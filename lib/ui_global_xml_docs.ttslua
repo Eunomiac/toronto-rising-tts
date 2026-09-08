@@ -6936,6 +6936,7 @@ UI.setAttributes("playerHud_refPanel_princesCourt_Red", {offsetXY = "-50 0"})
 <!-- Per-player transition blinds: ui/.templates/panel_overlay_blindfold.xml — root sibling beside this file (TOR-436). -->
 <!-- Placed last among blindfolds in ui/Global.xml so it draws above transition blinds when both are up. -->
 <!-- Parent Panel owns show/hide + FadeIn/FadeOut + raycast; child Images are stacked splash art. -->
+<!-- Attribute-path static showAnimation / colors live in session_splash_* Defaults; Lua only sets song-scaled delays/durations. -->
 
 <Defaults>
   <Panel class="global_blindfold_panel"
@@ -6964,6 +6965,40 @@ UI.setAttributes("playerHud_refPanel_princesCourt_Red", {offsetXY = "-50 0"})
     preserveAspect = "true"
     raycastTarget = "false"
   />
+
+  <!-- Attribute session-start path (TOR-559): static show/hide + resting colors. Timing stays in Lua. -->
+  <Panel class="session_splash_text_panel"
+    active = "false"
+    color = "rgba(1, 1, 1, 0)"
+    showAnimation = "FadeIn"
+  />
+  <Panel class="session_splash_art_panel"
+    active = "false"
+    color = "rgba(1, 1, 1, 0)"
+    showAnimation = "Grow"
+  />
+  <Panel class="session_splash_title_panel"
+    active = "false"
+    color = "rgba(0, 0, 0, 1)"
+    showAnimation = "Grow"
+  />
+  <Panel class="session_splash_frame_panel"
+    active = "false"
+    color = "rgba(1, 1, 1, 0)"
+    showAnimation = "FadeIn"
+    animationDuration = "0.5"
+  />
+  <Image class="session_splash_pair_image"
+    active = "true"
+    color = "rgba(1, 1, 1, 1)"
+    showAnimation = "FadeIn"
+    hideAnimation = "FadeOut"
+  />
+  <Image class="session_splash_title_image"
+    active = "true"
+    color = "rgba(1, 1, 1, 1)"
+    showAnimation = "FadeIn"
+  />
 </Defaults>
 
 <!--
@@ -6975,43 +7010,43 @@ UI.setAttributes("overlay_globalBlindfold", { active = "true"})
     <!-- image + active set together on load / Intermission sessionNum edit (inactive until then so missing art is black, not white) -->
     <Image id="overlay_globalBlindfold" class="global_blindfold" active = "false" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_1_B" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_1_B" class="global_blindfold" image="overlay_explode_image_blackCaesar" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_1_B" class="global_blindfold_image_panel session_splash_art_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_1_B" class="global_blindfold session_splash_pair_image" image="overlay_explode_image_blackCaesar" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_1_A" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_1_A" class="global_blindfold" image="overlay_explode_text_blackCaesar" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_1_A" class="global_blindfold_image_panel session_splash_text_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_1_A" class="global_blindfold session_splash_pair_image" image="overlay_explode_text_blackCaesar" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_2_B" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_2_B" class="global_blindfold" image="overlay_explode_image_fomorach" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_2_B" class="global_blindfold_image_panel session_splash_art_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_2_B" class="global_blindfold session_splash_pair_image" image="overlay_explode_image_fomorach" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_2_A" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_2_A" class="global_blindfold" image="overlay_explode_text_fomorach" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_2_A" class="global_blindfold_image_panel session_splash_text_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_2_A" class="global_blindfold session_splash_pair_image" image="overlay_explode_text_fomorach" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_3_B" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_3_B" class="global_blindfold" image="overlay_explode_image_aishe" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_3_B" class="global_blindfold_image_panel session_splash_art_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_3_B" class="global_blindfold session_splash_pair_image" image="overlay_explode_image_aishe" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_3_A" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_3_A" class="global_blindfold" image="overlay_explode_text_aishe" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_3_A" class="global_blindfold_image_panel session_splash_text_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_3_A" class="global_blindfold session_splash_pair_image" image="overlay_explode_text_aishe" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_4_B" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_4_B" class="global_blindfold" image="overlay_explode_image_rashid" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_4_B" class="global_blindfold_image_panel session_splash_art_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_4_B" class="global_blindfold session_splash_pair_image" image="overlay_explode_image_rashid" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_4_A" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_4_A" class="global_blindfold" image="overlay_explode_text_rashid" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_4_A" class="global_blindfold_image_panel session_splash_text_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_4_A" class="global_blindfold session_splash_pair_image" image="overlay_explode_text_rashid" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_5_B" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_5_B" class="global_blindfold" image="overlay_explode_image_lordLucien" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_5_B" class="global_blindfold_image_panel session_splash_art_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_5_B" class="global_blindfold session_splash_pair_image" image="overlay_explode_image_lordLucien" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_5_A" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_5_A" class="global_blindfold" image="overlay_explode_text_lordLucien" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_5_A" class="global_blindfold_image_panel session_splash_text_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_5_A" class="global_blindfold session_splash_pair_image" image="overlay_explode_text_lordLucien" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_6_A" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_6_A" class="global_blindfold" image="overlay_explode_sessionNum" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_6_A" class="global_blindfold_image_panel session_splash_title_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_6_A" class="global_blindfold session_splash_title_image" image="overlay_explode_sessionNum" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_6_B" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_6_B" class="global_blindfold" image="overlay_explode_sessionTitle" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_6_B" class="global_blindfold_image_panel session_splash_title_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_6_B" class="global_blindfold session_splash_title_image" image="overlay_explode_sessionTitle" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_frame" class="global_blindfold_image_panel" active = "false">
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_frame" class="global_blindfold_image_panel session_splash_frame_panel">
     <Image id="overlay_globalBlindfold_frame" class="global_blindfold" image="overlay_explode_frame" />
   </Panel>
 </Panel>
@@ -14698,6 +14733,7 @@ M.minimal = [=[
 <!-- Per-player transition blinds: ui/.templates/panel_overlay_blindfold.xml — root sibling beside this file (TOR-436). -->
 <!-- Placed last among blindfolds in ui/Global.xml so it draws above transition blinds when both are up. -->
 <!-- Parent Panel owns show/hide + FadeIn/FadeOut + raycast; child Images are stacked splash art. -->
+<!-- Attribute-path static showAnimation / colors live in session_splash_* Defaults; Lua only sets song-scaled delays/durations. -->
 
 <Defaults>
   <Panel class="global_blindfold_panel"
@@ -14726,6 +14762,40 @@ M.minimal = [=[
     preserveAspect = "true"
     raycastTarget = "false"
   />
+
+  <!-- Attribute session-start path (TOR-559): static show/hide + resting colors. Timing stays in Lua. -->
+  <Panel class="session_splash_text_panel"
+    active = "false"
+    color = "rgba(1, 1, 1, 0)"
+    showAnimation = "FadeIn"
+  />
+  <Panel class="session_splash_art_panel"
+    active = "false"
+    color = "rgba(1, 1, 1, 0)"
+    showAnimation = "Grow"
+  />
+  <Panel class="session_splash_title_panel"
+    active = "false"
+    color = "rgba(0, 0, 0, 1)"
+    showAnimation = "Grow"
+  />
+  <Panel class="session_splash_frame_panel"
+    active = "false"
+    color = "rgba(1, 1, 1, 0)"
+    showAnimation = "FadeIn"
+    animationDuration = "0.5"
+  />
+  <Image class="session_splash_pair_image"
+    active = "true"
+    color = "rgba(1, 1, 1, 1)"
+    showAnimation = "FadeIn"
+    hideAnimation = "FadeOut"
+  />
+  <Image class="session_splash_title_image"
+    active = "true"
+    color = "rgba(1, 1, 1, 1)"
+    showAnimation = "FadeIn"
+  />
 </Defaults>
 
 <!--
@@ -14737,43 +14807,43 @@ UI.setAttributes("overlay_globalBlindfold", { active = "true"})
     <!-- image + active set together on load / Intermission sessionNum edit (inactive until then so missing art is black, not white) -->
     <Image id="overlay_globalBlindfold" class="global_blindfold" active = "false" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_1_B" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_1_B" class="global_blindfold" image="overlay_explode_image_blackCaesar" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_1_B" class="global_blindfold_image_panel session_splash_art_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_1_B" class="global_blindfold session_splash_pair_image" image="overlay_explode_image_blackCaesar" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_1_A" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_1_A" class="global_blindfold" image="overlay_explode_text_blackCaesar" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_1_A" class="global_blindfold_image_panel session_splash_text_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_1_A" class="global_blindfold session_splash_pair_image" image="overlay_explode_text_blackCaesar" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_2_B" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_2_B" class="global_blindfold" image="overlay_explode_image_fomorach" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_2_B" class="global_blindfold_image_panel session_splash_art_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_2_B" class="global_blindfold session_splash_pair_image" image="overlay_explode_image_fomorach" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_2_A" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_2_A" class="global_blindfold" image="overlay_explode_text_fomorach" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_2_A" class="global_blindfold_image_panel session_splash_text_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_2_A" class="global_blindfold session_splash_pair_image" image="overlay_explode_text_fomorach" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_3_B" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_3_B" class="global_blindfold" image="overlay_explode_image_aishe" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_3_B" class="global_blindfold_image_panel session_splash_art_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_3_B" class="global_blindfold session_splash_pair_image" image="overlay_explode_image_aishe" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_3_A" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_3_A" class="global_blindfold" image="overlay_explode_text_aishe" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_3_A" class="global_blindfold_image_panel session_splash_text_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_3_A" class="global_blindfold session_splash_pair_image" image="overlay_explode_text_aishe" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_4_B" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_4_B" class="global_blindfold" image="overlay_explode_image_rashid" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_4_B" class="global_blindfold_image_panel session_splash_art_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_4_B" class="global_blindfold session_splash_pair_image" image="overlay_explode_image_rashid" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_4_A" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_4_A" class="global_blindfold" image="overlay_explode_text_rashid" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_4_A" class="global_blindfold_image_panel session_splash_text_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_4_A" class="global_blindfold session_splash_pair_image" image="overlay_explode_text_rashid" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_5_B" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_5_B" class="global_blindfold" image="overlay_explode_image_lordLucien" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_5_B" class="global_blindfold_image_panel session_splash_art_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_5_B" class="global_blindfold session_splash_pair_image" image="overlay_explode_image_lordLucien" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_5_A" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_5_A" class="global_blindfold" image="overlay_explode_text_lordLucien" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_5_A" class="global_blindfold_image_panel session_splash_text_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_5_A" class="global_blindfold session_splash_pair_image" image="overlay_explode_text_lordLucien" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_6_A" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_6_A" class="global_blindfold" image="overlay_explode_sessionNum" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_6_A" class="global_blindfold_image_panel session_splash_title_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_6_A" class="global_blindfold session_splash_title_image" image="overlay_explode_sessionNum" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_6_B" class="global_blindfold_image_panel" active = "false">
-    <Image id="overlay_globalBlindfold_sessionSplash_1_6_B" class="global_blindfold" image="overlay_explode_sessionTitle" active = "false" />
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_1_6_B" class="global_blindfold_image_panel session_splash_title_panel">
+    <Image id="overlay_globalBlindfold_sessionSplash_1_6_B" class="global_blindfold session_splash_title_image" image="overlay_explode_sessionTitle" />
   </Panel>
-  <Panel id="overlay_globalBlindfold_sessionSplashPanel_frame" class="global_blindfold_image_panel" active = "false">
+  <Panel id="overlay_globalBlindfold_sessionSplashPanel_frame" class="global_blindfold_image_panel session_splash_frame_panel">
     <Image id="overlay_globalBlindfold_frame" class="global_blindfold" image="overlay_explode_frame" />
   </Panel>
 </Panel>

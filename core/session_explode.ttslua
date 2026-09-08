@@ -116,8 +116,9 @@ local function applyIdleAttrs(id, color)
     })
 end
 
---- Restore Intermission look: opaque session cover, splash layers fully transparent,
---- splash panels inactive (attribute path may have shown them).
+--- Restore Intermission look: opaque session cover, splash panels inactive.
+--- Splash images stay opaque white (session_splash_* Defaults / attribute-path ready);
+--- inactive parents keep them invisible on Intermission.
 function SessionExplode.resetLayers()
     U.setAttributes(BASE_PANEL_ID, {
         active = "true",
@@ -125,12 +126,18 @@ function SessionExplode.resetLayers()
     })
     applyIdleAttrs(COVER_ID, "rgba(1, 1, 1, 1)")
     for i = 1, #SPLASH_IDS do
-        applyIdleAttrs(SPLASH_IDS[i], "rgba(1, 1, 1, 0)")
+        applyIdleAttrs(SPLASH_IDS[i], "rgba(1, 1, 1, 1)")
     end
     for i = 1, #SPLASH_PANEL_IDS do
-        U.setAttributes(SPLASH_PANEL_IDS[i], {
+        local panelId = SPLASH_PANEL_IDS[i]
+        local color = "rgba(1, 1, 1, 0)"
+        if panelId == "overlay_globalBlindfold_sessionSplashPanel_1_6_A"
+            or panelId == "overlay_globalBlindfold_sessionSplashPanel_1_6_B" then
+            color = "rgba(0, 0, 0, 1)"
+        end
+        U.setAttributes(panelId, {
             active = "false",
-            color = "rgba(1, 1, 1, 0)",
+            color = color,
         })
     end
 end
@@ -686,7 +693,9 @@ local function fireAttributeSessionIntroAudio()
     end
 end
 
---- Prepare TTS showAnimation / hideAnimation attrs for the attribute session-start path.
+--- Prepare song-scaled timing for the attribute session-start path.
+--- Static showAnimation / hideAnimation / colors live in session_splash_* Defaults
+--- (`ui/shared/panel_overlay_global_blindfold.xml`).
 -- @param songDuration number|nil
 -- @return number pair sequenceDuration (scaled)
 function SessionExplode.initializeAttributeAnimation(songDuration)
@@ -695,34 +704,11 @@ function SessionExplode.initializeAttributeAnimation(songDuration)
     end
     local timeRatio = SessionExplode.attributeTimeRatio(songDuration)
 
+    -- Panel may have been hidden; cover starts inactive until session art is applied.
+    -- Base goes transparent so splash layers read cleanly (Intermission leaves it opaque).
     U.setAttributes(PANEL_ID, { active = "true" })
-    U.setAttributes(BASE_PANEL_ID, { active = "true", color = "rgba(1, 1, 1, 0)" })
+    U.setAttributes(BASE_PANEL_ID, { color = "rgba(1, 1, 1, 0)" })
     U.setAttributes(COVER_ID, { active = "true" })
-    U.setAttributes(FRAME_PANEL_ID, { active = "false", color = "rgba(1, 1, 1, 0)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_1_A", { active = "false", color = "rgba(1, 1, 1, 0)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplash_1_1_A", { active = "true", color = "rgba(1, 1, 1, 1)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_1_B", { active = "false", color = "rgba(1, 1, 1, 0)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplash_1_1_B", { active = "true", color = "rgba(1, 1, 1, 1)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_2_A", { active = "false", color = "rgba(1, 1, 1, 0)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplash_1_2_A", { active = "true", color = "rgba(1, 1, 1, 1)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_2_B", { active = "false", color = "rgba(1, 1, 1, 0)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplash_1_2_B", { active = "true", color = "rgba(1, 1, 1, 1)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_3_A", { active = "false", color = "rgba(1, 1, 1, 0)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplash_1_3_A", { active = "true", color = "rgba(1, 1, 1, 1)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_3_B", { active = "false", color = "rgba(1, 1, 1, 0)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplash_1_3_B", { active = "true", color = "rgba(1, 1, 1, 1)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_4_A", { active = "false", color = "rgba(1, 1, 1, 0)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplash_1_4_A", { active = "true", color = "rgba(1, 1, 1, 1)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_4_B", { active = "false", color = "rgba(1, 1, 1, 0)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplash_1_4_B", { active = "true", color = "rgba(1, 1, 1, 1)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_5_A", { active = "false", color = "rgba(1, 1, 1, 0)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplash_1_5_A", { active = "true", color = "rgba(1, 1, 1, 1)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_5_B", { active = "false", color = "rgba(1, 1, 1, 0)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplash_1_5_B", { active = "true", color = "rgba(1, 1, 1, 1)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_A", { active = "false", color = "rgba(0, 0, 0, 1)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_A", { active = "true", color = "rgba(1, 1, 1, 1)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_B", { active = "false", color = "rgba(0, 0, 0, 1)" })
-    U.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_B", { active = "true", color = "rgba(1, 1, 1, 1)" })
 
     local sequenceDuration = 20 * timeRatio
 
@@ -755,61 +741,49 @@ function SessionExplode.initializeAttributeAnimation(songDuration)
     local imageFadeInEndTime = actualSequenceDuration * imageFadeInEndRatio
     local imageFadeInDuration = imageFadeInEndTime - imageFadeInStartTime
 
+    -- showAnimation / animationDuration=0.5 are Defaults on session_splash_frame_panel.
     U.setAttributes(FRAME_PANEL_ID, {
-        showAnimation = "FadeIn",
-        animationDuration = 0.5,
         showAnimationDelay = imageFadeInStartTime,
     })
 
     for sequence = 1, 5 do
         local imagePanelID = "overlay_globalBlindfold_sessionSplashPanel_1_" .. sequence .. "_B"
         U.setAttributes(imagePanelID, {
-            showAnimation = "Grow",
             showAnimationDelay = imagePanelGrowStartTime,
             animationDuration = imagePanelGrowDuration,
-            color = "rgba(1, 1, 1, 0)",
         })
 
         local imageID = "overlay_globalBlindfold_sessionSplash_1_" .. sequence .. "_B"
         U.setAttributes(imageID, {
-            showAnimation = "FadeIn",
-            hideAnimation = "FadeOut",
             showAnimationDelay = imageFadeInStartTime,
             animationDuration = imageFadeInDuration,
         })
 
         local textPanelID = "overlay_globalBlindfold_sessionSplashPanel_1_" .. sequence .. "_A"
         U.setAttributes(textPanelID, {
-            showAnimation = "FadeIn",
             showAnimationDelay = 0,
             animationDuration = textPanelSlideInDuration,
-            color = "rgba(1, 1, 1, 0)",
         })
 
         local textID = "overlay_globalBlindfold_sessionSplash_1_" .. sequence .. "_A"
         U.setAttributes(textID, {
-            showAnimation = "FadeIn",
-            hideAnimation = "FadeOut",
             showAnimationDelay = textFadeInStartTime,
             animationDuration = textFadeInDuration,
         })
     end
 
-    U.setAttributes(PANEL_ID, { hideAnimation = "FadeOut", animationDuration = 3 * timeRatio })
+    -- hideAnimation FadeOut is already on global_blindfold_panel Defaults.
+    U.setAttributes(PANEL_ID, { animationDuration = 3 * timeRatio })
     U.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_A", {
-        showAnimation = "Grow",
         animationDuration = 5 * timeRatio,
     })
     U.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_A", {
-        showAnimation = "FadeIn",
         animationDuration = 5 * timeRatio,
     })
     U.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_B", {
-        showAnimation = "Grow",
         animationDuration = 5 * timeRatio,
     })
     U.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_B", {
-        showAnimation = "FadeIn",
         animationDuration = 5 * timeRatio,
     })
 

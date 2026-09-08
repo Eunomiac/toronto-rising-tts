@@ -388,7 +388,7 @@ Play enter paints HUD behind the cover first (`Phases.armPlayHudBehindCover`, TO
 | `Phases.fadeIntermissionLoopForPlayEnter(_ctx)` | Start TR_Loop 0.5s fade when the cover explode starts | Play enter with `SE.play()` (TOR-534) |
 | `SessionExplode.play()` | Start the stacked cover explode (cover lerp starts immediately, then five still-text / wavering-art pairs, then session number/title together). Hides the panel near the end and resets layers. Times scale by `songDuration / C.SessionStartBaseDuration`. | Play enter **after** lights, **before** `fireSessionIntro` (TOR-533 / TOR-535); sting waits `C.SessionStartIntroDelaySec` (0.25s) |
 | `SessionExplode.sequenceDurationSec(songDuration?)` | Wall-clock seconds Play enter should wait after `play()` | `Phases.sessionIntroBlindfoldHoldSec` |
-| `SessionExplode.resetLayers()` | Opaque session cover, splash layers transparent, scale 1 | Intermission show |
+| `SessionExplode.resetLayers()` | Opaque session cover; splash panels inactive; splash images opaque white (attribute-path ready under inactive parents); title panels black | Intermission show |
 | `SessionExplode.cancel()` | Stop in-flight lerps (does not snap attrs) | Play exit; `HUD_clearLoadingOverlay` |
 | `SessionExplode.explodeImage(id, config?)` | Waver then scale-and-fade one XmlUI image. Config: `waverTime`, `scaleTime`, `waverLimit`, `waverSpeed`, `fadeOutRatio`, `fadeInTime`, `startDelay`, `scaleEase`, `songDuration`. | Used by `play()` |
 | `DEBUG.resetToIntermission()` | Snap to Intermission: session cover + TR_Loop; aborts an in-flight Play intro. Does not move tables/skyboxes. | Host console: re-test Intermission→Play Advance |

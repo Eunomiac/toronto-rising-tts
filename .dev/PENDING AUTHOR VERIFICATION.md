@@ -17,7 +17,15 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-07 — TOR-561 dual global blindfolds._
+_Last populated: 2026-09-08 — TOR-563 session-start attribute Defaults._
+
+### Phases / session start
+
+#### TOR-563 — Session-start attribute-path static attrs in XML Defaults
+
+**How to verify:** Save & Play so the Global HUD picks up the new Defaults (or Save & Play, then click Phases → **Refresh XML**). Leave **Lerp explode** off. From Intermission, click **Advance** to Play and watch the session-start splash: the character pairs should still Grow/FadeIn, the frame should FadeIn, the session number/title should Grow/FadeIn, the cover should FadeOut at the end, and the session-start music should still kick in on the mid-sequence beat. Then in the Host console run `lua DEBUG.resetToIntermission()` and Advance again — the second run should still look and time the same.
+
+**Context:** Moved static `showAnimation` / `hideAnimation` / colors out of Lua into `session_splash_*` Defaults. Lua only writes song-scaled delays and durations. relatedTo **TOR-559** (attribute vs lerp toggle).
 
 ### NPC / stage
 
