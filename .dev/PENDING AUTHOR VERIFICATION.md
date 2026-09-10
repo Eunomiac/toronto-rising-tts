@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-08 — TOR-563 session-start attribute Defaults._
+_Last populated: 2026-09-10 — TOR-564 Memoriam panel art from Steam Cloud._
 
 ### Phases / session start
 
@@ -38,6 +38,12 @@ Separately, restart the Storyteller Dashboard with the TTS Tools extension **dis
 **Context:** Runtime spawn exception to the named-NPC preload pool. Seating / PC-as-NPC / Memoriam generics are still out of scope. Post-ship polish: import UI edge, spawn row flip/spacing, nickname after reload, fixed rotation, Snap toggle on at spawn. Generics park in the next free under-table bay (named NPCs keep their sorted stable slots).
 
 ### Tooling / assets
+
+#### TOR-564 — Memoriam panel art from Steam Cloud
+
+**How to verify:** Finish uploading the Memoriam panel images to Cloud Manager (`Vampire the Masquerade 5E/Memoriam`, named like `blackCaesar37_a.jpg`). With Steam running, run `npm run cloud-asset-sync:catalog` from the repo root — it should report a `memoriamPanels` job with every file kept and none skipped, then write `lib/cloud_catalog.ttslua`. Save & Play. In the Host console, look for one line starting `[constants] Memoriam panel art:` — it should say how many panels were linked from Cloud, how many catalog panels still have no art, and (only if something is misnamed) list Cloud files that match no period. Then run `lua print(C.resolveMemoriamPanelURL("blackCaesar37", "panelA"))` — you should see a `steamusercontent` URL, not an error. Optionally `lua log(C.getMemoriamPanelsWithoutArt())` lists any panels still waiting for art; when the upload is complete that list should be empty. When I regenerated the catalog mid-upload, the 27 missing panels were all Rashid periods.
+
+**Context:** Cloud is now the source of truth for `C.MemoriamSkyboxes[key].panelA–D.url`; the Sheet's Panel URL columns only fill a panel that has no Cloud file. The Memoriam apply path (**TOR-101**) should call `C.resolveMemoriamPanelURL(skyboxKey, panelKey)`, which errors loudly when art is missing. The Memoriam popup itself does not read the URLs yet.
 
 #### ⚠️ TOR-558 — Cloud asset sync (CustomUIAssets + Cloud catalog)
 

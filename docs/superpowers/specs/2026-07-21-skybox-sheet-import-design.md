@@ -91,6 +91,7 @@ Fail loudly on non-200, empty body, or HTML/login error pages.
 - Panel `isOutdoors` / `isDaytime` parse as booleans (`TRUE`/`FALSE`)
 - Panel `Weather` is a pipe-delimited list of strings; a blank cell becomes an empty array
 - Panel URL, `blindfoldURL`, `splashText`, and NPC `label` / `tokenURL` / `figurineURL` may be blank (empty string)
+- **Panel art authority is Steam Cloud, not the sheet (TOR-564):** `lib/constants.ttslua` overwrites `panelA`–`panelD`.`url` from `Cloud.MemoriamPanels["<key>_<a|b|c|d>"].URL` (`.tools/cloud-asset-sync.jsonc` job `memoriamPanels`; regenerate with `npm run cloud-asset-sync:catalog`). A sheet Panel URL survives only for a panel with no Cloud file. Use `C.resolveMemoriamPanelURL(skyboxKey, panelKey)` at apply time; `C.getMemoriamPanelsWithoutArt()` lists blanks.
 - Panels A and B require a non-empty Display; if panel C or D Display is blank, omit that panel entirely
 - Always emit ten `npcs` tables, in sheet order 1–10
 - Rows with a blank Key are skipped (named ranges often include a draft/next row)

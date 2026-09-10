@@ -3009,6 +3009,110 @@ C.Skyboxes = SkyboxesCatalog.Skyboxes
 C.GenericSkyboxes = SkyboxesCatalog.GenericSkyboxes
 C.MemoriamSkyboxes = SkyboxesCatalog.MemoriamSkyboxes
 
+-- Memoriam panel art lives on Steam Cloud (`Vampire the Masquerade 5E/Memoriam`, files `<skyboxKey>_<a|b|c|d>.jpg`) and reaches
+-- Lua as `Cloud.MemoriamPanels` (AUTO-GENERATED `lib/cloud_catalog.ttslua`; regenerate: npm run cloud-asset-sync:catalog).
+-- Cloud is the URL authority for `panelA`–`panelD`.`url`; a sheet Panel URL survives only when no cloud file exists for that panel.
+local CloudCatalog = require("lib.cloud_catalog")
+
+local MEMORIAM_PANEL_KEYS = { "panelA", "panelB", "panelC", "panelD" }
+local MEMORIAM_PANEL_KEY_BY_LETTER = { a = "panelA", b = "panelB", c = "panelC", d = "panelD" }
+
+--- @param value any
+--- @return string
+local function trimmedString(value)
+  if type(value) ~= "string" then
+    return ""
+  end
+  return (string.gsub(string.gsub(value, "^%s+", ""), "%s+$", ""))
+end
+
+--- Writes `Cloud.MemoriamPanels["<skyboxKey>_<letter>"].URL` into `catalog[skyboxKey][panelX].url`.
+--- Cloud keys that name no catalog period, or a panel that period does not define, are reported — not applied.
+--- @param catalog table `C.MemoriamSkyboxes`
+--- @param cloudPanels table `Cloud.MemoriamPanels`
+--- @return integer linked
+--- @return string[] unmatched  sorted cloud keys with no catalog target
+local function applyMemoriamCloudPanelUrls(catalog, cloudPanels)
+  local linked = 0
+  local unmatched = {}
+  for cloudKey, row in pairs(cloudPanels) do
+    local skyboxKey, letter = string.match(tostring(cloudKey), "^(.-)_(%a)$")
+    local panelKey = letter and MEMORIAM_PANEL_KEY_BY_LETTER[string.lower(letter)] or nil
+    local entry = skyboxKey and catalog[skyboxKey] or nil
+    local panel = (panelKey and type(entry) == "table") and entry[panelKey] or nil
+    local url = type(row) == "table" and trimmedString(row.URL) or ""
+    if type(panel) == "table" and url ~= "" then
+      panel.url = url
+      linked = linked + 1
+    else
+      unmatched[#unmatched + 1] = tostring(cloudKey)
+    end
+  end
+  table.sort(unmatched)
+  return linked, unmatched
+end
+
+--- Catalog panels (`"<skyboxKey>.<panelKey>"`) whose `url` is still blank after the Cloud merge — sorted.
+--- @return string[]
+function C.getMemoriamPanelsWithoutArt()
+  local missing = {}
+  for skyboxKey, entry in pairs(C.MemoriamSkyboxes) do
+    if type(entry) == "table" then
+      for i = 1, #MEMORIAM_PANEL_KEYS do
+        local panelKey = MEMORIAM_PANEL_KEYS[i]
+        local panel = entry[panelKey]
+        if type(panel) == "table" and trimmedString(panel.url) == "" then
+          missing[#missing + 1] = tostring(skyboxKey) .. "." .. panelKey
+        end
+      end
+    end
+  end
+  table.sort(missing)
+  return missing
+end
+
+--- Skybox background URL for one Memoriam panel (the value the Memoriam apply path hands to `Backgrounds.setCustomURL`).
+--- Errors when the period, the panel, or its art is missing so a bad Advance payload cannot fail silently.
+--- @param skyboxKey string  `C.MemoriamSkyboxes` key (e.g. `blackCaesar37`)
+--- @param panelKey string  `panelA` … `panelD`
+--- @return string url
+function C.resolveMemoriamPanelURL(skyboxKey, panelKey)
+  local entry = type(skyboxKey) == "string" and C.MemoriamSkyboxes[skyboxKey] or nil
+  if type(entry) ~= "table" then
+    error("Memoriam skybox `" .. tostring(skyboxKey) .. "` is missing from the catalog")
+  end
+  local panel = type(panelKey) == "string" and entry[panelKey] or nil
+  if type(panel) ~= "table" then
+    error("Memoriam skybox `" .. skyboxKey .. "` has no panel `" .. tostring(panelKey) .. "`")
+  end
+  local url = trimmedString(panel.url)
+  if url == "" then
+    error(
+      "Memoriam skybox `" .. skyboxKey .. "`." .. panelKey
+        .. " has no art — upload `" .. skyboxKey .. "_" .. string.lower(string.sub(panelKey, -1)) .. ".jpg` to Cloud/Memoriam and run npm run cloud-asset-sync:catalog"
+    )
+  end
+  return url
+end
+
+if type(CloudCatalog.MemoriamPanels) ~= "table" then
+  print("[constants] Cloud.MemoriamPanels is missing — run npm run cloud-asset-sync:catalog. Memoriam panels have no art.")
+else
+  local linked, unmatched = applyMemoriamCloudPanelUrls(C.MemoriamSkyboxes, CloudCatalog.MemoriamPanels)
+  local missing = C.getMemoriamPanelsWithoutArt()
+  local summary = string.format(
+    "[constants] Memoriam panel art: %d linked from Cloud, %d catalog panel(s) still without art (C.getMemoriamPanelsWithoutArt)",
+    linked,
+    #missing
+  )
+  if #unmatched > 0 then
+    summary = summary
+      .. string.format("; %d Cloud file(s) match no catalog period/panel: ", #unmatched)
+      .. table.concat(unmatched, ", ")
+  end
+  print(summary)
+end
+
 --- @param entry table|nil
 --- @return number
 local function memoriamSkyboxStartYear(entry)
