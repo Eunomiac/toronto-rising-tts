@@ -12,6 +12,7 @@
  *   npm run cloud-asset-sync -- --dry-run
  *   npm run cloud-asset-sync -- --yes-purge
  *   npm run cloud-asset-sync -- --job siteCards
+ *   npm run cloud-asset-sync:catalog   (every LuaCatalog job; leaves the save alone)
  */
 
 const fs = require("fs");
@@ -327,8 +328,8 @@ function renderCloudCatalogLua(cloud) {
 function parseCli(argv) {
   /** @type {string | null} */
   let configPath = null;
-  /** @type {string | null} */
-  let jobFilter = null;
+  /** @type {string[]} */
+  const jobFilter = [];
   let dryRun = false;
   let yesPurge = false;
 
@@ -338,7 +339,10 @@ function parseCli(argv) {
       configPath = path.resolve(argv[i + 1]);
       i += 1;
     } else if (a === "--job" && argv[i + 1] != null) {
-      jobFilter = String(argv[i + 1]).trim();
+      for (const id of String(argv[i + 1]).split(",")) {
+        const trimmed = id.trim();
+        if (trimmed !== "" && !jobFilter.includes(trimmed)) jobFilter.push(trimmed);
+      }
       i += 1;
     } else if (a === "--dry-run") {
       dryRun = true;
@@ -349,7 +353,9 @@ function parseCli(argv) {
 
 Options:
   --config <path>   JSONC jobs file (default: .tools/cloud-asset-sync.jsonc)
-  --job <id>        Run only this job id
+  --job <id[,id…]>  Run only these job ids (repeatable). LuaCatalog runs rebuild
+                    lib/cloud_catalog.ttslua from the selected jobs only, so
+                    include every LuaCatalog job you want to keep.
   --dry-run         Plan only; do not write save or cloud_catalog.ttslua
   --yes-purge, -y   Accept stale CustomUIAssets purges without prompting
   --help, -h
@@ -362,7 +368,7 @@ Options:
 
   return {
     configPath: configPath || DEFAULT_CONFIG,
-    jobFilter,
+    jobFilter: jobFilter.length > 0 ? jobFilter : null,
     dryRun,
     yesPurge,
   };
@@ -427,11 +433,14 @@ async function main() {
   }
 
   if (cli.jobFilter) {
-    jobs = jobs.filter((j) => j.id === cli.jobFilter);
-    if (jobs.length === 0) {
-      console.error(`[cloud-asset-sync] FAIL: no job with id "${cli.jobFilter}".`);
+    const known = new Set(jobs.map((j) => j.id));
+    const unknown = cli.jobFilter.filter((id) => !known.has(id));
+    if (unknown.length > 0) {
+      console.error(`[cloud-asset-sync] FAIL: no job with id "${unknown.join('", "')}".`);
       process.exit(1);
     }
+    const wanted = new Set(cli.jobFilter);
+    jobs = jobs.filter((j) => wanted.has(j.id));
   }
 
   const needsSave = jobs.some(

@@ -20,6 +20,7 @@
     "tts-cloud:export": "node .tools/tts-cloud/export-folder-csv.js",
     "cloud-asset-sync": "node .tools/cloud-asset-sync.js",
     "cloud-asset-sync:dry-run": "node .tools/cloud-asset-sync.js --dry-run",
+    "cloud-asset-sync:catalog": "node .tools/cloud-asset-sync.js --job cloudSitesCatalog,genericNpcFigurines,genericNpcTokenFronts,genericNpcTokenBacks,memoriamPanels",
     "custom-ui-assets:purge": "node .tools/custom-ui-assets/purge-custom-ui-assets-by-pattern.js",
     "custom-ui-assets:add-csv": "node .tools/custom-ui-assets/add-custom-ui-assets-from-csv.js",
     "custom-ui-assets:probe-urls": "node .tools/custom-ui-assets/probe-custom-ui-asset-urls.js",

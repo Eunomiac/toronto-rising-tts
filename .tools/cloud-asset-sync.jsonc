@@ -54,6 +54,19 @@
       "filenameToNameSearchPattern": "^tokenBack_([^_]+_\\d{2})\\.[^.]+$",
       "filenameToNameReplacePattern": "$1"
       // → Cloud.GenericNpcTokenBacks.<stem> = { filename, key, URL }
+    },
+    {
+      "id": "memoriamPanels",
+      "cloudFolder": "Memoriam",
+      "recurIntoSubfolders": false,
+      "output": "LuaCatalog",
+      "tableName": "MemoriamPanels",
+      // <skyboxKey>_<panel>.<ext> where skyboxKey = <pcKey><periodId> (a C.MemoriamSkyboxes key,
+      // e.g. blackCaesar37) and panel = a|b|c|d → panelA..panelD.
+      "filenameToNameSearchPattern": "^([A-Za-z][A-Za-z0-9]*[0-9]+_[a-dA-D])\\.[^.]+$",
+      "filenameToNameReplacePattern": "$1"
+      // → Cloud.MemoriamPanels.blackCaesar37_a = { filename, key, URL }
+      // Consumed by lib/constants.ttslua (applyMemoriamCloudPanelUrls) → C.MemoriamSkyboxes[key].panelX.url
     }
   ]
 }

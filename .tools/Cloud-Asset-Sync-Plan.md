@@ -27,6 +27,17 @@ Verification (when implemented):
 
 Status: **implemented** — runner `.tools/cloud-asset-sync.js`; config `.tools/cloud-asset-sync.jsonc`; hooked into `build:full` / `build:all-tooling` only (`--yes-purge`).
 
+## Current jobs and consumers
+
+| Job id | Cloud folder (under `CLOUD_ROOT`) | Output | Lua consumer |
+| --- | --- | --- | --- |
+| `siteCards` | `Sites` | `GlobalCustomUIAssets` (`siteCard_<stem>`) | `C.Sites[*].image` |
+| `cloudSitesCatalog` | `Sites` | `Cloud.Sites` | — (console inspection) |
+| `genericNpcFigurines` / `genericNpcTokenFronts` / `genericNpcTokenBacks` | `NPC Cutouts/Generic/…` | `Cloud.GenericNpc*` | `lib/npcs_data.ttslua` `D.initGenericNPCs` |
+| `memoriamPanels` | `Memoriam` (`<skyboxKey>_<a\|b\|c\|d>.<ext>`) | `Cloud.MemoriamPanels` | `lib/constants.ttslua` fills `C.MemoriamSkyboxes[key].panelA–D.url` at load (TOR-564) |
+
+**`--job` takes several ids** (`--job a,b` or repeated). A `LuaCatalog` run rebuilds `lib/cloud_catalog.ttslua` from the selected jobs only, so **`npm run cloud-asset-sync:catalog`** is the safe way to refresh every `Cloud.*` table without touching the save (no site-card purge prompt).
+
 ---
 
 ## Goal
