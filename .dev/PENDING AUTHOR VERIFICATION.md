@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-10 — TOR-564 Memoriam panel art from Steam Cloud._
+_Last populated: 2026-09-10 — TOR-565 session-start / global blindfold reorg._
 
 ### Phases / session start
 
