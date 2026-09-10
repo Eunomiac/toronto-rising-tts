@@ -18,7 +18,6 @@ local S = require("core.state")
 
 local SESSION_START_HEAL_PANEL = "sessionStartHeal_panel"
 local SESSION_COVER_IMAGE_ID = "overlay_sessionStartSplash"
-local GLOBAL_BLINDFOLD_IMAGE_ID = "overlay_globalBlindfold"
 local SESSION_NUMBER_IMAGE_ID = "overlay_sessionNumber_6"
 local SESSION_TITLE_IMAGE_ID = "overlay_sessionTitle_7"
 local HEAL_BROADCAST_HOLD_SEC = 6
@@ -176,6 +175,29 @@ local function normalizeSessionNum(sessionNum)
     return n
 end
 
+--- Session that just ended (set on End exit before increment). Used for end splash (TOR-566).
+local pendingEndedSessionNum = nil
+
+--- Remember the outgoing session before `incrementSessionNum` on End exit.
+-- @param sessionNum number|nil
+function Phases.stashEndedSessionNumForSplash(sessionNum)
+    pendingEndedSessionNum = normalizeSessionNum(sessionNum)
+end
+
+--- Session index for `overlay_sessionEndSplash_<N>` after End → Intermission.
+--- Prefers the stash from End exit; otherwise `sessionNum - 1` (post-increment fallback).
+-- @return number
+function Phases.endedSessionNumForSplash()
+    if pendingEndedSessionNum ~= nil then
+        return pendingEndedSessionNum
+    end
+    local n = normalizeSessionNum(nil) - 1
+    if n < 1 then
+        n = 1
+    end
+    return n
+end
+
 --- Session-start splash CustomUIAsset name for `overlay_sessionStartSplash`.
 -- @param sessionNum number|nil
 -- @return string
@@ -184,10 +206,14 @@ function Phases.sessionBlindfoldImageName(sessionNum)
 end
 
 --- Session-end splash CustomUIAsset name for End→Intermission global cover.
--- @param sessionNum number|nil
+-- @param sessionNum number|nil  When nil, uses `endedSessionNumForSplash()` (TOR-566).
 -- @return string
 function Phases.endBlindfoldImageName(sessionNum)
-    return "overlay_sessionEndSplash_" .. tostring(normalizeSessionNum(sessionNum))
+    local n = sessionNum
+    if n == nil then
+        n = Phases.endedSessionNumForSplash()
+    end
+    return "overlay_sessionEndSplash_" .. tostring(normalizeSessionNum(n))
 end
 
 --- Per-session number / title CustomUIAsset names (session-start explode stack).
@@ -198,9 +224,10 @@ function Phases.sessionNumberAndTitleImageNames(sessionNum)
     return "overlay_sessionNumber_" .. n, "overlay_sessionTitle_" .. n
 end
 
---- Set session-start splash, number, title, and stash end-splash name on the global cover Image.
--- Does not show or hide panels. Start splash / number / title start `active=false` in XML so a
--- missing image does not flash white; activate them together with the asset name.
+--- Set session-start splash, number, and title Images for the given session.
+-- Does not show or hide panels. Does **not** write the global cover Image — scene transitions
+-- own that Image, and End→Intermission sets `overlay_sessionEndSplash_<N>` in showEnd (TOR-566).
+-- Start splash / number / title start `active=false` in XML so a missing image does not flash white.
 -- @param sessionNum number|nil
 -- @return boolean
 function Phases.applySessionBlindfoldImages(sessionNum)
@@ -218,8 +245,6 @@ function Phases.applySessionBlindfoldImages(sessionNum)
         image = titleName,
         active = "true",
     })
-    -- Prefetch end splash onto the global cover Image (inactive until End→Intermission show).
-    U.setAttribute(GLOBAL_BLINDFOLD_IMAGE_ID, "image", Phases.endBlindfoldImageName(n))
     return true
 end
 
@@ -281,7 +306,7 @@ end
 --- Outgoing session audio fades out while TR_Loop fades in; wait covers both plus cover settle.
 --- Does not `stopAll` — that would hard-cut the outgoing fade.
 function Phases.beginIntermissionCoverAndTheme(_ctx)
-    -- Image attrs were set on load / Intermission sessionNum edit; do not rewrite here.
+    -- showEnd sets `overlay_sessionEndSplash_<endedSession>` after UI.show (TOR-566).
     Phases.showEndGlobalBlindfold(_ctx)
     local Soundscape = require("core.soundscape")
     local key = C.IntermissionThemeFeaturedKey or "TR_Loop"
@@ -754,6 +779,8 @@ end
 Phases.onExit[C.Phases.END] = function(ctx)
     return {
         function()
+            -- Stash before increment so End→Intermission splash uses the session that just ended (TOR-566).
+            Phases.stashEndedSessionNumForSplash(nil)
             Phases.incrementSessionNum()
             return true
         end,

@@ -503,6 +503,7 @@ local function invalidateGlobalBlindfoldAppliedState()
 end
 
 --- Force-hide global blindfold panel (transitions / end splash). Idempotent.
+--- Wait for SlideOut_Top (~2s) before clearing `active` — immediate active=false snaps the hide (TOR-566).
 local function hideTransitionGlobalBlindfold()
     if transitionGlobalBlindfoldHideInFlight and transitionGlobalBlindfoldHideCancel ~= nil then
         transitionGlobalBlindfoldHideCancel.cancelled = true
@@ -514,11 +515,45 @@ local function hideTransitionGlobalBlindfold()
         setTransitionGlobalBlindfoldActive(false)
         return
     end
-    if type(UI.hide) == "function" then
-        UI.hide(GLOBAL_BLINDFOLD_PANEL_ID)
+    if transitionGlobalBlindfoldHideInFlight then
+        return
     end
-    setTransitionGlobalBlindfoldActive(false)
-    transitionGlobalBlindfoldAppliedVisible = false
+    transitionGlobalBlindfoldHideInFlight = true
+    local cancel = { cancelled = false, reason = nil }
+    transitionGlobalBlindfoldHideCancel = cancel
+    -- Re-assert hide animation attrs in case a prior Lua write dropped them.
+    U.setAttributes(GLOBAL_BLINDFOLD_PANEL_ID, {
+        showAnimation = "SlideIn_Top",
+        hideAnimation = "SlideOut_Top",
+        animationDuration = "2",
+        hideAnimationDelay = "0",
+    })
+    U.chain({
+        function()
+            if cancel.cancelled then
+                return
+            end
+            if type(UI.hide) == "function" then
+                UI.hide(GLOBAL_BLINDFOLD_PANEL_ID)
+            end
+            return 2.1
+        end,
+        function()
+            if cancel.cancelled then
+                return
+            end
+            setTransitionGlobalBlindfoldActive(false)
+            transitionGlobalBlindfoldAppliedVisible = false
+        end,
+    }, {
+        cancelRegistry = cancel,
+        onComplete = function()
+            if transitionGlobalBlindfoldHideCancel == cancel then
+                transitionGlobalBlindfoldHideInFlight = false
+                transitionGlobalBlindfoldHideCancel = nil
+            end
+        end,
+    })
 end
 
 --- Force-hide session-start cover immediately (no FadeOut wait). Used when swapping to end cover.
@@ -619,22 +654,29 @@ local function showStartupLoadingOverlays()
     end
 end
 
+--- Arm end-splash image on the global cover Image (TOR-566).
+local function armEndGlobalBlindfoldImage()
+    local PhasesMod = require("core.phases")
+    if type(PhasesMod.endBlindfoldImageName) ~= "function" then
+        return
+    end
+    U.setAttributes(GLOBAL_BLINDFOLD_IMAGE_ID, {
+        image = PhasesMod.endBlindfoldImageName(nil),
+        active = "true",
+        color = "White",
+    })
+end
+
 --- Show global blindfold with session-end splash for End → Intermission (TOR-565). Persistent.
 --- Hides the session-start panel. Idempotent: if already ON, ensure `active` only — no SlideIn.
+--- Always re-arm image after UI.show (show re-applies XML defaults → overlay_globalBlindfold_1).
 local function showEndGlobalBlindfold()
     globalBlindfoldUseEndCover = true
     forceHideSessionStartGlobalBlindfold()
 
-    local PhasesMod = require("core.phases")
-    if type(PhasesMod.endBlindfoldImageName) == "function" then
-        U.setAttributes(GLOBAL_BLINDFOLD_IMAGE_ID, {
-            image = PhasesMod.endBlindfoldImageName(nil),
-            active = "true",
-            color = "White",
-        })
-    end
     U.setAttributes("overlay_district_card_display", { active = "false", color = "Clear", image = "" })
     U.setAttributes("overlay_site_card_display", { active = "false", color = "Clear", image = "" })
+    armEndGlobalBlindfoldImage()
 
     local interruptedHide = false
     if transitionGlobalBlindfoldHideInFlight and transitionGlobalBlindfoldHideCancel ~= nil then
@@ -647,13 +689,24 @@ local function showEndGlobalBlindfold()
 
     if not interruptedHide and transitionGlobalBlindfoldAppliedVisible == true then
         setTransitionGlobalBlindfoldActive(true)
+        armEndGlobalBlindfoldImage()
         return
     end
 
+    U.setAttributes(GLOBAL_BLINDFOLD_PANEL_ID, {
+        showAnimation = "SlideIn_Top",
+        hideAnimation = "SlideOut_Top",
+        animationDuration = "2",
+        hideAnimationDelay = "0",
+    })
     setTransitionGlobalBlindfoldActive(true)
     if type(UI.show) == "function" then
         UI.show(GLOBAL_BLINDFOLD_PANEL_ID)
     end
+    -- Parent UI.show re-applies XML defaults (image → overlay_globalBlindfold_1).
+    armEndGlobalBlindfoldImage()
+    U.setAttributes("overlay_district_card_display", { active = "false", color = "Clear", image = "" })
+    U.setAttributes("overlay_site_card_display", { active = "false", color = "Clear", image = "" })
     transitionGlobalBlindfoldAppliedVisible = true
     local Main = require("core.main")
     if type(Main.setDefaultCameraBeforeBlindfold) == "function" then

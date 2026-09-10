@@ -57,7 +57,14 @@
   />
 </Defaults>
 
-<Panel id="overlay_globalBlindfold_panel" class="global_blindfold_panel">
+<!-- Animation attrs also on the element (TOR-566): Defaults alone were enough for SlideIn,
+     but SlideOut was snapping; mirror the old transition panel's on-element pattern. -->
+<Panel id="overlay_globalBlindfold_panel"
+  class="global_blindfold_panel"
+  showAnimation="SlideIn_Top"
+  hideAnimation="SlideOut_Top"
+  animationDuration="2"
+  hideAnimationDelay="0">
   <Image id="overlay_globalBlindfold" class="global_blindfold_image" image="overlay_globalBlindfold_1" />
   <Image id="overlay_district_card_display" class="global_blindfold_district_card" />
   <Image id="overlay_site_card_display" class="global_blindfold_site_card" />

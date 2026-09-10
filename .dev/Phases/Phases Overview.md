@@ -29,7 +29,7 @@ Status: current (TOR-143 / TOR-361 / TOR-362 / TOR-497 / TOR-516 / TOR-531 / TOR
 | Kind | XML | Phase system |
 | --- | --- | --- |
 | **Session-start overlay** | `ui/shared/panel_overlay_session_start.xml` (`overlay_sessionStart_panel`, `active=true` by default; stacked splash Images) | **Yes** — cold load / Intermission→Play explode only (TOR-565). Images: `overlay_sessionStartSplash_<N>`, `overlay_sessionNumber_<N>`, `overlay_sessionTitle_<N>` (set on load + Intermission sessionNum edit). Explode hides the panel near song end; production does not re-show until UI refresh on load. Attribute path default; **Lerp explode** toggle uses `SessionExplode.play()`. HUD canary for TOR-384. |
-| **Global blindfold** | `ui/shared/panel_overlay_global_blindfold.xml` (`overlay_globalBlindfold_panel`, `active=false`; SlideIn_Top / SlideOut_Top; all clients; district/site cards) | **Scene/table transitions** via `hud_blindfold` / `hud_overlays`. **End → Intermission:** image `overlay_sessionEndSplash_<N>`, slide down, persistent until next load (no timed lift). |
+| **Global blindfold** | `ui/shared/panel_overlay_global_blindfold.xml` (`overlay_globalBlindfold_panel`, `active=false`; SlideIn_Top / SlideOut_Top; all clients; district/site cards) | **Scene/table transitions** via `hud_blindfold` / `hud_overlays`. **End → Intermission:** image `overlay_sessionEndSplash_<N>` for the session that just ended (stashed before `sessionNum` increment; re-armed after `UI.show` — TOR-566), slide down, persistent until next load (no timed lift). |
 | **Retired** | Former shared transition panel + end-only panel | Removed in TOR-565 (supersedes TOR-444 panel path + TOR-561 end panel). |
 
 ## General Phase Structure

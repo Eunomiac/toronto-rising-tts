@@ -17,11 +17,20 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-10 — TOR-565 session-start / global blindfold reorg._
+_Last populated: 2026-09-10 — TOR-566 global blindfold hide + End splash fixes._
 
 ### Phases / session start
 
-#### TOR-565 — Session-start overlay split + all-clients global blindfold
+#### TOR-566 — Global blindfold: instant hide + wrong End→Intermission splash
+
+**How to verify:** Save & Play so Global XML and scripts reload.
+
+1. **Scene Apply lift:** Apply a library scene with District + Site. The cover should slide down, then after settle **slide up** over about two seconds (not vanish instantly).
+2. **End → Intermission splash:** Advance through End into Intermission. The cover should show the **session-end** art for the session you just finished (for example session 1 → `overlay_sessionEndSplash_1`), not a random `overlay_globalBlindfold_N` tile. It should stay up until the next reload.
+
+**Context:** End exit was incrementing `sessionNum` before the splash name was chosen; `UI.show` also reset the Image to the XML default. Hide path was snapping `active=false` / missing on-element SlideOut attrs. relatedTo **TOR-565**.
+
+#### ❌ TOR-565 — Session-start overlay split + all-clients global blindfold
 
 **How to verify:** First confirm CustomUIAssets were renamed (or re-run `npm run custom-ui-assets:rename-overlays:dry-run` — it should report nothing left to rename). Reload the save from the main menu, then Save & Play so the new Global XML loads.
 
@@ -32,6 +41,7 @@ _Last populated: 2026-09-10 — TOR-565 session-start / global blindfold reorg._
 
 **Context:** Split session-start explode into `panel_overlay_session_start.xml`; new SlideIn_Top global cover for transitions and End→Intermission; retired transition/end panels; renamed CustomUIAssets. relatedTo **TOR-561**, **TOR-444**.
 
+**Verification Failures:** Slide-up hide was instant; End→Intermission showed a random global variant instead of the session-end splash. Follow-up **TOR-566**.
 #### TOR-563 — Session-start attribute-path static attrs in XML Defaults
 
 **How to verify:** Save & Play so the Global HUD picks up the new Defaults (or Save & Play, then click Phases → **Refresh XML**). Leave **Lerp explode** off. From Intermission, click **Advance** to Play and watch the session-start splash: the character pairs should still Grow/FadeIn, the frame should FadeIn, the session number/title should Grow/FadeIn, the cover should FadeOut at the end, and the session-start music should still kick in on the mid-sequence beat. Then in the Host console run `lua DEBUG.resetToIntermission()` and Advance again — the second run should still look and time the same.

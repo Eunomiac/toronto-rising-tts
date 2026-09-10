@@ -47,6 +47,16 @@ local SHARED_BLINDFOLD_DISPLAY = "overlay_globalBlindfold"
 local SHARED_BLINDFOLD_DISTRICT = "overlay_district_card_display"
 local SHARED_BLINDFOLD_SITE = "overlay_site_card_display"
 
+--- Re-assert SlideIn/Out attrs before show/hide (TOR-566).
+local function armSharedBlindfoldPanelAnimations()
+  U.setAttributes(SHARED_BLINDFOLD_PANEL, {
+    showAnimation = "SlideIn_Top",
+    hideAnimation = "SlideOut_Top",
+    animationDuration = "2",
+    hideAnimationDelay = "0",
+  })
+end
+
 --- @return string
 local function blindfoldPanelId()
   return SHARED_BLINDFOLD_PANEL
@@ -315,6 +325,7 @@ local function applySharedBlindfold(variant, opts)
       if forceReshow and prev == true then
         U.setAttribute(panelId, "active", "false")
       end
+      armSharedBlindfoldPanelAnimations()
       -- Arm BEFORE show, then again AFTER (parent UI.show re-applies XML defaults).
       local v = armSharedBlindfoldDisplay(variant)
       armSharedBlindfoldLocationCards(districtImage, siteImage)
@@ -333,6 +344,7 @@ local function applySharedBlindfold(variant, opts)
   end
 
   if prev == true then
+    armSharedBlindfoldPanelAnimations()
     UI.hide(panelId)
     lastVisible[panelId] = false
     scheduleSharedBlindfoldChildCleanup()
