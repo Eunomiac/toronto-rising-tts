@@ -32,6 +32,17 @@ Before any save write, a timestamped copy is written to `<Saves>/tts-assets-back
 
 NPC world apply after a new upload batch (not a Run Task): `npm run custom-ui-assets:apply-npc-hosted-world`.
 
+## Rename overlay CustomUIAssets (TOR-565 one-time)
+
+Renames global overlay `Name`s for session-start / global blindfold reorganization (URLs unchanged):
+
+```powershell
+npm run custom-ui-assets:rename-overlays:dry-run
+npm run custom-ui-assets:rename-overlays -- --yes
+```
+
+Optional `--session N` maps legacy `overlay_explode_sessionNum` / `Title` to `overlay_sessionNumber_<N>` / `overlay_sessionTitle_<N>` (default 1).
+
 ## Purge by Name regexp
 
 Lists matching assets (per target), asks **Y/N** before write, then deletes.

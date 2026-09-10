@@ -16,10 +16,14 @@ local U = require("lib.util")
 local C = require("lib.constants")
 local S = require("core.state")
 
-local PANEL_ID = "overlay_globalBlindfold_panel"
-local COVER_ID = "overlay_globalBlindfold"
-local BASE_PANEL_ID = "overlay_globalBlindfold_sessionSplashPanel_base"
-local FRAME_PANEL_ID = "overlay_globalBlindfold_sessionSplashPanel_frame"
+local PANEL_ID = "overlay_sessionStart_panel"
+local COVER_ID = "overlay_sessionStartSplash"
+local BASE_PANEL_ID = "overlay_sessionStartSplash_panel"
+local FRAME_PANEL_ID = "overlay_sessionSplashFrame_panel"
+local SESSION_NUMBER_ID = "overlay_sessionNumber_6"
+local SESSION_TITLE_ID = "overlay_sessionTitle_7"
+local SESSION_NUMBER_PANEL_ID = "overlay_sessionNumberPanel_6"
+local SESSION_TITLE_PANEL_ID = "overlay_sessionTitlePanel_7"
 
 -- Unscaled author timings (71s base). explodeImage and play() apply durationMultiplier.
 local DELAY_TIME = 12
@@ -45,33 +49,33 @@ local ATTRIBUTE_INIT_SETTLE_SEC = 1
 local ATTRIBUTE_LOOP_FADE_SEC = 0.5
 
 local SPLASH_IDS = {
-    "overlay_globalBlindfold_sessionSplash_1_1_A",
-    "overlay_globalBlindfold_sessionSplash_1_1_B",
-    "overlay_globalBlindfold_sessionSplash_1_2_A",
-    "overlay_globalBlindfold_sessionSplash_1_2_B",
-    "overlay_globalBlindfold_sessionSplash_1_3_A",
-    "overlay_globalBlindfold_sessionSplash_1_3_B",
-    "overlay_globalBlindfold_sessionSplash_1_4_A",
-    "overlay_globalBlindfold_sessionSplash_1_4_B",
-    "overlay_globalBlindfold_sessionSplash_1_5_A",
-    "overlay_globalBlindfold_sessionSplash_1_5_B",
-    "overlay_globalBlindfold_sessionSplash_1_6_A",
-    "overlay_globalBlindfold_sessionSplash_1_6_B",
+    "overlay_characterIntroCaption_1",
+    "overlay_characterIntroImage_1",
+    "overlay_characterIntroCaption_2",
+    "overlay_characterIntroImage_2",
+    "overlay_characterIntroCaption_3",
+    "overlay_characterIntroImage_3",
+    "overlay_characterIntroCaption_4",
+    "overlay_characterIntroImage_4",
+    "overlay_characterIntroCaption_5",
+    "overlay_characterIntroImage_5",
+    SESSION_NUMBER_ID,
+    SESSION_TITLE_ID,
 }
 
 local SPLASH_PANEL_IDS = {
-    "overlay_globalBlindfold_sessionSplashPanel_1_1_A",
-    "overlay_globalBlindfold_sessionSplashPanel_1_1_B",
-    "overlay_globalBlindfold_sessionSplashPanel_1_2_A",
-    "overlay_globalBlindfold_sessionSplashPanel_1_2_B",
-    "overlay_globalBlindfold_sessionSplashPanel_1_3_A",
-    "overlay_globalBlindfold_sessionSplashPanel_1_3_B",
-    "overlay_globalBlindfold_sessionSplashPanel_1_4_A",
-    "overlay_globalBlindfold_sessionSplashPanel_1_4_B",
-    "overlay_globalBlindfold_sessionSplashPanel_1_5_A",
-    "overlay_globalBlindfold_sessionSplashPanel_1_5_B",
-    "overlay_globalBlindfold_sessionSplashPanel_1_6_A",
-    "overlay_globalBlindfold_sessionSplashPanel_1_6_B",
+    "overlay_characterIntroCaptionPanel_1",
+    "overlay_characterIntroImagePanel_1",
+    "overlay_characterIntroCaptionPanel_2",
+    "overlay_characterIntroImagePanel_2",
+    "overlay_characterIntroCaptionPanel_3",
+    "overlay_characterIntroImagePanel_3",
+    "overlay_characterIntroCaptionPanel_4",
+    "overlay_characterIntroImagePanel_4",
+    "overlay_characterIntroCaptionPanel_5",
+    "overlay_characterIntroImagePanel_5",
+    SESSION_NUMBER_PANEL_ID,
+    SESSION_TITLE_PANEL_ID,
     FRAME_PANEL_ID,
 }
 
@@ -131,8 +135,7 @@ function SessionExplode.resetLayers()
     for i = 1, #SPLASH_PANEL_IDS do
         local panelId = SPLASH_PANEL_IDS[i]
         local color = "rgba(1, 1, 1, 0)"
-        if panelId == "overlay_globalBlindfold_sessionSplashPanel_1_6_A"
-            or panelId == "overlay_globalBlindfold_sessionSplashPanel_1_6_B" then
+        if panelId == SESSION_NUMBER_PANEL_ID or panelId == SESSION_TITLE_PANEL_ID then
             color = "rgba(0, 0, 0, 1)"
         end
         U.setAttributes(panelId, {
@@ -553,14 +556,13 @@ function SessionExplode.explodeImage(id, config)
 end
 
 local function explodePair(index, songDuration)
-    local prefix = "overlay_globalBlindfold_sessionSplash_1_" .. tostring(index)
-    SessionExplode.explodeImage(prefix .. "_B", {
+    SessionExplode.explodeImage("overlay_characterIntroImage_" .. tostring(index), {
         waverTime = PAIR_WAVER_TIME,
         scaleTime = PAIR_SCALE_TIME,
         waverSpeed = PAIR_WAVER_SPEED,
         songDuration = songDuration,
     })
-    SessionExplode.explodeImage(prefix .. "_A", {
+    SessionExplode.explodeImage("overlay_characterIntroCaption_" .. tostring(index), {
         waverTime = PAIR_WAVER_TIME,
         scaleTime = PAIR_SCALE_TIME,
         waverLimit = 0,
@@ -634,7 +636,7 @@ function SessionExplode.play()
             if sequenceGen ~= gen then
                 return
             end
-            SessionExplode.explodeImage("overlay_globalBlindfold_sessionSplash_1_6_A", {
+            SessionExplode.explodeImage(SESSION_NUMBER_ID, {
                 waverTime = 0,
                 scaleTime = SESSION_NUM_SCALE_DUR,
                 waverLimit = 0,
@@ -648,7 +650,7 @@ function SessionExplode.play()
             if sequenceGen ~= gen then
                 return
             end
-            SessionExplode.explodeImage("overlay_globalBlindfold_sessionSplash_1_6_B", {
+            SessionExplode.explodeImage(SESSION_TITLE_ID, {
                 waverTime = 0,
                 scaleTime = SESSION_TITLE_SCALE_DUR,
                 waverLimit = 0,
@@ -695,7 +697,7 @@ end
 
 --- Prepare song-scaled timing for the attribute session-start path.
 --- Static showAnimation / hideAnimation / colors live in session_splash_* Defaults
---- (`ui/shared/panel_overlay_global_blindfold.xml`).
+--- (`ui/shared/panel_overlay_session_start.xml`).
 -- @param songDuration number|nil
 -- @return number pair sequenceDuration (scaled)
 function SessionExplode.initializeAttributeAnimation(songDuration)
@@ -747,43 +749,43 @@ function SessionExplode.initializeAttributeAnimation(songDuration)
     })
 
     for sequence = 1, 5 do
-        local imagePanelID = "overlay_globalBlindfold_sessionSplashPanel_1_" .. sequence .. "_B"
+        local imagePanelID = "overlay_characterIntroImagePanel_" .. sequence
         U.setAttributes(imagePanelID, {
             showAnimationDelay = imagePanelGrowStartTime,
             animationDuration = imagePanelGrowDuration,
         })
 
-        local imageID = "overlay_globalBlindfold_sessionSplash_1_" .. sequence .. "_B"
+        local imageID = "overlay_characterIntroImage_" .. sequence
         U.setAttributes(imageID, {
             showAnimationDelay = imageFadeInStartTime,
             animationDuration = imageFadeInDuration,
         })
 
-        local textPanelID = "overlay_globalBlindfold_sessionSplashPanel_1_" .. sequence .. "_A"
+        local textPanelID = "overlay_characterIntroCaptionPanel_" .. sequence
         U.setAttributes(textPanelID, {
             showAnimationDelay = 0,
             animationDuration = textPanelSlideInDuration,
         })
 
-        local textID = "overlay_globalBlindfold_sessionSplash_1_" .. sequence .. "_A"
+        local textID = "overlay_characterIntroCaption_" .. sequence
         U.setAttributes(textID, {
             showAnimationDelay = textFadeInStartTime,
             animationDuration = textFadeInDuration,
         })
     end
 
-    -- hideAnimation FadeOut is already on global_blindfold_panel Defaults.
+    -- hideAnimation FadeOut is already on session_start_panel Defaults.
     U.setAttributes(PANEL_ID, { animationDuration = 3 * timeRatio })
-    U.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_A", {
+    U.setAttributes(SESSION_NUMBER_PANEL_ID, {
         animationDuration = 5 * timeRatio,
     })
-    U.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_A", {
+    U.setAttributes(SESSION_NUMBER_ID, {
         animationDuration = 5 * timeRatio,
     })
-    U.setAttributes("overlay_globalBlindfold_sessionSplashPanel_1_6_B", {
+    U.setAttributes(SESSION_TITLE_PANEL_ID, {
         animationDuration = 5 * timeRatio,
     })
-    U.setAttributes("overlay_globalBlindfold_sessionSplash_1_6_B", {
+    U.setAttributes(SESSION_TITLE_ID, {
         animationDuration = 5 * timeRatio,
     })
 
@@ -820,8 +822,8 @@ function SessionExplode.playAttribute(songDuration)
             if sequenceGen ~= gen then
                 return
             end
-            UI.show("overlay_globalBlindfold_sessionSplashPanel_1_1_A")
-            UI.show("overlay_globalBlindfold_sessionSplashPanel_1_1_B")
+            UI.show("overlay_characterIntroCaptionPanel_1")
+            UI.show("overlay_characterIntroImagePanel_1")
             UI.show(FRAME_PANEL_ID)
             return sequenceDuration
         end,
@@ -831,46 +833,46 @@ function SessionExplode.playAttribute(songDuration)
             end
             -- Session starter track starts here; Intermission theme fades out swiftly.
             fireAttributeSessionIntroAudio()
-            UI.show("overlay_globalBlindfold_sessionSplashPanel_1_2_A")
-            UI.show("overlay_globalBlindfold_sessionSplashPanel_1_2_B")
+            UI.show("overlay_characterIntroCaptionPanel_2")
+            UI.show("overlay_characterIntroImagePanel_2")
             return sequenceDuration
         end,
         function()
             if sequenceGen ~= gen then
                 return
             end
-            UI.show("overlay_globalBlindfold_sessionSplashPanel_1_3_A")
-            UI.show("overlay_globalBlindfold_sessionSplashPanel_1_3_B")
+            UI.show("overlay_characterIntroCaptionPanel_3")
+            UI.show("overlay_characterIntroImagePanel_3")
             return sequenceDuration
         end,
         function()
             if sequenceGen ~= gen then
                 return
             end
-            UI.show("overlay_globalBlindfold_sessionSplashPanel_1_4_A")
-            UI.show("overlay_globalBlindfold_sessionSplashPanel_1_4_B")
+            UI.show("overlay_characterIntroCaptionPanel_4")
+            UI.show("overlay_characterIntroImagePanel_4")
             return sequenceDuration
         end,
         function()
             if sequenceGen ~= gen then
                 return
             end
-            UI.show("overlay_globalBlindfold_sessionSplashPanel_1_5_A")
-            UI.show("overlay_globalBlindfold_sessionSplashPanel_1_5_B")
+            UI.show("overlay_characterIntroCaptionPanel_5")
+            UI.show("overlay_characterIntroImagePanel_5")
             return sequenceDuration * 2
         end,
         function()
             if sequenceGen ~= gen then
                 return
             end
-            UI.show("overlay_globalBlindfold_sessionSplashPanel_1_6_A")
+            UI.show(SESSION_NUMBER_PANEL_ID)
             return 7.5 * timeRatio
         end,
         function()
             if sequenceGen ~= gen then
                 return
             end
-            UI.show("overlay_globalBlindfold_sessionSplashPanel_1_6_B")
+            UI.show(SESSION_TITLE_PANEL_ID)
             return 7.5 * timeRatio
         end,
         function()

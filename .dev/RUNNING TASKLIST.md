@@ -352,6 +352,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **PCs panel vertical trim:** Reduce padding/spacing/row heights; restore scale 1; keep font sizes. Follow-up: tighter preferred/min heights (button rows 18, glyph rows 28). Pending Save & Play. _(TOR-518)_
 - [x] **End→Intermission cover uses overlay_blindfold_end:** Set the top stacked global image before the cover comes down. relatedTo **TOR-506**. **Superseded by TOR-561** (separate end panel). _(TOR-524)_
 - [x] **Separate session-start and session-end global blindfolds:** Start panel + explode stack vs end-only panel; session-numbered Images on load / Intermission sessionNum edit; End→Intermission shows end panel only. relatedTo **TOR-524**, **TOR-506**. Pending Save & Play. _(TOR-561)_
+- [x] **Session-start overlay split + all-clients global blindfold:** Rename explode stack to session-start overlay; new SlideIn_Top global cover for transitions + End→Intermission; retire transition/end panels; rename CustomUIAssets. relatedTo **TOR-561**, **TOR-444**. Pending Save & Play. _(TOR-565)_
 - [x] All Storyteller UI panels: dark background `rgba(0, 0, 0, 0.8)`. _(TOR-68)_
 - [x] **Scenes Panel:** Site modal ? district-unique sites above generic bucket. _(TOR-63)_
 - [x] **Scenes Panel ? Scene location:** District/Site as text from modals, not free-text inputs. _(TOR-63)_

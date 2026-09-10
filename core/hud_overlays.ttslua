@@ -2,8 +2,8 @@
   Full-screen player HUD overlay Images (conditions + hunger).
   Visibility: UI.show / UI.hide (triggers XML showAnimation / hideAnimation per TTS API).
 
-  Shared scene-transition blindfold (TOR-444 / TOR-431 / TOR-425):
-  Canonical procedure lives on `ui/shared/panel_overlay_transition_blindfold.xml`.
+  Global scene-transition blindfold (TOR-565):
+  Canonical panel: `ui/shared/panel_overlay_global_blindfold.xml` (all clients, no visibility filter).
   Arm children (variant Image + optional District/Site cards) before one parent `UI.show`,
   then re-arm the same attrs after show — parent show re-applies XML defaults.
   Do not UI.show children. Hide: parent UI.hide only; restore child defaults after ~3s.
@@ -28,7 +28,7 @@ local lastDesiredVisibilityFpBySeat = {}
 --- seatColor -> delay id unused after TOR-444 shared blindfold (kept nil).
 local pendingBlindfoldChildCleanupBySeat = {}
 
---- Parent Panel hide: animationDuration 2 + hideAnimationDelay 1 (playerHud_blindfoldOverlay).
+--- Parent Panel hide: SlideOut_Top animationDuration 2 on global_blindfold_panel.
 local BLINDFOLD_HIDE_CHILD_CLEANUP_SEC = 3
 
 --- Tier assets overlay_hunger_0 .. overlay_hunger_5 (one Image per seat + image=; TOR-444).
@@ -36,14 +36,14 @@ local BLINDFOLD_HIDE_CHILD_CLEANUP_SEC = 3
 --- seatColor -> last applied hunger Custom UI image name (guarded setAttribute).
 local lastHungerImageBySeat = {}
 
---- Blindfold art variants overlay_blindfold_1 .. overlay_blindfold_N (asset names; one shared Image).
+--- Blindfold art variants overlay_globalBlindfold_1 .. overlay_globalBlindfold_N.
 local BLINDFOLD_VARIANTS = {}
 for v = 1, C.BlindfoldVariantCount do
   BLINDFOLD_VARIANTS[v] = v
 end
 
-local SHARED_BLINDFOLD_PANEL = "playerHud_overlay_blindfold"
-local SHARED_BLINDFOLD_DISPLAY = "overlay_blindfold_display"
+local SHARED_BLINDFOLD_PANEL = "overlay_globalBlindfold_panel"
+local SHARED_BLINDFOLD_DISPLAY = "overlay_globalBlindfold"
 local SHARED_BLINDFOLD_DISTRICT = "overlay_district_card_display"
 local SHARED_BLINDFOLD_SITE = "overlay_site_card_display"
 
@@ -56,7 +56,7 @@ end
 --- @return boolean
 local function isExclusiveBlindfoldElementId(elementId)
   return elementId == SHARED_BLINDFOLD_DISPLAY
-    or (type(elementId) == "string" and string.match(elementId, "^overlay_blindfold_%d+") ~= nil)
+    or (type(elementId) == "string" and string.match(elementId, "^overlay_globalBlindfold_%d+") ~= nil)
 end
 
 --- @param seatColor string
@@ -233,7 +233,7 @@ local function cancelSharedBlindfoldChildCleanup()
 end
 
 local function restoreSharedBlindfoldChildDefaults()
-  U.setAttribute(SHARED_BLINDFOLD_DISPLAY, "image", "overlay_blindfold_1")
+  U.setAttribute(SHARED_BLINDFOLD_DISPLAY, "image", "overlay_globalBlindfold_1")
   U.setAttributes(SHARED_BLINDFOLD_DISTRICT, { active = "false", color = "Clear", image = "" })
   U.setAttributes(SHARED_BLINDFOLD_SITE, { active = "false", color = "Clear", image = "" })
 end
@@ -269,7 +269,7 @@ local function armSharedBlindfoldDisplay(variant)
   U.setAttributes(SHARED_BLINDFOLD_DISPLAY, {
     active = "true",
     color = "White",
-    image = "overlay_blindfold_" .. tostring(v),
+    image = "overlay_globalBlindfold_" .. tostring(v),
   })
   return v
 end
@@ -283,21 +283,7 @@ local function transitionCardImagesFromHudBlindfold()
   return HUDBF.getTransitionLocationCardImages()
 end
 
---- @return table array of seated PC seat colors (for visibility audience)
-local function seatedPcVisibilityAudience()
-  local tokens = {}
-  local seen = {}
-  for _, player in ipairs(Player.getPlayers() or {}) do
-    local color = player and player.color or nil
-    if type(color) == "string" and seen[color] ~= true and U.isIn(color, C.PlayerColors) then
-      seen[color] = true
-      tokens[#tokens + 1] = color
-    end
-  end
-  return tokens
-end
-
---- Shared transition blindfold (TOR-444): one panel, one variant Image via image=.
+--- Global transition blindfold (TOR-565): one panel, all clients, one variant Image via image=.
 --- Procedure: arm children → one UI.show → re-arm children (show resets XML defaults).
 --- @param variant number|nil 1..N = show; nil = hide
 --- @param opts table|nil `{ districtImage?, siteImage?, forceReshow?, touchLocationCards? }`
@@ -313,9 +299,6 @@ local function applySharedBlindfold(variant, opts)
     local forceReshow = opts.forceReshow == true
     local needShow = forceReshow or prev ~= true
 
-    -- Audience while inactive / before show (TOR-444).
-    U.setVisibleTo(panelId, seatedPcVisibilityAudience())
-
     local districtImage = opts.districtImage
     local siteImage = opts.siteImage
     if type(districtImage) ~= "string" or type(siteImage) ~= "string" then
@@ -327,7 +310,7 @@ local function applySharedBlindfold(variant, opts)
     end
 
     if needShow then
-      -- Reset so UI.show restarts FadeIn (beginTransition forceReshow). Avoid extra
+      -- Reset so UI.show restarts SlideIn_Top (beginTransition forceReshow). Avoid extra
       -- hide/show from Sync.full — syncAll must not set forceReshow while already up.
       if forceReshow and prev == true then
         U.setAttribute(panelId, "active", "false")
@@ -363,7 +346,7 @@ function HO.clearSharedBlindfoldLocationCards()
   armSharedBlindfoldLocationCards(nil, nil)
 end
 
---- Show one blindfold variant for all seated PCs (shared panel, TOR-444).
+--- Show one blindfold variant for all clients (global panel, TOR-565).
 --- @param variant number 1..C.BlindfoldVariantCount
 --- @param opts table|nil `{ districtImage?, siteImage?, forceReshow? }`
 function HO.applyBlindfoldVariantForSeatedPlayers(variant, opts)

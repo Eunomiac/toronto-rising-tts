@@ -2,8 +2,8 @@
 <!-- Host arms this via Phases → Arm Join XML before a struggling client connects. -->
 <!-- Not the permanent save default — Remount with full embed via Refresh / Disarm. -->
 <!-- Include paths: same rules as ui/Global.xml (relative to this file's directory / ui/). -->
-<!-- Stacking: Global XmlUI draws later siblings above earlier ones. Keep blindfold BEFORE Host chrome -->
-<!-- (same as ui/Global.xml: overlay_globalBlindfold_panel, then HUD_PANEL_BLACK / ST toolbar). -->
+<!-- Stacking: Global XmlUI draws later siblings above earlier ones. Keep session-start BEFORE Host chrome -->
+<!-- (same as ui/Global.xml: overlay_sessionStart_panel, then HUD_PANEL_BLACK / ST toolbar). -->
 
 <!-- 1. Tag-based defaults -->
 <Include src="defaults_tags.xml" />
@@ -15,8 +15,8 @@
 <Include src="storyteller/hud_storyteller_defaults.xml" />
 <Include src="storyteller/panel_join_xml_chrome_defaults.xml" />
 
-<!-- 4. Global session blindfold (Intermission cover for all clients). -->
-<Include src="shared/panel_overlay_global_blindfold.xml" />
+<!-- 4. Session-start overlay (Intermission cover for all clients; HUD canary). -->
+<Include src="shared/panel_overlay_session_start.xml" />
 
 <!-- 5. Slim Host chrome AFTER blindfold — Phases must draw above Intermission cover. -->
 <!-- Full-screen clear root (like full ST HUD) so UpperLeft chrome is a later sibling of the Image. -->

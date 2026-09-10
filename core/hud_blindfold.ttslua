@@ -1,11 +1,11 @@
 --[[
   Scene/table transition blindfold orchestration.
-  Picks one random blindfold variant (1..C.BlindfoldVariantCount) shared by all seated players,
-  runs synchronous work, then lifts blindfolds after a settle delay.
+  Picks one random blindfold variant (1..C.BlindfoldVariantCount) for all clients,
+  runs synchronous work, then lifts the global blindfold after a settle delay.
   Optional destination District/Site cards (TOR-425 / TOR-431) are armed on the parent Panel before
   one UI.show; End scene / table-only / no-location keep cards Clear (invisible if animated).
-  Global session covers (`overlay_globalBlindfold_panel` + `overlay_globalBlindfold_panel_end`
-  in Global.xml) are phase-owned (TOR-561).
+  Global cover panel: `overlay_globalBlindfold_panel` (TOR-565). Session-start explode stack is
+  phase-owned (`overlay_sessionStart_panel`) — never by this module or a timed onLoad hide.
   (Intermission show / Play hide / connect policy) — never by this module or a timed onLoad hide.
   Agent guidance: .dev/Scene Constructor/Scene Constructor Overview.md; .dev/HUD_FUNCTIONS.md.
 ]]
@@ -21,7 +21,7 @@ local HO = require("core.hud_overlays")
 local Main = require("core.main")
 
 local TRANSITION_SETTLE_DELAY_SEC = 10
---- Parent Panel FadeIn (`animationDuration` on `playerHud_overlay_blindfold`) — cards delay longer on purpose
+--- Parent Panel SlideIn_Top (`animationDuration` on `overlay_globalBlindfold_panel`) — cards delay longer on purpose
 --- so players can read the blindfold art before district/site cards cover it.
 local BLINDFOLD_SLIDE_IN_SEC = 2
 --- District / site card XML: `showAnimationDelay` + `animationDuration` (1s FadeIn).

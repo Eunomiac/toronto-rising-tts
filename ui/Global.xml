@@ -54,14 +54,11 @@
 
 </Panel>
 
-<!-- Per-player transition blindfolds removed (TOR-444) — shared transition blindfold: -->
-<Include src="shared/panel_overlay_transition_blindfold.xml" />
+<!-- Session-start overlay (active by default; explode once on Intermission→Play). TOR-565. -->
+<Include src="shared/panel_overlay_session_start.xml" />
 
-<!-- 6. Startup loading screen (last among blindfolds — draws above transition blinds when both up). -->
+<!-- Global blindfold (all clients; scene transitions + End→Intermission). Draws above session-start when both up. -->
 <Include src="shared/panel_overlay_global_blindfold.xml" />
-
-<!-- 7. Ending session blindfold (last among blindfolds — draws above transition blinds when both up). -->
-<Include src="shared/panel_overlay_global_blindfold_end.xml" />
 
 <!-- 3. Storyteller HUD (Black): admin panel + sidebar + camera defaults -->
 <Panel id="HUD_PANEL_BLACK" class="hud_root_panel" visibility="Black|Host">

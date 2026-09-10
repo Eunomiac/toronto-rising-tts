@@ -21,6 +21,17 @@ _Last populated: 2026-09-10 — TOR-564 Memoriam panel art from Steam Cloud._
 
 ### Phases / session start
 
+#### TOR-565 — Session-start overlay split + all-clients global blindfold
+
+**How to verify:** First confirm CustomUIAssets were renamed (or re-run `npm run custom-ui-assets:rename-overlays:dry-run` — it should report nothing left to rename). Reload the save from the main menu, then Save & Play so the new Global XML loads.
+
+1. **Cold load:** You should see the session-start splash (character stack) covering everyone. There should be no separate “end” panel and no per-seat transition panel.
+2. **Intermission → Play:** Advance. The session-start explode should run, then that overlay should fade out and stay gone.
+3. **Scene Apply:** Apply a library scene with a District and Site. The global cover should slide down for everyone (including you on Black), show destination cards, then slide up after the settle.
+4. **End → Intermission:** Advance through to End, then into Intermission. The global cover should slide down with the session-end splash and stay up until the next reload.
+
+**Context:** Split session-start explode into `panel_overlay_session_start.xml`; new SlideIn_Top global cover for transitions and End→Intermission; retired transition/end panels; renamed CustomUIAssets. relatedTo **TOR-561**, **TOR-444**.
+
 #### TOR-563 — Session-start attribute-path static attrs in XML Defaults
 
 **How to verify:** Save & Play so the Global HUD picks up the new Defaults (or Save & Play, then click Phases → **Refresh XML**). Leave **Lerp explode** off. From Intermission, click **Advance** to Play and watch the session-start splash: the character pairs should still Grow/FadeIn, the frame should FadeIn, the session number/title should Grow/FadeIn, the cover should FadeOut at the end, and the session-start music should still kick in on the mid-sequence beat. Then in the Host console run `lua DEBUG.resetToIntermission()` and Advance again — the second run should still look and time the same.

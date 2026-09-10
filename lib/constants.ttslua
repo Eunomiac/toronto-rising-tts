@@ -73,7 +73,7 @@ C.PlayerColors = {
   "Brown", "Orange", "Red", "Pink", "Purple"
 }
 
--- Number of random blindfold art variants (overlay_blindfold_1 .. overlay_blindfold_N).
+-- Number of random blindfold art variants (overlay_globalBlindfold_1 .. overlay_globalBlindfold_N).
 -- Single authority for the blindfold range used by hud_blindfold, hud_overlays, and condition_effects.
 C.BlindfoldVariantCount = 32
 
