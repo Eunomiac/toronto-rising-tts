@@ -2,8 +2,8 @@
     Memoriam configuration popup (TOR-539 / TOR-540).
 
     Draft lives in this module until Advance. Cancel / Main / Downtime leave the
-    Play subphase unchanged. Advance prints the collected payload, then
-    Phases.setPlaySubPhase(Memoriam). LUT / skybox / overlay remain TOR-101.
+    Play subphase unchanged. Advance prints the collected payload; Just Smoke
+    stops there. Non–Just Smoke Advance calls Memoriam.applyEnter (TOR-101).
     Assignments always include the subject (`kind = "self"` unless they play an
     NPC). Non-subject PCs may be marked present as themselves or assigned an NPC.
 
@@ -1532,8 +1532,11 @@ function MemoriamModal.onConfirm()
     end
     print("[Memoriam] " .. encodePayload(payload))
     MemoriamModal.close()
-    local Phases = require("core.phases")
-    Phases.setPlaySubPhase(C.PlaySubPhases.MEMORIAM)
+    if selectedJustSmoke then
+        return
+    end
+    local Memoriam = require("core.memoriam")
+    Memoriam.applyEnter(payload)
 end
 
 return MemoriamModal

@@ -64,6 +64,8 @@ local transitionBlindfoldPlayerIds = {}
 --- Custom UI image refs for destination cards while a transition is active (nil when skipped).
 local transitionDistrictCardImage = nil
 local transitionSiteCardImage = nil
+--- Optional Custom Asset name for the cover Image (Memoriam); nil = stock overlay_globalBlindfold_N.
+local transitionCustomImage = nil
 
 --- @return number 1..C.BlindfoldVariantCount
 local function pickRandomVariant()
@@ -252,7 +254,9 @@ end
 --- XmlUI FadeIns are not hitch-frozen by lookAt.
 --- @param optsOrVariant number|table|nil
 ---   number — blindfold variant 1..C.BlindfoldVariantCount
----   table — `{ variant?, districtKey?, siteKey? }` (keys from the *destination* scene; live sessionScene is still old)
+---   table — `{ variant?, districtKey?, siteKey?, image? }`
+---     `image` — Custom Asset name for `overlay_globalBlindfold` (e.g. memoriamBlindfold_rashid7).
+---     When set, district/site cards are not armed.
 function HUDBF.beginTransition(optsOrVariant)
   if pendingEndDelayId ~= nil then
     U.cancel(pendingEndDelayId)
@@ -273,16 +277,28 @@ function HUDBF.beginTransition(optsOrVariant)
     variantOptional = optsOrVariant
   end
 
+  transitionCustomImage = nil
+  if type(opts) == "table" and type(opts.image) == "string" then
+    local img = string.gsub(string.gsub(opts.image, "^%s+", ""), "%s+$", "")
+    if img ~= "" then
+      transitionCustomImage = img
+    end
+  end
+
   local variant = tonumber(variantOptional)
   if variant == nil or variant < 1 or variant > BLINDFOLD_VARIANT_COUNT then
     variant = pickRandomVariant()
   end
   activeTransitionVariant = variant
 
-  local districtImage, siteImage = resolveTransitionLocationCardImages(opts)
-  if type(districtImage) == "string" and type(siteImage) == "string" then
-    transitionDistrictCardImage = districtImage
-    transitionSiteCardImage = siteImage
+  transitionDistrictCardImage = nil
+  transitionSiteCardImage = nil
+  if transitionCustomImage == nil then
+    local districtImage, siteImage = resolveTransitionLocationCardImages(opts)
+    if type(districtImage) == "string" and type(siteImage) == "string" then
+      transitionDistrictCardImage = districtImage
+      transitionSiteCardImage = siteImage
+    end
   end
 
   -- Mutation only: skip afterChange so Conditions cannot UI.show before children are armed.
@@ -297,8 +313,9 @@ function HUDBF.beginTransition(optsOrVariant)
   if type(HO.applyBlindfoldVariantForSeatedPlayers) == "function" then
     HO.applyBlindfoldVariantForSeatedPlayers(variant, {
       forceReshow = true,
-      districtImage = districtImage,
-      siteImage = siteImage,
+      districtImage = transitionDistrictCardImage,
+      siteImage = transitionSiteCardImage,
+      image = transitionCustomImage,
     })
   else
     HO.syncAll()
@@ -314,6 +331,7 @@ function HUDBF.endTransition()
   activeTransitionVariant = nil
   transitionDistrictCardImage = nil
   transitionSiteCardImage = nil
+  transitionCustomImage = nil
 
   -- Batch-clear state, then one overlay reconcile owns parent UI.hide (avoid N afterChange hides).
   clearTrackedTransitionBlindfolds({ skipAfterChange = true })

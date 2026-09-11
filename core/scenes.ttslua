@@ -522,6 +522,43 @@ function Scenes.reconcileSkyboxFromState(opts)
     opts = type(opts) == "table" and opts or {}
     local force = opts.force == true
 
+    -- Memoriam: panel art URL from Cloud/catalog (TOR-101 / TOR-564).
+    local Memoriam = require("core.memoriam")
+    if Memoriam.isActive() then
+        local mem = S.getStateVal("memoriam")
+        local payload = type(mem) == "table" and mem.payload or nil
+        if type(payload) == "table" and type(payload.skyboxKey) == "string" and type(payload.panel) == "string" then
+            local fingerprint = "memoriam:" .. payload.skyboxKey .. ":" .. payload.panel
+            if not force and lastSkyboxReconcileFingerprint == fingerprint then
+                return true
+            end
+            local url = nil
+            local okResolve, resolved = pcall(function()
+                return C.resolveMemoriamPanelURL(payload.skyboxKey, payload.panel)
+            end)
+            if okResolve and type(resolved) == "string" and resolved ~= "" then
+                url = resolved
+            end
+            if type(url) ~= "string" or url == "" then
+                print("[Scenes] reconcileSkyboxFromState: Memoriam panel URL missing for `"
+                    .. tostring(payload.skyboxKey) .. "` / `" .. tostring(payload.panel) .. "`.")
+                return false
+            end
+            if Backgrounds == nil or type(Backgrounds.setCustomURL) ~= "function" then
+                print("[Scenes] reconcileSkyboxFromState: Backgrounds.setCustomURL unavailable.")
+                return false
+            end
+            local ok = Backgrounds.setCustomURL(url)
+            if ok ~= true then
+                print("[Scenes] reconcileSkyboxFromState: Backgrounds.setCustomURL failed for Memoriam `"
+                    .. tostring(payload.skyboxKey) .. "`.")
+                return false
+            end
+            lastSkyboxReconcileFingerprint = fingerprint
+            return true
+        end
+    end
+
     local override = S.getStateVal("sessionScene", "skyboxOverride")
     if type(override) == "string" then
         override = string.gsub(string.gsub(override, "^%s+", ""), "%s+$", "")

@@ -656,8 +656,51 @@ function GameStateOverlay.reconcileFromState()
         return
     end
 
-    -- Play: existing clock / location / weather.
+    -- Play: Memoriam overlay (TOR-101) or existing clock / location / weather.
     applyOverlayPhaseChrome(false)
+    local Memoriam = require("core.memoriam")
+    if Memoriam.isActive() then
+        bustTextCacheIfSessionSceneChanged()
+        pushOverlayActive(OVERLAY_TIME_LOCATION_ID, true)
+        local mem = S.getStateVal("memoriam")
+        local payload = type(mem) == "table" and mem.payload or nil
+        local location = ""
+        if type(payload) == "table" and type(payload.location) == "string" then
+            location = payload.location
+        end
+        pushOverlayText("gameStateOverlay_district", location)
+        pushDistrictSeparator({
+            text = DISTRICT_SEPARATOR_DIAMOND,
+            fontStyle = "Bold",
+            active = false,
+        })
+        pushOverlayText("gameStateOverlay_parentSite", "")
+        pushOverlayText("gameStateOverlay_site", "")
+        pushOverlayActive("gameStateOverlay_parentSite", false)
+        pushOverlayActive("gameStateOverlay_parentSiteSeparator", false)
+
+        local ck = S.getStateVal("sessionScene", "clock")
+        local hasDatetime = type(ck) == "table"
+            and tonumber(ck.year) ~= nil
+            and tonumber(ck.month) ~= nil
+            and tonumber(ck.day) ~= nil
+        if hasDatetime then
+            pushOverlayText(
+                "gameStateOverlay_datetime",
+                formatOverlayDateLine(ck.year, ck.month, ck.day)
+            )
+            pushOverlayText("gameStateOverlay_time", format12h(ck.hour, ck.minute))
+        elseif type(payload) == "table" and type(payload.date) == "string" then
+            pushOverlayText("gameStateOverlay_datetime", payload.date)
+            pushOverlayText("gameStateOverlay_time", "")
+        else
+            pushOverlayText("gameStateOverlay_datetime", "")
+            pushOverlayText("gameStateOverlay_time", "")
+        end
+        pushOverlayActive(OVERLAY_WEATHER_ID, false)
+        return
+    end
+
     if SceneLibrary.hasLiveSceneOnTable() ~= true then
         bustTextCacheIfSessionSceneChanged()
         pushOverlayActive(OVERLAY_TIME_LOCATION_ID, true)

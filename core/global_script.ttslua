@@ -4876,6 +4876,11 @@ function HUD_setPlaySubPhase(player, button, id)
     if MemoriamModal.isOpen() then
         MemoriamModal.close()
     end
+    local Memoriam = require("core.memoriam")
+    if Memoriam.isActive() then
+        Memoriam.applyExit({ mode = "restore", player = player })
+        return
+    end
     local Phases = require("core.phases")
     Phases.setPlaySubPhase(target)
 end

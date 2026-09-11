@@ -274,15 +274,17 @@ end
 --- Resolves live clock for library apply from an incoming `sessionScene` bundle.
 --- @param bundle table sessionScene-shaped table (mutated in place for clock)
 --- @param clockMode string|nil `"scene"` | `"x5"` | `"setPresent"` | `"present"` | `"presentPlus15"`… (default `"scene"`)
+--- @param opts table|nil `{ presentOverride?: table }` — when applying NOW during Memoriam handoff, use this datetime instead of presentDayClock
 --- @return boolean ok
 --- @return string|nil err
-function PresentDayClock.resolveAndApplyActivationClock(bundle, clockMode)
+function PresentDayClock.resolveAndApplyActivationClock(bundle, clockMode, opts)
     if type(bundle) ~= "table" then
         return false, "Internal error: scene bundle is not a table."
     end
     if type(clockMode) ~= "string" or clockMode == "" then
         clockMode = "scene"
     end
+    opts = type(opts) == "table" and opts or {}
 
     local ck = bundle.clock
     if type(ck) ~= "table" then
@@ -298,11 +300,16 @@ function PresentDayClock.resolveAndApplyActivationClock(bundle, clockMode)
         clockMode = "present"
     end
 
-    -- NOW / NOW+N: ignore library datetime; keep flags; fill from presentDayClock (always enabled).
+    -- NOW / NOW+N: ignore library datetime; keep flags; fill from presentDayClock (or Memoriam pre-clock).
     if clockMode == "present" then
         ck = stripDatetimeKeepFlags(ck)
         bundle.clock = ck
-        local pd = PresentDayClock.getPresentDay()
+        local pd = nil
+        if type(opts.presentOverride) == "table" then
+            pd = opts.presentOverride
+        else
+            pd = PresentDayClock.getPresentDay()
+        end
         if pd == nil then
             return false,
                 "Present day clock is not initialized. Import or activate a present-day scene with a full clock time first."
@@ -312,9 +319,11 @@ function PresentDayClock.resolveAndApplyActivationClock(bundle, clockMode)
             if advanced == nil then
                 return false, "Could not advance present day clock by travel minutes."
             end
-            local setOk, setErr = PresentDayClock.setPresentDay(advanced)
-            if not setOk then
-                return false, setErr or "Could not set present day after travel."
+            if opts.presentOverride == nil then
+                local setOk, setErr = PresentDayClock.setPresentDay(advanced)
+                if not setOk then
+                    return false, setErr or "Could not set present day after travel."
+                end
             end
             pd = advanced
         end

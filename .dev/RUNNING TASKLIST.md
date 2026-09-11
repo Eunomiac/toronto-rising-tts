@@ -49,7 +49,7 @@ _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred
 | 3 | **TOR-81** (centralize light modes) | Solo cleanup/unblock work (also gates TOR-320/TOR-321). |
 | 4 | **TOR-168** (Sync.full call-site audit) | Low-risk sync hygiene; helps prevent future regressions. |
 
-**Also unblocked (not Focus top):** **TOR-89** (PCs map location modal). **TOR-101** (Memoriam LUT/HUD). **TOR-495** (spotlight tuner panel, already In Progress). Soft design waits: **TOR-92** / **TOR-99**. **Blocked:** **TOR-320**/ **TOR-321** wait on **TOR-81**; **TOR-330** waits on workshop **TOR-327**. **TOR-95** (play as NPC) is unblocked now that **TOR-247** shipped. Living docs: **TOR-141**, **TOR-464**. External: **TOR-88**, **TOR-463**, **TOR-454**, **TOR-456**, **TOR-455**, **TOR-303**.
+**Also unblocked (not Focus top):** **TOR-89** (PCs map location modal). **TOR-495** (spotlight tuner panel, already In Progress). Soft design waits: **TOR-92** / **TOR-99**. **Blocked:** **TOR-320**/ **TOR-321** wait on **TOR-81**; **TOR-330** waits on workshop **TOR-327**. **TOR-95** (play as NPC) is unblocked now that **TOR-247** shipped. Living docs: **TOR-141**, **TOR-464**. External: **TOR-88**, **TOR-463**, **TOR-454**, **TOR-456**, **TOR-455**, **TOR-303**.
 
 **Also in cycle (below top stack):** **TOR-141** (E2E playbooks living doc). **TOR-423** (npc_gameboard split - author confirmed 2026-08-06). **TOR-439** (deferred from top; needs multiclient testing time).
 
@@ -275,10 +275,10 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Skybox isShown picker filter:** Sheet `isShown` column → catalog boolean; `isShown = false` stays in catalog but is omitted from the Scenes skybox picker. Follow-up **TOR-511** (embed after generate). _(TOR-509)_
 - [x] **Skybox picker HUD snapshot:** Location-modal generate + skybox import run before Global XmlUI embed; standalone import also embeds. After Save & Play, Phases **Refresh XML** remounts the picker. Pending Save & Play. _(TOR-511)_
 - [x] **Memoriam skybox Sheet import:** `SKYBOXMEMORIAMCSV` → nested `SkyboxesCatalog.MemoriamSkyboxes` / `C.MemoriamSkyboxes`; pipe-delimited characters duplicate a row; blank panel C/D display omits that panel. Pending Save & Play. _(TOR-510)_
-- [x] **Memoriam catalog flatten + extra columns:** Top-level key; `characters` array; `blindfoldURL`, `splashText`, ten `npcs` (`label` / `tokenURL` / `figurineURL`). _(TOR-529)_
+- [x] **Memoriam catalog flatten + extra columns:** Top-level key; `characters` array; `splashText`, ten `npcs` (`label` / `tokenURL` / `figurineURL`). Catalog `blindfoldURL` removed — covers use Custom Asset `memoriamBlindfold_<skyboxKey>`. _(TOR-529)_ / _(TOR-101)_
 - [x] **Per-character ordered Memoriam lookup:** `C.MemoriamSkyboxKeysByCharacter` plus `C.getMemoriamSkyboxesForCharacter(characterKey)` (sorted by `startYear`, then `endYear`, then key). _(TOR-530)_ / _(TOR-541)_
 - [x] **Memoriam panel art from Steam Cloud:** `memoriamPanels` LuaCatalog job (`Cloud/Memoriam`, `<skyboxKey>_<a–d>.jpg` → `Cloud.MemoriamPanels`); Constants fills `C.MemoriamSkyboxes[key].panelA–D.url` from Cloud at load (Cloud is URL authority; sheet URL is fallback only) and prints a linked / unmatched / still-missing audit; `C.resolveMemoriamPanelURL` + `C.getMemoriamPanelsWithoutArt`; `npm run cloud-asset-sync:catalog` runs every catalog job without touching the save; `--job` accepts several ids. Pending Save & Play. _(TOR-564)_
-- [x] **Memoriam configuration popup (subphase gate):** Phases Memoriam opens the popup and does not change subphase until Advance (prints payload). LUT/overlay still **TOR-101**. Pending Save & Play. _(TOR-539)_
+- [x] **Memoriam configuration popup (subphase gate):** Phases Memoriam opens the popup and does not change subphase until Advance. Non–Just Smoke Advance applies via **TOR-101**. _(TOR-539)_
 - [x] **Memoriam popup follow-up:** reverse the period bar to match the right-to-left slider; shortest nested period wins each year; Just Smoke default panel; slider 0–2400; location label under the date. Pending Save & Play. _(TOR-540)_
 - [x] **Memoriam slider orientation:** present on the right, drag left for earlier years; same-startYear periods sort by earlier endYear. Pending Save & Play. _(TOR-541)_
 - [x] **Memoriam slider range 0–5000:** same year-to-strip mapping at higher resolution. Pending Save & Play. _(TOR-542)_
@@ -490,7 +490,7 @@ Standalone second-monitor web app (`.dev/storyteller-dashboard/`). Not the in-ta
 
 - [x] **Desires** ? page1 InputField ? `playerData[pid].desire`; unset class via `UI.setClass`; ST PCs row + Clear. Author verified 2026-07-26. _(TOR-97)_
 - [x] **Spotlight phase** — Play→Spotlight staged cover: narrative clear, Table A, Spotlight skybox, Main-only audio (no silence-all), in-session carousel + Host strip, ritual overlay. Spotlight→End: Table B0 + Generic skybox, overlay **DEBRIEF**, bags/companions/decks stay parked until Intermission cover. Workshop stand-ins come from `DEBUG.populateSpotlightFigurines()` (paste GUIDs into `lib/guids.ttslua`); Advance does not auto-spawn. Author confirmed 2026-08-29. _(TOR-98)_
-- [ ] **Memoriam toggle** ? Play sub-phase placement in TOR-143; global LUT + HUD overlay when Memoriam active still TBD. _(TOR-101)_
+- [x] **Memoriam runtime apply:** Advance (non–Just Smoke) → `memoriamBlindfold_<skyboxKey>` cover, Table B0, seats, clock/overlay, panel skybox/weather/audio; exit restores library scene or Downtime; Just Smoke print-only. Catalog `blindfoldURL` removed. LUT/sepia still **TOR-321**; PC-as-NPC still **TOR-95**. Pending Save & Play. _(TOR-101)_
 
 ## Agent Reviews
 

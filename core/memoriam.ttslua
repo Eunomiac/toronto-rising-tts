@@ -1,0 +1,699 @@
+--[[
+    Memoriam Play subphase runtime apply (TOR-101).
+
+    Enter: modal Advance (non–Just Smoke) → staged HUDBF with Custom Asset
+    `memoriamBlindfold_<skyboxKey>` → Table B0, seats, clock, panel skybox/weather/audio.
+    Exit: stats conversion; restore prior library scene or Downtime no-scene.
+    Just Smoke never reaches this module (modal prints only).
+
+    Agent guidance: .dev/Phases/Phases Overview.md; .dev/INBOX.md Author Workspace Memoriam.
+]]
+
+local Memoriam = {}
+
+local C = require("lib.constants")
+local U = require("lib.util")
+local S = require("core.state")
+local NarrativeCalendar = require("lib.narrative_calendar")
+
+local PC_MEMORIAM_KEYS = { "lucien", "rashid", "aishe", "fomorach", "blackCaesar" }
+
+--- Modal subject keys → C.PlayerData charKey (Lucien is lordLucien in PlayerData).
+local MEMORIAM_KEY_TO_CHARKEY = {
+    lucien = "lordLucien",
+    rashid = "rashid",
+    aishe = "aishe",
+    fomorach = "fomorach",
+    blackCaesar = "blackCaesar",
+}
+
+local MONTH_ABBR = {
+    january = 1, february = 2, march = 3, april = 4, may = 5, june = 6,
+    july = 7, august = 8, september = 9, october = 10, november = 11, december = 12,
+}
+
+local cloneClock
+local emptyMemoriamState
+local writeMemoriamState
+local resolveCharKey
+local colorForMemoriamKey
+local playerIdForColor
+local parseModalDate
+local pickNightHourMinute
+local snapshotSelfStats
+local healSelfTracks
+local applyExitStatConversion
+local applySeatLayoutForPayload
+local applyMemoriamClock
+local applyMemoriamSoundscape
+local applyWorldUnderCover
+local findStorytellerPlayer
+
+cloneClock = function(clock)
+    if type(clock) ~= "table" then
+        return nil
+    end
+    return U.merge({}, clock)
+end
+
+emptyMemoriamState = function()
+    return {
+        active = false,
+        payload = nil,
+        returnSceneKey = nil,
+        preMemoriamNowClock = nil,
+        enterStats = {},
+    }
+end
+
+writeMemoriamState = function(next)
+    S.setStateVal(next, "memoriam")
+end
+
+resolveCharKey = function(memoriamKey)
+    return MEMORIAM_KEY_TO_CHARKEY[memoriamKey] or memoriamKey
+end
+
+colorForMemoriamKey = function(memoriamKey)
+    local charKey = resolveCharKey(memoriamKey)
+    for _, pd in pairs(C.PlayerData or {}) do
+        if type(pd) == "table" and pd.charKey == charKey and type(pd.color) == "string" then
+            return pd.color
+        end
+    end
+    return nil
+end
+
+playerIdForColor = function(color)
+    if type(color) ~= "string" then
+        return nil
+    end
+    local ok, pid = pcall(function()
+        return S.getPlayerID(color)
+    end)
+    if ok and type(pid) == "string" then
+        return pid
+    end
+    return nil
+end
+
+parseModalDate = function(dateStr)
+    if type(dateStr) ~= "string" then
+        return nil
+    end
+    local monName, dayStr, yearStr = string.match(dateStr, "^(%a+)%s+(%d+),%s*(%d+)$")
+    if monName == nil then
+        return nil
+    end
+    local month = MONTH_ABBR[string.lower(monName)]
+    local day = tonumber(dayStr)
+    local year = tonumber(yearStr)
+    if month == nil or day == nil or year == nil then
+        return nil
+    end
+    return {
+        month = month,
+        day = math.floor(day),
+        year = math.floor(year),
+    }
+end
+
+--- Coin flip between midnight–2:00 AM and 9:00 PM–midnight (dusk-relative follow-up later).
+pickNightHourMinute = function()
+    if math.random(1, 2) == 1 then
+        local minuteOfWindow = math.random(0, 119)
+        return math.floor(minuteOfWindow / 60), minuteOfWindow % 60
+    end
+    local minuteOfWindow = math.random(0, 179)
+    return 21 + math.floor(minuteOfWindow / 60), minuteOfWindow % 60
+end
+
+snapshotSelfStats = function(assignments)
+    local enterStats = {}
+    for i = 1, #PC_MEMORIAM_KEYS do
+        local key = PC_MEMORIAM_KEYS[i]
+        local row = type(assignments) == "table" and assignments[key] or nil
+        local isSelf = type(row) == "table" and row.kind == "self"
+        if isSelf then
+            local color = colorForMemoriamKey(key)
+            local pid = playerIdForColor(color)
+            if pid ~= nil then
+                local health = S.getStateVal("playerData", pid, "stats", "health") or {}
+                local willpower = S.getStateVal("playerData", pid, "stats", "willpower") or {}
+                enterStats[pid] = {
+                    health = {
+                        superficial = tonumber(health.superficial) or 0,
+                        aggravated = tonumber(health.aggravated) or 0,
+                    },
+                    willpower = {
+                        superficial = tonumber(willpower.superficial) or 0,
+                        aggravated = tonumber(willpower.aggravated) or 0,
+                    },
+                    color = color,
+                }
+            end
+        end
+    end
+    return enterStats
+end
+
+healSelfTracks = function(enterStats)
+    local P = require("lib.pc_stats")
+    for pid, snap in pairs(enterStats or {}) do
+        local color = snap.color
+        if type(color) == "string" then
+            local health = S.getStateVal("playerData", pid, "stats", "health") or {}
+            local willpower = S.getStateVal("playerData", pid, "stats", "willpower") or {}
+            local hSup = tonumber(health.superficial) or 0
+            local hAgg = tonumber(health.aggravated) or 0
+            local wSup = tonumber(willpower.superficial) or 0
+            local wAgg = tonumber(willpower.aggravated) or 0
+            if hSup ~= 0 or hAgg ~= 0 then
+                P.applyDamageOrHeal(color, "health", -hSup, -hAgg)
+            end
+            if wSup ~= 0 or wAgg ~= 0 then
+                P.applyDamageOrHeal(color, "willpower", -wSup, -wAgg)
+            end
+        end
+    end
+end
+
+applyExitStatConversion = function(enterStats)
+    local P = require("lib.pc_stats")
+    for pid, snap in pairs(enterStats or {}) do
+        local color = snap.color
+        if type(color) ~= "string" then
+            -- continue
+        else
+            local health = S.getStateVal("playerData", pid, "stats", "health") or {}
+            local willpower = S.getStateVal("playerData", pid, "stats", "willpower") or {}
+            local curHSup = tonumber(health.superficial) or 0
+            local curHAgg = tonumber(health.aggravated) or 0
+            local curWSup = tonumber(willpower.superficial) or 0
+            local curWAgg = tonumber(willpower.aggravated) or 0
+            local enterHSup = tonumber(snap.health.superficial) or 0
+            local enterHAgg = tonumber(snap.health.aggravated) or 0
+            local enterWSup = tonumber(snap.willpower.superficial) or 0
+            local enterWAgg = tonumber(snap.willpower.aggravated) or 0
+            local memHSup = math.max(0, curHSup - enterHSup)
+            local memHAgg = math.max(0, curHAgg - enterHAgg)
+            local memWSup = math.max(0, curWSup - enterWSup)
+            local memWAgg = math.max(0, curWAgg - enterWAgg)
+            -- Restore enter tracks.
+            P.applyDamageOrHeal(color, "health", enterHSup - curHSup, enterHAgg - curHAgg)
+            P.applyDamageOrHeal(color, "willpower", enterWSup - curWSup, enterWAgg - curWAgg)
+            -- Health damage taken in Memoriam + Willpower damage taken → Willpower.
+            local addWSup = memHSup + memWSup
+            local addWAgg = memHAgg + memWAgg
+            if addWSup ~= 0 or addWAgg ~= 0 then
+                P.applyDamageOrHeal(color, "willpower", addWSup, addWAgg)
+            end
+        end
+    end
+end
+
+applySeatLayoutForPayload = function(payload)
+    local NPCS = require("core.npcs")
+    local O = require("core.objects")
+    local SceneLibrary = require("core.scene_library")
+
+    local assignments = type(payload.assignments) == "table" and payload.assignments or {}
+    local subjectKey = payload.subjectKey
+    local subjectColor = colorForMemoriamKey(subjectKey)
+    if subjectColor == nil then
+        return false, "Could not resolve a seat color for Memoriam subject `" .. tostring(subjectKey) .. "`."
+    end
+
+    local presentColors = {}
+    local hasNonSelf = false
+    for i = 1, #PC_MEMORIAM_KEYS do
+        local key = PC_MEMORIAM_KEYS[i]
+        local row = assignments[key]
+        local color = colorForMemoriamKey(key)
+        if color ~= nil then
+            if type(row) == "table" then
+                presentColors[#presentColors + 1] = { key = key, color = color, row = row }
+                if row.kind ~= "self" then
+                    hasNonSelf = true
+                end
+            end
+        end
+    end
+
+    -- Ensure subject is present (modal always includes them).
+    local subjectListed = false
+    for i = 1, #presentColors do
+        if presentColors[i].key == subjectKey then
+            subjectListed = true
+            break
+        end
+    end
+    if not subjectListed then
+        presentColors[#presentColors + 1] = {
+            key = subjectKey,
+            color = subjectColor,
+            row = { kind = "self" },
+        }
+    end
+
+    -- Subject → tableSlot 1; others fill 2..n in stable PC key order.
+    table.sort(presentColors, function(a, b)
+        if a.key == subjectKey then
+            return true
+        end
+        if b.key == subjectKey then
+            return false
+        end
+        return a.key < b.key
+    end)
+
+    local seatSlots = S.getStateVal("sessionScene", "seatSlots")
+    if type(seatSlots) ~= "table" then
+        seatSlots = {}
+    end
+    for _, color in ipairs(C.PlayerColors or {}) do
+        seatSlots[color] = {
+            isPresent = false,
+            isPlayingNPC = false,
+            npcCharacterKey = nil,
+            tableSlot = nil,
+        }
+    end
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        seatSlots[seatKey] = { slotEmpty = true, isPresent = true }
+    end
+
+    local slot = 1
+    for i = 1, #presentColors do
+        local color = presentColors[i].color
+        seatSlots[color] = {
+            isPresent = true,
+            isPlayingNPC = false,
+            npcCharacterKey = nil,
+            tableSlot = slot,
+        }
+        slot = slot + 1
+        if type(NPCS.setPlayerSeatPresence) == "function" then
+            NPCS.setPlayerSeatPresence(color, true)
+        end
+        if type(O.applyPcSeatHiddenObjectPresence) == "function" then
+            O.applyPcSeatHiddenObjectPresence(color, true)
+        end
+    end
+    for _, color in ipairs(C.PlayerColors or {}) do
+        local row = seatSlots[color]
+        if type(row) ~= "table" or row.isPresent ~= true then
+            if type(NPCS.setPlayerSeatPresence) == "function" then
+                NPCS.setPlayerSeatPresence(color, false)
+            end
+            if type(O.applyPcSeatHiddenObjectPresence) == "function" then
+                O.applyPcSeatHiddenObjectPresence(color, false)
+            end
+        end
+    end
+
+    local seatPresent = {}
+    for _, color in ipairs(C.PlayerColors or {}) do
+        local row = seatSlots[color]
+        seatPresent[color] = type(row) == "table" and row.isPresent == true
+    end
+
+    local bundle = S.getStateVal("sessionScene") or {}
+    bundle.seatSlots = seatSlots
+    bundle.seatPresent = seatPresent
+    bundle.tableKey = "Table B"
+    if type(SceneLibrary.syncNpcRoleOverrideFromSeatSlots) == "function" then
+        SceneLibrary.syncNpcRoleOverrideFromSeatSlots(bundle)
+    end
+    if type(SceneLibrary.syncOccupiedNpcSlotsFromSeatSlots) == "function" then
+        SceneLibrary.syncOccupiedNpcSlotsFromSeatSlots(bundle)
+    end
+    S.setStateVal(bundle, "sessionScene")
+
+    if hasNonSelf then
+        U.AlertGM("Memoriam stored NPC assignments, but Play-as-NPC is not applied yet (TOR-95). Those seats stay active as themselves.")
+    end
+    return true, nil
+end
+
+applyMemoriamClock = function(payload)
+    local parsed = parseModalDate(payload.date)
+    if parsed == nil then
+        return false, "Memoriam date `" .. tostring(payload.date) .. "` could not be parsed."
+    end
+    local hour, minute = pickNightHourMinute()
+    local dim = NarrativeCalendar.daysInMonth(parsed.year, parsed.month)
+    local day = parsed.day
+    if day > dim then
+        day = dim
+    end
+    local clock = {
+        hour = hour,
+        minute = minute,
+        day = day,
+        month = parsed.month,
+        year = parsed.year,
+        useRealTime = true,
+        realTimeSpeed = 1,
+        isPresentDay = false,
+    }
+    S.setStateVal(clock, "sessionScene", "clock")
+    local GameStateOverlay = require("core.game_state_overlay")
+    if type(GameStateOverlay.resetRealTimeCarry) == "function" then
+        GameStateOverlay.resetRealTimeCarry()
+    end
+    if type(GameStateOverlay.stopTicker) == "function" then
+        GameStateOverlay.stopTicker()
+    end
+    if type(GameStateOverlay.ensureTicker) == "function" then
+        GameStateOverlay.ensureTicker()
+    end
+    return true, nil
+end
+
+applyMemoriamSoundscape = function(panel)
+    local Soundscape = require("core.soundscape")
+    local locationAudio = ""
+    if type(panel) == "table" and type(panel.locationAudio) == "string" then
+        locationAudio = panel.locationAudio
+    end
+    if locationAudio == "" then
+        locationAudio = "silent"
+    end
+    local weatherKey = "none"
+    if type(panel) == "table" and type(panel.weather) == "table" and #panel.weather > 0 then
+        weatherKey = tostring(panel.weather[1])
+    end
+    local isOutdoors = type(panel) == "table" and panel.isOutdoors == true
+    if type(Soundscape.applyContext) == "function" then
+        Soundscape.applyContext({
+            locationAudio = locationAudio,
+            location = locationAudio,
+            weather = weatherKey,
+            weatherCondition = weatherKey,
+            isIndoors = not isOutdoors,
+            isSilent = locationAudio == "silent" or locationAudio == "none",
+        })
+    else
+        if type(Soundscape.setLocationAudio) == "function" then
+            Soundscape.setLocationAudio(locationAudio)
+        end
+        if type(Soundscape.setWeatherCondition) == "function" then
+            Soundscape.setWeatherCondition(weatherKey)
+        end
+    end
+    if type(Soundscape.markReconciledToCurrentState) == "function" then
+        Soundscape.markReconciledToCurrentState()
+    end
+end
+
+applyWorldUnderCover = function(payload, opts)
+    opts = type(opts) == "table" and opts or {}
+    local reinit = opts.reinit == true
+    local Scenes = require("core.scenes")
+    local SceneLibrary = require("core.scene_library")
+    local PresentDayClock = require("core.present_day_clock")
+    local RSL = require("lib.rotational-seat-layout")
+    local Sync = require("core.sync")
+
+    local skyboxKey = payload.skyboxKey
+    local panelKey = payload.panel
+    local entry = C.MemoriamSkyboxes and C.MemoriamSkyboxes[skyboxKey]
+    if type(entry) ~= "table" then
+        return false, "Memoriam period `" .. tostring(skyboxKey) .. "` is not in the catalog."
+    end
+    local panel = entry[panelKey]
+    if type(panel) ~= "table" then
+        return false, "Memoriam panel `" .. tostring(panelKey) .. "` is missing on `" .. tostring(skyboxKey) .. "`."
+    end
+    local urlOk, urlOrErr = pcall(function()
+        return C.resolveMemoriamPanelURL(skyboxKey, panelKey)
+    end)
+    if not urlOk or type(urlOrErr) ~= "string" or urlOrErr == "" then
+        return false, "Memoriam panel art missing for `" .. tostring(skyboxKey) .. "` / `" .. tostring(panelKey) .. "`."
+    end
+
+    local returnSceneKey = nil
+    local preClock = nil
+    local enterStats = {}
+    if not reinit then
+        local lastApplied = S.getStateVal("sceneLibrary", "lastAppliedKey")
+        if type(lastApplied) == "string" and lastApplied ~= "" then
+            returnSceneKey = lastApplied
+        end
+        preClock = cloneClock(S.getStateVal("sessionScene", "clock"))
+        enterStats = snapshotSelfStats(payload.assignments)
+    else
+        local prev = S.getStateVal("memoriam") or {}
+        returnSceneKey = prev.returnSceneKey
+        preClock = cloneClock(prev.preMemoriamNowClock)
+        enterStats = type(prev.enterStats) == "table" and prev.enterStats or {}
+    end
+
+    if type(PresentDayClock.cancelCatchUpOnLiveClock) == "function" then
+        PresentDayClock.cancelCatchUpOnLiveClock()
+    end
+    if type(PresentDayClock.flushLibraryRowClock) == "function" and type(returnSceneKey) == "string" then
+        PresentDayClock.flushLibraryRowClock(returnSceneKey)
+    end
+
+    Scenes.clearLiveNarrativeForPhaseTransition({ reason = "memoriam_enter" })
+
+    S.setStateVal(nil, "sessionScene", "districtKey")
+    S.setStateVal(nil, "sessionScene", "siteKey")
+    S.setStateVal(nil, "sessionScene", "skyboxOverride")
+    S.setStateVal({}, "sessionScene", "soundscapeNarrative")
+    S.setStateVal(false, "sessionScene", "isTopFogActive")
+    S.setStateVal("Table B", "sessionScene", "tableKey")
+
+    local seatOk, seatErr = applySeatLayoutForPayload(payload)
+    if not seatOk then
+        return false, seatErr
+    end
+
+    if not reinit then
+        healSelfTracks(enterStats)
+    end
+
+    local clockOk, clockErr = applyMemoriamClock(payload)
+    if not clockOk then
+        return false, clockErr
+    end
+
+    if C.Tables["Table B"] ~= nil or RSL.isDynamicTableFamilyKey("Table B") then
+        RSL.SetTableTo("Table B", { skipTransitionBlindfold = true })
+    end
+
+    writeMemoriamState({
+        active = true,
+        payload = U.merge({}, payload),
+        returnSceneKey = returnSceneKey,
+        preMemoriamNowClock = preClock,
+        enterStats = enterStats,
+    })
+
+    -- Avoid nested U.chain from Phases.setPlaySubPhase inside HUDBF work.
+    S.setPlaySubPhase(C.PlaySubPhases.MEMORIAM)
+    if type(Sync.ui) == "function" then
+        Sync.ui({ phase = true, gameStateOverlay = true })
+    end
+
+    Scenes.invalidateReconcileCache()
+    if type(Sync.full) == "function" then
+        Sync.full({ skipSoundscape = true, force = true })
+    end
+    -- Skybox after Sync so Memoriam reconcile path sees active state.
+    Scenes.reconcileSkyboxFromState({ force = true })
+    applyMemoriamSoundscape(panel)
+
+    local GameStateOverlay = require("core.game_state_overlay")
+    if type(GameStateOverlay.reconcileFromState) == "function" then
+        GameStateOverlay.reconcileFromState()
+    end
+    return true, nil
+end
+
+findStorytellerPlayer = function()
+    local players = Player.getPlayers() or {}
+    for _, p in ipairs(players) do
+        if U.isStorytellerSteamPlayer(p) then
+            return p
+        end
+    end
+    return nil
+end
+
+--- @return boolean
+function Memoriam.isActive()
+    local mem = S.getStateVal("memoriam")
+    if type(mem) == "table" and mem.active == true then
+        return true
+    end
+    return S.getStateVal("playSubPhase") == C.PlaySubPhases.MEMORIAM
+end
+
+--- Custom Asset name for the Memoriam transition cover.
+--- @param skyboxKey string
+--- @return string
+function Memoriam.blindfoldImageName(skyboxKey)
+    return "memoriamBlindfold_" .. tostring(skyboxKey)
+end
+
+--- Apply Memoriam from a modal Advance payload (non–Just Smoke).
+--- @param payload table
+--- @return boolean
+function Memoriam.applyEnter(payload)
+    if type(payload) ~= "table" then
+        U.AlertGM("Memoriam.applyEnter: missing payload.")
+        return false
+    end
+    if payload.justSmoke == true then
+        U.AlertGM("Memoriam.applyEnter: Just Smoke does not apply a Memoriam scene.")
+        return false
+    end
+    if S.getStateVal("currentPhase") ~= C.Phases.PLAY then
+        U.AlertGM("Memoriam can only be applied during Play.")
+        return false
+    end
+    if type(payload.skyboxKey) ~= "string" or payload.skyboxKey == "" then
+        U.AlertGM("Memoriam Advance needs a skyboxKey.")
+        return false
+    end
+    if type(payload.panel) ~= "string" or payload.panel == "" then
+        U.AlertGM("Memoriam Advance needs a panel.")
+        return false
+    end
+
+    local reinit = Memoriam.isActive()
+    local HUDBF = require("core.hud_blindfold")
+    local SS = require("core.soundscape")
+    local image = Memoriam.blindfoldImageName(payload.skyboxKey)
+
+    HUDBF.runStagedTransition({
+        fadeOut = function()
+            if type(SS.fadeOutTransitionAmbient) == "function" then
+                SS.fadeOutTransitionAmbient({ seconds = HUDBF.TRANSITION_FADE_OUT_SEC })
+            end
+        end,
+        work = function()
+            local ok, err = applyWorldUnderCover(payload, { reinit = reinit })
+            if not ok then
+                return false, err or "Memoriam enter failed."
+            end
+            return true
+        end,
+        fadeIn = function()
+            if type(SS.beginTransitionFadeWindow) == "function" then
+                SS.beginTransitionFadeWindow(HUDBF.TRANSITION_FADE_IN_SEC)
+            end
+            -- Soundscape already applied under cover; keep window for parity with scene Apply.
+            if type(SS.endTransitionFadeWindow) == "function" then
+                SS.endTransitionFadeWindow()
+            end
+        end,
+    }, {
+        image = image,
+    })
+    return true
+end
+
+--- Finish Memoriam: convert stats and clear state. Optional restore / handoff.
+--- @param opts table|nil `{ mode?: "restore"|"handoff"|"endScene", player?: Player }`
+--- @return table `{ presentOverride?: table, returnSceneKey?: string|nil }`
+function Memoriam.applyExit(opts)
+    opts = type(opts) == "table" and opts or {}
+    local mode = opts.mode or "restore"
+    local mem = S.getStateVal("memoriam")
+    if type(mem) ~= "table" or mem.active ~= true then
+        writeMemoriamState(emptyMemoriamState())
+        return {}
+    end
+
+    local returnSceneKey = mem.returnSceneKey
+    local presentOverride = cloneClock(mem.preMemoriamNowClock)
+    local enterStats = type(mem.enterStats) == "table" and mem.enterStats or {}
+
+    applyExitStatConversion(enterStats)
+    writeMemoriamState(emptyMemoriamState())
+
+    local Scenes = require("core.scenes")
+    local Sync = require("core.sync")
+
+    if mode == "handoff" then
+        S.setPlaySubPhase(C.PlaySubPhases.MAIN)
+        if type(Sync.ui) == "function" then
+            Sync.ui({ phase = true, gameStateOverlay = true })
+        end
+        return { presentOverride = presentOverride, returnSceneKey = returnSceneKey }
+    end
+
+    if mode == "endScene" then
+        S.setPlaySubPhase(C.PlaySubPhases.DOWNTIME)
+        if type(Sync.ui) == "function" then
+            Sync.ui({ phase = true, gameStateOverlay = true })
+        end
+        return { presentOverride = presentOverride, returnSceneKey = returnSceneKey }
+    end
+
+    -- restore
+    local player = opts.player or findStorytellerPlayer()
+    if type(returnSceneKey) == "string" and returnSceneKey ~= "" then
+        S.setPlaySubPhase(C.PlaySubPhases.MAIN)
+        if type(Sync.ui) == "function" then
+            Sync.ui({ phase = true, gameStateOverlay = true })
+        end
+        local StorytellerScenesPanel = require("core.storyteller_scenes_panel")
+        S.setStateVal(returnSceneKey, "sceneLibrary", "activeKey")
+        if type(StorytellerScenesPanel.applyActiveLibraryScene) == "function" and player ~= nil then
+            StorytellerScenesPanel.applyActiveLibraryScene(player, "scene")
+        else
+            U.AlertGM("Memoriam exit: could not re-apply library scene `" .. returnSceneKey .. "`.")
+            Scenes.applyDefaultNoSceneEnvironment({ reason = "memoriam_exit_missing_player" })
+            S.setPlaySubPhase(C.PlaySubPhases.DOWNTIME)
+        end
+    else
+        S.setPlaySubPhase(C.PlaySubPhases.DOWNTIME)
+        if type(Sync.ui) == "function" then
+            Sync.ui({ phase = true, gameStateOverlay = true })
+        end
+        local HUDBF = require("core.hud_blindfold")
+        local SS = require("core.soundscape")
+        HUDBF.runStagedTransition({
+            fadeOut = function()
+                if type(SS.fadeOutTransitionAmbient) == "function" then
+                    SS.fadeOutTransitionAmbient({ seconds = HUDBF.TRANSITION_FADE_OUT_SEC })
+                end
+            end,
+            work = function()
+                Scenes.applyDefaultNoSceneEnvironment({
+                    reason = "memoriam_exit_no_scene",
+                    skipTransitionBlindfold = true,
+                    skipSoundscape = true,
+                })
+                return true
+            end,
+            fadeIn = function()
+                if type(SS.beginTransitionFadeWindow) == "function" then
+                    SS.beginTransitionFadeWindow(HUDBF.TRANSITION_FADE_IN_SEC)
+                end
+                Scenes.applyNoSceneSoundscape()
+                if type(SS.endTransitionFadeWindow) == "function" then
+                    SS.endTransitionFadeWindow()
+                end
+            end,
+        })
+    end
+    return { presentOverride = presentOverride, returnSceneKey = returnSceneKey }
+end
+
+--- Peek pre-Memoriam clock for Apply NOW while still active (before exit).
+--- @return table|nil
+function Memoriam.getPreMemoriamNowClock()
+    local mem = S.getStateVal("memoriam")
+    if type(mem) ~= "table" then
+        return nil
+    end
+    return cloneClock(mem.preMemoriamNowClock)
+end
+
+return Memoriam

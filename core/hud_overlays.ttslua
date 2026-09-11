@@ -268,20 +268,33 @@ local function armSharedBlindfoldLocationCards(districtImage, siteImage)
 end
 
 --- Arm variant display Image (shared tree — image= swap, TOR-444).
-local function armSharedBlindfoldDisplay(variant)
-  local v = tonumber(variant) or 1
-  if v < 1 then
-    v = 1
+--- @param variant number|nil 1..N when using stock covers
+--- @param customImage string|nil Custom Asset name (e.g. memoriamBlindfold_rashid7); wins over variant
+local function armSharedBlindfoldDisplay(variant, customImage)
+  local image = nil
+  if type(customImage) == "string" then
+    customImage = string.gsub(string.gsub(customImage, "^%s+", ""), "%s+$", "")
+    if customImage ~= "" then
+      image = customImage
+    end
   end
-  if v > C.BlindfoldVariantCount then
-    v = C.BlindfoldVariantCount
+  if image == nil then
+    local v = tonumber(variant) or 1
+    if v < 1 then
+      v = 1
+    end
+    if v > C.BlindfoldVariantCount then
+      v = C.BlindfoldVariantCount
+    end
+    image = "overlay_globalBlindfold_" .. tostring(v)
+    variant = v
   end
   U.setAttributes(SHARED_BLINDFOLD_DISPLAY, {
     active = "true",
     color = "White",
-    image = "overlay_globalBlindfold_" .. tostring(v),
+    image = image,
   })
-  return v
+  return variant or 1
 end
 
 --- Lazy: destination card images held by hud_blindfold for the active transition.
@@ -296,13 +309,26 @@ end
 --- Global transition blindfold (TOR-565): one panel, all clients, one variant Image via image=.
 --- Procedure: arm children → one UI.show → re-arm children (show resets XML defaults).
 --- @param variant number|nil 1..N = show; nil = hide
---- @param opts table|nil `{ districtImage?, siteImage?, forceReshow?, touchLocationCards? }`
+--- @param opts table|nil `{ districtImage?, siteImage?, forceReshow?, touchLocationCards?, image? }`
+---   `image` — Custom Asset name for the cover (Memoriam); when set, district/site cards stay Clear.
 local function applySharedBlindfold(variant, opts)
   opts = type(opts) == "table" and opts or {}
   local panelId = SHARED_BLINDFOLD_PANEL
   local shouldShow = variant ~= nil
   local prev = lastVisible[panelId]
   local touchCards = opts.touchLocationCards ~= false
+  local customImage = opts.image
+  if type(customImage) == "string" then
+    customImage = string.gsub(string.gsub(customImage, "^%s+", ""), "%s+$", "")
+    if customImage == "" then
+      customImage = nil
+    end
+  else
+    customImage = nil
+  end
+  if customImage ~= nil then
+    touchCards = false
+  end
 
   if shouldShow then
     cancelSharedBlindfoldChildCleanup()
@@ -311,12 +337,16 @@ local function applySharedBlindfold(variant, opts)
 
     local districtImage = opts.districtImage
     local siteImage = opts.siteImage
-    if type(districtImage) ~= "string" or type(siteImage) ~= "string" then
+    if customImage == nil and (type(districtImage) ~= "string" or type(siteImage) ~= "string") then
       local d2, s2 = transitionCardImagesFromHudBlindfold()
       if type(d2) == "string" and type(s2) == "string" then
         districtImage = d2
         siteImage = s2
       end
+    end
+    if customImage ~= nil then
+      districtImage = nil
+      siteImage = nil
     end
 
     if needShow then
@@ -327,14 +357,14 @@ local function applySharedBlindfold(variant, opts)
       end
       armSharedBlindfoldPanelAnimations()
       -- Arm BEFORE show, then again AFTER (parent UI.show re-applies XML defaults).
-      local v = armSharedBlindfoldDisplay(variant)
+      local v = armSharedBlindfoldDisplay(variant, customImage)
       armSharedBlindfoldLocationCards(districtImage, siteImage)
       UI.show(panelId)
-      armSharedBlindfoldDisplay(v)
+      armSharedBlindfoldDisplay(v, customImage)
       armSharedBlindfoldLocationCards(districtImage, siteImage)
     else
       -- Already visible: refresh variant art only; leave cards alone unless explicitly touching.
-      armSharedBlindfoldDisplay(variant)
+      armSharedBlindfoldDisplay(variant, customImage)
       if touchCards then
         armSharedBlindfoldLocationCards(districtImage, siteImage)
       end
@@ -359,19 +389,33 @@ function HO.clearSharedBlindfoldLocationCards()
 end
 
 --- Show one blindfold variant for all clients (global panel, TOR-565).
---- @param variant number 1..C.BlindfoldVariantCount
---- @param opts table|nil `{ districtImage?, siteImage?, forceReshow? }`
+--- @param variant number 1..C.BlindfoldVariantCount (still required as the "show" signal; ignored when `opts.image` is set)
+--- @param opts table|nil `{ districtImage?, siteImage?, forceReshow?, image? }`
 function HO.applyBlindfoldVariantForSeatedPlayers(variant, opts)
   local v = tonumber(variant)
-  if v == nil or v < 1 or v > C.BlindfoldVariantCount then
-    return
-  end
   opts = type(opts) == "table" and opts or {}
+  local customImage = opts.image
+  if type(customImage) == "string" then
+    customImage = string.gsub(string.gsub(customImage, "^%s+", ""), "%s+$", "")
+    if customImage == "" then
+      customImage = nil
+    end
+  else
+    customImage = nil
+  end
+  if customImage == nil then
+    if v == nil or v < 1 or v > C.BlindfoldVariantCount then
+      return
+    end
+  elseif v == nil or v < 1 then
+    v = 1
+  end
   applySharedBlindfold(v, {
     forceReshow = opts.forceReshow == true,
-    touchLocationCards = true,
+    touchLocationCards = customImage == nil,
     districtImage = opts.districtImage,
     siteImage = opts.siteImage,
+    image = customImage,
   })
 end
 

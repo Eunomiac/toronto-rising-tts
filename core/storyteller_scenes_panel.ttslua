@@ -1854,6 +1854,17 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
         GameStateOverlay.ensureTicker()
     end
 
+    local memoriamPresentOverride = nil
+    do
+        local Memoriam = require("core.memoriam")
+        if Memoriam.isActive() then
+            local result = Memoriam.applyExit({ mode = "handoff", player = player })
+            if type(result) == "table" then
+                memoriamPresentOverride = result.presentOverride
+            end
+        end
+    end
+
     closeScenesPanel()
 
     local incomingWeather = Scenes.computeIncomingWeatherPreview(ent.sessionScene)
@@ -1920,7 +1931,9 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
             return false, "Apply failed: " .. tostring(draftErr)
         end
 
-        local clockOk, clockErr = PresentDayClock.resolveAndApplyActivationClock(bundle, clockMode)
+        local clockOk, clockErr = PresentDayClock.resolveAndApplyActivationClock(bundle, clockMode, {
+            presentOverride = memoriamPresentOverride,
+        })
         if not clockOk then
             return false, "Apply failed: " .. tostring(clockErr)
         end
@@ -2031,6 +2044,13 @@ function StorytellerScenesPanel.endSceneNarrative(player)
     if not U.isStorytellerSteamPlayer(player) then
         U.AlertGM("Only the Storyteller can end a scene.")
         return
+    end
+
+    do
+        local Memoriam = require("core.memoriam")
+        if Memoriam.isActive() then
+            Memoriam.applyExit({ mode = "endScene", player = player })
+        end
     end
 
     -- TOR-449: force HERE, then close without THERE block; deselect after detach (below).

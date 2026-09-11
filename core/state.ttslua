@@ -449,6 +449,14 @@ function S.GetDefaultGameState()
         debug = {
             npcLightModes = {},
         },
+        --- Memoriam Play subphase runtime (TOR-101). Modal draft is not stored here until Advance.
+        memoriam = {
+            active = false,
+            payload = nil,
+            returnSceneKey = nil,
+            preMemoriamNowClock = nil,
+            enterStats = {},
+        },
     }
 end
 
