@@ -42,7 +42,6 @@ const MEMORIAM_HEADER = [
   "Panel D Weather",
   "Panel D Location Audio",
   "Panel D URL",
-  "Blindfold URL",
   "Splash Text",
   ...Array.from({ length: 10 }, (_, i) => [
     `NPC ${i + 1} Label`,
@@ -60,19 +59,12 @@ function memoriamCsv(cells) {
 }
 
 function emptyMemoriamTail() {
-  return Array(32).fill("");
+  // Splash Text + 10 NPCs × (label, tokenURL, figurineURL)
+  return Array(31).fill("");
 }
 
 function emptyNpcs() {
   return Array.from({ length: 10 }, () => ({ label: "", tokenURL: "", figurineURL: "" }));
-}
-
-/**
- * @param {string[]} cells
- * @returns {string}
- */
-function memoriamCsv(cells) {
-  return [MEMORIAM_HEADER, cells.join(",")].join("\n");
 }
 
 test("parseCsv handles quoted commas", () => {
@@ -195,9 +187,9 @@ test("parseMemoriamSkyboxRows stores entries by key with a characters list", () 
   assert.equal(entry.startYear, 1799);
   assert.equal(entry.endYear, 1833);
   assert.equal(entry.location, "Brașov, Romania");
-  assert.equal(entry.blindfoldURL, "");
   assert.equal(entry.splashText, "");
   assert.deepEqual(entry.npcs, emptyNpcs());
+  assert.equal(entry.blindfoldURL, undefined);
   assert.deepEqual(entry.panelA, {
     display: "Father's townhouse",
     isOutdoors: false,
@@ -230,15 +222,13 @@ test("parseMemoriamSkyboxRows keeps pipe-delimited characters on one entry", () 
   assert.equal(parsed.fomorach, undefined);
 });
 
-test("parseMemoriamSkyboxRows imports blindfold, splash, and ten NPC slots", () => {
+test("parseMemoriamSkyboxRows imports splash and ten NPC slots", () => {
   const cells = AISHE2_CELLS.slice();
-  cells[29] = "https://blindfold/";
-  cells[30] = "Smoke and memory";
-  cells[31] = "Drake";
-  cells[32] = "https://token/";
-  cells[33] = "https://figurine/";
+  cells[29] = "Smoke and memory";
+  cells[30] = "Drake";
+  cells[31] = "https://token/";
+  cells[32] = "https://figurine/";
   const parsed = parseMemoriamSkyboxRows(memoriamCsv(cells));
-  assert.equal(parsed.aishe2.blindfoldURL, "https://blindfold/");
   assert.equal(parsed.aishe2.splashText, "Smoke and memory");
   assert.equal(parsed.aishe2.npcs.length, 10);
   assert.deepEqual(parsed.aishe2.npcs[0], {
@@ -341,8 +331,8 @@ test("renderSkyboxesCatalogLua emits flat MemoriamSkyboxes keyed by skybox key",
   assert.match(lua, /locationAudio = "quietIndoor"/);
   assert.match(lua, /url = ""/);
   assert.match(lua, /weather = \{\}/);
-  assert.match(lua, /blindfoldURL = ""/);
   assert.match(lua, /splashText = ""/);
+  assert.doesNotMatch(lua, /blindfoldURL/);
   assert.match(lua, /npcs = \{/);
   assert.match(lua, /tokenURL = ""/);
   assert.match(lua, /figurineURL = ""/);

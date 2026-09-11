@@ -168,7 +168,6 @@ const MEMORIAM_REQUIRED_HEADERS = [
   "panel d weather",
   "panel d location audio",
   "panel d url",
-  "blindfold url",
   "splash text",
 ];
 
@@ -194,7 +193,7 @@ function memoriamHeaderIndex(headerRow) {
   const missing = MEMORIAM_REQUIRED_HEADERS.filter((name) => map[name] == null);
   if (missing.length > 0) {
     throw new Error(
-      `SKYBOXMEMORIAMCSV: expected header Key, Characters, Start Year, End Year, Location, Panel A–D, Blindfold URL, Splash Text, NPC 1–10 fields; missing ${JSON.stringify(missing)}; got ${JSON.stringify(headerRow)}`,
+      `SKYBOXMEMORIAMCSV: expected header Key, Characters, Start Year, End Year, Location, Panel A–D, Splash Text, NPC 1–10 fields; missing ${JSON.stringify(missing)}; got ${JSON.stringify(headerRow)}`,
     );
   }
   return map;
@@ -284,7 +283,6 @@ function parseMemoriamNpcs(cells, cols) {
  *   panelB: object,
  *   panelC?: object,
  *   panelD?: object,
- *   blindfoldURL: string,
  *   splashText: string,
  *   npcs: { label: string, tokenURL: string, figurineURL: string }[],
  * }>}
@@ -357,7 +355,6 @@ function parseMemoriamSkyboxRows(csvText) {
       location,
       panelA,
       panelB,
-      blindfoldURL: trimCell(cellAt(cells, cols["blindfold url"])),
       splashText: trimCell(cellAt(cells, cols["splash text"])),
       npcs: parseMemoriamNpcs(cells, cols),
     };
@@ -546,7 +543,6 @@ function renderMemoriamNpcsLua(lines, npcs, indent) {
  *     panelB: object,
  *     panelC?: object,
  *     panelD?: object,
- *     blindfoldURL: string,
  *     splashText: string,
  *     npcs: { label: string, tokenURL: string, figurineURL: string }[],
  *   }>,
@@ -563,7 +559,7 @@ function renderSkyboxesCatalogLua(args) {
   lines.push("    AUTO-GENERATED from Google Sheet — DO NOT EDIT BY HAND.");
   lines.push(`    Sheet id: ${meta.sheetId}`);
   lines.push(
-    `    Ranges: ${meta.catalogRange} (Key,Display,isShown,URL), ${meta.genericsRange} (URL), ${memoriamRange} (Key,Characters,Start Year,End Year,Location,Panel A–D,Blindfold URL,Splash Text,NPC 1–10)`,
+    `    Ranges: ${meta.catalogRange} (Key,Display,isShown,URL), ${meta.genericsRange} (URL), ${memoriamRange} (Key,Characters,Start Year,End Year,Location,Panel A–D,Splash Text,NPC 1–10)`,
   );
   lines.push("    Regenerate: npm run skyboxes:import");
   lines.push("    Script: .dev/scripts/import_skyboxes_from_sheet.js");
@@ -606,7 +602,6 @@ function renderSkyboxesCatalogLua(args) {
     if (entry.panelD) {
       renderMemoriamPanelLua(lines, "panelD", entry.panelD, "    ");
     }
-    lines.push(`    blindfoldURL = "${escapeLuaString(entry.blindfoldURL || "")}",`);
     lines.push(`    splashText = "${escapeLuaString(entry.splashText || "")}",`);
     renderMemoriamNpcsLua(lines, entry.npcs || [], "    ");
     lines.push("  },");
