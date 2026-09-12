@@ -88,10 +88,8 @@ playerIdForColor = function(color)
     if type(color) ~= "string" then
         return nil
     end
-    local ok, pid = pcall(function()
-        return S.getPlayerID(color)
-    end)
-    if ok and type(pid) == "string" then
+    local pid = S.getPlayerID(color)
+    if type(pid) == "string" then
         return pid
     end
     return nil
@@ -426,12 +424,8 @@ applyWorldUnderCover = function(payload, opts)
     if type(panel) ~= "table" then
         return false, "Memoriam panel `" .. tostring(panelKey) .. "` is missing on `" .. tostring(skyboxKey) .. "`."
     end
-    local urlOk, urlOrErr = pcall(function()
-        return C.resolveMemoriamPanelURL(skyboxKey, panelKey)
-    end)
-    if not urlOk or type(urlOrErr) ~= "string" or urlOrErr == "" then
-        return false, "Memoriam panel art missing for `" .. tostring(skyboxKey) .. "` / `" .. tostring(panelKey) .. "`."
-    end
+    -- Loud miss: C.resolveMemoriamPanelURL errors when catalog/art is missing (TOR-564).
+    C.resolveMemoriamPanelURL(skyboxKey, panelKey)
 
     local returnSceneKey = nil
     local preClock = nil

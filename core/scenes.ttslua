@@ -532,18 +532,7 @@ function Scenes.reconcileSkyboxFromState(opts)
             if not force and lastSkyboxReconcileFingerprint == fingerprint then
                 return true
             end
-            local url = nil
-            local okResolve, resolved = pcall(function()
-                return C.resolveMemoriamPanelURL(payload.skyboxKey, payload.panel)
-            end)
-            if okResolve and type(resolved) == "string" and resolved ~= "" then
-                url = resolved
-            end
-            if type(url) ~= "string" or url == "" then
-                print("[Scenes] reconcileSkyboxFromState: Memoriam panel URL missing for `"
-                    .. tostring(payload.skyboxKey) .. "` / `" .. tostring(payload.panel) .. "`.")
-                return false
-            end
+            local url = C.resolveMemoriamPanelURL(payload.skyboxKey, payload.panel)
             if Backgrounds == nil or type(Backgrounds.setCustomURL) ~= "function" then
                 print("[Scenes] reconcileSkyboxFromState: Backgrounds.setCustomURL unavailable.")
                 return false

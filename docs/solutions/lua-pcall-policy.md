@@ -47,6 +47,7 @@ Older targeted cleanups still worth citing:
 - `ui/ui_csheet.ttslua`: all `pcall` removed; use direct TTS / `Global.call` / `C.GetPlayerIDOrNil`.
 - `lib/constants.ttslua`: `C.GetPlayerColor` no longer uses `pcall(C.GetPlayerID, …)`; added `C.GetPlayerIDOrNil`.
 - `core/global_script.ttslua`: `GlobalRollSeatCamera` calls `M.setCamera` directly.
+- **TOR-568:** Memoriam enter / skybox reconcile no longer wrap `C.resolveMemoriamPanelURL` or `S.getPlayerID` — missing panel art must error in the TTS log (TOR-564).
 
 ## Inventory (remaining `pcall` sites)
 
