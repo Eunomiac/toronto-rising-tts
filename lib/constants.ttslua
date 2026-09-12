@@ -264,8 +264,9 @@ C.Phases = {
 -- Play enter looks up `gameState.sessionNum` in this table; missing index falls back to [1].
 -- Base duration in seconds the explode sequence was authored against.
 C.SessionStartBaseDuration = 71
--- Per-session intro track + song length. Times in SessionExplode scale by
--- songDuration / C.SessionStartBaseDuration.
+-- Per-session intro track + song length. Lerp path times scale by
+-- songDuration / C.SessionStartBaseDuration. Attribute path scales so the
+-- intro track and splash end together (TEST BED runIntroSequence; TOR-567).
 -- - introKey: catalog key for Soundscape.playSessionIntro (Music C).
 -- - songDuration: wall-clock seconds of that track (drives time dilation).
 C.SessionStartAnimationData = {

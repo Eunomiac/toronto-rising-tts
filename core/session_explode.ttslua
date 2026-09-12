@@ -1,5 +1,5 @@
 --[[
-    Session-start cover animation for Intermission → Play (TOR-559).
+    Session-start cover animation for Intermission → Play (TOR-559 / TOR-567).
 
     Two paths (Phases panel toggle `phase_sessionStartLerp`):
     - Attribute path (default): TTS showAnimation / hideAnimation only — fewer
@@ -7,7 +7,9 @@
     - Lerp path (toggle on): author-tuned U.Lerp explode (TOR-516 / TOR-531).
 
     Lerp wall-clock times scale by songDuration / C.SessionStartBaseDuration.
-    Attribute path scales by songDuration / ATTRIBUTE_VISIBLE_DURATION (115s).
+    Attribute path (TEST BED runIntroSequence) scales so the intro track and
+    splash end together: timeRatio from songDuration vs 140.7s unscaled length,
+    15.5s unscalable tail, and 27s song lead-in.
 ]]
 
 local SessionExplode = {}
@@ -42,11 +44,42 @@ local HIDE_SETTLE = 3
 local SCALE_END = 2
 local DEFAULT_SCALE_EASE = "powerIn"
 
--- Attribute-animation author timings (TEST BED). Visible window is full − 20s lead-in.
-local ATTRIBUTE_FULL_DURATION = 135
-local ATTRIBUTE_VISIBLE_DURATION = ATTRIBUTE_FULL_DURATION - 20
-local ATTRIBUTE_INIT_SETTLE_SEC = 1
+-- Attribute-animation author timings (TEST BED runIntroSequence).
+-- Measured at timeRatio = 1; number/title tail is unscaled (numTitleTimeRatio = 1).
+local ATTRIBUTE_UNSCALED_FULL_DURATION = 140.7
+local ATTRIBUTE_UNSCALABLE_TIME = 15.5
+local ATTRIBUTE_SONG_START_DELAY = 27
+local ATTRIBUTE_CHARACTER_SEQUENCE_DURATION = 20
+local ATTRIBUTE_HIDE_OVERLAY_SETTLE_SEC = 3
 local ATTRIBUTE_LOOP_FADE_SEC = 0.5
+
+local CHARACTER_TEXT_PANEL_DATA = {
+    [1] = {
+        showAnimation = "SlideIn_Left",
+        offsetXY = "900 0",
+        scale = "1",
+    },
+    [2] = {
+        showAnimation = "Grow",
+        offsetXY = "0 0",
+        scale = "0.9",
+    },
+    [3] = {
+        showAnimation = "Grow",
+        offsetXY = "0 0",
+        scale = "0.9",
+    },
+    [4] = {
+        showAnimation = "SlideIn_Right",
+        offsetXY = "-900 0",
+        scale = "1",
+    },
+    [5] = {
+        showAnimation = "SlideIn_Bottom",
+        offsetXY = "0 300",
+        scale = "1",
+    },
+}
 
 local SPLASH_IDS = {
     "overlay_characterIntroCaption_1",
@@ -214,7 +247,7 @@ function SessionExplode.sequenceDurationSec(songDuration)
     return (DELAY_TIME * 5) * mul + AFTER_TITLE_WAIT * mul + HIDE_SETTLE
 end
 
---- Attribute-path scale factor: songDuration / 115 (TEST BED visible window).
+--- Attribute-path scale factor so song end matches splash end (TEST BED runIntroSequence).
 -- @param songDuration number|nil
 -- @return number
 function SessionExplode.attributeTimeRatio(songDuration)
@@ -224,16 +257,32 @@ function SessionExplode.attributeTimeRatio(songDuration)
     if type(songDuration) ~= "number" or songDuration <= 0 then
         error("SessionExplode.attributeTimeRatio: songDuration must be a positive number of seconds")
     end
-    return songDuration / ATTRIBUTE_VISIBLE_DURATION
+    local scalableSongWindow = (ATTRIBUTE_UNSCALED_FULL_DURATION - ATTRIBUTE_SONG_START_DELAY)
+        - ATTRIBUTE_UNSCALABLE_TIME
+    if scalableSongWindow <= 0 then
+        error("SessionExplode.attributeTimeRatio: scalable song window must be > 0")
+    end
+    if songDuration < ATTRIBUTE_UNSCALABLE_TIME then
+        error(
+            "SessionExplode.attributeTimeRatio: songDuration ("
+                .. tostring(songDuration)
+                .. ") is shorter than unscalableTime ("
+                .. tostring(ATTRIBUTE_UNSCALABLE_TIME)
+                .. "); cannot align ends by scaling"
+        )
+    end
+    return (songDuration - ATTRIBUTE_UNSCALABLE_TIME) / scalableSongWindow
 end
 
 --- Wall-clock seconds Play-enter should wait after playAttribute() is started.
+-- Covers splash end (song-aligned) plus the overlay hide settle.
 -- @param songDuration number|nil
 -- @return number
 function SessionExplode.attributeSequenceDurationSec(songDuration)
     local timeRatio = SessionExplode.attributeTimeRatio(songDuration)
-    -- init settle + 6× pair window (20tr, with pair 5 doubled) + 6A/6B + panel hide
-    return ATTRIBUTE_INIT_SETTLE_SEC + (135 * timeRatio) + (3 * timeRatio)
+    local animEnds = ATTRIBUTE_UNSCALABLE_TIME
+        + timeRatio * (ATTRIBUTE_UNSCALED_FULL_DURATION - ATTRIBUTE_UNSCALABLE_TIME)
+    return animEnds + ATTRIBUTE_HIDE_OVERLAY_SETTLE_SEC
 end
 
 --- Longer of lerp / attribute waits — Advance chain maxWait must cover either path.
@@ -695,105 +744,228 @@ local function fireAttributeSessionIntroAudio()
     end
 end
 
---- Prepare song-scaled timing for the attribute session-start path.
---- Static showAnimation / hideAnimation / colors live in session_splash_* Defaults
---- (`ui/shared/panel_overlay_session_start.xml`).
--- @param songDuration number|nil
--- @return number pair sequenceDuration (scaled)
-function SessionExplode.initializeAttributeAnimation(songDuration)
-    if songDuration == nil then
-        songDuration = SessionExplode.resolveAnimationData().songDuration
-    end
-    local timeRatio = SessionExplode.attributeTimeRatio(songDuration)
-
-    -- Panel may have been hidden; cover starts inactive until session art is applied.
-    -- Base goes transparent so splash layers read cleanly (Intermission leaves it opaque).
-    U.setAttributes(PANEL_ID, { active = "true" })
-    U.setAttributes(BASE_PANEL_ID, { color = "rgba(1, 1, 1, 0)" })
-    U.setAttributes(COVER_ID, { active = "true" })
-
-    local sequenceDuration = 20 * timeRatio
-
-    local textPanelSlideInStartRatio = -1
-    local textPanelSlideInEndRatio = 1
-    local textPanelSlideInDuration = sequenceDuration * (textPanelSlideInEndRatio - textPanelSlideInStartRatio)
-    local actualSequenceDuration = textPanelSlideInDuration
-
-    local textFadeInStartRatio = (0.05 + (-1 * textPanelSlideInStartRatio))
-        / (textPanelSlideInEndRatio - textPanelSlideInStartRatio)
-    local textFadeInEndRatio = (0.75 + (-1 * textPanelSlideInStartRatio))
-        / (textPanelSlideInEndRatio - textPanelSlideInStartRatio)
-    local textFadeInStartTime = actualSequenceDuration * textFadeInStartRatio
-    local textFadeInEndTime = actualSequenceDuration * textFadeInEndRatio
-    local textFadeInDuration = textFadeInEndTime - textFadeInStartTime
-
-    local imagePanelGrowStartRatio = (-1 + (-1 * textPanelSlideInStartRatio))
-        / (textPanelSlideInEndRatio - textPanelSlideInStartRatio)
-    local imagePanelGrowEndRatio = (0.25 + (-1 * textPanelSlideInStartRatio))
-        / (textPanelSlideInEndRatio - textPanelSlideInStartRatio)
-    local imagePanelGrowStartTime = actualSequenceDuration * imagePanelGrowStartRatio
-    local imagePanelGrowEndTime = actualSequenceDuration * imagePanelGrowEndRatio
-    local imagePanelGrowDuration = imagePanelGrowEndTime - imagePanelGrowStartTime
-
-    local imageFadeInStartRatio = 0
-        + (-1 * textPanelSlideInStartRatio) / (textPanelSlideInEndRatio - textPanelSlideInStartRatio)
-    local imageFadeInEndRatio = (0.25 + (-1 * textPanelSlideInStartRatio))
-        / (textPanelSlideInEndRatio - textPanelSlideInStartRatio)
-    local imageFadeInStartTime = actualSequenceDuration * imageFadeInStartRatio
-    local imageFadeInEndTime = actualSequenceDuration * imageFadeInEndRatio
-    local imageFadeInDuration = imageFadeInEndTime - imageFadeInStartTime
-
-    -- showAnimation / animationDuration=0.5 are Defaults on session_splash_frame_panel.
-    U.setAttributes(FRAME_PANEL_ID, {
-        showAnimationDelay = imageFadeInStartTime,
-    })
-
-    for sequence = 1, 5 do
-        local imagePanelID = "overlay_characterIntroImagePanel_" .. sequence
-        U.setAttributes(imagePanelID, {
-            showAnimationDelay = imagePanelGrowStartTime,
-            animationDuration = imagePanelGrowDuration,
-        })
-
-        local imageID = "overlay_characterIntroImage_" .. sequence
-        U.setAttributes(imageID, {
-            showAnimationDelay = imageFadeInStartTime,
-            animationDuration = imageFadeInDuration,
-        })
-
-        local textPanelID = "overlay_characterIntroCaptionPanel_" .. sequence
-        U.setAttributes(textPanelID, {
-            showAnimationDelay = 0,
-            animationDuration = textPanelSlideInDuration,
-        })
-
-        local textID = "overlay_characterIntroCaption_" .. sequence
-        U.setAttributes(textID, {
-            showAnimationDelay = textFadeInStartTime,
-            animationDuration = textFadeInDuration,
-        })
-    end
-
-    -- hideAnimation FadeOut is already on session_start_panel Defaults.
-    U.setAttributes(PANEL_ID, { animationDuration = 3 * timeRatio })
-    U.setAttributes(SESSION_NUMBER_PANEL_ID, {
-        animationDuration = 5 * timeRatio,
-    })
-    U.setAttributes(SESSION_NUMBER_ID, {
-        animationDuration = 5 * timeRatio,
-    })
-    U.setAttributes(SESSION_TITLE_PANEL_ID, {
-        animationDuration = 5 * timeRatio,
-    })
-    U.setAttributes(SESSION_TITLE_ID, {
-        animationDuration = 5 * timeRatio,
-    })
-
-    return sequenceDuration
+local function attributeStillCurrent(gen)
+    return sequenceGen == gen
 end
 
---- Start the TTS-attribute Intermission→Play animation. Fades TR_Loop and plays Music C
---- at the designed mid-sequence beat. Returns immediately; wait attributeSequenceDurationSec().
+local function attributeChainMaxWait(waitSec)
+    return math.max(60, waitSec + 5)
+end
+
+--- Session number (suffix 6) / title (suffix 7). Number/title tail uses timeRatio 1.
+local function runNumTitleSequence(gen, sequencePrefix, sequenceSuffix, numTitleTimeRatio, waitSec)
+    if numTitleTimeRatio == nil then
+        numTitleTimeRatio = 1
+    end
+    local numTitleSequenceDuration = 10 * numTitleTimeRatio
+
+    local containerPanelID = sequencePrefix .. "Panel_" .. sequenceSuffix
+    local bgPanel1ID = sequencePrefix .. "BgPanel_1"
+    local bgImage1ID = sequencePrefix .. "Bg_1"
+    local imagePanelID = sequencePrefix .. "ImagePanel_" .. sequenceSuffix
+    local imageID = sequencePrefix .. "_" .. sequenceSuffix
+
+    U.setAttributes("overlay_sessionNumberBg_1", { image = "overlay_globalBlindfold_17", active = "true" })
+    U.setAttributes("overlay_sessionTitleBg_1", { image = "overlay_globalBlindfold_20", active = "true" })
+
+    U.setAttributes(containerPanelID, {
+        color = "rgba(0, 0, 0, 0)",
+        scale = "3",
+        active = "true",
+        hideAnimation = "Shrink",
+        animationDuration = numTitleSequenceDuration * 16,
+    })
+
+    U.setAttributes(bgPanel1ID, {
+        color = "rgba(0, 0, 0, 0)",
+        scale = "4",
+        showAnimation = "Grow",
+        animationDuration = numTitleSequenceDuration * 2,
+    })
+    U.setAttributes(bgImage1ID, {
+        scale = "2",
+        showAnimation = "FadeIn",
+        hideAnimation = "FadeOut",
+        animationDuration = 1 * numTitleTimeRatio,
+        showAnimationDelay = 0.15 * numTitleSequenceDuration,
+    })
+
+    U.setAttributes(imagePanelID, {
+        color = "rgba(0, 0, 0, 0)",
+        scale = "1",
+        showAnimation = "Grow",
+        animationDuration = numTitleSequenceDuration * 2,
+    })
+    U.setAttributes(imageID, {
+        active = "true",
+        scale = "1",
+        showAnimation = "FadeIn",
+        hideAnimation = "FadeOut",
+        animationDuration = 2 * numTitleTimeRatio,
+        showAnimationDelay = 0.1 * numTitleSequenceDuration,
+    })
+
+    U.chain({
+        function()
+            if not attributeStillCurrent(gen) then
+                return 0
+            end
+            UI.show(bgPanel1ID)
+            UI.show(imagePanelID)
+            return 0.8 * numTitleSequenceDuration * numTitleTimeRatio
+        end,
+        function()
+            if not attributeStillCurrent(gen) then
+                return 0
+            end
+            UI.hide(bgImage1ID)
+            UI.hide(imageID)
+            return 2.5 * numTitleTimeRatio
+        end,
+        function()
+            if not attributeStillCurrent(gen) then
+                return 0
+            end
+            if sequenceSuffix == "7" then
+                hideGlobalPanel()
+            end
+            return ATTRIBUTE_HIDE_OVERLAY_SETTLE_SEC
+        end,
+        function()
+            if not attributeStillCurrent(gen) then
+                return 0
+            end
+            if sequenceSuffix == "7" then
+                SessionExplode.resetLayers()
+            end
+            return 0
+        end,
+    }, { maxWait = attributeChainMaxWait(waitSec) })
+end
+
+local function runCharacterSequence(gen, sequenceNumber, timeRatio, waitSec)
+    local textPanelID = "overlay_characterIntroCaptionPanel_" .. sequenceNumber
+    local imagePanelID = "overlay_characterIntroImagePanel_" .. sequenceNumber
+    local textID = "overlay_characterIntroCaption_" .. sequenceNumber
+    local imageID = "overlay_characterIntroImage_" .. sequenceNumber
+    local textPanelData = CHARACTER_TEXT_PANEL_DATA[sequenceNumber]
+    if type(textPanelData) ~= "table" then
+        error("SessionExplode.runCharacterSequence: missing panel data for sequence " .. tostring(sequenceNumber))
+    end
+
+    U.setAttributes(textPanelID, {
+        active = "false",
+        showAnimation = textPanelData.showAnimation,
+        animationDuration = 60 * timeRatio,
+    })
+    U.setAttributes(textID, {
+        active = "true",
+        showAnimation = "FadeIn",
+        showAnimationDelay = 34 * timeRatio,
+        animationDuration = 4,
+        hideAnimation = "FadeOut",
+        hideAnimationDelay = 0,
+        offsetXY = textPanelData.offsetXY,
+        scale = textPanelData.scale,
+    })
+    U.setAttributes(imagePanelID, {
+        active = "false",
+        showAnimation = "Grow",
+        animationDuration = 35 * timeRatio,
+    })
+    U.setAttributes(imageID, {
+        active = "true",
+        showAnimation = "FadeIn",
+        showAnimationDelay = 27 * timeRatio,
+        animationDuration = 0.5,
+        scale = "1",
+        hideAnimationDelay = 1.5,
+        hideAnimation = "FadeOut",
+    })
+
+    if sequenceNumber == 1 then
+        U.setAttributes(FRAME_PANEL_ID, {
+            active = "false",
+            showAnimation = "FadeIn",
+            animationDuration = 0.5,
+            showAnimationDelay = 27 * timeRatio,
+        })
+        U.setAttributes("overlay_sessionSplashFrame", { active = "true" })
+    end
+
+    U.chain({
+        function()
+            if not attributeStillCurrent(gen) then
+                return 0
+            end
+            UI.show(textPanelID)
+            UI.show(imagePanelID)
+            if sequenceNumber == 1 then
+                UI.show(FRAME_PANEL_ID)
+                U.await(function()
+                    if not attributeStillCurrent(gen) then
+                        return
+                    end
+                    fireAttributeSessionIntroAudio()
+                end, ATTRIBUTE_SONG_START_DELAY * timeRatio)
+            end
+            return 39 * timeRatio
+        end,
+        function()
+            if not attributeStillCurrent(gen) then
+                return 0
+            end
+            UI.hide(textID)
+            return 6 * timeRatio
+        end,
+        function()
+            if not attributeStillCurrent(gen) then
+                return 0
+            end
+            U.setAttributes(imagePanelID, { color = "#000000" })
+            UI.hide(imageID)
+            if sequenceNumber == 5 then
+                U.chain({
+                    function()
+                        if not attributeStillCurrent(gen) then
+                            return 0
+                        end
+                        runNumTitleSequence(gen, "overlay_sessionNumber", "6", 1, waitSec)
+                        U.setAttributes("overlay_sessionSplashFrame", { active = "false" })
+                        return 5
+                    end,
+                    function()
+                        if not attributeStillCurrent(gen) then
+                            return 0
+                        end
+                        runNumTitleSequence(gen, "overlay_sessionTitle", "7", 1, waitSec)
+                        return 0
+                    end,
+                }, { maxWait = attributeChainMaxWait(waitSec) })
+            end
+            return 0
+        end,
+    }, { maxWait = attributeChainMaxWait(waitSec) })
+end
+
+local function runAttributeSequences(gen, timeRatio, waitSec)
+    local characterSequenceDuration = ATTRIBUTE_CHARACTER_SEQUENCE_DURATION * timeRatio
+    local chainFunctions = {}
+    for sequenceNumber = 1, 5 do
+        table.insert(chainFunctions, function()
+            if not attributeStillCurrent(gen) then
+                return 0
+            end
+            runCharacterSequence(gen, sequenceNumber, timeRatio, waitSec)
+            return characterSequenceDuration
+        end)
+    end
+    U.chain(chainFunctions, { maxWait = attributeChainMaxWait(waitSec) })
+end
+
+--- Start the TTS-attribute Intermission→Play animation (TEST BED runIntroSequence).
+--- Fades TR_Loop and plays Music C after the authored song lead-in on pair 1.
+--- Returns immediately; wait attributeSequenceDurationSec().
 -- @param songDuration number|nil
 -- @return number attributeSequenceDurationSec
 function SessionExplode.playAttribute(songDuration)
@@ -802,7 +974,6 @@ function SessionExplode.playAttribute(songDuration)
     end
     local timeRatio = SessionExplode.attributeTimeRatio(songDuration)
     local waitSec = SessionExplode.attributeSequenceDurationSec(songDuration)
-    local sequenceDuration = 0
 
     sequenceGen = sequenceGen + 1
     local gen = sequenceGen
@@ -810,86 +981,8 @@ function SessionExplode.playAttribute(songDuration)
         explodeGenById[id] = idGen + 1
     end
 
-    U.chain({
-        function()
-            if sequenceGen ~= gen then
-                return
-            end
-            sequenceDuration = SessionExplode.initializeAttributeAnimation(songDuration)
-            return ATTRIBUTE_INIT_SETTLE_SEC
-        end,
-        function()
-            if sequenceGen ~= gen then
-                return
-            end
-            UI.show("overlay_characterIntroCaptionPanel_1")
-            UI.show("overlay_characterIntroImagePanel_1")
-            UI.show(FRAME_PANEL_ID)
-            return sequenceDuration
-        end,
-        function()
-            if sequenceGen ~= gen then
-                return
-            end
-            -- Session starter track starts here; Intermission theme fades out swiftly.
-            fireAttributeSessionIntroAudio()
-            UI.show("overlay_characterIntroCaptionPanel_2")
-            UI.show("overlay_characterIntroImagePanel_2")
-            return sequenceDuration
-        end,
-        function()
-            if sequenceGen ~= gen then
-                return
-            end
-            UI.show("overlay_characterIntroCaptionPanel_3")
-            UI.show("overlay_characterIntroImagePanel_3")
-            return sequenceDuration
-        end,
-        function()
-            if sequenceGen ~= gen then
-                return
-            end
-            UI.show("overlay_characterIntroCaptionPanel_4")
-            UI.show("overlay_characterIntroImagePanel_4")
-            return sequenceDuration
-        end,
-        function()
-            if sequenceGen ~= gen then
-                return
-            end
-            UI.show("overlay_characterIntroCaptionPanel_5")
-            UI.show("overlay_characterIntroImagePanel_5")
-            return sequenceDuration * 2
-        end,
-        function()
-            if sequenceGen ~= gen then
-                return
-            end
-            UI.show(SESSION_NUMBER_PANEL_ID)
-            return 7.5 * timeRatio
-        end,
-        function()
-            if sequenceGen ~= gen then
-                return
-            end
-            UI.show(SESSION_TITLE_PANEL_ID)
-            return 7.5 * timeRatio
-        end,
-        function()
-            if sequenceGen ~= gen then
-                return
-            end
-            hideGlobalPanel()
-            return math.max(3 * timeRatio, 1)
-        end,
-        function()
-            if sequenceGen ~= gen then
-                return
-            end
-            SessionExplode.resetLayers()
-        end,
-    }, { maxWait = math.max(60, waitSec + 5) })
-
+    U.setAttributes(PANEL_ID, { active = "true" })
+    runAttributeSequences(gen, timeRatio, waitSec)
     return waitSec
 end
 

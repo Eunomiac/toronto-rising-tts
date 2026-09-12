@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-11 — TOR-101 Memoriam runtime apply._
+_Last populated: 2026-09-12 — TOR-567 TEST BED session-start intro._
 
 ### Memoriam
 
@@ -34,6 +34,16 @@ _Last populated: 2026-09-11 — TOR-101 Memoriam runtime apply._
 **Context:** Catalog `blindfoldURL` removed. PC-as-NPC sheet swap still TOR-95; LUT/sepia still TOR-321.
 
 ### Phases / session start
+
+#### TOR-567 — TEST BED session-start intro sequence on Advance
+
+**How to verify:** Save & Play so scripts reload. Leave **Lerp explode** off on the Phases panel. Start from Intermission (cold load, or Host console `lua DEBUG.resetToIntermission()`). Click **Advance**.
+
+1. Lights and the Storyteller HUD should still update behind the cover first, same as before. Then the new character splash should play (Black Caesar slides in from the left, then the others Grow / slide, then the session number and title). The Intermission loop should fade and the session-start music should start a little while after the first character appears — not at the first frame, and not as early as the old pair-2 beat. That lead-in after clicking Advance can feel a bit longer; that is expected.
+2. When the song and splash finish together, the overlay should fade out, stay gone, Main music should come in, and the Willpower heal popup should still be able to appear if anyone has Superficial Willpower to heal.
+3. Optional: turn **Lerp explode** on and Advance again from Intermission — you should get the older scale-and-fade explode, not this new splash.
+
+**Context:** Ported the confirmed TEST BED `runIntroSequence` into `SessionExplode.playAttribute`. relatedTo **TOR-559**.
 
 #### TOR-566 — Global blindfold: instant hide + wrong End→Intermission splash
 
