@@ -291,12 +291,20 @@
   position: absolute;
   width: 9.5%;
   height: 3.1%;
-  padding: 0;
+  padding: 0 0.15rem;
   border-radius: 0.22rem;
-  background: #c9a227;
+  background: rgb(201 162 39 / 55%);
   border: 1px solid #f0d56a;
-  opacity: 0;
+  opacity: 0.85;
   z-index: 3;
+  cursor: grab;
+  color: #1a1408;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .scenes-drag-layer {

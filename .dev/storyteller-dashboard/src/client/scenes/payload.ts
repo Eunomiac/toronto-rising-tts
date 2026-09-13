@@ -67,30 +67,113 @@ export const sceneKeyFromTitle = (title: string): string => {
   return `scene${camel.slice(0, 1).toUpperCase()}${camel.slice(1)}`;
 };
 
-export const familyLabelUv = (snaps: ControlBoardSnaps, familyId: string): { u: number; v: number } | null => {
-  const members = snaps.polar.filter((snap) => snap.familyId === familyId);
-  if (members.length === 0) {
-    return null;
-  }
+const meanUv = (members: readonly PolarSnap[]): { u: number; v: number } => {
   let u = 0;
   let v = 0;
   for (const member of members) {
     u += member.u;
     v += member.v;
   }
-  u /= members.length;
-  v /= members.length;
-  const du = u - 0.5;
-  const dv = v - 0.5;
-  const len = Math.hypot(du, dv);
-  if (len < 0.06) {
-    return { u, v: Math.min(0.92, v + 0.075) };
+  return { u: u / members.length, v: v / members.length };
+};
+
+const familyMeanU = (snaps: ControlBoardSnaps, familyId: string): number => {
+  const members = snaps.polar.filter((snap) => snap.familyId === familyId);
+  return members.length === 0 ? 0.5 : meanUv(members).u;
+};
+
+const centerFamilyIdOnRing = (snaps: ControlBoardSnaps, ringIndex: number): string | null => {
+  const ids = [...new Set(snaps.polar.filter((snap) => snap.ringIndex === ringIndex).map((snap) => snap.familyId))];
+  if (ids.length === 0) {
+    return null;
   }
-  const scale = 0.065;
-  return {
-    u: Math.min(0.94, Math.max(0.06, u + (du / len) * scale)),
-    v: Math.min(0.92, Math.max(0.08, v + (dv / len) * scale))
-  };
+  let best = ids[0] ?? null;
+  let bestDist = Number.POSITIVE_INFINITY;
+  for (const id of ids) {
+    const dist = Math.abs(familyMeanU(snaps, id) - 0.5);
+    if (dist < bestDist) {
+      best = id;
+      bestDist = dist;
+    }
+  }
+  return best;
+};
+
+/** Board UV for the painted parchment name of a polar family. */
+export const familyLabelUv = (snaps: ControlBoardSnaps, familyId: string): { u: number; v: number } | null => {
+  const members = snaps.polar.filter((snap) => snap.familyId === familyId);
+  if (members.length === 0) {
+    return null;
+  }
+  const ringIndex = members[0]?.ringIndex ?? 0;
+  const { u, v } = meanUv(members);
+  if (ringIndex >= 3) {
+    return { u, v };
+  }
+  const centerId = centerFamilyIdOnRing(snaps, ringIndex);
+  if (centerId !== null && familyId === centerId) {
+    if (ringIndex === 1) {
+      return { u: u - 0.055, v };
+    }
+    return { u, v: v + 0.038 };
+  }
+  if (centerId !== null && u < familyMeanU(snaps, centerId)) {
+    return { u: u - 0.048, v };
+  }
+  return { u: u + 0.048, v };
+};
+
+export const polarAreaNameForFamily = (snaps: ControlBoardSnaps, familyId: string): string => {
+  const members = snaps.polar.filter((snap) => snap.familyId === familyId);
+  const ringIndex = members[0]?.ringIndex;
+  if (ringIndex === 3) {
+    return "Far Left";
+  }
+  if (ringIndex === 6) {
+    return "Far Right";
+  }
+  if (ringIndex === 4) {
+    return "Far Center-Left";
+  }
+  if (ringIndex === 5) {
+    return "Far Center-Right";
+  }
+  if (ringIndex === 1 || ringIndex === 2) {
+    const centerId = centerFamilyIdOnRing(snaps, ringIndex);
+    if (familyId === centerId) {
+      return ringIndex === 1 ? "CENTER" : "Mid Center";
+    }
+    if (familyMeanU(snaps, familyId) < (centerId ? familyMeanU(snaps, centerId) : 0.5)) {
+      return ringIndex === 1 ? "Center Left" : "Mid Left";
+    }
+    return ringIndex === 1 ? "Center Right" : "Mid Right";
+  }
+  return familyId;
+};
+
+const TABLE_B_VARIANT = /^Table B\d+$/u;
+
+export const tableChoiceKeys = (tables: readonly { readonly key: string }[]): string[] => {
+  const keys: string[] = [];
+  let addedB = false;
+  for (const table of tables) {
+    if (table.key === "Table B" || TABLE_B_VARIANT.test(table.key)) {
+      if (!addedB) {
+        keys.push("Table B");
+        addedB = true;
+      }
+      continue;
+    }
+    keys.push(table.key);
+  }
+  return keys;
+};
+
+export const tableChoiceIsSelected = (choiceKey: string, currentKey: string): boolean => {
+  if (choiceKey === "Table B") {
+    return currentKey === "Table B" || TABLE_B_VARIANT.test(currentKey);
+  }
+  return choiceKey === currentKey;
 };
 
 export const emptyScatterAreas = (snaps: ControlBoardSnaps): SceneDraft["scatter"]["areas"] => {

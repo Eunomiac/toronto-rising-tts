@@ -14,7 +14,7 @@ export const initToasts = (root: HTMLElement): { push: (kind: ToastKind, message
     const toast = document.createElement("button");
     toast.type = "button";
     toast.className = `scenes-toast scenes-toast-${kind}`;
-    toast.title = "Click to expand or collapse";
+    toast.title = "Click to dismiss";
     const icon = document.createElement("img");
     icon.className = "scenes-toast-icon";
     icon.alt = "";
@@ -23,14 +23,17 @@ export const initToasts = (root: HTMLElement): { push: (kind: ToastKind, message
     text.className = "scenes-toast-text";
     text.textContent = message;
     toast.append(icon, text);
-    toast.addEventListener("click", () => {
-      toast.classList.toggle("expanded");
-    });
+    let autoRemove: number | undefined;
+    const dismiss = (): void => {
+      if (autoRemove !== undefined) {
+        window.clearTimeout(autoRemove);
+      }
+      toast.remove();
+    };
+    toast.addEventListener("click", dismiss);
     root.append(toast);
     if (kind === "success") {
-      window.setTimeout(() => {
-        toast.remove();
-      }, 8000);
+      autoRemove = window.setTimeout(dismiss, 8000);
     }
   };
   return { push };

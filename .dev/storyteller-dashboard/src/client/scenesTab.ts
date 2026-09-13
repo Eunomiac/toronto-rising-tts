@@ -7,6 +7,9 @@ import {
   createDefaultDraft,
   cutoutUrl,
   familyLabelUv,
+  polarAreaNameForFamily,
+  tableChoiceIsSelected,
+  tableChoiceKeys,
   nearestPolarSnap,
   nearestSeatSnap,
   parseControlBoardSnaps,
@@ -372,7 +375,7 @@ export const initScenesTab = (): void => {
         return;
       }
       gsap.killTweensOf(handle);
-      gsap.fromTo(handle, { opacity: 0 }, { opacity: 0.95, duration: 0.12, yoyo: true, repeat: 1, ease: "power1.inOut" });
+      gsap.fromTo(handle, { opacity: 0.72 }, { opacity: 1, duration: 0.12, yoyo: true, repeat: 1, ease: "power1.inOut" });
     });
     bindBoardDrag(handle, {
       boardFrame,
@@ -483,16 +486,16 @@ export const initScenesTab = (): void => {
     requiredElement<HTMLButtonElement>("scenes-mode-scatter").classList.toggle("active", current.placementMode === "scatter");
     tableRow.hidden = current.placementMode === "scatter";
     tableChips.replaceChildren();
-    for (const table of catalogs.tables) {
+    for (const choiceKey of tableChoiceKeys(catalogs.tables)) {
       const chip = document.createElement("button");
       chip.type = "button";
-      chip.className = table.key === current.tableKey ? "lock active" : "";
-      chip.textContent = `${table.key} (${table.slotCapacity})`;
+      chip.className = tableChoiceIsSelected(choiceKey, current.tableKey) ? "lock active" : "";
+      chip.textContent = choiceKey;
       chip.addEventListener("click", () => {
         if (!draft) {
           return;
         }
-        draft.tableKey = table.key;
+        draft.tableKey = choiceKey;
         persist();
         render();
       });
@@ -559,20 +562,22 @@ export const initScenesTab = (): void => {
       }
       const familyIds = new Set(boardSnaps.polar.map((snap) => snap.familyId));
       for (const familyId of familyIds) {
-        const members = draft.standard.polar.filter((token) =>
-          boardSnaps.polar.find((snap) => snap.snapIndex === token.snapIndex)?.familyId === familyId
-        );
-        if (members.length === 0) {
-          continue;
-        }
         const label = familyLabelUv(boardSnaps, familyId);
         if (!label) {
           continue;
         }
+        const areaName = polarAreaNameForFamily(boardSnaps, familyId);
         const handle = document.createElement("button");
         handle.type = "button";
+        handle.id = `scenes-family-handle-${familyId.replace(":", "-")}`;
         handle.className = "scenes-family-handle";
-        handle.title = `Move group ${familyId}`;
+        handle.dataset.familyId = familyId;
+        handle.dataset.areaName = areaName;
+        handle.dataset.u = label.u.toFixed(4);
+        handle.dataset.v = label.v.toFixed(4);
+        handle.title = `Move ${areaName}`;
+        handle.setAttribute("aria-label", handle.title);
+        handle.textContent = areaName;
         placeToken(handle, label.u, label.v);
         overlay.append(handle);
         bindFamilyHandle(handle, familyId);
@@ -752,14 +757,11 @@ export const initScenesTab = (): void => {
       const grid = document.createElement("div");
       grid.className = "generic-npc-grid";
       let activeGroup = groupNames[0] ?? "Ungrouped";
-      const used = usedNamedKeys();
       const paint = (): void => {
         grid.replaceChildren();
         const query = search.value.trim().toLowerCase();
+        const used = usedNamedKeys();
         const list = (groups.get(activeGroup) ?? []).filter((npc) => {
-          if (used.has(npc.characterKey)) {
-            return false;
-          }
           if (query === "") {
             return true;
           }
@@ -768,7 +770,7 @@ export const initScenesTab = (): void => {
         for (const npc of list) {
           const tile = document.createElement("button");
           tile.type = "button";
-          tile.className = "generic-npc-tile";
+          tile.className = used.has(npc.characterKey) ? "generic-npc-tile added" : "generic-npc-tile";
           const thumb = document.createElement("div");
           thumb.className = "generic-npc-thumb";
           const img = document.createElement("img");
@@ -781,7 +783,7 @@ export const initScenesTab = (): void => {
           label.textContent = npc.fullName;
           tile.append(thumb, label);
           tile.addEventListener("click", () => {
-            if (!draft) {
+            if (!draft || used.has(npc.characterKey)) {
               return;
             }
             if (draft.placementMode === "standard") {
@@ -791,7 +793,7 @@ export const initScenesTab = (): void => {
             }
             persist();
             render();
-            modalRoot.innerHTML = "";
+            paint();
           });
           grid.append(tile);
         }
