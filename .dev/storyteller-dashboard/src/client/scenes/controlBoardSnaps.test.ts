@@ -2,9 +2,10 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { parseControlBoardSnaps } from "./payload";
+import { polarAreaNameForFamily, parseControlBoardSnaps } from "./payload";
 
 const snapsPath = join(dirname(fileURLToPath(import.meta.url)), "../../../data/control-board-snaps.json");
+const csvPath = join(dirname(fileURLToPath(import.meta.url)), "../../../agent/TTS Stage Control Board Snap Coordinates.csv");
 
 describe("control-board polar families", () => {
   const snaps = parseControlBoardSnaps(JSON.parse(readFileSync(snapsPath, "utf8")));
@@ -41,17 +42,37 @@ describe("control-board polar families", () => {
     expect(snaps.stageBoard?.scaleZ).toBeGreaterThan(0);
   });
 
-  it("converts stagger inches through CONTROL_BOARD aspect, not live STAGE scaleZ", () => {
+  it("uses STAGE Transform scale as stagger half-extents (not scale/2)", () => {
     const stage = snaps.stageBoard;
     expect(stage).toBeDefined();
-    expect(stage?.controlScaleX).toBeGreaterThan(0);
-    expect(stage?.controlScaleZ).toBeGreaterThan(0);
-    expect(stage?.impliedScaleZ).toBeCloseTo(
-      ((stage?.controlScaleZ ?? 0) * (stage?.scaleX ?? 0)) / (stage?.controlScaleX ?? 1),
-      5
-    );
-    expect(stage?.halfDepthZ).toBeCloseTo((stage?.impliedScaleZ ?? 0) / 2, 5);
-    expect(stage?.halfDepthZ).not.toBeCloseTo(Math.abs(stage?.scaleZ ?? 0) / 2, 1);
+    expect(stage?.halfWidthX).toBeCloseTo(Math.abs(stage?.scaleX ?? 0), 5);
+    expect(stage?.halfDepthZ).toBeCloseTo(Math.abs(stage?.scaleZ ?? 0), 5);
+  });
+
+  it("matches in-game CONTROL_BOARD snap UVs from the coordinate CSV", () => {
+    const byArea = new Map<string, { u: number; v: number }[]>();
+    for (const line of readFileSync(csvPath, "utf8").trim().split(/\r?\n/).slice(1)) {
+      const [area, , u, v] = line.split(",");
+      const rows = byArea.get(area) ?? [];
+      rows.push({ u: Number(u), v: Number(v) });
+      byArea.set(area, rows);
+    }
+    const misses: string[] = [];
+    for (const snap of snaps.polar) {
+      const area = polarAreaNameForFamily(snaps, snap.familyId);
+      const rows = byArea.get(area) ?? [];
+      let best = Number.POSITIVE_INFINITY;
+      for (const row of rows) {
+        const d = Math.hypot(row.u - snap.u, row.v - snap.v);
+        if (d < best) {
+          best = d;
+        }
+      }
+      if (best > 1e-4) {
+        misses.push(`${area} k=${snap.familyK} d=${best.toFixed(6)}`);
+      }
+    }
+    expect(misses).toEqual([]);
   });
 
   it("leaves each pack's center token as familyK 0", () => {

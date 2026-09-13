@@ -93,6 +93,7 @@ export type StageBoardFingerprint = {
   readonly controlScaleX?: number;
   readonly controlScaleZ?: number;
   readonly minimapRatioX?: number;
+  readonly minimapRatioZ?: number;
 };
 
 export type ControlBoardSnaps = {

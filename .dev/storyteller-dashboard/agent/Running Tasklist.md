@@ -47,6 +47,6 @@ SD-29. If I start to drag a group onto the board, but then change my mind and dr
 SD-30. Add a debug-only button called "Restore PCs" that removes all tokens from seated table positions, and replaces them with the default spread of the five PC tokens.
 
 ✔️ Polar snap catalogs read STAGE_BOARD size from the live TTS save whenever the dashboard is started or built (`npm run scene-catalogs`). After you resize the stage in-game, save the game, then restart the dashboard (or run `npm run dashboard:scene-catalogs` from the repo root).
-🤖 Center/Mid stagger now uses the CONTROL_BOARD 2:1 aspect (implied stage ~800×400), not live STAGE scaleZ (~289). That squash is the same X-vs-Z ratio that distorts the miniature tables. Lua `radialStagger` stays 15" / 10". Refresh the dashboard tab to check Center neighbor dots.
+🤖 Polar UVs are checked against `.dev/storyteller-dashboard/agent/TTS Stage Control Board Snap Coordinates.csv`. Stagger uses STAGE Transform scale as the UV half-extent (not scale/2). Refresh the dashboard tab to confirm Center/Mid neighbors sit on the painted holes.
 
 SD-31. Vary the red background color on the weather controls by intensity, as well as duplicating the icons: Low intensity should be darker red, increasing to full #FF0000 at maximum intensity.  The Wind button should get a cyan outline (not a border, to avoid repositioning) when it is applying winter wind instead of standard wind.

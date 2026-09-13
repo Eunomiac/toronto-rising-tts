@@ -8,9 +8,9 @@
  *   .dev/storyteller-dashboard/data/control-board-snaps.json
  *
  * Run from repo root: node .dev/scripts/generate_dashboard_scene_catalogs.js
- * Polar snap stagger uses CONTROL_BOARD aspect (implied stage depth) from the
- * live TTS save, not raw STAGE_BOARD scaleZ. STAGE Z was scaled independently
- * of the 2:1 minimap tile (`minimapScaleRatios` X vs Z).
+ * Polar snap stagger uses STAGE_BOARD Transform scale as UV half-extents (the
+ * conversion that matches installed CONTROL_BOARD snap UVs). `scale / 2` and a
+ * CONTROL_BOARD-aspect substitute for live `scaleZ` both miss neighbor snaps.
  * Chained from `npm run dashboard:scene-catalogs` (`build:all-tooling`) and from
  * Storyteller Dashboard `npm run dev` / `npm run build`.
  */
@@ -151,47 +151,27 @@ function extractBoardTransform(saveText, guid, nickname, label) {
 }
 
 /**
- * Polar UVs live on CONTROL_BOARD (painted 2:1 tile). STAGE_BOARD Z was scaled
- * independently of that tile (live ~800×289 vs control 20×10), which is why
- * minimap table markers use different X and Z divisors (`minimapScaleRatios`).
- * Stagger inches must use the control-tile aspect (implied stage depth =
- * controlZ × stageX/controlX), not live scaleZ, or neighbor snaps stretch in v.
+ * Lua `applyRadialStaggerUv` converts UV through STAGE world XZ, then back.
+ * Installed CONTROL_BOARD snap UVs match when Transform scale is used as the
+ * formula's half-extent (`u` 0–1 spans `2 * scale`), not `scale / 2` and not a
+ * CONTROL_BOARD-aspect substitute for live `scaleZ`.
  *
  * @param {{ posX: number, posZ: number, scaleX: number, scaleZ: number, rotY: number }} stage
- * @param {{ scaleX: number, scaleZ: number, rotY: number }} control
  */
-function staggerWorldFromBoardScales(stage, control) {
+function staggerWorldFromStageScale(stage) {
   const stageRotY = ((stage.rotY % 360) + 360) % 360;
-  const controlRotY = ((control.rotY % 360) + 360) % 360;
   let stageX = Math.abs(stage.scaleX);
   let stageZ = Math.abs(stage.scaleZ);
-  let controlX = Math.abs(control.scaleX);
-  let controlZ = Math.abs(control.scaleZ);
   if (Math.abs(stageRotY - 90) < 1 || Math.abs(stageRotY - 270) < 1) {
     const swap = stageX;
     stageX = stageZ;
     stageZ = swap;
   }
-  if (Math.abs(controlRotY - 90) < 1 || Math.abs(controlRotY - 270) < 1) {
-    const swap = controlX;
-    controlX = controlZ;
-    controlZ = swap;
-  }
-  if (controlX < 0.01) {
-    throw new Error("CONTROL_BOARD scaleX is too small to derive minimap stagger.");
-  }
-  const ratioX = stageX / controlX;
-  const impliedStageZ = controlZ * ratioX;
   return {
     centerX: stage.posX,
     centerZ: stage.posZ,
-    halfWidthX: stageX / 2,
-    halfDepthZ: impliedStageZ / 2,
-    ratioX,
-    liveStageZ: stageZ,
-    impliedStageZ,
-    controlX,
-    controlZ,
+    halfWidthX: stageX,
+    halfDepthZ: stageZ,
   };
 }
 
@@ -204,10 +184,12 @@ function loadDashboardStageWorld() {
   const saveText = fs.readFileSync(save.savePath, "utf8");
   const stage = extractBoardTransform(saveText, stageGuid, "STAGE_BOARD", "G.GUIDS.STAGE_BOARD");
   const control = extractBoardTransform(saveText, controlGuid, "NPC Control Board", "G.GUIDS.CONTROL_BOARD");
-  const world = staggerWorldFromBoardScales(stage, control);
+  const world = staggerWorldFromStageScale(stage);
   const where = save.source === "savesDir" ? "live TTS save" : "repo .dev snapshot";
+  const ratioX = Math.abs(stage.scaleX) / Math.abs(control.scaleX);
+  const ratioZ = Math.abs(stage.scaleZ) / Math.abs(control.scaleZ);
   console.log(
-    `STAGE_BOARD ${stageGuid} from ${save.saveFileName} (${where}): live scale ${stage.scaleX} × ${stage.scaleZ}; CONTROL_BOARD ${control.scaleX} × ${control.scaleZ}; stagger frame ${world.halfWidthX * 2} × ${world.impliedStageZ} (control aspect, not live scaleZ).`,
+    `STAGE_BOARD ${stageGuid} from ${save.saveFileName} (${where}): scale ${stage.scaleX} × ${stage.scaleZ}; CONTROL_BOARD ${control.scaleX} × ${control.scaleZ} (minimap marker ratios ~${ratioX.toFixed(1)} × ${ratioZ.toFixed(1)}); stagger half-extents ${world.halfWidthX} × ${world.halfDepthZ}.`,
   );
   return {
     centerX: world.centerX,
@@ -225,11 +207,10 @@ function loadDashboardStageWorld() {
       rotY: stage.rotY,
       halfWidthX: world.halfWidthX,
       halfDepthZ: world.halfDepthZ,
-      liveScaleZ: world.liveStageZ,
-      impliedScaleZ: world.impliedStageZ,
-      controlScaleX: world.controlX,
-      controlScaleZ: world.controlZ,
-      minimapRatioX: world.ratioX,
+      controlScaleX: Math.abs(control.scaleX),
+      controlScaleZ: Math.abs(control.scaleZ),
+      minimapRatioX: ratioX,
+      minimapRatioZ: ratioZ,
     },
   };
 }
@@ -509,8 +490,8 @@ function snapUvPassesValidSnaps(group, u, v) {
 }
 
 function applyRadialStaggerUv(originU, originV, familyK, radialStagger, u, v, stage) {
-  // Same formula as Lua applyRadialStaggerUv, but inches→UV uses the CONTROL_BOARD
-  // 2:1 stagger frame (see staggerWorldFromBoardScales), not live STAGE scaleZ.
+  // Same formula as Lua applyRadialStaggerUv (STAGE world XZ inches, then back to u/v).
+  // `stage.halfWidthX/Z` are Transform scale (not scale/2); see staggerWorldFromStageScale.
   const k = familyK;
   const staggerStep = radialStagger;
   if (k === 0 || staggerStep === 0) {
@@ -1003,7 +984,7 @@ function main() {
   fs.writeFileSync(catalogsOutPath, `${JSON.stringify(catalogs, null, 2)}\n`);
   fs.writeFileSync(snapsOutPath, `${JSON.stringify(snaps, null, 2)}\n`);
   console.log(
-    `Wrote ${path.relative(root, catalogsOutPath)} (${namedNpcs.length} named NPCs, ${pcs.length} PCs) and ${path.relative(root, snapsOutPath)} (${polarSnaps.length} polar + ${seatSnaps.length} seats; stagger frame ${stage.stageBoard.halfWidthX * 2} × ${stage.stageBoard.impliedScaleZ}).`,
+    `Wrote ${path.relative(root, catalogsOutPath)} (${namedNpcs.length} named NPCs, ${pcs.length} PCs) and ${path.relative(root, snapsOutPath)} (${polarSnaps.length} polar + ${seatSnaps.length} seats; stagger half-extents ${stage.stageBoard.halfWidthX} × ${stage.stageBoard.halfDepthZ}).`,
   );
 }
 
