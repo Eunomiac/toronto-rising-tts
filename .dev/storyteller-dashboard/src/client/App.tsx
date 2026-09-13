@@ -121,8 +121,28 @@ export const App = (): ReactElement => {
         hidden={activeTab !== "tab-scenes"}
       >
         <div className="scenes-workspace">
-          <aside className="scenes-group-rail" aria-label="NPC groups">
-            <div id="scenes-group-trays" className="scenes-group-trays"></div>
+          <aside className="scenes-group-rail" aria-label="Scene collections">
+            <div className="scenes-left-tabs" role="tablist" aria-label="Collection panels">
+              <button type="button" role="tab" data-scenes-left-tab="scenes" aria-selected="false">Scenes</button>
+              <button type="button" role="tab" data-scenes-left-tab="main" className="lock active" aria-selected="true">Main NPCs</button>
+              <button type="button" role="tab" data-scenes-left-tab="generic" aria-selected="false">Generic NPCs</button>
+              <button
+                type="button"
+                role="tab"
+                data-scenes-left-tab="memoriam"
+                aria-selected="false"
+                disabled
+                title="Memoriam NPCs become available when the scene is a Memoriam"
+              >
+                Memoriam NPCs
+              </button>
+            </div>
+            <div className="scenes-left-body">
+              <div id="scenes-left-panel-scenes" className="scenes-left-empty" hidden></div>
+              <div id="scenes-group-trays" className="scenes-group-trays"></div>
+              <div id="scenes-left-panel-generic" className="scenes-left-empty" hidden></div>
+              <div id="scenes-left-panel-memoriam" className="scenes-left-empty" hidden></div>
+            </div>
           </aside>
           <div className="scenes-board-wrap" id="scenes-board-wrap">
             <div className="scenes-board-frame" id="scenes-board-frame">
@@ -131,7 +151,7 @@ export const App = (): ReactElement => {
             </div>
             <div className="scenes-board-tools">
               <button id="scenes-debug-toggle" type="button">Debug</button>
-              <button id="scenes-debug-fill" type="button" hidden>Fill snaps</button>
+              <button id="scenes-debug-fill" type="button" hidden>Fill Stage</button>
               <button id="scenes-clear-stage" className="scenes-clear-stage" type="button">Clear Stage</button>
             </div>
           </div>

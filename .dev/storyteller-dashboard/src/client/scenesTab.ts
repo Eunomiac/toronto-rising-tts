@@ -1,7 +1,13 @@
-import { bindBoardDrag, gsap, killBoardDrags } from "./scenes/boardDrag.js";
+import { bindBoardDrag, gsap, killBoardDrags, pointerOnElement } from "./scenes/boardDrag.js";
 import { formatChronicleDateTime } from "./scenes/clockFormat.js";
+import {
+  applyDebugFillToDraft,
+  captureDebugFillBackup,
+  restoreDebugFillBackup,
+  type DebugFillBackup
+} from "./scenes/debugFill.js";
 import { comparePickerGroups, GROUP_THEMES, groupThemeClass, isImportantGroup, trayMergeLabel } from "./scenes/groupThemes.js";
-import { placeKeysOnPolarFamily, relocatePolarFamily } from "./scenes/groupRelocate.js";
+import { placeKeysOnPolarFamily, polarTokensInFamily, relocatePolarFamily } from "./scenes/groupRelocate.js";
 import {
   boardUvFromEvent,
   buildImportPayload,
@@ -21,7 +27,7 @@ import {
   PC_BY_COLOR,
   sceneKeyFromTitle
 } from "./scenes/payload.js";
-import { nameTranslateXForSnap } from "./scenes/tokenNames.js";
+import { applyTokenNameLayout, nameLayoutForPolarSnap, nameLayoutForSeat } from "./scenes/tokenNames.js";
 import { initToasts } from "./scenes/toasts.js";
 import {
   cycleRain,
@@ -41,7 +47,6 @@ import {
 import type {
   ControlBoardSnaps,
   NpcLightMode,
-  PolarToken,
   SceneCatalogs,
   SceneDraft
 } from "./scenes/types.js";
@@ -103,10 +108,11 @@ export const initScenesTab = (): void => {
   let missingCutouts = new Set<string>();
   const ghostEls: HTMLElement[] = [];
   let openPickerGroup: string | null = null;
+  let leftCollection: "scenes" | "main" | "generic" | "memoriam" = "main";
   let reticuleUv = { u: 0.42, v: 0.48 };
   let debugMode = false;
   let debugFillOn = false;
-  let debugPolarBackup: SceneDraft["standard"]["polar"] | null = null;
+  let debugFillBackup: DebugFillBackup | null = null;
 
   const setStatus = (kind: "idle" | "loading" | "error" | "success", message: string): void => {
     toasts.push(kind, message);
@@ -124,31 +130,16 @@ export const initScenesTab = (): void => {
     }
   };
 
-  const shuffleKeys = (keys: readonly string[]): string[] => {
-    const next = [...keys];
-    for (let i = next.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(Math.random() * (i + 1));
-      const current = next[i];
-      const swap = next[j];
-      if (current === undefined || swap === undefined) {
-        continue;
-      }
-      next[i] = swap;
-      next[j] = current;
-    }
-    return next;
-  };
-
   const restoreDebugFill = (): void => {
     if (!draft || !debugFillOn) {
       debugFillOn = false;
-      debugPolarBackup = null;
+      debugFillBackup = null;
       return;
     }
-    if (debugPolarBackup) {
-      draft.standard.polar = debugPolarBackup.map((token) => ({ ...token }));
+    if (debugFillBackup) {
+      restoreDebugFillBackup(draft, debugFillBackup);
     }
-    debugPolarBackup = null;
+    debugFillBackup = null;
     debugFillOn = false;
   };
 
@@ -156,24 +147,10 @@ export const initScenesTab = (): void => {
     if (!draft || !snaps || !catalogs) {
       return;
     }
-    if (!debugPolarBackup) {
-      debugPolarBackup = draft.standard.polar.map((token) => ({ ...token }));
+    if (!debugFillBackup) {
+      debugFillBackup = captureDebugFillBackup(draft);
     }
-    const pool = shuffleKeys(catalogs.namedNpcs.map((npc) => npc.characterKey));
-    const polar: PolarToken[] = [];
-    for (let i = 0; i < snaps.polar.length && i < pool.length; i += 1) {
-      const snap = snaps.polar[i];
-      const characterKey = pool[i];
-      if (!snap || !characterKey) {
-        break;
-      }
-      polar.push({
-        characterKey,
-        snapIndex: snap.snapIndex,
-        npcLightMode: snap.defaultLightMode === "STANDARD" ? "STANDARD" : "OFF"
-      });
-    }
-    draft.standard.polar = polar;
+    applyDebugFillToDraft(draft, snaps);
     debugFillOn = true;
   };
 
@@ -248,9 +225,10 @@ export const initScenesTab = (): void => {
     }
     if (lit && !extraClass.includes("scenes-token-palette")) {
       button.classList.add("scenes-token-lit");
+      const seed = tokenId !== "" ? tokenId : characterKey;
       let delay = 0;
-      for (let i = 0; i < characterKey.length; i += 1) {
-        delay += characterKey.charCodeAt(i);
+      for (let i = 0; i < seed.length; i += 1) {
+        delay += seed.charCodeAt(i);
       }
       button.style.setProperty("--glow-delay", `${delay % 900}ms`);
     }
@@ -323,9 +301,6 @@ export const initScenesTab = (): void => {
     }
   };
 
-  const pointInRect = (clientX: number, clientY: number, rect: DOMRect): boolean =>
-    clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom;
-
   const setPlaceLabel = (id: string, text: string, empty: boolean): void => {
     const button = requiredElement<HTMLButtonElement>(id);
     const value = button.querySelector(".scenes-widget-value");
@@ -374,11 +349,19 @@ export const initScenesTab = (): void => {
     });
   };
 
-  const returnTokenOffBoard = (characterKey: string): void => {
+  const returnTokenOffBoard = (characterKey: string, polarSnapIndex?: number): void => {
     if (!draft || !catalogs) {
       return;
     }
-    draft.standard.polar = draft.standard.polar.filter((token) => token.characterKey !== characterKey);
+    if (polarSnapIndex !== undefined) {
+      draft.standard.polar = draft.standard.polar.filter((token) => token.snapIndex !== polarSnapIndex);
+    } else {
+      draft.standard.polar = draft.standard.polar.filter((token) => token.characterKey !== characterKey);
+    }
+    const stillOnPolar = draft.standard.polar.some((token) => token.characterKey === characterKey);
+    if (stillOnPolar) {
+      return;
+    }
     draft.standard.paletteNpcKeys = draft.standard.paletteNpcKeys.filter((key) => key !== characterKey);
     draft.scatter.paletteNpcKeys = draft.scatter.paletteNpcKeys.filter((key) => key !== characterKey);
     for (const area of Object.values(draft.scatter.areas)) {
@@ -415,17 +398,24 @@ export const initScenesTab = (): void => {
     clientY: number,
     dragKind: "token" | "family" | "tray",
     dragKey: string,
-    trayKeys: readonly string[] = []
+    trayKeys: readonly string[] = [],
+    polarSnapIndex?: number
   ): void => {
     if (!draft || !snaps || !catalogs) {
       return;
     }
-    if (!pointInRect(clientX, clientY, boardFrame.getBoundingClientRect())) {
-      if (dragKind === "family" || dragKind === "tray") {
-        setStatus("error", "Drop the group handle onto a polar pack.");
+    if (!pointerOnElement(boardFrame, clientX, clientY)) {
+      if (dragKind === "tray") {
         return;
       }
-      returnTokenOffBoard(dragKey);
+      if (dragKind === "family") {
+        for (const token of polarTokensInFamily(draft.standard.polar, dragKey, snaps)) {
+          returnTokenOffBoard(token.characterKey, token.snapIndex);
+        }
+        persist();
+        return;
+      }
+      returnTokenOffBoard(dragKey, polarSnapIndex);
       persist();
       return;
     }
@@ -531,7 +521,7 @@ export const initScenesTab = (): void => {
 
   const paintTokenGhosts = (clientX: number, clientY: number, characterKey: string): void => {
     clearGhosts();
-    if (!snaps || !draft) {
+    if (!snaps || !draft || !pointerOnElement(boardFrame, clientX, clientY)) {
       return;
     }
     const uv = boardUvFromEvent(overlay, { clientX, clientY });
@@ -575,7 +565,7 @@ export const initScenesTab = (): void => {
 
   const paintFamilyGhosts = (clientX: number, clientY: number, familyId: string): void => {
     clearGhosts();
-    if (!snaps || !draft) {
+    if (!snaps || !draft || !pointerOnElement(boardFrame, clientX, clientY)) {
       return;
     }
     const uv = boardUvFromEvent(overlay, { clientX, clientY });
@@ -601,7 +591,7 @@ export const initScenesTab = (): void => {
 
   const paintTrayGhosts = (clientX: number, clientY: number, keys: readonly string[]): void => {
     clearGhosts();
-    if (!snaps || !draft || keys.length === 0) {
+    if (!snaps || !draft || keys.length === 0 || !pointerOnElement(boardFrame, clientX, clientY)) {
       return;
     }
     const uv = boardUvFromEvent(overlay, { clientX, clientY });
@@ -630,11 +620,12 @@ export const initScenesTab = (): void => {
     clientY: number,
     dragKind: "token" | "family" | "tray",
     dragKey: string,
-    trayKeys: readonly string[] = []
+    trayKeys: readonly string[] = [],
+    polarSnapIndex?: number
   ): void => {
     const before = snapshotTokenRects();
     clearGhosts();
-    applyBoardDrop(clientX, clientY, dragKind, dragKey, trayKeys);
+    applyBoardDrop(clientX, clientY, dragKind, dragKey, trayKeys, polarSnapIndex);
     render();
     flipTokensFrom(before);
   };
@@ -649,14 +640,15 @@ export const initScenesTab = (): void => {
     });
   };
 
-  const bindTokenDrag = (el: HTMLElement, characterKey: string, fromTray = false): void => {
+  const bindTokenDrag = (el: HTMLElement, characterKey: string, fromTray = false, polarSnapIndex?: number): void => {
     bindBoardDrag(el, {
       boardFrame,
       dragLayer,
       pickup: true,
       leaveOrigin: !fromTray,
+      clearCue: true,
       onMove: (clientX, clientY) => paintTokenGhosts(clientX, clientY, characterKey),
-      onEnd: (clientX, clientY) => finishBoardDrag(clientX, clientY, "token", characterKey)
+      onEnd: (clientX, clientY) => finishBoardDrag(clientX, clientY, "token", characterKey, [], polarSnapIndex)
     });
   };
 
@@ -672,6 +664,7 @@ export const initScenesTab = (): void => {
       boardFrame,
       dragLayer,
       pickup: false,
+      clearCue: true,
       onDragStart: () => {
         handle.dataset.dragging = "1";
         gsap.killTweensOf(handle);
@@ -896,6 +889,14 @@ export const initScenesTab = (): void => {
       : "/scenes-assets/controlBoard_standard.webp";
 
     if (draft.placementMode === "standard") {
+      if (debugMode && !debugFillOn) {
+        for (const snap of snaps.polar) {
+          const dot = document.createElement("div");
+          dot.className = "scenes-debug-snap";
+          placeToken(dot, snap.u, snap.v);
+          overlay.append(dot);
+        }
+      }
       for (const token of draft.standard.polar) {
         const snap = snaps.polar.find((row) => row.snapIndex === token.snapIndex);
         if (!snap) {
@@ -907,13 +908,10 @@ export const initScenesTab = (): void => {
           "",
           false,
           characterLabel(boardCatalogs, token.characterKey),
-          `polar:${token.characterKey}`
+          `polar:${token.snapIndex}`
         );
         placeToken(el, snap.u, snap.v);
-        const name = el.querySelector<HTMLElement>(".scenes-token-name");
-        if (name) {
-          name.style.transform = `translateX(${nameTranslateXForSnap(boardSnaps, snap)}%)`;
-        }
+        applyTokenNameLayout(el, nameLayoutForPolarSnap(boardSnaps, snap));
         el.title = characterLabel(boardCatalogs, token.characterKey);
         el.addEventListener("dblclick", () => {
           token.npcLightMode = token.npcLightMode === "OFF" ? "STANDARD" : "OFF";
@@ -921,7 +919,7 @@ export const initScenesTab = (): void => {
           render();
         });
         overlay.append(el);
-        bindTokenDrag(el, token.characterKey);
+        bindTokenDrag(el, token.characterKey, false, token.snapIndex);
       }
       const familyIds = new Set(boardSnaps.polar.map((snap) => snap.familyId));
       for (const familyId of familyIds) {
@@ -943,7 +941,7 @@ export const initScenesTab = (): void => {
         overlay.append(handle);
         bindFamilyHandle(handle, familyId);
       }
-      for (const seat of snaps.seats) {
+      for (const [seatIndex, seat] of snaps.seats.entries()) {
         const row = draft.standard.seatSlots[seat.seatKey];
         if (!row || row.slotEmpty === true || row.characterKey === "") {
           continue;
@@ -958,14 +956,7 @@ export const initScenesTab = (): void => {
           `seat:${seat.seatKey}:${row.characterKey}`
         );
         placeToken(el, seat.u, seat.v);
-        if (seat.v > 0.52) {
-          el.classList.add("scenes-token-caption-above");
-        }
-        if (seat.u < 0.4) {
-          el.classList.add("scenes-token-caption-left");
-        } else if (seat.u > 0.5) {
-          el.classList.add("scenes-token-caption-right");
-        }
+        applyTokenNameLayout(el, nameLayoutForSeat(seat, snaps.seats.length, seatIndex));
         el.title = `${characterLabel(catalogs, row.characterKey)} — ${seat.seatKey}`;
         el.addEventListener("dblclick", () => {
           row.isPresent = !row.isPresent;
@@ -1166,9 +1157,36 @@ export const initScenesTab = (): void => {
         header.type = "button";
         header.className = "scenes-group-tray-header";
         header.textContent = row.label;
+        let headerClickTimer: number | null = null;
         header.addEventListener("click", () => {
-          openPickerGroup = openPickerGroup === row.label ? null : row.label;
+          if (headerClickTimer !== null) {
+            window.clearTimeout(headerClickTimer);
+          }
+          headerClickTimer = window.setTimeout(() => {
+            headerClickTimer = null;
+            openPickerGroup = openPickerGroup === row.label ? null : row.label;
+            render();
+          }, 280);
+        });
+        header.addEventListener("dblclick", (event) => {
+          event.preventDefault();
+          if (headerClickTimer !== null) {
+            window.clearTimeout(headerClickTimer);
+            headerClickTimer = null;
+          }
+          if (!draft) {
+            return;
+          }
+          const keys = new Set(row.npcs.map((npc) => npc.characterKey));
+          const before = snapshotTokenRects();
+          for (const token of [...draft.standard.polar]) {
+            if (keys.has(token.characterKey)) {
+              returnTokenOffBoard(token.characterKey, token.snapIndex);
+            }
+          }
+          persist();
           render();
+          flipTokensFrom(before);
         });
         const handle = document.createElement("button");
         handle.type = "button";
@@ -1638,6 +1656,33 @@ export const initScenesTab = (): void => {
 
   copyButton.addEventListener("click", () => void copyJson());
   importButton.addEventListener("click", () => void importInTts());
+
+  const syncLeftCollection = (): void => {
+    for (const button of document.querySelectorAll<HTMLButtonElement>("[data-scenes-left-tab]")) {
+      const id = button.dataset.scenesLeftTab;
+      const on = id === leftCollection;
+      button.classList.toggle("lock", on);
+      button.classList.toggle("active", on);
+      button.setAttribute("aria-selected", on ? "true" : "false");
+    }
+    groupTrays.hidden = leftCollection !== "main";
+    requiredElement<HTMLDivElement>("scenes-left-panel-scenes").hidden = leftCollection !== "scenes";
+    requiredElement<HTMLDivElement>("scenes-left-panel-generic").hidden = leftCollection !== "generic";
+    requiredElement<HTMLDivElement>("scenes-left-panel-memoriam").hidden = leftCollection !== "memoriam";
+  };
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-scenes-left-tab]")) {
+    button.addEventListener("click", () => {
+      if (button.disabled) {
+        return;
+      }
+      const id = button.dataset.scenesLeftTab;
+      if (id === "scenes" || id === "main" || id === "generic" || id === "memoriam") {
+        leftCollection = id;
+        syncLeftCollection();
+      }
+    });
+  }
+  syncLeftCollection();
 
   const refreshBridge = async (): Promise<void> => {
     try {

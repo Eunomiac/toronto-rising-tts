@@ -32,35 +32,39 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 
 ## Task List
 
-⏳ SD-13. Display the token's full name near or overlapping each token, which can disappear when the token is picked up for dragging but should otherwise remain visible at all times. Be sure to test the appearance by placing some tokens on the game board and adjusting size and position of the names so that they display clearly, are clearly associated with their token, and don't overlap.
+✔️ SD-13. Display the token's full name near or overlapping each token, which can disappear when the token is picked up for dragging but should otherwise remain visible at all times. Be sure to test the appearance by placing some tokens on the game board and adjusting size and position of the names so that they display clearly, are clearly associated with their token, and don't overlap.
 
-🤖 `SNAP_NAME_TRANSLATE_X` in `src/client/scenes/tokenNames.ts` is empty and waiting for your per-snap `translateX` percentages. Until then, names use the family-median heuristic (`-90` / `-50` / `-10`).
+👨 It occurs to me that this is something you can manage independently, since you're able to see the board. Change the "fill stage" debug button so that it fills ALL token positions (seated and stage) with Rashid's token (since he has a very long name). Then, you can visually see how names should be positioned depending on snap slot. As long as the name is close enough to the token to be associated with it, you're free to position the name above, below, to the right or the left, wherever works best and doesn't overlap. (Additionally, when doing this, you'll notice some issues with snap points -- the Center, Mid Left, Mid Center and Mid Right areas appear to be missing snap points, and the positions of snap points for Mid Left, Mid Right, Center Left and Center Right do not line up with the image indicators -- and those image indicators do line up with the snap points in-game, I can confirm)
 
-👨 Determining all of the positions will take some time; issue deferred until I've completed this.
-
-✔️ SD-18. Could you make the drop animation for tokens and groups animate much like the tokens do when they are picked up?
-
-👨 Since the animation is now being performed on the tokens as they move from their original location to the dropped location, the held ghost token should not animate at all when it is dropped but disappear immediately.
+🤖 Fill Stage (Debug) now puts Rashid on every polar snap and chair. Names use pack-side placement (`SNAP_NAME_LAYOUT` / `SEAT_NAME_LAYOUT` if you want per-slot tweaks). I skipped dashboard radial stagger so Center/Mid snaps sit on the painted packs; Center Left and Center Right still have 4 snaps each because one candidate sits just outside Lua `validSnaps`. Fill-all-Rashid is the worst-case overlap; mixed real NPCs read more clearly.
 
 ✔️ SD-24. Add a gently pulsing glowing aura to lit tokens, with the pulses staggered slightly from each other.  At minimum brightness the aura should still be visible, i.e. it should pulse between "minimal brightness" and "maximum brightness", which should be a fairly subtle change, just a gentle throbbing as if representing a dimly pulsing light.
 
-👨 I still don't see an animated glow. The animation is properly registering in the inspector; perhaps the animation is simply too subtle?
+👨 Quick change: The `::after` element should have `inset: 0%`.
 
-✔️ SD-26. The weather buttons need a bit of work:
+✔️ SD-26. The weather buttons need a bit of work.
 
-  1. **Wind** — There are four different wind settings (including off/'no wind'). Check the sound catalog for the actual names. As a quick-and-dirty generalization, if the month is between November and February, OR if there is active Snow, the "winter" version of the wind should be used (e.g. "windWinterLow" instead of "windLow").
+👨 For displaying multiple icons to represent the levels, instead of absolutely-positioned stacked icons, display them with standard positioning in a centered flex-box so that the icons appear centered and adjacent to each other, rather than stacked and vertically offset.
 
-  2. **Rain** — There are three different rain settings (including 'none'); they should be listed in the sound catalog.
+✔️ SD-27. Dragging a group-move handle off the board should clear that entire group.
 
-  3. **Thunder** - If thunder is active, wind and rain should both be set to their most intense settings (with winter used for wind depending on date/snow as described above)
+✔️ SD-28. "Off the board" should be any location that is not over the board image itself. When dragging anything, only the board should be set up as a drop target -- e.g. you cannot drag tokens onto _specific_ NPC drawers; dragging them over the drawers simply counts as "off the board" and the token is cleared normally.  Tokens that are being dragged off the board should get a red outline/tint/border/indication that dropping them will clear them.
 
-  4. **Snow** - The snow button is currently inactive, and the tooltip reads "Snow is not in the import catalog yet". While this is technically true, it's only that we don't have _sounds_ for snow, because snow doesn't really make sounds. But we do have a snow particle system that will have "Light", "Medium" and "Heavy" values when implemented -- it should be possible to set these values now.
+✔️ SD-29. Double-clicking a group drawer header in the left panel should clear all staged NPCs from that group, either returning them to the drawer or putting them back in their table seat.
 
-  5. game-icons.net icons for each, please
+✔️ SD-30. Some style changes to the group colors:
+- Camarilla should be gold
+- Anarch should be red
+- Sabbat should be deep/dark purple
+- Independents should be grey
+- Hecata should be inverted grey (i.e. black text on a bright grey/white background)
+- Werewolves should be brown
+- Aapilu should be a deep blood red (though make them distinct from the Anarchs)
 
-  6. The "Fog" checkbox actually belongs with the district/site/skybox inputs -- it's not weather fog, but rather it's a sort of smoke effect intended to hide seams in the skybox or add ambience for, e.g., underground locations.
+✔️ SD-31. The left panel is going to contain quite a few different NPC collections (including generics and memoriam NPCs), and could also be used for the scene library, to list scenes that have been saved, or to load in scenes that have been previously created. As such, we should implement a vertically-oriented sequence of tabs that open the various panels; for now, just add the tab column with the following tabs. Clicking on any tab other than "Main NPCs" should simply present an empty panel, until we implement it:
+- "Scenes" -- Will contain the list of saved scenes for loading and editing
+- "Main NPCs" -- This should display the current panel of cataloged NPCs
+- "Generic NPCs" -- Will eventually replace the "Stage NPCs" tab of the Storyteller Dashboard completely.
+- "Memoriam NPCs" -- Will only be clickable/active if the current scene is a Memoriam scene, which we will implement in the future.
 
-🤖 Snow is saved on the dashboard draft and cycles Light / Medium / Heavy. Copy JSON / Import still omit `snow` until the Lua importer has a field for it.
-
-👨 I like the method of clicking to cycle through levels of the weather effects, but there is currently no visual indicator to distinguish between the various intensities.  Perhaps duplicate the icon, showing 1 for low, 2 for med, 3 for max?
-🤖 Rain only has light and heavy (plus off), so that button stacks 1 or 2 icons. Wind and snow use 1 / 2 / 3. Thunder stays a single bolt when it is on.
+✔️ SD-32. The faces on the tokens are a little small; could you scale up the cutouts on the interior of the tokens just a bit?

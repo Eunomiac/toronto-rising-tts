@@ -59,11 +59,17 @@ const leaveFadedOrigin = (el: HTMLElement): void => {
   el.parentElement?.insertBefore(origin, el);
 };
 
+export const pointerOnElement = (el: HTMLElement, clientX: number, clientY: number): boolean => {
+  const rect = el.getBoundingClientRect();
+  return clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom;
+};
+
 export type BindBoardDragOptions = {
   readonly boardFrame: HTMLElement;
   readonly dragLayer: HTMLElement;
   readonly pickup: boolean;
   readonly leaveOrigin?: boolean;
+  readonly clearCue?: boolean;
   readonly onMove: (clientX: number, clientY: number) => void;
   readonly onEnd: (clientX: number, clientY: number) => void;
   readonly onDragStart?: () => void;
@@ -92,6 +98,12 @@ export const bindBoardDrag = (el: HTMLElement, options: BindBoardDragOptions): v
     },
     onDrag() {
       const event = this.pointerEvent as PointerEvent;
+      if (options.clearCue === true) {
+        el.classList.toggle(
+          "scenes-token-will-clear",
+          !pointerOnElement(options.boardFrame, event.clientX, event.clientY)
+        );
+      }
       options.onMove(event.clientX, event.clientY);
     },
     onDragEnd() {

@@ -68,6 +68,16 @@ const evictionPriority = (snaps: ControlBoardSnaps, destFamilyId: string): strin
 const familySnaps = (snaps: ControlBoardSnaps, familyId: string) =>
   snaps.polar.filter((snap) => snap.familyId === familyId).sort((a, b) => Math.abs(a.familyK) - Math.abs(b.familyK) || a.familyK - b.familyK);
 
+export const polarTokensInFamily = (
+  tokens: PolarToken[],
+  familyId: string,
+  snaps: ControlBoardSnaps
+): PolarToken[] =>
+  tokens.filter((token) => {
+    const snap = snaps.polar.find((row) => row.snapIndex === token.snapIndex);
+    return snap?.familyId === familyId;
+  });
+
 export const relocatePolarFamily = (
   tokens: PolarToken[],
   sourceFamilyId: string,

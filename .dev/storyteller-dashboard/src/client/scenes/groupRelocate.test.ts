@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { placeKeysOnPolarFamily } from "./groupRelocate";
+import { placeKeysOnPolarFamily, polarTokensInFamily } from "./groupRelocate";
 import type { ControlBoardSnaps, PolarSnap } from "./types";
 
 const snap = (
@@ -33,5 +33,23 @@ describe("placeKeysOnPolarFamily", () => {
     expect(next[0]?.characterKey).toBe("myleneHamelin");
     expect(next[0]?.snapIndex).toBe(1);
     expect(next[1]?.snapIndex).toBe(2);
+  });
+});
+
+describe("polarTokensInFamily", () => {
+  it("returns only tokens sitting on that pack", () => {
+    const snaps = snapsWith([
+      snap({ familyId: "1:0", snapIndex: 1, familyK: 0 }),
+      snap({ familyId: "1:1", snapIndex: 4, familyK: 0 })
+    ]);
+    const tokens = polarTokensInFamily(
+      [
+        { characterKey: "rashid", snapIndex: 1, npcLightMode: "OFF" },
+        { characterKey: "lexie", snapIndex: 4, npcLightMode: "OFF" }
+      ],
+      "1:0",
+      snaps
+    );
+    expect(tokens.map((token) => token.characterKey)).toEqual(["rashid"]);
   });
 });

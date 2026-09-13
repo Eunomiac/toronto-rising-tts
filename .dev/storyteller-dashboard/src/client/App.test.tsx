@@ -20,9 +20,12 @@ describe("App shell", () => {
   it("keeps panels mounted when switching to Scenes", async () => {
     const user = userEvent.setup();
     render(<App />);
-    await user.click(screen.getByRole("tab", { name: "Scenes" }));
-    expect(screen.getByRole("tab", { name: "Scenes" })).toHaveAttribute("aria-selected", "true");
+    const scenesTab = document.getElementById("tab-scenes");
+    expect(scenesTab).toBeTruthy();
+    await user.click(scenesTab!);
+    expect(scenesTab).toHaveAttribute("aria-selected", "true");
     expect(document.getElementById("panel-scenes")).not.toHaveAttribute("hidden");
     expect(document.getElementById("panel-stage-npcs")).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Main NPCs" })).toHaveAttribute("aria-selected", "true");
   });
 });

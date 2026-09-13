@@ -36,6 +36,14 @@ const PALETTE_GROUP_BLACKLIST = { princesCourt: true };
 /** Dashboard `controlBoard_standard.webp` seats: slot 1 is at image center (u = 0.50). */
 const DASHBOARD_SEAT_ROW_UV = { uMin: 0.35, uMax: 0.65 };
 
+/**
+ * Live CONTROL_BOARD tokens sit on the painted pack indicators. Applying
+ * `DEFAULT_STAGE_WORLD` radial stagger here pulls Center/Mid snaps off those
+ * dots and drops k=±2 outside `validSnaps`. Skip stagger on the dashboard
+ * overlay so snap UVs follow the board art (and in-game clusters).
+ */
+const DASHBOARD_APPLY_POLAR_RADIAL_STAGGER = false;
+
 /** Palette groups that are not keys in C.CHRONICLE_DATA.coteries. */
 const EXTRA_PICKER_GROUP_LABELS = {
   aapilu: "Aapilu",
@@ -344,7 +352,7 @@ function generatePolarSnaps(cfg, stage) {
         const [ringOriginU, ringOriginV] = ringOriginUvForIndex(cfg, ringIndex);
         const angleDeg = familyAngleDegForSnap(cfg, ringIndex, rayIndex, k, group.angleDelta, group.rays);
         let [u, v] = uvOnEllipse(ringOriginU, ringOriginV, angleDeg, group.maxU, group.maxV);
-        if (group.radialStagger !== 0 && k !== 0) {
+        if (DASHBOARD_APPLY_POLAR_RADIAL_STAGGER && group.radialStagger !== 0 && k !== 0) {
           [u, v] = applyRadialStaggerUv(ringOriginU, ringOriginV, k, group.radialStagger, u, v, stage);
         }
         if (!snapUvOnBoard(u, v) || !snapUvPassesValidSnaps(group, u, v)) {
