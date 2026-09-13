@@ -21,6 +21,9 @@
       "groups": [
         "princesCourt"
       ],
+      "groupRanks": {
+        "princesCourt": 1
+      },
       "pickerGroups": []
     },
     {
@@ -30,6 +33,9 @@
       "groups": [
         "princesCourt"
       ],
+      "groupRanks": {
+        "princesCourt": 2
+      },
       "pickerGroups": []
     },
     {
@@ -39,6 +45,9 @@
       "groups": [
         "princesCourt"
       ],
+      "groupRanks": {
+        "princesCourt": 3
+      },
       "pickerGroups": []
     },
     {
@@ -48,6 +57,9 @@
       "groups": [
         "princesCourt"
       ],
+      "groupRanks": {
+        "princesCourt": 4
+      },
       "pickerGroups": []
     },
     {
@@ -57,6 +69,9 @@
       "groups": [
         "princesCourt"
       ],
+      "groupRanks": {
+        "princesCourt": 5
+      },
       "pickerGroups": []
     }
   ],
@@ -68,6 +83,9 @@
       "groups": [
         "touchstone"
       ],
+      "groupRanks": {
+        "touchstone": 1
+      },
       "pickerGroups": [
         "touchstone"
       ]
@@ -79,6 +97,9 @@
       "groups": [
         "memoriam"
       ],
+      "groupRanks": {
+        "memoriam": 1
+      },
       "pickerGroups": [
         "memoriam"
       ]
@@ -90,6 +111,9 @@
       "groups": [
         "autarkis"
       ],
+      "groupRanks": {
+        "autarkis": 2
+      },
       "pickerGroups": [
         "autarkis"
       ]
@@ -101,6 +125,9 @@
       "groups": [
         "friendlyNeighborhoodSpiders"
       ],
+      "groupRanks": {
+        "friendlyNeighborhoodSpiders": 1
+      },
       "pickerGroups": [
         "friendlyNeighborhoodSpiders"
       ]
@@ -112,6 +139,9 @@
       "groups": [
         "friendlyNeighborhoodSpidersGarou"
       ],
+      "groupRanks": {
+        "friendlyNeighborhoodSpidersGarou": 1
+      },
       "pickerGroups": [
         "friendlyNeighborhoodSpidersGarou"
       ]
@@ -123,6 +153,9 @@
       "groups": [
         "wychwoodHecata"
       ],
+      "groupRanks": {
+        "wychwoodHecata": 7
+      },
       "pickerGroups": [
         "wychwoodHecata"
       ]
@@ -134,6 +167,9 @@
       "groups": [
         "aapilu"
       ],
+      "groupRanks": {
+        "aapilu": 2
+      },
       "pickerGroups": [
         "aapilu"
       ]
@@ -145,6 +181,9 @@
       "groups": [
         "aapilu"
       ],
+      "groupRanks": {
+        "aapilu": 3
+      },
       "pickerGroups": [
         "aapilu"
       ]
@@ -156,6 +195,9 @@
       "groups": [
         "aapilu"
       ],
+      "groupRanks": {
+        "aapilu": 1
+      },
       "pickerGroups": [
         "aapilu"
       ]
@@ -167,6 +209,9 @@
       "groups": [
         "autarkis"
       ],
+      "groupRanks": {
+        "autarkis": 3
+      },
       "pickerGroups": [
         "autarkis"
       ]
@@ -178,6 +223,9 @@
       "groups": [
         "touchstone"
       ],
+      "groupRanks": {
+        "touchstone": 2
+      },
       "pickerGroups": [
         "touchstone"
       ]
@@ -189,6 +237,9 @@
       "groups": [
         "friendlyNeighborhoodSpiders"
       ],
+      "groupRanks": {
+        "friendlyNeighborhoodSpiders": 3
+      },
       "pickerGroups": [
         "friendlyNeighborhoodSpiders"
       ]
@@ -200,6 +251,9 @@
       "groups": [
         "friendlyNeighborhoodSpidersGarou"
       ],
+      "groupRanks": {
+        "friendlyNeighborhoodSpidersGarou": 3
+      },
       "pickerGroups": [
         "friendlyNeighborhoodSpidersGarou"
       ]
@@ -211,6 +265,9 @@
       "groups": [
         "criseDeLwa"
       ],
+      "groupRanks": {
+        "criseDeLwa": 2
+      },
       "pickerGroups": [
         "criseDeLwa"
       ]
@@ -222,6 +279,9 @@
       "groups": [
         "ducheskiRevenant"
       ],
+      "groupRanks": {
+        "ducheskiRevenant": 1
+      },
       "pickerGroups": [
         "ducheskiRevenant"
       ]
@@ -233,6 +293,9 @@
       "groups": [
         "memoriam"
       ],
+      "groupRanks": {
+        "memoriam": 2
+      },
       "pickerGroups": [
         "memoriam"
       ]
@@ -244,6 +307,9 @@
       "groups": [
         "ducheskiRevenant"
       ],
+      "groupRanks": {
+        "ducheskiRevenant": 2
+      },
       "pickerGroups": [
         "ducheskiRevenant"
       ]
@@ -255,6 +321,9 @@
       "groups": [
         "touchstone"
       ],
+      "groupRanks": {
+        "touchstone": 3
+      },
       "pickerGroups": [
         "touchstone"
       ]
@@ -266,6 +335,9 @@
       "groups": [
         "touchstone"
       ],
+      "groupRanks": {
+        "touchstone": 4
+      },
       "pickerGroups": [
         "touchstone"
       ]
@@ -277,6 +349,9 @@
       "groups": [
         "jarvisJacks"
       ],
+      "groupRanks": {
+        "jarvisJacks": 2
+      },
       "pickerGroups": [
         "jarvisJacks"
       ]
@@ -288,6 +363,9 @@
       "groups": [
         "memoriam"
       ],
+      "groupRanks": {
+        "memoriam": 3
+      },
       "pickerGroups": [
         "memoriam"
       ]
@@ -299,6 +377,9 @@
       "groups": [
         "wychwoodHecata"
       ],
+      "groupRanks": {
+        "wychwoodHecata": 5
+      },
       "pickerGroups": [
         "wychwoodHecata"
       ]
@@ -310,6 +391,9 @@
       "groups": [
         "deepSix"
       ],
+      "groupRanks": {
+        "deepSix": 2
+      },
       "pickerGroups": [
         "deepSix"
       ]
@@ -321,6 +405,9 @@
       "groups": [
         "civilian"
       ],
+      "groupRanks": {
+        "civilian": 1
+      },
       "pickerGroups": [
         "civilian"
       ]
@@ -332,6 +419,9 @@
       "groups": [
         "jarvisJacks"
       ],
+      "groupRanks": {
+        "jarvisJacks": 1
+      },
       "pickerGroups": [
         "jarvisJacks"
       ]
@@ -343,6 +433,9 @@
       "groups": [
         "touchstone"
       ],
+      "groupRanks": {
+        "touchstone": 5
+      },
       "pickerGroups": [
         "touchstone"
       ]
@@ -354,6 +447,9 @@
       "groups": [
         "friendlyNeighborhoodSpiders"
       ],
+      "groupRanks": {
+        "friendlyNeighborhoodSpiders": 2
+      },
       "pickerGroups": [
         "friendlyNeighborhoodSpiders"
       ]
@@ -365,6 +461,9 @@
       "groups": [
         "friendlyNeighborhoodSpidersGarou"
       ],
+      "groupRanks": {
+        "friendlyNeighborhoodSpidersGarou": 2
+      },
       "pickerGroups": [
         "friendlyNeighborhoodSpidersGarou"
       ]
@@ -376,6 +475,9 @@
       "groups": [
         "jarvisJacks"
       ],
+      "groupRanks": {
+        "jarvisJacks": 4
+      },
       "pickerGroups": [
         "jarvisJacks"
       ]
@@ -387,6 +489,9 @@
       "groups": [
         "beesHive"
       ],
+      "groupRanks": {
+        "beesHive": 7
+      },
       "pickerGroups": [
         "beesHive"
       ]
@@ -398,6 +503,9 @@
       "groups": [
         "civilian"
       ],
+      "groupRanks": {
+        "civilian": 2
+      },
       "pickerGroups": [
         "civilian"
       ]
@@ -409,6 +517,9 @@
       "groups": [
         "criseDeLwa"
       ],
+      "groupRanks": {
+        "criseDeLwa": 1
+      },
       "pickerGroups": [
         "criseDeLwa"
       ]
@@ -420,6 +531,9 @@
       "groups": [
         "criseDeLwa"
       ],
+      "groupRanks": {
+        "criseDeLwa": 3
+      },
       "pickerGroups": [
         "criseDeLwa"
       ]
@@ -431,6 +545,9 @@
       "groups": [
         "friendlyNeighborhoodSpiders"
       ],
+      "groupRanks": {
+        "friendlyNeighborhoodSpiders": 4
+      },
       "pickerGroups": [
         "friendlyNeighborhoodSpiders"
       ]
@@ -442,6 +559,9 @@
       "groups": [
         "friendlyNeighborhoodSpidersGarou"
       ],
+      "groupRanks": {
+        "friendlyNeighborhoodSpidersGarou": 4
+      },
       "pickerGroups": [
         "friendlyNeighborhoodSpidersGarou"
       ]
@@ -453,6 +573,9 @@
       "groups": [
         "wychwoodHecata"
       ],
+      "groupRanks": {
+        "wychwoodHecata": 6
+      },
       "pickerGroups": [
         "wychwoodHecata"
       ]
@@ -464,6 +587,9 @@
       "groups": [
         "friendlyNeighborhoodSpiders"
       ],
+      "groupRanks": {
+        "friendlyNeighborhoodSpiders": 5
+      },
       "pickerGroups": [
         "friendlyNeighborhoodSpiders"
       ]
@@ -475,6 +601,9 @@
       "groups": [
         "friendlyNeighborhoodSpidersGarou"
       ],
+      "groupRanks": {
+        "friendlyNeighborhoodSpidersGarou": 5
+      },
       "pickerGroups": [
         "friendlyNeighborhoodSpidersGarou"
       ]
@@ -486,6 +615,9 @@
       "groups": [
         "autarkis"
       ],
+      "groupRanks": {
+        "autarkis": 1
+      },
       "pickerGroups": [
         "autarkis"
       ]
@@ -497,6 +629,9 @@
       "groups": [
         "aapilu"
       ],
+      "groupRanks": {
+        "aapilu": 4
+      },
       "pickerGroups": [
         "aapilu"
       ]
@@ -508,6 +643,9 @@
       "groups": [
         "jarvisJacks"
       ],
+      "groupRanks": {
+        "jarvisJacks": 3
+      },
       "pickerGroups": [
         "jarvisJacks"
       ]
@@ -519,6 +657,9 @@
       "groups": [
         "civilian"
       ],
+      "groupRanks": {
+        "civilian": 3
+      },
       "pickerGroups": [
         "civilian"
       ]
@@ -530,6 +671,9 @@
       "groups": [
         "beesHive"
       ],
+      "groupRanks": {
+        "beesHive": 1
+      },
       "pickerGroups": [
         "beesHive"
       ]
@@ -541,6 +685,9 @@
       "groups": [
         "beesHive"
       ],
+      "groupRanks": {
+        "beesHive": 2
+      },
       "pickerGroups": [
         "beesHive"
       ]
@@ -552,6 +699,9 @@
       "groups": [
         "beesHive"
       ],
+      "groupRanks": {
+        "beesHive": 4
+      },
       "pickerGroups": [
         "beesHive"
       ]
@@ -563,6 +713,9 @@
       "groups": [
         "beesHive"
       ],
+      "groupRanks": {
+        "beesHive": 3
+      },
       "pickerGroups": [
         "beesHive"
       ]
@@ -574,6 +727,9 @@
       "groups": [
         "beesHive"
       ],
+      "groupRanks": {
+        "beesHive": 5
+      },
       "pickerGroups": [
         "beesHive"
       ]
@@ -585,6 +741,9 @@
       "groups": [
         "beesHive"
       ],
+      "groupRanks": {
+        "beesHive": 6
+      },
       "pickerGroups": [
         "beesHive"
       ]
@@ -596,6 +755,9 @@
       "groups": [
         "colorBlitz"
       ],
+      "groupRanks": {
+        "colorBlitz": 1
+      },
       "pickerGroups": [
         "colorBlitz"
       ]
@@ -607,6 +769,9 @@
       "groups": [
         "colorBlitz"
       ],
+      "groupRanks": {
+        "colorBlitz": 2
+      },
       "pickerGroups": [
         "colorBlitz"
       ]
@@ -618,6 +783,9 @@
       "groups": [
         "redFlag"
       ],
+      "groupRanks": {
+        "redFlag": 1
+      },
       "pickerGroups": [
         "redFlag"
       ]
@@ -629,6 +797,9 @@
       "groups": [
         "redFlag"
       ],
+      "groupRanks": {
+        "redFlag": 2
+      },
       "pickerGroups": [
         "redFlag"
       ]
@@ -640,6 +811,9 @@
       "groups": [
         "redFlag"
       ],
+      "groupRanks": {
+        "redFlag": 3
+      },
       "pickerGroups": [
         "redFlag"
       ]
@@ -651,6 +825,9 @@
       "groups": [
         "redFlag"
       ],
+      "groupRanks": {
+        "redFlag": 4
+      },
       "pickerGroups": [
         "redFlag"
       ]
@@ -662,6 +839,9 @@
       "groups": [
         "scarlettAndTheBoys"
       ],
+      "groupRanks": {
+        "scarlettAndTheBoys": 1
+      },
       "pickerGroups": [
         "scarlettAndTheBoys"
       ]
@@ -673,6 +853,9 @@
       "groups": [
         "scarlettAndTheBoys"
       ],
+      "groupRanks": {
+        "scarlettAndTheBoys": 2
+      },
       "pickerGroups": [
         "scarlettAndTheBoys"
       ]
@@ -684,6 +867,9 @@
       "groups": [
         "scarlettAndTheBoys"
       ],
+      "groupRanks": {
+        "scarlettAndTheBoys": 3
+      },
       "pickerGroups": [
         "scarlettAndTheBoys"
       ]
@@ -695,6 +881,9 @@
       "groups": [
         "scarlettAndTheBoys"
       ],
+      "groupRanks": {
+        "scarlettAndTheBoys": 4
+      },
       "pickerGroups": [
         "scarlettAndTheBoys"
       ]
@@ -707,6 +896,10 @@
         "fiveKeys",
         "princesCourt"
       ],
+      "groupRanks": {
+        "fiveKeys": 1,
+        "princesCourt": 6
+      },
       "pickerGroups": [
         "fiveKeys"
       ]
@@ -718,6 +911,9 @@
       "groups": [
         "fiveKeys"
       ],
+      "groupRanks": {
+        "fiveKeys": 2
+      },
       "pickerGroups": [
         "fiveKeys"
       ]
@@ -729,6 +925,9 @@
       "groups": [
         "fiveKeys"
       ],
+      "groupRanks": {
+        "fiveKeys": 3
+      },
       "pickerGroups": [
         "fiveKeys"
       ]
@@ -740,6 +939,9 @@
       "groups": [
         "fiveKeys"
       ],
+      "groupRanks": {
+        "fiveKeys": 4
+      },
       "pickerGroups": [
         "fiveKeys"
       ]
@@ -752,6 +954,10 @@
         "fiveKeys",
         "princesCourt"
       ],
+      "groupRanks": {
+        "fiveKeys": 5,
+        "princesCourt": 9
+      },
       "pickerGroups": [
         "fiveKeys"
       ]
@@ -764,6 +970,10 @@
         "freeChantry",
         "princesCourt"
       ],
+      "groupRanks": {
+        "freeChantry": 1,
+        "princesCourt": 8
+      },
       "pickerGroups": [
         "freeChantry"
       ]
@@ -775,6 +985,9 @@
       "groups": [
         "freeChantry"
       ],
+      "groupRanks": {
+        "freeChantry": 2
+      },
       "pickerGroups": [
         "freeChantry"
       ]
@@ -786,6 +999,9 @@
       "groups": [
         "freeChantry"
       ],
+      "groupRanks": {
+        "freeChantry": 3
+      },
       "pickerGroups": [
         "freeChantry"
       ]
@@ -797,6 +1013,9 @@
       "groups": [
         "freeChantry"
       ],
+      "groupRanks": {
+        "freeChantry": 4
+      },
       "pickerGroups": [
         "freeChantry"
       ]
@@ -808,6 +1027,9 @@
       "groups": [
         "harpies"
       ],
+      "groupRanks": {
+        "harpies": 1
+      },
       "pickerGroups": [
         "harpies"
       ]
@@ -819,6 +1041,9 @@
       "groups": [
         "harpies"
       ],
+      "groupRanks": {
+        "harpies": 2
+      },
       "pickerGroups": [
         "harpies"
       ]
@@ -830,6 +1055,9 @@
       "groups": [
         "harpies"
       ],
+      "groupRanks": {
+        "harpies": 3
+      },
       "pickerGroups": [
         "harpies"
       ]
@@ -841,6 +1069,9 @@
       "groups": [
         "ironGuard"
       ],
+      "groupRanks": {
+        "ironGuard": 1
+      },
       "pickerGroups": [
         "ironGuard"
       ]
@@ -852,6 +1083,9 @@
       "groups": [
         "ironGuard"
       ],
+      "groupRanks": {
+        "ironGuard": 2
+      },
       "pickerGroups": [
         "ironGuard"
       ]
@@ -863,6 +1097,9 @@
       "groups": [
         "ironGuard"
       ],
+      "groupRanks": {
+        "ironGuard": 3
+      },
       "pickerGroups": [
         "ironGuard"
       ]
@@ -874,6 +1111,9 @@
       "groups": [
         "theLine"
       ],
+      "groupRanks": {
+        "theLine": 1
+      },
       "pickerGroups": [
         "theLine"
       ]
@@ -885,6 +1125,9 @@
       "groups": [
         "theLine"
       ],
+      "groupRanks": {
+        "theLine": 2
+      },
       "pickerGroups": [
         "theLine"
       ]
@@ -896,6 +1139,9 @@
       "groups": [
         "theLine"
       ],
+      "groupRanks": {
+        "theLine": 3
+      },
       "pickerGroups": [
         "theLine"
       ]
@@ -907,6 +1153,9 @@
       "groups": [
         "theLine"
       ],
+      "groupRanks": {
+        "theLine": 4
+      },
       "pickerGroups": [
         "theLine"
       ]
@@ -918,6 +1167,9 @@
       "groups": [
         "theLine"
       ],
+      "groupRanks": {
+        "theLine": 5
+      },
       "pickerGroups": [
         "theLine"
       ]
@@ -929,6 +1181,9 @@
       "groups": [
         "midnightMass"
       ],
+      "groupRanks": {
+        "midnightMass": 1
+      },
       "pickerGroups": [
         "midnightMass"
       ]
@@ -940,6 +1195,9 @@
       "groups": [
         "midnightMass"
       ],
+      "groupRanks": {
+        "midnightMass": 2
+      },
       "pickerGroups": [
         "midnightMass"
       ]
@@ -951,6 +1209,9 @@
       "groups": [
         "midnightMass"
       ],
+      "groupRanks": {
+        "midnightMass": 3
+      },
       "pickerGroups": [
         "midnightMass"
       ]
@@ -962,6 +1223,9 @@
       "groups": [
         "moonClub"
       ],
+      "groupRanks": {
+        "moonClub": 1
+      },
       "pickerGroups": [
         "moonClub"
       ]
@@ -973,6 +1237,9 @@
       "groups": [
         "moonClub"
       ],
+      "groupRanks": {
+        "moonClub": 2
+      },
       "pickerGroups": [
         "moonClub"
       ]
@@ -984,6 +1251,9 @@
       "groups": [
         "moonClub"
       ],
+      "groupRanks": {
+        "moonClub": 3
+      },
       "pickerGroups": [
         "moonClub"
       ]
@@ -995,6 +1265,9 @@
       "groups": [
         "moonClub"
       ],
+      "groupRanks": {
+        "moonClub": 4
+      },
       "pickerGroups": [
         "moonClub"
       ]
@@ -1006,6 +1279,9 @@
       "groups": [
         "redeemers"
       ],
+      "groupRanks": {
+        "redeemers": 1
+      },
       "pickerGroups": [
         "redeemers"
       ]
@@ -1017,6 +1293,9 @@
       "groups": [
         "redeemers"
       ],
+      "groupRanks": {
+        "redeemers": 2
+      },
       "pickerGroups": [
         "redeemers"
       ]
@@ -1028,6 +1307,9 @@
       "groups": [
         "redeemers"
       ],
+      "groupRanks": {
+        "redeemers": 3
+      },
       "pickerGroups": [
         "redeemers"
       ]
@@ -1039,6 +1321,9 @@
       "groups": [
         "redeemers"
       ],
+      "groupRanks": {
+        "redeemers": 4
+      },
       "pickerGroups": [
         "redeemers"
       ]
@@ -1051,6 +1336,10 @@
         "regencyUniversityChantry",
         "princesCourt"
       ],
+      "groupRanks": {
+        "regencyUniversityChantry": 1,
+        "princesCourt": 7
+      },
       "pickerGroups": [
         "regencyUniversityChantry"
       ]
@@ -1062,6 +1351,9 @@
       "groups": [
         "regencyUniversityChantry"
       ],
+      "groupRanks": {
+        "regencyUniversityChantry": 2
+      },
       "pickerGroups": [
         "regencyUniversityChantry"
       ]
@@ -1073,6 +1365,9 @@
       "groups": [
         "regencyUniversityChantry"
       ],
+      "groupRanks": {
+        "regencyUniversityChantry": 3
+      },
       "pickerGroups": [
         "regencyUniversityChantry"
       ]
@@ -1084,6 +1379,9 @@
       "groups": [
         "regencyUniversityChantry"
       ],
+      "groupRanks": {
+        "regencyUniversityChantry": 4
+      },
       "pickerGroups": [
         "regencyUniversityChantry"
       ]
@@ -1095,6 +1393,9 @@
       "groups": [
         "regencyUniversityChantry"
       ],
+      "groupRanks": {
+        "regencyUniversityChantry": 5
+      },
       "pickerGroups": [
         "regencyUniversityChantry"
       ]
@@ -1106,6 +1407,9 @@
       "groups": [
         "wychwoodHecata"
       ],
+      "groupRanks": {
+        "wychwoodHecata": 1
+      },
       "pickerGroups": [
         "wychwoodHecata"
       ]
@@ -1117,6 +1421,9 @@
       "groups": [
         "wychwoodHecata"
       ],
+      "groupRanks": {
+        "wychwoodHecata": 2
+      },
       "pickerGroups": [
         "wychwoodHecata"
       ]
@@ -1128,6 +1435,9 @@
       "groups": [
         "wychwoodHecata"
       ],
+      "groupRanks": {
+        "wychwoodHecata": 3
+      },
       "pickerGroups": [
         "wychwoodHecata"
       ]
@@ -1139,6 +1449,9 @@
       "groups": [
         "wychwoodHecata"
       ],
+      "groupRanks": {
+        "wychwoodHecata": 4
+      },
       "pickerGroups": [
         "wychwoodHecata"
       ]
@@ -1150,6 +1463,9 @@
       "groups": [
         "petitioners"
       ],
+      "groupRanks": {
+        "petitioners": 1
+      },
       "pickerGroups": [
         "petitioners"
       ]
@@ -1161,6 +1477,9 @@
       "groups": [
         "petitioners"
       ],
+      "groupRanks": {
+        "petitioners": 2
+      },
       "pickerGroups": [
         "petitioners"
       ]
@@ -1172,6 +1491,9 @@
       "groups": [
         "petitioners"
       ],
+      "groupRanks": {
+        "petitioners": 3
+      },
       "pickerGroups": [
         "petitioners"
       ]
@@ -1183,6 +1505,9 @@
       "groups": [
         "petitioners"
       ],
+      "groupRanks": {
+        "petitioners": 4
+      },
       "pickerGroups": [
         "petitioners"
       ]
@@ -1194,6 +1519,9 @@
       "groups": [
         "petitioners"
       ],
+      "groupRanks": {
+        "petitioners": 5
+      },
       "pickerGroups": [
         "petitioners"
       ]

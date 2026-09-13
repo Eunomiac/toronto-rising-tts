@@ -1,6 +1,7 @@
 import { bindBoardDrag, gsap, killBoardDrags } from "./scenes/boardDrag.js";
-import { comparePickerGroups, groupThemeClass } from "./scenes/groupThemes.js";
-import { relocatePolarFamily } from "./scenes/groupRelocate.js";
+import { formatChronicleDateTime } from "./scenes/clockFormat.js";
+import { comparePickerGroups, GROUP_THEMES, groupThemeClass, isImportantGroup, trayMergeLabel } from "./scenes/groupThemes.js";
+import { placeKeysOnPolarFamily, relocatePolarFamily } from "./scenes/groupRelocate.js";
 import {
   boardUvFromEvent,
   buildImportPayload,
@@ -10,6 +11,7 @@ import {
   familyHandleLayoutFor,
   layoutBoardFrame,
   polarAreaNameForFamily,
+  resolveWeatherAxes,
   tableChoiceIsSelected,
   tableChoiceKeys,
   nearestPolarSnap,
@@ -19,11 +21,23 @@ import {
   PC_BY_COLOR,
   sceneKeyFromTitle
 } from "./scenes/payload.js";
+import { nameTranslateXForSnap } from "./scenes/tokenNames.js";
 import { initToasts } from "./scenes/toasts.js";
-import { axesFromWeatherKey, cycleRain, weatherKeyFromAxes } from "./scenes/weatherAxes.js";
+import {
+  cycleRain,
+  cycleSnow,
+  cycleWind,
+  applyThunder,
+  axesFromLegacyWeatherKey,
+  isWinterWind,
+  rainLabel,
+  snowLabel,
+  windLabel
+} from "./scenes/weatherAxes.js";
 import type {
   ControlBoardSnaps,
   NpcLightMode,
+  PolarToken,
   SceneCatalogs,
   SceneDraft
 } from "./scenes/types.js";
@@ -60,11 +74,6 @@ const MONTH_NAMES = [
   "July", "August", "September", "October", "November", "December"
 ];
 
-const pad2 = (value: number): string => String(value).padStart(2, "0");
-
-const formatClockTime = (hour: number, minute: number): string =>
-  `${pad2(hour)}:${pad2(minute)}`;
-
 const daysInMonth = (year: number, month: number): number =>
   new Date(year, month, 0).getDate();
 
@@ -75,7 +84,6 @@ export const initScenesTab = (): void => {
   const boardFrame = requiredElement<HTMLDivElement>("scenes-board-frame");
   const boardImg = requiredElement<HTMLImageElement>("scenes-board-img");
   const overlay = requiredElement<HTMLDivElement>("scenes-board-overlay");
-  const palette = requiredElement<HTMLDivElement>("scenes-palette-list");
   const groupTrays = requiredElement<HTMLDivElement>("scenes-group-trays");
   const dragLayer = requiredElement<HTMLDivElement>("scenes-drag-layer");
   const modalRoot = requiredElement<HTMLDivElement>("modal-root");
@@ -92,6 +100,9 @@ export const initScenesTab = (): void => {
   const ghostEls: HTMLElement[] = [];
   let openPickerGroup: string | null = null;
   let reticuleUv = { u: 0.42, v: 0.48 };
+  let debugMode = false;
+  let debugFillOn = false;
+  let debugPolarBackup: SceneDraft["standard"]["polar"] | null = null;
 
   const setStatus = (kind: "idle" | "loading" | "error" | "success", message: string): void => {
     toasts.push(kind, message);
@@ -107,6 +118,59 @@ export const initScenesTab = (): void => {
     if (draft) {
       window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
     }
+  };
+
+  const shuffleKeys = (keys: readonly string[]): string[] => {
+    const next = [...keys];
+    for (let i = next.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const current = next[i];
+      const swap = next[j];
+      if (current === undefined || swap === undefined) {
+        continue;
+      }
+      next[i] = swap;
+      next[j] = current;
+    }
+    return next;
+  };
+
+  const restoreDebugFill = (): void => {
+    if (!draft || !debugFillOn) {
+      debugFillOn = false;
+      debugPolarBackup = null;
+      return;
+    }
+    if (debugPolarBackup) {
+      draft.standard.polar = debugPolarBackup.map((token) => ({ ...token }));
+    }
+    debugPolarBackup = null;
+    debugFillOn = false;
+  };
+
+  const applyDebugFill = (): void => {
+    if (!draft || !snaps || !catalogs) {
+      return;
+    }
+    if (!debugPolarBackup) {
+      debugPolarBackup = draft.standard.polar.map((token) => ({ ...token }));
+    }
+    const pool = shuffleKeys(catalogs.namedNpcs.map((npc) => npc.characterKey));
+    const polar: PolarToken[] = [];
+    for (let i = 0; i < snaps.polar.length && i < pool.length; i += 1) {
+      const snap = snaps.polar[i];
+      const characterKey = pool[i];
+      if (!snap || !characterKey) {
+        break;
+      }
+      polar.push({
+        characterKey,
+        snapIndex: snap.snapIndex,
+        npcLightMode: snap.defaultLightMode === "STANDARD" ? "STANDARD" : "OFF"
+      });
+    }
+    draft.standard.polar = polar;
+    debugFillOn = true;
   };
 
   const namedByKey = (): Map<string, SceneCatalogs["namedNpcs"][number]> => {
@@ -168,12 +232,16 @@ export const initScenesTab = (): void => {
     lit: boolean,
     extraClass = "",
     ghost = false,
-    fullName = ""
+    fullName = "",
+    tokenId = ""
   ): HTMLButtonElement => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = `scenes-token ${extraClass}`.trim();
     button.dataset.characterKey = characterKey;
+    if (tokenId !== "") {
+      button.dataset.tokenId = tokenId;
+    }
     if (lit && !extraClass.includes("scenes-token-palette")) {
       button.classList.add("scenes-token-lit");
       let delay = 0;
@@ -209,33 +277,35 @@ export const initScenesTab = (): void => {
 
   const snapshotTokenRects = (): Map<string, DOMRect> => {
     const map = new Map<string, DOMRect>();
-    const scan = (root: ParentNode, includeOrigin: boolean): void => {
+    const scan = (root: ParentNode): void => {
       for (const el of root.querySelectorAll<HTMLElement>("[data-character-key]")) {
         if (el.classList.contains("scenes-token-ghost") || el.classList.contains("scenes-token-dragging")) {
           continue;
         }
-        if (!includeOrigin && el.classList.contains("scenes-token-origin")) {
+        const key = el.dataset.characterKey;
+        const id = el.dataset.tokenId ?? key;
+        if (!key || !id) {
           continue;
         }
-        const key = el.dataset.characterKey;
-        if (key) {
-          map.set(key, el.getBoundingClientRect());
+        map.set(id, el.getBoundingClientRect());
+        if (el.classList.contains("scenes-token-origin") || el.classList.contains("scenes-token-palette")) {
+          map.set(`from:${key}`, el.getBoundingClientRect());
         }
       }
     };
-    scan(groupTrays, true);
-    scan(palette, true);
-    scan(overlay, true);
+    scan(groupTrays);
+    scan(overlay);
     return map;
   };
 
   const flipTokensFrom = (before: Map<string, DOMRect>): void => {
     for (const el of overlay.querySelectorAll<HTMLElement>("[data-character-key]")) {
       const key = el.dataset.characterKey;
-      if (!key) {
+      const id = el.dataset.tokenId ?? key;
+      if (!key || !id) {
         continue;
       }
-      const prev = before.get(key);
+      const prev = before.get(id) ?? before.get(`from:${key}`);
       if (!prev) {
         continue;
       }
@@ -317,12 +387,18 @@ export const initScenesTab = (): void => {
     }
   };
 
-  const applyBoardDrop = (clientX: number, clientY: number, dragKind: "token" | "family", dragKey: string): void => {
+  const applyBoardDrop = (
+    clientX: number,
+    clientY: number,
+    dragKind: "token" | "family" | "tray",
+    dragKey: string,
+    trayKeys: readonly string[] = []
+  ): void => {
     if (!draft || !snaps || !catalogs) {
       return;
     }
-    if (!pointInRect(clientX, clientY, boardWrap.getBoundingClientRect())) {
-      if (dragKind === "family") {
+    if (!pointInRect(clientX, clientY, boardFrame.getBoundingClientRect())) {
+      if (dragKind === "family" || dragKind === "tray") {
         setStatus("error", "Drop the group handle onto a polar pack.");
         return;
       }
@@ -336,13 +412,17 @@ export const initScenesTab = (): void => {
       return;
     }
     if (draft.placementMode === "standard") {
-      if (dragKind === "family") {
+      if (dragKind === "family" || dragKind === "tray") {
         const dest = nearestPolarSnap(snaps, uv.u, uv.v, 0.1);
         if (!dest) {
           setStatus("error", "Drop the group handle onto a polar pack.");
           return;
         }
-        draft.standard.polar = relocatePolarFamily(draft.standard.polar, dragKey, dest.familyId, snaps);
+        if (dragKind === "tray") {
+          draft.standard.polar = placeKeysOnPolarFamily(draft.standard.polar, trayKeys, dest.familyId, snaps);
+        } else {
+          draft.standard.polar = relocatePolarFamily(draft.standard.polar, dragKey, dest.familyId, snaps);
+        }
         persist();
         return;
       }
@@ -496,20 +576,63 @@ export const initScenesTab = (): void => {
     }
   };
 
-  const finishBoardDrag = (clientX: number, clientY: number, dragKind: "token" | "family", dragKey: string): void => {
+  const paintTrayGhosts = (clientX: number, clientY: number, keys: readonly string[]): void => {
+    clearGhosts();
+    if (!snaps || !draft || keys.length === 0) {
+      return;
+    }
+    const uv = boardUvFromEvent(overlay, { clientX, clientY });
+    if (!uv) {
+      return;
+    }
+    const dest = nearestPolarSnap(snaps, uv.u, uv.v, 0.12);
+    if (!dest) {
+      return;
+    }
+    const preview = placeKeysOnPolarFamily(draft.standard.polar, keys, dest.familyId, snaps);
+    for (const key of keys) {
+      const token = preview.find((row) => row.characterKey === key);
+      if (!token) {
+        continue;
+      }
+      const snap = snaps.polar.find((row) => row.snapIndex === token.snapIndex);
+      if (snap) {
+        showTokenGhost(key, "", snap.u, snap.v);
+      }
+    }
+  };
+
+  const finishBoardDrag = (
+    clientX: number,
+    clientY: number,
+    dragKind: "token" | "family" | "tray",
+    dragKey: string,
+    trayKeys: readonly string[] = []
+  ): void => {
     const before = snapshotTokenRects();
     clearGhosts();
-    applyBoardDrop(clientX, clientY, dragKind, dragKey);
+    applyBoardDrop(clientX, clientY, dragKind, dragKey, trayKeys);
     render();
     flipTokensFrom(before);
   };
 
-  const bindTokenDrag = (el: HTMLElement, characterKey: string): void => {
+  const bindTrayHandle = (handle: HTMLElement, keys: readonly string[]): void => {
+    bindBoardDrag(handle, {
+      boardFrame,
+      dragLayer,
+      pickup: false,
+      dropPulse: false,
+      onMove: (clientX, clientY) => paintTrayGhosts(clientX, clientY, keys),
+      onEnd: (clientX, clientY) => finishBoardDrag(clientX, clientY, "tray", "", keys)
+    });
+  };
+
+  const bindTokenDrag = (el: HTMLElement, characterKey: string, fromTray = false): void => {
     bindBoardDrag(el, {
       boardFrame,
       dragLayer,
       pickup: true,
-      leaveOrigin: true,
+      leaveOrigin: !fromTray,
       onMove: (clientX, clientY) => paintTokenGhosts(clientX, clientY, characterKey),
       onEnd: (clientX, clientY) => finishBoardDrag(clientX, clientY, "token", characterKey)
     });
@@ -547,11 +670,9 @@ export const initScenesTab = (): void => {
     if (!draft) {
       return;
     }
-    draft.standard.paletteNpcKeys = draft.standard.paletteNpcKeys.filter((key) => key !== characterKey);
     draft.standard.polar = draft.standard.polar.filter((token) => token.characterKey !== characterKey);
     const occupant = draft.standard.polar.find((token) => token.snapIndex === snapIndex);
     if (occupant) {
-      draft.standard.paletteNpcKeys.push(occupant.characterKey);
       draft.standard.polar = draft.standard.polar.filter((token) => token.characterKey !== occupant.characterKey);
     }
     draft.standard.polar.push({ characterKey, snapIndex, npcLightMode: light });
@@ -598,7 +719,7 @@ export const initScenesTab = (): void => {
       }
       return;
     }
-    draft.standard.paletteNpcKeys = draft.standard.paletteNpcKeys.filter((key) => key !== characterKey);
+    draft.standard.polar = draft.standard.polar.filter((token) => token.characterKey !== characterKey);
     for (const npcSeat of catalogs.npcSeats) {
       const row = draft.standard.seatSlots[npcSeat];
       if (row && row.characterKey === characterKey) {
@@ -606,9 +727,6 @@ export const initScenesTab = (): void => {
       }
     }
     const dest = draft.standard.seatSlots[seatKey];
-    if (dest && dest.slotEmpty !== true && dest.characterKey !== "" && dest.characterKey !== characterKey) {
-      draft.standard.paletteNpcKeys.push(dest.characterKey);
-    }
     const onStage = draft.standard.polar.some((token) => token.characterKey === characterKey);
     draft.standard.seatSlots[seatKey] = {
       characterKey,
@@ -650,7 +768,15 @@ export const initScenesTab = (): void => {
     requiredElement<HTMLInputElement>("scenes-fog").checked = current.isTopFogActive;
     requiredElement<HTMLInputElement>("scenes-present-day").checked = current.clockPresentDay;
     requiredElement<HTMLInputElement>("scenes-clock-minutes").value = String(current.clockHour * 60 + current.clockMinute);
-    requiredElement<HTMLOutputElement>("scenes-clock-time-out").value = formatClockTime(current.clockHour, current.clockMinute);
+    const clockText = formatChronicleDateTime(
+      current.clockYear,
+      current.clockMonth,
+      current.clockDay,
+      current.clockHour,
+      current.clockMinute
+    );
+    requiredElement<HTMLOutputElement>("scenes-clock-date-out").value = clockText.date;
+    requiredElement<HTMLOutputElement>("scenes-clock-time-out").value = clockText.time;
     const maxDay = daysInMonth(current.clockYear, current.clockMonth);
     const dayInput = requiredElement<HTMLInputElement>("scenes-clock-day");
     dayInput.max = String(maxDay);
@@ -660,18 +786,31 @@ export const initScenesTab = (): void => {
     requiredElement<HTMLOutputElement>("scenes-clock-month-out").value =
       MONTH_NAMES[current.clockMonth - 1] ?? String(current.clockMonth);
     requiredElement<HTMLInputElement>("scenes-clock-year").value = String(current.clockYear);
-    requiredElement<HTMLSelectElement>("scenes-weather").value = current.weatherKey;
-    const axes = axesFromWeatherKey(current.weatherKey, catalogs.weatherConditions);
+    const weather = resolveWeatherAxes(current);
+    const winter = isWinterWind(current.clockMonth, weather.snow);
     const rainButton = requiredElement<HTMLButtonElement>("scenes-weather-rain");
-    rainButton.classList.toggle("lock", axes.rain !== "none");
-    rainButton.classList.toggle("active", axes.rain !== "none");
-    rainButton.title = axes.rain === "heavy" ? "Heavy rain" : axes.rain === "light" ? "Light rain" : "Rain";
+    rainButton.classList.toggle("lock", weather.rain !== "none");
+    rainButton.classList.toggle("active", weather.rain !== "none");
+    rainButton.title = rainLabel(weather.rain);
+    const snowButton = requiredElement<HTMLButtonElement>("scenes-weather-snow");
+    snowButton.classList.toggle("lock", weather.snow !== "none");
+    snowButton.classList.toggle("active", weather.snow !== "none");
+    snowButton.title = snowLabel(weather.snow);
     const windButton = requiredElement<HTMLButtonElement>("scenes-weather-wind");
-    windButton.classList.toggle("lock", axes.wind);
-    windButton.classList.toggle("active", axes.wind);
+    windButton.classList.toggle("lock", weather.wind !== "none");
+    windButton.classList.toggle("active", weather.wind !== "none");
+    windButton.title = windLabel(weather.wind, winter);
     const thunderButton = requiredElement<HTMLButtonElement>("scenes-weather-thunder");
-    thunderButton.classList.toggle("lock", axes.thunder);
-    thunderButton.classList.toggle("active", axes.thunder);
+    thunderButton.classList.toggle("lock", weather.thunder);
+    thunderButton.classList.toggle("active", weather.thunder);
+    thunderButton.title = weather.thunder ? "Thunderstorm" : "No thunder";
+    const debugToggle = requiredElement<HTMLButtonElement>("scenes-debug-toggle");
+    debugToggle.classList.toggle("lock", debugMode);
+    debugToggle.classList.toggle("active", debugMode);
+    const fillButton = requiredElement<HTMLButtonElement>("scenes-debug-fill");
+    fillButton.hidden = !debugMode;
+    fillButton.classList.toggle("lock", debugFillOn);
+    fillButton.classList.toggle("active", debugFillOn);
     const district = catalogs.districts.find((row) => row.key === current.districtKey);
     const site = catalogs.sites.find((row) => row.key === current.siteKey);
     setPlaceLabel("scenes-district", district ? district.name : "District", !district);
@@ -732,8 +871,19 @@ export const initScenesTab = (): void => {
         if (!snap) {
           continue;
         }
-        const el = makeToken(token.characterKey, token.npcLightMode !== "OFF", "", false, characterLabel(boardCatalogs, token.characterKey));
+        const el = makeToken(
+          token.characterKey,
+          token.npcLightMode !== "OFF",
+          "",
+          false,
+          characterLabel(boardCatalogs, token.characterKey),
+          `polar:${token.characterKey}`
+        );
         placeToken(el, snap.u, snap.v);
+        const name = el.querySelector<HTMLElement>(".scenes-token-name");
+        if (name) {
+          name.style.transform = `translateX(${nameTranslateXForSnap(boardSnaps, snap)}%)`;
+        }
         el.title = characterLabel(boardCatalogs, token.characterKey);
         el.addEventListener("dblclick", () => {
           token.npcLightMode = token.npcLightMode === "OFF" ? "STANDARD" : "OFF";
@@ -769,7 +919,14 @@ export const initScenesTab = (): void => {
           continue;
         }
         const lit = row.isPresent === true && row.absentFromSession !== true;
-        const el = makeToken(row.characterKey, lit, "scenes-token-seat", false, characterLabel(catalogs, row.characterKey));
+        const el = makeToken(
+          row.characterKey,
+          lit,
+          "scenes-token-seat",
+          false,
+          characterLabel(catalogs, row.characterKey),
+          `seat:${seat.seatKey}:${row.characterKey}`
+        );
         placeToken(el, seat.u, seat.v);
         if (seat.v > 0.52) {
           el.classList.add("scenes-token-caption-above");
@@ -801,7 +958,14 @@ export const initScenesTab = (): void => {
             continue;
           }
           const displayKey = row.isPlayingNPC && row.characterKey ? row.characterKey : pcKey;
-          const el = makeToken(displayKey, row.isPresent, "scenes-token-center", false, characterLabel(boardCatalogs, displayKey));
+          const el = makeToken(
+            displayKey,
+            row.isPresent,
+            "scenes-token-center",
+            false,
+            characterLabel(boardCatalogs, displayKey),
+            `scatter-center:${areaKey}:${pcKey}`
+          );
           el.dataset.pcKey = pcKey;
           placeToken(el, slot.u, slot.v);
           el.addEventListener("dblclick", () => {
@@ -817,7 +981,14 @@ export const initScenesTab = (): void => {
           if (!slot) {
             continue;
           }
-          const el = makeToken(npcKey, row.npcLightMode !== "OFF", "", false, characterLabel(boardCatalogs, npcKey));
+          const el = makeToken(
+            npcKey,
+            row.npcLightMode !== "OFF",
+            "",
+            false,
+            characterLabel(boardCatalogs, npcKey),
+            `scatter-orbit:${npcKey}`
+          );
           placeToken(el, slot.u, slot.v);
           el.addEventListener("dblclick", () => {
             row.npcLightMode = row.npcLightMode === "OFF" ? "STANDARD" : "OFF";
@@ -830,51 +1001,38 @@ export const initScenesTab = (): void => {
       }
     }
 
-    const reticule = document.createElement("button");
-    reticule.type = "button";
-    reticule.id = "scenes-reticule";
-    reticule.className = "scenes-reticule";
-    reticule.title = "Drop to copy board coordinates";
-    reticule.setAttribute("aria-label", reticule.title);
-    placeToken(reticule, reticuleUv.u, reticuleUv.v);
-    overlay.append(reticule);
-    bindBoardDrag(reticule, {
-      boardFrame,
-      dragLayer,
-      pickup: false,
-      leaveOrigin: false,
-      dropPulse: false,
-      onMove: () => undefined,
-      onEnd: (clientX, clientY) => {
-        overlay.append(reticule);
-        const uv = boardUvFromEvent(overlay, { clientX, clientY });
-        if (!uv) {
-          placeToken(reticule, reticuleUv.u, reticuleUv.v);
-          return;
+    if (debugMode) {
+      const reticule = document.createElement("button");
+      reticule.type = "button";
+      reticule.id = "scenes-reticule";
+      reticule.className = "scenes-reticule";
+      reticule.title = "Drop to copy board coordinates";
+      reticule.setAttribute("aria-label", reticule.title);
+      placeToken(reticule, reticuleUv.u, reticuleUv.v);
+      overlay.append(reticule);
+      bindBoardDrag(reticule, {
+        boardFrame,
+        dragLayer,
+        pickup: false,
+        leaveOrigin: false,
+        dropPulse: false,
+        onMove: () => undefined,
+        onEnd: (clientX, clientY) => {
+          overlay.append(reticule);
+          const uv = boardUvFromEvent(overlay, { clientX, clientY });
+          if (!uv) {
+            placeToken(reticule, reticuleUv.u, reticuleUv.v);
+            return;
+          }
+          reticuleUv = uv;
+          placeToken(reticule, uv.u, uv.v);
+          const text = `${uv.u.toFixed(4)}, ${uv.v.toFixed(4)}`;
+          void navigator.clipboard.writeText(text).then(
+            () => setStatus("success", `Copied ${text}`),
+            () => setStatus("error", "Could not copy coordinates.")
+          );
         }
-        reticuleUv = uv;
-        placeToken(reticule, uv.u, uv.v);
-        const text = `${uv.u.toFixed(4)}, ${uv.v.toFixed(4)}`;
-        void navigator.clipboard.writeText(text).then(
-          () => setStatus("success", `Copied ${text}`),
-          () => setStatus("error", "Could not copy coordinates.")
-        );
-      }
-    });
-  };
-
-  const renderPalette = (): void => {
-    if (!draft || !catalogs) {
-      return;
-    }
-    palette.replaceChildren();
-    const keys = draft.placementMode === "standard" ? draft.standard.paletteNpcKeys : draft.scatter.paletteNpcKeys;
-    palette.hidden = keys.length === 0;
-    for (const key of keys) {
-      const el = makeToken(key, true, "scenes-token-palette");
-      el.title = characterLabel(catalogs, key);
-      palette.append(el);
-      bindTokenDrag(el, key);
+      });
     }
   };
 
@@ -883,7 +1041,6 @@ export const initScenesTab = (): void => {
     killBoardDrags(dragLayer);
     renderChrome();
     renderBoard();
-    renderPalette();
     renderGroupTrays();
   };
 
@@ -894,9 +1051,6 @@ export const initScenesTab = (): void => {
     }
     for (const token of draft.standard.polar) {
       used.add(token.characterKey);
-    }
-    for (const key of draft.standard.paletteNpcKeys) {
-      used.add(key);
     }
     for (const [seatKey, row] of Object.entries(draft.standard.seatSlots)) {
       if (!PC_BY_COLOR[seatKey] && row.characterKey) {
@@ -916,9 +1070,6 @@ export const initScenesTab = (): void => {
         }
       }
     }
-    for (const key of draft.scatter.paletteNpcKeys) {
-      used.add(key);
-    }
     return used;
   };
 
@@ -927,50 +1078,102 @@ export const initScenesTab = (): void => {
       return;
     }
     const used = usedNamedKeys();
-    const groups = new Map<string, Array<SceneCatalogs["namedNpcs"][number]>>();
+    type TrayGroup = {
+      label: string;
+      themeClass: string;
+      theme: string;
+      important: boolean;
+      keys: string[];
+      npcs: Array<SceneCatalogs["namedNpcs"][number]>;
+    };
+    const groups = new Map<string, TrayGroup>();
     for (const npc of catalogs.namedNpcs) {
       const tags = npc.pickerGroups.length > 0 ? npc.pickerGroups : ["Ungrouped"];
       for (const tag of tags) {
-        const list = groups.get(tag) ?? [];
-        list.push(npc);
-        groups.set(tag, list);
+        const label = trayMergeLabel(pickerGroupLabel(tag));
+        const existing = groups.get(label);
+        if (existing) {
+          existing.important = existing.important || isImportantGroup(tag);
+          if (!existing.npcs.some((row) => row.characterKey === npc.characterKey)) {
+            existing.npcs.push(npc);
+            existing.keys.push(tag);
+          }
+          continue;
+        }
+        groups.set(label, {
+          label,
+          themeClass: groupThemeClass(tag),
+          theme: groupThemeClass(tag).replace("group-theme-", ""),
+          important: isImportantGroup(tag),
+          keys: [tag],
+          npcs: [npc]
+        });
       }
     }
-    const groupNames = [...groups.keys()].sort((a, b) =>
-      comparePickerGroups(a, b, pickerGroupLabel)
+    const ordered = [...groups.values()].sort((a, b) =>
+      comparePickerGroups(a.keys[0] ?? a.label, b.keys[0] ?? b.label, pickerGroupLabel)
     );
+    const themeOrder = [...GROUP_THEMES];
     groupTrays.replaceChildren();
-    for (const name of groupNames) {
-      const tray = document.createElement("div");
-      tray.className = `scenes-group-tray ${groupThemeClass(name)}`;
-      if (openPickerGroup === name) {
-        tray.classList.add("open");
+    for (const theme of themeOrder) {
+      const members = ordered.filter((row) => row.theme === theme);
+      if (members.length === 0) {
+        continue;
       }
-      const header = document.createElement("button");
-      header.type = "button";
-      header.className = "scenes-group-tray-header";
-      header.textContent = pickerGroupLabel(name);
-      header.addEventListener("click", () => {
-        openPickerGroup = openPickerGroup === name ? null : name;
-        render();
-      });
-      const body = document.createElement("div");
-      body.className = "scenes-group-tray-body";
-      for (const npc of groups.get(name) ?? []) {
-        const onBoard = used.has(npc.characterKey);
-        const el = makeToken(
-          npc.characterKey,
-          true,
-          onBoard ? "scenes-token-palette added" : "scenes-token-palette"
-        );
-        el.title = npc.fullName;
-        body.append(el);
-        if (!onBoard) {
-          bindTokenDrag(el, npc.characterKey);
+      const block = document.createElement("div");
+      block.className = `scenes-theme-block group-theme-${theme}`;
+      for (const row of members) {
+        const tray = document.createElement("div");
+        tray.className = `scenes-group-tray ${row.themeClass}`;
+        if (row.important) {
+          tray.classList.add("important-group");
         }
+        if (openPickerGroup === row.label) {
+          tray.classList.add("open");
+        }
+        const chrome = document.createElement("div");
+        chrome.className = "scenes-group-tray-chrome";
+        const header = document.createElement("button");
+        header.type = "button";
+        header.className = "scenes-group-tray-header";
+        header.textContent = row.label;
+        header.addEventListener("click", () => {
+          openPickerGroup = openPickerGroup === row.label ? null : row.label;
+          render();
+        });
+        const handle = document.createElement("button");
+        handle.type = "button";
+        handle.className = "scenes-group-tray-drag";
+        handle.title = `Place ${row.label} on the stage`;
+        handle.setAttribute("aria-label", handle.title);
+        const visibleNpcs = row.npcs
+          .slice()
+          .sort((a, b) => {
+            const rankA = Math.min(...row.keys.map((key) => a.groupRanks?.[key] ?? Number.POSITIVE_INFINITY));
+            const rankB = Math.min(...row.keys.map((key) => b.groupRanks?.[key] ?? Number.POSITIVE_INFINITY));
+            return rankA - rankB;
+          })
+          .filter((npc) => !used.has(npc.characterKey));
+        handle.disabled = visibleNpcs.length === 0;
+        if (visibleNpcs.length > 0) {
+          bindTrayHandle(handle, visibleNpcs.map((npc) => npc.characterKey));
+        }
+        chrome.append(header, handle);
+        const body = document.createElement("div");
+        body.className = "scenes-group-tray-body";
+        for (const npc of visibleNpcs) {
+          const el = makeToken(npc.characterKey, true, "scenes-token-palette");
+          const hover = document.createElement("span");
+          hover.className = "scenes-token-hover-name";
+          hover.textContent = npc.fullName;
+          el.append(hover);
+          body.append(el);
+          bindTokenDrag(el, npc.characterKey, true);
+        }
+        tray.append(chrome, body);
+        block.append(tray);
       }
-      tray.append(header, body);
-      groupTrays.append(tray);
+      groupTrays.append(block);
     }
   };
 
@@ -1258,47 +1461,52 @@ export const initScenesTab = (): void => {
     persist();
     renderChrome();
   });
-  const applyWeatherPatch = (patch: Partial<{ rain: "none" | "light" | "heavy"; wind: boolean; thunder: boolean }>): void => {
-    if (!draft || !catalogs) {
+  const persistWeather = (): void => {
+    if (!draft) {
       return;
     }
-    const next = {
-      ...axesFromWeatherKey(draft.weatherKey, catalogs.weatherConditions),
-      ...patch
-    };
-    draft.weatherKey = weatherKeyFromAxes(next);
+    const next = applyThunder({
+      rain: draft.weatherRain,
+      wind: draft.weatherWind,
+      thunder: draft.weatherThunder,
+      snow: draft.weatherSnow
+    });
+    draft.weatherRain = next.rain;
+    draft.weatherWind = next.wind;
+    draft.weatherThunder = next.thunder;
     persist();
     renderChrome();
   };
 
-  requiredElement<HTMLSelectElement>("scenes-weather").addEventListener("change", (event) => {
+  requiredElement<HTMLButtonElement>("scenes-weather-rain").addEventListener("click", () => {
     if (!draft) {
       return;
     }
-    draft.weatherKey = (event.target as HTMLSelectElement).value;
-    persist();
-    renderChrome();
+    draft.weatherThunder = false;
+    draft.weatherRain = cycleRain(draft.weatherRain);
+    persistWeather();
   });
-  requiredElement<HTMLButtonElement>("scenes-weather-rain").addEventListener("click", () => {
-    if (!draft || !catalogs) {
+  requiredElement<HTMLButtonElement>("scenes-weather-snow").addEventListener("click", () => {
+    if (!draft) {
       return;
     }
-    const axes = axesFromWeatherKey(draft.weatherKey, catalogs.weatherConditions);
-    applyWeatherPatch({ rain: cycleRain(axes.rain), thunder: false });
+    draft.weatherSnow = cycleSnow(draft.weatherSnow);
+    persistWeather();
   });
   requiredElement<HTMLButtonElement>("scenes-weather-wind").addEventListener("click", () => {
-    if (!draft || !catalogs) {
+    if (!draft) {
       return;
     }
-    const axes = axesFromWeatherKey(draft.weatherKey, catalogs.weatherConditions);
-    applyWeatherPatch({ wind: !axes.wind, thunder: false });
+    draft.weatherThunder = false;
+    draft.weatherWind = cycleWind(draft.weatherWind);
+    persistWeather();
   });
   requiredElement<HTMLButtonElement>("scenes-weather-thunder").addEventListener("click", () => {
-    if (!draft || !catalogs) {
+    if (!draft) {
       return;
     }
-    const axes = axesFromWeatherKey(draft.weatherKey, catalogs.weatherConditions);
-    applyWeatherPatch({ thunder: !axes.thunder });
+    draft.weatherThunder = !draft.weatherThunder;
+    persistWeather();
   });
   requiredElement<HTMLButtonElement>("scenes-district").addEventListener("click", () => {
     if (!catalogs || !draft) {
@@ -1378,6 +1586,27 @@ export const initScenesTab = (): void => {
     flipTokensFrom(before);
   });
 
+  requiredElement<HTMLButtonElement>("scenes-debug-toggle").addEventListener("click", () => {
+    debugMode = !debugMode;
+    if (!debugMode) {
+      restoreDebugFill();
+      persist();
+    }
+    render();
+  });
+  requiredElement<HTMLButtonElement>("scenes-debug-fill").addEventListener("click", () => {
+    if (!debugMode || !draft) {
+      return;
+    }
+    if (debugFillOn) {
+      restoreDebugFill();
+    } else {
+      applyDebugFill();
+    }
+    persist();
+    render();
+  });
+
   copyButton.addEventListener("click", () => void copyJson());
   importButton.addEventListener("click", () => void importInTts());
 
@@ -1416,11 +1645,6 @@ export const initScenesTab = (): void => {
       for (const key of catalogs.lightModes) {
         lighting.append(new Option(key, key));
       }
-      const weather = requiredElement<HTMLSelectElement>("scenes-weather");
-      weather.replaceChildren();
-      for (const row of catalogs.weatherConditions) {
-        weather.append(new Option(row.label, row.key));
-      }
       const locationSelect = requiredElement<HTMLSelectElement>("scenes-location-track");
       locationSelect.replaceChildren(new Option("(location)", ""));
       for (const track of catalogs.locationTracks) {
@@ -1433,9 +1657,17 @@ export const initScenesTab = (): void => {
       }
       const saved = window.localStorage.getItem(DRAFT_KEY);
       if (saved) {
-        draft = { ...createDefaultDraft(catalogs, snaps), ...(JSON.parse(saved) as SceneDraft) };
+        const parsed = JSON.parse(saved) as Partial<SceneDraft>;
+        draft = { ...createDefaultDraft(catalogs, snaps), ...parsed };
         draft.standard = { ...createDefaultDraft(catalogs, snaps).standard, ...draft.standard };
         draft.scatter = { ...createDefaultDraft(catalogs, snaps).scatter, ...draft.scatter };
+        if (parsed.weatherRain == null) {
+          const axes = axesFromLegacyWeatherKey(typeof parsed.weatherKey === "string" ? parsed.weatherKey : "none");
+          draft.weatherRain = axes.rain;
+          draft.weatherWind = axes.wind;
+          draft.weatherThunder = axes.thunder;
+          draft.weatherSnow = axes.snow;
+        }
       } else {
         draft = createDefaultDraft(catalogs, snaps);
       }

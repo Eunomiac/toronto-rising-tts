@@ -251,3 +251,15 @@ select {
     padding-left: 1.1rem;
   }
 }
+
+@keyframes tr-token-glow {
+  0%,
+  100% {
+    opacity: 0.28;
+  }
+
+  50% {
+    opacity: 0.72;
+  }
+}
+

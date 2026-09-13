@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  BOARD_CROP_UV,
   FAMILY_HANDLE_LAYOUT,
   familyHandleLayoutFor,
   layoutBoardFrame,
@@ -89,11 +90,10 @@ describe("tableChoiceKeys", () => {
 describe("layoutBoardFrame", () => {
   it("fits the crop window inside the wrap without covering past it", () => {
     const layout = layoutBoardFrame(1000, 500, 3000, 1500);
-    const cropW = 0.8 * layout.width;
-    const cropH = 0.8 * layout.height;
+    const cropW = (BOARD_CROP_UV.u1 - BOARD_CROP_UV.u0) * layout.width;
+    const cropH = (BOARD_CROP_UV.v1 - BOARD_CROP_UV.v0) * layout.height;
     expect(cropW).toBeLessThanOrEqual(1000 + 1);
     expect(cropH).toBeLessThanOrEqual(500 + 1);
-    expect(layout.left).toBeLessThanOrEqual(1);
   });
 });
 

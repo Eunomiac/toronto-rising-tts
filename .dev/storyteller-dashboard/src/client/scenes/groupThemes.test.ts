@@ -1,21 +1,26 @@
 import { describe, expect, it } from "vitest";
-import { comparePickerGroups, groupThemeClass } from "./groupThemes";
+import { comparePickerGroups, groupThemeClass, isImportantGroup, trayMergeLabel } from "./groupThemes";
 
 describe("groupThemes", () => {
-  it("maps known picker groups onto theme classes", () => {
-    expect(groupThemeClass("princesCourt")).toBe("group-theme-camarilla");
-    expect(groupThemeClass("touchstone")).toBe("group-theme-civilian");
-    expect(groupThemeClass("crisisMissing")).toBe("group-theme-independent");
+  it("maps recategorized picker groups", () => {
+    expect(groupThemeClass("petitioners")).toBe("group-theme-independent");
+    expect(groupThemeClass("fiveKeys")).toBe("group-theme-camarilla");
+    expect(groupThemeClass("scarlettAndTheBoys")).toBe("group-theme-camarilla");
+    expect(isImportantGroup("fiveKeys")).toBe(true);
   });
 
-  it("sorts Camarilla before civilian, then by label", () => {
-    const keys = ["touchstone", "princesCourt", "harpies"];
+  it("strips parenthetical suffixes for merged drawers", () => {
+    expect(trayMergeLabel("Friendly Neighborhood Spiders (Garou)")).toBe("Friendly Neighborhood Spiders");
+  });
+
+  it("sorts important Camarilla groups above other Camarilla groups", () => {
+    const keys = ["harpies", "fiveKeys", "princesCourt"];
     const labels: Record<string, string> = {
-      touchstone: "Touchstone",
-      princesCourt: "the Prince's Court",
-      harpies: "the Harpies"
+      harpies: "the Harpies",
+      fiveKeys: "the Five Keys",
+      princesCourt: "the Prince's Court"
     };
     keys.sort((a, b) => comparePickerGroups(a, b, (key) => labels[key] ?? key));
-    expect(keys).toEqual(["harpies", "princesCourt", "touchstone"]);
+    expect(keys[0]).toBe("fiveKeys");
   });
 });

@@ -585,7 +585,7 @@
       "seatKey": "NPC4",
       "kind": "npc",
       "tableSlot": 9,
-      "u": 0.05,
+      "u": 0.35,
       "v": 0.12
     },
     {
@@ -594,7 +594,7 @@
       "seatKey": "NPC2",
       "kind": "npc",
       "tableSlot": 7,
-      "u": 0.0875,
+      "u": 0.38749999999999996,
       "v": 0.12
     },
     {
@@ -603,7 +603,7 @@
       "seatKey": "Purple",
       "kind": "pc",
       "tableSlot": 5,
-      "u": 0.125,
+      "u": 0.425,
       "v": 0.12
     },
     {
@@ -612,7 +612,7 @@
       "seatKey": "Pink",
       "kind": "pc",
       "tableSlot": 3,
-      "u": 0.16249999999999998,
+      "u": 0.4625,
       "v": 0.12
     },
     {
@@ -621,7 +621,7 @@
       "seatKey": "Red",
       "kind": "pc",
       "tableSlot": 1,
-      "u": 0.2,
+      "u": 0.5,
       "v": 0.12
     },
     {
@@ -630,7 +630,7 @@
       "seatKey": "Orange",
       "kind": "pc",
       "tableSlot": 2,
-      "u": 0.2375,
+      "u": 0.5375,
       "v": 0.12
     },
     {
@@ -639,7 +639,7 @@
       "seatKey": "Brown",
       "kind": "pc",
       "tableSlot": 4,
-      "u": 0.27499999999999997,
+      "u": 0.575,
       "v": 0.12
     },
     {
@@ -648,7 +648,7 @@
       "seatKey": "NPC1",
       "kind": "npc",
       "tableSlot": 6,
-      "u": 0.3125,
+      "u": 0.6125,
       "v": 0.12
     },
     {
@@ -657,7 +657,7 @@
       "seatKey": "NPC3",
       "kind": "npc",
       "tableSlot": 8,
-      "u": 0.35,
+      "u": 0.65,
       "v": 0.12
     }
   ],

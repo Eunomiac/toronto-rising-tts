@@ -9,6 +9,7 @@ export type CatalogCharacter = {
   readonly fullName: string;
   readonly isPC: boolean;
   readonly groups: readonly string[];
+  readonly groupRanks?: Readonly<Record<string, number>>;
   readonly pickerGroups: readonly string[];
 };
 
@@ -146,6 +147,10 @@ export type SceneDraft = {
   locationTrack: string;
   backgroundMood: string;
   weatherKey: string;
+  weatherRain: "none" | "rainLight" | "rainHeavy";
+  weatherWind: "none" | "low" | "med" | "max";
+  weatherThunder: boolean;
+  weatherSnow: "none" | "light" | "medium" | "heavy";
   standard: {
     seatSlots: Record<string, SeatSlotRow>;
     polar: PolarToken[];

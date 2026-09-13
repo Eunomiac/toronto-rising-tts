@@ -1,4 +1,5 @@
 import type { ControlBoardSnaps, PolarSnap, SceneCatalogs, SceneDraft, SeatSlotRow } from "./types.js";
+import { applyThunder, isWinterWind, resolveWindCatalogKey, type WeatherAxes } from "./weatherAxes.js";
 
 const MAX_SLOT_UNKNOWN_TABLE = 10;
 
@@ -246,6 +247,10 @@ export const createDefaultDraft = (catalogs: SceneCatalogs, snaps: ControlBoardS
     locationTrack: "",
     backgroundMood: "",
     weatherKey: "none",
+    weatherRain: "none",
+    weatherWind: "none",
+    weatherThunder: false,
+    weatherSnow: "none",
     standard: {
       seatSlots: defaultSeatSlots(catalogs, snaps),
       polar: [],
@@ -325,6 +330,14 @@ const polarByIndex = (snaps: ControlBoardSnaps): Map<number, PolarSnap> => {
   return map;
 };
 
+export const resolveWeatherAxes = (draft: SceneDraft): WeatherAxes =>
+  applyThunder({
+    rain: draft.weatherRain ?? "none",
+    wind: draft.weatherWind ?? "none",
+    thunder: draft.weatherThunder === true,
+    snow: draft.weatherSnow ?? "none"
+  });
+
 export const buildImportPayload = (draft: SceneDraft, catalogs: SceneCatalogs, snaps: ControlBoardSnaps): unknown => {
   if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(draft.sceneKey)) {
     throw new Error("sceneKey: use letters, digits, underscore only; must start with a letter.");
@@ -367,7 +380,6 @@ export const buildImportPayload = (draft: SceneDraft, catalogs: SceneCatalogs, s
     sessionScene.conditions = [...draft.conditions];
   }
 
-  const weather = catalogs.weatherConditions.find((row) => row.key === draft.weatherKey);
   const narrative: Record<string, unknown> = {};
   if (draft.locationTrack !== "") {
     narrative.location = draft.locationTrack;
@@ -375,10 +387,13 @@ export const buildImportPayload = (draft: SceneDraft, catalogs: SceneCatalogs, s
   if (draft.backgroundMood !== "") {
     narrative.backgroundMusic = draft.backgroundMood;
   }
-  if (weather && weather.key !== "none") {
+  const weather = resolveWeatherAxes(draft);
+  const hasWeather = weather.rain !== "none" || weather.wind !== "none" || weather.thunder;
+  if (hasWeather) {
+    const winter = isWinterWind(draft.clockMonth, weather.snow);
     narrative.rain = weather.rain;
-    narrative.wind = weather.wind;
-    narrative.thunderstorm = weather.thunderEnabled;
+    narrative.wind = resolveWindCatalogKey(weather.wind, winter);
+    narrative.thunderstorm = weather.thunder;
   }
   if (Object.keys(narrative).length > 0) {
     sessionScene.soundscapeNarrative = narrative;
@@ -476,12 +491,12 @@ export const buildImportPayload = (draft: SceneDraft, catalogs: SceneCatalogs, s
   };
 };
 
-/** Visible parchment after cropping unused top/right of the control-board image. */
+/** Visible parchment after cropping unused margins around polar packs and centered seats. */
 export const BOARD_CROP_UV = {
-  u0: 0,
-  u1: 0.8,
-  v0: 0.08,
-  v1: 0.88
+  u0: 0.165,
+  u1: 0.835,
+  v0: 0.05,
+  v1: 0.875
 } as const;
 
 export const layoutBoardFrame = (
@@ -493,7 +508,7 @@ export const layoutBoardFrame = (
 ): { width: number; height: number; left: number; top: number } => {
   const cropW = (crop.u1 - crop.u0) * naturalWidth;
   const cropH = (crop.v1 - crop.v0) * naturalHeight;
-  const scale = Math.min(wrapWidth / cropW, wrapHeight / cropH);
+  const scale = Math.min(wrapWidth / cropW, wrapHeight / cropH) * 0.99;
   const width = naturalWidth * scale;
   const height = naturalHeight * scale;
   const cropDisplayW = cropW * scale;

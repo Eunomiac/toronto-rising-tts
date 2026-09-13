@@ -1,34 +1,45 @@
 import { describe, expect, it } from "vitest";
-import { axesFromWeatherKey, cycleRain, weatherKeyFromAxes } from "./weatherAxes";
-
-const catalog = [
-  { key: "none", label: "None", rain: "none", wind: "none", thunderEnabled: false },
-  { key: "rainLight", label: "Light Rain", rain: "rainLight", wind: "none", thunderEnabled: false },
-  { key: "rainHeavy", label: "Heavy Rain", rain: "rainHeavy", wind: "none", thunderEnabled: false },
-  { key: "wind", label: "Wind", rain: "none", wind: "windMed", thunderEnabled: false },
-  { key: "thunderstorm", label: "Thunderstorm", rain: "rainHeavy", wind: "windWinterMax", thunderEnabled: true }
-] as const;
+import {
+  applyThunder,
+  axesFromLegacyWeatherKey,
+  cycleRain,
+  cycleWind,
+  isWinterWind,
+  resolveWindCatalogKey
+} from "./weatherAxes";
 
 describe("weatherAxes", () => {
-  it("reads catalog rows into independent toggles", () => {
-    expect(axesFromWeatherKey("thunderstorm", catalog)).toEqual({
-      rain: "heavy",
-      wind: true,
+  it("cycles rain and wind through catalog strengths", () => {
+    expect(cycleRain("none")).toBe("rainLight");
+    expect(cycleRain("rainLight")).toBe("rainHeavy");
+    expect(cycleRain("rainHeavy")).toBe("none");
+    expect(cycleWind("none")).toBe("low");
+    expect(cycleWind("max")).toBe("none");
+  });
+
+  it("uses winter wind keys in Nov–Feb or when snow is falling", () => {
+    expect(isWinterWind(9, "none")).toBe(false);
+    expect(isWinterWind(12, "none")).toBe(true);
+    expect(isWinterWind(6, "light")).toBe(true);
+    expect(resolveWindCatalogKey("low", false)).toBe("windLow");
+    expect(resolveWindCatalogKey("max", true)).toBe("windWinterMax");
+  });
+
+  it("forces heaviest rain and wind when thunder is on", () => {
+    expect(applyThunder({ rain: "none", wind: "low", thunder: true, snow: "none" })).toEqual({
+      rain: "rainHeavy",
+      wind: "max",
       thunder: true,
-      snow: false
+      snow: "none"
     });
-    expect(axesFromWeatherKey("wind", catalog).wind).toBe(true);
   });
 
-  it("maps toggles onto the nearest catalog key", () => {
-    expect(weatherKeyFromAxes({ rain: "light", wind: false, thunder: false, snow: false })).toBe("rainLight");
-    expect(weatherKeyFromAxes({ rain: "none", wind: true, thunder: false, snow: false })).toBe("wind");
-    expect(weatherKeyFromAxes({ rain: "heavy", wind: true, thunder: true, snow: false })).toBe("thunderstorm");
-  });
-
-  it("cycles rain none \u2192 light \u2192 heavy \u2192 none", () => {
-    expect(cycleRain("none")).toBe("light");
-    expect(cycleRain("light")).toBe("heavy");
-    expect(cycleRain("heavy")).toBe("none");
+  it("restores independent axes from an old single weatherKey", () => {
+    expect(axesFromLegacyWeatherKey("thunderstorm")).toMatchObject({
+      rain: "rainHeavy",
+      wind: "max",
+      thunder: true
+    });
+    expect(axesFromLegacyWeatherKey("rainLight").rain).toBe("rainLight");
   });
 });

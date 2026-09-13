@@ -132,3 +132,72 @@ export const relocatePolarFamily = (
   }
   return next;
 };
+
+export const placeKeysOnPolarFamily = (
+  tokens: PolarToken[],
+  keys: readonly string[],
+  destFamilyId: string,
+  snaps: ControlBoardSnaps
+): PolarToken[] => {
+  const uniqueKeys = [...new Set(keys.filter((key) => key.trim() !== ""))];
+  if (uniqueKeys.length === 0) {
+    return tokens;
+  }
+  const next = tokens
+    .filter((token) => !uniqueKeys.includes(token.characterKey))
+    .map((token) => ({ ...token }));
+  const destOccupied = next.filter((token) => {
+    const snap = snaps.polar.find((row) => row.snapIndex === token.snapIndex);
+    return snap?.familyId === destFamilyId;
+  });
+  const occupied = new Set(next.map((token) => token.snapIndex));
+  const moveToken = (characterKey: string, snapIndex: number, light?: PolarToken["npcLightMode"]): void => {
+    const row = next.find((token) => token.characterKey === characterKey);
+    if (!row) {
+      return;
+    }
+    occupied.delete(row.snapIndex);
+    row.snapIndex = snapIndex;
+    occupied.add(snapIndex);
+    if (light) {
+      row.npcLightMode = light;
+    }
+  };
+  if (destOccupied.length > 0) {
+    const priority = evictionPriority(snaps, destFamilyId);
+    let moveIndex = 0;
+    for (const familyId of priority) {
+      const empty = familySnaps(snaps, familyId).filter((snap) => !occupied.has(snap.snapIndex));
+      for (const snap of empty) {
+        const occupant = destOccupied[moveIndex];
+        if (!occupant) {
+          break;
+        }
+        moveToken(occupant.characterKey, snap.snapIndex, "OFF");
+        moveIndex += 1;
+      }
+      if (moveIndex >= destOccupied.length) {
+        break;
+      }
+    }
+  }
+  const destSnaps = familySnaps(snaps, destFamilyId);
+  const limit = Math.min(uniqueKeys.length, destSnaps.length);
+  for (let i = 0; i < limit; i += 1) {
+    const key = uniqueKeys[i];
+    const dest = destSnaps[i];
+    if (!key || !dest) {
+      break;
+    }
+    const existing = next.find((token) => token.snapIndex === dest.snapIndex);
+    if (existing) {
+      continue;
+    }
+    next.push({
+      characterKey: key,
+      snapIndex: dest.snapIndex,
+      npcLightMode: dest.defaultLightMode === "STANDARD" ? "STANDARD" : "OFF"
+    });
+  }
+  return next;
+};

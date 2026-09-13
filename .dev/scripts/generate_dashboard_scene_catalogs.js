@@ -33,6 +33,9 @@ const REQUIRED_NPC_SEATS = ["NPC1", "NPC2", "NPC3", "NPC4"];
 const REQUIRED_SCATTER_AREAS = ["scatter1", "scatter2", "scatter3", "scatter4", "scatter5", "scatter6"];
 const PALETTE_GROUP_BLACKLIST = { princesCourt: true };
 
+/** Dashboard `controlBoard_standard.webp` seats: slot 1 is at image center (u = 0.50). */
+const DASHBOARD_SEAT_ROW_UV = { uMin: 0.35, uMax: 0.65 };
+
 /** Palette groups that are not keys in C.CHRONICLE_DATA.coteries. */
 const EXTRA_PICKER_GROUP_LABELS = {
   aapilu: "Aapilu",
@@ -652,9 +655,11 @@ function main() {
   const characters = parseTopLevelEntries(extractBlock(npcsSrc, "D.characters =")).map((entry) => {
     const groupsBlockMatch = entry.body.match(/groups\s*=\s*\{([^}]*)\}/);
     const groups = [];
+    const groupRanks = {};
     if (groupsBlockMatch) {
-      for (const m of groupsBlockMatch[1].matchAll(/([A-Za-z_][A-Za-z0-9_]*)\s*=/g)) {
+      for (const m of groupsBlockMatch[1].matchAll(/([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(-?\d+)/g)) {
         groups.push(m[1]);
+        groupRanks[m[1]] = Number(m[2]);
       }
     }
     return {
@@ -662,6 +667,7 @@ function main() {
       fullName: readStringField(entry.body, "fullName") || readStringField(entry.body, "name") || entry.key,
       isPC: readBooleanField(entry.body, "isPC") === true,
       groups,
+      groupRanks,
       pickerGroups: groups.filter((g) => PALETTE_GROUP_BLACKLIST[g] !== true),
     };
   });
@@ -702,7 +708,7 @@ function main() {
   const seatRow = parseSeatRow(boardSrc);
   const scatter = parseScatterBoard(boardSrc);
   const polarSnaps = generatePolarSnaps(snapCfg, stage);
-  const seatSnaps = generateSeatRowSnaps(seatRow);
+  const seatSnaps = generateSeatRowSnaps({ ...seatRow, ...DASHBOARD_SEAT_ROW_UV });
   seatSnaps.forEach((snap, i) => {
     snap.snapIndex = polarSnaps.length + i + 1;
   });

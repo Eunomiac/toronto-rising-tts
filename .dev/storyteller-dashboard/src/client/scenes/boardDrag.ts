@@ -15,7 +15,20 @@ export const killBoardDrags = (dragLayer: HTMLElement): void => {
 const pickupSizePx = (boardFrame: HTMLElement): number =>
   Math.max(28, boardFrame.getBoundingClientRect().width * PICKUP_BOARD_FRACTION);
 
-const liftToDragLayer = (el: HTMLElement, boardFrame: HTMLElement, dragLayer: HTMLElement, pickup: boolean): void => {
+type DragPointer = {
+  x: number;
+  y: number;
+  update: (applyBounds?: boolean) => void;
+  pointerEvent?: Event;
+};
+
+const liftToDragLayer = (
+  el: HTMLElement,
+  boardFrame: HTMLElement,
+  dragLayer: HTMLElement,
+  pickup: boolean,
+  inst: DragPointer
+): void => {
   const rect = el.getBoundingClientRect();
   dragLayer.append(el);
   el.classList.add("scenes-token-dragging");
@@ -32,6 +45,9 @@ const liftToDragLayer = (el: HTMLElement, boardFrame: HTMLElement, dragLayer: HT
     height: size,
     zIndex: 40
   });
+  inst.x = 0;
+  inst.y = 0;
+  inst.update(true);
 };
 
 const leaveFadedOrigin = (el: HTMLElement): void => {
@@ -44,18 +60,11 @@ const leaveFadedOrigin = (el: HTMLElement): void => {
 };
 
 const playDropPulse = (el: HTMLElement, done: () => void): void => {
-  gsap.fromTo(
-    el,
-    { scale: 1.12 },
-    {
-      scale: 0.92,
-      duration: 0.08,
-      yoyo: true,
-      repeat: 1,
-      ease: "power2.out",
-      onComplete: done
-    }
-  );
+  gsap.killTweensOf(el);
+  const timeline = gsap.timeline({ onComplete: done });
+  timeline.to(el, { scale: 0.86, duration: 0.08, ease: "power2.in" });
+  timeline.to(el, { scale: 1.1, duration: 0.09, ease: "power2.out" });
+  timeline.to(el, { scale: 1, duration: 0.08, ease: "power1.out" });
 };
 
 export type BindBoardDragOptions = {
@@ -80,8 +89,7 @@ export const bindBoardDrag = (el: HTMLElement, options: BindBoardDragOptions): v
       if (options.leaveOrigin === true) {
         leaveFadedOrigin(el);
       }
-      liftToDragLayer(el, options.boardFrame, options.dragLayer, options.pickup);
-      this.update(true);
+      liftToDragLayer(el, options.boardFrame, options.dragLayer, options.pickup, this as unknown as DragPointer);
       if (options.pickup) {
         gsap.fromTo(
           el,

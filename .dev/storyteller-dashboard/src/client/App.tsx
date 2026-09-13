@@ -122,7 +122,6 @@ export const App = (): ReactElement => {
       >
         <div className="scenes-workspace">
           <aside className="scenes-group-rail" aria-label="NPC groups">
-            <div id="scenes-palette-list" className="scenes-palette-list" hidden></div>
             <div id="scenes-group-trays" className="scenes-group-trays"></div>
           </aside>
           <div className="scenes-board-wrap" id="scenes-board-wrap">
@@ -130,7 +129,11 @@ export const App = (): ReactElement => {
               <img id="scenes-board-img" className="scenes-board-img" alt="Control board" />
               <div id="scenes-board-overlay" className="scenes-board-overlay"></div>
             </div>
-            <button id="scenes-clear-stage" className="scenes-clear-stage" type="button">Clear Stage</button>
+            <div className="scenes-board-tools">
+              <button id="scenes-debug-toggle" type="button">Debug</button>
+              <button id="scenes-debug-fill" type="button" hidden>Fill snaps</button>
+              <button id="scenes-clear-stage" className="scenes-clear-stage" type="button">Clear Stage</button>
+            </div>
           </div>
           <aside className="scenes-widget-rail" aria-label="Scene controls">
             <input id="scenes-title" type="text" placeholder="Scene title" aria-label="Scene title" />
@@ -140,21 +143,29 @@ export const App = (): ReactElement => {
             </div>
             <div className="scenes-widget scenes-place-widget">
               <button id="scenes-district" type="button" title="District">
-                <span className="scenes-widget-icon" aria-hidden="true">⌖</span>
+                <img className="scenes-widget-icon" src="/icons/scenes/district.svg" alt="" />
                 <span className="scenes-widget-value">District</span>
               </button>
               <button id="scenes-site" type="button" title="Site">
-                <span className="scenes-widget-icon" aria-hidden="true">⌂</span>
+                <img className="scenes-widget-icon" src="/icons/scenes/site.svg" alt="" />
                 <span className="scenes-widget-value">Site</span>
               </button>
               <button id="scenes-skybox" type="button" title="Skybox">
-                <span className="scenes-widget-icon" aria-hidden="true">☁</span>
+                <img className="scenes-widget-icon" src="/icons/scenes/skybox.svg" alt="" />
                 <span className="scenes-widget-value">Skybox</span>
               </button>
+              <label className="scenes-fog-toggle" title="Top fog">
+                <img className="scenes-widget-icon" src="/icons/scenes/fog.svg" alt="" />
+                <input id="scenes-fog" type="checkbox" defaultChecked />
+                Fog
+              </label>
             </div>
             <div className="scenes-widget scenes-clock-widget">
               <div className="scenes-clock-face">
-                <output id="scenes-clock-time-out" htmlFor="scenes-clock-minutes">21:00</output>
+                <div className="scenes-clock-readout">
+                  <output id="scenes-clock-date-out" htmlFor="scenes-clock-day">Sunday, September 13, 2026</output>
+                  <output id="scenes-clock-time-out" htmlFor="scenes-clock-minutes">9:00 PM</output>
+                </div>
                 <label className="scenes-present-day" title="Present day">
                   <input id="scenes-present-day" type="checkbox" defaultChecked />
                   Now
@@ -178,24 +189,39 @@ export const App = (): ReactElement => {
               </div>
             </div>
             <div className="scenes-widget scenes-weather-widget">
-              <select id="scenes-weather" hidden></select>
               <div className="scenes-weather-axes">
-                <button id="scenes-weather-rain" type="button" title="Rain">🌧</button>
-                <button id="scenes-weather-snow" type="button" title="Snow is not in the import catalog yet" disabled>❄</button>
-                <button id="scenes-weather-wind" type="button" title="Wind">🌬</button>
-                <button id="scenes-weather-thunder" type="button" title="Thunder">⚡</button>
+                <button id="scenes-weather-rain" type="button" title="No rain">
+                  <img src="/icons/scenes/rain.svg" alt="" />
+                </button>
+                <button id="scenes-weather-snow" type="button" title="No snow">
+                  <img src="/icons/scenes/snow.svg" alt="" />
+                </button>
+                <button id="scenes-weather-wind" type="button" title="No wind">
+                  <img src="/icons/scenes/wind.svg" alt="" />
+                </button>
+                <button id="scenes-weather-thunder" type="button" title="No thunder">
+                  <img src="/icons/scenes/thunder.svg" alt="" />
+                </button>
               </div>
-              <label className="scenes-fog-toggle" title="Top fog">
-                <input id="scenes-fog" type="checkbox" defaultChecked />
-                Fog
+              <label className="scenes-sound-row" title="Lighting">
+                <img className="scenes-widget-icon" src="/icons/scenes/lighting.svg" alt="" />
+                <select id="scenes-lighting" aria-label="Lighting"></select>
               </label>
-              <select id="scenes-lighting" aria-label="Lighting" title="Lighting"></select>
             </div>
             <div className="scenes-widget scenes-sound-widget">
-              <select id="scenes-location-track" aria-label="Location track" title="Location track"></select>
-              <select id="scenes-background-mood" aria-label="Background mood" title="Background mood"></select>
+              <label className="scenes-sound-row" title="Location track">
+                <img className="scenes-widget-icon" src="/icons/scenes/location.svg" alt="" />
+                <select id="scenes-location-track" aria-label="Location track"></select>
+              </label>
+              <label className="scenes-sound-row" title="Background mood">
+                <img className="scenes-widget-icon" src="/icons/scenes/music.svg" alt="" />
+                <select id="scenes-background-mood" aria-label="Background mood"></select>
+              </label>
             </div>
-            <div className="scenes-widget scenes-conditions-widget" id="scenes-conditions-list"></div>
+            <div className="scenes-widget scenes-conditions-widget">
+              <h3 className="scenes-widget-heading">Conditions</h3>
+              <div id="scenes-conditions-list"></div>
+            </div>
             <div className="scenes-widget scenes-table-widget" id="scenes-table-row">
               <div id="scenes-table-chips" className="scenes-table-chips"></div>
             </div>
