@@ -76,7 +76,10 @@ function openBrowser() {
     );
     return;
   }
-  const child = spawn(chromeExe, [`--profile-directory=${profileDir}`, url], {
+  const child = spawn(
+    chromeExe,
+    [`--profile-directory=${profileDir}`, "--new-window", url],
+    {
     cwd: root,
     stdio: "ignore",
     detached: true,
