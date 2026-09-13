@@ -38,33 +38,16 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 
 🤖 Fill Stage (Debug) now puts Rashid on every polar snap and chair. Names use pack-side placement (`SNAP_NAME_LAYOUT` / `SEAT_NAME_LAYOUT` if you want per-slot tweaks). I skipped dashboard radial stagger so Center/Mid snaps sit on the painted packs; Center Left and Center Right still have 4 snaps each because one candidate sits just outside Lua `validSnaps`. Fill-all-Rashid is the worst-case overlap; mixed real NPCs read more clearly.
 
-✔️ SD-24. Add a gently pulsing glowing aura to lit tokens, with the pulses staggered slightly from each other.  At minimum brightness the aura should still be visible, i.e. it should pulse between "minimal brightness" and "maximum brightness", which should be a fairly subtle change, just a gentle throbbing as if representing a dimly pulsing light.
+❌ SD-27. Dragging a group-move handle off the board should clear that entire group.
 
-👨 Quick change: The `::after` element should have `inset: 0%`.
+👨 Dragging a Group Handle off the side of the board likewise doesn't remove it, but presents a toast error telling me to drop it on a polar snap.
 
-✔️ SD-26. The weather buttons need a bit of work.
+❌ SD-28. "Off the board" should be any location that is not over the board image itself. When dragging anything, only the board should be set up as a drop target -- e.g. you cannot drag tokens onto _specific_ NPC drawers; dragging them over the drawers simply counts as "off the board" and the token is cleared normally.  Tokens that are being dragged off the board should get a red outline/tint/border/indication that dropping them will clear them.
 
-👨 For displaying multiple icons to represent the levels, instead of absolutely-positioned stacked icons, display them with standard positioning in a centered flex-box so that the icons appear centered and adjacent to each other, rather than stacked and vertically offset.
+👨 Dragging a token off of the left or right side of the board does not remove it from the board nor give it the red border indicating it will be removed.
 
-✔️ SD-27. Dragging a group-move handle off the board should clear that entire group.
+SD-29. If I start to drag a group onto the board, but then change my mind and drag it back off the board, the group will often still snap to the nearest snap group family. If a drag handle is not within the bounds of the board, it should never result in tokens being added to the board when released.
 
-✔️ SD-28. "Off the board" should be any location that is not over the board image itself. When dragging anything, only the board should be set up as a drop target -- e.g. you cannot drag tokens onto _specific_ NPC drawers; dragging them over the drawers simply counts as "off the board" and the token is cleared normally.  Tokens that are being dragged off the board should get a red outline/tint/border/indication that dropping them will clear them.
+✔️ SD-30. `grid-template-columns: 18.45rem minmax(0, 1fr) 20.5rem` on the `.scenes-workspace` grid provides just enough room for five tokens to fit horizontally. The first column is increased by 0.2rem, so by reducing the `gap` from `0.45rem` to `0.35rem`, we should be able to maintain the same width of the central board.
 
-✔️ SD-29. Double-clicking a group drawer header in the left panel should clear all staged NPCs from that group, either returning them to the drawer or putting them back in their table seat.
-
-✔️ SD-30. Some style changes to the group colors:
-- Camarilla should be gold
-- Anarch should be red
-- Sabbat should be deep/dark purple
-- Independents should be grey
-- Hecata should be inverted grey (i.e. black text on a bright grey/white background)
-- Werewolves should be brown
-- Aapilu should be a deep blood red (though make them distinct from the Anarchs)
-
-✔️ SD-31. The left panel is going to contain quite a few different NPC collections (including generics and memoriam NPCs), and could also be used for the scene library, to list scenes that have been saved, or to load in scenes that have been previously created. As such, we should implement a vertically-oriented sequence of tabs that open the various panels; for now, just add the tab column with the following tabs. Clicking on any tab other than "Main NPCs" should simply present an empty panel, until we implement it:
-- "Scenes" -- Will contain the list of saved scenes for loading and editing
-- "Main NPCs" -- This should display the current panel of cataloged NPCs
-- "Generic NPCs" -- Will eventually replace the "Stage NPCs" tab of the Storyteller Dashboard completely.
-- "Memoriam NPCs" -- Will only be clickable/active if the current scene is a Memoriam scene, which we will implement in the future.
-
-✔️ SD-32. The faces on the tokens are a little small; could you scale up the cutouts on the interior of the tokens just a bit?
+🤖 Confirmed: three-column grid has two gaps, so −0.10rem on each gap returns the same +0.20rem the left rail takes. The middle `1fr` column (the stage board) stays the same width. Snap `u`/`v` are percentages on the board image, so even a 1px rounding slip would not change catalog coordinates.
