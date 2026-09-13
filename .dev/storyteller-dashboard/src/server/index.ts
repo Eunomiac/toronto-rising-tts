@@ -1,5 +1,5 @@
 import { createReadStream } from "node:fs";
-import { stat } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -18,6 +18,10 @@ const distDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 const dashboardRoot = path.resolve(distDir, "..");
 const genericNpcCatalogPath = path.join(dashboardRoot, "data", "generic-npcs.json");
 const genericNpcImageDir = path.resolve(dashboardRoot, "..", "..", "assets", "images", "NPCs", "Generic");
+const sceneCatalogsPath = path.join(dashboardRoot, "data", "scene-catalogs.json");
+const controlBoardSnapsPath = path.join(dashboardRoot, "data", "control-board-snaps.json");
+const cataloguedNpcImageDir = path.resolve(dashboardRoot, "..", "..", "assets", "images", "NPCs", "Catalogued");
+const scenesAssetDir = path.join(dashboardRoot, "assets", "scenes");
 
 const contentTypes: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -92,6 +96,35 @@ const serveGenericNpcImage = async (response: ServerResponse, pathname: string):
   }
 };
 
+const serveSafeWebp = async (response: ServerResponse, imageDir: string, filename: string, invalidMessage: string): Promise<void> => {
+  const filePath = resolveGenericNpcImagePath(imageDir, filename);
+  if (!filePath) {
+    sendJson(response, 400, { error: invalidMessage });
+    return;
+  }
+  try {
+    const fileStat = await stat(filePath);
+    if (!fileStat.isFile()) {
+      sendJson(response, 404, { error: `Missing image: ${filename}` });
+      return;
+    }
+    response.writeHead(200, { "Content-Type": "image/webp" });
+    createReadStream(filePath).pipe(response);
+  } catch {
+    sendJson(response, 404, { error: `Missing image: ${filename}` });
+  }
+};
+
+const serveJsonFile = async (response: ServerResponse, filePath: string, missingMessage: string): Promise<void> => {
+  try {
+    const text = await readFile(filePath, "utf8");
+    response.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    response.end(text);
+  } catch {
+    sendJson(response, 500, { error: missingMessage });
+  }
+};
+
 const handleApi = async (request: IncomingMessage, response: ServerResponse, pathname: string): Promise<void> => {
   if (request.method === "GET" && pathname === "/api/generic-npcs") {
     try {
@@ -101,6 +134,24 @@ const handleApi = async (request: IncomingMessage, response: ServerResponse, pat
       const message = error instanceof Error ? error.message : "Could not load generic NPC catalog.";
       sendJson(response, 500, { error: message });
     }
+    return;
+  }
+
+  if (request.method === "GET" && pathname === "/api/scene-catalogs") {
+    await serveJsonFile(
+      response,
+      sceneCatalogsPath,
+      "scene-catalogs.json is missing. Run npm run dashboard:scene-catalogs from the repo root."
+    );
+    return;
+  }
+
+  if (request.method === "GET" && pathname === "/api/control-board-snaps") {
+    await serveJsonFile(
+      response,
+      controlBoardSnapsPath,
+      "control-board-snaps.json is missing. Run npm run dashboard:scene-catalogs from the repo root."
+    );
     return;
   }
 
@@ -167,6 +218,26 @@ void (async () => {
 
         if (request.method === "GET" && url.pathname.startsWith("/generic-npc-images/")) {
           await serveGenericNpcImage(response, url.pathname);
+          return;
+        }
+
+        if (request.method === "GET" && url.pathname.startsWith("/catalogued-npc-images/")) {
+          await serveSafeWebp(
+            response,
+            cataloguedNpcImageDir,
+            decodeURIComponent(url.pathname.slice("/catalogued-npc-images/".length)),
+            "Invalid catalogued NPC image filename."
+          );
+          return;
+        }
+
+        if (request.method === "GET" && url.pathname.startsWith("/scenes-assets/")) {
+          await serveSafeWebp(
+            response,
+            scenesAssetDir,
+            decodeURIComponent(url.pathname.slice("/scenes-assets/".length)),
+            "Invalid scenes asset filename."
+          );
           return;
         }
 

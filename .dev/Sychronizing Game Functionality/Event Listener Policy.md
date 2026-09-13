@@ -70,6 +70,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | --- | --- | --- | --- |
 | `GlobalGameboardApply/Clear/ClearClick/RecoverStrays/Save/Load/ToggleLayoutLock/ToggleControlBoardSnaps/TokenDroppedOnDiceBag/StageLerpOrchestrator` | C | 5 | Gameboard; Save is state-only (B); RecoverStrays = right-click Clear (TOR-485) |
 | `GlobalImportGenericNpcs` / `HUD_genericNpcImportConfirm` / `HUD_genericNpcImportCancel` | B+C | 5 | TOR-560 generic import: parse keys → ST label modal → spawn token/figurine/light; Dashboard executeLua |
+| `GlobalImportSceneJson` | B | 5 | TOR-570 Dashboard execute-lua: Scene Constructor JSON → `SceneLibrary.importConstructorJsonText` (library row only, no Apply). No Steam gate (no clicker). Same write path as in-game Import Scene. |
 | `GlobalGameboardInstallPaletteSnaps` | C | Done | palette snap install |
 | `GlobalGameboardSyncSnapsToggleLabel` | A | — | snaps + layout-lock toolbar labels |
 | `GlobalToggleSignalFireState` | C | 5 | signal lights; on/off = world Y — seat layout preserves per-seat Y (TOR-380), no gameState reconciler |

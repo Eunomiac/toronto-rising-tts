@@ -26,10 +26,9 @@ Runs on **port 8788** by default.
 A compact tab row sits flush with the top of the viewport:
 
 1. **Stage NPCs** (default) — searchable generic cutout grid, saved search tags, 300px hover preview of the full cutout, selection queue, copy comma-separated keys. Catalogue refreshes from **Generics Export** when this server starts. See [Generic NPCs.md](../Storyteller%20Dashboard%20Docs/Generic%20NPCs.md).
-2. **Lua** — Execute Code into a live TTS session (same External Editor hook as the TTS Tools extension). Disable the extension first; only one process can listen on port 39998.
-3. **Generate NPC** — the existing OpenAI NPC generator (prompt, cards, session history).
-
-A **Scenes** tab is planned. Until it ships, the import JSON contract lives in [Scene Import Guide.md](../Storyteller%20Dashboard%20Docs/Scene%20Import%20Guide.md) (written from the live TTS importer, not the Scene Constructor templates).
+2. **Scenes** — compact Standard / Scatter control-board editor. Copy JSON or Import in TTS writes a **library row only** (does not Apply). Catalogs are generated from Lua (`npm run dashboard:scene-catalogs`). See [Scene Import Guide.md](../Storyteller%20Dashboard%20Docs/Scene%20Import%20Guide.md).
+3. **Lua** — Execute Code into a live TTS session (same External Editor hook as the TTS Tools extension). Disable the extension first; only one process can listen on port 39998.
+4. **Generate NPC** — the existing OpenAI NPC generator (prompt, cards, session history).
 
 ## What is included
 

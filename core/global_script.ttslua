@@ -1460,6 +1460,26 @@ function GlobalImportGenericNpcsFromString(keysString)
     return GlobalImportGenericNpcs(keysString)
 end
 
+--- Storyteller Dashboard / External Editor: import Scene Constructor JSON into the library (no Apply).
+--- No Steam gate: execute-lua has no clicker. Same write path as the in-game Import Scene modal.
+--- @param params string|table JSON text, or `{ json = "..." }`
+--- @return string
+function GlobalImportSceneJson(params)
+    local jsonText = params
+    if type(params) == "table" then
+        jsonText = params.json or params[1]
+    end
+    if type(jsonText) ~= "string" then
+        return "GlobalImportSceneJson: expected a JSON string."
+    end
+    local SceneLibrary = require("core.scene_library")
+    local ok, msg = SceneLibrary.importConstructorJsonText(jsonText)
+    if ok then
+        return msg
+    end
+    return "Import failed: " .. tostring(msg)
+end
+
 function HUD_genericNpcImportConfirm(player, button, id)
     if not U.isStorytellerSteamPlayer(player) then
         return

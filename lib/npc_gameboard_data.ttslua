@@ -150,6 +150,28 @@ D.CONTROL_BOARD_SEAT_ROW = {
   },
 }
 
+--- Scatter-mode overlay on CONTROL_BOARD (Dashboard Scenes tab + future in-game scatter Apply).
+--- Six labeled areas; each has a pentagon of PC center slots (1–5) and a 12-slot NPC orbit
+--- (slot 12 at 12 o'clock, then 1–11 clockwise). Scatter does not store u/v in import JSON —
+--- slots are grouping only. Dashboard overlay coordinates are generated from these origins.
+D.SCATTER_BOARD = {
+  areaOrder = { "scatter1", "scatter2", "scatter3", "scatter4", "scatter5", "scatter6" },
+  centerSlotCount = 5,
+  orbitSlotCount = 12,
+  --- Pentagon slot 1 degrees from +u (0° = +u, 90° = +v), then counterclockwise 72°.
+  centerSlot1Deg = 234,
+  --- Orbit slot 12 degrees from +u (90° = 12 o'clock / +v); remaining slots clockwise 30°.
+  orbitSlot12Deg = 90,
+  areas = {
+    scatter1 = { origin = { u = 0.23, v = 0.80 }, centerRadius = 0.032, orbitRadius = 0.078 },
+    scatter2 = { origin = { u = 0.77, v = 0.80 }, centerRadius = 0.032, orbitRadius = 0.078 },
+    scatter3 = { origin = { u = 0.82, v = 0.45 }, centerRadius = 0.032, orbitRadius = 0.078 },
+    scatter4 = { origin = { u = 0.50, v = 0.18 }, centerRadius = 0.032, orbitRadius = 0.078 },
+    scatter5 = { origin = { u = 0.18, v = 0.45 }, centerRadius = 0.032, orbitRadius = 0.078 },
+    scatter6 = { origin = { u = 0.50, v = 0.52 }, centerRadius = 0.032, orbitRadius = 0.078 },
+  },
+}
+
 --- Groups excluded when picking palette row membership from `npcs_data` character `groups`.
 --- After filtering, a single remaining group wins; if multiple remain, `pairs()` picks one.
 D.PALETTE_GROUP_BLACKLIST = {

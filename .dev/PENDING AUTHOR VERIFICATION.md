@@ -17,7 +17,20 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-12 — TOR-567 TEST BED session-start intro._
+_Last populated: 2026-09-13 — TOR-570 Storyteller Dashboard Scenes tab._
+
+### Storyteller Dashboard
+
+#### TOR-570 — Storyteller Dashboard Scenes tab
+
+**How to verify:** Restart the Storyteller Dashboard (`npm run storyteller-dashboard:dev` from the repo, or restart the existing 8788 window) so it picks up the new Scenes tab. Save & Play in TTS so the new import function is loaded. Maximize the dashboard at 1920×1080 — the Scenes tab should fit without page scroll (only pop-up pickers may scroll). Disable TTS Tools and leave External Editor on before **Import in TTS**.
+
+1. **Standard:** Leave Standard selected. Confirm the five PCs start on the chair row. Click **Add NPCs…**, pick a named NPC, drag them onto the stage (polar pack). Double-click that token — the frame should switch between lit and unlit. **Copy JSON** and confirm it includes `"placementMode": "standard"` and `npcWorld.placements`. Paste that JSON into the in-game **Import Scene** box — it should accept. **Import in TTS** from the dashboard should add/replace a library button without changing the live table.
+2. **Scatter:** Click **Scatter**. Table chips should hide. Drag PCs onto a numbered center pentagon and NPCs onto an orbit ring. **Copy JSON** should include `scatterPlacements` and must **not** include `seatSlots`, `npcWorld`, or `tableKey`. Import should add a library row; the table should stay as it was.
+3. **Must fail (path error, not repaired):** Standard JSON that also has `scatterPlacements`; Scatter JSON that also has `seatSlots` / `npcWorld` / `tableKey`; missing scatter area keys; `npcWorld.byArea` on schemaVersion 2; `placementMode` set to anything other than `standard` or `scatter`.
+4. **Group handle (Standard only):** Put NPCs on a destination polar pack, then drag the gold group handle from another occupied pack onto it. The destination tokens should be pushed aside and land unlit; the moving pack should fill the destination.
+
+**Context:** Catalogs come from `npm run dashboard:scene-catalogs`. relatedTo **TOR-569** (Scene Import Guide), parent **TOR-552** (tab shell).
 
 ### Memoriam
 

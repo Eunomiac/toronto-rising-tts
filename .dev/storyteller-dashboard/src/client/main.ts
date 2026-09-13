@@ -14,6 +14,7 @@ import {
 } from "../shared/npc.js";
 import { initStageNpcs } from "./stageNpcs.js";
 import { initLuaTab } from "./luaTab.js";
+import { initScenesTab } from "./scenesTab.js";
 
 type LockMap = Partial<Record<keyof Npc, boolean>>;
 type NpcArrayField = "roleplay" | "mannerisms" | "sampleDialogue" | "notableDicePools" | "disciplines" | "sceneHooks";
@@ -109,6 +110,7 @@ const initTabs = (): void => {
 
 initTabs();
 void initStageNpcs();
+initScenesTab();
 initLuaTab();
 
 const promptElement = requiredElement<HTMLTextAreaElement>("prompt");

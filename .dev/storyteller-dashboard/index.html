@@ -9,6 +9,7 @@
   <body>
     <nav class="app-tabs" role="tablist" aria-label="Storyteller Dashboard">
       <button id="tab-stage-npcs" class="lock active" type="button" role="tab" aria-controls="panel-stage-npcs" aria-selected="true" tabindex="0">Stage NPCs</button>
+      <button id="tab-scenes" type="button" role="tab" aria-controls="panel-scenes" aria-selected="false" tabindex="-1">Scenes</button>
       <button id="tab-lua" type="button" role="tab" aria-controls="panel-lua" aria-selected="false" tabindex="-1">Lua</button>
       <button id="tab-generate-npc" type="button" role="tab" aria-controls="panel-generate-npc" aria-selected="false" tabindex="-1">Generate NPC</button>
     </nav>
@@ -43,6 +44,42 @@
         <p class="generic-npc-preview-empty" id="generic-npc-preview-empty">Hover a cutout</p>
         <p class="generic-npc-preview-label" id="generic-npc-preview-label" hidden></p>
       </aside>
+    </section>
+
+    <section id="panel-scenes" class="tab-panel scenes-panel" role="tabpanel" aria-labelledby="tab-scenes" hidden>
+      <div class="scenes-chrome">
+        <input id="scenes-scene-key" type="text" spellcheck="false" placeholder="sceneKey" aria-label="Scene key" />
+        <input id="scenes-title" type="text" placeholder="Title" aria-label="Scene title" />
+        <div class="scenes-mode-toggle">
+          <button id="scenes-mode-standard" class="lock active" type="button">Standard</button>
+          <button id="scenes-mode-scatter" type="button">Scatter</button>
+        </div>
+        <div id="scenes-table-chips" class="scenes-table-chips"></div>
+        <label class="scenes-check"><input id="scenes-present-day" type="checkbox" checked /> Present day</label>
+        <select id="scenes-lighting" aria-label="Lighting"></select>
+        <label class="scenes-check"><input id="scenes-fog" type="checkbox" checked /> Top fog</label>
+        <button id="scenes-district" type="button">District</button>
+        <button id="scenes-site" type="button">Site</button>
+        <button id="scenes-skybox" type="button">Skybox</button>
+        <button id="scenes-sound" type="button">Soundscape</button>
+        <button id="scenes-conditions" type="button">Conditions</button>
+        <div class="status idle" id="scenes-status">Ready.</div>
+      </div>
+      <div class="scenes-palette">
+        <button id="scenes-add-npcs" type="button">Add NPCs…</button>
+        <div id="scenes-palette-list" class="scenes-palette-list"></div>
+      </div>
+      <div class="scenes-board-wrap">
+        <div class="scenes-board-stage">
+          <img id="scenes-board-img" class="scenes-board-img" alt="Control board" />
+          <div id="scenes-board-overlay" class="scenes-board-overlay"></div>
+        </div>
+      </div>
+      <footer class="scenes-footer">
+        <button id="scenes-copy" type="button">Copy JSON</button>
+        <button id="scenes-import" type="button" disabled>Import in TTS</button>
+        <div class="status idle" id="scenes-bridge-status">Checking TTS bridge…</div>
+      </footer>
     </section>
 
     <section id="panel-lua" class="tab-panel lua-panel" role="tabpanel" aria-labelledby="tab-lua" hidden>

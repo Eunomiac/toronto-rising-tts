@@ -2655,52 +2655,14 @@ function StorytellerScenesPanel.confirmImportConstructorModal(player)
         U.AlertGM("Only the Storyteller can import scenes.")
         return
     end
-    local rawText = U.sanitizeJsonTextRemoveTrailingCommas(ctorDraft.importJson or "")
-    if string.match(rawText, "^%s*$") then
-        ctorSetImportError("Paste JSON first, then click Import.")
-        return
-    end
-    local decoded = JSON.decode(rawText)
-    if decoded == nil then
-        ctorSetImportError("Invalid JSON: could not parse (check commas and quotes).")
-        return
-    end
-    if type(decoded) ~= "table" then
-        ctorSetImportError("Invalid JSON: root must be an object.")
-        return
-    end
-    local ok, err, normalized = SceneLibrary.validateAndNormalizeImportPayload(decoded)
+    local ok, msg = SceneLibrary.importConstructorJsonText(ctorDraft.importJson or "")
     if not ok then
-        ctorSetImportError(err or "Import validation failed.")
+        ctorSetImportError(msg or "Import validation failed.")
         return
     end
-    local sceneKey = normalized.sceneKey
-    local entry = {
-        title = normalized.title,
-        receivesLiveWrites = false,
-        sessionScene = normalized.sessionScene,
-    }
-    S.setStateVal(entry, "sceneLibrary", "scenes", sceneKey)
-    local order = S.getStateVal("sceneLibrary", "order")
-    if type(order) ~= "table" then
-        order = {}
-    end
-    order = U.clone(order, true)
-    local found = false
-    for _, k in ipairs(order) do
-        if k == sceneKey then
-            found = true
-            break
-        end
-    end
-    if not found then
-        order[#order + 1] = sceneKey
-    end
-    S.setStateVal(order, "sceneLibrary", "order")
-    S.validateState()
     StorytellerScenesPanel.closeImportConstructorModal()
     StorytellerScenesPanel.refresh()
-    U.AlertGM("Scene imported: " .. sceneKey .. " (not activated — use scene controls when wired).")
+    U.AlertGM(msg)
 end
 
 --- Opens fork modal: prefill titles via `text` attribute and stash defaults.

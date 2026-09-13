@@ -427,7 +427,7 @@ function S.GetDefaultGameState()
             activeKey = nil,
             --- Button order; values must be keys of `scenes`.
             order = {},
-            --- [sceneKey] = { title, receivesLiveWrites, sessionScene = { ... } }
+            --- [sceneKey] = { title, receivesLiveWrites, placementMode, sessionScene = { ... } }
             scenes = {},
         },
         -- Storyteller roll automation (chronicle-wide); merged with defaults in validateState
@@ -978,16 +978,30 @@ function S.validateState()
     end
     for _, entry in pairs(gameState.sceneLibrary.scenes) do
         if type(entry) == "table" then
+            if entry.placementMode ~= "scatter" then
+                if entry.placementMode ~= nil and entry.placementMode ~= "standard" then
+                    print("[state] sceneLibrary placementMode `" .. tostring(entry.placementMode) .. "` is not standard/scatter; treating as standard.")
+                end
+                entry.placementMode = "standard"
+            end
             if type(entry.sessionScene) ~= "table" then
                 entry.sessionScene = {}
             end
             mergeSessionSceneDefaults(entry.sessionScene, S.GetDefaultGameState().sessionScene)
-            NpcPlacementsConvert.normalizeSessionScene(entry.sessionScene)
-            if type(entry.sessionScene.npcWorld) == "table" then
-                entry.sessionScene.npcWorld.layoutLock = nil
-            end
-            if SceneLibrary and type(SceneLibrary.syncNpcRoleOverrideFromSeatSlots) == "function" then
-                SceneLibrary.syncNpcRoleOverrideFromSeatSlots(entry.sessionScene)
+            if entry.placementMode == "scatter" then
+                entry.sessionScene.seatSlots = nil
+                entry.sessionScene.tableKey = nil
+                entry.sessionScene.npcWorld = nil
+                entry.sessionScene.npcRoleOverride = nil
+                entry.sessionScene.seatPresent = nil
+            else
+                NpcPlacementsConvert.normalizeSessionScene(entry.sessionScene)
+                if type(entry.sessionScene.npcWorld) == "table" then
+                    entry.sessionScene.npcWorld.layoutLock = nil
+                end
+                if SceneLibrary and type(SceneLibrary.syncNpcRoleOverrideFromSeatSlots) == "function" then
+                    SceneLibrary.syncNpcRoleOverrideFromSeatSlots(entry.sessionScene)
+                end
             end
             if type(SceneLibrary.validateSessionSceneClock) == "function" then
                 local okClock, errClock = SceneLibrary.validateSessionSceneClock(entry.sessionScene.clock)
