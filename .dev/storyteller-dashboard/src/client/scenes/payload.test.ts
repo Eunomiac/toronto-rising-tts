@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  familyLabelUv,
+  FAMILY_HANDLE_LAYOUT,
+  familyHandleLayoutFor,
   polarAreaNameForFamily,
   sceneKeyFromTitle,
   tableChoiceIsSelected,
@@ -40,7 +41,7 @@ describe("sceneKeyFromTitle", () => {
   });
 });
 
-describe("familyLabelUv", () => {
+describe("family handle layout", () => {
   const farLeft = snapsWith([
     polarSnap({ familyId: "3:0", ringIndex: 3, u: 0.22, v: 0.58 }),
     polarSnap({ familyId: "3:0", ringIndex: 3, u: 0.28, v: 0.62 })
@@ -52,18 +53,16 @@ describe("familyLabelUv", () => {
     polarSnap({ familyId: "1:7", ringIndex: 1, u: 0.64, v: 0.43 })
   ]);
 
-  it("keeps satellite-ring labels on the oval centroid", () => {
-    expect(familyLabelUv(farLeft, "3:0")).toEqual({ u: 0.25, v: 0.6 });
+  it("uses the Inspector-authored CSS box for Far Left", () => {
     expect(polarAreaNameForFamily(farLeft, "3:0")).toBe("Far Left");
+    expect(familyHandleLayoutFor(farLeft, "3:0")).toEqual(FAMILY_HANDLE_LAYOUT["Far Left"]);
   });
 
-  it("places CENTER to the left of the pack and side names outward", () => {
-    expect(familyLabelUv(centerRing, "1:0")).toEqual({ u: 0.445, v: 0.47 });
+  it("uses the Inspector-authored CSS box for CENTER and side packs", () => {
     expect(polarAreaNameForFamily(centerRing, "1:0")).toBe("CENTER");
-    const left = familyLabelUv(centerRing, "1:1");
-    const right = familyLabelUv(centerRing, "1:7");
-    expect(left?.u).toBeLessThan(0.36);
-    expect(right?.u).toBeGreaterThan(0.64);
+    expect(familyHandleLayoutFor(centerRing, "1:0")).toEqual(FAMILY_HANDLE_LAYOUT.CENTER);
+    expect(familyHandleLayoutFor(centerRing, "1:1")?.leftPct).toBe(36.8);
+    expect(familyHandleLayoutFor(centerRing, "1:7")?.leftPct).toBe(63.2);
   });
 });
 

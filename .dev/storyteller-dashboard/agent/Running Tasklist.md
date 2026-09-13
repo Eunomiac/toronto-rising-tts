@@ -14,7 +14,7 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 
 ❌ SD-3. The "move group" handle should be attached to the groups themselves, not tokens within a group. Initially position them directly on top of the label naming each group, and make them invisible. When they are hovered, they should GSAP-blink briefly, and only blink-pulse-and-stay when they are being dragged.
 👨 The group-move handles are not located over top of the displayed group names on the image. Perhaps temporarily set them to be visible at all times, so that you can check and refine their positions until they're in the right place?
-🤖 All 10 group handles are now on the board even when a pack is empty, labeled, and kept visible for Inspector work. Each has `id="scenes-family-handle-<ring>-<ray>"` plus `data-u` / `data-v`. Tweak left/top/width/height in the Inspector and send those values back.
+🤖 Your Inspector percentages are now the layout. Handles are invisible again, blink on hover, and pulse while dragged. Hover each parchment name to confirm the box sits on the label.
 
 ✔️ SD-8. Remove the general instruction/status bar at the top. If an alert message has to be given, display them as expandable toast messages on the right side of the screen. (Feel free to download appropriate icons from game-icons.net)
 👨 Toast messages should disappear when clicked on.

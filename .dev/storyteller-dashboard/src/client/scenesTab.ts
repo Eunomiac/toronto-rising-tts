@@ -6,7 +6,7 @@ import {
   characterLabel,
   createDefaultDraft,
   cutoutUrl,
-  familyLabelUv,
+  familyHandleLayoutFor,
   polarAreaNameForFamily,
   tableChoiceIsSelected,
   tableChoiceKeys,
@@ -375,7 +375,7 @@ export const initScenesTab = (): void => {
         return;
       }
       gsap.killTweensOf(handle);
-      gsap.fromTo(handle, { opacity: 0.72 }, { opacity: 1, duration: 0.12, yoyo: true, repeat: 1, ease: "power1.inOut" });
+      gsap.fromTo(handle, { opacity: 0 }, { opacity: 0.95, duration: 0.12, yoyo: true, repeat: 1, ease: "power1.inOut" });
     });
     bindBoardDrag(handle, {
       boardFrame,
@@ -562,8 +562,8 @@ export const initScenesTab = (): void => {
       }
       const familyIds = new Set(boardSnaps.polar.map((snap) => snap.familyId));
       for (const familyId of familyIds) {
-        const label = familyLabelUv(boardSnaps, familyId);
-        if (!label) {
+        const layout = familyHandleLayoutFor(boardSnaps, familyId);
+        if (!layout) {
           continue;
         }
         const areaName = polarAreaNameForFamily(boardSnaps, familyId);
@@ -573,12 +573,10 @@ export const initScenesTab = (): void => {
         handle.className = "scenes-family-handle";
         handle.dataset.familyId = familyId;
         handle.dataset.areaName = areaName;
-        handle.dataset.u = label.u.toFixed(4);
-        handle.dataset.v = label.v.toFixed(4);
         handle.title = `Move ${areaName}`;
         handle.setAttribute("aria-label", handle.title);
-        handle.textContent = areaName;
-        placeToken(handle, label.u, label.v);
+        handle.style.width = `${layout.widthPct}%`;
+        placeToken(handle, layout.leftPct / 100, 1 - layout.topPct / 100);
         overlay.append(handle);
         bindFamilyHandle(handle, familyId);
       }

@@ -99,28 +99,38 @@ const centerFamilyIdOnRing = (snaps: ControlBoardSnaps, ringIndex: number): stri
   return best;
 };
 
-/** Board UV for the painted parchment name of a polar family. */
+export type FamilyHandleLayout = {
+  readonly leftPct: number;
+  readonly topPct: number;
+  readonly widthPct: number;
+};
+
+/** Inspector-authored CSS % on the board frame (handle is centered on left/top). Height stays 3.1%. */
+export const FAMILY_HANDLE_LAYOUT: Readonly<Record<string, FamilyHandleLayout>> = {
+  CENTER: { leftPct: 50, topPct: 50, widthPct: 4.5 },
+  "Center Left": { leftPct: 36.8, topPct: 56.1, widthPct: 4.5 },
+  "Center Right": { leftPct: 63.2, topPct: 56.1, widthPct: 4.5 },
+  "Mid Right": { leftPct: 62.5, topPct: 43, widthPct: 3 },
+  "Mid Center": { leftPct: 50, topPct: 38, widthPct: 4.5 },
+  "Mid Left": { leftPct: 37.5, topPct: 43, widthPct: 3 },
+  "Far Left": { leftPct: 25, topPct: 40.3, widthPct: 4 },
+  "Far Center-Left": { leftPct: 40, topPct: 19.5, widthPct: 5.5 },
+  "Far Center-Right": { leftPct: 60, topPct: 19.5, widthPct: 5.5 },
+  "Far Right": { leftPct: 75, topPct: 40.3, widthPct: 4 }
+};
+
+export const familyHandleLayoutFor = (snaps: ControlBoardSnaps, familyId: string): FamilyHandleLayout | null => {
+  const areaName = polarAreaNameForFamily(snaps, familyId);
+  return FAMILY_HANDLE_LAYOUT[areaName] ?? null;
+};
+
+/** Board UV for the painted parchment name of a polar family (from Inspector left/top). */
 export const familyLabelUv = (snaps: ControlBoardSnaps, familyId: string): { u: number; v: number } | null => {
-  const members = snaps.polar.filter((snap) => snap.familyId === familyId);
-  if (members.length === 0) {
+  const layout = familyHandleLayoutFor(snaps, familyId);
+  if (!layout) {
     return null;
   }
-  const ringIndex = members[0]?.ringIndex ?? 0;
-  const { u, v } = meanUv(members);
-  if (ringIndex >= 3) {
-    return { u, v };
-  }
-  const centerId = centerFamilyIdOnRing(snaps, ringIndex);
-  if (centerId !== null && familyId === centerId) {
-    if (ringIndex === 1) {
-      return { u: u - 0.055, v };
-    }
-    return { u, v: v + 0.038 };
-  }
-  if (centerId !== null && u < familyMeanU(snaps, centerId)) {
-    return { u: u - 0.048, v };
-  }
-  return { u: u + 0.048, v };
+  return { u: layout.leftPct / 100, v: 1 - layout.topPct / 100 };
 };
 
 export const polarAreaNameForFamily = (snaps: ControlBoardSnaps, familyId: string): string => {
