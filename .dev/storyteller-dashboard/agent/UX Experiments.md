@@ -42,6 +42,8 @@ SD-9 asks for creative widgets instead of a stack of labeled rows. Later tasklis
 - **Ghost drag + FLIP:** The held ghost vanishes as soon as the pointer is released. Tokens already on the board then tween from their old screen position to the new one. Tray pickup recenters on the cursor. Off-board (not over the board image) clears the token or pack and tints the held piece red.
 - **Names:** Pack-aware sides (left/right for the outer packs, above for Mid / Far Center, CENTER names to the sides so they miss the chairs). Per-snap overrides live in `SNAP_NAME_LAYOUT` / `SEAT_NAME_LAYOUT`. Fill Stage (Debug) puts Rashid on every polar snap and chair.
 - **Lit tokens:** Gold disc plus a halo that pulses on the token (`inset: 0%`).
+- **District picker:** Toronto map at 800×1000 with name pins locked from the authored pin JSON. Click a name to choose that district.
+- **Family handles:** Stay visible while hovered; fade only after pointer leave. Double-click toggles the lead token’s light and copies that mode to the rest of the pack.
 
 ## Rejected / not yet
 

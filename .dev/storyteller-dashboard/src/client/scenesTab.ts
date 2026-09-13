@@ -1,13 +1,20 @@
 import { bindBoardDrag, gsap, killBoardDrags, pointerOnElement } from "./scenes/boardDrag.js";
 import { formatChronicleDateTime } from "./scenes/clockFormat.js";
 import {
+  DISTRICT_MAP_HEIGHT,
+  DISTRICT_MAP_SRC,
+  DISTRICT_MAP_WIDTH,
+  lockedDistrictPinPositions
+} from "./scenes/districtMap.js";
+import {
   applyDebugFillToDraft,
   captureDebugFillBackup,
   restoreDebugFillBackup,
   type DebugFillBackup
 } from "./scenes/debugFill.js";
 import { comparePickerGroups, GROUP_THEMES, groupThemeClass, isImportantGroup, trayMergeLabel } from "./scenes/groupThemes.js";
-import { placeKeysOnPolarFamily, polarTokensInFamily, relocatePolarFamily } from "./scenes/groupRelocate.js";
+import { applyLeadLightToFamily, placeKeysOnPolarFamily, polarTokensInFamily, relocatePolarFamily } from "./scenes/groupRelocate.js";
+import { swapOntoPolarSnap } from "./scenes/tokenSwap.js";
 import {
   boardUvFromEvent,
   buildImportPayload,
@@ -113,6 +120,10 @@ export const initScenesTab = (): void => {
   let debugMode = false;
   let debugFillOn = false;
   let debugFillBackup: DebugFillBackup | null = null;
+
+  const closeModal = (): void => {
+    modalRoot.innerHTML = "";
+  };
 
   const setStatus = (kind: "idle" | "loading" | "error" | "success", message: string): void => {
     toasts.push(kind, message);
@@ -443,10 +454,10 @@ export const initScenesTab = (): void => {
       const polar = nearestPolarSnap(snaps, uv.u, uv.v, 0.06);
       const isNpc = namedByKey().has(dragKey);
       if (seat && (!polar || Math.hypot(seat.u - uv.u, seat.v - uv.v) <= Math.hypot((polar?.u ?? 9) - uv.u, (polar?.v ?? 9) - uv.v))) {
-        placeOnSeat(dragKey, seat.seatKey);
+        placeOnSeat(dragKey, seat.seatKey, polarSnapIndex);
       } else if (polar && isNpc) {
         const existing = draft.standard.polar.find((token) => token.characterKey === dragKey);
-        placeNpcOnPolar(dragKey, polar.snapIndex, existing?.npcLightMode ?? (polar.defaultLightMode === "STANDARD" ? "STANDARD" : "OFF"));
+        placeNpcOnPolar(dragKey, polar.snapIndex, existing?.npcLightMode ?? (polar.defaultLightMode === "STANDARD" ? "STANDARD" : "OFF"), polarSnapIndex);
       } else if (polar && Object.values(PC_BY_COLOR).includes(dragKey)) {
         setStatus("error", "PCs sit on chairs, not on the polar stage.");
         return;
@@ -658,7 +669,28 @@ export const initScenesTab = (): void => {
         return;
       }
       gsap.killTweensOf(handle);
-      gsap.fromTo(handle, { opacity: 0 }, { opacity: 0.95, duration: 0.12, yoyo: true, repeat: 1, ease: "power1.inOut" });
+      gsap.set(handle, { opacity: 0.95 });
+    });
+    handle.addEventListener("pointerleave", () => {
+      if (handle.dataset.dragging === "1") {
+        return;
+      }
+      gsap.killTweensOf(handle);
+      gsap.set(handle, { opacity: 0 });
+    });
+    handle.addEventListener("dblclick", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (!draft || !snaps) {
+        return;
+      }
+      const next = applyLeadLightToFamily(draft.standard.polar, familyId, snaps);
+      if (!next) {
+        return;
+      }
+      draft.standard.polar = next;
+      persist();
+      render();
     });
     bindBoardDrag(handle, {
       boardFrame,
@@ -681,16 +713,11 @@ export const initScenesTab = (): void => {
     });
   };
 
-  const placeNpcOnPolar = (characterKey: string, snapIndex: number, light: NpcLightMode): void => {
+  const placeNpcOnPolar = (characterKey: string, snapIndex: number, light: NpcLightMode, fromSnapIndex?: number): void => {
     if (!draft) {
       return;
     }
-    draft.standard.polar = draft.standard.polar.filter((token) => token.characterKey !== characterKey);
-    const occupant = draft.standard.polar.find((token) => token.snapIndex === snapIndex);
-    if (occupant) {
-      draft.standard.polar = draft.standard.polar.filter((token) => token.characterKey !== occupant.characterKey);
-    }
-    draft.standard.polar.push({ characterKey, snapIndex, npcLightMode: light });
+    draft.standard.polar = swapOntoPolarSnap(draft.standard.polar, characterKey, snapIndex, fromSnapIndex, light);
     for (const npcSeat of catalogs?.npcSeats ?? []) {
       const row = draft.standard.seatSlots[npcSeat];
       if (row && row.characterKey === characterKey) {
@@ -699,7 +726,7 @@ export const initScenesTab = (): void => {
     }
   };
 
-  const placeOnSeat = (characterKey: string, seatKey: string): void => {
+  const placeOnSeat = (characterKey: string, seatKey: string, fromPolarSnapIndex?: number): void => {
     if (!draft || !catalogs || !snaps) {
       return;
     }
@@ -734,6 +761,20 @@ export const initScenesTab = (): void => {
       }
       return;
     }
+    const dest = draft.standard.seatSlots[seatKey];
+    const destOccupant =
+      dest && dest.slotEmpty !== true && dest.characterKey !== "" && dest.characterKey !== characterKey
+        ? dest.characterKey
+        : null;
+    const destOccupantPresent = dest?.isPresent === true;
+    const currentDraft = draft;
+    const sourceNpcSeat = catalogs.npcSeats.find((npcSeat) => {
+      const row = currentDraft.standard.seatSlots[npcSeat];
+      return npcSeat !== seatKey && row?.characterKey === characterKey;
+    });
+    const moverPolar =
+      fromPolarSnapIndex ??
+      draft.standard.polar.find((token) => token.characterKey === characterKey)?.snapIndex;
     draft.standard.polar = draft.standard.polar.filter((token) => token.characterKey !== characterKey);
     for (const npcSeat of catalogs.npcSeats) {
       const row = draft.standard.seatSlots[npcSeat];
@@ -741,7 +782,6 @@ export const initScenesTab = (): void => {
         draft.standard.seatSlots[npcSeat] = { characterKey: "", isPlayingNPC: false, isPresent: false, slotEmpty: true };
       }
     }
-    const dest = draft.standard.seatSlots[seatKey];
     const onStage = draft.standard.polar.some((token) => token.characterKey === characterKey);
     draft.standard.seatSlots[seatKey] = {
       characterKey,
@@ -750,6 +790,23 @@ export const initScenesTab = (): void => {
       tableSlot: seat.tableSlot,
       slotEmpty: false
     };
+    if (!destOccupant) {
+      return;
+    }
+    if (moverPolar !== undefined) {
+      placeNpcOnPolar(destOccupant, moverPolar, "OFF");
+      return;
+    }
+    if (sourceNpcSeat) {
+      const sourceSeat = snaps.seats.find((row) => row.seatKey === sourceNpcSeat);
+      draft.standard.seatSlots[sourceNpcSeat] = {
+        characterKey: destOccupant,
+        isPlayingNPC: false,
+        isPresent: destOccupantPresent,
+        tableSlot: sourceSeat?.tableSlot,
+        slotEmpty: false
+      };
+    }
   };
 
   const renderChrome = (): void => {
@@ -1226,13 +1283,19 @@ export const initScenesTab = (): void => {
 
   const openPickerModal = (
     title: string,
-    renderBody: (root: HTMLDivElement) => void
+    renderBody: (root: HTMLDivElement) => void,
+    options?: {
+      cardClass?: string;
+      bodyClass?: string;
+      footer?: (root: HTMLDivElement) => void;
+      afterOpen?: () => void;
+    }
   ): void => {
-    modalRoot.innerHTML = "";
+    closeModal();
     const backdrop = document.createElement("div");
     backdrop.className = "modal-backdrop";
     const card = document.createElement("div");
-    card.className = "modal-card";
+    card.className = options?.cardClass ? `modal-card ${options.cardClass}` : "modal-card";
     const header = document.createElement("div");
     header.className = "modal-header";
     const heading = document.createElement("h2");
@@ -1240,21 +1303,75 @@ export const initScenesTab = (): void => {
     const close = document.createElement("button");
     close.type = "button";
     close.textContent = "Close";
-    close.addEventListener("click", () => {
-      modalRoot.innerHTML = "";
-    });
+    close.addEventListener("click", closeModal);
     header.append(heading, close);
     const body = document.createElement("div");
-    body.className = "modal-body";
+    body.className = options?.bodyClass ? `modal-body ${options.bodyClass}` : "modal-body";
     renderBody(body);
     card.append(header, body);
+    if (options?.footer) {
+      const footer = document.createElement("div");
+      footer.className = "scenes-district-map-footer";
+      options.footer(footer);
+      card.append(footer);
+    }
     backdrop.append(card);
     backdrop.addEventListener("click", (event) => {
       if (event.target === backdrop) {
-        modalRoot.innerHTML = "";
+        closeModal();
       }
     });
     modalRoot.append(backdrop);
+    options?.afterOpen?.();
+  };
+
+  const openDistrictMapModal = (): void => {
+    if (!catalogs || !draft) {
+      return;
+    }
+    const currentDraft = draft;
+    const pins = lockedDistrictPinPositions(catalogs.districts);
+    openPickerModal(
+      "District",
+      (root) => {
+        const map = document.createElement("div");
+        map.className = "scenes-district-map";
+        const img = document.createElement("img");
+        img.src = DISTRICT_MAP_SRC;
+        img.alt = "Map of Toronto";
+        img.width = DISTRICT_MAP_WIDTH;
+        img.height = DISTRICT_MAP_HEIGHT;
+        img.draggable = false;
+        map.append(img);
+        for (const pin of pins) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "scenes-district-pin";
+          if (currentDraft.districtKey === pin.key) {
+            button.classList.add("active");
+          }
+          button.textContent = pin.name;
+          button.dataset.districtKey = pin.key;
+          button.style.left = `${pin.left}px`;
+          button.style.top = `${pin.top}px`;
+          button.addEventListener("click", () => {
+            if (!draft) {
+              return;
+            }
+            draft.districtKey = pin.key;
+            persist();
+            render();
+            closeModal();
+          });
+          map.append(button);
+        }
+        root.append(map);
+      },
+      {
+        cardClass: "scenes-district-map-card",
+        bodyClass: "scenes-district-map-body"
+      }
+    );
   };
 
   const openSiteModal = (): void => {
@@ -1324,7 +1441,7 @@ export const initScenesTab = (): void => {
             }
             persist();
             render();
-            modalRoot.innerHTML = "";
+            closeModal();
           });
           grid.append(button);
         }
@@ -1369,7 +1486,7 @@ export const initScenesTab = (): void => {
           button.textContent = row.label;
           button.addEventListener("click", () => {
             onPick(row.key);
-            modalRoot.innerHTML = "";
+            closeModal();
           });
           grid.append(button);
         }
@@ -1559,18 +1676,7 @@ export const initScenesTab = (): void => {
     if (!catalogs || !draft) {
       return;
     }
-    openSimpleListModal(
-      "District",
-      catalogs.districts.map((row) => ({ key: row.key, label: row.name })),
-      (key) => {
-        if (!draft) {
-          return;
-        }
-        draft.districtKey = key;
-        persist();
-        render();
-      }
-    );
+    openDistrictMapModal();
   });
   requiredElement<HTMLButtonElement>("scenes-site").addEventListener("click", openSiteModal);
   requiredElement<HTMLButtonElement>("scenes-skybox").addEventListener("click", () => {

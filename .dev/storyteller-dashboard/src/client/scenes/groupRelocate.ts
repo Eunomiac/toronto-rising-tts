@@ -211,3 +211,23 @@ export const placeKeysOnPolarFamily = (
   }
   return next;
 };
+
+/** Toggle the pack's lead (anchor) light, then copy that mode onto every token in the pack. */
+export const applyLeadLightToFamily = (
+  tokens: PolarToken[],
+  familyId: string,
+  snaps: ControlBoardSnaps
+): PolarToken[] | null => {
+  const members = familySnaps(snaps, familyId);
+  const leadSnap = members.find((snap) => snap.isAnchor) ?? members.find((snap) => snap.familyK === 0);
+  if (!leadSnap) {
+    return null;
+  }
+  const lead = tokens.find((token) => token.snapIndex === leadSnap.snapIndex);
+  if (!lead) {
+    return null;
+  }
+  const nextMode = lead.npcLightMode === "OFF" ? "STANDARD" : "OFF";
+  const indexes = new Set(members.map((snap) => snap.snapIndex));
+  return tokens.map((token) => (indexes.has(token.snapIndex) ? { ...token, npcLightMode: nextMode } : token));
+};

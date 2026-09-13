@@ -53,6 +53,9 @@ describe("control-board polar families", () => {
     const byArea = new Map<string, { u: number; v: number }[]>();
     for (const line of readFileSync(csvPath, "utf8").trim().split(/\r?\n/).slice(1)) {
       const [area, , u, v] = line.split(",");
+      if (!area || u === undefined || v === undefined) {
+        continue;
+      }
       const rows = byArea.get(area) ?? [];
       rows.push({ u: Number(u), v: Number(v) });
       byArea.set(area, rows);

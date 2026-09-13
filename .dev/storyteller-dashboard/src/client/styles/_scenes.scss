@@ -933,3 +933,97 @@
     padding: 0.35rem 0.55rem;
   }
 }
+
+.modal-card.scenes-district-map-card {
+  width: max-content;
+  max-width: calc(100vw - 3rem);
+  max-height: 94vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  .modal-header {
+    flex: 0 0 auto;
+    padding: 0.55rem 0.85rem;
+
+    h2 {
+      font-size: 1.45rem;
+    }
+  }
+}
+
+.scenes-district-map-body {
+  padding: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.scenes-district-map {
+  position: relative;
+  width: 800px;
+  height: 1000px;
+  overflow: hidden;
+  background: #1a1a16;
+
+  img {
+    display: block;
+    width: 800px;
+    height: 1000px;
+    pointer-events: none;
+    user-select: none;
+  }
+}
+
+.scenes-district-pin {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  max-width: 7.6rem;
+  margin: 0;
+  padding: 0.18rem 0.4rem;
+  border: 1px solid rgb(255 255 255 / 28%);
+  border-radius: 0.28rem;
+  background: rgb(12 12 15 / 88%);
+  color: #f4efe6;
+  font-size: 0.68rem;
+  font-weight: 650;
+  line-height: 1.15;
+  text-align: center;
+  white-space: normal;
+  cursor: pointer;
+
+  &.active {
+    border-color: #e8c56b;
+    background: rgb(40 32 12 / 92%);
+    color: #ffe9a8;
+  }
+
+  &:hover,
+  &:focus-visible {
+    border-color: #f0d48a;
+  }
+}
+
+.scenes-district-map-footer {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 0.85rem 0.7rem;
+  border-top: 1px solid var(--line);
+  background: rgba(12, 12, 15, 0.96);
+
+  p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+
+  button {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+}

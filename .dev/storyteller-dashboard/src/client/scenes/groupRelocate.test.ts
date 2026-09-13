@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { placeKeysOnPolarFamily, polarTokensInFamily } from "./groupRelocate";
+import { applyLeadLightToFamily, placeKeysOnPolarFamily, polarTokensInFamily } from "./groupRelocate";
 import type { ControlBoardSnaps, PolarSnap } from "./types";
 
 const snap = (
@@ -51,5 +51,27 @@ describe("polarTokensInFamily", () => {
       snaps
     );
     expect(tokens.map((token) => token.characterKey)).toEqual(["rashid"]);
+  });
+});
+
+describe("applyLeadLightToFamily", () => {
+  it("toggles the anchor light and copies it to the rest of the pack", () => {
+    const snaps = snapsWith([
+      snap({ familyId: "2:3", snapIndex: 1, familyK: 0 }),
+      snap({ familyId: "2:3", snapIndex: 2, familyK: 1 }),
+      snap({ familyId: "1:0", snapIndex: 9, familyK: 0 })
+    ]);
+    const next = applyLeadLightToFamily(
+      [
+        { characterKey: "lead", snapIndex: 1, npcLightMode: "OFF" },
+        { characterKey: "neighbor", snapIndex: 2, npcLightMode: "STANDARD" },
+        { characterKey: "other", snapIndex: 9, npcLightMode: "OFF" }
+      ],
+      "2:3",
+      snaps
+    );
+    expect(next?.find((token) => token.characterKey === "lead")?.npcLightMode).toBe("STANDARD");
+    expect(next?.find((token) => token.characterKey === "neighbor")?.npcLightMode).toBe("STANDARD");
+    expect(next?.find((token) => token.characterKey === "other")?.npcLightMode).toBe("OFF");
   });
 });

@@ -46,7 +46,11 @@ SD-29. If I start to drag a group onto the board, but then change my mind and dr
 
 SD-30. Add a debug-only button called "Restore PCs" that removes all tokens from seated table positions, and replaces them with the default spread of the five PC tokens.
 
-✔️ Polar snap catalogs read STAGE_BOARD size from the live TTS save whenever the dashboard is started or built (`npm run scene-catalogs`). After you resize the stage in-game, save the game, then restart the dashboard (or run `npm run dashboard:scene-catalogs` from the repo root).
-🤖 Polar UVs are checked against `.dev/storyteller-dashboard/agent/TTS Stage Control Board Snap Coordinates.csv`. Stagger uses STAGE Transform scale as the UV half-extent (not scale/2). Refresh the dashboard tab to confirm Center/Mid neighbors sit on the painted holes.
-
 SD-31. Vary the red background color on the weather controls by intensity, as well as duplicating the icons: Low intensity should be darker red, increasing to full #FF0000 at maximum intensity.  The Wind button should get a cyan outline (not a border, to avoid repositioning) when it is applying winter wind instead of standard wind.
+
+✔️ SD-32. I have added a map of Toronto image at `.dev\storyteller-dashboard\assets\scenes\districtMap.webp`. I'd like the District selection pop-up modal to display this image, and for the district buttons to be absolutely positioned on the map where their Districts are located.  To facilitate this, initially transform the buttons into draggable elements and add a button at the bottom of the modal that will output to my clipboard the absolute positions of each button. I'll then drag the buttons into the correct locations on the map, output their positions, and provide them to you so you can lock them in.  (The map image itself is 800 x 1000 pixels, so you should be able to display it at full size.)
+👨 The pin positions for all of the District buttons can be found in `.dev\storyteller-dashboard\agent\District Pin Positions.json`.
+
+✔️ SD-33. The group-move buttons should remain visible while hovered over (i.e. they shouldn't fade out as I originally instructed, at least not until I hover off of them). Additionally, double-clicking one of the group buttons will toggle the lead token's mode (lit to unlit or vice versa), then set all other tokens in the same group to that mode.
+
+✔️ SD-34. When a token is moved onto a snap point that already includes a token, the token positions should be swapped. (This includes token positions for seated players.)
