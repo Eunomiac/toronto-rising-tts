@@ -15,4 +15,14 @@ This rule exists for Cursor sessions in this repository. It supersedes generic/g
 - Reference `TOR-XX` in the commit body when the work maps to a Linear issue.
 - One logical unit per commit; split if the diff mixes unrelated concerns.
 
+### Storyteller Dashboard (same repo, different done)
+
+The dashboard stays in **this git repo** and the **same GitHub remote**. Do not split a second workspace or GitHub project.
+
+- **Shared contract** with TTS Lua (import schema, snaps, bridge, image paths): land Lua + dashboard (+ Scene Import Guide) **together**.
+- **Dashboard-only** (UI toolchain, Scenes chrome, Vitest): same `master` is fine; do **not** require Linear, PAVE, or Save & Play.
+- Never commit `.dev/storyteller-dashboard/.env` or API keys. The GitHub remote is public.
+
+Full policy: [toronto-rising-dashboard.mdc](toronto-rising-dashboard.mdc).
+
 For Codex/API sessions, follow the active system/developer instructions for committing and staging while preserving the same intent: frequent, scoped commits when commits are allowed.

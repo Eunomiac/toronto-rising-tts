@@ -1,0 +1,41 @@
+---
+description: Storyteller Dashboard SCSS must nest related selectors; never add dashboard .css sources
+globs: .dev/storyteller-dashboard/**/*.{scss,css,html,ts,mjs}
+alwaysApply: false
+---
+
+# Toronto Rising — dashboard SCSS nesting
+
+Dashboard styles live in `.dev/storyteller-dashboard/src/client/styles/` as **SCSS only**. Vite compiles them (imported from the React entry). Do **not** add or edit a `src/client/styles.css` source file.
+
+## Nest whenever possible
+
+- Put descendants, pseudos, and state classes **inside** their parent block (`&:hover`, `&[hidden]`, `img`, `button`).
+- For a block’s own BEM suffixes on the **same element or family**, use `&-seat`, `&-text`, `&-error` — not a second top-level `.scenes-token-seat { }`.
+- Put `@media` **inside** the block it changes, not as a file-level dump of that block’s properties.
+- Combined states nest under the block: `&.expanded`, `&.favorite`, `&.added.lock.active`.
+
+## Do not flatten
+
+```scss
+// ❌ BAD — related selectors as siblings
+.scenes-token { width: 2.4%; }
+.scenes-token-bg { border-radius: 50%; }
+.scenes-token img { pointer-events: none; }
+
+// ✅ GOOD
+.scenes-token {
+  width: 2.4%;
+  img,
+  &-bg { pointer-events: none; }
+  &-bg { border-radius: 50%; }
+}
+```
+
+## Allowed as top-level (not nested)
+
+- `:root`, `html` / `body`, universal reset (`*`)
+- A **new** component block (` .scenes-panel`, `.modal-backdrop`) — then nest **everything belonging to that block**
+- Selectors that are truly shared across unrelated blocks (`button` reset, `.status`, `.lock.active`) — nest their own variants (`&:hover`, `&.error`)
+
+Do not nest unrelated components inside each other just to create nesting. Depth of 3–4 is normal; if a nest is deeper, split a partial (`_scenes.scss`, `_stage-npcs.scss`), still nested inside each partial.

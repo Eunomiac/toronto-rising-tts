@@ -1,0 +1,33 @@
+---
+description: Storyteller Dashboard — ST-only web app, same git repo, no Linear/PAVE for dashboard-only work
+globs: .dev/storyteller-dashboard/**/*
+alwaysApply: false
+---
+
+# Toronto Rising — Storyteller Dashboard
+
+Second-monitor **Storyteller** app at `.dev/storyteller-dashboard/` (port **8788**). It is **not** a player surface. All player-facing UI stays in Tabletop Simulator.
+
+Track dashboard work on [`.dev/storyteller-dashboard/agent/Running Tasklist.md`](../../.dev/storyteller-dashboard/agent/Running%20Tasklist.md). **Do not** create, update, or comment on Linear issues for dashboard-only slices. **Do not** add Pending Author Verification rows for dashboard-only UI. Save & Play and object-bundle gates apply only when the change also ships TTS Lua/XML.
+
+## Git and GitHub
+
+Keep the dashboard **in this repo** on the same GitHub remote (`toronto-rising-tts`). Do not split a second workspace, submodule, or dashboard-only GitHub project.
+
+| Kind of change | How to land it |
+| --- | --- |
+| Shared contract (import schema, snaps, `GlobalImportSceneJson`, image paths, occupancy) | Same commit (or a short stack that lands together) as the Lua / Scene Import Guide |
+| Dashboard-only (Vite, React, SCSS, tab chrome, Vitest) | Same `master` / same remote; own commits are fine |
+
+The GitHub remote is **public**. Never commit `.env`, API keys, vector-store secrets, or private chronicle dumps.
+
+## Stack
+
+- **Vite** bundles the client (HMR in `--dev`). **React** owns the shell; tab bodies may still boot through existing `init*` functions until migrated. Do **not** wrap the app in React StrictMode while those hybrid inits run.
+- **Node** on **8788** keeps secrets, the TTS Lua bridge, and image/catalog files. Vite is not a replacement for that server.
+- **SCSS** with nesting: [toronto-rising-dashboard-scss.mdc](toronto-rising-dashboard-scss.mdc).
+- **Tests:** [toronto-rising-dashboard-testing.mdc](toronto-rising-dashboard-testing.mdc).
+- Control-board tokens stay a **GSAP Draggable** island (do not re-render React on every pointer move).
+- `gameState` stays in TTS. The dashboard holds drafts and sends small host commands.
+
+Canonical prose: [`.dev/storyteller-dashboard/README.md`](../../.dev/storyteller-dashboard/README.md).

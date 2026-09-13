@@ -9,6 +9,8 @@ alwaysApply: true
 
 **Linear is a primary source of truth for project state**, alongside the codebase. Agents must treat Linear synchronization as part of completing work — not an optional follow-up.
 
+**Exception — Storyteller Dashboard (`.dev/storyteller-dashboard/`):** dashboard-only work is tracked on [`.dev/storyteller-dashboard/agent/Running Tasklist.md`](../../.dev/storyteller-dashboard/agent/Running%20Tasklist.md). Do **not** create, update, or comment on Linear issues for that slice, and do **not** add PAVE rows for dashboard-only UI. If the same change also ships TTS Lua (import/bridge/catalogs), Linear + PAVE still apply to the **Lua** side. Policy: [toronto-rising-dashboard.mdc](toronto-rising-dashboard.mdc).
+
 ## Authoritative surfaces
 
 | Surface | Role |

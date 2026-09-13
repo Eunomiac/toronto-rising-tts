@@ -18,6 +18,10 @@ Verification:
 
 Status: current workflow index; verify specific playbook claims against code.
 
+**Storyteller Dashboard** (web app, not TTS): Vitest + Playwright MCP — [`.dev/storyteller-dashboard/TESTING.md`](storyteller-dashboard/TESTING.md), [toronto-rising-dashboard-testing.mdc](../.cursor/rules/toronto-rising-dashboard-testing.mdc). Do not use Save & Play playbooks for dashboard-only UI.
+
+## E2E playbooks (primary)
+
 Manual verification lives in **[E2E Playbooks](E2E%20Playbooks/README.md)** (TOR-141). This file indexes **remaining** console helpers in [`core/debug.ttslua`](../core/debug.ttslua).
 
 ## Quick start

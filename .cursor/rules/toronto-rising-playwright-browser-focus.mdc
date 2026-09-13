@@ -12,6 +12,7 @@ After the Playwright Chrome window is running, **not grabbing OS focus is a very
 - Click, type, screenshot, and navigate **in the existing Playwright tab** without `bringToFront`, new windows, or F11.
 - If a different URL is required (docs, download), **reuse that same tab**, then navigate back to the Storyteller Dashboard (`http://127.0.0.1:8788/`).
 - Keep the Playwright window open across turns so Chrome is not relaunched mid-session.
+- Restart the dashboard with `npm run dev` in `.dev/storyteller-dashboard/` (not `dev:open`) when Chrome is already running.
 
 ## Stop and ask in Cursor first
 

@@ -1,0 +1,26 @@
+---
+description: Storyteller Dashboard testing — Vitest for logic/React, Playwright for visual board
+globs: .dev/storyteller-dashboard/**/*.{ts,tsx,js,mjs}
+alwaysApply: false
+---
+
+# Toronto Rising — dashboard testing
+
+Run from `.dev/storyteller-dashboard/`: `npm test` (Vitest). Also part of `npm run build` via `npm run typecheck` plus tests in CI-local `npm test` before calling dashboard work done.
+
+## What to test where
+
+| Layer | Tool | Examples |
+| --- | --- | --- |
+| Pure logic | **Vitest** (node or jsdom) | `sceneKeyFromTitle`, occupancy helpers, payload builders |
+| React shell | **Vitest** + Testing Library | tabs exist, Storyteller-only chrome, no player HUD |
+| Visual board / GSAP / layout | **Playwright MCP** headed Chrome (`user-playwright`) | token sizes, drag, toasts. Follow [playwright-browser-focus](toronto-rising-playwright-browser-focus.mdc): do not steal OS focus |
+
+Do **not** add Save & Play or in-TTS playbooks for dashboard-only CSS/React. If the change also edits Lua import/bridge, use the existing TTS playbooks for that Lua side.
+
+## Policy
+
+- New pure functions get a Vitest file next to them (`*.test.ts` / `*.test.tsx`).
+- Do not unit-test GSAP pointer paths; cover those in Playwright when the board behavior changes.
+- Mock `init*` tab boots in React shell tests so they do not hit the network.
+- Do **not** wrap the dashboard in React StrictMode while vanilla `init*` functions still bind DOM listeners.
