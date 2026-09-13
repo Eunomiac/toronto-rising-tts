@@ -1,0 +1,28 @@
+---
+description: Playwright MCP browser must not steal OS focus after startup; prompt the author first if it cannot be avoided
+alwaysApply: true
+---
+
+# Toronto Rising — Playwright browser focus
+
+After the Playwright Chrome window is running, **not grabbing OS focus is a very high priority.** The author types in other apps and other Chrome windows while the agent uses the dashboard.
+
+## Do
+
+- Click, type, screenshot, and navigate **in the existing Playwright tab** without `bringToFront`, new windows, or F11.
+- If a different URL is required (docs, download), **reuse that same tab**, then navigate back to the Storyteller Dashboard (`http://127.0.0.1:8788/`).
+- Keep the Playwright window open across turns so Chrome is not relaunched mid-session.
+
+## Stop and ask in Cursor first
+
+Do **not** do these unless the author has agreed in this turn:
+
+- Launch or relaunch Chrome
+- Open a new tab or window
+- Switch Playwright tabs (`browser_tabs` select)
+- Send F11 / fullscreen / `bringToFront`
+- Anything else that would take the keyboard away from whatever they are typing
+
+Prompt in chat, wait, then proceed.
+
+Startup focus-steal is expected once; after that, background work only.
