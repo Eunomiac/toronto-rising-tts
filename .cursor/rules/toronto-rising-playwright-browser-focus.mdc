@@ -14,6 +14,16 @@ After the Playwright Chrome window is running, **not grabbing OS focus is a very
 - Keep the Playwright window open across turns so Chrome is not relaunched mid-session.
 - Restart the dashboard with `npm run dev` in `.dev/storyteller-dashboard/` (not `dev:open`) when Chrome is already running.
 
+## Window size
+
+The dashboard Chrome window should stay **1920×1080** (`window.innerWidth` / `innerHeight`). Docked DevTools, a restored window, or a second toolbar will shrink that.
+
+If those numbers are wrong:
+
+1. Check for docked DevTools (undock them), missing fullscreen, or a non-1920 display.
+2. Do **not** call `browser_resize`, F11, or `bringToFront` to “fix” it unless the author has agreed in this turn.
+3. If you cannot restore 1920×1080 without stealing focus, **stop and tell the author** what you measured and what was in the way.
+
 ## Stop and ask in Cursor first
 
 Do **not** do these unless the author has agreed in this turn:
