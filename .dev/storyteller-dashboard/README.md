@@ -80,7 +80,7 @@ PORT=8788
 
 ## Run locally
 
-**From Cursor / VS Code:** Run Task → **STORYTELLER DASHBOARD**. Builds, starts the server on `http://127.0.0.1:8788`, and opens Chrome (`npm run storyteller-dashboard:dev` from repo root). Skip that task if a Playwright Chrome window is already open — it would steal keyboard focus.
+**From Cursor / VS Code:** Run Task → **STORYTELLER DASHBOARD**. Builds, starts the server on `http://127.0.0.1:8788`, and opens the **Cursor** Chrome profile (`npm run storyteller-dashboard:dev` from repo root). Skip that task if a Playwright Chrome window is already open — it would steal keyboard focus. `dev:open` used to run `start chrome`, which always used the Default profile; it now launches `chrome.exe` with `--profile-directory` for the profile named Cursor. Override with `STORYTELLER_DASHBOARD_CHROME_PROFILE_DIR` (folder such as `Profile 3`) if needed.
 
 **From a terminal:**
 
@@ -90,7 +90,7 @@ npm install
 npm run dev
 ```
 
-Open <http://127.0.0.1:8788> in a browser. `npm run dev` first refreshes Scenes catalogs from Lua and the live **STAGE_BOARD** object in your TTS save (`tts-assets.config.json`), then compiles the Node server and serves the Vite client with hot reload (`--dev`). After you resize or move STAGE_BOARD in-game, save the game and restart this server (or run `npm run scene-catalogs` here / `npm run dashboard:scene-catalogs` from the repo root). `npm run start` is the production build (no HMR). `npm run dev:open` also launches Chrome; do not use it while the Playwright window is already running.
+Open <http://127.0.0.1:8788> in a browser. `npm run dev` first refreshes Scenes catalogs from Lua and the live **STAGE_BOARD** object in your TTS save (`tts-assets.config.json`), then compiles the Node server and serves the Vite client with hot reload (`--dev`). After you resize or move STAGE_BOARD in-game, save the game and restart this server (or run `npm run scene-catalogs` here / `npm run dashboard:scene-catalogs` from the repo root). `npm run start` is the production build (no HMR). `npm run dev:open` also launches the Cursor Chrome profile; do not use it while the Playwright window is already running.
 
 ## Chronicle vector store
 
