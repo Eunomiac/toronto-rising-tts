@@ -255,11 +255,17 @@ select {
 @keyframes tr-token-glow {
   0%,
   100% {
-    opacity: 0.28;
+    border-color: rgb(255 200 90 / 70%);
+    box-shadow:
+      0 0 0.35rem 0.08rem rgb(255 210 90 / 75%),
+      0 0 0.95rem 0.22rem rgb(255 160 40 / 50%);
   }
 
   50% {
-    opacity: 0.72;
+    border-color: rgb(255 245 190 / 100%);
+    box-shadow:
+      0 0 0.7rem 0.22rem rgb(255 235 160 / 100%),
+      0 0 1.55rem 0.45rem rgb(255 190 60 / 80%);
   }
 }
 

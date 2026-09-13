@@ -191,16 +191,24 @@ export const App = (): ReactElement => {
             <div className="scenes-widget scenes-weather-widget">
               <div className="scenes-weather-axes">
                 <button id="scenes-weather-rain" type="button" title="No rain">
-                  <img src="/icons/scenes/rain.svg" alt="" />
+                  <span className="scenes-weather-stack" data-count="1">
+                    <img src="/icons/scenes/rain.svg" alt="" />
+                  </span>
                 </button>
                 <button id="scenes-weather-snow" type="button" title="No snow">
-                  <img src="/icons/scenes/snow.svg" alt="" />
+                  <span className="scenes-weather-stack" data-count="1">
+                    <img src="/icons/scenes/snow.svg" alt="" />
+                  </span>
                 </button>
                 <button id="scenes-weather-wind" type="button" title="No wind">
-                  <img src="/icons/scenes/wind.svg" alt="" />
+                  <span className="scenes-weather-stack" data-count="1">
+                    <img src="/icons/scenes/wind.svg" alt="" />
+                  </span>
                 </button>
                 <button id="scenes-weather-thunder" type="button" title="No thunder">
-                  <img src="/icons/scenes/thunder.svg" alt="" />
+                  <span className="scenes-weather-stack" data-count="1">
+                    <img src="/icons/scenes/thunder.svg" alt="" />
+                  </span>
                 </button>
               </div>
               <label className="scenes-sound-row" title="Lighting">

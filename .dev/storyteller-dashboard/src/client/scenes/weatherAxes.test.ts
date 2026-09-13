@@ -5,7 +5,11 @@ import {
   cycleRain,
   cycleWind,
   isWinterWind,
-  resolveWindCatalogKey
+  rainIconCount,
+  resolveWindCatalogKey,
+  snowIconCount,
+  thunderIconCount,
+  windIconCount
 } from "./weatherAxes";
 
 describe("weatherAxes", () => {
@@ -32,6 +36,17 @@ describe("weatherAxes", () => {
       thunder: true,
       snow: "none"
     });
+  });
+
+  it("counts stacked weather icons by intensity", () => {
+    expect(rainIconCount("none")).toBe(0);
+    expect(rainIconCount("rainLight")).toBe(1);
+    expect(rainIconCount("rainHeavy")).toBe(2);
+    expect(windIconCount("low")).toBe(1);
+    expect(windIconCount("med")).toBe(2);
+    expect(windIconCount("max")).toBe(3);
+    expect(snowIconCount("heavy")).toBe(3);
+    expect(thunderIconCount(true)).toBe(1);
   });
 
   it("restores independent axes from an old single weatherKey", () => {

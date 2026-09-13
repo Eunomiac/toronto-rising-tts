@@ -75,6 +75,44 @@ export const rainLabel = (rain: RainKey): string => {
   return "No rain";
 };
 
+export const rainIconCount = (rain: RainKey): number => {
+  if (rain === "rainHeavy") {
+    return 2;
+  }
+  if (rain === "rainLight") {
+    return 1;
+  }
+  return 0;
+};
+
+export const windIconCount = (wind: WindStrength): number => {
+  if (wind === "max") {
+    return 3;
+  }
+  if (wind === "med") {
+    return 2;
+  }
+  if (wind === "low") {
+    return 1;
+  }
+  return 0;
+};
+
+export const snowIconCount = (snow: SnowKey): number => {
+  if (snow === "heavy") {
+    return 3;
+  }
+  if (snow === "medium") {
+    return 2;
+  }
+  if (snow === "light") {
+    return 1;
+  }
+  return 0;
+};
+
+export const thunderIconCount = (thunder: boolean): number => (thunder ? 1 : 0);
+
 export const windLabel = (wind: WindStrength, winter: boolean): string => {
   if (wind === "none") {
     return "No wind";

@@ -377,18 +377,53 @@
   button {
     display: grid;
     place-items: center;
-    padding: 0.32rem 0.2rem;
-    opacity: 0.42;
-
-    img {
-      width: 1.35rem;
-      height: 1.35rem;
-      display: block;
-    }
+    min-height: 2.35rem;
+    padding: 0.28rem 0.15rem;
+    opacity: 0.38;
 
     &.active,
     &.lock {
       opacity: 1;
+    }
+  }
+}
+
+.scenes-weather-stack {
+  position: relative;
+  display: block;
+  width: 1.35rem;
+  height: 1.35rem;
+
+  img {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 1.2rem;
+    height: 1.2rem;
+    display: block;
+    filter: drop-shadow(0 0 1px #000);
+  }
+
+  &[data-count="2"] {
+    width: 1.7rem;
+
+    img:nth-child(2) {
+      left: 0.38rem;
+      bottom: 0.14rem;
+    }
+  }
+
+  &[data-count="3"] {
+    width: 2.05rem;
+
+    img:nth-child(2) {
+      left: 0.34rem;
+      bottom: 0.12rem;
+    }
+
+    img:nth-child(3) {
+      left: 0.68rem;
+      bottom: 0.24rem;
     }
   }
 }
@@ -590,10 +625,12 @@
   &-lit::after {
     content: "";
     position: absolute;
-    inset: 8%;
+    inset: -22%;
+    z-index: 1;
     border-radius: 50%;
-    box-shadow: 0 0 0.28rem 0.05rem rgb(255 220 150 / 28%);
-    animation: tr-token-glow 2.8s ease-in-out infinite;
+    border: 2px solid rgb(255 224 130 / 90%);
+    background: rgb(255 210 90 / 12%);
+    animation: tr-token-glow 1.5s ease-in-out infinite;
     animation-delay: var(--glow-delay, 0ms);
     pointer-events: none;
   }

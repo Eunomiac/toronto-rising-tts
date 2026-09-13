@@ -30,8 +30,12 @@ import {
   applyThunder,
   axesFromLegacyWeatherKey,
   isWinterWind,
+  rainIconCount,
   rainLabel,
+  snowIconCount,
   snowLabel,
+  thunderIconCount,
+  windIconCount,
   windLabel
 } from "./scenes/weatherAxes.js";
 import type {
@@ -333,16 +337,35 @@ export const initScenesTab = (): void => {
     button.classList.toggle("is-placeholder", empty);
   };
 
+  const paintWeatherIcons = (button: HTMLButtonElement, src: string, count: number, title: string): void => {
+    const shown = Math.max(1, count);
+    button.title = title;
+    button.classList.toggle("lock", count > 0);
+    button.classList.toggle("active", count > 0);
+    button.dataset.count = String(count);
+    const stack = document.createElement("span");
+    stack.className = "scenes-weather-stack";
+    stack.dataset.count = String(shown);
+    for (let i = 0; i < shown; i += 1) {
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = "";
+      stack.append(img);
+    }
+    button.replaceChildren(stack);
+  };
+
   const placeToken = (el: HTMLElement, u: number, v: number): void => {
     el.classList.remove("scenes-token-dragging");
     el.style.position = "absolute";
     el.style.width = "";
     el.style.height = "";
     el.style.zIndex = "";
+    el.style.visibility = "";
     el.style.left = cssLeft(u);
     el.style.top = cssTop(v);
     gsap.set(el, {
-      clearProps: "width,height,zIndex",
+      clearProps: "width,height,zIndex,visibility",
       position: "absolute",
       xPercent: -50,
       yPercent: -50,
@@ -621,7 +644,6 @@ export const initScenesTab = (): void => {
       boardFrame,
       dragLayer,
       pickup: false,
-      dropPulse: false,
       onMove: (clientX, clientY) => paintTrayGhosts(clientX, clientY, keys),
       onEnd: (clientX, clientY) => finishBoardDrag(clientX, clientY, "tray", "", keys)
     });
@@ -788,22 +810,30 @@ export const initScenesTab = (): void => {
     requiredElement<HTMLInputElement>("scenes-clock-year").value = String(current.clockYear);
     const weather = resolveWeatherAxes(current);
     const winter = isWinterWind(current.clockMonth, weather.snow);
-    const rainButton = requiredElement<HTMLButtonElement>("scenes-weather-rain");
-    rainButton.classList.toggle("lock", weather.rain !== "none");
-    rainButton.classList.toggle("active", weather.rain !== "none");
-    rainButton.title = rainLabel(weather.rain);
-    const snowButton = requiredElement<HTMLButtonElement>("scenes-weather-snow");
-    snowButton.classList.toggle("lock", weather.snow !== "none");
-    snowButton.classList.toggle("active", weather.snow !== "none");
-    snowButton.title = snowLabel(weather.snow);
-    const windButton = requiredElement<HTMLButtonElement>("scenes-weather-wind");
-    windButton.classList.toggle("lock", weather.wind !== "none");
-    windButton.classList.toggle("active", weather.wind !== "none");
-    windButton.title = windLabel(weather.wind, winter);
-    const thunderButton = requiredElement<HTMLButtonElement>("scenes-weather-thunder");
-    thunderButton.classList.toggle("lock", weather.thunder);
-    thunderButton.classList.toggle("active", weather.thunder);
-    thunderButton.title = weather.thunder ? "Thunderstorm" : "No thunder";
+    paintWeatherIcons(
+      requiredElement<HTMLButtonElement>("scenes-weather-rain"),
+      "/icons/scenes/rain.svg",
+      rainIconCount(weather.rain),
+      rainLabel(weather.rain)
+    );
+    paintWeatherIcons(
+      requiredElement<HTMLButtonElement>("scenes-weather-snow"),
+      "/icons/scenes/snow.svg",
+      snowIconCount(weather.snow),
+      snowLabel(weather.snow)
+    );
+    paintWeatherIcons(
+      requiredElement<HTMLButtonElement>("scenes-weather-wind"),
+      "/icons/scenes/wind.svg",
+      windIconCount(weather.wind),
+      windLabel(weather.wind, winter)
+    );
+    paintWeatherIcons(
+      requiredElement<HTMLButtonElement>("scenes-weather-thunder"),
+      "/icons/scenes/thunder.svg",
+      thunderIconCount(weather.thunder),
+      weather.thunder ? "Thunderstorm" : "No thunder"
+    );
     const debugToggle = requiredElement<HTMLButtonElement>("scenes-debug-toggle");
     debugToggle.classList.toggle("lock", debugMode);
     debugToggle.classList.toggle("active", debugMode);
@@ -1015,7 +1045,6 @@ export const initScenesTab = (): void => {
         dragLayer,
         pickup: false,
         leaveOrigin: false,
-        dropPulse: false,
         onMove: () => undefined,
         onEnd: (clientX, clientY) => {
           overlay.append(reticule);
