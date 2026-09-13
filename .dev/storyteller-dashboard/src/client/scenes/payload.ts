@@ -476,18 +476,80 @@ export const buildImportPayload = (draft: SceneDraft, catalogs: SceneCatalogs, s
   };
 };
 
+/** Visible parchment after cropping unused top/right of the control-board image. */
+export const BOARD_CROP_UV = {
+  u0: 0,
+  u1: 0.8,
+  v0: 0.08,
+  v1: 0.88
+} as const;
+
+export const layoutBoardFrame = (
+  wrapWidth: number,
+  wrapHeight: number,
+  naturalWidth: number,
+  naturalHeight: number,
+  crop = BOARD_CROP_UV
+): { width: number; height: number; left: number; top: number } => {
+  const cropW = (crop.u1 - crop.u0) * naturalWidth;
+  const cropH = (crop.v1 - crop.v0) * naturalHeight;
+  const scale = Math.min(wrapWidth / cropW, wrapHeight / cropH);
+  const width = naturalWidth * scale;
+  const height = naturalHeight * scale;
+  const cropDisplayW = cropW * scale;
+  const cropDisplayH = cropH * scale;
+  const cropLeft = crop.u0 * width;
+  const cropTop = (1 - crop.v1) * height;
+  return {
+    width,
+    height,
+    left: (wrapWidth - cropDisplayW) / 2 - cropLeft,
+    top: (wrapHeight - cropDisplayH) / 2 - cropTop
+  };
+};
+
+const distUv = (au: number, av: number, bu: number, bv: number): number =>
+  Math.sqrt((au - bu) * (au - bu) + (av - bv) * (av - bv));
+
+/** Prefer the nearest polar *family*, then the nearest snap inside that pack. */
 export const nearestPolarSnap = (
   snaps: ControlBoardSnaps,
   u: number,
   v: number,
   maxDist = 0.07
 ): PolarSnap | null => {
-  let best: PolarSnap | null = null;
-  let bestDist = maxDist;
+  const families = new Map<string, PolarSnap[]>();
   for (const snap of snaps.polar) {
-    const du = snap.u - u;
-    const dv = snap.v - v;
-    const dist = Math.sqrt(du * du + dv * dv);
+    const members = families.get(snap.familyId);
+    if (members) {
+      members.push(snap);
+    } else {
+      families.set(snap.familyId, [snap]);
+    }
+  }
+  let bestFamilyId: string | null = null;
+  let bestFamilyDist = maxDist;
+  for (const [familyId, members] of families) {
+    let nearest = Number.POSITIVE_INFINITY;
+    for (const snap of members) {
+      nearest = Math.min(nearest, distUv(snap.u, snap.v, u, v));
+    }
+    if (nearest < bestFamilyDist) {
+      bestFamilyDist = nearest;
+      bestFamilyId = familyId;
+    }
+  }
+  if (!bestFamilyId) {
+    return null;
+  }
+  const members = families.get(bestFamilyId);
+  if (!members) {
+    return null;
+  }
+  let best: PolarSnap | null = null;
+  let bestDist = Number.POSITIVE_INFINITY;
+  for (const snap of members) {
+    const dist = distUv(snap.u, snap.v, u, v);
     if (dist < bestDist) {
       best = snap;
       bestDist = dist;

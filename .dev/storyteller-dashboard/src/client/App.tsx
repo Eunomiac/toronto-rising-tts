@@ -120,94 +120,94 @@ export const App = (): ReactElement => {
         aria-labelledby="tab-scenes"
         hidden={activeTab !== "tab-scenes"}
       >
-        <div className="scenes-chrome">
-          <div className="scenes-chrome-row scenes-chrome-identity">
-            <label className="scenes-field scenes-field-grow">
-              <span>Title</span>
-              <input id="scenes-title" type="text" placeholder="Title" />
-            </label>
-            <div className="scenes-field">
-              <span>Placement</span>
-              <div className="scenes-mode-toggle">
-                <button id="scenes-mode-standard" className="lock active" type="button">Standard</button>
-                <button id="scenes-mode-scatter" type="button">Scatter</button>
+        <div className="scenes-workspace">
+          <aside className="scenes-group-rail" aria-label="NPC groups">
+            <div id="scenes-palette-list" className="scenes-palette-list" hidden></div>
+            <div id="scenes-group-trays" className="scenes-group-trays"></div>
+          </aside>
+          <div className="scenes-board-wrap" id="scenes-board-wrap">
+            <div className="scenes-board-frame" id="scenes-board-frame">
+              <img id="scenes-board-img" className="scenes-board-img" alt="Control board" />
+              <div id="scenes-board-overlay" className="scenes-board-overlay"></div>
+            </div>
+            <button id="scenes-clear-stage" className="scenes-clear-stage" type="button">Clear Stage</button>
+          </div>
+          <aside className="scenes-widget-rail" aria-label="Scene controls">
+            <input id="scenes-title" type="text" placeholder="Scene title" aria-label="Scene title" />
+            <div className="scenes-mode-toggle" role="group" aria-label="Placement">
+              <button id="scenes-mode-standard" className="lock active" type="button" title="Standard table and polar stage">Standard</button>
+              <button id="scenes-mode-scatter" type="button" title="Scatter areas">Scatter</button>
+            </div>
+            <div className="scenes-widget scenes-place-widget">
+              <button id="scenes-district" type="button" title="District">
+                <span className="scenes-widget-icon" aria-hidden="true">⌖</span>
+                <span className="scenes-widget-value">District</span>
+              </button>
+              <button id="scenes-site" type="button" title="Site">
+                <span className="scenes-widget-icon" aria-hidden="true">⌂</span>
+                <span className="scenes-widget-value">Site</span>
+              </button>
+              <button id="scenes-skybox" type="button" title="Skybox">
+                <span className="scenes-widget-icon" aria-hidden="true">☁</span>
+                <span className="scenes-widget-value">Skybox</span>
+              </button>
+            </div>
+            <div className="scenes-widget scenes-clock-widget">
+              <div className="scenes-clock-face">
+                <output id="scenes-clock-time-out" htmlFor="scenes-clock-minutes">21:00</output>
+                <label className="scenes-present-day" title="Present day">
+                  <input id="scenes-present-day" type="checkbox" defaultChecked />
+                  Now
+                </label>
+              </div>
+              <label className="scenes-clock-slider" title="Time of day">
+                <input id="scenes-clock-minutes" type="range" min={0} max={1435} step={5} defaultValue={1260} />
+              </label>
+              <div className="scenes-clock-date">
+                <label className="scenes-clock-slider" title="Day">
+                  <output id="scenes-clock-day-out" htmlFor="scenes-clock-day">13</output>
+                  <input id="scenes-clock-day" type="range" min={1} max={31} defaultValue={13} />
+                </label>
+                <label className="scenes-clock-slider" title="Month">
+                  <output id="scenes-clock-month-out" htmlFor="scenes-clock-month">September</output>
+                  <input id="scenes-clock-month" type="range" min={1} max={12} defaultValue={9} />
+                </label>
+                <label className="scenes-clock-year" title="Year">
+                  <input id="scenes-clock-year" type="number" min={1} max={2100} defaultValue={2026} aria-label="Year" />
+                </label>
               </div>
             </div>
-          </div>
-          <div className="scenes-chrome-row" id="scenes-table-row">
-            <div className="scenes-field scenes-field-grow">
-              <span>Table</span>
+            <div className="scenes-widget scenes-weather-widget">
+              <select id="scenes-weather" hidden></select>
+              <div className="scenes-weather-axes">
+                <button id="scenes-weather-rain" type="button" title="Rain">🌧</button>
+                <button id="scenes-weather-snow" type="button" title="Snow is not in the import catalog yet" disabled>❄</button>
+                <button id="scenes-weather-wind" type="button" title="Wind">🌬</button>
+                <button id="scenes-weather-thunder" type="button" title="Thunder">⚡</button>
+              </div>
+              <label className="scenes-fog-toggle" title="Top fog">
+                <input id="scenes-fog" type="checkbox" defaultChecked />
+                Fog
+              </label>
+              <select id="scenes-lighting" aria-label="Lighting" title="Lighting"></select>
+            </div>
+            <div className="scenes-widget scenes-sound-widget">
+              <select id="scenes-location-track" aria-label="Location track" title="Location track"></select>
+              <select id="scenes-background-mood" aria-label="Background mood" title="Background mood"></select>
+            </div>
+            <div className="scenes-widget scenes-conditions-widget" id="scenes-conditions-list"></div>
+            <div className="scenes-widget scenes-table-widget" id="scenes-table-row">
               <div id="scenes-table-chips" className="scenes-table-chips"></div>
             </div>
-          </div>
-          <div className="scenes-chrome-row scenes-chrome-clock">
-            <label className="scenes-check scenes-present-day"><input id="scenes-present-day" type="checkbox" defaultChecked /> Present day</label>
-            <label className="scenes-clock-slider">
-              <span>Time of day <output id="scenes-clock-time-out" htmlFor="scenes-clock-minutes">21:00</output></span>
-              <input id="scenes-clock-minutes" type="range" min={0} max={1435} step={5} defaultValue={1260} />
-            </label>
-            <label className="scenes-clock-slider">
-              <span>Day <output id="scenes-clock-day-out" htmlFor="scenes-clock-day">13</output></span>
-              <input id="scenes-clock-day" type="range" min={1} max={31} defaultValue={13} />
-            </label>
-            <label className="scenes-clock-slider">
-              <span>Month <output id="scenes-clock-month-out" htmlFor="scenes-clock-month">September</output></span>
-              <input id="scenes-clock-month" type="range" min={1} max={12} defaultValue={9} />
-            </label>
-            <label className="scenes-clock-slider scenes-clock-year">
-              <span>Year</span>
-              <input id="scenes-clock-year" type="number" min={1} max={2100} defaultValue={2026} />
-            </label>
-          </div>
-          <div className="scenes-chrome-row scenes-chrome-place">
-            <div className="scenes-field">
-              <span>District</span>
-              <button id="scenes-district" type="button">District</button>
-            </div>
-            <div className="scenes-field">
-              <span>Site</span>
-              <button id="scenes-site" type="button">Site</button>
-            </div>
-            <div className="scenes-field">
-              <span>Skybox</span>
-              <button id="scenes-skybox" type="button">Skybox</button>
-            </div>
-            <label className="scenes-field">
-              <span>Weather</span>
-              <select id="scenes-weather"></select>
-            </label>
-            <label className="scenes-field">
-              <span>Lighting</span>
-              <select id="scenes-lighting"></select>
-            </label>
-            <label className="scenes-check"><input id="scenes-fog" type="checkbox" defaultChecked /> Top fog</label>
-            <div className="scenes-field">
-              <span>Sound</span>
-              <button id="scenes-sound" type="button">Soundscape</button>
-            </div>
-            <div className="scenes-field">
-              <span>Conditions</span>
-              <button id="scenes-conditions" type="button">Conditions</button>
-            </div>
-          </div>
+            <footer className="scenes-footer">
+              <div className="status idle" id="scenes-bridge-status">Checking TTS bridge…</div>
+              <div className="scenes-footer-actions">
+                <button id="scenes-copy" type="button">Copy JSON</button>
+                <button id="scenes-import" type="button" disabled>Import in TTS</button>
+              </div>
+            </footer>
+          </aside>
         </div>
-        <div className="scenes-palette">
-          <button id="scenes-add-npcs" type="button">Add NPCs…</button>
-          <div id="scenes-palette-list" className="scenes-palette-list"></div>
-        </div>
-        <div className="scenes-board-wrap" id="scenes-board-wrap">
-          <div className="scenes-board-frame" id="scenes-board-frame">
-            <img id="scenes-board-img" className="scenes-board-img" alt="Control board" />
-            <div id="scenes-board-overlay" className="scenes-board-overlay"></div>
-          </div>
-        </div>
-        <footer className="scenes-footer">
-          <div className="status idle" id="scenes-bridge-status">Checking TTS bridge…</div>
-          <div className="scenes-footer-actions">
-            <button id="scenes-copy" type="button">Copy JSON</button>
-            <button id="scenes-import" type="button" disabled>Import in TTS</button>
-          </div>
-        </footer>
         <div id="scenes-toasts" className="scenes-toasts" aria-live="polite"></div>
       </section>
       <div id="scenes-drag-layer" className="scenes-drag-layer"></div>

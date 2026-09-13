@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   FAMILY_HANDLE_LAYOUT,
   familyHandleLayoutFor,
+  layoutBoardFrame,
+  nearestPolarSnap,
   polarAreaNameForFamily,
   sceneKeyFromTitle,
   tableChoiceIsSelected,
@@ -9,7 +11,9 @@ import {
 } from "./payload";
 import type { ControlBoardSnaps, PolarSnap } from "./types";
 
-const polarSnap = (row: Pick<PolarSnap, "familyId" | "ringIndex" | "u" | "v">): PolarSnap => ({
+const polarSnap = (
+  row: Pick<PolarSnap, "familyId" | "ringIndex" | "u" | "v"> & Partial<Pick<PolarSnap, "snapIndex">>
+): PolarSnap => ({
   snapIndex: 1,
   snapKind: "polar",
   familyK: 0,
@@ -79,5 +83,29 @@ describe("tableChoiceKeys", () => {
   it("treats B variants as the Table B choice", () => {
     expect(tableChoiceIsSelected("Table B", "Table B2")).toBe(true);
     expect(tableChoiceIsSelected("Table B", "Table A")).toBe(false);
+  });
+});
+
+describe("layoutBoardFrame", () => {
+  it("fits the crop window inside the wrap without covering past it", () => {
+    const layout = layoutBoardFrame(1000, 500, 3000, 1500);
+    const cropW = 0.8 * layout.width;
+    const cropH = 0.8 * layout.height;
+    expect(cropW).toBeLessThanOrEqual(1000 + 1);
+    expect(cropH).toBeLessThanOrEqual(500 + 1);
+    expect(layout.left).toBeLessThanOrEqual(1);
+  });
+});
+
+describe("nearestPolarSnap", () => {
+  it("stays inside the nearer family even if another pack has a slightly closer member", () => {
+    const snaps = snapsWith([
+      polarSnap({ familyId: "1:0", ringIndex: 1, u: 0.5, v: 0.5, snapIndex: 1 }),
+      polarSnap({ familyId: "1:0", ringIndex: 1, u: 0.52, v: 0.5, snapIndex: 2 }),
+      polarSnap({ familyId: "2:3", ringIndex: 2, u: 0.56, v: 0.5, snapIndex: 3 })
+    ]);
+    const hit = nearestPolarSnap(snaps, 0.53, 0.5, 0.12);
+    expect(hit?.familyId).toBe("1:0");
+    expect(hit?.snapIndex).toBe(2);
   });
 });

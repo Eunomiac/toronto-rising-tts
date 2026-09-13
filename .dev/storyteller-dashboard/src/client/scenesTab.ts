@@ -1,4 +1,5 @@
 import { bindBoardDrag, gsap, killBoardDrags } from "./scenes/boardDrag.js";
+import { comparePickerGroups, groupThemeClass } from "./scenes/groupThemes.js";
 import { relocatePolarFamily } from "./scenes/groupRelocate.js";
 import {
   boardUvFromEvent,
@@ -7,6 +8,7 @@ import {
   createDefaultDraft,
   cutoutUrl,
   familyHandleLayoutFor,
+  layoutBoardFrame,
   polarAreaNameForFamily,
   tableChoiceIsSelected,
   tableChoiceKeys,
@@ -18,6 +20,7 @@ import {
   sceneKeyFromTitle
 } from "./scenes/payload.js";
 import { initToasts } from "./scenes/toasts.js";
+import { axesFromWeatherKey, cycleRain, weatherKeyFromAxes } from "./scenes/weatherAxes.js";
 import type {
   ControlBoardSnaps,
   NpcLightMode,
@@ -73,6 +76,7 @@ export const initScenesTab = (): void => {
   const boardImg = requiredElement<HTMLImageElement>("scenes-board-img");
   const overlay = requiredElement<HTMLDivElement>("scenes-board-overlay");
   const palette = requiredElement<HTMLDivElement>("scenes-palette-list");
+  const groupTrays = requiredElement<HTMLDivElement>("scenes-group-trays");
   const dragLayer = requiredElement<HTMLDivElement>("scenes-drag-layer");
   const modalRoot = requiredElement<HTMLDivElement>("modal-root");
   const importButton = requiredElement<HTMLButtonElement>("scenes-import");
@@ -86,6 +90,8 @@ export const initScenesTab = (): void => {
   let bridgeUsable = false;
   let missingCutouts = new Set<string>();
   const ghostEls: HTMLElement[] = [];
+  let openPickerGroup: string | null = null;
+  let reticuleUv = { u: 0.42, v: 0.48 };
 
   const setStatus = (kind: "idle" | "loading" | "error" | "success", message: string): void => {
     toasts.push(kind, message);
@@ -132,9 +138,11 @@ export const initScenesTab = (): void => {
     if (!naturalWidth || !naturalHeight || wrapRect.width < 8 || wrapRect.height < 8) {
       return;
     }
-    const scale = Math.min(wrapRect.width / naturalWidth, wrapRect.height / naturalHeight);
-    boardFrame.style.width = `${Math.floor(naturalWidth * scale)}px`;
-    boardFrame.style.height = `${Math.floor(naturalHeight * scale)}px`;
+    const layout = layoutBoardFrame(wrapRect.width, wrapRect.height, naturalWidth, naturalHeight);
+    boardFrame.style.width = `${Math.floor(layout.width)}px`;
+    boardFrame.style.height = `${Math.floor(layout.height)}px`;
+    boardFrame.style.left = `${Math.round(layout.left)}px`;
+    boardFrame.style.top = `${Math.round(layout.top)}px`;
   };
 
   const pickerGroupLabel = (groupKey: string): string => {
@@ -155,16 +163,30 @@ export const initScenesTab = (): void => {
     }
   };
 
-  const makeToken = (characterKey: string, lit: boolean, extraClass = "", ghost = false): HTMLButtonElement => {
+  const makeToken = (
+    characterKey: string,
+    lit: boolean,
+    extraClass = "",
+    ghost = false,
+    fullName = ""
+  ): HTMLButtonElement => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = `scenes-token ${extraClass}`.trim();
     button.dataset.characterKey = characterKey;
+    if (lit && !extraClass.includes("scenes-token-palette")) {
+      button.classList.add("scenes-token-lit");
+      let delay = 0;
+      for (let i = 0; i < characterKey.length; i += 1) {
+        delay += characterKey.charCodeAt(i);
+      }
+      button.style.setProperty("--glow-delay", `${delay % 900}ms`);
+    }
     const bg = document.createElement("span");
     bg.className = "scenes-token-bg";
     const cutout = document.createElement("img");
     cutout.className = "scenes-token-cutout";
-    cutout.alt = characterKey;
+    cutout.alt = fullName || characterKey;
     cutout.draggable = false;
     cutout.src = cutoutUrl(characterKey);
     if (!ghost) {
@@ -176,17 +198,136 @@ export const initScenesTab = (): void => {
     frame.draggable = false;
     frame.src = tokenFrame(lit);
     button.append(bg, cutout, frame);
+    if (fullName !== "" && !ghost) {
+      const name = document.createElement("span");
+      name.className = "scenes-token-name";
+      name.textContent = fullName;
+      button.append(name);
+    }
     return button;
   };
 
+  const snapshotTokenRects = (): Map<string, DOMRect> => {
+    const map = new Map<string, DOMRect>();
+    const scan = (root: ParentNode, includeOrigin: boolean): void => {
+      for (const el of root.querySelectorAll<HTMLElement>("[data-character-key]")) {
+        if (el.classList.contains("scenes-token-ghost") || el.classList.contains("scenes-token-dragging")) {
+          continue;
+        }
+        if (!includeOrigin && el.classList.contains("scenes-token-origin")) {
+          continue;
+        }
+        const key = el.dataset.characterKey;
+        if (key) {
+          map.set(key, el.getBoundingClientRect());
+        }
+      }
+    };
+    scan(groupTrays, true);
+    scan(palette, true);
+    scan(overlay, true);
+    return map;
+  };
+
+  const flipTokensFrom = (before: Map<string, DOMRect>): void => {
+    for (const el of overlay.querySelectorAll<HTMLElement>("[data-character-key]")) {
+      const key = el.dataset.characterKey;
+      if (!key) {
+        continue;
+      }
+      const prev = before.get(key);
+      if (!prev) {
+        continue;
+      }
+      const now = el.getBoundingClientRect();
+      const dx = prev.left - now.left;
+      const dy = prev.top - now.top;
+      if (Math.abs(dx) < 2 && Math.abs(dy) < 2) {
+        continue;
+      }
+      gsap.fromTo(el, { x: dx, y: dy }, { x: 0, y: 0, duration: 0.34, ease: "power2.inOut" });
+    }
+  };
+
+  const pointInRect = (clientX: number, clientY: number, rect: DOMRect): boolean =>
+    clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom;
+
+  const setPlaceLabel = (id: string, text: string, empty: boolean): void => {
+    const button = requiredElement<HTMLButtonElement>(id);
+    const value = button.querySelector(".scenes-widget-value");
+    if (value) {
+      value.textContent = text;
+    } else {
+      button.textContent = text;
+    }
+    button.classList.toggle("is-placeholder", empty);
+  };
+
   const placeToken = (el: HTMLElement, u: number, v: number): void => {
+    el.classList.remove("scenes-token-dragging");
+    el.style.position = "absolute";
+    el.style.width = "";
+    el.style.height = "";
+    el.style.zIndex = "";
     el.style.left = cssLeft(u);
     el.style.top = cssTop(v);
-    gsap.set(el, { xPercent: -50, yPercent: -50, x: 0, y: 0 });
+    gsap.set(el, {
+      clearProps: "width,height,zIndex",
+      position: "absolute",
+      xPercent: -50,
+      yPercent: -50,
+      x: 0,
+      y: 0
+    });
+  };
+
+  const returnTokenOffBoard = (characterKey: string): void => {
+    if (!draft || !catalogs) {
+      return;
+    }
+    draft.standard.polar = draft.standard.polar.filter((token) => token.characterKey !== characterKey);
+    draft.standard.paletteNpcKeys = draft.standard.paletteNpcKeys.filter((key) => key !== characterKey);
+    draft.scatter.paletteNpcKeys = draft.scatter.paletteNpcKeys.filter((key) => key !== characterKey);
+    for (const area of Object.values(draft.scatter.areas)) {
+      delete area.orbitCharacters[characterKey];
+      for (const [pcKey, row] of Object.entries(area.centerCharacters)) {
+        if (pcKey === characterKey || row.characterKey === characterKey) {
+          delete area.centerCharacters[pcKey];
+        }
+      }
+    }
+    if (Object.values(PC_BY_COLOR).includes(characterKey)) {
+      return;
+    }
+    for (const npcSeat of catalogs.npcSeats) {
+      const row = draft.standard.seatSlots[npcSeat];
+      if (!row || row.characterKey !== characterKey) {
+        continue;
+      }
+      if (row.isPresent === false) {
+        row.isPresent = true;
+      } else {
+        draft.standard.seatSlots[npcSeat] = {
+          characterKey: "",
+          isPlayingNPC: false,
+          isPresent: false,
+          slotEmpty: true
+        };
+      }
+    }
   };
 
   const applyBoardDrop = (clientX: number, clientY: number, dragKind: "token" | "family", dragKey: string): void => {
     if (!draft || !snaps || !catalogs) {
+      return;
+    }
+    if (!pointInRect(clientX, clientY, boardWrap.getBoundingClientRect())) {
+      if (dragKind === "family") {
+        setStatus("error", "Drop the group handle onto a polar pack.");
+        return;
+      }
+      returnTokenOffBoard(dragKey);
+      persist();
       return;
     }
     const uv = boardUvFromEvent(overlay, { clientX, clientY });
@@ -355,17 +496,22 @@ export const initScenesTab = (): void => {
     }
   };
 
+  const finishBoardDrag = (clientX: number, clientY: number, dragKind: "token" | "family", dragKey: string): void => {
+    const before = snapshotTokenRects();
+    clearGhosts();
+    applyBoardDrop(clientX, clientY, dragKind, dragKey);
+    render();
+    flipTokensFrom(before);
+  };
+
   const bindTokenDrag = (el: HTMLElement, characterKey: string): void => {
     bindBoardDrag(el, {
       boardFrame,
       dragLayer,
       pickup: true,
+      leaveOrigin: true,
       onMove: (clientX, clientY) => paintTokenGhosts(clientX, clientY, characterKey),
-      onEnd: (clientX, clientY) => {
-        clearGhosts();
-        applyBoardDrop(clientX, clientY, "token", characterKey);
-        render();
-      }
+      onEnd: (clientX, clientY) => finishBoardDrag(clientX, clientY, "token", characterKey)
     });
   };
 
@@ -387,13 +533,12 @@ export const initScenesTab = (): void => {
         gsap.set(handle, { opacity: 1 });
         gsap.to(handle, { scale: 1.18, duration: 0.16, yoyo: true, repeat: -1, ease: "sine.inOut" });
       },
+      leaveOrigin: true,
       onMove: (clientX, clientY) => paintFamilyGhosts(clientX, clientY, familyId),
       onEnd: (clientX, clientY) => {
         gsap.killTweensOf(handle);
         handle.dataset.dragging = "0";
-        clearGhosts();
-        applyBoardDrop(clientX, clientY, "family", familyId);
-        render();
+        finishBoardDrag(clientX, clientY, "family", familyId);
       }
     });
   };
@@ -516,19 +661,57 @@ export const initScenesTab = (): void => {
       MONTH_NAMES[current.clockMonth - 1] ?? String(current.clockMonth);
     requiredElement<HTMLInputElement>("scenes-clock-year").value = String(current.clockYear);
     requiredElement<HTMLSelectElement>("scenes-weather").value = current.weatherKey;
+    const axes = axesFromWeatherKey(current.weatherKey, catalogs.weatherConditions);
+    const rainButton = requiredElement<HTMLButtonElement>("scenes-weather-rain");
+    rainButton.classList.toggle("lock", axes.rain !== "none");
+    rainButton.classList.toggle("active", axes.rain !== "none");
+    rainButton.title = axes.rain === "heavy" ? "Heavy rain" : axes.rain === "light" ? "Light rain" : "Rain";
+    const windButton = requiredElement<HTMLButtonElement>("scenes-weather-wind");
+    windButton.classList.toggle("lock", axes.wind);
+    windButton.classList.toggle("active", axes.wind);
+    const thunderButton = requiredElement<HTMLButtonElement>("scenes-weather-thunder");
+    thunderButton.classList.toggle("lock", axes.thunder);
+    thunderButton.classList.toggle("active", axes.thunder);
     const district = catalogs.districts.find((row) => row.key === current.districtKey);
     const site = catalogs.sites.find((row) => row.key === current.siteKey);
-    requiredElement<HTMLButtonElement>("scenes-district").textContent = district ? district.name : "District";
-    requiredElement<HTMLButtonElement>("scenes-site").textContent = site ? site.name : "Site";
+    setPlaceLabel("scenes-district", district ? district.name : "District", !district);
+    setPlaceLabel("scenes-site", site ? site.name : "Site", !site);
     const sky = catalogs.skyboxes.find((row) => row.key === current.skyboxOverride);
-    requiredElement<HTMLButtonElement>("scenes-skybox").textContent = sky
+    const skyLabel = sky
       ? sky.display
       : current.skyboxOverride === "Generic"
         ? "Generic"
         : "Skybox";
-    requiredElement<HTMLButtonElement>("scenes-sound").textContent = "Soundscape";
-    requiredElement<HTMLButtonElement>("scenes-conditions").textContent =
-      current.conditions.length > 0 ? `Conditions (${current.conditions.length})` : "Conditions";
+    setPlaceLabel("scenes-skybox", skyLabel, !sky && current.skyboxOverride !== "Generic");
+    const locationSelect = requiredElement<HTMLSelectElement>("scenes-location-track");
+    if (locationSelect.value !== current.locationTrack) {
+      locationSelect.value = current.locationTrack;
+    }
+    const moodSelect = requiredElement<HTMLSelectElement>("scenes-background-mood");
+    if (moodSelect.value !== current.backgroundMood) {
+      moodSelect.value = current.backgroundMood;
+    }
+    const conditionsList = requiredElement<HTMLDivElement>("scenes-conditions-list");
+    conditionsList.replaceChildren();
+    for (const cond of catalogs.conditions) {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = current.conditions.includes(cond.id) ? "scenes-condition-chip lock active" : "scenes-condition-chip";
+      chip.textContent = cond.displayName;
+      chip.addEventListener("click", () => {
+        if (!draft) {
+          return;
+        }
+        if (draft.conditions.includes(cond.id)) {
+          draft.conditions = draft.conditions.filter((id) => id !== cond.id);
+        } else {
+          draft.conditions = [...draft.conditions, cond.id];
+        }
+        persist();
+        renderChrome();
+      });
+      conditionsList.append(chip);
+    }
   };
 
   const renderBoard = (): void => {
@@ -549,7 +732,7 @@ export const initScenesTab = (): void => {
         if (!snap) {
           continue;
         }
-        const el = makeToken(token.characterKey, token.npcLightMode !== "OFF");
+        const el = makeToken(token.characterKey, token.npcLightMode !== "OFF", "", false, characterLabel(boardCatalogs, token.characterKey));
         placeToken(el, snap.u, snap.v);
         el.title = characterLabel(boardCatalogs, token.characterKey);
         el.addEventListener("dblclick", () => {
@@ -586,8 +769,16 @@ export const initScenesTab = (): void => {
           continue;
         }
         const lit = row.isPresent === true && row.absentFromSession !== true;
-        const el = makeToken(row.characterKey, lit, "scenes-token-seat");
+        const el = makeToken(row.characterKey, lit, "scenes-token-seat", false, characterLabel(catalogs, row.characterKey));
         placeToken(el, seat.u, seat.v);
+        if (seat.v > 0.52) {
+          el.classList.add("scenes-token-caption-above");
+        }
+        if (seat.u < 0.4) {
+          el.classList.add("scenes-token-caption-left");
+        } else if (seat.u > 0.5) {
+          el.classList.add("scenes-token-caption-right");
+        }
         el.title = `${characterLabel(catalogs, row.characterKey)} — ${seat.seatKey}`;
         el.addEventListener("dblclick", () => {
           row.isPresent = !row.isPresent;
@@ -610,7 +801,7 @@ export const initScenesTab = (): void => {
             continue;
           }
           const displayKey = row.isPlayingNPC && row.characterKey ? row.characterKey : pcKey;
-          const el = makeToken(displayKey, row.isPresent, "scenes-token-center");
+          const el = makeToken(displayKey, row.isPresent, "scenes-token-center", false, characterLabel(boardCatalogs, displayKey));
           el.dataset.pcKey = pcKey;
           placeToken(el, slot.u, slot.v);
           el.addEventListener("dblclick", () => {
@@ -626,7 +817,7 @@ export const initScenesTab = (): void => {
           if (!slot) {
             continue;
           }
-          const el = makeToken(npcKey, row.npcLightMode !== "OFF");
+          const el = makeToken(npcKey, row.npcLightMode !== "OFF", "", false, characterLabel(boardCatalogs, npcKey));
           placeToken(el, slot.u, slot.v);
           el.addEventListener("dblclick", () => {
             row.npcLightMode = row.npcLightMode === "OFF" ? "STANDARD" : "OFF";
@@ -638,6 +829,38 @@ export const initScenesTab = (): void => {
         }
       }
     }
+
+    const reticule = document.createElement("button");
+    reticule.type = "button";
+    reticule.id = "scenes-reticule";
+    reticule.className = "scenes-reticule";
+    reticule.title = "Drop to copy board coordinates";
+    reticule.setAttribute("aria-label", reticule.title);
+    placeToken(reticule, reticuleUv.u, reticuleUv.v);
+    overlay.append(reticule);
+    bindBoardDrag(reticule, {
+      boardFrame,
+      dragLayer,
+      pickup: false,
+      leaveOrigin: false,
+      dropPulse: false,
+      onMove: () => undefined,
+      onEnd: (clientX, clientY) => {
+        overlay.append(reticule);
+        const uv = boardUvFromEvent(overlay, { clientX, clientY });
+        if (!uv) {
+          placeToken(reticule, reticuleUv.u, reticuleUv.v);
+          return;
+        }
+        reticuleUv = uv;
+        placeToken(reticule, uv.u, uv.v);
+        const text = `${uv.u.toFixed(4)}, ${uv.v.toFixed(4)}`;
+        void navigator.clipboard.writeText(text).then(
+          () => setStatus("success", `Copied ${text}`),
+          () => setStatus("error", "Could not copy coordinates.")
+        );
+      }
+    });
   };
 
   const renderPalette = (): void => {
@@ -646,6 +869,7 @@ export const initScenesTab = (): void => {
     }
     palette.replaceChildren();
     const keys = draft.placementMode === "standard" ? draft.standard.paletteNpcKeys : draft.scatter.paletteNpcKeys;
+    palette.hidden = keys.length === 0;
     for (const key of keys) {
       const el = makeToken(key, true, "scenes-token-palette");
       el.title = characterLabel(catalogs, key);
@@ -660,6 +884,7 @@ export const initScenesTab = (): void => {
     renderChrome();
     renderBoard();
     renderPalette();
+    renderGroupTrays();
   };
 
   const usedNamedKeys = (): Set<string> => {
@@ -697,6 +922,58 @@ export const initScenesTab = (): void => {
     return used;
   };
 
+  const renderGroupTrays = (): void => {
+    if (!catalogs) {
+      return;
+    }
+    const used = usedNamedKeys();
+    const groups = new Map<string, Array<SceneCatalogs["namedNpcs"][number]>>();
+    for (const npc of catalogs.namedNpcs) {
+      const tags = npc.pickerGroups.length > 0 ? npc.pickerGroups : ["Ungrouped"];
+      for (const tag of tags) {
+        const list = groups.get(tag) ?? [];
+        list.push(npc);
+        groups.set(tag, list);
+      }
+    }
+    const groupNames = [...groups.keys()].sort((a, b) =>
+      comparePickerGroups(a, b, pickerGroupLabel)
+    );
+    groupTrays.replaceChildren();
+    for (const name of groupNames) {
+      const tray = document.createElement("div");
+      tray.className = `scenes-group-tray ${groupThemeClass(name)}`;
+      if (openPickerGroup === name) {
+        tray.classList.add("open");
+      }
+      const header = document.createElement("button");
+      header.type = "button";
+      header.className = "scenes-group-tray-header";
+      header.textContent = pickerGroupLabel(name);
+      header.addEventListener("click", () => {
+        openPickerGroup = openPickerGroup === name ? null : name;
+        render();
+      });
+      const body = document.createElement("div");
+      body.className = "scenes-group-tray-body";
+      for (const npc of groups.get(name) ?? []) {
+        const onBoard = used.has(npc.characterKey);
+        const el = makeToken(
+          npc.characterKey,
+          true,
+          onBoard ? "scenes-token-palette added" : "scenes-token-palette"
+        );
+        el.title = npc.fullName;
+        body.append(el);
+        if (!onBoard) {
+          bindTokenDrag(el, npc.characterKey);
+        }
+      }
+      tray.append(header, body);
+      groupTrays.append(tray);
+    }
+  };
+
   const openPickerModal = (
     title: string,
     renderBody: (root: HTMLDivElement) => void
@@ -728,93 +1005,6 @@ export const initScenesTab = (): void => {
       }
     });
     modalRoot.append(backdrop);
-  };
-
-  const openNpcModal = (): void => {
-    if (!catalogs || !draft) {
-      return;
-    }
-    const groups = new Map<string, Array<SceneCatalogs["namedNpcs"][number]>>();
-    for (const npc of catalogs.namedNpcs) {
-      const tags = npc.pickerGroups.length > 0 ? npc.pickerGroups : ["Ungrouped"];
-      for (const tag of tags) {
-        const list = [...(groups.get(tag) ?? [])];
-        list.push(npc);
-        groups.set(tag, list);
-      }
-    }
-    const groupNames = [...groups.keys()].sort((a, b) =>
-      pickerGroupLabel(a).localeCompare(pickerGroupLabel(b))
-    );
-    openPickerModal("Add NPCs", (root) => {
-      const search = document.createElement("input");
-      search.type = "search";
-      search.placeholder = "Search NPCs…";
-      const tabs = document.createElement("div");
-      tabs.className = "scenes-modal-tabs";
-      const grid = document.createElement("div");
-      grid.className = "generic-npc-grid";
-      let activeGroup = groupNames[0] ?? "Ungrouped";
-      const paint = (): void => {
-        grid.replaceChildren();
-        const query = search.value.trim().toLowerCase();
-        const used = usedNamedKeys();
-        const list = (groups.get(activeGroup) ?? []).filter((npc) => {
-          if (query === "") {
-            return true;
-          }
-          return npc.fullName.toLowerCase().includes(query) || npc.characterKey.toLowerCase().includes(query);
-        });
-        for (const npc of list) {
-          const tile = document.createElement("button");
-          tile.type = "button";
-          tile.className = used.has(npc.characterKey) ? "generic-npc-tile added" : "generic-npc-tile";
-          const thumb = document.createElement("div");
-          thumb.className = "generic-npc-thumb";
-          const img = document.createElement("img");
-          img.src = cutoutUrl(npc.characterKey);
-          img.alt = npc.fullName;
-          img.addEventListener("error", () => markCutoutError(npc.characterKey));
-          thumb.append(img);
-          const label = document.createElement("div");
-          label.className = "generic-npc-label";
-          label.textContent = npc.fullName;
-          tile.append(thumb, label);
-          tile.addEventListener("click", () => {
-            if (!draft || used.has(npc.characterKey)) {
-              return;
-            }
-            if (draft.placementMode === "standard") {
-              draft.standard.paletteNpcKeys.push(npc.characterKey);
-            } else {
-              draft.scatter.paletteNpcKeys.push(npc.characterKey);
-            }
-            persist();
-            render();
-            paint();
-          });
-          grid.append(tile);
-        }
-      };
-      for (const name of groupNames) {
-        const tab = document.createElement("button");
-        tab.type = "button";
-        tab.textContent = pickerGroupLabel(name);
-        tab.className = name === activeGroup ? "lock active" : "";
-        tab.addEventListener("click", () => {
-          activeGroup = name;
-          for (const button of tabs.querySelectorAll("button")) {
-            button.classList.toggle("lock", button === tab);
-            button.classList.toggle("active", button === tab);
-          }
-          paint();
-        });
-        tabs.append(tab);
-      }
-      search.addEventListener("input", paint);
-      root.append(search, tabs, grid);
-      paint();
-    });
   };
 
   const openSiteModal = (): void => {
@@ -1068,6 +1258,19 @@ export const initScenesTab = (): void => {
     persist();
     renderChrome();
   });
+  const applyWeatherPatch = (patch: Partial<{ rain: "none" | "light" | "heavy"; wind: boolean; thunder: boolean }>): void => {
+    if (!draft || !catalogs) {
+      return;
+    }
+    const next = {
+      ...axesFromWeatherKey(draft.weatherKey, catalogs.weatherConditions),
+      ...patch
+    };
+    draft.weatherKey = weatherKeyFromAxes(next);
+    persist();
+    renderChrome();
+  };
+
   requiredElement<HTMLSelectElement>("scenes-weather").addEventListener("change", (event) => {
     if (!draft) {
       return;
@@ -1076,7 +1279,27 @@ export const initScenesTab = (): void => {
     persist();
     renderChrome();
   });
-  requiredElement<HTMLButtonElement>("scenes-add-npcs").addEventListener("click", openNpcModal);
+  requiredElement<HTMLButtonElement>("scenes-weather-rain").addEventListener("click", () => {
+    if (!draft || !catalogs) {
+      return;
+    }
+    const axes = axesFromWeatherKey(draft.weatherKey, catalogs.weatherConditions);
+    applyWeatherPatch({ rain: cycleRain(axes.rain), thunder: false });
+  });
+  requiredElement<HTMLButtonElement>("scenes-weather-wind").addEventListener("click", () => {
+    if (!draft || !catalogs) {
+      return;
+    }
+    const axes = axesFromWeatherKey(draft.weatherKey, catalogs.weatherConditions);
+    applyWeatherPatch({ wind: !axes.wind, thunder: false });
+  });
+  requiredElement<HTMLButtonElement>("scenes-weather-thunder").addEventListener("click", () => {
+    if (!draft || !catalogs) {
+      return;
+    }
+    const axes = axesFromWeatherKey(draft.weatherKey, catalogs.weatherConditions);
+    applyWeatherPatch({ thunder: !axes.thunder });
+  });
   requiredElement<HTMLButtonElement>("scenes-district").addEventListener("click", () => {
     if (!catalogs || !draft) {
       return;
@@ -1113,81 +1336,46 @@ export const initScenesTab = (): void => {
       render();
     });
   });
-  requiredElement<HTMLButtonElement>("scenes-sound").addEventListener("click", () => {
-    if (!catalogs || !draft) {
+  requiredElement<HTMLSelectElement>("scenes-location-track").addEventListener("change", (event) => {
+    if (!draft) {
       return;
     }
-    const loadedCatalogs = catalogs;
-    const currentDraft = draft;
-    openPickerModal("Soundscape", (root) => {
-      const loc = document.createElement("select");
-      loc.append(new Option("(none)", ""));
-      for (const track of loadedCatalogs.locationTracks) {
-        loc.append(new Option(track.key, track.key));
-      }
-      loc.value = currentDraft.locationTrack;
-      const mood = document.createElement("select");
-      mood.append(new Option("(none)", ""));
-      for (const key of loadedCatalogs.backgroundMoods) {
-        mood.append(new Option(key, key));
-      }
-      mood.value = currentDraft.backgroundMood;
-      const apply = document.createElement("button");
-      apply.type = "button";
-      apply.textContent = "Apply";
-      apply.addEventListener("click", () => {
-        if (!draft) {
-          return;
-        }
-        draft.locationTrack = loc.value;
-        draft.backgroundMood = mood.value;
-        persist();
-        render();
-        modalRoot.innerHTML = "";
-      });
-      root.append(loc, mood, apply);
-    });
+    draft.locationTrack = (event.target as HTMLSelectElement).value;
+    persist();
   });
-  requiredElement<HTMLButtonElement>("scenes-conditions").addEventListener("click", () => {
-    if (!catalogs || !draft) {
+  requiredElement<HTMLSelectElement>("scenes-background-mood").addEventListener("change", (event) => {
+    if (!draft) {
       return;
     }
-    const loadedCatalogs = catalogs;
-    const currentDraft = draft;
-    openPickerModal("Conditions", (root) => {
-      const selected = new Set(currentDraft.conditions);
-      const grid = document.createElement("div");
-      grid.className = "scenes-chip-grid";
-      for (const cond of loadedCatalogs.conditions) {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.textContent = cond.displayName;
-        button.className = selected.has(cond.id) ? "lock active" : "";
-        button.addEventListener("click", () => {
-          if (selected.has(cond.id)) {
-            selected.delete(cond.id);
-            button.className = "";
-          } else {
-            selected.add(cond.id);
-            button.className = "lock active";
-          }
-        });
-        grid.append(button);
+    draft.backgroundMood = (event.target as HTMLSelectElement).value;
+    persist();
+  });
+  requiredElement<HTMLButtonElement>("scenes-clear-stage").addEventListener("click", () => {
+    if (!draft) {
+      return;
+    }
+    const button = requiredElement<HTMLButtonElement>("scenes-clear-stage");
+    if (!button.classList.contains("armed")) {
+      button.classList.add("armed");
+      window.setTimeout(() => button.classList.remove("armed"), 5000);
+      return;
+    }
+    button.classList.remove("armed");
+    const before = snapshotTokenRects();
+    if (draft.placementMode === "standard") {
+      for (const token of [...draft.standard.polar]) {
+        returnTokenOffBoard(token.characterKey);
       }
-      const apply = document.createElement("button");
-      apply.type = "button";
-      apply.textContent = "Apply";
-      apply.addEventListener("click", () => {
-        if (!draft) {
-          return;
+    } else {
+      for (const area of Object.values(draft.scatter.areas)) {
+        for (const npcKey of Object.keys(area.orbitCharacters)) {
+          returnTokenOffBoard(npcKey);
         }
-        draft.conditions = [...selected];
-        persist();
-        render();
-        modalRoot.innerHTML = "";
-      });
-      root.append(grid, apply);
-    });
+      }
+    }
+    persist();
+    render();
+    flipTokensFrom(before);
   });
 
   copyButton.addEventListener("click", () => void copyJson());
@@ -1232,6 +1420,16 @@ export const initScenesTab = (): void => {
       weather.replaceChildren();
       for (const row of catalogs.weatherConditions) {
         weather.append(new Option(row.label, row.key));
+      }
+      const locationSelect = requiredElement<HTMLSelectElement>("scenes-location-track");
+      locationSelect.replaceChildren(new Option("(location)", ""));
+      for (const track of catalogs.locationTracks) {
+        locationSelect.append(new Option(track.key, track.key));
+      }
+      const moodSelect = requiredElement<HTMLSelectElement>("scenes-background-mood");
+      moodSelect.replaceChildren(new Option("(mood)", ""));
+      for (const key of catalogs.backgroundMoods) {
+        moodSelect.append(new Option(key, key));
       }
       const saved = window.localStorage.getItem(DRAFT_KEY);
       if (saved) {
