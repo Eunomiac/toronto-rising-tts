@@ -292,6 +292,8 @@ In-fiction chronicle time, not wall-clock date.
 
 Present-day **flags-only** (valid v2): `{ "isPresentDay": true, "useRealTime": false, "realTimeSpeed": 1 }` with no datetime. Apply then fills time from `gameState.presentDayClock` (errors if present day was never initialized — use the NOW Apply button after present day exists).
 
+The Storyteller Dashboard Scenes tab always writes all five datetime fields from its clock sliders, including when Present day is checked. That is valid v2 (present-day with a baked time). Historical scenes still require `isPresentDay: false` plus all five fields.
+
 Historical: `{ "isPresentDay": false, "year": 1924, "month": 6, "day": 12, "hour": 22, "minute": 0, ... }`.
 
 `useRealTime` / `realTimeSpeed` may appear on flags-only clocks.

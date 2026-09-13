@@ -33,6 +33,19 @@ const REQUIRED_NPC_SEATS = ["NPC1", "NPC2", "NPC3", "NPC4"];
 const REQUIRED_SCATTER_AREAS = ["scatter1", "scatter2", "scatter3", "scatter4", "scatter5", "scatter6"];
 const PALETTE_GROUP_BLACKLIST = { princesCourt: true };
 
+/** Palette groups that are not keys in C.CHRONICLE_DATA.coteries. */
+const EXTRA_PICKER_GROUP_LABELS = {
+  aapilu: "Aapilu",
+  civilian: "Civilian",
+  criseDeLwa: "Crise de Lwa",
+  ducheskiRevenant: "Ducheski Revenant",
+  friendlyNeighborhoodSpiders: "Friendly Neighborhood Spiders",
+  friendlyNeighborhoodSpidersGarou: "Friendly Neighborhood Spiders (Garou)",
+  memoriam: "Memoriam",
+  touchstone: "Touchstone",
+  Ungrouped: "Ungrouped",
+};
+
 /**
  * @param {string} source
  * @param {string} marker
@@ -656,6 +669,34 @@ function main() {
   const pcs = characters.filter((c) => c.isPC);
   const namedNpcs = characters.filter((c) => !c.isPC);
 
+  const chronicleBlock = extractBlock(constants, "C.CHRONICLE_DATA =");
+  const coterieEntries = parseTopLevelEntries(extractBlock(chronicleBlock, "coteries ="));
+  if (coterieEntries.length === 0) {
+    throw new Error("C.CHRONICLE_DATA.coteries extract is empty.");
+  }
+  const pickerGroupLabels = { ...EXTRA_PICKER_GROUP_LABELS };
+  for (const entry of coterieEntries) {
+    const name = readStringField(entry.body, "name");
+    if (!name) {
+      throw new Error(`C.CHRONICLE_DATA.coteries.${entry.key} is missing name.`);
+    }
+    pickerGroupLabels[entry.key] = name;
+  }
+  const missingGroupLabels = [];
+  for (const npc of namedNpcs) {
+    for (const group of npc.pickerGroups) {
+      if (!pickerGroupLabels[group]) {
+        missingGroupLabels.push(group);
+      }
+    }
+  }
+  const uniqueMissing = [...new Set(missingGroupLabels)].sort();
+  if (uniqueMissing.length > 0) {
+    throw new Error(
+      `No display name for NPC picker group(s): ${uniqueMissing.join(", ")}. Add them to C.CHRONICLE_DATA.coteries or EXTRA_PICKER_GROUP_LABELS.`,
+    );
+  }
+
   const stage = parseDefaultStageWorld(boardSrc);
   const snapCfg = parseControlBoardSnap(boardSrc);
   const seatRow = parseSeatRow(boardSrc);
@@ -730,6 +771,7 @@ function main() {
     backgroundMoods,
     weatherConditions,
     conditions,
+    pickerGroupLabels,
   };
 
   const snaps = {

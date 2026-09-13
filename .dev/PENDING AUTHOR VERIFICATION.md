@@ -17,9 +17,22 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-13 — TOR-570 Storyteller Dashboard Scenes tab._
+_Last populated: 2026-09-13 — TOR-571 Scenes tab polish._
 
 ### Storyteller Dashboard
+
+#### TOR-571 — Scenes tab: token crop, board size, clock/weather, chrome
+
+**How to verify:** Restart the Storyteller Dashboard so port 8788 reloads (`npm run storyteller-dashboard:dev`, or stop and start the existing 8788 window). Maximize the Scenes tab at 1920×1080. No Save & Play is required unless you also re-test Import in TTS.
+
+1. **Tokens:** NPC and PC portraits should sit inside the circular frames, not as full-height figurines. Drag a PC onto a chair — the drag ghost should be the small token, and dropping should land on the chair you aimed at.
+2. **Board size:** The parchment board should fill most of the remaining screen under the top bar, not sit as a small island in black.
+3. **Chrome:** District, Site, Skybox, Weather, Lighting, fog, Sound, and Conditions should each be their own labeled box. They may wrap as whole boxes, but should not split through the middle of the District/Site/Skybox set.
+4. **Clock / weather:** Drag Time of day / Day / Month, type a Year, and pick a Weather. Uncheck Present day for a historical scene. **Copy JSON** should include `clock.year/month/day/hour/minute` and weather under `soundscapeNarrative` when weather is not None.
+5. **Sites:** Open Site. District-specific sites should be in a group above General sites.
+6. **Add NPCs:** Open Add NPCs…. Group tabs should show names such as Bee's Hive, not `beesHive`.
+
+**Context:** Follow-up on **TOR-570** (Scenes tab). relatedTo **TOR-570**.
 
 #### TOR-570 — Storyteller Dashboard Scenes tab
 

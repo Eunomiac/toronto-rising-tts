@@ -9,6 +9,9 @@ export const parseSceneCatalogs = (value: unknown): SceneCatalogs => {
   if (!isRecord(value) || !Array.isArray(value.playerColors) || !Array.isArray(value.namedNpcs)) {
     throw new Error("scene-catalogs.json is missing required arrays.");
   }
+  if (!isRecord(value.pickerGroupLabels)) {
+    throw new Error("scene-catalogs.json is missing pickerGroupLabels. Run npm run dashboard:scene-catalogs.");
+  }
   return value as SceneCatalogs;
 };
 
@@ -90,6 +93,11 @@ export const createDefaultDraft = (catalogs: SceneCatalogs, snaps: ControlBoardS
     siteKey: "",
     skyboxOverride: "",
     clockPresentDay: true,
+    clockYear: 2026,
+    clockMonth: 9,
+    clockDay: 13,
+    clockHour: 21,
+    clockMinute: 0,
     conditions: [],
     locationTrack: "",
     backgroundMood: "",
@@ -180,11 +188,24 @@ export const buildImportPayload = (draft: SceneDraft, catalogs: SceneCatalogs, s
   if (draft.title.trim() === "") {
     throw new Error("title: cannot be empty or whitespace-only.");
   }
+  const clockFields = [draft.clockYear, draft.clockMonth, draft.clockDay, draft.clockHour, draft.clockMinute];
+  if (!clockFields.every((value) => Number.isInteger(value))) {
+    throw new Error("sessionScene.clock: year, month, day, hour, and minute must be integers.");
+  }
 
   const sessionScene: Record<string, unknown> = {
     lightingPresetKey: draft.lightingPresetKey,
     isTopFogActive: draft.isTopFogActive,
-    clock: { isPresentDay: draft.clockPresentDay, useRealTime: false, realTimeSpeed: 1 }
+    clock: {
+      isPresentDay: draft.clockPresentDay,
+      useRealTime: false,
+      realTimeSpeed: 1,
+      year: draft.clockYear,
+      month: draft.clockMonth,
+      day: draft.clockDay,
+      hour: draft.clockHour,
+      minute: draft.clockMinute
+    }
   };
   if (draft.districtKey !== "") {
     sessionScene.districtKey = draft.districtKey;

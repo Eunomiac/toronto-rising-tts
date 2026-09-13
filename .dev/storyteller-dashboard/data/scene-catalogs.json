@@ -3894,5 +3894,41 @@
       "id": "bestialNull",
       "displayName": "Bestial Null"
     }
-  ]
+  ],
+  "pickerGroupLabels": {
+    "aapilu": "Aapilu",
+    "civilian": "Civilian",
+    "criseDeLwa": "Crise de Lwa",
+    "ducheskiRevenant": "Ducheski Revenant",
+    "friendlyNeighborhoodSpiders": "Friendly Neighborhood Spiders",
+    "friendlyNeighborhoodSpidersGarou": "Friendly Neighborhood Spiders (Garou)",
+    "memoriam": "Memoriam",
+    "touchstone": "Touchstone",
+    "Ungrouped": "Ungrouped",
+    "autarkis": "Autarkis",
+    "beesHive": "Bee's Hive",
+    "colorBlitz": "Color Blitz",
+    "deepSix": "Deep Six",
+    "fiveKeys": "the Five Keys",
+    "freeChantry": "the Free Chantry",
+    "flyCooks": "the Fly Cooks",
+    "goodDoctors": "the Good Doctors",
+    "harpies": "the Harpies",
+    "houseRustovich": "the House of Rustovich",
+    "ironGuard": "the Iron Guard",
+    "jarvisJacks": "the Jarvis Jacks",
+    "theLine": "the Line",
+    "menInBlack": "the Men-In-Black",
+    "midnightMass": "the Midnight Mass at St. Michael's",
+    "moonClub": "the Moon Club",
+    "nightwolves": "the Nightwolves",
+    "openSanctum": "Open Sanctum",
+    "petitioners": "Petitioners",
+    "princesCourt": "the Prince's Court",
+    "redeemers": "the Redeemers",
+    "redFlag": "Red Flag",
+    "regencyUniversityChantry": "the Regency of the University Chantry",
+    "scarlettAndTheBoys": "Scarlett & the Boys",
+    "wychwoodHecata": "the Wychwood Hecata"
+  }
 }

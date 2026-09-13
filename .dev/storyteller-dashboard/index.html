@@ -48,29 +48,87 @@
 
     <section id="panel-scenes" class="tab-panel scenes-panel" role="tabpanel" aria-labelledby="tab-scenes" hidden>
       <div class="scenes-chrome">
-        <input id="scenes-scene-key" type="text" spellcheck="false" placeholder="sceneKey" aria-label="Scene key" />
-        <input id="scenes-title" type="text" placeholder="Title" aria-label="Scene title" />
-        <div class="scenes-mode-toggle">
-          <button id="scenes-mode-standard" class="lock active" type="button">Standard</button>
-          <button id="scenes-mode-scatter" type="button">Scatter</button>
+        <div class="scenes-chrome-row scenes-chrome-identity">
+          <label class="scenes-field">
+            <span>Scene key</span>
+            <input id="scenes-scene-key" type="text" spellcheck="false" placeholder="sceneKey" />
+          </label>
+          <label class="scenes-field scenes-field-grow">
+            <span>Title</span>
+            <input id="scenes-title" type="text" placeholder="Title" />
+          </label>
+          <div class="scenes-field">
+            <span>Placement</span>
+            <div class="scenes-mode-toggle">
+              <button id="scenes-mode-standard" class="lock active" type="button">Standard</button>
+              <button id="scenes-mode-scatter" type="button">Scatter</button>
+            </div>
+          </div>
+          <div class="status idle" id="scenes-status">Ready.</div>
         </div>
-        <div id="scenes-table-chips" class="scenes-table-chips"></div>
-        <label class="scenes-check"><input id="scenes-present-day" type="checkbox" checked /> Present day</label>
-        <select id="scenes-lighting" aria-label="Lighting"></select>
-        <label class="scenes-check"><input id="scenes-fog" type="checkbox" checked /> Top fog</label>
-        <button id="scenes-district" type="button">District</button>
-        <button id="scenes-site" type="button">Site</button>
-        <button id="scenes-skybox" type="button">Skybox</button>
-        <button id="scenes-sound" type="button">Soundscape</button>
-        <button id="scenes-conditions" type="button">Conditions</button>
-        <div class="status idle" id="scenes-status">Ready.</div>
+        <div class="scenes-chrome-row" id="scenes-table-row">
+          <div class="scenes-field scenes-field-grow">
+            <span>Table</span>
+            <div id="scenes-table-chips" class="scenes-table-chips"></div>
+          </div>
+        </div>
+        <div class="scenes-chrome-row scenes-chrome-clock">
+          <label class="scenes-check scenes-present-day"><input id="scenes-present-day" type="checkbox" checked /> Present day</label>
+          <label class="scenes-clock-slider">
+            <span>Time of day <output id="scenes-clock-time-out" for="scenes-clock-minutes">21:00</output></span>
+            <input id="scenes-clock-minutes" type="range" min="0" max="1435" step="5" value="1260" />
+          </label>
+          <label class="scenes-clock-slider">
+            <span>Day <output id="scenes-clock-day-out" for="scenes-clock-day">13</output></span>
+            <input id="scenes-clock-day" type="range" min="1" max="31" value="13" />
+          </label>
+          <label class="scenes-clock-slider">
+            <span>Month <output id="scenes-clock-month-out" for="scenes-clock-month">September</output></span>
+            <input id="scenes-clock-month" type="range" min="1" max="12" value="9" />
+          </label>
+          <label class="scenes-clock-slider scenes-clock-year">
+            <span>Year</span>
+            <input id="scenes-clock-year" type="number" min="1" max="2100" value="2026" />
+          </label>
+        </div>
+        <div class="scenes-chrome-row scenes-chrome-place">
+          <div class="scenes-field">
+            <span>District</span>
+            <button id="scenes-district" type="button">District</button>
+          </div>
+          <div class="scenes-field">
+            <span>Site</span>
+            <button id="scenes-site" type="button">Site</button>
+          </div>
+          <div class="scenes-field">
+            <span>Skybox</span>
+            <button id="scenes-skybox" type="button">Skybox</button>
+          </div>
+          <label class="scenes-field">
+            <span>Weather</span>
+            <select id="scenes-weather"></select>
+          </label>
+          <label class="scenes-field">
+            <span>Lighting</span>
+            <select id="scenes-lighting"></select>
+          </label>
+          <label class="scenes-check"><input id="scenes-fog" type="checkbox" checked /> Top fog</label>
+          <div class="scenes-field">
+            <span>Sound</span>
+            <button id="scenes-sound" type="button">Soundscape</button>
+          </div>
+          <div class="scenes-field">
+            <span>Conditions</span>
+            <button id="scenes-conditions" type="button">Conditions</button>
+          </div>
+        </div>
       </div>
       <div class="scenes-palette">
         <button id="scenes-add-npcs" type="button">Add NPCs…</button>
         <div id="scenes-palette-list" class="scenes-palette-list"></div>
       </div>
-      <div class="scenes-board-wrap">
-        <div class="scenes-board-stage">
+      <div class="scenes-board-wrap" id="scenes-board-wrap">
+        <div class="scenes-board-frame" id="scenes-board-frame">
           <img id="scenes-board-img" class="scenes-board-img" alt="Control board" />
           <div id="scenes-board-overlay" class="scenes-board-overlay"></div>
         </div>

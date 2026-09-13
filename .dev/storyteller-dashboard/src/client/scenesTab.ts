@@ -45,9 +45,24 @@ const luaLongString = (value: string): string => {
 const cssTop = (v: number): string => `${((1 - v) * 100).toFixed(4)}%`;
 const cssLeft = (u: number): string => `${(u * 100).toFixed(4)}%`;
 
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
+
+const pad2 = (value: number): string => String(value).padStart(2, "0");
+
+const formatClockTime = (hour: number, minute: number): string =>
+  `${pad2(hour)}:${pad2(minute)}`;
+
+const daysInMonth = (year: number, month: number): number =>
+  new Date(year, month, 0).getDate();
+
 export const initScenesTab = (): void => {
   const status = requiredElement<HTMLDivElement>("scenes-status");
   const bridgeStatus = requiredElement<HTMLDivElement>("scenes-bridge-status");
+  const boardWrap = requiredElement<HTMLDivElement>("scenes-board-wrap");
+  const boardFrame = requiredElement<HTMLDivElement>("scenes-board-frame");
   const boardImg = requiredElement<HTMLImageElement>("scenes-board-img");
   const overlay = requiredElement<HTMLDivElement>("scenes-board-overlay");
   const palette = requiredElement<HTMLDivElement>("scenes-palette-list");
@@ -55,6 +70,7 @@ export const initScenesTab = (): void => {
   const importButton = requiredElement<HTMLButtonElement>("scenes-import");
   const copyButton = requiredElement<HTMLButtonElement>("scenes-copy");
   const tableChips = requiredElement<HTMLDivElement>("scenes-table-chips");
+  const tableRow = requiredElement<HTMLDivElement>("scenes-table-row");
 
   let catalogs: SceneCatalogs | null = null;
   let snaps: ControlBoardSnaps | null = null;
@@ -94,6 +110,36 @@ export const initScenesTab = (): void => {
     setStatus("error", `Missing cutout: assets/images/NPCs/Catalogued/${characterKey}.webp`);
   };
 
+  const layoutBoard = (): void => {
+    const wrapRect = boardWrap.getBoundingClientRect();
+    const naturalWidth = boardImg.naturalWidth;
+    const naturalHeight = boardImg.naturalHeight;
+    if (!naturalWidth || !naturalHeight || wrapRect.width < 8 || wrapRect.height < 8) {
+      return;
+    }
+    const scale = Math.min(wrapRect.width / naturalWidth, wrapRect.height / naturalHeight);
+    boardFrame.style.width = `${Math.floor(naturalWidth * scale)}px`;
+    boardFrame.style.height = `${Math.floor(naturalHeight * scale)}px`;
+  };
+
+  const pickerGroupLabel = (groupKey: string): string => {
+    const label = catalogs?.pickerGroupLabels?.[groupKey];
+    if (label && label.trim() !== "") {
+      return label;
+    }
+    return groupKey;
+  };
+
+  const clampClockDay = (): void => {
+    if (!draft) {
+      return;
+    }
+    const maxDay = daysInMonth(draft.clockYear, draft.clockMonth);
+    if (draft.clockDay > maxDay) {
+      draft.clockDay = maxDay;
+    }
+  };
+
   const makeToken = (characterKey: string, lit: boolean, extraClass = ""): HTMLButtonElement => {
     const button = document.createElement("button");
     button.type = "button";
@@ -103,17 +149,21 @@ export const initScenesTab = (): void => {
     const cutout = document.createElement("img");
     cutout.className = "scenes-token-cutout";
     cutout.alt = characterKey;
+    cutout.draggable = false;
     cutout.src = cutoutUrl(characterKey);
     cutout.addEventListener("error", () => markCutoutError(characterKey));
     const frame = document.createElement("img");
     frame.className = "scenes-token-frame";
     frame.alt = "";
+    frame.draggable = false;
     frame.src = tokenFrame(lit);
     button.append(cutout, frame);
     button.addEventListener("dragstart", (event) => {
       dragKind = "token";
       dragKey = characterKey;
       event.dataTransfer?.setData("text/plain", characterKey);
+      const rect = button.getBoundingClientRect();
+      event.dataTransfer?.setDragImage(button, rect.width / 2, rect.height / 2);
     });
     return button;
   };
@@ -205,7 +255,7 @@ export const initScenesTab = (): void => {
     requiredElement<HTMLButtonElement>("scenes-mode-standard").classList.toggle("active", current.placementMode === "standard");
     requiredElement<HTMLButtonElement>("scenes-mode-scatter").classList.toggle("lock", current.placementMode === "scatter");
     requiredElement<HTMLButtonElement>("scenes-mode-scatter").classList.toggle("active", current.placementMode === "scatter");
-    tableChips.hidden = current.placementMode === "scatter";
+    tableRow.hidden = current.placementMode === "scatter";
     tableChips.replaceChildren();
     for (const table of catalogs.tables) {
       const chip = document.createElement("button");
@@ -225,6 +275,18 @@ export const initScenesTab = (): void => {
     requiredElement<HTMLSelectElement>("scenes-lighting").value = current.lightingPresetKey;
     requiredElement<HTMLInputElement>("scenes-fog").checked = current.isTopFogActive;
     requiredElement<HTMLInputElement>("scenes-present-day").checked = current.clockPresentDay;
+    requiredElement<HTMLInputElement>("scenes-clock-minutes").value = String(current.clockHour * 60 + current.clockMinute);
+    requiredElement<HTMLOutputElement>("scenes-clock-time-out").value = formatClockTime(current.clockHour, current.clockMinute);
+    const maxDay = daysInMonth(current.clockYear, current.clockMonth);
+    const dayInput = requiredElement<HTMLInputElement>("scenes-clock-day");
+    dayInput.max = String(maxDay);
+    dayInput.value = String(current.clockDay);
+    requiredElement<HTMLOutputElement>("scenes-clock-day-out").value = String(current.clockDay);
+    requiredElement<HTMLInputElement>("scenes-clock-month").value = String(current.clockMonth);
+    requiredElement<HTMLOutputElement>("scenes-clock-month-out").value =
+      MONTH_NAMES[current.clockMonth - 1] ?? String(current.clockMonth);
+    requiredElement<HTMLInputElement>("scenes-clock-year").value = String(current.clockYear);
+    requiredElement<HTMLSelectElement>("scenes-weather").value = current.weatherKey;
     const district = catalogs.districts.find((row) => row.key === current.districtKey);
     const site = catalogs.sites.find((row) => row.key === current.siteKey);
     requiredElement<HTMLButtonElement>("scenes-district").textContent = district ? district.name : "District";
@@ -245,6 +307,7 @@ export const initScenesTab = (): void => {
       return;
     }
     overlay.replaceChildren();
+    layoutBoard();
     const boardSnaps = snaps;
     const boardCatalogs = catalogs;
     boardImg.src = draft.placementMode === "scatter"
@@ -458,7 +521,9 @@ export const initScenesTab = (): void => {
         groups.set(tag, list);
       }
     }
-    const groupNames = [...groups.keys()].sort((a, b) => a.localeCompare(b));
+    const groupNames = [...groups.keys()].sort((a, b) =>
+      pickerGroupLabel(a).localeCompare(pickerGroupLabel(b))
+    );
     openPickerModal("Add NPCs", (root) => {
       const search = document.createElement("input");
       search.type = "search";
@@ -515,7 +580,7 @@ export const initScenesTab = (): void => {
       for (const name of groupNames) {
         const tab = document.createElement("button");
         tab.type = "button";
-        tab.textContent = name;
+        tab.textContent = pickerGroupLabel(name);
         tab.className = name === activeGroup ? "lock active" : "";
         tab.addEventListener("click", () => {
           activeGroup = name;
@@ -529,6 +594,95 @@ export const initScenesTab = (): void => {
       }
       search.addEventListener("input", paint);
       root.append(search, tabs, grid);
+      paint();
+    });
+  };
+
+  const openSiteModal = (): void => {
+    if (!catalogs || !draft) {
+      return;
+    }
+    const currentDraft = draft;
+    const district = catalogs.districts.find((row) => row.key === currentDraft.districtKey);
+    const districtSites = catalogs.sites.filter((site) =>
+      currentDraft.districtKey === ""
+        ? site.districtKey !== null
+        : site.districtKey === currentDraft.districtKey
+    );
+    const genericSites = catalogs.sites.filter((site) => site.districtKey === null);
+    openPickerModal("Site", (root) => {
+      const search = document.createElement("input");
+      search.type = "search";
+      search.placeholder = "Search…";
+      const districtHeading = document.createElement("h3");
+      districtHeading.className = "scenes-modal-group-title";
+      districtHeading.textContent = district
+        ? `Sites in ${district.name}`
+        : "District sites";
+      const genericHeading = document.createElement("h3");
+      genericHeading.className = "scenes-modal-group-title";
+      genericHeading.textContent = "General sites";
+      const districtGrid = document.createElement("div");
+      districtGrid.className = "scenes-chip-grid";
+      const genericGrid = document.createElement("div");
+      genericGrid.className = "scenes-chip-grid";
+      const paintGrid = (
+        grid: HTMLDivElement,
+        rows: readonly { key: string; label: string }[],
+        query: string
+      ): void => {
+        grid.replaceChildren();
+        for (const row of rows) {
+          if (query !== "" && !row.label.toLowerCase().includes(query) && !row.key.toLowerCase().includes(query)) {
+            continue;
+          }
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = row.label;
+          button.addEventListener("click", () => {
+            if (!draft || !catalogs) {
+              return;
+            }
+            const site = catalogs.sites.find((item) => item.key === row.key);
+            if (!site) {
+              throw new Error(`Unknown site key ${row.key}.`);
+            }
+            draft.siteKey = site.key;
+            if (site.districtKey) {
+              draft.districtKey = site.districtKey;
+            }
+            if (site.lightMode) {
+              draft.lightingPresetKey = site.lightMode;
+            }
+            if (site.topFog !== null) {
+              draft.isTopFogActive = site.topFog;
+            }
+            if (site.skybox) {
+              draft.skyboxOverride = site.skybox;
+            }
+            if (site.locationTrack) {
+              draft.locationTrack = site.locationTrack;
+            }
+            persist();
+            render();
+            modalRoot.innerHTML = "";
+          });
+          grid.append(button);
+        }
+      };
+      const paint = (): void => {
+        const query = search.value.trim().toLowerCase();
+        const districtRows = districtSites.map((site) => {
+          const districtName = catalogs?.districts.find((row) => row.key === site.districtKey)?.name;
+          const suffix = currentDraft.districtKey === "" && districtName ? ` (${districtName})` : "";
+          return { key: site.key, label: `${site.name}${suffix}` };
+        });
+        const genericRows = genericSites.map((site) => ({ key: site.key, label: site.name }));
+        paintGrid(districtGrid, districtRows, query);
+        paintGrid(genericGrid, genericRows, query);
+      };
+      search.addEventListener("input", paint);
+      root.append(search, districtHeading, districtGrid, genericHeading, genericGrid);
       paint();
     });
   };
@@ -757,6 +911,54 @@ export const initScenesTab = (): void => {
     draft.clockPresentDay = (event.target as HTMLInputElement).checked;
     persist();
   });
+  requiredElement<HTMLInputElement>("scenes-clock-minutes").addEventListener("input", (event) => {
+    if (!draft) {
+      return;
+    }
+    const total = Number((event.target as HTMLInputElement).value);
+    draft.clockHour = Math.floor(total / 60);
+    draft.clockMinute = total % 60;
+    persist();
+    renderChrome();
+  });
+  requiredElement<HTMLInputElement>("scenes-clock-day").addEventListener("input", (event) => {
+    if (!draft) {
+      return;
+    }
+    draft.clockDay = Number((event.target as HTMLInputElement).value);
+    persist();
+    renderChrome();
+  });
+  requiredElement<HTMLInputElement>("scenes-clock-month").addEventListener("input", (event) => {
+    if (!draft) {
+      return;
+    }
+    draft.clockMonth = Number((event.target as HTMLInputElement).value);
+    clampClockDay();
+    persist();
+    renderChrome();
+  });
+  requiredElement<HTMLInputElement>("scenes-clock-year").addEventListener("input", (event) => {
+    if (!draft) {
+      return;
+    }
+    const year = Number((event.target as HTMLInputElement).value);
+    if (!Number.isInteger(year) || year < 1) {
+      return;
+    }
+    draft.clockYear = year;
+    clampClockDay();
+    persist();
+    renderChrome();
+  });
+  requiredElement<HTMLSelectElement>("scenes-weather").addEventListener("change", (event) => {
+    if (!draft) {
+      return;
+    }
+    draft.weatherKey = (event.target as HTMLSelectElement).value;
+    persist();
+    renderChrome();
+  });
   requiredElement<HTMLButtonElement>("scenes-add-npcs").addEventListener("click", openNpcModal);
   requiredElement<HTMLButtonElement>("scenes-district").addEventListener("click", () => {
     if (!catalogs || !draft) {
@@ -775,42 +977,7 @@ export const initScenesTab = (): void => {
       }
     );
   });
-  requiredElement<HTMLButtonElement>("scenes-site").addEventListener("click", () => {
-    if (!catalogs || !draft) {
-      return;
-    }
-    const currentDraft = draft;
-    const rows = catalogs.sites
-      .filter((site) => currentDraft.districtKey === "" || site.districtKey === currentDraft.districtKey || site.districtKey === null)
-      .map((site) => ({ key: site.key, label: site.name }));
-    openSimpleListModal("Site", rows, (key) => {
-      if (!draft || !catalogs) {
-        return;
-      }
-      const site = catalogs.sites.find((row) => row.key === key);
-      if (!site) {
-        throw new Error(`Unknown site key ${key}.`);
-      }
-      draft.siteKey = site.key;
-      if (site.districtKey) {
-        draft.districtKey = site.districtKey;
-      }
-      if (site.lightMode) {
-        draft.lightingPresetKey = site.lightMode;
-      }
-      if (site.topFog !== null) {
-        draft.isTopFogActive = site.topFog;
-      }
-      if (site.skybox) {
-        draft.skyboxOverride = site.skybox;
-      }
-      if (site.locationTrack) {
-        draft.locationTrack = site.locationTrack;
-      }
-      persist();
-      render();
-    });
-  });
+  requiredElement<HTMLButtonElement>("scenes-site").addEventListener("click", openSiteModal);
   requiredElement<HTMLButtonElement>("scenes-skybox").addEventListener("click", () => {
     if (!catalogs || !draft) {
       return;
@@ -848,11 +1015,6 @@ export const initScenesTab = (): void => {
         mood.append(new Option(key, key));
       }
       mood.value = currentDraft.backgroundMood;
-      const weather = document.createElement("select");
-      for (const row of loadedCatalogs.weatherConditions) {
-        weather.append(new Option(row.label, row.key));
-      }
-      weather.value = currentDraft.weatherKey;
       const apply = document.createElement("button");
       apply.type = "button";
       apply.textContent = "Apply";
@@ -862,12 +1024,11 @@ export const initScenesTab = (): void => {
         }
         draft.locationTrack = loc.value;
         draft.backgroundMood = mood.value;
-        draft.weatherKey = weather.value;
         persist();
         render();
         modalRoot.innerHTML = "";
       });
-      root.append(loc, mood, weather, apply);
+      root.append(loc, mood, apply);
     });
   });
   requiredElement<HTMLButtonElement>("scenes-conditions").addEventListener("click", () => {
@@ -952,6 +1113,11 @@ export const initScenesTab = (): void => {
       for (const key of catalogs.lightModes) {
         lighting.append(new Option(key, key));
       }
+      const weather = requiredElement<HTMLSelectElement>("scenes-weather");
+      weather.replaceChildren();
+      for (const row of catalogs.weatherConditions) {
+        weather.append(new Option(row.label, row.key));
+      }
       const saved = window.localStorage.getItem(DRAFT_KEY);
       if (saved) {
         draft = { ...createDefaultDraft(catalogs, snaps), ...(JSON.parse(saved) as SceneDraft) };
@@ -961,6 +1127,9 @@ export const initScenesTab = (): void => {
         draft = createDefaultDraft(catalogs, snaps);
       }
       setStatus("idle", "Ready. Drag tokens onto the board. Copy JSON or Import in TTS writes a library row only.");
+      boardImg.addEventListener("load", layoutBoard);
+      window.addEventListener("resize", layoutBoard);
+      new ResizeObserver(layoutBoard).observe(boardWrap);
       render();
     } catch (error: unknown) {
       setStatus("error", error instanceof Error ? error.message : "Scenes tab failed to load.");

@@ -44,6 +44,7 @@ export type SceneCatalogs = {
     readonly thunderEnabled: boolean;
   }[];
   readonly conditions: readonly { readonly id: string; readonly displayName: string }[];
+  readonly pickerGroupLabels: Readonly<Record<string, string>>;
 };
 
 export type PolarSnap = {
@@ -136,6 +137,11 @@ export type SceneDraft = {
   siteKey: string;
   skyboxOverride: string;
   clockPresentDay: boolean;
+  clockYear: number;
+  clockMonth: number;
+  clockDay: number;
+  clockHour: number;
+  clockMinute: number;
   conditions: string[];
   locationTrack: string;
   backgroundMood: string;
