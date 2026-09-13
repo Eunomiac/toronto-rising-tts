@@ -8,8 +8,9 @@
  *   .dev/storyteller-dashboard/data/control-board-snaps.json
  *
  * Run from repo root: node .dev/scripts/generate_dashboard_scene_catalogs.js
- * Polar snap stagger uses STAGE_BOARD Transform from the live TTS save
- * (`tts-assets.config.json` savesDir + defaultSaveName), not D.DEFAULT_STAGE_WORLD.
+ * Polar snap stagger uses CONTROL_BOARD aspect (implied stage depth) from the
+ * live TTS save, not raw STAGE_BOARD scaleZ. STAGE Z was scaled independently
+ * of the 2:1 minimap tile (`minimapScaleRatios` X vs Z).
  * Chained from `npm run dashboard:scene-catalogs` (`build:all-tooling`) and from
  * Storyteller Dashboard `npm run dev` / `npm run build`.
  */
@@ -45,10 +46,10 @@ const DASHBOARD_SEAT_ROW_UV = { uMin: 0.35, uMax: 0.65 };
  * @param {string} guidsSrc
  * @returns {string}
  */
-function readStageBoardGuid(guidsSrc) {
-  const match = guidsSrc.match(/STAGE_BOARD\s*=\s*"([0-9a-fA-F]+)"/);
+function readGuidConstant(guidsSrc, name) {
+  const match = guidsSrc.match(new RegExp(`${name}\\s*=\\s*"([0-9a-fA-F]+)"`));
   if (!match) {
-    throw new Error('lib/guids.ttslua is missing STAGE_BOARD = "...".');
+    throw new Error(`lib/guids.ttslua is missing ${name} = "...".`);
   }
   return match[1];
 }
@@ -117,21 +118,23 @@ function readTransformNumber(block, key) {
 /**
  * @param {string} saveText
  * @param {string} guid
+ * @param {string} nickname
+ * @param {string} label
  * @returns {{ posX: number, posZ: number, scaleX: number, scaleZ: number, rotY: number }}
  */
-function extractStageBoardTransform(saveText, guid) {
+function extractBoardTransform(saveText, guid, nickname, label) {
   const marker = `"GUID": "${guid}"`;
   let from = 0;
   while (from < saveText.length) {
     const at = saveText.indexOf(marker, from);
     if (at < 0) {
-      throw new Error(`Save has no object GUID ${guid} (G.GUIDS.STAGE_BOARD).`);
+      throw new Error(`Save has no object GUID ${guid} (${label}).`);
     }
     const window = saveText.slice(at, at + 16000);
-    if (/"Nickname":\s*"STAGE_BOARD"/.test(window)) {
+    if (window.includes(`"Nickname": "${nickname}"`) || window.includes(`"Nickname":"${nickname}"`)) {
       const transformMatch = window.match(/"Transform":\s*\{([\s\S]*?)\}/);
       if (!transformMatch) {
-        throw new Error(`STAGE_BOARD ${guid} has no Transform block.`);
+        throw new Error(`${label} ${guid} has no Transform block.`);
       }
       const block = transformMatch[1];
       return {
@@ -144,78 +147,89 @@ function extractStageBoardTransform(saveText, guid) {
     }
     from = at + marker.length;
   }
-  throw new Error(`Found GUID ${guid} but no object nicknamed STAGE_BOARD.`);
+  throw new Error(`Found GUID ${guid} but no object nicknamed ${nickname}.`);
 }
 
 /**
- * Custom_Tile local ±0.5 × transform scale. Center/half only matter as deltas;
- * polar UVs stay in shared 0–1 board space. Not D.DEFAULT_STAGE_WORLD (440×400).
+ * Polar UVs live on CONTROL_BOARD (painted 2:1 tile). STAGE_BOARD Z was scaled
+ * independently of that tile (live ~800×289 vs control 20×10), which is why
+ * minimap table markers use different X and Z divisors (`minimapScaleRatios`).
+ * Stagger inches must use the control-tile aspect (implied stage depth =
+ * controlZ × stageX/controlX), not live scaleZ, or neighbor snaps stretch in v.
  *
- * @param {{ posX: number, posZ: number, scaleX: number, scaleZ: number, rotY: number }} transform
+ * @param {{ posX: number, posZ: number, scaleX: number, scaleZ: number, rotY: number }} stage
+ * @param {{ scaleX: number, scaleZ: number, rotY: number }} control
  */
-function stageWorldFromTransform(transform) {
-  const normalizedRotY = ((transform.rotY % 360) + 360) % 360;
-  const scaleX = Math.abs(transform.scaleX);
-  const scaleZ = Math.abs(transform.scaleZ);
-  let halfWidthX = scaleX / 2;
-  let halfDepthZ = scaleZ / 2;
-  if (Math.abs(normalizedRotY - 90) < 1 || Math.abs(normalizedRotY - 270) < 1) {
-    halfWidthX = scaleZ / 2;
-    halfDepthZ = scaleX / 2;
+function staggerWorldFromBoardScales(stage, control) {
+  const stageRotY = ((stage.rotY % 360) + 360) % 360;
+  const controlRotY = ((control.rotY % 360) + 360) % 360;
+  let stageX = Math.abs(stage.scaleX);
+  let stageZ = Math.abs(stage.scaleZ);
+  let controlX = Math.abs(control.scaleX);
+  let controlZ = Math.abs(control.scaleZ);
+  if (Math.abs(stageRotY - 90) < 1 || Math.abs(stageRotY - 270) < 1) {
+    const swap = stageX;
+    stageX = stageZ;
+    stageZ = swap;
   }
+  if (Math.abs(controlRotY - 90) < 1 || Math.abs(controlRotY - 270) < 1) {
+    const swap = controlX;
+    controlX = controlZ;
+    controlZ = swap;
+  }
+  if (controlX < 0.01) {
+    throw new Error("CONTROL_BOARD scaleX is too small to derive minimap stagger.");
+  }
+  const ratioX = stageX / controlX;
+  const impliedStageZ = controlZ * ratioX;
   return {
-    centerX: transform.posX,
-    centerZ: transform.posZ,
-    halfWidthX,
-    halfDepthZ,
+    centerX: stage.posX,
+    centerZ: stage.posZ,
+    halfWidthX: stageX / 2,
+    halfDepthZ: impliedStageZ / 2,
+    ratioX,
+    liveStageZ: stageZ,
+    impliedStageZ,
+    controlX,
+    controlZ,
   };
 }
 
-/**
- * Live Lua `applyRadialStaggerUv` converts UV through STAGE_BOARD `positionToWorld`.
- *
- * @returns {{
- *   centerX: number,
- *   centerZ: number,
- *   halfWidthX: number,
- *   halfDepthZ: number,
- *   stageBoard: {
- *     guid: string,
- *     saveFileName: string,
- *     source: string,
- *     posX: number,
- *     posZ: number,
- *     scaleX: number,
- *     scaleZ: number,
- *     rotY: number,
- *     halfWidthX: number,
- *     halfDepthZ: number,
- *   },
- * }}
- */
 function loadDashboardStageWorld() {
-  const guid = readStageBoardGuid(fs.readFileSync(guidsPath, "utf8"));
+  const guidsSrc = fs.readFileSync(guidsPath, "utf8");
+  const stageGuid = readGuidConstant(guidsSrc, "STAGE_BOARD");
+  const controlGuid = readGuidConstant(guidsSrc, "CONTROL_BOARD");
   const cfg = readRepoAssetsConfig();
   const save = resolveChronicleSaveFile(cfg.defaultSaveName, cfg.savesDir);
-  const transform = extractStageBoardTransform(fs.readFileSync(save.savePath, "utf8"), guid);
-  const world = stageWorldFromTransform(transform);
+  const saveText = fs.readFileSync(save.savePath, "utf8");
+  const stage = extractBoardTransform(saveText, stageGuid, "STAGE_BOARD", "G.GUIDS.STAGE_BOARD");
+  const control = extractBoardTransform(saveText, controlGuid, "NPC Control Board", "G.GUIDS.CONTROL_BOARD");
+  const world = staggerWorldFromBoardScales(stage, control);
   const where = save.source === "savesDir" ? "live TTS save" : "repo .dev snapshot";
   console.log(
-    `STAGE_BOARD ${guid} from ${save.saveFileName} (${where}): scale ${transform.scaleX} × ${transform.scaleZ} at (${transform.posX}, ${transform.posZ}), rotY ${transform.rotY}.`,
+    `STAGE_BOARD ${stageGuid} from ${save.saveFileName} (${where}): live scale ${stage.scaleX} × ${stage.scaleZ}; CONTROL_BOARD ${control.scaleX} × ${control.scaleZ}; stagger frame ${world.halfWidthX * 2} × ${world.impliedStageZ} (control aspect, not live scaleZ).`,
   );
   return {
-    ...world,
+    centerX: world.centerX,
+    centerZ: world.centerZ,
+    halfWidthX: world.halfWidthX,
+    halfDepthZ: world.halfDepthZ,
     stageBoard: {
-      guid,
+      guid: stageGuid,
       saveFileName: save.saveFileName,
       source: save.source,
-      posX: transform.posX,
-      posZ: transform.posZ,
-      scaleX: transform.scaleX,
-      scaleZ: transform.scaleZ,
-      rotY: transform.rotY,
+      posX: stage.posX,
+      posZ: stage.posZ,
+      scaleX: stage.scaleX,
+      scaleZ: stage.scaleZ,
+      rotY: stage.rotY,
       halfWidthX: world.halfWidthX,
       halfDepthZ: world.halfDepthZ,
+      liveScaleZ: world.liveStageZ,
+      impliedScaleZ: world.impliedStageZ,
+      controlScaleX: world.controlX,
+      controlScaleZ: world.controlZ,
+      minimapRatioX: world.ratioX,
     },
   };
 }
@@ -495,7 +509,8 @@ function snapUvPassesValidSnaps(group, u, v) {
 }
 
 function applyRadialStaggerUv(originU, originV, familyK, radialStagger, u, v, stage) {
-  // Same formula as Lua applyRadialStaggerUv (STAGE world XZ inches, then back to u/v).
+  // Same formula as Lua applyRadialStaggerUv, but inches→UV uses the CONTROL_BOARD
+  // 2:1 stagger frame (see staggerWorldFromBoardScales), not live STAGE scaleZ.
   const k = familyK;
   const staggerStep = radialStagger;
   if (k === 0 || staggerStep === 0) {
@@ -988,7 +1003,7 @@ function main() {
   fs.writeFileSync(catalogsOutPath, `${JSON.stringify(catalogs, null, 2)}\n`);
   fs.writeFileSync(snapsOutPath, `${JSON.stringify(snaps, null, 2)}\n`);
   console.log(
-    `Wrote ${path.relative(root, catalogsOutPath)} (${namedNpcs.length} named NPCs, ${pcs.length} PCs) and ${path.relative(root, snapsOutPath)} (${polarSnaps.length} polar + ${seatSnaps.length} seats; STAGE_BOARD ${stage.stageBoard.scaleX} × ${stage.stageBoard.scaleZ}).`,
+    `Wrote ${path.relative(root, catalogsOutPath)} (${namedNpcs.length} named NPCs, ${pcs.length} PCs) and ${path.relative(root, snapsOutPath)} (${polarSnaps.length} polar + ${seatSnaps.length} seats; stagger frame ${stage.stageBoard.halfWidthX * 2} × ${stage.stageBoard.impliedScaleZ}).`,
   );
 }
 

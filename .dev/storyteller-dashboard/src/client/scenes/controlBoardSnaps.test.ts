@@ -41,6 +41,19 @@ describe("control-board polar families", () => {
     expect(snaps.stageBoard?.scaleZ).toBeGreaterThan(0);
   });
 
+  it("converts stagger inches through CONTROL_BOARD aspect, not live STAGE scaleZ", () => {
+    const stage = snaps.stageBoard;
+    expect(stage).toBeDefined();
+    expect(stage?.controlScaleX).toBeGreaterThan(0);
+    expect(stage?.controlScaleZ).toBeGreaterThan(0);
+    expect(stage?.impliedScaleZ).toBeCloseTo(
+      ((stage?.controlScaleZ ?? 0) * (stage?.scaleX ?? 0)) / (stage?.controlScaleX ?? 1),
+      5
+    );
+    expect(stage?.halfDepthZ).toBeCloseTo((stage?.impliedScaleZ ?? 0) / 2, 5);
+    expect(stage?.halfDepthZ).not.toBeCloseTo(Math.abs(stage?.scaleZ ?? 0) / 2, 1);
+  });
+
   it("leaves each pack's center token as familyK 0", () => {
     for (const familyId of ["1:0", "1:1", "1:7", "2:2", "2:3", "2:4"]) {
       const members = snaps.polar.filter((snap) => snap.familyId === familyId);
