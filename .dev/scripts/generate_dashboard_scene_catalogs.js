@@ -37,12 +37,17 @@ const PALETTE_GROUP_BLACKLIST = { princesCourt: true };
 const DASHBOARD_SEAT_ROW_UV = { uMin: 0.35, uMax: 0.65 };
 
 /**
- * Live CONTROL_BOARD tokens sit on the painted pack indicators. Applying
- * `DEFAULT_STAGE_WORLD` radial stagger here pulls Center/Mid snaps off those
- * dots and drops k=±2 outside `validSnaps`. Skip stagger on the dashboard
- * overlay so snap UVs follow the board art (and in-game clusters).
+ * Live Lua `applyRadialStaggerUv` converts UV through STAGE_BOARD `positionToWorld`
+ * (Custom_Tile local ±0.5 × transform scale). That is the chronicle STAGE_BOARD
+ * in TS_Save (scaleX 800, scaleZ 288.904846), not D.DEFAULT_STAGE_WORLD (440×400).
+ * Center/half only matter as deltas; polar UVs stay in shared 0–1 board space.
  */
-const DASHBOARD_APPLY_POLAR_RADIAL_STAGGER = false;
+const DASHBOARD_STAGE_WORLD = {
+  centerX: 0,
+  centerZ: 62.0976563,
+  halfWidthX: 800 / 2,
+  halfDepthZ: 288.904846 / 2,
+};
 
 /** Palette groups that are not keys in C.CHRONICLE_DATA.coteries. */
 const EXTRA_PICKER_GROUP_LABELS = {
@@ -319,6 +324,7 @@ function snapUvPassesValidSnaps(group, u, v) {
 }
 
 function applyRadialStaggerUv(originU, originV, familyK, radialStagger, u, v, stage) {
+  // Same formula as Lua applyRadialStaggerUv (STAGE world XZ inches, then back to u/v).
   const k = familyK;
   const staggerStep = radialStagger;
   if (k === 0 || staggerStep === 0) {
@@ -342,7 +348,7 @@ function applyRadialStaggerUv(originU, originV, familyK, radialStagger, u, v, st
 
 function generatePolarSnaps(cfg, stage) {
   const rings = cfg.snapGroups.length;
-  const entries = [];
+  const raw = [];
   for (let ringIndex = 1; ringIndex <= rings; ringIndex += 1) {
     const group = cfg.snapGroups[ringIndex - 1];
     const [kMin, kMax] = familyKBoundsForSnapCount(group.num);
@@ -352,14 +358,13 @@ function generatePolarSnaps(cfg, stage) {
         const [ringOriginU, ringOriginV] = ringOriginUvForIndex(cfg, ringIndex);
         const angleDeg = familyAngleDegForSnap(cfg, ringIndex, rayIndex, k, group.angleDelta, group.rays);
         let [u, v] = uvOnEllipse(ringOriginU, ringOriginV, angleDeg, group.maxU, group.maxV);
-        if (DASHBOARD_APPLY_POLAR_RADIAL_STAGGER && group.radialStagger !== 0 && k !== 0) {
+        if (group.radialStagger !== 0 && k !== 0) {
           [u, v] = applyRadialStaggerUv(ringOriginU, ringOriginV, k, group.radialStagger, u, v, stage);
         }
-        if (!snapUvOnBoard(u, v) || !snapUvPassesValidSnaps(group, u, v)) {
+        if (!snapUvOnBoard(u, v)) {
           continue;
         }
-        entries.push({
-          snapIndex: entries.length + 1,
+        raw.push({
           snapKind: "polar",
           ringIndex,
           rayIndex,
@@ -372,6 +377,27 @@ function generatePolarSnaps(cfg, stage) {
         });
       }
     }
+  }
+  // Lua validSnaps is meant to drop unused rays on dense rings, not shrink a pack
+  // whose anchor is in the box. Keep every on-board member of a family whose
+  // k=0 snap passes the box (Center Left/Right stay at five in-game).
+  const acceptedFamilies = new Set();
+  for (const entry of raw) {
+    const group = cfg.snapGroups[entry.ringIndex - 1];
+    if (entry.isAnchor && snapUvPassesValidSnaps(group, entry.u, entry.v)) {
+      acceptedFamilies.add(entry.familyId);
+    }
+  }
+  const entries = [];
+  for (const entry of raw) {
+    const group = cfg.snapGroups[entry.ringIndex - 1];
+    if (!acceptedFamilies.has(entry.familyId) && !snapUvPassesValidSnaps(group, entry.u, entry.v)) {
+      continue;
+    }
+    entries.push({
+      snapIndex: entries.length + 1,
+      ...entry,
+    });
   }
   return entries;
 }
@@ -517,18 +543,6 @@ function parseSeatRow(source) {
     throw new Error("D.CONTROL_BOARD_SEAT_ROW.columns is empty.");
   }
   return { v, uMin, uMax, columns };
-}
-
-function parseDefaultStageWorld(source) {
-  const block = extractBlock(source, "D.DEFAULT_STAGE_WORLD =");
-  const centerX = readNumberField(block, "centerX");
-  const centerZ = readNumberField(block, "centerZ");
-  const halfWidthX = readNumberField(block, "halfWidthX");
-  const halfDepthZ = readNumberField(block, "halfDepthZ");
-  if (centerX === null || centerZ === null || halfWidthX === null || halfDepthZ === null) {
-    throw new Error("D.DEFAULT_STAGE_WORLD is missing center/half extents.");
-  }
-  return { centerX, centerZ, halfWidthX, halfDepthZ };
 }
 
 function parseScatterBoard(source) {
@@ -711,7 +725,7 @@ function main() {
     );
   }
 
-  const stage = parseDefaultStageWorld(boardSrc);
+  const stage = DASHBOARD_STAGE_WORLD;
   const snapCfg = parseControlBoardSnap(boardSrc);
   const seatRow = parseSeatRow(boardSrc);
   const scatter = parseScatterBoard(boardSrc);

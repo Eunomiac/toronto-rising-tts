@@ -9,8 +9,8 @@
       "familyId": "1:0",
       "familyK": -2,
       "isAnchor": false,
-      "u": 0.5362882843399502,
-      "v": 0.4455443589413995,
+      "u": 0.5575940246478122,
+      "v": 0.5309970159430379,
       "defaultLightMode": "STANDARD"
     },
     {
@@ -21,8 +21,8 @@
       "familyId": "1:0",
       "familyK": -1,
       "isAnchor": false,
-      "u": 0.5182804015107721,
-      "v": 0.4488819227461983,
+      "u": 0.5243160778186108,
+      "v": 0.4980385615243549,
       "defaultLightMode": "STANDARD"
     },
     {
@@ -45,8 +45,8 @@
       "familyId": "1:0",
       "familyK": 1,
       "isAnchor": false,
-      "u": 0.4817195984892279,
-      "v": 0.4488819227461983,
+      "u": 0.4756839221813893,
+      "v": 0.4980385615243549,
       "defaultLightMode": "STANDARD"
     },
     {
@@ -57,8 +57,8 @@
       "familyId": "1:0",
       "familyK": 2,
       "isAnchor": false,
-      "u": 0.4637117156600498,
-      "v": 0.4455443589413995,
+      "u": 0.44240597535218795,
+      "v": 0.5309970159430379,
       "defaultLightMode": "STANDARD"
     },
     {
@@ -69,8 +69,8 @@
       "familyId": "1:1",
       "familyK": -2,
       "isAnchor": false,
-      "u": 0.42274428876349185,
-      "v": 0.4285750951053169,
+      "u": 0.39060281947355213,
+      "v": 0.48206748297716284,
       "defaultLightMode": "STANDARD"
     },
     {
@@ -81,8 +81,8 @@
       "familyId": "1:1",
       "familyK": -1,
       "isAnchor": false,
-      "u": 0.40765077870115124,
-      "v": 0.41820161304100834,
+      "u": 0.39063099972680065,
+      "v": 0.43998593672100406,
       "defaultLightMode": "STANDARD"
     },
     {
@@ -105,24 +105,48 @@
       "familyId": "1:1",
       "familyK": 1,
       "isAnchor": false,
-      "u": 0.3817983869589917,
-      "v": 0.39234922129884875,
+      "u": 0.36375290454829373,
+      "v": 0.4064478973297069,
       "defaultLightMode": "STANDARD"
     },
     {
       "snapIndex": 10,
       "snapKind": "polar",
       "ringIndex": 1,
-      "rayIndex": 7,
-      "familyId": "1:7",
-      "familyK": -1,
+      "rayIndex": 1,
+      "familyId": "1:1",
+      "familyK": 2,
       "isAnchor": false,
-      "u": 0.6182016130410083,
-      "v": 0.39234922129884875,
+      "u": 0.33477773678751066,
+      "v": 0.3992755513509909,
       "defaultLightMode": "STANDARD"
     },
     {
       "snapIndex": 11,
+      "snapKind": "polar",
+      "ringIndex": 1,
+      "rayIndex": 7,
+      "familyId": "1:7",
+      "familyK": -2,
+      "isAnchor": false,
+      "u": 0.6652222632124893,
+      "v": 0.3992755513509909,
+      "defaultLightMode": "STANDARD"
+    },
+    {
+      "snapIndex": 12,
+      "snapKind": "polar",
+      "ringIndex": 1,
+      "rayIndex": 7,
+      "familyId": "1:7",
+      "familyK": -1,
+      "isAnchor": false,
+      "u": 0.6362470954517063,
+      "v": 0.4064478973297069,
+      "defaultLightMode": "STANDARD"
+    },
+    {
+      "snapIndex": 13,
       "snapKind": "polar",
       "ringIndex": 1,
       "rayIndex": 7,
@@ -134,55 +158,55 @@
       "defaultLightMode": "STANDARD"
     },
     {
-      "snapIndex": 12,
+      "snapIndex": 14,
       "snapKind": "polar",
       "ringIndex": 1,
       "rayIndex": 7,
       "familyId": "1:7",
       "familyK": 1,
       "isAnchor": false,
-      "u": 0.5923492212988488,
-      "v": 0.4182016130410082,
+      "u": 0.6093690002731994,
+      "v": 0.43998593672100395,
       "defaultLightMode": "STANDARD"
     },
     {
-      "snapIndex": 13,
+      "snapIndex": 15,
       "snapKind": "polar",
       "ringIndex": 1,
       "rayIndex": 7,
       "familyId": "1:7",
       "familyK": 2,
       "isAnchor": false,
-      "u": 0.5772557112365082,
-      "v": 0.42857509510531683,
+      "u": 0.609397180526448,
+      "v": 0.48206748297716273,
       "defaultLightMode": "STANDARD"
     },
     {
-      "snapIndex": 14,
+      "snapIndex": 16,
       "snapKind": "polar",
       "ringIndex": 2,
       "rayIndex": 2,
       "familyId": "2:2",
       "familyK": -2,
       "isAnchor": false,
-      "u": 0.6231322950651317,
-      "v": 0.5202103227790519,
+      "u": 0.6455000849771049,
+      "v": 0.5511301455498134,
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 15,
+      "snapIndex": 17,
       "snapKind": "polar",
       "ringIndex": 2,
       "rayIndex": 2,
       "familyId": "2:2",
       "familyK": -1,
       "isAnchor": false,
-      "u": 0.6118385806941493,
-      "v": 0.5290721156718889,
+      "u": 0.6226597703661806,
+      "v": 0.5463986349877659,
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 16,
+      "snapIndex": 18,
       "snapKind": "polar",
       "ringIndex": 2,
       "rayIndex": 2,
@@ -194,55 +218,55 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 17,
+      "snapIndex": 19,
       "snapKind": "polar",
       "ringIndex": 2,
       "rayIndex": 2,
       "familyId": "2:2",
       "familyK": 1,
       "isAnchor": false,
-      "u": 0.5876742293578154,
-      "v": 0.54413951400062,
-      "defaultLightMode": "OFF"
-    },
-    {
-      "snapIndex": 18,
-      "snapKind": "polar",
-      "ringIndex": 2,
-      "rayIndex": 2,
-      "familyId": "2:2",
-      "familyK": 2,
-      "isAnchor": false,
-      "u": 0.5749213186831824,
-      "v": 0.550271712586426,
-      "defaultLightMode": "OFF"
-    },
-    {
-      "snapIndex": 19,
-      "snapKind": "polar",
-      "ringIndex": 2,
-      "rayIndex": 3,
-      "familyId": "2:3",
-      "familyK": -2,
-      "isAnchor": false,
-      "u": 0.5278346201920131,
-      "v": 0.5638979028481791,
+      "u": 0.5974366957137767,
+      "v": 0.5657568180553693,
       "defaultLightMode": "OFF"
     },
     {
       "snapIndex": 20,
       "snapKind": "polar",
       "ringIndex": 2,
-      "rayIndex": 3,
-      "familyId": "2:3",
-      "familyK": -1,
+      "rayIndex": 2,
+      "familyId": "2:2",
+      "familyK": 2,
       "isAnchor": false,
-      "u": 0.5139512947488251,
-      "v": 0.565473834856122,
+      "u": 0.5929079733724553,
+      "v": 0.5983517277494526,
       "defaultLightMode": "OFF"
     },
     {
       "snapIndex": 21,
+      "snapKind": "polar",
+      "ringIndex": 2,
+      "rayIndex": 3,
+      "familyId": "2:3",
+      "familyK": -2,
+      "isAnchor": false,
+      "u": 0.5363097109297833,
+      "v": 0.629025579200567,
+      "defaultLightMode": "OFF"
+    },
+    {
+      "snapIndex": 22,
+      "snapKind": "polar",
+      "ringIndex": 2,
+      "rayIndex": 3,
+      "familyId": "2:3",
+      "familyK": -1,
+      "isAnchor": false,
+      "u": 0.5161572405569597,
+      "v": 0.5995440492212503,
+      "defaultLightMode": "OFF"
+    },
+    {
+      "snapIndex": 23,
       "snapKind": "polar",
       "ringIndex": 2,
       "rayIndex": 3,
@@ -254,55 +278,55 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 22,
+      "snapIndex": 24,
       "snapKind": "polar",
       "ringIndex": 2,
       "rayIndex": 3,
       "familyId": "2:3",
       "familyK": 1,
       "isAnchor": false,
-      "u": 0.48604870525117494,
-      "v": 0.565473834856122,
-      "defaultLightMode": "OFF"
-    },
-    {
-      "snapIndex": 23,
-      "snapKind": "polar",
-      "ringIndex": 2,
-      "rayIndex": 3,
-      "familyId": "2:3",
-      "familyK": 2,
-      "isAnchor": false,
-      "u": 0.47216537980798695,
-      "v": 0.5638979028481792,
-      "defaultLightMode": "OFF"
-    },
-    {
-      "snapIndex": 24,
-      "snapKind": "polar",
-      "ringIndex": 2,
-      "rayIndex": 4,
-      "familyId": "2:4",
-      "familyK": -2,
-      "isAnchor": false,
-      "u": 0.4250786813168176,
-      "v": 0.550271712586426,
+      "u": 0.4838427594430403,
+      "v": 0.5995440492212503,
       "defaultLightMode": "OFF"
     },
     {
       "snapIndex": 25,
       "snapKind": "polar",
       "ringIndex": 2,
-      "rayIndex": 4,
-      "familyId": "2:4",
-      "familyK": -1,
+      "rayIndex": 3,
+      "familyId": "2:3",
+      "familyK": 2,
       "isAnchor": false,
-      "u": 0.4123257706421845,
-      "v": 0.54413951400062,
+      "u": 0.46369028907021675,
+      "v": 0.6290255792005672,
       "defaultLightMode": "OFF"
     },
     {
       "snapIndex": 26,
+      "snapKind": "polar",
+      "ringIndex": 2,
+      "rayIndex": 4,
+      "familyId": "2:4",
+      "familyK": -2,
+      "isAnchor": false,
+      "u": 0.4070920266275447,
+      "v": 0.5983517277494526,
+      "defaultLightMode": "OFF"
+    },
+    {
+      "snapIndex": 27,
+      "snapKind": "polar",
+      "ringIndex": 2,
+      "rayIndex": 4,
+      "familyId": "2:4",
+      "familyK": -1,
+      "isAnchor": false,
+      "u": 0.4025633042862233,
+      "v": 0.5657568180553693,
+      "defaultLightMode": "OFF"
+    },
+    {
+      "snapIndex": 28,
       "snapKind": "polar",
       "ringIndex": 2,
       "rayIndex": 4,
@@ -314,31 +338,31 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 27,
+      "snapIndex": 29,
       "snapKind": "polar",
       "ringIndex": 2,
       "rayIndex": 4,
       "familyId": "2:4",
       "familyK": 1,
       "isAnchor": false,
-      "u": 0.3881614193058507,
-      "v": 0.5290721156718889,
+      "u": 0.3773402296338194,
+      "v": 0.5463986349877659,
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 28,
+      "snapIndex": 30,
       "snapKind": "polar",
       "ringIndex": 2,
       "rayIndex": 4,
       "familyId": "2:4",
       "familyK": 2,
       "isAnchor": false,
-      "u": 0.3768677049348684,
-      "v": 0.5202103227790519,
+      "u": 0.3544999150228952,
+      "v": 0.5511301455498134,
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 29,
+      "snapIndex": 31,
       "snapKind": "polar",
       "ringIndex": 3,
       "rayIndex": 0,
@@ -350,7 +374,7 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 30,
+      "snapIndex": 32,
       "snapKind": "polar",
       "ringIndex": 3,
       "rayIndex": 0,
@@ -362,7 +386,7 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 31,
+      "snapIndex": 33,
       "snapKind": "polar",
       "ringIndex": 3,
       "rayIndex": 0,
@@ -374,7 +398,7 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 32,
+      "snapIndex": 34,
       "snapKind": "polar",
       "ringIndex": 3,
       "rayIndex": 0,
@@ -386,7 +410,7 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 33,
+      "snapIndex": 35,
       "snapKind": "polar",
       "ringIndex": 3,
       "rayIndex": 0,
@@ -398,7 +422,7 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 34,
+      "snapIndex": 36,
       "snapKind": "polar",
       "ringIndex": 3,
       "rayIndex": 0,
@@ -410,7 +434,7 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 35,
+      "snapIndex": 37,
       "snapKind": "polar",
       "ringIndex": 4,
       "rayIndex": 0,
@@ -422,7 +446,7 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 36,
+      "snapIndex": 38,
       "snapKind": "polar",
       "ringIndex": 4,
       "rayIndex": 0,
@@ -434,7 +458,7 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 37,
+      "snapIndex": 39,
       "snapKind": "polar",
       "ringIndex": 4,
       "rayIndex": 0,
@@ -446,7 +470,7 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 38,
+      "snapIndex": 40,
       "snapKind": "polar",
       "ringIndex": 4,
       "rayIndex": 0,
@@ -458,7 +482,7 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 39,
+      "snapIndex": 41,
       "snapKind": "polar",
       "ringIndex": 4,
       "rayIndex": 0,
@@ -470,7 +494,7 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 40,
+      "snapIndex": 42,
       "snapKind": "polar",
       "ringIndex": 4,
       "rayIndex": 0,
@@ -482,7 +506,7 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 41,
+      "snapIndex": 43,
       "snapKind": "polar",
       "ringIndex": 5,
       "rayIndex": 0,
@@ -494,7 +518,7 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 42,
+      "snapIndex": 44,
       "snapKind": "polar",
       "ringIndex": 5,
       "rayIndex": 0,
@@ -506,7 +530,7 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 43,
+      "snapIndex": 45,
       "snapKind": "polar",
       "ringIndex": 5,
       "rayIndex": 0,
@@ -518,7 +542,7 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 44,
+      "snapIndex": 46,
       "snapKind": "polar",
       "ringIndex": 5,
       "rayIndex": 0,
@@ -530,7 +554,7 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 45,
+      "snapIndex": 47,
       "snapKind": "polar",
       "ringIndex": 5,
       "rayIndex": 0,
@@ -542,7 +566,7 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 46,
+      "snapIndex": 48,
       "snapKind": "polar",
       "ringIndex": 5,
       "rayIndex": 0,
@@ -554,7 +578,7 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 47,
+      "snapIndex": 49,
       "snapKind": "polar",
       "ringIndex": 6,
       "rayIndex": 0,
@@ -566,7 +590,7 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 48,
+      "snapIndex": 50,
       "snapKind": "polar",
       "ringIndex": 6,
       "rayIndex": 0,
@@ -578,7 +602,7 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 49,
+      "snapIndex": 51,
       "snapKind": "polar",
       "ringIndex": 6,
       "rayIndex": 0,
@@ -590,7 +614,7 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 50,
+      "snapIndex": 52,
       "snapKind": "polar",
       "ringIndex": 6,
       "rayIndex": 0,
@@ -602,7 +626,7 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 51,
+      "snapIndex": 53,
       "snapKind": "polar",
       "ringIndex": 6,
       "rayIndex": 0,
@@ -614,7 +638,7 @@
       "defaultLightMode": "OFF"
     },
     {
-      "snapIndex": 52,
+      "snapIndex": 54,
       "snapKind": "polar",
       "ringIndex": 6,
       "rayIndex": 0,
@@ -628,7 +652,7 @@
   ],
   "seats": [
     {
-      "snapIndex": 53,
+      "snapIndex": 55,
       "snapKind": "seat",
       "seatKey": "NPC4",
       "kind": "npc",
@@ -637,7 +661,7 @@
       "v": 0.12
     },
     {
-      "snapIndex": 54,
+      "snapIndex": 56,
       "snapKind": "seat",
       "seatKey": "NPC2",
       "kind": "npc",
@@ -646,7 +670,7 @@
       "v": 0.12
     },
     {
-      "snapIndex": 55,
+      "snapIndex": 57,
       "snapKind": "seat",
       "seatKey": "Purple",
       "kind": "pc",
@@ -655,7 +679,7 @@
       "v": 0.12
     },
     {
-      "snapIndex": 56,
+      "snapIndex": 58,
       "snapKind": "seat",
       "seatKey": "Pink",
       "kind": "pc",
@@ -664,7 +688,7 @@
       "v": 0.12
     },
     {
-      "snapIndex": 57,
+      "snapIndex": 59,
       "snapKind": "seat",
       "seatKey": "Red",
       "kind": "pc",
@@ -673,7 +697,7 @@
       "v": 0.12
     },
     {
-      "snapIndex": 58,
+      "snapIndex": 60,
       "snapKind": "seat",
       "seatKey": "Orange",
       "kind": "pc",
@@ -682,7 +706,7 @@
       "v": 0.12
     },
     {
-      "snapIndex": 59,
+      "snapIndex": 61,
       "snapKind": "seat",
       "seatKey": "Brown",
       "kind": "pc",
@@ -691,7 +715,7 @@
       "v": 0.12
     },
     {
-      "snapIndex": 60,
+      "snapIndex": 62,
       "snapKind": "seat",
       "seatKey": "NPC1",
       "kind": "npc",
@@ -700,7 +724,7 @@
       "v": 0.12
     },
     {
-      "snapIndex": 61,
+      "snapIndex": 63,
       "snapKind": "seat",
       "seatKey": "NPC3",
       "kind": "npc",
