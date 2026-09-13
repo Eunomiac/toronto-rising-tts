@@ -89,6 +89,7 @@ build/
 
 # Local Storyteller dashboard build output
 .dev/storyteller-dashboard/dist/
+.dev/storyteller-dashboard/public/client/
 
 assets/images/Clipboard Image.jpg
 # Local Sheets Obsidian dashboard runtime artifacts

@@ -1,0 +1,219 @@
+.stage-npcs-panel {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) 300px;
+  overflow: hidden;
+}
+
+.generic-npc-preview {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-left: 1px solid var(--line);
+  background: #0a0a0d;
+  overflow: hidden;
+
+  img {
+    max-width: 100%;
+    max-height: calc(100% - 2.5rem);
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    object-position: center top;
+    display: block;
+  }
+
+  &-empty,
+  &-label {
+    margin: 0;
+    text-align: center;
+  }
+
+  &-empty {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  &-label {
+    font-size: 0.9rem;
+    font-weight: 800;
+  }
+}
+
+.saved-tags-rail {
+  min-width: 0;
+  overflow: auto;
+  border-right: 1px solid var(--line);
+  background: var(--panel);
+  padding: 0.4rem 0.3rem;
+}
+
+.saved-tags-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+.saved-tags-empty {
+  margin: 0.35rem 0.2rem;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.stage-npcs-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.stage-npcs-toolbar {
+  display: grid;
+  grid-template-columns: minmax(16rem, 1fr) minmax(14rem, 22rem);
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+
+  input[type="search"] {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 0.4rem;
+    background: #0c0c10;
+    color: #fff;
+    padding: 0.55rem 0.75rem;
+  }
+}
+
+.stage-npcs-search-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 2.4rem;
+  gap: 0.4rem;
+  align-items: stretch;
+}
+
+#generic-npc-save-tags {
+  padding: 0;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.generic-npc-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7.25rem, 1fr));
+  gap: 0.5rem;
+  align-content: start;
+  padding: 0.75rem;
+}
+
+.saved-tag {
+  width: 100%;
+  padding: 0.35rem 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-align: left;
+  line-height: 1.15;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.generic-npc-tile {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.35rem;
+  text-align: center;
+  background: #101015;
+
+  &.lock.active {
+    background: color-mix(in srgb, var(--red) 55%, #101015);
+  }
+
+  &.added {
+    box-shadow: inset 0 0 0 2px #c9a227;
+    background: color-mix(in srgb, #c9a227 22%, #101015);
+
+    &.lock.active {
+      box-shadow: inset 0 0 0 2px #e6c84a;
+      background: color-mix(in srgb, #c9a227 35%, var(--red));
+    }
+  }
+}
+
+.generic-npc-thumb {
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: #000;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 0.72rem;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+  }
+}
+
+.generic-npc-label {
+  font-size: 0.72rem;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.generic-npc-queue {
+  flex: 0 0 auto;
+  border-top: 1px solid var(--line);
+  background: var(--panel);
+  padding: 0.55rem 0.75rem;
+  display: grid;
+  gap: 0.45rem;
+
+  &-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    min-height: 1.6rem;
+  }
+
+  &-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    align-items: center;
+    justify-content: flex-end;
+
+    span {
+      margin-right: auto;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+  }
+}
+
+.generic-npc-chip {
+  padding: 0.35rem 0.55rem;
+  font-size: 0.78rem;
+}

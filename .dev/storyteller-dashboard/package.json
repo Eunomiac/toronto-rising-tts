@@ -4,13 +4,32 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.json && node scripts/copy-static.mjs",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "copy-static": "node scripts/copy-static.mjs",
+    "typecheck": "tsc -p tsconfig.server.json --noEmit && tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.node.json --noEmit",
+    "build": "npm run typecheck && npm run test && npm run copy-static && tsc -p tsconfig.server.json && vite build",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "start": "npm run build && node dist/server/index.js",
-    "dev": "npm run start",
+    "dev": "npm run copy-static && tsc -p tsconfig.server.json && node dist/server/index.js --dev",
     "dev:open": "node scripts/dev-and-open.mjs"
   },
   "dependencies": {
-    "gsap": "^3.15.0"
+    "gsap": "^3.15.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^24.5.2",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.3",
+    "jsdom": "^27.0.0",
+    "sass": "^1.93.0",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.6",
+    "vitest": "^3.2.4"
   }
 }

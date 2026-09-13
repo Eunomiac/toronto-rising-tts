@@ -1,6 +1,4 @@
 import { cp, mkdir } from "node:fs/promises";
 
-await mkdir("dist/client", { recursive: true });
-await cp("index.html", "dist/index.html");
-await cp("src/client/styles.css", "dist/client/styles.css");
-await cp("assets/icons", "dist/client/icons", { recursive: true });
+await mkdir("public/client/icons", { recursive: true });
+await cp("assets/icons", "public/client/icons", { recursive: true });

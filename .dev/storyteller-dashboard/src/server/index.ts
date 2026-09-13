@@ -23,7 +23,8 @@ const sceneCatalogsPath = path.join(dashboardRoot, "data", "scene-catalogs.json"
 const controlBoardSnapsPath = path.join(dashboardRoot, "data", "control-board-snaps.json");
 const cataloguedNpcImageDir = path.join(repoRoot, "assets", "images", "NPCs", "Catalogued");
 const scenesAssetDir = path.join(dashboardRoot, "assets", "scenes");
-const gsapVendorDir = path.resolve(dashboardRoot, "node_modules", "gsap");
+const publicDir = path.join(distDir, "public");
+const isDev = process.argv.includes("--dev");
 
 const contentTypes: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -57,25 +58,30 @@ const readRequestJson = async (request: IncomingMessage): Promise<unknown> => {
 
 const serveFile = async (response: ServerResponse, requestPath: string): Promise<void> => {
   const safePath = requestPath === "/" ? "/index.html" : requestPath;
-  const filePath = path.normalize(path.join(distDir, safePath));
+  const filePath = path.normalize(path.join(publicDir, safePath));
 
-  if (!filePath.startsWith(distDir)) {
+  if (!filePath.startsWith(publicDir)) {
     sendJson(response, 403, { error: "Forbidden" });
     return;
   }
 
   try {
     const fileStat = await stat(filePath);
-    if (!fileStat.isFile()) {
-      sendJson(response, 404, { error: "Not found" });
+    if (fileStat.isFile()) {
+      response.writeHead(200, { "Content-Type": contentTypes[path.extname(filePath)] ?? "application/octet-stream" });
+      createReadStream(filePath).pipe(response);
       return;
     }
-
-    response.writeHead(200, { "Content-Type": contentTypes[path.extname(filePath)] ?? "application/octet-stream" });
-    createReadStream(filePath).pipe(response);
   } catch {
-    response.writeHead(302, { Location: "/" });
-    response.end();
+    // Serve the SPA shell when the path is not a built file.
+  }
+
+  try {
+    const indexPath = path.join(publicDir, "index.html");
+    response.writeHead(200, { "Content-Type": contentTypes[".html"] ?? "text/html; charset=utf-8" });
+    createReadStream(indexPath).pipe(response);
+  } catch {
+    sendJson(response, 404, { error: "Not found" });
   }
 };
 
@@ -97,32 +103,6 @@ const serveGenericNpcImage = async (response: ServerResponse, pathname: string):
     createReadStream(filePath).pipe(response);
   } catch {
     sendJson(response, 404, { error: "Image not found." });
-  }
-};
-
-const serveVendorGsap = async (response: ServerResponse, pathname: string): Promise<void> => {
-  const relativePath = decodeURIComponent(pathname.slice("/vendor/gsap/".length));
-  if (relativePath === "" || relativePath.includes("\0")) {
-    sendJson(response, 403, { error: "Forbidden" });
-    return;
-  }
-  const vendorRoot = path.resolve(gsapVendorDir);
-  const filePath = path.resolve(vendorRoot, relativePath);
-  const relative = path.relative(vendorRoot, filePath);
-  if (relative.startsWith("..") || path.isAbsolute(relative)) {
-    sendJson(response, 403, { error: "Forbidden" });
-    return;
-  }
-  try {
-    const fileStat = await stat(filePath);
-    if (!fileStat.isFile()) {
-      sendJson(response, 404, { error: "Not found" });
-      return;
-    }
-    response.writeHead(200, { "Content-Type": contentTypes[path.extname(filePath)] ?? "text/javascript; charset=utf-8" });
-    createReadStream(filePath).pipe(response);
-  } catch {
-    sendJson(response, 404, { error: "Not found" });
   }
 };
 
@@ -235,56 +215,91 @@ const handleApi = async (request: IncomingMessage, response: ServerResponse, pat
   sendJson(response, 404, { error: "API route not found" });
 };
 
-void (async () => {
-  await refreshGenericNpcCatalogOnStartup(genericNpcCatalogPath);
-  createServer((request, response) => {
+const tryHandleDedicatedRoutes = async (request: IncomingMessage, response: ServerResponse): Promise<boolean> => {
+  const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "127.0.0.1"}`);
+  const pathname = url.pathname;
+
+  if (pathname.startsWith("/api/")) {
+    await handleApi(request, response, pathname);
+    return true;
+  }
+
+  if (request.method === "GET" && pathname.startsWith("/generic-npc-images/")) {
+    await serveGenericNpcImage(response, pathname);
+    return true;
+  }
+
+  if (request.method === "GET" && pathname.startsWith("/catalogued-npc-images/")) {
+    await serveSafeWebp(
+      response,
+      cataloguedNpcImageDir,
+      decodeURIComponent(pathname.slice("/catalogued-npc-images/".length)),
+      "Invalid catalogued NPC image filename."
+    );
+    return true;
+  }
+
+  if (request.method === "GET" && pathname.startsWith("/scenes-assets/")) {
+    await serveSafeWebp(
+      response,
+      scenesAssetDir,
+      decodeURIComponent(pathname.slice("/scenes-assets/".length)),
+      "Invalid scenes asset filename."
+    );
+    return true;
+  }
+
+  return false;
+};
+
+const attachRequestHandler = (httpServer: ReturnType<typeof createServer>, handleFallback: (request: IncomingMessage, response: ServerResponse) => void): void => {
+  httpServer.on("request", (request, response) => {
     void (async () => {
       try {
-        const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "127.0.0.1"}`);
-        if (url.pathname.startsWith("/api/")) {
-          await handleApi(request, response, url.pathname);
+        if (await tryHandleDedicatedRoutes(request, response)) {
           return;
         }
-
-        if (request.method === "GET" && url.pathname.startsWith("/generic-npc-images/")) {
-          await serveGenericNpcImage(response, url.pathname);
-          return;
-        }
-
-        if (request.method === "GET" && url.pathname.startsWith("/catalogued-npc-images/")) {
-          await serveSafeWebp(
-            response,
-            cataloguedNpcImageDir,
-            decodeURIComponent(url.pathname.slice("/catalogued-npc-images/".length)),
-            "Invalid catalogued NPC image filename."
-          );
-          return;
-        }
-
-        if (request.method === "GET" && url.pathname.startsWith("/vendor/gsap/")) {
-          await serveVendorGsap(response, url.pathname);
-          return;
-        }
-
-        if (request.method === "GET" && url.pathname.startsWith("/scenes-assets/")) {
-          await serveSafeWebp(
-            response,
-            scenesAssetDir,
-            decodeURIComponent(url.pathname.slice("/scenes-assets/".length)),
-            "Invalid scenes asset filename."
-          );
-          return;
-        }
-
-        await serveFile(response, url.pathname);
+        handleFallback(request, response);
       } catch (error: unknown) {
-        sendError(response, error);
+        if (!response.headersSent) {
+          sendError(response, error);
+        }
       }
     })();
-  }).listen(config.port, "127.0.0.1", () => {
+  });
+};
+
+void (async () => {
+  await refreshGenericNpcCatalogOnStartup(genericNpcCatalogPath);
+  const httpServer = createServer();
+
+  if (isDev) {
+    const { createServer: createViteServer } = await import("vite");
+    const vite = await createViteServer({
+      configFile: path.join(dashboardRoot, "vite.config.ts"),
+      server: { middlewareMode: true, hmr: { server: httpServer } },
+      appType: "spa"
+    });
+    attachRequestHandler(httpServer, (request, response) => {
+      vite.middlewares(request, response, () => {
+        response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+        response.end("Not found");
+      });
+    });
+  } else {
+    attachRequestHandler(httpServer, (request, response) => {
+      const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "127.0.0.1"}`);
+      void serveFile(response, url.pathname);
+    });
+  }
+
+  httpServer.listen(config.port, "127.0.0.1", () => {
     console.log(`Storyteller dashboard listening on http://127.0.0.1:${config.port}`);
     console.log(chronicleHealthInfo(config).chronicleStatus);
     console.log(`Catalogued NPC images: ${cataloguedNpcImageDir}`);
+    if (isDev) {
+      console.log("Vite HMR is enabled (--dev).");
+    }
     if (!existsSync(cataloguedNpcImageDir)) {
       console.error("Catalogued NPC image folder is missing.");
     }

@@ -1,0 +1,37 @@
+.lua-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  textarea {
+    flex: 1 1 auto;
+    min-height: 0;
+    margin: 0.75rem 0.75rem 0.35rem;
+    resize: none;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.95rem;
+  }
+}
+
+.lua-toolbar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.lua-output {
+  flex: 0 0 10rem;
+  margin: 0 0.75rem 0.75rem;
+  overflow: auto;
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  background: #0c0c10;
+  color: #d7d7de;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+  white-space: pre-wrap;
+}
