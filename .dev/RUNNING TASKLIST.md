@@ -465,6 +465,7 @@ _Blocked: author must define data binding approach before substantial implementa
 Standalone second-monitor web app (`.dev/storyteller-dashboard/`). Not the in-table Storyteller HUD.
 
 - [x] **Tab shell:** Top flush tabs — Stage NPCs (default), Lua, Generate NPC. Existing generator lives under Generate NPC; the other two tabs are placeholders. _(TOR-552)_
+- [x] **Scene Import Guide (baseline):** Full Scene Constructor JSON contract from live importer + occupancy (`tableSlot`, co-requirements, catalogs) in [Scene Import Guide.md](Storyteller%20Dashboard%20Docs/Scene%20Import%20Guide.md). Living doc — keep in sync when `validateAndNormalizeImportPayload` / `FSL.checkOccupancy` change. _(TOR-569)_
 - [x] **Stage NPCs generic catalogue:** Searchable cutout grid + copy keys. Sheet import clones skyboxes (`Generics Export` Visualization CSV → `data/generic-npcs.json`); refreshes when the Storyteller Dashboard server starts. _(TOR-554)_
 - [x] **Generic NPC import (v1):** Sheet labels → `D.genericNpcs`; CONTROL_BOARD paste + label modal; `GlobalImportGenericNpcs`; spawn token/figurine/light; scene library `genericMembership`; Dashboard gold/Spawn/Clear Generics + bridge grey-out. Pending Save & Play. _(TOR-560)_
 - [x] **Build pipelines Main / XML / Full:** Default Ctrl+Shift+B is Main (backup + gates + stubs); `build:xml` adds UI/XML generators; `build:full` is the former all-tooling chain. _(TOR-557)_

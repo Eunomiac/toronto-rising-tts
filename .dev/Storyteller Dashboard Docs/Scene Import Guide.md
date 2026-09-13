@@ -1,0 +1,610 @@
+# Scene Import Guide
+
+## Agent Routing
+
+Read this when:
+- building or changing a Storyteller Dashboard **Scenes** tab
+- generating Scene Constructor JSON for paste into the in-game Import Scene modal
+- changing `SceneLibrary.validateAndNormalizeImportPayload` or import occupancy rules
+- answering “what does a scene import JSON look like?”
+
+Source of truth (code, not the Scene Constructor folder):
+- `core/scene_library.ttslua` — `SceneLibrary.validateAndNormalizeImportPayload`
+- `lib/figurine_seat_layout.ttslua` — `FSL.checkOccupancy` (`forImport = true`)
+- `core/storyteller_scenes_panel.ttslua` — `confirmImportConstructorModal`
+- `lib/npc_placements_convert.ttslua` — `byArea` → `placements`
+- Catalogs: `lib/constants.ttslua`, `lib/condition_defs.ttslua`, `lib/soundscape_catalog.ttslua`
+
+Verification:
+- Walk a payload through `validateAndNormalizeImportPayload` (in-game Import Scene, or a future Dashboard bridge call that uses the same function)
+- Occupancy failures come from `FSL.checkOccupancy`, not from the older Scene Constructor templates
+
+Status: current (TOR-569). Re-verify this file whenever the importer or occupancy code changes.
+
+**Do not** treat `.dev/Scene Constructor/SchemaV2.jsonc`, `import-template-full.jsonc`, or `import-schema-v2.json` as authoritative. Those files lag the live validator (for example they omit required `tableSlot` integers).
+
+---
+
+## What this is
+
+This is the full contract for the JSON you paste into the Storyteller **Scenes** panel **Import Scene** modal (or that a Dashboard Scenes tab will generate).
+
+A successful import creates or replaces a **saved library row**. It does **not** put the scene on the table. After import you still select the row and use one of the Apply buttons (Scene Time / ×5 to Now / SET Now / NOW).
+
+Today that paste happens in Tabletop Simulator. The Dashboard’s first Scenes-tab job is to produce JSON that this importer will accept. Direct bridge import, when it exists, should call the same validator — do not invent a second schema.
+
+---
+
+## What happens on Import
+
+1. Only the Storyteller (Steam-gated host click) can confirm import.
+2. The pasted text is cleaned of **trailing commas** (`U.sanitizeJsonTextRemoveTrailingCommas`), then parsed with TTS `JSON.decode`.
+3. `SceneLibrary.validateAndNormalizeImportPayload` either returns a short path-named error (modal stays open) or a normalized `{ sceneKey, title, sessionScene }`.
+4. That bundle is written to `gameState.sceneLibrary.scenes[sceneKey]` with `receivesLiveWrites = false`.
+5. If `sceneKey` is new, it is appended to `sceneLibrary.order`. If it already exists, the row is **replaced** (same button slot).
+6. `S.validateState()` runs. The live table (`gameState.sessionScene`) is **not** switched. `activeKey` / `lastAppliedKey` are **not** set by import.
+
+Comments (`//` / `/* */`) are **not** legal. Trailing commas after the last property in an object or array **are** tolerated. Do not put the literal characters `,}` or `,]` inside a string value.
+
+---
+
+## Root wrapper (the object you paste)
+
+The root may contain **only** these four keys. Anything else is a hard error. The importer will not hoist a misplaced field (for example `npcWorld` next to `sessionScene` instead of inside it).
+
+| Field | Required | Type | Rules |
+| --- | --- | --- | --- |
+| `schemaVersion` | Strongly recommended | integer | Omit = treated as **1**. Must be an integer ≥ 1. This build accepts at most **2**. Use **2** for all new Dashboard output. |
+| `sceneKey` | **Yes** | string | Non-empty. Must match `^[a-zA-Z][a-zA-Z0-9_]*$` (letter, then letters/digits/underscore). Example: `openingCouncil`. This is the library id, not the button label. |
+| `title` | **Yes** | string | After trim, cannot be empty or whitespace-only. Shown on the library button. |
+| `sessionScene` | **Yes** | object | The narrative bundle. Same shape as live `gameState.sessionScene`. |
+
+`schemaVersion` is **not** stored on the library row. Only `sceneKey`, `title`, and nested `sessionScene` are kept.
+
+### Mis-nested keys the importer names in the error
+
+If you put any of these on the root, import fails and tells you to move them inside `sessionScene`: `npcWorld`, `seatSlots`, `districtKey`, `siteKey`, `skyboxOverride`, `clock`, `lightingPresetKey`, `isTopFogActive`, `soundscapeNarrative`, `conditions`, `tableKey`, `seatPresent`, `npcRoleOverride`, `chronicleWeatherFollowSchedule`, `chronicleWeatherManualHold`, `rollDefaults`.
+
+---
+
+## Schema version 2 vs 1
+
+New work should always emit `"schemaVersion": 2`.
+
+| Rule | v1 (`schemaVersion` omitted or `1`) | v2 (`2`) |
+| --- | --- | --- |
+| `lightingPresetKey` | May be omitted or `null` | **Required** non-empty string; must be a key in `C.LightModes` |
+| `isTopFogActive` | Not required | **Required** boolean (`true` or `false`, not `"true"`) |
+| `clock` | Not required by the importer | **Required** object |
+| `clock.isPresentDay` | Not required | **Required** boolean |
+| `siteKey` without `districtKey` | Allowed | **Rejected** (if `siteKey` is a non-empty string, `districtKey` must be a non-empty string) |
+| `npcWorld.preload` | Rejected | Rejected |
+| `rollDefaults` | Rejected | Rejected |
+| PC `seatSlots` + `tableSlot` occupancy | **Required in both** | **Required in both** |
+
+Occupancy (`tableSlot` / `absentFromSession`) runs **before** the v2-only checks. A v1 payload still fails if chairs are missing or collide.
+
+---
+
+## Co-requirements (if you set X, you must also set Y)
+
+This is the checklist a Dashboard form should enforce before copy/paste or bridge send. Items marked **importer** are rejected by `validateAndNormalizeImportPayload` / `FSL.checkOccupancy`. Items marked **runtime** are not rejected on import but will misbehave on Apply if ignored.
+
+1. **All five PC seats** (`Brown`, `Orange`, `Red`, `Pink`, `Purple`) must appear under `sessionScene.seatSlots`. (**importer**)
+2. Each PC who is **in session** (`absentFromSession` is not `true`) must have an integer **`tableSlot`**. (**importer**)
+3. If `absentFromSession` is `true` on a PC row, **`tableSlot` must be omitted** (not `null` with a chair number). (**importer**)
+4. `tableSlot` values among in-session occupants (PCs + occupied NPC seats) must be **unique**. (**importer**)
+5. `tableSlot` must be in **1 .. capacity** for the chosen table (see [Tables and chair numbers](#tables-and-chair-numbers)). (**importer**)
+6. If `isPlayingNPC` is `true` on a PC row, **`npcCharacterKey`** must be a non-empty string. Keep **`characterKey`** as that seat’s real PC. (**importer**)
+7. An occupied NPC seat (`characterKey` set and `slotEmpty` not `true`) must have **`tableSlot`**. (**importer**)
+8. The same NPC `characterKey` may occupy **at most one** of `NPC1`…`NPC4`. (**importer**)
+9. If that same NPC is also in `npcWorld.placements`, the homeland seat row must set **`isPresent`: `false`**. An active seat + stage placement is rejected. (**importer**)
+10. **v2:** `lightingPresetKey`, `isTopFogActive`, and `clock` (with `isPresentDay`) are required. (**importer**)
+11. **v2:** if `siteKey` is a non-empty string, **`districtKey`** must also be a non-empty string. (**importer**)
+12. Clock datetime is all-or-nothing: set **all five** of `year`, `month`, `day`, `hour`, `minute`, or **omit all five**. Partial clocks are rejected. (**importer**)
+13. If `clock.isPresentDay` is `false`, all five datetime fields are **required** (historical scene). (**importer**)
+14. `soundscapeNarrative.wind`, `.rain`, and `.thunderstorm` are a **triple**: all three present (including `thunderstorm: false`) or all three omitted/`null`. Mixed is rejected. (**importer**)
+15. Do **not** include `rollDefaults`, `npcWorld.preload`, or a root-level extra key. (**importer**)
+16. `conditions` entries must be known registry ids with `canApplyManually: true`. (**importer**)
+17. `skyboxOverride`, if a non-blank string, must be a `C.Skyboxes` key or `"Generic"`. URLs are rejected. (**importer**)
+18. **Do not author** `npcRoleOverride`, `chronicleWeatherFollowSchedule`, or `chronicleWeatherManualHold` — the importer overwrites them. (harmless if present inside `sessionScene`, but they will not survive as pasted)
+19. Prefer **`placements`** for stage NPCs. Do not rely on `byArea` (see [NPC world](#npc-world)).
+
+---
+
+## `sessionScene` field catalog
+
+Unknown extra keys **inside** `sessionScene` are **not** rejected; they are cloned through. Still only emit fields below. After import, `S.validateState()` fills defaults for missing nested tables.
+
+### Lighting and table
+
+#### `lightingPresetKey` (string, v2 required)
+
+Global lighting preset applied on scene Apply (`U.applyLightingPreset`). Seat spotlights still follow the usual per-player priority (rolling, hunger, conditions, then this preset).
+
+Must be a key of `C.LightModes` (`lib/constants.ttslua`). Current keys:
+
+| Kind | Keys |
+| --- | --- |
+| Chronicle (normal play) | `IndoorBright`, `IndoorDim`, `IndoorDark`, `OutdoorBright`, `OutdoorDim`, `OutdoorDark`, `UndergroundBright`, `UndergroundDim`, `UndergroundDark` |
+| Memoriam | `MemoriamBright`, `MemoriamDim`, `MemoriamDark` |
+| Admin / debug | `BRIGHT`, `DIM`, `DEBUG`, `DARK`, `TENSION`, `STANDARD`, `AdminDark`, `AdminStandard`, `AdminBright`, `AdminDebug` |
+
+Whitespace is trimmed. Unknown keys fail import on v2. When no location is applied, the engine default is `OutdoorDim`.
+
+Do **not** author `lightingSeatSpotlightPreset`. Apply derives it from the preset’s `spotlights` map.
+
+#### `isTopFogActive` (boolean, v2 required)
+
+Turns the top-fog particle object on (`true` → TTS state 2) or off (`false` → state 1).
+
+This is authored on the scene, not inferred from indoor/outdoor on import. Later **location Apply** can overwrite it from the site (`C.Sites[siteKey].isTopFogActive` / `topFog`, else indoor → fog off, outdoor → fog on). For a Dashboard that wants the fog to match the site, copy the site’s fog flag into this field.
+
+#### `tableKey` (string or null, optional)
+
+Which physical table the scene wants. Used with `RSL.SetTableTo` on Apply.
+
+| Value | Meaning | Import occupancy capacity |
+| --- | --- | --- |
+| `"Table A"` | Circular table with optional leaves | 9 |
+| `"Table B"` | **Family** key — Apply resolves to `Table B0`…`Table B5` from occupied NPC count | **9** (hard-coded in the importer, not B5’s 10) |
+| `"Table B0"` … `"Table B5"` | Concrete B variants (random seating on cover) | 5, 6, 7, 8, 9, 10 |
+| `"Table C"` | Facing table | 10 |
+| omitted / unknown string | Occupancy uses a max of **10**; Apply may not find a table | 10 |
+
+The importer does **not** reject an unknown `tableKey` string. Dashboard should only emit the keys above.
+
+`"Table B"` is special: it is not an entry in `C.Tables`, but the importer treats it as capacity 9, and Apply grows/shrinks B0–B5 from seated NPCs.
+
+---
+
+### Seat slots
+
+#### `seatSlots` (object, **required**)
+
+Keys are seat ids:
+
+- PCs: `Brown`, `Orange`, `Red`, `Pink`, `Purple` — **all five required**
+- NPC bench: `NPC1`, `NPC2`, `NPC3`, `NPC4` — optional; any missing key is stored as `{ "slotEmpty": true }`
+
+#### PC row fields
+
+| Field | Required | Type | Meaning |
+| --- | --- | --- | --- |
+| `characterKey` | No | string | The **real** chronicle PC for this chair (`fomorach`, `rashid`, `lordLucien`, `aishe`, `blackCaesar`). Importer does **not** check that the key exists. Keep this as the PC even when they are playing an NPC. |
+| `isPlayingNPC` | No | boolean | When `true`, this player is sitting the PC chair but portraying an NPC. |
+| `npcCharacterKey` | If `isPlayingNPC` is `true` | non-empty string | NPC being portrayed. Drives rebuilt `npcRoleOverride`. Ignored unless `isPlayingNPC` is `true`. Not used on NPC bench seats. |
+| `isPresent` | No | boolean | Narrative “this person is in the scene” for lighting / hosted conditions. Distinct from `absentFromSession`. If omitted, import treats the seat as present unless `seatPresent` says otherwise. |
+| `tableSlot` | Yes unless `absentFromSession` | integer | Numbered chair. Slot **1** is the reference figurine. Even slots walk right; odd slots greater than 1 walk left. |
+| `absentFromSession` | No | boolean | PC only. `true` = no chair this session (PCs-panel Absent). Must **not** be combined with `tableSlot`. |
+
+`isPresent` vs `absentFromSession`:
+
+- **Absent from session** = no chair on the table (`tableSlot` omitted).
+- **Not present** (`isPresent: false`) = still has a chair, but lights/conditions treat them as not narratively there. Used when the figurine is on stage but the homeland seat is kept.
+
+#### NPC bench row fields
+
+| Field | When | Meaning |
+| --- | --- | --- |
+| `slotEmpty` | Empty bench | `true` marks the seat unused. Importer fills this in if you omit the NPC key. |
+| `characterKey` | Occupied bench | Non-empty NPC id. Occupies that homeland seat. |
+| `tableSlot` | Occupied bench | Required integer chair, same numbering as PCs. |
+| `isPresent` | Optional | `false` when that NPC is also staged (`placements`). Default present if omitted. |
+
+Do not put `isPlayingNPC` / `npcCharacterKey` on `NPC1`…`NPC4`.
+
+#### `seatPresent` (object, optional)
+
+Sparse map of seat id → boolean. Usually **omit**. If a `seatSlots` row sets `isPresent`, that value wins and is copied into `seatPresent` on live normalize.
+
+#### `npcRoleOverride` (do not author)
+
+Sparse map of PC color → NPC `characterKey`. Rebuilt on import from PC rows with `isPlayingNPC: true`. Any pasted map is overwritten.
+
+---
+
+### Location and skybox
+
+#### `districtKey` (string or null, optional except with `siteKey` on v2)
+
+Chronicle district id. Keys in `C.Districts`:
+
+`Annex`, `BayStFinancial`, `Bennington`, `Cabbagetown`, `CentreIsland`, `Chinatown`, `Corktown`, `Danforth`, `DeerPark`, `Discovery`, `DistilleryDist`, `DonRavine`, `DupontByTheCastle`, `GayVillage`, `HarbordVillage`, `Humewood`, `LakeOntario`, `LibertyVillage`, `LittleItaly`, `LittlePortugal`, `PATH`, `RegentPark`, `Riverdale`, `Rosedale`, `Sewers`, `StJamesTown`, `Streets`, `Subway`, `Summerhill`, `Waterfront`, `WestQueenWest`, `Wychwood`, `YongeBloorMuseum`, `YongeDundasHospital`, `YongeStreet`, `Yorkville`
+
+The importer does **not** check that the string exists in `C.Districts`. Dashboard should still only offer these keys.
+
+v2: required (non-empty) whenever `siteKey` is non-empty. A site without a district in `C.Sites` still needs a district string on import if you set `siteKey`.
+
+#### `siteKey` (string or null, optional)
+
+Site id from `C.Sites` (`lib/constants.ttslua`). The importer does **not** check that the key exists, or that it belongs to `districtKey`. Dashboard should pair each site with its district.
+
+Site catalog fields that matter when **authoring** a scene (copied by you, not auto-applied on import): `lightMode` → `lightingPresetKey`, `topFog` / `isTopFogActive` → `isTopFogActive`, `skybox` → default skybox unless overridden, `soundscape.location.track` → `soundscapeNarrative.location`, `isIndoors` (ducking on Apply; **not** read from JSON `soundscapeNarrative.isIndoors`).
+
+#### `skyboxOverride` (string or null, optional)
+
+When set, Apply uses this instead of the site default:
+
+- A key in `C.Skyboxes` (must have a non-empty `url`), or
+- `"Generic"` — pick a random generic skybox, ignoring the site
+
+Omit, `null`, or blank → no override (site skybox, or random generic if the site has none). **URLs are rejected.**
+
+---
+
+### Clock
+
+#### `clock` (object, v2 required)
+
+In-fiction chronicle time, not wall-clock date.
+
+| Field | Required | Type | Meaning |
+| --- | --- | --- | --- |
+| `isPresentDay` | v2: **yes** | boolean | `true` = this scene participates in present-day “now”. `false` = historical; datetime required. |
+| `year`, `month`, `day`, `hour`, `minute` | All five or none | numbers | Counted as “set” if `tonumber(...)` works. **No range check** (hour is not forced 0–23). Never defaulted: you may not set three of five. |
+| `useRealTime` | No | boolean | When `true`, narrative time ticks with real time while the scene is live. |
+| `realTimeSpeed` | No | number | Multiplier when `useRealTime` is true. `1` = one fiction minute per 60 real seconds. `0` freezes ticks. Not type-checked on import. |
+
+Present-day **flags-only** (valid v2): `{ "isPresentDay": true, "useRealTime": false, "realTimeSpeed": 1 }` with no datetime. Apply then fills time from `gameState.presentDayClock` (errors if present day was never initialized — use the NOW Apply button after present day exists).
+
+Historical: `{ "isPresentDay": false, "year": 1924, "month": 6, "day": 12, "hour": 22, "minute": 0, ... }`.
+
+`useRealTime` / `realTimeSpeed` may appear on flags-only clocks.
+
+---
+
+### Chronicle weather flags (do not author)
+
+| Field | Set by importer |
+| --- | --- |
+| `chronicleWeatherFollowSchedule` | `false` if the weather triple is fully set; `true` if none of the three are set |
+| `chronicleWeatherManualHold` | `true` if the weather triple is fully set; `false` if none are set |
+
+Pasted values inside `sessionScene` are overwritten. If the triple is mixed, import fails before this step.
+
+---
+
+### Conditions
+
+#### `conditions` (array of strings, optional)
+
+Registry ids applied to **present** PCs while the scene is live (`kind = scene`, hosted with location conditions).
+
+Must be a JSON **array** (numeric indices only), not `{ "bonusWPReroll": true }`.
+
+Each entry: non-empty string, known in `lib/condition_defs.ttslua`, and `canApplyManually === true`.
+
+**Allowed on import today:**
+
+| Id | Display name |
+| --- | --- |
+| `torpor` | Torpor |
+| `hudFrenzy` | Frenzy |
+| `hudBlindfold` | Blindfold |
+| `bumpBloodPotency` | Blood Potency +1 |
+| `majorClaim_WestQueenWest` | Major Claim: West Queen West |
+| `majorClaim_DupontByTheCastle` | Major Claim: Dupont by the Castle |
+| `compulsion_Delusion_2` | Oracular Static |
+| `bonusWPReroll` | Bonus WP Reroll |
+| `noTakeHalf` | No Take Half |
+| `noWPReroll` | No WP Reroll |
+| `noHungerDice` | No Hunger Dice |
+| `noCriticals` | No Criticals |
+| `canRerollHunger` | Can Reroll Hunger |
+| `bestialNull` | Bestial Null |
+
+**Rejected** (automatic / derived): `impairedHealth`, `impairedWillpower`, `impairedHumanity`, `stained`.
+
+The old template id `sceneBonusWpReroll` is **not** a registry id and will fail. Use `bonusWPReroll`.
+
+`rollDefaults` anywhere on `sessionScene` fails import.
+
+Empty array `[]` and omitted `conditions` are both fine.
+
+---
+
+### Soundscape
+
+#### `soundscapeNarrative` (object, optional)
+
+Intent consumed **on scene Apply**, mapped into `gameState.soundscape` (not a second weather engine). `{}` or omit = no narrative override (Apply still uses site defaults + chronicle weather if flags allow).
+
+| Field | Type | Importer checks? | Apply behavior |
+| --- | --- | --- | --- |
+| `backgroundMusic` | string | No catalog check | Non-empty: if `"none"`, silences location playlist; otherwise treated as a **mood** playlist key |
+| `location` | string | No catalog check | Non-empty: location ambience track key |
+| `wind` | string | Part of weather triple | Copied only when all three weather fields are set **and** `chronicleWeatherManualHold` is true (which import just set) |
+| `rain` | string | Part of weather triple | Same |
+| `thunderstorm` | boolean | Part of weather triple | `false` counts as **set**. Apply uses `thunderEnabled = (thunderstorm == true)` |
+| `isIndoors` | — | Ignored | Indoor/outdoor ducking comes from `C.Sites[siteKey].isIndoors` |
+
+**Weather triple:** after decode, each of `wind` / `rain` / `thunderstorm` is either nil (missing or JSON `null`) or non-nil. Count must be 0 or 3.
+
+Mood keys in `Catalog.PLAYLISTS.backgroundMusic`: `main`, `combat`, `intrigue`, `casaLoma`, `gioCatacombs`, `gioEstate`. `"none"` is the silence sentinel. Default mood if unspecified is `main`.
+
+Location track keys (`Catalog.TRACKS` with `type = "location"`), including `silent`:
+
+`airport`, `apothecary`, `autoshop`, `church`, `cityChatter`, `cityPark`, `cityRevelers`, `citySuburb`, `cityTraffic`, `cityWalking`, `computerLab`, `crickets`, `diveBar`, `dungeon`, `eerieForest`, `fastClock`, `fireplace`, `hospital`, `indoorMarket`, `industry`, `laboratory`, `library`, `lowWindAmbient`, `medicalClinic`, `nightclub`, `office`, `quietCity`, `ritualRoom`, `rooftop`, `sewers`, `silent`, `softHum`, `softIndoor`, `subway`, `tinkle`, `urbanDark`, `warrens`, `waterside`, `whisperGhosts`
+
+Rain catalog keys: `rainLight`, `rainHeavy`. Wind: `windLow`, `windMed`, `windMax`, `windWinterLow`, `windWinterMed`, `windWinterMax`. Engine defaults use `"none"` when weather is unset. The importer will accept any string (or `false` for thunder) as long as the triple rule holds; Apply then has to resolve those keys.
+
+---
+
+### NPC world
+
+#### `npcWorld` (object, optional)
+
+Runtime layout lives in **`placements`**. `Sync.full` → NPC reconcile places figurines and control-board tokens from this map.
+
+```json
+"npcWorld": {
+  "placements": {
+    "adrianVarga": {
+      "u": 0.18,
+      "v": 0.72,
+      "yaw": 0,
+      "npcLightMode": "OFF",
+      "groundLevel": -15
+    }
+  }
+}
+```
+
+| Field | Required | Meaning |
+| --- | --- | --- |
+| `u`, `v` | Yes for a useful placement | 0–1 on **STAGE_BOARD** (same frame as control-board Apply). Importer does **not** range-check. |
+| `yaw` | No | Degrees, board-relative. |
+| `npcLightMode` | No | `OFF`, `STANDARD`, or `SPOTLIGHT`. At play time anything else becomes `STANDARD`. |
+| `groundLevel` | No | Absolute world Y. Omit to derive from the snap ring at `u,v`. |
+
+Keys are NPC `characterKey` strings. The importer does **not** check that the NPC exists in `D.characters`.
+
+**Homeland + stage:** the same key may appear in `seatSlots.NPCn.characterKey` and `placements` only if that seat has `isPresent: false`.
+
+#### `byArea` (legacy, do not use for new Dashboard output)
+
+Older Google Sheet JSON used area buckets (`nearLeft`, `centerForward`, …) with numbered slots. The importer still **tries** to convert those rows into `placements`, then **clears** `byArea`. Existing `placements` rows win on a duplicate `characterKey`.
+
+The conversion uses `D.areas` in `lib/npcs_data.ttslua`. Those stage area definitions are currently **commented out**; only `preload` remains. A `byArea` payload will therefore typically migrate **zero** slots and then drop `byArea`. Stage NPCs authored only as `byArea` will not appear.
+
+Dashboard should emit **`placements` only**.
+
+#### Forbidden / pass-through `npcWorld` keys
+
+| Key | Import |
+| --- | --- |
+| `preload` | **Rejected** (engine-managed under-table pool) |
+| `genericMembership` | Not validated; cloned if present. Live generic-NPC import writes this. Do not invent it unless you are also implementing generic spawn. |
+| `controlBoardSnapsEnabled` | Not validated; live default is `true`. |
+
+---
+
+## Tables and chair numbers
+
+Import occupancy (`FSL.checkOccupancy`, `forImport = true`):
+
+1. Every PC row that is not `absentFromSession` **must** have `tableSlot`.
+2. Occupied NPC rows must have `tableSlot`.
+3. Slots are unique among those occupants.
+4. Slot is `math.floor(tonumber(tableSlot))` in `1 .. cap`.
+
+`cap` is the table’s `slotCapacity`, or **10** if the table is unknown, or **9** if `tableKey` is exactly `"Table B"`.
+
+Suggested default chairs when you are not placing people specially (`C.DefaultTableSlots`):
+
+| Occupant | Slot |
+| --- | --- |
+| Red | 1 |
+| Orange | 2 |
+| Pink | 3 |
+| Brown | 4 |
+| Purple | 5 |
+| NPC1 | 6 |
+| NPC2 | 7 |
+| NPC3 | 8 |
+| NPC4 | 9 |
+
+Those defaults are **not** filled in on import. Live saves may seed missing slots later; **import will not**. If a PC is at the table, you must send `tableSlot`.
+
+Table B family (`isRandomSeating`): cover transitions shuffle packed occupants into chairs 1..N. You still need unique authored slots that fit the **import** capacity.
+
+---
+
+## What the importer does not check
+
+These will import and can still fail or look wrong on Apply:
+
+- PC / NPC `characterKey` exists in chronicle data
+- `districtKey` / `siteKey` exist, or the site belongs to that district
+- `tableKey` is a real table (unknown strings only loosen occupancy capacity)
+- Soundscape mood / location / rain / wind keys exist in the catalog
+- `placements.u` / `v` are in 0–1
+- Clock fields are a real calendar (month 13 would import)
+
+Dashboard UI should validate those against catalogs even though TTS import does not.
+
+---
+
+## Normalization the importer applies for you
+
+On success, before the row is stored:
+
+- Missing `NPC1`…`NPC4` keys → `{ slotEmpty: true }`
+- `npcRoleOverride` rebuilt from PC `isPlayingNPC` + `npcCharacterKey`
+- Chronicle weather flags derived from the soundscape weather triple
+- `byArea` merged into `placements` (if conversion can map a slot), then `byArea` cleared
+- `skyboxOverride` trimmed; blank becomes `nil`
+- `lightingPresetKey` trimmed
+- `title` trimmed
+- `conditions` copied as a dense array
+
+---
+
+## Worked examples
+
+### Minimal valid schema v2 (five PCs, no NPCs, present-day flags only)
+
+This is the smallest payload that should pass the current importer.
+
+```json
+{
+  "schemaVersion": 2,
+  "sceneKey": "quietMoment",
+  "title": "A quiet moment",
+  "sessionScene": {
+    "lightingPresetKey": "IndoorDim",
+    "isTopFogActive": false,
+    "tableKey": "Table B",
+    "seatSlots": {
+      "Brown": { "characterKey": "fomorach", "isPlayingNPC": false, "isPresent": true, "tableSlot": 4 },
+      "Orange": { "characterKey": "rashid", "isPlayingNPC": false, "isPresent": true, "tableSlot": 2 },
+      "Red": { "characterKey": "lordLucien", "isPlayingNPC": false, "isPresent": true, "tableSlot": 1 },
+      "Pink": { "characterKey": "aishe", "isPlayingNPC": false, "isPresent": true, "tableSlot": 3 },
+      "Purple": { "characterKey": "blackCaesar", "isPlayingNPC": false, "isPresent": true, "tableSlot": 5 }
+    },
+    "clock": {
+      "isPresentDay": true,
+      "useRealTime": false,
+      "realTimeSpeed": 1
+    }
+  }
+}
+```
+
+NPC keys may be omitted; the importer stores four empty bench seats.
+
+### PC playing an NPC, occupied bench, staged NPC with homeland kept
+
+```json
+{
+  "schemaVersion": 2,
+  "sceneKey": "openingCouncil",
+  "title": "Opening Council",
+  "sessionScene": {
+    "lightingPresetKey": "IndoorBright",
+    "isTopFogActive": false,
+    "tableKey": "Table B1",
+    "seatSlots": {
+      "Brown": { "characterKey": "fomorach", "isPlayingNPC": false, "isPresent": true, "tableSlot": 4 },
+      "Orange": { "characterKey": "rashid", "isPlayingNPC": false, "isPresent": true, "tableSlot": 2 },
+      "Red": {
+        "characterKey": "lordLucien",
+        "isPlayingNPC": true,
+        "npcCharacterKey": "myleneHamelin",
+        "isPresent": true,
+        "tableSlot": 1
+      },
+      "Pink": { "characterKey": "aishe", "isPlayingNPC": false, "isPresent": true, "tableSlot": 3 },
+      "Purple": { "characterKey": "blackCaesar", "isPlayingNPC": false, "isPresent": true, "tableSlot": 5 },
+      "NPC1": { "characterKey": "adrianVarga", "isPresent": false, "tableSlot": 6 },
+      "NPC2": { "slotEmpty": true },
+      "NPC3": { "slotEmpty": true },
+      "NPC4": { "slotEmpty": true }
+    },
+    "districtKey": "BayStFinancial",
+    "siteKey": "StRegisCouncilChamber",
+    "clock": {
+      "hour": 22,
+      "minute": 15,
+      "day": 14,
+      "month": 9,
+      "year": 2026,
+      "useRealTime": true,
+      "realTimeSpeed": 1,
+      "isPresentDay": true
+    },
+    "conditions": ["bonusWPReroll"],
+    "soundscapeNarrative": {
+      "backgroundMusic": "casaLoma",
+      "location": "library",
+      "wind": "windMed",
+      "rain": "rainLight",
+      "thunderstorm": false
+    },
+    "npcWorld": {
+      "placements": {
+        "adrianVarga": {
+          "u": 0.18,
+          "v": 0.72,
+          "yaw": 0,
+          "npcLightMode": "OFF"
+        }
+      }
+    }
+  }
+}
+```
+
+Notes:
+
+- Red still has `characterKey: "lordLucien"` while playing `myleneHamelin`.
+- `adrianVarga` is on stage **and** in `NPC1`, so `NPC1.isPresent` is `false`.
+- Weather triple is complete, so import will set `chronicleWeatherManualHold: true` and `chronicleWeatherFollowSchedule: false`.
+- `tableKey: "Table B1"` has capacity 6, which fits slots 1–6.
+
+### Historical scene, one PC absent, no weather override
+
+```json
+{
+  "schemaVersion": 2,
+  "sceneKey": "aisheMemories1924",
+  "title": "Aishe — 1924",
+  "sessionScene": {
+    "lightingPresetKey": "MemoriamDim",
+    "isTopFogActive": false,
+    "tableKey": "Table B0",
+    "seatSlots": {
+      "Brown": { "characterKey": "fomorach", "absentFromSession": true, "isPresent": false },
+      "Orange": { "characterKey": "rashid", "isPlayingNPC": false, "isPresent": true, "tableSlot": 2 },
+      "Red": { "characterKey": "lordLucien", "isPlayingNPC": false, "isPresent": true, "tableSlot": 1 },
+      "Pink": { "characterKey": "aishe", "isPlayingNPC": false, "isPresent": true, "tableSlot": 3 },
+      "Purple": { "characterKey": "blackCaesar", "isPlayingNPC": false, "isPresent": true, "tableSlot": 4 }
+    },
+    "clock": {
+      "isPresentDay": false,
+      "year": 1924,
+      "month": 6,
+      "day": 12,
+      "hour": 21,
+      "minute": 0,
+      "useRealTime": false,
+      "realTimeSpeed": 1
+    }
+  }
+}
+```
+
+Brown has no `tableSlot`. Table B0 capacity is 5; four chairs fit.
+
+---
+
+## How to paste today
+
+1. Storyteller HUD → **Scenes**.
+2. **Import Scene**.
+3. Paste a single JSON object (no comments).
+4. **Import**. On failure, read the red path message under the field; the modal stays open.
+5. The new (or replaced) library button appears. Select it and Apply when you want it on the table.
+
+A future Dashboard tab should offer **Copy JSON** using this schema, then optionally a bridge call that runs the same validator on the host.
+
+---
+
+## Related files
+
+| Need | Where |
+| --- | --- |
+| Validator | `core/scene_library.ttslua` |
+| Chair occupancy | `lib/figurine_seat_layout.ttslua` |
+| Import modal | `core/storyteller_scenes_panel.ttslua` (`confirmImportConstructorModal`) |
+| Live `sessionScene` defaults | `core/state.ttslua` (`S.GetDefaultGameState`) |
+| Lighting / districts / sites / tables | `lib/constants.ttslua` |
+| Skyboxes | `lib/skyboxes_catalog.ttslua` (generated) via `C.Skyboxes` |
+| Conditions | `lib/condition_defs.ttslua` |
+| Soundscape keys | `lib/soundscape_catalog.ttslua` |
+| Stage UV conversion | `lib/npc_placements_convert.ttslua` |
+| Apply / clock buttons | `core/scenes.ttslua`, `core/present_day_clock.ttslua` |
+| Library vs live behavior (Apply, fork, unlink) | `.dev/Scene Constructor/Scene Constructor Overview.md` — **library/apply flows only**; do not copy its JSON examples for occupancy |
+
+Linear: [TOR-569](https://linear.app/eunomiac-dev/issue/TOR-569/storyteller-dashboard-scene-import-guide) (living doc). Parent: TOR-552 (Dashboard tab shell).

@@ -13,15 +13,14 @@ Source of truth:
 - `core/scenes.ttslua`
 - `core/present_day_clock.ttslua`
 - `core/state.ttslua`
-- `.dev/Scene Constructor/SchemaV2.jsonc`
-- `.dev/Scene Constructor/import-template-full.jsonc`
+- **Import JSON schema (fields, co-requirements, occupancy):** [`.dev/Storyteller Dashboard Docs/Scene Import Guide.md`](../Storyteller%20Dashboard%20Docs/Scene%20Import%20Guide.md) — written from the live importer. Do **not** treat `SchemaV2.jsonc` / `import-template-full.jsonc` / `import-schema-v2.json` as complete (they omit required `tableSlot`).
 
 Verification:
 - `npm run build`
 - `.dev/E2E Playbooks/Scenes-E2E.md`
 - relevant scene-library step-by-step verification after Save & Play
 
-Status: current scene import/library reference; verify state defaults and UI handlers against source.
+Status: library / Apply / fork / unlink reference; **import schema** is the Scene Import Guide. Verify state defaults and UI handlers against source.
 
 The Scene Constructor lets the Host paste JSON (typically generated from a Google Sheet) to define a **saved scene**: a bundle that uses the **same shape as `gameState.sessionScene`**, plus library metadata. Saved scenes appear as activation buttons in the Storyteller Scenes UI so the Host can switch between beats without re-entering every field by hand.
 

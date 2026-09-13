@@ -29,6 +29,8 @@ A compact tab row sits flush with the top of the viewport:
 2. **Lua** — Execute Code into a live TTS session (same External Editor hook as the TTS Tools extension). Disable the extension first; only one process can listen on port 39998.
 3. **Generate NPC** — the existing OpenAI NPC generator (prompt, cards, session history).
 
+A **Scenes** tab is planned. Until it ships, the import JSON contract lives in [Scene Import Guide.md](../Storyteller%20Dashboard%20Docs/Scene%20Import%20Guide.md) (written from the live TTS importer, not the Scene Constructor templates).
+
 ## What is included
 
 - Dependency-light TypeScript frontend served by a local Node HTTP server.
