@@ -32,11 +32,7 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 
 ## Task List
 
-✔️ SD-13. Display the token's full name near or overlapping each token, which can disappear when the token is picked up for dragging but should otherwise remain visible at all times. Be sure to test the appearance by placing some tokens on the game board and adjusting size and position of the names so that they display clearly, are clearly associated with their token, and don't overlap.
-
-👨 It occurs to me that this is something you can manage independently, since you're able to see the board. Change the "fill stage" debug button so that it fills ALL token positions (seated and stage) with Rashid's token (since he has a very long name). Then, you can visually see how names should be positioned depending on snap slot. As long as the name is close enough to the token to be associated with it, you're free to position the name above, below, to the right or the left, wherever works best and doesn't overlap. (Additionally, when doing this, you'll notice some issues with snap points -- the Center, Mid Left, Mid Center and Mid Right areas appear to be missing snap points, and the positions of snap points for Mid Left, Mid Right, Center Left and Center Right do not line up with the image indicators -- and those image indicators do line up with the snap points in-game, I can confirm)
-
-🤖 Fill Stage (Debug) puts Rashid on every polar snap and chair. Polar UVs now use live STAGE_BOARD size for radial stagger (same inches as in-game), and Center/Mid packs keep five snaps when their center token is in the Lua box. Please Save-refresh the dashboard and use Debug → Fill Stage to confirm Mid/Center tokens sit on the painted dots.
+SD-13. Display the token's full name near or overlapping each token, which can disappear when the token is picked up for dragging but should otherwise remain visible at all times. **For Configuration of Offsets:** Add a debug button called "Fill and Lock", which fills every slot on the stage with Rashid Abdulrahman tokens, then removes the drag handler from the token itself, and adds a drag handler to the name element. Then, add another debug button called "Get Name Offsets", which reads the positions of all name elements and pastes them to my clipboard. Then, I can position the names suitably, and paste to you the offsets each name should get depending on its snap slot on the game board.
 
 ❌ SD-27. Dragging a group-move handle off the board should clear that entire group.
 
@@ -46,8 +42,11 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 
 👨 Dragging a token off of the left or right side of the board does not remove it from the board nor give it the red border indicating it will be removed.
 
-SD-29. If I start to drag a group onto the board, but then change my mind and drag it back off the board, the group will often still snap to the nearest snap group family. If a drag handle is not within the bounds of the board, it should never result in tokens being added to the board when released.
+SD-29. If I start to drag a group onto the board, but then change my mind and drag it back off the board, the group will often still snap to the nearest snap group family. If a drag handle is not within the bounds of the board, it should never result in tokens being added to the board when released. (This may be fixed by resolving SD-27 and SD-28, though.)
 
-✔️ SD-30. `grid-template-columns: 18.45rem minmax(0, 1fr) 20.5rem` on the `.scenes-workspace` grid provides just enough room for five tokens to fit horizontally. The first column is increased by 0.2rem, so by reducing the `gap` from `0.45rem` to `0.35rem`, we should be able to maintain the same width of the central board.
+SD-30. Add a debug-only button called "Restore PCs" that removes all tokens from seated table positions, and replaces them with the default spread of the five PC tokens.
 
-🤖 Confirmed: three-column grid has two gaps, so −0.10rem on each gap returns the same +0.20rem the left rail takes. The middle `1fr` column (the stage board) stays the same width. Snap `u`/`v` are percentages on the board image, so even a 1px rounding slip would not change catalog coordinates.
+✔️ Polar snap catalogs read STAGE_BOARD size from the live TTS save whenever the dashboard is started or built (`npm run scene-catalogs`). After you resize the stage in-game, save the game, then restart the dashboard (or run `npm run dashboard:scene-catalogs` from the repo root).
+🤖 Center/Mid `radialStagger` is now 8" / 4" so the generated UVs sit on the painted holes with the current STAGE_BOARD (800×289). 15" / 10" pushed neighbor snaps off the pentagons. Far rings unchanged (stagger 0). Reinstall in-game snaps if you want the table to match this recipe.
+
+SD-31. Vary the red background color on the weather controls by intensity, as well as duplicating the icons: Low intensity should be darker red, increasing to full #FF0000 at maximum intensity.  The Wind button should get a cyan outline (not a border, to avoid repositioning) when it is applying winter wind instead of standard wind.
