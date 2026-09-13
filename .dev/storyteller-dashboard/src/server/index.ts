@@ -1,4 +1,4 @@
-import { createReadStream } from "node:fs";
+import { createReadStream, existsSync } from "node:fs";
 import { readFile, stat } from "node:fs/promises";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import path from "node:path";
@@ -16,18 +16,22 @@ loadEnvFile();
 const config = getConfig();
 const distDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dashboardRoot = path.resolve(distDir, "..");
+const repoRoot = path.resolve(dashboardRoot, "..", "..");
 const genericNpcCatalogPath = path.join(dashboardRoot, "data", "generic-npcs.json");
-const genericNpcImageDir = path.resolve(dashboardRoot, "..", "..", "assets", "images", "NPCs", "Generic");
+const genericNpcImageDir = path.join(repoRoot, "assets", "images", "NPCs", "Generic");
 const sceneCatalogsPath = path.join(dashboardRoot, "data", "scene-catalogs.json");
 const controlBoardSnapsPath = path.join(dashboardRoot, "data", "control-board-snaps.json");
-const cataloguedNpcImageDir = path.resolve(dashboardRoot, "..", "..", "assets", "images", "NPCs", "Catalogued");
+const cataloguedNpcImageDir = path.join(repoRoot, "assets", "images", "NPCs", "Catalogued");
 const scenesAssetDir = path.join(dashboardRoot, "assets", "scenes");
+const gsapVendorDir = path.resolve(dashboardRoot, "node_modules", "gsap");
 
 const contentTypes: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".json": "application/json; charset=utf-8",
+  ".svg": "image/svg+xml; charset=utf-8",
   ".webp": "image/webp"
 };
 
@@ -93,6 +97,32 @@ const serveGenericNpcImage = async (response: ServerResponse, pathname: string):
     createReadStream(filePath).pipe(response);
   } catch {
     sendJson(response, 404, { error: "Image not found." });
+  }
+};
+
+const serveVendorGsap = async (response: ServerResponse, pathname: string): Promise<void> => {
+  const relativePath = decodeURIComponent(pathname.slice("/vendor/gsap/".length));
+  if (relativePath === "" || relativePath.includes("\0")) {
+    sendJson(response, 403, { error: "Forbidden" });
+    return;
+  }
+  const vendorRoot = path.resolve(gsapVendorDir);
+  const filePath = path.resolve(vendorRoot, relativePath);
+  const relative = path.relative(vendorRoot, filePath);
+  if (relative.startsWith("..") || path.isAbsolute(relative)) {
+    sendJson(response, 403, { error: "Forbidden" });
+    return;
+  }
+  try {
+    const fileStat = await stat(filePath);
+    if (!fileStat.isFile()) {
+      sendJson(response, 404, { error: "Not found" });
+      return;
+    }
+    response.writeHead(200, { "Content-Type": contentTypes[path.extname(filePath)] ?? "text/javascript; charset=utf-8" });
+    createReadStream(filePath).pipe(response);
+  } catch {
+    sendJson(response, 404, { error: "Not found" });
   }
 };
 
@@ -231,6 +261,11 @@ void (async () => {
           return;
         }
 
+        if (request.method === "GET" && url.pathname.startsWith("/vendor/gsap/")) {
+          await serveVendorGsap(response, url.pathname);
+          return;
+        }
+
         if (request.method === "GET" && url.pathname.startsWith("/scenes-assets/")) {
           await serveSafeWebp(
             response,
@@ -249,6 +284,10 @@ void (async () => {
   }).listen(config.port, "127.0.0.1", () => {
     console.log(`Storyteller dashboard listening on http://127.0.0.1:${config.port}`);
     console.log(chronicleHealthInfo(config).chronicleStatus);
+    console.log(`Catalogued NPC images: ${cataloguedNpcImageDir}`);
+    if (!existsSync(cataloguedNpcImageDir)) {
+      console.error("Catalogued NPC image folder is missing.");
+    }
   });
 })().catch((error: unknown) => {
   console.error(error instanceof Error ? error.message : String(error));

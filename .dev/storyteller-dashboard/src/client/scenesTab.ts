@@ -1,3 +1,4 @@
+import { bindBoardDrag, gsap, killBoardDrags } from "./scenes/boardDrag.js";
 import { relocatePolarFamily } from "./scenes/groupRelocate.js";
 import {
   boardUvFromEvent,
@@ -5,12 +6,15 @@ import {
   characterLabel,
   createDefaultDraft,
   cutoutUrl,
+  familyLabelUv,
   nearestPolarSnap,
   nearestSeatSnap,
   parseControlBoardSnaps,
   parseSceneCatalogs,
-  PC_BY_COLOR
+  PC_BY_COLOR,
+  sceneKeyFromTitle
 } from "./scenes/payload.js";
+import { initToasts } from "./scenes/toasts.js";
 import type {
   ControlBoardSnaps,
   NpcLightMode,
@@ -59,13 +63,14 @@ const daysInMonth = (year: number, month: number): number =>
   new Date(year, month, 0).getDate();
 
 export const initScenesTab = (): void => {
-  const status = requiredElement<HTMLDivElement>("scenes-status");
+  const toasts = initToasts(requiredElement<HTMLDivElement>("scenes-toasts"));
   const bridgeStatus = requiredElement<HTMLDivElement>("scenes-bridge-status");
   const boardWrap = requiredElement<HTMLDivElement>("scenes-board-wrap");
   const boardFrame = requiredElement<HTMLDivElement>("scenes-board-frame");
   const boardImg = requiredElement<HTMLImageElement>("scenes-board-img");
   const overlay = requiredElement<HTMLDivElement>("scenes-board-overlay");
   const palette = requiredElement<HTMLDivElement>("scenes-palette-list");
+  const dragLayer = requiredElement<HTMLDivElement>("scenes-drag-layer");
   const modalRoot = requiredElement<HTMLDivElement>("modal-root");
   const importButton = requiredElement<HTMLButtonElement>("scenes-import");
   const copyButton = requiredElement<HTMLButtonElement>("scenes-copy");
@@ -77,12 +82,16 @@ export const initScenesTab = (): void => {
   let draft: SceneDraft | null = null;
   let bridgeUsable = false;
   let missingCutouts = new Set<string>();
-  let dragKind: "token" | "family" | null = null;
-  let dragKey = "";
+  const ghostEls: HTMLElement[] = [];
 
   const setStatus = (kind: "idle" | "loading" | "error" | "success", message: string): void => {
-    status.className = `status ${kind}`;
-    status.textContent = message;
+    toasts.push(kind, message);
+  };
+
+  const clearGhosts = (): void => {
+    while (ghostEls.length > 0) {
+      ghostEls.pop()?.remove();
+    }
   };
 
   const persist = (): void => {
@@ -106,6 +115,9 @@ export const initScenesTab = (): void => {
     lit ? "/scenes-assets/tokenFrameLit.webp" : "/scenes-assets/tokenFrameUnlit.webp";
 
   const markCutoutError = (characterKey: string): void => {
+    if (missingCutouts.has(characterKey)) {
+      return;
+    }
     missingCutouts.add(characterKey);
     setStatus("error", `Missing cutout: assets/images/NPCs/Catalogued/${characterKey}.webp`);
   };
@@ -140,32 +152,247 @@ export const initScenesTab = (): void => {
     }
   };
 
-  const makeToken = (characterKey: string, lit: boolean, extraClass = ""): HTMLButtonElement => {
+  const makeToken = (characterKey: string, lit: boolean, extraClass = "", ghost = false): HTMLButtonElement => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = `scenes-token ${extraClass}`.trim();
-    button.draggable = true;
     button.dataset.characterKey = characterKey;
+    const bg = document.createElement("span");
+    bg.className = "scenes-token-bg";
     const cutout = document.createElement("img");
     cutout.className = "scenes-token-cutout";
     cutout.alt = characterKey;
     cutout.draggable = false;
     cutout.src = cutoutUrl(characterKey);
-    cutout.addEventListener("error", () => markCutoutError(characterKey));
+    if (!ghost) {
+      cutout.addEventListener("error", () => markCutoutError(characterKey));
+    }
     const frame = document.createElement("img");
     frame.className = "scenes-token-frame";
     frame.alt = "";
     frame.draggable = false;
     frame.src = tokenFrame(lit);
-    button.append(cutout, frame);
-    button.addEventListener("dragstart", (event) => {
-      dragKind = "token";
-      dragKey = characterKey;
-      event.dataTransfer?.setData("text/plain", characterKey);
-      const rect = button.getBoundingClientRect();
-      event.dataTransfer?.setDragImage(button, rect.width / 2, rect.height / 2);
-    });
+    button.append(bg, cutout, frame);
     return button;
+  };
+
+  const placeToken = (el: HTMLElement, u: number, v: number): void => {
+    el.style.left = cssLeft(u);
+    el.style.top = cssTop(v);
+    gsap.set(el, { xPercent: -50, yPercent: -50, x: 0, y: 0 });
+  };
+
+  const applyBoardDrop = (clientX: number, clientY: number, dragKind: "token" | "family", dragKey: string): void => {
+    if (!draft || !snaps || !catalogs) {
+      return;
+    }
+    const uv = boardUvFromEvent(overlay, { clientX, clientY });
+    if (!uv) {
+      setStatus("error", "Drop tokens on the control board.");
+      return;
+    }
+    if (draft.placementMode === "standard") {
+      if (dragKind === "family") {
+        const dest = nearestPolarSnap(snaps, uv.u, uv.v, 0.1);
+        if (!dest) {
+          setStatus("error", "Drop the group handle onto a polar pack.");
+          return;
+        }
+        draft.standard.polar = relocatePolarFamily(draft.standard.polar, dragKey, dest.familyId, snaps);
+        persist();
+        return;
+      }
+      const seat = nearestSeatSnap(snaps, uv.u, uv.v, 0.055);
+      const polar = nearestPolarSnap(snaps, uv.u, uv.v, 0.06);
+      const isNpc = namedByKey().has(dragKey);
+      if (seat && (!polar || Math.hypot(seat.u - uv.u, seat.v - uv.v) <= Math.hypot((polar?.u ?? 9) - uv.u, (polar?.v ?? 9) - uv.v))) {
+        placeOnSeat(dragKey, seat.seatKey);
+      } else if (polar && isNpc) {
+        const existing = draft.standard.polar.find((token) => token.characterKey === dragKey);
+        placeNpcOnPolar(dragKey, polar.snapIndex, existing?.npcLightMode ?? (polar.defaultLightMode === "STANDARD" ? "STANDARD" : "OFF"));
+      } else if (polar && Object.values(PC_BY_COLOR).includes(dragKey)) {
+        setStatus("error", "PCs sit on chairs, not on the polar stage.");
+        return;
+      }
+      persist();
+      return;
+    }
+    const isPc = catalogs.pcs.some((pc) => pc.characterKey === dragKey);
+    let bestDist = 0.07;
+    let best: { areaKey: string; kind: "center" | "orbit"; slot: number } | null = null;
+    for (const areaKey of snaps.scatter.areaOrder) {
+      const layout = snaps.scatter.areas[areaKey];
+      if (!layout) {
+        continue;
+      }
+      const slots = isPc ? layout.center : layout.orbit;
+      const kind = isPc ? "center" as const : "orbit" as const;
+      for (const slot of slots) {
+        const dist = Math.hypot(slot.u - uv.u, slot.v - uv.v);
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = { areaKey, kind, slot: slot.slot };
+        }
+      }
+    }
+    if (!best) {
+      setStatus("error", isPc ? "Drop PCs on a numbered center pentagon." : "Drop NPCs on an orbit slot.");
+      return;
+    }
+    if (best.kind === "center") {
+      for (const area of Object.values(draft.scatter.areas)) {
+        delete area.centerCharacters[dragKey];
+      }
+      const area = draft.scatter.areas[best.areaKey];
+      if (!area) {
+        return;
+      }
+      for (const [pcKey, row] of Object.entries(area.centerCharacters)) {
+        if (row.slot === best.slot) {
+          delete area.centerCharacters[pcKey];
+          break;
+        }
+      }
+      area.centerCharacters[dragKey] = { slot: best.slot, isPlayingNPC: false, isPresent: true };
+    } else {
+      draft.scatter.paletteNpcKeys = draft.scatter.paletteNpcKeys.filter((key) => key !== dragKey);
+      for (const area of Object.values(draft.scatter.areas)) {
+        delete area.orbitCharacters[dragKey];
+      }
+      const area = draft.scatter.areas[best.areaKey];
+      if (!area) {
+        return;
+      }
+      for (const [npcKey, row] of Object.entries(area.orbitCharacters)) {
+        if (row.slot === best.slot) {
+          draft.scatter.paletteNpcKeys.push(npcKey);
+          delete area.orbitCharacters[npcKey];
+          break;
+        }
+      }
+      area.orbitCharacters[dragKey] = { slot: best.slot, npcLightMode: "STANDARD" };
+    }
+    persist();
+  };
+
+  const showTokenGhost = (characterKey: string, extraClass: string, u: number, v: number): void => {
+    const ghost = makeToken(characterKey, true, `${extraClass} scenes-token-ghost`.trim(), true);
+    placeToken(ghost, u, v);
+    overlay.append(ghost);
+    ghostEls.push(ghost);
+  };
+
+  const paintTokenGhosts = (clientX: number, clientY: number, characterKey: string): void => {
+    clearGhosts();
+    if (!snaps || !draft) {
+      return;
+    }
+    const uv = boardUvFromEvent(overlay, { clientX, clientY });
+    if (!uv) {
+      return;
+    }
+    if (draft.placementMode === "standard") {
+      const seat = nearestSeatSnap(snaps, uv.u, uv.v, 0.09);
+      const polar = nearestPolarSnap(snaps, uv.u, uv.v, 0.09);
+      if (seat && (!polar || Math.hypot(seat.u - uv.u, seat.v - uv.v) <= Math.hypot((polar?.u ?? 9) - uv.u, (polar?.v ?? 9) - uv.v))) {
+        showTokenGhost(characterKey, "scenes-token-seat", seat.u, seat.v);
+        return;
+      }
+      if (polar) {
+        showTokenGhost(characterKey, "", polar.u, polar.v);
+      }
+      return;
+    }
+    const isPc = catalogs?.pcs.some((pc) => pc.characterKey === characterKey) === true;
+    let bestDist = 0.1;
+    let best: { extraClass: string; u: number; v: number } | null = null;
+    for (const areaKey of snaps.scatter.areaOrder) {
+      const layout = snaps.scatter.areas[areaKey];
+      if (!layout) {
+        continue;
+      }
+      const slots = isPc ? layout.center : layout.orbit;
+      const extraClass = isPc ? "scenes-token-center" : "";
+      for (const slot of slots) {
+        const dist = Math.hypot(slot.u - uv.u, slot.v - uv.v);
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = { extraClass, u: slot.u, v: slot.v };
+        }
+      }
+    }
+    if (best) {
+      showTokenGhost(characterKey, best.extraClass, best.u, best.v);
+    }
+  };
+
+  const paintFamilyGhosts = (clientX: number, clientY: number, familyId: string): void => {
+    clearGhosts();
+    if (!snaps || !draft) {
+      return;
+    }
+    const uv = boardUvFromEvent(overlay, { clientX, clientY });
+    if (!uv) {
+      return;
+    }
+    const dest = nearestPolarSnap(snaps, uv.u, uv.v, 0.12);
+    if (!dest) {
+      return;
+    }
+    const preview = relocatePolarFamily(draft.standard.polar, familyId, dest.familyId, snaps);
+    for (const token of preview) {
+      const original = draft.standard.polar.find((row) => row.characterKey === token.characterKey);
+      if (!original || original.snapIndex === token.snapIndex) {
+        continue;
+      }
+      const snap = snaps.polar.find((row) => row.snapIndex === token.snapIndex);
+      if (snap) {
+        showTokenGhost(token.characterKey, "", snap.u, snap.v);
+      }
+    }
+  };
+
+  const bindTokenDrag = (el: HTMLElement, characterKey: string): void => {
+    bindBoardDrag(el, {
+      boardFrame,
+      dragLayer,
+      pickup: true,
+      onMove: (clientX, clientY) => paintTokenGhosts(clientX, clientY, characterKey),
+      onEnd: (clientX, clientY) => {
+        clearGhosts();
+        applyBoardDrop(clientX, clientY, "token", characterKey);
+        render();
+      }
+    });
+  };
+
+  const bindFamilyHandle = (handle: HTMLElement, familyId: string): void => {
+    handle.addEventListener("pointerenter", () => {
+      if (handle.dataset.dragging === "1") {
+        return;
+      }
+      gsap.killTweensOf(handle);
+      gsap.fromTo(handle, { opacity: 0 }, { opacity: 0.95, duration: 0.12, yoyo: true, repeat: 1, ease: "power1.inOut" });
+    });
+    bindBoardDrag(handle, {
+      boardFrame,
+      dragLayer,
+      pickup: false,
+      onDragStart: () => {
+        handle.dataset.dragging = "1";
+        gsap.killTweensOf(handle);
+        gsap.set(handle, { opacity: 1 });
+        gsap.to(handle, { scale: 1.18, duration: 0.16, yoyo: true, repeat: -1, ease: "sine.inOut" });
+      },
+      onMove: (clientX, clientY) => paintFamilyGhosts(clientX, clientY, familyId),
+      onEnd: (clientX, clientY) => {
+        gsap.killTweensOf(handle);
+        handle.dataset.dragging = "0";
+        clearGhosts();
+        applyBoardDrop(clientX, clientY, "family", familyId);
+        render();
+      }
+    });
   };
 
   const placeNpcOnPolar = (characterKey: string, snapIndex: number, light: NpcLightMode): void => {
@@ -249,7 +476,6 @@ export const initScenesTab = (): void => {
       return;
     }
     const current = draft;
-    requiredElement<HTMLInputElement>("scenes-scene-key").value = current.sceneKey;
     requiredElement<HTMLInputElement>("scenes-title").value = current.title;
     requiredElement<HTMLButtonElement>("scenes-mode-standard").classList.toggle("lock", current.placementMode === "standard");
     requiredElement<HTMLButtonElement>("scenes-mode-standard").classList.toggle("active", current.placementMode === "standard");
@@ -321,8 +547,7 @@ export const initScenesTab = (): void => {
           continue;
         }
         const el = makeToken(token.characterKey, token.npcLightMode !== "OFF");
-        el.style.left = cssLeft(snap.u);
-        el.style.top = cssTop(snap.v);
+        placeToken(el, snap.u, snap.v);
         el.title = characterLabel(boardCatalogs, token.characterKey);
         el.addEventListener("dblclick", () => {
           token.npcLightMode = token.npcLightMode === "OFF" ? "STANDARD" : "OFF";
@@ -330,6 +555,7 @@ export const initScenesTab = (): void => {
           render();
         });
         overlay.append(el);
+        bindTokenDrag(el, token.characterKey);
       }
       const familyIds = new Set(boardSnaps.polar.map((snap) => snap.familyId));
       for (const familyId of familyIds) {
@@ -339,23 +565,17 @@ export const initScenesTab = (): void => {
         if (members.length === 0) {
           continue;
         }
-        const anchor = snaps.polar.find((snap) => snap.familyId === familyId && snap.isAnchor)
-          ?? snaps.polar.find((snap) => snap.familyId === familyId);
-        if (!anchor) {
+        const label = familyLabelUv(boardSnaps, familyId);
+        if (!label) {
           continue;
         }
         const handle = document.createElement("button");
         handle.type = "button";
         handle.className = "scenes-family-handle";
-        handle.draggable = true;
         handle.title = `Move group ${familyId}`;
-        handle.style.left = cssLeft(anchor.u);
-        handle.style.top = cssTop(anchor.v - 0.035);
-        handle.addEventListener("dragstart", () => {
-          dragKind = "family";
-          dragKey = familyId;
-        });
+        placeToken(handle, label.u, label.v);
         overlay.append(handle);
+        bindFamilyHandle(handle, familyId);
       }
       for (const seat of snaps.seats) {
         const row = draft.standard.seatSlots[seat.seatKey];
@@ -364,19 +584,15 @@ export const initScenesTab = (): void => {
         }
         const lit = row.isPresent === true && row.absentFromSession !== true;
         const el = makeToken(row.characterKey, lit, "scenes-token-seat");
-        el.style.left = cssLeft(seat.u);
-        el.style.top = cssTop(seat.v);
+        placeToken(el, seat.u, seat.v);
         el.title = `${characterLabel(catalogs, row.characterKey)} — ${seat.seatKey}`;
         el.addEventListener("dblclick", () => {
-          if (seat.kind === "pc") {
-            row.isPresent = !row.isPresent;
-          } else {
-            row.isPresent = !row.isPresent;
-          }
+          row.isPresent = !row.isPresent;
           persist();
           render();
         });
         overlay.append(el);
+        bindTokenDrag(el, row.characterKey);
       }
     } else {
       for (const areaKey of snaps.scatter.areaOrder) {
@@ -393,14 +609,14 @@ export const initScenesTab = (): void => {
           const displayKey = row.isPlayingNPC && row.characterKey ? row.characterKey : pcKey;
           const el = makeToken(displayKey, row.isPresent, "scenes-token-center");
           el.dataset.pcKey = pcKey;
-          el.style.left = cssLeft(slot.u);
-          el.style.top = cssTop(slot.v);
+          placeToken(el, slot.u, slot.v);
           el.addEventListener("dblclick", () => {
             row.isPresent = !row.isPresent;
             persist();
             render();
           });
           overlay.append(el);
+          bindTokenDrag(el, displayKey);
         }
         for (const [npcKey, row] of Object.entries(area.orbitCharacters)) {
           const slot = layout.orbit.find((item) => item.slot === row.slot);
@@ -408,14 +624,14 @@ export const initScenesTab = (): void => {
             continue;
           }
           const el = makeToken(npcKey, row.npcLightMode !== "OFF");
-          el.style.left = cssLeft(slot.u);
-          el.style.top = cssTop(slot.v);
+          placeToken(el, slot.u, slot.v);
           el.addEventListener("dblclick", () => {
             row.npcLightMode = row.npcLightMode === "OFF" ? "STANDARD" : "OFF";
             persist();
             render();
           });
           overlay.append(el);
+          bindTokenDrag(el, npcKey);
         }
       }
     }
@@ -431,10 +647,13 @@ export const initScenesTab = (): void => {
       const el = makeToken(key, true, "scenes-token-palette");
       el.title = characterLabel(catalogs, key);
       palette.append(el);
+      bindTokenDrag(el, key);
     }
   };
 
   const render = (): void => {
+    clearGhosts();
+    killBoardDrags(dragLayer);
     renderChrome();
     renderBoard();
     renderPalette();
@@ -721,102 +940,6 @@ export const initScenesTab = (): void => {
     });
   };
 
-  const handleBoardDrop = (event: DragEvent): void => {
-    if (!draft || !snaps || !catalogs) {
-      return;
-    }
-    const uv = boardUvFromEvent(overlay, event);
-    if (!uv) {
-      return;
-    }
-    event.preventDefault();
-    if (draft.placementMode === "standard") {
-      if (dragKind === "family") {
-        const dest = nearestPolarSnap(snaps, uv.u, uv.v, 0.1);
-        if (!dest) {
-          setStatus("error", "Drop the group handle onto a polar pack.");
-          return;
-        }
-        draft.standard.polar = relocatePolarFamily(draft.standard.polar, dragKey, dest.familyId, snaps);
-        persist();
-        render();
-        return;
-      }
-      const seat = nearestSeatSnap(snaps, uv.u, uv.v, 0.055);
-      const polar = nearestPolarSnap(snaps, uv.u, uv.v, 0.06);
-      const isNpc = namedByKey().has(dragKey);
-      if (seat && (!polar || Math.hypot(seat.u - uv.u, seat.v - uv.v) <= Math.hypot((polar?.u ?? 9) - uv.u, (polar?.v ?? 9) - uv.v))) {
-        placeOnSeat(dragKey, seat.seatKey);
-      } else if (polar && isNpc) {
-        const existing = draft.standard.polar.find((token) => token.characterKey === dragKey);
-        placeNpcOnPolar(dragKey, polar.snapIndex, existing?.npcLightMode ?? (polar.defaultLightMode === "STANDARD" ? "STANDARD" : "OFF"));
-      } else if (polar && PC_BY_COLOR[Object.keys(PC_BY_COLOR).find((color) => PC_BY_COLOR[color] === dragKey) ?? ""]) {
-        setStatus("error", "PCs sit on chairs, not on the polar stage.");
-        return;
-      }
-      persist();
-      render();
-      return;
-    }
-    const isPc = catalogs.pcs.some((pc) => pc.characterKey === dragKey);
-    let bestDist = 0.07;
-    let best: { areaKey: string; kind: "center" | "orbit"; slot: number } | null = null;
-    for (const areaKey of snaps.scatter.areaOrder) {
-      const layout = snaps.scatter.areas[areaKey];
-      if (!layout) {
-        continue;
-      }
-      const slots = isPc ? layout.center : layout.orbit;
-      const kind = isPc ? "center" as const : "orbit" as const;
-      for (const slot of slots) {
-        const dist = Math.hypot(slot.u - uv.u, slot.v - uv.v);
-        if (dist < bestDist) {
-          bestDist = dist;
-          best = { areaKey, kind, slot: slot.slot };
-        }
-      }
-    }
-    if (!best) {
-      setStatus("error", isPc ? "Drop PCs on a numbered center pentagon." : "Drop NPCs on an orbit slot.");
-      return;
-    }
-    if (best.kind === "center") {
-      for (const area of Object.values(draft.scatter.areas)) {
-        delete area.centerCharacters[dragKey];
-      }
-      const area = draft.scatter.areas[best.areaKey];
-      if (!area) {
-        return;
-      }
-      for (const [pcKey, row] of Object.entries(area.centerCharacters)) {
-        if (row.slot === best.slot) {
-          delete area.centerCharacters[pcKey];
-          break;
-        }
-      }
-      area.centerCharacters[dragKey] = { slot: best.slot, isPlayingNPC: false, isPresent: true };
-    } else {
-      draft.scatter.paletteNpcKeys = draft.scatter.paletteNpcKeys.filter((key) => key !== dragKey);
-      for (const area of Object.values(draft.scatter.areas)) {
-        delete area.orbitCharacters[dragKey];
-      }
-      const area = draft.scatter.areas[best.areaKey];
-      if (!area) {
-        return;
-      }
-      for (const [npcKey, row] of Object.entries(area.orbitCharacters)) {
-        if (row.slot === best.slot) {
-          draft.scatter.paletteNpcKeys.push(npcKey);
-          delete area.orbitCharacters[npcKey];
-          break;
-        }
-      }
-      area.orbitCharacters[dragKey] = { slot: best.slot, npcLightMode: "STANDARD" };
-    }
-    persist();
-    render();
-  };
-
   const copyJson = async (): Promise<void> => {
     if (!draft || !catalogs || !snaps) {
       return;
@@ -860,18 +983,12 @@ export const initScenesTab = (): void => {
     }
   };
 
-  requiredElement<HTMLInputElement>("scenes-scene-key").addEventListener("input", (event) => {
-    if (!draft) {
-      return;
-    }
-    draft.sceneKey = (event.target as HTMLInputElement).value;
-    persist();
-  });
   requiredElement<HTMLInputElement>("scenes-title").addEventListener("input", (event) => {
     if (!draft) {
       return;
     }
     draft.title = (event.target as HTMLInputElement).value;
+    draft.sceneKey = sceneKeyFromTitle(draft.title);
     persist();
   });
   requiredElement<HTMLButtonElement>("scenes-mode-standard").addEventListener("click", () => {
@@ -1073,8 +1190,6 @@ export const initScenesTab = (): void => {
     });
   });
 
-  overlay.addEventListener("dragover", (event) => event.preventDefault());
-  overlay.addEventListener("drop", handleBoardDrop);
   copyButton.addEventListener("click", () => void copyJson());
   importButton.addEventListener("click", () => void importInTts());
 
@@ -1126,7 +1241,8 @@ export const initScenesTab = (): void => {
       } else {
         draft = createDefaultDraft(catalogs, snaps);
       }
-      setStatus("idle", "Ready. Drag tokens onto the board. Copy JSON or Import in TTS writes a library row only.");
+      draft.sceneKey = sceneKeyFromTitle(draft.title);
+      persist();
       boardImg.addEventListener("load", layoutBoard);
       window.addEventListener("resize", layoutBoard);
       new ResizeObserver(layoutBoard).observe(boardWrap);

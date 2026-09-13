@@ -83,6 +83,8 @@ const activateTab = (tabId: string): void => {
     }
   }
 
+  window.dispatchEvent(new Event("resize"));
+
   if (selectedTab.id === DEFAULT_TAB_ID) {
     document.getElementById("generic-npc-search")?.focus();
   }

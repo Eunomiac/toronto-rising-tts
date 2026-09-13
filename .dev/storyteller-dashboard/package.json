@@ -9,5 +9,8 @@
     "start": "npm run build && node dist/server/index.js",
     "dev": "npm run start",
     "dev:open": "node scripts/dev-and-open.mjs"
+  },
+  "dependencies": {
+    "gsap": "^3.15.0"
   }
 }

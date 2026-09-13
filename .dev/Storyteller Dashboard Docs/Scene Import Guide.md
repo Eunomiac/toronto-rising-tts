@@ -61,7 +61,7 @@ The root may contain **only** these keys. Anything else is a hard error. The imp
 | --------------- | -------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `schemaVersion` | Strongly recommended | integer | Omit = treated as **1**. Must be an integer ≥ 1. This build accepts at most **2**. Use **2** for all new Dashboard output.                                         |
 | `placementMode` | Dashboard: **yes**   | string  | `"standard"` or `"scatter"`. **Omit** = standard (old pastes). `null`, `""`, or any other value is an error — nothing is converted. Dashboard always emits the key. |
-| `sceneKey`      | **Yes**              | string  | Non-empty. Must match `^[a-zA-Z][a-zA-Z0-9_]*$` (letter, then letters/digits/underscore). Example: `openingCouncil`. This is the library id, not the button label. |
+| `sceneKey`      | **Yes**              | string  | Non-empty. Must match `^[a-zA-Z][a-zA-Z0-9_]*$` (letter, then letters/digits/underscore). Example: `openingCouncil`. This is the library id, not the button label. The Dashboard **Scenes** tab derives it from the title (strip punctuation, camelCase); you do not type it separately. |
 | `title`         | **Yes**              | string  | After trim, cannot be empty or whitespace-only. Shown on the library button.                                                                                       |
 | `sessionScene`  | **Yes**              | object  | The narrative bundle. Same shape as live `gameState.sessionScene` for standard; scatter uses `scatterPlacements` instead of seats/table/npcWorld.                  |
 

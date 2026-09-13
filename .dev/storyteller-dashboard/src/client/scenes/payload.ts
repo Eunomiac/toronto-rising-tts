@@ -40,7 +40,58 @@ export const characterLabel = (catalogs: SceneCatalogs, characterKey: string): s
 };
 
 export const cutoutUrl = (characterKey: string): string =>
-  `/catalogued-npc-images/${encodeURIComponent(characterKey)}.webp`;
+  `/catalogued-npc-images/${characterKey}.webp`;
+
+export const sceneKeyFromTitle = (title: string): string => {
+  const words = title
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .split(/[^a-zA-Z0-9]+/)
+    .map((word) => word.replace(/[^a-zA-Z0-9]/g, ""))
+    .filter((word) => word.length > 0);
+  if (words.length === 0) {
+    return "untitledScene";
+  }
+  const camel = words
+    .map((word, index) => {
+      const lower = word.toLowerCase();
+      if (index === 0) {
+        return lower;
+      }
+      return `${lower.slice(0, 1).toUpperCase()}${lower.slice(1)}`;
+    })
+    .join("");
+  if (/^[a-zA-Z]/.test(camel)) {
+    return camel;
+  }
+  return `scene${camel.slice(0, 1).toUpperCase()}${camel.slice(1)}`;
+};
+
+export const familyLabelUv = (snaps: ControlBoardSnaps, familyId: string): { u: number; v: number } | null => {
+  const members = snaps.polar.filter((snap) => snap.familyId === familyId);
+  if (members.length === 0) {
+    return null;
+  }
+  let u = 0;
+  let v = 0;
+  for (const member of members) {
+    u += member.u;
+    v += member.v;
+  }
+  u /= members.length;
+  v /= members.length;
+  const du = u - 0.5;
+  const dv = v - 0.5;
+  const len = Math.hypot(du, dv);
+  if (len < 0.06) {
+    return { u, v: Math.min(0.92, v + 0.075) };
+  }
+  const scale = 0.065;
+  return {
+    u: Math.min(0.94, Math.max(0.06, u + (du / len) * scale)),
+    v: Math.min(0.92, Math.max(0.08, v + (dv / len) * scale))
+  };
+};
 
 export const emptyScatterAreas = (snaps: ControlBoardSnaps): SceneDraft["scatter"]["areas"] => {
   const areas: SceneDraft["scatter"]["areas"] = {};
@@ -83,8 +134,8 @@ export const createDefaultDraft = (catalogs: SceneCatalogs, snaps: ControlBoardS
     throw new Error("scene-catalogs.json has no C.LightModes keys.");
   }
   return {
-    sceneKey: "newScene",
     title: "New Scene",
+    sceneKey: sceneKeyFromTitle("New Scene"),
     placementMode: "standard",
     tableKey: tableA?.key ?? catalogs.tables[0]?.key ?? "Table A",
     lightingPresetKey: lighting,

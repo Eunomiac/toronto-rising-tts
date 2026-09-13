@@ -26,7 +26,7 @@ Runs on **port 8788** by default.
 A compact tab row sits flush with the top of the viewport:
 
 1. **Stage NPCs** (default) — searchable generic cutout grid, saved search tags, 300px hover preview of the full cutout, selection queue, copy comma-separated keys. Catalogue refreshes from **Generics Export** when this server starts. See [Generic NPCs.md](../Storyteller%20Dashboard%20Docs/Generic%20NPCs.md).
-2. **Scenes** — Standard / Scatter control-board editor with labeled chrome (placement, table, clock, weather, location). Copy JSON or Import in TTS writes a **library row only** (does not Apply). Catalogs are generated from Lua (`npm run dashboard:scene-catalogs`). See [Scene Import Guide.md](../Storyteller%20Dashboard%20Docs/Scene%20Import%20Guide.md).
+2. **Scenes** — Standard / Scatter control-board editor with labeled chrome (placement, table, clock, weather, location). The library id (`sceneKey`) is derived from the title. Copy JSON or Import in TTS writes a **library row only** (does not Apply). Catalogs are generated from Lua (`npm run dashboard:scene-catalogs`). Token dragging uses **GSAP Draggable**. See [Scene Import Guide.md](../Storyteller%20Dashboard%20Docs/Scene%20Import%20Guide.md).
 3. **Lua** — Execute Code into a live TTS session (same External Editor hook as the TTS Tools extension). Disable the extension first; only one process can listen on port 39998.
 4. **Generate NPC** — the existing OpenAI NPC generator (prompt, cards, session history).
 
@@ -37,7 +37,8 @@ A compact tab row sits flush with the top of the viewport:
 - NPC text generation through the OpenAI Responses API with structured JSON output and **vector-store `file_search`** chronicle retrieval.
 - Optional NPC portrait generation through the OpenAI Images API.
 - Compact NPC cards, full screen-pin-friendly modal export cards, local browser-session history, pinned/favorite NPCs, field reroll buttons, and field locks for mass rerolls.
-- Stage NPCs generic catalogue (`data/generic-npcs.json`) plus images served from the repo Generic folder.
+- Token dragging uses the free GSAP `Draggable` plugin (`npm` `gsap`).
+- Named NPC cutouts are served from the repo folder `assets/images/NPCs/Catalogued/` at `/catalogued-npc-images/`.
 
 ## Repository placement
 

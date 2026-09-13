@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Toronto Rising Storyteller Dashboard</title>
     <link rel="stylesheet" href="/client/styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "gsap": "/vendor/gsap/index.js",
+          "gsap/Draggable": "/vendor/gsap/Draggable.js"
+        }
+      }
+    </script>
   </head>
   <body>
     <nav class="app-tabs" role="tablist" aria-label="Storyteller Dashboard">
@@ -49,10 +57,6 @@
     <section id="panel-scenes" class="tab-panel scenes-panel" role="tabpanel" aria-labelledby="tab-scenes" hidden>
       <div class="scenes-chrome">
         <div class="scenes-chrome-row scenes-chrome-identity">
-          <label class="scenes-field">
-            <span>Scene key</span>
-            <input id="scenes-scene-key" type="text" spellcheck="false" placeholder="sceneKey" />
-          </label>
           <label class="scenes-field scenes-field-grow">
             <span>Title</span>
             <input id="scenes-title" type="text" placeholder="Title" />
@@ -64,7 +68,6 @@
               <button id="scenes-mode-scatter" type="button">Scatter</button>
             </div>
           </div>
-          <div class="status idle" id="scenes-status">Ready.</div>
         </div>
         <div class="scenes-chrome-row" id="scenes-table-row">
           <div class="scenes-field scenes-field-grow">
@@ -134,11 +137,15 @@
         </div>
       </div>
       <footer class="scenes-footer">
-        <button id="scenes-copy" type="button">Copy JSON</button>
-        <button id="scenes-import" type="button" disabled>Import in TTS</button>
         <div class="status idle" id="scenes-bridge-status">Checking TTS bridge…</div>
+        <div class="scenes-footer-actions">
+          <button id="scenes-copy" type="button">Copy JSON</button>
+          <button id="scenes-import" type="button" disabled>Import in TTS</button>
+        </div>
       </footer>
+      <div id="scenes-toasts" class="scenes-toasts" aria-live="polite"></div>
     </section>
+    <div id="scenes-drag-layer" class="scenes-drag-layer"></div>
 
     <section id="panel-lua" class="tab-panel lua-panel" role="tabpanel" aria-labelledby="tab-lua" hidden>
       <div class="lua-toolbar">
