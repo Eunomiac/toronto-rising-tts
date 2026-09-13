@@ -5,12 +5,13 @@
   "type": "module",
   "scripts": {
     "copy-static": "node scripts/copy-static.mjs",
+    "scene-catalogs": "node ../scripts/generate_dashboard_scene_catalogs.js",
     "typecheck": "tsc -p tsconfig.server.json --noEmit && tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.node.json --noEmit",
-    "build": "npm run typecheck && npm run test && npm run copy-static && tsc -p tsconfig.server.json && vite build",
+    "build": "npm run scene-catalogs && npm run typecheck && npm run test && npm run copy-static && tsc -p tsconfig.server.json && vite build",
     "test": "vitest run",
     "test:watch": "vitest",
     "start": "npm run build && node dist/server/index.js",
-    "dev": "npm run copy-static && tsc -p tsconfig.server.json && node dist/server/index.js --dev",
+    "dev": "npm run scene-catalogs && npm run copy-static && tsc -p tsconfig.server.json && node dist/server/index.js --dev",
     "dev:open": "node scripts/dev-and-open.mjs"
   },
   "dependencies": {

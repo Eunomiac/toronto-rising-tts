@@ -16,7 +16,7 @@ Source of truth (code, not the Scene Constructor folder):
 - `core/storyteller_scenes_panel.ttslua` — `confirmImportConstructorModal` (calls `SceneLibrary.importConstructorJsonText`)
 - `core/global_script.ttslua` — `GlobalImportSceneJson` (Dashboard execute-lua, same write path)
 - Catalogs: `lib/constants.ttslua`, `lib/condition_defs.ttslua`, `lib/soundscape_catalog.ttslua`, `lib/npc_gameboard_data.ttslua` (`D.SCATTER_BOARD`)
-- Dashboard extract: `npm run dashboard:scene-catalogs` → `.dev/storyteller-dashboard/data/scene-catalogs.json` + `control-board-snaps.json`
+- Dashboard extract: `npm run dashboard:scene-catalogs` → `.dev/storyteller-dashboard/data/scene-catalogs.json` + `control-board-snaps.json` (polar stagger uses STAGE_BOARD Transform from the live TTS save; also runs on dashboard `npm run dev` / `npm run build`)
 
 Verification:
 

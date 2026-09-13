@@ -77,8 +77,22 @@ export type ScatterSlot = {
   readonly v: number;
 };
 
+export type StageBoardFingerprint = {
+  readonly guid: string;
+  readonly saveFileName: string;
+  readonly source: string;
+  readonly posX: number;
+  readonly posZ: number;
+  readonly scaleX: number;
+  readonly scaleZ: number;
+  readonly rotY: number;
+  readonly halfWidthX: number;
+  readonly halfDepthZ: number;
+};
+
 export type ControlBoardSnaps = {
   readonly generatedBy: string;
+  readonly stageBoard?: StageBoardFingerprint;
   readonly polar: readonly PolarSnap[];
   readonly seats: readonly SeatSnap[];
   readonly scatter: {

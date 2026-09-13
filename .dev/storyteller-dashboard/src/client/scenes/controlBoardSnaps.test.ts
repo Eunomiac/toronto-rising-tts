@@ -35,6 +35,12 @@ describe("control-board polar families", () => {
     expect(byFamily.get("6:0")?.n).toBe(6);
   });
 
+  it("records STAGE_BOARD scale from the save used at generate time", () => {
+    expect(snaps.stageBoard?.guid).toMatch(/^[0-9a-f]+$/i);
+    expect(snaps.stageBoard?.scaleX).toBeGreaterThan(0);
+    expect(snaps.stageBoard?.scaleZ).toBeGreaterThan(0);
+  });
+
   it("leaves each pack's center token as familyK 0", () => {
     for (const familyId of ["1:0", "1:1", "1:7", "2:2", "2:3", "2:4"]) {
       const members = snaps.polar.filter((snap) => snap.familyId === familyId);

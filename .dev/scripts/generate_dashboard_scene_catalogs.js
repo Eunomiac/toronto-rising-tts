@@ -8,11 +8,15 @@
  *   .dev/storyteller-dashboard/data/control-board-snaps.json
  *
  * Run from repo root: node .dev/scripts/generate_dashboard_scene_catalogs.js
- * Chained from `npm run dashboard:scene-catalogs` after `skyboxes:import` in `build:all-tooling`.
+ * Polar snap stagger uses STAGE_BOARD Transform from the live TTS save
+ * (`tts-assets.config.json` savesDir + defaultSaveName), not D.DEFAULT_STAGE_WORLD.
+ * Chained from `npm run dashboard:scene-catalogs` (`build:all-tooling`) and from
+ * Storyteller Dashboard `npm run dev` / `npm run build`.
  */
 
 const fs = require("fs");
 const path = require("path");
+const { resolveSavePath } = require("../../.tools/tts-save/resolve-save-path");
 
 const root = path.resolve(__dirname, "..", "..");
 const constantsPath = path.join(root, "lib", "constants.ttslua");
@@ -21,6 +25,7 @@ const soundscapePath = path.join(root, "lib", "soundscape_catalog.ttslua");
 const conditionDefsPath = path.join(root, "lib", "condition_defs.ttslua");
 const npcsDataPath = path.join(root, "lib", "npcs_data.ttslua");
 const gameboardDataPath = path.join(root, "lib", "npc_gameboard_data.ttslua");
+const guidsPath = path.join(root, "lib", "guids.ttslua");
 const catalogsOutPath = path.join(root, ".dev", "storyteller-dashboard", "data", "scene-catalogs.json");
 const snapsOutPath = path.join(root, ".dev", "storyteller-dashboard", "data", "control-board-snaps.json");
 
@@ -37,17 +42,183 @@ const PALETTE_GROUP_BLACKLIST = { princesCourt: true };
 const DASHBOARD_SEAT_ROW_UV = { uMin: 0.35, uMax: 0.65 };
 
 /**
- * Live Lua `applyRadialStaggerUv` converts UV through STAGE_BOARD `positionToWorld`
- * (Custom_Tile local ±0.5 × transform scale). That is the chronicle STAGE_BOARD
- * in TS_Save (scaleX 800, scaleZ 288.904846), not D.DEFAULT_STAGE_WORLD (440×400).
- * Center/half only matter as deltas; polar UVs stay in shared 0–1 board space.
+ * @param {string} guidsSrc
+ * @returns {string}
  */
-const DASHBOARD_STAGE_WORLD = {
-  centerX: 0,
-  centerZ: 62.0976563,
-  halfWidthX: 800 / 2,
-  halfDepthZ: 288.904846 / 2,
-};
+function readStageBoardGuid(guidsSrc) {
+  const match = guidsSrc.match(/STAGE_BOARD\s*=\s*"([0-9a-fA-F]+)"/);
+  if (!match) {
+    throw new Error('lib/guids.ttslua is missing STAGE_BOARD = "...".');
+  }
+  return match[1];
+}
+
+/**
+ * @returns {{ defaultSaveName: string, savesDir: string | undefined }}
+ */
+function readRepoAssetsConfig() {
+  const envPath =
+    process.env.TTS_ASSETS_CONFIG && String(process.env.TTS_ASSETS_CONFIG).trim() !== ""
+      ? path.resolve(String(process.env.TTS_ASSETS_CONFIG).trim())
+      : null;
+  const localPath = path.join(root, "tts-assets.config.json");
+  const chosen = envPath && fs.existsSync(envPath) ? envPath : fs.existsSync(localPath) ? localPath : null;
+  let defaultSaveName = "230";
+  /** @type {string | undefined} */
+  let savesDir;
+  if (chosen) {
+    const raw = JSON.parse(fs.readFileSync(chosen, "utf8"));
+    if (typeof raw.defaultSaveName === "string" && raw.defaultSaveName.trim() !== "") {
+      defaultSaveName = raw.defaultSaveName.trim().replace(/^TS_Save_/i, "").replace(/\.json$/i, "");
+    }
+    if (typeof raw.savesDir === "string" && raw.savesDir.trim() !== "") {
+      const resolved = path.resolve(raw.savesDir.trim());
+      if (fs.existsSync(resolved)) {
+        savesDir = resolved;
+      }
+    }
+  }
+  return { defaultSaveName, savesDir };
+}
+
+/**
+ * @param {string} defaultSaveName
+ * @param {string | undefined} savesDir
+ * @returns {{ savePath: string, saveFileName: string, source: "savesDir" | "dev-snapshot" }}
+ */
+function resolveChronicleSaveFile(defaultSaveName, savesDir) {
+  const live = resolveSavePath(defaultSaveName, savesDir);
+  if (fs.existsSync(live.savePath)) {
+    return { savePath: live.savePath, saveFileName: live.saveFileName, source: "savesDir" };
+  }
+  const snapshotName = `TS_Save_${defaultSaveName}.json`;
+  const snapshot = path.join(root, ".dev", snapshotName);
+  if (fs.existsSync(snapshot)) {
+    return { savePath: snapshot, saveFileName: snapshotName, source: "dev-snapshot" };
+  }
+  throw new Error(
+    `STAGE_BOARD save not found. Expected the live TTS save at ${live.savePath} (tts-assets.config.json savesDir + defaultSaveName). After you resize STAGE_BOARD in Tabletop Simulator, save the game, then re-run npm run dashboard:scene-catalogs or start the dashboard with npm run dev. Optional fallback: copy that save to .dev/${snapshotName}.`,
+  );
+}
+
+/**
+ * @param {string} block
+ * @param {string} key
+ * @returns {number}
+ */
+function readTransformNumber(block, key) {
+  const match = block.match(new RegExp(`"${key}":\\s*(-?[0-9]+(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?)`));
+  if (!match) {
+    throw new Error(`STAGE_BOARD Transform is missing ${key}.`);
+  }
+  return Number(match[1]);
+}
+
+/**
+ * @param {string} saveText
+ * @param {string} guid
+ * @returns {{ posX: number, posZ: number, scaleX: number, scaleZ: number, rotY: number }}
+ */
+function extractStageBoardTransform(saveText, guid) {
+  const marker = `"GUID": "${guid}"`;
+  let from = 0;
+  while (from < saveText.length) {
+    const at = saveText.indexOf(marker, from);
+    if (at < 0) {
+      throw new Error(`Save has no object GUID ${guid} (G.GUIDS.STAGE_BOARD).`);
+    }
+    const window = saveText.slice(at, at + 16000);
+    if (/"Nickname":\s*"STAGE_BOARD"/.test(window)) {
+      const transformMatch = window.match(/"Transform":\s*\{([\s\S]*?)\}/);
+      if (!transformMatch) {
+        throw new Error(`STAGE_BOARD ${guid} has no Transform block.`);
+      }
+      const block = transformMatch[1];
+      return {
+        posX: readTransformNumber(block, "posX"),
+        posZ: readTransformNumber(block, "posZ"),
+        scaleX: readTransformNumber(block, "scaleX"),
+        scaleZ: readTransformNumber(block, "scaleZ"),
+        rotY: readTransformNumber(block, "rotY"),
+      };
+    }
+    from = at + marker.length;
+  }
+  throw new Error(`Found GUID ${guid} but no object nicknamed STAGE_BOARD.`);
+}
+
+/**
+ * Custom_Tile local ±0.5 × transform scale. Center/half only matter as deltas;
+ * polar UVs stay in shared 0–1 board space. Not D.DEFAULT_STAGE_WORLD (440×400).
+ *
+ * @param {{ posX: number, posZ: number, scaleX: number, scaleZ: number, rotY: number }} transform
+ */
+function stageWorldFromTransform(transform) {
+  const normalizedRotY = ((transform.rotY % 360) + 360) % 360;
+  const scaleX = Math.abs(transform.scaleX);
+  const scaleZ = Math.abs(transform.scaleZ);
+  let halfWidthX = scaleX / 2;
+  let halfDepthZ = scaleZ / 2;
+  if (Math.abs(normalizedRotY - 90) < 1 || Math.abs(normalizedRotY - 270) < 1) {
+    halfWidthX = scaleZ / 2;
+    halfDepthZ = scaleX / 2;
+  }
+  return {
+    centerX: transform.posX,
+    centerZ: transform.posZ,
+    halfWidthX,
+    halfDepthZ,
+  };
+}
+
+/**
+ * Live Lua `applyRadialStaggerUv` converts UV through STAGE_BOARD `positionToWorld`.
+ *
+ * @returns {{
+ *   centerX: number,
+ *   centerZ: number,
+ *   halfWidthX: number,
+ *   halfDepthZ: number,
+ *   stageBoard: {
+ *     guid: string,
+ *     saveFileName: string,
+ *     source: string,
+ *     posX: number,
+ *     posZ: number,
+ *     scaleX: number,
+ *     scaleZ: number,
+ *     rotY: number,
+ *     halfWidthX: number,
+ *     halfDepthZ: number,
+ *   },
+ * }}
+ */
+function loadDashboardStageWorld() {
+  const guid = readStageBoardGuid(fs.readFileSync(guidsPath, "utf8"));
+  const cfg = readRepoAssetsConfig();
+  const save = resolveChronicleSaveFile(cfg.defaultSaveName, cfg.savesDir);
+  const transform = extractStageBoardTransform(fs.readFileSync(save.savePath, "utf8"), guid);
+  const world = stageWorldFromTransform(transform);
+  const where = save.source === "savesDir" ? "live TTS save" : "repo .dev snapshot";
+  console.log(
+    `STAGE_BOARD ${guid} from ${save.saveFileName} (${where}): scale ${transform.scaleX} × ${transform.scaleZ} at (${transform.posX}, ${transform.posZ}), rotY ${transform.rotY}.`,
+  );
+  return {
+    ...world,
+    stageBoard: {
+      guid,
+      saveFileName: save.saveFileName,
+      source: save.source,
+      posX: transform.posX,
+      posZ: transform.posZ,
+      scaleX: transform.scaleX,
+      scaleZ: transform.scaleZ,
+      rotY: transform.rotY,
+      halfWidthX: world.halfWidthX,
+      halfDepthZ: world.halfDepthZ,
+    },
+  };
+}
 
 /** Palette groups that are not keys in C.CHRONICLE_DATA.coteries. */
 const EXTRA_PICKER_GROUP_LABELS = {
@@ -725,7 +896,7 @@ function main() {
     );
   }
 
-  const stage = DASHBOARD_STAGE_WORLD;
+  const stage = loadDashboardStageWorld();
   const snapCfg = parseControlBoardSnap(boardSrc);
   const seatRow = parseSeatRow(boardSrc);
   const scatter = parseScatterBoard(boardSrc);
@@ -804,6 +975,7 @@ function main() {
 
   const snaps = {
     generatedBy: DO_NOT_EDIT,
+    stageBoard: stage.stageBoard,
     polar: polarSnaps,
     seats: seatSnaps,
     scatter: {
@@ -816,7 +988,7 @@ function main() {
   fs.writeFileSync(catalogsOutPath, `${JSON.stringify(catalogs, null, 2)}\n`);
   fs.writeFileSync(snapsOutPath, `${JSON.stringify(snaps, null, 2)}\n`);
   console.log(
-    `Wrote ${path.relative(root, catalogsOutPath)} (${namedNpcs.length} named NPCs, ${pcs.length} PCs) and ${path.relative(root, snapsOutPath)} (${polarSnaps.length} polar + ${seatSnaps.length} seats).`,
+    `Wrote ${path.relative(root, catalogsOutPath)} (${namedNpcs.length} named NPCs, ${pcs.length} PCs) and ${path.relative(root, snapsOutPath)} (${polarSnaps.length} polar + ${seatSnaps.length} seats; STAGE_BOARD ${stage.stageBoard.scaleX} × ${stage.stageBoard.scaleZ}).`,
   );
 }
 

@@ -19,6 +19,8 @@ Status: current
 
 This app is Storyteller-only. Player HUD stays in Tabletop Simulator. Dashboard-only tests never require Save & Play.
 
+`npm run dev` and `npm run build` regenerate Scenes catalogs (including STAGE_BOARD size from the live TTS save) before starting. `npm test` uses the committed `data/control-board-snaps.json`.
+
 | Layer | Command / tool |
 | --- | --- |
 | Pure functions and React shell | `npm test` (Vitest) |

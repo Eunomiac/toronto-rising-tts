@@ -39,7 +39,7 @@ The GitHub remote is public. Never commit `.env`, API keys, or private chronicle
 A compact tab row sits flush with the top of the viewport:
 
 1. **Stage NPCs** (default) — searchable generic cutout grid, saved search tags, 300px hover preview of the full cutout, selection queue, copy comma-separated keys. Catalogue refreshes from **Generics Export** when this server starts. See [Generic NPCs.md](../Storyteller%20Dashboard%20Docs/Generic%20NPCs.md).
-2. **Scenes** — Standard / Scatter control-board editor with labeled chrome (placement, table, clock, weather, location). The library id (`sceneKey`) is derived from the title. Copy JSON or Import in TTS writes a **library row only** (does not Apply). Catalogs are generated from Lua (`npm run dashboard:scene-catalogs`). Token dragging uses **GSAP Draggable**. See [Scene Import Guide.md](../Storyteller%20Dashboard%20Docs/Scene%20Import%20Guide.md).
+2. **Scenes** — Standard / Scatter control-board editor with labeled chrome (placement, table, clock, weather, location). The library id (`sceneKey`) is derived from the title. Copy JSON or Import in TTS writes a **library row only** (does not Apply). Catalogs are generated from Lua plus the live **STAGE_BOARD** size in your TTS save (`npm run dashboard:scene-catalogs`, also on `npm run dev` / `npm run build`). Token dragging uses **GSAP Draggable**. See [Scene Import Guide.md](../Storyteller%20Dashboard%20Docs/Scene%20Import%20Guide.md).
 3. **Lua** — Execute Code into a live TTS session (same External Editor hook as the TTS Tools extension). Disable the extension first; only one process can listen on port 39998.
 4. **Generate NPC** — the existing OpenAI NPC generator (prompt, cards, session history).
 
@@ -90,9 +90,7 @@ npm install
 npm run dev
 ```
 
-Open <http://127.0.0.1:8788> in a browser. `npm run dev` compiles the Node server and serves the Vite client with hot reload (`--dev`). `npm run start` is the production build (no HMR). `npm run dev:open` also launches Chrome; do not use it while the Playwright window is already running.
-
-## Chronicle vector store
+Open <http://127.0.0.1:8788> in a browser. `npm run dev` first refreshes Scenes catalogs from Lua and the live **STAGE_BOARD** object in your TTS save (`tts-assets.config.json`), then compiles the Node server and serves the Vite client with hot reload (`--dev`). After you resize or move STAGE_BOARD in-game, save the game and restart this server (or run `npm run scene-catalogs` here / `npm run dashboard:scene-catalogs` from the repo root). `npm run start` is the production build (no HMR). `npm run dev:open` also launches Chrome; do not use it while the Playwright window is already running.
 
 ## Chronicle vector store
 
@@ -122,6 +120,7 @@ No local `data/chronicle/` folder is required.
 ## Useful commands
 
 ```powershell
+npm run scene-catalogs
 npm run typecheck
 npm test
 npm run build
