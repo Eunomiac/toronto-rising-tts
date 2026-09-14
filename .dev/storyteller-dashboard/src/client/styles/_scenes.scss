@@ -774,6 +774,13 @@
     cursor: grab;
   }
 
+  &.scenes-token-name-target {
+    z-index: 10;
+    outline: 3px solid #ff0000;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px #000, 0 0 10px rgb(255 0 0 / 80%);
+  }
+
   &.scenes-token-will-clear {
     outline: 2px solid #ff4d5d;
     box-shadow: 0 0 0 3px rgb(255 40 50 / 50%), 0 0 14px rgb(180 16 28 / 75%);

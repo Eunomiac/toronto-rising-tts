@@ -17,9 +17,9 @@ describe("nameLayoutForPolarSnap", () => {
     const snaps: ControlBoardSnaps = {
       generatedBy: "test",
       polar: [
-        snap({ snapIndex: 1, familyId: "2:3", ringIndex: 2, u: 0.46 }),
-        snap({ snapIndex: 2, familyId: "2:3", ringIndex: 2, u: 0.5 }),
-        snap({ snapIndex: 3, familyId: "2:3", ringIndex: 2, u: 0.54 })
+        snap({ snapIndex: 901, familyId: "2:3", ringIndex: 2, u: 0.46 }),
+        snap({ snapIndex: 902, familyId: "2:3", ringIndex: 2, u: 0.5 }),
+        snap({ snapIndex: 903, familyId: "2:3", ringIndex: 2, u: 0.54 })
       ],
       seats: [],
       scatter: { areaOrder: [], areas: {} }
@@ -32,8 +32,8 @@ describe("nameLayoutForPolarSnap", () => {
     const snaps: ControlBoardSnaps = {
       generatedBy: "test",
       polar: [
-        snap({ snapIndex: 10, familyId: "3:0", ringIndex: 3, u: 0.22 }),
-        snap({ snapIndex: 11, familyId: "3:0", ringIndex: 3, u: 0.24 })
+        snap({ snapIndex: 910, familyId: "3:0", ringIndex: 3, u: 0.22 }),
+        snap({ snapIndex: 911, familyId: "3:0", ringIndex: 3, u: 0.24 })
       ],
       seats: [],
       scatter: { areaOrder: [], areas: {} }
@@ -50,7 +50,7 @@ describe("nameLayoutForSeat", () => {
     const seat: SeatSnap = {
       snapIndex: 50,
       snapKind: "seat",
-      seatKey: "NPC4",
+      seatKey: "NPC99",
       kind: "npc",
       tableSlot: 9,
       u: 0.35,
@@ -60,6 +60,35 @@ describe("nameLayoutForSeat", () => {
     expect(nameLayoutForSeat(seat, 9, 1).side).toBe("below");
     expect(nameLayoutForSeat(seat, 9, 1).oy).not.toBe(nameLayoutForSeat(seat, 9, 0).oy);
     expect(nameLayoutForSeat(seat, 9, 0).align).toBe("center");
+  });
+});
+
+describe("authored name offsets", () => {
+  it("uses the saved polar dump as the starting layout", () => {
+    const snaps: ControlBoardSnaps = {
+      generatedBy: "test",
+      polar: [snap({ snapIndex: 5, familyId: "1:0", ringIndex: 1, u: 0.4 })],
+      seats: [],
+      scatter: { areaOrder: [], areas: {} }
+    };
+    expect(nameLayoutForPolarSnap(snaps, snaps.polar[0]!)).toMatchObject({
+      ox: -191,
+      oy: 17,
+      align: "right"
+    });
+  });
+
+  it("uses the saved seat dump as the starting layout", () => {
+    const seat: SeatSnap = {
+      snapIndex: 50,
+      snapKind: "seat",
+      seatKey: "Red",
+      kind: "pc",
+      tableSlot: 3,
+      u: 0.5,
+      v: 0.12
+    };
+    expect(nameLayoutForSeat(seat, 9, 4)).toMatchObject({ ox: -2, oy: -76, align: "center" });
   });
 });
 

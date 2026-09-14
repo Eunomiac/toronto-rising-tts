@@ -1,5 +1,6 @@
+import authoredNameOffsets from "./tokenNameOffsets.json";
 import { polarAreaNameForFamily } from "./payload.js";
-import type { NameAlign } from "./nameOffsets.js";
+import type { NameAlign, NameOffset } from "./nameOffsets.js";
 import type { ControlBoardSnaps, PolarSnap, SeatSnap } from "./types.js";
 
 export type NameSide = "below" | "above" | "left" | "right";
@@ -30,10 +31,19 @@ export const nameAlignColor = (align: NameAlign): string => {
 };
 
 /** Author-editable per-snap name placement. Missing keys use the family heuristic. */
-export const SNAP_NAME_LAYOUT: Readonly<Record<number, Partial<TokenNameLayout>>> = {};
+const polarFromAuthored = (): Record<number, Partial<TokenNameLayout>> => {
+  const next: Record<number, Partial<TokenNameLayout>> = {};
+  for (const [key, offset] of Object.entries(authoredNameOffsets.polar as Record<string, NameOffset>)) {
+    next[Number.parseInt(key, 10)] = offset;
+  }
+  return next;
+};
+
+export const SNAP_NAME_LAYOUT: Readonly<Record<number, Partial<TokenNameLayout>>> = polarFromAuthored();
 
 /** Author-editable per-seat name placement. */
-export const SEAT_NAME_LAYOUT: Readonly<Record<string, Partial<TokenNameLayout>>> = {};
+export const SEAT_NAME_LAYOUT: Readonly<Record<string, Partial<TokenNameLayout>>> =
+  authoredNameOffsets.seats as Record<string, NameOffset>;
 
 const SIDE_BY_AREA: Readonly<Record<string, NameSide>> = {
   CENTER: "below",

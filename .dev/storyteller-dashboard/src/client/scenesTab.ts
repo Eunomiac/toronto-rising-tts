@@ -382,6 +382,18 @@ export const initScenesTab = (): void => {
   const mergeLockedLayout = (base: TokenNameLayout, lock?: NameOffset): TokenNameLayout =>
     lock ? { ...base, ox: lock.ox, oy: lock.oy, align: lock.align } : base;
 
+  const bindNameHoverHighlight = (tokenEl: HTMLElement, nameEl: HTMLElement): void => {
+    nameEl.addEventListener("pointerenter", () => {
+      tokenEl.classList.add("scenes-token-name-target");
+    });
+    nameEl.addEventListener("pointerleave", () => {
+      if (tokenEl.dataset.nameDragging === "1") {
+        return;
+      }
+      tokenEl.classList.remove("scenes-token-name-target");
+    });
+  };
+
   const bindNameOffsetDrag = (
     tokenEl: HTMLElement,
     nameEl: HTMLElement,
@@ -404,6 +416,8 @@ export const initScenesTab = (): void => {
       event.preventDefault();
       event.stopPropagation();
       dragging = true;
+      tokenEl.dataset.nameDragging = "1";
+      tokenEl.classList.add("scenes-token-name-target");
       originX = event.clientX;
       originY = event.clientY;
       baseOx = Number.parseFloat(tokenEl.style.getPropertyValue("--name-ox")) || 0;
@@ -425,8 +439,12 @@ export const initScenesTab = (): void => {
         return;
       }
       dragging = false;
+      tokenEl.dataset.nameDragging = "0";
       if (nameEl.hasPointerCapture(event.pointerId)) {
         nameEl.releasePointerCapture(event.pointerId);
+      }
+      if (!nameEl.matches(":hover")) {
+        tokenEl.classList.remove("scenes-token-name-target");
       }
     });
     nameEl.addEventListener("dblclick", (event) => {
@@ -453,7 +471,14 @@ export const initScenesTab = (): void => {
     const merged = mergeLockedLayout(layout, lock);
     applyTokenNameLayout(el, merged);
     const name = el.querySelector<HTMLElement>(".scenes-token-name");
-    if (!debugNamesLocked || !name) {
+    if (!name) {
+      return;
+    }
+    if (debugMode) {
+      name.style.pointerEvents = "auto";
+    }
+    bindNameHoverHighlight(el, name);
+    if (!debugNamesLocked) {
       return;
     }
     el.classList.add("scenes-token-name-locked");
