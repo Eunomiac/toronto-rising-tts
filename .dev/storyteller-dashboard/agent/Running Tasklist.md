@@ -32,9 +32,4 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 
 ## Task List
 
-✔️ SD-13.6. The positions and alignments for all token names are now recorded in `.dev\storyteller-dashboard\agent\Token Name Offsets.json`
-
-✔️ SD-31. Vary the red background color on the weather controls by intensity, as well as duplicating the icons: Low intensity should be darker red, increasing to full #FF0000 at maximum intensity.  The Wind button should get a cyan outline (not a border, to avoid repositioning) when it is applying winter wind instead of standard wind.
-👨 Use these colors for maximum distinctiveness:  #220000, #660000, #FF0000
-
-SD-32. Tokens (and their labels) should be z-ordered according to their vertical position:  The closer a token is to the bottom of the screen, the higher its z-index should be (i.e. lower tokens should overlap tokens higher up on the y-axis)
+✔️ SD-32. Tokens (and their labels) should be z-ordered according to their vertical position:  The closer a token is to the bottom of the screen, the higher its z-index should be (i.e. lower tokens should overlap tokens higher up on the y-axis)

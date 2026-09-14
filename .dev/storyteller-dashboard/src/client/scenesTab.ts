@@ -17,6 +17,7 @@ import { comparePickerGroups, GROUP_THEMES, groupThemeClass, isImportantGroup, t
 import { applyLeadLightToFamily, placeKeysOnPolarFamily, polarTokensInFamily, relocatePolarFamily } from "./scenes/groupRelocate.js";
 import { moveSeatOccupant, swapOntoPolarSnap } from "./scenes/tokenSwap.js";
 import { formatNameOffsetsClipboard, roundOffset } from "./scenes/nameOffsets.js";
+import { tokenStackZIndex } from "./scenes/tokenStack.js";
 import {
   boardUvFromEvent,
   buildImportPayload,
@@ -491,7 +492,7 @@ export const initScenesTab = (): void => {
     });
   };
 
-  const placeToken = (el: HTMLElement, u: number, v: number): void => {
+  const placeToken = (el: HTMLElement, u: number, v: number, stack: "token" | "handle" | "ghost" | "front" = "token"): void => {
     el.classList.remove("scenes-token-dragging");
     el.style.position = "absolute";
     el.style.width = "";
@@ -508,6 +509,9 @@ export const initScenesTab = (): void => {
       x: 0,
       y: 0
     });
+    const stackZ =
+      stack === "front" ? 2500 : tokenStackZIndex(v) + (stack === "handle" ? 2 : stack === "ghost" ? 1 : 0);
+    el.style.setProperty("--stack-z", String(stackZ));
   };
 
   const returnTokenOffBoard = (characterKey: string, polarSnapIndex?: number): void => {
@@ -711,7 +715,7 @@ export const initScenesTab = (): void => {
 
   const showTokenGhost = (characterKey: string, extraClass: string, u: number, v: number): void => {
     const ghost = makeToken(characterKey, true, `${extraClass} scenes-token-ghost`.trim(), true);
-    placeToken(ghost, u, v);
+    placeToken(ghost, u, v, "ghost");
     overlay.append(ghost);
     ghostEls.push(ghost);
   };
@@ -1208,7 +1212,7 @@ export const initScenesTab = (): void => {
         handle.title = `Move ${areaName}`;
         handle.setAttribute("aria-label", handle.title);
         handle.style.width = `${layout.widthPct}%`;
-        placeToken(handle, layout.leftPct / 100, 1 - layout.topPct / 100);
+        placeToken(handle, layout.leftPct / 100, 1 - layout.topPct / 100, "handle");
         overlay.append(handle);
         bindFamilyHandle(handle, familyId);
       }
@@ -1304,7 +1308,7 @@ export const initScenesTab = (): void => {
       reticule.className = "scenes-reticule";
       reticule.title = "Drop to copy board coordinates";
       reticule.setAttribute("aria-label", reticule.title);
-      placeToken(reticule, reticuleUv.u, reticuleUv.v);
+      placeToken(reticule, reticuleUv.u, reticuleUv.v, "front");
       overlay.append(reticule);
       bindBoardDrag(reticule, {
         boardFrame,
@@ -1316,11 +1320,11 @@ export const initScenesTab = (): void => {
           overlay.append(reticule);
           const uv = boardUvFromEvent(overlay, { clientX, clientY });
           if (!uv) {
-            placeToken(reticule, reticuleUv.u, reticuleUv.v);
+            placeToken(reticule, reticuleUv.u, reticuleUv.v, "front");
             return;
           }
           reticuleUv = uv;
-          placeToken(reticule, uv.u, uv.v);
+          placeToken(reticule, uv.u, uv.v, "front");
           const text = `${uv.u.toFixed(4)}, ${uv.v.toFixed(4)}`;
           void navigator.clipboard.writeText(text).then(
             () => setStatus("success", `Copied ${text}`),

@@ -566,6 +566,7 @@
   background: transparent;
   overflow: visible;
   border-radius: 50%;
+  z-index: var(--stack-z, 1);
 
   img,
   &-bg {
@@ -775,7 +776,7 @@
   }
 
   &.scenes-token-name-target {
-    z-index: 10;
+    z-index: calc(var(--stack-z, 1) + 2000);
     outline: 3px solid #ff0000;
     outline-offset: 2px;
     box-shadow: 0 0 0 2px #000, 0 0 10px rgb(255 0 0 / 80%);
@@ -808,7 +809,7 @@
   background: rgb(201 162 39 / 55%);
   border: 1px solid #f0d56a;
   opacity: 0;
-  z-index: 3;
+  z-index: var(--stack-z, 3);
   cursor: grab;
 
   &:hover,
@@ -833,7 +834,7 @@
   border-radius: 50%;
   background: rgb(12 10 6 / 35%);
   box-shadow: 0 0 0 1px #000, 0 0 10px rgb(240 213 106 / 55%);
-  z-index: 6;
+  z-index: var(--stack-z, 6);
   cursor: grab;
 
   &::before,
