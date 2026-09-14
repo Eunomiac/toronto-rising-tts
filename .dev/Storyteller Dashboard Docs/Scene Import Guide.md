@@ -319,6 +319,8 @@ Pasted values inside `sessionScene` are overwritten. If the triple is mixed, imp
 
 Registry ids applied to **present** PCs while the scene is live (`kind = scene`, hosted with location conditions).
 
+The Scenes tab turns these on automatically when you pick a district or site that lists them in `C.Districts` / `C.Sites` (today that is Dupont By The Castle → `bumpBloodPotency`). Leaving that location turns the chip off unless you still have it for another reason, or you toggled it by hand.
+
 Must be a JSON **array** (numeric indices only), not `{ "bonusWPReroll": true }`.
 
 Each entry: non-empty string, known in `lib/condition_defs.ttslua`, and `canApplyManually === true`.

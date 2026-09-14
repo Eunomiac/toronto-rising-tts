@@ -18,6 +18,7 @@ import { applyLeadLightToFamily, placeKeysOnPolarFamily, polarTokensInFamily, re
 import { moveSeatOccupant, swapOntoPolarSnap } from "./scenes/tokenSwap.js";
 import { formatNameOffsetsClipboard, roundOffset } from "./scenes/nameOffsets.js";
 import { tokenStackZIndex } from "./scenes/tokenStack.js";
+import { locationConditionIds, mergeLocationConditions } from "./scenes/locationConditions.js";
 import {
   boardUvFromEvent,
   buildImportPayload,
@@ -156,6 +157,37 @@ export const initScenesTab = (): void => {
   const persist = (): void => {
     if (draft) {
       window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    }
+  };
+
+  const locationIdsFor = (districtKey: string, siteKey: string): string[] => {
+    if (!catalogs) {
+      return [];
+    }
+    const district = catalogs.districts.find((row) => row.key === districtKey);
+    const site = catalogs.sites.find((row) => row.key === siteKey);
+    return locationConditionIds(district?.conditions, site?.conditions);
+  };
+
+  const applyLocationConditions = (previousDistrictKey: string, previousSiteKey: string): void => {
+    if (!draft) {
+      return;
+    }
+    draft.conditions = mergeLocationConditions(
+      draft.conditions,
+      locationIdsFor(previousDistrictKey, previousSiteKey),
+      locationIdsFor(draft.districtKey, draft.siteKey)
+    );
+  };
+
+  const clearSiteIfOutsideDistrict = (districtKey: string): void => {
+    if (!draft || !catalogs) {
+      return;
+    }
+    const current = draft;
+    const site = catalogs.sites.find((row) => row.key === current.siteKey);
+    if (site && site.districtKey !== null && site.districtKey !== districtKey) {
+      current.siteKey = "";
     }
   };
 
@@ -1591,10 +1623,14 @@ export const initScenesTab = (): void => {
             if (!draft) {
               return;
             }
+            const previousDistrictKey = draft.districtKey;
+            const previousSiteKey = draft.siteKey;
             draft.districtKey = pin.key;
+            clearSiteIfOutsideDistrict(pin.key);
+            applyLocationConditions(previousDistrictKey, previousSiteKey);
             persist();
             render();
-            closeModal();
+            openSiteModal();
           });
           map.append(button);
         }
@@ -1657,6 +1693,8 @@ export const initScenesTab = (): void => {
             if (!site) {
               throw new Error(`Unknown site key ${row.key}.`);
             }
+            const previousDistrictKey = draft.districtKey;
+            const previousSiteKey = draft.siteKey;
             draft.siteKey = site.key;
             if (site.districtKey) {
               draft.districtKey = site.districtKey;
@@ -1673,6 +1711,7 @@ export const initScenesTab = (): void => {
             if (site.locationTrack) {
               draft.locationTrack = site.locationTrack;
             }
+            applyLocationConditions(previousDistrictKey, previousSiteKey);
             persist();
             render();
             closeModal();

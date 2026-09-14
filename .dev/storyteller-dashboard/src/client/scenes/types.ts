@@ -22,6 +22,7 @@ export type CatalogSite = {
   readonly isIndoors: boolean | null;
   readonly skybox: string | null;
   readonly locationTrack: string | null;
+  readonly conditions: readonly string[];
 };
 
 export type SceneCatalogs = {
@@ -30,7 +31,7 @@ export type SceneCatalogs = {
   readonly npcSeats: readonly string[];
   readonly pcs: readonly CatalogCharacter[];
   readonly namedNpcs: readonly CatalogCharacter[];
-  readonly districts: readonly { readonly key: string; readonly name: string }[];
+  readonly districts: readonly { readonly key: string; readonly name: string; readonly conditions: readonly string[] }[];
   readonly sites: readonly CatalogSite[];
   readonly tables: readonly { readonly key: string; readonly slotCapacity: number }[];
   readonly lightModes: readonly string[];

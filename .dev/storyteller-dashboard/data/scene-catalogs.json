@@ -1530,147 +1530,185 @@
   "districts": [
     {
       "key": "Bennington",
-      "name": "Bennington Heights"
+      "name": "Bennington Heights",
+      "conditions": []
     },
     {
       "key": "Cabbagetown",
-      "name": "Cabbagetown"
+      "name": "Cabbagetown",
+      "conditions": []
     },
     {
       "key": "CentreIsland",
-      "name": "Centre Island"
+      "name": "Centre Island",
+      "conditions": []
     },
     {
       "key": "Chinatown",
-      "name": "Chinatown"
+      "name": "Chinatown",
+      "conditions": []
     },
     {
       "key": "Corktown",
-      "name": "Corktown"
+      "name": "Corktown",
+      "conditions": []
     },
     {
       "key": "DeerPark",
-      "name": "Deer Park"
+      "name": "Deer Park",
+      "conditions": []
     },
     {
       "key": "DupontByTheCastle",
-      "name": "Dupont By The Castle"
+      "name": "Dupont By The Castle",
+      "conditions": [
+        "bumpBloodPotency"
+      ]
     },
     {
       "key": "HarbordVillage",
-      "name": "Harbord Village"
+      "name": "Harbord Village",
+      "conditions": []
     },
     {
       "key": "Humewood",
-      "name": "Humewood"
+      "name": "Humewood",
+      "conditions": []
     },
     {
       "key": "LakeOntario",
-      "name": "Lake Ontario"
+      "name": "Lake Ontario",
+      "conditions": []
     },
     {
       "key": "LibertyVillage",
-      "name": "Liberty Village"
+      "name": "Liberty Village",
+      "conditions": []
     },
     {
       "key": "LittleItaly",
-      "name": "Little Italy"
+      "name": "Little Italy",
+      "conditions": []
     },
     {
       "key": "LittlePortugal",
-      "name": "Little Portugal"
+      "name": "Little Portugal",
+      "conditions": []
     },
     {
       "key": "PATH",
-      "name": "P.A.T.H."
+      "name": "P.A.T.H.",
+      "conditions": []
     },
     {
       "key": "RegentPark",
-      "name": "Regent Park"
+      "name": "Regent Park",
+      "conditions": []
     },
     {
       "key": "Riverdale",
-      "name": "Riverdale"
+      "name": "Riverdale",
+      "conditions": []
     },
     {
       "key": "Rosedale",
-      "name": "Rosedale"
+      "name": "Rosedale",
+      "conditions": []
     },
     {
       "key": "StJamesTown",
-      "name": "St. James Town"
+      "name": "St. James Town",
+      "conditions": []
     },
     {
       "key": "Summerhill",
-      "name": "Summerhill"
+      "name": "Summerhill",
+      "conditions": []
     },
     {
       "key": "Annex",
-      "name": "The Annex"
+      "name": "The Annex",
+      "conditions": []
     },
     {
       "key": "BayStFinancial",
-      "name": "The Bay St. Financial District"
+      "name": "The Bay St. Financial District",
+      "conditions": []
     },
     {
       "key": "Danforth",
-      "name": "The Danforth"
+      "name": "The Danforth",
+      "conditions": []
     },
     {
       "key": "Discovery",
-      "name": "The Discovery District"
+      "name": "The Discovery District",
+      "conditions": []
     },
     {
       "key": "DistilleryDist",
-      "name": "The Distillery District"
+      "name": "The Distillery District",
+      "conditions": []
     },
     {
       "key": "DonRavine",
-      "name": "The Don River Ravine"
+      "name": "The Don River Ravine",
+      "conditions": []
     },
     {
       "key": "GayVillage",
-      "name": "The Gay Village"
+      "name": "The Gay Village",
+      "conditions": []
     },
     {
       "key": "Sewers",
-      "name": "The Sewers"
+      "name": "The Sewers",
+      "conditions": []
     },
     {
       "key": "Streets",
-      "name": "The Streets"
+      "name": "The Streets",
+      "conditions": []
     },
     {
       "key": "Subway",
-      "name": "The Subway"
+      "name": "The Subway",
+      "conditions": []
     },
     {
       "key": "Waterfront",
-      "name": "The Waterfront"
+      "name": "The Waterfront",
+      "conditions": []
     },
     {
       "key": "YongeDundasHospital",
-      "name": "The Yonge & Dundas Hospital District"
+      "name": "The Yonge & Dundas Hospital District",
+      "conditions": []
     },
     {
       "key": "YongeBloorMuseum",
-      "name": "The Young & Bloor Museum District"
+      "name": "The Young & Bloor Museum District",
+      "conditions": []
     },
     {
       "key": "WestQueenWest",
-      "name": "West Queen West"
+      "name": "West Queen West",
+      "conditions": []
     },
     {
       "key": "Wychwood",
-      "name": "Wychwood"
+      "name": "Wychwood",
+      "conditions": []
     },
     {
       "key": "YongeStreet",
-      "name": "Yonge Street"
+      "name": "Yonge Street",
+      "conditions": []
     },
     {
       "key": "Yorkville",
-      "name": "Yorkville"
+      "name": "Yorkville",
+      "conditions": []
     }
   ],
   "sites": [
@@ -1682,7 +1720,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "AnarchBar",
-      "locationTrack": "diveBar"
+      "locationTrack": "diveBar",
+      "conditions": []
     },
     {
       "key": "AptCorridor",
@@ -1692,7 +1731,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "AptStreetside",
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "AptLobby",
@@ -1702,7 +1742,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "AptStreetside",
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "AptStreetside",
@@ -1712,7 +1753,8 @@
       "topFog": false,
       "isIndoors": false,
       "skybox": "AptStreetside",
-      "locationTrack": "quietCity"
+      "locationTrack": "quietCity",
+      "conditions": []
     },
     {
       "key": "ArtGallery",
@@ -1722,7 +1764,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "AutoMechanic",
@@ -1732,7 +1775,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "autoShop"
+      "locationTrack": "autoShop",
+      "conditions": []
     },
     {
       "key": "BackAlley1",
@@ -1742,7 +1786,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "BackAlley1",
-      "locationTrack": "cityTraffic"
+      "locationTrack": "cityTraffic",
+      "conditions": []
     },
     {
       "key": "BackAlley2",
@@ -1752,7 +1797,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "BackAlley2",
-      "locationTrack": "cityTraffic"
+      "locationTrack": "cityTraffic",
+      "conditions": []
     },
     {
       "key": "BackAlley3",
@@ -1762,7 +1808,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "BackAlley1",
-      "locationTrack": "cityTraffic"
+      "locationTrack": "cityTraffic",
+      "conditions": []
     },
     {
       "key": "BayTower",
@@ -1772,7 +1819,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "BayTower",
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "BierMarkt",
@@ -1782,7 +1830,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "bar"
+      "locationTrack": "bar",
+      "conditions": []
     },
     {
       "key": "BillyBishopAirport",
@@ -1792,7 +1841,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "BillyBishopAirport",
-      "locationTrack": "airport"
+      "locationTrack": "airport",
+      "conditions": []
     },
     {
       "key": "BillyBishopFerry",
@@ -1802,7 +1852,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": "BillyBishopFerry",
-      "locationTrack": "waterside"
+      "locationTrack": "waterside",
+      "conditions": []
     },
     {
       "key": "CabbagetownPenthouse",
@@ -1812,7 +1863,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "PenthouseApt1",
-      "locationTrack": "silent"
+      "locationTrack": "silent",
+      "conditions": []
     },
     {
       "key": "CNE",
@@ -1822,7 +1874,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": null,
-      "locationTrack": "cityRevelers"
+      "locationTrack": "cityRevelers",
+      "conditions": []
     },
     {
       "key": "CarusoResidence",
@@ -1832,7 +1885,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "softHum"
+      "locationTrack": "softHum",
+      "conditions": []
     },
     {
       "key": "CLGrounds",
@@ -1842,7 +1896,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "CLGrounds",
-      "locationTrack": "citySuburb"
+      "locationTrack": "citySuburb",
+      "conditions": []
     },
     {
       "key": "CLGallery",
@@ -1852,7 +1907,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "CLGallery",
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "CLGreatHall",
@@ -1862,7 +1918,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "CLGreatHall",
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "CLDrawingRoom",
@@ -1872,7 +1929,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "CLDrawingRoom",
-      "locationTrack": "library"
+      "locationTrack": "library",
+      "conditions": []
     },
     {
       "key": "CLTerrace",
@@ -1882,7 +1940,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "CLTerrace",
-      "locationTrack": "cityPark"
+      "locationTrack": "cityPark",
+      "conditions": []
     },
     {
       "key": "CLOverlook",
@@ -1892,7 +1951,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "CLOverlook",
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "CLLibrary",
@@ -1902,7 +1962,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "CLLibrary",
-      "locationTrack": "library"
+      "locationTrack": "library",
+      "conditions": []
     },
     {
       "key": "CLVestibule",
@@ -1912,7 +1973,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "CLVestibule",
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "Cemetery",
@@ -1922,7 +1984,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "Cemetery",
-      "locationTrack": "eerieForest"
+      "locationTrack": "eerieForest",
+      "conditions": []
     },
     {
       "key": "CAMH",
@@ -1932,7 +1995,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "SickKids",
-      "locationTrack": "hospital"
+      "locationTrack": "hospital",
+      "conditions": []
     },
     {
       "key": "CentrevillePark",
@@ -1942,7 +2006,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": null,
-      "locationTrack": "cityPark"
+      "locationTrack": "cityPark",
+      "conditions": []
     },
     {
       "key": "ChristiePitsPark",
@@ -1952,7 +2017,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "CityPark",
-      "locationTrack": "cityPark"
+      "locationTrack": "cityPark",
+      "conditions": []
     },
     {
       "key": "CityApt1",
@@ -1962,7 +2028,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "CityApt1",
-      "locationTrack": "silent"
+      "locationTrack": "silent",
+      "conditions": []
     },
     {
       "key": "CityApt2",
@@ -1972,7 +2039,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "CityApt1",
-      "locationTrack": "silent"
+      "locationTrack": "silent",
+      "conditions": []
     },
     {
       "key": "CityApt3",
@@ -1982,7 +2050,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "CityApt1",
-      "locationTrack": "silent"
+      "locationTrack": "silent",
+      "conditions": []
     },
     {
       "key": "CityHall",
@@ -1992,7 +2061,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "CityHall",
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "CityPark",
@@ -2002,7 +2072,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "CityPark",
-      "locationTrack": "cityPark"
+      "locationTrack": "cityPark",
+      "conditions": []
     },
     {
       "key": "CNTower",
@@ -2012,7 +2083,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "rooftop"
+      "locationTrack": "rooftop",
+      "conditions": []
     },
     {
       "key": "CorktownCommon",
@@ -2022,7 +2094,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "CityPark",
-      "locationTrack": "eerieForest"
+      "locationTrack": "eerieForest",
+      "conditions": []
     },
     {
       "key": "CrimeScene",
@@ -2032,7 +2105,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": null,
-      "locationTrack": "cityTraffic"
+      "locationTrack": "cityTraffic",
+      "conditions": []
     },
     {
       "key": "DanforthHall",
@@ -2042,7 +2116,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "nightclub"
+      "locationTrack": "nightclub",
+      "conditions": []
     },
     {
       "key": "DerelictWarehouse",
@@ -2052,7 +2127,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "urbanDark"
+      "locationTrack": "urbanDark",
+      "conditions": []
     },
     {
       "key": "DogPark",
@@ -2062,7 +2138,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "CityPark",
-      "locationTrack": "cityPark"
+      "locationTrack": "cityPark",
+      "conditions": []
     },
     {
       "key": "HemovoreResearch",
@@ -2072,7 +2149,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "HemovoreResearch",
-      "locationTrack": "hospital"
+      "locationTrack": "hospital",
+      "conditions": []
     },
     {
       "key": "LuxuryDriving",
@@ -2082,7 +2160,8 @@
       "topFog": false,
       "isIndoors": false,
       "skybox": null,
-      "locationTrack": "cityTraffic"
+      "locationTrack": "cityTraffic",
+      "conditions": []
     },
     {
       "key": "EatonCentre",
@@ -2092,7 +2171,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "EatonCentre",
-      "locationTrack": "indoorMarket"
+      "locationTrack": "indoorMarket",
+      "conditions": []
     },
     {
       "key": "Elevator",
@@ -2102,7 +2182,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "softHum"
+      "locationTrack": "softHum",
+      "conditions": []
     },
     {
       "key": "BrickWorks",
@@ -2112,7 +2193,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": "BrickWorks",
-      "locationTrack": "eerieForest"
+      "locationTrack": "eerieForest",
+      "conditions": []
     },
     {
       "key": "EvergreenPalisades",
@@ -2122,7 +2204,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": "EvergreenPalisades",
-      "locationTrack": "silent"
+      "locationTrack": "silent",
+      "conditions": []
     },
     {
       "key": "Fairmont",
@@ -2132,7 +2215,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "FightClub",
@@ -2142,7 +2226,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "diveBar"
+      "locationTrack": "diveBar",
+      "conditions": []
     },
     {
       "key": "FireSaleChantry",
@@ -2152,7 +2237,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "FireSaleChantry",
-      "locationTrack": "ritualRoom"
+      "locationTrack": "ritualRoom",
+      "conditions": []
     },
     {
       "key": "FortYork",
@@ -2162,7 +2248,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "cityWalking"
+      "locationTrack": "cityWalking",
+      "conditions": []
     },
     {
       "key": "CeramicsMuseum",
@@ -2172,7 +2259,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "GayBar",
@@ -2182,7 +2270,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "diveBar"
+      "locationTrack": "diveBar",
+      "conditions": []
     },
     {
       "key": "GayClub",
@@ -2192,7 +2281,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "Nightclub1",
-      "locationTrack": "nightclub"
+      "locationTrack": "nightclub",
+      "conditions": []
     },
     {
       "key": "GeorgeBrown",
@@ -2202,7 +2292,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "cityRevelers"
+      "locationTrack": "cityRevelers",
+      "conditions": []
     },
     {
       "key": "GraffitiAlley",
@@ -2212,7 +2303,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "GraffitiAlley",
-      "locationTrack": "cityTraffic"
+      "locationTrack": "cityTraffic",
+      "conditions": []
     },
     {
       "key": "HarbourfrontCentre",
@@ -2222,7 +2314,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "cityRevelers"
+      "locationTrack": "cityRevelers",
+      "conditions": []
     },
     {
       "key": "Highway",
@@ -2232,7 +2325,8 @@
       "topFog": false,
       "isIndoors": false,
       "skybox": null,
-      "locationTrack": "cityTraffic"
+      "locationTrack": "cityTraffic",
+      "conditions": []
     },
     {
       "key": "HockeyHallOfFame",
@@ -2242,7 +2336,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "indoorMarket"
+      "locationTrack": "indoorMarket",
+      "conditions": []
     },
     {
       "key": "SickKids",
@@ -2252,7 +2347,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "SickKids",
-      "locationTrack": "hospital"
+      "locationTrack": "hospital",
+      "conditions": []
     },
     {
       "key": "JRRLibrary",
@@ -2262,7 +2358,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "Library",
-      "locationTrack": "library"
+      "locationTrack": "library",
+      "conditions": []
     },
     {
       "key": "Junkyard",
@@ -2272,7 +2369,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": null,
-      "locationTrack": "autoShop"
+      "locationTrack": "autoShop",
+      "conditions": []
     },
     {
       "key": "Kensington",
@@ -2282,7 +2380,8 @@
       "topFog": false,
       "isIndoors": false,
       "skybox": "Kensington",
-      "locationTrack": "cityWalking"
+      "locationTrack": "cityWalking",
+      "conditions": []
     },
     {
       "key": "Keyhouse",
@@ -2292,7 +2391,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "Keyhouse",
-      "locationTrack": "softHum"
+      "locationTrack": "softHum",
+      "conditions": []
     },
     {
       "key": "Laboratory",
@@ -2302,7 +2402,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "Laboratory",
-      "locationTrack": "laboratory"
+      "locationTrack": "laboratory",
+      "conditions": []
     },
     {
       "key": "LectureHall",
@@ -2312,7 +2413,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "Library",
@@ -2322,7 +2424,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "Library",
-      "locationTrack": "library"
+      "locationTrack": "library",
+      "conditions": []
     },
     {
       "key": "Limousine",
@@ -2332,7 +2435,8 @@
       "topFog": false,
       "isIndoors": false,
       "skybox": "Limousine",
-      "locationTrack": "cityTraffic"
+      "locationTrack": "cityTraffic",
+      "conditions": []
     },
     {
       "key": "LowerParklands",
@@ -2342,7 +2446,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "CityPark",
-      "locationTrack": "eerieForest"
+      "locationTrack": "eerieForest",
+      "conditions": []
     },
     {
       "key": "Yacht",
@@ -2352,7 +2457,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "Yacht",
-      "locationTrack": "waterside"
+      "locationTrack": "waterside",
+      "conditions": []
     },
     {
       "key": "MadinaMasjid",
@@ -2362,7 +2468,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "MadinaMasjid",
-      "locationTrack": "church"
+      "locationTrack": "church",
+      "conditions": []
     },
     {
       "key": "MasseyHall",
@@ -2372,7 +2479,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "nightclub"
+      "locationTrack": "nightclub",
+      "conditions": []
     },
     {
       "key": "MiddleOfRoad",
@@ -2382,7 +2490,8 @@
       "topFog": false,
       "isIndoors": false,
       "skybox": null,
-      "locationTrack": "cityTraffic"
+      "locationTrack": "cityTraffic",
+      "conditions": []
     },
     {
       "key": "ModClub",
@@ -2392,7 +2501,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "nightclub"
+      "locationTrack": "nightclub",
+      "conditions": []
     },
     {
       "key": "MountSinai",
@@ -2402,7 +2512,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "SickKids",
-      "locationTrack": "hospital"
+      "locationTrack": "hospital",
+      "conditions": []
     },
     {
       "key": "Nightclub1",
@@ -2412,7 +2523,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "Nightclub1",
-      "locationTrack": "nightclub"
+      "locationTrack": "nightclub",
+      "conditions": []
     },
     {
       "key": "Nightclub2",
@@ -2422,7 +2534,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "Nightclub1",
-      "locationTrack": "nightclub"
+      "locationTrack": "nightclub",
+      "conditions": []
     },
     {
       "key": "Nightclub3",
@@ -2432,7 +2545,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "Nightclub1",
-      "locationTrack": "nightclub"
+      "locationTrack": "nightclub",
+      "conditions": []
     },
     {
       "key": "OCAD",
@@ -2442,7 +2556,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "cityRevelers"
+      "locationTrack": "cityRevelers",
+      "conditions": []
     },
     {
       "key": "Office",
@@ -2452,7 +2567,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "Office",
-      "locationTrack": "softHum"
+      "locationTrack": "softHum",
+      "conditions": []
     },
     {
       "key": "OldOsgoodeHall",
@@ -2462,7 +2578,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "OldOsgoodeHall",
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "OntarioPlaceMarina",
@@ -2472,7 +2589,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": null,
-      "locationTrack": "waterside"
+      "locationTrack": "waterside",
+      "conditions": []
     },
     {
       "key": "ParkDriveReservation",
@@ -2482,7 +2600,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "CityPark",
-      "locationTrack": "eerieForest"
+      "locationTrack": "eerieForest",
+      "conditions": []
     },
     {
       "key": "ParkingLot",
@@ -2492,7 +2611,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": null,
-      "locationTrack": "quietCity"
+      "locationTrack": "quietCity",
+      "conditions": []
     },
     {
       "key": "PenthouseApt1",
@@ -2502,7 +2622,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "PenthouseApt1",
-      "locationTrack": "silent"
+      "locationTrack": "silent",
+      "conditions": []
     },
     {
       "key": "PenthouseApt2",
@@ -2512,7 +2633,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "PenthouseApt1",
-      "locationTrack": "silent"
+      "locationTrack": "silent",
+      "conditions": []
     },
     {
       "key": "PenthouseApt3",
@@ -2522,7 +2644,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "PenthouseApt1",
-      "locationTrack": "silent"
+      "locationTrack": "silent",
+      "conditions": []
     },
     {
       "key": "PhoenixTheatre",
@@ -2532,7 +2655,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "nightclub"
+      "locationTrack": "nightclub",
+      "conditions": []
     },
     {
       "key": "PMHospital",
@@ -2542,7 +2666,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "SickKids",
-      "locationTrack": "hospital"
+      "locationTrack": "hospital",
+      "conditions": []
     },
     {
       "key": "ProfOffice",
@@ -2552,7 +2677,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "Office",
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "Ravenwing",
@@ -2562,7 +2688,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": "Ravenwing",
-      "locationTrack": "nightclub"
+      "locationTrack": "nightclub",
+      "conditions": []
     },
     {
       "key": "ReconciliationHouse",
@@ -2572,7 +2699,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "ReconciliationHouse",
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "RedemptionHouse",
@@ -2582,7 +2710,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "RedemptionHouse",
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "REMState",
@@ -2592,7 +2721,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "REMState",
-      "locationTrack": "silent"
+      "locationTrack": "silent",
+      "conditions": []
     },
     {
       "key": "RemembranceHouse",
@@ -2602,7 +2732,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "RemembranceHouse",
-      "locationTrack": "church"
+      "locationTrack": "church",
+      "conditions": []
     },
     {
       "key": "RevelationHouse",
@@ -2612,7 +2743,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "RevelationHouse",
-      "locationTrack": "nightclub"
+      "locationTrack": "nightclub",
+      "conditions": []
     },
     {
       "key": "RogersCentre",
@@ -2622,7 +2754,8 @@
       "topFog": false,
       "isIndoors": false,
       "skybox": null,
-      "locationTrack": "cityPark"
+      "locationTrack": "cityPark",
+      "conditions": []
     },
     {
       "key": "Rooftop",
@@ -2632,7 +2765,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "Rooftop",
-      "locationTrack": "rooftop"
+      "locationTrack": "rooftop",
+      "conditions": []
     },
     {
       "key": "ROMLoadingZone",
@@ -2642,7 +2776,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "ROMLoadingZone",
-      "locationTrack": "quietCity"
+      "locationTrack": "quietCity",
+      "conditions": []
     },
     {
       "key": "ROMC5Lounge",
@@ -2652,7 +2787,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "ROMC5Lounge",
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "ROMRotunda",
@@ -2662,7 +2798,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "ROMRotunda",
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "ROMSpiritHouse",
@@ -2672,7 +2809,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": "ROMSpiritHouse",
-      "locationTrack": "softHum"
+      "locationTrack": "softHum",
+      "conditions": []
     },
     {
       "key": "ROMHallOfExtinction",
@@ -2682,7 +2820,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": "ROMHallOfExtinction",
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "RunDownApt1",
@@ -2692,7 +2831,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "RunDownApt1",
-      "locationTrack": "silent"
+      "locationTrack": "silent",
+      "conditions": []
     },
     {
       "key": "RunDownApt2",
@@ -2702,7 +2842,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "RunDownApt1",
-      "locationTrack": "silent"
+      "locationTrack": "silent",
+      "conditions": []
     },
     {
       "key": "RunDownApt3",
@@ -2712,7 +2853,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "RunDownApt1",
-      "locationTrack": "silent"
+      "locationTrack": "silent",
+      "conditions": []
     },
     {
       "key": "Ryerson",
@@ -2722,7 +2864,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "cityRevelers"
+      "locationTrack": "cityRevelers",
+      "conditions": []
     },
     {
       "key": "ScotiabankTheatre",
@@ -2732,7 +2875,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "nightclub"
+      "locationTrack": "nightclub",
+      "conditions": []
     },
     {
       "key": "SecludedDeadEnd",
@@ -2742,7 +2886,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "SecludedDeadEnd",
-      "locationTrack": "cityPark"
+      "locationTrack": "cityPark",
+      "conditions": []
     },
     {
       "key": "SewerTunnel1",
@@ -2752,7 +2897,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": "SewerTunnel1",
-      "locationTrack": "sewers"
+      "locationTrack": "sewers",
+      "conditions": []
     },
     {
       "key": "SewerTunnel2",
@@ -2762,7 +2908,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": "SewerTunnel2",
-      "locationTrack": "sewers"
+      "locationTrack": "sewers",
+      "conditions": []
     },
     {
       "key": "SheratonCentre",
@@ -2772,7 +2919,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "nightclub"
+      "locationTrack": "nightclub",
+      "conditions": []
     },
     {
       "key": "Sidewalk1",
@@ -2782,7 +2930,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "Sidewalk1",
-      "locationTrack": "quietCity"
+      "locationTrack": "quietCity",
+      "conditions": []
     },
     {
       "key": "Sidewalk2",
@@ -2792,7 +2941,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "Sidewalk1",
-      "locationTrack": "quietCity"
+      "locationTrack": "quietCity",
+      "conditions": []
     },
     {
       "key": "Sidewalk3",
@@ -2802,7 +2952,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "Sidewalk1",
-      "locationTrack": "quietCity"
+      "locationTrack": "quietCity",
+      "conditions": []
     },
     {
       "key": "SnakesLattes",
@@ -2812,7 +2963,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "diveBar"
+      "locationTrack": "diveBar",
+      "conditions": []
     },
     {
       "key": "SneakyDees",
@@ -2822,7 +2974,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "diveBar"
+      "locationTrack": "diveBar",
+      "conditions": []
     },
     {
       "key": "StLawrenceMarket",
@@ -2832,7 +2985,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "StLawrenceMarket",
-      "locationTrack": "indoorMarket"
+      "locationTrack": "indoorMarket",
+      "conditions": []
     },
     {
       "key": "StMichaelsCathedral",
@@ -2842,7 +2996,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": "StMichaelsCathedral",
-      "locationTrack": "church"
+      "locationTrack": "church",
+      "conditions": []
     },
     {
       "key": "StMichaelsHospital",
@@ -2852,7 +3007,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "SickKids",
-      "locationTrack": "hospital"
+      "locationTrack": "hospital",
+      "conditions": []
     },
     {
       "key": "Stairwell",
@@ -2862,7 +3018,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "StreetCorner1",
@@ -2872,7 +3029,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "StreetCorner1",
-      "locationTrack": "quietCity"
+      "locationTrack": "quietCity",
+      "conditions": []
     },
     {
       "key": "StreetCorner2",
@@ -2882,7 +3040,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "StreetCorner1",
-      "locationTrack": "quietCity"
+      "locationTrack": "quietCity",
+      "conditions": []
     },
     {
       "key": "StreetCorner3",
@@ -2892,7 +3051,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "StreetCorner1",
-      "locationTrack": "quietCity"
+      "locationTrack": "quietCity",
+      "conditions": []
     },
     {
       "key": "StripClub",
@@ -2902,7 +3062,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "Nightclub1",
-      "locationTrack": "nightclub"
+      "locationTrack": "nightclub",
+      "conditions": []
     },
     {
       "key": "StudentVillage",
@@ -2912,7 +3073,8 @@
       "topFog": false,
       "isIndoors": false,
       "skybox": null,
-      "locationTrack": "cityRevelers"
+      "locationTrack": "cityRevelers",
+      "conditions": []
     },
     {
       "key": "SuburbanHouse1",
@@ -2922,7 +3084,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "SuburbanHouse1",
-      "locationTrack": "silent"
+      "locationTrack": "silent",
+      "conditions": []
     },
     {
       "key": "SuburbanHouse2",
@@ -2932,7 +3095,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "SuburbanHouse1",
-      "locationTrack": "silent"
+      "locationTrack": "silent",
+      "conditions": []
     },
     {
       "key": "SuburbanHouse3",
@@ -2942,7 +3106,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "SuburbanHouse1",
-      "locationTrack": "silent"
+      "locationTrack": "silent",
+      "conditions": []
     },
     {
       "key": "SubwayStation",
@@ -2952,7 +3117,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "SubwayStation",
-      "locationTrack": "subway"
+      "locationTrack": "subway",
+      "conditions": []
     },
     {
       "key": "SubwayTunnels",
@@ -2962,7 +3128,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": "SubwayTunnels",
-      "locationTrack": "sewers"
+      "locationTrack": "sewers",
+      "conditions": []
     },
     {
       "key": "SUV",
@@ -2972,7 +3139,8 @@
       "topFog": false,
       "isIndoors": false,
       "skybox": "Limousine",
-      "locationTrack": "cityTraffic"
+      "locationTrack": "cityTraffic",
+      "conditions": []
     },
     {
       "key": "Taxi",
@@ -2982,7 +3150,8 @@
       "topFog": false,
       "isIndoors": false,
       "skybox": "Taxi",
-      "locationTrack": "cityTraffic"
+      "locationTrack": "cityTraffic",
+      "conditions": []
     },
     {
       "key": "TeteATete",
@@ -2992,7 +3161,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "TeteATete",
-      "locationTrack": "softHum"
+      "locationTrack": "softHum",
+      "conditions": []
     },
     {
       "key": "CoachHouseEmbassy",
@@ -3002,7 +3172,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "CoachHouseEmbassy",
-      "locationTrack": "softHum"
+      "locationTrack": "softHum",
+      "conditions": []
     },
     {
       "key": "Docks",
@@ -3012,7 +3183,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "Docks",
-      "locationTrack": "waterside"
+      "locationTrack": "waterside",
+      "conditions": []
     },
     {
       "key": "Drake",
@@ -3022,7 +3194,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "GECatacombs",
@@ -3032,7 +3205,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": "GEEstateGrounds",
-      "locationTrack": "whisperGhosts"
+      "locationTrack": "whisperGhosts",
+      "conditions": []
     },
     {
       "key": "GEDiningHall",
@@ -3042,7 +3216,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "GEDiningHall",
-      "locationTrack": "silent"
+      "locationTrack": "silent",
+      "conditions": []
     },
     {
       "key": "GEEstateGrounds",
@@ -3052,7 +3227,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "GEEstateGrounds",
-      "locationTrack": "eerieForest"
+      "locationTrack": "eerieForest",
+      "conditions": []
     },
     {
       "key": "GEMortuary",
@@ -3062,7 +3238,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "GEEstateGrounds",
-      "locationTrack": "laboratory"
+      "locationTrack": "laboratory",
+      "conditions": []
     },
     {
       "key": "GETowerRoom",
@@ -3072,7 +3249,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": "GETowerRoom",
-      "locationTrack": "softHum"
+      "locationTrack": "softHum",
+      "conditions": []
     },
     {
       "key": "Distillery",
@@ -3082,7 +3260,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": "Distillery",
-      "locationTrack": "industry"
+      "locationTrack": "industry",
+      "conditions": []
     },
     {
       "key": "WarrensAntechamber",
@@ -3092,7 +3271,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": "WarrensAntechamber",
-      "locationTrack": "warrens"
+      "locationTrack": "warrens",
+      "conditions": []
     },
     {
       "key": "WarrensDrakes",
@@ -3102,7 +3282,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "WarrensDrakes",
-      "locationTrack": "warrens"
+      "locationTrack": "warrens",
+      "conditions": []
     },
     {
       "key": "WarrensFomorach",
@@ -3112,7 +3293,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "WarrensLabyrinth",
-      "locationTrack": "warrensSafe"
+      "locationTrack": "warrensSafe",
+      "conditions": []
     },
     {
       "key": "WarrensIQs",
@@ -3122,7 +3304,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": "WarrensLabyrinth",
-      "locationTrack": "warrensSafe"
+      "locationTrack": "warrensSafe",
+      "conditions": []
     },
     {
       "key": "WarrensLabyrinth",
@@ -3132,7 +3315,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": "WarrensLabyrinth",
-      "locationTrack": "warrens"
+      "locationTrack": "warrens",
+      "conditions": []
     },
     {
       "key": "WarrensPalis",
@@ -3142,7 +3326,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": "WarrensLabyrinth",
-      "locationTrack": "warrensSafe"
+      "locationTrack": "warrensSafe",
+      "conditions": []
     },
     {
       "key": "WarrensSpawningPool",
@@ -3152,7 +3337,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": "WarrensSpawningPool",
-      "locationTrack": "warrens"
+      "locationTrack": "warrens",
+      "conditions": []
     },
     {
       "key": "WarrensTunnelJunction",
@@ -3162,7 +3348,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": "WarrensTunnelJunction",
-      "locationTrack": "warrens"
+      "locationTrack": "warrens",
+      "conditions": []
     },
     {
       "key": "StRegisAishe",
@@ -3172,7 +3359,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "StRegisCouncilChamber",
-      "locationTrack": "softHum"
+      "locationTrack": "softHum",
+      "conditions": []
     },
     {
       "key": "StRegisBlackCaesar",
@@ -3182,7 +3370,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": "StRegisCouncilChamber",
-      "locationTrack": "silent"
+      "locationTrack": "silent",
+      "conditions": []
     },
     {
       "key": "StRegisCouncilChamber",
@@ -3192,7 +3381,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "StRegisCouncilChamber",
-      "locationTrack": "softHum"
+      "locationTrack": "softHum",
+      "conditions": []
     },
     {
       "key": "StRegisFomorach",
@@ -3202,7 +3392,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "StRegisCouncilChamber",
-      "locationTrack": "softHum"
+      "locationTrack": "softHum",
+      "conditions": []
     },
     {
       "key": "StRegisFoyer",
@@ -3212,7 +3403,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "StRegisFoyer",
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "StRegisGrandSalon",
@@ -3222,7 +3414,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "StRegisGrandSalon",
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "StRegisLucien",
@@ -3232,7 +3425,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "StRegisCouncilChamber",
-      "locationTrack": "softHum"
+      "locationTrack": "softHum",
+      "conditions": []
     },
     {
       "key": "StRegisRashid",
@@ -3242,7 +3436,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "StRegisCouncilChamber",
-      "locationTrack": "softHum"
+      "locationTrack": "softHum",
+      "conditions": []
     },
     {
       "key": "StRegisRoom101",
@@ -3252,7 +3447,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "StRegisRoom101",
-      "locationTrack": "computer"
+      "locationTrack": "computer",
+      "conditions": []
     },
     {
       "key": "ThreefoldExchange",
@@ -3262,7 +3458,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": "ThreefoldExchange",
-      "locationTrack": "apothecary"
+      "locationTrack": "apothecary",
+      "conditions": []
     },
     {
       "key": "ChantryLibrary",
@@ -3272,7 +3469,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "ChantryLibrary",
-      "locationTrack": "library"
+      "locationTrack": "library",
+      "conditions": []
     },
     {
       "key": "ChantryGrounds",
@@ -3282,7 +3480,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "ChantryGrounds",
-      "locationTrack": "cityPark"
+      "locationTrack": "cityPark",
+      "conditions": []
     },
     {
       "key": "ChantryQuarters",
@@ -3292,7 +3491,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "ChantryLibrary",
-      "locationTrack": "church"
+      "locationTrack": "church",
+      "conditions": []
     },
     {
       "key": "ChantryThaumatorium",
@@ -3302,7 +3502,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "ChantryThaumatorium",
-      "locationTrack": "ritualRoom"
+      "locationTrack": "ritualRoom",
+      "conditions": []
     },
     {
       "key": "WeepingCairn",
@@ -3312,7 +3513,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": null,
-      "locationTrack": "eerieForest"
+      "locationTrack": "eerieForest",
+      "conditions": []
     },
     {
       "key": "TIFFLightbox",
@@ -3322,7 +3524,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "TorontoGeneral",
@@ -3332,7 +3535,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "SickKids",
-      "locationTrack": "hospital"
+      "locationTrack": "hospital",
+      "conditions": []
     },
     {
       "key": "TPSHQ",
@@ -3342,7 +3546,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "TPSHQ",
-      "locationTrack": "softHum"
+      "locationTrack": "softHum",
+      "conditions": []
     },
     {
       "key": "UndergroundMedOffice",
@@ -3352,7 +3557,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "UndergroundParking",
@@ -3362,7 +3568,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "urbanDark"
+      "locationTrack": "urbanDark",
+      "conditions": []
     },
     {
       "key": "UnionConcourse",
@@ -3372,7 +3579,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "UnionConcourse",
-      "locationTrack": "cityWalking"
+      "locationTrack": "cityWalking",
+      "conditions": []
     },
     {
       "key": "UnionGrandClock",
@@ -3382,7 +3590,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "UnionGrandClock",
-      "locationTrack": "cityWalking"
+      "locationTrack": "cityWalking",
+      "conditions": []
     },
     {
       "key": "UnionLine1",
@@ -3392,7 +3601,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "UnionLine1",
-      "locationTrack": "subway"
+      "locationTrack": "subway",
+      "conditions": []
     },
     {
       "key": "UnionSecOffice",
@@ -3402,7 +3612,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "UnionSecOffice",
-      "locationTrack": "computer"
+      "locationTrack": "computer",
+      "conditions": []
     },
     {
       "key": "UnionServiceCorridor",
@@ -3412,7 +3623,8 @@
       "topFog": true,
       "isIndoors": true,
       "skybox": "UnionServiceCorridor",
-      "locationTrack": "softHum"
+      "locationTrack": "softHum",
+      "conditions": []
     },
     {
       "key": "UnionUPExpress",
@@ -3422,7 +3634,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "UnionUPExpress",
-      "locationTrack": "softIndoor"
+      "locationTrack": "softIndoor",
+      "conditions": []
     },
     {
       "key": "UpperCanadaCollege",
@@ -3432,7 +3645,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "cityRevelers"
+      "locationTrack": "cityRevelers",
+      "conditions": []
     },
     {
       "key": "VacantLot",
@@ -3442,7 +3656,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": null,
-      "locationTrack": "urbanDark"
+      "locationTrack": "urbanDark",
+      "conditions": []
     },
     {
       "key": "BackseatSedan",
@@ -3452,7 +3667,8 @@
       "topFog": false,
       "isIndoors": false,
       "skybox": "Limousine",
-      "locationTrack": "cityTraffic"
+      "locationTrack": "cityTraffic",
+      "conditions": []
     },
     {
       "key": "WalkingPath",
@@ -3462,7 +3678,8 @@
       "topFog": true,
       "isIndoors": false,
       "skybox": "CityPark",
-      "locationTrack": "cityPark"
+      "locationTrack": "cityPark",
+      "conditions": []
     },
     {
       "key": "WealthyEstate1",
@@ -3472,7 +3689,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "WealthyEstate1",
-      "locationTrack": "silent"
+      "locationTrack": "silent",
+      "conditions": []
     },
     {
       "key": "WealthyEstate2",
@@ -3482,7 +3700,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "WealthyEstate2",
-      "locationTrack": "silent"
+      "locationTrack": "silent",
+      "conditions": []
     },
     {
       "key": "WealthyEstate3",
@@ -3492,7 +3711,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "WealthyEstate1",
-      "locationTrack": "silent"
+      "locationTrack": "silent",
+      "conditions": []
     },
     {
       "key": "WychwoodPub",
@@ -3502,7 +3722,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "diveBar"
+      "locationTrack": "diveBar",
+      "conditions": []
     },
     {
       "key": "YongeDundasSquare",
@@ -3512,7 +3733,8 @@
       "topFog": false,
       "isIndoors": false,
       "skybox": "YongeDundasSquare",
-      "locationTrack": "cityTraffic"
+      "locationTrack": "cityTraffic",
+      "conditions": []
     },
     {
       "key": "YorkvilleApt1",
@@ -3522,7 +3744,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": "PenthouseApt1",
-      "locationTrack": "silent"
+      "locationTrack": "silent",
+      "conditions": []
     },
     {
       "key": "YouthShelter",
@@ -3532,7 +3755,8 @@
       "topFog": false,
       "isIndoors": true,
       "skybox": null,
-      "locationTrack": "cityRevelers"
+      "locationTrack": "cityRevelers",
+      "conditions": []
     }
   ],
   "tables": [

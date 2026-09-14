@@ -393,6 +393,19 @@ function readStringField(body, field) {
 /**
  * @param {string} body
  * @param {string} field
+ * @returns {string[]}
+ */
+function readStringListField(body, field) {
+  const match = body.match(new RegExp(`${field}\\s*=\\s*\\{([^}]*)\\}`));
+  if (!match) {
+    return [];
+  }
+  return [...match[1].matchAll(/"([^"]+)"/g)].map((row) => row[1]);
+}
+
+/**
+ * @param {string} body
+ * @param {string} field
  * @returns {boolean|null}
  */
 function readBooleanField(body, field) {
@@ -775,6 +788,7 @@ function main() {
   const districts = parseTopLevelEntries(extractBlock(constants, "C.Districts =")).map((entry) => ({
     key: entry.key,
     name: readStringField(entry.body, "name") || entry.key,
+    conditions: readStringListField(entry.body, "conditions"),
   }));
   districts.sort((a, b) => a.name.localeCompare(b.name));
 
@@ -792,6 +806,7 @@ function main() {
       isIndoors: readBooleanField(entry.body, "isIndoors"),
       skybox: readStringField(entry.body, "skybox"),
       locationTrack: soundTrackMatch ? soundTrackMatch[1] : null,
+      conditions: readStringListField(entry.body, "conditions"),
     };
   });
   sites.sort((a, b) => a.name.localeCompare(b.name));

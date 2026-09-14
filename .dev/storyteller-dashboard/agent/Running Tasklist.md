@@ -31,3 +31,7 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 2. Generally speaking, avoid using emojis as icons -- prefer using icons from game-icons.net, as they are much more resilient in terms of font and other styling peculiarities.
 
 ## Task List
+
+✔️ SD-35. When a location (either a district or a site) applies a Condition (as listed in the districts/sites data table), that condition should be automatically highlighted/toggled on in the Conditions widget.
+
+✔️ SD-36. When a district is selected on the District map, the Sites modal should open automatically to select a site as well.
