@@ -67,6 +67,15 @@
       "filenameToNameReplacePattern": "$1"
       // → Cloud.MemoriamPanels.blackCaesar37_a = { filename, key, URL }
       // Consumed by lib/constants.ttslua (applyMemoriamCloudPanelUrls) → C.MemoriamSkyboxes[key].panelX.url
+    },
+    {
+      "id": "memoriamBlindfolds",
+      "cloudFolder": "Memoriam/Blindfolds",
+      "recurIntoSubfolders": false,
+      "output": "GlobalCustomUIAssets",
+      "filenameToNameSearchPattern": "^([^.]+)\\.[^.]+$",
+      "filenameToNameReplacePattern": "memoriamBlindfold_$1" // E.g. "memoriamBlindfold_blackCaesar37.webp"
+      // Purge family derived → ^memoriamBlindfold_(.*)$
     }
   ]
 }

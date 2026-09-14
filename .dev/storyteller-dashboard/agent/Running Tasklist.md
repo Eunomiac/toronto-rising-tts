@@ -31,5 +31,3 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 2. Generally speaking, avoid using emojis as icons -- prefer using icons from game-icons.net, as they are much more resilient in terms of font and other styling peculiarities.
 
 ## Task List
-
-✔️ SD-32. Tokens (and their labels) should be z-ordered according to their vertical position:  The closer a token is to the bottom of the screen, the higher its z-index should be (i.e. lower tokens should overlap tokens higher up on the y-axis)

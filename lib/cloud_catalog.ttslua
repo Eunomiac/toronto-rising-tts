@@ -5703,6 +5703,86 @@ Cloud = {
       key = "rashid1_d",
       URL = "https://steamusercontent-a.akamaihd.net/ugc/9361898598469060917/EA9A3FEF37897F9B511EAFEE66A65F4A88ED2B9F/",
     },
+    rashid13_a = {
+      filename = "rashid13_a.jpg",
+      key = "rashid13_a",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/10594814564578315714/6CE4A7267DC2E32C5405393E449BF656B12A9E3B/",
+    },
+    rashid13_b = {
+      filename = "rashid13_b.jpg",
+      key = "rashid13_b",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/12766006292859887180/AEE16971702740336D0E919AF4A60D63A21CF7A4/",
+    },
+    rashid13_c = {
+      filename = "rashid13_c.jpg",
+      key = "rashid13_c",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/13385919221674850495/654F5BE43B0E446AE3AC76512C1F58DA9CB4052B/",
+    },
+    rashid13_d = {
+      filename = "rashid13_d.jpg",
+      key = "rashid13_d",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/15821024679285985647/E76CA25C612F73899DC8AFAE07D63CF3B65FE363/",
+    },
+    rashid18_a = {
+      filename = "rashid18_a.jpg",
+      key = "rashid18_a",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/9232005099083012935/D6D79EEDCDE2D01F1971E783EFB2C0D35FB269AE/",
+    },
+    rashid18_b = {
+      filename = "rashid18_b.jpg",
+      key = "rashid18_b",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/11278645617531341022/96A2DF4DEEC7C5530D14F0F7313F3EA7DE8DCD8E/",
+    },
+    rashid18_c = {
+      filename = "rashid18_c.jpg",
+      key = "rashid18_c",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/10997066985631294268/784C29EE893597CCEC95DEAFCCBB99EE5E37B9FB/",
+    },
+    rashid18_d = {
+      filename = "rashid18_d.jpg",
+      key = "rashid18_d",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/13418401029755685534/879AF2B36015D6019EA867A8E90310A80A18292F/",
+    },
+    rashid21_a = {
+      filename = "rashid21_a.jpg",
+      key = "rashid21_a",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/13380816761217964084/74D2868741338A4A972BF9D9E253EFE02BDE6584/",
+    },
+    rashid21_b = {
+      filename = "rashid21_b.jpg",
+      key = "rashid21_b",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/12982578412858779137/8CCFF00D20D2EC696C2E7CC51665E808DF44E139/",
+    },
+    rashid21_c = {
+      filename = "rashid21_c.jpg",
+      key = "rashid21_c",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/18126885608362923813/397765190721EE0AD3E405ECB8F7F255C50C4B87/",
+    },
+    rashid21_d = {
+      filename = "rashid21_d.jpg",
+      key = "rashid21_d",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/14566270281947016531/0BB0139A33CD5BEAFF3A334E825367C16C9E5C50/",
+    },
+    rashid26_a = {
+      filename = "rashid26_a.jpg",
+      key = "rashid26_a",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/12937787907476977762/99DE006070FBAB721D3A586F7E88A9B86C5C17DF/",
+    },
+    rashid26_b = {
+      filename = "rashid26_b.jpg",
+      key = "rashid26_b",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/12306494333434486755/089258AF5D5475E5039661272B0FEBB91986BD1D/",
+    },
+    rashid26_c = {
+      filename = "rashid26_c.jpg",
+      key = "rashid26_c",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/13309464566629532722/034BD20600583A71257BDB9A290072DD130AB6F3/",
+    },
+    rashid26_d = {
+      filename = "rashid26_d.jpg",
+      key = "rashid26_d",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/17935142644153191601/A4FEAA99EA80D1934DFF98D601C7208AEF4F5E6F/",
+    },
     rashid4_a = {
       filename = "rashid4_a.jpg",
       key = "rashid4_a",
@@ -5747,6 +5827,41 @@ Cloud = {
       filename = "rashid7_a.jpg",
       key = "rashid7_a",
       URL = "https://steamusercontent-a.akamaihd.net/ugc/12552823652382237487/9FF7B12EFA6212A9E58A1591C867E32C52DF4EBA/",
+    },
+    rashid7_b = {
+      filename = "rashid7_b.jpg",
+      key = "rashid7_b",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/17758758724668172623/5F5087D246A04952D6DB8792EEFD109FE077736A/",
+    },
+    rashid7_c = {
+      filename = "rashid7_c.jpg",
+      key = "rashid7_c",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/15093893849532754115/8A285B21592E562B1E308E51EFDF4552940DDB14/",
+    },
+    rashid7_d = {
+      filename = "rashid7_d.jpg",
+      key = "rashid7_d",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/12792417759668137051/0876621757F65F62974CA950295AC8F07397300F/",
+    },
+    rashid9_a = {
+      filename = "rashid9_a.jpg",
+      key = "rashid9_a",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/16693665179166808566/2E5BD23E5DC68D7BFD6E238F4E4FCB0A116795C0/",
+    },
+    rashid9_b = {
+      filename = "rashid9_b.jpg",
+      key = "rashid9_b",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/11413237928162139381/BFBB75D2314837FEC91CF08A943548538D0FE55B/",
+    },
+    rashid9_c = {
+      filename = "rashid9_c.jpg",
+      key = "rashid9_c",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/15418367628220445761/145A3CEE498D0CFD25FC56D119599D016713543C/",
+    },
+    rashid9_d = {
+      filename = "rashid9_d.jpg",
+      key = "rashid9_d",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/14293930239320354982/24E69B1D5D60A3BC39416235A4035A5087DD4DAA/",
     },
   },
   Sites = {
