@@ -72,9 +72,9 @@ describe("authored name offsets", () => {
       scatter: { areaOrder: [], areas: {} }
     };
     expect(nameLayoutForPolarSnap(snaps, snaps.polar[0]!)).toMatchObject({
-      ox: -191,
-      oy: 17,
-      align: "right"
+      ox: 74,
+      oy: -32,
+      align: "center"
     });
   });
 
@@ -88,7 +88,7 @@ describe("authored name offsets", () => {
       u: 0.5,
       v: 0.12
     };
-    expect(nameLayoutForSeat(seat, 9, 4)).toMatchObject({ ox: -2, oy: -76, align: "center" });
+    expect(nameLayoutForSeat(seat, 9, 4)).toMatchObject({ ox: 0, oy: -75, align: "center" });
   });
 });
 

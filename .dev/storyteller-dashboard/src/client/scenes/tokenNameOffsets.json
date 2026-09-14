@@ -1,14 +1,14 @@
 {
   "polar": {
     "1": {
-      "ox": 0,
-      "oy": -36,
+      "ox": -78,
+      "oy": -32,
       "align": "center"
     },
     "2": {
-      "ox": 0,
-      "oy": -18,
-      "align": "center"
+      "ox": -42,
+      "oy": 28,
+      "align": "left"
     },
     "3": {
       "ox": -2,
@@ -16,139 +16,139 @@
       "align": "center"
     },
     "4": {
-      "ox": 105,
-      "oy": -39,
-      "align": "center"
-    },
-    "5": {
-      "ox": -191,
-      "oy": 17,
+      "ox": -67,
+      "oy": 27,
       "align": "right"
     },
-    "6": {
-      "ox": 0,
-      "oy": -40,
+    "5": {
+      "ox": 74,
+      "oy": -32,
       "align": "center"
     },
+    "6": {
+      "ox": -78,
+      "oy": -26,
+      "align": "right"
+    },
     "7": {
-      "ox": -103,
-      "oy": -12,
+      "ox": -95,
+      "oy": -23,
       "align": "right"
     },
     "8": {
-      "ox": 143,
-      "oy": 12,
+      "ox": 110,
+      "oy": 25,
       "align": "left"
     },
     "9": {
-      "ox": 115,
-      "oy": 22,
-      "align": "left"
+      "ox": -77,
+      "oy": -21,
+      "align": "right"
     },
     "10": {
-      "ox": 107,
-      "oy": 30,
-      "align": "left"
+      "ox": -67,
+      "oy": 22,
+      "align": "right"
     },
     "11": {
-      "ox": 0,
-      "oy": -40,
-      "align": "center"
+      "ox": -39,
+      "oy": 25,
+      "align": "left"
     },
     "12": {
-      "ox": 0,
-      "oy": -20,
-      "align": "center"
+      "ox": -28,
+      "oy": -26,
+      "align": "left"
     },
     "13": {
-      "ox": 0,
-      "oy": 0,
-      "align": "center"
+      "ox": -10,
+      "oy": 21,
+      "align": "right"
     },
     "14": {
-      "ox": 0,
-      "oy": 20,
-      "align": "center"
+      "ox": -11,
+      "oy": -24,
+      "align": "left"
     },
     "15": {
-      "ox": 0,
-      "oy": 40,
-      "align": "center"
+      "ox": -45,
+      "oy": -28,
+      "align": "left"
     },
     "16": {
-      "ox": -40,
-      "oy": 0,
-      "align": "center"
+      "ox": 8,
+      "oy": 49,
+      "align": "left"
     },
     "17": {
-      "ox": -20,
-      "oy": 0,
-      "align": "center"
+      "ox": -19,
+      "oy": 1,
+      "align": "left"
     },
     "18": {
-      "ox": 0,
-      "oy": 0,
+      "ox": 1,
+      "oy": 53,
       "align": "center"
     },
     "19": {
-      "ox": 20,
-      "oy": 0,
-      "align": "center"
+      "ox": 2,
+      "oy": -1,
+      "align": "left"
     },
     "20": {
-      "ox": 40,
+      "ox": -7,
       "oy": 0,
       "align": "center"
     },
     "21": {
-      "ox": -40,
-      "oy": 0,
+      "ox": 1,
+      "oy": 1,
       "align": "center"
     },
     "22": {
-      "ox": -20,
-      "oy": 0,
-      "align": "center"
+      "ox": -11,
+      "oy": 53,
+      "align": "left"
     },
     "23": {
-      "ox": 0,
-      "oy": 0,
+      "ox": -3,
+      "oy": 54,
       "align": "center"
     },
     "24": {
-      "ox": 20,
-      "oy": 0,
-      "align": "center"
+      "ox": 7,
+      "oy": 53,
+      "align": "right"
     },
     "25": {
-      "ox": 40,
+      "ox": -8,
       "oy": 0,
       "align": "center"
     },
     "26": {
-      "ox": -40,
-      "oy": 0,
+      "ox": 0,
+      "oy": -1,
       "align": "center"
     },
     "27": {
-      "ox": -20,
+      "ox": 8,
       "oy": 0,
-      "align": "center"
+      "align": "right"
     },
     "28": {
-      "ox": 0,
-      "oy": 0,
+      "ox": -3,
+      "oy": 57,
       "align": "center"
     },
     "29": {
-      "ox": 20,
+      "ox": 19,
       "oy": 0,
-      "align": "center"
+      "align": "right"
     },
     "30": {
-      "ox": 40,
-      "oy": 0,
-      "align": "center"
+      "ox": 7,
+      "oy": 56,
+      "align": "right"
     },
     "31": {
       "ox": 199,
@@ -273,47 +273,47 @@
   },
   "seats": {
     "NPC4": {
-      "ox": -3,
+      "ox": 0,
       "oy": -75,
       "align": "center"
     },
     "NPC2": {
-      "ox": -5,
-      "oy": 1,
+      "ox": 0,
+      "oy": 0,
       "align": "center"
     },
     "Purple": {
-      "ox": 7,
+      "ox": 0,
       "oy": -75,
       "align": "center"
     },
     "Pink": {
-      "ox": 2,
-      "oy": -3,
+      "ox": 0,
+      "oy": 0,
       "align": "center"
     },
     "Red": {
-      "ox": -2,
-      "oy": -76,
+      "ox": 0,
+      "oy": -75,
       "align": "center"
     },
     "Orange": {
-      "ox": 1,
-      "oy": 1,
+      "ox": 0,
+      "oy": 0,
       "align": "center"
     },
     "Brown": {
-      "ox": -1,
-      "oy": -77,
+      "ox": 0,
+      "oy": -75,
       "align": "center"
     },
     "NPC1": {
-      "ox": 2,
-      "oy": -1,
+      "ox": 0,
+      "oy": 0,
       "align": "center"
     },
     "NPC3": {
-      "ox": 7,
+      "ox": 0,
       "oy": -75,
       "align": "center"
     }
