@@ -153,7 +153,7 @@ select {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 10;
+  z-index: 80;
   background: rgba(0, 0, 0, 0.78);
   display: grid;
   place-items: center;

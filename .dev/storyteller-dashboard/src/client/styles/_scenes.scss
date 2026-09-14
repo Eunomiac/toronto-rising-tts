@@ -552,6 +552,11 @@
   display: block;
 }
 
+.scenes-board-overlay {
+  isolation: isolate;
+  z-index: 1;
+}
+
 .scenes-board-img {
   object-fit: fill;
 }
