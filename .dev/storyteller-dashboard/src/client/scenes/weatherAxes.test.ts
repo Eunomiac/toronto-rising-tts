@@ -50,10 +50,14 @@ describe("weatherAxes", () => {
     expect(thunderIconCount(true)).toBe(1);
   });
 
-  it("ramps weather button red from dark to #FF0000", () => {
+  it("uses distinct reds for weather intensity", () => {
     expect(weatherIntensityFill(0, 3)).toBe("transparent");
-    expect(weatherIntensityFill(3, 3)).toBe("rgb(255, 0, 0)");
-    expect(weatherIntensityFill(1, 3)).not.toBe("rgb(255, 0, 0)");
+    expect(weatherIntensityFill(1, 3)).toBe("#220000");
+    expect(weatherIntensityFill(2, 3)).toBe("#660000");
+    expect(weatherIntensityFill(3, 3)).toBe("#FF0000");
+    expect(weatherIntensityFill(1, 2)).toBe("#220000");
+    expect(weatherIntensityFill(2, 2)).toBe("#FF0000");
+    expect(weatherIntensityFill(1, 1)).toBe("#FF0000");
   });
 
   it("restores independent axes from an old single weatherKey", () => {
