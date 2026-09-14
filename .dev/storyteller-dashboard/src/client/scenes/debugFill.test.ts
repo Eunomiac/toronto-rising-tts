@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyDebugFillToDraft, captureDebugFillBackup, restoreDebugFillBackup } from "./debugFill";
+import { applyDebugFillToDraft, captureDebugFillBackup, restoreDebugFillBackup, restoreDefaultPcSeats } from "./debugFill";
 import { createDefaultDraft } from "./payload";
 import type { ControlBoardSnaps, PolarSnap, SceneCatalogs, SeatSnap } from "./types";
 
@@ -60,5 +60,15 @@ describe("applyDebugFillToDraft", () => {
     expect(draft.standard.seatSlots.Red?.characterKey).toBe("rashid");
     restoreDebugFillBackup(draft, backup);
     expect(draft.standard.polar).toEqual([{ characterKey: "lexie", snapIndex: 1, npcLightMode: "OFF" }]);
+  });
+
+  it("Restore PCs puts the mapped PCs back on player chairs and clears NPC chairs", () => {
+    const draft = createDefaultDraft(catalogs, snaps);
+    draft.standard.seatSlots.Red = { characterKey: "rashid", isPlayingNPC: false, isPresent: true, tableSlot: 9 };
+    draft.standard.seatSlots.NPC1 = { characterKey: "lexie", isPlayingNPC: false, isPresent: true, tableSlot: 8, slotEmpty: false };
+    restoreDefaultPcSeats(draft, catalogs, snaps);
+    expect(draft.standard.seatSlots.Red?.characterKey).toBe("lordLucien");
+    expect(draft.standard.seatSlots.NPC1?.slotEmpty).toBe(true);
+    expect(draft.standard.seatSlots.NPC1?.characterKey).toBe("");
   });
 });

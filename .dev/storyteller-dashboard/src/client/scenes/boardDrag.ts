@@ -61,7 +61,31 @@ const leaveFadedOrigin = (el: HTMLElement): void => {
 
 export const pointerOnElement = (el: HTMLElement, clientX: number, clientY: number): boolean => {
   const rect = el.getBoundingClientRect();
-  return clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom;
+  return pointInRect(rect, clientX, clientY);
+};
+
+type RectBox = { left: number; right: number; top: number; bottom: number };
+
+export const pointInRect = (rect: RectBox, clientX: number, clientY: number): boolean =>
+  clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom;
+
+/** Visible parchment: the cropped board image inside the wrap, not the full uncropped frame. */
+export const pointerOnVisibleBoard = (
+  wrap: HTMLElement,
+  boardFrame: HTMLElement,
+  clientX: number,
+  clientY: number
+): boolean => {
+  const wrapRect = wrap.getBoundingClientRect();
+  const frameRect = boardFrame.getBoundingClientRect();
+  const left = Math.max(wrapRect.left, frameRect.left);
+  const right = Math.min(wrapRect.right, frameRect.right);
+  const top = Math.max(wrapRect.top, frameRect.top);
+  const bottom = Math.min(wrapRect.bottom, frameRect.bottom);
+  if (right <= left || bottom <= top) {
+    return false;
+  }
+  return pointInRect({ left, right, top, bottom }, clientX, clientY);
 };
 
 export type BindBoardDragOptions = {
@@ -73,6 +97,7 @@ export type BindBoardDragOptions = {
   readonly onMove: (clientX: number, clientY: number) => void;
   readonly onEnd: (clientX: number, clientY: number) => void;
   readonly onDragStart?: () => void;
+  readonly onBoard?: (clientX: number, clientY: number) => boolean;
 };
 
 export const bindBoardDrag = (el: HTMLElement, options: BindBoardDragOptions): void => {
@@ -99,10 +124,10 @@ export const bindBoardDrag = (el: HTMLElement, options: BindBoardDragOptions): v
     onDrag() {
       const event = this.pointerEvent as PointerEvent;
       if (options.clearCue === true) {
-        el.classList.toggle(
-          "scenes-token-will-clear",
-          !pointerOnElement(options.boardFrame, event.clientX, event.clientY)
-        );
+        const onBoard =
+          options.onBoard?.(event.clientX, event.clientY) ??
+          pointerOnElement(options.boardFrame, event.clientX, event.clientY);
+        el.classList.toggle("scenes-token-will-clear", !onBoard);
       }
       options.onMove(event.clientX, event.clientY);
     },

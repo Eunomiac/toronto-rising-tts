@@ -113,6 +113,15 @@ export const snowIconCount = (snow: SnowKey): number => {
 
 export const thunderIconCount = (thunder: boolean): number => (thunder ? 1 : 0);
 
+export const weatherIntensityFill = (level: number, maxLevel: number): string => {
+  if (level <= 0 || maxLevel <= 0) {
+    return "transparent";
+  }
+  const t = Math.min(1, level / maxLevel);
+  const red = Math.round(96 + t * (255 - 96));
+  return `rgb(${red}, 0, 0)`;
+};
+
 export const windLabel = (wind: WindStrength, winter: boolean): string => {
   if (wind === "none") {
     return "No wind";

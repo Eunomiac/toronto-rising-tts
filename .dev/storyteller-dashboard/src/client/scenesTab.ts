@@ -1,4 +1,4 @@
-import { bindBoardDrag, gsap, killBoardDrags, pointerOnElement } from "./scenes/boardDrag.js";
+import { bindBoardDrag, gsap, killBoardDrags, pointerOnVisibleBoard } from "./scenes/boardDrag.js";
 import { formatChronicleDateTime } from "./scenes/clockFormat.js";
 import {
   DISTRICT_MAP_HEIGHT,
@@ -10,11 +10,13 @@ import {
   applyDebugFillToDraft,
   captureDebugFillBackup,
   restoreDebugFillBackup,
+  restoreDefaultPcSeats,
   type DebugFillBackup
 } from "./scenes/debugFill.js";
 import { comparePickerGroups, GROUP_THEMES, groupThemeClass, isImportantGroup, trayMergeLabel } from "./scenes/groupThemes.js";
 import { applyLeadLightToFamily, placeKeysOnPolarFamily, polarTokensInFamily, relocatePolarFamily } from "./scenes/groupRelocate.js";
-import { swapOntoPolarSnap } from "./scenes/tokenSwap.js";
+import { moveSeatOccupant, swapOntoPolarSnap } from "./scenes/tokenSwap.js";
+import { formatNameOffsetsClipboard, roundOffset } from "./scenes/nameOffsets.js";
 import {
   boardUvFromEvent,
   buildImportPayload,
@@ -34,7 +36,15 @@ import {
   PC_BY_COLOR,
   sceneKeyFromTitle
 } from "./scenes/payload.js";
-import { applyTokenNameLayout, nameLayoutForPolarSnap, nameLayoutForSeat } from "./scenes/tokenNames.js";
+import {
+  applyTokenNameLayout,
+  nameAlignColor,
+  nameLayoutForPolarSnap,
+  nameLayoutForSeat,
+  nextNameAlign,
+  type TokenNameLayout
+} from "./scenes/tokenNames.js";
+import type { NameAlign, NameOffset } from "./scenes/nameOffsets.js";
 import { initToasts } from "./scenes/toasts.js";
 import {
   cycleRain,
@@ -48,6 +58,7 @@ import {
   snowIconCount,
   snowLabel,
   thunderIconCount,
+  weatherIntensityFill,
   windIconCount,
   windLabel
 } from "./scenes/weatherAxes.js";
@@ -119,7 +130,13 @@ export const initScenesTab = (): void => {
   let reticuleUv = { u: 0.42, v: 0.48 };
   let debugMode = false;
   let debugFillOn = false;
+  let debugNamesLocked = false;
   let debugFillBackup: DebugFillBackup | null = null;
+  const nameLockPolar: Record<number, NameOffset> = {};
+  const nameLockSeats: Record<string, NameOffset> = {};
+
+  const onVisibleBoard = (clientX: number, clientY: number): boolean =>
+    pointerOnVisibleBoard(boardWrap, boardFrame, clientX, clientY);
 
   const closeModal = (): void => {
     modalRoot.innerHTML = "";
@@ -141,10 +158,21 @@ export const initScenesTab = (): void => {
     }
   };
 
+  const clearNameLocks = (): void => {
+    debugNamesLocked = false;
+    for (const key of Object.keys(nameLockPolar)) {
+      delete nameLockPolar[Number.parseInt(key, 10)];
+    }
+    for (const key of Object.keys(nameLockSeats)) {
+      delete nameLockSeats[key];
+    }
+  };
+
   const restoreDebugFill = (): void => {
     if (!draft || !debugFillOn) {
       debugFillOn = false;
       debugFillBackup = null;
+      clearNameLocks();
       return;
     }
     if (debugFillBackup) {
@@ -152,6 +180,7 @@ export const initScenesTab = (): void => {
     }
     debugFillBackup = null;
     debugFillOn = false;
+    clearNameLocks();
   };
 
   const applyDebugFill = (): void => {
@@ -323,12 +352,21 @@ export const initScenesTab = (): void => {
     button.classList.toggle("is-placeholder", empty);
   };
 
-  const paintWeatherIcons = (button: HTMLButtonElement, src: string, count: number, title: string): void => {
+  const paintWeatherIcons = (
+    button: HTMLButtonElement,
+    src: string,
+    count: number,
+    title: string,
+    maxLevel: number,
+    winterWind = false
+  ): void => {
     const shown = Math.max(1, count);
     button.title = title;
     button.classList.toggle("lock", count > 0);
     button.classList.toggle("active", count > 0);
+    button.classList.toggle("scenes-weather-winter-wind", winterWind);
     button.dataset.count = String(count);
+    button.style.background = weatherIntensityFill(count, maxLevel);
     const stack = document.createElement("span");
     stack.className = "scenes-weather-stack";
     stack.dataset.count = String(shown);
@@ -339,6 +377,93 @@ export const initScenesTab = (): void => {
       stack.append(img);
     }
     button.replaceChildren(stack);
+  };
+
+  const mergeLockedLayout = (base: TokenNameLayout, lock?: NameOffset): TokenNameLayout =>
+    lock ? { ...base, ox: lock.ox, oy: lock.oy, align: lock.align } : base;
+
+  const bindNameOffsetDrag = (
+    tokenEl: HTMLElement,
+    nameEl: HTMLElement,
+    start: TokenNameLayout,
+    write: (next: NameOffset) => void
+  ): void => {
+    nameEl.style.pointerEvents = "auto";
+    nameEl.style.cursor = "grab";
+    nameEl.style.color = nameAlignColor(start.align);
+    let dragging = false;
+    let originX = 0;
+    let originY = 0;
+    let baseOx = start.ox;
+    let baseOy = start.oy;
+    const currentAlign = (): NameAlign =>
+      tokenEl.dataset.nameAlign === "left" || tokenEl.dataset.nameAlign === "right"
+        ? tokenEl.dataset.nameAlign
+        : "center";
+    nameEl.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      dragging = true;
+      originX = event.clientX;
+      originY = event.clientY;
+      baseOx = Number.parseFloat(tokenEl.style.getPropertyValue("--name-ox")) || 0;
+      baseOy = Number.parseFloat(tokenEl.style.getPropertyValue("--name-oy")) || 0;
+      nameEl.setPointerCapture(event.pointerId);
+    });
+    nameEl.addEventListener("pointermove", (event) => {
+      if (!dragging) {
+        return;
+      }
+      const ox = roundOffset(baseOx + event.clientX - originX);
+      const oy = roundOffset(baseOy + event.clientY - originY);
+      tokenEl.style.setProperty("--name-ox", `${ox}px`);
+      tokenEl.style.setProperty("--name-oy", `${oy}px`);
+      write({ ox, oy, align: currentAlign() });
+    });
+    nameEl.addEventListener("pointerup", (event) => {
+      if (!dragging) {
+        return;
+      }
+      dragging = false;
+      if (nameEl.hasPointerCapture(event.pointerId)) {
+        nameEl.releasePointerCapture(event.pointerId);
+      }
+    });
+    nameEl.addEventListener("dblclick", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const ox = Number.parseFloat(tokenEl.style.getPropertyValue("--name-ox")) || 0;
+      const oy = Number.parseFloat(tokenEl.style.getPropertyValue("--name-oy")) || 0;
+      const align = nextNameAlign(currentAlign());
+      applyTokenNameLayout(tokenEl, { ...start, ox, oy, align });
+      nameEl.style.color = nameAlignColor(align);
+      write({ ox, oy, align });
+    });
+  };
+
+  const applyPlacedTokenName = (
+    el: HTMLElement,
+    layout: TokenNameLayout,
+    polarSnapIndex?: number,
+    sourceSeatKey?: string
+  ): void => {
+    const lock = sourceSeatKey !== undefined ? nameLockSeats[sourceSeatKey] : polarSnapIndex !== undefined
+      ? nameLockPolar[polarSnapIndex]
+      : undefined;
+    const merged = mergeLockedLayout(layout, lock);
+    applyTokenNameLayout(el, merged);
+    const name = el.querySelector<HTMLElement>(".scenes-token-name");
+    if (!debugNamesLocked || !name) {
+      return;
+    }
+    el.classList.add("scenes-token-name-locked");
+    bindNameOffsetDrag(el, name, merged, (next) => {
+      if (sourceSeatKey !== undefined) {
+        nameLockSeats[sourceSeatKey] = next;
+      } else if (polarSnapIndex !== undefined) {
+        nameLockPolar[polarSnapIndex] = next;
+      }
+    });
   };
 
   const placeToken = (el: HTMLElement, u: number, v: number): void => {
@@ -410,12 +535,13 @@ export const initScenesTab = (): void => {
     dragKind: "token" | "family" | "tray",
     dragKey: string,
     trayKeys: readonly string[] = [],
-    polarSnapIndex?: number
+    polarSnapIndex?: number,
+    sourceSeatKey?: string
   ): void => {
     if (!draft || !snaps || !catalogs) {
       return;
     }
-    if (!pointerOnElement(boardFrame, clientX, clientY)) {
+    if (!onVisibleBoard(clientX, clientY)) {
       if (dragKind === "tray") {
         return;
       }
@@ -425,6 +551,14 @@ export const initScenesTab = (): void => {
         }
         persist();
         return;
+      }
+      if (sourceSeatKey && !PC_BY_COLOR[sourceSeatKey]) {
+        draft.standard.seatSlots[sourceSeatKey] = {
+          characterKey: "",
+          isPlayingNPC: false,
+          isPresent: false,
+          slotEmpty: true
+        };
       }
       returnTokenOffBoard(dragKey, polarSnapIndex);
       persist();
@@ -454,10 +588,37 @@ export const initScenesTab = (): void => {
       const polar = nearestPolarSnap(snaps, uv.u, uv.v, 0.06);
       const isNpc = namedByKey().has(dragKey);
       if (seat && (!polar || Math.hypot(seat.u - uv.u, seat.v - uv.v) <= Math.hypot((polar?.u ?? 9) - uv.u, (polar?.v ?? 9) - uv.v))) {
-        placeOnSeat(dragKey, seat.seatKey, polarSnapIndex);
+        placeOnSeat(dragKey, seat.seatKey, polarSnapIndex, sourceSeatKey);
       } else if (polar && isNpc) {
+        const destOccupant = draft.standard.polar.find(
+          (token) => token.snapIndex === polar.snapIndex && token.characterKey !== dragKey
+        );
         const existing = draft.standard.polar.find((token) => token.characterKey === dragKey);
-        placeNpcOnPolar(dragKey, polar.snapIndex, existing?.npcLightMode ?? (polar.defaultLightMode === "STANDARD" ? "STANDARD" : "OFF"), polarSnapIndex);
+        placeNpcOnPolar(
+          dragKey,
+          polar.snapIndex,
+          existing?.npcLightMode ?? (polar.defaultLightMode === "STANDARD" ? "STANDARD" : "OFF"),
+          polarSnapIndex
+        );
+        if (sourceSeatKey) {
+          if (destOccupant) {
+            const sourceSeat = snaps.seats.find((row) => row.seatKey === sourceSeatKey);
+            draft.standard.seatSlots[sourceSeatKey] = {
+              characterKey: destOccupant.characterKey,
+              isPlayingNPC: false,
+              isPresent: true,
+              tableSlot: sourceSeat?.tableSlot,
+              slotEmpty: false
+            };
+          } else {
+            draft.standard.seatSlots[sourceSeatKey] = {
+              characterKey: "",
+              isPlayingNPC: false,
+              isPresent: false,
+              slotEmpty: true
+            };
+          }
+        }
       } else if (polar && Object.values(PC_BY_COLOR).includes(dragKey)) {
         setStatus("error", "PCs sit on chairs, not on the polar stage.");
         return;
@@ -532,7 +693,7 @@ export const initScenesTab = (): void => {
 
   const paintTokenGhosts = (clientX: number, clientY: number, characterKey: string): void => {
     clearGhosts();
-    if (!snaps || !draft || !pointerOnElement(boardFrame, clientX, clientY)) {
+    if (!snaps || !draft || !onVisibleBoard(clientX, clientY)) {
       return;
     }
     const uv = boardUvFromEvent(overlay, { clientX, clientY });
@@ -576,7 +737,7 @@ export const initScenesTab = (): void => {
 
   const paintFamilyGhosts = (clientX: number, clientY: number, familyId: string): void => {
     clearGhosts();
-    if (!snaps || !draft || !pointerOnElement(boardFrame, clientX, clientY)) {
+    if (!snaps || !draft || !onVisibleBoard(clientX, clientY)) {
       return;
     }
     const uv = boardUvFromEvent(overlay, { clientX, clientY });
@@ -602,7 +763,7 @@ export const initScenesTab = (): void => {
 
   const paintTrayGhosts = (clientX: number, clientY: number, keys: readonly string[]): void => {
     clearGhosts();
-    if (!snaps || !draft || keys.length === 0 || !pointerOnElement(boardFrame, clientX, clientY)) {
+    if (!snaps || !draft || keys.length === 0 || !onVisibleBoard(clientX, clientY)) {
       return;
     }
     const uv = boardUvFromEvent(overlay, { clientX, clientY });
@@ -632,11 +793,12 @@ export const initScenesTab = (): void => {
     dragKind: "token" | "family" | "tray",
     dragKey: string,
     trayKeys: readonly string[] = [],
-    polarSnapIndex?: number
+    polarSnapIndex?: number,
+    sourceSeatKey?: string
   ): void => {
     const before = snapshotTokenRects();
     clearGhosts();
-    applyBoardDrop(clientX, clientY, dragKind, dragKey, trayKeys, polarSnapIndex);
+    applyBoardDrop(clientX, clientY, dragKind, dragKey, trayKeys, polarSnapIndex, sourceSeatKey);
     render();
     flipTokensFrom(before);
   };
@@ -651,15 +813,23 @@ export const initScenesTab = (): void => {
     });
   };
 
-  const bindTokenDrag = (el: HTMLElement, characterKey: string, fromTray = false, polarSnapIndex?: number): void => {
+  const bindTokenDrag = (
+    el: HTMLElement,
+    characterKey: string,
+    fromTray = false,
+    polarSnapIndex?: number,
+    sourceSeatKey?: string
+  ): void => {
     bindBoardDrag(el, {
       boardFrame,
       dragLayer,
       pickup: true,
       leaveOrigin: !fromTray,
       clearCue: true,
+      onBoard: onVisibleBoard,
       onMove: (clientX, clientY) => paintTokenGhosts(clientX, clientY, characterKey),
-      onEnd: (clientX, clientY) => finishBoardDrag(clientX, clientY, "token", characterKey, [], polarSnapIndex)
+      onEnd: (clientX, clientY) =>
+        finishBoardDrag(clientX, clientY, "token", characterKey, [], polarSnapIndex, sourceSeatKey)
     });
   };
 
@@ -697,6 +867,7 @@ export const initScenesTab = (): void => {
       dragLayer,
       pickup: false,
       clearCue: true,
+      onBoard: onVisibleBoard,
       onDragStart: () => {
         handle.dataset.dragging = "1";
         gsap.killTweensOf(handle);
@@ -726,7 +897,24 @@ export const initScenesTab = (): void => {
     }
   };
 
-  const placeOnSeat = (characterKey: string, seatKey: string, fromPolarSnapIndex?: number): void => {
+  const stampSeatTableSlots = (): void => {
+    if (!draft || !snaps) {
+      return;
+    }
+    for (const seat of snaps.seats) {
+      const row = draft.standard.seatSlots[seat.seatKey];
+      if (row && seat.tableSlot !== undefined) {
+        row.tableSlot = seat.tableSlot;
+      }
+    }
+  };
+
+  const placeOnSeat = (
+    characterKey: string,
+    seatKey: string,
+    fromPolarSnapIndex?: number,
+    sourceSeatKey?: string
+  ): void => {
     if (!draft || !catalogs || !snaps) {
       return;
     }
@@ -734,31 +922,9 @@ export const initScenesTab = (): void => {
     if (!seat) {
       return;
     }
-    const isPcSeat = Boolean(PC_BY_COLOR[seatKey]);
-    if (isPcSeat) {
-    const currentDraft = draft;
-    const sourceColor = catalogs.playerColors.find((color) => {
-      const occupant = currentDraft.standard.seatSlots[color];
-      return occupant?.characterKey === characterKey;
-    });
-      if (sourceColor && sourceColor !== seatKey) {
-        const source = draft.standard.seatSlots[sourceColor];
-        const dest = draft.standard.seatSlots[seatKey];
-        if (source && dest) {
-          const sourceSlot = source.tableSlot;
-          const destSlot = dest.tableSlot;
-          if (destSlot !== undefined) {
-            source.tableSlot = destSlot;
-          } else {
-            delete source.tableSlot;
-          }
-          if (sourceSlot !== undefined) {
-            dest.tableSlot = sourceSlot;
-          } else {
-            delete dest.tableSlot;
-          }
-        }
-      }
+    if (sourceSeatKey && sourceSeatKey !== seatKey) {
+      draft.standard.seatSlots = moveSeatOccupant(draft.standard.seatSlots, sourceSeatKey, seatKey);
+      stampSeatTableSlots();
       return;
     }
     const dest = draft.standard.seatSlots[seatKey];
@@ -791,10 +957,12 @@ export const initScenesTab = (): void => {
       slotEmpty: false
     };
     if (!destOccupant) {
+      stampSeatTableSlots();
       return;
     }
     if (moverPolar !== undefined) {
       placeNpcOnPolar(destOccupant, moverPolar, "OFF");
+      stampSeatTableSlots();
       return;
     }
     if (sourceNpcSeat) {
@@ -807,6 +975,7 @@ export const initScenesTab = (): void => {
         slotEmpty: false
       };
     }
+    stampSeatTableSlots();
   };
 
   const renderChrome = (): void => {
@@ -864,33 +1033,46 @@ export const initScenesTab = (): void => {
       requiredElement<HTMLButtonElement>("scenes-weather-rain"),
       "/icons/scenes/rain.svg",
       rainIconCount(weather.rain),
-      rainLabel(weather.rain)
+      rainLabel(weather.rain),
+      2
     );
     paintWeatherIcons(
       requiredElement<HTMLButtonElement>("scenes-weather-snow"),
       "/icons/scenes/snow.svg",
       snowIconCount(weather.snow),
-      snowLabel(weather.snow)
+      snowLabel(weather.snow),
+      3
     );
     paintWeatherIcons(
       requiredElement<HTMLButtonElement>("scenes-weather-wind"),
       "/icons/scenes/wind.svg",
       windIconCount(weather.wind),
-      windLabel(weather.wind, winter)
+      windLabel(weather.wind, winter),
+      3,
+      winter && weather.wind !== "none"
     );
     paintWeatherIcons(
       requiredElement<HTMLButtonElement>("scenes-weather-thunder"),
       "/icons/scenes/thunder.svg",
       thunderIconCount(weather.thunder),
-      weather.thunder ? "Thunderstorm" : "No thunder"
+      weather.thunder ? "Thunderstorm" : "No thunder",
+      1
     );
     const debugToggle = requiredElement<HTMLButtonElement>("scenes-debug-toggle");
     debugToggle.classList.toggle("lock", debugMode);
     debugToggle.classList.toggle("active", debugMode);
     const fillButton = requiredElement<HTMLButtonElement>("scenes-debug-fill");
     fillButton.hidden = !debugMode;
-    fillButton.classList.toggle("lock", debugFillOn);
-    fillButton.classList.toggle("active", debugFillOn);
+    fillButton.classList.toggle("lock", debugFillOn && !debugNamesLocked);
+    fillButton.classList.toggle("active", debugFillOn && !debugNamesLocked);
+    const restorePcsButton = requiredElement<HTMLButtonElement>("scenes-debug-restore-pcs");
+    restorePcsButton.hidden = !debugMode;
+    const fillLockButton = requiredElement<HTMLButtonElement>("scenes-debug-fill-lock");
+    fillLockButton.hidden = !debugMode;
+    fillLockButton.classList.toggle("lock", debugNamesLocked);
+    fillLockButton.classList.toggle("active", debugNamesLocked);
+    const nameOffsetsButton = requiredElement<HTMLButtonElement>("scenes-debug-name-offsets");
+    nameOffsetsButton.hidden = !debugMode;
     const district = catalogs.districts.find((row) => row.key === current.districtKey);
     const site = catalogs.sites.find((row) => row.key === current.siteKey);
     setPlaceLabel("scenes-district", district ? district.name : "District", !district);
@@ -968,18 +1150,25 @@ export const initScenesTab = (): void => {
           `polar:${token.snapIndex}`
         );
         placeToken(el, snap.u, snap.v);
-        applyTokenNameLayout(el, nameLayoutForPolarSnap(boardSnaps, snap));
+        applyPlacedTokenName(el, nameLayoutForPolarSnap(boardSnaps, snap), token.snapIndex);
         el.title = characterLabel(boardCatalogs, token.characterKey);
-        el.addEventListener("dblclick", () => {
-          token.npcLightMode = token.npcLightMode === "OFF" ? "STANDARD" : "OFF";
-          persist();
-          render();
-        });
+        if (!debugNamesLocked) {
+          el.addEventListener("dblclick", () => {
+            token.npcLightMode = token.npcLightMode === "OFF" ? "STANDARD" : "OFF";
+            persist();
+            render();
+          });
+        }
         overlay.append(el);
-        bindTokenDrag(el, token.characterKey, false, token.snapIndex);
+        if (!debugNamesLocked) {
+          bindTokenDrag(el, token.characterKey, false, token.snapIndex);
+        }
       }
       const familyIds = new Set(boardSnaps.polar.map((snap) => snap.familyId));
       for (const familyId of familyIds) {
+        if (debugNamesLocked) {
+          continue;
+        }
         const layout = familyHandleLayoutFor(boardSnaps, familyId);
         if (!layout) {
           continue;
@@ -1013,15 +1202,19 @@ export const initScenesTab = (): void => {
           `seat:${seat.seatKey}:${row.characterKey}`
         );
         placeToken(el, seat.u, seat.v);
-        applyTokenNameLayout(el, nameLayoutForSeat(seat, snaps.seats.length, seatIndex));
+        applyPlacedTokenName(el, nameLayoutForSeat(seat, snaps.seats.length, seatIndex), undefined, seat.seatKey);
         el.title = `${characterLabel(catalogs, row.characterKey)} — ${seat.seatKey}`;
-        el.addEventListener("dblclick", () => {
-          row.isPresent = !row.isPresent;
-          persist();
-          render();
-        });
+        if (!debugNamesLocked) {
+          el.addEventListener("dblclick", () => {
+            row.isPresent = !row.isPresent;
+            persist();
+            render();
+          });
+        }
         overlay.append(el);
-        bindTokenDrag(el, row.characterKey);
+        if (!debugNamesLocked) {
+          bindTokenDrag(el, row.characterKey, false, undefined, seat.seatKey);
+        }
       }
     } else {
       for (const areaKey of snaps.scatter.areaOrder) {
@@ -1289,26 +1482,30 @@ export const initScenesTab = (): void => {
       bodyClass?: string;
       footer?: (root: HTMLDivElement) => void;
       afterOpen?: () => void;
+      hideHeader?: boolean;
     }
   ): void => {
     closeModal();
     const backdrop = document.createElement("div");
-    backdrop.className = "modal-backdrop";
+    backdrop.className = options?.hideHeader === true ? "modal-backdrop scenes-district-map-backdrop" : "modal-backdrop";
     const card = document.createElement("div");
     card.className = options?.cardClass ? `modal-card ${options.cardClass}` : "modal-card";
-    const header = document.createElement("div");
-    header.className = "modal-header";
-    const heading = document.createElement("h2");
-    heading.textContent = title;
-    const close = document.createElement("button");
-    close.type = "button";
-    close.textContent = "Close";
-    close.addEventListener("click", closeModal);
-    header.append(heading, close);
     const body = document.createElement("div");
     body.className = options?.bodyClass ? `modal-body ${options.bodyClass}` : "modal-body";
     renderBody(body);
-    card.append(header, body);
+    if (options?.hideHeader !== true) {
+      const header = document.createElement("div");
+      header.className = "modal-header";
+      const heading = document.createElement("h2");
+      heading.textContent = title;
+      const close = document.createElement("button");
+      close.type = "button";
+      close.textContent = "Close";
+      close.addEventListener("click", closeModal);
+      header.append(heading, close);
+      card.append(header);
+    }
+    card.append(body);
     if (options?.footer) {
       const footer = document.createElement("div");
       footer.className = "scenes-district-map-footer";
@@ -1343,6 +1540,13 @@ export const initScenesTab = (): void => {
         img.height = DISTRICT_MAP_HEIGHT;
         img.draggable = false;
         map.append(img);
+        const closeX = document.createElement("button");
+        closeX.type = "button";
+        closeX.className = "scenes-district-map-close";
+        closeX.textContent = "X";
+        closeX.setAttribute("aria-label", "Close district map");
+        closeX.addEventListener("click", closeModal);
+        map.append(closeX);
         for (const pin of pins) {
           const button = document.createElement("button");
           button.type = "button";
@@ -1369,7 +1573,8 @@ export const initScenesTab = (): void => {
       },
       {
         cardClass: "scenes-district-map-card",
-        bodyClass: "scenes-district-map-body"
+        bodyClass: "scenes-district-map-body",
+        hideHeader: true
       }
     );
   };
@@ -1756,6 +1961,56 @@ export const initScenesTab = (): void => {
     } else {
       applyDebugFill();
     }
+    persist();
+    render();
+  });
+  requiredElement<HTMLButtonElement>("scenes-debug-fill-lock").addEventListener("click", () => {
+    if (!debugMode || !draft) {
+      return;
+    }
+    if (debugNamesLocked) {
+      debugNamesLocked = false;
+    } else {
+      applyDebugFill();
+      debugNamesLocked = true;
+    }
+    persist();
+    render();
+  });
+  requiredElement<HTMLButtonElement>("scenes-debug-name-offsets").addEventListener("click", () => {
+    const polar: Record<string, NameOffset> = {};
+    const seats: Record<string, NameOffset> = {};
+    for (const el of overlay.querySelectorAll<HTMLElement>("[data-token-id]")) {
+      const id = el.dataset.tokenId ?? "";
+      const ox = roundOffset(Number.parseFloat(el.style.getPropertyValue("--name-ox")) || 0);
+      const oy = roundOffset(Number.parseFloat(el.style.getPropertyValue("--name-oy")) || 0);
+      const align: NameAlign =
+        el.dataset.nameAlign === "left" || el.dataset.nameAlign === "right" ? el.dataset.nameAlign : "center";
+      const offset = { ox, oy, align };
+      if (id.startsWith("polar:")) {
+        polar[id.slice("polar:".length)] = offset;
+      } else if (id.startsWith("seat:")) {
+        const seatKey = id.slice("seat:".length).split(":")[0] ?? "";
+        if (seatKey !== "") {
+          seats[seatKey] = offset;
+        }
+      }
+    }
+    const text = formatNameOffsetsClipboard(polar, seats);
+    void navigator.clipboard.writeText(text).then(
+      () => {
+        setStatus("success", "Name offsets copied to the clipboard.");
+      },
+      () => {
+        setStatus("error", "Could not copy name offsets.");
+      }
+    );
+  });
+  requiredElement<HTMLButtonElement>("scenes-debug-restore-pcs").addEventListener("click", () => {
+    if (!debugMode || !draft || !catalogs || !snaps) {
+      return;
+    }
+    restoreDefaultPcSeats(draft, catalogs, snaps);
     persist();
     render();
   });

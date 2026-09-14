@@ -1,4 +1,4 @@
-import type { NpcLightMode, PolarToken } from "./types.js";
+import type { NpcLightMode, PolarToken, SeatSlotRow } from "./types.js";
 
 export const swapOntoPolarSnap = (
   tokens: PolarToken[],
@@ -25,3 +25,57 @@ export const swapOntoPolarSnap = (
   }
   return [...next, { characterKey, snapIndex: destSnapIndex, npcLightMode: light }];
 };
+
+const cloneSeat = (row: SeatSlotRow): SeatSlotRow => ({ ...row });
+
+const emptySeat = (): SeatSlotRow => ({
+  characterKey: "",
+  isPlayingNPC: false,
+  isPresent: false,
+  slotEmpty: true
+});
+
+export const swapSeatOccupants = (
+  seats: Record<string, SeatSlotRow>,
+  sourceKey: string,
+  destKey: string
+): Record<string, SeatSlotRow> => {
+  if (sourceKey === destKey) {
+    return seats;
+  }
+  const source = seats[sourceKey];
+  const dest = seats[destKey];
+  if (!source || !dest) {
+    return seats;
+  }
+  return {
+    ...seats,
+    [sourceKey]: { ...cloneSeat(dest), tableSlot: source.tableSlot },
+    [destKey]: { ...cloneSeat(source), tableSlot: dest.tableSlot }
+  };
+};
+
+export const moveSeatOccupant = (
+  seats: Record<string, SeatSlotRow>,
+  sourceKey: string,
+  destKey: string
+): Record<string, SeatSlotRow> => {
+  if (sourceKey === destKey) {
+    return seats;
+  }
+  const source = seats[sourceKey];
+  const dest = seats[destKey];
+  if (!source || !dest) {
+    return seats;
+  }
+  const destTaken = dest.slotEmpty !== true && dest.characterKey !== "" && dest.characterKey !== source.characterKey;
+  if (destTaken) {
+    return swapSeatOccupants(seats, sourceKey, destKey);
+  }
+  return {
+    ...seats,
+    [destKey]: { ...cloneSeat(source), tableSlot: dest.tableSlot, slotEmpty: false },
+    [sourceKey]: { ...emptySeat(), tableSlot: source.tableSlot }
+  };
+};
+

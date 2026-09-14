@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { captionClassForSide, nameLayoutForPolarSnap, nameLayoutForSeat } from "./tokenNames";
+import { captionClassForSide, nameAlignColor, nameLayoutForPolarSnap, nameLayoutForSeat, nextNameAlign } from "./tokenNames";
 import type { ControlBoardSnaps, PolarSnap, SeatSnap } from "./types";
 
 const snap = (row: Pick<PolarSnap, "snapIndex" | "familyId" | "u" | "ringIndex">): PolarSnap => ({
@@ -59,5 +59,17 @@ describe("nameLayoutForSeat", () => {
     expect(nameLayoutForSeat(seat, 9, 0).side).toBe("below");
     expect(nameLayoutForSeat(seat, 9, 1).side).toBe("below");
     expect(nameLayoutForSeat(seat, 9, 1).oy).not.toBe(nameLayoutForSeat(seat, 9, 0).oy);
+    expect(nameLayoutForSeat(seat, 9, 0).align).toBe("center");
+  });
+});
+
+describe("name alignment", () => {
+  it("cycles center → left → right and color-codes each", () => {
+    expect(nextNameAlign("center")).toBe("left");
+    expect(nextNameAlign("left")).toBe("right");
+    expect(nextNameAlign("right")).toBe("center");
+    expect(nameAlignColor("center")).toBe("#00FF00");
+    expect(nameAlignColor("left")).toBe("#FFFF00");
+    expect(nameAlignColor("right")).toBe("#00FFFF");
   });
 });

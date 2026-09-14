@@ -1,12 +1,32 @@
 import { polarAreaNameForFamily } from "./payload.js";
+import type { NameAlign } from "./nameOffsets.js";
 import type { ControlBoardSnaps, PolarSnap, SeatSnap } from "./types.js";
 
 export type NameSide = "below" | "above" | "left" | "right";
+export type { NameAlign };
 
 export type TokenNameLayout = {
   side: NameSide;
   ox: number;
   oy: number;
+  align: NameAlign;
+};
+
+export const NAME_ALIGN_CYCLE: readonly NameAlign[] = ["center", "left", "right"];
+
+export const nextNameAlign = (align: NameAlign): NameAlign => {
+  const index = NAME_ALIGN_CYCLE.indexOf(align);
+  return NAME_ALIGN_CYCLE[(index + 1) % NAME_ALIGN_CYCLE.length] ?? "center";
+};
+
+export const nameAlignColor = (align: NameAlign): string => {
+  if (align === "left") {
+    return "#FFFF00";
+  }
+  if (align === "right") {
+    return "#00FFFF";
+  }
+  return "#00FF00";
 };
 
 /** Author-editable per-snap name placement. Missing keys use the family heuristic. */
@@ -34,7 +54,8 @@ const familyMembers = (snaps: ControlBoardSnaps, familyId: string): PolarSnap[] 
 const mergeLayout = (base: TokenNameLayout, authored?: Partial<TokenNameLayout>): TokenNameLayout => ({
   side: authored?.side ?? base.side,
   ox: authored?.ox ?? base.ox,
-  oy: authored?.oy ?? base.oy
+  oy: authored?.oy ?? base.oy,
+  align: authored?.align ?? base.align
 });
 
 export const captionClassForSide = (side: NameSide): string => {
@@ -58,19 +79,19 @@ export const nameLayoutForPolarSnap = (snaps: ControlBoardSnaps, snap: PolarSnap
   let base: TokenNameLayout;
   if (area === "CENTER") {
     const side: NameSide = snap.u < 0.5 - 0.002 ? "left" : snap.u > 0.5 + 0.002 ? "right" : "above";
-    base = { side, ox: 0, oy: spread * 18 };
+    base = { side, ox: 0, oy: spread * 18, align: "center" };
   } else if (area.startsWith("Mid") || area.startsWith("Far Center")) {
-    base = { side: "above", ox: spread * 20, oy: 0 };
+    base = { side: "above", ox: spread * 20, oy: 0, align: "center" };
   } else if (area === "Far Left" || area === "Center Left") {
-    base = { side: "left", ox: 0, oy: spread * 20 };
+    base = { side: "left", ox: 0, oy: spread * 20, align: "center" };
   } else if (area === "Far Right" || area === "Center Right") {
-    base = { side: "right", ox: 0, oy: spread * 20 };
+    base = { side: "right", ox: 0, oy: spread * 20, align: "center" };
   } else {
     const side = SIDE_BY_AREA[area] ?? "below";
     base =
       side === "left" || side === "right"
-        ? { side, ox: 0, oy: spread * 16 }
-        : { side, ox: spread * 14, oy: 0 };
+        ? { side, ox: 0, oy: spread * 16, align: "center" }
+        : { side, ox: spread * 14, oy: 0, align: "center" };
   }
   return mergeLayout(base, SNAP_NAME_LAYOUT[snap.snapIndex]);
 };
@@ -78,17 +99,29 @@ export const nameLayoutForPolarSnap = (snaps: ControlBoardSnaps, snap: PolarSnap
 export const nameLayoutForSeat = (seat: SeatSnap, seatCount: number, seatIndex: number): TokenNameLayout => {
   const spread = seatIndex - (seatCount - 1) / 2;
   return mergeLayout(
-    { side: "below", ox: spread * 22, oy: seatIndex % 2 === 0 ? 0 : 16 },
+    { side: "below", ox: spread * 22, oy: seatIndex % 2 === 0 ? 0 : 16, align: "center" },
     SEAT_NAME_LAYOUT[seat.seatKey]
   );
 };
 
 export const applyTokenNameLayout = (tokenEl: HTMLElement, layout: TokenNameLayout): void => {
-  tokenEl.classList.remove("scenes-token-caption-above", "scenes-token-caption-left", "scenes-token-caption-right");
+  tokenEl.classList.remove(
+    "scenes-token-caption-above",
+    "scenes-token-caption-left",
+    "scenes-token-caption-right",
+    "scenes-token-align-left",
+    "scenes-token-align-right"
+  );
   const caption = captionClassForSide(layout.side);
   if (caption !== "") {
     tokenEl.classList.add(caption);
   }
+  if (layout.align === "left") {
+    tokenEl.classList.add("scenes-token-align-left");
+  } else if (layout.align === "right") {
+    tokenEl.classList.add("scenes-token-align-right");
+  }
+  tokenEl.dataset.nameAlign = layout.align;
   tokenEl.style.setProperty("--name-ox", `${layout.ox}px`);
   tokenEl.style.setProperty("--name-oy", `${layout.oy}px`);
 };

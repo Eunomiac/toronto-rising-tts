@@ -1,4 +1,5 @@
-import type { ControlBoardSnaps, PolarToken, SceneDraft, SeatSlotRow } from "./types.js";
+import type { ControlBoardSnaps, PolarToken, SceneCatalogs, SceneDraft, SeatSlotRow } from "./types.js";
+import { defaultSeatSlots } from "./payload.js";
 
 export const DEBUG_FILL_CHARACTER_KEY = "rashid";
 
@@ -44,4 +45,22 @@ export const applyDebugFillToDraft = (
 export const restoreDebugFillBackup = (draft: SceneDraft, backup: DebugFillBackup): void => {
   draft.standard.polar = backup.polar.map((token) => ({ ...token }));
   draft.standard.seatSlots = cloneSeatSlots(backup.seatSlots);
+};
+
+export const restoreDefaultPcSeats = (draft: SceneDraft, catalogs: SceneCatalogs, snaps: ControlBoardSnaps): void => {
+  const defaults = defaultSeatSlots(catalogs, snaps);
+  for (const color of catalogs.playerColors) {
+    const row = defaults[color];
+    if (row) {
+      draft.standard.seatSlots[color] = { ...row };
+    }
+  }
+  for (const npcSeat of catalogs.npcSeats) {
+    draft.standard.seatSlots[npcSeat] = {
+      characterKey: "",
+      isPlayingNPC: false,
+      isPresent: false,
+      slotEmpty: true
+    };
+  }
 };

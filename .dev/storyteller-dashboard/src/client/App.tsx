@@ -152,6 +152,9 @@ export const App = (): ReactElement => {
             <div className="scenes-board-tools">
               <button id="scenes-debug-toggle" type="button">Debug</button>
               <button id="scenes-debug-fill" type="button" hidden>Fill Stage</button>
+              <button id="scenes-debug-fill-lock" type="button" hidden>Fill and Lock</button>
+              <button id="scenes-debug-name-offsets" type="button" hidden>Get Name Offsets</button>
+              <button id="scenes-debug-restore-pcs" type="button" hidden>Restore PCs</button>
               <button id="scenes-clear-stage" className="scenes-clear-stage" type="button">Clear Stage</button>
             </div>
           </div>

@@ -429,6 +429,11 @@
     &.lock {
       opacity: 1;
     }
+
+    &.scenes-weather-winter-wind {
+      outline: 2px solid #00e8ff;
+      outline-offset: 2px;
+    }
   }
 }
 
@@ -516,8 +521,10 @@
   bottom: 0.55rem;
   z-index: 7;
   display: flex;
+  flex-wrap: wrap;
   gap: 0.28rem;
   align-items: center;
+  max-width: calc(100% - 1.1rem);
 }
 
 .scenes-clear-stage {
@@ -714,9 +721,31 @@
     overflow: visible;
   }
 
+  &-align-left .scenes-token-name {
+    text-align: left;
+    transform: translate(0, 0) translate(var(--name-ox, 0px), var(--name-oy, 0px));
+  }
+
+  &-align-right .scenes-token-name {
+    text-align: right;
+    transform: translate(-100%, 0) translate(var(--name-ox, 0px), var(--name-oy, 0px));
+  }
+
   &-caption-above .scenes-token-name {
     top: auto;
     bottom: 98%;
+  }
+
+  &-caption-above.scenes-token-align-left .scenes-token-name {
+    transform: translate(0, 0) translate(var(--name-ox, 0px), var(--name-oy, 0px));
+  }
+
+  &-caption-above.scenes-token-align-right .scenes-token-name {
+    transform: translate(-100%, 0) translate(var(--name-ox, 0px), var(--name-oy, 0px));
+  }
+
+  &-caption-left.scenes-token-align-left .scenes-token-name {
+    transform: translate(-100%, -50%) translate(var(--name-ox, 0px), var(--name-oy, 0px));
   }
 
   &-caption-left .scenes-token-name {
@@ -725,10 +754,24 @@
     transform: translate(-100%, -50%) translate(var(--name-ox, 0px), var(--name-oy, 0px));
   }
 
+  &-caption-left.scenes-token-align-right .scenes-token-name {
+    transform: translate(0, -50%) translate(var(--name-ox, 0px), var(--name-oy, 0px));
+  }
+
   &-caption-right .scenes-token-name {
     left: 100%;
     top: 50%;
     transform: translate(0, -50%) translate(var(--name-ox, 0px), var(--name-oy, 0px));
+  }
+
+  &-caption-right.scenes-token-align-right .scenes-token-name {
+    transform: translate(-100%, -50%) translate(var(--name-ox, 0px), var(--name-oy, 0px));
+  }
+
+  &-name-locked .scenes-token-name {
+    pointer-events: auto;
+    z-index: 8;
+    cursor: grab;
   }
 
   &.scenes-token-will-clear {
@@ -934,29 +977,25 @@
   }
 }
 
+.scenes-district-map-backdrop {
+  padding: 0;
+  overflow: hidden;
+}
+
 .modal-card.scenes-district-map-card {
   width: max-content;
-  max-width: calc(100vw - 3rem);
-  max-height: 94vh;
+  max-width: none;
+  max-height: none;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-
-  .modal-header {
-    flex: 0 0 auto;
-    padding: 0.55rem 0.85rem;
-
-    h2 {
-      font-size: 1.45rem;
-    }
-  }
+  padding: 0;
+  border-radius: 0;
 }
 
 .scenes-district-map-body {
   padding: 0;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: auto;
+  overflow: hidden;
 }
 
 .scenes-district-map {
@@ -975,6 +1014,24 @@
   }
 }
 
+.scenes-district-map-close {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  z-index: 3;
+  width: 1.7rem;
+  height: 1.7rem;
+  padding: 0;
+  border: 1px solid rgb(255 255 255 / 35%);
+  border-radius: 0.2rem;
+  background: rgb(12 12 15 / 72%);
+  color: #f4efe6;
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
 .scenes-district-pin {
   position: absolute;
   left: 0;
@@ -983,26 +1040,38 @@
   max-width: 7.6rem;
   margin: 0;
   padding: 0.18rem 0.4rem;
-  border: 1px solid rgb(255 255 255 / 28%);
+  border: 1px solid transparent;
   border-radius: 0.28rem;
-  background: rgb(12 12 15 / 88%);
-  color: #f4efe6;
+  background: transparent;
+  color: rgb(0 0 0 / 0);
   font-size: 0.68rem;
   font-weight: 650;
   line-height: 1.15;
   text-align: center;
   white-space: normal;
   cursor: pointer;
-
-  &.active {
-    border-color: #e8c56b;
-    background: rgb(40 32 12 / 92%);
-    color: #ffe9a8;
-  }
+  opacity: 0;
+  transition: opacity 0.12s ease, background-color 0.12s ease, border-color 0.12s ease;
 
   &:hover,
   &:focus-visible {
-    border-color: #f0d48a;
+    opacity: 1;
+    background: rgb(232 197 107 / 42%);
+    border-color: transparent;
+    color: rgb(0 0 0 / 0);
+  }
+
+  &.active {
+    opacity: 1;
+    background: transparent;
+    border-color: #e8c56b;
+    color: rgb(0 0 0 / 0);
+  }
+
+  &.active:hover,
+  &.active:focus-visible {
+    background: transparent;
+    border-color: #e8c56b;
   }
 }
 

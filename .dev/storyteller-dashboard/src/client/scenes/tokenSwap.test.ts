@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { swapOntoPolarSnap } from "./tokenSwap";
+import { swapOntoPolarSnap, swapSeatOccupants, moveSeatOccupant } from "./tokenSwap";
 
 describe("swapOntoPolarSnap", () => {
   it("swaps two polar tokens", () => {
@@ -27,5 +27,32 @@ describe("swapOntoPolarSnap", () => {
       "OFF"
     );
     expect(next.map((token) => token.characterKey)).toEqual(["a"]);
+  });
+});
+
+describe("seat occupants", () => {
+  const orange = { characterKey: "rashid", isPlayingNPC: false, isPresent: true, tableSlot: 1 };
+  const red = { characterKey: "lordLucien", isPlayingNPC: false, isPresent: true, tableSlot: 2 };
+
+  it("swaps two seated players including table slots", () => {
+    const next = swapSeatOccupants({ Orange: orange, Red: red }, "Orange", "Red");
+    expect(next.Orange?.characterKey).toBe("lordLucien");
+    expect(next.Red?.characterKey).toBe("rashid");
+    expect(next.Orange?.tableSlot).toBe(1);
+    expect(next.Red?.tableSlot).toBe(2);
+  });
+
+  it("moves onto an empty chair and clears the source chair", () => {
+    const next = moveSeatOccupant(
+      {
+        Orange: orange,
+        NPC1: { characterKey: "", isPlayingNPC: false, isPresent: false, slotEmpty: true }
+      },
+      "Orange",
+      "NPC1"
+    );
+    expect(next.NPC1?.characterKey).toBe("rashid");
+    expect(next.Orange?.slotEmpty).toBe(true);
+    expect(next.Orange?.characterKey).toBe("");
   });
 });

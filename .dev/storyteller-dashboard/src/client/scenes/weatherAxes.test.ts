@@ -9,6 +9,7 @@ import {
   resolveWindCatalogKey,
   snowIconCount,
   thunderIconCount,
+  weatherIntensityFill,
   windIconCount
 } from "./weatherAxes";
 
@@ -47,6 +48,12 @@ describe("weatherAxes", () => {
     expect(windIconCount("max")).toBe(3);
     expect(snowIconCount("heavy")).toBe(3);
     expect(thunderIconCount(true)).toBe(1);
+  });
+
+  it("ramps weather button red from dark to #FF0000", () => {
+    expect(weatherIntensityFill(0, 3)).toBe("transparent");
+    expect(weatherIntensityFill(3, 3)).toBe("rgb(255, 0, 0)");
+    expect(weatherIntensityFill(1, 3)).not.toBe("rgb(255, 0, 0)");
   });
 
   it("restores independent axes from an old single weatherKey", () => {
