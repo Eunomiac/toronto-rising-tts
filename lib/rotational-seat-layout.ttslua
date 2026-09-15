@@ -2463,6 +2463,11 @@ local function normalizeTableKeyInput(tableKey)
   if U.Type(tableKey) ~= "string" or tableKey == "" then
     return tableKey
   end
+  local Occupancy = require("lib.scatter_occupancy")
+  if Occupancy.isScatterTableKey(tableKey) then
+    local ScatterMode = require("core.scatter_mode")
+    return ScatterMode.TABLE_KEY
+  end
   if U.Type(C.Tables) == "table" and U.Type(C.Tables[tableKey]) == "table" then
     return tableKey
   end
@@ -3614,6 +3619,8 @@ function M.SyncTable(tableKey, opts)
     return { scatter = true }
   end
   if ScatterMode.isActive() then
+    local Occupancy = require("lib.scatter_occupancy")
+    Occupancy.prepareLeaveToStandard(key, { skipRestore = opts.skipScatterRestore == true })
     ScatterMode.leave(opts)
   end
   if inferredFromTags then
@@ -3729,7 +3736,11 @@ function M.SetTableTo(tableKey, opts)
   local destKey = normalizeTableKeyInput(tableKey)
   if destKey == ScatterMode.TABLE_KEY then
     local function enterScatter()
-      ScatterMode.enter({ force = true })
+      if ScatterMode.isActive() ~= true then
+        ScatterMode.enter({ force = true, translateFromStandard = true })
+      else
+        ScatterMode.enter({ force = true })
+      end
     end
     if opts.skipTransitionBlindfold == true then
       enterScatter()
@@ -3742,16 +3753,20 @@ function M.SetTableTo(tableKey, opts)
     end)
     return nil
   end
+  local currentTableKey = S.getStateVal("seatLayout", "currentTableKey")
+  local leavingScatter = currentTableKey == ScatterMode.TABLE_KEY
+  if leavingScatter then
+    local Occupancy = require("lib.scatter_occupancy")
+    Occupancy.prepareLeaveToStandard(destKey, { skipRestore = opts.skipScatterRestore == true })
+    ScatterMode.leave(opts)
+  end
   local shuffled = false
-  if shouldRandomizeSeating(destKey, opts) then
+  if leavingScatter ~= true and shouldRandomizeSeating(destKey, opts) then
     destKey = applyRandomSeatingOccupancy(destKey)
     shuffled = true
   end
   local resolvedKey, _ = resolveTableRef(destKey)
-  local currentTableKey = S.getStateVal("seatLayout", "currentTableKey")
-  if currentTableKey == ScatterMode.TABLE_KEY then
-    ScatterMode.leave()
-  end
+  currentTableKey = S.getStateVal("seatLayout", "currentTableKey")
 
   local function doSwitch()
     M.resolveSeatObjectsFromTable(resolvedKey, nil, { force = true })

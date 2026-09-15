@@ -323,6 +323,8 @@ function S.GetDefaultGameState()
             --- Per-occupant per-role Y snapshot taken when occupancy-stashing a pile at −200 (TOR-512).
             --- Distinguishes occupancy bury from feature-hide (CSHEET pages, signal fire, hunger smoke).
             absentPileY = {},
+            --- Standard occupancy snapshot while Scatter is a mid-scene table change (TOR-573).
+            scatterRestore = nil,
         },
         --- Single live PC roll (TOR-262): seat color in ROLLING until post-broadcast cleanup.
         rollConcurrency = {
@@ -422,6 +424,8 @@ function S.GetDefaultGameState()
             },
             --- Scatter Mode occupancy (six groups). Present when `placementMode` is `scatter`.
             scatterPlacements = nil,
+            --- True when the live scene was applied from an authored Scatter library row (no Standard stash to restore).
+            scatterAuthored = false,
         },
         --- Saved scene bundles (same `sessionScene` shape per entry) + UI ordering. Only `gameState.sessionScene` drives live reconciliation.
         sceneLibrary = {

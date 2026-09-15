@@ -111,6 +111,7 @@ local TABLE_TOGGLE_IDS = {
     scenes_tbl_TableB4 = "Table B4",
     scenes_tbl_TableB5 = "Table B5",
     scenes_tbl_TableC = "Table C",
+    scenes_tbl_Scatter = "Scatter",
 }
 
 --- Pre-declared rows in `ui/storyteller/panel_scenes_library.xml` (no dynamic `setXml` lists).
@@ -470,12 +471,25 @@ end
 --- @param pending boolean
 --- @return string|nil
 local function displayTableKeyFromBundle(bundle, pending)
+    local Occupancy = require("lib.scatter_occupancy")
     if pending and type(bundle) == "table" then
         local tk = bundle.tableKey
+        if Occupancy.isScatterTableKey(tk) then
+            return "Scatter"
+        end
         if type(tk) == "string" and tk ~= "" then
             return tk
         end
+        local activeKey = getActiveLibraryKey()
+        local entry = type(activeKey) == "string" and S.getStateVal("sceneLibrary", "scenes", activeKey) or nil
+        if type(entry) == "table" and entry.placementMode == "scatter" then
+            return "Scatter"
+        end
         return nil
+    end
+    local liveTk = S.getStateVal("sessionScene", "tableKey")
+    if Occupancy.isScatterTableKey(liveTk) or Occupancy.isScatterTableKey(S.getStateVal("seatLayout", "currentTableKey")) then
+        return "Scatter"
     end
     return effectiveTableKey()
 end
@@ -1969,26 +1983,30 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
         else
             tk = ""
         end
+        local Occupancy = require("lib.scatter_occupancy")
         local ScatterMode = require("core.scatter_mode")
-        if bundle.placementMode == "scatter" then
-            ScatterMode.enter({ force = true })
+        if bundle.placementMode == "scatter" or Occupancy.isScatterTableKey(tk) then
+            if type(bundle.scatterPlacements) ~= "table" then
+                local pack, errPack = Occupancy.translateFromSeatAuthoring(bundle)
+                if pack == nil then
+                    return false, "Apply failed: " .. tostring(errPack)
+                end
+                bundle.scatterPlacements = pack
+                S.setStateVal(pack, "sessionScene", "scatterPlacements")
+            end
+            ScatterMode.enter({ force = true, authored = true })
         elseif tk ~= "" then
             -- Accept explicit `C.Tables` keys and dynamic family keys (e.g. "Table B" → "Table B<N>");
             -- SetTableTo resolves family → concrete by occupied NPC seat count.
             if C.Tables[tk] ~= nil or RSL.isDynamicTableFamilyKey(tk) then
-                RSL.SetTableTo(tk, { skipTransitionBlindfold = true, randomizeSeating = true })
+                RSL.SetTableTo(tk, { skipTransitionBlindfold = true, randomizeSeating = true, skipScatterRestore = true })
             else
                 U.AlertGM("Scene bundle has unknown tableKey `" .. tk .. "` — seating layout was not switched.")
             end
         elseif ScatterMode.isActive() then
+            Occupancy.prepareLeaveToStandard("Table A", { skipRestore = true })
             ScatterMode.leave()
-            local fallback = S.getStateVal("seatLayout", "currentTableKey")
-            if fallback == ScatterMode.TABLE_KEY then
-                fallback = "Table A"
-            end
-            if type(fallback) == "string" and C.Tables[fallback] ~= nil then
-                RSL.SetTableTo(fallback, { skipTransitionBlindfold = true })
-            end
+            RSL.SetTableTo("Table A", { skipTransitionBlindfold = true, skipScatterRestore = true })
         end
 
         if GameStateOverlay and type(GameStateOverlay.resetRealTimeCarry) == "function" then
@@ -2139,14 +2157,21 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
 
     if TABLE_TOGGLE_IDS[id] ~= nil then
         local tableKey = TABLE_TOGGLE_IDS[id]
-        -- Accept explicit `C.Tables` keys and dynamic family keys (e.g. "Table B" → "Table B<N>").
-        if C.Tables[tableKey] == nil and not RSL.isDynamicTableFamilyKey(tableKey) then
+        local Occupancy = require("lib.scatter_occupancy")
+        local isScatter = Occupancy.isScatterTableKey(tableKey)
+        -- Accept explicit `C.Tables` keys, Scatter, and dynamic family keys (e.g. "Table B" → "Table B<N>").
+        if not isScatter and C.Tables[tableKey] == nil and not RSL.isDynamicTableFamilyKey(tableKey) then
             U.AlertGM("Unknown table key: " .. tostring(tableKey))
             return
         end
         local activeKey = getActiveLibraryKey()
         if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
             writePendingLibrarySessionSceneField(tableKey, "tableKey")
+            if isScatter then
+                S.setStateVal("scatter", "sceneLibrary", "scenes", activeKey, "placementMode")
+            else
+                S.setStateVal("standard", "sceneLibrary", "scenes", activeKey, "placementMode")
+            end
             StorytellerScenesPanel.refresh()
             U.AlertGM("Table `" .. tableKey .. "` saved on `" .. activeKey .. "` (applies when you Activate that scene).")
             return

@@ -235,6 +235,7 @@ Does **not** need live confirmation from Lua game state (author keeps gold list 
 
 ### PC-as-NPC Assignment
 
+
 ## Needs clarification
 
 ### Unclear Bugs
@@ -251,6 +252,8 @@ Does **not** need live confirmation from Lua game state (author keeps gold list 
 
 
 ## Processed
+
+2026-09-15 Immediate — Scatter chair import (`tableKey` Scatter) + live Standard↔Scatter stash/restore → **TOR-573** (shipped). relatedTo **TOR-572**.
 
 2026-08-30 `/tr-inbox` follow-up — overlay camera left-click default + FirstPerson face-look cycle → **TOR-538** (shipped). Replaces **TOR-521** right-click-default.
 

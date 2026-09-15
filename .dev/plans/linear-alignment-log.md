@@ -741,6 +741,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-09-12 | CREATE+SHIP | TOR-568 | Unmask Memoriam pcalls around panel URL / player-id lookup; pcall gate back to 24. relatedTo TOR-101 / TOR-564. |
 | 2026-09-12 | CREATE+SHIP | TOR-567 | Port TEST BED session-start intro sequence into default Play enter (`playAttribute`). relatedTo TOR-559 / TOR-563 / TOR-531. Pending Save & Play. |
 | 2026-09-07 | CREATE+SHIP | TOR-561 | Separate session-start vs session-end global blindfolds; session-numbered Images; supersedes TOR-524 image swap. Pending Save & Play. |
-| 2026-09-13 | CREATE+BASELINE | TOR-569 | Storyteller Dashboard Scene Import Guide from live importer + occupancy; living-doc stays In Progress. Parent TOR-552; relatedTo TOR-33. |
+| 2026-09-15 | CREATE+SHIP | TOR-573 | Scatter import from table=Scatter + live Standard↔Scatter translation. relatedTo TOR-572 / TOR-570 / TOR-507. Pending Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

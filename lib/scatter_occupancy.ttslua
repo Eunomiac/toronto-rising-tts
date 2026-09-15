@@ -1,0 +1,869 @@
+--[[
+    Scatter occupancy translation (TOR-573). Global `require` only — never from object scripts.
+
+    Seat-slot → scatter group (cycle past 6), polar-family packing, Standard stash/restore.
+]]
+
+local C = require("lib.constants")
+local U = require("lib.util")
+local ScatterLayout = require("lib.scatter_layout")
+
+local ScatterOccupancy = {}
+
+--- Polar pack names used when mapping occupied Standard stage groups onto scatter 1–6.
+ScatterOccupancy.POLAR_FAMILY_ORDER = (C.Scatter and C.Scatter.POLAR_FAMILY_ORDER) or {
+    "CENTER",
+    "Mid Center",
+    "Mid Left",
+    "Mid Right",
+    "Center Left",
+    "Center Right",
+    "Far Center-Left",
+    "Far Center-Right",
+    "Far Left",
+    "Far Right",
+}
+
+local function groupCount()
+    return ScatterLayout.groupCount()
+end
+
+--- @param tableKey any
+--- @return boolean
+function ScatterOccupancy.isScatterTableKey(tableKey)
+    if type(tableKey) ~= "string" then
+        return false
+    end
+    local trimmed = string.gsub(string.gsub(tableKey, "^%s+", ""), "%s+$", "")
+    return string.lower(trimmed) == "scatter"
+end
+
+--- Numbered chair → scatter group 1–6 (slot 7 → group 1).
+--- @param tableSlot number
+--- @return number
+function ScatterOccupancy.tableSlotToGroup(tableSlot)
+    local slot = math.floor(tonumber(tableSlot) or 0)
+    local n = groupCount()
+    if slot < 1 or n < 1 then
+        return 0
+    end
+    return ((slot - 1) % n) + 1
+end
+
+--- @param color string
+--- @return string|nil pcKey
+local function pcKeyForColor(color)
+    if type(color) ~= "string" then
+        return nil
+    end
+    for _, row in pairs(C.PlayerData or {}) do
+        if U.Type(row) == "table" and row.color == color and type(row.charKey) == "string" and row.charKey ~= "" then
+            return row.charKey
+        end
+    end
+    return nil
+end
+
+--- @param list table[]
+--- @return table[]
+local function shuffledCopy(list)
+    local out = {}
+    for i = 1, #list do
+        out[i] = list[i]
+    end
+    for i = #out, 2, -1 do
+        local j = math.random(i)
+        out[i], out[j] = out[j], out[i]
+    end
+    return out
+end
+
+--- Import/live translation: one PC → slot 1; several PCs shuffle into the lowest slots.
+--- @param pcRows table[] `{ pcKey, isPlayingNPC, characterKey?, isPresent }`
+--- @return table|nil centerCharacters, string|nil err
+local function assignPcSlots(pcRows)
+    local n = #pcRows
+    if n > 5 then
+        return nil, "a scatter group can hold at most 5 PCs."
+    end
+    local ordered = n <= 1 and pcRows or shuffledCopy(pcRows)
+    local center = {}
+    for i = 1, n do
+        local row = ordered[i]
+        local slot = i
+        center[row.pcKey] = {
+            slot = slot,
+            isPlayingNPC = row.isPlayingNPC == true,
+            isPresent = row.isPresent ~= false,
+            characterKey = row.characterKey,
+        }
+        if row.isPlayingNPC ~= true then
+            center[row.pcKey].characterKey = nil
+        end
+    end
+    return center, nil
+end
+
+--- Seated NPCs fill the lowest NPC slots first, then unseated (each batch shuffled).
+--- @param seated table[] `{ npcKey, npcLightMode }`
+--- @param unseated table[] `{ npcKey, npcLightMode }`
+--- @return table orbitCharacters
+local function assignNpcSlots(seated, unseated)
+    local orbit = {}
+    local slot = 1
+    local function take(batch)
+        local ordered = #batch <= 1 and batch or shuffledCopy(batch)
+        for i = 1, #ordered do
+            local row = ordered[i]
+            local light = row.npcLightMode
+            if light ~= "OFF" and light ~= "STANDARD" then
+                light = "STANDARD"
+            end
+            orbit[row.npcKey] = {
+                slot = slot,
+                npcLightMode = light,
+            }
+            slot = slot + 1
+        end
+    end
+    take(seated or {})
+    take(unseated or {})
+    return orbit
+end
+
+--- @param sessionScene table
+--- @param pcsByGroup table
+--- @param seatedByGroup table
+--- @param unseatedByGroup table
+--- @return table|nil pack
+--- @return string|nil err
+local function packFromBuckets(pcsByGroup, seatedByGroup, unseatedByGroup)
+    local pack = ScatterLayout.emptyPlacements()
+    local used = {}
+    for g = 1, groupCount() do
+        local areaKey = ScatterLayout.areaKeyForGroup(g)
+        local center, errPc = assignPcSlots(pcsByGroup[g] or {})
+        if center == nil then
+            return nil, "scatter group " .. tostring(g) .. ": " .. tostring(errPc)
+        end
+        for pcKey, _ in pairs(center) do
+            if used[pcKey] ~= nil then
+                return nil, "character " .. pcKey .. " is in more than one scatter group."
+            end
+            used[pcKey] = true
+            if type(center[pcKey].characterKey) == "string" then
+                local played = center[pcKey].characterKey
+                if used[played] ~= nil then
+                    return nil, "character " .. played .. " is in more than one scatter group."
+                end
+                used[played] = true
+            end
+        end
+        local orbit = assignNpcSlots(seatedByGroup[g] or {}, unseatedByGroup[g] or {})
+        for npcKey, _ in pairs(orbit) do
+            if used[npcKey] ~= nil then
+                return nil, "character " .. npcKey .. " is in more than one scatter group."
+            end
+            used[npcKey] = true
+        end
+        pack[areaKey].centerCharacters = center
+        pack[areaKey].orbitCharacters = orbit
+    end
+    return pack, nil
+end
+
+--- Translate seatSlots + scatterGroup placements into scatterPlacements.
+--- @param sessionScene table
+--- @return table|nil pack
+--- @return string|nil err
+function ScatterOccupancy.translateFromSeatAuthoring(sessionScene)
+    if U.Type(sessionScene) ~= "table" then
+        return nil, "sessionScene is required."
+    end
+    local slots = sessionScene.seatSlots
+    if U.Type(slots) ~= "table" then
+        return nil, "sessionScene.seatSlots: required when Scatter is authored with chairs (omit scatterPlacements)."
+    end
+    local pcsByGroup = {}
+    local seatedByGroup = {}
+    local unseatedByGroup = {}
+    for g = 1, groupCount() do
+        pcsByGroup[g] = {}
+        seatedByGroup[g] = {}
+        unseatedByGroup[g] = {}
+    end
+
+    for _, color in ipairs(C.PlayerColors or {}) do
+        local row = slots[color]
+        if row == nil then
+            return nil, "sessionScene.seatSlots." .. color .. ": missing (all five PC seats are required)."
+        end
+        if type(row) ~= "table" then
+            return nil, "sessionScene.seatSlots." .. color .. ": must be an object."
+        end
+        if row.absentFromSession == true then
+            -- Absent PCs do not occupy a scatter group.
+        else
+            local slot = tonumber(row.tableSlot)
+            if slot == nil or math.floor(slot) ~= slot or slot < 1 then
+                return nil, "sessionScene.seatSlots." .. color .. ".tableSlot: required positive integer when the PC is in session."
+            end
+            local g = ScatterOccupancy.tableSlotToGroup(slot)
+            local pcKey = pcKeyForColor(color)
+            if pcKey == nil then
+                return nil, "sessionScene.seatSlots." .. color .. ": no PC character key for that seat."
+            end
+            local rec = {
+                pcKey = pcKey,
+                isPlayingNPC = row.isPlayingNPC == true,
+                isPresent = row.isPresent ~= false,
+            }
+            if rec.isPlayingNPC then
+                if type(row.npcCharacterKey) ~= "string" or row.npcCharacterKey == "" then
+                    return nil, "sessionScene.seatSlots." .. color .. ".npcCharacterKey: required when isPlayingNPC is true."
+                end
+                rec.characterKey = row.npcCharacterKey
+            end
+            pcsByGroup[g][#pcsByGroup[g] + 1] = rec
+        end
+    end
+
+    for _, npcSeat in ipairs(C.NPCSeats or {}) do
+        local row = slots[npcSeat]
+        if type(row) == "table" and type(row.characterKey) == "string" and row.characterKey ~= "" and row.slotEmpty ~= true then
+            local slot = tonumber(row.tableSlot)
+            if slot == nil or math.floor(slot) ~= slot or slot < 1 then
+                return nil, "sessionScene.seatSlots." .. npcSeat .. ".tableSlot: required positive integer for a seated NPC."
+            end
+            local g = ScatterOccupancy.tableSlotToGroup(slot)
+            seatedByGroup[g][#seatedByGroup[g] + 1] = {
+                npcKey = row.characterKey,
+                npcLightMode = "STANDARD",
+            }
+        end
+    end
+
+    local placements = type(sessionScene.npcWorld) == "table" and sessionScene.npcWorld.placements or nil
+    if placements ~= nil and type(placements) ~= "table" then
+        return nil, "sessionScene.npcWorld.placements: must be an object when present."
+    end
+    if type(placements) == "table" then
+        for npcKey, row in pairs(placements) do
+            if type(npcKey) ~= "string" or npcKey == "" then
+                return nil, "sessionScene.npcWorld.placements: keys must be NPC character keys."
+            end
+            if type(row) ~= "table" then
+                return nil, "sessionScene.npcWorld.placements." .. npcKey .. ": must be an object."
+            end
+            if row.u ~= nil or row.v ~= nil then
+                return nil, "sessionScene.npcWorld.placements." .. npcKey .. ": Scatter scenes cannot use u/v; set scatterGroup (1–6)."
+            end
+            local g = math.floor(tonumber(row.scatterGroup) or 0)
+            if g < 1 or g > groupCount() then
+                return nil, "sessionScene.npcWorld.placements." .. npcKey .. ".scatterGroup: required integer 1.." .. tostring(groupCount()) .. "."
+            end
+            unseatedByGroup[g][#unseatedByGroup[g] + 1] = {
+                npcKey = npcKey,
+                npcLightMode = row.npcLightMode,
+            }
+        end
+    end
+
+    return packFromBuckets(pcsByGroup, seatedByGroup, unseatedByGroup)
+end
+
+local function polarFamiliesOnRingByU(catalog, ringIndex)
+    local seen = {}
+    local rows = {}
+    for i = 1, #catalog do
+        local entry = catalog[i]
+        if type(entry) == "table"
+            and type(entry.familyId) == "string"
+            and tonumber(entry.ringIndex) == ringIndex
+            and entry.snapKind ~= "seat"
+        then
+            if seen[entry.familyId] ~= true then
+                seen[entry.familyId] = true
+                rows[#rows + 1] = { familyId = entry.familyId, u = tonumber(entry.u) or 0.5 }
+            end
+        end
+    end
+    for i = 1, #rows do
+        for j = 1, #catalog do
+            local entry = catalog[j]
+            if type(entry) == "table" and entry.familyId == rows[i].familyId and entry.isAnchor == true then
+                rows[i].u = tonumber(entry.u) or rows[i].u
+                break
+            end
+        end
+    end
+    table.sort(rows, function(a, b)
+        if math.abs(a.u - b.u) > 1e-6 then
+            return a.u < b.u
+        end
+        return a.familyId < b.familyId
+    end)
+    return rows
+end
+
+--- Named polar pack for a catalog family (CENTER / Mid Center / …).
+--- @param catalog table[]
+--- @param familyId string
+--- @return string|nil
+local function polarAreaNameForFamily(catalog, familyId)
+    local ring = nil
+    local u = 0.5
+    for i = 1, #catalog do
+        local entry = catalog[i]
+        if type(entry) == "table" and entry.familyId == familyId then
+            ring = tonumber(entry.ringIndex)
+            if entry.isAnchor == true then
+                u = tonumber(entry.u) or u
+                break
+            end
+            u = tonumber(entry.u) or u
+        end
+    end
+    if ring == 3 then
+        return "Far Left"
+    end
+    if ring == 6 then
+        return "Far Right"
+    end
+    if ring == 4 then
+        return "Far Center-Left"
+    end
+    if ring == 5 then
+        return "Far Center-Right"
+    end
+    if ring == 1 or ring == 2 then
+        local rows = polarFamiliesOnRingByU(catalog, ring)
+        local centerId = nil
+        local centerU = 0.5
+        local bestDist = math.huge
+        for i = 1, #rows do
+            local dist = math.abs(rows[i].u - 0.5)
+            if dist < bestDist then
+                bestDist = dist
+                centerId = rows[i].familyId
+                centerU = rows[i].u
+            end
+        end
+        if familyId == centerId then
+            if ring == 1 then
+                return "CENTER"
+            end
+            return "Mid Center"
+        end
+        if u < centerU then
+            if ring == 1 then
+                return "Center Left"
+            end
+            return "Mid Left"
+        end
+        if ring == 1 then
+            return "Center Right"
+        end
+        return "Mid Right"
+    end
+    return nil
+end
+
+local function polarFamilyRank(name)
+    for i, label in ipairs(ScatterOccupancy.POLAR_FAMILY_ORDER) do
+        if label == name then
+            return i
+        end
+    end
+    return nil
+end
+
+--- @param familyId string
+--- @param catalog table[]
+--- @return table[] snaps center-out
+local function snapsForFamily(catalog, familyId)
+    local snaps = {}
+    for i = 1, #catalog do
+        local entry = catalog[i]
+        if type(entry) == "table" and entry.familyId == familyId and entry.snapKind ~= "seat" then
+            snaps[#snaps + 1] = entry
+        end
+    end
+    table.sort(snaps, function(a, b)
+        local ka = math.abs(tonumber(a.familyK) or 0)
+        local kb = math.abs(tonumber(b.familyK) or 0)
+        if ka ~= kb then
+            return ka < kb
+        end
+        return (tonumber(a.familyK) or 0) < (tonumber(b.familyK) or 0)
+    end)
+    return snaps
+end
+
+local function polarCatalog()
+    local Snaps = require("core.npc_gameboard_snaps")
+    local Board = require("core.npc_gameboard_board")
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) then
+        return {}
+    end
+    return Snaps.buildControlBoardSnapCatalog(board, nil) or {}
+end
+
+local function familyIdForAreaName(catalog, areaName)
+    local seen = {}
+    for i = 1, #catalog do
+        local entry = catalog[i]
+        if type(entry) == "table" and type(entry.familyId) == "string" and seen[entry.familyId] ~= true then
+            seen[entry.familyId] = true
+            if polarAreaNameForFamily(catalog, entry.familyId) == areaName then
+                return entry.familyId
+            end
+        end
+    end
+    return nil
+end
+
+--- @param characterKey string
+local function clearNpcFromStage(characterKey)
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return
+    end
+    local S = require("core.state")
+    local placements = S.getStateVal("sessionScene", "npcWorld", "placements")
+    if U.Type(placements) == "table" then
+        placements[characterKey] = nil
+    end
+    local NPCS = require("core.npcs")
+    if type(NPCS.ensureNpcInPreloadZone) == "function" then
+        NPCS.ensureNpcInPreloadZone(characterKey, { deferUiRefresh = true, skipSeatSync = true, forceNpcLightMode = "OFF" })
+    end
+    local Tokens = require("core.npc_gameboard_tokens")
+    local Board = require("core.npc_gameboard_board")
+    local Palette = require("lib.npc_control_board_palette")
+    local token = Tokens.controlTokenForCharacterKey(characterKey)
+    local palette = Board.getControlBoardPalette()
+    if token ~= nil and Board.isGameObject(palette) then
+        Palette.parkTokenAtAssignedSnap(palette, token, characterKey)
+    end
+end
+
+ScatterOccupancy.clearNpcFromStage = clearNpcFromStage
+
+--- Live Standard occupancy → scatterPlacements (seats + occupied polar packs).
+--- @return table|nil pack
+--- @return string[] clearedNpcKeys
+--- @return string|nil err
+function ScatterOccupancy.translateLiveStandardToPlacements()
+    local S = require("core.state")
+    local Snaps = require("core.npc_gameboard_snaps")
+    local sessionScene = {
+        seatSlots = S.getStateVal("sessionScene", "seatSlots") or {},
+        npcWorld = { placements = {} },
+    }
+    local pcsByGroup = {}
+    local seatedByGroup = {}
+    local unseatedByGroup = {}
+    for g = 1, groupCount() do
+        pcsByGroup[g] = {}
+        seatedByGroup[g] = {}
+        unseatedByGroup[g] = {}
+    end
+
+    local slots = sessionScene.seatSlots
+    for _, color in ipairs(C.PlayerColors or {}) do
+        local row = type(slots[color]) == "table" and slots[color] or nil
+        if row ~= nil and row.absentFromSession ~= true then
+            local slot = tonumber(row.tableSlot)
+            if slot ~= nil and slot >= 1 then
+                local g = ScatterOccupancy.tableSlotToGroup(slot)
+                local pcKey = pcKeyForColor(color)
+                if pcKey ~= nil then
+                    pcsByGroup[g][#pcsByGroup[g] + 1] = {
+                        pcKey = pcKey,
+                        isPlayingNPC = row.isPlayingNPC == true,
+                        isPresent = row.isPresent ~= false,
+                        characterKey = row.npcCharacterKey,
+                    }
+                end
+            end
+        end
+    end
+
+    local seatedKeys = {}
+    for _, npcSeat in ipairs(C.NPCSeats or {}) do
+        local row = type(slots[npcSeat]) == "table" and slots[npcSeat] or nil
+        local occupied = S.getStateVal("seatLayout", "occupiedNPCSlots", npcSeat)
+        local ck = nil
+        if type(row) == "table" and type(row.characterKey) == "string" and row.characterKey ~= "" then
+            ck = row.characterKey
+        elseif type(occupied) == "string" and occupied ~= "" then
+            ck = occupied
+        end
+        if ck ~= nil then
+            local slot = type(row) == "table" and tonumber(row.tableSlot) or tonumber(C.DefaultTableSlots and C.DefaultTableSlots[npcSeat])
+            if slot == nil then
+                slot = 6
+            end
+            local g = ScatterOccupancy.tableSlotToGroup(slot)
+            seatedByGroup[g][#seatedByGroup[g] + 1] = { npcKey = ck, npcLightMode = "STANDARD" }
+            seatedKeys[ck] = true
+        end
+    end
+
+    local catalog = polarCatalog()
+    local byFamily = {}
+    local placements = S.getStateVal("sessionScene", "npcWorld", "placements")
+    if type(placements) == "table" then
+        for npcKey, row in pairs(placements) do
+            if type(npcKey) == "string" and npcKey ~= "" and type(row) == "table" and seatedKeys[npcKey] ~= true then
+                local entry = Snaps.resolvePlacementSnapCatalogEntry(row.u, row.v, nil)
+                local famName = nil
+                if type(entry) == "table" and type(entry.familyId) == "string" then
+                    famName = polarAreaNameForFamily(catalog, entry.familyId)
+                end
+                if type(famName) ~= "string" then
+                    famName = "_unknown"
+                end
+                byFamily[famName] = byFamily[famName] or {}
+                byFamily[famName][#byFamily[famName] + 1] = {
+                    npcKey = npcKey,
+                    npcLightMode = row.npcLightMode,
+                }
+            end
+        end
+    end
+
+    local occupiedNames = {}
+    for name, _ in pairs(byFamily) do
+        if polarFamilyRank(name) ~= nil then
+            occupiedNames[#occupiedNames + 1] = name
+        end
+    end
+    table.sort(occupiedNames, function(a, b)
+        return polarFamilyRank(a) < polarFamilyRank(b)
+    end)
+
+    local cleared = {}
+    for i = 1, #occupiedNames do
+        local list = byFamily[occupiedNames[i]] or {}
+        if i > groupCount() then
+            for n = 1, #list do
+                cleared[#cleared + 1] = list[n].npcKey
+            end
+        else
+            for n = 1, #list do
+                unseatedByGroup[i][#unseatedByGroup[i] + 1] = list[n]
+            end
+        end
+    end
+    if byFamily["_unknown"] ~= nil then
+        for n = 1, #byFamily["_unknown"] do
+            cleared[#cleared + 1] = byFamily["_unknown"][n].npcKey
+        end
+    end
+
+    local pack, err = packFromBuckets(pcsByGroup, seatedByGroup, unseatedByGroup)
+    return pack, cleared, err
+end
+
+--- Snapshot Standard occupancy so leaving Scatter can restore it.
+function ScatterOccupancy.stashLiveStandard()
+    local S = require("core.state")
+    local stash = {
+        tableKey = S.getStateVal("sessionScene", "tableKey"),
+        seatSlots = U.clone(S.getStateVal("sessionScene", "seatSlots") or {}, true),
+        seatPresent = U.clone(S.getStateVal("sessionScene", "seatPresent") or {}, true),
+        occupiedNPCSlots = U.clone(S.getStateVal("seatLayout", "occupiedNPCSlots") or {}, true),
+        npcWorld = U.clone(S.getStateVal("sessionScene", "npcWorld") or {}, true),
+        npcRoleOverride = U.clone(S.getStateVal("sessionScene", "npcRoleOverride") or {}, true),
+    }
+    S.setStateVal(stash, "seatLayout", "scatterRestore")
+    S.setStateVal(false, "sessionScene", "scatterAuthored")
+end
+
+--- @param pack table scatterPlacements
+--- @return table<string, boolean>
+local function scatterNpcKeys(pack)
+    local keys = {}
+    if U.Type(pack) ~= "table" then
+        return keys
+    end
+    for i = 1, groupCount() do
+        local area = pack[ScatterLayout.areaKeyForGroup(i)]
+        if U.Type(area) == "table" and U.Type(area.orbitCharacters) == "table" then
+            for npcKey, _ in pairs(area.orbitCharacters) do
+                keys[npcKey] = true
+            end
+        end
+        if U.Type(area) == "table" and U.Type(area.centerCharacters) == "table" then
+            for _, row in pairs(area.centerCharacters) do
+                if U.Type(row) == "table" and row.isPlayingNPC == true and type(row.characterKey) == "string" then
+                    keys[row.characterKey] = true
+                end
+            end
+        end
+    end
+    return keys
+end
+
+local function placeNpcsOnFamilySnaps(catalog, areaName, npcRows, placements)
+    local familyId = familyIdForAreaName(catalog, areaName)
+    if familyId == nil then
+        return npcRows
+    end
+    local snaps = snapsForFamily(catalog, familyId)
+    local leftover = {}
+    local si = 1
+    for i = 1, #npcRows do
+        local snap = snaps[si]
+        if snap == nil then
+            leftover[#leftover + 1] = npcRows[i]
+        else
+            local light = npcRows[i].npcLightMode
+            if light ~= "OFF" and light ~= "STANDARD" then
+                light = "STANDARD"
+            end
+            placements[npcRows[i].npcKey] = {
+                u = snap.u,
+                v = snap.v,
+                yaw = snap.yawDeg,
+                npcLightMode = light,
+                groundLevel = snap.groundLevel,
+            }
+            si = si + 1
+        end
+    end
+    return leftover
+end
+
+--- Map scatter-group NPCs onto polar families (overflow claims the next whole family).
+--- @param pack table
+--- @param skipFamilyNames table<string, boolean>|nil
+--- @return table placements
+--- @return string[] overflowKeys
+function ScatterOccupancy.scatterNpcsToPolarPlacements(pack, skipFamilyNames)
+    skipFamilyNames = skipFamilyNames or {}
+    local catalog = polarCatalog()
+    if #catalog < 1 then
+        U.AlertGM("Scatter: the control board snap catalog is missing, so NPCs cannot be placed on polar packs.")
+    end
+    local placements = {}
+    local overflow = {}
+    local cursor = 1
+    local order = ScatterOccupancy.POLAR_FAMILY_ORDER
+    local function nextFamily()
+        while cursor <= #order do
+            local name = order[cursor]
+            cursor = cursor + 1
+            if skipFamilyNames[name] ~= true then
+                return name
+            end
+        end
+        return nil
+    end
+    for g = 1, groupCount() do
+        local area = pack[ScatterLayout.areaKeyForGroup(g)]
+        local rows = {}
+        if U.Type(area) == "table" and U.Type(area.orbitCharacters) == "table" then
+            for npcKey, row in pairs(area.orbitCharacters) do
+                rows[#rows + 1] = {
+                    npcKey = npcKey,
+                    slot = math.floor(tonumber(row and row.slot) or 0),
+                    npcLightMode = row and row.npcLightMode,
+                }
+            end
+        end
+        table.sort(rows, function(a, b)
+            if a.slot ~= b.slot then
+                return a.slot < b.slot
+            end
+            return a.npcKey < b.npcKey
+        end)
+        local remaining = rows
+        if #remaining > 0 then
+            local claimed = nextFamily()
+            if claimed == nil then
+                for i = 1, #remaining do
+                    overflow[#overflow + 1] = remaining[i].npcKey
+                end
+                remaining = {}
+            else
+                remaining = placeNpcsOnFamilySnaps(catalog, claimed, remaining, placements)
+                while #remaining > 0 do
+                    local extra = nextFamily()
+                    if extra == nil then
+                        for i = 1, #remaining do
+                            overflow[#overflow + 1] = remaining[i].npcKey
+                        end
+                        remaining = {}
+                    else
+                        remaining = placeNpcsOnFamilySnaps(catalog, extra, remaining, placements)
+                    end
+                end
+            end
+        end
+    end
+    return placements, overflow
+end
+
+--- Seed default PC chairs (Lucien 1 … Black Caesar 5) and polar-pack NPCs. No NPC seats.
+--- @param destTableKey string
+function ScatterOccupancy.applyAuthoredScatterToStandard(destTableKey)
+    local S = require("core.state")
+    local FSL = require("lib.figurine_seat_layout")
+    local pack = S.getStateVal("sessionScene", "scatterPlacements")
+    local ss = {}
+    for _, color in ipairs(C.PlayerColors or {}) do
+        local preferred = FSL.DEFAULT_TABLE_SLOTS and FSL.DEFAULT_TABLE_SLOTS[color]
+        ss[color] = {
+            tableSlot = tonumber(preferred) or nil,
+            isPresent = true,
+            isPlayingNPC = false,
+        }
+    end
+    for _, npcSeat in ipairs(C.NPCSeats or {}) do
+        ss[npcSeat] = { slotEmpty = true }
+    end
+    S.setStateVal(ss, "sessionScene", "seatSlots")
+    S.setStateVal({}, "seatLayout", "occupiedNPCSlots")
+    S.setStateVal({}, "sessionScene", "npcRoleOverride")
+    if FSL.tableUsesRandomSeating(destTableKey) then
+        FSL.randomizePackedOccupancy()
+    else
+        FSL.seedDefaultTableSlots()
+    end
+    if type(destTableKey) == "string" and destTableKey ~= "" then
+        S.setStateVal(destTableKey, "sessionScene", "tableKey")
+    end
+    local placements, overflow = ScatterOccupancy.scatterNpcsToPolarPlacements(pack, {})
+    local npcWorld = S.getStateVal("sessionScene", "npcWorld")
+    if U.Type(npcWorld) ~= "table" then
+        npcWorld = {}
+        S.setStateVal(npcWorld, "sessionScene", "npcWorld")
+    end
+    npcWorld.placements = placements
+    for i = 1, #overflow do
+        clearNpcFromStage(overflow[i])
+    end
+end
+
+--- Restore the Standard snapshot, dropping NPCs that left scatter groups. Leftover scatter NPCs fill unused polar families.
+--- @param destTableKey string|nil
+function ScatterOccupancy.restoreStash(destTableKey)
+    local S = require("core.state")
+    local stash = S.getStateVal("seatLayout", "scatterRestore")
+    if U.Type(stash) ~= "table" then
+        return false
+    end
+    local livePack = S.getStateVal("sessionScene", "scatterPlacements")
+    local stillHere = scatterNpcKeys(livePack)
+    if type(stash.seatSlots) == "table" then
+        S.setStateVal(U.clone(stash.seatSlots, true), "sessionScene", "seatSlots")
+    end
+    if type(stash.seatPresent) == "table" then
+        S.setStateVal(U.clone(stash.seatPresent, true), "sessionScene", "seatPresent")
+    end
+    local occupied = U.clone(stash.occupiedNPCSlots or {}, true)
+    for seatKey, ck in pairs(occupied) do
+        if type(ck) == "string" and stillHere[ck] ~= true then
+            occupied[seatKey] = false
+            local ss = S.getStateVal("sessionScene", "seatSlots")
+            if type(ss) == "table" and type(ss[seatKey]) == "table" then
+                ss[seatKey] = { slotEmpty = true }
+            end
+        end
+    end
+    S.setStateVal(occupied, "seatLayout", "occupiedNPCSlots")
+    if type(stash.npcRoleOverride) == "table" then
+        S.setStateVal(U.clone(stash.npcRoleOverride, true), "sessionScene", "npcRoleOverride")
+    end
+    local restoredPlacements = {}
+    local stashedWorld = stash.npcWorld
+    local stashedPlacements = type(stashedWorld) == "table" and stashedWorld.placements or {}
+    local claimedFamilies = {}
+    local catalog = polarCatalog()
+    local Snaps = require("core.npc_gameboard_snaps")
+    if type(stashedPlacements) == "table" then
+        for npcKey, row in pairs(stashedPlacements) do
+            if stillHere[npcKey] == true and type(row) == "table" then
+                restoredPlacements[npcKey] = U.clone(row, true)
+                local entry = Snaps.resolvePlacementSnapCatalogEntry(row.u, row.v, nil)
+                if type(entry) == "table" and type(entry.familyId) == "string" then
+                    local name = polarAreaNameForFamily(catalog, entry.familyId)
+                    if type(name) == "string" then
+                        claimedFamilies[name] = true
+                    end
+                end
+            end
+        end
+    end
+    local leftoverPack = ScatterLayout.emptyPlacements()
+    if U.Type(livePack) == "table" then
+        for i = 1, groupCount() do
+            local key = ScatterLayout.areaKeyForGroup(i)
+            local area = livePack[key]
+            if U.Type(area) == "table" and U.Type(area.orbitCharacters) == "table" then
+                for npcKey, row in pairs(area.orbitCharacters) do
+                    if restoredPlacements[npcKey] == nil then
+                        leftoverPack[key].orbitCharacters[npcKey] = row
+                    end
+                end
+            end
+        end
+    end
+    local extraPlacements, overflow = ScatterOccupancy.scatterNpcsToPolarPlacements(leftoverPack, claimedFamilies)
+    for npcKey, row in pairs(extraPlacements) do
+        restoredPlacements[npcKey] = row
+    end
+    local npcWorld = type(stashedWorld) == "table" and U.clone(stashedWorld, true) or {}
+    npcWorld.placements = restoredPlacements
+    S.setStateVal(npcWorld, "sessionScene", "npcWorld")
+    if type(stash.tableKey) == "string" and stash.tableKey ~= "" and destTableKey == nil then
+        S.setStateVal(stash.tableKey, "sessionScene", "tableKey")
+    end
+    for i = 1, #overflow do
+        clearNpcFromStage(overflow[i])
+    end
+    S.setStateVal(nil, "seatLayout", "scatterRestore")
+    return true
+end
+
+--- Enter Scatter from a live Standard table: stash, translate, write scatterPlacements.
+function ScatterOccupancy.prepareEnterFromStandard()
+    ScatterOccupancy.stashLiveStandard()
+    local pack, cleared, err = ScatterOccupancy.translateLiveStandardToPlacements()
+    if pack == nil then
+        U.AlertGM("Scatter: could not translate the table into scatter groups (" .. tostring(err) .. ").")
+        pack = ScatterLayout.emptyPlacements()
+    end
+    local S = require("core.state")
+    S.setStateVal(pack, "sessionScene", "scatterPlacements")
+    S.setStateVal("scatter", "sessionScene", "placementMode")
+    for i = 1, #cleared do
+        clearNpcFromStage(cleared[i])
+        U.AlertGM("Scatter: cleared " .. tostring(cleared[i]) .. " from the stage (more than six occupied polar packs).")
+    end
+end
+
+--- Leave Scatter toward a real table: restore stash, or seed default chairs + polar families.
+--- @param destTableKey string
+--- @param opts table|nil `{ skipRestore = boolean }`
+function ScatterOccupancy.prepareLeaveToStandard(destTableKey, opts)
+    opts = opts or {}
+    local S = require("core.state")
+    if opts.skipRestore == true then
+        S.setStateVal(nil, "seatLayout", "scatterRestore")
+        S.setStateVal(false, "sessionScene", "scatterAuthored")
+        S.setStateVal("standard", "sessionScene", "placementMode")
+        return
+    end
+    local restored = ScatterOccupancy.restoreStash(destTableKey)
+    if restored ~= true then
+        ScatterOccupancy.applyAuthoredScatterToStandard(destTableKey)
+    end
+    S.setStateVal(false, "sessionScene", "scatterAuthored")
+    S.setStateVal("standard", "sessionScene", "placementMode")
+end
+
+return ScatterOccupancy

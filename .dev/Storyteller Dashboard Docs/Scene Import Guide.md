@@ -106,17 +106,20 @@ Same as today’s v2 rules: five PC `seatSlots`, FSL occupancy, optional `npcWor
 
 ### Scatter (`"scatter"`)
 
-Skip FSL occupancy. **Error if present** (including `null` or `{}`): `tableKey`, `seatSlots`, `npcWorld`.
+Scatter if `placementMode` is `"scatter"` **or** `sessionScene.tableKey` / `sessionScene.table` is `"Scatter"` (any case). Do not mix Scatter with a real wood `tableKey` such as `"Table A"`.
 
-**Required:** `sessionScene.scatterPlacements` with **exactly** the keys `scatter1` … `scatter6`. Each area **must** have both `centerCharacters` and `orbitCharacters` (empty `{}` is allowed; omitting a key or `null` is an error). Extra keys on an area or character row are errors.
+Two authoring styles (**not both**):
 
-**Center** (up to 5, slots 1–5; slot 3 is the gold hole): map key is a PC character key. `characterKey` equals that key unless `isPlayingNPC` is true (then `characterKey` is the NPC being played). Required on each row: `slot`, `isPlayingNPC`, `isPresent`.
+1. **Dashboard pack** (unchanged): `sessionScene.scatterPlacements` with `scatter1`…`scatter6`. Omit `seatSlots` and `npcWorld`. `tableKey` may be omitted or `"Scatter"`.
+2. **Chair translation:** `tableKey` `"Scatter"` plus `seatSlots` like a table scene, except **`tableSlot` values may repeat**. Slot `7` maps to scatter group `1`, `8` to group `2`, and so on (`((slot - 1) % 6) + 1`). A single PC in a group always receives PC slot `1`; several PCs in the same group are shuffled into the lowest PC slots (`1..n`). Seated NPCs never occupy PC slots; they fill NPC slots first (shuffled among themselves), then unseated NPCs. Unseated NPCs live in `npcWorld.placements` with **`scatterGroup` 1–6** — `u`/`v` is an error. `npcLightMode` is `"OFF"` or `"STANDARD"` as in Standard.
 
-**Orbit** (NPC ring holes `1 .. BOARD_NPC_HOLE_COUNT`, currently 16; slot 1 is 12 o’clock, then clockwise): map key equals `characterKey`. PCs cannot occupy orbit. `npcLightMode` is `"OFF"` or `"STANDARD"`. Extra NPCs beyond the hole count are allowed (they still occupy the group in-game; the board may stack them on gold). Their `slot` should be greater than the hole count so it does not collide with a unique hole.
+The importer translates style 2 into `scatterPlacements` and stores that on the library row (chairs are not kept).
 
-A character key may occupy **at most one** slot across all six areas. Played-NPC keys must be unique versus orbit and other PCs.
+**Dashboard pack details:** Each area **must** have both `centerCharacters` and `orbitCharacters` (empty `{}` is allowed). Center map key is a PC character key. `characterKey` equals that key unless `isPlayingNPC` is true. Required on each center row: `slot`, `isPlayingNPC`, `isPresent`. Orbit map key equals the NPC key. Extra NPCs beyond the board hole count are allowed.
 
-Scatter does **not** store `u`/`v`. Slots are grouping only. Applying a scatter library row in TTS hides the table, swaps the control-board art, and poses figurines from occupancy.
+A character key may occupy **at most one** group. Applying a Scatter library row hides the table, swaps the control-board art, and poses figurines from occupancy.
+
+**Live table switch** (Scenes panel **Scatter** button, not import): chairs map the same way; occupied polar packs map in order CENTER → Mid Center → Mid Left → Mid Right → Center Left → Center Right → Far Center-Left → Far Center-Right → Far Left → Far Right onto scatter groups 1–6 (packs beyond 6 are Cleared). Switching back restores the stashed Standard layout, except NPCs you Cleared while in Scatter. An authored Scatter scene with no stash uses default PC chairs (Lucien 1 … Black Caesar 5, or a shuffle on random-seating tables) and packs NPCs into those polar families; overflow claims the next whole family.
 
 ---
 

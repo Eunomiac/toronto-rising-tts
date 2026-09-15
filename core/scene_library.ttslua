@@ -536,6 +536,28 @@ local function parsePlacementMode(raw)
     return false, "placementMode: must be \"standard\" or \"scatter\" (got `" .. tostring(pm) .. "`).", nil
 end
 
+--- `tableKey` / `table` of Scatter wins over omitted placementMode. Contradictory Table A + placementMode scatter is an error.
+--- @param raw table
+--- @param sessionScene table
+--- @param placementMode string
+--- @return boolean ok
+--- @return string|nil err
+--- @return string mode
+local function resolveImportPlacementMode(raw, sessionScene, placementMode)
+    local Occupancy = require("lib.scatter_occupancy")
+    if type(sessionScene.table) == "string" and (sessionScene.tableKey == nil or sessionScene.tableKey == "") then
+        sessionScene.tableKey = sessionScene.table
+    end
+    local tableIsScatter = Occupancy.isScatterTableKey(sessionScene.tableKey)
+    if placementMode == "scatter" and sessionScene.tableKey ~= nil and not tableIsScatter then
+        return false, "sessionScene.tableKey: Scatter scenes must use \"Scatter\" (or omit tableKey when scatterPlacements is provided).", placementMode
+    end
+    if tableIsScatter then
+        return true, nil, "scatter"
+    end
+    return true, nil, placementMode
+end
+
 --- @param tbl table
 --- @param allowed table
 --- @param path string
@@ -558,17 +580,7 @@ end
 --- @param sessionScene table
 --- @return boolean ok
 --- @return string|nil err
-local function validateScatterSessionForImport(sessionScene)
-    if sessionScene.tableKey ~= nil then
-        return false, "sessionScene.tableKey: must be omitted for placementMode \"scatter\" (including null)."
-    end
-    if sessionScene.seatSlots ~= nil then
-        return false, "sessionScene.seatSlots: must be omitted for placementMode \"scatter\" (including {})."
-    end
-    if sessionScene.npcWorld ~= nil then
-        return false, "sessionScene.npcWorld: must be omitted for placementMode \"scatter\" (including empty placements / byArea)."
-    end
-    local pack = sessionScene.scatterPlacements
+local function validateScatterPlacementsPack(sessionScene)
     if type(pack) ~= "table" then
         return false, "sessionScene.scatterPlacements: required object with scatter1…scatter6 (do not default missing areas)."
     end
@@ -697,9 +709,41 @@ local function validateScatterSessionForImport(sessionScene)
     return true, nil
 end
 
+--- Scatter import: dashboard `scatterPlacements` pack, or chair `tableKey=Scatter` + seatSlots/scatterGroup.
+--- @param sessionScene table
+--- @return boolean ok
+--- @return string|nil err
+local function validateScatterSessionForImport(sessionScene)
+    local Occupancy = require("lib.scatter_occupancy")
+    local hasPack = type(sessionScene.scatterPlacements) == "table"
+    local hasSeats = type(sessionScene.seatSlots) == "table"
+    if hasPack and hasSeats then
+        return false, "sessionScene: choose one Scatter authoring style — scatterPlacements, or tableKey Scatter with seatSlots (not both)."
+    end
+    if hasPack then
+        if sessionScene.npcWorld ~= nil then
+            return false, "sessionScene.npcWorld: must be omitted when scatterPlacements is provided (including empty placements)."
+        end
+        if sessionScene.tableKey ~= nil and not Occupancy.isScatterTableKey(sessionScene.tableKey) then
+            return false, "sessionScene.tableKey: omit it, or set it to Scatter, when using scatterPlacements."
+        end
+        return validateScatterPlacementsPack(sessionScene)
+    end
+    if Occupancy.isScatterTableKey(sessionScene.tableKey) ~= true and hasSeats ~= true then
+        return false, "sessionScene.scatterPlacements: required, unless tableKey is Scatter and seatSlots maps chairs onto scatter groups."
+    end
+    local pack, err = Occupancy.translateFromSeatAuthoring(sessionScene)
+    if pack == nil then
+        return false, err or "Scatter seat translation failed."
+    end
+    sessionScene.scatterPlacements = pack
+    return validateScatterPlacementsPack(sessionScene)
+end
+
 --- @param sessionScene table
 --- @return table
 local function normalizeScatterSessionForImport(sessionScene)
+    local Occupancy = require("lib.scatter_occupancy")
     local out = U.clone(sessionScene, true)
     applyChronicleWeatherFromSoundscapeForImport(out)
     if type(out.conditions) == "table" then
@@ -709,11 +753,20 @@ local function normalizeScatterSessionForImport(sessionScene)
         end
         out.conditions = condCopy
     end
+    if type(out.scatterPlacements) ~= "table" then
+        local pack, err = Occupancy.translateFromSeatAuthoring(out)
+        if pack == nil then
+            error("normalizeScatterSessionForImport: " .. tostring(err))
+        end
+        out.scatterPlacements = pack
+    end
     out.seatSlots = nil
     out.tableKey = nil
+    out.table = nil
     out.npcWorld = nil
     out.npcRoleOverride = nil
     out.seatPresent = nil
+    out.scatterAuthored = true
     return out
 end
 
@@ -819,6 +872,12 @@ function SceneLibrary.validateAndNormalizeImportPayload(raw)
     if type(sessionScene) ~= "table" then
         return false, "sessionScene: required object.", nil
     end
+
+    local okResolved, errResolved, resolvedMode = resolveImportPlacementMode(raw, sessionScene, placementMode)
+    if not okResolved then
+        return false, errResolved, nil
+    end
+    placementMode = resolvedMode
 
     if placementMode == "scatter" then
         local okScatter, errScatter = validateScatterSessionForImport(sessionScene)

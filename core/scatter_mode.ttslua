@@ -688,8 +688,17 @@ end
 
 function ScatterMode.enter(opts)
     opts = opts or {}
+    local Occupancy = require("lib.scatter_occupancy")
+    if opts.translateFromStandard == true then
+        Occupancy.prepareEnterFromStandard()
+    end
+    if opts.authored == true then
+        S.setStateVal(true, "sessionScene", "scatterAuthored")
+        S.setStateVal(nil, "seatLayout", "scatterRestore")
+    end
     S.setStateVal("scatter", "sessionScene", "placementMode")
     S.setStateVal(ScatterMode.TABLE_KEY, "seatLayout", "currentTableKey")
+    S.setStateVal(ScatterMode.TABLE_KEY, "sessionScene", "tableKey")
     S.setStateVal({}, "seatLayout", "occupiedNPCSlots")
     livePlacements()
     local npcWorld = S.getStateVal("sessionScene", "npcWorld")
@@ -704,6 +713,9 @@ end
 function ScatterMode.leave(opts)
     opts = opts or {}
     S.setStateVal("standard", "sessionScene", "placementMode")
+    if S.getStateVal("seatLayout", "currentTableKey") == ScatterMode.TABLE_KEY then
+        S.setStateVal(nil, "seatLayout", "currentTableKey")
+    end
     applyControlBoardImage(scatterCfg().CONTROL_BOARD_IMAGE_STANDARD)
     restorePolarSnaps()
     lastAppliedBoardImageUrl = scatterCfg().CONTROL_BOARD_IMAGE_STANDARD

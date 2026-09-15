@@ -1752,6 +1752,19 @@ C.Scatter = {
   BOARD_ART_UP_SIGN = 1,
   CONTROL_BOARD_IMAGE_STANDARD = "https://steamusercontent-a.akamaihd.net/ugc/13248133772831882366/6F672A9E951B9AC21C6DE9091659FE913AD29268/",
   CONTROL_BOARD_IMAGE_SCATTER = "https://steamusercontent-a.akamaihd.net/ugc/15826341776223196067/84A1D7EF997F4D44D279D50B0D5AF2C829CF0949/",
+  --- Occupied polar packs map to scatter groups 1–6 in this order (inbox TOR-573).
+  POLAR_FAMILY_ORDER = {
+    "CENTER",
+    "Mid Center",
+    "Mid Left",
+    "Mid Right",
+    "Center Left",
+    "Center Right",
+    "Far Center-Left",
+    "Far Center-Right",
+    "Far Left",
+    "Far Right",
+  },
 }
 
 C.Tables = {
