@@ -729,8 +729,8 @@ Phases.onEnter[C.Phases.PLAY] = function(ctx)
         end
     else
         steps[#steps + 1] = function()
-            -- TTS-attribute path (default): TEST BED splash; Loop fade + Music C after
-            -- the authored song lead-in on pair 1 (TOR-559 / TOR-567).
+            -- TTS-attribute path (default): TEST BED splash. TR_Loop starts fading
+            -- with the splash; Music C starts after the scaled song lead-in on pair 1.
             local SE = require("core.session_explode")
             return SE.playAttribute()
         end

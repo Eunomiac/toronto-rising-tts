@@ -9,7 +9,8 @@
     Lerp wall-clock times scale by songDuration / C.SessionStartBaseDuration.
     Attribute path (TEST BED runIntroSequence) scales so the intro track and
     splash end together: timeRatio from songDuration vs 140.7s unscaled length,
-    15.5s unscalable tail, and 27s song lead-in.
+    15.5s unscalable tail, and 27s song lead-in. TR_Loop fades across that
+    scaled lead-in and reaches silence when Music C starts.
 ]]
 
 local SessionExplode = {}
@@ -51,7 +52,6 @@ local ATTRIBUTE_UNSCALABLE_TIME = 15.5
 local ATTRIBUTE_SONG_START_DELAY = 27
 local ATTRIBUTE_CHARACTER_SEQUENCE_DURATION = 20
 local ATTRIBUTE_HIDE_OVERLAY_SETTLE_SEC = 3
-local ATTRIBUTE_LOOP_FADE_SEC = 0.5
 
 local CHARACTER_TEXT_PANEL_DATA = {
     [1] = {
@@ -272,6 +272,28 @@ function SessionExplode.attributeTimeRatio(songDuration)
         )
     end
     return (songDuration - ATTRIBUTE_UNSCALABLE_TIME) / scalableSongWindow
+end
+
+--- Scaled delay from splash start until Music C (ATTRIBUTE_SONG_START_DELAY * timeRatio).
+-- @param songDuration number|nil
+-- @return number
+function SessionExplode.attributeSongLeadInSec(songDuration)
+    return ATTRIBUTE_SONG_START_DELAY * SessionExplode.attributeTimeRatio(songDuration)
+end
+
+--- Start TR_Loop fading out across the scaled song lead-in so it reaches
+--- silence when Music C starts.
+-- @param songDuration number|nil
+function SessionExplode.fadeIntermissionLoopForAttributeIntro(songDuration)
+    local fadeSeconds = SessionExplode.attributeSongLeadInSec(songDuration)
+    local Soundscape = require("core.soundscape")
+    local okStop, stopMsg = Soundscape.stopFeaturedMusic({
+        fadeSeconds = fadeSeconds,
+        resumeBackground = false,
+    })
+    if okStop ~= true then
+        U.AlertGM("Session start Loop fade-out: " .. tostring(stopMsg or "stopFeaturedMusic failed"))
+    end
 end
 
 --- Wall-clock seconds Play-enter should wait after playAttribute() is started.
@@ -728,13 +750,6 @@ end
 local function fireAttributeSessionIntroAudio()
     local Soundscape = require("core.soundscape")
     local anim = SessionExplode.resolveAnimationData()
-    local okStop, stopMsg = Soundscape.stopFeaturedMusic({
-        fadeSeconds = ATTRIBUTE_LOOP_FADE_SEC,
-        resumeBackground = false,
-    })
-    if okStop ~= true then
-        U.AlertGM("Session start Loop fade-out: " .. tostring(stopMsg or "stopFeaturedMusic failed"))
-    end
     local okPlay, playMsg = Soundscape.playSessionIntro(anim.introKey, { fadeSeconds = 0 })
     if okPlay ~= true then
         U.AlertGM("Session start overture: " .. tostring(playMsg or "playSessionIntro failed"))
@@ -964,7 +979,8 @@ local function runAttributeSequences(gen, timeRatio, waitSec)
 end
 
 --- Start the TTS-attribute Intermission→Play animation (TEST BED runIntroSequence).
---- Fades TR_Loop and plays Music C after the authored song lead-in on pair 1.
+--- Starts fading TR_Loop immediately across the scaled song lead-in, and plays
+--- Music C when that lead-in ends (pair 1).
 --- Returns immediately; wait attributeSequenceDurationSec().
 -- @param songDuration number|nil
 -- @return number attributeSequenceDurationSec
@@ -982,6 +998,7 @@ function SessionExplode.playAttribute(songDuration)
     end
 
     U.setAttributes(PANEL_ID, { active = "true" })
+    SessionExplode.fadeIntermissionLoopForAttributeIntro(songDuration)
     runAttributeSequences(gen, timeRatio, waitSec)
     return waitSec
 end
