@@ -175,7 +175,7 @@ Recommendation: **GUID when the object is unique and registered; tag + role when
 
 #### Phase 1 contract (concrete names and rules)
 
-Scatter, orbit, and join are **not** in this phase. Phase 1 is: capture offsets from the **current** layout, then switch occupancy + figurine-anchor layout on real tables.
+Scatter Mode is **not** in this phase (see [`Scatter Mode.md`](./Scatter%20Mode.md)). Phase 1 is: capture offsets from the **current** layout, then switch occupancy + figurine-anchor layout on real tables.
 
 **`C.Tables` (geometry only)**
 
@@ -289,20 +289,7 @@ Hidden objects will show `defaultY = -200`; those rows are edited by hand to the
 
 **Any occupant in any slot.** Scene data can put NPC1 in slot 1 and Red in slot 4. Slot 1’s figurine pose still comes from `referenceFigurine` even if nobody is standing there. Everyone else’s figurine is rotated from that authored pose; everyone’s satellites hang off their own figurine using the shared offset table.
 
-**Scatter formation** (phase 2 — after free slot assignment on real tables works). Scatter is a table-shaped layout with no physical table:
-
-- An origin (`centerPoint`) and a `referenceFigurine` pose (radius = distance origin → figurine; facing = toward the origin).
-- Occupied slots equally spaced around that circle (`360° / occupiedCount`), still numbered 1, 2, 3… by the same right/left rule around slot 1’s bearing.
-- Figurines (and therefore people) face the origin.
-- Furniture that means “sitting at a table” is hidden — at least thrones; likely also table leaves / the table model itself. Sheets, bags, candles, and lights still follow the figurine unless we explicitly hide them too.
-- Scene `tableKey` would be a Scatter key (or a formation flag on the scene) instead of `Table A` / `Table B`.
-
-**Conversation clusters** (built on Scatter, or on a table slot):
-
-- A **stage NPC** can be assigned to the **orbit** of an occupant. On Apply they leave the usual stage/area pose, stand on an arc in front of that occupant, and face them (people who walked up to talk).
-- A **PC or seated NPC** can **join** another occupant: they stand beside the host, facing the same way, looking at that same arc (two PCs sharing one conversation).
-
-Orbit and join are occupancy **modes** on top of slot assignment (host occupant + index on the arc), not extra table slots. They need scene / control-board fields; they are the reason the anchor must be a figurine rather than a hidden hand zone.
+**Scatter Mode** (after free slot assignment on real tables works) is specified entirely in [`Scatter Mode.md`](./Scatter%20Mode.md). That document replaces the earlier one-ring Scatter sketch and the orbit/join cluster notes that used to live here. Phase 1 still does not implement it.
 
 ### Decisions (from review)
 
@@ -331,6 +318,7 @@ These answers are folded into New Behavior above. Original notes kept for the re
 
 8. **Scatter and clusters are a second product.** Hiding thrones, suppressing the table model, look-at facing (today’s facing tables deliberately *avoid* look-at), re-spacing on occupancy change, orbit arcs, and join-beside are all new. They are the payoff of the figurine-anchor work, but they should ride **after** “numbered slots + figurine offsets + occupancy in state” is stable. Control-board Apply, NPC reconciler, and scene `tableKey` all have to learn Scatter and orbit; that is not a small add-on.
 - **👤 USER RESPONSE** Agreed. Let's get the refactor and the ability to position players freely around tables working first, then we can introduce the SCATTER formation.
+- **Later:** the live Scatter spec is [`Scatter Mode.md`](./Scatter%20Mode.md) (six groups, nested PC/NPC arcs, control-board occupancy). It supersedes the one-ring / orbit / join sketch in this file.
 
 9. **Hand zones and cards.** Moving the anchor to the figurine does not remove TTS hand-zone ownership, card-follow-on-move, or the fact that NPC seats still have no physical zone. Virtual anchors remain; they just describe a figurine (and a derived hand offset) instead of a fake hand.
 - **👤 USER RESPONSE** Agreed.
