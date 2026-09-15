@@ -20,21 +20,14 @@ local function isGameObject(obj)
 end
 
 --- True when `obj` is a live TTS object whose custom mesh is finished loading.
---- After `reload()`, the old userdata is dead and the new tile may still be `loading_custom`.
+--- After `reload()`, re-fetch via GUID (`getControlBoard`); do not keep the old userdata.
 --- @param obj Object|nil
 --- @return boolean
 local function isMeshReady(obj)
-    if obj == nil then
+    if not isGameObject(obj) then
         return false
     end
-    -- pcall: destroyed/reloading Custom objects throw C# NRE on .guid / loading_custom.
-    local ok, ready = pcall(function()
-        if not isGameObject(obj) then
-            return false
-        end
-        return obj.loading_custom ~= true
-    end)
-    return ok == true and ready == true
+    return obj.loading_custom ~= true
 end
 
 --- @param obj Object|nil
