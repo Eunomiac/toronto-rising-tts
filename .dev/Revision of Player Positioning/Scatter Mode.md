@@ -42,6 +42,36 @@ Each group’s inner cluster is **five** PC holes: a **gold** hole in the center
 
 The outer ring has a finite number of holes. Game-world NPC occupancy is still unlimited: extra NPCs beyond the hole count remain in the group and still receive world positions. The board may stack those extras on the group (implementation detail at wiring time).
 
+### Board-hole calibration
+
+Token auto-place needs authored hole positions on the control board. Those are measured in-world, not guessed from the PNG.
+
+`DEBUG.calibrateScatterGroup(scatterGroupNum)` records one group at a time. `scatterGroupNum` is `1`–`6`, where `1` is the first scatter group (world angle `90°`, positive X) and the rest follow the same order as the world groups (`150°`, `210°`, `270°`, `330°`, `30°`). An out-of-range number is an error.
+
+**How to run it**
+
+1. Put the board in Scatter Mode.
+2. Clear other control tokens off the board (or leave none except the three below).
+3. Place **three** PC or NPC control tokens on the group you are calibrating:
+   - one on the **gold** center hole
+   - one on the **white** hole to the **upper left** of the gold hole
+   - one on the **NPC** hole at the **top** of that group’s dashed circle
+4. From the TTS console: `lua DEBUG.calibrateScatterGroup(1)` (use the group you just dressed).
+
+The function scans `pc_control_token` and `npc_control_token` objects that are on the stage control board. If it does not find **exactly three**, it broadcasts an error and stops.
+
+It does not use token type or color to decide which hole is which. It sorts the three tokens by **vertical position on the board art** (the axis that points toward the top of the Scatter parchment). After that sort:
+
+| Rank | Meaning |
+| --- | --- |
+| Lowest | Gold center (first PC hole / world slot 3) |
+| Middle | Upper-left white PC hole |
+| Highest | Top NPC hole on that group’s outer ring |
+
+Those three board-local positions (control-board `positionToLocal`) are written as pasteable Lua to `.dev/.debug/debug_logs/scatter_group_<N>_calibration.lua`, same dump path as `DEBUG.dumpSeatRoleOffsets`. Auto-place uses them as the measured anchors for that group: gold as the PC cluster origin, the upper-left white as one corner of the inner square (the other three whites follow by symmetry around gold), and the top NPC as the ring radius and 12-o’clock hole (the remaining NPC holes follow evenly around that circle).
+
+Calibrate each of the six groups the same way. Re-run a group if the art or board transform changes.
+
 ---
 
 ## Constants
