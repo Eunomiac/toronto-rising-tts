@@ -1080,7 +1080,7 @@ function ScatterMode.onControlTokenDropped(token, isPc)
     local Board = require("core.npc_gameboard_board")
     local Tokens = require("core.npc_gameboard_tokens")
     local board = Board.getControlBoard()
-    if not Board.isGameObject(board) or not Board.isTokenOnMinimapTokenSurface(board, token) then
+    if not Board.isGameObject(board) or not Board.isTokenOverMinimapParchment(board, token) then
         return false
     end
     local loc = tokenBoardLocal(board, token)
@@ -1149,27 +1149,37 @@ function ScatterMode.onControlTokenDropped(token, isPc)
     return true
 end
 
---- Rotate a board-local XZ point around gold clockwise by `deg`.
+--- Rotate `pt` around `gold` in world XZ (clockwise from above). CONTROL_BOARD is scaled
+--- 2:1 (X vs Z); a circle in board-local units is an ellipse on the parchment, so derived
+--- whites and NPC holes must be stepped in world space, then converted back with positionToLocal.
+--- @param board Object
 --- @param gold table
 --- @param pt table
 --- @param deg number
 --- @return table
-local function rotateLocalAroundGold(gold, pt, deg)
-    local gx = tonumber(gold.localX or gold.x) or 0
-    local gy = tonumber(gold.localY or gold.y) or 0
-    local gz = tonumber(gold.localZ or gold.z) or 0
-    local dx = (tonumber(pt.localX or pt.x) or 0) - gx
-    local dz = (tonumber(pt.localZ or pt.z) or 0) - gz
+local function rotateWorldAroundGold(board, gold, pt, deg)
+    local gW = holeLocalToWorld(board, gold)
+    local pW = holeLocalToWorld(board, pt)
+    local gx = gW.x or gW[1] or 0
+    local gy = gW.y or gW[2] or 0
+    local gz = gW.z or gW[3] or 0
+    local dx = (pW.x or pW[1] or 0) - gx
+    local dz = (pW.z or pW[3] or 0) - gz
     local r = math.sqrt(dx * dx + dz * dz)
     local az = math.deg(math.atan2(dx, dz))
     local rotated = U.rotateAroundPoint({ x = gx, y = gy, z = gz }, r, az + deg, gy)
+    local Board = require("core.npc_gameboard_board")
+    local loc = Board.boardWorldToLocal(board, rotated)
+    local lx = loc.x or loc[1] or 0
+    local ly = loc.y or loc[2] or 0
+    local lz = loc.z or loc[3] or 0
     return {
-        localX = rotated.x,
-        localY = gy,
-        localZ = rotated.z,
-        x = rotated.x,
-        y = gy,
-        z = rotated.z,
+        localX = lx,
+        localY = ly,
+        localZ = lz,
+        x = lx,
+        y = ly,
+        z = lz,
     }
 end
 
@@ -1200,27 +1210,13 @@ function ScatterMode.inferHolesFromAnchors(board, gold, ulWhite, topNpc)
     local goldH = holeWithUv(board, gold)
     local whites = { holeWithUv(board, ulWhite) }
     for _, deg in ipairs({ 90, 180, 270 }) do
-        whites[#whites + 1] = holeWithUv(board, rotateLocalAroundGold(gold, ulWhite, deg))
+        whites[#whites + 1] = holeWithUv(board, rotateWorldAroundGold(board, gold, ulWhite, deg))
     end
     local npcHoles = {}
     local count = boardNpcHoleCount()
-    local gx = tonumber(gold.localX or gold.x) or 0
-    local gy = tonumber(gold.localY or gold.y) or 0
-    local gz = tonumber(gold.localZ or gold.z) or 0
-    local nx = tonumber(topNpc.localX or topNpc.x) or 0
-    local nz = tonumber(topNpc.localZ or topNpc.z) or 0
-    local dx = nx - gx
-    local dz = nz - gz
-    local r = math.sqrt(dx * dx + dz * dz)
-    local az0 = math.deg(math.atan2(dx, dz))
     local step = 360 / count
     for i = 0, count - 1 do
-        local p = U.rotateAroundPoint({ x = gx, y = gy, z = gz }, r, az0 + i * step, gy)
-        npcHoles[#npcHoles + 1] = holeWithUv(board, {
-            localX = p.x,
-            localY = gy,
-            localZ = p.z,
-        })
+        npcHoles[#npcHoles + 1] = holeWithUv(board, rotateWorldAroundGold(board, gold, topNpc, i * step))
     end
     return {
         gold = goldH,

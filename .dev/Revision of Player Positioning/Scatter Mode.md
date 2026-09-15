@@ -70,7 +70,7 @@ It does not use token type or color to decide which hole is which. The three tok
 
 Those three board-local positions (control-board `positionToLocal`) plus every inferred white and NPC hole are written as pasteable Lua to `.dev/.debug/debug_logs/scatter_group_<N>_calibration.lua`, same dump path as `DEBUG.dumpSeatRoleOffsets`. The same inferred holes are also installed as **debug snap points** on CONTROL_BOARD so you can turn on Snap mode and confirm they sit on the printed holes. Scatter play still has no snap points; leaving Scatter (or calibrating nothing) clears them. Do not paste a dump into `D.SCATTER_BOARD` until the snaps look right.
 
-Auto-place uses the pasted dump as the measured anchors for that group: gold as the PC cluster origin, the upper-left white as one corner of the inner square, and the top NPC as the ring radius and 12-o’clock hole.
+Auto-place uses the pasted dump as the measured anchors for that group: gold as the PC cluster origin, the upper-left white as one corner of the inner square, and the top NPC as the ring radius and 12-o’clock hole. Derived whites and NPC holes are stepped in **world XZ** (then converted back with `positionToLocal`) so they stay on the printed circles. CONTROL_BOARD is scaled **2:1** (X vs Z); rotating in board-local units would squash the ring into an ellipse.
 
 Calibrate each of the six groups the same way. Re-run a group if the art or board transform changes.
 

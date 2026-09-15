@@ -299,11 +299,12 @@ end
 --- Max board-local |Y − surface| for a token to count as on the minimap (not dragged off / in the air).
 local MINIMAP_TOKEN_SURFACE_Y_TOLERANCE = 0.4
 
---- Token on CONTROL_BOARD face (not palette): tight XZ on tile + near surface Y.
+--- Token over CONTROL_BOARD parchment (not palette): tight XZ, no Y.
+--- Drop handlers use this so tokens still in the air count; Apply/calibrate also use surface Y.
 --- @param board Object
 --- @param token Object
 --- @return boolean
-local function isTokenOnMinimapTokenSurface(board, token)
+local function isTokenOverMinimapParchment(board, token)
     if not isGameObject(board) or not isGameObject(token) then
         return false
     end
@@ -318,6 +319,21 @@ local function isTokenOnMinimapTokenSurface(board, token)
     local halfX, halfZ = boardLocalSurfaceHalfExtents(board)
     local xzMargin = 1.05
     if math.abs(localPos.x or 0) > halfX * xzMargin or math.abs(localPos.z or 0) > halfZ * xzMargin then
+        return false
+    end
+    return true
+end
+
+--- Token on CONTROL_BOARD face (not palette): tight XZ on tile + near surface Y.
+--- @param board Object
+--- @param token Object
+--- @return boolean
+local function isTokenOnMinimapTokenSurface(board, token)
+    if not isTokenOverMinimapParchment(board, token) then
+        return false
+    end
+    local localPos = boardWorldToLocal(board, token.getPosition())
+    if localPos == nil then
         return false
     end
     local surfaceY = tonumber(DATA.MINIMAP_SURFACE_LOCAL_Y) or 0.18
@@ -530,6 +546,7 @@ Board.boardWorldToLocal = boardWorldToLocal
 Board.uvFromWorldOnBoard = uvFromWorldOnBoard
 Board.objectsOnControlBoard = objectsOnControlBoard
 Board.objectsAboveControlBoard = objectsAboveControlBoard
+Board.isTokenOverMinimapParchment = isTokenOverMinimapParchment
 Board.isTokenOnMinimapTokenSurface = isTokenOnMinimapTokenSurface
 Board.isTokenOnControlBoardSurface = isTokenOnControlBoardSurface
 Board.isTokenOnControlBoardFace = isTokenOnControlBoardFace

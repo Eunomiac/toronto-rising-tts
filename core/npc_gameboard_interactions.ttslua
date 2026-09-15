@@ -1497,6 +1497,11 @@ function Interactions.onNpcControlTokenDropped(token, playerColor)
     -- flags are false — b16f26b entered wait with wantSeatRow alone and timed out up to 1s.
     applyControlTokenDropScaleByBoardPosition(token, board)
 
+    if ScatterMode.isActive() then
+        Interactions.finishInteractionProfile(t0)
+        return
+    end
+
     local fuzziness = Board.snapMatchFuzzinessForBoard(board)
     U.await(
         function()
