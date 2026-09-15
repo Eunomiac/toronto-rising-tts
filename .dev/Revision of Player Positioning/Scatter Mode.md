@@ -38,7 +38,7 @@ In Scatter Mode the Stage Control Board uses the art in `.dev/Revision of Player
 - Tokens dropped onto a group are moved automatically into a free **board hole**: NPCs around that group’s outer ring, PCs in the inner cluster.
 - A token’s place on the board records **which of the six groups** it occupies. It does **not** author the figurine’s exact game-world pose.
 
-The inner cluster on the current board art has **four** holes. World layout uses **five** stable PC slots per group (see PC positioning). When that art is wired up, it needs a fifth inner hole so all five PCs can occupy one group at once.
+Each group’s inner cluster is **five** PC holes: a **gold** hole in the center of a square of **four white** holes. The first PC to join that group goes to the gold center (the same idea as world slot 3, the arc midpoint). Later PCs fill the white holes. That matches the five stable world PC slots; the board holes are occupancy UI, not a map of table-plane coordinates.
 
 The outer ring has a finite number of holes. Game-world NPC occupancy is still unlimited: extra NPCs beyond the hole count remain in the group and still receive world positions. The board may stack those extras on the group (implementation detail at wiring time).
 
@@ -252,7 +252,7 @@ The relevant positioning geometry is:
 
 Slots are numbered `1–5` from the counterclockwise end of the arc to the clockwise end. Slot 3 sits on the midpoint. Adjacent slots are spaced by `PC_DEPLOYMENT_ARC / 4` so the five slots use the full arc including both endpoints.
 
-When a PC **joins** a group, they take the **unoccupied** slot with the smallest angular distance to the midpoint. If two slots tie, use the lower slot number (the counterclockwise side of the tie). When a PC **leaves**, that slot becomes free; the other PCs in the group **stay put**.
+When a PC **joins** a group, they take the **unoccupied** slot with the smallest angular distance to the midpoint. The first PC therefore always receives slot 3 (on the board, the gold center hole). If two later slots tie, use the lower slot number (the counterclockwise side of the tie). When a PC **leaves**, that slot becomes free; the other PCs in the group **stay put**.
 
 Empty groups, PC-only groups, and putting all five PCs in one group are all allowed.
 
