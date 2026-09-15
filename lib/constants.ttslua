@@ -1738,15 +1738,20 @@ C.TableShapes = {
 --- Geometry: `.dev/Revision of Player Positioning/Scatter Mode.md`. Angles: 0° = +Z, 90° = +X, clockwise from above.
 C.Scatter = {
   TABLE_KEY = "Scatter",
+  --- Playfield origin for Scatter (same role as `C.Tables[*].centerPoint`).
+  CENTER_POINT = Vector({ 0, 0, 0 }),
+  --- STAGE_BOARD does not follow table origin. Restore this XZ when leaving Scatter (Y unchanged).
+  --- Live save TS_Save_230: `{ x = 0, z = 62.0977 }`.
+  STAGE_BOARD_HOME_XZ = { x = 0, z = 62.0977 },
   GROUP_COUNT = 6,
   --- Outer NPC holes on the Scatter CONTROL_BOARD art (counted on Stage Control Board in Scatter Mode.jpg).
   BOARD_NPC_HOLE_COUNT = 16,
   --- First group world azimuth (positive X). Remaining groups: 90 + i * 60.
   FIRST_GROUP_AZIMUTH_DEG = 90,
   GROUP_SPACING_DEG = 60,
-  SCATTER_RADIUS_WORLD = 90,
-  SCATTER_RADIUS_NPC = 22,
-  SCATTER_RADIUS_PC = 14,
+  SCATTER_RADIUS_WORLD = 300,
+  SCATTER_RADIUS_NPC = 50,
+  SCATTER_RADIUS_PC = 20,
   PC_SCATTER_POSITION_ANGLE = 180,
   NPC_DEPLOYMENT_ARC = 70,
   PC_DEPLOYMENT_ARC = 80,
@@ -1771,6 +1776,46 @@ C.Scatter = {
     "Far Left",
     "Far Right",
   },
+  objectPositions = {
+    {
+      guid = G.GUIDS.MAIN_LIGHT_LEFT,
+      position = { z = 0 }
+    },
+    {
+      guid = G.GUIDS.MAIN_LIGHT_RIGHT,
+      position = { z = 0 }
+    },
+    {
+      guid = G.GUIDS.PARTICLE_EMITTER,
+      position = { x = 0, z = 0}
+    },
+    {
+      guid = G.GUIDS.STAGE_BOARD,
+      position = { x = 0, z = 0}
+    },
+    {
+      guid = G.GUIDS.THE_FLOOR,
+      position = { x = 0, z = 0}
+    },
+    {
+      guid = G.GUIDS.TABLE_PLINTH,
+      position = { x = 0, z = 0}
+    }
+  },
+  objectsToHide = {
+    G.GUIDS.SEAT_CHAIR_RED,
+    G.GUIDS.SEAT_CHAIR_ORANGE,
+    G.GUIDS.SEAT_CHAIR_BROWN,
+    G.GUIDS.SEAT_CHAIR_PINK,
+    G.GUIDS.SEAT_CHAIR_PURPLE,
+    G.GUIDS.SEAT_CHAIR_NPC1,
+    G.GUIDS.SEAT_CHAIR_NPC2,
+    G.GUIDS.SEAT_CHAIR_NPC3,
+    G.GUIDS.SEAT_CHAIR_NPC4,
+    G.GUIDS.PRINCE_SIGNET_BORDER_RED,
+    G.GUIDS.PRINCE_SIGNET_RED,
+    G.GUIDS.PRINCE_CURTAIN_RED
+  }
 }
 
 C.Tables = {

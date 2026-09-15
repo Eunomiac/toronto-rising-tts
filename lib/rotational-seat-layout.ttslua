@@ -3375,7 +3375,8 @@ local function applyReferenceHandPositionDelta(fromTableKey, toTableKey)
   )
 end
 
---- Shared floor/plinth asset bundles follow the active table's cylindrical origin (XZ only).
+--- Shared floor/plinth/rain-emitter asset bundles follow the active table's cylindrical origin (XZ only).
+--- STAGE_BOARD is not in this list — it stays at a fixed workshop home except in Scatter Mode.
 --- @param tableCfg table|nil
 local function syncSharedFloorAndPlinthToTableOrigin(tableCfg)
   if type(tableCfg) ~= "table" or tableCfg.centerPoint == nil then
@@ -5386,6 +5387,8 @@ end
 
 M.moveHandZoneAndContainedCards = moveHandZoneAndContainedCards
 M.applyAllTablesVisualState = applyAllTablesVisualState
+M.syncSharedFloorAndPlinthToTableOrigin = syncSharedFloorAndPlinthToTableOrigin
+M.applyTableConfigObjectPositions = applyTableConfigObjectPositions
 
 --- Apply per-seat camera presets from a precomputed rigid bundle (Scatter Mode figurine yaw).
 --- @param computed table `{ seatRigidByKey, slot1Rigid, centerPoint, referenceSeatKey }`

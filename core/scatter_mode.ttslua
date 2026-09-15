@@ -492,6 +492,44 @@ local function hideAllPhysicalTables()
     end
 end
 
+--- Keep Y; write X/Z only.
+--- @param guid string
+--- @param x number
+--- @param z number
+local function setGuidXZ(guid, x, z)
+    local obj = G.getObject(guid)
+    if obj == nil or type(obj.getPosition) ~= "function" or type(obj.setPosition) ~= "function" then
+        return
+    end
+    local pos = obj.getPosition()
+    obj.setPosition({ x = x, y = pos.y, z = z })
+end
+
+--- Floor, plinth, and rain emitter already follow `C.Tables[*].centerPoint` on a normal table
+--- switch. STAGE_BOARD does not — it is moved to Scatter's origin here and restored on leave.
+local function applyScatterPlayfieldOrigin()
+    local RSL = require("lib.rotational-seat-layout")
+    local origin = ScatterLayout.centerPoint()
+    if type(RSL.syncSharedFloorAndPlinthToTableOrigin) == "function" then
+        RSL.syncSharedFloorAndPlinthToTableOrigin({ centerPoint = origin })
+    end
+    setGuidXZ(G.GUIDS.STAGE_BOARD, origin.x, origin.z)
+    if type(RSL.applyTableConfigObjectPositions) == "function" then
+        RSL.applyTableConfigObjectPositions(scatterCfg())
+    end
+end
+
+local function restoreStageBoardHome()
+    local home = scatterCfg().STAGE_BOARD_HOME_XZ
+    local x = 0
+    local z = 62.0977
+    if U.Type(home) == "table" then
+        x = tonumber(home.x or home[1]) or x
+        z = tonumber(home.z or home[3]) or z
+    end
+    setGuidXZ(G.GUIDS.STAGE_BOARD, x, z)
+end
+
 local function hideChairForOccupant(occupantKey)
     local FSL = require("lib.figurine_seat_layout")
     local tag = occupantKey .. "Object"
@@ -630,7 +668,7 @@ local function applyPcRigs(framesBySlot, occupants)
         position = Vector({ 0, ScatterLayout.floorY(), 0 }),
         rotation = Vector({ 0, 180, 0 }),
     }
-    local center = Vector({ 0, ScatterLayout.floorY(), 0 })
+    local center = ScatterLayout.centerPoint()
     local seatRigidByKey = {}
     local slot1Rigid = nil
     local packedFrames = {}
@@ -882,6 +920,7 @@ function ScatterMode.enter(opts)
     if U.Type(npcWorld) == "table" then
         npcWorld.placements = {}
     end
+    applyScatterPlayfieldOrigin()
     ScatterMode.applyWorldLayout()
     ScatterMode.applyBoardChrome()
     if controlBoardMeshReady() then
@@ -892,6 +931,7 @@ end
 function ScatterMode.leave(opts)
     opts = opts or {}
     debugHolesByGroup = {}
+    restoreStageBoardHome()
     S.setStateVal("standard", "sessionScene", "placementMode")
     if S.getStateVal("seatLayout", "currentTableKey") == ScatterMode.TABLE_KEY then
         S.setStateVal(nil, "seatLayout", "currentTableKey")

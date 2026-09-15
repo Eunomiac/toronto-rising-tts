@@ -10,8 +10,6 @@ local U = require("lib.util")
 
 local ScatterLayout = {}
 
-local WORLD_ORIGIN_XZ = { x = 0, z = 0 }
-
 --- @return table C.Scatter
 local function cfg()
     local scatter = C.Scatter
@@ -21,6 +19,15 @@ local function cfg()
     return scatter
 end
 
+--- @return number x, number z
+local function worldOriginXZ()
+    local cp = cfg().CENTER_POINT
+    if U.Type(cp) == "table" or U.Type(cp) == "userdata" then
+        return tonumber(cp.x or cp[1]) or 0, tonumber(cp.z or cp[3]) or 0
+    end
+    return 0, 0
+end
+
 --- @return number
 function ScatterLayout.floorY()
     local y = tonumber(cfg().FLOOR_Y)
@@ -28,6 +35,13 @@ function ScatterLayout.floorY()
         return -52.89
     end
     return y
+end
+
+--- Scatter playfield origin (table `centerPoint` equivalent).
+--- @return Vector
+function ScatterLayout.centerPoint()
+    local x, z = worldOriginXZ()
+    return Vector({ x = x, y = ScatterLayout.floorY(), z = z })
 end
 
 --- @return number groups 1–6
@@ -57,8 +71,8 @@ end
 --- @return Vector SCATTER_GROUP_ORIGIN
 function ScatterLayout.groupOrigin(groupIndex)
     local radius = tonumber(cfg().SCATTER_RADIUS_WORLD) or 90
-    local y = ScatterLayout.floorY()
-    return U.rotateAroundPoint({ x = 0, y = y, z = 0 }, radius, ScatterLayout.groupAzimuthDeg(groupIndex), y)
+    local origin = ScatterLayout.centerPoint()
+    return U.rotateAroundPoint(origin, radius, ScatterLayout.groupAzimuthDeg(groupIndex), origin.y)
 end
 
 --- Horizontal length of a direction; 0 means skip that pose.
@@ -100,7 +114,8 @@ function ScatterLayout.pcGroupOrigin(groupIndex)
     local G = ScatterLayout.groupOrigin(groupIndex)
     local gx = G.x
     local gz = G.z
-    if horizLen(gx - WORLD_ORIGIN_XZ.x, gz - WORLD_ORIGIN_XZ.z) < 1e-6 then
+    local ox, oz = worldOriginXZ()
+    if horizLen(gx - ox, gz - oz) < 1e-6 then
         return nil, "PC_SCATTER_GROUP_ORIGIN: G coincides with World Origin"
     end
     local rnpc = tonumber(cfg().SCATTER_RADIUS_NPC) or 22
@@ -116,7 +131,8 @@ end
 function ScatterLayout.pcDeploymentArcMidpoint(P)
     local px = tonumber(P.x or P[1]) or 0
     local pz = tonumber(P.z or P[3]) or 0
-    if horizLen(px, pz) < 1e-6 then
+    local ox, oz = worldOriginXZ()
+    if horizLen(px - ox, pz - oz) < 1e-6 then
         return nil, "PC_DEPLOYMENT_ARC midpoint: P coincides with World Origin"
     end
     local rpc = tonumber(cfg().SCATTER_RADIUS_PC) or 14

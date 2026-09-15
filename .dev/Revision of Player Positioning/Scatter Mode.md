@@ -82,7 +82,9 @@ All numeric Scatter parameters are **global constants** in `lib/constants.ttslua
 
 | Constant | Initial guess | Role |
 | --- | --- | --- |
-| `SCATTER_RADIUS_WORLD` | `90` | Distance from World Origin to each scatter-group origin. Adjacent origins are then `90` units apart (chord of 60°), which leaves room for the guessed NPC circles without forcing overlap. |
+| `CENTER_POINT` | `{0,0,0}` | Scatter playfield origin (same role as a table’s `centerPoint`). Floor, plinth, rain emitter, and STAGE_BOARD X/Z move here on enter. |
+| `STAGE_BOARD_HOME_XZ` | `{0, 62.0977}` | Workshop home for STAGE_BOARD (it does not follow tables). Restored on leave; Y is left alone. |
+| `SCATTER_RADIUS_WORLD` | `300` | Distance from World Origin to each scatter-group origin. |
 | `SCATTER_RADIUS_NPC` | `22` | NPC standing radius around the group origin. |
 | `SCATTER_RADIUS_PC` | `14` | PC standing radius around `PC_SCATTER_GROUP_ORIGIN`. |
 | `PC_SCATTER_POSITION_ANGLE` | `180` | Matches the geometry diagram: PCs on the near side of the NPC circle. |
@@ -99,7 +101,7 @@ Do not add extra “this arrangement looks wrong” guards. If a chosen constant
 
 For the definitions below:
 
-- **World Origin** is the fixed world-space point `{0, 0}` on the table plane (`x = 0`, `z = 0`). Height `y` is not part of this 2D origin; figurines use the default PC figurine Y.
+- **World Origin** is `C.Scatter.CENTER_POINT` on the table plane (default `{0, 0}` in X/Z). Height `y` is not part of this 2D origin; figurines use the default PC figurine Y.
 - **World Circle** is an imaginary circle centered on the World Origin with radius `SCATTER_RADIUS_WORLD`.
 - Each scatter group has a **Scatter Group Origin**, which lies on the World Circle.
 - A **World Ray** is a ray beginning at the World Origin and passing through a specified world-space point. Unless otherwise specified, "the World Ray" of a scatter group means the World Ray passing through that group's `SCATTER_GROUP_ORIGIN`.
