@@ -492,6 +492,65 @@ local function hideAllPhysicalTables()
     end
 end
 
+--- Player layers that `setInvisibleTo` must cover for Scatter `objectsToHide`.
+local SCATTER_HIDE_FROM_ALL = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey", "Black" }
+
+--- @return string[]
+local function scatterObjectsToHideGuids()
+    local list = scatterCfg().objectsToHide
+    if U.Type(list) ~= "table" then
+        return {}
+    end
+    local out = {}
+    for i = 1, #list do
+        local guid = list[i]
+        if type(guid) == "string" and guid ~= "" then
+            out[#out + 1] = guid
+        end
+    end
+    return out
+end
+
+--- Disable and hide every `C.Scatter.objectsToHide` GUID from all players.
+local function applyScatterObjectsToHide()
+    local guids = scatterObjectsToHideGuids()
+    for i = 1, #guids do
+        local obj = G.getObject(guids[i])
+        if obj ~= nil then
+            if type(obj.setInvisibleTo) == "function" then
+                obj.setInvisibleTo(SCATTER_HIDE_FROM_ALL)
+            end
+            obj.interactable = false
+        end
+    end
+end
+
+--- Restore catalog HiddenObjects (or fully visible) and LockedObjects interactable.
+local function restoreScatterObjectsToHide()
+    local O = require("core.objects")
+    local hidden = C.HiddenObjects
+    local guids = scatterObjectsToHideGuids()
+    for i = 1, #guids do
+        local guid = guids[i]
+        local obj = G.getObject(guid)
+        if obj ~= nil then
+            local colors = U.Type(hidden) == "table" and hidden[guid] or nil
+            if type(obj.setInvisibleTo) == "function" then
+                if U.Type(colors) == "table" then
+                    obj.setInvisibleTo(colors)
+                else
+                    obj.setInvisibleTo({})
+                end
+            end
+            if type(O.isLockedObjectGuid) == "function" and O.isLockedObjectGuid(guid) then
+                obj.interactable = false
+            else
+                obj.interactable = true
+            end
+        end
+    end
+end
+
 --- Keep Y; write X/Z only.
 --- @param guid string
 --- @param x number
@@ -845,6 +904,7 @@ finishScatterBoardAfterReload = function()
     end
     boardFinishInProgress = true
     clearPolarSnaps()
+    applyScatterObjectsToHide()
     ScatterMode.parkTokensFromState()
     local Gameboard = require("core.npc_gameboard")
     if type(Gameboard.reconcileControlBoardFromState) == "function" then
@@ -870,6 +930,7 @@ end
 --- After a real `reload()`, snaps/token park wait until the new tile is mesh-ready.
 function ScatterMode.applyBoardChrome()
     hideAllPhysicalTables()
+    applyScatterObjectsToHide()
     local reloaded = applyControlBoardImage(scatterCfg().CONTROL_BOARD_IMAGE_SCATTER)
     if reloaded then
         runAfterControlBoardReady(finishScatterBoardAfterReload)
@@ -922,6 +983,7 @@ function ScatterMode.enter(opts)
     end
     applyScatterPlayfieldOrigin()
     ScatterMode.applyWorldLayout()
+    applyScatterObjectsToHide()
     ScatterMode.applyBoardChrome()
     if controlBoardMeshReady() then
         ScatterMode.parkTokensFromState()
@@ -930,6 +992,7 @@ end
 
 function ScatterMode.leave(opts)
     opts = opts or {}
+    restoreScatterObjectsToHide()
     debugHolesByGroup = {}
     restoreStageBoardHome()
     S.setStateVal("standard", "sessionScene", "placementMode")
@@ -1335,6 +1398,10 @@ function ScatterMode.groupIndexForNpcCharacter(characterKey)
         end
     end
     return nil
+end
+
+function ScatterMode.applyObjectsToHide()
+    applyScatterObjectsToHide()
 end
 
 function ScatterMode.pcKeyForColor(color)

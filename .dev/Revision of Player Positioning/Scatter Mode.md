@@ -16,7 +16,7 @@ Scatter Mode is another **table type**: the “no table” type. Entering or lea
 In **Scatter Mode**:
 
 - There is no table.
-- There are no thrones or chairs.
+- There are no thrones or chairs. `C.Scatter.objectsToHide` lists objects (chairs, Prince signet and curtain, and anything else you add) that Scatter disables and hides from every player, including the Storyteller. Leaving Scatter restores their usual visibility.
 - PCs are not positioned in a separate group of their own.
 - Both PCs and NPCs are assigned to one of six **scatter groups** distributed around the game world.
 - A PC can move from one scatter group to another during play.
@@ -99,6 +99,7 @@ All numeric Scatter parameters are **global constants** in `lib/constants.ttslua
 | `ST_DICE_TRAY_ON_Y` | `-50.89` | Storyteller dice-tray height in Scatter (just above the figurine plane). Tune after the first in-world pass. |
 | `ST_DICE_TRAY_OFF_Y` | `-80.89` | Drop height before the tray rises at a scatter group. |
 | `ST_DICE_TRAY_YAW_OFFSET_DEG` | `0` | Extra yaw added to the group World Ray when posing the tray. |
+| `objectsToHide` | chairs + Prince signet/curtain | GUIDs to disable and hide from every player layer while Scatter is active. |
 
 Do not add extra “this arrangement looks wrong” guards. If a chosen constant set produces a bizarre layout, correct the constants. The only hard stop is math that cannot run (a zero-length direction, i.e. a true divide-by-zero / `normalize` of a zero vector). In that case broadcast a non-stopping error and skip that pose rather than crashing.
 

@@ -165,6 +165,14 @@ local function applyHiddenObjectsFromConstants(options)
     return { applied = applied, missing = missing, missingGuids = missingGuids }
 end
 
+--- Re-assert Scatter `objectsToHide` after HiddenObjects catalog writes (same GUIDs).
+local function reapplyScatterObjectsToHideIfActive()
+    local ScatterMode = require("core.scatter_mode")
+    if ScatterMode.isActive() == true and type(ScatterMode.applyObjectsToHide) == "function" then
+        ScatterMode.applyObjectsToHide()
+    end
+end
+
 --- Sets `interactable = false` for every GUID in `C.LockedObjects`.
 --- @param options table|nil `{ warnMissing?: boolean }`
 --- @return table
@@ -176,17 +184,21 @@ end
 --- @param options table|nil `{ warnMissing?: boolean }`
 --- @return table
 function O.ApplyHiddenObjectsFromConstants(options)
-    return applyHiddenObjectsFromConstants(options)
+    local result = applyHiddenObjectsFromConstants(options)
+    reapplyScatterObjectsToHideIfActive()
+    return result
 end
 
 --- Sets `interactable = false` for every GUID in `C.LockedObjects`, and `setInvisibleTo(colors)` for each entry in `C.HiddenObjects`. Called from Global startup readiness gate after objects finish loading.
 --- @param options table|nil `{ warnMissing?: boolean, logSummary?: boolean }`
 --- @return table `{ locked: table, hidden: table }`
 function O.ApplyLockedAndHiddenFromConstants(options)
-    return {
+    local result = {
         locked = applyLockedObjectsFromConstants(options),
         hidden = applyHiddenObjectsFromConstants(options),
     }
+    reapplyScatterObjectsToHideIfActive()
+    return result
 end
 
 --- Startup gate entry: lock interactable + apply hidden visibility once objects are ready.
@@ -266,6 +278,7 @@ function O.applyPcSeatHiddenObjectPresence(seatColor, present)
     end
     local hidden = C.HiddenObjects
     if U.Type(hidden) ~= "table" then
+        reapplyScatterObjectsToHideIfActive()
         return
     end
     local hideAll = allViewerColorsForInvisibility()
@@ -304,6 +317,7 @@ function O.applyPcSeatHiddenObjectPresence(seatColor, present)
             end
         end
     end
+    reapplyScatterObjectsToHideIfActive()
 end
 
 --- Step Four PC path: `C.HiddenObjects` per assigned player seat from narrative presence.
