@@ -652,12 +652,11 @@ local function validateScatterSessionForImport(sessionScene)
             end
         end
         local orbitSlots = {}
-        local orbitCount = 0
+        local holeCount = 16
+        if type(C.Scatter) == "table" and tonumber(C.Scatter.BOARD_NPC_HOLE_COUNT) ~= nil then
+            holeCount = math.floor(C.Scatter.BOARD_NPC_HOLE_COUNT)
+        end
         for npcKey, row in pairs(area.orbitCharacters) do
-            orbitCount = orbitCount + 1
-            if orbitCount > 12 then
-                return false, "sessionScene.scatterPlacements." .. areaKey .. ".orbitCharacters: at most 12 NPC rows."
-            end
             if type(npcKey) ~= "string" or npcKey == "" then
                 return false, "sessionScene.scatterPlacements." .. areaKey .. ".orbitCharacters: keys must be NPC character keys."
             end
@@ -676,13 +675,15 @@ local function validateScatterSessionForImport(sessionScene)
                 return false, "sessionScene.scatterPlacements." .. areaKey .. ".orbitCharacters." .. npcKey .. ".characterKey: must equal the map key."
             end
             local slot = tonumber(row.slot)
-            if slot == nil or math.floor(slot) ~= slot or slot < 1 or slot > 12 then
-                return false, "sessionScene.scatterPlacements." .. areaKey .. ".orbitCharacters." .. npcKey .. ".slot: required integer 1..12."
+            if slot == nil or math.floor(slot) ~= slot or slot < 1 then
+                return false, "sessionScene.scatterPlacements." .. areaKey .. ".orbitCharacters." .. npcKey .. ".slot: required positive integer."
             end
-            if orbitSlots[slot] ~= nil then
-                return false, "sessionScene.scatterPlacements." .. areaKey .. ".orbitCharacters." .. npcKey .. ".slot: " .. tostring(slot) .. " is already used."
+            if slot <= holeCount then
+                if orbitSlots[slot] ~= nil then
+                    return false, "sessionScene.scatterPlacements." .. areaKey .. ".orbitCharacters." .. npcKey .. ".slot: " .. tostring(slot) .. " is already used."
+                end
+                orbitSlots[slot] = npcKey
             end
-            orbitSlots[slot] = npcKey
             local light = row.npcLightMode
             if light ~= "OFF" and light ~= "STANDARD" then
                 return false, "sessionScene.scatterPlacements." .. areaKey .. ".orbitCharacters." .. npcKey .. ".npcLightMode: must be \"OFF\" or \"STANDARD\"."

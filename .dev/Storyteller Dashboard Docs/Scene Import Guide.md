@@ -110,13 +110,13 @@ Skip FSL occupancy. **Error if present** (including `null` or `{}`): `tableKey`,
 
 **Required:** `sessionScene.scatterPlacements` with **exactly** the keys `scatter1` … `scatter6`. Each area **must** have both `centerCharacters` and `orbitCharacters` (empty `{}` is allowed; omitting a key or `null` is an error). Extra keys on an area or character row are errors.
 
-**Center** (up to 5, slots 1–5, pentagon): map key is a PC character key. `characterKey` equals that key unless `isPlayingNPC` is true (then `characterKey` is the NPC being played). Required on each row: `slot`, `isPlayingNPC`, `isPresent`.
+**Center** (up to 5, slots 1–5; slot 3 is the gold hole): map key is a PC character key. `characterKey` equals that key unless `isPlayingNPC` is true (then `characterKey` is the NPC being played). Required on each row: `slot`, `isPlayingNPC`, `isPresent`.
 
-**Orbit** (up to 12, slots 1–12; slot 12 is 12 o’clock, then 1–11 clockwise): map key equals `characterKey`. PCs cannot occupy orbit. `npcLightMode` is `"OFF"` or `"STANDARD"`.
+**Orbit** (NPC ring holes `1 .. BOARD_NPC_HOLE_COUNT`, currently 16; slot 1 is 12 o’clock, then clockwise): map key equals `characterKey`. PCs cannot occupy orbit. `npcLightMode` is `"OFF"` or `"STANDARD"`. Extra NPCs beyond the hole count are allowed (they still occupy the group in-game; the board may stack them on gold). Their `slot` should be greater than the hole count so it does not collide with a unique hole.
 
 A character key may occupy **at most one** slot across all six areas. Played-NPC keys must be unique versus orbit and other PCs.
 
-Scatter does **not** store `u`/`v`. Slots are grouping only. In-game world scatter Apply is future work.
+Scatter does **not** store `u`/`v`. Slots are grouping only. Applying a scatter library row in TTS hides the table, swaps the control-board art, and poses figurines from occupancy.
 
 ---
 

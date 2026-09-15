@@ -395,6 +395,12 @@ function Apply.applyFromControlBoard()
         Apply.finishInteractionProfile(t0)
         return true, nil
     end
+    local ScatterMode = require("core.scatter_mode")
+    if ScatterMode.isActive() then
+        local okScatter, errScatter = ScatterMode.applyFromControlBoard()
+        Apply.finishInteractionProfile(t0)
+        return okScatter, errScatter
+    end
     local board = Board.getControlBoard()
     if not Board.isGameObject(board) then
         Apply.finishInteractionProfile(t0)

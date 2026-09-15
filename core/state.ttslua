@@ -375,6 +375,8 @@ function S.GetDefaultGameState()
         --- Narrative/session scene bundle (table presence, location, clock, roll defaults).
         sessionScene = {
             lightingPresetKey = nil,
+            --- `standard` (table + polar) or `scatter` (no table, six groups). Live copy of library `placementMode`.
+            placementMode = "standard",
             --- Top fog particle emitter active (reconciled to `G.GUIDS.TOP_FOG` object state 2/1).
             isTopFogActive = false,
             --- Seat spotlight baseline from the active scene's `C.LightModes.*.spotlights` (string mode or inline table per ref). Merged in `L.reconcileForPlayer` after hunger/dark/rolling/conditions.
@@ -418,6 +420,8 @@ function S.GetDefaultGameState()
                 --- When false, CONTROL_BOARD polar snaps are cleared (tokens stay put).
                 controlBoardSnapsEnabled = true,
             },
+            --- Scatter Mode occupancy (six groups). Present when `placementMode` is `scatter`.
+            scatterPlacements = nil,
         },
         --- Saved scene bundles (same `sessionScene` shape per entry) + UI ordering. Only `gameState.sessionScene` drives live reconciliation.
         sceneLibrary = {

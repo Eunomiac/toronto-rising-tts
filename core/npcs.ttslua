@@ -79,6 +79,9 @@ NPCS.STASH_AREA_KEY = STASH_AREA_KEY
 --- Sentinel `areaKey` for free-placement figurines driven by `npcWorld.placements` (gameboard).
 local STAGE_BOARD_AREA_KEY = "__stage_board__"
 NPCS.STAGE_BOARD_AREA_KEY = STAGE_BOARD_AREA_KEY
+--- Sentinel `areaKey` for Scatter Mode stage figurines (world poses, not STAGE_BOARD u/v).
+local SCATTER_AREA_KEY = "__scatter__"
+NPCS.SCATTER_AREA_KEY = SCATTER_AREA_KEY
 --- World Y used to hide NPC figurines under the table when clearing a scene layout (must be below playfield).
 NPCS.NPC_DISABLE_WORLD_Y = -200
 local NPC_DISABLE_WORLD_Y = -200
@@ -557,7 +560,7 @@ local function npcInstanceInStageArea(npcName)
     if U.Type(rec) ~= "table" then
         return false
     end
-    if rec.areaKey == STAGE_BOARD_AREA_KEY then
+    if rec.areaKey == STAGE_BOARD_AREA_KEY or rec.areaKey == SCATTER_AREA_KEY then
         return true
     end
     local ak = rec.areaKey
@@ -1919,6 +1922,58 @@ function NPCS.applyFigurinePlacementAtWorld(figurine, placement)
         pos.y,
         pos.z
     ))
+end
+
+--- Place a pooled NPC figurine at a Scatter Mode world pose (not STAGE_BOARD u/v).
+--- @param npcName string
+--- @param pose table `{ position, rotation }`
+--- @param opts table|nil `{ npcLightMode?, skipSeatSync? }`
+--- @return boolean, string|nil
+function NPCS.moveNpcToScatterPose(npcName, pose, opts)
+    opts = U.Type(opts) == "table" and opts or {}
+    if type(npcName) ~= "string" or npcName == "" or U.Type(pose) ~= "table" then
+        return false, "Invalid scatter pose."
+    end
+    local rec = getInstances()[npcName]
+    if rec == nil then
+        return false, "NPC not spawned."
+    end
+    if isNpcLocked(rec) then
+        return false, "NPC is locked in place. Unlock before moving."
+    end
+    local skipSeatSync = opts.skipSeatSync == true
+    if U.Type(rec.seatedSeatKey) == "string" and isValidNpcSeatKey(rec.seatedSeatKey) then
+        local seatFig = G.getObject(rec.figurineGuid or "")
+        local seatLit = G.getObject(rec.lightGuid or "")
+        if seatFig ~= nil then
+            clearNpcFigurineSeatIdentity(seatFig, seatLit)
+        end
+        rec.seatedSeatKey = nil
+        setInstanceRecord(npcName, rec)
+        rec = getInstances()[npcName]
+    end
+    local fig = G.getObject(rec.figurineGuid or "")
+    local lit = G.getObject(rec.lightGuid or "")
+    if fig == nil then
+        return false, "Figurine missing."
+    end
+    local pos = Vector(pose.position)
+    local rot = Vector(pose.rotation)
+    fig.setPosition(pos)
+    fig.setRotation(rot)
+    ensureNpcFigurinePhysicsLocked(fig)
+    rec.areaKey = SCATTER_AREA_KEY
+    rec.slotIndex = 0
+    rec.stagePlacement = nil
+    rec.npcLightMode = normalizedStageNpcLightMode({ npcLightMode = opts.npcLightMode or rec.npcLightMode or "STANDARD" })
+    setInstanceRecord(npcName, rec)
+    applyNpcPairPhysicalPresentation(fig, lit, STAGE_BOARD_AREA_KEY, npcName)
+    applyStageNpcSpotlightNow(npcName, fig, lit, 0)
+    deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, 0)
+    if not skipSeatSync then
+        requestSeatLayoutSync()
+    end
+    return true, nil
 end
 
 --- Normalize a mode `color` field to TTS `Color` when stored as `{ r, g, b }` (save-safe state).
@@ -3349,6 +3404,11 @@ end
 --- @return boolean allOk
 local function reconcileStepFiveStagePlacements(intent, opts)
     opts = U.Type(opts) == "table" and opts or {}
+    local ScatterMode = require("core.scatter_mode")
+    if ScatterMode.isActive() then
+        ScatterMode.applyWorldLayout()
+        return true
+    end
     local allOk = true
     -- Preload prep is for seat/preload → stage only. Stage→stage must keep areaKey == STAGE_BOARD
     -- so TOR-173 / TOR-367 lerp eligibility (`not_already_on_stage`) can pass.

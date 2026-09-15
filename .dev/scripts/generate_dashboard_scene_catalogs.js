@@ -602,32 +602,53 @@ function generateSeatRowSnaps(seatRow) {
 
 function generateScatterSlots(scatter) {
   const areas = {};
+  const whiteR = scatter.whiteRadius ?? 0.028;
+  const orbitR = scatter.orbitRadius ?? 0.078;
+  const orbitCount = scatter.orbitSlotCount;
   for (const areaKey of scatter.areaOrder) {
     const area = scatter.areas[areaKey];
     if (!area) {
       throw new Error(`D.SCATTER_BOARD.areas is missing ${areaKey}.`);
     }
-    const center = [];
-    for (let slot = 1; slot <= scatter.centerSlotCount; slot += 1) {
-      const deg = scatter.centerSlot1Deg + (slot - 1) * 72;
-      const rad = (deg * Math.PI) / 180;
-      center.push({
-        slot,
-        u: area.origin.u + Math.cos(rad) * area.centerRadius,
-        v: area.origin.v + Math.sin(rad) * area.centerRadius,
-      });
+    const origin = area.origin;
+    let center;
+    if (area.gold && Array.isArray(area.whites) && area.whites.length >= 4) {
+      center = [
+        { slot: 1, u: area.whites[0].u, v: area.whites[0].v },
+        { slot: 2, u: area.whites[1].u, v: area.whites[1].v },
+        { slot: 3, u: area.gold.u, v: area.gold.v },
+        { slot: 4, u: area.whites[2].u, v: area.whites[2].v },
+        { slot: 5, u: area.whites[3].u, v: area.whites[3].v },
+      ];
+    } else {
+      center = [
+        { slot: 1, u: origin.u - whiteR, v: origin.v + whiteR },
+        { slot: 2, u: origin.u + whiteR, v: origin.v + whiteR },
+        { slot: 3, u: origin.u, v: origin.v },
+        { slot: 4, u: origin.u + whiteR, v: origin.v - whiteR },
+        { slot: 5, u: origin.u - whiteR, v: origin.v - whiteR },
+      ];
     }
-    const orbit = [];
-    for (let slot = 1; slot <= scatter.orbitSlotCount; slot += 1) {
-      const deg = scatter.orbitSlot12Deg - slot * 30;
-      const rad = (deg * Math.PI) / 180;
-      orbit.push({
-        slot,
-        u: area.origin.u + Math.cos(rad) * area.orbitRadius,
-        v: area.origin.v + Math.sin(rad) * area.orbitRadius,
-      });
+    let orbit;
+    if (Array.isArray(area.npcHoles) && area.npcHoles.length > 0) {
+      orbit = area.npcHoles.map((hole, index) => ({
+        slot: index + 1,
+        u: hole.u,
+        v: hole.v,
+      }));
+    } else {
+      orbit = [];
+      for (let slot = 1; slot <= orbitCount; slot += 1) {
+        const deg = (slot - 1) * (360 / orbitCount);
+        const rad = (deg * Math.PI) / 180;
+        orbit.push({
+          slot,
+          u: origin.u + Math.sin(rad) * orbitR,
+          v: origin.v + Math.cos(rad) * orbitR,
+        });
+      }
     }
-    areas[areaKey] = { origin: area.origin, center, orbit };
+    areas[areaKey] = { origin, center, orbit };
   }
   return areas;
 }
@@ -725,14 +746,52 @@ function parseSeatRow(source) {
   return { v, uMin, uMax, columns };
 }
 
+function readUvPair(body) {
+  const u = readNumberField(body, "u");
+  const v = readNumberField(body, "v");
+  if (u === null || v === null) {
+    return null;
+  }
+  return { u, v };
+}
+
+function parseHoleArray(areaBody, fieldName) {
+  const marker = `${fieldName} =`;
+  if (!areaBody.includes(marker)) {
+    return null;
+  }
+  let block;
+  try {
+    block = extractBlock(areaBody, marker);
+  } catch {
+    return null;
+  }
+  const holes = parseAnonymousTableBodies(block)
+    .map((item) => readUvPair(item))
+    .filter((item) => item !== null);
+  return holes.length > 0 ? holes : null;
+}
+
+function readNamedHole(areaBody, fieldName) {
+  const marker = `${fieldName} =`;
+  if (!areaBody.includes(marker)) {
+    return null;
+  }
+  try {
+    return readUvPair(extractBlock(areaBody, `${fieldName} =`));
+  } catch {
+    return null;
+  }
+}
+
 function parseScatterBoard(source) {
   const block = extractBlock(source, "D.SCATTER_BOARD =");
   const centerSlotCount = readNumberField(block, "centerSlotCount");
   const orbitSlotCount = readNumberField(block, "orbitSlotCount");
-  const centerSlot1Deg = readNumberField(block, "centerSlot1Deg");
-  const orbitSlot12Deg = readNumberField(block, "orbitSlot12Deg");
-  if (centerSlotCount === null || orbitSlotCount === null || centerSlot1Deg === null || orbitSlot12Deg === null) {
-    throw new Error("D.SCATTER_BOARD is missing slot counts or slot angles.");
+  const whiteRadius = readNumberField(block, "whiteRadius");
+  const orbitRadius = readNumberField(block, "orbitRadius");
+  if (centerSlotCount === null || orbitSlotCount === null) {
+    throw new Error("D.SCATTER_BOARD is missing centerSlotCount or orbitSlotCount.");
   }
   const areaOrder = [];
   const orderMatch = block.match(/areaOrder\s*=\s*\{([^}]*)\}/);
@@ -746,14 +805,25 @@ function parseScatterBoard(source) {
   const areas = {};
   for (const entry of parseTopLevelEntries(areasBlock)) {
     const origin = readUvOrigin(entry.body);
-    const centerRadius = readNumberField(entry.body, "centerRadius");
-    const orbitRadius = readNumberField(entry.body, "orbitRadius");
-    if (!origin || centerRadius === null || orbitRadius === null) {
-      throw new Error(`D.SCATTER_BOARD.areas.${entry.key} is missing origin/centerRadius/orbitRadius.`);
+    if (!origin) {
+      throw new Error(`D.SCATTER_BOARD.areas.${entry.key} is missing origin u/v.`);
     }
-    areas[entry.key] = { origin, centerRadius, orbitRadius };
+    const gold = readNamedHole(entry.body, "gold");
+    areas[entry.key] = {
+      origin,
+      gold,
+      whites: parseHoleArray(entry.body, "whites"),
+      npcHoles: parseHoleArray(entry.body, "npcHoles"),
+    };
   }
-  return { areaOrder, centerSlotCount, orbitSlotCount, centerSlot1Deg, orbitSlot12Deg, areas };
+  return {
+    areaOrder,
+    centerSlotCount,
+    orbitSlotCount,
+    whiteRadius,
+    orbitRadius,
+    areas,
+  };
 }
 
 function parsePlayerColors(source) {
@@ -961,7 +1031,7 @@ function main() {
   }
   for (const areaKey of REQUIRED_SCATTER_AREAS) {
     const area = scatterAreas[areaKey];
-    if (!area || area.center.length !== 5 || area.orbit.length !== 12) {
+    if (!area || area.center.length !== 5 || area.orbit.length !== scatter.orbitSlotCount) {
       throw new Error(`Scatter area ${areaKey} is missing generated center/orbit slots.`);
     }
   }

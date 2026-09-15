@@ -17,7 +17,20 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-13 — TOR-571 Scenes tab polish._
+_Last populated: 2026-09-15 — TOR-572 in-game Scatter Mode._
+
+### Scatter / table layout
+
+#### TOR-572 — In-game Scatter Mode
+
+**How to verify:** Save & Play so scripts reload. You will need the Scatter control-board Cloud image already uploaded (the same file the dashboard uses).
+
+1. **Enter Scatter:** Apply a library scene whose JSON has `"placementMode": "scatter"`, or from the Host console run `lua require("lib.rotational-seat-layout").SetTableTo("Scatter")`. The control board should switch to the Scatter parchment, every wood table and throne/chair should vanish, and polar snap points on the board should be gone.
+2. **Calibrate (once per group):** Leave only three control tokens on the board. Put one on a group’s gold hole, one on the upper-left white hole, and one on the top NPC hole of that dashed ring. Host console: `lua DEBUG.calibrateScatterGroup(1)` (then 2–6 for the other groups). Paste each dump into `D.SCATTER_BOARD` and Save & Play again before testing auto-park.
+3. **Drop and Apply:** Drop a PC token onto a calibrated group — it should jump to gold. Drop a second PC onto the same group — the first should stay put. Click Apply NOW — PC figurines, cameras, sheets, and bags should move to that group’s arc; NPC tokens on the ring should spawn/move figurines facing the group origin. A second Apply with the same occupancy should not shove the first PC to a different slot.
+4. **Leave Scatter:** Apply a normal table scene (or `SetTableTo("Table A")`). Standard board art, polar snaps, and a real table should return.
+
+**Context:** relatedTo **TOR-507** (figurine satellites) and **TOR-570** (dashboard scatter JSON). Auto-park stays silent-error until that group’s calibration dump is pasted.
 
 ### Storyteller Dashboard
 

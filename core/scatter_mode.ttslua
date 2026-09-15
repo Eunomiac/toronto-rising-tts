@@ -1,0 +1,1032 @@
+--[[
+    Scatter Mode runtime (TOR-572). Global `require` only — never from object scripts.
+
+    Table-change into the “no table” sentinel `C.Scatter.TABLE_KEY`: swap CONTROL_BOARD art,
+    hide tables/chairs, clear polar snaps, auto-park tokens on measured holes, pose figurines.
+]]
+
+local C = require("lib.constants")
+local U = require("lib.util")
+local S = require("core.state")
+local G = require("lib.guids")
+local DATA = require("lib.npc_gameboard_data")
+local ScatterLayout = require("lib.scatter_layout")
+
+local ScatterMode = {}
+
+ScatterMode.TABLE_KEY = (C.Scatter and C.Scatter.TABLE_KEY) or "Scatter"
+
+--- Last CONTROL_BOARD custom image URL applied by ScatterMode (fingerprint vs Sync.full).
+local lastAppliedBoardImageUrl = nil
+
+local function scatterCfg()
+    local scatter = C.Scatter
+    if U.Type(scatter) ~= "table" then
+        error("scatter_mode: C.Scatter is missing")
+    end
+    return scatter
+end
+
+local function boardNpcHoleCount()
+    return math.floor(tonumber(scatterCfg().BOARD_NPC_HOLE_COUNT) or 16)
+end
+
+--- @return boolean
+function ScatterMode.isActive()
+    local key = S.getStateVal("seatLayout", "currentTableKey")
+    if key == ScatterMode.TABLE_KEY then
+        return true
+    end
+    local mode = S.getStateVal("sessionScene", "placementMode")
+    return mode == "scatter"
+end
+
+--- @param color string
+--- @return string|nil pcKey
+local function pcKeyForColor(color)
+    if type(color) ~= "string" then
+        return nil
+    end
+    for _, row in pairs(C.PlayerData or {}) do
+        if U.Type(row) == "table" and row.color == color and type(row.charKey) == "string" and row.charKey ~= "" then
+            return row.charKey
+        end
+    end
+    return nil
+end
+
+--- @param pcKey string
+--- @return string|nil color
+local function colorForPcKey(pcKey)
+    if type(pcKey) ~= "string" or pcKey == "" then
+        return nil
+    end
+    for _, row in pairs(C.PlayerData or {}) do
+        if U.Type(row) == "table" and row.charKey == pcKey and type(row.color) == "string" then
+            return row.color
+        end
+    end
+    return nil
+end
+
+--- @return table scatterPlacements
+local function livePlacements()
+    local pack = S.getStateVal("sessionScene", "scatterPlacements")
+    if U.Type(pack) ~= "table" then
+        pack = ScatterLayout.emptyPlacements()
+        S.setStateVal(pack, "sessionScene", "scatterPlacements")
+    end
+    for i = 1, ScatterLayout.groupCount() do
+        local key = ScatterLayout.areaKeyForGroup(i)
+        if U.Type(pack[key]) ~= "table" then
+            pack[key] = { centerCharacters = {}, orbitCharacters = {} }
+        end
+        if U.Type(pack[key].centerCharacters) ~= "table" then
+            pack[key].centerCharacters = {}
+        end
+        if U.Type(pack[key].orbitCharacters) ~= "table" then
+            pack[key].orbitCharacters = {}
+        end
+    end
+    return pack
+end
+
+--- @param groupIndex number
+--- @return table area
+local function areaForGroup(groupIndex)
+    local pack = livePlacements()
+    local key = ScatterLayout.areaKeyForGroup(groupIndex)
+    return pack[key]
+end
+
+--- Remove a PC or NPC character key from every scatter area.
+--- @param characterKey string
+local function removeCharacterFromAllGroups(characterKey)
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return
+    end
+    local pack = livePlacements()
+    for i = 1, ScatterLayout.groupCount() do
+        local area = pack[ScatterLayout.areaKeyForGroup(i)]
+        if U.Type(area) == "table" then
+            if U.Type(area.centerCharacters) == "table" then
+                area.centerCharacters[characterKey] = nil
+            end
+            if U.Type(area.orbitCharacters) == "table" then
+                area.orbitCharacters[characterKey] = nil
+            end
+        end
+    end
+end
+
+--- @return table|nil D.SCATTER_BOARD
+local function scatterBoardData()
+    return DATA.SCATTER_BOARD
+end
+
+--- @param groupIndex number
+--- @return table|nil area row from D.SCATTER_BOARD
+local function measuredArea(groupIndex)
+    local board = scatterBoardData()
+    if U.Type(board) ~= "table" or U.Type(board.areas) ~= "table" then
+        return nil
+    end
+    local key = ScatterLayout.areaKeyForGroup(groupIndex)
+    local row = board.areas[key]
+    if U.Type(row) ~= "table" then
+        return nil
+    end
+    return row
+end
+
+--- @param groupIndex number
+--- @return boolean
+function ScatterMode.groupIsCalibrated(groupIndex)
+    local row = measuredArea(groupIndex)
+    if row == nil then
+        return false
+    end
+    if row.calibrated == true and U.Type(row.gold) == "table" and U.Type(row.whites) == "table" and U.Type(row.npcHoles) == "table" then
+        return #row.whites >= 4 and #row.npcHoles >= 1
+    end
+    return false
+end
+
+--- @param hole table `{ localX, localY, localZ }`
+--- @param board Object
+--- @return Vector
+local function holeLocalToWorld(board, hole)
+    local Board = require("core.npc_gameboard_board")
+    local localPos = Vector({
+        x = tonumber(hole.localX) or 0,
+        y = tonumber(hole.localY) or 0,
+        z = tonumber(hole.localZ) or 0,
+    })
+    return Board.boardLocalToWorld(board, localPos)
+end
+
+--- Gold + four whites (UL, +90, +180, +270) + NPC ring. Slot 3 = gold; 1,2,4,5 = whites in dump order.
+--- @param groupIndex number
+--- @param board Object
+--- @return table|nil `{ gold, whites, npcHoles, pcHolesBySlot }`
+local function resolvedHoles(groupIndex, board)
+    if not ScatterMode.groupIsCalibrated(groupIndex) then
+        return nil
+    end
+    local row = measuredArea(groupIndex)
+    local pcHolesBySlot = {
+        [3] = row.gold,
+        [1] = row.whites[1],
+        [2] = row.whites[2],
+        [4] = row.whites[3],
+        [5] = row.whites[4],
+    }
+    return {
+        gold = row.gold,
+        whites = row.whites,
+        npcHoles = row.npcHoles,
+        pcHolesBySlot = pcHolesBySlot,
+        originWorld = holeLocalToWorld(board, row.gold),
+    }
+end
+
+--- @param a table local hole
+--- @param b Vector world or local
+--- @return number
+local function localDistSq(a, b)
+    local ax = tonumber(a.localX or a.x) or 0
+    local az = tonumber(a.localZ or a.z) or 0
+    local bx = tonumber(b.localX or b.x) or 0
+    local bz = tonumber(b.localZ or b.z) or 0
+    local dx = ax - bx
+    local dz = az - bz
+    return dx * dx + dz * dz
+end
+
+--- @param board Object
+--- @param token Object
+--- @return table local `{ x, y, z }`
+local function tokenBoardLocal(board, token)
+    local Board = require("core.npc_gameboard_board")
+    local loc = Board.boardWorldToLocal(board, token.getPosition())
+    return {
+        x = loc.x or loc[1] or 0,
+        y = loc.y or loc[2] or 0,
+        z = loc.z or loc[3] or 0,
+        localX = loc.x or loc[1] or 0,
+        localY = loc.y or loc[2] or 0,
+        localZ = loc.z or loc[3] or 0,
+    }
+end
+
+--- Gold hole (calibrated) or parametric origin UV (pre-calibration) as a board-local point.
+--- @param board Object
+--- @param groupIndex number
+--- @return table|nil
+local function groupGoldLocal(board, groupIndex)
+    if ScatterMode.groupIsCalibrated(groupIndex) then
+        local holes = resolvedHoles(groupIndex, board)
+        if holes ~= nil then
+            return holes.gold
+        end
+    end
+    local row = measuredArea(groupIndex)
+    if row == nil or U.Type(row.origin) ~= "table" then
+        return nil
+    end
+    local u = tonumber(row.origin.u)
+    local v = tonumber(row.origin.v)
+    if u == nil or v == nil then
+        return nil
+    end
+    local Board = require("core.npc_gameboard_board")
+    local lp = Board.boardLocalFromUv(board, u, v)
+    return {
+        x = lp.x or lp[1] or 0,
+        y = lp.y or lp[2] or 0,
+        z = lp.z or lp[3] or 0,
+        localX = lp.x or lp[1] or 0,
+        localY = lp.y or lp[2] or 0,
+        localZ = lp.z or lp[3] or 0,
+    }
+end
+
+--- Nearest of the six group gold origins (measured gold, or origin UV before calibration).
+--- @param board Object
+--- @param localPos table
+--- @return number|nil groupIndex
+local function nearestGroupIndex(board, localPos)
+    local bestI = nil
+    local bestD = nil
+    for i = 1, ScatterLayout.groupCount() do
+        local gold = groupGoldLocal(board, i)
+        if gold ~= nil then
+            local d = localDistSq(gold, localPos)
+            if bestD == nil or d < bestD then
+                bestD = d
+                bestI = i
+            end
+        end
+    end
+    return bestI
+end
+
+local function polarTokenScale()
+    local s = DATA.NPC_CONTROL_TOKEN_SCALE_POLAR or { x = 0.2, y = 1, z = 0.2 }
+    return tonumber(s.x) or 0.2, tonumber(s.y) or 1, tonumber(s.z) or 0.2
+end
+
+--- @param token Object
+--- @param board Object
+--- @param hole table
+local function parkTokenOnHole(token, board, hole)
+    if token == nil or hole == nil then
+        return
+    end
+    local world = holeLocalToWorld(board, hole)
+    token.setPosition(world)
+    local sx, sy, sz = polarTokenScale()
+    if type(token.setScale) == "function" then
+        token.setScale(Vector({ x = sx, y = sy, z = sz }))
+    end
+    if type(token.setLock) == "function" then
+        token.setLock(true)
+    end
+end
+
+--- @param url string
+--- @return boolean reloaded
+local function applyControlBoardImage(url)
+    if type(url) ~= "string" or url == "" then
+        return false
+    end
+    local Board = require("core.npc_gameboard_board")
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) or board.setCustomObject == nil or board.reload == nil then
+        return false
+    end
+    local current = nil
+    if board.getCustomObject ~= nil then
+        local co = board.getCustomObject()
+        if U.Type(co) == "table" and type(co.image) == "string" then
+            current = co.image
+        end
+    end
+    if current == url then
+        lastAppliedBoardImageUrl = url
+        return false
+    end
+    local co = board.getCustomObject()
+    if U.Type(co) ~= "table" then
+        co = {}
+    end
+    board.setCustomObject({
+        image = url,
+        image_secondary = co.image_secondary or url,
+        image_scalar = co.image_scalar,
+    })
+    board.reload()
+    lastAppliedBoardImageUrl = url
+    return true
+end
+
+local function clearPolarSnaps()
+    local Board = require("core.npc_gameboard_board")
+    local Snaps = require("core.npc_gameboard_snaps")
+    local board = Board.getControlBoard()
+    if Board.isGameObject(board) and board.setSnapPoints ~= nil then
+        board.setSnapPoints({})
+    end
+    if type(Snaps.clearPolarSnapInstallFingerprint) == "function" then
+        Snaps.clearPolarSnapInstallFingerprint()
+    end
+end
+
+local function restorePolarSnaps()
+    local Gameboard = require("core.npc_gameboard")
+    if type(Gameboard.installPolarSnaps) == "function" then
+        Gameboard.installPolarSnaps(nil, { force = true })
+    end
+end
+
+local function hideAllPhysicalTables()
+    local RSL = require("lib.rotational-seat-layout")
+    if type(RSL.applyAllTablesVisualState) == "function" then
+        RSL.applyAllTablesVisualState(nil, {})
+    end
+end
+
+local function hideChairForOccupant(occupantKey)
+    local FSL = require("lib.figurine_seat_layout")
+    local tag = occupantKey .. "Object"
+    local objs = getObjectsWithTag(tag) or {}
+    local SRI = require("lib.seat-role-identity")
+    for i = 1, #objs do
+        local obj = objs[i]
+        if obj ~= nil and U.isGameObject(obj) then
+            local disp = SRI.readRoleColorIdentity(obj)
+            local roleKey = disp and SRI.parseRoleAndSuffix(disp) or nil
+            if roleKey == "SEAT_CHAIR" then
+                local p = obj.getPosition()
+                obj.setPosition({ x = p.x, y = -200, z = p.z })
+            end
+        end
+    end
+end
+
+local function shortestSignedDelta(fromDeg, toDeg)
+    local d = (tonumber(toDeg) or 0) - (tonumber(fromDeg) or 0)
+    while d > 180 do
+        d = d - 360
+    end
+    while d < -180 do
+        d = d + 360
+    end
+    return d
+end
+
+--- Bury NPC1–4 chair piles (no table seats in Scatter).
+local function hideNpcSeatPiles()
+    local FSL = require("lib.figurine_seat_layout")
+    for _, npc in ipairs(C.NPCSeats or {}) do
+        FSL.setOccupantPileVisible(npc, false)
+    end
+end
+
+--- @param groupIndex number
+--- @return table occupiedSlots
+local function occupiedPcSlots(groupIndex)
+    local area = areaForGroup(groupIndex)
+    local used = {}
+    if U.Type(area.centerCharacters) == "table" then
+        for _, row in pairs(area.centerCharacters) do
+            if U.Type(row) == "table" then
+                local slot = math.floor(tonumber(row.slot) or 0)
+                if slot >= 1 and slot <= 5 then
+                    used[slot] = true
+                end
+            end
+        end
+    end
+    return used
+end
+
+--- @param groupIndex number
+--- @return table<number, boolean> used npc hole slots 1..N
+local function occupiedNpcHoleSlots(groupIndex)
+    local area = areaForGroup(groupIndex)
+    local used = {}
+    local maxHole = boardNpcHoleCount()
+    if U.Type(area.orbitCharacters) == "table" then
+        for _, row in pairs(area.orbitCharacters) do
+            if U.Type(row) == "table" then
+                local slot = math.floor(tonumber(row.slot) or 0)
+                if slot >= 1 and slot <= maxHole then
+                    used[slot] = true
+                end
+            end
+        end
+    end
+    return used
+end
+
+local function nextFreeNpcHoleSlot(groupIndex)
+    local used = occupiedNpcHoleSlots(groupIndex)
+    local maxHole = boardNpcHoleCount()
+    for slot = 1, maxHole do
+        if used[slot] ~= true then
+            return slot
+        end
+    end
+    return maxHole + 1
+end
+
+--- Sorted NPC keys in a group (by slot, then key) for world re-spacing.
+--- @param groupIndex number
+--- @return string[]
+local function npcKeysInJoinOrder(groupIndex)
+    local area = areaForGroup(groupIndex)
+    local rows = {}
+    if U.Type(area.orbitCharacters) == "table" then
+        for npcKey, row in pairs(area.orbitCharacters) do
+            if type(npcKey) == "string" then
+                rows[#rows + 1] = {
+                    key = npcKey,
+                    slot = math.floor(tonumber(row and row.slot) or 9999),
+                }
+            end
+        end
+    end
+    table.sort(rows, function(a, b)
+        if a.slot ~= b.slot then
+            return a.slot < b.slot
+        end
+        return a.key < b.key
+    end)
+    local keys = {}
+    for i = 1, #rows do
+        keys[i] = rows[i].key
+    end
+    return keys
+end
+
+--- Place stage NPC figurine + light at a computed scatter pose.
+--- @param npcName string
+--- @param pose table `{ position, rotation }`
+--- @param lightMode string|nil
+local function placeNpcAtScatterPose(npcName, pose, lightMode)
+    local NPCS = require("core.npcs")
+    if type(NPCS.moveNpcToScatterPose) == "function" then
+        NPCS.moveNpcToScatterPose(npcName, pose, {
+            npcLightMode = lightMode or "STANDARD",
+            skipSeatSync = true,
+        })
+        return
+    end
+    U.AlertGM("Scatter: NPCS.moveNpcToScatterPose is missing — cannot pose " .. tostring(npcName))
+end
+
+local function applyPcRigs(framesBySlot, occupants)
+    local FSL = require("lib.figurine_seat_layout")
+    local RSL = require("lib.rotational-seat-layout")
+    local tableA = C.Tables and C.Tables["Table A"] or nil
+    local refFig = tableA and tableA.referenceFigurine or {
+        position = Vector({ 0, ScatterLayout.floorY(), 0 }),
+        rotation = Vector({ 0, 180, 0 }),
+    }
+    local center = Vector({ 0, ScatterLayout.floorY(), 0 })
+    local seatRigidByKey = {}
+    local slot1Rigid = nil
+    local packedFrames = {}
+    for slot, frame in pairs(framesBySlot) do
+        local yaw = tonumber(frame.rotation.y) or 0
+        local refYaw = tonumber(refFig.rotation.y) or 180
+        local deltaDeg = shortestSignedDelta(refYaw, yaw)
+        local rotated = U.frameAfterRigidYawAboutCenter(center, refFig, deltaDeg)
+        local shift = Vector(frame.position) - Vector(rotated.position)
+        local rigid = { deltaDeg = deltaDeg, shift = shift }
+        packedFrames[slot] = { frame = frame, rigid = rigid }
+        if slot == 1 then
+            slot1Rigid = rigid
+        end
+    end
+    for i = 1, #occupants do
+        local occ = occupants[i]
+        local packed = packedFrames[occ.tableSlot]
+        if packed ~= nil then
+            seatRigidByKey[occ.occupantKey] = packed.rigid
+            if slot1Rigid == nil then
+                slot1Rigid = packed.rigid
+            end
+        end
+    end
+    FSL.applyOccupantRigs({
+        framesBySlot = packedFrames,
+        occupants = occupants,
+        seatRigidByKey = seatRigidByKey,
+        slot1Rigid = slot1Rigid or { deltaDeg = 0, shift = Vector(0, 0, 0) },
+        centerPoint = center,
+    }, {
+        moveHandZone = RSL.moveHandZoneAndContainedCards,
+        skipRoleKeys = { SEAT_CHAIR = true },
+    })
+    for i = 1, #occupants do
+        hideChairForOccupant(occupants[i].occupantKey)
+    end
+    hideNpcSeatPiles()
+    local computed = {
+        referenceSeatKey = (occupants[1] and occupants[1].occupantKey) or "Red",
+        referencePlayerColor = (occupants[1] and occupants[1].occupantKey) or "Red",
+        seatRigidByKey = seatRigidByKey,
+        slot1Rigid = slot1Rigid or { deltaDeg = 0, shift = Vector(0, 0, 0) },
+        centerPoint = center,
+        seatToPositionMap = {},
+    }
+    for i = 1, #occupants do
+        computed.seatToPositionMap[occupants[i].occupantKey] = occupants[i].tableSlot
+    end
+    if type(RSL.applyCameraModesFromComputed) == "function" then
+        RSL.applyCameraModesFromComputed(computed)
+    end
+end
+
+--- Apply PC satellites + NPC stage poses from live scatterPlacements.
+function ScatterMode.applyWorldLayout()
+    local pack = livePlacements()
+    local framesBySlot = {}
+    local occupants = {}
+    local occupiedColors = {}
+    for i = 1, ScatterLayout.groupCount() do
+        local area = pack[ScatterLayout.areaKeyForGroup(i)]
+        local pcPoses = ScatterLayout.pcSlotPoses(i)
+        local poseBySlot = {}
+        if type(pcPoses) == "table" then
+            for p = 1, #pcPoses do
+                poseBySlot[pcPoses[p].slot] = pcPoses[p]
+            end
+        end
+        if U.Type(area) == "table" and U.Type(area.centerCharacters) == "table" then
+            for pcKey, row in pairs(area.centerCharacters) do
+                local color = colorForPcKey(pcKey)
+                local slot = math.floor(tonumber(row and row.slot) or 0)
+                local pose = poseBySlot[slot]
+                if color ~= nil and pose ~= nil then
+                    occupiedColors[color] = true
+                    framesBySlot[slot + (i - 1) * 10] = {
+                        position = pose.position,
+                        rotation = pose.rotation,
+                    }
+                    occupants[#occupants + 1] = {
+                        occupantKey = color,
+                        tableSlot = slot + (i - 1) * 10,
+                    }
+                end
+            end
+        end
+        local npcKeys = npcKeysInJoinOrder(i)
+        local npcPoses = ScatterLayout.npcPoses(i, #npcKeys)
+        for n = 1, #npcKeys do
+            local pose = npcPoses[n]
+            if pose ~= nil then
+                local row = area.orbitCharacters[npcKeys[n]]
+                local light = (row and row.npcLightMode) or "STANDARD"
+                placeNpcAtScatterPose(npcKeys[n], pose, light)
+            end
+        end
+    end
+    local FSL = require("lib.figurine_seat_layout")
+    if #occupants > 0 then
+        applyPcRigs(framesBySlot, occupants)
+    else
+        for _, color in ipairs(C.PlayerColors or {}) do
+            FSL.setOccupantPileVisible(color, false)
+        end
+        hideNpcSeatPiles()
+    end
+    for _, color in ipairs(C.PlayerColors or {}) do
+        if occupiedColors[color] ~= true then
+            FSL.setOccupantPileVisible(color, false)
+        end
+    end
+end
+
+--- Park every control token that has a scatterPlacements row onto its hole.
+function ScatterMode.parkTokensFromState()
+    local Board = require("core.npc_gameboard_board")
+    local Tokens = require("core.npc_gameboard_tokens")
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) then
+        return
+    end
+    local pack = livePlacements()
+    for i = 1, ScatterLayout.groupCount() do
+        if not ScatterMode.groupIsCalibrated(i) then
+            -- Keep tokens where they are until this group is calibrated.
+        else
+            local holes = resolvedHoles(i, board)
+            local area = pack[ScatterLayout.areaKeyForGroup(i)]
+            if holes ~= nil and U.Type(area) == "table" then
+                if U.Type(area.centerCharacters) == "table" then
+                    for pcKey, row in pairs(area.centerCharacters) do
+                        local color = colorForPcKey(pcKey)
+                        local slot = math.floor(tonumber(row and row.slot) or 0)
+                        local hole = holes.pcHolesBySlot[slot]
+                        if color ~= nil and hole ~= nil then
+                            local token = nil
+                            for _, obj in ipairs(getObjectsWithTag(DATA.TAG_PC_CONTROL_TOKEN) or {}) do
+                                if Tokens.resolvePcTokenSeatColor(obj) == color then
+                                    token = obj
+                                    break
+                                end
+                            end
+                            if token ~= nil then
+                                parkTokenOnHole(token, board, hole)
+                            end
+                        end
+                    end
+                end
+                if U.Type(area.orbitCharacters) == "table" then
+                    for npcKey, row in pairs(area.orbitCharacters) do
+                        local slot = math.floor(tonumber(row and row.slot) or 0)
+                        local hole = holes.gold
+                        if slot >= 1 and slot <= #(holes.npcHoles or {}) then
+                            hole = holes.npcHoles[slot]
+                        end
+                        local token = Tokens.controlTokenForCharacterKey(npcKey)
+                        if token ~= nil and hole ~= nil then
+                            parkTokenOnHole(token, board, hole)
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+--- CONTROL_BOARD Scatter art + empty polar snaps (fingerprinted image; no reload when URL matches).
+function ScatterMode.applyBoardChrome()
+    applyControlBoardImage(scatterCfg().CONTROL_BOARD_IMAGE_SCATTER)
+    clearPolarSnaps()
+    hideAllPhysicalTables()
+end
+
+--- CONTROL_BOARD image, snaps, tables, tokens (fingerprinted image).
+function ScatterMode.reconcileControlBoardFromState(board, opts)
+    opts = opts or {}
+    ScatterMode.applyBoardChrome()
+    if opts.skipTokenPark ~= true then
+        ScatterMode.parkTokensFromState()
+    end
+    local Reconcile = require("core.npc_gameboard_reconcile")
+    if type(Reconcile.syncControlBoardSnapsToggleLabel) == "function" then
+        Reconcile.syncControlBoardSnapsToggleLabel(board)
+    end
+    if type(Reconcile.syncControlBoardModeToolbar) == "function" then
+        Reconcile.syncControlBoardModeToolbar(board)
+    end
+end
+
+function ScatterMode.enter(opts)
+    opts = opts or {}
+    S.setStateVal("scatter", "sessionScene", "placementMode")
+    S.setStateVal(ScatterMode.TABLE_KEY, "seatLayout", "currentTableKey")
+    S.setStateVal({}, "seatLayout", "occupiedNPCSlots")
+    livePlacements()
+    local npcWorld = S.getStateVal("sessionScene", "npcWorld")
+    if U.Type(npcWorld) == "table" then
+        npcWorld.placements = {}
+    end
+    ScatterMode.applyBoardChrome()
+    ScatterMode.parkTokensFromState()
+    ScatterMode.applyWorldLayout()
+end
+
+function ScatterMode.leave(opts)
+    opts = opts or {}
+    S.setStateVal("standard", "sessionScene", "placementMode")
+    applyControlBoardImage(scatterCfg().CONTROL_BOARD_IMAGE_STANDARD)
+    restorePolarSnaps()
+    lastAppliedBoardImageUrl = scatterCfg().CONTROL_BOARD_IMAGE_STANDARD
+end
+
+--- Apply NOW: read tokens on CONTROL_BOARD into scatterPlacements, then world layout.
+function ScatterMode.applyFromControlBoard()
+    local Board = require("core.npc_gameboard_board")
+    local Tokens = require("core.npc_gameboard_tokens")
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) then
+        return false, "CONTROL_BOARD not found"
+    end
+    local anyCalibrated = false
+    for i = 1, ScatterLayout.groupCount() do
+        if ScatterMode.groupIsCalibrated(i) then
+            anyCalibrated = true
+            break
+        end
+    end
+    if not anyCalibrated then
+        U.AlertGM("Scatter Apply: calibrate each group with DEBUG.calibrateScatterGroup(n) first.")
+        return false, "scatter groups not calibrated"
+    end
+    local pack = ScatterLayout.emptyPlacements()
+    S.setStateVal(pack, "sessionScene", "scatterPlacements")
+
+    local function considerPc(token)
+        if not Tokens.isPcControlToken(token) or not Board.isTokenOnControlBoardSurface(board, token) then
+            return
+        end
+        local color = Tokens.resolvePcTokenSeatColor(token)
+        local pcKey = color and pcKeyForColor(color) or nil
+        if pcKey == nil then
+            return
+        end
+        local loc = tokenBoardLocal(board, token)
+        local gi = nearestGroupIndex(board, loc)
+        if gi == nil then
+            U.AlertGM("Scatter Apply: calibrate this group before parking PC tokens.")
+            return
+        end
+        local holes = resolvedHoles(gi, board)
+        if holes == nil then
+            return
+        end
+        local bestSlot = nil
+        local bestD = nil
+        for slot, hole in pairs(holes.pcHolesBySlot) do
+            if hole ~= nil then
+                local d = localDistSq(hole, loc)
+                if bestD == nil or d < bestD then
+                    bestD = d
+                    bestSlot = slot
+                end
+            end
+        end
+        if bestSlot == nil then
+            return
+        end
+        local area = pack[ScatterLayout.areaKeyForGroup(gi)]
+        for existingKey, row in pairs(area.centerCharacters) do
+            if row.slot == bestSlot then
+                U.AlertGM("Scatter Apply: two PCs claimed slot " .. tostring(bestSlot) .. " in " .. ScatterLayout.areaKeyForGroup(gi) .. " (" .. existingKey .. ", " .. pcKey .. ").")
+                return
+            end
+        end
+        area.centerCharacters[pcKey] = {
+            slot = bestSlot,
+            isPlayingNPC = false,
+            isPresent = true,
+        }
+    end
+
+    local function considerNpc(token)
+        if not Tokens.isNpcControlToken(token) or not Board.isTokenOnControlBoardSurface(board, token) then
+            return
+        end
+        local npcKey = Tokens.resolveTokenCharacterKey(token)
+        if type(npcKey) ~= "string" or npcKey == "" then
+            return
+        end
+        local loc = tokenBoardLocal(board, token)
+        local gi = nearestGroupIndex(board, loc)
+        if gi == nil then
+            U.AlertGM("Scatter Apply: calibrate this group before parking NPC tokens.")
+            return
+        end
+        local holes = resolvedHoles(gi, board)
+        if holes == nil then
+            return
+        end
+        local bestSlot = nil
+        local bestD = nil
+        for slot = 1, #(holes.npcHoles or {}) do
+            local d = localDistSq(holes.npcHoles[slot], loc)
+            if bestD == nil or d < bestD then
+                bestD = d
+                bestSlot = slot
+            end
+        end
+        local area = pack[ScatterLayout.areaKeyForGroup(gi)]
+        if bestSlot == nil then
+            bestSlot = boardNpcHoleCount() + 1
+        else
+            for existingKey, row in pairs(area.orbitCharacters) do
+                if row.slot == bestSlot then
+                    bestSlot = boardNpcHoleCount() + 1
+                    break
+                end
+            end
+        end
+        local faceUp = Tokens.tokenRotationIsFaceUp(token)
+        area.orbitCharacters[npcKey] = {
+            slot = bestSlot,
+            npcLightMode = faceUp and "STANDARD" or "OFF",
+        }
+    end
+
+    for _, token in ipairs(getObjectsWithTag(DATA.TAG_PC_CONTROL_TOKEN) or {}) do
+        considerPc(token)
+    end
+    for _, token in ipairs(getObjectsWithTag(DATA.TAG_NPC_CONTROL_TOKEN) or {}) do
+        considerNpc(token)
+    end
+
+    ScatterMode.parkTokensFromState()
+    ScatterMode.applyWorldLayout()
+    local Sync = require("core.sync")
+    Sync.npcs({ reason = "scatter_apply" })
+    return true, nil
+end
+
+--- Drop branch: nearest group + assign stable slot + park. World wait for Apply.
+--- @param token Object
+--- @param isPc boolean
+--- @return boolean handled
+function ScatterMode.onControlTokenDropped(token, isPc)
+    if not ScatterMode.isActive() then
+        return false
+    end
+    local Board = require("core.npc_gameboard_board")
+    local Tokens = require("core.npc_gameboard_tokens")
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) or not Board.isTokenOnControlBoardSurface(board, token) then
+        return false
+    end
+    local loc = tokenBoardLocal(board, token)
+    local gi = nearestGroupIndex(board, loc)
+    if gi == nil then
+        U.AlertGM("Scatter: could not match a group. Calibrate with DEBUG.calibrateScatterGroup(n).")
+        return true
+    end
+    if not ScatterMode.groupIsCalibrated(gi) then
+        U.AlertGM(
+            "Scatter: calibrate group "
+                .. tostring(gi)
+                .. " with DEBUG.calibrateScatterGroup("
+                .. tostring(gi)
+                .. ") before auto-parking tokens."
+        )
+        return true
+    end
+    local holes = resolvedHoles(gi, board)
+    if holes == nil then
+        U.AlertGM("Scatter: calibrate group " .. tostring(gi) .. " before auto-parking tokens.")
+        return true
+    end
+    if isPc then
+        local color = Tokens.resolvePcTokenSeatColor(token)
+        local pcKey = color and pcKeyForColor(color) or nil
+        if pcKey == nil then
+            return true
+        end
+        removeCharacterFromAllGroups(pcKey)
+        local used = occupiedPcSlots(gi)
+        local slot = ScatterLayout.nextFreePcWorldSlot(used)
+        if slot == nil then
+            U.AlertGM("Scatter group " .. tostring(gi) .. " already has five PCs.")
+            return true
+        end
+        local area = areaForGroup(gi)
+        area.centerCharacters[pcKey] = {
+            slot = slot,
+            isPlayingNPC = false,
+            isPresent = true,
+        }
+        local hole = holes.pcHolesBySlot[slot]
+        if hole ~= nil then
+            parkTokenOnHole(token, board, hole)
+        end
+    else
+        local npcKey = Tokens.resolveTokenCharacterKey(token)
+        if type(npcKey) ~= "string" or npcKey == "" then
+            return true
+        end
+        removeCharacterFromAllGroups(npcKey)
+        local holeSlot = nextFreeNpcHoleSlot(gi)
+        local area = areaForGroup(gi)
+        local faceUp = Tokens.tokenRotationIsFaceUp(token)
+        area.orbitCharacters[npcKey] = {
+            slot = holeSlot,
+            npcLightMode = faceUp and "STANDARD" or "OFF",
+        }
+        local hole = holes.gold
+        if holeSlot >= 1 and holeSlot <= #(holes.npcHoles or {}) then
+            hole = holes.npcHoles[holeSlot]
+        end
+        parkTokenOnHole(token, board, hole)
+    end
+    return true
+end
+
+--- Rotate a board-local XZ point around gold clockwise by `deg`.
+--- @param gold table
+--- @param pt table
+--- @param deg number
+--- @return table
+local function rotateLocalAroundGold(gold, pt, deg)
+    local gx = tonumber(gold.localX or gold.x) or 0
+    local gy = tonumber(gold.localY or gold.y) or 0
+    local gz = tonumber(gold.localZ or gold.z) or 0
+    local dx = (tonumber(pt.localX or pt.x) or 0) - gx
+    local dz = (tonumber(pt.localZ or pt.z) or 0) - gz
+    local r = math.sqrt(dx * dx + dz * dz)
+    local az = math.deg(math.atan2(dx, dz))
+    local rotated = U.rotateAroundPoint({ x = gx, y = gy, z = gz }, r, az + deg, gy)
+    return {
+        localX = rotated.x,
+        localY = gy,
+        localZ = rotated.z,
+        x = rotated.x,
+        y = gy,
+        z = rotated.z,
+    }
+end
+
+local function holeWithUv(board, localHole)
+    local Board = require("core.npc_gameboard_board")
+    local loc = Vector({
+        x = localHole.localX,
+        y = localHole.localY,
+        z = localHole.localZ,
+    })
+    local u, v = Board.uvFromBoardLocal(board, loc)
+    return {
+        localX = localHole.localX,
+        localY = localHole.localY,
+        localZ = localHole.localZ,
+        u = u,
+        v = v,
+    }
+end
+
+--- Infer whites + NPC ring from three measured anchors. Used by DEBUG.calibrateScatterGroup.
+--- @param board Object
+--- @param gold table
+--- @param ulWhite table
+--- @param topNpc table
+--- @return table `{ gold, whites, npcHoles }`
+function ScatterMode.inferHolesFromAnchors(board, gold, ulWhite, topNpc)
+    local goldH = holeWithUv(board, gold)
+    local whites = { holeWithUv(board, ulWhite) }
+    for _, deg in ipairs({ 90, 180, 270 }) do
+        whites[#whites + 1] = holeWithUv(board, rotateLocalAroundGold(gold, ulWhite, deg))
+    end
+    local npcHoles = {}
+    local count = boardNpcHoleCount()
+    local gx = tonumber(gold.localX or gold.x) or 0
+    local gy = tonumber(gold.localY or gold.y) or 0
+    local gz = tonumber(gold.localZ or gold.z) or 0
+    local nx = tonumber(topNpc.localX or topNpc.x) or 0
+    local nz = tonumber(topNpc.localZ or topNpc.z) or 0
+    local dx = nx - gx
+    local dz = nz - gz
+    local r = math.sqrt(dx * dx + dz * dz)
+    local az0 = math.deg(math.atan2(dx, dz))
+    local step = 360 / count
+    for i = 0, count - 1 do
+        local p = U.rotateAroundPoint({ x = gx, y = gy, z = gz }, r, az0 + i * step, gy)
+        npcHoles[#npcHoles + 1] = holeWithUv(board, {
+            localX = p.x,
+            localY = gy,
+            localZ = p.z,
+        })
+    end
+    return {
+        gold = goldH,
+        whites = whites,
+        npcHoles = npcHoles,
+    }
+end
+
+--- Art-up sort of three board-local positions (gold lowest, UL middle, top NPC highest).
+--- @param locals table[]
+--- @return table gold, table ul, table topNpc
+function ScatterMode.sortCalibrationLocals(locals)
+    if type(locals) ~= "table" or #locals ~= 3 then
+        error("scatter_mode: calibration needs exactly three local positions")
+    end
+    local axis = scatterCfg().BOARD_ART_UP_AXIS or "z"
+    local sign = tonumber(scatterCfg().BOARD_ART_UP_SIGN) or 1
+    local function artUp(p)
+        local v = 0
+        if axis == "x" then
+            v = tonumber(p.x or p.localX) or 0
+        else
+            v = tonumber(p.z or p.localZ) or 0
+        end
+        return v * sign
+    end
+    table.sort(locals, function(a, b)
+        return artUp(a) < artUp(b)
+    end)
+    return locals[1], locals[2], locals[3]
+end
+
+function ScatterMode.pcKeyForColor(color)
+    return pcKeyForColor(color)
+end
+
+function ScatterMode.colorForPcKey(pcKey)
+    return colorForPcKey(pcKey)
+end
+
+return ScatterMode

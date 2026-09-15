@@ -1298,14 +1298,20 @@ function Reconcile.reconcileControlBoardFromState(opts)
         Reconcile.syncControlBoardModeToolbar(board)
         return
     end
+    local ScatterMode = require("core.scatter_mode")
+    local scatterActive = ScatterMode.isActive()
     local mirrorFp = Reconcile.controlBoardMirrorFingerprint(activeTable, model.mode, placements, seatSlots)
-    if opts.force ~= true and mirrorFp == Reconcile.lastControlBoardMirrorFingerprint then
+    if opts.force ~= true and not scatterActive and mirrorFp == Reconcile.lastControlBoardMirrorFingerprint then
         Reconcile.syncControlBoardSnapsToggleLabel(board)
         Reconcile.syncControlBoardModeToolbar(board)
         Reconcile.rebuildAnchorDropEligibilityCache(board)
         return
     end
-    Snaps.installPolarSnaps(board, { force = opts.force == true })
+    if scatterActive then
+        ScatterMode.applyBoardChrome()
+    else
+        Snaps.installPolarSnaps(board, { force = opts.force == true })
+    end
     Reconcile.ensureControlBoardObjectCallbacks(board)
     Reconcile.ensureControlBoardObjectUi(board, { force = opts.force == true })
     Reconcile.syncControlBoardSnapsToggleLabel(board, { force = opts.force == true })
@@ -1382,7 +1388,11 @@ function Reconcile.reconcileControlBoardFromState(opts)
         end
     end
 
-    Reconcile.mirrorControlBoardTokensFromModel(board, model)
+    if scatterActive then
+        ScatterMode.parkTokensFromState()
+    else
+        Reconcile.mirrorControlBoardTokensFromModel(board, model)
+    end
 
     Tokens.applyControlBoardComponentPlayerInvisibility()
     Reconcile.rebuildAnchorDropEligibilityCache(board)

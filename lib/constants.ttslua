@@ -1725,6 +1725,35 @@ C.TableShapes = {
   FACING = "facing", -- Two sides (0 and 180). Slot 1 is `referenceSeatSegment`; slots 6+ sit on the opposite side. Requires `slotCapacity`.
 }
 
+--- Scatter Mode (TOR-572): the “no table” table type. Not a row in `C.Tables`.
+--- Geometry: `.dev/Revision of Player Positioning/Scatter Mode.md`. Angles: 0° = +Z, 90° = +X, clockwise from above.
+C.Scatter = {
+  TABLE_KEY = "Scatter",
+  GROUP_COUNT = 6,
+  --- Outer NPC holes on the Scatter CONTROL_BOARD art (counted on Stage Control Board in Scatter Mode.jpg).
+  BOARD_NPC_HOLE_COUNT = 16,
+  --- First group world azimuth (positive X). Remaining groups: 90 + i * 60.
+  FIRST_GROUP_AZIMUTH_DEG = 90,
+  GROUP_SPACING_DEG = 60,
+  SCATTER_RADIUS_WORLD = 90,
+  SCATTER_RADIUS_NPC = 22,
+  SCATTER_RADIUS_PC = 14,
+  PC_SCATTER_POSITION_ANGLE = 180,
+  NPC_DEPLOYMENT_ARC = 70,
+  PC_DEPLOYMENT_ARC = 80,
+  NPC_SPACING_MIN = 10,
+  NPC_SPACING_MAX = 22,
+  --- Default in-use PC figurine Y (Table A dumps / SeatRoleOffsets SEAT_FIGURE). Tune after first in-world pass.
+  FLOOR_Y = -52.89,
+  --- Custom tile mesh looks along −Z at yaw 0; look-at toward a point needs +180 (same as stage figurines).
+  FIGURINE_YAW_OFFSET_DEG = 180,
+  --- Board-local axis used as parchment “up” when sorting calibration tokens (CONTROL_BOARD rotY 180).
+  BOARD_ART_UP_AXIS = "z",
+  BOARD_ART_UP_SIGN = 1,
+  CONTROL_BOARD_IMAGE_STANDARD = "https://steamusercontent-a.akamaihd.net/ugc/13248133772831882366/6F672A9E951B9AC21C6DE9091659FE913AD29268/",
+  CONTROL_BOARD_IMAGE_SCATTER = "https://steamusercontent-a.akamaihd.net/ugc/15826341776223196067/84A1D7EF997F4D44D279D50B0D5AF2C829CF0949/",
+}
+
 C.Tables = {
   ["Table A"] = {
     guid = G.GUIDS.TABLES.TABLE_A, -- required

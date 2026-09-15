@@ -3596,6 +3596,7 @@ end
 --- @return table|nil computed
 function M.SyncTable(tableKey, opts)
   opts = U.Type(opts) == "table" and opts or {}
+  local ScatterMode = require("core.scatter_mode")
   local key = tableKey
   if U.Type(key) ~= "string" or key == "" then
     key = S.getStateVal("seatLayout", "currentTableKey")
@@ -3607,6 +3608,13 @@ function M.SyncTable(tableKey, opts)
   end
   if U.Type(key) ~= "string" or key == "" then
     return nil
+  end
+  if key == ScatterMode.TABLE_KEY then
+    ScatterMode.enter(opts)
+    return { scatter = true }
+  end
+  if ScatterMode.isActive() then
+    ScatterMode.leave(opts)
   end
   if inferredFromTags then
     S.setStateVal(key, "seatLayout", "currentTableKey")
@@ -3717,7 +3725,23 @@ function M.SetTableTo(tableKey, opts)
   if M.alertAndBlockIfDiceOnTable("switch table layout") then
     return nil
   end
+  local ScatterMode = require("core.scatter_mode")
   local destKey = normalizeTableKeyInput(tableKey)
+  if destKey == ScatterMode.TABLE_KEY then
+    local function enterScatter()
+      ScatterMode.enter({ force = true })
+    end
+    if opts.skipTransitionBlindfold == true then
+      enterScatter()
+      return nil
+    end
+    local HUDBF = require("core.hud_blindfold")
+    HUDBF.runTransition(function()
+      enterScatter()
+      return true
+    end)
+    return nil
+  end
   local shuffled = false
   if shouldRandomizeSeating(destKey, opts) then
     destKey = applyRandomSeatingOccupancy(destKey)
@@ -3725,6 +3749,9 @@ function M.SetTableTo(tableKey, opts)
   end
   local resolvedKey, _ = resolveTableRef(destKey)
   local currentTableKey = S.getStateVal("seatLayout", "currentTableKey")
+  if currentTableKey == ScatterMode.TABLE_KEY then
+    ScatterMode.leave()
+  end
 
   local function doSwitch()
     M.resolveSeatObjectsFromTable(resolvedKey, nil, { force = true })
@@ -5340,6 +5367,17 @@ function M.refreshSeatRigsFromReferenceSegment(opts)
     skipped = skipped,
     dryRun = dryRun,
   }
+end
+
+M.moveHandZoneAndContainedCards = moveHandZoneAndContainedCards
+M.applyAllTablesVisualState = applyAllTablesVisualState
+
+--- Apply per-seat camera presets from a precomputed rigid bundle (Scatter Mode figurine yaw).
+--- @param computed table `{ seatRigidByKey, slot1Rigid, centerPoint, referenceSeatKey }`
+function M.applyCameraModesFromComputed(computed)
+  local src = C.TableSourceObjects
+  local sourceGroups = resolveSourceTemplateGroups(src)
+  applyCameraModesForSeats(computed, sourceGroups, nil)
 end
 
 return M

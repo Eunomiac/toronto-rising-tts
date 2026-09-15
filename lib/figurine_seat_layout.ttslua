@@ -811,6 +811,7 @@ end
 --- @param figObj Object|nil
 --- @param helpers table `{ moveHandZone = fn }`
 local function layoutOccupantSatellites(occupantKey, figFrame, figObj, helpers)
+    helpers = helpers or {}
     local tag = occupantKey .. "Object"
     local tagged = getObjectsWithTag(tag) or {}
     local seen = {}
@@ -826,6 +827,9 @@ local function layoutOccupantSatellites(occupantKey, figFrame, figObj, helpers)
             seen[guid] = true
         end
         if roleKey == "SEAT_FIGURE" then
+            return
+        end
+        if helpers.skipRoleKeys ~= nil and helpers.skipRoleKeys[roleKey] == true then
             return
         end
         if shouldSkipSatellite(obj, roleKey) then

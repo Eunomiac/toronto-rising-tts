@@ -192,13 +192,14 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `NPCS.onObjectDropped` | `core/npcs.ttslua` | **Pass** | Global `npc_figurine` tag only (seated figurines use seat `*Object` tag, not drop path) |
 | `NPCS.isPooledFigurineObject` | `core/npcs.ttslua` | **Pass** | `npc_figurine` **or** seat `*Object` tag + `Figurine_Custom` + (`npcInstance:` GM Notes **or** instance `figurineGuid` registry when seated) |
 | `NPCS.resolveNpcNameFromFigurine` | `core/npcs.ttslua` | **Pass** | GM Notes, then O(1) `figurineGuidToNpcName` cache (rebuilt on bulk instance replace) |
-| `Gameboard.onNpcControlTokenDropped` | `core/npc_gameboard_interactions.ttslua` (via `npc_gameboard` facade) | **Pass** | `isNpcControlToken` + palette/anchor flags before `waitForCondition` |
+| `Gameboard.onNpcControlTokenDropped` | `core/npc_gameboard_interactions.ttslua` (via `npc_gameboard` facade) | **Pass** | `isNpcControlToken` + palette/anchor flags before `waitForCondition`. Scatter Mode (TOR-572): after O(1) token check, nearest of six gold origins then free hole; no new listener. |
 | `Gameboard.onControlTokenRotated` | `core/npc_gameboard_interactions.ttslua` (via facade) | **Pass** | Global pre-gates NPC/PC token; O(1) THERE check precedes generation/debounce capture scheduling |
 | `Gameboard.onNpcControlTokenRotated` | `core/npc_gameboard_interactions.ttslua` (via facade) | **Pass** | Hotkey-held polar family face match; `familyFlipDepth` suppresses recursive rotate |
 | `Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag` | `core/npc_gameboard_interactions.ttslua` (via facade) | **Pass** | Black/ST + `dieKindNearStorytellerDiceBag` before restore/roll |
 | `Gameboard.tryPcControlTokenDroppedOnStorytellerDiceBag` | `core/npc_gameboard_interactions.ttslua` (via facade) | **Pass** | `isPcControlToken` + Black/ST + `dieKindNearStorytellerDiceBag` before restore; returns `rollColor, rollType` via `STR.rollTypeForStorytellerBagDrop` |
 | `GlobalGameboardTokenDroppedOnDiceBag` / `GlobalGameboardPcTokenDroppedOnDiceBag` | `core/global_script.ttslua` | **Pass** | tag + steam-ST before `require("core.npc_gameboard")`; PC wrapper owns `RC.initiateRoll` |
 | `GlobalRepositionStorytellerTrayDice` | `core/global_script.ttslua` | **Pass** | Tier C tray layout across all ST bags |
+| `Gameboard.onPcControlTokenDropped` | `core/npc_gameboard_interactions.ttslua` (via facade) | **Pass** | `isPcControlToken`. Scatter Mode (TOR-572): same host drop path; nearest group + stable PC world slot, then park (no snaps). |
 | `Gameboard.onNpcControlTokenPickUp` | `core/npc_gameboard_interactions.ttslua` (via facade) | **Pass** | `isNpcControlToken` |
 | `Compulsions.onGenericDrawn` / `onPresentedEnteredHand` / `onSelectedEnteredHand` | `core/compulsions.ttslua` | **Pass** | Called only after Global Card + `Compulsion:` prefix gates (TOR-204); selected path requires `<Color>Object` tag |
 

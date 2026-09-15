@@ -1188,6 +1188,13 @@ function Snaps.installPolarSnaps(board, options)
         print("[Gameboard] installPolarSnaps: CONTROL_BOARD missing or has no setSnapPoints")
         return false
     end
+    local ScatterMode = require("core.scatter_mode")
+    if ScatterMode.isActive() then
+        board.setSnapPoints({})
+        polarSnapInstallFingerprint = nil
+        installedPolarSnapConfig = nil
+        return true
+    end
     if Snaps.areControlBoardSnapsEnabled() ~= true then
         if #board.getSnapPoints() > 0 then
             board.setSnapPoints({})
@@ -1237,6 +1244,12 @@ function Snaps.getInstalledControlBoardSnapConfig()
         return nil
     end
     return resolveControlBoardSnapConfig(installedPolarSnapConfig)
+end
+
+--- Force the next `installPolarSnaps` to rebuild (Scatter Mode clears snaps without going through install).
+function Snaps.clearPolarSnapInstallFingerprint()
+    polarSnapInstallFingerprint = nil
+    installedPolarSnapConfig = nil
 end
 
 --- Anchor ray angle (degrees) for a catalog entry.

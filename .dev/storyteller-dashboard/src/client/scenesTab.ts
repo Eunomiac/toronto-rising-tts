@@ -706,7 +706,7 @@ export const initScenesTab = (): void => {
       }
     }
     if (!best) {
-      setStatus("error", isPc ? "Drop PCs on a numbered center pentagon." : "Drop NPCs on an orbit slot.");
+      setStatus("error", isPc ? "Drop PCs on the gold or white holes." : "Drop NPCs on an outer-ring hole.");
       return;
     }
     if (best.kind === "center") {

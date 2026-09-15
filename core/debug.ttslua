@@ -559,6 +559,107 @@ function DEBUG.dumpSeatRoleOffsets(occupantRaw)
     return true, relativePath
 end
 
+--- Measure one Scatter group’s gold, upper-left white, and top NPC holes from three control tokens.
+--- Group `1` is world 90° (+X). Writes pasteable Lua under `.dev/.debug/debug_logs/`.
+--- @param scatterGroupNum number 1–6
+function DEBUG.calibrateScatterGroup(scatterGroupNum)
+    local ScatterMode = require("core.scatter_mode")
+    local ScatterLayout = require("lib.scatter_layout")
+    local Board = require("core.npc_gameboard_board")
+    local DATA = require("lib.npc_gameboard_data")
+    local n = math.floor(tonumber(scatterGroupNum) or 0)
+    if n < 1 or n > ScatterLayout.groupCount() then
+        error("DEBUG.calibrateScatterGroup: group must be 1.." .. tostring(ScatterLayout.groupCount()))
+    end
+    if not ScatterMode.isActive() then
+        error("DEBUG.calibrateScatterGroup: enter Scatter Mode first (apply a scatter scene, or SetTableTo(\"Scatter\")).")
+    end
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) or type(board.positionToLocal) ~= "function" then
+        error("DEBUG.calibrateScatterGroup: CONTROL_BOARD is missing")
+    end
+    local found = {}
+    local function consider(obj)
+        if not Board.isGameObject(obj) then
+            return
+        end
+        if not Board.isTokenOnControlBoardSurface(board, obj) then
+            return
+        end
+        local loc = board.positionToLocal(obj.getPosition())
+        found[#found + 1] = {
+            x = loc.x or loc[1] or 0,
+            y = loc.y or loc[2] or 0,
+            z = loc.z or loc[3] or 0,
+            localX = loc.x or loc[1] or 0,
+            localY = loc.y or loc[2] or 0,
+            localZ = loc.z or loc[3] or 0,
+        }
+    end
+    for _, obj in ipairs(getObjectsWithTag(DATA.TAG_PC_CONTROL_TOKEN) or {}) do
+        consider(obj)
+    end
+    for _, obj in ipairs(getObjectsWithTag(DATA.TAG_NPC_CONTROL_TOKEN) or {}) do
+        consider(obj)
+    end
+    if #found ~= 3 then
+        error(
+            "DEBUG.calibrateScatterGroup: expected exactly three pc_control_token / npc_control_token objects on the board, found "
+                .. tostring(#found)
+        )
+    end
+    local gold, ul, topNpc = ScatterMode.sortCalibrationLocals(found)
+    local inferred = ScatterMode.inferHolesFromAnchors(board, gold, ul, topNpc)
+    local function fmtN(v)
+        return string.format("%.4f", tonumber(v) or 0)
+    end
+    local function fmtHole(h, indent)
+        indent = indent or "    "
+        return indent
+            .. "{ localX = "
+            .. fmtN(h.localX)
+            .. ", localY = "
+            .. fmtN(h.localY)
+            .. ", localZ = "
+            .. fmtN(h.localZ)
+            .. ", u = "
+            .. fmtN(h.u)
+            .. ", v = "
+            .. fmtN(h.v)
+            .. " }"
+    end
+    local areaKey = ScatterLayout.areaKeyForGroup(n)
+    local lines = {
+        "-- Scatter group " .. tostring(n) .. " (" .. areaKey .. ") calibration. Paste into D.SCATTER_BOARD.areas.",
+        areaKey .. " = {",
+        "  calibrated = true,",
+        "  origin = { u = " .. fmtN(inferred.gold.u) .. ", v = " .. fmtN(inferred.gold.v) .. " },",
+        "  gold = " .. fmtHole(inferred.gold, "") .. ",",
+        "  whites = {",
+    }
+    for i = 1, #inferred.whites do
+        local comma = i < #inferred.whites and "," or ""
+        lines[#lines + 1] = fmtHole(inferred.whites[i], "    ") .. comma
+    end
+    lines[#lines + 1] = "  },"
+    lines[#lines + 1] = "  npcHoles = {"
+    for i = 1, #inferred.npcHoles do
+        local comma = i < #inferred.npcHoles and "," or ""
+        lines[#lines + 1] = fmtHole(inferred.npcHoles[i], "    ") .. comma
+    end
+    lines[#lines + 1] = "  },"
+    lines[#lines + 1] = "},"
+    lines[#lines + 1] = ""
+    local relativePath = "debug_logs/scatter_group_" .. tostring(n) .. "_calibration.lua"
+    local body = table.concat(lines, "\n")
+    local okWrite = DEBUG.writeWorkspaceFile(relativePath, body, "none", false)
+    print("DEBUG.calibrateScatterGroup: wrote " .. areaKey .. " (" .. tostring(#inferred.npcHoles) .. " NPC holes)")
+    if not okWrite then
+        error("DEBUG.calibrateScatterGroup: failed to write file (is tts-bridge listening?)")
+    end
+    return true, relativePath
+end
+
 --- Capture the player's current view and export a paste-ready Lua snippet.
 --- The output can be pasted into C.UniversalCameraAngles or C.ReferenceCameraAngles.
 --- @param player Player

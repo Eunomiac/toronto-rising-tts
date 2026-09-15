@@ -1793,29 +1793,31 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
     end
 
     do
-        local FSL = require("lib.figurine_seat_layout")
-        local tableKey = ent.sessionScene.tableKey
-        local tableCfg = nil
-        if type(tableKey) == "string" then
-            if C.Tables and C.Tables[tableKey] then
-                tableCfg = C.Tables[tableKey]
-            elseif RSL.isDynamicTableFamilyKey and RSL.isDynamicTableFamilyKey(tableKey) then
-                local concrete = RSL.resolveTableKey(tableKey)
-                tableCfg = C.Tables and C.Tables[concrete] or nil
+        if ent.placementMode ~= "scatter" then
+            local FSL = require("lib.figurine_seat_layout")
+            local tableKey = ent.sessionScene.tableKey
+            local tableCfg = nil
+            if type(tableKey) == "string" then
+                if C.Tables and C.Tables[tableKey] then
+                    tableCfg = C.Tables[tableKey]
+                elseif RSL.isDynamicTableFamilyKey and RSL.isDynamicTableFamilyKey(tableKey) then
+                    local concrete = RSL.resolveTableKey(tableKey)
+                    tableCfg = C.Tables and C.Tables[concrete] or nil
+                end
             end
-        end
-        local occupied = {}
-        local slots = ent.sessionScene.seatSlots
-        for _, npc in ipairs(C.NPCSeats or {}) do
-            local row = type(slots) == "table" and slots[npc] or nil
-            if type(row) == "table" and type(row.characterKey) == "string" and row.characterKey ~= "" then
-                occupied[npc] = row.characterKey
+            local occupied = {}
+            local slots = ent.sessionScene.seatSlots
+            for _, npc in ipairs(C.NPCSeats or {}) do
+                local row = type(slots) == "table" and slots[npc] or nil
+                if type(row) == "table" and type(row.characterKey) == "string" and row.characterKey ~= "" then
+                    occupied[npc] = row.characterKey
+                end
             end
-        end
-        local okOcc, errOcc = FSL.checkOccupancy(slots, occupied, tableCfg, { forImport = true })
-        if not okOcc then
-            U.AlertGM(errOcc or "This library scene is missing numbered table slots.")
-            return
+            local okOcc, errOcc = FSL.checkOccupancy(slots, occupied, tableCfg, { forImport = true })
+            if not okOcc then
+                U.AlertGM(errOcc or "This library scene is missing numbered table slots.")
+                return
+            end
         end
     end
 
@@ -1908,6 +1910,7 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
 
         -- Deep copy: `U.clone(..., true)` is shallow only (see `lib/util.ttslua`); `U.merge` recurses nested tables.
         local bundle = U.merge({}, ent.sessionScene)
+        bundle.placementMode = ent.placementMode or "standard"
         local lockNextSceneApply = S.getStateVal("controlBoard", "lockNextSceneApply") == true
         if lockNextSceneApply then
             local liveParticipants = U.merge({}, S.getStateVal("sessionScene") or {})
@@ -1966,13 +1969,25 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
         else
             tk = ""
         end
-        if tk ~= "" then
+        local ScatterMode = require("core.scatter_mode")
+        if bundle.placementMode == "scatter" then
+            ScatterMode.enter({ force = true })
+        elseif tk ~= "" then
             -- Accept explicit `C.Tables` keys and dynamic family keys (e.g. "Table B" → "Table B<N>");
             -- SetTableTo resolves family → concrete by occupied NPC seat count.
             if C.Tables[tk] ~= nil or RSL.isDynamicTableFamilyKey(tk) then
                 RSL.SetTableTo(tk, { skipTransitionBlindfold = true, randomizeSeating = true })
             else
                 U.AlertGM("Scene bundle has unknown tableKey `" .. tk .. "` — seating layout was not switched.")
+            end
+        elseif ScatterMode.isActive() then
+            ScatterMode.leave()
+            local fallback = S.getStateVal("seatLayout", "currentTableKey")
+            if fallback == ScatterMode.TABLE_KEY then
+                fallback = "Table A"
+            end
+            if type(fallback) == "string" and C.Tables[fallback] ~= nil then
+                RSL.SetTableTo(fallback, { skipTransitionBlindfold = true })
             end
         end
 

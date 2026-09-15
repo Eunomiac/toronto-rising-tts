@@ -1,0 +1,279 @@
+--[[
+    Scatter Mode world geometry (TOR-572). Global `require` only — never from object scripts.
+
+    Nested circles: `.dev/Revision of Player Positioning/Scatter Mode.md`.
+    Angles: 0° = +Z, 90° = +X, clockwise from above (`U.rotateAroundPoint`).
+]]
+
+local C = require("lib.constants")
+local U = require("lib.util")
+
+local ScatterLayout = {}
+
+local WORLD_ORIGIN_XZ = { x = 0, z = 0 }
+
+--- @return table C.Scatter
+local function cfg()
+    local scatter = C.Scatter
+    if U.Type(scatter) ~= "table" then
+        error("scatter_layout: C.Scatter is missing")
+    end
+    return scatter
+end
+
+--- @return number
+function ScatterLayout.floorY()
+    local y = tonumber(cfg().FLOOR_Y)
+    if y == nil then
+        return -52.89
+    end
+    return y
+end
+
+--- @return number groups 1–6
+function ScatterLayout.groupCount()
+    return math.floor(tonumber(cfg().GROUP_COUNT) or 6)
+end
+
+--- World azimuth for scatter group `groupIndex` (1-based). Group 1 = +X (90°).
+--- @param groupIndex number
+--- @return number degrees
+function ScatterLayout.groupAzimuthDeg(groupIndex)
+    local i = math.floor(tonumber(groupIndex) or 0)
+    if i < 1 or i > ScatterLayout.groupCount() then
+        error("scatter_layout: groupIndex must be 1.." .. tostring(ScatterLayout.groupCount()))
+    end
+    local first = tonumber(cfg().FIRST_GROUP_AZIMUTH_DEG) or 90
+    local step = tonumber(cfg().GROUP_SPACING_DEG) or 60
+    local deg = first + (i - 1) * step
+    deg = deg % 360
+    if deg < 0 then
+        deg = deg + 360
+    end
+    return deg
+end
+
+--- @param groupIndex number 1–6
+--- @return Vector SCATTER_GROUP_ORIGIN
+function ScatterLayout.groupOrigin(groupIndex)
+    local radius = tonumber(cfg().SCATTER_RADIUS_WORLD) or 90
+    local y = ScatterLayout.floorY()
+    return U.rotateAroundPoint({ x = 0, y = y, z = 0 }, radius, ScatterLayout.groupAzimuthDeg(groupIndex), y)
+end
+
+--- Horizontal length of a direction; 0 means skip that pose.
+--- @param dx number
+--- @param dz number
+--- @return number
+local function horizLen(dx, dz)
+    return math.sqrt((dx or 0) * (dx or 0) + (dz or 0) * (dz or 0))
+end
+
+--- @param from Vector|table
+--- @param to Vector|table
+--- @return number|nil yawDeg, string|nil skipReason
+function ScatterLayout.lookAtYawDeg(from, to)
+    local fx = tonumber(from.x or from[1]) or 0
+    local fz = tonumber(from.z or from[3]) or 0
+    local tx = tonumber(to.x or to[1]) or 0
+    local tz = tonumber(to.z or to[3]) or 0
+    local dx = tx - fx
+    local dz = tz - fz
+    if horizLen(dx, dz) < 1e-6 then
+        return nil, "zero-length look-at"
+    end
+    local angle = math.deg(math.atan2(dx, dz))
+    local offset = tonumber(cfg().FIGURINE_YAW_OFFSET_DEG) or 180
+    local yaw = angle + offset
+    yaw = yaw % 360
+    if yaw < 0 then
+        yaw = yaw + 360
+    end
+    return yaw, nil
+end
+
+--- PC_SCATTER_GROUP_ORIGIN: G + rotateClockwise(normalize(G−W) * Rnpc, θ)
+--- Implemented as world azimuth(G) + θ.
+--- @param groupIndex number
+--- @return Vector|nil, string|nil skipReason
+function ScatterLayout.pcGroupOrigin(groupIndex)
+    local G = ScatterLayout.groupOrigin(groupIndex)
+    local gx = G.x
+    local gz = G.z
+    if horizLen(gx - WORLD_ORIGIN_XZ.x, gz - WORLD_ORIGIN_XZ.z) < 1e-6 then
+        return nil, "PC_SCATTER_GROUP_ORIGIN: G coincides with World Origin"
+    end
+    local rnpc = tonumber(cfg().SCATTER_RADIUS_NPC) or 22
+    local theta = tonumber(cfg().PC_SCATTER_POSITION_ANGLE) or 180
+    local worldAz = ScatterLayout.groupAzimuthDeg(groupIndex) + theta
+    local y = ScatterLayout.floorY()
+    return U.rotateAroundPoint(G, rnpc, worldAz, y), nil
+end
+
+--- Far intersection of the PC circle with the World Ray through P.
+--- @param P Vector
+--- @return Vector|nil, string|nil skipReason
+function ScatterLayout.pcDeploymentArcMidpoint(P)
+    local px = tonumber(P.x or P[1]) or 0
+    local pz = tonumber(P.z or P[3]) or 0
+    if horizLen(px, pz) < 1e-6 then
+        return nil, "PC_DEPLOYMENT_ARC midpoint: P coincides with World Origin"
+    end
+    local rpc = tonumber(cfg().SCATTER_RADIUS_PC) or 14
+    local az = math.deg(math.atan2(px, pz))
+    local y = tonumber(P.y or P[2]) or ScatterLayout.floorY()
+    return U.rotateAroundPoint(P, rpc, az, y), nil
+end
+
+--- Five stable PC slots (1–5) on PC_DEPLOYMENT_ARC. Slot 3 is the midpoint.
+--- @param groupIndex number
+--- @return table[]|nil poses `{ slot, position, rotation }`, string|nil skipReason
+function ScatterLayout.pcSlotPoses(groupIndex)
+    local P, pErr = ScatterLayout.pcGroupOrigin(groupIndex)
+    if P == nil then
+        return nil, pErr
+    end
+    local mid, midErr = ScatterLayout.pcDeploymentArcMidpoint(P)
+    if mid == nil then
+        return nil, midErr
+    end
+    local rpc = tonumber(cfg().SCATTER_RADIUS_PC) or 14
+    local arc = tonumber(cfg().PC_DEPLOYMENT_ARC) or 80
+    local step = arc / 4
+    local midAz = math.deg(math.atan2(mid.x - P.x, mid.z - P.z))
+    local y = ScatterLayout.floorY()
+    local poses = {}
+    for slot = 1, 5 do
+        local az = midAz + (slot - 3) * step
+        local pos = U.rotateAroundPoint(P, rpc, az, y)
+        local yaw, yawErr = ScatterLayout.lookAtYawDeg(pos, P)
+        if yaw == nil then
+            U.AlertGM("Scatter PC slot " .. tostring(slot) .. " in group " .. tostring(groupIndex) .. ": " .. tostring(yawErr) .. " — skipped.")
+        else
+            poses[#poses + 1] = {
+                slot = slot,
+                position = pos,
+                rotation = Vector({ 0, yaw, 0 }),
+            }
+        end
+    end
+    return poses, nil
+end
+
+--- NPC poses on NPC_DEPLOYMENT_ARC. `n=1` at midpoint; `n≥2` even with MIN/MAX clamp.
+--- @param groupIndex number
+--- @param npcCount number
+--- @return table[] poses `{ index, position, rotation }`
+function ScatterLayout.npcPoses(groupIndex, npcCount)
+    local n = math.floor(tonumber(npcCount) or 0)
+    if n < 1 then
+        return {}
+    end
+    local G = ScatterLayout.groupOrigin(groupIndex)
+    local P, pErr = ScatterLayout.pcGroupOrigin(groupIndex)
+    if P == nil then
+        U.AlertGM("Scatter NPC group " .. tostring(groupIndex) .. ": " .. tostring(pErr) .. " — skipped.")
+        return {}
+    end
+    local rnpc = tonumber(cfg().SCATTER_RADIUS_NPC) or 22
+    local arc = tonumber(cfg().NPC_DEPLOYMENT_ARC) or 70
+    local minSp = tonumber(cfg().NPC_SPACING_MIN) or 10
+    local maxSp = tonumber(cfg().NPC_SPACING_MAX) or 22
+    local midAz = math.deg(math.atan2(P.x - G.x, P.z - G.z))
+    local y = ScatterLayout.floorY()
+    local spacing = 0
+    if n >= 2 then
+        local unclamped = arc / (n - 1)
+        if unclamped > maxSp then
+            spacing = maxSp
+        elseif unclamped < minSp then
+            spacing = minSp
+            U.AlertGM(
+                "Scatter NPC group "
+                    .. tostring(groupIndex)
+                    .. ": unclamped spacing "
+                    .. string.format("%.2f", unclamped)
+                    .. "° is below NPC_SPACING_MIN; placing at MIN (arc overflow)."
+            )
+        else
+            spacing = unclamped
+        end
+    end
+    local poses = {}
+    for i = 1, n do
+        local az = midAz
+        if n >= 2 then
+            local offset = (i - 1) - (n - 1) / 2
+            az = midAz + offset * spacing
+        end
+        local pos = U.rotateAroundPoint(G, rnpc, az, y)
+        local yaw, yawErr = ScatterLayout.lookAtYawDeg(pos, G)
+        if yaw == nil then
+            U.AlertGM("Scatter NPC " .. tostring(i) .. " in group " .. tostring(groupIndex) .. ": " .. tostring(yawErr) .. " — skipped.")
+        else
+            poses[#poses + 1] = {
+                index = i,
+                position = pos,
+                rotation = Vector({ 0, yaw, 0 }),
+            }
+        end
+    end
+    return poses
+end
+
+--- First join → slot 3; later → closest free to midpoint; ties → lower slot. Does not reshuffle.
+--- @param occupiedSlots table<number, boolean>
+--- @return number|nil slot
+function ScatterLayout.nextFreePcWorldSlot(occupiedSlots)
+    occupiedSlots = occupiedSlots or {}
+    if occupiedSlots[3] ~= true then
+        return 3
+    end
+    local bestSlot = nil
+    local bestDist = nil
+    for slot = 1, 5 do
+        if occupiedSlots[slot] ~= true then
+            local dist = math.abs(slot - 3)
+            if bestDist == nil or dist < bestDist or (dist == bestDist and slot < bestSlot) then
+                bestDist = dist
+                bestSlot = slot
+            end
+        end
+    end
+    return bestSlot
+end
+
+--- Empty `scatterPlacements` pack (scatter1…scatter6).
+--- @return table
+function ScatterLayout.emptyPlacements()
+    local pack = {}
+    for i = 1, ScatterLayout.groupCount() do
+        pack["scatter" .. tostring(i)] = {
+            centerCharacters = {},
+            orbitCharacters = {},
+        }
+    end
+    return pack
+end
+
+--- @param groupIndex number
+--- @return string areaKey
+function ScatterLayout.areaKeyForGroup(groupIndex)
+    return "scatter" .. tostring(math.floor(tonumber(groupIndex) or 0))
+end
+
+--- @param areaKey string
+--- @return number|nil groupIndex
+function ScatterLayout.groupIndexForAreaKey(areaKey)
+    if type(areaKey) ~= "string" then
+        return nil
+    end
+    local n = tonumber(string.match(areaKey, "^scatter(%d+)$"))
+    n = math.floor(n or 0)
+    if n < 1 or n > ScatterLayout.groupCount() then
+        return nil
+    end
+    return n
+end
+
+return ScatterLayout

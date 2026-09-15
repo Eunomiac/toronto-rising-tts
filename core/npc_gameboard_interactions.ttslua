@@ -1395,6 +1395,10 @@ function Interactions.onPcControlTokenDropped(token, playerColor)
     if not Board.isGameObject(board) then
         return
     end
+    local ScatterMode = require("core.scatter_mode")
+    if ScatterMode.onControlTokenDropped(token, true) then
+        return
+    end
     applyControlTokenDropScaleByBoardPosition(token, board)
 end
 
@@ -1464,6 +1468,11 @@ function Interactions.onNpcControlTokenDropped(token, playerColor)
     local t0 = os.clock()
     local board = Board.getControlBoard()
     if not Board.isGameObject(board) then
+        Interactions.finishInteractionProfile(t0)
+        return
+    end
+    local ScatterMode = require("core.scatter_mode")
+    if ScatterMode.onControlTokenDropped(token, false) then
         Interactions.finishInteractionProfile(t0)
         return
     end
