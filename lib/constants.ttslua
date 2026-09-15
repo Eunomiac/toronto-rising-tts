@@ -3125,6 +3125,36 @@ local function memoriamNpcAssetCloudKey(name, kind)
   return "mem_tokenBack_" .. stem
 end
 
+--- Shared Memoriam figurine reverse: `mem_BACK.webp` → `Cloud.MemoriamNpcFigurines.mem_BACK` (any BACK casing).
+--- @param figurines table|nil
+--- @return string
+local function memoriamNpcSharedFigurineBackURL(figurines)
+  if type(figurines) ~= "table" then
+    return ""
+  end
+  local direct = figurines.mem_BACK or figurines.mem_Back or figurines.mem_back
+  if type(direct) == "table" then
+    return trimmedString(direct.URL)
+  end
+  for key, _ in pairs(figurines) do
+    if type(key) == "string" and string.lower(key) == "mem_back" then
+      return cloudCatalogURL(figurines, key)
+    end
+  end
+  return ""
+end
+
+--- Reserved Cloud stem `BACK` is the shared reverse, not a character.
+--- @param name string|nil
+--- @return boolean
+local function isMemoriamNpcSharedBackName(name)
+  local stem = trimmedString(name)
+  if string.sub(stem, 1, 4) == "mem_" then
+    stem = string.sub(stem, 5)
+  end
+  return string.lower(stem) == "back"
+end
+
 --- Writes `Cloud.MemoriamPanels["<skyboxKey>_<letter>"].URL` into `catalog[skyboxKey][panelX].url`.
 --- Cloud keys that name no catalog period, or a panel that period does not define, are reported — not applied.
 --- @param catalog table `C.MemoriamSkyboxes`
@@ -3153,6 +3183,7 @@ end
 
 --- Fills Memoriam NPC image URLs from Cloud catalogs. Missing tables, keys, or URLs become "".
 --- Named slots (`npc.name`) also get `figurine.URL` / `token.frontURL` / `token.backURL`.
+--- `mem_BACK.webp` is the shared figurine reverse (`figurine.back`), not a character front.
 --- @param catalog table `C.MemoriamSkyboxes`
 --- @param cloud table|nil `Cloud`
 local function applyMemoriamCloudNpcAssetUrls(catalog, cloud)
@@ -3160,6 +3191,7 @@ local function applyMemoriamCloudNpcAssetUrls(catalog, cloud)
   local figurines = type(cloud.MemoriamNpcFigurines) == "table" and cloud.MemoriamNpcFigurines or {}
   local tokenFronts = type(cloud.MemoriamNpcTokenFronts) == "table" and cloud.MemoriamNpcTokenFronts or {}
   local tokenBacks = type(cloud.MemoriamNpcTokenBacks) == "table" and cloud.MemoriamNpcTokenBacks or {}
+  local sharedFigurineBackUrl = memoriamNpcSharedFigurineBackURL(figurines)
   if type(catalog) ~= "table" then
     return
   end
@@ -3169,15 +3201,19 @@ local function applyMemoriamCloudNpcAssetUrls(catalog, cloud)
         local npc = entry.npcs[i]
         if type(npc) == "table" then
           local name = trimmedString(npc.name)
-          local figurineUrl = cloudCatalogURL(figurines, memoriamNpcAssetCloudKey(name, "figurine"))
+          local figurineUrl = ""
+          if name ~= "" and not isMemoriamNpcSharedBackName(name) then
+            figurineUrl = cloudCatalogURL(figurines, memoriamNpcAssetCloudKey(name, "figurine"))
+          end
           local frontUrl = cloudCatalogURL(tokenFronts, memoriamNpcAssetCloudKey(name, "tokenFront"))
           local backUrl = cloudCatalogURL(tokenBacks, memoriamNpcAssetCloudKey(name, "tokenBack"))
           npc.figurineURL = figurineUrl
           npc.tokenURL = frontUrl
           if type(npc.figurine) == "table" then
             npc.figurine.URL = figurineUrl
+            npc.figurine.back = sharedFigurineBackUrl
           elseif name ~= "" then
-            npc.figurine = { URL = figurineUrl }
+            npc.figurine = { URL = figurineUrl, back = sharedFigurineBackUrl }
           end
           if type(npc.token) == "table" then
             npc.token.frontURL = frontUrl

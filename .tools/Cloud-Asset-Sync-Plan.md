@@ -35,7 +35,7 @@ Status: **implemented** — runner `.tools/cloud-asset-sync.js`; config `.tools/
 | `cloudSitesCatalog` | `Sites` | `Cloud.Sites` | — (console inspection) |
 | `genericNpcFigurines` / `genericNpcTokenFronts` / `genericNpcTokenBacks` | `NPC Cutouts/Generic/…` | `Cloud.GenericNpc*` | `lib/npcs_data.ttslua` `D.initGenericNPCs` |
 | `memoriamPanels` | `Memoriam` (`<skyboxKey>_<a\|b\|c\|d>.<ext>`) | `Cloud.MemoriamPanels` | `lib/constants.ttslua` fills `C.MemoriamSkyboxes[key].panelA–D.url` at load (TOR-564) |
-| `memoriamNpcFigurines` / `memoriamNpcTokenFronts` / `memoriamNpcTokenBacks` | `NPC Cutouts/Memoriam/…` (`mem_<stem>`, `mem_tokenFront_<stem>`, `mem_tokenBack_<stem>`) | `Cloud.MemoriamNpc*` keys keep the `mem_` prefix | Constants: `npc.name` = `mem_<stem>` → figurine `mem_<stem>`, tokens `mem_tokenFront_<stem>` / `mem_tokenBack_<stem>` |
+| `memoriamNpcFigurines` / `memoriamNpcTokenFronts` / `memoriamNpcTokenBacks` | `NPC Cutouts/Memoriam/…` (`mem_<stem>`, `mem_BACK` shared reverse, `mem_tokenFront_<stem>`, `mem_tokenBack_<stem>`) | `Cloud.MemoriamNpc*` keys keep the `mem_` prefix | Constants: `npc.name` = `mem_<stem>` → figurine front `mem_<stem>`, `figurine.back` from `mem_BACK`, tokens `mem_tokenFront_<stem>` / `mem_tokenBack_<stem>` |
 
 **`--lua-catalog`** (used by `npm run cloud-asset-sync:catalog`) runs every `LuaCatalog` job in the config — including jobs added later — and leaves the save alone. A `LuaCatalog` run still rebuilds `lib/cloud_catalog.ttslua` from the selected jobs only. **`--job` takes several ids** (`--job a,b` or repeated) and can be combined with `--lua-catalog` to run a subset.
 

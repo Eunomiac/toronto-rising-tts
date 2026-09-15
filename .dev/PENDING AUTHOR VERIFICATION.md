@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-15 — TOR-574 Cloud sync skip missing folders; Memoriam NPC `mem_` keys._
+_Last populated: 2026-09-15 — TOR-575 Memoriam figurine shared back (`mem_BACK.webp`)._
 
 ### Scatter / table layout
 
@@ -144,6 +144,12 @@ Separately, restart the Storyteller Dashboard with the TTS Tools extension **dis
 **How to verify:** Run **BUILD PIPELINE (Full)** (or `npm run cloud-asset-sync -- --yes-purge`) while the Memoriam NPC Cloud folders are still empty or missing. The build should finish. You should see `SKIP: no matching Cloud files` for the three Memoriam NPC jobs, not a failed build. Save & Play. In the Host console, `lua print(C.cloudCatalogURL(Cloud.MemoriamNpcFigurines, "mem_maximillianSteele"))` should print an empty line (no error). After you upload `mem_maximillianSteele.webp` plus `mem_tokenFront_maximillianSteele.webp` / `mem_tokenBack_maximillianSteele.webp` and re-run `npm run cloud-asset-sync:catalog`, that same print should show a steamusercontent URL, and a sheet NPC whose Key is `mem_maximillianSteele` should pick up the matching figurine and token URLs.
 
 **Context:** relatedTo **TOR-564** (Memoriam panel art). Missing Cloud art is an empty URL, not a build abort. Token Cloud keys are `mem_tokenFront_<stem>` / `mem_tokenBack_<stem>` when the NPC Key is `mem_<stem>`.
+
+#### TOR-575 — Memoriam figurine shared back from `mem_BACK.webp`
+
+**How to verify:** Put `mem_BACK.webp` in Steam Cloud `NPC Cutouts/Memoriam/Figurines` (same folder as the character fronts). With Steam running, run `npm run cloud-asset-sync:catalog` from the repo root — the `memoriamNpcFigurines` job should keep `mem_BACK.webp` as catalog key `mem_BACK`. Save & Play. In the Host console, `lua print(C.cloudCatalogURL(Cloud.MemoriamNpcFigurines, "mem_BACK"))` should show a steamusercontent URL. Then pick any real Memoriam NPC on a period (for example Lucien 19’s first filled slot) and print `figurine.back` — it should be that same URL, not that NPC’s front. There should be no Memoriam character named BACK; `mem_BACK` is only the reverse image.
+
+**Context:** Same idea as generic `Back_00.webp`. relatedTo **TOR-574** (Memoriam NPC Cloud keys). If the file is not uploaded yet, that print should be an empty line, not an error.
 
 #### ⚠️ TOR-558 — Cloud asset sync (CustomUIAssets + Cloud catalog)
 

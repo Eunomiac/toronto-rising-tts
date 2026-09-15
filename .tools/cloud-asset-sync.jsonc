@@ -33,6 +33,7 @@
       "tableName": "GenericNpcFigurines",
       "filenameToNameSearchPattern": "^([^_]+_\\d{2})\\.[^.]+$",
       "filenameToNameReplacePattern": "$1"
+      // Back_00.webp → Cloud.GenericNpcFigurines.Back_00 (shared reverse). NPCs are _01+ only.
       // → Cloud.GenericNpcFigurines.<stem> = { filename, key, URL }
     },
     {
@@ -84,6 +85,7 @@
       "output": "LuaCatalog",
       "tableName": "MemoriamNpcFigurines",
       // Sheet NPC Key is mem_<stem> (no _01 variants). Cloud key keeps the mem_ prefix.
+      // mem_BACK.webp → Cloud.MemoriamNpcFigurines.mem_BACK (shared reverse, not an NPC; like Generic Back_00).
       "filenameToNameSearchPattern": "^mem_(.+)\\.[^.]+$",
       "filenameToNameReplacePattern": "mem_$1" // E.g. "mem_maximillianSteele.webp" → "mem_maximillianSteele"
       // → Cloud.MemoriamNpcFigurines.mem_maximillianSteele = { filename, key, URL }

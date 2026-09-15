@@ -743,5 +743,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-09-07 | CREATE+SHIP | TOR-561 | Separate session-start vs session-end global blindfolds; session-numbered Images; supersedes TOR-524 image swap. Pending Save & Play. |
 | 2026-09-15 | CREATE+SHIP | TOR-573 | Scatter import from table=Scatter + live Standard↔Scatter translation. relatedTo TOR-572 / TOR-570 / TOR-507. Pending Save & Play. |
 | 2026-09-15 | CREATE+SHIP | TOR-574 | Cloud asset sync skips missing folders (empty LuaCatalog tables / empty URLs). Memoriam NPC keys keep `mem_`. relatedTo TOR-564. Pending Save & Play. |
+| 2026-09-15 | CREATE+SHIP | TOR-575 | Memoriam figurine shared back from `mem_BACK.webp` (`figurine.back`); reserved stem is not an NPC. relatedTo TOR-574. Pending Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
