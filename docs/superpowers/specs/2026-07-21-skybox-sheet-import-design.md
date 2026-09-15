@@ -84,15 +84,15 @@ Fail loudly on non-200, empty body, or HTML/login error pages.
 
 **`SKYBOXMEMORIAMCSV`** (TOR-510, flattened in TOR-529)
 
-- Header must include `Key`, `Characters`, `Start Year`, `End Year`, `Location`, then for panels A–D: `Display`, `isOutdoors`, `isDaytime`, `Weather`, `Location Audio`, `URL`, then `Splash Text`, then for NPC 1–10: `Label`, `Token URL`, `Figurine URL` (case-insensitive)
+- Header must include `Key`, `Characters`, `Start Year`, `End Year`, `Location`, then for panels A–D: `Display`, `isOutdoors`, `isDaytime`, `Weather`, `Location Audio`, then `Splash Text`, then for NPC 1–10: `Label` (case-insensitive). Leftover Panel/NPC URL columns are ignored if still present.
 - Entries are stored **by skybox key** at the top of `SkyboxesCatalog.MemoriamSkyboxes` (no character nesting)
 - `characters` is a string array from the pipe-delimited `Characters` column (Lua identifiers). Example: `lucien14` with `lucien|fomorach` writes one entry `MemoriamSkyboxes.lucien14` whose `characters` is `{ "lucien", "fomorach" }`
 - `startYear` / `endYear` parse as integers
 - Panel `isOutdoors` / `isDaytime` parse as booleans (`TRUE`/`FALSE`)
 - Panel `Weather` is a pipe-delimited list of strings; a blank cell becomes an empty array
-- Panel URL, `splashText`, and NPC `label` / `tokenURL` / `figurineURL` may be blank (empty string)
+- `splashText` and NPC `label` may be blank (empty string). Memoriam panel and NPC image URLs are **not** sheet columns — they come from Steam Cloud (`Cloud.MemoriamPanels`, `Cloud.MemoriamNpc*`) at Constants load (TOR-564 / TOR-577).
 - Memoriam transition covers are **not** sheet URLs: Custom Asset names `memoriamBlindfold_<skyboxKey>` (Steam Cloud → Global Custom UI Assets via `memoriamBlindfolds` job)
-- **Panel art authority is Steam Cloud, not the sheet (TOR-564):** `lib/constants.ttslua` overwrites `panelA`–`panelD`.`url` from `Cloud.MemoriamPanels["<key>_<a|b|c|d>"].URL` (`.tools/cloud-asset-sync.jsonc` job `memoriamPanels`; regenerate with `npm run cloud-asset-sync:catalog`). A sheet Panel URL survives only for a panel with no Cloud file. Use `C.resolveMemoriamPanelURL(skyboxKey, panelKey)` at apply time; `C.getMemoriamPanelsWithoutArt()` lists blanks.
+- **Panel art authority is Steam Cloud (TOR-564):** `lib/constants.ttslua` writes `panelA`–`panelD`.`url` from `Cloud.MemoriamPanels["<key>_<a|b|c|d>"].URL` (`.tools/cloud-asset-sync.jsonc` job `memoriamPanels`; regenerate with `npm run cloud-asset-sync:catalog`). The generated catalog does not include panel or NPC URL fields (TOR-577). Use `C.resolveMemoriamPanelURL(skyboxKey, panelKey)` at apply time; `C.getMemoriamPanelsWithoutArt()` lists blanks.
 - Panels A and B require a non-empty Display; if panel C or D Display is blank, omit that panel entirely
 - Always emit ten `npcs` tables, in sheet order 1–10
 - Rows with a blank Key are skipped (named ranges often include a draft/next row)
@@ -133,7 +133,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
     },
     splashText = "",
     npcs = {
-      { label = "", tokenURL = "", figurineURL = "" },
+      { label = "" },
       -- ... ten slots
     },
   },

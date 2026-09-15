@@ -149,32 +149,28 @@ const MEMORIAM_REQUIRED_HEADERS = [
   "panel a isdaytime",
   "panel a weather",
   "panel a location audio",
-  "panel a url",
   "panel b display",
   "panel b isoutdoors",
   "panel b isdaytime",
   "panel b weather",
   "panel b location audio",
-  "panel b url",
   "panel c display",
   "panel c isoutdoors",
   "panel c isdaytime",
   "panel c weather",
   "panel c location audio",
-  "panel c url",
   "panel d display",
   "panel d isoutdoors",
   "panel d isdaytime",
   "panel d weather",
   "panel d location audio",
-  "panel d url",
   "splash text",
 ];
 
 const MEMORIAM_NPC_SLOT_COUNT = 10;
 
 for (let n = 1; n <= MEMORIAM_NPC_SLOT_COUNT; n += 1) {
-  MEMORIAM_REQUIRED_HEADERS.push(`npc ${n} label`, `npc ${n} token url`, `npc ${n} figurine url`);
+  MEMORIAM_REQUIRED_HEADERS.push(`npc ${n} label`);
 }
 
 /**
@@ -223,7 +219,6 @@ function cellAt(cells, index) {
  *   isDaytime: boolean,
  *   weather: string[],
  *   locationAudio: string,
- *   url: string,
  * } | null}
  */
 function parseMemoriamPanel(cells, cols, rowLabel, letter, opts) {
@@ -249,23 +244,20 @@ function parseMemoriamPanel(cells, cols, rowLabel, letter, opts) {
     ),
     weather: splitPipeList(cellAt(cells, cols[`${prefix} weather`])),
     locationAudio: trimCell(cellAt(cells, cols[`${prefix} location audio`])),
-    url: trimCell(cellAt(cells, cols[`${prefix} url`])),
   };
 }
 
 /**
  * @param {string[]} cells
  * @param {Record<string, number>} cols
- * @returns {{ label: string, tokenURL: string, figurineURL: string }[]}
+ * @returns {{ label: string }[]}
  */
 function parseMemoriamNpcs(cells, cols) {
-  /** @type {{ label: string, tokenURL: string, figurineURL: string }[]} */
+  /** @type {{ label: string }[]} */
   const npcs = [];
   for (let n = 1; n <= MEMORIAM_NPC_SLOT_COUNT; n += 1) {
     npcs.push({
       label: trimCell(cellAt(cells, cols[`npc ${n} label`])),
-      tokenURL: trimCell(cellAt(cells, cols[`npc ${n} token url`])),
-      figurineURL: trimCell(cellAt(cells, cols[`npc ${n} figurine url`])),
     });
   }
   return npcs;
@@ -284,7 +276,7 @@ function parseMemoriamNpcs(cells, cols) {
  *   panelC?: object,
  *   panelD?: object,
  *   splashText: string,
- *   npcs: { label: string, tokenURL: string, figurineURL: string }[],
+ *   npcs: { label: string }[],
  * }>}
  */
 function parseMemoriamSkyboxRows(csvText) {
@@ -480,7 +472,6 @@ function escapeLuaString(value) {
  *   isDaytime: boolean,
  *   weather: string[],
  *   locationAudio: string,
- *   url: string,
  * }} panel
  * @param {string} indent
  */
@@ -499,8 +490,7 @@ function renderMemoriamPanelLua(lines, name, panel, indent) {
     }
     lines.push(`${indent}  },`);
   }
-  lines.push(`${indent}  locationAudio = "${escapeLuaString(panel.locationAudio)}",`);
-  lines.push(`${indent}  url = "${escapeLuaString(panel.url)}"`);
+  lines.push(`${indent}  locationAudio = "${escapeLuaString(panel.locationAudio)}"`);
   lines.push(`${indent}},`);
 }
 
@@ -514,16 +504,14 @@ function renderLuaQuotedList(values) {
 
 /**
  * @param {string[]} lines
- * @param {{ label: string, tokenURL: string, figurineURL: string }[]} npcs
+ * @param {{ label: string }[]} npcs
  * @param {string} indent
  */
 function renderMemoriamNpcsLua(lines, npcs, indent) {
   lines.push(`${indent}npcs = {`);
   for (const npc of npcs) {
     lines.push(`${indent}  {`);
-    lines.push(`${indent}    label = "${escapeLuaString(npc.label)}",`);
-    lines.push(`${indent}    tokenURL = "${escapeLuaString(npc.tokenURL)}",`);
-    lines.push(`${indent}    figurineURL = "${escapeLuaString(npc.figurineURL)}",`);
+    lines.push(`${indent}    label = "${escapeLuaString(npc.label)}"`);
     lines.push(`${indent}  },`);
   }
   lines.push(`${indent}},`);
@@ -544,7 +532,7 @@ function renderMemoriamNpcsLua(lines, npcs, indent) {
  *     panelC?: object,
  *     panelD?: object,
  *     splashText: string,
- *     npcs: { label: string, tokenURL: string, figurineURL: string }[],
+ *     npcs: { label: string }[],
  *   }>,
  *   meta: { sheetId: string, catalogRange: string, genericsRange: string, memoriamRange?: string },
  * }} args

@@ -3063,7 +3063,7 @@ C.MemoriamSkyboxes = SkyboxesCatalog.MemoriamSkyboxes
 
 -- Memoriam panel art lives on Steam Cloud (`Vampire the Masquerade 5E/Memoriam`, files `<skyboxKey>_<a|b|c|d>.jpg`) and reaches
 -- Lua as `Cloud.MemoriamPanels` (AUTO-GENERATED `lib/cloud_catalog.ttslua`; regenerate: npm run cloud-asset-sync:catalog).
--- Cloud is the URL authority for `panelA`–`panelD`.`url`; a sheet Panel URL survives only when no cloud file exists for that panel.
+-- Cloud is the URL authority for `panelA`–`panelD`.`url` (filled at load from `Cloud.MemoriamPanels`). The sheet does not supply panel or NPC image URLs.
 local CloudCatalog = require("lib.cloud_catalog")
 
 local MEMORIAM_PANEL_KEYS = { "panelA", "panelB", "panelC", "panelD" }

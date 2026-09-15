@@ -23,31 +23,23 @@ const MEMORIAM_HEADER = [
   "Panel A isDaytime",
   "Panel A Weather",
   "Panel A Location Audio",
-  "Panel A URL",
   "Panel B Display",
   "Panel B isOutdoors",
   "Panel B isDaytime",
   "Panel B Weather",
   "Panel B Location Audio",
-  "Panel B URL",
   "Panel C Display",
   "Panel C isOutdoors",
   "Panel C isDaytime",
   "Panel C Weather",
   "Panel C Location Audio",
-  "Panel C URL",
   "Panel D Display",
   "Panel D isOutdoors",
   "Panel D isDaytime",
   "Panel D Weather",
   "Panel D Location Audio",
-  "Panel D URL",
   "Splash Text",
-  ...Array.from({ length: 10 }, (_, i) => [
-    `NPC ${i + 1} Label`,
-    `NPC ${i + 1} Token URL`,
-    `NPC ${i + 1} Figurine URL`,
-  ]).flat(),
+  ...Array.from({ length: 10 }, (_, i) => `NPC ${i + 1} Label`),
 ].join(",");
 
 /**
@@ -59,12 +51,12 @@ function memoriamCsv(cells) {
 }
 
 function emptyMemoriamTail() {
-  // Splash Text + 10 NPCs × (label, tokenURL, figurineURL)
-  return Array(31).fill("");
+  // Splash Text + 10 NPC labels
+  return Array(11).fill("");
 }
 
 function emptyNpcs() {
-  return Array.from({ length: 10 }, () => ({ label: "", tokenURL: "", figurineURL: "" }));
+  return Array.from({ length: 10 }, () => ({ label: "" }));
 }
 
 test("parseCsv handles quoted commas", () => {
@@ -157,15 +149,11 @@ const AISHE2_CELLS = [
   "TRUE",
   "windLow|rainLight",
   "quietIndoor",
-  "",
   "Market square",
   "TRUE",
   "FALSE",
   "",
   "busyStreet",
-  "",
-  "",
-  "",
   "",
   "",
   "",
@@ -196,7 +184,6 @@ test("parseMemoriamSkyboxRows stores entries by key with a characters list", () 
     isDaytime: true,
     weather: ["windLow", "rainLight"],
     locationAudio: "quietIndoor",
-    url: "",
   });
   assert.deepEqual(entry.panelB, {
     display: "Market square",
@@ -204,7 +191,6 @@ test("parseMemoriamSkyboxRows stores entries by key with a characters list", () 
     isDaytime: false,
     weather: [],
     locationAudio: "busyStreet",
-    url: "",
   });
   assert.equal(entry.panelC, undefined);
   assert.equal(entry.panelD, undefined);
@@ -224,19 +210,21 @@ test("parseMemoriamSkyboxRows keeps pipe-delimited characters on one entry", () 
 
 test("parseMemoriamSkyboxRows imports splash and ten NPC slots", () => {
   const cells = AISHE2_CELLS.slice();
-  cells[29] = "Smoke and memory";
-  cells[30] = "Drake";
-  cells[31] = "https://token/";
-  cells[32] = "https://figurine/";
+  cells[25] = "Smoke and memory";
+  cells[26] = "Drake";
   const parsed = parseMemoriamSkyboxRows(memoriamCsv(cells));
   assert.equal(parsed.aishe2.splashText, "Smoke and memory");
   assert.equal(parsed.aishe2.npcs.length, 10);
-  assert.deepEqual(parsed.aishe2.npcs[0], {
-    label: "Drake",
-    tokenURL: "https://token/",
-    figurineURL: "https://figurine/",
-  });
-  assert.deepEqual(parsed.aishe2.npcs[9], { label: "", tokenURL: "", figurineURL: "" });
+  assert.deepEqual(parsed.aishe2.npcs[0], { label: "Drake" });
+  assert.deepEqual(parsed.aishe2.npcs[9], { label: "" });
+});
+
+test("parseMemoriamSkyboxRows ignores leftover Panel/NPC URL columns", () => {
+  const header = `${MEMORIAM_HEADER},Panel A URL,NPC 1 Token URL,NPC 1 Figurine URL`;
+  const cells = AISHE2_CELLS.concat(["#REF!", "https://token/", "https://figurine/"]);
+  const parsed = parseMemoriamSkyboxRows([header, cells.join(",")].join("\n"));
+  assert.equal(parsed.aishe2.panelA.url, undefined);
+  assert.deepEqual(parsed.aishe2.npcs[0], { label: "" });
 });
 
 test("parseMemoriamSkyboxRows splits weather pipes and treats blank weather as empty array", () => {
@@ -247,12 +235,11 @@ test("parseMemoriamSkyboxRows splits weather pipes and treats blank weather as e
 
 test("parseMemoriamSkyboxRows omits panel C/D only when display is blank", () => {
   const withC = AISHE2_CELLS.slice();
-  withC[17] = "Hidden cellar";
-  withC[18] = "FALSE";
-  withC[19] = "FALSE";
-  withC[20] = "fogLow";
-  withC[21] = "quietIndoor";
-  withC[22] = "https://c/";
+  withC[15] = "Hidden cellar";
+  withC[16] = "FALSE";
+  withC[17] = "FALSE";
+  withC[18] = "fogLow";
+  withC[19] = "quietIndoor";
   const parsed = parseMemoriamSkyboxRows(memoriamCsv(withC));
   assert.deepEqual(parsed.aishe2.panelC, {
     display: "Hidden cellar",
@@ -260,7 +247,6 @@ test("parseMemoriamSkyboxRows omits panel C/D only when display is blank", () =>
     isDaytime: false,
     weather: ["fogLow"],
     locationAudio: "quietIndoor",
-    url: "https://c/",
   });
   assert.equal(parsed.aishe2.panelD, undefined);
 });
@@ -280,7 +266,7 @@ test("parseMemoriamSkyboxRows skips rows with blank Panel A and Panel B display"
   blankPanels[0] = "rashid12b";
   blankPanels[1] = "rashid";
   blankPanels[5] = "";
-  blankPanels[11] = "";
+  blankPanels[10] = "";
   const csv = [MEMORIAM_HEADER, AISHE2_CELLS.join(","), blankPanels.join(",")].join("\n");
   const parsed = parseMemoriamSkyboxRows(csv);
   assert.equal(parsed.aishe2.key, "aishe2");
@@ -329,13 +315,14 @@ test("renderSkyboxesCatalogLua emits flat MemoriamSkyboxes keyed by skybox key",
   assert.match(lua, /isDaytime = true,/);
   assert.match(lua, /weather = \{[\s\S]*"windLow",[\s\S]*"rainLight"/);
   assert.match(lua, /locationAudio = "quietIndoor"/);
-  assert.match(lua, /url = ""/);
   assert.match(lua, /weather = \{\}/);
   assert.match(lua, /splashText = ""/);
   assert.doesNotMatch(lua, /blindfoldURL/);
+  assert.doesNotMatch(lua, /panelA[\s\S]*url = /);
+  assert.doesNotMatch(lua, /tokenURL/);
+  assert.doesNotMatch(lua, /figurineURL/);
   assert.match(lua, /npcs = \{/);
-  assert.match(lua, /tokenURL = ""/);
-  assert.match(lua, /figurineURL = ""/);
+  assert.match(lua, /label = ""/);
   assert.doesNotMatch(lua, /panelC =/);
   assert.doesNotMatch(lua, /panelD =/);
 });

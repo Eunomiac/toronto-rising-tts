@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-15 — TOR-576 Memoriam token Cloud keys `tokenFront_mem_` / `tokenBack_mem_`._
+_Last populated: 2026-09-15 — TOR-577 Memoriam sheet import drops panel/NPC URL columns._
 
 ### Scatter / table layout
 
@@ -137,7 +137,7 @@ Separately, restart the Storyteller Dashboard with the TTS Tools extension **dis
 
 **How to verify:** Finish uploading the Memoriam panel images to Cloud Manager (`Vampire the Masquerade 5E/Memoriam`, named like `blackCaesar37_a.jpg`). With Steam running, run `npm run cloud-asset-sync:catalog` from the repo root — it should report a `memoriamPanels` job with every file kept and none skipped, then write `lib/cloud_catalog.ttslua`. Save & Play. In the Host console, look for one line starting `[constants] Memoriam panel art:` — it should say how many panels were linked from Cloud, how many catalog panels still have no art, and (only if something is misnamed) list Cloud files that match no period. Then run `lua print(C.resolveMemoriamPanelURL("blackCaesar37", "panelA"))` — you should see a `steamusercontent` URL, not an error. Optionally `lua log(C.getMemoriamPanelsWithoutArt())` lists any panels still waiting for art; when the upload is complete that list should be empty. When I regenerated the catalog mid-upload, the 27 missing panels were all Rashid periods.
 
-**Context:** Cloud is now the source of truth for `C.MemoriamSkyboxes[key].panelA–D.url`; the Sheet's Panel URL columns only fill a panel that has no Cloud file. The Memoriam apply path (**TOR-101**) should call `C.resolveMemoriamPanelURL(skyboxKey, panelKey)`, which errors loudly when art is missing. The Memoriam popup itself does not read the URLs yet.
+**Context:** Cloud is the source of truth for `C.MemoriamSkyboxes[key].panelA–D.url`. The sheet no longer emits panel or NPC image URLs (**TOR-577**). The Memoriam apply path (**TOR-101**) should call `C.resolveMemoriamPanelURL(skyboxKey, panelKey)`, which errors loudly when art is missing. The Memoriam popup itself does not read the URLs yet.
 
 #### TOR-574 — Cloud sync skips missing folders; Memoriam NPC keys keep `mem_`
 
@@ -156,6 +156,12 @@ Separately, restart the Storyteller Dashboard with the TTS Tools extension **dis
 **How to verify:** Upload token files named like `tokenFront_mem_maximillianSteele.webp` and `tokenBack_mem_maximillianSteele.webp` (not `mem_tokenFront_…`). Run `npm run cloud-asset-sync:catalog`, then Save & Play. In the Host console, `lua print(C.cloudCatalogURL(Cloud.MemoriamNpcTokenFronts, "tokenFront_mem_maximillianSteele"))` should show a steamusercontent URL. A sheet NPC whose Key is `mem_maximillianSteele` should pick up that token front (and the matching `tokenBack_mem_` back).
 
 **Context:** Matches generic/other NPC token filenames. relatedTo **TOR-574**.
+
+#### TOR-577 — Memoriam sheet import drops panel/NPC URL columns
+
+**How to verify:** Open `lib/skyboxes_catalog.ttslua` and jump to `MemoriamSkyboxes`. Period rows should have panel display/weather/audio, but **no** `url =` on panels and **no** `tokenURL` / `figurineURL` on NPC slots. Scene skyboxes above that (`SkyboxesCatalog.Skyboxes`) should still have their URLs — those still come from the sheet. Save & Play. In the Host console, `lua print(C.resolveMemoriamPanelURL("lucien19", "panelA"))` should still show a steamusercontent URL if that Cloud file is uploaded (Constants fills `panel.url` from Cloud at load). You should not see `#REF!` as a panel URL.
+
+**Context:** relatedTo **TOR-564** (Memoriam panel art from Cloud). The Google Sheet is no longer a source of Memoriam image URLs.
 
 #### ⚠️ TOR-558 — Cloud asset sync (CustomUIAssets + Cloud catalog)
 
