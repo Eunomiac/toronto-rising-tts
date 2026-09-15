@@ -1294,22 +1294,32 @@ function Reconcile.reconcileControlBoardFromState(opts)
     local placements = type(model.placements) == "table" and model.placements or {}
     local seatSlots = type(model.seatSlots) == "table" and model.seatSlots or {}
     if model.mode == "THERE" and opts.allowPreview ~= true then
-        Reconcile.syncControlBoardSnapsToggleLabel(board)
-        Reconcile.syncControlBoardModeToolbar(board)
+        if Board.isMeshReady(board) then
+            Reconcile.syncControlBoardSnapsToggleLabel(board)
+            Reconcile.syncControlBoardModeToolbar(board)
+        end
         return
     end
     local ScatterMode = require("core.scatter_mode")
     local scatterActive = ScatterMode.isActive()
     local mirrorFp = Reconcile.controlBoardMirrorFingerprint(activeTable, model.mode, placements, seatSlots)
     if opts.force ~= true and not scatterActive and mirrorFp == Reconcile.lastControlBoardMirrorFingerprint then
-        Reconcile.syncControlBoardSnapsToggleLabel(board)
-        Reconcile.syncControlBoardModeToolbar(board)
-        Reconcile.rebuildAnchorDropEligibilityCache(board)
+        if Board.isMeshReady(board) then
+            Reconcile.syncControlBoardSnapsToggleLabel(board)
+            Reconcile.syncControlBoardModeToolbar(board)
+            Reconcile.rebuildAnchorDropEligibilityCache(board)
+        end
         return
     end
     if scatterActive then
         ScatterMode.applyBoardChrome()
-    else
+    end
+    board = Board.getControlBoard()
+    if not Board.isMeshReady(board) then
+        -- CONTROL_BOARD.reload() from Scatter enter/leave; finish wait re-enters with force.
+        return
+    end
+    if not scatterActive then
         Snaps.installPolarSnaps(board, { force = opts.force == true })
     end
     Reconcile.ensureControlBoardObjectCallbacks(board)

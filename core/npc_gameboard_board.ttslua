@@ -19,6 +19,24 @@ local function isGameObject(obj)
     return U.isGameObject(obj)
 end
 
+--- True when `obj` is a live TTS object whose custom mesh is finished loading.
+--- After `reload()`, the old userdata is dead and the new tile may still be `loading_custom`.
+--- @param obj Object|nil
+--- @return boolean
+local function isMeshReady(obj)
+    if obj == nil then
+        return false
+    end
+    -- pcall: destroyed/reloading Custom objects throw C# NRE on .guid / loading_custom.
+    local ok, ready = pcall(function()
+        if not isGameObject(obj) then
+            return false
+        end
+        return obj.loading_custom ~= true
+    end)
+    return ok == true and ready == true
+end
+
 --- @param obj Object|nil
 --- @return number
 local function objectYawDeg(obj)
@@ -471,6 +489,7 @@ local function worldOnControlBoard(board, u, v, options)
 end
 
 Board.isGameObject = isGameObject
+Board.isMeshReady = isMeshReady
 Board.objectYawDeg = objectYawDeg
 Board.snapMatchFuzzinessForBoard = snapMatchFuzzinessForBoard
 Board.clamp = clamp

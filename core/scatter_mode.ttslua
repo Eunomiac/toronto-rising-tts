@@ -1,8 +1,9 @@
 --[[
     Scatter Mode runtime (TOR-572). Global `require` only — never from object scripts.
 
-    Table-change into the “no table” sentinel `C.Scatter.TABLE_KEY`: swap CONTROL_BOARD art,
-    hide tables/chairs, clear polar snaps, auto-park tokens on measured holes, pose figurines.
+    Table-change into the “no table” sentinel `C.Scatter.TABLE_KEY`: swap CONTROL_BOARD art
+    (wait until the recreated tile is mesh-ready before snaps/XmlUI), hide tables/chairs,
+    clear polar snaps, auto-park tokens on measured holes, pose figurines.
 ]]
 
 local C = require("lib.constants")
@@ -18,6 +19,12 @@ ScatterMode.TABLE_KEY = (C.Scatter and C.Scatter.TABLE_KEY) or "Scatter"
 
 --- Last CONTROL_BOARD custom image URL applied by ScatterMode (fingerprint vs Sync.full).
 local lastAppliedBoardImageUrl = nil
+--- Bumped when a new CONTROL_BOARD `reload()` wait starts so a stale wait cannot finish after leave/enter.
+local boardReloadGeneration = 0
+local CONTROL_BOARD_RELOAD_WAIT_SEC = 20
+
+local finishScatterBoardAfterReload
+local finishStandardBoardAfterReload
 
 local function scatterCfg()
     local scatter = C.Scatter
@@ -312,7 +319,7 @@ local function applyControlBoardImage(url)
             current = co.image
         end
     end
-    if current == url then
+    if lastAppliedBoardImageUrl == url or current == url then
         lastAppliedBoardImageUrl = url
         return false
     end
@@ -325,16 +332,66 @@ local function applyControlBoardImage(url)
         image_secondary = co.image_secondary or url,
         image_scalar = co.image_scalar,
     })
+    -- Do not keep or use this userdata after reload(); TTS recreates the tile.
     board.reload()
     lastAppliedBoardImageUrl = url
     return true
+end
+
+--- @return boolean
+local function controlBoardMeshReady()
+    local Board = require("core.npc_gameboard_board")
+    return Board.isMeshReady(Board.getControlBoard())
+end
+
+--- Wait until CONTROL_BOARD exists and is not `loading_custom`, then run `fn`.
+--- @param fn function
+local function runAfterControlBoardReady(fn)
+    if type(fn) ~= "function" then
+        return
+    end
+    boardReloadGeneration = boardReloadGeneration + 1
+    local gen = boardReloadGeneration
+    U.chain({
+        function()
+            return 0
+        end,
+        function()
+            return function()
+                if gen ~= boardReloadGeneration then
+                    return true
+                end
+                return controlBoardMeshReady()
+            end
+        end,
+        function()
+            if gen ~= boardReloadGeneration then
+                return
+            end
+            if not controlBoardMeshReady() then
+                U.AlertGM("Scatter: CONTROL_BOARD did not finish reloading — board art or snaps may be stale.")
+                return
+            end
+            fn()
+        end,
+    }, {
+        sequenceTimeoutSeconds = CONTROL_BOARD_RELOAD_WAIT_SEC,
+        onComplete = function(_ok, detail)
+            if gen ~= boardReloadGeneration then
+                return
+            end
+            if detail == "sequence_timeout" then
+                U.AlertGM("Scatter: timed out waiting for CONTROL_BOARD after the board-art swap.")
+            end
+        end,
+    })
 end
 
 local function clearPolarSnaps()
     local Board = require("core.npc_gameboard_board")
     local Snaps = require("core.npc_gameboard_snaps")
     local board = Board.getControlBoard()
-    if Board.isGameObject(board) and board.setSnapPoints ~= nil then
+    if Board.isMeshReady(board) and board.setSnapPoints ~= nil then
         board.setSnapPoints({})
     end
     if type(Snaps.clearPolarSnapInstallFingerprint) == "function" then
@@ -615,7 +672,7 @@ function ScatterMode.parkTokensFromState()
     local Board = require("core.npc_gameboard_board")
     local Tokens = require("core.npc_gameboard_tokens")
     local board = Board.getControlBoard()
-    if not Board.isGameObject(board) then
+    if not Board.isMeshReady(board) then
         return
     end
     local pack = livePlacements()
@@ -663,26 +720,67 @@ function ScatterMode.parkTokensFromState()
     end
 end
 
---- CONTROL_BOARD Scatter art + empty polar snaps (fingerprinted image; no reload when URL matches).
-function ScatterMode.applyBoardChrome()
-    applyControlBoardImage(scatterCfg().CONTROL_BOARD_IMAGE_SCATTER)
+local boardFinishInProgress = false
+
+finishScatterBoardAfterReload = function()
+    if boardFinishInProgress then
+        return
+    end
+    boardFinishInProgress = true
     clearPolarSnaps()
+    ScatterMode.parkTokensFromState()
+    local Gameboard = require("core.npc_gameboard")
+    if type(Gameboard.reconcileControlBoardFromState) == "function" then
+        Gameboard.reconcileControlBoardFromState({ force = true })
+    end
+    boardFinishInProgress = false
+end
+
+finishStandardBoardAfterReload = function()
+    if boardFinishInProgress then
+        return
+    end
+    boardFinishInProgress = true
+    restorePolarSnaps()
+    local Gameboard = require("core.npc_gameboard")
+    if type(Gameboard.reconcileControlBoardFromState) == "function" then
+        Gameboard.reconcileControlBoardFromState({ force = true })
+    end
+    boardFinishInProgress = false
+end
+
+--- CONTROL_BOARD Scatter art + empty polar snaps (fingerprinted image; no reload when URL matches).
+--- After a real `reload()`, snaps/token park wait until the new tile is mesh-ready.
+function ScatterMode.applyBoardChrome()
     hideAllPhysicalTables()
+    local reloaded = applyControlBoardImage(scatterCfg().CONTROL_BOARD_IMAGE_SCATTER)
+    if reloaded then
+        runAfterControlBoardReady(finishScatterBoardAfterReload)
+        return
+    end
+    if controlBoardMeshReady() then
+        clearPolarSnaps()
+    end
 end
 
 --- CONTROL_BOARD image, snaps, tables, tokens (fingerprinted image).
 function ScatterMode.reconcileControlBoardFromState(board, opts)
     opts = opts or {}
     ScatterMode.applyBoardChrome()
+    local Board = require("core.npc_gameboard_board")
+    local live = Board.getControlBoard()
+    if not Board.isMeshReady(live) then
+        return
+    end
     if opts.skipTokenPark ~= true then
         ScatterMode.parkTokensFromState()
     end
     local Reconcile = require("core.npc_gameboard_reconcile")
     if type(Reconcile.syncControlBoardSnapsToggleLabel) == "function" then
-        Reconcile.syncControlBoardSnapsToggleLabel(board)
+        Reconcile.syncControlBoardSnapsToggleLabel(live)
     end
     if type(Reconcile.syncControlBoardModeToolbar) == "function" then
-        Reconcile.syncControlBoardModeToolbar(board)
+        Reconcile.syncControlBoardModeToolbar(live)
     end
 end
 
@@ -705,9 +803,11 @@ function ScatterMode.enter(opts)
     if U.Type(npcWorld) == "table" then
         npcWorld.placements = {}
     end
-    ScatterMode.applyBoardChrome()
-    ScatterMode.parkTokensFromState()
     ScatterMode.applyWorldLayout()
+    ScatterMode.applyBoardChrome()
+    if controlBoardMeshReady() then
+        ScatterMode.parkTokensFromState()
+    end
 end
 
 function ScatterMode.leave(opts)
@@ -716,9 +816,12 @@ function ScatterMode.leave(opts)
     if S.getStateVal("seatLayout", "currentTableKey") == ScatterMode.TABLE_KEY then
         S.setStateVal(nil, "seatLayout", "currentTableKey")
     end
-    applyControlBoardImage(scatterCfg().CONTROL_BOARD_IMAGE_STANDARD)
+    local reloaded = applyControlBoardImage(scatterCfg().CONTROL_BOARD_IMAGE_STANDARD)
+    if reloaded then
+        runAfterControlBoardReady(finishStandardBoardAfterReload)
+        return
+    end
     restorePolarSnaps()
-    lastAppliedBoardImageUrl = scatterCfg().CONTROL_BOARD_IMAGE_STANDARD
 end
 
 --- Apply NOW: read tokens on CONTROL_BOARD into scatterPlacements, then world layout.
@@ -726,7 +829,7 @@ function ScatterMode.applyFromControlBoard()
     local Board = require("core.npc_gameboard_board")
     local Tokens = require("core.npc_gameboard_tokens")
     local board = Board.getControlBoard()
-    if not Board.isGameObject(board) then
+    if not Board.isMeshReady(board) then
         return false, "CONTROL_BOARD not found"
     end
     local anyCalibrated = false
