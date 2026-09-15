@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-15 — TOR-573 Scatter import and live Standard↔Scatter translation._
+_Last populated: 2026-09-15 — TOR-574 Cloud sync skip missing folders; Memoriam NPC `mem_` keys._
 
 ### Scatter / table layout
 
@@ -138,6 +138,12 @@ Separately, restart the Storyteller Dashboard with the TTS Tools extension **dis
 **How to verify:** Finish uploading the Memoriam panel images to Cloud Manager (`Vampire the Masquerade 5E/Memoriam`, named like `blackCaesar37_a.jpg`). With Steam running, run `npm run cloud-asset-sync:catalog` from the repo root — it should report a `memoriamPanels` job with every file kept and none skipped, then write `lib/cloud_catalog.ttslua`. Save & Play. In the Host console, look for one line starting `[constants] Memoriam panel art:` — it should say how many panels were linked from Cloud, how many catalog panels still have no art, and (only if something is misnamed) list Cloud files that match no period. Then run `lua print(C.resolveMemoriamPanelURL("blackCaesar37", "panelA"))` — you should see a `steamusercontent` URL, not an error. Optionally `lua log(C.getMemoriamPanelsWithoutArt())` lists any panels still waiting for art; when the upload is complete that list should be empty. When I regenerated the catalog mid-upload, the 27 missing panels were all Rashid periods.
 
 **Context:** Cloud is now the source of truth for `C.MemoriamSkyboxes[key].panelA–D.url`; the Sheet's Panel URL columns only fill a panel that has no Cloud file. The Memoriam apply path (**TOR-101**) should call `C.resolveMemoriamPanelURL(skyboxKey, panelKey)`, which errors loudly when art is missing. The Memoriam popup itself does not read the URLs yet.
+
+#### TOR-574 — Cloud sync skips missing folders; Memoriam NPC keys keep `mem_`
+
+**How to verify:** Run **BUILD PIPELINE (Full)** (or `npm run cloud-asset-sync -- --yes-purge`) while the Memoriam NPC Cloud folders are still empty or missing. The build should finish. You should see `SKIP: no matching Cloud files` for the three Memoriam NPC jobs, not a failed build. Save & Play. In the Host console, `lua print(C.cloudCatalogURL(Cloud.MemoriamNpcFigurines, "mem_maximillianSteele"))` should print an empty line (no error). After you upload `mem_maximillianSteele.webp` plus `mem_tokenFront_maximillianSteele.webp` / `mem_tokenBack_maximillianSteele.webp` and re-run `npm run cloud-asset-sync:catalog`, that same print should show a steamusercontent URL, and a sheet NPC whose Key is `mem_maximillianSteele` should pick up the matching figurine and token URLs.
+
+**Context:** relatedTo **TOR-564** (Memoriam panel art). Missing Cloud art is an empty URL, not a build abort. Token Cloud keys are `mem_tokenFront_<stem>` / `mem_tokenBack_<stem>` when the NPC Key is `mem_<stem>`.
 
 #### ⚠️ TOR-558 — Cloud asset sync (CustomUIAssets + Cloud catalog)
 

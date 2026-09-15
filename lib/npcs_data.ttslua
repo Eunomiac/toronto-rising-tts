@@ -1842,9 +1842,9 @@ end
 
 function D.initGenericNPCs()
   local figurineFronts = Cloud.GenericNpcFigurines
-  if figurineFronts == nil then
+  if figurineFronts == nil or next(figurineFronts) == nil then
     -- broadcast a warning, but don't error out, just return early as no-op
-    U.AlertGM("WARNING: Cloud.GenericNpcFigurines is nil, skipping generic NPC initialization")
+    U.AlertGM("WARNING: Cloud.GenericNpcFigurines is nil or empty, skipping generic NPC initialization")
     return
   end
   if Cloud.GenericNpcFigurines.Back_00 == nil then

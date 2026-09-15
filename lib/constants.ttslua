@@ -73,6 +73,15 @@ C.PlayerColors = {
   "Brown", "Orange", "Red", "Pink", "Purple"
 }
 
+-- Colors for `labelColor` field of memoriam-category NPCs.
+C.PlayerMemoriamColors = {
+  lordLucien = "rgba(218, 26, 24, 1)",
+  rashid = "rgba(244, 100, 29, 1)",
+  fomorach = "rgba(113, 59, 23, 1)",
+  blackCaesar = "rgba(160, 32, 240, 1)",
+  aishe = "rgba(245, 0, 173, 1)"
+}
+
 -- Number of random blindfold art variants (overlay_globalBlindfold_1 .. overlay_globalBlindfold_N).
 -- Single authority for the blindfold range used by hud_blindfold, hud_overlays, and condition_effects.
 C.BlindfoldVariantCount = 32
@@ -1745,7 +1754,7 @@ C.Scatter = {
   NPC_SPACING_MAX = 22,
   --- Default in-use PC figurine Y (Table A dumps / SeatRoleOffsets SEAT_FIGURE). Tune after first in-world pass.
   FLOOR_Y = -52.89,
-  --- Custom tile mesh looks along −Z at yaw 0; look-at toward a point needs +180 (same as stage figurines).
+  --- Custom tile mesh looks along -Z at yaw 0; look-at toward a point needs +180 (same as stage figurines).
   FIGURINE_YAW_OFFSET_DEG = 180,
   --- Board-local axis used as parchment “up” when sorting calibration tokens (CONTROL_BOARD rotY 180).
   BOARD_ART_UP_AXIS = "z",
@@ -3069,6 +3078,53 @@ local function trimmedString(value)
   return (string.gsub(string.gsub(value, "^%s+", ""), "%s+$", ""))
 end
 
+--- Hosted URL from a Cloud LuaCatalog row, or "" when the table, key, or URL is missing (art not uploaded yet).
+--- @param cloudTable table|nil `Cloud.<tableName>`
+--- @param key string|nil
+--- @return string
+local function cloudCatalogURL(cloudTable, key)
+  if type(cloudTable) ~= "table" or type(key) ~= "string" or key == "" then
+    return ""
+  end
+  local row = cloudTable[key]
+  if type(row) ~= "table" then
+    return ""
+  end
+  return trimmedString(row.URL)
+end
+
+--- @param cloudTable table|nil
+--- @param key string|nil
+--- @return string
+function C.cloudCatalogURL(cloudTable, key)
+  return cloudCatalogURL(cloudTable, key)
+end
+
+--- Sheet NPC Key is `mem_<stem>`. Figurine Cloud key matches that; token catalogs use `mem_tokenFront_<stem>` / `mem_tokenBack_<stem>`.
+--- @param name string|nil
+--- @param kind string `"figurine"` | `"tokenFront"` | `"tokenBack"`
+--- @return string
+local function memoriamNpcAssetCloudKey(name, kind)
+  local trimmed = trimmedString(name)
+  if trimmed == "" then
+    return ""
+  end
+  local stem = trimmed
+  if string.sub(stem, 1, 4) == "mem_" then
+    stem = string.sub(stem, 5)
+  end
+  if stem == "" then
+    return ""
+  end
+  if kind == "figurine" then
+    return "mem_" .. stem
+  end
+  if kind == "tokenFront" then
+    return "mem_tokenFront_" .. stem
+  end
+  return "mem_tokenBack_" .. stem
+end
+
 --- Writes `Cloud.MemoriamPanels["<skyboxKey>_<letter>"].URL` into `catalog[skyboxKey][panelX].url`.
 --- Cloud keys that name no catalog period, or a panel that period does not define, are reported — not applied.
 --- @param catalog table `C.MemoriamSkyboxes`
@@ -3078,12 +3134,12 @@ end
 local function applyMemoriamCloudPanelUrls(catalog, cloudPanels)
   local linked = 0
   local unmatched = {}
-  for cloudKey, row in pairs(cloudPanels) do
+  for cloudKey, _ in pairs(cloudPanels) do
     local skyboxKey, letter = string.match(tostring(cloudKey), "^(.-)_(%a)$")
     local panelKey = letter and MEMORIAM_PANEL_KEY_BY_LETTER[string.lower(letter)] or nil
     local entry = skyboxKey and catalog[skyboxKey] or nil
     local panel = (panelKey and type(entry) == "table") and entry[panelKey] or nil
-    local url = type(row) == "table" and trimmedString(row.URL) or ""
+    local url = cloudCatalogURL(cloudPanels, cloudKey)
     if type(panel) == "table" and url ~= "" then
       panel.url = url
       linked = linked + 1
@@ -3093,6 +3149,46 @@ local function applyMemoriamCloudPanelUrls(catalog, cloudPanels)
   end
   table.sort(unmatched)
   return linked, unmatched
+end
+
+--- Fills Memoriam NPC image URLs from Cloud catalogs. Missing tables, keys, or URLs become "".
+--- Named slots (`npc.name`) also get `figurine.URL` / `token.frontURL` / `token.backURL`.
+--- @param catalog table `C.MemoriamSkyboxes`
+--- @param cloud table|nil `Cloud`
+local function applyMemoriamCloudNpcAssetUrls(catalog, cloud)
+  cloud = type(cloud) == "table" and cloud or {}
+  local figurines = type(cloud.MemoriamNpcFigurines) == "table" and cloud.MemoriamNpcFigurines or {}
+  local tokenFronts = type(cloud.MemoriamNpcTokenFronts) == "table" and cloud.MemoriamNpcTokenFronts or {}
+  local tokenBacks = type(cloud.MemoriamNpcTokenBacks) == "table" and cloud.MemoriamNpcTokenBacks or {}
+  if type(catalog) ~= "table" then
+    return
+  end
+  for _, entry in pairs(catalog) do
+    if type(entry) == "table" and type(entry.npcs) == "table" then
+      for i = 1, #entry.npcs do
+        local npc = entry.npcs[i]
+        if type(npc) == "table" then
+          local name = trimmedString(npc.name)
+          local figurineUrl = cloudCatalogURL(figurines, memoriamNpcAssetCloudKey(name, "figurine"))
+          local frontUrl = cloudCatalogURL(tokenFronts, memoriamNpcAssetCloudKey(name, "tokenFront"))
+          local backUrl = cloudCatalogURL(tokenBacks, memoriamNpcAssetCloudKey(name, "tokenBack"))
+          npc.figurineURL = figurineUrl
+          npc.tokenURL = frontUrl
+          if type(npc.figurine) == "table" then
+            npc.figurine.URL = figurineUrl
+          elseif name ~= "" then
+            npc.figurine = { URL = figurineUrl }
+          end
+          if type(npc.token) == "table" then
+            npc.token.frontURL = frontUrl
+            npc.token.backURL = backUrl
+          elseif name ~= "" then
+            npc.token = { frontURL = frontUrl, backURL = backUrl }
+          end
+        end
+      end
+    end
+  end
 end
 
 --- Catalog panels (`"<skyboxKey>.<panelKey>"`) whose `url` is still blank after the Cloud merge — sorted.
@@ -3155,6 +3251,8 @@ else
   end
   print(summary)
 end
+
+applyMemoriamCloudNpcAssetUrls(C.MemoriamSkyboxes, CloudCatalog)
 
 --- @param entry table|nil
 --- @return number

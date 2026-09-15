@@ -35,9 +35,9 @@ Status: **implemented** — runner `.tools/cloud-asset-sync.js`; config `.tools/
 | `cloudSitesCatalog` | `Sites` | `Cloud.Sites` | — (console inspection) |
 | `genericNpcFigurines` / `genericNpcTokenFronts` / `genericNpcTokenBacks` | `NPC Cutouts/Generic/…` | `Cloud.GenericNpc*` | `lib/npcs_data.ttslua` `D.initGenericNPCs` |
 | `memoriamPanels` | `Memoriam` (`<skyboxKey>_<a\|b\|c\|d>.<ext>`) | `Cloud.MemoriamPanels` | `lib/constants.ttslua` fills `C.MemoriamSkyboxes[key].panelA–D.url` at load (TOR-564) |
-| `memoriamNpcFigurines` / `memoriamNpcTokenFronts` / `memoriamNpcTokenBacks` | `NPC Cutouts/Memoriam/…` (`mem_<name>`, `mem_tokenFront_<name>`, `mem_tokenBack_<name>`) | `Cloud.MemoriamNpc*` | Constants merge into `C.MemoriamSkyboxes[key].npcs[*]` (same load-time join as panel URLs) |
+| `memoriamNpcFigurines` / `memoriamNpcTokenFronts` / `memoriamNpcTokenBacks` | `NPC Cutouts/Memoriam/…` (`mem_<stem>`, `mem_tokenFront_<stem>`, `mem_tokenBack_<stem>`) | `Cloud.MemoriamNpc*` keys keep the `mem_` prefix | Constants: `npc.name` = `mem_<stem>` → figurine `mem_<stem>`, tokens `mem_tokenFront_<stem>` / `mem_tokenBack_<stem>` |
 
-**`--job` takes several ids** (`--job a,b` or repeated). A `LuaCatalog` run rebuilds `lib/cloud_catalog.ttslua` from the selected jobs only, so **`npm run cloud-asset-sync:catalog`** is the safe way to refresh every `Cloud.*` table without touching the save (no site-card purge prompt).
+**`--lua-catalog`** (used by `npm run cloud-asset-sync:catalog`) runs every `LuaCatalog` job in the config — including jobs added later — and leaves the save alone. A `LuaCatalog` run still rebuilds `lib/cloud_catalog.ttslua` from the selected jobs only. **`--job` takes several ids** (`--job a,b` or repeated) and can be combined with `--lua-catalog` to run a subset.
 
 ---
 
@@ -192,7 +192,7 @@ This is stricter than today’s `[Assets 1]` optional `--name-filter` (separate 
 
 **Validation:** search pattern **must** start with `^` and end with `$` (full-string match). Reject otherwise.
 
-If zero files remain after folder + pattern filtering → fail the job (nothing to sync).
+If zero files remain after folder + pattern filtering → **skip the job** (do not fail the run). A missing or empty Cloud folder means art has not been uploaded yet; the Full build must still complete. LuaCatalog writes an empty `Cloud.<tableName> = {}` so consumers can default URLs to `""`. Save jobs skip merge and purge for that empty plan (an empty planned set must not treat every existing CustomUIAssets name as stale). Log the skip clearly.
 
 Recommended extension-agnostic form (imports any single-extension filename, strips extension for the asset name):
 

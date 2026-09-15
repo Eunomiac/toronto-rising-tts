@@ -83,11 +83,11 @@
       "recurIntoSubfolders": false,
       "output": "LuaCatalog",
       "tableName": "MemoriamNpcFigurines",
-      // Unique character stem (no _01 variants). Sheet NPC Key must match this stem.
+      // Sheet NPC Key is mem_<stem> (no _01 variants). Cloud key keeps the mem_ prefix.
       "filenameToNameSearchPattern": "^mem_(.+)\\.[^.]+$",
-      "filenameToNameReplacePattern": "$1" // E.g. "mem_maximillianSteele.webp" → "maximillianSteele"
-      // → Cloud.MemoriamNpcFigurines.<stem> = { filename, key, URL }
-      // Merge target: C.MemoriamSkyboxes[period].npcs[*].figurine (Constants, same idea as applyMemoriamCloudPanelUrls)
+      "filenameToNameReplacePattern": "mem_$1" // E.g. "mem_maximillianSteele.webp" → "mem_maximillianSteele"
+      // → Cloud.MemoriamNpcFigurines.mem_maximillianSteele = { filename, key, URL }
+      // Merge: C.MemoriamSkyboxes[period].npcs[*] where npc.name == that key
     },
     {
       "id": "memoriamNpcTokenFronts",
@@ -96,8 +96,8 @@
       "output": "LuaCatalog",
       "tableName": "MemoriamNpcTokenFronts",
       "filenameToNameSearchPattern": "^mem_tokenFront_(.+)\\.[^.]+$",
-      "filenameToNameReplacePattern": "$1" // E.g. "mem_tokenFront_maximillianSteele.webp" → "maximillianSteele"
-      // → Cloud.MemoriamNpcTokenFronts.<stem> = { filename, key, URL }
+      "filenameToNameReplacePattern": "mem_tokenFront_$1" // E.g. "mem_tokenFront_maximillianSteele.webp" → "mem_tokenFront_maximillianSteele"
+      // → Cloud.MemoriamNpcTokenFronts.mem_tokenFront_maximillianSteele (stem from npc.name mem_<stem>)
     },
     {
       "id": "memoriamNpcTokenBacks",
@@ -106,8 +106,8 @@
       "output": "LuaCatalog",
       "tableName": "MemoriamNpcTokenBacks",
       "filenameToNameSearchPattern": "^mem_tokenBack_(.+)\\.[^.]+$",
-      "filenameToNameReplacePattern": "$1" // E.g. "mem_tokenBack_maximillianSteele.webp" → "maximillianSteele"
-      // → Cloud.MemoriamNpcTokenBacks.<stem> = { filename, key, URL }
+      "filenameToNameReplacePattern": "mem_tokenBack_$1" // E.g. "mem_tokenBack_maximillianSteele.webp" → "mem_tokenBack_maximillianSteele"
+      // → Cloud.MemoriamNpcTokenBacks.mem_tokenBack_maximillianSteele (stem from npc.name mem_<stem>)
     }
   ]
 }

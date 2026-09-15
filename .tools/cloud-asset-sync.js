@@ -12,7 +12,7 @@
  *   npm run cloud-asset-sync -- --dry-run
  *   npm run cloud-asset-sync -- --yes-purge
  *   npm run cloud-asset-sync -- --job siteCards
- *   npm run cloud-asset-sync:catalog   (every LuaCatalog job; leaves the save alone)
+ *   npm run cloud-asset-sync:catalog   (--lua-catalog; every LuaCatalog job; leaves the save alone)
  */
 
 const fs = require("fs");
@@ -332,6 +332,7 @@ function parseCli(argv) {
   const jobFilter = [];
   let dryRun = false;
   let yesPurge = false;
+  let luaCatalogOnly = false;
 
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
@@ -344,6 +345,8 @@ function parseCli(argv) {
         if (trimmed !== "" && !jobFilter.includes(trimmed)) jobFilter.push(trimmed);
       }
       i += 1;
+    } else if (a === "--lua-catalog") {
+      luaCatalogOnly = true;
     } else if (a === "--dry-run") {
       dryRun = true;
     } else if (a === "--yes-purge" || a === "-y") {
@@ -356,6 +359,8 @@ Options:
   --job <id[,id…]>  Run only these job ids (repeatable). LuaCatalog runs rebuild
                     lib/cloud_catalog.ttslua from the selected jobs only, so
                     include every LuaCatalog job you want to keep.
+  --lua-catalog     Run every LuaCatalog job (and only those). Safe default for
+                    npm run cloud-asset-sync:catalog so new catalog jobs are included.
   --dry-run         Plan only; do not write save or cloud_catalog.ttslua
   --yes-purge, -y   Accept stale CustomUIAssets purges without prompting
   --help, -h
@@ -371,6 +376,7 @@ Options:
     jobFilter: jobFilter.length > 0 ? jobFilter : null,
     dryRun,
     yesPurge,
+    luaCatalogOnly,
   };
 }
 
@@ -430,6 +436,14 @@ async function main() {
   } catch (err) {
     console.error(`[cloud-asset-sync] FAIL: ${err.message}`);
     process.exit(1);
+  }
+
+  if (cli.luaCatalogOnly) {
+    jobs = jobs.filter((j) => j.output === OUTPUT_LUA);
+    if (jobs.length < 1) {
+      console.error("[cloud-asset-sync] FAIL: --lua-catalog but the config has no LuaCatalog jobs.");
+      process.exit(1);
+    }
   }
 
   if (cli.jobFilter) {
@@ -590,10 +604,17 @@ async function main() {
       `[cloud-asset-sync]   Filter ${searchRe}: kept ${planned.length}, skipped ${skipped}`,
     );
     if (planned.length === 0) {
+      // Folder missing, empty, or art not uploaded yet — do not abort the Full build.
       console.error(
-        `[cloud-asset-sync] FAIL: job "${job.id}" matched zero files after filter.`,
+        `[cloud-asset-sync]   SKIP: no matching Cloud files (folder missing or art not uploaded yet).`,
       );
-      process.exit(1);
+      if (job.output === OUTPUT_LUA) {
+        cloudAccum[/** @type {string} */ (job.tableName)] = {};
+        console.error(
+          `[cloud-asset-sync]   LuaCatalog Cloud.${job.tableName}: 0 entries (URLs stay empty until art is uploaded)`,
+        );
+      }
+      continue;
     }
 
     if (job.output === OUTPUT_LUA) {
@@ -846,5 +867,7 @@ module.exports = {
   stripJsonc,
   derivePurgePatterns,
   parseAnchoredSearchPattern,
+  parseCli,
   validateJob,
+  renderCloudCatalogLua,
 };
