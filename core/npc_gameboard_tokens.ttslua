@@ -9,6 +9,7 @@ local C = require("lib.constants")
 local DATA = require("lib.npc_gameboard_data")
 local NPCS_DATA = require("lib.npcs_data")
 local Board = require("core.npc_gameboard_board")
+local O = require("core.objects")
 
 local TAG_TOKEN = DATA.TAG_NPC_CONTROL_TOKEN
 local TAG_PC_TOKEN = DATA.TAG_PC_CONTROL_TOKEN or "pc_control_token"
@@ -430,13 +431,15 @@ end
 --- can still snap to the occupancy chair (TOR-513).
 --- @param token Object
 local function stashAbsentPcControlToken(token)
-    if not Board.isGameObject(token) or token.setPosition == nil then
+    if not Board.isGameObject(token) then
         return
     end
-    local stashY = tonumber(DATA.MARKER_STASH_WORLD_Y) or -200
+    local stashY = tonumber(DATA.MARKER_STASH_WORLD_Y) or C.HIDDEN_OBJECT_WORLD_Y
     local pos = token.getPosition()
+    O.hideObject(token, {
+        parkPosition = { x = pos.x, y = stashY, z = pos.z },
+    })
     setControlTokenLock(token, true)
-    token.setPosition(Vector({ x = pos.x, y = stashY, z = pos.z }))
 end
 
 --- Programmatic mirror onto a seat-row catalog entry (Apply / Clear / reconcile — manual drops use `rotation_snap` only).
@@ -451,8 +454,12 @@ local function mirrorSeatRowControlToken(token, board, entry, faceUp)
     if faceUp == nil then
         faceUp = tokenRotationIsFaceUp(token)
     end
-    setControlTokenLock(token, false)
-    token.setPosition(Board.worldOnControlBoard(board, entry.u, entry.v))
+    local worldPos = Board.worldOnControlBoard(board, entry.u, entry.v)
+    local pos = worldPos
+    if type(worldPos) == "userdata" or type(worldPos) == "table" then
+        pos = { x = worldPos.x, y = worldPos.y, z = worldPos.z }
+    end
+    O.restoreObject(token, { position = pos, locked = false })
     applySeatRowNpcControlTokenScale(token)
     local boardYaw = Board.objectYawDeg(board)
     token.setRotation(rotationForNpcControlToken(boardYaw, entry.yawDeg, faceUp))

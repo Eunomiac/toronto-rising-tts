@@ -399,7 +399,7 @@ local function runCharacterSequence(gen, sequenceNumber, timeRatio, waitSec, pla
             animationDuration = 0.5,
             showAnimationDelay = 27 * timeRatio,
         })
-        U.setAttributes("overlay_sessionSplashFrame", { active = "true" })
+        U.setAttributes("overlay_sessionSplashFrame", { active = "false" })
     end
 
     U.chain({

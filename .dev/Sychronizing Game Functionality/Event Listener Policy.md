@@ -73,7 +73,9 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `GlobalImportSceneJson` | B | 5 | TOR-570 Dashboard execute-lua: Scene Constructor JSON → `SceneLibrary.importConstructorJsonText` (library row only, no Apply). No Steam gate (no clicker). Same write path as in-game Import Scene. |
 | `GlobalGameboardInstallPaletteSnaps` | C | Done | palette snap install |
 | `GlobalGameboardSyncSnapsToggleLabel` | A | — | snaps + layout-lock toolbar labels |
-| `GlobalToggleSignalFireState` | C | 5 | signal lights; on/off = world Y — seat layout preserves per-seat Y (TOR-380), no gameState reconciler |
+| `GlobalHideObject` | C | — | Unified off-table park (`O.hideObject`); object scripts pass `guid` + optional park opts |
+| `GlobalRestoreObject` | C | — | Unified reveal (`O.restoreObject`); object scripts pass `guid` + optional restore opts |
+| `GlobalToggleSignalFireState` | C | 5 | signal lights; on/off via hide/restore — seat layout preserves per-seat Y (TOR-380), no gameState reconciler |
 | `GlobalApplyTarotState` | C | — | Pink tarot drawer/deck/button poses (TOR-144 W2) |
 | `GlobalApplyCompanionToggleClick` | C | — | Red/Brown famulus companion left/right click (TOR-288) |
 | `GlobalDiceBagClick/RightClick/StorytellerDiceBagClick` | B+C | 5 | rolls; idle Rouse / Oblivion-Rouse right-click = 1-die check + Open + auto-toss (TOR-490 / TOR-491); concurrent idle-bag auto-Rouse exception (TOR-493) |

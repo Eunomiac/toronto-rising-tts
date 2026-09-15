@@ -142,8 +142,9 @@ local function applyControlBoardSpotlightPreviewForToken(token)
     end
 
     local lit = G.getObject(rec.lightGuid)
-    if U.isGameObject(lit) and lit.setInvisibleTo ~= nil then
-        lit.setInvisibleTo({})
+    if U.isGameObject(lit) then
+        local O = require("core.objects")
+        O.restoreObject(lit, { locked = true, interactable = false })
     end
 
     local spotMode = NPCS.buildResolvedLightModeTable(characterKey, "SPOTLIGHT")

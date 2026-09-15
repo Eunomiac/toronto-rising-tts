@@ -131,11 +131,11 @@ On apply:
 
 1. Compute each **occupied slot’s figurine pose** from `centerPoint` + `referenceFigurine` + that slot’s left/right offset (circular yaw-and-radius, or Scatter equal spacing, or a facing-table slot coordinate).
 2. If the occupant has a live figurine, move it there. If they do not (inactive NPC, figurine on stage), store that pose as a **virtual figurine** — the NPC analogue of today’s virtual hand zone.
-3. Place every other object for that occupant using **XZ and yaw relative to the figurine**, and that role’s **default absolute Y**. If the object is currently deactivated (hidden page, unlit fire, unused smoke, …), keep the **deactivation override** `y = -200` instead of snapping it back to the default.
+3. Place every other object for that occupant using **XZ and yaw relative to the figurine**, and that role’s **default absolute Y**. If the object is currently deactivated (hidden page, unlit fire, unused smoke, …), it should remain **`O.hideObject`-tagged** at `C.HIDDEN_OBJECT_WORLD_Y` instead of snapping back to the default on-table Y.
 
 Player **hand zones still exist** and still carry cards. They simply become another satellite: “this far in front of the figurine, this yaw relative to it,” not the thing everything else is copied from. Cameras, seat lights, sheets, bags, and thrones use the same rule.
 
-Stored **Y is the default location** (where the object sits when it is in use). Sending an object to `y = -200` is a **deactivation override**, not a second layout pose. Layout applies default Y for active objects and must not copy another occupant’s override. Hidden sheet pages and an unlit signal fire are the usual cases; hunger smoke already uses the same override.
+Stored **Y is the default location** (where the object sits when it is in use). **Deactivation** uses `O.hideObject` (park at `C.HIDDEN_OBJECT_WORLD_Y`, `HiddenObject` tag) — not a second layout pose in offset data. Layout applies default Y for active objects and must not copy another occupant’s parked hide. Hidden sheet pages and an unlit signal fire are the usual cases; hunger smoke uses the same pair. Policy: [`docs/solutions/lua-hide-restore-policy.md`](../../docs/solutions/lua-hide-restore-policy.md).
 
 #### Satellite offsets should be data, not a live copy
 
@@ -144,7 +144,7 @@ The current system copies live Red objects, then patches chairs with `postCorrec
 The new rule: **one authored offset table** per role, shared by every occupant that has that role:
 
 - **XZ and yaw** — local to the figurine (so they travel correctly when the figurine turns around the table).
-- **Y** — **absolute world height**, the **default location** for that role (table-height, not “this many units above this cutout”). `y = -200` is never stored as the default; it is only the live **deactivation override**.
+- **Y** — **absolute world height**, the **default location** for that role (table-height, not “this many units above this cutout”). `C.HIDDEN_OBJECT_WORLD_Y` is never stored as the default; deactivation uses `O.hideObject` at runtime.
 
 - Shared roles (chair, seat lights, dice-drawer anchors) — one offset, used at every occupied slot.
 - Player-only roles (sheet stack, hunger bags, signal candle, …) — same offsets, applied only to player occupants.

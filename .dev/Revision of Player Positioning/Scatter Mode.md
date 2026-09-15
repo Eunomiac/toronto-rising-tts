@@ -100,6 +100,7 @@ All numeric Scatter parameters are **global constants** in `lib/constants.ttslua
 | `ST_DICE_TRAY_OFF_Y` | `-80.89` | Drop height before the tray rises at a scatter group. |
 | `ST_DICE_TRAY_YAW_OFFSET_DEG` | `0` | Extra yaw added to the group World Ray when posing the tray. |
 | `objectsToHide` | chairs + Prince signet/curtain | GUIDs to disable and hide from every player layer while Scatter is active. |
+| `TOKEN_SCALE` | `{0.5, 1, 0.5}` | Control tokens on scatter group holes; palette parking restores polar `{0.2, 1, 0.2}`. |
 
 Do not add extra “this arrangement looks wrong” guards. If a chosen constant set produces a bizarre layout, correct the constants. The only hard stop is math that cannot run (a zero-length direction, i.e. a true divide-by-zero / `normalize` of a zero vector). In that case broadcast a non-stopping error and skip that pose rather than crashing.
 
@@ -290,7 +291,7 @@ The relevant positioning geometry is:
 - **Circle center:** `PC_SCATTER_GROUP_ORIGIN`
 - **Circle radius:** `SCATTER_RADIUS_PC`
 - **Arc size:** `PC_DEPLOYMENT_ARC`
-- **Arc midpoint:** the far intersection of the PC Scatter Circle with the World Ray through `PC_SCATTER_GROUP_ORIGIN`
+- **Arc midpoint:** the intersection of the PC Scatter Circle with the World Ray through `PC_SCATTER_GROUP_ORIGIN` that lies **far from World Origin** (on the scatter-group side of `P`, not the World-Origin side). Slot 3 (gold) sits here; the arc faces inward toward `P`.
 
 Slots are numbered `1–5` from the counterclockwise end of the arc to the clockwise end. Slot 3 sits on the midpoint. Adjacent slots are spaced by `PC_DEPLOYMENT_ARC / 4` so the five slots use the full arc including both endpoints.
 

@@ -1339,10 +1339,32 @@ function GlobalRefreshUiAfterSeatAssignment(params)
     refreshGlobalUiAfterSeatAssignment(seatColor)
 end
 
+--- Scatter playfield origin (same role as `C.Tables[*].centerPoint`; not a `C.Tables` row).
+--- @return table|nil { x, y, z }
+local function scatterSeatLayoutCenterPoint()
+    local scatter = C.Scatter
+    if type(scatter) ~= "table" then
+        return nil
+    end
+    local cp = scatter.CENTER_POINT
+    local floorY = tonumber(scatter.FLOOR_Y) or -52.89
+    local x, z = 0, 0
+    if type(cp) == "userdata" or type(cp) == "table" then
+        x = tonumber(cp.x or cp[1]) or 0
+        z = tonumber(cp.z or cp[3]) or 0
+    end
+    return { x = x, y = floorY, z = z }
+end
+
 --- Returns seat layout center point from global state for object scripts.
 --- @return table|nil { x, y, z }
 function GlobalGetSeatLayoutCenterPoint()
+    local scatterKey = (C.Scatter and C.Scatter.TABLE_KEY) or "Scatter"
     local tableKey = S.getStateVal("seatLayout", "currentTableKey")
+    local placementMode = S.getStateVal("sessionScene", "placementMode")
+    if tableKey == scatterKey or placementMode == "scatter" then
+        return scatterSeatLayoutCenterPoint()
+    end
     if type(tableKey) == "string" and C.Tables and C.Tables[tableKey] and C.Tables[tableKey].centerPoint ~= nil then
         local cp = Vector(C.Tables[tableKey].centerPoint)
         return { x = cp.x, y = cp.y, z = cp.z }
@@ -1364,6 +1386,36 @@ function GlobalIsStorytellerSteamPlayer(params)
     return U.isStorytellerSteamPlayer(color) == true
 end
 
+
+--- Park object via `O.hideObject` (object scripts: pass `guid` + optional park opts).
+--- @param params table `{ obj?, guid?, parkPosition?, parkRotation?, snapshotPosition? }`
+--- @return boolean
+function GlobalHideObject(params)
+    if type(params) ~= "table" then
+        return false
+    end
+    local obj = params.obj
+    if obj == nil and type(params.guid) == "string" then
+        local G = require("lib.guids")
+        obj = G.getObject(params.guid)
+    end
+    return O.hideObject(obj, params)
+end
+
+--- Reveal object via `O.restoreObject` (object scripts: pass `guid` + optional restore opts).
+--- @param params table `{ obj?, guid?, position?, rotation?, locked?, interactable? }`
+--- @return boolean
+function GlobalRestoreObject(params)
+    if type(params) ~= "table" then
+        return false
+    end
+    local obj = params.obj
+    if obj == nil and type(params.guid) == "string" then
+        local G = require("lib.guids")
+        obj = G.getObject(params.guid)
+    end
+    return O.restoreObject(obj, params)
+end
 
 --- Toggles a player's signal fire from object scripts (signal candle click target).
 --- @param params table { color: string, duration: number|nil }
@@ -3323,6 +3375,21 @@ function onLoad(saved_data)
                     .. tostring(warmed)
                     .. " bag(s)."
             )
+            setStartupAction("startup-ready-reconcile-parked-hide")
+            local RSL = require("lib.rotational-seat-layout")
+            if RSL ~= nil and type(RSL.reconcileYStateSeatObjectVisibilityFromWorld) == "function" then
+                RSL.reconcileYStateSeatObjectVisibilityFromWorld()
+            end
+            local NPCS = require("core.npcs")
+            if NPCS ~= nil and type(NPCS.reconcilePreloadPoolHideFromState) == "function" then
+                local preloadHidden = NPCS.reconcilePreloadPoolHideFromState()
+                print(
+                    U.loadElapsedPrefix()
+                        .. "Preload NPC hide reconciled for "
+                        .. tostring(preloadHidden)
+                        .. " instance(s)."
+                )
+            end
             setStartupAction("startup-ready-apply-session-blindfold-images")
             applySessionBlindfoldImagesFromState()
             setStartupAction("startup-ready-apply-global-blindfold-from-phase")

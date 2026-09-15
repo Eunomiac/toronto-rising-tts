@@ -16,7 +16,7 @@ CC.StorytellerID = "76561198002132577"
 CC.ObjectPositions = {
   CSHEET_PAGE = {
     on = { position = { y = 3.19 }, duration = 0 },
-    off = { position = { y = -200 }, duration = 0, isHidden = true },
+    off = { position = { y = -200 }, duration = 0 },
   },
 }
 

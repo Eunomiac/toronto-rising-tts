@@ -17,6 +17,7 @@ local OP = require("lib.object_positions")
 local L = require("core.lighting")
 local S = require("core.state")
 local STS = require("lib.st_dice_tray_spawn")
+local O = require("core.objects")
 
 local SLOT_DRAWER_KEYS = {
     [1] = "DICE_DRAWER_STORYTELLER_1",
@@ -62,7 +63,7 @@ local syncTrayLightXzToDrawer
 STD.DRAWER_RELEASE_MIN_Y = -2
 STD.DRAWER_RELEASE_MIN_Y_NPC = 2.0
 
-local WORKSHOP_HOME_OFF_Y = -200
+local WORKSHOP_HOME_OFF_Y = C.HIDDEN_OBJECT_WORLD_Y
 
 --- @param slot number
 -- @return number new epoch
@@ -253,15 +254,17 @@ local function applyWorkshopHomeOff(slot, opts)
 
     local home = resolveWorkshopHomeForSlot(slot)
     if type(home) == "table" and type(home.x) == "number" and type(home.z) == "number" then
-        -- Instant setPosition cancels smooth moves; do not use ObjectPositions Y-only merge here.
-        obj.setPosition({ x = home.x, y = WORKSHOP_HOME_OFF_Y, z = home.z })
+        local parkRot = nil
         if type(home.rotX) == "number"
             and type(home.rotY) == "number"
             and type(home.rotZ) == "number" then
-            obj.setRotation({ x = home.rotX, y = home.rotY, z = home.rotZ })
+            parkRot = { x = home.rotX, y = home.rotY, z = home.rotZ }
         end
+        O.hideObject(obj, {
+            parkPosition = { x = home.x, y = WORKSHOP_HOME_OFF_Y, z = home.z },
+            parkRotation = parkRot,
+        })
         restoreCachedWorkshopScale(slot, obj)
-        obj.setInvisibleTo({ "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey", "Black" })
         syncTrayLightXzToDrawer(slot)
         return true
     end

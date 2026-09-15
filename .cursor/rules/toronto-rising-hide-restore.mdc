@@ -1,0 +1,61 @@
+---
+description: Toronto Rising TTS — unified hide/restore (O.hideObject / O.restoreObject)
+alwaysApply: true
+---
+
+# Toronto Rising — hide / restore objects (mandatory)
+
+**Every off-table park at `y = C.HIDDEN_OBJECT_WORLD_Y` (-200) must go through `O.hideObject` / `O.restoreObject`.** Do not hand-roll `setPosition({ y = -200 })`, parallel lock/interactable toggles, or inline `setInvisibleTo({...})` for hide/reveal flows.
+
+Canonical doc: [`docs/solutions/lua-hide-restore-policy.md`](../../docs/solutions/lua-hide-restore-policy.md).
+
+## The pair
+
+| API | Module | Object scripts |
+| --- | --- | --- |
+| Hide | `O.hideObject(obj, opts?)` | `Global.call("GlobalHideObject", { guid, parkPosition?, parkRotation?, snapshotPosition? })` |
+| Restore | `O.restoreObject(obj, opts?)` | `Global.call("GlobalRestoreObject", { guid, position?, rotation?, locked?, interactable? })` |
+
+**Source:** `core/objects.ttslua`. **Constant:** `C.HIDDEN_OBJECT_WORLD_Y`. **Snapshot:** `gameState.hiddenObjects[guid]`.
+
+## What hide applies (only here)
+
+Park Y, `setLock(true)`, `interactable = false`, parked visibility (all viewer colors), `HiddenObject` tag. Snapshot stores `invisibleTo` (not parked Y when already at −200).
+
+## What restore applies (only here)
+
+Caller opts → catalogs (`C.LockedObjects`) → snapshot fallback; active visibility: opts → `C.HiddenObjects[guid]` when listed → snapshot `invisibleTo` → `{}`. Clears tag and snapshot.
+
+**Do not** hard-code player color arrays at call sites (use catalog + snapshot).
+
+## Options table
+
+**Hide:** `parkPosition`, `parkRotation`, `snapshotPosition` (when live Y is already parked).
+
+**Restore:** `position`, `rotation`, `locked`, `interactable` — prefer explicit `position` when restore authority is a catalog pose, table home, or board UV, not the snapshot alone.
+
+## Helpers
+
+- `O.isHiddenObject(obj)` — guard / idempotency
+- `O.activeVisibilityForGuid(guid)` — active-mode visibility (never inline lists)
+- `O.noteHiddenObjectWorldXZ(obj)` — layout moved hidden satellite X/Z
+- `O.transferHideSnapshot(fromGuid, toGuid)` — multi-state figurines
+
+## Object scripts
+
+**Never** `require("core.objects")` from object-hosted scripts — use `GlobalHideObject` / `GlobalRestoreObject` (see [toronto-rising-object-script-bundling.mdc](toronto-rising-object-script-bundling.mdc)).
+
+## Documented exceptions (do not migrate blindly)
+
+- Startup `C.HiddenObjects` visibility-only apply (present seats at authored Y)
+- Secret roll dice invisibility helpers
+- Seat-layout NPC chair visibility only (`enforceNPCSeatObjectVisibility`) — not preload pool hide
+
+New exceptions must be added to `docs/solutions/lua-hide-restore-policy.md`.
+
+## Agent checklist (before marking hide/reveal work done)
+
+1. Grep edited files for `-200`, `setInvisibleTo({`, and manual lock+Y stash patterns — migrate or document exception.
+2. Object scripts → Global.call, not `require("core.*")`.
+3. Restore passes explicit `position` when catalog/computed pose is authoritative.
+4. New Global mutators → row in [Event Listener Policy](../../.dev/Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md).

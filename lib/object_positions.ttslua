@@ -1,6 +1,10 @@
 --[[
   Shared ObjectPositions resolver.
   Centralizes absolute/relative pose resolution for C.ObjectPositions entries.
+
+  When pose.isHidden is set, finalize calls O.hideObject / O.restoreObject —
+  do not add parallel setInvisibleTo hide paths here.
+  Policy: docs/solutions/lua-hide-restore-policy.md
 ]]
 
 local OP = {}
@@ -8,6 +12,7 @@ local S = require("core.state")
 local C = require("lib.constants")
 local U = require("lib.util")
 local G = require("lib.guids")
+local O = require("core.objects")
 OP.DEFAULT_TRANSITION_DURATION = 0.5
 
 --- @param obj Object
@@ -15,7 +20,10 @@ OP.DEFAULT_TRANSITION_DURATION = 0.5
 --- @return Vector
 function OP.mergePosition(obj, partialPos)
   partialPos = partialPos or {}
-  local currentPos = obj.getPosition()
+  local currentPos = obj.getPosition and obj.getPosition() or nil
+  if currentPos == nil then
+    currentPos = Vector({ x = 0, y = 0, z = 0 })
+  end
   -- Vector:set(x, y, z) keeps components unchanged when passed nil.
   return currentPos:copy():set(partialPos.x, partialPos.y, partialPos.z)
 end
@@ -62,6 +70,23 @@ local function isCenterPoint(center)
     and type(center.z) == "number"
 end
 
+--- Scatter playfield origin when `seatLayout.currentTableKey` is the Scatter sentinel.
+--- @return table|nil
+local function scatterSeatLayoutCenterPoint()
+  local scatter = C.Scatter
+  if type(scatter) ~= "table" then
+    return nil
+  end
+  local cp = scatter.CENTER_POINT
+  local floorY = tonumber(scatter.FLOOR_Y) or -52.89
+  local x, z = 0, 0
+  if type(cp) == "userdata" or type(cp) == "table" then
+    x = tonumber(cp.x or cp[1]) or 0
+    z = tonumber(cp.z or cp[3]) or 0
+  end
+  return { x = x, y = floorY, z = z }
+end
+
 --- Object scripts run in a different Lua context, so prefer Global state bridge first.
 --- @return table|nil
 local function resolveSeatLayoutCenterPoint()
@@ -78,7 +103,12 @@ local function resolveSeatLayoutCenterPoint()
   end
   -- Fallback for global-context callers that do not need Global.call bridge.
   if self == Global then
+    local scatterKey = (C.Scatter and C.Scatter.TABLE_KEY) or "Scatter"
     local tableKey = S.getStateVal("seatLayout", "currentTableKey")
+    local placementMode = S.getStateVal("sessionScene", "placementMode")
+    if tableKey == scatterKey or placementMode == "scatter" then
+      return scatterSeatLayoutCenterPoint()
+    end
     if type(tableKey) == "string" and C.Tables and C.Tables[tableKey] and C.Tables[tableKey].centerPoint ~= nil then
       local cp = Vector(C.Tables[tableKey].centerPoint)
       return { x = cp.x, y = cp.y, z = cp.z }
@@ -314,9 +344,9 @@ function OP.applyResolvedPose(obj, pose, baseDuration, baseDelay, opts)
         obj.setLock(initialLock)
       end
       if pose.isHidden == true then
-        obj.setInvisibleTo({"Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey", "Black"})
+        O.hideObject(obj)
       else
-        obj.setInvisibleTo({})
+        O.restoreObject(obj)
       end
     end, finalizeDelay)
   end

@@ -1271,7 +1271,18 @@ function Interactions.onControlTokenPickUp(token)
     if not Tokens.isNpcControlToken(token) and not Tokens.isPcControlToken(token) then
         return
     end
-    Tokens.ensureDefaultNpcControlTokenScale(token)
+    local ScatterMode = require("core.scatter_mode")
+    local board = Board.getControlBoard()
+    if ScatterMode.isActive()
+        and Board.isGameObject(board)
+        and Board.isTokenOnControlBoardSurface(board, token) then
+        if type(token.setLock) == "function" then
+            token.setLock(false)
+        end
+        token.interactable = true
+    else
+        Tokens.ensureDefaultNpcControlTokenScale(token)
+    end
     if not Tokens.isNpcControlToken(token) then
         return
     end
@@ -1279,7 +1290,6 @@ function Interactions.onControlTokenPickUp(token)
     if guid ~= "" then
         tokenBoardFamilyAtPickUp[guid] = nil
     end
-    local board = Board.getControlBoard()
     if Board.isGameObject(board) and Board.isTokenOnControlBoardSurface(board, token) then
         local fuzziness = Board.snapMatchFuzzinessForBoard(board)
         local entry = Snaps.resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)

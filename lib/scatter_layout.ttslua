@@ -125,8 +125,9 @@ function ScatterLayout.pcGroupOrigin(groupIndex)
     return U.rotateAroundPoint(G, rnpc, worldAz, y), nil
 end
 
---- Far intersection of the PC circle with the World Ray through P.
---- @param P Vector
+--- Far side of the PC circle on the World Ray through P: the ray intersection farthest from World Origin
+--- (same direction as O→P, extended past P toward the scatter-group origin — not back toward O).
+--- @param P Vector PC_SCATTER_GROUP_ORIGIN
 --- @return Vector|nil, string|nil skipReason
 function ScatterLayout.pcDeploymentArcMidpoint(P)
     local px = tonumber(P.x or P[1]) or 0
@@ -136,7 +137,7 @@ function ScatterLayout.pcDeploymentArcMidpoint(P)
         return nil, "PC_DEPLOYMENT_ARC midpoint: P coincides with World Origin"
     end
     local rpc = tonumber(cfg().SCATTER_RADIUS_PC) or 14
-    local az = math.deg(math.atan2(px, pz))
+    local az = math.deg(math.atan2(px - ox, pz - oz))
     local y = tonumber(P.y or P[2]) or ScatterLayout.floorY()
     return U.rotateAroundPoint(P, rpc, az, y), nil
 end

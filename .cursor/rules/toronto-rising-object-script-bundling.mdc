@@ -33,6 +33,7 @@ Global / HUD paths (`core/global_script.ttslua`, storyteller XmlUI) are differen
 | NPC gameboard Apply | `Global.call("GlobalGameboardApply", …)` | `core.npc_gameboard` |
 | Tarot toggle | `lib.tarot_toggle` + **`lib.object_positions_object`** only | full `lib.object_positions` |
 | CSHEET UI | `ui.ui_csheet` / `ui.ui_csheet_pageN` thin chain | sheet collect, sync |
+| Hide / reveal object | `Global.call("GlobalHideObject", { guid = … })` / `GlobalRestoreObject` | `O.hideObject` / `O.restoreObject` in `core/objects.ttslua` |
 
 Canonical inventory: [`.dev/TTS_BUNDLING_SETUP.md`](../../.dev/TTS_BUNDLING_SETUP.md) § Character sheet pages / NPC gameboard objects.
 

@@ -91,6 +91,9 @@ C.HideFromPcSeatsAndSpectators = {
   "Brown", "Orange", "Red", "Pink", "Purple", "White", "Grey",
 }
 
+--- World Y for objects parked off-table via `O.hideObject` / `O.restoreObject`.
+C.HIDDEN_OBJECT_WORLD_Y = -200
+
 --- Resolve playerRef to a storage / Steam ID string (Storyteller normalized to C.StorytellerID).
 -- Accepts a TTS Player, steam id key, nickname key in C.PlayerIDs, seat color, playerName, charKey, or "Host"/"Storyteller".
 -- @param playerRef Player|string
@@ -642,7 +645,50 @@ C.HiddenObjects = {
   [G.GUIDS.STAGE_BOARD] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
   [G.GUIDS.CONTROL_BOARD] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
   [G.GUIDS.CONTROL_BOARD_PALETTE] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.DEBUG_LIGHT_FOCAL_POINT] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" }
+  [G.GUIDS.DEBUG_LIGHT_FOCAL_POINT] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.DICEBAG_NORMAL_STORYTELLER] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.DICEBAG_HUNGER_STORYTELLER] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.DICEBAG_ROUSE_STORYTELLER] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.DICEBAG_OBLIVROUSE_STORYTELLER] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.DICEBAG_WEREWOLF_STORYTELLER] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.DICEBAG_RAGE_STORYTELLER] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.COMPANION_TOGGLE_A_PURPLE] = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
+  [G.GUIDS.COMPANION_TOGGLE_B_PURPLE] = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
+  [G.GUIDS.COMPANION_TOGGLE_C_PURPLE] = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
+  [G.GUIDS.COMPANION_TOGGLE_A_RED] = { "Brown", "Orange", "Pink", "Purple", "White", "Grey" },
+  [G.GUIDS.COMPANION_TOGGLE_A_BROWN] = { "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.COMPANION_TOGGLE_TOKEN_A_PURPLE] = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
+  [G.GUIDS.COMPANION_TOGGLE_TOKEN_B_PURPLE] = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
+  [G.GUIDS.COMPANION_TOGGLE_TOKEN_C_PURPLE] = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
+  [G.GUIDS.COMPANION_TOGGLE_TOKEN_A_RED] = { "Brown", "Orange", "Pink", "Purple", "White", "Grey" },
+  [G.GUIDS.COMPANION_TOGGLE_TOKEN_A_BROWN] = { "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.TAROT_BUTTON_PINK] = { "Brown", "Orange", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.DICEBAG_HUNGER_BROWN] = { "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.DICEBAG_HUNGER_ORANGE] = { "Brown", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.DICEBAG_HUNGER_RED] = { "Brown", "Orange", "Pink", "Purple", "White", "Grey" },
+  [G.GUIDS.DICEBAG_HUNGER_PINK] = { "Brown", "Orange", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.DICEBAG_HUNGER_PURPLE] = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
+  [G.GUIDS.DICEBAG_NORMAL_BROWN] = { "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.DICEBAG_NORMAL_ORANGE] = { "Brown", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.DICEBAG_NORMAL_RED] = { "Brown", "Orange", "Pink", "Purple", "White", "Grey" },
+  [G.GUIDS.DICEBAG_NORMAL_PINK] = { "Brown", "Orange", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.DICEBAG_NORMAL_PURPLE] = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
+  [G.GUIDS.DICEBAG_ROUSE_BROWN] = { "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.DICEBAG_ROUSE_ORANGE] = { "Brown", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.DICEBAG_ROUSE_RED] = { "Brown", "Orange", "Pink", "Purple", "White", "Grey" },
+  [G.GUIDS.DICEBAG_ROUSE_PINK] = { "Brown", "Orange", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.DICEBAG_ROUSE_PURPLE] = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
+  [G.GUIDS.DICEBAG_OBLIVROUSE_PURPLE] = { "Brown", "Orange", "Pink", "Red", "White", "Grey" },
+  [G.GUIDS.SOUNDSCAPE_MUSIC_A] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.SOUNDSCAPE_MUSIC_B] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.SOUNDSCAPE_MUSIC_C] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.SOUNDSCAPE_FEATURED_A] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.SOUNDSCAPE_FEATURED_B] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.SOUNDSCAPE_LOCATION_A] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.SOUNDSCAPE_LOCATION_B] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.SOUNDSCAPE_WEATHER_RAIN] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.SOUNDSCAPE_WEATHER_WIND] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
+  [G.GUIDS.SOUNDSCAPE_WEATHER_THUNDER] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" }
 }
 -- #endregion
 
@@ -1740,10 +1786,10 @@ C.Scatter = {
   GROUP_COUNT = 6,
   --- Outer NPC holes on the Scatter CONTROL_BOARD art (counted on Stage Control Board in Scatter Mode.jpg).
   BOARD_NPC_HOLE_COUNT = 12,
-  --- First group world azimuth. CONTROL_BOARD yaw 180° puts group 1 at far left (−X = 270°), then clockwise 60°.
+  --- First group world azimuth. CONTROL_BOARD yaw 180° puts group 1 at far left (-X = 270°), then clockwise 60°.
   FIRST_GROUP_AZIMUTH_DEG = 270,
   GROUP_SPACING_DEG = 60,
-  SCATTER_RADIUS_WORLD = 250,
+  SCATTER_RADIUS_WORLD = 225,
   SCATTER_RADIUS_NPC = 125,
   SCATTER_RADIUS_PC = 100,
   PC_SCATTER_POSITION_ANGLE = 180,
@@ -1761,6 +1807,8 @@ C.Scatter = {
   ST_DICE_TRAY_YAW_OFFSET_DEG = 0,
   --- Custom tile mesh looks along -Z at yaw 0; look-at toward a point needs +180 (same as stage figurines).
   FIGURINE_YAW_OFFSET_DEG = 180,
+  --- Control tokens parked on a scatter group hole (palette default is polar 0.2).
+  TOKEN_SCALE = { x = 0.5, y = 1, z = 0.5 },
   CONTROL_BOARD_IMAGE_STANDARD = "https://steamusercontent-a.akamaihd.net/ugc/13248133772831882366/6F672A9E951B9AC21C6DE9091659FE913AD29268/",
   CONTROL_BOARD_IMAGE_SCATTER = "https://steamusercontent-a.akamaihd.net/ugc/15826341776223196067/84A1D7EF997F4D44D279D50B0D5AF2C829CF0949/",
   --- Occupied polar packs map to scatter groups 1–6 in this order (inbox TOR-573).
@@ -1802,6 +1850,7 @@ C.Scatter = {
       position = { x = 0, z = 0}
     }
   },
+  --- GUIDs to disable (`interactable = false`) and hide from every player layer while Scatter is active.
   objectsToHide = {
     G.GUIDS.SEAT_CHAIR_RED,
     G.GUIDS.SEAT_CHAIR_ORANGE,

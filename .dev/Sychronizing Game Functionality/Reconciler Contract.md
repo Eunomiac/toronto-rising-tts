@@ -57,6 +57,10 @@ New code must follow this shape:
 3. Do not hide live-world writes inside setters.
 4. Do not drive the same physical channel twice in one flow unless a fingerprint is primed or invalidated deliberately.
 
+## Hide / restore objects (Tier C)
+
+When a reconciler or layout pass parks an object off-table at `C.HIDDEN_OBJECT_WORLD_Y`, use **`O.hideObject` / `O.restoreObject`** only — not ad-hoc `setPosition` + `setInvisibleTo`. Object scripts call **`GlobalHideObject` / `GlobalRestoreObject`**. Active visibility after restore comes from `C.HiddenObjects[guid]`; parked visibility is fixed inside `applyHideProtocol`. Full policy: [`docs/solutions/lua-hide-restore-policy.md`](../../docs/solutions/lua-hide-restore-policy.md).
+
 ## Current exceptions to pure read-only reconcilers
 
 The desired contract is "reconcilers do not write `gameState`." Current code still has these explicit exceptions. Do not copy these patterns into new domains.

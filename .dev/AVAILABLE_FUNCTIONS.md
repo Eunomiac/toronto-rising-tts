@@ -44,6 +44,7 @@ Status: living function reference; useful for discovery, not a substitute for so
 - ❌ Writing custom type checking when `U.Type()`, `U.isGameObject()`, etc. exist
 - ❌ Writing custom table operations when utilities provide them
 - ❌ Writing custom state access when `S.getStateVal()` / `S.setStateVal()` exist
+- ❌ Hand-rolling `setPosition({ y = -200 })` + `setInvisibleTo({...})` when hiding objects — use `O.hideObject` / `O.restoreObject` (see [`docs/solutions/lua-hide-restore-policy.md`](../docs/solutions/lua-hide-restore-policy.md))
 
 ---
 
@@ -324,15 +325,38 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 
 ## 4.1 OBJECTS MODULE (`core/objects.ttslua`)
 
-**Require:** `local O = require("core.objects")`
+**Require:** `local O = require("core.objects")` (Global / `core/*` / `lib/*` only — **not** object-hosted scripts).
 
-### Signal Fire Functions
+**Policy:** [`docs/solutions/lua-hide-restore-policy.md`](../docs/solutions/lua-hide-restore-policy.md) — every off-table park at `C.HIDDEN_OBJECT_WORLD_Y` uses the hide/restore pair below.
+
+### Hide / restore (mandatory for y = -200 hides)
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
-| `O.SetSignalFireState(color, state, duration)` | Set a player's signal fire `"on"` or `"off"` | `O.SetSignalFireState("Brown", "on", 0.2)` |
+| `O.hideObject(obj, opts?)` | Park at `C.HIDDEN_OBJECT_WORLD_Y`, lock, non-interactable, parked visibility, `HiddenObject` tag; optional `parkPosition`, `parkRotation`, `snapshotPosition` | `O.hideObject(bag, { snapshotPosition = restPos })` |
+| `O.restoreObject(obj, opts?)` | Reveal: pose/lock/interactable from opts → snapshot; active visibility from `C.HiddenObjects[guid]` | `O.restoreObject(page, { position = onPos, interactable = true })` |
+| `O.isHiddenObject(obj)` | True when object has `HiddenObject` tag | Guard before re-hide |
+| `O.activeVisibilityForGuid(guid)` | Active-mode `setInvisibleTo` list from `C.HiddenObjects` or `{}` | Do not inline color lists at call sites |
+| `O.noteHiddenObjectWorldXZ(obj)` | Sync snapshot X/Z after layout moved a hidden satellite | Seat layout after table change |
+| `O.transferHideSnapshot(fromGuid, toGuid)` | Move snapshot when multi-state figurine GUID changes | Companion toggle state swap |
+
+**Object scripts:** `Global.call("GlobalHideObject", { guid = … })` / `GlobalRestoreObject` — see `core/global_script.ttslua`.
+
+### Signal fire / hunger smoke
+
+| Function | Description | Usage Example |
+| :--------- | :------------- | :--------------- |
+| `O.SetSignalFireState(color, state, duration)` | Set a player's signal fire `"on"` or `"off"` (uses hide/restore internally) | `O.SetSignalFireState("Brown", "on", 0.2)` |
 | `O.GetSignalFireState(color)` | Infer a player's signal fire state from its current height | `local state = O.GetSignalFireState("Brown")` |
 | `O.ToggleSignalFireState(color, duration)` | Toggle a player's signal fire and return the new state | `local state = O.ToggleSignalFireState("Brown", 0.2)` |
+| `O.SetHungerSmokeState(color, state, duration)` | Hunger smoke on/off (uses hide/restore internally) | `O.SetHungerSmokeState("Red", "off", 0)` |
+
+### Locked / catalog hidden objects (startup)
+
+| Function | Description | Usage Example |
+| :--------- | :------------- | :--------------- |
+| `O.ApplyLockedAndHiddenAtStartupGate()` | Apply `C.LockedObjects` + `C.HiddenObjects` visibility after load | Global startup readiness |
+| `O.reconcilePcSeatHiddenObjectsFromState()` | PC seat catalog hide/restore per narrative presence (`C.HiddenObjects`) | NPC reconciler Step Four — absent seats bury at −200 |
 
 ---
 

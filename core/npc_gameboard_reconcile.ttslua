@@ -13,6 +13,7 @@ local Palette = require("lib.npc_control_board_palette")
 local Board = require("core.npc_gameboard_board")
 local Tokens = require("core.npc_gameboard_tokens")
 local Snaps = require("core.npc_gameboard_snaps")
+local O = require("core.objects")
 
 local TAG_TOKEN = DATA.TAG_NPC_CONTROL_TOKEN
 local TAG_PC_TOKEN = DATA.TAG_PC_CONTROL_TOKEN or "pc_control_token"
@@ -899,10 +900,10 @@ end
 --- @param marker Object
 --- @param npcSeatKey string|nil Used to spread stash X slightly per slot
 local function stashNpcSeatMarker(marker, npcSeatKey)
-    if not Board.isGameObject(marker) or marker.setPosition == nil then
+    if not Board.isGameObject(marker) then
         return
     end
-    local stashY = tonumber(DATA.MARKER_STASH_WORLD_Y) or -200
+    local stashY = tonumber(DATA.MARKER_STASH_WORLD_Y) or C.HIDDEN_OBJECT_WORLD_Y
     local pos = marker.getPosition()
     local offsetX = 0
     if type(npcSeatKey) == "string" then
@@ -913,7 +914,9 @@ local function stashNpcSeatMarker(marker, npcSeatKey)
             end
         end
     end
-    marker.setPosition(Vector({ x = pos.x + offsetX, y = stashY, z = pos.z }))
+    O.hideObject(marker, {
+        parkPosition = { x = pos.x + offsetX, y = stashY, z = pos.z },
+    })
     lockControlBoardMarker(marker)
 end
 
@@ -921,16 +924,18 @@ end
 --- @param marker Object
 --- @param componentName string|nil Used to spread stash X slightly per component
 local function stashTableComponentMarker(marker, componentName)
-    if not Board.isGameObject(marker) or marker.setPosition == nil then
+    if not Board.isGameObject(marker) then
         return
     end
-    local stashY = tonumber(DATA.MARKER_STASH_WORLD_Y) or -200
+    local stashY = tonumber(DATA.MARKER_STASH_WORLD_Y) or C.HIDDEN_OBJECT_WORLD_Y
     local pos = marker.getPosition()
     local offsetX = 0
     if type(componentName) == "string" then
         offsetX = (string.byte(componentName, 1) or 0) * 0.01
     end
-    marker.setPosition(Vector({ x = pos.x + offsetX, y = stashY, z = pos.z }))
+    O.hideObject(marker, {
+        parkPosition = { x = pos.x + offsetX, y = stashY, z = pos.z },
+    })
     lockControlBoardMarker(marker)
 end
 
@@ -938,16 +943,18 @@ end
 --- @param marker Object
 --- @param tableKey string|nil Used to spread stash X slightly per table
 local function stashTableMarker(marker, tableKey)
-    if not Board.isGameObject(marker) or marker.setPosition == nil then
+    if not Board.isGameObject(marker) then
         return
     end
-    local stashY = tonumber(DATA.MARKER_STASH_WORLD_Y) or -200
+    local stashY = tonumber(DATA.MARKER_STASH_WORLD_Y) or C.HIDDEN_OBJECT_WORLD_Y
     local pos = marker.getPosition()
     local offsetX = 0
     if type(tableKey) == "string" then
         offsetX = (string.byte(tableKey, 1) or 0) * 0.02
     end
-    marker.setPosition(Vector({ x = pos.x + offsetX, y = stashY, z = pos.z }))
+    O.hideObject(marker, {
+        parkPosition = { x = pos.x + offsetX, y = stashY, z = pos.z },
+    })
     lockControlBoardMarker(marker)
 end
 
@@ -960,9 +967,16 @@ end
 local function placeControlBoardMarker(marker, board, u, v, source, options)
     local opts = options or {}
     if u ~= nil and v ~= nil then
-        marker.setPosition(Board.worldOnControlBoard(board, u, v, {
+        local worldPos = Board.worldOnControlBoard(board, u, v, {
             extraLocalY = opts.extraLocalY,
-        }))
+        })
+        local pos = worldPos
+        if type(worldPos) == "userdata" or type(worldPos) == "table" then
+            pos = { x = worldPos.x, y = worldPos.y, z = worldPos.z }
+        end
+        O.restoreObject(marker, { position = pos, locked = true })
+    elseif O.isHiddenObject(marker) then
+        O.restoreObject(marker, { locked = true })
     end
     if Board.isGameObject(source) then
         applyMinimapMarkerScale(marker, source)

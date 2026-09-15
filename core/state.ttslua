@@ -310,6 +310,8 @@ function S.GetDefaultGameState()
             },
             capabilities = {},
         },
+        --- Fallback restore fields for `O.hideObject` / `O.restoreObject` (position?, lock?, interactable?, invisibleTo?).
+        hiddenObjects = {},
         seatLayout = {
             currentTableKey = nil, -- e.g. "Table A"; preferred over raw center persistence
             occupiedNPCSlots = {
@@ -790,6 +792,9 @@ function S.validateState()
 
     -- Ensure other required top-level tables exist
     if not gameState.lights then gameState.lights = {} end
+    if type(gameState.hiddenObjects) ~= "table" then
+        gameState.hiddenObjects = {}
+    end
     if not gameState.scene then gameState.scene = {} end
     if type(gameState.lastActiveMapPin) ~= "table" then gameState.lastActiveMapPin = {} end
     if type(gameState.projects) ~= "table" then gameState.projects = {} end

@@ -2,8 +2,9 @@
   Character sheet pose helpers for object scripts (no core.state / lib.object_positions).
 
   CSHEET_PAGE entries only use simple on/off y positions — no anchors or radial layout.
+  Geometry only here; hide/restore is applied separately via GlobalHideObject / GlobalRestoreObject.
 
-  Agent guidance: .dev/TTS_BUNDLING_SETUP.md
+  Agent guidance: docs/solutions/lua-hide-restore-policy.md; .dev/TTS_BUNDLING_SETUP.md
 ]]
 
 local CU = require("lib.csheet_util")
@@ -37,7 +38,6 @@ function CP.resolveStatePose(entry, state)
     scale = pose.scale,
     rotation = pose.rotation,
     isLocked = pose.isLocked,
-    isHidden = pose.isHidden,
     duration = pose.duration,
     delay = pose.delay,
     transitionDuration = pose.transitionDuration,
@@ -103,11 +103,6 @@ function CP.applyResolvedPose(obj, pose, baseDuration, baseDelay)
     end
     if type(pose.isLocked) == "boolean" then
       obj.setLock(pose.isLocked)
-    end
-    if pose.isHidden == true then
-      obj.setInvisibleTo({"Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey", "Black"})
-    elseif pose.isHidden == false then
-      obj.setInvisibleTo({})
     end
   end
 

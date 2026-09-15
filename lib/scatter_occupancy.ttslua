@@ -78,7 +78,7 @@ local function shuffledCopy(list)
     return out
 end
 
---- Import/live translation: one PC → slot 1; several PCs shuffle into the lowest slots.
+--- Import/live translation: first PC → world slot 3 (gold); later PCs shuffle into closest free slots.
 --- @param pcRows table[] `{ pcKey, isPlayingNPC, characterKey?, isPresent }`
 --- @return table|nil centerCharacters, string|nil err
 local function assignPcSlots(pcRows)
@@ -87,10 +87,15 @@ local function assignPcSlots(pcRows)
         return nil, "a scatter group can hold at most 5 PCs."
     end
     local ordered = n <= 1 and pcRows or shuffledCopy(pcRows)
+    local used = {}
     local center = {}
     for i = 1, n do
         local row = ordered[i]
-        local slot = i
+        local slot = ScatterLayout.nextFreePcWorldSlot(used)
+        if slot == nil then
+            return nil, "a scatter group can hold at most 5 PCs."
+        end
+        used[slot] = true
         center[row.pcKey] = {
             slot = slot,
             isPlayingNPC = row.isPlayingNPC == true,

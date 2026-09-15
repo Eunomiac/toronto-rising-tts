@@ -19,6 +19,7 @@ local NLIGHT = require("lib.npcs_light_spawn_defaults")
 local SRI = require("lib.seat-role-identity")
 local G = require("lib.guids")
 local MapPins = require("core.map_pins")
+local O = require("core.objects")
 
 --- NPC-only roster (PCs flagged `isPC` are excluded). The stage pool, preload grid, palette
 --- tokens, and NPC group enumeration are all keyed off this, so PC characters never generate
@@ -694,16 +695,17 @@ function NPCS.invalidateHomelandStageBoundSpotlightsCache()
     lastHomelandStageBoundSpotlightsFingerprint = nil
 end
 
+--- Pooled `npc_light` hide/show — `O.hideObject` / `O.restoreObject` only (incl. Storyteller).
 --- @param lit Object|nil
 --- @param hidden boolean
-local function setPooledSpotlightHidden(lit, hidden)
-    if not U.isGameObject(lit) or lit.setInvisibleTo == nil then
+local function applyPooledSpotlightHideOrRestore(lit, hidden)
+    if not U.isGameObject(lit) then
         return
     end
     if hidden then
-        lit.setInvisibleTo(C.HideFromPcSeatsAndSpectators or {})
+        O.hideObject(lit)
     else
-        lit.setInvisibleTo({})
+        O.restoreObject(lit, { locked = true, interactable = false })
     end
 end
 
@@ -738,7 +740,7 @@ local function parkPooledSpotlightForSeatedNpc(npcName, lit)
     if lit.setScale ~= nil then
         lit.setScale(Vector(NPC_PRELOAD_LIGHT_SCALE, NPC_PRELOAD_LIGHT_SCALE, NPC_PRELOAD_LIGHT_SCALE))
     end
-    setPooledSpotlightHidden(lit, true)
+    applyPooledSpotlightHideOrRestore(lit, true)
     pendingStageImageScalarReload[npcName] = nil
     local rec = getInstances()[npcName]
     if U.Type(rec) == "table" then
@@ -992,7 +994,23 @@ local function applyNpcPairPhysicalPresentation(fig, lit, areaKey, npcName)
         lit.setScale(Vector(ls, ls, ls))
     end
     ensureNpcFigurinePhysicsLocked(fig)
-    return applyNpcFigurineImageScalarForPlacement(fig, npcName, areaKey) == true
+    local reloaded = applyNpcFigurineImageScalarForPlacement(fig, npcName, areaKey) == true
+    if isPreload then
+        if U.isGameObject(fig) then
+            O.hideObject(fig)
+        end
+        if U.isGameObject(lit) then
+            O.hideObject(lit)
+        end
+    else
+        if U.isGameObject(fig) and O.isHiddenObject(fig) then
+            O.restoreObject(fig, { locked = true, interactable = false })
+        end
+        if U.isGameObject(lit) and O.isHiddenObject(lit) then
+            O.restoreObject(lit, { locked = true, interactable = false })
+        end
+    end
+    return reloaded
 end
 
 --- Swap pooled figurine tags for table-seat layout (`SEAT_FIGURE` role); hide paired area spotlight.
@@ -1031,7 +1049,6 @@ local function applyNpcFigurineSeatIdentity(fig, lit, npcName, seatKey)
     end
     SRI.setRoleColorIdentity(fig, "SEAT_FIGURE", seatKey)
     applyNpcPairPhysicalPresentation(fig, lit, SEAT_PLACEMENT_KEY, npcName)
-    setPooledSpotlightHidden(lit, true)
     parkPooledSpotlightForSeatedNpc(npcName, lit)
 end
 
@@ -1090,7 +1107,7 @@ local function clearNpcFigurineSeatIdentity(fig, lit, npcName)
     if U.Type(npcName) == "string" and npcName ~= "" and fig.setGMNotes ~= nil then
         fig.setGMNotes(GM_PREFIX .. npcName)
     end
-    setPooledSpotlightHidden(lit, false)
+    applyPooledSpotlightHideOrRestore(lit, false)
 end
 
 --- @param npcName string
@@ -1280,7 +1297,7 @@ local function applyStageNpcSpotlightNow(npcName, fig, lit, transitionTime)
     end
     NPCS.cancelDeferredSpotlightAlign(npcName)
     if U.isGameObject(lit) then
-        setPooledSpotlightHidden(lit, false)
+        applyPooledSpotlightHideOrRestore(lit, false)
     end
     local rec = getInstances()[npcName]
     if U.Type(rec) == "table" then
@@ -4522,6 +4539,30 @@ function NPCS.restoreAfterStateLoad()
         local GenericNpcs = require("core.generic_npcs")
         GenericNpcs.ensureLiveFromMembership()
     end
+    NPCS.reconcilePreloadPoolHideFromState()
+end
+
+--- Re-apply hide protocol for every NPC instance parked in the preload pool (load + layout).
+--- Audit/adopt only runs `ensureNpcInPreloadZone` for missing instance rows; existing preload
+--- rows skip that path, so visibility must be refreshed explicitly when already at y = -200.
+--- @return number instance rows reconciled
+function NPCS.reconcilePreloadPoolHideFromState()
+    local instances = getInstances()
+    if U.Type(instances) ~= "table" then
+        return 0
+    end
+    local count = 0
+    for npcName, rec in pairs(instances) do
+        if U.Type(npcName) == "string" and U.Type(rec) == "table" and rec.areaKey == PRELOAD_AREA_KEY then
+            local fig = G.getObject(rec.figurineGuid or "")
+            local lit = G.getObject(rec.lightGuid or "")
+            if U.isGameObject(fig) or U.isGameObject(lit) then
+                applyNpcPairPhysicalPresentation(fig, lit, PRELOAD_AREA_KEY, npcName)
+                count = count + 1
+            end
+        end
+    end
+    return count
 end
 
 --- Verify every `NPCS.characters` key has an in-world `npc_figurine`; adopt instance rows when needed.

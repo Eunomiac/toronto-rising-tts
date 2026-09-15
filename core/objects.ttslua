@@ -1,16 +1,16 @@
 --[[
     Object Manipulation Module (core/objects.ttslua)
 
-    Handles manipulation of game objects like signal fires and hunger smoke.
-    Provides functions for raising/lowering objects with smooth animations.
+    Unified hide/restore for off-table parking (y = C.HIDDEN_OBJECT_WORLD_Y):
+    O.hideObject / O.restoreObject — lock, interactable, visibility, HiddenObject tag,
+    gameState.hiddenObjects snapshot. Object scripts route via GlobalHideObject /
+    GlobalRestoreObject (never require this module from object VMs).
 
-    This module provides:
-    - Signal fire control (raise/lower)
-    - Hunger smoke control (raise/lower)
-    - Smooth position transitions using U.setPositionSlow
-    - Partial position handling (only update specified axes)
+    Also: signal fire and hunger smoke (hide/restore + optional U.setPositionSlow),
+    C.LockedObjects / C.HiddenObjects startup apply, PC seat hidden-object presence.
 
-    Agent guidance: .dev/DEVELOPMENT_WORKFLOW.md; .dev/AVAILABLE_FUNCTIONS.md.
+    Agent guidance: docs/solutions/lua-hide-restore-policy.md;
+    .cursor/rules/toronto-rising-hide-restore.mdc; .dev/AVAILABLE_FUNCTIONS.md § 4.1.
 ]]
 
 local O = {}
@@ -19,6 +19,7 @@ local C = require("lib.constants")
 local G = require("lib.guids")
 local OP = require("lib.object_positions")
 local S = require("core.state")
+local SRI = require("lib.seat-role-identity")
 
 -- ============================================================================
 -- LOCKED / HIDDEN OBJECTS (from C.LockedObjects, C.HiddenObjects)
@@ -268,8 +269,9 @@ local function resolveSeatPresenceForSeat(seatKey)
     return true
 end
 
---- Applies `C.HiddenObjects` visibility for one PC seat (Step Four — see NPC Reconciler Procedure).
---- When absent: invisible to all viewer colors. When present: restore catalog defaults.
+--- Applies `C.HiddenObjects` catalog entries for one PC seat (Step Four — NPC Reconciler Procedure).
+--- When absent: `O.hideObject` (y = −200, lock, full invisibility — no on-table invisible collision).
+--- When present: `O.restoreObject` when tagged hidden; else active catalog visibility only.
 --- @param seatColor string Brown | Orange | …
 --- @param present boolean
 function O.applyPcSeatHiddenObjectPresence(seatColor, present)
@@ -281,17 +283,23 @@ function O.applyPcSeatHiddenObjectPresence(seatColor, present)
         reapplyScatterObjectsToHideIfActive()
         return
     end
-    local hideAll = allViewerColorsForInvisibility()
     local appliedGuids = {}
 
-    local function applyObject(obj, defaultColors)
-        if obj == nil or type(obj.setInvisibleTo) ~= "function" then
+    local function applyCatalogSeatObject(obj)
+        if not U.isGameObject(obj) then
             return
         end
         if present == true then
-            obj.setInvisibleTo(defaultColors)
+            if O.isHiddenObject(obj) then
+                O.restoreObject(obj)
+            else
+                local guid = type(obj.getGUID) == "function" and obj.getGUID() or nil
+                if U.Type(guid) == "string" and guid ~= "" and obj.setInvisibleTo ~= nil then
+                    obj.setInvisibleTo(O.activeVisibilityForGuid(guid))
+                end
+            end
         else
-            obj.setInvisibleTo(hideAll)
+            O.hideObject(obj)
         end
     end
 
@@ -299,7 +307,7 @@ function O.applyPcSeatHiddenObjectPresence(seatColor, present)
         if U.Type(guid) == "string" and guid ~= "" and U.Type(defaultColors) == "table" then
             if #defaultColors == 1 and defaultColors[1] == seatColor then
                 appliedGuids[guid] = true
-                applyObject(G.getObject(guid), defaultColors)
+                applyCatalogSeatObject(G.getObject(guid))
             end
         end
     end
@@ -312,7 +320,7 @@ function O.applyPcSeatHiddenObjectPresence(seatColor, present)
             if obj ~= nil and type(obj.getGUID) == "function" then
                 local guid = obj.getGUID()
                 if U.Type(guid) == "string" and hidden[guid] ~= nil and appliedGuids[guid] ~= true then
-                    applyObject(obj, hidden[guid])
+                    applyCatalogSeatObject(obj)
                 end
             end
         end
@@ -330,8 +338,581 @@ function O.reconcilePcSeatHiddenObjectsFromState()
 end
 
 -- ============================================================================
+-- HIDE / RESTORE (y = C.HIDDEN_OBJECT_WORLD_Y, tag HiddenObject)
+-- ============================================================================
+
+O.HIDDEN_OBJECT_TAG = "HiddenObject"
+
+local HIDDEN_Y = C.HIDDEN_OBJECT_WORLD_Y
+local HIDDEN_Y_THRESHOLD = HIDDEN_Y + 50
+
+--- @param obj Object|nil
+--- @return boolean
+function O.isHiddenObject(obj)
+    return U.isGameObject(obj)
+        and obj.hasTag ~= nil
+        and obj.hasTag(O.HIDDEN_OBJECT_TAG) == true
+end
+
+--- Active-object visibility from `C.HiddenObjects`; missing GUID → visible to all.
+--- @param guid string|nil
+--- @return string[]
+function O.activeVisibilityForGuid(guid)
+    local hidden = C.HiddenObjects
+    if U.Type(guid) == "string" and guid ~= "" and U.Type(hidden) == "table" and U.Type(hidden[guid]) == "table" then
+        return hidden[guid]
+    end
+    return {}
+end
+
+--- Parked visibility: hidden from every seated/spectator color (including Storyteller).
+--- @return string[]
+local function parkedVisibilityColors()
+    return allViewerColorsForInvisibility()
+end
+
+--- @param guid string|nil
+--- @return boolean
+local function catalogHasHiddenVisibilityEntry(guid)
+    return U.Type(guid) == "string"
+        and guid ~= ""
+        and U.Type(C.HiddenObjects) == "table"
+        and U.Type(C.HiddenObjects[guid]) == "table"
+end
+
+--- Active visibility to store before parking (restore fallback when not in `C.HiddenObjects`).
+--- @param guid string
+--- @return string[]
+local function snapshotActiveVisibilityForHide(guid)
+    return U.clone(O.activeVisibilityForGuid(guid), false)
+end
+
+--- @param guid string|nil
+--- @param opts table
+--- @param snap table|nil
+--- @return string[]
+local function resolveRestoreInvisibleTo(guid, opts, snap)
+    if type(opts.invisibleTo) == "table" then
+        return opts.invisibleTo
+    end
+    if catalogHasHiddenVisibilityEntry(guid) then
+        return O.activeVisibilityForGuid(guid)
+    end
+    if type(snap) == "table" and type(snap.invisibleTo) == "table" then
+        return snap.invisibleTo
+    end
+    return {}
+end
+
+--- @return table
+local function hiddenObjectsMap()
+    local map = S.getStateVal("hiddenObjects")
+    if U.Type(map) ~= "table" then
+        map = {}
+        S.setStateVal(map, "hiddenObjects")
+    end
+    return map
+end
+
+--- @param pos table|userdata|nil
+--- @return table|nil
+local function copyPosition(pos)
+    if pos == nil then
+        return nil
+    end
+    if type(pos) == "userdata" or type(pos) == "table" then
+        local x = pos.x
+        local y = pos.y
+        local z = pos.z
+        if type(x) == "number" and type(y) == "number" and type(z) == "number" then
+            return { x = x, y = y, z = z }
+        end
+    end
+    return nil
+end
+
+--- @param pos table|userdata|nil
+--- @return table|nil
+local function copyRotation(pos)
+    if pos == nil then
+        return nil
+    end
+    if type(pos) == "userdata" or type(pos) == "table" then
+        local x = pos.x
+        local y = pos.y
+        local z = pos.z
+        if type(x) == "number" and type(y) == "number" and type(z) == "number" then
+            return { x = x, y = y, z = z }
+        end
+    end
+    return nil
+end
+
+--- @param y number|nil
+--- @return boolean
+local function yLooksParked(y)
+    local n = tonumber(y)
+    return n ~= nil and n <= HIDDEN_Y_THRESHOLD
+end
+
+--- @param obj Object
+--- @return string|nil
+local function objectGuid(obj)
+    if not U.isGameObject(obj) or obj.getGUID == nil then
+        return nil
+    end
+    local guid = obj.getGUID()
+    if U.Type(guid) ~= "string" or guid == "" then
+        return nil
+    end
+    return guid
+end
+
+--- @param obj Object
+--- @param isParking boolean
+--- @param resolved table { position?, rotation?, locked?, interactable?, invisibleTo? }
+local function applyHideProtocol(obj, isParking, resolved)
+    if not U.isGameObject(obj) then
+        return false
+    end
+    resolved = type(resolved) == "table" and resolved or {}
+
+    if isParking then
+        if type(resolved.position) == "table" and obj.setPosition ~= nil then
+            obj.setPosition(resolved.position)
+        end
+        if type(resolved.rotation) == "table" and obj.setRotation ~= nil then
+            obj.setRotation(resolved.rotation)
+        end
+        if obj.setLock ~= nil then
+            obj.setLock(true)
+        end
+        obj.interactable = false
+        if obj.setInvisibleTo ~= nil then
+            obj.setInvisibleTo(parkedVisibilityColors())
+        end
+        if obj.addTag ~= nil then
+            obj.addTag(O.HIDDEN_OBJECT_TAG)
+        end
+        return true
+    end
+
+    if type(resolved.position) == "table" and obj.setPosition ~= nil then
+        obj.setPosition(resolved.position)
+    end
+    if type(resolved.rotation) == "table" and obj.setRotation ~= nil then
+        obj.setRotation(resolved.rotation)
+    end
+    if type(resolved.locked) == "boolean" and obj.setLock ~= nil then
+        obj.setLock(resolved.locked)
+    end
+    if type(resolved.interactable) == "boolean" then
+        obj.interactable = resolved.interactable
+    end
+    if obj.setInvisibleTo ~= nil then
+        obj.setInvisibleTo(type(resolved.invisibleTo) == "table" and resolved.invisibleTo or {})
+    end
+    if obj.removeTag ~= nil and obj.hasTag ~= nil and obj.hasTag(O.HIDDEN_OBJECT_TAG) then
+        obj.removeTag(O.HIDDEN_OBJECT_TAG)
+    end
+    return true
+end
+
+--- @param obj Object
+--- @param opts table|nil
+--- @return table|nil snapshot row written
+local function writeHideSnapshot(obj, opts)
+    opts = type(opts) == "table" and opts or {}
+    local guid = objectGuid(obj)
+    if guid == nil then
+        return nil
+    end
+    local map = hiddenObjectsMap()
+    local row = map[guid]
+    if U.Type(row) ~= "table" then
+        row = {}
+        map[guid] = row
+    end
+
+    local livePos = copyPosition(obj.getPosition and obj.getPosition() or nil)
+    local snapPos = copyPosition(opts.snapshotPosition)
+    if snapPos == nil and livePos ~= nil and not yLooksParked(livePos.y) and row.position == nil then
+        snapPos = livePos
+    end
+    -- When live Y is already parked: omit position (never snapshot -200); still refresh lock/interactable.
+
+    if snapPos ~= nil then
+        if row.position == nil or opts.refreshSnapshotPosition == true then
+            row.position = snapPos
+        end
+    end
+    if row.invisibleTo == nil then
+        row.invisibleTo = snapshotActiveVisibilityForHide(guid)
+    end
+    row.interactable = obj.interactable == true
+    if obj.getLock ~= nil then
+        row.locked = obj.getLock() == true
+    end
+    return row
+end
+
+--- @param guid string
+local function clearHideSnapshot(guid)
+    if U.Type(guid) ~= "string" or guid == "" then
+        return
+    end
+    local map = hiddenObjectsMap()
+    map[guid] = nil
+end
+
+--- Park object at `y = C.HIDDEN_OBJECT_WORLD_Y` with lock / non-interactable / parked visibility.
+--- @param obj Object|nil
+--- @param opts table|nil `{ parkPosition?, parkRotation?, snapshotPosition? }`
+--- @return boolean
+function O.hideObject(obj, opts)
+    if not U.isGameObject(obj) then
+        return false
+    end
+    opts = type(opts) == "table" and opts or {}
+
+    writeHideSnapshot(obj, opts)
+
+    local livePos = copyPosition(obj.getPosition and obj.getPosition() or nil)
+    local park = copyPosition(opts.parkPosition)
+    if park == nil and livePos ~= nil and not yLooksParked(livePos.y) then
+        park = { x = livePos.x, y = HIDDEN_Y, z = livePos.z }
+    end
+    if park ~= nil and livePos ~= nil then
+        local sameY = yLooksParked(livePos.y) and yLooksParked(park.y)
+        local sameXz = math.abs((livePos.x or 0) - (park.x or 0)) < 0.01
+            and math.abs((livePos.z or 0) - (park.z or 0)) < 0.01
+        if sameY and sameXz then
+            park = nil
+        end
+    end
+    local parkRot = copyRotation(opts.parkRotation)
+
+    applyHideProtocol(obj, true, {
+        position = park,
+        rotation = parkRot,
+    })
+    return true
+end
+
+--- Reveal object: restore pose/lock/interactable; active visibility from `C.HiddenObjects`.
+--- @param obj Object|nil
+--- @param opts table|nil `{ position?, rotation?, locked?, interactable? }`
+--- @return boolean
+function O.restoreObject(obj, opts)
+    if not U.isGameObject(obj) then
+        return false
+    end
+    opts = type(opts) == "table" and opts or {}
+    local guid = objectGuid(obj)
+    local snap = guid ~= nil and hiddenObjectsMap()[guid] or nil
+
+    local pos = copyPosition(opts.position)
+    if pos == nil and type(snap) == "table" then
+        pos = copyPosition(snap.position)
+    end
+
+    local rot = copyRotation(opts.rotation)
+
+    local locked = opts.locked
+    if locked == nil and type(snap) == "table" and type(snap.locked) == "boolean" then
+        locked = snap.locked
+    end
+
+    local interactable = opts.interactable
+    if interactable == nil and guid ~= nil and O.isLockedObjectGuid(guid) then
+        interactable = false
+    end
+    if interactable == nil and type(snap) == "table" and type(snap.interactable) == "boolean" then
+        interactable = snap.interactable
+    end
+    if interactable == nil then
+        interactable = true
+    end
+
+    local invisibleTo = resolveRestoreInvisibleTo(guid, opts, snap)
+
+    applyHideProtocol(obj, false, {
+        position = pos,
+        rotation = rot,
+        locked = locked,
+        interactable = interactable,
+        invisibleTo = invisibleTo,
+    })
+
+    if guid ~= nil then
+        clearHideSnapshot(guid)
+    end
+    return true
+end
+
+--- While tagged HiddenObject, layout may move X/Z — keep snapshot position in sync.
+--- @param obj Object|nil
+function O.noteHiddenObjectWorldXZ(obj)
+    if not O.isHiddenObject(obj) then
+        return
+    end
+    local guid = objectGuid(obj)
+    if guid == nil or obj.getPosition == nil then
+        return
+    end
+    local map = hiddenObjectsMap()
+    local row = map[guid]
+    if U.Type(row) ~= "table" then
+        return
+    end
+    local live = copyPosition(obj.getPosition())
+    if live == nil then
+        return
+    end
+    if U.Type(row.position) ~= "table" then
+        row.position = { x = live.x, y = live.y, z = live.z }
+    else
+        row.position.x = live.x
+        row.position.z = live.z
+        if not yLooksParked(row.position.y) then
+            row.position.y = live.y
+        end
+    end
+end
+
+--- Copy hide snapshot from one GUID to another (multi-state figurine setState).
+--- @param fromGuid string
+--- @param toGuid string
+function O.transferHideSnapshot(fromGuid, toGuid)
+    if U.Type(fromGuid) ~= "string" or U.Type(toGuid) ~= "string" or fromGuid == "" or toGuid == "" then
+        return
+    end
+    local map = hiddenObjectsMap()
+    if map[fromGuid] ~= nil then
+        map[toGuid] = U.clone(map[fromGuid], true)
+        map[fromGuid] = nil
+    end
+end
+
+-- ============================================================================
 -- SIGNAL FIRE FUNCTIONS
 -- ============================================================================
+
+--- @return boolean
+local function isScatterSeatLayoutActive()
+    local scatterKey = (C.Scatter and C.Scatter.TABLE_KEY) or "Scatter"
+    local tableKey = S.getStateVal("seatLayout", "currentTableKey")
+    if tableKey == scatterKey then
+        return true
+    end
+    return S.getStateVal("sessionScene", "placementMode") == "scatter"
+end
+
+--- @return table|nil
+local function signalFireObjectPositionsEntry()
+    local positions = C.ObjectPositions
+    if U.Type(positions) ~= "table" then
+        return nil
+    end
+    local entry = positions.SIGNAL_FIRE
+    if U.Type(entry) ~= "table" then
+        return nil
+    end
+    return entry
+end
+
+--- @return number onY, number offY
+local function signalFireThresholdY()
+    local entry = signalFireObjectPositionsEntry()
+    local onY = 7.85
+    local offY = HIDDEN_Y
+    if type(entry) == "table" then
+        local onPose = entry.on
+        local offPose = entry.off
+        if type(onPose) == "table" and type(onPose.position) == "table" and type(onPose.position.y) == "number" then
+            onY = onPose.position.y
+        end
+        if type(offPose) == "table" and type(offPose.position) == "table" and type(offPose.position.y) == "number" then
+            offY = offPose.position.y
+        end
+    end
+    return onY, offY
+end
+
+--- @param color string
+--- @return Object|nil
+local function getPcFigurineObject(color)
+    if U.Type(color) ~= "string" then
+        return nil
+    end
+    local guid = G.GUIDS and G.GUIDS["SEAT_FIGURE_" .. string.upper(color)]
+    if type(guid) == "string" and guid ~= "" then
+        local obj = G.getObject(guid)
+        if obj ~= nil then
+            return obj
+        end
+    end
+    local tag = color .. "Object"
+    local tagged = getObjectsWithTag(tag) or {}
+    for i = 1, #tagged do
+        local obj = tagged[i]
+        if obj ~= nil and U.isGameObject(obj) then
+            local disp = SRI.readRoleColorIdentity(obj)
+            if disp ~= nil and SRI.parseRoleAndSuffix(disp) == "SEAT_FIGURE" then
+                return obj
+            end
+        end
+    end
+    return nil
+end
+
+--- @param color string
+--- @return Object|nil
+local function findSignalFireByTag(color)
+    local tag = color .. "Object"
+    local tagged = getObjectsWithTag(tag) or {}
+    for i = 1, #tagged do
+        local obj = tagged[i]
+        if obj ~= nil and U.isGameObject(obj) then
+            local disp = SRI.readRoleColorIdentity(obj)
+            if disp ~= nil and SRI.parseRoleAndSuffix(disp) == "SIGNAL_FIRE" then
+                return obj
+            end
+        end
+    end
+    return nil
+end
+
+--- @param color string
+--- @param roleKey string
+--- @return table|nil
+local function lookupPlayerRoleOffset(color, roleKey)
+    local pack = C.SeatRoleOffsets
+    if U.Type(pack) ~= "table" then
+        return nil
+    end
+    if U.Type(color) == "string" and U.Type(pack.extraByOccupant) == "table" then
+        local extra = pack.extraByOccupant[color]
+        if U.Type(extra) == "table" and extra[roleKey] ~= nil then
+            return extra[roleKey]
+        end
+    end
+    if U.Type(pack.player) == "table" and pack.player[roleKey] ~= nil then
+        return pack.player[roleKey]
+    end
+    if U.Type(pack.shared) == "table" and pack.shared[roleKey] ~= nil then
+        return pack.shared[roleKey]
+    end
+    return nil
+end
+
+--- XZ from figurine frame; Y stays authored defaultY (table-top), even in Scatter (figurines sit lower).
+--- @param figurine Object
+--- @param offset table
+--- @param roleKey string|nil
+--- @return table|nil
+local function worldFromFigurineForRole(figurine, offset, roleKey)
+    if figurine == nil or U.Type(offset) ~= "table" then
+        return nil
+    end
+    local localXZ = offset.localXZ or { x = 0, z = 0 }
+    local lx = tonumber(localXZ.x) or 0
+    local lz = tonumber(localXZ.z) or 0
+    local world
+    if type(figurine.positionToWorld) == "function" then
+        world = figurine.positionToWorld(Vector({ x = lx, y = 0, z = lz }))
+    else
+        local pos = figurine.getPosition and figurine.getPosition() or nil
+        local rot = figurine.getRotation and figurine.getRotation() or nil
+        if pos == nil then
+            return nil
+        end
+        local yaw = math.rad(tonumber(rot and rot.y) or 0)
+        local c = math.cos(yaw)
+        local s = math.sin(yaw)
+        world = Vector({
+            x = pos.x + lx * c + lz * s,
+            y = pos.y,
+            z = pos.z - lx * s + lz * c,
+        })
+    end
+    if world == nil then
+        return nil
+    end
+    local y = tonumber(offset.defaultY)
+    if y == nil then
+        y = world.y
+    end
+    return { x = world.x, y = y, z = world.z }
+end
+
+--- @param color string
+--- @return table|nil
+local function signalFireOnPositionForColor(color)
+    local figurine = getPcFigurineObject(color)
+    local offset = lookupPlayerRoleOffset(color, "SIGNAL_FIRE")
+    if figurine == nil or offset == nil then
+        return nil
+    end
+    return worldFromFigurineForRole(figurine, offset, "SIGNAL_FIRE")
+end
+
+--- @param color string
+--- @return table|nil
+local function signalFireOnRotationForColor(color)
+    local figurine = getPcFigurineObject(color)
+    local offset = lookupPlayerRoleOffset(color, "SIGNAL_FIRE")
+    if figurine == nil or offset == nil or figurine.getRotation == nil then
+        return nil
+    end
+    local fr = figurine.getRotation()
+    local lr = offset.localRotation or { x = 0, y = 0, z = 0 }
+    return {
+        x = (tonumber(fr.x) or 0) + (tonumber(lr.x) or 0),
+        y = (tonumber(fr.y) or 0) + (tonumber(lr.y) or 0),
+        z = (tonumber(fr.z) or 0) + (tonumber(lr.z) or 0),
+    }
+end
+
+--- Prefer hide snapshot, then figurine XZ + authored on-Y, then table on-Y fallback.
+--- @param color string
+--- @param fire Object
+--- @return table|nil
+local function resolveSignalFireOnPosition(color, fire)
+    local guid = objectGuid(fire)
+    if guid ~= nil then
+        local snap = hiddenObjectsMap()[guid]
+        if U.Type(snap) == "table" and U.Type(snap.position) == "table" then
+            local snapPos = copyPosition(snap.position)
+            if snapPos ~= nil and not yLooksParked(snapPos.y) then
+                local onPos = signalFireOnPositionForColor(color)
+                local floorY = tonumber(C.Scatter and C.Scatter.FLOOR_Y) or -52.89
+                if isScatterSeatLayoutActive() and onPos ~= nil
+                    and snapPos.y <= floorY + 10
+                    and onPos.y > floorY + 10 then
+                    -- Stale figurine-plane snapshot — prefer table-top on pose beside figurine.
+                else
+                    return snapPos
+                end
+            end
+        end
+    end
+
+    local fromFig = signalFireOnPositionForColor(color)
+    if fromFig ~= nil then
+        return fromFig
+    end
+
+    local entry = signalFireObjectPositionsEntry()
+    if entry == nil then
+        return nil
+    end
+    local resolvedPose = OP.resolveStatePose(fire, entry, "on")
+    if not resolvedPose or type(resolvedPose.position) ~= "table" then
+        return nil
+    end
+    return copyPosition(OP.mergePosition(fire, resolvedPose.position))
+end
 
 --- Resolves a player's signal fire object.
 -- @param color string Player color (e.g., "Brown", "Orange", "Red", "Pink", "Purple")
@@ -354,6 +935,9 @@ local function getSignalFireObject(color)
 
     local fire = G.getObject(guid)
     if fire == nil then
+        fire = findSignalFireByTag(color)
+    end
+    if fire == nil then
         U.AlertGM(string.format("O.getSignalFireObject: Signal fire not found for color: %s", color))
         return nil
     end
@@ -371,9 +955,24 @@ function O.GetSignalFireState(color)
         return nil
     end
 
-    local currentY = fire.getPosition().y
-    local onY = C.ObjectPositions.SIGNAL_FIRE.on.position.y
-    local offY = C.ObjectPositions.SIGNAL_FIRE.off.position.y
+    if O.isHiddenObject(fire) then
+        return "off"
+    end
+
+    local pos = fire.getPosition and fire.getPosition() or nil
+    local currentY = (type(pos) == "userdata" or type(pos) == "table") and pos.y or nil
+    if type(currentY) ~= "number" then
+        return nil
+    end
+
+    if isScatterSeatLayoutActive() then
+        if yLooksParked(currentY) then
+            return "off"
+        end
+        return "on"
+    end
+
+    local onY, offY = signalFireThresholdY()
     local midpointY = (onY + offY) / 2
 
     if currentY >= midpointY then
@@ -397,13 +996,46 @@ function O.SetSignalFireState(color, state, duration)
         return false
     end
 
-    local resolvedPose = OP.resolveStatePose(fire, C.ObjectPositions.SIGNAL_FIRE, state)
-    if not resolvedPose or type(resolvedPose.position) ~= "table" then
+    if state == "off" then
+        local onPos = signalFireOnPositionForColor(color)
+        if onPos ~= nil then
+            return O.hideObject(fire, {
+                snapshotPosition = onPos,
+                refreshSnapshotPosition = true,
+            })
+        end
+        return O.hideObject(fire)
+    end
+    if state ~= "on" then
         U.AlertGM(string.format("O.SetSignalFireState: Invalid state: %s", tostring(state)))
         return false
     end
 
-    OP.applyResolvedPose(fire, resolvedPose, duration, 0)
+    local targetPos = resolveSignalFireOnPosition(color, fire)
+    if targetPos == nil then
+        U.AlertGM(string.format("O.SetSignalFireState: Invalid on pose for color: %s", tostring(color)))
+        return false
+    end
+
+    local targetRot = signalFireOnRotationForColor(color)
+    local restoreOpts = {
+        position = targetPos,
+        locked = false,
+        interactable = false,
+    }
+    if targetRot ~= nil then
+        restoreOpts.rotation = targetRot
+    end
+
+    if duration > 0 then
+        local live = copyPosition(fire.getPosition and fire.getPosition() or nil)
+        local startY = live and live.y or HIDDEN_Y
+        restoreOpts.position = { x = targetPos.x, y = startY, z = targetPos.z }
+        O.restoreObject(fire, restoreOpts)
+        U.setPositionSlow(fire, Vector(targetPos), duration, nil, false)
+    else
+        O.restoreObject(fire, restoreOpts)
+    end
 
     return true
 end
@@ -453,13 +1085,29 @@ function O.SetHungerSmokeState(color, state, duration)
         return false
     end
 
-    local resolvedPose = OP.resolveStatePose(smoke, C.ObjectPositions.HUNGER_SMOKE, state)
-    if not resolvedPose or type(resolvedPose.position) ~= "table" then
+    if state == "off" then
+        return O.hideObject(smoke)
+    end
+    if state ~= "on" then
         U.AlertGM("O.SetHungerSmokeState: Invalid state: " .. tostring(state))
         return false
     end
 
-    OP.applyResolvedPose(smoke, resolvedPose, duration, 0)
+    local resolvedPose = OP.resolveStatePose(smoke, C.ObjectPositions.HUNGER_SMOKE, "on")
+    if not resolvedPose or type(resolvedPose.position) ~= "table" then
+        U.AlertGM("O.SetHungerSmokeState: Invalid on pose for color: " .. tostring(color))
+        return false
+    end
+
+    local targetPos = OP.mergePosition(smoke, resolvedPose.position)
+    if duration > 0 then
+        local live = copyPosition(smoke.getPosition())
+        local startY = live and live.y or HIDDEN_Y
+        O.restoreObject(smoke, { position = { x = targetPos.x, y = startY, z = targetPos.z } })
+        U.setPositionSlow(smoke, targetPos, duration, nil, false)
+    else
+        O.restoreObject(smoke, { position = targetPos })
+    end
 
     return true
 end

@@ -226,25 +226,68 @@ local function applyCsheetRootActiveOnObject(obj, show)
   obj.UI.setAttribute(CSHEET_ROOT_PANEL_ID, "active", a)
 end
 
---- Apply visibility side-effects for current placement (without moving object).
---- @param obj any
+--- @param obj Object|nil
+--- @return string|nil
+local function csheetObjectGuid(obj)
+  if obj == nil or type(obj.getGUID) ~= "function" then
+    return nil
+  end
+  local guid = obj.getGUID()
+  if type(guid) ~= "string" or guid == "" then
+    return nil
+  end
+  return guid
+end
+
+--- Lock, invisibility, HiddenObject tag, and interactable — Global hide/restore only.
+--- @param obj Object|nil
 --- @param visible boolean
-local function applyCsheetVisibilityForCurrentPlacement(obj, visible)
-  if obj == nil then
+local function applyCsheetHideOrRestore(obj, visible)
+  local guid = csheetObjectGuid(obj)
+  if guid == nil or Global == nil or type(Global.call) ~= "function" then
     return
   end
-  obj.interactable = visible
   if visible then
-    obj.setInvisibleTo({})
+    Global.call("GlobalRestoreObject", { guid = guid, interactable = true })
   else
-    obj.setInvisibleTo({"Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey"})
+    Global.call("GlobalHideObject", { guid = guid })
   end
-  applyCsheetNavButtonsActiveOnObject(obj, visible)
-  applyCsheetRootActiveOnObject(obj, visible)
+end
+
+--- XmlUI presentation only (nav clicks / root panel); no world visibility or lock.
+--- @param obj Object|nil
+--- @param show boolean
+local function applyCsheetXmlUiActive(obj, show)
+  applyCsheetNavButtonsActiveOnObject(obj, show)
+  applyCsheetRootActiveOnObject(obj, show)
+end
+
+--- After pose or on load: hide/restore world state, then sheet XmlUI active flags.
+--- @param obj Object|nil
+--- @param visible boolean
+local function applyCsheetAfterPlacement(obj, visible)
+  applyCsheetHideOrRestore(obj, visible)
+  applyCsheetXmlUiActive(obj, visible)
+end
+
+--- Pose fields that move geometry only; hide/restore runs after the move via Global.
+--- @param posData table
+--- @return table
+local function csheetPoseGeometryOnly(posData)
+  return {
+    position = posData.position,
+    rotation = posData.rotation,
+    scale = posData.scale,
+    isLocked = posData.isLocked,
+    duration = posData.duration,
+    delay = posData.delay,
+    transitionDuration = posData.transitionDuration,
+    transitionDelay = posData.transitionDelay,
+  }
 end
 
 --- Instant Y (and any other axis) move for a character sheet page — no smoothing.
---- `interactable` and nav `active` follow final y (>= 0 visible convention).
+--- Hide/restore via `applyCsheetAfterPlacement` after the pose settles (same path as onLoad).
 --- @param obj Object
 --- @param state string `"on"` or `"off"`
 --- @return boolean
@@ -260,16 +303,9 @@ local function applyCsheetPageState(obj, state)
   local targetPos = CP.mergePosition(obj, posData.position)
   local visible = (targetPos.y >= 0)
   local duration, delay = CP.resolveTransitionTiming(posData, 0, 0)
-  CP.applyResolvedPose(obj, posData, 0, 0)
+  CP.applyResolvedPose(obj, csheetPoseGeometryOnly(posData), 0, 0)
   CU.await(function()
-    obj.interactable = visible
-    if visible then
-      obj.setInvisibleTo({})
-    else
-      obj.setInvisibleTo({"Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey"})
-    end
-    applyCsheetNavButtonsActiveOnObject(obj, visible)
-    applyCsheetRootActiveOnObject(obj, visible)
+    applyCsheetAfterPlacement(obj, visible)
   end, delay + duration)
   return true
 end
@@ -380,9 +416,7 @@ local function applyCsheetLayoutFromFirstSpread()
   local vis = (targetY >= 0)
   self.setPosition(Vector(p.x, targetY, p.z))
   self.setRotation(Vector(r.x, r.y, r.z))
-  self.interactable = vis
-  applyCsheetNavButtonsActiveOnObject(self, vis)
-  applyCsheetRootActiveOnObject(self, vis)
+  applyCsheetAfterPlacement(self, vis)
   self.addTag(CSHEET_ALIGNMENT_DONE_TAG)
 end
 
@@ -702,12 +736,10 @@ function CSHEET.onLoad()
   local disableThresholdY = getCsheetDisableThresholdY()
   local py = self.getPosition().y
   local visible = (py >= disableThresholdY)
-  applyCsheetVisibilityForCurrentPlacement(self, visible)
+  applyCsheetAfterPlacement(self, visible)
   -- XML may not be ready on frame 0; re-apply nav `active` once UI exists.
   Wait.frames(function()
-    local y = self.getPosition().y
-    local isVisible = (y >= disableThresholdY)
-    applyCsheetVisibilityForCurrentPlacement(self, isVisible)
+    applyCsheetXmlUiActive(self, self.getPosition().y >= disableThresholdY)
   end, 1)
 
   if not sheetHasAlignmentDoneTag() then
@@ -723,12 +755,12 @@ function CSHEET.onLoad()
     pushTrackerDisplayToGlobal()
     refreshCharacterSheetUi()
     local y = self.getPosition().y
-    applyCsheetVisibilityForCurrentPlacement(self, y >= disableThresholdY)
+    applyCsheetAfterPlacement(self, y >= disableThresholdY)
   end, 3)
   Wait.frames(function()
     refreshCharacterSheetUi()
     local y = self.getPosition().y
-    applyCsheetVisibilityForCurrentPlacement(self, y >= disableThresholdY)
+    applyCsheetAfterPlacement(self, y >= disableThresholdY)
   end, 30)
 end
 

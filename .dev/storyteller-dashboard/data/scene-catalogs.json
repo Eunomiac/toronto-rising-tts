@@ -91,20 +91,6 @@
       ]
     },
     {
-      "characterKey": "agnesBellanger",
-      "fullName": "Agnes Bellanger",
-      "isPC": false,
-      "groups": [
-        "memoriam"
-      ],
-      "groupRanks": {
-        "memoriam": 1
-      },
-      "pickerGroups": [
-        "memoriam"
-      ]
-    },
-    {
       "characterKey": "bertrice",
       "fullName": "Bertrice",
       "isPC": false,
@@ -287,20 +273,6 @@
       ]
     },
     {
-      "characterKey": "jervaisDeLaCroix",
-      "fullName": "Jervais de la Croix",
-      "isPC": false,
-      "groups": [
-        "memoriam"
-      ],
-      "groupRanks": {
-        "memoriam": 2
-      },
-      "pickerGroups": [
-        "memoriam"
-      ]
-    },
-    {
       "characterKey": "jezdimirDucheski",
       "fullName": "Jezdimir Ducheski",
       "isPC": false,
@@ -354,20 +326,6 @@
       },
       "pickerGroups": [
         "jarvisJacks"
-      ]
-    },
-    {
-      "characterKey": "ladyAvelineDubois",
-      "fullName": "Lady Aveline Dubois",
-      "isPC": false,
-      "groups": [
-        "memoriam"
-      ],
-      "groupRanks": {
-        "memoriam": 3
-      },
-      "pickerGroups": [
-        "memoriam"
       ]
     },
     {

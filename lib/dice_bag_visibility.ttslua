@@ -11,8 +11,9 @@ local DK = require("lib.dice_kinds")
 local G = require("lib.guids")
 local C = require("lib.constants")
 local S = require("core.state")
+local O = require("core.objects")
 
-DBV.DISABLED_Y = -200
+DBV.DISABLED_Y = C.HIDDEN_OBJECT_WORLD_Y
 --- World Y above this threshold means the bag is already active (visible at rest).
 DBV.ACTIVE_Y_THRESHOLD = -100
 
@@ -105,6 +106,9 @@ local function isBagActiveAtRest(bag)
     if bag == nil or bag.getPosition == nil then
         return false
     end
+    if O.isHiddenObject(bag) then
+        return false
+    end
     local pos = bag.getPosition()
     return type(pos) == "table"
         and type(pos.y) == "number"
@@ -150,7 +154,10 @@ local function setBagEnabled(guid, enabled, color)
         if type(pos) ~= "table" or type(pos.x) ~= "number" or type(pos.z) ~= "number" then
             return
         end
-        bag.setPosition({ x = pos.x, y = restY, z = pos.z })
+        O.restoreObject(bag, {
+            position = { x = pos.x, y = restY, z = pos.z },
+            locked = true,
+        })
         ensureBagLocked(bag)
     else
         cacheRestY(guid, bag)
@@ -163,7 +170,12 @@ local function setBagEnabled(guid, enabled, color)
         if type(pos) ~= "table" or type(pos.x) ~= "number" or type(pos.z) ~= "number" then
             return
         end
-        bag.setPosition({ x = pos.x, y = DBV.DISABLED_Y, z = pos.z })
+        local restY = restYByGuid[guid]
+        local snap = nil
+        if type(restY) == "number" then
+            snap = { x = pos.x, y = restY, z = pos.z }
+        end
+        O.hideObject(bag, { snapshotPosition = snap })
         ensureBagLocked(bag)
     end
 end

@@ -29,6 +29,7 @@ This project has **long-running** Tabletop Simulator systems (dice, roll pipelin
 | Shipping: commit message + PR body should match repo standards | **Git / PR** skills (`git-commit`, `git-commit-push-pr`, `ce-pr-description`): align with `AGENTS.md` and `.cursor/rules/toronto-rising-git.mdc` (Linear refs, clear narrative). |
 | After solving a non-obvious bug or pattern worth remembering | **Compound learnings** (`ce:compound` / `cecompound-refresh` when applicable): capture in `docs/solutions/` if that tree exists and the repo uses it. |
 | **Any Lua edit** (especially `global_script`, `npc_gameboard`, `npcs`) | **Mandatory:** [`.cursor/rules/toronto-rising-lua-local-function-order.mdc`](../../../.cursor/rules/toronto-rising-lua-local-function-order.mdc) + [`lua-local-function-order.md`](../../../docs/solutions/lua-local-function-order.md) — `#1 nil-call bug`; locals **before** callers; forward-declare if needed; build does not catch. |
+| **Hide / reveal / stash at y = -200** | **Mandatory:** [`.cursor/rules/toronto-rising-hide-restore.mdc`](../../../.cursor/rules/toronto-rising-hide-restore.mdc) + [`lua-hide-restore-policy.md`](../../../docs/solutions/lua-hide-restore-policy.md) — `O.hideObject` / `O.restoreObject` only; object VMs → `GlobalHideObject` / `GlobalRestoreObject`. |
 
 ## Proportionality
 

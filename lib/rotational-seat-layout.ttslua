@@ -36,6 +36,7 @@ local TarotObjects = require("lib.tarot_objects")
 local CompulsionObjects = require("lib.compulsion_objects")
 local G = require("lib.guids")
 local FSL = require("lib.figurine_seat_layout")
+local O = require("core.objects")
 
 --- Lazy load: core.debug is large; only needed for workspace file export helpers.
 --- @return table
@@ -619,11 +620,17 @@ local function reconcileCsheetPageVisibilityFromY(obj)
     return
   end
   local visible = y >= 0
-  obj.interactable = visible
   if visible then
-    obj.setInvisibleTo({})
+    if O.isHiddenObject(obj) then
+      local pos = obj.getPosition()
+      local restorePos = nil
+      if type(pos) == "userdata" or type(pos) == "table" then
+        restorePos = { x = pos.x, y = pos.y, z = pos.z }
+      end
+      O.restoreObject(obj, { position = restorePos, interactable = true })
+    end
   else
-    obj.setInvisibleTo({ "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" })
+    O.hideObject(obj)
   end
 end
 
@@ -645,9 +652,50 @@ local function reconcileSignalFireVisibilityFromY(obj)
     and tonumber(entry.off.position.y) or -200
   local midpointY = (onY + offY) / 2
   if y >= midpointY then
-    obj.setInvisibleTo({})
+    if O.isHiddenObject(obj) then
+      local pos = obj.getPosition()
+      local restorePos = nil
+      if type(pos) == "userdata" or type(pos) == "table" then
+        restorePos = { x = pos.x, y = pos.y, z = pos.z }
+      end
+      O.restoreObject(obj, { position = restorePos })
+    end
   else
-    obj.setInvisibleTo({ "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey", "Black" })
+    O.hideObject(obj)
+  end
+end
+
+--- CSHEET pages and signal fires keep per-seat Y as state; on load they may already be at y = -200
+--- without ever passing through a layout move — refresh hide/restore from live Y for one seat.
+--- @param seatKey string
+local function reconcileYStateSeatObjectVisibilityForSeat(seatKey)
+  if U.Type(seatKey) ~= "string" or seatKey == "" then
+    return
+  end
+  local tag = objectTagForPlayerColor(seatKey)
+  local tagged = getObjectsWithTag(tag) or {}
+  for _, obj in ipairs(tagged) do
+    if obj ~= nil and U.isGameObject(obj) then
+      local disp = SRI.readRoleColorIdentity(obj)
+      if type(disp) == "string" then
+        local roleKey = SRI.parseRoleAndSuffix(disp)
+        if isCsheetPageRoleKey(roleKey) then
+          reconcileCsheetPageVisibilityFromY(obj)
+        elseif roleKey == "SIGNAL_FIRE" then
+          reconcileSignalFireVisibilityFromY(obj)
+        end
+      end
+    end
+  end
+end
+
+--- Cold-load + layout tail: apply CSHEET / SIGNAL_FIRE hide protocol from world Y for every seat.
+function M.reconcileYStateSeatObjectVisibilityFromWorld()
+  for i = 1, #(C.PlayerColors or {}) do
+    reconcileYStateSeatObjectVisibilityForSeat(C.PlayerColors[i])
+  end
+  for i = 1, #(C.NPCSeats or {}) do
+    reconcileYStateSeatObjectVisibilityForSeat(C.NPCSeats[i])
   end
 end
 
@@ -2722,10 +2770,22 @@ local function applyTableObjectState(obj, tableCfg, isActive)
   end
   ---@cast obj Object
   ---@cast tableCfg table
-  local targetPos = isActive and tableCfg.activePosition or tableCfg.inactivePosition
-  if targetPos ~= nil then
-    local p = Vector(targetPos)
-    obj.setPosition({ x = p.x, y = p.y, z = p.z })
+  if isActive then
+    local targetPos = tableCfg.activePosition
+    if targetPos ~= nil then
+      local p = Vector(targetPos)
+      O.restoreObject(obj, { position = { x = p.x, y = p.y, z = p.z } })
+    else
+      O.restoreObject(obj)
+    end
+  else
+    local targetPos = tableCfg.inactivePosition
+    local park = nil
+    if targetPos ~= nil then
+      local p = Vector(targetPos)
+      park = { x = p.x, y = p.y, z = p.z }
+    end
+    O.hideObject(obj, { parkPosition = park })
   end
   if obj.setColorTint ~= nil then
     if isActive then
@@ -2814,7 +2874,6 @@ local function enforceNPCSeatObjectVisibility(sourceObjects, occupiedNPCSlots, t
   local tableSeatPresence = collectSeatPresenceMap(targetTableCfg)
   local currentSeatPresence = collectSeatPresenceMap(currentTableCfg)
   local allLayerColors = getAllLayerColors()
-  local hiddenSeatY = -200
   local referenceColor, refKeyErr = M.resolveReferenceSeatKey(targetTableCfg)
   if U.Type(referenceColor) ~= "string" or referenceColor == "" then
     error("rotational-seat-layout: enforceNPCSeatObjectVisibility missing reference seat key: "
@@ -2849,20 +2908,20 @@ local function enforceNPCSeatObjectVisibility(sourceObjects, occupiedNPCSlots, t
           -- Never hide template source refs; they are needed for cloning.
           local isTemplateSource = templateGuidSet[guid] == true
           if NPCS.isPooledFigurineObject(obj) then
-            if visible and obj.setInvisibleTo ~= nil then
-              obj.setInvisibleTo({})
-            elseif not visible and obj.setInvisibleTo ~= nil then
-              obj.setInvisibleTo(allLayerColors)
+            if visible then
+              if O.isHiddenObject(obj) then
+                O.restoreObject(obj, { locked = true, interactable = false })
+              elseif obj.setInvisibleTo ~= nil then
+                obj.setInvisibleTo({})
+              end
+            else
+              O.hideObject(obj)
             end
           elseif not isTemplateSource then
             if visible then
-              obj.setInvisibleTo({})
+              O.restoreObject(obj)
             else
-              obj.setInvisibleTo(allLayerColors)
-              local p = obj.getPosition and obj.getPosition() or nil
-              if p ~= nil and obj.setPosition ~= nil then
-                obj.setPosition({ x = p.x, y = hiddenSeatY, z = p.z })
-              end
+              O.hideObject(obj)
             end
           end
         end
@@ -3545,6 +3604,7 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
     end
   end
   enforceNPCSeatObjectVisibility(src, occupiedNPCSlots, tableCfg, previousTableCfg)
+  M.reconcileYStateSeatObjectVisibilityFromWorld()
   local orchestratorActive = type(NPCS.isReconcileOrchestratorInProgress) == "function"
       and NPCS.isReconcileOrchestratorInProgress()
   local npcInstances = S.getStateVal("npcs", "instances")

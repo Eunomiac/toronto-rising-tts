@@ -5,7 +5,8 @@
     instead of fresh takeObject placeholder frames. Global orchestrates; dice bags claim
     via Global.call and return on destroy/remove.
 
-    Parked dice use tag `d10Preload` (not `d10`) for roll hot-path scans; layout guard ignores under-table y.
+    Parked dice use `O.hideObject` (lock, non-interactable, full invisibility, HiddenObject tag);
+    `DPP.claim` calls `O.restoreObject` before staging. Tag `d10Preload` (not `d10`) for roll scans.
     Pool grid anchors to each bag's world X/Z and follows table layout sync.
 ]]
 
@@ -15,6 +16,7 @@ local DPP = {}
 
 local G = require("lib.guids")
 local DK = require("lib.dice_kinds")
+local O = require("core.objects")
 
 --- Dice per bag — matches player MAX_DICE_PER_ARC headroom.
 local POOL_SIZE = 12
@@ -95,11 +97,12 @@ local function parkDie(die, bagGuid, slotIndex)
         return
     end
     local pos = parkPositionForBag(bagGuid, slotIndex)
-    die.setLock(true)
     die.script_state = DK.SCRIPT_STATE_PRELOAD_POOL
     DK.setDieTagsForPreloadPool(die)
-    die.setPosition(pos)
-    die.setRotation({ x = 0, y = 180, z = 0 })
+    O.hideObject(die, {
+        parkPosition = pos,
+        parkRotation = { x = 0, y = 180, z = 0 },
+    })
 end
 
 --- @param bagGuid string
@@ -238,6 +241,7 @@ function DPP.retagAllParked()
             for _, die in ipairs(stack) do
                 if die ~= nil then
                     DK.setDieTagsForPreloadPool(die)
+                    O.hideObject(die)
                 end
             end
         end
@@ -264,12 +268,7 @@ function DPP.repositionAllAfterLayout()
         if type(stack) == "table" then
             for slotIndex, die in ipairs(stack) do
                 if die ~= nil then
-                    local pos = parkPositionForBag(bagGuid, slotIndex)
-                    die.setLock(true)
-                    die.script_state = DK.SCRIPT_STATE_PRELOAD_POOL
-                    DK.setDieTagsForPreloadPool(die)
-                    die.setPosition(pos)
-                    die.setRotation({ x = 0, y = 180, z = 0 })
+                    parkDie(die, bagGuid, slotIndex)
                 end
             end
         end
@@ -297,6 +296,7 @@ function DPP.claim(bagGuid, position, rotation, scale)
         return nil
     end
     trackDie(die, bagGuid)
+    O.restoreObject(die, { locked = true, interactable = false })
     die.script_state = " "
     DK.setDieTagsForActivePlay(die)
     if type(scale) == "number" then

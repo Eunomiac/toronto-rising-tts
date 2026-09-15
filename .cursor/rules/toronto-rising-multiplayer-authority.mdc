@@ -35,7 +35,7 @@ Before marking work done:
 - [ ] ST-only paths use `isStorytellerSteamPlayer` on the event's player param; per-client UI uses XmlUI `visibility`.
 - [ ] Hot paths: O(1) tag/GUID guard before `require` / `Sync.*` (TOR-197).
 - [ ] Mutation → narrow `Sync.*`; no dual apply without fingerprint ([Dual-apply survey](../../.dev/Sychronizing%20Game%20Functionality/Dual_apply_survey.md)).
-- [ ] Object scripts route mutations via `Global.call`; no `require("core.*")`.
+- [ ] Object scripts route mutations via `Global.call`; no `require("core.*")` (hide/reveal → `GlobalHideObject` / `GlobalRestoreObject`, not `require("core.objects")`).
 - [ ] Event Listener Policy inventory updated if handlers added/changed.
 - [ ] Solo smoke if touching gameboard or rolls (Apply/Clear, one roll path); hotseat smoke if execution-model related; re-smoke Multiclient Session Script when changing join/seat/HUD visibility paths.
 

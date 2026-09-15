@@ -10,10 +10,11 @@
 local C = require("lib.constants")
 local G = require("lib.guids")
 local S = require("core.state")
+local O = require("core.objects")
 
 local CompanionToggle = {}
 
-local OFF_Y = -200
+local OFF_Y = C.HIDDEN_OBJECT_WORLD_Y
 local ON_Y = -1.03
 local ACTIVE_Y_MIN = -50
 
@@ -97,23 +98,17 @@ local function objY(obj)
     return pos.y
 end
 
---- @param obj Object|nil
---- @param y number
-local function setObjY(obj, y)
-    if obj == nil or type(y) ~= "number" then
-        return
-    end
-    local pos = obj.getPosition()
-    if type(pos) ~= "userdata" and type(pos) ~= "table" then
-        return
-    end
-    obj.setPosition({ x = pos.x, y = y, z = pos.z })
-end
-
 --- @param ownerColor string
 --- @return boolean
 local function isFigurineActive(ownerColor)
-    local y = objY(getFigurineObject(ownerColor))
+    local fig = getFigurineObject(ownerColor)
+    if fig == nil then
+        return false
+    end
+    if O.isHiddenObject(fig) then
+        return false
+    end
+    local y = objY(fig)
     return type(y) == "number" and y > ACTIVE_Y_MIN
 end
 
@@ -309,6 +304,7 @@ local function applyFigurineVisibility(ownerColor, active, state)
             .. " (check FAMULUS_FIGURINE_* state GUIDs)")
         return nil
     end
+    local priorGuid = type(fig.getGUID) == "function" and fig.getGUID() or nil
 
     if active == true then
         local curId = type(fig.getStateId) == "function" and fig.getStateId() or nil
@@ -319,10 +315,16 @@ local function applyFigurineVisibility(ownerColor, active, state)
             else
                 fig = G.getObject(map) or fig
             end
+            local newGuid = type(fig.getGUID) == "function" and fig.getGUID() or nil
+            if type(priorGuid) == "string" and type(newGuid) == "string" and priorGuid ~= newGuid then
+                O.transferHideSnapshot(priorGuid, newGuid)
+            end
         end
-        setObjY(fig, onY)
+        local p = fig.getPosition and fig.getPosition() or nil
+        local pos = type(p) == "table" and { x = p.x, y = onY, z = p.z } or { x = 0, y = onY, z = 0 }
+        O.restoreObject(fig, { position = pos })
     else
-        setObjY(fig, offY)
+        O.hideObject(fig)
     end
 
     persistActiveState(ownerColor, wantState)

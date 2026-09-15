@@ -164,12 +164,156 @@ D.SCATTER_BOARD = {
   whiteRadius = 0.028,
   orbitRadius = 0.078,
   areas = {
-    scatter1 = { origin = { u = 0.12, v = 0.52 }, calibrated = false },
-    scatter2 = { origin = { u = 0.38, v = 0.78 }, calibrated = false },
-    scatter3 = { origin = { u = 0.62, v = 0.78 }, calibrated = false },
-    scatter4 = { origin = { u = 0.88, v = 0.52 }, calibrated = false },
-    scatter5 = { origin = { u = 0.62, v = 0.32 }, calibrated = false },
-    scatter6 = { origin = { u = 0.38, v = 0.32 }, calibrated = false },
+    scatter1 = {
+      calibrated = true,
+      origin = { u = 0.1470, v = 0.5534 },
+      gold = { localX = -0.7060, localY = 0.2000, localZ = 0.1069, u = 0.1470, v = 0.5534 },
+      whites = {
+        { localX = -0.7526, localY = 0.2000, localZ = 0.2020, u = 0.1237, v = 0.6010 },
+        { localX = -0.6584, localY = 0.2000, localZ = 0.2000, u = 0.1708, v = 0.6000 },
+        { localX = -0.6594, localY = 0.2000, localZ = 0.0117, u = 0.1703, v = 0.5059 },
+        { localX = -0.7536, localY = 0.2000, localZ = 0.0137, u = 0.1232, v = 0.5069 }
+      },
+      npcHoles = {
+        { localX = -0.7049, localY = 0.2000, localZ = 0.4048, u = 0.1476, v = 0.7024 },
+        { localX = -0.6306, localY = 0.2000, localZ = 0.3637, u = 0.1847, v = 0.6819 },
+        { localX = -0.5765, localY = 0.2000, localZ = 0.2539, u = 0.2118, v = 0.6269 },
+        { localX = -0.5571, localY = 0.2000, localZ = 0.1046, u = 0.2215, v = 0.5523 },
+        { localX = -0.5776, localY = 0.2000, localZ = -0.0440, u = 0.2112, v = 0.4780 },
+        { localX = -0.6325, localY = 0.2000, localZ = -0.1522, u = 0.1837, v = 0.4239 },
+        { localX = -0.7071, localY = 0.2000, localZ = -0.1910, u = 0.1464, v = 0.4045 },
+        { localX = -0.7814, localY = 0.2000, localZ = -0.1500, u = 0.1093, v = 0.4250 },
+        { localX = -0.8356, localY = 0.2000, localZ = -0.0401, u = 0.0822, v = 0.4799 },
+        { localX = -0.8549, localY = 0.2000, localZ = 0.1091, u = 0.0725, v = 0.5546 },
+        { localX = -0.8344, localY = 0.2000, localZ = 0.2578, u = 0.0828, v = 0.6289 },
+        { localX = -0.7795, localY = 0.2000, localZ = 0.3660, u = 0.1103, v = 0.6830 }
+      },
+    },
+    scatter2 = {
+      calibrated = true,
+      origin = { u = 0.3400, v = 0.7812 },
+      gold = { localX = -0.3199, localY = 0.2000, localZ = 0.5624, u = 0.3400, v = 0.7812 },
+      whites = {
+        { localX = -0.3665, localY = 0.2000, localZ = 0.6575, u = 0.3168, v = 0.8288 },
+        { localX = -0.2724, localY = 0.2000, localZ = 0.6555, u = 0.3638, v = 0.8278 },
+        { localX = -0.2734, localY = 0.2000, localZ = 0.4673, u = 0.3633, v = 0.7336 },
+        { localX = -0.3675, localY = 0.2000, localZ = 0.4693, u = 0.3163, v = 0.7346 }
+      },
+      npcHoles = {
+        { localX = -0.3188, localY = 0.2000, localZ = 0.8603, u = 0.3406, v = 0.9301 },
+        { localX = -0.2445, localY = 0.2000, localZ = 0.8192, u = 0.3778, v = 0.9096 },
+        { localX = -0.1904, localY = 0.2000, localZ = 0.7094, u = 0.4048, v = 0.8547 },
+        { localX = -0.1710, localY = 0.2000, localZ = 0.5601, u = 0.4145, v = 0.7801 },
+        { localX = -0.1915, localY = 0.2000, localZ = 0.4115, u = 0.4042, v = 0.7057 },
+        { localX = -0.2464, localY = 0.2000, localZ = 0.3033, u = 0.3768, v = 0.6516 },
+        { localX = -0.3211, localY = 0.2000, localZ = 0.2645, u = 0.3395, v = 0.6323 },
+        { localX = -0.3954, localY = 0.2000, localZ = 0.3055, u = 0.3023, v = 0.6528 },
+        { localX = -0.4495, localY = 0.2000, localZ = 0.4154, u = 0.2753, v = 0.7077 },
+        { localX = -0.4689, localY = 0.2000, localZ = 0.5646, u = 0.2656, v = 0.7823 },
+        { localX = -0.4484, localY = 0.2000, localZ = 0.7133, u = 0.2758, v = 0.8566 },
+        { localX = -0.3934, localY = 0.2000, localZ = 0.8215, u = 0.3033, v = 0.9107 }
+      },
+    },
+    scatter3 = {
+      calibrated = true,
+      origin = { u = 0.6605, v = 0.7812 },
+      gold = { localX = 0.3210, localY = 0.2000, localZ = 0.5624, u = 0.6605, v = 0.7812 },
+      whites = {
+        { localX = 0.2693, localY = 0.2000, localZ = 0.6557, u = 0.6347, v = 0.8278 },
+        { localX = 0.3676, localY = 0.2000, localZ = 0.6657, u = 0.6838, v = 0.8328 },
+        { localX = 0.3726, localY = 0.2000, localZ = 0.4691, u = 0.6863, v = 0.7346 },
+        { localX = 0.2743, localY = 0.2000, localZ = 0.4591, u = 0.6372, v = 0.7295 }
+      },
+      npcHoles = {
+        { localX = 0.3202, localY = 0.2000, localZ = 0.8584, u = 0.6601, v = 0.9292 },
+        { localX = 0.3943, localY = 0.2000, localZ = 0.8195, u = 0.6972, v = 0.9097 },
+        { localX = 0.4488, localY = 0.2000, localZ = 0.7117, u = 0.7244, v = 0.8558 },
+        { localX = 0.4690, localY = 0.2000, localZ = 0.5638, u = 0.7345, v = 0.7819 },
+        { localX = 0.4495, localY = 0.2000, localZ = 0.4156, u = 0.7248, v = 0.7078 },
+        { localX = 0.3956, localY = 0.2000, localZ = 0.3067, u = 0.6978, v = 0.6534 },
+        { localX = 0.3217, localY = 0.2000, localZ = 0.2664, u = 0.6609, v = 0.6332 },
+        { localX = 0.2476, localY = 0.2000, localZ = 0.3053, u = 0.6238, v = 0.6526 },
+        { localX = 0.1932, localY = 0.2000, localZ = 0.4131, u = 0.5966, v = 0.7066 },
+        { localX = 0.1730, localY = 0.2000, localZ = 0.5609, u = 0.5865, v = 0.7805 },
+        { localX = 0.1924, localY = 0.2000, localZ = 0.7091, u = 0.5962, v = 0.8546 },
+        { localX = 0.2463, localY = 0.2000, localZ = 0.8180, u = 0.6232, v = 0.9090 }
+      },
+    },
+    scatter4 = {
+      calibrated = true,
+      origin = { u = 0.8528, v = 0.5543 },
+      gold = { localX = 0.7057, localY = 0.2000, localZ = 0.1087, u = 0.8528, v = 0.5543 },
+      whites = {
+        { localX = 0.6540, localY = 0.2000, localZ = 0.2019, u = 0.8270, v = 0.6010 },
+        { localX = 0.7523, localY = 0.2000, localZ = 0.2120, u = 0.8762, v = 0.6060 },
+        { localX = 0.7573, localY = 0.2000, localZ = 0.0154, u = 0.8787, v = 0.5077 },
+        { localX = 0.6591, localY = 0.2000, localZ = 0.0053, u = 0.8295, v = 0.5027 }
+      },
+      npcHoles = {
+        { localX = 0.7050, localY = 0.2000, localZ = 0.4047, u = 0.8525, v = 0.7023 },
+        { localX = 0.7791, localY = 0.2000, localZ = 0.3658, u = 0.8895, v = 0.6829 },
+        { localX = 0.8335, localY = 0.2000, localZ = 0.2579, u = 0.9168, v = 0.6290 },
+        { localX = 0.8537, localY = 0.2000, localZ = 0.1101, u = 0.9269, v = 0.5551 },
+        { localX = 0.8342, localY = 0.2000, localZ = -0.0381, u = 0.9171, v = 0.4810 },
+        { localX = 0.7803, localY = 0.2000, localZ = -0.1470, u = 0.8902, v = 0.4265 },
+        { localX = 0.7064, localY = 0.2000, localZ = -0.1874, u = 0.8532, v = 0.4063 },
+        { localX = 0.6323, localY = 0.2000, localZ = -0.1484, u = 0.8162, v = 0.4258 },
+        { localX = 0.5779, localY = 0.2000, localZ = -0.0406, u = 0.7889, v = 0.4797 },
+        { localX = 0.5577, localY = 0.2000, localZ = 0.1072, u = 0.7788, v = 0.5536 },
+        { localX = 0.5771, localY = 0.2000, localZ = 0.2554, u = 0.7886, v = 0.6277 },
+        { localX = 0.6310, localY = 0.2000, localZ = 0.3643, u = 0.8155, v = 0.6822 }
+      },
+    },
+    scatter5 = {
+      calibrated = true,
+      origin = { u = 0.6605, v = 0.3261 },
+      gold = { localX = 0.3209, localY = 0.2000, localZ = -0.3478, u = 0.6605, v = 0.3261 },
+      whites = {
+        { localX = 0.2693, localY = 0.2000, localZ = -0.2545, u = 0.6346, v = 0.3728 },
+        { localX = 0.3676, localY = 0.2000, localZ = -0.2444, u = 0.6838, v = 0.3778 },
+        { localX = 0.3726, localY = 0.2000, localZ = -0.4410, u = 0.6863, v = 0.2795 },
+        { localX = 0.2743, localY = 0.2000, localZ = -0.4511, u = 0.6371, v = 0.2745 }
+      },
+      npcHoles = {
+        { localX = 0.3202, localY = 0.2000, localZ = -0.0517, u = 0.6601, v = 0.4741 },
+        { localX = 0.3943, localY = 0.2000, localZ = -0.0907, u = 0.6971, v = 0.4547 },
+        { localX = 0.4487, localY = 0.2000, localZ = -0.1985, u = 0.7244, v = 0.4008 },
+        { localX = 0.4689, localY = 0.2000, localZ = -0.3463, u = 0.7345, v = 0.3269 },
+        { localX = 0.4495, localY = 0.2000, localZ = -0.4945, u = 0.7247, v = 0.2528 },
+        { localX = 0.3956, localY = 0.2000, localZ = -0.6034, u = 0.6978, v = 0.1983 },
+        { localX = 0.3216, localY = 0.2000, localZ = -0.6438, u = 0.6608, v = 0.1781 },
+        { localX = 0.2475, localY = 0.2000, localZ = -0.6048, u = 0.6238, v = 0.1976 },
+        { localX = 0.1931, localY = 0.2000, localZ = -0.4970, u = 0.5966, v = 0.2515 },
+        { localX = 0.1729, localY = 0.2000, localZ = -0.3492, u = 0.5865, v = 0.3254 },
+        { localX = 0.1924, localY = 0.2000, localZ = -0.2010, u = 0.5962, v = 0.3995 },
+        { localX = 0.2463, localY = 0.2000, localZ = -0.0921, u = 0.6231, v = 0.4539 }
+      },
+    },
+    scatter6 = {
+      calibrated = true,
+      origin = { u = 0.3395, v = 0.3259 },
+      gold = { localX = -0.3210, localY = 0.2000, localZ = -0.3482, u = 0.3395, v = 0.3259 },
+      whites = {
+        { localX = -0.3675, localY = 0.2000, localZ = -0.2536, u = 0.3162, v = 0.3732 },
+        { localX = -0.2736, localY = 0.2000, localZ = -0.2551, u = 0.3632, v = 0.3725 },
+        { localX = -0.2744, localY = 0.2000, localZ = -0.4429, u = 0.3628, v = 0.2786 },
+        { localX = -0.3683, localY = 0.2000, localZ = -0.4413, u = 0.3159, v = 0.2793 }
+      },
+      npcHoles = {
+        { localX = -0.3208, localY = 0.2000, localZ = -0.0513, u = 0.3396, v = 0.4744 },
+        { localX = -0.2465, localY = 0.2000, localZ = -0.0912, u = 0.3767, v = 0.4544 },
+        { localX = -0.1923, localY = 0.2000, localZ = -0.2001, u = 0.4039, v = 0.4000 },
+        { localX = -0.1725, localY = 0.2000, localZ = -0.3486, u = 0.4138, v = 0.3257 },
+        { localX = -0.1925, localY = 0.2000, localZ = -0.4970, u = 0.4038, v = 0.2515 },
+        { localX = -0.2469, localY = 0.2000, localZ = -0.6056, u = 0.3766, v = 0.1972 },
+        { localX = -0.3212, localY = 0.2000, localZ = -0.6452, u = 0.3394, v = 0.1774 },
+        { localX = -0.3954, localY = 0.2000, localZ = -0.6052, u = 0.3023, v = 0.1974 },
+        { localX = -0.4496, localY = 0.2000, localZ = -0.4964, u = 0.2752, v = 0.2518 },
+        { localX = -0.4694, localY = 0.2000, localZ = -0.3478, u = 0.2653, v = 0.3261 },
+        { localX = -0.4494, localY = 0.2000, localZ = -0.1994, u = 0.2753, v = 0.4003 },
+        { localX = -0.3950, localY = 0.2000, localZ = -0.0909, u = 0.3025, v = 0.4546 }
+      },
+    }
   },
 }
 

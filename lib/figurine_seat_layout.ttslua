@@ -18,6 +18,7 @@ local S = require("core.state")
 local SRI = require("lib.seat-role-identity")
 local G = require("lib.guids")
 local TarotObjects = require("lib.tarot_objects")
+local O = require("core.objects")
 
 local FSL = {}
 
@@ -471,6 +472,16 @@ local function liveYIsHidden(y)
     return n ~= nil and n <= HIDE_Y_FLOOR
 end
 
+--- @return boolean
+local function isScatterSeatLayoutActive()
+    local scatterKey = (C.Scatter and C.Scatter.TABLE_KEY) or "Scatter"
+    local tableKey = S.getStateVal("seatLayout", "currentTableKey")
+    if tableKey == scatterKey then
+        return true
+    end
+    return S.getStateVal("sessionScene", "placementMode") == "scatter"
+end
+
 --- Roles whose on/off (or page show/hide) is encoded in world Y — occupancy stash must not flatten these.
 --- @param roleKey string|nil
 --- @return boolean
@@ -553,6 +564,21 @@ local function peekOccupantPileY(occupantKey, roleKey)
     return tonumber(row[roleKey])
 end
 
+--- True when this occupant has occupancy-stash rows from a prior Absent bury (restore on layout).
+--- @param occupantKey string
+--- @return boolean
+function FSL.hasOccupancyStash(occupantKey)
+    if type(occupantKey) ~= "string" or occupantKey == "" then
+        return false
+    end
+    local map = S.getStateVal("seatLayout", "absentPileY")
+    if U.Type(map) ~= "table" then
+        return false
+    end
+    local row = map[occupantKey]
+    return U.Type(row) == "table" and next(row) ~= nil
+end
+
 --- @param occupantKey string
 local function clearOccupantPileY(occupantKey)
     if type(occupantKey) ~= "string" then
@@ -608,8 +634,9 @@ end
 --- @param roleKey string|nil
 --- @param liveY number
 --- @param defaultY number
+--- @param worldY number|nil figurine frame Y (unused for Y; satellites keep authored defaultY)
 --- @return number
-local function resolveSatelliteY(occupantKey, roleKey, liveY, defaultY)
+local function resolveSatelliteY(occupantKey, roleKey, liveY, defaultY, worldY)
     if roleKey == "TAROT_DECK" then
         local sample = peekOccupantPileY(occupantKey, roleKey)
         if sample == nil then
@@ -620,17 +647,19 @@ local function resolveSatelliteY(occupantKey, roleKey, liveY, defaultY)
         end
         return tarotDeckOffY()
     end
+    -- Feature-hide off (page, fire, smoke) beats occupancy stash — layout must not lift these.
+    if isFeatureHideRoleKey(roleKey) and liveYIsHidden(liveY) then
+        return liveY
+    end
+    local activeY = defaultY
     local stashY = peekOccupantPileY(occupantKey, roleKey)
     if stashY ~= nil then
         if liveYIsHidden(stashY) then
             return stashY
         end
-        return defaultY
+        return activeY
     end
-    if liveYIsHidden(liveY) and isFeatureHideRoleKey(roleKey) then
-        return liveY
-    end
-    return defaultY
+    return activeY
 end
 
 local function findFigurine(occupantKey)
@@ -681,9 +710,29 @@ local function applyOffsetToObject(obj, figFrame, figObj, offset, roleKey, occup
     local livePos = Vector(obj.getPosition())
     local world = worldFromFigurineLocal(figFrame, figObj, offset.localXZ or { x = 0, z = 0 })
     local defaultY = tonumber(offset.defaultY) or world.y
-    local y = resolveSatelliteY(occupantKey, roleKey, livePos.y, defaultY)
+    local y = resolveSatelliteY(occupantKey, roleKey, livePos.y, defaultY, world.y)
     local rot = addRot(figFrame.rotation, offset.localRotation)
-    placeObjectExact(obj, Vector({ x = world.x, y = y, z = world.z }), rot)
+    local rotTable = { x = rot.x, y = rot.y, z = rot.z }
+
+    if isFeatureHideRoleKey(roleKey) then
+        local onPos = { x = world.x, y = defaultY, z = world.z }
+        local wantOff = (type(O.isHiddenObject) == "function" and O.isHiddenObject(obj))
+            or liveYIsHidden(livePos.y)
+            or liveYIsHidden(y)
+        if wantOff then
+            -- Reposition while parked; never restore/reveal during layout.
+            O.hideObject(obj, {
+                snapshotPosition = onPos,
+                refreshSnapshotPosition = true,
+                parkPosition = { x = world.x, y = y, z = world.z },
+                parkRotation = rotTable,
+            })
+        else
+            placeObjectExact(obj, Vector({ x = world.x, y = y, z = world.z }), rot)
+        end
+    else
+        placeObjectExact(obj, Vector({ x = world.x, y = y, z = world.z }), rot)
+    end
     if roleKey == "TAROT_DECK" then
         local on = yLooksLikeTarotOn(y)
         if type(obj.setLock) == "function" then
@@ -844,7 +893,7 @@ local function layoutOccupantSatellites(occupantKey, figFrame, figObj, helpers)
             local rot = addRot(figFrame.rotation, offset.localRotation)
             local defaultY = tonumber(offset.defaultY) or world.y
             local livePos = Vector(obj.getPosition())
-            local y = resolveSatelliteY(occupantKey, roleKey, livePos.y, defaultY)
+            local y = resolveSatelliteY(occupantKey, roleKey, livePos.y, defaultY, world.y)
             helpers.moveHandZone(obj, Vector({ x = world.x, y = y, z = world.z }), rot)
             return
         end
@@ -981,16 +1030,13 @@ end
 --- @param occupantKey string
 --- @param hiddenSeatY number
 --- @param layers string[]
-local function stashHandZoneAndCards(occupantKey, hiddenSeatY, layers)
+local function stashHandZoneAndCards(occupantKey, hiddenSeatY)
     local hz = U.getHandZone(occupantKey)
     if hz == nil then
         return
     end
-    if hz.setInvisibleTo ~= nil then
-        hz.setInvisibleTo(layers)
-    end
     local p = hz.getPosition and hz.getPosition() or nil
-    if p == nil or hz.setPosition == nil then
+    if p == nil then
         return
     end
     if not liveYIsHidden(p.y) then
@@ -1014,7 +1060,7 @@ local function stashHandZoneAndCards(occupantKey, hiddenSeatY, layers)
             end
         end
     end
-    hz.setPosition({ x = p.x, y = hiddenSeatY, z = p.z })
+    O.hideObject(hz, { parkPosition = { x = p.x, y = hiddenSeatY, z = p.z } })
 end
 
 --- @param occupantKey string
@@ -1022,24 +1068,31 @@ end
 function FSL.setOccupantPileVisible(occupantKey, visible)
     local tag = occupantKey .. "Object"
     local objs = getObjectsWithTag(tag) or {}
-    local hiddenSeatY = -200
-    local layers = allLayerColors()
+    local hiddenSeatY = C.HIDDEN_OBJECT_WORLD_Y
     for i = 1, #objs do
         local obj = objs[i]
-        if obj ~= nil and obj.setInvisibleTo ~= nil then
+        if not U.isGameObject(obj) then
+            -- skip
+        elseif isCardLikeObject(obj) or isHandZoneObject(obj) then
+            -- hand zone handled below; cards move with zone only
+        else
             local isPooledFig = obj.hasTag ~= nil and obj.hasTag("npc_figurine")
+            local roleKey = readSatelliteRoleKey(obj)
             if visible then
-                obj.setInvisibleTo({})
-            elseif not isCardLikeObject(obj) and not isHandZoneObject(obj) then
-                obj.setInvisibleTo(layers)
-                if not isPooledFig then
+                if roleKey == "SEAT_CHAIR" then
+                    -- Chair hide is owned by table/scatter layout, not occupancy restore.
+                elseif O.isHiddenObject(obj) and not isFeatureHideRoleKey(roleKey) then
+                    O.restoreObject(obj)
+                end
+            elseif not isPooledFig then
+                if isFeatureHideRoleKey(roleKey) and O.isHiddenObject(obj) then
+                    -- feature-owned hide (page off, fire off, …)
+                else
                     local p = obj.getPosition and obj.getPosition() or nil
-                    if p ~= nil and obj.setPosition ~= nil then
-                        if not liveYIsHidden(p.y) then
-                            captureOccupantPileY(occupantKey, readSatelliteRoleKey(obj), p.y)
-                        end
-                        obj.setPosition({ x = p.x, y = hiddenSeatY, z = p.z })
+                    if p ~= nil and not liveYIsHidden(p.y) then
+                        captureOccupantPileY(occupantKey, roleKey, p.y)
                     end
+                    O.hideObject(obj)
                 end
             end
         end
@@ -1047,11 +1100,11 @@ function FSL.setOccupantPileVisible(occupantKey, visible)
     if isPlayerSeatKey(occupantKey) then
         local hz = U.getHandZone(occupantKey)
         if visible then
-            if hz ~= nil and hz.setInvisibleTo ~= nil then
-                hz.setInvisibleTo({})
+            if hz ~= nil and O.isHiddenObject(hz) then
+                O.restoreObject(hz)
             end
         else
-            stashHandZoneAndCards(occupantKey, hiddenSeatY, layers)
+            stashHandZoneAndCards(occupantKey, hiddenSeatY)
         end
     end
 end
@@ -1081,7 +1134,9 @@ function FSL.applyOccupantRigs(bundle, helpers)
                 }
             end
             layoutOccupantSatellites(occ.occupantKey, figFrame, figObj, helpers)
-            FSL.setOccupantPileVisible(occ.occupantKey, true)
+            if FSL.hasOccupancyStash(occ.occupantKey) then
+                FSL.setOccupantPileVisible(occ.occupantKey, true)
+            end
             clearOccupantPileY(occ.occupantKey)
         end
     end

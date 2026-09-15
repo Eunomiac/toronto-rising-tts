@@ -206,7 +206,7 @@ Seat slots can be **assigned but inactive** when `present` is false.
 
 **PC slot:**
 
-1. Objects tagged `<Color>Object` listed in `C.HiddenObjects` — invisible to all player colors
+1. Objects tagged `<Color>Object` listed in `C.HiddenObjects` — buried at y = −200 via `O.hideObject` (invisible to all viewers, including Storyteller)
 2. Seat lights 1 and 2 off (not 3)
 
 **NPC slot:**
@@ -217,9 +217,9 @@ Seat slots can be **assigned but inactive** when `present` is false.
 
 ### Activate (assigned, present)
 
-Reverse the above: PC hidden-object visibility per `C.HiddenObjects`; pooled NPC figurine and chair visible to all; seat lights 1 and 2 per lighting mode.
+Reverse the above: PC catalog entries restored via `O.restoreObject` (or active `C.HiddenObjects` visibility when already on-table); pooled NPC figurine and chair visible to all; seat lights 1 and 2 per lighting mode.
 
-*Implementation note:* PC and NPC paths may use different existing helpers (`O.reconcilePcSeatHiddenObjectsFromState` / `O.applyPcSeatHiddenObjectPresence` for `C.HiddenObjects`, `L.reconcileForPlayer`, NPC tag visibility in `core/npcs.ttslua`, etc.) as long as the outcomes above are met. `NPCS.reconcileAllFromState` Step Four applies PC hidden-object visibility and NPC figurine/chair invisibility and seat lights after layout commit A.
+*Implementation note:* PC and NPC paths may use different existing helpers as long as the outcomes above are met. **Off-table Y bury** (absent PC catalog entries, absent piles, inactive NPC seat objects, gameboard stashes) must use `O.hideObject` / `O.restoreObject` — see [`docs/solutions/lua-hide-restore-policy.md`](../../docs/solutions/lua-hide-restore-policy.md). PC absent/present catalog sync: `O.reconcilePcSeatHiddenObjectsFromState` / `O.applyPcSeatHiddenObjectPresence`. Also: `L.reconcileForPlayer`, NPC tag visibility in `core/npcs.ttslua`. `NPCS.reconcileAllFromState` Step Four applies PC hide/restore and NPC figurine/chair invisibility and seat lights after layout commit A.
 
 **Stage-bound homeland seats (TOR-178 / TOR-250):** Step Four runs `L.reconcileForPlayer` for **every** assigned NPC seat (including stage-bound homelands). Priority derives OFF for `isPresent === false` and for stage-bound occupants (`NPCS.isNpcSeatOccupantStageBound`). RSL layout sync (`enforceNPCSeatObjectVisibility`) adjusts chair visibility only — it does **not** eager-write homeland workshop lights (TOR-265). Fingerprint-gated `reconcileNpcHomelandSeatSpotlightsWhenStageBound` runs on orchestrator fingerprint skip and RSL tail when the orchestrator is inactive.
 

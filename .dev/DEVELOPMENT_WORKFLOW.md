@@ -119,6 +119,17 @@ Policy: `.cursor/rules/toronto-rising-author-session.mdc` (always-on). Checklist
 
 Canonical reference: [`docs/solutions/lua-local-function-order.md`](../docs/solutions/lua-local-function-order.md). Always-on Cursor rule: `.cursor/rules/toronto-rising-lua-local-function-order.mdc`.
 
+## Hide / restore objects
+
+| Rule | Detail |
+| --- | --- |
+| **Mandatory pair** | `O.hideObject` / `O.restoreObject` in Global; `GlobalHideObject` / `GlobalRestoreObject` from object scripts |
+| **Never** | Hand-roll `setPosition({ y = -200 })` + inline `setInvisibleTo` for hide/reveal |
+| **Visibility** | Active: `C.HiddenObjects[guid]` or `{}`; parked: `C.HideFromPcSeatsAndSpectators` (inside API only) |
+| **Object VMs** | No `require("core.objects")` — bundle-safe Global.call |
+
+Canonical reference: [`docs/solutions/lua-hide-restore-policy.md`](../docs/solutions/lua-hide-restore-policy.md). Always-on Cursor rule: `.cursor/rules/toronto-rising-hide-restore.mdc`.
+
 ## Multiplayer authority
 
 **TOR-144** / **TOR-249** initial multiclient E2E **passed** (2026-07-13) — host-authority scripting confirmed with real clients. Solo Host Save & Play still does not fully validate join-client-only quirks (P10, XmlUI visibility). TTS mod Lua runs on the host only; do not reintroduce host-execution gates. Residual missing join HUD: **TOR-381** (TTS External).

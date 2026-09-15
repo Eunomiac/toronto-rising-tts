@@ -378,20 +378,6 @@ D.characters = {
       note = "Stats not set."
     }
   },
-  agnesBellanger = {
-    name = "agnesBellanger",
-    fullName = "Agnes Bellanger",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      memoriam = 1
-    },
-    stats = {
-      note = "Stats not set."
-    }
-  },
   bertrice = {
     name = "bertrice",
     fullName = "Bertrice",
@@ -574,20 +560,6 @@ D.characters = {
       note = "Stats not set."
     }
   },
-  jervaisDeLaCroix = {
-    name = "jervaisDeLaCroix",
-    fullName = "Jervais de la Croix",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      memoriam = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
-  },
   jezdimirDucheski = {
     name = "jezdimirDucheski",
     fullName = "Jezdimir Ducheski",
@@ -639,20 +611,6 @@ D.characters = {
     },
     groups = {
       jarvisJacks = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
-  },
-  ladyAvelineDubois = {
-    name = "ladyAvelineDubois",
-    fullName = "Lady Aveline Dubois",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      memoriam = 3
     },
     stats = {
       note = "Stats not set."

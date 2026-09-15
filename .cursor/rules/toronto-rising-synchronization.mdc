@@ -26,6 +26,17 @@ When a mutation path **already** applied emitters/lights to match persisted stat
 
 Survey notes: [`.dev/Sychronizing Game Functionality/Dual_apply_survey.md`](.dev/Sychronizing%20Game%20Functionality/Dual_apply_survey.md).
 
+## Hide / restore (world apply)
+
+Off-table object hides are **Tier C world apply** and must use the unified pair in `core/objects.ttslua`:
+
+- **Hide:** `O.hideObject(obj, opts?)` — park at `C.HIDDEN_OBJECT_WORLD_Y`, lock, non-interactable, parked visibility, `HiddenObject` tag, optional `gameState.hiddenObjects` snapshot.
+- **Restore:** `O.restoreObject(obj, opts?)` — caller pose/lock/interactable; visibility: opts → `C.HiddenObjects[guid]` → snapshot `invisibleTo`.
+
+Object-hosted scripts: `Global.call("GlobalHideObject", …)` / `GlobalRestoreObject` — never `require("core.objects")`. Full contract: [`docs/solutions/lua-hide-restore-policy.md`](../../docs/solutions/lua-hide-restore-policy.md).
+
+Do not duplicate hide protocol (Y + lock + `setInvisibleTo`) inside reconcilers or layout helpers.
+
 ## Reconciler rules
 
 - Reconciler functions must be idempotent.

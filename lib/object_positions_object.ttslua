@@ -17,7 +17,10 @@ OP.DEFAULT_TRANSITION_DURATION = 0.5
 --- @return Vector
 function OP.mergePosition(obj, partialPos)
   partialPos = partialPos or {}
-  local currentPos = obj.getPosition()
+  local currentPos = obj.getPosition and obj.getPosition() or nil
+  if currentPos == nil then
+    currentPos = Vector({ x = 0, y = 0, z = 0 })
+  end
   return currentPos:copy():set(partialPos.x, partialPos.y, partialPos.z)
 end
 
@@ -269,15 +272,26 @@ function OP.applyResolvedPose(obj, pose, baseDuration, baseDelay, opts)
       if shouldAbort ~= nil and shouldAbort() then
         return
       end
-      if type(desiredLock) == "boolean" then
-        obj.setLock(desiredLock)
-      elseif type(initialLock) == "boolean" then
-        obj.setLock(initialLock)
-      end
+      local guid = type(obj.getGUID) == "function" and obj.getGUID() or nil
+      local canGlobal = type(Global) == "table" and type(Global.call) == "function" and type(guid) == "string"
       if pose.isHidden == true then
-        obj.setInvisibleTo({"Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey", "Black"})
+        if canGlobal then
+          Global.call("GlobalHideObject", { guid = guid })
+        end
+      elseif pose.isHidden == false then
+        if canGlobal then
+          local restoreOpts = { guid = guid, interactable = true }
+          if type(desiredLock) == "boolean" then
+            restoreOpts.locked = desiredLock
+          end
+          Global.call("GlobalRestoreObject", restoreOpts)
+        end
       else
-        obj.setInvisibleTo({})
+        if type(desiredLock) == "boolean" then
+          obj.setLock(desiredLock)
+        elseif type(initialLock) == "boolean" then
+          obj.setLock(initialLock)
+        end
       end
     end, finalizeDelay)
   end

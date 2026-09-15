@@ -42,11 +42,12 @@ You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masq
 **Coding policies (build gate enforced)**
 
 10. **`docs/solutions/lua-local-function-order.md`** — **READ FIRST among Lua policies.** Top recurring runtime bug: **`local function` before every caller** in the same file (or forward-declare). Causes `attempt to call a nil value` in `Global.*`, `Global.call`, HUD/object handlers; **not caught by `npm run build`**. Always-on: `.cursor/rules/toronto-rising-lua-local-function-order.mdc`.
-11. `docs/solutions/lua-pcall-policy.md` — **no `pcall`** in production paths unless annotated necessity + impact.
-12. `docs/solutions/lua-wait-api-policy.md` — **no raw `Wait.time` / `Wait.condition` / `Wait.stop`** outside `lib/util.ttslua`; use `U.await`, `U.chain`, `U.stagger`, etc.
-13. `docs/solutions/lua-ui-full-xml-policy.md` — avoid **`UI.setXml` / `setXmlTable`**; prefer `setAttribute`, `setAttributes`, `setValue`, `show`/`hide`. Gate counts are baseline — do not add call sites without review.
-14. `.dev/AVAILABLE_FUNCTIONS.md` + `lib/util.ttslua` — **reuse existing helpers** (`U.map`, `U.filter`, `U.Type`, …) before writing new ones.
-15. `.dev/Sychronizing Game Functionality/TTS-API-Heavy-Workload-Catalog.md`, `.dev/Sychronizing Game Functionality/TTS-API-Heavy-Workload-Usage-Inventory.md`, and `.dev/Sychronizing Game Functionality/Performance Audit.md` — **mandatory before Lua/XML changes touching TTS APIs, scans/casts, object spawn/reload/custom object APIs, component traversal, timers, AssetBundle/audio updates, or broad UI refresh fan-out.**
+11. **`docs/solutions/lua-hide-restore-policy.md`** — **Mandatory for hide/reveal:** every off-table park at `C.HIDDEN_OBJECT_WORLD_Y` uses `O.hideObject` / `O.restoreObject` (Global) or `GlobalHideObject` / `GlobalRestoreObject` (object scripts). No hand-roll `setPosition({ y = -200 })` + inline `setInvisibleTo`. Always-on: `.cursor/rules/toronto-rising-hide-restore.mdc`.
+12. `docs/solutions/lua-pcall-policy.md` — **no `pcall`** in production paths unless annotated necessity + impact.
+13. `docs/solutions/lua-wait-api-policy.md` — **no raw `Wait.time` / `Wait.condition` / `Wait.stop`** outside `lib/util.ttslua`; use `U.await`, `U.chain`, `U.stagger`, etc.
+14. `docs/solutions/lua-ui-full-xml-policy.md` — avoid **`UI.setXml` / `setXmlTable`**; prefer `setAttribute`, `setAttributes`, `setValue`, `show`/`hide`. Gate counts are baseline — do not add call sites without review.
+15. `.dev/AVAILABLE_FUNCTIONS.md` + `lib/util.ttslua` — **reuse existing helpers** (`U.map`, `U.filter`, `U.Type`, …) before writing new ones.
+16. `.dev/Sychronizing Game Functionality/TTS-API-Heavy-Workload-Catalog.md`, `.dev/Sychronizing Game Functionality/TTS-API-Heavy-Workload-Usage-Inventory.md`, and `.dev/Sychronizing Game Functionality/Performance Audit.md` — **mandatory before Lua/XML changes touching TTS APIs, scans/casts, object spawn/reload/custom object APIs, component traversal, timers, AssetBundle/audio updates, or broad UI refresh fan-out.**
 
 **When relevant**
 
@@ -71,6 +72,7 @@ You are starting (or re-scoping) work on **Toronto Rising**, a Vampire: The Masq
 | **Require order** | `lib/constants` → `lib/guids` → `lib/util` → `core/state` → other modules. |
 | **Lua local order** | **#1 nil-call bug:** `local function` **above** every caller in the same chunk (or forward-declare). Pre-flight: grep helper vs caller line numbers. Not caught by build. See `lua-local-function-order.md` + `toronto-rising-lua-local-function-order.mdc`. |
 | **Object script `require()`** | **#1 Save & Play break:** object-hosted scripts bundle **per object**. **Piecemeal** thin modules only — **never** `core.*`, `lib.constants`, or wide libs; use **`Global.call`**. See `toronto-rising-object-script-bundling.mdc` + `.dev/TTS_BUNDLING_SETUP.md`. |
+| **Hide / restore** | Off-table hides → `O.hideObject` / `O.restoreObject` or `GlobalHideObject` / `GlobalRestoreObject`. Active vis from `C.HiddenObjects`; no inline color lists. See `lua-hide-restore-policy.md` + `toronto-rising-hide-restore.mdc`. |
 | **Player identity** | Per-player state keyed by **steam_id**; Storyteller = `Black`; PC colors per `C.PlayerColors`. |
 | **Minimal diff** | Remove dead code and obsolete shims; update `.dev/` docs in the same change when behavior or public APIs move. |
 | **Linear sync** | Part of **done**: In Progress when starting, Done + comment + tasklist `[x]` when finishing; if author TTS verify is still owed, **add an Outstanding row** to [PENDING AUTHOR VERIFICATION.md](../../.dev/PENDING%20AUTHOR%20VERIFICATION.md) **in this session** and put the same plain-English how-to-verify in the Linear Done comment (policy: [PENDING AUTHOR VERIFICATION.agent.md](../../.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md)); process **✅** / **❌** / **⚠️** marks on **`/tr-inbox`** only; on gate-close (**Focus** / **`blockedBy` prerequisite**), run **deferred resurfacing** (unblock dependents, propose 1–3 labeled resurfacing candidates in comment or chat). Never leave Focus/tasklist/Linear diverged. |

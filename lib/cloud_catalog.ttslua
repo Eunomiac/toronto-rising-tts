@@ -4902,6 +4902,62 @@ Cloud = {
       URL = "https://steamusercontent-a.akamaihd.net/ugc/16963597139322713729/58FF002DAE4D6A9BE43C3FD90125F756CAED4B38/",
     },
   },
+  MemoriamNpcFigurines = {
+    mem_agnesBellanger = {
+      filename = "mem_agnesBellanger.webp",
+      key = "mem_agnesBellanger",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/11462591356423110989/AC24BFF7A5D2326D96EA750F6E86B90835A59FC4/",
+    },
+    mem_BACK = {
+      filename = "mem_BACK.webp",
+      key = "mem_BACK",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/11700655442801088415/2DD80A434DB0656E59FE6D56CD9150D3F9446732/",
+    },
+    mem_jervaisDeLaCroix = {
+      filename = "mem_jervaisDeLaCroix.webp",
+      key = "mem_jervaisDeLaCroix",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/17289784412265189691/FFB6729A231DECC88ED2F23A002923EED2B5A224/",
+    },
+    mem_ladyAvelineDubois = {
+      filename = "mem_ladyAvelineDubois.webp",
+      key = "mem_ladyAvelineDubois",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/9525289396349634639/454D5A74CA5370CC942E12BB302357C9A1734CFB/",
+    },
+  },
+  MemoriamNpcTokenBacks = {
+    tokenBack_mem_agnesBellanger = {
+      filename = "tokenBack_mem_agnesBellanger.webp",
+      key = "tokenBack_mem_agnesBellanger",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/10284879731479469421/6A4E44C867A5D0B51C6D7FBFED8B81C01F06460D/",
+    },
+    tokenBack_mem_jervaisDeLaCroix = {
+      filename = "tokenBack_mem_jervaisDeLaCroix.webp",
+      key = "tokenBack_mem_jervaisDeLaCroix",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/17311628894760406178/BB0184BE5F2CC1761315BEAAC3B33AFC7DA8BDDA/",
+    },
+    tokenBack_mem_ladyAvelineDubois = {
+      filename = "tokenBack_mem_ladyAvelineDubois.webp",
+      key = "tokenBack_mem_ladyAvelineDubois",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/14875356526596999713/7DDF7589410DCFD307B254C88A74F5AC4C780353/",
+    },
+  },
+  MemoriamNpcTokenFronts = {
+    tokenFront_mem_agnesBellanger = {
+      filename = "tokenFront_mem_agnesBellanger.webp",
+      key = "tokenFront_mem_agnesBellanger",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/17663102677108817756/7FF4A2079745BA5F2814048F91AA1601F243787C/",
+    },
+    tokenFront_mem_jervaisDeLaCroix = {
+      filename = "tokenFront_mem_jervaisDeLaCroix.webp",
+      key = "tokenFront_mem_jervaisDeLaCroix",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/15688361043235686216/DF79E4D4A2C141E16D28433358C332D1E667E5BF/",
+    },
+    tokenFront_mem_ladyAvelineDubois = {
+      filename = "tokenFront_mem_ladyAvelineDubois.webp",
+      key = "tokenFront_mem_ladyAvelineDubois",
+      URL = "https://steamusercontent-a.akamaihd.net/ugc/10824262796648982697/8F79E8A425B620311CF8A9268CF1C6EF9DBD3C2F/",
+    },
+  },
   MemoriamPanels = {
     aishe13_a = {
       filename = "aishe13_a.jpg",

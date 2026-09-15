@@ -61,7 +61,8 @@ function click_signalCandle(_buttonId, clickColor)
         return
     end
 
-    if clickColor ~= playerColor then
+    -- Seated owner toggles their signal; Black (Storyteller) may toggle any PC candle for table setup.
+    if clickColor ~= playerColor and clickColor ~= "Black" then
         return
     end
 

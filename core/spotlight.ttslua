@@ -36,7 +36,7 @@ local CAROUSEL_Y = -55
 local SLOT_STEP_DEG = 36
 local FRONT_ANGLE_DEG = 180
 local ROTATE_SEC = 2
-local PARK_Y = -200
+local PARK_Y = C.HIDDEN_OBJECT_WORLD_Y
 local PARK_X0 = 140
 local PARK_Z = 0
 local PARK_SPACING = 14
@@ -340,12 +340,19 @@ local function placeStandIn(color, slotOffset, lightMode)
         return
     end
     ensureTag(fig, Spotlight.FIGURE_TAG)
-    fig.setInvisibleTo({})
     if slotOffset == nil then
-        snapObject(fig, parkPosition(color), Vector(0, 180, 0))
+        local park = parkPosition(color)
+        local parkPos = { x = park.x, y = park.y, z = park.z }
+        O.hideObject(fig, {
+            parkPosition = parkPos,
+            parkRotation = { x = 0, y = 180, z = 0 },
+        })
         local lit = lightObject(color)
         if U.isGameObject(lit) then
-            snapObject(lit, parkPosition(color), Vector(0, 0, 0))
+            O.hideObject(lit, {
+                parkPosition = parkPos,
+                parkRotation = { x = 0, y = 0, z = 0 },
+            })
             applyStandInLight(color, "OFF", 0)
         end
         return
@@ -409,16 +416,6 @@ local function applyCarouselSnapFromState()
     }, "|")
 end
 
---- @param obj Object|nil
---- @param y number
-local function setWorldY(obj, y)
-    if not U.isGameObject(obj) or obj.getPosition == nil or obj.setPosition == nil then
-        return
-    end
-    local p = obj.getPosition()
-    obj.setPosition(Vector(p.x, y, p.z))
-end
-
 local function eachDiceBag(fn)
     for i = 1, #(C.PlayerColors or {}) do
         local color = C.PlayerColors[i]
@@ -455,29 +452,35 @@ end
 
 local function parkPlayfieldToys()
     eachDiceBag(function(obj)
-        setWorldY(obj, PARK_Y)
+        O.hideObject(obj)
     end)
     eachCompanionObject(function(obj)
-        setWorldY(obj, PARK_Y)
+        O.hideObject(obj)
     end)
     eachCompulsionDeck(function(obj)
-        setWorldY(obj, PARK_Y)
+        O.hideObject(obj)
     end)
 end
 
 local function applyHideListOn()
-    local hideColors = C.HideFromPcSeatsAndSpectators or {}
     for i = 1, #(C.PlayerColors or {}) do
         local color = C.PlayerColors[i]
         local fig = G.getObject(G.GUIDS["SEAT_FIGURE_" .. string.upper(color)])
-        if U.isGameObject(fig) and fig.setInvisibleTo ~= nil then
-            fig.setInvisibleTo(hideColors)
+        if U.isGameObject(fig) then
+            O.hideObject(fig)
         end
     end
     parkPlayfieldToys()
 end
 
 local function applyHideListOff()
+    for i = 1, #(C.PlayerColors or {}) do
+        local color = C.PlayerColors[i]
+        local fig = G.getObject(G.GUIDS["SEAT_FIGURE_" .. string.upper(color)])
+        if O.isHiddenObject(fig) then
+            O.restoreObject(fig, { locked = true, interactable = false })
+        end
+    end
     if type(O.reconcilePcSeatHiddenObjectsFromState) == "function" then
         O.reconcilePcSeatHiddenObjectsFromState()
     end

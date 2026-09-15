@@ -283,9 +283,9 @@ local function nearestGroupIndex(board, localPos)
     return bestI
 end
 
-local function polarTokenScale()
-    local s = DATA.NPC_CONTROL_TOKEN_SCALE_POLAR or { x = 0.2, y = 1, z = 0.2 }
-    return tonumber(s.x) or 0.2, tonumber(s.y) or 1, tonumber(s.z) or 0.2
+local function scatterTokenScale()
+    local s = scatterCfg().TOKEN_SCALE or { x = 0.5, y = 1, z = 0.5 }
+    return tonumber(s.x) or 0.5, tonumber(s.y) or 1, tonumber(s.z) or 0.5
 end
 
 local function controlBoardSnapYawOffsetDeg()
@@ -304,15 +304,16 @@ local function parkTokenOnHole(token, board, hole)
     local Tokens = require("core.npc_gameboard_tokens")
     local world = holeLocalToWorld(board, hole)
     token.setPosition(world)
-    local sx, sy, sz = polarTokenScale()
+    local sx, sy, sz = scatterTokenScale()
     if type(token.setScale) == "function" then
         token.setScale(Vector({ x = sx, y = sy, z = sz }))
     end
     local faceUp = Tokens.tokenRotationIsFaceUp(token) == true
     token.setRotation(Tokens.rotationForNpcControlToken(Board.objectYawDeg(board), controlBoardSnapYawOffsetDeg(), faceUp))
     if type(token.setLock) == "function" then
-        token.setLock(true)
+        token.setLock(false)
     end
+    token.interactable = true
 end
 
 --- @param url string
@@ -492,9 +493,6 @@ local function hideAllPhysicalTables()
     end
 end
 
---- Player layers that `setInvisibleTo` must cover for Scatter `objectsToHide`.
-local SCATTER_HIDE_FROM_ALL = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey", "Black" }
-
 --- @return string[]
 local function scatterObjectsToHideGuids()
     local list = scatterCfg().objectsToHide
@@ -511,42 +509,26 @@ local function scatterObjectsToHideGuids()
     return out
 end
 
---- Disable and hide every `C.Scatter.objectsToHide` GUID from all players.
+--- Park every `C.Scatter.objectsToHide` GUID via `O.hideObject`.
 local function applyScatterObjectsToHide()
+    local O = require("core.objects")
     local guids = scatterObjectsToHideGuids()
     for i = 1, #guids do
         local obj = G.getObject(guids[i])
         if obj ~= nil then
-            if type(obj.setInvisibleTo) == "function" then
-                obj.setInvisibleTo(SCATTER_HIDE_FROM_ALL)
-            end
-            obj.interactable = false
+            O.hideObject(obj)
         end
     end
 end
 
---- Restore catalog HiddenObjects (or fully visible) and LockedObjects interactable.
+--- Restore scatter hide-list objects via `O.restoreObject`.
 local function restoreScatterObjectsToHide()
     local O = require("core.objects")
-    local hidden = C.HiddenObjects
     local guids = scatterObjectsToHideGuids()
     for i = 1, #guids do
-        local guid = guids[i]
-        local obj = G.getObject(guid)
-        if obj ~= nil then
-            local colors = U.Type(hidden) == "table" and hidden[guid] or nil
-            if type(obj.setInvisibleTo) == "function" then
-                if U.Type(colors) == "table" then
-                    obj.setInvisibleTo(colors)
-                else
-                    obj.setInvisibleTo({})
-                end
-            end
-            if type(O.isLockedObjectGuid) == "function" and O.isLockedObjectGuid(guid) then
-                obj.interactable = false
-            else
-                obj.interactable = true
-            end
+        local obj = G.getObject(guids[i])
+        if obj ~= nil and O.isHiddenObject(obj) then
+            O.restoreObject(obj)
         end
     end
 end
@@ -600,8 +582,8 @@ local function hideChairForOccupant(occupantKey)
             local disp = SRI.readRoleColorIdentity(obj)
             local roleKey = disp and SRI.parseRoleAndSuffix(disp) or nil
             if roleKey == "SEAT_CHAIR" then
-                local p = obj.getPosition()
-                obj.setPosition({ x = p.x, y = -200, z = p.z })
+                local O = require("core.objects")
+                O.hideObject(obj)
             end
         end
     end
@@ -719,6 +701,35 @@ local function placeNpcAtScatterPose(npcName, pose, lightMode)
     U.AlertGM("Scatter: NPCS.moveNpcToScatterPose is missing — cannot pose " .. tostring(npcName))
 end
 
+--- @param tableSlot number packed slot key from applyWorldLayout
+--- @return number world slot 1–5
+local function worldSlotFromPackedTableSlot(tableSlot)
+    return ((math.floor(tonumber(tableSlot) or 0) - 1) % 10) + 1
+end
+
+--- Direct figurine pose (same path as NPC scatter placement) before satellite layout.
+--- @param color string
+--- @param frame table `{ position, rotation }`
+local function movePcFigurineToScatterPose(color, frame)
+    if type(color) ~= "string" or U.Type(frame) ~= "table" then
+        return
+    end
+    local guid = G.GUIDS and G.GUIDS["SEAT_FIGURE_" .. string.upper(color)]
+    local fig = type(guid) == "string" and G.getObject(guid) or nil
+    if fig == nil then
+        return
+    end
+    local pos = Vector(frame.position)
+    local rot = Vector(frame.rotation)
+    local FSL = require("lib.figurine_seat_layout")
+    local figOff = FSL.lookupOffset(color, "SEAT_FIGURE")
+    if figOff ~= nil and tonumber(figOff.defaultY) ~= nil then
+        pos = Vector({ x = pos.x, y = figOff.defaultY, z = pos.z })
+    end
+    fig.setPosition(pos)
+    fig.setRotation(rot)
+end
+
 local function applyPcRigs(framesBySlot, occupants)
     local FSL = require("lib.figurine_seat_layout")
     local RSL = require("lib.rotational-seat-layout")
@@ -735,11 +746,23 @@ local function applyPcRigs(framesBySlot, occupants)
         local yaw = tonumber(frame.rotation.y) or 0
         local refYaw = tonumber(refFig.rotation.y) or 180
         local deltaDeg = shortestSignedDelta(refYaw, yaw)
-        local rotated = U.frameAfterRigidYawAboutCenter(center, refFig, deltaDeg)
+        local rigidCenter = center
+        local groupIndex = math.floor(tonumber(frame.groupIndex) or 0)
+        if groupIndex >= 1 then
+            local P = ScatterLayout.pcGroupOrigin(groupIndex)
+            if P ~= nil then
+                rigidCenter = P
+            end
+        end
+        local rotated = U.frameAfterRigidYawAboutCenter(rigidCenter, refFig, deltaDeg)
         local shift = Vector(frame.position) - Vector(rotated.position)
         local rigid = { deltaDeg = deltaDeg, shift = shift }
-        packedFrames[slot] = { frame = frame, rigid = rigid }
-        if slot == 1 then
+        local poseFrame = {
+            position = Vector(frame.position),
+            rotation = Vector(frame.rotation),
+        }
+        packedFrames[slot] = { frame = poseFrame, rigid = rigid }
+        if worldSlotFromPackedTableSlot(slot) == 3 then
             slot1Rigid = rigid
         end
     end
@@ -747,8 +770,9 @@ local function applyPcRigs(framesBySlot, occupants)
         local occ = occupants[i]
         local packed = packedFrames[occ.tableSlot]
         if packed ~= nil then
+            movePcFigurineToScatterPose(occ.occupantKey, packed.frame)
             seatRigidByKey[occ.occupantKey] = packed.rigid
-            if slot1Rigid == nil then
+            if slot1Rigid == nil and worldSlotFromPackedTableSlot(occ.tableSlot) == 3 then
                 slot1Rigid = packed.rigid
             end
         end
@@ -808,6 +832,7 @@ function ScatterMode.applyWorldLayout()
                     framesBySlot[slot + (i - 1) * 10] = {
                         position = pose.position,
                         rotation = pose.rotation,
+                        groupIndex = i,
                     }
                     occupants[#occupants + 1] = {
                         occupantKey = color,
@@ -1087,29 +1112,38 @@ function ScatterMode.applyFromControlBoard()
         if holes == nil then
             return
         end
-        local bestSlot = nil
-        local bestD = nil
-        for slot, hole in pairs(holes.pcHolesBySlot) do
-            if hole ~= nil then
-                local d = localDistSq(hole, loc)
-                if bestD == nil or d < bestD then
-                    bestD = d
-                    bestSlot = slot
+        removeCharacterFromAllGroups(pcKey)
+        local area = pack[ScatterLayout.areaKeyForGroup(gi)]
+        local used = {}
+        for _, row in pairs(area.centerCharacters) do
+            if U.Type(row) == "table" then
+                local s = math.floor(tonumber(row.slot) or 0)
+                if s >= 1 and s <= 5 then
+                    used[s] = true
                 end
             end
         end
-        if bestSlot == nil then
-            return
-        end
-        local area = pack[ScatterLayout.areaKeyForGroup(gi)]
-        for existingKey, row in pairs(area.centerCharacters) do
-            if row.slot == bestSlot then
-                U.AlertGM("Scatter Apply: two PCs claimed slot " .. tostring(bestSlot) .. " in " .. ScatterLayout.areaKeyForGroup(gi) .. " (" .. existingKey .. ", " .. pcKey .. ").")
-                return
+        -- Match drop handler: first PC → slot 3; joins pick the nearest *free* hole (not abort on gold).
+        local slot = nil
+        local bestD = nil
+        for s, hole in pairs(holes.pcHolesBySlot) do
+            if hole ~= nil and used[s] ~= true then
+                local d = localDistSq(hole, loc)
+                if bestD == nil or d < bestD then
+                    bestD = d
+                    slot = s
+                end
             end
         end
+        if slot == nil then
+            slot = ScatterLayout.nextFreePcWorldSlot(used)
+        end
+        if slot == nil then
+            U.AlertGM("Scatter Apply: group " .. tostring(gi) .. " already has five PCs.")
+            return
+        end
         area.centerCharacters[pcKey] = {
-            slot = bestSlot,
+            slot = slot,
             isPlayingNPC = false,
             isPresent = true,
         }
