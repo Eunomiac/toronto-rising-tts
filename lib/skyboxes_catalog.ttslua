@@ -608,21 +608,21 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       isOutdoors = true,
       isDaytime = true,
       weather = {},
-      locationAudio = "horseDrawnTraffic",
+      locationAudio = "horseDrawnTraffic"
     },
     panelB = {
       display = "Boarding house",
       isOutdoors = false,
       isDaytime = true,
       weather = {},
-      locationAudio = "quietIndoor",
+      locationAudio = "quietIndoor"
     },
     panelC = {
       display = "Gagnon's salon",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "quietIndoor",
+      locationAudio = "quietIndoor"
     },
     panelD = {
       display = "Nighttime alleyway",
@@ -631,39 +631,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "rainLight"
       },
-      locationAudio = "oldAlley",
+      locationAudio = "oldAlley"
     },
     splashText = "Raised from poverty by Oliver Gagnon of Clan Toreador, in 1884 Lucien is Embraced into a lineage of storytellers. In the waning years of thr 19th century, his sire opens doors from garrets and boulevards into gilded salons, where patronage, predation, ambition, and loyalty continually change the terms of his immortality.",
     npcs = {
       {
-        label = "",
+        name = "mem_oliverGagnon",
+        fullName = "Oliver Gagnon",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -681,60 +701,80 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "wartimeStreet",
+      locationAudio = "wartimeStreet"
     },
     panelB = {
       display = "Gagnon's townhouse",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "quietIndoor",
+      locationAudio = "quietIndoor"
     },
     panelC = {
       display = "Gare de l'Est",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "railwayStation",
+      locationAudio = "railwayStation"
     },
     panelD = {
       display = "Military hospital",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "fieldHospital",
+      locationAudio = "fieldHospital"
     },
     splashText = "Paris teaches Lucien every elegance the Camarilla can offer—and every obligation. He moves through Gagnon’s court, changing alliances and mortal entanglements, Embracing Damien Abanda in 1915 as war closes around the city. In the end, he flees Europe with his childe in tow, breaking the chains of both sect and sire.",
     npcs = {
       {
-        label = "",
+        name = "mem_oliverGagnon",
+        fullName = "Oliver Gagnon",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "mem_damienAbanda",
+        fullName = "Damien Abanda",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -752,7 +792,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "militaryOccupation",
+      locationAudio = "militaryOccupation"
     },
     panelB = {
       display = "Bombarded rail yard",
@@ -762,7 +802,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainHeavy",
         "windMed"
       },
-      locationAudio = "distantBattle",
+      locationAudio = "distantBattle"
     },
     panelC = {
       display = "Cantina courtyard",
@@ -772,7 +812,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "diveBar",
+      locationAudio = "diveBar"
     },
     panelD = {
       display = "Field hospital camp",
@@ -782,39 +822,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "fieldHospital",
+      locationAudio = "fieldHospital"
     },
     splashText = "Lucien and Damien make their unlives in Celaya without Camarilla protection. Across rail yards, plazas, haciendas, hospitals, markets, and midnight refuges, freedom offers them new alliances alongside new threats, while planting the seeds of a rift between sire and childe.",
     npcs = {
       {
-        label = "",
+        name = "mem_damienAbanda",
+        fullName = "Damien Abanda",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -829,14 +889,14 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "jazzClub",
+      locationAudio = "jazzClub"
     },
     panelB = {
       display = "Ruined Elysium",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "quietIndoor",
+      locationAudio = "quietIndoor"
     },
     panelC = {
       display = "Revolt-torn boulevard",
@@ -846,46 +906,66 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "wartimeStreet",
+      locationAudio = "wartimeStreet"
     },
     panelD = {
       display = "Intact Elysium",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "quietIndoor",
+      locationAudio = "quietIndoor"
     },
     splashText = "Lucien and Damien build a place in a city where glamour, hunger, labour, migration, and rebellion share the same streets. Nightclubs, studios, courts, criminal networks, and revolutionary cells test whether liberty can survive the oppression of the Ivory Tower. As the Second Anarch Revolt grips LA in 1944, Lucien is driven into torpor beneath the sands of the Mojave—and believes it was his childe who put him there.",
     npcs = {
       {
-        label = "",
+        name = "mem_damienAbanda",
+        fullName = "Damien Abanda",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -902,7 +982,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windMed"
       },
-      locationAudio = "lowWindAmbient",
+      locationAudio = "lowWindAmbient"
     },
     panelB = {
       display = "Abandoned mining camp",
@@ -911,7 +991,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windMed"
       },
-      locationAudio = "lowWindAmbient",
+      locationAudio = "lowWindAmbient"
     },
     panelC = {
       display = "Desert search camp",
@@ -920,46 +1000,66 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windLow"
       },
-      locationAudio = "crickets",
+      locationAudio = "crickets"
     },
     panelD = {
       display = "Collapsed mine chamber",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "dungeon",
+      locationAudio = "dungeon"
     },
     splashText = "Fomórach follows an inherited boon and a thinning trail of evidence across the Mojave. Lucien lies beyond history beneath the desert while each failed lead deepens the search—until discovery introduces new perils, as Fomórach awakens a starving ancilla driven to madness by a decade of hunger.",
     npcs = {
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -976,7 +1076,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windLow"
       },
-      locationAudio = "roadsideTraffic",
+      locationAudio = "roadsideTraffic"
     },
     panelB = {
       display = "Roadside diner",
@@ -985,7 +1085,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "rainLight"
       },
-      locationAudio = "diveBar",
+      locationAudio = "diveBar"
     },
     panelC = {
       display = "Southern gas station",
@@ -995,7 +1095,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "roadsideTraffic",
+      locationAudio = "roadsideTraffic"
     },
     panelD = {
       display = "Pine campsite",
@@ -1004,39 +1104,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windLow"
       },
-      locationAudio = "crickets",
+      locationAudio = "crickets"
     },
     splashText = "Lucien and Fomórach cross the southern United States from desert highways into blistering roads, neon motor courts, diners, garages, and segregated towns. Every breakdown, police stop, feeding problem, false identity, and approaching dawn forces them to improvise together, forging a boon into a bond.",
     npcs = {
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -1054,7 +1174,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "roadsideTraffic",
+      locationAudio = "roadsideTraffic"
     },
     panelB = {
       display = "Interstate restaurant",
@@ -1063,7 +1183,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "rainLight"
       },
-      locationAudio = "diveBar",
+      locationAudio = "diveBar"
     },
     panelC = {
       display = "Industrial waterfront",
@@ -1073,7 +1193,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "industry",
+      locationAudio = "industry"
     },
     panelD = {
       display = "Border crossing",
@@ -1083,39 +1203,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "cityTraffic",
+      locationAudio = "cityTraffic"
     },
     splashText = "The road carries Lucien and Fomórach through Midwestern highways, Rust Belt cities, Great Lakes industry, winter motor courts, freight corridors, and increasingly guarded borders. Cold weather, feeding, failing machinery, territorial Kindred, and official scrutiny follow them north.",
     npcs = {
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -1130,7 +1270,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "railwayStation",
+      locationAudio = "railwayStation"
     },
     panelB = {
       display = "Downtown street",
@@ -1140,53 +1280,73 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "streetcarTraffic",
+      locationAudio = "streetcarTraffic"
     },
     panelC = {
       display = "Camarilla receiving room",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "quietIndoor",
+      locationAudio = "quietIndoor"
     },
     panelD = {
       display = "Rail-corridor haven",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "industry",
+      locationAudio = "industry"
     },
     splashText = "Lucien and Fomórach rebuild themselves beneath the controlled authority of the Iron Praxis. Union Station, streetcars, warehouses, immigrant neighbourhoods, new towers, courtrooms, and temporary havens become the ground on which they turn a desert bargain into an uneasy partnership. As Toronto modernizes around them, Lucien works to regain Camarilla trust while Fomórach tests what place the city—and their alliance—can offer him.",
     npcs = {
       {
-        label = "",
+        name = "mem_maximillianSteele",
+        fullName = "Maximillian Steele",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "mem_frederikScheer",
+        fullName = "Frederik Scheer",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "mem_agnesBellanger",
+        fullName = "Agnes Bellanger",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -1204,60 +1364,80 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "cityTraffic",
+      locationAudio = "cityTraffic"
     },
     panelB = {
       display = "Biker clubhouse",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "diveBar",
+      locationAudio = "diveBar"
     },
     panelC = {
       display = "Jazz club",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "jazzClub",
+      locationAudio = "jazzClub"
     },
     panelD = {
       display = "Sabbat chapel",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "ritualRoom",
+      locationAudio = "ritualRoom"
     },
     splashText = "Montreal becomes Lucien’s long crucible—the City of Black Miracles will be his redemption. Across churches, jazz clubs, winter streets, biker strongholds, industrial ruins, mortal crises, and the city's own black soul, he stands deep behind enemy lines to earn his place in the Camarilla by facing their most hated enemy.",
     npcs = {
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -1276,7 +1456,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "windMax",
         "thunder"
       },
-      locationAudio = "roadsideTraffic",
+      locationAudio = "roadsideTraffic"
     },
     panelB = {
       display = "Illusory quarry campground",
@@ -1287,39 +1467,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "windMax",
         "thunder"
       },
-      locationAudio = "eerieForest",
+      locationAudio = "eerieForest"
     },
     splashText = "In 1999, the Week of Nightmares strikes while Lucien returns to Toronto. Ravnos, driven to madness and gifted with explosive Chimerstry, twist the woods and highways around Kingston into impossibility. Lucien struggles to distinguish threat from illusion—and must decide whether two neonates of a doomed clan can be saved when reality finally settles.",
     npcs = {
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -1334,14 +1534,14 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       isOutdoors = false,
       isDaytime = true,
       weather = {},
-      locationAudio = "quietIndoor",
+      locationAudio = "quietIndoor"
     },
     panelB = {
       display = "Strandza townhouse",
       isOutdoors = false,
       isDaytime = true,
       weather = {},
-      locationAudio = "quietIndoor",
+      locationAudio = "quietIndoor"
     },
     panelC = {
       display = "Market square",
@@ -1350,7 +1550,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windLow"
       },
-      locationAudio = "marketCrowd",
+      locationAudio = "marketCrowd"
     },
     panelD = {
       display = "Posting-inn courtyard",
@@ -1359,39 +1559,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windLow"
       },
-      locationAudio = "horseDrawnTraffic",
+      locationAudio = "horseDrawnTraffic"
     },
     splashText = "Before immortality, Aishe grows from a wealthy merchant’s daughter into the true steward of the indebted Strandza household. Across Brașov’s salons, markets, churches, kitchens, and winter roads, she raises three children, contains Andrei’s scandals, and learns how little security wealth affords a woman whose life is treated as an asset. By 1833, even departure promises another kind of confinement.",
     npcs = {
       {
-        label = "",
+        name = "mem_andreiStrandza",
+        fullName = "Andrei Strandza",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -1409,14 +1629,14 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "historicStreet",
+      locationAudio = "historicStreet"
     },
     panelB = {
       display = "Aveline's salon",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "quietIndoor",
+      locationAudio = "quietIndoor"
     },
     panelC = {
       display = "Mississippi levee",
@@ -1426,7 +1646,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "waterside",
+      locationAudio = "waterside"
     },
     panelD = {
       display = "Union-occupied mansion",
@@ -1436,39 +1656,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "militaryOccupation",
+      locationAudio = "militaryOccupation"
     },
     splashText = "New Orleans offers Aishe freedom, love, and damnation in the person of Lady Aveline. Their affair ends one mortal life and begins another existence shaped by Hunger, prophecy, Malkavian tutelage, and the strange intimacy of the Cobweb. Through antebellum splendor, epidemic, civil war, and occupation, their shared refuge endures—until Aveline vanishes and leaves Aishe to survive alone.",
     npcs = {
       {
-        label = "",
+        name = "mem_ladyAvelineDubois",
+        fullName = "Lady Aveline Dubois",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "mem_andreiStrandza",
+        fullName = "Andrei Strandza",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -1485,21 +1725,21 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windLow"
       },
-      locationAudio = "waterside",
+      locationAudio = "waterside"
     },
     panelB = {
       display = "Boardinghouse fortune room",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "quietIndoor",
+      locationAudio = "quietIndoor"
     },
     panelC = {
       display = "Doran's Elysium",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "softIndoor",
+      locationAudio = "softIndoor"
     },
     panelD = {
       display = "Oracle theatre",
@@ -1509,39 +1749,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "historicStreet",
+      locationAudio = "historicStreet"
     },
     splashText = "Abandoned but unbroken, Aishe crosses Reconstruction New Orleans as reader, confidence artist, wanderer, and reluctant Anarch. A deck of stolen playing cards guides her back toward the city and into Prince Doran’s hopeful court, where recognition demands a terrible price. Over the decades, she turns visions into influence and fashions herself into the oracle the Camarilla cannot afford to dismiss.",
     npcs = {
       {
-        label = "",
+        name = "mem_princeDoran",
+        fullName = "Prince Doran",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -1556,7 +1816,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "quietIndoor",
+      locationAudio = "quietIndoor"
     },
     panelB = {
       display = "Wartime port ward",
@@ -1566,14 +1826,14 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "waterside",
+      locationAudio = "waterside"
     },
     panelC = {
       display = "Jazz Age Elysium",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "jazzClub",
+      locationAudio = "jazzClub"
     },
     panelD = {
       display = "Flood relief camp",
@@ -1583,39 +1843,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainHeavy",
         "windMed"
       },
-      locationAudio = "waterside",
+      locationAudio = "waterside"
     },
     splashText = "Aishe enters the twentieth century as one of Doran’s most polished and useful courtiers. Her salon receives anxious elites while war, influenza, Prohibition, jazz, organized crime, and the Mississippi flood transform the city beyond its doors. Every catastrophe brings clients, rivals, moral compromises, and visions no one wishes to hear—deepening both her dominion and her responsibility for what she foresees.",
     npcs = {
       {
-        label = "",
+        name = "mem_princeDoran",
+        fullName = "Prince Doran",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -1630,7 +1910,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "quietIndoor",
+      locationAudio = "quietIndoor"
     },
     panelB = {
       display = "Wartime shipyard",
@@ -1640,7 +1920,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "industry",
+      locationAudio = "industry"
     },
     panelC = {
       display = "Postwar neighborhood",
@@ -1650,46 +1930,66 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "streetcarTraffic",
+      locationAudio = "streetcarTraffic"
     },
     panelD = {
       display = "Doran's funeral Elysium",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "quietIndoor",
+      locationAudio = "quietIndoor"
     },
     splashText = "Depression, global war, and uneasy prosperity test everything Aishe has built beneath Doran’s protection. She reads for rulers, workers, soldiers, mourners, and visiting Kindred while New Orleans changes around them, preserving her influence through fear and upheaval. In 1955, Doran’s Final Death ends the dream at the heart of his court, and Marcel Guilbeau inherits its hollow remains.",
     npcs = {
       {
-        label = "",
+        name = "mem_princeDoran",
+        fullName = "Prince Doran",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "mem_marcelGuilbeau",
+        fullName = "Marcel Guilbeau",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -1704,7 +2004,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "quietIndoor",
+      locationAudio = "quietIndoor"
     },
     panelB = {
       display = "Civil-rights meeting room",
@@ -1714,53 +2014,73 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "cityChatter",
+      locationAudio = "cityChatter"
     },
     panelC = {
       display = "Disco club",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "nightclub",
+      locationAudio = "nightclub"
     },
     panelD = {
       display = "Guilbeau's court",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "softIndoor",
+      locationAudio = "softIndoor"
     },
     splashText = "Under Marcel’s empty rule, Aishe withdraws from courtly ambition without surrendering her place in the city. Her neighborhood fortune shop becomes the human center of her nights, carrying her through civil-rights struggle, feminism, queer liberation, antiwar protest, occult fashion, and disco. Among ordinary women seeking truths they can use, an immortal oracle begins to recover the conscience power once cost her.",
     npcs = {
       {
-        label = "",
+        name = "mem_marcelGuilbeau",
+        fullName = "Marcel Guilbeau",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -1775,14 +2095,14 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "softIndoor",
+      locationAudio = "softIndoor"
     },
     panelB = {
       display = "Fortune shop",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "quietIndoor",
+      locationAudio = "quietIndoor"
     },
     panelC = {
       display = "Nightlife street",
@@ -1792,7 +2112,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "cityRevelers",
+      locationAudio = "cityRevelers"
     },
     panelD = {
       display = "1997 back office",
@@ -1801,39 +2121,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "rainHeavy"
       },
-      locationAudio = "quietIndoor",
+      locationAudio = "quietIndoor"
     },
     splashText = "Aishe’s final New Orleans years unfold between Marcel’s stagnant court and a changing city of occult tourism, political reinvestment, aggressive policing, AIDS-era grief, and restless nightlife. Decades of clients and memories accumulate in her shop until Aveline returns in 1997 with a warning, a prophecy, and a mistaken postcard. Their second meeting sends Aishe north toward an uncertain inheritance.",
     npcs = {
       {
-        label = "",
+        name = "mem_marcelGuilbeau",
+        fullName = "Marcel Guilbeau",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "mem_ladyAvelineDubois",
+        fullName = "Lady Aveline Dubois",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -1851,60 +2191,80 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "cityTraffic",
+      locationAudio = "cityTraffic"
     },
     panelB = {
       display = "Occult storefront",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "quietIndoor",
+      locationAudio = "quietIndoor"
     },
     panelC = {
       display = "Iron Prince's court",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "softIndoor",
+      locationAudio = "softIndoor"
     },
     panelD = {
       display = "Condominium haven",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "softHum",
+      locationAudio = "softHum"
     },
     splashText = "A postcard meant for another city brings Aishe to Toronto, where unfamiliar winters and the Iron Praxis demand that she begin again. She earns recognition, builds a haven and clientele, adapts prophecy to computers and changing media, and makes herself useful through blackouts, public fear, protests, and court petitions. By 2016, the stranger has become an established voice in a city nearing its next upheaval.",
     npcs = {
       {
-        label = "",
+        name = "mem_maximillianSteele",
+        fullName = "Maximillian Steele",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "mem_frederikScheer",
+        fullName = "Frederik Scheer",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "mem_agnesBellanger",
+        fullName = "Agnes Bellanger",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -1921,21 +2281,21 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windMed"
       },
-      locationAudio = "shipDeck",
+      locationAudio = "shipDeck"
     },
     panelB = {
       display = "Nassau tavern",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "diveBar",
+      locationAudio = "diveBar"
     },
     panelC = {
       display = "Captured ship interior",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "shipDeck",
+      locationAudio = "shipDeck"
     },
     panelD = {
       display = "Mangrove hideout",
@@ -1944,39 +2304,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windLow"
       },
-      locationAudio = "waterside",
+      locationAudio = "waterside"
     },
     splashText = "Across the Caribbean, Caesar survives his later mortal years as an enslaved mariner passed between merchants, privateers, and pirates. Harbors, holds, storms, punishment, mutiny, and escape teach him every craft by which ships and men may be mastered. The legend of Black Caesar grows from violence imposed and violence answered, carrying him at last toward Spanish Florida and the death awaiting him there.",
     npcs = {
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -1993,7 +2373,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windLow"
       },
-      locationAudio = "crickets",
+      locationAudio = "crickets"
     },
     panelB = {
       display = "Castillo prison yard",
@@ -2003,7 +2383,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "dungeon",
+      locationAudio = "dungeon"
     },
     panelC = {
       display = "Harbor tavern street",
@@ -2013,46 +2393,66 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "oldAlley",
+      locationAudio = "oldAlley"
     },
     panelD = {
       display = "Jervais's haven",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "ritualRoom",
+      locationAudio = "ritualRoom"
     },
     splashText = "In St. Augustine, Black Caesar’s mortal resistance ends at the scaffold—and Jervais de la Croix offers an immortality more binding than execution. Concealed behind a staged death, Caesar learns Hunger, blood sorcery, espionage, and the uses of being underestimated. Across forts, marshes, missions, taverns, and maroon refuges, the escaped slave becomes his sire’s hidden instrument.",
     npcs = {
       {
-        label = "",
+        name = "mem_jervaisDeLaCroix",
+        fullName = "Jervais de la Croix",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -2067,21 +2467,21 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "library",
+      locationAudio = "library"
     },
     panelB = {
       display = "Audience chamber",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "softIndoor",
+      locationAudio = "softIndoor"
     },
     panelC = {
       display = "Alchemical laboratory",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "apothecary",
+      locationAudio = "apothecary"
     },
     panelD = {
       display = "Palace street café",
@@ -2091,39 +2491,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "horseDrawnTraffic",
+      locationAudio = "horseDrawnTraffic"
     },
     splashText = "Vienna reveals the true architecture of Caesar’s new captivity. Beneath Enlightenment elegance, the Tremere Pyramid rules through stone vaults, ritual chambers, sealed orders, and servants who know their place. Among magisters, scribes, revenants, and foreign envoys, Caesar reports, studies, and obeys—discovering that House Goratrix can make a prison of immortality more complete than any ship’s hold.",
     npcs = {
       {
-        label = "",
+        name = "mem_jervaisDeLaCroix",
+        fullName = "Jervais de la Croix",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -2140,7 +2560,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windMed"
       },
-      locationAudio = "shipDeck",
+      locationAudio = "shipDeck"
     },
     panelB = {
       display = "Kingston naval shipyard",
@@ -2149,39 +2569,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windLow"
       },
-      locationAudio = "waterside",
+      locationAudio = "waterside"
     },
     splashText = "For more than three decades, Caesar carries Jervais’s will across the world’s oceans. Sailors whisper his mortal legend while he raids ships, transports captives and relics, gathers intelligence, and hides Tremere atrocities beneath the familiar terror of piracy. Storms, mutiny, imperial harbors, and moments of remorse mark the long voyage east, until his orders carry him toward New South Wales.",
     npcs = {
       {
-        label = "",
+        name = "mem_jervaisDeLaCroix",
+        fullName = "Jervais de la Croix",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -2198,7 +2638,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windLow"
       },
-      locationAudio = "frontierSettlement",
+      locationAudio = "frontierSettlement"
     },
     panelB = {
       display = "Harbor boatyard",
@@ -2207,7 +2647,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windLow"
       },
-      locationAudio = "waterside",
+      locationAudio = "waterside"
     },
     panelC = {
       display = "Bush frontier",
@@ -2216,7 +2656,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windLow"
       },
-      locationAudio = "eerieForest",
+      locationAudio = "eerieForest"
     },
     panelD = {
       display = "Government compound",
@@ -2225,39 +2665,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windLow"
       },
-      locationAudio = "frontierSettlement",
+      locationAudio = "frontierSettlement"
     },
     splashText = "New South Wales confines Caesar within another brutal experiment in power: a penal settlement struggling to become a colony. Among convicts, marines, administrators, sailors, and Indigenous peoples, he manipulates rations, punishment, escape, shipping, and occult inquiry while the harbor grows around him. Isolation sharpens both his usefulness and his doubts, before a new mission draws him toward revolution in Haiti.",
     npcs = {
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -2275,7 +2735,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "distantBattle",
+      locationAudio = "distantBattle"
     },
     panelB = {
       display = "House High Saturday",
@@ -2285,7 +2745,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "ritualDrums",
+      locationAudio = "ritualDrums"
     },
     panelC = {
       display = "Harbor district",
@@ -2295,7 +2755,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "waterside",
+      locationAudio = "waterside"
     },
     panelD = {
       display = "Market and civic street",
@@ -2305,39 +2765,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "marketCrowd",
+      locationAudio = "marketCrowd"
     },
     splashText = "Caesar arrives in Port-au-Prince amid revolution and remains as Haiti fights to define its freedom. From wartime alliances he builds House High Saturday, studying with houngans, mambos, the Samedi, revenants, and the Lwa until ritual becomes community as well as power. For fifty years he balances Haitian obligations against Jervais’s commands, living two unlives that cannot forever remain reconciled.",
     npcs = {
       {
-        label = "",
+        name = "mem_theBleakBokor",
+        fullName = "The Baron's Bleak Bokor",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "mem_jervaisDeLaCroix",
+        fullName = "Jervais de la Croix",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "mem_jeanDucheskiIPreDeath",
+        fullName = "Pre-Death Jean Ducheski Francois I",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -2354,14 +2834,14 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windMed"
       },
-      locationAudio = "shipDeck",
+      locationAudio = "shipDeck"
     },
     panelB = {
       display = "Captain's ritual cabin",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "shipDeck",
+      locationAudio = "shipDeck"
     },
     panelC = {
       display = "Port-au-Prince harbor",
@@ -2371,7 +2851,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "waterside",
+      locationAudio = "waterside"
     },
     panelD = {
       display = "Pirate attack deck",
@@ -2380,39 +2860,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windMed"
       },
-      locationAudio = "navalBattle",
+      locationAudio = "navalBattle"
     },
     splashText = "Leaving Haiti does not sever Caesar from House High Saturday; it turns the oceans into the roads between its scattered obligations. Sail and steam carry him among abolitionists, imperial patrols, Black Atlantic communities, smugglers, occult couriers, and old enemies. He transports people, letters, relics, and secrets across a changing world, until Florida once again offers the possibility of land and permanence.",
     npcs = {
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -2430,21 +2930,21 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "horseDrawnTraffic",
+      locationAudio = "horseDrawnTraffic"
     },
     panelB = {
       display = "Coastal house office",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "quietIndoor",
+      locationAudio = "quietIndoor"
     },
     panelC = {
       display = "Empty waterfront warehouse",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "quietWarehouse",
+      locationAudio = "quietWarehouse"
     },
     panelD = {
       display = "Black church and school",
@@ -2454,39 +2954,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "church",
+      locationAudio = "church"
     },
     splashText = "Caesar returns to Reconstruction St. Augustine determined to turn mobility, knowledge, and old violence into durable power. He builds respectable businesses, shipping connections, a household, and covert networks among freedpeople and the city’s competing institutions, even as House Goratrix names him Magister. The promises of the postwar South remain perilous, and by 1880 his ambitions draw him onward to New Orleans.",
     npcs = {
       {
-        label = "",
+        name = "mem_jervaisDeLaCroix",
+        fullName = "Jervais de la Croix",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -2501,7 +3021,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "quietIndoor",
+      locationAudio = "quietIndoor"
     },
     panelB = {
       display = "Mississippi riverfront",
@@ -2511,7 +3031,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "waterside",
+      locationAudio = "waterside"
     },
     panelC = {
       display = "Cemetery ritual grounds",
@@ -2521,7 +3041,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "eerieForest",
+      locationAudio = "eerieForest"
     },
     panelD = {
       display = "Market entertainment street",
@@ -2531,39 +3051,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "historicStreet",
+      locationAudio = "historicStreet"
     },
     splashText = "In Gilded Age New Orleans, Caesar surrounds himself with the wealth and ceremony denied to his mortal life. Warehouses, river traffic, Creole parlors, cemeteries, mutual-aid societies, and Black religious networks feed a growing household and occult circle. Yet every lavish success remains entangled with Goratrix assignments, spirit bargains, predation, and the question of whether power can redeem the violence that purchased it.",
     npcs = {
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -2578,21 +3118,21 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "softIndoor",
+      locationAudio = "softIndoor"
     },
     panelB = {
       display = "Intelligence archive",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "library",
+      locationAudio = "library"
     },
     panelC = {
       display = "Occult laboratory",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "apothecary",
+      locationAudio = "apothecary"
     },
     panelD = {
       display = "Boulevard railway café",
@@ -2602,39 +3142,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "horseDrawnTraffic",
+      locationAudio = "horseDrawnTraffic"
     },
     splashText = "Fin-de-siècle Vienna draws Caesar back into the Pyramid’s center, where imperial confidence conceals anxious modernity and absolute occult hierarchy. He works through laboratories, archives, salons, railway stations, and servant corridors, gathering intelligence while enduring the exclusions of those who depend upon his expertise. Altered records, foreign envoys, and hidden infiltrators deepen his distrust as obedience curdles toward eventual rebellion.",
     npcs = {
       {
-        label = "",
+        name = "mem_jervaisDeLaCroix",
+        fullName = "Jervais de la Croix",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -2649,7 +3209,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "ritualRoom",
+      locationAudio = "ritualRoom"
     },
     panelB = {
       display = "Industrial freight corridor",
@@ -2659,14 +3219,14 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "industry",
+      locationAudio = "industry"
     },
     panelC = {
       display = "Prohibition speakeasy",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "jazzClub",
+      locationAudio = "jazzClub"
     },
     panelD = {
       display = "Farmhouse forest road",
@@ -2676,39 +3236,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "eerieForest",
+      locationAudio = "eerieForest"
     },
     splashText = "Milwaukee gives Caesar allies as well as orders. Amid factories, rail yards, lakefront docks, immigrant neighborhoods, influenza wards, speakeasies, and Lupine-haunted outskirts, he serves the city’s Tremere and earns the trust of Prince Terence Merik, Regent Carna, and Apprentice Mortius. Saving Mortius wins a Life Boon—an old debt that will one night offer Caesar a path back from damnation.",
     npcs = {
       {
-        label = "",
+        name = "mem_carna",
+        fullName = "Carna",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "mem_terenceMerik",
+        fullName = "Terence Merik",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "mem_mortius",
+        fullName = "Mortius",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -2723,7 +3303,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "ritualRoom",
+      locationAudio = "ritualRoom"
     },
     panelB = {
       display = "Toledo street plaza",
@@ -2733,14 +3313,14 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "horseDrawnTraffic",
+      locationAudio = "horseDrawnTraffic"
     },
     panelC = {
       display = "Union tavern",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "diveBar",
+      locationAudio = "diveBar"
     },
     panelD = {
       display = "Railway checkpoint",
@@ -2750,39 +3330,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "railwayStation",
+      locationAudio = "railwayStation"
     },
     splashText = "Caesar comes to Toledo hunting the sire who has commanded his unlife for two centuries. As monarchy gives way to republic and Spain slides toward civil war, sacred stone, political violence, Sabbat emissaries, and returning whispers from the Lwa surround his reckoning. He destroys Jervais openly, abandons the pretense of loyalty, and departs for Montreal with freedom purchased at terrible spiritual cost.",
     npcs = {
       {
-        label = "",
+        name = "mem_jervaisDeLaCroix",
+        fullName = "Jervais de la Croix",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -2797,7 +3397,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "ritualRoom",
+      locationAudio = "ritualRoom"
     },
     panelB = {
       display = "Wartime harbor district",
@@ -2807,7 +3407,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "industry",
+      locationAudio = "industry"
     },
     panelC = {
       display = "Neon club district",
@@ -2817,46 +3417,66 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "cityRevelers",
+      locationAudio = "cityRevelers"
     },
     panelD = {
       display = "Goratrix laboratory",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "laboratory",
+      locationAudio = "laboratory"
     },
     splashText = "Montreal becomes Caesar’s stronghold within the Sabbat and House Goratrix. Across six decades of war, industrial change, revolution, separatist crisis, biker power, occult research, and brutal pack politics, he rises from infiltrator to commander while the Lwa fall silent. In 1998, a purge begun far away reaches across the blood to destroy the antitribu—and leaves Caesar searching for another way to survive.",
     npcs = {
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -2871,21 +3491,21 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "office",
+      locationAudio = "office"
     },
     panelB = {
       display = "Tremere archive",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "library",
+      locationAudio = "library"
     },
     panelC = {
       display = "Diner and bar",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "diveBar",
+      locationAudio = "diveBar"
     },
     panelD = {
       display = "Waterfront parking structure",
@@ -2895,39 +3515,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "waterside",
+      locationAudio = "waterside"
     },
     splashText = "After the purge, Caesar returns to Milwaukee with enemies behind him and Mortius’s Life Boon in hand. Four years of interviews, blood tests, forged records, favors, threats, and carefully edited testimony transform a Sabbat war leader into a supposed Camarilla double agent. Beneath late-century bureaucracy and surveillance, he constructs a future credible enough to carry him onward to Toronto.",
     npcs = {
       {
-        label = "",
+        name = "mem_mortius",
+        fullName = "Mortius",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -2944,7 +3584,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windLow"
       },
-      locationAudio = "residentialCourtyard",
+      locationAudio = "residentialCourtyard"
     },
     panelB = {
       display = "Belfast marketplace",
@@ -2953,7 +3593,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windLow"
       },
-      locationAudio = "marketCrowd",
+      locationAudio = "marketCrowd"
     },
     panelC = {
       display = "Atlantic emigrant ship",
@@ -2962,7 +3602,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windMed"
       },
-      locationAudio = "shipDeck",
+      locationAudio = "shipDeck"
     },
     panelD = {
       display = "Colonial settlement",
@@ -2971,39 +3611,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windLow"
       },
-      locationAudio = "frontierSettlement",
+      locationAudio = "frontierSettlement"
     },
     splashText = "Before the curse, Fomórach is a tall, hard-built Belfast boy among too many siblings and too few opportunities. Family labor, Catholic faith, sectarian pressure, recruiters’ promises, and a dangerous Atlantic crossing carry him from familiar streets into colonial indenture. By seventeen, hunger, exploitation, resistance, and flight have drawn him beyond every protection he knew—and into Drake’s waiting shadow.",
     npcs = {
       {
-        label = "",
+        name = "mem_fomorachPreEmbrace",
+        fullName = "Pre-Embrace Fomórach",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -3020,7 +3680,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windLow"
       },
-      locationAudio = "frontierSettlement",
+      locationAudio = "frontierSettlement"
     },
     panelB = {
       display = "Winter collapse",
@@ -3029,14 +3689,14 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windWinterMed"
       },
-      locationAudio = "lowWindAmbient",
+      locationAudio = "lowWindAmbient"
     },
     panelC = {
       display = "Settlement meetinghouse",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "fireplace",
+      locationAudio = "fireplace"
     },
     panelD = {
       display = "Ravine refuge",
@@ -3045,39 +3705,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windWinterMed"
       },
-      locationAudio = "eerieForest",
+      locationAudio = "eerieForest"
     },
     splashText = "On a failing frontier, Fomórach learns to survive scarcity before immortality makes hunger eternal. Indentured among suspicious Puritans, he becomes Drake’s overlooked informant, then his ghoul, enduring winter, ration conflict, isolation, and the threat of Lupines. In 1786, Drake preserves his endangered bloodline through the Embrace, and a sturdy Irish boy awakens bearing the monstrous curse of Wendigo.",
     npcs = {
       {
-        label = "",
+        name = "mem_fomorachPreEmbrace",
+        fullName = "Pre-Embrace Fomórach",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -3095,7 +3775,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "waterside",
+      locationAudio = "waterside"
     },
     panelB = {
       display = "War-damaged fort",
@@ -3105,7 +3785,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "militaryCamp",
+      locationAudio = "militaryCamp"
     },
     panelC = {
       display = "Market and civic street",
@@ -3115,46 +3795,66 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "horseDrawnTraffic",
+      locationAudio = "horseDrawnTraffic"
     },
     panelD = {
       display = "Underground refuge",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "sewers",
+      locationAudio = "sewers"
     },
     splashText = "Fomórach arrives as York is being carved from forest and shoreline, then watches the garrison settlement become Toronto. War, bombardment, rebuilding, trade, rebellion, and Maximillian Steele’s Iron Praxis reshape the streets above while he and Drake map cellars, tunnels, secrets, and escape routes below. Decades of surveillance and service turn apprenticeship into mastery, until Fomórach finally earns the right to leave his sire’s side.",
     npcs = {
       {
-        label = "",
+        name = "mem_maximillianSteele",
+        fullName = "Maximillian Steele",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -3172,7 +3872,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "eerieForest",
+      locationAudio = "eerieForest"
     },
     panelB = {
       display = "Dockside rookery",
@@ -3182,53 +3882,73 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "oldAlley",
+      locationAudio = "oldAlley"
     },
     panelC = {
       display = "Lodging house and gin room",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "diveBar",
+      locationAudio = "diveBar"
     },
     panelD = {
       display = "Merritt's Elysium",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "softIndoor",
+      locationAudio = "softIndoor"
     },
     splashText = "Fomórach returns to Belfast amid famine and dispossession, only to find his ancestral home destroyed and his family’s fate written in absence. His grief becomes a bloody passage to London, where wealth and misery share gaslit streets and an older Kindred court answers violence with judgment. Drake spends hard-won influence to save him, and Fomórach returns to Toronto staked inside a coffin.",
     npcs = {
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -3243,60 +3963,80 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "sewers",
+      locationAudio = "sewers"
     },
     panelB = {
       display = "Great Fire cellar",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "urbanFire",
+      locationAudio = "urbanFire"
     },
     panelC = {
       display = "Streetcar tunnel cache",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "industry",
+      locationAudio = "industry"
     },
     panelD = {
       display = "Postwar utility room",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "industry",
+      locationAudio = "industry"
     },
     splashText = "Back beneath Toronto, Fomórach begins a century of penance, service, and patient mastery. Railways, sewers, fires, electric grids, streetcar tunnels, bootlegging routes, wartime infrastructure, and new communications accumulate into an undercity only he fully understands. Through disasters, Sabbat pressure, Drake’s missions, and a changing mortal population, punishment becomes purpose—and trust is slowly restored.",
     npcs = {
       {
-        label = "",
+        name = "mem_maximillianSteele",
+        fullName = "Maximillian Steele",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "mem_frederikScheer",
+        fullName = "Frederik Scheer",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "mem_agnesBellanger",
+        fullName = "Agnes Bellanger",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -3313,7 +4053,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windWinterMed"
       },
-      locationAudio = "lowWindAmbient",
+      locationAudio = "lowWindAmbient"
     },
     panelB = {
       display = "Empty farmhouse",
@@ -3322,7 +4062,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windLow"
       },
-      locationAudio = "lowWindAmbient",
+      locationAudio = "lowWindAmbient"
     },
     panelC = {
       display = "Grain depot",
@@ -3331,46 +4071,66 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windWinterLow"
       },
-      locationAudio = "railwayStation",
+      locationAudio = "railwayStation"
     },
     panelD = {
       display = "Soviet office and clinic",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "fieldHospital",
+      locationAudio = "fieldHospital"
     },
     splashText = "Fomórach enters famine-stricken Kharkiv searching for someone capable of surviving the Wendigo curse. Empty villages, guarded grain, overwhelmed clinics, Soviet surveillance, and desperate black markets turn every journey into an encounter with mortal hunger and supernatural temptation. Among the dying he finds Oksana “Mara” Ziva, and chooses a childe whose rage may preserve what the world is trying to erase.",
     npcs = {
       {
-        label = "",
+        name = "mem_maraPreEmbrace",
+        fullName = "Pre-Embrace Oksana Mara Ziva",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -3388,7 +4148,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "distantBattle",
+      locationAudio = "distantBattle"
     },
     panelB = {
       display = "Jaffa port",
@@ -3398,7 +4158,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "waterside",
+      locationAudio = "waterside"
     },
     panelC = {
       display = "Refugee shelter",
@@ -3408,7 +4168,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "militaryCamp",
+      locationAudio = "militaryCamp"
     },
     panelD = {
       display = "Checkpoint clinic",
@@ -3418,39 +4178,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "fieldHospital",
+      locationAudio = "fieldHospital"
     },
     splashText = "Jaffa is transformed by war, flight, military rule, confiscation, and the struggle of displaced communities to endure. Fomórach moves through damaged streets, clinics, shelters, abandoned homes, and the old port while searching for resilience amid catastrophe. In Yusuf “Palis” bin Yafa he finds a possible successor, but the Embrace begins a relationship whose loyalty will have to be tested.",
     npcs = {
       {
-        label = "",
+        name = "mem_palisPreEmbrace",
+        fullName = "Pre-Embrace Yusuf bin Yafa",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -3465,60 +4245,80 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "industry",
+      locationAudio = "industry"
     },
     panelB = {
       display = "Subway maintenance depot",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "subway",
+      locationAudio = "subway"
     },
     panelC = {
       display = "Utility nexus",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "industry",
+      locationAudio = "industry"
     },
     panelD = {
       display = "Intelligence refuge",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "office",
+      locationAudio = "office"
     },
     splashText = "Fomórach returns to Toronto with Lucien and settles the boon that carried them across a continent. As subway excavations become service tunnels and telecommunications turn Drake’s undercity into an intelligence network, he evolves from visible enforcer into covert broker of secrets. Workers, runaways, police, engineers, hackers, ghouls, and rival sects pass through his hidden domain while succession draws steadily nearer.",
     npcs = {
       {
-        label = "",
+        name = "mem_maximillianSteele",
+        fullName = "Maximillian Steele",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "mem_frederikScheer",
+        fullName = "Frederik Scheer",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "mem_agnesBellanger",
+        fullName = "Agnes Bellanger",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -3535,7 +4335,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windLow"
       },
-      locationAudio = "residentialCourtyard",
+      locationAudio = "residentialCourtyard"
     },
     panelB = {
       display = "Night souq",
@@ -3544,14 +4344,14 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windLow"
       },
-      locationAudio = "indoorMarket",
+      locationAudio = "indoorMarket"
     },
     panelC = {
       display = "Sufi study",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "library",
+      locationAudio = "library"
     },
     panelD = {
       display = "Oasis city gate",
@@ -3560,39 +4360,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windMed"
       },
-      locationAudio = "marketCrowd",
+      locationAudio = "marketCrowd"
     },
     splashText = "Mortal Rashid grows with Diriyah as an oasis settlement becomes the heart of a rising state. Family duty, Sufi devotion, Wahhabi reform, scholarship, trade, diplomacy, and war teach him to weigh conviction against coexistence while power narrows the space between them. His intelligence attracts Laleh’s hidden notice, and each compromise makes him more valuable to the Web of Knives.",
     npcs = {
       {
-        label = "",
+        name = "mem_lalehBintSaif",
+        fullName = "Laleh bint Saif",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -3609,7 +4429,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windLow"
       },
-      locationAudio = "weaponsTraining",
+      locationAudio = "weaponsTraining"
     },
     panelB = {
       display = "Wartime ration market",
@@ -3618,7 +4438,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windMed"
       },
-      locationAudio = "indoorMarket",
+      locationAudio = "indoorMarket"
     },
     panelC = {
       display = "Gatehouse watchtower",
@@ -3627,46 +4447,66 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windMed"
       },
-      locationAudio = "lowWindAmbient",
+      locationAudio = "lowWindAmbient"
     },
     panelD = {
       display = "Intelligence study",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "library",
+      locationAudio = "library"
     },
     splashText = "Laleh’s Embrace brings Rashid into the Warrior Caste and turns political service into immortal espionage. He learns coded messages, infiltration, interrogation, feeding, and clan judgment while Diriyah fortifies itself against the advancing Ottoman campaign. Secret orders collide with mortal loyalties, and Rashid’s growing certainty prepares the mistake that will destroy a prince, devastate a city, and haunt his philosophy for centuries.",
     npcs = {
       {
-        label = "",
+        name = "mem_lalehBintSaif",
+        fullName = "Laleh bint Saif",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -3683,7 +4523,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windMed"
       },
-      locationAudio = "distantBattle",
+      locationAudio = "distantBattle"
     },
     panelB = {
       display = "Military camp",
@@ -3692,7 +4532,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windMed"
       },
-      locationAudio = "militaryCamp",
+      locationAudio = "militaryCamp"
     },
     panelC = {
       display = "Shattered mosque",
@@ -3701,7 +4541,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windLow"
       },
-      locationAudio = "church",
+      locationAudio = "church"
     },
     panelD = {
       display = "Burial ground",
@@ -3710,39 +4550,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windMed"
       },
-      locationAudio = "lowWindAmbient",
+      locationAudio = "lowWindAmbient"
     },
     splashText = "Diriyah has fallen, and Rashid walks through the ruins of everything certainty promised to defend. The destruction of Prince Ibrahim Kethüda proves catastrophic; occupation, prison lines, graves, stripped gardens, and clan judgment replace triumph. From the ashes Rashid takes a mysterious ring, while Laleh answers him only with silence. He leaves for Alamut carrying penance, prophecy, and a secret he cannot yet understand.",
     npcs = {
       {
-        label = "",
+        name = "mem_ibrahimKethuda",
+        fullName = "Ibrahim Kethüda",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "mem_lalehBintSaif",
+        fullName = "Laleh bint Saif",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -3759,21 +4619,21 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windMed"
       },
-      locationAudio = "lowWindAmbient",
+      locationAudio = "lowWindAmbient"
     },
     panelB = {
       display = "Manuscript library",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "library",
+      locationAudio = "library"
     },
     panelC = {
       display = "Blood Sorcery chamber",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "ritualRoom",
+      locationAudio = "ritualRoom"
     },
     panelD = {
       display = "Mountain training yard",
@@ -3782,39 +4642,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windMed"
       },
-      locationAudio = "weaponsTraining",
+      locationAudio = "weaponsTraining"
     },
     splashText = "At Alamut, Rashid submits his catastrophe to the judgment of the Banu Haqim. Two decades among libraries, training yards, ritual chambers, judges, warriors, sorcerers, servants, and prisoners turn punishment into scholarship and doubt into doctrine. He studies clan law, Michael’s Dream, and the shadow of Ur-Shulgi until dependence on the mountain becomes intolerable, and in 1839 he departs in search of another path.",
     npcs = {
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -3829,14 +4709,14 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "quietIndoor",
+      locationAudio = "quietIndoor"
     },
     panelB = {
       display = "Nephilim library",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "library",
+      locationAudio = "library"
     },
     panelC = {
       display = "Ministry avenue",
@@ -3846,46 +4726,66 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "horseDrawnTraffic",
+      locationAudio = "horseDrawnTraffic"
     },
     panelD = {
       display = "Bazaar and quay",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "indoorMarket",
+      locationAudio = "indoorMarket"
     },
     splashText = "Constantinople gives Rashid a partner in Sofia and a cause in the Nephilim. Across Bosphorus salons, bazaars, ministries, manuscript shops, telegraph offices, and the ruins of Michael’s Dream, they build a library and test whether Kindred governance can permit coexistence. Half a century of reform, censorship, fire, diplomacy, and occult inquiry deepens their bond—and eventually sends Rashid back to Alamut for forbidden answers.",
     npcs = {
       {
-        label = "",
+        name = "mem_sofiaMavridi",
+        fullName = "Sofia Mavridi",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -3902,21 +4802,21 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windMed"
       },
-      locationAudio = "lowWindAmbient",
+      locationAudio = "lowWindAmbient"
     },
     panelB = {
       display = "Manuscript library",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "library",
+      locationAudio = "library"
     },
     panelC = {
       display = "Blood Sorcery chamber",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "ritualRoom",
+      locationAudio = "ritualRoom"
     },
     panelD = {
       display = "Mountain training yard",
@@ -3925,39 +4825,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       weather = {
         "windMed"
       },
-      locationAudio = "weaponsTraining",
+      locationAudio = "weaponsTraining"
     },
     splashText = "Rashid returns to Alamut because Sofia’s blood may hold memories that ordinary archives cannot reach. Beneath the mountain’s guarded hierarchy, he submits to ritual training, rival scrutiny, secret bargains, and the institution he once rejected. By mastering the sorcery of ancestral memory, Rashid acquires the means to seek Michael’s lost reflection—and draws closer to the truth concealed within Ur-Shulgi’s ring.",
     npcs = {
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -3972,7 +4892,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "ritualRoom",
+      locationAudio = "ritualRoom"
     },
     panelB = {
       display = "Newspaper avenue",
@@ -3982,7 +4902,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "horseDrawnTraffic",
+      locationAudio = "horseDrawnTraffic"
     },
     panelC = {
       display = "Wartime harbor",
@@ -3992,7 +4912,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "waterside",
+      locationAudio = "waterside"
     },
     panelD = {
       display = "Occupation checkpoint",
@@ -4002,39 +4922,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "militaryOccupation",
+      locationAudio = "militaryOccupation"
     },
     splashText = "Back in Constantinople, Rashid and Sofia open the blood’s memory and make contact with Michael’s impossible radiance. Prophecy reveals the truth of Ur-Shulgi and brands Rashid’s ring into his hand while revolution, war, refugees, and occupation consume the empire outside. Their research survives the collapsing world, but Laleh’s disappearance turns revelation into a search that will last three decades.",
     npcs = {
       {
-        label = "",
+        name = "mem_sofiaMavridi",
+        fullName = "Sofia Mavridi",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "mem_michaelTheArchangel",
+        fullName = "Michael the Archangel",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -4049,14 +4989,14 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "library",
+      locationAudio = "library"
     },
     panelB = {
       display = "Interwar hotel café",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "diveBar",
+      locationAudio = "diveBar"
     },
     panelC = {
       display = "Old-city tram square",
@@ -4066,7 +5006,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "historicStreet",
+      locationAudio = "historicStreet"
     },
     panelD = {
       display = "International border station",
@@ -4076,39 +5016,59 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windMed"
       },
-      locationAudio = "railwayStation",
+      locationAudio = "railwayStation"
     },
     splashText = "Rashid follows Laleh’s trail across a Europe repeatedly remade by borders, ideology, and war. Archives, hotels, cafés, trains, checkpoints, black markets, and refugee routes yield coded letters, false sightings, compromised informants, and another departure. Through fascism, occupation, displacement, and postwar suspicion, identities change and governments fall, but the Piece-Taker remains always one clue beyond his reach.",
     npcs = {
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -4123,7 +5083,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "quietIndoor",
+      locationAudio = "quietIndoor"
     },
     panelB = {
       display = "Immigrant commercial street",
@@ -4133,53 +5093,73 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "streetcarTraffic",
+      locationAudio = "streetcarTraffic"
     },
     panelC = {
       display = "Training room",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "weaponsTraining",
+      locationAudio = "weaponsTraining"
     },
     panelD = {
       display = "Operations archive",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "office",
+      locationAudio = "office"
     },
     splashText = "Toronto ends Rashid’s long search when the feared Piece-Taker proves to be Laleh herself. Their reunion begins decades of guarded coexistence within a hidden Banu Haqim refuge, where scholarship, training, surveillance, immigrant community ties, and Camarilla negotiation gradually turn shelter into purpose. As computers replace paper files and warnings of Ur-Shulgi and Kemintiri accumulate, old loyalties are tested against Michael’s Dream.",
     npcs = {
       {
-        label = "",
+        name = "mem_lalehBintSaif",
+        fullName = "Laleh bint Saif",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "mem_maximillianSteele",
+        fullName = "Maximillian Steele",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "mem_frederikScheer",
+        fullName = "Frederik Scheer",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "mem_agnesBellanger",
+        fullName = "Agnes Bellanger",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },
@@ -4194,7 +5174,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "softIndoor",
+      locationAudio = "softIndoor"
     },
     panelB = {
       display = "Odense old town",
@@ -4204,53 +5184,73 @@ SkyboxesCatalog.MemoriamSkyboxes = {
         "rainLight",
         "windLow"
       },
-      locationAudio = "cityChatter",
+      locationAudio = "cityChatter"
     },
     panelC = {
       display = "Hotel caucus lounge",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "softIndoor",
+      locationAudio = "softIndoor"
     },
     panelD = {
       display = "Harbor Kindred venue",
       isOutdoors = false,
       isDaytime = false,
       weather = {},
-      locationAudio = "nightclub",
+      locationAudio = "nightclub"
     },
     splashText = "In Odense, Rashid helps negotiate a future for the Schismatic Banu Haqim within the Camarilla. Delegates, lawyers, interpreters, scholars, security, and young Kindred crowd a restrained international gathering where every courtesy conceals questions of trust, law, and survival. The pact offers his clan a place inside the Ivory Tower—and Rashid another imperfect instrument with which to pursue Michael’s Dream.",
     npcs = {
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
       {
-        label = "",
+        name = "",
+        fullName = "",
+        figurineScale = 53
       },
     },
   },

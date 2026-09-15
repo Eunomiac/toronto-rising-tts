@@ -205,11 +205,15 @@ npcLabelFromSlot = function(slot)
     if type(slot) ~= "table" then
         return nil
     end
-    local label = trimString(slot.label)
-    if label == "" then
-        return nil
+    local fullName = trimString(slot.fullName)
+    if fullName ~= "" then
+        return fullName
     end
-    return label
+    local name = trimString(slot.name)
+    if name ~= "" then
+        return name
+    end
+    return nil
 end
 
 characterDisplayName = function(def, key)

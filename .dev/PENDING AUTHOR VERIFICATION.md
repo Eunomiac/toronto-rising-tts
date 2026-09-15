@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-15 — TOR-577 Memoriam sheet import drops panel/NPC URL columns._
+_Last populated: 2026-09-15 — Memoriam catalog NPCs `name` / `fullName` / `figurineScale` (TOR-529)._
 
 ### Scatter / table layout
 
@@ -162,6 +162,12 @@ Separately, restart the Storyteller Dashboard with the TTS Tools extension **dis
 **How to verify:** Open `lib/skyboxes_catalog.ttslua` and jump to `MemoriamSkyboxes`. Period rows should have panel display/weather/audio, but **no** `url =` on panels and **no** `tokenURL` / `figurineURL` on NPC slots. Scene skyboxes above that (`SkyboxesCatalog.Skyboxes`) should still have their URLs — those still come from the sheet. Save & Play. In the Host console, `lua print(C.resolveMemoriamPanelURL("lucien19", "panelA"))` should still show a steamusercontent URL if that Cloud file is uploaded (Constants fills `panel.url` from Cloud at load). You should not see `#REF!` as a panel URL.
 
 **Context:** relatedTo **TOR-564** (Memoriam panel art from Cloud). The Google Sheet is no longer a source of Memoriam image URLs.
+
+#### TOR-529 — Memoriam catalog NPCs: `name`, `fullName`, `figurineScale`
+
+**How to verify:** Confirm the Memoriam sheet has `NPC 1 Key`, `NPC 1 Label`, and (optional) `NPC 1 Scale` columns through NPC 10, then run `npm run skyboxes:import` (or **BUILD PIPELINE (Full)**). Open `lib/skyboxes_catalog.ttslua` and jump to a period that has people — for example Lucien 2. Each filled NPC slot should look like `name`, `fullName`, and `figurineScale` (53 unless that row has a Scale number). Empty slots should still have those three fields, with blank name/fullName and scale 53. There should be no `label =` on those slots. Save & Play. Open Phases → Memoriam and pick that period: the NPC picker should show the `fullName` text, not a blank.
+
+**Context:** Sheet Key/Label/Scale → catalog fields that match `lib/npcs_data.ttslua`. Cloud still fills image URLs from `npc.name` at load. Follow-up on **TOR-577** (dropped URL fields). Linear could not create a new issue this session (workspace issue cap).
 
 #### ⚠️ TOR-558 — Cloud asset sync (CustomUIAssets + Cloud catalog)
 

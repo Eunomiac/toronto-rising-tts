@@ -39,7 +39,7 @@ const MEMORIAM_HEADER = [
   "Panel D Weather",
   "Panel D Location Audio",
   "Splash Text",
-  ...Array.from({ length: 10 }, (_, i) => `NPC ${i + 1} Label`),
+  ...Array.from({ length: 10 }, (_, i) => [`NPC ${i + 1} Key`, `NPC ${i + 1} Label`]).flat(),
 ].join(",");
 
 /**
@@ -51,12 +51,12 @@ function memoriamCsv(cells) {
 }
 
 function emptyMemoriamTail() {
-  // Splash Text + 10 NPC labels
-  return Array(11).fill("");
+  // Splash Text + 10 NPCs × (key, label)
+  return Array(21).fill("");
 }
 
 function emptyNpcs() {
-  return Array.from({ length: 10 }, () => ({ label: "" }));
+  return Array.from({ length: 10 }, () => ({ name: "", fullName: "", figurineScale: 53 }));
 }
 
 test("parseCsv handles quoted commas", () => {
@@ -211,12 +211,17 @@ test("parseMemoriamSkyboxRows keeps pipe-delimited characters on one entry", () 
 test("parseMemoriamSkyboxRows imports splash and ten NPC slots", () => {
   const cells = AISHE2_CELLS.slice();
   cells[25] = "Smoke and memory";
-  cells[26] = "Drake";
+  cells[26] = "mem_drake";
+  cells[27] = "Drake";
   const parsed = parseMemoriamSkyboxRows(memoriamCsv(cells));
   assert.equal(parsed.aishe2.splashText, "Smoke and memory");
   assert.equal(parsed.aishe2.npcs.length, 10);
-  assert.deepEqual(parsed.aishe2.npcs[0], { label: "Drake" });
-  assert.deepEqual(parsed.aishe2.npcs[9], { label: "" });
+  assert.deepEqual(parsed.aishe2.npcs[0], {
+    name: "mem_drake",
+    fullName: "Drake",
+    figurineScale: 53,
+  });
+  assert.deepEqual(parsed.aishe2.npcs[9], { name: "", fullName: "", figurineScale: 53 });
 });
 
 test("parseMemoriamSkyboxRows ignores leftover Panel/NPC URL columns", () => {
@@ -224,7 +229,32 @@ test("parseMemoriamSkyboxRows ignores leftover Panel/NPC URL columns", () => {
   const cells = AISHE2_CELLS.concat(["#REF!", "https://token/", "https://figurine/"]);
   const parsed = parseMemoriamSkyboxRows([header, cells.join(",")].join("\n"));
   assert.equal(parsed.aishe2.panelA.url, undefined);
-  assert.deepEqual(parsed.aishe2.npcs[0], { label: "" });
+  assert.deepEqual(parsed.aishe2.npcs[0], { name: "", fullName: "", figurineScale: 53 });
+});
+
+test("parseMemoriamSkyboxRows reads NPC Scale when present and defaults blanks to 53", () => {
+  const header = `${MEMORIAM_HEADER},NPC 1 Scale,NPC 2 Scale`;
+  const cells = AISHE2_CELLS.concat(["60", ""]);
+  cells[26] = "mem_drake";
+  cells[27] = "Drake";
+  cells[28] = "mem_oliverGagnon";
+  cells[29] = "Oliver Gagnon";
+  const parsed = parseMemoriamSkyboxRows([header, cells.join(",")].join("\n"));
+  assert.equal(parsed.aishe2.npcs[0].figurineScale, 60);
+  assert.equal(parsed.aishe2.npcs[1].figurineScale, 53);
+  assert.equal(parsed.aishe2.npcs[2].figurineScale, 53);
+});
+
+test("parseMemoriamSkyboxRows rejects a non-integer NPC Scale", () => {
+  const header = `${MEMORIAM_HEADER},NPC 1 Scale`;
+  const cells = AISHE2_CELLS.concat(["tall"]);
+  assert.throws(() => parseMemoriamSkyboxRows([header, cells.join(",")].join("\n")), /NPC 1 Scale/i);
+});
+
+test("parseMemoriamSkyboxRows rejects an invalid NPC Key", () => {
+  const cells = AISHE2_CELLS.slice();
+  cells[26] = "bad-key";
+  assert.throws(() => parseMemoriamSkyboxRows(memoriamCsv(cells)), /NPC 1 Key/i);
 });
 
 test("parseMemoriamSkyboxRows splits weather pipes and treats blank weather as empty array", () => {
@@ -322,7 +352,10 @@ test("renderSkyboxesCatalogLua emits flat MemoriamSkyboxes keyed by skybox key",
   assert.doesNotMatch(lua, /tokenURL/);
   assert.doesNotMatch(lua, /figurineURL/);
   assert.match(lua, /npcs = \{/);
-  assert.match(lua, /label = ""/);
+  assert.match(lua, /name = ""/);
+  assert.match(lua, /fullName = ""/);
+  assert.match(lua, /figurineScale = 53/);
+  assert.doesNotMatch(lua, /label = /);
   assert.doesNotMatch(lua, /panelC =/);
   assert.doesNotMatch(lua, /panelD =/);
 });
