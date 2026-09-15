@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-15 — Scatter CONTROL_BOARD reload wait (TOR-573 live switch crash)._
+_Last populated: 2026-09-15 — Scatter CONTROL_BOARD debug snaps, 180° calibration, table-miniature stash, on-board token filter (TOR-572)._
 
 ### Scatter / table layout
 
@@ -36,8 +36,8 @@ _Last populated: 2026-09-15 — Scatter CONTROL_BOARD reload wait (TOR-573 live 
 **How to verify:** Save & Play so scripts reload. You will need the Scatter control-board Cloud image already uploaded (the same file the dashboard uses).
 
 1. **Enter Scatter:** Apply a library scene whose JSON has `"placementMode": "scatter"`, or from the Host console run `lua require("lib.rotational-seat-layout").SetTableTo("Scatter")`. The control board should switch to the Scatter parchment, every wood table and throne/chair should vanish, and polar snap points on the board should be gone.
-2. **Calibrate (once per group):** Leave only three control tokens on the board. Put one on a group’s gold hole, one on the upper-left white hole, and one on the top NPC hole of that dashed ring. Host console: `lua DEBUG.calibrateScatterGroup(1)` (then 2–6 for the other groups). Paste each dump into `D.SCATTER_BOARD` and Save & Play again before testing auto-park.
-3. **Drop and Apply:** Drop a PC token onto a calibrated group — it should jump to gold. Drop a second PC onto the same group — the first should stay put. Click Apply NOW — PC figurines, cameras, sheets, and bags should move to that group’s arc; NPC tokens on the ring should spawn/move figurines facing the group origin. A second Apply with the same occupancy should not shove the first PC to a different slot.
+2. **Calibrate (once per group):** Leave only three control tokens on the parchment (not on the palette). Put one on a group’s gold hole, one on the upper-left white hole, and one on the top NPC hole of that dashed ring. Host console: `lua DEBUG.calibrateScatterGroup(1)` (then 2–6 for the other groups). Turn on Snap mode — you should see a snap on gold, four whites, and the sixteen NPC holes. Tokens sitting on the palette must not be counted. The wood-table miniature and table-component chips should not sit on the Scatter parchment. **Do not paste the dump into `D.SCATTER_BOARD` until those snaps sit on the printed holes.** After you paste and Save & Play again, auto-park can use that group.
+3. **Drop and Apply:** Drop a PC token onto a calibrated group — it should jump to gold and sit upright. Drop a second PC onto the same group — the first should stay put. Click Apply NOW — PC figurines, cameras, sheets, and bags should move to that group’s arc; NPC tokens on the ring should spawn/move figurines facing the group origin. A second Apply with the same occupancy should not shove the first PC to a different slot. Tokens left on the palette should not be treated as on that group.
 4. **Leave Scatter:** Apply a normal table scene (or `SetTableTo("Table A")`). Standard board art, polar snaps, and a real table should return.
 
 **Context:** relatedTo **TOR-507** (figurine satellites) and **TOR-570** (dashboard scatter JSON). Auto-park stays silent-error until that group’s calibration dump is pasted.

@@ -105,7 +105,7 @@ No current source call sites were found for `registerCollisions`, `Material.set`
 
 | API | Tier | Source rows | Frequency | Guard / boundedness / existing mitigation | Phase-3 disposition |
 | --- | --- | --- | --- | --- | --- |
-| `Physics.cast` | HEAVY | `lib/util.ttslua:581` (`U.findAboveObject`) | warm if helper is used; no direct production caller found in this scan | helper requires a known object, derives bounds, and filters hits; `debug=true` is gated by UI debug panel state | `inspect` |
+| `Physics.cast` | HEAVY | `lib/util.ttslua:581` (`U.findAboveObject`); `core/npc_gameboard_board.ttslua` (`Board.objectsAboveControlBoard`) | ST-initiated Scatter calibrate / Apply (TOR-572); not drop/pick-up | known CONTROL_BOARD object; box cast; palette tokens excluded; drop uses `isTokenOnMinimapTokenSurface` (O(1) bounds) | `inspect` |
 | `Hands.getHands` | LIGHT | `lib/util.ttslua:2099` | cold/helper | bounded by player hand zones; used for color lookup | `keep` |
 
 No current source call sites were found for `Physics.setGravity`, `Grid.*`, or per-frame vector APIs (`Vector.rotateTowards`, `Vector.distance`, `Vector.magnitude`, `Vector.normalized`) from the catalog.

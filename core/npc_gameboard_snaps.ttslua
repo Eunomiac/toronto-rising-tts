@@ -1190,6 +1190,11 @@ function Snaps.installPolarSnaps(board, options)
     end
     local ScatterMode = require("core.scatter_mode")
     if ScatterMode.isActive() then
+        if type(ScatterMode.applyDebugCalibrationSnapsIfAny) == "function" and ScatterMode.applyDebugCalibrationSnapsIfAny() == true then
+            polarSnapInstallFingerprint = nil
+            installedPolarSnapConfig = nil
+            return true
+        end
         board.setSnapPoints({})
         polarSnapInstallFingerprint = nil
         installedPolarSnapConfig = nil

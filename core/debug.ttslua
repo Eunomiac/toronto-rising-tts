@@ -566,7 +566,6 @@ function DEBUG.calibrateScatterGroup(scatterGroupNum)
     local ScatterMode = require("core.scatter_mode")
     local ScatterLayout = require("lib.scatter_layout")
     local Board = require("core.npc_gameboard_board")
-    local DATA = require("lib.npc_gameboard_data")
     local n = math.floor(tonumber(scatterGroupNum) or 0)
     if n < 1 or n > ScatterLayout.groupCount() then
         error("DEBUG.calibrateScatterGroup: group must be 1.." .. tostring(ScatterLayout.groupCount()))
@@ -579,13 +578,8 @@ function DEBUG.calibrateScatterGroup(scatterGroupNum)
         error("DEBUG.calibrateScatterGroup: CONTROL_BOARD is missing")
     end
     local found = {}
-    local function consider(obj)
-        if not Board.isGameObject(obj) then
-            return
-        end
-        if not Board.isTokenOnControlBoardSurface(board, obj) then
-            return
-        end
+    local tokens = ScatterMode.controlTokensOnScatterBoard(board)
+    for _, obj in ipairs(tokens) do
         local loc = board.positionToLocal(obj.getPosition())
         found[#found + 1] = {
             x = loc.x or loc[1] or 0,
@@ -596,12 +590,6 @@ function DEBUG.calibrateScatterGroup(scatterGroupNum)
             localZ = loc.z or loc[3] or 0,
         }
     end
-    for _, obj in ipairs(getObjectsWithTag(DATA.TAG_PC_CONTROL_TOKEN) or {}) do
-        consider(obj)
-    end
-    for _, obj in ipairs(getObjectsWithTag(DATA.TAG_NPC_CONTROL_TOKEN) or {}) do
-        consider(obj)
-    end
     if #found ~= 3 then
         error(
             "DEBUG.calibrateScatterGroup: expected exactly three pc_control_token / npc_control_token objects on the board, found "
@@ -610,6 +598,7 @@ function DEBUG.calibrateScatterGroup(scatterGroupNum)
     end
     local gold, ul, topNpc = ScatterMode.sortCalibrationLocals(found)
     local inferred = ScatterMode.inferHolesFromAnchors(board, gold, ul, topNpc)
+    ScatterMode.rememberDebugCalibrationHoles(n, inferred)
     local function fmtN(v)
         return string.format("%.4f", tonumber(v) or 0)
     end
@@ -654,6 +643,9 @@ function DEBUG.calibrateScatterGroup(scatterGroupNum)
     local body = table.concat(lines, "\n")
     local okWrite = DEBUG.writeWorkspaceFile(relativePath, body, "none", false)
     print("DEBUG.calibrateScatterGroup: wrote " .. areaKey .. " (" .. tostring(#inferred.npcHoles) .. " NPC holes)")
+    print(
+        "DEBUG.calibrateScatterGroup: debug snap points are on CONTROL_BOARD — turn on Snap mode to confirm they sit on the printed holes. Do not paste this dump into D.SCATTER_BOARD until they do."
+    )
     if not okWrite then
         error("DEBUG.calibrateScatterGroup: failed to write file (is tts-bridge listening?)")
     end

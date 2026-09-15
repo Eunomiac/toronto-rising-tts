@@ -272,6 +272,37 @@ local function objectsOnControlBoard(board, tag)
     return out
 end
 
+--- Objects actually above CONTROL_BOARD (Physics.cast box). Scatter calibrate / Apply only —
+--- not drop/pick-up (`Physics.cast` is HEAVY). Palette tokens are excluded.
+--- @param board Object
+--- @param testFunc function|nil
+--- @return table
+local function objectsAboveControlBoard(board, testFunc)
+    if not isMeshReady(board) then
+        return {}
+    end
+    local filter = testFunc
+    if type(filter) ~= "function" then
+        filter = function()
+            return true
+        end
+    end
+    local hits = U.findAboveObject(board, function(obj)
+        if not isGameObject(obj) then
+            return false
+        end
+        local palette = getControlBoardPalette()
+        if isGameObject(palette) and Palette.isTokenOnPaletteBoard(palette, obj) then
+            return false
+        end
+        return filter(obj) == true
+    end, { box = true })
+    if type(hits) ~= "table" then
+        return {}
+    end
+    return hits
+end
+
 --- Max board-local |Y − surface| for a token to count as on the minimap (not dragged off / in the air).
 local MINIMAP_TOKEN_SURFACE_Y_TOLERANCE = 0.4
 
@@ -505,6 +536,7 @@ Board.boardLocalSurfaceHalfExtents = boardLocalSurfaceHalfExtents
 Board.boardWorldToLocal = boardWorldToLocal
 Board.uvFromWorldOnBoard = uvFromWorldOnBoard
 Board.objectsOnControlBoard = objectsOnControlBoard
+Board.objectsAboveControlBoard = objectsAboveControlBoard
 Board.isTokenOnMinimapTokenSurface = isTokenOnMinimapTokenSurface
 Board.isTokenOnControlBoardSurface = isTokenOnControlBoardSurface
 Board.isTokenOnControlBoardFace = isTokenOnControlBoardFace

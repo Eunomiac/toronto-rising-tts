@@ -1345,7 +1345,15 @@ function Reconcile.reconcileControlBoardFromState(opts)
             local pcSeat = Tokens.readMarkerKey(obj, DATA.MARKER_PC_SEAT_PREFIX)
             local npcSeat = Tokens.readMarkerKey(obj, DATA.MARKER_NPC_SEAT_PREFIX)
 
-            if tableKey ~= nil then
+            if scatterActive and (tableKey ~= nil or (obj.hasTag ~= nil and obj.hasTag(TAG_TABLE) == true)) then
+                Tokens.setMarkerVisible(obj, false)
+                stashTableMarker(obj, tableKey)
+            elseif scatterActive and (compKey ~= nil or (obj.hasTag ~= nil and obj.hasTag(TAG_COMPONENT) == true)) then
+                local markerRow = describeTableComponentMarker(obj, activeTable)
+                local componentName = (markerRow and markerRow.componentName) or compKey
+                Tokens.setMarkerVisible(obj, false)
+                stashTableComponentMarker(obj, componentName)
+            elseif tableKey ~= nil then
                 local show = tableKey == activeTable
                 Tokens.setMarkerVisible(obj, show)
                 if show then

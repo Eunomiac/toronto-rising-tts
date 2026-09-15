@@ -1756,9 +1756,6 @@ C.Scatter = {
   FLOOR_Y = -52.89,
   --- Custom tile mesh looks along -Z at yaw 0; look-at toward a point needs +180 (same as stage figurines).
   FIGURINE_YAW_OFFSET_DEG = 180,
-  --- Board-local axis used as parchment “up” when sorting calibration tokens (CONTROL_BOARD rotY 180).
-  BOARD_ART_UP_AXIS = "z",
-  BOARD_ART_UP_SIGN = 1,
   CONTROL_BOARD_IMAGE_STANDARD = "https://steamusercontent-a.akamaihd.net/ugc/13248133772831882366/6F672A9E951B9AC21C6DE9091659FE913AD29268/",
   CONTROL_BOARD_IMAGE_SCATTER = "https://steamusercontent-a.akamaihd.net/ugc/15826341776223196067/84A1D7EF997F4D44D279D50B0D5AF2C829CF0949/",
   --- Occupied polar packs map to scatter groups 1–6 in this order (inbox TOR-573).
