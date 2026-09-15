@@ -8546,6 +8546,7 @@ UI.setAttributes("storytellerToolbarRoot", {width = "1100"})
     <Button id="scenes_tbl_TableB4" text="B4" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
     <Button id="scenes_tbl_TableB5" text="B5" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
     <Button id="scenes_tbl_TableC" text="Table C" minWidth="72" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+    <Button id="scenes_tbl_Scatter" text="Scatter" minWidth="72" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
   </HorizontalLayout>
   <!--
   UI.setAttributes("db_panel_scenes_seat_presence_buttons", {color = "rgba(1, 0, 0, 0.15)", childAlignment = "MiddleCenter"})

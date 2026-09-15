@@ -97,9 +97,9 @@
       "recurIntoSubfolders": false,
       "output": "LuaCatalog",
       "tableName": "MemoriamNpcTokenFronts",
-      "filenameToNameSearchPattern": "^mem_tokenFront_(.+)\\.[^.]+$",
-      "filenameToNameReplacePattern": "mem_tokenFront_$1" // E.g. "mem_tokenFront_maximillianSteele.webp" → "mem_tokenFront_maximillianSteele"
-      // → Cloud.MemoriamNpcTokenFronts.mem_tokenFront_maximillianSteele (stem from npc.name mem_<stem>)
+      "filenameToNameSearchPattern": "^tokenFront_mem_(.+)\\.[^.]+$",
+      "filenameToNameReplacePattern": "tokenFront_mem_$1" // E.g. "tokenFront_mem_maximillianSteele.webp" → "tokenFront_mem_maximillianSteele"
+      // → Cloud.MemoriamNpcTokenFronts.tokenFront_mem_maximillianSteele (stem from npc.name mem_<stem>)
     },
     {
       "id": "memoriamNpcTokenBacks",
@@ -107,9 +107,9 @@
       "recurIntoSubfolders": false,
       "output": "LuaCatalog",
       "tableName": "MemoriamNpcTokenBacks",
-      "filenameToNameSearchPattern": "^mem_tokenBack_(.+)\\.[^.]+$",
-      "filenameToNameReplacePattern": "mem_tokenBack_$1" // E.g. "mem_tokenBack_maximillianSteele.webp" → "mem_tokenBack_maximillianSteele"
-      // → Cloud.MemoriamNpcTokenBacks.mem_tokenBack_maximillianSteele (stem from npc.name mem_<stem>)
+      "filenameToNameSearchPattern": "^tokenBack_mem_(.+)\\.[^.]+$",
+      "filenameToNameReplacePattern": "tokenBack_mem_$1" // E.g. "tokenBack_mem_maximillianSteele.webp" → "tokenBack_mem_maximillianSteele"
+      // → Cloud.MemoriamNpcTokenBacks.tokenBack_mem_maximillianSteele (stem from npc.name mem_<stem>)
     }
   ]
 }

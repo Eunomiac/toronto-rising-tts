@@ -32,6 +32,5 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 
 ## Task List
 
-✔️ SD-35. When a location (either a district or a site) applies a Condition (as listed in the districts/sites data table), that condition should be automatically highlighted/toggled on in the Conditions widget.
-
-✔️ SD-36. When a district is selected on the District map, the Sites modal should open automatically to select a site as well.
+SD-37. Whenever a new site is selected, the Skybox should be reset to "[site default]"
+SD-38. When an NPC token is moved to a seated slot at the table, they should continue to occupy that slot even if they are subsequently dragged onto a stage area: Their token should be duplicated and the seated version of their token should be set inactive. A single NPC cannot have both an active seated token and a stage token (whether active or inactive): If they have a token on the stage, their seated token must be inactive. If their seated token is double-clicked (i.e. activated/lit), the stage token must be cleared from the board to adhere to this rule. If the stage token is cleared from the board by some other means, their seated token should be set to the state it was when the staged token was added to the board. If a stage token is dragged onto a seat, it should not be duplicated, but simply moved to occupy that seat, defaulting to active/lit. (Let me know if I've failed to cover all of the possible combinations, but the general rule is that a seated NPC can only have a duplicate on the stage if their seated token is inactive.)

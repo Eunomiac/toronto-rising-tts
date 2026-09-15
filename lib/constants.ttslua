@@ -3100,7 +3100,7 @@ function C.cloudCatalogURL(cloudTable, key)
   return cloudCatalogURL(cloudTable, key)
 end
 
---- Sheet NPC Key is `mem_<stem>`. Figurine Cloud key matches that; token catalogs use `mem_tokenFront_<stem>` / `mem_tokenBack_<stem>`.
+--- Sheet NPC Key is `mem_<stem>`. Figurine Cloud key matches that; token catalogs use `tokenFront_mem_<stem>` / `tokenBack_mem_<stem>`.
 --- @param name string|nil
 --- @param kind string `"figurine"` | `"tokenFront"` | `"tokenBack"`
 --- @return string
@@ -3120,9 +3120,9 @@ local function memoriamNpcAssetCloudKey(name, kind)
     return "mem_" .. stem
   end
   if kind == "tokenFront" then
-    return "mem_tokenFront_" .. stem
+    return "tokenFront_mem_" .. stem
   end
-  return "mem_tokenBack_" .. stem
+  return "tokenBack_mem_" .. stem
 end
 
 --- Shared Memoriam figurine reverse: `mem_BACK.webp` → `Cloud.MemoriamNpcFigurines.mem_BACK` (any BACK casing).
