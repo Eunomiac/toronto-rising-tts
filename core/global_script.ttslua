@@ -4278,11 +4278,11 @@ syncStorytellerPhaseButtons = function()
     local deferSetXml = S.getStateVal("connectionControls", "deferSetXml") == true
     U.setAttributes("phase_deferSetXml", { isOn = deferSetXml })
     local PhasesMod = require("core.phases")
-    local useLerp = false
-    if type(PhasesMod.useLerpSessionStartAnimation) == "function" then
-        useLerp = PhasesMod.useLerpSessionStartAnimation() == true
+    local useQuick = false
+    if type(PhasesMod.useQuickSessionStartTransition) == "function" then
+        useQuick = PhasesMod.useQuickSessionStartTransition() == true
     end
-    U.setAttributes("phase_sessionStartLerp", { isOn = useLerp })
+    U.setAttributes("phase_sessionStartQuick", { isOn = useQuick })
     local joinXmlArmed = S.getStateVal("connectionControls", "joinXmlArmed") == true
     local assetsSlim = type(S.getStateVal("connectionControls", "joinXmlCustomAssetsBackup")) == "table"
         and #(S.getStateVal("connectionControls", "joinXmlCustomAssetsBackup") or {}) > 0
@@ -5080,9 +5080,9 @@ function HUD_phaseDeferSetXml(player, value, id)
     syncStorytellerPhaseButtons()
 end
 
---- Phases panel: Intermission→Play uses lerp explode when on; TTS-attribute path when off (TOR-559).
-function HUD_phaseSessionStartLerp(player, value, id)
-    if not requireStorytellerForMutation(player, "HUD_phaseSessionStartLerp") then
+--- Phases panel: Intermission→Play Quick Transition skips Music C and uses songDuration 0.
+function HUD_phaseSessionStartQuick(player, value, id)
+    if not requireStorytellerForMutation(player, "HUD_phaseSessionStartQuick") then
         return
     end
     local on = coerceUiToggleBool(value)
@@ -5090,7 +5090,7 @@ function HUD_phaseSessionStartLerp(player, value, id)
         return
     end
     local Phases = require("core.phases")
-    Phases.setUseLerpSessionStartAnimation(on)
+    Phases.setUseQuickSessionStartTransition(on)
     syncStorytellerPhaseButtons()
 end
 

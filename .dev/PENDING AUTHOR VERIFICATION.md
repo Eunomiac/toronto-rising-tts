@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-15 — Scatter Storyteller dice trays on the World Ray (TOR-572)._
+_Last populated: 2026-09-15 — Phases Quick Transition (lerp explode removed)._
 
 ### Scatter / table layout
 
@@ -85,15 +85,34 @@ _Last populated: 2026-09-15 — Scatter Storyteller dice trays on the World Ray 
 
 ### Phases / session start
 
+#### Phases Quick Transition (replaces Lerp explode)
+
+**How to verify:** Save & Play so scripts and the Phases panel XML reload. Open **Phases**. Next to **Advance →** you should see a **Quick Transition** checkbox (not Lerp explode). It should start unchecked.
+
+1. From Intermission (or Host console `lua DEBUG.resetToIntermission()`), leave **Quick Transition** off and click **Advance**. You should get the full splash and the session-start music after the usual lead-in, with the Intermission loop fading out until that music starts.
+2. Run `lua DEBUG.resetToIntermission()` again. Check **Quick Transition**, then Advance. You should **not** hear the session-start track. The splash should run in the short `songDuration = 0` timing (character beats collapse; session number/title still play at their usual unscaled speed). The Intermission loop should cut as the splash starts. When that short sequence finishes, Main music and the Willpower heal popup should still be able to appear as usual.
+3. Uncheck **Quick Transition**. The next Advance from Intermission should be the full song path again. The checkbox is a Host preference and resets if you Save & Play.
+
+**Context:** Lerp explode path removed. Linear issue not created this session (workspace quota); noted on **TOR-559**.
+
+#### TR_Loop fade across the session-start song lead-in (TOR-567 follow-up)
+
+**How to verify:** Save & Play so scripts reload. Leave **Quick Transition** off on the Phases panel. Start from Intermission (cold load, or Host console `lua DEBUG.resetToIntermission()`). Click **Advance**.
+
+1. Lights and the Storyteller HUD should still update behind the cover first, same as before. The looping Intermission theme should keep playing at full volume through that short lights settle.
+2. As soon as the character splash starts, the Intermission loop should begin a slow fade. It should reach silence at the same moment the session-start music begins — not cut out when that track starts, and not finish fading well before it. The splash itself should look the same (Black Caesar, then the others, then session number and title).
+3. When the song and splash finish together, the overlay should fade out, Main music should come in, and the Willpower heal popup should still be able to appear if anyone has Superficial Willpower to heal.
+
+**Context:** Default splash only. Linear issue not created this session (workspace quota); noted on **TOR-567**.
+
 #### TOR-567 — TEST BED session-start intro sequence on Advance
 
-**How to verify:** Save & Play so scripts reload. Leave **Lerp explode** off on the Phases panel. Start from Intermission (cold load, or Host console `lua DEBUG.resetToIntermission()`). Click **Advance**.
+**How to verify:** Save & Play so scripts reload. Leave **Quick Transition** off on the Phases panel. Start from Intermission (cold load, or Host console `lua DEBUG.resetToIntermission()`). Click **Advance**.
 
-1. Lights and the Storyteller HUD should still update behind the cover first, same as before. Then the new character splash should play (Black Caesar slides in from the left, then the others Grow / slide, then the session number and title). The Intermission loop should fade and the session-start music should start a little while after the first character appears — not at the first frame, and not as early as the old pair-2 beat. That lead-in after clicking Advance can feel a bit longer; that is expected.
+1. Lights and the Storyteller HUD should still update behind the cover first, same as before. Then the character splash should play (Black Caesar slides in from the left, then the others Grow / slide, then the session number and title). The Intermission loop should fade and the session-start music should start a little while after the first character appears — not at the first frame, and not as early as the old pair-2 beat. That lead-in after clicking Advance can feel a bit longer; that is expected.
 2. When the song and splash finish together, the overlay should fade out, stay gone, Main music should come in, and the Willpower heal popup should still be able to appear if anyone has Superficial Willpower to heal.
-3. Optional: turn **Lerp explode** on and Advance again from Intermission — you should get the older scale-and-fade explode, not this new splash.
 
-**Context:** Ported the confirmed TEST BED `runIntroSequence` into `SessionExplode.playAttribute`. relatedTo **TOR-559**.
+**Context:** Ported the confirmed TEST BED `runIntroSequence` into `SessionExplode.playAttribute`. relatedTo **TOR-559**. Lerp explode path later removed.
 
 #### TOR-566 — Global blindfold: instant hide + wrong End→Intermission splash
 
@@ -118,9 +137,9 @@ _Last populated: 2026-09-15 — Scatter Storyteller dice trays on the World Ray 
 **Verification Failures:** Slide-up hide was instant; End→Intermission showed a random global variant instead of the session-end splash. Follow-up **TOR-566**.
 #### TOR-563 — Session-start attribute-path static attrs in XML Defaults
 
-**How to verify:** Save & Play so the Global HUD picks up the new Defaults (or Save & Play, then click Phases → **Refresh XML**). Leave **Lerp explode** off. From Intermission, click **Advance** to Play and watch the session-start splash: the character pairs should still Grow/FadeIn, the frame should FadeIn, the session number/title should Grow/FadeIn, the cover should FadeOut at the end, and the session-start music should still kick in on the mid-sequence beat. Then in the Host console run `lua DEBUG.resetToIntermission()` and Advance again — the second run should still look and time the same.
+**How to verify:** Save & Play so the Global HUD picks up the new Defaults (or Save & Play, then click Phases → **Refresh XML**). Leave **Quick Transition** off. From Intermission, click **Advance** to Play and watch the session-start splash: the character pairs should still Grow/FadeIn, the frame should FadeIn, the session number/title should Grow/FadeIn, the cover should FadeOut at the end, and the session-start music should still kick in after the authored lead-in. Then in the Host console run `lua DEBUG.resetToIntermission()` and Advance again — the second run should still look and time the same.
 
-**Context:** Moved static `showAnimation` / `hideAnimation` / colors out of Lua into `session_splash_*` Defaults. Lua only writes song-scaled delays and durations. relatedTo **TOR-559** (attribute vs lerp toggle).
+**Context:** Moved static `showAnimation` / `hideAnimation` / colors out of Lua into `session_splash_*` Defaults. Lua only writes song-scaled delays and durations. relatedTo **TOR-559**. Lerp explode path later removed.
 
 ### NPC / stage
 

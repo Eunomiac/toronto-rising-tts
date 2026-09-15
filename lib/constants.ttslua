@@ -271,11 +271,9 @@ C.Phases = {
 
 -- Session start animation data (TOR-531).
 -- Play enter looks up `gameState.sessionNum` in this table; missing index falls back to [1].
--- Base duration in seconds the explode sequence was authored against.
-C.SessionStartBaseDuration = 71
--- Per-session intro track + song length. Lerp path times scale by
--- songDuration / C.SessionStartBaseDuration. Attribute path scales so the
--- intro track and splash end together (TEST BED runIntroSequence; TOR-567).
+-- Attribute path scales so the intro track and splash end together
+-- (TEST BED runIntroSequence; TOR-567). songDuration 0 (Quick Transition)
+-- uses timeRatio 0 and skips Music C.
 -- - introKey: catalog key for Soundscape.playSessionIntro (Music C).
 -- - songDuration: wall-clock seconds of that track (drives time dilation).
 C.SessionStartAnimationData = {
@@ -311,14 +309,10 @@ C.IntermissionThemeFeaturedKey = "TR_Loop"
 --- Play enter uses C.SessionStartAnimationData[sessionNum].introKey (TOR-531).
 --- Unity Trigger Effect name is `Session Starter`. Fallback `effectIndex` is 0-based (UI slot 2 → 1).
 C.SessionStartIntroKey = "TR_SessionStart"
---- Legacy 71s sting length alias of C.SessionStartBaseDuration. Play-enter wait uses
---- SessionStartAnimationData.songDuration via SessionExplode.sequenceDurationSec (TOR-531).
+--- Catalog length of the default session-start track (matches SessionStartAnimationData[1]).
 C.SessionStartIntroDurationSec = 71
 C.SessionStartBlindfoldLeadSec = 2
---- Play enter waits this many seconds after the cover explode starts before the Music C
---- sting, so the opening drum lines up with the first visible scale (TOR-534 / TOR-535).
-C.SessionStartIntroDelaySec = 0
---- After OutdoorDim / HUD work behind the cover, wait this long before fade/explode/sting
+--- After OutdoorDim / HUD work behind the cover, wait this long before the splash
 --- so TTS can finish lighting applies (TOR-536). Seat lights snap instantly on Play enter.
 C.SessionStartPlayEnterSettleSec = 2
 
@@ -1749,9 +1743,9 @@ C.Scatter = {
   --- First group world azimuth. CONTROL_BOARD yaw 180° puts group 1 at far left (−X = 270°), then clockwise 60°.
   FIRST_GROUP_AZIMUTH_DEG = 270,
   GROUP_SPACING_DEG = 60,
-  SCATTER_RADIUS_WORLD = 200,
-  SCATTER_RADIUS_NPC = 50,
-  SCATTER_RADIUS_PC = 20,
+  SCATTER_RADIUS_WORLD = 250,
+  SCATTER_RADIUS_NPC = 125,
+  SCATTER_RADIUS_PC = 100,
   PC_SCATTER_POSITION_ANGLE = 180,
   NPC_DEPLOYMENT_ARC = 70,
   PC_DEPLOYMENT_ARC = 80,
