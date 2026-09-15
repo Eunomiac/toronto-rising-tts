@@ -49,7 +49,7 @@ function ScatterLayout.groupCount()
     return math.floor(tonumber(cfg().GROUP_COUNT) or 6)
 end
 
---- World azimuth for scatter group `groupIndex` (1-based). Group 1 = +X (90°).
+--- World azimuth for scatter group `groupIndex` (1-based). Group 1 = −X (270°); clockwise from there.
 --- @param groupIndex number
 --- @return number degrees
 function ScatterLayout.groupAzimuthDeg(groupIndex)
@@ -57,7 +57,7 @@ function ScatterLayout.groupAzimuthDeg(groupIndex)
     if i < 1 or i > ScatterLayout.groupCount() then
         error("scatter_layout: groupIndex must be 1.." .. tostring(ScatterLayout.groupCount()))
     end
-    local first = tonumber(cfg().FIRST_GROUP_AZIMUTH_DEG) or 90
+    local first = tonumber(cfg().FIRST_GROUP_AZIMUTH_DEG) or 270
     local step = tonumber(cfg().GROUP_SPACING_DEG) or 60
     local deg = first + (i - 1) * step
     deg = deg % 360

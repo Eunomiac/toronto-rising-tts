@@ -40,13 +40,13 @@ In Scatter Mode the Stage Control Board uses the art in `.dev/Revision of Player
 
 Each group’s inner cluster is **five** PC holes: a **gold** hole in the center of a square of **four white** holes. The first PC to join that group goes to the gold center (the same idea as world slot 3, the arc midpoint). Later PCs fill the white holes. That matches the five stable world PC slots; the board holes are occupancy UI, not a map of table-plane coordinates.
 
-The outer ring has a finite number of holes. Game-world NPC occupancy is still unlimited: extra NPCs beyond the hole count remain in the group and still receive world positions. The board may stack those extras on the group (implementation detail at wiring time).
+The outer ring has **twelve** NPC holes (`BOARD_NPC_HOLE_COUNT`). Game-world NPC occupancy is still unlimited: extra NPCs beyond the hole count remain in the group and still receive world positions. The board may stack those extras on the group (implementation detail at wiring time).
 
 ### Board-hole calibration
 
 Token auto-place needs authored hole positions on the control board. Those are measured in-world, not guessed from the PNG.
 
-`DEBUG.calibrateScatterGroup(scatterGroupNum)` records one group at a time. `scatterGroupNum` is `1`–`6`, where `1` is the first scatter group (world angle `90°`, positive X) and the rest follow the same order as the world groups (`150°`, `210°`, `270°`, `330°`, `30°`). An out-of-range number is an error.
+`DEBUG.calibrateScatterGroup(scatterGroupNum)` records one group at a time. `scatterGroupNum` is `1`–`6`, where `1` is the first scatter group (world angle `270°`, negative X / far left, after the control board’s 180° yaw) and the rest follow clockwise (`330°`, `30°`, `90°`, `150°`, `210°`). An out-of-range number is an error.
 
 **How to run it**
 
@@ -84,6 +84,10 @@ All numeric Scatter parameters are **global constants** in `lib/constants.ttslua
 | --- | --- | --- |
 | `CENTER_POINT` | `{0,0,0}` | Scatter playfield origin (same role as a table’s `centerPoint`). Floor, plinth, rain emitter, and STAGE_BOARD X/Z move here on enter. |
 | `STAGE_BOARD_HOME_XZ` | `{0, 62.0977}` | Workshop home for STAGE_BOARD (it does not follow tables). Restored on leave; Y is left alone. |
+| `GROUP_COUNT` | `6` | Number of scatter groups. |
+| `BOARD_NPC_HOLE_COUNT` | `12` | NPC holes on each group’s dashed ring on the control board. |
+| `FIRST_GROUP_AZIMUTH_DEG` | `270` | World angle of group 1 (−X / far left after the board’s 180° yaw). Remaining groups step clockwise by `GROUP_SPACING_DEG`. |
+| `GROUP_SPACING_DEG` | `60` | Angle between adjacent scatter groups. |
 | `SCATTER_RADIUS_WORLD` | `300` | Distance from World Origin to each scatter-group origin. |
 | `SCATTER_RADIUS_NPC` | `22` | NPC standing radius around the group origin. |
 | `SCATTER_RADIUS_PC` | `14` | PC standing radius around `PC_SCATTER_GROUP_ORIGIN`. |
@@ -128,14 +132,14 @@ This is distinct from the **World Origin**, which is always `{0, 0}`.
 
 The six `SCATTER_GROUP_ORIGIN` points lie on the World Circle and are spaced evenly around it at `60°` intervals.
 
-The first scatter group sits on the **positive X-axis**. In project angles that is **`90°`**, not `0°` and not `−90°` (`−90°` is negative X). Subsequent groups increase clockwise by `60°`:
+The first scatter group sits on the **negative X-axis** (far left), matching the control board’s 180° yaw. In project angles that is **`270°`**. Subsequent groups increase clockwise by `60°`:
 
-- Group 0: `90°` (+X)
-- Group 1: `150°`
-- Group 2: `210°`
-- Group 3: `270°` (−X)
-- Group 4: `330°`
-- Group 5: `30°` (`390°` wrapped)
+- Group 1: `270°` (−X, far left)
+- Group 2: `330°`
+- Group 3: `30°`
+- Group 4: `90°` (+X, far right)
+- Group 5: `150°`
+- Group 6: `210°`
 
 Every `SCATTER_GROUP_ORIGIN` is exactly `SCATTER_RADIUS_WORLD` units from the World Origin.
 

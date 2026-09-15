@@ -40,7 +40,7 @@ local function scatterCfg()
 end
 
 local function boardNpcHoleCount()
-    return math.floor(tonumber(scatterCfg().BOARD_NPC_HOLE_COUNT) or 16)
+    return math.floor(tonumber(scatterCfg().BOARD_NPC_HOLE_COUNT) or 12)
 end
 
 --- @return boolean

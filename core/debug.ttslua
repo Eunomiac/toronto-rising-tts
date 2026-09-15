@@ -560,7 +560,7 @@ function DEBUG.dumpSeatRoleOffsets(occupantRaw)
 end
 
 --- Measure one Scatter group’s gold, upper-left white, and top NPC holes from three control tokens.
---- Group `1` is world 90° (+X). Writes pasteable Lua under `.dev/.debug/debug_logs/`.
+--- Group `1` is world 270° (−X, far left). Writes pasteable Lua under `.dev/.debug/debug_logs/`.
 --- @param scatterGroupNum number 1–6
 function DEBUG.calibrateScatterGroup(scatterGroupNum)
     local ScatterMode = require("core.scatter_mode")

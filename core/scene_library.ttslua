@@ -664,7 +664,7 @@ local function validateScatterPlacementsPack(sessionScene)
             end
         end
         local orbitSlots = {}
-        local holeCount = 16
+        local holeCount = 12
         if type(C.Scatter) == "table" and tonumber(C.Scatter.BOARD_NPC_HOLE_COUNT) ~= nil then
             holeCount = math.floor(C.Scatter.BOARD_NPC_HOLE_COUNT)
         end

@@ -1745,9 +1745,9 @@ C.Scatter = {
   STAGE_BOARD_HOME_XZ = { x = 0, z = 62.0977 },
   GROUP_COUNT = 6,
   --- Outer NPC holes on the Scatter CONTROL_BOARD art (counted on Stage Control Board in Scatter Mode.jpg).
-  BOARD_NPC_HOLE_COUNT = 16,
-  --- First group world azimuth (positive X). Remaining groups: 90 + i * 60.
-  FIRST_GROUP_AZIMUTH_DEG = 90,
+  BOARD_NPC_HOLE_COUNT = 12,
+  --- First group world azimuth. CONTROL_BOARD yaw 180° puts group 1 at far left (−X = 270°), then clockwise 60°.
+  FIRST_GROUP_AZIMUTH_DEG = 270,
   GROUP_SPACING_DEG = 60,
   SCATTER_RADIUS_WORLD = 200,
   SCATTER_RADIUS_NPC = 50,

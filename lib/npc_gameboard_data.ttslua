@@ -154,22 +154,22 @@ D.CONTROL_BOARD_SEAT_ROW = {
 --- Until a group is calibrated (`calibrated = true` + gold/whites/npcHoles from
 --- DEBUG.calibrateScatterGroup), auto-park loud-errors. Dashboard overlay uses origin +
 --- whiteRadius / orbitRadius to draw gold + square whites + NPC ring (not a pentagon).
---- Group 1 = world 90° (+X); remaining groups clockwise 60°. Approximate UV origins match
---- the six dashed circles around the parchment star (right = scatter1).
+--- Group 1 = world 270° (−X, far left) after CONTROL_BOARD yaw 180°; remaining groups clockwise 60°.
+--- Approximate UV origins match the six dashed circles (left = scatter1).
 D.SCATTER_BOARD = {
   areaOrder = { "scatter1", "scatter2", "scatter3", "scatter4", "scatter5", "scatter6" },
   centerSlotCount = 5,
-  orbitSlotCount = 16,
+  orbitSlotCount = 12,
   --- Dashboard fallback: gold at origin; four whites on a square; NPC ring from 12 o’clock clockwise.
   whiteRadius = 0.028,
   orbitRadius = 0.078,
   areas = {
-    scatter1 = { origin = { u = 0.88, v = 0.52 }, calibrated = false },
-    scatter2 = { origin = { u = 0.62, v = 0.32 }, calibrated = false },
-    scatter3 = { origin = { u = 0.38, v = 0.32 }, calibrated = false },
-    scatter4 = { origin = { u = 0.12, v = 0.52 }, calibrated = false },
-    scatter5 = { origin = { u = 0.38, v = 0.78 }, calibrated = false },
-    scatter6 = { origin = { u = 0.62, v = 0.78 }, calibrated = false },
+    scatter1 = { origin = { u = 0.12, v = 0.52 }, calibrated = false },
+    scatter2 = { origin = { u = 0.38, v = 0.78 }, calibrated = false },
+    scatter3 = { origin = { u = 0.62, v = 0.78 }, calibrated = false },
+    scatter4 = { origin = { u = 0.88, v = 0.52 }, calibrated = false },
+    scatter5 = { origin = { u = 0.62, v = 0.32 }, calibrated = false },
+    scatter6 = { origin = { u = 0.38, v = 0.32 }, calibrated = false },
   },
 }
 
