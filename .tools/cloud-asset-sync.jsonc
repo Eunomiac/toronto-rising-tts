@@ -76,6 +76,38 @@
       "filenameToNameSearchPattern": "^([^.]+)\\.[^.]+$",
       "filenameToNameReplacePattern": "memoriamBlindfold_$1" // E.g. "memoriamBlindfold_blackCaesar37.webp"
       // Purge family derived → ^memoriamBlindfold_(.*)$
+    },
+    {
+      "id": "memoriamNpcFigurines",
+      "cloudFolder": "NPC Cutouts/Memoriam/Figurines",
+      "recurIntoSubfolders": false,
+      "output": "LuaCatalog",
+      "tableName": "MemoriamNpcFigurines",
+      // Unique character stem (no _01 variants). Sheet NPC Key must match this stem.
+      "filenameToNameSearchPattern": "^mem_(.+)\\.[^.]+$",
+      "filenameToNameReplacePattern": "$1" // E.g. "mem_maximillianSteele.webp" → "maximillianSteele"
+      // → Cloud.MemoriamNpcFigurines.<stem> = { filename, key, URL }
+      // Merge target: C.MemoriamSkyboxes[period].npcs[*].figurine (Constants, same idea as applyMemoriamCloudPanelUrls)
+    },
+    {
+      "id": "memoriamNpcTokenFronts",
+      "cloudFolder": "NPC Cutouts/Memoriam/Tokens",
+      "recurIntoSubfolders": false,
+      "output": "LuaCatalog",
+      "tableName": "MemoriamNpcTokenFronts",
+      "filenameToNameSearchPattern": "^mem_tokenFront_(.+)\\.[^.]+$",
+      "filenameToNameReplacePattern": "$1" // E.g. "mem_tokenFront_maximillianSteele.webp" → "maximillianSteele"
+      // → Cloud.MemoriamNpcTokenFronts.<stem> = { filename, key, URL }
+    },
+    {
+      "id": "memoriamNpcTokenBacks",
+      "cloudFolder": "NPC Cutouts/Memoriam/Tokens",
+      "recurIntoSubfolders": false,
+      "output": "LuaCatalog",
+      "tableName": "MemoriamNpcTokenBacks",
+      "filenameToNameSearchPattern": "^mem_tokenBack_(.+)\\.[^.]+$",
+      "filenameToNameReplacePattern": "$1" // E.g. "mem_tokenBack_maximillianSteele.webp" → "maximillianSteele"
+      // → Cloud.MemoriamNpcTokenBacks.<stem> = { filename, key, URL }
     }
   ]
 }
