@@ -1309,6 +1309,34 @@ function ScatterMode.sortCalibrationLocals(locals)
     return gold, ul, npc
 end
 
+--- Scatter group 1–6 when this NPC occupies a group (orbit, or a PC portraying them).
+--- @param characterKey string|nil
+--- @return number|nil
+function ScatterMode.groupIndexForNpcCharacter(characterKey)
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return nil
+    end
+    local pack = livePlacements()
+    for i = 1, ScatterLayout.groupCount() do
+        local area = pack[ScatterLayout.areaKeyForGroup(i)]
+        if U.Type(area) == "table" then
+            if U.Type(area.orbitCharacters) == "table" and area.orbitCharacters[characterKey] ~= nil then
+                return i
+            end
+            if U.Type(area.centerCharacters) == "table" then
+                for _, row in pairs(area.centerCharacters) do
+                    if U.Type(row) == "table"
+                        and row.isPlayingNPC == true
+                        and row.characterKey == characterKey then
+                        return i
+                    end
+                end
+            end
+        end
+    end
+    return nil
+end
+
 function ScatterMode.pcKeyForColor(color)
     return pcKeyForColor(color)
 end

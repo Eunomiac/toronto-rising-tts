@@ -91,7 +91,10 @@ All numeric Scatter parameters are **global constants** in `lib/constants.ttslua
 | `NPC_DEPLOYMENT_ARC` | `70` | Angular width of the NPC placement fan. |
 | `PC_DEPLOYMENT_ARC` | `80` | Angular width of the five PC slots; meant to hold five figurines on `SCATTER_RADIUS_PC` without stacking. |
 | `NPC_SPACING_MIN` | `10` | Tightest allowed angular gap between adjacent NPCs in a group (~3.8 units of chord at the guessed NPC radius). |
-| `NPC_SPACING_MAX` | `22` | Widest angular gap; fewer NPCs cluster near the arc midpoint instead of stretching across the whole fan. |
+| `NPC_SPACING_MAX` | `22` | Widest allowed angular gap; fewer NPCs cluster near the arc midpoint instead of stretching across the whole fan. |
+| `ST_DICE_TRAY_ON_Y` | `-50.89` | Storyteller dice-tray height in Scatter (just above the figurine plane). Tune after the first in-world pass. |
+| `ST_DICE_TRAY_OFF_Y` | `-80.89` | Drop height before the tray rises at a scatter group. |
+| `ST_DICE_TRAY_YAW_OFFSET_DEG` | `0` | Extra yaw added to the group World Ray when posing the tray. |
 
 Do not add extra “this arrangement looks wrong” guards. If a chosen constant set produces a bizarre layout, correct the constants. The only hard stop is math that cannot run (a zero-length direction, i.e. a true divide-by-zero / `normalize` of a zero vector). In that case broadcast a non-stopping error and skip that pose rather than crashing.
 
@@ -339,3 +342,22 @@ For an NPC at world-space position `N`, facing is:
     SCATTER_GROUP_ORIGIN - N
 
 Associated NPC lights stay positioned and oriented relative to their NPC figurines using the same satellite-follow behavior as in Standard Mode.
+
+### Storyteller dice tray
+
+While Scatter is active, each Storyteller dice tray sits on that scatter group’s **World Ray**, at the midpoint between:
+
+- the **NPC deployment-arc midpoint** (`PC_SCATTER_GROUP_ORIGIN`)
+- the **PC deployment-arc midpoint** (far intersection of the PC circle with that same ray)
+
+Yaw around Y is the same as that World Ray (`groupAzimuthDeg`, plus `ST_DICE_TRAY_YAW_OFFSET_DEG` if you ever need a mesh correction).
+
+When the Storyteller starts a Storyteller roll, that roll’s tray moves to the scatter group that currently contains the NPC who started it (orbit occupancy, or a PC portraying that NPC). If that NPC is not on the stage, the tray appears at World Origin with yaw `0`.
+
+Scatter still has only three Storyteller trays, and **only one uncleared Storyteller roll per scatter group** (off-stage rolls share the origin bucket):
+
+- Starting a roll in a group that already has one **clears and replaces** that group’s roll immediately.
+- Starting a roll in a group with no roll, when all three trays are already used at other groups, **clears the oldest** of those three and reuses that tray.
+- Table Mode still refuses a new roll when no tray is free. Scatter does not.
+
+Code: `ScatterLayout.storytellerTrayPose`, `STD.openForSlot` with `scatterGroupIndex`, `STR.initiateNpcRoll`.

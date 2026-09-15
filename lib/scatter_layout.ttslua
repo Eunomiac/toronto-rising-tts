@@ -237,6 +237,52 @@ function ScatterLayout.npcPoses(groupIndex, npcCount)
     return poses
 end
 
+--- NPC deployment-arc midpoint is `PC_SCATTER_GROUP_ORIGIN` (on the NPC circle, toward World Origin).
+--- @param groupIndex number
+--- @return Vector|nil, string|nil skipReason
+function ScatterLayout.npcDeploymentArcMidpoint(groupIndex)
+    return ScatterLayout.pcGroupOrigin(groupIndex)
+end
+
+--- Storyteller dice tray: midpoint of PC vs NPC deployment-arc midpoints along the World Ray.
+--- Yaw is the group World Ray (`groupAzimuthDeg`) plus `ST_DICE_TRAY_YAW_OFFSET_DEG`.
+--- @param groupIndex number
+--- @return table|nil `{ position, rotation }`, string|nil skipReason
+function ScatterLayout.storytellerTrayPose(groupIndex)
+    local npcMid, npcErr = ScatterLayout.npcDeploymentArcMidpoint(groupIndex)
+    if npcMid == nil then
+        return nil, npcErr
+    end
+    local pcMid, pcErr = ScatterLayout.pcDeploymentArcMidpoint(npcMid)
+    if pcMid == nil then
+        return nil, pcErr
+    end
+    local y = ScatterLayout.floorY()
+    local yaw = ScatterLayout.groupAzimuthDeg(groupIndex) + (tonumber(cfg().ST_DICE_TRAY_YAW_OFFSET_DEG) or 0)
+    yaw = yaw % 360
+    if yaw < 0 then
+        yaw = yaw + 360
+    end
+    return {
+        position = Vector({
+            x = (npcMid.x + pcMid.x) * 0.5,
+            y = y,
+            z = (npcMid.z + pcMid.z) * 0.5,
+        }),
+        rotation = Vector({ 0, yaw, 0 }),
+    }, nil
+end
+
+--- Un-rotated tray at World Origin (NPC not on a scatter group).
+--- @return table `{ position, rotation }`
+function ScatterLayout.storytellerTrayOriginPose()
+    local ox, oz = worldOriginXZ()
+    return {
+        position = Vector({ x = ox, y = ScatterLayout.floorY(), z = oz }),
+        rotation = Vector({ 0, 0, 0 }),
+    }
+end
+
 --- First join → slot 3; later → closest free to midpoint; ties → lower slot. Does not reshuffle.
 --- @param occupiedSlots table<number, boolean>
 --- @return number|nil slot

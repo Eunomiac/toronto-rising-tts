@@ -1749,7 +1749,7 @@ C.Scatter = {
   --- First group world azimuth (positive X). Remaining groups: 90 + i * 60.
   FIRST_GROUP_AZIMUTH_DEG = 90,
   GROUP_SPACING_DEG = 60,
-  SCATTER_RADIUS_WORLD = 300,
+  SCATTER_RADIUS_WORLD = 200,
   SCATTER_RADIUS_NPC = 50,
   SCATTER_RADIUS_PC = 20,
   PC_SCATTER_POSITION_ANGLE = 180,
@@ -1759,6 +1759,12 @@ C.Scatter = {
   NPC_SPACING_MAX = 22,
   --- Default in-use PC figurine Y (Table A dumps / SeatRoleOffsets SEAT_FIGURE). Tune after first in-world pass.
   FLOOR_Y = -52.89,
+  --- Storyteller dice tray in Scatter: sit just above the figurine plane (not table-top Y). Tune after first in-world pass.
+  ST_DICE_TRAY_ON_Y = -50.89,
+  --- Drop Y before the tray rises at a scatter group (same idea as homeland NPC off).
+  ST_DICE_TRAY_OFF_Y = -80.89,
+  --- Extra yaw added to the group World Ray when posing the tray (0 = ray azimuth).
+  ST_DICE_TRAY_YAW_OFFSET_DEG = 0,
   --- Custom tile mesh looks along -Z at yaw 0; look-at toward a point needs +180 (same as stage figurines).
   FIGURINE_YAW_OFFSET_DEG = 180,
   CONTROL_BOARD_IMAGE_STANDARD = "https://steamusercontent-a.akamaihd.net/ugc/13248133772831882366/6F672A9E951B9AC21C6DE9091659FE913AD29268/",

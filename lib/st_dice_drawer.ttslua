@@ -5,6 +5,7 @@
     Drawer poses: C.ObjectPositions DICE_DRAWER_STORYTELLER_* ; lights: L.LIGHTMODES.
     Tray light X/Z always mirrors the live drawer (never C.Tables light entries).
     Seated-NPC rolls reposition drawer via DICE_DRAWER_STORYTELLER_NPC* (TOR-302); light follows.
+    Scatter Mode poses the tray on the World Ray between PC and NPC deployment arcs.
 ]]
 
 ---@diagnostic disable: undefined-global
@@ -39,6 +40,10 @@ local NPC_SEAT_DRAWER_KEYS = {
 --- NPC seat key when slot drawer was repositioned in front of a homeland seat (TOR-302).
 --- @type table<number, string|nil>
 local npcSeatBySlot = {}
+
+--- True while this slot is posed at a Scatter group (or Scatter world origin).
+--- @type table<number, boolean>
+local scatterPoseBySlot = {}
 
 --- Workshop scale snapped before NPC-seat resize; restored on park (TOR-302 / TOR-344).
 --- @type table<number, table|nil>
@@ -330,6 +335,9 @@ end
 -- @param slot number 1..3
 -- @return string|nil
 local function npcSeatKeyForSlot(slot)
+    if scatterPoseBySlot[slot] == true then
+        return nil
+    end
     local cached = npcSeatBySlot[slot]
     if type(cached) == "string" then
         return cached
@@ -430,6 +438,13 @@ function STD.isRaisedForRelease(slot)
     if type(y) ~= "number" then
         return false
     end
+    if scatterPoseBySlot[slot] == true then
+        local onY = tonumber(C.Scatter and C.Scatter.ST_DICE_TRAY_ON_Y)
+        if onY == nil then
+            onY = (tonumber(C.Scatter and C.Scatter.FLOOR_Y) or -52.89) + 2
+        end
+        return y > (onY - 2.5)
+    end
     local npcSeatKey = npcSeatKeyForSlot(slot)
     if type(npcSeatKey) == "string" then
         return y > STD.DRAWER_RELEASE_MIN_Y_NPC
@@ -465,14 +480,93 @@ function STD.arcCenterForSlot(slot)
     return STS.arcCenterFromTraySpec(traySpec)
 end
 
+--- Scatter tray on/off Y from C.Scatter (figurine plane, not table-top).
+-- @return number, number onY, offY
+local function scatterTrayHeights()
+    local scatter = C.Scatter
+    local floorY = tonumber(scatter and scatter.FLOOR_Y) or -52.89
+    local onY = tonumber(scatter and scatter.ST_DICE_TRAY_ON_Y)
+    if onY == nil then
+        onY = floorY + 2
+    end
+    local offY = tonumber(scatter and scatter.ST_DICE_TRAY_OFF_Y)
+    if offY == nil then
+        offY = onY - 30
+    end
+    return onY, offY
+end
+
+--- World XZ + yaw for a Scatter ST tray (group ray midpoint, or origin if group is 0/nil).
+-- @param groupIndex number|nil
+-- @return table `{ x, z, yaw }`
+local function resolveScatterTrayXzYaw(groupIndex)
+    local ScatterLayout = require("lib.scatter_layout")
+    local gi = math.floor(tonumber(groupIndex) or 0)
+    if gi >= 1 then
+        local pose, err = ScatterLayout.storytellerTrayPose(gi)
+        if type(pose) == "table" and type(pose.position) == "table" then
+            return {
+                x = tonumber(pose.position.x) or 0,
+                z = tonumber(pose.position.z) or 0,
+                yaw = tonumber(pose.rotation and pose.rotation.y) or 0,
+            }
+        end
+        if type(err) == "string" and err ~= "" then
+            print("[STD] Scatter ST tray pose skipped: " .. err .. " — using World Origin.")
+        end
+    end
+    local origin = ScatterLayout.storytellerTrayOriginPose()
+    return {
+        x = tonumber(origin.position.x) or 0,
+        z = tonumber(origin.position.z) or 0,
+        yaw = 0,
+    }
+end
+
+--- Instant XZ + yaw, then rise Y (same pattern as homeland NPC seats).
+-- @param slot number 1..3
+-- @param groupIndex number|nil  1–6, or 0/nil for un-rotated World Origin
+local function openForSlotAtScatter(slot, groupIndex)
+    scatterPoseBySlot[slot] = true
+    npcSeatBySlot[slot] = nil
+    local obj = findDrawerObject(slot)
+    if obj == nil then
+        return
+    end
+    local xz = resolveScatterTrayXzYaw(groupIndex)
+    local onY, offY = scatterTrayHeights()
+    local epoch = bumpPoseEpoch(slot)
+    obj.setLock(true)
+    obj.setInvisibleTo({})
+    obj.setPosition({ x = xz.x, y = offY, z = xz.z })
+    obj.setRotation({ x = 0, y = xz.yaw, z = 0 })
+    syncTrayLightXzToDrawer(slot)
+    OP.applyResolvedPose(obj, {
+        position = { x = xz.x, y = onY, z = xz.z },
+        rotation = { x = 0, y = xz.yaw, z = 0 },
+        isHidden = false,
+        isLocked = true,
+    }, OP.DEFAULT_TRANSITION_DURATION, 0, {
+        useSmoothSetters = true,
+        shouldAbort = makePoseAbort(slot, epoch),
+    })
+    syncTrayLightXzToDrawer(slot)
+end
+
 --- Opens drawer pose and STANDARD tray light for a slot.
 -- @param slot number 1..3
--- @param opts table|nil  { npcSeatKey?: string } homeland seat when rolling for seated NPC (TOR-302)
+-- @param opts table|nil  { npcSeatKey?: string, scatterGroupIndex?: number }
+--   scatterGroupIndex set (including 0) → Scatter pose; else homeland NPC seat (TOR-302) or default.
 function STD.openForSlot(slot, opts)
     if type(slot) ~= "number" then
         return
     end
     opts = type(opts) == "table" and opts or {}
+    if opts.scatterGroupIndex ~= nil then
+        openForSlotAtScatter(slot, opts.scatterGroupIndex)
+        return
+    end
+    scatterPoseBySlot[slot] = nil
     local npcSeatKey = opts.npcSeatKey
     if type(npcSeatKey) == "string" and NPC_SEAT_DRAWER_KEYS[npcSeatKey] ~= nil then
         openForSlotAtNpcSeat(slot, npcSeatKey)
@@ -581,6 +675,7 @@ function STD.closeForSlot(slot)
         return
     end
     npcSeatBySlot[slot] = nil
+    scatterPoseBySlot[slot] = nil
     clearPersistedWorkshopHomes(slot)
 
     applyWorkshopHomeOff(slot, { instant = true })
@@ -598,6 +693,7 @@ function STD.reconcileAllToWorkshopHome(opts)
     local restored = 0
     for slot = 1, 3 do
         npcSeatBySlot[slot] = nil
+        scatterPoseBySlot[slot] = nil
         clearPersistedWorkshopHomes(slot)
         -- Drop stale NPC scale cache when force-reconciling all homes.
         workshopScaleBySlot[slot] = nil

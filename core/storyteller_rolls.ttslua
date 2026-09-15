@@ -6,6 +6,10 @@
 
     Live FSM runs on the Storyteller seat (Black) via core.roll_controller; slot metadata
     tracks drawer occupancy until the ST cancels from the panel.
+
+    Scatter Mode: one uncleared roll per scatter group (origin bucket if the NPC is off-stage).
+    A new roll at a busy group replaces that group's roll. If all three trays are elsewhere,
+    the oldest roll is cleared and that tray moves. Table Mode still refuses when no tray is free.
 ]]
 
 local STR = {}
@@ -161,6 +165,101 @@ local function firstFreeSlot(slots)
     return nil
 end
 
+local SCATTER_ORIGIN_GROUP = 0
+
+--- @return number Time.time, or 0
+local function nowTime()
+    if Time ~= nil and type(Time.time) == "number" then
+        return Time.time
+    end
+    return 0
+end
+
+--- @param npcCharacterKey string|nil
+--- @return number 1–6, or 0 when the NPC is not on a scatter group
+local function scatterGroupKeyForNpc(npcCharacterKey)
+    local ScatterMode = require("core.scatter_mode")
+    local gi = ScatterMode.groupIndexForNpcCharacter(npcCharacterKey)
+    if type(gi) == "number" and gi >= 1 then
+        return gi
+    end
+    return SCATTER_ORIGIN_GROUP
+end
+
+--- @param slots table
+--- @param groupKey number
+--- @return number|nil slot 1..3
+local function unclearedSlotForScatterGroup(slots, groupKey)
+    local key = math.floor(tonumber(groupKey) or SCATTER_ORIGIN_GROUP)
+    for i = 1, MAX_SLOTS do
+        local slot = slots[i]
+        if type(slot) == "table" and slot.cleared ~= true then
+            local g = math.floor(tonumber(slot.scatterGroupIndex) or SCATTER_ORIGIN_GROUP)
+            if g == key then
+                return i
+            end
+        end
+    end
+    return nil
+end
+
+--- Oldest uncleared drawer (initiatedAt, then initiatedSeq, then slot index).
+--- @param slots table
+--- @return number|nil
+local function oldestUnclearedSlot(slots)
+    local best = nil
+    local bestAt = nil
+    local bestSeq = nil
+    for i = 1, MAX_SLOTS do
+        local slot = slots[i]
+        if type(slot) == "table" and slot.cleared ~= true then
+            local at = tonumber(slot.initiatedAt) or 0
+            local seq = tonumber(slot.initiatedSeq) or 0
+            if best == nil
+                or at < bestAt
+                or (at == bestAt and seq < bestSeq)
+                or (at == bestAt and seq == bestSeq and i < best) then
+                best = i
+                bestAt = at
+                bestSeq = seq
+            end
+        end
+    end
+    return best
+end
+
+--- Scatter: free a tray for `groupKey` (replace same group, else steal oldest if full).
+--- Also clears a leftover live Black roll so the new roll can own the FSM.
+--- @param groupKey number
+--- @return number|nil slot 1..3
+local function prepareScatterDrawerSlot(groupKey)
+    local root = getRoot()
+    local existing = unclearedSlotForScatterGroup(root.slots, groupKey)
+    if existing ~= nil then
+        STR.cancelSlot(existing)
+        root = getRoot()
+    end
+    if firstFreeSlot(root.slots) == nil then
+        local oldest = oldestUnclearedSlot(root.slots)
+        if oldest ~= nil then
+            STR.cancelSlot(oldest)
+            root = getRoot()
+        end
+    end
+    if getBlackActive() ~= nil then
+        local liveIdx = root.liveSlotIndex
+        if type(liveIdx) == "number" then
+            STR.cancelSlot(liveIdx)
+        else
+            local RC = require("core.roll_controller")
+            RC.cancelRoll(ST_COLOR)
+            STR.cleanupLiveRoll()
+        end
+        root = getRoot()
+    end
+    return firstFreeSlot(root.slots)
+end
+
 --- Maps ST dice-bag kind (+ optional token context) to `C.RollType` for bag modal and token-on-bag drops.
 -- Non-`Werewolf` tokens: Normal→STANDARD, Hunger→DISCIPLINE, Werewolf bag→WILLPOWER_ROLL,
 -- Rage→FRENZY, Rouse→ROUSE, Obliv-Rouse→REMORSE at SessionEnd else ROUSE_OBLIVION.
@@ -256,9 +355,17 @@ function STR.activateDrawerForSlot(slotIndex)
     saveRoot(root)
 
     local npcSeatKey = nil
+    local scatterGroupIndex = nil
     local active = getBlackActive()
-    if type(active) == "table" and type(active.npcCharacterKey) == "string" then
+    local ScatterMode = require("core.scatter_mode")
+    if ScatterMode.isActive() == true and type(slot.scatterGroupIndex) == "number" then
+        scatterGroupIndex = slot.scatterGroupIndex
+    elseif type(active) == "table" and type(active.npcCharacterKey) == "string" then
         npcSeatKey = resolveActiveNpcSeatForCharacter(active.npcCharacterKey)
+    end
+    if scatterGroupIndex ~= nil then
+        STD.openForSlot(slotIndex, { scatterGroupIndex = scatterGroupIndex })
+        return
     end
     STD.openForSlot(slotIndex, { npcSeatKey = npcSeatKey })
 end
@@ -269,16 +376,28 @@ end
 -- @param npcCharacterKey string|nil  Authoritative NPC key (avoids ambiguous fullName broadcast lookup — TOR-252)
 -- @return boolean
 function STR.initiateNpcRoll(rawLabel, rollType, npcCharacterKey)
-    if not STR.canInitiate() then
-        print("[StorytellerRolls] Cannot initiate: no free drawer or a roll is still live.")
-        return false
-    end
-
+    local ScatterMode = require("core.scatter_mode")
+    local scatterActive = ScatterMode.isActive() == true
+    local scatterGroupIndex = nil
     local RC = require("core.roll_controller")
     local root = getRoot()
-    local slot = firstFreeSlot(root.slots)
-    if slot == nil then
-        return false
+    local slot = nil
+    if scatterActive then
+        scatterGroupIndex = scatterGroupKeyForNpc(npcCharacterKey)
+        slot = prepareScatterDrawerSlot(scatterGroupIndex)
+        if slot == nil then
+            print("[StorytellerRolls] Cannot initiate: Scatter could not free a Storyteller dice tray.")
+            return false
+        end
+    else
+        if not STR.canInitiate() then
+            print("[StorytellerRolls] Cannot initiate: no free drawer or a roll is still live.")
+            return false
+        end
+        slot = firstFreeSlot(root.slots)
+        if slot == nil then
+            return false
+        end
     end
 
     local rt = rollType or C.RollType.STANDARD
@@ -295,6 +414,9 @@ function STR.initiateNpcRoll(rawLabel, rollType, npcCharacterKey)
         return false
     end
 
+    root = getRoot()
+    local nextSeq = (tonumber(root.nextInitiateSeq) or 0) + 1
+    root.nextInitiateSeq = nextSeq
     root.slots[slot] = {
         drawerSlot = slot,
         label = label,
@@ -303,6 +425,9 @@ function STR.initiateNpcRoll(rawLabel, rollType, npcCharacterKey)
         confirmed = false,
         drawerActive = false,
         phase = skipSetupForRollType(rt) and C.RollPhase.PRE_ROLL or C.RollPhase.SETUP,
+        scatterGroupIndex = scatterActive and scatterGroupIndex or nil,
+        initiatedAt = nowTime(),
+        initiatedSeq = nextSeq,
     }
     root.liveSlotIndex = slot
     saveRoot(root)
@@ -324,7 +449,8 @@ end
 -- @param opts table|nil  forwarded to `rollTypeForStorytellerBagDrop` (e.g. `{ tokenIsWerewolf = true }`)
 -- @return boolean
 function STR.initiateFromBagLabel(label, dieKind, npcCharacterKey, opts)
-    if hasLiveBlackRoll() then
+    local ScatterMode = require("core.scatter_mode")
+    if hasLiveBlackRoll() and ScatterMode.isActive() ~= true then
         return false
     end
     local rt = STR.rollTypeForStorytellerBagDrop(dieKind, opts)
