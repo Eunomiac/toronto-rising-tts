@@ -12,8 +12,9 @@
     Agent guidance: .dev/Phases/Phases Overview.md; hide-list must run after
     seat layout in Sync.full so bags/companions/compulsion decks stay stashed
     while phase is Spotlight or End (restore on Intermission enter, after the cover).
-    Seat figurines stay at table seats with visibility-only hide during Spotlight
-    (`setInvisibleTo(C.HideFromPcSeatsAndSpectators)` — never O.hideObject).
+    Seat figurines stay at table seats; active visibility is always `C.HiddenObjects`
+    via `O.restoreObject` / `O.applyActiveVisibility` (never a blanket PC hide list,
+    never O.hideObject park for home seats).
 ]]
 
 local Spotlight = {}
@@ -359,15 +360,10 @@ local function revealStandInAtPose(obj, pos, rot)
             locked = true,
             interactable = false,
         })
-        if obj.setInvisibleTo ~= nil then
-            obj.setInvisibleTo({})
-        end
         return
     end
     snapObject(obj, pos, rot)
-    if obj.setInvisibleTo ~= nil then
-        obj.setInvisibleTo({})
-    end
+    O.applyActiveVisibility(obj)
 end
 
 --- @param color string
@@ -406,9 +402,8 @@ local function placeStandIn(color, slotOffset, lightMode)
                 locked = true,
                 interactable = false,
             })
-            if lit.setInvisibleTo ~= nil then
-                lit.setInvisibleTo({})
-            end
+        else
+            O.applyActiveVisibility(lit)
         end
         ensureTag(lit, Spotlight.LIGHT_TAG)
     end
@@ -515,21 +510,18 @@ local function parkPlayfieldToys()
     end)
 end
 
---- Seat figurines stay at table seats during Spotlight. Only visibility changes
---- (Phases Overview): hide from PC seats + White/Grey. Do not `O.hideObject` them —
---- that parks at −200 and makes the carousel stand-ins look like the home figures moved.
+--- Seat figurines stay at table seats during Spotlight. Active visibility comes
+--- only from `C.HiddenObjects` (owner-color hide) — never a blanket PC hide list
+--- and never `O.hideObject` (that parks at −200).
 local function applySeatFigurineSpotlightVisibility()
-    local hideColors = C.HideFromPcSeatsAndSpectators or {}
     for i = 1, #(C.PlayerColors or {}) do
         local color = C.PlayerColors[i]
         local fig = G.getObject(G.GUIDS["SEAT_FIGURE_" .. string.upper(color)])
         if U.isGameObject(fig) then
-            -- Recover from the brief hide-protocol regression that parked seat figures.
             if O.isHiddenObject(fig) then
                 O.restoreObject(fig, { locked = true, interactable = false })
-            end
-            if fig.setInvisibleTo ~= nil then
-                fig.setInvisibleTo(hideColors)
+            else
+                O.applyActiveVisibility(fig)
             end
         end
     end

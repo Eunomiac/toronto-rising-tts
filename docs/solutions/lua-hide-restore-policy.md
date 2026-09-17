@@ -16,11 +16,11 @@ One pair of functions owns the full hide protocol and the matching restore path:
 | Lock | `setLock(true)` | `opts.locked` → snapshot → catalog default |
 | Interactable | `false` | `opts.interactable` → `C.LockedObjects` → snapshot → `true` |
 | Visibility (parked) | All viewer colors (PC seats + White/Grey/Black) | — |
-| Visibility (active) | — | `opts.invisibleTo` → `C.HiddenObjects[guid]` → snapshot `invisibleTo` → `{}` |
+| Visibility (active) | — | Always `C.HiddenObjects[guid]` when catalogued; else snapshot / `{}` |
 | Tag | Add `HiddenObject` | Remove `HiddenObject` |
 | State snapshot | Write `gameState.hiddenObjects[guid]` once (fallback restore) | Clear snapshot after restore |
 
-**Source of truth:** `core/objects.ttslua` (`O.hideObject`, `O.restoreObject`, `O.isHiddenObject`, `O.activeVisibilityForGuid`, `O.noteHiddenObjectWorldXZ`, `O.transferHideSnapshot`).
+**Source of truth:** `core/objects.ttslua` (`O.hideObject`, `O.restoreObject`, `O.isHiddenObject`, `O.activeVisibilityForGuid`, `O.applyActiveVisibility`, `O.noteHiddenObjectWorldXZ`, `O.transferHideSnapshot`).
 
 **Constant:** `C.HIDDEN_OBJECT_WORLD_Y` in `lib/constants.ttslua`.
 
@@ -70,8 +70,8 @@ Calibrated examples: `lib/csheet_pose.ttslua`, `ui/ui_csheet_core.ttslua`.
 When `O.restoreObject` runs, each field resolves in this order (first win):
 
 1. **Caller `opts`** (`position`, `rotation`, `locked`, `interactable`)
-2. **Catalogs** — `C.LockedObjects` forces `interactable = false` when no explicit opts
-3. **`gameState.hiddenObjects[guid].invisibleTo`** snapshot (fallback when GUID is not in `C.HiddenObjects`)
+2. **Catalogs** — `C.LockedObjects` forces `interactable = false` when no explicit opts; **`C.HiddenObjects[guid]` always wins for active visibility** when the GUID is catalogued
+3. **`gameState.hiddenObjects[guid].invisibleTo`** snapshot (fallback only when GUID is **not** in `C.HiddenObjects`)
 4. **Defaults** — `{}` (visible to all); interactable `true` unless locked catalog says otherwise
 
 **Position** snapshot is omitted when the object is already parked at `C.HIDDEN_OBJECT_WORLD_Y` (never store −200 as restore Y). **Visibility** is always snapshotted on first hide (active `C.HiddenObjects` entry or `{}`) so restore has a fallback when the GUID is not catalogued.
@@ -83,15 +83,17 @@ Snapshot position is **not** the primary restore authority when a catalog pose o
 | Mode | Rule |
 | --- | --- |
 | **Parked** | All viewer colors (every PC seat + White/Grey/Black) inside `applyHideProtocol` — do not pass custom `invisibleTo` to hide |
-| **Active** | `opts.invisibleTo` → `C.HiddenObjects[guid]` when listed → snapshot `invisibleTo` → `{}` — **do not** hard-code player color arrays at call sites |
+| **Active** | Always `C.HiddenObjects[guid]` when catalogued (`O.restoreObject`, `O.applyActiveVisibility`); else snapshot `invisibleTo` → `{}`. Do not hard-code player color arrays for catalogued GUIDs |
 
-`opts.invisibleTo` is **not supported** on hide/restore. Add or adjust `C.HiddenObjects[guid]` when a GUID needs persistent per-seat visibility while active.
+`opts.invisibleTo` is **not** an authority override when the GUID is in `C.HiddenObjects`. Add or adjust `C.HiddenObjects[guid]` when a GUID needs persistent per-seat visibility while active.
 
 ## Helper utilities
 
 | Function | Use |
 | --- | --- |
 | `O.isHiddenObject(obj)` | Guard before re-hide; detect tagged hides |
+| `O.activeVisibilityForGuid(guid)` | Read active `setInvisibleTo` list from `C.HiddenObjects` |
+| `O.applyActiveVisibility(obj)` | Apply catalog active visibility on an on-table (not parked) object |
 | `O.noteHiddenObjectWorldXZ(obj)` | After layout moves X/Z on a still-hidden satellite — keeps snapshot position in sync |
 | `O.transferHideSnapshot(fromGuid, toGuid)` | Multi-state figurines (companion toggle state swap) |
 
@@ -108,7 +110,7 @@ Snapshot position is **not** the primary restore authority when a catalog pose o
 | --- | --- | --- |
 | **Startup `C.HiddenObjects` catalog** | Visibility-only registry; objects stay at authored Y while **present** | `O.ApplyHiddenObjectsFromConstants` |
 | **Secret ST roll dice** | Temporary invisibility mid-roll; not off-table park | `GlobalApplySecretRollDiceInvisibility` / `GlobalRestoreSecretRollDiceVisibility` |
-| **Spotlight seat figurines (visibility only)** | Stay at seat Y; `setInvisibleTo(C.HideFromPcSeatsAndSpectators)` during Spotlight — not off-table park | `applySeatFigurineSpotlightVisibility` in `core/spotlight.ttslua` |
+| **Spotlight seat figurines (visibility only)** | Stay at seat Y; active visibility from `C.HiddenObjects` only — not off-table park | `O.applyActiveVisibility` / `O.restoreObject` via `applySeatFigurineSpotlightVisibility` in `core/spotlight.ttslua` |
 
 **Preload pool (in scope):** NPC figurines + paired lights at `preload` and dice under bags use `O.hideObject` / `O.restoreObject` via `applyNpcPairPhysicalPresentation` and `core/dice_preload_pool.ttslua` (`parkDie` / `claim`).
 
@@ -118,7 +120,7 @@ Snapshot position is **not** the primary restore authority when a catalog pose o
 
 **NPC pooled spotlights (`npc_light`):** `applyPooledSpotlightHideOrRestore` in `core/npcs.ttslua` — seated/preload park and stage reveal use **`O.hideObject` / `O.restoreObject`** (full invisibility incl. Storyteller). Gameboard spotlight preview: `core/npc_gameboard_spotlight.ttslua`.
 
-**Spotlight phase (carousel):** `core/spotlight.ttslua` — seat `SEAT_FIGURE_*` stay at table seats with **visibility-only** hide (`setInvisibleTo(C.HideFromPcSeatsAndSpectators)`); they are **not** parked via `O.hideObject`. Dice bags / companions / compulsion decks and off-carousel workshop stand-ins use `O.hideObject` / `O.restoreObject`.
+**Spotlight phase (carousel):** `core/spotlight.ttslua` — seat `SEAT_FIGURE_*` stay at table seats with **`C.HiddenObjects` active visibility** (`O.applyActiveVisibility` / `O.restoreObject`); they are **not** parked via `O.hideObject`. Dice bags / companions / compulsion decks and off-carousel workshop stand-ins use `O.hideObject` / `O.restoreObject`.
 
 **PC seat absent (`C.HiddenObjects` catalog):** `O.applyPcSeatHiddenObjectPresence` / `O.reconcilePcSeatHiddenObjectsFromState` — when a PC seat is narratively absent or disconnected, every matching catalog GUID and `<Color>Object` tag entry uses **`O.hideObject`** (not on-table `setInvisibleTo`). When present again, **`O.restoreObject`** when tagged `HiddenObject`, else active catalog visibility via `O.activeVisibilityForGuid`.
 

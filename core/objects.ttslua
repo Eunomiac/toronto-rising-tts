@@ -293,10 +293,7 @@ function O.applyPcSeatHiddenObjectPresence(seatColor, present)
             if O.isHiddenObject(obj) then
                 O.restoreObject(obj)
             else
-                local guid = type(obj.getGUID) == "function" and obj.getGUID() or nil
-                if U.Type(guid) == "string" and guid ~= "" and obj.setInvisibleTo ~= nil then
-                    obj.setInvisibleTo(O.activeVisibilityForGuid(guid))
-                end
+                O.applyActiveVisibility(obj)
             end
         else
             O.hideObject(obj)
@@ -365,6 +362,25 @@ function O.activeVisibilityForGuid(guid)
     return {}
 end
 
+--- Apply on-table (active) visibility from `C.HiddenObjects`. Does not unpark:
+--- call `O.restoreObject` first when tagged `HiddenObject`.
+--- @param obj Object|nil
+--- @return boolean
+function O.applyActiveVisibility(obj)
+    if not U.isGameObject(obj) or obj.setInvisibleTo == nil then
+        return false
+    end
+    if O.isHiddenObject(obj) then
+        return false
+    end
+    local guid = nil
+    if type(obj.getGUID) == "function" then
+        guid = obj.getGUID()
+    end
+    obj.setInvisibleTo(O.activeVisibilityForGuid(guid))
+    return true
+end
+
 --- Parked visibility: hidden from every seated/spectator color (including Storyteller).
 --- @return string[]
 local function parkedVisibilityColors()
@@ -387,16 +403,17 @@ local function snapshotActiveVisibilityForHide(guid)
     return U.clone(O.activeVisibilityForGuid(guid), false)
 end
 
+--- Active visibility on restore: `C.HiddenObjects` wins whenever the GUID is catalogued.
 --- @param guid string|nil
 --- @param opts table
 --- @param snap table|nil
 --- @return string[]
 local function resolveRestoreInvisibleTo(guid, opts, snap)
-    if type(opts.invisibleTo) == "table" then
-        return opts.invisibleTo
-    end
     if catalogHasHiddenVisibilityEntry(guid) then
         return O.activeVisibilityForGuid(guid)
+    end
+    if type(opts.invisibleTo) == "table" then
+        return opts.invisibleTo
     end
     if type(snap) == "table" and type(snap.invisibleTo) == "table" then
         return snap.invisibleTo

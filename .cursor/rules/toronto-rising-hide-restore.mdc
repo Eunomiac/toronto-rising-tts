@@ -22,11 +22,11 @@ Canonical doc: [`docs/solutions/lua-hide-restore-policy.md`](../../docs/solution
 
 Park Y, `setLock(true)`, `interactable = false`, parked visibility (all viewer colors), `HiddenObject` tag. Snapshot stores `invisibleTo` (not parked Y when already at −200).
 
-## What restore applies (only here)
+**What restore applies (only here)**
 
-Caller opts → catalogs (`C.LockedObjects`) → snapshot fallback; active visibility: opts → `C.HiddenObjects[guid]` when listed → snapshot `invisibleTo` → `{}`. Clears tag and snapshot.
+Caller opts → catalogs (`C.LockedObjects`) → snapshot fallback; active visibility: **`C.HiddenObjects[guid]` when catalogued** → snapshot `invisibleTo` → `{}`. Clears tag and snapshot.
 
-**Do not** hard-code player color arrays at call sites (use catalog + snapshot).
+**Do not** hard-code player color arrays at call sites (use catalog + snapshot). For on-table re-apply without unparking, use `O.applyActiveVisibility(obj)`.
 
 ## Options table
 
@@ -37,7 +37,8 @@ Caller opts → catalogs (`C.LockedObjects`) → snapshot fallback; active visib
 ## Helpers
 
 - `O.isHiddenObject(obj)` — guard / idempotency
-- `O.activeVisibilityForGuid(guid)` — active-mode visibility (never inline lists)
+- `O.activeVisibilityForGuid(guid)` — active-mode visibility from `C.HiddenObjects` (never inline lists)
+- `O.applyActiveVisibility(obj)` — apply catalog active visibility on an on-table object
 - `O.noteHiddenObjectWorldXZ(obj)` — layout moved hidden satellite X/Z
 - `O.transferHideSnapshot(fromGuid, toGuid)` — multi-state figurines
 
@@ -50,7 +51,7 @@ Caller opts → catalogs (`C.LockedObjects`) → snapshot fallback; active visib
 - Startup `C.HiddenObjects` visibility-only apply (present seats at authored Y)
 - Secret roll dice invisibility helpers
 - Seat-layout NPC chair visibility only (`enforceNPCSeatObjectVisibility`) — not preload pool hide
-- Spotlight phase seat figurines (`SEAT_FIGURE_*`) — visibility-only via `setInvisibleTo(C.HideFromPcSeatsAndSpectators)`; never `O.hideObject` park
+- Spotlight phase seat figurines (`SEAT_FIGURE_*`) — stay at seats; active visibility via `O.applyActiveVisibility` / `O.restoreObject` from `C.HiddenObjects` (never `O.hideObject` park, never blanket PC hide lists)
 
 New exceptions must be added to `docs/solutions/lua-hide-restore-policy.md`.
 
