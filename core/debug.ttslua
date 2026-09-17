@@ -184,7 +184,7 @@ end
 
 --- Writes content via sendExternalMessage type "write". File appears as **workspace/.dev/.debug/<relativePath>** when the bridge listens on 39998.
 --- Does not use log append cache; each call overwrites that file path.
---- Falls back to `sendExternalCommand` write shapes used by Test Bed when messages are unavailable.
+--- Falls back to `sendExternalCommand` (`type = "write"`) when messages are unavailable.
 --- @param relativePath string Path suffix under .dev/.debug, e.g. "debug_logs/npcs_panel.txt"
 --- @param content string
 --- @param format string|nil "none" or "auto" (default "none")
@@ -221,32 +221,17 @@ function DEBUG.writeWorkspaceFile(relativePath, content, format, silent)
 
     ---@diagnostic disable-next-line: undefined-global
     if sendExternalCommand ~= nil then
-        local ok = pcall(function()
-            ---@diagnostic disable-next-line: undefined-global
-            sendExternalCommand({
-                type = "write",
-                name = relativePath,
-                content = content,
-                format = format,
-            })
-        end)
-        if not ok then
-            ok = pcall(function()
-                ---@diagnostic disable-next-line: undefined-global
-                sendExternalCommand({
-                    command = "write",
-                    name = relativePath,
-                    content = content,
-                    format = format,
-                })
-            end)
+        ---@diagnostic disable-next-line: undefined-global
+        sendExternalCommand({
+            type = "write",
+            name = relativePath,
+            content = content,
+            format = format,
+        })
+        if not silent then
+            print("DEBUG: Wrote via sendExternalCommand " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. relativePath)
         end
-        if ok then
-            if not silent then
-                print("DEBUG: Wrote via sendExternalCommand " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. relativePath)
-            end
-            return true
-        end
+        return true
     end
 
     print("DEBUG.writeWorkspaceFile: sendExternalMessage/Command not available (TTS Tools / tts-bridge on 39998?)")
@@ -1782,10 +1767,8 @@ local function spotlightAssetbundleUrlFromObject(obj)
         return nil
     end
     if type(obj.getCustomObject) == "function" then
-        local ok, co = pcall(function()
-            return obj.getCustomObject()
-        end)
-        if ok and type(co) == "table" then
+        local co = obj.getCustomObject()
+        if type(co) == "table" then
             local url = co.assetbundle or co.AssetbundleURL or co.assetbundle_url
             if type(url) == "string" and url ~= "" then
                 return url
@@ -1793,10 +1776,8 @@ local function spotlightAssetbundleUrlFromObject(obj)
         end
     end
     if type(obj.getData) == "function" then
-        local ok, data = pcall(function()
-            return obj.getData()
-        end)
-        if ok and type(data) == "table" and type(data.CustomAssetbundle) == "table" then
+        local data = obj.getData()
+        if type(data) == "table" and type(data.CustomAssetbundle) == "table" then
             local url = data.CustomAssetbundle.AssetbundleURL
             if type(url) == "string" and url ~= "" then
                 return url
@@ -1841,29 +1822,23 @@ function DEBUG.listAllSpotlightObjects(relativePath)
             local tags = (obj.getTags and obj.getTags()) or {}
             local data = {}
             if type(obj.getData) == "function" then
-                local ok, d = pcall(function()
-                    return obj.getData()
-                end)
-                if ok and type(d) == "table" then
+                local d = obj.getData()
+                if type(d) == "table" then
                     data = d
                 end
             end
             local cab = (type(data.CustomAssetbundle) == "table" and data.CustomAssetbundle) or {}
             local co = {}
             if type(obj.getCustomObject) == "function" then
-                local ok, c = pcall(function()
-                    return obj.getCustomObject()
-                end)
-                if ok and type(c) == "table" then
+                local c = obj.getCustomObject()
+                if type(c) == "table" then
                     co = c
                 end
             end
 
             local loopingIdx = nil
-            local abOk, ab = pcall(function()
-                return obj.AssetBundle
-            end)
-            if abOk and ab ~= nil and type(ab.getLoopingEffectIndex) == "function" then
+            local ab = obj.AssetBundle
+            if ab ~= nil and type(ab.getLoopingEffectIndex) == "function" then
                 loopingIdx = ab.getLoopingEffectIndex()
             end
             if loopingIdx == nil then
