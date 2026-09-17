@@ -14,7 +14,7 @@ Run from `.dev/storyteller-dashboard/`: `npm test` (Vitest). Also part of `npm r
 | --- | --- | --- |
 | Pure logic | **Vitest** (node or jsdom) | `sceneKeyFromTitle`, occupancy helpers, payload builders |
 | React shell | **Vitest** + Testing Library | tabs exist, Storyteller-only chrome, no player HUD |
-| Visual board / GSAP / layout | **Playwright MCP** headed Chrome (`user-playwright`) in the **Cursor** profile (`Profile 3`) via the Playwright extension. Follow [playwright-browser-focus](toronto-rising-playwright-browser-focus.mdc) and [PLAYWRIGHT.md](../../.dev/storyteller-dashboard/PLAYWRIGHT.md): do not steal OS focus, and do not treat a private `--user-data-dir` `about:blank` as the dashboard. |
+| Visual board / GSAP / layout | **Playwright MCP** headed Chrome (`user-playwright`) in the dedicated TorontoRising profile, no extension debugger bar. Follow [playwright-browser-focus](toronto-rising-playwright-browser-focus.mdc) and [PLAYWRIGHT.md](../../.dev/storyteller-dashboard/PLAYWRIGHT.md). Do not attach via `--extension`. |
 
 Do **not** add Save & Play or in-TTS playbooks for dashboard-only CSS/React. If the change also edits Lua import/bridge, use the existing TTS playbooks for that Lua side.
 

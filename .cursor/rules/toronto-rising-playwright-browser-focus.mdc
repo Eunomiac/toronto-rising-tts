@@ -1,11 +1,11 @@
 ---
-description: Playwright MCP must use the Cursor Chrome profile; after that window is running, do not steal OS focus
+description: Playwright MCP uses a dedicated no-banner Chrome for the dashboard; after that window is running, do not steal OS focus
 alwaysApply: true
 ---
 
 # Toronto Rising — Playwright browser focus
 
-Dashboard visual checks use **Playwright MCP** (`user-playwright`) in the Google Chrome profile named **Cursor** (disk folder **`Profile 3`**), which has the Playwright **extension**. They do **not** use the Cursor IDE browser pane, and they do not use Playwright’s private `--user-data-dir` window.
+Dashboard visual checks use **Playwright MCP** (`user-playwright`) in a **dedicated Chrome** (`%LOCALAPPDATA%/TorontoRising/playwright-chrome-profile`) with the automation infobar turned off. They do **not** use the Cursor IDE browser pane, and they do **not** attach through the Playwright **extension** (that bar shrinks the layout and cannot be hidden).
 
 Canonical recipe: [`.dev/storyteller-dashboard/PLAYWRIGHT.md`](../../.dev/storyteller-dashboard/PLAYWRIGHT.md).
 
@@ -15,25 +15,24 @@ Canonical recipe: [`.dev/storyteller-dashboard/PLAYWRIGHT.md`](../../.dev/storyt
 
 | What you see | Meaning |
 | --- | --- |
-| `http://127.0.0.1:8788/` titled Toronto Rising Storyteller Dashboard | Correct window. Reuse this tab. Confirm with a Scenes click. |
-| `Welcome` / Playwright `connect.html` | Extension is attached, but this is **not** the dashboard. Open a new tab in the Playwright group at `http://127.0.0.1:8788/`. Do not click around on Welcome. |
-| Only `about:blank`, or a Chrome whose user-data is `TorontoRising/playwright-chrome-profile` | **Wrong Chrome.** Do not treat this as the dashboard being open. |
+| `http://127.0.0.1:8788/` titled Toronto Rising Storyteller Dashboard, **no** “Playwright Extension started debugging” bar | Correct window. Reuse this tab. |
+| `Welcome` / Playwright `connect.html`, or a bar that says the extension is debugging the browser | MCP is still in **`--extension`** mode. Stop. That layout is not real use. Reload MCP without `--extension`. |
+| `about:blank` in the TorontoRising Playwright profile | Expected at launch. Navigate **that same tab** to `http://127.0.0.1:8788/`. |
 
-Do not use leftover port 8788 plus a blank or Welcome tab as “already running.”
+Do not use leftover port 8788 plus the Cursor-profile extension window as “already running.”
 
 ## Cold start
 
-If the dashboard tab is missing or you are in the wrong Chrome:
+If the dashboard tab is missing or you are in extension Chrome:
 
 1. If **8788** is in use and the Cursor terminal is aborted, kill the orphan `node dist/server/index.js --dev` tree first.
 2. From `.dev/storyteller-dashboard/` start **`npm run dev`** and wait for `Storyteller dashboard listening on http://127.0.0.1:8788`. Leave that terminal running.
-3. Playwright MCP must be `--extension --profile-dir-name=Profile 3` **without** `--user-data-dir`. Local `PLAYWRIGHT_MCP_EXTENSION_TOKEN` in MCP `env` skips the permission dialog (never commit the token).
-4. If `browser_tabs` list shows Welcome / `connect.html`, run `browser_tabs` **new** with `http://127.0.0.1:8788/` — do not stop at Welcome, and do not rely on `browser_navigate` on that tab.
-5. Prove attach by clicking **Scenes**. Recipe: [`.dev/storyteller-dashboard/PLAYWRIGHT.md`](../../.dev/storyteller-dashboard/PLAYWRIGHT.md).
+3. Playwright MCP must launch Chrome with `--user-data-dir` `TorontoRising/playwright-chrome-profile`, `--config` `playwright-mcp.config.json` (`ignoreDefaultArgs: ["--enable-automation"]`, `--start-fullscreen`), and `--viewport-size=1920x1080`. **No** `--extension`.
+4. `browser_navigate` the existing tab to `http://127.0.0.1:8788/`. Prove it with a **Scenes** click.
 
-`npm run dev:open` / task **STORYTELLER DASHBOARD** steal focus. Use them only when that Playwright Cursor window is not already open. If it is open, restart the server with `npm run dev` only.
+`npm run dev:open` / task **STORYTELLER DASHBOARD** open Cursor Chrome and steal focus. Use them only when the author wants that profile. For agent Playwright, if the dedicated window is already open, restart the server with `npm run dev` only.
 
-## After the Playwright Cursor window is running
+## After the Playwright window is running
 
 **Not grabbing OS focus is a very high priority.** The author types in other apps and other Chrome windows while the agent uses the dashboard.
 
@@ -43,20 +42,20 @@ If the dashboard tab is missing or you are in the wrong Chrome:
 
 ## Window size
 
-The dashboard Chrome window should stay **1920×1080** (`window.innerWidth` / `innerHeight`). A successful attach on this machine measured **1920×1009** because of Windows chrome — do not treat that as a failure, and do not `browser_resize` to “fix” it. Docked DevTools, a restored window, or a second toolbar will shrink it further.
+Target **1920×1080** (`window.innerWidth` / `innerHeight`). The extension debugger bar is **not** an acceptable way to get a short viewport.
 
 If those numbers are wrong:
 
-1. Check for docked DevTools (undock them), missing fullscreen, or a non-1920 display.
+1. Check for docked DevTools, missing fullscreen, or a non-1920 display.
 2. Do **not** call `browser_resize`, F11, or `bringToFront` to “fix” it unless the author has agreed in this turn.
-3. If you cannot restore 1920×1080 without stealing focus, **stop and tell the author** what you measured and what was in the way.
+3. If you cannot restore a banner-free 1920×1080 without stealing focus, **stop and tell the author** what you measured and what was in the way.
 
 ## Stop and ask in Cursor first
 
 Do **not** do these unless the author has agreed in this turn:
 
 - Launch or relaunch Chrome (cold start above is the exception when they asked to open the dashboard)
-- Open a new tab or window (exception: cold start `browser_tabs` **new** to `http://127.0.0.1:8788/` when the list is still Welcome / `connect.html`)
+- Open a new tab or window
 - Switch Playwright tabs (`browser_tabs` select)
 - Send F11 / fullscreen / `bringToFront`
 - Anything else that would take the keyboard away from whatever they are typing
