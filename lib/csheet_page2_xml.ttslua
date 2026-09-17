@@ -89,32 +89,34 @@ local function collectRitualsAndCeremonies(discs)
 end
 
 --- @param powers table|nil
---- @return string
+--- @return string one line per power level; same-level names joined with ◆
 local function powersText(powers)
   if type(powers) ~= "table" then
     return ""
   end
-  local rows = {}
+  --- @type table<number, string[]>
+  local byLevel = {}
+  local levels = {}
   for i = 1, #powers do
     local p = powers[i]
     if type(p) == "table" then
-      rows[#rows + 1] = {
-        level = math.floor(tonumber(p.level) or 0),
-        name = tostring(p.name or ""),
-      }
+      local level = math.floor(tonumber(p.level) or 0)
+      local name = tostring(p.name or "")
+      if name ~= "" then
+        if byLevel[level] == nil then
+          byLevel[level] = {}
+          levels[#levels + 1] = level
+        end
+        byLevel[level][#byLevel[level] + 1] = name
+      end
     end
   end
-  table.sort(rows, function(a, b)
-    if a.level == b.level then
-      return a.name < b.name
-    end
-    return a.level < b.level
-  end)
+  table.sort(levels)
   local lines = {}
-  for i = 1, #rows do
-    if rows[i].name ~= "" then
-      lines[#lines + 1] = rows[i].name
-    end
+  for i = 1, #levels do
+    local names = byLevel[levels[i]]
+    table.sort(names)
+    lines[#lines + 1] = table.concat(names, " ◆ ")
   end
   return table.concat(lines, "\n")
 end
