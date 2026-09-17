@@ -225,9 +225,9 @@ function ChronicleWeather.applyHudAudioOverrides(resolved)
         return resolved
     end
 
-    local soundscape = S.getStateVal("gameState", "soundscape")
+    local soundscape = S.getStateVal("soundscape")
     if type(soundscape) ~= "table" then
-        error("ChronicleWeather.applyHudAudioOverrides: missing gameState.soundscape during manual weather hold")
+        error("ChronicleWeather.applyHudAudioOverrides: missing soundscape during manual weather hold")
     end
 
     local rainKey = soundscape.rain

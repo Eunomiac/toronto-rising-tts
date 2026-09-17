@@ -428,7 +428,7 @@ Play enter paints HUD behind the cover first (`Phases.armPlayHudBehindCover`, TO
 | `ChronicleWeather.getCode(month, day, hour)` | Returns five-character code + month `avgTemp`, or `nil` | Debug schedule lookup |
 | `ChronicleWeather.parseCode(code, avgTemp)` | Parses code via `C.WEATHER` → rain/wind keys, HUD strings, `tempC`/`tempF` | Unit-style inspection |
 | `ChronicleWeather.resolveForClock(month, day, hour)` | `getCode` + `parseCode` combined | HUD + audio derivation |
-| `ChronicleWeather.applyHudAudioOverrides(resolved)` | When `chronicleWeatherManualHold`, maps `gameState.soundscape` rain/wind/thunder to `C.WEATHER_AUDIO_OVERRIDES` HUD text | Scene Constructor weather lock |
+| `ChronicleWeather.applyHudAudioOverrides(resolved)` | When `chronicleWeatherManualHold`, maps live soundscape rain/wind/thunder to `C.WEATHER_AUDIO_OVERRIDES` HUD text | Scene Constructor weather lock |
 | `ChronicleWeather.resolveHudForClock(month, day, hour)` | `resolveForClock` + `applyHudAudioOverrides` for overlay | `GameStateOverlay.reconcileWeatherFromState` |
 | `ChronicleWeather.getRow(month, day, hour)` | Returns `{ wind, rain, thunder }` layer keys for that hour or `nil` | Legacy inspect shape |
 | `ChronicleWeather.shouldAutoApply()` | Currently always `true` (gates removed); reserved for future hold/follow wiring | Rarely called directly |

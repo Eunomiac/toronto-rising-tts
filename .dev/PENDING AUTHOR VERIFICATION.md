@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-17 — Dashboard PCs tab live sheet Lua._
+_Last populated: 2026-09-17 — Scene apply weather HUD crash._
 
 ### Character sheets
 
@@ -335,6 +335,12 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 ---
 
 ### Medium — overlay / HUD / Spotlight
+
+#### Scene apply — locked weather HUD no longer crashes
+
+**How to verify:** Save & Play so scripts reload. In the Scenes library, Apply **Scarlett & the Boys Concert** (or any imported scene whose JSON sets `soundscapeNarrative` wind, rain, and thunderstorm together). The Host console must **not** print `ChronicleWeather.applyHudAudioOverrides: missing … soundscape during manual weather hold`. The scene transition should finish. Ravenwing is indoor, so the weather panel in the top-right overlay may stay hidden — that is expected. Light rain and medium wind should still be the locked audio for that scene.
+
+**Context:** The weather triple in the import JSON is valid. It locks chronicle weather, and the overlay then reads live rain/wind from soundscape. The lookup used a nested `gameState` key that never exists. Linear issue create hit workspace quota this session — track under Scenes epic TOR-33 until a TOR id can be filed.
 
 #### TOR-517 — Hide humidity on the weather overlay
 
