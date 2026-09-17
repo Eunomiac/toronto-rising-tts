@@ -19,6 +19,8 @@ In **Scatter Mode**:
 
 - There is no table.
 - There are no thrones or chairs. `C.Tables["Scatter"].objectsToHide` (also available as `C.Scatter.objectsToHide`) lists objects (chairs, Prince signet and curtain, and anything else you add) that Scatter disables and hides from every player, including the Storyteller. Leaving Scatter restores their usual visibility.
+- `THE_FLOOR` and `TABLE_PLINTH` stay at playfield height but become invisible to every PC seat plus White/Grey while Scatter is active (Storyteller still sees them). Outside Scatter they are visible to everyone.
+- `BOTTOM_FOG` (`G.GUIDS.BOTTOM_FOG`) uses TTS object **state 2** in Scatter and **state 1** otherwise. It is authored at about y = −350 and must never be parked with `O.hideObject` (the park-Y threshold would treat it as already hidden).
 - PCs are not positioned in a separate group of their own.
 - Both PCs and NPCs are assigned to one of six **scatter groups** distributed around the game world.
 - A PC can move from one scatter group to another during play.

@@ -551,6 +551,55 @@ local function restoreScatterObjectsToHide()
     end
 end
 
+--- BOTTOM_FOG: TTS object state 2 while Scatter is active, state 1 otherwise.
+--- Authored at y ≈ −350 — never park via `O.hideObject` (park-Y threshold would misfire).
+--- @param scatterActive boolean
+local function applyBottomFogState(scatterActive)
+    local guid = G.GUIDS and G.GUIDS.BOTTOM_FOG
+    if type(guid) ~= "string" or guid == "" then
+        return
+    end
+    local obj = G.getObject(guid)
+    if obj == nil then
+        return
+    end
+    if type(obj.setState) ~= "function" then
+        U.AlertGM("Scatter: BOTTOM_FOG has no setState.")
+        return
+    end
+    obj.setState(scatterActive == true and 2 or 1)
+end
+
+--- THE_FLOOR + TABLE_PLINTH: visibility-only (stay at playfield Y). Scatter → hide from PC seats +
+--- White/Grey; otherwise visible to everyone. Not `O.hideObject` (would bury at −200).
+--- @param scatterActive boolean
+local function applyScatterPlayfieldVisibility(scatterActive)
+    local O = require("core.objects")
+    local colors = {}
+    if scatterActive == true then
+        colors = U.clone(C.HideFromPcSeatsAndSpectators, false) or {
+            "Brown", "Orange", "Red", "Pink", "Purple", "White", "Grey",
+        }
+    end
+    local guids = { G.GUIDS.THE_FLOOR, G.GUIDS.TABLE_PLINTH }
+    for i = 1, #guids do
+        local guid = guids[i]
+        if type(guid) == "string" and guid ~= "" then
+            local obj = G.getObject(guid)
+            if obj ~= nil and obj.setInvisibleTo ~= nil and O.isHiddenObject(obj) ~= true then
+                obj.setInvisibleTo(colors)
+            end
+        end
+    end
+end
+
+--- World chrome that follows Scatter active/inactive (fog state + floor/plinth visibility).
+--- @param scatterActive boolean
+local function applyScatterWorldChrome(scatterActive)
+    applyBottomFogState(scatterActive)
+    applyScatterPlayfieldVisibility(scatterActive)
+end
+
 --- Keep Y; write X/Z only.
 --- @param guid string
 --- @param x number
@@ -978,6 +1027,7 @@ finishScatterBoardAfterReload = function()
     boardFinishInProgress = true
     clearPolarSnaps()
     applyScatterObjectsToHide()
+    applyScatterWorldChrome(true)
     ScatterMode.parkTokensFromState()
     local Gameboard = require("core.npc_gameboard")
     if type(Gameboard.reconcileControlBoardFromState) == "function" then
@@ -992,6 +1042,7 @@ finishStandardBoardAfterReload = function()
     end
     boardFinishInProgress = true
     restorePolarSnaps()
+    applyScatterWorldChrome(false)
     local Gameboard = require("core.npc_gameboard")
     if type(Gameboard.reconcileControlBoardFromState) == "function" then
         Gameboard.reconcileControlBoardFromState({ force = true })
@@ -1004,6 +1055,7 @@ end
 function ScatterMode.applyBoardChrome()
     hideAllPhysicalTables()
     applyScatterObjectsToHide()
+    applyScatterWorldChrome(true)
     local reloaded = applyControlBoardImage(scatterCfg().CONTROL_BOARD_IMAGE_SCATTER)
     if reloaded then
         runAfterControlBoardReady(finishScatterBoardAfterReload)
@@ -1058,6 +1110,7 @@ function ScatterMode.enter(opts)
     applyScatterPlayfieldOrigin()
     ScatterMode.applyWorldLayout()
     applyScatterObjectsToHide()
+    applyScatterWorldChrome(true)
     ScatterMode.applyBoardChrome()
     if controlBoardMeshReady() then
         ScatterMode.parkTokensFromState()
@@ -1067,6 +1120,7 @@ end
 function ScatterMode.leave(opts)
     opts = opts or {}
     restoreScatterObjectsToHide()
+    applyScatterWorldChrome(false)
     debugHolesByGroup = {}
     restoreStageBoardHome()
     S.setStateVal("standard", "sessionScene", "placementMode")
@@ -1485,6 +1539,7 @@ end
 
 function ScatterMode.applyObjectsToHide()
     applyScatterObjectsToHide()
+    applyScatterWorldChrome(true)
 end
 
 function ScatterMode.pcKeyForColor(color)
