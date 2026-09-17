@@ -998,11 +998,13 @@ C.ObjectPositions = {
   },
   TAROT_DECK_PINK = {
     on = {
-      -- Semi-lock physics: deck no longer falls into place; spawn at resting height (TOR-411).
-      position = { y = 7.7 },
+      -- Follow seat-layout deck anchor XZ/rotation; authored on-height (TOR-411).
+      anchor = G.GUIDS.TAROT_DECK_ANCHOR_PINK,
+      height = { y = 7.7 },
       duration = 0,
       delay = 1.5,
-      isLocked = false
+      isLocked = false,
+      isHidden = false,
     },
     off = {
       duration = 0,

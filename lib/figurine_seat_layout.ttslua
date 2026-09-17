@@ -590,10 +590,21 @@ end
 --- @return number
 local function tarotDeckOnY()
     local entry = C.ObjectPositions and C.ObjectPositions.TAROT_DECK_PINK
-    if U.Type(entry) == "table" and U.Type(entry.on) == "table" and U.Type(entry.on.position) == "table" then
-        local y = tonumber(entry.on.position.y)
-        if y ~= nil then
-            return y
+    if U.Type(entry) == "table" and U.Type(entry.on) == "table" then
+        local on = entry.on
+        if U.Type(on.height) == "table" then
+            local y = tonumber(on.height.y)
+            if y ~= nil then
+                return y
+            end
+        elseif type(on.height) == "number" then
+            return on.height
+        end
+        if U.Type(on.position) == "table" then
+            local y = tonumber(on.position.y)
+            if y ~= nil then
+                return y
+            end
         end
     end
     return 7.7

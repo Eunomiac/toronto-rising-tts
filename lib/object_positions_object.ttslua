@@ -242,8 +242,10 @@ function OP.applyResolvedPose(obj, pose, baseDuration, baseDelay, opts)
     if type(desiredLock) == "boolean" and desiredLock == true then
       obj.setLock(true)
     end
+    local targetPos = nil
+    local targetRot = nil
     if pose.position ~= nil then
-      local targetPos = OP.mergePosition(obj, pose.position)
+      targetPos = OP.mergePosition(obj, pose.position)
       if duration > 0 then
         obj.setPositionSmooth(targetPos, false, false)
       else
@@ -251,7 +253,7 @@ function OP.applyResolvedPose(obj, pose, baseDuration, baseDelay, opts)
       end
     end
     if pose.rotation ~= nil then
-      local targetRot = OP.mergeRotation(obj, pose.rotation)
+      targetRot = OP.mergeRotation(obj, pose.rotation)
       if duration > 0 then
         obj.setRotationSmooth(targetRot, false, false)
       else
@@ -288,6 +290,20 @@ function OP.applyResolvedPose(obj, pose, baseDuration, baseDelay, opts)
           local restoreOpts = { guid = guid, interactable = true }
           if type(desiredLock) == "boolean" then
             restoreOpts.locked = desiredLock
+          end
+          if type(targetPos) == "table" then
+            restoreOpts.position = {
+              x = targetPos.x,
+              y = targetPos.y,
+              z = targetPos.z,
+            }
+          end
+          if type(targetRot) == "table" then
+            restoreOpts.rotation = {
+              x = targetRot.x,
+              y = targetRot.y,
+              z = targetRot.z,
+            }
           end
           Global.call("GlobalRestoreObject", restoreOpts)
         end

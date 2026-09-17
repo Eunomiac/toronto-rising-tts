@@ -98,13 +98,25 @@ end
 
 --- @param obj Object
 --- @param entry table
---- @return table|nil
+--- @return table|nil `{ x, y, z }` from resolved ObjectPositions on pose (anchor-aware)
 local function snapshotOnPosition(obj, entry)
     local onPose = OP.resolveStatePose(obj, entry, STATE_ON) or entry.on
     if type(onPose) ~= "table" or type(onPose.position) ~= "table" then
         return nil
     end
     local merged = OP.mergePosition(obj, onPose.position)
+    return { x = merged.x, y = merged.y, z = merged.z }
+end
+
+--- @param obj Object
+--- @param entry table
+--- @return table|nil full rotation from resolved on pose
+local function snapshotOnRotation(obj, entry)
+    local onPose = OP.resolveStatePose(obj, entry, STATE_ON) or entry.on
+    if type(onPose) ~= "table" or type(onPose.rotation) ~= "table" then
+        return nil
+    end
+    local merged = OP.mergeRotation(obj, onPose.rotation)
     return { x = merged.x, y = merged.y, z = merged.z }
 end
 
@@ -123,6 +135,8 @@ local function deckIsParkedHidden(deck)
 end
 
 --- Pink deck off uses hide/restore (y = −200), not a visible shallow bury.
+--- On reveal, ObjectPositions on pose (deck anchor + height) is the active authority —
+--- never keep parked X/Z from the hide stash.
 --- @param state string
 --- @param token number
 --- @param buttonGuid string|nil
@@ -159,6 +173,12 @@ local function applyDeckState(state, token, buttonGuid)
         print("[TarotToggle] Missing 'on' pose for Pink tarot deck.")
         return
     end
+    if type(onPose.position) ~= "table"
+        or onPose.position.x == nil
+        or onPose.position.z == nil
+    then
+        print("[TarotToggle] Pink tarot on pose missing resolved XZ; check TAROT_DECK_ANCHOR_PINK is in-world.")
+    end
     if Global ~= nil and type(Global.call) == "function" then
         local restoreOpts = {
             guid = guid,
@@ -168,6 +188,10 @@ local function applyDeckState(state, token, buttonGuid)
         local onPos = snapshotOnPosition(obj, entry)
         if onPos ~= nil then
             restoreOpts.position = onPos
+        end
+        local onRot = snapshotOnRotation(obj, entry)
+        if onRot ~= nil then
+            restoreOpts.rotation = onRot
         end
         Global.call("GlobalRestoreObject", restoreOpts)
     end

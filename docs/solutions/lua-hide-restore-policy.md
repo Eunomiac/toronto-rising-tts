@@ -116,7 +116,7 @@ Snapshot position is **not** the primary restore authority when a catalog pose o
 
 **Character sheet pages:** World Y selects on/off; **`GlobalHideObject` / `GlobalRestoreObject` only** for lock, invisibility, tag, and interactable (`ui/ui_csheet_core.ttslua` → `applyCsheetHideOrRestore`). XmlUI nav/root `active` is separate (`applyCsheetXmlUiActive`). Pose apply (`lib/csheet_pose.ttslua`) moves geometry only.
 
-**Tarot (object script):** `lib/tarot_toggle.ttslua` → `lib/object_positions_object.ttslua` — `pose.isHidden` routes through **`GlobalHideObject` / `GlobalRestoreObject`** after the move (not inline `setInvisibleTo`).
+**Tarot (object script):** `lib/tarot_toggle.ttslua` → `lib/object_positions_object.ttslua` — `pose.isHidden` routes through **`GlobalHideObject` / `GlobalRestoreObject`**. Reveal (`isHidden == false`) must pass the **ObjectPositions-resolved** position/rotation (Pink deck: `TAROT_DECK_ANCHOR_PINK` + height), not the hide snapshot alone.
 
 **NPC pooled spotlights (`npc_light`):** `applyPooledSpotlightHideOrRestore` in `core/npcs.ttslua` — seated/preload park and stage reveal use **`O.hideObject` / `O.restoreObject`** (full invisibility incl. Storyteller). Gameboard spotlight preview: `core/npc_gameboard_spotlight.ttslua`.
 

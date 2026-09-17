@@ -295,8 +295,10 @@ function OP.applyResolvedPose(obj, pose, baseDuration, baseDelay, opts)
     if type(desiredLock) == "boolean" and desiredLock == true then
       obj.setLock(true)
     end
+    local targetPos = nil
+    local targetRot = nil
     if pose.position ~= nil then
-      local targetPos = OP.mergePosition(obj, pose.position)
+      targetPos = OP.mergePosition(obj, pose.position)
       if duration > 0 then
         if useSmoothSetters then
           obj.setPositionSmooth(targetPos, false, false)
@@ -308,7 +310,7 @@ function OP.applyResolvedPose(obj, pose, baseDuration, baseDelay, opts)
       end
     end
     if pose.rotation ~= nil then
-      local targetRot = OP.mergeRotation(obj, pose.rotation)
+      targetRot = OP.mergeRotation(obj, pose.rotation)
       if duration > 0 then
         if useSmoothSetters then
           obj.setRotationSmooth(targetRot, false, false)
@@ -342,10 +344,38 @@ function OP.applyResolvedPose(obj, pose, baseDuration, baseDelay, opts)
       elseif type(initialLock) == "boolean" then
         obj.setLock(initialLock)
       end
+      -- ObjectPositions is the active-pose authority: hide/show only when isHidden is explicit.
       if pose.isHidden == true then
-        O.hideObject(obj)
-      else
-        O.restoreObject(obj)
+        local hideOpts = nil
+        if type(opts.snapshotPosition) == "table" then
+          hideOpts = {
+            snapshotPosition = opts.snapshotPosition,
+            refreshSnapshotPosition = opts.refreshSnapshotPosition == true,
+          }
+        end
+        O.hideObject(obj, hideOpts)
+      elseif pose.isHidden == false then
+        local restoreOpts = {
+          interactable = true,
+        }
+        if type(desiredLock) == "boolean" then
+          restoreOpts.locked = desiredLock
+        end
+        if type(targetPos) == "table" then
+          restoreOpts.position = {
+            x = targetPos.x,
+            y = targetPos.y,
+            z = targetPos.z,
+          }
+        end
+        if type(targetRot) == "table" then
+          restoreOpts.rotation = {
+            x = targetRot.x,
+            y = targetRot.y,
+            z = targetRot.z,
+          }
+        end
+        O.restoreObject(obj, restoreOpts)
       end
     end, finalizeDelay)
   end

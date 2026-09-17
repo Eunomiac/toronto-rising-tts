@@ -268,9 +268,9 @@ Then **disable the TTS Tools extension** (only one editor can listen on 39998). 
 
 **How to verify:** Save & Play so the new scripts load. On the PCs panel, turn **Absent** on for one player who is sitting at the table. Their whole pile should drop under the table and disappear, the same way an unused NPC seat does. Turn **Absent** off. That player should come back with the full pile at table height — figurine, character sheet, bags, chair, hand zone, **and seat lights** — not just the figurine. Lights should behave like a normal in-session seat. A sheet page that was already hidden should stay hidden; the page that was showing should still be showing. If a signal fire or hunger smoke was on before Absent, it should still be on after they return.
 
-Pink’s tarot deck should stay **put away** after Save & Play, table change, and after turning Pink Absent off — unless you had already clicked **Consult the Tarot**. When put away it should be **hidden at y = −200** (same hide protocol as other parked objects), not visible at y = −10 under the table. Click **Consult the Tarot**: the deck should come out to table height (~7.7); click again: it should park at −200 and disappear.
+**How to verify:** Save & Play so scripts reload. Put Pink’s tarot away if it is out. Confirm the deck is parked at y = −200 (invisible). Click **Consult the Tarot**. The deck should appear on the **tarot deck anchor** (same X/Z as that anchor object, height about 7.7) — not at some leftover park X/Z under the table. Put it away again: park at −200. Change table / Scatter and Consult again: still snaps to the live anchor.
 
-**Context:** Turning Absent off was putting the figurine back on the chair but leaving everything else (including lights) buried under the table. The tarot dump had captured the deck while it was out, so layout was also putting it into the Consult pose by default.
+**Context:** Reveal was only restoring Y ≈ 7.7 onto the parked stash X/Z. `C.ObjectPositions.TAROT_DECK_PINK.on` now uses `TAROT_DECK_ANCHOR_PINK` + height, and restore passes that resolved pose.
 
 #### TOR-513 — Absent hand zone, PC token stash, and Apply PC reseat
 
