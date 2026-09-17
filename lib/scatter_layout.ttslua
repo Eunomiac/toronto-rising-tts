@@ -237,16 +237,12 @@ function ScatterLayout.npcPoses(groupIndex, npcCount)
             az = midAz + offset * spacing
         end
         local pos = U.rotateAroundPoint(G, rnpc, az, y)
-        -- Look at G, then +180 so the mesh faces outward (away from World Origin / PC cluster).
-        -- Spotlights follow as a rigid body via Scatter flip in resolveFigurineLightPose.
+        -- lookAtYawDeg already applies FIGURINE_YAW_OFFSET_DEG (180° mesh correction).
+        -- Do not add a second +180 here — that double-flipped figurines while lights stayed correct.
         local yaw, yawErr = ScatterLayout.lookAtYawDeg(pos, G)
         if yaw == nil then
             U.AlertGM("Scatter NPC " .. tostring(i) .. " in group " .. tostring(groupIndex) .. ": " .. tostring(yawErr) .. " — skipped.")
         else
-            yaw = (yaw + 180) % 360
-            if yaw < 0 then
-                yaw = yaw + 360
-            end
             poses[#poses + 1] = {
                 index = i,
                 position = pos,
