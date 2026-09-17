@@ -69,6 +69,16 @@ _Last populated: 2026-09-17 — Dashboard PCs tab live sheet Lua._
 
 ### Scatter / table layout
 
+#### Hand-zone cards move with PC seats (Scatter / table layout)
+
+**How to verify:** Save & Play so scripts reload. Put a few cards in Red’s hand (and optionally another seat).
+
+1. Switch **Scatter** on the Scenes panel (or Apply a scatter scene), then Apply with Red on a group. Red’s hand zone **and every card in that hand** should move to the scatter pile together — cards must not stay at the old chair, fall through the floor, or float off the table.
+2. Switch back to **Table A**. Hand zone and cards should return with Red’s seat pile and stay grabbable after a brief moment.
+3. Optional: mark Red **Absent** then **Present** — cards should bury and restore with the hand zone the same way.
+
+**Context:** `moveHandZoneAndContainedCards` now collects via `Player.getHandObjects` as well as zone contents, locks cards for the teleport, and restores lock after a short settle. Linear issue create hit workspace quota this session — related to **TOR-513** (Absent hand stash) and **TOR-572** (Scatter Mode).
+
 #### TOR-573 — Scatter import and live Standard↔Scatter switch
 
 **How to verify:** Save & Play so scripts reload.

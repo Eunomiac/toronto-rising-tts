@@ -895,13 +895,16 @@ local function layoutOccupantSatellites(occupantKey, figFrame, figObj, helpers)
         if offset == nil then
             return
         end
-        if roleKey == "HAND_ZONE" and type(helpers.moveHandZone) == "function" then
+        if roleKey == "HAND_ZONE" then
+            if type(helpers.moveHandZone) ~= "function" then
+                error("figurine_seat_layout: HAND_ZONE requires helpers.moveHandZone (lock + move cards with zone)")
+            end
             local world = worldFromFigurineLocal(figFrame, figObj, offset.localXZ or { x = 0, z = 0 })
             local rot = addRot(figFrame.rotation, offset.localRotation)
             local defaultY = tonumber(offset.defaultY) or world.y
             local livePos = Vector(obj.getPosition())
             local y = resolveSatelliteY(occupantKey, roleKey, livePos.y, defaultY, world.y)
-            helpers.moveHandZone(obj, Vector({ x = world.x, y = y, z = world.z }), rot)
+            helpers.moveHandZone(obj, Vector({ x = world.x, y = y, z = world.z }), rot, occupantKey)
             return
         end
         applyOffsetToObject(obj, figFrame, figObj, offset, roleKey, occupantKey)
@@ -1036,7 +1039,6 @@ end
 --- Stash the player's hand zone and every card in that hand to occupancy Y (TOR-513).
 --- @param occupantKey string
 --- @param hiddenSeatY number
---- @param layers string[]
 local function stashHandZoneAndCards(occupantKey, hiddenSeatY)
     local hz = U.getHandZone(occupantKey)
     if hz == nil then
@@ -1051,6 +1053,7 @@ local function stashHandZoneAndCards(occupantKey, hiddenSeatY)
     end
     local dy = hiddenSeatY - p.y
     local cards = collectHandCards(occupantKey, hz)
+    local captured = {}
     for i = 1, #cards do
         local obj = cards[i]
         if obj.setPosition ~= nil and obj.getPosition ~= nil then
@@ -1062,12 +1065,21 @@ local function stashHandZoneAndCards(occupantKey, hiddenSeatY)
             if cp ~= nil then
                 obj.setPosition({ x = cp.x, y = cp.y + dy, z = cp.z })
             end
-            if obj.setLock ~= nil then
-                obj.setLock(wasLocked)
-            end
+            captured[#captured + 1] = { obj = obj, wasLocked = wasLocked }
         end
     end
     O.hideObject(hz, { parkPosition = { x = p.x, y = hiddenSeatY, z = p.z } })
+    if #captured > 0 then
+        U.await(function()
+            for i = 1, #captured do
+                local entry = captured[i]
+                local obj = entry.obj
+                if obj ~= nil and U.isGameObject(obj) and obj.setLock ~= nil then
+                    obj.setLock(entry.wasLocked)
+                end
+            end
+        end, 0.15)
+    end
 end
 
 --- @param occupantKey string

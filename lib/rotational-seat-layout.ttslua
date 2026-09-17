@@ -160,37 +160,115 @@ local function tryGetObjectLockState(obj)
   return false
 end
 
+--- Resolve which player color owns a hand zone (FogColor / getValue).
+--- @param hz Object
+--- @return string|nil
+local function resolveHandZoneSeatColor(hz)
+  if hz == nil then
+    return nil
+  end
+  if hz.getData ~= nil then
+    local data = hz.getData()
+    if data ~= nil and type(data.FogColor) == "string" and data.FogColor ~= "" then
+      return data.FogColor
+    end
+  end
+  if hz.getValue ~= nil then
+    local value = hz.getValue()
+    if type(value) == "string" and value ~= "" then
+      return value
+    end
+  end
+  return nil
+end
+
+--- Cards do not always appear in Hand Zone getObjects(); also use Player.getHandObjects.
+--- @param hz Object
+--- @param seatColor string|nil
+--- @return Object[]
+local function collectHandZoneCards(hz, seatColor)
+  local seen = {}
+  local out = {}
+  local function consider(obj)
+    if not isCardLikeObject(obj) then
+      return
+    end
+    local guid = obj.getGUID and obj.getGUID() or nil
+    if type(guid) == "string" and guid ~= "" then
+      if seen[guid] == true then
+        return
+      end
+      seen[guid] = true
+    end
+    out[#out + 1] = obj
+  end
+  if hz ~= nil and hz.getObjects ~= nil then
+    local zoneObjects = hz.getObjects()
+    if U.Type(zoneObjects) == "table" then
+      for i = 1, #zoneObjects do
+        consider(zoneObjects[i])
+      end
+    end
+  end
+  local color = seatColor
+  if type(color) ~= "string" or color == "" then
+    color = resolveHandZoneSeatColor(hz)
+  end
+  if type(color) == "string" and color ~= "" then
+    local player = Player[color]
+    if player ~= nil and type(player.getHandObjects) == "function" then
+      local handObjects = player.getHandObjects()
+      if U.Type(handObjects) == "table" then
+        for i = 1, #handObjects do
+          consider(handObjects[i])
+        end
+      end
+    end
+  end
+  return out
+end
+
+--- Restore prior lock after a short delay so TTS can re-bind cards to the moved hand zone.
+--- Immediate unlock after setPosition drops cards out of the world on large PC moves.
+--- @param captured table[]
+local function restoreHandCardLocksAfterSettle(captured)
+  U.await(function()
+    for i = 1, #captured do
+      local entry = captured[i]
+      local obj = entry.obj
+      if obj ~= nil and U.isGameObject(obj) and obj.setLock ~= nil then
+        obj.setLock(entry.wasLocked)
+      end
+    end
+  end, 0.15)
+end
+
 --- Move a player hand zone and keep cards/decks in rigid relative formation.
+--- Locks every hand card, teleports it with the zone, then restores prior lock after settle.
 --- @param hz Object
 --- @param targetPos Vector
 --- @param targetRot Vector
+--- @param seatColor string|nil optional player color (preferred over FogColor lookup)
 --- @return table hzBefore { position = Vector, rotation = Vector }
-local function moveHandZoneAndContainedCards(hz, targetPos, targetRot)
+local function moveHandZoneAndContainedCards(hz, targetPos, targetRot, seatColor)
   local hzBefore = {
     position = hz.getPosition(),
     rotation = hz.getRotation(),
   }
-  local zoneObjects = {}
-  if hz.getObjects ~= nil then
-    zoneObjects = hz.getObjects()
-  end
-  if U.Type(zoneObjects) ~= "table" then
-    error("rotational-seat-layout: hand zone getObjects() must return a table")
-  end
-
+  local cards = collectHandZoneCards(hz, seatColor)
   local captured = {}
-  for _, obj in ipairs(zoneObjects) do
-    if isCardLikeObject(obj) then
-      local wasLocked = tryGetObjectLockState(obj)
-      local entry = {
-        obj = obj,
-        wasLocked = wasLocked,
-        before = {
-          position = obj.getPosition(),
-          rotation = obj.getRotation(),
-        },
-      }
-      captured[#captured + 1] = entry
+  for i = 1, #cards do
+    local obj = cards[i]
+    local wasLocked = tryGetObjectLockState(obj)
+    captured[#captured + 1] = {
+      obj = obj,
+      wasLocked = wasLocked,
+      before = {
+        position = obj.getPosition(),
+        rotation = obj.getRotation(),
+      },
+    }
+    if obj.setLock ~= nil then
       obj.setLock(true)
     end
   end
@@ -209,8 +287,8 @@ local function moveHandZoneAndContainedCards(hz, targetPos, targetRot)
     local entry = captured[i]
     -- Final snap avoids residual skew drift: cards should face opposite the hand-zone forward.
     entry.obj.setRotation({ x = alignedCardRotation.x, y = alignedCardRotation.y, z = alignedCardRotation.z })
-    entry.obj.setLock(entry.wasLocked)
   end
+  restoreHandCardLocksAfterSettle(captured)
   return hzBefore
 end
 
@@ -1993,7 +2071,7 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
         if hz == nil then
           error("rotational-seat-layout: no hand zone for reference seat '" .. tostring(referencePlayerColor) .. "'")
         end
-        local hzBefore = moveHandZoneAndContainedCards(hz, pos, rot)
+        local hzBefore = moveHandZoneAndContainedCards(hz, pos, rot, referencePlayerColor)
         maybeSetHandZoneSeatColor(hz, slot.roleKey, referencePlayerColor)
         referenceHandZoneMove = {
           roleKey = slot.roleKey,
@@ -2127,7 +2205,7 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
               position = hz.getPosition(),
               rotation = hz.getRotation(),
             }
-            hzBefore = moveHandZoneAndContainedCards(hz, pos, rot)
+            hzBefore = moveHandZoneAndContainedCards(hz, pos, rot, color)
             maybeSetHandZoneSeatColor(hz, expectedRole, color)
             local eg = hz.getGUID and hz.getGUID() or ""
             if eg == "" then
@@ -3396,18 +3474,17 @@ local function applyReferenceHandPositionDelta(fromTableKey, toTableKey)
   -- Move reference hand zone using the same path as other seat hand-zone moves:
   -- lock contained cards/decks, move rigidly with zone, restore lock states.
   local handZoneRotation = handZone.getRotation and Vector(handZone.getRotation()) or Vector({ 0, 0, 0 })
-  moveHandZoneAndContainedCards(handZone, toRef, handZoneRotation)
+  moveHandZoneAndContainedCards(handZone, toRef, handZoneRotation, refColor)
 
   -- Prevent double-shifting cards/decks already moved with the hand zone.
   local movedWithHandZone = {}
-  if handZone.getObjects ~= nil then
-    local inZone = handZone.getObjects() or {}
-    for _, obj in ipairs(inZone) do
-      if obj ~= nil and isCardLikeObject(obj) and obj.getGUID ~= nil then
-        local g = obj.getGUID()
-        if U.Type(g) == "string" and g ~= "" then
-          movedWithHandZone[g] = true
-        end
+  local movedCards = collectHandZoneCards(handZone, refColor)
+  for i = 1, #movedCards do
+    local obj = movedCards[i]
+    if obj.getGUID ~= nil then
+      local g = obj.getGUID()
+      if U.Type(g) == "string" and g ~= "" then
+        movedWithHandZone[g] = true
       end
     end
   end
@@ -4943,7 +5020,7 @@ local function applyPcReferenceSeatHandDeltaFollow(seatKey, handFrame, sourceObj
   end
   local targetPos = Vector(handFrame.position)
   local targetRot = Vector(handFrame.rotation)
-  local hzBefore = moveHandZoneAndContainedCards(hz, targetPos, targetRot)
+  local hzBefore = moveHandZoneAndContainedCards(hz, targetPos, targetRot, seatKey)
   maybeSetHandZoneSeatColor(hz, "HAND_ZONE_ANCHOR", seatKey)
 
   local beforePos = Vector(hzBefore.position)
@@ -5097,7 +5174,7 @@ local function applyPcSeatRolePropagationAndRelativeFollow(
     position = Vector(hz.getPosition()),
     rotation = Vector(hz.getRotation()),
   }
-  moveHandZoneAndContainedCards(hz, targetPos, targetRot)
+  moveHandZoneAndContainedCards(hz, targetPos, targetRot, seatKey)
   maybeSetHandZoneSeatColor(hz, "HAND_ZONE_ANCHOR", seatKey)
 
   local movedCount = 1
@@ -5423,7 +5500,7 @@ function M.refreshSeatRigsFromReferenceSegment(opts)
           local hz = U.getHandZone(seatKey)
           if hz ~= nil then
             if not dryRun then
-              moveHandZoneAndContainedCards(hz, Vector(handFrame.position), Vector(handFrame.rotation))
+              moveHandZoneAndContainedCards(hz, Vector(handFrame.position), Vector(handFrame.rotation), seatKey)
               maybeSetHandZoneSeatColor(hz, "HAND_ZONE_ANCHOR", seatKey)
             end
             movedCount = movedCount + 1
