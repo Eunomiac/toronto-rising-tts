@@ -69,6 +69,12 @@ _Last populated: 2026-09-17 — Scene apply weather HUD crash._
 
 ### Scatter / table layout
 
+#### Scatter figurine height uses FLOOR_Y
+
+**How to verify:** Save & Play with `C.Tables.Scatter.FLOOR_Y` set to **-65** (or another value you choose). Enter Scatter and place NPCs on a group (or switch from a table that already has stage NPCs). Those figurines’ world **Y** should match `FLOOR_Y` (e.g. −65), not the old −52.89 floor. PC figurines on the same group should use the same height.
+
+**Context:** Scatter placement was letting seat-offset / restore paths keep the old −52.89 Y; NPC scatter poses now force `ScatterLayout.floorY()` after unhide. relatedTo **TOR-572**.
+
 #### Scatter enter places NPC figurines + forces lit tokens
 
 **How to verify:** Save & Play so scripts reload.

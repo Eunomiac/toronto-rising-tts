@@ -770,6 +770,7 @@ local function worldSlotFromPackedTableSlot(tableSlot)
 end
 
 --- Direct figurine pose (same path as NPC scatter placement) before satellite layout.
+--- World Y is always `C.Tables.Scatter.FLOOR_Y` (not SeatRoleOffsets SEAT_FIGURE defaultY).
 --- @param color string
 --- @param frame table `{ position, rotation }`
 local function movePcFigurineToScatterPose(color, frame)
@@ -781,13 +782,13 @@ local function movePcFigurineToScatterPose(color, frame)
     if fig == nil then
         return
     end
-    local pos = Vector(frame.position)
+    local src = frame.position
+    local pos = Vector({
+        x = tonumber(src and (src.x or src[1])) or 0,
+        y = ScatterLayout.floorY(),
+        z = tonumber(src and (src.z or src[3])) or 0,
+    })
     local rot = Vector(frame.rotation)
-    local FSL = require("lib.figurine_seat_layout")
-    local figOff = FSL.lookupOffset(color, "SEAT_FIGURE")
-    if figOff ~= nil and tonumber(figOff.defaultY) ~= nil then
-        pos = Vector({ x = pos.x, y = figOff.defaultY, z = pos.z })
-    end
     fig.setPosition(pos)
     fig.setRotation(rot)
 end

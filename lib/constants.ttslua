@@ -2274,15 +2274,15 @@ C.Tables = {
     FIRST_GROUP_AZIMUTH_DEG = 270,
     GROUP_SPACING_DEG = 60,
     SCATTER_RADIUS_WORLD = 225,
-    SCATTER_RADIUS_NPC = 125,
-    SCATTER_RADIUS_PC = 100,
+    SCATTER_RADIUS_NPC = 100,
+    SCATTER_RADIUS_PC = 107,
     PC_SCATTER_POSITION_ANGLE = 180,
-    NPC_DEPLOYMENT_ARC = 70,
+    NPC_DEPLOYMENT_ARC = 50,
     PC_DEPLOYMENT_ARC = 80,
     NPC_SPACING_MIN = 10,
-    NPC_SPACING_MAX = 22,
+    NPC_SPACING_MAX = 18,
     --- Default in-use PC figurine Y (Table A dumps / SeatRoleOffsets SEAT_FIGURE). Tune after first in-world pass.
-    FLOOR_Y = -52.89,
+    FLOOR_Y = -65,
     --- Extra yaw added to the group World Ray when posing the storyteller dice tray (0 = ray azimuth).
     ST_DICE_TRAY_YAW_OFFSET_DEG = 0,
     --- Custom tile mesh looks along -Z at yaw 0; look-at toward a point needs +180 (same as stage figurines).
@@ -2343,7 +2343,8 @@ C.Tables = {
       G.GUIDS.SEAT_CHAIR_NPC4,
       G.GUIDS.PRINCE_SIGNET_BORDER_RED,
       G.GUIDS.PRINCE_SIGNET_RED,
-      G.GUIDS.PRINCE_CURTAIN_RED
+      G.GUIDS.PRINCE_CURTAIN_RED,
+      G.GUIDS.PARTICLE_EMITTER
     }
   }
 }
@@ -2473,36 +2474,37 @@ C.TableSourceObjects = {
       position = { y = -40 }
     }
   },
-  --- Per-seat `SEAT_FIGURE` Y tweaks after layout (PC workshop figurines and pooled NPC cutouts share this table).
-  postCorrectionsBySeatRole = {
+    --- Per-seat `SEAT_FIGURE` Y tweaks after layout (PC workshop figurines and pooled NPC cutouts share this table).
+    --- Scatter playfield Y is `FLOOR_Y`; keep these in sync when tuning floor height.
+    postCorrectionsBySeatRole = {
     Brown = {
       SEAT_FIGURE = {
-        position = { y = -50 },
+        position = { y = -65 },
       },
     },
     Purple = {
       SEAT_FIGURE = {
-        position = { y = -50.67 },
+        position = { y = -65 },
       },
     },
     NPC1 = {
       SEAT_FIGURE = {
-        position = { y = -52.89 },
+        position = { y = -65 },
       },
     },
     NPC2 = {
       SEAT_FIGURE = {
-        position = { y = -52.89 },
+        position = { y = -65 },
       },
     },
     NPC3 = {
       SEAT_FIGURE = {
-        position = { y = -52.89 },
+        position = { y = -65 },
       },
     },
     NPC4 = {
       SEAT_FIGURE = {
-        position = { y = -52.89 },
+        position = { y = -65 },
       },
     },
   },

@@ -1960,6 +1960,7 @@ function NPCS.applyFigurinePlacementAtWorld(figurine, placement)
 end
 
 --- Place a pooled NPC figurine at a Scatter Mode world pose (not STAGE_BOARD u/v).
+--- World Y always comes from `C.Tables.Scatter.FLOOR_Y` (pose XZ/yaw from scatter layout).
 --- @param npcName string
 --- @param pose table `{ position, rotation }`
 --- @param opts table|nil `{ npcLightMode?, skipSeatSync? }`
@@ -1992,8 +1993,17 @@ function NPCS.moveNpcToScatterPose(npcName, pose, opts)
     if fig == nil then
         return false, "Figurine missing."
     end
-    local pos = Vector(pose.position)
+    local ScatterLayout = require("lib.scatter_layout")
+    local floorY = ScatterLayout.floorY()
+    local srcPos = pose.position
+    local pos = Vector({
+        x = tonumber(srcPos and (srcPos.x or srcPos[1])) or 0,
+        y = floorY,
+        z = tonumber(srcPos and (srcPos.z or srcPos[3])) or 0,
+    })
     local rot = Vector(pose.rotation)
+    -- Unhide / scale before the final pose so restoreObject cannot overwrite FLOOR_Y.
+    local reloaded = applyNpcPairPhysicalPresentation(fig, lit, SCATTER_AREA_KEY, npcName)
     fig.setPosition(pos)
     fig.setRotation(rot)
     ensureNpcFigurinePhysicsLocked(fig)
@@ -2002,9 +2012,31 @@ function NPCS.moveNpcToScatterPose(npcName, pose, opts)
     rec.stagePlacement = nil
     rec.npcLightMode = normalizedStageNpcLightMode({ npcLightMode = opts.npcLightMode or rec.npcLightMode or "STANDARD" })
     setInstanceRecord(npcName, rec)
-    applyNpcPairPhysicalPresentation(fig, lit, STAGE_BOARD_AREA_KEY, npcName)
     applyStageNpcSpotlightNow(npcName, fig, lit, 0)
     deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, 0)
+    if reloaded == true then
+        local settleName = npcName
+        local settlePos = Vector({ x = pos.x, y = pos.y, z = pos.z })
+        local settleRot = Vector({ x = rot.x, y = rot.y, z = rot.z })
+        U.chain({
+            function()
+                return function()
+                    local f = G.getObject((getInstances()[settleName] or {}).figurineGuid or "")
+                    return f ~= nil and f.loading_custom ~= true
+                end
+            end,
+            function()
+                local f = G.getObject((getInstances()[settleName] or {}).figurineGuid or "")
+                local l = G.getObject((getInstances()[settleName] or {}).lightGuid or "")
+                if f ~= nil then
+                    f.setPosition(settlePos)
+                    f.setRotation(settleRot)
+                    ensureNpcFigurinePhysicsLocked(f)
+                    applyStageNpcSpotlightNow(settleName, f, l, 0)
+                end
+            end,
+        })
+    end
     if not skipSeatSync then
         requestSeatLayoutSync()
     end
