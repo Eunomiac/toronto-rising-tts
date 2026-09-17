@@ -62,6 +62,19 @@ local function orderedOwnedDisciplineKeys(discs)
   return owned
 end
 
+--- Copy name/level into a table owned by this script (stats may come from Global).
+--- @param entry any
+--- @return table|nil
+local function localRcEntry(entry)
+  if type(entry) ~= "table" then
+    return nil
+  end
+  return {
+    name = entry.name,
+    level = entry.level,
+  }
+end
+
 --- @param discs table|nil
 --- @return table[] rituals
 --- @return table[] ceremonies
@@ -75,12 +88,18 @@ local function collectRitualsAndCeremonies(discs)
     if type(row) == "table" then
       if type(row.rituals) == "table" then
         for i = 1, #row.rituals do
-          rituals[#rituals + 1] = row.rituals[i]
+          local copy = localRcEntry(row.rituals[i])
+          if copy ~= nil then
+            rituals[#rituals + 1] = copy
+          end
         end
       end
       if type(row.ceremonies) == "table" then
         for i = 1, #row.ceremonies do
-          ceremonies[#ceremonies + 1] = row.ceremonies[i]
+          local copy = localRcEntry(row.ceremonies[i])
+          if copy ~= nil then
+            ceremonies[#ceremonies + 1] = copy
+          end
         end
       end
     end

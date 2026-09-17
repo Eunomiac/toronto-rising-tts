@@ -353,12 +353,25 @@ function PSC.collectSheetImageUpdates(stats, resolvedStatChanges, pageNum)
         if type(row) == "table" then
           if type(row.rituals) == "table" then
             for i = 1, #row.rituals do
-              rituals[#rituals + 1] = row.rituals[i]
+              local entry = row.rituals[i]
+              -- Copy scalars: stats tables may be Global-owned; object scripts cannot store them.
+              if type(entry) == "table" then
+                rituals[#rituals + 1] = {
+                  name = entry.name,
+                  level = entry.level,
+                }
+              end
             end
           end
           if type(row.ceremonies) == "table" then
             for i = 1, #row.ceremonies do
-              ceremonies[#ceremonies + 1] = row.ceremonies[i]
+              local entry = row.ceremonies[i]
+              if type(entry) == "table" then
+                ceremonies[#ceremonies + 1] = {
+                  name = entry.name,
+                  level = entry.level,
+                }
+              end
             end
           end
         end

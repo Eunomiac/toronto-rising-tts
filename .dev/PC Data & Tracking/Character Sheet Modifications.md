@@ -91,6 +91,8 @@ Cloud sync: job `csheetPage1Overlays` (`CSheets/Page1` → five page‑1 GUIDs).
 
 Blank disciplines area on the tile; runtime XmlUI builds a 2×3 discipline grid (`discName_<key>` + `page2_dotline` + fill overlays) and optional rituals/ceremonies section (`divider_rituals` / `divider_ceremonies` / `divider_ritualsAndCeremonies`). `stats.disciplines` keeps full PCS rows (`powers`, `rituals`, `ceremonies`) after bootstrap.
 
+**Cross-script ownership:** Page‑2 object scripts must not store Global-owned ritual/ceremony/power row tables in local arrays. Copy the scalar fields you need (`name`, `level`) into a fresh table owned by the object script (same rule in `lib/csheet_page2_xml.ttslua` and `lib/pc_sheet_collect.ttslua`). Otherwise TTS throws `Attempt to perform operations with resources owned by different scripts`.
+
 Cloud sync: job `csheetPage2Assets` (`CSheets/Page2` → five page‑2 GUIDs, no purge).
 
 ```text
