@@ -23,6 +23,13 @@
 }
 
 @font-face {
+  font-family: "Perpetua";
+  src: url("/pc-sheet-assets/fonts/Perpetua/Perpetua%20Italic.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
   font-family: "Cormorant Garamond";
   src: url("/pc-sheet-assets/fonts/CormorantGaramond/CormorantGaramond%20Bold.ttf") format("truetype");
   font-weight: 700;
@@ -35,25 +42,12 @@
 }
 
 @font-face {
-  font-family: "Book Antiqua";
-  src: url("/pc-sheet-assets/fonts/BookAntiqua/BookAntiqua%20Bold.ttf") format("truetype");
-  font-weight: 700;
-}
-
-@font-face {
-  font-family: "Book Antiqua";
-  src: url("/pc-sheet-assets/fonts/BookAntiqua/BookAntiqua%20BoldItalic.ttf") format("truetype");
-  font-weight: 700;
-  font-style: italic;
-}
-
-@font-face {
   font-family: "Abril Fatface";
   src: url("/pc-sheet-assets/fonts/AbrilFatface.ttf") format("truetype");
   font-weight: 400;
 }
 
-.pc-sheet-panel {
+.tab-panel.pc-sheet-panel {
   overflow: hidden;
   display: flex;
 
@@ -67,8 +61,12 @@
   display: grid;
   grid-template-columns: 15.5rem minmax(0, 1fr);
   min-height: 0;
+  min-width: 0;
   height: 100%;
-  background: #050506;
+  width: 100%;
+  background:
+    radial-gradient(1200px 700px at 70% 20%, rgba(90, 18, 22, 0.28), transparent 55%),
+    #050506;
 }
 
 .pc-rail {
@@ -184,20 +182,22 @@
 }
 
 .pc-spread {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.1rem;
+  container-type: size;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.15rem;
   flex: 1 1 auto;
   min-height: 0;
-  padding: 0.7rem 1.1rem 0.2rem;
+  min-width: 0;
+  padding: 0.55rem 1rem 0.15rem;
 }
 
 .pc-page {
   position: relative;
+  flex: 0 0 auto;
+  height: min(100cqh, calc((100cqw - 1.15rem) / 2 * 2000 / 1545));
   aspect-ratio: 1545 / 2000;
-  max-height: 100%;
-  width: auto;
-  justify-self: center;
   overflow: hidden;
   color: #f6ead2;
   background:
@@ -314,6 +314,17 @@
   }
 }
 
+.pc-col-title {
+  margin: 0 0 0.2rem;
+  color: #c4a15a;
+  font-family: "Trajan Pro 3", serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
 .pc-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -393,8 +404,8 @@
   }
 
   &.archaic {
-    font-family: "Book Antiqua", serif;
-    font-weight: 700;
+    font-family: "Perpetua", serif;
+    font-style: italic;
     color: #d8c48a;
 
     i {
@@ -445,6 +456,7 @@
   text-align: left;
 
   &:nth-child(1) { grid-area: health; }
+  &:nth-child(3) { grid-area: will; }
   &:nth-child(4) { grid-area: humanity; }
 }
 
@@ -478,8 +490,8 @@
 }
 
 .pc-box {
-  width: 0.82rem;
-  height: 0.82rem;
+  width: 0.72rem;
+  height: 0.72rem;
   background: rgba(255, 255, 255, 0.04);
   box-shadow: inset 0 0 0 1px rgba(220, 220, 220, 0.45);
 
@@ -525,8 +537,8 @@
 
 .pc-ring {
   position: absolute;
-  width: 0;
-  height: 0;
+  width: 1px;
+  height: 1px;
 }
 
 .pc-ring-btn {

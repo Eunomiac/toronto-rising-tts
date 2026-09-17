@@ -11,6 +11,8 @@ type Props = {
   readonly onDesire: (text: string) => void;
 };
 
+const COLUMN_TITLES = ["Physical", "Social", "Mental"] as const;
+
 const specialtiesFor = (seat: SeatSnapshot, skill: string): readonly Specialty[] =>
   seat.specialties.filter((row) => row.skill === skill);
 
@@ -81,6 +83,7 @@ export const PageOne = ({ seat, onRing, onDesire }: Props): ReactElement => {
       <section className="pc-grid pc-attributes" aria-label="Attributes">
         {ATTRIBUTE_COLUMNS.map((column, columnIndex) => (
           <div key={columnIndex} className="pc-col">
+            <h2 className="pc-col-title">{COLUMN_TITLES[columnIndex]}</h2>
             {column.map((key) => {
               const rating = ratingOrZero(seat.attributes, key);
               const delta = seat.resolvedStatChanges[key] ?? 0;
@@ -103,6 +106,7 @@ export const PageOne = ({ seat, onRing, onDesire }: Props): ReactElement => {
       <section className="pc-grid pc-skills" aria-label="Skills">
         {SKILL_COLUMNS.map((column, columnIndex) => (
           <div key={columnIndex} className="pc-col">
+            <h2 className="pc-col-title">{COLUMN_TITLES[columnIndex]}</h2>
             {column.map((key) => {
               const rating = ratingOrZero(seat.skills, key);
               const delta = seat.resolvedStatChanges[key] ?? 0;
@@ -136,7 +140,7 @@ export const PageOne = ({ seat, onRing, onDesire }: Props): ReactElement => {
         <button className="pc-track" type="button" onClick={(event) => openDamage(event, "health")}>
           <span className="pc-track-label">Health</span>
           <span className="pc-boxes">
-            {healthBoxes.map((box, index) => (
+            {healthBoxes.slice(0, seat.healthMax).map((box, index) => (
               <span
                 key={index}
                 className={`pc-box${box.active ? " on" : ""}`}
@@ -160,36 +164,18 @@ export const PageOne = ({ seat, onRing, onDesire }: Props): ReactElement => {
           <strong>{seat.xp}</strong>
           <span>XP</span>
         </button>
-        <div className="pc-track-stack">
-          <button className="pc-track" type="button" onClick={(event) => openDamage(event, "willpower")}>
-            <span className="pc-track-label">Willpower</span>
-            <span className="pc-boxes">
-              {willBoxes.map((box, index) => (
-                <span
-                  key={index}
-                  className={`pc-box${box.active ? " on" : ""}`}
-                  style={box.active && box.image ? { backgroundImage: `url("${assetUrl(`boxes/${box.image}.webp`)}")` } : undefined}
-                />
-              ))}
-            </span>
-          </button>
-          <button className="pc-track" type="button" onClick={(event) => openDots(event, "bloodPotency", "bloodPotency")}>
-            <span className="pc-track-label">Blood Potency</span>
-            <DotLine slots={bpDots} large />
-            <span className="pc-track-note">Blood Surge for +{seat.bloodSurge}</span>
-          </button>
-          <button
-            className="pc-track hunger"
-            type="button"
-            onClick={(event) => onRing(event, [
-              { id: "hg-", label: "−1", command: { op: "hunger", color: seat.color, delta: -1 } },
-              { id: "hg+", label: "+1", command: { op: "hunger", color: seat.color, delta: 1 } }
-            ])}
-          >
-            <span className="pc-track-label">Hunger</span>
-            <DotLine slots={hungerDots} />
-          </button>
-        </div>
+        <button className="pc-track" type="button" onClick={(event) => openDamage(event, "willpower")}>
+          <span className="pc-track-label">Willpower</span>
+          <span className="pc-boxes">
+            {willBoxes.slice(0, seat.willpowerMax).map((box, index) => (
+              <span
+                key={index}
+                className={`pc-box${box.active ? " on" : ""}`}
+                style={box.active && box.image ? { backgroundImage: `url("${assetUrl(`boxes/${box.image}.webp`)}")` } : undefined}
+              />
+            ))}
+          </span>
+        </button>
         <button
           className="pc-track"
           type="button"
@@ -212,6 +198,24 @@ export const PageOne = ({ seat, onRing, onDesire }: Props): ReactElement => {
             ))}
           </span>
         </button>
+        <div className="pc-track-stack">
+          <button className="pc-track" type="button" onClick={(event) => openDots(event, "bloodPotency", "bloodPotency")}>
+            <span className="pc-track-label">Blood Potency</span>
+            <DotLine slots={bpDots} large />
+            <span className="pc-track-note">Blood Surge for +{seat.bloodSurge}</span>
+          </button>
+          <button
+            className="pc-track hunger"
+            type="button"
+            onClick={(event) => onRing(event, [
+              { id: "hg-", label: "−1", command: { op: "hunger", color: seat.color, delta: -1 } },
+              { id: "hg+", label: "+1", command: { op: "hunger", color: seat.color, delta: 1 } }
+            ])}
+          >
+            <span className="pc-track-label">Hunger</span>
+            <DotLine slots={hungerDots} />
+          </button>
+        </div>
       </footer>
     </article>
   );

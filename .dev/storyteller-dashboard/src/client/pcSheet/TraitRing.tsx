@@ -19,11 +19,11 @@ export const TraitRing = ({ x, y, actions, onPick, onClose }: Props): ReactEleme
       return;
     }
     const ctx = gsap.context(() => {
-      gsap.fromTo(root, { scale: 0.72, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.28, ease: "back.out(1.8)" });
+      gsap.fromTo(root, { opacity: 0 }, { opacity: 1, duration: 0.18, ease: "power2.out" });
       gsap.fromTo(
         root.querySelectorAll(".pc-ring-btn"),
-        { scale: 0.4, opacity: 0 },
-        { scale: 1, opacity: 1, duration: 0.22, stagger: 0.035, ease: "power3.out", delay: 0.04 }
+        { scale: 0.45, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.28, stagger: 0.04, ease: "back.out(1.7)", delay: 0.02 }
       );
     }, root);
     return () => ctx.revert();

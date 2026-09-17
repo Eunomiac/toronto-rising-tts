@@ -2,6 +2,7 @@ import { gsap } from "gsap";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent, type ReactElement } from "react";
 import { fetchBridgeStatus } from "../ttsBridge.js";
 import { applySheetCommand, snapshotOrFixture } from "./bridge.js";
+import { applyLocal } from "./applyLocal.js";
 import { fixtureSnapshot } from "./fixture.js";
 import { PageOne } from "./PageOne.js";
 import { PlayerRail } from "./PlayerRail.js";
@@ -14,37 +15,51 @@ type Props = {
 
 const POLL_MS = 2500;
 
+const friendlyBridgeMessage = (message: string): string => {
+  if (/nil value|executeScript|did not return a sheet snapshot/i.test(message)) {
+    return "Live sheet is not answering yet — showing stand-in stats.";
+  }
+  return message;
+};
+
 export const PcSheetTab = ({ active }: Props): ReactElement => {
   const spreadRef = useRef<HTMLDivElement>(null);
-  const [snapshot, setSnapshot] = useState<SheetSnapshot | null>(null);
+  const [snapshot, setSnapshot] = useState<SheetSnapshot>(() => fixtureSnapshot());
   const [selected, setSelected] = useState<SeatColor>("Pink");
   const [status, setStatus] = useState("Checking TTS…");
   const [live, setLive] = useState(false);
   const [busy, setBusy] = useState(false);
   const [ring, setRing] = useState<{ x: number; y: number; actions: readonly RingAction[] } | null>(null);
   const inFlight = useRef(false);
+  const skipLive = useRef(false);
 
   const refresh = useCallback(async (): Promise<void> => {
-    if (inFlight.current) {
+    if (inFlight.current || skipLive.current) {
       return;
     }
     inFlight.current = true;
     try {
       const bridge = await fetchBridgeStatus();
       if (!bridge.usable) {
-        setSnapshot(fixtureSnapshot());
+        skipLive.current = true;
         setLive(false);
         setStatus(bridge.message);
         return;
       }
       const result = await snapshotOrFixture();
-      setSnapshot(result.snapshot);
-      setLive(result.live);
-      setStatus(result.message);
-    } catch (error: unknown) {
-      setSnapshot(fixtureSnapshot());
+      if (result.live) {
+        setSnapshot(result.snapshot);
+        setLive(true);
+        setStatus(result.message);
+        return;
+      }
+      skipLive.current = true;
       setLive(false);
-      setStatus(error instanceof Error ? error.message : "Could not reach TTS.");
+      setStatus(friendlyBridgeMessage(result.message));
+    } catch (error: unknown) {
+      skipLive.current = true;
+      setLive(false);
+      setStatus(friendlyBridgeMessage(error instanceof Error ? error.message : "Could not reach TTS."));
     } finally {
       inFlight.current = false;
     }
@@ -72,19 +87,24 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
       gsap.fromTo(root.querySelectorAll(".pc-page"), { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45, stagger: 0.08, ease: "power2.out" });
     }, root);
     return () => ctx.revert();
-  }, [active, selected]);
+  }, [active]);
 
   const apply = async (command: ApplyCommand): Promise<void> => {
     setBusy(true);
     setRing(null);
     try {
+      if (!live) {
+        setSnapshot((current) => applyLocal(current ?? fixtureSnapshot(), command));
+        setStatus("Stand-in sheet — changes stay on this tab until live TTS answers.");
+        return;
+      }
       const next = await applySheetCommand(command);
       if (next.ok) {
         setSnapshot(next);
         setLive(true);
         setStatus("Applied in Tabletop Simulator.");
       } else {
-        setStatus(next.error ?? "Apply failed.");
+        setStatus(friendlyBridgeMessage(next.error ?? "Apply failed."));
       }
     } catch (error: unknown) {
       setStatus(error instanceof Error ? error.message : "Apply failed.");
