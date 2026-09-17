@@ -146,16 +146,20 @@ end
 local function buildDisciplineCell(key, row)
   local nameImg = "discName_" .. key
   local parts = {
-    '<VerticalLayout class="page2_disc_cell" flexibleWidth="1" preferredHeight="280">',
-    '  <HorizontalLayout class="page2_disc_header" preferredHeight="70" flexibleHeight="0">',
-    string.format('    <Image image="%s" class="page2_disc_name" preferredWidth="220" preferredHeight="63" flexibleWidth="0" />', nameImg),
-    '    <Panel class="page2_dotline_wrap" preferredHeight="63" flexibleWidth="1">',
-    '      <Image image="page2_dotline" class="page2_dotline_bg" />',
-    '      <HorizontalLayout class="page2_dot_fills" spacing="8" padding="8 8 0 0">',
+    string.format('<VerticalLayout id="db_disc_cell_%s" class="page2_disc_cell">', key),
+    string.format('  <HorizontalLayout id="db_disc_header_%s" class="page2_disc_header">', key),
+    string.format(
+      '    <Image id="db_disc_name_%s" image="%s" class="page2_disc_name" />',
+      key,
+      nameImg
+    ),
+    string.format('    <Panel id="db_dotline_wrap_%s" class="page2_dotline_wrap page2_dotline_wrap_disc">', key),
+    string.format('      <Image id="db_dotline_bg_%s" image="page2_dotline" class="page2_dotline_bg" />', key),
+    string.format('      <HorizontalLayout id="db_dot_fills_%s" class="page2_dot_fills">', key),
   }
   for slot = 1, 5 do
     parts[#parts + 1] = string.format(
-      '        <Image id="dot_%s_%d" class="dot dot_standard" active="false" preferredWidth="63" preferredHeight="63" flexibleWidth="0" />',
+      '        <Image id="dot_%s_%d" class="dot dot_standard page2_dot_fill" />',
       key,
       slot
     )
@@ -164,16 +168,21 @@ local function buildDisciplineCell(key, row)
   parts[#parts + 1] = "    </Panel>"
   parts[#parts + 1] = "  </HorizontalLayout>"
   parts[#parts + 1] = string.format(
-    '  <Text class="page2_powers_text" alignment="UpperLeft" fontSize="28" color="#FFFFFF" text="%s" />',
+    '  <Text id="db_powers_%s" class="page2_powers_text" text="%s" />',
+    key,
     xmlEscape(powersText(row.powers))
   )
   parts[#parts + 1] = "</VerticalLayout>"
   return table.concat(parts, "\n")
 end
 
+--- @param cellIndex number 1..6
 --- @return string
-local function emptyDisciplineCell()
-  return '<VerticalLayout class="page2_disc_cell" flexibleWidth="1" preferredHeight="280" />'
+local function emptyDisciplineCell(cellIndex)
+  return string.format(
+    '<VerticalLayout id="db_disc_cell_empty_%d" class="page2_disc_cell" />',
+    cellIndex
+  )
 end
 
 --- @param entry table|nil
@@ -185,15 +194,22 @@ local function buildRcRow(entry, side, rowIndex)
   if type(entry) == "table" then
     name = tostring(entry.name or "")
   end
+  local rowId = string.format("%s_%d", side, rowIndex)
   local parts = {
-    '<HorizontalLayout class="page2_rc_row" preferredHeight="63" flexibleHeight="0">',
-    '  <Panel class="page2_dotline_wrap" preferredWidth="280" preferredHeight="63" flexibleWidth="0">',
-    '    <Image image="page2_dotline" class="page2_dotline_bg" />',
-    '    <HorizontalLayout class="page2_dot_fills" spacing="8" padding="8 8 0 0">',
+    string.format('<HorizontalLayout id="db_rc_row_%s" class="page2_rc_row">', rowId),
+    string.format(
+      '  <Panel id="db_rc_dotline_wrap_%s" class="page2_dotline_wrap page2_dotline_wrap_rc">',
+      rowId
+    ),
+    string.format(
+      '    <Image id="db_rc_dotline_bg_%s" image="page2_dotline" class="page2_dotline_bg" />',
+      rowId
+    ),
+    string.format('    <HorizontalLayout id="db_rc_dot_fills_%s" class="page2_dot_fills">', rowId),
   }
   for slot = 1, 5 do
     parts[#parts + 1] = string.format(
-      '      <Image id="dot_rc_%s_%d_%d" class="dot dot_standard" active="false" preferredWidth="63" preferredHeight="63" flexibleWidth="0" />',
+      '      <Image id="dot_rc_%s_%d_%d" class="dot dot_standard page2_dot_fill" />',
       side,
       rowIndex,
       slot
@@ -202,7 +218,8 @@ local function buildRcRow(entry, side, rowIndex)
   parts[#parts + 1] = "    </HorizontalLayout>"
   parts[#parts + 1] = "  </Panel>"
   parts[#parts + 1] = string.format(
-    '  <Text class="page2_rc_name" alignment="MiddleLeft" fontSize="28" color="#FFFFFF" text="%s" flexibleWidth="1" />',
+    '  <Text id="db_rc_name_%s" class="page2_rc_name" text="%s" />',
+    rowId,
     xmlEscape(name)
   )
   parts[#parts + 1] = "</HorizontalLayout>"
@@ -230,7 +247,7 @@ function M.buildPage2DocumentXml(stats, _seatColorRaw, _pd)
     if key ~= nil then
       cells[i] = buildDisciplineCell(key, discs[key])
     else
-      cells[i] = emptyDisciplineCell()
+      cells[i] = emptyDisciplineCell(i)
     end
   end
 
@@ -254,24 +271,37 @@ function M.buildPage2DocumentXml(stats, _seatColorRaw, _pd)
   end
 
   local parts = {
-    '<Defaults>',
-    '  <Image class="page2_dotline_bg" ignoreLayout="true" rectAlignment="MiddleLeft" width="280" height="63" />',
-    '  <HorizontalLayout class="page2_dot_fills" ignoreLayout="true" width="280" height="63" childForceExpandWidth="false" childForceExpandHeight="false" />',
+    "<Defaults>",
+    '  <VerticalLayout class="page2_disc_cell" flexibleWidth="1" preferredHeight="280" />',
+    '  <HorizontalLayout class="page2_disc_header" preferredHeight="70" flexibleHeight="0" />',
+    '  <Image class="page2_disc_name" preferredWidth="220" preferredHeight="63" flexibleWidth="0" />',
     '  <Panel class="page2_dotline_wrap" raycastTarget="false" />',
-    '  <Text class="page2_powers_text" preferredHeight="200" flexibleHeight="1" />',
-    '</Defaults>',
+    '  <Panel class="page2_dotline_wrap_disc" preferredHeight="63" flexibleWidth="1" />',
+    '  <Panel class="page2_dotline_wrap_rc" preferredWidth="280" preferredHeight="63" flexibleWidth="0" />',
+    '  <Image class="page2_dotline_bg" ignoreLayout="true" rectAlignment="MiddleLeft" width="280" height="63" />',
+    '  <HorizontalLayout class="page2_dot_fills" ignoreLayout="true" width="280" height="63" spacing="8" padding="8 8 0 0" childForceExpandWidth="false" childForceExpandHeight="false" />',
+    '  <Image class="page2_dot_fill" preferredWidth="63" preferredHeight="63" flexibleWidth="0" />',
+    '  <Text class="page2_powers_text" alignment="UpperLeft" fontSize="28" color="#FFFFFF" preferredHeight="200" flexibleHeight="1" />',
+    '  <HorizontalLayout class="page2_disc_row" preferredHeight="280" flexibleHeight="0" spacing="24" />',
+    '  <Image class="page2_rc_divider" preferredHeight="80" flexibleHeight="0" preserveAspect="true" />',
+    '  <HorizontalLayout class="page2_rc_columns" spacing="40" flexibleHeight="1" />',
+    '  <VerticalLayout class="page2_rc_col" flexibleWidth="1" spacing="12" />',
+    '  <HorizontalLayout class="page2_rc_row" preferredHeight="63" flexibleHeight="0" />',
+    '  <Text class="page2_rc_name" alignment="MiddleLeft" fontSize="28" color="#FFFFFF" flexibleWidth="1" />',
+    '  <VerticalLayout class="page2_dynamic" padding="80 80 160 520" spacing="24" />',
+    "</Defaults>",
     "",
     '<Panel id="paper_root" class="page_root padded_border">',
     '  <Button id="pageForward" class="page_navigation page_forward" />',
     '  <Button id="pageInner" class="page_navigation page_inner_left" />',
     "",
-    '  <VerticalLayout id="page2_dynamic" padding="80 80 160 520" spacing="24">',
-    '    <HorizontalLayout class="page2_disc_row" preferredHeight="280" flexibleHeight="0" spacing="24">',
+    '  <VerticalLayout id="page2_dynamic" class="page2_dynamic">',
+    '    <HorizontalLayout id="db_disc_row_1" class="page2_disc_row">',
     cells[1],
     cells[2],
     cells[3],
     "    </HorizontalLayout>",
-    '    <HorizontalLayout class="page2_disc_row" preferredHeight="280" flexibleHeight="0" spacing="24">',
+    '    <HorizontalLayout id="db_disc_row_2" class="page2_disc_row">',
     cells[4],
     cells[5],
     cells[6],
@@ -306,16 +336,16 @@ function M.buildPage2DocumentXml(stats, _seatColorRaw, _pd)
     end
 
     parts[#parts + 1] = string.format(
-      '    <Image image="%s" class="page2_rc_divider" preferredHeight="80" flexibleHeight="0" preserveAspect="true" />',
+      '    <Image id="db_rc_divider" image="%s" class="page2_rc_divider" />',
       divider
     )
-    parts[#parts + 1] = '    <HorizontalLayout class="page2_rc_columns" spacing="40" flexibleHeight="1">'
-    parts[#parts + 1] = '      <VerticalLayout class="page2_rc_col" flexibleWidth="1" spacing="12">'
+    parts[#parts + 1] = '    <HorizontalLayout id="db_rc_columns" class="page2_rc_columns">'
+    parts[#parts + 1] = '      <VerticalLayout id="db_rc_col_L" class="page2_rc_col">'
     for row = 1, 5 do
       parts[#parts + 1] = buildRcRow(leftList[row], "L", row)
     end
     parts[#parts + 1] = "      </VerticalLayout>"
-    parts[#parts + 1] = '      <VerticalLayout class="page2_rc_col" flexibleWidth="1" spacing="12">'
+    parts[#parts + 1] = '      <VerticalLayout id="db_rc_col_R" class="page2_rc_col">'
     for row = 1, 5 do
       parts[#parts + 1] = buildRcRow(rightList[row], "R", row)
     end
