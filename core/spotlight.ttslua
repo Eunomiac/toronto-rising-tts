@@ -322,6 +322,7 @@ local function applyStandInLight(color, modeKey, transitionTime)
         return
     end
     ensureTag(lit, Spotlight.LIGHT_TAG)
+    L.applySpotlightObjectIndicator(lit)
     if lit.setLock ~= nil then
         lit.setLock(true)
     end
@@ -795,10 +796,13 @@ local function spawnStandInLight(color)
         error("Spotlight.populateWorkshopStandins: NPC_LIGHT_OBJECT_DATA_DEFAULTS missing")
     end
     local data = cloneObjectDataForSpawn(defaults)
-    data.Tags = { Spotlight.LIGHT_TAG }
+    data.Tags = { Spotlight.LIGHT_TAG, L.SPOTLIGHT_OBJECT_TAG }
     data.Nickname = "Spotlight Light " .. color
     data.Locked = true
     data.Hands = false
+    if type(data.CustomAssetbundle) == "table" then
+        data.CustomAssetbundle.LoopingEffectIndex = L.SPOTLIGHT_ARROW_INVISIBLE_INDEX
+    end
     local pos = parkPosition(color)
     local rot = Vector(0, 0, 0)
     ---@diagnostic disable-next-line: undefined-global
@@ -807,7 +811,9 @@ local function spawnStandInLight(color)
         position = { pos.x, pos.y, pos.z },
         rotation = { rot.x, rot.y, rot.z },
     })
-    return finishSpawnedStandIn(obj, Spotlight.LIGHT_TAG, pos, rot)
+    local guid = finishSpawnedStandIn(obj, Spotlight.LIGHT_TAG, pos, rot)
+    L.applySpotlightObjectIndicator(obj)
+    return guid
 end
 
 --- Clone seat figurines and spawn matching stage lights into the preload grid.

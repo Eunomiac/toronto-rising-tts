@@ -2625,6 +2625,97 @@ function L.unregisterLightModeEntry(lightName)
 end
 
 -- ============================================================================
+-- SPOTLIGHT OBJECT INDICATORS (AssetBundle looping effects)
+-- ============================================================================
+
+--- Tag shared by NPC pooled lights, carousel stand-in lights, and the Debug "Toggle Spotlights" control.
+L.SPOTLIGHT_OBJECT_TAG = "Spotlight"
+--- Visible object-indicator arrow (AssetBundle UI slot 1 → 0-based API index 0).
+L.SPOTLIGHT_ARROW_VISIBLE_INDEX = 0
+--- Invisible object-indicator arrow (AssetBundle UI slot 2 → 0-based API index 1).
+L.SPOTLIGHT_ARROW_INVISIBLE_INDEX = 1
+
+--- @return boolean
+function L.spotlightArrowsWantVisible()
+    return S.getStateVal("debug", "spotlightArrowsVisible") == true
+end
+
+--- Persist whether Spotlight-tagged lights should show the visible indicator arrow.
+--- @param want boolean
+function L.setSpotlightArrowsWantVisible(want)
+    S.setStateVal(want == true, "debug", "spotlightArrowsVisible")
+end
+
+--- Ensure the object carries the admin `Spotlight` tag (Toggle Spotlights / hide-all).
+--- @param obj Object|nil
+--- @return boolean
+function L.ensureSpotlightObjectTag(obj)
+    if not U.isGameObject(obj) then
+        return false
+    end
+    local tag = L.SPOTLIGHT_OBJECT_TAG
+    if obj.hasTag ~= nil and obj.hasTag(tag) == true then
+        return true
+    end
+    if obj.addTag ~= nil then
+        obj.addTag(tag)
+        return true
+    end
+    return false
+end
+
+--- Apply the AssetBundle object-indicator looping effect from `debug.spotlightArrowsVisible`.
+--- Default (flag false): invisible indicator. Debug Toggle Spotlights flips the flag.
+--- @param obj Object|nil
+--- @return boolean applied
+function L.applySpotlightObjectIndicator(obj)
+    if not U.isGameObject(obj) then
+        return false
+    end
+    L.ensureSpotlightObjectTag(obj)
+    local ab = obj.AssetBundle
+    if ab == nil or ab.playLoopingEffect == nil then
+        return false
+    end
+    local wantIdx = L.spotlightArrowsWantVisible() and L.SPOTLIGHT_ARROW_VISIBLE_INDEX or L.SPOTLIGHT_ARROW_INVISIBLE_INDEX
+    if ab.getLoopingEffectIndex ~= nil then
+        local current = ab.getLoopingEffectIndex()
+        if type(current) == "number" and current == wantIdx then
+            return true
+        end
+    end
+    ab.playLoopingEffect(wantIdx)
+    return true
+end
+
+--- Apply indicator visibility to every object tagged `Spotlight`.
+--- @return table `{ tagged, updated, skipped }`
+function L.applySpotlightObjectIndicatorToAllTagged()
+    local spotlights = getObjectsWithTag(L.SPOTLIGHT_OBJECT_TAG) or {}
+    local updated = 0
+    local skipped = 0
+    for i = 1, #spotlights do
+        local obj = spotlights[i]
+        local ab = obj and obj.AssetBundle or nil
+        if ab ~= nil and ab.playLoopingEffect ~= nil then
+            if L.applySpotlightObjectIndicator(obj) then
+                updated = updated + 1
+            else
+                skipped = skipped + 1
+            end
+        else
+            skipped = skipped + 1
+        end
+    end
+    return {
+        tagged = #spotlights,
+        updated = updated,
+        skipped = skipped,
+        arrowsVisible = L.spotlightArrowsWantVisible(),
+    }
+end
+
+-- ============================================================================
 -- PUBLIC API EXPORTS
 -- ============================================================================
 

@@ -2204,16 +2204,7 @@ end
 --- Ensure a spawned/loaded NPC light also carries the global Spotlight tag used by admin tooling.
 --- @param obj Object|nil
 local function ensureSpotlightTag(obj)
-    if obj == nil then
-        return
-    end
-    local has = false
-    if obj.hasTag ~= nil then
-        has = obj.hasTag(TAG_SPOTLIGHT) == true
-    end
-    if not has and obj.addTag ~= nil then
-        obj.addTag(TAG_SPOTLIGHT)
-    end
+    L.ensureSpotlightObjectTag(obj)
 end
 
 --- Ensure pooled spotlight registry includes OFFSPOTLIGHT (TOR-473).
@@ -2832,9 +2823,10 @@ local function spawnPreloadSpotlightForNpc(npcName, slotIndex)
         return nil, "spawnObjectData returned nil for NPC light"
     end
     if lit.AssetBundle ~= nil and lit.AssetBundle.playLoopingEffect ~= nil then
-        lit.AssetBundle.playLoopingEffect(1)
+        L.applySpotlightObjectIndicator(lit)
+    else
+        L.ensureSpotlightObjectTag(lit)
     end
-    ensureSpotlightTag(lit)
     return lit, nil
 end
 

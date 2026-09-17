@@ -5671,7 +5671,13 @@ function HUD_toggleAllSpotlights(player, button, id)
     end
     local summary = DEBUG.toggleAllSpotlightArrows()
     broadcastToColor(
-        string.format("Spotlights toggled: tagged=%d toggled=%d skipped=%d.", summary.tagged or 0, summary.toggled or 0, summary.skipped or 0),
+        string.format(
+            "Spotlights toggled: tagged=%d toggled=%d skipped=%d (arrows %s).",
+            summary.tagged or 0,
+            summary.toggled or 0,
+            summary.skipped or 0,
+            (summary.arrowsVisible == true) and "VISIBLE" or "hidden"
+        ),
         player.color,
         {0, 1, 1}
     )

@@ -1471,34 +1471,15 @@ function DEBUG.toggleAllAnchorObjects()
 end
 
 --- Toggle Spotlight-tagged object arrows using AssetBundle looping effects.
---- UI 1 <-> UI 2 maps to API index 0 <-> 1 (0-based).
+--- Flips `gameState.debug.spotlightArrowsVisible`, then applies to every tagged light.
+--- Invisible default = UI slot 2 (API index 1); visible = UI slot 1 (API index 0).
 --- @return table
 function DEBUG.toggleAllSpotlightArrows()
-    local spotlights = getObjectsWithTag("Spotlight") or {}
-    local toggled = 0
-    local skipped = 0
-    for _, obj in ipairs(spotlights) do
-        local ab = obj and obj.AssetBundle or nil
-        if ab ~= nil and ab.getLoopingEffectIndex ~= nil and ab.playLoopingEffect ~= nil then
-            local currentIdx0 = ab.getLoopingEffectIndex()
-            if type(currentIdx0) == "number" then
-                local currentUi = currentIdx0 + 1
-                local targetUi = (currentUi == 2) and 1 or 2
-                local targetIdx0 = targetUi - 1
-                ab.playLoopingEffect(targetIdx0)
-                toggled = toggled + 1
-            else
-                skipped = skipped + 1
-            end
-        else
-            skipped = skipped + 1
-        end
-    end
-    local summary = {
-        tagged = #spotlights,
-        toggled = toggled,
-        skipped = skipped,
-    }
+    local L = require("core.lighting")
+    local wantVisible = not L.spotlightArrowsWantVisible()
+    L.setSpotlightArrowsWantVisible(wantVisible)
+    local summary = L.applySpotlightObjectIndicatorToAllTagged()
+    summary.toggled = summary.updated
     print("[DEBUG.toggleAllSpotlightArrows] " .. JSON.encode(summary))
     return summary
 end
@@ -1513,39 +1494,15 @@ function DEBUG.populateSpotlightFigurines()
     Spotlight.populateWorkshopStandins()
 end
 
---- Set every Spotlight-tagged object to Looping Effect UI slot 2 (invisible arrow).
---- Same object set as `DEBUG.toggleAllSpotlightArrows` (`getObjectsWithTag("Spotlight")`).
---- UI slot 2 → API index 1 (0-based), matching the Toggle Spotlights debug control.
+--- Set every Spotlight-tagged object to the invisible object indicator (UI slot 2).
+--- Clears `debug.spotlightArrowsVisible` so production reconciles keep arrows hidden.
 --- Console: `lua DEBUG.hideAllSpotlightArrows()`
 --- @return table
 function DEBUG.hideAllSpotlightArrows()
-    local SPOTLIGHT_INVISIBLE_LOOPING_EFFECT_UI = 2
-    local targetIdx0 = SPOTLIGHT_INVISIBLE_LOOPING_EFFECT_UI - 1
-    local spotlights = getObjectsWithTag("Spotlight") or {}
-    local updated = 0
-    local skipped = 0
-    for _, obj in ipairs(spotlights) do
-        local ab = obj and obj.AssetBundle or nil
-        if ab ~= nil and ab.getLoopingEffectIndex ~= nil and ab.playLoopingEffect ~= nil then
-            local currentIdx0 = ab.getLoopingEffectIndex()
-            if type(currentIdx0) == "number" and currentIdx0 == targetIdx0 then
-                skipped = skipped + 1
-            elseif type(currentIdx0) == "number" then
-                ab.playLoopingEffect(targetIdx0)
-                updated = updated + 1
-            else
-                skipped = skipped + 1
-            end
-        else
-            skipped = skipped + 1
-        end
-    end
-    local summary = {
-        tagged = #spotlights,
-        updated = updated,
-        skipped = skipped,
-        targetLoopingEffectUi = SPOTLIGHT_INVISIBLE_LOOPING_EFFECT_UI,
-    }
+    local L = require("core.lighting")
+    L.setSpotlightArrowsWantVisible(false)
+    local summary = L.applySpotlightObjectIndicatorToAllTagged()
+    summary.targetLoopingEffectUi = L.SPOTLIGHT_ARROW_INVISIBLE_INDEX + 1
     print("[DEBUG.hideAllSpotlightArrows] " .. JSON.encode(summary))
     return summary
 end

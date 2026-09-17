@@ -458,6 +458,9 @@ function S.GetDefaultGameState()
         --- deep-merged last in `NPCS.getMergedModeDefinition` (TOR-471 / TOR-473).
         debug = {
             npcLightModes = {},
+            --- When true, Spotlight-tagged light AssetBundles show the visible object indicator
+            --- (UI slot 1). Default false = invisible indicator (UI slot 2). Debug HUD toggle.
+            spotlightArrowsVisible = false,
         },
         --- Memoriam Play subphase runtime (TOR-101). Modal draft is not stored here until Advance.
         memoriam = {

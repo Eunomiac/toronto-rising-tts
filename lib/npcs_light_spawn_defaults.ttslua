@@ -58,7 +58,7 @@ M.NPC_LIGHT_OBJECT_DATA_DEFAULTS = {
         AssetbundleSecondaryURL = "",
         MaterialIndex = 0,
         TypeIndex = 0,
-        LoopingEffectIndex = 0,
+        LoopingEffectIndex = 1,
     },
     LuaScript = "",
     LuaScriptState = "",

@@ -26,7 +26,7 @@ _Last populated: 2026-09-16 — Spotlight seat figurines visibility-only (hide-p
 **How to verify:** Save & Play so scripts reload.
 
 1. Advance into **Spotlight**. On the Host camera, confirm each player's **home** figurine is still at its Table A seat (not under the table at y = −200). Visibility must match **`C.HiddenObjects`**: each home figurine is invisible **only to its own seat color** (Red cannot see the Red figurine; other players can). Do **not** hide every home figurine from every PC.
-2. Confirm the carousel ring shows the separate workshop stand-ins (`SPOTLIGHT_FIGURE_*`), not the home seat objects. Home seats and carousel figures should both exist at once.
+2. Confirm the carousel ring shows the separate workshop stand-ins (`SPOTLIGHT_FIGURE_*`), not the home seat objects. Home seats and carousel figures should both exist at once. Carousel **lights** should not show the cone/arrow object indicator (invisible looping effect) unless you turned **Toggle Spotlights** on in the Host debug menu.
 3. Advance **Spotlight → End**. Home figurines and their seat lights should land on Table B0 seats at normal height with the same owner-only catalog visibility — not stuck at carousel poses, −200, or odd light aim. Bags / companions / compulsion decks should still be parked until Intermission.
 
 **Context:** The hide/reveal protocol migration had parked `SEAT_FIGURE_*` with `O.hideObject`, then a follow-up briefly used a blanket PC hide list. Active visibility is now always `C.HiddenObjects` via `O.restoreObject` / `O.applyActiveVisibility`. Linear issue create blocked this session (workspace quota); related to TOR-98 (Spotlight phase).
