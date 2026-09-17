@@ -1,13 +1,13 @@
 ---
-description: Playwright MCP uses a dedicated no-banner Chrome for the dashboard; after that window is running, do not steal OS focus
+description: Playwright MCP uses a dedicated Chrome for the dashboard; after that window is running, do not steal OS focus
 alwaysApply: true
 ---
 
 # Toronto Rising — Playwright browser focus
 
-Dashboard visual checks use **Playwright MCP** (`user-playwright`) in a **dedicated Chrome** (`%LOCALAPPDATA%/TorontoRising/playwright-chrome-profile`) with the automation infobar turned off. They do **not** use the Cursor IDE browser pane, and they do **not** attach through the Playwright **extension** (that bar shrinks the layout and cannot be hidden).
+Dashboard visual checks use **Playwright MCP** (`user-playwright`) in a **dedicated Chrome** (`%LOCALAPPDATA%/TorontoRising/playwright-chrome-profile`). They do **not** use the Cursor IDE browser pane, and they do **not** attach through the Playwright **extension**.
 
-Canonical recipe: [`.dev/storyteller-dashboard/PLAYWRIGHT.md`](../../.dev/storyteller-dashboard/PLAYWRIGHT.md).
+Full recipe (server, MCP flags, 1920×1080 CDP restore, Scenes proof): [`.dev/storyteller-dashboard/PLAYWRIGHT.md`](../../.dev/storyteller-dashboard/PLAYWRIGHT.md).
 
 ## Success vs false success
 
@@ -16,21 +16,22 @@ Canonical recipe: [`.dev/storyteller-dashboard/PLAYWRIGHT.md`](../../.dev/storyt
 | What you see | Meaning |
 | --- | --- |
 | `http://127.0.0.1:8788/` titled Toronto Rising Storyteller Dashboard, **no** “Playwright Extension started debugging” bar | Correct window. Reuse this tab. |
-| `Welcome` / Playwright `connect.html`, or a bar that says the extension is debugging the browser | MCP is still in **`--extension`** mode. Stop. That layout is not real use. Reload MCP without `--extension`. |
+| `Welcome` / Playwright `connect.html`, or a bar that says the extension is debugging the browser | MCP is still in **`--extension`** mode. Stop. Reload MCP without `--extension`. |
 | `about:blank` in the TorontoRising Playwright profile | Expected at launch. Navigate **that same tab** to `http://127.0.0.1:8788/`. |
 
-Do not use leftover port 8788 plus the Cursor-profile extension window as “already running.”
+Do not treat leftover port 8788 plus the Cursor-profile extension window as “already running.”
 
 ## Cold start
 
-If the dashboard tab is missing or you are in extension Chrome:
+If the dashboard tab is missing or you are in extension Chrome, follow **PLAYWRIGHT.md** in order:
 
-1. If **8788** is in use and the Cursor terminal is aborted, kill the orphan `node dist/server/index.js --dev` tree first.
-2. From `.dev/storyteller-dashboard/` start **`npm run dev`** and wait for `Storyteller dashboard listening on http://127.0.0.1:8788`. Leave that terminal running.
-3. Playwright MCP must launch Chrome with `--user-data-dir` `TorontoRising/playwright-chrome-profile`, `--config` `playwright-mcp.config.json` (`ignoreDefaultArgs: ["--enable-automation"]`, `--start-fullscreen`), and `--viewport-size=1920x1080`. **No** `--extension`.
-4. `browser_navigate` the existing tab to `http://127.0.0.1:8788/`. Prove it with a **Scenes** click.
+1. Kill orphan `node dist/server/index.js --dev` if 8788 is in use and the Cursor terminal is aborted.
+2. From `.dev/storyteller-dashboard/` start **`npm run dev`**. Wait for `Storyteller dashboard listening on http://127.0.0.1:8788`.
+3. MCP must use `--user-data-dir` `TorontoRising/playwright-chrome-profile` and `--viewport-size=1920x1080`. **No** `--extension`.
+4. Navigate the existing tab to `http://127.0.0.1:8788/`. Measure inner size. If it is not 1920×1080, restore with CDP `Emulation.setDeviceMetricsOverride` from PLAYWRIGHT.md — not F11, not Inspector scaling.
+5. Prove with a **Scenes** click (`#tab-scenes`).
 
-`npm run dev:open` / task **STORYTELLER DASHBOARD** open Cursor Chrome and steal focus. Use them only when the author wants that profile. For agent Playwright, if the dedicated window is already open, restart the server with `npm run dev` only.
+`npm run dev:open` / task **STORYTELLER DASHBOARD** open Cursor Chrome and steal focus. Use them only when the author wants that profile. If the dedicated window is already open, restart the server with `npm run dev` only.
 
 ## After the Playwright window is running
 
@@ -40,29 +41,16 @@ If the dashboard tab is missing or you are in extension Chrome:
 - If a different URL is required (docs, download), **reuse that same tab**, then navigate back to `http://127.0.0.1:8788/`.
 - Keep the window open across turns so Chrome is not relaunched mid-session. Do **not** minimize it.
 
-## Window size
-
-The **agent** layout is Playwright’s page size: **1920×1080** (`window.innerWidth` / `innerHeight` via evaluate). `--viewport-size=1920x1080` forces that even when the OS window is smaller.
-
-The author’s monitor may show a windowed Chrome, a taskbar cutoff, or a Chrome infobar about `--disable-blink-features=AutomationControlled`. That is fine. Do **not** F11, `browser_resize`, or ask them to use Inspector scaling.
-
-The extension debugger bar is still **not** acceptable — that one shrinks the page Playwright measures.
-
-If Playwright’s inner size is **not** 1920×1080:
-
-1. Check for `--extension` mode.
-2. Re-apply CDP `Emulation.setDeviceMetricsOverride` at 1920×1080 (Inspector device mode can clear the launch viewport when toggled off).
-3. Do **not** call `browser_resize`, F11, or `bringToFront` unless the author has agreed in this turn.
-4. If you still cannot get 1920×1080 without stealing focus, **stop and tell the author** what you measured.
+The author’s window may be windowed, clipped, or show a Chrome infobar about `--disable-blink-features=AutomationControlled`. Leave it. The agent layout is Playwright’s **1920×1080** page.
 
 ## Stop and ask in Cursor first
 
 Do **not** do these unless the author has agreed in this turn:
 
-- Launch or relaunch Chrome (cold start above is the exception when they asked to open the dashboard)
+- Launch or relaunch Chrome (cold start in PLAYWRIGHT.md is the exception when they asked to open the dashboard)
 - Open a new tab or window
 - Switch Playwright tabs (`browser_tabs` select)
-- Send F11 / fullscreen / `bringToFront`
+- Send F11 / fullscreen / `bringToFront` / `browser_resize`
 - Anything else that would take the keyboard away from whatever they are typing
 
 Prompt in chat, wait, then proceed.
