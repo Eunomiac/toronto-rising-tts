@@ -439,13 +439,11 @@ function FSL.lookupOffset(occupantKey, roleKey)
     return nil
 end
 
-local function worldFromFigurineLocal(figFrame, figObj, localXZ)
+--- World XZ from the computed figurine frame only — never live `positionToWorld`.
+--- After Scatter the Unity transform can still be at the old group pose for a tick.
+local function worldFromFigurineLocal(figFrame, _figObj, localXZ)
     local lx = tonumber(localXZ.x) or 0
     local lz = tonumber(localXZ.z) or 0
-    if figObj ~= nil and type(figObj.positionToWorld) == "function" then
-        local wp = figObj.positionToWorld(Vector({ x = lx, y = 0, z = lz }))
-        return Vector(wp)
-    end
     local pos = Vector(figFrame.position)
     local yaw = math.rad(tonumber(figFrame.rotation.y) or 0)
     local c = math.cos(yaw)
@@ -736,6 +734,13 @@ local function applyOffsetToObject(obj, figFrame, figObj, offset, roleKey, occup
         end
     else
         placeObjectExact(obj, Vector({ x = world.x, y = y, z = world.z }), rot)
+        if O.isHiddenObject(obj) then
+            O.restoreObject(obj, {
+                keepWorldPose = true,
+                position = { x = world.x, y = y, z = world.z },
+                rotation = rotTable,
+            })
+        end
     end
     if roleKey == "TAROT_DECK" then
         local on = yLooksLikeTarotOn(livePos.y) and not O.isHiddenObject(obj)
@@ -1101,7 +1106,7 @@ function FSL.setOccupantPileVisible(occupantKey, visible)
                 if roleKey == "SEAT_CHAIR" then
                     -- Chair hide is owned by table/scatter layout, not occupancy restore.
                 elseif O.isHiddenObject(obj) and not isFeatureHideRoleKey(roleKey) then
-                    O.restoreObject(obj)
+                    O.restoreObject(obj, { keepWorldPose = true })
                 end
             elseif not isPooledFig then
                 if isFeatureHideRoleKey(roleKey) and O.isHiddenObject(obj) then
@@ -1146,6 +1151,21 @@ function FSL.applyOccupantRigs(bundle, helpers)
             local figObj = findFigurine(occ.occupantKey)
             if figObj ~= nil then
                 placeObjectExact(figObj, figFrame.position, figFrame.rotation)
+                if O.isHiddenObject(figObj) then
+                    O.restoreObject(figObj, {
+                        keepWorldPose = true,
+                        position = {
+                            x = figFrame.position.x,
+                            y = figFrame.position.y,
+                            z = figFrame.position.z,
+                        },
+                        rotation = {
+                            x = figFrame.rotation.x,
+                            y = figFrame.rotation.y,
+                            z = figFrame.rotation.z,
+                        },
+                    })
+                end
             else
                 anchors[occ.occupantKey] = {
                     position = { x = figFrame.position.x, y = figFrame.position.y, z = figFrame.position.z },

@@ -627,7 +627,9 @@ end
 
 --- Reveal object: restore pose/lock/interactable; active visibility from `C.HiddenObjects`.
 --- @param obj Object|nil
---- @param opts table|nil `{ position?, rotation?, locked?, interactable? }`
+--- @param opts table|nil `{ position?, rotation?, locked?, interactable?, keepWorldPose? }`
+---   `keepWorldPose`: after layout already moved the object, unhide in place instead of
+---   replaying the hide snapshot (Scatter leave / occupancy unstash).
 --- @return boolean
 function O.restoreObject(obj, opts)
     if not U.isGameObject(obj) then
@@ -638,11 +640,18 @@ function O.restoreObject(obj, opts)
     local snap = guid ~= nil and hiddenObjectsMap()[guid] or nil
 
     local pos = copyPosition(opts.position)
+    local rot = copyRotation(opts.rotation)
+    if opts.keepWorldPose == true then
+        if pos == nil then
+            pos = copyPosition(obj.getPosition and obj.getPosition() or nil)
+        end
+        if rot == nil then
+            rot = copyRotation(obj.getRotation and obj.getRotation() or nil)
+        end
+    end
     if pos == nil and type(snap) == "table" then
         pos = copyPosition(snap.position)
     end
-
-    local rot = copyRotation(opts.rotation)
 
     local locked = opts.locked
     if locked == nil and type(snap) == "table" and type(snap.locked) == "boolean" then

@@ -18,7 +18,7 @@ Nested-circle world layout and control-board hole parking stay in dedicated modu
 In **Scatter Mode**:
 
 - There is no table.
-- There are no thrones or chairs. `C.Tables["Scatter"].objectsToHide` (also available as `C.Scatter.objectsToHide`) lists objects (chairs, Prince signet and curtain, and anything else you add) that Scatter disables and hides from every player, including the Storyteller. Leaving Scatter restores their usual visibility.
+- There are no thrones or chairs. `C.Tables["Scatter"].objectsToHide` (also available as `C.Scatter.objectsToHide`) lists objects (chairs, Prince signet and curtain, and anything else you add) that Scatter disables and hides from every player, including the Storyteller. Leaving Scatter restores their usual visibility, then seat layout places them on the destination table. Restore must keep the layout pose (`keepWorldPose`) so chairs and seat lights are not snapped back to their Scatter hide snapshots. Table C (FACING) also re-runs layout a moment later so live table bounds are read after the wood table is unparked.
 - `THE_FLOOR` and `TABLE_PLINTH` stay at playfield height but become invisible to every PC seat plus White/Grey while Scatter is active (Storyteller still sees them). Outside Scatter they are visible to everyone.
 - `BOTTOM_FOG` (`G.GUIDS.BOTTOM_FOG`) plays AssetBundle **Looping Effect 2** in Scatter and **Looping Effect 1** otherwise (same pattern as `TOP_FOG`). It is authored at about y = −350 and must never be parked with `O.hideObject` (the park-Y threshold would treat it as already hidden).
 - PCs are not positioned in a separate group of their own.

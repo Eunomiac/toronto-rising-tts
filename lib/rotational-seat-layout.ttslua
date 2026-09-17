@@ -2724,6 +2724,8 @@ end
 
 --- Fingerprint of last successful `resolveSeatObjectsFromTable` (stable inputs only).
 local lastLayoutSyncFingerprint = nil
+--- Coalesce delayed Scatter→table re-layout if the destination changes before the chain fires.
+local postScatterLayoutGeneration = 0
 
 --- True when an NPC instance is assigned to a seat slot but its figurine is not at the table rig yet
 --- (preload / stage / stash). Seated-at-table instances (`areaKey == "seat"`) stay in the layout filter.
@@ -2999,7 +3001,7 @@ local function enforceNPCSeatObjectVisibility(sourceObjects, occupiedNPCSlots, t
           if NPCS.isPooledFigurineObject(obj) then
             if visible then
               if O.isHiddenObject(obj) then
-                O.restoreObject(obj, { locked = true, interactable = false })
+                O.restoreObject(obj, { keepWorldPose = true, locked = true, interactable = false })
               elseif obj.setInvisibleTo ~= nil then
                 obj.setInvisibleTo({})
               end
@@ -3008,7 +3010,11 @@ local function enforceNPCSeatObjectVisibility(sourceObjects, occupiedNPCSlots, t
             end
           elseif not isTemplateSource then
             if visible then
-              O.restoreObject(obj)
+              if O.isHiddenObject(obj) then
+                O.restoreObject(obj, { keepWorldPose = true })
+              elseif type(O.applyActiveVisibility) == "function" then
+                O.applyActiveVisibility(obj)
+              end
             else
               O.hideObject(obj)
             end
@@ -3753,6 +3759,36 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
   return computed
 end
 
+--- FACING bounds and hide-snapshot restores can still be one tick behind Scatter unpark.
+--- Re-run layout shortly after leave so Table C (and other wood tables) settle like a later A→C switch.
+--- @param tableKey string
+local function schedulePostScatterSeatLayout(tableKey)
+  if type(tableKey) ~= "string" or tableKey == "" then
+    return
+  end
+  postScatterLayoutGeneration = postScatterLayoutGeneration + 1
+  local gen = postScatterLayoutGeneration
+  U.chain({
+    function()
+      return 0.05
+    end,
+    function()
+      if gen ~= postScatterLayoutGeneration then
+        return
+      end
+      local current = S.getStateVal("seatLayout", "currentTableKey")
+      if current ~= tableKey then
+        return
+      end
+      local Occupancy = require("lib.scatter_occupancy")
+      if Occupancy.isScatterLayoutActive() == true then
+        return
+      end
+      M.resolveSeatObjectsFromTable(tableKey, nil, { force = true })
+    end,
+  })
+end
+
 --- Re-apply table state based on current `gameState.seatLayout.currentTableKey`.
 --- Useful after load or when recovering from drift between state and live objects.
 --- @param tableKey string|nil optional explicit table key to sync
@@ -3790,14 +3826,19 @@ function M.SyncTable(tableKey, opts)
     ScatterMode.enter(opts)
     return { scatter = true }
   end
-  if ScatterMode.isActive() then
+  local leavingScatter = ScatterMode.isActive()
+  if leavingScatter then
     Occupancy.prepareLeaveToStandard(key, { skipRestore = opts.skipScatterRestore == true })
     ScatterMode.leave(opts)
   end
   if inferredFromTags then
     S.setStateVal(key, "seatLayout", "currentTableKey")
   end
-  return M.resolveSeatObjectsFromTable(tostring(key), nil, opts)
+  local computed = M.resolveSeatObjectsFromTable(tostring(key), nil, opts)
+  if leavingScatter then
+    schedulePostScatterSeatLayout(tostring(key))
+  end
+  return computed
 end
 
 --- Y at or above this counts as on-table for layout guards (preload pool parks at y = -200).
@@ -3946,12 +3987,18 @@ function M.SetTableTo(tableKey, opts)
     if shuffled then
       mirrorControlBoardAfterRandomSeating()
     end
+    if leavingScatter then
+      schedulePostScatterSeatLayout(resolvedKey)
+    end
   end
 
   if currentTableKey == resolvedKey then
     local computed = M.SyncTable(resolvedKey, { force = true })
     if shuffled then
       mirrorControlBoardAfterRandomSeating()
+    end
+    if leavingScatter then
+      schedulePostScatterSeatLayout(resolvedKey)
     end
     return computed
   end

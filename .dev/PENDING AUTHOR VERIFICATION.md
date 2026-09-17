@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-17 — Scene apply weather HUD crash._
+_Last populated: 2026-09-17 — Scatter → Table C scene Apply layout._
 
 ### Character sheets
 
@@ -68,6 +68,15 @@ _Last populated: 2026-09-17 — Scene apply weather HUD crash._
 **Context:** New central API in `core/objects.ttslua` (`O.hideObject`, `O.restoreObject`, `gameState.hiddenObjects` snapshot). Preload NPC + dice pools migrated in follow-up. Linear issue not created this session (workspace quota).
 
 ### Scatter / table layout
+
+#### Scatter → Table C (or any wood table) on scene Apply
+
+**How to verify:** Save & Play so the hardening loads. This was a same-tick race (hard to force on purpose). You do **not** need to hunt for the original mess.
+
+1. From a Scatter scene, Apply a **Table C** library scene directly (no Table A in between). After the cover, figurines, sheets, chairs, and seat lights should already match — same as when you switched A then C.
+2. If anything still looks wrong, switch Table A then Table C again. That second layout is the “settled” path; the hardening is meant to make the first Apply look like that.
+
+**Context:** Leaving Scatter could unhide chairs/lights from their Scatter snapshots after layout, and Table C could read its width before the wood table finished unparking. relatedTo **TOR-572** (Scatter Mode) and **TOR-573** (Scatter import / Standard switch).
 
 #### Scatter figurine height uses FLOOR_Y
 

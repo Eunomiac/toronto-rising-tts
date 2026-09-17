@@ -12,7 +12,7 @@ One pair of functions owns the full hide protocol and the matching restore path:
 
 | Concern | Hide (`O.hideObject`) | Restore (`O.restoreObject`) |
 | --- | --- | --- |
-| World Y | Park at `C.HIDDEN_OBJECT_WORLD_Y` (default: same X/Z) | Caller `opts.position` → snapshot → stay put |
+| World Y | Park at `C.HIDDEN_OBJECT_WORLD_Y` (default: same X/Z) | Caller `opts.position` → `keepWorldPose` live pose → snapshot → stay put |
 | Lock | `setLock(true)` | `opts.locked` → snapshot → catalog default |
 | Interactable | `false` | `opts.interactable` → `C.LockedObjects` → snapshot → `true` |
 | Visibility (parked) | All viewer colors (PC seats + White/Grey/Black) | — |
@@ -70,9 +70,10 @@ Calibrated examples: `lib/csheet_pose.ttslua`, `ui/ui_csheet_core.ttslua`.
 When `O.restoreObject` runs, each field resolves in this order (first win):
 
 1. **Caller `opts`** (`position`, `rotation`, `locked`, `interactable`)
-2. **Catalogs** — `C.LockedObjects` forces `interactable = false` when no explicit opts; **`C.HiddenObjects[guid]` always wins for active visibility** when the GUID is catalogued
-3. **`gameState.hiddenObjects[guid].invisibleTo`** snapshot (fallback only when GUID is **not** in `C.HiddenObjects`)
-4. **Defaults** — `{}` (visible to all); interactable `true` unless locked catalog says otherwise
+2. **`opts.keepWorldPose`** — if true, fill missing pose from the object’s live `getPosition` / `getRotation` (unhide after layout already placed it; do not replay the hide snapshot)
+3. **Catalogs** — `C.LockedObjects` forces `interactable = false` when no explicit opts; **`C.HiddenObjects[guid]` always wins for active visibility** when the GUID is catalogued
+4. **`gameState.hiddenObjects[guid]` snapshot** (`position` / `invisibleTo`)
+5. **Defaults** — `{}` (visible to all); interactable `true` unless locked catalog says otherwise
 
 **Position** snapshot is omitted when the object is already parked at `C.HIDDEN_OBJECT_WORLD_Y` (never store −200 as restore Y). **Visibility** is always snapshotted on first hide (active `C.HiddenObjects` entry or `{}`) so restore has a fallback when the GUID is not catalogued.
 

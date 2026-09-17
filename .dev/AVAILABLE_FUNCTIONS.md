@@ -334,7 +334,7 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
 | `O.hideObject(obj, opts?)` | Park at `C.HIDDEN_OBJECT_WORLD_Y`, lock, non-interactable, parked visibility, `HiddenObject` tag; optional `parkPosition`, `parkRotation`, `snapshotPosition` | `O.hideObject(bag, { snapshotPosition = restPos })` |
-| `O.restoreObject(obj, opts?)` | Reveal: pose/lock/interactable from opts → snapshot; active visibility from `C.HiddenObjects[guid]` | `O.restoreObject(page, { position = onPos, interactable = true })` |
+| `O.restoreObject(obj, opts?)` | Reveal: pose/lock/interactable from opts → `keepWorldPose` live pose → snapshot; active visibility from `C.HiddenObjects[guid]` | `O.restoreObject(page, { position = onPos, interactable = true })` / `O.restoreObject(chair, { keepWorldPose = true })` |
 | `O.isHiddenObject(obj)` | True when object has `HiddenObject` tag | Guard before re-hide |
 | `O.activeVisibilityForGuid(guid)` | Active-mode `setInvisibleTo` list from `C.HiddenObjects` or `{}` | Do not inline color lists at call sites |
 | `O.noteHiddenObjectWorldXZ(obj)` | Sync snapshot X/Z after layout moved a hidden satellite | Seat layout after table change |

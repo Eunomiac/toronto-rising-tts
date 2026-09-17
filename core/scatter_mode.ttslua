@@ -1049,6 +1049,18 @@ finishStandardBoardAfterReload = function()
     if type(Gameboard.reconcileControlBoardFromState) == "function" then
         Gameboard.reconcileControlBoardFromState({ force = true })
     end
+    -- Board reload finishes after SetTableTo already laid out seats; FACING bounds and
+    -- hide-list chairs can still be mid-unpark. Re-apply the destination table once.
+    local destKey = S.getStateVal("seatLayout", "currentTableKey")
+    local Occupancy = require("lib.scatter_occupancy")
+    if type(destKey) == "string" and destKey ~= ""
+        and destKey ~= ScatterMode.TABLE_KEY
+        and Occupancy.isScatterLayoutActive() ~= true then
+        local RSL = require("lib.rotational-seat-layout")
+        if type(RSL.resolveSeatObjectsFromTable) == "function" then
+            RSL.resolveSeatObjectsFromTable(destKey, nil, { force = true })
+        end
+    end
     boardFinishInProgress = false
 end
 
