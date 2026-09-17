@@ -3749,6 +3749,10 @@
     {
       "key": "Table C",
       "slotCapacity": 10
+    },
+    {
+      "key": "Scatter",
+      "slotCapacity": 6
     }
   ],
   "lightModes": [

@@ -2262,6 +2262,8 @@ C.Tables = {
     shape = C.TableShapes.SCATTER,
     TABLE_KEY = "Scatter",
     centerPoint = Vector({ 0, 0, 0 }),
+    --- Highest valid numbered chair / `tableSlot` when Scatter is authored via seatSlots (1:1 → groups 1–6).
+    slotCapacity = 6,
     --- STAGE_BOARD does not follow table origin. Restore this XZ when leaving Scatter (Y unchanged).
     --- Live save TS_Save_230: `{ x = 0, z = 62.0977 }`.
     STAGE_BOARD_HOME_XZ = { x = 0, z = 62.0977 },
