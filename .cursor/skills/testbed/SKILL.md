@@ -48,7 +48,16 @@ end
 
 ## Globals
 
-Global already loaded most libraries. Use them directly. Prefer `DEBUG.*` for dumps, file writes, rolls, soundscape, gameboard, and other test helpers (`DEBUG.help()`, `core/debug.ttslua`).
+Global already loaded most libraries. Use them directly. Prefer `DEBUG.*` for dumps, file writes, rolls, soundscape, gameboard, and other test helpers (`DEBUG.help()`, `core/debug.ttslua`). Do **not** reimplement these TEST BED dump helpers — they live on `DEBUG` for a reason:
+
+- `DEBUG.writeWorkspaceFile(path, content, format?, silent?)` — overwrite `.dev/.debug/<path>`
+- `DEBUG.encodePretty(value)` — pretty JSON string (does not print)
+- `DEBUG.fmtVec(v)` / `DEBUG.fmtTags(tags)` — pose and tag dump formatters
+- `DEBUG.objectDisplayName(obj)` — scripted name / Name / Nickname
+- `DEBUG.prettyPrintXml(rawXml)` — indent XmlUI / object UI XML
+- `DEBUG.getObjectsByName(substring, path?)` — name search → GUID list file
+- `DEBUG.dumpObjectXmlToFile(guid, path?)` — runtime `object.UI.getXml()` dump
+- `DEBUG.listAllSpotlightObjects(path?)` — lights by AssetBundle URL
 
 | Global | Typical use |
 | --- | --- |
