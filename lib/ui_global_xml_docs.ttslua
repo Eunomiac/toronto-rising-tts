@@ -7425,6 +7425,7 @@ UI.setAttributes("playerHud_refPanel_princesCourt_Red", {offsetXY = "-50 0"})
       <Button class="hud_storyteller_button" onClick="HUD_toggleAllSpotlights">Toggle Spotlights</Button>
       <Button class="hud_storyteller_button" onClick="HUD_debugCameraActivate">Debug Camera</Button>
       <Button class="hud_storyteller_button" onClick="HUD_debugLightActivate">Debug Light</Button>
+      <Button class="hud_storyteller_button" onClick="HUD_debugScatterActivate">Debug Scatter</Button>
     </VerticalLayout>
 
     
@@ -8060,6 +8061,78 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (60-slot p
 </Panel>
 
 <!-- /include ui/storyteller/panel_debug_camera.xml -->
+
+    
+<!-- include ui/storyteller/panel_debug_scatter.xml -->
+<Defaults>
+  <HorizontalLayout flexibleHeight="0" />
+  <Text flexibleWidth="0" />
+  <Button flexibleWidth="0" flexibleHeight="0" />
+  <Slider minWidth="120" />
+</Defaults>
+
+<!-- Scatter geometry debug: live sliders for C.Scatter layout constants (ST only). -->
+<Panel id="panel_debug_scatter_root" active="false" color="rgba(0,0,0,0.82)" padding="10 10 10 10" width="1080" scale="0.8" rectAlignment="MiddleLeft" offsetXY="360 0" raycastTarget="true">
+  <VerticalLayout spacing="6" childForceExpandWidth="true" childForceExpandHeight="false">
+    <Text id="ds_debug_label" fontSize="14" color="#7FE7FF" preferredHeight="32">Debug Scatter Geometry</Text>
+
+    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text id="ds_scatter_radius_world_label" preferredWidth="420" fontSize="13" color="#EEEEEE">SCATTER_RADIUS_WORLD = 0</Text>
+    </HorizontalLayout>
+    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Slider id="ds_scatter_radius_world" minValue="0" maxValue="500" value="225" flexibleWidth="1" onValueChanged="HUD_debugScatterSlider" />
+    </HorizontalLayout>
+
+    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text id="ds_scatter_radius_npc_label" preferredWidth="420" fontSize="13" color="#EEEEEE">SCATTER_RADIUS_NPC = 0</Text>
+    </HorizontalLayout>
+    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Slider id="ds_scatter_radius_npc" minValue="0" maxValue="500" value="125" flexibleWidth="1" onValueChanged="HUD_debugScatterSlider" />
+    </HorizontalLayout>
+
+    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text id="ds_scatter_radius_pc_label" preferredWidth="420" fontSize="13" color="#EEEEEE">SCATTER_RADIUS_PC = 0</Text>
+    </HorizontalLayout>
+    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Slider id="ds_scatter_radius_pc" minValue="0" maxValue="500" value="100" flexibleWidth="1" onValueChanged="HUD_debugScatterSlider" />
+    </HorizontalLayout>
+
+    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text id="ds_npc_deployment_arc_label" preferredWidth="420" fontSize="13" color="#EEEEEE">NPC_DEPLOYMENT_ARC = 0</Text>
+    </HorizontalLayout>
+    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Slider id="ds_npc_deployment_arc" minValue="0" maxValue="360" value="70" flexibleWidth="1" onValueChanged="HUD_debugScatterSlider" />
+    </HorizontalLayout>
+
+    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text id="ds_pc_deployment_arc_label" preferredWidth="420" fontSize="13" color="#EEEEEE">PC_DEPLOYMENT_ARC = 0</Text>
+    </HorizontalLayout>
+    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Slider id="ds_pc_deployment_arc" minValue="0" maxValue="360" value="80" flexibleWidth="1" onValueChanged="HUD_debugScatterSlider" />
+    </HorizontalLayout>
+
+    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text id="ds_npc_spacing_min_label" preferredWidth="420" fontSize="13" color="#EEEEEE">NPC_SPACING_MIN = 0</Text>
+    </HorizontalLayout>
+    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Slider id="ds_npc_spacing_min" minValue="0" maxValue="100" value="10" flexibleWidth="1" onValueChanged="HUD_debugScatterSlider" />
+    </HorizontalLayout>
+
+    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Text id="ds_npc_spacing_max_label" preferredWidth="420" fontSize="13" color="#EEEEEE">NPC_SPACING_MAX = 0</Text>
+    </HorizontalLayout>
+    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
+      <Slider id="ds_npc_spacing_max" minValue="0" maxValue="150" value="22" flexibleWidth="1" onValueChanged="HUD_debugScatterSlider" />
+    </HorizontalLayout>
+
+    <HorizontalLayout preferredHeight="34" spacing="8" childAlignment="MiddleCenter">
+      <Button class="smallButton" preferredWidth="120" fontSize="11" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugScatterApply">Apply</Button>
+      <Button class="smallButton" preferredWidth="120" fontSize="11" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugScatterDone">Done</Button>
+    </HorizontalLayout>
+  </VerticalLayout>
+</Panel>
+
+<!-- /include ui/storyteller/panel_debug_scatter.xml -->
 
 
     <!-- ================================================================ -->
