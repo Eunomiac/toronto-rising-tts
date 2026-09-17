@@ -296,16 +296,17 @@ The TTS extension often scrambles these (e.g. pasting a csheet `<Include>` or th
 
 **Stub filenames vs GUIDs:** TTS Tools syncs `.tts/objects/{displayNickname}.{guid}.lua` (and `.xml`, `.data.json`). Display nicknames are free-form (e.g. `Aishe - p.1.c4abec.lua`); **role identity** for build tooling comes from the companion `.data.json` → **`GMNotes`** (e.g. `CSHEET_PAGE_1_PINK`). `fix_tts_object_stubs` normalizes stub **content** from that role; **`check:tts-object-stub-guids`** verifies the filename `{guid}` suffix matches `lib/guids.ttslua` for that role. After workshop edits or a partial sync, the wrong GUID can land on a nickname — Save & Play then never repairs the broken object. **`npm run build`** (Main) runs the stub GUID gate **first** (then other gates; skips when `.tts/objects` is absent). On failure: **Get Lua Scripts** from TTS to refresh from the save, then `npm run tts-objects:fix-stubs`, then Save & Play.
 
-**Pages 3–6** (`CSHEET_PAGE_3_*` … `CSHEET_PAGE_6_*`) use separate entries so each page’s XML builder (and embedded templates when shipped) is **not** bundled into all ~80 sheet objects:
+**Pages 2–6** (`CSHEET_PAGE_2_*` … `CSHEET_PAGE_6_*`) use separate entries so each page’s XML builder (and embedded templates when shipped) is **not** bundled into all ~80 sheet objects:
 
 ```lua
+require("ui.ui_csheet_page2")   -- disciplines / rituals / ceremonies (live)
 require("ui.ui_csheet_page3")   -- backgrounds / merits / flaws (live)
 require("ui.ui_csheet_page4")   -- relationships / bonds (placeholder builder today)
 require("ui.ui_csheet_page5")   -- projects / equipment (placeholder)
 require("ui.ui_csheet_page6")   -- history / XP log (placeholder)
 ```
 
-Each entry loads `ui/ui_csheet_pageN_local.ttslua` (registers `lib/csheet_pageN_xml` on `_G`) then `ui/ui_csheet_core.ttslua`. Default pages (1–2, 7–8) must **not** pull another page’s template chain. Page 3 adds ~+30 KB vs the default entry; pages 4–6 placeholders add only a few KB until real templates land.
+Each entry loads `ui/ui_csheet_pageN_local.ttslua` (registers `lib/csheet_pageN_xml` on `_G`) then `ui/ui_csheet_core.ttslua`. Default pages (1, 7–8) must **not** pull another page’s template chain. Page 3 adds ~+30 KB vs the default entry; pages 4–6 placeholders add only a few KB until real templates land.
 
 Object scripts run in a **separate Lua VM** from Global. They must not pull the full game stack (`lib.pc_stats` → `core.sync`, etc.). **Agents:** treat every object-script `require()` as high risk — import **piecemeal** (thin object-only modules) or **`Global.call`**; never entire libraries or anything that transitively requires `core.*`. Each object is bundled separately, so cost multiplies by object count (22 dice bags, ~37 CSHEET pages). See [`.cursor/rules/toronto-rising-object-script-bundling.mdc`](../.cursor/rules/toronto-rising-object-script-bundling.mdc). Thin modules and `Global.call` keep each CSHEET bundle small (~tens of KB vs ~1.4 MB before slimming). **Signal candles** use `GlobalToggleSignalFireState`; **CSHEET hide/show** uses `GlobalHideObject` / `GlobalRestoreObject` (via `lib/csheet_pose.ttslua`); **NPC CONTROL_BOARD / PALETTE** use `GlobalGameboardApply`, `GlobalGameboardToggleControlBoardSnaps`, `GlobalGameboardInstallPaletteSnaps` (no `require("core.npc_gameboard")` on objects); **tarot** uses `lib/object_positions_object.ttslua` (not `lib/object_positions.ttslua`); **dice bags** use `GlobalGetPcRollTrayYOffset` (not `lib.pc_roll_tray_lower`).
 

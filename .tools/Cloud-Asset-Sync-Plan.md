@@ -31,6 +31,8 @@ Status: **implemented** — runner `.tools/cloud-asset-sync.js`; config `.tools/
 
 | Job id | Cloud folder (under `CLOUD_ROOT`) | Output | Lua consumer |
 | --- | --- | --- | --- |
+| `csheetPage1Overlays` | `CSheets/Page1` | `ObjectCustomUIAssets` on five `CSHEET_PAGE_1_*` GUIDs (`dot_*` / `box_*`; purge `^dot_`/`^box_`) | page‑1 XmlUI overlays |
+| `csheetPage2Assets` | `CSheets/Page2` | `ObjectCustomUIAssets` on five `CSHEET_PAGE_2_*` GUIDs (no purge) | page‑2 disc names / dotlines / dividers |
 | `siteCards` | `Sites` | `GlobalCustomUIAssets` (`siteCard_<stem>`) | `C.Sites[*].image` |
 | `cloudSitesCatalog` | `Sites` | `Cloud.Sites` | — (console inspection) |
 | `genericNpcFigurines` / `genericNpcTokenFronts` / `genericNpcTokenBacks` | `NPC Cutouts/Generic/…` | `Cloud.GenericNpc*` | `lib/npcs_data.ttslua` `D.initGenericNPCs` |

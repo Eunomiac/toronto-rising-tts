@@ -70,11 +70,31 @@ Pages with PCS-driven layout use a **separate object entry** so template builder
 
 | Page | Object stub | Builder module | Status |
 | :-- | :-- | :-- | :-- |
+| 2 | `require("ui.ui_csheet_page2")` | `lib/csheet_page2_xml.ttslua` | Live (`self.UI.setXml`) — disciplines + rituals/ceremonies |
 | 3 | `require("ui.ui_csheet_page3")` | `lib/csheet_page3_xml.ttslua` | Live (`self.UI.setXml`) |
 | 4 | `require("ui.ui_csheet_page4")` | `lib/csheet_page4_xml.ttslua` | Live (`self.UI.setXml` from `lib/json/PC_Relationships.json`) |
 | 5 | `require("ui.ui_csheet_page5")` | `lib/csheet_page5_xml.ttslua` | Placeholder |
 | 6 | `require("ui.ui_csheet_page6")` | `lib/csheet_page6_xml.ttslua` | Placeholder |
 
-Pages **1–2** and **7–8** use `require("ui.ui_csheet")`. Dynamic pages must not use the default entry — core errors if the matching `_G.CSHEET_PAGEN_LOCAL` module was not loaded via `ui/ui_csheet_pageN_local.ttslua`. Stubs are normalized by `npm run tts-objects:fix-stubs`.
+Pages **1** and **7–8** use `require("ui.ui_csheet")`. Pages **2–6** use dedicated entries so builders are not bundled into every sheet object. Dynamic pages must not use the default entry — core errors if the matching `_G.CSHEET_PAGEN_LOCAL` module was not loaded via `ui/ui_csheet_pageN_local.ttslua`. Stubs are normalized by `npm run tts-objects:fix-stubs`.
+
+### Page 1 blank-base overlays
+
+Printed face is the object `CustomImage` (author-set). XmlUI uses one `Image` per slot:
+
+- Dots: `dot_<key>_<1..5>` — script sets `active` + `image` (`dot_yellow` / `dot_white` / `dot_grey`; Blood Potency uses `dot_red` with `dot_large` size class).
+- Boxes: `box_<tracker>_<1..10>` — `box_white` / `box_grey_slash` / `box_red_x` / `box_purple` (stain) / `box_red` (impaired).
+
+Cloud sync: job `csheetPage1Overlays` (`CSheets/Page1` → five page‑1 GUIDs).
+
+### Page 2 dynamic disciplines
+
+Blank disciplines area on the tile; runtime XmlUI builds a 2×3 discipline grid (`discName_<key>` + `page2_dotline` + fill overlays) and optional rituals/ceremonies section (`divider_rituals` / `divider_ceremonies` / `divider_ritualsAndCeremonies`). `stats.disciplines` keeps full PCS rows (`powers`, `rituals`, `ceremonies`) after bootstrap.
+
+Cloud sync: job `csheetPage2Assets` (`CSheets/Page2` → five page‑2 GUIDs, no purge).
+
+```text
+npm run cloud-asset-sync -- --job csheetPage1Overlays,csheetPage2Assets
+```
 
 Runtime `UI.setXml` strings cannot resolve editor `<Include>`; pages 3–4 prepend `lib/csheet_defaults_xml` via Lua and must not embed `<Include src="csheet_defaults.xml" />` in `ui/.templates/csheet/pageN.xml`. Page 4 relationship portraits and dividers must exist on each `CSHEET_PAGE_4_*` object (`npm run custom-ui-assets:merge-object-assets` from `lib/json/PC_Relationship_Images.json`).

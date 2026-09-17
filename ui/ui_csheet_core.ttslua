@@ -45,7 +45,7 @@ local CSHEET_TRACKER_DISPLAY = {
     },
     humanity = {
       filled = "box_white",
-      stain = "box_black",
+      stain = "box_purple",
       impaired = "box_red",
     },
   },
@@ -56,6 +56,12 @@ local CSHEET = {}
 --- Dynamic setXml pages: separate object entry per page so template builders are not bundled on all sheets.
 --- @type table<number, { globalKey: string, fingerprintFn: string, buildFn: string, entryRequire: string }>
 local PAGE_DYNAMIC_XML = {
+  [2] = {
+    globalKey = "CSHEET_PAGE2_LOCAL",
+    fingerprintFn = "fingerprintPage2Stats",
+    buildFn = "buildPage2DocumentXml",
+    entryRequire = "ui.ui_csheet_page2",
+  },
   [3] = {
     globalKey = "CSHEET_PAGE3_LOCAL",
     fingerprintFn = "fingerprintPage3Stats",
@@ -621,9 +627,35 @@ local function applyPageDynamicXml()
   end, 1)
 end
 
---- Apply collected attribute tweaks to this object's UI.
+--- Apply collected attribute tweaks to this object's UI (skip when unchanged).
+local lastUiUpdatesFingerprint = nil
+
+local function fingerprintUiUpdates(updates)
+  if type(updates) ~= "table" then
+    return ""
+  end
+  local parts = {}
+  for i = 1, #updates do
+    local u = updates[i]
+    if type(u) == "table" and type(u.id) == "string" and type(u.attributes) == "table" then
+      local attrs = {}
+      for k, v in pairs(u.attributes) do
+        attrs[#attrs + 1] = tostring(k) .. "=" .. tostring(v)
+      end
+      table.sort(attrs)
+      parts[#parts + 1] = u.id .. "{" .. table.concat(attrs, ",") .. "}"
+    end
+  end
+  table.sort(parts)
+  return table.concat(parts, "|")
+end
+
 local function applyUiUpdates(updates)
   if self.UI == nil then
+    return
+  end
+  local fp = fingerprintUiUpdates(updates)
+  if fp == lastUiUpdatesFingerprint then
     return
   end
   for _, u in ipairs(updates) do
@@ -635,6 +667,7 @@ local function applyUiUpdates(updates)
       end
     end
   end
+  lastUiUpdatesFingerprint = fp
 end
 
 --- Apply Blood Potency derived-stat decal URLs on CSHEET_PAGE_1 / _2 (exact static slot names).
@@ -705,15 +738,17 @@ function refreshCharacterSheetUi()
   if type(updates) ~= "table" then
     updates = {}
   end
+
+  -- Dynamic pages must remount XmlUI before setAttribute (fill Image ids are in the new tree).
+  if PAGE_DYNAMIC_XML[pageNum] ~= nil then
+    applyPageDynamicXml()
+  end
+
   applyUiUpdates(updates)
 
   if pageNum == 1 and self.UI then
     self.UI.setAttribute("xp_text", "text", tostring(tonumber(stats.xp) or 0))
     applyDesireFieldFromMerged(pd)
-  end
-
-  if PAGE_DYNAMIC_XML[pageNum] ~= nil then
-    applyPageDynamicXml()
   end
 
   if pageNum == 1 or pageNum == 2 then

@@ -41,13 +41,20 @@ PSC.DISCIPLINE_DOT_KEYS = {
 }
 
 --- @param elementId string
---- @return string|nil discipline key from dot_on_<key>_<n> or dot_off_<key>_<n>
+--- @return string|nil discipline key from dot_<key>_<n> or legacy dot_on|off_<key>_<n>
 function PSC.disciplineKeyFromDotElementId(elementId)
   if type(elementId) ~= "string" then
     return nil
   end
-  local _, _, _onOff, key = elementId:find("^dot_(on|off)_(.+)_(%d+)$")
-  return key
+  local k1 = select(3, elementId:find("^dot_on_(.+)_(%d+)$"))
+  if k1 ~= nil then
+    return k1
+  end
+  local k2 = select(3, elementId:find("^dot_off_(.+)_(%d+)$"))
+  if k2 ~= nil then
+    return k2
+  end
+  return select(3, elementId:find("^dot_(.+)_(%d+)$"))
 end
 
 --- Sum resolved condition stat deltas for aggregate trackers (health, willpower, humanity).
@@ -129,17 +136,43 @@ function PSC.dotRatingFromStats(stats, resolvedStatChanges, dotKey, clampMax)
   return math.max(0, math.min(maxRating, math.floor(rating)))
 end
 
+--- Image asset for a painted fill slot (blank-base sheets).
+--- @param key string
+--- @param base number
+--- @param eff number temp+condition delta
+--- @param slot number 1..5
+--- @return boolean active
+--- @return string|nil imageName
+function PSC.resolveDotSlotImage(key, base, eff, slot)
+  local rating = base + eff
+  local fillImage = "dot_yellow"
+  if key == "bloodPotency" then
+    fillImage = "dot_red"
+  end
+  if slot <= base and slot <= rating then
+    return true, fillImage
+  end
+  if eff > 0 and slot > base and slot <= rating then
+    return true, "dot_white"
+  end
+  if eff < 0 and slot > rating and slot <= base then
+    return true, "dot_grey"
+  end
+  return false, nil
+end
+
 --- Build XML attribute updates for character sheet objects.
+--- Blank-base contract: one Image per slot (`dot_<key>_<n>`, `box_<tracker>_<i>`); set active + image.
 --- @param stats table
 --- @param resolvedStatChanges table|nil merged statChanges from condition_effects
 --- @param pageNum number|nil sheet index from object name; see `PSC.SHEET_PAGE_UPDATE_PROFILE`
---- @return table[] list of { id = string, attributes = { active = "true"|"false" } }
+--- @return table[] list of { id = string, attributes = { active = "true"|"false", image?: string } }
 function PSC.collectSheetImageUpdates(stats, resolvedStatChanges, pageNum)
   local updates = {}
   --- @param imageName string|nil when set, applied as `image` (custom-ui asset name)
   local function add(id, active, imageName)
     local attrs = { active = active and "true" or "false" }
-    if type(imageName) == "string" and imageName ~= "" then
+    if active and type(imageName) == "string" and imageName ~= "" then
       attrs.image = imageName
     end
     updates[#updates + 1] = { id = id, attributes = attrs }
@@ -157,172 +190,203 @@ function PSC.collectSheetImageUpdates(stats, resolvedStatChanges, pageNum)
     end
   end
 
-  local dotKeys = {}
-  if type(stats.attributes) == "table" then
-    for k, _ in pairs(stats.attributes) do
-      dotKeys[#dotKeys + 1] = { k, "attributes" }
-    end
-  end
-  if type(stats.skills) == "table" then
-    for k, _ in pairs(stats.skills) do
-      dotKeys[#dotKeys + 1] = { k, "skills" }
-    end
-  end
-  if type(stats.disciplines) == "table" then
-    for k, _ in pairs(stats.disciplines) do
-      dotKeys[#dotKeys + 1] = { k, "disciplines" }
-    end
-  end
-  if type(stats.bloodPotency) == "table" then
-    dotKeys[#dotKeys + 1] = { "bloodPotency", "bloodPotency" }
-  end
-
-  for _, pair in ipairs(dotKeys) do
-    local key = pair[1]
-    local eff = PSC.effectiveTempForDot(stats, resolvedStatChanges, key)
+  local function paintDotKey(key, kind)
     local base = 0
-    if pair[2] == "bloodPotency" then
+    if kind == "bloodPotency" then
       base = tonumber(stats.bloodPotency.base) or 0
-    elseif pair[2] == "attributes" then
+    elseif kind == "attributes" then
       base = tonumber(stats.attributes[key].base) or 0
-    elseif pair[2] == "skills" then
+    elseif kind == "skills" then
       base = tonumber(stats.skills[key].base) or 0
-    elseif pair[2] == "disciplines" then
+    elseif kind == "disciplines" then
       base = tonumber(stats.disciplines[key].base) or 0
     end
-    local rating = base + eff
+    local eff = PSC.effectiveTempForDot(stats, resolvedStatChanges, key)
     for slot = 1, 5 do
-      if slot > base then
-        add("dot_on_" .. key .. "_" .. slot, false)
-      end
-      if slot <= base then
-        add("dot_off_" .. key .. "_" .. slot, false)
-      end
-    end
-    if eff > 0 then
-      for slot = base + 1, math.min(5, rating) do
-        add("dot_on_" .. key .. "_" .. slot, true)
-      end
-    elseif eff < 0 then
-      for slot = rating + 1, base do
-        add("dot_off_" .. key .. "_" .. slot, true)
-      end
+      local active, imageName = PSC.resolveDotSlotImage(key, base, eff, slot)
+      add("dot_" .. key .. "_" .. slot, active, imageName)
     end
   end
 
-  local function boxFill(which, trackerKey)
-    local tr = stats[which]
-    if type(tr) ~= "table" then
-      return
+  if pageProfile == "main" or pageProfile == nil then
+    if type(stats.attributes) == "table" then
+      for k, _ in pairs(stats.attributes) do
+        paintDotKey(k, "attributes")
+      end
     end
-    local td = getMergedTrackerDisplay()
-    local layerImg = type(td) == "table" and type(td.sheetImages) == "table" and td.sheetImages[trackerKey] or nil
-    local function boxImg(layer)
-      if type(layerImg) == "table" then
-        local v = layerImg[layer]
-        if type(v) == "string" and v ~= "" then
-          return v
+    if type(stats.skills) == "table" then
+      for k, _ in pairs(stats.skills) do
+        paintDotKey(k, "skills")
+      end
+    end
+    if type(stats.bloodPotency) == "table" then
+      paintDotKey("bloodPotency", "bloodPotency")
+    end
+
+    local function boxFill(which, trackerKey)
+      local tr = stats[which]
+      if type(tr) ~= "table" then
+        return
+      end
+      local td = getMergedTrackerDisplay()
+      local layerImg = type(td) == "table" and type(td.sheetImages) == "table" and td.sheetImages[trackerKey] or nil
+      local function boxImg(layer, fallback)
+        if type(layerImg) == "table" then
+          local v = layerImg[layer]
+          if type(v) == "string" and v ~= "" then
+            return v
+          end
+        end
+        return fallback
+      end
+      local maxB = (tonumber(tr.base) or 0) + PSC.effectiveTempForAggregate(stats, resolvedStatChanges, which)
+      local cells = {}
+      if which == "humanity" then
+        local lineLen = maxB
+        local stains = tonumber(tr.stains) or 0
+        for i = 1, 10 do
+          cells[i] = nil
+        end
+        for i = 1, lineLen do
+          cells[i] = "filled"
+        end
+        local sIdx = 10
+        for _ = 1, stains do
+          if sIdx < 1 then
+            break
+          end
+          if cells[sIdx] == "filled" then
+            cells[sIdx] = "impaired"
+            break
+          end
+          cells[sIdx] = "stain"
+          sIdx = sIdx - 1
+        end
+        for i = 1, 10 do
+          local layer = cells[i]
+          if layer == "filled" then
+            add("box_humanity_" .. i, true, boxImg("filled", "box_white"))
+          elseif layer == "stain" then
+            add("box_humanity_" .. i, true, boxImg("stain", "box_purple"))
+          elseif layer == "impaired" then
+            add("box_humanity_" .. i, true, boxImg("impaired", "box_red"))
+          else
+            add("box_humanity_" .. i, false)
+          end
+        end
+        return
+      end
+
+      local sup = tonumber(tr.superficial) or 0
+      local agg = tonumber(tr.aggravated) or 0
+      local idx = 1
+      for _ = 1, agg do
+        if idx <= maxB then
+          cells[idx] = "aggravated"
+          idx = idx + 1
         end
       end
-      return nil
-    end
-    local maxB = (tonumber(tr.base) or 0) + PSC.effectiveTempForAggregate(stats, resolvedStatChanges, which)
-    local sup = tonumber(tr.superficial) or 0
-    local agg = tonumber(tr.aggravated) or 0
-    for i = 1, 10 do
-      add("box_agg_" .. trackerKey .. "_" .. i, false)
-      add("box_sup_" .. trackerKey .. "_" .. i, false)
-      add("box_on_" .. trackerKey .. "_" .. i, false)
-    end
-    local idx = 1
-    for _ = 1, agg do
-      if idx <= maxB then
-        add("box_agg_" .. trackerKey .. "_" .. idx, true, boxImg("aggravated"))
+      for _ = 1, sup do
+        if idx <= maxB then
+          cells[idx] = "superficial"
+          idx = idx + 1
+        end
+      end
+      while idx <= maxB do
+        cells[idx] = "undamaged"
         idx = idx + 1
       end
-    end
-    for _ = 1, sup do
-      if idx <= maxB then
-        add("box_sup_" .. trackerKey .. "_" .. idx, true, boxImg("superficial"))
-        idx = idx + 1
+      for i = 1, 10 do
+        local layer = cells[i]
+        if layer == "aggravated" then
+          add("box_" .. trackerKey .. "_" .. i, true, boxImg("aggravated", "box_red_x"))
+        elseif layer == "superficial" then
+          add("box_" .. trackerKey .. "_" .. i, true, boxImg("superficial", "box_grey_slash"))
+        elseif layer == "undamaged" then
+          add("box_" .. trackerKey .. "_" .. i, true, boxImg("undamaged", "box_white"))
+        else
+          add("box_" .. trackerKey .. "_" .. i, false)
+        end
       end
     end
-    while idx <= maxB do
-      add("box_on_" .. trackerKey .. "_" .. idx, true, boxImg("undamaged"))
-      idx = idx + 1
+
+    boxFill("health", "health")
+    boxFill("willpower", "willpower")
+    if type(stats.humanity) == "table" then
+      boxFill("humanity", "humanity")
     end
   end
 
-  boxFill("health", "health")
-  boxFill("willpower", "willpower")
-
-  if type(stats.humanity) == "table" then
-    local hu = stats.humanity
-    local lineLen = (tonumber(hu.base) or 0) + PSC.effectiveTempForAggregate(stats, resolvedStatChanges, "humanity")
-    local stains = tonumber(hu.stains) or 0
-    for i = 1, 10 do
-      add("box_on_humanity_" .. i, false)
-      add("box_stain_humanity_" .. i, false)
-      add("box_impaired_humanity_" .. i, false)
-    end
-    local slots = {}
-    for i = 1, 10 do
-      slots[i] = "empty"
-    end
-    for i = 1, lineLen do
-      slots[i] = "on"
-    end
-    local sIdx = 10
-    for _ = 1, stains do
-      if sIdx < 1 then
-        break
-      end
-      if slots[sIdx] == "on" then
-        slots[sIdx] = "impaired"
-        break
-      end
-      slots[sIdx] = "stain"
-      sIdx = sIdx - 1
-    end
-    local tdH = getMergedTrackerDisplay()
-    local hImg = type(tdH) == "table" and type(tdH.sheetImages) == "table" and tdH.sheetImages.humanity or nil
-    local function humImg(layer)
-      if type(hImg) == "table" then
-        local v = hImg[layer]
-        if type(v) == "string" and v ~= "" then
-          return v
+  if pageProfile == "disciplines" or pageProfile == nil then
+    if type(stats.disciplines) == "table" then
+      for k, _ in pairs(stats.disciplines) do
+        if PSC.DISCIPLINE_DOT_KEYS[k] == true then
+          paintDotKey(k, "disciplines")
         end
       end
-      return nil
     end
-    for i = 1, 10 do
-      if slots[i] == "on" then
-        add("box_on_humanity_" .. i, true, humImg("filled"))
-      elseif slots[i] == "stain" then
-        add("box_stain_humanity_" .. i, true, humImg("stain"))
-      elseif slots[i] == "impaired" then
-        add("box_impaired_humanity_" .. i, true, humImg("impaired"))
+    -- Ritual / ceremony row fills: ids from page2 builder `dot_rc_<side>_<row>_<slot>`
+    local function paintRcList(list, side)
+      if type(list) ~= "table" then
+        return
+      end
+      for row = 1, 5 do
+        local entry = list[row]
+        local level = 0
+        if type(entry) == "table" then
+          level = math.floor(tonumber(entry.level) or 0)
+        end
+        for slot = 1, 5 do
+          local id = string.format("dot_rc_%s_%d_%d", side, row, slot)
+          if slot <= level then
+            add(id, true, "dot_yellow")
+          else
+            add(id, false)
+          end
+        end
+      end
+    end
+    local rituals = {}
+    local ceremonies = {}
+    if type(stats.disciplines) == "table" then
+      for _, row in pairs(stats.disciplines) do
+        if type(row) == "table" then
+          if type(row.rituals) == "table" then
+            for i = 1, #row.rituals do
+              rituals[#rituals + 1] = row.rituals[i]
+            end
+          end
+          if type(row.ceremonies) == "table" then
+            for i = 1, #row.ceremonies do
+              ceremonies[#ceremonies + 1] = row.ceremonies[i]
+            end
+          end
+        end
+      end
+    end
+    if #rituals > 0 or #ceremonies > 0 then
+      if #rituals > 0 and #ceremonies > 0 then
+        paintRcList(rituals, "L")
+        paintRcList(ceremonies, "R")
+      else
+        local only = #rituals > 0 and rituals or ceremonies
+        local left = {}
+        local right = {}
+        for i = 1, math.min(5, #only) do
+          left[i] = only[i]
+        end
+        for i = 6, math.min(10, #only) do
+          right[i - 5] = only[i]
+        end
+        paintRcList(left, "L")
+        paintRcList(right, "R")
       end
     end
   end
 
   if pageNum ~= nil and pageProfile ~= nil then
-    local filtered = {}
-    for _, u in ipairs(updates) do
-      local id = u.id
-      local dk = PSC.disciplineKeyFromDotElementId(id)
-      local isDisc = dk ~= nil and PSC.DISCIPLINE_DOT_KEYS[dk] == true
-      if pageProfile == "main" then
-        if not isDisc then
-          filtered[#filtered + 1] = u
-        end
-      elseif pageProfile == "disciplines" then
-        if isDisc then
-          filtered[#filtered + 1] = u
-        end
-      end
-    end
-    return filtered
+    -- Profile already gated which sections ran; return as-is.
+    return updates
   end
 
   return updates
@@ -358,7 +422,7 @@ function PSC.collectPrincesCourtTrackerUpdates(stats, resolvedStatChanges, panel
       return "box_white"
     end
     if layer == "stain" then
-      return "box_black"
+      return "box_purple"
     end
     if layer == "impaired" then
       return "box_red"

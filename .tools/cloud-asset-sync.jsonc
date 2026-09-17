@@ -110,6 +110,38 @@
       "filenameToNameSearchPattern": "^tokenBack_mem_(.+)\\.[^.]+$",
       "filenameToNameReplacePattern": "tokenBack_mem_$1" // E.g. "tokenBack_mem_maximillianSteele.webp" → "tokenBack_mem_maximillianSteele"
       // → Cloud.MemoriamNpcTokenBacks.tokenBack_mem_maximillianSteele (stem from npc.name mem_<stem>)
+    },
+    {
+      "id": "csheetPage1Overlays",
+      "cloudFolder": "CSheets/Page1",
+      "recurIntoSubfolders": false,
+      "output": "ObjectCustomUIAssets",
+      // CSHEET_PAGE_1_BROWN / ORANGE / RED / PINK / PURPLE
+      "targetGUIDs": ["21d213", "553538", "f10182", "c4abec", "0bdb4a"],
+      "filenameToNameSearchPattern": "^(.*)\\.[^.]+$",
+      "filenameToNameReplacePattern": "$1",
+      // Only remove known obsolete glyphs — do not use ^dot_|^box_ (would purge
+      // yellow/white/grey if they are not yet present in Cloud Page1).
+      "purgePatterns": [
+        "^dot_blank$",
+        "^dot_large_",
+        "^box_blank$",
+        "^box_black$",
+        "^box_grey$",
+        "^box_yellow$"
+      ]
+    },
+    {
+      "id": "csheetPage2Assets",
+      "cloudFolder": "CSheets/Page2",
+      "recurIntoSubfolders": false,
+      "output": "ObjectCustomUIAssets",
+      // CSHEET_PAGE_2_BROWN / ORANGE / RED / PINK / PURPLE
+      "targetGUIDs": ["c80132", "e2c921", "8a59a9", "c0f4b5", "7ac353"],
+      "filenameToNameSearchPattern": "^(.*)\\.[^.]+$",
+      "filenameToNameReplacePattern": "$1",
+      // No purge — folder still evolving; protect baneSeverity* / discBonus* / discReroll*.
+      "purgePatterns": []
     }
   ]
 }

@@ -1,0 +1,351 @@
+--[[
+  Build character sheet page 2 UI XML: disciplines grid + optional rituals/ceremonies.
+  Consumed via PAGE_DYNAMIC_XML[2] / ui.ui_csheet_page2 (object entry).
+
+  Agent guidance: .dev/PC Data & Tracking/Character Sheet Modifications.md
+]]
+
+local M = {}
+
+local CSHEET_DEFAULTS = require("lib.csheet_defaults_xml")
+local PSC = require("lib.pc_sheet_collect")
+
+local DISC_ORDER = {
+  "animalism",
+  "auspex",
+  "bloodSorcery",
+  "celerity",
+  "dominate",
+  "fortitude",
+  "obfuscate",
+  "oblivion",
+  "potence",
+  "presence",
+  "protean",
+}
+
+local function xmlEscape(s)
+  s = tostring(s or "")
+  s = s:gsub("&", "&amp;")
+  s = s:gsub("<", "&lt;")
+  s = s:gsub(">", "&gt;")
+  s = s:gsub('"', "&quot;")
+  return s
+end
+
+--- @param discs table|nil
+--- @return string[] owned keys in chronicle order
+local function orderedOwnedDisciplineKeys(discs)
+  local owned = {}
+  if type(discs) ~= "table" then
+    return owned
+  end
+  for _, key in ipairs(DISC_ORDER) do
+    if type(discs[key]) == "table" then
+      owned[#owned + 1] = key
+    end
+  end
+  for key, row in pairs(discs) do
+    if type(key) == "string" and type(row) == "table" and PSC.DISCIPLINE_DOT_KEYS[key] == true then
+      local found = false
+      for i = 1, #owned do
+        if owned[i] == key then
+          found = true
+          break
+        end
+      end
+      if not found then
+        owned[#owned + 1] = key
+      end
+    end
+  end
+  return owned
+end
+
+--- @param discs table|nil
+--- @return table[] rituals
+--- @return table[] ceremonies
+local function collectRitualsAndCeremonies(discs)
+  local rituals = {}
+  local ceremonies = {}
+  if type(discs) ~= "table" then
+    return rituals, ceremonies
+  end
+  for _, row in pairs(discs) do
+    if type(row) == "table" then
+      if type(row.rituals) == "table" then
+        for i = 1, #row.rituals do
+          rituals[#rituals + 1] = row.rituals[i]
+        end
+      end
+      if type(row.ceremonies) == "table" then
+        for i = 1, #row.ceremonies do
+          ceremonies[#ceremonies + 1] = row.ceremonies[i]
+        end
+      end
+    end
+  end
+  return rituals, ceremonies
+end
+
+--- @param powers table|nil
+--- @return string
+local function powersText(powers)
+  if type(powers) ~= "table" then
+    return ""
+  end
+  local rows = {}
+  for i = 1, #powers do
+    local p = powers[i]
+    if type(p) == "table" then
+      rows[#rows + 1] = {
+        level = math.floor(tonumber(p.level) or 0),
+        name = tostring(p.name or ""),
+      }
+    end
+  end
+  table.sort(rows, function(a, b)
+    if a.level == b.level then
+      return a.name < b.name
+    end
+    return a.level < b.level
+  end)
+  local lines = {}
+  for i = 1, #rows do
+    if rows[i].name ~= "" then
+      lines[#lines + 1] = rows[i].name
+    end
+  end
+  return table.concat(lines, "\n")
+end
+
+--- @param key string
+--- @param row table
+--- @return string
+local function buildDisciplineCell(key, row)
+  local nameImg = "discName_" .. key
+  local parts = {
+    '<VerticalLayout class="page2_disc_cell" flexibleWidth="1" preferredHeight="280">',
+    '  <HorizontalLayout class="page2_disc_header" preferredHeight="70" flexibleHeight="0">',
+    string.format('    <Image image="%s" class="page2_disc_name" preferredWidth="220" preferredHeight="63" flexibleWidth="0" />', nameImg),
+    '    <Panel class="page2_dotline_wrap" preferredHeight="63" flexibleWidth="1">',
+    '      <Image image="page2_dotline" class="page2_dotline_bg" />',
+    '      <HorizontalLayout class="page2_dot_fills" spacing="8" padding="8 8 0 0">',
+  }
+  for slot = 1, 5 do
+    parts[#parts + 1] = string.format(
+      '        <Image id="dot_%s_%d" class="dot dot_standard" active="false" preferredWidth="63" preferredHeight="63" flexibleWidth="0" />',
+      key,
+      slot
+    )
+  end
+  parts[#parts + 1] = "      </HorizontalLayout>"
+  parts[#parts + 1] = "    </Panel>"
+  parts[#parts + 1] = "  </HorizontalLayout>"
+  parts[#parts + 1] = string.format(
+    '  <Text class="page2_powers_text" alignment="UpperLeft" fontSize="28" color="#FFFFFF" text="%s" />',
+    xmlEscape(powersText(row.powers))
+  )
+  parts[#parts + 1] = "</VerticalLayout>"
+  return table.concat(parts, "\n")
+end
+
+--- @return string
+local function emptyDisciplineCell()
+  return '<VerticalLayout class="page2_disc_cell" flexibleWidth="1" preferredHeight="280" />'
+end
+
+--- @param entry table|nil
+--- @param side string L|R
+--- @param rowIndex number
+--- @return string
+local function buildRcRow(entry, side, rowIndex)
+  local name = ""
+  if type(entry) == "table" then
+    name = tostring(entry.name or "")
+  end
+  local parts = {
+    '<HorizontalLayout class="page2_rc_row" preferredHeight="63" flexibleHeight="0">',
+    '  <Panel class="page2_dotline_wrap" preferredWidth="280" preferredHeight="63" flexibleWidth="0">',
+    '    <Image image="page2_dotline" class="page2_dotline_bg" />',
+    '    <HorizontalLayout class="page2_dot_fills" spacing="8" padding="8 8 0 0">',
+  }
+  for slot = 1, 5 do
+    parts[#parts + 1] = string.format(
+      '      <Image id="dot_rc_%s_%d_%d" class="dot dot_standard" active="false" preferredWidth="63" preferredHeight="63" flexibleWidth="0" />',
+      side,
+      rowIndex,
+      slot
+    )
+  end
+  parts[#parts + 1] = "    </HorizontalLayout>"
+  parts[#parts + 1] = "  </Panel>"
+  parts[#parts + 1] = string.format(
+    '  <Text class="page2_rc_name" alignment="MiddleLeft" fontSize="28" color="#FFFFFF" text="%s" flexibleWidth="1" />',
+    xmlEscape(name)
+  )
+  parts[#parts + 1] = "</HorizontalLayout>"
+  return table.concat(parts, "\n")
+end
+
+--- @param stats table|nil
+--- @param _seatColorRaw string|nil
+--- @param _pd table|nil
+--- @return string
+function M.buildPage2DocumentXml(stats, _seatColorRaw, _pd)
+  stats = type(stats) == "table" and stats or {}
+  local discs = type(stats.disciplines) == "table" and stats.disciplines or {}
+  local owned = orderedOwnedDisciplineKeys(discs)
+  if #owned > 6 then
+    error(string.format(
+      "[csheet_page2] character has %d disciplines; page 2 layout supports at most 6",
+      #owned
+    ))
+  end
+
+  local cells = {}
+  for i = 1, 6 do
+    local key = owned[i]
+    if key ~= nil then
+      cells[i] = buildDisciplineCell(key, discs[key])
+    else
+      cells[i] = emptyDisciplineCell()
+    end
+  end
+
+  local rituals, ceremonies = collectRitualsAndCeremonies(discs)
+  if #rituals > 5 and #ceremonies > 0 then
+    error(string.format("[csheet_page2] %d rituals exceed left-column capacity of 5", #rituals))
+  end
+  if #ceremonies > 5 and #rituals > 0 then
+    error(string.format("[csheet_page2] %d ceremonies exceed right-column capacity of 5", #ceremonies))
+  end
+  if #rituals == 0 and #ceremonies == 0 then
+    -- ok
+  elseif #rituals > 0 and #ceremonies == 0 then
+    if #rituals > 10 then
+      error(string.format("[csheet_page2] %d rituals exceed capacity of 10", #rituals))
+    end
+  elseif #ceremonies > 0 and #rituals == 0 then
+    if #ceremonies > 10 then
+      error(string.format("[csheet_page2] %d ceremonies exceed capacity of 10", #ceremonies))
+    end
+  end
+
+  local parts = {
+    '<Defaults>',
+    '  <Image class="page2_dotline_bg" ignoreLayout="true" rectAlignment="MiddleLeft" width="280" height="63" />',
+    '  <HorizontalLayout class="page2_dot_fills" ignoreLayout="true" width="280" height="63" childForceExpandWidth="false" childForceExpandHeight="false" />',
+    '  <Panel class="page2_dotline_wrap" raycastTarget="false" />',
+    '  <Text class="page2_powers_text" preferredHeight="200" flexibleHeight="1" />',
+    '</Defaults>',
+    "",
+    '<Panel id="paper_root" class="page_root padded_border">',
+    '  <Button id="pageForward" class="page_navigation page_forward" />',
+    '  <Button id="pageInner" class="page_navigation page_inner_left" />',
+    "",
+    '  <VerticalLayout id="page2_dynamic" padding="80 80 160 520" spacing="24">',
+    '    <HorizontalLayout class="page2_disc_row" preferredHeight="280" flexibleHeight="0" spacing="24">',
+    cells[1],
+    cells[2],
+    cells[3],
+    "    </HorizontalLayout>",
+    '    <HorizontalLayout class="page2_disc_row" preferredHeight="280" flexibleHeight="0" spacing="24">',
+    cells[4],
+    cells[5],
+    cells[6],
+    "    </HorizontalLayout>",
+  }
+
+  local hasRc = #rituals > 0 or #ceremonies > 0
+  if hasRc then
+    local divider = "divider_ritualsAndCeremonies"
+    local leftList = {}
+    local rightList = {}
+    if #rituals > 0 and #ceremonies > 0 then
+      divider = "divider_ritualsAndCeremonies"
+      leftList = rituals
+      rightList = ceremonies
+    elseif #rituals > 0 then
+      divider = "divider_rituals"
+      for i = 1, math.min(5, #rituals) do
+        leftList[i] = rituals[i]
+      end
+      for i = 6, math.min(10, #rituals) do
+        rightList[i - 5] = rituals[i]
+      end
+    else
+      divider = "divider_ceremonies"
+      for i = 1, math.min(5, #ceremonies) do
+        leftList[i] = ceremonies[i]
+      end
+      for i = 6, math.min(10, #ceremonies) do
+        rightList[i - 5] = ceremonies[i]
+      end
+    end
+
+    parts[#parts + 1] = string.format(
+      '    <Image image="%s" class="page2_rc_divider" preferredHeight="80" flexibleHeight="0" preserveAspect="true" />',
+      divider
+    )
+    parts[#parts + 1] = '    <HorizontalLayout class="page2_rc_columns" spacing="40" flexibleHeight="1">'
+    parts[#parts + 1] = '      <VerticalLayout class="page2_rc_col" flexibleWidth="1" spacing="12">'
+    for row = 1, 5 do
+      parts[#parts + 1] = buildRcRow(leftList[row], "L", row)
+    end
+    parts[#parts + 1] = "      </VerticalLayout>"
+    parts[#parts + 1] = '      <VerticalLayout class="page2_rc_col" flexibleWidth="1" spacing="12">'
+    for row = 1, 5 do
+      parts[#parts + 1] = buildRcRow(rightList[row], "R", row)
+    end
+    parts[#parts + 1] = "      </VerticalLayout>"
+    parts[#parts + 1] = "    </HorizontalLayout>"
+  end
+
+  parts[#parts + 1] = "  </VerticalLayout>"
+  parts[#parts + 1] = "</Panel>"
+
+  return table.concat({
+    CSHEET_DEFAULTS.getXml(),
+    "",
+    table.concat(parts, "\n"),
+    "",
+  }, "\n")
+end
+
+--- @param stats table|nil
+--- @return string
+function M.fingerprintPage2Stats(stats)
+  if type(stats) ~= "table" then
+    return ""
+  end
+  local discs = type(stats.disciplines) == "table" and stats.disciplines or {}
+  local parts = { "p2" }
+  local owned = orderedOwnedDisciplineKeys(discs)
+  for i = 1, #owned do
+    local key = owned[i]
+    local row = discs[key]
+    local base = tonumber(row.base) or 0
+    local temp = tonumber(row.temp) or 0
+    parts[#parts + 1] = string.format("%s=%d/%d|%s", key, base, temp, powersText(row.powers))
+  end
+  local rituals, ceremonies = collectRitualsAndCeremonies(discs)
+  local function fpList(label, list)
+    parts[#parts + 1] = label
+    for i = 1, #list do
+      local e = list[i]
+      if type(e) == "table" then
+        parts[#parts + 1] = string.format(
+          "%s@%s",
+          tostring(e.name or ""),
+          tostring(e.level or 0)
+        )
+      end
+    end
+  end
+  fpList("R", rituals)
+  fpList("C", ceremonies)
+  return table.concat(parts, "\3")
+end
+
+return M

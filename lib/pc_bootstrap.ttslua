@@ -29,22 +29,14 @@ local function deepCloneTable(t)
   return U.clone(t)
 end
 
---- Shallow copy of discipline dots only (strip powers metadata from PCS).
+--- Clone discipline rows for live stats (keeps powers / rituals / ceremonies for page 2).
 --- @param srcDisc table|nil
 --- @return table
-local function stripDisciplines(srcDisc)
-  local out = {}
+local function cloneDisciplines(srcDisc)
   if type(srcDisc) ~= "table" then
-    return out
+    return {}
   end
-  for key, row in pairs(srcDisc) do
-    if type(row) == "table" and type(key) == "string" then
-      local b = tonumber(row.base) or 0
-      local t = tonumber(row.temp) or 0
-      out[key] = { base = b, temp = t }
-    end
-  end
-  return out
+  return deepCloneTable(srcDisc)
 end
 
 --- Build full stats table (Part A–E) from a PCS character record.
@@ -65,7 +57,7 @@ function BOOT.statsFromPcsChar(pcsChar)
     bloodPotency = deepCloneTable(pcsChar.bloodPotency or { base = 0, temp = 0 }),
     xp = tonumber(pcsChar.xp) or 0,
     hunger = 0,
-    disciplines = stripDisciplines(pcsChar.disciplines),
+    disciplines = cloneDisciplines(pcsChar.disciplines),
     backgrounds = deepCloneTable(pcsChar.backgrounds or {}),
     merits = deepCloneTable(pcsChar.merits or {}),
     flaws = deepCloneTable(pcsChar.flaws or {}),
@@ -116,6 +108,41 @@ function BOOT.hydrateNarrativeTraits(stats, charKey)
   end
   if narrativeTraitArrayEmpty(stats.flaws) then
     stats.flaws = deepCloneTable(pcsChar.flaws or {})
+  end
+end
+
+--- Merge powers / rituals / ceremonies from PCS into live discipline rows (keep base/temp).
+--- Needed when older saves stripped those fields at bootstrap.
+--- @param stats table
+--- @param charKey string
+function BOOT.hydrateDisciplineDetails(stats, charKey)
+  if type(stats) ~= "table" or type(charKey) ~= "string" or charKey == "" then
+    return
+  end
+  local pcsChar = PCS.getPC(charKey)
+  if type(pcsChar) ~= "table" or type(pcsChar.disciplines) ~= "table" then
+    return
+  end
+  if type(stats.disciplines) ~= "table" then
+    stats.disciplines = {}
+  end
+  for key, pcsRow in pairs(pcsChar.disciplines) do
+    if type(key) == "string" and type(pcsRow) == "table" then
+      local live = stats.disciplines[key]
+      if type(live) ~= "table" then
+        stats.disciplines[key] = deepCloneTable(pcsRow)
+      else
+        if live.powers == nil and pcsRow.powers ~= nil then
+          live.powers = deepCloneTable(pcsRow.powers)
+        end
+        if live.rituals == nil and pcsRow.rituals ~= nil then
+          live.rituals = deepCloneTable(pcsRow.rituals)
+        end
+        if live.ceremonies == nil and pcsRow.ceremonies ~= nil then
+          live.ceremonies = deepCloneTable(pcsRow.ceremonies)
+        end
+      end
+    end
   end
 end
 

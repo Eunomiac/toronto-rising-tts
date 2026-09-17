@@ -53,6 +53,7 @@ const LUA_STUB_RULES = [
   { prefix: "TAROT_BUTTON", line: `require("ui.ui_tarot_button")` },
   { prefix: "COMPANION_TOGGLE", line: `require("ui.ui_companion_toggle")` },
   { prefix: "DICEBAG", line: `require("objects.dice_bag")` },
+  { prefix: "CSHEET_PAGE_2", line: `require("ui.ui_csheet_page2")` },
   { prefix: "CSHEET_PAGE_3", line: `require("ui.ui_csheet_page3")` },
   { prefix: "CSHEET_PAGE_4", line: `require("ui.ui_csheet_page4")` },
   { prefix: "CSHEET_PAGE_5", line: `require("ui.ui_csheet_page5")` },
