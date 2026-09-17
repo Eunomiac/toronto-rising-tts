@@ -700,12 +700,8 @@ end
 
 --- @return boolean
 local function isScatterSeatLayoutActive()
-    local scatterKey = (C.Scatter and C.Scatter.TABLE_KEY) or "Scatter"
-    local tableKey = S.getStateVal("seatLayout", "currentTableKey")
-    if tableKey == scatterKey then
-        return true
-    end
-    return S.getStateVal("sessionScene", "placementMode") == "scatter"
+    local Occupancy = require("lib.scatter_occupancy")
+    return Occupancy.isScatterLayoutActive() == true
 end
 
 --- @return table|nil
@@ -1020,7 +1016,6 @@ function O.SetSignalFireState(color, state, duration)
     local targetRot = signalFireOnRotationForColor(color)
     local restoreOpts = {
         position = targetPos,
-        locked = false,
         interactable = false,
     }
     if targetRot ~= nil then

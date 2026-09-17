@@ -1339,14 +1339,14 @@ function GlobalRefreshUiAfterSeatAssignment(params)
     refreshGlobalUiAfterSeatAssignment(seatColor)
 end
 
---- Scatter playfield origin (same role as `C.Tables[*].centerPoint`; not a `C.Tables` row).
+--- Scatter playfield origin from `C.Tables["Scatter"].centerPoint` (FLOOR_Y for Y).
 --- @return table|nil { x, y, z }
 local function scatterSeatLayoutCenterPoint()
-    local scatter = C.Scatter
+    local scatter = C.Tables and C.Tables["Scatter"] or C.Scatter
     if type(scatter) ~= "table" then
         return nil
     end
-    local cp = scatter.CENTER_POINT
+    local cp = scatter.centerPoint
     local floorY = tonumber(scatter.FLOOR_Y) or -52.89
     local x, z = 0, 0
     if type(cp) == "userdata" or type(cp) == "table" then
@@ -1359,10 +1359,9 @@ end
 --- Returns seat layout center point from global state for object scripts.
 --- @return table|nil { x, y, z }
 function GlobalGetSeatLayoutCenterPoint()
-    local scatterKey = (C.Scatter and C.Scatter.TABLE_KEY) or "Scatter"
+    local Occupancy = require("lib.scatter_occupancy")
     local tableKey = S.getStateVal("seatLayout", "currentTableKey")
-    local placementMode = S.getStateVal("sessionScene", "placementMode")
-    if tableKey == scatterKey or placementMode == "scatter" then
+    if Occupancy.isScatterTableKey(tableKey) or S.getStateVal("sessionScene", "placementMode") == "scatter" then
         return scatterSeatLayoutCenterPoint()
     end
     if type(tableKey) == "string" and C.Tables and C.Tables[tableKey] and C.Tables[tableKey].centerPoint ~= nil then
@@ -5861,6 +5860,63 @@ function HUD_debugCameraDone(player, button, id)
     end
 end
 
+--- Open scatter geometry debug panel (ST only).
+-- @param player Player
+-- @param button string|nil
+-- @param id string|nil
+function HUD_debugScatterActivate(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_debugScatterActivate") then
+        return
+    end
+    if ScatterDebugPanel == nil or type(ScatterDebugPanel.activate) ~= "function" then
+        broadcastToColor("Debug Scatter: module not loaded.", player.color, { 1, 0.35, 0 })
+        return
+    end
+    ScatterDebugPanel.activate(player)
+end
+
+--- Scatter geometry slider (cache only until Apply).
+-- @param player Player
+-- @param value number|string
+-- @param id string
+function HUD_debugScatterSlider(player, value, id)
+    if not requireStorytellerForMutation(player, "HUD_debugScatterSlider") then
+        return
+    end
+    if ScatterDebugPanel == nil or type(ScatterDebugPanel.onSlider) ~= "function" then
+        return
+    end
+    ScatterDebugPanel.onSlider(player, value, id)
+end
+
+--- Apply cached scatter geometry and reposition occupants.
+-- @param player Player
+-- @param button string|nil
+-- @param id string|nil
+function HUD_debugScatterApply(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_debugScatterApply") then
+        return
+    end
+    if ScatterDebugPanel == nil or type(ScatterDebugPanel.apply) ~= "function" then
+        broadcastToColor("Debug Scatter: module not loaded.", player.color, { 1, 0.35, 0 })
+        return
+    end
+    local ok, message = ScatterDebugPanel.apply(player)
+    if not ok then
+        broadcastToColor("Debug Scatter: " .. tostring(message), player.color, { 1, 0.35, 0 })
+    end
+end
+
+--- Close scatter geometry debug panel.
+-- @param player Player
+-- @param button string|nil
+-- @param id string|nil
+function HUD_debugScatterDone(player, button, id)
+    if ScatterDebugPanel and ScatterDebugPanel.done then
+        ScatterDebugPanel.done()
+    end
+end
+
 --- Cache camera mode input text for debug camera panel.
 -- @param player Player
 -- @param value string|nil
@@ -6166,6 +6222,7 @@ R = require("lib.rotational-seat-layout")
 LightDebug = require("core.light_debug")
 LightDebugFocus = require("core.light_debug_focus")
 CameraDebugFocus = require("core.camera_debug_focus")
+ScatterDebugPanel = require("core.scatter_debug_panel")
 
 -- ============================================================================
 -- DICE SYSTEM MODULES

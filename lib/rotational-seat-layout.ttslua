@@ -3512,7 +3512,17 @@ end
 --- @param options table|nil forwarded options; `currentTableKey` defaults from tableRef; `force` bypasses fingerprint short-circuit
 --- @return table|nil computed; nil when fingerprint short-circuit skips work
 function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
+  local Occupancy = require("lib.scatter_occupancy")
+  -- SCATTER shape: never run circular/facing chair layout. Enter/sync via SetTableTo / SyncTable.
+  if U.Type(tableRef) == "string" and Occupancy.isScatterTableKey(tableRef) then
+    return { scatter = true }
+  end
   local tableKey, tableCfg = resolveTableRef(tableRef)
+  if Occupancy.isScatterTableKey(tableKey)
+      or (U.Type(tableCfg) == "table" and tableCfg.shape == (C.TableShapes and C.TableShapes.SCATTER))
+  then
+    return { scatter = true }
+  end
   local src = sourceObjects or C.TableSourceObjects
   if U.Type(src) ~= "table" then
     error("rotational-seat-layout: sourceObjects must be a table or nil (to use C.TableSourceObjects)")
@@ -3663,6 +3673,7 @@ end
 function M.SyncTable(tableKey, opts)
   opts = U.Type(opts) == "table" and opts or {}
   local ScatterMode = require("core.scatter_mode")
+  local Occupancy = require("lib.scatter_occupancy")
   local key = tableKey
   if U.Type(key) ~= "string" or key == "" then
     key = S.getStateVal("seatLayout", "currentTableKey")
@@ -3675,12 +3686,23 @@ function M.SyncTable(tableKey, opts)
   if U.Type(key) ~= "string" or key == "" then
     return nil
   end
-  if key == ScatterMode.TABLE_KEY then
+  key = normalizeTableKeyInput(key)
+  if Occupancy.isScatterTableKey(key) or key == ScatterMode.TABLE_KEY then
+    if ScatterMode.isActive() then
+      ScatterMode.applyWorldLayout()
+      if type(ScatterMode.reconcileControlBoardFromState) == "function" then
+        local Board = require("core.npc_gameboard_board")
+        local board = Board.getControlBoard and Board.getControlBoard() or nil
+        if board ~= nil then
+          ScatterMode.reconcileControlBoardFromState(board, opts)
+        end
+      end
+      return { scatter = true }
+    end
     ScatterMode.enter(opts)
     return { scatter = true }
   end
   if ScatterMode.isActive() then
-    local Occupancy = require("lib.scatter_occupancy")
     Occupancy.prepareLeaveToStandard(key, { skipRestore = opts.skipScatterRestore == true })
     ScatterMode.leave(opts)
   end
@@ -3794,14 +3816,17 @@ function M.SetTableTo(tableKey, opts)
     return nil
   end
   local ScatterMode = require("core.scatter_mode")
+  local Occupancy = require("lib.scatter_occupancy")
   local destKey = normalizeTableKeyInput(tableKey)
-  if destKey == ScatterMode.TABLE_KEY then
+  if Occupancy.isScatterTableKey(destKey) then
     local function enterScatter()
-      if ScatterMode.isActive() ~= true then
-        ScatterMode.enter({ force = true, translateFromStandard = true })
-      else
-        ScatterMode.enter({ force = true })
+      local enterOpts = { force = true }
+      if opts.authored == true then
+        enterOpts.authored = true
+      elseif ScatterMode.isActive() ~= true then
+        enterOpts.translateFromStandard = true
       end
+      ScatterMode.enter(enterOpts)
     end
     if opts.skipTransitionBlindfold == true then
       enterScatter()
@@ -3815,9 +3840,8 @@ function M.SetTableTo(tableKey, opts)
     return nil
   end
   local currentTableKey = S.getStateVal("seatLayout", "currentTableKey")
-  local leavingScatter = currentTableKey == ScatterMode.TABLE_KEY
+  local leavingScatter = Occupancy.isScatterTableKey(currentTableKey)
   if leavingScatter then
-    local Occupancy = require("lib.scatter_occupancy")
     Occupancy.prepareLeaveToStandard(destKey, { skipRestore = opts.skipScatterRestore == true })
     ScatterMode.leave(opts)
   end
@@ -5452,10 +5476,17 @@ M.applyTableConfigObjectPositions = applyTableConfigObjectPositions
 
 --- Apply per-seat camera presets from a precomputed rigid bundle (Scatter Mode figurine yaw).
 --- @param computed table `{ seatRigidByKey, slot1Rigid, centerPoint, referenceSeatKey }`
-function M.applyCameraModesFromComputed(computed)
+--- @param opts table|nil `{ tableCfg?: table }` — when set, camera position offset uses that table's reference figurine (Scatter passes Table A).
+function M.applyCameraModesFromComputed(computed, opts)
+  opts = type(opts) == "table" and opts or {}
   local src = C.TableSourceObjects
   local sourceGroups = resolveSourceTemplateGroups(src)
-  applyCameraModesForSeats(computed, sourceGroups, nil)
+  local tableCfg = opts.tableCfg
+  if tableCfg == nil and type(C.Tables) == "table" then
+    tableCfg = C.Tables["Table A"]
+  end
+  local camWorldOffset = cameraPositionWorldOffsetForActiveTable(tableCfg)
+  applyCameraModesForSeats(computed, sourceGroups, camWorldOffset)
 end
 
 return M

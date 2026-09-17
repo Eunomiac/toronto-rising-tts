@@ -6,6 +6,7 @@
 
 local C = require("lib.constants")
 local U = require("lib.util")
+local S = require("core.state")
 local ScatterLayout = require("lib.scatter_layout")
 
 local ScatterOccupancy = {}
@@ -35,7 +36,24 @@ function ScatterOccupancy.isScatterTableKey(tableKey)
         return false
     end
     local trimmed = string.gsub(string.gsub(tableKey, "^%s+", ""), "%s+$", "")
-    return string.lower(trimmed) == "scatter"
+    if string.lower(trimmed) == "scatter" then
+        return true
+    end
+    local row = C.Tables and C.Tables[trimmed]
+    if U.Type(row) == "table" and row.shape == (C.TableShapes and C.TableShapes.SCATTER) then
+        return true
+    end
+    return false
+end
+
+--- True when the live seat layout is the Scatter table shape.
+--- @return boolean
+function ScatterOccupancy.isScatterLayoutActive()
+    local key = S.getStateVal("seatLayout", "currentTableKey")
+    if ScatterOccupancy.isScatterTableKey(key) then
+        return true
+    end
+    return S.getStateVal("sessionScene", "placementMode") == "scatter"
 end
 
 --- Numbered chair → scatter group 1–6 (slot 7 → group 1).

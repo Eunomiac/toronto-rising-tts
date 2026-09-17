@@ -7,7 +7,9 @@ The NPC stage and control board have two modes of operation:
 - **Standard Mode:** The existing behavior, using the table and the existing PC/NPC snap-group families.
 - **Scatter Mode:** A new mode for scenes in which the PCs are free to move around the game world and interact with different groups of NPCs. Instead of occupying a fixed PC group, each PC belongs to one of six spatially separated **scatter groups**.
 
-Scatter Mode is another **table type**: the “no table” type. Entering or leaving it is a change-of-table transition (same class of work as switching `Table A` / `Table B` / `Table C`). Scene data names it the same way it names any other table (`tableKey`, or the equivalent once Phase 1 occupancy lives in `seatSlots`).
+Scatter Mode is a **table type** in `C.Tables["Scatter"]` with `shape = C.TableShapes.SCATTER` (the “no table” playfield). Entering or leaving it is a change-of-table transition (same class of work as switching `Table A` / `Table B` / `Table C`). Scene data names it with `tableKey: "Scatter"` (and may also set `placementMode: "scatter"` as a dashboard/import mirror). `C.Scatter` is a thin alias of that Tables row.
+
+Nested-circle world layout and control-board hole parking stay in dedicated modules (`lib/scatter_layout.ttslua`, `core/scatter_mode.ttslua`) — they are the SCATTER shape backend, not circular/facing chair walking.
 
 ---
 
@@ -16,7 +18,7 @@ Scatter Mode is another **table type**: the “no table” type. Entering or lea
 In **Scatter Mode**:
 
 - There is no table.
-- There are no thrones or chairs. `C.Scatter.objectsToHide` lists objects (chairs, Prince signet and curtain, and anything else you add) that Scatter disables and hides from every player, including the Storyteller. Leaving Scatter restores their usual visibility.
+- There are no thrones or chairs. `C.Tables["Scatter"].objectsToHide` (also available as `C.Scatter.objectsToHide`) lists objects (chairs, Prince signet and curtain, and anything else you add) that Scatter disables and hides from every player, including the Storyteller. Leaving Scatter restores their usual visibility.
 - PCs are not positioned in a separate group of their own.
 - Both PCs and NPCs are assigned to one of six **scatter groups** distributed around the game world.
 - A PC can move from one scatter group to another during play.
@@ -78,11 +80,11 @@ Calibrate each of the six groups the same way. Re-run a group if the art or boar
 
 ## Constants
 
-All numeric Scatter parameters are **global constants** in `lib/constants.ttslua`. They are not per-group and not per-scene. Initial values below are educated guesses for first in-world testing; they are expected to change.
+All numeric Scatter parameters are **global constants** on `C.Tables["Scatter"]` in `lib/constants.ttslua` (`shape = C.TableShapes.SCATTER`). They are not per-group and not per-scene. Shared table keys use the same names as other tables (`centerPoint`, `objectPositions`). Scatter-only geometry keys keep their existing names. Initial values below are educated guesses for first in-world testing; they are expected to change. (`C.Scatter` is an alias of this row.)
 
 | Constant | Initial guess | Role |
 | --- | --- | --- |
-| `CENTER_POINT` | `{0,0,0}` | Scatter playfield origin (same role as a table’s `centerPoint`). Floor, plinth, rain emitter, and STAGE_BOARD X/Z move here on enter. |
+| `centerPoint` | `{0,0,0}` | Scatter playfield origin (same key as other `C.Tables` rows). Floor, plinth, rain emitter, and STAGE_BOARD X/Z move here on enter. |
 | `STAGE_BOARD_HOME_XZ` | `{0, 62.0977}` | Workshop home for STAGE_BOARD (it does not follow tables). Restored on leave; Y is left alone. |
 | `GROUP_COUNT` | `6` | Number of scatter groups. |
 | `BOARD_NPC_HOLE_COUNT` | `12` | NPC holes on each group’s dashed ring on the control board. |
@@ -96,11 +98,12 @@ All numeric Scatter parameters are **global constants** in `lib/constants.ttslua
 | `PC_DEPLOYMENT_ARC` | `80` | Angular width of the five PC slots; meant to hold five figurines on `SCATTER_RADIUS_PC` without stacking. |
 | `NPC_SPACING_MIN` | `10` | Tightest allowed angular gap between adjacent NPCs in a group (~3.8 units of chord at the guessed NPC radius). |
 | `NPC_SPACING_MAX` | `22` | Widest allowed angular gap; fewer NPCs cluster near the arc midpoint instead of stretching across the whole fan. |
-| `ST_DICE_TRAY_ON_Y` | `-50.89` | Storyteller dice-tray height in Scatter (just above the figurine plane). Tune after the first in-world pass. |
-| `ST_DICE_TRAY_OFF_Y` | `-80.89` | Drop height before the tray rises at a scatter group. |
-| `ST_DICE_TRAY_YAW_OFFSET_DEG` | `0` | Extra yaw added to the group World Ray when posing the tray. |
+| `ST_DICE_TRAY_YAW_OFFSET_DEG` | `0` | Extra yaw added to the group World Ray when posing the storyteller dice tray. On/off Y uses homeland `DICE_DRAWER_STORYTELLER_*` poses (−200 off). |
 | `objectsToHide` | chairs + Prince signet/curtain | GUIDs to disable and hide from every player layer while Scatter is active. |
 | `TOKEN_SCALE` | `{0.5, 1, 0.5}` | Control tokens on scatter group holes; palette parking restores polar `{0.2, 1, 0.2}`. |
+| `objectPositions` | lights / floor / plinth / STAGE_BOARD | Same shared table key as wood tables; applied on enter. |
+
+This row has **no** wood-table `guid`, `activePosition`, or chair maps.
 
 Do not add extra “this arrangement looks wrong” guards. If a chosen constant set produces a bizarre layout, correct the constants. The only hard stop is math that cannot run (a zero-length direction, i.e. a true divide-by-zero / `normalize` of a zero vector). In that case broadcast a non-stopping error and skip that pose rather than crashing.
 
@@ -110,7 +113,7 @@ Do not add extra “this arrangement looks wrong” guards. If a chosen constant
 
 For the definitions below:
 
-- **World Origin** is `C.Scatter.CENTER_POINT` on the table plane (default `{0, 0}` in X/Z). Height `y` is not part of this 2D origin; figurines use the default PC figurine Y.
+- **World Origin** is `C.Tables["Scatter"].centerPoint` on the table plane (default `{0, 0}` in X/Z). Height `y` is not part of this 2D origin; figurines use the default PC figurine Y.
 - **World Circle** is an imaginary circle centered on the World Origin with radius `SCATTER_RADIUS_WORLD`.
 - Each scatter group has a **Scatter Group Origin**, which lies on the World Circle.
 - A **World Ray** is a ray beginning at the World Origin and passing through a specified world-space point. Unless otherwise specified, "the World Ray" of a scatter group means the World Ray passing through that group's `SCATTER_GROUP_ORIGIN`.

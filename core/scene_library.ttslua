@@ -581,6 +581,7 @@ end
 --- @return boolean ok
 --- @return string|nil err
 local function validateScatterPlacementsPack(sessionScene)
+    local pack = type(sessionScene) == "table" and sessionScene.scatterPlacements or nil
     if type(pack) ~= "table" then
         return false, "sessionScene.scatterPlacements: required object with scatter1…scatter6 (do not default missing areas)."
     end
@@ -665,8 +666,9 @@ local function validateScatterPlacementsPack(sessionScene)
         end
         local orbitSlots = {}
         local holeCount = 12
-        if type(C.Scatter) == "table" and tonumber(C.Scatter.BOARD_NPC_HOLE_COUNT) ~= nil then
-            holeCount = math.floor(C.Scatter.BOARD_NPC_HOLE_COUNT)
+        local scatterRow = C.Tables and C.Tables["Scatter"] or C.Scatter
+        if type(scatterRow) == "table" and tonumber(scatterRow.BOARD_NPC_HOLE_COUNT) ~= nil then
+            holeCount = math.floor(scatterRow.BOARD_NPC_HOLE_COUNT)
         end
         for npcKey, row in pairs(area.orbitCharacters) do
             if type(npcKey) ~= "string" or npcKey == "" then

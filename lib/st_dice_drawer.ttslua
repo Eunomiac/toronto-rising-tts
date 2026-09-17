@@ -442,10 +442,8 @@ function STD.isRaisedForRelease(slot)
         return false
     end
     if scatterPoseBySlot[slot] == true then
-        local onY = tonumber(C.Scatter and C.Scatter.ST_DICE_TRAY_ON_Y)
-        if onY == nil then
-            onY = (tonumber(C.Scatter and C.Scatter.FLOOR_Y) or -52.89) + 2
-        end
+        local ScatterLayout = require("lib.scatter_layout")
+        local onY = ScatterLayout.storytellerTrayOnY()
         return y > (onY - 2.5)
     end
     local npcSeatKey = npcSeatKeyForSlot(slot)
@@ -483,20 +481,11 @@ function STD.arcCenterForSlot(slot)
     return STS.arcCenterFromTraySpec(traySpec)
 end
 
---- Scatter tray on/off Y from C.Scatter (figurine plane, not table-top).
+--- Scatter tray on/off Y: same on height as homeland table drawers; off = hide plane.
 -- @return number, number onY, offY
 local function scatterTrayHeights()
-    local scatter = C.Scatter
-    local floorY = tonumber(scatter and scatter.FLOOR_Y) or -52.89
-    local onY = tonumber(scatter and scatter.ST_DICE_TRAY_ON_Y)
-    if onY == nil then
-        onY = floorY + 2
-    end
-    local offY = tonumber(scatter and scatter.ST_DICE_TRAY_OFF_Y)
-    if offY == nil then
-        offY = onY - 30
-    end
-    return onY, offY
+    local ScatterLayout = require("lib.scatter_layout")
+    return ScatterLayout.storytellerTrayOnY(), WORKSHOP_HOME_OFF_Y
 end
 
 --- World XZ + yaw for a Scatter ST tray (group ray midpoint, or origin if group is 0/nil).

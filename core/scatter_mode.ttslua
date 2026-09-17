@@ -1,7 +1,7 @@
 --[[
     Scatter Mode runtime (TOR-572). Global `require` only — never from object scripts.
 
-    Table-change into the “no table” sentinel `C.Scatter.TABLE_KEY`: swap CONTROL_BOARD art
+    Table-change into `C.Tables["Scatter"]` (`shape = SCATTER`): swap CONTROL_BOARD art
     (wait until the recreated tile is mesh-ready before snaps/XmlUI), hide tables/chairs,
     clear polar snaps (debug calibration snaps only while measuring holes), auto-park tokens
     on measured holes, pose figurines.
@@ -16,7 +16,7 @@ local ScatterLayout = require("lib.scatter_layout")
 
 local ScatterMode = {}
 
-ScatterMode.TABLE_KEY = (C.Scatter and C.Scatter.TABLE_KEY) or "Scatter"
+ScatterMode.TABLE_KEY = "Scatter"
 
 --- Last CONTROL_BOARD custom image URL applied by ScatterMode (fingerprint vs Sync.full).
 local lastAppliedBoardImageUrl = nil
@@ -32,9 +32,9 @@ local applyDebugCalibrationSnapsIfAny
 local debugHolesByGroup = {}
 
 local function scatterCfg()
-    local scatter = C.Scatter
+    local scatter = C.Tables and C.Tables["Scatter"] or C.Scatter
     if U.Type(scatter) ~= "table" then
-        error("scatter_mode: C.Scatter is missing")
+        error("scatter_mode: C.Tables[\"Scatter\"] is missing")
     end
     return scatter
 end
@@ -45,8 +45,9 @@ end
 
 --- @return boolean
 function ScatterMode.isActive()
+    local Occupancy = require("lib.scatter_occupancy")
     local key = S.getStateVal("seatLayout", "currentTableKey")
-    if key == ScatterMode.TABLE_KEY then
+    if Occupancy.isScatterTableKey(key) then
         return true
     end
     local mode = S.getStateVal("sessionScene", "placementMode")
@@ -730,6 +731,30 @@ local function movePcFigurineToScatterPose(color, frame)
     fig.setRotation(rot)
 end
 
+--- @param occupants table
+--- @return table|nil occupant at packed world slot 3 (center)
+local function centerOccupant(occupants)
+    for i = 1, #occupants do
+        if worldSlotFromPackedTableSlot(occupants[i].tableSlot) == 3 then
+            return occupants[i]
+        end
+    end
+    return occupants[1]
+end
+
+local function applyScatterPlayerCameras(occupants)
+    local Main = require("core.main")
+    if type(Main.setCamera) ~= "function" then
+        return
+    end
+    for i = 1, #occupants do
+        local color = occupants[i].occupantKey
+        if type(color) == "string" and color ~= "" then
+            Main.setCamera(color, "default")
+        end
+    end
+end
+
 local function applyPcRigs(framesBySlot, occupants)
     local FSL = require("lib.figurine_seat_layout")
     local RSL = require("lib.rotational-seat-layout")
@@ -791,11 +816,13 @@ local function applyPcRigs(framesBySlot, occupants)
         hideChairForOccupant(occupants[i].occupantKey)
     end
     hideNpcSeatPiles()
+    local centerOcc = centerOccupant(occupants)
+    local refKey = (centerOcc and centerOcc.occupantKey) or "Red"
     local computed = {
-        referenceSeatKey = (occupants[1] and occupants[1].occupantKey) or "Red",
-        referencePlayerColor = (occupants[1] and occupants[1].occupantKey) or "Red",
+        referenceSeatKey = refKey,
+        referencePlayerColor = refKey,
         seatRigidByKey = seatRigidByKey,
-        slot1Rigid = slot1Rigid or { deltaDeg = 0, shift = Vector(0, 0, 0) },
+        slot1Rigid = slot1Rigid or seatRigidByKey[refKey] or { deltaDeg = 0, shift = Vector(0, 0, 0) },
         centerPoint = center,
         seatToPositionMap = {},
     }
@@ -803,8 +830,9 @@ local function applyPcRigs(framesBySlot, occupants)
         computed.seatToPositionMap[occupants[i].occupantKey] = occupants[i].tableSlot
     end
     if type(RSL.applyCameraModesFromComputed) == "function" then
-        RSL.applyCameraModesFromComputed(computed)
+        RSL.applyCameraModesFromComputed(computed, { tableCfg = tableA })
     end
+    applyScatterPlayerCameras(occupants)
 end
 
 --- Apply PC satellites + NPC stage poses from live scatterPlacements.
@@ -846,9 +874,7 @@ function ScatterMode.applyWorldLayout()
         for n = 1, #npcKeys do
             local pose = npcPoses[n]
             if pose ~= nil then
-                local row = area.orbitCharacters[npcKeys[n]]
-                local light = (row and row.npcLightMode) or "STANDARD"
-                placeNpcAtScatterPose(npcKeys[n], pose, light)
+                placeNpcAtScatterPose(npcKeys[n], pose, "STANDARD")
             end
         end
     end
@@ -865,6 +891,10 @@ function ScatterMode.applyWorldLayout()
         if occupiedColors[color] ~= true then
             FSL.setOccupantPileVisible(color, false)
         end
+    end
+    local NPCS = require("core.npcs")
+    if type(NPCS.reconcilePreloadPoolHideFromState) == "function" then
+        NPCS.reconcilePreloadPoolHideFromState()
     end
 end
 
@@ -1187,10 +1217,9 @@ function ScatterMode.applyFromControlBoard()
                 end
             end
         end
-        local faceUp = Tokens.tokenRotationIsFaceUp(token)
         area.orbitCharacters[npcKey] = {
             slot = bestSlot,
-            npcLightMode = faceUp and "STANDARD" or "OFF",
+            npcLightMode = "STANDARD",
         }
     end
 
@@ -1272,10 +1301,9 @@ function ScatterMode.onControlTokenDropped(token, isPc)
         removeCharacterFromAllGroups(npcKey)
         local holeSlot = nextFreeNpcHoleSlot(gi)
         local area = areaForGroup(gi)
-        local faceUp = Tokens.tokenRotationIsFaceUp(token)
         area.orbitCharacters[npcKey] = {
             slot = holeSlot,
-            npcLightMode = faceUp and "STANDARD" or "OFF",
+            npcLightMode = "STANDARD",
         }
         local hole = holes.gold
         if holeSlot >= 1 and holeSlot <= #(holes.npcHoles or {}) then

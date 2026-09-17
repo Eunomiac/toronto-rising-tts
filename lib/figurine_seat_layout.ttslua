@@ -9,7 +9,7 @@
     so restore can lift table-height roles without flattening feature-hide Y
     (CSHEET pages, SIGNAL_FIRE, HUNGER_SMOKE) — TOR-512 / TOR-513.
     Cover transitions onto `isRandomSeating` tables (Table B) shuffle packed occupancy (TOR-537).
-    Pink TAROT_DECK layout Y follows Consult-the-Tarot (ObjectPositions on/off), default off.
+    Pink TAROT_DECK follows Consult-the-Tarot (ObjectPositions on/off) via hide/restore at −200 when off.
 ]]
 
 local U = require("lib.util")
@@ -474,12 +474,8 @@ end
 
 --- @return boolean
 local function isScatterSeatLayoutActive()
-    local scatterKey = (C.Scatter and C.Scatter.TABLE_KEY) or "Scatter"
-    local tableKey = S.getStateVal("seatLayout", "currentTableKey")
-    if tableKey == scatterKey then
-        return true
-    end
-    return S.getStateVal("sessionScene", "placementMode") == "scatter"
+    local Occupancy = require("lib.scatter_occupancy")
+    return Occupancy.isScatterLayoutActive() == true
 end
 
 --- Roles whose on/off (or page show/hide) is encoded in world Y — occupancy stash must not flatten these.
@@ -489,7 +485,7 @@ local function isFeatureHideRoleKey(roleKey)
     if type(roleKey) ~= "string" then
         return false
     end
-    if roleKey == "SIGNAL_FIRE" or roleKey == "HUNGER_SMOKE" then
+    if roleKey == "SIGNAL_FIRE" or roleKey == "HUNGER_SMOKE" or roleKey == "TAROT_DECK" then
         return true
     end
     return string.match(roleKey, "^CSHEET_PAGE_%d+$") ~= nil
@@ -590,7 +586,7 @@ local function clearOccupantPileY(occupantKey)
     end
 end
 
---- Pink tarot on/off is encoded in Y (on ≈ 7.7, off = −10). Occupancy bury (−200) is not “on”.
+--- Pink tarot on Y (≈ 7.7). Off uses hide protocol at C.HIDDEN_OBJECT_WORLD_Y (−200).
 --- @return number
 local function tarotDeckOnY()
     local entry = C.ObjectPositions and C.ObjectPositions.TAROT_DECK_PINK
@@ -603,29 +599,14 @@ local function tarotDeckOnY()
     return 7.7
 end
 
---- @return number
-local function tarotDeckOffY()
-    local entry = C.ObjectPositions and C.ObjectPositions.TAROT_DECK_PINK
-    if U.Type(entry) == "table" and U.Type(entry.off) == "table" and U.Type(entry.off.position) == "table" then
-        local y = tonumber(entry.off.position.y)
-        if y ~= nil then
-            return y
-        end
-    end
-    return -10
-end
-
---- Same midpoint rule as TarotToggle.inferCurrentState.
 --- @param y number|nil
 --- @return boolean
 local function yLooksLikeTarotOn(y)
     local n = tonumber(y)
-    if n == nil then
+    if n == nil or liveYIsHidden(n) then
         return false
     end
-    local onY = tarotDeckOnY()
-    local offY = tarotDeckOffY()
-    return n >= ((onY + offY) / 2)
+    return n >= (tarotDeckOnY() - 1)
 end
 
 --- Occupancy stash Y vs feature-hide Y vs authored defaultY.
@@ -638,14 +619,13 @@ end
 --- @return number
 local function resolveSatelliteY(occupantKey, roleKey, liveY, defaultY, worldY)
     if roleKey == "TAROT_DECK" then
-        local sample = peekOccupantPileY(occupantKey, roleKey)
-        if sample == nil then
-            sample = liveY
+        if liveYIsHidden(liveY) then
+            return liveY
         end
-        if yLooksLikeTarotOn(sample) then
+        if yLooksLikeTarotOn(liveY) then
             return tarotDeckOnY()
         end
-        return tarotDeckOffY()
+        return C.HIDDEN_OBJECT_WORLD_Y
     end
     -- Feature-hide off (page, fire, smoke) beats occupancy stash — layout must not lift these.
     if isFeatureHideRoleKey(roleKey) and liveYIsHidden(liveY) then
@@ -716,31 +696,47 @@ local function applyOffsetToObject(obj, figFrame, figObj, offset, roleKey, occup
 
     if isFeatureHideRoleKey(roleKey) then
         local onPos = { x = world.x, y = defaultY, z = world.z }
-        local wantOff = (type(O.isHiddenObject) == "function" and O.isHiddenObject(obj))
-            or liveYIsHidden(livePos.y)
-            or liveYIsHidden(y)
+        if roleKey == "TAROT_DECK" then
+            onPos.y = tarotDeckOnY()
+        end
+        local wantOff
+        if roleKey == "TAROT_DECK" then
+            wantOff = (type(O.isHiddenObject) == "function" and O.isHiddenObject(obj))
+                or liveYIsHidden(livePos.y)
+                or not yLooksLikeTarotOn(livePos.y)
+        else
+            wantOff = (type(O.isHiddenObject) == "function" and O.isHiddenObject(obj))
+                or liveYIsHidden(livePos.y)
+                or liveYIsHidden(y)
+        end
         if wantOff then
-            -- Reposition while parked; never restore/reveal during layout.
-            O.hideObject(obj, {
+            local hideOpts = {
                 snapshotPosition = onPos,
                 refreshSnapshotPosition = true,
-                parkPosition = { x = world.x, y = y, z = world.z },
                 parkRotation = rotTable,
-            })
+            }
+            if roleKey ~= "TAROT_DECK" then
+                hideOpts.parkPosition = { x = world.x, y = y, z = world.z }
+            end
+            O.hideObject(obj, hideOpts)
         else
-            placeObjectExact(obj, Vector({ x = world.x, y = y, z = world.z }), rot)
+            local placeY = roleKey == "TAROT_DECK" and tarotDeckOnY() or y
+            placeObjectExact(obj, Vector({ x = world.x, y = placeY, z = world.z }), rot)
         end
     else
         placeObjectExact(obj, Vector({ x = world.x, y = y, z = world.z }), rot)
     end
     if roleKey == "TAROT_DECK" then
-        local on = yLooksLikeTarotOn(y)
+        local on = yLooksLikeTarotOn(livePos.y) and not O.isHiddenObject(obj)
         if type(obj.setLock) == "function" then
             obj.setLock(not on)
         end
         obj.interactable = on
     end
-    if offset.scale ~= nil and type(obj.setScale) == "function" and roleKey ~= "SIGNAL_FIRE" then
+    if offset.scale ~= nil and type(obj.setScale) == "function"
+        and roleKey ~= "SIGNAL_FIRE"
+        and not (type(roleKey) == "string" and string.match(roleKey, "^DICEBAG_"))
+    then
         obj.setScale(Vector(offset.scale))
     end
 end

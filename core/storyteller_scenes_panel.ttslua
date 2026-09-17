@@ -1984,7 +1984,6 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
             tk = ""
         end
         local Occupancy = require("lib.scatter_occupancy")
-        local ScatterMode = require("core.scatter_mode")
         if bundle.placementMode == "scatter" or Occupancy.isScatterTableKey(tk) then
             if type(bundle.scatterPlacements) ~= "table" then
                 local pack, errPack = Occupancy.translateFromSeatAuthoring(bundle)
@@ -1994,7 +1993,11 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
                 bundle.scatterPlacements = pack
                 S.setStateVal(pack, "sessionScene", "scatterPlacements")
             end
-            ScatterMode.enter({ force = true, authored = true })
+            S.setStateVal("Scatter", "sessionScene", "tableKey")
+            RSL.SetTableTo("Scatter", {
+                skipTransitionBlindfold = true,
+                authored = true,
+            })
         elseif tk ~= "" then
             -- Accept explicit `C.Tables` keys and dynamic family keys (e.g. "Table B" → "Table B<N>");
             -- SetTableTo resolves family → concrete by occupied NPC seat count.
@@ -2003,9 +2006,7 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
             else
                 U.AlertGM("Scene bundle has unknown tableKey `" .. tk .. "` — seating layout was not switched.")
             end
-        elseif ScatterMode.isActive() then
-            Occupancy.prepareLeaveToStandard("Table A", { skipRestore = true })
-            ScatterMode.leave()
+        elseif Occupancy.isScatterLayoutActive() then
             RSL.SetTableTo("Table A", { skipTransitionBlindfold = true, skipScatterRestore = true })
         end
 
@@ -2159,8 +2160,8 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
         local tableKey = TABLE_TOGGLE_IDS[id]
         local Occupancy = require("lib.scatter_occupancy")
         local isScatter = Occupancy.isScatterTableKey(tableKey)
-        -- Accept explicit `C.Tables` keys, Scatter, and dynamic family keys (e.g. "Table B" → "Table B<N>").
-        if not isScatter and C.Tables[tableKey] == nil and not RSL.isDynamicTableFamilyKey(tableKey) then
+        -- Accept explicit `C.Tables` keys (incl. Scatter) and dynamic family keys (e.g. "Table B" → "Table B<N>").
+        if C.Tables[tableKey] == nil and not RSL.isDynamicTableFamilyKey(tableKey) then
             U.AlertGM("Unknown table key: " .. tostring(tableKey))
             return
         end

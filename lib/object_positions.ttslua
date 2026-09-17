@@ -70,14 +70,14 @@ local function isCenterPoint(center)
     and type(center.z) == "number"
 end
 
---- Scatter playfield origin when `seatLayout.currentTableKey` is the Scatter sentinel.
+--- Scatter playfield origin from `C.Tables["Scatter"].centerPoint`.
 --- @return table|nil
 local function scatterSeatLayoutCenterPoint()
-  local scatter = C.Scatter
+  local scatter = C.Tables and C.Tables["Scatter"] or C.Scatter
   if type(scatter) ~= "table" then
     return nil
   end
-  local cp = scatter.CENTER_POINT
+  local cp = scatter.centerPoint
   local floorY = tonumber(scatter.FLOOR_Y) or -52.89
   local x, z = 0, 0
   if type(cp) == "userdata" or type(cp) == "table" then
@@ -103,10 +103,9 @@ local function resolveSeatLayoutCenterPoint()
   end
   -- Fallback for global-context callers that do not need Global.call bridge.
   if self == Global then
-    local scatterKey = (C.Scatter and C.Scatter.TABLE_KEY) or "Scatter"
+    local Occupancy = require("lib.scatter_occupancy")
     local tableKey = S.getStateVal("seatLayout", "currentTableKey")
-    local placementMode = S.getStateVal("sessionScene", "placementMode")
-    if tableKey == scatterKey or placementMode == "scatter" then
+    if Occupancy.isScatterTableKey(tableKey) or S.getStateVal("sessionScene", "placementMode") == "scatter" then
       return scatterSeatLayoutCenterPoint()
     end
     if type(tableKey) == "string" and C.Tables and C.Tables[tableKey] and C.Tables[tableKey].centerPoint ~= nil then

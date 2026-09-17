@@ -58,7 +58,6 @@ local function getTarotDeck(buttonGuid)
     return resolveTarotObject(TarotObjects.GUIDS_KEY_DECK_PINK, buttonGuid)
 end
 
---- Hidden deck at y=-10 remains reachable through the table unless interactable is cleared.
 --- @param targetOn boolean
 --- @param buttonGuid string|nil
 local function setDeckInteractable(targetOn, buttonGuid)
@@ -97,11 +96,110 @@ local function isTokenCurrent(token)
     return token == currentOpToken
 end
 
+--- @param obj Object
+--- @param entry table
+--- @return table|nil
+local function snapshotOnPosition(obj, entry)
+    local onPose = OP.resolveStatePose(obj, entry, STATE_ON) or entry.on
+    if type(onPose) ~= "table" or type(onPose.position) ~= "table" then
+        return nil
+    end
+    local merged = OP.mergePosition(obj, onPose.position)
+    return { x = merged.x, y = merged.y, z = merged.z }
+end
+
+--- @param deck Object|nil
+--- @return boolean
+local function deckIsParkedHidden(deck)
+    if deck == nil then
+        return false
+    end
+    if deck.hasTag ~= nil and deck.hasTag("HiddenObject") then
+        return true
+    end
+    local pos = deck.getPosition and deck.getPosition() or nil
+    local y = pos and pos.y
+    return type(y) == "number" and y <= -199
+end
+
+--- Pink deck off uses hide/restore (y = −200), not a visible shallow bury.
+--- @param state string
+--- @param token number
+--- @param buttonGuid string|nil
+local function applyDeckState(state, token, buttonGuid)
+    local obj = getTarotDeck(buttonGuid)
+    if obj == nil then
+        print("[TarotToggle] Missing object for key: " .. tostring(TarotObjects.GUIDS_KEY_DECK_PINK))
+        return
+    end
+    local entry = C.ObjectPositions[TarotObjects.GUIDS_KEY_DECK_PINK]
+    if type(entry) ~= "table" then
+        print("[TarotToggle] Missing C.ObjectPositions entry for Pink tarot deck.")
+        return
+    end
+    local guid = type(obj.getGUID) == "function" and obj.getGUID() or nil
+    if type(guid) ~= "string" or guid == "" then
+        return
+    end
+    if not isTokenCurrent(token) then
+        return
+    end
+    if state == STATE_OFF then
+        if Global ~= nil and type(Global.call) == "function" then
+            Global.call("GlobalHideObject", {
+                guid = guid,
+                snapshotPosition = snapshotOnPosition(obj, entry),
+                refreshSnapshotPosition = true,
+            })
+        end
+        return
+    end
+    local onPose = OP.resolveStatePose(obj, entry, STATE_ON) or entry.on
+    if type(onPose) ~= "table" then
+        print("[TarotToggle] Missing 'on' pose for Pink tarot deck.")
+        return
+    end
+    if Global ~= nil and type(Global.call) == "function" then
+        local restoreOpts = {
+            guid = guid,
+            interactable = true,
+            locked = false,
+        }
+        local onPos = snapshotOnPosition(obj, entry)
+        if onPos ~= nil then
+            restoreOpts.position = onPos
+        end
+        Global.call("GlobalRestoreObject", restoreOpts)
+    end
+    local effectivePose = {}
+    for k, v in pairs(onPose) do
+        effectivePose[k] = v
+    end
+    effectivePose.isHidden = false
+    if type(effectivePose.position) == "table" then
+        local hasX = effectivePose.position.x ~= nil
+        local hasY = effectivePose.position.y ~= nil
+        local hasZ = effectivePose.position.z ~= nil
+        if not (hasX and hasY and hasZ) then
+            effectivePose.position = OP.mergePosition(obj, effectivePose.position)
+        end
+    end
+    OP.applyResolvedPose(obj, effectivePose, OP.DEFAULT_TRANSITION_DURATION, 0, {
+        shouldAbort = function()
+            return not isTokenCurrent(token)
+        end,
+    })
+end
+
 --- @param key string
 --- @param state string
 --- @param token number
 --- @param buttonGuid string|nil
 local function applyObjectState(key, state, token, buttonGuid)
+    if key == TarotObjects.GUIDS_KEY_DECK_PINK then
+        applyDeckState(state, token, buttonGuid)
+        return
+    end
     local obj = resolveTarotObject(key, buttonGuid)
     if obj == nil then
         print("[TarotToggle] Missing object for key: " .. tostring(key))
@@ -199,7 +297,7 @@ function TarotToggle.applyState(targetOn, buttonGuid)
     return applyTarotStateNow(targetOn, token, buttonGuid)
 end
 
---- Read-only: infer on/off from deck Y (for object script onLoad hydration).
+--- Read-only: infer on/off from hide tag / parked Y / table-top on Y (object script onLoad hydration).
 --- @param buttonGuid string|nil
 --- @param fallback boolean
 --- @return boolean
@@ -212,21 +310,21 @@ function TarotToggle.inferCurrentState(buttonGuid, fallback)
     if deck == nil then
         return fallback
     end
+    if deckIsParkedHidden(deck) then
+        return false
+    end
     local entry = C.ObjectPositions.TAROT_DECK_PINK
     if type(entry) ~= "table" then
         return fallback
     end
     local onPose = OP.resolveStatePose(deck, entry, STATE_ON) or entry.on
-    local offPose = OP.resolveStatePose(deck, entry, STATE_OFF) or entry.off
-    if type(onPose) ~= "table" or type(offPose) ~= "table" then
+    if type(onPose) ~= "table" then
         return fallback
     end
     local onY = onPose.position and onPose.position.y
-    local offY = offPose.position and offPose.position.y
     local currentY = deck.getPosition().y
-    if type(onY) == "number" and type(offY) == "number" then
-        local midpoint = (onY + offY) / 2
-        return currentY >= midpoint
+    if type(onY) == "number" and type(currentY) == "number" then
+        return currentY >= (onY - 1)
     end
     return fallback
 end

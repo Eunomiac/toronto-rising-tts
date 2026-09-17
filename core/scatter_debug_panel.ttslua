@@ -1,0 +1,195 @@
+--[[
+    Scatter geometry debug panel (TOR-572): live sliders for C.Tables["Scatter"] layout constants.
+    Values update in a session cache on slider change; Apply writes the Scatter table row + re-layout.
+]]
+
+local C = require("lib.constants")
+local U = require("lib.util")
+
+local ScatterDebugPanel = {}
+
+local SLIDER_SPECS = {
+    {
+        key = "SCATTER_RADIUS_WORLD",
+        id = "ds_scatter_radius_world",
+        labelId = "ds_scatter_radius_world_label",
+        min = 0,
+        max = 500,
+    },
+    {
+        key = "SCATTER_RADIUS_NPC",
+        id = "ds_scatter_radius_npc",
+        labelId = "ds_scatter_radius_npc_label",
+        min = 0,
+        max = 500,
+    },
+    {
+        key = "SCATTER_RADIUS_PC",
+        id = "ds_scatter_radius_pc",
+        labelId = "ds_scatter_radius_pc_label",
+        min = 0,
+        max = 500,
+    },
+    {
+        key = "NPC_DEPLOYMENT_ARC",
+        id = "ds_npc_deployment_arc",
+        labelId = "ds_npc_deployment_arc_label",
+        min = 0,
+        max = 360,
+    },
+    {
+        key = "PC_DEPLOYMENT_ARC",
+        id = "ds_pc_deployment_arc",
+        labelId = "ds_pc_deployment_arc_label",
+        min = 0,
+        max = 360,
+    },
+    {
+        key = "NPC_SPACING_MIN",
+        id = "ds_npc_spacing_min",
+        labelId = "ds_npc_spacing_min_label",
+        min = 0,
+        max = 100,
+    },
+    {
+        key = "NPC_SPACING_MAX",
+        id = "ds_npc_spacing_max",
+        labelId = "ds_npc_spacing_max_label",
+        min = 0,
+        max = 150,
+    },
+}
+
+local cache = {}
+local syncingSliders = false
+
+--- @param n number|nil
+--- @return number
+local function roundForDisplay(n)
+    local v = tonumber(n)
+    if v == nil then
+        return 0
+    end
+    return math.floor(v + 0.5)
+end
+
+--- @param spec table
+--- @return number
+local function readConstant(spec)
+    local scatter = C.Tables and C.Tables["Scatter"] or C.Scatter
+    if U.Type(scatter) ~= "table" then
+        return 0
+    end
+    return tonumber(scatter[spec.key]) or 0
+end
+
+--- @param spec table
+local function pushSliderRow(spec)
+    local val = cache[spec.key]
+    if val == nil then
+        val = readConstant(spec)
+        cache[spec.key] = val
+    end
+    UI.setValue(spec.labelId, spec.key .. " = " .. tostring(roundForDisplay(val)))
+    U.setAttributes(spec.id, { value = val })
+end
+
+local function pushAllSlidersToUi()
+    syncingSliders = true
+    for i = 1, #SLIDER_SPECS do
+        pushSliderRow(SLIDER_SPECS[i])
+    end
+    syncingSliders = false
+end
+
+local function refreshCacheFromConstants()
+    for i = 1, #SLIDER_SPECS do
+        local spec = SLIDER_SPECS[i]
+        cache[spec.key] = readConstant(spec)
+    end
+end
+
+--- @param player Player|nil
+--- @return boolean
+function ScatterDebugPanel.activate(player)
+    if player == nil then
+        return false
+    end
+    refreshCacheFromConstants()
+    pushAllSlidersToUi()
+    U.setAttribute("panel_debug_scatter_root", "active", true)
+    return true
+end
+
+--- @param player Player
+--- @param value number|string
+--- @param id string
+function ScatterDebugPanel.onSlider(player, value, id)
+    if syncingSliders then
+        return
+    end
+    local v = tonumber(value)
+    if v == nil then
+        return
+    end
+    for i = 1, #SLIDER_SPECS do
+        local spec = SLIDER_SPECS[i]
+        if spec.id == id then
+            if v < spec.min then
+                v = spec.min
+            elseif v > spec.max then
+                v = spec.max
+            end
+            cache[spec.key] = v
+            UI.setValue(spec.labelId, spec.key .. " = " .. tostring(roundForDisplay(v)))
+            return
+        end
+    end
+end
+
+--- Write cache to `C.Tables["Scatter"]` and reposition scatter occupants.
+--- @param player Player|nil
+--- @return boolean ok
+--- @return string|nil message
+function ScatterDebugPanel.apply(player)
+    local scatter = C.Tables and C.Tables["Scatter"] or C.Scatter
+    if U.Type(scatter) ~= "table" then
+        return false, "C.Tables[\"Scatter\"] is missing."
+    end
+    for i = 1, #SLIDER_SPECS do
+        local spec = SLIDER_SPECS[i]
+        local v = tonumber(cache[spec.key])
+        if v == nil then
+            v = readConstant(spec)
+        end
+        if v < spec.min then
+            v = spec.min
+        elseif v > spec.max then
+            v = spec.max
+        end
+        scatter[spec.key] = v
+        cache[spec.key] = v
+    end
+    local ScatterMode = require("core.scatter_mode")
+    if type(ScatterMode.isActive) == "function" and ScatterMode.isActive() ~= true then
+        return false, "Scatter Mode is not active."
+    end
+    if type(ScatterMode.applyWorldLayout) == "function" then
+        ScatterMode.applyWorldLayout()
+    end
+    local Sync = require("core.sync")
+    if type(Sync.npcs) == "function" then
+        Sync.npcs({ reason = "scatter_debug_geometry" })
+    end
+    pushAllSlidersToUi()
+    if player ~= nil and player.color ~= nil then
+        broadcastToColor("Scatter geometry applied; PCs and NPCs repositioned.", player.color, { 0.4, 1, 0.5 })
+    end
+    return true, nil
+end
+
+function ScatterDebugPanel.done()
+    U.setAttribute("panel_debug_scatter_root", "active", false)
+end
+
+return ScatterDebugPanel

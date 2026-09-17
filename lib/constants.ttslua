@@ -617,6 +617,11 @@ C.LockedObjects = {
   G.GUIDS.HUNGER_SMOKE_RED,
   G.GUIDS.HUNGER_SMOKE_PINK,
   G.GUIDS.HUNGER_SMOKE_PURPLE,
+  G.GUIDS.SIGNAL_FIRE_BROWN,
+  G.GUIDS.SIGNAL_FIRE_ORANGE,
+  G.GUIDS.SIGNAL_FIRE_RED,
+  G.GUIDS.SIGNAL_FIRE_PINK,
+  G.GUIDS.SIGNAL_FIRE_PURPLE,
   G.GUIDS.TAROT_DRAWER_PINK,
   G.GUIDS.TAROT_BUTTON_ANCHOR_ON_PINK,
   G.GUIDS.TAROT_BUTTON_ANCHOR_OFF_PINK,
@@ -1000,7 +1005,6 @@ C.ObjectPositions = {
       isLocked = false
     },
     off = {
-      position = { y = -10 },
       duration = 0,
       delay = 0,
       isLocked = true,
@@ -1772,100 +1776,11 @@ C.TableShapes = {
   CIRCULAR = "circular", -- Numbered slots walk around centerPoint from referenceFigurine (slot 1). Configurations must include `numSegments`, `angleSegmentOne`, `referenceSeatSegment`, and `slotCapacity`.
   RECTANGULAR = "rectangular", -- Reserved; not used by current tables.
   FACING = "facing", -- Two sides (0 and 180). Slot 1 is `referenceSeatSegment`; slots 6+ sit on the opposite side. Requires `slotCapacity`.
+  SCATTER = "scatter", -- No wood table; nested-circle PC/NPC groups (TOR-572). Config lives in C.Tables["Scatter"]. No guid / activePosition / chair maps.
 }
 
---- Scatter Mode (TOR-572): the “no table” table type. Not a row in `C.Tables`.
---- Geometry: `.dev/Revision of Player Positioning/Scatter Mode.md`. Angles: 0° = +Z, 90° = +X, clockwise from above.
-C.Scatter = {
-  TABLE_KEY = "Scatter",
-  --- Playfield origin for Scatter (same role as `C.Tables[*].centerPoint`).
-  CENTER_POINT = Vector({ 0, 0, 0 }),
-  --- STAGE_BOARD does not follow table origin. Restore this XZ when leaving Scatter (Y unchanged).
-  --- Live save TS_Save_230: `{ x = 0, z = 62.0977 }`.
-  STAGE_BOARD_HOME_XZ = { x = 0, z = 62.0977 },
-  GROUP_COUNT = 6,
-  --- Outer NPC holes on the Scatter CONTROL_BOARD art (counted on Stage Control Board in Scatter Mode.jpg).
-  BOARD_NPC_HOLE_COUNT = 12,
-  --- First group world azimuth. CONTROL_BOARD yaw 180° puts group 1 at far left (-X = 270°), then clockwise 60°.
-  FIRST_GROUP_AZIMUTH_DEG = 270,
-  GROUP_SPACING_DEG = 60,
-  SCATTER_RADIUS_WORLD = 225,
-  SCATTER_RADIUS_NPC = 125,
-  SCATTER_RADIUS_PC = 100,
-  PC_SCATTER_POSITION_ANGLE = 180,
-  NPC_DEPLOYMENT_ARC = 70,
-  PC_DEPLOYMENT_ARC = 80,
-  NPC_SPACING_MIN = 10,
-  NPC_SPACING_MAX = 22,
-  --- Default in-use PC figurine Y (Table A dumps / SeatRoleOffsets SEAT_FIGURE). Tune after first in-world pass.
-  FLOOR_Y = -52.89,
-  --- Storyteller dice tray in Scatter: sit just above the figurine plane (not table-top Y). Tune after first in-world pass.
-  ST_DICE_TRAY_ON_Y = -50.89,
-  --- Drop Y before the tray rises at a scatter group (same idea as homeland NPC off).
-  ST_DICE_TRAY_OFF_Y = -80.89,
-  --- Extra yaw added to the group World Ray when posing the tray (0 = ray azimuth).
-  ST_DICE_TRAY_YAW_OFFSET_DEG = 0,
-  --- Custom tile mesh looks along -Z at yaw 0; look-at toward a point needs +180 (same as stage figurines).
-  FIGURINE_YAW_OFFSET_DEG = 180,
-  --- Control tokens parked on a scatter group hole (palette default is polar 0.2).
-  TOKEN_SCALE = { x = 0.5, y = 1, z = 0.5 },
-  CONTROL_BOARD_IMAGE_STANDARD = "https://steamusercontent-a.akamaihd.net/ugc/13248133772831882366/6F672A9E951B9AC21C6DE9091659FE913AD29268/",
-  CONTROL_BOARD_IMAGE_SCATTER = "https://steamusercontent-a.akamaihd.net/ugc/15826341776223196067/84A1D7EF997F4D44D279D50B0D5AF2C829CF0949/",
-  --- Occupied polar packs map to scatter groups 1–6 in this order (inbox TOR-573).
-  POLAR_FAMILY_ORDER = {
-    "CENTER",
-    "Mid Center",
-    "Mid Left",
-    "Mid Right",
-    "Center Left",
-    "Center Right",
-    "Far Center-Left",
-    "Far Center-Right",
-    "Far Left",
-    "Far Right",
-  },
-  objectPositions = {
-    {
-      guid = G.GUIDS.MAIN_LIGHT_LEFT,
-      position = { z = 0 }
-    },
-    {
-      guid = G.GUIDS.MAIN_LIGHT_RIGHT,
-      position = { z = 0 }
-    },
-    {
-      guid = G.GUIDS.PARTICLE_EMITTER,
-      position = { x = 0, z = 0}
-    },
-    {
-      guid = G.GUIDS.STAGE_BOARD,
-      position = { x = 0, z = 0}
-    },
-    {
-      guid = G.GUIDS.THE_FLOOR,
-      position = { x = 0, z = 0}
-    },
-    {
-      guid = G.GUIDS.TABLE_PLINTH,
-      position = { x = 0, z = 0}
-    }
-  },
-  --- GUIDs to disable (`interactable = false`) and hide from every player layer while Scatter is active.
-  objectsToHide = {
-    G.GUIDS.SEAT_CHAIR_RED,
-    G.GUIDS.SEAT_CHAIR_ORANGE,
-    G.GUIDS.SEAT_CHAIR_BROWN,
-    G.GUIDS.SEAT_CHAIR_PINK,
-    G.GUIDS.SEAT_CHAIR_PURPLE,
-    G.GUIDS.SEAT_CHAIR_NPC1,
-    G.GUIDS.SEAT_CHAIR_NPC2,
-    G.GUIDS.SEAT_CHAIR_NPC3,
-    G.GUIDS.SEAT_CHAIR_NPC4,
-    G.GUIDS.PRINCE_SIGNET_BORDER_RED,
-    G.GUIDS.PRINCE_SIGNET_RED,
-    G.GUIDS.PRINCE_CURTAIN_RED
-  }
-}
+--- Scatter Mode (TOR-572): “no table” playfield. Canonical row is `C.Tables["Scatter"]`.
+--- `C.Scatter` is a thin alias set after `C.Tables` is defined. Geometry: `.dev/Revision of Player Positioning/Scatter Mode.md`.
 
 C.Tables = {
   ["Table A"] = {
@@ -2339,6 +2254,93 @@ C.Tables = {
         rotation = { x = 0, y = 0, z = 0 }
       },
     }
+  },
+  --- Scatter (TOR-572): no wood `guid` / activePosition / chair maps. Angles: 0° = +Z, 90° = +X, clockwise from above.
+  ["Scatter"] = {
+    shape = C.TableShapes.SCATTER,
+    TABLE_KEY = "Scatter",
+    centerPoint = Vector({ 0, 0, 0 }),
+    --- STAGE_BOARD does not follow table origin. Restore this XZ when leaving Scatter (Y unchanged).
+    --- Live save TS_Save_230: `{ x = 0, z = 62.0977 }`.
+    STAGE_BOARD_HOME_XZ = { x = 0, z = 62.0977 },
+    GROUP_COUNT = 6,
+    --- Outer NPC holes on the Scatter CONTROL_BOARD art (counted on Stage Control Board in Scatter Mode.jpg).
+    BOARD_NPC_HOLE_COUNT = 12,
+    --- First group world azimuth. CONTROL_BOARD yaw 180° puts group 1 at far left (-X = 270°), then clockwise 60°.
+    FIRST_GROUP_AZIMUTH_DEG = 270,
+    GROUP_SPACING_DEG = 60,
+    SCATTER_RADIUS_WORLD = 225,
+    SCATTER_RADIUS_NPC = 125,
+    SCATTER_RADIUS_PC = 100,
+    PC_SCATTER_POSITION_ANGLE = 180,
+    NPC_DEPLOYMENT_ARC = 70,
+    PC_DEPLOYMENT_ARC = 80,
+    NPC_SPACING_MIN = 10,
+    NPC_SPACING_MAX = 22,
+    --- Default in-use PC figurine Y (Table A dumps / SeatRoleOffsets SEAT_FIGURE). Tune after first in-world pass.
+    FLOOR_Y = -52.89,
+    --- Extra yaw added to the group World Ray when posing the storyteller dice tray (0 = ray azimuth).
+    ST_DICE_TRAY_YAW_OFFSET_DEG = 0,
+    --- Custom tile mesh looks along -Z at yaw 0; look-at toward a point needs +180 (same as stage figurines).
+    FIGURINE_YAW_OFFSET_DEG = 180,
+    --- Control tokens parked on a scatter group hole (palette default is polar 0.2).
+    TOKEN_SCALE = { x = 0.5, y = 1, z = 0.5 },
+    CONTROL_BOARD_IMAGE_STANDARD = "https://steamusercontent-a.akamaihd.net/ugc/13248133772831882366/6F672A9E951B9AC21C6DE9091659FE913AD29268/",
+    CONTROL_BOARD_IMAGE_SCATTER = "https://steamusercontent-a.akamaihd.net/ugc/15826341776223196067/84A1D7EF997F4D44D279D50B0D5AF2C829CF0949/",
+    --- Occupied polar packs map to scatter groups 1–6 in this order (inbox TOR-573).
+    POLAR_FAMILY_ORDER = {
+      "CENTER",
+      "Mid Center",
+      "Mid Left",
+      "Mid Right",
+      "Center Left",
+      "Center Right",
+      "Far Center-Left",
+      "Far Center-Right",
+      "Far Left",
+      "Far Right",
+    },
+    objectPositions = {
+      {
+        guid = G.GUIDS.MAIN_LIGHT_LEFT,
+        position = { z = 0 }
+      },
+      {
+        guid = G.GUIDS.MAIN_LIGHT_RIGHT,
+        position = { z = 0 }
+      },
+      {
+        guid = G.GUIDS.PARTICLE_EMITTER,
+        position = { x = 0, z = 0}
+      },
+      {
+        guid = G.GUIDS.STAGE_BOARD,
+        position = { x = 0, z = 0}
+      },
+      {
+        guid = G.GUIDS.THE_FLOOR,
+        position = { x = 0, z = 0}
+      },
+      {
+        guid = G.GUIDS.TABLE_PLINTH,
+        position = { x = 0, z = 0}
+      }
+    },
+    --- GUIDs to disable (`interactable = false`) and hide from every player layer while Scatter is active.
+    objectsToHide = {
+      G.GUIDS.SEAT_CHAIR_RED,
+      G.GUIDS.SEAT_CHAIR_ORANGE,
+      G.GUIDS.SEAT_CHAIR_BROWN,
+      G.GUIDS.SEAT_CHAIR_PINK,
+      G.GUIDS.SEAT_CHAIR_PURPLE,
+      G.GUIDS.SEAT_CHAIR_NPC1,
+      G.GUIDS.SEAT_CHAIR_NPC2,
+      G.GUIDS.SEAT_CHAIR_NPC3,
+      G.GUIDS.SEAT_CHAIR_NPC4,
+      G.GUIDS.PRINCE_SIGNET_BORDER_RED,
+      G.GUIDS.PRINCE_SIGNET_RED,
+      G.GUIDS.PRINCE_CURTAIN_RED
+    }
   }
 }
 
@@ -2347,6 +2349,9 @@ for _, _tableCfg in pairs(C.Tables) do
     _tableCfg.referenceFigurine = referenceFigurineFromHand(_tableCfg.referenceHand)
   end
 end
+
+--- Thin alias: Scatter is a `C.Tables` row (`shape = SCATTER`). Prefer `C.Tables["Scatter"]` for new code.
+C.Scatter = C.Tables["Scatter"]
 
 -- Default Table Source Objects
 -- During a table transition, if a sourceObjects table is not provided, the default table source objects will be used.

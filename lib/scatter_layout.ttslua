@@ -10,18 +10,18 @@ local U = require("lib.util")
 
 local ScatterLayout = {}
 
---- @return table C.Scatter
+--- @return table C.Tables["Scatter"] (aliased as C.Scatter)
 local function cfg()
-    local scatter = C.Scatter
+    local scatter = C.Tables and C.Tables["Scatter"] or C.Scatter
     if U.Type(scatter) ~= "table" then
-        error("scatter_layout: C.Scatter is missing")
+        error("scatter_layout: C.Tables[\"Scatter\"] is missing")
     end
     return scatter
 end
 
 --- @return number x, number z
 local function worldOriginXZ()
-    local cp = cfg().CENTER_POINT
+    local cp = cfg().centerPoint
     if U.Type(cp) == "table" or U.Type(cp) == "userdata" then
         return tonumber(cp.x or cp[1]) or 0, tonumber(cp.z or cp[3]) or 0
     end
@@ -35,6 +35,19 @@ function ScatterLayout.floorY()
         return -52.89
     end
     return y
+end
+
+--- Storyteller dice tray on Y matches homeland table drawers (`DICE_DRAWER_STORYTELLER_* .on`).
+--- @return number
+function ScatterLayout.storytellerTrayOnY()
+    local entry = C.ObjectPositions and C.ObjectPositions.DICE_DRAWER_STORYTELLER_1
+    if U.Type(entry) == "table" and U.Type(entry.on) == "table" and U.Type(entry.on.position) == "table" then
+        local y = tonumber(entry.on.position.y)
+        if y ~= nil then
+            return y
+        end
+    end
+    return -0.64
 end
 
 --- Scatter playfield origin (table `centerPoint` equivalent).
@@ -258,7 +271,7 @@ function ScatterLayout.storytellerTrayPose(groupIndex)
     if pcMid == nil then
         return nil, pcErr
     end
-    local y = ScatterLayout.floorY()
+    local y = ScatterLayout.storytellerTrayOnY()
     local yaw = ScatterLayout.groupAzimuthDeg(groupIndex) + (tonumber(cfg().ST_DICE_TRAY_YAW_OFFSET_DEG) or 0)
     yaw = yaw % 360
     if yaw < 0 then
@@ -279,7 +292,7 @@ end
 function ScatterLayout.storytellerTrayOriginPose()
     local ox, oz = worldOriginXZ()
     return {
-        position = Vector({ x = ox, y = ScatterLayout.floorY(), z = oz }),
+        position = Vector({ x = ox, y = ScatterLayout.storytellerTrayOnY(), z = oz }),
         rotation = Vector({ 0, 0, 0 }),
     }
 end

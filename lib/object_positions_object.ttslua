@@ -276,7 +276,12 @@ function OP.applyResolvedPose(obj, pose, baseDuration, baseDelay, opts)
       local canGlobal = type(Global) == "table" and type(Global.call) == "function" and type(guid) == "string"
       if pose.isHidden == true then
         if canGlobal then
-          Global.call("GlobalHideObject", { guid = guid })
+          local hideParams = { guid = guid }
+          if type(opts.snapshotPosition) == "table" then
+            hideParams.snapshotPosition = opts.snapshotPosition
+            hideParams.refreshSnapshotPosition = opts.refreshSnapshotPosition == true
+          end
+          Global.call("GlobalHideObject", hideParams)
         end
       elseif pose.isHidden == false then
         if canGlobal then
