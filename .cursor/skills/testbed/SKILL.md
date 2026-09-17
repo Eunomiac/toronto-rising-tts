@@ -17,19 +17,23 @@ The rest of the request after `/testbed` is the functionality to add.
 3. Code _can_ and _should_ use globally-exposed libraries (which is most of them), especially the `DEBUG` library which contains many useful functions meant specifically for TEST BED code.
 4. Running code from TEST BED is done from the TEST BED file directly: Instructions to "run the code from the console" or to prefix it with "`lua`" are inaccurate and unnecessary.
 5. After writing the necessary code, several examples of calling the entry function(s) should be added at the end in commented-out lines.
+6. All top-level variables and functions should be global, so they persist between separate uses of the Execute Code command.
+7. Everything should be contained within a single function that, when called, performs the described task (this is for organization purposes mostly, as it's sometimes difficult to know how much code I'm meant to select and run at once -- by having everything be delineated into functions, it simplifies this greatly). So helper functions, configuration variables, etc, should all be internal to the top-level global function
 
 ## How to add the code
 
-Append a new `#region` at the **end** of `TEST BED.ttslua`. Keep helpers and the entry function inside that region so selecting the region is enough.
+Append a new `#region` at the **end** of `TEST BED.ttslua`. One top-level global function per task. Helpers, config, and other locals live **inside** that function.
 
 ```lua
 -- #region short-name
-local function helper(x)
-  return x
-end
-
 function DoTheThing(color)
-  DEBUG.printTable(S.getPlayerVal(color), "player")
+  local CONFIG = { label = "player" }
+
+  local function helper(x)
+    return x
+  end
+
+  DEBUG.printTable(helper(S.getPlayerVal(color)), CONFIG.label)
 end
 
 -- DoTheThing("Red")
@@ -37,9 +41,10 @@ end
 -- #endregion
 ```
 
-- Do **not** leave a live (uncommented) call that would run as soon as the region is executed.
-- Locals defined elsewhere in the file are **not** in scope when this region is selected. Use globals, or define what you need inside the region.
-- `local function` helpers must still appear **above** their callers inside the selected chunk.
+- Do **not** leave a live (uncommented) call that would run as soon as the function is executed.
+- Do **not** use `local` for the top-level entry function or for top-level variables in the region.
+- Locals defined elsewhere in the file are **not** in scope when this region is selected. Put what you need inside the global function.
+- Nested `local function` helpers must still appear **above** their callers inside that global function.
 
 ## Globals
 
@@ -64,4 +69,4 @@ If a name is missing, check `core/global_script.ttslua` for `Foo = require(...)`
 
 ## After writing
 
-Tell the author to select the new region in `TEST BED.ttslua` and run **Execute Code**. Do not tell them to paste into the Host console, and do not prefix examples with `lua`.
+Tell the author to select the new global function in `TEST BED.ttslua` and run **Execute Code** (that registers it), then select one of the commented call examples, uncomment it, and Execute Code again. Do not tell them to paste into the Host console, and do not prefix examples with `lua`.
