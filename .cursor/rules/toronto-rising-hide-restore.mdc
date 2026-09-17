@@ -52,6 +52,8 @@ Caller opts → catalogs (`C.LockedObjects`) → snapshot fallback; active visib
 - Secret roll dice invisibility helpers
 - Seat-layout NPC chair visibility only (`enforceNPCSeatObjectVisibility`) — not preload pool hide
 - Spotlight phase seat figurines (`SEAT_FIGURE_*`) — stay at seats; active visibility via `O.applyActiveVisibility` / `O.restoreObject` from `C.HiddenObjects` (never `O.hideObject` park, never blanket PC hide lists)
+- Scatter `THE_FLOOR` / `TABLE_PLINTH` — visibility-only via `C.HideFromPcSeatsAndSpectators` while Scatter is active (stay at playfield Y)
+- `BOTTOM_FOG` / `TOP_FOG` — AssetBundle Looping Effect 2 on / Effect 1 off (`Scenes.applyFogEmitterLooping`); never `setState` or `O.hideObject` for BOTTOM_FOG (authored at y ≈ −350)
 
 New exceptions must be added to `docs/solutions/lua-hide-restore-policy.md`.
 
