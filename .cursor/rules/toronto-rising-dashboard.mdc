@@ -31,3 +31,7 @@ The GitHub remote is **public**. Never commit `.env`, API keys, vector-store sec
 - `gameState` stays in TTS. The dashboard holds drafts and sends small host commands.
 
 Canonical prose: [`.dev/storyteller-dashboard/README.md`](../../.dev/storyteller-dashboard/README.md).
+
+## Browser (Playwright)
+
+Visual board checks use Playwright MCP in the Chrome profile named **Cursor** (`Profile 3`) via the Playwright **extension**. Do not treat a private `--user-data-dir` `about:blank` window as the dashboard. Recipe: [`.dev/storyteller-dashboard/PLAYWRIGHT.md`](../../.dev/storyteller-dashboard/PLAYWRIGHT.md), always-on [toronto-rising-playwright-browser-focus.mdc](toronto-rising-playwright-browser-focus.mdc).

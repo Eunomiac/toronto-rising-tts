@@ -82,6 +82,8 @@ PORT=8788
 
 **From Cursor / VS Code:** Run Task → **STORYTELLER DASHBOARD**. Builds, starts the server on `http://127.0.0.1:8788`, and opens the **Cursor** Chrome profile (`npm run storyteller-dashboard:dev` from repo root). Skip that task if a Playwright Chrome window is already open — it would steal keyboard focus. `dev:open` used to run `start chrome`, which always used the Default profile; it now launches `chrome.exe` with `--profile-directory` for the profile named Cursor. Override with `STORYTELLER_DASHBOARD_CHROME_PROFILE_DIR` (folder such as `Profile 3`) if needed.
 
+Agents driving the UI must use Playwright MCP through the Playwright **extension** in that same Cursor profile — not Playwright’s private Chrome folder, and not the IDE browser pane. Recipe: [PLAYWRIGHT.md](PLAYWRIGHT.md).
+
 **From a terminal:**
 
 ```powershell

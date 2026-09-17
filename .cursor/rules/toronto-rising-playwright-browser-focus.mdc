@@ -1,18 +1,42 @@
 ---
-description: Playwright MCP browser must not steal OS focus after startup; prompt the author first if it cannot be avoided
+description: Playwright MCP must use the Cursor Chrome profile; after that window is running, do not steal OS focus
 alwaysApply: true
 ---
 
 # Toronto Rising — Playwright browser focus
 
-After the Playwright Chrome window is running, **not grabbing OS focus is a very high priority.** The author types in other apps and other Chrome windows while the agent uses the dashboard.
+Dashboard visual checks use **Playwright MCP** (`user-playwright`) in the Google Chrome profile named **Cursor** (disk folder **`Profile 3`**), which has the Playwright **extension**. They do **not** use the Cursor IDE browser pane, and they do not use Playwright’s private `--user-data-dir` window.
 
-## Do
+Canonical recipe: [`.dev/storyteller-dashboard/PLAYWRIGHT.md`](../../.dev/storyteller-dashboard/PLAYWRIGHT.md).
+
+## Success vs false success
+
+`browser_tabs` **list** (never `select` during this check):
+
+| What you see | Meaning |
+| --- | --- |
+| `http://127.0.0.1:8788/` titled Toronto Rising Storyteller Dashboard | Correct window. Reuse this tab. |
+| Only `about:blank`, or a Chrome whose user-data is `TorontoRising/playwright-chrome-profile` | **Wrong Chrome.** Do not treat this as the dashboard being open. The author cannot see it. |
+
+Do not use leftover port 8788 plus that blank tab as “already running.”
+
+## Cold start
+
+If the dashboard tab is missing or you are in the wrong Chrome:
+
+1. From `.dev/storyteller-dashboard/` start **`npm run dev`** and wait for `Storyteller dashboard listening on http://127.0.0.1:8788`. If **EADDRINUSE** and there is no live Cursor terminal, kill the orphan `node dist/server/index.js --dev` first.
+2. Open Cursor Chrome: `chrome.exe --profile-directory=Profile 3 http://127.0.0.1:8788/` (not `start chrome`).
+3. Playwright MCP must be `--extension --profile-dir-name=Profile 3` **without** `--user-data-dir`. If tabs stay `about:blank`, stop and tell the author to reload the Playwright MCP server. Agents cannot attach to the Cursor profile while MCP still launches a private Chrome.
+
+`npm run dev:open` / task **STORYTELLER DASHBOARD** steal focus. Use them only when that Playwright Cursor window is not already open. If it is open, restart the server with `npm run dev` only.
+
+## After the Playwright Cursor window is running
+
+**Not grabbing OS focus is a very high priority.** The author types in other apps and other Chrome windows while the agent uses the dashboard.
 
 - Click, type, screenshot, and navigate **in the existing Playwright tab** without `bringToFront`, new windows, or F11.
-- If a different URL is required (docs, download), **reuse that same tab**, then navigate back to the Storyteller Dashboard (`http://127.0.0.1:8788/`).
-- Keep the Playwright window open across turns so Chrome is not relaunched mid-session.
-- Restart the dashboard with `npm run dev` in `.dev/storyteller-dashboard/` (not `dev:open`) when Chrome is already running.
+- If a different URL is required (docs, download), **reuse that same tab**, then navigate back to `http://127.0.0.1:8788/`.
+- Keep the window open across turns so Chrome is not relaunched mid-session. Do **not** minimize it.
 
 ## Window size
 
@@ -28,7 +52,7 @@ If those numbers are wrong:
 
 Do **not** do these unless the author has agreed in this turn:
 
-- Launch or relaunch Chrome
+- Launch or relaunch Chrome (cold start above is the exception when they asked to open the dashboard)
 - Open a new tab or window
 - Switch Playwright tabs (`browser_tabs` select)
 - Send F11 / fullscreen / `bringToFront`
