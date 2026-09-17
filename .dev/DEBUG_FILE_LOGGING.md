@@ -41,11 +41,28 @@ When adding **runtime logging** from Lua (especially **object scripts** or one-o
 | Use case | API | Notes |
 | -------- | --- | ----- |
 | Line-oriented console-style log (TTS `lua logToFile(...)`) | `DEBUG.logToFile` | Files under **`.dev/.debug/debug_logs/`** when the bridge is listening. |
-| One-off file body (overwrite) | `DEBUG.writeWorkspaceFile(relativePath, content, format?, silent?)` | `relativePath` is the **`name`** suffix (e.g. `debug_logs/npcs_panel.txt`). |
+| One-off file body (overwrite) | `DEBUG.writeWorkspaceFile(relativePath, content, format?, silent?)` | `relativePath` is the **`name`** suffix (e.g. `debug_logs/npcs_panel.txt`). Prefer this over hand-rolled `sendExternalMessage` / `sendExternalCommand` writers (including Test Bed). |
+| Pretty JSON / scalars to string | `DEBUG.encodePretty(value)` | `JSON.encode_pretty` for tables; `tostring` otherwise. Does not print. |
+| Pretty-print to console | `DEBUG.printTable(value, label?)` | Uses `encodePretty`, then `print`. |
+| Format pose / tags for dumps | `DEBUG.fmtVec(v)` / `DEBUG.fmtTags(tags)` | Shared by audits and Test Bed. |
+| Object label for dump headers | `DEBUG.objectDisplayName(obj)` | Scripted name → saved Name → Nickname. |
+| Indent XmlUI / object UI XML | `DEBUG.prettyPrintXml(rawXml)` | Best-effort 2-space indent (not a validating parser). |
+| Name → GUID search file | `DEBUG.getObjectsByName(substring, path?)` | Writes GUID comment lines under `.dev/.debug/`. |
+| Runtime object UI XML dump | `DEBUG.dumpObjectXmlToFile(guid, path?)` | `object.UI.getXml()` + pretty-print + write. |
+| Spotlight world audit (URL fingerprint) | `DEBUG.listAllSpotlightObjects(path?)` | Matches workshop AssetBundle URL (not tags); writes `debug_logs/spotlight_objects_*.txt`. |
 | **Structured NDJSON** (hypothesis tags, session id, etc.) | **`DEBUG.workspaceNdjsonBegin`** + **`DEBUG.workspaceNdjsonAppend`** | Prefer this over `require("lib.workspace_ndjson_log")` in new code. |
 | Quick NDJSON session with fixed name | `DEBUG.beginWorkspaceDebugSession()` | Clears `debug_workspace_ndjson.log` only. |
 
 **Do not** wire new features directly to `lib/workspace_ndjson_log` unless you have a specific reason; **`core/debug.ttslua`** is the supported façade.
+
+### Formatting / dump examples
+
+```lua
+lua DEBUG.printTable(S.getStateVal("debug"), "debug slice")
+lua DEBUG.getObjectsByName("CSHEET")
+lua DEBUG.dumpObjectXmlToFile("802d14")
+lua DEBUG.listAllSpotlightObjects()
+```
 
 ### NDJSON session example (Global script)
 

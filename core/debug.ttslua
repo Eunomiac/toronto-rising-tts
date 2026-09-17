@@ -184,6 +184,7 @@ end
 
 --- Writes content via sendExternalMessage type "write". File appears as **workspace/.dev/.debug/<relativePath>** when the bridge listens on 39998.
 --- Does not use log append cache; each call overwrites that file path.
+--- Falls back to `sendExternalCommand` write shapes used by Test Bed when messages are unavailable.
 --- @param relativePath string Path suffix under .dev/.debug, e.g. "debug_logs/npcs_panel.txt"
 --- @param content string
 --- @param format string|nil "none" or "auto" (default "none")
@@ -198,6 +199,7 @@ function DEBUG.writeWorkspaceFile(relativePath, content, format, silent)
     if U.Type(content) ~= "string" then
         content = tostring(content)
     end
+
     ---@diagnostic disable-next-line: undefined-global
     if sendExternalMessage then
         ---@diagnostic disable-next-line: undefined-global
@@ -205,7 +207,7 @@ function DEBUG.writeWorkspaceFile(relativePath, content, format, silent)
             type = "write",
             content = content,
             name = relativePath,
-            format = format
+            format = format,
         })
         if not silent then
             print("DEBUG: Wrote " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. relativePath)
@@ -216,8 +218,278 @@ function DEBUG.writeWorkspaceFile(relativePath, content, format, silent)
         end
         return true
     end
-    print("DEBUG.writeWorkspaceFile: sendExternalMessage not available (TTS Tools extension?)")
+
+    ---@diagnostic disable-next-line: undefined-global
+    if sendExternalCommand ~= nil then
+        local ok = pcall(function()
+            ---@diagnostic disable-next-line: undefined-global
+            sendExternalCommand({
+                type = "write",
+                name = relativePath,
+                content = content,
+                format = format,
+            })
+        end)
+        if not ok then
+            ok = pcall(function()
+                ---@diagnostic disable-next-line: undefined-global
+                sendExternalCommand({
+                    command = "write",
+                    name = relativePath,
+                    content = content,
+                    format = format,
+                })
+            end)
+        end
+        if ok then
+            if not silent then
+                print("DEBUG: Wrote via sendExternalCommand " .. WORKSPACE_DEBUG_WRITE_ROOT .. "/" .. relativePath)
+            end
+            return true
+        end
+    end
+
+    print("DEBUG.writeWorkspaceFile: sendExternalMessage/Command not available (TTS Tools / tts-bridge on 39998?)")
     return false
+end
+
+--- Pretty-encode a value to a string (`JSON.encode_pretty` for tables). Does not print.
+--- @param value any
+--- @return string
+function DEBUG.encodePretty(value)
+    if type(value) == "table" then
+        local text = JSON.encode_pretty(value)
+        if text == nil then
+            error("DEBUG.encodePretty: JSON.encode_pretty returned nil (unencodable table?)")
+        end
+        return text
+    end
+    return tostring(value)
+end
+
+--- Format a position/rotation/scale vector for console or file dumps.
+--- @param v table|userdata|nil
+--- @return string
+function DEBUG.fmtVec(v)
+    if v == nil then
+        return "?"
+    end
+    return string.format(
+        "%.4f, %.4f, %.4f",
+        tonumber(v.x) or 0,
+        tonumber(v.y) or 0,
+        tonumber(v.z) or 0
+    )
+end
+
+--- Join a TTS tag list (array and/or set-style map) into a sorted CSV string.
+--- @param tags any
+--- @return string
+function DEBUG.fmtTags(tags)
+    if type(tags) ~= "table" then
+        return ""
+    end
+    local parts = {}
+    for i = 1, #tags do
+        parts[#parts + 1] = tostring(tags[i])
+    end
+    for k, v in pairs(tags) do
+        if type(k) ~= "number" and v == true then
+            parts[#parts + 1] = tostring(k)
+        end
+    end
+    table.sort(parts)
+    return table.concat(parts, ", ")
+end
+
+--- Label for dump headers: scripted name, saved Name, or Nickname.
+--- @param obj Object|nil
+--- @return string
+function DEBUG.objectDisplayName(obj)
+    if obj == nil then
+        return "(nil object)"
+    end
+    local scripted = obj.getName and obj.getName() or ""
+    if type(scripted) == "string" and scripted ~= "" then
+        return scripted
+    end
+    local data = (obj.getData and obj.getData()) or {}
+    if type(data) == "table" then
+        if type(data.Name) == "string" and data.Name ~= "" then
+            return data.Name
+        end
+        if type(data.Nickname) == "string" and data.Nickname ~= "" then
+            return data.Nickname
+        end
+    end
+    return "(unnamed)"
+end
+
+--- Best-effort XML pretty-printer (2-space indent). Not a validating parser.
+--- @param rawXml string|nil
+--- @return string
+function DEBUG.prettyPrintXml(rawXml)
+    if type(rawXml) ~= "string" or rawXml == "" then
+        return rawXml or ""
+    end
+
+    local xml = string.gsub(rawXml, "\r\n", "\n")
+    xml = string.gsub(xml, ">%s+<", "><")
+
+    local tokens = {}
+    local pos = 1
+    while pos <= #xml do
+        local lt = string.find(xml, "<", pos, true)
+        if lt == nil then
+            local tail = string.sub(xml, pos)
+            if string.match(tail, "%S") then
+                table.insert(tokens, tail)
+            end
+            break
+        end
+        if lt > pos then
+            local text = string.sub(xml, pos, lt - 1)
+            if string.match(text, "%S") then
+                table.insert(tokens, text)
+            end
+        end
+        local gt = string.find(xml, ">", lt, true)
+        if gt == nil then
+            table.insert(tokens, string.sub(xml, lt))
+            break
+        end
+        table.insert(tokens, string.sub(xml, lt, gt))
+        pos = gt + 1
+    end
+
+    local indent = 0
+    local lines = {}
+    for t = 1, #tokens do
+        local token = tokens[t]
+        if string.sub(token, 1, 1) == "<" then
+            local tag = token
+            local isClosing = string.match(tag, "^</") ~= nil
+            local isSelfClosing = string.match(tag, "/>$") ~= nil
+            local isDeclaration = string.match(tag, "^<%?") ~= nil or string.match(tag, "^<!") ~= nil
+
+            if isClosing then
+                indent = math.max(0, indent - 1)
+            end
+            table.insert(lines, string.rep("  ", indent) .. tag)
+            if not isClosing and not isSelfClosing and not isDeclaration then
+                local openName = string.match(tag, "^<([%w_%-]+)")
+                if openName ~= nil and string.match(tag, "</" .. openName .. ">$") == nil then
+                    indent = indent + 1
+                end
+            end
+        else
+            local text = string.gsub(token, "^%s+", "")
+            text = string.gsub(text, "%s+$", "")
+            if text ~= "" then
+                table.insert(lines, string.rep("  ", indent) .. text)
+            end
+        end
+    end
+
+    return table.concat(lines, "\n")
+end
+
+--- Case-sensitive substring search over spawned objects; writes GUID lines under `.dev/.debug/`.
+--- @param substring string Non-empty substring (plain text)
+--- @param relativePath string|nil Optional path under .dev/.debug
+--- @return table matches
+function DEBUG.getObjectsByName(substring, relativePath)
+    if type(substring) ~= "string" or substring == "" then
+        print("DEBUG.getObjectsByName: substring must be a non-empty string")
+        return {}
+    end
+    relativePath = relativePath or ("debug_logs/objects_by_name_" .. tostring(os.time()) .. ".lua")
+
+    local matches = {}
+    for _, obj in ipairs(getAllObjects() or {}) do
+        local fullName = DEBUG.objectDisplayName(obj)
+        if string.find(fullName, substring, 1, true) ~= nil then
+            local guid = (obj.getGUID and obj.getGUID()) or "?"
+            matches[#matches + 1] = { guid = guid, name = fullName }
+        end
+    end
+    table.sort(matches, function(a, b)
+        if a.name == b.name then
+            return a.guid < b.guid
+        end
+        return a.name < b.name
+    end)
+
+    local lines = {}
+    for i = 1, #matches do
+        local row = matches[i]
+        local safeName = string.gsub(row.name, "[\r\n]", " ")
+        lines[#lines + 1] = string.format('  "%s", -- %s', row.guid, safeName)
+    end
+    local body = table.concat(lines, "\n")
+    if body ~= "" then
+        body = body .. "\n"
+    end
+    local ok = DEBUG.writeWorkspaceFile(relativePath, body, "none", false)
+    print(
+        string.format(
+            "DEBUG.getObjectsByName: matches=%d ok=%s -> .dev/.debug/%s",
+            #matches,
+            tostring(ok),
+            relativePath
+        )
+    )
+    return matches
+end
+
+--- Read an object's runtime UI XML (`object.UI.getXml()`), pretty-print, write under `.dev/.debug/`.
+--- @param objectGuid string
+--- @param relativePath string|nil
+--- @return boolean
+function DEBUG.dumpObjectXmlToFile(objectGuid, relativePath)
+    if type(objectGuid) ~= "string" or objectGuid == "" then
+        print("DEBUG.dumpObjectXmlToFile: objectGuid must be a non-empty string")
+        return false
+    end
+    relativePath = relativePath
+        or ("debug_logs/object_xml_" .. string.gsub(objectGuid, "[^%w]", "_") .. "_" .. tostring(os.time()) .. ".xml")
+
+    local obj = G.getObject(objectGuid)
+    if obj == nil then
+        print("DEBUG.dumpObjectXmlToFile: no object for guid=" .. tostring(objectGuid))
+        return false
+    end
+    if obj.UI == nil or type(obj.UI.getXml) ~= "function" then
+        print("DEBUG.dumpObjectXmlToFile: object has no UI.getXml (guid=" .. tostring(objectGuid) .. ")")
+        return false
+    end
+    local rawXml = obj.UI.getXml()
+    if type(rawXml) ~= "string" or rawXml == "" then
+        print("DEBUG.dumpObjectXmlToFile: getXml() empty (guid=" .. tostring(objectGuid) .. ")")
+        return false
+    end
+
+    local header = table.concat({
+        "<!--",
+        "  DEBUG.dumpObjectXmlToFile",
+        "  os.time=" .. tostring(os.time()),
+        "  guid=" .. tostring(objectGuid),
+        "  name=" .. DEBUG.objectDisplayName(obj),
+        "  note=Runtime UI from object.UI.getXml(); editor source may differ.",
+        "-->",
+        "",
+    }, "\n")
+    local body = DEBUG.prettyPrintXml(rawXml)
+    local ok = DEBUG.writeWorkspaceFile(relativePath, header .. body, "none", false)
+    print(
+        string.format(
+            "DEBUG.dumpObjectXmlToFile: chars=%d ok=%s -> .dev/.debug/%s",
+            #body,
+            tostring(ok),
+            relativePath
+        )
+    )
+    return ok
 end
 
 --- @param n number|nil
@@ -962,15 +1234,7 @@ end
 -- @usage lua DEBUG.printTable(S.getStateVal("connectionControls"))
 -- @usage lua printTable(activeRoll, "active roll")
 function DEBUG.printTable(value, label)
-    local text
-    if type(value) == "table" then
-        text = JSON.encode_pretty(value)
-        if text == nil then
-            error("DEBUG.printTable: JSON.encode_pretty returned nil (unencodable table?)")
-        end
-    else
-        text = tostring(value)
-    end
+    local text = DEBUG.encodePretty(value)
     if type(label) == "string" and label ~= "" then
         print("[DEBUG.printTable] " .. label)
     end
@@ -1505,6 +1769,248 @@ function DEBUG.hideAllSpotlightArrows()
     summary.targetLoopingEffectUi = L.SPOTLIGHT_ARROW_INVISIBLE_INDEX + 1
     print("[DEBUG.hideAllSpotlightArrows] " .. JSON.encode(summary))
     return summary
+end
+
+--- Workshop spotlight AssetBundle URL shared by NPC, seat, and carousel lights.
+local SPOTLIGHT_ASSETBUNDLE_URL =
+    "https://steamusercontent-a.akamaihd.net/ugc/1667980476488958906/639B7FC2EF736A1A6B6B3B29DB728F37C9B618D9/"
+
+--- @param obj Object|nil
+--- @return string|nil
+local function spotlightAssetbundleUrlFromObject(obj)
+    if obj == nil then
+        return nil
+    end
+    if type(obj.getCustomObject) == "function" then
+        local ok, co = pcall(function()
+            return obj.getCustomObject()
+        end)
+        if ok and type(co) == "table" then
+            local url = co.assetbundle or co.AssetbundleURL or co.assetbundle_url
+            if type(url) == "string" and url ~= "" then
+                return url
+            end
+        end
+    end
+    if type(obj.getData) == "function" then
+        local ok, data = pcall(function()
+            return obj.getData()
+        end)
+        if ok and type(data) == "table" and type(data.CustomAssetbundle) == "table" then
+            local url = data.CustomAssetbundle.AssetbundleURL
+            if type(url) == "string" and url ~= "" then
+                return url
+            end
+        end
+    end
+    return nil
+end
+
+--- @param guid string
+--- @return string
+local function spotlightKnownGuidKey(guid)
+    if type(guid) ~= "string" or guid == "" then
+        return ""
+    end
+    for key, value in pairs(G.GUIDS or {}) do
+        if value == guid then
+            return tostring(key)
+        end
+    end
+    return ""
+end
+
+--- Audit every in-world spotlight matched by workshop AssetBundle URL (not tags).
+--- Writes `.dev/.debug/debug_logs/spotlight_objects_<time>.txt`.
+--- @param relativePath string|nil
+--- @return table rows
+--- @usage lua DEBUG.listAllSpotlightObjects()
+function DEBUG.listAllSpotlightObjects(relativePath)
+    relativePath = relativePath or ("debug_logs/spotlight_objects_" .. tostring(os.time()) .. ".txt")
+
+    local rows = {}
+    local objs = getAllObjects() or getObjects() or {}
+    for i = 1, #objs do
+        local obj = objs[i]
+        local url = spotlightAssetbundleUrlFromObject(obj)
+        if url == SPOTLIGHT_ASSETBUNDLE_URL then
+            local guid = (obj.getGUID and obj.getGUID()) or ""
+            local nick = (obj.getName and obj.getName()) or ""
+            local gmNotes = (obj.getGMNotes and obj.getGMNotes()) or ""
+            local description = (obj.getDescription and obj.getDescription()) or ""
+            local tags = (obj.getTags and obj.getTags()) or {}
+            local data = {}
+            if type(obj.getData) == "function" then
+                local ok, d = pcall(function()
+                    return obj.getData()
+                end)
+                if ok and type(d) == "table" then
+                    data = d
+                end
+            end
+            local cab = (type(data.CustomAssetbundle) == "table" and data.CustomAssetbundle) or {}
+            local co = {}
+            if type(obj.getCustomObject) == "function" then
+                local ok, c = pcall(function()
+                    return obj.getCustomObject()
+                end)
+                if ok and type(c) == "table" then
+                    co = c
+                end
+            end
+
+            local loopingIdx = nil
+            local abOk, ab = pcall(function()
+                return obj.AssetBundle
+            end)
+            if abOk and ab ~= nil and type(ab.getLoopingEffectIndex) == "function" then
+                loopingIdx = ab.getLoopingEffectIndex()
+            end
+            if loopingIdx == nil then
+                loopingIdx = cab.LoopingEffectIndex
+            end
+
+            local hasSpotlightTag = obj.hasTag ~= nil and obj.hasTag("Spotlight") == true
+            local hasNpcLightTag = obj.hasTag ~= nil and obj.hasTag("npc_light") == true
+            local hasCarouselLightTag = obj.hasTag ~= nil and obj.hasTag("spotlight_light") == true
+            local hasHiddenObjectTag = obj.hasTag ~= nil and obj.hasTag("HiddenObject") == true
+
+            local invisibleTo = ""
+            if hasHiddenObjectTag then
+                invisibleTo = "(parked HiddenObject — full parked visibility)"
+            else
+                local snapMap = S.getStateVal("hiddenObjects")
+                if type(snapMap) == "table" and type(snapMap[tostring(guid)]) == "table" then
+                    local snapInv = snapMap[tostring(guid)].invisibleTo
+                    if type(snapInv) == "table" then
+                        invisibleTo = DEBUG.fmtTags(snapInv) .. " (hide snapshot)"
+                    end
+                end
+            end
+            if invisibleTo == "" and type(C.HiddenObjects) == "table" then
+                local cat = C.HiddenObjects[tostring(guid)]
+                if type(cat) == "table" then
+                    invisibleTo = DEBUG.fmtTags(cat) .. " (C.HiddenObjects)"
+                end
+            end
+            if invisibleTo == "" and type(O.activeVisibilityForGuid) == "function" then
+                local cat = O.activeVisibilityForGuid(tostring(guid))
+                if type(cat) == "table" and #cat > 0 then
+                    invisibleTo = DEBUG.fmtTags(cat) .. " (O.activeVisibilityForGuid)"
+                end
+            end
+
+            local locked = nil
+            if obj.getLock ~= nil then
+                locked = obj.getLock()
+            end
+
+            rows[#rows + 1] = {
+                guid = tostring(guid),
+                guidKey = spotlightKnownGuidKey(tostring(guid)),
+                nickname = tostring(nick),
+                objectName = tostring(data.Name or obj.name or ""),
+                description = tostring(description),
+                gmNotes = tostring(gmNotes),
+                tags = DEBUG.fmtTags(tags),
+                hasSpotlightTag = hasSpotlightTag,
+                hasNpcLightTag = hasNpcLightTag,
+                hasCarouselLightTag = hasCarouselLightTag,
+                hasHiddenObjectTag = hasHiddenObjectTag,
+                locked = locked,
+                interactable = obj.interactable,
+                position = DEBUG.fmtVec(obj.getPosition and obj.getPosition() or nil),
+                rotation = DEBUG.fmtVec(obj.getRotation and obj.getRotation() or nil),
+                scale = DEBUG.fmtVec(obj.getScale and obj.getScale() or nil),
+                loopingEffectIndex = loopingIdx,
+                typeIndex = cab.TypeIndex or co.type or co.TypeIndex,
+                materialIndex = cab.MaterialIndex or co.material or co.MaterialIndex,
+                invisibleTo = invisibleTo,
+                luaScriptEmpty = (data.LuaScript == nil or data.LuaScript == ""),
+            }
+        end
+    end
+
+    table.sort(rows, function(a, b)
+        if a.nickname == b.nickname then
+            return a.guid < b.guid
+        end
+        return a.nickname < b.nickname
+    end)
+
+    local missingSpotlight = 0
+    local missingBothKindTags = 0
+    local visibleArrow = 0
+    for i = 1, #rows do
+        local r = rows[i]
+        if r.hasSpotlightTag ~= true then
+            missingSpotlight = missingSpotlight + 1
+        end
+        if r.hasNpcLightTag ~= true and r.hasCarouselLightTag ~= true then
+            missingBothKindTags = missingBothKindTags + 1
+        end
+        if tonumber(r.loopingEffectIndex) == 0 then
+            visibleArrow = visibleArrow + 1
+        end
+    end
+
+    local lines = {
+        "Toronto Rising — spotlight object audit",
+        "Matched by CustomAssetbundle / getCustomObject assetbundle URL (not tags).",
+        "URL: " .. SPOTLIGHT_ASSETBUNDLE_URL,
+        "count=" .. tostring(#rows),
+        "missing Spotlight tag=" .. tostring(missingSpotlight),
+        "missing both npc_light and spotlight_light=" .. tostring(missingBothKindTags),
+        "loopingEffectIndex==0 (visible indicator arrow)=" .. tostring(visibleArrow),
+        "debug.spotlightArrowsVisible=" .. tostring(S.getStateVal("debug", "spotlightArrowsVisible")),
+        string.rep("-", 72),
+        "",
+    }
+
+    for i = 1, #rows do
+        local r = rows[i]
+        lines[#lines + 1] = string.format("--- [%d] %s ---", i, r.guid)
+        lines[#lines + 1] = "  nickname:           " .. r.nickname
+        lines[#lines + 1] = "  object Name:        " .. r.objectName
+        lines[#lines + 1] = "  G.GUIDS key:        " .. (r.guidKey ~= "" and r.guidKey or "(none)")
+        lines[#lines + 1] = "  description:        " .. string.gsub(r.description, "[\r\n]", " | ")
+        lines[#lines + 1] = "  gmNotes:            " .. string.gsub(r.gmNotes, "[\r\n]", " | ")
+        lines[#lines + 1] = "  tags:               " .. r.tags
+        lines[#lines + 1] = "  tag Spotlight:      " .. tostring(r.hasSpotlightTag)
+        lines[#lines + 1] = "  tag npc_light:      " .. tostring(r.hasNpcLightTag)
+        lines[#lines + 1] = "  tag spotlight_light:" .. tostring(r.hasCarouselLightTag)
+        lines[#lines + 1] = "  tag HiddenObject:   " .. tostring(r.hasHiddenObjectTag)
+        lines[#lines + 1] = "  locked:             " .. tostring(r.locked)
+        lines[#lines + 1] = "  interactable:       " .. tostring(r.interactable)
+        lines[#lines + 1] = "  position:           " .. r.position
+        lines[#lines + 1] = "  rotation:           " .. r.rotation
+        lines[#lines + 1] = "  scale:              " .. r.scale
+        lines[#lines + 1] = "  loopingEffectIndex: " .. tostring(r.loopingEffectIndex)
+            .. "  (0=visible arrow, 1=invisible)"
+        lines[#lines + 1] = "  typeIndex:          " .. tostring(r.typeIndex)
+        lines[#lines + 1] = "  materialIndex:      " .. tostring(r.materialIndex)
+        lines[#lines + 1] = "  invisibleTo:        " .. (r.invisibleTo ~= "" and r.invisibleTo or "(none / catalog empty)")
+        lines[#lines + 1] = "  luaScript empty:    " .. tostring(r.luaScriptEmpty)
+        lines[#lines + 1] = ""
+    end
+
+    local body = table.concat(lines, "\n")
+    local ok = DEBUG.writeWorkspaceFile(relativePath, body, "none", false)
+    if not ok then
+        print(body)
+    end
+    print(
+        string.format(
+            "[DEBUG.listAllSpotlightObjects] count=%d missingSpotlightTag=%d missingKindTags=%d visibleArrow=%d ok=%s -> .dev/.debug/%s",
+            #rows,
+            missingSpotlight,
+            missingBothKindTags,
+            visibleArrow,
+            tostring(ok),
+            relativePath
+        )
+    )
+    return rows
 end
 
 --- Inspect soundscape AssetBundle emitters, looping/trigger effect names, and AudioSource counts.
@@ -5982,7 +6488,15 @@ function DEBUG.help()
     print("  dumpConditions(color)    - Active conditions + resolved effects")
     print("  dumpEffectiveStats(color) - Effective stat getters (tracker max, BP, …)")
     print("  dumpRollPolicy(color)    - Merged roll policy on active roll")
-    print("\nFILE LOGGING:")
+    print("\nFILE LOGGING / FORMATTING:")
+    print("  writeWorkspaceFile(path, content, format?, silent?) - Overwrite .dev/.debug/<path>")
+    print("  encodePretty(value)         - JSON.encode_pretty → string (no print)")
+    print("  prettyPrintXml(rawXml)      - Indent XmlUI / object UI XML")
+    print("  objectDisplayName(obj)      - Scripted name / Name / Nickname")
+    print("  fmtVec(v) / fmtTags(tags)   - Pose / tag list formatters for dumps")
+    print("  getObjectsByName(substr, path?) - Name search → GUID list file")
+    print("  dumpObjectXmlToFile(guid, path?) - Runtime object.UI.getXml() dump")
+    print("  listAllSpotlightObjects(path?) - All lights by AssetBundle URL (tag-independent audit)")
     print("  logToFile(level, msg, filename?) - Log a message to file")
     print("  logStateToFile(filename?)       - Log game state to file (JSON)")
     print("  dumpCustomAssetsToFile(path?)   - Dump UI.getCustomAssets() → .dev/.debug/debug_logs/custom_ui_assets.json")
