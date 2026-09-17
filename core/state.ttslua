@@ -381,7 +381,7 @@ function S.GetDefaultGameState()
             lightingPresetKey = nil,
             --- `standard` (table + polar) or `scatter` (no table, six groups). Live copy of library `placementMode`.
             placementMode = "standard",
-            --- Top fog particle emitter active (reconciled to `G.GUIDS.TOP_FOG` object state 2/1).
+            --- Top fog particle emitter active (reconciled to `G.GUIDS.TOP_FOG` AssetBundle looping Effect 2 on / Effect 1 off).
             isTopFogActive = false,
             --- Seat spotlight baseline from the active scene's `C.LightModes.*.spotlights` (string mode or inline table per ref). Merged in `L.reconcileForPlayer` after hunger/dark/rolling/conditions.
             lightingSeatSpotlightPreset = {},

@@ -155,7 +155,7 @@ Use **flat** keys that already exist on live `sessionScene` (do not nest a separ
 | Key | Type | Role |
 |-----|------|------|
 | `lightingPresetKey` | string | **Schema v2:** required; must be a key in **`C.LightModes`** (e.g. `IndoorBright`). Applied via `Scenes.reconcileFromState` → `U.applyLightingPreset`; seat spotlights still follow `L.reconcileForPlayer` priority. v1 imports may omit (null). |
-| `isTopFogActive` | boolean | **Schema v2:** required. Reconciler sets `G.GUIDS.TOP_FOG` object state **2** (on) / **1** (off). |
+| `isTopFogActive` | boolean | **Schema v2:** required. Reconciler plays `G.GUIDS.TOP_FOG` AssetBundle **Looping Effect 2** (API index 1) when on, **Looping Effect 1** (index 0) when off. |
 | `tableKey` | string \| null | Table **intent** used with `RSL.SetTableTo`. May be an exact `C.Tables` key (`Table A`, `Table B4`, `Table C`) **or** a dynamic **family key** (`Table B`) that resolves to `Table B<occupied NPC seat count>` (B0–B4) at apply time — see [Rotational Coordinate Generator](../Rotational%20Coordinate%20Generator.md) § Dynamic table family keys (TOR-258). Physical table is `seatLayout.currentTableKey` (always concrete). |
 | `seatPresent` | object | Sparse tri-state map (`nil` / `false` / `true`) — **derived** from `seatSlots` when `isPresent` is set (see `normalizeLiveSessionSceneSeatSlots` in `core/state.ttslua`). Imports may omit if every seat is described in `seatSlots`. |
 | `seatSlots` | object | Per-seat rows (keys: `Brown`, `Orange`, `Red`, `Pink`, `Purple`, `NPC1`…`NPC4`). See **Seat slots** below. |

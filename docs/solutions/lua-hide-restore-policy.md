@@ -112,7 +112,7 @@ Snapshot position is **not** the primary restore authority when a catalog pose o
 | **Secret ST roll dice** | Temporary invisibility mid-roll; not off-table park | `GlobalApplySecretRollDiceInvisibility` / `GlobalRestoreSecretRollDiceVisibility` |
 | **Spotlight seat figurines (visibility only)** | Stay at seat Y; active visibility from `C.HiddenObjects` only — not off-table park | `O.applyActiveVisibility` / `O.restoreObject` via `applySeatFigurineSpotlightVisibility` in `core/spotlight.ttslua` |
 | **Scatter floor / plinth** | Stay at playfield Y; PC+spectator invisibility only while Scatter is active | `ScatterMode` `applyScatterPlayfieldVisibility` (`setInvisibleTo` via `C.HideFromPcSeatsAndSpectators`) |
-| **BOTTOM_FOG emitter** | Authored at y ≈ −350 (below park threshold); Scatter toggles TTS object state 2/1 | `ScatterMode` `applyBottomFogState`; `O.hideObject` refuses this GUID |
+| **BOTTOM_FOG emitter** | Authored at y ≈ −350 (below park threshold); Scatter plays AssetBundle Looping Effect 2/1 | `Scenes.applyFogEmitterLooping` via ScatterMode; `O.hideObject` refuses this GUID |
 
 **Preload pool (in scope):** NPC figurines + paired lights at `preload` and dice under bags use `O.hideObject` / `O.restoreObject` via `applyNpcPairPhysicalPresentation` and `core/dice_preload_pool.ttslua` (`parkDie` / `claim`).
 

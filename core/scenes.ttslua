@@ -34,6 +34,43 @@ local lastSceneReconcileFingerprint = nil
 local lastTopFogReconcileFingerprint = nil
 local lastSkyboxReconcileFingerprint = nil
 
+--- AssetBundle fog emitters (`TOP_FOG`, `BOTTOM_FOG`): TTS UI “Looping Effect” 1/2 → API indexes 0/1.
+Scenes.FOG_LOOP_OFF_INDEX = 0 -- Looping Effect 1 (inactive)
+Scenes.FOG_LOOP_ON_INDEX = 1 -- Looping Effect 2 (active)
+
+--- Play fog emitter looping effect. Does not use TTS object `setState`.
+--- @param guid string|nil
+--- @param active boolean
+--- @param opts table|nil `{ label?: string, force?: boolean }`
+--- @return boolean
+function Scenes.applyFogEmitterLooping(guid, active, opts)
+    opts = type(opts) == "table" and opts or {}
+    local label = type(opts.label) == "string" and opts.label or "fog"
+    if type(guid) ~= "string" or guid == "" then
+        print("[Scenes] applyFogEmitterLooping: missing GUID for " .. label)
+        return false
+    end
+    local obj = U.getObject(guid, true)
+    if obj == nil then
+        print("[Scenes] applyFogEmitterLooping: no object for " .. label .. " guid " .. guid)
+        return false
+    end
+    local ab = obj.AssetBundle
+    if ab == nil or type(ab.playLoopingEffect) ~= "function" then
+        print("[Scenes] applyFogEmitterLooping: " .. label .. " has no AssetBundle.playLoopingEffect")
+        return false
+    end
+    local wantIdx = active == true and Scenes.FOG_LOOP_ON_INDEX or Scenes.FOG_LOOP_OFF_INDEX
+    if opts.force ~= true and type(ab.getLoopingEffectIndex) == "function" then
+        local current = tonumber(ab.getLoopingEffectIndex())
+        if current == wantIdx then
+            return true
+        end
+    end
+    ab.playLoopingEffect(wantIdx)
+    return true
+end
+
 -- ============================================================================
 -- CONFIGURATION
 -- ============================================================================
@@ -478,7 +515,8 @@ function Scenes.invalidateReconcileCache()
     lastSkyboxReconcileFingerprint = nil
 end
 
---- Reconciles top fog emitter from `sessionScene.isTopFogActive` (TTS object state 2 = on, 1 = off).
+--- Reconciles top fog emitter from `sessionScene.isTopFogActive`.
+--- AssetBundle Looping Effect 2 = on (index 1), Looping Effect 1 = off (index 0).
 --- @param opts table|nil `{ force = boolean }`
 --- @return boolean
 function Scenes.reconcileTopFogFromState(opts)
@@ -496,22 +534,14 @@ function Scenes.reconcileTopFogFromState(opts)
     end
 
     local guid = G.GUIDS and G.GUIDS.TOP_FOG
-    if type(guid) ~= "string" or guid == "" then
-        print("[Scenes] reconcileTopFogFromState: TOP_FOG GUID missing from lib.guids.")
-        return false
+    local ok = Scenes.applyFogEmitterLooping(guid, active, {
+        label = "TOP_FOG",
+        force = force,
+    })
+    if ok then
+        lastTopFogReconcileFingerprint = fp
     end
-    local obj = U.getObject(guid, true)
-    if obj == nil then
-        print("[Scenes] reconcileTopFogFromState: no object for TOP_FOG guid " .. guid)
-        return false
-    end
-    if type(obj.setState) ~= "function" then
-        print("[Scenes] reconcileTopFogFromState: TOP_FOG object has no setState.")
-        return false
-    end
-    obj.setState(active and 2 or 1)
-    lastTopFogReconcileFingerprint = fp
-    return true
+    return ok
 end
 
 --- Reconciles TTS table background (skybox) from `sessionScene.skyboxOverride` (catalog key or `"Generic"`)

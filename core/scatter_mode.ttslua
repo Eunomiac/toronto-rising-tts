@@ -551,23 +551,18 @@ local function restoreScatterObjectsToHide()
     end
 end
 
---- BOTTOM_FOG: TTS object state 2 while Scatter is active, state 1 otherwise.
+--- BOTTOM_FOG: AssetBundle Looping Effect 2 while Scatter is active, Effect 1 otherwise.
 --- Authored at y ≈ −350 — never park via `O.hideObject` (park-Y threshold would misfire).
 --- @param scatterActive boolean
 local function applyBottomFogState(scatterActive)
-    local guid = G.GUIDS and G.GUIDS.BOTTOM_FOG
-    if type(guid) ~= "string" or guid == "" then
+    local Scenes = require("core.scenes")
+    if type(Scenes.applyFogEmitterLooping) ~= "function" then
+        U.AlertGM("Scatter: Scenes.applyFogEmitterLooping is missing.")
         return
     end
-    local obj = G.getObject(guid)
-    if obj == nil then
-        return
-    end
-    if type(obj.setState) ~= "function" then
-        U.AlertGM("Scatter: BOTTOM_FOG has no setState.")
-        return
-    end
-    obj.setState(scatterActive == true and 2 or 1)
+    Scenes.applyFogEmitterLooping(G.GUIDS and G.GUIDS.BOTTOM_FOG, scatterActive == true, {
+        label = "BOTTOM_FOG",
+    })
 end
 
 --- THE_FLOOR + TABLE_PLINTH: visibility-only (stay at playfield Y). Scatter → hide from PC seats +

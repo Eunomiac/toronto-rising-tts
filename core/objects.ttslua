@@ -590,13 +590,13 @@ function O.hideObject(obj, opts)
     if not U.isGameObject(obj) then
         return false
     end
-    -- BOTTOM_FOG is authored at y ≈ −350 (below park threshold). Never park it — Scatter uses setState only.
+    -- BOTTOM_FOG is authored at y ≈ −350 (below park threshold). Never park it — Scatter uses AssetBundle looping Effect 2/1 only.
     local refuseGuid = objectGuid(obj)
     if type(refuseGuid) == "string"
         and type(G.GUIDS) == "table"
         and type(G.GUIDS.BOTTOM_FOG) == "string"
         and refuseGuid == G.GUIDS.BOTTOM_FOG then
-        U.AlertGM("[O.hideObject] Refusing to park BOTTOM_FOG (authored deep Y; use setState 1/2 only).")
+        U.AlertGM("[O.hideObject] Refusing to park BOTTOM_FOG (authored deep Y; use AssetBundle looping Effect 2/1 only).")
         return false
     end
     opts = type(opts) == "table" and opts or {}
