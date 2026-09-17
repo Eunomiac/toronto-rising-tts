@@ -184,7 +184,8 @@ Then File → Load. Do not Save & Play / inject-global before that load. Author 
 **What to do**:
 
 1. Quit or disable other External Editor integrations that listen on **39998** (e.g. another VS Code / Cursor extension talking to TTS at the same time).
-2. Or stop the other tool, then start the MCP / bridge again.
+2. Or stop leftover **node** holders (Storyteller Dashboard, `tts-bridge:listen`, MCP) with `npm run tts-bridge:free-port` (Cursor **Run Task → FREE TTS EDITOR PORT (39998)**). That does **not** stop Cursor or Tabletop Simulator. Cursor’s TTS Tools bind is often IPv6 (`::`) and can coexist with an IPv4 `127.0.0.1` listener.
+3. Then start the MCP / bridge again if that is the tool you want on the port.
 
 See [TTS_MCP.md](TTS_MCP.md) for setup and Cursor configuration.
 

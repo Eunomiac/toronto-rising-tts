@@ -181,7 +181,7 @@ JSON pretty-printed when `format` is `"auto"`.
 2. **`sendExternalMessage` is nil** — Lua has **no path to the editor**; nothing is written and TTS prints a **`sendExternalMessage is nil`** line from `DEBUG.workspaceNdjsonBegin`. **Fix:** enable External Editor and ensure a bridge is listening on **39998** when you need file writes.
 3. **`require lib.workspace_ndjson_log` failed** or **invalid** — often the Save & Play **bundle omitted** that module because it was only required inside functions. `core/debug.ttslua` includes a **top-level** `require("lib.workspace_ndjson_log")` so the bundler pulls it in. If you still see **`require failed:`**, read the error text and see **`.dev/TTS_BUNDLING_SETUP.md` (Issue 2a)**.
 4. **Multi-root workspace** — run MCP / npm scripts with **`cwd`** set to this repo.
-5. **`EADDRINUSE` on 39998** — stop **`npm run tts-bridge:listen`**, disconnect MCP, or disable another VS Code extension that binds the same inbound port.
+5. **`EADDRINUSE` on 39998** — run **`npm run tts-bridge:free-port`** (Cursor **Run Task → FREE TTS EDITOR PORT (39998)**) to stop leftover **node** listeners (dashboard / `tts-bridge:listen` / MCP). That leaves Cursor and Tabletop Simulator alone. Disable the TTS Tools extension only if you need its IPv6 bind released.
 
 ### After Save & Play: still no file?
 

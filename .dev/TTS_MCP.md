@@ -35,7 +35,13 @@ VS Code/Cursor task: **Manual: Build TTS MCP (Node)**.
 
 ## Port conflict (39998)
 
-Only **one** process may listen on **39998** (TTS Tools extension **or** this bridge — not both). See [TTS_BUNDLING_SETUP.md — Issue 0b](TTS_BUNDLING_SETUP.md#issue-0b-port-39998-already-in-use-eaddrinuse).
+Only **one** process may listen on a given bind of **39998** (TTS Tools extension **or** this bridge — not both on the same address). Cursor’s TTS Tools extension often holds IPv6 (`::`) while a leftover dashboard `node` holds IPv4 (`127.0.0.1`); those can coexist. To stop leftover **node** listeners (dashboard, `tts-bridge:listen`, MCP) without touching Cursor or Tabletop Simulator:
+
+```bash
+npm run tts-bridge:free-port
+```
+
+Cursor **Run Task → FREE TTS EDITOR PORT (39998)** runs the same command. `npm run tts-bridge:free-port -- --dry-run` lists holders only. See [TTS_BUNDLING_SETUP.md — Issue 0b](TTS_BUNDLING_SETUP.md#issue-0b-port-39998-already-in-use-eaddrinuse).
 
 ## Manual start (recommended)
 
@@ -196,6 +202,7 @@ Multi-step table logic in this project often uses [`U.chain`](../lib/util.ttslua
 | `npm run build:all-tooling` | Full generator chain without the daily backup. |
 | `npm run tts-mcp:start` | Run the MCP server on stdio (normally Cursor spawns this; useful for debugging). |
 | `npm run tts-bridge:listen` | Bridge only: listen on **39998** and persist Lua **`sendExternalMessage`** `type: "write"` to **`.dev/.debug/`** (no MCP). |
+| `npm run tts-bridge:free-port` | Stop leftover **node** listeners on **39998** (dashboard / bridge / MCP). Leaves Cursor and Tabletop Simulator alone. `--dry-run` lists only. |
 
 **File writes from Lua:** When the bridge holds **39998**, inbound **`messageID` 4** with `customMessage.type === "write"` is written under **`.dev/.debug/`** (see [DEBUG_FILE_LOGGING.md](DEBUG_FILE_LOGGING.md)). MCP startup calls **`ensureListening()`** so this works before the first `tts_execute_lua`.
 

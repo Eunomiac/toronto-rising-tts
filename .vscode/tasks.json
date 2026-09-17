@@ -203,6 +203,31 @@
         "showReuseMessage": false,
         "clear": true
       }
+    },
+    {
+      "label": "FREE TTS EDITOR PORT (39998)",
+      "type": "shell",
+      "command": "npm run tts-bridge:free-port",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "windows": {
+        "options": {
+          "shell": {
+            "executable": "cmd.exe",
+            "args": ["/d", "/c"]
+          }
+        }
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
     }
   ],
   "inputs": [

@@ -108,6 +108,7 @@
     "code-review:validate": "npm run code-review:build && node .tools/code-review/dist/cli.js validate",
     "code-review:help": "npm run code-review:build && node .tools/code-review/dist/cli.js help",
     "tts-bridge:listen": "npm run tts-bridge:build && node .tools/tts-bridge/dist/listen.js",
+    "tts-bridge:free-port": "node .tools/tts-bridge/scripts/free-port-39998.mjs",
     "csv-to-markdown:start": "npm --prefix \".dev/CSV to Markdown Parser\" start",
     "csv-to-markdown:dev": "npm --prefix \".dev/CSV to Markdown Parser\" run dev",
     "csv-to-markdown:ts:init": "npm --prefix \".dev/CSV to Markdown Parser\" run ts:init",
