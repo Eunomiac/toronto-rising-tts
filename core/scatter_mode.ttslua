@@ -316,8 +316,8 @@ local function parkTokenOnHole(token, board, hole)
     if type(token.setScale) == "function" then
         token.setScale(Vector({ x = sx, y = sy, z = sz }))
     end
-    local faceUp = Tokens.tokenRotationIsFaceUp(token) == true
-    token.setRotation(Tokens.rotationForNpcControlToken(Board.objectYawDeg(board), controlBoardSnapYawOffsetDeg(), faceUp))
+    -- Scatter tokens are always lit / face-up (no OFF face on a group).
+    token.setRotation(Tokens.rotationForNpcControlToken(Board.objectYawDeg(board), controlBoardSnapYawOffsetDeg(), true))
     if type(token.setLock) == "function" then
         token.setLock(false)
     end
@@ -936,6 +936,11 @@ function ScatterMode.applyWorldLayout()
         for n = 1, #npcKeys do
             local pose = npcPoses[n]
             if pose ~= nil then
+                local area = pack[ScatterLayout.areaKeyForGroup(i)]
+                local row = area and area.orbitCharacters and area.orbitCharacters[npcKeys[n]]
+                if U.Type(row) == "table" then
+                    row.npcLightMode = "STANDARD"
+                end
                 placeNpcAtScatterPose(npcKeys[n], pose, "STANDARD")
             end
         end
@@ -1024,6 +1029,7 @@ finishScatterBoardAfterReload = function()
     applyScatterObjectsToHide()
     applyScatterWorldChrome(true)
     ScatterMode.parkTokensFromState()
+    ScatterMode.applyWorldLayout()
     local Gameboard = require("core.npc_gameboard")
     if type(Gameboard.reconcileControlBoardFromState) == "function" then
         Gameboard.reconcileControlBoardFromState({ force = true })
@@ -1097,6 +1103,7 @@ function ScatterMode.enter(opts)
     S.setStateVal(ScatterMode.TABLE_KEY, "seatLayout", "currentTableKey")
     S.setStateVal(ScatterMode.TABLE_KEY, "sessionScene", "tableKey")
     S.setStateVal({}, "seatLayout", "occupiedNPCSlots")
+    Occupancy.forceScatterOrbitLightsStandard()
     livePlacements()
     local npcWorld = S.getStateVal("sessionScene", "npcWorld")
     if U.Type(npcWorld) == "table" then
@@ -1109,7 +1116,10 @@ function ScatterMode.enter(opts)
     ScatterMode.applyBoardChrome()
     if controlBoardMeshReady() then
         ScatterMode.parkTokensFromState()
+        ScatterMode.applyWorldLayout()
     end
+    local Sync = require("core.sync")
+    Sync.npcs({ reason = "scatter_enter" })
 end
 
 function ScatterMode.leave(opts)

@@ -69,6 +69,16 @@ _Last populated: 2026-09-17 — Scene apply weather HUD crash._
 
 ### Scatter / table layout
 
+#### Scatter enter places NPC figurines + forces lit tokens
+
+**How to verify:** Save & Play so scripts reload.
+
+1. On a normal table, put two or three NPCs on the stage. Leave at least one of them **unlit** (token face-down / dark). Switch to **Scatter** on the Scenes panel. Those NPC tokens should rearrange onto scatter-group holes **face-up (lit)**. Their figurines and spotlights should appear around the matching scatter positions in the world **without** clicking Apply on the control board.
+2. Drop another NPC token from the palette onto a calibrated scatter group. It should park face-up (lit) on a dashed-ring hole. After Apply (or if drop already updates state), that figurine should stand lit at the group — not stay dark or face-down on the board.
+3. Optional: Apply NOW once and confirm a second Apply does not shove figurines or flip tokens face-down.
+
+**Context:** Sync was treating scatter orbit NPCs as “preload,” which pulled figurines under the table after enter; Apply worked because it placed them before a skipped Sync. Orbit lights and parked tokens are always STANDARD / face-up in Scatter. relatedTo **TOR-572** (Scatter Mode). Linear create hit workspace quota this session.
+
 #### Hand-zone cards move with PC seats (Scatter / table layout)
 
 **How to verify:** Save & Play so scripts reload. Put a few cards in Red’s hand (and optionally another seat).

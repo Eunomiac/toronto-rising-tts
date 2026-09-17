@@ -128,6 +128,7 @@ local function assignPcSlots(pcRows)
 end
 
 --- Seated NPCs fill the lowest NPC slots first, then unseated (each batch shuffled).
+--- Scatter orbit is always lit (STANDARD) — never OFF.
 --- @param seated table[] `{ npcKey, npcLightMode }`
 --- @param unseated table[] `{ npcKey, npcLightMode }`
 --- @return table orbitCharacters
@@ -138,13 +139,9 @@ local function assignNpcSlots(seated, unseated)
         local ordered = #batch <= 1 and batch or shuffledCopy(batch)
         for i = 1, #ordered do
             local row = ordered[i]
-            local light = row.npcLightMode
-            if light ~= "OFF" and light ~= "STANDARD" then
-                light = "STANDARD"
-            end
             orbit[row.npcKey] = {
                 slot = slot,
-                npcLightMode = light,
+                npcLightMode = "STANDARD",
             }
             slot = slot + 1
         end
@@ -866,6 +863,29 @@ function ScatterOccupancy.prepareEnterFromStandard()
     for i = 1, #cleared do
         clearNpcFromStage(cleared[i])
         U.AlertGM("Scatter: cleared " .. tostring(cleared[i]) .. " from the stage (more than six occupied polar packs).")
+    end
+end
+
+--- Coerce every orbit NPC in live scatterPlacements to STANDARD (tokens never unlit in Scatter).
+function ScatterOccupancy.forceScatterOrbitLightsStandard()
+    local S = require("core.state")
+    local pack = S.getStateVal("sessionScene", "scatterPlacements")
+    if U.Type(pack) ~= "table" then
+        return
+    end
+    for i = 1, groupCount() do
+        local area = pack[ScatterLayout.areaKeyForGroup(i)]
+        if U.Type(area) == "table" and U.Type(area.orbitCharacters) == "table" then
+            for npcKey, row in pairs(area.orbitCharacters) do
+                if type(npcKey) == "string" then
+                    if U.Type(row) ~= "table" then
+                        area.orbitCharacters[npcKey] = { slot = 1, npcLightMode = "STANDARD" }
+                    else
+                        row.npcLightMode = "STANDARD"
+                    end
+                end
+            end
+        end
     end
 end
 

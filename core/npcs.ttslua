@@ -3118,6 +3118,45 @@ local function npcReconcileFingerprint()
     lines[#lines + 1] = "seats:\n" .. occupiedNpcSeatsFingerprint()
     local tableKey = S.getStateVal("seatLayout", "currentTableKey")
     lines[#lines + 1] = "table:" .. tostring(tableKey or "")
+    local scatterLines = {}
+    local ScatterLayout = require("lib.scatter_layout")
+    local pack = S.getStateVal("sessionScene", "scatterPlacements")
+    if U.Type(pack) == "table" then
+        for i = 1, ScatterLayout.groupCount() do
+            local areaKey = ScatterLayout.areaKeyForGroup(i)
+            local area = pack[areaKey]
+            if U.Type(area) == "table" then
+                if U.Type(area.orbitCharacters) == "table" then
+                    for npcKey, row in pairs(area.orbitCharacters) do
+                        if type(npcKey) == "string" then
+                            scatterLines[#scatterLines + 1] = string.format(
+                                "o:%s:%s:%d:%s",
+                                areaKey,
+                                npcKey,
+                                math.floor(tonumber(row and row.slot) or 0),
+                                tostring(row and row.npcLightMode or "")
+                            )
+                        end
+                    end
+                end
+                if U.Type(area.centerCharacters) == "table" then
+                    for pcKey, row in pairs(area.centerCharacters) do
+                        if type(pcKey) == "string" then
+                            scatterLines[#scatterLines + 1] = string.format(
+                                "c:%s:%s:%d:%s",
+                                areaKey,
+                                pcKey,
+                                math.floor(tonumber(row and row.slot) or 0),
+                                tostring(row and row.characterKey or "")
+                            )
+                        end
+                    end
+                end
+            end
+        end
+    end
+    table.sort(scatterLines)
+    lines[#lines + 1] = "scatter:\n" .. table.concat(scatterLines, "\n")
     for _, seatKey in ipairs(C.NPCSeats or {}) do
         lines[#lines + 1] = "present:" .. seatKey .. "=" .. tostring(resolveSeatPresenceForSeat(seatKey))
     end
@@ -3152,6 +3191,43 @@ resolveNpcPlacementIntent = function()
         end
     end
 
+    -- Scatter Mode owns orbit (and playing-NPC) figurines via scatterPlacements, not npcWorld.placements.
+    local ScatterMode = require("core.scatter_mode")
+    if ScatterMode.isActive() then
+        local ScatterLayout = require("lib.scatter_layout")
+        local pack = S.getStateVal("sessionScene", "scatterPlacements")
+        if U.Type(pack) == "table" then
+            for i = 1, ScatterLayout.groupCount() do
+                local area = pack[ScatterLayout.areaKeyForGroup(i)]
+                if U.Type(area) == "table" then
+                    if U.Type(area.orbitCharacters) == "table" then
+                        for npcKey, _ in pairs(area.orbitCharacters) do
+                            if isNpcManagedCharacter(npcKey) then
+                                byCharacter[npcKey] = {
+                                    target = "scatter",
+                                    npcLightMode = "STANDARD",
+                                }
+                            end
+                        end
+                    end
+                    if U.Type(area.centerCharacters) == "table" then
+                        for _, crow in pairs(area.centerCharacters) do
+                            if U.Type(crow) == "table"
+                                and crow.isPlayingNPC == true
+                                and isNpcManagedCharacter(crow.characterKey)
+                            then
+                                byCharacter[crow.characterKey] = {
+                                    target = "scatter",
+                                    npcLightMode = "STANDARD",
+                                }
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
     local tableKey = S.getStateVal("seatLayout", "currentTableKey")
     local tableCfg = U.Type(tableKey) == "string" and C.Tables[tableKey] or nil
     local FSL = require("lib.figurine_seat_layout")
@@ -3163,7 +3239,8 @@ resolveNpcPlacementIntent = function()
         local tableHasSlot = FSL.seatIsOnTable(seatKey, tableCfg)
         local present = resolveSeatPresenceForSeat(seatKey)
         local ciAssigned = assigned and U.Type(byCharacter[assignedChar]) == "table" and byCharacter[assignedChar] or nil
-        local areaBound = ciAssigned ~= nil and ciAssigned.target == "stage"
+        local areaBound = ciAssigned ~= nil
+            and (ciAssigned.target == "stage" or ciAssigned.target == "scatter")
         local physicalSeatAllowed = assigned and tableHasSlot and not areaBound
         bySeat[seatKey] = {
             assigned = assigned,
@@ -3240,6 +3317,8 @@ local function reconcileStepOneAreaRemovals(intent)
                         -- Step Three re-seats from stage; avoid parking to preload first.
                     elseif U.Type(ci) == "table" and ci.target == "stage" then
                         -- Step Five repositions on stage (lerp or snap); do not park paired spotlight to preload first.
+                    elseif U.Type(ci) == "table" and ci.target == "scatter" then
+                        -- Step Five ScatterMode.applyWorldLayout; do not park first.
                     else
                         local ok, err = NPCS.retreatNpcInstanceToPreloadPool(name, {
                             skipUiRefresh = true,
