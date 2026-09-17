@@ -42,19 +42,19 @@
     <!-- charisma -->
     <Image id="dot_charisma_1" class="dot dot_standard" offsetXY="782 -668" active="false" />
     <Image id="dot_charisma_2" class="dot dot_standard" offsetXY="816 -668" active="false" />
-    <Image id="dot_charisma_3" class="dot dot_standard" offsetXY="85 -668" active="false" />
+    <Image id="dot_charisma_3" class="dot dot_standard" offsetXY="850 -668" active="false" />
     <Image id="dot_charisma_4" class="dot dot_standard" offsetXY="884 -668" active="false" />
     <Image id="dot_charisma_5" class="dot dot_standard" offsetXY="918 -668" active="false" />
     <!-- manipulation -->
     <Image id="dot_manipulation_1" class="dot dot_standard" offsetXY="782 -745" active="false" />
     <Image id="dot_manipulation_2" class="dot dot_standard" offsetXY="816 -745" active="false" />
-    <Image id="dot_manipulation_3" class="dot dot_standard" offsetXY="85 -745" active="false" />
+    <Image id="dot_manipulation_3" class="dot dot_standard" offsetXY="850 -745" active="false" />
     <Image id="dot_manipulation_4" class="dot dot_standard" offsetXY="884 -745" active="false" />
     <Image id="dot_manipulation_5" class="dot dot_standard" offsetXY="918 -745" active="false" />
     <!-- composure -->
     <Image id="dot_composure_1" class="dot dot_standard" offsetXY="782 -822" active="false" />
     <Image id="dot_composure_2" class="dot dot_standard" offsetXY="816 -822" active="false" />
-    <Image id="dot_composure_3" class="dot dot_standard" offsetXY="85 -822" active="false" />
+    <Image id="dot_composure_3" class="dot dot_standard" offsetXY="850 -822" active="false" />
     <Image id="dot_composure_4" class="dot dot_standard" offsetXY="884 -822" active="false" />
     <Image id="dot_composure_5" class="dot dot_standard" offsetXY="918 -822" active="false" />
     <!-- intelligence -->
@@ -80,11 +80,11 @@
   <!-- === SKILLS === -->
   <Panel id="skills_panel">
     <!-- athletics -->
-    <Image id="dot_athletics_1" class="dot dot_standard" offsetXY="285 -94" active="false" />
-    <Image id="dot_athletics_2" class="dot dot_standard" offsetXY="319 -94" active="false" />
-    <Image id="dot_athletics_3" class="dot dot_standard" offsetXY="353 -94" active="false" />
-    <Image id="dot_athletics_4" class="dot dot_standard" offsetXY="387 -94" active="false" />
-    <Image id="dot_athletics_5" class="dot dot_standard" offsetXY="421 -94" active="false" />
+    <Image id="dot_athletics_1" class="dot dot_standard" offsetXY="285 -940" active="false" />
+    <Image id="dot_athletics_2" class="dot dot_standard" offsetXY="319 -940" active="false" />
+    <Image id="dot_athletics_3" class="dot dot_standard" offsetXY="353 -940" active="false" />
+    <Image id="dot_athletics_4" class="dot dot_standard" offsetXY="387 -940" active="false" />
+    <Image id="dot_athletics_5" class="dot dot_standard" offsetXY="421 -940" active="false" />
     <!-- brawl -->
     <Image id="dot_brawl_1" class="dot dot_standard" offsetXY="285 -1019" active="false" />
     <Image id="dot_brawl_2" class="dot dot_standard" offsetXY="319 -1019" active="false" />
@@ -134,65 +134,65 @@
     <Image id="dot_survival_4" class="dot dot_standard" offsetXY="387 -1572" active="false" />
     <Image id="dot_survival_5" class="dot dot_standard" offsetXY="421 -1572" active="false" />
     <!-- animalKen -->
-    <Image id="dot_animalKen_1" class="dot dot_standard" offsetXY="782 -94" active="false" />
-    <Image id="dot_animalKen_2" class="dot dot_standard" offsetXY="816 -94" active="false" />
-    <Image id="dot_animalKen_3" class="dot dot_standard" offsetXY="85 -94" active="false" />
-    <Image id="dot_animalKen_4" class="dot dot_standard" offsetXY="884 -94" active="false" />
-    <Image id="dot_animalKen_5" class="dot dot_standard" offsetXY="918 -94" active="false" />
+    <Image id="dot_animalKen_1" class="dot dot_standard" offsetXY="782 -940" active="false" />
+    <Image id="dot_animalKen_2" class="dot dot_standard" offsetXY="816 -940" active="false" />
+    <Image id="dot_animalKen_3" class="dot dot_standard" offsetXY="850 -940" active="false" />
+    <Image id="dot_animalKen_4" class="dot dot_standard" offsetXY="884 -940" active="false" />
+    <Image id="dot_animalKen_5" class="dot dot_standard" offsetXY="918 -940" active="false" />
     <!-- etiquette -->
     <Image id="dot_etiquette_1" class="dot dot_standard" offsetXY="782 -1019" active="false" />
     <Image id="dot_etiquette_2" class="dot dot_standard" offsetXY="816 -1019" active="false" />
-    <Image id="dot_etiquette_3" class="dot dot_standard" offsetXY="85 -1019" active="false" />
+    <Image id="dot_etiquette_3" class="dot dot_standard" offsetXY="850 -1019" active="false" />
     <Image id="dot_etiquette_4" class="dot dot_standard" offsetXY="884 -1019" active="false" />
     <Image id="dot_etiquette_5" class="dot dot_standard" offsetXY="918 -1019" active="false" />
     <!-- insight -->
     <Image id="dot_insight_1" class="dot dot_standard" offsetXY="782 -1098" active="false" />
     <Image id="dot_insight_2" class="dot dot_standard" offsetXY="816 -1098" active="false" />
-    <Image id="dot_insight_3" class="dot dot_standard" offsetXY="85 -1098" active="false" />
+    <Image id="dot_insight_3" class="dot dot_standard" offsetXY="850 -1098" active="false" />
     <Image id="dot_insight_4" class="dot dot_standard" offsetXY="884 -1098" active="false" />
     <Image id="dot_insight_5" class="dot dot_standard" offsetXY="918 -1098" active="false" />
     <!-- intimidation -->
     <Image id="dot_intimidation_1" class="dot dot_standard" offsetXY="782 -1177" active="false" />
     <Image id="dot_intimidation_2" class="dot dot_standard" offsetXY="816 -1177" active="false" />
-    <Image id="dot_intimidation_3" class="dot dot_standard" offsetXY="85 -1177" active="false" />
+    <Image id="dot_intimidation_3" class="dot dot_standard" offsetXY="850 -1177" active="false" />
     <Image id="dot_intimidation_4" class="dot dot_standard" offsetXY="884 -1177" active="false" />
     <Image id="dot_intimidation_5" class="dot dot_standard" offsetXY="918 -1177" active="false" />
     <!-- leadership -->
     <Image id="dot_leadership_1" class="dot dot_standard" offsetXY="782 -1256" active="false" />
     <Image id="dot_leadership_2" class="dot dot_standard" offsetXY="816 -1256" active="false" />
-    <Image id="dot_leadership_3" class="dot dot_standard" offsetXY="85 -1256" active="false" />
+    <Image id="dot_leadership_3" class="dot dot_standard" offsetXY="850 -1256" active="false" />
     <Image id="dot_leadership_4" class="dot dot_standard" offsetXY="884 -1256" active="false" />
     <Image id="dot_leadership_5" class="dot dot_standard" offsetXY="918 -1256" active="false" />
     <!-- performance -->
     <Image id="dot_performance_1" class="dot dot_standard" offsetXY="782 -1335" active="false" />
     <Image id="dot_performance_2" class="dot dot_standard" offsetXY="816 -1335" active="false" />
-    <Image id="dot_performance_3" class="dot dot_standard" offsetXY="85 -1335" active="false" />
+    <Image id="dot_performance_3" class="dot dot_standard" offsetXY="850 -1335" active="false" />
     <Image id="dot_performance_4" class="dot dot_standard" offsetXY="884 -1335" active="false" />
     <Image id="dot_performance_5" class="dot dot_standard" offsetXY="918 -1335" active="false" />
     <!-- persuasion -->
     <Image id="dot_persuasion_1" class="dot dot_standard" offsetXY="782 -1414" active="false" />
     <Image id="dot_persuasion_2" class="dot dot_standard" offsetXY="816 -1414" active="false" />
-    <Image id="dot_persuasion_3" class="dot dot_standard" offsetXY="85 -1414" active="false" />
+    <Image id="dot_persuasion_3" class="dot dot_standard" offsetXY="850 -1414" active="false" />
     <Image id="dot_persuasion_4" class="dot dot_standard" offsetXY="884 -1414" active="false" />
     <Image id="dot_persuasion_5" class="dot dot_standard" offsetXY="918 -1414" active="false" />
     <!-- streetwise -->
     <Image id="dot_streetwise_1" class="dot dot_standard" offsetXY="782 -1493" active="false" />
     <Image id="dot_streetwise_2" class="dot dot_standard" offsetXY="816 -1493" active="false" />
-    <Image id="dot_streetwise_3" class="dot dot_standard" offsetXY="85 -1493" active="false" />
+    <Image id="dot_streetwise_3" class="dot dot_standard" offsetXY="850 -1493" active="false" />
     <Image id="dot_streetwise_4" class="dot dot_standard" offsetXY="884 -1493" active="false" />
     <Image id="dot_streetwise_5" class="dot dot_standard" offsetXY="918 -1493" active="false" />
     <!-- subterfuge -->
     <Image id="dot_subterfuge_1" class="dot dot_standard" offsetXY="782 -1572" active="false" />
     <Image id="dot_subterfuge_2" class="dot dot_standard" offsetXY="816 -1572" active="false" />
-    <Image id="dot_subterfuge_3" class="dot dot_standard" offsetXY="85 -1572" active="false" />
+    <Image id="dot_subterfuge_3" class="dot dot_standard" offsetXY="850 -1572" active="false" />
     <Image id="dot_subterfuge_4" class="dot dot_standard" offsetXY="884 -1572" active="false" />
     <Image id="dot_subterfuge_5" class="dot dot_standard" offsetXY="918 -1572" active="false" />
     <!-- academics -->
-    <Image id="dot_academics_1" class="dot dot_standard" offsetXY="1279 -94" active="false" />
-    <Image id="dot_academics_2" class="dot dot_standard" offsetXY="1313 -94" active="false" />
-    <Image id="dot_academics_3" class="dot dot_standard" offsetXY="1347 -94" active="false" />
-    <Image id="dot_academics_4" class="dot dot_standard" offsetXY="1381 -94" active="false" />
-    <Image id="dot_academics_5" class="dot dot_standard" offsetXY="1415 -94" active="false" />
+    <Image id="dot_academics_1" class="dot dot_standard" offsetXY="1279 -940" active="false" />
+    <Image id="dot_academics_2" class="dot dot_standard" offsetXY="1313 -940" active="false" />
+    <Image id="dot_academics_3" class="dot dot_standard" offsetXY="1347 -940" active="false" />
+    <Image id="dot_academics_4" class="dot dot_standard" offsetXY="1381 -940" active="false" />
+    <Image id="dot_academics_5" class="dot dot_standard" offsetXY="1415 -940" active="false" />
     <!-- awareness -->
     <Image id="dot_awareness_1" class="dot dot_standard" offsetXY="1279 -1019" active="false" />
     <Image id="dot_awareness_2" class="dot dot_standard" offsetXY="1313 -1019" active="false" />

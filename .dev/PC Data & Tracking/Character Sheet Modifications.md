@@ -87,6 +87,8 @@ Printed face is the object `CustomImage` (author-set). XmlUI uses one `Image` pe
 
 Cloud sync: job `csheetPage1Overlays` (`CSheets/Page1` → five page‑1 GUIDs).
 
+When editing `page1.xml` offsets in PowerShell, use single-quoted strings — double-quoted strings expand `$850` / `$0` inside coordinates and silently corrupt them (`850`→`85`, `-940`→`-94`).
+
 ### Page 2 dynamic disciplines
 
 Blank disciplines area on the tile; runtime XmlUI builds a 2×3 discipline grid (`discName_<key>` + `page2_dotline` + fill overlays) and optional rituals/ceremonies section (`divider_rituals` / `divider_ceremonies` / `divider_ritualsAndCeremonies`). `stats.disciplines` keeps full PCS rows (`powers`, `rituals`, `ceremonies`) after bootstrap.
