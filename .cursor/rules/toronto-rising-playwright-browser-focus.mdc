@@ -42,13 +42,18 @@ If the dashboard tab is missing or you are in extension Chrome:
 
 ## Window size
 
-Target **1920×1080** (`window.innerWidth` / `innerHeight`). The extension debugger bar is **not** an acceptable way to get a short viewport.
+The **agent** layout is Playwright’s page size: **1920×1080** (`window.innerWidth` / `innerHeight` via evaluate). `--viewport-size=1920x1080` forces that even when the OS window is smaller.
 
-If those numbers are wrong:
+The author’s monitor may show a windowed Chrome, a taskbar cutoff, or a Chrome infobar about `--disable-blink-features=AutomationControlled`. That is fine. Do **not** F11, `browser_resize`, or ask them to use Inspector scaling.
 
-1. Check for docked DevTools, missing fullscreen, or a non-1920 display.
-2. Do **not** call `browser_resize`, F11, or `bringToFront` to “fix” it unless the author has agreed in this turn.
-3. If you cannot restore a banner-free 1920×1080 without stealing focus, **stop and tell the author** what you measured and what was in the way.
+The extension debugger bar is still **not** acceptable — that one shrinks the page Playwright measures.
+
+If Playwright’s inner size is **not** 1920×1080:
+
+1. Check for `--extension` mode.
+2. Re-apply CDP `Emulation.setDeviceMetricsOverride` at 1920×1080 (Inspector device mode can clear the launch viewport when toggled off).
+3. Do **not** call `browser_resize`, F11, or `bringToFront` unless the author has agreed in this turn.
+4. If you still cannot get 1920×1080 without stealing focus, **stop and tell the author** what you measured.
 
 ## Stop and ask in Cursor first
 

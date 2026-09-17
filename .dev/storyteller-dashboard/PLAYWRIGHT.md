@@ -17,7 +17,7 @@ Verification:
 - Cursor terminal for `npm run dev` is **running** and logs `Storyteller dashboard listening on http://127.0.0.1:8788`
 - Playwright `browser_tabs` list shows `http://127.0.0.1:8788/` titled **Toronto Rising Storyteller Dashboard**
 - The Chrome window has **no** “Playwright Extension started debugging this browser” bar
-- `window.innerWidth` / `innerHeight` is the layout we care about (target 1920×1080; do not `browser_resize` after startup)
+- Playwright `window.innerWidth` / `innerHeight` is **1920×1080**. That is the agent layout. The OS window on the author’s monitor may be windowed or clipped by the taskbar — do not treat that as failure, and do not `browser_resize` / F11 after startup. If inner size is wrong, restore with CDP `Emulation.setDeviceMetricsOverride`, not Inspector scaling.
 
 Status: current
 
@@ -29,7 +29,11 @@ Layout-accurate agent work uses a **separate** Chrome that Playwright launches i
 
 - user data: `%LOCALAPPDATA%/TorontoRising/playwright-chrome-profile`
 - `ignoreDefaultArgs: ["--enable-automation"]` so Chrome does **not** show “controlled by automated software”
-- `--start-fullscreen` and `--viewport-size=1920x1080`
+- `--viewport-size=1920x1080` so the **page** is 1920×1080 even when the OS window is smaller
+
+`--start-fullscreen` may not stick. Chrome may still show tabs, a taskbar, or an infobar about `--disable-blink-features=AutomationControlled`. Those sit in the Chrome chrome, not in the page Playwright measures.
+
+Do **not** ask the author to turn on Inspector device / aspect-ratio scaling. That can hold 1920×1080 while it is on, then drop the page to the real window height (for example 1920×889) when they turn it off. If Playwright’s inner size is no longer 1920×1080, restore it from the agent side with CDP `Emulation.setDeviceMetricsOverride` (width 1920, height 1080, mobile false). Do not F11 or `browser_resize`.
 
 That window is not Ryan, Vault, or Cursor. Park it on another monitor; do not minimize it. The Playwright extension can stay installed in Cursor Chrome; MCP must **not** use `--extension` for dashboard work.
 
@@ -71,5 +75,7 @@ Do **not** use `start chrome` (Default / Ryan). Do **not** launch Cursor Chrome 
 ## After the window is up
 
 Reuse the existing Playwright tab. No `bringToFront`, no extra windows, no F11, no `browser_resize` unless the author agreed this turn. Keep the window **open and not minimized**.
+
+If the author’s monitor shows a smaller window or a Chrome infobar, leave it. Success is Playwright reporting 1920×1080, not the window looking fullscreen on their display. If inner size dropped after they closed Inspector, restore with `Emulation.setDeviceMetricsOverride` — do not ask them to scale again.
 
 HMR of `scenesTab.ts` does not re-bind. Reload `http://127.0.0.1:8788/`, then click `#tab-scenes`.
