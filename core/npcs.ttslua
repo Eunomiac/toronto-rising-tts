@@ -31,7 +31,6 @@ NPCS.areas = DATA.areas or {}
 
 local TAG_FIG = "npc_figurine"
 local TAG_LIT = "npc_light"
-local TAG_SPOTLIGHT = "Spotlight"
 local GM_PREFIX = "npcInstance:"
 --- Spawn nickname for pooled NPC spotlights (`spawnObjectData` / save `Nickname`).
 local NPC_LIGHT_NICKNAME_PREFIX = "NPC Light "
