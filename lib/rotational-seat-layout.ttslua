@@ -1103,7 +1103,8 @@ end
 --- Apply a seat's precomputed **rigid transform** (yaw `deltaDeg` about `centerPoint`, then `shift`) to
 --- a camera frame, so per-seat camera presets land with the seat. The seat's `{ deltaDeg, shift }` comes
 --- from `computed.seatRigidByKey` (populated identically by circular + facing generators), so camera and
---- seat-object placement always agree.
+--- seat-object placement always agree. Optional `rigid.centerPoint` overrides the shared layout center
+--- (Scatter Mode: each PC group yaws about its own `PC_SCATTER_GROUP_ORIGIN`).
 --- @param centerPoint Vector
 --- @param deltaDeg number seat yaw delta about centerPoint
 --- @param shift Vector|table seat translation after yaw
@@ -1144,7 +1145,17 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
     error("rotational-seat-layout: applyCameraModesForSeats missing rigid transform for slot 1 / reference seat '" ..
       tostring(referenceColor) .. "'")
   end
-  local centerPoint = Vector(computed.centerPoint)
+  local layoutCenterPoint = Vector(computed.centerPoint)
+
+  --- Rigid yaw pivot: per-seat override (Scatter group origin) else shared table/layout center.
+  --- @param rigid table
+  --- @return Vector
+  local function rigidYawCenter(rigid)
+    if U.Type(rigid) == "table" and rigid.centerPoint ~= nil then
+      return Vector(rigid.centerPoint)
+    end
+    return layoutCenterPoint
+  end
 
   --- Wrap yaw into [0, 360), clamp pitch into [0, 90], and avoid exact zero for yaw/pitch/distance.
   --- TTS treats exact zeros for these camera fields as "no change", so bump to 0.1.
@@ -1192,7 +1203,7 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
         end
         local pos = Vector(modeVal.position) + worldOff
         local shiftedPos, shiftedRot = cameraFrameFromRigid(
-          centerPoint,
+          rigidYawCenter(referenceRigid),
           referenceRigid.deltaDeg,
           referenceRigid.shift,
           pos,
@@ -1238,7 +1249,7 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
     for seatKey, rigid in pairs(seatRigidByKey) do
       if U.Type(seatKey) == "string" and U.Type(rigid) == "table" and rigid.shift ~= nil then
         local shiftedPos, shiftedRot = cameraFrameFromRigid(
-          centerPoint,
+          rigidYawCenter(rigid),
           rigid.deltaDeg,
           rigid.shift,
           basePos,

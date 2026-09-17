@@ -972,6 +972,18 @@ local function npcFigurineBoundsHeightReady(fig, npcName)
     return true
 end
 
+--- Preload pool hide only — used by reconcile and presentation (no ImageScalar `reload()`).
+--- @param fig Object|nil
+--- @param lit Object|nil
+local function applyPreloadPairHide(fig, lit)
+    if U.isGameObject(fig) then
+        O.hideObject(fig)
+    end
+    if U.isGameObject(lit) then
+        O.hideObject(lit)
+    end
+end
+
 --- Figurine Transform scale + tooltip and paired spotlight scale (preload = small, tooltips off; active areas/seats = full, tooltips on).
 --- ImageScalar (figurine custom-property scale) applied separately when placement changes — see `applyNpcFigurineImageScalarForPlacement`.
 --- @param fig Object|nil
@@ -995,11 +1007,18 @@ local function applyNpcPairPhysicalPresentation(fig, lit, areaKey, npcName)
     ensureNpcFigurinePhysicsLocked(fig)
     local reloaded = applyNpcFigurineImageScalarForPlacement(fig, npcName, areaKey) == true
     if isPreload then
-        if U.isGameObject(fig) then
-            O.hideObject(fig)
-        end
-        if U.isGameObject(lit) then
-            O.hideObject(lit)
+        applyPreloadPairHide(fig, lit)
+        if reloaded and U.isGameObject(fig) then
+            U.chain({
+                function()
+                    return function()
+                        return fig.loading_custom ~= true
+                    end
+                end,
+                function()
+                    applyPreloadPairHide(fig, lit)
+                end,
+            })
         end
     else
         if U.isGameObject(fig) and O.isHiddenObject(fig) then
@@ -2180,6 +2199,21 @@ function NPCS.resolveNpcLightPose(npcName, modeKey, figOverride)
     local pose = NPCS.resolveFigurineLightPose(fig, positioning, npcName)
     if pose == nil then
         return out
+    end
+    -- Scatter: figurine yaw is flipped +180 vs look-at-G. Light placement uses world-origin
+    -- "inward", so rotate the light XZ around the figurine 180° to keep NPC+light a rigid body.
+    if U.Type(rec) == "table" and rec.areaKey == SCATTER_AREA_KEY and pose.position ~= nil then
+        local b = fig.getBounds()
+        local fx = (b and b.center and (b.center.x or b.center[1])) or (pose.lookAtTarget and pose.lookAtTarget.x) or 0
+        local fz = (b and b.center and (b.center.z or b.center[3])) or (pose.lookAtTarget and pose.lookAtTarget.z) or 0
+        local lp = pose.position
+        local lx = tonumber(lp.x or lp[1]) or 0
+        local ly = tonumber(lp.y or lp[2]) or 0
+        local lz = tonumber(lp.z or lp[3]) or 0
+        pose.position = Vector(2 * fx - lx, ly, 2 * fz - lz)
+        if pose.lookAtTarget ~= nil then
+            pose.rotation = U.lookAtRotation(pose.position, pose.lookAtTarget)
+        end
     end
     out.position = pose.position
     out.rotation = pose.rotation
@@ -3539,6 +3573,7 @@ function NPCS.reconcileAllFromState(opts)
         --- Tail reconcilers with own fingerprint gates — same as full path end (TOR-178 / TOR-201).
         --- Skipping these violated sync contract when homeland cache was invalidated alone.
         reconcileNpcHomelandSeatSpotlightsWhenStageBound()
+        NPCS.reconcilePreloadPoolHideFromState()
         local Gameboard = require("core.npc_gameboard")
         if type(Gameboard.reconcileControlBoardFromState) == "function" then
             Gameboard.reconcileControlBoardFromState()
@@ -3590,6 +3625,8 @@ function NPCS.reconcileAllFromState(opts)
         print("[NPCS] reconcileAllFromState incomplete; fingerprint not committed (will retry on next Sync.full)")
     end
 
+
+    NPCS.reconcilePreloadPoolHideFromState()
 
     local Gameboard = require("core.npc_gameboard")
     if type(Gameboard.reconcileControlBoardFromState) == "function" then
@@ -4533,26 +4570,77 @@ function NPCS.restoreAfterStateLoad()
     NPCS.reconcilePreloadPoolHideFromState()
 end
 
+--- True when a pooled figurine sits in the under-table preload grid (not on a seat tag).
+--- @param fig Object|nil
+--- @return boolean
+local function figurineInPreloadWorldPool(fig)
+    if not NPCS.isPooledFigurineObject(fig) or figurineHasAnySeatTag(fig) then
+        return false
+    end
+    local pos = fig.getPosition and fig.getPosition() or nil
+    if pos == nil then
+        return false
+    end
+    return (pos.y or 0) <= (C.HIDDEN_OBJECT_WORLD_Y + 50)
+end
+
+--- @param figGuid string
+--- @return table|nil rec
+local function instanceRecordForFigurineGuid(figGuid)
+    if U.Type(figGuid) ~= "string" or figGuid == "" then
+        return nil
+    end
+    for _, rec in pairs(getInstances()) do
+        if U.Type(rec) == "table" and rec.figurineGuid == figGuid then
+            return rec
+        end
+    end
+    return nil
+end
+
 --- Re-apply hide protocol for every NPC instance parked in the preload pool (load + layout).
 --- Audit/adopt only runs `ensureNpcInPreloadZone` for missing instance rows; existing preload
 --- rows skip that path, so visibility must be refreshed explicitly when already at y = -200.
---- @return number instance rows reconciled
+--- Also scans in-world preload figurines (ImageScalar `reload()` can reset hide until mesh settles).
+--- @return number pairs reconciled
 function NPCS.reconcilePreloadPoolHideFromState()
     local instances = getInstances()
-    if U.Type(instances) ~= "table" then
-        return 0
-    end
+    local touchedFigGuids = {}
     local count = 0
-    for npcName, rec in pairs(instances) do
-        if U.Type(npcName) == "string" and U.Type(rec) == "table" and rec.areaKey == PRELOAD_AREA_KEY then
-            local fig = G.getObject(rec.figurineGuid or "")
-            local lit = G.getObject(rec.lightGuid or "")
-            if U.isGameObject(fig) or U.isGameObject(lit) then
-                applyNpcPairPhysicalPresentation(fig, lit, PRELOAD_AREA_KEY, npcName)
-                count = count + 1
+
+    local function markAndHide(fig, lit)
+        local figGuid = U.isGameObject(fig) and fig.getGUID and fig.getGUID() or nil
+        if U.Type(figGuid) == "string" and figGuid ~= "" then
+            if touchedFigGuids[figGuid] == true then
+                return
+            end
+            touchedFigGuids[figGuid] = true
+        end
+        if U.isGameObject(fig) or U.isGameObject(lit) then
+            applyPreloadPairHide(fig, lit)
+            count = count + 1
+        end
+    end
+
+    if U.Type(instances) == "table" then
+        for _, rec in pairs(instances) do
+            if U.Type(rec) == "table" and rec.areaKey == PRELOAD_AREA_KEY then
+                markAndHide(G.getObject(rec.figurineGuid or ""), G.getObject(rec.lightGuid or ""))
             end
         end
     end
+
+    local figs = getObjectsWithTag(TAG_FIG) or {}
+    for i = 1, #figs do
+        local fig = figs[i]
+        if figurineInPreloadWorldPool(fig) then
+            local figGuid = fig.getGUID and fig.getGUID() or ""
+            local rec = instanceRecordForFigurineGuid(figGuid)
+            local lit = rec ~= nil and G.getObject(rec.lightGuid or "") or nil
+            markAndHide(fig, lit)
+        end
+    end
+
     return count
 end
 

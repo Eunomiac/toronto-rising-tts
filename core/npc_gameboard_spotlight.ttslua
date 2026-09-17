@@ -40,10 +40,23 @@ local function npcHasStagePlacementForSpotlight(characterKey)
         return false
     end
     local placements = stateModule().getStateVal("sessionScene", "npcWorld", "placements")
-    if type(placements) ~= "table" then
-        return false
+    if type(placements) == "table" and Reconcile.normalizePlacementRow(placements[characterKey]) ~= nil then
+        return true
     end
-    return Reconcile.normalizePlacementRow(placements[characterKey]) ~= nil
+    -- Scatter Mode: NPCs live in scatterPlacements, not npcWorld.placements.
+    local ScatterMode = require("core.scatter_mode")
+    if type(ScatterMode.isActive) == "function"
+        and ScatterMode.isActive()
+        and type(ScatterMode.groupIndexForNpcCharacter) == "function"
+        and ScatterMode.groupIndexForNpcCharacter(characterKey) ~= nil then
+        return true
+    end
+    local NPCS = require("core.npcs")
+    local rec = type(NPCS.getInstanceRecord) == "function" and NPCS.getInstanceRecord(characterKey) or nil
+    if type(rec) == "table" and rec.areaKey == NPCS.SCATTER_AREA_KEY then
+        return true
+    end
+    return false
 end
 
 --- @param playerColor string

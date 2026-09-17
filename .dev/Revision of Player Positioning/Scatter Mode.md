@@ -344,13 +344,11 @@ NPC-only groups and empty groups are allowed.
 
 #### NPC Rotation / Orientation
 
-Every NPC faces `SCATTER_GROUP_ORIGIN`.
+Every NPC faces **outward** — away from `SCATTER_GROUP_ORIGIN` / World Origin (backs toward the PC cluster).
 
-For an NPC at world-space position `N`, facing is:
+Implementation: compute look-at toward `SCATTER_GROUP_ORIGIN`, then add **180°** yaw so the mesh faces the opposite way.
 
-    SCATTER_GROUP_ORIGIN - N
-
-Associated NPC lights stay positioned and oriented relative to their NPC figurines using the same satellite-follow behavior as in Standard Mode.
+Associated NPC lights stay locked to their figurine. Because Standard Mode light offsets use world-origin “inward,” Scatter rotates each light’s XZ position **180° around the figurine** after resolve so the NPC + light stay a rigid body when the figurine is flipped.
 
 ### Storyteller dice tray
 

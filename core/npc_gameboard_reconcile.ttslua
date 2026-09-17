@@ -1427,6 +1427,8 @@ function Reconcile.reconcileControlBoardFromState(opts)
     end
 
     Tokens.applyControlBoardComponentPlayerInvisibility()
+    O.applyActiveVisibility(board)
+    O.applyActiveVisibility(Board.getControlBoardPalette())
     Reconcile.rebuildAnchorDropEligibilityCache(board)
 end
 

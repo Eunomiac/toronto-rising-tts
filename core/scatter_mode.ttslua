@@ -27,6 +27,7 @@ local CONTROL_BOARD_RELOAD_WAIT_SEC = 20
 local finishScatterBoardAfterReload
 local finishStandardBoardAfterReload
 local applyDebugCalibrationSnapsIfAny
+local reapplyControlBoardCatalogVisibility
 
 --- In-memory inferred holes per group for debug snap points (Scatter play has none).
 local debugHolesByGroup = {}
@@ -130,6 +131,12 @@ local function removeCharacterFromAllGroups(characterKey)
             end
         end
     end
+end
+
+--- Public: free board/orbit slots when a control token leaves a scatter hole (pick-up or off-parchment drop).
+--- @param characterKey string|nil
+function ScatterMode.clearCharacterOccupancy(characterKey)
+    removeCharacterFromAllGroups(characterKey)
 end
 
 --- @return table|nil D.SCATTER_BOARD
@@ -315,6 +322,16 @@ local function parkTokenOnHole(token, board, hole)
         token.setLock(false)
     end
     token.interactable = true
+end
+
+reapplyControlBoardCatalogVisibility = function()
+    local O = require("core.objects")
+    local Board = require("core.npc_gameboard_board")
+    if type(O.applyActiveVisibility) ~= "function" then
+        return
+    end
+    O.applyActiveVisibility(Board.getControlBoard())
+    O.applyActiveVisibility(Board.getControlBoardPalette())
 end
 
 --- @param url string
@@ -781,7 +798,8 @@ local function applyPcRigs(framesBySlot, occupants)
         end
         local rotated = U.frameAfterRigidYawAboutCenter(rigidCenter, refFig, deltaDeg)
         local shift = Vector(frame.position) - Vector(rotated.position)
-        local rigid = { deltaDeg = deltaDeg, shift = shift }
+        --- Cameras must yaw about the same center used for this rigid (PC group origin), not World Origin.
+        local rigid = { deltaDeg = deltaDeg, shift = shift, centerPoint = rigidCenter }
         local poseFrame = {
             position = Vector(frame.position),
             rotation = Vector(frame.rotation),
@@ -994,6 +1012,7 @@ function ScatterMode.applyBoardChrome()
     if controlBoardMeshReady() then
         clearPolarSnaps()
     end
+    reapplyControlBoardCatalogVisibility()
 end
 
 --- CONTROL_BOARD image, snaps, tables, tokens (fingerprinted image).
@@ -1060,6 +1079,7 @@ function ScatterMode.leave(opts)
         return
     end
     restorePolarSnaps()
+    reapplyControlBoardCatalogVisibility()
 end
 
 --- Control tokens actually on CONTROL_BOARD (box cast above the tile, plus tight surface fallback).
@@ -1207,15 +1227,16 @@ function ScatterMode.applyFromControlBoard()
             end
         end
         local area = pack[ScatterLayout.areaKeyForGroup(gi)]
-        if bestSlot == nil then
-            bestSlot = boardNpcHoleCount() + 1
-        else
-            for existingKey, row in pairs(area.orbitCharacters) do
-                if row.slot == bestSlot then
-                    bestSlot = boardNpcHoleCount() + 1
+        if bestSlot ~= nil then
+            for _, row in pairs(area.orbitCharacters) do
+                if U.Type(row) == "table" and math.floor(tonumber(row.slot) or 0) == bestSlot then
+                    bestSlot = nil
                     break
                 end
             end
+        end
+        if bestSlot == nil then
+            bestSlot = nextFreeNpcHoleSlot(gi)
         end
         area.orbitCharacters[npcKey] = {
             slot = bestSlot,

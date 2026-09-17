@@ -1280,6 +1280,17 @@ function Interactions.onControlTokenPickUp(token)
             token.setLock(false)
         end
         token.interactable = true
+        -- Free the scatter hole as soon as the token leaves it so another NPC can claim that slot.
+        if Board.isTokenOnMinimapTokenSurface(board, token)
+            and type(ScatterMode.clearCharacterOccupancy) == "function" then
+            if Tokens.isNpcControlToken(token) then
+                ScatterMode.clearCharacterOccupancy(Tokens.resolveTokenCharacterKey(token))
+            elseif Tokens.isPcControlToken(token) then
+                local color = Tokens.resolvePcTokenSeatColor(token)
+                local pcKey = color and ScatterMode.pcKeyForColor(color) or nil
+                ScatterMode.clearCharacterOccupancy(pcKey)
+            end
+        end
     else
         Tokens.ensureDefaultNpcControlTokenScale(token)
     end
@@ -1409,6 +1420,11 @@ function Interactions.onPcControlTokenDropped(token, playerColor)
     if ScatterMode.onControlTokenDropped(token, true) then
         return
     end
+    if ScatterMode.isActive() and type(ScatterMode.clearCharacterOccupancy) == "function" then
+        local color = Tokens.resolvePcTokenSeatColor(token)
+        local pcKey = color and ScatterMode.pcKeyForColor(color) or nil
+        ScatterMode.clearCharacterOccupancy(pcKey)
+    end
     applyControlTokenDropScaleByBoardPosition(token, board)
 end
 
@@ -1485,6 +1501,10 @@ function Interactions.onNpcControlTokenDropped(token, playerColor)
     if ScatterMode.onControlTokenDropped(token, false) then
         Interactions.finishInteractionProfile(t0)
         return
+    end
+    -- Left the Scatter parchment (palette / off-board): keep orbit holes free for the next token.
+    if ScatterMode.isActive() and type(ScatterMode.clearCharacterOccupancy) == "function" then
+        ScatterMode.clearCharacterOccupancy(Tokens.resolveTokenCharacterKey(token))
     end
     if not Board.isTokenOnControlBoardSurface(board, token) then
         Tokens.ensureDefaultNpcControlTokenScale(token)
