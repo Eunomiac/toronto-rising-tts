@@ -94,7 +94,8 @@ When editing `page1.xml` offsets in PowerShell, use single-quoted strings — do
 Blank disciplines area on the tile; runtime XmlUI builds a 2×3 discipline grid (`discName_<key>` + `page2_dotline` + fill overlays) and optional rituals/ceremonies section (`divider_rituals` / `divider_ceremonies` / `divider_ritualsAndCeremonies`). `stats.disciplines` keeps full PCS rows (`powers`, `rituals`, `ceremonies`) after bootstrap.
 
 **Generated XML conventions (`lib/csheet_page2_xml.ttslua`):**
-- Repeated layout attrs live on page‑2 classes in a second `<Defaults>` block (cells, headers, name plates, dotline wraps, fills, powers text, ritual rows).
+- Repeated layout attrs live on page‑2 classes in a second `<Defaults>` block (cells, headers, name plates, dotline wraps, fills, powers text, ritual rows). Discipline layout values match the author’s live setAttribute pass (absolute fill offsets `page2_dot_fill_1..5`, 200px dotline, powers text `#AAAAAA` Bold).
+- Power lines use a real `\n` between levels, eight-space indent per line, and `◆` between same-level names.
 - Script-touched ids keep production names: `paper_root`, `pageForward`, `pageInner`, `page2_dynamic`, `dot_<key>_<n>`, `dot_rc_<L|R>_<row>_<slot>`.
 - Everything else gets a unique `db_…` id for live `UI.setAttribute` tuning (strip later once layout is locked).
 

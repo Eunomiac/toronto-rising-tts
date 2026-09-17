@@ -108,7 +108,7 @@ local function collectRitualsAndCeremonies(discs)
 end
 
 --- @param powers table|nil
---- @return string one line per power level; same-level names joined with ◆
+--- @return string one line per power level (8-space indent); same-level names joined with ◆
 local function powersText(powers)
   if type(powers) ~= "table" then
     return ""
@@ -135,7 +135,7 @@ local function powersText(powers)
   for i = 1, #levels do
     local names = byLevel[levels[i]]
     table.sort(names)
-    lines[#lines + 1] = table.concat(names, " ◆ ")
+    lines[#lines + 1] = "        " .. table.concat(names, " ◆ ")
   end
   return table.concat(lines, "\n")
 end
@@ -154,13 +154,20 @@ local function buildDisciplineCell(key, row)
       nameImg
     ),
     string.format('    <Panel id="db_dotline_wrap_%s" class="page2_dotline_wrap page2_dotline_wrap_disc">', key),
-    string.format('      <Image id="db_dotline_bg_%s" image="page2_dotline" class="page2_dotline_bg" />', key),
-    string.format('      <HorizontalLayout id="db_dot_fills_%s" class="page2_dot_fills">', key),
+    string.format(
+      '      <Image id="db_dotline_bg_%s" image="page2_dotline" class="page2_dotline_bg page2_dotline_bg_disc" />',
+      key
+    ),
+    string.format(
+      '      <HorizontalLayout id="db_dot_fills_%s" class="page2_dot_fills page2_dot_fills_disc">',
+      key
+    ),
   }
   for slot = 1, 5 do
     parts[#parts + 1] = string.format(
-      '        <Image id="dot_%s_%d" class="dot dot_standard page2_dot_fill" />',
+      '        <Image id="dot_%s_%d" class="dot dot_standard page2_dot_fill page2_dot_fill_%d" />',
       key,
+      slot,
       slot
     )
   end
@@ -202,16 +209,20 @@ local function buildRcRow(entry, side, rowIndex)
       rowId
     ),
     string.format(
-      '    <Image id="db_rc_dotline_bg_%s" image="page2_dotline" class="page2_dotline_bg" />',
+      '    <Image id="db_rc_dotline_bg_%s" image="page2_dotline" class="page2_dotline_bg page2_dotline_bg_rc" />',
       rowId
     ),
-    string.format('    <HorizontalLayout id="db_rc_dot_fills_%s" class="page2_dot_fills">', rowId),
+    string.format(
+      '    <HorizontalLayout id="db_rc_dot_fills_%s" class="page2_dot_fills page2_dot_fills_rc">',
+      rowId
+    ),
   }
   for slot = 1, 5 do
     parts[#parts + 1] = string.format(
-      '      <Image id="dot_rc_%s_%d_%d" class="dot dot_standard page2_dot_fill" />',
+      '      <Image id="dot_rc_%s_%d_%d" class="dot dot_standard page2_dot_fill page2_dot_fill_%d" />',
       side,
       rowIndex,
+      slot,
       slot
     )
   end
@@ -270,28 +281,39 @@ function M.buildPage2DocumentXml(stats, _seatColorRaw, _pd)
     end
   end
 
+  -- Layout values from author live setAttribute pass (Aishe p.2, 2026-09-17).
   local parts = {
     "<Defaults>",
-    '  <VerticalLayout class="page2_disc_cell" flexibleWidth="1" preferredHeight="280" />',
-    '  <HorizontalLayout class="page2_disc_header" preferredHeight="70" flexibleHeight="0" />',
+    '  <Panel class="page2_paper_root" childAlignment="UpperCenter" padding="50 50 110 100" />',
+    '  <VerticalLayout class="page2_dynamic" padding="40 40 0 0" childAlignment="UpperCenter" childForceExpandHeight="false" childForceExpandWidth="true" spacing="0" />',
+    '  <HorizontalLayout class="page2_disc_row" flexibleWidth="1" spacing="0" preferredHeight="225" />',
+    '  <VerticalLayout class="page2_disc_cell" flexibleWidth="1" preferredHeight="225" childForceExpandWidth="false" />',
+    '  <HorizontalLayout class="page2_disc_header" preferredHeight="70" flexibleHeight="0" childForceExpandWidth="false" preferredWidth="800" flexibleWidth="1" spacing="0" />',
     '  <Image class="page2_disc_name" preferredWidth="220" preferredHeight="63" flexibleWidth="0" />',
     '  <Panel class="page2_dotline_wrap" raycastTarget="false" />',
-    '  <Panel class="page2_dotline_wrap_disc" preferredHeight="63" flexibleWidth="1" />',
+    '  <Panel class="page2_dotline_wrap_disc" padding="0 0 0 0" flexibleWidth="0" preferredWidth="200" preferredHeight="63" />',
     '  <Panel class="page2_dotline_wrap_rc" preferredWidth="280" preferredHeight="63" flexibleWidth="0" />',
-    '  <Image class="page2_dotline_bg" ignoreLayout="true" rectAlignment="MiddleLeft" width="280" height="63" />',
-    '  <HorizontalLayout class="page2_dot_fills" ignoreLayout="true" width="280" height="63" spacing="8" padding="8 8 0 0" childForceExpandWidth="false" childForceExpandHeight="false" />',
-    '  <Image class="page2_dot_fill" preferredWidth="63" preferredHeight="63" flexibleWidth="0" />',
-    '  <Text class="page2_powers_text" alignment="UpperLeft" fontSize="28" color="#FFFFFF" preferredHeight="200" flexibleHeight="1" />',
-    '  <HorizontalLayout class="page2_disc_row" preferredHeight="280" flexibleHeight="0" spacing="24" />',
+    '  <Image class="page2_dotline_bg" ignoreLayout="true" rectAlignment="MiddleLeft" />',
+    '  <Image class="page2_dotline_bg_disc" flexibleWidth="0" preferredWidth="200" preferredHeight="0" width="200" />',
+    '  <Image class="page2_dotline_bg_rc" width="280" height="63" />',
+    '  <HorizontalLayout class="page2_dot_fills" childForceExpandHeight="false" />',
+    '  <HorizontalLayout class="page2_dot_fills_disc" preferredWidth="200" ignoreLayout="false" padding="20 20 0 0" childAlignment="MiddleLeft" childForceExpandWidth="false" />',
+    '  <HorizontalLayout class="page2_dot_fills_rc" ignoreLayout="true" width="280" height="63" spacing="8" padding="8 8 0 0" childForceExpandWidth="false" />',
+    '  <Image class="page2_dot_fill" ignoreLayout="true" width="63" height="63" />',
+    '  <Image class="page2_dot_fill_1" offsetXY="0 2" />',
+    '  <Image class="page2_dot_fill_2" offsetXY="35 2" />',
+    '  <Image class="page2_dot_fill_3" offsetXY="70 2" />',
+    '  <Image class="page2_dot_fill_4" offsetXY="105 2" />',
+    '  <Image class="page2_dot_fill_5" offsetXY="140 2" />',
+    '  <Text class="page2_powers_text" alignment="UpperLeft" fontSize="28" color="#AAAAAA" fontStyle="Bold" preferredHeight="200" flexibleHeight="1" />',
     '  <Image class="page2_rc_divider" preferredHeight="80" flexibleHeight="0" preserveAspect="true" />',
     '  <HorizontalLayout class="page2_rc_columns" spacing="40" flexibleHeight="1" />',
     '  <VerticalLayout class="page2_rc_col" flexibleWidth="1" spacing="12" />',
     '  <HorizontalLayout class="page2_rc_row" preferredHeight="63" flexibleHeight="0" />',
     '  <Text class="page2_rc_name" alignment="MiddleLeft" fontSize="28" color="#FFFFFF" flexibleWidth="1" />',
-    '  <VerticalLayout class="page2_dynamic" padding="80 80 160 520" spacing="24" />',
     "</Defaults>",
     "",
-    '<Panel id="paper_root" class="page_root padded_border">',
+    '<Panel id="paper_root" class="page_root page2_paper_root">',
     '  <Button id="pageForward" class="page_navigation page_forward" />',
     '  <Button id="pageInner" class="page_navigation page_inner_left" />',
     "",
