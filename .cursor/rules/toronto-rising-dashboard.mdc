@@ -34,4 +34,4 @@ Canonical prose: [`.dev/storyteller-dashboard/README.md`](../../.dev/storyteller
 
 ## Browser (Playwright)
 
-Visual board checks use Playwright MCP in a **dedicated Chrome** (`TorontoRising/playwright-chrome-profile`) with the automation infobar off. Do **not** attach through the Playwright extension — that debugger bar shrinks the layout. Recipe: [`.dev/storyteller-dashboard/PLAYWRIGHT.md`](../../.dev/storyteller-dashboard/PLAYWRIGHT.md), always-on [toronto-rising-playwright-browser-focus.mdc](toronto-rising-playwright-browser-focus.mdc).
+Visual board checks use Playwright MCP in a **dedicated Chrome** (`TorontoRising/playwright-chrome-profile`, profile name Cursor). Do **not** attach through the Playwright extension. Dashboard addons belong in that window. Recipe: [`.dev/storyteller-dashboard/PLAYWRIGHT.md`](../../.dev/storyteller-dashboard/PLAYWRIGHT.md), always-on [toronto-rising-playwright-browser-focus.mdc](toronto-rising-playwright-browser-focus.mdc).

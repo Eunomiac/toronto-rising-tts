@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Toronto Rising — Playwright browser focus
 
-Dashboard visual checks use **Playwright MCP** (`user-playwright`) in a **dedicated Chrome** (`%LOCALAPPDATA%/TorontoRising/playwright-chrome-profile`). They do **not** use the Cursor IDE browser pane, and they do **not** attach through the Playwright **extension**.
+Dashboard visual checks use **Playwright MCP** (`user-playwright`) in a **dedicated Chrome** (`%LOCALAPPDATA%/TorontoRising/playwright-chrome-profile`, profile name **Cursor**). That folder is the Playwright profile for this project. They do **not** use the Cursor IDE browser pane, Google Chrome’s Profile 3 picker tile, or the Playwright **extension**. Addons for the dashboard (SCSS live reload, and so on) are installed in that Playwright Chrome, not in Ryan/Vault.
 
 Full recipe (server, MCP flags, 1920×1080 CDP restore, Scenes proof): [`.dev/storyteller-dashboard/PLAYWRIGHT.md`](../../.dev/storyteller-dashboard/PLAYWRIGHT.md).
 
@@ -27,7 +27,7 @@ If the dashboard tab is missing or you are in extension Chrome, follow **PLAYWRI
 
 1. Kill orphan `node dist/server/index.js --dev` if 8788 is in use and the Cursor terminal is aborted.
 2. From `.dev/storyteller-dashboard/` start **`npm run dev`**. Wait for `Storyteller dashboard listening on http://127.0.0.1:8788`.
-3. MCP must use `--user-data-dir` `TorontoRising/playwright-chrome-profile` and `--viewport-size=1920x1080`. **No** `--extension`.
+3. MCP must use `--user-data-dir` `TorontoRising/playwright-chrome-profile`, `--viewport-size=1920x1080`, and `ignoreDefaultArgs` including `--disable-extensions`. **No** `--extension`.
 4. Navigate the existing tab to `http://127.0.0.1:8788/`. Measure inner size. If it is not 1920×1080, restore with CDP `Emulation.setDeviceMetricsOverride` from PLAYWRIGHT.md — not F11, not Inspector scaling.
 5. Prove with a **Scenes** click (`#tab-scenes`).
 

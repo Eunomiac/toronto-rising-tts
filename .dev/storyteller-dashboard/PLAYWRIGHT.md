@@ -27,20 +27,22 @@ Status: current
 
 ## Which Chrome
 
+The agent window **is** the Playwright / Cursor profile for this project. It is not Google Chrome’s Profile 3 (the picker tile also named Cursor). That tile shares User Data with Ryan and Vault, so Playwright cannot launch it as its own browser. Playwright instead uses a **separate** user-data folder whose profile name is **Cursor**:
+
+`%LOCALAPPDATA%/TorontoRising/playwright-chrome-profile`
+
 | Window | Use it? |
 | --- | --- |
-| Dedicated Playwright Chrome (`%LOCALAPPDATA%/TorontoRising/playwright-chrome-profile`) | **Yes** — this is the agent window |
-| Cursor Chrome (Profile 3, Playwright extension installed) | **No** — that is for the author. `--extension` always draws a debugger bar that shrinks the page. Cancel / X detaches Playwright. |
+| Playwright Chrome (TorontoRising folder, profile name Cursor) | **Yes** — this is the agent window. Install dashboard addons (SCSS live reload, and so on) **here**. They persist in that folder. |
+| Google Chrome picker tile **Cursor** (Profile 3) | **No** for agents. Leftover from `--extension` attach. |
 | Ryan / Vault / Default Chrome | **No** |
 | Cursor IDE browser pane | **No** |
 
-The Playwright extension can stay installed in Cursor Chrome. MCP must **not** pass `--extension` or `PLAYWRIGHT_MCP_EXTENSION_TOKEN`. Agents do not need the extension; they drive Chrome directly.
+MCP must **not** pass `--extension` or `PLAYWRIGHT_MCP_EXTENSION_TOKEN`. Agents drive this Chrome directly. Playwright’s default `--disable-extensions` must be in `ignoreDefaultArgs` so addons actually load.
 
-Everyday Chrome (Ryan, Vault, Cursor — one shared Chrome process) can hide the extension debugger bar with Chromium’s `--silent-debugger-extension-api`. That flag is on the **taskbar** Chrome shortcut and the user Start Menu shortcut, and on `dev-and-open.mjs`. It is **not** per-profile: quit every Chrome window, then open Chrome from the taskbar as the first launch of the session. Link-clicks and the system-wide Start Menu shortcut still need Administrator to patch; if Chrome is already running with the flag, later windows inherit it.
+Everyday Google Chrome (Ryan, Vault, Profile 3) can still use `--silent-debugger-extension-api` on the **taskbar** shortcut. That is unrelated to the agent window.
 
-Do **not** ask the author to toggle this on other profiles. Do **not** switch MCP back to `--extension` unless they ask.
-
-`ignoreDefaultArgs: ["--enable-automation"]` hides “Chrome is being controlled by automated software”. Chrome may still show an infobar: **You are using an unsupported command-line flag: `--disable-blink-features=AutomationControlled`**. That bar is in Chrome chrome. Leave it. Do not switch back to `--extension` to “fix” it.
+`ignoreDefaultArgs` also includes `--enable-automation` so Chrome does not show “controlled by automated software”. Chrome may still show an infobar: **You are using an unsupported command-line flag: `--disable-blink-features=AutomationControlled`**. That bar is in Chrome chrome. Leave it.
 
 `--start-fullscreen` often does not stick. The author’s monitor may show a windowed Chrome, tabs, taskbar, clipping, or that infobar. **That is not failure.** Success is Playwright’s **page** size, not how the OS window looks.
 
@@ -119,7 +121,7 @@ Do **not** use `npm run dev:open`, `npm run storyteller-dashboard:dev`, or the *
     "launchOptions": {
       "channel": "chrome",
       "chromiumSandbox": true,
-      "ignoreDefaultArgs": ["--enable-automation"],
+      "ignoreDefaultArgs": ["--enable-automation", "--disable-extensions"],
       "args": ["--start-fullscreen", "--silent-debugger-extension-api"]
     },
     "contextOptions": {
