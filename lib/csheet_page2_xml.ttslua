@@ -140,6 +140,15 @@ local function powersText(powers)
   return table.concat(lines, "\n")
 end
 
+--- Absolute fill offsets within the 200px disc/ritual dotline (author-tuned).
+local DOT_FILL_OFFSET_XY = {
+  "0 2",
+  "35 2",
+  "70 2",
+  "105 2",
+  "140 2",
+}
+
 --- @param key string
 --- @param row table
 --- @return string
@@ -154,21 +163,15 @@ local function buildDisciplineCell(key, row)
       nameImg
     ),
     string.format('    <Panel id="db_dotline_wrap_%s" class="page2_dotline_wrap page2_dotline_wrap_disc">', key),
-    string.format(
-      '      <Image id="db_dotline_bg_%s" image="page2_dotline" class="page2_dotline_bg page2_dotline_bg_disc" />',
-      key
-    ),
-    string.format(
-      '      <HorizontalLayout id="db_dot_fills_%s" class="page2_dot_fills page2_dot_fills_disc">',
-      key
-    ),
+    string.format('      <Image id="db_dotline_bg_%s" image="page2_dotline" class="page2_dotline_bg" />', key),
+    string.format('      <HorizontalLayout id="db_dot_fills_%s" class="page2_dot_fills">', key),
   }
   for slot = 1, 5 do
     parts[#parts + 1] = string.format(
-      '        <Image id="dot_%s_%d" class="dot dot_standard page2_dot_fill page2_dot_fill_%d" />',
+      '        <Image id="dot_%s_%d" class="dot dot_standard page2_dot_fill" offsetXY="%s" />',
       key,
       slot,
-      slot
+      DOT_FILL_OFFSET_XY[slot]
     )
   end
   parts[#parts + 1] = "      </HorizontalLayout>"
@@ -209,21 +212,18 @@ local function buildRcRow(entry, side, rowIndex)
       rowId
     ),
     string.format(
-      '    <Image id="db_rc_dotline_bg_%s" image="page2_dotline" class="page2_dotline_bg page2_dotline_bg_rc" />',
+      '    <Image id="db_rc_dotline_bg_%s" image="page2_dotline" class="page2_dotline_bg" />',
       rowId
     ),
-    string.format(
-      '    <HorizontalLayout id="db_rc_dot_fills_%s" class="page2_dot_fills page2_dot_fills_rc">',
-      rowId
-    ),
+    string.format('    <HorizontalLayout id="db_rc_dot_fills_%s" class="page2_dot_fills">', rowId),
   }
   for slot = 1, 5 do
     parts[#parts + 1] = string.format(
-      '      <Image id="dot_rc_%s_%d_%d" class="dot dot_standard page2_dot_fill page2_dot_fill_%d" />',
+      '      <Image id="dot_rc_%s_%d_%d" class="dot dot_standard page2_dot_fill" offsetXY="%s" />',
       side,
       rowIndex,
       slot,
-      slot
+      DOT_FILL_OFFSET_XY[slot]
     )
   end
   parts[#parts + 1] = "    </HorizontalLayout>"
@@ -281,30 +281,22 @@ function M.buildPage2DocumentXml(stats, _seatColorRaw, _pd)
     end
   end
 
-  -- Layout values from author live setAttribute pass (Aishe p.2, 2026-09-17).
+  -- Single page-2 Defaults block: author-tuned overrides only (no prior 280px/spacing values that could win).
+  -- paper_root must not also use padded_border — that class's padding would override page_root padding.
   local parts = {
     "<Defaults>",
-    '  <Panel class="page2_paper_root" childAlignment="UpperCenter" padding="50 50 110 100" />',
+    '  <Panel class="page_root" childAlignment="UpperCenter" padding="50 50 110 100" />',
     '  <VerticalLayout class="page2_dynamic" padding="40 40 0 0" childAlignment="UpperCenter" childForceExpandHeight="false" childForceExpandWidth="true" spacing="0" />',
     '  <HorizontalLayout class="page2_disc_row" flexibleWidth="1" spacing="0" preferredHeight="225" />',
-    '  <VerticalLayout class="page2_disc_cell" flexibleWidth="1" preferredHeight="225" childForceExpandWidth="false" />',
+    '  <VerticalLayout class="page2_disc_cell" flexibleWidth="1" preferredHeight="280" childForceExpandWidth="false" />',
     '  <HorizontalLayout class="page2_disc_header" preferredHeight="70" flexibleHeight="0" childForceExpandWidth="false" preferredWidth="800" flexibleWidth="1" spacing="0" />',
     '  <Image class="page2_disc_name" preferredWidth="220" preferredHeight="63" flexibleWidth="0" />',
     '  <Panel class="page2_dotline_wrap" raycastTarget="false" />',
-    '  <Panel class="page2_dotline_wrap_disc" padding="0 0 0 0" flexibleWidth="0" preferredWidth="200" preferredHeight="63" />',
+    '  <Panel class="page2_dotline_wrap_disc" padding="0 0 0 0" flexibleWidth="0" preferredWidth="200" />',
     '  <Panel class="page2_dotline_wrap_rc" preferredWidth="280" preferredHeight="63" flexibleWidth="0" />',
-    '  <Image class="page2_dotline_bg" ignoreLayout="true" rectAlignment="MiddleLeft" />',
-    '  <Image class="page2_dotline_bg_disc" flexibleWidth="0" preferredWidth="200" preferredHeight="0" width="200" />',
-    '  <Image class="page2_dotline_bg_rc" width="280" height="63" />',
-    '  <HorizontalLayout class="page2_dot_fills" childForceExpandHeight="false" />',
-    '  <HorizontalLayout class="page2_dot_fills_disc" preferredWidth="200" ignoreLayout="false" padding="20 20 0 0" childAlignment="MiddleLeft" childForceExpandWidth="false" />',
-    '  <HorizontalLayout class="page2_dot_fills_rc" ignoreLayout="true" width="280" height="63" spacing="8" padding="8 8 0 0" childForceExpandWidth="false" />',
+    '  <Image class="page2_dotline_bg" flexibleWidth="0" preferredWidth="200" preferredHeight="0" ignoreLayout="true" width="200" />',
+    '  <HorizontalLayout class="page2_dot_fills" preferredWidth="200" ignoreLayout="false" padding="20 20 0 0" childAlignment="MiddleLeft" childForceExpandWidth="false" />',
     '  <Image class="page2_dot_fill" ignoreLayout="true" width="63" height="63" />',
-    '  <Image class="page2_dot_fill_1" offsetXY="0 2" />',
-    '  <Image class="page2_dot_fill_2" offsetXY="35 2" />',
-    '  <Image class="page2_dot_fill_3" offsetXY="70 2" />',
-    '  <Image class="page2_dot_fill_4" offsetXY="105 2" />',
-    '  <Image class="page2_dot_fill_5" offsetXY="140 2" />',
     '  <Text class="page2_powers_text" alignment="UpperLeft" fontSize="28" color="#AAAAAA" fontStyle="Bold" preferredHeight="200" flexibleHeight="1" />',
     '  <Image class="page2_rc_divider" preferredHeight="80" flexibleHeight="0" preserveAspect="true" />',
     '  <HorizontalLayout class="page2_rc_columns" spacing="40" flexibleHeight="1" />',
@@ -313,7 +305,7 @@ function M.buildPage2DocumentXml(stats, _seatColorRaw, _pd)
     '  <Text class="page2_rc_name" alignment="MiddleLeft" fontSize="28" color="#FFFFFF" flexibleWidth="1" />',
     "</Defaults>",
     "",
-    '<Panel id="paper_root" class="page_root page2_paper_root">',
+    '<Panel id="paper_root" class="page_root">',
     '  <Button id="pageForward" class="page_navigation page_forward" />',
     '  <Button id="pageInner" class="page_navigation page_inner_left" />',
     "",
