@@ -1,0 +1,554 @@
+@font-face {
+  font-family: "Trajan Pro 3";
+  src: url("/pc-sheet-assets/fonts/TrajanPro3/TrajanPro3%20Regular.otf") format("opentype");
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Trajan Pro 3";
+  src: url("/pc-sheet-assets/fonts/TrajanPro3/TrajanPro3%20Bold.otf") format("opentype");
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: "Cinzel Decorative";
+  src: url("/pc-sheet-assets/fonts/CinzelDecorative/CinzelDecorative%20Bold.ttf") format("truetype");
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: "Perpetua";
+  src: url("/pc-sheet-assets/fonts/Perpetua/Perpetua%20Regular.otf") format("opentype");
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Cormorant Garamond";
+  src: url("/pc-sheet-assets/fonts/CormorantGaramond/CormorantGaramond%20Bold.ttf") format("truetype");
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: "Franklin Gothic Demi Cond";
+  src: url("/pc-sheet-assets/fonts/FranklinGothicDemiCond%20Regular.ttf") format("truetype");
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: "Book Antiqua";
+  src: url("/pc-sheet-assets/fonts/BookAntiqua/BookAntiqua%20Bold.ttf") format("truetype");
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: "Book Antiqua";
+  src: url("/pc-sheet-assets/fonts/BookAntiqua/BookAntiqua%20BoldItalic.ttf") format("truetype");
+  font-weight: 700;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "Abril Fatface";
+  src: url("/pc-sheet-assets/fonts/AbrilFatface.ttf") format("truetype");
+  font-weight: 400;
+}
+
+.pc-sheet-panel {
+  overflow: hidden;
+  display: flex;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.pc-sheet-workspace {
+  position: relative;
+  display: grid;
+  grid-template-columns: 15.5rem minmax(0, 1fr);
+  min-height: 0;
+  height: 100%;
+  background: #050506;
+}
+
+.pc-rail {
+  min-height: 0;
+  overflow: auto;
+  padding: 0.7rem 0.55rem;
+  border-right: 1px solid var(--line);
+  background: linear-gradient(180deg, #121218, #0b0b0f);
+}
+
+.pc-card {
+  --seat: #b5121b;
+  margin-bottom: 0.45rem;
+  border: 1px solid color-mix(in srgb, var(--seat) 55%, #2a2a32);
+  border-radius: 0.55rem;
+  background: #101016;
+  overflow: hidden;
+
+  &.selected {
+    border-color: var(--seat);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--seat) 40%, transparent);
+  }
+}
+
+.pc-card-main {
+  display: grid;
+  grid-template-columns: 0.55rem 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 0.55rem;
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+
+.pc-card-pip {
+  grid-row: 1 / span 2;
+  width: 0.4rem;
+  border-radius: 99px;
+  background: var(--seat);
+}
+
+.pc-card-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+
+  strong {
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+  }
+
+  em {
+    color: var(--muted);
+    font-style: normal;
+    font-size: 0.7rem;
+  }
+}
+
+.pc-card-flags {
+  grid-column: 2;
+  margin-top: 0.15rem;
+  color: #c9b48a;
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pc-card-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0 0.65rem 0.65rem;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--muted);
+    font-size: 0.72rem;
+  }
+
+  button {
+    padding: 0.28rem 0.4rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+
+    &.on,
+    &:disabled {
+      border-color: var(--seat);
+    }
+  }
+}
+
+.pc-card-actions,
+.pc-rolls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.pc-spread-wrap {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+
+  .status {
+    flex: 0 0 auto;
+    margin: 0.35rem 0.75rem 0.5rem;
+  }
+}
+
+.pc-spread {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.1rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0.7rem 1.1rem 0.2rem;
+}
+
+.pc-page {
+  position: relative;
+  aspect-ratio: 1545 / 2000;
+  max-height: 100%;
+  width: auto;
+  justify-self: center;
+  overflow: hidden;
+  color: #f6ead2;
+  background:
+    linear-gradient(180deg, rgba(8, 8, 8, 0.18), rgba(0, 0, 0, 0.42)),
+    url("/pc-sheet-assets/textures/black_leather.webp") center / cover;
+  box-shadow:
+    inset 0 0 0 1px rgba(203, 153, 92, 0.35),
+    0 18px 40px rgba(0, 0, 0, 0.45);
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    width: 3.2rem;
+    height: 3.2rem;
+    border: 2px solid #c4a15a;
+    pointer-events: none;
+  }
+
+  &::before {
+    top: 0.7rem;
+    left: 0.7rem;
+    border-right: 0;
+    border-bottom: 0;
+  }
+
+  &::after {
+    right: 0.7rem;
+    bottom: 0.7rem;
+    border-left: 0;
+    border-top: 0;
+  }
+}
+
+.pc-page-one {
+  display: flex;
+  flex-direction: column;
+  padding: 1.15rem 1.25rem 0.9rem;
+}
+
+.pc-page-two {
+  display: grid;
+  place-items: center;
+
+  span {
+    font-family: "Trajan Pro 3", serif;
+    font-size: 4rem;
+    letter-spacing: 0.4em;
+    color: rgba(196, 161, 90, 0.28);
+  }
+}
+
+.pc-header {
+  text-align: center;
+}
+
+.pc-name {
+  margin: 0;
+  font-family: "Trajan Pro 3", serif;
+  font-size: clamp(1.15rem, 1.7vw, 1.85rem);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pc-subtitle,
+.pc-chrono {
+  margin: 0.15rem 0 0;
+  color: #d7c39a;
+  font-family: "Perpetua", serif;
+  font-size: 0.72rem;
+}
+
+.pc-ambition {
+  margin: 0.45rem 0 0.3rem;
+  font-family: "Cinzel Decorative", serif;
+  font-size: clamp(0.62rem, 0.95vw, 0.82rem);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pc-desire {
+  width: 92%;
+  margin: 0.2rem auto 0.45rem;
+  padding: 0.28rem 0.5rem;
+  border: 1px solid #5a1a1a;
+  background: #2a0000;
+  color: #fce5c1;
+  font-family: "Perpetua", serif;
+  font-size: 0.9rem;
+  text-align: center;
+
+  &.unset {
+    font-style: italic;
+    color: #777;
+  }
+}
+
+.pc-convictions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.35rem;
+  margin-top: 0.2rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid #c4a15a;
+
+  p {
+    margin: 0;
+    font-family: "Trajan Pro 3", serif;
+    font-size: 0.58rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    transform: scaleX(0.9);
+  }
+}
+
+.pc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.35rem 0.7rem;
+  margin-top: 0.55rem;
+}
+
+.pc-attributes {
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid #c4a15a;
+}
+
+.pc-skills {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.pc-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+
+.pc-trait {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+  width: 100%;
+  padding: 0.08rem 0.15rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+
+  &:hover {
+    background: rgba(196, 161, 90, 0.08);
+  }
+
+  &.skill {
+    align-items: flex-start;
+  }
+}
+
+.pc-trait-copy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.35rem;
+  min-width: 0;
+}
+
+.pc-trait-label {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.pc-badge {
+  padding: 0 0.25rem;
+  border-radius: 0.2rem;
+  background: #c4a15a;
+  color: #111;
+  font-size: 0.58rem;
+  font-weight: 800;
+}
+
+.pc-spec {
+  font-size: 0.58rem;
+  letter-spacing: 0.04em;
+
+  &.standard {
+    font-family: "Franklin Gothic Demi Cond", sans-serif;
+    text-transform: uppercase;
+    color: #f0c24b;
+  }
+
+  &.archaic {
+    font-family: "Book Antiqua", serif;
+    font-weight: 700;
+    color: #d8c48a;
+
+    i {
+      font-style: italic;
+      margin-left: 0.15rem;
+    }
+  }
+}
+
+.pc-dots {
+  display: inline-flex;
+  gap: 0.12rem;
+  flex: 0 0 auto;
+
+  &.large .pc-dot {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+}
+
+.pc-dot {
+  width: 0.72rem;
+  height: 0.72rem;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(196, 161, 90, 0.55);
+
+  &.on {
+    background: var(--pc-dot) center / contain no-repeat;
+    box-shadow: none;
+  }
+}
+
+.pc-trackers {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  grid-template-areas:
+    "health xp will"
+    "humanity xp stack";
+  gap: 0.45rem 0.6rem;
+  margin-top: auto;
+  padding-top: 0.45rem;
+}
+
+.pc-track {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+
+  &:nth-child(1) { grid-area: health; }
+  &:nth-child(4) { grid-area: humanity; }
+}
+
+.pc-track-stack {
+  grid-area: stack;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.pc-track-label {
+  display: block;
+  font-family: "Abril Fatface", serif;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.pc-track-note {
+  display: block;
+  margin-top: 0.1rem;
+  color: #c45a4a;
+  font-family: "Perpetua", serif;
+  font-size: 0.68rem;
+}
+
+.pc-boxes {
+  display: flex;
+  gap: 0.12rem;
+  margin-top: 0.15rem;
+}
+
+.pc-box {
+  width: 0.82rem;
+  height: 0.82rem;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 0 0 1px rgba(220, 220, 220, 0.45);
+
+  &.on {
+    background-size: contain;
+    background-repeat: no-repeat;
+    box-shadow: none;
+  }
+}
+
+.pc-xp {
+  position: relative;
+  grid-area: xp;
+  display: grid;
+  place-items: center;
+  align-self: center;
+  border: 0;
+  background: transparent;
+  color: #c5c799;
+
+  img {
+    width: 3.4rem;
+    height: 3.4rem;
+  }
+
+  strong {
+    position: absolute;
+    font-size: 1.35rem;
+    font-weight: 800;
+  }
+
+  span {
+    font-family: "Abril Fatface", serif;
+    letter-spacing: 0.16em;
+  }
+}
+
+.pc-ring-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+}
+
+.pc-ring {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.pc-ring-btn {
+  position: absolute;
+  width: 3.4rem;
+  height: 3.4rem;
+  margin: -1.7rem 0 0 -1.7rem;
+  border-radius: 50%;
+  border-color: #c4a15a;
+  background: #160f0a;
+  color: #f6ead2;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 1400px) {
+  .pc-sheet-workspace {
+    grid-template-columns: 13.5rem minmax(0, 1fr);
+  }
+
+  .pc-name {
+    font-size: 1.15rem;
+  }
+}

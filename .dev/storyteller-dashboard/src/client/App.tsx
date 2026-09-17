@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactElement } from "react";
 import { initGenerateNpc } from "./generateNpcTab";
 import { initLuaTab } from "./luaTab";
+import { PcSheetTab } from "./pcSheet/PcSheetTab";
 import { initScenesTab } from "./scenesTab";
 import { initStageNpcs } from "./stageNpcs";
 
@@ -9,6 +10,7 @@ const DEFAULT_TAB_ID = "tab-stage-npcs";
 const TABS = [
   { id: "tab-stage-npcs", panelId: "panel-stage-npcs", label: "Stage NPCs" },
   { id: "tab-scenes", panelId: "panel-scenes", label: "Scenes" },
+  { id: "tab-pcs", panelId: "panel-pcs", label: "PCs" },
   { id: "tab-lua", panelId: "panel-lua", label: "Lua" },
   { id: "tab-generate-npc", panelId: "panel-generate-npc", label: "Generate NPC" }
 ] as const;
@@ -268,6 +270,16 @@ export const App = (): ReactElement => {
         <div id="scenes-toasts" className="scenes-toasts" aria-live="polite"></div>
       </section>
       <div id="scenes-drag-layer" className="scenes-drag-layer"></div>
+
+      <section
+        id="panel-pcs"
+        className="tab-panel pc-sheet-panel"
+        role="tabpanel"
+        aria-labelledby="tab-pcs"
+        hidden={activeTab !== "tab-pcs"}
+      >
+        <PcSheetTab active={activeTab === "tab-pcs"} />
+      </section>
 
       <section
         id="panel-lua"

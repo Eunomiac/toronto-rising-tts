@@ -23,6 +23,7 @@ const sceneCatalogsPath = path.join(dashboardRoot, "data", "scene-catalogs.json"
 const controlBoardSnapsPath = path.join(dashboardRoot, "data", "control-board-snaps.json");
 const cataloguedNpcImageDir = path.join(repoRoot, "assets", "images", "NPCs", "Catalogued");
 const scenesAssetDir = path.join(dashboardRoot, "assets", "scenes");
+const pcSheetAssetDir = path.join(dashboardRoot, "assets");
 const publicDir = path.join(distDir, "public");
 const isDev = process.argv.includes("--dev");
 
@@ -33,7 +34,11 @@ const contentTypes: Record<string, string> = {
   ".css": "text/css; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".svg": "image/svg+xml; charset=utf-8",
-  ".webp": "image/webp"
+  ".webp": "image/webp",
+  ".png": "image/png",
+  ".otf": "font/otf",
+  ".ttf": "font/ttf",
+  ".woff": "font/woff"
 };
 
 const sendJson = (response: ServerResponse, statusCode: number, body: unknown): void => {
@@ -122,6 +127,32 @@ const serveSafeWebp = async (response: ServerResponse, imageDir: string, filenam
     createReadStream(filePath).pipe(response);
   } catch {
     sendJson(response, 404, { error: `Missing image: ${filename}` });
+  }
+};
+
+const servePcSheetAsset = async (response: ServerResponse, pathname: string): Promise<void> => {
+  const relative = decodeURIComponent(pathname.slice("/pc-sheet-assets/".length));
+  if (relative.length === 0 || relative.includes("\0") || /(^|[\\/])\.\.([\\/]|$)/.test(relative)) {
+    sendJson(response, 400, { error: "Invalid PC sheet asset path." });
+    return;
+  }
+  const assetRoot = path.resolve(pcSheetAssetDir);
+  const filePath = path.resolve(assetRoot, relative);
+  const fromRoot = path.relative(assetRoot, filePath);
+  if (fromRoot.startsWith("..") || path.isAbsolute(fromRoot)) {
+    sendJson(response, 403, { error: "Forbidden" });
+    return;
+  }
+  try {
+    const fileStat = await stat(filePath);
+    if (!fileStat.isFile()) {
+      sendJson(response, 404, { error: "Asset not found." });
+      return;
+    }
+    response.writeHead(200, { "Content-Type": contentTypes[path.extname(filePath).toLowerCase()] ?? "application/octet-stream" });
+    createReadStream(filePath).pipe(response);
+  } catch {
+    sendJson(response, 404, { error: "Asset not found." });
   }
 };
 
@@ -246,6 +277,11 @@ const tryHandleDedicatedRoutes = async (request: IncomingMessage, response: Serv
       decodeURIComponent(pathname.slice("/scenes-assets/".length)),
       "Invalid scenes asset filename."
     );
+    return true;
+  }
+
+  if (request.method === "GET" && pathname.startsWith("/pc-sheet-assets/")) {
+    await servePcSheetAsset(response, pathname);
     return true;
   }
 

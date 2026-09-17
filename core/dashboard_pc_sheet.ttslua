@@ -1,0 +1,435 @@
+--[[
+  Storyteller Dashboard PCs tab: live snapshot + apply over execute-lua.
+  No Steam clicker (same pattern as GlobalImportSceneJson).
+  Agent guidance: .dev/PC Data & Tracking/PC Tracking & State Behavior.md
+]]
+
+local Dash = {}
+
+local C = require("lib.constants")
+local S = require("core.state")
+local P = require("lib.pc_stats")
+local PCST = require("core.pc_storyteller_panel")
+local PSC = require("lib.pc_sheet_collect")
+local Conditions = require("core.conditions")
+local Sync = require("core.sync")
+local ES = require("lib.effective_stats")
+local U = require("lib.util")
+
+local ATTRIBUTE_KEYS = {
+  "strength", "dexterity", "stamina",
+  "charisma", "manipulation", "composure",
+  "intelligence", "wits", "resolve",
+}
+
+local SKILL_KEYS = {
+  "athletics", "brawl", "craft", "drive", "firearms", "larceny", "melee", "stealth", "survival",
+  "animalKen", "etiquette", "insight", "intimidation", "leadership", "performance", "persuasion", "streetwise", "subterfuge",
+  "academics", "awareness", "finance", "investigation", "medicine", "occult", "politics", "science", "technology",
+}
+
+local ROLL_TYPE_MAP = {
+  standard = C.RollType.STANDARD,
+  simplecheck = C.RollType.SIMPLE_CHECK,
+  rouse = C.RollType.ROUSE,
+  remorse = C.RollType.REMORSE,
+  discipline = C.RollType.DISCIPLINE,
+  willpowerroll = C.RollType.WILLPOWER_ROLL,
+  humanityroll = C.RollType.HUMANITY_ROLL,
+  frenzy = C.RollType.FRENZY,
+  launch = C.RollType.LAUNCH,
+  goal = C.RollType.GOAL,
+}
+
+local function num(value, fallback)
+  local n = tonumber(value)
+  if n == nil then
+    return fallback or 0
+  end
+  return n
+end
+
+local function canonColor(raw)
+  if type(raw) ~= "string" or raw == "" then
+    return nil
+  end
+  local lr = string.lower(raw)
+  for _, col in ipairs(C.PlayerColors) do
+    if string.lower(col) == lr then
+      return col
+    end
+  end
+  return nil
+end
+
+local function copyRating(row)
+  if type(row) ~= "table" then
+    return { base = 0, temp = 0 }
+  end
+  return { base = num(row.base), temp = num(row.temp) }
+end
+
+local function copyTracker(row)
+  local out = copyRating(row)
+  if type(row) ~= "table" then
+    out.superficial = 0
+    out.aggravated = 0
+    out.stains = 0
+    return out
+  end
+  out.superficial = num(row.superficial)
+  out.aggravated = num(row.aggravated)
+  out.stains = num(row.stains)
+  return out
+end
+
+local function copySpecialties(list)
+  local out = {}
+  if type(list) ~= "table" then
+    return out
+  end
+  for i = 1, #list do
+    local row = list[i]
+    if type(row) == "table" then
+      out[#out + 1] = {
+        skill = tostring(row.skill or ""),
+        type = tostring(row.type or "standard"),
+        name = tostring(row.name or ""),
+        decade = tonumber(row.decade),
+      }
+    end
+  end
+  return out
+end
+
+local function copyStatChanges(resolved)
+  local out = {}
+  if type(resolved) ~= "table" then
+    return out
+  end
+  for key, value in pairs(resolved) do
+    local n = tonumber(value)
+    if type(key) == "string" and n ~= nil and n ~= 0 then
+      out[key] = n
+    end
+  end
+  return out
+end
+
+local function encodeSnapshot(payload)
+  if JSON == nil or type(JSON.encode) ~= "function" then
+    error("dashboard_pc_sheet: JSON.encode unavailable")
+  end
+  local encoded = JSON.encode(payload)
+  if type(encoded) ~= "string" or encoded == "" then
+    error("dashboard_pc_sheet: JSON.encode returned empty")
+  end
+  return encoded
+end
+
+local function decodeCommand(jsonText)
+  if JSON == nil or type(JSON.decode) ~= "function" then
+    return nil, "JSON.decode unavailable"
+  end
+  local ok, parsed = pcall(function()
+    return JSON.decode(jsonText)
+  end)
+  if not ok or type(parsed) ~= "table" then
+    return nil, "Command JSON could not be parsed"
+  end
+  return parsed, nil
+end
+
+local function relayoutSeatsAfterOccupancyChange()
+  S.validateState()
+  local RSL = require("lib.rotational-seat-layout")
+  if type(RSL.invalidateLayoutSyncCache) == "function" then
+    RSL.invalidateLayoutSyncCache()
+  end
+  if type(RSL.SyncTable) == "function" then
+    RSL.SyncTable(nil, { force = true })
+  end
+  local Gameboard = require("core.npc_gameboard")
+  if type(Gameboard.reconcileControlBoardFromState) == "function" then
+    Gameboard.reconcileControlBoardFromState({ force = true, forceTokenMirror = true })
+  end
+end
+
+local function afterTrackerChange(color)
+  PCST.refreshCharacterSheetsForColor(color)
+  PCST.refreshRow(color)
+end
+
+local function applyDotDelta(color, family, key, field, delta)
+  local pid = C.GetPlayerID(color)
+  if type(pid) ~= "string" or pid == C.StorytellerID then
+    return "No player for color " .. tostring(color)
+  end
+  local pathFamily = family
+  local pathKey = key
+  if family == "bloodPotency" then
+    pathFamily = nil
+    pathKey = "bloodPotency"
+  end
+  local current
+  if pathFamily ~= nil then
+    current = S.getStateVal("playerData", pid, "stats", pathFamily, pathKey, field)
+  else
+    current = S.getStateVal("playerData", pid, "stats", pathKey, field)
+  end
+  local nextVal = num(current) + num(delta)
+  local clampMax = 5
+  if family == "bloodPotency" then
+    clampMax = 10
+  end
+  nextVal = math.max(0, math.min(clampMax, math.floor(nextVal)))
+  if pathFamily ~= nil then
+    S.setStateVal(nextVal, "playerData", pid, "stats", pathFamily, pathKey, field)
+  else
+    S.setStateVal(nextVal, "playerData", pid, "stats", pathKey, field)
+  end
+  afterTrackerChange(color)
+  return nil
+end
+
+local function snapshotSeat(color)
+  local pid = C.GetPlayerID(color)
+  local catalog = type(pid) == "string" and C.PlayerData[pid] or nil
+  local stats = type(pid) == "string" and S.getStateVal("playerData", pid, "stats") or nil
+  if type(stats) ~= "table" then
+    stats = {}
+  end
+  local resolved = {}
+  if type(pid) == "string" and pid ~= C.StorytellerID then
+    resolved = ES.forPlayer(pid).statChanges or {}
+  end
+  local attributes = {}
+  for i = 1, #ATTRIBUTE_KEYS do
+    local key = ATTRIBUTE_KEYS[i]
+    local row = type(stats.attributes) == "table" and stats.attributes[key] or nil
+    attributes[key] = copyRating(row)
+  end
+  local skills = {}
+  for i = 1, #SKILL_KEYS do
+    local key = SKILL_KEYS[i]
+    local row = type(stats.skills) == "table" and stats.skills[key] or nil
+    skills[key] = copyRating(row)
+  end
+  local ss = S.getStateVal("sessionScene", "seatSlots")
+  local seatRow = U.Type(ss) == "table" and ss[color] or nil
+  local bpDerived = ES.bloodPotencyDerivedFromStats(stats, resolved)
+  local hungerMax = tonumber(C.MAX_HUNGER) or 5
+  return {
+    color = color,
+    playerId = pid,
+    charKey = catalog and catalog.charKey or "",
+    charName = catalog and catalog.charName or "",
+    playerName = catalog and catalog.playerName or "",
+    desire = PCST.normalizeDesire(type(pid) == "string" and S.getStateVal("playerData", pid, "desire") or ""),
+    absentFromSession = U.Type(seatRow) == "table" and seatRow.absentFromSession == true,
+    deferAutoSeat = S.getStateVal("connectionControls", "deferAutoSeatByColor", color) == true,
+    deferConnect = S.getStateVal("connectionControls", "deferConnectByColor", color) == true,
+    attributes = attributes,
+    skills = skills,
+    specialties = copySpecialties(stats.specialties),
+    health = copyTracker(stats.health),
+    willpower = copyTracker(stats.willpower),
+    humanity = copyTracker(stats.humanity),
+    bloodPotency = copyRating(stats.bloodPotency),
+    xp = num(stats.xp),
+    hunger = num(type(pid) == "string" and S.getPlayerVal(color, "hunger") or 0),
+    hungerMax = hungerMax,
+    resolvedStatChanges = copyStatChanges(resolved),
+    bloodSurge = num(bpDerived and bpDerived.bloodSurge),
+    mending = num(bpDerived and bpDerived.mending),
+    healthMax = PSC.trackerMaxFromStats(stats, resolved, "health"),
+    willpowerMax = PSC.trackerMaxFromStats(stats, resolved, "willpower"),
+    humanityMax = PSC.trackerMaxFromStats(stats, resolved, "humanity"),
+    torpor = type(pid) == "string" and S.getStateVal("playerData", pid, "conditions", "torpor") ~= nil,
+    hudFrenzy = type(pid) == "string" and S.getStateVal("playerData", pid, "conditions", "hudFrenzy") ~= nil,
+    hudBlindfold = type(pid) == "string" and S.getStateVal("playerData", pid, "conditions", "hudBlindfold") ~= nil,
+  }
+end
+
+function Dash.snapshot()
+  local seats = {}
+  for i = 1, #C.PlayerColors do
+    seats[#seats + 1] = snapshotSeat(C.PlayerColors[i])
+  end
+  return encodeSnapshot({ ok = true, seats = seats })
+end
+
+local function applyCommand(cmd)
+  local color = canonColor(cmd.color)
+  if color == nil then
+    return "Unknown seat color"
+  end
+  local op = cmd.op
+  if op == "dotDelta" then
+    local family = cmd.family
+    local key = cmd.key
+    local field = cmd.field
+    if (family ~= "attributes" and family ~= "skills" and family ~= "bloodPotency")
+      or (field ~= "base" and field ~= "temp") then
+      return "Invalid dotDelta"
+    end
+    if family ~= "bloodPotency" and type(key) ~= "string" then
+      return "Invalid dot key"
+    end
+    return applyDotDelta(color, family, key, field, num(cmd.delta))
+  end
+  if op == "damage" then
+    local which = cmd.which
+    if which ~= "health" and which ~= "willpower" then
+      return "Invalid damage tracker"
+    end
+    P.applyDamageOrHeal(color, which, num(cmd.superficialDelta), num(cmd.aggravatedDelta))
+    afterTrackerChange(color)
+    P.refreshHudOverlays()
+    return nil
+  end
+  if op == "humanity" then
+    local kind = cmd.kind
+    if kind == "stain" then
+      P.applyHumanityStainDelta(color, num(cmd.delta))
+    elseif kind == "clearStains" then
+      P.clearHumanityStains(color)
+    elseif kind == "base" then
+      P.applyHumanityBaseDelta(color, num(cmd.delta))
+    else
+      return "Invalid humanity kind"
+    end
+    afterTrackerChange(color)
+    P.refreshHudOverlays()
+    return nil
+  end
+  if op == "xp" then
+    local pid = C.GetPlayerID(color)
+    if type(pid) ~= "string" then
+      return "No player for XP"
+    end
+    local cur = num(S.getStateVal("playerData", pid, "stats", "xp"))
+    S.setStateVal(math.max(0, math.floor(cur + num(cmd.delta))), "playerData", pid, "stats", "xp")
+    afterTrackerChange(color)
+    return nil
+  end
+  if op == "hunger" then
+    local cur = num(S.getPlayerVal(color, "hunger"))
+    local maxDots = tonumber(C.MAX_HUNGER) or 5
+    local nx = math.max(0, math.min(maxDots, math.floor(cur + num(cmd.delta))))
+    S.setPlayerVal(color, "hunger", nx)
+    Sync.player(color)
+    P.refreshHudOverlaysForSeat(color)
+    afterTrackerChange(color)
+    return nil
+  end
+  if op == "desire" then
+    PCST.setDesireForColor(color, cmd.text)
+    return nil
+  end
+  if op == "torporClear" then
+    P.storytellerClearTorpor(color)
+    afterTrackerChange(color)
+    P.refreshHudOverlays()
+    return nil
+  end
+  if op == "toggleFrenzy" then
+    local pid = C.GetPlayerID(color)
+    if type(pid) ~= "string" then
+      return "No player for Frenzy"
+    end
+    if S.getStateVal("playerData", pid, "conditions", "hudFrenzy") ~= nil then
+      Conditions.clear(pid, "hudFrenzy")
+    else
+      Conditions.setManual(pid, "hudFrenzy", true)
+    end
+    afterTrackerChange(color)
+    P.refreshHudOverlays()
+    return nil
+  end
+  if op == "toggleBlindfold" then
+    local pid = C.GetPlayerID(color)
+    if type(pid) ~= "string" then
+      return "No player for Blindfold"
+    end
+    if S.getStateVal("playerData", pid, "conditions", "hudBlindfold") ~= nil then
+      Conditions.clear(pid, "hudBlindfold")
+    else
+      Conditions.setManual(pid, "hudBlindfold", { variant = math.random(1, 6) })
+      local Main = require("core.main")
+      if type(Main.setDefaultCameraBeforeBlindfold) == "function" then
+        U.await(function()
+          Main.setDefaultCameraBeforeBlindfold(color)
+        end, 1.5)
+      end
+    end
+    afterTrackerChange(color)
+    P.refreshHudOverlays()
+    return nil
+  end
+  if op == "absent" then
+    local FSL = require("lib.figurine_seat_layout")
+    local on = cmd.value == true
+    local ok, err = FSL.setPlayerAbsentFromSession(color, on)
+    if not ok then
+      return err or ("Could not change Absent for " .. color)
+    end
+    relayoutSeatsAfterOccupancyChange()
+    PCST.refreshRow(color)
+    return nil
+  end
+  if op == "deferAutoSeat" then
+    S.setStateVal(cmd.value == true, "connectionControls", "deferAutoSeatByColor", color)
+    PCST.refreshRow(color)
+    return nil
+  end
+  if op == "deferConnect" then
+    S.setStateVal(cmd.value == true, "connectionControls", "deferConnectByColor", color)
+    PCST.refreshRow(color)
+    return nil
+  end
+  if op == "autoSeat" then
+    local Main = require("core.main")
+    Main.manualAssignSeatForColor(color)
+    PCST.refreshRow(color)
+    return nil
+  end
+  if op == "connect" then
+    local Main = require("core.main")
+    Main.manualRunPlayerConnect(color)
+    PCST.refreshRow(color)
+    return nil
+  end
+  if op == "initiateRoll" then
+    local rollKey = type(cmd.rollType) == "string" and string.lower(cmd.rollType) or ""
+    local rollType = ROLL_TYPE_MAP[rollKey]
+    if rollType == nil then
+      return "Unknown roll type"
+    end
+    local RC = require("core.roll_controller")
+    RC.initiateRoll(color, { rollType = rollType, initiator = "storyteller" })
+    return nil
+  end
+  return "Unknown op"
+end
+
+function Dash.apply(jsonText)
+  if type(jsonText) ~= "string" or jsonText == "" then
+    return encodeSnapshot({ ok = false, error = "Expected command JSON" })
+  end
+  local cmd, err = decodeCommand(jsonText)
+  if cmd == nil then
+    return encodeSnapshot({ ok = false, error = err })
+  end
+  local applyErr = applyCommand(cmd)
+  if applyErr ~= nil then
+    return encodeSnapshot({ ok = false, error = applyErr })
+  end
+  local seats = {}
+  for i = 1, #C.PlayerColors do
+    seats[#seats + 1] = snapshotSeat(C.PlayerColors[i])
+  end
+  return encodeSnapshot({ ok = true, seats = seats })
+end
+
+return Dash

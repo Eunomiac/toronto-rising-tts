@@ -470,7 +470,8 @@ _Blocked: author must define data binding approach before substantial implementa
 
 Standalone second-monitor web app (`.dev/storyteller-dashboard/`). Not the in-table Storyteller HUD.
 
-- [x] **Tab shell:** Top flush tabs — Stage NPCs (default), Scenes, Lua, Generate NPC. Existing generator lives under Generate NPC. _(TOR-552)_
+- [x] **Tab shell:** Top flush tabs — Stage NPCs (default), Scenes, PCs, Lua, Generate NPC. Existing generator lives under Generate NPC. _(TOR-552)_
+- [x] **PCs tab live sheet:** Dashboard two-page spread + player rail; Lua snapshot/apply Globals. Pending Save & Play. Track under Character Sheets epic TOR-38 until a dedicated TOR id can be filed.
 - [x] **Scene Import Guide (baseline):** Full Scene Constructor JSON contract from live importer + occupancy (`tableSlot`, co-requirements, catalogs) in [Scene Import Guide.md](Storyteller%20Dashboard%20Docs/Scene%20Import%20Guide.md). Living doc — keep in sync when `validateAndNormalizeImportPayload` / `FSL.checkOccupancy` change. _(TOR-569)_
 - [x] **Scenes tab:** Compact 1920×1080 board (Standard + Scatter), named-NPC picker, Copy JSON + Import in TTS (library row only). Catalog extract `npm run dashboard:scene-catalogs`. Pending Save & Play / dashboard restart. _(TOR-570)_
 - [x] **Scenes tab polish:** Crop tokens to the circular frame, enlarge the board, clock sliders + weather, grouped site picker, coterie display names, labeled chrome. Pending dashboard restart. _(TOR-571)_
