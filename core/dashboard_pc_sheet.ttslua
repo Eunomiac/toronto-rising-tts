@@ -129,15 +129,13 @@ end
 
 local function decodeCommand(jsonText)
   if JSON == nil or type(JSON.decode) ~= "function" then
-    return nil, "JSON.decode unavailable"
+    error("dashboard_pc_sheet: JSON.decode unavailable")
   end
-  local ok, parsed = pcall(function()
-    return JSON.decode(jsonText)
-  end)
-  if not ok or type(parsed) ~= "table" then
-    return nil, "Command JSON could not be parsed"
+  local parsed = JSON.decode(jsonText)
+  if type(parsed) ~= "table" then
+    error("dashboard_pc_sheet: command JSON did not decode to a table")
   end
-  return parsed, nil
+  return parsed
 end
 
 local function relayoutSeatsAfterOccupancyChange()
@@ -417,10 +415,7 @@ function Dash.apply(jsonText)
   if type(jsonText) ~= "string" or jsonText == "" then
     return encodeSnapshot({ ok = false, error = "Expected command JSON" })
   end
-  local cmd, err = decodeCommand(jsonText)
-  if cmd == nil then
-    return encodeSnapshot({ ok = false, error = err })
-  end
+  local cmd = decodeCommand(jsonText)
   local applyErr = applyCommand(cmd)
   if applyErr ~= nil then
     return encodeSnapshot({ ok = false, error = applyErr })
