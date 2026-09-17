@@ -34,6 +34,8 @@ Agent-first `.dev` routing docs may stay compact for other agents; anything the 
 
 `/tr-quick` batches small Focus work: assess listed `TOR-*` ids (or the whole Focus stack if none were given), drop items too heavy to do together, then switch to Plan mode and write **one** implementation plan. Do not ask the author to confirm the issue list. Skill: [`.cursor/skills/tr-quick/SKILL.md`](.cursor/skills/tr-quick/SKILL.md).
 
+`/testbed` writes self-contained Lua into [`.dev/testbed/TEST BED.ttslua`](.dev/testbed/TEST%20BED.ttslua) for **Execute Code** (no `require`; use live globals, especially `DEBUG`). Skill: [`.cursor/skills/testbed/SKILL.md`](.cursor/skills/testbed/SKILL.md).
+
 These workflows are not permanent architecture. Preserve their current behavior until a cleaner agent-first workflow is deliberately introduced.
 
 For Codex/API sessions where slash commands are not available, mirror the same behavior manually: inspect `.dev/RUNNING TASKLIST.md`, read `.dev/PENDING AUTHOR VERIFICATION.md` when useful, follow `.dev/PENDING AUTHOR VERIFICATION.agent.md` for verify wording, **add a checklist row in the same session whenever you ship TTS-observable code**, process author marks only when mirroring `/tr-inbox` / “process the inbox”, inspect `.dev/INBOX.md` when relevant, Linear context if available, and the task-specific routing in `.dev/DOCS_INDEX.md`. For a combined small Focus batch, follow [`.cursor/skills/tr-quick/SKILL.md`](.cursor/skills/tr-quick/SKILL.md) (assess, then plan — do not wait for issue-list confirmation).
