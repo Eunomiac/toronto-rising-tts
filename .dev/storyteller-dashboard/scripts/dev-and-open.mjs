@@ -6,6 +6,8 @@
  * On Windows, `start chrome <url>` uses the Default Chrome profile. The dashboard
  * belongs in the profile named "Cursor". Launch chrome.exe with
  * --profile-directory so an already-running Default Chrome does not steal the tab.
+ * --silent-debugger-extension-api hides Chrome’s “extension started debugging this
+ * browser” infobar for that process (shared by every profile once Chrome is running).
  */
 import { spawn } from "node:child_process";
 import fs from "node:fs";
@@ -78,7 +80,12 @@ function openBrowser() {
   }
   const child = spawn(
     chromeExe,
-    [`--profile-directory=${profileDir}`, "--new-window", url],
+    [
+      `--profile-directory=${profileDir}`,
+      "--silent-debugger-extension-api",
+      "--new-window",
+      url,
+    ],
     {
     cwd: root,
     stdio: "ignore",

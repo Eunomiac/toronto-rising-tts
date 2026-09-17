@@ -36,6 +36,10 @@ Status: current
 
 The Playwright extension can stay installed in Cursor Chrome. MCP must **not** pass `--extension` or `PLAYWRIGHT_MCP_EXTENSION_TOKEN`. Agents do not need the extension; they drive Chrome directly.
 
+Everyday Chrome (Ryan, Vault, Cursor — one shared Chrome process) can hide the extension debugger bar with Chromium’s `--silent-debugger-extension-api`. That flag is on the **taskbar** Chrome shortcut and the user Start Menu shortcut, and on `dev-and-open.mjs`. It is **not** per-profile: quit every Chrome window, then open Chrome from the taskbar as the first launch of the session. Link-clicks and the system-wide Start Menu shortcut still need Administrator to patch; if Chrome is already running with the flag, later windows inherit it.
+
+Do **not** ask the author to toggle this on other profiles. Do **not** switch MCP back to `--extension` unless they ask.
+
 `ignoreDefaultArgs: ["--enable-automation"]` hides “Chrome is being controlled by automated software”. Chrome may still show an infobar: **You are using an unsupported command-line flag: `--disable-blink-features=AutomationControlled`**. That bar is in Chrome chrome. Leave it. Do not switch back to `--extension` to “fix” it.
 
 `--start-fullscreen` often does not stick. The author’s monitor may show a windowed Chrome, tabs, taskbar, clipping, or that infobar. **That is not failure.** Success is Playwright’s **page** size, not how the OS window looks.
@@ -116,7 +120,7 @@ Do **not** use `npm run dev:open`, `npm run storyteller-dashboard:dev`, or the *
       "channel": "chrome",
       "chromiumSandbox": true,
       "ignoreDefaultArgs": ["--enable-automation"],
-      "args": ["--start-fullscreen"]
+      "args": ["--start-fullscreen", "--silent-debugger-extension-api"]
     },
     "contextOptions": {
       "viewport": { "width": 1920, "height": 1080 }
