@@ -17,9 +17,19 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-15 — Phases Quick Transition (lerp explode removed)._
+_Last populated: 2026-09-16 — Spotlight seat figurines visibility-only (hide-protocol regression)._
 
 ### Synchronization / objects
+
+#### Spotlight seat figurines — visibility-only during Spotlight (not O.hideObject park)
+
+**How to verify:** Save & Play so scripts reload.
+
+1. Advance into **Spotlight**. On the Host camera, confirm each player's **home** figurine is still at its Table A seat (not under the table at y = −200). Those seats should be invisible to PC colors / White / Grey, but **Black** should still see them.
+2. Confirm the carousel ring shows the separate workshop stand-ins (`SPOTLIGHT_FIGURE_*`), not the home seat objects. Home seats and carousel figures should both exist at once.
+3. Advance **Spotlight → End**. Home figurines and their seat lights should land on Table B0 seats at normal height with the usual “hidden from self” visibility — not stuck at carousel poses, −200, or odd light aim. Bags / companions / compulsion decks should still be parked until Intermission.
+
+**Context:** The hide/reveal protocol migration had parked `SEAT_FIGURE_*` with `O.hideObject` during Spotlight. Restored visibility-only hide per Phases Overview. Linear issue create blocked this session (workspace quota); related to TOR-98 (Spotlight phase).
 
 #### Unified hide/restore — y = −200 parking protocol
 
@@ -30,7 +40,7 @@ _Last populated: 2026-09-15 — Phases Quick Transition (lerp explode removed)._
 3. **CSHEET page flip:** Flip through every page for one seat. Off pages should be invisible under the table (not just parked at y = −200). Bring a hidden page back on — it should sit at normal height and be visible to the right seats, not stuck invisible from an old hide.
 4. **Signal fire / hunger smoke:** Toggle off/on from the signal candle or hunger control. Objects should park at −200 when off and animate back when on; Black should still see them when parked.
 5. **Gameboard markers:** On the control board, switch active table so an inactive table chip hides — it should stash at −200 with the `HiddenObject` tag. Switch back — the chip should reappear on the minimap at the correct UV, not stay buried.
-6. **Spotlight:** Enter Spotlight phase. Playfield toys (bags, companion figurines, compulsion decks) should stay parked; carousel stand-ins not on the ring should park at the side grid. PC **home** figurines at seat positions should bury at y = −200 and be **invisible to everyone including Storyteller** (not just PCs). Stand-ins on the carousel ring should still be visible. Leave Spotlight — home figurines and toys should restore via normal sync (bags via dice visibility, companions via toggle state).
+6. **Spotlight:** Enter Spotlight phase. Playfield toys (bags, companion figurines, compulsion decks) should stay parked at y = −200; carousel stand-ins not on the ring should park at the side grid. PC **home** figurines must **stay at their seat positions** (not bury at −200) and become invisible to PC seats + White/Grey only — Storyteller (Black) can still see them at the seats. Stand-ins on the carousel ring should be the dedicated `SPOTLIGHT_FIGURE_*` copies, visible and separate from the home seats. Leave Spotlight into End — home figurines return to normal per-seat visibility and Table B0 seating; bags/companions/decks stay parked until Intermission.
 7. **Preload pools on load:** After Save & Play, look under the table (or fly Host camera down). Preload NPC figurines, their paired lights, and warmed dice under bags should be **invisible to everyone** (not just PCs), locked, and non-interactable — even though they were already saved at y = −200. Console should **not** spam `[O.hideObject] Refusing to snapshot parked Y`. Roll dice from a bag once — claimed dice should become visible on the tray; when the roll finishes and dice return to the pool, they should hide again.
 
 **Context:** New central API in `core/objects.ttslua` (`O.hideObject`, `O.restoreObject`, `gameState.hiddenObjects` snapshot). Preload NPC + dice pools migrated in follow-up. Linear issue not created this session (workspace quota).

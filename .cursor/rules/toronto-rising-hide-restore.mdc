@@ -50,6 +50,7 @@ Caller opts → catalogs (`C.LockedObjects`) → snapshot fallback; active visib
 - Startup `C.HiddenObjects` visibility-only apply (present seats at authored Y)
 - Secret roll dice invisibility helpers
 - Seat-layout NPC chair visibility only (`enforceNPCSeatObjectVisibility`) — not preload pool hide
+- Spotlight phase seat figurines (`SEAT_FIGURE_*`) — visibility-only via `setInvisibleTo(C.HideFromPcSeatsAndSpectators)`; never `O.hideObject` park
 
 New exceptions must be added to `docs/solutions/lua-hide-restore-policy.md`.
 

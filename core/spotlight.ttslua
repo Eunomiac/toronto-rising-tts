@@ -12,6 +12,8 @@
     Agent guidance: .dev/Phases/Phases Overview.md; hide-list must run after
     seat layout in Sync.full so bags/companions/compulsion decks stay stashed
     while phase is Spotlight or End (restore on Intermission enter, after the cover).
+    Seat figurines stay at table seats with visibility-only hide during Spotlight
+    (`setInvisibleTo(C.HideFromPcSeatsAndSpectators)` — never O.hideObject).
 ]]
 
 local Spotlight = {}
@@ -331,6 +333,43 @@ local function applyStandInLight(color, modeKey, transitionTime)
     L.SetLightMode(guid, modeTable, nil, sec)
 end
 
+--- Reveal a parked stand-in (or its light) onto an explicit carousel pose.
+--- `snapObject` alone leaves `HiddenObject` / parked visibility from `O.hideObject`.
+--- @param obj Object|nil
+--- @param pos Vector
+--- @param rot Vector
+local function revealStandInAtPose(obj, pos, rot)
+    if not U.isGameObject(obj) then
+        return
+    end
+    local pose = {
+        x = pos.x,
+        y = pos.y,
+        z = pos.z,
+    }
+    local rotation = {
+        x = rot.x,
+        y = rot.y,
+        z = rot.z,
+    }
+    if O.isHiddenObject(obj) then
+        O.restoreObject(obj, {
+            position = pose,
+            rotation = rotation,
+            locked = true,
+            interactable = false,
+        })
+        if obj.setInvisibleTo ~= nil then
+            obj.setInvisibleTo({})
+        end
+        return
+    end
+    snapObject(obj, pos, rot)
+    if obj.setInvisibleTo ~= nil then
+        obj.setInvisibleTo({})
+    end
+end
+
 --- @param color string
 --- @param slotOffset number|nil nil parks under the table
 --- @param lightMode string|nil
@@ -358,7 +397,21 @@ local function placeStandIn(color, slotOffset, lightMode)
         return
     end
     local pos, rot = carouselPoseForSlot(slotOffset)
-    snapObject(fig, pos, rot)
+    revealStandInAtPose(fig, pos, rot)
+    local lit = lightObject(color)
+    if U.isGameObject(lit) then
+        -- Light pose is applied by SetLightMode from the figurine; clear park tag first.
+        if O.isHiddenObject(lit) then
+            O.restoreObject(lit, {
+                locked = true,
+                interactable = false,
+            })
+            if lit.setInvisibleTo ~= nil then
+                lit.setInvisibleTo({})
+            end
+        end
+        ensureTag(lit, Spotlight.LIGHT_TAG)
+    end
     applyStandInLight(color, lightMode or "OFF", 0)
 end
 
@@ -462,14 +515,28 @@ local function parkPlayfieldToys()
     end)
 end
 
-local function applyHideListOn()
+--- Seat figurines stay at table seats during Spotlight. Only visibility changes
+--- (Phases Overview): hide from PC seats + White/Grey. Do not `O.hideObject` them —
+--- that parks at −200 and makes the carousel stand-ins look like the home figures moved.
+local function applySeatFigurineSpotlightVisibility()
+    local hideColors = C.HideFromPcSeatsAndSpectators or {}
     for i = 1, #(C.PlayerColors or {}) do
         local color = C.PlayerColors[i]
         local fig = G.getObject(G.GUIDS["SEAT_FIGURE_" .. string.upper(color)])
         if U.isGameObject(fig) then
-            O.hideObject(fig)
+            -- Recover from the brief hide-protocol regression that parked seat figures.
+            if O.isHiddenObject(fig) then
+                O.restoreObject(fig, { locked = true, interactable = false })
+            end
+            if fig.setInvisibleTo ~= nil then
+                fig.setInvisibleTo(hideColors)
+            end
         end
     end
+end
+
+local function applyHideListOn()
+    applySeatFigurineSpotlightVisibility()
     parkPlayfieldToys()
 end
 

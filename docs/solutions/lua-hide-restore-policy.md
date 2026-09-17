@@ -108,7 +108,7 @@ Snapshot position is **not** the primary restore authority when a catalog pose o
 | --- | --- | --- |
 | **Startup `C.HiddenObjects` catalog** | Visibility-only registry; objects stay at authored Y while **present** | `O.ApplyHiddenObjectsFromConstants` |
 | **Secret ST roll dice** | Temporary invisibility mid-roll; not off-table park | `GlobalApplySecretRollDiceInvisibility` / `GlobalRestoreSecretRollDiceVisibility` |
-| **Pooled NPC figurines (visibility only)** | Seat-layout chair visibility; not off-table preload pool hide | `enforceNPCSeatObjectVisibility` pooled branch |
+| **Spotlight seat figurines (visibility only)** | Stay at seat Y; `setInvisibleTo(C.HideFromPcSeatsAndSpectators)` during Spotlight — not off-table park | `applySeatFigurineSpotlightVisibility` in `core/spotlight.ttslua` |
 
 **Preload pool (in scope):** NPC figurines + paired lights at `preload` and dice under bags use `O.hideObject` / `O.restoreObject` via `applyNpcPairPhysicalPresentation` and `core/dice_preload_pool.ttslua` (`parkDie` / `claim`).
 
@@ -118,7 +118,7 @@ Snapshot position is **not** the primary restore authority when a catalog pose o
 
 **NPC pooled spotlights (`npc_light`):** `applyPooledSpotlightHideOrRestore` in `core/npcs.ttslua` — seated/preload park and stage reveal use **`O.hideObject` / `O.restoreObject`** (full invisibility incl. Storyteller). Gameboard spotlight preview: `core/npc_gameboard_spotlight.ttslua`.
 
-**Spotlight phase (carousel):** `core/spotlight.ttslua` — workshop `SEAT_FIGURE_*` buried via **`O.hideObject`** on enter; **`O.restoreObject`** on exit; carousel stand-ins use `O.hideObject` when parked off-carousel.
+**Spotlight phase (carousel):** `core/spotlight.ttslua` — seat `SEAT_FIGURE_*` stay at table seats with **visibility-only** hide (`setInvisibleTo(C.HideFromPcSeatsAndSpectators)`); they are **not** parked via `O.hideObject`. Dice bags / companions / compulsion decks and off-carousel workshop stand-ins use `O.hideObject` / `O.restoreObject`.
 
 **PC seat absent (`C.HiddenObjects` catalog):** `O.applyPcSeatHiddenObjectPresence` / `O.reconcilePcSeatHiddenObjectsFromState` — when a PC seat is narratively absent or disconnected, every matching catalog GUID and `<Color>Object` tag entry uses **`O.hideObject`** (not on-table `setInvisibleTo`). When present again, **`O.restoreObject`** when tagged `HiddenObject`, else active catalog visibility via `O.activeVisibilityForGuid`.
 
