@@ -260,21 +260,20 @@ local function attributeChainMaxWait(waitSec)
   return math.max(60, waitSec + 5)
 end
 
---- Session number (suffix 6) / title (suffix 7). Number/title tail uses timeRatio 1.
-local function runNumTitleSequence(gen, sequencePrefix, sequenceSuffix, numTitleTimeRatio, waitSec)
+--- Session number / title splash. Number/title tail uses timeRatio 1.
+--- kind: "number" | "title" (title hides the overlay when finished).
+local function runNumTitleSequence(gen, kind, numTitleTimeRatio, waitSec)
   if numTitleTimeRatio == nil then
     numTitleTimeRatio = 1
   end
   local numTitleSequenceDuration = 10 * numTitleTimeRatio
-
-  local containerPanelID = sequencePrefix .. "Panel_" .. sequenceSuffix
-  local bgPanel1ID = sequencePrefix .. "BgPanel_1"
-  local bgImage1ID = sequencePrefix .. "Bg_1"
-  local imagePanelID = sequencePrefix .. "ImagePanel_" .. sequenceSuffix
-  local imageID = sequencePrefix .. "_" .. sequenceSuffix
-
-  U.setAttributes("overlay_sessionNumber_bg", { image = "overlay_globalBlindfold_17", active = "true" })
-  U.setAttributes("overlay_sessionTitle_bg", { image = "overlay_globalBlindfold_20", active = "true" })
+  local isTitle = kind == "title"
+  local prefix = isTitle and "overlay_sessionTitle" or "overlay_sessionNumber"
+  local containerPanelID = isTitle and SESSION_TITLE_PANEL_ID or SESSION_NUMBER_PANEL_ID
+  local bgPanelID = prefix .. "BgPanel"
+  local bgImageID = prefix .. "_bg"
+  local imagePanelID = prefix .. "ImagePanel"
+  local imageID = prefix
 
   U.setAttributes(containerPanelID, {
     color = "rgba(0, 0, 0, 0)",
@@ -284,13 +283,13 @@ local function runNumTitleSequence(gen, sequencePrefix, sequenceSuffix, numTitle
     animationDuration = numTitleSequenceDuration * 16,
   })
 
-  U.setAttributes(bgPanel1ID, {
+  U.setAttributes(bgPanelID, {
     color = "rgba(0, 0, 0, 0)",
     scale = "4",
     showAnimation = "Grow",
     animationDuration = numTitleSequenceDuration * 2,
   })
-  U.setAttributes(bgImage1ID, {
+  U.setAttributes(bgImageID, {
     scale = "2",
     showAnimation = "FadeIn",
     hideAnimation = "FadeOut",
@@ -318,7 +317,7 @@ local function runNumTitleSequence(gen, sequencePrefix, sequenceSuffix, numTitle
       if not attributeStillCurrent(gen) then
         return 0
       end
-      UI.show(bgPanel1ID)
+      UI.show(bgPanelID)
       UI.show(imagePanelID)
       return 0.8 * numTitleSequenceDuration * numTitleTimeRatio
     end,
@@ -326,7 +325,7 @@ local function runNumTitleSequence(gen, sequencePrefix, sequenceSuffix, numTitle
       if not attributeStillCurrent(gen) then
         return 0
       end
-      UI.hide(bgImage1ID)
+      UI.hide(bgImageID)
       UI.hide(imageID)
       return 2.5 * numTitleTimeRatio
     end,
@@ -334,7 +333,7 @@ local function runNumTitleSequence(gen, sequencePrefix, sequenceSuffix, numTitle
       if not attributeStillCurrent(gen) then
         return 0
       end
-      if sequenceSuffix == "7" then
+      if isTitle then
         hideGlobalPanel()
       end
       return ATTRIBUTE_HIDE_OVERLAY_SETTLE_SEC
@@ -343,7 +342,7 @@ local function runNumTitleSequence(gen, sequencePrefix, sequenceSuffix, numTitle
       if not attributeStillCurrent(gen) then
         return 0
       end
-      if sequenceSuffix == "7" then
+      if isTitle then
         SessionExplode.resetLayers()
       end
       return 0
@@ -429,15 +428,14 @@ local function runCharacterSequence(gen, sequenceNumber, timeRatio, waitSec, pla
             if not attributeStillCurrent(gen) then
               return 0
             end
-            runNumTitleSequence(gen, "overlay_sessionNumber", "6", 1, waitSec)
-            U.setAttributes("overlay_sessionSplashFrame", { active = "false" })
+            runNumTitleSequence(gen, "number", 1, waitSec)
             return 5
           end,
           function()
             if not attributeStillCurrent(gen) then
               return 0
             end
-            runNumTitleSequence(gen, "overlay_sessionTitle", "7", 1, waitSec)
+            runNumTitleSequence(gen, "title", 1, waitSec)
             return 0
           end,
         }, { maxWait = attributeChainMaxWait(waitSec) })

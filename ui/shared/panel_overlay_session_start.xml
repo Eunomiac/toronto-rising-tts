@@ -49,12 +49,6 @@
     color = "rgba(0, 0, 0, 1)"
     showAnimation = "Grow"
   />
-  <Panel class="session_splash_frame_panel"
-    active = "false"
-    color = "rgba(1, 1, 1, 0)"
-    showAnimation = "FadeIn"
-    animationDuration = "0.5"
-  />
   <Image class="session_splash_pair_image"
     active = "true"
     color = "rgba(1, 1, 1, 1)"
@@ -67,7 +61,10 @@
     showAnimation = "FadeIn"
   />
 </Defaults>
+<!--
 
+UI.setAttributes("overlay_sessionStartSplash", {active = "true"})
+-->
 <Panel id="overlay_sessionStart_panel" class="session_start_panel">
   <Panel id="overlay_sessionStartSplash_panel" class="session_start_image_panel">
     <!-- image + active set together on load / Intermission sessionNum edit (inactive until then so missing art is black, not white) -->
