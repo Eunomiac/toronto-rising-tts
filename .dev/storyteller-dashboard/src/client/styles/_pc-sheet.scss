@@ -48,7 +48,7 @@
 }
 
 .tab-panel.pc-sheet-panel {
-  overflow: hidden;
+  overflow: visible;
   display: flex;
 
   &[hidden] {
@@ -131,6 +131,7 @@
   grid-column: 2;
   margin-top: 0.15rem;
   color: #c9b48a;
+  color: #FFFFFF;
   font-size: 0.65rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -176,8 +177,11 @@
   min-height: 0;
 
   .status {
-    flex: 0 0 auto;
-    margin: 0.35rem 0.75rem 0.5rem;
+    position: absolute;
+    top: -35px;
+    right: 3px;
+    z-index: 5;
+    background: rgba(0, 0, 0, 1);
   }
 }
 
@@ -196,16 +200,17 @@
 .pc-page {
   position: relative;
   flex: 0 0 auto;
-  height: min(100cqh, calc((100cqw - 1.15rem) / 2 * 2000 / 1545));
+  height: 750px;
   aspect-ratio: 1545 / 2000;
   overflow: hidden;
-  color: #f6ead2;
+  color: #FFFFFF;
   background:
     linear-gradient(180deg, rgba(8, 8, 8, 0.18), rgba(0, 0, 0, 0.42)),
     url("/pc-sheet-assets/textures/black_leather.webp") center / cover;
   box-shadow:
     inset 0 0 0 1px rgba(203, 153, 92, 0.35),
     0 18px 40px rgba(0, 0, 0, 0.45);
+  transform: scale(1.25);
 
   &::before,
   &::after {
@@ -236,11 +241,13 @@
   display: flex;
   flex-direction: column;
   padding: 1.15rem 1.25rem 0.9rem;
+  transform-origin: 100% 50%;
 }
 
 .pc-page-two {
   display: grid;
   place-items: center;
+  transform-origin: 0% 50%;
 
   span {
     font-family: "Trajan Pro 3", serif;
@@ -258,7 +265,8 @@
   margin: 0;
   font-family: "Trajan Pro 3", serif;
   font-size: clamp(1.15rem, 1.7vw, 1.85rem);
-  font-weight: 400;
+  font-weight: 1000;
+  color: #FFFFFF;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -266,33 +274,36 @@
 .pc-subtitle,
 .pc-chrono {
   margin: 0.15rem 0 0;
-  color: #d7c39a;
+  color: #FFFFFF;
   font-family: "Perpetua", serif;
-  font-size: 0.72rem;
+  font-size: 1rem;
 }
 
 .pc-ambition {
+  border-top: 1px solid #c4a15a;
   margin: 0.45rem 0 0.3rem;
   font-family: "Cinzel Decorative", serif;
   font-size: clamp(0.62rem, 0.95vw, 0.82rem);
   letter-spacing: 0.04em;
-  text-transform: uppercase;
+  padding-top:0.4rem;
 }
 
 .pc-desire {
   width: 92%;
   margin: 0.2rem auto 0.45rem;
   padding: 0.28rem 0.5rem;
-  border: 1px solid #5a1a1a;
-  background: #2a0000;
+  background: #000000;
+  border: 1px solid #ffe285;
   color: #fce5c1;
   font-family: "Perpetua", serif;
-  font-size: 0.9rem;
-  text-align: center;
+  font-size: 1rem;
+  text-align: left;
 
   &.unset {
     font-style: italic;
     color: #777;
+    background: #2a0000;
+    border-color: #5a1a1a;
   }
 }
 
@@ -302,15 +313,21 @@
   gap: 0.35rem;
   margin-top: 0.2rem;
   padding-top: 0.35rem;
+  color: #FFFFFF;
   border-top: 1px solid #c4a15a;
+  border-bottom: 1px solid #c4a15a;
 
   p {
     margin: 0;
     font-family: "Trajan Pro 3", serif;
-    font-size: 0.58rem;
+    font-size: 1rem;
     letter-spacing: 0.03em;
     text-transform: uppercase;
     transform: scaleX(0.9);
+    display: flex;
+    align-items: center;
+    /* Balance text for prettier wrapping in supported browsers */
+    text-wrap: balance;
   }
 }
 
@@ -323,12 +340,13 @@
   letter-spacing: 0.22em;
   text-align: center;
   text-transform: uppercase;
+  display: none;
 }
 
 .pc-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.35rem 0.7rem;
+  gap: 0.35rem 1.5rem;
   margin-top: 0.55rem;
 }
 
@@ -338,8 +356,12 @@
 }
 
 .pc-skills {
-  flex: 1 1 auto;
+  flex: 1 0 auto;
   min-height: 0;
+
+  .pc-col {
+    gap: 0.5rem;
+  }
 }
 
 .pc-col {
@@ -361,13 +383,15 @@
   font: inherit;
   text-align: left;
 
+  &.skill {
+    align-items: baseline;
+    position: relative;
+  }
+
   &:hover {
     background: rgba(196, 161, 90, 0.08);
   }
 
-  &.skill {
-    align-items: flex-start;
-  }
 }
 
 .pc-trait-copy {
@@ -380,22 +404,38 @@
 
 .pc-trait-label {
   font-family: "Cormorant Garamond", serif;
-  font-size: 0.78rem;
+  font-size: 1rem;
   font-weight: 700;
 }
 
 .pc-badge {
+  font-family: "Cormorant Garamond", serif;
+  position: absolute;
+  text-shadow:
+    0 0 2px #000000,
+    0 0 2px #000000,
+    0 0 2px #000000,
+    0 0 2px #000000,
+    0 0 10px #ffef96,
+    0 0 10px #ffef96,
+    0 0 10px #ffef96,
+    0 0 10px #ffef96;
   padding: 0 0.25rem;
   border-radius: 0.2rem;
-  background: #c4a15a;
-  color: #111;
-  font-size: 0.58rem;
+  // background: #c4a15a;
+  color: #fff7cb;
+  font-size: 1.25rem;
   font-weight: 800;
+  top: -3px;
+  left: -22px;
 }
 
 .pc-spec {
-  font-size: 0.58rem;
-  letter-spacing: 0.04em;
+  font-size: 0.75rem;
+  letter-spacing: 0em;
+  position: absolute;
+  bottom: -10px;
+  left: 10px;
 
   &.standard {
     font-family: "Franklin Gothic Demi Cond", sans-serif;
@@ -405,7 +445,7 @@
 
   &.archaic {
     font-family: "Perpetua", serif;
-    font-style: italic;
+    // font-style: italic;
     color: #d8c48a;
 
     i {
@@ -430,10 +470,10 @@
   width: 0.72rem;
   height: 0.72rem;
   border-radius: 50%;
-  box-shadow: inset 0 0 0 1px rgba(196, 161, 90, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(196, 196, 196, 0.55);
 
   &.on {
-    background: var(--pc-dot) center / contain no-repeat;
+    background: var(--pc-dot) center / 250% 250% no-repeat;
     box-shadow: none;
   }
 }
@@ -444,9 +484,7 @@
   grid-template-areas:
     "health xp will"
     "humanity xp stack";
-  gap: 0.45rem 0.6rem;
-  margin-top: auto;
-  padding-top: 0.45rem;
+  flex: 1 0 auto;
 }
 
 .pc-track {
@@ -454,10 +492,28 @@
   background: transparent;
   color: inherit;
   text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.25rem;
 
-  &:nth-child(1) { grid-area: health; }
-  &:nth-child(3) { grid-area: will; }
-  &:nth-child(4) { grid-area: humanity; }
+  &:nth-child(1) {
+    grid-area: health;
+  }
+
+  &:nth-child(3) {
+    grid-area: will;
+  }
+
+  &:nth-child(4) {
+    grid-area: humanity;
+  }
+
+  &.hunger {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
 }
 
 .pc-track-stack {
@@ -470,9 +526,11 @@
 .pc-track-label {
   display: block;
   font-family: "Abril Fatface", serif;
-  font-size: 0.72rem;
-  letter-spacing: 0.12em;
+  font-size: 1rem;
+  // letter-spacing: 0em;
   text-transform: uppercase;
+  font-weight: normal;
+  color: #FFFFFF;
 }
 
 .pc-track-note {
@@ -496,9 +554,12 @@
   box-shadow: inset 0 0 0 1px rgba(220, 220, 220, 0.45);
 
   &.on {
+    background-position-y: -0.5px;
     background-size: contain;
     background-repeat: no-repeat;
+    background-color: transparent;
     box-shadow: none;
+    transform: scale(2.5);
   }
 }
 

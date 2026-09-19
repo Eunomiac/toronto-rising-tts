@@ -18,7 +18,7 @@
     color = "#000000"
   />
   <Panel class="session_start_image_panel"
-    active = "true"
+    active = "false"
     width = "1920"
     height = "1200"
     rectAlignment = "MiddleCenter"
@@ -104,24 +104,19 @@
     <Image id="overlay_characterIntroCaption_5" class="session_start_image session_splash_pair_image" image="overlay_characterIntroCaption_lordLucien" />
   </Panel>
   <Panel id="overlay_sessionNumberPanel_6" class="session_start_image_panel session_splash_title_panel">
-    <Panel id="overlay_sessionNumberBgPanel_1" class="session_start_image_panel session_splash_title_panel">
-      <Image id="overlay_sessionNumberBg_1" class="session_start_image session_splash_title_image" image="overlay_globalBlindfold_17" />
+    <Panel id="overlay_sessionNumberBgPanel" class="session_start_image_panel session_splash_title_panel">
+      <Image id="overlay_sessionNumber_bg" class="session_start_image session_splash_title_image" image="overlay_sessionNumber_bg" />
     </Panel>
-    <Panel id="overlay_sessionNumberImagePanel_6" class="session_start_image_panel session_splash_title_panel">
-      <!-- image set on load / Intermission sessionNum edit: overlay_sessionNumber_<N> -->
-      <Image id="overlay_sessionNumber_6" class="session_start_image session_splash_title_image" active = "false" />
+    <Panel id="overlay_sessionNumberImagePanel" class="session_start_image_panel session_splash_title_panel">
+      <Image id="overlay_sessionNumber" class="session_start_image session_splash_title_image" />
     </Panel>
   </Panel>
   <Panel id="overlay_sessionTitlePanel_7" class="session_start_image_panel session_splash_title_panel">
-    <Panel id="overlay_sessionTitleBgPanel_1" class="session_start_image_panel session_splash_title_panel">
-      <Image id="overlay_sessionTitleBg_1" class="session_start_image session_splash_title_image" image="overlay_globalBlindfold_20" />
+    <Panel id="overlay_sessionTitleBgPanel" class="session_start_image_panel session_splash_title_panel">
+      <Image id="overlay_sessionTitle_bg" class="session_start_image session_splash_title_image" image="overlay_sessionTitle_bg" />
     </Panel>
-    <Panel id="overlay_sessionTitleImagePanel_7" class="session_start_image_panel session_splash_title_panel">
-      <!-- image set on load / Intermission sessionNum edit: overlay_sessionTitle_<N> -->
-      <Image id="overlay_sessionTitle_7" class="session_start_image session_splash_title_image" active = "false" />
+    <Panel id="overlay_sessionTitleImagePanel" class="session_start_image_panel session_splash_title_panel">
+      <Image id="overlay_sessionTitle" class="session_start_image session_splash_title_image" />
     </Panel>
-  </Panel>
-  <Panel id="overlay_sessionSplashFrame_panel" class="session_start_image_panel session_splash_frame_panel">
-    <Image id="overlay_sessionSplashFrame" class="session_start_image" image="overlay_sessionSplashFrame" />
   </Panel>
 </Panel>
