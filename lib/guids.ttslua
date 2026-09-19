@@ -154,6 +154,7 @@ G.GUIDS = {
 
     -- Ambient Effects (toggleable emitters of ambient effects)
     TOP_FOG = "db3de2",
+    BOTTOM_FOG = "e9803f",
 
     SEAT_LIGHT_1_BROWN = "f251e0",
     SEAT_LIGHT_1_ORANGE = "d3356d",

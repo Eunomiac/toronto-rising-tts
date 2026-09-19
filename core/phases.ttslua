@@ -18,8 +18,8 @@ local S = require("core.state")
 
 local SESSION_START_HEAL_PANEL = "sessionStartHeal_panel"
 local SESSION_COVER_IMAGE_ID = "overlay_sessionStartSplash"
-local SESSION_NUMBER_IMAGE_ID = "overlay_sessionNumber_6"
-local SESSION_TITLE_IMAGE_ID = "overlay_sessionTitle_7"
+local SESSION_NUMBER_IMAGE_ID = "overlay_sessionNumber"
+local SESSION_TITLE_IMAGE_ID = "overlay_sessionTitle"
 local HEAL_BROADCAST_HOLD_SEC = 6
 local INTERMISSION_THEME_FADE_SEC = 2
 --- End → Intermission: wait after showing the global cover so SlideIn (and camera) can finish
