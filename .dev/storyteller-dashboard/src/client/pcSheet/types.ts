@@ -5,6 +5,7 @@ export type SeatColor = (typeof SEAT_COLORS)[number];
 export type Rating = {
   readonly base: number;
   readonly temp: number;
+  readonly disabled: number;
 };
 
 export type Tracker = Rating & {
@@ -41,6 +42,7 @@ export type SeatSnapshot = {
   readonly hunger: number;
   readonly hungerMax: number;
   readonly resolvedStatChanges: Record<string, number>;
+  readonly badges: Record<string, number>;
   readonly bloodSurge: number;
   readonly mending: number;
   readonly healthMax: number;
@@ -57,10 +59,21 @@ export type SheetSnapshot = {
   readonly seats: readonly SeatSnapshot[];
 };
 
+export type DamageMode =
+  | "addSuper"
+  | "addAgg"
+  | "removeSuper"
+  | "removeAgg"
+  | "clearSuper"
+  | "clearAgg"
+  | "mend"
+  | "refresh";
+
 export type ApplyCommand =
-  | { op: "dotDelta"; color: SeatColor; family: "attributes" | "skills" | "bloodPotency"; key: string; field: "base" | "temp"; delta: number }
-  | { op: "damage"; color: SeatColor; which: "health" | "willpower"; superficialDelta: number; aggravatedDelta: number }
-  | { op: "humanity"; color: SeatColor; kind: "stain" | "clearStains" | "base"; delta?: number }
+  | { op: "dotDelta"; color: SeatColor; family: "attributes" | "skills" | "bloodPotency"; key: string; field: "base" | "temp" | "disabled"; delta: number }
+  | { op: "badgeDelta"; color: SeatColor; key: string; delta: number }
+  | { op: "damage"; color: SeatColor; which: "health" | "willpower"; mode: DamageMode }
+  | { op: "humanity"; color: SeatColor; kind: "stain" | "base" | "remorse"; delta?: number; remorse?: "pass" | "fail" }
   | { op: "xp"; color: SeatColor; delta: number }
   | { op: "hunger"; color: SeatColor; delta: number }
   | { op: "desire"; color: SeatColor; text: string }
@@ -74,16 +87,27 @@ export type ApplyCommand =
   | { op: "connect"; color: SeatColor }
   | { op: "initiateRoll"; color: SeatColor; rollType: string };
 
+export type RingTarget =
+  | { kind: "trait"; family: "attributes" | "skills"; key: string }
+  | { kind: "bloodPotency" }
+  | { kind: "damage"; which: "health" | "willpower" }
+  | { kind: "humanity" };
+
 export type RingAction = {
   readonly id: string;
   readonly label: string;
-  readonly command: ApplyCommand;
+  readonly image?: string;
+  readonly badgeText?: string;
+  readonly left: ApplyCommand;
+  readonly right?: ApplyCommand;
+  readonly closeOnPick?: boolean;
 };
 
 export type Identity = {
   readonly charKey: string;
   readonly fullName: string;
   readonly clan: string;
+  readonly bloodline: string;
   readonly titles: readonly string[];
   readonly generation: string;
   readonly birthPlace: string;

@@ -7,26 +7,36 @@ export type DotSlot = {
   readonly image?: DotFill;
 };
 
-export const resolveDotSlot = (key: string, base: number, temp: number, conditionDelta: number, slot: number): DotSlot => {
-  const eff = temp + conditionDelta;
-  const rating = base + eff;
-  const fillImage: DotFill = key === "bloodPotency" ? "dot_red" : "dot_yellow";
-  if (slot <= base && slot <= rating) {
-    return { active: true, image: fillImage };
+export const humanityHasImpairedSlot = (lineLen: number, stains: number): boolean => {
+  if (lineLen < 1 || stains < 1) {
+    return false;
   }
-  if (eff > 0 && slot > base && slot <= rating) {
-    return { active: true, image: "dot_white" };
-  }
-  if (eff < 0 && slot > rating && slot <= base) {
-    return { active: true, image: "dot_grey" };
-  }
-  return { active: false };
+  return 11 - stains <= lineLen;
 };
 
-export const paintDotLine = (key: string, rating: Rating, conditionDelta: number, slots = 5): readonly DotSlot[] => {
+export const resolveDotSlot = (key: string, base: number, temp: number, disabled: number, slot: number): DotSlot => {
+  const fillImage: DotFill = key === "bloodPotency" ? "dot_red" : "dot_yellow";
+  const tempUp = Math.max(0, temp);
+  const tempDown = Math.max(0, -temp);
+  const shown = base + tempUp;
+  if (slot < 1 || slot > shown) {
+    return { active: false };
+  }
+  const greyCount = Math.max(0, disabled) + tempDown;
+  const greyStart = shown - greyCount + 1;
+  if (greyCount > 0 && slot >= greyStart) {
+    return { active: true, image: "dot_grey" };
+  }
+  if (slot > base) {
+    return { active: true, image: "dot_white" };
+  }
+  return { active: true, image: fillImage };
+};
+
+export const paintDotLine = (key: string, rating: Rating, slots = 5): readonly DotSlot[] => {
   const line: DotSlot[] = [];
   for (let slot = 1; slot <= slots; slot += 1) {
-    line.push(resolveDotSlot(key, rating.base, rating.temp, conditionDelta, slot));
+    line.push(resolveDotSlot(key, rating.base, rating.temp, rating.disabled, slot));
   }
   return line;
 };

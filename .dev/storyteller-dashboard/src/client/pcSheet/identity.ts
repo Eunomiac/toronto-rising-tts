@@ -5,6 +5,7 @@ const IDENTITIES: Record<string, Identity> = {
     charKey: "aishe",
     fullName: "Aishe Tache",
     clan: "Malkavian",
+    bloodline: "Descendant of the Pythia",
     titles: ["Malkavian Primogen"],
     generation: "Eighth",
     birthPlace: "Brasov, Romania",
@@ -22,6 +23,7 @@ const IDENTITIES: Record<string, Identity> = {
     charKey: "lordLucien",
     fullName: "Lord Lucien St. Clair",
     clan: "Toreador",
+    bloodline: "Descendant of the Count of St. Germain",
     titles: ["Prince"],
     generation: "Tenth",
     birthPlace: "Lucerne, Switzerland",
@@ -39,6 +41,7 @@ const IDENTITIES: Record<string, Identity> = {
     charKey: "rashid",
     fullName: "Rashid Abdulrahman",
     clan: "Banu Haqim",
+    bloodline: "Descendant of Ur-Shulgi",
     titles: ["Vizier Caste", "Seneschal"],
     generation: "Eighth",
     birthPlace: "Diriyah, Ottoman Empire",
@@ -56,6 +59,7 @@ const IDENTITIES: Record<string, Identity> = {
     charKey: "fomorach",
     fullName: "Fomórach",
     clan: "Nosferatu",
+    bloodline: "Descendant of the Wendigo",
     titles: ["Nosferatu Primogen"],
     generation: "Eighth",
     birthPlace: "Belfast, Ireland",
@@ -73,6 +77,7 @@ const IDENTITIES: Record<string, Identity> = {
     charKey: "blackCaesar",
     fullName: "Henri “Black” Caesar",
     clan: "Tremere",
+    bloodline: "bani Gwo Samedi",
     titles: ["Sheriff"],
     generation: "Eighth",
     birthPlace: "Asante Empire",
@@ -96,10 +101,11 @@ export const CHAR_BY_COLOR: Record<SeatColor, string> = {
   Purple: "blackCaesar"
 };
 
-export const identityFor = (charKey: string): Identity => IDENTITIES[charKey] ?? {
+const emptyIdentity = (charKey: string): Identity => ({
   charKey,
   fullName: charKey,
   clan: "",
+  bloodline: "",
   titles: [],
   generation: "",
   birthPlace: "",
@@ -108,13 +114,30 @@ export const identityFor = (charKey: string): Identity => IDENTITIES[charKey] ??
   embraceYear: 0,
   ambition: "",
   convictions: []
-};
+});
+
+export const identityFor = (charKey: string): Identity => IDENTITIES[charKey] ?? emptyIdentity(charKey);
 
 export const identityForColor = (color: SeatColor): Identity => identityFor(CHAR_BY_COLOR[color]);
 
+export const clanPhraseFor = (clan: string): string => {
+  if (clan === "Banu Haqim") {
+    return "the Banu Haqim";
+  }
+  if (clan === "") {
+    return "";
+  }
+  return `Clan ${clan}`;
+};
+
 export const subtitleFor = (identity: Identity): string => {
-  const title = identity.titles[identity.titles.length - 1] ?? identity.clan;
-  return `${identity.generation} Generation ${title} of Clan ${identity.clan}`;
+  const clanPart = clanPhraseFor(identity.clan);
+  const bloodline = identity.bloodline.trim();
+  const head = `${identity.generation} Generation Ancilla of ${clanPart}`.trim();
+  if (bloodline === "") {
+    return head;
+  }
+  return `${head} ◆ ${bloodline}`;
 };
 
 export const chronologyFor = (identity: Identity): string =>

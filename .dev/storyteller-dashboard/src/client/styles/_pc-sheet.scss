@@ -47,6 +47,18 @@
   font-weight: 400;
 }
 
+@font-face {
+  font-family: "Mano Negra";
+  src: url("/pc-sheet-assets/fonts/ManoNegra/ManoNegra%20Regular.ttf") format("truetype");
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Mano Negra";
+  src: url("/pc-sheet-assets/fonts/ManoNegra/ManoNegra%20Bold.ttf") format("truetype");
+  font-weight: 700;
+}
+
 .tab-panel.pc-sheet-panel {
   overflow: visible;
   display: flex;
@@ -348,6 +360,7 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 0.35rem 1.5rem;
   margin-top: 0.55rem;
+  overflow: visible;
 }
 
 .pc-attributes {
@@ -358,9 +371,12 @@
 .pc-skills {
   flex: 1 0 auto;
   min-height: 0;
+  overflow: visible;
 
   .pc-col {
     gap: 0.5rem;
+    overflow: visible;
+    min-width: 0;
   }
 }
 
@@ -382,16 +398,19 @@
   color: inherit;
   font: inherit;
   text-align: left;
+  position: relative;
 
   &.skill {
     align-items: baseline;
-    position: relative;
+
+    &:has(.pc-specs:hover) {
+      z-index: 7;
+    }
   }
 
   &:hover {
     background: rgba(196, 161, 90, 0.08);
   }
-
 }
 
 .pc-trait-copy {
@@ -433,9 +452,6 @@
 .pc-spec {
   font-size: 0.75rem;
   letter-spacing: 0em;
-  position: absolute;
-  bottom: -10px;
-  left: 10px;
 
   &.standard {
     font-family: "Franklin Gothic Demi Cond", sans-serif;
@@ -445,13 +461,38 @@
 
   &.archaic {
     font-family: "Perpetua", serif;
-    // font-style: italic;
     color: #d8c48a;
 
     i {
       font-style: italic;
       margin-left: 0.15rem;
     }
+  }
+}
+
+.pc-specs {
+  position: absolute;
+  bottom: -10px;
+  left: 10px;
+  max-width: calc(100% - 12px);
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: auto;
+
+  .pc-spec-sep {
+    color: #c4a15a;
+  }
+
+  &:hover {
+    z-index: 6;
+    overflow: visible;
+    text-overflow: clip;
+    max-width: none;
+    padding: 0.08rem 0.4rem;
+    background: #000;
+    border: 1px solid #c4a15a;
   }
 }
 
@@ -537,8 +578,14 @@
   display: block;
   margin-top: 0.1rem;
   color: #c45a4a;
-  font-family: "Perpetua", serif;
-  font-size: 0.68rem;
+  font-family: "Mano Negra", cursive;
+  font-size: 0.78rem;
+  font-weight: 400;
+
+  b {
+    font-family: "Mano Negra", cursive;
+    font-weight: 700;
+  }
 }
 
 .pc-boxes {
@@ -614,6 +661,34 @@
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.02em;
+
+  &.img {
+    border: 0;
+    border-radius: 0;
+    background-color: transparent;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    box-shadow: none;
+  }
+
+  &.badge {
+    border: 0;
+    background: transparent;
+    font-family: "Cormorant Garamond", serif;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #fff7cb;
+    text-shadow:
+      0 0 2px #000000,
+      0 0 2px #000000,
+      0 0 2px #000000,
+      0 0 2px #000000,
+      0 0 10px #ffef96,
+      0 0 10px #ffef96,
+      0 0 10px #ffef96,
+      0 0 10px #ffef96;
+  }
 }
 
 @media (max-width: 1400px) {

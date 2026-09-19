@@ -64,9 +64,9 @@ end
 
 local function copyRating(row)
   if type(row) ~= "table" then
-    return { base = 0, temp = 0 }
+    return { base = 0, temp = 0, disabled = 0 }
   end
-  return { base = num(row.base), temp = num(row.temp) }
+  return { base = num(row.base), temp = num(row.temp), disabled = num(row.disabled) }
 end
 
 local function copyTracker(row)
@@ -108,6 +108,20 @@ local function copyStatChanges(resolved)
     return out
   end
   for key, value in pairs(resolved) do
+    local n = tonumber(value)
+    if type(key) == "string" and n ~= nil and n ~= 0 then
+      out[key] = n
+    end
+  end
+  return out
+end
+
+local function copyBadges(row)
+  local out = {}
+  if type(row) ~= "table" then
+    return out
+  end
+  for key, value in pairs(row) do
     local n = tonumber(value)
     if type(key) == "string" and n ~= nil and n ~= 0 then
       out[key] = n
@@ -180,13 +194,124 @@ local function applyDotDelta(color, family, key, field, delta)
   if family == "bloodPotency" then
     clampMax = 10
   end
-  nextVal = math.max(0, math.min(clampMax, math.floor(nextVal)))
+  if field == "temp" then
+    nextVal = math.max(-clampMax, math.min(clampMax, math.floor(nextVal)))
+  else
+    nextVal = math.max(0, math.min(clampMax, math.floor(nextVal)))
+  end
   if pathFamily ~= nil then
     S.setStateVal(nextVal, "playerData", pid, "stats", pathFamily, pathKey, field)
   else
     S.setStateVal(nextVal, "playerData", pid, "stats", pathKey, field)
   end
   afterTrackerChange(color)
+  return nil
+end
+
+local function applyBadgeDelta(color, key, delta)
+  local pid = C.GetPlayerID(color)
+  if type(pid) ~= "string" or pid == C.StorytellerID then
+    return "No player for color " .. tostring(color)
+  end
+  if type(key) ~= "string" or key == "" then
+    return "Invalid badge key"
+  end
+  local current = num(S.getStateVal("playerData", pid, "stats", "badges", key))
+  local nextVal = math.max(-5, math.min(5, math.floor(current + num(delta))))
+  S.setStateVal(nextVal, "playerData", pid, "stats", "badges", key)
+  afterTrackerChange(color)
+  return nil
+end
+
+local function effectiveAttribute(stats, badges, key)
+  local row = type(stats.attributes) == "table" and stats.attributes[key] or nil
+  if type(row) ~= "table" then
+    row = {}
+  end
+  return num(row.base) + num(row.temp) - num(row.disabled) + num(type(badges) == "table" and badges[key] or 0)
+end
+
+local function applyDamageMode(color, which, mode)
+  local pid = C.GetPlayerID(color)
+  if type(pid) ~= "string" or pid == C.StorytellerID then
+    return "No player for color " .. tostring(color)
+  end
+  local stats = S.getStateVal("playerData", pid, "stats")
+  if type(stats) ~= "table" then
+    return "Missing stats"
+  end
+  local resolved = ES.forPlayer(pid).statChanges or {}
+  local ds = 0
+  local da = 0
+  if mode == "addSuper" then
+    ds = 1
+  elseif mode == "addAgg" then
+    da = 1
+  elseif mode == "removeSuper" then
+    ds = -1
+  elseif mode == "removeAgg" then
+    da = -1
+  elseif mode == "clearSuper" then
+    ds = -99
+  elseif mode == "clearAgg" then
+    da = -99
+  elseif mode == "mend" then
+    if which ~= "health" then
+      return "Mend is health only"
+    end
+    local bpDerived = ES.bloodPotencyDerivedFromStats(stats, resolved)
+    ds = -num(bpDerived and bpDerived.mending)
+  elseif mode == "refresh" then
+    if which ~= "willpower" then
+      return "Refresh is willpower only"
+    end
+    local badges = stats.badges
+    local x = math.max(effectiveAttribute(stats, badges, "resolve"), effectiveAttribute(stats, badges, "composure"))
+    ds = -x
+  else
+    return "Invalid damage mode"
+  end
+  P.applyDamageOrHeal(color, which, ds, da)
+  afterTrackerChange(color)
+  P.refreshHudOverlays()
+  return nil
+end
+
+local function applyHumanityOp(color, kind, delta, remorse)
+  local pid = C.GetPlayerID(color)
+  if type(pid) ~= "string" or pid == C.StorytellerID then
+    return "No player for color " .. tostring(color)
+  end
+  if kind == "stain" then
+    local d = num(delta)
+    if d > 0 then
+      local stats = S.getStateVal("playerData", pid, "stats")
+      if type(stats) ~= "table" then
+        return "Missing stats"
+      end
+      local resolved = ES.forPlayer(pid).statChanges or {}
+      local lineLen = PSC.trackerMaxFromStats(stats, resolved, "humanity")
+      local stains = 0
+      if type(stats.humanity) == "table" then
+        stains = num(stats.humanity.stains)
+      end
+      if P.humanityHasImpairedSlot(lineLen, stains) then
+        return nil
+      end
+    end
+    P.applyHumanityStainDelta(color, d)
+  elseif kind == "base" then
+    P.applyHumanityBaseDelta(color, num(delta))
+  elseif kind == "remorse" then
+    P.clearHumanityStains(color)
+    if remorse == "fail" then
+      P.applyHumanityBaseDelta(color, -1)
+    end
+  else
+    return "Invalid humanity kind"
+  end
+  afterTrackerChange(color)
+  P.refreshHudOverlays()
   return nil
 end
 
@@ -238,6 +363,7 @@ local function snapshotSeat(color)
     hunger = num(type(pid) == "string" and S.getPlayerVal(color, "hunger") or 0),
     hungerMax = hungerMax,
     resolvedStatChanges = copyStatChanges(resolved),
+    badges = copyBadges(stats.badges),
     bloodSurge = num(bpDerived and bpDerived.bloodSurge),
     mending = num(bpDerived and bpDerived.mending),
     healthMax = PSC.trackerMaxFromStats(stats, resolved, "health"),
@@ -268,7 +394,7 @@ local function applyCommand(cmd)
     local key = cmd.key
     local field = cmd.field
     if (family ~= "attributes" and family ~= "skills" and family ~= "bloodPotency")
-      or (field ~= "base" and field ~= "temp") then
+      or (field ~= "base" and field ~= "temp" and field ~= "disabled") then
       return "Invalid dotDelta"
     end
     if family ~= "bloodPotency" and type(key) ~= "string" then
@@ -276,30 +402,18 @@ local function applyCommand(cmd)
     end
     return applyDotDelta(color, family, key, field, num(cmd.delta))
   end
+  if op == "badgeDelta" then
+    return applyBadgeDelta(color, cmd.key, num(cmd.delta))
+  end
   if op == "damage" then
     local which = cmd.which
     if which ~= "health" and which ~= "willpower" then
       return "Invalid damage tracker"
     end
-    P.applyDamageOrHeal(color, which, num(cmd.superficialDelta), num(cmd.aggravatedDelta))
-    afterTrackerChange(color)
-    P.refreshHudOverlays()
-    return nil
+    return applyDamageMode(color, which, cmd.mode)
   end
   if op == "humanity" then
-    local kind = cmd.kind
-    if kind == "stain" then
-      P.applyHumanityStainDelta(color, num(cmd.delta))
-    elseif kind == "clearStains" then
-      P.clearHumanityStains(color)
-    elseif kind == "base" then
-      P.applyHumanityBaseDelta(color, num(cmd.delta))
-    else
-      return "Invalid humanity kind"
-    end
-    afterTrackerChange(color)
-    P.refreshHudOverlays()
-    return nil
+    return applyHumanityOp(color, cmd.kind, cmd.delta, cmd.remorse)
   end
   if op == "xp" then
     local pid = C.GetPlayerID(color)

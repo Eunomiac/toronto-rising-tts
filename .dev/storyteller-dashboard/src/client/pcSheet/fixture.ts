@@ -1,9 +1,9 @@
 import { identityForColor } from "./identity.js";
 import type { SeatColor, SeatSnapshot, SheetSnapshot, Tracker } from "./types.js";
 
-const emptyRating = { base: 0, temp: 0 };
+const emptyRating = { base: 0, temp: 0, disabled: 0 };
 const emptyTracker = (base: number): Tracker => ({
-  base, temp: 0, superficial: 0, aggravated: 0, stains: 0
+  base, temp: 0, disabled: 0, superficial: 0, aggravated: 0, stains: 0
 });
 
 const emptySeat = (color: SeatColor): SeatSnapshot => {
@@ -18,19 +18,19 @@ const emptySeat = (color: SeatColor): SeatSnapshot => {
     deferAutoSeat: false,
     deferConnect: false,
     attributes: {
-      strength: { base: 1, temp: 0 },
-      dexterity: { base: 2, temp: 0 },
-      stamina: { base: 2, temp: 0 },
-      charisma: { base: 3, temp: 0 },
-      manipulation: { base: 4, temp: 0 },
-      composure: { base: 3, temp: 0 },
-      intelligence: { base: 2, temp: 0 },
-      wits: { base: 2, temp: 0 },
-      resolve: { base: 3, temp: 0 }
+      strength: { base: 1, temp: 0, disabled: 0 },
+      dexterity: { base: 2, temp: 0, disabled: 0 },
+      stamina: { base: 2, temp: 0, disabled: 0 },
+      charisma: { base: 3, temp: 0, disabled: 0 },
+      manipulation: { base: 4, temp: 0, disabled: 0 },
+      composure: { base: 3, temp: 0, disabled: 0 },
+      intelligence: { base: 2, temp: 0, disabled: 0 },
+      wits: { base: 2, temp: 0, disabled: 0 },
+      resolve: { base: 3, temp: 0, disabled: 0 }
     },
     skills: {
-      athletics: { base: 1, temp: 0 },
-      brawl: { base: 1, temp: 0 },
+      athletics: { base: 1, temp: 0, disabled: 0 },
+      brawl: { base: 1, temp: 0, disabled: 0 },
       craft: emptyRating,
       drive: emptyRating,
       firearms: emptyRating,
@@ -39,21 +39,21 @@ const emptySeat = (color: SeatColor): SeatSnapshot => {
       stealth: emptyRating,
       survival: emptyRating,
       animalKen: emptyRating,
-      etiquette: { base: 2, temp: 0 },
-      insight: { base: 3, temp: 0 },
-      intimidation: { base: 2, temp: 0 },
-      leadership: { base: 2, temp: 0 },
+      etiquette: { base: 2, temp: 0, disabled: 0 },
+      insight: { base: 3, temp: 0, disabled: 0 },
+      intimidation: { base: 2, temp: 0, disabled: 0 },
+      leadership: { base: 2, temp: 0, disabled: 0 },
       performance: emptyRating,
-      persuasion: { base: 3, temp: 0 },
+      persuasion: { base: 3, temp: 0, disabled: 0 },
       streetwise: emptyRating,
-      subterfuge: { base: 4, temp: 0 },
+      subterfuge: { base: 4, temp: 0, disabled: 0 },
       academics: emptyRating,
-      awareness: { base: 1, temp: 0 },
+      awareness: { base: 1, temp: 0, disabled: 0 },
       finance: emptyRating,
       investigation: emptyRating,
       medicine: emptyRating,
-      occult: { base: 2, temp: 0 },
-      politics: { base: 2, temp: 0 },
+      occult: { base: 2, temp: 0, disabled: 0 },
+      politics: { base: 2, temp: 0, disabled: 0 },
       science: emptyRating,
       technology: emptyRating
     },
@@ -66,12 +66,13 @@ const emptySeat = (color: SeatColor): SeatSnapshot => {
     ],
     health: emptyTracker(5),
     willpower: emptyTracker(6),
-    humanity: { base: 7, temp: 0, superficial: 0, aggravated: 0, stains: 0 },
-    bloodPotency: { base: 2, temp: 0 },
+    humanity: { base: 7, temp: 0, disabled: 0, superficial: 0, aggravated: 0, stains: 0 },
+    bloodPotency: { base: 2, temp: 0, disabled: 0 },
     xp: 5,
     hunger: 1,
     hungerMax: 5,
-    resolvedStatChanges: { etiquette: 2, politics: 2 },
+    resolvedStatChanges: {},
+    badges: { etiquette: 2, politics: 2 },
     bloodSurge: 2,
     mending: 2,
     healthMax: 5,
@@ -93,7 +94,7 @@ export const fixtureSnapshot = (): SheetSnapshot => ({
         charKey: identityForColor(color as SeatColor).charKey,
         charName: identityForColor(color as SeatColor).fullName,
         specialties: [],
-        resolvedStatChanges: {}
+        badges: {}
       };
     }
     return seat;

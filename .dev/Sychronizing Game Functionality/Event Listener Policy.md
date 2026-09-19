@@ -72,7 +72,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `GlobalImportGenericNpcs` / `HUD_genericNpcImportConfirm` / `HUD_genericNpcImportCancel` | B+C | 5 | TOR-560 generic import: parse keys → ST label modal → spawn token/figurine/light; Dashboard executeLua |
 | `GlobalImportSceneJson` | B | 5 | TOR-570 Dashboard execute-lua: Scene Constructor JSON → `SceneLibrary.importConstructorJsonText` (library row only, no Apply). No Steam gate (no clicker). Same write path as in-game Import Scene. |
 | `GlobalDashboardPcSheetSnapshot` | B | — | Dashboard execute-lua: JSON snapshot of five PC seats (stats, Desire, session flags, conditions). No Steam gate (no clicker). |
-| `GlobalDashboardPcSheetApply` | B+C | — | Dashboard execute-lua: one typed mutation (trackers, dots, Hunger, Desire, Absent/join, ST rolls) then snapshot. No Steam gate. Reuses `PCST` / `P` / `Sync.player` / `FSL.setPlayerAbsentFromSession` / `RC.initiateRoll`. |
+| `GlobalDashboardPcSheetApply` | B+C | — | Dashboard execute-lua: one typed mutation (trackers, dots, disabled, ST badges, Hunger/XP, Desire, Absent/join, ST rolls) then snapshot. Damage uses V5 overflow (super→agg). Stain add is a no-op while impaired. No Steam gate. Reuses `PCST` / `P` / `Sync.player` / `FSL.setPlayerAbsentFromSession` / `RC.initiateRoll`. |
 | `GlobalGameboardInstallPaletteSnaps` | C | Done | palette snap install |
 | `GlobalGameboardSyncSnapsToggleLabel` | A | — | snaps + layout-lock toolbar labels |
 | `GlobalHideObject` | C | — | Unified off-table park (`O.hideObject`); object scripts pass `guid` + optional park opts |

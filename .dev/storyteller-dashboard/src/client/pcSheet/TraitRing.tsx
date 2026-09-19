@@ -1,12 +1,13 @@
 import { gsap } from "gsap";
 import { useLayoutEffect, useRef, type ReactElement } from "react";
+import { assetUrl } from "./layout.js";
 import type { RingAction } from "./types.js";
 
 type Props = {
   readonly x: number;
   readonly y: number;
   readonly actions: readonly RingAction[];
-  readonly onPick: (action: RingAction) => void;
+  readonly onPick: (action: RingAction, button: "left" | "right") => void;
   readonly onClose: () => void;
 };
 
@@ -27,11 +28,16 @@ export const TraitRing = ({ x, y, actions, onPick, onClose }: Props): ReactEleme
       );
     }, root);
     return () => ctx.revert();
-  }, [actions, x, y]);
+  }, [x, y]);
 
   const radius = 78;
   return (
-    <div className="pc-ring-layer" onClick={onClose} role="presentation">
+    <div
+      className="pc-ring-layer"
+      onClick={onClose}
+      onContextMenu={(event) => event.preventDefault()}
+      role="presentation"
+    >
       <div
         ref={rootRef}
         className="pc-ring"
@@ -43,16 +49,35 @@ export const TraitRing = ({ x, y, actions, onPick, onClose }: Props): ReactEleme
           const angle = (-90 + (360 / actions.length) * index) * (Math.PI / 180);
           const left = Math.cos(angle) * radius;
           const top = Math.sin(angle) * radius;
+          const classes = [
+            "pc-ring-btn",
+            action.image !== undefined ? "img" : "",
+            action.badgeText !== undefined ? "badge" : ""
+          ].filter((part) => part !== "").join(" ");
           return (
             <button
               key={action.id}
-              className="pc-ring-btn"
+              className={classes}
               type="button"
               role="menuitem"
-              style={{ left: `calc(50% + ${left}px)`, top: `calc(50% + ${top}px)` }}
-              onClick={() => onPick(action)}
+              aria-label={action.label}
+              style={{
+                left: `calc(50% + ${left}px)`,
+                top: `calc(50% + ${top}px)`,
+                backgroundImage: action.image !== undefined ? `url("${assetUrl(action.image)}")` : undefined
+              }}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onPick(action, "left");
+              }}
+              onContextMenu={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onPick(action, "right");
+              }}
             >
-              {action.label}
+              {action.badgeText ?? ""}
             </button>
           );
         })}

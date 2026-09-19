@@ -15,7 +15,8 @@ const asBool = (value: unknown): boolean => value === true;
 
 const asRating = (value: unknown) => ({
   base: isRecord(value) ? asNumber(value.base) : 0,
-  temp: isRecord(value) ? asNumber(value.temp) : 0
+  temp: isRecord(value) ? asNumber(value.temp) : 0,
+  disabled: isRecord(value) ? asNumber(value.disabled) : 0
 });
 
 const asTracker = (value: unknown) => ({
@@ -63,6 +64,14 @@ const parseSeat = (value: unknown): SeatSnapshot | null => {
       }
     }
   }
+  const badges: Record<string, number> = {};
+  if (isRecord(value.badges)) {
+    for (const [key, delta] of Object.entries(value.badges)) {
+      if (typeof delta === "number" && delta !== 0) {
+        badges[key] = delta;
+      }
+    }
+  }
   return {
     color,
     playerId: asString(value.playerId) || undefined,
@@ -84,6 +93,7 @@ const parseSeat = (value: unknown): SeatSnapshot | null => {
     hunger: asNumber(value.hunger),
     hungerMax: asNumber(value.hungerMax, 5),
     resolvedStatChanges: resolved,
+    badges,
     bloodSurge: asNumber(value.bloodSurge),
     mending: asNumber(value.mending),
     healthMax: asNumber(value.healthMax, asTracker(value.health).base),

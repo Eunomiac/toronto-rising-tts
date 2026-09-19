@@ -6,8 +6,9 @@ import { applyLocal } from "./applyLocal.js";
 import { fixtureSnapshot } from "./fixture.js";
 import { PageOne } from "./PageOne.js";
 import { PlayerRail } from "./PlayerRail.js";
+import { actionsForRing } from "./ringActions.js";
 import { TraitRing } from "./TraitRing.js";
-import type { ApplyCommand, RingAction, SeatColor, SeatSnapshot, SheetSnapshot } from "./types.js";
+import type { ApplyCommand, RingTarget, SeatColor, SeatSnapshot, SheetSnapshot } from "./types.js";
 
 type Props = {
   readonly active: boolean;
@@ -29,7 +30,7 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
   const [status, setStatus] = useState("Checking TTS…");
   const [live, setLive] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [ring, setRing] = useState<{ x: number; y: number; actions: readonly RingAction[] } | null>(null);
+  const [ring, setRing] = useState<{ x: number; y: number; target: RingTarget } | null>(null);
   const inFlight = useRef(false);
   const skipLive = useRef(false);
 
@@ -89,9 +90,11 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
     return () => ctx.revert();
   }, [active]);
 
-  const apply = async (command: ApplyCommand): Promise<void> => {
+  const apply = async (command: ApplyCommand, closeRing = true): Promise<void> => {
     setBusy(true);
-    setRing(null);
+    if (closeRing) {
+      setRing(null);
+    }
     try {
       if (!live) {
         setSnapshot((current) => applyLocal(current ?? fixtureSnapshot(), command));
@@ -115,15 +118,17 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
 
   const seat: SeatSnapshot | undefined = snapshot?.seats.find((row) => row.color === selected) ?? snapshot?.seats[0];
 
-  const openRing = (event: MouseEvent<HTMLElement>, actions: readonly RingAction[]): void => {
+  const openRing = (event: MouseEvent<HTMLElement>, target: RingTarget): void => {
     const panel = event.currentTarget.closest(".pc-sheet-panel");
     const bounds = panel?.getBoundingClientRect();
     setRing({
       x: event.clientX - (bounds?.left ?? 0),
       y: event.clientY - (bounds?.top ?? 0),
-      actions
+      target
     });
   };
+
+  const ringActions = ring && seat ? actionsForRing(seat, ring.target) : [];
 
   return (
     <div className="pc-sheet-workspace">
@@ -141,6 +146,7 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
             <PageOne
               seat={seat}
               onRing={openRing}
+              onCommand={({ op, delta }) => void apply({ op, color: seat.color, delta })}
               onDesire={(text) => {
                 if (text !== seat.desire) {
                   void apply({ op: "desire", color: seat.color, text });
@@ -158,8 +164,11 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
         <TraitRing
           x={ring.x}
           y={ring.y}
-          actions={ring.actions}
-          onPick={(action) => void apply(action.command)}
+          actions={ringActions}
+          onPick={(action, button) => {
+            const command = button === "right" ? (action.right ?? action.left) : action.left;
+            void apply(command, action.closeOnPick === true);
+          }}
           onClose={() => setRing(null)}
         />
       ) : null}

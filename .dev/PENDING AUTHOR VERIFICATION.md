@@ -25,11 +25,11 @@ _Last populated: 2026-09-17 — Scatter → Table C scene Apply layout._
 
 **How to verify:** Save & Play so the new Global functions load. Keep External Editor on, and keep the TTS Tools Cursor extension **off** (only one process can listen on the editor port).
 
-1. Open the Storyteller Dashboard and click **PCs**. The status line under the two-page spread should say it is live from Tabletop Simulator, not a stand-in fixture. You should see all five player cards on the left and a page-1 sheet plus an empty page 2.
-2. Select a seated player. Click Hunger or a Health box, pick a ring option, and confirm the in-game character sheet and Storyteller PCs row match. Change Desire and leave the field — the in-game Desire should update.
-3. Optional: click **Std** (or another roll button) on the selected card and confirm a Storyteller-initiated roll starts for that seat.
+1. Open the Storyteller Dashboard and click **PCs**. The status line under the two-page spread should say it is live from Tabletop Simulator, not a stand-in fixture. You should see all five player cards on the left and a page-1 sheet plus an empty page 2. The subtitle should read like “Eighth Generation Ancilla of Clan Malkavian ◆ Descendant of the Pythia”.
+2. Select a seated player. Left-click Hunger to add a pip, right-click to remove one (no popup). Same for the XP jewel. Click Health: left-click the superficial icon to add damage, right-click to remove; fill the track then add one more and confirm a superficial box becomes aggravated. Mend should heal up to current Mending and close the menu. Humanity stain should not pile up a hidden tally while the red impaired box is showing.
+3. Change Desire and leave the field — the in-game Desire should update. Optional: click **Std** on the selected card and confirm a Storyteller-initiated roll starts for that seat.
 
-**Context:** `GlobalDashboardPcSheetSnapshot` / `Apply` in `core/dashboard_pc_sheet.ttslua`. Dashboard UI is local; this row is the TTS Lua. Linear issue create hit workspace quota this session — track under Character Sheets epic TOR-38 until a TOR id can be filed.
+**Context:** `GlobalDashboardPcSheetSnapshot` / `Apply` in `core/dashboard_pc_sheet.ttslua`. Dashboard UI is local; this row is the TTS Lua. Track under Character Sheets epic TOR-38 until a TOR id can be filed.
 
 #### CSHEET blank-base page 1 overlays + dynamic page 2 disciplines
 
