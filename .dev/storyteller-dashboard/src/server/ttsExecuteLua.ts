@@ -92,6 +92,7 @@ const wait = (ms: number): Promise<void> => new Promise((resolve) => {
  */
 export class DashboardTtsBridge {
   private servers: Server[] = [];
+  private released = false;
   private readonly inboundHandlers = new Set<(msg: Record<string, unknown>) => void>();
   private chain: Promise<void> = Promise.resolve();
 
@@ -133,6 +134,9 @@ export class DashboardTtsBridge {
   }
 
   async ensureListening(hosts: readonly string[] = ["127.0.0.1"]): Promise<void> {
+    if (this.released) {
+      throw new Error("Dashboard is not holding port 39998. Click Claim Port first.");
+    }
     if (this.isListening) {
       return;
     }
@@ -164,6 +168,7 @@ export class DashboardTtsBridge {
     readonly listening: boolean;
     readonly message: string;
   }> {
+    this.released = false;
     await this.stopListening();
     let result: Awaited<ReturnType<typeof reclaimEditorPort>>;
     try {
@@ -215,7 +220,15 @@ export class DashboardTtsBridge {
     };
   }
 
-  /** Non-destructive probe of ports 39998 / 39999 for UI grey-out (TOR-560). */
+  async releasePort(): Promise<{ listening: boolean; message: string }> {
+    this.released = true;
+    await this.stopListening();
+    return {
+      listening: false,
+      message: "Released port 39998. TTS Tools can take it again."
+    };
+  }
+
   async getBridgeStatus(): Promise<{
     editorPort: "held_by_dashboard" | "free" | "in_use";
     commandPort: "reachable" | "unreachable";
@@ -303,11 +316,11 @@ export class DashboardTtsBridge {
         });
       };
 
-      const resetIdle = (): void => {
+      const resetIdle = (ms: number): void => {
         if (idleTimer !== undefined) {
           clearTimeout(idleTimer);
         }
-        idleTimer = setTimeout(() => finish(false), 1200);
+        idleTimer = setTimeout(() => finish(false), ms);
       };
 
       const onMessage = (msg: Record<string, unknown>): void => {
@@ -316,7 +329,7 @@ export class DashboardTtsBridge {
         }
         const id = asMessageId(msg);
         if (id === 2 || id === 3 || id === 4 || id === 5) {
-          resetIdle();
+          resetIdle(2000);
         }
         if (id === 2 && typeof msg["message"] === "string") {
           prints.push(msg["message"]);
@@ -335,7 +348,7 @@ export class DashboardTtsBridge {
       maxTimer = setTimeout(() => finish(true), 15000);
 
       void sendToTts({ messageID: 3, guid: "-1", script })
-        .then(() => resetIdle())
+        .then(() => resetIdle(8000))
         .catch((error: unknown) => {
           if (!done) {
             done = true;

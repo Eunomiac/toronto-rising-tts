@@ -119,16 +119,25 @@ const parseSnapshotJson = (raw: string): SheetSnapshot => {
   return { ok: true, seats };
 };
 
-const extractJson = (result: { returnValue?: unknown; prints: readonly string[]; error?: string }): string => {
+export const extractSnapshotJson = (result: { returnValue?: unknown; prints: readonly string[]; error?: string }): string => {
   if (typeof result.returnValue === "string" && result.returnValue.trim().startsWith("{")) {
     return result.returnValue;
   }
   if (isRecord(result.returnValue) && result.returnValue.ok !== undefined) {
     return JSON.stringify(result.returnValue);
   }
-  const printed = [...result.prints].reverse().find((line) => line.trim().startsWith("{"));
+  const printed = [...result.prints].reverse().find((line) => {
+    const trimmed = line.trim();
+    const start = trimmed.indexOf("{");
+    if (start < 0) {
+      return false;
+    }
+    const body = trimmed.slice(start);
+    return body.startsWith("{") && (body.includes('"ok"') || body.includes('"seats"'));
+  });
   if (printed) {
-    return printed;
+    const start = printed.indexOf("{");
+    return start >= 0 ? printed.slice(start) : printed;
   }
   if (result.error) {
     throw new Error(result.error);
@@ -136,21 +145,31 @@ const extractJson = (result: { returnValue?: unknown; prints: readonly string[];
   throw new Error("TTS did not return a sheet snapshot. Save & Play so the live PCs bridge is loaded.");
 };
 
+const SNAPSHOT_SCRIPT = [
+  "local json = GlobalDashboardPcSheetSnapshot()",
+  "print(json)",
+  "return json"
+].join("\n");
+
 export const fetchSheetSnapshot = async (): Promise<SheetSnapshot> => {
-  const result = await executeLua("return GlobalDashboardPcSheetSnapshot()");
+  const result = await executeLua(SNAPSHOT_SCRIPT);
   if (result.timedOut) {
     throw new Error("TTS did not answer. Keep External Editor on and the TTS Tools extension off.");
   }
-  return parseSnapshotJson(extractJson(result));
+  return parseSnapshotJson(extractSnapshotJson(result));
 };
 
 export const applySheetCommand = async (command: ApplyCommand): Promise<SheetSnapshot> => {
-  const script = `return GlobalDashboardPcSheetApply(${luaLongString(JSON.stringify(command))})`;
+  const script = [
+    `local json = GlobalDashboardPcSheetApply(${luaLongString(JSON.stringify(command))})`,
+    "print(json)",
+    "return json"
+  ].join("\n");
   const result = await executeLua(script);
   if (result.timedOut) {
     throw new Error("TTS did not answer. Keep External Editor on and the TTS Tools extension off.");
   }
-  return parseSnapshotJson(extractJson(result));
+  return parseSnapshotJson(extractSnapshotJson(result));
 };
 
 export const snapshotOrFixture = async (): Promise<{ snapshot: SheetSnapshot; live: boolean; message: string }> => {

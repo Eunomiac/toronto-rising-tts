@@ -8,6 +8,7 @@ export type ExecuteLuaResult = {
 export type BridgeStatus = {
   readonly usable: boolean;
   readonly message: string;
+  readonly editorPort?: "held_by_dashboard" | "free" | "in_use";
 };
 
 export const luaLongString = (value: string): string => {
@@ -40,6 +41,18 @@ export const reclaimEditorPort = async (): Promise<{ listening: boolean; message
   return {
     listening: payload.listening === true,
     message: payload.message ?? payload.error ?? "Could not reclaim the editor port."
+  };
+};
+
+export const releaseEditorPort = async (): Promise<{ listening: boolean; message: string }> => {
+  const response = await fetch("/api/tts/release-editor-port", { method: "POST" });
+  const payload = await response.json() as { listening?: boolean; message?: string; error?: string };
+  if (!response.ok) {
+    throw new Error(payload.error ?? payload.message ?? `Could not release port 39998 (${response.status})`);
+  }
+  return {
+    listening: payload.listening === true,
+    message: payload.message ?? "Released port 39998."
   };
 };
 

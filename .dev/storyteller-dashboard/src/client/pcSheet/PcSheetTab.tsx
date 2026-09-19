@@ -1,6 +1,6 @@
 import { gsap } from "gsap";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent, type ReactElement } from "react";
-import { fetchBridgeStatus, reclaimEditorPort } from "../ttsBridge.js";
+import { fetchBridgeStatus, reclaimEditorPort, releaseEditorPort } from "../ttsBridge.js";
 import { applySheetCommand, snapshotOrFixture } from "./bridge.js";
 import { applyLocal } from "./applyLocal.js";
 import { fixtureSnapshot } from "./fixture.js";
@@ -17,6 +17,9 @@ type Props = {
 const POLL_MS = 2500;
 
 const friendlyBridgeMessage = (message: string): string => {
+  if (/Claim Port first|not holding port 39998/i.test(message)) {
+    return "Dashboard is not holding the editor port.";
+  }
   if (/Command failed:|powershell\.exe|netstat\.exe/i.test(message)) {
     return "Could not inspect port 39998.";
   }
@@ -34,6 +37,7 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
   const [live, setLive] = useState(false);
   const [busy, setBusy] = useState(false);
   const [reclaiming, setReclaiming] = useState(false);
+  const [holdingPort, setHoldingPort] = useState(false);
   const [ring, setRing] = useState<{ x: number; y: number; target: RingTarget } | null>(null);
   const inFlight = useRef(false);
   const skipLive = useRef(false);
@@ -42,12 +46,25 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
     if (force) {
       skipLive.current = false;
     }
-    if (inFlight.current || skipLive.current) {
+    if (inFlight.current) {
       return;
     }
     inFlight.current = true;
     try {
       const bridge = await fetchBridgeStatus();
+      const holding = bridge.editorPort === "held_by_dashboard";
+      setHoldingPort(holding);
+      if (!holding) {
+        skipLive.current = true;
+        setLive(false);
+        setStatus(bridge.editorPort === "in_use"
+          ? "TTS Tools is using port 39998. Click Claim Port to take it for the live sheet."
+          : "Dashboard is not holding the editor port. Click Claim Port to talk to Tabletop Simulator.");
+        return;
+      }
+      if (skipLive.current) {
+        return;
+      }
       if (!bridge.usable) {
         skipLive.current = true;
         setLive(false);
@@ -97,15 +114,16 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
     return () => ctx.revert();
   }, [active]);
 
-  const reconnect = async (): Promise<void> => {
+  const claimPort = async (): Promise<void> => {
     if (reclaiming) {
       return;
     }
     setReclaiming(true);
     setBusy(true);
-    setStatus("Clearing port 39998…");
+    setStatus("Claiming port 39998…");
     try {
       const result = await reclaimEditorPort();
+      setHoldingPort(result.listening);
       setStatus(result.message);
       skipLive.current = false;
       inFlight.current = false;
@@ -113,7 +131,29 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
     } catch (error: unknown) {
       skipLive.current = true;
       setLive(false);
-      setStatus(error instanceof Error ? error.message : "Could not clear port 39998.");
+      setHoldingPort(false);
+      setStatus(error instanceof Error ? error.message : "Could not claim port 39998.");
+    } finally {
+      setBusy(false);
+      setReclaiming(false);
+    }
+  };
+
+  const releasePort = async (): Promise<void> => {
+    if (reclaiming) {
+      return;
+    }
+    setReclaiming(true);
+    setBusy(true);
+    setStatus("Releasing port 39998…");
+    try {
+      const result = await releaseEditorPort();
+      setHoldingPort(false);
+      skipLive.current = true;
+      setLive(false);
+      setStatus(result.message);
+    } catch (error: unknown) {
+      setStatus(error instanceof Error ? error.message : "Could not release port 39998.");
     } finally {
       setBusy(false);
       setReclaiming(false);
@@ -191,13 +231,15 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
         <div className="pc-bridge-bar">
           <div className={`status ${live ? "success" : "idle"}`}>{status}{busy ? "  Sending…" : ""}</div>
           <button
-            className="pc-bridge-retry"
+            className={`pc-bridge-retry${holdingPort ? " release" : " claim"}`}
             type="button"
             disabled={reclaiming}
-            onClick={() => void reconnect()}
-            title="Stop anything using port 39998, then try Tabletop Simulator again"
+            onClick={() => void (holdingPort ? releasePort() : claimPort())}
+            title={holdingPort
+              ? "Release port 39998 so TTS Tools can use it"
+              : "Stop anything using port 39998, then try Tabletop Simulator again"}
           >
-            {reclaiming ? "Clearing…" : "Clear port"}
+            {reclaiming ? (holdingPort ? "Releasing…" : "Claiming…") : (holdingPort ? "Release Port" : "Claim Port")}
           </button>
         </div>
       </div>

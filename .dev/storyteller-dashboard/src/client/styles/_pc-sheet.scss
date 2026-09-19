@@ -205,13 +205,24 @@
 
   .pc-bridge-retry {
     padding: 0.22rem 0.55rem;
-    border: 1px solid #c4a15a;
-    background: #160f0a;
-    color: #f6ead2;
+    border: 1px solid;
     font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.02em;
     white-space: nowrap;
+    cursor: pointer;
+
+    &.claim {
+      border-color: #ff4d5d;
+      background: #3a1014;
+      color: #ffd5d9;
+    }
+
+    &.release {
+      border-color: #9fd37d;
+      background: #132016;
+      color: #d5f5c4;
+    }
 
     &:disabled {
       opacity: 0.6;

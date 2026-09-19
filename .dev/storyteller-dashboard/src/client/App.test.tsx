@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -47,6 +47,34 @@ describe("App shell", () => {
     expect(document.getElementById("panel-pcs")).not.toHaveAttribute("hidden");
     expect(document.getElementById("panel-stage-npcs")).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "PCs" })).toHaveAttribute("aria-selected", "true");
-    expect(screen.getByRole("button", { name: "Clear port" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Claim Port" })).toBeInTheDocument();
+  });
+
+  it("shows Release Port when the dashboard holds 39998", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo) => {
+      const url = String(input);
+      if (url.includes("/api/tts-bridge-status")) {
+        return {
+          ok: true,
+          json: async () => ({
+            usable: true,
+            editorPort: "held_by_dashboard",
+            message: "Dashboard holds port 39998; TTS command port is reachable."
+          })
+        };
+      }
+      return {
+        ok: true,
+        json: async () => ({ prints: [], error: "stand-in" })
+      };
+    }));
+    const user = userEvent.setup();
+    render(<App />);
+    const pcsTab = document.getElementById("tab-pcs");
+    expect(pcsTab).toBeTruthy();
+    await user.click(pcsTab!);
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Release Port" })).toBeInTheDocument();
+    });
   });
 });

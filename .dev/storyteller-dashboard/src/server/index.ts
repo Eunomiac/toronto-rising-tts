@@ -205,6 +205,12 @@ const handleApi = async (request: IncomingMessage, response: ServerResponse, pat
     return;
   }
 
+  if (request.method === "POST" && pathname === "/api/tts/release-editor-port") {
+    const result = await dashboardTtsBridge.releasePort();
+    sendJson(response, 200, result);
+    return;
+  }
+
   if (request.method === "POST" && pathname === "/api/tts/reclaim-editor-port") {
     try {
       const result = await dashboardTtsBridge.reclaimAndListen();
