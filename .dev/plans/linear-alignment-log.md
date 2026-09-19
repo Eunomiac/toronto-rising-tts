@@ -749,5 +749,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-09-15 | SHIP | TOR-529 | Memoriam catalog NPCs emit `name` / `fullName` / `figurineScale` (Key/Label/Scale; default 53). New Linear issue blocked by workspace cap; comment on TOR-577. Pending Save & Play. |
 | 2026-09-15 | SHIP | TOR-567 follow-up | Attribute-path TR_Loop fades across scaled song lead-in (silence when Music C starts). Linear create blocked by workspace quota; comment on TOR-567. Pending Save & Play. |
 | 2026-09-15 | SHIP | TOR-559 follow-up | Remove lerp explode; Phases **Quick Transition** skips Music C and runs `playAttribute(0)`. Linear create blocked by workspace quota; comment on TOR-559. Pending Save & Play. |
+| 2026-09-19 | SHIP | TOR-567 follow-up | Tuned session-start splash (number/title + blackout). TR_Loop fade lasts lead-in/0.75 so Music C starts at ~25% loop volume. Comment on TOR-567. Pending Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

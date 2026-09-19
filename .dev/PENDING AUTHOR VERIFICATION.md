@@ -17,7 +17,19 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-17 — Scatter → Table C scene Apply layout._
+_Last populated: 2026-09-19 — session-start splash timing and TR_Loop fade._
+
+### Phases / session start
+
+#### Session-start splash timing and Intermission-theme fade
+
+**How to verify:** Save & Play so scripts reload. Leave **Quick Transition** off. From Intermission (or Host console `lua DEBUG.resetToIntermission()`), click **Advance**.
+
+1. The character splash should match the timing you tuned in TEST BED (including Lord Lucien’s caption sliding up from lower on the screen). The session number, then the title, should use the current session’s art.
+2. The Intermission loop should still be audible, about a quarter of its volume, when the session-start track begins. It should finish fading out during the opening of that track, not cut off at the first note.
+3. Near the end, a black cover should fade in, the session-start splash should go away behind it, and the black cover should fade out. The Storyteller HUD should still be the normal one — not a freshly remounted panel. Main music and the Willpower heal popup should still be able to appear after that.
+
+**Context:** relatedTo **TOR-567**. Quick Transition still skips the session-start track. Linear create blocked if the workspace is at its issue cap; noted on **TOR-567**.
 
 ### Character sheets
 

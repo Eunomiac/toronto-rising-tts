@@ -3,10 +3,12 @@
 
     TTS showAnimation / hideAnimation splash (TEST BED runIntroSequence).
     Scales so the intro track and splash end together: timeRatio from
-    songDuration vs 140.7s unscaled length, 15.5s unscalable tail, and 27s
-    song lead-in. TR_Loop fades across that scaled lead-in and reaches
-    silence when Music C starts. songDuration 0 (Quick Transition) uses
-    timeRatio 0 (unscalable tail only) and skips Music C.
+    songDuration vs 148.4s unscaled length, 1s unscalable tail, and 27s
+    song lead-in. TR_Loop starts fading at splash start; Music C begins when
+    that fade is about 75% done (loop still at ~25% volume). songDuration 0
+    (Quick Transition) uses timeRatio 0 and skips Music C. Number/title art
+    comes from gameState.sessionNum. The end blackout drops the session-start
+    panel and leaves the rest of the HUD in place (no XML remount).
 ]]
 
 local SessionExplode = {}
@@ -22,14 +24,22 @@ local SESSION_NUMBER_ID = "overlay_sessionNumber"
 local SESSION_TITLE_ID = "overlay_sessionTitle"
 local SESSION_NUMBER_PANEL_ID = "overlay_sessionNumberPanel_6"
 local SESSION_TITLE_PANEL_ID = "overlay_sessionTitlePanel_7"
+local BLACKOUT_ID = "overlay_sessionStart_blackoutPanel"
 
--- Attribute-animation author timings (TEST BED runIntroSequence).
--- Measured at timeRatio = 1; number/title tail is unscaled (numTitleTimeRatio = 1).
-local ATTRIBUTE_UNSCALED_FULL_DURATION = 140.7
-local ATTRIBUTE_UNSCALABLE_TIME = 15.5
+-- Attribute-animation author timings (TEST BED runIntroSequence, 2026-09-19).
+-- Measured at timeRatio = 1. Number/title wall time is 0–10s with the splash ratio.
+local ATTRIBUTE_UNSCALED_FULL_DURATION = 148.4
+local ATTRIBUTE_UNSCALABLE_TIME = 1
 local ATTRIBUTE_SONG_START_DELAY = 27
 local ATTRIBUTE_CHARACTER_SEQUENCE_DURATION = 20
-local ATTRIBUTE_HIDE_OVERLAY_SETTLE_SEC = 3
+local ATTRIBUTE_CHARACTER_BEAT_SEC = 31
+local ATTRIBUTE_NUM_TITLE_MAX_SEC = 10
+local ATTRIBUTE_NUM_TITLE_MIN_SEC = 0
+--- Music C starts when the TR_Loop fade is this far along (remaining volume = 1 - this).
+local ATTRIBUTE_LOOP_FADE_AT_SONG_START = 0.75
+local ATTRIBUTE_BLACKOUT_SHOW_SEC = 1.5
+local ATTRIBUTE_PANEL_DOWN_GAP_SEC = 0.5
+local ATTRIBUTE_BLACKOUT_HIDE_SEC = 1
 
 local CHARACTER_TEXT_PANEL_DATA = {
   [1] = {
@@ -54,7 +64,7 @@ local CHARACTER_TEXT_PANEL_DATA = {
   },
   [5] = {
     showAnimation = "SlideIn_Bottom",
-    offsetXY = "0 300",
+    offsetXY = "0 500",
     scale = "1",
   },
 }
@@ -91,15 +101,123 @@ local SPLASH_PANEL_IDS = {
 
 local sequenceGen = 0
 
-local function hideGlobalPanel()
-  local fn = rawget(_G, "hideStartupLoadingOverlaysForPhases")
-  if type(fn) == "function" then
-    fn()
-    return
+local attributeStillCurrent
+local attributeChainMaxWait
+
+local function hideSessionStartPanel()
+  U.setAttributes(PANEL_ID, { active = "false" })
+end
+
+local function numTitleWallSec(timeRatio)
+  local span = ATTRIBUTE_NUM_TITLE_MAX_SEC - ATTRIBUTE_NUM_TITLE_MIN_SEC
+  return (span * timeRatio) + ATTRIBUTE_NUM_TITLE_MIN_SEC
+end
+
+--- Session number / title splash.
+--- kind: "number" | "title". Title ends on the blackout, then drops the session-start panel.
+--- Art name is overlay_sessionNumber_<sessionNum> / overlay_sessionTitle_<sessionNum>.
+local function runNumTitleSequence(gen, kind, timeRatio, waitSec)
+  local wallSec = numTitleWallSec(timeRatio)
+  local isTitle = kind == "title"
+  local prefix = isTitle and "overlay_sessionTitle" or "overlay_sessionNumber"
+  local containerID = isTitle and SESSION_TITLE_PANEL_ID or SESSION_NUMBER_PANEL_ID
+  local bgPanelID = prefix .. "BgPanel"
+  local bgImageID = prefix .. "_bg"
+  local imagePanelID = prefix .. "ImagePanel"
+  local imageID = prefix
+  local sessionNum = SessionExplode.resolveAnimationData().sessionNum
+  local imageRef = prefix .. "_" .. tostring(sessionNum)
+
+  local fullDuration = 40 * timeRatio
+  local leadInBgGrow = 20 * timeRatio
+  local leadInBgImage = 27 * timeRatio
+  local leadInTextGrow = 27 * timeRatio
+  local leadInTextImage = 27 * timeRatio
+  local bgGrowExtra = 16 * timeRatio
+  local imageGrowExtra = 8 * timeRatio
+
+  U.setAttributes(containerID, {
+    color = "rgba(0, 0, 0, 0)",
+    scale = "5",
+    active = "true",
+    hideAnimation = "FadeOut",
+    animationDuration = 1,
+  })
+  U.setAttributes(bgPanelID, {
+    active = "true",
+    color = "rgba(0, 0, 0, 0)",
+    scale = "1",
+    showAnimation = "Grow",
+    showAnimationDelay = leadInBgGrow,
+    animationDuration = fullDuration - leadInBgGrow + bgGrowExtra,
+  })
+  U.setAttributes(bgImageID, {
+    active = "false",
+    scale = "3",
+    showAnimation = "FadeIn",
+    showAnimationDelay = leadInBgImage,
+    hideAnimation = "FadeOut",
+    animationDuration = 0.5,
+  })
+  U.setAttributes(imagePanelID, {
+    active = "true",
+    color = "rgba(0, 0, 0, 0)",
+    scale = "1",
+    showAnimation = "Grow",
+    showAnimationDelay = leadInTextGrow,
+    animationDuration = fullDuration - leadInTextGrow + imageGrowExtra,
+  })
+  U.setAttributes(imageID, {
+    active = "false",
+    scale = "1",
+    showAnimation = "FadeIn",
+    hideAnimation = "FadeOut",
+    animationDuration = 0.5,
+    showAnimationDelay = leadInTextImage,
+    image = imageRef,
+  })
+
+  local steps = {
+    function()
+      if not attributeStillCurrent(gen) then
+        return 0
+      end
+      UI.show(containerID)
+      UI.show(bgImageID)
+      UI.show(imageID)
+      return wallSec
+    end,
+  }
+  if isTitle then
+    table.insert(steps, function()
+      if not attributeStillCurrent(gen) then
+        return 0
+      end
+      return (fullDuration - wallSec) * 0.95
+    end)
+    table.insert(steps, function()
+      if not attributeStillCurrent(gen) then
+        return 0
+      end
+      UI.show(BLACKOUT_ID)
+      return ATTRIBUTE_BLACKOUT_SHOW_SEC
+    end)
+    table.insert(steps, function()
+      if not attributeStillCurrent(gen) then
+        return 0
+      end
+      hideSessionStartPanel()
+      return ATTRIBUTE_PANEL_DOWN_GAP_SEC
+    end)
+    table.insert(steps, function()
+      if not attributeStillCurrent(gen) then
+        return 0
+      end
+      UI.hide(BLACKOUT_ID)
+      return ATTRIBUTE_BLACKOUT_HIDE_SEC
+    end)
   end
-  if type(UI.hide) == "function" then
-    UI.hide(PANEL_ID)
-  end
+  U.chain(steps, { maxWait = attributeChainMaxWait(waitSec) })
 end
 
 local function applyIdleAttrs(id, color)
@@ -134,6 +252,7 @@ function SessionExplode.resetLayers()
       color = color,
     })
   end
+  U.setAttributes(BLACKOUT_ID, { active = "false" })
 end
 
 --- Stop an in-flight splash sequence. Does not snap attrs (hide first, then resetLayers when showing Intermission).
@@ -208,11 +327,15 @@ function SessionExplode.attributeSongLeadInSec(songDuration)
   return ATTRIBUTE_SONG_START_DELAY * SessionExplode.attributeTimeRatio(songDuration)
 end
 
---- Start TR_Loop fading out across the scaled song lead-in so it reaches
---- silence when Music C starts.
+--- Start TR_Loop fading so Music C begins at about 75% of the fade
+--- (loop still near 25% volume). Fade finishes during the opening of the sting.
 -- @param songDuration number|nil
 function SessionExplode.fadeIntermissionLoopForAttributeIntro(songDuration)
-  local fadeSeconds = SessionExplode.attributeSongLeadInSec(songDuration)
+  local leadIn = SessionExplode.attributeSongLeadInSec(songDuration)
+  local fadeSeconds = 0
+  if leadIn > 0 and ATTRIBUTE_LOOP_FADE_AT_SONG_START > 0 then
+    fadeSeconds = leadIn / ATTRIBUTE_LOOP_FADE_AT_SONG_START
+  end
   local Soundscape = require("core.soundscape")
   local okStop, stopMsg = Soundscape.stopFeaturedMusic({
     fadeSeconds = fadeSeconds,
@@ -231,7 +354,7 @@ function SessionExplode.attributeSequenceDurationSec(songDuration)
   local timeRatio = SessionExplode.attributeTimeRatio(songDuration)
   local animEnds = ATTRIBUTE_UNSCALABLE_TIME
       + timeRatio * (ATTRIBUTE_UNSCALED_FULL_DURATION - ATTRIBUTE_UNSCALABLE_TIME)
-  return animEnds + ATTRIBUTE_HIDE_OVERLAY_SETTLE_SEC
+  return animEnds + ATTRIBUTE_BLACKOUT_SHOW_SEC + ATTRIBUTE_PANEL_DOWN_GAP_SEC + ATTRIBUTE_BLACKOUT_HIDE_SEC
 end
 
 --- Play-enter U.chain maxWait uses the catalog-length splash (Quick Transition is shorter).
@@ -252,102 +375,12 @@ local function fireAttributeSessionIntroAudio()
   end
 end
 
-local function attributeStillCurrent(gen)
+attributeStillCurrent = function(gen)
   return sequenceGen == gen
 end
 
-local function attributeChainMaxWait(waitSec)
+attributeChainMaxWait = function(waitSec)
   return math.max(60, waitSec + 5)
-end
-
---- Session number / title splash. Number/title tail uses timeRatio 1.
---- kind: "number" | "title" (title hides the overlay when finished).
-local function runNumTitleSequence(gen, kind, numTitleTimeRatio, waitSec)
-  if numTitleTimeRatio == nil then
-    numTitleTimeRatio = 1
-  end
-  local numTitleSequenceDuration = 10 * numTitleTimeRatio
-  local isTitle = kind == "title"
-  local prefix = isTitle and "overlay_sessionTitle" or "overlay_sessionNumber"
-  local containerPanelID = isTitle and SESSION_TITLE_PANEL_ID or SESSION_NUMBER_PANEL_ID
-  local bgPanelID = prefix .. "BgPanel"
-  local bgImageID = prefix .. "_bg"
-  local imagePanelID = prefix .. "ImagePanel"
-  local imageID = prefix
-
-  U.setAttributes(containerPanelID, {
-    color = "rgba(0, 0, 0, 0)",
-    scale = "3",
-    active = "true",
-    hideAnimation = "Shrink",
-    animationDuration = numTitleSequenceDuration * 16,
-  })
-
-  U.setAttributes(bgPanelID, {
-    color = "rgba(0, 0, 0, 0)",
-    scale = "4",
-    showAnimation = "Grow",
-    animationDuration = numTitleSequenceDuration * 2,
-  })
-  U.setAttributes(bgImageID, {
-    scale = "2",
-    showAnimation = "FadeIn",
-    hideAnimation = "FadeOut",
-    animationDuration = 1 * numTitleTimeRatio,
-    showAnimationDelay = 0.15 * numTitleSequenceDuration,
-  })
-
-  U.setAttributes(imagePanelID, {
-    color = "rgba(0, 0, 0, 0)",
-    scale = "1",
-    showAnimation = "Grow",
-    animationDuration = numTitleSequenceDuration * 2,
-  })
-  U.setAttributes(imageID, {
-    active = "true",
-    scale = "1",
-    showAnimation = "FadeIn",
-    hideAnimation = "FadeOut",
-    animationDuration = 2 * numTitleTimeRatio,
-    showAnimationDelay = 0.1 * numTitleSequenceDuration,
-  })
-
-  U.chain({
-    function()
-      if not attributeStillCurrent(gen) then
-        return 0
-      end
-      UI.show(bgPanelID)
-      UI.show(imagePanelID)
-      return 0.8 * numTitleSequenceDuration * numTitleTimeRatio
-    end,
-    function()
-      if not attributeStillCurrent(gen) then
-        return 0
-      end
-      UI.hide(bgImageID)
-      UI.hide(imageID)
-      return 2.5 * numTitleTimeRatio
-    end,
-    function()
-      if not attributeStillCurrent(gen) then
-        return 0
-      end
-      if isTitle then
-        hideGlobalPanel()
-      end
-      return ATTRIBUTE_HIDE_OVERLAY_SETTLE_SEC
-    end,
-    function()
-      if not attributeStillCurrent(gen) then
-        return 0
-      end
-      if isTitle then
-        SessionExplode.resetLayers()
-      end
-      return 0
-    end,
-  }, { maxWait = attributeChainMaxWait(waitSec) })
 end
 
 local function runCharacterSequence(gen, sequenceNumber, timeRatio, waitSec, playSessionIntro)
@@ -407,39 +440,13 @@ local function runCharacterSequence(gen, sequenceNumber, timeRatio, waitSec, pla
           end, ATTRIBUTE_SONG_START_DELAY * timeRatio
         )
       end
-      return 39 * timeRatio
+      return ATTRIBUTE_CHARACTER_BEAT_SEC * timeRatio
     end,
     function()
       if not attributeStillCurrent(gen) then
         return 0
       end
       UI.hide(textID)
-      return 6 * timeRatio
-    end,
-    function()
-      if not attributeStillCurrent(gen) then
-        return 0
-      end
-      U.setAttributes(imagePanelID, { color = "#000000" })
-      UI.hide(imageID)
-      if sequenceNumber == 5 then
-        U.chain({
-          function()
-            if not attributeStillCurrent(gen) then
-              return 0
-            end
-            runNumTitleSequence(gen, "number", 1, waitSec)
-            return 5
-          end,
-          function()
-            if not attributeStillCurrent(gen) then
-              return 0
-            end
-            runNumTitleSequence(gen, "title", 1, waitSec)
-            return 0
-          end,
-        }, { maxWait = attributeChainMaxWait(waitSec) })
-      end
       return 0
     end,
   }, { maxWait = attributeChainMaxWait(waitSec) })
@@ -447,6 +454,7 @@ end
 
 local function runAttributeSequences(gen, timeRatio, waitSec, playSessionIntro)
   local characterSequenceDuration = ATTRIBUTE_CHARACTER_SEQUENCE_DURATION * timeRatio
+  local numTitleSec = numTitleWallSec(timeRatio)
   local chainFunctions = {}
   for sequenceNumber = 1, 5 do
     table.insert(chainFunctions, function()
@@ -457,12 +465,27 @@ local function runAttributeSequences(gen, timeRatio, waitSec, playSessionIntro)
       return characterSequenceDuration
     end)
   end
+  table.insert(chainFunctions, function()
+    if not attributeStillCurrent(gen) then
+      return 0
+    end
+    runNumTitleSequence(gen, "number", timeRatio, waitSec)
+    return numTitleSec
+  end)
+  table.insert(chainFunctions, function()
+    if not attributeStillCurrent(gen) then
+      return 0
+    end
+    runNumTitleSequence(gen, "title", timeRatio, waitSec)
+    return numTitleSec
+  end)
   U.chain(chainFunctions, { maxWait = attributeChainMaxWait(waitSec) })
 end
 
 --- Start the TTS-attribute Intermission→Play animation (TEST BED runIntroSequence).
---- songDuration nil uses the current session's catalog length: fades TR_Loop across
---- the scaled song lead-in and plays Music C when that lead-in ends.
+--- songDuration nil uses C.SessionStartAnimationData for the current sessionNum
+--- (session 1 is 71s): fades TR_Loop so Music C starts about 75% through that fade,
+--- and plays Music C when the scaled lead-in ends.
 --- songDuration 0 (Quick Transition) runs at timeRatio 0 and skips Music C.
 --- Returns immediately; wait attributeSequenceDurationSec(songDuration).
 -- @param songDuration number|nil
