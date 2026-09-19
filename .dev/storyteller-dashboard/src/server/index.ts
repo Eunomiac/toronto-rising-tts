@@ -47,7 +47,10 @@ const sendJson = (response: ServerResponse, statusCode: number, body: unknown): 
 };
 
 const sendError = (response: ServerResponse, error: unknown): void => {
-  const message = error instanceof Error ? error.message : "Unknown server error";
+  const raw = error instanceof Error ? error.message : "Unknown server error";
+  const message = /Command failed:/i.test(raw)
+    ? "Could not inspect or clear port 39998."
+    : raw;
   sendJson(response, 500, { error: message });
 };
 
@@ -203,8 +206,19 @@ const handleApi = async (request: IncomingMessage, response: ServerResponse, pat
   }
 
   if (request.method === "POST" && pathname === "/api/tts/reclaim-editor-port") {
-    const result = await dashboardTtsBridge.reclaimAndListen();
-    sendJson(response, result.listening ? 200 : 409, result);
+    try {
+      const result = await dashboardTtsBridge.reclaimAndListen();
+      sendJson(response, 200, result);
+    } catch (error: unknown) {
+      const raw = error instanceof Error ? error.message : "Could not clear port 39998.";
+      sendJson(response, 200, {
+        listening: false,
+        killed: [],
+        leftover: [],
+        failed: [],
+        message: /Command failed:/i.test(raw) ? "Could not inspect port 39998." : raw
+      });
+    }
     return;
   }
 

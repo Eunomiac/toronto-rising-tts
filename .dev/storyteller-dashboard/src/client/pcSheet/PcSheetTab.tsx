@@ -17,6 +17,9 @@ type Props = {
 const POLL_MS = 2500;
 
 const friendlyBridgeMessage = (message: string): string => {
+  if (/Command failed:|powershell\.exe|netstat\.exe/i.test(message)) {
+    return "Could not inspect port 39998.";
+  }
   if (/nil value|executeScript|did not return a sheet snapshot/i.test(message)) {
     return "Live sheet is not answering yet — showing stand-in stats.";
   }

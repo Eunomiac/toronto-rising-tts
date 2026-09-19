@@ -165,7 +165,24 @@ export class DashboardTtsBridge {
     readonly message: string;
   }> {
     await this.stopListening();
-    const result = await reclaimEditorPort(process.pid);
+    let result: Awaited<ReturnType<typeof reclaimEditorPort>>;
+    try {
+      result = await reclaimEditorPort(process.pid);
+    } catch (error: unknown) {
+      try {
+        await this.ensureListening(["0.0.0.0", "::"]);
+      } catch {
+        await this.ensureListening();
+      }
+      const raw = error instanceof Error ? error.message : "Could not inspect port 39998.";
+      return {
+        killed: [],
+        leftover: [],
+        failed: [],
+        listening: this.isListening,
+        message: /Command failed:/i.test(raw) ? "Could not inspect port 39998." : raw
+      };
+    }
     await wait(400);
     try {
       await this.ensureListening(["0.0.0.0", "::"]);

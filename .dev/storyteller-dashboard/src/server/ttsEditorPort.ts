@@ -18,22 +18,6 @@ export type ReclaimResult = {
   readonly failed: readonly { readonly pid: number; readonly error: string }[];
 };
 
-const LIST_CONNECTIONS_PS = `
-$ErrorActionPreference = 'SilentlyContinue'
-Get-NetTCPConnection -LocalPort ${EDITOR_PORT} |
-  Where-Object { $_.State -eq 'Listen' } |
-  ForEach-Object {
-    $proc = Get-Process -Id $_.OwningProcess
-    $cim = Get-CimInstance Win32_Process -Filter ("ProcessId=" + $_.OwningProcess)
-    [PSCustomObject]@{
-      localAddress = $_.LocalAddress
-      pid = $_.OwningProcess
-      name = $proc.ProcessName
-      command = $cim.CommandLine
-    }
-  } | ConvertTo-Json -Compress
-`;
-
 const isTabletopSimulator = (listener: EditorPortListener): boolean => {
   const name = listener.name.trim().toLowerCase();
   const command = listener.command.toLowerCase();
@@ -50,58 +34,114 @@ export const shouldKillListener = (listener: EditorPortListener, selfPid: number
   return true;
 };
 
-const parseListeners = (raw: string): EditorPortListener[] => {
-  const trimmed = raw.trim();
-  if (trimmed.length === 0) {
-    return [];
-  }
-  const parsed: unknown = JSON.parse(trimmed);
-  const rows = Array.isArray(parsed) ? parsed : [parsed];
-  const byPid = new Map<number, { pid: number; name: string; command: string; addresses: string[] }>();
-  for (const row of rows) {
-    if (typeof row !== "object" || row === null) {
+export const parseNetstatListening = (stdout: string, port: number): { address: string; pid: number }[] => {
+  const rows: { address: string; pid: number }[] = [];
+  for (const line of stdout.split(/\r?\n/)) {
+    const parts = line.trim().split(/\s+/);
+    if (parts[0] !== "TCP" || parts[3] !== "LISTENING" || parts[1] === undefined || parts[4] === undefined) {
       continue;
     }
-    const record = row as Record<string, unknown>;
-    const pid = Number(record.pid);
+    const local = parts[1];
+    const colon = local.lastIndexOf(":");
+    if (colon < 0) {
+      continue;
+    }
+    if (Number(local.slice(colon + 1)) !== port) {
+      continue;
+    }
+    const pid = Number(parts[4]);
     if (!Number.isInteger(pid) || pid <= 4) {
       continue;
     }
-    const address = String(record.localAddress ?? "");
-    const existing = byPid.get(pid);
-    if (existing) {
-      if (!existing.addresses.includes(address)) {
-        existing.addresses.push(address);
-      }
-      continue;
-    }
-    byPid.set(pid, {
-      pid,
-      name: String(record.name ?? ""),
-      command: record.command == null ? "" : String(record.command),
-      addresses: [address]
-    });
+    rows.push({ address: local.slice(0, colon), pid });
   }
-  return [...byPid.values()];
+  return rows;
+};
+
+const friendlyExecError = (error: unknown, fallback: string): string => {
+  if (typeof error === "object" && error !== null && "stderr" in error) {
+    const stderr = String((error as { stderr?: unknown }).stderr ?? "").trim();
+    if (stderr.length > 0 && !/powershell\.exe/i.test(stderr) && stderr.length < 180) {
+      return stderr;
+    }
+  }
+  return fallback;
+};
+
+const csvFirstField = (stdout: string): string => {
+  const line = stdout.split(/\r?\n/).find((row) => row.trim().length > 0) ?? "";
+  const match = line.match(/^"([^"]+)"/);
+  if (match?.[1]) {
+    return match[1];
+  }
+  return line.split(",")[0]?.replace(/^"|"$/g, "").trim() ?? "";
+};
+
+const processNameForPid = async (pid: number): Promise<string> => {
+  try {
+    const { stdout } = await execFileAsync("tasklist.exe", ["/FI", `PID eq ${pid}`, "/FO", "CSV", "/NH"], {
+      windowsHide: true,
+      encoding: "utf8"
+    });
+    const image = csvFirstField(stdout);
+    return image.replace(/\.exe$/i, "") || `pid-${pid}`;
+  } catch {
+    return `pid-${pid}`;
+  }
 };
 
 export const listEditorPortListeners = async (): Promise<EditorPortListener[]> => {
   if (process.platform !== "win32") {
     throw new Error("Clearing port 39998 is only implemented on Windows.");
   }
-  const { stdout } = await execFileAsync(
-    "powershell.exe",
-    ["-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", LIST_CONNECTIONS_PS],
-    { windowsHide: true, encoding: "utf8" }
-  );
-  return parseListeners(stdout);
+  let stdout: string;
+  try {
+    ({ stdout } = await execFileAsync("netstat.exe", ["-ano", "-p", "TCP"], {
+      windowsHide: true,
+      encoding: "utf8"
+    }));
+  } catch {
+    try {
+      ({ stdout } = await execFileAsync("netstat.exe", ["-ano"], {
+        windowsHide: true,
+        encoding: "utf8"
+      }));
+    } catch (error: unknown) {
+      throw new Error(friendlyExecError(error, "Could not inspect port 39998."));
+    }
+  }
+  const grouped = new Map<number, { pid: number; addresses: string[] }>();
+  for (const row of parseNetstatListening(stdout, EDITOR_PORT)) {
+    const existing = grouped.get(row.pid);
+    if (existing) {
+      if (!existing.addresses.includes(row.address)) {
+        existing.addresses.push(row.address);
+      }
+      continue;
+    }
+    grouped.set(row.pid, { pid: row.pid, addresses: [row.address] });
+  }
+  const listeners: EditorPortListener[] = [];
+  for (const row of grouped.values()) {
+    listeners.push({
+      pid: row.pid,
+      name: await processNameForPid(row.pid),
+      command: "",
+      addresses: row.addresses
+    });
+  }
+  return listeners;
 };
 
 const killPid = async (pid: number): Promise<void> => {
-  await execFileAsync("taskkill.exe", ["/PID", String(pid), "/F"], {
-    windowsHide: true,
-    encoding: "utf8"
-  });
+  try {
+    await execFileAsync("taskkill.exe", ["/PID", String(pid), "/F"], {
+      windowsHide: true,
+      encoding: "utf8"
+    });
+  } catch (error: unknown) {
+    throw new Error(friendlyExecError(error, `Could not stop process ${pid}.`));
+  }
 };
 
 export const reclaimEditorPort = async (selfPid: number): Promise<ReclaimResult> => {
