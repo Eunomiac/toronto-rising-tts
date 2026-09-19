@@ -1,4 +1,5 @@
-import net from "node:net";
+import net, { type Server } from "node:net";
+import { reclaimEditorPort } from "./ttsEditorPort.js";
 
 const TTS_COMMAND_PORT = 39999;
 const TTS_EDITOR_PORT = 39998;
@@ -81,32 +82,39 @@ const sendToTts = (message: object): Promise<void> =>
     });
   });
 
+const wait = (ms: number): Promise<void> => new Promise((resolve) => {
+  setTimeout(resolve, ms);
+});
+
 /**
  * Same External Editor hook as TTS Tools Execute Code:
  * TTS listens on 39999; this dashboard listens on 39998 (only one editor at a time).
  */
 export class DashboardTtsBridge {
-  private server: { listen(port: number, host: string, cb: () => void): void } | null = null;
+  private servers: Server[] = [];
   private readonly inboundHandlers = new Set<(msg: Record<string, unknown>) => void>();
   private chain: Promise<void> = Promise.resolve();
 
-  async ensureListening(): Promise<void> {
-    if (this.server !== null) {
-      return;
-    }
+  private get isListening(): boolean {
+    return this.servers.length > 0;
+  }
 
-    await new Promise<void>((resolve, reject) => {
-      const server = net.createServer((socket: SocketLike) => {
-        void readJsonFromSocket(socket).then(
-          (msg) => {
-            for (const handler of this.inboundHandlers) {
-              handler(msg);
-            }
-          },
-          () => undefined
-        );
-      });
+  private attachSocketServer(): Server {
+    return net.createServer((socket: SocketLike) => {
+      void readJsonFromSocket(socket).then(
+        (msg) => {
+          for (const handler of this.inboundHandlers) {
+            handler(msg);
+          }
+        },
+        () => undefined
+      );
+    });
+  }
 
+  private listenOn(host: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const server = this.attachSocketServer();
       server.once("error", (error?: Error) => {
         const detail = error?.message ?? "";
         if (detail.includes("EADDRINUSE")) {
@@ -117,12 +125,77 @@ export class DashboardTtsBridge {
         }
         reject(error ?? new Error("Could not listen on 39998."));
       });
-
-      server.listen(TTS_EDITOR_PORT, "127.0.0.1", () => {
-        this.server = server;
+      server.listen(TTS_EDITOR_PORT, host, () => {
+        this.servers.push(server);
         resolve();
       });
     });
+  }
+
+  async ensureListening(hosts: readonly string[] = ["127.0.0.1"]): Promise<void> {
+    if (this.isListening) {
+      return;
+    }
+    const errors: string[] = [];
+    for (const host of hosts) {
+      try {
+        await this.listenOn(host);
+      } catch (error: unknown) {
+        errors.push(`${host}: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+    if (!this.isListening) {
+      throw new Error(errors[0] ?? "Could not listen on 39998.");
+    }
+  }
+
+  async stopListening(): Promise<void> {
+    const servers = this.servers;
+    this.servers = [];
+    await Promise.all(servers.map((server) => new Promise<void>((resolve) => {
+      server.close(() => resolve());
+    })));
+  }
+
+  async reclaimAndListen(): Promise<{
+    readonly killed: readonly { readonly pid: number; readonly name: string }[];
+    readonly leftover: readonly { readonly pid: number; readonly name: string }[];
+    readonly failed: readonly { readonly pid: number; readonly error: string }[];
+    readonly listening: boolean;
+    readonly message: string;
+  }> {
+    await this.stopListening();
+    const result = await reclaimEditorPort(process.pid);
+    await wait(400);
+    try {
+      await this.ensureListening(["0.0.0.0", "::"]);
+    } catch {
+      await wait(800);
+      await this.ensureListening(["0.0.0.0", "::"]);
+    }
+    const killed = result.killed.map((row) => ({ pid: row.pid, name: row.name }));
+    const leftover = result.leftover
+      .filter((row) => row.pid !== process.pid)
+      .map((row) => ({ pid: row.pid, name: row.name }));
+    const listening = this.isListening;
+    const stopped = killed.length === 0
+      ? "No other process was using port 39998."
+      : `Stopped ${killed.map((row) => `${row.name} (${row.pid})`).join(", ")}.`;
+    const leftoverNote = leftover.length === 0
+      ? ""
+      : ` Still held by ${leftover.map((row) => `${row.name} (${row.pid})`).join(", ")}.`;
+    const failedNote = result.failed.length === 0
+      ? ""
+      : ` Could not stop ${result.failed.map((row) => String(row.pid)).join(", ")}.`;
+    return {
+      killed,
+      leftover,
+      failed: result.failed,
+      listening,
+      message: listening
+        ? `${stopped}${leftoverNote}${failedNote} Dashboard now holds the editor port.`
+        : `${stopped}${leftoverNote}${failedNote} Could not take port 39998.`
+    };
   }
 
   /** Non-destructive probe of ports 39998 / 39999 for UI grey-out (TOR-560). */
@@ -133,7 +206,7 @@ export class DashboardTtsBridge {
     message: string;
   }> {
     let editorPort: "held_by_dashboard" | "free" | "in_use" = "free";
-    if (this.server !== null) {
+    if (this.isListening) {
       editorPort = "held_by_dashboard";
     } else {
       editorPort = await new Promise((resolve) => {

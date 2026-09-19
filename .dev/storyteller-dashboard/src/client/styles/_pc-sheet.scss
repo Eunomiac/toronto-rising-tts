@@ -183,17 +183,39 @@
 }
 
 .pc-spread-wrap {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
   min-height: 0;
 
-  .status {
+  .pc-bridge-bar {
     position: absolute;
     top: -35px;
     right: 3px;
     z-index: 5;
+    display: flex;
+    align-items: stretch;
+    gap: 0.35rem;
+  }
+
+  .status {
     background: rgba(0, 0, 0, 1);
+  }
+
+  .pc-bridge-retry {
+    padding: 0.22rem 0.55rem;
+    border: 1px solid #c4a15a;
+    background: #160f0a;
+    color: #f6ead2;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+
+    &:disabled {
+      opacity: 0.6;
+    }
   }
 }
 

@@ -202,6 +202,12 @@ const handleApi = async (request: IncomingMessage, response: ServerResponse, pat
     return;
   }
 
+  if (request.method === "POST" && pathname === "/api/tts/reclaim-editor-port") {
+    const result = await dashboardTtsBridge.reclaimAndListen();
+    sendJson(response, result.listening ? 200 : 409, result);
+    return;
+  }
+
   if (request.method === "POST" && pathname === "/api/tts/execute-lua") {
     const body = await readRequestJson(request);
     const script = typeof body === "object" && body !== null && "script" in body ? (body as { script: unknown }).script : undefined;

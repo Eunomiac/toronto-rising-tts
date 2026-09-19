@@ -28,6 +28,21 @@ export const fetchBridgeStatus = async (): Promise<BridgeStatus> => {
   return payload;
 };
 
+export const reclaimEditorPort = async (): Promise<{ listening: boolean; message: string }> => {
+  const response = await fetch("/api/tts/reclaim-editor-port", { method: "POST" });
+  const payload = await response.json() as { listening?: boolean; message?: string; error?: string };
+  if (!response.ok && payload.listening !== true) {
+    if (typeof payload.message === "string") {
+      return { listening: false, message: payload.message };
+    }
+    throw new Error(payload.error ?? `Could not clear port 39998 (${response.status})`);
+  }
+  return {
+    listening: payload.listening === true,
+    message: payload.message ?? payload.error ?? "Could not reclaim the editor port."
+  };
+};
+
 export const executeLua = async (script: string): Promise<ExecuteLuaResult> => {
   const response = await fetch("/api/tts/execute-lua", {
     method: "POST",

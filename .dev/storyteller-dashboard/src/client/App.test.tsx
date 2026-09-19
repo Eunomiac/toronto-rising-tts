@@ -47,5 +47,6 @@ describe("App shell", () => {
     expect(document.getElementById("panel-pcs")).not.toHaveAttribute("hidden");
     expect(document.getElementById("panel-stage-npcs")).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "PCs" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("button", { name: "Clear port" })).toBeInTheDocument();
   });
 });

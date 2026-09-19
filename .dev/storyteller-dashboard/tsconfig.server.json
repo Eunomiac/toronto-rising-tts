@@ -14,5 +14,6 @@
     "exactOptionalPropertyTypes": true,
     "types": ["node"]
   },
-  "include": ["src/server/**/*.ts", "src/shared/**/*.ts"]
+  "include": ["src/server/**/*.ts", "src/shared/**/*.ts"],
+  "exclude": ["src/server/**/*.test.ts"]
 }

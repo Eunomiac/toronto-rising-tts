@@ -1,6 +1,6 @@
 import { gsap } from "gsap";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent, type ReactElement } from "react";
-import { fetchBridgeStatus } from "../ttsBridge.js";
+import { fetchBridgeStatus, reclaimEditorPort } from "../ttsBridge.js";
 import { applySheetCommand, snapshotOrFixture } from "./bridge.js";
 import { applyLocal } from "./applyLocal.js";
 import { fixtureSnapshot } from "./fixture.js";
@@ -30,11 +30,15 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
   const [status, setStatus] = useState("Checking TTS…");
   const [live, setLive] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [reclaiming, setReclaiming] = useState(false);
   const [ring, setRing] = useState<{ x: number; y: number; target: RingTarget } | null>(null);
   const inFlight = useRef(false);
   const skipLive = useRef(false);
 
-  const refresh = useCallback(async (): Promise<void> => {
+  const refresh = useCallback(async (force = false): Promise<void> => {
+    if (force) {
+      skipLive.current = false;
+    }
     if (inFlight.current || skipLive.current) {
       return;
     }
@@ -89,6 +93,29 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
     }, root);
     return () => ctx.revert();
   }, [active]);
+
+  const reconnect = async (): Promise<void> => {
+    if (reclaiming) {
+      return;
+    }
+    setReclaiming(true);
+    setBusy(true);
+    setStatus("Clearing port 39998…");
+    try {
+      const result = await reclaimEditorPort();
+      setStatus(result.message);
+      skipLive.current = false;
+      inFlight.current = false;
+      await refresh(true);
+    } catch (error: unknown) {
+      skipLive.current = true;
+      setLive(false);
+      setStatus(error instanceof Error ? error.message : "Could not clear port 39998.");
+    } finally {
+      setBusy(false);
+      setReclaiming(false);
+    }
+  };
 
   const apply = async (command: ApplyCommand, closeRing = true): Promise<void> => {
     setBusy(true);
@@ -158,7 +185,18 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
             <span>II</span>
           </article>
         </div>
-        <div className={`status ${live ? "success" : "idle"}`}>{status}{busy ? "  Sending…" : ""}</div>
+        <div className="pc-bridge-bar">
+          <div className={`status ${live ? "success" : "idle"}`}>{status}{busy ? "  Sending…" : ""}</div>
+          <button
+            className="pc-bridge-retry"
+            type="button"
+            disabled={reclaiming}
+            onClick={() => void reconnect()}
+            title="Stop anything using port 39998, then try Tabletop Simulator again"
+          >
+            {reclaiming ? "Clearing…" : "Clear port"}
+          </button>
+        </div>
       </div>
       {ring ? (
         <TraitRing
