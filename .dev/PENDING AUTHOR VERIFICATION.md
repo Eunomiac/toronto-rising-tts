@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — TOR-592 seat-role offset world-unit XZ._
+_Last populated: 2026-09-21 — TOR-590 hand-zone instant co-move (retest)._
 
 ### Phases / session start
 
@@ -201,13 +201,13 @@ _Last populated: 2026-09-21 — TOR-592 seat-role offset world-unit XZ._
 
 #### TOR-590 — Hand zone and cards move together
 
-**How to verify:** Save & Play. Put a few cards in at least two hands.
+**How to verify:** Save & Play so the instant-move scripts load. Put a few cards in at least two hands. Start in **Play** on Table B.
 
-1. Advance **Play → Spotlight** from Table B. The colored hand-zone boxes **and** the white fanned cards should travel together to Table A.
-2. Advance **Spotlight → End** (Table B0). The boxes and the white fans should arrive together, stay fanned in the new hands, and be grabbable — cards must not stay locked in the old Spotlight/Table A fan.
+1. Advance **Play → Spotlight**. After the cover lifts you should **not** hear a long swoop of cards flying, and you should **not** see white cards stranded on figurines, sheets, or mid-table. Each colored hand-zone box on Table A should have its own fan sitting in that hand, grabbable.
+2. Advance **Spotlight → End** (Table B0). Same check: boxes and fans arrive together at the new seats. Cards must not stay in the old Spotlight/Table A fan.
 3. Optional: turn **Absent** on and off for one seat. Those cards should bury under the table with that hand zone and come back with it.
 
-**Context:** One `U.movePlayerHand` rigid-moves the Hand Zone and every card in that hand (smooth on the table, instant when parking Absent). Layout no longer locks cards. relatedTo **TOR-513** (Absent hand stash) and **TOR-572** (Scatter Mode).
+**Context:** First Save & Play of the unified mover used a smooth lerp. After Play→Spotlight the cover lifted while cards were still flying Table B→A; they stalled mid-path. The mover now teleports the zone and cards in one step (no lock). relatedTo **TOR-513** (Absent hand stash) and **TOR-572** (Scatter Mode).
 
 #### TOR-573 — Scatter import and live Standard↔Scatter switch
 

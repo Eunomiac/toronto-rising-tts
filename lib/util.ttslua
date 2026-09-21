@@ -2452,12 +2452,14 @@ local function poseObjectWithHand(obj, pos, rot, smooth)
 end
 
 --- Move a player's hand zone and every card in that hand as one rigid body (TOR-590).
---- Does not lock cards. On-table layout smooth-moves (`collide=false`, `fast=true`);
---- occupancy park passes `opts.smooth = false` for an instant teleport.
+--- Does not lock cards. Default is an instant teleport: Play→Spotlight Table B→A is a ~100-unit
+--- jump behind the cover, and `setPositionSmooth` was still interpolating after the blindfold
+--- lifted (swoop audio; cards stalled mid-table). Pass `opts.smooth = true` only for a short
+--- on-table nudge that is meant to be seen.
 --- @param playerRef string|userdata seat color or Player
 --- @param position Vector|table world position of the hand zone
 --- @param rotation Vector|table world rotation of the hand zone
---- @param opts table|nil `{ smooth?: boolean }` default smooth true
+--- @param opts table|nil `{ smooth?: boolean }` default false (instant)
 --- @return table `{ position = Vector, rotation = Vector, cards = Object[] }` zone pose before the move
 function U.movePlayerHand(playerRef, position, rotation, opts)
 	local color = resolveHandSeatColor(playerRef)
@@ -2472,7 +2474,7 @@ function U.movePlayerHand(playerRef, position, rotation, opts)
 		error("U.movePlayerHand: rotation must be a world vector")
 	end
 	opts = U.Type(opts) == "table" and opts or {}
-	local smooth = opts.smooth ~= false
+	local smooth = opts.smooth == true
 
 	local targetPos = Vector(position)
 	local targetRot = Vector(rotation)
