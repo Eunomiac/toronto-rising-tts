@@ -1,7 +1,7 @@
 --[[
     Center-top overlay: district / site (split on first ":" when present) and in-game date + 12-hour clock
-    during **Play**. Spotlight and End use the same panel with ritual copy (TOR-98). Session-start
-    Downtime uses prologue copy (TOR-598). End time line is **EPILOGUE** (TOR-599).
+    during **Play**. Spotlight uses ritual copy (TOR-98). Session-start Downtime uses prologue copy
+    (TOR-598). End uses the same bookend layout with **EPILOGUE** (TOR-599).
 
     Single writer: `GameStateOverlay.reconcileFromState()` — driven from `UpdateUIDisplays` / `Sync.ui`
     (see `core/sync.ttslua` incremental delta `gameStateOverlay`) so nothing else fights the overlay.
@@ -227,7 +227,7 @@ local function pushDistrictSeparator(attrs)
 end
 
 --- Datetime/time/session-number chrome. Fingerprinted so Sync.full does not rewrite every pass.
---- Prologue styles must be undone when leaving session-start Downtime (TOR-598).
+--- Prologue/End bookend styles must be undone when leaving those phases (TOR-598 / TOR-599).
 --- @param kind "play"|"spotlight"|"prologue"
 local function applyOverlayPhaseChrome(kind)
     if UI == nil or UI.setAttributes == nil then
@@ -357,7 +357,7 @@ local function shouldShowNarrativeClockOnOverlay()
     return phase == C.Phases.PLAY
 end
 
---- Time/location panel presenter: Play (clock / prologue / Downtime), Spotlight (ritual), End (session name + EPILOGUE), or hidden.
+--- Time/location panel presenter: Play (clock / prologue / Downtime), Spotlight (ritual), End (bookend + EPILOGUE), or hidden.
 --- @return string "play"|"spotlight"|"sessionEnd"|"hidden"
 local function overlayTimeLocationKind()
     local phase = S.getStateVal("currentPhase")
@@ -680,8 +680,9 @@ local function pushEmptyLocationRow()
     pushOverlayActive("gameStateOverlay_parentSiteSeparator", false)
 end
 
---- Session-start first Downtime overlay: banner, compact roman, spaced title, PROLOGUE (TOR-598).
-local function pushSessionStartDowntimeOverlay()
+--- TORONTO RISING banner, compact roman, spaced title, and PROLOGUE or EPILOGUE (TOR-598 / TOR-599).
+--- @param timeLabel string
+local function pushBookendOverlay(timeLabel)
     pushOverlayTextAttribute("gameStateOverlay_sesionNumber", OVERLAY_PROLOGUE_BANNER)
     pushOverlayText("gameStateOverlay_district", "")
     pushOverlayText("gameStateOverlay_parentSite", "")
@@ -700,7 +701,11 @@ local function pushSessionStartDowntimeOverlay()
         sessionName = ""
     end
     pushOverlayTextAttribute("gameStateOverlay_datetime", formatSpacedUppercaseTitle(sessionName))
-    pushOverlayTextAttribute("gameStateOverlay_time", "PROLOGUE")
+    local label = timeLabel
+    if type(label) ~= "string" or label == "" then
+        label = "PROLOGUE"
+    end
+    pushOverlayTextAttribute("gameStateOverlay_time", label)
 end
 
 --- Push district / site row (parent site + separator only when the site name contains a ":" split).
@@ -736,12 +741,12 @@ function GameStateOverlay.reconcileFromState()
 
     -- Session roman lives inside the time/location panel; keep it in sync even while the panel is hidden
     -- (e.g. Intermission edits to sessionNum) so Play reveal is not stale (TOR-362).
-    -- Session-start prologue replaces this line; skip so we do not flash roman first (TOR-598).
-    if not isSessionStartDowntimeOverlay() then
+    -- Bookend copy (prologue / End) replaces this line; skip so we do not flash roman first (TOR-598 / TOR-599).
+    local kind = overlayTimeLocationKind()
+    if kind ~= "sessionEnd" and not isSessionStartDowntimeOverlay() then
         reconcileSessionNumberFromState()
     end
 
-    local kind = overlayTimeLocationKind()
     if kind == "hidden" then
         applyOverlayPhaseChrome("play")
         pushDistrictSeparator({
@@ -777,15 +782,9 @@ function GameStateOverlay.reconcileFromState()
 
     if kind == "sessionEnd" then
         bustTextCacheIfSessionSceneChanged()
-        applyOverlayPhaseChrome("play")
+        applyOverlayPhaseChrome("prologue")
         pushOverlayActive(OVERLAY_TIME_LOCATION_ID, true)
-        pushEmptyLocationRow()
-        local sessionName = S.getStateVal("sessionName")
-        if type(sessionName) ~= "string" then
-            sessionName = ""
-        end
-        pushOverlayText("gameStateOverlay_datetime", sessionName)
-        pushOverlayText("gameStateOverlay_time", "EPILOGUE")
+        pushBookendOverlay("EPILOGUE")
         pushOverlayActive(OVERLAY_WEATHER_ID, false)
         return
     end
@@ -841,7 +840,7 @@ function GameStateOverlay.reconcileFromState()
         pushOverlayActive(OVERLAY_TIME_LOCATION_ID, true)
         if isSessionStartDowntimeOverlay() then
             applyOverlayPhaseChrome("prologue")
-            pushSessionStartDowntimeOverlay()
+            pushBookendOverlay("PROLOGUE")
             pushOverlayActive(OVERLAY_WEATHER_ID, false)
             return
         end

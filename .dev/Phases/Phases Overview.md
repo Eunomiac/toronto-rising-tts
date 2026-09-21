@@ -19,7 +19,7 @@ Source of truth:
 Verification:
 - Save & Play → Host Phases panel → **Advance →** (first click shows red confirm; second click within 5s Advances and the panel closes) through Intermission → Play → Spotlight → End → Intermission
 - Confirm Intermission: session-end splash slides down fully (`HUDBF.BLINDFOLD_DOWN_COMPLETE_SEC`), then leftover-audio fade-out with TR_Loop fade-in (~2s), then no-scene table prep under cover, AdminDark (TOR-580). Play: OutdoorDim lights and HUD arm behind the cover first, then a settle (`C.SessionStartPlayEnterSettleSec`); then the session-start splash with Music C after the authored song lead-in, or **Quick Transition** (`playAttribute(0)`, no Music C); the panel hides near the end of that session's song (or the unscalable tail), layers reset, then Main fades in and the Willpower heal overlay can appear. First Play with no live scene starts in **Downtime** (TOR-527); that first overlay is prologue copy (TOR-598).
-- Play → Spotlight: staged transition cover; Table A + Spotlight skybox; Main keeps playing; in-session stand-ins on the carousel; overlay shows the session name in the diamond slot, **S P O T L I G H T** in gold, and the front character name in white. Spotlight → End: same cover; Main keeps playing; table becomes B0 (PC seats only, NPCs stay off the table); Generic skybox is selected; overlay shows the session name and **EPILOGUE**; bags/companions/compulsion decks stay under the table until Intermission cover
+- Play → Spotlight: staged transition cover; Table A + Spotlight skybox; Main keeps playing; in-session stand-ins on the carousel; overlay shows the session name in the diamond slot, **S P O T L I G H T** in gold, and the front character name in white. Spotlight → End: same cover; Main keeps playing; table becomes B0 (PC seats only, NPCs stay off the table); Generic skybox is selected; overlay uses the same bookend copy as session-start prologue (**TORONTO RISING** / compact roman / spaced title) with **EPILOGUE**; bags/companions/compulsion decks stay under the table until Intermission cover
 - Workshop: Host console `lua DEBUG.populateSpotlightFigurines()` clones seat figures and spawns tagged lights, then prints GUIDs for `lib/guids.ttslua`. Play → Spotlight does **not** auto-spawn (duplicates if GUIDs are forgotten).
 - Re-test Intermission→Play without cycling Spotlight/End: Host console `lua DEBUG.resetToIntermission()` (session cover + TR_Loop, no table/skybox move). Then **Advance →**.
 - Solo Host verified only until **TOR-144** (multiplayer E2E) — multiclient connect blindfold + Advance replication: [Multiclient Session Script](../E2E%20Playbooks/Multiplayer-Session.md) (A4, B0, D1)
@@ -43,7 +43,7 @@ There are four top-level phases, advanced by the Storyteller **Advance** button 
 1. `INTERMISSION` — Between sessions: **global cover + Intermission theme handoff first**, then no-scene table/skybox/overlay under that cover, AdminDark; connect keeps global blindfold up (TOR-319 / TOR-497 / TOR-506).
 2. `PLAY` — Session start: OutdoorDim lights and HUD behind the cover first, then session-start splash, Intermission Loop fades across the scaled song lead-in, Music C overture (skipped if **Quick Transition** is on), panel hide near sting end, Main playlist, Superficial WP heal + optional broadcast. Contains most gameplay.
 3. `SPOTLIGHT` — End-of-session player vignettes: narrative clear (not End-scene Table B0), Table A + Spotlight skybox, Main-only music, in-session PC stand-ins on a 36° carousel, Host strip, ritual overlay.
-4. `END` — Remorse / session-end bookkeeping. **Advance Spotlight → End** keeps Table A and Main, parks the carousel, and shows the session name + **EPILOGUE** on the overlay (TOR-599). Leaving End increments `sessionNum`. Intermission enter then shows the **session-end splash** on the global blindfold (`overlay_sessionEndSplash_<N>`) and applies the real no-scene table prep (TOR-565).
+4. `END` — Remorse / session-end bookkeeping. **Advance Spotlight → End** keeps Table A and Main, parks the carousel, and shows the prologue-style bookend overlay with **EPILOGUE** (TOR-599). Leaving End increments `sessionNum`. Intermission enter then shows the **session-end splash** on the global blindfold (`overlay_sessionEndSplash_<N>`) and applies the real no-scene table prep (TOR-565).
 
 Advancing from `END` returns to `INTERMISSION`.
 
@@ -96,7 +96,7 @@ Ending events of the previous phase run before starting events of the new phase 
 
 ### Starting Events: `END`
 
-* Overlay: datetime = `sessionName` (blank until the Storyteller types one in the Phases panel), time = `EPILOGUE`, location row empty, weather hidden. Session roman stays.
+* Overlay: same bookend copy as session-start prologue — **T O R O N T O   R I S I N G**, compact roman session, spaced uppercase session title, time = **EPILOGUE**. Weather hidden (TOR-599).
 
 ### Ending Events: `END`
 

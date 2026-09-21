@@ -49,7 +49,7 @@ Verification:
 
 ## Processed
 
-2026-09-21 Immediate — session-start first Downtime overlay prologue copy → **TOR-598** (shipped). End overlay **DEBRIEF** → **EPILOGUE** → **TOR-599** (shipped).
+2026-09-21 Immediate — session-start first Downtime overlay prologue copy → **TOR-598** (shipped). End overlay **DEBRIEF** → **EPILOGUE**, then same prologue bookend layout with **EPILOGUE** → **TOR-599** (shipped).
 
 2026-09-21 `/tr-inbox` Immediate — hide Storyteller camera/seat bars during session-start splash → **TOR-596** (shipped). PAVE ⚠️ overlay camera click vs hold → **TOR-597** (shipped). Dashboard async-send ⚠️ left to the parallel dashboard session (not processed here). PAVE ✅ cleared session-start / sheet / Scatter / Memoriam / overlay rows marked confirmed.
 

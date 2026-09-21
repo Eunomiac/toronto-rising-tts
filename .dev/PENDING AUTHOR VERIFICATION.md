@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — TOR-605 camera look-at Y stays at authored constants; Willpower reroll dice can be picked up (Linear quota blocked a new issue; noted on TOR-31)._
+_Last populated: 2026-09-21 — TOR-599 End overlay uses prologue bookend layout with EPILOGUE._
 
 ### Soundscape
 
@@ -99,14 +99,14 @@ _Last populated: 2026-09-21 — TOR-605 camera look-at Y stays at authored const
 
 **Context:** Leaving prologue used to clear the time row height to empty, which collapsed it. relatedTo **TOR-598**.
 
-#### TOR-599 — End overlay says EPILOGUE
+#### TOR-599 — End overlay uses prologue layout with EPILOGUE
 
-**How to verify:** Save & Play so scripts reload. Advance to **End** (Play → Spotlight → End, or however you usually get there).
+**How to verify:** Save & Play so scripts reload. On the Phases panel, set a session title such as `The Devils You Know`. Advance to **End** (Play → Spotlight → End).
 
-1. The center overlay should show the session name on the date line and **EPILOGUE** underneath — not **DEBRIEF**.
-2. Optional: Advance back through Intermission → Play (no scene) and confirm the prologue overlay from **TOR-598** still works after End.
+1. The center overlay should match session-start prologue: **T O R O N T O   R I S I N G** on top, compact roman session in the middle (for example **– I –**), the gold spaced title (**T H E   D E V I L S   Y O U   K N O W**), and **EPILOGUE** on the bottom — not the old session-name + EPILOGUE layout, and not **DEBRIEF**.
+2. Advance to Intermission, then Intermission → Play with no scene. Prologue should still say **PROLOGUE**, not EPILOGUE.
 
-**Context:** Copy change only. relatedTo **TOR-98**.
+**Context:** Same bookend chrome as **TOR-598**. Linear quota blocked a new issue id; this row covers the End layout follow-up. relatedTo **TOR-98**.
 
 ### Character sheets
 #### Dashboard PCs tab — live sheet snapshot/apply
@@ -206,12 +206,12 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **How to verify:** Save & Play so scripts reload. Be in Scatter Mode. Sit as Host in a player seat whose PC is actually in a scatter group (bottom-right seat-color buttons are fine).
 
-1. Open Debug Camera and click **roll** (the short button, not rollBrown). The look-at **Y** should match `C.ReferenceCameraAngles.roll` (about **10.84**), not ~9 units lower. Same check for **sheet** (about **5.84**) and **default** (about **18.58**). Those heights should match a wood-table seat of the same color.
+1. Open Debug Camera and click **roll** (the short button, not rollBrown). The look-at **Y** should match `C.ReferenceCameraAngles.roll` (about **10.84**), not ~9 units lower. Same check for **sheet** (about **5.84**) and **default** (about **18.58**). Those heights should match a wood-table seat of the same color. A PC figurine and character sheet in that scatter group should sit at the same height as on a wood table — not down on the NPC stage floor.
 2. Click that seat’s spoof button (Brown, Red, …). The Storyteller camera set should match that seat’s current Scatter cameras, including those Y values.
 3. Optional: leave Scatter for a wood table (cover should still snap you to that table’s default). Come back to Scatter and click **roll** again. Y should still be about 10.84.
 4. Sit back on Black. Storyteller Rolls / Main / Mid should still be the usual Black views.
 
-**Context:** Roll was stored in game state and could keep the old angle. Occupied-seat Storyteller copies were leftover saved cameras. Scatter then applied the figurine floor-Y shift to look-at Y even though sheets stay at authored height. relatedTo **TOR-603**.
+**Context:** Roll was stored in game state and could keep the old angle. Occupied-seat Storyteller copies were leftover saved cameras. Scatter was applying the NPC stage floor height (`FLOOR_Y`) to seated PC piles and cameras. relatedTo **TOR-603**.
 
 #### TOR-603 — Storyteller camera follows the occupied seat after table or scene layout
 
