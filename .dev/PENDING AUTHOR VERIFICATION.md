@@ -255,7 +255,7 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 3. About six seconds after the black fade started, the black should start fading away and the ended session’s splash art should already be there underneath (no slide). It should stay up.
 4. The table, seats, and lights should not jump around while either fade is still running. After the black is gone, the room should be the between-session setup (dark, no scene) with that splash still covering the view.
 
-**Context:** Linear could not open a new issue (workspace quota). This changes the End → Intermission cover that **TOR-580** and **TOR-566** used to slide in. Parent is **TOR-143** (phase sequence).
+**Context:** Linear could not open a new issue (workspace quota). This changes the End → Intermission cover that **TOR-580** and **TOR-566** used to slide in. Parent is **TOR-143** (phase sequence). The first pass faded the black out onto the table because the splash panel was marked active without `UI.show`, so it never actually appeared. This pass shows that panel with no animation while the black is still solid.
 
 ### Dice
 

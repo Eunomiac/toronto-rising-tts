@@ -697,14 +697,19 @@ local function showEndGlobalBlindfoldInstant()
         transitionGlobalBlindfoldHideCancel = nil
     end
 
-    -- Snap the panel on. UI.show would play SlideIn_Top over the blackout fade-out.
-    -- Duration 0 first so the active flip cannot replay a 2s slide.
+    -- active=true alone does not display a panel that is still off. UI.show does.
+    -- showAnimation None so that show is instant (SlideIn_Top would play the cover in).
     -- hideTransitionGlobalBlindfold restores the 2s SlideOut before the next hide.
     U.setAttributes(GLOBAL_BLINDFOLD_PANEL_ID, {
-        showAnimation = "FadeIn",
+        showAnimation = "None",
         animationDuration = "0",
+        color = "#000000",
     })
-    U.setAttributes(GLOBAL_BLINDFOLD_PANEL_ID, { active = "true" })
+    setTransitionGlobalBlindfoldActive(true)
+    if type(UI.show) == "function" then
+        UI.show(GLOBAL_BLINDFOLD_PANEL_ID)
+    end
+    -- Parent UI.show re-applies XML defaults (image → overlay_globalBlindfold_1).
     armEndGlobalBlindfoldImage()
     clearGlobalBlindfoldLocationCards()
     transitionGlobalBlindfoldAppliedVisible = true
