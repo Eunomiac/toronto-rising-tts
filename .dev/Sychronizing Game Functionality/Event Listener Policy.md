@@ -165,9 +165,9 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_STcamera` | A | Yes | Host ST camera strip → `M.setCamera(Black, mode)` from `C.StorytellerCameraAngles` (TOR-348) |
 | `HUD_cameraControl_click` | A | — | Player camera overlay; MAIN left=`default`, right=`wideFacing`; all picker clicks `M.setCamera` → ThirdPerson (TOR-594) |
 | `HUD_popoutCameraControl_click` / `_mouseDown` / `_mouseUp` / `_mouseExit` / `HUD_alphaControl_hover*` | A | — | Camera picker: left-click `default` ThirdPerson (picker stays closed); hold 1s opens picker without moving camera (TOR-597); right-click `M.lookAtNPC` (elevated default focus, horizon yaw toward next occupied stage NPC, keep distance, then FirstPerson) (TOR-538 / TOR-562 / TOR-594); Apply resets cycle |
-| `HUD_scatterModeControl_toggleClick` / `_toggleHoverOn` / `_toggleHoverOff` | A | — | TOR-602 player Scatter strip toggle; clicker seat must match id color suffix |
+| `HUD_scatterModeControl_toggleClick` / `_toggleHoverOn` / `_toggleHoverOff` | A | — | TOR-602 player Scatter strip toggle; clicker seat must match id color suffix; closed uses inactive/hover images, open hides Hit except on hover |
 | `HUD_scatterModeControl_selectorClick` | B+C | — | TOR-602 move that PC to the clicked scatter group (`ScatterMode.movePcToGroup`); no-op (strip stays open) if already there; successful move parks token, poses figurine/seat objects, closes that player’s strip |
-| `HUD_scatterModeControl_selectorHoverOn` / `_selectorHoverOff` | A | — | TOR-602 selector hover image swap |
+| `HUD_scatterModeControl_selectorHoverOn` / `_selectorHoverOff` | A | — | TOR-602 selector hover overlay; occupied group keeps `scatterGroupSelector_active`, others hide (inactive art is in the background) |
 | `HUD_debugLightActivate/ButtonClick/Slider` | C | Yes | Tuner select / sliders / Zero / Discard / close; `getObjectsWithTag("Spotlight")` on open and when returning to the grid |
 | `HUD_debugLightGuidInput/Enabled/ResetRow/Done/Snapshot` | A | — | Guid/Enabled/ResetRow are leftover no-ops; Done returns to selection; Snapshot writes workspace Lua |
 | `HUD_debugCamera*` / `HUD_debugCaptureCameraPreset` | A | — | local camera |

@@ -137,14 +137,14 @@ Root `Panel` id `gameStateOverlay_location_<Color>` uses class `playerHud_overla
 
 ## Scatter Mode control (`ui/.templates/panel_scatter_mode_control.xml` → `ui/player/panel_scatter_mode_control.xml`)
 
-Per-seat copy under `HUD_PANEL_PLAYER` (`visibility` = that color). Root is Lua-activated only while Scatter is the table. Gold / first-join is PC **slot 1** (`pc1`, visual middle of the row). Clicking another group is a full move; clicking the group you already occupy does nothing and leaves the strip open (TOR-602).
+Per-seat copy under `HUD_PANEL_PLAYER` (`visibility` = that color). Root is Lua-activated only while Scatter is the table. Gold / first-join is PC **slot 1** (`pc1`, visual middle of the row). Clicking another group is a full move; clicking the group you already occupy does nothing and leaves the strip open (TOR-602). Lucien’s portrait key is `scatterModeControlPC_lordLucien`. Selector inactive art and the open-toggle art are baked into the strip background.
 
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
-| `HUD_scatterModeControl_toggleClick` | `scatterModeControlToggle_<Color>` | `(player, value, id)` | Seat color must match the id suffix. Opens or closes that player’s strip (`pcRowContainer` + `db_scatterModeControl_container`) and sets the toggle image to `_active` / `_inactive`. |
-| `HUD_scatterModeControl_toggleHoverOn` / `_toggleHoverOff` | same | `(player, value, id)` | Hover image, then restore open/closed image. |
-| `HUD_scatterModeControl_selectorClick` | `scatterModeControlGroupN_selector_<Color>` | `(player, value, id)` | `ScatterMode.movePcToGroup` for that PC. On a real move: park token, pose figurine/bags/sheet/camera, refresh portraits for all colors, close **that** player’s strip. No-op if they click their current group (strip stays open) or the destination already has five PCs. |
-| `HUD_scatterModeControl_selectorHoverOn` / `_selectorHoverOff` | same | `(player, value, id)` | Hover image, then restore `_active` if this is their group else `_inactive`. |
+| `HUD_scatterModeControl_toggleClick` | `scatterModeControlTogglePad_<Color>` | `(player, value, id)` | Seat color must match the id suffix. Opens or closes that player’s strip (`pcRowContainer` + `db_scatterModeControl_container`). Re-applies hover so the graphic stays correct while the cursor is still over the pad. |
+| `HUD_scatterModeControl_toggleHoverOn` / `_toggleHoverOff` | same | `(player, value, id)` | Strip closed: swap `scatterModeControlToggleHit` between `scatterGroupToggle_inactive` and `_hover`. Strip open: show/hide that Hit (`active` true/false); image stays `_hover`. |
+| `HUD_scatterModeControl_selectorClick` | `scatterModeControlGroupN_selectorHit_<Color>` | `(player, value, id)` | `ScatterMode.movePcToGroup` for that PC. On a real move: park token, pose figurine/bags/sheet/camera, refresh portraits for all colors, close **that** player’s strip. No-op if they click their current group (strip stays open) or the destination already has five PCs. |
+| `HUD_scatterModeControl_selectorHoverOn` / `_selectorHoverOff` | same | `(player, value, id)` | Show `scatterGroupSelector_hover`. Hover-off: `scatterGroupSelector_active` if this is their group, otherwise hide the overlay (`active=false`; inactive art is in the background). |
 
 `ScatterMode.reconcileControlHudFromState` paints roots, portraits, selectors, and NPC name lists from `scatterPlacements` (fingerprint-skipped). Called from world layout, leave Scatter, token drop/clear, `UpdateUIDisplays` (`playerHud`), and Global XML remount.
 

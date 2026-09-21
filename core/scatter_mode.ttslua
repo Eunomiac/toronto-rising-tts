@@ -761,6 +761,39 @@ function ScatterMode.isControlHudStripOpen(color)
     return type(color) == "string" and controlHudStripOpenByColor[color] == true
 end
 
+--- Resting toggle Image: closed = inactive graphic; open = hidden hover graphic (baked into strip bg).
+--- @param color string
+--- @param stripOpen boolean
+local function applyToggleResting(color, stripOpen)
+    local id = "scatterModeControlToggleHit_" .. color
+    if stripOpen == true then
+        U.setAttributes(id, {
+            active = "false",
+            image = "scatterGroupToggle_hover",
+        })
+        return
+    end
+    U.setAttributes(id, {
+        active = "true",
+        image = "scatterGroupToggle_inactive",
+    })
+end
+
+--- @param color string
+--- @param groupIndex number
+--- @param isOccupied boolean
+local function applySelectorResting(color, groupIndex, isOccupied)
+    local id = "scatterModeControlGroup" .. tostring(groupIndex) .. "_selector_" .. color
+    if isOccupied then
+        U.setAttributes(id, {
+            active = "true",
+            image = "scatterGroupSelector_active",
+        })
+        return
+    end
+    U.setAttribute(id, "active", "false")
+end
+
 --- Open or close one player's Scatter strip (toggle chrome). Does not change occupancy.
 --- @param color string
 --- @param isOpen boolean
@@ -773,11 +806,7 @@ function ScatterMode.setControlHudStripOpen(color, isOpen)
     local active = open and "true" or "false"
     U.setAttribute("scatterModeControl_pcRowContainer_" .. color, "active", active)
     U.setAttribute("db_scatterModeControl_container_" .. color, "active", active)
-    U.setAttribute(
-        "scatterModeControlToggle_" .. color,
-        "image",
-        open and "scatterGroupToggle_active" or "scatterGroupToggle_inactive"
-    )
+    applyToggleResting(color, open)
 end
 
 --- @param npcKey string
@@ -823,7 +852,7 @@ local function applyControlHudHidden()
         U.setAttribute("scatterModeControl_root_" .. color, "active", "false")
         U.setAttribute("scatterModeControl_pcRowContainer_" .. color, "active", "false")
         U.setAttribute("db_scatterModeControl_container_" .. color, "active", "false")
-        U.setAttribute("scatterModeControlToggle_" .. color, "image", "scatterGroupToggle_inactive")
+        U.setAttribute("scatterModeControlToggleHit_" .. color, "active", "false")
     end
 end
 
@@ -859,11 +888,7 @@ local function applyControlHudVisible()
         local stripActive = stripOpen and "true" or "false"
         U.setAttribute("scatterModeControl_pcRowContainer_" .. color, "active", stripActive)
         U.setAttribute("db_scatterModeControl_container_" .. color, "active", stripActive)
-        U.setAttribute(
-            "scatterModeControlToggle_" .. color,
-            "image",
-            stripOpen and "scatterGroupToggle_active" or "scatterGroupToggle_inactive"
-        )
+        applyToggleResting(color, stripOpen)
         local myKey = pcKeyForColor(color)
         local myGroup = myKey and groupOfPcKey[myKey] or nil
         for i = 1, ScatterLayout.groupCount() do
@@ -879,8 +904,7 @@ local function applyControlHudVisible()
                     U.setAttribute(id, "active", "false")
                 end
             end
-            local selImage = (myGroup == i) and "scatterGroupSelector_active" or "scatterGroupSelector_inactive"
-            U.setAttribute("scatterModeControlGroup" .. tostring(i) .. "_selector_" .. color, "image", selImage)
+            applySelectorResting(color, i, myGroup == i)
             U.setAttributes("scatterModeControlGroup" .. tostring(i) .. "_npcList_" .. color, {
                 text = npcTextByGroup[i] or "",
             })

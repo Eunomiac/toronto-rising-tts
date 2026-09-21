@@ -96,10 +96,10 @@ Then `npm run build:xml`.
 
 Image names in the template (must exist on Global Custom UI):
 
-- `scatterGroupToggle_inactive` / `_hover` / `_active`
-- `scatterGroupSelector_inactive` / `_hover` / `_active`
+- `scatterGroupToggle_inactive` / `_hover`
+- `scatterGroupSelector_hover` / `_active`
 - `scatterGroupControl_bg`
-- `scatterModeControlPC_lucien` / `_rashid` / `_aishe` / `_fomorach` / `_blackCaesar`
+- `scatterModeControlPC_lordLucien` / `_rashid` / `_aishe` / `_fomorach` / `_blackCaesar`
 
 These are not in repo cloud-asset-sync. If Save & Play shows missing images, add them in TTS under those exact names (author-owned; not a Lua guess).
 
@@ -111,18 +111,18 @@ When Scatter is **on**:
 
 - Root `active=true` for each `C.PlayerColors` entry.
 - For each group 1–6, for each slot 1–5: if that slot’s `centerCharacters` row exists, set that Image `active=true` and `image=scatterModeControlPC_<pcKey>`; else `active=false`.
-- For each player color, exactly one selector is `scatterGroupSelector_active` (the group that PC occupies); the rest `inactive`. If that PC is in no group, all six inactive.
+- For each player color, the occupied group’s selector overlay is `active=true` with `scatterGroupSelector_active`; the rest are `active=false` (inactive art is baked into the strip background). If that PC is in no group, all six overlays stay hidden.
 - NPC lists: `UI.setAttributes(id, { text = … })` with `"\n"` between **full display names** (`def.fullName or def.name`, same idea as `npcDisplayNameForCharacterKey`). Order = existing `npcKeysInJoinOrder` (hole slot, then key). Empty group → `""`. Update every color’s copy.
 
 Do not `UI.setXml`. Guard with a cheap occupancy fingerprint so idle `Sync.full` does not rewrite identical text.
 
 ### Click / hover handlers (`core/hud_player.ttslua`)
 
-Parse `scatterModeControlToggle_<Color>` and `scatterModeControlGroupN_selector_<Color>`. Cheap first check: `player.color == Color` (and the player is that seated color). Wrong color → return.
+Parse `scatterModeControlTogglePad_<Color>` (visual state on `scatterModeControlToggleHit_<Color>`) and `scatterModeControlGroupN_selectorHit_<Color>`. Cheap first check: `player.color == Color` (and the player is that seated color). Wrong color → return.
 
-- Toggle click: flip both inner HorizontalLayouts for **that color only**; set toggle image to `_active` or `_inactive`.
-- Toggle hover: `_hover`, then restore the open/closed image.
-- Selector hover: `_hover`, then restore that group’s active/inactive image for **that** player.
+- Toggle click: flip both inner HorizontalLayouts for **that color only**. Closed: Hit Image `active=true` + `scatterGroupToggle_inactive`. Open: Hit Image `active=false` + `scatterGroupToggle_hover`.
+- Toggle hover: closed swaps inactive/hover images; open shows/hides the Hit Image (image stays hover).
+- Selector hover: `_hover` overlay on; hover-off restores `_active` if occupied else hides the overlay.
 - Selector click: `ScatterMode.movePcToGroup(pcKeyForColor(color), N)`; reconcile HUD; close that player’s strip.
 
 Handler names go on the template so `build:xml` copies them into generated `ui/player/panel_scatter_mode_control.xml` and the Global remount snapshot.
