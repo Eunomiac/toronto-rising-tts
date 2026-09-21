@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — TOR-589 dice bags keep authored scale (layout never setScale)._
+_Last populated: 2026-09-21 — TOR-591 Blood Surge dice every-other add._
 
 ### Phases / session start
 
@@ -516,6 +516,18 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 If Standard or Rouse bags are still at 1 after Save & Play, the earlier TOR-584 pass already wrote that into the save. Set those two bag types to 1.3 once on the table, then Save. After that, layout will leave them alone.
 
 **Context:** Layout no longer calls `setScale` on `DICEBAG_*` roles, and those offset rows no longer include a `scale` field. Bags keep the size authored in the save.
+
+### Dice
+
+#### TOR-591 — Blood Surge dice should not pile on the Standard bag every second add
+
+**How to verify:** Save & Play so scripts reload. Sit a PC at a table and start a Standard (or Discipline) roll for that seat.
+
+1. Left-click that seat's Hunger bag to turn Blood Surge **on**. The Blood Surge Rouse die and the bonus dice should fan out on their rings around the Standard (normal) bag.
+2. Right-click the Hunger bag to turn Blood Surge **off**. Those dice should all leave the table — including the Rouse die. Nothing should stay hovering over the Standard bag.
+3. Repeat on/off at least four times. Every add should fan correctly. Every remove should clear every Blood Surge die.
+
+**Context:** Recycled preload-pool dice were restoring to their last tray pose, then a hover move to the Standard bag won over the arc layout. Claim now unhides at the staging pose; the bag does the one move into the ring.
 
 ---
 

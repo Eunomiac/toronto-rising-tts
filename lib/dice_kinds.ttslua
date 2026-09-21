@@ -94,11 +94,11 @@ DK.PENDING_BRUTAL_FAIL_VIOLENCE = "brutalFailViolence"
 DK.TAG_D10         = "d10"
 DK.TAG_D10_PRELOAD = "d10Preload"
 
---- Pool claim + arc staging: TTS `setPositionSmooth(..., collide, fast)` (TOR-310/318).
+--- Pool claim restores instantly at the staging pose; bag arc staging uses TTS `setPositionSmooth` (TOR-318 / TOR-591).
 DK.SPAWN_SMOOTH_COLLIDE = false
 DK.SPAWN_SMOOTH_FAST = true
 
---- Smooth-move a die to world position for roll staging (preload hover, bag→arc).
+--- Smooth-move a die to a world position (player bag arc staging).
 -- @param die Object|nil
 -- @param position table|nil
 function DK.smoothMoveDieToPosition(die, position)

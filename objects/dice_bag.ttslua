@@ -426,7 +426,7 @@ function spawnDie(bagColor, dieType, opts)
     end
 
     -- Per-ring arc slots (Rouse bag may hold manual rouse + Blood Surge rouse at different radii).
-    -- Pool claims use setPositionSmooth (TOR-310); ST tray ring layout stays instant before Roll randomize.
+    -- Pool claim restores instantly at hover; this bag owns the single smooth into the arc (TOR-318 / TOR-591).
     local useSmoothStaging = not isStorytellerBag()
     local ringCount = 0
     for _, staged in ipairs(spawnedDice) do

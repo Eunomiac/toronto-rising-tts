@@ -6,8 +6,9 @@
     via Global.call and return on destroy/remove.
 
     Parked dice use `O.hideObject` (lock, non-interactable, full invisibility, HiddenObject tag);
-    `DPP.claim` calls `O.restoreObject` before staging. Tag `d10Preload` (not `d10`) for roll scans.
-    Pool grid anchors to each bag's world X/Z and follows table layout sync.
+    `DPP.claim` calls `O.restoreObject` at the caller staging pose (never the hide snapshot)
+    so recycled dice do not replay the last tray position. Tag `d10Preload` (not `d10`) for
+    roll scans. Pool grid anchors to each bag's world X/Z and follows table layout sync.
 ]]
 
 ---@diagnostic disable: undefined-global
@@ -103,6 +104,11 @@ local function parkDie(die, bagGuid, slotIndex)
         parkPosition = pos,
         parkRotation = { x = 0, y = 180, z = 0 },
     })
+    -- Hide uses setPosition; cancel any leftover bag/claim smooth so parked dice
+    -- cannot drift back to the Standard-bag hover after Blood Surge undo (TOR-591).
+    if die.isSmoothMoving ~= nil and die.isSmoothMoving() == true and die.setPosition ~= nil then
+        die.setPosition(pos)
+    end
 end
 
 --- @param bagGuid string
@@ -296,18 +302,28 @@ function DPP.claim(bagGuid, position, rotation, scale)
         return nil
     end
     trackDie(die, bagGuid)
-    O.restoreObject(die, { locked = true, interactable = false })
+    -- Staging pose is known (bag hover / arc / ST tray). Passing it here is mandatory:
+    -- without it, restore replays the hide snapshot (last on-table arc) and a follow-up
+    -- setPositionSmooth to hover wins over the bag's arc move (TOR-591).
+    local restoreOpts = {
+        locked = true,
+        interactable = false,
+    }
+    if type(position) == "table" then
+        restoreOpts.position = position
+    else
+        restoreOpts.keepWorldPose = true
+    end
+    if type(rotation) == "table" then
+        restoreOpts.rotation = rotation
+    end
+    O.restoreObject(die, restoreOpts)
     die.script_state = " "
     DK.setDieTagsForActivePlay(die)
     if type(scale) == "number" then
         die.setScale({ scale, scale, scale })
     end
-    if type(position) == "table" then
-        DK.smoothMoveDieToPosition(die, position)
-    end
-    if type(rotation) == "table" then
-        die.setRotation(rotation)
-    end
+    -- Do not setPositionSmooth here. The bag owns the single hover→arc smooth (TOR-318).
     die.setLock(true)
     return die
 end

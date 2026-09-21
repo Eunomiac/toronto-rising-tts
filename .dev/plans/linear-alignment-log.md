@@ -770,5 +770,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-09-21 | SHIP | TOR-527 | Main/Downtime follow live scene; `downtimeClock` overlay copy. Pending Save & Play. |
 | 2026-09-21 | SHIP | TOR-579 | Spotlight carousel GUID guards vs `SEAT_FIGURE_*`. Pending Save & Play. |
 | 2026-09-21 | CREATE+SHIP | TOR-589 | Layout never `setScale` dice bags (Standard/Rouse 1.3, Hunger/OblivRouse 1.0). relatedTo TOR-584. Pending Save & Play. |
+| 2026-09-21 | CREATE+SHIP | TOR-591 | Blood Surge every-other add piled on the Standard bag: `DPP.claim` restores at staging pose, bag owns hover→arc smooth. Pending Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

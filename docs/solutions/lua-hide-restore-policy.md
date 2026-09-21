@@ -115,7 +115,7 @@ Snapshot position is **not** the primary restore authority when a catalog pose o
 | **Scatter floor / plinth** | Stay at playfield Y; PC+spectator invisibility only while Scatter is active | `ScatterMode` `applyScatterPlayfieldVisibility` (`setInvisibleTo` via `C.HideFromPcSeatsAndSpectators`) |
 | **BOTTOM_FOG emitter** | Authored at y ≈ −350 (below park threshold); Scatter plays AssetBundle Looping Effect 2/1 | `Scenes.applyFogEmitterLooping` via ScatterMode; `O.hideObject` refuses this GUID |
 
-**Preload pool (in scope):** NPC figurines + paired lights at `preload` and dice under bags use `O.hideObject` / `O.restoreObject` via `applyNpcPairPhysicalPresentation` and `core/dice_preload_pool.ttslua` (`parkDie` / `claim`).
+**Preload pool (in scope):** NPC figurines + paired lights at `preload` and dice under bags use `O.hideObject` / `O.restoreObject` via `applyNpcPairPhysicalPresentation` and `core/dice_preload_pool.ttslua` (`parkDie` / `claim`). `DPP.claim` must pass the staging `position` (bag hover / arc / ST tray) into `O.restoreObject` so recycled dice unhide at that pose — never replay the hide snapshot of the last tray slot.
 
 **Character sheet pages:** World Y selects on/off; **`GlobalHideObject` / `GlobalRestoreObject` only** for lock, invisibility, tag, and interactable (`ui/ui_csheet_core.ttslua` → `applyCsheetHideOrRestore`). XmlUI nav/root `active` is separate (`applyCsheetXmlUiActive`). Pose apply (`lib/csheet_pose.ttslua`) moves geometry only.
 
