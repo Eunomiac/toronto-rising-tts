@@ -143,7 +143,7 @@ _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred
 
 ## Camera
 
-- [x] **Scatter roll camera uses live ReferenceCameraAngles:** By-seat `roll` (and other seat presets) resolve from that seat’s laid-out `cameraAngles` / `rollBrown`. Scatter still builds group-origin rigids, then uses the same camera writer and `M.snapDefaultCamerasAfterLayout` finish as wood tables (recopy occupied seat, snap seated players to default). Pending Save & Play. _(TOR-605)_
+- [x] **Scatter roll camera uses live ReferenceCameraAngles:** By-seat presets resolve from laid-out `cameraAngles`. Scatter uses the same writer/finish as wood tables. Look-at **Y** stays at the authored constants (XZ only follows the seat). Pending Save & Play. _(TOR-605)_
 - [x] **Keep Storyteller cameraAngles synced to occupied seat on table/scene layout:** After layout writes new per-seat cameras, recopy the seat the Storyteller is sitting in before the cover transition lookAt. relatedTo **TOR-348**, **TOR-368**. Pending Save & Play. _(TOR-603)_
 - [x] **Overlay camera: quick click default, hold 1s to open picker:** Quick left-click snaps to `default` ThirdPerson with the picker closed. Hold about one second opens the picker without moving the camera. Right-click stage look unchanged. relatedTo **TOR-538**, **TOR-594**. Pending Save & Play. _(TOR-597)_
 - [x] **ThirdPerson on every camera action except overlay right-click FirstPerson:** `M.setCamera` lookAt then `setCameraMode("ThirdPerson")` and cancels a pending overlay FirstPerson settle. Overlay camera right-click still uses `M.lookAtNPC` → FirstPerson. Pending Save & Play. _(TOR-594)_

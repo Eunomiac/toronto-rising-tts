@@ -1447,8 +1447,10 @@ C.CameraModes = {
 --[[ To be clear, after R.resolveSeatObjectsFromTable() is called, the "universal" camera modes will include one of every entry in C.UniversalCameraAngles, plus the following: "facingRed", "facingBrown", "facingOrange", "facingPink" and "facingPurple", as well as some number of "facingNPC1", "facingNPC2", "facingNPC3" and "facingNPC4" depending on which slots are open in the seatToPositionMap of the new table configuration -- and then the same for "sheetRed", "sheetBrown", ... and "diceTrayRed", "diceTrayBrown", ... etc. ]]
 
 --- World-space position of the reference seat hand zone when `C.ReferenceCameraAngles` was authored.
---- `lib.rotational-seat-layout` adds `(activeTable.referenceFigurine.position - C.CameraAuthoringReferenceFigurinePosition)`
---- to **position** only for presets with `isRelativeToReferenceHandPosition == true`.
+--- `lib.rotational-seat-layout` adds the **XZ** of
+--- `(activeTable.referenceFigurine.position - C.CameraAuthoringReferenceFigurinePosition)`
+--- to camera **position** for presets with `isRelativeToReferenceHandPosition == true`.
+--- Look-at **Y** stays at the authored `C.ReferenceCameraAngles` value (sheets keep authored height).
 --- Keep in sync with the canonical layout table (currently `Table A` slot-1 figurine).
 C.CameraAuthoringReferenceHandPosition = Vector({ 0.00, 3.22, -76.61 })
 C.CameraAuthoringReferenceFigurinePosition = Vector({ 0.5035, -55.8166, -72.7348 })

@@ -1013,8 +1013,8 @@ local function ensureReferenceHandZoneAnchorSlot(referenceSlots, referencePlayer
   return referenceSlots, #referenceSlots
 end
 
---- `activeTable.referenceHand.position - C.CameraAuthoringReferenceHandPosition`. Applied to camera **position**
---- only for presets with `isRelativeToReferenceHandPosition == true`.
+--- `activeTable.referenceFigurine.position - C.CameraAuthoringReferenceFigurinePosition`, **XZ only**.
+--- Camera look-at Y stays at `C.ReferenceCameraAngles` (sheets keep authored height on every table).
 --- @param tableCfg table|nil
 --- @return Vector
 local function cameraPositionWorldOffsetForActiveTable(tableCfg)
@@ -1030,7 +1030,8 @@ local function cameraPositionWorldOffsetForActiveTable(tableCfg)
   if base == nil then
     return Vector(0, 0, 0)
   end
-  return Vector(refFig.position) - Vector(base)
+  local delta = Vector(refFig.position) - Vector(base)
+  return Vector({ x = delta.x, y = 0, z = delta.z })
 end
 
 --- Live TTS seat the Storyteller currently occupies (`player.color`, not chronicle Black).
@@ -1112,7 +1113,10 @@ local function cameraFrameFromRigid(centerPoint, deltaDeg, shift, worldPos, pitc
     rotation = Vector({ pitch or 0, yaw or 0, 0 }),
   }
   local fr = U.frameAfterRigidYawAboutCenter(cp, camFrame, deltaDeg)
-  return Vector(fr.position) + Vector(shift), Vector(fr.rotation)
+  -- Seat objects may move in Y (Scatter figurines at FLOOR_Y). Camera look-at Y stays
+  -- at the authored ReferenceCameraAngles height — same as CSHEET defaultY.
+  local sh = Vector(shift)
+  return Vector(fr.position) + Vector({ x = sh.x, y = 0, z = sh.z }), Vector(fr.rotation)
 end
 
 --- @param computed table

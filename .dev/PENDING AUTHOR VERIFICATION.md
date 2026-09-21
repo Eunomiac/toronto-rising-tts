@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — Willpower reroll dice can be picked up (Linear quota blocked a new issue; noted on TOR-31)._
+_Last populated: 2026-09-21 — TOR-605 camera look-at Y stays at authored constants; Willpower reroll dice can be picked up (Linear quota blocked a new issue; noted on TOR-31)._
 
 ### Soundscape
 
@@ -206,12 +206,12 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **How to verify:** Save & Play so scripts reload. Be in Scatter Mode. Sit as Host in a player seat whose PC is actually in a scatter group (bottom-right seat-color buttons are fine).
 
-1. Open Debug Camera and click **roll** (the short button, not rollBrown). The look-at should sit at the new higher roll height from `C.ReferenceCameraAngles.roll` (about 10.8 before scatter offset), not the old lower roll that sat at sheet height (about 5.8).
-2. Click that seat’s spoof button (Brown, Red, …). The Storyteller camera set should match that seat’s **current Scatter** cameras — same raised roll — not the previous wood-table copy or the old lower roll.
-3. Optional: leave Scatter for a wood table (cover should still snap you to that table’s default). Come back to Scatter and click **roll** again. It should still use the higher angle.
+1. Open Debug Camera and click **roll** (the short button, not rollBrown). The look-at **Y** should match `C.ReferenceCameraAngles.roll` (about **10.84**), not ~9 units lower. Same check for **sheet** (about **5.84**) and **default** (about **18.58**). Those heights should match a wood-table seat of the same color.
+2. Click that seat’s spoof button (Brown, Red, …). The Storyteller camera set should match that seat’s current Scatter cameras, including those Y values.
+3. Optional: leave Scatter for a wood table (cover should still snap you to that table’s default). Come back to Scatter and click **roll** again. Y should still be about 10.84.
 4. Sit back on Black. Storyteller Rolls / Main / Mid should still be the usual Black views.
 
-**Context:** Roll was stored in game state and could keep the old angle after you changed the constants. Occupied-seat Storyteller copies in Scatter were still leftover saved player cameras. Scatter now uses the same camera writer and the same recopy-and-snap finish as wood tables (`M.snapDefaultCamerasAfterLayout`). relatedTo **TOR-603**.
+**Context:** Roll was stored in game state and could keep the old angle. Occupied-seat Storyteller copies were leftover saved cameras. Scatter then applied the figurine floor-Y shift to look-at Y even though sheets stay at authored height. relatedTo **TOR-603**.
 
 #### TOR-603 — Storyteller camera follows the occupied seat after table or scene layout
 
