@@ -55,6 +55,17 @@
     image = ""
     color = "clear"
   />
+    <Panel class="overlay_blackout_panel"
+    active = "false"
+    width = "1920"
+    height = "1200"
+    rectAlignment = "MiddleCenter"
+    color = "rgba(0, 0, 0, 1)"
+    showAnimation = "FadeIn"
+    hideAnimation = "FadeOut"
+    animationDuration = "5"
+    raycastTarget = "false"
+  />
 </Defaults>
 
 <!-- Animation attrs also on the element (TOR-566): Defaults alone were enough for SlideIn,
@@ -69,3 +80,5 @@
   <Image id="overlay_district_card_display" class="global_blindfold_district_card" />
   <Image id="overlay_site_card_display" class="global_blindfold_site_card" />
 </Panel>
+
+<Panel id="overlay_blackoutPanel" class="overlay_blackout_panel" />
