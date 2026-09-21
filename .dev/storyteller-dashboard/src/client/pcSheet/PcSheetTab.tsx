@@ -1,8 +1,9 @@
 import { gsap } from "gsap";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent, type ReactElement } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent, type ReactElement } from "react";
 import { fetchBridgeStatus, reclaimEditorPort, releaseEditorPort } from "../ttsBridge.js";
 import { applySheetCommand, snapshotOrFixture } from "./bridge.js";
 import { applyLocal } from "./applyLocal.js";
+import { createApplyQueue } from "./applyQueue.js";
 import { fixtureSnapshot } from "./fixture.js";
 import { PageOne } from "./PageOne.js";
 import { PlayerRail } from "./PlayerRail.js";
@@ -36,15 +37,20 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
   const [status, setStatus] = useState("Checking TTS…");
   const [live, setLive] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [reclaiming, setReclaiming] = useState(false);
   const [holdingPort, setHoldingPort] = useState(false);
   const [ring, setRing] = useState<{ x: number; y: number; target: RingTarget } | null>(null);
   const inFlight = useRef(false);
   const skipLive = useRef(false);
+  const syncingRef = useRef(false);
 
   const refresh = useCallback(async (force = false): Promise<void> => {
     if (force) {
       skipLive.current = false;
+    }
+    if (!force && syncingRef.current) {
+      return;
     }
     if (inFlight.current) {
       return;
@@ -72,6 +78,9 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
         return;
       }
       const result = await snapshotOrFixture();
+      if (syncingRef.current) {
+        return;
+      }
       if (result.live) {
         setSnapshot(result.snapshot);
         setLive(true);
@@ -90,18 +99,44 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
     }
   }, []);
 
+  const refreshRef = useRef(refresh);
+  refreshRef.current = refresh;
+
+  const applyQueue = useMemo(
+    () =>
+      createApplyQueue({
+        send: applySheetCommand,
+        onSettled: (next) => {
+          setSnapshot(next);
+          setLive(true);
+          setStatus("Live from Tabletop Simulator.");
+        },
+        onFailure: (error) => {
+          setStatus(friendlyBridgeMessage(error.message));
+          skipLive.current = false;
+          inFlight.current = false;
+          void refreshRef.current(true);
+        },
+        onPendingChange: (pending) => {
+          syncingRef.current = pending > 0;
+          setSyncing(pending > 0);
+        }
+      }),
+    []
+  );
+
   useEffect(() => {
     if (!active) {
       return;
     }
     void refresh();
     const timer = window.setInterval(() => {
-      if (!busy) {
+      if (!busy && !syncing) {
         void refresh();
       }
     }, POLL_MS);
     return () => window.clearInterval(timer);
-  }, [active, busy, refresh]);
+  }, [active, busy, syncing, refresh]);
 
   useLayoutEffect(() => {
     const root = spreadRef.current;
@@ -160,30 +195,16 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
     }
   };
 
-  const apply = async (command: ApplyCommand, closeRing = true): Promise<void> => {
-    setBusy(true);
+  const apply = (command: ApplyCommand, closeRing = true): void => {
     if (closeRing) {
       setRing(null);
     }
-    try {
-      if (!live) {
-        setSnapshot((current) => applyLocal(current ?? fixtureSnapshot(), command));
-        setStatus("Stand-in sheet — changes stay on this tab until live TTS answers.");
-        return;
-      }
-      const next = await applySheetCommand(command);
-      if (next.ok) {
-        setSnapshot(next);
-        setLive(true);
-        setStatus("Applied in Tabletop Simulator.");
-      } else {
-        setStatus(friendlyBridgeMessage(next.error ?? "Apply failed."));
-      }
-    } catch (error: unknown) {
-      setStatus(error instanceof Error ? error.message : "Apply failed.");
-    } finally {
-      setBusy(false);
+    setSnapshot((current) => applyLocal(current ?? fixtureSnapshot(), command));
+    if (!live) {
+      setStatus("Stand-in sheet — changes stay on this tab until live TTS answers.");
+      return;
     }
+    applyQueue.enqueue(command);
   };
 
   const seat: SeatSnapshot | undefined = snapshot?.seats.find((row) => row.color === selected) ?? snapshot?.seats[0];
@@ -229,7 +250,7 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
           </article>
         </div>
         <div className="pc-bridge-bar">
-          <div className={`status ${live ? "success" : "idle"}`}>{status}{busy ? "  Sending…" : ""}</div>
+          <div className={`status ${live ? "success" : "idle"}`}>{status}{syncing ? "  Updating Tabletop Simulator…" : ""}{busy ? "  Sending…" : ""}</div>
           <button
             className={`pc-bridge-retry${holdingPort ? " release" : " claim"}`}
             type="button"

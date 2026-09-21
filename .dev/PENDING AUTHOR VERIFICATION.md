@@ -32,7 +32,7 @@ _Last populated: 2026-09-21 — TOR-594 camera ThirdPerson except overlay right-
 
 ### Phases / session start
 
-#### TOR-578 — Phases Advance click-again-to-confirm
+#### ✅ TOR-578 — Phases Advance click-again-to-confirm
 
 **How to verify:** Save & Play so the Phases panel XML reloads. Open the Phases tab.
 
@@ -40,7 +40,7 @@ _Last populated: 2026-09-21 — TOR-594 camera ThirdPerson except overlay right-
 2. Click **Advance →** again within about five seconds. The hint should disappear and the phase should advance.
 3. Click **Advance →** once more, then wait five seconds without a second click. The red hint should go away by itself. Closing the Phases panel should also clear it.
 
-#### TOR-580 — End→Intermission waits until the cover is down
+#### ✅ TOR-580 — End→Intermission waits until the cover is down
 
 **How to verify:** Save & Play. Advance through Play and Spotlight to End, then click **Advance →** (second click to confirm) to go to Intermission.
 
@@ -65,21 +65,21 @@ _Last populated: 2026-09-21 — TOR-594 camera ThirdPerson except overlay right-
 4. Click **Main** or **Downtime** when already on the correct one: nothing should change. Click the “wrong” one: it should snap to the correct one for whether a scene is live.
 5. If you enter Memoriam from a live scene, then click **Main**, that scene should come back. If Memoriam started with no scene, you should land in Downtime.
 
-#### TOR-579 — Spotlight uses stand-ins, not home figurines
+#### ✅ TOR-579 — Spotlight uses stand-ins, not home figurines
 
 **How to verify:** Save & Play. Advance into Spotlight.
 
 1. Home seat figurines should stay at the chairs. Each player should still be unable to see their own home figurine.
 2. The ring should show the dedicated Spotlight stand-ins. The Host console should print a line listing those stand-in GUIDs.
 
-#### TOR-586 — Load shows character sheet pages 1 and 2
+#### ✅ TOR-586 — Load shows character sheet pages 1 and 2
 
 **How to verify:** Before Save & Play, leave at least one PC sheet showing a later page (3 or 4). Save & Play.
 
 1. Every player character sheet should be showing pages 1 and 2 above the table.
 2. Later pages should be parked, not the pair you are looking at.
 
-#### TOR-592 — Left character sheet sits on the seat centerline, not 7.24 out
+#### ✅ TOR-592 — Left character sheet sits on the seat centerline, not 7.24 out
 
 **How to verify:** Save & Play so scripts reload. Apply the current table (Scenes Apply, or any action that re-lays out seats). Look at the south-facing reference seat (Table A slot 1; whoever is in chair 1).
 
@@ -87,7 +87,7 @@ _Last populated: 2026-09-21 — TOR-594 camera ThirdPerson except overlay right-
 2. The two pages should sit as a pair around **x = 0** — about **−6.12** on the left (odd pages) and **+6.12** on the right (even pages).
 3. The left page must **not** sit at **x = −7.24**. The sheet base, hand, and chair should still line up on the same centerline as those pages.
 
-#### TOR-587 — Session-start cover shows black instead of splash art
+#### ✅ TOR-587 — Session-start cover shows black instead of splash art
 
 **How to verify:** Save & Play so the Global HUD XML reloads. You should be in Intermission (or run `lua DEBUG.resetToIntermission()` in the Host console).
 
@@ -113,12 +113,12 @@ _Last populated: 2026-09-21 — TOR-594 camera ThirdPerson except overlay right-
 **How to verify:** Save & Play so the new Global functions load. Keep External Editor on, and keep the TTS Tools Cursor extension **off** (only one process can listen on the editor port).
 
 1. Open the Storyteller Dashboard and click **PCs**. The status line under the two-page spread should say it is live from Tabletop Simulator, not a stand-in fixture. You should see all five player cards on the left and a page-1 sheet plus an empty page 2. The subtitle should read like “Eighth Generation Ancilla of Clan Malkavian ◆ Descendant of the Pythia”.
-2. Select a seated player. Left-click Hunger to add a pip, right-click to remove one (no popup). Same for the XP jewel. Click Health: left-click the superficial icon to add damage, right-click to remove; fill the track then add one more and confirm a superficial box becomes aggravated. Mend should heal up to current Mending and close the menu. Humanity stain should not pile up a hidden tally while the red impaired box is showing.
+2. Select a seated player. Hunger, XP, Health, and Humanity should **move on the dashboard as soon as you click** — do not wait for Tabletop Simulator. Left-click Hunger to add a pip, right-click to remove one (no popup). Same for the XP jewel. Click Health: left-click the superficial icon to add damage, right-click to remove; fill the track then add one more and confirm a superficial box becomes aggravated. Mend should heal up to current Mending and close the menu. Humanity stain should not pile up a hidden tally while the red impaired box is showing. The in-game sheet may lag a second behind; the status line may say it is updating Tabletop Simulator.
 3. Change Desire and leave the field — the in-game Desire should update. Optional: click **Std** on the selected card and confirm a Storyteller-initiated roll starts for that seat.
 
 **Context:** `GlobalDashboardPcSheetSnapshot` / `Apply` in `core/dashboard_pc_sheet.ttslua`. Dashboard UI is local; this row is the TTS Lua. Track under Character Sheets epic TOR-38 until a TOR id can be filed.
 
-**Author Comment:** The interfacing between the dashboard and TTS is causing significant performance interruption —— at least, when _sending_ intructions; it seems to be able to update itself against changes in TTS much more speedily. Regardless, can we make the transfer of data to TTS asynchronous somehow, while keeping the display of information on the dashboar
+**Author Comment:** The interfacing between the dashboard and TTS is causing significant performance interruption —— at least, when _sending_ intructions; it seems to be able to update itself against changes in TTS much more speedily. Regardless, can we make the transfer of data to TTS asynchronous somehow, while keeping the display of information on the dashboard instant-display/feedback? Perhaps an action queue of some kind?
 
 #### ✅ CSHEET blank-base page 1 overlays + dynamic page 2 disciplines
 
@@ -130,25 +130,25 @@ _Last populated: 2026-09-21 — TOR-594 camera ThirdPerson except overlay right-
 
 **Context:** Blank CustomImage faces (author-set); one XmlUI Image per page‑1 slot; page‑2 dynamic XmlUI; Cloud jobs `csheetPage1Overlays` / `csheetPage2Assets`. Linear issue create hit workspace quota this session — track under Character Sheets epic TOR-38 until a TOR id can be filed.
 
-#### TOR-585 — Character sheet pages restore to y = 3.20
+#### ✅ TOR-585 — Character sheet pages restore to y = 3.20
 
 **How to verify:** Save & Play so scripts reload. Flip a PC sheet so a hidden page comes back on. That page should sit at y = 3.20, not 3.19.
 
 **Context:** Catalog and layout now use y = 3.20 (`C.ObjectPositions.CSHEET_PAGE`, seat-role offsets, object-script slice).
 
-#### TOR-582 — Hunger overlay defaults to 1
+#### ✅ TOR-582 — Hunger overlay defaults to 1
 
 **How to verify:** Save & Play from a cold load (File → Load, then Save & Play). Each PC Hunger overlay should match Hunger 1 (one pip), not the empty Hunger-0 art, unless you already changed that character's Hunger in play.
 
 **Context:** Missing Hunger was defaulting to 0 in bootstrap and state normalize. New or missing Hunger now defaults to 1. Saved Hunger values other than nil are unchanged.
 
-#### TOR-588 — CSHEET page 2 discipline rows should not stretch vertically
+#### ✅ TOR-588 — CSHEET page 2 discipline rows should not stretch vertically
 
 **How to verify:** Save & Play so character-sheet XML reloads. Open a PC sheet to page 2. The two discipline rows (name plates and power lists) should stay at their usual height instead of stretching taller to fill extra space on the page.
 
 **Context:** `page2_disc_row` Defaults now include `flexibleHeight="0"`.
 
-#### CSHEET page 2 — discipline fill dots + power line breaks
+#### ✅ CSHEET page 2 — discipline fill dots + power line breaks
 
 **How to verify:** Save & Play so object scripts reload. Open a PC sheet to page 2 (Black Caesar or Aishe).
 
@@ -159,7 +159,7 @@ _Last populated: 2026-09-21 — TOR-594 camera ThirdPerson except overlay right-
 
 ### Synchronization / objects
 
-#### ⌚ TOR-579 — Spotlight carousel must use preload stand-ins, not home seat figurines
+#### ✅ TOR-579 — Spotlight carousel must use preload stand-ins, not home seat figurines
 
 **How to verify:** Save & Play so scripts reload.
 
@@ -169,7 +169,7 @@ _Last populated: 2026-09-21 — TOR-594 camera ThirdPerson except overlay right-
 
 **Context:** Inbox Immediate 2026-09-21: the carousel is still using home seat figurines. **TOR-579** is Focus #1. Do not Save & Play this row until that ships. Related to **TOR-98** (Spotlight phase).
 
-#### Unified hide/restore — y = −200 parking protocol
+#### ✅ Unified hide/restore — y = −200 parking protocol
 
 **How to verify:** Save & Play so scripts reload.
 
@@ -185,7 +185,7 @@ _Last populated: 2026-09-21 — TOR-594 camera ThirdPerson except overlay right-
 
 ### Scatter / table layout
 
-#### Scatter → Table C (or any wood table) on scene Apply
+#### ✅ Scatter → Table C (or any wood table) on scene Apply
 
 **How to verify:** Save & Play so the hardening loads. This was a same-tick race (hard to force on purpose). You do **not** need to hunt for the original mess.
 
@@ -194,13 +194,13 @@ _Last populated: 2026-09-21 — TOR-594 camera ThirdPerson except overlay right-
 
 **Context:** Leaving Scatter could unhide chairs/lights from their Scatter snapshots after layout, and Table C could read its width before the wood table finished unparking. relatedTo **TOR-572** (Scatter Mode) and **TOR-573** (Scatter import / Standard switch).
 
-#### Scatter figurine height uses FLOOR_Y
+#### ✅ Scatter figurine height uses FLOOR_Y
 
 **How to verify:** Save & Play with `C.Tables.Scatter.FLOOR_Y` set to **-65** (or another value you choose). Enter Scatter and place NPCs on a group (or switch from a table that already has stage NPCs). Those figurines’ world **Y** should match `FLOOR_Y` (e.g. −65), not the old −52.89 floor. PC figurines on the same group should use the same height.
 
 **Context:** Scatter placement was letting seat-offset / restore paths keep the old −52.89 Y; NPC scatter poses now force `ScatterLayout.floorY()` after unhide. relatedTo **TOR-572**.
 
-#### Scatter enter places NPC figurines + forces lit tokens
+#### ✅ Scatter enter places NPC figurines + forces lit tokens
 
 **How to verify:** Save & Play so scripts reload.
 
@@ -230,7 +230,7 @@ _Last populated: 2026-09-21 — TOR-594 camera ThirdPerson except overlay right-
 
 **Context:** relatedTo **TOR-572** (in-game Scatter table) and **TOR-570** (dashboard scatter JSON). Dashboard Copy JSON can keep using `scatterPlacements`; chair-style import is the other legal paste.
 
-#### TOR-572 — In-game Scatter Mode
+#### ✅ TOR-572 — In-game Scatter Mode
 
 **How to verify:** Save & Play so scripts reload. You will need the Scatter control-board Cloud image already uploaded (the same file the dashboard uses).
 
@@ -255,7 +255,7 @@ _Last populated: 2026-09-21 — TOR-594 camera ThirdPerson except overlay right-
 
 ### Storyteller Dashboard
 
-#### TOR-571 — Scenes tab: token crop, board size, clock/weather, chrome
+#### ✅ TOR-571 — Scenes tab: token crop, board size, clock/weather, chrome
 
 **How to verify:** Restart the Storyteller Dashboard so port 8788 reloads (`npm run storyteller-dashboard:dev`, or stop and start the existing 8788 window). Maximize the Scenes tab at 1920×1080. No Save & Play is required unless you also re-test Import in TTS.
 
@@ -268,7 +268,7 @@ _Last populated: 2026-09-21 — TOR-594 camera ThirdPerson except overlay right-
 
 **Context:** Follow-up on **TOR-570** (Scenes tab). relatedTo **TOR-570**.
 
-#### TOR-570 — Storyteller Dashboard Scenes tab
+#### ✅ TOR-570 — Storyteller Dashboard Scenes tab
 
 **How to verify:** Restart the Storyteller Dashboard (`npm run storyteller-dashboard:dev` from the repo, or restart the existing 8788 window) so it picks up the new Scenes tab. Save & Play in TTS so the new import function is loaded. Maximize the dashboard at 1920×1080 — the Scenes tab should fit without page scroll (only pop-up pickers may scroll). Disable TTS Tools and leave External Editor on before **Import in TTS**.
 
@@ -295,7 +295,7 @@ _Last populated: 2026-09-21 — TOR-594 camera ThirdPerson except overlay right-
 
 ### Phases / session start
 
-#### Phases Quick Transition (replaces Lerp explode)
+#### ✅ Phases Quick Transition (replaces Lerp explode)
 
 **How to verify:** Save & Play so scripts and the Phases panel XML reload. Open **Phases**. Next to **Advance →** you should see a **Quick Transition** checkbox (not Lerp explode). It should start unchecked.
 
@@ -305,7 +305,7 @@ _Last populated: 2026-09-21 — TOR-594 camera ThirdPerson except overlay right-
 
 **Context:** Lerp explode path removed. Linear issue not created this session (workspace quota); noted on **TOR-559**.
 
-#### TR_Loop fade across the session-start song lead-in (TOR-567 follow-up)
+#### ✅ TR_Loop fade across the session-start song lead-in (TOR-567 follow-up)
 
 **How to verify:** Save & Play so scripts reload. Leave **Quick Transition** off on the Phases panel. Start from Intermission (cold load, or Host console `lua DEBUG.resetToIntermission()`). Click **Advance**.
 
@@ -315,7 +315,7 @@ _Last populated: 2026-09-21 — TOR-594 camera ThirdPerson except overlay right-
 
 **Context:** Default splash only. Linear issue not created this session (workspace quota); noted on **TOR-567**.
 
-#### TOR-567 — TEST BED session-start intro sequence on Advance
+#### ✅ TOR-567 — TEST BED session-start intro sequence on Advance
 
 **How to verify:** Save & Play so scripts reload. Leave **Quick Transition** off on the Phases panel. Start from Intermission (cold load, or Host console `lua DEBUG.resetToIntermission()`). Click **Advance**.
 
@@ -324,7 +324,7 @@ _Last populated: 2026-09-21 — TOR-594 camera ThirdPerson except overlay right-
 
 **Context:** Ported the confirmed TEST BED `runIntroSequence` into `SessionExplode.playAttribute`. relatedTo **TOR-559**. Lerp explode path later removed.
 
-#### TOR-566 — Global blindfold: instant hide + wrong End→Intermission splash
+#### ✅ TOR-566 — Global blindfold: instant hide + wrong End→Intermission splash
 
 **How to verify:** Save & Play so Global XML and scripts reload.
 
@@ -333,7 +333,7 @@ _Last populated: 2026-09-21 — TOR-594 camera ThirdPerson except overlay right-
 
 **Context:** End exit was incrementing `sessionNum` before the splash name was chosen; `UI.show` also reset the Image to the XML default. Hide path was snapping `active=false` / missing on-element SlideOut attrs. relatedTo **TOR-565**.
 
-#### ⌚ TOR-565 — Session-start overlay split + all-clients global blindfold
+#### ✅ TOR-565 — Session-start overlay split + all-clients global blindfold
 
 **How to verify:** First confirm CustomUIAssets were renamed (or re-run `npm run custom-ui-assets:rename-overlays:dry-run` — it should report nothing left to rename). Reload the save from the main menu, then Save & Play so the new Global XML loads.
 
@@ -346,7 +346,7 @@ _Last populated: 2026-09-21 — TOR-594 camera ThirdPerson except overlay right-
 
 **Verification Failures:** Slide-up hide was instant; End→Intermission showed a random global variant instead of the session-end splash. Follow-up **TOR-566** is shipped — verify that row instead. Do not re-run this original checklist (Lerp explode / old overlay split).
 
-#### TOR-563 — Session-start attribute-path static attrs in XML Defaults
+#### ✅ TOR-563 — Session-start attribute-path static attrs in XML Defaults
 
 **How to verify:** Save & Play so the Global HUD picks up the new Defaults (or Save & Play, then click Phases → **Refresh XML**). Leave **Quick Transition** off. From Intermission, click **Advance** to Play and watch the session-start splash: the character pairs should still Grow/FadeIn, the frame should FadeIn, the session number/title should Grow/FadeIn, the cover should FadeOut at the end, and the session-start music should still kick in after the authored lead-in. Then in the Host console run `lua DEBUG.resetToIntermission()` and Advance again — the second run should still look and time the same.
 
@@ -364,43 +364,43 @@ Separately, restart the Storyteller Dashboard with the TTS Tools extension **dis
 
 ### Tooling / assets
 
-#### TOR-564 — Memoriam panel art from Steam Cloud
+#### ✅ TOR-564 — Memoriam panel art from Steam Cloud
 
 **How to verify:** Finish uploading the Memoriam panel images to Cloud Manager (`Vampire the Masquerade 5E/Memoriam`, named like `blackCaesar37_a.jpg`). With Steam running, run `npm run cloud-asset-sync:catalog` from the repo root — it should report a `memoriamPanels` job with every file kept and none skipped, then write `lib/cloud_catalog.ttslua`. Save & Play. In the Host console, look for one line starting `[constants] Memoriam panel art:` — it should say how many panels were linked from Cloud, how many catalog panels still have no art, and (only if something is misnamed) list Cloud files that match no period. Then run `lua print(C.resolveMemoriamPanelURL("blackCaesar37", "panelA"))` — you should see a `steamusercontent` URL, not an error. Optionally `lua log(C.getMemoriamPanelsWithoutArt())` lists any panels still waiting for art; when the upload is complete that list should be empty. When I regenerated the catalog mid-upload, the 27 missing panels were all Rashid periods.
 
 **Context:** Cloud is the source of truth for `C.MemoriamSkyboxes[key].panelA–D.url`. The sheet no longer emits panel or NPC image URLs (**TOR-577**). The Memoriam apply path (**TOR-101**) should call `C.resolveMemoriamPanelURL(skyboxKey, panelKey)`, which errors loudly when art is missing. The Memoriam popup itself does not read the URLs yet.
 
-#### TOR-574 — Cloud sync skips missing folders; Memoriam NPC keys keep `mem_`
+#### ✅ TOR-574 — Cloud sync skips missing folders; Memoriam NPC keys keep `mem_`
 
 **How to verify:** Run **BUILD PIPELINE (Full)** (or `npm run cloud-asset-sync -- --yes-purge`) while the Memoriam NPC Cloud folders are still empty or missing. The build should finish. You should see `SKIP: no matching Cloud files` for the three Memoriam NPC jobs, not a failed build. Save & Play. In the Host console, `lua print(C.cloudCatalogURL(Cloud.MemoriamNpcFigurines, "mem_maximillianSteele"))` should print an empty line (no error). After you upload `mem_maximillianSteele.webp` plus `tokenFront_mem_maximillianSteele.webp` / `tokenBack_mem_maximillianSteele.webp` and re-run `npm run cloud-asset-sync:catalog`, that same print should show a steamusercontent URL, and a sheet NPC whose Key is `mem_maximillianSteele` should pick up the matching figurine and token URLs.
 
 **Context:** relatedTo **TOR-564** (Memoriam panel art). Missing Cloud art is an empty URL, not a build abort. Token Cloud keys are `tokenFront_mem_<stem>` / `tokenBack_mem_<stem>` when the NPC Key is `mem_<stem>` (see **TOR-576**).
 
-#### TOR-575 — Memoriam figurine shared back from `mem_BACK.webp`
+#### ✅ TOR-575 — Memoriam figurine shared back from `mem_BACK.webp`
 
 **How to verify:** Put `mem_BACK.webp` in Steam Cloud `NPC Cutouts/Memoriam/Figurines` (same folder as the character fronts). With Steam running, run `npm run cloud-asset-sync:catalog` from the repo root — the `memoriamNpcFigurines` job should keep `mem_BACK.webp` as catalog key `mem_BACK`. Save & Play. In the Host console, `lua print(C.cloudCatalogURL(Cloud.MemoriamNpcFigurines, "mem_BACK"))` should show a steamusercontent URL. Then pick any real Memoriam NPC on a period (for example Lucien 19’s first filled slot) and print `figurine.back` — it should be that same URL, not that NPC’s front. There should be no Memoriam character named BACK; `mem_BACK` is only the reverse image.
 
 **Context:** Same idea as generic `Back_00.webp`. relatedTo **TOR-574** (Memoriam NPC Cloud keys). If the file is not uploaded yet, that print should be an empty line, not an error.
 
-#### TOR-576 — Memoriam token Cloud keys `tokenFront_mem_` / `tokenBack_mem_`
+#### ✅ TOR-576 — Memoriam token Cloud keys `tokenFront_mem_` / `tokenBack_mem_`
 
 **How to verify:** Upload token files named like `tokenFront_mem_maximillianSteele.webp` and `tokenBack_mem_maximillianSteele.webp` (not `mem_tokenFront_…`). Run `npm run cloud-asset-sync:catalog`, then Save & Play. In the Host console, `lua print(C.cloudCatalogURL(Cloud.MemoriamNpcTokenFronts, "tokenFront_mem_maximillianSteele"))` should show a steamusercontent URL. A sheet NPC whose Key is `mem_maximillianSteele` should pick up that token front (and the matching `tokenBack_mem_` back).
 
 **Context:** Matches generic/other NPC token filenames. relatedTo **TOR-574**.
 
-#### TOR-577 — Memoriam sheet import drops panel/NPC URL columns
+#### ✅ TOR-577 — Memoriam sheet import drops panel/NPC URL columns
 
 **How to verify:** Open `lib/skyboxes_catalog.ttslua` and jump to `MemoriamSkyboxes`. Period rows should have panel display/weather/audio, but **no** `url =` on panels and **no** `tokenURL` / `figurineURL` on NPC slots. Scene skyboxes above that (`SkyboxesCatalog.Skyboxes`) should still have their URLs — those still come from the sheet. Save & Play. In the Host console, `lua print(C.resolveMemoriamPanelURL("lucien19", "panelA"))` should still show a steamusercontent URL if that Cloud file is uploaded (Constants fills `panel.url` from Cloud at load). You should not see `#REF!` as a panel URL.
 
 **Context:** relatedTo **TOR-564** (Memoriam panel art from Cloud). The Google Sheet is no longer a source of Memoriam image URLs.
 
-#### TOR-529 — Memoriam catalog NPCs: `name`, `fullName`, `figurineScale`
+#### ✅ TOR-529 — Memoriam catalog NPCs: `name`, `fullName`, `figurineScale`
 
 **How to verify:** Confirm the Memoriam sheet has `NPC 1 Key`, `NPC 1 Label`, and (optional) `NPC 1 Scale` columns through NPC 10, then run `npm run skyboxes:import` (or **BUILD PIPELINE (Full)**). Open `lib/skyboxes_catalog.ttslua` and jump to a period that has people — for example Lucien 2. Each filled NPC slot should look like `name`, `fullName`, and `figurineScale` (53 unless that row has a Scale number). Empty slots should still have those three fields, with blank name/fullName and scale 53. There should be no `label =` on those slots. Save & Play. Open Phases → Memoriam and pick that period: the NPC picker should show the `fullName` text, not a blank.
 
 **Context:** Sheet Key/Label/Scale → catalog fields that match `lib/npcs_data.ttslua`. Cloud still fills image URLs from `npc.name` at load. Follow-up on **TOR-577** (dropped URL fields). Linear could not create a new issue this session (workspace issue cap).
 
-#### TOR-558 — Cloud asset sync (CustomUIAssets + Cloud catalog)
+#### ✅ TOR-558 — Cloud asset sync (CustomUIAssets + Cloud catalog)
 
 **How to verify:** With Steam running and logged into the chronicle account, run `npm run cloud-asset-sync:dry-run` from the repo root. You should see the `siteCards` job keep ~170 Sites images and list any stale `siteCard_*` names, plus a `LuaCatalog` plan for `Cloud.Sites`. Then either run `npm run cloud-asset-sync` in a normal terminal (answer **y** if it asks about removing stale names) or run **BUILD PIPELINE (Full)** / `npm run build:full` (that path auto-accepts purges). Reload save **230** in Tabletop Simulator. Site card art should still resolve; after a catalog write, `print(Cloud.Sites and Cloud.Sites.AnarchBar and Cloud.Sites.AnarchBar.URL)` in the TTS console should show a hosted URL.
 
@@ -408,7 +408,7 @@ Separately, restart the Storyteller Dashboard with the TTS Tools extension **dis
 
 ### Dashboard
 
-#### TOR-555 — Saved search tags and Lua Execute Code
+#### ✅ TOR-555 — Saved search tags and Lua Execute Code
 
 **How to verify:** Restart the **STORYTELLER DASHBOARD** task. On **Stage NPCs**, type `dog angry` and click **+**. Both words should appear as buttons on the left, sorted A–Z, and stay selected. Click **angry** — it should leave the search box and the grid should widen; click it again to put it back. Tags should still be there after a browser refresh.
 
@@ -426,7 +426,7 @@ Then **disable the TTS Tools extension** (only one editor can listen on 39998). 
 
 **Context:** Earlier run: Assets, Emitters, and Figurines restore steps succeeded; step 2 timed out and drove **TOR-444**. Deferred from Focus until you can gather testers.
 
-#### TOR-507 — Numbered table slots and figurine offsets
+#### ✅ TOR-507 — Numbered table slots and figurine offsets
 
 **How to verify:** Save & Play so the new scripts load. On Table A, Red should still sit in the center-front chair, Orange on Red’s right, and Pink on Red’s left; empty chairs should be plain wood with no spare throne. Switch to Table C from the Scenes panel — the same occupant order should hold, and cameras should still look at the person in that chair. Switching to Table B now randomizes packed seating (**TOR-537**). On the PCs panel, turn Absent on for one player: their pile should drop under the table like an unused NPC. Turn Absent off: they should take the lowest free chair, or you should get an error if the table is full. Hidden character-sheet pages should stay hidden. The signal fire should sit at table height (about Y 7.85), not the tiny hide scale. If you Import or Apply a library scene that is missing a chair number on an in-session PC, you should get a named error, not a silent fallback.
 
