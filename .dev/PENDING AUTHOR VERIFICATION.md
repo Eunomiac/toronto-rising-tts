@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — TOR-598 session-start prologue overlay; TOR-599 End EPILOGUE._
+_Last populated: 2026-09-21 — TOR-600 prologue overlay word-gap spaces._
 
 ### Soundscape
 
@@ -64,11 +64,20 @@ _Last populated: 2026-09-21 — TOR-598 session-start prologue overlay; TOR-599 
 
 **How to verify:** Save & Play so scripts reload. On the Phases panel, set the session number (for example 1) and type a session title such as `The Devils You Know`. Start from Intermission with no scene on the table (Host console `lua DEBUG.resetToIntermission()` is fine).
 
-1. Click **Advance** to Play. After the cover, the center overlay should show **T O R O N T O   R I S I N G** on the top line, **– I –** (or the matching compact roman for your session number) in the middle, the title as spaced uppercase (for that example **T H E   D E V I L S   Y O U   K N O W**), and **PROLOGUE** on the bottom. It should not say **DOWNTIME**, and there should be no date or district/site.
+1. Click **Advance** to Play. After the cover, the center overlay should show **T O R O N T O   R I S I N G** on the top line (a clearly wider gap between TORONTO and RISING than between letters), **– I –** (or the matching compact roman for your session number) in the middle, the title as spaced uppercase (for that example **T H E   D E V I L S   Y O U   K N O W**, with the same wider gaps between words), and **PROLOGUE** on the bottom. It should not say **DOWNTIME**, and there should be no date or district/site.
 2. Apply a library scene. The overlay should go back to the usual red date, location, and clock (not gold title / PROLOGUE).
 3. End that scene. You should land in Downtime with a date and the word **DOWNTIME** — not the prologue layout again.
 
-**Context:** Only the first Intermission→Play Downtime uses this layout. relatedTo **TOR-527**.
+**Context:** Only the first Intermission→Play Downtime uses this layout. relatedTo **TOR-527**. Word gaps use non-breaking spaces so Unity does not collapse them (**TOR-600**).
+
+#### TOR-600 — Prologue overlay word gaps stay three spaces wide
+
+**How to verify:** Save & Play so scripts reload, then use the same Intermission → Play check as **TOR-598**.
+
+1. **T O R O N T O   R I S I N G** must have a visibly wider gap between the two words than between letters. Same for **T H E   D E V I L S   Y O U   K N O W** — four words, three wider gaps.
+2. It must not look like one run of letters: `T O R O N T O R I S I N G`.
+
+**Context:** Follow-up to **TOR-598**. TTS collapses ordinary double spaces; the overlay now uses non-breaking spaces between words.
 
 #### TOR-599 — End overlay says EPILOGUE
 

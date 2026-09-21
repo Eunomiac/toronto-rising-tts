@@ -59,7 +59,10 @@ local OVERLAY_SESSION_NUMBER_PLAY_COLOR = "#CC0000"
 local OVERLAY_SESSION_NUMBER_PROLOGUE_COLOR = "#990000"
 local OVERLAY_SEPARATOR_PLAY_COLOR = "#CC0000"
 local OVERLAY_SEPARATOR_PROLOGUE_COLOR = "#FF0000"
-local OVERLAY_PROLOGUE_BANNER = "T O R O N T O   R I S I N G"
+-- Unity XmlUI collapses consecutive ASCII spaces; word gaps use NBSP (U+00A0).
+local OVERLAY_NBSP = "\194\160"
+local OVERLAY_WORD_GAP = OVERLAY_NBSP .. OVERLAY_NBSP .. OVERLAY_NBSP
+local OVERLAY_PROLOGUE_BANNER = "T O R O N T O" .. OVERLAY_WORD_GAP .. "R I S I N G"
 
 --- Last session-scene fingerprint; bust text cache when district/site/clock changes.
 local lastSessionSceneOverlayFingerprint = nil
@@ -103,7 +106,7 @@ local function trimString(s)
     return t
 end
 
---- Session title: uppercase, one space between letters, three spaces between words (TOR-598).
+--- Session title: uppercase, one space between letters, three NBSP between words (TOR-598 / TOR-600).
 --- @param title string|nil
 --- @return string
 local function formatSpacedUppercaseTitle(title)
@@ -120,7 +123,7 @@ local function formatSpacedUppercaseTitle(title)
         end
         words[#words + 1] = table.concat(letters, " ")
     end
-    return table.concat(words, "   ")
+    return table.concat(words, OVERLAY_WORD_GAP)
 end
 
 --- Compact ASCII roman (no spaces) for prologue separator, e.g. session 1 → `I` (TOR-598).
