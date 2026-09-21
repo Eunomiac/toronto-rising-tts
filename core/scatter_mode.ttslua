@@ -1049,6 +1049,10 @@ local function applyPcRigs(framesBySlot, occupants)
         RSL.applyCameraModesFromComputed(computed, { tableCfg = tableA })
     end
     applyScatterPlayerCameras(occupants)
+    local CameraDebugFocus = require("core.camera_debug_focus")
+    if type(CameraDebugFocus.resyncStorytellerCameraForOccupiedSeat) == "function" then
+        CameraDebugFocus.resyncStorytellerCameraForOccupiedSeat()
+    end
 end
 
 --- Apply PC satellites + NPC stage poses from live scatterPlacements.

@@ -431,9 +431,8 @@ local function occupiedSeatColorForStoryteller()
     for i = 1, #seated do
         local player = seated[i]
         if U.isPlayer(player) and S.getStorageID(player) == C.StorytellerID then
-            if C ~= nil and type(C.GetPlayerColor) == "function" then
-                return C.GetPlayerColor(player) or player.color
-            end
+            -- Live TTS seat. Do not use C.GetPlayerColor: that can still resolve
+            -- the Host as Black after they sat in a PC seat (TOR-605).
             return player.color
         end
     end
@@ -531,8 +530,8 @@ function CameraDebugFocus.onSpoofColor(player, color)
         return true, "Storyteller cameraAngles restored from C.StorytellerCameraAngles."
     end
 
-    local pdata = S.getPlayerData(color)
-    if type(pdata) ~= "table" or type(pdata.cameraAngles) ~= "table" then
+    local angles = seatCameraAnglesForCopy(color)
+    if type(angles) ~= "table" then
         local msg = "No cameraAngles for seat '" .. color .. "'."
         U.AlertGM("CameraDebugFocus.onSpoofColor: " .. msg)
         if player and player.color then
@@ -542,8 +541,7 @@ function CameraDebugFocus.onSpoofColor(player, color)
     end
     activeSpoofColor = color
     refreshSpoofButtons()
-    -- Deep-enough copy for nested angle tables (U.clone is shallow only; see lib/util.ttslua).
-    S.setStateVal(U.merge({}, pdata.cameraAngles), "playerData", C.StorytellerID, "cameraAngles")
+    S.setStateVal(U.merge({}, angles), "playerData", C.StorytellerID, "cameraAngles")
     return true, "Storyteller cameraAngles copied from " .. color .. "."
 end
 

@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — TOR-605 Scatter roll camera follows live ReferenceCameraAngles._
+_Last populated: 2026-09-21 — TOR-605 Scatter occupied-seat Storyteller camera copy uses live seat cameras._
 
 ### Soundscape
 
@@ -204,13 +204,14 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 #### TOR-605 — Scatter roll camera uses the raised ReferenceCameraAngles position
 
-**How to verify:** Save & Play so scripts reload. Be in Scatter Mode. Sit in a player seat (or use the bottom-right seat-color buttons). Start a normal player roll, or open Debug Camera and click **roll** (the short button, not rollBrown).
+**How to verify:** Save & Play so scripts reload. Be in Scatter Mode. Sit as Host in a player seat whose PC is actually in a scatter group (bottom-right seat-color buttons are fine).
 
-1. The look-at should sit at the new higher roll height from `C.ReferenceCameraAngles.roll` (about 10.8 before scatter offset), not the old lower roll that sat at sheet height (about 5.8).
-2. Optional: switch to a wood table and back to Scatter, then roll again. The roll camera should still use that higher angle, not a leftover from the previous table.
-3. Sit back on Black. Storyteller Rolls / Main / Mid should still be the usual Black views.
+1. Open Debug Camera and click **roll** (the short button, not rollBrown). The look-at should sit at the new higher roll height from `C.ReferenceCameraAngles.roll` (about 10.8 before scatter offset), not the old lower roll that sat at sheet height (about 5.8).
+2. Click that seat’s spoof button (Brown, Red, …). The Storyteller camera set should match that seat’s **current Scatter** cameras — same raised roll — not the previous wood-table copy or the old lower roll.
+3. Optional: leave Scatter for a wood table and come back, then click **roll** again. It should still use the higher angle.
+4. Sit back on Black. Storyteller Rolls / Main / Mid should still be the usual Black views.
 
-**Context:** Roll was stored in game state and could keep the old angle after you changed the constants. relatedTo **TOR-603**.
+**Context:** Roll was stored in game state and could keep the old angle after you changed the constants. Occupied-seat Storyteller copies in Scatter were still the leftover saved player cameras. relatedTo **TOR-603**.
 
 #### TOR-603 — Storyteller camera follows the occupied seat after table or scene layout
 

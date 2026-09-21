@@ -1033,6 +1033,65 @@ local function cameraPositionWorldOffsetForActiveTable(tableCfg)
   return Vector(refFig.position) - Vector(base)
 end
 
+--- Live TTS seat the Storyteller currently occupies (`player.color`, not chronicle Black).
+--- @return string|nil
+local function storytellerOccupiedSeatColor()
+  if Player == nil or type(Player.getPlayers) ~= "function" then
+    return nil
+  end
+  if S == nil or type(S.getStorageID) ~= "function" or C == nil then
+    return nil
+  end
+  local seated = Player.getPlayers() or {}
+  for i = 1, #seated do
+    local player = seated[i]
+    if U.isPlayer(player) and S.getStorageID(player) == C.StorytellerID then
+      local color = player.color
+      if type(color) == "string" and color ~= "" then
+        return color
+      end
+    end
+  end
+  return nil
+end
+
+--- JSON-safe `{ x, y, z }` so `S.setStateVal` cannot skip a whole camera map for Vector userdata.
+--- @param pos Vector|table
+--- @return table
+local function cameraPositionJson(pos)
+  local v = Vector(pos)
+  return {
+    x = tonumber(v.x) or 0,
+    y = tonumber(v.y) or 0,
+    z = tonumber(v.z) or 0,
+  }
+end
+
+--- Copy freshly computed PC cameras onto the Storyteller when they occupy that seat (TOR-605).
+--- Prefer the in-memory layout map so Scatter does not recopy leftover saved angles.
+--- @param playerAnglesById table|nil
+local function copyOccupiedSeatCamerasOntoStoryteller(playerAnglesById)
+  if C == nil or C.StorytellerID == nil then
+    return
+  end
+  local occColor = storytellerOccupiedSeatColor()
+  if not isPlayerSeatKey(occColor) then
+    return
+  end
+  local pid = chroniclePlayerIdForSeatKey(occColor)
+  local angles = nil
+  if pid ~= nil and type(playerAnglesById) == "table" then
+    angles = playerAnglesById[pid]
+  end
+  if type(angles) ~= "table" and pid ~= nil then
+    angles = S.getStateVal("playerData", pid, "cameraAngles")
+  end
+  if type(angles) ~= "table" then
+    return
+  end
+  S.setStateVal(U.merge({}, angles), "playerData", C.StorytellerID, "cameraAngles")
+end
+
 --- Apply a seat's precomputed **rigid transform** (yaw `deltaDeg` about `centerPoint`, then `shift`) to
 --- a camera frame, so per-seat camera presets land with the seat. The seat's `{ deltaDeg, shift }` comes
 --- from `computed.seatRigidByKey` (populated identically by circular + facing generators), so camera and
@@ -1151,7 +1210,7 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
         )
         universalAngles[modeKey] = {
           cameraMode = modeVal.cameraMode or "ThirdPerson",
-          position = { x = shiftedPos.x, y = shiftedPos.y, z = shiftedPos.z },
+          position = cameraPositionJson(shiftedPos),
           pitch = pitch,
           yaw = yaw,
           distance = distance,
@@ -1190,7 +1249,7 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
           redMode.pitch or 0,
           redMode.yaw or 0
         )
-        local shiftedPosTable = { x = shiftedPos.x, y = shiftedPos.y, z = shiftedPos.z }
+        local shiftedPosTable = cameraPositionJson(shiftedPos)
         local pitch, yaw, distance = normalizeCameraAngles(
           shiftedRot.x,
           shiftedRot.y,
@@ -1215,7 +1274,7 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
             end
             row[modeKey] = {
               cameraMode = camMode,
-              position = { x = shiftedPos.x, y = shiftedPos.y, z = shiftedPos.z },
+              position = cameraPositionJson(shiftedPos),
               pitch = pitch,
               yaw = yaw,
               distance = distance,
@@ -1232,8 +1291,9 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
     S.setStateVal(angles, "playerData", playerID, "cameraAngles")
   end
   S.setStateVal(universalAngles, "seatLayout", "universalCameraAngles")
-  -- Layout writes chronicle-PC cameraAngles. If the Storyteller is occupying a PC seat,
-  -- recopy those new angles onto Storyteller state before any transition lookAt (TOR-603).
+  -- Scatter has no later cover recopy. Copy the just-computed seat map onto the
+  -- Storyteller using live TTS seat color, then restore Black presets if needed (TOR-605).
+  copyOccupiedSeatCamerasOntoStoryteller(playerAnglesById)
   local CameraDebugFocus = require("core.camera_debug_focus")
   if type(CameraDebugFocus.resyncStorytellerCameraForOccupiedSeat) == "function" then
     CameraDebugFocus.resyncStorytellerCameraForOccupiedSeat()
