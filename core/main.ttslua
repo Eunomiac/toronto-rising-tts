@@ -222,7 +222,9 @@ end
     @usage M.setCamera("ALL", "GM_VIEW") -- Set camera for all players
     @usage M.setCamera("Red", nil, Vector(0, 5, 0)) -- Custom look-at position
 
-    Applies preset positions from `C.CameraAngles` (or a custom look-at).
+    Applies preset positions from `C.CameraAngles` (or a custom look-at), then
+    `setCameraMode("ThirdPerson")`. Overlay right-click stage look is `M.lookAtNPC`
+    and is the only path that switches to FirstPerson.
 ]]
 
 --- Resolve a named camera preset for an already-converted Player object.
@@ -294,8 +296,18 @@ function M.resolveCameraPreset(player, cameraMode)
   return cameraPreset
 end
 
---- Per-player generation so a rapid second right-click cancels an in-flight settle.
+--- Per-player generation so a later camera action cancels an in-flight overlay FirstPerson settle.
 local lookAtNpcGen = {}
+
+--- Bump (and thus cancel) any in-flight overlay FirstPerson settle for this player.
+--- @param player Player
+--- @return string genKey
+--- @return number gen
+local function bumpLookAtNpcGeneration(player)
+  local genKey = tostring((player and player.color) or "")
+  lookAtNpcGen[genKey] = (tonumber(lookAtNpcGen[genKey]) or 0) + 1
+  return genKey, lookAtNpcGen[genKey]
+end
 
 --- Eye height used when yawing toward a staged figurine (horizon-only; players pitch up in FirstPerson).
 local LOOK_AT_NPC_Y = 30
@@ -327,9 +339,7 @@ function M.lookAtNPC(player, npcPositionVector)
     end
   end
 
-  local genKey = tostring(player.color or "")
-  lookAtNpcGen[genKey] = (tonumber(lookAtNpcGen[genKey]) or 0) + 1
-  local gen = lookAtNpcGen[genKey]
+  local genKey, gen = bumpLookAtNpcGeneration(player)
   U.chain({
     function()
       if not U.isPlayer(player) then
@@ -406,9 +416,6 @@ function M.setCamera(player, cameraMode, lookAtPos)
     return
   end
 
-  -- Set camera mode to cameraPreset.cameraMode if present, or ThirdPerson by default
-  local playerCameraMode = (cameraPreset and cameraPreset.cameraMode) or "ThirdPerson"
-
   -- Build camera data table for lookAt() - must include position, pitch, yaw, and distance
   local cameraData = nil
   if lookAtPos ~= nil then
@@ -429,52 +436,13 @@ function M.setCamera(player, cameraMode, lookAtPos)
     end
   end
 
+  -- Overlay right-click (M.lookAtNPC) is the only FirstPerson path. Every other camera
+  -- action stays ThirdPerson. lookAt() is supposed to force ThirdPerson, but it can
+  -- no-op when the pose is already close and leave the player in FirstPerson.
   if cameraData and cameraData.position then
-    -- lookAt() can no-op when incoming values are too close to current camera state.
-    -- Nudge to an intermediate transform first, then apply the requested transform.
-    local function getCameraNumber(v, fallback)
-      local n = tonumber(v)
-      if n == nil then
-        return fallback
-      end
-      return n
-    end
-
-    local function getIntermediateCameraData(finalCameraData)
-      local intermediate = U.clone(finalCameraData)
-      intermediate.pitch = getCameraNumber(intermediate.pitch, 45)
-      intermediate.distance = getCameraNumber(intermediate.distance, 15)
-
-      if intermediate.pitch > 45 then
-        intermediate.pitch = intermediate.pitch - 2
-      else
-        intermediate.pitch = intermediate.pitch + 2
-      end
-      if intermediate.distance > 15 then
-        intermediate.distance = intermediate.distance - 2
-      else
-        intermediate.distance = intermediate.distance + 2
-      end
-      return intermediate
-    end
-
-    local intermediateCameraData = getIntermediateCameraData(cameraData)
-    -- Match debug-camera behavior: nudge away from the current pose first, then apply the
-    -- requested preset. Applying the final lookAt immediately can no-op when deltas are tiny.
-    U.chain({
-      -- function()
-      --   player.lookAt(intermediateCameraData)
-      --   return 1
-      -- end,
-      function()
-        player.lookAt(cameraData)
-        return 3
-      end,
-      -- function()
-      --   player.setCameraMode(playerCameraMode)
-      --   return 1
-      -- end
-    })
+    bumpLookAtNpcGeneration(player)
+    player.lookAt(cameraData)
+    player.setCameraMode("ThirdPerson")
   end
 end
 

@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — TOR-593 Ravenwing theme replaces Main._
+_Last populated: 2026-09-21 — TOR-594 camera ThirdPerson except overlay right-click FirstPerson._
 
 ### Soundscape
 
@@ -547,6 +547,19 @@ If Standard or Rouse bags are still at 1 after Save & Play, the earlier TOR-584 
 3. Repeat on/off at least four times. Every add should fan correctly. Every remove should clear every Blood Surge die.
 
 **Context:** Recycled preload-pool dice were restoring to their last tray pose, then a hover move to the Standard bag won over the arc layout. Claim now unhides at the staging pose; the bag does the one move into the ring.
+
+### Camera
+
+#### TOR-594 — ThirdPerson except overlay camera right-click FirstPerson
+
+**How to verify:** Save & Play so Global scripts reload. Sit as a player character.
+
+1. Right-click the bottom-left camera button. After about a quarter-second you should be in FirstPerson so you can look around the stage (tilt with the mouse).
+2. Left-click that same camera button. You should snap to your usual default table view in ThirdPerson (the normal table camera, not a walking look).
+3. Open the camera picker and click sheet, dice tray, or another preset. Each one should also be ThirdPerson.
+4. Right-click the camera button again to go FirstPerson, then immediately click a picker preset (or left-click the camera button). You should not stay stuck in FirstPerson.
+
+**Context:** Overlay right-click is the only scripted FirstPerson camera. Other camera snaps were leaving players in FirstPerson because lookAt can no-op and a delayed FirstPerson switch was not cancelled.
 
 ---
 

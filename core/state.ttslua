@@ -213,21 +213,21 @@ end
 local function getDefaultPlayerCameraAngles()
     return {
       default = {
-        cameraMode = "FirstPerson",
+        cameraMode = "ThirdPerson",
         position = Vector({0, 0, 0}),
         pitch = 0,
         yaw = 0,
         distance = 0
       },
       sheet = {
-        cameraMode = "FirstPerson",
+        cameraMode = "ThirdPerson",
         position = Vector({0, 0, 0}),
         pitch = 0,
         yaw = 0,
         distance = 0
       },
       diceTray = {
-        cameraMode = "FirstPerson",
+        cameraMode = "ThirdPerson",
         position = Vector({0, 0, 0}),
         pitch = 0,
         yaw = 0,

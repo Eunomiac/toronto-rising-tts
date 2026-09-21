@@ -515,7 +515,8 @@ Animated Scene Time jumps (TOR-222 / TOR-470). Mid-lerp: overlay date/time text 
 | `M.advancePhaseNext()` | Advance one step in `C.PhaseSequence` | Storyteller Advance button |
 | `M.setPlaySubPhase(sub)` | Free switch Main/Downtime/Memoriam during Play | Phases panel sub buttons |
 | `M.syncPhase()` | Log/align UI with `currentPhase` + `playSubPhase` | Load / after advance |
-| `M.setCamera(player, cameraMode, lookAtPos)` | Set camera angle (nudge → lookAt → setCameraMode → 1s wait → repeat lookAt to snap) | Cinematic control |
+| `M.setCamera(player, cameraMode, lookAtPos)` | LookAt the preset (or custom position), then `setCameraMode("ThirdPerson")`. Cancels a pending overlay FirstPerson settle. Overlay right-click stage look is `M.lookAtNPC`. | Cinematic control |
+| `M.lookAtNPC(player, npcPositionVector)` | Elevated default lookAt, yaw toward a staged figurine, then FirstPerson after 0.25s (overlay camera right-click) | Stage look (TOR-538 / TOR-562 / TOR-594) |
 | `M.onObjectDrop(playerColor, droppedObject, zone)` | Handle object drops | Event delegation |
 | `M.onPlayerAction(playerColor, action, clickState)` | Handle player actions | Custom hotkeys |
 

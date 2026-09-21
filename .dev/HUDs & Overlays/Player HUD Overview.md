@@ -510,12 +510,12 @@ Per-seat overlay picker (`ui/.templates/panel_overlay_camera.xml` → `HUD_camer
 
 - **MAIN** (`cameraControl_default_*`): left-click → `default`; right-click → `wideFacing` (universal preset in `C.UniversalCameraAngles`).
 - Other controls map to `diceTray` / `sheet` (self or other-seat suffixes) via `parseCameraControlIdToMode`.
-- Each click calls `Main.setCamera` and collapses the picker.
+- Each click calls `Main.setCamera` (ThirdPerson) and collapses the picker.
 
 The overlay **camera icon** (`popout_cameraPanel_*` / `HUD_popoutCameraControl_click`):
 
-- **Left-click:** opens the preset picker **and** snaps that player to their `default` table camera.
-- **Right-click:** clones that seat’s `default` lookAt preset, raises the focus to **y = 30**, sets **pitch = 0**, retargets **yaw** toward the lead figurine in the next occupied stage area (same-height `Vector:heading("y")` with `U.cycle(heading, 0, 360)`), and **keeps `distance` unchanged** so the view turns around the usual focus. After a short settle, switches to FirstPerson so the player can pitch up manually (scripted lookAt cannot aim above the horizon). Further right-clicks advance Center → Center Left → … → Far Right (skip empty) and loop. Control-board Apply resets the cycle. Empty stage: same elevate + FirstPerson, default yaw kept.
+- **Left-click:** opens the preset picker **and** snaps that player to their `default` table camera in **ThirdPerson**.
+- **Right-click:** clones that seat’s `default` lookAt preset, raises the focus to **y = 30**, sets **pitch = 0**, retargets **yaw** toward the lead figurine in the next occupied stage area (same-height `Vector:heading("y")` with `U.cycle(heading, 0, 360)`), and **keeps `distance` unchanged** so the view turns around the usual focus. After a short settle, switches to **FirstPerson** so the player can pitch up and look around the stage (scripted lookAt cannot aim above the horizon). This is the only scripted FirstPerson camera path. Further right-clicks advance Center → Center Left → … → Far Right (skip empty) and loop. Control-board Apply resets the cycle. Empty stage: same elevate + FirstPerson, default yaw kept. Any later `Main.setCamera` (picker, sheet, dice tray, scene snap, and so on) cancels a pending FirstPerson settle and returns the player to ThirdPerson.
 
 ## LEFT SIDEBAR
 

@@ -1129,7 +1129,7 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
           modeVal.distance or 0
         )
         universalAngles[modeKey] = {
-          cameraMode = modeVal.cameraMode or "FirstPerson",
+          cameraMode = modeVal.cameraMode or "ThirdPerson",
           position = { x = shiftedPos.x, y = shiftedPos.y, z = shiftedPos.z },
           pitch = pitch,
           yaw = yaw,
@@ -1175,7 +1175,7 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
           shiftedRot.y,
           redMode.distance or 0
         )
-        local camMode = redMode.cameraMode or "FirstPerson"
+        local camMode = redMode.cameraMode or "ThirdPerson"
         universalAngles[modeKey .. seatKey] = {
           cameraMode = camMode,
           position = shiftedPosTable,
