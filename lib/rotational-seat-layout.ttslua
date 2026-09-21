@@ -483,6 +483,26 @@ local function isPlayerSeatKey(seatKey)
   return PLAYER_COLOR_SET[string.upper(seatKey)] == true
 end
 
+--- Chronicle PC steam id for a player seat (never the Host Storyteller row while they occupy that seat).
+--- @param seatKey string
+--- @return string|nil
+local function chroniclePlayerIdForSeatKey(seatKey)
+  if type(seatKey) ~= "string" or seatKey == "" then
+    return nil
+  end
+  if type(C.GetPlayerIDOrNil) == "function" then
+    local pid = C.GetPlayerIDOrNil(seatKey)
+    if type(pid) == "string" and pid ~= "" and pid ~= C.StorytellerID then
+      return pid
+    end
+  end
+  local playerID = S.getPlayerID(seatKey)
+  if playerID == nil or playerID == C.StorytellerID then
+    return nil
+  end
+  return playerID
+end
+
 --- @param roleKey string|nil
 --- @return boolean
 local function isCsheetPageRoleKey(roleKey)
@@ -1106,6 +1126,7 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
   end
 
   local universalAngles = {}
+  local playerAnglesById = {}
 
   if U.Type(C.UniversalCameraAngles) == "table" then
     for modeKey, modeVal in pairs(C.UniversalCameraAngles) do
@@ -1185,27 +1206,31 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
         }
 
         if isPlayerSeatKey(seatKey) then
-          local playerID = S.getPlayerID(seatKey)
+          local playerID = chroniclePlayerIdForSeatKey(seatKey)
           if playerID ~= nil then
-            S.setStateVal(
-              {
-                cameraMode = camMode,
-                position = { x = shiftedPos.x, y = shiftedPos.y, z = shiftedPos.z },
-                pitch = pitch,
-                yaw = yaw,
-                distance = distance,
-              },
-              "playerData",
-              playerID,
-              "cameraAngles",
-              modeKey
-            )
+            local row = playerAnglesById[playerID]
+            if row == nil then
+              row = {}
+              playerAnglesById[playerID] = row
+            end
+            row[modeKey] = {
+              cameraMode = camMode,
+              position = { x = shiftedPos.x, y = shiftedPos.y, z = shiftedPos.z },
+              pitch = pitch,
+              yaw = yaw,
+              distance = distance,
+            }
           end
         end
       end
     end
   end
 
+  -- Replace each occupant's full cameraAngles map so leftover keys such as an old `roll`
+  -- cannot survive a layout that refreshed default/sheet/diceTray (TOR-605).
+  for playerID, angles in pairs(playerAnglesById) do
+    S.setStateVal(angles, "playerData", playerID, "cameraAngles")
+  end
   S.setStateVal(universalAngles, "seatLayout", "universalCameraAngles")
   -- Layout writes chronicle-PC cameraAngles. If the Storyteller is occupying a PC seat,
   -- recopy those new angles onto Storyteller state before any transition lookAt (TOR-603).

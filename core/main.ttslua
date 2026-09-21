@@ -227,6 +227,49 @@ end
     and is the only path that switches to FirstPerson.
 ]]
 
+--- True when `cameraMode` is a per-seat preset (`roll`, `default`, `sheet`, …),
+--- not a shared or already-suffixed key (`wide`, `rollBrown`).
+--- @param cameraMode string
+--- @return boolean
+local function isBySeatCameraMode(cameraMode)
+  if type(cameraMode) ~= "string" or cameraMode == "" then
+    return false
+  end
+  if type(C.ReferenceCameraAngles) == "table" and type(C.ReferenceCameraAngles[cameraMode]) == "table" then
+    return true
+  end
+  if type(C.CameraModes) == "table" and C.CameraModes[cameraMode] == "bySeat" then
+    return true
+  end
+  return false
+end
+
+--- Chronicle PC `cameraAngles` for a TTS seat color (not the Host steam row when they occupy that seat).
+--- @param seatColor string
+--- @return table|nil
+local function playerCameraAnglesForSeatColor(seatColor)
+  if type(seatColor) ~= "string" or seatColor == "" then
+    return nil
+  end
+  if type(C.GetPlayerIDOrNil) == "function" then
+    local pid = C.GetPlayerIDOrNil(seatColor)
+    if type(pid) == "string" and pid ~= "" and pid ~= C.StorytellerID then
+      local angles = S.getStateVal("playerData", pid, "cameraAngles")
+      if type(angles) == "table" then
+        return angles
+      end
+    end
+  end
+  if type(S.getPlayerID) == "function" and S.getPlayerID(seatColor) == C.StorytellerID then
+    return nil
+  end
+  local pdata = S.getPlayerData(seatColor)
+  if type(pdata) == "table" and type(pdata.cameraAngles) == "table" then
+    return pdata.cameraAngles
+  end
+  return nil
+end
+
 --- Resolve a named camera preset for an already-converted Player object.
 --- @param player Player
 --- @param cameraMode string
@@ -242,9 +285,18 @@ function M.resolveCameraPreset(player, cameraMode)
       mergedUniversal[key] = val
     end
   end
-  -- Prefer merged universal data when present. Do not gate on C.CameraModes alone —
-  -- a "universal" label with nil data must fall through to Black/ST/per-seat resolution.
-  if type(mergedUniversal[cameraMode]) == "table" then
+  local seatColor = nil
+  if type(C.GetPlayerColor) == "function" then
+    seatColor = C.GetPlayerColor(player)
+  end
+  if type(seatColor) ~= "string" or seatColor == "" then
+    seatColor = player.color
+  end
+  local suffixedMode = cameraMode .. tostring(seatColor)
+
+  -- Exact key in universal: shared modes (`wide`) and already-suffixed layout keys (`rollBrown`).
+  -- Do not treat leftover unsuffixed `roll` / `default` in seatLayout as a hit (TOR-605).
+  if not isBySeatCameraMode(cameraMode) and type(mergedUniversal[cameraMode]) == "table" then
     return U.clone(mergedUniversal[cameraMode])
   end
   if player.color == "Black"
@@ -252,6 +304,15 @@ function M.resolveCameraPreset(player, cameraMode)
       and type(C.StorytellerCameraAngles[cameraMode]) == "table"
   then
     return U.clone(C.StorytellerCameraAngles[cameraMode])
+  end
+  if isBySeatCameraMode(cameraMode) then
+    local seatAngles = playerCameraAnglesForSeatColor(seatColor)
+    if type(seatAngles) == "table" and type(seatAngles[cameraMode]) == "table" then
+      return U.clone(seatAngles[cameraMode])
+    end
+    if type(mergedUniversal[suffixedMode]) == "table" then
+      return U.clone(mergedUniversal[suffixedMode])
+    end
   end
   local playerData = S.getPlayerData(player)
   if type(playerData) ~= "table" then
@@ -263,14 +324,6 @@ function M.resolveCameraPreset(player, cameraMode)
     U.AlertGM("M.setCamera: No cameraAngles found for player '" .. tostring(player.color) .. "'")
     return nil
   end
-  local seatColor = nil
-  if C ~= nil and type(C.GetPlayerColor) == "function" then
-    seatColor = C.GetPlayerColor(player)
-  end
-  if type(seatColor) ~= "string" or seatColor == "" then
-    seatColor = player.color
-  end
-  local suffixedMode = cameraMode .. tostring(seatColor)
   local cameraPreset = U.clone(playerCameraAngles[cameraMode])
   if type(cameraPreset) ~= "table" then
     cameraPreset = U.clone(playerCameraAngles[suffixedMode])

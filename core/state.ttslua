@@ -208,32 +208,39 @@ local function getDefaultPlayerHUD()
     }
 end
 
--- Returns the default player camera angles structure.
+-- Placeholder per-seat cameras. Layout overwrites these from C.ReferenceCameraAngles
+-- (including `roll` / `facing` / `compulsions`). Keys must match that table so load
+-- merge does not treat `roll` as a leftover-only field (TOR-605).
 -- @return table Default player camera angles structure
 local function getDefaultPlayerCameraAngles()
-    return {
-      default = {
+    local placeholder = {
         cameraMode = "ThirdPerson",
-        position = Vector({0, 0, 0}),
+        position = { x = 0, y = 0, z = 0 },
         pitch = 0,
         yaw = 0,
-        distance = 0
-      },
-      sheet = {
-        cameraMode = "ThirdPerson",
-        position = Vector({0, 0, 0}),
-        pitch = 0,
-        yaw = 0,
-        distance = 0
-      },
-      diceTray = {
-        cameraMode = "ThirdPerson",
-        position = Vector({0, 0, 0}),
-        pitch = 0,
-        yaw = 0,
-        distance = 0
-      }
+        distance = 0,
     }
+    local out = {}
+    if type(C.ReferenceCameraAngles) == "table" then
+        for modeKey, modeVal in pairs(C.ReferenceCameraAngles) do
+            if type(modeKey) == "string" and type(modeVal) == "table" then
+                out[modeKey] = U.clone(placeholder)
+            end
+        end
+    end
+    if out.default == nil then
+        out.default = U.clone(placeholder)
+    end
+    if out.sheet == nil then
+        out.sheet = U.clone(placeholder)
+    end
+    if out.diceTray == nil then
+        out.diceTray = U.clone(placeholder)
+    end
+    if out.roll == nil then
+        out.roll = U.clone(placeholder)
+    end
+    return out
 end
 
 --- Returns the default game state structure

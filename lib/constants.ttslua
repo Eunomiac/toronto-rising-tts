@@ -1440,8 +1440,9 @@ C.CameraModes = {
 -- Reference Color Red Camera Angles
 -- These are the camera angle definitions that are defined for the Red seat, but that will need to be rotated and defined for each of the other player seats.
 -- Each of these derived camera angles should be written into two locations in game state:
---    - "gameState.playerData[playerID].cameraAngles[cameraMode]": each camera angle should be written to each player's playerData leaving the mode name unchanged (e.g. "default", "facing", "sheet", etc.)
---    - "gameState.seatLayout.universalCameraAngles[cameraMode + seatKey]": each camera angle should also be made available to all players, by writing it to the seatLayout.universalCameraAngles object, with the seat key appended to the mode name (e.g. "facing" -> "facingBrown", "facingRed", "facingNPC1", etc.)  Note that, even though the NPC slots do not have player data (and thus won't have their own "facing", etc. entries), they will still need universal "facingNPC1", "sheetNPC2", etc. angles calculated for this step.
+--    - "gameState.playerData[playerID].cameraAngles[cameraMode]": each camera angle should be written to each player's playerData leaving the mode name unchanged (e.g. "default", "facing", "sheet", "roll", etc.)
+--    - "gameState.seatLayout.universalCameraAngles[cameraMode + seatKey]": each camera angle should also be made available to all players, by writing it to the seatLayout.universalCameraAngles object, with the seat key appended to the mode name (e.g. "facing" -> "facingBrown", "roll" -> "rollRed").
+-- `M.setCamera(..., "roll")` reads the seat's playerData / `rollBrown` layout keys — not a leftover unsuffixed `universalCameraAngles.roll` (TOR-605).
 
 --[[ To be clear, after R.resolveSeatObjectsFromTable() is called, the "universal" camera modes will include one of every entry in C.UniversalCameraAngles, plus the following: "facingRed", "facingBrown", "facingOrange", "facingPink" and "facingPurple", as well as some number of "facingNPC1", "facingNPC2", "facingNPC3" and "facingNPC4" depending on which slots are open in the seatToPositionMap of the new table configuration -- and then the same for "sheetRed", "sheetBrown", ... and "diceTrayRed", "diceTrayBrown", ... etc. ]]
 
@@ -2270,9 +2271,9 @@ C.Tables = {
     --- Outer NPC holes on the Scatter CONTROL_BOARD art (counted on Stage Control Board in Scatter Mode.jpg).
     BOARD_NPC_HOLE_COUNT = 12,
     --- First group world azimuth. CONTROL_BOARD yaw 180° puts group 1 at far left (-X = 270°), then clockwise 60°.
-    FIRST_GROUP_AZIMUTH_DEG = 270,
+    FIRST_GROUP_AZIMUTH_DEG = 285,
     GROUP_SPACING_DEG = 60,
-    SCATTER_RADIUS_WORLD = 225,
+    SCATTER_RADIUS_WORLD = 200,
     SCATTER_RADIUS_NPC = 100,
     SCATTER_RADIUS_PC = 107,
     PC_SCATTER_POSITION_ANGLE = 180,

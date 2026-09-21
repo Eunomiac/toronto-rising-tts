@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — TOR-604 Play overlay time height after prologue._
+_Last populated: 2026-09-21 — TOR-605 Scatter roll camera follows live ReferenceCameraAngles._
 
 ### Soundscape
 
@@ -201,6 +201,16 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 **Context:** Absent was hiding the pile but leaving the hand zone (and often the cards) at the table, and parking the PC token on the board. Apply that only moved PC tokens also skipped seat layout because the NPC reconciler thought nothing had changed.
 
 ### Camera
+
+#### TOR-605 — Scatter roll camera uses the raised ReferenceCameraAngles position
+
+**How to verify:** Save & Play so scripts reload. Be in Scatter Mode. Sit in a player seat (or use the bottom-right seat-color buttons). Start a normal player roll, or open Debug Camera and click **roll** (the short button, not rollBrown).
+
+1. The look-at should sit at the new higher roll height from `C.ReferenceCameraAngles.roll` (about 10.8 before scatter offset), not the old lower roll that sat at sheet height (about 5.8).
+2. Optional: switch to a wood table and back to Scatter, then roll again. The roll camera should still use that higher angle, not a leftover from the previous table.
+3. Sit back on Black. Storyteller Rolls / Main / Mid should still be the usual Black views.
+
+**Context:** Roll was stored in game state and could keep the old angle after you changed the constants. relatedTo **TOR-603**.
 
 #### TOR-603 — Storyteller camera follows the occupied seat after table or scene layout
 

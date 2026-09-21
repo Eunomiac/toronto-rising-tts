@@ -131,6 +131,9 @@ local function resolveModePresetForPlayer(player, modeName)
     if type(modeName) ~= "string" or modeName == "" then
         return nil
     end
+    if M ~= nil and type(M.resolveCameraPreset) == "function" and U.isPlayer(player) then
+        return M.resolveCameraPreset(player, modeName)
+    end
 
     local mergedUniversal = {}
     if C ~= nil and type(C.UniversalCameraAngles) == "table" then
