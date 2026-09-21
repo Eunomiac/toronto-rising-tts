@@ -24,9 +24,6 @@ local SESSION_NUMBER_IMAGE_ID = "overlay_sessionNumber"
 local SESSION_TITLE_IMAGE_ID = "overlay_sessionTitle"
 local HEAL_BROADCAST_HOLD_SEC = 6
 local INTERMISSION_THEME_FADE_SEC = 2
---- End → Intermission: wait after showing the global cover so SlideIn (and camera) can finish
---- before no-scene table/skybox work (TOR-502).
-local INTERMISSION_BLINDFOLD_SETTLE_SEC = 2
 --- Per-step U.chain cap is computed in advanceTo from SessionExplode.maxPlayEnterWaitSec + 15
 --- so a longer per-session song is not killed by the default 60s chainWait (TOR-501 / TOR-531).
 
@@ -304,13 +301,9 @@ function Phases.applyAllLightsDark(_ctx)
     return true
 end
 
---- End → Intermission: drop the end splash on the global cover and start the audio handoff (TOR-506 / TOR-565).
---- Uses `overlay_globalBlindfold_panel` with `overlay_sessionEndSplash_<N>` (persistent; no timed lift).
---- Outgoing session audio fades out while TR_Loop fades in; wait covers both plus cover settle.
---- Does not `stopAll` — that would hard-cut the outgoing fade.
-function Phases.beginIntermissionCoverAndTheme(_ctx)
-    -- showEnd sets `overlay_sessionEndSplash_<endedSession>` after UI.show (TOR-566).
-    Phases.showEndGlobalBlindfold(_ctx)
+--- End → Intermission: leftover session audio fades out while TR_Loop fades in (after the cover is down).
+--- Does not `stopAll` — that would hard-cut the outgoing fade. Does not lift the end splash (TOR-580).
+function Phases.beginIntermissionThemeHandoff(_ctx)
     local Soundscape = require("core.soundscape")
     local key = C.IntermissionThemeFeaturedKey or "TR_Loop"
     local ok, msg = Soundscape.playFeaturedMusic(key, {
@@ -320,7 +313,6 @@ function Phases.beginIntermissionCoverAndTheme(_ctx)
     if ok ~= true then
         U.AlertGM("Intermission theme: " .. tostring(msg or "playFeaturedMusic failed"))
     end
-    -- Weather leftovers (Main/location already started fading via outgoingFadeSeconds).
     if type(Soundscape.fadeOutTransitionAmbient) == "function" then
         Soundscape.fadeOutTransitionAmbient({ seconds = INTERMISSION_THEME_FADE_SEC })
     end
@@ -329,11 +321,109 @@ function Phases.beginIntermissionCoverAndTheme(_ctx)
     elseif type(Soundscape.markReconciledToCurrentState) == "function" then
         Soundscape.markReconciledToCurrentState()
     end
-    local waitSec = INTERMISSION_BLINDFOLD_SETTLE_SEC
-    if INTERMISSION_THEME_FADE_SEC > waitSec then
-        waitSec = INTERMISSION_THEME_FADE_SEC
+    return INTERMISSION_THEME_FADE_SEC
+end
+
+--- @return table `{ x, y, z }` table-origin X/Z plus snapshot or live Y
+local function particleEmitterRestorePosition(obj)
+    local G = require("lib.guids")
+    local tableKey = S.getStateVal("seatLayout", "currentTableKey")
+    local originX, originZ = 0, 0
+    if type(tableKey) == "string" and type(C.Tables) == "table" then
+        local cfg = C.Tables[tableKey]
+        if type(cfg) == "table" and cfg.centerPoint ~= nil then
+            originX = tonumber(cfg.centerPoint.x) or 0
+            originZ = tonumber(cfg.centerPoint.z) or 0
+        end
     end
-    return waitSec
+    local y = nil
+    local guid = G.GUIDS.PARTICLE_EMITTER
+    if type(guid) == "string" then
+        local snap = S.getStateVal("hiddenObjects", guid)
+        if type(snap) == "table" and type(snap.position) == "table" then
+            y = tonumber(snap.position.y)
+        end
+    end
+    if (type(y) ~= "number" or y <= (C.HIDDEN_OBJECT_WORLD_Y or -200) + 1) and obj ~= nil and obj.getPosition ~= nil then
+        local live = obj.getPosition()
+        if (type(live) == "userdata" or type(live) == "table") and type(live.y) == "number"
+            and live.y > (C.HIDDEN_OBJECT_WORLD_Y or -200) + 1 then
+            y = live.y
+        end
+    end
+    if type(y) ~= "number" then
+        y = 0
+    end
+    return { x = originX, y = y, z = originZ }
+end
+
+--- Hide the rain emitter off Play; restore on Play. Scatter keeps ownership while Scatter is on (TOR-581).
+function Phases.reconcileParticleEmitterFromPhase()
+    local G = require("lib.guids")
+    local O = require("core.objects")
+    local guid = G.GUIDS and G.GUIDS.PARTICLE_EMITTER or nil
+    if type(guid) ~= "string" or guid == "" then
+        return false
+    end
+    local obj = G.getObject(guid)
+    if obj == nil then
+        return false
+    end
+    local Occupancy = require("lib.scatter_occupancy")
+    if Occupancy.isScatterLayoutActive() == true then
+        return true
+    end
+    if S.getStateVal("currentPhase") == C.Phases.PLAY then
+        if O.isHiddenObject(obj) then
+            O.restoreObject(obj, { position = particleEmitterRestorePosition(obj) })
+        end
+        return true
+    end
+    if not O.isHiddenObject(obj) then
+        O.hideObject(obj)
+    end
+    return true
+end
+
+--- Live library scene → Main; otherwise Downtime (TOR-527).
+--- @return string
+function Phases.playSubPhaseForLiveScene()
+    local SceneLibrary = require("core.scene_library")
+    if type(SceneLibrary.hasLiveSceneOnTable) == "function" and SceneLibrary.hasLiveSceneOnTable() == true then
+        return C.PlaySubPhases.MAIN
+    end
+    return C.PlaySubPhases.DOWNTIME
+end
+
+--- @return boolean
+function Phases.isPlayDowntime()
+    return S.getStateVal("currentPhase") == C.Phases.PLAY
+        and S.getStateVal("playSubPhase") == C.PlaySubPhases.DOWNTIME
+end
+
+--- Copy chronicle present-day (or live session clock) into `gameState.downtimeClock`. Does not write present-day.
+function Phases.copyPresentDayIntoDowntimeClock()
+    local pd = S.getStateVal("presentDayClock")
+    local copy = nil
+    if type(pd) == "table" then
+        copy = U.clone(pd, true)
+    end
+    if type(copy) ~= "table" then
+        local live = S.getStateVal("sessionScene", "clock")
+        if type(live) == "table" then
+            copy = U.clone(live, true)
+        end
+    end
+    S.setStateVal(copy, "downtimeClock")
+    return true
+end
+
+--- When already Play, switch Main/Downtime to match live-scene presence (no-op if already correct).
+function Phases.syncPlaySubPhaseToLiveScene()
+    if S.getStateVal("currentPhase") ~= C.Phases.PLAY then
+        return false
+    end
+    return Phases.setPlaySubPhase(Phases.playSubPhaseForLiveScene())
 end
 
 --- Starts looping TR_Loop on the featured lane (Intermission ambient).
@@ -615,10 +705,34 @@ for _, sub in pairs(C.PlaySubPhases) do
     Phases.onEnterSub[sub] = emptySteps
 end
 
+Phases.onEnterSub[C.PlaySubPhases.DOWNTIME] = function(_ctx)
+    return {
+        function()
+            Phases.copyPresentDayIntoDowntimeClock()
+            return true
+        end,
+    }
+end
+
 Phases.onEnter[C.Phases.INTERMISSION] = function(ctx)
     return {
         function()
-            return Phases.beginIntermissionCoverAndTheme(ctx)
+            -- showEnd sets `overlay_sessionEndSplash_<endedSession>` after UI.show (TOR-566).
+            return Phases.showEndGlobalBlindfold(ctx)
+        end,
+        function()
+            local HUDBF = require("core.hud_blindfold")
+            return HUDBF.BLINDFOLD_DOWN_COMPLETE_SEC
+        end,
+        function()
+            local Main = require("core.main")
+            if type(Main.setDefaultCameraBeforeBlindfold) == "function" then
+                Main.setDefaultCameraBeforeBlindfold("ALL")
+            end
+            return true
+        end,
+        function()
+            return Phases.beginIntermissionThemeHandoff(ctx)
         end,
         function()
             return Phases.applyNoSceneDefault(ctx, {
@@ -627,6 +741,7 @@ Phases.onEnter[C.Phases.INTERMISSION] = function(ctx)
             })
         end,
         function()
+            Phases.reconcileParticleEmitterFromPhase()
             return Phases.applyAllLightsDark(ctx)
         end,
     }
@@ -670,6 +785,13 @@ Phases.onEnter[C.Phases.PLAY] = function(ctx)
             Phases.applyPlayEnterNoSceneLights(ctx)
             return C.SessionStartPlayEnterSettleSec
         end,
+        function()
+            if S.getStateVal("playSubPhase") == C.PlaySubPhases.DOWNTIME then
+                Phases.copyPresentDayIntoDowntimeClock()
+            end
+            Phases.reconcileParticleEmitterFromPhase()
+            return true
+        end,
     }
     steps[#steps + 1] = function()
         -- Splash after lights. Quick Transition skips Music C and uses songDuration 0.
@@ -704,6 +826,7 @@ end
 Phases.onEnter[C.Phases.SPOTLIGHT] = function(ctx)
     return {
         function()
+            Phases.reconcileParticleEmitterFromPhase()
             return runSpotlightEnterFromPlayTransition(ctx)
         end,
     }
@@ -717,6 +840,14 @@ Phases.onExit[C.Phases.SPOTLIGHT] = function(ctx)
                 return Phases.applyNoSceneDefault(ctx, { reason = "phase_spotlight_exit" })
             end
             return runSpotlightExitToEndTransition(ctx)
+        end,
+    }
+end
+
+Phases.onEnter[C.Phases.END] = function(_ctx)
+    return {
+        function()
+            return Phases.reconcileParticleEmitterFromPhase()
         end,
     }
 end
@@ -765,13 +896,16 @@ function Phases.debugSnapToIntermission()
 end
 
 --- Promote to Play without enter/exit events (scene Apply already owns the world).
+--- Always couples Main/Downtime to whether a library scene is live (TOR-527).
 function Phases.ensurePlayPhaseForSceneApply()
+    local desired = Phases.playSubPhaseForLiveScene()
     local phase = S.getStateVal("currentPhase")
     if phase == C.Phases.PLAY then
+        Phases.setPlaySubPhase(desired)
         return
     end
     S.setCurrentPhase(C.Phases.PLAY)
-    S.setPlaySubPhase(C.PlaySubPhases.MAIN)
+    S.setPlaySubPhase(desired)
     syncPhaseUi()
 end
 
@@ -818,7 +952,7 @@ function Phases.advanceTo(newPhase, opts)
     steps[#steps + 1] = function()
         S.setCurrentPhase(newPhase)
         if newPhase == C.Phases.PLAY then
-            S.setPlaySubPhase(C.PlaySubPhases.MAIN)
+            S.setPlaySubPhase(Phases.playSubPhaseForLiveScene())
         end
         return true
     end

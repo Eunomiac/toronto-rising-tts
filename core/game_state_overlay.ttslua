@@ -701,6 +701,30 @@ function GameStateOverlay.reconcileFromState()
         return
     end
 
+    local Phases = require("core.phases")
+    if type(Phases.isPlayDowntime) == "function" and Phases.isPlayDowntime() == true then
+        bustTextCacheIfSessionSceneChanged()
+        applyOverlayPhaseChrome(false)
+        pushOverlayActive(OVERLAY_TIME_LOCATION_ID, true)
+        pushEmptyLocationRow()
+        local ck = S.getStateVal("downtimeClock")
+        local hasDatetime = type(ck) == "table"
+            and tonumber(ck.year) ~= nil
+            and tonumber(ck.month) ~= nil
+            and tonumber(ck.day) ~= nil
+        if hasDatetime then
+            pushOverlayText(
+                "gameStateOverlay_datetime",
+                formatOverlayDateLine(ck.year, ck.month, ck.day)
+            )
+        else
+            pushOverlayText("gameStateOverlay_datetime", "")
+        end
+        pushOverlayText("gameStateOverlay_time", "DOWNTIME")
+        pushOverlayActive(OVERLAY_WEATHER_ID, false)
+        return
+    end
+
     if SceneLibrary.hasLiveSceneOnTable() ~= true then
         bustTextCacheIfSessionSceneChanged()
         pushOverlayActive(OVERLAY_TIME_LOCATION_ID, true)
@@ -810,10 +834,21 @@ function GameStateOverlay.pushNarrativeClockTextOnly(year, month, day, hour24, m
     pushOverlayText("gameStateOverlay_time", format12h(hour24, minute))
 end
 
---- Advances `sessionScene.clock` when real-time simulation is enabled.
+--- Active clock for overlay ticker / real-time: Downtime uses the copied clock only (TOR-527).
+--- @return table|nil
+--- @return string
+local function activeTickerClockKey()
+    local Phases = require("core.phases")
+    if type(Phases.isPlayDowntime) == "function" and Phases.isPlayDowntime() == true then
+        return S.getStateVal("downtimeClock"), "downtimeClock"
+    end
+    return S.getStateVal("sessionScene", "clock"), "sessionSceneClock"
+end
+
+--- Advances the active overlay clock when real-time simulation is enabled.
 --- @return boolean True when state was mutated.
 function GameStateOverlay.tickRealTimeClock()
-    local ck = S.getStateVal("sessionScene", "clock")
+    local ck, clockKey = activeTickerClockKey()
     if type(ck) ~= "table" or ck.useRealTime ~= true then
         return false
     end
@@ -936,6 +971,11 @@ function GameStateOverlay.tickRealTimeClock()
             PresentDayClock.clearCatchUpAndRestore(nextClock)
         end
     end
+    if clockKey == "downtimeClock" then
+        S.setStateVal(nextClock, "downtimeClock")
+        GameStateOverlay.reconcileFromState()
+        return true
+    end
     S.setStateVal(nextClock, "sessionScene", "clock")
     PresentDayClock.tryAdvance(nextClock)
     if nextClock.catchUpToPresentDay ~= true and ck.catchUpToPresentDay == true then
@@ -964,6 +1004,10 @@ local function scheduleNextTick(epoch)
         tickerHandle = nil
     end
     local ckPre = S.getStateVal("sessionScene", "clock")
+    local Phases = require("core.phases")
+    if type(Phases.isPlayDowntime) == "function" and Phases.isPlayDowntime() == true then
+        ckPre = S.getStateVal("downtimeClock")
+    end
     if type(ckPre) ~= "table" or ckPre.useRealTime ~= true then
         return
     end
@@ -980,6 +1024,10 @@ end
 --- Starts the 1-second wall loop when `sessionScene.clock.useRealTime` is true.
 function GameStateOverlay.ensureTicker()
     local ck = S.getStateVal("sessionScene", "clock")
+    local Phases = require("core.phases")
+    if type(Phases.isPlayDowntime) == "function" and Phases.isPlayDowntime() == true then
+        ck = S.getStateVal("downtimeClock")
+    end
     if type(ck) == "table" and ck.useRealTime == true then
         if tickerHandle ~= nil then
             return

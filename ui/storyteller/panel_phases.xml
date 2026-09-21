@@ -10,6 +10,8 @@ UI.setAttributes("input_sessionNum", {minHeight = "30", fontStyle = "Bold"})
     <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
       <Button id="phase_Advance" text="Advance →" minWidth="120" preferredWidth="120" onClick="HUD_phaseAdvance"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
+      <Text id="phase_AdvanceConfirmHint" fontSize="13" fontStyle="Bold" color="#FF0000" active="false"
+        alignment="MiddleLeft" text="Click Again to Confirm" />
       <Toggle id="phase_sessionStartQuick" isOn="false" onValueChanged="HUD_phaseSessionStartQuick"
         minWidth="170" preferredWidth="190" textColor="#FFFFFF">Quick Transition</Toggle>
     </HorizontalLayout>

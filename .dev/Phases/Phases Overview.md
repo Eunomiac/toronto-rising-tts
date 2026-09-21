@@ -17,14 +17,14 @@ Source of truth:
 - `ui/storyteller/panel_spotlight_controls.xml`
 
 Verification:
-- Save & Play → Host Phases panel → **Advance →** (panel closes immediately) through Intermission → Play → Spotlight → End → Intermission
-- Confirm Intermission: global cover comes down together with leftover-audio fade-out and TR_Loop fade-in (~2s), then no-scene table prep under cover, AdminDark. Play: OutdoorDim lights and HUD arm behind the cover first, then a settle (`C.SessionStartPlayEnterSettleSec`); then the session-start splash with Music C after the authored song lead-in, or **Quick Transition** (`playAttribute(0)`, no Music C); the panel hides near the end of that session's song (or the unscalable tail), layers reset, then Main fades in and the Willpower heal overlay can appear
+- Save & Play → Host Phases panel → **Advance →** (first click shows red confirm; second click within 5s Advances and the panel closes) through Intermission → Play → Spotlight → End → Intermission
+- Confirm Intermission: session-end splash slides down fully (`HUDBF.BLINDFOLD_DOWN_COMPLETE_SEC`), then leftover-audio fade-out with TR_Loop fade-in (~2s), then no-scene table prep under cover, AdminDark (TOR-580). Play: OutdoorDim lights and HUD arm behind the cover first, then a settle (`C.SessionStartPlayEnterSettleSec`); then the session-start splash with Music C after the authored song lead-in, or **Quick Transition** (`playAttribute(0)`, no Music C); the panel hides near the end of that session's song (or the unscalable tail), layers reset, then Main fades in and the Willpower heal overlay can appear. First Play with no live scene starts in **Downtime** (TOR-527).
 - Play → Spotlight: staged transition cover; Table A + Spotlight skybox; Main keeps playing; in-session stand-ins on the carousel; overlay shows the session name in the diamond slot, **S P O T L I G H T** in gold, and the front character name in white. Spotlight → End: same cover; Main keeps playing; table becomes B0 (PC seats only, NPCs stay off the table); Generic skybox is selected; overlay shows the session name and **DEBRIEF**; bags/companions/compulsion decks stay under the table until Intermission cover
 - Workshop: Host console `lua DEBUG.populateSpotlightFigurines()` clones seat figures and spawns tagged lights, then prints GUIDs for `lib/guids.ttslua`. Play → Spotlight does **not** auto-spawn (duplicates if GUIDs are forgotten).
 - Re-test Intermission→Play without cycling Spotlight/End: Host console `lua DEBUG.resetToIntermission()` (session cover + TR_Loop, no table/skybox move). Then **Advance →**.
 - Solo Host verified only until **TOR-144** (multiplayer E2E) — multiclient connect blindfold + Advance replication: [Multiclient Session Script](../E2E%20Playbooks/Multiplayer-Session.md) (A4, B0, D1)
 
-Status: current (TOR-143 / TOR-361 / TOR-362 / TOR-497 / TOR-516 / TOR-531 / TOR-532 / TOR-533 / TOR-534 / TOR-98)
+Status: current (TOR-143 / TOR-361 / TOR-362 / TOR-497 / TOR-516 / TOR-531 / TOR-532 / TOR-533 / TOR-534 / TOR-98 / TOR-527 / TOR-578 / TOR-580 / TOR-581)
 
 ## Blindfolds (do not conflate)
 
@@ -51,7 +51,7 @@ Advancing from `END` returns to `INTERMISSION`.
 
 Only `PLAY` has subphases. They switch freely (no top-level enter/exit), except **Memoriam** is gated by the configuration popup:
 
-1. _(default)_ `MAIN`
+1. `MAIN` when a library scene is live on the table; `DOWNTIME` when there is none (including the first Intermission → Play). Scene **Apply** switches to Main; **End scene** switches to Downtime. The Main and Downtime buttons resolve to that pairing (or no-op). Downtime copies present-day into `downtimeClock` and shows date + **DOWNTIME** on the overlay (TOR-527).
 2. `DOWNTIME`
 3. `MEMORIAM` — clicking Memoriam on the Phases panel opens `ui/storyteller/memoriam_modal.xml` (**TOR-539** / **TOR-540**). The Play subphase does **not** change until Advance; Cancel leaves the current subphase in place. Runtime enter/exit, payload, catalog, clock/overlay, and remaining plans: [**Memoriam.md**](Memoriam.md) (`Memoriam.applyEnter` / `applyExit`, **TOR-101**). Nested catalog years use shortest-span priority (**TOR-547**). Just Smoke remains a valid modal destination in gaps. Assignment list: subject green + NPC-assignable; other PCs present-as-self (**TOR-551**). PC-as-NPC sheet swap still **TOR-95**; LUT/sepia still **TOR-321**.
 
@@ -104,9 +104,11 @@ Ending events of the previous phase run before starting events of the new phase 
 
 ### Starting Events: `INTERMISSION`
 
-* **Show the session-end global cover and start the audio handoff together** (`overlay_globalBlindfold_panel_end` + leftover session audio fading out while Intermission theme `TR_Loop` fades in over ~2s) — TOR-561 / TOR-502 / TOR-506. Do **not** restore `overlay_globalBlindfold_panel` here (session-start explode leaves that panel unrestorable until UI refresh on load). Table work must not start until this settle finishes.
+* **Show the session-end splash only**, then wait until the cover SlideIn has finished (`HUDBF.BLINDFOLD_DOWN_COMPLETE_SEC`) before any theme, table, or lighting work (TOR-580). Do **not** use `HUDBF.runStagedTransition` here — that would lift the cover, and Intermission's end splash must stay up. Camera snap runs on that same Advance chain after the cover-down wait (not a parallel `U.await` next to `UI.show`).
+* Then the audio handoff: leftover session audio fading out while Intermission theme `TR_Loop` fades in over ~2s (TOR-506 / TOR-565). Table/`Sync.full` work starts after that fade so it cannot hitch SlideIn.
 * Apply the no-scene default environment under that cover (table, seats, generic skybox, overlay; soundscape skipped) so next week's session start does not reshuffle the table (TOR-497). Spotlight-parked dice bags, companions, and compulsion decks restore here (after the cover is down), not during End.
 * All lights dark (`AdminDark` phase override).
+* Rain particle emitter is parked off Play (`O.hideObject`) unless Scatter already owns that hide (TOR-581).
 * Countdown timer: deferred (optional TBD on **TOR-319**).
 
 ### Connect / load policy (TOR-319 / TOR-143 / TOR-561)

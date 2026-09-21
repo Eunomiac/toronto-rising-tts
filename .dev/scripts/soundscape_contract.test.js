@@ -490,8 +490,7 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
     "resumeBackground = false",
     "PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC",
     "maxWait = PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC",
-    "local INTERMISSION_BLINDFOLD_SETTLE_SEC = 2",
-    "function Phases.beginIntermissionCoverAndTheme(_ctx)",
+    "function Phases.beginIntermissionThemeHandoff(_ctx)",
     "outgoingFadeSeconds = INTERMISSION_THEME_FADE_SEC",
   ].forEach((needle) => {
     assert.ok(phases.includes(needle), `missing phase session intro: ${needle}`);
@@ -577,12 +576,14 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
     "missing Intermission enter steps",
   );
   const intermissionEnter = phases.slice(intermissionEnterStart, intermissionEnterEnd);
-  const coverIdx = intermissionEnter.indexOf("Phases.beginIntermissionCoverAndTheme");
+  const coverIdx = intermissionEnter.indexOf("Phases.showEndGlobalBlindfold");
+  const waitIdx = intermissionEnter.indexOf("BLINDFOLD_DOWN_COMPLETE_SEC");
+  const themeIdx = intermissionEnter.indexOf("Phases.beginIntermissionThemeHandoff");
   const prepIdx = intermissionEnter.indexOf("Phases.applyNoSceneDefault");
   const darkIdx = intermissionEnter.indexOf("Phases.applyAllLightsDark");
   assert.ok(
-    coverIdx >= 0 && prepIdx > coverIdx && darkIdx > prepIdx,
-    "Intermission enter should start cover+theme handoff, then no-scene prep, then AdminDark",
+    coverIdx >= 0 && waitIdx > coverIdx && themeIdx > waitIdx && prepIdx > themeIdx && darkIdx > prepIdx,
+    "Intermission enter should show the end splash, wait for cover-down, then theme, then no-scene prep, then AdminDark",
   );
   assert.equal(
     intermissionEnter.includes("Phases.fadeOutAllEmitters")

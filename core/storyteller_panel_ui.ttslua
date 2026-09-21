@@ -52,8 +52,15 @@ local function setStorytellerToggleVisual(toggleId, isActive)
     })
 end
 
+local function clearPhaseAdvanceConfirmIfOpen()
+    if type(clearPhaseAdvanceConfirmArm) == "function" then
+        clearPhaseAdvanceConfirmArm()
+    end
+end
+
 --- Collapses every storyteller toolbar panel without Scenes THERE/deselect guards.
 function StorytellerPanelUI.closeAllPanelsUnconditionally()
+    clearPhaseAdvanceConfirmIfOpen()
     U.setAttribute(STORYTELLER_CONTENT_AREA_ID, "active", "false")
     for _, ids in pairs(STORYTELLER_PANELS) do
         U.setAttribute(ids.panel, "active", "false")
@@ -119,6 +126,9 @@ function StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen)
     for key, ids in pairs(STORYTELLER_PANELS) do
         U.setAttribute(ids.panel, "active", key == panelKey and "true" or "false")
         setStorytellerToggleVisual(ids.toggle, key == panelKey)
+    end
+    if panelKey ~= "phases" then
+        clearPhaseAdvanceConfirmIfOpen()
     end
     return true
 end

@@ -26,6 +26,11 @@ local PCST = require("core.pc_storyteller_panel")
 local MapPins = require("core.map_pins")
 local NPCS = require("core.npcs")
 
+--- @return boolean
+local function isPlayDowntime()
+    local Phases = require("core.phases")
+    return type(Phases.isPlayDowntime) == "function" and Phases.isPlayDowntime() == true
+end
 --- Reconcile hosted PC conditions (location + scene) after session location, scene bundle, or seat presence changes.
 local function reconcileHostedConditions(opts)
     local Conditions = require("core.conditions")
@@ -643,6 +648,10 @@ function StorytellerScenesPanel.syncClockDraftFromClock(ck)
 end
 
 function StorytellerScenesPanel.syncClockDraftFromState()
+    if isPlayDowntime() then
+        StorytellerScenesPanel.syncClockDraftFromClock(S.getStateVal("downtimeClock"))
+        return
+    end
     StorytellerScenesPanel.syncClockDraftFromClock(S.getStateVal("sessionScene", "clock"))
 end
 
@@ -2117,6 +2126,12 @@ function StorytellerScenesPanel.endSceneNarrative(player)
     clockDraft.sceneKey = nil
     clockDraft.dirty = false
     StorytellerScenesPanel.syncClockDraftFromState()
+    do
+        local Phases = require("core.phases")
+        if type(Phases.syncPlaySubPhaseToLiveScene) == "function" then
+            Phases.syncPlaySubPhaseToLiveScene()
+        end
+    end
 
     HUDBF.runStagedTransition({
         fadeOut = function()
@@ -2478,6 +2493,34 @@ function StorytellerScenesPanel.applyClockFromInputs(player)
     if clockLerpBusy() then
         return
     end
+    if isPlayDowntime() then
+        local baseClock = S.getStateVal("downtimeClock")
+        if type(baseClock) ~= "table" then
+            baseClock = {}
+        end
+        local clock, err = buildClockFromDraft(baseClock)
+        if clock == nil then
+            U.AlertGM(err or "Could not parse clock inputs.")
+            return
+        end
+        S.setStateVal(clock, "downtimeClock")
+        clockDraft.dirty = false
+        StorytellerScenesPanel.syncClockDraftFromClock(clock)
+        if GameStateOverlay and type(GameStateOverlay.resetRealTimeCarry) == "function" then
+            GameStateOverlay.resetRealTimeCarry()
+        end
+        if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
+            GameStateOverlay.stopTicker()
+        end
+        if GameStateOverlay and type(GameStateOverlay.ensureTicker) == "function" then
+            GameStateOverlay.ensureTicker()
+        end
+        if Sync and type(Sync.ui) == "function" then
+            Sync.ui({ gameStateOverlay = true, scenesPanel = true })
+        end
+        U.AlertGM("Downtime clock updated.")
+        return
+    end
     local activeKey = getActiveLibraryKey()
     local baseClock = type(activeKey) == "string" and getLibraryRowClock(activeKey) or S.getStateVal("sessionScene", "clock")
     if type(baseClock) ~= "table" then
@@ -2616,6 +2659,18 @@ function StorytellerScenesPanel.setPendingMonth(month)
     end
     if m > 12 then
         m = 12
+    end
+
+    if isPlayDowntime() then
+        local ck = S.getStateVal("downtimeClock")
+        if type(ck) ~= "table" then
+            ck = {}
+        end
+        ck.month = m
+        S.setStateVal(ck, "downtimeClock")
+        clockDraft.month = m
+        StorytellerScenesPanel.refresh()
+        return
     end
 
     local activeKey = getActiveLibraryKey()
@@ -2815,6 +2870,33 @@ end
 --- Toggles `useRealTime` on the pending activation draft or live `sessionScene.clock`.
 function StorytellerScenesPanel.toggleRealTimeClock()
     if clockLerpBusy() then
+        return
+    end
+    if isPlayDowntime() then
+        local ck = S.getStateVal("downtimeClock")
+        if type(ck) ~= "table" then
+            ck = {}
+        end
+        ck.useRealTime = not (ck.useRealTime == true)
+        S.setStateVal(ck, "downtimeClock")
+        clockDraft.useRealTime = ck.useRealTime == true
+        StorytellerScenesPanel.refresh()
+        if ck.useRealTime == true then
+            if GameStateOverlay and type(GameStateOverlay.resetRealTimeCarry) == "function" then
+                GameStateOverlay.resetRealTimeCarry()
+            end
+            if GameStateOverlay and type(GameStateOverlay.ensureTicker) == "function" then
+                GameStateOverlay.ensureTicker()
+            end
+        else
+            if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
+                GameStateOverlay.stopTicker()
+            end
+        end
+        if Sync and type(Sync.ui) == "function" then
+            Sync.ui({ gameStateOverlay = true })
+        end
+        U.AlertGM(ck.useRealTime and "Downtime real-time clock: ON." or "Downtime real-time clock: OFF.")
         return
     end
     local activeKey = getActiveLibraryKey()

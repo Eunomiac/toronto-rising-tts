@@ -109,10 +109,36 @@ local function lightGuid(color)
 end
 
 --- @param color string
+--- @return boolean
+local function isSeatHomeFigurineGuid(guid)
+    if type(guid) ~= "string" or guid == "" then
+        return false
+    end
+    for i = 1, #(C.PlayerColors or {}) do
+        local color = C.PlayerColors[i]
+        local seatGuid = G.GUIDS["SEAT_FIGURE_" .. string.upper(color)]
+        if seatGuid == guid then
+            return true
+        end
+    end
+    return false
+end
+
+--- @param color string
 --- @return Object|nil
 local function figureObject(color)
     local guid = figureGuid(color)
     if guid == nil then
+        return nil
+    end
+    if isSeatHomeFigurineGuid(guid) then
+        U.AlertGM(
+            "Spotlight: "
+                .. figureGuidKey(color)
+                .. " is a home seat figurine GUID. Carousel will not move "
+                .. tostring(color)
+                .. "."
+        )
         return nil
     end
     return G.getObject(guid)
@@ -373,6 +399,15 @@ end
 local function placeStandIn(color, slotOffset, lightMode)
     local fig = figureObject(color)
     if not U.isGameObject(fig) then
+        return
+    end
+    local figGuid = fig.getGUID and fig.getGUID() or nil
+    if isSeatHomeFigurineGuid(figGuid) then
+        U.AlertGM(
+            "Spotlight: refusing to place home seat figurine "
+                .. tostring(color)
+                .. " on the carousel."
+        )
         return
     end
     ensureTag(fig, Spotlight.FIGURE_TAG)
@@ -988,6 +1023,15 @@ function Spotlight.applyEnterWorld()
 
     if ok == true then
         applyCarouselSnapFromState()
+        local ringGuids = {}
+        for i = 1, #(C.PlayerColors or {}) do
+            local color = C.PlayerColors[i]
+            local fig = figureObject(color)
+            if U.isGameObject(fig) then
+                ringGuids[#ringGuids + 1] = tostring(color) .. "=" .. tostring(fig.getGUID and fig.getGUID() or "?")
+            end
+        end
+        print("[Spotlight] Stand-ins on the ring: " .. table.concat(ringGuids, ", "))
     end
     applyPlayfieldToysFromPhase()
     refreshHostControls()

@@ -17,9 +17,56 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — CSHEET page 2 fill dots + power line breaks._
+_Last populated: 2026-09-21 — Focus batch TOR-578 / TOR-586 / TOR-580 / TOR-581 / TOR-527 / TOR-579._
 
 ### Phases / session start
+
+#### TOR-578 — Phases Advance click-again-to-confirm
+
+**How to verify:** Save & Play so the Phases panel XML reloads. Open the Phases tab.
+
+1. Click **Advance →** once. Red text **Click Again to Confirm** should appear immediately to the right of the button. The phase should not change.
+2. Click **Advance →** again within about five seconds. The hint should disappear and the phase should advance.
+3. Click **Advance →** once more, then wait five seconds without a second click. The red hint should go away by itself. Closing the Phases panel should also clear it.
+
+#### TOR-580 — End→Intermission waits until the cover is down
+
+**How to verify:** Save & Play. Advance through Play and Spotlight to End, then click **Advance →** (second click to confirm) to go to Intermission.
+
+1. The session-end splash should slide down fully before the table, skybox, or lights jump.
+2. The splash art should still be the session that just ended, not the next session number.
+
+#### TOR-581 — Rain emitter hidden off Play
+
+**How to verify:** Save & Play. Note the rain particle object on the table during Play (with rain weather if you have a rainy scene).
+
+1. In Play it should sit on the table origin and play rain when weather calls for it.
+2. Advance to Spotlight, End, or Intermission: it should be parked under the table (not sitting in the playfield).
+3. If you Apply a Scatter scene during Play, Scatter should still hide it; leaving Scatter while still in Play should bring it back.
+
+#### TOR-527 — Main and Downtime follow the live scene
+
+**How to verify:** Save & Play. Start from Intermission with no scene on the table.
+
+1. Advance to Play. The overlay should show a date and the word **DOWNTIME** (no district/site text). Changing the Scenes clock should not change chronicle present-day.
+2. Apply a library scene. The Play subphase should switch to Main and the overlay should show location and normal time.
+3. End the scene. You should be back in Downtime.
+4. Click **Main** or **Downtime** when already on the correct one: nothing should change. Click the “wrong” one: it should snap to the correct one for whether a scene is live.
+5. If you enter Memoriam from a live scene, then click **Main**, that scene should come back. If Memoriam started with no scene, you should land in Downtime.
+
+#### TOR-579 — Spotlight uses stand-ins, not home figurines
+
+**How to verify:** Save & Play. Advance into Spotlight.
+
+1. Home seat figurines should stay at the chairs. Each player should still be unable to see their own home figurine.
+2. The ring should show the dedicated Spotlight stand-ins. The Host console should print a line listing those stand-in GUIDs.
+
+#### TOR-586 — Load shows character sheet pages 1 and 2
+
+**How to verify:** Before Save & Play, leave at least one PC sheet showing a later page (3 or 4). Save & Play.
+
+1. Every player character sheet should be showing pages 1 and 2 above the table.
+2. Later pages should be parked, not the pair you are looking at.
 
 #### TOR-587 — Session-start cover shows black instead of splash art
 

@@ -708,12 +708,6 @@ local function showEndGlobalBlindfold()
     U.setAttributes("overlay_district_card_display", { active = "false", color = "Clear", image = "" })
     U.setAttributes("overlay_site_card_display", { active = "false", color = "Clear", image = "" })
     transitionGlobalBlindfoldAppliedVisible = true
-    local Main = require("core.main")
-    if type(Main.setDefaultCameraBeforeBlindfold) == "function" then
-        U.await(function()
-            Main.setDefaultCameraBeforeBlindfold("ALL")
-        end, 1.5)
-    end
 end
 
 --- Apply session-number CustomUIAsset names on session-start + end splash Images (TOR-565).
@@ -3398,6 +3392,15 @@ function onLoad(saved_data)
             if RSL ~= nil and type(RSL.reconcileYStateSeatObjectVisibilityFromWorld) == "function" then
                 RSL.reconcileYStateSeatObjectVisibilityFromWorld()
             end
+            if RSL ~= nil and type(RSL.ensureMinVisibleCsheetPagesForAllSeats) == "function" then
+                RSL.ensureMinVisibleCsheetPagesForAllSeats()
+            end
+            do
+                local Phases = require("core.phases")
+                if type(Phases.reconcileParticleEmitterFromPhase) == "function" then
+                    Phases.reconcileParticleEmitterFromPhase()
+                end
+            end
             local NPCS = require("core.npcs")
             if NPCS ~= nil and type(NPCS.reconcilePreloadPoolHideFromState) == "function" then
                 local preloadHidden = NPCS.reconcilePreloadPoolHideFromState()
@@ -4944,13 +4947,47 @@ function HUD_scenesLibEnd(player, button, id)
     StorytellerScenesPanel.endSceneNarrative(player)
 end
 
---- Advance top-level phase in sequence (TOR-143).
+--- Advance click-again-to-confirm (TOR-578): 5s window, same as control-board Clear.
+local PHASE_ADVANCE_CONFIRM_SEC = 5
+local PHASE_ADVANCE_CONFIRM_HINT_ID = "phase_AdvanceConfirmHint"
+local phaseAdvanceConfirmExpire = nil
+local phaseAdvanceConfirmGen = 0
+
+local function hidePhaseAdvanceConfirmHint()
+    phaseAdvanceConfirmExpire = nil
+    U.setAttribute(PHASE_ADVANCE_CONFIRM_HINT_ID, "active", "false")
+end
+
+function clearPhaseAdvanceConfirmArm()
+    phaseAdvanceConfirmGen = phaseAdvanceConfirmGen + 1
+    hidePhaseAdvanceConfirmHint()
+end
+
+local function armPhaseAdvanceConfirm()
+    local gen = phaseAdvanceConfirmGen + 1
+    phaseAdvanceConfirmGen = gen
+    phaseAdvanceConfirmExpire = os.time() + PHASE_ADVANCE_CONFIRM_SEC
+    U.setAttribute(PHASE_ADVANCE_CONFIRM_HINT_ID, "active", "true")
+    U.await(function()
+        if phaseAdvanceConfirmGen ~= gen then
+            return
+        end
+        hidePhaseAdvanceConfirmHint()
+    end, PHASE_ADVANCE_CONFIRM_SEC)
+end
+
+--- Advance top-level phase in sequence (TOR-143). First click arms; second within 5s Advances (TOR-578).
 function HUD_phaseAdvance(player, button, id)
     if not requireStorytellerForMutation(player, "HUD_phaseAdvance") then
         return
     end
-    local Phases = require("core.phases")
-    Phases.advanceNext()
+    if phaseAdvanceConfirmExpire ~= nil and os.time() <= phaseAdvanceConfirmExpire then
+        clearPhaseAdvanceConfirmArm()
+        local Phases = require("core.phases")
+        Phases.advanceNext()
+        return
+    end
+    armPhaseAdvanceConfirm()
 end
 
 --- Legacy alias: free-jump removed; Advance only.
@@ -4987,7 +5024,11 @@ function HUD_setPlaySubPhase(player, button, id)
         return
     end
     local Phases = require("core.phases")
-    Phases.setPlaySubPhase(target)
+    local desired = Phases.playSubPhaseForLiveScene()
+    if S.getStateVal("playSubPhase") == desired then
+        return
+    end
+    Phases.setPlaySubPhase(desired)
 end
 
 --- Memoriam configuration popup (TOR-539). ST-gated; draft is modal-local until Advance.

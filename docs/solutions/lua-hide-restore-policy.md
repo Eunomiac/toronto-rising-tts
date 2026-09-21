@@ -123,7 +123,7 @@ Snapshot position is **not** the primary restore authority when a catalog pose o
 
 **NPC pooled spotlights (`npc_light`):** `applyPooledSpotlightHideOrRestore` in `core/npcs.ttslua` — seated/preload park and stage reveal use **`O.hideObject` / `O.restoreObject`** (full invisibility incl. Storyteller). Gameboard spotlight preview: `core/npc_gameboard_spotlight.ttslua`.
 
-**Spotlight phase (carousel):** `core/spotlight.ttslua` — seat `SEAT_FIGURE_*` stay at table seats with **`C.HiddenObjects` active visibility** (`O.applyActiveVisibility` / `O.restoreObject`); they are **not** parked via `O.hideObject`. Dice bags / companions / compulsion decks and off-carousel workshop stand-ins use `O.hideObject` / `O.restoreObject`.
+**Rain particle emitter:** Off Play, `Phases.reconcileParticleEmitterFromPhase` parks `G.GUIDS.PARTICLE_EMITTER` with `O.hideObject`. On Play it restores at table-origin X/Z plus snapshot Y. While Scatter is active, Scatter's `objectsToHide` list stays in charge (do not un-park from Play restore).
 
 **PC seat absent (`C.HiddenObjects` catalog):** `O.applyPcSeatHiddenObjectPresence` / `O.reconcilePcSeatHiddenObjectsFromState` — when a PC seat is narratively absent or disconnected, every matching catalog GUID and `<Color>Object` tag entry uses **`O.hideObject`** (not on-table `setInvisibleTo`). When present again, **`O.restoreObject`** when tagged `HiddenObject`, else active catalog visibility via `O.activeVisibilityForGuid`.
 

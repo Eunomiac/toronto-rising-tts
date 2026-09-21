@@ -337,6 +337,8 @@ function S.GetDefaultGameState()
         },
         --- Chronicle in-fiction "now" (Y/M/D/h/m only). Set on first present-day scene with datetime; advances monotonically.
         presentDayClock = nil,
+        --- Play Downtime copy of present-day. Edits during Downtime must not write `presentDayClock` (TOR-527).
+        downtimeClock = nil,
         --- Projects by id (TOR-232). See `.dev/Projects/Project System Overview.md`.
         projects = {},
         --- Per-PC last map pin location + narrative clock when last active (TOR-245). Top-level (not in
@@ -925,6 +927,9 @@ function S.validateState()
     end
     if type(gameState.presentDayClock) == "table" and not U.narrativeClockHasDatetime(gameState.presentDayClock) then
         gameState.presentDayClock = nil
+    end
+    if gameState.downtimeClock ~= nil and type(gameState.downtimeClock) ~= "table" then
+        gameState.downtimeClock = nil
     end
     if not gameState.seatLayout or type(gameState.seatLayout) ~= "table" then
         gameState.seatLayout = {}

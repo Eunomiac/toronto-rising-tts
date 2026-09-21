@@ -788,7 +788,7 @@ local function csheetPageOnY()
   return 3.20
 end
 
---- If fewer than two pages are above-table for this seat, raise pages 1–2 (TOR-343 invariant).
+--- Pages 1 and 2 are the visible pair for every PC seat (TOR-586). Raise 1–2 to on-Y and park later pages.
 --- @param seatKey string
 local function ensureMinVisibleCsheetPagesForSeat(seatKey)
   if not isPlayerSeatKey(seatKey) then
@@ -797,7 +797,6 @@ local function ensureMinVisibleCsheetPagesForSeat(seatKey)
   local tag = objectTagForPlayerColor(seatKey)
   local tagged = getObjectsWithTag(tag) or {}
   local pagesByNum = {}
-  local visibleCount = 0
   for _, obj in ipairs(tagged) do
     if obj ~= nil and U.isGameObject(obj) then
       local disp = SRI.readRoleColorIdentity(obj)
@@ -806,28 +805,29 @@ local function ensureMinVisibleCsheetPagesForSeat(seatKey)
         local pageNum = type(roleKey) == "string" and tonumber(string.match(roleKey, "^CSHEET_PAGE_(%d+)$")) or nil
         if type(pageNum) == "number" then
           pagesByNum[pageNum] = obj
-          local pos = obj.getPosition()
-          local y = (type(pos) == "userdata" or type(pos) == "table") and pos.y or nil
-          if type(y) == "number" and y >= 0 then
-            visibleCount = visibleCount + 1
-          end
         end
       end
     end
   end
-  if visibleCount >= 2 then
-    return
-  end
   local onY = csheetPageOnY()
-  for _, pageNum in ipairs({ 1, 2 }) do
-    local obj = pagesByNum[pageNum]
-    if obj ~= nil then
-      local pos = obj.getPosition()
-      if type(pos) == "userdata" or type(pos) == "table" then
-        obj.setPosition({ x = pos.x, y = onY, z = pos.z })
-        reconcileCsheetPageVisibilityFromY(obj)
+  local offY = C.HIDDEN_OBJECT_WORLD_Y
+  for pageNum, obj in pairs(pagesByNum) do
+    local pos = obj.getPosition()
+    if type(pos) == "userdata" or type(pos) == "table" then
+      local targetY = (pageNum == 1 or pageNum == 2) and onY or offY
+      local y = pos.y
+      if type(y) ~= "number" or math.abs(y - targetY) > 0.01 then
+        obj.setPosition({ x = pos.x, y = targetY, z = pos.z })
       end
+      reconcileCsheetPageVisibilityFromY(obj)
     end
+  end
+end
+
+--- Cold load: every PC seat shows pages 1 and 2 (TOR-586).
+function M.ensureMinVisibleCsheetPagesForAllSeats()
+  for i = 1, #(C.PlayerColors or {}) do
+    ensureMinVisibleCsheetPagesForSeat(C.PlayerColors[i])
   end
 end
 
