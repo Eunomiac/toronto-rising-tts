@@ -51,7 +51,8 @@ Use this bucket for **rules that only change how pool math / result class is com
 - **Per-die locks after WP randomize** use **`U.await` with a resting/`loading_custom` predicate** (`Wait.condition` transport — appropriate from **`onObjectRandomize`**). Prefer that over object-`testRef` waits that historically used brittle shared coroutine names. Max timeout: **`C.WP_REROLL_DIE_REST_MAX_WAIT_SECONDS`**.
 - **Parameters** for that behavior still belong in `active.rollOptions` (e.g. can reroll hunger, number of rerolls, dice per spend) so new tuning does not require new globals.
 - **WP reroll wave (TOR-165):** during `wpRerollWave` the settle debounce is **not** scheduled (`onDieSettledSignal` returns early) — partial rerolls never time out to confirmation. Each rerolled die, on settle, is driven by the per-die callback in `onWpRerollDieRandomized`:
-  - **Lock on settle** — a rerolled die is `setLock(true)` once resting (cannot reroll the same die twice).
+  - **Unlock for the wave** — eligible dice are unlocked and made interactable. Preload-pool dice are restored non-interactable, so clearing the physics lock alone leaves them ungrabbable.
+  - **Lock on settle** — a rerolled die is locked and made non-interactable once resting (cannot reroll the same die twice).
   - **Display refresh** — `RC.recalculate(color, true)` (`previewOnly`) rebuilds `diceFaces`/`result` and `notifyStateChanged` so the player panel updates **without** leaving the wave (stays ROLLING).
   - **Cap auto-finish** — when the `numberOfDiceRerolled` cap **N** is reached and all chosen dice are locked, `finishWpRerollWaveFromRolling` → full `recalculate` → POST_ROLL (no Confirm needed).
   - **Confirm** — for fewer-than-cap (or `wpRerollScope` "all") waves, **Confirm** is the only way forward; `confirmRoll` detects ROLLING + `wpRerollWave` and ends the wave → POST_ROLL.

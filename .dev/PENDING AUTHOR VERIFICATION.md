@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — TOR-605 Scatter and wood tables share one camera layout finish._
+_Last populated: 2026-09-21 — Willpower reroll dice can be picked up (Linear quota blocked a new issue; noted on TOR-31)._
 
 ### Soundscape
 
@@ -243,6 +243,19 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 4. Right-click the camera button again to go FirstPerson, then immediately click a picker preset (or quick-click the camera button). You should not stay stuck in FirstPerson.
 
 **Context:** Overlay right-click is the only scripted FirstPerson camera. Other camera snaps were leaving players in FirstPerson because lookAt can no-op and a delayed FirstPerson switch was not cancelled. Left-click vs hold is **TOR-597**.
+
+### Dice
+
+#### TOR-31 — Willpower reroll dice can be picked up
+
+**How to verify:** Save & Play so scripts reload. Start a normal player roll with a few standard dice (right-click Roll is fine). When the result is up, click **Spend Willpower**.
+
+1. The standard dice should unlock. You should be able to pick them up and reroll up to the usual three.
+2. Hunger dice should stay locked, and Rouse dice should stay locked.
+3. After a die you rerolled comes to rest, that die should lock again so you cannot reroll it a second time.
+4. Optional: left-click Roll (not right-click) on a fresh pool. The dice should unlock and you should be able to pick them up and throw them yourself.
+
+**Context:** Recycled dice were put back on the table with interaction turned off. Spending Willpower only cleared the physics lock, so the dice still could not be picked up. Linear could not open a new bug issue (workspace quota). relatedTo **TOR-165** (willpower reroll wave) and **TOR-287** (dice preload pool).
 
 ## Cleared
 

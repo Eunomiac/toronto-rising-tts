@@ -67,6 +67,7 @@ _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred
 
 ## Dice Roller
 
+- [x] **Willpower reroll leaves dice locked and ungrabbable:** Recycled dice stay non-interactable after the physics lock is cleared, so Spend Willpower could not be used to pick dice up. Eligible dice are now interactable for the reroll (and when a roll is released for a manual throw). Hunger and Rouse stay locked. Pending Save & Play. Linear quota blocked a new issue; noted on **TOR-31** (dice epic) and related to **TOR-165** (willpower reroll wave) / **TOR-287** (dice preload pool).
 - [ ] **Auto Rouse: lock 0.5s after table hit, 1s broadcast:** Do not wait for resting; lock after impact, resolve immediately, show the fullscreen result for one second. relatedTo **TOR-490**, **TOR-492**. _(TOR-526)_
 - [x] **Hunger overlay defaults to 1:** Missing Hunger in bootstrap / state normalize was filling 0, so overlays started empty. New or missing Hunger is now 1. Pending Save & Play. _(TOR-582)_
 - [x] **ST roll tray/light before dice + player-like randomize pop:** Tray/light ordering shipped; ST dice spawn unlocked at tray Y=2.04 then unlock ? 0.15s ? `randomize(clickerSeat)`. Author confirmed 2026-08-03. _(TOR-448)_

@@ -305,6 +305,8 @@ function DPP.claim(bagGuid, position, rotation, scale)
     -- Staging pose is known (bag hover / arc / ST tray). Passing it here is mandatory:
     -- without it, restore replays the hide snapshot (last on-table arc) and a follow-up
     -- setPositionSmooth to hover wins over the bag's arc move (TOR-591).
+    -- Non-interactable while staged on the arc. Roll release and the Willpower
+    -- wave turn interaction back on when the player is supposed to handle them.
     local restoreOpts = {
         locked = true,
         interactable = false,

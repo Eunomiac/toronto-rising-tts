@@ -2477,6 +2477,8 @@ local function randomizeReleasedDieForRoll(color, die, physicsColor)
     if die == nil or die.randomize == nil then
         return false
     end
+    -- Turn interaction on before the toss. Preload dice stay ungrabbable if only the lock is cleared.
+    die.interactable = true
     if die.getLock ~= nil and die.getLock() == true then
         die.setLock(false)
     end

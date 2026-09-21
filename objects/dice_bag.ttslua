@@ -722,6 +722,9 @@ function releaseDice(params)
     end
 
     for _, die in ipairs(dice) do
+        -- Preload claim leaves dice non-interactable. Unlock the physics lock and
+        -- let the player pick them up (left-click Roll is a manual throw).
+        die.interactable = true
         die.setLock(false)
     end
 

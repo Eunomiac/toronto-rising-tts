@@ -370,7 +370,22 @@ local function readPhysicalDieFace(obj)
     return 0
 end
 
---- Locks every physical die for this roll (all kinds).
+--- Physics lock plus whether a player can pick the die up.
+-- Preload-pool dice are restored non-interactable. Clearing the lock alone leaves
+-- them ungrabbable, so a Willpower reroll (and a manual throw) never starts.
+-- Interactable is set first so the unlock is not ignored on a non-interactable object.
+-- @param obj Object|nil
+-- @param canTouch boolean
+local function setRollDiePlayerAccess(obj, canTouch)
+    if obj == nil then return end
+    local touch = canTouch == true
+    obj.interactable = touch
+    if obj.setLock ~= nil then
+        obj.setLock(not touch)
+    end
+end
+
+--- Locks every physical die for this roll (all kinds) and makes them unselectable.
 -- @param color string
 -- @param rollId string
 local function lockAllRollDiceObjects(color, rollId)
@@ -378,13 +393,14 @@ local function lockAllRollDiceObjects(color, rollId)
     local objsByKind = RC._getDiceObjectsByKindForRoll(color, rollId)
     for _, kind in ipairs(diceKindsForActive(active)) do
         for _, o in ipairs(objsByKind[kind] or {}) do
-            if o ~= nil then o.setLock(true) end
+            setRollDiePlayerAccess(o, false)
         end
     end
 end
 
 --- After initial POST_ROLL settle, all dice are locked (see recalculate). Here we unlock
 --- normals for rerolling and lock hunger unless rollPolicy.wpCanRerollHunger (applied now, not carried from prior phase).
+-- Eligible dice are also made interactable so the player can pick them up.
 -- @param color string
 -- @param active table
 local function applyWpRerollWaveStart(color, active)
@@ -402,7 +418,7 @@ local function applyWpRerollWaveStart(color, active)
                 if kind == DK.KIND_HUNGER and not canHunger then
                     unlock = false
                 end
-                o.setLock(not unlock)
+                setRollDiePlayerAccess(o, unlock)
             end
         end
     end
@@ -426,7 +442,7 @@ local function lockDiceOutsideRerollSelection(color, active)
     for _, kind in ipairs(diceKindsForActive(active)) do
         for _, o in ipairs(objsByKind[kind] or {}) do
             if o ~= nil and not chosen[o.getGUID()] then
-                o.setLock(true)
+                setRollDiePlayerAccess(o, false)
             end
         end
     end
@@ -1544,9 +1560,7 @@ local function lockRouseDiceForRoll(color, rollId)
     local objsByKind = RC._getDiceObjectsByKindForRoll(color, rollId)
     for _, kind in ipairs({ DK.KIND_ROUSE, DK.KIND_OBLIV_ROUSE, DK.KIND_BLOOD_SURGE_ROUSE }) do
         for _, o in ipairs(objsByKind[kind] or {}) do
-            if o ~= nil and o.getLock() ~= true then
-                o.setLock(true)
-            end
+            setRollDiePlayerAccess(o, false)
         end
     end
 end
@@ -2063,8 +2077,9 @@ function RC.recalculate(color, previewOnly)
         if wasWpWave then
             active.willpower.wpRerollWave = false
         end
-        -- Lock entire pool whenever dice finish settling (initial roll or WP wave). Unlock only
-        -- when the player spends Willpower (applyWpRerollWaveStart).
+        -- Lock entire pool whenever dice finish settling (initial roll or WP wave), and
+        -- make those dice non-interactable. Unlock and restore interaction only when the
+        -- player spends Willpower (applyWpRerollWaveStart).
         lockAllRollDiceObjects(color, active.id)
     end
 
@@ -2190,7 +2205,7 @@ function RC.onWpRerollDieRandomized(color, obj)
             -- Rerolled die settled: lock it (cannot reroll the same die twice — req 3),
             -- then either auto-finish at the cap (req 2) or refresh the panel display
             -- without ending the wave (req 1).
-            o.setLock(true)
+            setRollDiePlayerAccess(o, false)
             if not tryFinishWpRerollWaveWhenCapSatisfied(color) then
                 RC.recalculate(color, true)
             end
