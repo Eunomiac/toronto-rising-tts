@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — Focus batch TOR-578 / TOR-586 / TOR-580 / TOR-581 / TOR-527 / TOR-579._
+_Last populated: 2026-09-21 — TOR-589 dice bags keep authored scale (layout never setScale)._
 
 ### Phases / session start
 
@@ -501,9 +501,21 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 #### TOR-584 — Do not rescale player dice bags or companion toggles
 
-**How to verify:** Save & Play. Hunger, Normal, Rouse, and Oblivion-Rouse bags at a PC seat should be their original size (scale 1), not inflated. Check Table A and Scatter. Companion toggle tiles should keep the size they have in the workshop save.
+**How to verify:** Save & Play. Companion toggle tiles at a PC seat should keep the size they have in the workshop save (layout must not resize them). Dice-bag sizes are the TOR-589 check below.
 
-**Context:** Seat-role offsets had `{1.35, 1.35, 1.35}` on dice bags, and layout was skipping `DICEBAG_` so already-inflated bags stayed large. Offsets are now `{1, 1, 1}` and layout applies that scale. Companion toggles are skipped so workshop scale is never overwritten.
+**Context:** Companion toggles skip layout scale. The first dice-bag pass applied `{1, 1, 1}` to every bag; that was too aggressive — see TOR-589.
+
+#### TOR-589 — Do not change player dice bag scale during layout
+
+**How to verify:** Save & Play. Look at a PC seat on Table A, then again after Scatter.
+
+1. Standard (normal) and Rouse bags should be scale `{1.3, 1.3, 1.3}` — clearly larger than the Hunger bag.
+2. Blood Surge (Hunger) and Oblivion-Rouse bags should stay `{1, 1, 1}`.
+3. Applying a scene, switching tables, or going into Scatter should not change those sizes.
+
+If Standard or Rouse bags are still at 1 after Save & Play, the earlier TOR-584 pass already wrote that into the save. Set those two bag types to 1.3 once on the table, then Save. After that, layout will leave them alone.
+
+**Context:** Layout no longer calls `setScale` on `DICEBAG_*` roles, and those offset rows no longer include a `scale` field. Bags keep the size authored in the save.
 
 ---
 
