@@ -20,16 +20,6 @@ Verification:
 ## For Immediate Implementation
 > _After registering each of these issues with Linear in the ordinary fashion, before updating the Focus Stack, briefly review the issue: If it is a quick or easy fix, implement it immediately without waiting for author confirmation. Otherwise, promote it to the top of the Focus Stack, and offer to begin work on it immediately when summarizing your work processing `INBOX.md` to the author. If multiple issues require promotion in this way, consider how best to resolve them as quickly as possible, and offer to draft an implementation plan in your response to the author._
 
-- [Phases Panel] Add a click-again-to-confirm functionality to the "Advance ->" button, with the message "Click Again to Confirm" appearing in red text to the immediate right of the Advance button after the first click, and disappearing after the confirmation OR after the second click window closes.
-- [Main & Downtime Phases] Tightly couple the Main subphase to the existence of an active scene: When a scene is applied, the subphase should be switched to "Main", and when a scene is ended (or whenever there is no established scene), the subphase should switch to "Downtime". (This includes the initial transition from INTERMISSION to PLAY: The game should start in Downtime, as there isn't a scene active.) The "Main" and "Downtime" buttons in the Phases panel should only ever switch to the appropriate subphase, regardless of which one is clicked, and if this would result in no change of phase, the button should no-op.  (E.g. clicking "Main" during a Memoriam subphase should end the Memoriam subphase, but return to "Downtime" if the Memoriam subphase was started outside of an active scene, and to "Main" if there was an active scene when Memoriam was initialized, restoring that scene as it was.)
-- [Dice Bag Rescaling] Player dice bags and companion toggles should never have their scale changed at any point in the script. Please confirm scale remains unchanged — I'm not sure how it happened, but Blood Surge (i.e. "DICEBAG_HUNGER") bags in particular are being scaled up at some point by a script action.
-- [Game Load Sequence] All player character sheets should be set to page 1 & 2 being active.
-- [Inactive Tarot Deck] When the pink player's tarot deck is inactive, it should be hidden using the new hideObject function, and revealed with the complementary function when it is activated.
-- [Spotlight Phase] It appears that the player figurines are being moved onto the stage and used as the spotlight figurines on the carousel. Instead, duplicates of the character figurines (stored in preload zone) should be used on the carousel, and the seated NPC figurines should remain untouched (i.e. their visibility modes should remain such that each player color's figurine is hidden from themselves)
-- [End Phase] During the transition from END phase to INTERMISSION, behind-the-blindfold work begins too quickly, interrupting the descent of the blindfold. Before applying a bespoke fix, why isn't this transition following the same pipeline as the other transitions (which delay work until the blindfold is down). Shouldn't we have a single path that handles blindfold transitions, a single source of sequencing-truth that governs all transitions and treats them the same way?
-- [Particle Emitter] The particle emitter object should be hidden (via our hide function) whenever the phase is not PLAY, and should be shown when the phase is PLAY.
-
-
 ## Active
 
 ## External Work (Set STATUS to "External To Do")
@@ -257,6 +247,8 @@ Does **not** need live confirmation from Lua game state (author keeps gold list 
 
 
 ## Processed
+
+2026-09-21 `/tr-inbox` Immediate — shipped **TOR-582** (Hunger overlay defaults to 1), **TOR-583** (PCs panel drop color/nickname row + smaller trackers), **TOR-584** (dice bag / companion scale), **TOR-585** (CSHEET restore y = 3.20). Promoted **TOR-578** (Advance click-again-to-confirm), **TOR-579** (Spotlight carousel stand-ins), **TOR-580** (End→Intermission behind-cover sequencing), **TOR-581** (hide particle emitter off PLAY), **TOR-586** (load CSHEET pages 1 and 2). Expanded **TOR-527** (Main/Downtime coupled to live scene). Tarot inactive hide already shipped (`GlobalHideObject`). PAVE ✅ cleared Memoriam slider/button rows plus **TOR-559** / **TOR-528** (Linear Done issues deleted to free quota). **TOR-565** ❌ closed in favor of **TOR-566**. **TOR-558** ⚠️: Assets 1–3 kept for ad-hoc Cloud folders.
 
 2026-09-15 Immediate — Scatter chair import (`tableKey` Scatter) + live Standard↔Scatter stash/restore → **TOR-573** (shipped). relatedTo **TOR-572**.
 

@@ -750,5 +750,17 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-09-15 | SHIP | TOR-567 follow-up | Attribute-path TR_Loop fades across scaled song lead-in (silence when Music C starts). Linear create blocked by workspace quota; comment on TOR-567. Pending Save & Play. |
 | 2026-09-15 | SHIP | TOR-559 follow-up | Remove lerp explode; Phases **Quick Transition** skips Music C and runs `playAttribute(0)`. Linear create blocked by workspace quota; comment on TOR-559. Pending Save & Play. |
 | 2026-09-19 | SHIP | TOR-567 follow-up | Tuned session-start splash (number/title + blackout). TR_Loop fade lasts lead-in/0.75 so Music C starts at ~25% loop volume. Comment on TOR-567. Pending Save & Play. |
+| 2026-09-21 | DELETE | TOR-559, TOR-528, TOR-541–551, TOR-568, TOR-552, TOR-557, TOR-556, TOR-531, TOR-516, TOR-497, TOR-510, TOR-530, TOR-554 | Linear free-plan cap. Deleted **Done** issues that were not on remaining PAVE (author-confirmed Memoriam/session rows plus older Done without outstanding verify). Author allowed this prune. |
+| 2026-09-21 | CREATE | TOR-578 | Phases Advance click-again-to-confirm. Focus #4. |
+| 2026-09-21 | CREATE | TOR-579 | Spotlight carousel must use preload stand-ins. relatedTo TOR-98. Focus #1. |
+| 2026-09-21 | CREATE | TOR-580 | End→Intermission behind-cover sequencing. relatedTo TOR-143 / TOR-566. Focus #2. |
+| 2026-09-21 | CREATE | TOR-581 | Hide particle emitter when phase is not PLAY. Focus #5. |
+| 2026-09-21 | CREATE | TOR-586 | On load, CSHEET pages 1 and 2. Focus #6. |
+| 2026-09-21 | UPDATE | TOR-527 | Expanded Immediate spec: Main/Downtime coupled to live scene. Focus #3. |
+| 2026-09-21 | CREATE+SHIP | TOR-582 | Hunger overlay defaults to 1 (bootstrap + state normalize). Pending Save & Play. |
+| 2026-09-21 | CREATE+SHIP | TOR-583 | PCs panel drop color/nickname row; tracker fonts 18 / Hunger 16. relatedTo TOR-518. Pending Save & Play. |
+| 2026-09-21 | CREATE+SHIP | TOR-584 | Dice bag scale `{1,1,1}`; companion toggles skip layout scale. Pending Save & Play. |
+| 2026-09-21 | CREATE+SHIP | TOR-585 | CSHEET restore y = 3.20. Pending Save & Play. |
+| 2026-09-21 | `/tr-inbox` | PAVE | ✅ cleared TOR-541–551, TOR-528, TOR-559 (Linear Done issues then deleted). ❌ TOR-565 → ⌚ (verify TOR-566). ⚠️ TOR-558: keep Assets 1–3 for ad-hoc Cloud folders. Duplicate tarot hide dismissed (`GlobalHideObject`). |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

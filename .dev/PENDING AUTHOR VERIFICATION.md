@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-19 — session-start splash timing and TR_Loop fade._
+_Last populated: 2026-09-21 — Hunger overlay, PCs panel, dice bag scale, CSHEET Y._
 
 ### Phases / session start
 
@@ -53,9 +53,21 @@ _Last populated: 2026-09-19 — session-start splash timing and TR_Loop fade._
 
 **Context:** Blank CustomImage faces (author-set); one XmlUI Image per page‑1 slot; page‑2 dynamic XmlUI; Cloud jobs `csheetPage1Overlays` / `csheetPage2Assets`. Linear issue create hit workspace quota this session — track under Character Sheets epic TOR-38 until a TOR id can be filed.
 
+#### TOR-585 — Character sheet pages restore to y = 3.20
+
+**How to verify:** Save & Play so scripts reload. Flip a PC sheet so a hidden page comes back on. That page should sit at y = 3.20, not 3.19.
+
+**Context:** Catalog and layout now use y = 3.20 (`C.ObjectPositions.CSHEET_PAGE`, seat-role offsets, object-script slice).
+
+#### TOR-582 — Hunger overlay defaults to 1
+
+**How to verify:** Save & Play from a cold load (File → Load, then Save & Play). Each PC Hunger overlay should match Hunger 1 (one pip), not the empty Hunger-0 art, unless you already changed that character's Hunger in play.
+
+**Context:** Missing Hunger was defaulting to 0 in bootstrap and state normalize. New or missing Hunger now defaults to 1. Saved Hunger values other than nil are unchanged.
+
 ### Synchronization / objects
 
-#### Spotlight seat figurines — visibility-only during Spotlight (not O.hideObject park)
+#### ⌚ TOR-579 — Spotlight carousel must use preload stand-ins, not home seat figurines
 
 **How to verify:** Save & Play so scripts reload.
 
@@ -63,7 +75,7 @@ _Last populated: 2026-09-19 — session-start splash timing and TR_Loop fade._
 2. Confirm the carousel ring shows the separate workshop stand-ins (`SPOTLIGHT_FIGURE_*`), not the home seat objects. Home seats and carousel figures should both exist at once. Carousel **lights** should not show the cone/arrow object indicator (invisible looping effect) unless you turned **Toggle Spotlights** on in the Host debug menu.
 3. Advance **Spotlight → End**. Home figurines and their seat lights should land on Table B0 seats at normal height with the same owner-only catalog visibility — not stuck at carousel poses, −200, or odd light aim. Bags / companions / compulsion decks should still be parked until Intermission.
 
-**Context:** The hide/reveal protocol migration had parked `SEAT_FIGURE_*` with `O.hideObject`, then a follow-up briefly used a blanket PC hide list. Active visibility is now always `C.HiddenObjects` via `O.restoreObject` / `O.applyActiveVisibility`. Linear issue create blocked this session (workspace quota); related to TOR-98 (Spotlight phase).
+**Context:** Inbox Immediate 2026-09-21: the carousel is still using home seat figurines. **TOR-579** is Focus #1. Do not Save & Play this row until that ships. Related to **TOR-98** (Spotlight phase).
 
 #### Unified hide/restore — y = −200 parking protocol
 
@@ -229,7 +241,7 @@ _Last populated: 2026-09-19 — session-start splash timing and TR_Loop fade._
 
 **Context:** End exit was incrementing `sessionNum` before the splash name was chosen; `UI.show` also reset the Image to the XML default. Hide path was snapping `active=false` / missing on-element SlideOut attrs. relatedTo **TOR-565**.
 
-#### ❌ TOR-565 — Session-start overlay split + all-clients global blindfold
+#### ⌚ TOR-565 — Session-start overlay split + all-clients global blindfold
 
 **How to verify:** First confirm CustomUIAssets were renamed (or re-run `npm run custom-ui-assets:rename-overlays:dry-run` — it should report nothing left to rename). Reload the save from the main menu, then Save & Play so the new Global XML loads.
 
@@ -240,7 +252,8 @@ _Last populated: 2026-09-19 — session-start splash timing and TR_Loop fade._
 
 **Context:** Split session-start explode into `panel_overlay_session_start.xml`; new SlideIn_Top global cover for transitions and End→Intermission; retired transition/end panels; renamed CustomUIAssets. relatedTo **TOR-561**, **TOR-444**.
 
-**Verification Failures:** Slide-up hide was instant; End→Intermission showed a random global variant instead of the session-end splash. Follow-up **TOR-566**.
+**Verification Failures:** Slide-up hide was instant; End→Intermission showed a random global variant instead of the session-end splash. Follow-up **TOR-566** is shipped — verify that row instead. Do not re-run this original checklist (Lerp explode / old overlay split).
+
 #### TOR-563 — Session-start attribute-path static attrs in XML Defaults
 
 **How to verify:** Save & Play so the Global HUD picks up the new Defaults (or Save & Play, then click Phases → **Refresh XML**). Leave **Quick Transition** off. From Intermission, click **Advance** to Play and watch the session-start splash: the character pairs should still Grow/FadeIn, the frame should FadeIn, the session number/title should Grow/FadeIn, the cover should FadeOut at the end, and the session-start music should still kick in after the authored lead-in. Then in the Host console run `lua DEBUG.resetToIntermission()` and Advance again — the second run should still look and time the same.
@@ -295,13 +308,11 @@ Separately, restart the Storyteller Dashboard with the TTS Tools extension **dis
 
 **Context:** Sheet Key/Label/Scale → catalog fields that match `lib/npcs_data.ttslua`. Cloud still fills image URLs from `npc.name` at load. Follow-up on **TOR-577** (dropped URL fields). Linear could not create a new issue this session (workspace issue cap).
 
-#### ⚠️ TOR-558 — Cloud asset sync (CustomUIAssets + Cloud catalog)
+#### TOR-558 — Cloud asset sync (CustomUIAssets + Cloud catalog)
 
 **How to verify:** With Steam running and logged into the chronicle account, run `npm run cloud-asset-sync:dry-run` from the repo root. You should see the `siteCards` job keep ~170 Sites images and list any stale `siteCard_*` names, plus a `LuaCatalog` plan for `Cloud.Sites`. Then either run `npm run cloud-asset-sync` in a normal terminal (answer **y** if it asks about removing stale names) or run **BUILD PIPELINE (Full)** / `npm run build:full` (that path auto-accepts purges). Reload save **230** in Tabletop Simulator. Site card art should still resolve; after a catalog write, `print(Cloud.Sites and Cloud.Sites.AnarchBar and Cloud.Sites.AnarchBar.URL)` in the TTS console should show a hosted URL.
 
-**Context:** Replaces the manual Assets 1→2→3 loop for configured jobs. Main and XML builds do not run this.
-
-**Correction:** If "the manual Assets 1→2→3 loop" has been replaced by this new build process, remove the obsolete tasks from the `tasks.json` config file.
+**Context:** Cloud sync in Full build / `cloud-asset-sync` covers configured jobs. The VS Code **Assets 1 / 2 / 3** tasks stay for ad-hoc Cloud folders that are not in that job list. Main and XML builds do not run Cloud sync.
 
 ### Dashboard
 
@@ -314,12 +325,6 @@ Then **disable the TTS Tools extension** (only one editor can listen on 39998). 
 **Context:** Same External Editor hook as Execute Code. TTS listens on 39999; this dashboard listens on 39998 while it is running.
 
 ### High — session / join / first-load
-
-#### ✅ TOR-559 — TTS-attribute session-start animation (Phases Lerp explode toggle)
-
-**How to verify:** Save & Play so the new scripts and Phases XML load. Open **Phases**. Next to **Advance →** you should see a **Lerp explode** checkbox that starts unchecked. From Intermission, click **Advance →** into Play with that box still off. You should see the simpler splash sequence (Grow / FadeIn on the panels), and the session-starter track should kick in when the second pair appears — with the Intermission loop fading out at that same moment, not at the very start. When the sequence finishes, the cover should lift and Main music should come in as usual. Then run `lua DEBUG.resetToIntermission()`, turn **Lerp explode** on, and Advance again: you should get the older wavering attribute-lerp explode, with the sting timed to the first cover scale like before.
-
-**Context:** Default path uses TTS animation attributes so join clients do less per-frame XmlUI attribute traffic. Toggle on keeps the previous lerp explode for comparison.
 
 #### ⌚ TOR-439 — Join-stress re-verify after Global HUD remount weight cut
 
@@ -385,6 +390,12 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **Context:** Humidity is still stored in the chronicle weather codes; it is just not shown on the overlay.
 
+#### TOR-583 — PCs panel: drop color/nickname row and shrink tracker fonts
+
+**How to verify:** Save & Play. Open the Storyteller PCs panel. Each block should start with the character's full name (no Brown · nickname line). HP, WP, Humanity, and Hunger trackers should fit inside their rows without clipping.
+
+**Context:** Follow-up to **TOR-518** (PCs panel vertical trim). Track fonts are 18; Hunger dots are 16.
+
 #### TOR-518 — Tighten PCs panel vertical spacing
 
 **How to verify:** Save & Play. Open the Storyteller PCs panel at full size. Seat names, Desire, track glyphs, and button labels should keep the same font sizes as before. Rows and buttons should sit tighter vertically (less padding, shorter row heights). You should still be able to read the health / willpower / humanity glyph rows without clipping.
@@ -403,12 +414,6 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **Context:** Replaces the TOR-524 approach of swapping the image on the session-start panel. Session-start explode animations left that panel hard to restore cleanly.
 
-#### ✅ TOR-528 — DEBUG.resetToIntermission for intro re-tests
-
-**How to verify:** Save & Play. In the Host console run `lua DEBUG.resetToIntermission()`. The global session cover should come back with the usual session-start art (not the End blindfold). You should hear the looping Intermission theme (TR_Loop), not the session-start overture or Main. The Phases panel should show Intermission. Click **Advance →**: the intro animation and overture should play again. You can run the console command again after the intro — or even while it is still playing — to jump back without going through Spotlight and End. Tables, skyboxes, and seat piles should stay where they were. The Host console should print a short status line; it should not write a test-results file under `.dev/.debug`.
-
-**Context:** Debug helper only. It does not run the full Intermission enter (no no-scene table prep). Console-only; the print-to-file path was removed.
-
 #### TOR-539 — Memoriam configuration popup (subphase gate)
 
 **How to verify:** Save & Play so the new scripts load. During Play, open the Phases panel and click **Memoriam**. The Memoriam popup should appear, and the Phases label should still show the subphase you were already on (Main or Downtime). Pick a character from the dropdown. The timeline bar and scene grid should fill, and the slider should sit at the right (present day). Move the slider: the date should change, the gold bar segment should follow (black gaps stay black), and that period's scene buttons should turn green. Click a scene: the NPC assignment rows should appear **without** the character you picked. Click **+** on another character, then pick a listed NPC or type a library key and OK. Click **Advance** with the slider in a black gap, or with no scene chosen: the popup should stay open and you should get a Host message. Fill those in and click **Advance**: the Host console should print a one-line summary, the popup should close, and Phases should show Memoriam. Click **Memoriam** again, fill partway, then **Cancel**: the popup should close and the subphase should stay Memoriam.
@@ -421,71 +426,11 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **Context:** Follow-up to TOR-539 after the first in-game look. The default Just Smoke panel in Lua is a placeholder for you to fill in.
 
-#### ✅ TOR-541 — Memoriam slider: present on the right; sort ties by endYear
+#### TOR-584 — Do not rescale player dice bags or companion toggles
 
-**How to verify:** Save & Play. During Play, open Phases → **Memoriam** and pick a character. The slider handle should start on the **right** (present day). The gold bar block should sit under that handle on the right. Drag the handle left: dates should go backward, and the gold block should follow to the left. The scene-button columns should still run earliest on the left and latest on the right, lining up with the strip. If two periods share a start year, the one that ends sooner should appear first (left of the other).
+**How to verify:** Save & Play. Hunger, Normal, Rouse, and Oblivion-Rouse bags at a PC seat should be their original size (scale 1), not inflated. Check Table A and Scatter. Companion toggle tiles should keep the size they have in the workshop save.
 
-**Context:** Follow-up to TOR-540 after the Photoshop mockup. Dragging left is how you move into the past; the strip and handle stay together.
-
-#### ✅ TOR-542 — Memoriam slider range 0–5000
-
-**How to verify:** Save & Play. Open Memoriam, pick a character, and move the slider slowly across a long period. Dates and the gold block should still line up with the strip the same way as before, just with finer steps. The handle should still start on the right (present). Clicking a dim scene button should still jump into that period.
-
-**Context:** You raised the slider max from 2400 to 5000. The year mapping now fills that full range; the colored strip is still 1200 pixels wide.
-
-#### ✅ TOR-543 — Memoriam scene buttons ignore XML highlight/selected colors
-
-**How to verify:** Save & Play. Open Memoriam and pick a character. Scene buttons in the current period should use the color from `selection_button_highlighted` in the modal XML (currently yellow). The one you click should use `selection_button_selected` (currently green). Just Smoke should follow the same two classes. Empty dummy C/D cells can stay black.
-
-**Context:** Lua was painting button colors directly, so XML Default class colors never showed. It now switches classes with `UI.setClass` and leaves color to those Defaults.
-
-#### ✅ TOR-544 — Memoriam bar: white for nested/overlapping shorter periods
-
-**How to verify:** Save & Play. Open Memoriam and pick **Fomórach**. On the period strip, Kharkiv and Jaffa (the short periods nested inside the long Toronto span) should be **white** when the gold handle is not on them. Toronto’s remaining gray chunks should still alternate with the other non-nested periods. Sliding onto Kharkiv or Jaffa should gold those white blocks as usual.
-
-**Context:** Nested periods skip the two-gray stripe so they stay readable against the longer period they sit inside.
-
-#### ✅ TOR-545 — Memoriam bar: four greys so nested panels can alternate
-
-**How to verify:** Save & Play. Open Memoriam and pick **Fomórach**. On the period strip, Toronto (the long span) should use the two darker greys for its chunks, and Kharkiv and Jaffa (the nested shorts) should use the two lighter greys — not the same light shade next to each other. Sliding onto a nested period should still gold that block as usual. Empty years stay black.
-
-**Context:** One white for every nested period made adjacent nested panels look like one block. Base periods and nested periods now each have their own alternating pair.
-
-#### ✅ TOR-546 — Memoriam scene buttons go grey when selected
-
-**How to verify:** Save & Play. Open Memoriam and pick a character. Scene buttons in the current period should be yellow. Click one: that button should turn green and stay green (not drop back to grey). The other current-period buttons should stay yellow. Click Just Smoke: it should turn green the same way. You can still change the highlighted/selected colors in the modal XML Defaults.
-
-**Context:** The layout class was painting grey, and a TTS button click puts that grey back after Lua sets the selected class. Idle, highlighted, and selected are now separate color classes.
-
-#### ✅ TOR-547 — Memoriam bar: abutting years are not overlapping
-
-**How to verify:** Save & Play. Open Memoriam and pick a character who has two periods that only meet at a year (one ends the year the next begins, for example 1949–1955 then 1955–1965). Those two blocks should sit side by side in the darker base greys, not jump to the lighter nested greys. A period that is truly inside a longer one (including a single year in the middle of a longer span) should still use the lighter nested greys.
-
-**Context:** Sharing only a start/end year is adjacent time, not a nested overlay.
-
-#### ✅ TOR-548 — Memoriam scene buttons keep XML labels; dummy C/D stay dark
-
-**How to verify:** Save & Play. Open Memoriam and pick a character. Scene buttons should show the catalog panel names, not “Period 3, Panel A”. Unused columns, including 13 and 14, should disappear. Pick a character whose period has only A/B: C and D in that column should be empty black placeholders. Switch to a character who has C/D (or fewer periods so that column is unused): those C/D cells should become real named buttons, or hide, and must not stay black from the previous character.
-
-**Context:** Lua was applying class after text, so XML placeholders came back. Dummy C/D had been painted black as a leftover color that survived a PC change.
-
-#### ✅ TOR-549 — Memoriam bar drops a same-year period on a neighbor’s last year
-
-**How to verify:** Save & Play. Open Memoriam and pick **Lord Lucien**. On the period strip, 1999 should show a short Kingston block (`lucien23`) sitting on the last year of Montreal (`lucien19`, 1980–1999), not disappear into Montreal. Rashid’s single-year 2013 period should still appear as before. Two multi-year periods that only meet at a year (1949–1955 then 1955–1965) should still sit side by side.
-
-**Context:** The abutting-year skip was hiding any period that started on another period’s last year, including a 1999–1999 period whose only year is that shared year.
-
-#### ✅ TOR-550 — Memoriam popup: PC row of five exclusive buttons
-
-**How to verify:** Save & Play so the new scripts load. During Play, open Phases → **Memoriam**. Instead of a dropdown, you should see a row of five grey buttons: Lord Lucien, Rashid Abdulrahman, Aishe Tache, Fomórach, and Black Caesar. Click one: that button should turn green and the others should stay grey. The timeline, date slider, and scene grid should fill for that character, the same as the old dropdown did. Click a different character: the first should go grey, the new one green, and the strip should rebuild. Clicking the already-green button should leave it green (only one character selected at a time).
-
-**Context:** Follow-up to TOR-539. Same idle grey / selected green classes as the scene panel buttons.
-
-#### ✅ TOR-551 — Memoriam: present-as-self toggles and subject NPC assignment
-
-**How to verify:** Save & Play so the new scripts load. During Play, open Phases → **Memoriam**, pick a character, then pick a scene (or Just Smoke). All five names should appear. The character you picked should have a **green** name and **no** square to the left; the other four should have a small empty grey square before their names. Click a square: it should turn green, and that character is coming as themselves. Click it again: it should go grey. Click **+** on the subject (green name) and assign an NPC: Advance should still print `subjectKey` as that PC, and their `assignments` entry should be the NPC (`kind` / `key` / `label`), not `self`. Advance with no NPC on the subject: their assignment should be `{kind = "self"}`. A non-subject with a green square should also be `{kind = "self"}`. A non-subject with neither a green square nor an NPC should be missing from `assignments`. Assigning an NPC to someone who had a green square should clear the square (they are playing the NPC, not themselves).
-
-**Context:** Follow-up to TOR-539. Rituals and similar can bring other people into Memoriam as themselves; the subject can also enter as someone else.
+**Context:** Seat-role offsets had `{1.35, 1.35, 1.35}` on dice bags, and layout was skipping `DICEBAG_` so already-inflated bags stayed large. Offsets are now `{1, 1, 1}` and layout applies that scale. Companion toggles are skipped so workshop scale is never overwritten.
 
 ---
 
