@@ -287,7 +287,7 @@ function M.buildPage2DocumentXml(stats, _seatColorRaw, _pd)
     "<Defaults>",
     '  <Panel class="page_root" childAlignment="UpperCenter" padding="50 50 110 100" />',
     '  <VerticalLayout class="page2_dynamic" padding="40 40 0 0" childAlignment="UpperCenter" childForceExpandHeight="false" childForceExpandWidth="true" spacing="0" />',
-    '  <HorizontalLayout class="page2_disc_row" flexibleWidth="1" spacing="0" preferredHeight="225" />',
+    '  <HorizontalLayout class="page2_disc_row" flexibleWidth="1" spacing="0" preferredHeight="225" flexibleHeight="0" />',
     '  <VerticalLayout class="page2_disc_cell" flexibleWidth="1" preferredHeight="280" childForceExpandWidth="false" />',
     '  <HorizontalLayout class="page2_disc_header" preferredHeight="70" flexibleHeight="0" childForceExpandWidth="false" preferredWidth="800" flexibleWidth="1" spacing="0" />',
     '  <Image class="page2_disc_name" preferredWidth="220" preferredHeight="63" flexibleWidth="0" />',

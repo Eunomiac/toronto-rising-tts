@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — session-start splash parent + blackout panel._
+_Last populated: 2026-09-21 — CSHEET page 2 discipline-row height lock._
 
 ### Phases / session start
 
@@ -75,6 +75,12 @@ _Last populated: 2026-09-21 — session-start splash parent + blackout panel._
 **How to verify:** Save & Play from a cold load (File → Load, then Save & Play). Each PC Hunger overlay should match Hunger 1 (one pip), not the empty Hunger-0 art, unless you already changed that character's Hunger in play.
 
 **Context:** Missing Hunger was defaulting to 0 in bootstrap and state normalize. New or missing Hunger now defaults to 1. Saved Hunger values other than nil are unchanged.
+
+#### TOR-588 — CSHEET page 2 discipline rows should not stretch vertically
+
+**How to verify:** Save & Play so character-sheet XML reloads. Open a PC sheet to page 2. The two discipline rows (name plates and power lists) should stay at their usual height instead of stretching taller to fill extra space on the page.
+
+**Context:** `page2_disc_row` Defaults now include `flexibleHeight="0"`.
 
 ### Synchronization / objects
 

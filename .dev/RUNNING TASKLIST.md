@@ -443,6 +443,7 @@ _Blocked: author must define data binding approach before substantial implementa
 
 - [ ] **On load, show pages 1 and 2:** Every PC sheet should raise pages 1 and 2, even if later pages were already showing. _(TOR-586)_
 - [x] **Character sheet pages restore to y = 3.20:** Catalog and layout use 3.20 (not 3.19). Pending Save & Play. _(TOR-585)_
+- [x] **Page 2 discipline rows do not stretch:** `page2_disc_row` Defaults include `flexibleHeight="0"`. Pending Save & Play. _(TOR-588)_
 - [x] **Character sheet pages all hide:** Seat layout was stamping reference-seat CSHEET Y onto other seats (desync vs `setInvisibleTo`). Propagate preserves per-page Y, reconciles visibility from Y, ensures ?2 pages visible. _(TOR-343)_
 - [ ] **Page 4:** PC relationships; Blood Bonds. _(Partial: `lib/json/PC_Relationships.json`, `lib/pcs_data.ttslua`.)_ _(TOR-93)_
 - [ ] **Fomorach animal-form shapeshift toggle:** Sheet toggle applying author-defined stat deltas. `blockedBy` **TOR-327** (workshop stat deltas). _(TOR-330)_
