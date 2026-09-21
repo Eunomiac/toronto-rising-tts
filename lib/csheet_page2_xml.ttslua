@@ -295,7 +295,7 @@ function M.buildPage2DocumentXml(stats, _seatColorRaw, _pd)
     '  <Image class="page2_dotline_bg" flexibleWidth="0" preferredWidth="200" preferredHeight="0" ignoreLayout="true" width="200" />',
     '  <HorizontalLayout class="page2_dot_fills" preferredWidth="200" ignoreLayout="false" padding="20 20 0 0" childAlignment="MiddleLeft" childForceExpandWidth="false" />',
     '  <Image class="page2_dot_fill" ignoreLayout="true" width="63" height="63" />',
-    '  <Text class="page2_powers_text" alignment="UpperLeft" fontSize="28" color="#AAAAAA" fontStyle="Bold" preferredHeight="200" flexibleHeight="1" />',
+    '  <Text class="page2_powers_text" alignment="UpperLeft" fontSize="28" color="#AAAAAA" fontStyle="Bold" preferredHeight="200" flexibleHeight="1" horizontalOverflow="Overflow" />',
     '  <Image class="page2_rc_divider" preferredHeight="80" flexibleHeight="0" preserveAspect="true" />',
     '  <HorizontalLayout class="page2_rc_columns" spacing="40" flexibleHeight="1" />',
     '  <VerticalLayout class="page2_rc_col" flexibleWidth="1" spacing="12" />',
