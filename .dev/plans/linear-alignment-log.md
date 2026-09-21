@@ -780,6 +780,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-09-21 | CREATE+SHIP | TOR-603 | Storyteller occupied-seat cameraAngles recopy after table/scene layout, before transition lookAt. relatedTo TOR-348, TOR-368. Pending Save & Play. |
 | 2026-09-21 | CREATE+SHIP | TOR-605 | Scatter roll camera: resolve by-seat presets from seat PC / rollBrown, replace full cameraAngles on layout. relatedTo TOR-603. Pending Save & Play. |
 | 2026-09-21 | REOPEN+SHIP | TOR-605 | Scatter occupied-seat Storyteller copy: use live TTS seat color + just-computed PC camera map (author found leftover saved player angles after first ship). Pending Save & Play. |
+| 2026-09-21 | SHIP | TOR-605 | Scatter/wood-table camera finish consolidation: remove Scatter-only look-at loop; both modes call `M.snapDefaultCamerasAfterLayout` (renamed from setDefaultCameraBeforeBlindfold). Linear quota blocked a new id. Pending Save & Play. |
 | 2026-09-21 | CREATE+SHIP | TOR-602 | Scatter Mode player HUD: group strip + click-to-move; gold is PC slot 1; click own group keeps strip open. relatedTo TOR-572. Pending Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

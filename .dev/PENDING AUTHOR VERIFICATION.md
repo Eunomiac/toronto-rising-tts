@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — TOR-605 Scatter occupied-seat Storyteller camera copy uses live seat cameras._
+_Last populated: 2026-09-21 — TOR-605 Scatter and wood tables share one camera layout finish._
 
 ### Soundscape
 
@@ -208,10 +208,10 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 1. Open Debug Camera and click **roll** (the short button, not rollBrown). The look-at should sit at the new higher roll height from `C.ReferenceCameraAngles.roll` (about 10.8 before scatter offset), not the old lower roll that sat at sheet height (about 5.8).
 2. Click that seat’s spoof button (Brown, Red, …). The Storyteller camera set should match that seat’s **current Scatter** cameras — same raised roll — not the previous wood-table copy or the old lower roll.
-3. Optional: leave Scatter for a wood table and come back, then click **roll** again. It should still use the higher angle.
+3. Optional: leave Scatter for a wood table (cover should still snap you to that table’s default). Come back to Scatter and click **roll** again. It should still use the higher angle.
 4. Sit back on Black. Storyteller Rolls / Main / Mid should still be the usual Black views.
 
-**Context:** Roll was stored in game state and could keep the old angle after you changed the constants. Occupied-seat Storyteller copies in Scatter were still the leftover saved player cameras. relatedTo **TOR-603**.
+**Context:** Roll was stored in game state and could keep the old angle after you changed the constants. Occupied-seat Storyteller copies in Scatter were still leftover saved player cameras. Scatter now uses the same camera writer and the same recopy-and-snap finish as wood tables (`M.snapDefaultCamerasAfterLayout`). relatedTo **TOR-603**.
 
 #### TOR-603 — Storyteller camera follows the occupied seat after table or scene layout
 

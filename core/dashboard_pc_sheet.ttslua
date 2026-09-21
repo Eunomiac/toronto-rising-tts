@@ -470,9 +470,9 @@ local function applyCommand(cmd)
     else
       Conditions.setManual(pid, "hudBlindfold", { variant = math.random(1, 6) })
       local Main = require("core.main")
-      if type(Main.setDefaultCameraBeforeBlindfold) == "function" then
+      if type(Main.snapDefaultCamerasAfterLayout) == "function" then
         U.await(function()
-          Main.setDefaultCameraBeforeBlindfold(color)
+          Main.snapDefaultCamerasAfterLayout(color)
         end, 1.5)
       end
     end

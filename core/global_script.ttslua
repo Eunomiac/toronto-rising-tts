@@ -647,9 +647,9 @@ local function showStartupLoadingOverlays()
     globalBlindfoldAppliedVisible = true
     -- TOR-368: wait until global blindfold is up before camera motion (OFF→ON / interrupted hide only).
     local Main = require("core.main")
-    if type(Main.setDefaultCameraBeforeBlindfold) == "function" then
+    if type(Main.snapDefaultCamerasAfterLayout) == "function" then
         U.await(function()
-            Main.setDefaultCameraBeforeBlindfold("ALL")
+            Main.snapDefaultCamerasAfterLayout("ALL")
         end, 1.5)
     end
 end

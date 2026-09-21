@@ -732,8 +732,8 @@ Phases.onEnter[C.Phases.INTERMISSION] = function(ctx)
         end,
         function()
             local Main = require("core.main")
-            if type(Main.setDefaultCameraBeforeBlindfold) == "function" then
-                Main.setDefaultCameraBeforeBlindfold("ALL")
+            if type(Main.snapDefaultCamerasAfterLayout) == "function" then
+                Main.snapDefaultCamerasAfterLayout("ALL")
             end
             return true
         end,

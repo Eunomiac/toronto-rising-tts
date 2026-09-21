@@ -1291,8 +1291,9 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
     S.setStateVal(angles, "playerData", playerID, "cameraAngles")
   end
   S.setStateVal(universalAngles, "seatLayout", "universalCameraAngles")
-  -- Scatter has no later cover recopy. Copy the just-computed seat map onto the
-  -- Storyteller using live TTS seat color, then restore Black presets if needed (TOR-605).
+  -- Layout writes chronicle-PC cameraAngles, then copies the occupied seat onto
+  -- the Storyteller (TOR-603 / TOR-605). LookAt is `M.snapDefaultCamerasAfterLayout`
+  -- (wood tables under cover; Scatter immediately after piles move).
   copyOccupiedSeatCamerasOntoStoryteller(playerAnglesById)
   local CameraDebugFocus = require("core.camera_debug_focus")
   if type(CameraDebugFocus.resyncStorytellerCameraForOccupiedSeat) == "function" then
@@ -5526,9 +5527,10 @@ M.applyAllTablesVisualState = applyAllTablesVisualState
 M.syncSharedFloorAndPlinthToTableOrigin = syncSharedFloorAndPlinthToTableOrigin
 M.applyTableConfigObjectPositions = applyTableConfigObjectPositions
 
---- Apply per-seat camera presets from a precomputed rigid bundle (Scatter Mode figurine yaw).
+--- Apply per-seat camera presets from a precomputed rigid bundle (Scatter group-origin yaw).
+--- Same writer as wood-table `resolveSeatObjectsFromTable` (`applyCameraModesForSeats`).
 --- @param computed table `{ seatRigidByKey, slot1Rigid, centerPoint, referenceSeatKey }`
---- @param opts table|nil `{ tableCfg?: table }` — when set, camera position offset uses that table's reference figurine (Scatter passes Table A).
+--- @param opts table|nil `{ tableCfg?: table }` — camera authoring offset; Scatter passes Table A.
 function M.applyCameraModesFromComputed(computed, opts)
   opts = type(opts) == "table" and opts or {}
   local src = C.TableSourceObjects

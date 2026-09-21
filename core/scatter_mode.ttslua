@@ -958,19 +958,6 @@ local function centerOccupant(occupants)
     return occupants[1]
 end
 
-local function applyScatterPlayerCameras(occupants)
-    local Main = require("core.main")
-    if type(Main.setCamera) ~= "function" then
-        return
-    end
-    for i = 1, #occupants do
-        local color = occupants[i].occupantKey
-        if type(color) == "string" and color ~= "" then
-            Main.setCamera(color, "default")
-        end
-    end
-end
-
 local function applyPcRigs(framesBySlot, occupants)
     local FSL = require("lib.figurine_seat_layout")
     local RSL = require("lib.rotational-seat-layout")
@@ -1048,10 +1035,9 @@ local function applyPcRigs(framesBySlot, occupants)
     if type(RSL.applyCameraModesFromComputed) == "function" then
         RSL.applyCameraModesFromComputed(computed, { tableCfg = tableA })
     end
-    applyScatterPlayerCameras(occupants)
-    local CameraDebugFocus = require("core.camera_debug_focus")
-    if type(CameraDebugFocus.resyncStorytellerCameraForOccupiedSeat) == "function" then
-        CameraDebugFocus.resyncStorytellerCameraForOccupiedSeat()
+    local Main = require("core.main")
+    if type(Main.snapDefaultCamerasAfterLayout) == "function" then
+        Main.snapDefaultCamerasAfterLayout("ALL")
     end
 end
 

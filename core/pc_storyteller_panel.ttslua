@@ -359,9 +359,9 @@ function PCST.onHudClick(player, _button, id)
       -- TOR-368: raise blindfold first; snap camera after overlay settle.
       Conditions.setManual(pid, "hudBlindfold", { variant = math.random(1, 6) })
       local Main = require("core.main")
-      if type(Main.setDefaultCameraBeforeBlindfold) == "function" then
+      if type(Main.snapDefaultCamerasAfterLayout) == "function" then
         U.await(function()
-          Main.setDefaultCameraBeforeBlindfold(color)
+          Main.snapDefaultCamerasAfterLayout(color)
         end, 1.5)
       end
     end

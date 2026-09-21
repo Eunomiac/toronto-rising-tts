@@ -226,12 +226,12 @@ end
 --- Reset every seated player to the layout-derived default camera when the pre-lift settle delay starts.
 --- TOR-446: lookAt snap only — do not force FirstPerson (reverses TOR-443).
 local function setDefaultCameraForSeatedPlayers()
-  if type(Main) == "table" and type(Main.setDefaultCameraBeforeBlindfold) == "function" then
-    Main.setDefaultCameraBeforeBlindfold("ALL")
+  if type(Main) == "table" and type(Main.snapDefaultCamerasAfterLayout) == "function" then
+    Main.snapDefaultCamerasAfterLayout("ALL")
     return
   end
   if type(Main) ~= "table" or type(Main.setCamera) ~= "function" then
-    error("hud_blindfold: core.main M.setDefaultCameraBeforeBlindfold (or M.setCamera) is required for transition default camera sync")
+    error("hud_blindfold: core.main M.snapDefaultCamerasAfterLayout (or M.setCamera) is required for transition default camera sync")
   end
   local seated = Player.getPlayers() or {}
   for _, player in ipairs(seated) do
@@ -457,7 +457,8 @@ end
 ---   - `fadeOut` runs at the district-card FadeIn window (same lead-in when cards are Clear)
 ---   - `work` starts after site-card FadeIn + 0.25s pad (~5.75s); returns `ok, errMsg`; on failure lifts immediately
 ---   - default camera snaps **after** `work` (under full cover; TOR-368 / TOR-603) so layout can
----     rewrite seat cameraAngles — including the Storyteller occupancy copy — before lookAt
+---     rewrite seat cameraAngles — including the Storyteller occupancy copy — before
+---     `M.snapDefaultCamerasAfterLayout`
 ---   - `fadeIn` runs immediately after work (no silent workSettle first) so new ambient fills the settle window
 --- @param opts table|nil `{ fadeOutSec?, workSettleSec?, fadeInSec?, settleDelaySec?, leadInDelaySec?, variant?, districtKey?, siteKey? }`
 function HUDBF.runStagedTransition(phases, opts)
@@ -493,8 +494,8 @@ function HUDBF.runStagedTransition(phases, opts)
     end,
     function()
       -- TOR-368: snap default cameras in this covered window, not during card FadeIns.
-      -- TOR-603: run layout work first so new seat cameraAngles exist, then recopy the
-      -- Storyteller's occupied-seat angles, then lookAt.
+      -- TOR-603: run layout work first so new seat cameraAngles exist, then
+      -- `M.snapDefaultCamerasAfterLayout` recopies the occupied seat and lookAts.
       if type(phases.work) == "function" then
         local ok, errMsg = phases.work()
         if ok ~= true then

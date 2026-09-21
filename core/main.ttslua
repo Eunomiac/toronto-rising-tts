@@ -499,11 +499,11 @@ function M.setCamera(player, cameraMode, lookAtPos)
   end
 end
 
---- TOR-368: snap cameras to default after blindfold overlay has settled (~1.5s on raise paths).
---- TOR-446: do not force FirstPerson after the lookAt snap (reverses TOR-443).
---- TOR-603: recopy occupied-seat cameraAngles onto the Storyteller before lookAt.
+--- After layout has written seat cameras: recopy the Storyteller occupied-seat
+--- map, then snap seated players to `default`. Wood tables call this under the
+--- cover (TOR-368 / TOR-603). Scatter calls it immediately after piles move.
 --- @param colorOrPlayer string|Player|nil  nil/"ALL" → every seated player; else that seat only
-function M.setDefaultCameraBeforeBlindfold(colorOrPlayer)
+function M.snapDefaultCamerasAfterLayout(colorOrPlayer)
   local CameraDebugFocus = require("core.camera_debug_focus")
   if type(CameraDebugFocus.resyncStorytellerCameraForOccupiedSeat) == "function" then
     CameraDebugFocus.resyncStorytellerCameraForOccupiedSeat()

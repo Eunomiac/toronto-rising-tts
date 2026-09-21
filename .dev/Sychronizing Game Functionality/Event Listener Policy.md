@@ -261,16 +261,17 @@ end
 3. Implement **guard first**, handler body second — PR review checks guard line count ≤ 3 before any `require` / loop / sync.
 4. If the handler mutates world state, follow [Reconciler Contract](Reconciler%20Contract.md): mutate state, then narrow sync — never hide reconcile in a drop handler unless explicitly spec'd (Gameboard pick-up flags are ephemeral runtime context, not `gameState`).
 
-## Blindfold raise — default camera (TOR-368)
+## Blindfold raise / layout finish — default camera (TOR-368)
 
-Snap default cameras **under** the transition blindfold after early XmlUI FadeIns, not during them — so lookAt does not hitch-freeze parent/card animations. **TOR-446:** do **not** force `setCameraMode("FirstPerson")` afterward (reverses TOR-443).
+Snap default cameras **after** layout has written seat `cameraAngles` (including the Storyteller occupancy copy). Wood-table scene/table switches do this **under** the transition cover so lookAt does not hitch-freeze parent/card animations. Scatter uses the same `M.snapDefaultCamerasAfterLayout` immediately after piles move (no cover). **TOR-446:** do **not** force `setCameraMode("FirstPerson")` afterward (reverses TOR-443).
 
-| Raise path | File | When |
+| Raise / layout path | File | When |
 | --- | --- | --- |
 | Global overlay show | `global_script.showStartupLoadingOverlays` | after `UI.show(overlay_globalBlindfold_panel)`, then `U.await(1.5)` |
-| Staged scene transition (Apply / End) | `HUDBF.runStagedTransition` | After TOR-434 lead-in (~5.0s) + ambient fade-out (~1s); heavy Sync/table work first, then default camera (TOR-368 / TOR-603 occupied-seat Storyteller copy). `beginTransition` arms UI only (no early camera await). |
+| Staged scene transition (Apply / End) | `HUDBF.runStagedTransition` | After TOR-434 lead-in (~5.0s) + ambient fade-out (~1s); heavy Sync/table work first, then `M.snapDefaultCamerasAfterLayout` (TOR-368 / TOR-603 occupied-seat Storyteller copy). `beginTransition` arms UI only (no early camera await). |
 | Simple / lead-in transition settle | `HUDBF.scheduleEnd` | When settle delay > 0, snap default cameras at the start of the settle wait (after work). |
 | PCs panel Blind toggle on | `PCST` `blindfoldToggle` | after `Conditions.setManual(hudBlindfold)`, then `U.await(1.5)` |
+| Scatter world apply | `ScatterMode.applyWorldLayout` | After group-origin rigs + `RSL.applyCameraModesFromComputed` (same camera writer as wood tables). Immediate; no cover. |
 
 Lift paths may still reset cameras while the blindfold is down via `scheduleEnd` when a positive settle delay is used.
 
