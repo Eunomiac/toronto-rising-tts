@@ -95,7 +95,7 @@ Blank disciplines area on the tile; runtime XmlUI builds a 2×3 discipline grid 
 
 **Generated XML conventions (`lib/csheet_page2_xml.ttslua`):**
 - One page‑2 `<Defaults>` block with the author-tuned class values (no stale 280px / old spacing left to fight them). `paper_root` uses `class="page_root"` only — never `padded_border`, whose padding would override `page_root`.
-- Dot fills use class `page2_dot_fill` plus inline `offsetXY` (`0 2` … `140 2`). Paint still sets `active` / `image` **one frame after** dynamic `setXml` (same-frame setAttribute misses the new tree).
+- Dot fills use class `page2_dot_fill` plus inline `offsetXY` (`0 2` … `140 2`). **Fill `active`/`image` are baked into the dynamic XML** at remount (so empty tracks are not waiting on setAttribute). Deferred `setAttributes` still refreshes after remount for condition/temp deltas. Dotline wrap + fills row use `preferredHeight="63"`.
 - Power lines: eight-space indent and `\n` between levels via `UI.setAttribute` after remount (XML `text="…"` collapses newlines to spaces). Same-level names still joined with `◆`.
 - Script-touched ids: `paper_root`, `pageForward`, `pageInner`, `page2_dynamic`, `dot_<key>_<n>`, `dot_rc_<L|R>_<row>_<slot>`. Other nodes use `db_…` ids for live tuning.
 

@@ -154,6 +154,8 @@ local DOT_FILL_OFFSET_XY = {
 --- @return string
 local function buildDisciplineCell(key, row)
   local nameImg = "discName_" .. key
+  local base = tonumber(row.base) or 0
+  local temp = tonumber(row.temp) or 0
   local parts = {
     string.format('<VerticalLayout id="db_disc_cell_%s" class="page2_disc_cell">', key),
     string.format('  <HorizontalLayout id="db_disc_header_%s" class="page2_disc_header">', key),
@@ -167,12 +169,24 @@ local function buildDisciplineCell(key, row)
     string.format('      <HorizontalLayout id="db_dot_fills_%s" class="page2_dot_fills">', key),
   }
   for slot = 1, 5 do
-    parts[#parts + 1] = string.format(
-      '        <Image id="dot_%s_%d" class="dot dot_standard page2_dot_fill" offsetXY="%s" />',
-      key,
-      slot,
-      DOT_FILL_OFFSET_XY[slot]
-    )
+    -- Bake fill state into XML so remount shows dots without relying on same-frame setAttribute.
+    local active, imageName = PSC.resolveDotSlotImage(key, base, temp, slot)
+    if active and type(imageName) == "string" and imageName ~= "" then
+      parts[#parts + 1] = string.format(
+        '        <Image id="dot_%s_%d" class="dot dot_standard page2_dot_fill" offsetXY="%s" active="true" image="%s" />',
+        key,
+        slot,
+        DOT_FILL_OFFSET_XY[slot],
+        imageName
+      )
+    else
+      parts[#parts + 1] = string.format(
+        '        <Image id="dot_%s_%d" class="dot dot_standard page2_dot_fill" offsetXY="%s" active="false" />',
+        key,
+        slot,
+        DOT_FILL_OFFSET_XY[slot]
+      )
+    end
   end
   parts[#parts + 1] = "      </HorizontalLayout>"
   parts[#parts + 1] = "    </Panel>"
@@ -199,8 +213,10 @@ end
 --- @return string
 local function buildRcRow(entry, side, rowIndex)
   local name = ""
+  local level = 0
   if type(entry) == "table" then
     name = tostring(entry.name or "")
+    level = math.floor(tonumber(entry.level) or 0)
   end
   local rowId = string.format("%s_%d", side, rowIndex)
   local parts = {
@@ -216,13 +232,23 @@ local function buildRcRow(entry, side, rowIndex)
     string.format('    <HorizontalLayout id="db_rc_dot_fills_%s" class="page2_dot_fills">', rowId),
   }
   for slot = 1, 5 do
-    parts[#parts + 1] = string.format(
-      '      <Image id="dot_rc_%s_%d_%d" class="dot dot_standard page2_dot_fill" offsetXY="%s" />',
-      side,
-      rowIndex,
-      slot,
-      DOT_FILL_OFFSET_XY[slot]
-    )
+    if slot <= level then
+      parts[#parts + 1] = string.format(
+        '      <Image id="dot_rc_%s_%d_%d" class="dot dot_standard page2_dot_fill" offsetXY="%s" active="true" image="dot_yellow" />',
+        side,
+        rowIndex,
+        slot,
+        DOT_FILL_OFFSET_XY[slot]
+      )
+    else
+      parts[#parts + 1] = string.format(
+        '      <Image id="dot_rc_%s_%d_%d" class="dot dot_standard page2_dot_fill" offsetXY="%s" active="false" />',
+        side,
+        rowIndex,
+        slot,
+        DOT_FILL_OFFSET_XY[slot]
+      )
+    end
   end
   parts[#parts + 1] = "    </HorizontalLayout>"
   parts[#parts + 1] = "  </Panel>"
@@ -290,10 +316,10 @@ function M.buildPage2DocumentXml(stats, _seatColorRaw, _pd)
     '  <HorizontalLayout class="page2_disc_header" preferredHeight="70" flexibleHeight="0" childForceExpandWidth="false" preferredWidth="800" flexibleWidth="1" spacing="0" />',
     '  <Image class="page2_disc_name" preferredWidth="220" preferredHeight="63" flexibleWidth="0" />',
     '  <Panel class="page2_dotline_wrap" raycastTarget="false" />',
-    '  <Panel class="page2_dotline_wrap_disc" padding="0 0 0 0" flexibleWidth="0" preferredWidth="200" />',
+    '  <Panel class="page2_dotline_wrap_disc" padding="0 0 0 0" flexibleWidth="0" preferredWidth="200" preferredHeight="63" />',
     '  <Panel class="page2_dotline_wrap_rc" preferredWidth="280" preferredHeight="63" flexibleWidth="0" />',
     '  <Image class="page2_dotline_bg" flexibleWidth="0" preferredWidth="200" preferredHeight="0" ignoreLayout="true" width="200" />',
-    '  <HorizontalLayout class="page2_dot_fills" preferredWidth="200" ignoreLayout="false" padding="20 20 0 0" childAlignment="MiddleLeft" childForceExpandWidth="false" />',
+    '  <HorizontalLayout class="page2_dot_fills" preferredWidth="200" preferredHeight="63" ignoreLayout="false" padding="20 20 0 0" childAlignment="MiddleLeft" childForceExpandWidth="false" />',
     '  <Image class="page2_dot_fill" ignoreLayout="true" width="63" height="63" />',
     '  <Text class="page2_powers_text" alignment="UpperLeft" fontSize="28" color="#AAAAAA" fontStyle="Bold" preferredHeight="200" flexibleHeight="1" horizontalOverflow="Overflow" />',
     '  <Image class="page2_rc_divider" preferredHeight="80" flexibleHeight="0" preserveAspect="true" />',

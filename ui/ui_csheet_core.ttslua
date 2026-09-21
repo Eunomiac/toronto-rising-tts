@@ -667,8 +667,13 @@ local function applyUiUpdates(updates)
     local id = u.id
     local attrs = u.attributes
     if type(id) == "string" and type(attrs) == "table" then
-      for attrName, attrVal in pairs(attrs) do
-        self.UI.setAttribute(id, attrName, tostring(attrVal))
+      -- Prefer atomic setAttributes (active+image together); matches live tuning that worked.
+      if type(self.UI.setAttributes) == "function" then
+        self.UI.setAttributes(id, attrs)
+      else
+        for attrName, attrVal in pairs(attrs) do
+          self.UI.setAttribute(id, attrName, tostring(attrVal))
+        end
       end
     end
   end
@@ -727,6 +732,29 @@ local function applyPage2PowersTexts(stats)
   pageMod.applyPowersTexts(self.UI, stats)
 end
 
+--- Copy Global.call update rows into this script VM (safe across Wait.frames).
+--- @param updates any
+--- @return table
+local function cloneUiUpdatesLocal(updates)
+  local out = {}
+  if type(updates) ~= "table" then
+    return out
+  end
+  for i = 1, #updates do
+    local u = updates[i]
+    if type(u) == "table" and type(u.id) == "string" then
+      local attrs = {}
+      if type(u.attributes) == "table" then
+        for k, v in pairs(u.attributes) do
+          attrs[tostring(k)] = tostring(v)
+        end
+      end
+      out[#out + 1] = { id = u.id, attributes = attrs }
+    end
+  end
+  return out
+end
+
 --- Refresh images and XP from merged game state (fetched in Global script).
 function refreshCharacterSheetUi()
   syncSheetContextFromGmNotes()
@@ -753,9 +781,7 @@ function refreshCharacterSheetUi()
   if type(resolvedStatChanges) ~= "table" then
     resolvedStatChanges = {}
   end
-  if type(updates) ~= "table" then
-    updates = {}
-  end
+  updates = cloneUiUpdatesLocal(updates)
 
   -- Dynamic pages must remount XmlUI before setAttribute (fill Image ids are in the new tree).
   local remounted = false

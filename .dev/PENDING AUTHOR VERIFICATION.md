@@ -139,12 +139,12 @@ _Last populated: 2026-09-21 — TOR-592 seat-role offset world-unit XZ._
 
 #### CSHEET page 2 — discipline fill dots + power line breaks
 
-**How to verify:** Save & Play so object scripts reload. Open a PC sheet to page 2 (Aishe is a good check).
+**How to verify:** Save & Play so object scripts reload. Open a PC sheet to page 2 (Black Caesar or Aishe).
 
-1. Each discipline’s five-dot track should show gold fills for that discipline’s rating — not an empty ring row. Temp-up/temp-down coloring on page 1 is unrelated; here you mainly want filled vs empty from base rating.
+1. Each discipline’s five-dot track should show gold fills for that discipline’s rating (e.g. Blood Sorcery 2 → two fills) — not empty rings only. Rituals/ceremonies rows (e.g. Oneiromancy / Summon Spirit) should show fills for their level too.
 2. Power names under each discipline should be **one line per power level**, with an eight-space indent, not a single run-on line. Same-level powers still share a line joined with ◆.
 
-**Context:** After dynamic `setXml`, fill paint now waits one frame; power text is applied with `UI.setAttribute` so newlines survive (XML attributes flatten `\n` to spaces). Track under Character Sheets epic **TOR-38** (workspace issue quota). Commit `d1a1b253`.
+**Context:** Fills are now written into the page‑2 XML at remount; power text still uses `UI.setAttribute` so newlines survive. Track under Character Sheets epic **TOR-38**.
 
 ### Synchronization / objects
 
