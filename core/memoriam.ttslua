@@ -6,7 +6,7 @@
     Exit: stats conversion; restore prior library scene or Downtime no-scene.
     Just Smoke never reaches this module (modal prints only).
 
-    Agent guidance: .dev/Phases/Phases Overview.md; .dev/INBOX.md Author Workspace Memoriam.
+    Agent guidance: .dev/Phases/Memoriam.md; phase chrome in .dev/Phases/Phases Overview.md.
 ]]
 
 local Memoriam = {}

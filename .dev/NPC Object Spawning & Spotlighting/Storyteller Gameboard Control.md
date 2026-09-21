@@ -7,6 +7,7 @@
 Read this when:
 - changing CONTROL_BOARD/STAGE_BOARD token workflows, Apply/Clear behavior, token palette behavior, or NPC/PC control-token contracts
 - debugging minimap marker mirroring, stage placement lerps, homeland seat retention, or Storyteller token-to-dice-bag rolls
+- generic NPC paste/import on CONTROL_BOARD: [`Generic NPCs.md`](Generic%20NPCs.md)
 
 Source of truth:
 - `core/npc_gameboard.ttslua` — thin `Gameboard` facade (re-exports siblings; TOR-423)
@@ -38,7 +39,8 @@ Physical **STAGE_BOARD** (hidden world floor) + **CONTROL_BOARD** (GM table mini
 | HERE authority | Live `sessionScene.npcWorld.placements` + `sessionScene.seatSlots`. `{ characterKey = { u, v, yaw, npcLightMode } }` uses 0–1 stage-board coordinates. HERE always mirrors live state; the one-shot Lock never suppresses reconcile. |
 | THERE authority | Persisted `gameState.controlBoard.previewDraft = { sceneKey, npcWorld = { placements }, seatSlots }`. The selected library row remains the committed baseline; draft edits never run live NPC/table/condition/light reconciliation. |
 | **Apply / Reset** | HERE scans stage + NPC/PC seat tokens into live state then `Sync.npcs`. THERE labels this button **Reset** and reloads library participants into the draft and board. |
-| **Clear** | Left-click: HERE uses the TOR-281 homeland rules, empties live placements, parks stage tokens, and reconciles NPCs (double-confirm). Right-click (TOR-485 / TOR-486): recover stray NPC tokens (not on CONTROL_BOARD face) to palette, re-snap tokens already on the palette, and always broadcast ST feedback — no placement wipe. THERE left-click applies the same participant/home logic to the draft and board only; live and library data remain unchanged. |
+| **Clear** | Left-click: HERE uses the TOR-281 homeland rules, empties live placements, parks stage tokens, and reconciles NPCs (double-confirm). **Also destroys live generic NPCs and clears `genericMembership`.** Right-click (TOR-485 / TOR-486): recover stray NPC tokens (not on CONTROL_BOARD face) to palette, re-snap tokens already on the palette, and always broadcast ST feedback — no placement wipe. THERE left-click applies the same participant/home logic to the draft and board only; live and library data remain unchanged. |
+| **Generic import** | ST-only paste field + Import on CONTROL_BOARD XmlUI (`gb_generic_import_keys`) → `GlobalImportGenericNpcs` → label modal → spawn token (board top-right, face-down) + figurine/light (preload, OFF). Runtime: [`Generic NPCs.md`](Generic%20NPCs.md). |
 | **Load** | Force-mirrors the persisted active model: live state in HERE, preview draft in THERE. |
 | Reconcile | HERE mirrors explicit live placements/seat rows and parks orphaned NPC tokens. Ordinary `Sync.full`/`Sync.npcs` returns before token/marker writes while THERE; only dedicated preview actions may mirror the draft. |
 

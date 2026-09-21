@@ -69,7 +69,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | Function | Tier | Phase | Notes |
 | --- | --- | --- | --- |
 | `GlobalGameboardApply/Clear/ClearClick/RecoverStrays/Save/Load/ToggleLayoutLock/ToggleControlBoardSnaps/TokenDroppedOnDiceBag/StageLerpOrchestrator` | C | 5 | Gameboard; Save is state-only (B); RecoverStrays = right-click Clear (TOR-485) |
-| `GlobalImportGenericNpcs` / `HUD_genericNpcImportConfirm` / `HUD_genericNpcImportCancel` | B+C | 5 | TOR-560 generic import: parse keys → ST label modal → spawn token/figurine/light; Dashboard executeLua |
+| `GlobalImportGenericNpcs` / `HUD_genericNpcImportConfirm` / `HUD_genericNpcImportCancel` / `HUD_genericNpcImportLabelChanged` | B+C | 5 | TOR-560 generic import: parse keys → ST label modal → spawn token/figurine/light; Dashboard executeLua; LabelChanged stashes typed names |
 | `GlobalImportSceneJson` | B | 5 | TOR-570 Dashboard execute-lua: Scene Constructor JSON → `SceneLibrary.importConstructorJsonText` (library row only, no Apply). No Steam gate (no clicker). Same write path as in-game Import Scene. |
 | `GlobalDashboardPcSheetSnapshot` | B | — | Dashboard execute-lua: JSON snapshot of five PC seats (stats, Desire, session flags, conditions). No Steam gate (no clicker). |
 | `GlobalDashboardPcSheetApply` | B+C | — | Dashboard execute-lua: one typed mutation (trackers, dots, disabled, ST badges, Hunger/XP, Desire, Absent/join, ST rolls) then snapshot. Damage uses V5 overflow (super→agg). Stain add is a no-op while impaired. No Steam gate. Reuses `PCST` / `P` / `Sync.player` / `FSL.setPlayerAbsentFromSession` / `RC.initiateRoll`. |
@@ -151,6 +151,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_memoriamModalPcButton` / `HUD_memoriamModalSlider` / `HUD_memoriamModalSceneButton` / `HUD_memoriamModalJustSmoke` / `HUD_memoriamModalPcPresence` / `HUD_memoriamModalNpcPlus` / `HUD_memoriamModalNpcPick` / `HUD_memoriamModalNpcInput` / `HUD_memoriamModalNpcConfirm` / `HUD_memoriamModalNpcCancel` | A | Yes | TOR-539 / TOR-540 / TOR-550 / TOR-551 Memoriam popup draft (clicker, ST-gated). Slider is not a hot path. |
 | `HUD_memoriamModalConfirm` | B+C | Yes | TOR-101: print payload; Just Smoke closes only; else `Memoriam.applyEnter` (staged world apply) |
 | `HUD_memoriamModalCancel` | A | Yes | TOR-539: close popup; subphase unchanged |
+| `HUD_genericNpcImportConfirm` / `HUD_genericNpcImportCancel` / `HUD_genericNpcImportLabelChanged` | B+C / A | Yes | TOR-560 label modal Confirm/Cancel + InputField stash; clicker ST-gated |
 | `HUD_spotlightClick` | B+C | Yes | TOR-98 Host carousel strip (prev / color chips / next); clicker-only, ST-gated |
 | `HUD_advancePhase` | B | Yes | legacy alias → `HUD_phaseAdvance` |
 | `HUD_phaseDeferSetXml` / `HUD_phaseRefreshXml` / `HUD_phaseArmJoinXml` / `HUD_phaseRestoreJoinAssets` / `HUD_phaseRestoreJoinHud` / `HUD_phaseRestoreJoinEmitters` / `HUD_phaseRestoreJoinFigurines` | A/B + C (remount / spawn) | Yes | TOR-428 defer; TOR-439 Arm + staged restore (assets → HUD → emitters → figurines) |

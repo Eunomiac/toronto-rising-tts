@@ -3,6 +3,8 @@
 
     Runtime spawn exception to the named-NPC workshop preload pool.
     Catalog: D.genericNpcs (Cloud URLs + sheet labels via lib.generic_npcs_catalog).
+    Agent guidance: .dev/NPC Object Spawning & Spotlighting/Generic NPCs.md;
+    Dashboard catalogue: .dev/Storyteller Dashboard Docs/Generic NPCs.md.
 ]]
 
 local U = require("lib.util")

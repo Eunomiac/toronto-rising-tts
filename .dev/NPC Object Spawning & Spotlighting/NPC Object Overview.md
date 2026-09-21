@@ -5,9 +5,11 @@
 Read this when:
 - changing NPC spawning, pooling, placement, spotlighting, or gameboard control behavior
 - editing NPC registry shape or custom UI asset injection for NPC images
+- generic NPC import/spawn (TOR-560): also read [`Generic NPCs.md`](Generic%20NPCs.md)
 
 Source of truth:
 - `core/npcs.ttslua`
+- `core/generic_npcs.ttslua` (generic import/spawn; see [`Generic NPCs.md`](Generic%20NPCs.md))
 - `core/npc_gameboard.ttslua` (+ siblings `npc_gameboard_{board,tokens,snaps,reconcile,apply,interactions,spotlight}`)
 - `lib/npcs_data.ttslua`
 - `lib/npcs_light_spawn_defaults.ttslua`
@@ -103,7 +105,7 @@ Whenever the figurine **moves or rotates**, this pipeline is re-run (UI moves, `
 
 ### Spawn source
 
-* **Figurine:** Workshop `npc_figurine` objects in the TTS save (`npcInstance:<characterKey>` GM notes). Runtime **does not** spawn figurines; `NPCS.auditPreloadPoolFigurines` errors if any registry key is missing. Figurines are **always** TTS-locked via `ensureNpcFigurinePhysicsLocked`. **`rec.locked`** is the Storyteller panel “pin in place” (blocks script moves only). **Tooltips** off in the preload pool; on when active in a stage area or at a seat.
+* **Figurine:** Workshop `npc_figurine` objects in the TTS save (`npcInstance:<characterKey>` GM notes). Runtime **does not** spawn **named** figurines; `NPCS.auditPreloadPoolFigurines` errors if any registry key is missing. **Generic NPCs** are the exception — import/`ensureLiveFromMembership` spawn figurine + token + light ([Generic NPCs.md](Generic%20NPCs.md)). Figurines are **always** TTS-locked via `ensureNpcFigurinePhysicsLocked`. **`rec.locked`** is the Storyteller panel “pin in place” (blocks script moves only). **Tooltips** off in the preload pool; on when active in a stage area or at a seat.
 * **Light:** `spawnObjectData` for missing `npc_light` only (spotlight repair). Existing pooled lights are adopted by nickname `NPC Light <characterKey>`.
 
 ---

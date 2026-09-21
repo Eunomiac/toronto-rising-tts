@@ -5,9 +5,11 @@
 Read this when:
 - changing top-level phase sequence, Play subphases, or phase enter/exit events
 - touching `core/phases.ttslua`, `panel_phases.xml`, or phase HUD handlers
+- Memoriam enter/exit, catalog, or popup: also read [`Memoriam.md`](Memoriam.md)
 
 Source of truth:
 - `core/phases.ttslua` (lifecycle registries + `advanceTo` / `setPlaySubPhase`)
+- `core/memoriam.ttslua` / `core/memoriam_modal.ttslua` (Memoriam enter/exit + popup; see [`Memoriam.md`](Memoriam.md))
 - `core/session_explode.ttslua` (Intermission→Play stacked cover explode)
 - `core/spotlight.ttslua` (Spotlight carousel, hide-list, Host strip)
 - `lib/constants.ttslua` (`C.Phases`, `C.PhaseSequence`, `C.PlaySubPhases`)
@@ -51,7 +53,7 @@ Only `PLAY` has subphases. They switch freely (no top-level enter/exit), except 
 
 1. _(default)_ `MAIN`
 2. `DOWNTIME`
-3. `MEMORIAM` — clicking Memoriam on the Phases panel opens `ui/storyteller/memoriam_modal.xml` (**TOR-539** / **TOR-540**). The Play subphase does **not** change until Advance; Cancel leaves the current subphase in place. **Advance (non–Just Smoke)** runs `Memoriam.applyEnter` (**TOR-101**): staged cover with Custom Asset `memoriamBlindfold_<skyboxKey>`, Table B0, subject at seat 1, HP/WP heal for self PCs, Memoriam clock/overlay, panel skybox URL + weather/locationAudio. **Just Smoke** prints the payload only (no subphase/world change). Exit via Main/Downtime restores the prior library scene (or Downtime no-scene); Scene Apply / End Scene hand off after stats conversion. Nested catalog years use shortest-span priority (**TOR-547**). Just Smoke remains a valid modal destination in gaps. Assignment list: subject green + NPC-assignable; other PCs present-as-self (**TOR-551**). PC-as-NPC sheet swap still **TOR-95**; LUT/sepia still **TOR-321**.
+3. `MEMORIAM` — clicking Memoriam on the Phases panel opens `ui/storyteller/memoriam_modal.xml` (**TOR-539** / **TOR-540**). The Play subphase does **not** change until Advance; Cancel leaves the current subphase in place. Runtime enter/exit, payload, catalog, clock/overlay, and remaining plans: [**Memoriam.md**](Memoriam.md) (`Memoriam.applyEnter` / `applyExit`, **TOR-101**). Nested catalog years use shortest-span priority (**TOR-547**). Just Smoke remains a valid modal destination in gaps. Assignment list: subject green + NPC-assignable; other PCs present-as-self (**TOR-551**). PC-as-NPC sheet swap still **TOR-95**; LUT/sepia still **TOR-321**.
 
 Scene library **Apply** promotes to Play via `Phases.ensurePlayPhaseForSceneApply()` (silent — does **not** re-run Play enter events).
 

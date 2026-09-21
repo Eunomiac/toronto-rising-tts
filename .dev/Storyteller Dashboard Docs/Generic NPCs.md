@@ -6,6 +6,7 @@ Read this when:
 - changing the Storyteller Dashboard **Stage NPCs** tab
 - refreshing generic NPC rows from the Google Sheet
 - changing when the Generics Export sheet is refreshed into `generic-npcs.json`
+- Lua spawn/membership (CONTROL_BOARD, scene library): [`.dev/NPC Object Spawning & Spotlighting/Generic NPCs.md`](../NPC%20Object%20Spawning%20%26%20Spotlighting/Generic%20NPCs.md)
 
 Source of truth:
 - Sheet named range `GENERICNPCCSV` (columns `filename,label,key,tags`)
@@ -27,7 +28,7 @@ Status: current
 
 ## What this is
 
-The **Stage NPCs** tab on the existing Storyteller Dashboard lets you search the generic cutout catalogue, pick several NPCs, and copy their `key` values as a comma-separated list (for pasting into table tools). It is not a second app, and it does not talk to Tabletop Simulator.
+The **Stage NPCs** tab on the existing Storyteller Dashboard lets you search the generic cutout catalogue, pick several NPCs, **Copy** their `key` values as a comma-separated list (for pasting onto CONTROL_BOARD), or **Spawn in TTS** when the External Editor bridge is free. It is not a second app. Lua spawn/membership/destroy: [`.dev/NPC Object Spawning & Spotlighting/Generic NPCs.md`](../NPC%20Object%20Spawning%20%26%20Spotlighting/Generic%20NPCs.md).
 
 Generate NPC (OpenAI) stays on its own tab.
 
