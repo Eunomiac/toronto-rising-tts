@@ -37,6 +37,7 @@ FSL.DEFAULT_TABLE_SLOTS = C.DefaultTableSlots or {
 
 local HIDE_Y_FLOOR = -199
 local PC_FIGURINE_Y = -55.8166
+-- Must match C.SeatRoleOffsets.player.HAND_ZONE.localXZ (world-unit figurine yaw frame).
 local HAND_TO_FIG_X = 0.5035
 local HAND_TO_FIG_Z = 3.8752
 local MAX_SLOT_ANY_TABLE = 10

@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — TOR-590 unified hand-zone mover._
+_Last populated: 2026-09-21 — TOR-592 seat-role offset world-unit XZ._
 
 ### Phases / session start
 
@@ -67,6 +67,14 @@ _Last populated: 2026-09-21 — TOR-590 unified hand-zone mover._
 
 1. Every player character sheet should be showing pages 1 and 2 above the table.
 2. Later pages should be parked, not the pair you are looking at.
+
+#### TOR-592 — Left character sheet sits on the seat centerline, not 7.24 out
+
+**How to verify:** Save & Play so scripts reload. Apply the current table (Scenes Apply, or any action that re-lays out seats). Look at the south-facing reference seat (Table A slot 1; whoever is in chair 1).
+
+1. Open that seat’s character sheet to pages 1 and 2. In the Host console you can print the page positions, or Gizmo the two page objects.
+2. The two pages should sit as a pair around **x = 0** — about **−6.12** on the left (odd pages) and **+6.12** on the right (even pages).
+3. The left page must **not** sit at **x = −7.24**. The sheet base, hand, and chair should still line up on the same centerline as those pages.
 
 #### TOR-587 — Session-start cover shows black instead of splash art
 

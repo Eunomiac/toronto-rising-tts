@@ -1,0 +1,78 @@
+--[[
+  World-unit XZ relative to a figurine pose (yaw only).
+
+  Seat layout apply and DEBUG.dumpSeatRoleOffsets must use this pair.
+  Do not use Figurine_Custom:positionToLocal / positionToWorld for seat-role
+  offsets — custom-figurine local space is not world inches (ImageScalar / mesh).
+]]
+
+local FF = {}
+
+local function asNumber(v, fallback)
+    local n = tonumber(v)
+    if n == nil then
+        return fallback
+    end
+    return n
+end
+
+local function component(tbl, key, index, fallback)
+    if tbl == nil then
+        return fallback
+    end
+    local n = asNumber(tbl[key], nil)
+    if n ~= nil then
+        return n
+    end
+    return asNumber(tbl[index], fallback)
+end
+
+local function yawRad(figFrame)
+    local rot = figFrame and figFrame.rotation or nil
+    return math.rad(component(rot, "y", 2, 0))
+end
+
+local function asVec3(x, y, z)
+    if Vector ~= nil then
+        return Vector({ x = x, y = y, z = z })
+    end
+    return { x = x, y = y, z = z }
+end
+
+--- World XZ from the computed figurine frame — never live `positionToWorld`.
+--- After Scatter the Unity transform can still be at the old group pose for a tick.
+--- @param figFrame table `{ position, rotation }`
+--- @param localXZ table `{ x, z }` world-unit offsets in the figurine yaw frame
+--- @return table
+function FF.worldFromLocal(figFrame, localXZ)
+    local lx = component(localXZ, "x", 1, 0)
+    local lz = component(localXZ, "z", 3, 0)
+    local pos = figFrame and figFrame.position or nil
+    local yaw = yawRad(figFrame)
+    local c = math.cos(yaw)
+    local s = math.sin(yaw)
+    return asVec3(
+        component(pos, "x", 1, 0) + lx * c + lz * s,
+        component(pos, "y", 2, 0),
+        component(pos, "z", 3, 0) - lx * s + lz * c
+    )
+end
+
+--- Inverse of `FF.worldFromLocal` (world-unit XZ, yaw only).
+--- @param figFrame table `{ position, rotation }`
+--- @param worldPos table `{ x, y, z }`
+--- @return table `{ x, z }`
+function FF.localFromWorld(figFrame, worldPos)
+    local pos = figFrame and figFrame.position or nil
+    local dx = component(worldPos, "x", 1, 0) - component(pos, "x", 1, 0)
+    local dz = component(worldPos, "z", 3, 0) - component(pos, "z", 3, 0)
+    local yaw = yawRad(figFrame)
+    local c = math.cos(yaw)
+    local s = math.sin(yaw)
+    return {
+        x = dx * c - dz * s,
+        z = dx * s + dz * c,
+    }
+end
+
+return FF

@@ -9,6 +9,7 @@ Read this when:
 
 Source of truth:
 - `lib/figurine_seat_layout.ttslua` (numbered slots + figurine offsets, TOR-507)
+- `lib/figurine_frame.ttslua` (world-unit XZ vs figurine yaw; dump + apply)
 - `lib/rotational-seat-layout.ttslua` (SetTableTo / SyncTable wrapper, cameras, table family)
 - `lib/constants.ttslua` (`C.Tables`, `C.SeatRoleOffsets`, `C.DefaultTableSlots`)
 - `lib/seat_role_offsets.ttslua`
@@ -37,7 +38,7 @@ Use the table-driven entrypoints for production layout:
 - `slotCapacity`
 - `usedBySlot` on Table A leaves
 
-Satellites use `C.SeatRoleOffsets` (local XZ + rotation vs the occupant figurine; absolute `defaultY`). Table B family size is `highestOccupiedTableSlot` (B0 when the highest chair is 1–5, B1 at 6, … B4 at 9).
+Satellites use `C.SeatRoleOffsets` (world-unit XZ + rotation vs the occupant figurine yaw frame; absolute `defaultY`). Table B family size is `highestOccupiedTableSlot` (B0 when the highest chair is 1–5, B1 at 6, … B4 at 9).
 
 Current placement behavior:
 

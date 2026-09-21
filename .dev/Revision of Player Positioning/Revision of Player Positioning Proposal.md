@@ -152,7 +152,7 @@ The new rule: **one authored offset table** per role, shared by every occupant t
 
 Because the offsets live in data, **slot 1 does not need to be occupied**, and the occupant in slot 1 does not need to be a player. We do not copy from a live occupant.
 
-Authoring aid: `DEBUG.dumpSeatRoleOffsets(color)` reads that color’s live figurine, then writes every `{color}Object`-tagged object in pasteable form: **local XZ and rotation** relative to the figurine, plus the object’s **current absolute Y**. Run it on **any** player color (and later NPC occupants if needed). Red is the usual source for **shared** and **player** roles; Pink, Purple, Brown, etc. are for **`extraByOccupant`** pieces that only exist at that seat (tarot, companion tokens, Oblivion-Rouse bag, Prince signet, …). Capture a seat that already looks correct (after today’s post-corrections). Deactivated objects will dump `y = -200`; those rows are edited by hand to the default (in-use) height. The dump does not special-case or omit them.
+Authoring aid: `DEBUG.dumpSeatRoleOffsets(color)` reads that color’s live figurine, then writes every `{color}Object`-tagged object in pasteable form: **world-unit XZ** in the figurine yaw frame (`lib.figurine_frame`, same math layout apply uses) and rotation relative to the figurine, plus the object’s **current absolute Y**. Do not dump with `Figurine_Custom:positionToLocal`. Run it on **any** player color (and later NPC occupants if needed). Red is the usual source for **shared** and **player** roles; Pink, Purple, Brown, etc. are for **`extraByOccupant`** pieces that only exist at that seat (tarot, companion tokens, Oblivion-Rouse bag, Prince signet, …). Capture a seat that already looks correct (after today’s post-corrections). Deactivated objects will dump `y = -200`; those rows are edited by hand to the default (in-use) height. The dump does not special-case or omit them.
 
 `postCorrections` / `postCorrectionsBySeatRole` should shrink to nothing, or to a tiny authored exception list, once chair and figurine offsets are correct relative to `referenceFigurine`. If a throne mesh is authored 180° off, fix that mesh or put 180° in that role’s offset — do not keep per-GUID patches.
 
@@ -220,7 +220,7 @@ C.SeatRoleOffsets = {
 }
 ```
 
-- `localXZ` / `localRotation` — in the **figurine’s** local space (dump via `positionToLocal` / rotation delta).
+- `localXZ` / `localRotation` — world-unit XZ in the **figurine yaw frame** (dump via `lib.figurine_frame` / `DEBUG.dumpSeatRoleOffsets`; same math layout apply uses). Do **not** dump with `Figurine_Custom:positionToLocal` — that space is not world inches.
 - `defaultY` — absolute world Y when the object is in use. Never store `-200` here.
 - Optional `scale` only if a role actually needs it.
 
@@ -271,7 +271,7 @@ Occupant identity (Red, NPC1) does not change when the token moves to a differen
 
 #### Delivery phases
 
-**Phase 0 — capture (old layout still running).** `DEBUG.dumpSeatRoleOffsets(color)` is available. Pass any player color (`"Red"`, `"Pink"`, `"Purple"`, …) or NPC seat (`"NPC1"`). From the TTS console after Save & Play: `lua DEBUG.dumpSeatRoleOffsets("Red")`. It writes pasteable Lua to `.dev/.debug/debug_logs/seat_role_offsets_<COLOR>.lua` (same bridge as other DEBUG dumps): every `{color}Object` as `localXZ`, `localRotation`, and current absolute Y, plus the live figurine pose as a `referenceFigurine` candidate. Player-color dumps also include the hand zone as `HAND_ZONE` even if it is not tagged.
+**Phase 0 — capture (old layout still running).** `DEBUG.dumpSeatRoleOffsets(color)` is available. Pass any player color (`"Red"`, `"Pink"`, `"Purple"`, …) or NPC seat (`"NPC1"`). From the TTS console after Save & Play: `lua DEBUG.dumpSeatRoleOffsets("Red")`. It writes pasteable Lua to `.dev/.debug/debug_logs/seat_role_offsets_<COLOR>.lua` (same bridge as other DEBUG dumps): every `{color}Object` as world-unit `localXZ` (figurine yaw frame), `localRotation`, and current absolute Y, plus the live figurine pose as a `referenceFigurine` candidate. Player-color dumps also include the hand zone as `HAND_ZONE` even if it is not tagged.
 
 Typical capture:
 

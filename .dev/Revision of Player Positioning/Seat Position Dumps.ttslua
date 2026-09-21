@@ -1,4 +1,7 @@
 -- Phase 0 seat-role offset dump (current layout still running).
+-- HISTORICAL: localXZ in this file was captured with Figurine_Custom:positionToLocal
+-- (not world inches). Canonical offsets after TOR-592 are lib/seat_role_offsets.ttslua,
+-- rebuilt from the `-- world` coordinates below via lib/figurine_frame.ttslua.
 -- lua DEBUG.dumpSeatRoleOffsets("Red")
 -- Hidden objects may have defaultY = -200; replace those with the in-use height before pasting.
 -- Copy roles into C.SeatRoleOffsets.shared / .player / .extraByOccupant["Red"].

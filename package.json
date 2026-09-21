@@ -59,6 +59,7 @@
     "npcs:report-missing-characters": "node .dev/scripts/report-missing-npc-characters-from-disk.js",
     "images:renumber-suffixes": "node .dev/scripts/renumber-image-suffixes.js",
     "images:renumber-suffixes:test": "node .dev/scripts/renumber-image-suffixes.test.js",
+    "figurine-frame:test": "node .dev/scripts/figurine_frame.test.js",
     "custom-ui-assets:pipeline-npc-groups": "node .tools/custom-ui-assets/run-custom-ui-assets-pipeline.js --mode npc-groups --saveName 230",
     "custom-ui-assets:extract-npc-token-urls": "node .tools/custom-ui-assets/extract-npc-token-hosted-urls.js --saveName 230 --generatedAssets .dev/custom-ui-assets/npc-group-generated-assets.json",
     "custom-ui-assets:patch-npc-token-urls-in-save": "node .tools/custom-ui-assets/patch-npc-token-local-urls-in-save.js --save .dev/TS_Save_230.json",

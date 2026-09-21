@@ -23,6 +23,7 @@ L = require("core.lighting")
 O = require("core.objects")
 local Sync = require("core.sync")
 local SRI = require("lib.seat-role-identity")
+local FigurineFrame = require("lib.figurine_frame")
 LightTest = require("core.light_test")
 -- Bundler tracing: `lib.workspace_ndjson_log` is otherwise only required from inside DEBUG.* at runtime
 -- and can be omitted from Save & Play bundles → a late require there fails in-game. Keep one top-level require.
@@ -593,6 +594,8 @@ local function dumpSeatObjectTagsCsv(obj)
 end
 
 --- Capture `{occupant}Object` poses relative to that seat's figurine (Phase 0 player-positioning).
+--- `localXZ` is world-unit XZ in the figurine yaw frame (`lib.figurine_frame`) — the inverse of layout apply.
+--- Do not use Figurine_Custom:positionToLocal (that space is not world inches).
 --- Writes pasteable Lua to `.dev/.debug/debug_logs/seat_role_offsets_<OCCUPANT>.lua`.
 --- Hidden objects may dump `defaultY = -200`; edit those by hand to the in-use height.
 --- @param occupantRaw string|nil player color or NPC1..NPC4 (default `"Red"`)
@@ -612,10 +615,6 @@ function DEBUG.dumpSeatRoleOffsets(occupantRaw)
                 .. ")"
         )
     end
-    if type(figurine.positionToLocal) ~= "function" then
-        error("DEBUG.dumpSeatRoleOffsets: figurine for '" .. occupantKey .. "' has no positionToLocal")
-    end
-
     local figPos = Vector(figurine.getPosition())
     local figRot = Vector(figurine.getRotation())
     local figGuid = ""
@@ -685,9 +684,12 @@ function DEBUG.dumpSeatRoleOffsets(occupantRaw)
         else
             local pos = Vector(obj.getPosition())
             local rot = Vector(obj.getRotation())
-            local lp = figurine.positionToLocal(pos)
-            local lx = (type(lp) == "userdata" or type(lp) == "table") and tonumber(lp.x) or 0
-            local lz = (type(lp) == "userdata" or type(lp) == "table") and tonumber(lp.z) or 0
+            local lp = FigurineFrame.localFromWorld({
+                position = figPos,
+                rotation = figRot,
+            }, pos)
+            local lx = tonumber(lp.x) or 0
+            local lz = tonumber(lp.z) or 0
             local key = roleKey
             if roleUsed[key] == true then
                 key = roleKey .. "__" .. guid
@@ -732,6 +734,8 @@ function DEBUG.dumpSeatRoleOffsets(occupantRaw)
     local lines = {
         "-- Phase 0 seat-role offset dump (current layout still running).",
         "-- lua DEBUG.dumpSeatRoleOffsets(\"" .. occupantKey .. "\")",
+        "-- localXZ is world-unit XZ vs the figurine yaw frame (lib.figurine_frame; same as layout apply).",
+        "-- Do not use Figurine_Custom:positionToLocal — that space is not world inches.",
         "-- Hidden objects may have defaultY = -200; replace those with the in-use height before pasting.",
         "-- Copy roles into C.SeatRoleOffsets.shared / .player / .extraByOccupant[\"" .. occupantKey .. "\"].",
         "-- occupant=" .. occupantKey
@@ -6475,7 +6479,7 @@ function DEBUG.help()
     print("  logToFile(level, msg, filename?) - Log a message to file")
     print("  logStateToFile(filename?)       - Log game state to file (JSON)")
     print("  dumpCustomAssetsToFile(path?)   - Dump UI.getCustomAssets() → .dev/.debug/debug_logs/custom_ui_assets.json")
-    print("  dumpSeatRoleOffsets(color?)     - Seat objects vs figurine (local XZ/rot + Y) → debug_logs/seat_role_offsets_<COLOR>.lua")
+    print("  dumpSeatRoleOffsets(color?)     - Seat objects vs figurine (world-unit XZ/rot + Y) → debug_logs/seat_role_offsets_<COLOR>.lua")
     print("  logNpcPlacementIntentToFile(filename?) - Log Step Zero NPC placement intent (reconcile verify)")
     print("  exportNpcSeatFigurinesToFile(path?)     - Export NPC#Object figurines (name + GUID) to debug_logs")
     print("  exportControlBoardSnapGroupsToFile(filename?, config?) - CSV polar snap groups (logStateToFile path)")
