@@ -1502,9 +1502,8 @@ C.ReferenceCameraAngles = {
     isRelativeToReferenceHandPosition = true
   },
   roll = {
-
     cameraMode = "ThirdPerson",
-    position = Vector({ 0, 5.8436, -50.6698 }),
+    position = Vector({ 0, 10.8436, -50.6698 }),
     pitch = 35.9174,
     yaw = 0,
     distance = 17.2098,

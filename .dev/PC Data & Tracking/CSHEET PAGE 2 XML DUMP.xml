@@ -4,6 +4,9 @@
   guid=c0f4b5
   name=Aishe - p.2
   note=Runtime UI from object.UI.getXml(); editor source may differ.
+
+
+  DEBUG.dumpObjectXmlToFile("7ac353")
 -->
 <Defaults>
   <InputField class="player_desire" ignoreLayout="true" width="87%" color="#000000" textColor="#fce5c1" height="50" fontSize="30" fontStyle="Bold" rectAlignment="UpperCenter" offsetXY="0 -447" placeholder="Enter your Desire ..." />
@@ -175,129 +178,276 @@
       end
       return
     end
-    getObjectFromGUID("c0f4b5").UI.setAttributes(elem, attrs)
+    getObjectFromGUID("e2c921").UI.setAttributes(elem, attrs)
   end
 
   set("paper_root", {childAlignment = "UpperCenter", padding = "50 50 110 100"})
-  set("page2_dynamic", {padding = "40 40 0 0", childAlignment = "UpperCenter", childForceExpandHeight = "false", childForceExpandWidth = "true", spacing = "0"})
 
-  set({"db_disc_row_1", "db_disc_row_2"}, {flexibleWidth = "1", spacing = "0", preferredHeight = "225"})
+set("page2_dynamic", {childForceExpandHeight = "false"})
 
-  set({"db_disc_cell_auspex", "db_disc_cell_dominate", "db_disc_cell_fortitude", "db_disc_cell_obfuscate"}, {childForceExpandWidth = "false"})
-  set({"db_disc_header_auspex", "db_disc_header_dominate", "db_disc_header_fortitude", "db_disc_header_obfuscate"}, {childForceExpandWidth = "false", preferredWidth = "800", flexibleWidth = "1", spacing = "0"})
-  set({"db_disc_name_auspex", "db_disc_name_dominate", "db_disc_name_fortitude", "db_disc_name_obfuscate"}, {})
-  set({"db_dotline_wrap_auspex", "db_dotline_wrap_dominate", "db_dotline_wrap_fortitude", "db_dotline_wrap_obfuscate"}, {padding = "0 0 0 0", flexibleWidth = "0", preferredWidth = "200"})
-  set({"db_dotline_bg_auspex", "db_dotline_bg_dominate", "db_dotline_bg_fortitude", "db_dotline_bg_obfuscate"}, {flexibleWidth = "0", preferredWidth = "200", preferredHeight = "0", ignoreLayout = "true", width = "200"})
-  set({"db_dot_fills_auspex", "db_dot_fills_dominate", "db_dot_fills_fortitude", "db_dot_fills_obfuscate"}, {preferredWidth = "200", ignoreLayout = "false", padding = "20 20 0 0", childAlignment = "MiddleLeft", childForceExpandWidth = "false"})
+set({"db_disc_row_1", "db_disc_row_2", "db_rc_columns"}, {flexibleHeight = "0"})
 
-  set({"dot_auspex_1", "dot_auspex_2", "dot_auspex_3", "dot_auspex_4", "dot_auspex_5"}, { image = "dot_yellow", active="true", ignoreLayout = "true", width = "63", height = "63"})
-  set("dot_auspex_1", {offsetXY = "0 2"})
-  set("dot_auspex_2", {offsetXY = "35 2"})
-  set("dot_auspex_3", {offsetXY = "70 2"})
-  set("dot_auspex_4", {offsetXY = "105 2"})
-  set("dot_auspex_5", {offsetXY = "140 2"})
-  set("db_powers_auspex", {color = "#AAAAAA", fontStyle = "Bold", text = "        Heightened Senses\n        Premonition\n        Doomsaying ◆ Scry the Soul\n        Level 4\n        Level 5"})
+set({"db_rc_columns"}, {flexibleHeight = "1", preferredHeight = "0"})
 
-  set({"dot_dominate_1", "dot_dominate_2", "dot_dominate_3", "dot_dominate_4", "dot_dominate_5"}, { image = "dot_yellow", active="true", ignoreLayout = "true", width = "63", height = "63"})
-  set("dot_dominate_1", {offsetXY = "0 2"})
-  set("dot_dominate_2", {offsetXY = "35 2"})
-  set("dot_dominate_3", {offsetXY = "70 2"})
-  set("dot_dominate_4", {offsetXY = "105 2"})
-  set("dot_dominate_5", {offsetXY = "140 2"})
-  set("db_powers_dominate", {color = "#AAAAAA", fontStyle = "Bold", text = "        Cloud Memory\n        Dementation\n        The Forgetful Mind"})
+set({"db_rc_col_L", "db_rc_col_R"}, {childForceExpandHeight = "false", spacing = "0"})
 
-  set({"dot_fortitude_1", "dot_fortitude_2", "dot_fortitude_3", "dot_fortitude_4", "dot_fortitude_5"}, { image = "dot_yellow", active="true", ignoreLayout = "true", width = "63", height = "63"})
-  set("dot_fortitude_1", {offsetXY = "0 2"})
-  set("dot_fortitude_2", {offsetXY = "35 2"})
-  set("dot_fortitude_3", {offsetXY = "70 2"})
-  set("dot_fortitude_4", {offsetXY = "105 2"})
-  set("dot_fortitude_5", {offsetXY = "140 2"})
-  set("db_powers_fortitude", {color = "#AAAAAA", fontStyle = "Bold", text = "        Unswayable Mind"})
+set({"db_rc_dotline_bg_L_1"}, {image = "page2_ritualDotline",preferredHeight = "60", flexibleHeight = "0", height = "60"})
 
-  set({"dot_obfuscate_1", "dot_obfuscate_2", "dot_obfuscate_3", "dot_obfuscate_4", "dot_obfuscate_5"}, { image = "dot_yellow", active="true", ignoreLayout = "true", width = "63", height = "63"})
-  set("dot_obfuscate_1", {offsetXY = "0 2"})
-  set("dot_obfuscate_2", {offsetXY = "35 2"})
-  set("dot_obfuscate_3", {offsetXY = "70 2"})
-  set("dot_obfuscate_4", {offsetXY = "105 2"})
-  set("dot_obfuscate_5", {offsetXY = "140 2"})
-  set("db_powers_obfuscate", {color = "#AAAAAA", fontStyle = "Bold", text = "        Cloak of Shadows\n        Unseen Passage\n        Level 3\n        Level 4\n        Level 5"})
+set({"db_rc_row_L_1", "db_rc_row_L_2", "db_rc_row_L_3", "db_rc_row_L_4", "db_rc_row_L_5", }, {childForceExpandWidth = "false", preferredHeight = "60"})
 
+
+
+set({"dot_rc_L_2_1", "dot_rc_L_2_2", "dot_rc_L_2_3", "dot_rc_L_2_4", "dot_rc_L_2_5"}, { image = "dot_yellow", active="true", ignoreLayout = "true", width = "63", height = "63"})
+
+
+set({"db_rc_dotline_wrap_L_1"}, {color = "rgba(0, 1, 1, 0.1)", flexibleWidth = "0", preferredWidth = "200", padding = "0 0 0 0"})
+set({"db_rc_name_L_1"}, {alignment = "MiddleLeft"})
+set({"dot_rc_L_1_1", "dot_rc_L_1_2", "dot_rc_L_1_3", "dot_rc_L_1_4", "dot_rc_L_1_5"}, { image = "dot_yellow", active="true", ignoreLayout = "true", width = "63", height = "63"})
 -->
 
-
-<Panel id="paper_root" class="page_root padded_border" active="true">
+<!--
+  DEBUG.dumpObjectXmlToFile
+  os.time=1789969226.23477
+  guid=7ac353
+  name=Black Caesar - p.2
+  note=Runtime UI from object.UI.getXml(); editor source may differ.
+-->
+<Defaults>
+  <InputField class="player_desire" ignoreLayout="true" width="87%" color="#000000" textColor="#fce5c1" height="50" fontSize="30" fontStyle="Bold" rectAlignment="UpperCenter" offsetXY="0 -447" placeholder="Enter your Desire ..." />
+  <InputField class="player_desire_unset" color="#440000" fontStyle="Italic" textColor="#555555" />
+  <Image preserveAspect="true" />
+  <Image class="dot" rectAlignment="UpperLeft" preserveAspect="true" raycastTarget="false" active="false" />
+  <Image class="dot_standard" height="63" width="63" />
+  <Image class="dot_small" />
+  <Image class="dot_large" height="113" width="113" />
+  <Image class="box" rectAlignment="UpperLeft" preserveAspect="true" raycastTarget="false" active="false" />
+  <Image class="box_standard" height="80" width="80" />
+  <Text class="xp_text" fontSize="82" fontStyle="Bold" color="#c5c799" rectAlignment="LowerCenter" alignment="LowerCenter" offsetXY="-67 125" outline="#000000" outlineSize="2 2" shadow="#000000" shadowDistance="5 -5" />
+  <Panel class="page_root" active="true" rectAlignment="MiddleCenter" width="1545" height="2000" scale="0.1 0.1 0.1" position="0 0 -13" rotation="0 0 180" pivot="0.5 0.5" />
+  <Panel class="padded_border" padding="50 50 140 100" />
+  <VerticalLayout class="vertical_section_container" spacing="10" height="100%" width="100%" childForceExpandWidth="true" childForceExpandHeight="false" childAlignment="UpperCenter" padding="40 40 0 0" />
+  <Image class="divider_image" preserveAspect="true" minWidth="1445" />
+  <Image class="divider_image_small" preserveAspect="true" minWidth="1445" />
+  <HorizontalLayout class="box_column_container" spacing="10" childForceExpandWidth="true" childForceExpandHeight="false" width="1500" />
+  <VerticalLayout class="box_column" minWidth="200" childForceExpandWidth="true" childForceExpandHeight="false" childAlignment="UpperLeft" spacing="15" />
+  <VerticalLayout class="box_text_container" childForceExpandWidth="true" childForceExpandHeight="false" color="#000000" flexibleHeight="0" outline="#cb995c" outlineSize="2 -2" spacing="5" padding="10 10 5 5" />
+  <HorizontalLayout class="box_text_title_bar" preferredHeight="20" minHeight="20" flexibleHeight="0" childForceExpandWidth="true" padding="0 0 0 0" childAlignment="MiddleLeft" />
+  <HorizontalLayout class="1_dot" padding="0 20 0 0" />
+  <HorizontalLayout class="2_dots" padding="0 40 0 0" />
+  <HorizontalLayout class="3_dots" padding="0 60 0 0" />
+  <HorizontalLayout class="4_dots" padding="0 80 0 0" />
+  <HorizontalLayout class="5_dots" padding="0 100 0 0" />
+  <HorizontalLayout class="6_dots" padding="0 120 0 0" />
+  <Text class="box_text_title_text" resizeTextForBestFit="true" horizontalOverflow="Truncate" verticalOverflow="Truncate" alignment="MiddleLeft" color="#FFFFFF" resizeTextMinSize="14" resizeTextMaxSize="24" fontStyle="Bold" flexibleWidth="1" />
+  <Text class="flaw_title" color="#FF0000" />
+  <Panel class="box_text_panel_title_dotline" ignoreLayout="true" rectAlignment="MiddleRight" width="120" height="24" />
+  <Image class="box_text_title_dot" height="40" width="40" offsetXY="-5 10" rectAlignment="MiddleRight" active="true" />
+  <Image class="dot_1" offsetXY="10 0" />
+  <Image class="dot_2" offsetXY="-10 0" />
+  <Image class="dot_3" offsetXY="-30 0" />
+  <Image class="dot_4" offsetXY="-50 0" />
+  <Image class="dot_5" offsetXY="-70 0" />
+  <Image class="dot_6" offsetXY="-90 0" />
+  <Panel class="box_text_panel_body" padding="0 0 0 0" color="#000000" />
+  <VerticalLayout class="box_text_panel_body" padding="0 0 0 0" spacing="0" childForceExpandHeight="false" color="#000000" />
+  <Text class="box_text" resizeTextForBestFit="true" resizeTextMinSize="8" resizeTextMaxSize="24" horizontalOverflow="Wrap" verticalOverflow="Truncate" alignment="UpperLeft" color="#DDDDDD" />
+  <Text class="flavor_text" fontStyle="BoldAndItalic" color="#FFFFFF" />
+  <HorizontalLayout class="four_column_text" spacing="20" childForceExpandWidth="true" childForceExpandHeight="false" childAlignment="UpperCenter" />
+  <VerticalLayout class="quarter_column" flexibleHeight="0" />
+  <Button class="page_navigation" width="100" height="2000" ignoreLayout="true" />
+  <Button class="page_back" rectAlignment="UpperLeft" onClick="onPageBack" color="clear" />
+  <Button class="page_forward" rectAlignment="UpperRight" onClick="onPageForward" color="clear" />
+  <Button class="page_inner_left" rectAlignment="UpperLeft" onClick="onPageInnerClick" color="clear" />
+  <Button class="page_inner_right" rectAlignment="UpperRight" onClick="onPageInnerClick" color="clear" />
+  <VerticalLayout class="vertical_project_container" width="75%" spacing="15" rectAlignment="UpperLeft" childAlignment="UpperLeft" childForceExpandHeight="false" padding="0 50 130 150" />
+  <Panel class="project_container" minHeight="150" preferredHeight="150" flexibleHeight="0" color="rgba(0, 0, 0, 1)" outline="#cb995c" outlineSize="2 -2" scale="0.9" />
+  <HorizontalLayout class="project_header_container" height="30" width="100%" outline="#cb995c" outlineSize="2 -2" color="rgba(0, 0, 0, 1)" rectAlignment="UpperLeft" childAlignment="UpperLeft" childForceExpandWidth="false" padding="10 10 0 0" spacing="10" />
+  <GridLayout class="project_header_dotline" cellSize="20 20" spacing="2" startCorner="UpperLeft" startAxis="Horizontal" constraint="FixedRowCount" constraintCount="1" childAlignment="MiddleLeft" childForceExpandWidth="false" childForceExpandHeight="false" />
+  <Image class="project_scope_dot" image="dot_yellow" minHeight="120" minWidth="120" flexibleWidth="0" flexibleHeight="0" scale="2 2" />
+  <Text class="project_goal_text" color="#FFFFFF" fontStyle="Bold" fontSize="27" alignment="MiddleLeft" offsetXY="10 0" preferredWidth="1000" />
+  <Panel class="project_result_container" ignoreLayout="true" height="50" width="100" rectAlignment="UpperRight" offsetXY="10 10" color="rgba(0.2, 0.2, 0.2, 1)" outline="#cb995c" outlineSize="2 -2" />
+  <Image class="project_result_image" rectAlignment="MiddleCenter" width="90" scale="2 2" preserveAspect="true" />
+  <Text class="project_result_margin" color="#FFFFFF" fontStyle="Bold" fontSize="40" alignment="MiddleRight" horizontalOverflow="wrap" width="100" />
+  <GridLayout class="project_stake_container" color="rgba(1, 0, 0, 0)" rectAlignment="LowerLeft" cellSize="557 30" height="100" width="557" spacing="0" startCorner="UpperLeft" startAxis="Horizontal" childAlignment="UpperLeft" padding="0 0 0 0" constraint="FixedColumnCount" constraintCount="1" offsetXY="5 20" />
+  <HorizontalLayout class="project_stake_container" spacing="15" color="rgba(1, 0, 1, 0)" childForceExpandWidth="false" childForceExpandHeight="true" padding="5 0 0 0" childAlignment="MiddleLeft" />
+  <Text class="project_stakes_label" color="rgba(0, 0, 0, 0)" fontSize="0" active="false" />
+  <GridLayout class="project_stake_dotline" color="rgba(0, 1, 0, 0)" cellSize="25 25" spacing="2" startCorner="UpperLeft" startAxis="Horizontal" constraint="FixedRowCount" constraintCount="1" childAlignment="MiddleLeft" childForceExpandWidth="false" childForceExpandHeight="false" scale="0.75" preferredWidth="0" flexibleWidth="0" minWidth="0" padding="0 0 0 0" />
+  <Panel class="project_stake_spacer" flexibleWidth="1" />
+  <Image class="project_stake_dot" image="dot_white" minHeight="120" minWidth="12" flexibleWidth="0" flexibleHeight="0" scale="2 2" />
+  <Image class="project_stake_dot_other" image="dot_grey" />
+  <Image class="project_stake_dot_coterie" image="dot_yellow" />
+  <Text class="project_stake_label" color="#FFFFFF" fontStyle="Bold" fontSize="22" alignment="MiddleLeft" flexibleWidth="0" horizontalOverflow="overflow" />
+  <Text class="project_stake_label_other" color="#AAAAAA" fontStyle="Italic" />
+  <Text class="project_stake_label_coterie" color="#FFDD00" />
+  <Image class="project_die" ignoreLayout="true" rectAlignment="MiddleRight" width="500" preserveAspect="true" offsetXY="0 -10" />
+  <HorizontalLayout class="project_date_container" ignoreLayout="true" height="30" width="550" rectAlignment="LowerRight" offsetXY="10 -10" color="rgba(0, 0, 0, 1)" outline="#cb995c" outlineSize="2 -2" spacing="0" />
+  <Text class="project_date_text" color="#FFFFFF" fontStyle="Bold" fontSize="20" alignment="MiddleCenter" preferredWidth="1000" />
+  <Text class="project_increment_text" fontStyle="Italic" fontSize="18" color="#999999" alignment="MiddleCenter" preferredWidth="1000" />
+  <Text class="project_date_start_text" fontStyle="Italic" color="#999999" />
+  <HorizontalLayout class="project_stake_container" active="false" />
+  <Image class="project_stake_dot" active="false" />
+  <Image class="project_scope_dot" active="false" />
+</Defaults>
+<Defaults>
+  <Panel class="page_root" childAlignment="UpperCenter" padding="50 50 110 100" />
+  <VerticalLayout class="page2_dynamic" padding="40 40 0 0" childAlignment="UpperCenter" childForceExpandHeight="false" childForceExpandWidth="true" spacing="0" />
+  <HorizontalLayout class="page2_disc_row" flexibleWidth="1" spacing="0" preferredHeight="225" />
+  <VerticalLayout class="page2_disc_cell" flexibleWidth="1" preferredHeight="280" childForceExpandWidth="false" />
+  <HorizontalLayout class="page2_disc_header" preferredHeight="70" flexibleHeight="0" childForceExpandWidth="false" preferredWidth="800" flexibleWidth="1" spacing="0" />
+  <Image class="page2_disc_name" preferredWidth="220" preferredHeight="63" flexibleWidth="0" />
+  <Panel class="page2_dotline_wrap" raycastTarget="false" />
+  <Panel class="page2_dotline_wrap_disc" padding="0 0 0 0" flexibleWidth="0" preferredWidth="200" />
+  <Panel class="page2_dotline_wrap_rc" preferredWidth="280" preferredHeight="63" flexibleWidth="0" />
+  <Image class="page2_dotline_bg" flexibleWidth="0" preferredWidth="200" preferredHeight="0" ignoreLayout="true" width="200" />
+  <HorizontalLayout class="page2_dot_fills" preferredWidth="200" ignoreLayout="false" padding="20 20 0 0" childAlignment="MiddleLeft" childForceExpandWidth="false" />
+  <Image class="page2_dot_fill" ignoreLayout="true" width="63" height="63" />
+  <Text class="page2_powers_text" alignment="UpperLeft" fontSize="28" color="#AAAAAA" fontStyle="Bold" preferredHeight="200" flexibleHeight="1" />
+  <Image class="page2_rc_divider" preferredHeight="80" flexibleHeight="0" preserveAspect="true" />
+  <HorizontalLayout class="page2_rc_columns" spacing="40" flexibleHeight="1" />
+  <VerticalLayout class="page2_rc_col" flexibleWidth="1" spacing="12" />
+  <HorizontalLayout class="page2_rc_row" preferredHeight="63" flexibleHeight="0" />
+  <Text class="page2_rc_name" alignment="MiddleLeft" fontSize="28" color="#FFFFFF" flexibleWidth="1" />
+</Defaults>
+<Panel id="paper_root" class="page_root" active="true">
   <Button id="pageForward" class="page_navigation page_forward" active="true" />
   <Button id="pageInner" class="page_navigation page_inner_left" active="true" />
   <VerticalLayout id="page2_dynamic" class="page2_dynamic">
-    <HorizontalLayout id="db_disc_row_1" class="page2_disc_row">
-      <VerticalLayout id="db_disc_cell_auspex" class="page2_disc_cell">
-        <HorizontalLayout id="db_disc_header_auspex" class="page2_disc_header">
-          <Image id="db_disc_name_auspex" image="discName_auspex" class="page2_disc_name" />
-          <Panel id="db_dotline_wrap_auspex" class="page2_dotline_wrap page2_dotline_wrap_disc">
-            <Image id="db_dotline_bg_auspex" image="page2_dotline" class="page2_dotline_bg" />
-            <HorizontalLayout id="db_dot_fills_auspex" class="page2_dot_fills">
-              <Image id="dot_auspex_1" class="dot dot_standard page2_dot_fill" offsetXY = "0 2" />
-              <Image id="dot_auspex_2" class="dot dot_standard page2_dot_fill" offsetXY = "35 2" />
-              <Image id="dot_auspex_3" class="dot dot_standard page2_dot_fill" offsetXY = "70 2" />
-              <Image id="dot_auspex_4" class="dot dot_standard page2_dot_fill" offsetXY = "105 2" />
-              <Image id="dot_auspex_5" class="dot dot_standard page2_dot_fill" offsetXY = "140 2" />
+    <Image id="db_rc_divider" image="divider_ritualsAndCeremonies" class="page2_rc_divider" />
+    <HorizontalLayout id="db_rc_columns" class="page2_rc_columns">
+      <VerticalLayout id="db_rc_col_L" class="page2_rc_col">
+        <HorizontalLayout id="db_rc_row_L_1" class="page2_rc_row">
+          <Panel id="db_rc_dotline_wrap_L_1" class="page2_dotline_wrap page2_dotline_wrap_rc">
+            <Image id="db_rc_dotline_bg_L_1" image="page2_dotline" class="page2_dotline_bg" />
+            <HorizontalLayout id="db_rc_dot_fills_L_1" class="page2_dot_fills">
+              <Image id="dot_rc_L_1_1" class="dot dot_standard page2_dot_fill" offsetXY="0 2" />
+              <Image id="dot_rc_L_1_2" class="dot dot_standard page2_dot_fill" offsetXY="35 2" />
+              <Image id="dot_rc_L_1_3" class="dot dot_standard page2_dot_fill" offsetXY="70 2" />
+              <Image id="dot_rc_L_1_4" class="dot dot_standard page2_dot_fill" offsetXY="105 2" />
+              <Image id="dot_rc_L_1_5" class="dot dot_standard page2_dot_fill" offsetXY="140 2" />
             </HorizontalLayout>
           </Panel>
+          <Text id="db_rc_name_L_1" class="page2_rc_name" text="Oneiromancy" />
         </HorizontalLayout>
-        <Text id="db_powers_auspex" class="page2_powers_text" text="Heightened Senses Premonition Doomsaying ◆ Scry the Soul" />
-      </VerticalLayout>
-      <VerticalLayout id="db_disc_cell_dominate" class="page2_disc_cell">
-        <HorizontalLayout id="db_disc_header_dominate" class="page2_disc_header">
-          <Image id="db_disc_name_dominate" image="discName_dominate" class="page2_disc_name" />
-          <Panel id="db_dotline_wrap_dominate" class="page2_dotline_wrap page2_dotline_wrap_disc">
-            <Image id="db_dotline_bg_dominate" image="page2_dotline" class="page2_dotline_bg" />
-            <HorizontalLayout id="db_dot_fills_dominate" class="page2_dot_fills">
-              <Image id="dot_dominate_1" class="dot dot_standard page2_dot_fill" />
-              <Image id="dot_dominate_2" class="dot dot_standard page2_dot_fill" />
-              <Image id="dot_dominate_3" class="dot dot_standard page2_dot_fill" />
-              <Image id="dot_dominate_4" class="dot dot_standard page2_dot_fill" />
-              <Image id="dot_dominate_5" class="dot dot_standard page2_dot_fill" />
+        <HorizontalLayout id="db_rc_row_L_2" class="page2_rc_row">
+          <Panel id="db_rc_dotline_wrap_L_2" class="page2_dotline_wrap page2_dotline_wrap_rc">
+            <Image id="db_rc_dotline_bg_L_2" image="page2_dotline" class="page2_dotline_bg" />
+            <HorizontalLayout id="db_rc_dot_fills_L_2" class="page2_dot_fills">
+              <Image id="dot_rc_L_2_1" class="dot dot_standard page2_dot_fill" offsetXY="0 2" />
+              <Image id="dot_rc_L_2_2" class="dot dot_standard page2_dot_fill" offsetXY="35 2" />
+              <Image id="dot_rc_L_2_3" class="dot dot_standard page2_dot_fill" offsetXY="70 2" />
+              <Image id="dot_rc_L_2_4" class="dot dot_standard page2_dot_fill" offsetXY="105 2" />
+              <Image id="dot_rc_L_2_5" class="dot dot_standard page2_dot_fill" offsetXY="140 2" />
             </HorizontalLayout>
           </Panel>
+          <Text id="db_rc_name_L_2" class="page2_rc_name" text="Depths of Nightmare" />
         </HorizontalLayout>
-        <Text id="db_powers_dominate" class="page2_powers_text" text="Cloud Memory Dementation The Forgetful Mind" />
-      </VerticalLayout>
-      <VerticalLayout id="db_disc_cell_fortitude" class="page2_disc_cell">
-        <HorizontalLayout id="db_disc_header_fortitude" class="page2_disc_header">
-          <Image id="db_disc_name_fortitude" image="discName_fortitude" class="page2_disc_name" />
-          <Panel id="db_dotline_wrap_fortitude" class="page2_dotline_wrap page2_dotline_wrap_disc">
-            <Image id="db_dotline_bg_fortitude" image="page2_dotline" class="page2_dotline_bg" />
-            <HorizontalLayout id="db_dot_fills_fortitude" class="page2_dot_fills">
-              <Image id="dot_fortitude_1" class="dot dot_standard page2_dot_fill" />
-              <Image id="dot_fortitude_2" class="dot dot_standard page2_dot_fill" />
-              <Image id="dot_fortitude_3" class="dot dot_standard page2_dot_fill" />
-              <Image id="dot_fortitude_4" class="dot dot_standard page2_dot_fill" />
-              <Image id="dot_fortitude_5" class="dot dot_standard page2_dot_fill" />
+        <HorizontalLayout id="db_rc_row_L_3" class="page2_rc_row">
+          <Panel id="db_rc_dotline_wrap_L_3" class="page2_dotline_wrap page2_dotline_wrap_rc">
+            <Image id="db_rc_dotline_bg_L_3" image="page2_dotline" class="page2_dotline_bg" />
+            <HorizontalLayout id="db_rc_dot_fills_L_3" class="page2_dot_fills">
+              <Image id="dot_rc_L_3_1" class="dot dot_standard page2_dot_fill" offsetXY="0 2" />
+              <Image id="dot_rc_L_3_2" class="dot dot_standard page2_dot_fill" offsetXY="35 2" />
+              <Image id="dot_rc_L_3_3" class="dot dot_standard page2_dot_fill" offsetXY="70 2" />
+              <Image id="dot_rc_L_3_4" class="dot dot_standard page2_dot_fill" offsetXY="105 2" />
+              <Image id="dot_rc_L_3_5" class="dot dot_standard page2_dot_fill" offsetXY="140 2" />
             </HorizontalLayout>
           </Panel>
+          <Text id="db_rc_name_L_3" class="page2_rc_name" text="" />
         </HorizontalLayout>
-        <Text id="db_powers_fortitude" class="page2_powers_text" text="Unswayable Mind" />
-      </VerticalLayout>
-    </HorizontalLayout>
-    <HorizontalLayout id="db_disc_row_2" class="page2_disc_row">
-      <VerticalLayout id="db_disc_cell_obfuscate" class="page2_disc_cell">
-        <HorizontalLayout id="db_disc_header_obfuscate" class="page2_disc_header">
-          <Image id="db_disc_name_obfuscate" image="discName_obfuscate" class="page2_disc_name" />
-          <Panel id="db_dotline_wrap_obfuscate" class="page2_dotline_wrap page2_dotline_wrap_disc">
-            <Image id="db_dotline_bg_obfuscate" image="page2_dotline" class="page2_dotline_bg" />
-            <HorizontalLayout id="db_dot_fills_obfuscate" class="page2_dot_fills">
-              <Image id="dot_obfuscate_1" class="dot dot_standard page2_dot_fill" />
-              <Image id="dot_obfuscate_2" class="dot dot_standard page2_dot_fill" />
-              <Image id="dot_obfuscate_3" class="dot dot_standard page2_dot_fill" />
-              <Image id="dot_obfuscate_4" class="dot dot_standard page2_dot_fill" />
-              <Image id="dot_obfuscate_5" class="dot dot_standard page2_dot_fill" />
+        <HorizontalLayout id="db_rc_row_L_4" class="page2_rc_row">
+          <Panel id="db_rc_dotline_wrap_L_4" class="page2_dotline_wrap page2_dotline_wrap_rc">
+            <Image id="db_rc_dotline_bg_L_4" image="page2_dotline" class="page2_dotline_bg" />
+            <HorizontalLayout id="db_rc_dot_fills_L_4" class="page2_dot_fills">
+              <Image id="dot_rc_L_4_1" class="dot dot_standard page2_dot_fill" offsetXY="0 2" />
+              <Image id="dot_rc_L_4_2" class="dot dot_standard page2_dot_fill" offsetXY="35 2" />
+              <Image id="dot_rc_L_4_3" class="dot dot_standard page2_dot_fill" offsetXY="70 2" />
+              <Image id="dot_rc_L_4_4" class="dot dot_standard page2_dot_fill" offsetXY="105 2" />
+              <Image id="dot_rc_L_4_5" class="dot dot_standard page2_dot_fill" offsetXY="140 2" />
             </HorizontalLayout>
           </Panel>
+          <Text id="db_rc_name_L_4" class="page2_rc_name" text="" />
         </HorizontalLayout>
-        <Text id="db_powers_obfuscate" class="page2_powers_text" text="Cloak of Shadows Unseen Passage" />
+        <HorizontalLayout id="db_rc_row_L_5" class="page2_rc_row">
+          <Panel id="db_rc_dotline_wrap_L_5" class="page2_dotline_wrap page2_dotline_wrap_rc">
+            <Image id="db_rc_dotline_bg_L_5" image="page2_dotline" class="page2_dotline_bg" />
+            <HorizontalLayout id="db_rc_dot_fills_L_5" class="page2_dot_fills">
+              <Image id="dot_rc_L_5_1" class="dot dot_standard page2_dot_fill" offsetXY="0 2" />
+              <Image id="dot_rc_L_5_2" class="dot dot_standard page2_dot_fill" offsetXY="35 2" />
+              <Image id="dot_rc_L_5_3" class="dot dot_standard page2_dot_fill" offsetXY="70 2" />
+              <Image id="dot_rc_L_5_4" class="dot dot_standard page2_dot_fill" offsetXY="105 2" />
+              <Image id="dot_rc_L_5_5" class="dot dot_standard page2_dot_fill" offsetXY="140 2" />
+            </HorizontalLayout>
+          </Panel>
+          <Text id="db_rc_name_L_5" class="page2_rc_name" text="" />
+        </HorizontalLayout>
       </VerticalLayout>
-      <VerticalLayout id="db_disc_cell_empty_5" class="page2_disc_cell" />
-      <VerticalLayout id="db_disc_cell_empty_6" class="page2_disc_cell" />
+      <VerticalLayout id="db_rc_col_R" class="page2_rc_col">
+        <HorizontalLayout id="db_rc_row_R_1" class="page2_rc_row">
+          <Panel id="db_rc_dotline_wrap_R_1" class="page2_dotline_wrap page2_dotline_wrap_rc">
+            <Image id="db_rc_dotline_bg_R_1" image="page2_dotline" class="page2_dotline_bg" />
+            <HorizontalLayout id="db_rc_dot_fills_R_1" class="page2_dot_fills">
+              <Image id="dot_rc_R_1_1" class="dot dot_standard page2_dot_fill" offsetXY="0 2" />
+              <Image id="dot_rc_R_1_2" class="dot dot_standard page2_dot_fill" offsetXY="35 2" />
+              <Image id="dot_rc_R_1_3" class="dot dot_standard page2_dot_fill" offsetXY="70 2" />
+              <Image id="dot_rc_R_1_4" class="dot dot_standard page2_dot_fill" offsetXY="105 2" />
+              <Image id="dot_rc_R_1_5" class="dot dot_standard page2_dot_fill" offsetXY="140 2" />
+            </HorizontalLayout>
+          </Panel>
+          <Text id="db_rc_name_R_1" class="page2_rc_name" text="Summon Spirit" />
+        </HorizontalLayout>
+        <HorizontalLayout id="db_rc_row_R_2" class="page2_rc_row">
+          <Panel id="db_rc_dotline_wrap_R_2" class="page2_dotline_wrap page2_dotline_wrap_rc">
+            <Image id="db_rc_dotline_bg_R_2" image="page2_dotline" class="page2_dotline_bg" />
+            <HorizontalLayout id="db_rc_dot_fills_R_2" class="page2_dot_fills">
+              <Image id="dot_rc_R_2_1" class="dot dot_standard page2_dot_fill" offsetXY="0 2" />
+              <Image id="dot_rc_R_2_2" class="dot dot_standard page2_dot_fill" offsetXY="35 2" />
+              <Image id="dot_rc_R_2_3" class="dot dot_standard page2_dot_fill" offsetXY="70 2" />
+              <Image id="dot_rc_R_2_4" class="dot dot_standard page2_dot_fill" offsetXY="105 2" />
+              <Image id="dot_rc_R_2_5" class="dot dot_standard page2_dot_fill" offsetXY="140 2" />
+            </HorizontalLayout>
+          </Panel>
+          <Text id="db_rc_name_R_2" class="page2_rc_name" text="Nekyia" />
+        </HorizontalLayout>
+        <HorizontalLayout id="db_rc_row_R_3" class="page2_rc_row">
+          <Panel id="db_rc_dotline_wrap_R_3" class="page2_dotline_wrap page2_dotline_wrap_rc">
+            <Image id="db_rc_dotline_bg_R_3" image="page2_dotline" class="page2_dotline_bg" />
+            <HorizontalLayout id="db_rc_dot_fills_R_3" class="page2_dot_fills">
+              <Image id="dot_rc_R_3_1" class="dot dot_standard page2_dot_fill" offsetXY="0 2" />
+              <Image id="dot_rc_R_3_2" class="dot dot_standard page2_dot_fill" offsetXY="35 2" />
+              <Image id="dot_rc_R_3_3" class="dot dot_standard page2_dot_fill" offsetXY="70 2" />
+              <Image id="dot_rc_R_3_4" class="dot dot_standard page2_dot_fill" offsetXY="105 2" />
+              <Image id="dot_rc_R_3_5" class="dot dot_standard page2_dot_fill" offsetXY="140 2" />
+            </HorizontalLayout>
+          </Panel>
+          <Text id="db_rc_name_R_3" class="page2_rc_name" text="Host Spirit" />
+        </HorizontalLayout>
+        <HorizontalLayout id="db_rc_row_R_4" class="page2_rc_row">
+          <Panel id="db_rc_dotline_wrap_R_4" class="page2_dotline_wrap page2_dotline_wrap_rc">
+            <Image id="db_rc_dotline_bg_R_4" image="page2_dotline" class="page2_dotline_bg" />
+            <HorizontalLayout id="db_rc_dot_fills_R_4" class="page2_dot_fills">
+              <Image id="dot_rc_R_4_1" class="dot dot_standard page2_dot_fill" offsetXY="0 2" />
+              <Image id="dot_rc_R_4_2" class="dot dot_standard page2_dot_fill" offsetXY="35 2" />
+              <Image id="dot_rc_R_4_3" class="dot dot_standard page2_dot_fill" offsetXY="70 2" />
+              <Image id="dot_rc_R_4_4" class="dot dot_standard page2_dot_fill" offsetXY="105 2" />
+              <Image id="dot_rc_R_4_5" class="dot dot_standard page2_dot_fill" offsetXY="140 2" />
+            </HorizontalLayout>
+          </Panel>
+          <Text id="db_rc_name_R_4" class="page2_rc_name" text="" />
+        </HorizontalLayout>
+        <HorizontalLayout id="db_rc_row_R_5" class="page2_rc_row">
+          <Panel id="db_rc_dotline_wrap_R_5" class="page2_dotline_wrap page2_dotline_wrap_rc">
+            <Image id="db_rc_dotline_bg_R_5" image="page2_dotline" class="page2_dotline_bg" />
+            <HorizontalLayout id="db_rc_dot_fills_R_5" class="page2_dot_fills">
+              <Image id="dot_rc_R_5_1" class="dot dot_standard page2_dot_fill" offsetXY="0 2" />
+              <Image id="dot_rc_R_5_2" class="dot dot_standard page2_dot_fill" offsetXY="35 2" />
+              <Image id="dot_rc_R_5_3" class="dot dot_standard page2_dot_fill" offsetXY="70 2" />
+              <Image id="dot_rc_R_5_4" class="dot dot_standard page2_dot_fill" offsetXY="105 2" />
+              <Image id="dot_rc_R_5_5" class="dot dot_standard page2_dot_fill" offsetXY="140 2" />
+            </HorizontalLayout>
+          </Panel>
+          <Text id="db_rc_name_R_5" class="page2_rc_name" text="" />
+        </HorizontalLayout>
+      </VerticalLayout>
     </HorizontalLayout>
   </VerticalLayout>
 </Panel>
