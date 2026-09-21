@@ -127,6 +127,9 @@ local playerID = nil
 --- Skip redundant `UI.setXml` when dynamic page content unchanged (per object instance).
 local lastPageDynamicXmlFingerprint = {}
 
+--- Skip redundant fill/image setAttribute when unchanged (cleared on dynamic setXml remount).
+local lastUiUpdatesFingerprint = nil
+
 --- Skip redundant `setDecals` when derived BP stats for this page unchanged.
 local lastBloodPotencyDecalFingerprint = nil
 
@@ -570,22 +573,23 @@ end
 
 --- Replace dynamic-page markup from PCS-backed stats (full document replace — TOR-376 will remove).
 --- Cheap no-op when not a dynamic page, fingerprint unchanged, or builder returns empty (placeholder).
+--- @return boolean true when XmlUI was remounted (callers must defer setAttribute paint by ≥1 frame)
 local function applyPageDynamicXml()
   syncSheetContextFromGmNotes()
   local cfg = PAGE_DYNAMIC_XML[pageNum]
   if cfg == nil then
-    return
+    return false
   end
   if self.UI == nil then
-    return
+    return false
   end
   resolvePlayer()
   if playerID == nil or playerID == CC.StorytellerID then
-    return
+    return false
   end
   local pd = getMergedPlayerDataFromGlobal(playerID)
   if type(pd) ~= "table" or type(pd.stats) ~= "table" then
-    return
+    return false
   end
   local pageMod = getPageDynamicModule(pageNum)
   if pageMod == nil then
@@ -611,25 +615,26 @@ local function applyPageDynamicXml()
   end
   local fp = fingerprintFn(pd.stats, seatColor, pd)
   if fp == lastPageDynamicXmlFingerprint[pageNum] then
-    return
+    return false
   end
   local xml = buildFn(pd.stats, seatColor, pd)
   if type(xml) ~= "string" or xml == "" then
     lastPageDynamicXmlFingerprint[pageNum] = fp
-    return
+    return false
   end
   self.UI.setXml(xml)
   lastPageDynamicXmlFingerprint[pageNum] = fp
+  -- Remount replaces the element tree; clear paint fingerprint so fills re-apply on the new ids.
+  lastUiUpdatesFingerprint = nil
   Wait.frames(function()
     local y = self.getPosition().y
     applyCsheetNavButtonsActiveOnObject(self, y >= 0)
     applyCsheetRootActiveOnObject(self, y >= 0)
   end, 1)
+  return true
 end
 
 --- Apply collected attribute tweaks to this object's UI (skip when unchanged).
-local lastUiUpdatesFingerprint = nil
-
 local function fingerprintUiUpdates(updates)
   if type(updates) ~= "table" then
     return ""
@@ -709,6 +714,19 @@ local function applyBloodPotencyDecals(stats, resolvedStatChanges)
   lastBloodPotencyDecalFingerprint = fp
 end
 
+--- Page-2 power lines must use setAttribute (`\n` survives); XML attrs normalize newlines to spaces.
+--- @param stats table
+local function applyPage2PowersTexts(stats)
+  if pageNum ~= 2 or self.UI == nil then
+    return
+  end
+  local pageMod = getPageDynamicModule(2)
+  if pageMod == nil or type(pageMod.applyPowersTexts) ~= "function" then
+    return
+  end
+  pageMod.applyPowersTexts(self.UI, stats)
+end
+
 --- Refresh images and XP from merged game state (fetched in Global script).
 function refreshCharacterSheetUi()
   syncSheetContextFromGmNotes()
@@ -740,11 +758,22 @@ function refreshCharacterSheetUi()
   end
 
   -- Dynamic pages must remount XmlUI before setAttribute (fill Image ids are in the new tree).
+  local remounted = false
   if PAGE_DYNAMIC_XML[pageNum] ~= nil then
-    applyPageDynamicXml()
+    remounted = applyPageDynamicXml() == true
   end
 
-  applyUiUpdates(updates)
+  local function paintSheetUi()
+    applyUiUpdates(updates)
+    applyPage2PowersTexts(stats)
+  end
+
+  -- setXml is not ready for setAttribute in the same frame — paint one frame later after remount.
+  if remounted then
+    Wait.frames(paintSheetUi, 1)
+  else
+    paintSheetUi()
+  end
 
   if pageNum == 1 and self.UI then
     self.UI.setAttribute("xp_text", "text", tostring(tonumber(stats.xp) or 0))

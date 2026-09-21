@@ -177,11 +177,9 @@ local function buildDisciplineCell(key, row)
   parts[#parts + 1] = "      </HorizontalLayout>"
   parts[#parts + 1] = "    </Panel>"
   parts[#parts + 1] = "  </HorizontalLayout>"
-  parts[#parts + 1] = string.format(
-    '  <Text id="db_powers_%s" class="page2_powers_text" text="%s" />',
-    key,
-    xmlEscape(powersText(row.powers))
-  )
+  -- Powers `text` is applied via UI.setAttribute after setXml — XML attribute whitespace
+  -- normalization collapses real newlines to spaces.
+  parts[#parts + 1] = string.format('  <Text id="db_powers_%s" class="page2_powers_text" text="" />', key)
   parts[#parts + 1] = "</VerticalLayout>"
   return table.concat(parts, "\n")
 end
@@ -411,6 +409,29 @@ function M.fingerprintPage2Stats(stats)
   fpList("R", rituals)
   fpList("C", ceremonies)
   return table.concat(parts, "\3")
+end
+
+--- Apply discipline power lines after XmlUI remount (setAttribute preserves `\n`; XML attrs do not).
+--- @param ui table object.UI
+--- @param stats table|nil
+function M.applyPowersTexts(ui, stats)
+  if ui == nil or type(ui.setAttribute) ~= "function" then
+    return
+  end
+  if type(stats) ~= "table" then
+    return
+  end
+  local discs = type(stats.disciplines) == "table" and stats.disciplines or {}
+  local owned = orderedOwnedDisciplineKeys(discs)
+  for i = 1, #owned do
+    local key = owned[i]
+    local row = discs[key]
+    local body = ""
+    if type(row) == "table" then
+      body = powersText(row.powers)
+    end
+    ui.setAttribute("db_powers_" .. key, "text", body)
+  end
 end
 
 return M
