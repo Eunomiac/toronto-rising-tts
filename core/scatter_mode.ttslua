@@ -137,6 +137,7 @@ end
 --- @param characterKey string|nil
 function ScatterMode.clearCharacterOccupancy(characterKey)
     removeCharacterFromAllGroups(characterKey)
+    ScatterMode.reconcileControlHudFromState()
 end
 
 --- @return table|nil D.SCATTER_BOARD
@@ -185,7 +186,7 @@ local function holeLocalToWorld(board, hole)
     return Board.boardLocalToWorld(board, localPos)
 end
 
---- Gold + four whites (UL, +90, +180, +270) + NPC ring. Slot 3 = gold; 1,2,4,5 = whites in dump order.
+--- Gold + four whites (UL, +90, +180, +270) + NPC ring. Slot 1 = gold; 2–5 = whites in dump order.
 --- @param groupIndex number
 --- @param board Object
 --- @return table|nil `{ gold, whites, npcHoles, pcHolesBySlot }`
@@ -195,9 +196,9 @@ local function resolvedHoles(groupIndex, board)
     end
     local row = measuredArea(groupIndex)
     local pcHolesBySlot = {
-        [3] = row.gold,
-        [1] = row.whites[1],
-        [2] = row.whites[2],
+        [1] = row.gold,
+        [2] = row.whites[1],
+        [3] = row.whites[2],
         [4] = row.whites[3],
         [5] = row.whites[4],
     }
@@ -747,6 +748,159 @@ local function npcKeysInJoinOrder(groupIndex)
     return keys
 end
 
+local lastControlHudFingerprint = nil
+local controlHudStripOpenByColor = {}
+
+function ScatterMode.invalidateControlHudFingerprint()
+    lastControlHudFingerprint = nil
+end
+
+--- @param color string
+--- @return boolean
+function ScatterMode.isControlHudStripOpen(color)
+    return type(color) == "string" and controlHudStripOpenByColor[color] == true
+end
+
+--- Open or close one player's Scatter strip (toggle chrome). Does not change occupancy.
+--- @param color string
+--- @param isOpen boolean
+function ScatterMode.setControlHudStripOpen(color, isOpen)
+    if type(color) ~= "string" then
+        return
+    end
+    local open = isOpen == true
+    controlHudStripOpenByColor[color] = open
+    local active = open and "true" or "false"
+    U.setAttribute("scatterModeControl_pcRowContainer_" .. color, "active", active)
+    U.setAttribute("db_scatterModeControl_container_" .. color, "active", active)
+    U.setAttribute(
+        "scatterModeControlToggle_" .. color,
+        "image",
+        open and "scatterGroupToggle_active" or "scatterGroupToggle_inactive"
+    )
+end
+
+--- @param npcKey string
+--- @return string
+local function npcHudDisplayName(npcKey)
+    local NPCS = require("core.npcs")
+    local def = NPCS.characters and NPCS.characters[npcKey]
+    if U.Type(def) == "table" then
+        local n = def.fullName or def.name
+        if type(n) == "string" and n ~= "" then
+            return n
+        end
+    end
+    return npcKey
+end
+
+--- @return string
+local function controlHudFingerprint()
+    if ScatterMode.isActive() ~= true then
+        return "off"
+    end
+    local parts = { "on" }
+    for i = 1, ScatterLayout.groupCount() do
+        local area = areaForGroup(i)
+        local pcBits = {}
+        if U.Type(area) == "table" and U.Type(area.centerCharacters) == "table" then
+            for pcKey, row in pairs(area.centerCharacters) do
+                if type(pcKey) == "string" then
+                    pcBits[#pcBits + 1] = pcKey .. ":" .. tostring(math.floor(tonumber(row and row.slot) or 0))
+                end
+            end
+            table.sort(pcBits)
+        end
+        local npcBits = npcKeysInJoinOrder(i)
+        parts[#parts + 1] = tostring(i) .. "=" .. table.concat(pcBits, ",") .. ";" .. table.concat(npcBits, ",")
+    end
+    return table.concat(parts, "|")
+end
+
+local function applyControlHudHidden()
+    for _, color in ipairs(C.PlayerColors or {}) do
+        controlHudStripOpenByColor[color] = nil
+        U.setAttribute("scatterModeControl_root_" .. color, "active", "false")
+        U.setAttribute("scatterModeControl_pcRowContainer_" .. color, "active", "false")
+        U.setAttribute("db_scatterModeControl_container_" .. color, "active", "false")
+        U.setAttribute("scatterModeControlToggle_" .. color, "image", "scatterGroupToggle_inactive")
+    end
+end
+
+local function applyControlHudVisible()
+    local pack = livePlacements()
+    local pcByGroupSlot = {}
+    local groupOfPcKey = {}
+    for i = 1, ScatterLayout.groupCount() do
+        pcByGroupSlot[i] = {}
+        local area = pack[ScatterLayout.areaKeyForGroup(i)]
+        if U.Type(area) == "table" and U.Type(area.centerCharacters) == "table" then
+            for pcKey, row in pairs(area.centerCharacters) do
+                local slot = math.floor(tonumber(row and row.slot) or 0)
+                if type(pcKey) == "string" and slot >= 1 and slot <= 5 then
+                    pcByGroupSlot[i][slot] = pcKey
+                    groupOfPcKey[pcKey] = i
+                end
+            end
+        end
+    end
+    local npcTextByGroup = {}
+    for i = 1, ScatterLayout.groupCount() do
+        local keys = npcKeysInJoinOrder(i)
+        local names = {}
+        for n = 1, #keys do
+            names[n] = npcHudDisplayName(keys[n])
+        end
+        npcTextByGroup[i] = table.concat(names, "\n")
+    end
+    for _, color in ipairs(C.PlayerColors or {}) do
+        U.setAttribute("scatterModeControl_root_" .. color, "active", "true")
+        local stripOpen = controlHudStripOpenByColor[color] == true
+        local stripActive = stripOpen and "true" or "false"
+        U.setAttribute("scatterModeControl_pcRowContainer_" .. color, "active", stripActive)
+        U.setAttribute("db_scatterModeControl_container_" .. color, "active", stripActive)
+        U.setAttribute(
+            "scatterModeControlToggle_" .. color,
+            "image",
+            stripOpen and "scatterGroupToggle_active" or "scatterGroupToggle_inactive"
+        )
+        local myKey = pcKeyForColor(color)
+        local myGroup = myKey and groupOfPcKey[myKey] or nil
+        for i = 1, ScatterLayout.groupCount() do
+            for slot = 1, 5 do
+                local id = "scatterModeControlGroup" .. tostring(i) .. "_pc" .. tostring(slot) .. "_" .. color
+                local occupant = pcByGroupSlot[i][slot]
+                if type(occupant) == "string" then
+                    U.setAttributes(id, {
+                        active = "true",
+                        image = "scatterGroupControlPC_" .. occupant,
+                    })
+                else
+                    U.setAttribute(id, "active", "false")
+                end
+            end
+            local selImage = (myGroup == i) and "scatterGroupSelector_active" or "scatterGroupSelector_inactive"
+            U.setAttribute("scatterModeControlGroup" .. tostring(i) .. "_selector_" .. color, "image", selImage)
+            U.setAttributes("scatterModeControlGroup" .. tostring(i) .. "_npcList_" .. color, {
+                text = npcTextByGroup[i] or "",
+            })
+        end
+    end
+end
+
+function ScatterMode.reconcileControlHudFromState()
+    local fp = controlHudFingerprint()
+    if fp == lastControlHudFingerprint then
+        return
+    end
+    lastControlHudFingerprint = fp
+    if fp == "off" then
+        applyControlHudHidden()
+        return
+    end
+    applyControlHudVisible()
+end
+
 --- Place stage NPC figurine + light at a computed scatter pose.
 --- @param npcName string
 --- @param pose table `{ position, rotation }`
@@ -794,10 +948,10 @@ local function movePcFigurineToScatterPose(color, frame)
 end
 
 --- @param occupants table
---- @return table|nil occupant at packed world slot 3 (center)
+--- @return table|nil occupant at packed world slot 1 (gold / group center)
 local function centerOccupant(occupants)
     for i = 1, #occupants do
-        if worldSlotFromPackedTableSlot(occupants[i].tableSlot) == 3 then
+        if worldSlotFromPackedTableSlot(occupants[i].tableSlot) == 1 then
             return occupants[i]
         end
     end
@@ -850,7 +1004,7 @@ local function applyPcRigs(framesBySlot, occupants)
             rotation = Vector(frame.rotation),
         }
         packedFrames[slot] = { frame = poseFrame, rigid = rigid }
-        if worldSlotFromPackedTableSlot(slot) == 3 then
+        if worldSlotFromPackedTableSlot(slot) == 1 then
             slot1Rigid = rigid
         end
     end
@@ -860,7 +1014,7 @@ local function applyPcRigs(framesBySlot, occupants)
         if packed ~= nil then
             movePcFigurineToScatterPose(occ.occupantKey, packed.frame)
             seatRigidByKey[occ.occupantKey] = packed.rigid
-            if slot1Rigid == nil and worldSlotFromPackedTableSlot(occ.tableSlot) == 3 then
+            if slot1Rigid == nil and worldSlotFromPackedTableSlot(occ.tableSlot) == 1 then
                 slot1Rigid = packed.rigid
             end
         end
@@ -963,6 +1117,7 @@ function ScatterMode.applyWorldLayout()
     if type(NPCS.reconcilePreloadPoolHideFromState) == "function" then
         NPCS.reconcilePreloadPoolHideFromState()
     end
+    ScatterMode.reconcileControlHudFromState()
 end
 
 --- Park every control token that has a scatterPlacements row onto its hole.
@@ -1145,6 +1300,7 @@ function ScatterMode.leave(opts)
         S.setStateVal(nil, "seatLayout", "currentTableKey")
     end
     local reloaded = applyControlBoardImage(scatterCfg().CONTROL_BOARD_IMAGE_STANDARD)
+    ScatterMode.reconcileControlHudFromState()
     if reloaded then
         runAfterControlBoardReady(finishStandardBoardAfterReload)
         return
@@ -1244,7 +1400,7 @@ function ScatterMode.applyFromControlBoard()
                 end
             end
         end
-        -- Match drop handler: first PC → slot 3; joins pick the nearest *free* hole (not abort on gold).
+        -- Match drop handler: first PC → slot 1 (gold); joins pick the nearest *free* hole.
         local slot = nil
         local bestD = nil
         for s, hole in pairs(holes.pcHolesBySlot) do
@@ -1327,7 +1483,7 @@ function ScatterMode.applyFromControlBoard()
     return true, nil
 end
 
---- Drop branch: nearest group + assign stable slot + park. World wait for Apply.
+--- Drop branch: nearest group + assign stable slot + park, then world layout + HUD.
 --- @param token Object
 --- @param isPc boolean
 --- @return boolean handled
@@ -1403,6 +1559,7 @@ function ScatterMode.onControlTokenDropped(token, isPc)
         end
         parkTokenOnHole(token, board, hole)
     end
+    ScatterMode.applyWorldLayout()
     return true
 end
 
@@ -1565,6 +1722,99 @@ end
 
 function ScatterMode.colorForPcKey(pcKey)
     return colorForPcKey(pcKey)
+end
+
+--- @param pcKey string
+--- @return number|nil group 1–6
+function ScatterMode.groupIndexForPcKey(pcKey)
+    if type(pcKey) ~= "string" or pcKey == "" then
+        return nil
+    end
+    local pack = livePlacements()
+    for i = 1, ScatterLayout.groupCount() do
+        local area = pack[ScatterLayout.areaKeyForGroup(i)]
+        if U.Type(area) == "table"
+            and U.Type(area.centerCharacters) == "table"
+            and U.Type(area.centerCharacters[pcKey]) == "table" then
+            return i
+        end
+    end
+    return nil
+end
+
+--- @param pcKey string
+--- @param groupIndex number
+--- @param slot number
+local function parkPcTokenOnSlot(pcKey, groupIndex, slot)
+    local Board = require("core.npc_gameboard_board")
+    local Tokens = require("core.npc_gameboard_tokens")
+    local board = Board.getControlBoard()
+    if not Board.isMeshReady(board) or not ScatterMode.groupIsCalibrated(groupIndex) then
+        return
+    end
+    local holes = resolvedHoles(groupIndex, board)
+    local hole = holes and holes.pcHolesBySlot and holes.pcHolesBySlot[slot]
+    if hole == nil then
+        return
+    end
+    local color = colorForPcKey(pcKey)
+    if color == nil then
+        return
+    end
+    for _, obj in ipairs(getObjectsWithTag(DATA.TAG_PC_CONTROL_TOKEN) or {}) do
+        if Tokens.resolvePcTokenSeatColor(obj) == color then
+            parkTokenOnHole(obj, board, hole)
+            return
+        end
+    end
+end
+
+--- Move a PC into a scatter group. No-op if they are already there.
+--- Parks their control token, poses the figurine/seat objects, and refreshes the HUD.
+--- @param pcKey string
+--- @param groupIndex number
+--- @return boolean moved
+function ScatterMode.movePcToGroup(pcKey, groupIndex)
+    local gi = math.floor(tonumber(groupIndex) or 0)
+    if type(pcKey) ~= "string" or pcKey == "" then
+        return false
+    end
+    if gi < 1 or gi > ScatterLayout.groupCount() then
+        return false
+    end
+    if ScatterMode.groupIndexForPcKey(pcKey) == gi then
+        return false
+    end
+    local used = occupiedPcSlots(gi)
+    local slot = ScatterLayout.nextFreePcWorldSlot(used)
+    if slot == nil then
+        U.AlertGM("Scatter group " .. tostring(gi) .. " already has five PCs.")
+        return false
+    end
+    local prev = nil
+    local pack = livePlacements()
+    for i = 1, ScatterLayout.groupCount() do
+        local area = pack[ScatterLayout.areaKeyForGroup(i)]
+        local row = area and area.centerCharacters and area.centerCharacters[pcKey]
+        if U.Type(row) == "table" then
+            prev = row
+            break
+        end
+    end
+    removeCharacterFromAllGroups(pcKey)
+    local area = areaForGroup(gi)
+    area.centerCharacters[pcKey] = {
+        slot = slot,
+        isPlayingNPC = prev ~= nil and prev.isPlayingNPC == true,
+        isPresent = prev == nil or prev.isPresent ~= false,
+        characterKey = prev and prev.characterKey,
+    }
+    if area.centerCharacters[pcKey].isPlayingNPC ~= true then
+        area.centerCharacters[pcKey].characterKey = nil
+    end
+    parkPcTokenOnSlot(pcKey, gi, slot)
+    ScatterMode.applyWorldLayout()
+    return true
 end
 
 return ScatterMode

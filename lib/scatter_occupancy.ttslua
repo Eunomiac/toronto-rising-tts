@@ -96,7 +96,7 @@ local function shuffledCopy(list)
     return out
 end
 
---- Import/live translation: first PC → world slot 3 (gold); later PCs shuffle into closest free slots.
+--- Import/live translation: first PC → world slot 1 (gold); later PCs shuffle into closest free slots.
 --- @param pcRows table[] `{ pcKey, isPlayingNPC, characterKey?, isPresent }`
 --- @return table|nil centerCharacters, string|nil err
 local function assignPcSlots(pcRows)

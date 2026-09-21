@@ -42,7 +42,7 @@ In Scatter Mode the Stage Control Board uses the art in `.dev/Revision of Player
 - Tokens dropped onto a group are moved automatically into a free **board hole**: NPCs around that group’s outer ring, PCs in the inner cluster.
 - A token’s place on the board records **which of the six groups** it occupies. It does **not** author the figurine’s exact game-world pose.
 
-Each group’s inner cluster is **five** PC holes: a **gold** hole in the center of a square of **four white** holes. The first PC to join that group goes to the gold center (the same idea as world slot 3, the arc midpoint). Later PCs fill the white holes. That matches the five stable world PC slots; the board holes are occupancy UI, not a map of table-plane coordinates.
+Each group’s inner cluster is **five** PC holes: a **gold** hole in the center of a square of **four white** holes. The first PC to join that group goes to the gold center (world **slot 1**, the arc midpoint). Later PCs fill the white holes (slots 2–5). That matches the five stable world PC slots; the board holes are occupancy UI, not a map of table-plane coordinates.
 
 The outer ring has **twelve** NPC holes (`BOARD_NPC_HOLE_COUNT`). Game-world NPC occupancy is still unlimited: extra NPCs beyond the hole count remain in the group and still receive world positions. The board may stack those extras on the group (implementation detail at wiring time).
 
@@ -68,7 +68,7 @@ It does not use token type or color to decide which hole is which. The three tok
 
 | Role | Meaning |
 | --- | --- |
-| Gold | Center of the inner square (first PC hole / world slot 3) |
+| Gold | Center of the inner square (first PC hole / world slot 1) |
 | Upper-left white | One corner of the inner square; the other three whites are inferred by 90° steps around gold |
 | Top NPC | 12-o’clock hole on that group’s outer ring; the remaining NPC holes follow evenly around that circle |
 
@@ -296,11 +296,11 @@ The relevant positioning geometry is:
 - **Circle center:** `PC_SCATTER_GROUP_ORIGIN`
 - **Circle radius:** `SCATTER_RADIUS_PC`
 - **Arc size:** `PC_DEPLOYMENT_ARC`
-- **Arc midpoint:** the intersection of the PC Scatter Circle with the World Ray through `PC_SCATTER_GROUP_ORIGIN` that lies **far from World Origin** (on the scatter-group side of `P`, not the World-Origin side). Slot 3 (gold) sits here; the arc faces inward toward `P`.
+- **Arc midpoint:** the intersection of the PC Scatter Circle with the World Ray through `PC_SCATTER_GROUP_ORIGIN` that lies **far from World Origin** (on the scatter-group side of `P`, not the World-Origin side). Slot 1 (gold) sits here; the arc faces inward toward `P`.
 
-Slots are numbered `1–5` from the counterclockwise end of the arc to the clockwise end. Slot 3 sits on the midpoint. Adjacent slots are spaced by `PC_DEPLOYMENT_ARC / 4` so the five slots use the full arc including both endpoints.
+Slots are numbered `1–5` with gold at the midpoint. The HUD row is left→right `5, 3, 1, 2, 4`. Arc offsets from the midpoint are `{0, +1, −1, +2, −2}` × `(PC_DEPLOYMENT_ARC / 4)` for slots 1–5.
 
-When a PC **joins** a group, they take the **unoccupied** slot with the smallest angular distance to the midpoint. The first PC therefore always receives slot 3 (on the board, the gold center hole). If two later slots tie, use the lower slot number (the counterclockwise side of the tie). When a PC **leaves**, that slot becomes free; the other PCs in the group **stay put**.
+When a PC **joins** a group, they take the **unoccupied** slot closest to gold (slot 1), ties to the lower slot number. The first PC therefore always receives slot 1 (the gold center hole). When a PC **leaves**, that slot becomes free; the other PCs in the group **stay put**.
 
 Empty groups, PC-only groups, and putting all five PCs in one group are all allowed.
 

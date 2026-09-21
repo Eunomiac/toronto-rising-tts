@@ -1,0 +1,214 @@
+<!-- TARGET: ui/player/panel_scatter_mode_control.xml -->
+<!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md (generator). -->
+
+
+<!-- AGENT: This panel should be activated whenever the table is set to Scatter, and active = false otherwise. -->
+<Panel id="scatterModeControl_root_@@color@@" class="scatterModeControl_root" visibility="@@color@@" active="false">
+  <Defaults>
+
+    <Image class="scatterModeControl_toggle"
+      ignoreLayout = "true"
+      rectAlignment = "UpperCenter"
+      offsetXY = "0 -100"
+      height = "100"
+      width = "100"
+      preserveAspect = "true"
+      raycastTarget = "true" />
+
+    <HorizontalLayout class="scatterModeControl_container"
+      active = "false"
+      ignoreLayout = "true"
+      rectAlignment = "UpperCenter"
+      offsetXY = "0 -108"
+      width = "1393"
+      height = "303"
+      childForceExpandWidth = "true"
+      childForceExpandHeight = "true"
+      childAlignment = "UpperCenter"
+      padding = "2 0 87 0"
+      spacing = "10"
+      raycastTarget = "false"
+    />
+
+    <Image class="scatterModeControl_container_bg"
+      ignoreLayout = "true"
+      height = "100%"
+      width = "100%"
+      preserveAspect = "true"
+      raycastTarget = "false" />
+
+    <VerticalLayout class="scatterModeControl_group_container"
+      childForceExpandWidth = "true"
+      padding = "0 0 0 0"
+      raycastTarget = "false"
+    />
+    <HorizontalLayout class="scatterModeControl_pcRowContainer"
+      active = "false"
+      ignoreLayout = "true"
+      height = "70"
+      rectAlignment = "UpperCenter"
+      offsetXY = "0 -150"
+      width = "1393"
+      childAlignment = "LowerCenter"
+      childForceExpandHeight = "false"
+      padding = "0 0 50 0"
+      raycastTarget = "false"
+    />
+
+    <HorizontalLayout class="scatterModeControl_pcRow"
+      preferredHeight = "100"
+      padding = "10 10 0 0"
+      raycastTarget = "false"
+    />
+
+    <Image class="scatterModeControl_pc"
+      active = "false"
+      minHeight = "70"
+      offsetXY = "0 -15"
+      raycastTarget = "false"
+    />
+
+    <HorizontalLayout class="scatterModeControl_selectorContainer"
+      preferredHeight = "56"
+      minHeight = "56"
+      preferredWidth = "202"
+      padding = "0 0 0 0"
+      flexibleWidth = "0"
+      raycastTarget = "false"
+    />
+    <Image class="scatterModeControl_selector"
+      raycastTarget = "true" />
+
+    <Text class="scatterModeControl_npcList"
+      color = "#FFFFFF"
+      fontStyle = "Bold"
+      fontSize = "14"
+      raycastTarget = "false"
+     />
+
+  </Defaults>
+
+  <HorizontalLayout id="scatterModeControl_pcRowContainer_@@color@@" class="scatterModeControl_pcRowContainer">
+    <!-- AGENT: Whenever Scatter mode is initiated, and whenever PCs change scatter groups, the images below should be updated to always show each PC's image once, in the scatter group they are currently a part of, using the image whose 'pc#' index matches the PC slot within the scatter group. PC images are named "scatterGroupControlPC_<pcKey>", where <pcKey> is one of "lucien", "rashid", "aishe", "fomorach" or "blackCaesar".
+     For example, if the Scatter table is activated and Aishe Tache is in Scatter Group 1, Rashid is in Scatter Group 3, and the remaining three PCs are all in Scatter Group 4, the following elements should be set for ALL colors:
+        1. "scatterModeControlGroup1_pc1_@@color@@"  - active = "true", image = "scatterGroupControlPC_aishe"
+        2. "scatterModeControlGroup3_pc1_@@color@@"  - active = "true", image = "scatterGroupControlPC_rashid"
+        3. "scatterModeControlGroup4_pc1_@@color@@"  - active = "true", image = "scatterGroupControlPC_lucien"
+        4. "scatterModeControlGroup4_pc2_@@color@@"  - active = "true", image = "scatterGroupControlPC_fomorach"
+        5. "scatterModeControlGroup4_pc3_@@color@@"  - active = "true", image = "scatterGroupControlPC_blackCaesar"
+      ... and all other PC image elements should be active = "false".  If, let's say, Rashid then moves from Scatter Group 3 to join Scatter Group 4:
+        1. "scatterModeControlGroup3_pc1_@@color@@"  - active = "false"
+        2. "scatterModeControlGroup4_pc4_@@color@@"  - active = "true", image = "scatterGroupControlPC_rashid"
+     -->
+    <HorizontalLayout id="scatterModeControlGroup1_pcRow_@@color@@" class="scatterModeControl_pcRow">
+      <Image id="scatterModeControlGroup1_pc5_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup1_pc3_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup1_pc1_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup1_pc2_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup1_pc4_@@color@@" class="scatterModeControl_pc" />
+    </HorizontalLayout>
+    <HorizontalLayout id="scatterModeControlGroup2_pcRow_@@color@@" class="scatterModeControl_pcRow">
+      <Image id="scatterModeControlGroup2_pc5_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup2_pc3_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup2_pc1_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup2_pc2_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup2_pc4_@@color@@" class="scatterModeControl_pc" />
+    </HorizontalLayout>
+    <HorizontalLayout id="scatterModeControlGroup3_pcRow_@@color@@" class="scatterModeControl_pcRow">
+      <Image id="scatterModeControlGroup3_pc5_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup3_pc3_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup3_pc1_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup3_pc2_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup3_pc4_@@color@@" class="scatterModeControl_pc" />
+    </HorizontalLayout>
+    <HorizontalLayout id="scatterModeControlGroup4_pcRow_@@color@@" class="scatterModeControl_pcRow">
+      <Image id="scatterModeControlGroup4_pc5_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup4_pc3_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup4_pc1_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup4_pc2_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup4_pc4_@@color@@" class="scatterModeControl_pc" />
+    </HorizontalLayout>
+    <HorizontalLayout id="scatterModeControlGroup5_pcRow_@@color@@" class="scatterModeControl_pcRow">
+      <Image id="scatterModeControlGroup5_pc5_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup5_pc3_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup5_pc1_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup5_pc2_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup5_pc4_@@color@@" class="scatterModeControl_pc" />
+    </HorizontalLayout>
+    <HorizontalLayout id="scatterModeControlGroup6_pcRow_@@color@@" class="scatterModeControl_pcRow">
+      <Image id="scatterModeControlGroup6_pc5_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup6_pc3_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup6_pc1_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup6_pc2_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup6_pc4_@@color@@" class="scatterModeControl_pc" />
+    </HorizontalLayout>
+
+  </HorizontalLayout>
+
+  <HorizontalLayout id="db_scatterModeControl_container_@@color@@" class="scatterModeControl_container">
+
+    <Image id="db_scatterModeControl_container_bg_@@color@@" class="scatterModeControl_container_bg" image="scatterGroupControl_bg" />
+
+    <!-- AGENT: Each of these VerticalLayout groups corresponds to one of the six Scatter groups. Comments in the first group apply to all others; their behavior is otherwise identical. -->
+    <VerticalLayout id="scatterModeControlGroup1_container_@@color@@" class="scatterModeControl_group_container">
+      <HorizontalLayout id="db_scatterModeControlGroup1_selectorContainer_@@color@@" class="scatterModeControl_selectorContainer">
+        <!-- AGENT: This image is an interactive button. By default, its image is "scatterGroupSelector_inactive". However, the button for the scatter group that this PC is currently occupying should be set to "scatterGroupSelector_active".
+        - ON HOVER: change the image to "scatterGroupSelector_hover", then revert on hover-off.
+        - ON CLICK: move the PC to the scatter group they clicked on (no-op if they click on the group they're currently occupying — the strip stays open). On a real move, update selectors and pcRows for all colors, then close the strip for that player only. -->
+        <Image id="scatterModeControlGroup1_selector_@@color@@" class="scatterModeControl_selector" image="scatterGroupSelector_inactive" onClick="HUD_scatterModeControl_selectorClick" onMouseEnter="HUD_scatterModeControl_selectorHoverOn" onMouseExit="HUD_scatterModeControl_selectorHoverOff" />
+      </HorizontalLayout>
+      <!-- AGENT: This text element is a simple "\n" delimited list of NPCs occupying the scatter group. Set the text via setAttribute (not setValue), and use a basic "\n" for the line breaks. Use the NPC's full display name. Maintain alignment of these text elements whenever NPC occupancy of scatter groups changes, such as being removed from the stage or moved to another group, for all colors.
+      E.g. `UI.setAttributes("scatterModeControlGroup1_npcList_Red", {text = "Mylene 'the Puck' Hamelin\nOliver Gagnon\nThe Aristocrat"})
+      -->
+      <Text id="scatterModeControlGroup1_npcList_@@color@@" class="scatterModeControl_npcList" text="" />
+    </VerticalLayout>
+
+    <VerticalLayout id="scatterModeControlGroup2_container_@@color@@" class="scatterModeControl_group_container">
+      <HorizontalLayout id="db_scatterModeControlGroup2_selectorContainer_@@color@@" class="scatterModeControl_selectorContainer">
+        <Image id="scatterModeControlGroup2_selector_@@color@@" class="scatterModeControl_selector" image="scatterGroupSelector_inactive" onClick="HUD_scatterModeControl_selectorClick" onMouseEnter="HUD_scatterModeControl_selectorHoverOn" onMouseExit="HUD_scatterModeControl_selectorHoverOff" />
+      </HorizontalLayout>
+      <Text id="scatterModeControlGroup2_npcList_@@color@@" class="scatterModeControl_npcList" text="" />
+    </VerticalLayout>
+
+
+    <VerticalLayout id="scatterModeControlGroup3_container_@@color@@" class="scatterModeControl_group_container">
+      <HorizontalLayout id="db_scatterModeControlGroup3_selectorContainer_@@color@@" class="scatterModeControl_selectorContainer">
+        <Image id="scatterModeControlGroup3_selector_@@color@@" class="scatterModeControl_selector" image="scatterGroupSelector_inactive" onClick="HUD_scatterModeControl_selectorClick" onMouseEnter="HUD_scatterModeControl_selectorHoverOn" onMouseExit="HUD_scatterModeControl_selectorHoverOff" />
+      </HorizontalLayout>
+      <Text id="scatterModeControlGroup3_npcList_@@color@@" class="scatterModeControl_npcList" text="" />
+    </VerticalLayout>
+
+
+    <VerticalLayout id="scatterModeControlGroup4_container_@@color@@" class="scatterModeControl_group_container">
+      <HorizontalLayout id="db_scatterModeControlGroup4_selectorContainer_@@color@@" class="scatterModeControl_selectorContainer">
+        <Image id="scatterModeControlGroup4_selector_@@color@@" class="scatterModeControl_selector" image="scatterGroupSelector_inactive" onClick="HUD_scatterModeControl_selectorClick" onMouseEnter="HUD_scatterModeControl_selectorHoverOn" onMouseExit="HUD_scatterModeControl_selectorHoverOff" />
+      </HorizontalLayout>
+      <Text id="scatterModeControlGroup4_npcList_@@color@@" class="scatterModeControl_npcList" text="" />
+    </VerticalLayout>
+
+
+    <VerticalLayout id="scatterModeControlGroup5_container_@@color@@" class="scatterModeControl_group_container">
+      <HorizontalLayout id="db_scatterModeControlGroup5_selectorContainer_@@color@@" class="scatterModeControl_selectorContainer">
+        <Image id="scatterModeControlGroup5_selector_@@color@@" class="scatterModeControl_selector" image="scatterGroupSelector_inactive" onClick="HUD_scatterModeControl_selectorClick" onMouseEnter="HUD_scatterModeControl_selectorHoverOn" onMouseExit="HUD_scatterModeControl_selectorHoverOff" />
+      </HorizontalLayout>
+      <Text id="scatterModeControlGroup5_npcList_@@color@@" class="scatterModeControl_npcList" text="" />
+    </VerticalLayout>
+
+
+    <VerticalLayout id="scatterModeControlGroup6_container_@@color@@" class="scatterModeControl_group_container">
+      <HorizontalLayout id="db_scatterModeControlGroup6_selectorContainer_@@color@@" class="scatterModeControl_selectorContainer">
+        <Image id="scatterModeControlGroup6_selector_@@color@@" class="scatterModeControl_selector" image="scatterGroupSelector_inactive" onClick="HUD_scatterModeControl_selectorClick" onMouseEnter="HUD_scatterModeControl_selectorHoverOn" onMouseExit="HUD_scatterModeControl_selectorHoverOff" />
+      </HorizontalLayout>
+      <Text id="scatterModeControlGroup6_npcList_@@color@@" class="scatterModeControl_npcList" text="" />
+    </VerticalLayout>
+
+  </HorizontalLayout>
+
+  <!-- AGENT: This element should be active at all times, and interactable both on hover and click.
+    - on HOVER: set its image to "scatterGroupToggle_hover", then back to what it was originally on hover-off
+    - on CLICK: toggle the active status of both HorizontalLayout elements above, then set the image of this element to "scatterGroupToggle_inactive" if the panels were deactivated, or "scatterGroupToggle_active" if they were activated. -->
+
+  <Image id="scatterModeControlToggle_@@color@@" class="scatterModeControl_toggle" image="scatterGroupToggle_inactive" onClick="HUD_scatterModeControl_toggleClick" onMouseEnter="HUD_scatterModeControl_toggleHoverOn" onMouseExit="HUD_scatterModeControl_toggleHoverOff" />
+
+
+</Panel>

@@ -7,6 +7,15 @@
 
   "jobs": [
     {
+      "id": "scatterOverlay",
+      "cloudFolder": "HUD/Scatter Overlay",
+      "recurIntoSubfolders": false,
+      "output": "GlobalCustomUIAssets",
+      "filenameToNameSearchPattern": "^(.*)\\.[^.]+$",
+      "filenameToNameReplacePattern": "$1"
+      // Purge family derived → ^siteCard_(.*)$
+    },
+    {
       "id": "siteCards",
       "cloudFolder": "Sites",
       "recurIntoSubfolders": false,

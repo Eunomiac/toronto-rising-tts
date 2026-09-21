@@ -62,7 +62,7 @@ Per the TTS **InputField** note ([Input Elements](https://api.tabletopsimulator.
 | `HUD_selectStorytellerPanel` | `toggle_scenes`, `toggle_soundscape`, `toggle_pcs`, `toggle_phases`, `toggle_stats` | `(player, button, id)` | Strips `toggle_` prefix from `id`, calls `StorytellerPanelUI.selectStorytellerPanel(panelKey)`. If that returns `false` (Scenes leave/close blocked while Stage Control is THERE — TOR-449), returns without deferred refreshes. Otherwise updates toggles and defers refresh for Sound / Scenes / Stats / etc. Re-clicking the open tab (or `closeAllPanels`) also collapses `storytellerToolbarBody`; switching panels does not (TOR-395). |
 | `HUD_togglePanel` | `toggleElem_*` buttons (where present) | `(player, button, id)` | Strips `toggleElem_` prefix from `id`, calls `U.toggleXmlElement(elemID, button)` to collapse/expand the target panel. Swaps toggle button text between `►` and `▼` when a matching `toggleElem_*` exists. **ST toolbar** (`storytellerToolbarBody`) and **debug** (`adminControlsBody`) open/close via one-shot Game Keys instead of ► (TOR-481); opening debug still syncs last-load clock + seat colors (TOR-406). |
 | `HUD_refreshUi` | `Refresh UI` button | `(player, button, id)` | Manual **`refreshGlobalUiAfterSeatAssignment`** for the Host's current seat (`hostCurrentSeatColor`). Use after debug hotseat swaps — Host seat changes no longer auto-refresh (join clients and first connect after `onPlayerConnect` still do). Same post-refresh path as TOR-285: `UI.setXml` once per player per seat since connect, then targeted `UpdateUIDisplays`, loading overlay hide, blindfold/orphan cleanup (TOR-324). |
-| `HUD_debugSeatColor` | `debugSeat_Black`, `debugSeat_Red`, `debugSeat_Orange`, `debugSeat_Brown`, `debugSeat_Pink`, `debugSeat_Purple` | `(player, button, id)` | Bottom-right debug row (left of admin twirl-down). **Left-click (`"-1"`):** `player.changeColor(<Color>)`, then `hideStartupLoadingOverlays()`. **Right-click (`"-2"`):** `M.setCamera(player, "default<Color>")` (e.g. `defaultBrown`). Active Host seat button gets a **red** outline (`#FF0000`, 4px) via `syncDebugSeatColorButtons()` (`onPlayerChangeColor`, `UpdateUIDisplays`, after left-click). Host hotseat swaps do **not** auto-run `refreshGlobalUiAfterSeatAssignment` — use **`HUD_refreshUi`**. |
+| `HUD_debugSeatColor` | `debugSeat_Black`, `debugSeat_Red`, `debugSeat_Orange`, `debugSeat_Brown`, `debugSeat_Pink`, `debugSeat_Purple` | `(player, button, id)` | Bottom-right debug row (left of admin twirl-down). **Left-click (`"-1"`):** `player.changeColor(<Color>)`, then `hideStartupLoadingOverlays()`. **Right-click (`"-2"`):** `M.setCamera(player, "default<Color>")` (e.g. `defaultBrown`). Changing into a PC seat copies that seat's `cameraAngles` onto the Storyteller; table/scene layout recopies them **before** the transition camera snap (TOR-603). Active Host seat button gets a **red** outline (`#FF0000`, 4px) via `syncDebugSeatColorButtons()` (`onPlayerChangeColor`, `UpdateUIDisplays`, after left-click). Host hotseat swaps do **not** auto-run `refreshGlobalUiAfterSeatAssignment` — use **`HUD_refreshUi`**. |
 
 ## Scenes tab (`panel_scenes_host.xml` → `panel_scenes.xml` + `panel_scenes_library.xml`)
 
@@ -134,6 +134,19 @@ Root `Panel` id `gameStateOverlay_location_<Color>` uses class `playerHud_overla
 | ------- | ---------------- | ------ | -------- |
 | `HUD_locationOverlay_hoverOn` | `popout_locationPanel_<Color>` `Image` | `(player, value, id)` | `setActive` on `gameStateOverlay_locationPanel_<Color>` to true; popout tint `rgba(1, 1, 1, 1)`. |
 | `HUD_locationOverlay_hoverOff` | same `Image` | `(player, value, id)` | Hides the inner panel; popout tint back to `rgba(1, 1, 1, 0.15)`. |
+
+## Scatter Mode control (`ui/.templates/panel_scatter_mode_control.xml` → `ui/player/panel_scatter_mode_control.xml`)
+
+Per-seat copy under `HUD_PANEL_PLAYER` (`visibility` = that color). Root is Lua-activated only while Scatter is the table. Gold / first-join is PC **slot 1** (`pc1`, visual middle of the row). Clicking another group is a full move; clicking the group you already occupy does nothing and leaves the strip open (TOR-602).
+
+| Handler | XML Element(s) | Params | Behavior |
+| ------- | ---------------- | ------ | -------- |
+| `HUD_scatterModeControl_toggleClick` | `scatterModeControlToggle_<Color>` | `(player, value, id)` | Seat color must match the id suffix. Opens or closes that player’s strip (`pcRowContainer` + `db_scatterModeControl_container`) and sets the toggle image to `_active` / `_inactive`. |
+| `HUD_scatterModeControl_toggleHoverOn` / `_toggleHoverOff` | same | `(player, value, id)` | Hover image, then restore open/closed image. |
+| `HUD_scatterModeControl_selectorClick` | `scatterModeControlGroupN_selector_<Color>` | `(player, value, id)` | `ScatterMode.movePcToGroup` for that PC. On a real move: park token, pose figurine/bags/sheet/camera, refresh portraits for all colors, close **that** player’s strip. No-op if they click their current group (strip stays open) or the destination already has five PCs. |
+| `HUD_scatterModeControl_selectorHoverOn` / `_selectorHoverOff` | same | `(player, value, id)` | Hover image, then restore `_active` if this is their group else `_inactive`. |
+
+`ScatterMode.reconcileControlHudFromState` paints roots, portraits, selectors, and NPC name lists from `scatterPlacements` (fingerprint-skipped). Called from world layout, leave Scatter, token drop/clear, `UpdateUIDisplays` (`playerHud`), and Global XML remount.
 
 ## Legacy scene preset buttons (player HUD / other XML)
 

@@ -880,6 +880,13 @@ local function postMountGlobalUi(reason, armedMinimal)
     if syncStorytellerPhaseButtons ~= nil then
         syncStorytellerPhaseButtons()
     end
+    local ScatterMode = require("core.scatter_mode")
+    if type(ScatterMode.invalidateControlHudFingerprint) == "function" then
+        ScatterMode.invalidateControlHudFingerprint()
+    end
+    if type(ScatterMode.reconcileControlHudFromState) == "function" then
+        ScatterMode.reconcileControlHudFromState()
+    end
     print(string.format(
         "[SeatUI] Full UI resync sent (%s).",
         type(reason) == "string" and reason ~= "" and reason or "unspecified"
@@ -6261,6 +6268,13 @@ function UpdateUIDisplays(delta)
                 HUDP.updatePlayerUI(player, color)
             end
         end)
+    end
+
+    if wants("playerHud") or refreshAll then
+        local ScatterMode = require("core.scatter_mode")
+        if type(ScatterMode.reconcileControlHudFromState) == "function" then
+            ScatterMode.reconcileControlHudFromState()
+        end
     end
 
     if wants("overlays") then

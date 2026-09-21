@@ -25,6 +25,9 @@
 
   <!-- 4a. Player HUD Right Sidebar -->
 
+  <!-- Scatter Mode Control Panel -->
+  <Include src="player/panel_scatter_mode_control.xml" />
+
   <!-- Camera Controls Overlay (generated per player color) -->
   <Include src="player/panel_overlay_camera.xml" />
 

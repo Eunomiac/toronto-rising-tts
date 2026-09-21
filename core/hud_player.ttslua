@@ -2729,4 +2729,119 @@ function HUD_playerMap_recenter_mouseUp(player, value, id)
     HUDP.updatePlayerMapPanelUI(player, seatColor)
 end
 
+--- Scatter Mode control strip (`ui/.templates/panel_scatter_mode_control.xml`).
+
+--- @param id string
+--- @return string|nil color
+local function parseScatterToggleColor(id)
+    if type(id) ~= "string" then
+        return nil
+    end
+    return id:match("^scatterModeControlToggle_(%a+)$")
+end
+
+--- @param id string
+--- @return number|nil groupIndex
+--- @return string|nil color
+local function parseScatterSelectorId(id)
+    if type(id) ~= "string" then
+        return nil, nil
+    end
+    local group, color = id:match("^scatterModeControlGroup(%d+)_selector_(%a+)$")
+    local gi = math.floor(tonumber(group) or 0)
+    if gi < 1 or gi > 6 or type(color) ~= "string" then
+        return nil, nil
+    end
+    return gi, color
+end
+
+--- Clicker seat must match the element's color suffix.
+--- @param player Player
+--- @param color string
+--- @return boolean
+local function scatterHudClickerMatches(player, color)
+    if type(color) ~= "string" then
+        return false
+    end
+    local _, seatColor = getPlayerIDAndColor(player)
+    return seatColor == color
+end
+
+function HUD_scatterModeControl_toggleHoverOn(player, value, id)
+    local color = parseScatterToggleColor(id)
+    if not scatterHudClickerMatches(player, color) then
+        return
+    end
+    U.setAttribute("scatterModeControlToggle_" .. color, "image", "scatterGroupToggle_hover")
+end
+
+function HUD_scatterModeControl_toggleHoverOff(player, value, id)
+    local color = parseScatterToggleColor(id)
+    if not scatterHudClickerMatches(player, color) then
+        return
+    end
+    local ScatterMode = require("core.scatter_mode")
+    local open = type(ScatterMode.isControlHudStripOpen) == "function" and ScatterMode.isControlHudStripOpen(color)
+    U.setAttribute(
+        "scatterModeControlToggle_" .. color,
+        "image",
+        open and "scatterGroupToggle_active" or "scatterGroupToggle_inactive"
+    )
+end
+
+function HUD_scatterModeControl_toggleClick(player, value, id)
+    local color = parseScatterToggleColor(id)
+    if not scatterHudClickerMatches(player, color) then
+        return
+    end
+    local ScatterMode = require("core.scatter_mode")
+    if ScatterMode.isActive() ~= true then
+        return
+    end
+    local open = type(ScatterMode.isControlHudStripOpen) == "function" and ScatterMode.isControlHudStripOpen(color)
+    ScatterMode.setControlHudStripOpen(color, not open)
+end
+
+function HUD_scatterModeControl_selectorHoverOn(player, value, id)
+    local _, color = parseScatterSelectorId(id)
+    if not scatterHudClickerMatches(player, color) then
+        return
+    end
+    U.setAttribute(id, "image", "scatterGroupSelector_hover")
+end
+
+function HUD_scatterModeControl_selectorHoverOff(player, value, id)
+    local groupIndex, color = parseScatterSelectorId(id)
+    if not scatterHudClickerMatches(player, color) or groupIndex == nil then
+        return
+    end
+    local ScatterMode = require("core.scatter_mode")
+    local pcKey = ScatterMode.pcKeyForColor(color)
+    local mine = type(pcKey) == "string" and ScatterMode.groupIndexForPcKey(pcKey) or nil
+    U.setAttribute(
+        id,
+        "image",
+        (mine == groupIndex) and "scatterGroupSelector_active" or "scatterGroupSelector_inactive"
+    )
+end
+
+function HUD_scatterModeControl_selectorClick(player, value, id)
+    local groupIndex, color = parseScatterSelectorId(id)
+    if not scatterHudClickerMatches(player, color) or groupIndex == nil then
+        return
+    end
+    local ScatterMode = require("core.scatter_mode")
+    if ScatterMode.isActive() ~= true then
+        return
+    end
+    local pcKey = ScatterMode.pcKeyForColor(color)
+    if type(pcKey) ~= "string" then
+        return
+    end
+    local moved = ScatterMode.movePcToGroup(pcKey, groupIndex)
+    if moved == true then
+        ScatterMode.setControlHudStripOpen(color, false)
+    end
+end
+
 return HUDP

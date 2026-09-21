@@ -155,7 +155,10 @@ function ScatterLayout.pcDeploymentArcMidpoint(P)
     return U.rotateAroundPoint(P, rpc, az, y), nil
 end
 
---- Five stable PC slots (1–5) on PC_DEPLOYMENT_ARC. Slot 3 is the midpoint.
+-- Arc steps from the midpoint: gold (slot 1) sits at 0; HUD row left→right is 5, 3, 1, 2, 4.
+local PC_SLOT_ARC_STEPS = { 0, 1, -1, 2, -2 }
+
+--- Five stable PC slots (1–5) on PC_DEPLOYMENT_ARC. Slot 1 is the midpoint (gold).
 --- @param groupIndex number
 --- @return table[]|nil poses `{ slot, position, rotation }`, string|nil skipReason
 function ScatterLayout.pcSlotPoses(groupIndex)
@@ -174,7 +177,7 @@ function ScatterLayout.pcSlotPoses(groupIndex)
     local y = ScatterLayout.floorY()
     local poses = {}
     for slot = 1, 5 do
-        local az = midAz + (slot - 3) * step
+        local az = midAz + (PC_SLOT_ARC_STEPS[slot] or 0) * step
         local pos = U.rotateAroundPoint(P, rpc, az, y)
         local yaw, yawErr = ScatterLayout.lookAtYawDeg(pos, P)
         if yaw == nil then
@@ -299,19 +302,19 @@ function ScatterLayout.storytellerTrayOriginPose()
     }
 end
 
---- First join → slot 3; later → closest free to midpoint; ties → lower slot. Does not reshuffle.
+--- First join → slot 1 (gold); later → closest free to gold; ties → lower slot. Does not reshuffle.
 --- @param occupiedSlots table<number, boolean>
 --- @return number|nil slot
 function ScatterLayout.nextFreePcWorldSlot(occupiedSlots)
     occupiedSlots = occupiedSlots or {}
-    if occupiedSlots[3] ~= true then
-        return 3
+    if occupiedSlots[1] ~= true then
+        return 1
     end
     local bestSlot = nil
     local bestDist = nil
     for slot = 1, 5 do
         if occupiedSlots[slot] ~= true then
-            local dist = math.abs(slot - 3)
+            local dist = math.abs(slot - 1)
             if bestDist == nil or dist < bestDist or (dist == bestDist and slot < bestSlot) then
                 bestDist = dist
                 bestSlot = slot

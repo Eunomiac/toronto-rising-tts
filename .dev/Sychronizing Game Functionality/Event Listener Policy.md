@@ -165,6 +165,9 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_STcamera` | A | Yes | Host ST camera strip → `M.setCamera(Black, mode)` from `C.StorytellerCameraAngles` (TOR-348) |
 | `HUD_cameraControl_click` | A | — | Player camera overlay; MAIN left=`default`, right=`wideFacing`; all picker clicks `M.setCamera` → ThirdPerson (TOR-594) |
 | `HUD_popoutCameraControl_click` / `_mouseDown` / `_mouseUp` / `_mouseExit` / `HUD_alphaControl_hover*` | A | — | Camera picker: left-click `default` ThirdPerson (picker stays closed); hold 1s opens picker without moving camera (TOR-597); right-click `M.lookAtNPC` (elevated default focus, horizon yaw toward next occupied stage NPC, keep distance, then FirstPerson) (TOR-538 / TOR-562 / TOR-594); Apply resets cycle |
+| `HUD_scatterModeControl_toggleClick` / `_toggleHoverOn` / `_toggleHoverOff` | A | — | TOR-602 player Scatter strip toggle; clicker seat must match id color suffix |
+| `HUD_scatterModeControl_selectorClick` | B+C | — | TOR-602 move that PC to the clicked scatter group (`ScatterMode.movePcToGroup`); no-op (strip stays open) if already there; successful move parks token, poses figurine/seat objects, closes that player’s strip |
+| `HUD_scatterModeControl_selectorHoverOn` / `_selectorHoverOff` | A | — | TOR-602 selector hover image swap |
 | `HUD_debugLightActivate/ButtonClick/Slider` | C | Yes | Tuner select / sliders / Zero / Discard / close; `getObjectsWithTag("Spotlight")` on open and when returning to the grid |
 | `HUD_debugLightGuidInput/Enabled/ResetRow/Done/Snapshot` | A | — | Guid/Enabled/ResetRow are leftover no-ops; Done returns to selection; Snapshot writes workspace Lua |
 | `HUD_debugCamera*` / `HUD_debugCaptureCameraPreset` | A | — | local camera |
@@ -204,7 +207,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `Gameboard.tryPcControlTokenDroppedOnStorytellerDiceBag` | `core/npc_gameboard_interactions.ttslua` (via facade) | **Pass** | `isPcControlToken` + Black/ST + `dieKindNearStorytellerDiceBag` before restore; returns `rollColor, rollType` via `STR.rollTypeForStorytellerBagDrop` |
 | `GlobalGameboardTokenDroppedOnDiceBag` / `GlobalGameboardPcTokenDroppedOnDiceBag` | `core/global_script.ttslua` | **Pass** | tag + steam-ST before `require("core.npc_gameboard")`; PC wrapper owns `RC.initiateRoll` |
 | `GlobalRepositionStorytellerTrayDice` | `core/global_script.ttslua` | **Pass** | Tier C tray layout across all ST bags |
-| `Gameboard.onPcControlTokenDropped` | `core/npc_gameboard_interactions.ttslua` (via facade) | **Pass** | `isPcControlToken`. Scatter Mode (TOR-572): same host drop path; `isTokenOverMinimapParchment`; nearest group + stable PC world slot, then park (debug snaps only while calibrating — not used for play). |
+| `Gameboard.onPcControlTokenDropped` | `core/npc_gameboard_interactions.ttslua` (via facade) | **Pass** | `isPcControlToken`. Scatter Mode (TOR-572 / TOR-602): same host drop path; nearest group + stable PC world slot (gold = slot 1), park, then `applyWorldLayout` + HUD reconcile. |
 | `Gameboard.onNpcControlTokenPickUp` | `core/npc_gameboard_interactions.ttslua` (via facade) | **Pass** | `isNpcControlToken` |
 | `Compulsions.onGenericDrawn` / `onPresentedEnteredHand` / `onSelectedEnteredHand` | `core/compulsions.ttslua` | **Pass** | Called only after Global Card + `Compulsion:` prefix gates (TOR-204); selected path requires `<Color>Object` tag |
 
@@ -265,7 +268,7 @@ Snap default cameras **under** the transition blindfold after early XmlUI FadeIn
 | Raise path | File | When |
 | --- | --- | --- |
 | Global overlay show | `global_script.showStartupLoadingOverlays` | after `UI.show(overlay_globalBlindfold_panel)`, then `U.await(1.5)` |
-| Staged scene transition (Apply / End) | `HUDBF.runStagedTransition` | After TOR-434 lead-in (~5.0s) + ambient fade-out (~1s); default camera at **start of heavy work**, then Sync/table work. `beginTransition` arms UI only (no early camera await). |
+| Staged scene transition (Apply / End) | `HUDBF.runStagedTransition` | After TOR-434 lead-in (~5.0s) + ambient fade-out (~1s); heavy Sync/table work first, then default camera (TOR-368 / TOR-603 occupied-seat Storyteller copy). `beginTransition` arms UI only (no early camera await). |
 | Simple / lead-in transition settle | `HUDBF.scheduleEnd` | When settle delay > 0, snap default cameras at the start of the settle wait (after work). |
 | PCs panel Blind toggle on | `PCST` `blindfoldToggle` | after `Conditions.setManual(hudBlindfold)`, then `U.await(1.5)` |
 

@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — TOR-601 prologue overlay setAttributes word gaps._
+_Last populated: 2026-09-21 — TOR-604 Play overlay time height after prologue._
 
 ### Soundscape
 
@@ -89,6 +89,16 @@ _Last populated: 2026-09-21 — TOR-601 prologue overlay setAttributes word gaps
 
 **Context:** Author confirmed `UI.setAttributes(..., { text = "T O R O N T O   R I S I N G" })` keeps the three spaces. relatedTo **TOR-600**.
 
+#### TOR-604 — Play overlay clock height after leaving prologue
+
+**How to verify:** Save & Play so scripts reload. From Intermission with no scene, Advance to Play (prologue overlay), then Apply a library scene.
+
+1. The center overlay should show roman session, district/site, the red date, **and the clock** (for example `8:00 PM`) inside the gold frame — not clipped off the bottom.
+2. Session number and location should sit near the top of that frame, similar to a normal Play overlay that never went through prologue.
+3. Optional: End the scene. Date + **DOWNTIME** should also sit in that same vertical layout, with **DOWNTIME** fully visible.
+
+**Context:** Leaving prologue used to clear the time row height to empty, which collapsed it. relatedTo **TOR-598**.
+
 #### TOR-599 — End overlay says EPILOGUE
 
 **How to verify:** Save & Play so scripts reload. Advance to **End** (Play → Spotlight → End, or however you usually get there).
@@ -124,11 +134,24 @@ _Last populated: 2026-09-21 — TOR-601 prologue overlay setAttributes word gaps
 
 **How to verify:** Save & Play so scripts reload.
 
-1. **Import a Scatter scene from chairs:** Paste v2 JSON whose `sessionScene.tableKey` is `Scatter` (you can omit `placementMode` if the table key is Scatter). Give two PCs the same `tableSlot`, and put a stage NPC in `npcWorld.placements` with `scatterGroup` 1–6 and no `u`/`v`. Import, then Apply. The wood table should hide. Those two PCs should share one scatter group; a lone PC in a group should stand on PC slot 1 (not the gold hole used when you drop tokens during play).
+1. **Import a Scatter scene from chairs:** Paste v2 JSON whose `sessionScene.tableKey` is `Scatter` (you can omit `placementMode` if the table key is Scatter). Give two PCs the same `tableSlot`, and put a stage NPC in `npcWorld.placements` with `scatterGroup` 1–6 and no `u`/`v`. Import, then Apply. The wood table should hide. Those two PCs should share one scatter group; a lone PC in a group should stand on PC slot 1, which is now the gold hole.
 2. **Live switch:** Start from a normal table scene with people in chairs and NPCs on polar packs. Click **Scatter** on the Scenes panel. The cover should run, and the Host console should **not** print `Object reference not set to an instance of an object`. Chairs should become scatter groups by chair number (7 wraps to group 1). Polar packs should fill scatter groups in CENTER, then Mid Center, and so on; a seventh occupied pack should vanish as if you hit Clear. Click **Table A**. Same rule: no Object reference error. Everyone who was still in a scatter group should return to the chairs and packs they had before Scatter. NPCs you Cleared while in Scatter should stay gone.
 3. **Authored Scatter with no prior table:** Apply a Scatter library scene, then click Table A. PCs should sit Lucien 1, Rashid 2, Aishe 3, Fomorach 4, Black Caesar 5 (or shuffle if you pick a Table B size). NPCs should fill polar packs in that same family order; extra NPCs from one scatter group should take the next whole pack, and the following scatter group should skip that overflow pack.
 
 **Context:** relatedTo **TOR-572** (in-game Scatter table) and **TOR-570** (dashboard scatter JSON). Dashboard Copy JSON can keep using `scatterPlacements`; chair-style import is the other legal paste.
+
+#### TOR-602 — Scatter Mode player HUD (group strip + click-to-move)
+
+**How to verify:** Save & Play so Global XML and scripts reload. Confirm Custom UI assets exist for `scatterGroupToggle_*`, `scatterGroupSelector_*`, `scatterGroupControl_bg`, and `scatterGroupControlPC_lucien` / `rashid` / `aishe` / `fomorach` / `blackCaesar`. If any portrait or button is blank, that is a missing asset name in the save, not the Lua.
+
+1. Switch the table to Scatter. Each PC should see a toggle near the top of **their** screen only. The six-group strip starts closed.
+2. Open the toggle. Portraits should match who is in each group; the center portrait slot (`pc1`) is gold / first-join. NPC names under each group should match the board, one full name per line.
+3. Click a **different** group. Your figurine, bags/sheet/camera, and PC token should move there immediately. An empty group uses the gold hole. The strip closes. Other players with the strip open should see you in the new group.
+4. Open the strip again and click the group you are **already** in. Nothing should move, and the strip should **stay open**.
+5. Storyteller: drop a PC token onto another group. That player’s figurine should move, and HUD portraits should follow without that player clicking.
+6. Leave Scatter. The toggle and strip should disappear.
+
+**Context:** Gold is PC slot 1 (not 3). Occupancy written under the old slot-3 scheme will sit on the wrong hole until you re-enter Scatter or move that PC once. relatedTo **TOR-572**.
 
 ### Memoriam
 #### TOR-101 — Memoriam runtime apply (enter / exit)
@@ -178,6 +201,16 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 **Context:** Absent was hiding the pile but leaving the hand zone (and often the cards) at the table, and parking the PC token on the board. Apply that only moved PC tokens also skipped seat layout because the NPC reconciler thought nothing had changed.
 
 ### Camera
+
+#### TOR-603 — Storyteller camera follows the occupied seat after table or scene layout
+
+**How to verify:** Save & Play so scripts reload. Sit as Host. Use the bottom-right colored seat buttons to sit in a player seat (for example Brown). Look at that seat’s usual default table view so you know what it should be.
+
+1. Apply a library scene that uses a **different table**, or switch tables from the Scenes panel, so the seats actually move.
+2. After the cover lifts, your camera should be that seat’s **new** default for the table you landed on — not the old table’s view, and not the Storyteller Black Main/Mid/Stage views.
+3. Sit back on Black with the black seat button. Apply or switch tables again. After the cover, you should get the usual Storyteller views (Main / Mid / Stage), not a leftover player-seat camera.
+
+**Context:** Sitting in a player seat already copied that seat’s cameras onto the Storyteller. Table and scene layout were rewriting the player’s cameras and then snapping views **before** that copy was refreshed.
 
 #### TOR-597 — Overlay camera: quick click default, hold 1s to open picker
 
