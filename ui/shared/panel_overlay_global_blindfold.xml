@@ -2,6 +2,7 @@
      SlideIn_Top / SlideOut_Top on the parent Panel. Image set dynamically:
      - Scene/table transitions: overlay_globalBlindfold_<1..32>
      - End → Intermission persistent: overlay_sessionEndSplash_<N>
+       (snapped on under overlay_blackoutPanel; that panel FadeIn/FadeOut, not a splash SlideIn)
      Session-start explode stack: ui/shared/panel_overlay_session_start.xml — never this panel.
      Lua: core/hud_overlays.ttslua (transitions); core/phases.ttslua / global_script (End→Intermission).
 -->
@@ -55,7 +56,7 @@
     image = ""
     color = "clear"
   />
-    <Panel class="overlay_blackout_panel"
+  <Panel class="overlay_blackout_panel"
     active = "false"
     width = "1920"
     height = "1200"
@@ -81,4 +82,10 @@
   <Image id="overlay_site_card_display" class="global_blindfold_site_card" />
 </Panel>
 
-<Panel id="overlay_blackoutPanel" class="overlay_blackout_panel" />
+<!-- On-element animation attrs: Defaults alone snapped SlideOut on the cover (TOR-566). -->
+<Panel id="overlay_blackoutPanel"
+  class="overlay_blackout_panel"
+  showAnimation="FadeIn"
+  hideAnimation="FadeOut"
+  animationDuration="5"
+  raycastTarget="false" />

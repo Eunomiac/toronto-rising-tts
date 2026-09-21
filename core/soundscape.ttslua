@@ -1669,7 +1669,10 @@ end
 --- silence at blindfold-down, emitter-only, without mutating scene intent in `gameState` (TOR-147).
 --- Channel `volume` is set to its faded target so the subsequent crossfade does not burst the old clip
 --- back to full for a frame. Weather follows the outgoing-vs-incoming policy via `opts.incoming`.
---- @param opts table|nil `{ seconds?: number, incoming?: table }` — `incoming` from `previewIncomingWeather`
+--- `opts.silenceAfter` — after the fade, stop thunder scheduling and swap music, location,
+--- and weather loops onto the silent clip so only the incoming featured theme is still playing
+--- (End→Intermission). Do not combine with a weather duck (`opts.incoming`).
+--- @param opts table|nil `{ seconds?: number, incoming?: table, skipBackground?: boolean, silenceAfter?: boolean }`
 --- @return boolean ok
 function Soundscape.fadeOutTransitionAmbient(opts)
     opts = type(opts) == "table" and opts or {}
@@ -1703,8 +1706,27 @@ function Soundscape.fadeOutTransitionAmbient(opts)
         end
     end
 
+    local silenceAfter = opts.silenceAfter == true
     fadeOutTransitionWeatherChannel("weatherRain", state.rain, incoming.rain, incoming.rainVolume, seconds, state)
     fadeOutTransitionWeatherChannel("weatherWind", state.wind, incoming.wind, incoming.windVolume, seconds, state)
+    if silenceAfter then
+        -- Drop queued thunder so a hit cannot land after the theme is the only bed.
+        weatherGeneration = weatherGeneration + 1
+        local thunderObj = resolveEmitter("weatherThunder")
+        if thunderObj ~= nil then
+            local thunderState = state.channels and state.channels.weatherThunder or {}
+            fadeEmitterVolume(thunderObj, tonumber(thunderState.volume) or 0, 0, seconds)
+            updateChannelState("weatherThunder", { volume = 0 })
+        end
+        U.await(function()
+            silenceLoopChannel("musicA")
+            silenceLoopChannel("musicB")
+            silenceLoopChannel("locationA")
+            silenceLoopChannel("locationB")
+            silenceLoopChannel("weatherRain")
+            silenceLoopChannel("weatherWind")
+        end, seconds)
+    end
     return true
 end
 

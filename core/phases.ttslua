@@ -24,6 +24,11 @@ local SESSION_NUMBER_IMAGE_ID = "overlay_sessionNumber"
 local SESSION_TITLE_IMAGE_ID = "overlay_sessionTitle"
 local HEAL_BROADCAST_HOLD_SEC = 6
 local INTERMISSION_THEME_FADE_SEC = 2
+--- End→Intermission blackout (`overlay_blackoutPanel` FadeIn/FadeOut is 5s; hold is one second longer).
+local END_INTERMISSION_BLACKOUT_ID = "overlay_blackoutPanel"
+local END_INTERMISSION_BLACKOUT_HOLD_SEC = 6
+--- TR_Loop fade-in starts this long after the blackout show (fade itself is INTERMISSION_THEME_FADE_SEC).
+local END_INTERMISSION_THEME_LEAD_SEC = 3
 --- Per-step U.chain cap is computed in advanceTo from SessionExplode.maxPlayEnterWaitSec + 15
 --- so a longer per-session song is not killed by the default 60s chainWait (TOR-501 / TOR-531).
 
@@ -301,8 +306,9 @@ function Phases.applyAllLightsDark(_ctx)
     return true
 end
 
---- End → Intermission: leftover session audio fades out while TR_Loop fades in (after the cover is down).
---- Does not `stopAll` — that would hard-cut the outgoing fade. Does not lift the end splash (TOR-580).
+--- End → Intermission: TR_Loop fades in while every other lane fades out.
+--- Does not `stopAll` — that would hard-cut the outgoing fade. Does not lift the end splash.
+--- Returns immediately; the fades run for INTERMISSION_THEME_FADE_SEC. The Advance chain owns the waits.
 function Phases.beginIntermissionThemeHandoff(_ctx)
     local Soundscape = require("core.soundscape")
     local key = C.IntermissionThemeFeaturedKey or "TR_Loop"
@@ -314,14 +320,20 @@ function Phases.beginIntermissionThemeHandoff(_ctx)
         U.AlertGM("Intermission theme: " .. tostring(msg or "playFeaturedMusic failed"))
     end
     if type(Soundscape.fadeOutTransitionAmbient) == "function" then
-        Soundscape.fadeOutTransitionAmbient({ seconds = INTERMISSION_THEME_FADE_SEC })
+        Soundscape.fadeOutTransitionAmbient({
+            seconds = INTERMISSION_THEME_FADE_SEC,
+            silenceAfter = true,
+        })
+    end
+    if type(Soundscape.stopSessionIntro) == "function" then
+        Soundscape.stopSessionIntro({ fadeSeconds = INTERMISSION_THEME_FADE_SEC })
     end
     if type(Soundscape.commitEagerSteadyState) == "function" then
         Soundscape.commitEagerSteadyState(ok == true)
     elseif type(Soundscape.markReconciledToCurrentState) == "function" then
         Soundscape.markReconciledToCurrentState()
     end
-    return INTERMISSION_THEME_FADE_SEC
+    return true
 end
 
 --- @return table `{ x, y, z }` table-origin X/Z plus snapshot or live Y
@@ -723,22 +735,33 @@ end
 Phases.onEnter[C.Phases.INTERMISSION] = function(ctx)
     return {
         function()
-            -- showEnd sets `overlay_sessionEndSplash_<endedSession>` after UI.show (TOR-566).
-            return Phases.showEndGlobalBlindfold(ctx)
+            callGlobalBlindfoldHelper("beginEndIntermissionCoverHoldForPhases")
+            if type(UI.show) == "function" then
+                UI.show(END_INTERMISSION_BLACKOUT_ID)
+            end
+            return END_INTERMISSION_THEME_LEAD_SEC
         end,
         function()
-            local HUDBF = require("core.hud_blindfold")
-            return HUDBF.BLINDFOLD_DOWN_COMPLETE_SEC
+            Phases.beginIntermissionThemeHandoff(ctx)
+            return END_INTERMISSION_BLACKOUT_HOLD_SEC - END_INTERMISSION_THEME_LEAD_SEC
         end,
         function()
+            -- Splash is already behind the opaque blackout; snap it on, then fade the blackout out.
+            callGlobalBlindfoldHelper("showEndGlobalBlindfoldInstantForPhases")
+            if type(UI.hide) == "function" then
+                UI.hide(END_INTERMISSION_BLACKOUT_ID)
+            end
+            return END_INTERMISSION_BLACKOUT_HOLD_SEC
+        end,
+        function()
+            if type(U.setAttribute) == "function" then
+                U.setAttribute(END_INTERMISSION_BLACKOUT_ID, "active", "false")
+            end
             local Main = require("core.main")
             if type(Main.snapDefaultCamerasAfterLayout) == "function" then
                 Main.snapDefaultCamerasAfterLayout("ALL")
             end
             return true
-        end,
-        function()
-            return Phases.beginIntermissionThemeHandoff(ctx)
         end,
         function()
             return Phases.applyNoSceneDefault(ctx, {

@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — TOR-599 End overlay uses prologue bookend layout with EPILOGUE._
+_Last populated: 2026-09-21 — End→Intermission blackout, then the session-end splash (Linear quota blocked a new issue; parent TOR-143)._
 
 ### Soundscape
 
@@ -243,6 +243,19 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 4. Right-click the camera button again to go FirstPerson, then immediately click a picker preset (or quick-click the camera button). You should not stay stuck in FirstPerson.
 
 **Context:** Overlay right-click is the only scripted FirstPerson camera. Other camera snaps were leaving players in FirstPerson because lookAt can no-op and a delayed FirstPerson switch was not cancelled. Left-click vs hold is **TOR-597**.
+
+### Phases
+
+#### TOR-143 — End→Intermission blackout, then the session-end splash
+
+**How to verify:** Save & Play so scripts and the global overlay reload. Be in **End** with some scene audio still going (theme, location, or weather is fine). On the Phases panel, click **Advance**, then click again to confirm.
+
+1. The screen should fade to black over about five seconds. The session-end art should not slide down over the table.
+2. About three seconds after the fade to black starts, the Toronto Rising theme loop should start fading in. Whatever else was playing should fade out over those same two seconds. When the theme finishes fading in, you should hear only that loop.
+3. About six seconds after the black fade started, the black should start fading away and the ended session’s splash art should already be there underneath (no slide). It should stay up.
+4. The table, seats, and lights should not jump around while either fade is still running. After the black is gone, the room should be the between-session setup (dark, no scene) with that splash still covering the view.
+
+**Context:** Linear could not open a new issue (workspace quota). This changes the End → Intermission cover that **TOR-580** and **TOR-566** used to slide in. Parent is **TOR-143** (phase sequence).
 
 ### Dice
 

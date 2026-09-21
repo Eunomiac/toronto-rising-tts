@@ -8193,6 +8193,7 @@ UI.setAttributes("overlay_sessionStartSplash", {active = "true"})
      SlideIn_Top / SlideOut_Top on the parent Panel. Image set dynamically:
      - Scene/table transitions: overlay_globalBlindfold_<1..32>
      - End → Intermission persistent: overlay_sessionEndSplash_<N>
+       (snapped on under overlay_blackoutPanel; that panel FadeIn/FadeOut, not a splash SlideIn)
      Session-start explode stack: ui/shared/panel_overlay_session_start.xml — never this panel.
      Lua: core/hud_overlays.ttslua (transitions); core/phases.ttslua / global_script (End→Intermission).
 -->
@@ -8246,6 +8247,17 @@ UI.setAttributes("overlay_sessionStartSplash", {active = "true"})
     image = ""
     color = "clear"
   />
+  <Panel class="overlay_blackout_panel"
+    active = "false"
+    width = "1920"
+    height = "1200"
+    rectAlignment = "MiddleCenter"
+    color = "rgba(0, 0, 0, 1)"
+    showAnimation = "FadeIn"
+    hideAnimation = "FadeOut"
+    animationDuration = "5"
+    raycastTarget = "false"
+  />
 </Defaults>
 
 <!-- Animation attrs also on the element (TOR-566): Defaults alone were enough for SlideIn,
@@ -8260,6 +8272,14 @@ UI.setAttributes("overlay_sessionStartSplash", {active = "true"})
   <Image id="overlay_district_card_display" class="global_blindfold_district_card" />
   <Image id="overlay_site_card_display" class="global_blindfold_site_card" />
 </Panel>
+
+<!-- On-element animation attrs: Defaults alone snapped SlideOut on the cover (TOR-566). -->
+<Panel id="overlay_blackoutPanel"
+  class="overlay_blackout_panel"
+  showAnimation="FadeIn"
+  hideAnimation="FadeOut"
+  animationDuration="5"
+  raycastTarget="false" />
 
 <!-- /include ui/shared/panel_overlay_global_blindfold.xml -->
 

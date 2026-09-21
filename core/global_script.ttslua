@@ -472,6 +472,8 @@ local globalBlindfoldHideInFlight = false
 local globalBlindfoldHideCancel = nil
 --- When true, Intermission phase policy keeps the global end splash up (TOR-565).
 local globalBlindfoldUseEndCover = false
+--- End→Intermission: blackout owns the screen until the end splash is snapped on underneath.
+local endIntermissionSplashDeferred = false
 --- Last applied global blindfold panel visibility (transitions + End→Intermission).
 local transitionGlobalBlindfoldAppliedVisible = nil
 local transitionGlobalBlindfoldHideInFlight = false
@@ -500,6 +502,7 @@ local function invalidateGlobalBlindfoldAppliedState()
     globalBlindfoldAppliedVisible = nil
     transitionGlobalBlindfoldAppliedVisible = nil
     globalBlindfoldUseEndCover = false
+    endIntermissionSplashDeferred = false
 end
 
 --- Force-hide global blindfold panel (transitions / end splash). Idempotent.
@@ -654,6 +657,11 @@ local function showStartupLoadingOverlays()
     end
 end
 
+local function clearGlobalBlindfoldLocationCards()
+    U.setAttributes("overlay_district_card_display", { active = "false", color = "Clear", image = "" })
+    U.setAttributes("overlay_site_card_display", { active = "false", color = "Clear", image = "" })
+end
+
 --- Arm end-splash image on the global cover Image (TOR-566).
 local function armEndGlobalBlindfoldImage()
     local PhasesMod = require("core.phases")
@@ -667,6 +675,41 @@ local function armEndGlobalBlindfoldImage()
     })
 end
 
+--- End→Intermission: hold the splash until the blackout is opaque. Blocks phase policy from sliding it early.
+local function beginEndIntermissionCoverHold()
+    endIntermissionSplashDeferred = true
+    globalBlindfoldUseEndCover = true
+    forceHideSessionStartGlobalBlindfold()
+end
+
+--- Place the ended-session splash on instantly (no SlideIn). Caller has the blackout fully up.
+local function showEndGlobalBlindfoldInstant()
+    endIntermissionSplashDeferred = false
+    globalBlindfoldUseEndCover = true
+    forceHideSessionStartGlobalBlindfold()
+    clearGlobalBlindfoldLocationCards()
+    armEndGlobalBlindfoldImage()
+
+    if transitionGlobalBlindfoldHideInFlight and transitionGlobalBlindfoldHideCancel ~= nil then
+        transitionGlobalBlindfoldHideCancel.cancelled = true
+        transitionGlobalBlindfoldHideCancel.reason = "show"
+        transitionGlobalBlindfoldHideInFlight = false
+        transitionGlobalBlindfoldHideCancel = nil
+    end
+
+    -- Snap the panel on. UI.show would play SlideIn_Top over the blackout fade-out.
+    -- Duration 0 first so the active flip cannot replay a 2s slide.
+    -- hideTransitionGlobalBlindfold restores the 2s SlideOut before the next hide.
+    U.setAttributes(GLOBAL_BLINDFOLD_PANEL_ID, {
+        showAnimation = "FadeIn",
+        animationDuration = "0",
+    })
+    U.setAttributes(GLOBAL_BLINDFOLD_PANEL_ID, { active = "true" })
+    armEndGlobalBlindfoldImage()
+    clearGlobalBlindfoldLocationCards()
+    transitionGlobalBlindfoldAppliedVisible = true
+end
+
 --- Show global blindfold with session-end splash for End → Intermission (TOR-565). Persistent.
 --- Hides the session-start panel. Idempotent: if already ON, ensure `active` only — no SlideIn.
 --- Always re-arm image after UI.show (show re-applies XML defaults → overlay_globalBlindfold_1).
@@ -674,8 +717,7 @@ local function showEndGlobalBlindfold()
     globalBlindfoldUseEndCover = true
     forceHideSessionStartGlobalBlindfold()
 
-    U.setAttributes("overlay_district_card_display", { active = "false", color = "Clear", image = "" })
-    U.setAttributes("overlay_site_card_display", { active = "false", color = "Clear", image = "" })
+    clearGlobalBlindfoldLocationCards()
     armEndGlobalBlindfoldImage()
 
     local interruptedHide = false
@@ -705,8 +747,7 @@ local function showEndGlobalBlindfold()
     end
     -- Parent UI.show re-applies XML defaults (image → overlay_globalBlindfold_1).
     armEndGlobalBlindfoldImage()
-    U.setAttributes("overlay_district_card_display", { active = "false", color = "Clear", image = "" })
-    U.setAttributes("overlay_site_card_display", { active = "false", color = "Clear", image = "" })
+    clearGlobalBlindfoldLocationCards()
     transitionGlobalBlindfoldAppliedVisible = true
 end
 
@@ -725,6 +766,9 @@ end
 local function applyGlobalBlindfoldFromPhase()
     local phase = S.getStateVal("currentPhase")
     if phase == nil or phase == C.Phases.INTERMISSION then
+        if endIntermissionSplashDeferred == true then
+            return
+        end
         if globalBlindfoldUseEndCover == true then
             showEndGlobalBlindfold()
         else
@@ -750,6 +794,14 @@ end
 
 function showEndGlobalBlindfoldForPhases()
     showEndGlobalBlindfold()
+end
+
+function beginEndIntermissionCoverHoldForPhases()
+    beginEndIntermissionCoverHold()
+end
+
+function showEndGlobalBlindfoldInstantForPhases()
+    showEndGlobalBlindfoldInstant()
 end
 
 local function seatAssignmentPlayerKey(player)
