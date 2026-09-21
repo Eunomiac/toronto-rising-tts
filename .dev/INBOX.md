@@ -29,12 +29,6 @@ Verification:
 ## Author Workspace
 > _Do NOT process these items during any INBOX processing, unless explicitly instructed to by the author: They are works-in-progress, and will be moved into the processing area above when completed._
 
-### Memoriam Phase
-> Shipped runtime (and remaining unimplemented items) lives in [`.dev/Phases/Memoriam.md`](Phases/Memoriam.md). Do not paste the old plan back here.
-
-### Generic NPCs
-> Shipped v1 import/spawn (and remaining / out-of-scope items) lives in [`.dev/NPC Object Spawning & Spotlighting/Generic NPCs.md`](NPC%20Object%20Spawning%20%26%20Spotlighting/Generic%20NPCs.md). Dashboard catalogue / Spawn UI: [`.dev/Storyteller Dashboard Docs/Generic NPCs.md`](Storyteller%20Dashboard%20Docs/Generic%20NPCs.md).
-
 ### PC-as-NPC Assignment
 
 
