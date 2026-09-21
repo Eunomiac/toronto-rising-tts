@@ -150,10 +150,30 @@ Use for manuals/playbooks/registries that are **never “finished”** (e.g. **T
 - Audit trail: [`.dev/plans/linear-alignment-log.md`](../../.dev/plans/linear-alignment-log.md)
 - Full sync workflow: [`.dev/DEVELOPMENT_WORKFLOW.md`](../../.dev/DEVELOPMENT_WORKFLOW.md) § Linear synchronization and § Inbox capture & triage
 
+## Issue limit — delete author-confirmed Done issues
+
+**Default:** Do **not** delete Linear issues. Prefer **Canceled** (true descope) or leave **Done** as bug anchors.
+
+**Exception — plan / workspace issue limit reached:** When Linear refuses new issues (or create fails with a quota / issue-limit error), **delete** issues that are **both**:
+
+1. **Done** in Linear, and
+2. **Author-confirmed** — PAVE **✅** processed on `/tr-inbox`, or the author confirmed the same closure in chat / Linear during an inbox pass
+
+**How to purge (when the limit blocks work):**
+
+- Prefer **oldest** Done + author-confirmed issues first; delete only as many as needed to create the new issue(s).
+- **Eligible:** ordinary finished features/bugs/improvements with author verification closed.
+- **Do not delete:** open work (Backlog / Todo / In Progress / Triage), **Done but still awaiting author verify**, **⌚** PAVE follow-ups, **`living-doc`** issues still In Progress, parent **epics** with open children, or anything the author has not confirmed closed.
+- Log each deletion in [`.dev/plans/linear-alignment-log.md`](../../.dev/plans/linear-alignment-log.md) (`DELETE` + labeled `TOR-XXX` + reason “issue limit”).
+- Keep historical `_(TOR-XX)_` on checked tasklist bullets; do not invent replacement ids for deleted issues.
+- If the Linear MCP cannot delete issues, list labeled candidates and ask the author to trash them in the Linear UI, then retry create.
+
+Do **not** delete preventively while under the limit. Do **not** skip creating **Done** issues for shipped work just to save quota — purge only when the limit blocks creating or updating tracking.
+
 ## Non-negotiables
 
 - **Never** leave RUNNING TASKLIST and Linear out of sync after a session.
 - **Never** finish TTS-observable code without an Outstanding row on [PENDING AUTHOR VERIFICATION.md](../../.dev/PENDING%20AUTHOR%20VERIFICATION.md) in that same session. Inbox catch-up is not the primary add path. Process author **✅** / **❌** / **⚠️** marks only on **`/tr-inbox`** (author owns those marks between passes).
-- **Never** delete Linear issues; cancel or close with reason.
-- **Never** skip creating a Done issue for shipped work — completed features are bug anchors.
+- **Do not** delete Linear issues except under **§ Issue limit** (Done + author-confirmed only). Otherwise cancel or close with reason.
+- **Never** skip creating a Done issue for shipped work — completed features are bug anchors until a later issue-limit purge removes them.
 - **Do not** wait for the author to ask for Linear updates; sync is part of the definition of done.

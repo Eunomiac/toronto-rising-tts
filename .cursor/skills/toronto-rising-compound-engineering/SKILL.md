@@ -18,7 +18,7 @@ This project has **long-running** Tabletop Simulator systems (dice, roll pipelin
 
 | Situation | Use |
 |-----------|-----|
-| Starting, continuing, or closing any feature/fix (always) | **Linear** (`.cursor/rules/toronto-rising-linear.mdc`): check `TOR-*` issues, update status/comments, keep RUNNING TASKLIST in sync. |
+| Starting, continuing, or closing any feature/fix (always) | **Linear** (`.cursor/rules/toronto-rising-linear.mdc`): check `TOR-*` issues, update status/comments, keep RUNNING TASKLIST in sync; if the issue limit blocks creates, delete **Done + author-confirmed** only. |
 | Quick bugs/intents/ideas while testing | **INBOX** ([`.dev/INBOX.md`](../../../.dev/INBOX.md)): one-line **Active** notes; **`Answer:`** inline under **Needs clarification**; **“process the inbox”** to promote |
 | Choosing the next task | **Focus** ([RUNNING TASKLIST § Focus](../../../.dev/RUNNING%20TASKLIST.md)): **“what’s next”** / **“prioritize the backlog”** → read stack rank + Linear Bugs |
 | Starting a fresh agent session | **`/tr-start`** ([`.cursor/skills/tr-start/SKILL.md`](../../../.cursor/skills/tr-start/SKILL.md)): Focus + mandatory policy reads + architecture non-negotiables; in Cursor, commit without asking unless the author explicitly says not to |

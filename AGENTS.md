@@ -42,6 +42,8 @@ For Codex/API sessions where slash commands are not available, mirror the same b
 
 **Author verification:** Linear **Done** does not mean Save & Play confirmed. When shipping any in-game code (chat request, Linear issue, inbox Quick Fix, or otherwise), **add an Outstanding row** to [`.dev/PENDING AUTHOR VERIFICATION.md`](.dev/PENDING%20AUTHOR%20VERIFICATION.md) **in that same session**, with the same plain-English how-to-verify in the Linear Done comment. Do not wait for inbox. Policy: [`.dev/PENDING AUTHOR VERIFICATION.agent.md`](.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md). On inbox, process author marks **✅** / **❌** / **⚠️**, mark unshipped follow-ups **⌚** (not ready to verify), and catch up any shipped work a previous agent forgot to list.
 
+**Linear issue limit:** Do not delete Linear issues by default. When the workspace/plan issue limit blocks creating new issues, delete **Done + author-confirmed** issues only (oldest first), per [`.cursor/rules/toronto-rising-linear.mdc`](.cursor/rules/toronto-rising-linear.mdc) § Issue limit.
+
 ## Trust Hierarchy
 
 Use this order when sources disagree:

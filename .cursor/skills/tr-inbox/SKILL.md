@@ -135,6 +135,7 @@ Even if capture sections were empty, refresh the stack so **`/tr-start`** reader
 6. **Blocking links:** When B should wait for A, add **`blockedBy: [A, …]`** on B (liberal sequencing OK). **Anti-gridlock:** star pattern on B only; 1–6 direct prerequisites; no peer-to-peer mesh. List new blocks in **Linear sync** (reply format).
 7. Ensure every Focus row has a matching open tasklist bullet and Linear issue; remove Focus rows for **Done** or **Canceled** work.
 8. **Do not** update **Deferred this cycle** — it is **paused** (historical line in RUNNING TASKLIST is context only).
+9. **Issue limit:** If `save_issue` create fails (or Linear reports the workspace/plan issue limit), purge **Done + author-confirmed** issues per [`.cursor/rules/toronto-rising-linear.mdc`](../../rules/toronto-rising-linear.mdc) § Issue limit — oldest first, only as many as needed — then retry. Log deletions in [`.dev/plans/linear-alignment-log.md`](../../../.dev/plans/linear-alignment-log.md). Do **not** delete preventively while under the limit. If MCP cannot delete, list labeled candidates and ask the author to trash them in Linear.
 
 Part B is **tracking-only for INBOX Active / Focus re-stack**, except: **Quick Fixes** (Part A.0) and **PAVE ❌ / ⚠️ Immediate disposition** may implement in this session when the fix is quick.
 
@@ -151,7 +152,7 @@ Before your final reply, verify and report:
 | **RUNNING TASKLIST** | New `[ ]` bullets for every scheduled promotion |
 | **Focus** | Dated stack rank; top row is the recommended next task |
 | **PENDING AUTHOR VERIFICATION** | Process **✅** / **❌** / **⚠️** per [PENDING AUTHOR VERIFICATION.agent.md](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md); catch-up any shipped work missing a row; mark unshipped follow-ups **⌚** (skip verify); Quick Fixes / Immediate ships in this session get an **unmarked** row now; **❌**/**⚠️** follow Immediate Implementation disposition (ship quick fixes here; Focus top otherwise; defer only complex refactors) |
-| **Linear** | Priorities reflect **importance**; **`blockedBy`** reflects **precedence**; no orphan promoted ids |
+| **Linear** | Priorities reflect **importance**; **`blockedBy`** reflects **precedence**; no orphan promoted ids; if create hit the **issue limit**, purged Done + author-confirmed issues and logged deletions |
 
 If unanswered **`?`** remain, say so explicitly — repo is still **`/tr-start`-ready** for implementation on existing Focus items; promotion waits for **`Answer:`** + re-run **`/tr-inbox`**.
 
@@ -161,7 +162,7 @@ Write the whole reply in plain English (author voice). Tables are fine; do not l
 
 1. **Inbox summary** — quick-fix shipped / promoted / parked / dismissed / duplicate. Every `TOR-XXX` includes a short label. Say what each item means in everyday language when the label alone is jargon. Include PAVE **❌**/**⚠️** items shipped or Focus-promoted under Immediate disposition.
 2. **Focus table** — reproduce the updated **`## Focus`** rows (top 6 max). Ids in the table already have a **Why now** column — that satisfies the context rule for those rows.
-3. **Linear sync** — **priority** changes and new **`blockedBy`** links; each id with label (e.g. `TOR-143 (phase system redesign) → Medium`; `TOR-143 blockedBy TOR-141 (E2E playbooks)`).
+3. **Linear sync** — **priority** changes and new **`blockedBy`** links; each id with label (e.g. `TOR-143 (phase system redesign) → Medium`; `TOR-143 blockedBy TOR-141 (E2E playbooks)`). If you purged issues for quota, list each deleted id with label and say it was for the Linear issue limit.
 4. **Blocked on author** — any `?` still needing **`Answer:`** in INBOX (copy the questions).
 5. **Sequencing notes** — inbox promotions not in Focus: where they landed (domain section) and **`blockedBy`** applied (labeled). If none promoted this session, say *“No new sequencing.”*
 6. **Handoff** — one sentence with labeled id if naming a specific next task: *“Open a new chat and run `/tr-start TOR-135 NPC cutouts on scene apply` (include the issue id in the message so scope is obvious).”*

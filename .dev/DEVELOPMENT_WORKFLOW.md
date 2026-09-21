@@ -386,7 +386,20 @@ Work that requires **author action outside the IDE** (TTS workshop save, playtes
 
 - Linear → **Canceled** (true descope) or **Backlog** with reason; move or strikethrough the tasklist item.
 - **Sequencing (not deferral lists):** set **`blockedBy`** on the waiting issue toward prerequisites — do not auto-set **Low** priority; do **not** add to **Deferred this cycle** (paused).
-- Do not delete Linear issues.
+- Do **not** delete Linear issues except under **§ Issue limit hygiene** below.
+
+### Issue limit hygiene (quota purge)
+
+Linear plans can cap total issues. When create fails or the workspace reports the issue limit is reached:
+
+1. Find **Done** issues that the author has **confirmed** (PAVE **✅** processed, or explicit author confirmation in chat / Linear on an inbox pass).
+2. **Delete** the oldest eligible issues first — only as many as needed to free quota for the new work.
+3. **Do not** delete open issues, Done-but-unverified work, **`living-doc`** issues still In Progress, epics with open children, or unconfirmed Done items.
+4. Append a `DELETE` row to [`.dev/plans/linear-alignment-log.md`](plans/linear-alignment-log.md) for each purged id (label + “issue limit”).
+5. Leave historical `_(TOR-XX)_` on checked RUNNING TASKLIST bullets; do not reassign those ids.
+6. If MCP cannot delete, give the author a short labeled candidate list and ask them to trash those issues in Linear, then retry.
+
+Do not purge preventively while under the limit. Keep creating **Done** issues for shipped work; purge is a last resort when quota blocks tracking. Full rule: [`.cursor/rules/toronto-rising-linear.mdc`](../.cursor/rules/toronto-rising-linear.mdc) § Issue limit.
 
 ### Issue relationships (Linear MCP)
 
@@ -413,6 +426,7 @@ Do not create circular **`blockedBy`** chains. Do not use blocking where **`pare
 3. Process or clear stale **Active** / **Needs clarification** items in [`.dev/INBOX.md`](INBOX.md) via **“process the inbox”**.
 4. Scan new `core/` / `lib/` modules for missing coverage under domain epics.
 5. Archive completed epics only when all children are Done or Canceled.
+6. If approaching or at the Linear **issue limit**, purge **Done + author-confirmed** issues per **§ Issue limit hygiene** (do not wait for a failed create if the author already asked to free quota).
 
 ### Agent workflow
 
@@ -449,7 +463,7 @@ Do not create circular **`blockedBy`** chains. Do not use blocking where **`pare
 
 When working on this project:
 
-1. **Linear (primary):** Follow `.cursor/rules/toronto-rising-linear.mdc` — check `TOR-*` before start, **In Progress** when working, **Done** + comment + tasklist when finished
+1. **Linear (primary):** Follow `.cursor/rules/toronto-rising-linear.mdc` — check `TOR-*` before start, **In Progress** when working, **Done** + comment + tasklist when finished; if the Linear issue limit blocks creates, delete **Done + author-confirmed** issues only (see that rule § Issue limit)
 2. **Inbox:** One-line notes in [`.dev/INBOX.md`](INBOX.md); clarifications via inline **`Answer:`** under **Needs clarification**; **“process the inbox”** to promote
 3. **Focus:** Stack rank at top of [RUNNING TASKLIST](RUNNING%20TASKLIST.md); **“what’s next”** / **“prioritize the backlog”** reads Focus + Linear Bugs
 4. **Session bootstrap:** **`/tr-start`** in Cursor (`.cursor/skills/tr-start/SKILL.md`) — re-anchor on Focus + architecture policies; commit without asking unless the author explicitly says not to
@@ -481,5 +495,5 @@ When working on this project:
 
 ---
 
-**Last Updated**: 2026-06-04 (deferred resurfacing on gate-close Done/Canceled; Focus stack rank; `/tr-start` and `/tr-inbox`; Linear ID labels; inbox back-burner; precedence vs priority; liberal `blockedBy` + anti-gridlock; proactive commits + agent chat rename prompt)
+**Last Updated**: 2026-09-21 (Linear issue-limit purge: delete Done + author-confirmed only; deferred resurfacing; Focus; `/tr-start` / `/tr-inbox`; liberal `blockedBy` + anti-gridlock)
 **Maintained By**: Development Team

@@ -18,7 +18,7 @@ Verification:
 
 Audit trail for the 2026-05-22 Linear alignment pass.
 
-**Ongoing agent responsibility:** Keep Linear, [RUNNING TASKLIST](../RUNNING%20TASKLIST.md), [INBOX](../INBOX.md) triage, and code aligned per [`.cursor/rules/toronto-rising-linear.mdc`](../../.cursor/rules/toronto-rising-linear.mdc).
+**Ongoing agent responsibility:** Keep Linear, [RUNNING TASKLIST](../RUNNING%20TASKLIST.md), [INBOX](../INBOX.md) triage, and code aligned per [`.cursor/rules/toronto-rising-linear.mdc`](../../.cursor/rules/toronto-rising-linear.mdc). When the Linear **issue limit** blocks new issues, append `DELETE` rows here for each purged **Done + author-confirmed** issue (see that rule § Issue limit).
 
 ## Summary
 
