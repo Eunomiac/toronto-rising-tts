@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — CSHEET page 2 discipline-row height lock._
+_Last populated: 2026-09-21 — CSHEET page 2 fill dots + power line breaks._
 
 ### Phases / session start
 
@@ -81,6 +81,15 @@ _Last populated: 2026-09-21 — CSHEET page 2 discipline-row height lock._
 **How to verify:** Save & Play so character-sheet XML reloads. Open a PC sheet to page 2. The two discipline rows (name plates and power lists) should stay at their usual height instead of stretching taller to fill extra space on the page.
 
 **Context:** `page2_disc_row` Defaults now include `flexibleHeight="0"`.
+
+#### CSHEET page 2 — discipline fill dots + power line breaks
+
+**How to verify:** Save & Play so object scripts reload. Open a PC sheet to page 2 (Aishe is a good check).
+
+1. Each discipline’s five-dot track should show gold fills for that discipline’s rating — not an empty ring row. Temp-up/temp-down coloring on page 1 is unrelated; here you mainly want filled vs empty from base rating.
+2. Power names under each discipline should be **one line per power level**, with an eight-space indent, not a single run-on line. Same-level powers still share a line joined with ◆.
+
+**Context:** After dynamic `setXml`, fill paint now waits one frame; power text is applied with `UI.setAttribute` so newlines survive (XML attributes flatten `\n` to spaces). Track under Character Sheets epic **TOR-38** (workspace issue quota). Commit `d1a1b253`.
 
 ### Synchronization / objects
 
