@@ -142,7 +142,7 @@ _Last populated: 2026-09-21 — TOR-605 Scatter roll camera follows live Referen
 
 #### TOR-602 — Scatter Mode player HUD (group strip + click-to-move)
 
-**How to verify:** Save & Play so Global XML and scripts reload. Confirm Custom UI assets exist for `scatterGroupToggle_*`, `scatterGroupSelector_*`, `scatterGroupControl_bg`, and `scatterGroupControlPC_lucien` / `rashid` / `aishe` / `fomorach` / `blackCaesar`. If any portrait or button is blank, that is a missing asset name in the save, not the Lua.
+**How to verify:** Save & Play so Global XML and scripts reload. Confirm Custom UI assets exist for `scatterGroupToggle_*`, `scatterGroupSelector_*`, `scatterGroupControl_bg`, and `scatterModeControlPC_lucien` / `rashid` / `aishe` / `fomorach` / `blackCaesar`. If any portrait or button is blank, that is a missing asset name in the save, not the Lua.
 
 1. Switch the table to Scatter. Each PC should see a toggle near the top of **their** screen only. The six-group strip starts closed.
 2. Open the toggle. Portraits should match who is in each group; the center portrait slot (`pc1`) is gold / first-join. NPC names under each group should match the board, one full name per line.

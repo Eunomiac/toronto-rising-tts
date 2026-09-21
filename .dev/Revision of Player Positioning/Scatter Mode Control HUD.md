@@ -99,7 +99,7 @@ Image names in the template (must exist on Global Custom UI):
 - `scatterGroupToggle_inactive` / `_hover` / `_active`
 - `scatterGroupSelector_inactive` / `_hover` / `_active`
 - `scatterGroupControl_bg`
-- `scatterGroupControlPC_lucien` / `_rashid` / `_aishe` / `_fomorach` / `_blackCaesar`
+- `scatterModeControlPC_lucien` / `_rashid` / `_aishe` / `_fomorach` / `_blackCaesar`
 
 These are not in repo cloud-asset-sync. If Save & Play shows missing images, add them in TTS under those exact names (author-owned; not a Lua guess).
 
@@ -110,7 +110,7 @@ When Scatter is **off**: `scatterModeControl_root_<Color>` `active=false`.
 When Scatter is **on**:
 
 - Root `active=true` for each `C.PlayerColors` entry.
-- For each group 1–6, for each slot 1–5: if that slot’s `centerCharacters` row exists, set that Image `active=true` and `image=scatterGroupControlPC_<pcKey>`; else `active=false`.
+- For each group 1–6, for each slot 1–5: if that slot’s `centerCharacters` row exists, set that Image `active=true` and `image=scatterModeControlPC_<pcKey>`; else `active=false`.
 - For each player color, exactly one selector is `scatterGroupSelector_active` (the group that PC occupies); the rest `inactive`. If that PC is in no group, all six inactive.
 - NPC lists: `UI.setAttributes(id, { text = … })` with `"\n"` between **full display names** (`def.fullName or def.name`, same idea as `npcDisplayNameForCharacterKey`). Order = existing `npcKeysInJoinOrder` (hole slot, then key). Empty group → `""`. Update every color’s copy.
 

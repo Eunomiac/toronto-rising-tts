@@ -89,16 +89,16 @@
   </Defaults>
 
   <HorizontalLayout id="scatterModeControl_pcRowContainer_@@color@@" class="scatterModeControl_pcRowContainer">
-    <!-- AGENT: Whenever Scatter mode is initiated, and whenever PCs change scatter groups, the images below should be updated to always show each PC's image once, in the scatter group they are currently a part of, using the image whose 'pc#' index matches the PC slot within the scatter group. PC images are named "scatterGroupControlPC_<pcKey>", where <pcKey> is one of "lucien", "rashid", "aishe", "fomorach" or "blackCaesar".
+    <!-- AGENT: Whenever Scatter mode is initiated, and whenever PCs change scatter groups, the images below should be updated to always show each PC's image once, in the scatter group they are currently a part of, using the image whose 'pc#' index matches the PC slot within the scatter group. PC images are named "scatterModeControlPC_<pcKey>", where <pcKey> is one of "lucien", "rashid", "aishe", "fomorach" or "blackCaesar".
      For example, if the Scatter table is activated and Aishe Tache is in Scatter Group 1, Rashid is in Scatter Group 3, and the remaining three PCs are all in Scatter Group 4, the following elements should be set for ALL colors:
-        1. "scatterModeControlGroup1_pc1_@@color@@"  - active = "true", image = "scatterGroupControlPC_aishe"
-        2. "scatterModeControlGroup3_pc1_@@color@@"  - active = "true", image = "scatterGroupControlPC_rashid"
-        3. "scatterModeControlGroup4_pc1_@@color@@"  - active = "true", image = "scatterGroupControlPC_lucien"
-        4. "scatterModeControlGroup4_pc2_@@color@@"  - active = "true", image = "scatterGroupControlPC_fomorach"
-        5. "scatterModeControlGroup4_pc3_@@color@@"  - active = "true", image = "scatterGroupControlPC_blackCaesar"
+        1. "scatterModeControlGroup1_pc1_@@color@@"  - active = "true", image = "scatterModeControlPC_aishe"
+        2. "scatterModeControlGroup3_pc1_@@color@@"  - active = "true", image = "scatterModeControlPC_rashid"
+        3. "scatterModeControlGroup4_pc1_@@color@@"  - active = "true", image = "scatterModeControlPC_lucien"
+        4. "scatterModeControlGroup4_pc2_@@color@@"  - active = "true", image = "scatterModeControlPC_fomorach"
+        5. "scatterModeControlGroup4_pc3_@@color@@"  - active = "true", image = "scatterModeControlPC_blackCaesar"
       ... and all other PC image elements should be active = "false".  If, let's say, Rashid then moves from Scatter Group 3 to join Scatter Group 4:
         1. "scatterModeControlGroup3_pc1_@@color@@"  - active = "false"
-        2. "scatterModeControlGroup4_pc4_@@color@@"  - active = "true", image = "scatterGroupControlPC_rashid"
+        2. "scatterModeControlGroup4_pc4_@@color@@"  - active = "true", image = "scatterModeControlPC_rashid"
      -->
     <HorizontalLayout id="scatterModeControlGroup1_pcRow_@@color@@" class="scatterModeControl_pcRow">
       <Image id="scatterModeControlGroup1_pc5_@@color@@" class="scatterModeControl_pc" />
