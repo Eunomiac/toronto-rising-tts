@@ -751,7 +751,7 @@ local function applyOffsetToObject(obj, figFrame, figObj, offset, roleKey, occup
     end
     if offset.scale ~= nil and type(obj.setScale) == "function"
         and roleKey ~= "SIGNAL_FIRE"
-        and not (type(roleKey) == "string" and string.match(roleKey, "^DICEBAG_"))
+        and not (type(roleKey) == "string" and string.match(roleKey, "^COMPANION_TOGGLE"))
     then
         obj.setScale(Vector(offset.scale))
     end

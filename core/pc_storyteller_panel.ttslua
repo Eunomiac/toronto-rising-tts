@@ -195,14 +195,6 @@ end
 --- @param color string
 function PCST.refreshRow(color)
   local pid = playerIdForColor(color)
-  local displayName = color
-  if pid and C.PlayerData[pid] then
-    local pname = C.PlayerData[pid].playerName
-    displayName = pname and string.format("%s · %s", color, pname) or color
-  else
-    displayName = string.format("%s (unassigned)", color)
-  end
-  safeSetValue("pcs_rowName_" .. color, displayName)
   local charFull = characterFullNameForPlayerId(pid)
   safeSetValue("pcs_charFullName_" .. color, charFull ~= "" and charFull or "—")
 

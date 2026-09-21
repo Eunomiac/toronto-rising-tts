@@ -56,7 +56,7 @@ function BOOT.statsFromPcsChar(pcsChar)
     humanity = deepCloneTable(pcsChar.humanity or { base = 7, temp = 0, stains = 0 }),
     bloodPotency = deepCloneTable(pcsChar.bloodPotency or { base = 0, temp = 0 }),
     xp = tonumber(pcsChar.xp) or 0,
-    hunger = 0,
+    hunger = 1,
     disciplines = cloneDisciplines(pcsChar.disciplines),
     backgrounds = deepCloneTable(pcsChar.backgrounds or {}),
     merits = deepCloneTable(pcsChar.merits or {}),

@@ -915,7 +915,7 @@ C.ObjectPositions = {
       G.GUIDS.CSHEET_PAGE_8_RED, G.GUIDS.CSHEET_PAGE_8_BROWN, G.GUIDS.CSHEET_PAGE_8_ORANGE, G.GUIDS.CSHEET_PAGE_8_PINK, G
         .GUIDS.CSHEET_PAGE_8_PURPLE
     },
-    on = { position = { y = 3.19 }, duration = 0 },
+    on = { position = { y = 3.20 }, duration = 0 },
     off = { position = { y = -200 }, duration = 0, isHidden = true }
   },
   CSHEET_DICE_DRAWER_BROWN = {

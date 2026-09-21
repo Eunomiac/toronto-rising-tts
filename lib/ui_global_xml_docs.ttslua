@@ -7249,8 +7249,8 @@ UI.setAttributes("overlay_sessionStartSplash", {active = "true"})
   <Text class="pcs_prefix_desire" fontSize="11" fontStyle="Bold" color="#FFFFFF" preferredWidth="56" minWidth="56" flexibleWidth="0" alignment="MiddleLeft" />
   <Text class="pcs_prefix_hg" fontSize="11" fontStyle="Bold" color="#FFFFFF" preferredWidth="36" minWidth="36" flexibleWidth="0" alignment="MiddleLeft" />
 
-  <Text class="pcs_track_damage" fontSize="27" fontStyle="Bold" color="#EEEEEE" preferredWidth="280" minWidth="280" preferredHeight="28" minHeight="28" flexibleWidth="0" alignment="MiddleLeft" />
-  <Text class="pcs_track_hum" fontSize="27" fontStyle="Bold"  color="#E8DDFF" preferredWidth="280" minWidth="280" preferredHeight="28" minHeight="28" flexibleWidth="0" alignment="MiddleLeft" />
+  <Text class="pcs_track_damage" fontSize="18" fontStyle="Bold" color="#EEEEEE" preferredWidth="280" minWidth="280" preferredHeight="28" minHeight="28" flexibleWidth="0" alignment="MiddleLeft" />
+  <Text class="pcs_track_hum" fontSize="18" fontStyle="Bold"  color="#E8DDFF" preferredWidth="280" minWidth="280" preferredHeight="28" minHeight="28" flexibleWidth="0" alignment="MiddleLeft" />
 
   <Text class="pcs_buf_agg" fontSize="11" color="#FFCCCC" preferredWidth="34" minWidth="34" flexibleWidth="0" alignment="MiddleCenter" />
   <Text class="pcs_buf_neutral" fontSize="11" color="#EEEEEE" preferredWidth="34" minWidth="34" flexibleWidth="0" alignment="MiddleCenter" />
@@ -7260,7 +7260,7 @@ UI.setAttributes("overlay_sessionStartSplash", {active = "true"})
 
   <Text class="pcs_xp_val" fontSize="13" color="#CCE8FF" preferredWidth="68" minWidth="64" flexibleWidth="0" alignment="MiddleLeft" />
   <Text class="pcs_hunger_val" fontSize="12" color="#FFE0C2" preferredWidth="40" minWidth="36" flexibleWidth="0" alignment="MiddleLeft" />
-  <Text class="pcs_hunger_dots" fontSize="22" fontStyle="Bold" color="#FFE0C2" preferredWidth="90" minWidth="72" flexibleWidth="0" alignment="MiddleLeft" />
+  <Text class="pcs_hunger_dots" fontSize="16" fontStyle="Bold" color="#FFE0C2" preferredWidth="90" minWidth="72" flexibleWidth="0" alignment="MiddleLeft" />
   <Text class="pcs_torpor_lbl" fontSize="11" color="#F0F0F0" preferredWidth="72" minWidth="72" flexibleWidth="0" alignment="MiddleLeft" />
 
   <!-- Shared button base; pair with a palette class. `text` and `id` stay on the element. -->
@@ -9019,7 +9019,6 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
     <!-- Brown -->
     <Panel class="pcs_seat_block" color="#6B4423">
       <VerticalLayout class="pcs_seat_column">
-        <Text class="pcs_row_title" id="pcs_rowName_Brown">Brown</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Brown">—</Text>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_desire">Desire:</Text>
@@ -9105,7 +9104,6 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
     <!-- Orange -->
     <Panel class="pcs_seat_block" color="#E67300">
       <VerticalLayout class="pcs_seat_column">
-        <Text class="pcs_row_title" id="pcs_rowName_Orange">Orange</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Orange">—</Text>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_desire">Desire:</Text>
@@ -9190,7 +9188,6 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
     <!-- Red -->
     <Panel class="pcs_seat_block" color="#B22222">
       <VerticalLayout class="pcs_seat_column">
-        <Text class="pcs_row_title" id="pcs_rowName_Red">Red</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Red">—</Text>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_desire">Desire:</Text>
@@ -9275,7 +9272,6 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
     <!-- Pink -->
     <Panel class="pcs_seat_block" color="#C71585">
       <VerticalLayout class="pcs_seat_column">
-        <Text class="pcs_row_title" id="pcs_rowName_Pink">Pink</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Pink">—</Text>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_desire">Desire:</Text>
@@ -9360,7 +9356,6 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
     <!-- Purple -->
     <Panel class="pcs_seat_block" color="#5E2A7E">
       <VerticalLayout class="pcs_seat_column">
-        <Text class="pcs_row_title" id="pcs_rowName_Purple">Purple</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Purple">—</Text>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_desire">Desire:</Text>

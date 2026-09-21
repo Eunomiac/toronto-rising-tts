@@ -15,7 +15,7 @@ CC.StorytellerID = "76561198002132577"
 --- Character sheet page visibility poses (y only; csheet nav uses instant moves).
 CC.ObjectPositions = {
   CSHEET_PAGE = {
-    on = { position = { y = 3.19 }, duration = 0 },
+    on = { position = { y = 3.20 }, duration = 0 },
     off = { position = { y = -200 }, duration = 0 },
   },
 }

@@ -9,7 +9,6 @@
     <!-- Brown -->
     <Panel class="pcs_seat_block" color="#6B4423">
       <VerticalLayout class="pcs_seat_column">
-        <Text class="pcs_row_title" id="pcs_rowName_Brown">Brown</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Brown">—</Text>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_desire">Desire:</Text>
@@ -95,7 +94,6 @@
     <!-- Orange -->
     <Panel class="pcs_seat_block" color="#E67300">
       <VerticalLayout class="pcs_seat_column">
-        <Text class="pcs_row_title" id="pcs_rowName_Orange">Orange</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Orange">—</Text>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_desire">Desire:</Text>
@@ -180,7 +178,6 @@
     <!-- Red -->
     <Panel class="pcs_seat_block" color="#B22222">
       <VerticalLayout class="pcs_seat_column">
-        <Text class="pcs_row_title" id="pcs_rowName_Red">Red</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Red">—</Text>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_desire">Desire:</Text>
@@ -265,7 +262,6 @@
     <!-- Pink -->
     <Panel class="pcs_seat_block" color="#C71585">
       <VerticalLayout class="pcs_seat_column">
-        <Text class="pcs_row_title" id="pcs_rowName_Pink">Pink</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Pink">—</Text>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_desire">Desire:</Text>
@@ -350,7 +346,6 @@
     <!-- Purple -->
     <Panel class="pcs_seat_block" color="#5E2A7E">
       <VerticalLayout class="pcs_seat_column">
-        <Text class="pcs_row_title" id="pcs_rowName_Purple">Purple</Text>
         <Text class="pcs_char_title" id="pcs_charFullName_Purple">—</Text>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_desire">Desire:</Text>

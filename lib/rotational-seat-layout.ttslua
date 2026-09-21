@@ -683,7 +683,7 @@ local function isPcSeatChairGuid(guid)
   return false
 end
 
---- CSHEET visibility follows world Y (on ≈ 3.19, off = -200). Layout must not leave setInvisibleTo stale (TOR-343).
+--- CSHEET visibility follows world Y (on ≈ 3.20, off = -200). Layout must not leave setInvisibleTo stale (TOR-343).
 --- @param obj Object
 local function reconcileCsheetPageVisibilityFromY(obj)
   if obj == nil or not U.isGameObject(obj) then
@@ -785,7 +785,7 @@ local function csheetPageOnY()
   if type(y) == "number" then
     return y
   end
-  return 3.19
+  return 3.20
 end
 
 --- If fewer than two pages are above-table for this seat, raise pages 1–2 (TOR-343 invariant).
