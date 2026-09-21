@@ -1207,6 +1207,12 @@ local function applyCameraModesForSeats(computed, sourceGroups, positionWorldOff
   end
 
   S.setStateVal(universalAngles, "seatLayout", "universalCameraAngles")
+  -- Layout writes chronicle-PC cameraAngles. If the Storyteller is occupying a PC seat,
+  -- recopy those new angles onto Storyteller state before any transition lookAt (TOR-603).
+  local CameraDebugFocus = require("core.camera_debug_focus")
+  if type(CameraDebugFocus.resyncStorytellerCameraForOccupiedSeat) == "function" then
+    CameraDebugFocus.resyncStorytellerCameraForOccupiedSeat()
+  end
 end
 
 --- @param keys string[]

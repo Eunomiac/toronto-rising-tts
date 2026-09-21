@@ -456,7 +456,8 @@ end
 --- @param phases table `{ fadeOut?: fun(), work?: fun(): boolean, string|nil, fadeIn?: fun() }`
 ---   - `fadeOut` runs at the district-card FadeIn window (same lead-in when cards are Clear)
 ---   - `work` starts after site-card FadeIn + 0.25s pad (~5.75s); returns `ok, errMsg`; on failure lifts immediately
----   - default camera snaps at the start of `work` (under full cover; TOR-368) so card FadeIns stay smooth
+---   - default camera snaps **after** `work` (under full cover; TOR-368 / TOR-603) so layout can
+---     rewrite seat cameraAngles — including the Storyteller occupancy copy — before lookAt
 ---   - `fadeIn` runs immediately after work (no silent workSettle first) so new ambient fills the settle window
 --- @param opts table|nil `{ fadeOutSec?, workSettleSec?, fadeInSec?, settleDelaySec?, leadInDelaySec?, variant?, districtKey?, siteKey? }`
 function HUDBF.runStagedTransition(phases, opts)
@@ -491,8 +492,9 @@ function HUDBF.runStagedTransition(phases, opts)
       return siteCardGateSec
     end,
     function()
-      -- TOR-368: snap default cameras here (with heavy work), not during card FadeIns.
-      setDefaultCameraForSeatedPlayers()
+      -- TOR-368: snap default cameras in this covered window, not during card FadeIns.
+      -- TOR-603: run layout work first so new seat cameraAngles exist, then recopy the
+      -- Storyteller's occupied-seat angles, then lookAt.
       if type(phases.work) == "function" then
         local ok, errMsg = phases.work()
         if ok ~= true then
@@ -502,6 +504,7 @@ function HUDBF.runStagedTransition(phases, opts)
           end
         end
       end
+      setDefaultCameraForSeatedPlayers()
       -- Fade-in starts immediately after work (no workSettle silence first).
       return 0
     end,

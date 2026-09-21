@@ -448,8 +448,13 @@ end
 
 --- TOR-368: snap cameras to default after blindfold overlay has settled (~1.5s on raise paths).
 --- TOR-446: do not force FirstPerson after the lookAt snap (reverses TOR-443).
+--- TOR-603: recopy occupied-seat cameraAngles onto the Storyteller before lookAt.
 --- @param colorOrPlayer string|Player|nil  nil/"ALL" → every seated player; else that seat only
 function M.setDefaultCameraBeforeBlindfold(colorOrPlayer)
+  local CameraDebugFocus = require("core.camera_debug_focus")
+  if type(CameraDebugFocus.resyncStorytellerCameraForOccupiedSeat) == "function" then
+    CameraDebugFocus.resyncStorytellerCameraForOccupiedSeat()
+  end
   if colorOrPlayer == nil or colorOrPlayer == "ALL" then
     M.setCamera("ALL", "default")
     return

@@ -776,5 +776,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-09-21 | CREATE+SHIP | TOR-598, TOR-599 | Session-start first Downtime overlay prologue copy; End overlay **EPILOGUE** (was DEBRIEF). Pending Save & Play. |
 | 2026-09-21 | CREATE+SHIP | TOR-600 | Prologue overlay word gaps: NBSP so Unity does not collapse TORONTO / RISING. relatedTo TOR-598. Pending Save & Play. |
 | 2026-09-21 | CREATE+SHIP | TOR-601 | Prologue word gaps: ASCII spaces via setAttributes text (setValue collapses; NBSP showed as Â). relatedTo TOR-600. Pending Save & Play. |
+| 2026-09-21 | CREATE+SHIP | TOR-603 | Storyteller occupied-seat cameraAngles recopy after table/scene layout, before transition lookAt. relatedTo TOR-348, TOR-368. Pending Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
