@@ -1691,6 +1691,22 @@ local function setCameraControlsPanelExpanded(seatColor, expanded)
     end
 end
 
+--- Overlay camera icon: quick left-click snaps to default; hold 1s opens the picker (TOR-597).
+local CAMERA_PICKER_HOLD_SEC = 1
+local cameraPickerHoldGenBySeat = {}
+--- "pending" while the button is held; "opened" after the 1s picker hold fires.
+local cameraPickerHoldStateBySeat = {}
+
+local function isOverlayCameraRightClick(value)
+    return value == "-2" or value == -2
+end
+
+local function bumpCameraPickerHold(seatColor)
+    local nextGen = (cameraPickerHoldGenBySeat[seatColor] or 0) + 1
+    cameraPickerHoldGenBySeat[seatColor] = nextGen
+    return nextGen
+end
+
 --- Right-click cycle through occupied polar stage areas (TOR-538 / TOR-562). Apply resets this.
 local stageLookCycleIndexBySeat = {}
 
@@ -1951,9 +1967,68 @@ function HUD_alphaControl_hoverOff(player, value, id)
     U.setAttributes(id, { color = CAMERA_ALPHA_CONTROL_RGBA_IDLE })
 end
 
---- Toggle the camera preset picker panel for this seat's HUD.
---- Left-click opens the picker and snaps this player to `default`.
+--- Overlay camera icon press. Left-click starts a 1s hold to open the picker
+--- without changing the camera. Right-click is handled on `onClick`.
+function HUD_popoutCameraControl_mouseDown(player, value, id)
+    if type(id) ~= "string" or isOverlayCameraRightClick(value) then
+        return
+    end
+    local seatColor = parseSeatColorFromPopoutCameraId(id)
+    if seatColor == nil then
+        return
+    end
+    cameraPickerHoldStateBySeat[seatColor] = "pending"
+    local gen = bumpCameraPickerHold(seatColor)
+    U.await(function()
+        if cameraPickerHoldGenBySeat[seatColor] ~= gen then
+            return
+        end
+        cameraPickerHoldStateBySeat[seatColor] = "opened"
+        setCameraControlsPanelExpanded(seatColor, true)
+    end, CAMERA_PICKER_HOLD_SEC)
+end
+
+--- Overlay camera icon release. Quick left-click snaps to `default` ThirdPerson
+--- and leaves the picker closed. After a hold-open, release does not move the camera.
+function HUD_popoutCameraControl_mouseUp(player, value, id)
+    if type(id) ~= "string" or isOverlayCameraRightClick(value) then
+        return
+    end
+    local seatColor = parseSeatColorFromPopoutCameraId(id)
+    if seatColor == nil then
+        return
+    end
+    local state = cameraPickerHoldStateBySeat[seatColor]
+    bumpCameraPickerHold(seatColor)
+    cameraPickerHoldStateBySeat[seatColor] = nil
+    if state == "opened" then
+        return
+    end
+    if state ~= "pending" then
+        return
+    end
+    Main.setCamera(player, "default")
+    setCameraControlsPanelExpanded(seatColor, false)
+end
+
+--- Leaving the icon mid-press cancels the hold without snapping the camera.
+function HUD_popoutCameraControl_mouseExit(player, value, id)
+    if type(id) ~= "string" then
+        return
+    end
+    local seatColor = parseSeatColorFromPopoutCameraId(id)
+    if seatColor == nil then
+        return
+    end
+    if cameraPickerHoldStateBySeat[seatColor] ~= "pending" then
+        return
+    end
+    bumpCameraPickerHold(seatColor)
+    cameraPickerHoldStateBySeat[seatColor] = nil
+end
+
 --- Right-click (`-2`) FirstPerson at elevated default focus, yawed toward the next occupied stage NPC (TOR-562).
+--- Left-click is handled by mouseDown / mouseUp (TOR-597).
 function HUD_popoutCameraControl_click(player, value, id)
     if type(id) ~= "string" then
         return
@@ -1962,13 +2037,13 @@ function HUD_popoutCameraControl_click(player, value, id)
     if seatColor == nil then
         return
     end
-    if value == "-2" or value == -2 then
-        applyOverlayCameraStageLook(player, seatColor)
-        setCameraControlsPanelExpanded(seatColor, false)
+    if not isOverlayCameraRightClick(value) then
         return
     end
-    Main.setCamera(player, "default")
-    setCameraControlsPanelExpanded(seatColor, true)
+    bumpCameraPickerHold(seatColor)
+    cameraPickerHoldStateBySeat[seatColor] = nil
+    applyOverlayCameraStageLook(player, seatColor)
+    setCameraControlsPanelExpanded(seatColor, false)
 end
 
 --- Apply a camera preset for the clicking player and collapse the picker.

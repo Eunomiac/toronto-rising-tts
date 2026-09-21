@@ -20,8 +20,6 @@ Verification:
 ## For Immediate Implementation
 > _After registering each of these issues with Linear in the ordinary fashion, before updating the Focus Stack, briefly review the issue: If it is a quick or easy fix, implement it immediately without waiting for author confirmation. Otherwise, promote it to the top of the Focus Stack, and offer to begin work on it immediately when summarizing your work processing `INBOX.md` to the author. If multiple issues require promotion in this way, consider how best to resolve them as quickly as possible, and offer to draft an implementation plan in your response to the author._
 
-- [Session Start] During the session start animation, hide the Storyteller's camera controls and seat controls (at the bottom of the screen)
-
 ## Active
 
 ## External Work (Set STATUS to "External To Do")
@@ -50,6 +48,8 @@ Verification:
 
 
 ## Processed
+
+2026-09-21 `/tr-inbox` Immediate — hide Storyteller camera/seat bars during session-start splash → **TOR-596** (shipped). PAVE ⚠️ overlay camera click vs hold → **TOR-597** (shipped). Dashboard async-send ⚠️ left to the parallel dashboard session (not processed here). PAVE ✅ cleared session-start / sheet / Scatter / Memoriam / overlay rows marked confirmed.
 
 2026-09-21 Author Workspace — moved completed **Memoriam Phase** and **Generic NPCs** plans out of this file into `.dev/Phases/Memoriam.md` and `.dev/NPC Object Spawning & Spotlighting/Generic NPCs.md` (aligned to current Lua). Remaining unimplemented items stayed in those docs. **PC-as-NPC Assignment** left here as an empty workspace heading.
 

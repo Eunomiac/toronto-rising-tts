@@ -410,13 +410,13 @@ Play enter paints HUD behind the cover first (`Phases.armPlayHudBehindCover`, TO
 | :--------- | :------------- | :--------------- |
 | `SessionExplode.resolveAnimationData()` | `introKey` + `songDuration` for current `sessionNum`; missing index uses `[1]` | Play enter / `playAttribute` |
 | `Phases.armPlayHudBehindCover(_ctx)` | Paint game-state overlay + player HUD/overlays while the global cover is still up | Play enter after `showGlobalBlindfold` (TOR-532) |
-| `SessionExplode.playAttribute(songDuration?)` | Start the splash. Nil uses `C.SessionStartAnimationData` for the current session (fade TR_Loop, play Music C after the scaled lead-in). `0` is Quick Transition (timeRatio 0, skip Music C). | Default Play enter after lights; Quick Transition passes `0` |
+| `SessionExplode.playAttribute(songDuration?)` | Start the splash. Hides Host `adminControls` and `panel_STcamera` for the duration (TOR-596). Nil uses `C.SessionStartAnimationData` for the current session (fade TR_Loop, play Music C after the scaled lead-in). `0` is Quick Transition (timeRatio 0, skip Music C). | Default Play enter after lights; Quick Transition passes `0` |
 | `SessionExplode.attributeSongLeadInSec(songDuration?)` | Seconds from splash start until Music C (`ATTRIBUTE_SONG_START_DELAY * timeRatio`) | Music C delay; loop fade is this divided by 0.75 |
 | `SessionExplode.fadeIntermissionLoopForAttributeIntro(songDuration?)` | Start TR_Loop fade lasting `leadIn / 0.75` so Music C begins at ~25% loop volume | Called from `playAttribute` |
 | `SessionExplode.attributeSequenceDurationSec(songDuration?)` | Wall-clock seconds Play enter should wait after `playAttribute()` | Play enter return value |
 | `SessionExplode.maxPlayEnterWaitSec()` | Catalog-length splash wait for Advance `U.chain` maxWait | `Phases.advanceTo` |
-| `SessionExplode.resetLayers()` | Opaque session cover; splash panels inactive; splash images opaque white (attribute-path ready under inactive parents); title panels black | Intermission show |
-| `SessionExplode.cancel()` | Stop an in-flight splash (does not snap attrs) | Play exit; `HUD_clearLoadingOverlay` |
+| `SessionExplode.resetLayers()` | Opaque session cover; splash panels inactive; splash images opaque white (attribute-path ready under inactive parents); title panels black; restore Host camera/seat chrome | Intermission show |
+| `SessionExplode.cancel()` | Stop an in-flight splash (does not snap attrs) and restore Host camera/seat chrome | Play exit; `HUD_clearLoadingOverlay` |
 | `DEBUG.resetToIntermission()` | Snap to Intermission: session cover + TR_Loop; aborts an in-flight Play intro. Does not move tables/skyboxes. | Host console: re-test Intermission→Play Advance |
 
 ### Chronicle weather (`lib/chronicle_weather.ttslua`)

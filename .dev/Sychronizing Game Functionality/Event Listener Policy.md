@@ -164,7 +164,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_toggleRunTestPanel` / `HUD_runtest` / `HUD_runtest_step` | A | Yes | Host RunTest strip; arms/continues/stops `DEBUG.RunTest` (TOR-347) |
 | `HUD_STcamera` | A | Yes | Host ST camera strip → `M.setCamera(Black, mode)` from `C.StorytellerCameraAngles` (TOR-348) |
 | `HUD_cameraControl_click` | A | — | Player camera overlay; MAIN left=`default`, right=`wideFacing`; all picker clicks `M.setCamera` → ThirdPerson (TOR-594) |
-| `HUD_popoutCameraControl_click` / `HUD_alphaControl_hover*` | A | — | Camera picker: left-click opens + `default` ThirdPerson; right-click `M.lookAtNPC` (elevated default focus, horizon yaw toward next occupied stage NPC, keep distance, then FirstPerson) (TOR-538 / TOR-562 / TOR-594); Apply resets cycle |
+| `HUD_popoutCameraControl_click` / `_mouseDown` / `_mouseUp` / `_mouseExit` / `HUD_alphaControl_hover*` | A | — | Camera picker: left-click `default` ThirdPerson (picker stays closed); hold 1s opens picker without moving camera (TOR-597); right-click `M.lookAtNPC` (elevated default focus, horizon yaw toward next occupied stage NPC, keep distance, then FirstPerson) (TOR-538 / TOR-562 / TOR-594); Apply resets cycle |
 | `HUD_debugLightActivate/ButtonClick/Slider` | C | Yes | Tuner select / sliders / Zero / Discard / close; `getObjectsWithTag("Spotlight")` on open and when returning to the grid |
 | `HUD_debugLightGuidInput/Enabled/ResetRow/Done/Snapshot` | A | — | Guid/Enabled/ResetRow are leftover no-ops; Done returns to selection; Snapshot writes workspace Lua |
 | `HUD_debugCamera*` / `HUD_debugCaptureCameraPreset` | A | — | local camera |

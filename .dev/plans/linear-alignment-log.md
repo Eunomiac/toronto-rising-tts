@@ -772,6 +772,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-09-21 | CREATE+SHIP | TOR-589 | Layout never `setScale` dice bags (Standard/Rouse 1.3, Hunger/OblivRouse 1.0). relatedTo TOR-584. Pending Save & Play. |
 | 2026-09-21 | CREATE+SHIP | TOR-591 | Blood Surge every-other add piled on the Standard bag: `DPP.claim` restores at staging pose, bag owns hover→arc smooth. Pending Save & Play. |
 | 2026-09-21 | CREATE+SHIP | TOR-593 | Ravenwing playlist none was losing to leftover Main mood in applyContext; nightclub and Main overlapped. relatedTo TOR-494. Pending Save & Play. |
-| 2026-09-21 | CREATE+SHIP | TOR-594 | Camera modes: overlay right-click FirstPerson only; every other `M.setCamera` forces ThirdPerson and cancels pending overlay settle. relatedTo TOR-538 / TOR-562 / TOR-446. Pending Save & Play. |
+| 2026-09-21 | `/tr-inbox` Immediate | TOR-596, TOR-597 | Hide ST camera/seat bars during splash (shipped). Overlay camera quick-click vs 1s hold (shipped). PAVE ✅ batch cleared. Dashboard async ⚠️ left to parallel session. Focus → TOR-526 / TOR-141 / TOR-81 / TOR-495. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

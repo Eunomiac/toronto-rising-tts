@@ -1295,11 +1295,11 @@ M.full = [=[
 
 <!--
 UI.setAttributes("gameStateOverlay_district", {text = ""})
-UI.setAttributes("gameStateOverlay_districtSeparator", {text = "The Devils You Know", active="true", fontStyle="Normal"})
+UI.setAttributes("gameStateOverlay_districtSeparator", {text = "T O R O N T O   R I S I N G", active="true", fontStyle="BoldAndItalic"})
 UI.setAttributes("gameStateOverlay_parentSite", {text = "The Devil's Bargain"})
 UI.setAttributes("gameStateOverlay_parentSiteSeparator", {text = "◆"})
 UI.setAttributes("gameStateOverlay_site", {text = "The Devil's Bargain"})
-UI.setAttributes("gameStateOverlay_datetime", {color = "#d3ba50", fontStyle = "BoldAndItalic"})
+UI.setAttributes("gameStateOverlay_datetime", {text = "T H E   D E V I L S   Y O U   K N O W", color = "#d3ba50", fontStyle = "Bold"})
 UI.setAttributes("gameStateOverlay_time", {color="#FFFFFF", fontSize = "42", minHeight = "", preferredHeight = "", flexibleHeight = "0", text="DEBRIEF"})
 UI.setAttributes("gameStateOverlay_timeAndLocation", {offsetXY = "0 20", spacing="0"})
 UI.setAttributes("gameStateOverlay_timeAndLocation_background", {offsetXY = "7 10"})
@@ -1333,7 +1333,7 @@ UI.setAttributes("gameStateOverlay_timeAndLocation_background", {offsetXY = "7 1
 
 <Panel id="playerHud_overlay_camera_Brown" class="playerHud_overlay_camera" visibility="Brown">
 
-  <Image id="popout_cameraPanel_Brown" class="popoutControl_camera" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" />
+  <Image id="popout_cameraPanel_Brown" class="popoutControl_camera" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" onMouseDown="HUD_popoutCameraControl_mouseDown" onMouseUp="HUD_popoutCameraControl_mouseUp" onMouseExit="HUD_popoutCameraControl_mouseExit" />
 
 
   <Panel id="playerHud_overlay_cameraControls_Brown" class="playerHud_overlay_cameraControls" padding="30 30 10 10" active="false">
@@ -1384,7 +1384,7 @@ UI.setAttributes("gameStateOverlay_timeAndLocation_background", {offsetXY = "7 1
 
 <Panel id="playerHud_overlay_camera_Orange" class="playerHud_overlay_camera" visibility="Orange">
 
-  <Image id="popout_cameraPanel_Orange" class="popoutControl_camera" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" />
+  <Image id="popout_cameraPanel_Orange" class="popoutControl_camera" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" onMouseDown="HUD_popoutCameraControl_mouseDown" onMouseUp="HUD_popoutCameraControl_mouseUp" onMouseExit="HUD_popoutCameraControl_mouseExit" />
 
 
   <Panel id="playerHud_overlay_cameraControls_Orange" class="playerHud_overlay_cameraControls" padding="30 30 10 10" active="false">
@@ -1435,7 +1435,7 @@ UI.setAttributes("gameStateOverlay_timeAndLocation_background", {offsetXY = "7 1
 
 <Panel id="playerHud_overlay_camera_Red" class="playerHud_overlay_camera" visibility="Red">
 
-  <Image id="popout_cameraPanel_Red" class="popoutControl_camera" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" />
+  <Image id="popout_cameraPanel_Red" class="popoutControl_camera" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" onMouseDown="HUD_popoutCameraControl_mouseDown" onMouseUp="HUD_popoutCameraControl_mouseUp" onMouseExit="HUD_popoutCameraControl_mouseExit" />
 
 
   <Panel id="playerHud_overlay_cameraControls_Red" class="playerHud_overlay_cameraControls" padding="30 30 10 10" active="false">
@@ -1486,7 +1486,7 @@ UI.setAttributes("gameStateOverlay_timeAndLocation_background", {offsetXY = "7 1
 
 <Panel id="playerHud_overlay_camera_Pink" class="playerHud_overlay_camera" visibility="Pink">
 
-  <Image id="popout_cameraPanel_Pink" class="popoutControl_camera" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" />
+  <Image id="popout_cameraPanel_Pink" class="popoutControl_camera" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" onMouseDown="HUD_popoutCameraControl_mouseDown" onMouseUp="HUD_popoutCameraControl_mouseUp" onMouseExit="HUD_popoutCameraControl_mouseExit" />
 
 
   <Panel id="playerHud_overlay_cameraControls_Pink" class="playerHud_overlay_cameraControls" padding="30 30 10 10" active="false">
@@ -1537,7 +1537,7 @@ UI.setAttributes("gameStateOverlay_timeAndLocation_background", {offsetXY = "7 1
 
 <Panel id="playerHud_overlay_camera_Purple" class="playerHud_overlay_camera" visibility="Purple">
 
-  <Image id="popout_cameraPanel_Purple" class="popoutControl_camera" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" />
+  <Image id="popout_cameraPanel_Purple" class="popoutControl_camera" image="popoutControl_camera" onClick="HUD_popoutCameraControl_click" onMouseDown="HUD_popoutCameraControl_mouseDown" onMouseUp="HUD_popoutCameraControl_mouseUp" onMouseExit="HUD_popoutCameraControl_mouseExit" />
 
 
   <Panel id="playerHud_overlay_cameraControls_Purple" class="playerHud_overlay_cameraControls" padding="30 30 10 10" active="false">

@@ -104,6 +104,24 @@ local sequenceGen = 0
 local attributeStillCurrent
 local attributeChainMaxWait
 
+--- Host chrome that sits on top of the splash (TEST BED runIntroSequenceStandalone).
+local ST_SESSION_CHROME_IDS = {
+  "adminControls",
+  "panel_STcamera",
+}
+
+local function hideStorytellerSessionChrome()
+  for i = 1, #ST_SESSION_CHROME_IDS do
+    UI.hide(ST_SESSION_CHROME_IDS[i])
+  end
+end
+
+local function showStorytellerSessionChrome()
+  for i = 1, #ST_SESSION_CHROME_IDS do
+    UI.show(ST_SESSION_CHROME_IDS[i])
+  end
+end
+
 local function hideSessionStartPanel()
   U.setAttributes(PANEL_ID, { active = "false" })
 end
@@ -216,6 +234,13 @@ local function runNumTitleSequence(gen, kind, timeRatio, waitSec)
       UI.hide(BLACKOUT_ID)
       return ATTRIBUTE_BLACKOUT_HIDE_SEC
     end)
+    table.insert(steps, function()
+      if not attributeStillCurrent(gen) then
+        return 0
+      end
+      showStorytellerSessionChrome()
+      return 0
+    end)
   end
   U.chain(steps, { maxWait = attributeChainMaxWait(waitSec) })
 end
@@ -233,6 +258,7 @@ end
 --- Splash images stay opaque white (session_splash_* Defaults / attribute-path ready);
 --- inactive parents keep them invisible on Intermission.
 function SessionExplode.resetLayers()
+  showStorytellerSessionChrome()
   U.setAttributes(BASE_PANEL_ID, {
     active = "true",
     color = "rgba(1, 1, 1, 1)",
@@ -258,6 +284,7 @@ end
 --- Stop an in-flight splash sequence. Does not snap attrs (hide first, then resetLayers when showing Intermission).
 function SessionExplode.cancel()
   sequenceGen = sequenceGen + 1
+  showStorytellerSessionChrome()
 end
 
 --- introKey + songDuration for the current `sessionNum`. Missing index falls back to [1].
@@ -504,6 +531,7 @@ function SessionExplode.playAttribute(songDuration)
   sequenceGen = sequenceGen + 1
   local gen = sequenceGen
 
+  hideStorytellerSessionChrome()
   U.setAttributes(PANEL_ID, { active = "true" })
   SessionExplode.fadeIntermissionLoopForAttributeIntro(songDuration)
   runAttributeSequences(gen, timeRatio, waitSec, playSessionIntro)
