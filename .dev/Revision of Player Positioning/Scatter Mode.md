@@ -28,7 +28,7 @@ In **Scatter Mode**:
 
 Unlike Standard Mode, external control of PC/NPC positioning is therefore limited primarily to adding an occupant to a scatter group, removing an occupant from a scatter group, or transferring an occupant between scatter groups.
 
-Hand zones, character sheets, bags, candles, seat lights, cameras, and any other seat objects **not** listed as hidden stay in play and move with their PC. The floor height (`y`) for Scatter layout is the **default in-use Y** of PC figurines (the same default location used when a figurine is on the table, not the `y = -200` hide override).
+Hand zones, character sheets, bags, candles, seat lights, cameras, PC figurines, and any other seat objects **not** listed as hidden stay in play and move with their PC on the **XZ** plane only. Their **Y** stays at the same authored height as on a wood table (`C.SeatRoleOffsets` / `C.ReferenceCameraAngles` / Table A figurine Y). `FLOOR_Y` is only the standing height for **NPC figurines** on the stage / scatter playfield.
 
 NPC occupancy per scatter group is **unlimited**. The four NPC seats in Standard Mode are a table-seating cap only; they do not apply here.
 
@@ -115,7 +115,7 @@ Do not add extra “this arrangement looks wrong” guards. If a chosen constant
 
 For the definitions below:
 
-- **World Origin** is `C.Tables["Scatter"].centerPoint` on the table plane (default `{0, 0}` in X/Z). Height `y` is not part of this 2D origin; figurines use the default PC figurine Y.
+- **World Origin** is `C.Tables["Scatter"].centerPoint` on the table plane (default `{0, 0}` in X/Z). Height `y` is not part of this 2D origin. Seated PC piles keep authored Y; NPC figurines on the playfield use `FLOOR_Y`.
 - **World Circle** is an imaginary circle centered on the World Origin with radius `SCATTER_RADIUS_WORLD`.
 - Each scatter group has a **Scatter Group Origin**, which lies on the World Circle.
 - A **World Ray** is a ray beginning at the World Origin and passing through a specified world-space point. Unless otherwise specified, "the World Ray" of a scatter group means the World Ray passing through that group's `SCATTER_GROUP_ORIGIN`.

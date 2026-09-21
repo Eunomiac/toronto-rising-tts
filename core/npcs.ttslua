@@ -1960,7 +1960,7 @@ function NPCS.applyFigurinePlacementAtWorld(figurine, placement)
 end
 
 --- Place a pooled NPC figurine at a Scatter Mode world pose (not STAGE_BOARD u/v).
---- World Y always comes from `C.Tables.Scatter.FLOOR_Y` (pose XZ/yaw from scatter layout).
+--- World Y is stage/playfield `FLOOR_Y` (NPC feet). Seated PC piles do not use this.
 --- @param npcName string
 --- @param pose table `{ position, rotation }`
 --- @param opts table|nil `{ npcLightMode?, skipSeatSync? }`

@@ -2283,7 +2283,8 @@ C.Tables = {
     PC_DEPLOYMENT_ARC = 80,
     NPC_SPACING_MIN = 10,
     NPC_SPACING_MAX = 18,
-    --- Default in-use PC figurine Y (Table A dumps / SeatRoleOffsets SEAT_FIGURE). Tune after first in-world pass.
+    --- Standing Y for NPC figurines on the stage / scatter playfield (Figurine_Custom feet).
+    --- Seated PC piles and cameras keep authored Y and only move in XZ.
     FLOOR_Y = -65,
     --- Extra yaw added to the group World Ray when posing the storyteller dice tray (0 = ray azimuth).
     ST_DICE_TRAY_YAW_OFFSET_DEG = 0,
@@ -2477,7 +2478,7 @@ C.TableSourceObjects = {
     }
   },
     --- Per-seat `SEAT_FIGURE` Y tweaks after layout (PC workshop figurines and pooled NPC cutouts share this table).
-    --- Scatter playfield Y is `FLOOR_Y`; keep these in sync when tuning floor height.
+    --- These are authored seat exceptions, not Scatter `FLOOR_Y` (that height is stage NPCs only).
     postCorrectionsBySeatRole = {
     Brown = {
       SEAT_FIGURE = {

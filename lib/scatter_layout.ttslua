@@ -28,6 +28,7 @@ local function worldOriginXZ()
     return 0, 0
 end
 
+--- Stage / scatter-playfield standing height for **NPC** figurines only.
 --- @return number
 function ScatterLayout.floorY()
     local y = tonumber(cfg().FLOOR_Y)
@@ -35,6 +36,28 @@ function ScatterLayout.floorY()
         return -52.89
     end
     return y
+end
+
+--- Authored PC figurine Y (Table A / camera authoring). Seated piles and cameras keep this; they do not use `FLOOR_Y`.
+--- @return number
+function ScatterLayout.pcSeatY()
+    local tableA = C.Tables and C.Tables["Table A"]
+    local rf = tableA and tableA.referenceFigurine
+    if rf ~= nil then
+        local pos = rf.position
+        local y = tonumber(pos and (pos.y or pos[2]))
+        if y ~= nil then
+            return y
+        end
+    end
+    local authored = C.CameraAuthoringReferenceFigurinePosition
+    if authored ~= nil then
+        local y = tonumber(authored.y or authored[2])
+        if y ~= nil then
+            return y
+        end
+    end
+    return -55.8166
 end
 
 --- Storyteller dice tray on Y matches homeland table drawers (`DICE_DRAWER_STORYTELLER_* .on`).
@@ -174,7 +197,7 @@ function ScatterLayout.pcSlotPoses(groupIndex)
     local arc = tonumber(cfg().PC_DEPLOYMENT_ARC) or 80
     local step = arc / 4
     local midAz = math.deg(math.atan2(mid.x - P.x, mid.z - P.z))
-    local y = ScatterLayout.floorY()
+    local y = ScatterLayout.pcSeatY()
     local poses = {}
     for slot = 1, 5 do
         local az = midAz + (PC_SLOT_ARC_STEPS[slot] or 0) * step

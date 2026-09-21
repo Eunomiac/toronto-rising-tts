@@ -947,8 +947,7 @@ local function worldSlotFromPackedTableSlot(tableSlot)
     return ((math.floor(tonumber(tableSlot) or 0) - 1) % 10) + 1
 end
 
---- Direct figurine pose (same path as NPC scatter placement) before satellite layout.
---- World Y is always `C.Tables.Scatter.FLOOR_Y` (not SeatRoleOffsets SEAT_FIGURE defaultY).
+--- Direct figurine pose before satellite layout. XZ from the scatter slot; Y stays authored (`pcSeatY`).
 --- @param color string
 --- @param frame table `{ position, rotation }`
 local function movePcFigurineToScatterPose(color, frame)
@@ -963,7 +962,7 @@ local function movePcFigurineToScatterPose(color, frame)
     local src = frame.position
     local pos = Vector({
         x = tonumber(src and (src.x or src[1])) or 0,
-        y = ScatterLayout.floorY(),
+        y = tonumber(src and (src.y or src[2])) or ScatterLayout.pcSeatY(),
         z = tonumber(src and (src.z or src[3])) or 0,
     })
     local rot = Vector(frame.rotation)
@@ -986,8 +985,9 @@ local function applyPcRigs(framesBySlot, occupants)
     local FSL = require("lib.figurine_seat_layout")
     local RSL = require("lib.rotational-seat-layout")
     local tableA = C.Tables and C.Tables["Table A"] or nil
+    local authoredY = ScatterLayout.pcSeatY()
     local refFig = tableA and tableA.referenceFigurine or {
-        position = Vector({ 0, ScatterLayout.floorY(), 0 }),
+        position = Vector({ 0, authoredY, 0 }),
         rotation = Vector({ 0, 180, 0 }),
     }
     local center = ScatterLayout.centerPoint()
@@ -1007,11 +1007,19 @@ local function applyPcRigs(framesBySlot, occupants)
             end
         end
         local rotated = U.frameAfterRigidYawAboutCenter(rigidCenter, refFig, deltaDeg)
-        local shift = Vector(frame.position) - Vector(rotated.position)
+        local src = frame.position
+        local posePos = Vector({
+            x = tonumber(src and (src.x or src[1])) or 0,
+            y = authoredY,
+            z = tonumber(src and (src.z or src[3])) or 0,
+        })
+        local shiftFull = posePos - Vector(rotated.position)
+        -- Seated piles and cameras only translate in XZ. FLOOR_Y is for stage NPC figurines.
+        local shift = Vector({ x = shiftFull.x, y = 0, z = shiftFull.z })
         --- Cameras must yaw about the same center used for this rigid (PC group origin), not World Origin.
         local rigid = { deltaDeg = deltaDeg, shift = shift, centerPoint = rigidCenter }
         local poseFrame = {
-            position = Vector(frame.position),
+            position = posePos,
             rotation = Vector(frame.rotation),
         }
         packedFrames[slot] = { frame = poseFrame, rigid = rigid }

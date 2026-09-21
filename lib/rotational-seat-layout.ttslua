@@ -1113,8 +1113,8 @@ local function cameraFrameFromRigid(centerPoint, deltaDeg, shift, worldPos, pitc
     rotation = Vector({ pitch or 0, yaw or 0, 0 }),
   }
   local fr = U.frameAfterRigidYawAboutCenter(cp, camFrame, deltaDeg)
-  -- Seat objects may move in Y (Scatter figurines at FLOOR_Y). Camera look-at Y stays
-  -- at the authored ReferenceCameraAngles height — same as CSHEET defaultY.
+  -- Seated objects and cameras only follow the seat in XZ. Look-at Y stays at
+  -- C.ReferenceCameraAngles. FLOOR_Y is for stage NPC figurines, not this path.
   local sh = Vector(shift)
   return Vector(fr.position) + Vector({ x = sh.x, y = 0, z = sh.z }), Vector(fr.rotation)
 end
