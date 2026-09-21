@@ -3146,6 +3146,7 @@ end
 --- @return string
 local function npcReconcileFingerprint()
     local lines = {}
+    lines[#lines + 1] = "phase:" .. tostring(S.getStateVal("currentPhase") or "")
     lines[#lines + 1] = "npcWorld:\n" .. sessionNpcWorldFingerprint()
     lines[#lines + 1] = "seats:\n" .. occupiedNpcSeatsFingerprint()
     local tableKey = S.getStateVal("seatLayout", "currentTableKey")
@@ -3207,51 +3208,61 @@ local function isNpcManagedCharacter(name)
     return U.Type(name) == "string" and name ~= "" and NPCS.characters[name] ~= nil
 end
 
+--- Spotlight and End have no live NPC stage. Leftover placement rows must not keep figurines up.
+--- @return boolean
+local function narrativeNpcStageOpen()
+    local phase = S.getStateVal("currentPhase")
+    return phase ~= C.Phases.SPOTLIGHT and phase ~= C.Phases.END
+end
+
 --- @return table `{ byCharacter, bySeat, tableKey }`
 resolveNpcPlacementIntent = function()
     local byCharacter = {}
-    for _, pl in ipairs(collectSessionStagePlacements()) do
-        if isNpcManagedCharacter(pl.characterKey) then
-            byCharacter[pl.characterKey] = {
-                target = "stage",
-                u = pl.u,
-                v = pl.v,
-                yaw = pl.yaw,
-                npcLightMode = pl.npcLightMode,
-                groundLevel = pl.groundLevel,
-            }
+    local stageOpen = narrativeNpcStageOpen()
+    if stageOpen then
+        for _, pl in ipairs(collectSessionStagePlacements()) do
+            if isNpcManagedCharacter(pl.characterKey) then
+                byCharacter[pl.characterKey] = {
+                    target = "stage",
+                    u = pl.u,
+                    v = pl.v,
+                    yaw = pl.yaw,
+                    npcLightMode = pl.npcLightMode,
+                    groundLevel = pl.groundLevel,
+                }
+            end
         end
-    end
 
-    -- Scatter Mode owns orbit (and playing-NPC) figurines via scatterPlacements, not npcWorld.placements.
-    local ScatterMode = require("core.scatter_mode")
-    if ScatterMode.isActive() then
-        local ScatterLayout = require("lib.scatter_layout")
-        local pack = S.getStateVal("sessionScene", "scatterPlacements")
-        if U.Type(pack) == "table" then
-            for i = 1, ScatterLayout.groupCount() do
-                local area = pack[ScatterLayout.areaKeyForGroup(i)]
-                if U.Type(area) == "table" then
-                    if U.Type(area.orbitCharacters) == "table" then
-                        for npcKey, _ in pairs(area.orbitCharacters) do
-                            if isNpcManagedCharacter(npcKey) then
-                                byCharacter[npcKey] = {
-                                    target = "scatter",
-                                    npcLightMode = "STANDARD",
-                                }
+        -- Scatter Mode owns orbit (and playing-NPC) figurines via scatterPlacements, not npcWorld.placements.
+        local ScatterMode = require("core.scatter_mode")
+        if ScatterMode.isActive() then
+            local ScatterLayout = require("lib.scatter_layout")
+            local pack = S.getStateVal("sessionScene", "scatterPlacements")
+            if U.Type(pack) == "table" then
+                for i = 1, ScatterLayout.groupCount() do
+                    local area = pack[ScatterLayout.areaKeyForGroup(i)]
+                    if U.Type(area) == "table" then
+                        if U.Type(area.orbitCharacters) == "table" then
+                            for npcKey, _ in pairs(area.orbitCharacters) do
+                                if isNpcManagedCharacter(npcKey) then
+                                    byCharacter[npcKey] = {
+                                        target = "scatter",
+                                        npcLightMode = "STANDARD",
+                                    }
+                                end
                             end
                         end
-                    end
-                    if U.Type(area.centerCharacters) == "table" then
-                        for _, crow in pairs(area.centerCharacters) do
-                            if U.Type(crow) == "table"
-                                and crow.isPlayingNPC == true
-                                and isNpcManagedCharacter(crow.characterKey)
-                            then
-                                byCharacter[crow.characterKey] = {
-                                    target = "scatter",
-                                    npcLightMode = "STANDARD",
-                                }
+                        if U.Type(area.centerCharacters) == "table" then
+                            for _, crow in pairs(area.centerCharacters) do
+                                if U.Type(crow) == "table"
+                                    and crow.isPlayingNPC == true
+                                    and isNpcManagedCharacter(crow.characterKey)
+                                then
+                                    byCharacter[crow.characterKey] = {
+                                        target = "scatter",
+                                        npcLightMode = "STANDARD",
+                                    }
+                                end
                             end
                         end
                     end
@@ -3558,7 +3569,7 @@ end
 local function reconcileStepFiveStagePlacements(intent, opts)
     opts = U.Type(opts) == "table" and opts or {}
     local ScatterMode = require("core.scatter_mode")
-    if ScatterMode.isActive() then
+    if narrativeNpcStageOpen() and ScatterMode.isActive() then
         ScatterMode.applyWorldLayout()
         return true
     end

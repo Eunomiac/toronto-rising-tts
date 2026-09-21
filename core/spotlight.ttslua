@@ -1001,7 +1001,15 @@ function Spotlight.applyEnterWorld()
     local currentTable = S.getStateVal("seatLayout", "currentTableKey")
     S.setStateVal("Table A", "sessionScene", "tableKey")
     if currentTable ~= "Table A" then
-        RSL.SetTableTo("Table A", { skipTransitionBlindfold = true })
+        -- Leaving Scatter restores the previous stage layout unless this is set.
+        -- Spotlight already discarded that layout; do not put figurines back.
+        RSL.SetTableTo("Table A", {
+            skipTransitionBlindfold = true,
+            skipScatterRestore = true,
+        })
+    end
+    if type(Scenes.discardLiveNpcLayout) == "function" then
+        Scenes.discardLiveNpcLayout()
     end
     S.setStateVal("Spotlight", "sessionScene", "skyboxOverride")
     if type(Scenes.invalidateReconcileCache) == "function" then

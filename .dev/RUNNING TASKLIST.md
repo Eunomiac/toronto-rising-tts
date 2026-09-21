@@ -162,6 +162,7 @@ _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred
 See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%20Object%20Overview.md).
 
 - [x] **Spotlight carousel must use preload stand-ins:** Ring should use `SPOTLIGHT_FIGURE_*`, not home `SEAT_FIGURE_*`. Home figurines stay at seats with catalog visibility (owner cannot see their own). relatedTo **TOR-98**. Author confirmed 2026-09-21. _(TOR-579)_
+- [x] **Play → Spotlight clears stage NPC figurines:** Narrative clear drops stage and Scatter NPC rows, Table A does not restore the pre-Scatter stage layout, and Spotlight/End reconcile parks those figurines in the preload pool. relatedTo **TOR-98**. Linear quota blocked a new issue. Pending Save & Play.
 - [x] **Spotlight carousel Y −55, center X 0 / Z 125:** Stand-in figurines on the Spotlight ring. relatedTo **TOR-98**. Pending Save & Play. _(TOR-523)_
 - [x] **Preload pool:** Workshop-baked `npc_figurine` objects in preload grid (y = -200); runtime audit only (`NPCS.auditPreloadPoolFigurines`). Supersedes runtime spawn via `ensureAllNpcsPreloaded`. _(TOR-60)_
 - [x] **Seat spawn:** Pooled figurine uses seat `*Object` tag + `SEAT_FIGURE` rotational layout; `postCorrectionsBySeatRole`; area spotlight hidden at seat; workshop `SEAT_LIGHT_*_NPC*` only. _(TOR-64)_

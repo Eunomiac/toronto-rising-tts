@@ -837,6 +837,32 @@ local function clearLiveNpcWorldPlacements()
     S.setStateVal(npcWorld, "sessionScene", "npcWorld")
 end
 
+--- Drop live stage rows, Scatter orbit rows, and the Scatter→table restore stash.
+--- Leaving Scatter otherwise writes those NPCs back onto the stage (Play → Spotlight).
+local function discardLiveNpcLayout()
+    clearLiveNpcWorldPlacements()
+    local ScatterLayout = require("lib.scatter_layout")
+    if type(ScatterLayout.emptyPlacements) == "function" then
+        S.setStateVal(ScatterLayout.emptyPlacements(), "sessionScene", "scatterPlacements")
+    else
+        S.setStateVal({}, "sessionScene", "scatterPlacements")
+    end
+    S.setStateVal(nil, "seatLayout", "scatterRestore")
+    if S.getStateVal("sessionScene", "placementMode") == "scatter" then
+        local Occupancy = require("lib.scatter_occupancy")
+        local tableKey = S.getStateVal("seatLayout", "currentTableKey")
+        local stillOnScatterTable = type(Occupancy.isScatterTableKey) == "function"
+            and Occupancy.isScatterTableKey(tableKey) == true
+        if not stillOnScatterTable then
+            S.setStateVal("standard", "sessionScene", "placementMode")
+        end
+    end
+end
+
+function Scenes.discardLiveNpcLayout()
+    discardLiveNpcLayout()
+end
+
 --- Persisted + eager apply: Main BGM only, no location/weather (TOR-151 / TOR-152 no-scene branch).
 --- @param opts table|nil `{ skipMoodIfAlreadyMain?: boolean }` — do not restart the main playlist when it is already the mood.
 local function applyMainOnlySoundscapeIntent(opts)
@@ -907,7 +933,7 @@ function Scenes.clearLiveNarrativeForPhaseTransition(opts)
     S.setStateVal({}, "sessionScene", "soundscapeNarrative")
     S.setStateVal(false, "sessionScene", "isTopFogActive")
 
-    clearLiveNpcWorldPlacements()
+    discardLiveNpcLayout()
     do
         local GenericNpcs = require("core.generic_npcs")
         GenericNpcs.destroyAllLiveAndClearMembership()

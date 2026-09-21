@@ -70,6 +70,8 @@ For each character key that appears anywhere in the above (or that currently has
 
 Characters with target **Stage** are **stage-bound**: Steps Three must not seat them. Characters with target **Seat** are **seat-bound**: Step Five does not apply a stage placement for them.
 
+While `currentPhase` is Spotlight or End, Step Zero skips stage and Scatter targets. Those figurines resolve to **Preload** even if a placement row is still in state. Step Five does not run Scatter world layout in those phases.
+
 ### Per-seat resolved flags
 
 For each `NPC1`–`NPC4`:

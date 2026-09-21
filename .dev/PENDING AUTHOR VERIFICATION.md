@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — End→Intermission blackout, then the session-end splash (Linear quota blocked a new issue; parent TOR-143)._
+_Last populated: 2026-09-21 — Play→Spotlight parks stage NPC figurines (Linear quota blocked a new issue; parent TOR-98)._
 
 ### Soundscape
 
@@ -167,6 +167,15 @@ _Last populated: 2026-09-21 — End→Intermission blackout, then the session-en
 **Context:** Catalog `blindfoldURL` removed. PC-as-NPC sheet swap still TOR-95; LUT/sepia still TOR-321.
 
 ### NPC / stage
+#### Play → Spotlight clears NPC figurines off the stage
+
+**How to verify:** Save & Play so scripts reload. In Play, put at least one NPC figurine on the stage (Apply a scene, or stand them up in Scatter). Advance to Spotlight and wait for the cover to lift.
+
+1. Those NPC figurines and their lights should be gone from the stage (and from the Scatter floor). They belong in the under-table preload pool, not standing in the middle of Spotlight.
+2. The Spotlight ring should still show the player stand-ins. Home seat figurines stay at the chairs.
+
+**Context:** Leaving Scatter for Table A was writing the old stage layout back after Spotlight had already cleared it. Spotlight and End now refuse to keep NPC figurines on stage. Linear quota blocked a new issue; parent is TOR-98 (Spotlight phase).
+
 #### TOR-560 — Generic NPC import (spawn, scene library, Dashboard bridge)
 
 **How to verify:** Save & Play so Global + CONTROL_BOARD UI update. The **Import** field should sit on the control-board edge **opposite** the Apply/Clear row (not stacked above those buttons). Paste a short key list from the Storyteller Dashboard (for example `dogGuard_01,academicsProfessor_02`) and click **Import** (or press Enter in the field). A Storyteller-only name popup should open with those rows pre-filled from sheet labels — change a name if you like, then confirm. You should get face-down tokens in a spaced row on the edge **opposite** the PC seat-token row (not on top of the PCs), with tooltip nicknames matching whatever you typed in the popup, rotation `{0, 0, 180}`, and **Toggles → Snap** on so they pull onto control-board snap points. Figurines should park under the table with lights off. Apply should place them from token positions like other stage NPCs. Leaving the scene (or Clear) should destroy those generic objects; applying that library scene again should recreate them with the same display names.
