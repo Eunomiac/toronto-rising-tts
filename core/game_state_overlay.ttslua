@@ -59,9 +59,9 @@ local OVERLAY_SESSION_NUMBER_PLAY_COLOR = "#CC0000"
 local OVERLAY_SESSION_NUMBER_PROLOGUE_COLOR = "#990000"
 local OVERLAY_SEPARATOR_PLAY_COLOR = "#CC0000"
 local OVERLAY_SEPARATOR_PROLOGUE_COLOR = "#FF0000"
--- Unity XmlUI collapses consecutive ASCII spaces; word gaps use NBSP (U+00A0).
-local OVERLAY_NBSP = "\194\160"
-local OVERLAY_WORD_GAP = OVERLAY_NBSP .. OVERLAY_NBSP .. OVERLAY_NBSP
+-- Three ASCII spaces between words. Must be written with `text` via setAttributes;
+-- `UI.setValue` collapses the run (TOR-600 / TOR-601).
+local OVERLAY_WORD_GAP = "   "
 local OVERLAY_PROLOGUE_BANNER = "T O R O N T O" .. OVERLAY_WORD_GAP .. "R I S I N G"
 
 --- Last session-scene fingerprint; bust text cache when district/site/clock changes.
@@ -106,7 +106,7 @@ local function trimString(s)
     return t
 end
 
---- Session title: uppercase, one space between letters, three NBSP between words (TOR-598 / TOR-600).
+--- Session title: uppercase, one space between letters, three ASCII spaces between words (TOR-598).
 --- @param title string|nil
 --- @return string
 local function formatSpacedUppercaseTitle(title)
@@ -159,6 +159,21 @@ local function pushOverlayText(id, text)
         return
     end
     UI.setValue(id, nextVal)
+    overlayTextCache[id] = nextVal
+end
+
+--- `UI.setValue` collapses consecutive ASCII spaces. XmlUI `text` via setAttributes keeps them.
+--- @param id string
+--- @param text string
+local function pushOverlayTextAttribute(id, text)
+    if UI == nil or UI.setAttributes == nil then
+        return
+    end
+    local nextVal = tostring(text)
+    if overlayTextCache[id] == nextVal then
+        return
+    end
+    U.setAttributes(id, { text = nextVal })
     overlayTextCache[id] = nextVal
 end
 
@@ -662,7 +677,7 @@ end
 
 --- Session-start first Downtime overlay: banner, compact roman, spaced title, PROLOGUE (TOR-598).
 local function pushSessionStartDowntimeOverlay()
-    pushOverlayText("gameStateOverlay_sesionNumber", OVERLAY_PROLOGUE_BANNER)
+    pushOverlayTextAttribute("gameStateOverlay_sesionNumber", OVERLAY_PROLOGUE_BANNER)
     pushOverlayText("gameStateOverlay_district", "")
     pushOverlayText("gameStateOverlay_parentSite", "")
     pushOverlayText("gameStateOverlay_site", "")
@@ -679,8 +694,8 @@ local function pushSessionStartDowntimeOverlay()
     if type(sessionName) ~= "string" then
         sessionName = ""
     end
-    pushOverlayText("gameStateOverlay_datetime", formatSpacedUppercaseTitle(sessionName))
-    pushOverlayText("gameStateOverlay_time", "PROLOGUE")
+    pushOverlayTextAttribute("gameStateOverlay_datetime", formatSpacedUppercaseTitle(sessionName))
+    pushOverlayTextAttribute("gameStateOverlay_time", "PROLOGUE")
 end
 
 --- Push district / site row (parent site + separator only when the site name contains a ":" split).

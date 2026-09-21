@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — TOR-600 prologue overlay word-gap spaces._
+_Last populated: 2026-09-21 — TOR-601 prologue overlay setAttributes word gaps._
 
 ### Soundscape
 
@@ -68,7 +68,7 @@ _Last populated: 2026-09-21 — TOR-600 prologue overlay word-gap spaces._
 2. Apply a library scene. The overlay should go back to the usual red date, location, and clock (not gold title / PROLOGUE).
 3. End that scene. You should land in Downtime with a date and the word **DOWNTIME** — not the prologue layout again.
 
-**Context:** Only the first Intermission→Play Downtime uses this layout. relatedTo **TOR-527**. Word gaps use non-breaking spaces so Unity does not collapse them (**TOR-600**).
+**Context:** Only the first Intermission→Play Downtime uses this layout. relatedTo **TOR-527**. Word gaps are ordinary spaces written with `setAttributes` `text` (**TOR-601**). Non-breaking spaces were wrong (**TOR-600**).
 
 #### TOR-600 — Prologue overlay word gaps stay three spaces wide
 
@@ -76,8 +76,18 @@ _Last populated: 2026-09-21 — TOR-600 prologue overlay word-gap spaces._
 
 1. **T O R O N T O   R I S I N G** must have a visibly wider gap between the two words than between letters. Same for **T H E   D E V I L S   Y O U   K N O W** — four words, three wider gaps.
 2. It must not look like one run of letters: `T O R O N T O R I S I N G`.
+3. It must not show stray **Â** characters in those gaps.
 
-**Context:** Follow-up to **TOR-598**. TTS collapses ordinary double spaces; the overlay now uses non-breaking spaces between words.
+**Context:** Follow-up to **TOR-598**. `UI.setValue` collapses ordinary double spaces; non-breaking spaces showed as Â. **TOR-601** writes those strings with `setAttributes` `text` instead.
+
+#### TOR-601 — Prologue overlay spaces use setAttributes, not setValue
+
+**How to verify:** Save & Play so scripts reload. Same Intermission → Play check as **TOR-598**.
+
+1. Top line should read **T O R O N T O   R I S I N G** with a wider gap between the two words, and **no Â**.
+2. Session title should read **T H E   D E V I L S   Y O U   K N O W** the same way.
+
+**Context:** Author confirmed `UI.setAttributes(..., { text = "T O R O N T O   R I S I N G" })` keeps the three spaces. relatedTo **TOR-600**.
 
 #### TOR-599 — End overlay says EPILOGUE
 

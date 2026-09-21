@@ -775,5 +775,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-09-21 | `/tr-inbox` Immediate | TOR-596, TOR-597 | Hide ST camera/seat bars during splash (shipped). Overlay camera quick-click vs 1s hold (shipped). PAVE ✅ batch cleared. Dashboard async ⚠️ left to parallel session. Focus → TOR-526 / TOR-141 / TOR-81 / TOR-495. |
 | 2026-09-21 | CREATE+SHIP | TOR-598, TOR-599 | Session-start first Downtime overlay prologue copy; End overlay **EPILOGUE** (was DEBRIEF). Pending Save & Play. |
 | 2026-09-21 | CREATE+SHIP | TOR-600 | Prologue overlay word gaps: NBSP so Unity does not collapse TORONTO / RISING. relatedTo TOR-598. Pending Save & Play. |
+| 2026-09-21 | CREATE+SHIP | TOR-601 | Prologue word gaps: ASCII spaces via setAttributes text (setValue collapses; NBSP showed as Â). relatedTo TOR-600. Pending Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
