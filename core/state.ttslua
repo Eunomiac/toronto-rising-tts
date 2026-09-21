@@ -260,6 +260,8 @@ function S.GetDefaultGameState()
         playSubPhase = C.PlaySubPhases.MAIN,
         sessionNum = 1,
         sessionName = "",
+        -- First Intermission→Play Downtime (no live scene) uses prologue overlay copy (TOR-598).
+        sessionStartDowntime = false,
         spotlight = {
             order = {},
             frontIndex = 1,
@@ -776,6 +778,9 @@ function S.validateState()
     end
     if type(gameState.sessionName) ~= "string" then
         gameState.sessionName = ""
+    end
+    if gameState.sessionStartDowntime ~= true then
+        gameState.sessionStartDowntime = false
     end
     if type(gameState.spotlight) ~= "table" then
         gameState.spotlight = { order = {}, frontIndex = 1 }

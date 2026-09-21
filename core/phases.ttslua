@@ -401,6 +401,12 @@ function Phases.isPlayDowntime()
         and S.getStateVal("playSubPhase") == C.PlaySubPhases.DOWNTIME
 end
 
+--- First Intermission→Play Downtime (no live scene) uses prologue overlay copy (TOR-598).
+--- @param on boolean
+local function writeSessionStartDowntime(on)
+    S.setStateVal(on == true, "sessionStartDowntime")
+end
+
 --- Copy chronicle present-day (or live session clock) into `gameState.downtimeClock`. Does not write present-day.
 function Phases.copyPresentDayIntoDowntimeClock()
     local pd = S.getStateVal("presentDayClock")
@@ -887,6 +893,7 @@ function Phases.debugSnapToIntermission()
         SE.cancel()
     end
     S.setCurrentPhase(C.Phases.INTERMISSION)
+    writeSessionStartDowntime(false)
     Phases.applySessionBlindfoldImages(nil)
     Phases.showGlobalBlindfold(nil)
     hideSessionStartHealPanel()
@@ -952,7 +959,13 @@ function Phases.advanceTo(newPhase, opts)
     steps[#steps + 1] = function()
         S.setCurrentPhase(newPhase)
         if newPhase == C.Phases.PLAY then
-            S.setPlaySubPhase(Phases.playSubPhaseForLiveScene())
+            local sub = Phases.playSubPhaseForLiveScene()
+            S.setPlaySubPhase(sub)
+            writeSessionStartDowntime(
+                oldPhase == C.Phases.INTERMISSION and sub == C.PlaySubPhases.DOWNTIME
+            )
+        else
+            writeSessionStartDowntime(false)
         end
         return true
     end
@@ -1004,6 +1017,9 @@ function Phases.setPlaySubPhase(subPhase)
     appendSteps(steps, buildSteps(Phases.onExitSub, oldSub, ctx))
     steps[#steps + 1] = function()
         S.setPlaySubPhase(subPhase)
+        if subPhase ~= C.PlaySubPhases.DOWNTIME then
+            writeSessionStartDowntime(false)
+        end
         return true
     end
     appendSteps(steps, buildSteps(Phases.onEnterSub, subPhase, ctx))

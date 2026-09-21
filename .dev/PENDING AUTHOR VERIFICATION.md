@@ -17,11 +17,11 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — TOR-596 session-start ST chrome hide; TOR-597 overlay camera click vs hold._
+_Last populated: 2026-09-21 — TOR-598 session-start prologue overlay; TOR-599 End EPILOGUE._
 
 ### Soundscape
 
-#### TOR-593 — Ravenwing nightclub should replace the default theme
+#### ✅ TOR-593 — Ravenwing nightclub should replace the default theme
 
 **How to verify:** Save & Play so scripts reload. Be in Play with the usual default theme already going (Main). On the Scenes panel, pick **Ravenwing** and click **Apply Location** (or Apply a library scene whose site is Ravenwing).
 
@@ -54,11 +54,30 @@ _Last populated: 2026-09-21 — TOR-596 session-start ST chrome hide; TOR-597 ov
 
 **How to verify:** Save & Play. Start from Intermission with no scene on the table.
 
-1. Advance to Play. The overlay should show a date and the word **DOWNTIME** (no district/site text). Changing the Scenes clock should not change chronicle present-day.
+1. Advance to Play. The overlay should **not** show date + **DOWNTIME** on this first landing — that first overlay is prologue copy (**TOR-598**). Changing the Scenes clock should not change chronicle present-day.
 2. Apply a library scene. The Play subphase should switch to Main and the overlay should show location and normal time.
-3. End the scene. You should be back in Downtime.
+3. End the scene. You should be back in Downtime, now with a date and the word **DOWNTIME** (no district/site text).
 4. Click **Main** or **Downtime** when already on the correct one: nothing should change. Click the “wrong” one: it should snap to the correct one for whether a scene is live.
 5. If you enter Memoriam from a live scene, then click **Main**, that scene should come back. If Memoriam started with no scene, you should land in Downtime.
+
+#### TOR-598 — Session-start first Downtime overlay is prologue copy
+
+**How to verify:** Save & Play so scripts reload. On the Phases panel, set the session number (for example 1) and type a session title such as `The Devils You Know`. Start from Intermission with no scene on the table (Host console `lua DEBUG.resetToIntermission()` is fine).
+
+1. Click **Advance** to Play. After the cover, the center overlay should show **T O R O N T O   R I S I N G** on the top line, **– I –** (or the matching compact roman for your session number) in the middle, the title as spaced uppercase (for that example **T H E   D E V I L S   Y O U   K N O W**), and **PROLOGUE** on the bottom. It should not say **DOWNTIME**, and there should be no date or district/site.
+2. Apply a library scene. The overlay should go back to the usual red date, location, and clock (not gold title / PROLOGUE).
+3. End that scene. You should land in Downtime with a date and the word **DOWNTIME** — not the prologue layout again.
+
+**Context:** Only the first Intermission→Play Downtime uses this layout. relatedTo **TOR-527**.
+
+#### TOR-599 — End overlay says EPILOGUE
+
+**How to verify:** Save & Play so scripts reload. Advance to **End** (Play → Spotlight → End, or however you usually get there).
+
+1. The center overlay should show the session name on the date line and **EPILOGUE** underneath — not **DEBRIEF**.
+2. Optional: Advance back through Intermission → Play (no scene) and confirm the prologue overlay from **TOR-598** still works after End.
+
+**Context:** Copy change only. relatedTo **TOR-98**.
 
 ### Character sheets
 #### Dashboard PCs tab — live sheet snapshot/apply

@@ -1,6 +1,7 @@
 --[[
     Center-top overlay: district / site (split on first ":" when present) and in-game date + 12-hour clock
-    during **Play**. Spotlight and End use the same panel with ritual copy (TOR-98).
+    during **Play**. Spotlight and End use the same panel with ritual copy (TOR-98). Session-start
+    Downtime uses prologue copy (TOR-598). End time line is **EPILOGUE** (TOR-599).
 
     Single writer: `GameStateOverlay.reconcileFromState()` — driven from `UpdateUIDisplays` / `Sync.ui`
     (see `core/sync.ttslua` incremental delta `gameStateOverlay`) so nothing else fights the overlay.
@@ -50,9 +51,15 @@ local lastDistrictSeparatorFingerprint = nil
 local lastOverlayChromeFingerprint = nil
 
 local DISTRICT_SEPARATOR_DIAMOND = "◆"
+local DISTRICT_SEPARATOR_EN_DASH = "–"
 local OVERLAY_DATETIME_PLAY_COLOR = "#FF0000"
 local OVERLAY_TIME_PLAY_COLOR = "#FF0000"
 local OVERLAY_DATETIME_SPOTLIGHT_COLOR = "#d3ba50"
+local OVERLAY_SESSION_NUMBER_PLAY_COLOR = "#CC0000"
+local OVERLAY_SESSION_NUMBER_PROLOGUE_COLOR = "#990000"
+local OVERLAY_SEPARATOR_PLAY_COLOR = "#CC0000"
+local OVERLAY_SEPARATOR_PROLOGUE_COLOR = "#FF0000"
+local OVERLAY_PROLOGUE_BANNER = "T O R O N T O   R I S I N G"
 
 --- Last session-scene fingerprint; bust text cache when district/site/clock changes.
 local lastSessionSceneOverlayFingerprint = nil
@@ -96,6 +103,48 @@ local function trimString(s)
     return t
 end
 
+--- Session title: uppercase, one space between letters, three spaces between words (TOR-598).
+--- @param title string|nil
+--- @return string
+local function formatSpacedUppercaseTitle(title)
+    local raw = trimString(title)
+    if raw == "" then
+        return ""
+    end
+    raw = string.upper(raw)
+    local words = {}
+    for word in string.gmatch(raw, "%S+") do
+        local letters = {}
+        for i = 1, #word do
+            letters[#letters + 1] = string.sub(word, i, i)
+        end
+        words[#words + 1] = table.concat(letters, " ")
+    end
+    return table.concat(words, "   ")
+end
+
+--- Compact ASCII roman (no spaces) for prologue separator, e.g. session 1 → `I` (TOR-598).
+--- @param n number|nil
+--- @return string
+local function compactSessionRoman(n)
+    local Phases = require("core.phases")
+    local spaced = Phases.romanize(n)
+    if type(spaced) ~= "string" or spaced == "" then
+        return "I"
+    end
+    return (string.gsub(spaced, "%s+", ""))
+end
+
+--- Intermission→Play first Downtime (no live scene) uses prologue overlay copy (TOR-598).
+--- @return boolean
+local function isSessionStartDowntimeOverlay()
+    local Phases = require("core.phases")
+    if type(Phases.isPlayDowntime) ~= "function" or Phases.isPlayDowntime() ~= true then
+        return false
+    end
+    return S.getStateVal("sessionStartDowntime") == true
+end
+
 --- @param id string
 --- @param text string
 local function pushOverlayText(id, text)
@@ -124,7 +173,7 @@ local function pushOverlayActive(id, active)
     overlayActiveCache[id] = nextVal
 end
 
---- @param attrs table `{ text: string, fontStyle: string, active: boolean }`
+--- @param attrs table `{ text: string, fontStyle: string, active: boolean, color: string|nil }`
 local function pushDistrictSeparator(attrs)
     if UI == nil or UI.setAttributes == nil then
         return
@@ -137,8 +186,12 @@ local function pushDistrictSeparator(attrs)
     if type(fontStyle) ~= "string" or fontStyle == "" then
         fontStyle = "Bold"
     end
+    local color = attrs.color
+    if type(color) ~= "string" or color == "" then
+        color = OVERLAY_SEPARATOR_PLAY_COLOR
+    end
     local active = attrs.active == true
-    local fp = table.concat({ text, fontStyle, active and "1" or "0" }, "|")
+    local fp = table.concat({ text, fontStyle, color, active and "1" or "0" }, "|")
     if fp == lastDistrictSeparatorFingerprint then
         return
     end
@@ -147,22 +200,47 @@ local function pushDistrictSeparator(attrs)
         active = active and "true" or "false",
         text = text,
         fontStyle = fontStyle,
+        color = color,
     })
     overlayTextCache["gameStateOverlay_districtSeparator"] = text
 end
 
---- Spotlight datetime/time chrome vs Play/End restore. Fingerprinted so Sync.full does not rewrite every pass.
---- @param isSpotlight boolean
-local function applyOverlayPhaseChrome(isSpotlight)
+--- Datetime/time/session-number chrome. Fingerprinted so Sync.full does not rewrite every pass.
+--- Prologue styles must be undone when leaving session-start Downtime (TOR-598).
+--- @param kind "play"|"spotlight"|"prologue"
+local function applyOverlayPhaseChrome(kind)
     if UI == nil or UI.setAttributes == nil then
         return
     end
-    local fp = isSpotlight and "spotlight" or "play"
-    if fp == lastOverlayChromeFingerprint then
+    if kind ~= "spotlight" and kind ~= "prologue" then
+        kind = "play"
+    end
+    if kind == lastOverlayChromeFingerprint then
         return
     end
-    lastOverlayChromeFingerprint = fp
-    if isSpotlight then
+    lastOverlayChromeFingerprint = kind
+    if kind == "prologue" then
+        U.setAttributes("gameStateOverlay_sesionNumber", {
+            fontStyle = "BoldAndItalic",
+            color = OVERLAY_SESSION_NUMBER_PROLOGUE_COLOR,
+        })
+        U.setAttributes("gameStateOverlay_datetime", {
+            color = OVERLAY_DATETIME_SPOTLIGHT_COLOR,
+            fontStyle = "BoldAndItalic",
+        })
+        U.setAttributes("gameStateOverlay_time", {
+            color = OVERLAY_TIME_PLAY_COLOR,
+            fontSize = "42",
+            preferredHeight = "48",
+            flexibleHeight = "0",
+        })
+        return
+    end
+    U.setAttributes("gameStateOverlay_sesionNumber", {
+        fontStyle = "Bold",
+        color = OVERLAY_SESSION_NUMBER_PLAY_COLOR,
+    })
+    if kind == "spotlight" then
         U.setAttributes("gameStateOverlay_datetime", {
             color = OVERLAY_DATETIME_SPOTLIGHT_COLOR,
             fontStyle = "BoldAndItalic",
@@ -171,6 +249,8 @@ local function applyOverlayPhaseChrome(isSpotlight)
             color = "#FFFFFF",
             fontSize = "29",
             minHeight = "42",
+            preferredHeight = "",
+            flexibleHeight = "0",
         })
         return
     end
@@ -181,6 +261,9 @@ local function applyOverlayPhaseChrome(isSpotlight)
     U.setAttributes("gameStateOverlay_time", {
         color = OVERLAY_TIME_PLAY_COLOR,
         fontSize = "42",
+        minHeight = "",
+        preferredHeight = "",
+        flexibleHeight = "0",
     })
 end
 
@@ -216,7 +299,9 @@ local function sessionSceneOverlayFingerprint()
     end
     return table.concat({
         tostring(S.getStateVal("currentPhase") or ""),
+        tostring(S.getStateVal("playSubPhase") or ""),
         tostring(S.getStateVal("sessionName") or ""),
+        S.getStateVal("sessionStartDowntime") == true and "1" or "0",
         dKey,
         sKey,
         ckParts.y,
@@ -249,7 +334,7 @@ local function shouldShowNarrativeClockOnOverlay()
     return phase == C.Phases.PLAY
 end
 
---- Time/location panel presenter: Play (clock), Spotlight (ritual), End (session name + DEBRIEF), or hidden.
+--- Time/location panel presenter: Play (clock / prologue / Downtime), Spotlight (ritual), End (session name + EPILOGUE), or hidden.
 --- @return string "play"|"spotlight"|"sessionEnd"|"hidden"
 local function overlayTimeLocationKind()
     local phase = S.getStateVal("currentPhase")
@@ -572,6 +657,29 @@ local function pushEmptyLocationRow()
     pushOverlayActive("gameStateOverlay_parentSiteSeparator", false)
 end
 
+--- Session-start first Downtime overlay: banner, compact roman, spaced title, PROLOGUE (TOR-598).
+local function pushSessionStartDowntimeOverlay()
+    pushOverlayText("gameStateOverlay_sesionNumber", OVERLAY_PROLOGUE_BANNER)
+    pushOverlayText("gameStateOverlay_district", "")
+    pushOverlayText("gameStateOverlay_parentSite", "")
+    pushOverlayText("gameStateOverlay_site", "")
+    pushOverlayActive("gameStateOverlay_parentSite", false)
+    pushOverlayActive("gameStateOverlay_parentSiteSeparator", false)
+    local n = tonumber(S.getStateVal("sessionNum")) or 1
+    pushDistrictSeparator({
+        text = DISTRICT_SEPARATOR_EN_DASH .. " " .. compactSessionRoman(n) .. " " .. DISTRICT_SEPARATOR_EN_DASH,
+        fontStyle = "Bold",
+        color = OVERLAY_SEPARATOR_PROLOGUE_COLOR,
+        active = true,
+    })
+    local sessionName = S.getStateVal("sessionName")
+    if type(sessionName) ~= "string" then
+        sessionName = ""
+    end
+    pushOverlayText("gameStateOverlay_datetime", formatSpacedUppercaseTitle(sessionName))
+    pushOverlayText("gameStateOverlay_time", "PROLOGUE")
+end
+
 --- Push district / site row (parent site + separator only when the site name contains a ":" split).
 local function reconcileLocationRowFromState()
     reconcileSessionNumberFromState()
@@ -605,11 +713,14 @@ function GameStateOverlay.reconcileFromState()
 
     -- Session roman lives inside the time/location panel; keep it in sync even while the panel is hidden
     -- (e.g. Intermission edits to sessionNum) so Play reveal is not stale (TOR-362).
-    reconcileSessionNumberFromState()
+    -- Session-start prologue replaces this line; skip so we do not flash roman first (TOR-598).
+    if not isSessionStartDowntimeOverlay() then
+        reconcileSessionNumberFromState()
+    end
 
     local kind = overlayTimeLocationKind()
     if kind == "hidden" then
-        applyOverlayPhaseChrome(false)
+        applyOverlayPhaseChrome("play")
         pushDistrictSeparator({
             text = DISTRICT_SEPARATOR_DIAMOND,
             fontStyle = "Bold",
@@ -627,7 +738,7 @@ function GameStateOverlay.reconcileFromState()
 
     if kind == "spotlight" then
         bustTextCacheIfSessionSceneChanged()
-        applyOverlayPhaseChrome(true)
+        applyOverlayPhaseChrome("spotlight")
         pushOverlayActive(OVERLAY_TIME_LOCATION_ID, true)
         pushSpotlightLocationRow()
         pushOverlayText("gameStateOverlay_datetime", "S P O T L I G H T")
@@ -643,7 +754,7 @@ function GameStateOverlay.reconcileFromState()
 
     if kind == "sessionEnd" then
         bustTextCacheIfSessionSceneChanged()
-        applyOverlayPhaseChrome(false)
+        applyOverlayPhaseChrome("play")
         pushOverlayActive(OVERLAY_TIME_LOCATION_ID, true)
         pushEmptyLocationRow()
         local sessionName = S.getStateVal("sessionName")
@@ -651,15 +762,15 @@ function GameStateOverlay.reconcileFromState()
             sessionName = ""
         end
         pushOverlayText("gameStateOverlay_datetime", sessionName)
-        pushOverlayText("gameStateOverlay_time", "DEBRIEF")
+        pushOverlayText("gameStateOverlay_time", "EPILOGUE")
         pushOverlayActive(OVERLAY_WEATHER_ID, false)
         return
     end
 
-    -- Play: Memoriam overlay (TOR-101) or existing clock / location / weather.
-    applyOverlayPhaseChrome(false)
+    -- Play: Memoriam overlay (TOR-101), session-start prologue, Downtime, or clock / location / weather.
     local Memoriam = require("core.memoriam")
     if Memoriam.isActive() then
+        applyOverlayPhaseChrome("play")
         bustTextCacheIfSessionSceneChanged()
         pushOverlayActive(OVERLAY_TIME_LOCATION_ID, true)
         local mem = S.getStateVal("memoriam")
@@ -704,8 +815,14 @@ function GameStateOverlay.reconcileFromState()
     local Phases = require("core.phases")
     if type(Phases.isPlayDowntime) == "function" and Phases.isPlayDowntime() == true then
         bustTextCacheIfSessionSceneChanged()
-        applyOverlayPhaseChrome(false)
         pushOverlayActive(OVERLAY_TIME_LOCATION_ID, true)
+        if isSessionStartDowntimeOverlay() then
+            applyOverlayPhaseChrome("prologue")
+            pushSessionStartDowntimeOverlay()
+            pushOverlayActive(OVERLAY_WEATHER_ID, false)
+            return
+        end
+        applyOverlayPhaseChrome("play")
         pushEmptyLocationRow()
         local ck = S.getStateVal("downtimeClock")
         local hasDatetime = type(ck) == "table"
@@ -724,6 +841,8 @@ function GameStateOverlay.reconcileFromState()
         pushOverlayActive(OVERLAY_WEATHER_ID, false)
         return
     end
+
+    applyOverlayPhaseChrome("play")
 
     if SceneLibrary.hasLiveSceneOnTable() ~= true then
         bustTextCacheIfSessionSceneChanged()

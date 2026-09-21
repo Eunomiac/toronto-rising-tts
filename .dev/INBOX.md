@@ -38,10 +38,6 @@ Verification:
 
 ### Unclear Intents
 
-- **Downtime overlay copy:** During the move into Downtime, the center-top game-state overlay should change, but the capture stopped at “modified as follows.”
-  - ? Which overlay lines should change (district, site, date, time, the gold “The Devils You Know” line, something else)?
-  - ? What should each of those lines say (or should they go blank)?
-  - ? Is this only when Play has no live scene (the current Downtime path), or also when you click Downtime on the Phases panel?
 
 ### Unclear Ideas
 
@@ -53,7 +49,9 @@ Verification:
 
 ## Processed
 
-2026-09-21 `/tr-inbox` Immediate — hide Storyteller camera/seat bars during session-start splash → **TOR-596** (shipped). PAVE ⚠️ overlay camera click vs hold → **TOR-597** (shipped). Dashboard async-send ⚠️ left to the parallel dashboard session (not processed here). PAVE ✅ cleared session-start / sheet / Scatter / Memoriam / overlay rows marked confirmed. Downtime overlay capture parked in Needs clarification (list of overlay changes was blank).
+2026-09-21 Immediate — session-start first Downtime overlay prologue copy → **TOR-598** (shipped). End overlay **DEBRIEF** → **EPILOGUE** → **TOR-599** (shipped).
+
+2026-09-21 `/tr-inbox` Immediate — hide Storyteller camera/seat bars during session-start splash → **TOR-596** (shipped). PAVE ⚠️ overlay camera click vs hold → **TOR-597** (shipped). Dashboard async-send ⚠️ left to the parallel dashboard session (not processed here). PAVE ✅ cleared session-start / sheet / Scatter / Memoriam / overlay rows marked confirmed.
 
 2026-09-21 Author Workspace — moved completed **Memoriam Phase** and **Generic NPCs** plans out of this file into `.dev/Phases/Memoriam.md` and `.dev/NPC Object Spawning & Spotlighting/Generic NPCs.md` (aligned to current Lua). Remaining unimplemented items stayed in those docs. **PC-as-NPC Assignment** left here as an empty workspace heading.
 
