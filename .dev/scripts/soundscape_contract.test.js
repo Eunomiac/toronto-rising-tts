@@ -51,6 +51,20 @@ test("soundscape site none playlist suppresses background music without defaulti
     false,
     "reconcile must not nest enabled check inside suppressed branch",
   );
+
+  const applyStart = source.indexOf("function Soundscape.applyContext(context)");
+  assert.ok(applyStart >= 0, "missing Soundscape.applyContext");
+  const applyEnd = source.indexOf("\nfunction Soundscape.", applyStart + 1);
+  const applyBody = applyEnd >= 0 ? source.slice(applyStart, applyEnd) : source.slice(applyStart);
+  assert.ok(
+    applyBody.includes('if locMusKey == "none" or moodKey == "none" then'),
+    "applyContext must suppress BGM when locationMusic or musicMood is explicit none",
+  );
+  assert.equal(
+    applyBody.includes("if moodKey ~= nil and locMusKey ~= nil then"),
+    false,
+    "applyContext must not let leftover musicMood win over site playlist none",
+  );
 });
 
 test("soundscape reconcileFromState guards duplicate deferred apply", () => {

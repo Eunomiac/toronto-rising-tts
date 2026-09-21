@@ -79,7 +79,7 @@ Do not call `AssetBundle.playLoopingEffect` or trigger effect APIs outside
 
 ### No background music (`backgroundMusic.playlist = "none"`)
 
-Per-site `soundscape.backgroundMusic.playlist = "none"` silences **background music only** (location ambience and weather still apply). Omit `backgroundMusic` entirely to get the catalog default mood (`main`) during play. Persisted `soundscape.backgroundMusicSuppressed` keeps BGM off across reconcile until a mood or site playlist is applied. Do not use `isSilent` when you only want BGM off.
+Per-site `soundscape.backgroundMusic.playlist = "none"` silences **background music only** (location ambience and weather still apply). Omit `backgroundMusic` entirely to get the catalog default mood (`main`) during play. Persisted `soundscape.backgroundMusicSuppressed` keeps BGM off across reconcile until a mood or site playlist is applied. Do not use `isSilent` when you only want BGM off. `Soundscape.applyContext` honors that `"none"` even when a leftover scene `musicMood` (often `main`) is also in the same context — otherwise Main stays on `musicA`/`musicB` while the site bed (Ravenwing `nightclub`) starts on the location lane.
 
 ### Featured music vs location ambience (TOR-494)
 

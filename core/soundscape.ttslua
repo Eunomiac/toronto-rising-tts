@@ -2102,9 +2102,10 @@ function Soundscape.applyContext(context)
         end
         local moodKey = context.musicMood
         local locMusKey = context.locationMusic
-        if moodKey ~= nil and locMusKey ~= nil then
-            -- One background crossfade: narrative mood wins when both are present (avoids site playlist then mood).
-            collect(Soundscape.setMusicMood(moodKey))
+        -- Explicit none always suppresses BGM (Ravenwing nightclub / site playlist none).
+        -- Two real playlists still use mood only (one crossfade, no site-then-mood).
+        if locMusKey == "none" or moodKey == "none" then
+            collect(Soundscape.setLocationMusic("none"))
         elseif moodKey ~= nil then
             collect(Soundscape.setMusicMood(moodKey))
         elseif locMusKey ~= nil then

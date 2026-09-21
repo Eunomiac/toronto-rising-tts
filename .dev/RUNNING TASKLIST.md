@@ -233,6 +233,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## Soundscape
 
+- [x] **Ravenwing (playlist none) replaces Main:** Site `backgroundMusic.playlist = "none"` suppresses the default theme even when leftover scene mood is still `main`; nightclub location bed plays alone. Pending Save & Play. relatedTo **TOR-494**, **TOR-77**. _(TOR-593)_
 - [x] **Hide particle emitter when not PLAY:** Park with `O.hideObject` off Play; restore with `O.restoreObject` on Play enter. Pending Save & Play. _(TOR-581)_
 - [x] **Rain particle emitter follows table origin X/Z:** `G.GUIDS.PARTICLE_EMITTER` moves with floor/plinth on table switch; Y unchanged. relatedTo **TOR-498**. Pending Save & Play. _(TOR-520)_
 - [x] **Outdoor rain particles follow weather audio:** When the live site is outdoors, `G.GUIDS.PARTICLES_WEATHER_RAIN` looping effect matches rain/wind/thunder (indoor or no rain → None). Switch during the blindfold-down weather apply, not after lift. relatedTo **TOR-136**, **TOR-147**, **TOR-463**. Author confirmed 2026-08-22. _(TOR-498)_

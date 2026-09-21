@@ -17,7 +17,18 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — TOR-590 hand-zone instant co-move (retest)._
+_Last populated: 2026-09-21 — TOR-593 Ravenwing theme replaces Main._
+
+### Soundscape
+
+#### TOR-593 — Ravenwing nightclub should replace the default theme
+
+**How to verify:** Save & Play so scripts reload. Be in Play with the usual default theme already going (Main). On the Scenes panel, pick **Ravenwing** and click **Apply Location** (or Apply a library scene whose site is Ravenwing).
+
+1. After the cover, you should hear only the Ravenwing nightclub bed — not the default theme underneath it.
+2. Leave Ravenwing for a normal outdoor site (or End scene). The default theme should come back, and the nightclub bed should stop.
+
+**Context:** The site says “no background playlist,” but leftover Main mood was still starting on the music emitters while nightclub started on the location emitters.
 
 ### Phases / session start
 
