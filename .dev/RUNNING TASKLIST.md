@@ -365,6 +365,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 ## UI Panels
 
 - [ ] **Phases Advance click-again-to-confirm:** First click shows red **Click Again to Confirm** to the right of Advance; second click in the window runs Advance; message clears on confirm or timeout. Keep Storyteller steam gate. _(TOR-578)_
+- [x] **Session-start cover shows splash art, not black:** Splash parent is on in XML; blackout is its own inactive panel at the end of the stack. relatedTo **TOR-567**. Pending Save & Play. _(TOR-587)_
 - [ ] **End→Intermission behind-cover sequencing:** Behind-the-blindfold work starts too soon and interrupts descent. Use the same wait-until-cover-is-down path as other phase transitions. relatedTo **TOR-143**, **TOR-566**. _(TOR-580)_
 - [x] **PCs panel drop nickname row + smaller trackers:** Removed color/Steam-nickname title row; HP/WP/Humanity font 18, Hunger dots 16. relatedTo **TOR-518**. Pending Save & Play. _(TOR-583)_
 - [x] **Hide humidity on the weather overlay:** Weather codes still parse humidity; the HUD no longer shows it. Pending Save & Play. _(TOR-517)_

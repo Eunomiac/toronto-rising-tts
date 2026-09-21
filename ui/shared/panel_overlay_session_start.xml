@@ -24,6 +24,18 @@
     rectAlignment = "MiddleCenter"
     color = "#000000"
   />
+  <!-- End-of-splash fade only. Do not share session_start_image_panel (that class is the Intermission cover parent). -->
+  <Panel class="session_start_blackout_panel"
+    active = "false"
+    width = "1920"
+    height = "1200"
+    rectAlignment = "MiddleCenter"
+    color = "rgba(0, 0, 0, 1)"
+    showAnimation = "FadeIn"
+    hideAnimation = "FadeOut"
+    animationDuration = "1"
+    raycastTarget = "false"
+  />
   <Image class="session_start_image"
     active = "true"
     width = "1920"
@@ -66,7 +78,7 @@
 UI.setAttributes("overlay_sessionStartSplash", {active = "true"})
 -->
 <Panel id="overlay_sessionStart_panel" class="session_start_panel">
-  <Panel id="overlay_sessionStartSplash_panel" class="session_start_image_panel">
+  <Panel id="overlay_sessionStartSplash_panel" class="session_start_image_panel" active = "true">
     <!-- image + active set together on load / Intermission sessionNum edit (inactive until then so missing art is black, not white) -->
     <Image id="overlay_sessionStartSplash" class="session_start_image" active = "false" />
   </Panel>
@@ -116,4 +128,5 @@ UI.setAttributes("overlay_sessionStartSplash", {active = "true"})
       <Image id="overlay_sessionTitle" class="session_start_image session_splash_title_image" />
     </Panel>
   </Panel>
+  <Panel id="overlay_sessionStart_blackoutPanel" class="session_start_blackout_panel" />
 </Panel>

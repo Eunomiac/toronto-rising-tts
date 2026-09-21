@@ -18,6 +18,8 @@ local S = require("core.state")
 
 local SESSION_START_HEAL_PANEL = "sessionStartHeal_panel"
 local SESSION_COVER_IMAGE_ID = "overlay_sessionStartSplash"
+local SESSION_COVER_PANEL_ID = "overlay_sessionStartSplash_panel"
+local SESSION_START_BLACKOUT_ID = "overlay_sessionStart_blackoutPanel"
 local SESSION_NUMBER_IMAGE_ID = "overlay_sessionNumber"
 local SESSION_TITLE_IMAGE_ID = "overlay_sessionTitle"
 local HEAL_BROADCAST_HOLD_SEC = 6
@@ -231,6 +233,9 @@ end
 function Phases.applySessionBlindfoldImages(sessionNum)
     local n = normalizeSessionNum(sessionNum)
     local numName, titleName = Phases.sessionNumberAndTitleImageNames(n)
+    -- Parent class defaults inactive; splash art is invisible without this (black backing only).
+    UI.setAttributes(SESSION_COVER_PANEL_ID, { active = "true" })
+    UI.setAttributes(SESSION_START_BLACKOUT_ID, { active = "false" })
     UI.setAttributes(SESSION_COVER_IMAGE_ID, {
         image = Phases.sessionBlindfoldImageName(n),
         active = "true",

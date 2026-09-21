@@ -762,5 +762,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-09-21 | CREATE+SHIP | TOR-584 | Dice bag scale `{1,1,1}`; companion toggles skip layout scale. Pending Save & Play. |
 | 2026-09-21 | CREATE+SHIP | TOR-585 | CSHEET restore y = 3.20. Pending Save & Play. |
 | 2026-09-21 | `/tr-inbox` | PAVE | ✅ cleared TOR-541–551, TOR-528, TOR-559 (Linear Done issues then deleted). ❌ TOR-565 → ⌚ (verify TOR-566). ⚠️ TOR-558: keep Assets 1–3 for ad-hoc Cloud folders. Duplicate tarot hide dismissed (`GlobalHideObject`). |
+| 2026-09-21 | CREATE+SHIP | TOR-587 | Session-start cover shows splash art, not black. Splash parent on in XML; blackout is its own inactive last-child panel. relatedTo TOR-567. Pending Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

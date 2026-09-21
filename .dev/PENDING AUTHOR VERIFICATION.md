@@ -7,8 +7,8 @@ Your TTS checklist for shipped work that still needs Save & Play / in-game confi
 | Mark | Who | Meaning |
 | --- | --- | --- |
 | **✅** | Author | Confirmed in TTS — agents remove on next inbox |
-| **❌** | Author | Still broken (+ **Verification Failures:** / optional **Verified:**) |
-| **⚠️** | Author | Bad expectations (+ **Corrections:**) |
+| **❌** | Author | Still broken (+ **Author Comment:**) |
+| **⚠️** | Author | Bad expectations (+ **Author Comment::**) |
 | **⌚** | Agent | Not ready to verify yet — fix is open in Linear / Focus; **do not** Save & Play for this row until the watch is cleared |
 
 Unmarked = shipped (or verification gate) and waiting for your first pass. Agents add a new unmarked row whenever they ship in-game code; they process your **✅** / **❌** / **⚠️** marks on the next inbox. Agent policy: [PENDING AUTHOR VERIFICATION.agent.md](PENDING AUTHOR VERIFICATION.agent.md).
@@ -17,11 +17,20 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — Hunger overlay, PCs panel, dice bag scale, CSHEET Y._
+_Last populated: 2026-09-21 — session-start splash parent + blackout panel._
 
 ### Phases / session start
 
-#### Session-start splash timing and Intermission-theme fade
+#### TOR-587 — Session-start cover shows black instead of splash art
+
+**How to verify:** Save & Play so the Global HUD XML reloads. You should be in Intermission (or run `lua DEBUG.resetToIntermission()` in the Host console).
+
+1. You should see the usual session-start splash art for the current session number — not a solid black screen.
+2. Optional: leave **Quick Transition** off, click **Advance →**, and let the character splash finish. Near the end a black fade should cover the stack, then lift. After that, `lua DEBUG.resetToIntermission()` should bring the splash art back, not leave a black sheet.
+
+**Context:** The Intermission cover is a black panel; splash art is a child that was defaulting off. The end-of-splash blackout panel Lua already showed was missing from the XML. relatedTo **TOR-567**.
+
+#### ✅ Session-start splash timing and Intermission-theme fade
 
 **How to verify:** Save & Play so scripts reload. Leave **Quick Transition** off. From Intermission (or Host console `lua DEBUG.resetToIntermission()`), click **Advance**.
 
@@ -33,7 +42,7 @@ _Last populated: 2026-09-21 — Hunger overlay, PCs panel, dice bag scale, CSHEE
 
 ### Character sheets
 
-#### Dashboard PCs tab — live sheet snapshot/apply
+#### ⚠️ Dashboard PCs tab — live sheet snapshot/apply
 
 **How to verify:** Save & Play so the new Global functions load. Keep External Editor on, and keep the TTS Tools Cursor extension **off** (only one process can listen on the editor port).
 
@@ -43,7 +52,9 @@ _Last populated: 2026-09-21 — Hunger overlay, PCs panel, dice bag scale, CSHEE
 
 **Context:** `GlobalDashboardPcSheetSnapshot` / `Apply` in `core/dashboard_pc_sheet.ttslua`. Dashboard UI is local; this row is the TTS Lua. Track under Character Sheets epic TOR-38 until a TOR id can be filed.
 
-#### CSHEET blank-base page 1 overlays + dynamic page 2 disciplines
+**Author Comment:** The interfacing between the dashboard and TTS is causing significant performance interruption —— at least, when _sending_ intructions; it seems to be able to update itself against changes in TTS much more speedily. Regardless, can we make the transfer of data to TTS asynchronous somehow, while keeping the display of information on the dashboar
+
+#### ✅ CSHEET blank-base page 1 overlays + dynamic page 2 disciplines
 
 **How to verify:** First upload `dot_yellow.webp`, `dot_white.webp`, and `dot_grey.webp` into Steam Cloud `Vampire the Masquerade 5E/CSheets/Page1` if they are not there yet (Cloud currently has the box glyphs and `dot_red` only — your page‑1 objects still have yellow/white/grey from before). Then File → Load save **230** (or reload after Cloud sync) so CustomUIAssets stick, and Save & Play so scripts/XML load.
 
