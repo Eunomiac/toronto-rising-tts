@@ -1,7 +1,7 @@
 import { gsap } from "gsap";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent, type ReactElement } from "react";
 import { fetchBridgeStatus, reclaimEditorPort, releaseEditorPort } from "../ttsBridge.js";
-import { applySheetCommand, snapshotOrFixture } from "./bridge.js";
+import { applySheetCommands, snapshotOrFixture } from "./bridge.js";
 import { applyLocal } from "./applyLocal.js";
 import { createApplyQueue } from "./applyQueue.js";
 import { fixtureSnapshot } from "./fixture.js";
@@ -105,7 +105,7 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
   const applyQueue = useMemo(
     () =>
       createApplyQueue({
-        send: applySheetCommand,
+        send: applySheetCommands,
         onSettled: (next) => {
           setSnapshot(next);
           setLive(true);

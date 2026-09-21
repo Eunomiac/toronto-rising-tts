@@ -1,5 +1,6 @@
 --[[
   Storyteller Dashboard PCs tab: live snapshot + apply over execute-lua.
+  Apply accepts one command object or a JSON array of commands (one snapshot at the end).
   No Steam clicker (same pattern as GlobalImportSceneJson).
   Agent guidance: .dev/PC Data & Tracking/PC Tracking & State Behavior.md
 ]]
@@ -529,10 +530,26 @@ function Dash.apply(jsonText)
   if type(jsonText) ~= "string" or jsonText == "" then
     return encodeSnapshot({ ok = false, error = "Expected command JSON" })
   end
-  local cmd = decodeCommand(jsonText)
-  local applyErr = applyCommand(cmd)
-  if applyErr ~= nil then
-    return encodeSnapshot({ ok = false, error = applyErr })
+  local parsed = decodeCommand(jsonText)
+  local list
+  if type(parsed.op) == "string" then
+    list = { parsed }
+  else
+    list = {}
+    for i = 1, #parsed do
+      if type(parsed[i]) == "table" then
+        list[#list + 1] = parsed[i]
+      end
+    end
+  end
+  if #list == 0 then
+    return encodeSnapshot({ ok = false, error = "Expected command JSON" })
+  end
+  for i = 1, #list do
+    local applyErr = applyCommand(list[i])
+    if applyErr ~= nil then
+      return encodeSnapshot({ ok = false, error = applyErr })
+    end
   end
   local seats = {}
   for i = 1, #C.PlayerColors do

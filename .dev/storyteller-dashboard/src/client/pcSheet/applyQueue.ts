@@ -6,7 +6,7 @@ export type ApplyQueue = {
 };
 
 type Options = {
-  send: (command: ApplyCommand) => Promise<SheetSnapshot>;
+  send: (commands: readonly ApplyCommand[]) => Promise<SheetSnapshot>;
   onSettled: (snapshot: SheetSnapshot) => void;
   onFailure: (error: Error) => void;
   onPendingChange: (pending: number) => void;
@@ -14,8 +14,8 @@ type Options = {
 
 /**
  * Serial TTS apply queue. Callers paint locally first; this only talks to Tabletop Simulator.
- * Intermediate apply replies are ignored while more commands are waiting, so a slow round-trip
- * cannot rewind clicks the dashboard already showed.
+ * While a send is in flight, later clicks accumulate. The next send flushes the whole waiting
+ * list in one round-trip so three rapid Health clicks become at most two TTS calls, not three.
  */
 export const createApplyQueue = (options: Options): ApplyQueue => {
   const waiting: ApplyCommand[] = [];
@@ -42,12 +42,9 @@ export const createApplyQueue = (options: Options): ApplyQueue => {
     notify();
     try {
       while (waiting.length > 0) {
-        const command = waiting.shift();
-        if (command === undefined) {
-          break;
-        }
+        const batch = waiting.splice(0, waiting.length);
         notify();
-        const snapshot = await options.send(command);
+        const snapshot = await options.send(batch);
         if (!snapshot.ok) {
           failAndClear(new Error(snapshot.error ?? "Apply failed."));
           return;

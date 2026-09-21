@@ -1532,7 +1532,7 @@ function GlobalDashboardPcSheetSnapshot()
     return Dash.snapshot()
 end
 
---- Storyteller Dashboard PCs tab: apply one mutation, then return a fresh snapshot JSON.
+--- Storyteller Dashboard PCs tab: apply one mutation or a JSON array of mutations, then return a fresh snapshot JSON.
 --- @param params string|table JSON text, or `{ json = "..." }`
 --- @return string JSON
 function GlobalDashboardPcSheetApply(params)

@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — TOR-594 camera ThirdPerson except overlay right-click FirstPerson._
+_Last populated: 2026-09-21 — TOR-595 PCs tab batched apply (also TOR-594 camera)._
 
 ### Soundscape
 
@@ -108,15 +108,15 @@ _Last populated: 2026-09-21 — TOR-594 camera ThirdPerson except overlay right-
 
 ### Character sheets
 
-#### ⚠️ Dashboard PCs tab — live sheet snapshot/apply
+#### ⚠️ TOR-595 — Dashboard PCs tab — live sheet snapshot/apply
 
-**How to verify:** Save & Play so the new Global functions load. Keep External Editor on, and keep the TTS Tools Cursor extension **off** (only one process can listen on the editor port).
+**How to verify:** Save & Play so the new Global functions load. Keep External Editor on, and keep the TTS Tools Cursor extension **off** (only one process can listen on the editor port). Restart the Storyteller Dashboard if it was already running.
 
 1. Open the Storyteller Dashboard and click **PCs**. The status line under the two-page spread should say it is live from Tabletop Simulator, not a stand-in fixture. You should see all five player cards on the left and a page-1 sheet plus an empty page 2. The subtitle should read like “Eighth Generation Ancilla of Clan Malkavian ◆ Descendant of the Pythia”.
-2. Select a seated player. Hunger, XP, Health, and Humanity should **move on the dashboard as soon as you click** — do not wait for Tabletop Simulator. Left-click Hunger to add a pip, right-click to remove one (no popup). Same for the XP jewel. Click Health: left-click the superficial icon to add damage, right-click to remove; fill the track then add one more and confirm a superficial box becomes aggravated. Mend should heal up to current Mending and close the menu. Humanity stain should not pile up a hidden tally while the red impaired box is showing. The in-game sheet may lag a second behind; the status line may say it is updating Tabletop Simulator.
+2. Select a seated player. Hunger, XP, Health, and Humanity should **move on the dashboard as soon as you click**. Left-click Hunger to add a pip, right-click to remove one (no popup). Same for the XP jewel. Click Health superficial **three times quickly**: the dashboard should show all three immediately. After a short wait the in-game Health track should match — without three long pauses. Mend should heal up to current Mending and close the menu. Humanity stain should not pile up a hidden tally while the red impaired box is showing. The status line may say it is updating Tabletop Simulator.
 3. Change Desire and leave the field — the in-game Desire should update. Optional: click **Std** on the selected card and confirm a Storyteller-initiated roll starts for that seat.
 
-**Context:** `GlobalDashboardPcSheetSnapshot` / `Apply` in `core/dashboard_pc_sheet.ttslua`. Dashboard UI is local; this row is the TTS Lua. Track under Character Sheets epic TOR-38 until a TOR id can be filed.
+**Context:** `GlobalDashboardPcSheetApply` accepts one command or a JSON array (`core/dashboard_pc_sheet.ttslua`). Dashboard clicks paint locally and flush queued clicks in one execute-lua call. **TOR-595**.
 
 **Author Comment:** The interfacing between the dashboard and TTS is causing significant performance interruption —— at least, when _sending_ intructions; it seems to be able to update itself against changes in TTS much more speedily. Regardless, can we make the transfer of data to TTS asynchronous somehow, while keeping the display of information on the dashboard instant-display/feedback? Perhaps an action queue of some kind?
 
@@ -448,19 +448,21 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **Context:** Absent was hiding the pile but leaving the hand zone (and often the cards) at the table, and parking the PC token on the board. Apply that only moved PC tokens also skipped seat layout because the NPC reconciler thought nothing had changed.
 
-#### TOR-537 — Randomize Table B seating on cover transition
+#### ✅ TOR-537 — Randomize Table B seating on cover transition
 
 **How to verify:** Save & Play so the new scripts load. Seat a mix of player characters and NPCs at the table, and mark one player **Absent** on the PCs panel. Apply a library scene that uses Table B, or click **Table B** on the Scenes panel so the cover comes down. When the cover lifts, the people who were sitting should be in a new random order, with no empty chairs in the middle of the ring. The physical table should match how many people are actually sitting (the small five-chair table if five or fewer). On the stage control board, the chair-row tokens should match that new order. The Absent player’s token should stay hidden under the board, not sitting on a chair. Click **Apply** on the control board without a cover: seats should stay where you put the tokens, not reshuffle.
 
 **Context:** Table B is the round “everyone sits in a packed ring” family. Cover transitions shuffle PCs and NPCs together; Absent players do not take a chair.
 
-#### TOR-538 — Overlay camera left-click default + right-click stage cycle
+#### ⚠️ TOR-538 — Overlay camera left-click default + right-click stage cycle
 
 **How to verify:** Save & Play so the new scripts load. Sit as a player with NPCs on the stage (at least two different polar areas, e.g. Center and Mid Left). Left-click the overlay camera button: the picker should open **and** your view should snap to that seat’s usual default table camera. Right-click again after Apply on the control board: the area cycle should restart from the first occupied polar area. Further right-clicks should advance Center → Center Left → … → Far Right, skipping empty areas, then loop. Clear the stage and right-click: elevated default framing with no NPC yaw retarget.
 
 **Context:** Cycle / Apply-reset behavior from the original overlay camera work. Aim math is covered by **TOR-562** below.
 
-#### TOR-562 — Overlay camera right-click: horizon yaw (keep default distance)
+**Author Comment:** Please implement a delay before opening the popup menu. A quick click should reset the player's camera to ThirdPerson default, while a click + hold for one second should not change the player's camera, but instead open the popup menu.
+
+#### ✅ TOR-562 — Overlay camera right-click: horizon yaw (keep default distance)
 
 **How to verify:** Save & Play so Global scripts reload. Sit as a player with at least one NPC on the stage. Look around so you are not already on default, then right-click the overlay camera icon. Your view should stay on that seat’s usual default focus in the XZ plane (same `distance` as default), with the look-at point raised, pitch flat on the horizon, and yaw turned **toward** the lead figurine (not 180° the other way). After about a quarter-second you should be in FirstPerson so you can tilt up yourself if you need to. Right-click again to confirm the next occupied area gets a new yaw while the focus XZ / distance still feel like a turn, not a teleport.
 
@@ -470,31 +472,31 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 ### Medium — overlay / HUD / Spotlight
 
-#### Scene apply — locked weather HUD no longer crashes
+#### ✅ Scene apply — locked weather HUD no longer crashes
 
 **How to verify:** Save & Play so scripts reload. In the Scenes library, Apply **Scarlett & the Boys Concert** (or any imported scene whose JSON sets `soundscapeNarrative` wind, rain, and thunderstorm together). The Host console must **not** print `ChronicleWeather.applyHudAudioOverrides: missing … soundscape during manual weather hold`. The scene transition should finish. Ravenwing is indoor, so the weather panel in the top-right overlay may stay hidden — that is expected. Light rain and medium wind should still be the locked audio for that scene.
 
 **Context:** The weather triple in the import JSON is valid. It locks chronicle weather, and the overlay then reads live rain/wind from soundscape. The lookup used a nested `gameState` key that never exists. Linear issue create hit workspace quota this session — track under Scenes epic TOR-33 until a TOR id can be filed.
 
-#### TOR-517 — Hide humidity on the weather overlay
+#### ✅ TOR-517 — Hide humidity on the weather overlay
 
 **How to verify:** Save & Play. During a live outdoor scene, the weather panel should still show the weather words, wind, and temperatures. Humidity text (damp / dry / etc.) should no longer appear next to them.
 
 **Context:** Humidity is still stored in the chronicle weather codes; it is just not shown on the overlay.
 
-#### TOR-583 — PCs panel: drop color/nickname row and shrink tracker fonts
+#### ✅ TOR-583 — PCs panel: drop color/nickname row and shrink tracker fonts
 
 **How to verify:** Save & Play. Open the Storyteller PCs panel. Each block should start with the character's full name (no Brown · nickname line). HP, WP, Humanity, and Hunger trackers should fit inside their rows without clipping.
 
 **Context:** Follow-up to **TOR-518** (PCs panel vertical trim). Track fonts are 18; Hunger dots are 16.
 
-#### TOR-518 — Tighten PCs panel vertical spacing
+#### ✅ TOR-518 — Tighten PCs panel vertical spacing
 
 **How to verify:** Save & Play. Open the Storyteller PCs panel at full size. Seat names, Desire, track glyphs, and button labels should keep the same font sizes as before. Rows and buttons should sit tighter vertically (less padding, shorter row heights). You should still be able to read the health / willpower / humanity glyph rows without clipping.
 
 **Context:** The first trim still left too much vertical space. Row containers and children now have explicit preferred/min heights; button rows are shorter than the glyph rows.
 
-#### TOR-561 — Separate session-start and session-end global blindfolds
+#### ✅ TOR-561 — Separate session-start and session-end global blindfolds
 
 **How to verify:** Save & Play so the new Global XML and scripts load. Confirm CustomUIAssets include `overlay_blindfold_session_<N>` and `overlay_blindfold_end_session_<N>` for your current session number.
 
@@ -506,25 +508,25 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **Context:** Replaces the TOR-524 approach of swapping the image on the session-start panel. Session-start explode animations left that panel hard to restore cleanly.
 
-#### TOR-539 — Memoriam configuration popup (subphase gate)
+#### ✅ TOR-539 — Memoriam configuration popup (subphase gate)
 
 **How to verify:** Save & Play so the new scripts load. During Play, open the Phases panel and click **Memoriam**. The Memoriam popup should appear, and the Phases label should still show the subphase you were already on (Main or Downtime). Pick a character from the dropdown. The timeline bar and scene grid should fill, and the slider should sit at the right (present day). Move the slider: the date should change, the gold bar segment should follow (black gaps stay black), and that period's scene buttons should turn green. Click a scene: the NPC assignment rows should appear **without** the character you picked. Click **+** on another character, then pick a listed NPC or type a library key and OK. Click **Advance** with the slider in a black gap, or with no scene chosen: the popup should stay open and you should get a Host message. Fill those in and click **Advance**: the Host console should print a one-line summary, the popup should close, and Phases should show Memoriam. Click **Memoriam** again, fill partway, then **Cancel**: the popup should close and the subphase should stay Memoriam.
 
 **Context:** The popup is the gate for entering Memoriam. Skybox, LUT, and overlay still wait on TOR-101. NPC names in the catalog are often still blank, so the picker list can be empty.
 
-#### TOR-540 — Memoriam popup: reverse bar, nested periods, Just Smoke, location
+#### ✅ TOR-540 — Memoriam popup: reverse bar, nested periods, Just Smoke, location
 
 **How to verify:** Save & Play so the new scripts load. During Play, open the Phases panel and click **Memoriam**, then pick **Fomórach**. The date and the location line under it should update as you move the slider; the location should match the gold period (for example Toronto, Kharkiv, or Jaffa) and go blank in a black gap. The gold bar should sit on the same side of the strip as the slider handle (present toward the left, matching the right-to-left slider). The long Toronto years should split around Kharkiv and Jaffa, and sliding onto any Toronto chunk should gold **all** of Toronto's chunks together. Click a scene button that is not green: the slider should jump into that period (not into a nested hole), that column should highlight, and the location should match. Move the slider into a different period: the old yellow button should clear. **Just Smoke** sits centered under the grid and stays green; click it, drag through a gap, and it should stay selected. **Advance** with Just Smoke in a gap should succeed and print a Host line that includes `justSmoke` and a default panel. The slider range is now 0–2400.
 
 **Context:** Follow-up to TOR-539 after the first in-game look. The default Just Smoke panel in Lua is a placeholder for you to fill in.
 
-#### TOR-584 — Do not rescale player dice bags or companion toggles
+#### ✅ TOR-584 — Do not rescale player dice bags or companion toggles
 
 **How to verify:** Save & Play. Companion toggle tiles at a PC seat should keep the size they have in the workshop save (layout must not resize them). Dice-bag sizes are the TOR-589 check below.
 
 **Context:** Companion toggles skip layout scale. The first dice-bag pass applied `{1, 1, 1}` to every bag; that was too aggressive — see TOR-589.
 
-#### TOR-589 — Do not change player dice bag scale during layout
+#### ✅ TOR-589 — Do not change player dice bag scale during layout
 
 **How to verify:** Save & Play. Look at a PC seat on Table A, then again after Scatter.
 
@@ -538,7 +540,7 @@ If Standard or Rouse bags are still at 1 after Save & Play, the earlier TOR-584 
 
 ### Dice
 
-#### TOR-591 — Blood Surge dice should not pile on the Standard bag every second add
+#### ✅ TOR-591 — Blood Surge dice should not pile on the Standard bag every second add
 
 **How to verify:** Save & Play so scripts reload. Sit a PC at a table and start a Standard (or Discipline) roll for that seat.
 

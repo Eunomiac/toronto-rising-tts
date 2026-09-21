@@ -159,9 +159,13 @@ export const fetchSheetSnapshot = async (): Promise<SheetSnapshot> => {
   return parseSnapshotJson(extractSnapshotJson(result));
 };
 
-export const applySheetCommand = async (command: ApplyCommand): Promise<SheetSnapshot> => {
+export const applySheetCommands = async (commands: readonly ApplyCommand[]): Promise<SheetSnapshot> => {
+  if (commands.length === 0) {
+    throw new Error("No sheet commands to apply.");
+  }
+  const payload = commands.length === 1 ? commands[0] : commands;
   const script = [
-    `local json = GlobalDashboardPcSheetApply(${luaLongString(JSON.stringify(command))})`,
+    `local json = GlobalDashboardPcSheetApply(${luaLongString(JSON.stringify(payload))})`,
     "print(json)",
     "return json"
   ].join("\n");
@@ -171,6 +175,9 @@ export const applySheetCommand = async (command: ApplyCommand): Promise<SheetSna
   }
   return parseSnapshotJson(extractSnapshotJson(result));
 };
+
+export const applySheetCommand = async (command: ApplyCommand): Promise<SheetSnapshot> =>
+  applySheetCommands([command]);
 
 export const snapshotOrFixture = async (): Promise<{ snapshot: SheetSnapshot; live: boolean; message: string }> => {
   try {

@@ -50,7 +50,7 @@ const okSnapshot = (hungerValue: number): SheetSnapshot => ({
 });
 
 describe("createApplyQueue", () => {
-  it("holds TTS replies until the queue is empty so a slow apply cannot rewind later clicks", async () => {
+  it("flushes clicks that arrived during a send as one batch", async () => {
     const first = deferred<SheetSnapshot>();
     const second = deferred<SheetSnapshot>();
     const sends = [first, second];
@@ -63,22 +63,31 @@ describe("createApplyQueue", () => {
     });
     const onSettled = vi.fn();
     const onFailure = vi.fn();
-    const onPendingChange = vi.fn();
-    const queue = createApplyQueue({ send, onSettled, onFailure, onPendingChange });
+    const queue = createApplyQueue({
+      send,
+      onSettled,
+      onFailure,
+      onPendingChange: vi.fn()
+    });
 
     queue.enqueue(hunger(1));
     queue.enqueue(hunger(1));
+    queue.enqueue(hunger(1));
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(send).toHaveBeenNthCalledWith(1, [hunger(1)]);
+
     first.resolve(okSnapshot(2));
     await vi.waitFor(() => {
       expect(send).toHaveBeenCalledTimes(2);
     });
+    expect(send).toHaveBeenNthCalledWith(2, [hunger(1), hunger(1)]);
     expect(onSettled).not.toHaveBeenCalled();
 
-    second.resolve(okSnapshot(3));
+    second.resolve(okSnapshot(4));
     await vi.waitFor(() => {
       expect(onSettled).toHaveBeenCalledTimes(1);
     });
-    expect(onSettled.mock.calls[0]?.[0]).toEqual(okSnapshot(3));
+    expect(onSettled.mock.calls[0]?.[0]).toEqual(okSnapshot(4));
     expect(onFailure).not.toHaveBeenCalled();
   });
 
