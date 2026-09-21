@@ -872,7 +872,6 @@ local function applyPcRigs(framesBySlot, occupants)
         slot1Rigid = slot1Rigid or { deltaDeg = 0, shift = Vector(0, 0, 0) },
         centerPoint = center,
     }, {
-        moveHandZone = RSL.moveHandZoneAndContainedCards,
         skipRoleKeys = { SEAT_CHAIR = true },
     })
     for i = 1, #occupants do

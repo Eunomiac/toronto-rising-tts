@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — TOR-591 Blood Surge dice every-other add._
+_Last populated: 2026-09-21 — TOR-590 unified hand-zone mover._
 
 ### Phases / session start
 
@@ -191,15 +191,15 @@ _Last populated: 2026-09-21 — TOR-591 Blood Surge dice every-other add._
 
 **Context:** Sync was treating scatter orbit NPCs as “preload,” which pulled figurines under the table after enter; Apply worked because it placed them before a skipped Sync. Orbit lights and parked tokens are always STANDARD / face-up in Scatter. relatedTo **TOR-572** (Scatter Mode). Linear create hit workspace quota this session.
 
-#### Hand-zone cards move with PC seats (Scatter / table layout)
+#### TOR-590 — Hand zone and cards move together
 
-**How to verify:** Save & Play so scripts reload. Put a few cards in Red’s hand (and optionally another seat).
+**How to verify:** Save & Play. Put a few cards in at least two hands.
 
-1. Switch **Scatter** on the Scenes panel (or Apply a scatter scene), then Apply with Red on a group. Red’s hand zone **and every card in that hand** should move to the scatter pile together — cards must not stay at the old chair, fall through the floor, or float off the table.
-2. Switch back to **Table A**. Hand zone and cards should return with Red’s seat pile and stay grabbable after a brief moment.
-3. Optional: mark Red **Absent** then **Present** — cards should bury and restore with the hand zone the same way.
+1. Advance **Play → Spotlight** from Table B. The colored hand-zone boxes **and** the white fanned cards should travel together to Table A.
+2. Advance **Spotlight → End** (Table B0). The boxes and the white fans should arrive together, stay fanned in the new hands, and be grabbable — cards must not stay locked in the old Spotlight/Table A fan.
+3. Optional: turn **Absent** on and off for one seat. Those cards should bury under the table with that hand zone and come back with it.
 
-**Context:** `moveHandZoneAndContainedCards` now collects via `Player.getHandObjects` as well as zone contents, locks cards for the teleport, and restores lock after a short settle. Linear issue create hit workspace quota this session — related to **TOR-513** (Absent hand stash) and **TOR-572** (Scatter Mode).
+**Context:** One `U.movePlayerHand` rigid-moves the Hand Zone and every card in that hand (smooth on the table, instant when parking Absent). Layout no longer locks cards. relatedTo **TOR-513** (Absent hand stash) and **TOR-572** (Scatter Mode).
 
 #### TOR-573 — Scatter import and live Standard↔Scatter switch
 

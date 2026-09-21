@@ -148,6 +148,7 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | `U.getZoneBounds(zone)` | Get bounding box of zone | Zone size check |
 | `U.isInside(zone, pos, ignoreY)` | Check if position is inside zone | Containment test |
 | `U.getHandZone(color)` | Get player's hand zone | Access hand zone |
+| `U.movePlayerHand(playerRef, position, rotation, opts?)` | Rigid-move a seat's Hand Zone and every card in that hand (no lock; `opts.smooth` default true) | Table/Scatter layout, Absent park |
 
 ### 1.7 String & Data Utilities
 

@@ -2337,6 +2337,175 @@ function U.getHandZone(color)
 	end)
 end
 
+--- @param obj Object|nil
+--- @return boolean
+local function isHandCardLikeObject(obj)
+	if obj == nil or not U.isGameObject(obj) then
+		return false
+	end
+	local tagVal = obj.tag
+	if tagVal == "Card" or tagVal == "Deck" then
+		return true
+	end
+	local typeVal = obj.type
+	if typeVal == "Card" or typeVal == "Deck" then
+		return true
+	end
+	return false
+end
+
+--- @param fromDeg number
+--- @param toDeg number
+--- @return number
+local function shortestSignedYawDelta(fromDeg, toDeg)
+	local d = toDeg - fromDeg
+	while d > 180 do
+		d = d - 360
+	end
+	while d < -180 do
+		d = d + 360
+	end
+	return d
+end
+
+--- Seat color from a color string or TTS Player (`player.color`). Empty seats have a
+--- color even when nobody is seated — do not require steam_id.
+--- @param playerRef string|userdata
+--- @return string
+local function resolveHandSeatColor(playerRef)
+	if type(playerRef) == "string" and playerRef ~= "" then
+		return playerRef
+	end
+	if playerRef ~= nil then
+		local color = playerRef.color
+		if type(color) == "string" and color ~= "" then
+			return color
+		end
+	end
+	error("U.movePlayerHand: playerRef must be a seat color string or a Player with .color")
+end
+
+--- Zone getObjects often misses in-hand cards; also use Player.getHandObjects.
+--- @param hz Object
+--- @param seatColor string
+--- @return Object[]
+local function collectHandCards(hz, seatColor)
+	local seen = {}
+	local out = {}
+	local function consider(obj)
+		if not isHandCardLikeObject(obj) then
+			return
+		end
+		local guid = obj.getGUID and obj.getGUID() or nil
+		if type(guid) == "string" and guid ~= "" then
+			if seen[guid] == true then
+				return
+			end
+			seen[guid] = true
+		end
+		out[#out + 1] = obj
+	end
+	if hz ~= nil and hz.getObjects ~= nil then
+		local zoneObjects = hz.getObjects()
+		if U.Type(zoneObjects) == "table" then
+			for i = 1, #zoneObjects do
+				consider(zoneObjects[i])
+			end
+		end
+	end
+	if type(seatColor) == "string" and seatColor ~= "" then
+		local player = Player[seatColor]
+		if player ~= nil and type(player.getHandObjects) == "function" then
+			local handObjects = player.getHandObjects()
+			if U.Type(handObjects) == "table" then
+				for i = 1, #handObjects do
+					consider(handObjects[i])
+				end
+			end
+		end
+	end
+	return out
+end
+
+--- @param obj Object
+--- @param pos Vector|table
+--- @param rot Vector|table
+--- @param smooth boolean
+local function poseObjectWithHand(obj, pos, rot, smooth)
+	local posTbl = { x = pos.x, y = pos.y, z = pos.z }
+	local rotTbl = { x = rot.x, y = rot.y, z = rot.z }
+	if smooth == true then
+		if obj.setPositionSmooth ~= nil then
+			obj.setPositionSmooth(posTbl, false, true)
+		else
+			obj.setPosition(posTbl)
+		end
+		if obj.setRotationSmooth ~= nil then
+			obj.setRotationSmooth(rotTbl, false, true)
+		else
+			obj.setRotation(rotTbl)
+		end
+		return
+	end
+	obj.setPosition(posTbl)
+	obj.setRotation(rotTbl)
+end
+
+--- Move a player's hand zone and every card in that hand as one rigid body (TOR-590).
+--- Does not lock cards. On-table layout smooth-moves (`collide=false`, `fast=true`);
+--- occupancy park passes `opts.smooth = false` for an instant teleport.
+--- @param playerRef string|userdata seat color or Player
+--- @param position Vector|table world position of the hand zone
+--- @param rotation Vector|table world rotation of the hand zone
+--- @param opts table|nil `{ smooth?: boolean }` default smooth true
+--- @return table `{ position = Vector, rotation = Vector, cards = Object[] }` zone pose before the move
+function U.movePlayerHand(playerRef, position, rotation, opts)
+	local color = resolveHandSeatColor(playerRef)
+	local hz = U.getHandZone(color)
+	if hz == nil or hz.getPosition == nil or hz.setPosition == nil then
+		error("U.movePlayerHand: no hand zone for seat '" .. tostring(color) .. "'")
+	end
+	if position == nil or position.x == nil or position.y == nil or position.z == nil then
+		error("U.movePlayerHand: position must be a world vector")
+	end
+	if rotation == nil or rotation.x == nil or rotation.y == nil or rotation.z == nil then
+		error("U.movePlayerHand: rotation must be a world vector")
+	end
+	opts = U.Type(opts) == "table" and opts or {}
+	local smooth = opts.smooth ~= false
+
+	local targetPos = Vector(position)
+	local targetRot = Vector(rotation)
+	local hzBefore = {
+		position = Vector(hz.getPosition()),
+		rotation = Vector(hz.getRotation()),
+		cards = {},
+	}
+	local cards = collectHandCards(hz, color)
+	local captured = {}
+	for i = 1, #cards do
+		local obj = cards[i]
+		captured[#captured + 1] = {
+			obj = obj,
+			before = {
+				position = Vector(obj.getPosition()),
+				rotation = Vector(obj.getRotation()),
+			},
+		}
+		hzBefore.cards[#hzBefore.cards + 1] = obj
+	end
+
+	local deltaYaw = shortestSignedYawDelta(hzBefore.rotation.y, targetRot.y)
+	poseObjectWithHand(hz, targetPos, targetRot, smooth)
+	for i = 1, #captured do
+		local entry = captured[i]
+		local rotated = U.frameAfterRigidYawAboutCenter(hzBefore.position, entry.before, deltaYaw)
+		local newPos = Vector(rotated.position) + (targetPos - hzBefore.position)
+		poseObjectWithHand(entry.obj, newPos, rotated.rotation, smooth)
+	end
+	return hzBefore
+end
+
 --- Rounds a number to a specified number of significant digits
 -- @param num number The number to round
 -- @param sigDigits number Number of decimal places (default: 1)
