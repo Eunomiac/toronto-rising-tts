@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-23 — playerLight1 anchor + lookAt modes (Linear quota; no new TOR)._
+_Last populated: 2026-09-23 — TOR-604 overlay chrome via absolute setClass (PLAY/MAIN = XML baseline)._
 
 ### Lighting / debug
 
@@ -32,13 +32,13 @@ _Last populated: 2026-09-23 — playerLight1 anchor + lookAt modes (Linear quota
 
 **Context:** `L.SetLightMode` now resolves `{ anchor, height }` the same way as `C.ObjectPositions`, and turns `lookAt` into the existing NPC-style `lookAtTarget` + `U.lookAtRotation` path. Authored modes were already in `L.LIGHTMODES` for all five player colors. Linear could not create a new issue (workspace free-issue limit).
 
-#### Debug Light control buttons: hover tooltips (no new TOR — Linear quota)
+#### ✅ Debug Light control buttons: hover tooltips (no new TOR — Linear quota)
 
 **How to verify:** Save & Play so HUD XML reloads. Open **Debug Light**, click any spotlight so the control panel opens, then hover each of **REFRESH**, **SNAPSHOT**, **DISCARD**, **ZERO**, and **DONE**. A short tip should appear above each button describing what it does.
 
 **Context:** TTS `tooltip` / `tooltipPosition="Above"` on the five control buttons in `panel_debug_light.xml`. relatedTo **TOR-495** (Debug Light selection labels). Linear could not create a new issue (workspace free-issue limit).
 
-#### TOR-495 — Debug Light selection buttons show spotlight names
+#### ✅ TOR-495 — Debug Light selection buttons show spotlight names
 
 **How to verify:** Save & Play so Global scripts and HUD XML reload (or Refresh XML if scripts already match). On the Storyteller HUD, click **Debug Light**.
 
@@ -51,7 +51,7 @@ _Last populated: 2026-09-23 — playerLight1 anchor + lookAt modes (Linear quota
 
 ### Tooling / TTS Tools fork
 
-#### TTS Tools Epic B — Claim / Release editor port (no new TOR — Linear quota)
+#### ✅ TTS Tools Epic B — Claim / Release editor port (no new TOR — Linear quota)
 
 **How to verify:** Run **Update TTS Extension from VSIX** (extension **2.3.0**). Status bar should show **TTS Port: 39998** when the extension is listening.
 
@@ -64,15 +64,15 @@ _Last populated: 2026-09-23 — playerLight1 anchor + lookAt modes (Linear quota
 
 ### Phases / session start
 
-#### TOR-604 — Play overlay restore matches XML after prologue
+#### TOR-604 — Overlay chrome uses absolute setClass; PLAY/MAIN stays on XML baseline
 
-**How to verify:** Save & Play so scripts reload. From Intermission with no scene, Advance to Play (prologue overlay), then Apply a library scene.
+**How to verify:** Save & Play so scripts and Global UI reload. From Intermission with no scene, Advance to Play (prologue overlay), then Apply a library scene.
 
-1. The center overlay should show roman session, district/site, the red date, and the clock inside the gold frame — not clipped off the bottom.
-2. Session number, location, and date should sit at the same height as a Play overlay that never went through prologue — not shifted up.
-3. Optional: End the scene. Date + **DOWNTIME** should use that same vertical layout, with **DOWNTIME** fully visible.
+1. During prologue: **T O R O N T O   R I S I N G**, compact roman, gold spaced title, **PROLOGUE**.
+2. After Apply: roman, district/site, date, and clock should sit at the same height as a scene that never went through prologue — not shifted up. Clock fully visible inside the gold frame.
+3. Optional: End the scene (Downtime). Date + **DOWNTIME** should use the Downtime class look (brighter red / tall time). Optional: Advance to Spotlight and End — ritual / EPILOGUE bookend still correct.
 
-**Context:** The 52/60 time box was not in the overlay XML (`large_red_text` is fontSize 42 with no layout box). Play restore now uses 42 / 42 and lets the row grow with the layout. relatedTo **TOR-598**. Linear quota blocked a new issue id.
+**Context:** Style chrome is absolute `UI.setClass` lists from overlay Defaults; copy is `setAttributes` text only. PLAY/MAIN no longer invents height/color overrides. Id renamed `sessionNumber`. relatedTo **TOR-598**.
 
 ### Character sheets
 
@@ -99,7 +99,7 @@ _Last populated: 2026-09-23 — playerLight1 anchor + lookAt modes (Linear quota
 
 ### Scatter / table layout
 
-#### TOR-590 — Hand zone and cards move together (incl. square yaw)
+#### ✅ TOR-590 — Hand zone and cards move together (incl. square yaw)
 
 **How to verify:** Save & Play so the instant-move scripts load. Put a few cards in at least two hands. Start in **Play** on Table B.
 

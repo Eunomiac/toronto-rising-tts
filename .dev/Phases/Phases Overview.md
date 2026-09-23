@@ -100,7 +100,7 @@ Ending events of the previous phase run before starting events of the new phase 
 
 ### Ending Events: `END`
 
-* Increment `sessionNum` by one (roman overlay via `gameStateOverlay_sesionNumber`).
+* Increment `sessionNum` by one (roman overlay via `gameStateOverlay_sessionNumber`).
 
 ### Starting Events: `INTERMISSION`
 

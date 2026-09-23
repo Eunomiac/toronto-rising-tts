@@ -3,6 +3,10 @@
     during **Play**. Spotlight uses ritual copy (TOR-98). Session-start Downtime uses prologue copy
     (TOR-598). End uses the same bookend layout with **EPILOGUE** (TOR-599).
 
+    Style chrome uses absolute `UI.setClass` lists from `ui/shared/game_state_overlay.xml` Defaults
+    (PLAY/MAIN baseline; Downtime / prologue / Spotlight APPLY strings). Copy uses `setAttributes`
+    `text` only — never `UI.setValue` (TOR-604 / TOR-600).
+
     Single writer: `GameStateOverlay.reconcileFromState()` — driven from `UpdateUIDisplays` / `Sync.ui`
     (see `core/sync.ttslua` incremental delta `gameStateOverlay`) so nothing else fights the overlay.
 
@@ -39,32 +43,40 @@ local rtMinuteCarry = 0
 --- time that actually passed. `nil` means "re-baseline on next tick" (no jump after pause/scene change).
 local lastRealTickClock = nil
 
---- Last pushed UI text values to avoid redundant `UI.setValue` on hot paths (RT tick).
+--- Last pushed UI text values to avoid redundant `setAttributes` on hot paths (RT tick).
 local overlayTextCache = {}
 
 --- Last pushed `active` flags. Skip unchanged writes so Advance `onComplete` cannot
 --- retrigger a TTS show after Play enter already armed the overlay behind the cover (TOR-532).
 local overlayActiveCache = {}
 
---- Last district-separator and datetime/time chrome fingerprints (avoid `UI.setAttributes` on every Sync.full).
+--- Last `UI.setClass` strings per element id (absolute class lists).
+local overlayClassCache = {}
+
+--- Last district-separator fingerprint (class + text + active).
 local lastDistrictSeparatorFingerprint = nil
+--- Last overlay chrome mode: "main"|"downtime"|"prologue"|"spotlight".
 local lastOverlayChromeFingerprint = nil
 
 local DISTRICT_SEPARATOR_DIAMOND = "◆"
 local DISTRICT_SEPARATOR_EN_DASH = "–"
-local OVERLAY_DATETIME_PLAY_COLOR = "#FF0000"
-local OVERLAY_TIME_PLAY_COLOR = "#FF0000"
-local OVERLAY_DATETIME_SPOTLIGHT_COLOR = "#d3ba50"
-local OVERLAY_SESSION_NUMBER_PLAY_COLOR = "#CC0000"
-local OVERLAY_SESSION_NUMBER_PROLOGUE_COLOR = "#990000"
-local OVERLAY_SEPARATOR_PLAY_COLOR = "#CC0000"
-local OVERLAY_SEPARATOR_PROLOGUE_COLOR = "#FF0000"
--- Play time matches overlay XML `large_red_text` (fontSize 42). Empty preferredHeight
--- collapses the row (TOR-604); 52/60 overshoots and lifts the stack. VerticalLayout
--- `childForceExpandHeight` defaults true, so restore flexibleHeight 1.
-local OVERLAY_TIME_PLAY_MIN_HEIGHT = "42"
-local OVERLAY_TIME_PLAY_PREFERRED_HEIGHT = "42"
-local OVERLAY_TIME_PLAY_FLEXIBLE_HEIGHT = "1"
+
+-- Absolute class lists (see APPLY/REVERT notes in `ui/shared/game_state_overlay.xml`).
+-- PLAY/MAIN baseline = authored XML classes only. Other modes replace the full list.
+local CLASS_SESSION_MAIN = "small_red_text"
+local CLASS_SESSION_PROLOGUE = "small_red_text dark_red_text bold_italic_text"
+local CLASS_DATETIME_MAIN = "med_red_text"
+local CLASS_DATETIME_DOWNTIME = "med_red_text bright_red_text"
+local CLASS_DATETIME_BOOKEND = "med_red_text gold_text bold_italic_text"
+local CLASS_DATETIME_SPOTLIGHT = CLASS_DATETIME_BOOKEND
+local CLASS_TIME_MAIN = "large_red_text"
+local CLASS_TIME_DOWNTIME = "large_red_text bright_red_text flex_tall_text"
+local CLASS_TIME_PROLOGUE = "large_red_text bright_red_text"
+local CLASS_TIME_SPOTLIGHT = "large_red_text med_white_text rigid_tall_text"
+local CLASS_SEP_MAIN = "small_red_text"
+local CLASS_SEP_PROLOGUE = "small_red_text bright_red_text"
+local CLASS_SEP_SPOTLIGHT = "small_red_text normal_text"
+
 -- Three ASCII spaces between words. Must be written with `text` via setAttributes;
 -- `UI.setValue` collapses the run (TOR-600 / TOR-601).
 local OVERLAY_WORD_GAP = "   "
@@ -154,24 +166,10 @@ local function isSessionStartDowntimeOverlay()
     return S.getStateVal("sessionStartDowntime") == true
 end
 
+--- Overlay copy: always `text` via setAttributes (never setValue — collapses spaces; TOR-600 / TOR-601).
 --- @param id string
 --- @param text string
 local function pushOverlayText(id, text)
-    if UI == nil or UI.setValue == nil then
-        return
-    end
-    local nextVal = tostring(text)
-    if overlayTextCache[id] == nextVal then
-        return
-    end
-    UI.setValue(id, nextVal)
-    overlayTextCache[id] = nextVal
-end
-
---- `UI.setValue` collapses consecutive ASCII spaces. XmlUI `text` via setAttributes keeps them.
---- @param id string
---- @param text string
-local function pushOverlayTextAttribute(id, text)
     if UI == nil or UI.setAttributes == nil then
         return
     end
@@ -181,6 +179,22 @@ local function pushOverlayTextAttribute(id, text)
     end
     U.setAttributes(id, { text = nextVal })
     overlayTextCache[id] = nextVal
+end
+
+--- @param id string
+--- @param classNames string absolute space-separated class list
+local function pushOverlayClass(id, classNames)
+    if UI == nil or UI.setClass == nil then
+        return
+    end
+    if type(classNames) ~= "string" or classNames == "" then
+        return
+    end
+    if overlayClassCache[id] == classNames then
+        return
+    end
+    UI.setClass(id, classNames)
+    overlayClassCache[id] = classNames
 end
 
 --- @param id string
@@ -197,7 +211,8 @@ local function pushOverlayActive(id, active)
     overlayActiveCache[id] = nextVal
 end
 
---- @param attrs table `{ text: string, fontStyle: string, active: boolean, color: string|nil }`
+--- District separator: absolute class list + text/active attributes only.
+--- @param attrs table `{ text: string, active: boolean, classNames: string }`
 local function pushDistrictSeparator(attrs)
     if UI == nil or UI.setAttributes == nil then
         return
@@ -206,91 +221,60 @@ local function pushDistrictSeparator(attrs)
     if type(text) ~= "string" then
         text = DISTRICT_SEPARATOR_DIAMOND
     end
-    local fontStyle = attrs.fontStyle
-    if type(fontStyle) ~= "string" or fontStyle == "" then
-        fontStyle = "Bold"
-    end
-    local color = attrs.color
-    if type(color) ~= "string" or color == "" then
-        color = OVERLAY_SEPARATOR_PLAY_COLOR
+    local classNames = attrs.classNames
+    if type(classNames) ~= "string" or classNames == "" then
+        classNames = CLASS_SEP_MAIN
     end
     local active = attrs.active == true
-    local fp = table.concat({ text, fontStyle, color, active and "1" or "0" }, "|")
+    local fp = table.concat({ classNames, text, active and "1" or "0" }, "|")
     if fp == lastDistrictSeparatorFingerprint then
         return
     end
     lastDistrictSeparatorFingerprint = fp
+    pushOverlayClass("gameStateOverlay_districtSeparator", classNames)
     U.setAttributes("gameStateOverlay_districtSeparator", {
         active = active and "true" or "false",
         text = text,
-        fontStyle = fontStyle,
-        color = color,
     })
     overlayTextCache["gameStateOverlay_districtSeparator"] = text
+    overlayActiveCache["gameStateOverlay_districtSeparator"] = active and "true" or "false"
 end
 
---- Datetime/time/session-number chrome. Fingerprinted so Sync.full does not rewrite every pass.
---- Prologue/End bookend styles must be undone when leaving those phases (TOR-598 / TOR-599).
---- @param kind "play"|"spotlight"|"prologue"
+--- Session / datetime / time chrome via absolute `UI.setClass` (TOR-604).
+--- PLAY/MAIN and Memoriam use XML baseline classes. Downtime / prologue / Spotlight apply mode lists.
+--- @param kind "main"|"downtime"|"prologue"|"spotlight"
 local function applyOverlayPhaseChrome(kind)
-    if UI == nil or UI.setAttributes == nil then
+    if UI == nil or UI.setClass == nil then
         return
     end
-    if kind ~= "spotlight" and kind ~= "prologue" then
-        kind = "play"
+    if kind ~= "downtime" and kind ~= "prologue" and kind ~= "spotlight" then
+        kind = "main"
     end
     if kind == lastOverlayChromeFingerprint then
         return
     end
     lastOverlayChromeFingerprint = kind
     if kind == "prologue" then
-        U.setAttributes("gameStateOverlay_sesionNumber", {
-            fontStyle = "BoldAndItalic",
-            color = OVERLAY_SESSION_NUMBER_PROLOGUE_COLOR,
-        })
-        U.setAttributes("gameStateOverlay_datetime", {
-            color = OVERLAY_DATETIME_SPOTLIGHT_COLOR,
-            fontStyle = "BoldAndItalic",
-        })
-        U.setAttributes("gameStateOverlay_time", {
-            color = OVERLAY_TIME_PLAY_COLOR,
-            fontSize = "42",
-            fontStyle = "Bold",
-        })
+        pushOverlayClass("gameStateOverlay_sessionNumber", CLASS_SESSION_PROLOGUE)
+        pushOverlayClass("gameStateOverlay_datetime", CLASS_DATETIME_BOOKEND)
+        pushOverlayClass("gameStateOverlay_time", CLASS_TIME_PROLOGUE)
         return
     end
-    U.setAttributes("gameStateOverlay_sesionNumber", {
-        fontStyle = "Bold",
-        fontSize = "18",
-        color = OVERLAY_SESSION_NUMBER_PLAY_COLOR,
-    })
     if kind == "spotlight" then
-        U.setAttributes("gameStateOverlay_datetime", {
-            color = OVERLAY_DATETIME_SPOTLIGHT_COLOR,
-            fontStyle = "BoldAndItalic",
-        })
-        U.setAttributes("gameStateOverlay_time", {
-            color = "#FFFFFF",
-            fontSize = "29",
-            minHeight = "42",
-            preferredHeight = "42",
-            flexibleHeight = "0",
-        })
+        pushOverlayClass("gameStateOverlay_sessionNumber", CLASS_SESSION_MAIN)
+        pushOverlayClass("gameStateOverlay_datetime", CLASS_DATETIME_SPOTLIGHT)
+        pushOverlayClass("gameStateOverlay_time", CLASS_TIME_SPOTLIGHT)
         return
     end
-    U.setAttributes("gameStateOverlay_datetime", {
-        color = OVERLAY_DATETIME_PLAY_COLOR,
-        fontStyle = "Bold",
-        fontSize = "30",
-    })
-    U.setAttributes("gameStateOverlay_time", {
-        color = OVERLAY_TIME_PLAY_COLOR,
-        fontStyle = "Bold",
-        fontSize = "42",
-        minHeight = OVERLAY_TIME_PLAY_MIN_HEIGHT,
-        preferredHeight = OVERLAY_TIME_PLAY_PREFERRED_HEIGHT,
-        flexibleHeight = OVERLAY_TIME_PLAY_FLEXIBLE_HEIGHT,
-    })
+    if kind == "downtime" then
+        pushOverlayClass("gameStateOverlay_sessionNumber", CLASS_SESSION_MAIN)
+        pushOverlayClass("gameStateOverlay_datetime", CLASS_DATETIME_DOWNTIME)
+        pushOverlayClass("gameStateOverlay_time", CLASS_TIME_DOWNTIME)
+        return
+    end
+    pushOverlayClass("gameStateOverlay_sessionNumber", CLASS_SESSION_MAIN)
+    pushOverlayClass("gameStateOverlay_datetime", CLASS_DATETIME_MAIN)
+    pushOverlayClass("gameStateOverlay_time", CLASS_TIME_MAIN)
 end
 
 --- Build a cheap fingerprint for session scene fields that drive the center overlay.
@@ -351,6 +335,13 @@ end
 --- Clear overlay text cache (e.g. after hiding panels for non-play phases).
 local function clearOverlayTextCache()
     overlayTextCache = {}
+end
+
+--- Reset chrome fingerprints so the next visible mode re-applies absolute class lists.
+local function clearOverlayChromeCaches()
+    lastOverlayChromeFingerprint = nil
+    lastDistrictSeparatorFingerprint = nil
+    overlayClassCache = {}
 end
 
 --- Narrative clock + location row are shown only when chronicle phase is in-world play (not session bookends).
@@ -598,7 +589,7 @@ end
 
 --- Weather panel (top-right): parsed chronicle code for current clock hour.
 function GameStateOverlay.reconcileWeatherFromState()
-    if UI == nil or UI.setValue == nil or UI.setAttribute == nil then
+    if UI == nil or UI.setAttributes == nil or UI.setAttribute == nil then
         return
     end
 
@@ -638,7 +629,7 @@ function GameStateOverlay.reconcileWeatherFromState()
     pushOverlayText("gameStateOverlay_temperatureF", string.format("(%d°F)", resolved.tempF or 0))
 end
 
---- Session roman numeral row (id keeps historical typo `sesionNumber`). TOR-263 / TOR-143.
+--- Session roman numeral row. TOR-263 / TOR-143.
 local function reconcileSessionNumberFromState()
     local Phases = require("core.phases")
     local n = tonumber(S.getStateVal("sessionNum")) or 1
@@ -646,7 +637,7 @@ local function reconcileSessionNumberFromState()
     if roman == "" then
         roman = "I"
     end
-    pushOverlayText("gameStateOverlay_sesionNumber", "− " .. roman .. " −")
+    pushOverlayText("gameStateOverlay_sessionNumber", "− " .. roman .. " −")
 end
 
 --- Spotlight location row: session name in the district-separator slot (not the diamond).
@@ -663,12 +654,12 @@ local function pushSpotlightLocationRow()
     end
     pushDistrictSeparator({
         text = sessionName,
-        fontStyle = "Normal",
+        classNames = CLASS_SEP_SPOTLIGHT,
         active = true,
     })
 end
 
---- Empty district/site row (End ritual overlay). Diamond separator stays off without a live scene.
+--- Empty district/site row (Downtime / Memoriam). Diamond separator stays off without a live scene.
 local function pushEmptyLocationRow()
     reconcileSessionNumberFromState()
     pushOverlayText("gameStateOverlay_district", "")
@@ -676,7 +667,7 @@ local function pushEmptyLocationRow()
     pushOverlayText("gameStateOverlay_site", "")
     pushDistrictSeparator({
         text = DISTRICT_SEPARATOR_DIAMOND,
-        fontStyle = "Bold",
+        classNames = CLASS_SEP_MAIN,
         active = false,
     })
     pushOverlayActive("gameStateOverlay_parentSite", false)
@@ -686,7 +677,7 @@ end
 --- TORONTO RISING banner, compact roman, spaced title, and PROLOGUE or EPILOGUE (TOR-598 / TOR-599).
 --- @param timeLabel string
 local function pushBookendOverlay(timeLabel)
-    pushOverlayTextAttribute("gameStateOverlay_sesionNumber", OVERLAY_PROLOGUE_BANNER)
+    pushOverlayText("gameStateOverlay_sessionNumber", OVERLAY_PROLOGUE_BANNER)
     pushOverlayText("gameStateOverlay_district", "")
     pushOverlayText("gameStateOverlay_parentSite", "")
     pushOverlayText("gameStateOverlay_site", "")
@@ -695,20 +686,19 @@ local function pushBookendOverlay(timeLabel)
     local n = tonumber(S.getStateVal("sessionNum")) or 1
     pushDistrictSeparator({
         text = DISTRICT_SEPARATOR_EN_DASH .. " " .. compactSessionRoman(n) .. " " .. DISTRICT_SEPARATOR_EN_DASH,
-        fontStyle = "Bold",
-        color = OVERLAY_SEPARATOR_PROLOGUE_COLOR,
+        classNames = CLASS_SEP_PROLOGUE,
         active = true,
     })
     local sessionName = S.getStateVal("sessionName")
     if type(sessionName) ~= "string" then
         sessionName = ""
     end
-    pushOverlayTextAttribute("gameStateOverlay_datetime", formatSpacedUppercaseTitle(sessionName))
+    pushOverlayText("gameStateOverlay_datetime", formatSpacedUppercaseTitle(sessionName))
     local label = timeLabel
     if type(label) ~= "string" or label == "" then
         label = "PROLOGUE"
     end
-    pushOverlayTextAttribute("gameStateOverlay_time", label)
+    pushOverlayText("gameStateOverlay_time", label)
 end
 
 --- Push district / site row (parent site + separator only when the site name contains a ":" split).
@@ -718,7 +708,7 @@ local function reconcileLocationRowFromState()
     pushOverlayText("gameStateOverlay_district", districtLabel)
     pushDistrictSeparator({
         text = DISTRICT_SEPARATOR_DIAMOND,
-        fontStyle = "Bold",
+        classNames = CLASS_SEP_MAIN,
         active = true,
     })
 
@@ -738,7 +728,7 @@ end
 
 --- Idempotent: reads `gameState` and applies only required Global UI diffs for the center-top overlay.
 function GameStateOverlay.reconcileFromState()
-    if UI == nil or UI.setValue == nil or UI.setAttribute == nil then
+    if UI == nil or UI.setAttributes == nil or UI.setClass == nil or UI.setAttribute == nil then
         return
     end
 
@@ -751,10 +741,10 @@ function GameStateOverlay.reconcileFromState()
     end
 
     if kind == "hidden" then
-        applyOverlayPhaseChrome("play")
+        applyOverlayPhaseChrome("main")
         pushDistrictSeparator({
             text = DISTRICT_SEPARATOR_DIAMOND,
-            fontStyle = "Bold",
+            classNames = CLASS_SEP_MAIN,
             active = false,
         })
         pushOverlayActive(OVERLAY_TIME_LOCATION_ID, false)
@@ -762,6 +752,7 @@ function GameStateOverlay.reconcileFromState()
         pushOverlayText("gameStateOverlay_datetime", "")
         pushOverlayText("gameStateOverlay_time", "")
         clearOverlayTextCache()
+        clearOverlayChromeCaches()
         -- Re-push session after cache clear so the next Play show is not skipped as "unchanged".
         reconcileSessionNumberFromState()
         return
@@ -795,7 +786,7 @@ function GameStateOverlay.reconcileFromState()
     -- Play: Memoriam overlay (TOR-101), session-start prologue, Downtime, or clock / location / weather.
     local Memoriam = require("core.memoriam")
     if Memoriam.isActive() then
-        applyOverlayPhaseChrome("play")
+        applyOverlayPhaseChrome("main")
         bustTextCacheIfSessionSceneChanged()
         pushOverlayActive(OVERLAY_TIME_LOCATION_ID, true)
         local mem = S.getStateVal("memoriam")
@@ -807,7 +798,7 @@ function GameStateOverlay.reconcileFromState()
         pushOverlayText("gameStateOverlay_district", location)
         pushDistrictSeparator({
             text = DISTRICT_SEPARATOR_DIAMOND,
-            fontStyle = "Bold",
+            classNames = CLASS_SEP_MAIN,
             active = false,
         })
         pushOverlayText("gameStateOverlay_parentSite", "")
@@ -847,7 +838,7 @@ function GameStateOverlay.reconcileFromState()
             pushOverlayActive(OVERLAY_WEATHER_ID, false)
             return
         end
-        applyOverlayPhaseChrome("play")
+        applyOverlayPhaseChrome("downtime")
         pushEmptyLocationRow()
         local ck = S.getStateVal("downtimeClock")
         local hasDatetime = type(ck) == "table"
@@ -867,7 +858,7 @@ function GameStateOverlay.reconcileFromState()
         return
     end
 
-    applyOverlayPhaseChrome("play")
+    applyOverlayPhaseChrome("main")
 
     if SceneLibrary.hasLiveSceneOnTable() ~= true then
         bustTextCacheIfSessionSceneChanged()
@@ -916,7 +907,7 @@ end
 --- @param hour24 number
 --- @param minute number
 local function reconcileOverlayAfterClockTick(prevY, prevMo, prevD, prevH, y, mo, d, hour24, minute)
-    if UI == nil or UI.setValue == nil or UI.setAttribute == nil then
+    if UI == nil or UI.setAttributes == nil or UI.setAttribute == nil then
         return
     end
 
@@ -948,7 +939,7 @@ end
 --- @param hour24 number
 --- @param minute number
 function GameStateOverlay.pushNarrativeClockDisplay(year, month, day, hour24, minute)
-    if UI == nil or UI.setValue == nil or UI.setAttribute == nil then
+    if UI == nil or UI.setAttributes == nil or UI.setAttribute == nil then
         return
     end
     if not shouldShowNarrativeClockOnOverlay() then
@@ -958,14 +949,14 @@ function GameStateOverlay.pushNarrativeClockDisplay(year, month, day, hour24, mi
     GameStateOverlay.pushNarrativeClockTextOnly(year, month, day, hour24, minute)
 end
 
---- Mid-lerp text scrub only (TOR-470): dirty-checked `UI.setValue` for date + time; no active flag.
+--- Mid-lerp text scrub only (TOR-470): dirty-checked setAttributes text for date + time; no active flag.
 --- @param year number
 --- @param month number
 --- @param day number
 --- @param hour24 number
 --- @param minute number
 function GameStateOverlay.pushNarrativeClockTextOnly(year, month, day, hour24, minute)
-    if UI == nil or UI.setValue == nil then
+    if UI == nil or UI.setAttributes == nil then
         return
     end
     if not shouldShowNarrativeClockOnOverlay() then
