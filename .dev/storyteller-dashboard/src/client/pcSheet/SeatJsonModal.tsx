@@ -78,16 +78,12 @@ export const SeatJsonModal = ({ seat, applying = false, onClose, onApply }: Prop
         <header className="modal-header pc-json-modal-header">
           <div>
             <h2 id="pc-json-modal-title">Sheet JSON — {title}</h2>
-            <p>{seat.color} seat · live snapshot from Tabletop Simulator</p>
           </div>
           <button type="button" className="pc-json-modal-close" disabled={waiting} onClick={onClose}>
             Close
           </button>
         </header>
         <div className="modal-body pc-json-modal-body">
-          <label className="pc-json-patch-label" htmlFor="pc-json-patch">
-            Patch properties (deep-merge into the sheet below; arrays replace, objects merge)
-          </label>
           <div className="pc-json-patch-frame">
             <span className="pc-json-brace" aria-hidden="true">{"{"}</span>
             <textarea

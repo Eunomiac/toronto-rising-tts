@@ -7,6 +7,10 @@
     {
       "path": "../../../Owner/Documents/My Games/Tabletop Simulator",
       "name": "TTS (Documents)"
+    },
+    {
+      "path": "../tts-tools",
+      "name": "tts-tools"
     }
   ],
   "settings": {}

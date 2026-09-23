@@ -171,7 +171,7 @@ Later relocation phases must update `.cursor/rules/*` and `.cursor/skills/*` in 
 | `.dev/SOLVING ISSUES & DEBUGGING.md` | authoritative-doc | Debugging playbook | high | yes | yes | `.dev/docs/troubleshooting/` |
 | `.dev/TESTING.md` | authoritative-doc | Testing index | high | yes | yes | `.dev/docs/testing/README.md` |
 | `.dev/TS_Save_230*.json` | save-snapshot | Ignored local save snapshots used by save-analysis scripts | high | no hand edits | yes | local ignored working files |
-| `.dev/TTS Edtior.log` | generated-artifact | Ignored typo-named log | high | no | no | keep ignored or generated/logs |
+| `.dev/TTS Editor.log` | generated-artifact | Ignored typo-named log | high | no | no | keep ignored or generated/logs |
 | `.dev/TTS_BUNDLING_SETUP.md` | authoritative-doc | Bundling/save pipeline | high | yes | yes | `.dev/docs/workflows/tts-bundling.md` |
 | `.dev/TTS_MCP.md` | authoritative-doc | TTS MCP/bridge setup | high | yes | yes | `.dev/docs/workflows/tts-mcp.md` |
 | `.dev/TTS-Scripting-Guide.htm` | reference-vendor | Offline TTS guide | medium | no | yes | `.dev/docs/reference/tts-api/` |
@@ -207,7 +207,7 @@ Current generated-output policy:
 - `.dev/Problems/*.json`: ignored IDE/problem captures.
 - `.dev/PC Data & Tracking/PC Reference.md`: explicitly generated; keep but mark generated.
 - `.dev/CSV to Markdown Parser/node_modules/`, `md/`, output-like files: local app artifacts; add/verify ignores before moving.
-- `.dev/TTS Edtior.log`: ignored by `*.log`; keep ignored.
+- `.dev/TTS Editor.log`: ignored by `*.log`; keep ignored.
 - `.dev/TTS-Scripting-Guide.htm` and `.dev/tts-api/`: reference/vendor material, not source docs.
 
 ## Active Tooling Inside `.dev`

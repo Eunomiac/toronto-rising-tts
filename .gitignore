@@ -56,6 +56,7 @@ logs/
 
 # Local dev artifacts — machine/session-specific; not versioned
 .dev/TS_Save_230*.json
+.dev/Custom Fork of TTS Tools Extension/save-backup/
 .dev/(temp) EmoJuice Audit/**
 .dev/build-logs/
 .dev/Problems/

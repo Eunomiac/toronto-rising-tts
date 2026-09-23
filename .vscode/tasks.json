@@ -228,16 +228,120 @@
         "showReuseMessage": true,
         "clear": false
       }
+    },
+    {
+      "label": "BUILD TTS Tools Extension (VSIX)",
+      "type": "shell",
+      "command": "npm run package",
+      "options": {
+        "cwd": "${workspaceFolder}/../tts-tools"
+      },
+      "windows": {
+        "options": {
+          "shell": {
+            "executable": "cmd.exe",
+            "args": ["/d", "/c"]
+          }
+        }
+      },
+      "group": "build",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "dedicated",
+        "showReuseMessage": true,
+        "clear": false
+      }
+    },
+    {
+      "label": "Install TTS Extension VSIX",
+      "type": "shell",
+      "command": "cursor --install-extension \"${workspaceFolder}/../tts-tools/dist/tts-tools.vsix\" --force",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "windows": {
+        "options": {
+          "shell": {
+            "executable": "cmd.exe",
+            "args": ["/d", "/c"]
+          }
+        }
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true
+      }
+    },
+    {
+      "label": "Reload Extension Host",
+      "type": "shell",
+      "command": "echo Reloading extension host.${input:restartExtensionHost}",
+      "problemMatcher": [],
+      "presentation": {
+        "echo": false,
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "close": true
+      }
+    },
+    {
+      "label": "Update TTS Extension from VSIX",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Install TTS Extension VSIX",
+        "Reload Extension Host"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": false
+      }
+    },
+    {
+      "label": "BUILD + Install TTS Tools Extension",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "BUILD TTS Tools Extension (VSIX)",
+        "Update TTS Extension from VSIX"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": false
+      }
     }
   ],
   "inputs": [
+    {
+      "id": "restartExtensionHost",
+      "type": "command",
+      "command": "workbench.action.restartExtensionHost"
+    },
     {
       "id": "customUiAssetsSaveName",
       "type": "promptString",
       "description": "TTS save name or number (examples: 230, TS_Save_230, TS_Save_230.json)",
       "default": "230"
     },
-    {
+
       "id": "ttsCloudExportSubfolder",
       "type": "promptString",
       "description": "TTS Cloud Manager subfolder under CLOUD_ROOT (config.js), e.g. Sites or Districts",
