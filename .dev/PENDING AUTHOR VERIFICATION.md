@@ -120,7 +120,7 @@ Separately, restart the Storyteller Dashboard with the TTS Tools extension **dis
 
 **Context:** Occupancy stash at Y=−200 was keeping satellites buried. relatedTo **TOR-507**.
 
-#### Pink Tarot Consult: one delayed place at authored height (no new TOR — Linear quota; relatedTo TOR-411)
+#### ✅ Pink Tarot Consult: one delayed place at authored height (no new TOR — Linear quota; relatedTo TOR-411)
 
 **How to verify:** Save & Play so `lib/tarot_toggle.ttslua` reloads. Put Pink’s tarot away (deck at y ≈ −200). Confirm `C.ObjectPositions.TAROT_DECK_PINK.on.height` is the height you want (currently **8.5**).
 
