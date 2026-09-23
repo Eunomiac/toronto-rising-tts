@@ -20,6 +20,8 @@ Verification:
 ## For Immediate Implementation
 > _After registering each of these issues with Linear in the ordinary fashion, before updating the Focus Stack, briefly review the issue: If it is a quick or easy fix, implement it immediately without waiting for author confirmation. Otherwise, promote it to the top of the Focus Stack, and offer to begin work on it immediately when summarizing your work processing `INBOX.md` to the author. If multiple issues require promotion in this way, consider how best to resolve them as quickly as possible, and offer to draft an implementation plan in your response to the author._
 
+* [Soundscape] Upon transitioning from PLAY to SPOTLIGHT, any custom location-based music (e.g. for sites like `C.Sites.Ravenwing`) should crossfade out and the default background music playlist should be restored.
+
 ## Active
 
 ## External Work (Set STATUS to "External To Do")

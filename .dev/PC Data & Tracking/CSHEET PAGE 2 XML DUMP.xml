@@ -170,15 +170,105 @@
 
 <!--
 
-  (Helper function for setting attributes on multiple elements at once)
-  function set(elem, attrs)
+  /**
+   * Sets UI attributes on one or more elements, with support for batch operations and sequence mapping.
+   *
+   * Overload Signatures:
+   *   UISet(elem, attrs, [mapSequences])
+   *   UISet(objectGuid, elem, attrs, [mapSequences])
+   *
+   * - elem:   (string | array of string) - The element name or an array of element names. If a string, may contain sequence mapping characters.
+   * - attrs:  (table) - Table of attributes to apply.
+   * - objectGuid: (optional) (string | array of string) - If supplied, applies attributes only to a specific object (or objects, if an array). Otherwise applies globally.
+   * - mapSequences: (optional) (array of {char: string, vals: array}) - For sequence mapping. For each mapping object:
+   *       {char = "#", vals = {1,2,3,4,5}}
+   *   For a given element name containing 'char' (e.g., "dot_rc_L_2_#"), each value in 'vals' replaces 'char' and a separate set operation occurs (e.g., "dot_rc_L_2_1", ... "dot_rc_L_2_5").
+   *
+   * Usage examples:
+   *   UISet("dot_rc_L_2_#", {image="dot_yellow"}, { {char="#", vals={1,2,3,4,5}} }) -- sets attributes for "dot_rc_L_2_1"... through "dot_rc_L_2_5".
+   *   UISet({"dot_a", "dot_b"}, {image="dot_yellow"})
+   *   UISet("object123", "elem_name", {active=true})
+   *   UISet({"object1","object2"}, {"elem_a","elem_b"}, {attr=val}, { ... })
+   */
+  function UISet(paramA, paramB, paramC, paramD)
+
+    function is_map(tbl)
+      if type(tbl) ~= "table" then return false end
+      local n = 0
+      for k, _ in pairs(tbl) do
+        n = n + 1
+        if type(k) ~= "number" or k < 1 or k ~= math.floor(k) then
+          return true
+        end
+      end
+      -- Also, if the keys are not contiguous from 1..N, it's a map
+      local i = 0
+      for _ in pairs(tbl) do
+        i = i + 1
+      end
+      if i ~= #tbl then return true end
+      return false
+    end
+
+    local objectGuid = nil
+    local elem = nil
+    local attrs = nil
+    local mapSequences = nil
+
+    if is_map(paramB) then
+      elem = paramA
+      attrs = paramB
+      mapSequences = paramC
+    else
+      objectGuid = paramA
+      elem = paramB
+      attrs = paramC
+      mapSequences = paramD
+
+      -- if objectGuid is a table, iterate through the table and call set for each element, passing the objectGuid and the element, attrs and mapSequences
+      if type(objectGuid) == "table" then
+        for _, guid in ipairs(objectGuid) do
+          UISet(guid, elem, attrs, mapSequences)
+        end
+        return
+      end
+    end
+
+    -- if elem is a table, iterate through the table and call set for each element, passing the objectGuid (unless nil) and the element, attrs and mapSequences
     if type(elem) == "table" then
       for _, e in ipairs(elem) do
-        set(e, attrs)
+        if objectGuid then
+          UISet(objectGuid, e, attrs, mapSequences)
+        else
+          UISet(e, attrs, mapSequences)
+        end
       end
       return
     end
-    getObjectFromGUID("e2c921").UI.setAttributes(elem, attrs)
+
+    -- will only get here with objectGuid being nil or a string, elem being a string, attrs being a table, and mapSequences being nil or a table
+    if mapSequences ~= nil then
+      -- now, apply the mapSequences to the elem, and call set for each resulting element
+      for _, sequence in ipairs(mapSequences) do
+        for _, val in ipairs(sequence.vals) do
+          local newElem = elem:gsub(sequence.char, val)
+          if objectGuid then
+            UISet(objectGuid, newElem, attrs)
+          else
+            UISet(newElem, attrs)
+          end
+        end
+      end
+      return
+    end
+
+    -- will only get here with objectGuid being nil or a string, elem being a string, attrs being a table, and mapSequences being nil
+    -- which is enough to call setAttributes globally or on the object
+    if objectGuid then
+      getObjectFromGUID(objectGuid).UI.setAttributes(elem, attrs)
+    else
+      UI.setAttributes(elem, attrs)
+    end
   end
 
   set("paper_root", {childAlignment = "UpperCenter", padding = "50 50 110 100"})
