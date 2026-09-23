@@ -95,7 +95,8 @@ export type ApplyCommand =
   | { op: "deferConnect"; color: SeatColor; value: boolean }
   | { op: "autoSeat"; color: SeatColor }
   | { op: "connect"; color: SeatColor }
-  | { op: "initiateRoll"; color: SeatColor; rollType: string };
+  | { op: "initiateRoll"; color: SeatColor; rollType: string }
+  | { op: "mergeSeat"; color: SeatColor; seat: SeatSnapshot };
 
 export type RingTarget =
   | { kind: "trait"; family: "attributes" | "skills"; key: string }

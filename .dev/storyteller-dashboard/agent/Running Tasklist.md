@@ -38,7 +38,8 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 
 ✔️ SD-PCs Claim/Release port. Red **Claim Port** seizes 39998 (including TTS Tools) and retries the live sheet. Green **Release Port** drops the dashboard hold so TTS Tools can reconnect. Snapshot JSON is printed from the execute-lua call so the tab can read it when TTS omits `return`.
 ✔️ SD-PCs live-only (no fixture). Offline shows **No live sheet** + reason. Identity and Ambition come from TTS snapshot / `playerData.ambition` only.
-✔️ SD-PCs **JSON** debug button. Opens a scrollable modal with pretty-printed live seat snapshot for the sheet on screen.
+✔️ SD-PCs **JSON** debug button. Opens a scrollable modal with pretty-printed live seat snapshot; patch textarea + **Apply** deep-merges into TTS (`mergeSeat`).
+✔️ Dashboard Lua bridge folder: `dashboard/pc_sheet.ttslua` (`require("dashboard.pc_sheet")`), not under `core/`.
 
 ✔️ SD-PCs apply batch. Rapid PCs-tab clicks that pile up while TTS is busy go in one `GlobalDashboardPcSheetApply` array (TOR-595). Dashboard still paints immediately.
 

@@ -133,6 +133,8 @@ const patchSeat = (seat: SeatSnapshot, command: ApplyCommand): SeatSnapshot => {
       return { ...seat, hudBlindfold: !seat.hudBlindfold };
     case "torporClear":
       return { ...seat, torpor: false };
+    case "mergeSeat":
+      return command.seat.color === seat.color ? command.seat : seat;
     default:
       return seat;
   }

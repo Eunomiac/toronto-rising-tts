@@ -1,5 +1,6 @@
 --[[
   Storyteller Dashboard PCs tab: live snapshot + apply over execute-lua.
+  Module: dashboard.pc_sheet (not core — dashboard bridge lives under dashboard/).
   Apply accepts one command object or a JSON array of commands (one snapshot at the end).
   No Steam clicker (same pattern as GlobalImportSceneJson).
   Agent guidance: .dev/PC Data & Tracking/PC Tracking & State Behavior.md
@@ -193,24 +194,70 @@ local function identityFromPcs(charKey, catalog)
   }
 end
 
+local function overlayString(overlay, key, fallback)
+  if type(overlay) == "table" and type(overlay[key]) == "string" then
+    return overlay[key]
+  end
+  return fallback
+end
+
+local function overlayNumber(overlay, key, fallback)
+  if type(overlay) == "table" and overlay[key] ~= nil then
+    return num(overlay[key], fallback)
+  end
+  return fallback
+end
+
+local function overlayStringList(overlay, key, fallback)
+  if type(overlay) == "table" and type(overlay[key]) == "table" then
+    return copyStringList(overlay[key])
+  end
+  return fallback
+end
+
+local applyMergedSeat
+
+local function writeRating(pid, pathFamily, pathKey, rating)
+  local row = copyRating(rating)
+  if pathFamily ~= nil then
+    S.setStateVal(row.base, "playerData", pid, "stats", pathFamily, pathKey, "base")
+    S.setStateVal(row.temp, "playerData", pid, "stats", pathFamily, pathKey, "temp")
+    S.setStateVal(row.disabled, "playerData", pid, "stats", pathFamily, pathKey, "disabled")
+  else
+    S.setStateVal(row.base, "playerData", pid, "stats", pathKey, "base")
+    S.setStateVal(row.temp, "playerData", pid, "stats", pathKey, "temp")
+    S.setStateVal(row.disabled, "playerData", pid, "stats", pathKey, "disabled")
+  end
+end
+
+local function writeTracker(pid, which, tracker)
+  local row = copyTracker(tracker)
+  S.setStateVal(row.base, "playerData", pid, "stats", which, "base")
+  S.setStateVal(row.temp, "playerData", pid, "stats", which, "temp")
+  S.setStateVal(row.disabled, "playerData", pid, "stats", which, "disabled")
+  S.setStateVal(row.superficial, "playerData", pid, "stats", which, "superficial")
+  S.setStateVal(row.aggravated, "playerData", pid, "stats", which, "aggravated")
+  S.setStateVal(row.stains, "playerData", pid, "stats", which, "stains")
+end
+
 local function encodeSnapshot(payload)
   if JSON == nil or type(JSON.encode) ~= "function" then
-    error("dashboard_pc_sheet: JSON.encode unavailable")
+    error("dashboard.pc_sheet: JSON.encode unavailable")
   end
   local encoded = JSON.encode(payload)
   if type(encoded) ~= "string" or encoded == "" then
-    error("dashboard_pc_sheet: JSON.encode returned empty")
+    error("dashboard.pc_sheet: JSON.encode returned empty")
   end
   return encoded
 end
 
 local function decodeCommand(jsonText)
   if JSON == nil or type(JSON.decode) ~= "function" then
-    error("dashboard_pc_sheet: JSON.decode unavailable")
+    error("dashboard.pc_sheet: JSON.decode unavailable")
   end
   local parsed = JSON.decode(jsonText)
   if type(parsed) ~= "table" then
-    error("dashboard_pc_sheet: command JSON did not decode to a table")
+    error("dashboard.pc_sheet: command JSON did not decode to a table")
   end
   return parsed
 end
@@ -233,6 +280,110 @@ end
 local function afterTrackerChange(color)
   PCST.refreshCharacterSheetsForColor(color)
   PCST.refreshRow(color)
+end
+
+--- Absolute write of a dashboard-merged seat into gameState (debug JSON Apply).
+applyMergedSeat = function(color, seat)
+  local pid = C.GetPlayerID(color)
+  if type(pid) ~= "string" or pid == C.StorytellerID then
+    return "No player for color " .. tostring(color)
+  end
+  if type(seat) ~= "table" then
+    return "mergeSeat requires a seat object"
+  end
+
+  if type(seat.attributes) == "table" then
+    for key, rating in pairs(seat.attributes) do
+      if type(key) == "string" then
+        writeRating(pid, "attributes", key, rating)
+      end
+    end
+  end
+  if type(seat.skills) == "table" then
+    for key, rating in pairs(seat.skills) do
+      if type(key) == "string" then
+        writeRating(pid, "skills", key, rating)
+      end
+    end
+  end
+  if seat.bloodPotency ~= nil then
+    writeRating(pid, nil, "bloodPotency", seat.bloodPotency)
+  end
+  if seat.health ~= nil then
+    writeTracker(pid, "health", seat.health)
+  end
+  if seat.willpower ~= nil then
+    writeTracker(pid, "willpower", seat.willpower)
+  end
+  if seat.humanity ~= nil then
+    writeTracker(pid, "humanity", seat.humanity)
+  end
+  if seat.specialties ~= nil then
+    S.setStateVal(copySpecialties(seat.specialties), "playerData", pid, "stats", "specialties")
+  end
+  if type(seat.badges) == "table" then
+    local badges = {}
+    for key, value in pairs(seat.badges) do
+      if type(key) == "string" then
+        local n = math.floor(num(value))
+        if n ~= 0 then
+          badges[key] = math.max(-5, math.min(5, n))
+        end
+      end
+    end
+    S.setStateVal(badges, "playerData", pid, "stats", "badges")
+  end
+  if seat.xp ~= nil then
+    S.setStateVal(math.max(0, math.floor(num(seat.xp))), "playerData", pid, "stats", "xp")
+  end
+  if seat.hunger ~= nil then
+    local maxDots = tonumber(C.MAX_HUNGER) or 5
+    local nx = math.max(0, math.min(maxDots, math.floor(num(seat.hunger))))
+    S.setPlayerVal(color, "hunger", nx)
+  end
+  if seat.desire ~= nil then
+    PCST.setDesireForColor(color, tostring(seat.desire or ""))
+  end
+  if seat.ambition ~= nil then
+    S.setStateVal(PCST.normalizeDesire(tostring(seat.ambition or "")), "playerData", pid, "ambition")
+  end
+
+  local overlay = {
+    charName = type(seat.charName) == "string" and seat.charName or "",
+    clan = type(seat.clan) == "string" and seat.clan or "",
+    bloodline = type(seat.bloodline) == "string" and seat.bloodline or "",
+    titles = copyStringList(seat.titles),
+    generation = type(seat.generation) == "string" and seat.generation or "",
+    birthPlace = type(seat.birthPlace) == "string" and seat.birthPlace or "",
+    birthYear = num(seat.birthYear),
+    embracePlace = type(seat.embracePlace) == "string" and seat.embracePlace or "",
+    embraceYear = num(seat.embraceYear),
+    convictions = copyStringList(seat.convictions),
+  }
+  S.setStateVal(overlay, "playerData", pid, "sheetOverlay")
+  if overlay.charName ~= "" then
+    S.setStateVal(overlay.charName, "playerData", pid, "charName")
+  end
+
+  if seat.absentFromSession ~= nil then
+    local FSL = require("lib.figurine_seat_layout")
+    local ok, err = FSL.setPlayerAbsentFromSession(color, seat.absentFromSession == true)
+    if not ok then
+      return err or ("Could not change Absent for " .. color)
+    end
+    relayoutSeatsAfterOccupancyChange()
+  end
+  if seat.deferAutoSeat ~= nil then
+    S.setStateVal(seat.deferAutoSeat == true, "connectionControls", "deferAutoSeatByColor", color)
+  end
+  if seat.deferConnect ~= nil then
+    S.setStateVal(seat.deferConnect == true, "connectionControls", "deferConnectByColor", color)
+  end
+
+  Sync.player(color)
+  P.refreshHudOverlaysForSeat(color)
+  afterTrackerChange(color)
+  return nil
 end
 
 local function applyDotDelta(color, family, key, field, delta)
@@ -407,22 +558,23 @@ local function snapshotSeat(color)
   local hungerMax = tonumber(C.MAX_HUNGER) or 5
   local charKey = catalog and catalog.charKey or ""
   local identity = identityFromPcs(charKey, catalog)
+  local overlay = type(pid) == "string" and S.getStateVal("playerData", pid, "sheetOverlay") or nil
   local ambition = PCST.normalizeDesire(type(pid) == "string" and S.getStateVal("playerData", pid, "ambition") or "")
   return {
     color = color,
     playerId = pid,
     charKey = charKey,
-    charName = identity.charName,
+    charName = overlayString(overlay, "charName", identity.charName),
     playerName = catalog and catalog.playerName or "",
-    clan = identity.clan,
-    bloodline = identity.bloodline,
-    titles = identity.titles,
-    generation = identity.generation,
-    birthPlace = identity.birthPlace,
-    birthYear = identity.birthYear,
-    embracePlace = identity.embracePlace,
-    embraceYear = identity.embraceYear,
-    convictions = identity.convictions,
+    clan = overlayString(overlay, "clan", identity.clan),
+    bloodline = overlayString(overlay, "bloodline", identity.bloodline),
+    titles = overlayStringList(overlay, "titles", identity.titles),
+    generation = overlayString(overlay, "generation", identity.generation),
+    birthPlace = overlayString(overlay, "birthPlace", identity.birthPlace),
+    birthYear = overlayNumber(overlay, "birthYear", identity.birthYear),
+    embracePlace = overlayString(overlay, "embracePlace", identity.embracePlace),
+    embraceYear = overlayNumber(overlay, "embraceYear", identity.embraceYear),
+    convictions = overlayStringList(overlay, "convictions", identity.convictions),
     desire = PCST.normalizeDesire(type(pid) == "string" and S.getStateVal("playerData", pid, "desire") or ""),
     ambition = ambition,
     absentFromSession = U.Type(seatRow) == "table" and seatRow.absentFromSession == true,
@@ -597,6 +749,9 @@ local function applyCommand(cmd)
     local RC = require("core.roll_controller")
     RC.initiateRoll(color, { rollType = rollType, initiator = "storyteller" })
     return nil
+  end
+  if op == "mergeSeat" then
+    return applyMergedSeat(color, cmd.seat)
   end
   return "Unknown op"
 end

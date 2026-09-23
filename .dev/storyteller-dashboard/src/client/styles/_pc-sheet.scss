@@ -319,6 +319,64 @@
   min-height: 0;
   overflow: auto;
   padding: 0.75rem 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.pc-json-patch-label {
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  color: rgba(252, 229, 193, 0.72);
+}
+
+.pc-json-patch {
+  width: 100%;
+  min-height: 15rem;
+  max-height: 25rem;
+  resize: vertical;
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid rgba(252, 229, 193, 0.28);
+  background: #08080b;
+  color: #f5ebd6;
+  font-family: "Cascadia Code", "Consolas", "Courier New", monospace;
+  font-size: 0.78rem;
+  line-height: 1.4;
+
+  &:disabled {
+    opacity: 0.55;
+  }
+}
+
+.pc-json-patch-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.pc-json-apply {
+  padding: 0.35rem 0.9rem;
+  border: 1px solid #9fd37d;
+  background: #132016;
+  color: #d5f5c4;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+}
+
+.pc-json-patch-error {
+  margin: 0;
+  color: #ffb4bc;
+  font-size: 0.8rem;
 }
 
 .pc-json-modal-pre {

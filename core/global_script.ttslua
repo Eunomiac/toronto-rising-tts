@@ -1592,7 +1592,7 @@ end
 --- Storyteller Dashboard PCs tab: live player sheet snapshot (execute-lua, no clicker).
 --- @return string JSON
 function GlobalDashboardPcSheetSnapshot()
-    local Dash = require("core.dashboard_pc_sheet")
+    local Dash = require("dashboard.pc_sheet")
     return Dash.snapshot()
 end
 
@@ -1604,7 +1604,7 @@ function GlobalDashboardPcSheetApply(params)
     if type(params) == "table" then
         jsonText = params.json or params[1]
     end
-    local Dash = require("core.dashboard_pc_sheet")
+    local Dash = require("dashboard.pc_sheet")
     return Dash.apply(jsonText)
 end
 

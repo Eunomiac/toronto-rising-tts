@@ -18,11 +18,12 @@ Global / HUD paths (`core/global_script.ttslua`, storyteller XmlUI) are differen
 ## The rule
 
 1. **Never** `require("core.*")` from object scripts (state, sync, roll_controller, npcs, …).
-2. **Never** `require` “kitchen sink” libs from objects: `lib.constants`, `lib.util`, `lib.pcs_data`, `lib.pc_stats`, `lib.object_positions` (use **`lib.object_positions_object`**), or any module whose dependency graph reaches `core.*`.
-3. **Import piecemeal only** — object-purpose modules designed to stay thin (`lib.dice_kinds`, `lib.guids`, `lib.csheet_util`, `lib.blood_potency_constants`, …). If you need game state or orchestration, add a **`Global.call("Global…")`** entry in `core/global_script.ttslua` and keep the object stub dumb.
-4. **Do not** `require` a Global module “just for one helper” if that module pulls `core.state` or similar — route through Global instead (see TOR-262 dice bag incident below).
-5. **Lazy `require` inside functions** may still be bundled on some paths; prefer **top-level** requires only of whitelisted thin modules, or Global.call.
-6. Before finishing any object-script change: mentally multiply bundle size by **number of objects** with that stub (e.g. **22** dice bags, **~37** CSHEET pages).
+2. **Never** `require("dashboard.*")` from object scripts (Storyteller Dashboard bridges under `dashboard/`).
+3. **Never** `require` “kitchen sink” libs from objects: `lib.constants`, `lib.util`, `lib.pcs_data`, `lib.pc_stats`, `lib.object_positions` (use **`lib.object_positions_object`**), or any module whose dependency graph reaches `core.*`.
+4. **Import piecemeal only** — object-purpose modules designed to stay thin (`lib.dice_kinds`, `lib.guids`, `lib.csheet_util`, `lib.blood_potency_constants`, …). If you need game state or orchestration, add a **`Global.call("Global…")`** entry in `core/global_script.ttslua` and keep the object stub dumb.
+5. **Do not** `require` a Global module “just for one helper” if that module pulls `core.state` or similar — route through Global instead (see TOR-262 dice bag incident below).
+6. **Lazy `require` inside functions** may still be bundled on some paths; prefer **top-level** requires only of whitelisted thin modules, or Global.call.
+7. Before finishing any object-script change: mentally multiply bundle size by **number of objects** with that stub (e.g. **22** dice bags, **~37** CSHEET pages).
 
 ## Approved patterns
 

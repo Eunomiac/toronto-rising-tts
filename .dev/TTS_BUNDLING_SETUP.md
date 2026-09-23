@@ -49,7 +49,7 @@ Based on the [TTS Tools documentation](https://sebaestschjin.github.io/tts-tools
 
 - **TTS may overwrite** `.tts/objects/Global.lua` when you reload the game or sync from TTS. Treat that file as **volatile**.
 - It should stay a **stub** only: `require("core.global_script")`.
-- **All global game logic** lives in **`core/global_script.ttslua`** (same `require()` roots as `lib/` and `core/`). Edit that file, not the stub, when adding `onLoad`, HUD handlers, etc.
+- **All global game logic** lives in **`core/global_script.ttslua`** (same `require()` roots as `lib/`, `core/`, and `dashboard/`). Edit that file, not the stub, when adding `onLoad`, HUD handlers, etc.
 - **Local function order (top recurring runtime bug):** In **every** `.ttslua` file you edit (especially `core/global_script.ttslua`), declare each **`local function`** **before** any `Global.*` / `HUD_*` / `local function` / callback that calls it — or **forward-declare** (`local foo` at top, assign later). Otherwise Lua treats the name as a global → **`attempt to call a nil value`** at Save & Play. **`npm run build` does not catch this.** Agents: grep helper vs caller line numbers before marking work done. See [`docs/solutions/lua-local-function-order.md`](../docs/solutions/lua-local-function-order.md) and `.cursor/rules/toronto-rising-lua-local-function-order.mdc`.
 
 See also [`README.md`](../README.md) at the repo root (Global script overview).
@@ -57,8 +57,8 @@ See also [`README.md`](../README.md) at the repo root (Global script overview).
 **Rolandostar / `Global.-1.lua` in Temp:** The synced file under e.g. `%LocalAppData%\Temp\TabletopSimulator\Tabletop Simulator Lua\` is **not** where `require()` looks. Module names like `core.global_script` resolve against your **project workspace** (`core/global_script.ttslua`, `lib/…`). Prefer **`require("core.global_script")`** in the stub. If a save or old stub still says **`require("global.global_script")`**, the repo provides a one-line shim at [`global/global_script.ttslua`](../global/global_script.ttslua) so that id keeps working; **edit game logic only in `core/global_script.ttslua`.** In a **multi-root** VS Code/Cursor window, put **this repo first** (or use a single-folder window) so the extension’s include path finds `core/` and `global/`.
 
 1. **Entry Point (stub)**: `.tts/objects/Global.lua` is what the extension bundles first; it should only `require("core.global_script")`.
-2. **Module Files**: Your module files (e.g., `lib/util.ttslua`, `core/state.ttslua`, `core/global_script.ttslua`) are in the workspace directory
-3. **Require Syntax**: Use dot notation: `require("lib.util")` for `lib/util.lua` or `lib/util.ttslua`
+2. **Module Files**: Your module files (e.g., `lib/util.ttslua`, `core/state.ttslua`, `core/global_script.ttslua`, `dashboard/pc_sheet.ttslua`) are in the workspace directory
+3. **Require Syntax**: Use dot notation: `require("lib.util")` for `lib/util.lua` or `lib/util.ttslua`; `require("dashboard.pc_sheet")` for dashboard bridge modules under `dashboard/`
 4. **Bundling Process**: When you use "Save and Play":
    - Extension reads `.tts/objects/Global.lua`
    - For each `require()` call, it looks for the file in the workspace directory (based on `ttsEditor.includePath`)

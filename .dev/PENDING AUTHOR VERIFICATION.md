@@ -116,9 +116,9 @@ _Last populated: 2026-09-21 — Play→Spotlight parks stage NPC figurines (Line
 1. **Offline notice:** On the **PCs** tab, click **Release Port** (or leave the port unclaimed). You should see a blank spread titled **No live sheet** with a short reason (for example that the dashboard is not holding the editor port). You must **not** see fake character names, Desire, Ambition, or tracker dots from a stand-in sheet.
 2. **Live sheet:** Click **Claim Port**. The status should say it is live from Tabletop Simulator. Player cards and page 1 should fill from the table. Subtitles and chronology come from the live seat snapshot (PCS identity in TTS), not from a dashboard hardcode file.
 3. **Ambition:** In Execute Lua / TEST BED, run something like `SetPcAmbition("aishe", "Create a legacy in Toronto that long outlasts me")` for a few seats. After Claim Port (or wait a couple of seconds for the poll), each Ambition line under the name on page 1 should match what you set. Empty `playerData.ambition` shows no quote — it must not invent text from the PCS catalog.
-4. Optional: click **JSON** next to Claim/Release Port — a scrollable modal should show pretty-printed data for the seat on screen. Escape or Close dismisses it. Hunger / Desire clicks still paint immediately (**TOR-595** batch apply).
+4. Optional: click **JSON** next to Claim/Release Port — a scrollable modal should show pretty-printed data for the seat on screen. Paste a partial patch (for example new `titles` / `convictions` arrays and a nested `attributes.charisma.base`), click **Apply**, and confirm the live sheet updates (arrays replace; nested objects merge). Escape or Close dismisses the modal. Hunger / Desire clicks still paint immediately (**TOR-595** batch apply).
 
-**Context:** Follow-up on the live PCs bridge (**TOR-595**). Snapshot fields include identity + `ambition` from `playerData` (`core/dashboard_pc_sheet.ttslua`). Dashboard never paints a fixture when TTS is unreachable.
+**Context:** Follow-up on the live PCs bridge (**TOR-595**). Snapshot/apply live in `dashboard/pc_sheet.ttslua` (`require("dashboard.pc_sheet")`). Snapshot fields include identity + `ambition` from `playerData`. Dashboard never paints a fixture when TTS is unreachable.
 
 ### Scatter / table layout
 #### TOR-590 — Hand zone and cards move together

@@ -206,6 +206,20 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
     applyQueue.enqueue(command);
   };
 
+  const applyMergedSeat = async (merged: SeatSnapshot): Promise<void> => {
+    if (!live) {
+      throw new Error("No live sheet to apply into.");
+    }
+    const command: ApplyCommand = { op: "mergeSeat", color: merged.color, seat: merged };
+    const next = await applySheetCommands([command]);
+    if (!next.ok) {
+      throw new Error(next.error ?? "mergeSeat apply failed");
+    }
+    setSnapshot(next);
+    setLive(true);
+    setStatus("Live from Tabletop Simulator.");
+  };
+
   const seat: SeatSnapshot | undefined = live
     ? (snapshot.seats.find((row) => row.color === selected) ?? snapshot.seats[0])
     : undefined;
@@ -291,7 +305,13 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
           onClose={() => setRing(null)}
         />
       ) : null}
-      {jsonOpen && seat ? <SeatJsonModal seat={seat} onClose={() => setJsonOpen(false)} /> : null}
+      {jsonOpen && seat ? (
+        <SeatJsonModal
+          seat={seat}
+          onClose={() => setJsonOpen(false)}
+          onApply={applyMergedSeat}
+        />
+      ) : null}
     </div>
   );
 };

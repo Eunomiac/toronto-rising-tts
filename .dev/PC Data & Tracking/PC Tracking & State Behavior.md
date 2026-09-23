@@ -66,12 +66,14 @@ The steam ID numbers (used as keys in the `playerData` table) are stored in the 
 ### `playerData.ambition`
 
 - **Type:** string. Missing/nil normalizes to `""` (same trim rules as Desire).
-- **Read:** Storyteller Dashboard PCs tab snapshot (`GlobalDashboardPcSheetSnapshot`) includes `ambition` from **live `playerData` only** (no PCS-catalog fill-in). Not yet an in-game CSHEET InputField (Ambition is still baked into page-1 art for many sheets).
+- **Read:** Storyteller Dashboard PCs tab snapshot (`GlobalDashboardPcSheetSnapshot` via `dashboard/pc_sheet.ttslua`) includes `ambition` from **live `playerData` only** (no PCS-catalog fill-in). Not yet an in-game CSHEET InputField (Ambition is still baked into page-1 art for many sheets).
 - **Mutation:** author TEST BED `SetPcAmbition(charKey, text)` / future dashboard edit — `S.setStateVal(text, "playerData", pid, "ambition")`.
 
 ### Dashboard PCs tab (live-only)
 
-The Storyteller Dashboard **PCs** tab must never paint a stand-in sheet when the editor bridge is down. If port 39998 is unclaimed or TTS does not return a snapshot, the tab shows an empty **No live sheet** notice with the bridge reason. Identity (name, clan, chronology, convictions) and trackers all come from `GlobalDashboardPcSheetSnapshot`.
+The Storyteller Dashboard **PCs** tab must never paint a stand-in sheet when the editor bridge is down. If port 39998 is unclaimed or TTS does not return a snapshot, the tab shows an empty **No live sheet** notice with the bridge reason. Identity (name, clan, chronology, convictions) and trackers all come from `GlobalDashboardPcSheetSnapshot` (`dashboard/pc_sheet.ttslua`, required as `dashboard.pc_sheet`).
+
+JSON **Apply** deep-merges a patch into the current seat (arrays replace; objects merge) and writes through `GlobalDashboardPcSheetApply` `mergeSeat`. Identity fields are stored under `playerData[steamId].sheetOverlay` so later snapshots prefer them over the PCS catalog.
 
 ## `PCStatsPartA`: `stats.attributes`, `stats.skills`, and `stats.specialties`
 
