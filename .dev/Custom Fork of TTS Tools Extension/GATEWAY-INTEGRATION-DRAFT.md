@@ -20,6 +20,8 @@ The **TTS Tools Gateway** is a small helper started by the TTS Tools extension. 
 
 When the gateway is **not** running (Cursor closed, extension disabled), apps talk to TTS **directly** on 39998 — same as today. Prefer using the client library so that failover is automatic.
 
+**Do not** poll TTS ports for “is anyone home?” status. Connecting to **39999** or briefly binding **39998** from a status timer hitch Tabletop Simulator. Until the gateway answers hold-state without touching TTS, dashboards should only report whether **they** currently hold 39998.
+
 ---
 
 ## Choose your integration path

@@ -229,47 +229,34 @@ export class DashboardTtsBridge {
     };
   }
 
+  /**
+   * Local hold state only — do **not** probe 39998/39999 here.
+   * Binding or connecting those ports from a status poll hitch TTS (and the editor).
+   * When the gateway exists, status can go through it without touching TTS.
+   */
   async getBridgeStatus(): Promise<{
     editorPort: "held_by_dashboard" | "free" | "in_use";
     commandPort: "reachable" | "unreachable";
     usable: boolean;
     message: string;
   }> {
-    let editorPort: "held_by_dashboard" | "free" | "in_use" = "free";
     if (this.isListening) {
-      editorPort = "held_by_dashboard";
-    } else {
-      editorPort = await new Promise((resolve) => {
-        const probe = net.createServer();
-        probe.once("error", (error?: Error) => {
-          const detail = error?.message ?? "";
-          resolve(detail.includes("EADDRINUSE") ? "in_use" : "free");
-        });
-        probe.listen(TTS_EDITOR_PORT, "127.0.0.1", () => {
-          probe.close(() => resolve("free"));
-        });
-      });
+      return {
+        editorPort: "held_by_dashboard",
+        // Not probed — real reachability is proven on executeLua / snapshot.
+        commandPort: "reachable",
+        usable: true,
+        message: "Dashboard holds port 39998."
+      };
     }
 
-    const commandPort = await new Promise<"reachable" | "unreachable">((resolve) => {
-      const client = net.connect({ host: "127.0.0.1", port: TTS_COMMAND_PORT }, () => {
-        client.end();
-        resolve("reachable");
-      });
-      client.once("error", () => resolve("unreachable"));
-    });
-
-    let message = "TTS bridge ready.";
-    if (editorPort === "in_use") {
-      message = "TTS Tools extension is using port 39998 — disable it to spawn from the Dashboard.";
-    } else if (commandPort === "unreachable") {
-      message = "TTS External Editor not reachable on 39999 — load a game with External Editor enabled.";
-    } else if (editorPort === "held_by_dashboard") {
-      message = "Dashboard holds port 39998; TTS command port is reachable.";
-    }
-
-    const usable = editorPort !== "in_use" && commandPort === "reachable";
-    return { editorPort, commandPort, usable, message };
+    return {
+      // "free" means the dashboard is not holding the port — not a live probe of who owns 39998.
+      editorPort: "free",
+      commandPort: "unreachable",
+      usable: false,
+      message: "Dashboard is not holding port 39998. Click Claim Port to talk to Tabletop Simulator."
+    };
   }
 
   executeLua(script: string): Promise<ExecuteResult> {

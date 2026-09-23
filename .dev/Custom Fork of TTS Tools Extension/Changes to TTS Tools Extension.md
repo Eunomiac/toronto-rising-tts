@@ -45,6 +45,7 @@ Code lives in `D:\Projects\.CODING\tts-tools`. VSIX build/install tasks live in 
 | Claim/Release | Power-user escape hatch only; normal apps rely on `gateway-client` state machine. Extension still ships Claim/Release early (Epic B) before gateway exists |
 | Commands to TTS (**39999**) | Fire-and-forget may go direct; **anything expecting a return is proxied through the gateway (C1 = A)** |
 | Inbound fan-out (**39998**) | Default: **broadcast** print / error / loadingANewGame / customMessage to all registered clients; **unicast** `returnMessage` to the client that owns that `returnID` |
+| Status without hitching TTS | Dashboard must **not** probe 39998/39999 on a timer; gateway can answer “who holds the editor port” without opening connections to TTS |
 | Optional tags | Optional, easy; agent owns v1 design (see C3 below) |
 | Dashboard TTS access | **One** shared Dashboard bridge for all features (PC sheet, Lua tab, Scenes, etc.) — either the whole Dashboard is on gateway/direct, or none. Prefer **all features work** in emergency |
 | Third-party DX (Marketplace) | **Agreed — three layers** (see below) |
@@ -101,7 +102,7 @@ Work order is intentional. **Epic A is the first implementation step** — its j
 8. [x] Package VSIX via existing tasks.
 
 ### Epic B — Extension port Claim/Release (no gateway yet)
-**Repo:** `tts-tools/packages/tts-editor`  
+**Repo:** `tts-tools/packages/tts-editor`
 **Status (2026-09-23):** Implemented in extension **2.3.0**. Pending author port-swap check with Dashboard.
 
 1. [x] Expose **Claim TTS Editor Port** / **Release TTS Editor Port** (listen/close on current direct API).

@@ -73,9 +73,10 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
       const holding = bridge.editorPort === "held_by_dashboard";
       setHoldingPort(holding);
       if (!holding) {
-        showOffline(bridge.editorPort === "in_use"
-          ? "TTS Tools is using port 39998. Click Claim Port to take it for the live sheet."
-          : "Dashboard is not holding the editor port. Click Claim Port to talk to Tabletop Simulator.");
+        showOffline(
+          bridge.message ||
+            "Dashboard is not holding the editor port. Click Claim Port to talk to Tabletop Simulator."
+        );
         return;
       }
       if (skipLive.current) {
