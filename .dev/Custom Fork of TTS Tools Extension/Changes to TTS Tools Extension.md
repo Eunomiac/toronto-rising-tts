@@ -86,10 +86,10 @@ Work order is intentional. **Epic A is the first implementation step** — its j
 **Author status (2026-09-23):** Fence email sent to Stern. C3 tag syntax accepted. Marketplace publish **deferred** until the fork is solid in daily TR use; still design/implement with eventual publication in mind (clean attribution, three-layer DX, no TR-only hacks in the public surface).
 
 ### Epic A — Fast Save & Play / incremental sync  ← **first build**
-**Repo:** `tts-tools/packages/tts-editor`  
+**Repo:** `tts-tools/packages/tts-editor`
 **Primary success:** After a normal Save & Play on Toronto Rising, disk sync finishes in **seconds**, not minutes — no blind wipe, no N× `getJSON` for every object just to refresh scripts.
 
-**Status (2026-09-23):** Implemented on branch `epic-a-fast-sync` (extension **2.2.0**, VSIX at `tts-tools/dist/tts-tools.vsix`). Pending your Save & Play check in TTS.
+**Status (2026-09-23):** Implemented and **author-verified** on branch `epic-a-fast-sync` (extension **2.3.0** includes Epic B). Load Objects instantaneous; Save & Play fingerprint/echo path confirmed live.
 
 1. [x] Add `objectSync` (fingerprint + reconcile; no blind wipe).
 2. [x] Drive `loadingANewGame`, Get Objects, and `pushingNewObject` through it.
@@ -97,16 +97,17 @@ Work order is intentional. **Epic A is the first implementation step** — its j
 4. [x] Default Save & Play: send + expect-echo short-circuit; **write sent bundles to `.tts/bundled`** so Go to Error works.
 5. [x] Fix import scramble early: match `returnID` on Lua returns; single-flight / mutex around import so overlapping Get Objects / push don’t interleave.
 6. [x] Add **Save & Play (Full Resync)** command (+ optional setting).
-7. [ ] Verify on Toronto Rising: cold load once; **edit → Save & Play is fast**; manual Get Objects / Full Resync still correct when needed.
+7. [x] Verify on Toronto Rising: cold load once; **edit → Save & Play is fast**; manual Get Objects / Full Resync still correct when needed.
 8. [x] Package VSIX via existing tasks.
 
 ### Epic B — Extension port Claim/Release (no gateway yet)
-**Repo:** `tts-tools/packages/tts-editor`
+**Repo:** `tts-tools/packages/tts-editor`  
+**Status (2026-09-23):** Implemented in extension **2.3.0**. Pending author port-swap check with Dashboard.
 
-1. Expose **Claim TTS Editor Port** / **Release TTS Editor Port** (listen/close on current direct API).
-2. `deactivate` closes cleanly (or documents helper handoff once Epic C exists).
-3. Status bar: holding 39998 / released / error.
-4. Verify: Dashboard Claim → Release → Extension Claim without Extension Host restart.
+1. [x] Expose **Claim TTS Editor Port** / **Release TTS Editor Port** (listen/close on current direct API).
+2. [x] `deactivate` closes cleanly (or documents helper handoff once Epic C exists).
+3. [x] Status bar: holding 39998 / released / error.
+4. [ ] Verify: Dashboard Claim → Extension Release → Extension Claim without Extension Host restart (or Extension Release → Dashboard Claim → Dashboard Release → Extension Claim).
 
 ### Epic C — Gateway helper + register protocol
 **Repo:** `tts-tools` (e.g. `packages/tts-gateway` + wire from `tts-editor`)

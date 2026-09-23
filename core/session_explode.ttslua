@@ -37,7 +37,7 @@ local ATTRIBUTE_NUM_TITLE_MAX_SEC = 10
 local ATTRIBUTE_NUM_TITLE_MIN_SEC = 0
 --- Music C starts when the TR_Loop fade is this far along (remaining volume = 1 - this).
 local ATTRIBUTE_LOOP_FADE_AT_SONG_START = 0.75
-local ATTRIBUTE_BLACKOUT_SHOW_SEC = 1.5
+local ATTRIBUTE_BLACKOUT_SHOW_SEC = 1
 local ATTRIBUTE_PANEL_DOWN_GAP_SEC = 0.5
 local ATTRIBUTE_BLACKOUT_HIDE_SEC = 1
 

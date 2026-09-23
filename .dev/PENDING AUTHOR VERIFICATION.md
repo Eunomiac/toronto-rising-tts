@@ -17,21 +17,20 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-23 — `/tr-inbox` cleared author ✅ rows; shipped TOR-590 card-yaw snap follow-up._
+_Last populated: 2026-09-23 — TTS Tools Epic B Claim/Release; Epic A author-confirmed._
 
 ### Tooling / TTS Tools fork
 
-#### TTS Tools Epic A — Fast Save & Play sync (no new TOR — Linear quota)
+#### TTS Tools Epic B — Claim / Release editor port (no new TOR — Linear quota)
 
-**How to verify:** Install the fork VSIX (toronto-rising task **Install TTS Tools** / reload Extension Host, or install `D:\Projects\.CODING\tts-tools\dist\tts-tools.vsix`). Confirm the extension is **TTS Tools (Community Fork) 2.2.0**. With Toronto Rising loaded and `.tts` already populated:
+**How to verify:** Run **Update TTS Extension from VSIX** (extension **2.3.0**). Status bar should show **TTS Port: 39998** when the extension is listening.
 
-1. Edit any object script, then use normal **Save and Play** (Ctrl+Alt+S).
-2. Success: the status bar finishes in **seconds**, not multi-minute “Reading objects.” Your edited script should still be on disk under `.tts/objects` and `.tts/bundled`.
-3. Cause a deliberate Lua error and use **Go to Error** — it should open the right bundled file.
-4. Optional: run **Save and Play (Full Resync)** once; that path may take longer and should refresh object `data.json` files.
-5. Spot-check that scripts are not swapped onto the wrong GUID folders after Save & Play.
+1. Command Palette → **Release TTS Editor Port** (or click the port status item). Status should show **released**.
+2. On the Storyteller Dashboard PCs tab, **Claim Port** — it should take 39998 without you restarting Cursor’s Extension Host.
+3. Dashboard **Release Port**, then in Cursor **Claim TTS Editor Port** — status back to **39998**, and Save & Play / Load Objects should work again.
+4. Optional: with the extension holding the port, Dashboard **Claim Port** may force-stop the extension’s listener (existing Dashboard behavior); then use extension **Claim** to take it back.
 
-**Context:** Community fork Epic A on `tts-tools` branch `epic-a-fast-sync`. Default Save & Play skips wipe + N× getJSON; uses `scriptStates` + returnID demux + import mutex. Save 230 backup: `.dev/Custom Fork of TTS Tools Extension/save-backup/` (gitignored). Linear could not open a tracking issue (workspace quota).
+**Context:** Epic B on `tts-tools` `epic-a-fast-sync`. Power-user escape hatch before the gateway (Epic C). Epic A (fast Save & Play) was author-confirmed earlier this session (Load Objects instant; Save & Play echo live).
 
 ### Phases / session start
 
