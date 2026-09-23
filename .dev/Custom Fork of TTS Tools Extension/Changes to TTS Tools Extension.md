@@ -90,7 +90,7 @@ Work order is intentional. **Epic A is the first implementation step** — its j
 **Repo:** `tts-tools/packages/tts-editor`
 **Primary success:** After a normal Save & Play on Toronto Rising, disk sync finishes in **seconds**, not minutes — no blind wipe, no N× `getJSON` for every object just to refresh scripts.
 
-**Status (2026-09-23):** Implemented and **author-verified** on branch `epic-a-fast-sync` (extension **2.3.0** includes Epic B). Load Objects instantaneous; Save & Play fingerprint/echo path confirmed live.
+**Status (2026-09-23):** Implemented and **author-verified** on branch `epic-a-fast-sync` (extension **2.3.1** includes Epic B + Global stub fix). Load Objects instantaneous; Save & Play fingerprint/echo path confirmed live.
 
 1. [x] Add `objectSync` (fingerprint + reconcile; no blind wipe).
 2. [x] Drive `loadingANewGame`, Get Objects, and `pushingNewObject` through it.
@@ -100,10 +100,11 @@ Work order is intentional. **Epic A is the first implementation step** — its j
 6. [x] Add **Save & Play (Full Resync)** command (+ optional setting).
 7. [x] Verify on Toronto Rising: cold load once; **edit → Save & Play is fast**; manual Get Objects / Full Resync still correct when needed.
 8. [x] Package VSIX via existing tasks.
+9. [x] **Global Include/require stubs (2.3.1):** Bundled Save & Play still rebundles Global from `.tts/objects` when those files are thin stubs; echo flushes sent scripts to `.tts/bundled` without replacing the objects stubs.
 
 ### Epic B — Extension port Claim/Release (no gateway yet)
 **Repo:** `tts-tools/packages/tts-editor`
-**Status (2026-09-23):** Implemented in extension **2.3.0**. Pending author port-swap check with Dashboard.
+**Status (2026-09-23):** Implemented in extension **2.3.1**. Pending author port-swap check with Dashboard.
 
 1. [x] Expose **Claim TTS Editor Port** / **Release TTS Editor Port** (listen/close on current direct API).
 2. [x] `deactivate` closes cleanly (or documents helper handoff once Epic C exists).
