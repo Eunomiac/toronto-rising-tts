@@ -11,17 +11,26 @@ Source of truth:
 - `lib/figurine_seat_layout.ttslua` (numbered slots + figurine offsets, TOR-507)
 - `lib/figurine_frame.ttslua` (world-unit XZ vs figurine yaw; dump + apply)
 - `lib/rotational-seat-layout.ttslua` (SetTableTo / SyncTable wrapper, cameras, table family)
-- `lib/constants.ttslua` (`C.Tables`, `C.SeatRoleOffsets`, `C.DefaultTableSlots`)
-- `lib/seat_role_offsets.ttslua`
+- `lib/constants.ttslua` (`C.Tables`, `C.SeatRoleOffsets`, `C.ObjectPositions`, `C.DefaultTableSlots`)
+- `lib/seat_role_offsets.ttslua` (always-on furniture + anchors only)
 - `core/debug.ttslua` layout/debug helpers
 
 Verification:
-- `rg -n "SetTableTo|resolveTableKey|referenceFigurine|tableSlot|SeatRoleOffsets" lib core`
+- `rg -n "SetTableTo|resolveTableKey|referenceFigurine|tableSlot|SeatRoleOffsets|ObjectPositions" lib core`
 - Save & Play table A/B/C seat order; Scenes table buttons; PCs panel Absent; control-board token occupancy (TOR-247)
 
 Status: current layout reference; production placement is figurine-offset (TOR-507). Generator helpers in `rotational-seat-layout.ttslua` remain for debug/compare.
 
 This document describes layout math for player object groups around a table center, and the **implemented** API in [`lib/rotational-seat-layout.ttslua`](../lib/rotational-seat-layout.ttslua) plus [`lib/figurine_seat_layout.ttslua`](../lib/figurine_seat_layout.ttslua).
+
+## Pose authority (SeatRoleOffsets vs ObjectPositions)
+
+| Table | Owns |
+| --- | --- |
+| **`C.SeatRoleOffsets`** | Always-on seat furniture and **anchors** (figurine-local XZ / yaw / `defaultY`) |
+| **`C.ObjectPositions`** | Full on/off (or Consult) pose for feature objects — XZ from the live anchor, Y from `height` / `position` |
+
+**Rule:** If an object has a `C.ObjectPositions` entry (Pink tarot deck/drawer/button, `CSHEET_DICE_DRAWER_<COLOR>`, …), seat layout must **not** place it from a SeatRoleOffsets role row. Layout moves anchors first, then re-applies ObjectPositions via `TarotToggle.reconcileAfterSeatLayout` / `DiceDrawer` open/close.
 
 ## Current production path
 
@@ -38,13 +47,13 @@ Use the table-driven entrypoints for production layout:
 - `slotCapacity`
 - `usedBySlot` on Table A leaves
 
-Satellites use `C.SeatRoleOffsets` (world-unit XZ + rotation vs the occupant figurine yaw frame; absolute `defaultY`). Table B family size is `highestOccupiedTableSlot` (B0 when the highest chair is 1–5, B1 at 6, … B4 at 9).
+Satellites use `C.SeatRoleOffsets` (world-unit XZ + rotation vs the occupant figurine yaw frame; absolute `defaultY`) for furniture and anchors. Table B family size is `highestOccupiedTableSlot` (B0 when the highest chair is 1–5, B1 at 6, … B4 at 9).
 
 Current placement behavior:
 
-- Each in-session occupant is moved to their numbered slot; satellites follow figurine-local offsets.
+- Each in-session occupant is moved to their numbered slot; furniture/anchors follow figurine-local offsets.
 - Live Y at or below −199 is a **feature-hide** override for character-sheet pages, signal fire, and hunger smoke — occupancy stash (Absent / unused NPC pile at Y=−200) is a different writer. On hide, in-session Y is stored on `seatLayout.absentPileY`; on restore, table-height roles use authored `defaultY` so lights, bags, and the chair come back with the figurine (TOR-512). The player hand zone also moves to Y=−200, and cards in that hand ride with it via `U.movePlayerHand` (TOR-513 / TOR-590).
-- Pink’s tarot deck uses the **inactive** ObjectPositions Y (−10), not the dumped Consult-the-Tarot height. Layout only keeps the on pose if the deck was already consulting.
+- Pink tarot and PC dice drawers re-apply from `C.ObjectPositions` after anchors move (Consult on/off; tray open/closed).
 - Hand zones still use the dedicated hand-zone mover so cards in hand stay with the zone.
 
 Low-level helpers such as `generateRotationalCoordinates` and `resolveSeatObjects` still exist for debug/geometry workflows, but new production code should use the table-driven wrapper unless the task explicitly concerns those low-level helpers.

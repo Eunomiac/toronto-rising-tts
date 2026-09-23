@@ -270,4 +270,27 @@ function DD.reconcileAllToOff(opts)
   return closed
 end
 
+--- After seat layout moved drawer anchors: re-apply ObjectPositions on/off from
+--- in-memory open flags. Does not run tray open/close choreography.
+--- @param opts table|nil `{ instant?: boolean }` (default instant)
+function DD.reconcileAfterSeatLayout(opts)
+  opts = type(opts) == "table" and opts or {}
+  local instant = opts.instant ~= false
+  for _, color in ipairs(C.PlayerColors or {}) do
+    local wantOn = drawerOpenByColor[color] == true
+    local pose = getPoseEntry(color, wantOn)
+    if pose ~= nil then
+      local obj = findDiceDrawerObject(color)
+      if obj ~= nil then
+        local key = objectPositionsKey(color)
+        local entry = key ~= nil and C.ObjectPositions[key] or nil
+        local state = wantOn and "on" or "off"
+        local resolvedPose = OP.resolveStatePose(obj, entry or {}, state) or pose
+        local duration = instant and 0 or OP.DEFAULT_TRANSITION_DURATION
+        OP.applyResolvedPose(obj, resolvedPose, duration, 0, { useSmoothSetters = not instant })
+      end
+    end
+  end
+end
+
 return DD

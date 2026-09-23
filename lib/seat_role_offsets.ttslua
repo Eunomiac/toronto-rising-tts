@@ -16,7 +16,7 @@ local offsets = {
       defaultY = 17.0400
     },
     CSHEET_DICE_DRAWER_ANCHOR_ON = {
-      localXZ = { x = 0, z = -40.3241 },
+      localXZ = { x = 0, z = -41.3241 },
       localRotation = { x = 0, y = -180, z = 0 },
       defaultY = 200
     },
@@ -36,15 +36,6 @@ local offsets = {
       localXZ = { x = 0, z = -30.2052 },
       localRotation = { x = 0, y = -180, z = 0 },
       defaultY = 1.4300
-    },
-    -- Layout default must be the closed (OFF) pose. ObjectPositions moves to ANCHOR_ON + open
-    -- scale/Y when a roll opens the tray. Dumping while a tray is open pastes the ON pose here
-    -- and every Sync.full / Spotlight enter reopens all drawers.
-    CSHEET_DICE_DRAWER = {
-      localXZ = { x = 0, z = -19.5036 }, -- match CSHEET_DICE_DRAWER_ANCHOR_OFF
-      localRotation = { x = 0, y = -180, z = 0 },
-      defaultY = -1.0000,
-      scale = { x = 23.5700, y = 0.1000, z = 7.6800 },
     },
     CSHEET_PAGE_1 = {
       localXZ = { x = 6.1500, z = -20.7349 },
@@ -203,12 +194,6 @@ local offsets = {
       SEAT_CHAIR = { localXZ = { x = 0, z = 13.0852 }, localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 }, defaultY = -31.9300, scale = { x = 15.0000, y = 20.0000, z = 15.0000 } },
     },
     Pink = {
-      TAROT_BUTTON = {
-        localXZ = { x = -8.2958, z = -29.9693 },
-        localRotation = { x = 0, y = 180, z = 0 },
-        defaultY = 6.0000,
-        scale = { x = 0.7000, y = 1.0000, z = 0.7000 },
-      },
       TAROT_BUTTON_ANCHOR_OFF = {
         localXZ = { x = -8.2958, z = -29.9693 },
         localRotation = { x = 0, y = 180, z = 0 },
@@ -220,16 +205,9 @@ local offsets = {
         defaultY = 200
       },
       TAROT_DECK_ANCHOR = {
-        localXZ = { x = -5.6408, z = -37.0964 },
+        localXZ = { x = -5.6408, z = -36.0964 },
         localRotation = { x = 17.6000, y = -0.0141, z = 180 },
         defaultY = 200
-      },
-      TAROT_DECK = { localXZ = { x = -5.6408, z = -37.0964 }, localRotation = { x = 17.6000, y = -0.0141, z = 180.0000 }, defaultY = -10.0000 }, -- inactive default; off uses hide at −200 via ObjectPositions.TAROT_DECK_PINK
-      TAROT_DRAWER = {
-        localXZ = { x = -5.6446, z = -25.3428 },
-        localRotation = { x = 0, y = 180, z = 0 },
-        defaultY = 2.4100,
-        scale = { x = 7.4900, y = 0, z = 5.7200 },
       },
       TAROT_DRAWER_ANCHOR_OFF = {
         localXZ = { x = -5.6446, z = -25.3428 },
@@ -251,7 +229,7 @@ local offsets = {
       COMPANION_TOGGLE_A = { localXZ = { x = -6.4341, z = -30.3745 }, localRotation = { x = 0.0000, y = 0.0428, z = 180.0000 }, defaultY = 6.0050 },
       COMPANION_TOGGLE_B = { localXZ = { x = -8.6364, z = -30.3444 }, localRotation = { x = 0.0000, y = 0.0000, z = 180.0000 }, defaultY = 6.0000 },
       COMPANION_TOGGLE_C = { localXZ = { x = -10.7167, z = -30.3444 }, localRotation = { x = 0.0000, y = 0.0000, z = 180.0000 }, defaultY = 6.0050 },
-      DICEBAG_OBLIVROUSE = { localXZ = { x = 4.4491, z = -30.2232 }, localRotation = { x = 0.0000, y = -0.0143, z = 0.0000 }, defaultY = 5.9800 },
+      DICEBAG_OBLIVROUSE = { localXZ = { x = 4.7491, z = -30.2169 }, localRotation = { x = 0.0000, y = -0.0143, z = 0.0000 }, defaultY = 5.9800 },
       SEAT_CHAIR = { localXZ = { x = 0, z = 13.0852 }, localRotation = { x = 0.0000, y = -180.0000, z = 0.0000 }, defaultY = -37.0800, scale = { x = 35.0000, y = 35.0000, z = 12.1044 } },
     },
     Brown = {

@@ -17,11 +17,11 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-23 — Play→Spotlight location→Main (comment on TOR-98)._
+_Last populated: 2026-09-23 — ObjectPositions sole pose authority (comments on TOR-411 / TOR-507)._
 
 ### Phases / session end
 
-#### Play→Spotlight: location bed → Main playlist (no new TOR — Linear quota; comment on TOR-98)
+#### ✅ Play→Spotlight: location bed → Main playlist (no new TOR — Linear quota; comment on TOR-98)
 
 **How to verify:** Save & Play so scripts reload. Apply **Ravenwing** (or any site with a location bed and `backgroundMusic.playlist = "none"`) so you hear the nightclub bed, not the default Main theme.
 
@@ -31,7 +31,7 @@ _Last populated: 2026-09-23 — Play→Spotlight location→Main (comment on TOR
 
 **Context:** `Scenes.applyMainOnlySoundscape({ skipMoodIfAlreadyMain = true })` used to treat leftover `musicMood == "main"` as “Main is playing” even when BGM was suppressed and only the location lane was audible. relatedTo **TOR-593**, **TOR-494**.
 
-#### End→Intermission: TR_Loop starts with blackout FadeOut (no new TOR — Linear quota; comment on TOR-143)
+#### ✅ End→Intermission: TR_Loop starts with blackout FadeOut (no new TOR — Linear quota; comment on TOR-143)
 
 **How to verify:** Save & Play so phase scripts reload. Advance from **End** to **Intermission**.
 
@@ -65,6 +65,16 @@ _Last populated: 2026-09-23 — Play→Spotlight location→Main (comment on TOR
 **Context:** Follow-up on the live PCs bridge (**TOR-595**). Snapshot/apply live in `dashboard/pc_sheet.ttslua` (`require("dashboard.pc_sheet")`). Snapshot fields include identity + `ambition` from `playerData`. Dashboard never paints a fixture when TTS is unreachable.
 
 ### Scatter / table layout
+
+#### ObjectPositions sole pose for Pink tarot + PC dice drawers (comments on TOR-411 / TOR-507)
+
+**How to verify:** Save & Play so seat layout and tarot/drawer scripts reload.
+
+1. Put the Pink tarot away (Consult off). Switch Table A ↔ B, or Advance **Play → Spotlight**. The deck should stay hidden at −200; Pink anchors should still follow the seat. Click Consult once — the deck should appear once at the authored ObjectPositions height (8.5), with no hop from drawer height up to 8.5.
+2. With every PC dice tray closed, Advance **Play → Spotlight**. Trays should stay closed (layout no longer pastes a SeatRoleOffsets drawer pose). Optional: open one seat’s roll so that tray slides out, then cancel — only that tray should have opened.
+3. Optional: dump seat-role offsets for Pink — you should only need **anchors** for tarot (deck/drawer/button) and dice-drawer ON/OFF anchors, not object rows for `TAROT_DECK` / `TAROT_DRAWER` / `TAROT_BUTTON` / `CSHEET_DICE_DRAWER`.
+
+**Context:** Seat layout now moves anchors only for ObjectPositions-owned roles, then re-applies Consult / tray on-off via `TarotToggle.reconcileAfterSeatLayout` and `DiceDrawer.reconcileAfterSeatLayout`. relatedTo **TOR-411** (Pink tarot), **TOR-507** (figurine seat layout).
 
 #### ✅ PC dice drawers stay closed on Play→Spotlight (no new TOR — Linear quota; comment on TOR-507)
 

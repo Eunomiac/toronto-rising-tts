@@ -131,7 +131,9 @@ end
 --- @param state string
 --- @param token number
 --- @param buttonGuid string|nil
-local function applyDeckState(state, token, buttonGuid)
+--- @param opts table|nil `{ instant?: boolean }`
+local function applyDeckState(state, token, buttonGuid, opts)
+    opts = type(opts) == "table" and opts or {}
     local obj = getTarotDeck(buttonGuid)
     if obj == nil then
         print("[TarotToggle] Missing object for key: " .. tostring(TarotObjects.GUIDS_KEY_DECK_PINK))
@@ -177,6 +179,10 @@ local function applyDeckState(state, token, buttonGuid)
         effectivePose[k] = v
     end
     effectivePose.isHidden = false
+    if opts.instant == true then
+        effectivePose.delay = nil
+        effectivePose.transitionDelay = nil
+    end
     OP.applyResolvedPose(obj, effectivePose, 0, 0, {
         shouldAbort = function()
             return not isTokenCurrent(token)
@@ -188,9 +194,11 @@ end
 --- @param state string
 --- @param token number
 --- @param buttonGuid string|nil
-local function applyObjectState(key, state, token, buttonGuid)
+--- @param opts table|nil `{ instant?: boolean }`
+local function applyObjectState(key, state, token, buttonGuid, opts)
+    opts = type(opts) == "table" and opts or {}
     if key == TarotObjects.GUIDS_KEY_DECK_PINK then
-        applyDeckState(state, token, buttonGuid)
+        applyDeckState(state, token, buttonGuid, opts)
         return
     end
     local obj = resolveTarotObject(key, buttonGuid)
@@ -224,7 +232,12 @@ local function applyObjectState(key, state, token, buttonGuid)
             effectivePose.position = OP.mergePosition(obj, effectivePose.position)
         end
     end
-    OP.applyResolvedPose(obj, effectivePose, OP.DEFAULT_TRANSITION_DURATION, 0, {
+    if opts.instant == true then
+        effectivePose.delay = nil
+        effectivePose.transitionDelay = nil
+    end
+    local duration = opts.instant == true and 0 or OP.DEFAULT_TRANSITION_DURATION
+    OP.applyResolvedPose(obj, effectivePose, duration, 0, {
         shouldAbort = function()
             return not isTokenCurrent(token)
         end,
@@ -247,7 +260,9 @@ end
 --- @param targetOn boolean
 --- @param token number
 --- @param buttonGuid string|nil
-local function applyTarotStateNow(targetOn, token, buttonGuid)
+--- @param opts table|nil `{ skipShuffle?: boolean, instant?: boolean }`
+local function applyTarotStateNow(targetOn, token, buttonGuid, opts)
+    opts = type(opts) == "table" and opts or {}
     if not isTokenCurrent(token) then
         return nil
     end
@@ -256,11 +271,11 @@ local function applyTarotStateNow(targetOn, token, buttonGuid)
     end
     local state = targetOn and STATE_ON or STATE_OFF
     for i = 1, #TAROT_KEYS do
-        applyObjectState(TAROT_KEYS[i], state, token, buttonGuid)
+        applyObjectState(TAROT_KEYS[i], state, token, buttonGuid, opts)
     end
     setDeckInteractable(targetOn, buttonGuid)
     -- TOR-447: shuffle when activating so the drawn order is fresh after the deck settles into pose.
-    if targetOn then
+    if targetOn and opts.skipShuffle ~= true then
         shuffleTarotDeck(buttonGuid)
     end
     return targetOn
@@ -288,6 +303,22 @@ function TarotToggle.applyState(targetOn, buttonGuid)
     currentOpToken = currentOpToken + 1
     local token = currentOpToken
     return applyTarotStateNow(targetOn, token, buttonGuid)
+end
+
+--- After seat layout moved Pink anchors: re-assert Consult on/off from ObjectPositions
+--- (no shuffle; instant pose so XZ tracks the new seat without Consult delay).
+--- @param buttonGuid string|nil
+--- @return boolean|nil
+function TarotToggle.reconcileAfterSeatLayout(buttonGuid)
+    if not isSeatLayoutReady() then
+        return nil
+    end
+    local targetOn = TarotToggle.inferCurrentState(buttonGuid, false)
+    currentOpToken = currentOpToken + 1
+    return applyTarotStateNow(targetOn, currentOpToken, buttonGuid, {
+        skipShuffle = true,
+        instant = true,
+    })
 end
 
 --- Read-only: infer on/off from hide tag / parked Y / table-top on Y (object script onLoad hydration).

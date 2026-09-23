@@ -3,13 +3,16 @@
 
     Occupancy lives on sessionScene.seatSlots[occupant].tableSlot.
     Geometry: slot 1 = C.Tables[].referenceFigurine; even slots walk right, odd slots >1 walk left.
-    Satellites: C.SeatRoleOffsets (extraByOccupant → player → shared).
+    Satellites: C.SeatRoleOffsets (extraByOccupant → player → shared) for always-on furniture
+    and **anchors** only.
+    Pose authority: if an object has a C.ObjectPositions entry (tarot deck/drawer/button,
+    CSHEET_DICE_DRAWER_*, …), layout must not place it from SeatRoleOffsets. Layout moves
+    anchors, then re-applies ObjectPositions on/off (TarotToggle / DiceDrawer).
     Occupancy hide (Absent / unused pile) stashes Y=-200 — including the player hand
     zone and cards in that hand — and records in-session Y on seatLayout.absentPileY
     so restore can lift table-height roles without flattening feature-hide Y
     (CSHEET pages, SIGNAL_FIRE, HUNGER_SMOKE) — TOR-512 / TOR-513.
     Cover transitions onto `isRandomSeating` tables (Table B) shuffle packed occupancy (TOR-537).
-    Pink TAROT_DECK follows Consult-the-Tarot (ObjectPositions on/off) via hide/restore at −200 when off.
 ]]
 
 local U = require("lib.util")
@@ -17,7 +20,6 @@ local C = require("lib.constants")
 local S = require("core.state")
 local SRI = require("lib.seat-role-identity")
 local G = require("lib.guids")
-local TarotObjects = require("lib.tarot_objects")
 local O = require("core.objects")
 local FigurineFrame = require("lib.figurine_frame")
 
@@ -33,6 +35,14 @@ FSL.DEFAULT_TABLE_SLOTS = C.DefaultTableSlots or {
     NPC2 = 7,
     NPC3 = 8,
     NPC4 = 9,
+}
+
+--- Roles owned by C.ObjectPositions — never place from SeatRoleOffsets.
+local OBJECT_POSITIONS_OWNED_ROLES = {
+    TAROT_DECK = true,
+    TAROT_DRAWER = true,
+    TAROT_BUTTON = true,
+    CSHEET_DICE_DRAWER = true,
 }
 
 local HIDE_Y_FLOOR = -199
@@ -475,7 +485,7 @@ local function isFeatureHideRoleKey(roleKey)
     if type(roleKey) ~= "string" then
         return false
     end
-    if roleKey == "SIGNAL_FIRE" or roleKey == "HUNGER_SMOKE" or roleKey == "TAROT_DECK" then
+    if roleKey == "SIGNAL_FIRE" or roleKey == "HUNGER_SMOKE" then
         return true
     end
     return string.match(roleKey, "^CSHEET_PAGE_%d+$") ~= nil
@@ -576,42 +586,7 @@ local function clearOccupantPileY(occupantKey)
     end
 end
 
---- Pink tarot on Y (≈ 7.7). Off uses hide protocol at C.HIDDEN_OBJECT_WORLD_Y (−200).
---- @return number
-local function tarotDeckOnY()
-    local entry = C.ObjectPositions and C.ObjectPositions.TAROT_DECK_PINK
-    if U.Type(entry) == "table" and U.Type(entry.on) == "table" then
-        local on = entry.on
-        if U.Type(on.height) == "table" then
-            local y = tonumber(on.height.y)
-            if y ~= nil then
-                return y
-            end
-        elseif type(on.height) == "number" then
-            return on.height
-        end
-        if U.Type(on.position) == "table" then
-            local y = tonumber(on.position.y)
-            if y ~= nil then
-                return y
-            end
-        end
-    end
-    return 7.7
-end
-
---- @param y number|nil
---- @return boolean
-local function yLooksLikeTarotOn(y)
-    local n = tonumber(y)
-    if n == nil or liveYIsHidden(n) then
-        return false
-    end
-    return n >= (tarotDeckOnY() - 1)
-end
-
 --- Occupancy stash Y vs feature-hide Y vs authored defaultY.
---- TAROT_DECK defaults to inactive (Consult the Tarot); layout must not lift it to the on pose.
 --- @param occupantKey string
 --- @param roleKey string|nil
 --- @param liveY number
@@ -619,15 +594,6 @@ end
 --- @param worldY number|nil figurine frame Y (unused for Y; satellites keep authored defaultY)
 --- @return number
 local function resolveSatelliteY(occupantKey, roleKey, liveY, defaultY, worldY)
-    if roleKey == "TAROT_DECK" then
-        if liveYIsHidden(liveY) then
-            return liveY
-        end
-        if yLooksLikeTarotOn(liveY) then
-            return tarotDeckOnY()
-        end
-        return C.HIDDEN_OBJECT_WORLD_Y
-    end
     -- Feature-hide off (page, fire, smoke) beats occupancy stash — layout must not lift these.
     if isFeatureHideRoleKey(roleKey) and liveYIsHidden(liveY) then
         return liveY
@@ -697,32 +663,18 @@ local function applyOffsetToObject(obj, figFrame, figObj, offset, roleKey, occup
 
     if isFeatureHideRoleKey(roleKey) then
         local onPos = { x = world.x, y = defaultY, z = world.z }
-        if roleKey == "TAROT_DECK" then
-            onPos.y = tarotDeckOnY()
-        end
-        local wantOff
-        if roleKey == "TAROT_DECK" then
-            wantOff = (type(O.isHiddenObject) == "function" and O.isHiddenObject(obj))
-                or liveYIsHidden(livePos.y)
-                or not yLooksLikeTarotOn(livePos.y)
-        else
-            wantOff = (type(O.isHiddenObject) == "function" and O.isHiddenObject(obj))
-                or liveYIsHidden(livePos.y)
-                or liveYIsHidden(y)
-        end
+        local wantOff = (type(O.isHiddenObject) == "function" and O.isHiddenObject(obj))
+            or liveYIsHidden(livePos.y)
+            or liveYIsHidden(y)
         if wantOff then
-            local hideOpts = {
+            O.hideObject(obj, {
                 snapshotPosition = onPos,
                 refreshSnapshotPosition = true,
                 parkRotation = rotTable,
-            }
-            if roleKey ~= "TAROT_DECK" then
-                hideOpts.parkPosition = { x = world.x, y = y, z = world.z }
-            end
-            O.hideObject(obj, hideOpts)
+                parkPosition = { x = world.x, y = y, z = world.z },
+            })
         else
-            local placeY = roleKey == "TAROT_DECK" and tarotDeckOnY() or y
-            placeObjectExact(obj, Vector({ x = world.x, y = placeY, z = world.z }), rot)
+            placeObjectExact(obj, Vector({ x = world.x, y = y, z = world.z }), rot)
         end
     else
         placeObjectExact(obj, Vector({ x = world.x, y = y, z = world.z }), rot)
@@ -733,13 +685,6 @@ local function applyOffsetToObject(obj, figFrame, figObj, offset, roleKey, occup
                 rotation = rotTable,
             })
         end
-    end
-    if roleKey == "TAROT_DECK" then
-        local on = yLooksLikeTarotOn(livePos.y) and not O.isHiddenObject(obj)
-        if type(obj.setLock) == "function" then
-            obj.setLock(not on)
-        end
-        obj.interactable = on
     end
     -- Companion tiles and dice bags keep authored workshop scale (never layout setScale).
     if offset.scale ~= nil and type(obj.setScale) == "function"
@@ -887,6 +832,10 @@ local function layoutOccupantSatellites(occupantKey, figFrame, figObj, helpers)
         if helpers.skipRoleKeys ~= nil and helpers.skipRoleKeys[roleKey] == true then
             return
         end
+        -- ObjectPositions owns feature object poses — layout only moves anchors.
+        if OBJECT_POSITIONS_OWNED_ROLES[roleKey] == true then
+            return
+        end
         if shouldSkipSatellite(obj, roleKey) then
             return
         end
@@ -926,26 +875,6 @@ local function layoutOccupantSatellites(occupantKey, figFrame, figObj, helpers)
         local hz = U.getHandZone(occupantKey)
         if hz ~= nil then
             handle(hz, "HAND_ZONE")
-        end
-    end
-
-    if occupantKey == "Pink" then
-        local deck = TarotObjects.resolveByGuidsKey and TarotObjects.resolveByGuidsKey(TarotObjects.GUIDS_KEY_DECK_PINK)
-        if deck == nil then
-            local taggedPink = getObjectsWithTag("PinkObject") or {}
-            for i = 1, #taggedPink do
-                local o = taggedPink[i]
-                if o ~= nil and o.hasTag and o.hasTag("Tarot") then
-                    local notes = o.getGMNotes and o.getGMNotes() or ""
-                    if notes == "" then
-                        deck = o
-                        break
-                    end
-                end
-            end
-        end
-        if deck ~= nil then
-            handle(deck, "TAROT_DECK")
         end
     end
 end
@@ -1057,6 +986,18 @@ function FSL.setOccupantPileVisible(occupantKey, visible)
     end
 end
 
+--- Re-apply ObjectPositions-owned feature poses after anchors moved.
+local function reconcileObjectPositionsOwnedAfterLayout()
+    local TarotToggle = require("lib.tarot_toggle")
+    if TarotToggle ~= nil and type(TarotToggle.reconcileAfterSeatLayout) == "function" then
+        TarotToggle.reconcileAfterSeatLayout(G.GUIDS and G.GUIDS.TAROT_BUTTON_PINK)
+    end
+    local DiceDrawer = require("lib.dice_drawer")
+    if DiceDrawer ~= nil and type(DiceDrawer.reconcileAfterSeatLayout) == "function" then
+        DiceDrawer.reconcileAfterSeatLayout({ instant = true })
+    end
+end
+
 --- @param bundle table from computeSlotFrames
 --- @param helpers table|nil `{ skipRoleKeys?: table }`
 function FSL.applyOccupantRigs(bundle, helpers)
@@ -1116,6 +1057,7 @@ function FSL.applyOccupantRigs(bundle, helpers)
     end
 
     S.setStateVal(anchors, "seatLayout", "virtualFigurineAnchors")
+    reconcileObjectPositionsOwnedAfterLayout()
 end
 
 --- Lowest unused slot in 1..cap, or nil.

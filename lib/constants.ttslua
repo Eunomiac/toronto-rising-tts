@@ -1000,7 +1000,7 @@ C.ObjectPositions = {
     on = {
       -- Follow seat-layout deck anchor XZ/rotation; authored on-height (TOR-411).
       anchor = G.GUIDS.TAROT_DECK_ANCHOR_PINK,
-      height = { y = 7.7 },
+      height = { y = 8.5 },
       duration = 0,
       delay = 1.5,
       isLocked = false,
