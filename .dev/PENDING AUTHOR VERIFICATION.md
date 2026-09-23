@@ -17,7 +17,21 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-21 — Play→Spotlight parks stage NPC figurines (Linear quota blocked a new issue; parent TOR-98)._
+_Last populated: 2026-09-23 — TTS Tools fork Epic A fast Save & Play (Linear quota blocked a new issue)._
+
+### Tooling / TTS Tools fork
+
+#### TTS Tools Epic A — Fast Save & Play sync (no new TOR — Linear quota)
+
+**How to verify:** Install the fork VSIX (toronto-rising task **Install TTS Tools** / reload Extension Host, or install `D:\Projects\.CODING\tts-tools\dist\tts-tools.vsix`). Confirm the extension is **TTS Tools (Community Fork) 2.2.0**. With Toronto Rising loaded and `.tts` already populated:
+
+1. Edit any object script, then use normal **Save and Play** (Ctrl+Alt+S).
+2. Success: the status bar finishes in **seconds**, not multi-minute “Reading objects.” Your edited script should still be on disk under `.tts/objects` and `.tts/bundled`.
+3. Cause a deliberate Lua error and use **Go to Error** — it should open the right bundled file.
+4. Optional: run **Save and Play (Full Resync)** once; that path may take longer and should refresh object `data.json` files.
+5. Spot-check that scripts are not swapped onto the wrong GUID folders after Save & Play.
+
+**Context:** Community fork Epic A on `tts-tools` branch `epic-a-fast-sync`. Default Save & Play skips wipe + N× getJSON; uses `scriptStates` + returnID demux + import mutex. Save 230 backup: `.dev/Custom Fork of TTS Tools Extension/save-backup/` (gitignored). Linear could not open a tracking issue (workspace quota).
 
 ### Soundscape
 

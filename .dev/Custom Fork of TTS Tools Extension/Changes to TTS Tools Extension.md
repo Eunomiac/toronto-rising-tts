@@ -86,17 +86,19 @@ Work order is intentional. **Epic A is the first implementation step** — its j
 **Author status (2026-09-23):** Fence email sent to Stern. C3 tag syntax accepted. Marketplace publish **deferred** until the fork is solid in daily TR use; still design/implement with eventual publication in mind (clean attribution, three-layer DX, no TR-only hacks in the public surface).
 
 ### Epic A — Fast Save & Play / incremental sync  ← **first build**
-**Repo:** `tts-tools/packages/tts-editor`
+**Repo:** `tts-tools/packages/tts-editor`  
 **Primary success:** After a normal Save & Play on Toronto Rising, disk sync finishes in **seconds**, not minutes — no blind wipe, no N× `getJSON` for every object just to refresh scripts.
 
-1. Add `objectSync` (fingerprint + reconcile; no blind wipe).
-2. Drive `loadingANewGame`, Get Objects, and `pushingNewObject` through it.
-3. Prefer `scriptStates` for Lua/XML; limited `getJSON` for data / Full Resync only.
-4. Default Save & Play: send + expect-echo short-circuit; **write sent bundles to `.tts/bundled`** so Go to Error works.
-5. Fix import scramble early: match `returnID` on Lua returns; single-flight / mutex around import so overlapping Get Objects / push don’t interleave.
-6. Add **Save & Play (Full Resync)** command (+ optional setting).
-7. Verify on Toronto Rising: cold load once; **edit → Save & Play is fast**; manual Get Objects / Full Resync still correct when needed.
-8. Package VSIX via existing tasks.
+**Status (2026-09-23):** Implemented on branch `epic-a-fast-sync` (extension **2.2.0**, VSIX at `tts-tools/dist/tts-tools.vsix`). Pending your Save & Play check in TTS.
+
+1. [x] Add `objectSync` (fingerprint + reconcile; no blind wipe).
+2. [x] Drive `loadingANewGame`, Get Objects, and `pushingNewObject` through it.
+3. [x] Prefer `scriptStates` for Lua/XML; limited `getJSON` for data / Full Resync only.
+4. [x] Default Save & Play: send + expect-echo short-circuit; **write sent bundles to `.tts/bundled`** so Go to Error works.
+5. [x] Fix import scramble early: match `returnID` on Lua returns; single-flight / mutex around import so overlapping Get Objects / push don’t interleave.
+6. [x] Add **Save & Play (Full Resync)** command (+ optional setting).
+7. [ ] Verify on Toronto Rising: cold load once; **edit → Save & Play is fast**; manual Get Objects / Full Resync still correct when needed.
+8. [x] Package VSIX via existing tasks.
 
 ### Epic B — Extension port Claim/Release (no gateway yet)
 **Repo:** `tts-tools/packages/tts-editor`
