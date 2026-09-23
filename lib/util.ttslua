@@ -1882,11 +1882,14 @@ end
 ---   U.UISet(elem, attrs, [mapSequences])
 ---   U.UISet(objectGuid, elem, attrs, [mapSequences])
 ---
+--- mapSequences is a char → values map, e.g. `{ ["#"] = { 1, 2, 3, 4, 5 } }`.
+--- Each placeholder char is expanded independently from the original elem string.
+---
 --- @param paramA string|table Element id(s), or object GUID(s) when using the object form
 --- @param paramB table|string|table Attribute map, or element id(s) when using the object form
 --- @param paramC table|nil mapSequences (global form) or attrs (object form)
 --- @param paramD table|nil mapSequences (object form only)
---- @usage U.UISet("dot_rc_L_2_#", { image = "dot_yellow" }, { { char = "#", vals = { 1, 2, 3, 4, 5 } } })
+--- @usage U.UISet("dot_rc_L_2_#", { image = "dot_yellow" }, { ["#"] = { 1, 2, 3, 4, 5 } })
 --- @usage U.UISet({ "dot_a", "dot_b" }, { image = "dot_yellow" })
 --- @usage U.UISet("object123", "elem_name", { active = true })
 --- @usage U.UISet({ "object1", "object2" }, { "elem_a", "elem_b" }, { attr = val })
@@ -1935,14 +1938,14 @@ function U.UISet(paramA, paramB, paramC, paramD)
 
   if mapSequences ~= nil then
     if type(mapSequences) ~= "table" then
-      error("U.UISet: mapSequences must be an array of { char, vals } tables", 2)
+      error("U.UISet: mapSequences must be a map of placeholder char → value array", 2)
     end
-    for _, sequence in ipairs(mapSequences) do
-      if type(sequence) ~= "table" or type(sequence.char) ~= "string" or type(sequence.vals) ~= "table" then
-        error("U.UISet: each mapSequences entry needs char (string) and vals (array)", 2)
+    for char, vals in pairs(mapSequences) do
+      if type(char) ~= "string" or type(vals) ~= "table" then
+        error("U.UISet: mapSequences entries must be string keys with array values", 2)
       end
-      for _, val in ipairs(sequence.vals) do
-        local newElem = elem:gsub(sequence.char, tostring(val))
+      for _, val in ipairs(vals) do
+        local newElem = elem:gsub(char, tostring(val))
         if objectGuid then
           U.UISet(objectGuid, newElem, attrs)
         else
