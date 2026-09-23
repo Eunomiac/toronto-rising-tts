@@ -796,5 +796,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-09-23 | SHIP | TOR-143 | End→Intermission: TR_Loop starts with blackout FadeOut (5s match). CREATE blocked (issue limit); comment on TOR-143. Pending Save & Play. |
 | 2026-09-23 | PROMOTE | TOR-98 | Play→Spotlight location→Main Focus #1. CREATE blocked (issue limit); comment on TOR-98. |
 | 2026-09-23 | NOTE | quota | Still no MCP delete_issue. Author-confirmed Done purge candidates to free create slots: TOR-604, TOR-590, TOR-593, TOR-596, TOR-581, TOR-527, TOR-598, TOR-600, TOR-601, TOR-605, TOR-603, TOR-597, TOR-594. |
+| 2026-09-23 | SHIP | TOR-98 | Play→Spotlight: skipMoodIfAlreadyMain only when Main is audibly playing (not suppressed / locationMusic). Ravenwing location→Main. CREATE blocked; comment on TOR-98. Pending Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

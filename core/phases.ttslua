@@ -510,6 +510,7 @@ function Phases.applyNoSceneDefault(_ctx, opts)
 end
 
 --- Play → Spotlight: staged transition cover (same lead-in as scene Apply). Destination cards stay Clear.
+--- Location beds (e.g. Ravenwing nightclub) crossfade out; Main playlist restores on fadeIn.
 --- @param ctx table|nil
 --- @return number|boolean
 local function runSpotlightEnterFromPlayTransition(ctx)
@@ -517,13 +518,18 @@ local function runSpotlightEnterFromPlayTransition(ctx)
     local SS = require("core.soundscape")
     local Scenes = require("core.scenes")
     local Spotlight = require("core.spotlight")
-    local mood = S.getStateVal("soundscape", "musicMood")
+    -- Skip fading music lanes only when Main is already the audible BGM (not suppressed / locationMusic mode).
+    local skipBackground = S.getStateVal("soundscape", "musicMood") == "main"
+        and S.getStateVal("soundscape", "backgroundMusicSuppressed") ~= true
+        and S.getStateVal("soundscape", "siteSilent") ~= true
+        and S.getStateVal("soundscape", "backgroundMusicEnabled") == true
+        and S.getStateVal("soundscape", "backgroundMusicMode") ~= "locationMusic"
     HUDBF.runStagedTransition({
         fadeOut = function()
             if type(SS.fadeOutTransitionAmbient) == "function" then
                 SS.fadeOutTransitionAmbient({
                     seconds = HUDBF.TRANSITION_FADE_OUT_SEC,
-                    skipBackground = mood == "main",
+                    skipBackground = skipBackground,
                 })
             end
         end,

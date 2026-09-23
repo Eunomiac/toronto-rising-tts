@@ -864,15 +864,37 @@ function Scenes.discardLiveNpcLayout()
 end
 
 --- Persisted + eager apply: Main BGM only, no location/weather (TOR-151 / TOR-152 no-scene branch).
---- @param opts table|nil `{ skipMoodIfAlreadyMain?: boolean }` — do not restart the main playlist when it is already the mood.
+--- @param opts table|nil `{ skipMoodIfAlreadyMain?: boolean }` — skip restarting Main only when Main is already the audible BGM bed
+local function mainMoodAlreadyAudible()
+    if S.getStateVal("soundscape", "musicMood") ~= "main" then
+        return false
+    end
+    -- Ravenwing-style sites: leftover mood key is still "main" while playlist none suppresses BGM
+    -- and the location lane carries the bed — must call setMusicMood("main") to restore Main.
+    if S.getStateVal("soundscape", "backgroundMusicSuppressed") == true then
+        return false
+    end
+    if S.getStateVal("soundscape", "siteSilent") == true then
+        return false
+    end
+    if S.getStateVal("soundscape", "backgroundMusicEnabled") ~= true then
+        return false
+    end
+    -- Site-specific BGM playlist on the music lanes (not mood Main), even if musicMood was left at "main".
+    if S.getStateVal("soundscape", "backgroundMusicMode") == "locationMusic" then
+        return false
+    end
+    return true
+end
+
 local function applyMainOnlySoundscapeIntent(opts)
     opts = type(opts) == "table" and opts or {}
-    local alreadyMain = S.getStateVal("soundscape", "musicMood") == "main"
+    local skipMood = opts.skipMoodIfAlreadyMain == true and mainMoodAlreadyAudible()
     S.setStateVal("main", "soundscape", "musicMood")
     S.setStateVal(nil, "soundscape", "lastAppliedSiteKey")
     S.setStateVal(nil, "soundscape", "lastAppliedDistrictKey")
     Soundscape.setLocationAudio("none")
-    if not (opts.skipMoodIfAlreadyMain == true and alreadyMain) then
+    if not skipMood then
         Soundscape.setMusicMood("main")
     end
     Soundscape.setWeatherCondition("none")

@@ -17,9 +17,19 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-23 afternoon `/tr-inbox` — End→Intermission TR_Loop timing; cleared ✅ lighting / TOR-495 labels / TTS Tools Epic B / TOR-604 / TOR-590._
+_Last populated: 2026-09-23 — Play→Spotlight location→Main (comment on TOR-98)._
 
 ### Phases / session end
+
+#### Play→Spotlight: location bed → Main playlist (no new TOR — Linear quota; comment on TOR-98)
+
+**How to verify:** Save & Play so scripts reload. Apply **Ravenwing** (or any site with a location bed and `backgroundMusic.playlist = "none"`) so you hear the nightclub bed, not the default Main theme.
+
+1. Advance **Play → Spotlight**. Under the cover, the nightclub (location) bed should fade out — it must not keep looping through Spotlight.
+2. After the cover lifts, you should hear the default **Main** background playlist (not silence, and not the nightclub bed).
+3. Optional: Apply a normal site that already plays Main plus soft indoor ambience, then Advance to Spotlight. Main should keep going without a hard restart; location ambience should still fade out.
+
+**Context:** `Scenes.applyMainOnlySoundscape({ skipMoodIfAlreadyMain = true })` used to treat leftover `musicMood == "main"` as “Main is playing” even when BGM was suppressed and only the location lane was audible. relatedTo **TOR-593**, **TOR-494**.
 
 #### End→Intermission: TR_Loop starts with blackout FadeOut (no new TOR — Linear quota; comment on TOR-143)
 
