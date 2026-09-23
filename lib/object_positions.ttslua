@@ -2,6 +2,10 @@
   Shared ObjectPositions resolver.
   Centralizes absolute/relative pose resolution for C.ObjectPositions entries.
 
+  Anchored points (`anchor` + `height`): X/Z from the live anchor object; Y from
+  `height` only (number or `{ y = n }`). Used by pose entries and by lighting
+  mode `position` / `lookAt` via `OP.resolveAnchoredWorldPoint`.
+
   When pose.isHidden is set, finalize calls O.hideObject / O.restoreObject —
   do not add parallel setInvisibleTo hide paths here.
   Policy: docs/solutions/lua-hide-restore-policy.md
@@ -114,6 +118,39 @@ local function resolveSeatLayoutCenterPoint()
     end
   end
   return nil
+end
+
+--- Resolve a world point from an ObjectPositions-style `anchor` + `height`.
+--- X/Z always come from the live anchor object; Y comes only from `height`
+--- (a number, or `{ y = number }`). Anchors are authored high (y ≈ 200) and are
+--- never used as the point's Y.
+--- @param anchorRef string|Object GUID string, G.GUIDS registry key, or object
+--- @param height number|table|nil
+--- @return table|nil `{ x, y, z }`
+function OP.resolveAnchoredWorldPoint(anchorRef, height)
+  local anchorObj = resolveAnchorObject(nil, anchorRef)
+  if anchorObj == nil then
+    print("[ObjectPositions] Anchored world point: anchor not found: " .. tostring(anchorRef))
+    return nil
+  end
+  local yHeight = nil
+  if type(height) == "table" then
+    yHeight = height.y
+  elseif type(height) == "number" then
+    yHeight = height
+  end
+  if type(yHeight) ~= "number" then
+    print(
+      "[ObjectPositions] Anchored world point requires numeric height for anchor: "
+        .. tostring(anchorRef)
+        .. " (got "
+        .. tostring(height)
+        .. ")"
+    )
+    return nil
+  end
+  local anchorPos = anchorObj.getPosition()
+  return { x = anchorPos.x, y = yHeight, z = anchorPos.z }
 end
 
 --- Resolve an on/off pose entry. Supports absolute and relative forms.

@@ -278,6 +278,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## Lighting
 
+- [x] **playerLight1 anchor + lookAt modes:** `OP.resolveAnchoredWorldPoint` + `SetLightMode` materialize of `{ anchor, height }` / `lookAt` → world position + `lookAtTarget` / `U.lookAtRotation` (STANDARD seat anchors ↔ ROLLING dice-drawer anchors). Pending Save & Play. _(no new TOR — Linear quota)_
 - [ ] **Spotlight tuner panel:** Selection grid (build-time 400-slot pool, 10 columns) plus Cartesian / spherical debug sliders; lighting reconcile skips the selected GUID while the panel is open. Labels via `U.setAttributes({ text, active })` after class (never `UI.setValue`). Pending Save & Play. _(TOR-495)_
 - [x] Reconciler lighting updates lerped (default 2s). _( `core/lighting.ttslua` `L.DEFAULT_RECONCILE_LERP_SECONDS`.)_ _(TOR-59)_
 - [x] Test-bed helpers to apply seat-light settings from Red to all active seats. _( `TestBed_applyPlayerSeatLightsFromRed`.)_ _(TOR-61)_

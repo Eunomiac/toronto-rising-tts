@@ -17,9 +17,20 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-23 — TOR-604 Play overlay restore matches XML font sizes (not 52/60)._
+_Last populated: 2026-09-23 — playerLight1 anchor + lookAt modes (Linear quota; no new TOR)._
 
 ### Lighting / debug
+
+#### playerLight1 STANDARD / ROLLING: anchor position + lookAt aim (no new TOR — Linear quota)
+
+**How to verify:** Save & Play so scripts reload. Seat any PC color (Brown / Orange / Red / Pink / Purple).
+
+1. With that seat present and not rolling, the main seat spotlight (`playerLight1`) should sit on the **seat light position anchor** (height about 23) and aim toward the **lookAt anchor** (aim height −50) — same place and cone direction you authored for STANDARD.
+2. Start a roll for that seat so the dice drawer opens / rolling lighting kicks in. The same spotlight should move over the **dice drawer on-anchor** (height about 16) and aim straight down at that drawer (lookAt height −50). Color/intensity should switch to the pinkish ROLLING look.
+3. End or cancel the roll. The light should return to the STANDARD seat pose (not stay parked over the drawer).
+4. Optional: change table / Scatter and repeat steps 1–3 — poses should follow the live anchors, not old absolute coordinates.
+
+**Context:** `L.SetLightMode` now resolves `{ anchor, height }` the same way as `C.ObjectPositions`, and turns `lookAt` into the existing NPC-style `lookAtTarget` + `U.lookAtRotation` path. Authored modes were already in `L.LIGHTMODES` for all five player colors. Linear could not create a new issue (workspace free-issue limit).
 
 #### Debug Light control buttons: hover tooltips (no new TOR — Linear quota)
 

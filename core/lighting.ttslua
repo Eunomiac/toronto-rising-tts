@@ -18,6 +18,13 @@
     For `position` and `rotation`, tables (or Vectors) may omit any axis; omitted
     components keep the light object's current world values (see OP.mergePosition / mergeRotation).
 
+    Anchored transforms (same contract as C.ObjectPositions pose.anchor + height):
+      position = { anchor = G.GUIDS.…, height = 23 }
+      lookAt   = { anchor = G.GUIDS.…, height = -50 }
+    X/Z come from the live anchor; Y from `height` only. `lookAt` is a world aim
+    point; SetLightMode resolves it to ephemeral lookAtTarget + rotation via
+    U.lookAtRotation (coupled spherical lerp when transitioning).
+
     Agent guidance: .dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md (paired spotlights);
     .dev/User Guides/TTS-3D-Positioning-Coordinate-Utilities.md.
 ]]
@@ -73,7 +80,9 @@ local DefaultTransitionTime = 0.5
 --   - angle (number): Spotlight angle (degrees)
 --   - intensity (number): Light intensity/brightness
 --   - rotation (Vector): Light rotation {x,y,z}
---   - position (Vector): Light position {x,y,z}
+--   - position (Vector|{x,y,z}|{anchor,height}): Absolute or anchored world position
+--   - lookAt ({anchor,height}|{x,y,z}): World aim point; resolved to lookAtTarget + rotation
+--   - lookAtTarget (Vector): Runtime aim point (NPC path / after lookAt materialize; not persisted)
 --
 -- Special properties (at light definition level, not mode level):
 --   - default (string): Default mode to use when mode is "default"
@@ -179,14 +188,30 @@ L.LIGHTMODES = {
             range = 126.798203,
             angle = 116.352303,
             intensity = 1.800000,
-            color = Color(0.339730, 0.339730, 0.339730)
+            color = Color(0.339730, 0.339730, 0.339730),
+            position = {
+              anchor = G.GUIDS.SEAT_LIGHT_1_POSITION_ANCHOR_BROWN,
+              height = 23
+            },
+            lookAt = {
+              anchor = G.GUIDS.SEAT_LIGHT_1_LOOKAT_ANCHOR_BROWN,
+              height = -50
+            }
         },
         ROLLING = {
           enabled = true,
-          range = 101.139198,
-          angle = 134.550003,
-          intensity = 1.800000,
-          color = Color(0.525551, 0.522316, 0.522316)
+          range = 102.000000,
+          angle = 97.000000,
+          intensity = 2.190000,
+          color = Color(1.000000, 0.667152, 0.667152),
+          position = {
+            anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_BROWN,
+            height = 16
+          },
+          lookAt = {
+            anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_BROWN,
+            height = -50
+          }
         },
         HUNGRY = {
           color = Color(1, 0, 0)
@@ -207,43 +232,75 @@ L.LIGHTMODES = {
             range = 126.798203,
             angle = 116.352303,
             intensity = 1.800000,
-            color = Color(0.339730, 0.339730, 0.339730)
+            color = Color(0.339730, 0.339730, 0.339730),
+            position = {
+              anchor = G.GUIDS.SEAT_LIGHT_1_POSITION_ANCHOR_ORANGE,
+              height = 23
+            },
+            lookAt = {
+              anchor = G.GUIDS.SEAT_LIGHT_1_LOOKAT_ANCHOR_ORANGE,
+              height = -50
+            }
         },
         ROLLING = {
           enabled = true,
-          range = 101.139198,
-          angle = 134.550003,
-          intensity = 1.800000,
-          color = Color(0.525551, 0.522316, 0.522316)
+          range = 102.000000,
+          angle = 97.000000,
+          intensity = 2.190000,
+          color = Color(1.000000, 0.667152, 0.667152),
+          position = {
+            anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_ORANGE,
+            height = 16
+          },
+          lookAt = {
+            anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_ORANGE,
+            height = -50
+          }
         },
         HUNGRY = {
           color = Color(1, 0, 0)
         }
     },
     playerLight1Red = {
-        guid = G.GUIDS.SEAT_LIGHT_1_RED,
-        isPlayerLight = true,
-        default = "OFF",
-        OFF = {
-            enabled = false,
-            range = 40,
-            angle = 0,
-            intensity = 0
+      guid = G.GUIDS.SEAT_LIGHT_1_RED,
+      isPlayerLight = true,
+      default = "OFF",
+      OFF = {
+          enabled = false,
+          range = 40,
+          angle = 0,
+          intensity = 0
+      },
+      STANDARD = {
+        enabled = true,
+        range = 126.798203,
+        angle = 116.352303,
+        intensity = 1.800000,
+        color = Color(0.339730, 0.339730, 0.339730),
+        position = {
+          anchor = G.GUIDS.SEAT_LIGHT_1_POSITION_ANCHOR_RED,
+          height = 23
         },
-        STANDARD = {
-            enabled = true,
-            range = 126.798203,
-            angle = 116.352303,
-            intensity = 1.800000,
-            color = Color(0.339730, 0.339730, 0.339730)
+        lookAt = {
+          anchor = G.GUIDS.SEAT_LIGHT_1_LOOKAT_ANCHOR_RED,
+          height = -50
+        }
+      },
+      ROLLING = {
+        enabled = true,
+        range = 102.000000,
+        angle = 97.000000,
+        intensity = 2.190000,
+        color = Color(1.000000, 0.667152, 0.667152),
+        position = {
+          anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_RED,
+          height = 16
         },
-        ROLLING = {
-          enabled = true,
-          range = 101.139198,
-          angle = 134.550003,
-          intensity = 1.800000,
-          color = Color(0.525551, 0.522316, 0.522316)
-        },
+        lookAt = {
+          anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_RED,
+          height = -50
+        }
+      },
         HUNGRY = {
           color = Color(1, 0, 0)
         }
@@ -263,14 +320,30 @@ L.LIGHTMODES = {
             range = 126.798203,
             angle = 116.352303,
             intensity = 1.800000,
-            color = Color(0.339730, 0.339730, 0.339730)
+            color = Color(0.339730, 0.339730, 0.339730),
+            position = {
+              anchor = G.GUIDS.SEAT_LIGHT_1_POSITION_ANCHOR_PINK,
+              height = 23
+            },
+            lookAt = {
+              anchor = G.GUIDS.SEAT_LIGHT_1_LOOKAT_ANCHOR_PINK,
+              height = -50
+            }
         },
         ROLLING = {
           enabled = true,
-          range = 101.139198,
-          angle = 134.550003,
-          intensity = 1.800000,
-          color = Color(0.525551, 0.522316, 0.522316)
+          range = 102.000000,
+          angle = 97.000000,
+          intensity = 2.190000,
+          color = Color(1.000000, 0.667152, 0.667152),
+          position = {
+            anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_PINK,
+            height = 16
+          },
+          lookAt = {
+            anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_PINK,
+            height = -50
+          }
         },
         HUNGRY = {
           color = Color(1, 0, 0)
@@ -291,14 +364,30 @@ L.LIGHTMODES = {
             range = 126.798203,
             angle = 116.352303,
             intensity = 1.800000,
-            color = Color(0.339730, 0.339730, 0.339730)
+            color = Color(0.339730, 0.339730, 0.339730),
+            position = {
+              anchor = G.GUIDS.SEAT_LIGHT_1_POSITION_ANCHOR_PURPLE,
+              height = 23
+            },
+            lookAt = {
+              anchor = G.GUIDS.SEAT_LIGHT_1_LOOKAT_ANCHOR_PURPLE,
+              height = -50
+            }
         },
         ROLLING = {
           enabled = true,
-          range = 101.139198,
-          angle = 134.550003,
-          intensity = 1.800000,
-          color = Color(0.525551, 0.522316, 0.522316)
+          range = 102.000000,
+          angle = 97.000000,
+          intensity = 2.190000,
+          color = Color(1.000000, 0.667152, 0.667152),
+          position = {
+            anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_PURPLE,
+            height = 16
+          },
+          lookAt = {
+            anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_PURPLE,
+            height = -50
+          }
         },
         HUNGRY = {
           color = Color(1, 0, 0)
@@ -1165,6 +1254,7 @@ end
 --- Runtime-only mode fields (must not land in `gameState.lights`).
 local EPHEMERAL_MODE_KEYS = {
     lookAtTarget = true,
+    lookAt = true,
     positioning = true,
 }
 
@@ -1196,6 +1286,77 @@ end
 --- @param mt table|nil
 --- @return table|nil
 L.sanitizeLightModeTableForPersistence = sanitizeModeForPersistence
+
+--- True when `spec` is an ObjectPositions-style `{ anchor, height }` descriptor.
+--- @param spec any
+--- @return boolean
+local function isAnchoredPointSpec(spec)
+    return U.Type(spec) == "table" and spec.anchor ~= nil
+end
+
+--- True when `spec` already has world XYZ (Vector or {x,y,z}).
+--- @param spec any
+--- @return boolean
+local function isAbsolutePointSpec(spec)
+    if U.isInstance(spec, Vector) then
+        return true
+    end
+    return U.Type(spec) == "table"
+        and type(spec.x) == "number"
+        and type(spec.z) == "number"
+end
+
+--- Resolve one point field: anchored `{anchor,height}` or absolute `{x,y,z}` / Vector.
+--- @param spec any
+--- @param fieldLabel string
+--- @return table|nil `{ x, y, z }`
+local function resolveModePointSpec(spec, fieldLabel)
+    if isAnchoredPointSpec(spec) then
+        local pt = OP.resolveAnchoredWorldPoint(spec.anchor, spec.height)
+        if pt == nil then
+            print("[Lighting] Could not resolve anchored " .. tostring(fieldLabel) .. " for light mode")
+        end
+        return pt
+    end
+    if isAbsolutePointSpec(spec) then
+        return {
+            x = tonumber(spec.x or spec[1]) or 0,
+            y = tonumber(spec.y or spec[2]) or 0,
+            z = tonumber(spec.z or spec[3]) or 0,
+        }
+    end
+    return nil
+end
+
+--- Materialize anchored `position` / `lookAt` on a cloned mode table into absolute
+--- `position`, ephemeral `lookAtTarget`, and (when rotation is unset) look-at rotation.
+--- Mutates `modeDef` in place. Safe for shallow U.clone of LIGHTMODES entries because
+--- nested position/lookAt tables are replaced, not mutated.
+--- @param modeDef table|nil
+local function materializeLightModeTransforms(modeDef)
+    if U.Type(modeDef) ~= "table" then
+        return
+    end
+
+    if isAnchoredPointSpec(modeDef.position) then
+        local pt = resolveModePointSpec(modeDef.position, "position")
+        modeDef.position = pt
+    end
+
+    if modeDef.lookAt ~= nil then
+        local aim = resolveModePointSpec(modeDef.lookAt, "lookAt")
+        modeDef.lookAt = nil
+        if aim ~= nil then
+            modeDef.lookAtTarget = Vector(aim.x, aim.y, aim.z)
+        end
+    end
+
+    if modeDef.lookAtTarget ~= nil and modeDef.position ~= nil and modeDef.rotation == nil then
+        if isAbsolutePointSpec(modeDef.position) then
+            modeDef.rotation = U.lookAtRotation(modeDef.position, modeDef.lookAtTarget)
+        end
+    end
+end
 
 --- @param tbl table
 --- @return string
@@ -2123,6 +2284,8 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
             end
         end
 
+        materializeLightModeTransforms(modeDef)
+
         local afterVals = {}
 
         -- Handle enabled state (special case: animate on/off).
@@ -2247,8 +2410,9 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
                 end
 
                 -- Transform lerps use inline U.Lerp (not U.setPositionSlow) so epoch guards apply every tick.
-                -- When `lookAtTarget` is present (NPC pooled spotlights), interpolate in spherical
-                -- coords around the aim so the cone settles with minimal swing (TOR-416).
+                -- When `lookAtTarget` is present (NPC pooled spotlights, or player modes after
+                -- anchored `lookAt` materialize), interpolate in spherical coords around the aim
+                -- so the cone settles with minimal swing (TOR-416).
                 local lookAtTarget = modeDef.lookAtTarget
                 local useLookAtCoupled = modeDef.position ~= nil and lookAtTarget ~= nil
                     and (type(lookAtTarget) == "table" or U.isInstance(lookAtTarget, Vector))
