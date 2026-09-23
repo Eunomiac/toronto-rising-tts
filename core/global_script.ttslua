@@ -25,6 +25,8 @@
 -- GUIDs MUST match `lib/guids.ttslua` `SOUNDSCAPE_*` (see SYNC comment there).
 -- ---------------------------------------------------------------------------
 U = require("lib.util")
+-- Batch / sequence-mapped UI.setAttributes (see U.UISet). Global alias for Execute Lua + Global callers.
+UISet = U.UISet
 
 local TR_EARLY_SOUNDSCAPE_EMITTER_GUIDS = {
   "2870fb",
@@ -162,6 +164,7 @@ end
 Sync = require("core.sync")
 O = require("core.objects")
 U = require("lib.util")
+UISet = U.UISet
 local StorytellerPanelUI = require("core.storyteller_panel_ui")
 local StorytellerScenesPanel = require("core.storyteller_scenes_panel")
 

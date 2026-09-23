@@ -46,6 +46,16 @@ _Last populated: 2026-09-23 — TTS Tools Epic B Claim/Release; Epic A author-co
 
 ### Character sheets
 
+#### UISet — batch / sequence UI attribute helper (no new TOR — Linear quota)
+
+**How to verify:** Save & Play so Global scripts reload. Open **Execute Lua** on Global.
+
+1. Pick any Global XmlUI element you can see change (for example a debug panel id). Run `UISet("<that_id>", { active = "true" })` then again with `active = "false"`. It should show and hide with no console error.
+2. Optional object form: with a character-sheet page GUID from the Objects pane, run `UISet("<guid>", "paper_root", { padding = "50 50 110 100" })` (or another real page-2 id). Confirm no `no object for GUID` / nil UI error.
+3. Optional sequence: `UISet("<guid>", "dot_rc_L_2_#", { image = "dot_yellow", active = "true" }, { { char = "#", vals = { 1, 2, 3, 4, 5 } } })` should light five dots if those ids exist on that page.
+
+**Context:** Helper from the page-2 XML dump, shipped as `U.UISet` in `lib/util.ttslua` and Global `UISet`. Linear could not create a new issue (workspace free-issue limit).
+
 #### TOR-595 — Dashboard PCs tab: live-only sheet (no stand-in) + Ambition from gameState
 
 **How to verify:** Save & Play so the snapshot script reloads. Keep External Editor on. Restart the Storyteller Dashboard if it was already running.

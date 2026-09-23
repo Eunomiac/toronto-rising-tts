@@ -1856,6 +1856,120 @@ function U.setAttributes(elemID, attrs)
   return UI.setAttributes(elemID, attrsToSet)
 end
 
+--- True when `tbl` is a key/value map (attribute table), not a 1..N array of values.
+--- Empty `{}` counts as a map so `UISet("elem", {})` does not mis-dispatch as the object form.
+local function uiSetIsAttrMap(tbl)
+  if type(tbl) ~= "table" then
+    return false
+  end
+  local n = 0
+  for k, _ in pairs(tbl) do
+    n = n + 1
+    if type(k) ~= "number" or k < 1 or k ~= math.floor(k) then
+      return true
+    end
+  end
+  if n == 0 then
+    return true
+  end
+  return n ~= #tbl
+end
+
+--- Sets UI attributes on one or more elements, with batch and sequence-mapping support.
+--- Also exposed as Global `UISet` after `lib.util` loads in `core/global_script.ttslua`.
+---
+--- Overloads:
+---   U.UISet(elem, attrs, [mapSequences])
+---   U.UISet(objectGuid, elem, attrs, [mapSequences])
+---
+--- @param paramA string|table Element id(s), or object GUID(s) when using the object form
+--- @param paramB table|string|table Attribute map, or element id(s) when using the object form
+--- @param paramC table|nil mapSequences (global form) or attrs (object form)
+--- @param paramD table|nil mapSequences (object form only)
+--- @usage U.UISet("dot_rc_L_2_#", { image = "dot_yellow" }, { { char = "#", vals = { 1, 2, 3, 4, 5 } } })
+--- @usage U.UISet({ "dot_a", "dot_b" }, { image = "dot_yellow" })
+--- @usage U.UISet("object123", "elem_name", { active = true })
+--- @usage U.UISet({ "object1", "object2" }, { "elem_a", "elem_b" }, { attr = val })
+function U.UISet(paramA, paramB, paramC, paramD)
+  local objectGuid = nil
+  local elem = nil
+  local attrs = nil
+  local mapSequences = nil
+
+  if uiSetIsAttrMap(paramB) then
+    elem = paramA
+    attrs = paramB
+    mapSequences = paramC
+  else
+    objectGuid = paramA
+    elem = paramB
+    attrs = paramC
+    mapSequences = paramD
+
+    if type(objectGuid) == "table" then
+      for _, guid in ipairs(objectGuid) do
+        U.UISet(guid, elem, attrs, mapSequences)
+      end
+      return
+    end
+  end
+
+  if type(attrs) ~= "table" then
+    error("U.UISet: attrs must be a table of attribute name-value pairs", 2)
+  end
+
+  if type(elem) == "table" then
+    for _, e in ipairs(elem) do
+      if objectGuid then
+        U.UISet(objectGuid, e, attrs, mapSequences)
+      else
+        U.UISet(e, attrs, mapSequences)
+      end
+    end
+    return
+  end
+
+  if type(elem) ~= "string" then
+    error("U.UISet: elem must be a string or array of strings", 2)
+  end
+
+  if mapSequences ~= nil then
+    if type(mapSequences) ~= "table" then
+      error("U.UISet: mapSequences must be an array of { char, vals } tables", 2)
+    end
+    for _, sequence in ipairs(mapSequences) do
+      if type(sequence) ~= "table" or type(sequence.char) ~= "string" or type(sequence.vals) ~= "table" then
+        error("U.UISet: each mapSequences entry needs char (string) and vals (array)", 2)
+      end
+      for _, val in ipairs(sequence.vals) do
+        local newElem = elem:gsub(sequence.char, tostring(val))
+        if objectGuid then
+          U.UISet(objectGuid, newElem, attrs)
+        else
+          U.UISet(newElem, attrs)
+        end
+      end
+    end
+    return
+  end
+
+  if objectGuid then
+    if type(objectGuid) ~= "string" then
+      error("U.UISet: objectGuid must be a string or array of strings", 2)
+    end
+    local obj = getObjectFromGUID(objectGuid)
+    if obj == nil then
+      error("U.UISet: no object for GUID " .. objectGuid, 2)
+    end
+    if obj.UI == nil or obj.UI.setAttributes == nil then
+      error("U.UISet: object " .. objectGuid .. " has no UI.setAttributes", 2)
+    end
+    return obj.UI.setAttributes(elem, attrs)
+  end
+
+  return U.setAttributes(elem, attrs)
+end
+
 --- Toggles visibility of a UI element via the `active` attribute (collapse/expand pattern).
 --- Updates the companion toggle button `toggleElem_<elemID>` text to ▼ (expanded) or ► (collapsed).
 --- @param elemID string ID of the element to toggle (not the toggle button id)

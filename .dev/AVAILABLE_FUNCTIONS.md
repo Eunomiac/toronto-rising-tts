@@ -534,6 +534,7 @@ General-purpose UI helpers (system-agnostic). Prefer **`U.setAttribute` / `U.set
 | :--------- | :------------- | :--------------- |
 | `U.setAttribute(elemID, attr, val)` | Set one attribute; preserves button color/textSize/textColor when needed | `U.setAttribute("myButton", "text", "OK")` |
 | `U.setAttributes(elemID, attrs)` | Set many attributes; same button preservation | `U.setAttributes("btn", { text = "Go", fontSize = 18 })` |
+| `U.UISet(...)` / Global `UISet` | Batch element ids and/or object GUIDs; optional `#`-style sequence map onto `setAttributes` | `UISet("dot_rc_L_2_#", { image = "dot_yellow" }, { { char = "#", vals = { 1, 2, 3, 4, 5 } } })` |
 | `U.isButton(elemID)` | True if element has click handlers | Guards / branching |
 | `U.splashUIElement(elemID, duration, delay)` | Show element briefly then hide | Notifications |
 
@@ -562,7 +563,7 @@ Distinct from `active`. Empty audience serializes as `U.VISIBILITY_EMPTY_SENTINE
 
 Do not use `UI.getValue` / `UI.getAttribute(id, "text")` to read typed `InputField` content. Use **`onValueChanged` / `onEndEdit`**, stash the callback **`value`**, and prefill with **`U.setAttribute(id, "text", ...)`** (see `uiSetInputField` in `core/roll_ui.ttslua`). Full checklist: [`.dev/SOLVING ISSUES & DEBUGGING.md`](SOLVING%20ISSUES%20&%20DEBUGGING.md) section *Global UI `InputField` — typed text*.
 
-TTS also exposes **`UI.setAttributes`** natively; use **`U.setAttributes`** when the target may be a **Button**.
+TTS also exposes **`UI.setAttributes`** natively; use **`U.setAttributes`** when the target may be a **Button**. Prefer **`UISet` / `U.UISet`** when you need one call to hit many element ids, many object GUIDs, or a `#`-style id sequence (Global alias is set in `core/global_script.ttslua` after `lib.util` loads).
 
 ### Storyteller HUD toolbar (not in `lib/`)
 
