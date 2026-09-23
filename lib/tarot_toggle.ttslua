@@ -8,6 +8,7 @@
 local C = require("lib.constants")
 local G = require("lib.guids")
 local OP = require("lib.object_positions_object")
+local CU = require("lib.csheet_util")
 local TarotObjects = require("lib.tarot_objects")
 
 local TarotToggle = {}
@@ -22,6 +23,25 @@ local TAROT_KEYS = {
 }
 
 local currentOpToken = 0
+
+--- Forward declare: applyDeckState may shuffle after delayed reveal.
+local shuffleTarotDeck
+
+--- Plain `{ x, y, z }` from a Vector or table (TTS Vectors are userdata).
+--- @param v any
+--- @return table|nil
+local function xyzTable(v)
+    if v == nil then
+        return nil
+    end
+    local x = v.x
+    local y = v.y
+    local z = v.z
+    if type(x) ~= "number" or type(y) ~= "number" or type(z) ~= "number" then
+        return nil
+    end
+    return { x = x, y = y, z = z }
+end
 
 --- @return table|nil
 local function getSeatLayoutCenterPoint()
@@ -123,15 +143,14 @@ local function deckIsParkedHidden(deck)
 end
 
 --- Pink deck off uses hide/restore (y = −200), not a visible shallow bury.
---- On reveal: one pose apply only (`OP.applyResolvedPose`). That path honors
---- `on.delay` (drawer opens first) and clears HiddenObject via GlobalRestoreObject
---- at the resolved anchor+height. Do not also call GlobalRestoreObject eagerly —
---- that dual-apply made the deck pop at the stash/drawer height, then snap again
---- when the delayed pose ran.
+--- On reveal: one delayed GlobalRestoreObject at the resolved ObjectPositions pose.
+--- Do not route reveal through applyResolvedPose setPosition-then-restore — TTS Vectors
+--- are userdata, so restore often omitted position and left the deck parked at −200
+--- (drawer still opened; deck never appeared on the table).
 --- @param state string
 --- @param token number
 --- @param buttonGuid string|nil
---- @param opts table|nil `{ instant?: boolean }`
+--- @param opts table|nil `{ instant?: boolean, shuffleAfterReveal?: boolean }`
 local function applyDeckState(state, token, buttonGuid, opts)
     opts = type(opts) == "table" and opts or {}
     local obj = getTarotDeck(buttonGuid)
@@ -166,28 +185,44 @@ local function applyDeckState(state, token, buttonGuid, opts)
         print("[TarotToggle] Missing 'on' pose for Pink tarot deck.")
         return
     end
-    if type(onPose.position) ~= "table"
-        or onPose.position.x == nil
-        or onPose.position.z == nil
-        or onPose.position.y == nil
-    then
+    local pos = xyzTable(onPose.position)
+    if pos == nil then
         print("[TarotToggle] Pink tarot on pose missing resolved XYZ; check TAROT_DECK_ANCHOR_PINK is in-world and on.height is set.")
         return
     end
-    local effectivePose = {}
-    for k, v in pairs(onPose) do
-        effectivePose[k] = v
+    local rot = xyzTable(onPose.rotation)
+    local delay = 0
+    if opts.instant ~= true and type(onPose.delay) == "number" then
+        delay = onPose.delay
     end
-    effectivePose.isHidden = false
-    if opts.instant == true then
-        effectivePose.delay = nil
-        effectivePose.transitionDelay = nil
+    local shuffleAfter = opts.shuffleAfterReveal == true
+
+    local function reveal()
+        if not isTokenCurrent(token) then
+            return
+        end
+        -- Re-resolve GUID in case the deck object was rebuilt while waiting.
+        local live = getTarotDeck(buttonGuid)
+        local liveGuid = live ~= nil and type(live.getGUID) == "function" and live.getGUID() or guid
+        if Global ~= nil and type(Global.call) == "function" then
+            Global.call("GlobalRestoreObject", {
+                guid = liveGuid,
+                position = pos,
+                rotation = rot,
+                locked = onPose.isLocked == true,
+                interactable = true,
+            })
+        end
+        if shuffleAfter then
+            shuffleTarotDeck(buttonGuid)
+        end
     end
-    OP.applyResolvedPose(obj, effectivePose, 0, 0, {
-        shouldAbort = function()
-            return not isTokenCurrent(token)
-        end,
-    })
+
+    if delay > 0 then
+        CU.await(reveal, delay)
+    else
+        reveal()
+    end
 end
 
 --- @param key string
@@ -245,7 +280,7 @@ local function applyObjectState(key, state, token, buttonGuid, opts)
 end
 
 --- @param buttonGuid string|nil
-local function shuffleTarotDeck(buttonGuid)
+shuffleTarotDeck = function(buttonGuid)
     local deck = getTarotDeck(buttonGuid)
     if deck == nil then
         return
@@ -270,14 +305,21 @@ local function applyTarotStateNow(targetOn, token, buttonGuid, opts)
         returnLooseTarotCardsToDeck(buttonGuid)
     end
     local state = targetOn and STATE_ON or STATE_OFF
+    -- TOR-447: shuffle after the deck reveal settles (not while still parked at −200).
+    local deckOpts = opts
+    if targetOn and opts.skipShuffle ~= true then
+        deckOpts = {}
+        for k, v in pairs(opts) do
+            deckOpts[k] = v
+        end
+        deckOpts.shuffleAfterReveal = true
+    end
     for i = 1, #TAROT_KEYS do
-        applyObjectState(TAROT_KEYS[i], state, token, buttonGuid, opts)
+        local key = TAROT_KEYS[i]
+        local keyOpts = (key == TarotObjects.GUIDS_KEY_DECK_PINK) and deckOpts or opts
+        applyObjectState(key, state, token, buttonGuid, keyOpts)
     end
     setDeckInteractable(targetOn, buttonGuid)
-    -- TOR-447: shuffle when activating so the drawn order is fresh after the deck settles into pose.
-    if targetOn and opts.skipShuffle ~= true then
-        shuffleTarotDeck(buttonGuid)
-    end
     return targetOn
 end
 

@@ -21,7 +21,7 @@ _Last populated: 2026-09-23 morning `/tr-inbox` — Play→Spotlight PC seat rea
 
 ### Phases / session end
 
-#### Play→Spotlight: inactive PC seats reactivate (no new TOR — Linear quota; comment on TOR-98)
+#### ✅ Play→Spotlight: inactive PC seats reactivate (no new TOR — Linear quota; comment on TOR-98)
 
 **How to verify:** Save & Play so scene/phase scripts reload. Apply a library scene, then deactivate one or two PC seats on the Scenes panel or stage control board so those piles drop (inactive, not Absent).
 
@@ -33,7 +33,7 @@ _Last populated: 2026-09-23 morning `/tr-inbox` — Play→Spotlight PC seat rea
 
 ### Scatter / table layout
 
-#### Scatter objectsToHide: Prince signet/curtain stay parked (no new TOR — Linear quota; comment on TOR-572)
+#### ✅ Scatter objectsToHide: Prince signet/curtain stay parked (no new TOR — Linear quota; comment on TOR-572)
 
 **How to verify:** Save & Play so Scatter scripts reload. Start from a normal table (Table A is fine) with Red’s Prince signet, border, and curtain visible to you as Storyteller.
 
@@ -78,7 +78,7 @@ _Last populated: 2026-09-23 morning `/tr-inbox` — Play→Spotlight PC seat rea
 
 **Context:** Helper from the page-2 XML dump, shipped as `U.UISet` in `lib/util.ttslua` and Global `UISet`. Linear could not create a new issue (workspace free-issue limit).
 
-#### TOR-595 — Dashboard PCs tab: live-only sheet (no stand-in) + Ambition from gameState
+#### ✅ TOR-595 — Dashboard PCs tab: live-only sheet (no stand-in) + Ambition from gameState
 
 **How to verify:** Save & Play so the snapshot script reloads. Keep External Editor on. Restart the Storyteller Dashboard if it was already running.
 

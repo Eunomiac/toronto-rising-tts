@@ -398,14 +398,15 @@ function OP.applyResolvedPose(obj, pose, baseDuration, baseDelay, opts)
         if type(desiredLock) == "boolean" then
           restoreOpts.locked = desiredLock
         end
-        if type(targetPos) == "table" then
+        -- TTS Vectors are userdata; do not require type == "table".
+        if targetPos ~= nil and type(targetPos.x) == "number" then
           restoreOpts.position = {
             x = targetPos.x,
             y = targetPos.y,
             z = targetPos.z,
           }
         end
-        if type(targetRot) == "table" then
+        if targetRot ~= nil and type(targetRot.x) == "number" then
           restoreOpts.rotation = {
             x = targetRot.x,
             y = targetRot.y,
