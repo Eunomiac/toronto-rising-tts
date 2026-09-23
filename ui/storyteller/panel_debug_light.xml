@@ -17,7 +17,7 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (400-slot 
   <GridLayout class="panel_debug_light_selection"
      padding = "5 5 5 5"
      spacing = "3 3"
-     cellSize = "80 20"
+     cellSize = "115 40"
      childAlignment = "UpperLeft"
      constraint = "FixedColumnCount"
      constraintCount = "10"
@@ -85,7 +85,7 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (400-slot 
   **OTHER BUTTONS**
   - [Done] - Closes the light selection panel, returning the author to the world viewportData. (Note: Parameter sent is 'close', to avoid conflict with the 'done' button in the light control panel.)
 
-  UI.setAttributes("panel_debug_light_selection", {cellSize = "80 20"})
+  UI.setAttributes("panel_debug_light_selection", {cellSize = "115 40"})
 -->
 
   <GridLayout id="panel_debug_light_selection" class="panel_debug_light_selection">
@@ -602,11 +602,49 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (400-slot 
   - [Discard] - Discards all changes made to the light's configuration by the debug control panel, restoring it to its initial state.
   - [Snapshot] - Sends a lua-table formatted configuration of the light's current state to the IDE, so it can be copied into the various LightMode definitions.
   - [Done] - Closes the debug control panel, returning the author to the light selection panel.
+
+
+  UI.setAttributes("panel_debug_light_control", {spacing = "10"})
+  UI.setAttributes("db_position_header_container", {color = "rgba(1, 0, 0, 0.15)", childAlignment = "LowerCenter", childForceExpandHeight = "false", padding = "0 0 0 0"})
+  UI.setAttributes("db_position_header", {fontSize = "20"})
+  UI.setAttributes("db_x_position_container", {color = "rgba(1, 1, 0, 0)", childForceExpandWidth = "true", childForceExpandHeight = "true"})
+  UI.setAttributes("db_x_position_container_top", {color = "rgba(1, 0, 1, 0.15)", minHeight = "0", minWidth = "0"})
+  UI.setAttributes("db_x_position_container_middle", {color = "rgba(0, 0, 1, 0.15)"})
+  UI.setAttributes("db_x_position_container_bottom", {color = "rgba(0, 1, 1, 0)"})
+  UI.setAttributes("db_x_position_header", {alignment = "MiddleLeft", fontSize = "14"})
+  UI.setAttributes("debug_light_slider_xposition", {width = "100%"})
+  UI.setAttributes("", {})
+  UI.setAttributes("", {})
+
+
 -->
+
+
+<Defaults>
+  <GridLayout class="panel_debug_light_control" spacing = "10" />
+
+  <HorizontalLayout class="header_container"
+    childAlignment = "LowerCenter"
+    childForceExpandHeight = "false"
+    padding = "0 0 0 0"
+  />
+
+  <Text class="header_text" fontSize = "14" fontStyle = "Bold" color = "#FFDD00" alignment = "MiddleLeft" />
+  <Text class="top_header_text" fontSize = "20" alignment = "MiddleCenter" />
+
+  <VerticalLayout class="debug_light_control_container" childForceExpandWidth = "true" childForceExpandHeight = "true" />
+  <Panel class="debug_light_control_container_top" minHeight = "0" minWidth = "0" />
+  <Panel class="debug_light_control_container_middle" />
+  <Panel class="debug_light_control_container_bottom" />
+  <Slider class="debug_light_slider" width = "100%" />
+
+  <Text class="debug_light_current_value" fontSize = "14" fontStyle = "Bold" color = "#FFFFFF" />
+  <Text class="debug_light_slider_label" fontSize = "12" fontStyle = "Normal" color = "#999999" />
+</Defaults>
 
   <GridLayout id="panel_debug_light_control" class="panel_debug_light_control" active="false">
     <HorizontalLayout id="db_position_header_container" class="header_container">
-      <Text id="db_position_header" class="header_text">Position</Text>
+      <Text id="db_position_header" class="header_text top_header_text">Position</Text>
     </HorizontalLayout>
     <VerticalLayout id="db_x_position_container" class="debug_light_control_container">
       <Panel id="db_x_position_container_top" class="debug_light_control_container_top">
@@ -651,7 +689,7 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (400-slot 
       </Panel>
     </VerticalLayout>
     <HorizontalLayout id="db_color_header_container" class="header_container">
-      <Text id="db_color_header" class="header_text">Color</Text>
+      <Text id="db_color_header" class="header_text top_header_text">Color</Text>
     </HorizontalLayout>
     <VerticalLayout id="db_hue_container" class="debug_light_control_container">
       <Panel id="db_hue_container_top" class="debug_light_control_container_top">
@@ -696,7 +734,7 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (400-slot 
       </Panel>
     </VerticalLayout>
     <HorizontalLayout id="db_focalPoint_header_container" class="header_container">
-      <Text id="db_focalPoint_header" class="header_text">Focal Point</Text>
+      <Text id="db_focalPoint_header" class="header_text top_header_text">Focal Point</Text>
     </HorizontalLayout>
     <VerticalLayout id="db_pitch_container" class="debug_light_control_container">
       <Panel id="db_pitch_container_top" class="debug_light_control_container_top">
@@ -742,7 +780,7 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (400-slot 
     </VerticalLayout>
     <Panel id="db_debug_light_panel_spacer" class="debug_light_panel_spacer" />
     <HorizontalLayout id="db_rotation_header_container" class="header_container">
-      <Text id="db_rotation_header" class="header_text">Rotation</Text>
+      <Text id="db_rotation_header" class="header_text top_header_text">Rotation</Text>
     </HorizontalLayout>
     <VerticalLayout id="db_x_rotation_container" class="debug_light_control_container">
       <Panel id="db_x_rotation_container_top" class="debug_light_control_container_top">
@@ -787,7 +825,7 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (400-slot 
       </Panel>
     </VerticalLayout>
     <HorizontalLayout id="db_emission_header_container" class="header_container">
-      <Text id="db_emission_header" class="header_text">Emission</Text>
+      <Text id="db_emission_header" class="header_text top_header_text">Emission</Text>
     </HorizontalLayout>
     <VerticalLayout id="db_range_container" class="debug_light_control_container">
       <Panel id="db_range_container_top" class="debug_light_control_container_top">
@@ -832,19 +870,19 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (400-slot 
       </Panel>
     </VerticalLayout>
     <HorizontalLayout id="db_refresh_button_container" class="button_container">
-      <Button id="debug_light_control_button_refresh" class="debug_light_control_button" onClick="HUD_debugLightButtonClick(refresh)">REFRESH</Button>
+      <Button id="debug_light_control_button_refresh" class="debug_light_control_button" onClick="HUD_debugLightButtonClick(refresh)" tooltip="Reload all sliders from the light and focal marker as they are in the world right now." tooltipPosition="Above">REFRESH</Button>
     </HorizontalLayout>
     <HorizontalLayout id="db_snapshot_button_container" class="button_container">
-      <Button id="debug_light_control_button_snapshot" class="debug_light_control_button" onClick="HUD_debugLightButtonClick(snapshot)">SNAPSHOT</Button>
+      <Button id="debug_light_control_button_snapshot" class="debug_light_control_button" onClick="HUD_debugLightButtonClick(snapshot)" tooltip="Write this light's settings as Lua to .dev/.debug/debug_logs/focused_light.lua so you can paste them into a LightMode definition." tooltipPosition="Above">SNAPSHOT</Button>
     </HorizontalLayout>
     <HorizontalLayout id="db_discard_button_container" class="button_container">
-      <Button id="debug_light_control_button_discard" class="debug_light_control_button" onClick="HUD_debugLightButtonClick(discard)">DISCARD</Button>
+      <Button id="debug_light_control_button_discard" class="debug_light_control_button" onClick="HUD_debugLightButtonClick(discard)" tooltip="Undo panel edits and restore the light and focal marker to how they were when you selected this light." tooltipPosition="Above">DISCARD</Button>
     </HorizontalLayout>
     <HorizontalLayout id="db_zero_button_container" class="button_container">
-      <Button id="debug_light_control_button_zero" class="debug_light_control_button" onClick="HUD_debugLightButtonClick(zero)">ZERO</Button>
+      <Button id="debug_light_control_button_zero" class="debug_light_control_button" onClick="HUD_debugLightButtonClick(zero)" tooltip="Recenter the unbalanced sliders (position, range, intensity, distance) around the light's current values." tooltipPosition="Above">ZERO</Button>
     </HorizontalLayout>
     <HorizontalLayout id="db_done_button_container" class="button_container">
-      <Button id="debug_light_control_button_done" class="debug_light_control_button" onClick="HUD_debugLightButtonClick(done)">DONE</Button>
+      <Button id="debug_light_control_button_done" class="debug_light_control_button" onClick="HUD_debugLightButtonClick(done)" tooltip="Close this tuner and return to the light list. Keeps your current light settings." tooltipPosition="Above">DONE</Button>
     </HorizontalLayout>
   </GridLayout>
 

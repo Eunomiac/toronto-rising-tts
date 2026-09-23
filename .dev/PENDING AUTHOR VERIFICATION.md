@@ -17,9 +17,15 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-23 — Debug Light labels + 400-slot / 10-col grid (TOR-495)._
+_Last populated: 2026-09-23 — Debug Light control button tooltips (no new TOR — Linear quota)._
 
 ### Lighting / debug
+
+#### Debug Light control buttons: hover tooltips (no new TOR — Linear quota)
+
+**How to verify:** Save & Play so HUD XML reloads. Open **Debug Light**, click any spotlight so the control panel opens, then hover each of **REFRESH**, **SNAPSHOT**, **DISCARD**, **ZERO**, and **DONE**. A short tip should appear above each button describing what it does.
+
+**Context:** TTS `tooltip` / `tooltipPosition="Above"` on the five control buttons in `panel_debug_light.xml`. relatedTo **TOR-495** (Debug Light selection labels). Linear could not create a new issue (workspace free-issue limit).
 
 #### TOR-495 — Debug Light selection buttons show spotlight names
 
