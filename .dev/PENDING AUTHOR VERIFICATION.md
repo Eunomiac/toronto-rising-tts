@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-23 morning `/tr-inbox` — Play→Spotlight PC seat reactivate + Scatter objectsToHide re-hide._
+_Last populated: 2026-09-23 — Pink tarot Consult deck reveal fix (comment on TOR-411)._
 
 ### Phases / session end
 
@@ -32,6 +32,16 @@ _Last populated: 2026-09-23 morning `/tr-inbox` — Play→Spotlight PC seat rea
 **Context:** Spotlight narrative clear emptied NPC seats but left PC `isPresent` from the prior scene. Now it calls `applyDefaultPcSeatPresence` (same helper as no-scene / End), skipping Absent. relatedTo **TOR-98**, **TOR-256**.
 
 ### Scatter / table layout
+
+#### ObjectPositions sole pose + Consult deck reveal (comments on TOR-411 / TOR-507)
+
+**How to verify:** Save & Play so tarot and seat-layout scripts reload.
+
+1. Put the Pink tarot away. Click Consult once — the drawer should slide out, then after about **1.5 seconds** the deck should appear at height **8.5** (it must not stay missing while the drawer is open, and it should not hop from a lower height).
+2. Put tarot away again; switch Table A ↔ B or Advance **Play → Spotlight**. The deck should stay hidden; anchors should follow Pink. Consult again — same single appear at 8.5.
+3. With every PC dice tray closed, Advance **Play → Spotlight**. Trays should stay closed.
+
+**Context:** Layout moves anchors only; ObjectPositions owns on/off. Deck reveal uses one delayed `GlobalRestoreObject` with a plain XYZ (TTS Vectors are userdata; the old restore path often skipped position and left the deck at −200). relatedTo **TOR-411**, **TOR-507**.
 
 #### ✅ Scatter objectsToHide: Prince signet/curtain stay parked (no new TOR — Linear quota; comment on TOR-572)
 
