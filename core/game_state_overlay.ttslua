@@ -59,9 +59,12 @@ local OVERLAY_SESSION_NUMBER_PLAY_COLOR = "#CC0000"
 local OVERLAY_SESSION_NUMBER_PROLOGUE_COLOR = "#990000"
 local OVERLAY_SEPARATOR_PLAY_COLOR = "#CC0000"
 local OVERLAY_SEPARATOR_PROLOGUE_COLOR = "#FF0000"
--- Play clock box after prologue: empty preferredHeight collapses the row in XmlUI.
-local OVERLAY_TIME_PLAY_MIN_HEIGHT = "52"
-local OVERLAY_TIME_PLAY_PREFERRED_HEIGHT = "60"
+-- Play time matches overlay XML `large_red_text` (fontSize 42). Empty preferredHeight
+-- collapses the row (TOR-604); 52/60 overshoots and lifts the stack. VerticalLayout
+-- `childForceExpandHeight` defaults true, so restore flexibleHeight 1.
+local OVERLAY_TIME_PLAY_MIN_HEIGHT = "42"
+local OVERLAY_TIME_PLAY_PREFERRED_HEIGHT = "42"
+local OVERLAY_TIME_PLAY_FLEXIBLE_HEIGHT = "1"
 -- Three ASCII spaces between words. Must be written with `text` via setAttributes;
 -- `UI.setValue` collapses the run (TOR-600 / TOR-601).
 local OVERLAY_WORD_GAP = "   "
@@ -252,13 +255,13 @@ local function applyOverlayPhaseChrome(kind)
         U.setAttributes("gameStateOverlay_time", {
             color = OVERLAY_TIME_PLAY_COLOR,
             fontSize = "42",
-            preferredHeight = "48",
-            flexibleHeight = "0",
+            fontStyle = "Bold",
         })
         return
     end
     U.setAttributes("gameStateOverlay_sesionNumber", {
         fontStyle = "Bold",
+        fontSize = "18",
         color = OVERLAY_SESSION_NUMBER_PLAY_COLOR,
     })
     if kind == "spotlight" then
@@ -286,7 +289,7 @@ local function applyOverlayPhaseChrome(kind)
         fontSize = "42",
         minHeight = OVERLAY_TIME_PLAY_MIN_HEIGHT,
         preferredHeight = OVERLAY_TIME_PLAY_PREFERRED_HEIGHT,
-        flexibleHeight = "0",
+        flexibleHeight = OVERLAY_TIME_PLAY_FLEXIBLE_HEIGHT,
     })
 end
 

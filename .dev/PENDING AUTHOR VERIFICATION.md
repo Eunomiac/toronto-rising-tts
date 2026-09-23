@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-23 — Debug Light control button tooltips (no new TOR — Linear quota)._
+_Last populated: 2026-09-23 — TOR-604 Play overlay restore matches XML font sizes (not 52/60)._
 
 ### Lighting / debug
 
@@ -53,15 +53,15 @@ _Last populated: 2026-09-23 — Debug Light control button tooltips (no new TOR 
 
 ### Phases / session start
 
-#### TOR-604 — Play overlay clock height after leaving prologue
+#### TOR-604 — Play overlay restore matches XML after prologue
 
 **How to verify:** Save & Play so scripts reload. From Intermission with no scene, Advance to Play (prologue overlay), then Apply a library scene.
 
-1. The center overlay should show roman session, district/site, the red date, **and the clock** (for example `8:00 PM`) inside the gold frame — not clipped off the bottom.
-2. Session number and location should sit near the top of that frame, similar to a normal Play overlay that never went through prologue.
-3. Optional: End the scene. Date + **DOWNTIME** should also sit in that same vertical layout, with **DOWNTIME** fully visible.
+1. The center overlay should show roman session, district/site, the red date, and the clock inside the gold frame — not clipped off the bottom.
+2. Session number, location, and date should sit at the same height as a Play overlay that never went through prologue — not shifted up.
+3. Optional: End the scene. Date + **DOWNTIME** should use that same vertical layout, with **DOWNTIME** fully visible.
 
-**Context:** Leaving prologue used to clear the time row height to empty, which collapsed it. relatedTo **TOR-598**.
+**Context:** The 52/60 time box was not in the overlay XML (`large_red_text` is fontSize 42 with no layout box). Play restore now uses 42 / 42 and lets the row grow with the layout. relatedTo **TOR-598**. Linear quota blocked a new issue id.
 
 ### Character sheets
 
