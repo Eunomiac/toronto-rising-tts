@@ -26,9 +26,10 @@ local HEAL_BROADCAST_HOLD_SEC = 6
 local INTERMISSION_THEME_FADE_SEC = 2
 --- End→Intermission blackout (`overlay_blackoutPanel` FadeIn/FadeOut is 5s; hold is one second longer).
 local END_INTERMISSION_BLACKOUT_ID = "overlay_blackoutPanel"
+local END_INTERMISSION_BLACKOUT_FADE_SEC = 5
 local END_INTERMISSION_BLACKOUT_HOLD_SEC = 6
---- TR_Loop fade-in starts this long after the blackout show (fade itself is INTERMISSION_THEME_FADE_SEC).
-local END_INTERMISSION_THEME_LEAD_SEC = 3
+--- TR_Loop starts when the blackout begins FadeOut; duration matches that FadeOut (not the generic Intermission 2s).
+local END_INTERMISSION_THEME_FADE_SEC = END_INTERMISSION_BLACKOUT_FADE_SEC
 --- Per-step U.chain cap is computed in advanceTo from SessionExplode.maxPlayEnterWaitSec + 15
 --- so a longer per-session song is not killed by the default 60s chainWait (TOR-501 / TOR-531).
 
@@ -308,25 +309,33 @@ end
 
 --- End → Intermission: TR_Loop fades in while every other lane fades out.
 --- Does not `stopAll` — that would hard-cut the outgoing fade. Does not lift the end splash.
---- Returns immediately; the fades run for INTERMISSION_THEME_FADE_SEC. The Advance chain owns the waits.
-function Phases.beginIntermissionThemeHandoff(_ctx)
+--- Returns immediately; the fades run for `opts.fadeSeconds` (default INTERMISSION_THEME_FADE_SEC).
+--- The Advance chain owns the waits.
+--- @param _ctx table|nil
+--- @param opts table|nil `{ fadeSeconds?: number }` — End→Intermission uses blackout FadeOut length
+function Phases.beginIntermissionThemeHandoff(_ctx, opts)
+    opts = type(opts) == "table" and opts or {}
+    local fadeSec = tonumber(opts.fadeSeconds)
+    if fadeSec == nil or fadeSec < 0 then
+        fadeSec = INTERMISSION_THEME_FADE_SEC
+    end
     local Soundscape = require("core.soundscape")
     local key = C.IntermissionThemeFeaturedKey or "TR_Loop"
     local ok, msg = Soundscape.playFeaturedMusic(key, {
-        incomingFadeSeconds = INTERMISSION_THEME_FADE_SEC,
-        outgoingFadeSeconds = INTERMISSION_THEME_FADE_SEC,
+        incomingFadeSeconds = fadeSec,
+        outgoingFadeSeconds = fadeSec,
     })
     if ok ~= true then
         U.AlertGM("Intermission theme: " .. tostring(msg or "playFeaturedMusic failed"))
     end
     if type(Soundscape.fadeOutTransitionAmbient) == "function" then
         Soundscape.fadeOutTransitionAmbient({
-            seconds = INTERMISSION_THEME_FADE_SEC,
+            seconds = fadeSec,
             silenceAfter = true,
         })
     end
     if type(Soundscape.stopSessionIntro) == "function" then
-        Soundscape.stopSessionIntro({ fadeSeconds = INTERMISSION_THEME_FADE_SEC })
+        Soundscape.stopSessionIntro({ fadeSeconds = fadeSec })
     end
     if type(Soundscape.commitEagerSteadyState) == "function" then
         Soundscape.commitEagerSteadyState(ok == true)
@@ -735,23 +744,21 @@ end
 Phases.onEnter[C.Phases.INTERMISSION] = function(ctx)
     return {
         function()
+            -- Blackout FadeIn only; hold until opaque before splash + theme (no TR_Loop under black).
             callGlobalBlindfoldHelper("beginEndIntermissionCoverHoldForPhases")
             if type(UI.show) == "function" then
                 UI.show(END_INTERMISSION_BLACKOUT_ID)
             end
-            return END_INTERMISSION_THEME_LEAD_SEC
+            return END_INTERMISSION_BLACKOUT_HOLD_SEC
         end,
         function()
-            Phases.beginIntermissionThemeHandoff(ctx)
-            return END_INTERMISSION_BLACKOUT_HOLD_SEC - END_INTERMISSION_THEME_LEAD_SEC
-        end,
-        function()
-            -- Splash is already behind the opaque blackout; snap it on, then fade the blackout out.
+            -- Splash under opaque blackout; start TR_Loop as blackout FadeOut begins (same duration).
             callGlobalBlindfoldHelper("showEndGlobalBlindfoldInstantForPhases")
+            Phases.beginIntermissionThemeHandoff(ctx, { fadeSeconds = END_INTERMISSION_THEME_FADE_SEC })
             if type(UI.hide) == "function" then
                 UI.hide(END_INTERMISSION_BLACKOUT_ID)
             end
-            return END_INTERMISSION_BLACKOUT_HOLD_SEC
+            return END_INTERMISSION_BLACKOUT_FADE_SEC
         end,
         function()
             if type(U.setAttribute) == "function" then

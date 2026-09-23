@@ -20,8 +20,6 @@ Verification:
 ## For Immediate Implementation
 > _After registering each of these issues with Linear in the ordinary fashion, before updating the Focus Stack, briefly review the issue: If it is a quick or easy fix, implement it immediately without waiting for author confirmation. Otherwise, promote it to the top of the Focus Stack, and offer to begin work on it immediately when summarizing your work processing `INBOX.md` to the author. If multiple issues require promotion in this way, consider how best to resolve them as quickly as possible, and offer to draft an implementation plan in your response to the author._
 
-* [Soundscape] Upon transitioning from PLAY to SPOTLIGHT, any custom location-based music (e.g. for sites like `C.Sites.Ravenwing`) should crossfade out and the default background music playlist should be restored.
-
 ## Active
 
 ## External Work (Set STATUS to "External To Do")
@@ -50,6 +48,8 @@ Verification:
 
 
 ## Processed
+
+2026-09-23 afternoon `/tr-inbox` — Immediate: Play→Spotlight location→Main → Focus #1 (comment on **TOR-98**; Linear quota blocked new Bug). End→Intermission TR_Loop with blackout FadeOut → shipped in `core/phases.ttslua` (comment on **TOR-143**; PAVE Outstanding). PAVE ✅ cleared playerLight1 STANDARD/ROLLING, Debug Light tooltips, **TOR-495** selection names, TTS Tools Epic B Claim/Release, **TOR-604**, **TOR-590**. Focus → Play→Spotlight location→Main, **TOR-526**, **TOR-141**, **TOR-81**, **TOR-495**.
 
 2026-09-23 `/tr-inbox` — capture empty (Quick Fixes / Active / Immediate / Needs clarification). PAVE ✅ cleared **TOR-593**, **TOR-596**, **TOR-581**, **TOR-527**, **TOR-598**, **TOR-600**, **TOR-601**, Play→Spotlight stage clear, **TOR-605**, **TOR-603**, **TOR-597**, **TOR-594**, **TOR-143** End→Intermission blackout splash, **TOR-31** Willpower reroll grabbable. PAVE ⚠️ **TOR-590** card yaw → shipped snap in `U.movePlayerHand` (Linear quota blocked a new Bug id; comment on **TOR-590**). Split orphaned Pink Tarot Consult verify text out of **TOR-512** PAVE row. Focus unchanged: **TOR-526**, **TOR-141**, **TOR-81**, **TOR-495**.
 

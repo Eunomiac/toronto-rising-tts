@@ -17,62 +17,19 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-23 — PC dice drawers closed default on seat layout (Play→Spotlight; comment on TOR-507)._
+_Last populated: 2026-09-23 afternoon `/tr-inbox` — End→Intermission TR_Loop timing; cleared ✅ lighting / TOR-495 labels / TTS Tools Epic B / TOR-604 / TOR-590._
 
-### Lighting / debug
+### Phases / session end
 
-#### playerLight1 STANDARD / ROLLING: anchor position + lookAt aim (no new TOR — Linear quota)
+#### End→Intermission: TR_Loop starts with blackout FadeOut (no new TOR — Linear quota; comment on TOR-143)
 
-**How to verify:** Save & Play so scripts reload. Seat any PC color (Brown / Orange / Red / Pink / Purple).
+**How to verify:** Save & Play so phase scripts reload. Advance from **End** to **Intermission**.
 
-1. With that seat present and not rolling, the main seat spotlight (`playerLight1`) should sit on the **seat light position anchor** (height about 23) and aim toward the **lookAt anchor** (aim height −50) — same place and cone direction you authored for STANDARD.
-2. Start a roll for that seat so the dice drawer opens / rolling lighting kicks in. The same spotlight should move over the **dice drawer on-anchor** (height about 16) and aim straight down at that drawer (lookAt height −50). Color/intensity should switch to the pinkish ROLLING look.
-3. End or cancel the roll. The light should return to the STANDARD seat pose (not stay parked over the drawer).
-4. Optional: change table / Scatter and repeat steps 1–3 — poses should follow the live anchors, not old absolute coordinates.
+1. While the screen is fully black, you should **not** hear the Intermission theme (`TR_Loop`) swelling under the blackout. Leftover session audio may fade or go quiet.
+2. When the blackout lifts and you see the ended-session splash, `TR_Loop` should fade **in** over about **five seconds**, matching the blackout fade-out.
+3. Camera / table / dark lights should still wait until after that fade before heavy world work.
 
-**Context:** `L.SetLightMode` now resolves `{ anchor, height }` the same way as `C.ObjectPositions`, and turns `lookAt` into the existing NPC-style `lookAtTarget` + `U.lookAtRotation` path. Authored modes were already in `L.LIGHTMODES` for all five player colors. Linear could not create a new issue (workspace free-issue limit).
-
-#### ✅ Debug Light control buttons: hover tooltips (no new TOR — Linear quota)
-
-**How to verify:** Save & Play so HUD XML reloads. Open **Debug Light**, click any spotlight so the control panel opens, then hover each of **REFRESH**, **SNAPSHOT**, **DISCARD**, **ZERO**, and **DONE**. A short tip should appear above each button describing what it does.
-
-**Context:** TTS `tooltip` / `tooltipPosition="Above"` on the five control buttons in `panel_debug_light.xml`. relatedTo **TOR-495** (Debug Light selection labels). Linear could not create a new issue (workspace free-issue limit).
-
-#### ✅ TOR-495 — Debug Light selection buttons show spotlight names
-
-**How to verify:** Save & Play so Global scripts and HUD XML reload (or Refresh XML if scripts already match). On the Storyteller HUD, click **Debug Light**.
-
-1. The selection grid should use **ten columns** and show one button per in-world spotlight (not the NPC preload pool), with each button’s **name** visible (or GM notes / GUID if unnamed) — not blank grey cells.
-2. If you have more than a handful of lights, you should see them all listed (up to 400), not capped at 60.
-3. Lights that are currently on should still look yellow (lit class); off lights stay grey. Font size / color should match the Defaults classes, not fall back to TTS defaults.
-4. Click one named button: the control panel should open and the green focal marker should appear down the beam. Click **DONE** on the control side to return to the grid — names should still be visible.
-
-**Context:** Labels use `U.setAttributes({ text, active })` after `setClass` (never `UI.setValue`). Class owns color/font; pool is 400 slots at 10 columns.
-
-### Tooling / TTS Tools fork
-
-#### ✅ TTS Tools Epic B — Claim / Release editor port (no new TOR — Linear quota)
-
-**How to verify:** Run **Update TTS Extension from VSIX** (extension **2.3.0**). Status bar should show **TTS Port: 39998** when the extension is listening.
-
-1. Command Palette → **Release TTS Editor Port** (or click the port status item). Status should show **released**.
-2. On the Storyteller Dashboard PCs tab, **Claim Port** — it should take 39998 without you restarting Cursor’s Extension Host.
-3. Dashboard **Release Port**, then in Cursor **Claim TTS Editor Port** — status back to **39998**, and Save & Play / Load Objects should work again.
-4. Optional: with the extension holding the port, Dashboard **Claim Port** may force-stop the extension’s listener (existing Dashboard behavior); then use extension **Claim** to take it back.
-
-**Context:** Epic B on `tts-tools` `epic-a-fast-sync`. Power-user escape hatch before the gateway (Epic C). Epic A (fast Save & Play) was author-confirmed earlier this session (Load Objects instant; Save & Play echo live).
-
-### Phases / session start
-
-#### TOR-604 — Overlay chrome uses absolute setClass; PLAY/MAIN stays on XML baseline
-
-**How to verify:** Save & Play so scripts and Global UI reload. From Intermission with no scene, Advance to Play (prologue overlay), then Apply a library scene.
-
-1. During prologue: **T O R O N T O   R I S I N G**, compact roman, gold spaced title, **PROLOGUE**.
-2. After Apply: roman, district/site, date, and clock should sit at the same height as a scene that never went through prologue — not shifted up. Clock fully visible inside the gold frame.
-3. Optional: End the scene (Downtime). Date + **DOWNTIME** should use the Downtime class look (brighter red / tall time). Optional: Advance to Spotlight and End — ritual / EPILOGUE bookend still correct.
-
-**Context:** Style chrome is absolute `UI.setClass` lists from overlay Defaults; copy is `setAttributes` text only. PLAY/MAIN no longer invents height/color overrides. Id renamed `sessionNumber`. relatedTo **TOR-598**.
+**Context:** Inbox Immediate 2026-09-23. Theme no longer starts three seconds into the blackout hold. relatedTo **TOR-506** (cover+theme handoff) and **TOR-143** (phase redesign).
 
 ### Character sheets
 
@@ -108,17 +65,6 @@ _Last populated: 2026-09-23 — PC dice drawers closed default on seat layout (P
 3. Optional: switch tables or re-enter Play and confirm drawers still default closed after layout.
 
 **Context:** Layout default for `CSHEET_DICE_DRAWER` had been pasted from a dump taken while a tray was open (same XZ/Y/scale as the ON anchor). Spotlight enter re-runs seat layout. Restored default to match the OFF anchor + closed height/scale. tracked on **TOR-507** (figurine seat offsets). relatedTo **TOR-592**.
-
-#### ✅ TOR-590 — Hand zone and cards move together (incl. square yaw)
-
-**How to verify:** Save & Play so the instant-move scripts load. Put a few cards in at least two hands. Start in **Play** on Table B.
-
-1. Advance **Play → Spotlight**. After the cover lifts you should **not** hear a long swoop of cards flying, and you should **not** see white cards stranded on figurines, sheets, or mid-table. Each colored hand-zone box on Table A should have its own fan sitting in that hand, grabbable.
-2. Those cards should sit **square** in the fan — not tilted a few degrees relative to the hand-zone box. (Follow-up from your ⚠️ note: card Y is now snapped to hand-zone Y + 180°.)
-3. Advance **Spotlight → End** (Table B0). Same checks: boxes and fans arrive together; cards stay square in the new hand.
-4. Optional: turn **Absent** on and off for one seat. Those cards should bury under the table with that hand zone and come back with it.
-
-**Context:** Unified `U.movePlayerHand` teleports the zone and cards together. Inbox 2026-09-23 also snaps card yaw after the move. Linear quota blocked a new follow-up Bug id — tracked on **TOR-590**. relatedTo **TOR-513** and **TOR-572**.
 
 #### TOR-573 — Scatter import and live Standard↔Scatter switch
 
