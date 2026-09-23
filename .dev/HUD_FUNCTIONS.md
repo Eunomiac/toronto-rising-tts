@@ -232,3 +232,5 @@ Storyteller **Stats** panel: edit PC backgrounds/merits/flaws and coterie advant
 ## Focused Debug Light panel (`panel_debug_light.xml`)
 
 Included from `hud_storyteller.xml`. Host-only. Sliders and Snapshot/Done are documented in the **Storyteller admin column** table above.
+
+**Selection pool labels:** `LightDebugFocus` fills `debug_light_selection_01`..`60` via `refreshSelectionClasses` — `UI.setClass` for lit/selected, then `U.setAttributes({ text, active })`. Do **not** use `UI.setValue` for these Buttons; TTS clears Button text on later `setAttribute` / `setClass` writes.

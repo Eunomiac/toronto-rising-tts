@@ -642,12 +642,15 @@ local function collectTunerSpotlights()
     return list
 end
 
+--- Apply lit/selected class, then restore Button `text` + `active`.
+--- TTS wipes Button text on setClass / setAttribute; use U.setAttributes (not UI.setValue).
 local function refreshSelectionClasses()
     for slot = 1, SELECTION_POOL_SIZE do
         local id = selectionSlotId(slot)
         local guid = slotToGuid[slot]
         if guid == nil then
             UI.setClass(id, CLASS_OFF)
+            U.setAttributes(id, { text = "", active = false })
         else
             local obj = G.getObject(guid)
             local lit = isLightEnabled(obj)
@@ -661,6 +664,10 @@ local function refreshSelectionClasses()
             else
                 UI.setClass(id, CLASS_OFF)
             end
+            U.setAttributes(id, {
+                text = spotlightDisplayName(obj),
+                active = true,
+            })
         end
     end
 end
@@ -677,16 +684,9 @@ local function fillSelectionPool(player)
         )
     end
     for slot = 1, SELECTION_POOL_SIZE do
-        local id = selectionSlotId(slot)
         local obj = list[slot]
         if obj ~= nil then
-            local guid = obj.getGUID()
-            slotToGuid[slot] = guid
-            UI.setValue(id, spotlightDisplayName(obj))
-            UI.setAttribute(id, "active", true)
-        else
-            UI.setValue(id, "")
-            UI.setAttribute(id, "active", false)
+            slotToGuid[slot] = obj.getGUID()
         end
     end
     refreshSelectionClasses()
