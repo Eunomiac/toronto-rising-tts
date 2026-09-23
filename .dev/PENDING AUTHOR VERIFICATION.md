@@ -17,41 +17,22 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-23 — Pink tarot Consult deck reveal fix (comment on TOR-411)._
+_Last populated: 2026-09-23 evening `/tr-inbox` — End→Intermission ambient fade with blackout FadeIn; cleared Play→Spotlight seat reactivate + Scatter objectsToHide ✅._
 
 ### Phases / session end
 
-#### ✅ Play→Spotlight: inactive PC seats reactivate (no new TOR — Linear quota; comment on TOR-98)
+#### End→Intermission: session music fades out with blackout FadeIn (no new TOR — Linear quota; comment on TOR-143 / TOR-506)
 
-**How to verify:** Save & Play so scene/phase scripts reload. Apply a library scene, then deactivate one or two PC seats on the Scenes panel or stage control board so those piles drop (inactive, not Absent).
+**How to verify:** Save & Play so phase scripts reload. Advance through a session until you are on **End**, with location or Main music still audible (any scene bed is fine).
 
-1. Advance **Play → Spotlight**. Under the cover, those previously inactive seats should come **back to the table** — figurine, sheet, bags, chair, and seat lights as usual.
-2. A player marked **Absent** on the PCs panel should stay parked under the table (do not treat Absent as “just inactive”).
-3. Optional: start Spotlight from a scene where every PC seat was already active — nothing should flicker or double-move oddly.
+1. Advance **End → Intermission**.
+2. As the screen goes black (about five seconds), that session music should **fade out** over the same stretch — not cut off, and not wait until the blackout lifts.
+3. When the blackout is fully up (brief hold), you should hear silence or near-silence — no TR_Loop yet.
+4. When the blackout starts fading out and the session-end splash appears, **TR_Loop** should fade in over those same five seconds (this part was already confirmed earlier).
 
-**Context:** Spotlight narrative clear emptied NPC seats but left PC `isPresent` from the prior scene. Now it calls `applyDefaultPcSeatPresence` (same helper as no-scene / End), skipping Absent. relatedTo **TOR-98**, **TOR-256**.
+**Context:** Outgoing ambient used to wait for blackout FadeOut (with TR_Loop). FadeIn now owns the outgoing fade; FadeOut owns TR_Loop only. relatedTo **TOR-506**, **TOR-143**.
 
 ### Scatter / table layout
-
-#### ObjectPositions sole pose + Consult deck reveal (comments on TOR-411 / TOR-507)
-
-**How to verify:** Save & Play so tarot and seat-layout scripts reload.
-
-1. Put the Pink tarot away. Click Consult once — the drawer should slide out, then after about **1.5 seconds** the deck should appear at height **8.5** (it must not stay missing while the drawer is open, and it should not hop from a lower height).
-2. Put tarot away again; switch Table A ↔ B or Advance **Play → Spotlight**. The deck should stay hidden; anchors should follow Pink. Consult again — same single appear at 8.5.
-3. With every PC dice tray closed, Advance **Play → Spotlight**. Trays should stay closed.
-
-**Context:** Layout moves anchors only; ObjectPositions owns on/off. Deck reveal uses one delayed `GlobalRestoreObject` with a plain XYZ (TTS Vectors are userdata; the old restore path often skipped position and left the deck at −200). relatedTo **TOR-411**, **TOR-507**.
-
-#### ✅ Scatter objectsToHide: Prince signet/curtain stay parked (no new TOR — Linear quota; comment on TOR-572)
-
-**How to verify:** Save & Play so Scatter scripts reload. Start from a normal table (Table A is fine) with Red’s Prince signet, border, and curtain visible to you as Storyteller.
-
-1. Switch to **Scatter**. Those three objects (and the chairs) should **disappear for everyone**, including you — not float in the old chair positions.
-2. Optional: move a PC between scatter groups, or open/close the Scatter HUD strip — the Prince props should stay gone.
-3. Switch back to **Table A**. Signet, border, and curtain should return with the usual Red-only hide (you can see them; Red cannot).
-
-**Context:** PC pile layout was restoring any `HiddenObject` satellite after Scatter parked the hide list. `applyWorldLayout` now re-parks `objectsToHide` at the end of each pass. relatedTo **TOR-572**.
 
 #### TOR-573 — Scatter import and live Standard↔Scatter switch
 
@@ -88,7 +69,7 @@ _Last populated: 2026-09-23 — Pink tarot Consult deck reveal fix (comment on T
 
 **Context:** Helper from the page-2 XML dump, shipped as `U.UISet` in `lib/util.ttslua` and Global `UISet`. Linear could not create a new issue (workspace free-issue limit).
 
-#### ✅ TOR-595 — Dashboard PCs tab: live-only sheet (no stand-in) + Ambition from gameState
+#### TOR-595 — Dashboard PCs tab: live-only sheet (no stand-in) + Ambition from gameState
 
 **How to verify:** Save & Play so the snapshot script reloads. Keep External Editor on. Restart the Storyteller Dashboard if it was already running.
 

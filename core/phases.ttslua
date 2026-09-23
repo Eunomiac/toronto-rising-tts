@@ -25,6 +25,7 @@ local SESSION_TITLE_IMAGE_ID = "overlay_sessionTitle"
 local HEAL_BROADCAST_HOLD_SEC = 6
 local INTERMISSION_THEME_FADE_SEC = 2
 --- End→Intermission blackout (`overlay_blackoutPanel` FadeIn/FadeOut is 5s; hold is one second longer).
+--- Session ambient fades out during FadeIn; TR_Loop fades in during FadeOut (same durations).
 local END_INTERMISSION_BLACKOUT_ID = "overlay_blackoutPanel"
 local END_INTERMISSION_BLACKOUT_FADE_SEC = 5
 local END_INTERMISSION_BLACKOUT_HOLD_SEC = 6
@@ -307,27 +308,17 @@ function Phases.applyAllLightsDark(_ctx)
     return true
 end
 
---- End → Intermission: TR_Loop fades in while every other lane fades out.
---- Does not `stopAll` — that would hard-cut the outgoing fade. Does not lift the end splash.
---- Returns immediately; the fades run for `opts.fadeSeconds` (default INTERMISSION_THEME_FADE_SEC).
---- The Advance chain owns the waits.
---- @param _ctx table|nil
---- @param opts table|nil `{ fadeSeconds?: number }` — End→Intermission uses blackout FadeOut length
-function Phases.beginIntermissionThemeHandoff(_ctx, opts)
+--- End → Intermission: fade session Main / location / weather out while blackout FadeIn runs.
+--- Does not start TR_Loop. Returns immediately; the Advance chain owns the wait.
+--- @param opts table|nil `{ fadeSeconds?: number }` — matches `overlay_blackoutPanel` FadeIn (5s)
+--- @return boolean
+function Phases.beginEndIntermissionAmbientFadeOut(opts)
     opts = type(opts) == "table" and opts or {}
     local fadeSec = tonumber(opts.fadeSeconds)
     if fadeSec == nil or fadeSec < 0 then
-        fadeSec = INTERMISSION_THEME_FADE_SEC
+        fadeSec = END_INTERMISSION_BLACKOUT_FADE_SEC
     end
     local Soundscape = require("core.soundscape")
-    local key = C.IntermissionThemeFeaturedKey or "TR_Loop"
-    local ok, msg = Soundscape.playFeaturedMusic(key, {
-        incomingFadeSeconds = fadeSec,
-        outgoingFadeSeconds = fadeSec,
-    })
-    if ok ~= true then
-        U.AlertGM("Intermission theme: " .. tostring(msg or "playFeaturedMusic failed"))
-    end
     if type(Soundscape.fadeOutTransitionAmbient) == "function" then
         Soundscape.fadeOutTransitionAmbient({
             seconds = fadeSec,
@@ -336,6 +327,47 @@ function Phases.beginIntermissionThemeHandoff(_ctx, opts)
     end
     if type(Soundscape.stopSessionIntro) == "function" then
         Soundscape.stopSessionIntro({ fadeSeconds = fadeSec })
+    end
+    return true
+end
+
+--- End → Intermission: TR_Loop fades in. Outgoing ambient is usually already faded during blackout FadeIn.
+--- Does not `stopAll` — that would hard-cut any remaining fade. Does not lift the end splash.
+--- Returns immediately; the fades run for `opts.fadeSeconds` (default INTERMISSION_THEME_FADE_SEC).
+--- The Advance chain owns the waits.
+--- @param _ctx table|nil
+--- @param opts table|nil `{ fadeSeconds?: number, fadeOutgoing?: boolean }` —
+---   End→Intermission uses blackout FadeOut length; `fadeOutgoing=false` when ambient already faded
+function Phases.beginIntermissionThemeHandoff(_ctx, opts)
+    opts = type(opts) == "table" and opts or {}
+    local fadeSec = tonumber(opts.fadeSeconds)
+    if fadeSec == nil or fadeSec < 0 then
+        fadeSec = INTERMISSION_THEME_FADE_SEC
+    end
+    local fadeOutgoing = opts.fadeOutgoing ~= false
+    local Soundscape = require("core.soundscape")
+    local key = C.IntermissionThemeFeaturedKey or "TR_Loop"
+    local playOpts = {
+        incomingFadeSeconds = fadeSec,
+        outgoingFadeSeconds = fadeOutgoing and fadeSec or 0,
+    }
+    if fadeOutgoing ~= true then
+        playOpts.keepBackgroundPaused = true
+    end
+    local ok, msg = Soundscape.playFeaturedMusic(key, playOpts)
+    if ok ~= true then
+        U.AlertGM("Intermission theme: " .. tostring(msg or "playFeaturedMusic failed"))
+    end
+    if fadeOutgoing == true then
+        if type(Soundscape.fadeOutTransitionAmbient) == "function" then
+            Soundscape.fadeOutTransitionAmbient({
+                seconds = fadeSec,
+                silenceAfter = true,
+            })
+        end
+        if type(Soundscape.stopSessionIntro) == "function" then
+            Soundscape.stopSessionIntro({ fadeSeconds = fadeSec })
+        end
     end
     if type(Soundscape.commitEagerSteadyState) == "function" then
         Soundscape.commitEagerSteadyState(ok == true)
@@ -750,17 +782,23 @@ end
 Phases.onEnter[C.Phases.INTERMISSION] = function(ctx)
     return {
         function()
-            -- Blackout FadeIn only; hold until opaque before splash + theme (no TR_Loop under black).
+            -- Blackout FadeIn + fade session ambient out over the same 5s (no TR_Loop under black).
             callGlobalBlindfoldHelper("beginEndIntermissionCoverHoldForPhases")
             if type(UI.show) == "function" then
                 UI.show(END_INTERMISSION_BLACKOUT_ID)
             end
+            Phases.beginEndIntermissionAmbientFadeOut({
+                fadeSeconds = END_INTERMISSION_BLACKOUT_FADE_SEC,
+            })
             return END_INTERMISSION_BLACKOUT_HOLD_SEC
         end,
         function()
             -- Splash under opaque blackout; start TR_Loop as blackout FadeOut begins (same duration).
             callGlobalBlindfoldHelper("showEndGlobalBlindfoldInstantForPhases")
-            Phases.beginIntermissionThemeHandoff(ctx, { fadeSeconds = END_INTERMISSION_THEME_FADE_SEC })
+            Phases.beginIntermissionThemeHandoff(ctx, {
+                fadeSeconds = END_INTERMISSION_THEME_FADE_SEC,
+                fadeOutgoing = false,
+            })
             if type(UI.hide) == "function" then
                 UI.hide(END_INTERMISSION_BLACKOUT_ID)
             end

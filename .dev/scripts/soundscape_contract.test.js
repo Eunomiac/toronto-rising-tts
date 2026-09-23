@@ -504,8 +504,9 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
     "resumeBackground = false",
     "PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC",
     "maxWait = PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC",
-    "function Phases.beginIntermissionThemeHandoff(_ctx)",
-    "outgoingFadeSeconds = INTERMISSION_THEME_FADE_SEC",
+    "function Phases.beginIntermissionThemeHandoff(_ctx",
+    "function Phases.beginEndIntermissionAmbientFadeOut(",
+    "outgoingFadeSeconds = fadeOutgoing and fadeSec or 0",
   ].forEach((needle) => {
     assert.ok(phases.includes(needle), `missing phase session intro: ${needle}`);
   });
@@ -590,14 +591,22 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
     "missing Intermission enter steps",
   );
   const intermissionEnter = phases.slice(intermissionEnterStart, intermissionEnterEnd);
-  const coverIdx = intermissionEnter.indexOf("Phases.showEndGlobalBlindfold");
-  const waitIdx = intermissionEnter.indexOf("BLINDFOLD_DOWN_COMPLETE_SEC");
+  const blackoutShowIdx = intermissionEnter.indexOf("UI.show(END_INTERMISSION_BLACKOUT_ID)");
+  const ambientFadeIdx = intermissionEnter.indexOf("Phases.beginEndIntermissionAmbientFadeOut");
   const themeIdx = intermissionEnter.indexOf("Phases.beginIntermissionThemeHandoff");
   const prepIdx = intermissionEnter.indexOf("Phases.applyNoSceneDefault");
   const darkIdx = intermissionEnter.indexOf("Phases.applyAllLightsDark");
   assert.ok(
-    coverIdx >= 0 && waitIdx > coverIdx && themeIdx > waitIdx && prepIdx > themeIdx && darkIdx > prepIdx,
-    "Intermission enter should show the end splash, wait for cover-down, then theme, then no-scene prep, then AdminDark",
+    blackoutShowIdx >= 0
+      && ambientFadeIdx > blackoutShowIdx
+      && themeIdx > ambientFadeIdx
+      && prepIdx > themeIdx
+      && darkIdx > prepIdx,
+    "Intermission enter should FadeIn blackout + fade ambient, then TR_Loop with FadeOut, then no-scene prep, then AdminDark",
+  );
+  assert.ok(
+    intermissionEnter.includes("fadeOutgoing = false"),
+    "TR_Loop handoff should not re-fade ambient already silenced during blackout FadeIn",
   );
   assert.equal(
     intermissionEnter.includes("Phases.fadeOutAllEmitters")

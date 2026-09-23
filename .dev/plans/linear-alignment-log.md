@@ -801,5 +801,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-09-23 | INBOX+SHIP | TOR-98 | Morning `/tr-inbox`: Play→Spotlight reactivates scene-inactive PC seats (`clearLiveNarrativeForPhaseTransition` → `applyDefaultPcSeatPresence`; Absent skipped). CREATE blocked; comment on TOR-98. PAVE ✅ cleared location→Main, End→Intermission TR_Loop FadeOut, PC dice drawers. |
 | 2026-09-23 | INBOX+SHIP | TOR-572 | Morning `/tr-inbox`: Scatter objectsToHide re-park after PC rig layout (Prince signet/curtain). CREATE blocked; comment on TOR-572. |
 | 2026-09-23 | NOTE | quota | Still no MCP delete_issue. Ask author to trash Done+confirmed ids in Linear UI to free creates (e.g. TOR-604, TOR-590, TOR-593, TOR-596, TOR-581, TOR-527, TOR-598–601, TOR-605, TOR-603, TOR-597, TOR-594). |
+| 2026-09-23 | INBOX+SHIP | TOR-143 | Evening `/tr-inbox`: End→Intermission session ambient fades with blackout FadeIn (`beginEndIntermissionAmbientFadeOut`); TR_Loop handoff `fadeOutgoing=false`. CREATE blocked; comment on TOR-143 / TOR-506. Pending Save & Play. |
+| 2026-09-23 | `/tr-inbox` | PAVE | ✅ cleared Play→Spotlight inactive PC seat reactivate (TOR-98) + Scatter objectsToHide re-hide (TOR-572). |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
