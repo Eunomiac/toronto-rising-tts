@@ -17,7 +17,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-23 — TOR-604 overlay chrome via absolute setClass (PLAY/MAIN = XML baseline)._
+_Last populated: 2026-09-23 — PC dice drawers closed default on seat layout (Play→Spotlight; comment on TOR-507)._
 
 ### Lighting / debug
 
@@ -98,6 +98,16 @@ _Last populated: 2026-09-23 — TOR-604 overlay chrome via absolute setClass (PL
 **Context:** Follow-up on the live PCs bridge (**TOR-595**). Snapshot/apply live in `dashboard/pc_sheet.ttslua` (`require("dashboard.pc_sheet")`). Snapshot fields include identity + `ambition` from `playerData`. Dashboard never paints a fixture when TTS is unreachable.
 
 ### Scatter / table layout
+
+#### PC dice drawers stay closed on Play→Spotlight (no new TOR — Linear quota; comment on TOR-507)
+
+**How to verify:** Save & Play so seat-role offsets reload. Start in **Play** with every character-sheet dice drawer closed (thin tray under the sheet, not slid out).
+
+1. Advance **Play → Spotlight**. After the cover lifts, every PC dice drawer should still be **closed** — not parked at the open “roll” position.
+2. Optional: open a roll for one seat so that drawer slides out; cancel or end the roll — that drawer alone should close again. The others should never have opened.
+3. Optional: switch tables or re-enter Play and confirm drawers still default closed after layout.
+
+**Context:** Layout default for `CSHEET_DICE_DRAWER` had been pasted from a dump taken while a tray was open (same XZ/Y/scale as the ON anchor). Spotlight enter re-runs seat layout. Restored default to match the OFF anchor + closed height/scale. tracked on **TOR-507** (figurine seat offsets). relatedTo **TOR-592**.
 
 #### ✅ TOR-590 — Hand zone and cards move together (incl. square yaw)
 

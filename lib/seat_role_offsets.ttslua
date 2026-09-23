@@ -37,11 +37,14 @@ local offsets = {
       localRotation = { x = 0, y = -180, z = 0 },
       defaultY = 1.4300
     },
+    -- Layout default must be the closed (OFF) pose. ObjectPositions moves to ANCHOR_ON + open
+    -- scale/Y when a roll opens the tray. Dumping while a tray is open pastes the ON pose here
+    -- and every Sync.full / Spotlight enter reopens all drawers.
     CSHEET_DICE_DRAWER = {
-      localXZ = { x = 0, z = -40.3241 },
+      localXZ = { x = 0, z = -19.5036 }, -- match CSHEET_DICE_DRAWER_ANCHOR_OFF
       localRotation = { x = 0, y = -180, z = 0 },
-      defaultY = 2.9700,
-      scale = { x = 23.5700, y = 3.9200, z = 7.6800 },
+      defaultY = -1.0000,
+      scale = { x = 23.5700, y = 0.1000, z = 7.6800 },
     },
     CSHEET_PAGE_1 = {
       localXZ = { x = 6.1500, z = -20.7349 },
