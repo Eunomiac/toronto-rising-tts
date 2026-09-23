@@ -17,74 +17,31 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-23 — ObjectPositions sole pose authority (comments on TOR-411 / TOR-507)._
+_Last populated: 2026-09-23 morning `/tr-inbox` — Play→Spotlight PC seat reactivate + Scatter objectsToHide re-hide._
 
 ### Phases / session end
 
-#### ✅ Play→Spotlight: location bed → Main playlist (no new TOR — Linear quota; comment on TOR-98)
+#### Play→Spotlight: inactive PC seats reactivate (no new TOR — Linear quota; comment on TOR-98)
 
-**How to verify:** Save & Play so scripts reload. Apply **Ravenwing** (or any site with a location bed and `backgroundMusic.playlist = "none"`) so you hear the nightclub bed, not the default Main theme.
+**How to verify:** Save & Play so scene/phase scripts reload. Apply a library scene, then deactivate one or two PC seats on the Scenes panel or stage control board so those piles drop (inactive, not Absent).
 
-1. Advance **Play → Spotlight**. Under the cover, the nightclub (location) bed should fade out — it must not keep looping through Spotlight.
-2. After the cover lifts, you should hear the default **Main** background playlist (not silence, and not the nightclub bed).
-3. Optional: Apply a normal site that already plays Main plus soft indoor ambience, then Advance to Spotlight. Main should keep going without a hard restart; location ambience should still fade out.
+1. Advance **Play → Spotlight**. Under the cover, those previously inactive seats should come **back to the table** — figurine, sheet, bags, chair, and seat lights as usual.
+2. A player marked **Absent** on the PCs panel should stay parked under the table (do not treat Absent as “just inactive”).
+3. Optional: start Spotlight from a scene where every PC seat was already active — nothing should flicker or double-move oddly.
 
-**Context:** `Scenes.applyMainOnlySoundscape({ skipMoodIfAlreadyMain = true })` used to treat leftover `musicMood == "main"` as “Main is playing” even when BGM was suppressed and only the location lane was audible. relatedTo **TOR-593**, **TOR-494**.
-
-#### ✅ End→Intermission: TR_Loop starts with blackout FadeOut (no new TOR — Linear quota; comment on TOR-143)
-
-**How to verify:** Save & Play so phase scripts reload. Advance from **End** to **Intermission**.
-
-1. While the screen is fully black, you should **not** hear the Intermission theme (`TR_Loop`) swelling under the blackout. Leftover session audio may fade or go quiet.
-2. When the blackout lifts and you see the ended-session splash, `TR_Loop` should fade **in** over about **five seconds**, matching the blackout fade-out.
-3. Camera / table / dark lights should still wait until after that fade before heavy world work.
-
-**Context:** Inbox Immediate 2026-09-23. Theme no longer starts three seconds into the blackout hold. relatedTo **TOR-506** (cover+theme handoff) and **TOR-143** (phase redesign).
-
-### Character sheets
-
-#### UISet — batch / sequence UI attribute helper (no new TOR — Linear quota)
-
-**How to verify:** Save & Play so Global scripts reload. Open **Execute Lua** on Global.
-
-1. Pick any Global XmlUI element you can see change (for example a debug panel id). Run `UISet("<that_id>", { active = "true" })` then again with `active = "false"`. It should show and hide with no console error.
-2. Optional object form: with a character-sheet page GUID from the Objects pane, run `UISet("<guid>", "paper_root", { padding = "50 50 110 100" })` (or another real page-2 id). Confirm no `no object for GUID` / nil UI error.
-3. Optional sequence: `UISet("<guid>", "dot_rc_L_2_#", { image = "dot_yellow", active = "true" }, { ["#"] = { 1, 2, 3, 4, 5 } })` should light five dots if those ids exist on that page.
-
-**Context:** Helper from the page-2 XML dump, shipped as `U.UISet` in `lib/util.ttslua` and Global `UISet`. Linear could not create a new issue (workspace free-issue limit).
-
-#### TOR-595 — Dashboard PCs tab: live-only sheet (no stand-in) + Ambition from gameState
-
-**How to verify:** Save & Play so the snapshot script reloads. Keep External Editor on. Restart the Storyteller Dashboard if it was already running.
-
-1. **Offline notice:** On the **PCs** tab, click **Release Port** (or leave the port unclaimed). You should see a blank spread titled **No live sheet** with a short reason (for example that the dashboard is not holding the editor port). You must **not** see fake character names, Desire, Ambition, or tracker dots from a stand-in sheet.
-2. **Live sheet:** Click **Claim Port**. The status should say it is live from Tabletop Simulator. Player cards and page 1 should fill from the table. Subtitles and chronology come from the live seat snapshot (PCS identity in TTS), not from a dashboard hardcode file.
-3. **Ambition:** In Execute Lua / TEST BED, run something like `SetPcAmbition("aishe", "Create a legacy in Toronto that long outlasts me")` for a few seats. After Claim Port (or wait a couple of seconds for the poll), each Ambition line under the name on page 1 should match what you set. Empty `playerData.ambition` shows no quote — it must not invent text from the PCS catalog.
-4. Optional: click **JSON** next to Claim/Release Port — a scrollable modal should show pretty-printed data for the seat on screen. Paste a partial patch (for example new `titles` / `convictions` arrays and a nested `attributes.charisma.base`), click **Apply**, and confirm the live sheet updates (arrays replace; nested objects merge). Escape or Close dismisses the modal. Hunger / Desire clicks still paint immediately (**TOR-595** batch apply).
-
-**Context:** Follow-up on the live PCs bridge (**TOR-595**). Snapshot/apply live in `dashboard/pc_sheet.ttslua` (`require("dashboard.pc_sheet")`). Snapshot fields include identity + `ambition` from `playerData`. Dashboard never paints a fixture when TTS is unreachable.
+**Context:** Spotlight narrative clear emptied NPC seats but left PC `isPresent` from the prior scene. Now it calls `applyDefaultPcSeatPresence` (same helper as no-scene / End), skipping Absent. relatedTo **TOR-98**, **TOR-256**.
 
 ### Scatter / table layout
 
-#### ObjectPositions sole pose for Pink tarot + PC dice drawers (comments on TOR-411 / TOR-507)
+#### Scatter objectsToHide: Prince signet/curtain stay parked (no new TOR — Linear quota; comment on TOR-572)
 
-**How to verify:** Save & Play so seat layout and tarot/drawer scripts reload.
+**How to verify:** Save & Play so Scatter scripts reload. Start from a normal table (Table A is fine) with Red’s Prince signet, border, and curtain visible to you as Storyteller.
 
-1. Put the Pink tarot away (Consult off). Switch Table A ↔ B, or Advance **Play → Spotlight**. The deck should stay hidden at −200; Pink anchors should still follow the seat. Click Consult once — the deck should appear once at the authored ObjectPositions height (8.5), with no hop from drawer height up to 8.5.
-2. With every PC dice tray closed, Advance **Play → Spotlight**. Trays should stay closed (layout no longer pastes a SeatRoleOffsets drawer pose). Optional: open one seat’s roll so that tray slides out, then cancel — only that tray should have opened.
-3. Optional: dump seat-role offsets for Pink — you should only need **anchors** for tarot (deck/drawer/button) and dice-drawer ON/OFF anchors, not object rows for `TAROT_DECK` / `TAROT_DRAWER` / `TAROT_BUTTON` / `CSHEET_DICE_DRAWER`.
+1. Switch to **Scatter**. Those three objects (and the chairs) should **disappear for everyone**, including you — not float in the old chair positions.
+2. Optional: move a PC between scatter groups, or open/close the Scatter HUD strip — the Prince props should stay gone.
+3. Switch back to **Table A**. Signet, border, and curtain should return with the usual Red-only hide (you can see them; Red cannot).
 
-**Context:** Seat layout now moves anchors only for ObjectPositions-owned roles, then re-applies Consult / tray on-off via `TarotToggle.reconcileAfterSeatLayout` and `DiceDrawer.reconcileAfterSeatLayout`. relatedTo **TOR-411** (Pink tarot), **TOR-507** (figurine seat layout).
-
-#### ✅ PC dice drawers stay closed on Play→Spotlight (no new TOR — Linear quota; comment on TOR-507)
-
-**How to verify:** Save & Play so seat-role offsets reload. Start in **Play** with every character-sheet dice drawer closed (thin tray under the sheet, not slid out).
-
-1. Advance **Play → Spotlight**. After the cover lifts, every PC dice drawer should still be **closed** — not parked at the open “roll” position.
-2. Optional: open a roll for one seat so that drawer slides out; cancel or end the roll — that drawer alone should close again. The others should never have opened.
-3. Optional: switch tables or re-enter Play and confirm drawers still default closed after layout.
-
-**Context:** Layout default for `CSHEET_DICE_DRAWER` had been pasted from a dump taken while a tray was open (same XZ/Y/scale as the ON anchor). Spotlight enter re-runs seat layout. Restored default to match the OFF anchor + closed height/scale. tracked on **TOR-507** (figurine seat offsets). relatedTo **TOR-592**.
+**Context:** PC pile layout was restoring any `HiddenObject` satellite after Scatter parked the hide list. `applyWorldLayout` now re-parks `objectsToHide` at the end of each pass. relatedTo **TOR-572**.
 
 #### TOR-573 — Scatter import and live Standard↔Scatter switch
 
@@ -108,6 +65,29 @@ _Last populated: 2026-09-23 — ObjectPositions sole pose authority (comments on
 6. Leave Scatter. The toggle and strip should disappear.
 
 **Context:** Gold is PC slot 1 (not 3). Occupancy written under the old slot-3 scheme will sit on the wrong hole until you re-enter Scatter or move that PC once. relatedTo **TOR-572**.
+
+### Character sheets
+
+#### UISet — batch / sequence UI attribute helper (no new TOR — Linear quota)
+
+**How to verify:** Save & Play so Global scripts reload. Open **Execute Lua** on Global.
+
+1. Pick any Global XmlUI element you can see change (for example a debug panel id). Run `UISet("<that_id>", { active = "true" })` then again with `active = "false"`. It should show and hide with no console error.
+2. Optional object form: with a character-sheet page GUID from the Objects pane, run `UISet("<guid>", "paper_root", { padding = "50 50 110 100" })` (or another real page-2 id). Confirm no `no object for GUID` / nil UI error.
+3. Optional sequence: `UISet("<guid>", "dot_rc_L_2_#", { image = "dot_yellow", active = "true" }, { ["#"] = { 1, 2, 3, 4, 5 } })` should light five dots if those ids exist on that page.
+
+**Context:** Helper from the page-2 XML dump, shipped as `U.UISet` in `lib/util.ttslua` and Global `UISet`. Linear could not create a new issue (workspace free-issue limit).
+
+#### TOR-595 — Dashboard PCs tab: live-only sheet (no stand-in) + Ambition from gameState
+
+**How to verify:** Save & Play so the snapshot script reloads. Keep External Editor on. Restart the Storyteller Dashboard if it was already running.
+
+1. **Offline notice:** On the **PCs** tab, click **Release Port** (or leave the port unclaimed). You should see a blank spread titled **No live sheet** with a short reason (for example that the dashboard is not holding the editor port). You must **not** see fake character names, Desire, Ambition, or tracker dots from a stand-in sheet.
+2. **Live sheet:** Click **Claim Port**. The status should say it is live from Tabletop Simulator. Player cards and page 1 should fill from the table. Subtitles and chronology come from the live seat snapshot (PCS identity in TTS), not from a dashboard hardcode file.
+3. **Ambition:** In Execute Lua / TEST BED, run something like `SetPcAmbition("aishe", "Create a legacy in Toronto that long outlasts me")` for a few seats. After Claim Port (or wait a couple of seconds for the poll), each Ambition line under the name on page 1 should match what you set. Empty `playerData.ambition` shows no quote — it must not invent text from the PCS catalog.
+4. Optional: click **JSON** next to Claim/Release Port — a scrollable modal should show pretty-printed data for the seat on screen. Paste a partial patch (for example new `titles` / `convictions` arrays and a nested `attributes.charisma.base`), click **Apply**, and confirm the live sheet updates (arrays replace; nested objects merge). Escape or Close dismisses the modal. Hunger / Desire clicks still paint immediately (**TOR-595** batch apply).
+
+**Context:** Follow-up on the live PCs bridge (**TOR-595**). Snapshot/apply live in `dashboard/pc_sheet.ttslua` (`require("dashboard.pc_sheet")`). Snapshot fields include identity + `ambition` from `playerData`. Dashboard never paints a fixture when TTS is unreachable.
 
 ### Memoriam
 

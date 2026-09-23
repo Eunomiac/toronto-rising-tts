@@ -783,7 +783,9 @@ local function clearLiveClockDatetimeForOverlay()
     S.setStateVal(ck, "sessionScene", "clock")
 end
 
---- All five PC seats present; preserve per-seat `characterKey` when already authored.
+--- Activate all PC seats that are not Absent (`absentFromSession`).
+--- Outside Play/Main, narrative presence should not leave scene-inactive piles parked.
+--- Preserve per-seat `characterKey` / `tableSlot` / Absent flags when already authored.
 local function applyDefaultPcSeatPresence()
     local seatSlots = S.getStateVal("sessionScene", "seatSlots")
     if type(seatSlots) ~= "table" then
@@ -795,11 +797,12 @@ local function applyDefaultPcSeatPresence()
         if type(row) ~= "table" then
             row = {}
         end
-        row.isPresent = true
+        local absent = row.absentFromSession == true
+        row.isPresent = not absent
         row.isPlayingNPC = false
         row.npcCharacterKey = nil
         seatSlots[color] = row
-        seatPresent[color] = true
+        seatPresent[color] = not absent
     end
     local bundle = S.getStateVal("sessionScene") or {}
     bundle.seatSlots = seatSlots
@@ -961,6 +964,8 @@ function Scenes.clearLiveNarrativeForPhaseTransition(opts)
         GenericNpcs.destroyAllLiveAndClearMembership()
     end
     clearNpcSeatSlotsForNoScene()
+    -- Outside Play/Main, inactive scene seats must come back (Spotlight enter path).
+    applyDefaultPcSeatPresence()
     if type(SceneLibrary.syncOccupiedNpcSlotsFromSeatSlots) == "function" then
         SceneLibrary.syncOccupiedNpcSlotsFromSeatSlots(S.getStateVal("sessionScene"))
     end
