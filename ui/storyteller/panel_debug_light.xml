@@ -9,7 +9,7 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (400-slot 
 <Defaults>
 
   <Panel class="panel_debug_lights"
-    rectAlignment = "MiddleCenter"
+    rectAlignment = "MiddleLeft"
     height = "900"
     width = "1200"
     color = "rgba(0, 0, 0, 0.82)" />
@@ -61,7 +61,7 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (400-slot 
 </Defaults>
 
 
-<Panel id="panel_debug_lights" class="panel_debug_lights" active="false" raycastTarget="true">
+<Panel id="panel_debug_lights" class="panel_debug_lights" active="false">
 
 
   <!-- === LIGHT SELECTION PANEL ===
@@ -85,8 +85,8 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (400-slot 
   **OTHER BUTTONS**
   - [Done] - Closes the light selection panel, returning the author to the world viewportData. (Note: Parameter sent is 'close', to avoid conflict with the 'done' button in the light control panel.)
 
-  UI.setAttributes("panel_debug_light_selection", {cellSize = "115 40"})
--->
+  UI.setAttributes("panel_debug_lights", {raycastTarget = "false", rectAlignment = "MiddleLeft", color = "rgba(1, 1, 0, 0)", ignoreLayout = "true", offsetXY = "-300 0"})
+  -->
 
   <GridLayout id="panel_debug_light_selection" class="panel_debug_light_selection">
     <Button id="debug_light_selection_001" class="panel_debug_light_selection_button" active="false" onClick="HUD_debugLightButtonClick"></Button>
@@ -604,7 +604,7 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (400-slot 
   - [Done] - Closes the debug control panel, returning the author to the light selection panel.
 
 
-  UI.setAttributes("panel_debug_light_control", {spacing = "10"})
+  UI.setAttributes("panel_debug_light_control", {ignoreLayout = "true",color = "rgba(1, 0, 0, 0)", spacing = "10", raycastTarget = "false", rectAlignment = "MiddleLeft"})
   UI.setAttributes("db_position_header_container", {color = "rgba(1, 0, 0, 0.15)", childAlignment = "LowerCenter", childForceExpandHeight = "false", padding = "0 0 0 0"})
   UI.setAttributes("db_position_header", {fontSize = "20"})
   UI.setAttributes("db_x_position_container", {color = "rgba(1, 1, 0, 0)", childForceExpandWidth = "true", childForceExpandHeight = "true"})
@@ -612,7 +612,7 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (400-slot 
   UI.setAttributes("db_x_position_container_middle", {color = "rgba(0, 0, 1, 0.15)"})
   UI.setAttributes("db_x_position_container_bottom", {color = "rgba(0, 1, 1, 0)"})
   UI.setAttributes("db_x_position_header", {alignment = "MiddleLeft", fontSize = "14"})
-  UI.setAttributes("debug_light_slider_xposition", {width = "100%"})
+  UI.setAttributes("", {width = "100%"})
   UI.setAttributes("", {})
   UI.setAttributes("", {})
 
@@ -621,7 +621,7 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (400-slot 
 
 
 <Defaults>
-  <GridLayout class="panel_debug_light_control" spacing = "10" />
+  <GridLayout class="panel_debug_light_control" spacing = "10" raycastTarget = "false" rectAlignment = "MiddleLeft" />
 
   <HorizontalLayout class="header_container"
     childAlignment = "LowerCenter"
