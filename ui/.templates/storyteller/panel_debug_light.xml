@@ -2,7 +2,7 @@
 <!-- Agent guidance: .dev/TTS_BUNDLING_SETUP.md (generator); .dev/HUDs & Overlays/Storyteller HUD Overview.md (debug light panel). -->
 
 <!-- Parameters:
-BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (60-slot pool; SLOT is 01..60). Lua fills slots on open.
+BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (400-slot pool; SLOT is 001..400). Lua fills slots on open.
 -->
 
 <Defaults>
@@ -19,7 +19,7 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (60-slot p
      cellSize = "80 20"
      childAlignment = "UpperLeft"
      constraint = "FixedColumnCount"
-     constraintCount = "6"
+     constraintCount = "10"
      rectAlignment = "MiddleLeft" />
 
   <Button class="panel_debug_light_selection_button"

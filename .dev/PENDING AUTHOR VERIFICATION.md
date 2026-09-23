@@ -17,19 +17,20 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-23 — Debug Light selection button labels (TOR-495)._
+_Last populated: 2026-09-23 — Debug Light labels + 400-slot / 10-col grid (TOR-495)._
 
 ### Lighting / debug
 
 #### TOR-495 — Debug Light selection buttons show spotlight names
 
-**How to verify:** Save & Play so Global scripts reload. On the Storyteller HUD, click **Debug Light**.
+**How to verify:** Save & Play so Global scripts and HUD XML reload (or Refresh XML if scripts already match). On the Storyteller HUD, click **Debug Light**.
 
-1. The left selection grid should show one button per in-world spotlight (not the NPC preload pool), and each button’s label should be that light’s **name** (or GM notes / GUID if the object has no name) — not blank grey cells.
-2. Lights that are currently on should still look yellow (lit class); off lights stay grey.
-3. Click one named button: the control panel should open and the green focal marker should appear down the beam. Click **DONE** on the control side to return to the grid — names should still be visible.
+1. The selection grid should use **ten columns** and show one button per in-world spotlight (not the NPC preload pool), with each button’s **name** visible (or GM notes / GUID if unnamed) — not blank grey cells.
+2. If you have more than a handful of lights, you should see them all listed (up to 400), not capped at 60.
+3. Lights that are currently on should still look yellow (lit class); off lights stay grey. Font size / color should match the Defaults classes, not fall back to TTS defaults.
+4. Click one named button: the control panel should open and the green focal marker should appear down the beam. Click **DONE** on the control side to return to the grid — names should still be visible.
 
-**Context:** Labels were written with `UI.setValue`, then wiped when `active` / class updated. Fix restores text with `U.setAttributes` after `setClass` in `core/light_debug_focus.ttslua`.
+**Context:** Labels use `U.setAttributes({ text, active })` after `setClass` (never `UI.setValue`). Class owns color/font; pool is 400 slots at 10 columns.
 
 ### Tooling / TTS Tools fork
 

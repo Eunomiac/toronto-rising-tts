@@ -23,8 +23,8 @@ const TEMPLATE_REL = "ui/.templates/storyteller/panel_debug_light.xml";
 const PARTIAL_REL = "ui/.templates/storyteller/partials/debug_button_light.xml";
 const TARGET_COMMENT_REGEX = /^<!--\s*TARGET:\s*(\S+)\s*-->\s*$/;
 
-/** Must match LightDebugFocus SELECTION_POOL_SIZE. */
-const POOL_SIZE = 60;
+/** Must match LightDebugFocus SELECTION_POOL_SIZE (3-digit slot ids: 001..POOL_SIZE). */
+const POOL_SIZE = 400;
 
 /**
  * @param {string} projectRoot
@@ -65,7 +65,7 @@ function parseTargetFromFirstLine(fileText, templatePath) {
  * @returns {string}
  */
 function slotToken(i) {
-  return String(i).padStart(2, "0");
+  return String(i).padStart(3, "0");
 }
 
 /**
