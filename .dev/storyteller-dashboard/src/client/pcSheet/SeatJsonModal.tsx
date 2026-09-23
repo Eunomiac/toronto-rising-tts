@@ -29,9 +29,14 @@ export const SeatJsonModal = ({ seat, applying = false, onClose, onApply }: Prop
 
   const handleApply = async (): Promise<void> => {
     setError(null);
+    const body = patchText.trim();
+    if (body === "") {
+      setError("Add at least one property to apply.");
+      return;
+    }
     let parsed: unknown;
     try {
-      parsed = JSON.parse(patchText);
+      parsed = JSON.parse(`{\n${body}\n}`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Could not parse JSON.");
       return;
@@ -81,22 +86,26 @@ export const SeatJsonModal = ({ seat, applying = false, onClose, onApply }: Prop
         </header>
         <div className="modal-body pc-json-modal-body">
           <label className="pc-json-patch-label" htmlFor="pc-json-patch">
-            Patch JSON (deep-merge into the sheet below; arrays replace, objects merge)
+            Patch properties (deep-merge into the sheet below; arrays replace, objects merge)
           </label>
-          <textarea
-            id="pc-json-patch"
-            className="pc-json-patch"
-            spellCheck={false}
-            value={patchText}
-            disabled={waiting}
-            placeholder={'{\n  "titles": ["Seneschal"],\n  "attributes": { "charisma": { "base": 4 } }\n}'}
-            onChange={(event) => {
-              setPatchText(event.target.value);
-              if (error) {
-                setError(null);
-              }
-            }}
-          />
+          <div className="pc-json-patch-frame">
+            <span className="pc-json-brace" aria-hidden="true">{"{"}</span>
+            <textarea
+              id="pc-json-patch"
+              className="pc-json-patch"
+              spellCheck={false}
+              value={patchText}
+              disabled={waiting}
+              placeholder={'"titles": ["Seneschal"],\n"attributes": { "charisma": { "base": 4 } }'}
+              onChange={(event) => {
+                setPatchText(event.target.value);
+                if (error) {
+                  setError(null);
+                }
+              }}
+            />
+            <span className="pc-json-brace" aria-hidden="true">{"}"}</span>
+          </div>
           <div className="pc-json-patch-actions">
             <button
               type="button"

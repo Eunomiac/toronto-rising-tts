@@ -330,16 +330,34 @@
   color: rgba(252, 229, 193, 0.72);
 }
 
+.pc-json-patch-frame {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  border: 1px solid rgba(252, 229, 193, 0.28);
+  background: #08080b;
+  padding: 0.35rem 0.55rem 0.45rem;
+}
+
+.pc-json-brace {
+  font-family: "Cascadia Code", "Consolas", "Courier New", monospace;
+  font-size: 0.9rem;
+  line-height: 1.2;
+  color: rgba(252, 229, 193, 0.55);
+  user-select: none;
+}
+
 .pc-json-patch {
   width: 100%;
-  min-height: 9rem;
-  max-height: 14rem;
+  min-height: 5rem;
+  max-height: 25rem;
   resize: vertical;
   overflow: auto;
   box-sizing: border-box;
-  padding: 0.7rem 0.85rem;
-  border: 1px solid rgba(252, 229, 193, 0.28);
-  background: #08080b;
+  margin: 0;
+  padding: 0.15rem 0.85rem 0.35rem;
+  border: 0;
+  background: transparent;
   color: #f5ebd6;
   font-family: "Cascadia Code", "Consolas", "Courier New", monospace;
   font-size: 0.78rem;
@@ -347,6 +365,10 @@
 
   &:disabled {
     opacity: 0.55;
+  }
+
+  &:focus {
+    outline: none;
   }
 }
 
