@@ -1,5 +1,4 @@
 import { executeLua, luaLongString } from "../ttsBridge.js";
-import { fixtureSnapshot } from "./fixture.js";
 import type { ApplyCommand, SeatColor, SeatSnapshot, SheetSnapshot } from "./types.js";
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -78,7 +77,21 @@ const parseSeat = (value: unknown): SeatSnapshot | null => {
     charKey: asString(value.charKey),
     charName: asString(value.charName),
     playerName: asString(value.playerName),
+    clan: asString(value.clan),
+    bloodline: asString(value.bloodline),
+    titles: Array.isArray(value.titles)
+      ? value.titles.filter((row): row is string => typeof row === "string" && row !== "")
+      : [],
+    generation: asString(value.generation),
+    birthPlace: asString(value.birthPlace),
+    birthYear: asNumber(value.birthYear),
+    embracePlace: asString(value.embracePlace),
+    embraceYear: asNumber(value.embraceYear),
+    convictions: Array.isArray(value.convictions)
+      ? value.convictions.filter((row): row is string => typeof row === "string" && row !== "")
+      : [],
     desire: asString(value.desire),
+    ambition: asString(value.ambition),
     absentFromSession: asBool(value.absentFromSession),
     deferAutoSeat: asBool(value.deferAutoSeat),
     deferConnect: asBool(value.deferConnect),
@@ -179,15 +192,19 @@ export const applySheetCommands = async (commands: readonly ApplyCommand[]): Pro
 export const applySheetCommand = async (command: ApplyCommand): Promise<SheetSnapshot> =>
   applySheetCommands([command]);
 
-export const snapshotOrFixture = async (): Promise<{ snapshot: SheetSnapshot; live: boolean; message: string }> => {
+export const fetchLiveSnapshot = async (): Promise<{ snapshot: SheetSnapshot; live: boolean; message: string }> => {
   try {
     const snapshot = await fetchSheetSnapshot();
     if (!snapshot.ok) {
-      return { snapshot: fixtureSnapshot(), live: false, message: snapshot.error ?? "Snapshot failed." };
+      return {
+        snapshot: { ok: false, error: snapshot.error, seats: [] },
+        live: false,
+        message: snapshot.error ?? "Tabletop Simulator returned an empty sheet snapshot."
+      };
     }
     return { snapshot, live: true, message: "Live from Tabletop Simulator." };
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Could not read live sheet state.";
-    return { snapshot: fixtureSnapshot(), live: false, message };
+    return { snapshot: { ok: false, error: message, seats: [] }, live: false, message };
   }
 };

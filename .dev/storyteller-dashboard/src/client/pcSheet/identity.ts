@@ -1,107 +1,53 @@
-import type { Identity, SeatColor } from "./types.js";
+import type { Identity, SeatColor, SeatSnapshot } from "./types.js";
 
-const IDENTITIES: Record<string, Identity> = {
-  aishe: {
-    charKey: "aishe",
-    fullName: "Aishe Tache",
-    clan: "Malkavian",
-    bloodline: "Descendant of the Pythia",
-    titles: ["Malkavian Primogen"],
-    generation: "Eighth",
-    birthPlace: "Brasov, Romania",
-    birthYear: 1799,
-    embracePlace: "Louisiana, USA",
-    embraceYear: 1834,
-    ambition: "Create a legacy in Toronto that long outlasts me",
-    convictions: [
-      "You Must Take Care Of Yourself First",
-      "Keep Every Door Open",
-      "Keep Everyone Guessing"
-    ]
-  },
-  lordLucien: {
-    charKey: "lordLucien",
-    fullName: "Lord Lucien St. Clair",
-    clan: "Toreador",
-    bloodline: "Descendant of the Count of St. Germain",
-    titles: ["Prince"],
-    generation: "Tenth",
-    birthPlace: "Lucerne, Switzerland",
-    birthYear: 1864,
-    embracePlace: "Paris, France",
-    embraceYear: 1889,
-    ambition: "Orchestrate a political order that collapses without me",
-    convictions: [
-      "Drama Over Caution",
-      "You Must Take Care Of Your Friends First",
-      "Results Sanctify The Method"
-    ]
-  },
-  rashid: {
-    charKey: "rashid",
-    fullName: "Rashid Abdulrahman",
-    clan: "Banu Haqim",
-    bloodline: "Descendant of Ur-Shulgi",
-    titles: ["Vizier Caste", "Seneschal"],
-    generation: "Eighth",
-    birthPlace: "Diriyah, Ottoman Empire",
-    birthYear: 1774,
-    embracePlace: "Diriyah, Ottoman Empire",
-    embraceYear: 1811,
-    ambition: "",
-    convictions: [
-      "The City Must Not Burn",
-      "Diplomacy Over Coercion",
-      "The Court Must Be Protected"
-    ]
-  },
-  fomorach: {
-    charKey: "fomorach",
-    fullName: "Fomórach",
-    clan: "Nosferatu",
-    bloodline: "Descendant of the Wendigo",
-    titles: ["Nosferatu Primogen"],
-    generation: "Eighth",
-    birthPlace: "Belfast, Ireland",
-    birthYear: 1769,
-    embracePlace: "Pennsylvania, USA",
-    embraceYear: 1786,
-    ambition: "",
-    convictions: [
-      "Clan Over Sect",
-      "Survival At Any Cost",
-      "The British Must Be Destroyed"
-    ]
-  },
-  blackCaesar: {
-    charKey: "blackCaesar",
-    fullName: "Henri “Black” Caesar",
-    clan: "Tremere",
-    bloodline: "bani Gwo Samedi",
-    titles: ["Sheriff"],
-    generation: "Eighth",
-    birthPlace: "Asante Empire",
-    birthYear: 1699,
-    embracePlace: "Spanish Florida, USA",
-    embraceYear: 1735,
-    ambition: "",
-    convictions: [
-      "My Soldiers Must Be Able To Handle Anything",
-      "The Captain Always Saves Himself First",
-      "Reward Success, Excoriate Failure"
-    ]
+export const clanPhraseFor = (clan: string): string => {
+  if (clan === "Banu Haqim") {
+    return "the Banu Haqim";
   }
+  if (clan === "") {
+    return "";
+  }
+  return `Clan ${clan}`;
 };
 
-export const CHAR_BY_COLOR: Record<SeatColor, string> = {
-  Brown: "fomorach",
-  Orange: "rashid",
-  Red: "lordLucien",
-  Pink: "aishe",
-  Purple: "blackCaesar"
+export const identityFromSeat = (seat: SeatSnapshot): Identity => ({
+  charKey: seat.charKey,
+  fullName: seat.charName,
+  clan: seat.clan,
+  bloodline: seat.bloodline,
+  titles: seat.titles,
+  generation: seat.generation,
+  birthPlace: seat.birthPlace,
+  birthYear: seat.birthYear,
+  embracePlace: seat.embracePlace,
+  embraceYear: seat.embraceYear,
+  ambition: seat.ambition,
+  convictions: seat.convictions
+});
+
+export const subtitleFor = (identity: Identity): string => {
+  const clanPart = clanPhraseFor(identity.clan);
+  const bloodline = identity.bloodline.trim();
+  const generation = identity.generation.trim();
+  if (generation === "" && clanPart === "") {
+    return bloodline;
+  }
+  const head = `${generation} Generation Ancilla of ${clanPart}`.trim();
+  if (bloodline === "") {
+    return head;
+  }
+  return `${head} ◆ ${bloodline}`;
 };
 
-const emptyIdentity = (charKey: string): Identity => ({
+export const chronologyFor = (identity: Identity): string => {
+  if (identity.birthPlace === "" && identity.embracePlace === "") {
+    return "";
+  }
+  return `Born in ${identity.birthPlace}, ${identity.birthYear}  ·  Embraced in ${identity.embracePlace}, ${identity.embraceYear}`;
+};
+
+/** @deprecated Live UI must use identityFromSeat. Kept only for unit tests of subtitle formatting. */
+export const identityFor = (charKey: string): Identity => ({
   charKey,
   fullName: charKey,
   clan: "",
@@ -116,29 +62,4 @@ const emptyIdentity = (charKey: string): Identity => ({
   convictions: []
 });
 
-export const identityFor = (charKey: string): Identity => IDENTITIES[charKey] ?? emptyIdentity(charKey);
-
-export const identityForColor = (color: SeatColor): Identity => identityFor(CHAR_BY_COLOR[color]);
-
-export const clanPhraseFor = (clan: string): string => {
-  if (clan === "Banu Haqim") {
-    return "the Banu Haqim";
-  }
-  if (clan === "") {
-    return "";
-  }
-  return `Clan ${clan}`;
-};
-
-export const subtitleFor = (identity: Identity): string => {
-  const clanPart = clanPhraseFor(identity.clan);
-  const bloodline = identity.bloodline.trim();
-  const head = `${identity.generation} Generation Ancilla of ${clanPart}`.trim();
-  if (bloodline === "") {
-    return head;
-  }
-  return `${head} ◆ ${bloodline}`;
-};
-
-export const chronologyFor = (identity: Identity): string =>
-  `Born in ${identity.birthPlace}, ${identity.birthYear}  ·  Embraced in ${identity.embracePlace}, ${identity.embraceYear}`;
+export const identityForColor = (_color: SeatColor): Identity => identityFor("unknown");

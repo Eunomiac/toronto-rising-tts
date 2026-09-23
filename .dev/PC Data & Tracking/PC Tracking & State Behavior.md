@@ -49,11 +49,12 @@ The steam ID numbers (used as keys in the `playerData` table) are stored in the 
         "playerName": "Thaumaterge",
         "stats": PCStatsPartA & PCStatsPartB & PCStatsPartC & PCStatsPartD,
         "conditions": {},
-        "desire": "" // Session Desire string (TOR-97); whitespace-only stored as ""
+        "desire": "", // Session Desire string (TOR-97); whitespace-only stored as ""
+        "ambition": "" // Ambition string (dashboard PCs tab); whitespace-only stored as ""
     }
 ```
 
-`conditions` and **`desire`** are **siblings** of `stats` on the same `playerData` entry (not nested under `stats`). The Storyteller entry in `playerData` does not use `stats`, `conditions`, or `desire`.
+`conditions`, **`desire`**, and **`ambition`** are **siblings** of `stats` on the same `playerData` entry (not nested under `stats`). The Storyteller entry in `playerData` does not use `stats`, `conditions`, `desire`, or `ambition`.
 
 ### `playerData.desire` (TOR-97)
 
@@ -61,6 +62,16 @@ The steam ID numbers (used as keys in the `playerData` table) are stored in the 
 - **Unset:** whitespace-only input is stored as `""`. Sheet InputField class becomes `player_desire player_desire_unset`.
 - **Mutation:** page1 CSHEET `onValueChanged` / `onEndEdit` → `GlobalSetPlayerDesire` (seat owner or Storyteller steam); ST PCs panel **Clear** → `pcs_<Color>_desireClear` via `HUD_pcPanel`.
 - **UI sync:** ST row `pcs_desire_<Color>` + page1 `player_desire` text/class (no `Sync.full`).
+
+### `playerData.ambition`
+
+- **Type:** string. Missing/nil normalizes to `""` (same trim rules as Desire).
+- **Read:** Storyteller Dashboard PCs tab snapshot (`GlobalDashboardPcSheetSnapshot`) includes `ambition` from **live `playerData` only** (no PCS-catalog fill-in). Not yet an in-game CSHEET InputField (Ambition is still baked into page-1 art for many sheets).
+- **Mutation:** author TEST BED `SetPcAmbition(charKey, text)` / future dashboard edit — `S.setStateVal(text, "playerData", pid, "ambition")`.
+
+### Dashboard PCs tab (live-only)
+
+The Storyteller Dashboard **PCs** tab must never paint a stand-in sheet when the editor bridge is down. If port 39998 is unclaimed or TTS does not return a snapshot, the tab shows an empty **No live sheet** notice with the bridge reason. Identity (name, clan, chronology, convictions) and trackers all come from `GlobalDashboardPcSheetSnapshot`.
 
 ## `PCStatsPartA`: `stats.attributes`, `stats.skills`, and `stats.specialties`
 

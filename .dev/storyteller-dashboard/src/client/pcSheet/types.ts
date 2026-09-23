@@ -27,7 +27,17 @@ export type SeatSnapshot = {
   readonly charKey: string;
   readonly charName: string;
   readonly playerName: string;
+  readonly clan: string;
+  readonly bloodline: string;
+  readonly titles: readonly string[];
+  readonly generation: string;
+  readonly birthPlace: string;
+  readonly birthYear: number;
+  readonly embracePlace: string;
+  readonly embraceYear: number;
+  readonly convictions: readonly string[];
   readonly desire: string;
+  readonly ambition: string;
   readonly absentFromSession: boolean;
   readonly deferAutoSeat: boolean;
   readonly deferConnect: boolean;

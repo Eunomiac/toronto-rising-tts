@@ -10,6 +10,7 @@ local Dash = {}
 local C = require("lib.constants")
 local S = require("core.state")
 local P = require("lib.pc_stats")
+local PCS = require("lib.pcs_data")
 local PCST = require("core.pc_storyteller_panel")
 local PSC = require("lib.pc_sheet_collect")
 local Conditions = require("core.conditions")
@@ -129,6 +130,67 @@ local function copyBadges(row)
     end
   end
   return out
+end
+
+local function copyStringList(list)
+  local out = {}
+  if type(list) ~= "table" then
+    return out
+  end
+  for i = 1, #list do
+    local value = list[i]
+    if type(value) == "string" and value ~= "" then
+      out[#out + 1] = value
+    end
+  end
+  return out
+end
+
+local function copyConvictionDescriptions(list)
+  local out = {}
+  if type(list) ~= "table" then
+    return out
+  end
+  for i = 1, #list do
+    local row = list[i]
+    if type(row) == "table" and type(row.description) == "string" and row.description ~= "" then
+      out[#out + 1] = row.description
+    elseif type(row) == "string" and row ~= "" then
+      out[#out + 1] = row
+    end
+  end
+  return out
+end
+
+local function identityFromPcs(charKey, catalog)
+  local pcs = type(charKey) == "string" and charKey ~= "" and PCS.getPC(charKey) or nil
+  if type(pcs) ~= "table" then
+    pcs = {}
+  end
+  local bloodline = ""
+  if type(pcs.bloodline) == "table" and type(pcs.bloodline.name) == "string" then
+    bloodline = pcs.bloodline.name
+  elseif type(pcs.bloodline) == "string" then
+    bloodline = pcs.bloodline
+  end
+  local charName = ""
+  if type(pcs.name) == "string" and pcs.name ~= "" then
+    charName = pcs.name
+  elseif type(catalog) == "table" and type(catalog.charName) == "string" then
+    charName = catalog.charName
+  end
+  return {
+    charName = charName,
+    clan = type(pcs.clan) == "string" and pcs.clan or "",
+    bloodline = bloodline,
+    titles = copyStringList(pcs.titles),
+    generation = type(pcs.generation) == "string" and pcs.generation or "",
+    birthPlace = type(pcs.birthPlace) == "string" and pcs.birthPlace or "",
+    birthYear = num(pcs.birthYear),
+    embracePlace = type(pcs.embracePlace) == "string" and pcs.embracePlace or "",
+    embraceYear = num(pcs.embraceYear),
+    convictions = copyConvictionDescriptions(pcs.convictions),
+  }
 end
 
 local function encodeSnapshot(payload)
@@ -343,13 +405,26 @@ local function snapshotSeat(color)
   local seatRow = U.Type(ss) == "table" and ss[color] or nil
   local bpDerived = ES.bloodPotencyDerivedFromStats(stats, resolved)
   local hungerMax = tonumber(C.MAX_HUNGER) or 5
+  local charKey = catalog and catalog.charKey or ""
+  local identity = identityFromPcs(charKey, catalog)
+  local ambition = PCST.normalizeDesire(type(pid) == "string" and S.getStateVal("playerData", pid, "ambition") or "")
   return {
     color = color,
     playerId = pid,
-    charKey = catalog and catalog.charKey or "",
-    charName = catalog and catalog.charName or "",
+    charKey = charKey,
+    charName = identity.charName,
     playerName = catalog and catalog.playerName or "",
+    clan = identity.clan,
+    bloodline = identity.bloodline,
+    titles = identity.titles,
+    generation = identity.generation,
+    birthPlace = identity.birthPlace,
+    birthYear = identity.birthYear,
+    embracePlace = identity.embracePlace,
+    embraceYear = identity.embraceYear,
+    convictions = identity.convictions,
     desire = PCST.normalizeDesire(type(pid) == "string" and S.getStateVal("playerData", pid, "desire") or ""),
+    ambition = ambition,
     absentFromSession = U.Type(seatRow) == "table" and seatRow.absentFromSession == true,
     deferAutoSeat = S.getStateVal("connectionControls", "deferAutoSeatByColor", color) == true,
     deferConnect = S.getStateVal("connectionControls", "deferConnectByColor", color) == true,

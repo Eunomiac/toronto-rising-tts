@@ -1,10 +1,10 @@
 import { useEffect, useState, type MouseEvent, type ReactElement } from "react";
-import { chronologyFor, identityForColor, subtitleFor } from "./identity.js";
+import { chronologyFor, identityFromSeat, subtitleFor } from "./identity.js";
 import { ATTRIBUTE_COLUMNS, ATTRIBUTE_LABELS, SKILL_COLUMNS, SKILL_LABELS, assetUrl } from "./layout.js";
 import { DotLine } from "./DotLine.js";
 import { paintDamageTrack, paintDotLine, paintHumanityTrack } from "./paint.js";
 import { formatBadge } from "./ringActions.js";
-import type { RingTarget, SeatColor, SeatSnapshot, Specialty } from "./types.js";
+import type { RingTarget, SeatSnapshot, Specialty } from "./types.js";
 
 type Props = {
   readonly seat: SeatSnapshot;
@@ -64,7 +64,10 @@ export const PageOne = ({ seat, onRing, onCommand, onDesire }: Props): ReactElem
   useEffect(() => {
     setDesireDraft(seat.desire);
   }, [seat.color, seat.desire]);
-  const identity = identityForColor(seat.color as SeatColor);
+  const identity = identityFromSeat(seat);
+  const ambition = identity.ambition.trim();
+  const subtitle = subtitleFor(identity);
+  const chronology = chronologyFor(identity);
   const healthBoxes = paintDamageTrack(seat.health, seat.healthMax);
   const willBoxes = paintDamageTrack(seat.willpower, seat.willpowerMax);
   const humanityBoxes = paintHumanityTrack(seat.humanity, seat.humanityMax);
@@ -83,9 +86,9 @@ export const PageOne = ({ seat, onRing, onCommand, onDesire }: Props): ReactElem
     <article className="pc-page pc-page-one">
       <header className="pc-header">
         <h1 className="pc-name">{identity.fullName}</h1>
-        <p className="pc-subtitle">{subtitleFor(identity)}</p>
-        <p className="pc-chrono">{chronologyFor(identity)}</p>
-        {identity.ambition !== "" ? <p className="pc-ambition">“{identity.ambition}”</p> : null}
+        {subtitle !== "" ? <p className="pc-subtitle">{subtitle}</p> : null}
+        {chronology !== "" ? <p className="pc-chrono">{chronology}</p> : null}
+        {ambition !== "" ? <p className="pc-ambition">“{ambition}”</p> : null}
         <input
           className={`pc-desire${desireDraft.trim() === "" ? " unset" : ""}`}
           value={desireDraft}

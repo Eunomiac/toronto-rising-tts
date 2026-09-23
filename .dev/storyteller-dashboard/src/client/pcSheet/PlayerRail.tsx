@@ -1,5 +1,4 @@
 import type { CSSProperties, ReactElement } from "react";
-import { identityForColor } from "./identity.js";
 import { ROLL_TYPES, SEAT_ACCENT } from "./layout.js";
 import type { ApplyCommand, SeatColor, SeatSnapshot } from "./types.js";
 
@@ -13,7 +12,6 @@ type Props = {
 export const PlayerRail = ({ seats, selected, onSelect, onCommand }: Props): ReactElement => (
   <aside className="pc-rail" aria-label="Players">
     {seats.map((seat) => {
-      const identity = identityForColor(seat.color);
       const open = seat.color === selected;
       return (
         <article
@@ -24,7 +22,7 @@ export const PlayerRail = ({ seats, selected, onSelect, onCommand }: Props): Rea
           <button className="pc-card-main" type="button" onClick={() => onSelect(seat.color)}>
             <span className="pc-card-pip" />
             <span className="pc-card-copy">
-              <strong>{identity.fullName}</strong>
+              <strong>{seat.charName || seat.charKey || seat.color}</strong>
               <em>{seat.playerName || seat.color}</em>
             </span>
             <span className="pc-card-flags">

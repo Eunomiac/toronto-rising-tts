@@ -1128,6 +1128,12 @@ function S.validateState()
                 local trimmed = string.match(playerData.desire, "^%s*(.-)%s*$") or ""
                 playerData.desire = trimmed
             end
+            if type(playerData.ambition) ~= "string" then
+                playerData.ambition = ""
+            else
+                local ambTrimmed = string.match(playerData.ambition, "^%s*(.-)%s*$") or ""
+                playerData.ambition = ambTrimmed
+            end
         else
             if type(playerData.stats) ~= "table" then
                 playerData.conditions = nil

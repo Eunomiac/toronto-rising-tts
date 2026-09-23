@@ -189,6 +189,36 @@
   min-width: 0;
   min-height: 0;
 
+  .pc-spread-offline {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    margin: 0.5rem 0.35rem 0;
+    padding: 2rem 1.5rem;
+    border: 1px solid rgba(252, 229, 193, 0.18);
+    background: rgba(0, 0, 0, 0.55);
+    text-align: center;
+  }
+
+  .pc-offline-title {
+    margin: 0;
+    font-family: "Trajan Pro 3", serif;
+    font-size: 1.15rem;
+    letter-spacing: 0.04em;
+    color: #fce5c1;
+  }
+
+  .pc-offline-body {
+    margin: 0;
+    max-width: 34rem;
+    font-size: 0.92rem;
+    line-height: 1.45;
+    color: rgba(252, 229, 193, 0.82);
+  }
+
   .pc-bridge-bar {
     position: absolute;
     top: -35px;
@@ -201,6 +231,23 @@
 
   .status {
     background: rgba(0, 0, 0, 1);
+  }
+
+  .pc-bridge-debug {
+    padding: 0.22rem 0.55rem;
+    border: 1px solid rgba(252, 229, 193, 0.35);
+    background: #1a1814;
+    color: #fce5c1;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
   }
 
   .pc-bridge-retry {
@@ -228,6 +275,63 @@
       opacity: 0.6;
     }
   }
+}
+
+.pc-json-modal-card {
+  width: min(52rem, 94vw);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(252, 229, 193, 0.22);
+  background: #0c0c10;
+  color: #fce5c1;
+}
+
+.pc-json-modal-header {
+  flex: 0 0 auto;
+
+  h2 {
+    font-family: "Trajan Pro 3", serif;
+    font-size: 1.35rem;
+    letter-spacing: 0.03em;
+    color: #fce5c1;
+  }
+
+  p {
+    color: rgba(252, 229, 193, 0.65);
+  }
+}
+
+.pc-json-modal-close {
+  align-self: flex-start;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid rgba(252, 229, 193, 0.35);
+  background: #1a1814;
+  color: #fce5c1;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pc-json-modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 0.75rem 1rem 1.25rem;
+}
+
+.pc-json-modal-pre {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(252, 229, 193, 0.12);
+  background: #08080b;
+  color: #e8dcc4;
+  font-family: "Cascadia Code", "Consolas", "Courier New", monospace;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  white-space: pre;
+  overflow-x: auto;
 }
 
 .pc-spread {
@@ -355,7 +459,7 @@
 .pc-convictions {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.35rem;
+  gap: 0rem;
   margin-top: 0.2rem;
   padding-top: 0.35rem;
   color: #FFFFFF;
@@ -365,7 +469,7 @@
   p {
     margin: 0;
     font-family: "Trajan Pro 3", serif;
-    font-size: 1rem;
+    font-size: 0.96rem;
     letter-spacing: 0.03em;
     text-transform: uppercase;
     transform: scaleX(0.9);
@@ -560,6 +664,7 @@
     "health xp will"
     "humanity xp stack";
   flex: 1 0 auto;
+  position: relative;
 }
 
 .pc-track {
@@ -586,8 +691,9 @@
 
   &.hunger {
     position: absolute;
-    left: 0;
-    top: 0;
+    left: 50%;
+    bottom: 50%;
+    transform: translate(-50%, -50%);
   }
 }
 
@@ -611,9 +717,9 @@
 .pc-track-note {
   display: block;
   margin-top: 0.1rem;
-  color: #c45a4a;
+  color: #ff0000;
   font-family: "Mano Negra", cursive;
-  font-size: 0.78rem;
+  font-size: 1rem;
   font-weight: 400;
 
   b {
@@ -653,6 +759,7 @@
   border: 0;
   background: transparent;
   color: #c5c799;
+  top: 25px;
 
   img {
     width: 3.4rem;
@@ -661,13 +768,18 @@
 
   strong {
     position: absolute;
-    font-size: 1.35rem;
+    font-size: 2rem;
     font-weight: 800;
+    transform: translate(-50%, -50%);
+    top: 36px;
+    left: 39px;
+    text-shadow: 2px 2px 0px black;
   }
 
   span {
     font-family: "Abril Fatface", serif;
     letter-spacing: 0.16em;
+    color: #FFFFFF;
   }
 }
 

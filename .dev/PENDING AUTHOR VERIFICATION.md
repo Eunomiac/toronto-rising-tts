@@ -109,15 +109,16 @@ _Last populated: 2026-09-21 — Play→Spotlight parks stage NPC figurines (Line
 **Context:** Same bookend chrome as **TOR-598**. Linear quota blocked a new issue id; this row covers the End layout follow-up. relatedTo **TOR-98**.
 
 ### Character sheets
-#### Dashboard PCs tab — live sheet snapshot/apply
+#### TOR-595 — Dashboard PCs tab: live-only sheet (no stand-in) + Ambition from gameState
 
-**How to verify:** Save & Play so the new Global functions load. Keep External Editor on, and keep the TTS Tools Cursor extension **off** (only one process can listen on the editor port). Restart the Storyteller Dashboard if it was already running.
+**How to verify:** Save & Play so the snapshot script reloads. Keep External Editor on. Restart the Storyteller Dashboard if it was already running.
 
-1. Open the Storyteller Dashboard and click **PCs**. The status line under the two-page spread should say it is live from Tabletop Simulator, not a stand-in fixture. You should see all five player cards on the left and a page-1 sheet plus an empty page 2. The subtitle should read like “Eighth Generation Ancilla of Clan Malkavian ◆ Descendant of the Pythia”.
-2. Select a seated player. Hunger, XP, Health, and Humanity should **move on the dashboard as soon as you click**. Left-click Hunger to add a pip, right-click to remove one (no popup). Same for the XP jewel. Click Health superficial **three times quickly**: the dashboard should show all three immediately. After a short wait the in-game Health track should match — without three long pauses. Mend should heal up to current Mending and close the menu. Humanity stain should not pile up a hidden tally while the red impaired box is showing. The status line may say it is updating Tabletop Simulator.
-3. Change Desire and leave the field — the in-game Desire should update. Optional: click **Std** on the selected card and confirm a Storyteller-initiated roll starts for that seat.
+1. **Offline notice:** On the **PCs** tab, click **Release Port** (or leave the port unclaimed). You should see a blank spread titled **No live sheet** with a short reason (for example that the dashboard is not holding the editor port). You must **not** see fake character names, Desire, Ambition, or tracker dots from a stand-in sheet.
+2. **Live sheet:** Click **Claim Port**. The status should say it is live from Tabletop Simulator. Player cards and page 1 should fill from the table. Subtitles and chronology come from the live seat snapshot (PCS identity in TTS), not from a dashboard hardcode file.
+3. **Ambition:** In Execute Lua / TEST BED, run something like `SetPcAmbition("aishe", "Create a legacy in Toronto that long outlasts me")` for a few seats. After Claim Port (or wait a couple of seconds for the poll), each Ambition line under the name on page 1 should match what you set. Empty `playerData.ambition` shows no quote — it must not invent text from the PCS catalog.
+4. Optional: click **JSON** next to Claim/Release Port — a scrollable modal should show pretty-printed data for the seat on screen. Escape or Close dismisses it. Hunger / Desire clicks still paint immediately (**TOR-595** batch apply).
 
-**Context:** `GlobalDashboardPcSheetApply` accepts one command or a JSON array (`core/dashboard_pc_sheet.ttslua`). Dashboard clicks paint locally and flush queued clicks in one execute-lua call. **TOR-595**. Async apply-queue work is in a parallel dashboard session — do not treat that as this row.
+**Context:** Follow-up on the live PCs bridge (**TOR-595**). Snapshot fields include identity + `ambition` from `playerData` (`core/dashboard_pc_sheet.ttslua`). Dashboard never paints a fixture when TTS is unreachable.
 
 ### Scatter / table layout
 #### TOR-590 — Hand zone and cards move together

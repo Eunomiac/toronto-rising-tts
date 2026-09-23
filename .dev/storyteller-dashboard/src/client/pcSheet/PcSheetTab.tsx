@@ -1,12 +1,12 @@
 import { gsap } from "gsap";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent, type ReactElement } from "react";
 import { fetchBridgeStatus, reclaimEditorPort, releaseEditorPort } from "../ttsBridge.js";
-import { applySheetCommands, snapshotOrFixture } from "./bridge.js";
+import { applySheetCommands, fetchLiveSnapshot } from "./bridge.js";
 import { applyLocal } from "./applyLocal.js";
 import { createApplyQueue } from "./applyQueue.js";
-import { fixtureSnapshot } from "./fixture.js";
 import { PageOne } from "./PageOne.js";
 import { PlayerRail } from "./PlayerRail.js";
+import { SeatJsonModal } from "./SeatJsonModal.js";
 import { actionsForRing } from "./ringActions.js";
 import { TraitRing } from "./TraitRing.js";
 import type { ApplyCommand, RingTarget, SeatColor, SeatSnapshot, SheetSnapshot } from "./types.js";
@@ -17,22 +17,24 @@ type Props = {
 
 const POLL_MS = 2500;
 
+const emptyLiveSnapshot = (): SheetSnapshot => ({ ok: false, seats: [] });
+
 const friendlyBridgeMessage = (message: string): string => {
   if (/Claim Port first|not holding port 39998/i.test(message)) {
-    return "Dashboard is not holding the editor port.";
+    return "Dashboard is not holding the editor port. Click Claim Port to talk to Tabletop Simulator.";
   }
   if (/Command failed:|powershell\.exe|netstat\.exe/i.test(message)) {
     return "Could not inspect port 39998.";
   }
   if (/nil value|executeScript|did not return a sheet snapshot/i.test(message)) {
-    return "Live sheet is not answering yet — showing stand-in stats.";
+    return "Tabletop Simulator did not return a sheet snapshot. Save & Play so the live PCs bridge is loaded.";
   }
   return message;
 };
 
 export const PcSheetTab = ({ active }: Props): ReactElement => {
   const spreadRef = useRef<HTMLDivElement>(null);
-  const [snapshot, setSnapshot] = useState<SheetSnapshot>(() => fixtureSnapshot());
+  const [snapshot, setSnapshot] = useState<SheetSnapshot>(emptyLiveSnapshot);
   const [selected, setSelected] = useState<SeatColor>("Pink");
   const [status, setStatus] = useState("Checking TTS…");
   const [live, setLive] = useState(false);
@@ -41,9 +43,19 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
   const [reclaiming, setReclaiming] = useState(false);
   const [holdingPort, setHoldingPort] = useState(false);
   const [ring, setRing] = useState<{ x: number; y: number; target: RingTarget } | null>(null);
+  const [jsonOpen, setJsonOpen] = useState(false);
   const inFlight = useRef(false);
   const skipLive = useRef(false);
   const syncingRef = useRef(false);
+
+  const showOffline = useCallback((message: string): void => {
+    skipLive.current = true;
+    setLive(false);
+    setSnapshot(emptyLiveSnapshot());
+    setRing(null);
+    setJsonOpen(false);
+    setStatus(friendlyBridgeMessage(message));
+  }, []);
 
   const refresh = useCallback(async (force = false): Promise<void> => {
     if (force) {
@@ -61,9 +73,7 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
       const holding = bridge.editorPort === "held_by_dashboard";
       setHoldingPort(holding);
       if (!holding) {
-        skipLive.current = true;
-        setLive(false);
-        setStatus(bridge.editorPort === "in_use"
+        showOffline(bridge.editorPort === "in_use"
           ? "TTS Tools is using port 39998. Click Claim Port to take it for the live sheet."
           : "Dashboard is not holding the editor port. Click Claim Port to talk to Tabletop Simulator.");
         return;
@@ -72,12 +82,10 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
         return;
       }
       if (!bridge.usable) {
-        skipLive.current = true;
-        setLive(false);
-        setStatus(bridge.message);
+        showOffline(bridge.message);
         return;
       }
-      const result = await snapshotOrFixture();
+      const result = await fetchLiveSnapshot();
       if (syncingRef.current) {
         return;
       }
@@ -87,17 +95,13 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
         setStatus(result.message);
         return;
       }
-      skipLive.current = true;
-      setLive(false);
-      setStatus(friendlyBridgeMessage(result.message));
+      showOffline(result.message);
     } catch (error: unknown) {
-      skipLive.current = true;
-      setLive(false);
-      setStatus(friendlyBridgeMessage(error instanceof Error ? error.message : "Could not reach TTS."));
+      showOffline(error instanceof Error ? error.message : "Could not reach TTS.");
     } finally {
       inFlight.current = false;
     }
-  }, []);
+  }, [showOffline]);
 
   const refreshRef = useRef(refresh);
   refreshRef.current = refresh;
@@ -112,7 +116,7 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
           setStatus("Live from Tabletop Simulator.");
         },
         onFailure: (error) => {
-          setStatus(friendlyBridgeMessage(error.message));
+          showOffline(error.message);
           skipLive.current = false;
           inFlight.current = false;
           void refreshRef.current(true);
@@ -122,7 +126,7 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
           setSyncing(pending > 0);
         }
       }),
-    []
+    [showOffline]
   );
 
   useEffect(() => {
@@ -140,14 +144,14 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
 
   useLayoutEffect(() => {
     const root = spreadRef.current;
-    if (!root || !active) {
+    if (!root || !active || !live) {
       return;
     }
     const ctx = gsap.context(() => {
       gsap.fromTo(root.querySelectorAll(".pc-page"), { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45, stagger: 0.08, ease: "power2.out" });
     }, root);
     return () => ctx.revert();
-  }, [active]);
+  }, [active, live]);
 
   const claimPort = async (): Promise<void> => {
     if (reclaiming) {
@@ -164,10 +168,8 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
       inFlight.current = false;
       await refresh(true);
     } catch (error: unknown) {
-      skipLive.current = true;
-      setLive(false);
       setHoldingPort(false);
-      setStatus(error instanceof Error ? error.message : "Could not claim port 39998.");
+      showOffline(error instanceof Error ? error.message : "Could not claim port 39998.");
     } finally {
       setBusy(false);
       setReclaiming(false);
@@ -184,9 +186,7 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
     try {
       const result = await releaseEditorPort();
       setHoldingPort(false);
-      skipLive.current = true;
-      setLive(false);
-      setStatus(result.message);
+      showOffline(result.message);
     } catch (error: unknown) {
       setStatus(error instanceof Error ? error.message : "Could not release port 39998.");
     } finally {
@@ -196,18 +196,19 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
   };
 
   const apply = (command: ApplyCommand, closeRing = true): void => {
+    if (!live) {
+      return;
+    }
     if (closeRing) {
       setRing(null);
     }
-    setSnapshot((current) => applyLocal(current ?? fixtureSnapshot(), command));
-    if (!live) {
-      setStatus("Stand-in sheet — changes stay on this tab until live TTS answers.");
-      return;
-    }
+    setSnapshot((current) => applyLocal(current, command));
     applyQueue.enqueue(command);
   };
 
-  const seat: SeatSnapshot | undefined = snapshot?.seats.find((row) => row.color === selected) ?? snapshot?.seats[0];
+  const seat: SeatSnapshot | undefined = live
+    ? (snapshot.seats.find((row) => row.color === selected) ?? snapshot.seats[0])
+    : undefined;
 
   const openRing = (event: MouseEvent<HTMLElement>, target: RingTarget): void => {
     const panel = event.currentTarget.closest(".pc-sheet-panel");
@@ -223,17 +224,17 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
 
   return (
     <div className="pc-sheet-workspace">
-      {snapshot ? (
+      {live && snapshot.seats.length > 0 ? (
         <PlayerRail
           seats={snapshot.seats}
           selected={seat?.color ?? selected}
           onSelect={setSelected}
           onCommand={(command) => void apply(command)}
         />
-      ) : <aside className="pc-rail" />}
+      ) : <aside className="pc-rail" aria-hidden={!live} />}
       <div className="pc-spread-wrap">
-        <div ref={spreadRef} className="pc-spread">
-          {seat ? (
+        {live && seat ? (
+          <div ref={spreadRef} className="pc-spread">
             <PageOne
               seat={seat}
               onRing={openRing}
@@ -244,13 +245,27 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
                 }
               }}
             />
-          ) : <article className="pc-page pc-page-one" />}
-          <article className="pc-page pc-page-two" aria-hidden="true">
-            <span>II</span>
-          </article>
-        </div>
+            <article className="pc-page pc-page-two" aria-hidden="true">
+              <span>II</span>
+            </article>
+          </div>
+        ) : (
+          <div className="pc-spread pc-spread-offline" role="status">
+            <p className="pc-offline-title">No live sheet</p>
+            <p className="pc-offline-body">{status}</p>
+          </div>
+        )}
         <div className="pc-bridge-bar">
           <div className={`status ${live ? "success" : "idle"}`}>{status}{syncing ? "  Updating Tabletop Simulator…" : ""}{busy ? "  Sending…" : ""}</div>
+          <button
+            className="pc-bridge-debug"
+            type="button"
+            disabled={!live || seat == null}
+            onClick={() => setJsonOpen(true)}
+            title="Show pretty-printed JSON for the sheet on screen"
+          >
+            JSON
+          </button>
           <button
             className={`pc-bridge-retry${holdingPort ? " release" : " claim"}`}
             type="button"
@@ -264,7 +279,7 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
           </button>
         </div>
       </div>
-      {ring ? (
+      {ring && live ? (
         <TraitRing
           x={ring.x}
           y={ring.y}
@@ -276,6 +291,7 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
           onClose={() => setRing(null)}
         />
       ) : null}
+      {jsonOpen && seat ? <SeatJsonModal seat={seat} onClose={() => setJsonOpen(false)} /> : null}
     </div>
   );
 };
