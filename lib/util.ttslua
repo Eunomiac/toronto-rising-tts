@@ -2499,11 +2499,16 @@ function U.movePlayerHand(playerRef, position, rotation, opts)
 
 	local deltaYaw = shortestSignedYawDelta(hzBefore.rotation.y, targetRot.y)
 	poseObjectWithHand(hz, targetPos, targetRot, smooth)
+	-- Hand-zone facing is opposite card face yaw in TTS; snap card Y to zone Y ± 180
+	-- so rigid-transported cards sit square in the fan (TOR-590 follow-up).
+	local cardYaw = targetRot.y + 180
 	for i = 1, #captured do
 		local entry = captured[i]
 		local rotated = U.frameAfterRigidYawAboutCenter(hzBefore.position, entry.before, deltaYaw)
 		local newPos = Vector(rotated.position) + (targetPos - hzBefore.position)
-		poseObjectWithHand(entry.obj, newPos, rotated.rotation, smooth)
+		local cardRot = Vector(rotated.rotation)
+		cardRot.y = cardYaw
+		poseObjectWithHand(entry.obj, newPos, cardRot, smooth)
 	end
 	return hzBefore
 end

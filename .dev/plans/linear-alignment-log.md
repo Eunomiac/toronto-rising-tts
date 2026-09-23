@@ -786,5 +786,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-09-21 | SHIP | TOR-599 | End overlay uses prologue bookend layout (TORONTO RISING / compact roman / spaced title) with EPILOGUE. Linear quota blocked a new id. Pending Save & Play. |
 | 2026-09-21 | SHIP | TOR-143 | End→Intermission: blackout FadeIn, TR_Loop crossfade starting at 3s, instant end splash at 6s, blackout FadeOut, world work after another 6s. Linear quota blocked a new issue. Pending Save & Play. |
 | 2026-09-21 | SHIP | TOR-98 | Play→Spotlight parks stage/Scatter NPC figurines. Table A switch uses skipScatterRestore; Spotlight/End intent skips stage targets. Linear quota blocked a new issue. Pending Save & Play. |
+| 2026-09-23 | INBOX | — | Capture empty. PAVE ✅ cleared TOR-593, TOR-596, TOR-581, TOR-527, TOR-598, TOR-600, TOR-601, Play→Spotlight stage clear, TOR-605, TOR-603, TOR-597, TOR-594, TOR-143 End→Intermission, TOR-31 Willpower reroll. |
+| 2026-09-23 | SHIP | TOR-590 | PAVE ⚠️ follow-up: `U.movePlayerHand` snaps card Y to hand-zone Y+180 after rigid teleport. CREATE blocked (issue limit); comment on TOR-590. Pending Save & Play. |
+| 2026-09-23 | NOTE | quota | MCP has no delete_issue. Author-confirmed Done purge candidates if creating new ids: TOR-593, TOR-596, TOR-581, TOR-527, TOR-598, TOR-600, TOR-601, TOR-605, TOR-603, TOR-597, TOR-594 (and other ✅-cleared Done issues from this inbox). |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

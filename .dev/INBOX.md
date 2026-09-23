@@ -49,6 +49,8 @@ Verification:
 
 ## Processed
 
+2026-09-23 `/tr-inbox` — capture empty (Quick Fixes / Active / Immediate / Needs clarification). PAVE ✅ cleared **TOR-593**, **TOR-596**, **TOR-581**, **TOR-527**, **TOR-598**, **TOR-600**, **TOR-601**, Play→Spotlight stage clear, **TOR-605**, **TOR-603**, **TOR-597**, **TOR-594**, **TOR-143** End→Intermission blackout splash, **TOR-31** Willpower reroll grabbable. PAVE ⚠️ **TOR-590** card yaw → shipped snap in `U.movePlayerHand` (Linear quota blocked a new Bug id; comment on **TOR-590**). Split orphaned Pink Tarot Consult verify text out of **TOR-512** PAVE row. Focus unchanged: **TOR-526**, **TOR-141**, **TOR-81**, **TOR-495**.
+
 2026-09-21 Immediate — session-start first Downtime overlay prologue copy → **TOR-598** (shipped). End overlay **DEBRIEF** → **EPILOGUE**, then same prologue bookend layout with **EPILOGUE** → **TOR-599** (shipped).
 
 2026-09-21 `/tr-inbox` Immediate — hide Storyteller camera/seat bars during session-start splash → **TOR-596** (shipped). PAVE ⚠️ overlay camera click vs hold → **TOR-597** (shipped). Dashboard async-send ⚠️ left to the parallel dashboard session (not processed here). PAVE ✅ cleared session-start / sheet / Scatter / Memoriam / overlay rows marked confirmed.
