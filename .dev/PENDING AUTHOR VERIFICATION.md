@@ -66,7 +66,7 @@ _Last populated: 2026-09-23 — Play→Spotlight location→Main (comment on TOR
 
 ### Scatter / table layout
 
-#### PC dice drawers stay closed on Play→Spotlight (no new TOR — Linear quota; comment on TOR-507)
+#### ✅ PC dice drawers stay closed on Play→Spotlight (no new TOR — Linear quota; comment on TOR-507)
 
 **How to verify:** Save & Play so seat-role offsets reload. Start in **Play** with every character-sheet dice drawer closed (thin tray under the sheet, not slid out).
 
@@ -139,11 +139,15 @@ Separately, restart the Storyteller Dashboard with the TTS Tools extension **dis
 
 **Context:** Occupancy stash at Y=−200 was keeping satellites buried. relatedTo **TOR-507**.
 
-#### Pink Tarot Consult snaps to live deck anchor (no new TOR — Linear quota; relatedTo TOR-512 / TOR-411)
+#### Pink Tarot Consult: one delayed place at authored height (no new TOR — Linear quota; relatedTo TOR-411)
 
-**How to verify:** Save & Play so scripts reload. Put Pink’s tarot away if it is out. Confirm the deck is parked at y = −200 (invisible). Click **Consult the Tarot**. The deck should appear on the **tarot deck anchor** (same X/Z as that anchor object, height about 7.7) — not at some leftover park X/Z under the table. Put it away again: park at −200. Change table / Scatter and Consult again: still snaps to the live anchor.
+**How to verify:** Save & Play so `lib/tarot_toggle.ttslua` reloads. Put Pink’s tarot away (deck at y ≈ −200). Confirm `C.ObjectPositions.TAROT_DECK_PINK.on.height` is the height you want (currently **8.5**).
 
-**Context:** Reveal was only restoring Y ≈ 7.7 onto the parked stash X/Z. `C.ObjectPositions.TAROT_DECK_PINK.on` now uses `TAROT_DECK_ANCHOR_PINK` + height, and restore passes that resolved pose. Split out of the TOR-512 PAVE row on 2026-09-23 (header had been lost).
+1. Click **Consult the Tarot**. The **drawer** should start opening first. The **deck** should stay invisible for about **1.5 seconds** (`on.delay`), then appear **once** on the deck anchor at height **8.5** — not flash at the drawer surface and then hop up.
+2. Put it away again: park at −200. Consult again: same single delayed appear at 8.5.
+3. Optional: change `height` to another value, Save & Play, Consult — the deck should land at that new height on first appearance (no earlier wrong height).
+
+**Context:** Reveal was calling `GlobalRestoreObject` immediately (ignoring delay) and then `applyResolvedPose` again after `on.delay`, so the deck popped early at the wrong height and snapped a second time. relatedTo **TOR-512** / **TOR-411**.
 
 #### TOR-513 — Absent hand zone, PC token stash, and Apply PC reseat
 

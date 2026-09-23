@@ -108,18 +108,6 @@ local function snapshotOnPosition(obj, entry)
     return { x = merged.x, y = merged.y, z = merged.z }
 end
 
---- @param obj Object
---- @param entry table
---- @return table|nil full rotation from resolved on pose
-local function snapshotOnRotation(obj, entry)
-    local onPose = OP.resolveStatePose(obj, entry, STATE_ON) or entry.on
-    if type(onPose) ~= "table" or type(onPose.rotation) ~= "table" then
-        return nil
-    end
-    local merged = OP.mergeRotation(obj, onPose.rotation)
-    return { x = merged.x, y = merged.y, z = merged.z }
-end
-
 --- @param deck Object|nil
 --- @return boolean
 local function deckIsParkedHidden(deck)
@@ -135,8 +123,11 @@ local function deckIsParkedHidden(deck)
 end
 
 --- Pink deck off uses hide/restore (y = −200), not a visible shallow bury.
---- On reveal, ObjectPositions on pose (deck anchor + height) is the active authority —
---- never keep parked X/Z from the hide stash.
+--- On reveal: one pose apply only (`OP.applyResolvedPose`). That path honors
+--- `on.delay` (drawer opens first) and clears HiddenObject via GlobalRestoreObject
+--- at the resolved anchor+height. Do not also call GlobalRestoreObject eagerly —
+--- that dual-apply made the deck pop at the stash/drawer height, then snap again
+--- when the delayed pose ran.
 --- @param state string
 --- @param token number
 --- @param buttonGuid string|nil
@@ -176,39 +167,17 @@ local function applyDeckState(state, token, buttonGuid)
     if type(onPose.position) ~= "table"
         or onPose.position.x == nil
         or onPose.position.z == nil
+        or onPose.position.y == nil
     then
-        print("[TarotToggle] Pink tarot on pose missing resolved XZ; check TAROT_DECK_ANCHOR_PINK is in-world.")
-    end
-    if Global ~= nil and type(Global.call) == "function" then
-        local restoreOpts = {
-            guid = guid,
-            interactable = true,
-            locked = false,
-        }
-        local onPos = snapshotOnPosition(obj, entry)
-        if onPos ~= nil then
-            restoreOpts.position = onPos
-        end
-        local onRot = snapshotOnRotation(obj, entry)
-        if onRot ~= nil then
-            restoreOpts.rotation = onRot
-        end
-        Global.call("GlobalRestoreObject", restoreOpts)
+        print("[TarotToggle] Pink tarot on pose missing resolved XYZ; check TAROT_DECK_ANCHOR_PINK is in-world and on.height is set.")
+        return
     end
     local effectivePose = {}
     for k, v in pairs(onPose) do
         effectivePose[k] = v
     end
     effectivePose.isHidden = false
-    if type(effectivePose.position) == "table" then
-        local hasX = effectivePose.position.x ~= nil
-        local hasY = effectivePose.position.y ~= nil
-        local hasZ = effectivePose.position.z ~= nil
-        if not (hasX and hasY and hasZ) then
-            effectivePose.position = OP.mergePosition(obj, effectivePose.position)
-        end
-    end
-    OP.applyResolvedPose(obj, effectivePose, OP.DEFAULT_TRANSITION_DURATION, 0, {
+    OP.applyResolvedPose(obj, effectivePose, 0, 0, {
         shouldAbort = function()
             return not isTokenCurrent(token)
         end,

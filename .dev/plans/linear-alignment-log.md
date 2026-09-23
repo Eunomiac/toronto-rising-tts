@@ -792,6 +792,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-09-23 | NOTE | quota | MCP has no delete_issue. Author-confirmed Done purge candidates if creating new ids: TOR-593, TOR-596, TOR-581, TOR-527, TOR-598, TOR-600, TOR-601, TOR-605, TOR-603, TOR-597, TOR-594 (and other ✅-cleared Done issues from this inbox). |
 | 2026-09-23 | SHIP | TOR-37 | Global `UISet` / `U.UISet` batch+sequence setAttributes helper. CREATE blocked (issue limit); comment on TOR-37. Pending Save & Play. |
 | 2026-09-23 | SHIP | TOR-507 | PC dice drawer layout default restored to OFF pose (open dump had been pasted). CREATE blocked (issue limit); comment on TOR-507. Pending Save & Play. |
+| 2026-09-23 | SHIP | TOR-411 | Pink tarot Consult: remove eager GlobalRestoreObject dual-apply so on.delay + height apply once. CREATE blocked (issue limit); comment on TOR-411. Pending Save & Play. |
 | 2026-09-23 | `/tr-inbox` | PAVE | ✅ cleared playerLight1 STANDARD/ROLLING, Debug Light tooltips, TOR-495 selection names, TTS Tools Epic B Claim/Release, TOR-604, TOR-590. |
 | 2026-09-23 | SHIP | TOR-143 | End→Intermission: TR_Loop starts with blackout FadeOut (5s match). CREATE blocked (issue limit); comment on TOR-143. Pending Save & Play. |
 | 2026-09-23 | PROMOTE | TOR-98 | Play→Spotlight location→Main Focus #1. CREATE blocked (issue limit); comment on TOR-98. |
