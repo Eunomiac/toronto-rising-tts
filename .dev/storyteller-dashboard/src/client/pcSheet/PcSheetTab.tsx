@@ -213,7 +213,13 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
     const command: ApplyCommand = { op: "mergeSeat", color: merged.color, seat: merged };
     const next = await applySheetCommands([command]);
     if (!next.ok) {
-      throw new Error(next.error ?? "mergeSeat apply failed");
+      const detail = next.error ?? "mergeSeat apply failed";
+      if (/Unknown op/i.test(detail)) {
+        throw new Error(
+          `${detail}. Save & Play in Tabletop Simulator so the dashboard.pc_sheet bridge (mergeSeat) loads, then try Apply again.`
+        );
+      }
+      throw new Error(detail);
     }
     setSnapshot(next);
     setLive(true);

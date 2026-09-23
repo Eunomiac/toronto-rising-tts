@@ -753,7 +753,7 @@ local function applyCommand(cmd)
   if op == "mergeSeat" then
     return applyMergedSeat(color, cmd.seat)
   end
-  return "Unknown op"
+  return "Unknown op: " .. tostring(op)
 end
 
 function Dash.apply(jsonText)
