@@ -195,7 +195,7 @@ local function identityFromPcs(charKey, catalog)
 end
 
 local function overlayString(overlay, key, fallback)
-  if type(overlay) == "table" and type(overlay[key]) == "string" then
+  if type(overlay) == "table" and type(overlay[key]) == "string" and overlay[key] ~= "" then
     return overlay[key]
   end
   return fallback
@@ -203,13 +203,16 @@ end
 
 local function overlayNumber(overlay, key, fallback)
   if type(overlay) == "table" and overlay[key] ~= nil then
-    return num(overlay[key], fallback)
+    local n = tonumber(overlay[key])
+    if n ~= nil then
+      return n
+    end
   end
   return fallback
 end
 
 local function overlayStringList(overlay, key, fallback)
-  if type(overlay) == "table" and type(overlay[key]) == "table" then
+  if type(overlay) == "table" and type(overlay[key]) == "table" and #overlay[key] > 0 then
     return copyStringList(overlay[key])
   end
   return fallback
@@ -348,21 +351,58 @@ applyMergedSeat = function(color, seat)
     S.setStateVal(PCST.normalizeDesire(tostring(seat.ambition or "")), "playerData", pid, "ambition")
   end
 
-  local overlay = {
-    charName = type(seat.charName) == "string" and seat.charName or "",
-    clan = type(seat.clan) == "string" and seat.clan or "",
-    bloodline = type(seat.bloodline) == "string" and seat.bloodline or "",
-    titles = copyStringList(seat.titles),
-    generation = type(seat.generation) == "string" and seat.generation or "",
-    birthPlace = type(seat.birthPlace) == "string" and seat.birthPlace or "",
-    birthYear = num(seat.birthYear),
-    embracePlace = type(seat.embracePlace) == "string" and seat.embracePlace or "",
-    embraceYear = num(seat.embraceYear),
-    convictions = copyStringList(seat.convictions),
+  -- Only touch sheetOverlay keys that the patch actually included. A full replace of
+  -- empty defaults wiped charName / titles / etc. when the author patched ambition alone.
+  local overlayKeys = {
+    "charName", "clan", "bloodline", "titles", "generation",
+    "birthPlace", "birthYear", "embracePlace", "embraceYear", "convictions",
   }
-  S.setStateVal(overlay, "playerData", pid, "sheetOverlay")
-  if overlay.charName ~= "" then
-    S.setStateVal(overlay.charName, "playerData", pid, "charName")
+  local hasOverlayPatch = false
+  for i = 1, #overlayKeys do
+    if seat[overlayKeys[i]] ~= nil then
+      hasOverlayPatch = true
+      break
+    end
+  end
+  if hasOverlayPatch then
+    local overlay = S.getStateVal("playerData", pid, "sheetOverlay")
+    if type(overlay) ~= "table" then
+      overlay = {}
+    end
+    if seat.charName ~= nil then
+      overlay.charName = type(seat.charName) == "string" and seat.charName or ""
+    end
+    if seat.clan ~= nil then
+      overlay.clan = type(seat.clan) == "string" and seat.clan or ""
+    end
+    if seat.bloodline ~= nil then
+      overlay.bloodline = type(seat.bloodline) == "string" and seat.bloodline or ""
+    end
+    if seat.titles ~= nil then
+      overlay.titles = copyStringList(seat.titles)
+    end
+    if seat.generation ~= nil then
+      overlay.generation = type(seat.generation) == "string" and seat.generation or ""
+    end
+    if seat.birthPlace ~= nil then
+      overlay.birthPlace = type(seat.birthPlace) == "string" and seat.birthPlace or ""
+    end
+    if seat.birthYear ~= nil then
+      overlay.birthYear = num(seat.birthYear)
+    end
+    if seat.embracePlace ~= nil then
+      overlay.embracePlace = type(seat.embracePlace) == "string" and seat.embracePlace or ""
+    end
+    if seat.embraceYear ~= nil then
+      overlay.embraceYear = num(seat.embraceYear)
+    end
+    if seat.convictions ~= nil then
+      overlay.convictions = copyStringList(seat.convictions)
+    end
+    S.setStateVal(overlay, "playerData", pid, "sheetOverlay")
+    if type(overlay.charName) == "string" and overlay.charName ~= "" then
+      S.setStateVal(overlay.charName, "playerData", pid, "charName")
+    end
   end
 
   if seat.absentFromSession ~= nil then

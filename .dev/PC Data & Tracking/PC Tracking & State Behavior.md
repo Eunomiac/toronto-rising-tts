@@ -73,7 +73,7 @@ The steam ID numbers (used as keys in the `playerData` table) are stored in the 
 
 The Storyteller Dashboard **PCs** tab must never paint a stand-in sheet when the editor bridge is down. If port 39998 is unclaimed or TTS does not return a snapshot, the tab shows an empty **No live sheet** notice with the bridge reason. Identity (name, clan, chronology, convictions) and trackers all come from `GlobalDashboardPcSheetSnapshot` (`dashboard/pc_sheet.ttslua`, required as `dashboard.pc_sheet`).
 
-JSON **Apply** deep-merges a patch into the current seat (arrays replace; objects merge) and writes through `GlobalDashboardPcSheetApply` `mergeSeat`. Identity fields are stored under `playerData[steamId].sheetOverlay` so later snapshots prefer them over the PCS catalog.
+JSON **Apply** deep-merges a patch into the current seat (arrays replace; objects merge) and writes through `GlobalDashboardPcSheetApply` `mergeSeat`. Only keys present in the patch are written. Identity fields, when patched, merge into `playerData[steamId].sheetOverlay` (empty overlay values fall back to the PCS catalog). The PCs tab does **not** poll TTS on an interval — it loads once when the tab opens and after Claim Port / Apply.
 
 ## `PCStatsPartA`: `stats.attributes`, `stats.skills`, and `stats.specialties`
 

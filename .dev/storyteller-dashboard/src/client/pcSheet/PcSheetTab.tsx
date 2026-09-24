@@ -16,8 +16,6 @@ type Props = {
   readonly active: boolean;
 };
 
-const POLL_MS = 2500;
-
 const emptyLiveSnapshot = (): SheetSnapshot => ({ ok: false, seats: [] });
 
 const friendlyBridgeMessage = (message: string): string => {
@@ -135,14 +133,9 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
     if (!active) {
       return;
     }
-    void refresh();
-    const timer = window.setInterval(() => {
-      if (!busy && !syncing) {
-        void refresh();
-      }
-    }, POLL_MS);
-    return () => window.clearInterval(timer);
-  }, [active, busy, syncing, refresh]);
+    // One-shot load when the tab opens. Do not poll execute-lua — that stalls TTS.
+    void refresh(true);
+  }, [active, refresh]);
 
   useLayoutEffect(() => {
     const root = spreadRef.current;
