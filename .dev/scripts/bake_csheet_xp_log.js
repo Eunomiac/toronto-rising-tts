@@ -114,6 +114,7 @@ function normalizeSessionBlock(sessionNum, block) {
       description: String(s.description || ""),
     }));
 
+  // Legacy: split timeline into bins if gains/spends were empty (timeline is no longer stored).
   if (timeline && timeline.length > 0 && gainList.length === 0 && spendList.length === 0) {
     gainList = [];
     spendList = [];

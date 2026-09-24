@@ -12,6 +12,38 @@ local XpLog = {}
 
 XpLog.LIVE_SLOT_CAP = XD.LIVE_SLOT_CAP
 
+--- Session keys must be strings in stored state. TTS JSON.encode mishandles negative
+--- numeric keys (and key 0) and can throw during onSave (noKeyConversion / userdata).
+--- @param sessionNum number
+--- @return string
+local function sessionKey(sessionNum)
+  return tostring(math.floor(tonumber(sessionNum) or 0))
+end
+
+--- Move any numeric session keys onto string keys (idempotent).
+--- @param log table
+--- @return table
+local function normalizeLogKeys(log)
+  if U.Type(log) ~= "table" then
+    return {}
+  end
+  local numeric = {}
+  for k, block in pairs(log) do
+    if type(k) == "number" and U.Type(block) == "table" then
+      numeric[#numeric + 1] = k
+    end
+  end
+  for i = 1, #numeric do
+    local n = numeric[i]
+    local key = sessionKey(n)
+    if log[key] == nil then
+      log[key] = log[n]
+    end
+    log[n] = nil
+  end
+  return log
+end
+
 --- @param pid string
 --- @return table
 local function getLog(pid)
@@ -19,6 +51,8 @@ local function getLog(pid)
   if U.Type(log) ~= "table" then
     log = {}
     S.setStateVal(log, "playerData", pid, "xp")
+  else
+    normalizeLogKeys(log)
   end
   return log
 end
@@ -43,9 +77,14 @@ end
 --- @return table|nil
 local function getBlock(log, sessionNum)
   local n = math.floor(tonumber(sessionNum) or 0)
-  local block = log[n]
+  local key = sessionKey(n)
+  local block = log[key]
   if block == nil then
-    block = log[tostring(n)]
+    block = log[n]
+    if U.Type(block) == "table" then
+      log[key] = block
+      log[n] = nil
+    end
   end
   if U.Type(block) == "table" then
     return block
@@ -53,76 +92,71 @@ local function getBlock(log, sessionNum)
   return nil
 end
 
---- Recompute gains/spends bins and totals from timeline.
+--- Recompute gainTotal / spendTotal / newTotal from gains and spends arrays.
 --- @param block table
-local function recomputeFromTimeline(block)
-  local timeline = block.timeline
-  if U.Type(timeline) ~= "table" then
-    timeline = {}
-    block.timeline = timeline
+local function recomputeTotals(block)
+  local gains = block.gains
+  local spends = block.spends
+  if U.Type(gains) ~= "table" then
+    gains = {}
+    block.gains = gains
   end
-  local gains = {}
-  local spends = {}
+  if U.Type(spends) ~= "table" then
+    spends = {}
+    block.spends = spends
+  end
   local gainTotal = 0
   local spendTotal = 0
-  for i = 1, #timeline do
-    local e = timeline[i]
-    if U.Type(e) == "table" then
-      local amount = math.floor(math.abs(tonumber(e.amount) or 0))
-      local desc = tostring(e.description or "")
-      local kind = e.kind
-      if kind == "gain" or (kind == nil and (tonumber(e.signedAmount) or 0) > 0) then
-        gains[#gains + 1] = { amount = amount, description = desc }
-        gainTotal = gainTotal + amount
-      else
-        spends[#spends + 1] = { amount = amount, description = desc }
-        spendTotal = spendTotal + amount
-      end
+  for i = 1, #gains do
+    local g = gains[i]
+    if U.Type(g) == "table" then
+      gainTotal = gainTotal + math.floor(math.abs(tonumber(g.amount) or 0))
     end
   end
-  block.gains = gains
-  block.spends = spends
+  for i = 1, #spends do
+    local s = spends[i]
+    if U.Type(s) == "table" then
+      spendTotal = spendTotal + math.floor(math.abs(tonumber(s.amount) or 0))
+    end
+  end
   block.gainTotal = gainTotal
   block.spendTotal = spendTotal
   local prev = math.floor(tonumber(block.prevTotal) or 0)
   block.newTotal = prev + gainTotal - spendTotal
+  -- Drop derived timeline if present (gains/spends are the source of truth).
+  block.timeline = nil
 end
 
---- Migrate legacy gains/spends-only blocks to timeline (append gains then spends).
+--- Normalize a session block: ensure bins, strip timeline, recompute totals.
 --- @param block table
-local function ensureTimeline(block)
-  if U.Type(block.timeline) == "table" and #block.timeline > 0 then
+local function normalizeBlock(block)
+  if U.Type(block) ~= "table" then
     return
   end
-  local timeline = {}
-  local gains = block.gains
-  local spends = block.spends
-  if U.Type(gains) == "table" then
-    for i = 1, #gains do
-      local g = gains[i]
-      if U.Type(g) == "table" then
-        timeline[#timeline + 1] = {
-          kind = "gain",
-          amount = math.floor(math.abs(tonumber(g.amount) or 0)),
-          description = tostring(g.description or ""),
-        }
+  if U.Type(block.gains) ~= "table" then
+    block.gains = {}
+  end
+  if U.Type(block.spends) ~= "table" then
+    block.spends = {}
+  end
+  -- One-time migrate: if only timeline exists, split into bins (append order within each kind).
+  if U.Type(block.timeline) == "table" and #block.timeline > 0
+    and #block.gains == 0 and #block.spends == 0 then
+    for i = 1, #block.timeline do
+      local e = block.timeline[i]
+      if U.Type(e) == "table" then
+        local amount = math.floor(math.abs(tonumber(e.amount) or 0))
+        local desc = tostring(e.description or "")
+        local row = { amount = amount, description = desc }
+        if e.kind == "spend" or (tonumber(e.signedAmount) or 0) < 0 then
+          block.spends[#block.spends + 1] = row
+        else
+          block.gains[#block.gains + 1] = row
+        end
       end
     end
   end
-  if U.Type(spends) == "table" then
-    for i = 1, #spends do
-      local s = spends[i]
-      if U.Type(s) == "table" then
-        timeline[#timeline + 1] = {
-          kind = "spend",
-          amount = math.floor(math.abs(tonumber(s.amount) or 0)),
-          description = tostring(s.description or ""),
-        }
-      end
-    end
-  end
-  block.timeline = timeline
-  recomputeFromTimeline(block)
+  recomputeTotals(block)
 end
 
 --- Current banked XP: newTotal of the latest session block.
@@ -132,10 +166,7 @@ function XpLog.getCurrentXp(pid)
   if type(pid) ~= "string" or pid == "" then
     return 0
   end
-  local log = S.getStateVal("playerData", pid, "xp")
-  if U.Type(log) ~= "table" then
-    return 0
-  end
+  local log = getLog(pid)
   local maxK = maxSessionKey(log)
   if maxK == nil then
     return 0
@@ -171,13 +202,14 @@ end
 --- @return table session block
 function XpLog.ensureSessionBlock(pid, sessionNum)
   local n = math.floor(tonumber(sessionNum) or 0)
+  local key = sessionKey(n)
   local log = getLog(pid)
   local existing = getBlock(log, n)
   if existing ~= nil then
-    ensureTimeline(existing)
-    log[n] = existing
-    if log[tostring(n)] ~= nil then
-      log[tostring(n)] = nil
+    normalizeBlock(existing)
+    log[key] = existing
+    if log[n] ~= nil then
+      log[n] = nil
     end
     S.setStateVal(log, "playerData", pid, "xp")
     return existing
@@ -194,9 +226,11 @@ function XpLog.ensureSessionBlock(pid, sessionNum)
     newTotal = prevTotal,
     gains = {},
     spends = {},
-    timeline = {},
   }
-  log[n] = block
+  log[key] = block
+  if log[n] ~= nil then
+    log[n] = nil
+  end
   S.setStateVal(log, "playerData", pid, "xp")
   return block
 end
@@ -242,19 +276,25 @@ function XpLog.appendEntry(pid, amount, description)
 
   local sessionNum = math.floor(tonumber(S.getStateVal("sessionNum")) or 1)
   local block = XpLog.ensureSessionBlock(pid, sessionNum)
-  ensureTimeline(block)
+  normalizeBlock(block)
 
   local kind = signed > 0 and "gain" or "spend"
   local absAmount = math.abs(signed)
-  block.timeline[#block.timeline + 1] = {
-    kind = kind,
-    amount = absAmount,
-    description = desc,
-  }
-  recomputeFromTimeline(block)
+  local row = { amount = absAmount, description = desc }
+  if kind == "gain" then
+    block.gains[#block.gains + 1] = row
+  else
+    block.spends[#block.spends + 1] = row
+  end
+  -- Lightweight Undo hint (which bin was last appended); not a full interleaved timeline.
+  block.lastKind = kind
+  recomputeTotals(block)
 
   local log = getLog(pid)
-  log[sessionNum] = block
+  log[sessionKey(sessionNum)] = block
+  if log[sessionNum] ~= nil then
+    log[sessionNum] = nil
+  end
   S.setStateVal(log, "playerData", pid, "xp")
 
   local binCount = kind == "gain" and #block.gains or #block.spends
@@ -270,7 +310,8 @@ function XpLog.appendEntry(pid, amount, description)
   }
 end
 
---- Most recent timeline entry for current session (for modal Undo strip).
+--- Most recent entry for current session (for modal Undo strip).
+--- Uses lastKind when set; otherwise the last spend, else the last gain.
 --- @param pid string
 --- @return table|nil { kind, amount, description, sessionNum }
 function XpLog.getLastEntry(pid)
@@ -278,29 +319,36 @@ function XpLog.getLastEntry(pid)
     return nil
   end
   local sessionNum = math.floor(tonumber(S.getStateVal("sessionNum")) or 1)
-  local log = S.getStateVal("playerData", pid, "xp")
-  if U.Type(log) ~= "table" then
-    return nil
-  end
+  local log = getLog(pid)
   local block = getBlock(log, sessionNum)
   if block == nil then
     return nil
   end
-  ensureTimeline(block)
-  local timeline = block.timeline
-  if U.Type(timeline) ~= "table" or #timeline == 0 then
+  normalizeBlock(block)
+  local kind = block.lastKind
+  if kind ~= "gain" and kind ~= "spend" then
+    if U.Type(block.spends) == "table" and #block.spends > 0 then
+      kind = "spend"
+    elseif U.Type(block.gains) == "table" and #block.gains > 0 then
+      kind = "gain"
+    else
+      return nil
+    end
+  end
+  local bin = kind == "gain" and block.gains or block.spends
+  if U.Type(bin) ~= "table" or #bin == 0 then
     return nil
   end
-  local e = timeline[#timeline]
+  local e = bin[#bin]
   return {
-    kind = e.kind,
+    kind = kind,
     amount = e.amount,
     description = e.description,
     sessionNum = sessionNum,
   }
 end
 
---- Undo the most recent entry for the current session.
+--- Undo the most recent entry for the current session (pops from lastKind bin).
 --- @param pid string
 --- @return boolean ok
 --- @return string|nil err
@@ -315,23 +363,34 @@ function XpLog.undoLastEntry(pid)
   if block == nil then
     return false, "No XP entries for the current session", nil
   end
-  ensureTimeline(block)
-  local timeline = block.timeline
-  if #timeline == 0 then
+  normalizeBlock(block)
+  local last = XpLog.getLastEntry(pid)
+  if last == nil then
     return false, "No XP entries to undo", nil
   end
-  local removed = timeline[#timeline]
-  timeline[#timeline] = nil
-  recomputeFromTimeline(block)
-
-  if #timeline == 0 and sessionNum > 0 then
-    -- Keep empty live session block so prevTotal/date remain stable if they log again.
+  local kind = last.kind
+  local bin = kind == "gain" and block.gains or block.spends
+  local removed = bin[#bin]
+  bin[#bin] = nil
+  -- Point lastKind at the other bin if this one is empty but the other still has rows.
+  if #bin > 0 then
+    block.lastKind = kind
+  elseif kind == "gain" and #block.spends > 0 then
+    block.lastKind = "spend"
+  elseif kind == "spend" and #block.gains > 0 then
+    block.lastKind = "gain"
+  else
+    block.lastKind = nil
   end
+  recomputeTotals(block)
 
-  log[sessionNum] = block
+  log[sessionKey(sessionNum)] = block
+  if log[sessionNum] ~= nil then
+    log[sessionNum] = nil
+  end
   S.setStateVal(log, "playerData", pid, "xp")
   return true, nil, {
-    kind = removed.kind,
+    kind = kind,
     amount = removed.amount,
     description = removed.description,
     sessionNum = sessionNum,
@@ -383,13 +442,13 @@ function XpLog.getSessionBlock(pid, sessionNum)
   if block == nil then
     return nil
   end
-  ensureTimeline(block)
+  normalizeBlock(block)
   return block
 end
 
 --- Replace the entire Experience Log (authoring / Dashboard JSON Apply).
---- Session keys may arrive as strings (JSON). Blocks are deep-copied; timeline is
---- rebuilt from gains/spends when timeline is missing.
+--- Session keys may arrive as strings (JSON). Blocks are deep-copied; gains/spends
+--- are the source of truth (any legacy timeline is migrated then dropped).
 --- @param pid string
 --- @param raw any
 --- @return boolean ok
@@ -428,16 +487,16 @@ function XpLog.replaceLog(pid, raw)
       if copy.prevTotal ~= nil then
         copy.prevTotal = math.floor(tonumber(copy.prevTotal) or 0)
       end
-      ensureTimeline(copy)
-      log[sessionNum] = copy
+      normalizeBlock(copy)
+      copy.lastKind = nil
+      log[sessionKey(sessionNum)] = copy
     end
   end
   S.setStateVal(log, "playerData", pid, "xp")
   return true, nil
 end
 
---- Experience Log shaped for JSON.encode (string session keys).
---- Numeric Lua keys (including 0 / negatives) are unsafe for TTS JSON object fidelity.
+--- Experience Log shaped for JSON.encode (string session keys + deep-copied blocks).
 --- @param pid string|nil
 --- @return table
 function XpLog.exportLogForJson(pid)
@@ -448,14 +507,46 @@ function XpLog.exportLogForJson(pid)
   if U.Type(log) ~= "table" then
     return {}
   end
+  normalizeLogKeys(log)
+
+  local function deepCopy(value)
+    if type(value) ~= "table" then
+      return value
+    end
+    local out = {}
+    for k, v in pairs(value) do
+      if k ~= "timeline" then
+        out[k] = deepCopy(v)
+      end
+    end
+    return out
+  end
+
   local out = {}
   for k, block in pairs(log) do
     local n = tonumber(k)
     if n ~= nil and U.Type(block) == "table" then
-      out[tostring(math.floor(n))] = block
+      local copy = deepCopy(block)
+      normalizeBlock(copy)
+      copy.lastKind = nil
+      out[sessionKey(n)] = copy
     end
   end
   return out
+end
+
+--- Rewrite any numeric xp session keys to strings (call from validateState / repair).
+--- @param pid string|nil
+function XpLog.normalizeStoredKeysForPlayer(pid)
+  if type(pid) ~= "string" or pid == "" then
+    return
+  end
+  local log = S.getStateVal("playerData", pid, "xp")
+  if U.Type(log) ~= "table" then
+    return
+  end
+  normalizeLogKeys(log)
+  S.setStateVal(log, "playerData", pid, "xp")
 end
 
 return XpLog

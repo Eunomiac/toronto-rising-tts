@@ -333,7 +333,8 @@ local function applyMergedPlayerData(color, patch)
       if key == "xp" then
         xpPatch = value
       else
-        pd[key] = deepCopyValue(value)
+        -- Always go through setStateVal so non-JSON values are rejected.
+        S.setStateVal(deepCopyValue(value), "playerData", pid, key)
       end
     end
   end
@@ -349,8 +350,9 @@ local function applyMergedPlayerData(color, patch)
     end
   end
 
-  -- Drop legacy scalar if a patch reintroduced it under stats.
-  if type(pd.stats) == "table" and pd.stats.xp ~= nil then
+  -- Re-read after writes (replaceLog / setStateVal).
+  pd = S.getStateVal("playerData", pid)
+  if type(pd) == "table" and type(pd.stats) == "table" and pd.stats.xp ~= nil then
     pd.stats.xp = nil
   end
 

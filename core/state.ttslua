@@ -1131,6 +1131,24 @@ function S.validateState()
             end
             if type(playerData.xp) ~= "table" then
                 playerData.xp = {}
+            else
+                -- TTS JSON.encode breaks on negative / zero numeric keys during onSave.
+                -- Keep session keys as strings (e.g. "-5", "0", "1").
+                local xp = playerData.xp
+                local numericKeys = {}
+                for k, block in pairs(xp) do
+                    if type(k) == "number" and type(block) == "table" then
+                        numericKeys[#numericKeys + 1] = k
+                    end
+                end
+                for i = 1, #numericKeys do
+                    local n = numericKeys[i]
+                    local key = tostring(math.floor(n))
+                    if xp[key] == nil then
+                        xp[key] = xp[n]
+                    end
+                    xp[n] = nil
+                end
             end
             if type(playerData.conditions) ~= "table" then
                 playerData.conditions = {}
@@ -1360,6 +1378,16 @@ local function buildSavePlayerData()
             for fieldName, fieldVal in pairs(playerData) do
                 if type(staticData) == "table" and staticData[fieldName] ~= nil then
                     -- Skip static field from merged runtime data.
+                elseif fieldName == "xp" and type(fieldVal) == "table" then
+                    -- Force string session keys before JSON.encode (negative numeric keys break TTS save).
+                    local xpOut = {}
+                    for k, block in pairs(fieldVal) do
+                        local n = tonumber(k)
+                        if n ~= nil and type(block) == "table" and isValueSafeForState(block, "playerData." .. tostring(playerID) .. ".xp." .. tostring(k)) then
+                            xpOut[tostring(math.floor(n))] = U.clone(block, true)
+                        end
+                    end
+                    dynamicPlayerData.xp = xpOut
                 elseif isValueSafeForState(fieldVal, "playerData." .. tostring(playerID) .. "." .. tostring(fieldName)) then
                     if type(fieldVal) == "table" then
                         dynamicPlayerData[fieldName] = U.clone(fieldVal, true)

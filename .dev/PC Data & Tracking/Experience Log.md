@@ -25,7 +25,6 @@ If there does not exist an entry keyed to the current session number, a new reco
 * `"newTotal"` — The player's current XP, after adding `"gainTotal"` and subtracting `"spendTotal"` from `"prevTotal"`. This value (along with `"gainTotal"` and `"spendTotal"`) will need to be updated each time a new entry is created for this session.
 * `"gains"` — An array of XP entries that were created with positive XP values during this session (i.e. representing gained XP), in the form `{"amount": <int>, "description": <string>}`.
 * `"spends"` — An array of XP entries created with negative XP values during this session (i.e. representing spent XP), in the form `{"amount": <int>, "description": <string>}` (note: `"amount"` is always positive; the negative value should be removed once the entry is sorted into the `"spends"` bin)
-* `"timeline"` — Append-order list of `{kind="gain"|"spend", amount, description}` used for sequential Undo in the ST modal; `gains`/`spends`/totals are derived from it.
 
 ### Adding New Entries to an Existing Live Session
 
@@ -33,7 +32,7 @@ If an entry already exists in the player's data for the current session number, 
 
 ### Modal Undo
 
-The XP modal shows the most recent timeline entry for the current session with an **Undo** button. Each Undo removes that entry and refreshes the strip so further sequential Undos work.
+The XP modal shows the most recent entry for the current session with an **Undo** button. Each Undo removes the last row from the bin that was most recently appended (`gains` or `spends`). Gains and spends are independent columns — there is no interleaved timeline of when each was logged relative to the other.
 
 ### Ids and bake
 
@@ -54,12 +53,14 @@ Past sessions taller than 20 lines get one full page; excess gain/spend rows are
 
 #### Example of Stored XP Log Data
 
-A player's XP log in state might look like the following, during or after `sessionNum = 1`:
+A player's XP log in state might look like the following, during or after `sessionNum = 1`.
+
+Session keys are **strings** (`"0"`, `"1"`, `"-5"`, …). Do not store them as Lua numbers — TTS `JSON.encode` mishandles negative (and zero) numeric keys and can fail `onSave`.
 
 ```jsonc
 {
   "xp": {
-    [0]: {
+    "0": {
       "sessionDisplay": "Character Creation", // The sessionNum = 0 entry will be created directly; no need to handle creating entries in this session in the script.
       "date": 1789652600,
       "prevTotal": 0,
@@ -87,7 +88,7 @@ A player's XP log in state might look like the following, during or after `sessi
         }
       ]
     },
-    [1]: {
+    "1": {
       "sessionDisplay": "Session One", // Derived from `sessionNum`
       "date": 1790257016, // `os.time()` when first entry is created
       "prevTotal": 15, // Equals the previous session's `"newTotal"`
