@@ -48,7 +48,10 @@ export type SeatSnapshot = {
   readonly willpower: Tracker;
   readonly humanity: Tracker;
   readonly bloodPotency: Rating;
+  /** Banked XP (latest session newTotal) — sheet jewel / rail. */
   readonly xp: number;
+  /** Full Experience Log (`playerData.xp`); shown as `xp` in the JSON modal. */
+  readonly xpLog: Record<string, unknown>;
   readonly hunger: number;
   readonly hungerMax: number;
   readonly resolvedStatChanges: Record<string, number>;

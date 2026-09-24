@@ -642,6 +642,16 @@ local function snapshotSeat(color)
       local XpLog = require("core.xp_log")
       return XpLog.getCurrentXp(pid)
     end)(),
+    xpLog = (function()
+      if type(pid) ~= "string" then
+        return {}
+      end
+      local log = S.getStateVal("playerData", pid, "xp")
+      if type(log) ~= "table" then
+        return {}
+      end
+      return log
+    end)(),
     hunger = num(type(pid) == "string" and S.getPlayerVal(color, "hunger") or 0),
     hungerMax = hungerMax,
     resolvedStatChanges = copyStatChanges(resolved),

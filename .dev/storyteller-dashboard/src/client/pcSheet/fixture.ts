@@ -74,6 +74,7 @@ export const emptySeat = (color: SeatColor): SeatSnapshot => ({
   humanity: { ...emptyTracker(7), stains: 0 },
   bloodPotency: { base: 2, temp: 0, disabled: 0 },
   xp: 12,
+  xpLog: {},
   hunger: 1,
   hungerMax: 5,
   resolvedStatChanges: {},

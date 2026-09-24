@@ -44,6 +44,7 @@ const okSnapshot = (hungerValue: number): SheetSnapshot => ({
     humanity: { base: 7, temp: 0, disabled: 0, superficial: 0, aggravated: 0, stains: 0 },
     bloodPotency: { base: 1, temp: 0, disabled: 0 },
     xp: 0,
+    xpLog: {},
     hunger: hungerValue,
     hungerMax: 5,
     resolvedStatChanges: {},
