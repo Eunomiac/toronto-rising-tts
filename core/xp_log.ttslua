@@ -535,7 +535,9 @@ function XpLog.exportLogForJson(pid)
   return out
 end
 
---- Rewrite any numeric xp session keys to strings (call from validateState / repair).
+--- Rewrite any numeric xp session keys to strings and drop legacy `timeline`
+--- fields from every session block (gains/spends are the source of truth).
+--- Call from validateState / repair / save prep.
 --- @param pid string|nil
 function XpLog.normalizeStoredKeysForPlayer(pid)
   if type(pid) ~= "string" or pid == "" then
@@ -546,7 +548,28 @@ function XpLog.normalizeStoredKeysForPlayer(pid)
     return
   end
   normalizeLogKeys(log)
+  for _, block in pairs(log) do
+    if U.Type(block) == "table" then
+      normalizeBlock(block)
+    end
+  end
   S.setStateVal(log, "playerData", pid, "xp")
+end
+
+--- Strip legacy `timeline` from an xp log table in place (and string-key sessions).
+--- @param log any
+--- @return table
+function XpLog.scrubLogTable(log)
+  if U.Type(log) ~= "table" then
+    return {}
+  end
+  normalizeLogKeys(log)
+  for _, block in pairs(log) do
+    if U.Type(block) == "table" then
+      normalizeBlock(block)
+    end
+  end
+  return log
 end
 
 return XpLog

@@ -305,13 +305,20 @@ local function playerDataForJson(pid)
   if type(pd) ~= "table" then
     return {}
   end
-  return deepCopyValue(pd)
+  local copy = deepCopyValue(pd)
+  -- Never surface legacy xp.timeline in the Dashboard dump.
+  if type(copy.xp) == "table" then
+    local XpLog = require("core.xp_log")
+    XpLog.scrubLogTable(copy.xp)
+  end
+  return copy
 end
 
 --- Developer JSON Apply: assign patched top-level keys onto live playerData as-is.
 --- The Dashboard already deep-merged the author's patch (JSON null = delete).
 --- Top-level deletes arrive as deleteKeys (JSON null does not survive Lua decode as a key).
---- This path must not fill defaults, normalize XP, or run validateState.
+--- This path must not fill defaults, normalize XP totals, or run validateState — but it
+--- does strip forbidden xp.timeline keys if an old dump is re-applied.
 local function applyMergedPlayerData(color, patch, deleteKeys)
   local pid = C.GetPlayerID(color)
   if type(pid) ~= "string" or pid == C.StorytellerID then
@@ -352,6 +359,11 @@ local function applyMergedPlayerData(color, patch, deleteKeys)
         pd[key] = deepCopyValue(value)
       end
     end
+  end
+
+  if type(pd.xp) == "table" then
+    local XpLog = require("core.xp_log")
+    XpLog.scrubLogTable(pd.xp)
   end
 
   -- Refresh presentation only — do not reshape what was just written.

@@ -1134,21 +1134,9 @@ function S.validateState()
             else
                 -- TTS JSON.encode breaks on negative / zero numeric keys during onSave.
                 -- Keep session keys as strings (e.g. "-5", "0", "1").
-                local xp = playerData.xp
-                local numericKeys = {}
-                for k, block in pairs(xp) do
-                    if type(k) == "number" and type(block) == "table" then
-                        numericKeys[#numericKeys + 1] = k
-                    end
-                end
-                for i = 1, #numericKeys do
-                    local n = numericKeys[i]
-                    local key = tostring(math.floor(n))
-                    if xp[key] == nil then
-                        xp[key] = xp[n]
-                    end
-                    xp[n] = nil
-                end
+                -- Drop legacy per-session `timeline` (gains/spends are authoritative).
+                local XpLog = require("core.xp_log")
+                XpLog.scrubLogTable(playerData.xp)
             end
             if type(playerData.conditions) ~= "table" then
                 playerData.conditions = {}
@@ -1380,11 +1368,15 @@ local function buildSavePlayerData()
                     -- Skip static field from merged runtime data.
                 elseif fieldName == "xp" and type(fieldVal) == "table" then
                     -- Force string session keys before JSON.encode (negative numeric keys break TTS save).
+                    -- Never persist legacy `timeline` rows.
+                    local XpLog = require("core.xp_log")
+                    local scrubbed = U.clone(fieldVal, true)
+                    XpLog.scrubLogTable(scrubbed)
                     local xpOut = {}
-                    for k, block in pairs(fieldVal) do
+                    for k, block in pairs(scrubbed) do
                         local n = tonumber(k)
                         if n ~= nil and type(block) == "table" and isValueSafeForState(block, "playerData." .. tostring(playerID) .. ".xp." .. tostring(k)) then
-                            xpOut[tostring(math.floor(n))] = U.clone(block, true)
+                            xpOut[tostring(math.floor(n))] = block
                         end
                     end
                     dynamicPlayerData.xp = xpOut
