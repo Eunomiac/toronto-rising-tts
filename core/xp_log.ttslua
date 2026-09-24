@@ -401,12 +401,24 @@ function XpLog.replaceLog(pid, raw)
   if U.Type(raw) ~= "table" then
     return false, "XP log must be a JSON object keyed by session number"
   end
+
+  local function deepCopy(value)
+    if type(value) ~= "table" then
+      return value
+    end
+    local out = {}
+    for k, v in pairs(value) do
+      out[k] = deepCopy(v)
+    end
+    return out
+  end
+
   local log = {}
   for k, block in pairs(raw) do
     local n = tonumber(k)
     if n ~= nil and U.Type(block) == "table" then
       local sessionNum = math.floor(n)
-      local copy = U.clone(block, true)
+      local copy = deepCopy(block)
       if type(copy.sessionDisplay) ~= "string" or copy.sessionDisplay == "" then
         copy.sessionDisplay = XD.sessionDisplayForNum(sessionNum)
       end
