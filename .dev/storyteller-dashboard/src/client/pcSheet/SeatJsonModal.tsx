@@ -98,7 +98,7 @@ export const SeatJsonModal = ({
               spellCheck={false}
               value={patchText}
               disabled={waiting}
-              placeholder={'"xp": { "0": { "sessionDisplay": "Rollover", "newTotal": 0, "gains": [], "spends": [] } },\n"desire": "Hunt"'}
+              placeholder={'"xp": { "-5": { "sessionDisplay": "Ancilla", "newTotal": 3 } },\n"desire": "Hunt"'}
               onChange={(event) => {
                 setPatchText(event.target.value);
                 if (error) {

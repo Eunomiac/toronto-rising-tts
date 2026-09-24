@@ -296,7 +296,7 @@ local function deepCopyValue(value)
   return out
 end
 
---- Raw playerData for JSON modal (xp session keys as strings for JSON.encode).
+--- Exact deep copy of live playerData for the JSON modal (no reshape / defaults).
 local function playerDataForJson(pid)
   if type(pid) ~= "string" or pid == "" or pid == C.StorytellerID then
     return {}
@@ -305,14 +305,12 @@ local function playerDataForJson(pid)
   if type(pd) ~= "table" then
     return {}
   end
-  local out = deepCopyValue(pd)
-  local XpLog = require("core.xp_log")
-  out.xp = XpLog.exportLogForJson(pid)
-  return out
+  return deepCopyValue(pd)
 end
 
---- Deep-merge patch into live playerData (debug JSON Apply). Top-level keys in patch replace
---- after client-side deep-merge of nested values. xp goes through XpLog.replaceLog.
+--- Developer JSON Apply: assign patched top-level keys onto live playerData as-is.
+--- The Dashboard already deep-merged the author's patch into the dumped playerData; this
+--- path must not fill defaults, normalize XP, strip fields, or run validateState.
 local function applyMergedPlayerData(color, patch)
   local pid = C.GetPlayerID(color)
   if type(pid) ~= "string" or pid == C.StorytellerID then
@@ -321,45 +319,26 @@ local function applyMergedPlayerData(color, patch)
   if type(patch) ~= "table" then
     return "mergePlayerData requires a patch object"
   end
-  local pd = S.getStateVal("playerData", pid)
+
+  if type(gameState) ~= "table" then
+    return "gameState is not available"
+  end
+  if type(gameState.playerData) ~= "table" then
+    gameState.playerData = {}
+  end
+  local pd = gameState.playerData[pid]
   if type(pd) ~= "table" then
     pd = {}
-    S.setStateVal(pd, "playerData", pid)
+    gameState.playerData[pid] = pd
   end
 
-  local xpPatch = nil
   for key, value in pairs(patch) do
     if type(key) == "string" then
-      if key == "xp" then
-        xpPatch = value
-      else
-        -- Always go through setStateVal so non-JSON values are rejected.
-        S.setStateVal(deepCopyValue(value), "playerData", pid, key)
-      end
+      pd[key] = deepCopyValue(value)
     end
   end
 
-  if xpPatch ~= nil then
-    if type(xpPatch) ~= "table" then
-      return "playerData.xp must be an Experience Log object (session-number keys), not a scalar"
-    end
-    local XpLog = require("core.xp_log")
-    local ok, err = XpLog.replaceLog(pid, xpPatch)
-    if not ok then
-      return err or "Could not replace Experience Log"
-    end
-  end
-
-  -- Re-read after writes (replaceLog / setStateVal).
-  pd = S.getStateVal("playerData", pid)
-  if type(pd) == "table" and type(pd.stats) == "table" and pd.stats.xp ~= nil then
-    pd.stats.xp = nil
-  end
-
-  if type(S.validateState) == "function" then
-    S.validateState()
-  end
-
+  -- Refresh presentation only — do not reshape what was just written.
   Sync.player(color)
   P.refreshHudOverlaysForSeat(color)
   afterTrackerChange(color)
