@@ -1,0 +1,103 @@
+<!-- Experience Log page shell. SESSION_BLOCKS = live + finished sessions. -->
+
+<Include src="csheet_defaults.xml" />
+
+<Defaults>
+  <VerticalLayout class="vertical_section_container"
+    ignoreLayout="true"
+    rectAlignment="LowerCenter"
+    offsetXY="0 45"
+    height="800"
+    padding="45 45 0 0"
+    childForceExpandHeight="false"
+    spacing="0"
+  />
+  <Button class="xp_navigate_forward"
+    ignoreLayout="true"
+    rectAlignment="UpperCenter"
+    width="100"
+    height="40"
+    offsetXY="0 50"
+    image="navigate_up"
+    active="false"
+  />
+  <Button class="xp_navigate_backward"
+    ignoreLayout="true"
+    rectAlignment="LowerCenter"
+    width="100"
+    height="40"
+    offsetXY="0 -50"
+    image="navigate_down"
+    active="false"
+  />
+  <HorizontalLayout class="xp_title_line"
+    preferredHeight="40"
+    childForceExpandHeight="false"
+    childForceExpandWidth="true"
+    color="#e9cf9f"
+    padding="10 10 0 0" />
+  <HorizontalLayout class="xp_title_line_left"
+    childForceExpandHeight="false"
+    preferredHeight="40"
+    childForceExpandWidth="false"
+    spacing="10"
+    childAlignment="MiddleLeft" />
+  <HorizontalLayout class="xp_title_line_right"
+    childForceExpandHeight="false"
+    preferredHeight="40"
+    childForceExpandWidth="false"
+    spacing="5"
+    childAlignment="MiddleRight" />
+  <Text color="#FFFFFF" fontSize="24" fontStyle="Bold" />
+  <Text class="xp_session_num"
+    color="#000000"
+    fontSize="34"
+    alignment="MiddleLeft"
+    flexibleWidth="0" />
+  <Text class="xp_session_date"
+    color="#000000"
+    alignment="MiddleLeft"
+    flexibleWidth="1"
+    fontStyle="BoldAndItalic" />
+  <Text class="xp_summation"
+    color="#000000"
+    alignment="MiddleRight"
+    flexibleWidth="1" />
+  <Text class="xp_total"
+    color="#000000"
+    alignment="MiddleRight"
+    fontSize="34"
+    flexibleWidth="0" />
+  <HorizontalLayout class="xp_listing_wrapper" childForceExpandHeight="false" />
+  <GridLayout class="xp_listing"
+    cellSize="700 40"
+    startAxis="Vertical"
+    constraint="FixedColumnCount"
+    constraintCount="1" />
+  <HorizontalLayout class="xp_item"
+    color="rgba(0, 0, 1, 0)"
+    spacing="20"
+    childForceExpandWidth="false" />
+  <Text class="xp_gain_num"
+    flexibleWidth="0"
+    preferredWidth="80"
+    color="#f4c15b"
+    minWidth="80" />
+  <Text class="xp_gain_desc" fontStyle="Normal" color="#AAAAAA" />
+  <Text class="xp_spend_num"
+    flexibleWidth="0"
+    preferredWidth="80"
+    minWidth="80"
+    color="#FF0000" />
+  <Text class="xp_spend_desc" fontStyle="Normal" color="#AAAAAA" />
+</Defaults>
+
+<Panel id="paper_root" class="page_root">
+  <Button id="pageForward" class="page_navigation page_forward" />
+  <Button id="pageInner" class="page_navigation page_inner_left" />
+  <VerticalLayout id="db_vertical_section_container" class="vertical_section_container">
+    @@SESSION_BLOCKS@@
+  </VerticalLayout>
+  <Button id="xp_navigate_forward" class="xp_navigate_forward" onClick="onXpLogNavigateForward" colors="#00000000|#00000000|#00000000|#00000000" />
+  <Button id="xp_navigate_backward" class="xp_navigate_backward" onClick="onXpLogNavigateBack" colors="#00000000|#00000000|#00000000|#00000000" />
+</Panel>

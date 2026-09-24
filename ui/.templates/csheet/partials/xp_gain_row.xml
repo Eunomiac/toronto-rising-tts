@@ -1,0 +1,5 @@
+<!-- Gain row for one session slot. -->
+<HorizontalLayout id="xp_item_left_@@TOKEN@@_@@INDEX@@" class="xp_item" active="@@ACTIVE@@">
+  <Text id="xp_gainNum_@@TOKEN@@_@@INDEX@@" class="xp_gain_num" text="@@NUM_TEXT@@" />
+  <Text id="xp_gainDesc_@@TOKEN@@_@@INDEX@@" class="xp_gain_desc" text="@@DESC_TEXT@@" />
+</HorizontalLayout>

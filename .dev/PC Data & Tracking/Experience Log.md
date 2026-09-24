@@ -36,9 +36,14 @@ The XP modal shows the most recent entry for the current session with an **Undo*
 
 ### Ids and bake
 
-Element ids use a **session id token** derived from the session key: positive/zero stay as digits (`xp_sessionNum_2`), negatives use an `m` prefix so XmlUI ids stay safe (`-1` → `xp_sessionNum_m1`). Mid-week bake (`npm run csheet-xp-log:bake`) reads the latest TTS save’s `LuaScriptState`, writes finished sessions (`session key < gameState.sessionNum`, including negatives) into `lib/csheet_xp_log_baked.ttslua`, and stamps `bakedForSessionNum`. Live placeholders use that stamp’s session id. If `sessionNum` advances without a bake, warn the Storyteller only; the live placeholder block still receives current-session paint.
+Element ids use a **session id token** derived from the session key: positive/zero stay as digits (`xp_sessionNum_2`), negatives use an `m` prefix so XmlUI ids stay safe (`-1` → `xp_sessionNum_m1`). Mid-week bake (`npm run csheet-xp-log:bake`) reads the latest TTS save’s `LuaScriptState`, fills templates under `ui/.templates/csheet/` (`page6.xml` + `partials/xp_*.xml`), and writes:
 
-At remount, the XML builder marks the **first page** of finished sessions `active="true"` and leaves the empty live shell inactive. Runtime paint still fills live slots and toggles pagination; the first page of history must be readable even if paint has not run yet (for example when page 6 was still parked under the table at load).
+* **`ui/player/csheets/page6_<charKey>.xml`** — full finished history + live placeholders (object Include target)
+* **`lib/csheet_xp_log_baked.ttslua`** — thin meta only (`bakedForSessionNum`, per-session line counts for pagination / stale-bake warn)
+
+Live placeholders use the bake stamp’s session id. If `sessionNum` advances without a bake, warn the Storyteller only; the live placeholder block still receives current-session paint via `setAttribute`.
+
+The bake marks the **first page** of finished sessions `active="true"` and leaves the empty live shell inactive. Runtime paint fills live slots and toggles pagination; there is **no** runtime `UI.setXml` for page 6.
 
 ### Pre-session blocks (before Session One)
 
@@ -128,7 +133,7 @@ Session keys are **strings** (`"0"`, `"1"`, `"-5"`, …). Do not store them as L
 
 ## Display of XP Log on Character Sheet Page 6
 
-The XP log in `page6.xml` displays every session in a paginated, vertical layout element, with sessions sorted in reverse order (with the current session appearing at the top).
+The XP log in `ui/player/csheets/page6_<charKey>.xml` (from `ui/.templates/csheet/page6.xml`) displays every session in a paginated, vertical layout element, with sessions sorted in reverse order (with the current session appearing at the top).
 
 ### Displaying a Session
 

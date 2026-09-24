@@ -1,0 +1,5 @@
+<!-- Spend row for one session slot. -->
+<HorizontalLayout id="xp_item_right_@@TOKEN@@_@@INDEX@@" class="xp_item" active="@@ACTIVE@@">
+  <Text id="xp_spendNum_@@TOKEN@@_@@INDEX@@" class="xp_spend_num" text="@@NUM_TEXT@@" />
+  <Text id="xp_spendDesc_@@TOKEN@@_@@INDEX@@" class="xp_spend_desc" text="@@DESC_TEXT@@" />
+</HorizontalLayout>

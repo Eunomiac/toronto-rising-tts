@@ -34,7 +34,7 @@ const SAMPLES = [
   },
   {
     outName: "CSHEET_PAGE_6_ORANGE.sample.lua",
-    entry: 'require("ui.ui_csheet_page6")\n',
+    entry: 'require("ui.ui_csheet")\n',
   },
   {
     outName: "SIGNAL_CANDLE_RED.sample.lua",

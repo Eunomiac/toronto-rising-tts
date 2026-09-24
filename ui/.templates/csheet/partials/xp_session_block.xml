@@ -1,0 +1,19 @@
+<!-- Finished session block (token / active / title / date / summation / total / gain+spend rows). -->
+<HorizontalLayout id="xp_title_line_@@TOKEN@@" class="xp_title_line" active="@@ACTIVE@@">
+  <HorizontalLayout class="xp_title_line_left">
+    <Text id="xp_sessionNum_@@TOKEN@@" class="xp_session_num" text="@@TITLE_UPPER@@" />
+    <Text id="xp_sessionDate_@@TOKEN@@" class="xp_session_date" text="@@DATE_DISPLAY@@" />
+  </HorizontalLayout>
+  <HorizontalLayout class="xp_title_line_right">
+    <Text id="xp_summation_@@TOKEN@@" class="xp_summation" text="@@SUMMATION@@" />
+    <Text id="xp_total_@@TOKEN@@" class="xp_total" text="@@TOTAL_DISPLAY@@" />
+  </HorizontalLayout>
+</HorizontalLayout>
+<HorizontalLayout id="xp_listing_wrapper_@@TOKEN@@" class="xp_listing_wrapper" active="@@ACTIVE@@">
+  <GridLayout id="xp_listing_left_@@TOKEN@@" class="xp_listing">
+    @@GAIN_ROWS@@
+  </GridLayout>
+  <GridLayout id="xp_listing_right_@@TOKEN@@" class="xp_listing">
+    @@SPEND_ROWS@@
+  </GridLayout>
+</HorizontalLayout>

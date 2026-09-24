@@ -1,4 +1,4 @@
-<!-- Fallback stub — prefer page6_<charKey>.xml via object stubs. -->
+<!-- GENERATED — do not edit by hand. npm run csheet-xp-log:bake → page6_blackCaesar.xml -->
 <!-- Experience Log page shell. SESSION_BLOCKS = live + finished sessions. -->
 
 <Include src="csheet_defaults.xml" />

@@ -80,12 +80,7 @@ local PAGE_DYNAMIC_XML = {
     buildFn = "buildPage5DocumentXml",
     entryRequire = "ui.ui_csheet_page5",
   },
-  [6] = {
-    globalKey = "CSHEET_PAGE6_LOCAL",
-    fingerprintFn = "fingerprintPage6Stats",
-    buildFn = "buildPage6DocumentXml",
-    entryRequire = "ui.ui_csheet_page6",
-  },
+  -- Page 6: build-baked Include (page6_<charKey>.xml) + setAttribute paint only — no setXml.
 }
 
 --- @param pageN number
@@ -820,17 +815,10 @@ function refreshCharacterSheetUi()
   end
 
   if pageNum == 6 and type(seatColor) == "string" and Global ~= nil and type(Global.call) == "function" then
-    -- setXml is not ready for setAttribute on the next frame reliably; give the remount
-    -- a couple of frames, then paint again once more after a short settle.
-    local paintDelay = remounted and 3 or 1
+    -- Baked Include XML — paint live slots + pagination via setAttribute only (no setXml).
     Wait.frames(function()
       Global.call("GlobalPaintXpLogPage6", { color = seatColor })
-    end, paintDelay)
-    if remounted then
-      Wait.frames(function()
-        Global.call("GlobalPaintXpLogPage6", { color = seatColor })
-      end, paintDelay + 5)
-    end
+    end, 1)
   end
 
   if pageNum == 1 or pageNum == 2 then

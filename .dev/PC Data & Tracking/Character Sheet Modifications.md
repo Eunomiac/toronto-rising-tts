@@ -64,19 +64,19 @@ On load and whenever `PCST.refreshCharacterSheetsForColor` runs, `ui/ui_csheet.t
 
 Effective Blood Potency for decals matches sheet dots: `stats.bloodPotency.base + stats.bloodPotency.temp + resolvedStatChanges.bloodPotency` (via `GlobalGetResolvedStatChangesForPlayer` — location conditions such as `bumpBloodPotency` apply through `statChanges`, not persisted `temp`). Decals live on **pages 1–2 only**; refreshing page 3 alone does not update them — use `PCST.refreshCharacterSheetsForColor` or reload pages 1/2. After location reconcile with `{ skipPresentation = true }`, callers must run `PCST.refreshAllCharacterSheets()` (via `StorytellerScenesPanel` helpers) so page 1 dots and BP decals catch resolved condition statChanges — `Sync.full` alone does not refresh sheets.
 
-### Dynamic page XML (pages 3–6)
+### Dynamic page XML (pages 2–6)
 
-Pages with PCS-driven layout use a **separate object entry** so template builders are not bundled on every sheet:
+Pages with PCS-driven layout use a **separate object entry** so template builders are not bundled on every sheet (except page 6, which is build-baked Include XML):
 
-| Page | Object stub | Builder module | Status |
+| Page | Object stub | Builder / bake | Status |
 | :-- | :-- | :-- | :-- |
 | 2 | `require("ui.ui_csheet_page2")` | `lib/csheet_page2_xml.ttslua` | Live (`self.UI.setXml`) — disciplines + rituals/ceremonies |
 | 3 | `require("ui.ui_csheet_page3")` | `lib/csheet_page3_xml.ttslua` | Live (`self.UI.setXml`) |
 | 4 | `require("ui.ui_csheet_page4")` | `lib/csheet_page4_xml.ttslua` | Live (`self.UI.setXml` from `lib/json/PC_Relationships.json`) |
 | 5 | `require("ui.ui_csheet_page5")` | `lib/csheet_page5_xml.ttslua` | Placeholder |
-| 6 | `require("ui.ui_csheet_page6")` | `lib/csheet_page6_xml.ttslua` | Live (`self.UI.setXml`) — Experience Log; past sessions from `npm run csheet-xp-log:bake` |
+| 6 | `require("ui.ui_csheet")` | Templates `ui/.templates/csheet/page6.xml` + partials → `ui/player/csheets/page6_<charKey>.xml` via `npm run csheet-xp-log:bake` | **Build-baked Include** + live `setAttribute` only (no runtime `setXml`) |
 
-Pages **1** and **7–8** use `require("ui.ui_csheet")`. Pages **2–6** use dedicated entries so builders are not bundled into every sheet object. Dynamic pages must not use the default entry — core errors if the matching `_G.CSHEET_PAGEN_LOCAL` module was not loaded via `ui/ui_csheet_pageN_local.ttslua`. Stubs are normalized by `npm run tts-objects:fix-stubs`.
+Pages **1**, **6**, and **7–8** use `require("ui.ui_csheet")`. Pages **2–5** use dedicated entries so builders are not bundled into all sheet objects. Dynamic setXml pages must not use the default entry — core errors if the matching `_G.CSHEET_PAGEN_LOCAL` module was not loaded via `ui/ui_csheet_pageN_local.ttslua`. Stubs are normalized by `npm run tts-objects:fix-stubs` (page 6 Include points at `page6_<charKey>.xml`).
 
 ### Page 1 blank-base overlays
 

@@ -1,15 +1,20 @@
 --[[
-  Baked finished XP sessions for character sheet page 6.
+  Thin XP page-6 bake meta (session nums / line counts for pagination).
+  Markup lives in ui/player/csheets/page6_<charKey>.xml
   DO NOT EDIT BY HAND — regenerate: node .dev/scripts/bake_csheet_xp_log.js
   Source: TS_Save_230.json
 ]]
 
 local BAKE = {
   bakedForSessionNum = 1,
-  bakeRevision = 1790263309244,
+  bakeRevision = 1790272938307,
   saveFileName = "TS_Save_230.json",
   byCharKey = {
     ["aishe"] = {
+      sessions = {
+      },
+    },
+    ["blackCaesar"] = {
       sessions = {
       },
     },
@@ -19,6 +24,42 @@ local BAKE = {
     },
     ["lordLucien"] = {
       sessions = {
+        {
+          sessionNum = 0,
+          lineCount = 3,
+          gainCount = 0,
+          spendCount = 2,
+        },
+        {
+          sessionNum = -1,
+          lineCount = 4,
+          gainCount = 2,
+          spendCount = 3,
+        },
+        {
+          sessionNum = -2,
+          lineCount = 5,
+          gainCount = 1,
+          spendCount = 4,
+        },
+        {
+          sessionNum = -3,
+          lineCount = 5,
+          gainCount = 2,
+          spendCount = 4,
+        },
+        {
+          sessionNum = -4,
+          lineCount = 4,
+          gainCount = 2,
+          spendCount = 3,
+        },
+        {
+          sessionNum = -5,
+          lineCount = 6,
+          gainCount = 2,
+          spendCount = 5,
+        },
       },
     },
     ["rashid"] = {

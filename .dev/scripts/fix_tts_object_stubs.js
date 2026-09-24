@@ -57,9 +57,19 @@ const LUA_STUB_RULES = [
   { prefix: "CSHEET_PAGE_3", line: `require("ui.ui_csheet_page3")` },
   { prefix: "CSHEET_PAGE_4", line: `require("ui.ui_csheet_page4")` },
   { prefix: "CSHEET_PAGE_5", line: `require("ui.ui_csheet_page5")` },
-  { prefix: "CSHEET_PAGE_6", line: `require("ui.ui_csheet_page6")` },
+  // Page 6: build-baked Include XML + setAttribute paint (no page6 XML builder bundle).
+  { prefix: "CSHEET_PAGE_6", line: `require("ui.ui_csheet")` },
   { prefix: "CSHEET", line: `require("ui.ui_csheet")` },
 ];
+
+/** Seat color (upper) → charKey for page-6 per-character Includes. */
+const COLOR_TO_CHAR_KEY = {
+  BROWN: "fomorach",
+  ORANGE: "rashid",
+  RED: "lordLucien",
+  PINK: "aishe",
+  PURPLE: "blackCaesar",
+};
 
 /**
  * @param {string} flagName
@@ -78,9 +88,20 @@ function isQuiet() {
 
 /**
  * @param {string} pageNum
+ * @param {string|null} [roleKey]
  * @returns {string}
  */
-function expectedCsheetIncludeLine(pageNum) {
+function expectedCsheetIncludeLine(pageNum, roleKey) {
+  if (String(pageNum) === "6" && typeof roleKey === "string") {
+    const colorMatch = /^CSHEET_PAGE_6_([A-Za-z]+)$/i.exec(roleKey);
+    if (colorMatch) {
+      const colorUpper = colorMatch[1].toUpperCase();
+      const charKey = COLOR_TO_CHAR_KEY[colorUpper];
+      if (charKey) {
+        return `<Include src="ui/player/csheets/page6_${charKey}.xml" />`;
+      }
+    }
+  }
   return `<Include src="ui/player/csheets/page${pageNum}.xml" />`;
 }
 
@@ -227,7 +248,7 @@ function collectCsheetXmlTargets(objectsDir) {
     const pageNum = match[1];
     out.push({
       fullPath: path.join(objectsDir, stub.fileName),
-      want: expectedCsheetIncludeLine(pageNum),
+      want: expectedCsheetIncludeLine(pageNum, roleKey),
     });
   }
   out.sort((a, b) => a.fullPath.localeCompare(b.fullPath, "en"));

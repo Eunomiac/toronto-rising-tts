@@ -297,17 +297,17 @@ The TTS extension often scrambles these (e.g. pasting a csheet `<Include>` or th
 
 **Stub filenames vs GUIDs:** TTS Tools syncs `.tts/objects/{displayNickname}.{guid}.lua` (and `.xml`, `.data.json`). Display nicknames are free-form (e.g. `Aishe - p.1.c4abec.lua`); **role identity** for build tooling comes from the companion `.data.json` → **`GMNotes`** (e.g. `CSHEET_PAGE_1_PINK`). `fix_tts_object_stubs` normalizes stub **content** from that role; **`check:tts-object-stub-guids`** verifies the filename `{guid}` suffix matches `lib/guids.ttslua` for that role. After workshop edits or a partial sync, the wrong GUID can land on a nickname — Save & Play then never repairs the broken object. **`npm run build`** (Main) runs the stub GUID gate **first** (then other gates; skips when `.tts/objects` is absent). On failure: **Get Lua Scripts** from TTS to refresh from the save, then `npm run tts-objects:fix-stubs`, then Save & Play.
 
-**Pages 2–6** (`CSHEET_PAGE_2_*` … `CSHEET_PAGE_6_*`) use separate entries so each page’s XML builder (and embedded templates when shipped) is **not** bundled into all ~80 sheet objects:
+**Pages 2–5** (`CSHEET_PAGE_2_*` … `CSHEET_PAGE_5_*`) use separate entries so each page’s XML builder (and embedded templates when shipped) is **not** bundled into all ~80 sheet objects. **Page 6** uses the default entry (`require("ui.ui_csheet")`) with **build-baked** Include XML (`page6_<charKey>.xml` from `npm run csheet-xp-log:bake`) and live `setAttribute` paint only — no page-6 XML builder in the object bundle.
 
 ```lua
-require("ui.ui_csheet_page2")   -- disciplines / rituals / ceremonies (live)
-require("ui.ui_csheet_page3")   -- backgrounds / merits / flaws (live)
-require("ui.ui_csheet_page4")   -- relationships / bonds (placeholder builder today)
-require("ui.ui_csheet_page5")   -- projects / equipment (placeholder)
-require("ui.ui_csheet_page6")   -- history / XP log (placeholder)
+require("ui.ui_csheet_page2")   -- disciplines / rituals / ceremonies (live setXml)
+require("ui.ui_csheet_page3")   -- backgrounds / merits / flaws (live setXml)
+require("ui.ui_csheet_page4")   -- relationships / bonds
+require("ui.ui_csheet_page5")   -- projects / equipment
+require("ui.ui_csheet")         -- pages 1, 6, 7–8 (page 6 = baked Include + setAttribute)
 ```
 
-Each entry loads `ui/ui_csheet_pageN_local.ttslua` (registers `lib/csheet_pageN_xml` on `_G`) then `ui/ui_csheet_core.ttslua`. Default pages (1, 7–8) must **not** pull another page’s template chain. Page 3 adds ~+30 KB vs the default entry; pages 4–6 placeholders add only a few KB until real templates land.
+Each page 2–5 entry loads `ui/ui_csheet_pageN_local.ttslua` (registers `lib/csheet_pageN_xml` on `_G`) then `ui/ui_csheet_core.ttslua`. Default pages (1, 6, 7–8) must **not** pull another page’s template chain. Page 3 adds ~+30 KB vs the default entry; pages 4–5 placeholders add only a few KB until real templates land.
 
 Object scripts run in a **separate Lua VM** from Global. They must not pull the full game stack (`lib.pc_stats` → `core.sync`, etc.). **Agents:** treat every object-script `require()` as high risk — import **piecemeal** (thin object-only modules) or **`Global.call`**; never entire libraries or anything that transitively requires `core.*`. Each object is bundled separately, so cost multiplies by object count (22 dice bags, ~37 CSHEET pages). See [`.cursor/rules/toronto-rising-object-script-bundling.mdc`](../.cursor/rules/toronto-rising-object-script-bundling.mdc). Thin modules and `Global.call` keep each CSHEET bundle small (~tens of KB vs ~1.4 MB before slimming). **Signal candles** use `GlobalToggleSignalFireState`; **CSHEET hide/show** uses `GlobalHideObject` / `GlobalRestoreObject` (via `lib/csheet_pose.ttslua`); **NPC CONTROL_BOARD / PALETTE** use `GlobalGameboardApply`, `GlobalGameboardToggleControlBoardSnaps`, `GlobalGameboardInstallPaletteSnaps` (no `require("core.npc_gameboard")` on objects); **tarot** uses `lib/object_positions_object.ttslua` (not `lib/object_positions.ttslua`); **dice bags** use `GlobalGetPcRollTrayYOffset` (not `lib.pc_roll_tray_lower`).
 
@@ -315,7 +315,8 @@ Object scripts run in a **separate Lua VM** from Global. They must not pull the 
 | ----- | ------ | ---- |
 | Object UI (shared) | `ui/ui_csheet_core.ttslua` via `ui/ui_csheet.ttslua` or `ui/ui_csheet_pageN.ttslua` | Page/seat from GM Notes `CSHEET_PAGE_<n>_<COLOR>` (`lib/csheet_identity.ttslua`); navigation; applies UI from Global payloads |
 | Sheet diffs (Global) | `GlobalCollectSheetImageUpdates({ playerID, pageNum })` → resolves registry effects → `lib/pc_sheet_collect.ttslua` | Dot/box `setAttribute` list |
-| Dynamic page XML (pages 3–6 objects) | `require("ui.ui_csheet_pageN")` → `ui/ui_csheet_pageN_local.ttslua` → `lib/csheet_pageN_xml.ttslua` | `self.UI.setXml` in object VM; page 3 live, 4–6 placeholder until templates ship |
+| Dynamic page XML (pages 2–5 objects) | `require("ui.ui_csheet_pageN")` → `ui/ui_csheet_pageN_local.ttslua` → `lib/csheet_pageN_xml.ttslua` | `self.UI.setXml` in object VM |
+| Page 6 Experience Log | Build: `ui/.templates/csheet/page6*.xml` → `ui/player/csheets/page6_<charKey>.xml`; runtime: `core/xp_sheet.ttslua` | Include + `setAttribute` only (no setXml) |
 | BP decals (object) | `lib/blood_potency_decals.ttslua` bundled into CSHEET object script | `self.getDecals` / `self.setDecals` — uses `lib/blood_potency_derived.ttslua` + `lib/blood_potency_constants.ttslua` (not `lib.constants` or `lib.effective_stats`) |
 | Object-only | `lib/csheet_constants.ttslua`, `lib/csheet_util.ttslua`, `lib/csheet_pose.ttslua`, `lib/blood_potency_constants.ttslua`, `lib/blood_potency_derived.ttslua`, `lib/object_positions_object.ttslua` | CSHEET poses, delay, BP tables/decals, tarot pose — no `core.*`, no full `lib.constants` |
 
@@ -405,10 +406,10 @@ TTS resolves that path on **Save & Play** before object Lua runs. You always nee
 | **3** | **Dynamic** (`UI.setXml`) | Layout: **`ui/.templates/csheet/page3.xml`** + partials; builder: **`lib/csheet_page3_xml.ttslua`**. Shipped **`ui/player/csheets/page3.xml`** is only a minimal Include placeholder. |
 | **4** | **Dynamic** (`UI.setXml`) | **`lib/json/PC_Relationships.json`** → **`lib/csheet_page4_xml.ttslua`**; templates **`ui/.templates/csheet/page4.xml`** + partials. Regenerate data: `node .dev/scripts/generate_pc_relationships_lua.js`. |
 | **5** | **Dynamic** (`UI.setXml` via Global) | Object entry `ui.ui_csheet_page5`; XML built in Global `Projects.buildPage5DocumentXml` (templates pack `ui_xml_templates_csheet_page5`). |
-| **6** | **Dynamic** (`UI.setXml` + live `setAttribute`) | Object stub `require("ui.ui_csheet_page6")`; past XP from `lib/csheet_xp_log_baked` (`npm run csheet-xp-log:bake`); live session placeholders. |
+| **6** | **Build-baked Include** + live `setAttribute` | Templates **`ui/.templates/csheet/page6.xml`** + `partials/xp_*.xml` → **`ui/player/csheets/page6_<charKey>.xml`** via `npm run csheet-xp-log:bake`. Object stub `require("ui.ui_csheet")`; Include per character. Thin meta in `lib/csheet_xp_log_baked.ttslua`. **No runtime setXml.** |
 | **7–8** | Static shipped XML (scaffolding / WIP) | `ui/player/csheets/page7.xml`, `page8.xml` — default csheet entry only |
 
-**Do not** bundle dynamic template chains on the default csheet entry. When a page needs PCS-driven layout like page 3: (1) add templates under `ui/.templates/csheet/`, (2) replace **`lib/csheet_pageN_xml.ttslua`** placeholder with a real builder (entry + `_local` shims already exist for pages 4–6), (3) run `npm run ui-xml-templates:embed`, (4) **replace** the shipped `ui/player/csheets/pageN.xml` with a thin placeholder (keep the file so Includes still resolve). Pages 7–8 remain static until you add `ui.ui_csheet_page7` stubs the same way.
+**Do not** bundle dynamic template chains on the default csheet entry. When a page needs PCS-driven layout like page 3: (1) add templates under `ui/.templates/csheet/`, (2) replace **`lib/csheet_pageN_xml.ttslua`** placeholder with a real builder (entry + `_local` shims for pages 2–5), (3) run `npm run ui-xml-templates:embed`, (4) **replace** the shipped `ui/player/csheets/pageN.xml` with a thin placeholder (keep the file so Includes still resolve). **Page 6 is different:** bake finished markup into `page6_<charKey>.xml` at build time (no Lua XML builder). Pages 7–8 remain static until you add dedicated stubs if needed.
 
 ## Runtime UI XML templates (`ui/.templates/`)
 

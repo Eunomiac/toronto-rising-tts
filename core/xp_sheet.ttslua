@@ -101,12 +101,16 @@ local function buildSessionMeta(pid)
       local sn = math.floor(tonumber(s.sessionNum) or 0)
       -- Finished = any key below the live session (includes negative pre-session keys).
       if sn < liveN then
-        local g = #(s.gains or {})
-        local sp = #(s.spends or {})
+        local g = math.floor(tonumber(s.gainCount) or 0)
+        local sp = math.floor(tonumber(s.spendCount) or 0)
+        local lines = math.floor(tonumber(s.lineCount) or 0)
+        if lines <= 0 then
+          lines = XD.sessionLineCount(g, sp)
+        end
         if g > 0 or sp > 0 then
           finished[#finished + 1] = {
             sessionNum = sn,
-            lineCount = XD.sessionLineCount(g, sp),
+            lineCount = lines,
             isLive = false,
           }
         end
