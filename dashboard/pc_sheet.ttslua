@@ -321,16 +321,18 @@ local function applyMergedPlayerData(color, patch, deleteKeys)
     return "mergePlayerData requires a patch object"
   end
 
-  if type(gameState) ~= "table" then
+  -- gameState is local to core.state — never read the bare global.
+  local root = S.getGameState(false)
+  if type(root) ~= "table" then
     return "gameState is not available"
   end
-  if type(gameState.playerData) ~= "table" then
-    gameState.playerData = {}
+  if type(root.playerData) ~= "table" then
+    root.playerData = {}
   end
-  local pd = gameState.playerData[pid]
+  local pd = root.playerData[pid]
   if type(pd) ~= "table" then
     pd = {}
-    gameState.playerData[pid] = pd
+    root.playerData[pid] = pd
   end
 
   if type(deleteKeys) == "table" then
