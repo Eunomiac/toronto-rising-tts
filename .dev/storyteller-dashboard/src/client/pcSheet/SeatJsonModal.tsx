@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactElement } from "react";
 import { createPortal } from "react-dom";
+import { parseJsonLenient } from "./jsonSanitize.js";
 import type { SeatSnapshot } from "./types.js";
 
 type Props = {
@@ -36,7 +37,7 @@ export const SeatJsonModal = ({ seat, applying = false, onClose, onApply }: Prop
     }
     let parsed: unknown;
     try {
-      parsed = JSON.parse(`{\n${body}\n}`);
+      parsed = parseJsonLenient(`{\n${body}\n}`);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Could not parse JSON.");
       return;
@@ -91,7 +92,7 @@ export const SeatJsonModal = ({ seat, applying = false, onClose, onApply }: Prop
               spellCheck={false}
               value={patchText}
               disabled={waiting}
-              placeholder={'"titles": ["Seneschal"],\n"attributes": { "charisma": { "base": 4 } }'}
+              placeholder={'"titles": ["Seneschal"],\n"attributes": { "charisma": { "base": 4 }, },'}
               onChange={(event) => {
                 setPatchText(event.target.value);
                 if (error) {
