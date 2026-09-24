@@ -21,7 +21,7 @@ _Last populated: 2026-09-23 evening `/tr-inbox` — End→Intermission ambient f
 
 ### Phases / session end
 
-#### End→Intermission: session music fades out with blackout FadeIn (no new TOR — Linear quota; comment on TOR-143 / TOR-506)
+#### ✅ End→Intermission: session music fades out with blackout FadeIn (no new TOR — Linear quota; comment on TOR-143 / TOR-506)
 
 **How to verify:** Save & Play so phase scripts reload. Advance through a session until you are on **End**, with location or Main music still audible (any scene bed is fine).
 
@@ -65,7 +65,7 @@ _Last populated: 2026-09-23 evening `/tr-inbox` — End→Intermission ambient f
 
 1. Pick any Global XmlUI element you can see change (for example a debug panel id). Run `UISet("<that_id>", { active = "true" })` then again with `active = "false"`. It should show and hide with no console error.
 2. Optional object form: with a character-sheet page GUID from the Objects pane, run `UISet("<guid>", "paper_root", { padding = "50 50 110 100" })` (or another real page-2 id). Confirm no `no object for GUID` / nil UI error.
-3. Optional sequence: `UISet("<guid>", "dot_rc_L_2_#", { image = "dot_yellow", active = "true" }, { ["#"] = { 1, 2, 3, 4, 5 } })` should light five dots if those ids exist on that page.
+3. Optional sequence: `UISet("<guid>", "dot_rc_L_2_#", { image = "dot_yellow", active = "true" }, { ["#"] = { 1, 2, 3, 4, 5 } })` should light five dots if those ids exist on that page. With two placeholders, e.g. `dot_rc_#_@` and `{ ["#"] = { 1, 2 }, ["@"] = { "L", "R" } }`, all four combinations should update (cartesian product), not half-substituted ids.
 
 **Context:** Helper from the page-2 XML dump, shipped as `U.UISet` in `lib/util.ttslua` and Global `UISet`. Linear could not create a new issue (workspace free-issue limit).
 

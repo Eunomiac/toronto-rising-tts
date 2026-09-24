@@ -534,7 +534,7 @@ General-purpose UI helpers (system-agnostic). Prefer **`U.setAttribute` / `U.set
 | :--------- | :------------- | :--------------- |
 | `U.setAttribute(elemID, attr, val)` | Set one attribute; preserves button color/textSize/textColor when needed | `U.setAttribute("myButton", "text", "OK")` |
 | `U.setAttributes(elemID, attrs)` | Set many attributes; same button preservation | `U.setAttributes("btn", { text = "Go", fontSize = 18 })` |
-| `U.UISet(...)` / Global `UISet` | Batch element ids and/or object GUIDs; optional `#`-style sequence map onto `setAttributes` | `UISet("dot_rc_L_2_#", { image = "dot_yellow" }, { ["#"] = { 1, 2, 3, 4, 5 } })` |
+| `U.UISet(...)` / Global `UISet` | Batch element ids and/or object GUIDs; optional `#`-style sequence map (cartesian if several keys) onto `setAttributes` | `UISet("dot_rc_#_@", { image = "dot_yellow" }, { ["#"] = { 1, 2 }, ["@"] = { "L", "R" } })` |
 | `U.isButton(elemID)` | True if element has click handlers | Guards / branching |
 | `U.splashUIElement(elemID, duration, delay)` | Show element briefly then hide | Notifications |
 

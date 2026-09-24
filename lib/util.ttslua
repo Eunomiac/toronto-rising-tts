@@ -1883,13 +1883,15 @@ end
 ---   U.UISet(objectGuid, elem, attrs, [mapSequences])
 ---
 --- mapSequences is a char → values map, e.g. `{ ["#"] = { 1, 2, 3, 4, 5 } }`.
---- Each placeholder char is expanded independently from the original elem string.
+--- Multiple keys expand as a cartesian product: each placeholder is applied in turn,
+--- then UISet recurses with the remaining map so every combination is fully substituted.
 ---
 --- @param paramA string|table Element id(s), or object GUID(s) when using the object form
 --- @param paramB table|string|table Attribute map, or element id(s) when using the object form
 --- @param paramC table|nil mapSequences (global form) or attrs (object form)
 --- @param paramD table|nil mapSequences (object form only)
 --- @usage U.UISet("dot_rc_L_2_#", { image = "dot_yellow" }, { ["#"] = { 1, 2, 3, 4, 5 } })
+--- @usage U.UISet("dot_rc_#_@", { image = "dot_yellow" }, { ["#"] = { 1, 2 }, ["@"] = { "L", "R" } })
 --- @usage U.UISet({ "dot_a", "dot_b" }, { image = "dot_yellow" })
 --- @usage U.UISet("object123", "elem_name", { active = true })
 --- @usage U.UISet({ "object1", "object2" }, { "elem_a", "elem_b" }, { attr = val })
@@ -1940,20 +1942,37 @@ function U.UISet(paramA, paramB, paramC, paramD)
     if type(mapSequences) ~= "table" then
       error("U.UISet: mapSequences must be a map of placeholder char → value array", 2)
     end
+
+    local firstChar = nil
+    local firstVals = nil
+    local remaining = nil
     for char, vals in pairs(mapSequences) do
       if type(char) ~= "string" or type(vals) ~= "table" then
         error("U.UISet: mapSequences entries must be string keys with array values", 2)
       end
-      for _, val in ipairs(vals) do
-        local newElem = elem:gsub(char, tostring(val))
-        if objectGuid then
-          U.UISet(objectGuid, newElem, attrs)
-        else
-          U.UISet(newElem, attrs)
+      if firstChar == nil then
+        firstChar = char
+        firstVals = vals
+      else
+        if remaining == nil then
+          remaining = {}
         end
+        remaining[char] = vals
       end
     end
-    return
+
+    -- Empty map → fall through and set the unresolved elem once.
+    if firstChar ~= nil then
+      for _, val in ipairs(firstVals) do
+        local newElem = elem:gsub(firstChar, tostring(val))
+        if objectGuid then
+          U.UISet(objectGuid, newElem, attrs, remaining)
+        else
+          U.UISet(newElem, attrs, remaining)
+        end
+      end
+      return
+    end
   end
 
   if objectGuid then
