@@ -71,7 +71,6 @@
       color = "rgba(1, 1, 1, 0)"
       minHeight = "100"
       raycastTarget = "false"
-      image = "scatterModeControlPC_lordLucien"
     />
 
     <HorizontalLayout class="scatterModeControl_selectorContainer"
@@ -118,55 +117,52 @@
   -->
   <HorizontalLayout id="scatterModeControl_pcRowContainer_@@color@@" class="scatterModeControl_pcRowContainer">
     <!-- AGENT: Keep every pc# Image active=true so HorizontalLayout spacing stays stable.
-      Occupied slots: color = "rgba(1, 1, 1, 1)", image = "scatterModeControlPC_<pcKey>"
-        (<pcKey> is lordLucien / rashid / aishe / fomorach / blackCaesar).
-      Empty slots: color = "rgba(1, 1, 1, 0)", image = "scatterModeControlPC_lordLucien"
-        (placeholder keeps layout; always re-assert image in Lua — partial setAttributes can wipe
-        the class default to an empty inline image → white boxes when alpha is raised).
-      Do not set active=false on empty slots — that collapses the row.
+      Each Image must have inline image="scatterModeControlPC_lordLucien" (class Defaults do not
+      apply a readable image for sizing). Occupied: Lua sets color full + scatterModeControlPC_<pcKey>.
+      Empty: Lua sets color alpha 0 only (do not clear image; do not set active=false).
       Slot index matches world/board hole (pc1 = gold / first-join, visual middle of the LTR row). -->
 
     <HorizontalLayout id="scatterModeControlGroup1_pcRow_@@color@@" class="scatterModeControl_pcRow">
-      <Image id="scatterModeControlGroup1_pc5_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup1_pc3_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup1_pc1_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup1_pc2_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup1_pc4_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup1_pc5_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup1_pc3_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup1_pc1_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup1_pc2_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup1_pc4_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
     </HorizontalLayout>
     <HorizontalLayout id="scatterModeControlGroup2_pcRow_@@color@@" class="scatterModeControl_pcRow">
-      <Image id="scatterModeControlGroup2_pc5_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup2_pc3_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup2_pc1_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup2_pc2_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup2_pc4_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup2_pc5_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup2_pc3_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup2_pc1_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup2_pc2_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup2_pc4_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
     </HorizontalLayout>
     <HorizontalLayout id="scatterModeControlGroup3_pcRow_@@color@@" class="scatterModeControl_pcRow">
-      <Image id="scatterModeControlGroup3_pc5_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup3_pc3_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup3_pc1_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup3_pc2_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup3_pc4_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup3_pc5_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup3_pc3_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup3_pc1_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup3_pc2_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup3_pc4_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
     </HorizontalLayout>
     <HorizontalLayout id="scatterModeControlGroup4_pcRow_@@color@@" class="scatterModeControl_pcRow">
-      <Image id="scatterModeControlGroup4_pc5_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup4_pc3_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup4_pc1_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup4_pc2_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup4_pc4_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup4_pc5_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup4_pc3_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup4_pc1_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup4_pc2_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup4_pc4_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
     </HorizontalLayout>
     <HorizontalLayout id="scatterModeControlGroup5_pcRow_@@color@@" class="scatterModeControl_pcRow">
-      <Image id="scatterModeControlGroup5_pc5_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup5_pc3_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup5_pc1_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup5_pc2_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup5_pc4_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup5_pc5_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup5_pc3_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup5_pc1_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup5_pc2_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup5_pc4_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
     </HorizontalLayout>
     <HorizontalLayout id="scatterModeControlGroup6_pcRow_@@color@@" class="scatterModeControl_pcRow">
-      <Image id="scatterModeControlGroup6_pc5_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup6_pc3_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup6_pc1_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup6_pc2_@@color@@" class="scatterModeControl_pc" />
-      <Image id="scatterModeControlGroup6_pc4_@@color@@" class="scatterModeControl_pc" />
+      <Image id="scatterModeControlGroup6_pc5_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup6_pc3_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup6_pc1_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup6_pc2_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
+      <Image id="scatterModeControlGroup6_pc4_@@color@@" class="scatterModeControl_pc" image="scatterModeControlPC_lordLucien" />
     </HorizontalLayout>
 
   </HorizontalLayout>
@@ -193,7 +189,7 @@
       raycastTarget = "false"
      />
 
-    UISet("scatterModeControlGroup#_npcList_Red", {fontStyle = "Normal"}, {["#"] = {1, 2, 3, 4, 6}})
+    UISet("scatterModeControlGroup#_npcList_Red", {fontStyle = "Italic", color = "#777777"}, {["#"] = {1, 2, 3, 4, 6}})
     -->
     <VerticalLayout id="scatterModeControlGroup1_container_@@color@@" class="scatterModeControl_group_container">
       <HorizontalLayout id="db_scatterModeControlGroup1_selectorContainer_@@color@@" class="scatterModeControl_selectorContainer">

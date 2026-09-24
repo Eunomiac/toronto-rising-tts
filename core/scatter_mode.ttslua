@@ -1018,8 +1018,8 @@ local function applyControlHudVisible()
                 local id = "scatterModeControlGroup" .. tostring(i) .. "_pc" .. tostring(slot) .. "_" .. color
                 local occupant = pcByGroupSlot[i][slot]
                 -- Keep active=true always: toggling active collapses HorizontalLayout spacing.
-                -- Always re-assert `image`: a partial setAttributes (active+color only) can leave an
-                -- empty inline image that overrides the Defaults class asset → white boxes when revealed.
+                -- Empty slots: alpha only. Placeholder `image` is authored inline on each XML
+                -- Image (class Defaults do not apply a readable `image` for layout).
                 if type(occupant) == "string" and occupant ~= "" then
                     U.setAttributes(id, {
                         active = "true",
@@ -1030,7 +1030,6 @@ local function applyControlHudVisible()
                     U.setAttributes(id, {
                         active = "true",
                         color = "rgba(1, 1, 1, 0)",
-                        image = "scatterModeControlPC_lordLucien",
                     })
                 end
             end
