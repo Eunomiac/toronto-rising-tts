@@ -315,6 +315,14 @@ local function applyCsheetPageState(obj, state)
   CP.applyResolvedPose(obj, csheetPoseGeometryOnly(posData), 0, 0)
   CU.await(function()
     applyCsheetAfterPlacement(obj, visible)
+    -- Page 6 XP pagination/live paint must run when the tile comes on-table;
+    -- load-time paint often happens while the page is still parked at y=-200.
+    if visible and pageNum == 6 and type(seatColor) == "string" and Global ~= nil and type(Global.call) == "function" then
+      Global.call("GlobalPaintXpLogPage6", { color = seatColor })
+      Wait.frames(function()
+        Global.call("GlobalPaintXpLogPage6", { color = seatColor })
+      end, 2)
+    end
   end, delay + duration)
   return true
 end
@@ -812,9 +820,17 @@ function refreshCharacterSheetUi()
   end
 
   if pageNum == 6 and type(seatColor) == "string" and Global ~= nil and type(Global.call) == "function" then
+    -- setXml is not ready for setAttribute on the next frame reliably; give the remount
+    -- a couple of frames, then paint again once more after a short settle.
+    local paintDelay = remounted and 3 or 1
     Wait.frames(function()
       Global.call("GlobalPaintXpLogPage6", { color = seatColor })
-    end, 1)
+    end, paintDelay)
+    if remounted then
+      Wait.frames(function()
+        Global.call("GlobalPaintXpLogPage6", { color = seatColor })
+      end, paintDelay + 5)
+    end
   end
 
   if pageNum == 1 or pageNum == 2 then

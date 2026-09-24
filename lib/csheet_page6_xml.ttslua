@@ -263,6 +263,33 @@ function M.fingerprintPage6Stats(_stats, seatColor, pd)
   return "page6:" .. stamp .. ":" .. ck .. ":" .. seat .. ":" .. tostring(bake.bakeRevision or 0)
 end
 
+--- First page of finished sessions (newest first) that fit PAGE_LINE_BUDGET.
+--- Live is omitted here — it starts inactive until paint finds live entries.
+--- @param finished table array of bake session tables (already newest-first)
+--- @return table set of sessionNum → true for page 1
+local function firstPageFinishedActive(finished)
+  local onPage = {}
+  local used = 0
+  for i = 1, #finished do
+    local s = finished[i]
+    local g = #(s.gains or {})
+    local sp = #(s.spends or {})
+    if g > 0 or sp > 0 then
+      local need = XD.sessionLineCount(g, sp)
+      if need > XD.PAGE_LINE_BUDGET then
+        need = XD.PAGE_LINE_BUDGET
+      end
+      if used > 0 and used + need > XD.PAGE_LINE_BUDGET then
+        break
+      end
+      local sn = math.floor(tonumber(s.sessionNum) or 0)
+      onPage[sn] = true
+      used = used + need
+    end
+  end
+  return onPage
+end
+
 --- @param _stats table|nil
 --- @param seatColor string|nil
 --- @param pd table|nil
@@ -277,6 +304,9 @@ function M.buildPage6DocumentXml(_stats, seatColor, pd)
 
   local body = {}
   -- Newest-first DOM order: live first, then finished descending.
+  -- Live shell starts inactive (empty placeholders). Paint activates it when the
+  -- current session has entries. Past sessions on page 1 start active so the sheet
+  -- shows history even if live paint has not run yet after setXml.
   local liveSession = {
     sessionDisplay = XD.sessionDisplayForNum(liveN),
     titleUpper = XD.sessionTitleUpper(nil, liveN),
@@ -287,7 +317,7 @@ function M.buildPage6DocumentXml(_stats, seatColor, pd)
     gains = {},
     spends = {},
   }
-  body[#body + 1] = renderSessionBlock(liveN, liveSession, true, true)
+  body[#body + 1] = renderSessionBlock(liveN, liveSession, false, true)
 
   local finished = {}
   for i = 1, #sessions do
@@ -304,6 +334,8 @@ function M.buildPage6DocumentXml(_stats, seatColor, pd)
     return (tonumber(a.sessionNum) or 0) > (tonumber(b.sessionNum) or 0)
   end)
 
+  local page1Active = firstPageFinishedActive(finished)
+
   for i = 1, #finished do
     local s = finished[i]
     local sn = math.floor(tonumber(s.sessionNum) or 0)
@@ -317,8 +349,7 @@ function M.buildPage6DocumentXml(_stats, seatColor, pd)
       gains = s.gains or {},
       spends = s.spends or {},
     }
-    -- Past sessions start inactive; reconcile activates the current page set.
-    body[#body + 1] = renderSessionBlock(sn, display, false, false)
+    body[#body + 1] = renderSessionBlock(sn, display, page1Active[sn] == true, false)
   end
 
   body[#body + 1] =

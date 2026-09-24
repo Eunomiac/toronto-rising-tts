@@ -38,6 +38,8 @@ The XP modal shows the most recent entry for the current session with an **Undo*
 
 Element ids use a **session id token** derived from the session key: positive/zero stay as digits (`xp_sessionNum_2`), negatives use an `m` prefix so XmlUI ids stay safe (`-1` → `xp_sessionNum_m1`). Mid-week bake (`npm run csheet-xp-log:bake`) reads the latest TTS save’s `LuaScriptState`, writes finished sessions (`session key < gameState.sessionNum`, including negatives) into `lib/csheet_xp_log_baked.ttslua`, and stamps `bakedForSessionNum`. Live placeholders use that stamp’s session id. If `sessionNum` advances without a bake, warn the Storyteller only; the live placeholder block still receives current-session paint.
 
+At remount, the XML builder marks the **first page** of finished sessions `active="true"` and leaves the empty live shell inactive. Runtime paint still fills live slots and toggles pagination; the first page of history must be readable even if paint has not run yet (for example when page 6 was still parked under the table at load).
+
 ### Pre-session blocks (before Session One)
 
 When Character Creation / prologue XP needs more than one page (~20 lines), split it across **negative integer** session keys, oldest first:

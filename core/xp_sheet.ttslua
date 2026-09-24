@@ -200,6 +200,9 @@ local function paintLiveBlock(obj, pid)
     return
   end
 
+  -- Activate live shell here; applyPagination may refine which page is visible.
+  setObjAttrs(obj, "xp_title_line_" .. liveTok, { active = "true" })
+  setObjAttrs(obj, "xp_listing_wrapper_" .. liveTok, { active = "true" })
   setObjAttrs(obj, "xp_sessionNum_" .. liveTok, {
     text = XD.sessionTitleUpper(block.sessionDisplay, stateSession),
   })

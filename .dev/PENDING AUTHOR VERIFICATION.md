@@ -25,15 +25,16 @@ _Last populated: 2026-09-24 — Experience Log + page 6 (TOR-92)._
 
 **How to verify:** Save & Play so Global and character sheet scripts reload. You do not need session `0` authored yet for a smoke test, but mid-week bake should have been run once (`npm run csheet-xp-log:bake` is part of full tooling).
 
-1. Open the Storyteller **PCs** panel. Confirm each seat shows an **XP** button (not up/down/apply) and a current XP number.
-2. Click **XP** on one present PC. Enter a positive amount (e.g. `1`) and a short description, then **Apply**. The modal’s last-entry strip should show the line; page 1 `xp_text` and the panel XP value should rise by 1; page 6 should show the live session title and that gain.
-3. Log a spend with a negative amount (e.g. `-2`) and another description. Confirm the spend appears in red on page 6 and totals update (negative banked XP is allowed).
-4. Click **Undo** twice and confirm both lines disappear and totals return.
-5. Mark another PC **Absent**, enter a gain, click **Apply to All**, and confirm the Absent seat did not change while present seats did.
-6. After you advance session number (End→Intermission), **without** re-baking, you should get a Storyteller warning about a stale page 6 bake; the live block still accepts new entries for the new session. After `npm run csheet-xp-log:bake` + Save & Play, the previous session should appear as a baked block.
-7. Optional authoring check: on the Storyteller Dashboard **PCs** tab, open **JSON**. The bottom pane should be a dump of that seat’s raw `playerData` (including the full `xp` Experience Log with **string** session keys and **no** `timeline` field). Paste under `"xp": { … }`, **Apply**, re-open JSON, and confirm the dump matches. Then **Save** the game — onSave must succeed (no `noKeyConversion` JSON error). The sheet jewel still shows banked XP.
+1. Open **Lord Lucien**’s character sheet and go to **page 6** (Experience Log). You should see baked history (Rollover / Time of Legacy / etc.) even before logging any new XP for Session One. If the page was blank before this fix, it should show that history now.
+2. Open the Storyteller **PCs** panel. Confirm each seat shows an **XP** button (not up/down/apply) and a current XP number.
+3. Click **XP** on one present PC. Enter a positive amount (e.g. `1`) and a short description, then **Apply**. The modal’s last-entry strip should show the line; page 1 `xp_text` and the panel XP value should rise by 1; page 6 should show the live session title and that gain.
+4. Log a spend with a negative amount (e.g. `-2`) and another description. Confirm the spend appears in red on page 6 and totals update (negative banked XP is allowed).
+5. Click **Undo** twice and confirm both lines disappear and totals return.
+6. Mark another PC **Absent**, enter a gain, click **Apply to All**, and confirm the Absent seat did not change while present seats did.
+7. After you advance session number (End→Intermission), **without** re-baking, you should get a Storyteller warning about a stale page 6 bake; the live block still accepts new entries for the new session. After `npm run csheet-xp-log:bake` + Save & Play, the previous session should appear as a baked block.
+8. Optional authoring check: on the Storyteller Dashboard **PCs** tab, open **JSON**. The bottom pane should be a dump of that seat’s raw `playerData` (including the full `xp` Experience Log with **string** session keys and **no** `timeline` field). Paste under `"xp": { … }`, **Apply**, re-open JSON, and confirm the dump matches. Then **Save** the game — onSave must succeed (no `noKeyConversion` JSON error). The sheet jewel still shows banked XP.
 
-**Context:** Scalar `stats.xp` removed; log is `playerData.<pid>.xp` with string session keys. Gains/spends are the source of truth (no timeline). JSON modal dumps/merges raw `playerData` via `mergePlayerData`. Page-6 object scripts must not `require("lib.constants")` (bundle gate).
+**Context:** Scalar `stats.xp` removed; log is `playerData.<pid>.xp` with string session keys. Gains/spends are the source of truth (no timeline). JSON modal dumps/merges raw `playerData` via `mergePlayerData`. Page-6 object scripts must not `require("lib.constants")` (bundle gate). Past sessions on page 1 start active in the remounted XML so history shows without waiting on live paint.
 
 ### Phases / session end
 
