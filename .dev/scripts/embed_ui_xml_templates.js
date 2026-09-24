@@ -76,6 +76,19 @@ const PACKS = [
   },
 ];
 
+/**
+ * Templates consumed only by Node build scripts (not embedded into Lua packs).
+ * Page 6 Experience Log: npm run csheet-xp-log:bake → ui/player/csheets/page6_<charKey>.xml
+ * @type {ReadonlySet<string>}
+ */
+const BUILD_ONLY_KEYS = new Set([
+  "csheet/page6",
+  "csheet/partials/xp_gain_row",
+  "csheet/partials/xp_spend_row",
+  "csheet/partials/xp_session_block",
+  "csheet/partials/xp_live_session_block",
+]);
+
 /** Legacy monolithic output — removed; fail loudly if required. */
 const LEGACY_MONOLITH_OUT_REL = ["lib", "ui_xml_templates.ttslua"];
 
@@ -230,7 +243,12 @@ function main(projectRoot) {
   }
 
   const orphans = [];
+  const buildOnlySkipped = [];
   for (const key of byKey.keys()) {
+    if (BUILD_ONLY_KEYS.has(key)) {
+      buildOnlySkipped.push(key);
+      continue;
+    }
     const pack = findPackForKey(key, PACKS);
     if (pack === null) {
       orphans.push(key);
@@ -242,6 +260,14 @@ function main(projectRoot) {
   if (orphans.length > 0) {
     throw new Error(
       `[embed_ui_xml_templates] Template keys not assigned to any pack:\n  - ${orphans.join("\n  - ")}`
+    );
+  }
+
+  // Fail if a listed build-only key is missing from disk (typo / rename drift).
+  const missingBuildOnly = [...BUILD_ONLY_KEYS].filter((k) => !byKey.has(k));
+  if (missingBuildOnly.length > 0) {
+    throw new Error(
+      `[embed_ui_xml_templates] BUILD_ONLY_KEYS missing on disk:\n  - ${missingBuildOnly.join("\n  - ")}`
     );
   }
 
@@ -283,6 +309,11 @@ function main(projectRoot) {
   }
 
   const total = written.reduce((n, w) => n + w.count, 0);
+  if (buildOnlySkipped.length > 0) {
+    console.log(
+      `[embed_ui_xml_templates] Skipped ${buildOnlySkipped.length} build-only template(s) (Node bake, not Lua embed)`
+    );
+  }
   console.log(
     `[embed_ui_xml_templates] OK: ${written.length} packs, ${total} templates from ${sourceRoots.join(", ")}`
   );
