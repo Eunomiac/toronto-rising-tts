@@ -37,4 +37,14 @@ describe("deepMerge", () => {
       { desire: "new", xp: 5 }
     )).toEqual({ desire: "new", ambition: "keep", xp: 5 });
   });
+
+  it("deletes keys set to null (including nested)", () => {
+    expect(deepMerge(
+      { desire: "hunt", ambition: "keep", xp: { "0": { newTotal: 1 }, "-5": { newTotal: 3 } } },
+      { desire: null, xp: { "-5": null } }
+    )).toEqual({
+      ambition: "keep",
+      xp: { "0": { newTotal: 1 } }
+    });
+  });
 });

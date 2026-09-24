@@ -211,15 +211,22 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
     }
     const base = current.playerData ?? {};
     // Deep-merge into stored playerData; send only keys the author typed.
+    // JSON null deletes (top-level → deleteKeys; nested → omitted from merged parent).
     const merged = deepMerge(base, patch) as Record<string, unknown>;
     const partial: Record<string, unknown> = {};
+    const deleteKeys: string[] = [];
     for (const key of Object.keys(patch)) {
-      partial[key] = merged[key];
+      if (patch[key] === null) {
+        deleteKeys.push(key);
+      } else {
+        partial[key] = merged[key];
+      }
     }
     const command: ApplyCommand = {
       op: "mergePlayerData",
       color: current.color,
-      patch: partial
+      patch: partial,
+      ...(deleteKeys.length > 0 ? { deleteKeys } : {})
     };
     setBusy(true);
     try {

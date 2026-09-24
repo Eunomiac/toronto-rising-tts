@@ -100,7 +100,7 @@ export type ApplyCommand =
   | { op: "connect"; color: SeatColor }
   | { op: "initiateRoll"; color: SeatColor; rollType: string }
   | { op: "mergeSeat"; color: SeatColor; seat: SeatSnapshot }
-  | { op: "mergePlayerData"; color: SeatColor; patch: Record<string, unknown> };
+  | { op: "mergePlayerData"; color: SeatColor; patch: Record<string, unknown>; deleteKeys?: readonly string[] };
 
 export type RingTarget =
   | { kind: "trait"; family: "attributes" | "skills"; key: string }

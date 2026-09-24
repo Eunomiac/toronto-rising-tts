@@ -309,9 +309,10 @@ local function playerDataForJson(pid)
 end
 
 --- Developer JSON Apply: assign patched top-level keys onto live playerData as-is.
---- The Dashboard already deep-merged the author's patch into the dumped playerData; this
---- path must not fill defaults, normalize XP, strip fields, or run validateState.
-local function applyMergedPlayerData(color, patch)
+--- The Dashboard already deep-merged the author's patch (JSON null = delete).
+--- Top-level deletes arrive as deleteKeys (JSON null does not survive Lua decode as a key).
+--- This path must not fill defaults, normalize XP, or run validateState.
+local function applyMergedPlayerData(color, patch, deleteKeys)
   local pid = C.GetPlayerID(color)
   if type(pid) ~= "string" or pid == C.StorytellerID then
     return "No player for color " .. tostring(color)
@@ -332,9 +333,22 @@ local function applyMergedPlayerData(color, patch)
     gameState.playerData[pid] = pd
   end
 
+  if type(deleteKeys) == "table" then
+    for i = 1, #deleteKeys do
+      local key = deleteKeys[i]
+      if type(key) == "string" and key ~= "" then
+        pd[key] = nil
+      end
+    end
+  end
+
   for key, value in pairs(patch) do
     if type(key) == "string" then
-      pd[key] = deepCopyValue(value)
+      if value == nil then
+        pd[key] = nil
+      else
+        pd[key] = deepCopyValue(value)
+      end
     end
   end
 
@@ -865,7 +879,7 @@ local function applyCommand(cmd)
     return applyMergedSeat(color, cmd.seat)
   end
   if op == "mergePlayerData" then
-    return applyMergedPlayerData(color, cmd.patch)
+    return applyMergedPlayerData(color, cmd.patch, cmd.deleteKeys)
   end
   return "Unknown op: " .. tostring(op)
 end
