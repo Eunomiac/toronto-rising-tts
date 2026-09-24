@@ -137,7 +137,7 @@ local function restoreNpcControlTokenHome(token, characterKey)
     end
 
     local ScatterMode = require("core.scatter_mode")
-    if ScatterMode.isActive() and type(ScatterMode.clearCharacterOccupancy) == "function" then
+    if ScatterMode.wantsBoardScatterChrome() and type(ScatterMode.clearCharacterOccupancy) == "function" then
         ScatterMode.clearCharacterOccupancy(characterKey, { token = token, parkToPalette = true })
         return true
     end
@@ -277,7 +277,7 @@ local function restorePcControlTokenHome(token, color)
     end
 
     local ScatterMode = require("core.scatter_mode")
-    if ScatterMode.isActive() and type(ScatterMode.clearCharacterOccupancy) == "function" then
+    if ScatterMode.wantsBoardScatterChrome() and type(ScatterMode.clearCharacterOccupancy) == "function" then
         local pcKey = ScatterMode.pcKeyForColor(color)
         ScatterMode.clearCharacterOccupancy(pcKey, { token = token, parkToPalette = false })
         if type(token.setLock) == "function" then
@@ -1296,7 +1296,7 @@ function Interactions.onControlTokenPickUp(token)
     end
     local ScatterMode = require("core.scatter_mode")
     local board = Board.getControlBoard()
-    if ScatterMode.isActive()
+    if ScatterMode.wantsBoardScatterChrome()
         and Board.isGameObject(board)
         and Board.isTokenOnControlBoardSurface(board, token) then
         if type(token.setLock) == "function" then
@@ -1450,7 +1450,7 @@ function Interactions.onPcControlTokenDropped(token, playerColor)
     if ScatterMode.onControlTokenDropped(token, true) then
         return
     end
-    if ScatterMode.isActive() and type(ScatterMode.clearCharacterOccupancy) == "function" then
+    if ScatterMode.wantsBoardScatterChrome() and type(ScatterMode.clearCharacterOccupancy) == "function" then
         local color = Tokens.resolvePcTokenSeatColor(token)
         local pcKey = color and ScatterMode.pcKeyForColor(color) or nil
         ScatterMode.clearCharacterOccupancy(pcKey, { token = token, parkToPalette = false })
@@ -1534,7 +1534,7 @@ function Interactions.onNpcControlTokenDropped(token, playerColor)
     end
     -- Left the Scatter parchment (palette / off-board): park NPC tokens on the palette;
     -- PC tokens unlock off-board (no palette snap). HERE also updates figurines immediately.
-    if ScatterMode.isActive() and type(ScatterMode.clearCharacterOccupancy) == "function" then
+    if ScatterMode.wantsBoardScatterChrome() and type(ScatterMode.clearCharacterOccupancy) == "function" then
         ScatterMode.clearCharacterOccupancy(Tokens.resolveTokenCharacterKey(token), {
             token = token,
             parkToPalette = true,
@@ -1561,7 +1561,7 @@ function Interactions.onNpcControlTokenDropped(token, playerColor)
     -- flags are false — b16f26b entered wait with wantSeatRow alone and timed out up to 1s.
     applyControlTokenDropScaleByBoardPosition(token, board)
 
-    if ScatterMode.isActive() then
+    if ScatterMode.wantsBoardScatterChrome() then
         Interactions.finishInteractionProfile(t0)
         return
     end

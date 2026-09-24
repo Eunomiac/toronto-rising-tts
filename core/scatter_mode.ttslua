@@ -55,6 +55,62 @@ function ScatterMode.isActive()
     return mode == "scatter"
 end
 
+--- THERE preview of a Scatter library row (live world may still be a wood table).
+--- @return boolean
+function ScatterMode.isPendingScatterPreview()
+    local Preview = require("core.control_board_preview")
+    if Preview.isThere() ~= true then
+        return false
+    end
+    local draft = Preview.getDraft()
+    if draft == nil or type(draft.sceneKey) ~= "string" then
+        return false
+    end
+    local Occupancy = require("lib.scatter_occupancy")
+    local entry = S.getStateVal("sceneLibrary", "scenes", draft.sceneKey)
+    if type(entry) ~= "table" then
+        return false
+    end
+    if entry.placementMode == "scatter" then
+        return true
+    end
+    local ss = entry.sessionScene
+    return Occupancy.isScatterTableKey(type(ss) == "table" and ss.tableKey or nil)
+end
+
+--- CONTROL_BOARD should show Scatter art/snaps (live Scatter or THERE Scatter preview).
+--- @return boolean
+function ScatterMode.wantsBoardScatterChrome()
+    return ScatterMode.isActive() or ScatterMode.isPendingScatterPreview()
+end
+
+--- Pending library table key while THERE; otherwise live seatLayout table.
+--- @return string|nil tableKey
+--- @return boolean boardIsScatter
+function ScatterMode.resolveBoardTableContext()
+    local Occupancy = require("lib.scatter_occupancy")
+    local Preview = require("core.control_board_preview")
+    if Preview.isThere() then
+        local draft = Preview.getDraft()
+        if draft ~= nil and type(draft.sceneKey) == "string" then
+            local entry = S.getStateVal("sceneLibrary", "scenes", draft.sceneKey)
+            local ss = type(entry) == "table" and entry.sessionScene or nil
+            local tk = type(ss) == "table" and ss.tableKey or nil
+            local scatter = (type(entry) == "table" and entry.placementMode == "scatter")
+                or Occupancy.isScatterTableKey(tk)
+            if scatter then
+                return ScatterMode.TABLE_KEY, true
+            end
+            return tk, false
+        end
+    end
+    local liveKey = S.getStateVal("seatLayout", "currentTableKey")
+    if Occupancy.isScatterTableKey(liveKey) or ScatterMode.isActive() then
+        return ScatterMode.TABLE_KEY, true
+    end
+    return liveKey, false
+end
+
 --- @param color string
 --- @return string|nil pcKey
 local function pcKeyForColor(color)
@@ -1374,19 +1430,72 @@ end
 
 --- CONTROL_BOARD Scatter art + empty polar snaps (fingerprinted image; no reload when URL matches).
 --- After a real `reload()`, snaps/token park wait until the new tile is mesh-ready.
-function ScatterMode.applyBoardChrome()
-    hideAllPhysicalTables()
-    applyScatterObjectsToHide()
-    applyScatterWorldChrome(true)
+--- @param opts table|nil `{ previewOnly?: boolean }` — previewOnly skips live world hide/figurine layout
+function ScatterMode.applyBoardChrome(opts)
+    opts = type(opts) == "table" and opts or {}
+    local previewOnly = opts.previewOnly == true
+    if not previewOnly then
+        hideAllPhysicalTables()
+        applyScatterObjectsToHide()
+        applyScatterWorldChrome(true)
+    end
     local reloaded = applyControlBoardImage(scatterCfg().CONTROL_BOARD_IMAGE_SCATTER)
     if reloaded then
-        runAfterControlBoardReady(finishScatterBoardAfterReload)
+        runAfterControlBoardReady(function()
+            if previewOnly then
+                clearPolarSnaps()
+                ScatterMode.parkTokensFromState()
+                local Gameboard = require("core.npc_gameboard")
+                if type(Gameboard.reconcileControlBoardFromState) == "function" then
+                    Gameboard.reconcileControlBoardFromState({
+                        force = true,
+                        forceTokenMirror = true,
+                        allowPreview = true,
+                    })
+                end
+                return
+            end
+            finishScatterBoardAfterReload()
+        end)
         return
     end
     if controlBoardMeshReady() then
         clearPolarSnaps()
     end
     reapplyControlBoardCatalogVisibility()
+end
+
+--- Restore Standard CONTROL_BOARD art when the board should not show Scatter chrome.
+--- @param opts table|nil `{ allowPreview?: boolean }` passed through after image reload
+--- @return boolean reloaded
+function ScatterMode.ensureStandardBoardImage(opts)
+    opts = type(opts) == "table" and opts or {}
+    local reloaded = applyControlBoardImage(scatterCfg().CONTROL_BOARD_IMAGE_STANDARD)
+    if reloaded then
+        runAfterControlBoardReady(function()
+            restorePolarSnaps()
+            reapplyControlBoardCatalogVisibility()
+            local Gameboard = require("core.npc_gameboard")
+            if type(Gameboard.reconcileControlBoardFromState) == "function" then
+                local reconcileOpts = { force = true, forceTokenMirror = true }
+                if opts.allowPreview == true then
+                    reconcileOpts.allowPreview = true
+                end
+                Gameboard.reconcileControlBoardFromState(reconcileOpts)
+            end
+        end)
+        return true
+    end
+    if controlBoardMeshReady() then
+        restorePolarSnaps()
+    end
+    reapplyControlBoardCatalogVisibility()
+    return false
+end
+
+--- @deprecated prefer ensureStandardBoardImage
+function ScatterMode.applyStandardPreviewBoardChrome()
+    return ScatterMode.ensureStandardBoardImage({ allowPreview = true })
 end
 
 --- CONTROL_BOARD image, snaps, tables, tokens (fingerprinted image).
@@ -1679,7 +1788,7 @@ end
 --- @param isPc boolean
 --- @return boolean handled
 function ScatterMode.onControlTokenDropped(token, isPc)
-    if not ScatterMode.isActive() then
+    if not ScatterMode.wantsBoardScatterChrome() then
         return false
     end
     local Board = require("core.npc_gameboard_board")

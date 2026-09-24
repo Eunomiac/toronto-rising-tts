@@ -260,7 +260,18 @@ function FSL.seedDefaultTableSlots()
         ss = {}
         S.setStateVal(ss, "sessionScene", "seatSlots")
     end
-    local occupiedNPC = S.getStateVal("seatLayout", "occupiedNPCSlots")
+    FSL.seedDefaultTableSlotsOnto(ss, S.getStateVal("seatLayout", "occupiedNPCSlots"))
+end
+
+--- Fill missing `tableSlot` values on a seatSlots table (library row or live).
+--- @param seatSlots table
+--- @param occupiedNPCSlots table|nil
+function FSL.seedDefaultTableSlotsOnto(seatSlots, occupiedNPCSlots)
+    local ss = seatSlots
+    if U.Type(ss) ~= "table" then
+        return
+    end
+    local occupiedNPC = U.Type(occupiedNPCSlots) == "table" and occupiedNPCSlots or {}
     local used = {}
     for occupant, row in pairs(ss) do
         if U.Type(row) == "table" and row.absentFromSession ~= true then

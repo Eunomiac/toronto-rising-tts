@@ -470,17 +470,16 @@ end
 
 ScatterOccupancy.clearNpcFromStage = clearNpcFromStage
 
---- Live Standard occupancy → scatterPlacements (seats + occupied polar packs).
+--- Session-scene Standard occupancy → scatterPlacements (seats + occupied polar packs).
+--- @param sessionScene table
+--- @param occupiedNPCSlots table|nil
 --- @return table|nil pack
 --- @return string[] clearedNpcKeys
 --- @return string|nil err
-function ScatterOccupancy.translateLiveStandardToPlacements()
-    local S = require("core.state")
+function ScatterOccupancy.translateSessionSceneToPlacements(sessionScene, occupiedNPCSlots)
     local Snaps = require("core.npc_gameboard_snaps")
-    local sessionScene = {
-        seatSlots = S.getStateVal("sessionScene", "seatSlots") or {},
-        npcWorld = { placements = {} },
-    }
+    sessionScene = type(sessionScene) == "table" and sessionScene or {}
+    occupiedNPCSlots = type(occupiedNPCSlots) == "table" and occupiedNPCSlots or {}
     local pcsByGroup = {}
     local seatedByGroup = {}
     local unseatedByGroup = {}
@@ -490,7 +489,7 @@ function ScatterOccupancy.translateLiveStandardToPlacements()
         unseatedByGroup[g] = {}
     end
 
-    local slots = sessionScene.seatSlots
+    local slots = type(sessionScene.seatSlots) == "table" and sessionScene.seatSlots or {}
     for _, color in ipairs(C.PlayerColors or {}) do
         local row = type(slots[color]) == "table" and slots[color] or nil
         if row ~= nil and row.absentFromSession ~= true then
@@ -513,7 +512,7 @@ function ScatterOccupancy.translateLiveStandardToPlacements()
     local seatedKeys = {}
     for _, npcSeat in ipairs(C.NPCSeats or {}) do
         local row = type(slots[npcSeat]) == "table" and slots[npcSeat] or nil
-        local occupied = S.getStateVal("seatLayout", "occupiedNPCSlots", npcSeat)
+        local occupied = occupiedNPCSlots[npcSeat]
         local ck = nil
         if type(row) == "table" and type(row.characterKey) == "string" and row.characterKey ~= "" then
             ck = row.characterKey
@@ -533,24 +532,23 @@ function ScatterOccupancy.translateLiveStandardToPlacements()
 
     local catalog = polarCatalog()
     local byFamily = {}
-    local placements = S.getStateVal("sessionScene", "npcWorld", "placements")
-    if type(placements) == "table" then
-        for npcKey, row in pairs(placements) do
-            if type(npcKey) == "string" and npcKey ~= "" and type(row) == "table" and seatedKeys[npcKey] ~= true then
-                local entry = Snaps.resolvePlacementSnapCatalogEntry(row.u, row.v, nil)
-                local famName = nil
-                if type(entry) == "table" and type(entry.familyId) == "string" then
-                    famName = polarAreaNameForFamily(catalog, entry.familyId)
-                end
-                if type(famName) ~= "string" then
-                    famName = "_unknown"
-                end
-                byFamily[famName] = byFamily[famName] or {}
-                byFamily[famName][#byFamily[famName] + 1] = {
-                    npcKey = npcKey,
-                    npcLightMode = row.npcLightMode,
-                }
+    local npcWorld = type(sessionScene.npcWorld) == "table" and sessionScene.npcWorld or {}
+    local placements = type(npcWorld.placements) == "table" and npcWorld.placements or {}
+    for npcKey, row in pairs(placements) do
+        if type(npcKey) == "string" and npcKey ~= "" and type(row) == "table" and seatedKeys[npcKey] ~= true then
+            local entry = Snaps.resolvePlacementSnapCatalogEntry(row.u, row.v, nil)
+            local famName = nil
+            if type(entry) == "table" and type(entry.familyId) == "string" then
+                famName = polarAreaNameForFamily(catalog, entry.familyId)
             end
+            if type(famName) ~= "string" then
+                famName = "_unknown"
+            end
+            byFamily[famName] = byFamily[famName] or {}
+            byFamily[famName][#byFamily[famName] + 1] = {
+                npcKey = npcKey,
+                npcLightMode = row.npcLightMode,
+            }
         end
     end
 
@@ -585,6 +583,21 @@ function ScatterOccupancy.translateLiveStandardToPlacements()
 
     local pack, err = packFromBuckets(pcsByGroup, seatedByGroup, unseatedByGroup)
     return pack, cleared, err
+end
+
+--- Live Standard occupancy → scatterPlacements (seats + occupied polar packs).
+--- @return table|nil pack
+--- @return string[] clearedNpcKeys
+--- @return string|nil err
+function ScatterOccupancy.translateLiveStandardToPlacements()
+    local S = require("core.state")
+    return ScatterOccupancy.translateSessionSceneToPlacements(
+        {
+            seatSlots = S.getStateVal("sessionScene", "seatSlots") or {},
+            npcWorld = S.getStateVal("sessionScene", "npcWorld") or { placements = {} },
+        },
+        S.getStateVal("seatLayout", "occupiedNPCSlots") or {}
+    )
 end
 
 --- Snapshot Standard occupancy so leaving Scatter can restore it.

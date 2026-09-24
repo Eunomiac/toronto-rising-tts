@@ -460,7 +460,7 @@ function Reconcile.capturePreviewDraftNow()
         return false
     end
     local ScatterMode = require("core.scatter_mode")
-    if ScatterMode.isActive() and type(ScatterMode.scanBoardToPlacements) == "function" then
+    if ScatterMode.wantsBoardScatterChrome() and type(ScatterMode.scanBoardToPlacements) == "function" then
         local snapshot = {
             npcWorld = { placements = {} },
             seatSlots = type(draft.seatSlots) == "table" and draft.seatSlots or {},
@@ -1315,7 +1315,11 @@ function Reconcile.reconcileControlBoardFromState(opts)
         return
     end
     local model = Reconcile.getActiveBoardModel()
-    local activeTable = S.getStateVal("seatLayout", "currentTableKey")
+    local ScatterMode = require("core.scatter_mode")
+    local activeTable, boardIsScatter = ScatterMode.resolveBoardTableContext()
+    if type(activeTable) ~= "string" or activeTable == "" then
+        activeTable = S.getStateVal("seatLayout", "currentTableKey")
+    end
     local placements = type(model.placements) == "table" and model.placements or {}
     local seatSlots = type(model.seatSlots) == "table" and model.seatSlots or {}
     if model.mode == "THERE" and opts.allowPreview ~= true then
@@ -1325,10 +1329,14 @@ function Reconcile.reconcileControlBoardFromState(opts)
         end
         return
     end
-    local ScatterMode = require("core.scatter_mode")
-    local scatterActive = ScatterMode.isActive()
-    local mirrorFp = Reconcile.controlBoardMirrorFingerprint(activeTable, model.mode, placements, seatSlots)
-    if opts.force ~= true and not scatterActive and mirrorFp == Reconcile.lastControlBoardMirrorFingerprint then
+    local scatterLive = ScatterMode.isActive()
+    local mirrorFp = Reconcile.controlBoardMirrorFingerprint(
+        activeTable,
+        model.mode,
+        placements,
+        seatSlots
+    ) .. "|scatterBoard:" .. tostring(boardIsScatter == true)
+    if opts.force ~= true and not boardIsScatter and mirrorFp == Reconcile.lastControlBoardMirrorFingerprint then
         if Board.isMeshReady(board) then
             Reconcile.syncControlBoardSnapsToggleLabel(board)
             Reconcile.syncControlBoardModeToolbar(board)
@@ -1336,15 +1344,20 @@ function Reconcile.reconcileControlBoardFromState(opts)
         end
         return
     end
-    if scatterActive then
-        ScatterMode.applyBoardChrome()
+    if boardIsScatter then
+        ScatterMode.applyBoardChrome({ previewOnly = scatterLive ~= true })
+    else
+        if ScatterMode.ensureStandardBoardImage({ allowPreview = model.mode == "THERE" }) then
+            -- Image reload finishes asynchronously; it re-enters reconcile with force.
+            return
+        end
     end
     board = Board.getControlBoard()
     if not Board.isMeshReady(board) then
         -- CONTROL_BOARD.reload() from Scatter enter/leave; finish wait re-enters with force.
         return
     end
-    if not scatterActive then
+    if not boardIsScatter then
         Snaps.installPolarSnaps(board, { force = opts.force == true })
     end
     Reconcile.ensureControlBoardObjectCallbacks(board)
@@ -1370,10 +1383,10 @@ function Reconcile.reconcileControlBoardFromState(opts)
             local pcSeat = Tokens.readMarkerKey(obj, DATA.MARKER_PC_SEAT_PREFIX)
             local npcSeat = Tokens.readMarkerKey(obj, DATA.MARKER_NPC_SEAT_PREFIX)
 
-            if scatterActive and (tableKey ~= nil or (obj.hasTag ~= nil and obj.hasTag(TAG_TABLE) == true)) then
+            if boardIsScatter and (tableKey ~= nil or (obj.hasTag ~= nil and obj.hasTag(TAG_TABLE) == true)) then
                 Tokens.setMarkerVisible(obj, false)
                 stashTableMarker(obj, tableKey)
-            elseif scatterActive and (compKey ~= nil or (obj.hasTag ~= nil and obj.hasTag(TAG_COMPONENT) == true)) then
+            elseif boardIsScatter and (compKey ~= nil or (obj.hasTag ~= nil and obj.hasTag(TAG_COMPONENT) == true)) then
                 local markerRow = describeTableComponentMarker(obj, activeTable)
                 local componentName = (markerRow and markerRow.componentName) or compKey
                 Tokens.setMarkerVisible(obj, false)
@@ -1431,7 +1444,7 @@ function Reconcile.reconcileControlBoardFromState(opts)
         end
     end
 
-    if scatterActive then
+    if boardIsScatter then
         ScatterMode.parkTokensFromState()
     else
         Reconcile.mirrorControlBoardTokensFromModel(board, model)

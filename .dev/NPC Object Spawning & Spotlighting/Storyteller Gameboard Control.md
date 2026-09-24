@@ -124,6 +124,7 @@ Scatter uses the same Control Board **HERE / THERE** draft as polar preview (`ga
 - **Remove:** Pick-up frees the slot immediately (HERE figurines leave). Off-parchment NPC drop / Clear path parks on the palette. THERE edits stay in the draft until commit / leave THERE.
 - **Apply / Reset:** HERE + Scatter Apply still scans parchment → live pack → world. THERE toolbar remains **Reset** (reload library baseline into the draft, including `scatterPlacements`).
 - **Capture:** While Scatter + THERE, draft capture snapshots parchment occupancy into `scatterPlacements` and does not overwrite it with an empty polar scan.
+- **Pending table toggle (THERE):** Scenes panel table buttons write the pending library row’s `tableKey` / `placementMode` and immediately remirror the Control Board (Scatter art when Scatter is selected). Polar `seatSlots` / `tableSlot` are **kept** when switching to Scatter so returning to Table A does not wipe occupancy. Missing `tableSlot` values are re-seeded from defaults when needed.
 
 ## Workshop tags
 

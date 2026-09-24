@@ -517,6 +517,109 @@ local function writePendingLibrarySessionSceneField(value, ...)
     return true
 end
 
+--- @param pack any
+--- @return boolean
+local function scatterPackHasOccupancy(pack)
+    if type(pack) ~= "table" then
+        return false
+    end
+    local ScatterLayout = require("lib.scatter_layout")
+    for i = 1, ScatterLayout.groupCount() do
+        local area = pack[ScatterLayout.areaKeyForGroup(i)]
+        if type(area) == "table" then
+            if type(area.centerCharacters) == "table" and next(area.centerCharacters) ~= nil then
+                return true
+            end
+            if type(area.orbitCharacters) == "table" and next(area.orbitCharacters) ~= nil then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+--- While THERE, reload the draft from the pending library row and remirror the Control Board
+--- (table markers / Scatter art) without touching the live stage.
+--- @param activeKey string
+local function refreshThereBoardFromPendingLibrary(activeKey)
+    local Preview = require("core.control_board_preview")
+    local draft = Preview.getDraft()
+    if type(draft) ~= "table" or draft.sceneKey ~= activeKey then
+        return
+    end
+    if Preview.reset() == nil then
+        return
+    end
+    local Gameboard = require("core.npc_gameboard")
+    if type(Gameboard.reconcileControlBoardFromState) == "function" then
+        Gameboard.reconcileControlBoardFromState({
+            force = true,
+            forceTokenMirror = true,
+            allowPreview = true,
+        })
+    end
+end
+
+--- Pending Scenes table toggle: write tableKey + placementMode, seed scatter/standard occupancy,
+--- and refresh the THERE Control Board immediately (no live SetTableTo).
+--- @param activeKey string
+--- @param tableKey string
+--- @param isScatter boolean
+--- @return boolean ok
+local function applyPendingLibraryTableChoice(activeKey, tableKey, isScatter)
+    local entry = S.getStateVal("sceneLibrary", "scenes", activeKey)
+    if type(entry) ~= "table" then
+        return false
+    end
+    local ss = entry.sessionScene
+    if type(ss) ~= "table" then
+        ss = {}
+        entry.sessionScene = ss
+    end
+
+    if isScatter then
+        local Occupancy = require("lib.scatter_occupancy")
+        if scatterPackHasOccupancy(ss.scatterPlacements) ~= true then
+            local occupied = {}
+            local slots = type(ss.seatSlots) == "table" and ss.seatSlots or {}
+            for _, npc in ipairs(C.NPCSeats or {}) do
+                local row = slots[npc]
+                if type(row) == "table" and type(row.characterKey) == "string" and row.characterKey ~= "" then
+                    occupied[npc] = row.characterKey
+                end
+            end
+            local pack = Occupancy.translateSessionSceneToPlacements(ss, occupied)
+            if pack == nil then
+                local ScatterLayout = require("lib.scatter_layout")
+                pack = ScatterLayout.emptyPlacements()
+            end
+            ss.scatterPlacements = pack
+        end
+        ss.tableKey = "Scatter"
+        entry.placementMode = "scatter"
+    else
+        ss.tableKey = tableKey
+        entry.placementMode = "standard"
+        if type(ss.seatSlots) ~= "table" then
+            ss.seatSlots = {}
+        end
+        local FSL = require("lib.figurine_seat_layout")
+        local occupied = {}
+        for _, npc in ipairs(C.NPCSeats or {}) do
+            local row = ss.seatSlots[npc]
+            if type(row) == "table" and type(row.characterKey) == "string" and row.characterKey ~= "" then
+                occupied[npc] = row.characterKey
+            end
+        end
+        -- Recover tableSlot after older validateState wipes, or empty imported rows.
+        FSL.seedDefaultTableSlotsOnto(ss.seatSlots, occupied)
+    end
+
+    S.validateState()
+    refreshThereBoardFromPendingLibrary(activeKey)
+    return true
+end
+
 --- Seat presence on pending library row only (`seatSlots` + `seatPresent`); no world reconcile / mirror.
 --- @param seatKey string
 --- @param present boolean
@@ -2182,11 +2285,9 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
         end
         local activeKey = getActiveLibraryKey()
         if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
-            writePendingLibrarySessionSceneField(tableKey, "tableKey")
-            if isScatter then
-                S.setStateVal("scatter", "sceneLibrary", "scenes", activeKey, "placementMode")
-            else
-                S.setStateVal("standard", "sceneLibrary", "scenes", activeKey, "placementMode")
+            if not applyPendingLibraryTableChoice(activeKey, tableKey, isScatter) then
+                U.AlertGM("Could not save table `" .. tableKey .. "` on `" .. activeKey .. "`.")
+                return
             end
             StorytellerScenesPanel.refresh()
             U.AlertGM("Table `" .. tableKey .. "` saved on `" .. activeKey .. "` (applies when you Activate that scene).")

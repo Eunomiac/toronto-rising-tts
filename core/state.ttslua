@@ -1024,11 +1024,15 @@ function S.validateState()
             end
             mergeSessionSceneDefaults(entry.sessionScene, S.GetDefaultGameState().sessionScene)
             if entry.placementMode == "scatter" then
-                entry.sessionScene.seatSlots = nil
-                entry.sessionScene.tableKey = nil
-                entry.sessionScene.npcWorld = nil
-                entry.sessionScene.npcRoleOverride = nil
-                entry.sessionScene.seatPresent = nil
+                -- Keep seatSlots / npcWorld / tableKey for pending Standard↔Scatter toggles
+                -- (Scenes panel). Wiping them made Table A re-select lose PC tableSlot and
+                -- fail occupancy checks. Authored scatter Apply ignores polar fields when
+                -- placementMode is scatter.
+                local Occupancy = require("lib.scatter_occupancy")
+                if Occupancy.isScatterTableKey(entry.sessionScene.tableKey) ~= true
+                    and (entry.sessionScene.tableKey == nil or entry.sessionScene.tableKey == "") then
+                    entry.sessionScene.tableKey = "Scatter"
+                end
             else
                 NpcPlacementsConvert.normalizeSessionScene(entry.sessionScene)
                 if type(entry.sessionScene.npcWorld) == "table" then
