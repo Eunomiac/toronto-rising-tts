@@ -1993,11 +1993,14 @@ function M.resolveSeatObjects(computed, sourceObjects, options)
     local rot = Vector(slot.frame.rotation)
     if isHandZoneSlot or not slot.isFrame then
       local obj = referenceObjByRole[slot.roleKey]
-      if obj ~= nil and obj ~= false then
+      -- Player hand zones: never placeObjectExact first. That teleports the zone alone so
+      -- U.movePlayerHand sees a ~0 delta and leaves cards behind (Hand Lab rigid_instant).
+      local playerHandViaMovePlayerHand = isHandZoneSlot and isPlayerSeatKey(referencePlayerColor)
+      if obj ~= nil and obj ~= false and not playerHandViaMovePlayerHand then
         placeObjectExact(obj, pos, rot)
         maybeSetHandZoneSeatColor(obj, slot.roleKey, referencePlayerColor)
       end
-      if isHandZoneSlot and isPlayerSeatKey(referencePlayerColor) then
+      if playerHandViaMovePlayerHand then
         local hz = U.getHandZone(referencePlayerColor)
         if hz == nil then
           error("rotational-seat-layout: no hand zone for reference seat '" .. tostring(referencePlayerColor) .. "'")

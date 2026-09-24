@@ -2457,6 +2457,15 @@ function U.parsePosition(obj)
 end
 
 function U.getHandZone(color)
+	if type(color) == "string" and color ~= "" and G ~= nil and type(G.GetHandZoneGUID) == "function" then
+		local guid = G.GetHandZoneGUID(color)
+		if type(guid) == "string" and guid ~= "" then
+			local byGuid = getObjectFromGUID(guid)
+			if byGuid ~= nil then
+				return byGuid
+			end
+		end
+	end
 	local hands = Hands.getHands()
 	if U.Type(hands) ~= "table" then
 		return nil
@@ -2588,10 +2597,13 @@ local function poseObjectWithHand(obj, pos, rot, smooth)
 end
 
 --- Move a player's hand zone and every card in that hand as one rigid body (TOR-590).
---- Does not lock cards. Default is an instant teleport: Play→Spotlight Table B→A is a ~100-unit
---- jump behind the cover, and `setPositionSmooth` was still interpolating after the blindfold
---- lifted (swoop audio; cards stalled mid-table). Pass `opts.smooth = true` only for a short
---- on-table nudge that is meant to be seen.
+--- Sole production writer for hand-zone pose + in-hand cards. Callers must not
+--- `setPosition` / `placeObjectExact` the zone first — that zeroes the delta and leaves cards behind.
+---
+--- Behavior (Hand Lab `rigid_instant`): unlock any locked hand cards, then instant
+--- `setPosition`/`setRotation` on the zone and every card (same rigid yaw + translation;
+--- card yaw snapped to zone Y + 180). Never locks. Pass `opts.smooth = true` only for a
+--- short on-table nudge that is meant to be seen (table-scale jumps must stay instant).
 --- @param playerRef string|userdata seat color or Player
 --- @param position Vector|table world position of the hand zone
 --- @param rotation Vector|table world rotation of the hand zone
@@ -2623,6 +2635,11 @@ function U.movePlayerHand(playerRef, position, rotation, opts)
 	local captured = {}
 	for i = 1, #cards do
 		local obj = cards[i]
+		-- Locking in-hand cards prevents TTS from carrying them and can no-op setPosition
+		-- (Hand Lab D1 / TOR-590). Always unlock before the rigid teleport.
+		if obj.getLock ~= nil and obj.setLock ~= nil and obj.getLock() == true then
+			obj.setLock(false)
+		end
 		captured[#captured + 1] = {
 			obj = obj,
 			before = {

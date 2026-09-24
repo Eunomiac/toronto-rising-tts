@@ -53,6 +53,16 @@ _Last populated: 2026-09-24 — Experience Log + page 6 (TOR-92)._
 
 ### Scatter / table layout
 
+#### TOR-629 — Hand zone rigid co-move (no zone-only place first)
+
+**How to verify:** Save & Play so scripts reload. Put a full hand of cards in at least two PC seats (for example Red and Pink).
+
+1. Advance **Play → Spotlight** so the table changes. After the cover lifts, each colored hand-zone box should have its own white fan with it — cards should not be stranded at the old table.
+2. Advance **Spotlight → End**. Same check: boxes and cards arrive together and stay held (grabbable in the new fan).
+3. Optional: on the PCs panel, turn **Absent** on for one seated PC, then off. That seat’s hand zone and cards should bury and return together.
+
+**Context:** Hand Lab showed rigid-instant works. `U.movePlayerHand` already did that; rotational layout was also `placeObjectExact`-ing the reference hand zone first (zero delta → cards left behind). relatedTo **TOR-590** (hand-zone co-move).
+
 #### TOR-628 — Scatter Mode HERE/THERE preview + token lifecycle
 
 **How to verify:** Save & Play so scripts reload.
