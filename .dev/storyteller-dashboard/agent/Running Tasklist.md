@@ -45,6 +45,7 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 
 ✔️ SD-PCs live-only (no fixture). Offline shows **No live sheet** + reason. Identity and Ambition come from TTS snapshot / `playerData.ambition` only.
 ✔️ SD-PCs **JSON** debug button. Opens a scrollable modal with pretty-printed live seat snapshot; patch textarea + **Apply** deep-merges into TTS (`mergeSeat`).
+✔️ PCs JSON Apply accepts trailing commas (same sanitize as TTS scene import) instead of rejecting the paste.
 ✔️ Dashboard Lua bridge folder: `dashboard/pc_sheet.ttslua` (`require("dashboard.pc_sheet")`), not under `core/`.
 
 ✔️ SD-PCs apply batch. Rapid PCs-tab clicks that pile up while TTS is busy go in one `GlobalDashboardPcSheetApply` array (TOR-595). Dashboard still paints immediately.
