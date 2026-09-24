@@ -4,7 +4,7 @@
 
 Read this when:
 - **shipping any TTS-observable code** (Lua, XML, HUD, generated catalogs that Save & Play loads, and so on) — add an Outstanding row on the checklist **in the same session**
-- marking a Linear issue **Done** before the author has confirmed in Tabletop Simulator (how-to-verify goes on the checklist **and** in the Linear **Done** comment)
+- moving a shipped Linear issue to **Awaiting Author Review** before the author has confirmed in Tabletop Simulator (how-to-verify goes on the checklist **and** in the Linear completion comment)
 - `/tr-inbox` / “process the inbox” — process author **✅** / **❌** / **⚠️** marks; catch up any shipped work a previous agent forgot to list
 - `/tr-start` or “what’s next” when **reading** verification debt (skim/read only at bootstrap; if this session later ships code, add the row then)
 - needing the writing-style rules for verify text
@@ -12,18 +12,18 @@ Read this when:
 **Checklist (author-facing Outstanding list):** [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md)
 
 Source of truth:
-- [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md) for the living **Outstanding** entries (Linear **Done** ≠ verified in TTS)
+- [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md) for the living **Outstanding** entries (**Awaiting Author Review** = shipped but not verified in TTS)
 - **This file** for how agents add, rewrite, and process those entries
-- Linear for issue status / comments (including how-to-verify notes when Done)
+- Linear for issue status / comments (including how-to-verify notes when entering **Awaiting Author Review**)
 - [RUNNING TASKLIST.md](RUNNING%20TASKLIST.md) for Focus + domain bullets
 
 Verification:
 - every shipped TTS-observable change that still needs in-game confirmation has an Outstanding row **before the implementation session ends**
-- every checklist entry has a live `TOR-*` (Done / verification-gate In Progress, **or** open follow-up work marked **⌚**)
+- every checklist entry has a live `TOR-*` (**Awaiting Author Review** / verification-gate In Progress, **or** open follow-up work marked **⌚**)
 - every entry’s **How to verify** uses plain English (see **Writing style** below) — for **⌚** entries, how-to-verify is the future re-test after the fix ships
 - process author marks **✅** / **❌** / **⚠️** on checklist headers during **`/tr-inbox`** only; maintain **⌚** on entries that are not ready to test yet
-- remove an entry when the author marks **✅** (or confirms in chat / Linear during an inbox pass); then update the tasklist bullet
-- when promoting an ❌/⚠️ follow-up to Linear instead of shipping in-session, keep/add the Outstanding entry with **⌚** until that follow-up is Done and ready to re-verify
+- remove an entry when the author marks **✅** (or confirms in chat / Linear during an inbox pass); then update the tasklist bullet and move Linear to **Fully Complete** by default or **Complete (KEEP)** sparingly
+- when promoting an ❌/⚠️ follow-up to Linear instead of shipping in-session, keep/add the Outstanding entry with **⌚** until that follow-up ships and is ready to re-verify
 
 Status: living agent policy for the author verification checklist.
 
@@ -45,7 +45,7 @@ If the change can be observed after Save & Play (Lua, XML, HUD, lighting, audio,
 
 **Definition of done for a ship includes all of:**
 
-1. Linear **Done** comment with the same plain-English how-to-verify
+1. Linear status **Awaiting Author Review** with a completion comment containing the same plain-English how-to-verify
 2. An **unmarked** Outstanding row on the checklist (or **⌚** cleared if this was an open follow-up that just shipped)
 3. “Pending Save & Play” on the matching tasklist bullet when one exists
 4. The how-to-verify repeated in chat so the author does not have to open Linear
@@ -69,8 +69,8 @@ When adding:
 | Allowed when shipping (any session) | Checklist edits — **`/tr-inbox` only** |
 | --- | --- |
 | Add Outstanding rows for work **this session just shipped** | Process **✅** / **❌** / **⚠️** marks; remove confirmed entries |
-| Clear **⌚** on a follow-up **this session just shipped** | Catch-up: add any Done-without-confirm work a previous agent forgot |
-| Put the same how-to-verify in Linear **Done** comments + chat | Immediate disposition for ❌ / ⚠️ follow-ups (unless you are already shipping the fix in this session) |
+| Clear **⌚** on a follow-up **this session just shipped** | Catch-up: add any shipped-but-unconfirmed work a previous agent forgot and align it to **Awaiting Author Review** |
+| Put the same how-to-verify in the Linear **Awaiting Author Review** comment + chat | Immediate disposition for ❌ / ⚠️ follow-ups (unless you are already shipping the fix in this session) |
 | Note “Pending Save & Play” on tasklist bullets | Sync checklist ↔ Linear / tasklist after author confirmation |
 
 **Do not** process author test marks just because the file is open, you are on `/tr-start`, or you are debugging. If marks are present and would change what you should work on, tell the author to run `/tr-inbox` (or ask them to confirm you may process marks now).
@@ -89,7 +89,7 @@ Open follow-ups that came from PAVE ❌/⚠️ Immediate disposition **may** sta
 
 ## Purpose
 
-Linear **Done** means the code and docs were shipped. It does **not** mean the author has already tested the change inside Tabletop Simulator. The checklist file is the author’s short list of work that still needs a real in-game pass (Save & Play, multiclient join, listen check, and so on) before we treat it as fully closed.
+Linear **Awaiting Author Review** means the code and docs were shipped but the author has not yet confirmed the change inside Tabletop Simulator. The checklist file is the author’s short list of work that still needs a real in-game pass (Save & Play, multiclient join, listen check, and so on) before the issue moves to **Fully Complete** or, sparingly, **Complete (KEEP)**.
 
 **Two kinds of Outstanding rows:**
 
@@ -118,10 +118,10 @@ As the author works through the checklist in Tabletop Simulator, they will prefi
 
 | Mark | Who sets it | Meaning | What the agent must do (**`/tr-inbox`**) |
 | --- | --- | --- | --- |
-| **✅** | Author | Confirmed. The author followed the **How to verify** steps and everything passed. | **Remove** this entire issue entry from **Outstanding**. Mark the matching RUNNING TASKLIST bullet as author-confirmed (or clear its “Pending Save & Play” wording). Optionally leave a short Linear comment that author verification passed. Treat the work as fully closed for verification debt. That Linear issue is now **eligible** for deletion later **only** if the workspace hits its issue limit — see [`.cursor/rules/toronto-rising-linear.mdc`](../.cursor/rules/toronto-rising-linear.mdc) § Issue limit (do not delete on ✅ alone). |
+| **✅** | Author | Confirmed. The author followed the **How to verify** steps and everything passed. | **Remove** this entire issue entry from **Outstanding**. Mark the matching RUNNING TASKLIST bullet as author-confirmed (or clear its “Pending Save & Play” wording). Leave a short Linear comment that author verification passed. Set **Fully Complete** by default. Use **Complete (KEEP)** only when the issue contains lasting comments, attachments, or decisions that should remain in Linear; state the reason in the inbox summary. |
 | **❌** | Author | Testing failed. The bug or missing behavior is still live. | Expect **`**Verification Failures:**`** (and optional **`**Verified:**`**). Narrow the checklist entry (remaining how-to-verify + Context for what already passed). Then handle remaining failures under **§ Immediate disposition** below — same urgency as INBOX **For Immediate Implementation**. Keep the Outstanding entry until fixed and the author re-confirms with **✅**. If the fix is **not** shipped in this inbox session, switch the header to **⌚** (keep failure/context in the body) so the author does not re-test unfinished work. |
 | **⚠️** | Author | The issue definition or expected validation is wrong or misleading (for example, “End scene should remain selected” when End should deselect). | Expect **`**Corrections:**`**. Fix inaccurate verify text / docs immediately when that is the whole correction. If the correction implies product/code change, handle under **§ Immediate disposition** below. After doc-only corrections are applied, **remove the ⚠️ mark and the Corrections paragraph** (or replace with a short **Context** note that verify text was corrected and re-test is still owed). Leave the entry until the author marks **✅** or **❌** on a fresh pass. If code work remains unshipped, use **⌚**. |
-| **⌚** | Agent | **Not ready to verify.** The fix was promoted to Linear / Focus instead of shipping during inbox (or the follow-up is still open). | Set or keep **⌚** when adding/keeping an Outstanding row for open follow-up work. Do **not** ask the author to Save & Play that issue yet. Keep plain-English how-to-verify for the future re-test. When the follow-up ships (**Done**) **in that implementation session**, **remove ⌚** so the row becomes a normal ready-to-verify entry (unmarked until the author tests). Never leave a shipped-and-ready entry under **⌚**. |
+| **⌚** | Agent | **Not ready to verify.** The fix was promoted to Linear / Focus instead of shipping during inbox (or the follow-up is still open). | Set or keep **⌚** when adding/keeping an Outstanding row for open follow-up work. Do **not** ask the author to Save & Play that issue yet. Keep plain-English how-to-verify for the future re-test. When the follow-up ships **in that implementation session**, **remove ⌚**, set **Awaiting Author Review**, and make the row a normal ready-to-verify entry (unmarked until the author tests). Never leave a shipped-and-ready entry under **⌚**. |
 
 **Unmarked headers** (no ✅ / ❌ / ⚠️ / ⌚) mean “shipped or verification-gate — not yet tested by the author.” Leave them alone unless you are adding a new shipped entry or the author confirmed elsewhere and inbox is syncing that fact.
 
@@ -137,13 +137,13 @@ Treat **Verification Failures** and **Corrections** that need code or behavior c
 
 | Disposition | When | Agent action |
 | --- | --- | --- |
-| **Implement now** | Clear, bounded fix (wrong verify wording, small bug, obvious one-file/logic tweak) | Register/update Linear Bug if needed (`relatedTo` the original Done issue), set **In Progress**, **ship the fix in this inbox session**, leave/narrow the PAVE entry for re-test (**unmarked**, not **⌚**) |
+| **Implement now** | Clear, bounded fix (wrong verify wording, small bug, obvious one-file/logic tweak) | Register/update Linear Bug if needed (`relatedTo` the original completed issue), set **In Progress**, **ship the fix in this inbox session**, then set **Awaiting Author Review** and leave/narrow the PAVE entry for re-test (**unmarked**, not **⌚**) |
 | **Focus #1 (or top stack) + offer to start** | Needs a short plan or a few coordinated files, but not a large redesign | Create/update Linear, put at **top of Focus**, offer to begin immediately in the inbox summary; keep/narrow Outstanding with header **⌚** until shipped |
 | **Defer into Linear only** | Truly complex refactor, multi-system redesign, or unclear architecture | Create/update Linear with full description; place in the right domain tasklist section with **`blockedBy`** as needed; Outstanding row gets **⌚** — **do not** use backlog deferral as the default for verify failures |
 
 **Do not** park ordinary ❌ / ⚠️ follow-ups as quiet Backlog/Todo while inbox finishes. Author verification debt that still breaks is urgent unless complexity clearly forces a planned refactor.
 
-Mirror what passed vs what remains in Linear comments. Prefer a new related **Bug** when the original feature issue is already **Done**.
+Mirror what passed vs what remains in Linear comments. Prefer a new related **Bug** when the original feature issue is already in a completed status.
 
 ---
 
@@ -151,7 +151,7 @@ Mirror what passed vs what remains in Linear comments. Prefer a new related **Bu
 
 Checklist entries follow the project-wide **author voice** rule: [`.cursor/rules/toronto-rising-author-voice.mdc`](../.cursor/rules/toronto-rising-author-voice.mdc). That rule covers **all** writing to the author (chat included). The notes below are the verify-entry specialization.
 
-When you add or rewrite a verification entry (on ship, or on **`/tr-inbox`** catch-up), or when you write how-to-verify in a Linear **Done** comment, write **plain English instructions the author can follow without decoding shorthand**.
+When you add or rewrite a verification entry (on ship, or on **`/tr-inbox`** catch-up), or when you write how-to-verify in a Linear **Awaiting Author Review** comment, write **plain English instructions the author can follow without decoding shorthand**.
 
 **Do:**
 
@@ -170,7 +170,7 @@ When you add or rewrite a verification entry (on ship, or on **`/tr-inbox`** cat
 
 **Good:** `Load into the save from the main menu. Ensure the global HUD appears without requiring a reload, confirming that the script checks for the existence of the global HUD on load and remounts it automatically if it does not.`
 
-Same standard applies to Linear Done comments that say verification is still owed: write a short plain-English test note there too. The checklist row is added **in the ship session**; inbox only copies over rows a previous agent forgot.
+The same standard applies to Linear comments written when an issue enters **Awaiting Author Review**: write a short plain-English test note there too. The checklist row is added **in the ship session**; inbox only copies over rows a previous agent forgot.
 
 Also: [`.cursor/rules/toronto-rising-linear.mdc`](../.cursor/rules/toronto-rising-linear.mdc) § Pending author verification.
 
@@ -182,10 +182,10 @@ Policy lives here. The checklist is [PENDING AUTHOR VERIFICATION.md](PENDING%20A
 
 | Event | What to do |
 | --- | --- |
-| Ship TTS-observable code (any path) and the author has **not** confirmed in-TTS | **Add** an unmarked Outstanding row **now**. Put the same plain-English how-to-verify in the Linear **Done** comment and chat. Note “Pending Save & Play” on the tasklist bullet. If a **⌚** row already exists for this id, clear **⌚**. |
-| **`/tr-inbox`** | Process **✅** / **❌** / **⚠️**. Catch-up: add any missing Outstanding entries from recent Done-without-confirm work. For ❌/⚠️ follow-ups not shipped this session, set header **⌚**. If a previously **⌚** follow-up is already **Done** (a ship session should have cleared this), remove **⌚** so the author can re-test. Mention remaining high-priority verify debt if it would block a play session. |
-| Author marks header **✅** (or confirms in chat / Linear) | On **`/tr-inbox`**: **Remove** the entry; mark the tasklist bullet author-confirmed; optional Linear comment. Outside inbox: do not process marks unless the author explicitly asks. |
+| Ship TTS-observable code (any path) and the author has **not** confirmed in-TTS | Set Linear to **Awaiting Author Review** and **add** an unmarked Outstanding row **now**. Put the same plain-English how-to-verify in the Linear comment and chat. Note “Pending Save & Play” on the tasklist bullet. If a **⌚** row already exists for this id, clear **⌚**. |
+| **`/tr-inbox`** | Process **✅** / **❌** / **⚠️**. Catch-up: add any missing Outstanding entries for shipped work still awaiting confirmation and align those issues to **Awaiting Author Review**. For ❌/⚠️ follow-ups not shipped this session, set header **⌚**. If a previously **⌚** follow-up has shipped (the ship session should have cleared this), remove **⌚**, set **Awaiting Author Review**, and let the author re-test. Mention remaining high-priority verify debt if it would block a play session. |
+| Author marks header **✅** (or confirms in chat / Linear) | On **`/tr-inbox`**: **Remove** the entry; mark the tasklist bullet author-confirmed; leave a Linear verification comment; set **Fully Complete** by default or **Complete (KEEP)** sparingly with a stated reason. Outside inbox: do not process marks unless the author explicitly asks. |
 | Author marks header **❌** + **Verification Failures:** (and optional **Verified:**) | On **`/tr-inbox`**: keep/narrow the entry; then **§ Immediate disposition** (implement now / Focus top / defer only if complex refactor). If you ship the fix in this session, leave the row **unmarked**. If unshipped after disposition → **⌚**. |
 | Author marks header **⚠️** + **Corrections:** | On **`/tr-inbox`**: apply doc corrections immediately when possible; code/behavior corrections use **§ Immediate disposition**; clear ⚠️ + Corrections once addressed; leave entry until re-tested (or **⌚** if code still open) |
 
-When finishing work: if verification is still owed, the checklist row **and** the Linear **Done** comment both get the how-to-verify note. **Do not** treat Linear as the only record.
+When finishing work: if verification is still owed, set **Awaiting Author Review** and put the how-to-verify note in both the checklist row and the Linear completion comment. **Do not** treat Linear as the only record.

@@ -16,6 +16,7 @@ Verification:
 - promoted items have matching Linear issues
 - processed items move out of active capture sections
 - `.dev/RUNNING TASKLIST.md` and Linear stay aligned
+- Quick Fixes that ship to PAV are **Awaiting Author Review** in Linear; `/tr-inbox` moves author-confirmed **✅** issues to **Fully Complete** by default or **Complete (KEEP)** sparingly
 
 ## For Immediate Implementation
 > _After registering each of these issues with Linear in the ordinary fashion, before updating the Focus Stack, briefly review the issue: If it is a quick or easy fix, implement it immediately without waiting for author confirmation. Otherwise, promote it to the top of the Focus Stack, and offer to begin work on it immediately when summarizing your work processing `INBOX.md` to the author. If multiple issues require promotion in this way, consider how best to resolve them as quickly as possible, and offer to draft an implementation plan in your response to the author._

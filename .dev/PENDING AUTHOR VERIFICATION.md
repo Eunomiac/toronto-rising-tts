@@ -1,6 +1,6 @@
 # Pending Author Verification
 
-Your TTS checklist for shipped work that still needs Save & Play / in-game confirmation. Linear **Done** alone does not mean verified.
+Your TTS checklist for shipped work that still needs Save & Play / in-game confirmation. Issues listed here should be **Awaiting Author Review** in Linear.
 
 **Marks** (prefix the `####` header):
 
@@ -11,7 +11,7 @@ Your TTS checklist for shipped work that still needs Save & Play / in-game confi
 | **⚠️** | Author | Bad expectations (+ **Author Comment:**) |
 | **⌚** | Agent | Not ready to verify yet — fix is open in Linear / Focus; **do not** Save & Play for this row until the watch is cleared |
 
-Unmarked = shipped (or verification gate) and waiting for your first pass. Agents add a new unmarked row whenever they ship in-game code; they process your **✅** / **❌** / **⚠️** marks on the next inbox. Agent policy: [PENDING AUTHOR VERIFICATION.agent.md](PENDING AUTHOR VERIFICATION.agent.md).
+Unmarked = shipped (or verification gate) and waiting for your first pass. Agents add a new unmarked row and set Linear to **Awaiting Author Review** whenever they ship in-game code. They process your **✅** / **❌** / **⚠️** marks on the next inbox. A **✅** moves the Linear issue to **Fully Complete** by default, or **Complete (KEEP)** when its Linear history should be retained. Agent policy: [PENDING AUTHOR VERIFICATION.agent.md](PENDING AUTHOR VERIFICATION.agent.md).
 
 ---
 
@@ -140,4 +140,4 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 ## Cleared
 
-_Optionally park confirmed entries here briefly, or just delete them. Prefer delete plus a tasklist / Linear note._
+_Remove confirmed entries from Outstanding. In Linear, set **Fully Complete** by default; use **Complete (KEEP)** sparingly when the issue contains lasting information that should remain._

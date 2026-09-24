@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 /**
- * Bulk-archive Done/Canceled Linear issues to free free-tier active issue quota (250).
+ * Author-run fallback: archive Linear issues whose exact status is Fully Complete.
  *
  * Linear has no manual archive in UI; auto-archive is time-delayed. The GraphQL
  * issueArchive mutation works immediately. Archived issues remain searchable (G X).
+ * Agents should not run this automatically; the author clears Fully Complete issues
+ * when the issue cap is reached.
  *
  * Usage:
  *   set LINEAR_API_KEY=lin_api_...   (PowerShell: $env:LINEAR_API_KEY="...")
  *   node .dev/scripts/archive-linear-done-issues.mjs --dry-run
  *   node .dev/scripts/archive-linear-done-issues.mjs
- *   node .dev/scripts/archive-linear-done-issues.mjs --keep-recent 40
  *
  * Options:
  *   --dry-run          List what would be archived; no mutations
- *   --keep-recent N    Keep N most recently completed/canceled issues (default 35)
  *   --team-id ID       Linear team UUID (default: Toronto Rising)
  *   --delay-ms N       Pause between archive calls (default 120)
  */
@@ -23,8 +23,6 @@ import path from "path";
 
 const TEAM_ID = "eeeed08e-75d8-4278-a1e0-9859d21421b3";
 const API_URL = "https://api.linear.app/graphql";
-
-const KEEP_LABELS = new Set(["living-doc"]);
 
 /** Load repo-root `.env` when LINEAR_API_KEY is not already set. */
 function loadEnvFile() {
@@ -51,21 +49,18 @@ function loadEnvFile() {
 function parseArgs(argv) {
   const opts = {
     dryRun: false,
-    keepRecent: 35,
     teamId: TEAM_ID,
     delayMs: 120,
   };
   for (let i = 2; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--dry-run") opts.dryRun = true;
-    else if (a === "--keep-recent") opts.keepRecent = Number(argv[++i] ?? 35);
     else if (a === "--team-id") opts.teamId = argv[++i];
     else if (a === "--delay-ms") opts.delayMs = Number(argv[++i] ?? 120);
     else if (a === "--help" || a === "-h") {
       console.log(`Usage: node .dev/scripts/archive-linear-done-issues.mjs [options]
 
   --dry-run          Preview only
-  --keep-recent N    Keep N newest closed issues (default 35)
   --team-id ID       Team UUID
   --delay-ms N       Delay between archives (default 120)
 `);
@@ -93,7 +88,7 @@ async function gql(apiKey, query, variables = {}) {
   return json.data;
 }
 
-async function fetchClosedIssues(apiKey, teamId) {
+async function fetchFullyCompleteIssues(apiKey, teamId) {
   const query = `
     query ClosedIssues($teamId: String!, $after: String) {
       team(id: $teamId) {
@@ -102,7 +97,7 @@ async function fetchClosedIssues(apiKey, teamId) {
           after: $after
           includeArchived: false
           filter: {
-            state: { type: { in: ["completed", "canceled"] } }
+            state: { name: { eq: "Fully Complete" } }
           }
         ) {
           nodes {
@@ -136,10 +131,6 @@ function closedAt(issue) {
   return issue.completedAt || issue.canceledAt || issue.updatedAt || "";
 }
 
-function hasKeepLabel(issue) {
-  return (issue.labels?.nodes ?? []).some((l) => KEEP_LABELS.has(l.name));
-}
-
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
@@ -168,24 +159,12 @@ async function main() {
     process.exit(1);
   }
 
-  console.log("Fetching closed (Done/Canceled) non-archived issues…");
-  const closed = await fetchClosedIssues(apiKey, opts.teamId);
-  console.log(`Found ${closed.length} closed non-archived issues.`);
+  console.log("Fetching non-archived issues with status Fully Complete…");
+  const closed = await fetchFullyCompleteIssues(apiKey, opts.teamId);
+  console.log(`Found ${closed.length} Fully Complete non-archived issues.`);
 
   const sorted = [...closed].sort((a, b) => closedAt(a).localeCompare(closedAt(b)));
-  const keep = new Set();
-  for (const issue of sorted) {
-    if (hasKeepLabel(issue)) keep.add(issue.id);
-  }
-  const recent = [...sorted]
-    .sort((a, b) => closedAt(b).localeCompare(closedAt(a)))
-    .slice(0, opts.keepRecent);
-  for (const issue of recent) keep.add(issue.id);
-
-  const toArchive = sorted.filter((i) => !keep.has(i.id));
-  console.log(
-    `Keeping ${keep.size} (${opts.keepRecent} most recent + ${KEEP_LABELS.size ? [...KEEP_LABELS].join(", ") + " label" : "labels"}).`,
-  );
+  const toArchive = sorted;
   console.log(`Will archive ${toArchive.length} issues${opts.dryRun ? " (dry-run)" : ""}.`);
 
   if (toArchive.length === 0) {

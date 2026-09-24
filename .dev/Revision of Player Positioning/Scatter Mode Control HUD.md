@@ -133,7 +133,7 @@ Handler names go on the template so `build:xml` copies them into generated `ui/p
 2. **`movePcToGroup`** extracted from the drop path (drop handler calls it). Smoke: drop still works.
 3. **HUD reconciler** + enter/leave Scatter + drop/Apply call sites. Smoke: enter Scatter, portraits and NPC names match the board without using the toggle.
 4. **Template handlers + hover/toggle/click**. Smoke: open strip, click another group, you move, strip closes, everyone else’s portraits update.
-5. **Docs / Event Listener Policy / HUD_FUNCTIONS / PAVE / Linear Done comment.**
+5. **Docs / Event Listener Policy / HUD_FUNCTIONS / PAVE / Linear Awaiting Author Review comment.**
 
 ## Files (expected)
 

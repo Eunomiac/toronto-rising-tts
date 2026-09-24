@@ -45,4 +45,4 @@ Load/bootstrap, gameboard Apply/Clear, token drop/pick-up, scenes/soundscape HUD
 
 ## Linear
 
-Initial multiclient gate (**TOR-144** / **TOR-249**) is **Done**. Continue upholding P1–P10; comment on related issues when adding event handlers or Global mutators. Residual join HUD: **TOR-381**.
+Initial multiclient gate (**TOR-144** / **TOR-249**) is complete. Continue upholding P1–P10; comment on related issues when adding event handlers or Global mutators. Residual join HUD: **TOR-381**.

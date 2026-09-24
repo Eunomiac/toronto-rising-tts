@@ -18,7 +18,7 @@ Verification:
 
 Audit trail for the 2026-05-22 Linear alignment pass.
 
-**Ongoing agent responsibility:** Keep Linear, [RUNNING TASKLIST](../RUNNING%20TASKLIST.md), [INBOX](../INBOX.md) triage, and code aligned per [`.cursor/rules/toronto-rising-linear.mdc`](../../.cursor/rules/toronto-rising-linear.mdc). When the Linear **issue limit** blocks new issues, append `DELETE` rows here for each purged **Done + author-confirmed** issue (see that rule § Issue limit).
+**Ongoing agent responsibility:** Keep Linear, [RUNNING TASKLIST](../RUNNING%20TASKLIST.md), [INBOX](../INBOX.md) triage, and code aligned per [`.cursor/rules/toronto-rising-linear.mdc`](../../.cursor/rules/toronto-rising-linear.mdc). Shipped PAV work uses **Awaiting Author Review**; PAV **✅** becomes **Fully Complete** by default or **Complete (KEEP)** sparingly. Agents cannot delete through MCP; when the Linear issue cap blocks a create, ask the author to clear all **Fully Complete** issues.
 
 ## Summary
 

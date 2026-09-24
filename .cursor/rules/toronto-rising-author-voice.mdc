@@ -25,7 +25,7 @@ This rule applies to **everything written for the author**, not only verificatio
 | --- | --- |
 | **Chat replies** | Full sentences; explain what changed and what to do next in everyday language |
 | **Status summaries** (`/tr-inbox`, finish work, “what’s next”) | Same — readable paragraphs over dense bullet stacks of nicknames |
-| **Linear comments** | Human-readable Done/In Progress notes, including how to test when verification is owed |
+| **Linear comments** | Human-readable In Progress / Awaiting Author Review / completion notes, including how to test when verification is owed |
 | **PENDING AUTHOR VERIFICATION** | Plain-English **How to verify** on the checklist (agents **add a row when they ship** in-game code; process **✅** / **❌** / **⚠️** on `/tr-inbox`); agent policy in `.agent.md` |
 | **Step-by-step / author playbooks** | Followable instructions without assuming Linear or code literacy |
 | **Questions to the author** | Ask in clear English; one idea per question when possible |
@@ -52,9 +52,9 @@ This rule applies to **everything written for the author**, not only verificatio
 
 ## Examples
 
-**Bad (chat):** `TOR-384 Done. Canary remount on cold load; pending PAVE.`
+**Bad (chat):** `TOR-384 Awaiting Review. Canary remount on cold load; pending PAVE.`
 
-**Good (chat):** `I finished **TOR-384** (Global HUD missing on first save load). On a fresh load from the main menu, the script now checks whether the global HUD is present and remounts it if it is missing, so you should not need a second reload. I have not seen you confirm that in TTS yet, so it is listed under Pending Author Verification with step-by-step check instructions.`
+**Good (chat):** `I finished **TOR-384** (Global HUD missing on first save load) and moved it to Awaiting Author Review. On a fresh load from the main menu, the script now checks whether the global HUD is present and remounts it if it is missing, so you should not need a second reload. I have not seen you confirm that in TTS yet, so it is listed under Pending Author Verification with step-by-step check instructions.`
 
 **Bad:** `blockedBy TOR-444; re-smoke step 2.`
 

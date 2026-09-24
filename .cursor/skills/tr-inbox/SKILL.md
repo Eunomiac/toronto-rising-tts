@@ -57,7 +57,7 @@ Two **independent** axes:
 - **Focus** = small stack rank (top ~3–6) for what to run **`/tr-start`** on next
 - **Sequencing** = Linear **`blockedBy`** on the **waiting** issue (star pattern, 1–6 direct prerequisites)
 - **Inbox promotions** not in Focus: Linear issue + tasklist `[ ]` bullet in the right domain section + **`blockedBy`** when B should wait for A — apply blockers **without** asking
-- When a **`blockedBy` prerequisite** is **Done** or **Canceled**: remove stale blockers on dependents (standard gate-close survey in `.cursor/rules/toronto-rising-linear.mdc`); optionally re-stack **Focus** — do **not** expect a deferral list to resurface work
+- When a **`blockedBy` prerequisite** enters any completed status or is **Canceled**: remove stale blockers on dependents (standard gate-close survey in `.cursor/rules/toronto-rising-linear.mdc`); optionally re-stack **Focus** — do **not** expect a deferral list to resurface work
 
 **Do not** auto-set Linear **Low** on work that is simply “not Focus #1” — that is sequencing/importance, not low importance.
 
@@ -83,8 +83,8 @@ For each bullet under **Quick Fixes**:
 2. **Implement now** when the fix is clearly small (typically one file, a few lines, no design fork):
    - Patch the repo; run `npm run build` (Main) before Save & Play; use `npm run build:xml` when Lua/XML HUD templates changed, or `npm run build:full` when JSON/sheet/constants/CustomUIAssets inputs changed.
    - **Commit** without asking (Quick Fixes grants commit permission during `/tr-inbox`).
-   - If a matching open Linear issue exists → mark **Done** with a short comment; else log in [`.dev/plans/linear-alignment-log.md`](../../../.dev/plans/linear-alignment-log.md) as shipped (create a **Bug** issue only when you want a bug anchor).
-   - Add an unmarked Outstanding row to [PENDING AUTHOR VERIFICATION.md](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.md) **now** (same-session add — do not wait for Part B catch-up).
+   - If a matching open Linear issue exists → set **Awaiting Author Review** with a short completion comment; else log in [`.dev/plans/linear-alignment-log.md`](../../../.dev/plans/linear-alignment-log.md) as shipped (create a **Bug** issue only when you want a bug anchor).
+   - Add an unmarked Outstanding row to [PENDING AUTHOR VERIFICATION.md](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.md) **now** (same-session add — do not wait for Part B catch-up). Every shipped issue represented by that row must be **Awaiting Author Review**.
    - Do **not** add a Focus row for work already shipped here unless the author should verify in TTS.
 3. **Promote** when not a quick fix → same as Active (Linear + RUNNING TASKLIST + alignment log).
 
@@ -118,7 +118,7 @@ After Quick Fixes + Phase 1/2, apply **INBOX cleanup** (Conventions above): remo
 Even if capture sections were empty, refresh the stack so **`/tr-start`** readers get current truth:
 
 1. Read **`## Focus`** in [`.dev/RUNNING TASKLIST.md`](../../../.dev/RUNNING%20TASKLIST.md).
-1b. Maintain [`.dev/PENDING AUTHOR VERIFICATION.md`](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.md): process author header marks **✅** / **❌** / **⚠️**, catch up any shipped work a previous agent forgot to list, and set **⌚** on unshipped ❌/⚠️ follow-ups — per [PENDING AUTHOR VERIFICATION.agent.md](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md). Ship sessions should already have added Outstanding rows; this step is catch-up plus mark processing. **❌ Verification Failures** and **⚠️ Corrections** that need behavior changes follow the same urgency as INBOX **For Immediate Implementation** (implement quick fixes in this session and leave the row unmarked; otherwise Focus top + offer to start; defer to Linear backlog **only** for complex refactors). If High-priority verify debt would block a play session, mention it in the summary.
+1b. Maintain [`.dev/PENDING AUTHOR VERIFICATION.md`](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.md): process author header marks **✅** / **❌** / **⚠️**, catch up any shipped work a previous agent forgot to list, and set **⌚** on unshipped ❌/⚠️ follow-ups — per [PENDING AUTHOR VERIFICATION.agent.md](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md). Align every shipped, ready-to-test row to Linear **Awaiting Author Review**. On **✅**, remove the row and set **Fully Complete** by default; use **Complete (KEEP)** only when the issue contains lasting comments, attachments, or decisions that should remain, and state that reason in the summary. Ship sessions should already have added Outstanding rows; this step is catch-up plus mark processing. **❌ Verification Failures** and **⚠️ Corrections** that need behavior changes follow the same urgency as INBOX **For Immediate Implementation** (implement quick fixes in this session and leave the row unmarked; otherwise Focus top + offer to start; defer to Linear backlog **only** for complex refactors). If High-priority verify debt would block a play session, mention it in the summary.
 2. List open Linear **Bug** issues and non-epic **In Progress** work (ignore epic-only noise unless actively blocking).
 3. **Re-stack Focus** (update the table + dated blurb) using this default policy unless the author overrode in chat:
    - **Session-blocking bugs** and audible/regression failures first — including PAVE **❌** / **⚠️** follow-ups promoted under Immediate disposition.
@@ -133,9 +133,9 @@ Even if capture sections were empty, refresh the stack so **`/tr-start`** reader
    - **Medium** — real features/improvements (including inbox captures with full specs that are not Focus #1)
    - **Low** — polish/nice-to-have **only when author confirms** low importance — never as a side effect of “not in Focus”
 6. **Blocking links:** When B should wait for A, add **`blockedBy: [A, …]`** on B (liberal sequencing OK). **Anti-gridlock:** star pattern on B only; 1–6 direct prerequisites; no peer-to-peer mesh. List new blocks in **Linear sync** (reply format).
-7. Ensure every Focus row has a matching open tasklist bullet and Linear issue; remove Focus rows for **Done** or **Canceled** work.
+7. Ensure every Focus row has a matching open tasklist bullet and Linear issue; remove Focus rows for any completed status or **Canceled** work.
 8. **Do not** update **Deferred this cycle** — it is **paused** (historical line in RUNNING TASKLIST is context only).
-9. **Issue limit:** If `save_issue` create fails (or Linear reports the workspace/plan issue limit), purge **Done + author-confirmed** issues per [`.cursor/rules/toronto-rising-linear.mdc`](../../rules/toronto-rising-linear.mdc) § Issue limit — oldest first, only as many as needed — then retry. Log deletions in [`.dev/plans/linear-alignment-log.md`](../../../.dev/plans/linear-alignment-log.md). Do **not** delete preventively while under the limit. If MCP cannot delete, list labeled candidates and ask the author to trash them in Linear.
+9. **Issue cap:** If `save_issue` create fails because Linear has reached the workspace/plan issue cap, stop the blocked create and tell the author to clear **all Fully Complete issues** in Linear. Agents cannot delete or archive issues through the current MCP tools. Do not include **Complete (KEEP)**, **Awaiting Author Review**, open work, canceled work, living docs, or active parent epics. Retry only after the author confirms cleanup.
 
 Part B is **tracking-only for INBOX Active / Focus re-stack**, except: **Quick Fixes** (Part A.0) and **PAVE ❌ / ⚠️ Immediate disposition** may implement in this session when the fix is quick.
 
@@ -151,8 +151,8 @@ Before your final reply, verify and report:
 | **Processed** | New session entries appended for handled items |
 | **RUNNING TASKLIST** | New `[ ]` bullets for every scheduled promotion |
 | **Focus** | Dated stack rank; top row is the recommended next task |
-| **PENDING AUTHOR VERIFICATION** | Process **✅** / **❌** / **⚠️** per [PENDING AUTHOR VERIFICATION.agent.md](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md); catch-up any shipped work missing a row; mark unshipped follow-ups **⌚** (skip verify); Quick Fixes / Immediate ships in this session get an **unmarked** row now; **❌**/**⚠️** follow Immediate Implementation disposition (ship quick fixes here; Focus top otherwise; defer only complex refactors) |
-| **Linear** | Priorities reflect **importance**; **`blockedBy`** reflects **precedence**; no orphan promoted ids; if create hit the **issue limit**, purged Done + author-confirmed issues and logged deletions |
+| **PENDING AUTHOR VERIFICATION** | Process **✅** / **❌** / **⚠️** per [PENDING AUTHOR VERIFICATION.agent.md](../../../.dev/PENDING%20AUTHOR%20VERIFICATION.agent.md); catch-up any shipped work missing a row; mark unshipped follow-ups **⌚** (skip verify); Quick Fixes / Immediate ships in this session get an **unmarked** row now and **Awaiting Author Review** in Linear; **✅** becomes **Fully Complete** by default or **Complete (KEEP)** with a stated reason; **❌**/**⚠️** follow Immediate Implementation disposition (ship quick fixes here; Focus top otherwise; defer only complex refactors) |
+| **Linear** | Priorities reflect **importance**; **`blockedBy`** reflects **precedence**; no orphan promoted ids; if a create hit the **issue cap**, told the author to clear all **Fully Complete** issues and left the blocked create pending |
 
 If unanswered **`?`** remain, say so explicitly — repo is still **`/tr-start`-ready** for implementation on existing Focus items; promotion waits for **`Answer:`** + re-run **`/tr-inbox`**.
 
@@ -162,7 +162,7 @@ Write the whole reply in plain English (author voice). Tables are fine; do not l
 
 1. **Inbox summary** — quick-fix shipped / promoted / parked / dismissed / duplicate. Every `TOR-XXX` includes a short label. Say what each item means in everyday language when the label alone is jargon. Include PAVE **❌**/**⚠️** items shipped or Focus-promoted under Immediate disposition.
 2. **Focus table** — reproduce the updated **`## Focus`** rows (top 6 max). Ids in the table already have a **Why now** column — that satisfies the context rule for those rows.
-3. **Linear sync** — **priority** changes and new **`blockedBy`** links; each id with label (e.g. `TOR-143 (phase system redesign) → Medium`; `TOR-143 blockedBy TOR-141 (E2E playbooks)`). If you purged issues for quota, list each deleted id with label and say it was for the Linear issue limit.
+3. **Linear sync** — status changes, **priority** changes, and new **`blockedBy`** links; each id with label (e.g. `TOR-143 (phase system redesign) → Awaiting Author Review`; `TOR-143 blockedBy TOR-141 (E2E playbooks)`). For each **Complete (KEEP)** choice, explain what lasting information must remain. If the issue cap blocked a create, say so plainly and ask the author to clear all **Fully Complete** issues.
 4. **Blocked on author** — any `?` still needing **`Answer:`** in INBOX (copy the questions).
 5. **Sequencing notes** — inbox promotions not in Focus: where they landed (domain section) and **`blockedBy`** applied (labeled). If none promoted this session, say *“No new sequencing.”*
 6. **Handoff** — one sentence with labeled id if naming a specific next task: *“Open a new chat and run `/tr-start TOR-135 NPC cutouts on scene apply` (include the issue id in the message so scope is obvious).”*

@@ -56,7 +56,7 @@ Omit from the combined plan when **any** of these is true:
 
 - Major refactor or architecture (light-mode centralization, Sync.full audit, phase UX redesign, rotational seat layout, and similar)
 - Living documentation (`living-doc`), External / `workshop-only` / human-gate, or verification-only (e.g. join-stress re-smoke with no code)
-- Open **`blockedBy`** whose prerequisite is not Done/Canceled
+- Open **`blockedBy`** whose prerequisite is not in a completed status or **Canceled**
 - Unclear product/scope that would need INBOX `?` answers
 - Combining it with the rest would force an unsafe dual-writer or a dedicated solo session
 

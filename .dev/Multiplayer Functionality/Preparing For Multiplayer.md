@@ -28,7 +28,7 @@ Status: current multiplayer authority policy. **Initial multiclient E2E passed**
 
 **Related:** [Multiclient Session Script](../E2E%20Playbooks/Multiplayer-Session.md), [Multiplayer-E2E](../E2E%20Playbooks/Multiplayer-E2E.md) (coverage checklist), [Event Listener Policy](../Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md), [Reconciler Contract](../Sychronizing%20Game%20Functionality/Reconciler%20Contract.md), [Dual-apply survey](../Sychronizing%20Game%20Functionality/Dual_apply_survey.md), [Phases Overview](../Phases/Phases%20Overview.md) (TOR-143), [lua-local-function-order](../../docs/solutions/lua-local-function-order.md).
 
-**Linear:** **TOR-144** / **TOR-249** Done (2026-07-13). Residual join HUD: **TOR-381**.
+**Linear:** **TOR-144** / **TOR-249** completed (2026-07-13). Residual join HUD: **TOR-381**.
 
 ---
 

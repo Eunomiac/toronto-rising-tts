@@ -80,7 +80,7 @@
 
 - [ ] **Step 4: Run** `npm run skyboxes:import` — expect catalog + modal refresh
 
-- [ ] **Step 5: Docs + tasklist + Linear Done**
+- [ ] **Step 5: Docs + tasklist + Linear Awaiting Author Review**
 
 - [ ] **Step 6: Commit**
 

@@ -15,14 +15,14 @@ Source of truth:
 - `.cursor/skills/tr-quick/SKILL.md`
 - `.cursor/rules/toronto-rising-linear.mdc`
 - `.dev/INBOX.md` for raw capture before triage
-- [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md) — author checklist of Done work still awaiting TTS confirmation (**agents add a row when they ship**; process **✅** / **❌** / **⚠️** on `/tr-inbox`)
+- [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md) — author checklist of **Awaiting Author Review** work still awaiting TTS confirmation (**agents add a row when they ship**; process **✅** / **❌** / **⚠️** on `/tr-inbox`)
 - [PENDING AUTHOR VERIFICATION.agent.md](PENDING%20AUTHOR%20VERIFICATION.agent.md) — agent policy for that checklist (same-session add, marks, writing style)
 
 Verification:
 - every active bullet has a matching `TOR-*` Linear issue
 - Focus order matches current Linear blocker/priority intent
 - completed work is reflected in Linear and relevant docs
-- author-unconfirmed Done work is listed in PENDING AUTHOR VERIFICATION (agents add a row in the ship session; inbox catch-up plus mark processing; how-to-verify also in Linear Done comments)
+- author-unconfirmed shipped work is listed in PENDING AUTHOR VERIFICATION and set to **Awaiting Author Review** (agents add a row in the ship session; inbox catch-up plus mark processing; how-to-verify also in the Linear completion comment)
 
 This file is continuously updated with issues and plans for feature development.
 
@@ -30,7 +30,7 @@ This file is continuously updated with issues and plans for feature development.
 
 **Quick capture before items are shaped:** [INBOX.md](INBOX.md) ? one-line notes only; say **?process the inbox?** to triage (agent promotes to Linear + this file when ready).
 
-**Author TTS verification debt:** [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md) — Linear Done ≠ Save & Play confirmed. Agents **add a checklist row in the same session as the ship**. Process **✅** / **❌** / **⚠️** marks on **`/tr-inbox`**. Agent instructions: [PENDING AUTHOR VERIFICATION.agent.md](PENDING%20AUTHOR%20VERIFICATION.agent.md).
+**Author TTS verification debt:** [PENDING AUTHOR VERIFICATION.md](PENDING%20AUTHOR%20VERIFICATION.md) — listed shipped work belongs in Linear **Awaiting Author Review**. Agents **add a checklist row in the same session as the ship**. Process **✅** / **❌** / **⚠️** marks on **`/tr-inbox`**; **✅** becomes **Fully Complete** by default or **Complete (KEEP)** sparingly. Agent instructions: [PENDING AUTHOR VERIFICATION.agent.md](PENDING%20AUTHOR%20VERIFICATION.agent.md).
 
 **What to work next:** skim **Focus** below, then say **?what?s next?** or pick the top unchecked Focus item. Re-stack Focus when priorities shift (after inbox triage, before a play session, or weekly).
 
@@ -61,7 +61,7 @@ _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred
 
 **Deferred this cycle:** _Paused (author 2026-06-21 ? no back-burner surfacing mechanism yet). Open bullets stay in domain sections below; use **Focus** + Linear **`blockedBy`** for work order._
 
-**How blocked work unblocks:** Linear **`blockedBy`** on the waiting issue; when a prerequisite is **Done** or **Canceled**, agents remove stale blockers and may re-stack **Focus** (`/tr-inbox`, **?what?s next?**, **`/tr-start`**). Gate-close resurfacing survey still applies when Focus prerequisites finish.
+**How blocked work unblocks:** Linear **`blockedBy`** on the waiting issue; when a prerequisite enters a completed status or is **Canceled**, agents remove stale blockers and may re-stack **Focus** (`/tr-inbox`, **?what?s next?**, **`/tr-start`**). Gate-close resurfacing survey still applies when Focus prerequisites finish.
 
 ---
 
