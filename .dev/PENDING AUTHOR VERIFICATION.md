@@ -31,8 +31,9 @@ _Last populated: 2026-09-24 — Experience Log + page 6 (TOR-92)._
 4. Click **Undo** twice and confirm both lines disappear and totals return.
 5. Mark another PC **Absent**, enter a gain, click **Apply to All**, and confirm the Absent seat did not change while present seats did.
 6. After you advance session number (End→Intermission), **without** re-baking, you should get a Storyteller warning about a stale page 6 bake; the live block still accepts new entries for the new session. After `npm run csheet-xp-log:bake` + Save & Play, the previous session should appear as a baked block.
+7. Optional authoring check: on the Storyteller Dashboard **PCs** tab, open **JSON**, paste an Experience Log object under `"xp": { "0": { ... } }` (trailing commas OK), and **Apply**. Page 1 XP and page 6 should match that log. A bare number for `xp` should still be refused.
 
-**Context:** Scalar `stats.xp` removed; log is `playerData.<pid>.xp`. Character history remains background art only. Dashboard XP editor UI is out of scope (scalar writes return an error).
+**Context:** Scalar `stats.xp` removed; log is `playerData.<pid>.xp`. Character history remains background art only. Dashboard ring/`op:xp` scalar writes stay disabled; JSON Apply may replace the full Experience Log object.
 
 ### Phases / session end
 

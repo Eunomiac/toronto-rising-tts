@@ -387,4 +387,41 @@ function XpLog.getSessionBlock(pid, sessionNum)
   return block
 end
 
+--- Replace the entire Experience Log (authoring / Dashboard JSON Apply).
+--- Session keys may arrive as strings (JSON). Blocks are deep-copied; timeline is
+--- rebuilt from gains/spends when timeline is missing.
+--- @param pid string
+--- @param raw any
+--- @return boolean ok
+--- @return string|nil err
+function XpLog.replaceLog(pid, raw)
+  if type(pid) ~= "string" or pid == "" then
+    return false, "Missing player id"
+  end
+  if U.Type(raw) ~= "table" then
+    return false, "XP log must be a JSON object keyed by session number"
+  end
+  local log = {}
+  for k, block in pairs(raw) do
+    local n = tonumber(k)
+    if n ~= nil and U.Type(block) == "table" then
+      local sessionNum = math.floor(n)
+      local copy = U.clone(block, true)
+      if type(copy.sessionDisplay) ~= "string" or copy.sessionDisplay == "" then
+        copy.sessionDisplay = XD.sessionDisplayForNum(sessionNum)
+      end
+      if copy.date ~= nil then
+        copy.date = math.floor(tonumber(copy.date) or 0)
+      end
+      if copy.prevTotal ~= nil then
+        copy.prevTotal = math.floor(tonumber(copy.prevTotal) or 0)
+      end
+      ensureTimeline(copy)
+      log[sessionNum] = copy
+    end
+  end
+  S.setStateVal(log, "playerData", pid, "xp")
+  return true, nil
+end
+
 return XpLog

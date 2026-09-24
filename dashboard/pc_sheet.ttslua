@@ -337,7 +337,18 @@ applyMergedSeat = function(color, seat)
     S.setStateVal(badges, "playerData", pid, "stats", "badges")
   end
   if seat.xp ~= nil then
-    return "XP is managed via the Experience Log (PCs panel XP button); dashboard scalar XP writes are disabled"
+    if type(seat.xp) == "table" then
+      local XpLog = require("core.xp_log")
+      local ok, err = XpLog.replaceLog(pid, seat.xp)
+      if not ok then
+        return err or "Could not replace Experience Log"
+      end
+      if type(PCST.paintXpLogPage6ForColor) == "function" then
+        PCST.paintXpLogPage6ForColor(color)
+      end
+    else
+      return "XP patch must be an Experience Log object (session-number keys), not a single number — use the PCs panel XP button for live gains/spends"
+    end
   end
   if seat.hunger ~= nil then
     local maxDots = tonumber(C.MAX_HUNGER) or 5
