@@ -118,6 +118,8 @@ local function npcDisplayNameForCharacterKey(characterKey)
 end
 
 --- Re-apply committed token home from state (stage placement, homeland seat row, or palette).
+--- Under Scatter Mode, tokens leave the group and park on the CONTROL_BOARD_PALETTE (NPC)
+--- instead of returning to a polar seat-row / placement on the board.
 --- @param token Object
 --- @param characterKey string|nil
 --- @return boolean restored
@@ -132,6 +134,12 @@ local function restoreNpcControlTokenHome(token, characterKey)
     local guid = tostring(token.getGUID() or "")
     if guid ~= "" then
         tokenPickedUpFromPaletteGuid[guid] = nil
+    end
+
+    local ScatterMode = require("core.scatter_mode")
+    if ScatterMode.isActive() and type(ScatterMode.clearCharacterOccupancy) == "function" then
+        ScatterMode.clearCharacterOccupancy(characterKey, { token = token, parkToPalette = true })
+        return true
     end
 
     local model = Reconcile.getActiveBoardModel()
@@ -254,6 +262,8 @@ Interactions.tryNpcControlTokenDroppedOnStorytellerDiceBag = tryNpcControlTokenD
 --- Re-pin a `pc_control_token` to the numbered chair in `seatSlots[color].tableSlot`
 --- (or stash it locked at Y = −200 when Absent). Flip matches
 --- `seatSlots[color].isPresent` (state authoritative — TOR-247 / TOR-513).
+--- Under Scatter Mode, free the group slot and leave the token unlocked off the board
+--- (PC tokens have no palette snaps); do not snap back onto a Scatter hole or polar seat row.
 --- @param token Object
 --- @param color string|nil player seat color (defaults to GM Notes `pcToken:<Color>`)
 --- @return boolean restored
@@ -265,6 +275,19 @@ local function restorePcControlTokenHome(token, color)
     if type(color) ~= "string" or color == "" then
         return false
     end
+
+    local ScatterMode = require("core.scatter_mode")
+    if ScatterMode.isActive() and type(ScatterMode.clearCharacterOccupancy) == "function" then
+        local pcKey = ScatterMode.pcKeyForColor(color)
+        ScatterMode.clearCharacterOccupancy(pcKey, { token = token, parkToPalette = false })
+        if type(token.setLock) == "function" then
+            token.setLock(false)
+        end
+        token.interactable = true
+        Tokens.ensureDefaultNpcControlTokenScale(token)
+        return true
+    end
+
     local board = Board.getControlBoard()
     if not Board.isGameObject(board) then
         return false
@@ -1281,14 +1304,21 @@ function Interactions.onControlTokenPickUp(token)
         end
         token.interactable = true
         -- Free the scatter hole as soon as the token leaves it so another NPC can claim that slot.
+        -- Do not palette-park yet (token is still in hand); off-parchment drop / dice-bag restore parks.
         if Board.isTokenOnMinimapTokenSurface(board, token)
             and type(ScatterMode.clearCharacterOccupancy) == "function" then
             if Tokens.isNpcControlToken(token) then
-                ScatterMode.clearCharacterOccupancy(Tokens.resolveTokenCharacterKey(token))
+                ScatterMode.clearCharacterOccupancy(Tokens.resolveTokenCharacterKey(token), {
+                    token = token,
+                    parkToPalette = false,
+                })
             elseif Tokens.isPcControlToken(token) then
                 local color = Tokens.resolvePcTokenSeatColor(token)
                 local pcKey = color and ScatterMode.pcKeyForColor(color) or nil
-                ScatterMode.clearCharacterOccupancy(pcKey)
+                ScatterMode.clearCharacterOccupancy(pcKey, {
+                    token = token,
+                    parkToPalette = false,
+                })
             end
         end
     else
@@ -1423,7 +1453,7 @@ function Interactions.onPcControlTokenDropped(token, playerColor)
     if ScatterMode.isActive() and type(ScatterMode.clearCharacterOccupancy) == "function" then
         local color = Tokens.resolvePcTokenSeatColor(token)
         local pcKey = color and ScatterMode.pcKeyForColor(color) or nil
-        ScatterMode.clearCharacterOccupancy(pcKey)
+        ScatterMode.clearCharacterOccupancy(pcKey, { token = token, parkToPalette = false })
     end
     applyControlTokenDropScaleByBoardPosition(token, board)
 end
@@ -1502,9 +1532,13 @@ function Interactions.onNpcControlTokenDropped(token, playerColor)
         Interactions.finishInteractionProfile(t0)
         return
     end
-    -- Left the Scatter parchment (palette / off-board): keep orbit holes free for the next token.
+    -- Left the Scatter parchment (palette / off-board): park NPC tokens on the palette;
+    -- PC tokens unlock off-board (no palette snap). HERE also updates figurines immediately.
     if ScatterMode.isActive() and type(ScatterMode.clearCharacterOccupancy) == "function" then
-        ScatterMode.clearCharacterOccupancy(Tokens.resolveTokenCharacterKey(token))
+        ScatterMode.clearCharacterOccupancy(Tokens.resolveTokenCharacterKey(token), {
+            token = token,
+            parkToPalette = true,
+        })
     end
     if not Board.isTokenOnControlBoardSurface(board, token) then
         Tokens.ensureDefaultNpcControlTokenScale(token)

@@ -34,6 +34,18 @@ _Last populated: 2026-09-23 evening `/tr-inbox` — End→Intermission ambient f
 
 ### Scatter / table layout
 
+#### TOR-628 — Scatter Mode HERE/THERE preview + token lifecycle
+
+**How to verify:** Save & Play so scripts reload.
+
+1. **Live Scatter (HERE):** Drop a PC or NPC control token onto a scatter group. Figurines should move right away. The PC token on a center hole should lock. If a library row is linked for live writes, that row’s `scatterPlacements` should update after the edit.
+2. **THERE preview:** Select a pending library row and switch the Control Board to **THERE**. Rearrange scatter tokens on the parchment — the live stage figurines should **not** move. Click **Reset** — tokens should match the library row’s pack again. Leave THERE (click THERE → HERE) — the pending row’s `scatterPlacements` should match what you left on the board.
+3. **Remove → palette:** Pick up an NPC token from a group and drop it on empty table space (not on a group). It should return to the **CONTROL_BOARD_PALETTE**. On HERE, that character’s figurine should leave the group immediately.
+4. **Dice bag roll:** From Scatter, drop an NPC token onto an ST dice bag to start a roll. The token should park on the **palette**, not snap back onto a Scatter hole. The roll should still open as usual.
+5. **Apply pending Scatter scene:** Apply a pending Scatter library row. The world should match the committed pack, and the board should return to HERE.
+
+**Context:** Aligns Scatter with polar HERE/THERE (`previewDraft.scatterPlacements`). relatedTo **TOR-572** (in-game Scatter).
+
 #### TOR-573 — Scatter import and live Standard↔Scatter switch
 
 **How to verify:** Save & Play so scripts reload.

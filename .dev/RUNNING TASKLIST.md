@@ -38,16 +38,17 @@ This file is continuously updated with issues and plans for feature development.
 
 ## Focus
 
-_Stack rank for the current cycle (2026-09-23 evening `/tr-inbox`: End→Intermission ambient fade with blackout FadeIn shipped under **TOR-143** / **TOR-506**; Solo Focus stays Auto Rouse then E2E / light-mode cleanup). **Precedence** = Focus stack + Linear **`blockedBy`** (not Linear priority). **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). **Back-burner / "Deferred this cycle" is paused** (author 2026-06-21) - open work stays in domain sections; sequence via Linear blockers only._
+_Stack rank for the current cycle (2026-09-24: **TOR-628** Scatter HERE/THERE + token lifecycle shipped — pending Save & Play). **Precedence** = Focus stack + Linear **`blockedBy`** (not Linear priority). **TOR-141 (E2E playbooks)** is a living doc (In Progress, not Focus stack). **Back-burner / "Deferred this cycle" is paused** (author 2026-06-21) - open work stays in domain sections; sequence via Linear blockers only._
 
 _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred from the top** because it depends on your ability to get other people to test; the Focus stack should stay to items you can do solo.
 
 | # | Issue | Why now |
 | --- | --- | --- |
-| 1 | **TOR-526** (Auto Rouse: lock 0.5s after table hit, 1s broadcast) | Leftover play-session dice work; End→Intermission audio polish shipped. |
-| 2 | **TOR-141** (Dice + Scenes E2E playbooks) | Living regression harness — keep current before large refactors. |
-| 3 | **TOR-81** (centralize light modes) | Large in-flight lighting cleanup after session-audio Focus. |
-| 4 | **TOR-495** (spotlight tuner panel) | Already In Progress; debug lighting tooling. |
+| 1 | **TOR-628** (Scatter HERE/THERE + token lifecycle) | Inbox Scatter Mode Fixes shipped; needs Save & Play verify (HERE/THERE, PC lock, remove→palette, dice-bag→palette). |
+| 2 | **TOR-526** (Auto Rouse: lock 0.5s after table hit, 1s broadcast) | Leftover play-session dice work. |
+| 3 | **TOR-141** (Dice + Scenes E2E playbooks) | Living regression harness — keep current before large refactors. |
+| 4 | **TOR-81** (centralize light modes) | Large in-flight lighting cleanup after session-audio Focus. |
+| 5 | **TOR-495** (spotlight tuner panel) | Already In Progress; debug lighting tooling. |
 
 **Also unblocked (not Focus top):** **TOR-89** (PCs map location modal). **TOR-495** (spotlight tuner panel, already In Progress). Soft design waits: **TOR-92** / **TOR-99**. **Blocked:** **TOR-320**/ **TOR-321** wait on **TOR-81**; **TOR-330** waits on workshop **TOR-327**. **TOR-95** (play as NPC) is unblocked now that **TOR-247** shipped. Living docs: **TOR-141**, **TOR-464**. External: **TOR-88**, **TOR-463**, **TOR-454**, **TOR-456**, **TOR-455**, **TOR-303**.
 
@@ -375,6 +376,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## UI Panels
 
+- [x] **Scatter Mode HERE/THERE + token lifecycle:** Preview draft carries `scatterPlacements`; THERE edits draft only (no world layout); HERE instant world apply + library mirror; PC tokens lock on center holes when HERE; remove/off-parchment/dice-bag parks NPC tokens on palette. relatedTo **TOR-572**. Pending Save & Play. _(TOR-628)_
 - [x] **Scatter Mode player HUD:** Scatter-only per-seat strip; gold / first-join is PC slot 1; click another group to move immediately; click own group is a no-op and does not close the strip. relatedTo **TOR-572**. Pending Save & Play. _(TOR-602)_
 - [x] **Play overlay chrome via absolute setClass:** PLAY/MAIN stays on authored XML classes; Downtime / prologue / Spotlight / End APPLY absolute class lists; text via setAttributes only; `sesionNumber` → `sessionNumber`. relatedTo **TOR-598**. Author confirmed 2026-09-23. _(TOR-604)_
 - [x] **Session-start first Downtime overlay is prologue copy:** Intermission→Play with no live scene shows **T O R O N T O   R I S I N G**, compact ASCII roman session, spaced uppercase session title, and **PROLOGUE**. Later Downtime (after End scene) is date + **DOWNTIME**; leaving prologue restores usual overlay styles. relatedTo **TOR-527**. Word gaps: **TOR-600**. Pending Save & Play. _(TOR-598)_

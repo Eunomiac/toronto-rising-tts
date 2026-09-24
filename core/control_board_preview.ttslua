@@ -98,6 +98,26 @@ local function emptyNpcSeatRow(row)
     return result
 end
 
+--- Normalize scatter pack shape for drafts (six area keys with center/orbit tables).
+--- @param pack any
+--- @return table
+local function normalizeScatterPlacements(pack)
+    local ScatterLayout = require("lib.scatter_layout")
+    local out = ScatterLayout.emptyPlacements()
+    if type(pack) ~= "table" then
+        return out
+    end
+    for i = 1, ScatterLayout.groupCount() do
+        local key = ScatterLayout.areaKeyForGroup(i)
+        local area = pack[key]
+        if type(area) == "table" then
+            out[key].centerCharacters = deepCopy(type(area.centerCharacters) == "table" and area.centerCharacters or {})
+            out[key].orbitCharacters = deepCopy(type(area.orbitCharacters) == "table" and area.orbitCharacters or {})
+        end
+    end
+    return out
+end
+
 --- Builds a detached JSON-safe participant draft from a library `sessionScene`.
 --- @param sceneKey string
 --- @param sessionScene table
@@ -111,6 +131,7 @@ function Preview.buildDraft(sceneKey, sessionScene)
             placements = deepCopy(type(sourceWorld.placements) == "table" and sourceWorld.placements or {}),
         },
         seatSlots = deepCopy(type(source.seatSlots) == "table" and source.seatSlots or {}),
+        scatterPlacements = normalizeScatterPlacements(source.scatterPlacements),
     }
     for _, seatKey in ipairs(C.PlayerColors or {}) do
         ensureDraftSeatRow(draft, seatKey).isPresent = seatPresence(source, seatKey)
@@ -126,15 +147,33 @@ function Preview.buildDraft(sceneKey, sessionScene)
     return draft
 end
 
+--- Ensures a draft table has a shaped `scatterPlacements` pack (legacy drafts may omit it).
+--- @param draft table
+local function ensureDraftScatterPlacements(draft)
+    if type(draft) ~= "table" then
+        return
+    end
+    if type(draft.scatterPlacements) ~= "table" then
+        draft.scatterPlacements = normalizeScatterPlacements(nil)
+    else
+        draft.scatterPlacements = normalizeScatterPlacements(draft.scatterPlacements)
+    end
+end
+
 --- Validates the persisted draft shape without consulting live objects.
 --- @param draft any
 --- @return boolean
 function Preview.isValidDraft(draft)
-    return type(draft) == "table"
-        and isNonEmptyString(draft.sceneKey)
-        and type(draft.npcWorld) == "table"
-        and type(draft.npcWorld.placements) == "table"
-        and type(draft.seatSlots) == "table"
+    if type(draft) ~= "table"
+        or not isNonEmptyString(draft.sceneKey)
+        or type(draft.npcWorld) ~= "table"
+        or type(draft.npcWorld.placements) ~= "table"
+        or type(draft.seatSlots) ~= "table"
+    then
+        return false
+    end
+    -- Legacy drafts without scatterPlacements are still valid; getDraft normalizes the field.
+    return true
 end
 
 --- Replaces board-owned fields on a library `sessionScene`, preserving all other row metadata.
@@ -147,6 +186,7 @@ function Preview.mergeDraftIntoSessionScene(draft, sessionScene)
     result.npcWorld.placements = deepCopy(draft.npcWorld.placements)
     result.seatSlots = type(result.seatSlots) == "table" and result.seatSlots or {}
     result.seatPresent = type(result.seatPresent) == "table" and result.seatPresent or {}
+    result.scatterPlacements = normalizeScatterPlacements(draft.scatterPlacements)
 
     for _, seatKey in ipairs(C.NPCSeats or {}) do
         local target = type(result.seatSlots[seatKey]) == "table"
@@ -186,7 +226,11 @@ end
 function Preview.getDraft()
     local S = require("core.state")
     local draft = S.getStateVal("controlBoard", "previewDraft")
-    return Preview.isValidDraft(draft) and draft or nil
+    if not Preview.isValidDraft(draft) then
+        return nil
+    end
+    ensureDraftScatterPlacements(draft)
+    return draft
 end
 
 --- @return boolean
@@ -195,6 +239,7 @@ function Preview.isThere()
 end
 
 --- Starts THERE for a pending library row.
+--- Scatter pack seeds from the pending library row when present; otherwise from live sessionScene.
 --- @param sceneKey string|nil defaults to sceneLibrary.activeKey
 --- @return boolean
 function Preview.enter(sceneKey)
@@ -208,12 +253,36 @@ function Preview.enter(sceneKey)
     if type(sessionScene) ~= "table" then
         return false
     end
-    S.setStateVal(Preview.buildDraft(key, sessionScene), "controlBoard", "previewDraft")
+    local draft = Preview.buildDraft(key, sessionScene)
+    -- Prefer library row pack; if the pending row has no scatter occupancy, fall back to live.
+    local libPack = sessionScene.scatterPlacements
+    local hasLibOrbit = false
+    if type(libPack) == "table" then
+        local ScatterLayout = require("lib.scatter_layout")
+        for i = 1, ScatterLayout.groupCount() do
+            local area = libPack[ScatterLayout.areaKeyForGroup(i)]
+            if type(area) == "table" then
+                if type(area.centerCharacters) == "table" and next(area.centerCharacters) ~= nil then
+                    hasLibOrbit = true
+                    break
+                end
+                if type(area.orbitCharacters) == "table" and next(area.orbitCharacters) ~= nil then
+                    hasLibOrbit = true
+                    break
+                end
+            end
+        end
+    end
+    if not hasLibOrbit then
+        local livePack = S.getStateVal("sessionScene", "scatterPlacements")
+        draft.scatterPlacements = normalizeScatterPlacements(livePack)
+    end
+    S.setStateVal(draft, "controlBoard", "previewDraft")
     return true
 end
 
 --- Replaces the active draft's participant snapshot after a settled board scan.
---- @param snapshot table `{ npcWorld = { placements }, seatSlots }`
+--- @param snapshot table `{ npcWorld = { placements }, seatSlots, scatterPlacements? }`
 --- @return boolean
 function Preview.capture(snapshot)
     local S = require("core.state")
@@ -232,6 +301,9 @@ function Preview.capture(snapshot)
         local target = ensureDraftSeatRow(draft, seatKey)
         local source = type(snapshot.seatSlots) == "table" and snapshot.seatSlots[seatKey] or nil
         target.isPresent = type(source) == "table" and source.isPresent == true
+    end
+    if snapshot.scatterPlacements ~= nil then
+        draft.scatterPlacements = normalizeScatterPlacements(snapshot.scatterPlacements)
     end
     S.setStateVal(draft, "controlBoard", "previewDraft")
     return true

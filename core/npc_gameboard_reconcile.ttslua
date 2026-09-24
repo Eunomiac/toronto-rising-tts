@@ -446,6 +446,8 @@ function Reconcile.buildParticipantSnapshot(board, baseSeatSlots)
 end
 
 --- Persist a settled THERE board scan; does no live mutation or world reconciliation.
+--- Under Scatter Mode, captures parchment occupancy into `draft.scatterPlacements`
+--- and does not overwrite that pack with an empty polar scan.
 --- @return boolean
 function Reconcile.capturePreviewDraftNow()
     local Preview = require("core.control_board_preview")
@@ -456,6 +458,15 @@ function Reconcile.capturePreviewDraftNow()
     local board = Board.getControlBoard()
     if not Board.isGameObject(board) then
         return false
+    end
+    local ScatterMode = require("core.scatter_mode")
+    if ScatterMode.isActive() and type(ScatterMode.scanBoardToPlacements) == "function" then
+        local snapshot = {
+            npcWorld = { placements = {} },
+            seatSlots = type(draft.seatSlots) == "table" and draft.seatSlots or {},
+            scatterPlacements = ScatterMode.scanBoardToPlacements(board),
+        }
+        return Preview.capture(snapshot)
     end
     return Preview.capture(Reconcile.buildParticipantSnapshot(board, draft.seatSlots))
 end

@@ -355,6 +355,8 @@ function S.GetDefaultGameState()
         lastActiveMapPin = {},
         --- Control Board runtime. A valid previewDraft means THERE mode (mid-session only;
         --- TOR-449 clears THERE on load via Preview.forceHere).
+        --- Preview draft shape: sceneKey, npcWorld.placements, seatSlots, scatterPlacements
+        --- (Scatter Mode HERE/THERE; polar THERE may omit scatterPlacements — getDraft normalizes).
         controlBoard = {
             lockNextSceneApply = false,
             previewDraft = nil,

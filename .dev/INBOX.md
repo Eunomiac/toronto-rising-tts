@@ -21,6 +21,17 @@ Verification:
 ## For Immediate Implementation
 > _After registering each of these issues with Linear in the ordinary fashion, before updating the Focus Stack, briefly review the issue: If it is a quick or easy fix, implement it immediately without waiting for author confirmation. Otherwise, promote it to the top of the Focus Stack, and offer to begin work on it immediately when summarizing your work processing `INBOX.md` to the author. If multiple issues require promotion in this way, consider how best to resolve them as quickly as possible, and offer to draft an implementation plan in your response to the author._
 
+- [Dice Rolling] During a Willpower reroll, occasionally a die that has not been randomized by the player will be bumped to a new value by physics interactions with neighboring dice. This should be checked for and corrected after the player has finished rerolling -- when a player selects "spend willpower" and the dice are unlocked, their values should be logged. When the player finishes rerolling dice (either by reaching the maximum, or by hitting "Confirm"), the physical dice should be compared against the stored values, and any dice that differ but were not rerolled should be restored to their correct values.
+- [Dice Rolling] Remove the ability for players to add standard/hunger dice to a roll that was initialized as a rouse (or oblivion-rouse) check. Players can still add rouse dice to non-rouse rolls (converting them into combined rouse + standard/discipline/whatever rolls), but not the other way around.
+- [Object Positions] The code written to file as part of the object positions dump debug function should be modified as follows:
+  1. Dumped entries should match the form of the local `offsets` table in `seat_role_offsets.ttslua`, so that entries can be copied and pasted directly. Additional data should not be included.
+  2. The `offsets` table should be referenced to determine which key each entry should fall under (`shared`, `player`, or `extraByOccupant`).
+  3. `defaultY` should be derived from existing `seat_role_offsets.ttslua` data, NOT from the game world, unless the object doesn't exist in the `offsets` table (this is because many objects are deactivated by setting their y-level to -200, making y-level data drawn from the game world unreliable).
+  4. `scale` should be excluded from BOTH the dump file data, AND from the `offsets` table -- rotational coordinates never affect scale, making this an inappropriate location for scale settings. No code should expect to find `scale` data in the `offsets` table; scale should largely remain unchanged, unless scaling data is given in `C.ObjectPositions`.
+- [Stage Control Board] Right-clicking the "Clear" button is supposed to find all tokens in the game world that are not on the stage control board, and return them to their positions on the palette.  Currently, this only works if the tokens are already on the palette. Tokens dropped elsewhere in the game world should be included.
+
+
+
 ## Active
 
 ## External Work (Set STATUS to "External To Do")
@@ -49,6 +60,8 @@ Verification:
 
 
 ## Processed
+
+2026-09-24 — Immediate: **Scatter Mode Fixes** (HERE/THERE, state writes, PC lock, remove→palette) + dice-bag ST roll parks on palette → shipped as **TOR-628** (Awaiting Author Review / PAVE). Focus #1.
 
 2026-09-23 evening `/tr-inbox` — Immediate: End→Intermission session music fades with blackout FadeIn → shipped in `core/phases.ttslua` (comment on **TOR-143** / **TOR-506**; Linear quota blocked new Bug). PAVE ✅ cleared Play→Spotlight inactive PC seat reactivate + Scatter objectsToHide re-hide. Focus unchanged: **TOR-526**, **TOR-141**, **TOR-81**, **TOR-495**.
 
