@@ -146,7 +146,7 @@ Per-seat copy under `HUD_PANEL_PLAYER` (`visibility` = that color). Root is Lua-
 | `HUD_scatterModeControl_selectorClick` | `scatterModeControlGroupN_selectorHit_<Color>` | `(player, value, id)` | `ScatterMode.movePcToGroup` for that PC. On a real move: park token, pose figurine/bags/sheet/camera, refresh portraits for all colors, close **that** player’s strip. No-op if they click their current group (strip stays open) or the destination already has five PCs. |
 | `HUD_scatterModeControl_selectorHoverOn` / `_selectorHoverOff` | same | `(player, value, id)` | Show `scatterGroupSelector_hover`. Hover-off: `scatterGroupSelector_active` if this is their group, otherwise hide the overlay (`active=false`; inactive art is in the background). |
 
-`ScatterMode.reconcileControlHudFromState` paints roots, portraits, selectors, and NPC name lists from `scatterPlacements` (fingerprint-skipped). Called from world layout, leave Scatter, token drop/clear, `UpdateUIDisplays` (`playerHud`), and Global XML remount.
+`ScatterMode.reconcileControlHudFromState` paints roots, portraits, selectors, and NPC name lists from `scatterPlacements` (fingerprint-skipped). PC slot Images stay `active=true`; occupied slots use full alpha + `scatterModeControlPC_<pcKey>`, empty slots use alpha 0 so row spacing does not collapse. Called from world layout, leave Scatter, token drop/clear, `UpdateUIDisplays` (`playerHud`), and Global XML remount.
 
 ## Legacy scene preset buttons (player HUD / other XML)
 

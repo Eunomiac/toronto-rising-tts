@@ -895,13 +895,18 @@ local function applyControlHudVisible()
             for slot = 1, 5 do
                 local id = "scatterModeControlGroup" .. tostring(i) .. "_pc" .. tostring(slot) .. "_" .. color
                 local occupant = pcByGroupSlot[i][slot]
+                -- Keep active=true always: toggling active collapses HorizontalLayout spacing.
                 if type(occupant) == "string" then
                     U.setAttributes(id, {
                         active = "true",
+                        color = "rgba(1, 1, 1, 1)",
                         image = "scatterModeControlPC_" .. occupant,
                     })
                 else
-                    U.setAttribute(id, "active", "false")
+                    U.setAttributes(id, {
+                        active = "true",
+                        color = "rgba(1, 1, 1, 0)",
+                    })
                 end
             end
             applySelectorResting(color, i, myGroup == i)

@@ -38,7 +38,7 @@ In the same work, **gold is PC slot 1** (not slot 3). The four white holes aroun
 | Topic | Decision |
 | --- | --- |
 | Portrait `pc#` | Same number as world/board slot. Gold / first join = **slot 1** = HUD `…_pc1_…` (already the visual middle of the row: `pc5, pc3, pc1, pc2, pc4`). |
-| Occupants stay put | When someone leaves, remaining PCs keep their slots. Do **not** compact portraits into `pc1..n`. Empty slots stay `active=false`. |
+| Occupants stay put | When someone leaves, remaining PCs keep their slots. Do **not** compact portraits into `pc1..n`. Empty slots stay `active=true` with `color=rgba(1,1,1,0)` (alpha hide — do not deactivate or the row collapses). |
 | Selector click | Full move now: occupancy + park that PC’s control token + `ScatterMode.applyWorldLayout()` (figurine, bags, sheets, camera) + close **that player’s** strip. Same outcome as dropping their token on that group. |
 | Who clicks | Clicker color must match the element’s `_Brown` / `_Orange` / … suffix. XmlUI visibility already prevents Option C (seeing another seat’s HUD). |
 | Hover | Swap `image` to the `_hover` asset; on exit restore **active** or **inactive**, whichever that selector actually is. |
@@ -110,7 +110,7 @@ When Scatter is **off**: `scatterModeControl_root_<Color>` `active=false`.
 When Scatter is **on**:
 
 - Root `active=true` for each `C.PlayerColors` entry.
-- For each group 1–6, for each slot 1–5: if that slot’s `centerCharacters` row exists, set that Image `active=true` and `image=scatterModeControlPC_<pcKey>`; else `active=false`.
+- For each group 1–6, for each slot 1–5: keep Image `active=true`. Occupied → `color=rgba(1,1,1,1)` and `image=scatterModeControlPC_<pcKey>`; empty → `color=rgba(1,1,1,0)` (do not deactivate).
 - For each player color, the occupied group’s selector overlay is `active=true` with `scatterGroupSelector_active`; the rest are `active=false` (inactive art is baked into the strip background). If that PC is in no group, all six overlays stay hidden.
 - NPC lists: `UI.setAttributes(id, { text = … })` with `"\n"` between **full display names** (`def.fullName or def.name`, same idea as `npcDisplayNameForCharacterKey`). Order = existing `npcKeysInJoinOrder` (hole slot, then key). Empty group → `""`. Update every color’s copy.
 
