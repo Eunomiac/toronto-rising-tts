@@ -22,7 +22,6 @@ export type DashboardBridgeStatus = {
 
 const ROUTE_TAG = "DASHBOARD";
 const CLIENT_ID = "storyteller-dashboard";
-const EXECUTE_TIMEOUT_MS = 15_000;
 
 const wait = (ms: number): Promise<void> => new Promise((resolve) => {
   setTimeout(resolve, ms);
@@ -280,13 +279,11 @@ export class DashboardTtsBridge {
     session.on("print", onPrint);
     session.on("error", onError);
 
+    // Await the real executeLua to completion before releasing the serial chain.
+    // A soft Promise.race timeout used to return early while Lua was still running,
+    // which let the PCs-tab poll queue more executeLua calls and hammer TTS.
     try {
-      const returnValue = await Promise.race([
-        session.executeLua(script),
-        wait(EXECUTE_TIMEOUT_MS).then(() => {
-          throw new Error("__dashboard_execute_timeout__");
-        })
-      ]);
+      const returnValue = await session.executeLua(script);
       const result: ExecuteResult = {
         prints,
         timedOut: false,
@@ -298,7 +295,7 @@ export class DashboardTtsBridge {
       return result;
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      if (message === "__dashboard_execute_timeout__") {
+      if (/timed out/i.test(message)) {
         return {
           prints,
           timedOut: true,

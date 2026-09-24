@@ -41,6 +41,8 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 
 ✔️ SD-PCs / Epic E gateway bridge. Dashboard TTS I/O goes through `@tts-tools/gateway-client` (`DASHBOARD` tag): gateway when Cursor/TTS Tools is up, direct 39998 otherwise, auto-rejoin. Claim/Release remain connect/disconnect escape hatches.
 
+✔️ PCs JSON Apply hang. Soft 15s executeLua timeout was freeing the serial chain while TTS still ran a full-seat mergeSeat, so the PCs poll stormed more Lua. Await real completion; send patch keys only; stop printing full snapshot JSON on apply/snapshot.
+
 ✔️ SD-PCs live-only (no fixture). Offline shows **No live sheet** + reason. Identity and Ambition come from TTS snapshot / `playerData.ambition` only.
 ✔️ SD-PCs **JSON** debug button. Opens a scrollable modal with pretty-printed live seat snapshot; patch textarea + **Apply** deep-merges into TTS (`mergeSeat`).
 ✔️ Dashboard Lua bridge folder: `dashboard/pc_sheet.ttslua` (`require("dashboard.pc_sheet")`), not under `core/`.

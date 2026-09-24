@@ -160,7 +160,6 @@ export const extractSnapshotJson = (result: { returnValue?: unknown; prints: rea
 
 const SNAPSHOT_SCRIPT = [
   "local json = GlobalDashboardPcSheetSnapshot()",
-  "print(json)",
   "return json"
 ].join("\n");
 
@@ -177,9 +176,10 @@ export const applySheetCommands = async (commands: readonly ApplyCommand[]): Pro
     throw new Error("No sheet commands to apply.");
   }
   const payload = commands.length === 1 ? commands[0] : commands;
+  // Return-only (no print): large sheet JSON through print floods the External Editor and can
+  // look like the apply payload is being resent while the PCs tab keeps polling.
   const script = [
     `local json = GlobalDashboardPcSheetApply(${luaLongString(JSON.stringify(payload))})`,
-    "print(json)",
     "return json"
   ].join("\n");
   const result = await executeLua(script);

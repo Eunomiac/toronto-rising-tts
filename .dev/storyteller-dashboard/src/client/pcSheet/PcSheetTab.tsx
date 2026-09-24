@@ -4,6 +4,7 @@ import { fetchBridgeStatus, isBridgeConnected, reclaimEditorPort, releaseEditorP
 import { applySheetCommands, fetchLiveSnapshot } from "./bridge.js";
 import { applyLocal } from "./applyLocal.js";
 import { createApplyQueue } from "./applyQueue.js";
+import { deepMerge } from "./deepMerge.js";
 import { PageOne } from "./PageOne.js";
 import { PlayerRail } from "./PlayerRail.js";
 import { SeatJsonModal } from "./SeatJsonModal.js";
@@ -207,24 +208,62 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
     applyQueue.enqueue(command);
   };
 
-  const applyMergedSeat = async (merged: SeatSnapshot): Promise<void> => {
+  const applySeatJsonPatch = async (patch: Record<string, unknown>): Promise<void> => {
     if (!live) {
       throw new Error("No live sheet to apply into.");
     }
-    const command: ApplyCommand = { op: "mergeSeat", color: merged.color, seat: merged };
-    const next = await applySheetCommands([command]);
-    if (!next.ok) {
-      const detail = next.error ?? "mergeSeat apply failed";
-      if (/Unknown op/i.test(detail)) {
-        throw new Error(
-          `${detail}. Save & Play in Tabletop Simulator so the dashboard.pc_sheet bridge (mergeSeat) loads, then try Apply again.`
-        );
-      }
-      throw new Error(detail);
+    const current = snapshot.seats.find((row) => row.color === selected) ?? snapshot.seats[0];
+    if (!current) {
+      throw new Error("No seat selected to patch.");
     }
-    setSnapshot(next);
-    setLive(true);
-    setStatus("Live from Tabletop Simulator.");
+    // Deep-merge so nested rating patches keep temp/disabled, but only send keys the author
+    // typed — not the entire seat (that made executeLua payloads huge and hung TTS).
+    const merged = deepMerge(current, patch) as SeatSnapshot;
+    const mergedRecord = merged as unknown as Record<string, unknown>;
+    const partial: Record<string, unknown> = { color: current.color };
+    for (const key of Object.keys(patch)) {
+      const patchValue = patch[key];
+      if (
+        (key === "attributes" || key === "skills")
+        && typeof patchValue === "object"
+        && patchValue !== null
+        && !Array.isArray(patchValue)
+        && typeof mergedRecord[key] === "object"
+        && mergedRecord[key] !== null
+      ) {
+        const mergedGroup = mergedRecord[key] as Record<string, unknown>;
+        const subset: Record<string, unknown> = {};
+        for (const subKey of Object.keys(patchValue as Record<string, unknown>)) {
+          subset[subKey] = mergedGroup[subKey];
+        }
+        partial[key] = subset;
+      } else {
+        partial[key] = mergedRecord[key];
+      }
+    }
+    const command: ApplyCommand = {
+      op: "mergeSeat",
+      color: current.color,
+      seat: partial as unknown as SeatSnapshot
+    };
+    setBusy(true);
+    try {
+      const next = await applySheetCommands([command]);
+      if (!next.ok) {
+        const detail = next.error ?? "mergeSeat apply failed";
+        if (/Unknown op/i.test(detail)) {
+          throw new Error(
+            `${detail}. Save & Play in Tabletop Simulator so the dashboard.pc_sheet bridge (mergeSeat) loads, then try Apply again.`
+          );
+        }
+        throw new Error(detail);
+      }
+      setSnapshot(next);
+      setLive(true);
+      setStatus("Live from Tabletop Simulator.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const seat: SeatSnapshot | undefined = live
@@ -316,7 +355,7 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
         <SeatJsonModal
           seat={seat}
           onClose={() => setJsonOpen(false)}
-          onApply={applyMergedSeat}
+          onApply={applySeatJsonPatch}
         />
       ) : null}
     </div>

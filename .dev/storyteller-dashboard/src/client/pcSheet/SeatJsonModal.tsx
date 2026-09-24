@@ -1,13 +1,13 @@
 import { useEffect, useState, type ReactElement } from "react";
 import { createPortal } from "react-dom";
-import { deepMerge } from "./deepMerge.js";
 import type { SeatSnapshot } from "./types.js";
 
 type Props = {
   readonly seat: SeatSnapshot;
   readonly applying?: boolean;
   readonly onClose: () => void;
-  readonly onApply: (merged: SeatSnapshot) => Promise<void>;
+  /** Patch object only (keys the author typed) — not the full seat. */
+  readonly onApply: (patch: Record<string, unknown>) => Promise<void>;
 };
 
 export const SeatJsonModal = ({ seat, applying = false, onClose, onApply }: Props): ReactElement => {
@@ -45,10 +45,9 @@ export const SeatJsonModal = ({ seat, applying = false, onClose, onApply }: Prop
       setError("Patch must be a JSON object.");
       return;
     }
-    const merged = deepMerge(seat, parsed);
     setBusy(true);
     try {
-      await onApply(merged);
+      await onApply(parsed as Record<string, unknown>);
       setPatchText("");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Apply failed.");
