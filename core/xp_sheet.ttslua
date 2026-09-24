@@ -285,10 +285,11 @@ local function applyPagination(obj, pid, pageIndex)
     end
   end
 
-  local showBack = pageIndex < #pages
-  local showFwd = pageIndex > 1
-  setObjAttrs(obj, "xp_navigate_backward", { active = showBack and "true" or "false" })
-  setObjAttrs(obj, "xp_navigate_forward", { active = showFwd and "true" or "false" })
+  -- Bottom chevron (backward): older pages. Top chevron (forward): newer / toward page 1.
+  local showOlder = pageIndex < #pages
+  local showNewer = pageIndex > 1
+  setObjAttrs(obj, "xp_navigate_backward", { active = showOlder and "true" or "false" })
+  setObjAttrs(obj, "xp_navigate_forward", { active = showNewer and "true" or "false" })
 end
 
 --- @param color string
@@ -316,7 +317,9 @@ function XpSheet.paintForColor(color)
 end
 
 --- @param color string
---- @param direction string "forward" (older / next page) or "back" (newer)
+--- @param direction string
+---   "back" / "older" = bottom chevron (navigate_down) → older sessions (higher page index)
+---   "forward" / "newer" = top chevron (navigate_up) → newer sessions (toward page 1)
 --- @return boolean
 function XpSheet.navigate(color, direction)
   if type(color) ~= "string" then
@@ -329,16 +332,11 @@ function XpSheet.navigate(color, direction)
   local meta = buildSessionMeta(pid)
   local pages = paginate(meta)
   local pageIndex = math.floor(tonumber(S.getStateVal("playerData", pid, "xpLogPage")) or 1)
-  if direction == "forward" or direction == "back" then
-    -- forward button is "up"/older pages in mock (navigate_up = forward in doc naming)
-    if direction == "forward" then
-      pageIndex = pageIndex + 1
-    else
-      pageIndex = pageIndex - 1
-    end
-  elseif direction == "older" then
+  -- Visibility in applyPagination: backward when pageIndex < #pages, forward when pageIndex > 1.
+  -- Match that: bottom/back = older, top/forward = newer.
+  if direction == "back" or direction == "older" or direction == "backward" then
     pageIndex = pageIndex + 1
-  elseif direction == "newer" then
+  elseif direction == "forward" or direction == "newer" then
     pageIndex = pageIndex - 1
   end
   if pageIndex < 1 then

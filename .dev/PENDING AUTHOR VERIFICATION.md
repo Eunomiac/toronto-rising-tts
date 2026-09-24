@@ -25,14 +25,16 @@ _Last populated: 2026-09-24 — Experience Log + page 6 (TOR-92)._
 
 **How to verify:** Run `npm run csheet-xp-log:bake` (or a full build) so `ui/player/csheets/page6_lordLucien.xml` exists, then Save & Play so object Includes and scripts reload.
 
-1. Open **Lord Lucien**’s character sheet and go to **page 6**. You should see baked history (Rollover / Time of Legacy / etc.) immediately — no blank page. The Host console must **not** show a page-6 `setXml` remount for that tile.
-2. Open the Storyteller **PCs** panel. Confirm each seat shows an **XP** button (not up/down/apply) and a current XP number.
-3. Click **XP** on one present PC. Enter a positive amount (e.g. `1`) and a short description, then **Apply**. The modal’s last-entry strip should show the line; page 1 `xp_text` and the panel XP value should rise by 1; page 6 should show the live session title and that gain (via `setAttribute` only).
-4. Log a spend with a negative amount (e.g. `-2`) and another description. Confirm the spend appears in red on page 6 and totals update (negative banked XP is allowed).
-5. Click **Undo** twice and confirm both lines disappear and totals return.
-6. Mark another PC **Absent**, enter a gain, click **Apply to All**, and confirm the Absent seat did not change while present seats did.
-7. After you advance session number (End→Intermission), **without** re-baking, you should get a Storyteller warning about a stale page 6 bake; the live block still accepts new entries for the new session. After `npm run csheet-xp-log:bake` + Save & Play, the previous session should appear as a baked block in that character’s `page6_<charKey>.xml`.
-8. Optional authoring check: on the Storyteller Dashboard **PCs** tab, open **JSON**. The bottom pane should be a dump of that seat’s raw `playerData` (including the full `xp` Experience Log with **string** session keys and **no** `timeline` field). Paste under `"xp": { … }`, **Apply**, re-open JSON, and confirm the dump matches. Then **Save** the game — onSave must succeed (no `noKeyConversion` JSON error). The sheet jewel still shows banked XP.
+1. Open **Lord Lucien**’s character sheet and go to **page 6**. You should see baked history (Rollover / Time of Legacy / etc.) immediately — no blank page. The Host console must **not** show a page-6 `setXml` remount for that tile. A **down** chevron should appear at the bottom when there are older sessions off-page.
+2. Click the **bottom** (down) chevron once. Sessions from page 1 should hide and the next older sessions (e.g. earlier negative session blocks) should appear; a **top** (up) chevron should become available to return.
+3. Click the **top** chevron to return to the newest page. Confirm the first-page sessions are back.
+4. Open the Storyteller **PCs** panel. Confirm each seat shows an **XP** button (not up/down/apply) and a current XP number.
+5. Click **XP** on one present PC. Enter a positive amount (e.g. `1`) and a short description, then **Apply**. The modal’s last-entry strip should show the line; page 1 `xp_text` and the panel XP value should rise by 1; page 6 should show the live session title and that gain (via `setAttribute` only).
+6. Log a spend with a negative amount (e.g. `-2`) and another description. Confirm the spend appears in red on page 6 and totals update (negative banked XP is allowed).
+7. Click **Undo** twice and confirm both lines disappear and totals return.
+8. Mark another PC **Absent**, enter a gain, click **Apply to All**, and confirm the Absent seat did not change while present seats did.
+9. After you advance session number (End→Intermission), **without** re-baking, you should get a Storyteller warning about a stale page 6 bake; the live block still accepts new entries for the new session. After `npm run csheet-xp-log:bake` + Save & Play, the previous session should appear as a baked block in that character’s `page6_<charKey>.xml`.
+10. Optional authoring check: on the Storyteller Dashboard **PCs** tab, open **JSON**. The bottom pane should be a dump of that seat’s raw `playerData` (including the full `xp` Experience Log with **string** session keys and **no** `timeline` field). Paste under `"xp": { … }`, **Apply**, re-open JSON, and confirm the dump matches. Then **Save** the game — onSave must succeed (no `noKeyConversion` JSON error). The sheet jewel still shows banked XP.
 
 **Context:** Scalar `stats.xp` removed; log is `playerData.<pid>.xp` with string session keys. Page 6 markup is **template-baked** (`ui/.templates/csheet/` → `page6_<charKey>.xml`); runtime paints live slots and pagination with `setAttribute` only (no Lua-built XML / no page-6 `setXml`).
 

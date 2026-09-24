@@ -161,7 +161,7 @@ Since new entries may be created during play, the currently-live session cannot 
 
 ### XP Log Pagination
 
-There is enough space on the character sheet XML to display exactly twenty lines of Experience Log data at one time. The title bar and the entries themselves are both the same height, so this twenty-line limit applies regardless of how many session title bars vs. XP entries are being displayed.  Two navigation buttons -- `id="xp_navigate_forward"` and `id="xp_navigate_back"` — allow the player to page through their experience log. When initially displayed, the first page should be shown (i.e. the page containing the most recent/current session at the top).
+There is enough space on the character sheet XML to display exactly twenty lines of Experience Log data at one time. The title bar and the entries themselves are both the same height, so this twenty-line limit applies regardless of how many session title bars vs. XP entries are being displayed.  Two navigation chevrons — `id="xp_navigate_forward"` (top, `navigate_up`) and `id="xp_navigate_backward"` (bottom, `navigate_down`) — allow the player to page through their experience log. The bottom control moves to **older** sessions; the top control moves back toward **newer** sessions / page 1. When initially displayed, the first page should be shown (i.e. the page containing the most recent/current session at the top).
 
 When breaking a player's XP log into pages, the following constraints apply:
 

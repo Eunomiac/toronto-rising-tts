@@ -13,23 +13,23 @@
     childForceExpandHeight="false"
     spacing="0"
   />
-  <Button class="xp_navigate_forward"
+  <Image class="xp_navigate_forward"
     ignoreLayout="true"
     rectAlignment="UpperCenter"
     width="100"
     height="40"
     offsetXY="0 50"
-    image="navigate_up"
     active="false"
+    raycastTarget = "true"
   />
-  <Button class="xp_navigate_backward"
+  <Image class="xp_navigate_backward"
     ignoreLayout="true"
     rectAlignment="LowerCenter"
     width="100"
     height="40"
     offsetXY="0 -50"
-    image="navigate_down"
     active="false"
+    raycastTarget = "true"
   />
   <HorizontalLayout class="xp_title_line"
     preferredHeight="40"
@@ -238,17 +238,22 @@
 <!-- Finished session block (token / active / title / date / summation / total / gain+spend rows). -->
 <HorizontalLayout id="xp_title_line_0" class="xp_title_line" active="true">
   <HorizontalLayout class="xp_title_line_left">
-    <Text id="xp_sessionNum_0" class="xp_session_num" text="ROLLOVER" />
+    <Text id="xp_sessionNum_0" class="xp_session_num" text="PREGAME" />
     <Text id="xp_sessionDate_0" class="xp_session_date" text="Apr. 2, 2026" />
   </HorizontalLayout>
   <HorizontalLayout class="xp_title_line_right">
-    <Text id="xp_summation_0" class="xp_summation" text="15 XP − 15 =" />
-    <Text id="xp_total_0" class="xp_total" text="0 XP" />
+    <Text id="xp_summation_0" class="xp_summation" text="15 XP + 18 − 15 =" />
+    <Text id="xp_total_0" class="xp_total" text="18 XP" />
   </HorizontalLayout>
 </HorizontalLayout>
 <HorizontalLayout id="xp_listing_wrapper_0" class="xp_listing_wrapper" active="true">
   <GridLayout id="xp_listing_left_0" class="xp_listing">
-    
+    <!-- Gain row for one session slot. -->
+<HorizontalLayout id="xp_item_left_0_1" class="xp_item" active="true">
+  <Text id="xp_gainNum_0_1" class="xp_gain_num" text="+18 XP" />
+  <Text id="xp_gainDesc_0_1" class="xp_gain_desc" text="Backgrounds Bonus (Backgrounds Only)" />
+</HorizontalLayout>
+
   </GridLayout>
   <GridLayout id="xp_listing_right_0" class="xp_listing">
     <!-- Spend row for one session slot. -->
@@ -525,6 +530,6 @@
 </HorizontalLayout>
 
   </VerticalLayout>
-  <Button id="xp_navigate_forward" class="xp_navigate_forward" onClick="onXpLogNavigateForward" colors="#00000000|#00000000|#00000000|#00000000" />
-  <Button id="xp_navigate_backward" class="xp_navigate_backward" onClick="onXpLogNavigateBack" colors="#00000000|#00000000|#00000000|#00000000" />
+  <Image id="xp_navigate_forward" class="xp_navigate_forward" image="navigate_up" onClick="onXpLogNavigateForward" />
+  <Image id="xp_navigate_backward" class="xp_navigate_backward" image="navigate_down"  onClick="onXpLogNavigateBack" />
 </Panel>

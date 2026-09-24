@@ -13,23 +13,23 @@
     childForceExpandHeight="false"
     spacing="0"
   />
-  <Button class="xp_navigate_forward"
+  <Image class="xp_navigate_forward"
     ignoreLayout="true"
     rectAlignment="UpperCenter"
     width="100"
     height="40"
     offsetXY="0 50"
-    image="navigate_up"
     active="false"
+    raycastTarget = "true"
   />
-  <Button class="xp_navigate_backward"
+  <Image class="xp_navigate_backward"
     ignoreLayout="true"
     rectAlignment="LowerCenter"
     width="100"
     height="40"
     offsetXY="0 -50"
-    image="navigate_down"
     active="false"
+    raycastTarget = "true"
   />
   <HorizontalLayout class="xp_title_line"
     preferredHeight="40"
@@ -236,6 +236,6 @@
 </HorizontalLayout>
 
   </VerticalLayout>
-  <Button id="xp_navigate_forward" class="xp_navigate_forward" onClick="onXpLogNavigateForward" colors="#00000000|#00000000|#00000000|#00000000" />
-  <Button id="xp_navigate_backward" class="xp_navigate_backward" onClick="onXpLogNavigateBack" colors="#00000000|#00000000|#00000000|#00000000" />
+  <Image id="xp_navigate_forward" class="xp_navigate_forward" image="navigate_up" onClick="onXpLogNavigateForward" />
+  <Image id="xp_navigate_backward" class="xp_navigate_backward" image="navigate_down"  onClick="onXpLogNavigateBack" />
 </Panel>
