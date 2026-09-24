@@ -9,7 +9,6 @@ local M = {}
 local CSHEET_DEFAULTS = require("lib.csheet_defaults_xml")
 local XD = require("lib.xp_display")
 local Bake = require("lib.csheet_xp_log_baked")
-local C = require("lib.constants")
 
 local LIVE_CAP = XD.LIVE_SLOT_CAP
 
@@ -26,11 +25,11 @@ local function charKeyFromPd(pd, seatColor)
   if type(pd) == "table" and type(pd.charKey) == "string" and pd.charKey ~= "" then
     return pd.charKey
   end
-  if type(seatColor) == "string" then
-    for _, row in pairs(C.PlayerData or {}) do
-      if type(row) == "table" and row.color == seatColor and type(row.charKey) == "string" then
-        return row.charKey
-      end
+  -- Object VM: never require lib.constants — resolve via Global.
+  if type(seatColor) == "string" and Global ~= nil and type(Global.call) == "function" then
+    local ck = Global.call("GlobalCharKeyForSeatColor", seatColor)
+    if type(ck) == "string" and ck ~= "" then
+      return ck
     end
   end
   return nil
