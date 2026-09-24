@@ -104,21 +104,22 @@ Work order is intentional. **Epic A is the first implementation step** — its j
 
 ### Epic B — Extension port Claim/Release (no gateway yet)
 **Repo:** `tts-tools/packages/tts-editor`
-**Status (2026-09-23):** Implemented in extension **2.3.1**. Pending author port-swap check with Dashboard.
+**Status (2026-09-23):** Implemented and **author-verified** (port swap with other local tools works without Extension Host restart). Superseded for steady-state by Epic C gateway, but Claim/Release remain the power-user escape hatch.
 
 1. [x] Expose **Claim TTS Editor Port** / **Release TTS Editor Port** (listen/close on current direct API).
 2. [x] `deactivate` closes cleanly (or documents helper handoff once Epic C exists).
 3. [x] Status bar: holding 39998 / released / error.
-4. [ ] Verify: Dashboard Claim → Extension Release → Extension Claim without Extension Host restart (or Extension Release → Dashboard Claim → Dashboard Release → Extension Claim).
+4. [x] Verify: Extension Release → other tool Claim → Extension Claim without Extension Host restart.
 
 ### Epic C — Gateway helper + register protocol
-**Repo:** `tts-tools` (e.g. `packages/tts-gateway` + wire from `tts-editor`)
+**Repo:** `tts-tools` (`packages/tts-gateway` + `packages/gateway-client` + wire from `tts-editor`)
+**Status (2026-09-23):** Implemented on **main** / extension **2.4.0**. Control port **39997** (NDJSON). Pending author smoke (Save & Play, Claim/Release vs other tools, deactivate stops helper).
 
-1. Helper process: sole binder of **39998** (force-claim reclaimable holders; never TTS); control/register API on a fixed localhost control port.
-2. Extension on activate: if gateway not up → spawn helper; register as client via **same** `gateway-client` as everyone else (`TTSTOOLS` tag).
-3. Fan-out + returnID tracking for proxied executeLua; optional `<@TAG@>` filter/strip.
-4. Heartbeat so clients detect death quickly.
-5. On extension deactivate / Cursor quit: stop helper (C4=B). Clients fall back via library.
+1. [x] Helper process: sole binder of **39998** (force-claim reclaimable holders; never TTS); control/register API on **39997**.
+2. [x] Extension on activate: if gateway not up → spawn helper; register as client via **same** `gateway-client` as everyone else (`TTSTOOLS` tag).
+3. [x] Fan-out + returnID tracking for proxied executeLua; optional `<@TAG@>` filter/strip.
+4. [x] Heartbeat so clients detect death quickly.
+5. [x] On extension deactivate / Cursor quit: stop helper (C4=B). Clients fall back via library (full auto-rejoin = Epic D).
 
 ### Epic D — `gateway-client` + docs (three layers)
 **Repo:** `tts-tools` (e.g. `packages/gateway-client`)

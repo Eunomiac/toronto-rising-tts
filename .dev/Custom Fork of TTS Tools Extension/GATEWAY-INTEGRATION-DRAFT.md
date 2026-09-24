@@ -1,6 +1,6 @@
 # TTS Tools Gateway — Integration Guide (DRAFT)
 
-> **Status:** Preliminary design draft. The gateway is **not implemented yet**. APIs, ports, and message shapes may change before v1. This document describes the intended third-party experience so we can validate the design.
+> **Status:** Control protocol implemented in source (`packages/tts-gateway`, `packages/gateway-client`, extension **2.4.0**). **Not** Marketplace-published yet. APIs may still change before a public release.
 
 **Who this is for:** Authors of local tools that want to talk to Tabletop Simulator’s External Editor API **at the same time** as the TTS Tools VS Code / Cursor extension (or other registered apps).
 
@@ -20,7 +20,7 @@ The **TTS Tools Gateway** is a small helper started by the TTS Tools extension. 
 
 When the gateway is **not** running (Cursor closed, extension disabled), apps talk to TTS **directly** on 39998 — same as today. Prefer using the client library so that failover is automatic.
 
-**Do not** poll TTS ports for “is anyone home?” status. Connecting to **39999** or briefly binding **39998** from a status timer hitch Tabletop Simulator. Until the gateway answers hold-state without touching TTS, dashboards should only report whether **they** currently hold 39998.
+**Do not** poll TTS ports for “is anyone home?” status. Connecting to **39999** or briefly binding **39998** from a status timer hitch Tabletop Simulator. The gateway control port (**39997**) can answer presence without touching TTS.
 
 ---
 
@@ -44,7 +44,7 @@ When the gateway is **not** running (Cursor closed, extension disabled), apps ta
 npm install @tts-tools/gateway-client
 ```
 
-> Package name and version are placeholders until published.
+> Until published to npm, depend on the monorepo path: `file:../gateway-client` next to `tts-tools`.
 
 ### Minimal example
 
@@ -74,7 +74,7 @@ tts.on("customMessage", (payload) => {
 });
 
 tts.on("status", (status) => {
-  // "gateway" | "direct" | "disconnected" — library managed the switch
+  // Epic C: "gateway" | "disconnected" — full auto-rejoin is a later release
   console.log("TTS link:", status.mode, status.detail ?? "");
 });
 
@@ -94,9 +94,8 @@ You should **not** write this yourself:
 | --- | --- |
 | Is the gateway up? | Pings the control port |
 | Gateway up | Registers; receives fan-out |
-| Gateway down / Cursor quit | Falls back to **direct** listen on 39998 |
-| Gateway appears while you held 39998 | Detects port loss / claims; **re-registers** with the gateway |
-| `executeLua` return routing | Sends via gateway when attached; tracks `returnID` |
+| Gateway down / Cursor quit | Session emits `disconnected` (full direct fallback = later) |
+| `executeLua` return routing | Sends via gateway; tracks `requestId` |
 | Heartbeats | Detects dead gateway quickly |
 
 Your app code stays at: connect → subscribe → call helpers → close.
@@ -117,7 +116,7 @@ export async function getTts(): Promise<GatewaySession> {
 }
 ```
 
-Use **one** bridge for the whole app (PC UI, Lua panel, importers, …). Do not open multiple competing 39998 listeners inside one process.
+Use **one** bridge for the whole app. Do not open multiple competing 39998 listeners inside one process.
 
 ### Optional: tagged messages from Lua
 
@@ -136,7 +135,7 @@ Tags are **optional**. Most apps never need them.
 
 | Call | Path |
 | --- | --- |
-| `executeLua` / anything needing a return | Through the gateway (or library equivalent when in direct mode) |
+| `executeLua` / anything needing a return | Through the gateway |
 | Pure fire-and-forget (if exposed) | May hit TTS **39999** directly |
 
 Prefer the library methods; do not open raw sockets to 39999 for returns unless you are on Layer 2/3 and know the demux rules.
@@ -144,35 +143,50 @@ Prefer the library methods; do not open raw sockets to 39999 for returns unless 
 ### Lifecycle notes
 
 - **Starting Cursor / enabling TTS Tools** starts the gateway helper (if not already running) and force-claims 39998.
-- **Quitting Cursor / disabling the extension** stops the gateway. Your library session should flip to `direct` or `disconnected` via `status` events.
-- **Extension Host reload** may briefly drop the gateway; the library is expected to auto-recover.
+- **Quitting Cursor / disabling the extension** stops the gateway. Your library session should flip to `disconnected` via `status` events.
+- **Extension Host reload** may briefly drop the gateway; reconnect after reload.
 
 ---
 
 ## Layer 2 — Gateway protocol (non-JS)
 
-Implement this only if you cannot use the npm client. Prefer matching whatever `gateway-client` does in the final release — this section will be expanded with exact JSON schemas when the control API stabilizes.
+Implement this only if you cannot use the npm client. Prefer matching whatever `gateway-client` does.
 
-### Ports (planned defaults — TBD)
+### Ports (frozen for v1 source)
 
 | Port | Role |
 | --- | --- |
 | `39998` | TTS → editor messages (held by **gateway** when running; by your app when in direct mode) |
 | `39999` | Client → TTS commands |
-| `39xxx` (TBD) | Gateway **control** port (register, heartbeat, proxied executeLua) |
+| `39997` | Gateway **control** port (register, heartbeat, proxied executeLua) — NDJSON, one JSON object per line |
 
-### Client algorithm (must mirror the library)
+### Control messages (client → gateway)
 
-1. **Discover:** TCP/HTTP ping control port (exact path TBD, e.g. `GET /health` or a one-line JSON hello).
-2. **If gateway present:**
-   - `REGISTER { clientId, routeTag?, callback... }`
-   - Keep **heartbeat**
-   - Receive event stream (prints, errors, loads, custom, returns for *your* requests)
-   - Send return-expecting commands **via control API**, not by inventing your own returnID demux on a shared broadcast
-3. **If gateway absent:**
-   - Bind **39998** yourself and speak the [External Editor API](https://api.tabletopsimulator.com/externaleditorapi/) as today
-4. **If your 39998 server dies** while a control port appears: treat as gateway claim → go to step 2
-5. **If heartbeat fails:** close register → go to step 3
+```json
+{"type":"register","clientId":"my-app","routeTag":"MYAPP"}
+{"type":"heartbeat"}
+{"type":"executeLua","requestId":1,"script":"return 1","guid":"-1"}
+{"type":"command","payload":{"messageID":0}}
+{"type":"shutdown"}
+```
+
+### Control messages (gateway → client)
+
+```json
+{"type":"hello","version":1,"editorPort":39998,"commandPort":39999}
+{"type":"registered","clientId":"my-app","routeTag":"MYAPP"}
+{"type":"heartbeat"}
+{"type":"event","messageID":2,"payload":{"messageID":2,"message":"hello"}}
+{"type":"return","requestId":1,"returnValue":2}
+{"type":"error","message":"...","requestId":1}
+```
+
+### Client algorithm
+
+1. **Discover:** TCP connect to **39997**.
+2. **If gateway present:** wait for `hello` → `register` → keep **heartbeat** → receive `event` / `return`.
+3. **If gateway absent:** bind **39998** yourself and speak the [External Editor API](https://api.tabletopsimulator.com/externaleditorapi/) as today.
+4. **If heartbeat fails:** close → go to step 3 (or reconnect when control returns).
 
 ### Fan-out rules (inbound from TTS)
 
@@ -191,23 +205,26 @@ Implement this only if you cannot use the npm client. Prefer matching whatever `
 
 ## Layer 3 — Copy-paste stub (last resort)
 
-> This stub will be filled with a minimal Node example that speaks the control port once the protocol freezes. Until then, use Layer 1.
-
-Sketch only:
+Prefer Layer 1. Minimal Node sketch:
 
 ```ts
-// DRAFT — do not ship; API not final
+import * as net from "node:net";
+
 async function main() {
-  const gatewayUp = await pingControlPort();
-  if (gatewayUp) {
-    await registerAndListen();
-  } else {
-    await listenDirect39998();
-  }
+  const socket = net.connect(39997, "127.0.0.1");
+  socket.setEncoding("utf8");
+  socket.on("data", (chunk) => {
+    for (const line of chunk.split("\n")) {
+      if (!line.trim()) continue;
+      const msg = JSON.parse(line);
+      if (msg.type === "hello") {
+        socket.write(JSON.stringify({ type: "register", clientId: "stub" }) + "\n");
+      }
+      console.log(msg);
+    }
+  });
 }
 ```
-
-If you paste this into production, you own keeping it updated when the protocol changes. **Use Layer 1 instead.**
 
 ---
 
@@ -222,13 +239,13 @@ The gateway does not replace TTS’s protocol; it **multiplexes** the single 399
 ## FAQ
 
 **Q: Do I need the TTS Tools extension installed?**
-For multi-app use, yes (it ships/starts the gateway). For solo use of your tool, no — bind 39998 yourself (or use the client in direct mode).
+For multi-app use, yes (it ships/starts the gateway). For solo use of your tool, no — bind 39998 yourself (or use the client when a gateway is already up).
 
 **Q: Will the gateway keep running after I close Cursor?**
-No (v1). Closing Cursor / disabling the extension stops the helper. Your client should fall back to direct mode.
+No (v1). Closing Cursor / disabling the extension stops the helper.
 
 **Q: Can two apps both bind 39998?**
-No. Either the gateway holds it, or exactly one direct listener. The client library prevents your app from fighting itself; it cannot stop a *different* app that ignores this guide.
+No. Either the gateway holds it, or exactly one direct listener.
 
 **Q: How do I debug “who got this print”?**
 Use an optional `routeTag` and `<@YOURTAG@>` prefixes from Lua, or temporarily log all broadcasts.
@@ -242,4 +259,5 @@ Planned for Marketplace readiness: a user-local token so random processes cannot
 
 | Version | Notes |
 | --- | --- |
-| draft-0 | Preliminary README aligned with Toronto Rising fork design notes (Save & Play / port gateway plan). Not implemented. |
+| draft-0 | Preliminary README aligned with fork design notes. Not implemented. |
+| draft-1 | Control port **39997** frozen; NDJSON shapes documented; source implementation in tts-tools 2.4.0. |
