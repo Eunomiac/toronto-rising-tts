@@ -132,7 +132,7 @@ Work order is intentional. **Epic A is the first implementation step** — its j
 
 ### Epic E — Dashboard single TTS bridge
 **Repo:** `toronto-rising-tts/.dev/storyteller-dashboard`
-**Status (2026-09-24):** Implemented — Dashboard server wraps `@tts-tools/gateway-client` (`routeTag: DASHBOARD`).
+**Status (2026-09-24):** Implemented — Dashboard server wraps `@tts-tools/gateway-client` (`routeTag: DASHBOARD`). **Author-verified** (gateway + Dashboard together).
 
 1. [x] One module all features use — `src/server/ttsExecuteLua.ts` over `@tts-tools/gateway-client` (no bespoke port politics on the happy path).
 2. [x] Library handles probe/register/direct/fallback/rejoin (`failover: true`).
