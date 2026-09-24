@@ -78,12 +78,7 @@ const GATE_ENTRIES = [
     maxBytes: 120 * 1024,
     forbidCore: true,
   },
-  {
-    id: "ui.ui_csheet_page6",
-    entry: 'require("ui.ui_csheet_page6")\n',
-    maxBytes: 120 * 1024,
-    forbidCore: true,
-  },
+  // Page 6 uses require("ui.ui_csheet") — covered by the ui.ui_csheet entry above.
   {
     id: "ui.ui_signal_candle",
     entry: 'require("ui.ui_signal_candle")\n',
