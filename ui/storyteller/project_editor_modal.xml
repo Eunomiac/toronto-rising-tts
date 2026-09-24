@@ -2,7 +2,7 @@
   <Defaults>
     <Panel class="projectEditor_modal" visibility="Black|Host" active="false" rectAlignment="MiddleCenter" offsetXY="0 0" preferredWidth="760" width="760" height="500" preferredHeight="500" color="rgba(0.05,0.05,0.08,0.96)" padding="10 10 10 10" />
 
-    <VerticalLayout class="projectEditor_content" spacing="10" childForceExpandHeight="false" childAlignment="UpperMiddle" />
+    <VerticalLayout class="projectEditor_content" spacing="10" childForceExpandHeight="false" childAlignment="UpperCenter" />
 
     <Text class="projectEditor_title" fontSize="16" fontStyle="Bold" color="#FFD700" />
 

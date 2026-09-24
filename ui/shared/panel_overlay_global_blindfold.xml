@@ -31,9 +31,9 @@
   <Image class="global_blindfold_district_card"
     raycastTarget = "false"
     preserveAspect = "true"
-    rectAlignment = "LowerLeft"
+    rectAlignment = "MIddleLeft"
     width = "900"
-    offsetXY = "50 75"
+    offsetXY = "50 125"
     showAnimation = "FadeIn"
     hideAnimation = "FadeOut"
     animationDuration = "1"
@@ -45,9 +45,9 @@
   <Image class="global_blindfold_site_card"
     raycastTarget = "false"
     preserveAspect = "true"
-    rectAlignment = "LowerRight"
+    rectAlignment = "MiddleRight"
     width = "900"
-    offsetXY = "-50 125"
+    offsetXY = "-50 -125"
     showAnimation = "FadeIn"
     hideAnimation = "FadeOut"
     animationDuration = "1"
@@ -81,6 +81,12 @@
   <Image id="overlay_district_card_display" class="global_blindfold_district_card" />
   <Image id="overlay_site_card_display" class="global_blindfold_site_card" />
 </Panel>
+
+<!--
+UI.hide("overlay_globalBlindfold_panel")
+UI.setAttributes("overlay_district_card_display", {rectAlignment = "MiddleLeft", offsetXY = "50 125", active = "true", image = "districtCard_HarbordVillage", color = "rgba(1, 1, 1, 1)"}  )
+UI.setAttributes("overlay_site_card_display", {rectAlignment = "MiddleRight", offsetXY = "-50 -125", active = "true", image = "siteCard_SnakesLattes", color = "rgba(1, 1, 1, 1)"})
+-->
 
 <!-- On-element animation attrs: Defaults alone snapped SlideOut on the cover (TOR-566). -->
 <Panel id="overlay_blackoutPanel"

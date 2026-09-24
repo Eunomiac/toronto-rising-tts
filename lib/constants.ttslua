@@ -922,7 +922,7 @@ C.ObjectPositions = {
     target = G.GUIDS.CSHEET_DICE_DRAWER_BROWN,
     on = {
       anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_BROWN,
-      height = { y = 2.97 },
+      height = { y = 2.69 },
       scale = Vector({ 23.57, 3.92, 7.68 })
     },
     off = {
@@ -935,7 +935,7 @@ C.ObjectPositions = {
     target = G.GUIDS.CSHEET_DICE_DRAWER_ORANGE,
     on = {
       anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_ORANGE,
-      height = { y = 2.97 },
+      height = { y = 2.69 },
       scale = Vector({ 23.57, 3.92, 7.68 })
     },
     off = {
@@ -948,7 +948,7 @@ C.ObjectPositions = {
     target = G.GUIDS.CSHEET_DICE_DRAWER_RED,
     on = {
       anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_RED,
-      height = { y = 2.97 },
+      height = { y = 2.69 },
       scale = Vector({ 23.57, 3.92, 7.68 })
     },
     off = {
@@ -961,7 +961,7 @@ C.ObjectPositions = {
     target = G.GUIDS.CSHEET_DICE_DRAWER_PINK,
     on = {
       anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_PINK,
-      height = { y = 2.97 },
+      height = { y = 2.69 },
       scale = Vector({ 23.57, 3.92, 7.68 })
     },
     off = {
@@ -974,7 +974,7 @@ C.ObjectPositions = {
     target = G.GUIDS.CSHEET_DICE_DRAWER_PURPLE,
     on = {
       anchor = G.GUIDS.CSHEET_DICE_DRAWER_ANCHOR_ON_PURPLE,
-      height = { y = 2.97 },
+      height = { y = 2.69 },
       scale = Vector({ 23.57, 3.92, 7.68 })
     },
     off = {

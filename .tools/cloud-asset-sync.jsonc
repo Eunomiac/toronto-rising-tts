@@ -151,6 +151,17 @@
       "filenameToNameReplacePattern": "$1",
       // No purge — folder still evolving; protect baneSeverity* / discBonus* / discReroll*.
       "purgePatterns": []
+    },
+    {
+      "id": "csheetPage6Assets",
+      "cloudFolder": "CSheets/Page6",
+      "recurIntoSubfolders": false,
+      "output": "ObjectCustomUIAssets",
+      // CSHEET_PAGE_6_BROWN / ORANGE / RED / PINK / PURPLE
+      "targetGUIDs": ["f36758", "f4d6b6", "515b16", "555372", "1c72c5"],
+      "filenameToNameSearchPattern": "^(navigate.*)\\.[^.]+$",
+      "filenameToNameReplacePattern": "$1",
+      "purgePatterns": []
     }
   ]
 }

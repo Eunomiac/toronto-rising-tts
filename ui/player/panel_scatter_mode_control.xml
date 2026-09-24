@@ -89,13 +89,14 @@
       raycastTarget = "false" />
 
     <Text class="scatterModeControl_npcList"
-      color = "#999999"
-      fontStyle = "Bold"
+      color = "#777777"
+      fontStyle = "Italic"
       fontSize = "20"
       raycastTarget = "false"
      />
 
      <Text class="scatterModeControl_activeList"
+       fontStyle = "Bold"
        color = "#FFFFFF" />
 
   </Defaults>
@@ -103,6 +104,23 @@
 
   UISet("scatterModeControl_pcRowContainer_Red", {padding = "0 0 0 0"})
   UISet("scatterModeControlGroup#_pcRow_Red", {padding = "10 10 0 0"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+
+  UISet("scatterModeControlGroup4_pc2_Red", {color = "rgba(1, 1, 1, 1)", scale = "1.16"})
+  UISet("scatterModeControlGroup2_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup3_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup4_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup5_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+
+
+
+  UISet("scatterModeControlGroup#_pc@_Red", {color = "rgba(1, 1, 1, 1)", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}, ["@"] = {5, 3, 1, 2, 4}})
+
+  UISet("scatterModeControlGroup#_pc1_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc2_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_rashid"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc3_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_aishe"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc4_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_fomorach"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc5_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_blackCaesar"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+
   -->
   <HorizontalLayout id="scatterModeControl_pcRowContainer_Brown" class="scatterModeControl_pcRowContainer">
     <!-- AGENT: Keep every pc# Image active=true so HorizontalLayout spacing stays stable.
@@ -341,13 +359,14 @@
       raycastTarget = "false" />
 
     <Text class="scatterModeControl_npcList"
-      color = "#999999"
-      fontStyle = "Bold"
+      color = "#777777"
+      fontStyle = "Italic"
       fontSize = "20"
       raycastTarget = "false"
      />
 
      <Text class="scatterModeControl_activeList"
+       fontStyle = "Bold"
        color = "#FFFFFF" />
 
   </Defaults>
@@ -355,6 +374,23 @@
 
   UISet("scatterModeControl_pcRowContainer_Red", {padding = "0 0 0 0"})
   UISet("scatterModeControlGroup#_pcRow_Red", {padding = "10 10 0 0"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+
+  UISet("scatterModeControlGroup4_pc2_Red", {color = "rgba(1, 1, 1, 1)", scale = "1.16"})
+  UISet("scatterModeControlGroup2_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup3_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup4_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup5_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+
+
+
+  UISet("scatterModeControlGroup#_pc@_Red", {color = "rgba(1, 1, 1, 1)", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}, ["@"] = {5, 3, 1, 2, 4}})
+
+  UISet("scatterModeControlGroup#_pc1_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc2_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_rashid"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc3_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_aishe"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc4_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_fomorach"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc5_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_blackCaesar"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+
   -->
   <HorizontalLayout id="scatterModeControl_pcRowContainer_Orange" class="scatterModeControl_pcRowContainer">
     <!-- AGENT: Keep every pc# Image active=true so HorizontalLayout spacing stays stable.
@@ -593,13 +629,14 @@
       raycastTarget = "false" />
 
     <Text class="scatterModeControl_npcList"
-      color = "#999999"
-      fontStyle = "Bold"
+      color = "#777777"
+      fontStyle = "Italic"
       fontSize = "20"
       raycastTarget = "false"
      />
 
      <Text class="scatterModeControl_activeList"
+       fontStyle = "Bold"
        color = "#FFFFFF" />
 
   </Defaults>
@@ -607,6 +644,23 @@
 
   UISet("scatterModeControl_pcRowContainer_Red", {padding = "0 0 0 0"})
   UISet("scatterModeControlGroup#_pcRow_Red", {padding = "10 10 0 0"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+
+  UISet("scatterModeControlGroup4_pc2_Red", {color = "rgba(1, 1, 1, 1)", scale = "1.16"})
+  UISet("scatterModeControlGroup2_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup3_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup4_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup5_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+
+
+
+  UISet("scatterModeControlGroup#_pc@_Red", {color = "rgba(1, 1, 1, 1)", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}, ["@"] = {5, 3, 1, 2, 4}})
+
+  UISet("scatterModeControlGroup#_pc1_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc2_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_rashid"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc3_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_aishe"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc4_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_fomorach"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc5_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_blackCaesar"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+
   -->
   <HorizontalLayout id="scatterModeControl_pcRowContainer_Red" class="scatterModeControl_pcRowContainer">
     <!-- AGENT: Keep every pc# Image active=true so HorizontalLayout spacing stays stable.
@@ -845,13 +899,14 @@
       raycastTarget = "false" />
 
     <Text class="scatterModeControl_npcList"
-      color = "#999999"
-      fontStyle = "Bold"
+      color = "#777777"
+      fontStyle = "Italic"
       fontSize = "20"
       raycastTarget = "false"
      />
 
      <Text class="scatterModeControl_activeList"
+       fontStyle = "Bold"
        color = "#FFFFFF" />
 
   </Defaults>
@@ -859,6 +914,23 @@
 
   UISet("scatterModeControl_pcRowContainer_Red", {padding = "0 0 0 0"})
   UISet("scatterModeControlGroup#_pcRow_Red", {padding = "10 10 0 0"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+
+  UISet("scatterModeControlGroup4_pc2_Red", {color = "rgba(1, 1, 1, 1)", scale = "1.16"})
+  UISet("scatterModeControlGroup2_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup3_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup4_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup5_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+
+
+
+  UISet("scatterModeControlGroup#_pc@_Red", {color = "rgba(1, 1, 1, 1)", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}, ["@"] = {5, 3, 1, 2, 4}})
+
+  UISet("scatterModeControlGroup#_pc1_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc2_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_rashid"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc3_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_aishe"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc4_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_fomorach"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc5_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_blackCaesar"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+
   -->
   <HorizontalLayout id="scatterModeControl_pcRowContainer_Pink" class="scatterModeControl_pcRowContainer">
     <!-- AGENT: Keep every pc# Image active=true so HorizontalLayout spacing stays stable.
@@ -1097,13 +1169,14 @@
       raycastTarget = "false" />
 
     <Text class="scatterModeControl_npcList"
-      color = "#999999"
-      fontStyle = "Bold"
+      color = "#777777"
+      fontStyle = "Italic"
       fontSize = "20"
       raycastTarget = "false"
      />
 
      <Text class="scatterModeControl_activeList"
+       fontStyle = "Bold"
        color = "#FFFFFF" />
 
   </Defaults>
@@ -1111,6 +1184,23 @@
 
   UISet("scatterModeControl_pcRowContainer_Red", {padding = "0 0 0 0"})
   UISet("scatterModeControlGroup#_pcRow_Red", {padding = "10 10 0 0"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+
+  UISet("scatterModeControlGroup4_pc2_Red", {color = "rgba(1, 1, 1, 1)", scale = "1.16"})
+  UISet("scatterModeControlGroup2_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup3_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup4_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup5_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+
+
+
+  UISet("scatterModeControlGroup#_pc@_Red", {color = "rgba(1, 1, 1, 1)", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}, ["@"] = {5, 3, 1, 2, 4}})
+
+  UISet("scatterModeControlGroup#_pc1_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc2_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_rashid"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc3_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_aishe"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc4_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_fomorach"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc5_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_blackCaesar"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+
   -->
   <HorizontalLayout id="scatterModeControl_pcRowContainer_Purple" class="scatterModeControl_pcRowContainer">
     <!-- AGENT: Keep every pc# Image active=true so HorizontalLayout spacing stays stable.

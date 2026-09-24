@@ -91,13 +91,14 @@
       raycastTarget = "false" />
 
     <Text class="scatterModeControl_npcList"
-      color = "#999999"
-      fontStyle = "Bold"
+      color = "#777777"
+      fontStyle = "Italic"
       fontSize = "20"
       raycastTarget = "false"
      />
 
      <Text class="scatterModeControl_activeList"
+       fontStyle = "Bold"
        color = "#FFFFFF" />
 
   </Defaults>
@@ -105,6 +106,14 @@
 
   UISet("scatterModeControl_pcRowContainer_Red", {padding = "0 0 0 0"})
   UISet("scatterModeControlGroup#_pcRow_Red", {padding = "10 10 0 0"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+
+  UISet("scatterModeControlGroup4_pc2_Red", {color = "rgba(1, 1, 1, 1)", scale = "1.16"})
+  UISet("scatterModeControlGroup2_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup3_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup4_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup5_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+
+
 
   UISet("scatterModeControlGroup#_pc@_Red", {color = "rgba(1, 1, 1, 1)", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}, ["@"] = {5, 3, 1, 2, 4}})
 

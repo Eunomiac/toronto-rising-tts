@@ -75,7 +75,7 @@
   <VerticalLayout class="hud_storyteller_inner_column"
     spacing="6"
     childForceExpandWidth="true"
-    childAlignment="UpperMiddle"
+    childAlignment="UpperCenter"
     minWidth = "0"
     flexibleWidth = "1"
     preferredWidth = "250" />

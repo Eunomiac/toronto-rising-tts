@@ -16,7 +16,7 @@ local offsets = {
       defaultY = 17.0400
     },
     CSHEET_DICE_DRAWER_ANCHOR_ON = {
-      localXZ = { x = 0, z = -41.3241 },
+      localXZ = { x = 0, z = -45.3241 },
       localRotation = { x = 0, y = -180, z = 0 },
       defaultY = 200
     },
