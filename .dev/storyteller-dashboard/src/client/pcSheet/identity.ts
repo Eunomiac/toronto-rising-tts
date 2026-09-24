@@ -43,7 +43,7 @@ export const chronologyFor = (identity: Identity): string => {
   if (identity.birthPlace === "" && identity.embracePlace === "") {
     return "";
   }
-  return `Born in ${identity.birthPlace}, ${identity.birthYear}  ·  Embraced in ${identity.embracePlace}, ${identity.embraceYear}`;
+  return `Born in ${identity.birthPlace}, ${identity.birthYear} ◆ Embraced in ${identity.embracePlace}, ${identity.embraceYear}`;
 };
 
 /** @deprecated Live UI must use identityFromSeat. Kept only for unit tests of subtitle formatting. */

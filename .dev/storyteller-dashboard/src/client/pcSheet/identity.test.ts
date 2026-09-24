@@ -65,7 +65,7 @@ describe("identityFromSeat", () => {
 
   it("formats chronology from seat birth and embrace fields", () => {
     expect(chronologyFor(identityFromSeat(seat({})))).toBe(
-      "Born in Brasov, Romania, 1799  ·  Embraced in Louisiana, USA, 1834"
+      "Born in Brasov, Romania, 1799 ◆ Embraced in Louisiana, USA, 1834"
     );
   });
 
