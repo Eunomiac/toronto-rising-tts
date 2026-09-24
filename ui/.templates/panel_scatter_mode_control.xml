@@ -62,7 +62,7 @@
     />
 
     <HorizontalLayout class="scatterModeControl_pcRow"
-      padding = "0 0 0 0"
+      padding = "10 10 0 0"
       raycastTarget = "false"
     />
 
@@ -71,6 +71,7 @@
       color = "rgba(1, 1, 1, 0)"
       minHeight = "100"
       raycastTarget = "false"
+      image = "scatterModeControlPC_lordLucien"
     />
 
     <HorizontalLayout class="scatterModeControl_selectorContainer"
@@ -104,8 +105,9 @@
   <!--
 
   UISet("scatterModeControl_pcRowContainer_Red", {padding = "0 0 0 0"})
+  UISet("scatterModeControlGroup#_pcRow_Red", {padding = "10 10 0 0"}, {["#"] = {1, 2, 3, 4, 5, 6}})
 
-  UISet("scatterModeControlGroup#_pc1_Red", {active = "true", color = "rgba(1, 1, 1, 0)", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}, ["@"] = {5, 3, 1, 2, 4}})
+  UISet("scatterModeControlGroup#_pc@_Red", {color = "rgba(1, 1, 1, 1)", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}, ["@"] = {5, 3, 1, 2, 4}})
 
   UISet("scatterModeControlGroup#_pc1_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}})
   UISet("scatterModeControlGroup#_pc2_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_rashid"}, {["#"] = {1, 2, 3, 4, 5, 6}})
@@ -118,7 +120,10 @@
     <!-- AGENT: Keep every pc# Image active=true so HorizontalLayout spacing stays stable.
       Occupied slots: color = "rgba(1, 1, 1, 1)", image = "scatterModeControlPC_<pcKey>"
         (<pcKey> is lordLucien / rashid / aishe / fomorach / blackCaesar).
-      Empty slots: color = "rgba(1, 1, 1, 0)" (do not set active=false — that collapses the row).
+      Empty slots: color = "rgba(1, 1, 1, 0)", image = "scatterModeControlPC_lordLucien"
+        (placeholder keeps layout; always re-assert image in Lua — partial setAttributes can wipe
+        the class default to an empty inline image → white boxes when alpha is raised).
+      Do not set active=false on empty slots — that collapses the row.
       Slot index matches world/board hole (pc1 = gold / first-join, visual middle of the LTR row). -->
 
     <HorizontalLayout id="scatterModeControlGroup1_pcRow_@@color@@" class="scatterModeControl_pcRow">
@@ -188,7 +193,7 @@
       raycastTarget = "false"
      />
 
-    UISet("scatterModeControlGroup#_npcList_Red", {fontSize= "18", text = "Mylene 'the Puck' Hamelin\nThe Aristocrat\nOliver Gagnon\nAlistair Etrata\nAgnes Bellanger"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+    UISet("scatterModeControlGroup#_npcList_Red", {fontStyle = "Normal"}, {["#"] = {1, 2, 3, 4, 6}})
     -->
     <VerticalLayout id="scatterModeControlGroup1_container_@@color@@" class="scatterModeControl_group_container">
       <HorizontalLayout id="db_scatterModeControlGroup1_selectorContainer_@@color@@" class="scatterModeControl_selectorContainer">
