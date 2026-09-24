@@ -802,8 +802,19 @@ function refreshCharacterSheetUi()
   end
 
   if pageNum == 1 and self.UI then
-    self.UI.setAttribute("xp_text", "text", tostring(tonumber(stats.xp) or 0))
+    local xpVal = 0
+    if type(playerID) == "string" and Global ~= nil and type(Global.call) == "function" then
+      local n = Global.call("GlobalGetCurrentXp", playerID)
+      xpVal = tonumber(n) or 0
+    end
+    self.UI.setAttribute("xp_text", "text", tostring(xpVal))
     applyDesireFieldFromMerged(pd)
+  end
+
+  if pageNum == 6 and type(seatColor) == "string" and Global ~= nil and type(Global.call) == "function" then
+    Wait.frames(function()
+      Global.call("GlobalPaintXpLogPage6", { color = seatColor })
+    end, 1)
   end
 
   if pageNum == 1 or pageNum == 2 then
@@ -941,6 +952,22 @@ end
 
 function onDesireEndEdit(player, value, id)
   handleDesireChanged(player, value, id, true)
+end
+
+function onXpLogNavigateForward(player, value, id)
+  syncSheetContextFromGmNotes()
+  if type(seatColor) ~= "string" or Global == nil or type(Global.call) ~= "function" then
+    return
+  end
+  Global.call("GlobalXpLogNavigate", { color = seatColor, direction = "forward" })
+end
+
+function onXpLogNavigateBack(player, value, id)
+  syncSheetContextFromGmNotes()
+  if type(seatColor) ~= "string" or Global == nil or type(Global.call) ~= "function" then
+    return
+  end
+  Global.call("GlobalXpLogNavigate", { color = seatColor, direction = "back" })
 end
 
 return CSHEET

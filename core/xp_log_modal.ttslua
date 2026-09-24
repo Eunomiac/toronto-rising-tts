@@ -1,0 +1,207 @@
+--[[
+  Storyteller XP log modal (Global HUD). Opens from PCs panel XP button.
+]]
+
+local S = require("core.state")
+local U = require("lib.util")
+local C = require("lib.constants")
+local XpLog = require("core.xp_log")
+local PCST = require("core.pc_storyteller_panel")
+
+local M = {}
+
+--- @type { color: string|nil, amountText: string, description: string }
+local draft = {
+  color = nil,
+  amountText = "",
+  description = "",
+}
+
+local function setAttr(id, attrs)
+  if type(U.setAttributes) == "function" then
+    U.setAttributes(id, attrs)
+  elseif UI ~= nil and type(UI.setAttribute) == "function" then
+    for k, v in pairs(attrs) do
+      UI.setAttribute(id, k, tostring(v))
+    end
+  end
+end
+
+local function charNameForColor(color)
+  local pid = C.GetPlayerID(color)
+  if type(pid) ~= "string" then
+    return color
+  end
+  local name = S.getStateVal("playerData", pid, "charName")
+  if type(name) == "string" and name ~= "" then
+    return name
+  end
+  local merged = S.getPlayerData(pid)
+  if U.Type(merged) == "table" and type(merged.charName) == "string" and merged.charName ~= "" then
+    return merged.charName
+  end
+  return color
+end
+
+local function refreshUndoStrip()
+  local color = draft.color
+  local pid = color and C.GetPlayerID(color) or nil
+  local last = type(pid) == "string" and XpLog.getLastEntry(pid) or nil
+  if last == nil then
+    setAttr("xpLog_undoRow", { active = "false" })
+    setAttr("xpLog_lastEntry", { text = "" })
+    return
+  end
+  local sign = last.kind == "gain" and "+" or "−"
+  local text = string.format("Last: %s%d XP — %s", sign, last.amount, last.description)
+  setAttr("xpLog_lastEntry", { text = text })
+  setAttr("xpLog_undoRow", { active = "true" })
+end
+
+--- @param color string
+function M.open(color)
+  if type(color) ~= "string" or color == "" then
+    return
+  end
+  draft.color = color
+  draft.amountText = ""
+  draft.description = ""
+  setAttr("xpLog_title", { text = "XP — " .. charNameForColor(color) })
+  setAttr("xpLog_amount", { text = "" })
+  setAttr("xpLog_description", { text = "" })
+  if UI ~= nil and type(UI.setValue) == "function" then
+    UI.setValue("xpLog_amount", "")
+    UI.setValue("xpLog_description", "")
+  end
+  refreshUndoStrip()
+  setAttr("xpLog_modal", { active = "true" })
+end
+
+function M.close()
+  draft.color = nil
+  draft.amountText = ""
+  draft.description = ""
+  setAttr("xpLog_modal", { active = "false" })
+end
+
+--- @param id string
+--- @param value string
+function M.onField(id, value)
+  local v = type(value) == "string" and value or tostring(value or "")
+  if id == "xpLog_amount" then
+    draft.amountText = v
+  elseif id == "xpLog_description" then
+    draft.description = v
+  end
+end
+
+local function afterMutation(colors)
+  for i = 1, #colors do
+    local color = colors[i]
+    PCST.refreshRow(color)
+    PCST.refreshCharacterSheetsForColor(color)
+    if type(PCST.paintXpLogPage6ForColor) == "function" then
+      PCST.paintXpLogPage6ForColor(color)
+    end
+  end
+end
+
+local function applyOne(pid, color)
+  local ok, err, info = XpLog.appendEntry(pid, draft.amountText, draft.description)
+  if not ok then
+    return false, err
+  end
+  if info and info.overCap then
+    XpLog.warnStoryteller(
+      string.format(
+        "%s: more than %d %s entries this session — extras are stored but hidden on page 6 until rebuild.",
+        charNameForColor(color),
+        XpLog.LIVE_SLOT_CAP,
+        info.kind == "gain" and "gain" or "spend"
+      )
+    )
+  end
+  return true, nil
+end
+
+--- @return boolean
+function M.apply()
+  local color = draft.color
+  if type(color) ~= "string" then
+    return false
+  end
+  local pid = C.GetPlayerID(color)
+  if type(pid) ~= "string" then
+    U.AlertGM("XP: no player for " .. tostring(color))
+    return false
+  end
+  local ok, err = applyOne(pid, color)
+  if not ok then
+    U.AlertGM(err or "XP apply failed")
+    return false
+  end
+  afterMutation({ color })
+  refreshUndoStrip()
+  draft.amountText = ""
+  draft.description = ""
+  setAttr("xpLog_amount", { text = "" })
+  setAttr("xpLog_description", { text = "" })
+  if UI ~= nil and type(UI.setValue) == "function" then
+    UI.setValue("xpLog_amount", "")
+    UI.setValue("xpLog_description", "")
+  end
+  return true
+end
+
+--- @return boolean
+function M.applyToAll()
+  local okVal, errVal = XpLog.validateEntry(draft.amountText, draft.description)
+  if not okVal then
+    U.AlertGM(errVal or "Invalid XP entry")
+    return false
+  end
+  local colors = XpLog.presentPcColors()
+  local touched = {}
+  local fail = 0
+  for i = 1, #colors do
+    local color = colors[i]
+    local pid = C.GetPlayerID(color)
+    if type(pid) == "string" and pid ~= C.StorytellerID then
+      local ok = applyOne(pid, color)
+      if ok then
+        touched[#touched + 1] = color
+      else
+        fail = fail + 1
+      end
+    end
+  end
+  if #touched == 0 then
+    U.AlertGM(fail > 0 and "XP Apply to All: no entries applied" or "XP Apply to All: no present PCs")
+    return false
+  end
+  afterMutation(touched)
+  refreshUndoStrip()
+  return true
+end
+
+--- @return boolean
+function M.undo()
+  local color = draft.color
+  if type(color) ~= "string" then
+    return false
+  end
+  local pid = C.GetPlayerID(color)
+  if type(pid) ~= "string" then
+    return false
+  end
+  local ok, err = XpLog.undoLastEntry(pid)
+  if not ok then
+    U.AlertGM(err or "Nothing to undo")
+    return false
+  end
+  afterMutation({ color })
+  refreshUndoStrip()
+  return true
+end
+
+return M

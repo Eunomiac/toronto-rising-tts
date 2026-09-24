@@ -482,7 +482,7 @@ _Blocked: author must define data binding approach before substantial implementa
 - [x] **sheetDisplay:false Status:** Temp/disabled overlays on page 3; list in Stats + Project Editor Advantages. _(TOR-385)_
 - [x] **Domain ratings in Stats + Project Editor:** Top-level `chasse` / `lien` / `portillon` / `haven` stakeable + listed when Coterie selected. _(TOR-386)_
 - [ ] **Coterie sheet notes:** Player-initiated notes on final page right ? compact by title, date-sorted; detail on click/hover. _(TOR-382 ? Future)_
-- [ ] **Page 6:** Character history; scrolling XP log. _(TOR-92)_
+- [x] **Page 6:** Scrolling Experience Log (bake past sessions; live placeholders; ST XP modal). Character history is background art only. Pending Save & Play. _(TOR-92)_
 - [ ] **Discipline card grimoire:** Drop zone + page navigation near sheet for stored power/ritual/ceremony cards. _(TOR-205)_
 - [x] **Decals:** Sheet object decals update from Blood Potency (state ? UI reconcile). _(TOR-70)_
 

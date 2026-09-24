@@ -1,0 +1,35 @@
+--[[
+  Baked finished XP sessions for character sheet page 6.
+  DO NOT EDIT BY HAND — regenerate: node .dev/scripts/bake_csheet_xp_log.js
+  Source: TS_Save_230.json
+]]
+
+local BAKE = {
+  bakedForSessionNum = 1,
+  bakeRevision = 1790263309244,
+  saveFileName = "TS_Save_230.json",
+  byCharKey = {
+    ["aishe"] = {
+      sessions = {
+      },
+    },
+    ["fomorach"] = {
+      sessions = {
+      },
+    },
+    ["lordLucien"] = {
+      sessions = {
+      },
+    },
+    ["rashid"] = {
+      sessions = {
+      },
+    },
+  },
+}
+
+function BAKE.getPack()
+  return BAKE
+end
+
+return BAKE

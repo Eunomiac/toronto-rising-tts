@@ -144,6 +144,9 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_statsTarget` / `HUD_statsBack` | A | — | Stats panel navigation |
 | `HUD_statsAdd` / `HUD_statsEdit` / `HUD_statsEditRating` / `HUD_statsEditorConfirm` / `HUD_statsEditorDelete` | B+C | Yes | advantage mutations |
 | `HUD_statsEditorField` / `HUD_statsEditorCancel` | A | — | draft stash / close |
+| `HUD_xpLogField` / `HUD_xpLogCancel` | A | — | XP modal draft / close (TOR-92) |
+| `HUD_xpLogApply` / `HUD_xpLogApplyAll` / `HUD_xpLogUndo` | B | Yes | XP log mutate + sheet live paint (TOR-92) |
+| `onXpLogNavigateForward` / `onXpLogNavigateBack` | A | — | CSHEET page 6 pagination (object XmlUI) |
 | `HUD_projectsTarget` / `HUD_projectsBack` | A | — | Projects panel navigation |
 | `HUD_projectsAdd` / `HUD_projectsEdit` / `HUD_projectEditorConfirm` / `HUD_projectEditorDelete` / `HUD_projectEditorBegin` / `HUD_projectEditorComplete` / `HUD_projectEditorLaunchR` | B+C | Yes | project mutations / Launch roll |
 | `HUD_projectEditorField` / `HUD_projectDropdown` / `HUD_projectStakeDropdown` / `HUD_projectStakeAdvOpen` / `HUD_projectAdvPick` / `HUD_projectAdvPickCancel` / `HUD_projectEditorCancel` | A/B | Yes (field persist) | live project editor writes; advantage picker uses Buttons (TTS Dropdown Options do not refresh labels); Cancel may delete pre-inProgress |

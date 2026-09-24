@@ -12,6 +12,7 @@ local U = require("lib.util")
 local Sync = require("core.sync")
 local CI = require("lib.csheet_identity")
 local HUDP = require("core.hud_player")
+local XpLog = require("core.xp_log")
 
 --- @type table<string, table>
 local buffers = {}
@@ -26,7 +27,6 @@ local function buf(color)
       wAgg = 0,
       wSup = 0,
       hum = 0,
-      xp = 0,
       hunger = 0
     }
   end
@@ -53,8 +53,6 @@ local ACTIONS_SKIP_OVERLAY_REFRESH = {
   wpSupDown = true,
   humUp = true,
   humDown = true,
-  xpUp = true,
-  xpDown = true,
   hungerUp = true,
   hungerDown = true,
   -- hungerApply uses P.refreshHudOverlaysForSeat after Sync.player (TOR-340).
@@ -221,8 +219,7 @@ function PCST.refreshRow(color)
   safeSetValue("pcs_wpTrack_" .. color, P.formatDamageTrackText(color, "willpower"))
   safeSetValue("pcs_humTrack_" .. color, P.formatHumanityTrackText(color))
 
-  local xp = S.getStateVal("playerData", pid, "stats", "xp")
-  safeSetValue("pcs_xpVal_" .. color, tostring(xp or 0))
+  safeSetValue("pcs_xpVal_" .. color, tostring(XpLog.getCurrentXp(pid)))
 
   local desire = PCST.normalizeDesire(S.getStateVal("playerData", pid, "desire"))
   safeSetValue("pcs_desire_" .. color, desire ~= "" and desire or "—")
@@ -243,7 +240,6 @@ function PCST.refreshRow(color)
   safeSetValue("pcs_bufWPA_" .. color, string.format("%+d", b.wAgg))
   safeSetValue("pcs_bufWPS_" .. color, string.format("%+d", b.wSup))
   safeSetValue("pcs_bufHum_" .. color, string.format("%+d", b.hum))
-  safeSetValue("pcs_bufXp_" .. color, string.format("%+d", b.xp))
   safeSetValue("pcs_bufHunger_" .. color, string.format("%+d", b.hunger))
 end
 
@@ -316,17 +312,9 @@ function PCST.onHudClick(player, _button, id)
   elseif action == "humBaseDown" then
     P.applyHumanityBaseDelta(color, -1)
     PCST.refreshCharacterSheetsForColor(color)
-  elseif action == "xpUp" then
-    b.xp = b.xp + 1
-  elseif action == "xpDown" then
-    b.xp = b.xp - 1
-  elseif action == "xpApply" then
-    if pid then
-      local cur = tonumber(S.getStateVal("playerData", pid, "stats", "xp")) or 0
-      S.setStateVal(cur + b.xp, "playerData", pid, "stats", "xp")
-    end
-    b.xp = 0
-    PCST.refreshCharacterSheetsForColor(color)
+  elseif action == "xpOpen" then
+    local XpModal = require("core.xp_log_modal")
+    XpModal.open(color)
   elseif action == "hungerUp" then
     b.hunger = b.hunger + 1
   elseif action == "hungerDown" then
@@ -379,6 +367,20 @@ function PCST.onHudClick(player, _button, id)
   PCST.refreshRow(color)
   if not ACTIONS_SKIP_OVERLAY_REFRESH[action] then
     P.refreshHudOverlays()
+  end
+end
+
+--- Paint page 6 live XP slots + pagination (no remount).
+--- @param color string
+function PCST.paintXpLogPage6ForColor(color)
+  if type(color) ~= "string" then
+    return
+  end
+  if Global ~= nil and type(Global.call) == "function" then
+    Global.call("GlobalPaintXpLogPage6", { color = color })
+  else
+    local XpSheet = require("core.xp_sheet")
+    XpSheet.paintForColor(color)
   end
 end
 

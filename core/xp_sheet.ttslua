@@ -1,0 +1,344 @@
+--[[
+  Page 6 Experience Log: live session paint, pagination, bake-mismatch warn.
+  Global VM — called via GlobalPaintXpLogPage6 / GlobalXpLogNavigate.
+]]
+
+local S = require("core.state")
+local U = require("lib.util")
+local C = require("lib.constants")
+local CI = require("lib.csheet_identity")
+local XD = require("lib.xp_display")
+local XpLog = require("core.xp_log")
+local Bake = require("lib.csheet_xp_log_baked")
+
+local XpSheet = {}
+
+--- @type table<string, boolean>
+local warnedBakeMismatch = {}
+
+local function bakePack()
+  return Bake.getPack and Bake.getPack() or Bake
+end
+
+local function liveSessionId()
+  local bake = bakePack()
+  return math.floor(tonumber(bake.bakedForSessionNum) or 1)
+end
+
+--- @param color string
+--- @return Object|nil
+local function findPage6Object(color)
+  local tag = CI.seatColorObjectTag(color)
+  if tag == nil then
+    return nil
+  end
+  local tagged = getObjectsWithTag(tag)
+  if U.Type(tagged) ~= "table" then
+    return nil
+  end
+  for i = 1, #tagged do
+    local obj = tagged[i]
+    if obj ~= nil and obj.getGMNotes ~= nil then
+      local notes = tostring(obj.getGMNotes() or "")
+      if notes:match("CSHEET_PAGE_6_") then
+        return obj
+      end
+    end
+  end
+  return nil
+end
+
+--- @param obj Object
+--- @param id string
+--- @param attrs table
+local function setObjAttrs(obj, id, attrs)
+  if obj == nil or obj.UI == nil then
+    return
+  end
+  if type(obj.UI.setAttributes) == "function" then
+    obj.UI.setAttributes(id, attrs)
+  else
+    for k, v in pairs(attrs) do
+      obj.UI.setAttribute(id, k, tostring(v))
+    end
+  end
+end
+
+--- Build ordered session list for pagination (newest first): live + finished from bake + state.
+--- @param pid string
+--- @return table array of { sessionNum, lineCount, isLive }
+local function buildSessionMeta(pid)
+  local bake = bakePack()
+  local liveN = liveSessionId()
+  local meta = {}
+  local liveBlock = XpLog.getSessionBlock(pid, math.floor(tonumber(S.getStateVal("sessionNum")) or liveN))
+  local liveGains = 0
+  local liveSpends = 0
+  if liveBlock ~= nil then
+    liveGains = math.min(#(liveBlock.gains or {}), XD.LIVE_SLOT_CAP)
+    liveSpends = math.min(#(liveBlock.spends or {}), XD.LIVE_SLOT_CAP)
+  end
+  -- Always include live shell (even empty) so title can show when entries exist.
+  if liveGains > 0 or liveSpends > 0 then
+    meta[#meta + 1] = {
+      sessionNum = liveN,
+      lineCount = XD.sessionLineCount(liveGains, liveSpends),
+      isLive = true,
+    }
+  end
+
+  local ck = nil
+  local staticRow = C.PlayerData[pid]
+  if U.Type(staticRow) == "table" then
+    ck = staticRow.charKey
+  end
+  local entry = ck and bake.byCharKey and bake.byCharKey[ck] or nil
+  local sessions = entry and entry.sessions or {}
+  local finished = {}
+  for i = 1, #sessions do
+    local s = sessions[i]
+    if type(s) == "table" then
+      local sn = math.floor(tonumber(s.sessionNum) or -1)
+      if sn >= 0 and sn < liveN then
+        local g = #(s.gains or {})
+        local sp = #(s.spends or {})
+        if g > 0 or sp > 0 then
+          finished[#finished + 1] = {
+            sessionNum = sn,
+            lineCount = XD.sessionLineCount(g, sp),
+            isLive = false,
+          }
+        end
+      end
+    end
+  end
+  table.sort(finished, function(a, b)
+    return a.sessionNum > b.sessionNum
+  end)
+  for i = 1, #finished do
+    meta[#meta + 1] = finished[i]
+  end
+  return meta
+end
+
+--- Pack sessions into pages of PAGE_LINE_BUDGET lines; sessions do not split.
+--- @param meta table
+--- @return table array of pages, each page = array of sessionNums
+local function paginate(meta)
+  local pages = {}
+  local page = {}
+  local used = 0
+  for i = 1, #meta do
+    local s = meta[i]
+    local need = s.lineCount
+    if need > XD.PAGE_LINE_BUDGET then
+      need = XD.PAGE_LINE_BUDGET
+    end
+    if #page > 0 and used + need > XD.PAGE_LINE_BUDGET then
+      pages[#pages + 1] = page
+      page = {}
+      used = 0
+    end
+    page[#page + 1] = s.sessionNum
+    used = used + need
+  end
+  if #page > 0 then
+    pages[#pages + 1] = page
+  end
+  if #pages == 0 then
+    pages[1] = {}
+  end
+  return pages
+end
+
+local function warnBakeIfNeeded(color)
+  local bake = bakePack()
+  local stateSession = math.floor(tonumber(S.getStateVal("sessionNum")) or 1)
+  local baked = math.floor(tonumber(bake.bakedForSessionNum) or 1)
+  if stateSession == baked then
+    return
+  end
+  local key = tostring(baked) .. "->" .. tostring(stateSession)
+  if warnedBakeMismatch[key] then
+    return
+  end
+  warnedBakeMismatch[key] = true
+  XpLog.warnStoryteller(
+    string.format(
+      "Page 6 XP bake is for session %d but gameState sessionNum is %d. Run mid-week bake (npm run csheet-xp-log:bake) then Save & Play. Finished sessions since the last bake will not show on the sheet.",
+      baked,
+      stateSession
+    )
+  )
+end
+
+--- Paint live placeholder block from gameState current session into baked live ids.
+--- @param obj Object
+--- @param pid string
+local function paintLiveBlock(obj, pid)
+  local liveN = liveSessionId()
+  local stateSession = math.floor(tonumber(S.getStateVal("sessionNum")) or liveN)
+  local block = XpLog.getSessionBlock(pid, stateSession)
+  if block == nil then
+    setObjAttrs(obj, "xp_title_line_" .. liveN, { active = "false" })
+    setObjAttrs(obj, "xp_listing_wrapper_" .. liveN, { active = "false" })
+    for i = 1, XD.LIVE_SLOT_CAP do
+      setObjAttrs(obj, "xp_item_left_" .. liveN .. "_" .. i, { active = "false" })
+      setObjAttrs(obj, "xp_item_right_" .. liveN .. "_" .. i, { active = "false" })
+    end
+    return
+  end
+
+  local gains = block.gains or {}
+  local spends = block.spends or {}
+  local hasEntries = #gains > 0 or #spends > 0
+  if not hasEntries then
+    setObjAttrs(obj, "xp_title_line_" .. liveN, { active = "false" })
+    setObjAttrs(obj, "xp_listing_wrapper_" .. liveN, { active = "false" })
+    return
+  end
+
+  setObjAttrs(obj, "xp_sessionNum_" .. liveN, {
+    text = XD.sessionTitleUpper(block.sessionDisplay, stateSession),
+  })
+  setObjAttrs(obj, "xp_sessionDate_" .. liveN, {
+    text = XD.formatShortDate(block.date),
+  })
+  setObjAttrs(obj, "xp_summation_" .. liveN, {
+    text = XD.formatSummation(block.prevTotal, block.gainTotal, block.spendTotal),
+  })
+  setObjAttrs(obj, "xp_total_" .. liveN, {
+    text = tostring(math.floor(tonumber(block.newTotal) or 0)) .. " XP",
+  })
+
+  for i = 1, XD.LIVE_SLOT_CAP do
+    local g = gains[i]
+    if g ~= nil then
+      setObjAttrs(obj, "xp_item_left_" .. liveN .. "_" .. i, { active = "true" })
+      setObjAttrs(obj, "xp_gainNum_" .. liveN .. "_" .. i, {
+        text = "+" .. tostring(g.amount) .. " XP",
+      })
+      setObjAttrs(obj, "xp_gainDesc_" .. liveN .. "_" .. i, {
+        text = tostring(g.description or ""),
+      })
+    else
+      setObjAttrs(obj, "xp_item_left_" .. liveN .. "_" .. i, { active = "false" })
+    end
+    local s = spends[i]
+    if s ~= nil then
+      setObjAttrs(obj, "xp_item_right_" .. liveN .. "_" .. i, { active = "true" })
+      setObjAttrs(obj, "xp_spendNum_" .. liveN .. "_" .. i, {
+        text = "−" .. tostring(s.amount) .. " XP",
+      })
+      setObjAttrs(obj, "xp_spendDesc_" .. liveN .. "_" .. i, {
+        text = tostring(s.description or ""),
+      })
+    else
+      setObjAttrs(obj, "xp_item_right_" .. liveN .. "_" .. i, { active = "false" })
+    end
+  end
+
+  if #gains > XD.LIVE_SLOT_CAP or #spends > XD.LIVE_SLOT_CAP then
+    XpLog.warnStoryteller(
+      "More than " .. tostring(XD.LIVE_SLOT_CAP) .. " gain/spend lines this session — extras are hidden on page 6."
+    )
+  end
+end
+
+--- Apply which session blocks are active for the current page index.
+--- @param obj Object
+--- @param pid string
+--- @param pageIndex number 1-based
+local function applyPagination(obj, pid, pageIndex)
+  local meta = buildSessionMeta(pid)
+  local pages = paginate(meta)
+  local page = pages[pageIndex] or pages[1] or {}
+  local onPage = {}
+  for i = 1, #page do
+    onPage[page[i]] = true
+  end
+
+  local liveN = liveSessionId()
+  local allNums = { liveN }
+  for i = 1, #meta do
+    allNums[#allNums + 1] = meta[i].sessionNum
+  end
+  -- Unique
+  local seen = {}
+  for i = 1, #allNums do
+    local sn = allNums[i]
+    if not seen[sn] then
+      seen[sn] = true
+      local active = onPage[sn] == true
+      setObjAttrs(obj, "xp_title_line_" .. sn, { active = active and "true" or "false" })
+      setObjAttrs(obj, "xp_listing_wrapper_" .. sn, { active = active and "true" or "false" })
+    end
+  end
+
+  local showBack = pageIndex < #pages
+  local showFwd = pageIndex > 1
+  setObjAttrs(obj, "xp_navigate_backward", { active = showBack and "true" or "false" })
+  setObjAttrs(obj, "xp_navigate_forward", { active = showFwd and "true" or "false" })
+end
+
+--- @param color string
+--- @return boolean
+function XpSheet.paintForColor(color)
+  if type(color) ~= "string" or color == "" then
+    return false
+  end
+  warnBakeIfNeeded(color)
+  local pid = C.GetPlayerID(color)
+  if type(pid) ~= "string" then
+    return false
+  end
+  local obj = findPage6Object(color)
+  if obj == nil then
+    return false
+  end
+  paintLiveBlock(obj, pid)
+  local pageIndex = math.floor(tonumber(S.getStateVal("playerData", pid, "xpLogPage")) or 1)
+  if pageIndex < 1 then
+    pageIndex = 1
+  end
+  applyPagination(obj, pid, pageIndex)
+  return true
+end
+
+--- @param color string
+--- @param direction string "forward" (older / next page) or "back" (newer)
+--- @return boolean
+function XpSheet.navigate(color, direction)
+  if type(color) ~= "string" then
+    return false
+  end
+  local pid = C.GetPlayerID(color)
+  if type(pid) ~= "string" then
+    return false
+  end
+  local meta = buildSessionMeta(pid)
+  local pages = paginate(meta)
+  local pageIndex = math.floor(tonumber(S.getStateVal("playerData", pid, "xpLogPage")) or 1)
+  if direction == "forward" or direction == "back" then
+    -- forward button is "up"/older pages in mock (navigate_up = forward in doc naming)
+    if direction == "forward" then
+      pageIndex = pageIndex + 1
+    else
+      pageIndex = pageIndex - 1
+    end
+  elseif direction == "older" then
+    pageIndex = pageIndex + 1
+  elseif direction == "newer" then
+    pageIndex = pageIndex - 1
+  end
+  if pageIndex < 1 then
+    pageIndex = 1
+  end
+  if pageIndex > #pages then
+    pageIndex = #pages
+  end
+  S.setStateVal(pageIndex, "playerData", pid, "xpLogPage")
+  return XpSheet.paintForColor(color)
+end
+
+return XpSheet

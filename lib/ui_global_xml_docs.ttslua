@@ -3368,13 +3368,14 @@ prettyPrintTable(draggableData, "draggableData")
       raycastTarget = "false" />
 
     <Text class="scatterModeControl_npcList"
-      color = "#999999"
-      fontStyle = "Bold"
+      color = "#777777"
+      fontStyle = "Italic"
       fontSize = "20"
       raycastTarget = "false"
      />
 
      <Text class="scatterModeControl_activeList"
+       fontStyle = "Bold"
        color = "#FFFFFF" />
 
   </Defaults>
@@ -3382,6 +3383,23 @@ prettyPrintTable(draggableData, "draggableData")
 
   UISet("scatterModeControl_pcRowContainer_Red", {padding = "0 0 0 0"})
   UISet("scatterModeControlGroup#_pcRow_Red", {padding = "10 10 0 0"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+
+  UISet("scatterModeControlGroup4_pc2_Red", {color = "rgba(1, 1, 1, 1)", scale = "1.16"})
+  UISet("scatterModeControlGroup2_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup3_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup4_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup5_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+
+
+
+  UISet("scatterModeControlGroup#_pc@_Red", {color = "rgba(1, 1, 1, 1)", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}, ["@"] = {5, 3, 1, 2, 4}})
+
+  UISet("scatterModeControlGroup#_pc1_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc2_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_rashid"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc3_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_aishe"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc4_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_fomorach"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc5_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_blackCaesar"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+
   -->
   <HorizontalLayout id="scatterModeControl_pcRowContainer_Brown" class="scatterModeControl_pcRowContainer">
     <!-- AGENT: Keep every pc# Image active=true so HorizontalLayout spacing stays stable.
@@ -3620,13 +3638,14 @@ prettyPrintTable(draggableData, "draggableData")
       raycastTarget = "false" />
 
     <Text class="scatterModeControl_npcList"
-      color = "#999999"
-      fontStyle = "Bold"
+      color = "#777777"
+      fontStyle = "Italic"
       fontSize = "20"
       raycastTarget = "false"
      />
 
      <Text class="scatterModeControl_activeList"
+       fontStyle = "Bold"
        color = "#FFFFFF" />
 
   </Defaults>
@@ -3634,6 +3653,23 @@ prettyPrintTable(draggableData, "draggableData")
 
   UISet("scatterModeControl_pcRowContainer_Red", {padding = "0 0 0 0"})
   UISet("scatterModeControlGroup#_pcRow_Red", {padding = "10 10 0 0"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+
+  UISet("scatterModeControlGroup4_pc2_Red", {color = "rgba(1, 1, 1, 1)", scale = "1.16"})
+  UISet("scatterModeControlGroup2_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup3_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup4_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup5_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+
+
+
+  UISet("scatterModeControlGroup#_pc@_Red", {color = "rgba(1, 1, 1, 1)", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}, ["@"] = {5, 3, 1, 2, 4}})
+
+  UISet("scatterModeControlGroup#_pc1_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc2_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_rashid"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc3_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_aishe"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc4_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_fomorach"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc5_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_blackCaesar"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+
   -->
   <HorizontalLayout id="scatterModeControl_pcRowContainer_Orange" class="scatterModeControl_pcRowContainer">
     <!-- AGENT: Keep every pc# Image active=true so HorizontalLayout spacing stays stable.
@@ -3872,13 +3908,14 @@ prettyPrintTable(draggableData, "draggableData")
       raycastTarget = "false" />
 
     <Text class="scatterModeControl_npcList"
-      color = "#999999"
-      fontStyle = "Bold"
+      color = "#777777"
+      fontStyle = "Italic"
       fontSize = "20"
       raycastTarget = "false"
      />
 
      <Text class="scatterModeControl_activeList"
+       fontStyle = "Bold"
        color = "#FFFFFF" />
 
   </Defaults>
@@ -3886,6 +3923,23 @@ prettyPrintTable(draggableData, "draggableData")
 
   UISet("scatterModeControl_pcRowContainer_Red", {padding = "0 0 0 0"})
   UISet("scatterModeControlGroup#_pcRow_Red", {padding = "10 10 0 0"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+
+  UISet("scatterModeControlGroup4_pc2_Red", {color = "rgba(1, 1, 1, 1)", scale = "1.16"})
+  UISet("scatterModeControlGroup2_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup3_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup4_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup5_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+
+
+
+  UISet("scatterModeControlGroup#_pc@_Red", {color = "rgba(1, 1, 1, 1)", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}, ["@"] = {5, 3, 1, 2, 4}})
+
+  UISet("scatterModeControlGroup#_pc1_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc2_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_rashid"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc3_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_aishe"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc4_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_fomorach"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc5_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_blackCaesar"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+
   -->
   <HorizontalLayout id="scatterModeControl_pcRowContainer_Red" class="scatterModeControl_pcRowContainer">
     <!-- AGENT: Keep every pc# Image active=true so HorizontalLayout spacing stays stable.
@@ -4124,13 +4178,14 @@ prettyPrintTable(draggableData, "draggableData")
       raycastTarget = "false" />
 
     <Text class="scatterModeControl_npcList"
-      color = "#999999"
-      fontStyle = "Bold"
+      color = "#777777"
+      fontStyle = "Italic"
       fontSize = "20"
       raycastTarget = "false"
      />
 
      <Text class="scatterModeControl_activeList"
+       fontStyle = "Bold"
        color = "#FFFFFF" />
 
   </Defaults>
@@ -4138,6 +4193,23 @@ prettyPrintTable(draggableData, "draggableData")
 
   UISet("scatterModeControl_pcRowContainer_Red", {padding = "0 0 0 0"})
   UISet("scatterModeControlGroup#_pcRow_Red", {padding = "10 10 0 0"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+
+  UISet("scatterModeControlGroup4_pc2_Red", {color = "rgba(1, 1, 1, 1)", scale = "1.16"})
+  UISet("scatterModeControlGroup2_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup3_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup4_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup5_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+
+
+
+  UISet("scatterModeControlGroup#_pc@_Red", {color = "rgba(1, 1, 1, 1)", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}, ["@"] = {5, 3, 1, 2, 4}})
+
+  UISet("scatterModeControlGroup#_pc1_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc2_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_rashid"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc3_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_aishe"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc4_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_fomorach"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc5_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_blackCaesar"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+
   -->
   <HorizontalLayout id="scatterModeControl_pcRowContainer_Pink" class="scatterModeControl_pcRowContainer">
     <!-- AGENT: Keep every pc# Image active=true so HorizontalLayout spacing stays stable.
@@ -4376,13 +4448,14 @@ prettyPrintTable(draggableData, "draggableData")
       raycastTarget = "false" />
 
     <Text class="scatterModeControl_npcList"
-      color = "#999999"
-      fontStyle = "Bold"
+      color = "#777777"
+      fontStyle = "Italic"
       fontSize = "20"
       raycastTarget = "false"
      />
 
      <Text class="scatterModeControl_activeList"
+       fontStyle = "Bold"
        color = "#FFFFFF" />
 
   </Defaults>
@@ -4390,6 +4463,23 @@ prettyPrintTable(draggableData, "draggableData")
 
   UISet("scatterModeControl_pcRowContainer_Red", {padding = "0 0 0 0"})
   UISet("scatterModeControlGroup#_pcRow_Red", {padding = "10 10 0 0"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+
+  UISet("scatterModeControlGroup4_pc2_Red", {color = "rgba(1, 1, 1, 1)", scale = "1.16"})
+  UISet("scatterModeControlGroup2_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup3_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup4_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+  UISet("scatterModeControlGroup5_pc1_Red", {color = "rgba(0.5, 0.5, 0.5, 1)"})
+
+
+
+  UISet("scatterModeControlGroup#_pc@_Red", {color = "rgba(1, 1, 1, 1)", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}, ["@"] = {5, 3, 1, 2, 4}})
+
+  UISet("scatterModeControlGroup#_pc1_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc2_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_rashid"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc3_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_aishe"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc4_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_fomorach"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc5_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_blackCaesar"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+
   -->
   <HorizontalLayout id="scatterModeControl_pcRowContainer_Purple" class="scatterModeControl_pcRowContainer">
     <!-- AGENT: Keep every pc# Image active=true so HorizontalLayout spacing stays stable.
@@ -10247,7 +10337,7 @@ UI.setAttributes("rollPanelST_header_container", {color = "rgba(1, 0, 0, 0.15)",
   <VerticalLayout class="hud_storyteller_inner_column"
     spacing="6"
     childForceExpandWidth="true"
-    childAlignment="UpperMiddle"
+    childAlignment="UpperCenter"
     minWidth = "0"
     flexibleWidth = "1"
     preferredWidth = "250" />
@@ -10777,10 +10867,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">XP:</Text>
           <Text class="pcs_xp_val" id="pcs_xpVal_Brown">0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Brown_xpUp" text="▲" />
-          <Text class="pcs_buf_xp" id="pcs_bufXp_Brown">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Brown_xpDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_xp" id="pcs_Brown_xpApply" />
+          <Button class="pcs_btn pcs_btn_palette_xp" id="pcs_Brown_xpOpen" text="XP" preferredWidth="64" preferredHeight="24" />
           <Text class="pcs_prefix_hg">Hg:</Text>
           <Text class="pcs_hunger_dots" id="pcs_hungerDots_Brown"></Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Brown_hungerUp" text="▲" />
@@ -10861,10 +10948,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">XP:</Text>
           <Text class="pcs_xp_val" id="pcs_xpVal_Orange">0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Orange_xpUp" text="▲" />
-          <Text class="pcs_buf_xp" id="pcs_bufXp_Orange">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Orange_xpDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_xp" id="pcs_Orange_xpApply" />
+          <Button class="pcs_btn pcs_btn_palette_xp" id="pcs_Orange_xpOpen" text="XP" preferredWidth="64" preferredHeight="24" />
           <Text class="pcs_prefix_hg">Hg:</Text>
           <Text class="pcs_hunger_dots" id="pcs_hungerDots_Orange"></Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Orange_hungerUp" text="▲" />
@@ -10945,10 +11029,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">XP:</Text>
           <Text class="pcs_xp_val" id="pcs_xpVal_Red">0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Red_xpUp" text="▲" />
-          <Text class="pcs_buf_xp" id="pcs_bufXp_Red">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Red_xpDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_xp" id="pcs_Red_xpApply" />
+          <Button class="pcs_btn pcs_btn_palette_xp" id="pcs_Red_xpOpen" text="XP" preferredWidth="64" preferredHeight="24" />
           <Text class="pcs_prefix_hg">Hg:</Text>
           <Text class="pcs_hunger_dots" id="pcs_hungerDots_Red"></Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Red_hungerUp" text="▲" />
@@ -11029,10 +11110,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">XP:</Text>
           <Text class="pcs_xp_val" id="pcs_xpVal_Pink">0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Pink_xpUp" text="▲" />
-          <Text class="pcs_buf_xp" id="pcs_bufXp_Pink">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Pink_xpDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_xp" id="pcs_Pink_xpApply" />
+          <Button class="pcs_btn pcs_btn_palette_xp" id="pcs_Pink_xpOpen" text="XP" preferredWidth="64" preferredHeight="24" />
           <Text class="pcs_prefix_hg">Hg:</Text>
           <Text class="pcs_hunger_dots" id="pcs_hungerDots_Pink"></Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Pink_hungerUp" text="▲" />
@@ -11113,10 +11191,7 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">XP:</Text>
           <Text class="pcs_xp_val" id="pcs_xpVal_Purple">0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Purple_xpUp" text="▲" />
-          <Text class="pcs_buf_xp" id="pcs_bufXp_Purple">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Purple_xpDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_xp" id="pcs_Purple_xpApply" />
+          <Button class="pcs_btn pcs_btn_palette_xp" id="pcs_Purple_xpOpen" text="XP" preferredWidth="64" preferredHeight="24" />
           <Text class="pcs_prefix_hg">Hg:</Text>
           <Text class="pcs_hunger_dots" id="pcs_hungerDots_Purple"></Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Purple_hungerUp" text="▲" />
@@ -14826,7 +14901,7 @@ UI.hide("sessionStartHeal_playerContainer_Orange")
   <Defaults>
     <Panel class="projectEditor_modal" visibility="Black|Host" active="false" rectAlignment="MiddleCenter" offsetXY="0 0" preferredWidth="760" width="760" height="500" preferredHeight="500" color="rgba(0.05,0.05,0.08,0.96)" padding="10 10 10 10" />
 
-    <VerticalLayout class="projectEditor_content" spacing="10" childForceExpandHeight="false" childAlignment="UpperMiddle" />
+    <VerticalLayout class="projectEditor_content" spacing="10" childForceExpandHeight="false" childAlignment="UpperCenter" />
 
     <Text class="projectEditor_title" fontSize="16" fontStyle="Bold" color="#FFD700" />
 
@@ -15116,6 +15191,61 @@ UI.hide("sessionStartHeal_playerContainer_Orange")
   </Panel>
 
 <!-- /include ui/storyteller/project_editor_modal.xml -->
+
+
+<!-- include ui/storyteller/xp_log_modal.xml -->
+<!-- Storyteller XP log modal (PCs panel). TOR-92 -->
+<Panel id="xpLog_modal"
+  visibility="Black|Host"
+  active="False"
+  rectAlignment="MiddleCenter"
+  offsetXY="0 0"
+  preferredWidth="520"
+  width="520"
+  height="320"
+  preferredHeight="320"
+  color="rgba(0.05,0.05,0.08,0.96)">
+
+  <VerticalLayout id="xpLog_content" spacing="8" padding="16 16 16 16" childForceExpandHeight="false">
+
+    <Text id="xpLog_title" fontSize="16" fontStyle="Bold" color="#FFD700" text="Experience" />
+
+    <HorizontalLayout spacing="8" preferredHeight="32" childForceExpandWidth="false">
+      <Text fontSize="12" color="#CCCCCC" text="Amount" preferredWidth="80" alignment="MiddleLeft" />
+      <InputField id="xpLog_amount" contentType="IntegerNumber" text="" characterLimit="5" preferredWidth="100" preferredHeight="28"
+        onValueChanged="HUD_xpLogField" onEndEdit="HUD_xpLogField" />
+      <Text fontSize="11" color="#888888" text="(+gain / −spend)" alignment="MiddleLeft" />
+    </HorizontalLayout>
+
+    <HorizontalLayout spacing="8" preferredHeight="32" childForceExpandWidth="false">
+      <Text fontSize="12" color="#CCCCCC" text="Description" preferredWidth="80" alignment="MiddleLeft" />
+      <InputField id="xpLog_description" text="" preferredWidth="360" preferredHeight="28"
+        onValueChanged="HUD_xpLogField" onEndEdit="HUD_xpLogField" />
+    </HorizontalLayout>
+
+    <HorizontalLayout id="xpLog_undoRow" spacing="8" preferredHeight="28" childForceExpandWidth="false" active="false">
+      <Text id="xpLog_lastEntry" fontSize="11" color="#AAAAAA" text="" flexibleWidth="1" alignment="MiddleLeft" />
+      <Button id="xpLog_undo" text="Undo" preferredWidth="80" preferredHeight="26" fontSize="11"
+        colors="#662222|#883333|#991111|rgba(0.5,0.1,0.1,0.4)" textColor="#FFFFFF"
+        onClick="HUD_xpLogUndo" />
+    </HorizontalLayout>
+
+    <HorizontalLayout spacing="8" preferredHeight="36" childAlignment="MiddleCenter">
+      <Button id="xpLog_apply" text="Apply" preferredWidth="100" preferredHeight="32" fontSize="12"
+        colors="#225522|#336633|#44AA44|rgba(0.1,0.3,0.1,0.5)" textColor="#FFFFFF"
+        onClick="HUD_xpLogApply" />
+      <Button id="xpLog_applyAll" text="Apply to All" preferredWidth="120" preferredHeight="32" fontSize="12"
+        colors="#224466|#335577|#4466AA|rgba(0.1,0.2,0.3,0.4)" textColor="#FFFFFF"
+        onClick="HUD_xpLogApplyAll" />
+      <Button id="xpLog_cancel" text="Cancel" preferredWidth="100" preferredHeight="32" fontSize="12"
+        colors="#333333|#444444|#555555|rgba(0.2,0.2,0.2,0.5)" textColor="#FFFFFF"
+        onClick="HUD_xpLogCancel" />
+    </HorizontalLayout>
+
+  </VerticalLayout>
+</Panel>
+
+<!-- /include ui/storyteller/xp_log_modal.xml -->
 
 
 <!-- include ui/storyteller/memoriam_modal.xml -->

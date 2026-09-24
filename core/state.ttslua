@@ -1125,6 +1125,13 @@ function S.validateState()
             if type(playerData.stats) == "table" and playerData.stats.hunger == nil then
                 playerData.stats.hunger = 1
             end
+            -- Experience is session-keyed under playerData.xp (TOR-92); drop legacy scalar.
+            if type(playerData.stats) == "table" and playerData.stats.xp ~= nil then
+                playerData.stats.xp = nil
+            end
+            if type(playerData.xp) ~= "table" then
+                playerData.xp = {}
+            end
             if type(playerData.conditions) ~= "table" then
                 playerData.conditions = {}
             end

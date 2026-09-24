@@ -1,7 +1,340 @@
 --[[
-  Character sheet page 6 dynamic XML (history / XP log).
-  Replace placeholder with template embed + builder when page 6 layout ships.
-  Loaded only from require("ui.ui_csheet_page6") on CSHEET_PAGE_6_* objects.
+  Character sheet page 6: Experience Log XML builder.
+  Past sessions from lib/csheet_xp_log_baked; live session = placeholder slots.
+  Consumed via require("ui.ui_csheet_page6").
 ]]
 
-return require("lib.csheet_page_xml_placeholder").makePlaceholder(6)
+local M = {}
+
+local CSHEET_DEFAULTS = require("lib.csheet_defaults_xml")
+local XD = require("lib.xp_display")
+local Bake = require("lib.csheet_xp_log_baked")
+local C = require("lib.constants")
+
+local LIVE_CAP = XD.LIVE_SLOT_CAP
+
+local function esc(s)
+  s = tostring(s or "")
+  s = s:gsub("&", "&amp;")
+  s = s:gsub("<", "&lt;")
+  s = s:gsub(">", "&gt;")
+  s = s:gsub('"', "&quot;")
+  return s
+end
+
+local function charKeyFromPd(pd, seatColor)
+  if type(pd) == "table" and type(pd.charKey) == "string" and pd.charKey ~= "" then
+    return pd.charKey
+  end
+  if type(seatColor) == "string" then
+    for _, row in pairs(C.PlayerData or {}) do
+      if type(row) == "table" and row.color == seatColor and type(row.charKey) == "string" then
+        return row.charKey
+      end
+    end
+  end
+  return nil
+end
+
+local function defaultsXml()
+  return [[
+<Defaults>
+  <VerticalLayout class="vertical_section_container"
+    ignoreLayout="true"
+    rectAlignment="LowerCenter"
+    offsetXY="0 45"
+    height="800"
+    padding="45 45 0 0"
+    childForceExpandHeight="false"
+    spacing="0"
+  />
+  <Button class="xp_navigate_forward"
+    ignoreLayout="true"
+    rectAlignment="UpperCenter"
+    width="100"
+    height="40"
+    offsetXY="0 50"
+    image="navigate_up"
+    active="false"
+  />
+  <Button class="xp_navigate_backward"
+    ignoreLayout="true"
+    rectAlignment="LowerCenter"
+    width="100"
+    height="40"
+    offsetXY="0 -50"
+    image="navigate_down"
+    active="false"
+  />
+  <HorizontalLayout class="xp_title_line"
+    preferredHeight="40"
+    childForceExpandHeight="false"
+    childForceExpandWidth="true"
+    color="#e9cf9f"
+    padding="10 10 0 0" />
+  <HorizontalLayout class="xp_title_line_left"
+    childForceExpandHeight="false"
+    preferredHeight="40"
+    childForceExpandWidth="false"
+    spacing="10"
+    childAlignment="MiddleLeft" />
+  <HorizontalLayout class="xp_title_line_right"
+    childForceExpandHeight="false"
+    preferredHeight="40"
+    childForceExpandWidth="false"
+    spacing="5"
+    childAlignment="MiddleRight" />
+  <Text color="#FFFFFF" fontSize="24" fontStyle="Bold" />
+  <Text class="xp_session_num"
+    color="#000000"
+    fontSize="34"
+    alignment="MiddleLeft"
+    flexibleWidth="0" />
+  <Text class="xp_session_date"
+    color="#000000"
+    alignment="MiddleLeft"
+    flexibleWidth="1"
+    fontStyle="BoldAndItalic" />
+  <Text class="xp_summation"
+    color="#000000"
+    alignment="MiddleRight"
+    flexibleWidth="1" />
+  <Text class="xp_total"
+    color="#000000"
+    alignment="MiddleRight"
+    fontSize="34"
+    flexibleWidth="0" />
+  <HorizontalLayout class="xp_listing_wrapper" childForceExpandHeight="false" />
+  <GridLayout class="xp_listing"
+    cellSize="700 40"
+    startAxis="Vertical"
+    constraint="FixedColumnCount"
+    constraintCount="1" />
+  <HorizontalLayout class="xp_item"
+    color="rgba(0, 0, 1, 0)"
+    spacing="20"
+    childForceExpandWidth="false" />
+  <Text class="xp_gain_num"
+    flexibleWidth="0"
+    preferredWidth="80"
+    color="#f4c15b"
+    minWidth="80" />
+  <Text class="xp_gain_desc" fontStyle="Normal" color="#AAAAAA" />
+  <Text class="xp_spend_num"
+    flexibleWidth="0"
+    preferredWidth="80"
+    minWidth="80"
+    color="#FF0000" />
+  <Text class="xp_spend_desc" fontStyle="Normal" color="#AAAAAA" />
+</Defaults>
+]]
+end
+
+--- @param sessionNum number
+--- @param session table display fields
+--- @param active boolean
+--- @param isLive boolean
+--- @return string
+local function renderSessionBlock(sessionNum, session, active, isLive)
+  local n = math.floor(tonumber(sessionNum) or 0)
+  local activeAttr = active and "true" or "false"
+  local title = esc(session.titleUpper or XD.sessionTitleUpper(session.sessionDisplay, n))
+  local dateText = esc(session.dateDisplay or "")
+  local summation = esc(session.summation or "")
+  local totalText = esc(session.totalDisplay or ((session.newTotal or 0) .. " XP"))
+
+  local parts = {}
+  parts[#parts + 1] = string.format(
+    '<HorizontalLayout id="xp_title_line_%d" class="xp_title_line" active="%s">',
+    n,
+    activeAttr
+  )
+  parts[#parts + 1] = '<HorizontalLayout class="xp_title_line_left">'
+  parts[#parts + 1] = string.format(
+    '<Text id="xp_sessionNum_%d" class="xp_session_num" text="%s" />',
+    n,
+    title
+  )
+  parts[#parts + 1] = string.format(
+    '<Text id="xp_sessionDate_%d" class="xp_session_date" text="%s" />',
+    n,
+    dateText
+  )
+  parts[#parts + 1] = "</HorizontalLayout>"
+  parts[#parts + 1] = '<HorizontalLayout class="xp_title_line_right">'
+  parts[#parts + 1] = string.format(
+    '<Text id="xp_summation_%d" class="xp_summation" text="%s" />',
+    n,
+    summation
+  )
+  parts[#parts + 1] = string.format(
+    '<Text id="xp_total_%d" class="xp_total" text="%s" />',
+    n,
+    totalText
+  )
+  parts[#parts + 1] = "</HorizontalLayout></HorizontalLayout>"
+
+  parts[#parts + 1] = string.format(
+    '<HorizontalLayout id="xp_listing_wrapper_%d" class="xp_listing_wrapper" active="%s">',
+    n,
+    activeAttr
+  )
+  parts[#parts + 1] = string.format('<GridLayout id="xp_listing_left_%d" class="xp_listing">', n)
+
+  local gains = session.gains or {}
+  local spends = session.spends or {}
+  local gainSlots = isLive and LIVE_CAP or math.max(#gains, 0)
+  local spendSlots = isLive and LIVE_CAP or math.max(#spends, 0)
+  if not isLive then
+    -- Crop oversized past sessions to page budget lines (title + 19 entry rows max).
+    local maxRows = XD.PAGE_LINE_BUDGET - 1
+    gainSlots = math.min(#gains, maxRows)
+    spendSlots = math.min(#spends, maxRows)
+  end
+
+  for i = 1, gainSlots do
+    local g = gains[i]
+    local rowActive = (g ~= nil) and "true" or "false"
+    local numText = g and esc("+" .. tostring(g.amount) .. " XP") or ""
+    local descText = g and esc(g.description) or ""
+    parts[#parts + 1] = string.format(
+      '<HorizontalLayout id="xp_item_left_%d_%d" class="xp_item" active="%s">',
+      n,
+      i,
+      rowActive
+    )
+    parts[#parts + 1] = string.format(
+      '<Text id="xp_gainNum_%d_%d" class="xp_gain_num" text="%s" />',
+      n,
+      i,
+      numText
+    )
+    parts[#parts + 1] = string.format(
+      '<Text id="xp_gainDesc_%d_%d" class="xp_gain_desc" text="%s" />',
+      n,
+      i,
+      descText
+    )
+    parts[#parts + 1] = "</HorizontalLayout>"
+  end
+  parts[#parts + 1] = "</GridLayout>"
+
+  parts[#parts + 1] = string.format('<GridLayout id="xp_listing_right_%d" class="xp_listing">', n)
+  for i = 1, spendSlots do
+    local s = spends[i]
+    local rowActive = (s ~= nil) and "true" or "false"
+    local numText = s and esc("−" .. tostring(s.amount) .. " XP") or ""
+    local descText = s and esc(s.description) or ""
+    parts[#parts + 1] = string.format(
+      '<HorizontalLayout id="xp_item_right_%d_%d" class="xp_item" active="%s">',
+      n,
+      i,
+      rowActive
+    )
+    parts[#parts + 1] = string.format(
+      '<Text id="xp_spendNum_%d_%d" class="xp_spend_num" text="%s" />',
+      n,
+      i,
+      numText
+    )
+    parts[#parts + 1] = string.format(
+      '<Text id="xp_spendDesc_%d_%d" class="xp_spend_desc" text="%s" />',
+      n,
+      i,
+      descText
+    )
+    parts[#parts + 1] = "</HorizontalLayout>"
+  end
+  parts[#parts + 1] = "</GridLayout></HorizontalLayout>"
+
+  return table.concat(parts)
+end
+
+--- Fingerprint ignores live entry bodies so Apply/Undo does not remount.
+--- @param _stats table|nil
+--- @param seatColor string|nil
+--- @param pd table|nil
+--- @return string
+function M.fingerprintPage6Stats(_stats, seatColor, pd)
+  local bake = Bake.getPack and Bake.getPack() or Bake
+  local stamp = tostring(bake.bakedForSessionNum or "")
+  local ck = charKeyFromPd(pd, seatColor) or ""
+  local seat = tostring(seatColor or "")
+  return "page6:" .. stamp .. ":" .. ck .. ":" .. seat .. ":" .. tostring(bake.bakeRevision or 0)
+end
+
+--- @param _stats table|nil
+--- @param seatColor string|nil
+--- @param pd table|nil
+--- @return string|nil
+function M.buildPage6DocumentXml(_stats, seatColor, pd)
+  local bake = Bake.getPack and Bake.getPack() or Bake
+  local liveN = math.floor(tonumber(bake.bakedForSessionNum) or 1)
+  local ck = charKeyFromPd(pd, seatColor)
+  local byKey = bake.byCharKey or {}
+  local entry = (ck and byKey[ck]) or { sessions = {} }
+  local sessions = entry.sessions or {}
+
+  local body = {}
+  -- Newest-first DOM order: live first, then finished descending.
+  local liveSession = {
+    sessionDisplay = XD.sessionDisplayForNum(liveN),
+    titleUpper = XD.sessionTitleUpper(nil, liveN),
+    dateDisplay = "",
+    summation = "",
+    totalDisplay = "",
+    newTotal = 0,
+    gains = {},
+    spends = {},
+  }
+  body[#body + 1] = renderSessionBlock(liveN, liveSession, true, true)
+
+  local finished = {}
+  for i = 1, #sessions do
+    local s = sessions[i]
+    if type(s) == "table" then
+      local sn = math.floor(tonumber(s.sessionNum) or -1)
+      if sn >= 0 and sn < liveN then
+        finished[#finished + 1] = s
+      end
+    end
+  end
+  table.sort(finished, function(a, b)
+    return (tonumber(a.sessionNum) or 0) > (tonumber(b.sessionNum) or 0)
+  end)
+
+  for i = 1, #finished do
+    local s = finished[i]
+    local sn = math.floor(tonumber(s.sessionNum) or 0)
+    local display = {
+      sessionDisplay = s.sessionDisplay,
+      titleUpper = s.titleUpper or XD.sessionTitleUpper(s.sessionDisplay, sn),
+      dateDisplay = s.dateDisplay or "",
+      summation = s.summation or XD.formatSummation(s.prevTotal, s.gainTotal, s.spendTotal),
+      totalDisplay = s.totalDisplay or (tostring(s.newTotal or 0) .. " XP"),
+      newTotal = s.newTotal,
+      gains = s.gains or {},
+      spends = s.spends or {},
+    }
+    -- Past sessions start inactive; reconcile activates the current page set.
+    body[#body + 1] = renderSessionBlock(sn, display, false, false)
+  end
+
+  body[#body + 1] =
+    '<Button id="xp_navigate_forward" class="xp_navigate_forward" onClick="onXpLogNavigateForward" colors="#00000000|#00000000|#00000000|#00000000" />'
+  body[#body + 1] =
+    '<Button id="xp_navigate_backward" class="xp_navigate_backward" onClick="onXpLogNavigateBack" colors="#00000000|#00000000|#00000000|#00000000" />'
+
+  local xml = {}
+  xml[#xml + 1] = CSHEET_DEFAULTS.getXml()
+  xml[#xml + 1] = defaultsXml()
+  xml[#xml + 1] = '<Panel id="paper_root" class="page_root">'
+  xml[#xml + 1] = '<Button id="pageForward" class="page_navigation page_forward" />'
+  xml[#xml + 1] = '<Button id="pageInner" class="page_navigation page_inner_left" />'
+  xml[#xml + 1] = '<VerticalLayout id="db_vertical_section_container" class="vertical_section_container">'
+  xml[#xml + 1] = table.concat(body)
+  xml[#xml + 1] = "</VerticalLayout></Panel>"
+  return table.concat(xml)
+end
+
+return M

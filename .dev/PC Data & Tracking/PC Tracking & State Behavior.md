@@ -187,7 +187,7 @@ Each attribute and each skill should be recorded in state following the followin
     }
 ```
 
-## `PCStatsPartB`: `stats.health`, `stats.willpower`, `stats.humanity`, `stats.xp`, and `stats.bloodPotency`
+## `PCStatsPartB`: `stats.health`, `stats.willpower`, `stats.humanity`, and `stats.bloodPotency`
 
 * `stats.health`, `stats.willpower` and `stats.humanity` are 10-box boxlines of matching size and shape. They vary in their position on the character sheet, and in what needs to be dynamically tracked in `playerData.stats`, as shown below. **Importantly**, these stats have *not* been baked into the character sheet image; they are fully dynamic and the appropriate image for each slot will need to be toggled to the `active="true"` state.
 
@@ -205,7 +205,8 @@ Each attribute and each skill should be recorded in state following the followin
     }
 ```
 
-* `stats.xp` and `stats.hunger` are recorded as single `number` values.
+* `stats.hunger` is recorded as a single `number` value.
+* **Experience** is **not** under `stats`. It lives at `playerData.<pid>.xp` as a session-keyed log (see [Experience Log.md](Experience%20Log.md)). Current banked XP is the latest session’s `newTotal` (`core/xp_log.ttslua` → `XpLog.getCurrentXp`).
 * `stats.bloodPotency` is recorded as a `BasicStat` object, with the `base` value being the player's current blood potency (as baked into the character sheet image), and the `temp` value being the player's current temporary blood potency bonus or penalty.
 
 ```typescript
@@ -214,7 +215,6 @@ Each attribute and each skill should be recorded in state following the followin
     willpower: HealthOrWillpower;
     humanity: Humanity;
     bloodPotency: BasicStat;
-    xp: number;
     hunger: number;
   }
 ```
@@ -244,7 +244,6 @@ Each attribute and each skill should be recorded in state following the followin
         "base": 2,
         "temp": 0
       },
-      "xp": 0,
       "hunger": 2
     }
 ```
@@ -471,13 +470,13 @@ The above steps would proceed as follows:
 
 To be implemented later.
 
-#### `stats.xp`
+#### `playerData.xp` (Experience Log)
 
-The `text` attribute of the `<Text id="xp_text">` element must always be set to the player's current XP level, as a number, including `"0"`.
+Session-keyed log under `playerData.<pid>.xp` (not `stats.xp`). Current XP for page 1 `xp_text` and the PCs panel is `XpLog.getCurrentXp(pid)` (latest session `newTotal`). Spec: [Experience Log.md](Experience%20Log.md).
 
 #### `stats.hunger`
 
-Hunger is stored under **`stats.hunger`**. The Storyteller panel includes Hunger controls matching the XP pattern (buffer + Apply).
+Hunger is stored under **`stats.hunger`**. The Storyteller panel includes Hunger controls (buffer + Apply).
 
 `S.getPlayerVal` / `S.setPlayerVal` accept the key **`"hunger"`** as an alias for **`stats.hunger`**.
 

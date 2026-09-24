@@ -73,10 +73,7 @@
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">XP:</Text>
           <Text class="pcs_xp_val" id="pcs_xpVal_Brown">0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Brown_xpUp" text="▲" />
-          <Text class="pcs_buf_xp" id="pcs_bufXp_Brown">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Brown_xpDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_xp" id="pcs_Brown_xpApply" />
+          <Button class="pcs_btn pcs_btn_palette_xp" id="pcs_Brown_xpOpen" text="XP" preferredWidth="64" preferredHeight="24" />
           <Text class="pcs_prefix_hg">Hg:</Text>
           <Text class="pcs_hunger_dots" id="pcs_hungerDots_Brown"></Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Brown_hungerUp" text="▲" />
@@ -157,10 +154,7 @@
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">XP:</Text>
           <Text class="pcs_xp_val" id="pcs_xpVal_Orange">0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Orange_xpUp" text="▲" />
-          <Text class="pcs_buf_xp" id="pcs_bufXp_Orange">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Orange_xpDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_xp" id="pcs_Orange_xpApply" />
+          <Button class="pcs_btn pcs_btn_palette_xp" id="pcs_Orange_xpOpen" text="XP" preferredWidth="64" preferredHeight="24" />
           <Text class="pcs_prefix_hg">Hg:</Text>
           <Text class="pcs_hunger_dots" id="pcs_hungerDots_Orange"></Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Orange_hungerUp" text="▲" />
@@ -241,10 +235,7 @@
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">XP:</Text>
           <Text class="pcs_xp_val" id="pcs_xpVal_Red">0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Red_xpUp" text="▲" />
-          <Text class="pcs_buf_xp" id="pcs_bufXp_Red">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Red_xpDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_xp" id="pcs_Red_xpApply" />
+          <Button class="pcs_btn pcs_btn_palette_xp" id="pcs_Red_xpOpen" text="XP" preferredWidth="64" preferredHeight="24" />
           <Text class="pcs_prefix_hg">Hg:</Text>
           <Text class="pcs_hunger_dots" id="pcs_hungerDots_Red"></Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Red_hungerUp" text="▲" />
@@ -325,10 +316,7 @@
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">XP:</Text>
           <Text class="pcs_xp_val" id="pcs_xpVal_Pink">0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Pink_xpUp" text="▲" />
-          <Text class="pcs_buf_xp" id="pcs_bufXp_Pink">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Pink_xpDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_xp" id="pcs_Pink_xpApply" />
+          <Button class="pcs_btn pcs_btn_palette_xp" id="pcs_Pink_xpOpen" text="XP" preferredWidth="64" preferredHeight="24" />
           <Text class="pcs_prefix_hg">Hg:</Text>
           <Text class="pcs_hunger_dots" id="pcs_hungerDots_Pink"></Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Pink_hungerUp" text="▲" />
@@ -409,10 +397,7 @@
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">XP:</Text>
           <Text class="pcs_xp_val" id="pcs_xpVal_Purple">0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Purple_xpUp" text="▲" />
-          <Text class="pcs_buf_xp" id="pcs_bufXp_Purple">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_xp" id="pcs_Purple_xpDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_xp" id="pcs_Purple_xpApply" />
+          <Button class="pcs_btn pcs_btn_palette_xp" id="pcs_Purple_xpOpen" text="XP" preferredWidth="64" preferredHeight="24" />
           <Text class="pcs_prefix_hg">Hg:</Text>
           <Text class="pcs_hunger_dots" id="pcs_hungerDots_Purple"></Text>
           <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Purple_hungerUp" text="▲" />

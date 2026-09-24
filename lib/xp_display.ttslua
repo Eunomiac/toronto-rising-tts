@@ -1,0 +1,162 @@
+--[[
+  Experience log display helpers: session titles and short dates.
+  Used by core/xp_log (runtime) and mirrored in .dev/scripts/xp_display.js (bake).
+]]
+
+local XD = {}
+
+local ONES = {
+  [0] = "Zero",
+  [1] = "One",
+  [2] = "Two",
+  [3] = "Three",
+  [4] = "Four",
+  [5] = "Five",
+  [6] = "Six",
+  [7] = "Seven",
+  [8] = "Eight",
+  [9] = "Nine",
+  [10] = "Ten",
+  [11] = "Eleven",
+  [12] = "Twelve",
+  [13] = "Thirteen",
+  [14] = "Fourteen",
+  [15] = "Fifteen",
+  [16] = "Sixteen",
+  [17] = "Seventeen",
+  [18] = "Eighteen",
+  [19] = "Nineteen",
+}
+
+local TENS = {
+  [2] = "Twenty",
+  [3] = "Thirty",
+  [4] = "Forty",
+  [5] = "Fifty",
+  [6] = "Sixty",
+  [7] = "Seventy",
+  [8] = "Eighty",
+  [9] = "Ninety",
+}
+
+local MONTHS = {
+  [1] = "Jan.",
+  [2] = "Feb.",
+  [3] = "Mar.",
+  [4] = "Apr.",
+  [5] = "May",
+  [6] = "June",
+  [7] = "July",
+  [8] = "Aug.",
+  [9] = "Sept.",
+  [10] = "Oct.",
+  [11] = "Nov.",
+  [12] = "Dec.",
+}
+
+--- Spell out a non-negative integer in title case English words (through 999).
+--- @param n number
+--- @return string
+function XD.numberToWords(n)
+  n = math.floor(tonumber(n) or 0)
+  if n < 0 then
+    return "Negative " .. XD.numberToWords(-n)
+  end
+  if n < 20 then
+    return ONES[n] or tostring(n)
+  end
+  if n < 100 then
+    local t = math.floor(n / 10)
+    local o = n % 10
+    if o == 0 then
+      return TENS[t] or tostring(n)
+    end
+    return (TENS[t] or tostring(t * 10)) .. "-" .. (ONES[o] or tostring(o))
+  end
+  if n < 1000 then
+    local h = math.floor(n / 100)
+    local rest = n % 100
+    local head = (ONES[h] or tostring(h)) .. " Hundred"
+    if rest == 0 then
+      return head
+    end
+    return head .. " " .. XD.numberToWords(rest)
+  end
+  return tostring(n)
+end
+
+--- Session display title for state / sheet (title case, not uppercase).
+--- @param sessionNum number
+--- @return string e.g. "Character Creation", "Session One"
+function XD.sessionDisplayForNum(sessionNum)
+  local n = math.floor(tonumber(sessionNum) or 0)
+  if n == 0 then
+    return "Character Creation"
+  end
+  return "Session " .. XD.numberToWords(n)
+end
+
+--- Uppercase form for sheet title bar.
+--- @param sessionDisplay string|nil
+--- @param sessionNum number|nil
+--- @return string
+function XD.sessionTitleUpper(sessionDisplay, sessionNum)
+  local s = sessionDisplay
+  if type(s) ~= "string" or s == "" then
+    s = XD.sessionDisplayForNum(sessionNum or 0)
+  end
+  return string.upper(s)
+end
+
+--- Short date from unix timestamp: "Sept. 24, 2026"
+--- @param unixTime number|nil
+--- @return string
+function XD.formatShortDate(unixTime)
+  local t = tonumber(unixTime)
+  if t == nil or os == nil or type(os.date) ~= "function" then
+    return ""
+  end
+  local mon = tonumber(os.date("%m", t)) or 1
+  local day = tonumber(os.date("%d", t)) or 1
+  local year = tonumber(os.date("%Y", t)) or 1970
+  local monName = MONTHS[mon] or tostring(mon)
+  return string.format("%s %d, %d", monName, day, year)
+end
+
+--- XP summation text for a session title bar (omit zero gain or spend sides).
+--- @param prevTotal number
+--- @param gainTotal number
+--- @param spendTotal number
+--- @return string e.g. "5 XP + 6 − 1 ="
+function XD.formatSummation(prevTotal, gainTotal, spendTotal)
+  local prev = math.floor(tonumber(prevTotal) or 0)
+  local gain = math.floor(tonumber(gainTotal) or 0)
+  local spend = math.floor(tonumber(spendTotal) or 0)
+  local parts = { tostring(prev) .. " XP" }
+  if gain > 0 then
+    parts[#parts + 1] = "+ " .. tostring(gain)
+  end
+  if spend > 0 then
+    parts[#parts + 1] = "− " .. tostring(spend)
+  end
+  return table.concat(parts, " ") .. " ="
+end
+
+--- Line count for pagination: 1 (title) + max(gains, spends), cropped to 20.
+--- @param gainCount number
+--- @param spendCount number
+--- @return number
+function XD.sessionLineCount(gainCount, spendCount)
+  local g = math.max(0, math.floor(tonumber(gainCount) or 0))
+  local s = math.max(0, math.floor(tonumber(spendCount) or 0))
+  local lines = 1 + math.max(g, s)
+  if lines > 20 then
+    return 20
+  end
+  return lines
+end
+
+XD.LIVE_SLOT_CAP = 10
+XD.PAGE_LINE_BUDGET = 20
+
+return XD

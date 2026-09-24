@@ -1,0 +1,50 @@
+<!-- Storyteller XP log modal (PCs panel). TOR-92 -->
+<Panel id="xpLog_modal"
+  visibility="Black|Host"
+  active="False"
+  rectAlignment="MiddleCenter"
+  offsetXY="0 0"
+  preferredWidth="520"
+  width="520"
+  height="320"
+  preferredHeight="320"
+  color="rgba(0.05,0.05,0.08,0.96)">
+
+  <VerticalLayout id="xpLog_content" spacing="8" padding="16 16 16 16" childForceExpandHeight="false">
+
+    <Text id="xpLog_title" fontSize="16" fontStyle="Bold" color="#FFD700" text="Experience" />
+
+    <HorizontalLayout spacing="8" preferredHeight="32" childForceExpandWidth="false">
+      <Text fontSize="12" color="#CCCCCC" text="Amount" preferredWidth="80" alignment="MiddleLeft" />
+      <InputField id="xpLog_amount" contentType="IntegerNumber" text="" characterLimit="5" preferredWidth="100" preferredHeight="28"
+        onValueChanged="HUD_xpLogField" onEndEdit="HUD_xpLogField" />
+      <Text fontSize="11" color="#888888" text="(+gain / −spend)" alignment="MiddleLeft" />
+    </HorizontalLayout>
+
+    <HorizontalLayout spacing="8" preferredHeight="32" childForceExpandWidth="false">
+      <Text fontSize="12" color="#CCCCCC" text="Description" preferredWidth="80" alignment="MiddleLeft" />
+      <InputField id="xpLog_description" text="" preferredWidth="360" preferredHeight="28"
+        onValueChanged="HUD_xpLogField" onEndEdit="HUD_xpLogField" />
+    </HorizontalLayout>
+
+    <HorizontalLayout id="xpLog_undoRow" spacing="8" preferredHeight="28" childForceExpandWidth="false" active="false">
+      <Text id="xpLog_lastEntry" fontSize="11" color="#AAAAAA" text="" flexibleWidth="1" alignment="MiddleLeft" />
+      <Button id="xpLog_undo" text="Undo" preferredWidth="80" preferredHeight="26" fontSize="11"
+        colors="#662222|#883333|#991111|rgba(0.5,0.1,0.1,0.4)" textColor="#FFFFFF"
+        onClick="HUD_xpLogUndo" />
+    </HorizontalLayout>
+
+    <HorizontalLayout spacing="8" preferredHeight="36" childAlignment="MiddleCenter">
+      <Button id="xpLog_apply" text="Apply" preferredWidth="100" preferredHeight="32" fontSize="12"
+        colors="#225522|#336633|#44AA44|rgba(0.1,0.3,0.1,0.5)" textColor="#FFFFFF"
+        onClick="HUD_xpLogApply" />
+      <Button id="xpLog_applyAll" text="Apply to All" preferredWidth="120" preferredHeight="32" fontSize="12"
+        colors="#224466|#335577|#4466AA|rgba(0.1,0.2,0.3,0.4)" textColor="#FFFFFF"
+        onClick="HUD_xpLogApplyAll" />
+      <Button id="xpLog_cancel" text="Cancel" preferredWidth="100" preferredHeight="32" fontSize="12"
+        colors="#333333|#444444|#555555|rgba(0.2,0.2,0.2,0.5)" textColor="#FFFFFF"
+        onClick="HUD_xpLogCancel" />
+    </HorizontalLayout>
+
+  </VerticalLayout>
+</Panel>

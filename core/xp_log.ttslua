@@ -1,0 +1,377 @@
+--[[
+  Experience log: session-keyed playerData.xp (replaces scalar stats.xp).
+  Global VM only — object scripts use Global.call helpers.
+]]
+
+local S = require("core.state")
+local U = require("lib.util")
+local C = require("lib.constants")
+local XD = require("lib.xp_display")
+
+local XpLog = {}
+
+XpLog.LIVE_SLOT_CAP = XD.LIVE_SLOT_CAP
+
+--- @param pid string
+--- @return table
+local function getLog(pid)
+  local log = S.getStateVal("playerData", pid, "xp")
+  if U.Type(log) ~= "table" then
+    log = {}
+    S.setStateVal(log, "playerData", pid, "xp")
+  end
+  return log
+end
+
+--- @param log table
+--- @return number|nil highest session key
+local function maxSessionKey(log)
+  local maxK = nil
+  for k, block in pairs(log) do
+    local n = tonumber(k)
+    if n ~= nil and U.Type(block) == "table" then
+      if maxK == nil or n > maxK then
+        maxK = n
+      end
+    end
+  end
+  return maxK
+end
+
+--- @param log table
+--- @param sessionNum number
+--- @return table|nil
+local function getBlock(log, sessionNum)
+  local n = math.floor(tonumber(sessionNum) or 0)
+  local block = log[n]
+  if block == nil then
+    block = log[tostring(n)]
+  end
+  if U.Type(block) == "table" then
+    return block
+  end
+  return nil
+end
+
+--- Recompute gains/spends bins and totals from timeline.
+--- @param block table
+local function recomputeFromTimeline(block)
+  local timeline = block.timeline
+  if U.Type(timeline) ~= "table" then
+    timeline = {}
+    block.timeline = timeline
+  end
+  local gains = {}
+  local spends = {}
+  local gainTotal = 0
+  local spendTotal = 0
+  for i = 1, #timeline do
+    local e = timeline[i]
+    if U.Type(e) == "table" then
+      local amount = math.floor(math.abs(tonumber(e.amount) or 0))
+      local desc = tostring(e.description or "")
+      local kind = e.kind
+      if kind == "gain" or (kind == nil and (tonumber(e.signedAmount) or 0) > 0) then
+        gains[#gains + 1] = { amount = amount, description = desc }
+        gainTotal = gainTotal + amount
+      else
+        spends[#spends + 1] = { amount = amount, description = desc }
+        spendTotal = spendTotal + amount
+      end
+    end
+  end
+  block.gains = gains
+  block.spends = spends
+  block.gainTotal = gainTotal
+  block.spendTotal = spendTotal
+  local prev = math.floor(tonumber(block.prevTotal) or 0)
+  block.newTotal = prev + gainTotal - spendTotal
+end
+
+--- Migrate legacy gains/spends-only blocks to timeline (append gains then spends).
+--- @param block table
+local function ensureTimeline(block)
+  if U.Type(block.timeline) == "table" and #block.timeline > 0 then
+    return
+  end
+  local timeline = {}
+  local gains = block.gains
+  local spends = block.spends
+  if U.Type(gains) == "table" then
+    for i = 1, #gains do
+      local g = gains[i]
+      if U.Type(g) == "table" then
+        timeline[#timeline + 1] = {
+          kind = "gain",
+          amount = math.floor(math.abs(tonumber(g.amount) or 0)),
+          description = tostring(g.description or ""),
+        }
+      end
+    end
+  end
+  if U.Type(spends) == "table" then
+    for i = 1, #spends do
+      local s = spends[i]
+      if U.Type(s) == "table" then
+        timeline[#timeline + 1] = {
+          kind = "spend",
+          amount = math.floor(math.abs(tonumber(s.amount) or 0)),
+          description = tostring(s.description or ""),
+        }
+      end
+    end
+  end
+  block.timeline = timeline
+  recomputeFromTimeline(block)
+end
+
+--- Current banked XP: newTotal of the latest session block.
+--- @param pid string|nil
+--- @return number
+function XpLog.getCurrentXp(pid)
+  if type(pid) ~= "string" or pid == "" then
+    return 0
+  end
+  local log = S.getStateVal("playerData", pid, "xp")
+  if U.Type(log) ~= "table" then
+    return 0
+  end
+  local maxK = maxSessionKey(log)
+  if maxK == nil then
+    return 0
+  end
+  local block = getBlock(log, maxK)
+  if block == nil then
+    return 0
+  end
+  return math.floor(tonumber(block.newTotal) or 0)
+end
+
+--- @param pid string
+--- @param sessionNum number
+--- @return table session block
+function XpLog.ensureSessionBlock(pid, sessionNum)
+  local n = math.floor(tonumber(sessionNum) or 0)
+  local log = getLog(pid)
+  local existing = getBlock(log, n)
+  if existing ~= nil then
+    ensureTimeline(existing)
+    log[n] = existing
+    if log[tostring(n)] ~= nil then
+      log[tostring(n)] = nil
+    end
+    S.setStateVal(log, "playerData", pid, "xp")
+    return existing
+  end
+
+  local prevTotal = 0
+  if n > 0 then
+    local prev = getBlock(log, n - 1)
+    if prev ~= nil then
+      prevTotal = math.floor(tonumber(prev.newTotal) or 0)
+    end
+  end
+
+  local block = {
+    sessionDisplay = XD.sessionDisplayForNum(n),
+    date = (os ~= nil and type(os.time) == "function") and os.time() or 0,
+    prevTotal = prevTotal,
+    gainTotal = 0,
+    spendTotal = 0,
+    newTotal = prevTotal,
+    gains = {},
+    spends = {},
+    timeline = {},
+  }
+  log[n] = block
+  S.setStateVal(log, "playerData", pid, "xp")
+  return block
+end
+
+--- Validate amount + description for Apply.
+--- @param amount any
+--- @param description any
+--- @return boolean ok
+--- @return string|nil err
+--- @return number|nil signedAmount
+--- @return string|nil desc
+function XpLog.validateEntry(amount, description)
+  local n = tonumber(amount)
+  if n == nil then
+    return false, "XP amount must be a number", nil, nil
+  end
+  n = math.floor(n)
+  if n == 0 then
+    return false, "XP amount must be a non-zero integer", nil, nil
+  end
+  local desc = type(description) == "string" and description:match("^%s*(.-)%s*$") or ""
+  if desc == "" then
+    return false, "XP description is required", nil, nil
+  end
+  return true, nil, n, desc
+end
+
+--- Append one XP entry for the current game sessionNum.
+--- @param pid string
+--- @param amount number signed (positive gain, negative spend)
+--- @param description string
+--- @return boolean ok
+--- @return string|nil err
+--- @return table|nil info { overCap = bool, sessionNum = n, newTotal = n }
+function XpLog.appendEntry(pid, amount, description)
+  if type(pid) ~= "string" or pid == "" then
+    return false, "Missing player id", nil
+  end
+  local ok, err, signed, desc = XpLog.validateEntry(amount, description)
+  if not ok then
+    return false, err, nil
+  end
+
+  local sessionNum = math.floor(tonumber(S.getStateVal("sessionNum")) or 1)
+  local block = XpLog.ensureSessionBlock(pid, sessionNum)
+  ensureTimeline(block)
+
+  local kind = signed > 0 and "gain" or "spend"
+  local absAmount = math.abs(signed)
+  block.timeline[#block.timeline + 1] = {
+    kind = kind,
+    amount = absAmount,
+    description = desc,
+  }
+  recomputeFromTimeline(block)
+
+  local log = getLog(pid)
+  log[sessionNum] = block
+  S.setStateVal(log, "playerData", pid, "xp")
+
+  local binCount = kind == "gain" and #block.gains or #block.spends
+  local overCap = binCount > XpLog.LIVE_SLOT_CAP
+
+  return true, nil, {
+    overCap = overCap,
+    sessionNum = sessionNum,
+    newTotal = block.newTotal,
+    kind = kind,
+    amount = absAmount,
+    description = desc,
+  }
+end
+
+--- Most recent timeline entry for current session (for modal Undo strip).
+--- @param pid string
+--- @return table|nil { kind, amount, description, sessionNum }
+function XpLog.getLastEntry(pid)
+  if type(pid) ~= "string" or pid == "" then
+    return nil
+  end
+  local sessionNum = math.floor(tonumber(S.getStateVal("sessionNum")) or 1)
+  local log = S.getStateVal("playerData", pid, "xp")
+  if U.Type(log) ~= "table" then
+    return nil
+  end
+  local block = getBlock(log, sessionNum)
+  if block == nil then
+    return nil
+  end
+  ensureTimeline(block)
+  local timeline = block.timeline
+  if U.Type(timeline) ~= "table" or #timeline == 0 then
+    return nil
+  end
+  local e = timeline[#timeline]
+  return {
+    kind = e.kind,
+    amount = e.amount,
+    description = e.description,
+    sessionNum = sessionNum,
+  }
+end
+
+--- Undo the most recent entry for the current session.
+--- @param pid string
+--- @return boolean ok
+--- @return string|nil err
+--- @return table|nil removed
+function XpLog.undoLastEntry(pid)
+  if type(pid) ~= "string" or pid == "" then
+    return false, "Missing player id", nil
+  end
+  local sessionNum = math.floor(tonumber(S.getStateVal("sessionNum")) or 1)
+  local log = getLog(pid)
+  local block = getBlock(log, sessionNum)
+  if block == nil then
+    return false, "No XP entries for the current session", nil
+  end
+  ensureTimeline(block)
+  local timeline = block.timeline
+  if #timeline == 0 then
+    return false, "No XP entries to undo", nil
+  end
+  local removed = timeline[#timeline]
+  timeline[#timeline] = nil
+  recomputeFromTimeline(block)
+
+  if #timeline == 0 and sessionNum > 0 then
+    -- Keep empty live session block so prevTotal/date remain stable if they log again.
+  end
+
+  log[sessionNum] = block
+  S.setStateVal(log, "playerData", pid, "xp")
+  return true, nil, {
+    kind = removed.kind,
+    amount = removed.amount,
+    description = removed.description,
+    sessionNum = sessionNum,
+    newTotal = block.newTotal,
+  }
+end
+
+--- PC seat colors that are not marked absentFromSession.
+--- @return table array of color strings
+function XpLog.presentPcColors()
+  local out = {}
+  local ss = S.getStateVal("sessionScene", "seatSlots")
+  for _, color in ipairs(C.PlayerColors or {}) do
+    local row = U.Type(ss) == "table" and ss[color] or nil
+    if not (U.Type(row) == "table" and row.absentFromSession == true) then
+      out[#out + 1] = color
+    end
+  end
+  return out
+end
+
+--- Broadcast a short ST-facing warning.
+--- @param message string
+function XpLog.warnStoryteller(message)
+  local msg = tostring(message or "")
+  if msg == "" then
+    return
+  end
+  if type(broadcastToAll) == "function" then
+    broadcastToAll("[XP] " .. msg, { 1, 0.75, 0.2 })
+  else
+    print("[XP] " .. msg)
+  end
+end
+
+--- Session block for display/reconcile (read-only copy of key fields).
+--- @param pid string
+--- @param sessionNum number
+--- @return table|nil
+function XpLog.getSessionBlock(pid, sessionNum)
+  if type(pid) ~= "string" then
+    return nil
+  end
+  local log = S.getStateVal("playerData", pid, "xp")
+  if U.Type(log) ~= "table" then
+    return nil
+  end
+  local block = getBlock(log, sessionNum)
+  if block == nil then
+    return nil
+  end
+  ensureTimeline(block)
+  return block
+end
+
+return XpLog

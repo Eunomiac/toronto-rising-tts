@@ -74,7 +74,7 @@ Pages with PCS-driven layout use a **separate object entry** so template builder
 | 3 | `require("ui.ui_csheet_page3")` | `lib/csheet_page3_xml.ttslua` | Live (`self.UI.setXml`) |
 | 4 | `require("ui.ui_csheet_page4")` | `lib/csheet_page4_xml.ttslua` | Live (`self.UI.setXml` from `lib/json/PC_Relationships.json`) |
 | 5 | `require("ui.ui_csheet_page5")` | `lib/csheet_page5_xml.ttslua` | Placeholder |
-| 6 | `require("ui.ui_csheet_page6")` | `lib/csheet_page6_xml.ttslua` | Placeholder |
+| 6 | `require("ui.ui_csheet_page6")` | `lib/csheet_page6_xml.ttslua` | Live (`self.UI.setXml`) — Experience Log; past sessions from `npm run csheet-xp-log:bake` |
 
 Pages **1** and **7–8** use `require("ui.ui_csheet")`. Pages **2–6** use dedicated entries so builders are not bundled into every sheet object. Dynamic pages must not use the default entry — core errors if the matching `_G.CSHEET_PAGEN_LOCAL` module was not loaded via `ui/ui_csheet_pageN_local.ttslua`. Stubs are normalized by `npm run tts-objects:fix-stubs`.
 

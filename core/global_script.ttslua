@@ -327,6 +327,36 @@ function GlobalGetMergedPlayerData(playerID)
     return S.getPlayerData(playerID)
 end
 
+--- Current banked XP from the session log (replaces scalar stats.xp).
+--- @param playerID string|nil
+--- @return number
+function GlobalGetCurrentXp(playerID)
+    local XpLog = require("core.xp_log")
+    return XpLog.getCurrentXp(playerID)
+end
+
+--- Page 6 live/pagination paint for one seat (object scripts / PCST).
+--- @param params table|nil `{ color: string }` or bare color string
+--- @return boolean
+function GlobalPaintXpLogPage6(params)
+    local color = params
+    if type(params) == "table" then
+        color = params.color or params.seatColor
+    end
+    local XpSheet = require("core.xp_sheet")
+    return XpSheet.paintForColor(color) == true
+end
+
+--- @param params table|nil `{ color: string, direction: string }` direction = "forward"|"back"
+--- @return boolean
+function GlobalXpLogNavigate(params)
+    if type(params) ~= "table" then
+        return false
+    end
+    local XpSheet = require("core.xp_sheet")
+    return XpSheet.navigate(params.color or params.seatColor, params.direction) == true
+end
+
 --- Set / clear a PC Desire from CSHEET InputField callbacks (TOR-97).
 --- Actor gate: sheet seat owner color or Storyteller steam player.
 --- Object scripts must pass `player_color` (Player userdata does not cross Global.call).
@@ -4036,6 +4066,40 @@ function HUD_statsEditorDelete(player, button, id)
     if StorytellerStatsPanel and StorytellerStatsPanel.onEditorDelete then
         StorytellerStatsPanel.onEditorDelete(color)
     end
+end
+
+function HUD_xpLogField(player, value, id)
+    local XpModal = require("core.xp_log_modal")
+    XpModal.onField(id, value)
+end
+
+function HUD_xpLogApply(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_xpLogApply") then
+        return
+    end
+    local XpModal = require("core.xp_log_modal")
+    XpModal.apply()
+end
+
+function HUD_xpLogApplyAll(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_xpLogApplyAll") then
+        return
+    end
+    local XpModal = require("core.xp_log_modal")
+    XpModal.applyToAll()
+end
+
+function HUD_xpLogCancel(player, button, id)
+    local XpModal = require("core.xp_log_modal")
+    XpModal.close()
+end
+
+function HUD_xpLogUndo(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_xpLogUndo") then
+        return
+    end
+    local XpModal = require("core.xp_log_modal")
+    XpModal.undo()
 end
 
 --- Projects panel: select PC or Coterie target.

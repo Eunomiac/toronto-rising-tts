@@ -334,7 +334,7 @@ applyMergedSeat = function(color, seat)
     S.setStateVal(badges, "playerData", pid, "stats", "badges")
   end
   if seat.xp ~= nil then
-    S.setStateVal(math.max(0, math.floor(num(seat.xp))), "playerData", pid, "stats", "xp")
+    return "XP is managed via the Experience Log (PCs panel XP button); dashboard scalar XP writes are disabled"
   end
   if seat.hunger ~= nil then
     local maxDots = tonumber(C.MAX_HUNGER) or 5
@@ -587,7 +587,10 @@ local function snapshotSeat(color)
     willpower = copyTracker(stats.willpower),
     humanity = copyTracker(stats.humanity),
     bloodPotency = copyRating(stats.bloodPotency),
-    xp = num(stats.xp),
+    xp = (function()
+      local XpLog = require("core.xp_log")
+      return XpLog.getCurrentXp(pid)
+    end)(),
     hunger = num(type(pid) == "string" and S.getPlayerVal(color, "hunger") or 0),
     hungerMax = hungerMax,
     resolvedStatChanges = copyStatChanges(resolved),
@@ -644,14 +647,7 @@ local function applyCommand(cmd)
     return applyHumanityOp(color, cmd.kind, cmd.delta, cmd.remorse)
   end
   if op == "xp" then
-    local pid = C.GetPlayerID(color)
-    if type(pid) ~= "string" then
-      return "No player for XP"
-    end
-    local cur = num(S.getStateVal("playerData", pid, "stats", "xp"))
-    S.setStateVal(math.max(0, math.floor(cur + num(cmd.delta))), "playerData", pid, "stats", "xp")
-    afterTrackerChange(color)
-    return nil
+    return "XP is managed via the Experience Log (PCs panel XP button); dashboard scalar XP writes are disabled"
   end
   if op == "hunger" then
     local cur = num(S.getPlayerVal(color, "hunger"))

@@ -405,7 +405,7 @@ TTS resolves that path on **Save & Play** before object Lua runs. You always nee
 | **3** | **Dynamic** (`UI.setXml`) | Layout: **`ui/.templates/csheet/page3.xml`** + partials; builder: **`lib/csheet_page3_xml.ttslua`**. Shipped **`ui/player/csheets/page3.xml`** is only a minimal Include placeholder. |
 | **4** | **Dynamic** (`UI.setXml`) | **`lib/json/PC_Relationships.json`** → **`lib/csheet_page4_xml.ttslua`**; templates **`ui/.templates/csheet/page4.xml`** + partials. Regenerate data: `node .dev/scripts/generate_pc_relationships_lua.js`. |
 | **5** | **Dynamic** (`UI.setXml` via Global) | Object entry `ui.ui_csheet_page5`; XML built in Global `Projects.buildPage5DocumentXml` (templates pack `ui_xml_templates_csheet_page5`). |
-| **6** | **Dynamic entry** (placeholder builder) | Object stub `require("ui.ui_csheet_page6")`; placeholder until templates ship. |
+| **6** | **Dynamic** (`UI.setXml` + live `setAttribute`) | Object stub `require("ui.ui_csheet_page6")`; past XP from `lib/csheet_xp_log_baked` (`npm run csheet-xp-log:bake`); live session placeholders. |
 | **7–8** | Static shipped XML (scaffolding / WIP) | `ui/player/csheets/page7.xml`, `page8.xml` — default csheet entry only |
 
 **Do not** bundle dynamic template chains on the default csheet entry. When a page needs PCS-driven layout like page 3: (1) add templates under `ui/.templates/csheet/`, (2) replace **`lib/csheet_pageN_xml.ttslua`** placeholder with a real builder (entry + `_local` shims already exist for pages 4–6), (3) run `npm run ui-xml-templates:embed`, (4) **replace** the shipped `ui/player/csheets/pageN.xml` with a thin placeholder (keep the file so Includes still resolve). Pages 7–8 remain static until you add `ui.ui_csheet_page7` stubs the same way.
