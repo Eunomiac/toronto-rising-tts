@@ -113,7 +113,7 @@ Work order is intentional. **Epic A is the first implementation step** — its j
 
 ### Epic C — Gateway helper + register protocol
 **Repo:** `tts-tools` (`packages/tts-gateway` + `packages/gateway-client` + wire from `tts-editor`)
-**Status (2026-09-23):** Implemented on **main** / extension **2.4.0**. Control port **39997** (NDJSON). Pending author smoke (Save & Play, Claim/Release vs other tools, deactivate stops helper).
+**Status (2026-09-24):** Implemented on **main** / extension **2.4.3**. Control port **39997** (NDJSON). **Author-verified** on the Cursor/IDE side (gateway working).
 
 1. [x] Helper process: sole binder of **39998** (force-claim reclaimable holders; never TTS); control/register API on **39997**.
 2. [x] Extension on activate: if gateway not up → spawn helper; register as client via **same** `gateway-client` as everyone else (`TTSTOOLS` tag).
@@ -121,15 +121,15 @@ Work order is intentional. **Epic A is the first implementation step** — its j
 4. [x] Heartbeat so clients detect death quickly.
 5. [x] On extension deactivate / Cursor quit: stop helper (C4=B). Clients fall back via library (full auto-rejoin = Epic D).
 
-### Epic D — `gateway-client` + docs (three layers)
+### Epic D — `gateway-client` + docs (three layers)  ← **next**
 **Repo:** `tts-tools` (e.g. `packages/gateway-client`)
 
 **DX goal:** Third-party apps should not re-implement port claiming, return demux, or failover. The library is the product surface.
 
-1. **Layer 1 — npm package:** `connectGateway()`, events, `executeLua` (gateway-proxied returns), `routeTag`, **built-in** direct↔gateway state machine (port stolen → register; gateway down → direct; gateway up → rejoin). Extension + Dashboard use this package.
-2. **Layer 2 — protocol markdown:** for non-JS languages; JS users told to prefer Layer 1.
-3. **Layer 3 — README appendix:** minimal copy-paste raw client; “use Layer 1 if you can.”
-4. Marketplace README leads with ~10-line Layer 1 quickstart.
+1. [ ] **Layer 1 — npm package:** finish `connectGateway()` state machine — **direct↔gateway** failover (port stolen → register; gateway down → direct; gateway up → rejoin). Extension + Dashboard use this package.
+2. [ ] **Layer 2 — protocol markdown:** for non-JS languages; JS users told to prefer Layer 1.
+3. [ ] **Layer 3 — README appendix:** minimal copy-paste raw client; “use Layer 1 if you can.”
+4. [ ] Marketplace README leads with ~10-line Layer 1 quickstart.
 
 ### Epic E — Dashboard single TTS bridge
 **Repo:** `toronto-rising-tts/.dev/storyteller-dashboard`
