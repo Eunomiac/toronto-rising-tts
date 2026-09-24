@@ -31,9 +31,9 @@ _Last populated: 2026-09-24 — Experience Log + page 6 (TOR-92)._
 4. Click **Undo** twice and confirm both lines disappear and totals return.
 5. Mark another PC **Absent**, enter a gain, click **Apply to All**, and confirm the Absent seat did not change while present seats did.
 6. After you advance session number (End→Intermission), **without** re-baking, you should get a Storyteller warning about a stale page 6 bake; the live block still accepts new entries for the new session. After `npm run csheet-xp-log:bake` + Save & Play, the previous session should appear as a baked block.
-7. Optional authoring check: on the Storyteller Dashboard **PCs** tab, open **JSON**. The pretty-printed `xp` field should be the full Experience Log object (same as `playerData.<pid>.xp`), not a bare number. Paste a log under `"xp": { … }`, Apply, re-open JSON, and confirm the log is still there. The sheet jewel shows banked XP derived from the latest session `newTotal`.
+7. Optional authoring check: on the Storyteller Dashboard **PCs** tab, open **JSON**. The bottom pane should be a dump of that seat’s raw `playerData` (including the full `xp` Experience Log), not the assembled sheet view. Paste under `"xp": { … }` (or any other playerData keys), **Apply**, re-open JSON, and confirm the dump matches what you wrote. The sheet jewel still shows banked XP derived from the log.
 
-**Context:** Scalar `stats.xp` removed; log is `playerData.<pid>.xp`. Character history remains background art only. Dashboard ring/`op:xp` scalar writes stay disabled; JSON Apply may replace the full Experience Log object. Seat snapshot `xp` is that log (not a derived banked number). Page-6 object scripts must not `require("lib.constants")` (bundle gate).
+**Context:** Scalar `stats.xp` removed; log is `playerData.<pid>.xp`. Character history remains background art only. Dashboard ring/`op:xp` scalar writes stay disabled. JSON modal dumps/merges raw `playerData` via `mergePlayerData`. Page-6 object scripts must not `require("lib.constants")` (bundle gate).
 
 ### Phases / session end
 

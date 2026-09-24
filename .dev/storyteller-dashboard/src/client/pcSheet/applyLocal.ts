@@ -116,8 +116,7 @@ const patchSeat = (seat: SeatSnapshot, command: ApplyCommand): SeatSnapshot => {
       return { ...seat, humanity: { ...seat.humanity, base }, humanityMax: base };
     }
     case "xp":
-      // Live XP edits go through the ST Experience Log modal; keep seat.xp as the log object.
-      return seat;
+      return { ...seat, xp: clamp(seat.xp + command.delta, 0, 999) };
     case "hunger":
       return { ...seat, hunger: clamp(seat.hunger + command.delta, 0, seat.hungerMax) };
     case "desire":
@@ -136,6 +135,8 @@ const patchSeat = (seat: SeatSnapshot, command: ApplyCommand): SeatSnapshot => {
       return { ...seat, torpor: false };
     case "mergeSeat":
       return command.seat.color === seat.color ? command.seat : seat;
+    case "mergePlayerData":
+      return seat;
     default:
       return seat;
   }

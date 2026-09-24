@@ -1,5 +1,4 @@
 import { useEffect, useState, type MouseEvent, type ReactElement } from "react";
-import { bankedXpFromLog } from "./bankedXp.js";
 import { chronologyFor, identityFromSeat, subtitleFor } from "./identity.js";
 import { ATTRIBUTE_COLUMNS, ATTRIBUTE_LABELS, SKILL_COLUMNS, SKILL_LABELS, assetUrl } from "./layout.js";
 import { DotLine } from "./DotLine.js";
@@ -171,7 +170,7 @@ export const PageOne = ({ seat, onRing, onCommand, onDesire }: Props): ReactElem
           onContextMenu={(event) => nudge("xp", event, -1)}
         >
           <img src={assetUrl("dots/xp_jewel.webp")} alt="" />
-          <strong>{bankedXpFromLog(seat.xp)}</strong>
+          <strong>{seat.xp}</strong>
           <span>XP</span>
         </button>
         <button className="pc-track" type="button" onClick={(event) => onRing(event, { kind: "damage", which: "willpower" })}>

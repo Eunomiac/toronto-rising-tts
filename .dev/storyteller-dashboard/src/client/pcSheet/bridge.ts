@@ -71,8 +71,9 @@ const parseSeat = (value: unknown): SeatSnapshot | null => {
       }
     }
   }
-  // Experience Log object (legacy scalar snapshots → empty log until Save & Play).
-  const xp: Record<string, unknown> = isRecord(value.xp) ? { ...value.xp } : {};
+  // Experience Log lives under playerData.xp; seat.xp is banked XP for the jewel.
+  const playerData: Record<string, unknown> = isRecord(value.playerData) ? { ...value.playerData } : {};
+  const xp = asNumber(value.xp);
   return {
     color,
     playerId: asString(value.playerId) || undefined,
@@ -105,6 +106,7 @@ const parseSeat = (value: unknown): SeatSnapshot | null => {
     humanity: asTracker(value.humanity),
     bloodPotency: asRating(value.bloodPotency),
     xp,
+    playerData,
     hunger: asNumber(value.hunger),
     hungerMax: asNumber(value.hungerMax, 5),
     resolvedStatChanges: resolved,

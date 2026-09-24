@@ -48,8 +48,10 @@ export type SeatSnapshot = {
   readonly willpower: Tracker;
   readonly humanity: Tracker;
   readonly bloodPotency: Rating;
-  /** Experience Log — same shape as `playerData.<pid>.xp` (session-keyed object). */
-  readonly xp: Record<string, unknown>;
+  /** Banked XP for the sheet jewel (latest session newTotal). */
+  readonly xp: number;
+  /** Raw `gameState.playerData.<pid>` for the JSON modal (dump + merge target). */
+  readonly playerData: Record<string, unknown>;
   readonly hunger: number;
   readonly hungerMax: number;
   readonly resolvedStatChanges: Record<string, number>;
@@ -97,7 +99,8 @@ export type ApplyCommand =
   | { op: "autoSeat"; color: SeatColor }
   | { op: "connect"; color: SeatColor }
   | { op: "initiateRoll"; color: SeatColor; rollType: string }
-  | { op: "mergeSeat"; color: SeatColor; seat: SeatSnapshot };
+  | { op: "mergeSeat"; color: SeatColor; seat: SeatSnapshot }
+  | { op: "mergePlayerData"; color: SeatColor; patch: Record<string, unknown> };
 
 export type RingTarget =
   | { kind: "trait"; family: "attributes" | "skills"; key: string }

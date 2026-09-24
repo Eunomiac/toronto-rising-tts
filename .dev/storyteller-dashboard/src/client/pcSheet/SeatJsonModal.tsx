@@ -1,19 +1,25 @@
 import { useEffect, useState, type ReactElement } from "react";
 import { createPortal } from "react-dom";
 import { parseJsonLenient } from "./jsonSanitize.js";
-import type { SeatSnapshot } from "./types.js";
 
 type Props = {
-  readonly seat: SeatSnapshot;
+  readonly title: string;
+  /** Raw gameState.playerData for this seat. */
+  readonly playerData: Record<string, unknown>;
   readonly applying?: boolean;
   readonly onClose: () => void;
-  /** Patch object only (keys the author typed) — not the full seat. */
+  /** Patch object only (keys the author typed) — merged into playerData. */
   readonly onApply: (patch: Record<string, unknown>) => Promise<void>;
 };
 
-export const SeatJsonModal = ({ seat, applying = false, onClose, onApply }: Props): ReactElement => {
-  const json = JSON.stringify(seat, null, 2);
-  const title = seat.charName || seat.charKey || seat.color;
+export const SeatJsonModal = ({
+  title,
+  playerData,
+  applying = false,
+  onClose,
+  onApply
+}: Props): ReactElement => {
+  const json = JSON.stringify(playerData, null, 2);
   const [patchText, setPatchText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -77,7 +83,7 @@ export const SeatJsonModal = ({ seat, applying = false, onClose, onApply }: Prop
       >
         <header className="modal-header pc-json-modal-header">
           <div>
-            <h2 id="pc-json-modal-title">Sheet JSON — {title}</h2>
+            <h2 id="pc-json-modal-title">Player data — {title}</h2>
           </div>
           <button type="button" className="pc-json-modal-close" disabled={waiting} onClick={onClose}>
             Close
@@ -92,7 +98,7 @@ export const SeatJsonModal = ({ seat, applying = false, onClose, onApply }: Prop
               spellCheck={false}
               value={patchText}
               disabled={waiting}
-              placeholder={'"titles": ["Seneschal"],\n"attributes": { "charisma": { "base": 4 }, },'}
+              placeholder={'"xp": { "0": { "sessionDisplay": "Rollover", "newTotal": 0, "gains": [], "spends": [] } },\n"desire": "Hunt"'}
               onChange={(event) => {
                 setPatchText(event.target.value);
                 if (error) {

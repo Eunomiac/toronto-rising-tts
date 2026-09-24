@@ -44,7 +44,7 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 ✔️ PCs JSON Apply hang. Soft 15s executeLua timeout was freeing the serial chain while TTS still ran a full-seat mergeSeat, so the PCs poll stormed more Lua. Await real completion; send patch keys only; stop printing full snapshot JSON on apply/snapshot.
 
 ✔️ SD-PCs live-only (no fixture). Offline shows **No live sheet** + reason. Identity and Ambition come from TTS snapshot / `playerData.ambition` only.
-✔️ SD-PCs **JSON** debug button. Opens a scrollable modal with pretty-printed live seat snapshot; patch textarea + **Apply** deep-merges into TTS (`mergeSeat`).
+✔️ SD-PCs **JSON** debug button. Opens a scrollable modal with pretty-printed **raw `playerData`** for the seat; patch textarea + **Apply** deep-merges into `gameState.playerData` (`mergePlayerData`).
 ✔️ PCs JSON Apply accepts trailing commas (same sanitize as TTS scene import) instead of rejecting the paste.
 ✔️ Dashboard Lua bridge folder: `dashboard/pc_sheet.ttslua` (`require("dashboard.pc_sheet")`), not under `core/`.
 

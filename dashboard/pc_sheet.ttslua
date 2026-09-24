@@ -285,7 +285,89 @@ local function afterTrackerChange(color)
   PCST.refreshRow(color)
 end
 
---- Absolute write of a dashboard-merged seat into gameState (debug JSON Apply).
+local function deepCopyValue(value)
+  if type(value) ~= "table" then
+    return value
+  end
+  local out = {}
+  for k, v in pairs(value) do
+    out[k] = deepCopyValue(v)
+  end
+  return out
+end
+
+--- Raw playerData for JSON modal (xp session keys as strings for JSON.encode).
+local function playerDataForJson(pid)
+  if type(pid) ~= "string" or pid == "" or pid == C.StorytellerID then
+    return {}
+  end
+  local pd = S.getStateVal("playerData", pid)
+  if type(pd) ~= "table" then
+    return {}
+  end
+  local out = deepCopyValue(pd)
+  local XpLog = require("core.xp_log")
+  out.xp = XpLog.exportLogForJson(pid)
+  return out
+end
+
+--- Deep-merge patch into live playerData (debug JSON Apply). Top-level keys in patch replace
+--- after client-side deep-merge of nested values. xp goes through XpLog.replaceLog.
+local function applyMergedPlayerData(color, patch)
+  local pid = C.GetPlayerID(color)
+  if type(pid) ~= "string" or pid == C.StorytellerID then
+    return "No player for color " .. tostring(color)
+  end
+  if type(patch) ~= "table" then
+    return "mergePlayerData requires a patch object"
+  end
+  local pd = S.getStateVal("playerData", pid)
+  if type(pd) ~= "table" then
+    pd = {}
+    S.setStateVal(pd, "playerData", pid)
+  end
+
+  local xpPatch = nil
+  for key, value in pairs(patch) do
+    if type(key) == "string" then
+      if key == "xp" then
+        xpPatch = value
+      else
+        pd[key] = deepCopyValue(value)
+      end
+    end
+  end
+
+  if xpPatch ~= nil then
+    if type(xpPatch) ~= "table" then
+      return "playerData.xp must be an Experience Log object (session-number keys), not a scalar"
+    end
+    local XpLog = require("core.xp_log")
+    local ok, err = XpLog.replaceLog(pid, xpPatch)
+    if not ok then
+      return err or "Could not replace Experience Log"
+    end
+  end
+
+  -- Drop legacy scalar if a patch reintroduced it under stats.
+  if type(pd.stats) == "table" and pd.stats.xp ~= nil then
+    pd.stats.xp = nil
+  end
+
+  if type(S.validateState) == "function" then
+    S.validateState()
+  end
+
+  Sync.player(color)
+  P.refreshHudOverlaysForSeat(color)
+  afterTrackerChange(color)
+  if type(PCST.paintXpLogPage6ForColor) == "function" then
+    PCST.paintXpLogPage6ForColor(color)
+  end
+  return nil
+end
+
+--- Absolute write of a dashboard-merged seat into gameState (legacy sheet-shaped Apply).
 applyMergedSeat = function(color, seat)
   local pid = C.GetPlayerID(color)
   if type(pid) ~= "string" or pid == C.StorytellerID then
@@ -638,11 +720,11 @@ local function snapshotSeat(color)
     willpower = copyTracker(stats.willpower),
     humanity = copyTracker(stats.humanity),
     bloodPotency = copyRating(stats.bloodPotency),
-    -- Same Experience Log object as playerData.<pid>.xp (string keys for JSON.encode).
     xp = (function()
       local XpLog = require("core.xp_log")
-      return XpLog.exportLogForJson(pid)
+      return XpLog.getCurrentXp(pid)
     end)(),
+    playerData = playerDataForJson(pid),
     hunger = num(type(pid) == "string" and S.getPlayerVal(color, "hunger") or 0),
     hungerMax = hungerMax,
     resolvedStatChanges = copyStatChanges(resolved),
@@ -800,6 +882,9 @@ local function applyCommand(cmd)
   end
   if op == "mergeSeat" then
     return applyMergedSeat(color, cmd.seat)
+  end
+  if op == "mergePlayerData" then
+    return applyMergedPlayerData(color, cmd.patch)
   end
   return "Unknown op: " .. tostring(op)
 end

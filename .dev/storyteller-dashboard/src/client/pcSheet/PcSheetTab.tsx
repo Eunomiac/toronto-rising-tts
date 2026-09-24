@@ -201,7 +201,7 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
     applyQueue.enqueue(command);
   };
 
-  const applySeatJsonPatch = async (patch: Record<string, unknown>): Promise<void> => {
+  const applyPlayerDataJsonPatch = async (patch: Record<string, unknown>): Promise<void> => {
     if (!live) {
       throw new Error("No live sheet to apply into.");
     }
@@ -209,44 +209,26 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
     if (!current) {
       throw new Error("No seat selected to patch.");
     }
-    // Deep-merge so nested rating patches keep temp/disabled, but only send keys the author
-    // typed — not the entire seat (that made executeLua payloads huge and hung TTS).
-    const merged = deepMerge(current, patch) as SeatSnapshot;
-    const mergedRecord = merged as unknown as Record<string, unknown>;
-    const partial: Record<string, unknown> = { color: current.color };
+    const base = current.playerData ?? {};
+    // Deep-merge into stored playerData; send only keys the author typed.
+    const merged = deepMerge(base, patch) as Record<string, unknown>;
+    const partial: Record<string, unknown> = {};
     for (const key of Object.keys(patch)) {
-      const patchValue = patch[key];
-      if (
-        (key === "attributes" || key === "skills")
-        && typeof patchValue === "object"
-        && patchValue !== null
-        && !Array.isArray(patchValue)
-        && typeof mergedRecord[key] === "object"
-        && mergedRecord[key] !== null
-      ) {
-        const mergedGroup = mergedRecord[key] as Record<string, unknown>;
-        const subset: Record<string, unknown> = {};
-        for (const subKey of Object.keys(patchValue as Record<string, unknown>)) {
-          subset[subKey] = mergedGroup[subKey];
-        }
-        partial[key] = subset;
-      } else {
-        partial[key] = mergedRecord[key];
-      }
+      partial[key] = merged[key];
     }
     const command: ApplyCommand = {
-      op: "mergeSeat",
+      op: "mergePlayerData",
       color: current.color,
-      seat: partial as unknown as SeatSnapshot
+      patch: partial
     };
     setBusy(true);
     try {
       const next = await applySheetCommands([command]);
       if (!next.ok) {
-        const detail = next.error ?? "mergeSeat apply failed";
+        const detail = next.error ?? "mergePlayerData apply failed";
         if (/Unknown op/i.test(detail)) {
           throw new Error(
-            `${detail}. Save & Play in Tabletop Simulator so the dashboard.pc_sheet bridge (mergeSeat) loads, then try Apply again.`
+            `${detail}. Save & Play in Tabletop Simulator so the dashboard.pc_sheet bridge (mergePlayerData) loads, then try Apply again.`
           );
         }
         throw new Error(detail);
@@ -315,7 +297,7 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
             type="button"
             disabled={!live || seat == null}
             onClick={() => setJsonOpen(true)}
-            title="Show pretty-printed JSON for the sheet on screen"
+            title="Show raw playerData JSON for this seat (merge Apply into game state)"
           >
             JSON
           </button>
@@ -346,9 +328,10 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
       ) : null}
       {jsonOpen && seat ? (
         <SeatJsonModal
-          seat={seat}
+          title={seat.charName || seat.charKey || seat.color}
+          playerData={seat.playerData ?? {}}
           onClose={() => setJsonOpen(false)}
-          onApply={applySeatJsonPatch}
+          onApply={applyPlayerDataJsonPatch}
         />
       ) : null}
     </div>
