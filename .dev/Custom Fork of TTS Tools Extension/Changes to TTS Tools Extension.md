@@ -119,17 +119,16 @@ Work order is intentional. **Epic A is the first implementation step** — its j
 2. [x] Extension on activate: if gateway not up → spawn helper; register as client via **same** `gateway-client` as everyone else (`TTSTOOLS` tag).
 3. [x] Fan-out + returnID tracking for proxied executeLua; optional `<@TAG@>` filter/strip.
 4. [x] Heartbeat so clients detect death quickly.
-5. [x] On extension deactivate / Cursor quit: stop helper (C4=B). Clients fall back via library (full auto-rejoin = Epic D).
+5. [x] On extension deactivate / Cursor quit: stop helper (C4=B). Clients fall back via library (**Epic D** failover).
 
-### Epic D — `gateway-client` + docs (three layers)  ← **next**
-**Repo:** `tts-tools` (e.g. `packages/gateway-client`)
+### Epic D — `gateway-client` + docs (three layers)
+**Repo:** `tts-tools` (`packages/gateway-client`)
+**Status (2026-09-24):** Implemented on **main** — `@tts-tools/gateway-client` **0.2.0**, extension **2.5.0**.
 
-**DX goal:** Third-party apps should not re-implement port claiming, return demux, or failover. The library is the product surface.
-
-1. [ ] **Layer 1 — npm package:** finish `connectGateway()` state machine — **direct↔gateway** failover (port stolen → register; gateway down → direct; gateway up → rejoin). Extension + Dashboard use this package.
-2. [ ] **Layer 2 — protocol markdown:** for non-JS languages; JS users told to prefer Layer 1.
-3. [ ] **Layer 3 — README appendix:** minimal copy-paste raw client; “use Layer 1 if you can.”
-4. [ ] Marketplace README leads with ~10-line Layer 1 quickstart.
+1. [x] **Layer 1 — npm package:** `connectGateway()` with **direct↔gateway** failover (port stolen → register; gateway down → direct; gateway up → rejoin). Extension uses `failover: false` (owns helper).
+2. [x] **Layer 2 — protocol markdown:** [`packages/gateway-client/PROTOCOL.md`](../../../tts-tools/packages/gateway-client/PROTOCOL.md) (also mirrored in GATEWAY draft).
+3. [x] **Layer 3 — README appendix:** copy-paste stub in package README; “use Layer 1 if you can.”
+4. [x] Marketplace / package README leads with ~10-line Layer 1 quickstart.
 
 ### Epic E — Dashboard single TTS bridge
 **Repo:** `toronto-rising-tts/.dev/storyteller-dashboard`

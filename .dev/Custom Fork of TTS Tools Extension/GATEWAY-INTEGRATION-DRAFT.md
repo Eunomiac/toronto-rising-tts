@@ -1,6 +1,6 @@
 # TTS Tools Gateway — Integration Guide (DRAFT)
 
-> **Status:** Control protocol implemented in source (`packages/tts-gateway`, `packages/gateway-client`, extension **2.4.0**). **Not** Marketplace-published yet. APIs may still change before a public release.
+> **Status:** Control protocol + failover implemented (`packages/tts-gateway`, `@tts-tools/gateway-client` **0.2.0**, extension **2.5.0**). **Not** Marketplace-published yet. APIs may still change before a public release.
 
 **Who this is for:** Authors of local tools that want to talk to Tabletop Simulator’s External Editor API **at the same time** as the TTS Tools VS Code / Cursor extension (or other registered apps).
 
@@ -18,7 +18,7 @@ The **TTS Tools Gateway** is a small helper started by the TTS Tools extension. 
 2. Lets multiple local apps **register** and receive fan-out of TTS events.
 3. Proxies **executeLua** (and other return-expecting calls) so `returnMessage`s go to the right client.
 
-When the gateway is **not** running (Cursor closed, extension disabled), apps talk to TTS **directly** on 39998 — same as today. Prefer using the client library so that failover is automatic.
+When the gateway is **not** running (Cursor closed, extension disabled), `@tts-tools/gateway-client` (failover on by default) binds **39998** directly and rejoins the gateway when **39997** returns. Prefer the client library so you do not re-implement that.
 
 **Do not** poll TTS ports for “is anyone home?” status. Connecting to **39999** or briefly binding **39998** from a status timer hitch Tabletop Simulator. The gateway control port (**39997**) can answer presence without touching TTS.
 
@@ -74,7 +74,7 @@ tts.on("customMessage", (payload) => {
 });
 
 tts.on("status", (status) => {
-  // Epic C: "gateway" | "disconnected" — full auto-rejoin is a later release
+  // "gateway" | "direct" | "disconnected"
   console.log("TTS link:", status.mode, status.detail ?? "");
 });
 
@@ -92,10 +92,11 @@ You should **not** write this yourself:
 
 | Concern | Handled by `gateway-client` |
 | --- | --- |
-| Is the gateway up? | Pings the control port |
-| Gateway up | Registers; receives fan-out |
-| Gateway down / Cursor quit | Session emits `disconnected` (full direct fallback = later) |
-| `executeLua` return routing | Sends via gateway; tracks `requestId` |
+| Is the gateway up? | Probes control port **39997** |
+| Gateway up | Registers; receives fan-out (`status.mode = "gateway"`) |
+| Gateway down / Cursor quit | Binds **39998** directly (`"direct"`); polls to rejoin |
+| Own the helper | Pass `failover: false` (TTS Tools extension) |
+| `executeLua` return routing | Via gateway when registered; direct demux when in direct mode |
 | Heartbeats | Detects dead gateway quickly |
 
 Your app code stays at: connect → subscribe → call helpers → close.
@@ -143,14 +144,15 @@ Prefer the library methods; do not open raw sockets to 39999 for returns unless 
 ### Lifecycle notes
 
 - **Starting Cursor / enabling TTS Tools** starts the gateway helper (if not already running) and force-claims 39998.
-- **Quitting Cursor / disabling the extension** stops the gateway. Your library session should flip to `disconnected` via `status` events.
-- **Extension Host reload** may briefly drop the gateway; reconnect after reload.
+- **Quitting Cursor / disabling the extension** stops the gateway. With failover on, your session moves to `direct` (or `disconnected` if 39998 is taken) and can rejoin later.
+- **Extension Host reload** may briefly drop the gateway; the client rejoins when **39997** is back.
+- Apps that **start** the helper themselves should use `failover: false` so they never steal 39998 from their own helper.
 
 ---
 
 ## Layer 2 — Gateway protocol (non-JS)
 
-Implement this only if you cannot use the npm client. Prefer matching whatever `gateway-client` does.
+Implement this only if you cannot use the npm client. Canonical detail: [`packages/gateway-client/PROTOCOL.md`](../../../tts-tools/packages/gateway-client/PROTOCOL.md) in the tts-tools repo. Prefer matching whatever `gateway-client` does.
 
 ### Ports (frozen for v1 source)
 
@@ -261,3 +263,4 @@ Planned for Marketplace readiness: a user-local token so random processes cannot
 | --- | --- |
 | draft-0 | Preliminary README aligned with fork design notes. Not implemented. |
 | draft-1 | Control port **39997** frozen; NDJSON shapes documented; source implementation in tts-tools 2.4.0. |
+| draft-2 | Epic D: failover modes `gateway` / `direct` / `disconnected`; PROTOCOL.md Layer 2; extension 2.5.0 / client 0.2.0. |
