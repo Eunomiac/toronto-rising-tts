@@ -785,13 +785,33 @@ end
 local function applySelectorResting(color, groupIndex, isOccupied)
     local id = "scatterModeControlGroup" .. tostring(groupIndex) .. "_selector_" .. color
     if isOccupied then
+        -- Occupied group: hover graphic stays visible; hover handlers pulse color only.
         U.setAttributes(id, {
             active = "true",
-            image = "scatterGroupSelector_active",
+            image = "scatterGroupSelector_hover",
+            color = "rgba(1, 1, 1, 1)",
         })
         return
     end
-    U.setAttribute(id, "active", "false")
+    U.setAttributes(id, {
+        active = "false",
+        color = "rgba(1, 1, 1, 1)",
+    })
+end
+
+--- @param color string
+--- @param groupIndex number
+--- @param isOccupied boolean
+local function applyNpcListClass(color, groupIndex, isOccupied)
+    local id = "scatterModeControlGroup" .. tostring(groupIndex) .. "_npcList_" .. color
+    if UI == nil or UI.setClass == nil then
+        return
+    end
+    if isOccupied then
+        UI.setClass(id, "scatterModeControl_npcList scatterModeControl_activeList")
+        return
+    end
+    UI.setClass(id, "scatterModeControl_npcList")
 end
 
 --- Open or close one player's Scatter strip (toggle chrome). Does not change occupancy.
@@ -853,6 +873,9 @@ local function applyControlHudHidden()
         U.setAttribute("scatterModeControl_pcRowContainer_" .. color, "active", "false")
         U.setAttribute("db_scatterModeControl_container_" .. color, "active", "false")
         U.setAttribute("scatterModeControlToggleHit_" .. color, "active", "false")
+        for i = 1, ScatterLayout.groupCount() do
+            applyNpcListClass(color, i, false)
+        end
     end
 end
 
@@ -910,6 +933,7 @@ local function applyControlHudVisible()
                 end
             end
             applySelectorResting(color, i, myGroup == i)
+            applyNpcListClass(color, i, myGroup == i)
             U.setAttributes("scatterModeControlGroup" .. tostring(i) .. "_npcList_" .. color, {
                 text = npcTextByGroup[i] or "",
             })

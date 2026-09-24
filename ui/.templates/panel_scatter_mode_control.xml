@@ -45,7 +45,8 @@
 
     <VerticalLayout class="scatterModeControl_group_container"
       childForceExpandWidth = "true"
-      padding = "0 0 0 0"
+      minWidth = "280"
+      padding = "0 0 105 0"
       raycastTarget = "false"
     />
     <HorizontalLayout class="scatterModeControl_pcRowContainer"
@@ -90,14 +91,29 @@
       raycastTarget = "false" />
 
     <Text class="scatterModeControl_npcList"
-      color = "#FFFFFF"
+      color = "#999999"
       fontStyle = "Bold"
       fontSize = "20"
       raycastTarget = "false"
      />
 
-  </Defaults>
+     <Text class="scatterModeControl_activeList"
+       color = "#FFFFFF" />
 
+  </Defaults>
+  <!--
+
+  UISet("scatterModeControl_pcRowContainer_Red", {padding = "0 0 0 0"})
+
+  UISet("scatterModeControlGroup#_pc1_Red", {active = "true", color = "rgba(1, 1, 1, 0)", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}, ["@"] = {5, 3, 1, 2, 4}})
+
+  UISet("scatterModeControlGroup#_pc1_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_lordLucien"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc2_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_rashid"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc3_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_aishe"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc4_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_fomorach"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+  UISet("scatterModeControlGroup#_pc5_Red", {active = "true", color = "#FFFFFF", image = "scatterModeControlPC_blackCaesar"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+
+  -->
   <HorizontalLayout id="scatterModeControl_pcRowContainer_@@color@@" class="scatterModeControl_pcRowContainer">
     <!-- AGENT: Keep every pc# Image active=true so HorizontalLayout spacing stays stable.
       Occupied slots: color = "rgba(1, 1, 1, 1)", image = "scatterModeControlPC_<pcKey>"
@@ -155,11 +171,25 @@
     <Image id="db_scatterModeControl_container_bg_@@color@@" class="scatterModeControl_container_bg" image="scatterGroupControl_bg" />
 
     <!-- AGENT: Each VerticalLayout is one scatter group. Resting "inactive" selector art is baked into
-      scatterGroupControl_bg, so the overlay Image starts active=false. Show it only on hover
-      (scatterGroupSelector_hover) or for the group this PC occupies (scatterGroupSelector_active).
+      scatterGroupControl_bg, so the overlay Image starts active=false. Show it on hover
+      (scatterGroupSelector_hover), or keep it visible for the group this PC occupies.
+      Occupied group: hover image stays on; on hover-over set color="rgba(1,1,1,0.5)", restore to full alpha on exit.
       Click/hover live on the hit Panel so they still fire while the Image is hidden.
-      NPC Text: "\n"-delimited full display names via setAttributes text. -->
+      NPC Text: "\n"-delimited full display names via setAttributes text.
+      Occupied group NPC list: UI.setClass(..., "scatterModeControl_npcList scatterModeControl_activeList");
+      other groups / after leave: UI.setClass(..., "scatterModeControl_npcList"). -->
+    <!--
+    UISet("scatterModeControlGroup#_container_Red", {minWidth = "280", padding = "0 0 105 0"}, {["#"] = {1, 2, 3, 4, 5, 6}})
 
+    <Text class="scatterModeControl_npcList"
+      color = "#FFFFFF"
+      fontStyle = "Bold"
+      fontSize = "18"
+      raycastTarget = "false"
+     />
+
+    UISet("scatterModeControlGroup#_npcList_Red", {fontSize= "18", text = "Mylene 'the Puck' Hamelin\nThe Aristocrat\nOliver Gagnon\nAlistair Etrata\nAgnes Bellanger"}, {["#"] = {1, 2, 3, 4, 5, 6}})
+    -->
     <VerticalLayout id="scatterModeControlGroup1_container_@@color@@" class="scatterModeControl_group_container">
       <HorizontalLayout id="db_scatterModeControlGroup1_selectorContainer_@@color@@" class="scatterModeControl_selectorContainer">
         <Panel id="scatterModeControlGroup1_selectorHit_@@color@@" class="scatterModeControl_selectorHit" onClick="HUD_scatterModeControl_selectorClick" onMouseEnter="HUD_scatterModeControl_selectorHoverOn" onMouseExit="HUD_scatterModeControl_selectorHoverOff">

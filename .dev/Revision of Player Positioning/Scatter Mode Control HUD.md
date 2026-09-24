@@ -97,7 +97,7 @@ Then `npm run build:xml`.
 Image names in the template (must exist on Global Custom UI):
 
 - `scatterGroupToggle_inactive` / `_hover`
-- `scatterGroupSelector_hover` / `_active`
+- `scatterGroupSelector_hover`
 - `scatterGroupControl_bg`
 - `scatterModeControlPC_lordLucien` / `_rashid` / `_aishe` / `_fomorach` / `_blackCaesar`
 
@@ -111,7 +111,8 @@ When Scatter is **on**:
 
 - Root `active=true` for each `C.PlayerColors` entry.
 - For each group 1–6, for each slot 1–5: keep Image `active=true`. Occupied → `color=rgba(1,1,1,1)` and `image=scatterModeControlPC_<pcKey>`; empty → `color=rgba(1,1,1,0)` (do not deactivate).
-- For each player color, the occupied group’s selector overlay is `active=true` with `scatterGroupSelector_active`; the rest are `active=false` (inactive art is baked into the strip background). If that PC is in no group, all six overlays stay hidden.
+- For each player color, the occupied group’s selector overlay stays `active=true` with `scatterGroupSelector_hover` (hover pulses color to half alpha); the rest are `active=false` (inactive art is baked into the strip background). If that PC is in no group, all six overlays stay hidden.
+- Occupied group NPC list: `UI.setClass(id, "scatterModeControl_npcList scatterModeControl_activeList")`; other groups and leave-Scatter: `UI.setClass(id, "scatterModeControl_npcList")`.
 - NPC lists: `UI.setAttributes(id, { text = … })` with `"\n"` between **full display names** (`def.fullName or def.name`, same idea as `npcDisplayNameForCharacterKey`). Order = existing `npcKeysInJoinOrder` (hole slot, then key). Empty group → `""`. Update every color’s copy.
 
 Do not `UI.setXml`. Guard with a cheap occupancy fingerprint so idle `Sync.full` does not rewrite identical text.
@@ -122,7 +123,7 @@ Parse `scatterModeControlTogglePad_<Color>` (visual state on `scatterModeControl
 
 - Toggle click: flip both inner HorizontalLayouts for **that color only**. Closed: Hit Image `active=true` + `scatterGroupToggle_inactive`. Open: Hit Image `active=false` + `scatterGroupToggle_hover`.
 - Toggle hover: closed swaps inactive/hover images; open shows/hides the Hit Image (image stays hover).
-- Selector hover: `_hover` overlay on; hover-off restores `_active` if occupied else hides the overlay.
+- Selector hover: other groups show `_hover` overlay; occupied group keeps `_hover` and pulses `color` to half alpha.
 - Selector click: `ScatterMode.movePcToGroup(pcKeyForColor(color), N)`; reconcile HUD; close that player’s strip.
 
 Handler names go on the template so `build:xml` copies them into generated `ui/player/panel_scatter_mode_control.xml` and the Global remount snapshot.

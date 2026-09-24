@@ -2834,9 +2834,19 @@ function HUD_scatterModeControl_selectorHoverOn(player, value, id)
     if not scatterHudClickerMatches(player, color) or groupIndex == nil then
         return
     end
-    U.setAttributes(scatterSelectorImageId(groupIndex, color), {
+    local ScatterMode = require("core.scatter_mode")
+    local pcKey = ScatterMode.pcKeyForColor(color)
+    local mine = type(pcKey) == "string" and ScatterMode.groupIndexForPcKey(pcKey) or nil
+    local imageId = scatterSelectorImageId(groupIndex, color)
+    if mine == groupIndex then
+        -- Occupied group already shows hover art; pulse with half alpha.
+        U.setAttribute(imageId, "color", "rgba(1, 1, 1, 0.5)")
+        return
+    end
+    U.setAttributes(imageId, {
         active = "true",
         image = "scatterGroupSelector_hover",
+        color = "rgba(1, 1, 1, 1)",
     })
 end
 
@@ -2852,7 +2862,8 @@ function HUD_scatterModeControl_selectorHoverOff(player, value, id)
     if mine == groupIndex then
         U.setAttributes(imageId, {
             active = "true",
-            image = "scatterGroupSelector_active",
+            image = "scatterGroupSelector_hover",
+            color = "rgba(1, 1, 1, 1)",
         })
         return
     end
