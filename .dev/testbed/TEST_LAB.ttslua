@@ -1,0 +1,1347 @@
+---@diagnostic disable: undefined-global, need-check-nil, undefined-field, lowercase-global
+---
+--- *** Do Not Use `require` in this file. ***
+--- The debugging extension does not support it. Most libraries are exposed globally, especially `DEBUG` (containing debugging and reporting functions) and `U` (containing general utility functions). Some important/helpful debugging and utility functions include:
+---
+--- * `DEBUG.encodePretty(value)` - Encodes a value into a pretty-printed string
+---
+--- *** Use a Persistent Scope ***
+--- Top-level variables should be global, not local. Ideally, an entire task can be wrapped in a global function (allowing `local` variables to work just fine, and the function can be called from the top level).
+---
+--- *** Include Many Usage Examples ***
+--- Code in this file will be selected by the author and run via "Execute Code". Supplying a list of usage templates makes it easy for the author to copy, paste and edit the function call he needs.
+---
+--- =============================================================================
+--- HAND ZONE MOVE LAB
+--- Tabula rasa experiment: move/rotate player hand zones without dropping cards.
+---
+--- Lifecycle:
+---   1. HandLab_Register() once (defines HandLab + scenario catalog)
+---   2. HandLab_CaptureHomes() once (baseline zone + card poses for all five PCs)
+---   3. HandLab_Run("id") — restores to homes FIRST, runs trial, leaves displaced for inspection
+---   4. Next HandLab_Run restores again at its start; HandLab_Restore() alone for a clean table
+--- =============================================================================
+
+-- #region HandLab
+
+function HandLab_Register()
+  HandLab = HandLab or {}
+
+  local SEATS = { "Brown", "Orange", "Red", "Pink", "Purple" }
+  local CFG = {
+    defaultColor = "Red",
+    pairColors = { "Red", "Pink" },
+    settleInstant = 0.15,
+    settleExtra = 0.25,
+    nearHorizEps = 6.0,
+    dropYEps = 1.5,
+    rigidPosEps = 0.75,
+    rigidYawEps = 8.0,
+    pulseCount = 5,
+    pulseFastDt = 0.05,
+    pulseSlowDt = 0.5,
+    repeatFarCount = 3,
+  }
+
+  local PRESETS = {
+    nudge = { dx = 1, dy = 0, dz = 0, dYaw = 0 },
+    near = { dx = 8, dy = 0, dz = 0, dYaw = 15 },
+    far = { dx = 80, dy = 0, dz = 0, dYaw = 90 },
+    parkY = { dx = 0, dy = nil, dz = 0, dYaw = 0, absoluteY = -200 },
+    parkY180 = { dx = 0, dy = nil, dz = 0, dYaw = 180, absoluteY = -200 },
+    yawOnly = { dx = 0, dy = 0, dz = 0, dYaw = 180 },
+  }
+
+  -------------------------------------------------------------------
+  -- Local helpers (above all callers)
+  -------------------------------------------------------------------
+
+  local function vecCopy(v)
+    if v == nil then
+      return nil
+    end
+    return Vector({ x = v.x, y = v.y, z = v.z })
+  end
+
+  local function fmtVec(v)
+    if v == nil then
+      return "nil"
+    end
+    if DEBUG ~= nil and type(DEBUG.fmtVec) == "function" then
+      return DEBUG.fmtVec(v)
+    end
+    return string.format("(%.2f, %.2f, %.2f)", v.x or 0, v.y or 0, v.z or 0)
+  end
+
+  local function shortestSignedYawDelta(fromDeg, toDeg)
+    local d = toDeg - fromDeg
+    while d > 180 do
+      d = d - 360
+    end
+    while d < -180 do
+      d = d + 360
+    end
+    return d
+  end
+
+  local function isCardLike(obj)
+    if obj == nil then
+      return false
+    end
+    local tagVal = obj.tag
+    if tagVal == "Card" or tagVal == "Deck" then
+      return true
+    end
+    local typeVal = obj.type
+    return typeVal == "Card" or typeVal == "Deck"
+  end
+
+  local function resolveHandZone(color)
+    local guidKey = "HAND_" .. string.upper(color)
+    local guid = G ~= nil and G.GUIDS ~= nil and G.GUIDS[guidKey] or nil
+    if type(guid) == "string" and guid ~= "" then
+      local obj = getObjectFromGUID(guid)
+      if obj ~= nil then
+        return obj, "G.GUIDS." .. guidKey
+      end
+    end
+    if U ~= nil and type(U.getHandZone) == "function" then
+      local hz = U.getHandZone(color)
+      if hz ~= nil then
+        return hz, "U.getHandZone"
+      end
+    end
+    if Hands ~= nil and type(Hands.getHands) == "function" then
+      local hands = Hands.getHands()
+      if type(hands) == "table" then
+        for i = 1, #hands do
+          local h = hands[i]
+          if h ~= nil and h.getData ~= nil then
+            local data = h.getData()
+            if data ~= nil and data.FogColor == color then
+              return h, "Hands.getHands"
+            end
+          end
+        end
+      end
+    end
+    return nil, nil
+  end
+
+  local function collectHandCards(hz, seatColor)
+    local seen = {}
+    local out = {}
+    local function consider(obj)
+      if not isCardLike(obj) then
+        return
+      end
+      local guid = obj.getGUID and obj.getGUID() or nil
+      if type(guid) == "string" and guid ~= "" then
+        if seen[guid] == true then
+          return
+        end
+        seen[guid] = true
+      end
+      out[#out + 1] = obj
+    end
+    if hz ~= nil and hz.getObjects ~= nil then
+      local zoneObjects = hz.getObjects()
+      if type(zoneObjects) == "table" then
+        for i = 1, #zoneObjects do
+          consider(zoneObjects[i])
+        end
+      end
+    end
+    if type(seatColor) == "string" and seatColor ~= "" then
+      local player = Player[seatColor]
+      if player ~= nil and type(player.getHandObjects) == "function" then
+        local handObjects = player.getHandObjects()
+        if type(handObjects) == "table" then
+          for i = 1, #handObjects do
+            consider(handObjects[i])
+          end
+        end
+      end
+    end
+    return out
+  end
+
+  local function handObjectGuidSet(seatColor)
+    local set = {}
+    local list = {}
+    local player = Player[seatColor]
+    if player ~= nil and type(player.getHandObjects) == "function" then
+      local objs = player.getHandObjects()
+      if type(objs) == "table" then
+        for i = 1, #objs do
+          local obj = objs[i]
+          local guid = obj ~= nil and obj.getGUID and obj.getGUID() or nil
+          if type(guid) == "string" and guid ~= "" then
+            set[guid] = true
+            list[#list + 1] = guid
+          end
+        end
+      end
+    end
+    table.sort(list)
+    return set, list
+  end
+
+  local function fogColorOf(hz)
+    if hz == nil or hz.getData == nil then
+      return nil
+    end
+    local data = hz.getData()
+    if data == nil then
+      return nil
+    end
+    return data.FogColor
+  end
+
+  local function applyPose(obj, pos, rot, mode)
+    if obj == nil then
+      return
+    end
+    local posTbl = { x = pos.x, y = pos.y, z = pos.z }
+    local rotTbl = { x = rot.x, y = rot.y, z = rot.z }
+    mode = mode or "instant"
+    if mode == "instant" then
+      obj.setPosition(posTbl)
+      obj.setRotation(rotTbl)
+    elseif mode == "smoothFast" then
+      if obj.setPositionSmooth ~= nil then
+        obj.setPositionSmooth(posTbl, false, true)
+      else
+        obj.setPosition(posTbl)
+      end
+      if obj.setRotationSmooth ~= nil then
+        obj.setRotationSmooth(rotTbl, false, true)
+      else
+        obj.setRotation(rotTbl)
+      end
+    elseif mode == "smoothSlow" then
+      if obj.setPositionSmooth ~= nil then
+        obj.setPositionSmooth(posTbl, false, false)
+      else
+        obj.setPosition(posTbl)
+      end
+      if obj.setRotationSmooth ~= nil then
+        obj.setRotationSmooth(rotTbl, false, false)
+      else
+        obj.setRotation(rotTbl)
+      end
+    elseif mode == "lerp03" then
+      U.setPositionSlow(obj, Vector(posTbl), 0.3)
+      U.setRotationSlow(obj, Vector(rotTbl), 0.3)
+    elseif mode == "lerp15" then
+      U.setPositionSlow(obj, Vector(posTbl), 1.5)
+      U.setRotationSlow(obj, Vector(rotTbl), 1.5)
+    else
+      error("HandLab: unknown pose mode '" .. tostring(mode) .. "'")
+    end
+  end
+
+  local function settleSecondsForMode(mode, pulseDt, pulseN)
+    if mode == "lerp03" then
+      return 0.3 + CFG.settleExtra
+    end
+    if mode == "lerp15" then
+      return 1.5 + CFG.settleExtra
+    end
+    if mode == "smoothFast" or mode == "smoothSlow" then
+      return 1.0 + CFG.settleExtra
+    end
+    if pulseDt ~= nil then
+      return (pulseN or CFG.pulseCount) * pulseDt + CFG.settleExtra
+    end
+    return CFG.settleInstant
+  end
+
+  local function targetFromHome(homeZonePos, homeZoneRot, preset)
+    local p = PRESETS[preset]
+    if p == nil then
+      error("HandLab: unknown preset '" .. tostring(preset) .. "'")
+    end
+    local y = homeZonePos.y
+    if p.absoluteY ~= nil then
+      y = p.absoluteY
+    elseif p.dy ~= nil then
+      y = homeZonePos.y + p.dy
+    end
+    return Vector({
+      x = homeZonePos.x + (p.dx or 0),
+      y = y,
+      z = homeZonePos.z + (p.dz or 0),
+    }), Vector({
+      x = homeZoneRot.x,
+      y = homeZoneRot.y + (p.dYaw or 0),
+      z = homeZoneRot.z,
+    })
+  end
+
+  local function expectedCardPose(hzBeforePos, hzBeforeRot, cardBefore, targetPos, targetRot)
+    local deltaYaw = shortestSignedYawDelta(hzBeforeRot.y, targetRot.y)
+    local rotated = U.frameAfterRigidYawAboutCenter(hzBeforePos, cardBefore, deltaYaw)
+    local newPos = Vector(rotated.position) + (Vector(targetPos) - Vector(hzBeforePos))
+    local cardRot = Vector(rotated.rotation)
+    cardRot.y = targetRot.y + 180
+    return newPos, cardRot
+  end
+
+  local function snapshotSeat(color)
+    local hz, how = resolveHandZone(color)
+    if hz == nil then
+      return nil
+    end
+    local cards = collectHandCards(hz, color)
+    local cardSnaps = {}
+    for i = 1, #cards do
+      local c = cards[i]
+      cardSnaps[#cardSnaps + 1] = {
+        guid = c.getGUID(),
+        position = vecCopy(c.getPosition()),
+        rotation = vecCopy(c.getRotation()),
+        locked = c.getLock ~= nil and c.getLock() or false,
+      }
+    end
+    local _, handGuids = handObjectGuidSet(color)
+    return {
+      color = color,
+      zoneGuid = hz.getGUID and hz.getGUID() or nil,
+      zoneSource = how,
+      zonePos = vecCopy(hz.getPosition()),
+      zoneRot = vecCopy(hz.getRotation()),
+      fogColor = fogColorOf(hz),
+      cards = cardSnaps,
+      handGuids = handGuids,
+    }
+  end
+
+  local function captureHomes()
+    HandLab.homes = {}
+    local summary = {}
+    for i = 1, #SEATS do
+      local color = SEATS[i]
+      local snap = snapshotSeat(color)
+      if snap == nil then
+        print("[HandLab] CAPTURE FAIL: no hand zone for " .. color)
+      else
+        HandLab.homes[color] = {
+          zonePos = vecCopy(snap.zonePos),
+          zoneRot = vecCopy(snap.zoneRot),
+          cards = {},
+        }
+        for j = 1, #snap.cards do
+          local c = snap.cards[j]
+          HandLab.homes[color].cards[c.guid] = {
+            position = vecCopy(c.position),
+            rotation = vecCopy(c.rotation),
+            locked = c.locked,
+          }
+        end
+        summary[color] = {
+          zone = fmtVec(snap.zonePos),
+          cardCount = #snap.cards,
+          handGuids = #snap.handGuids,
+          source = snap.zoneSource,
+        }
+      end
+    end
+    HandLab.homesCapturedAt = (Time ~= nil and Time.time) or nil
+    print("[HandLab] Captured homes:")
+    print(DEBUG.encodePretty(summary))
+    return summary
+  end
+
+  local function restoreHomes()
+    if HandLab.homes == nil then
+      error("HandLab_Restore: no homes captured — run HandLab_CaptureHomes() first")
+    end
+    for i = 1, #SEATS do
+      local color = SEATS[i]
+      local home = HandLab.homes[color]
+      if home ~= nil then
+        local hz = resolveHandZone(color)
+        if hz ~= nil then
+          applyPose(hz, home.zonePos, home.zoneRot, "instant")
+        end
+        -- Prefer live collect so we still restore cards that drifted out of Player hand list
+        local cards = collectHandCards(hz, color)
+        local byGuid = {}
+        for j = 1, #cards do
+          local c = cards[j]
+          byGuid[c.getGUID()] = c
+        end
+        for guid, pose in pairs(home.cards) do
+          local obj = byGuid[guid] or getObjectFromGUID(guid)
+          if obj ~= nil then
+            if obj.setLock ~= nil then
+              obj.setLock(pose.locked == true)
+            end
+            applyPose(obj, pose.position, pose.rotation, "instant")
+          end
+        end
+      end
+    end
+    print("[HandLab] Restored all seats to captured homes (instant).")
+  end
+
+  local function colorsForConcurrency(concurrency)
+    if concurrency == "one" then
+      return { CFG.defaultColor }
+    end
+    if concurrency == "pair" then
+      return { CFG.pairColors[1], CFG.pairColors[2] }
+    end
+    if concurrency == "allFive" then
+      local out = {}
+      for i = 1, #SEATS do
+        out[i] = SEATS[i]
+      end
+      return out
+    end
+    error("HandLab: unknown concurrency '" .. tostring(concurrency) .. "'")
+  end
+
+  local function assertSeat(color, beforeSnap, afterSnap, expectRigid, expectedByGuid)
+    local checks = {}
+    local pass = true
+
+    local function fail(name, detail)
+      pass = false
+      checks[#checks + 1] = { name = name, ok = false, detail = detail }
+    end
+
+    local function ok(name, detail)
+      checks[#checks + 1] = { name = name, ok = true, detail = detail }
+    end
+
+    if afterSnap == nil then
+      fail("zoneExists", "missing after snapshot")
+      return false, checks
+    end
+
+    if afterSnap.fogColor ~= color then
+      fail("fogColor", "expected " .. color .. " got " .. tostring(afterSnap.fogColor))
+    else
+      ok("fogColor", afterSnap.fogColor)
+    end
+
+    local beforeSet = {}
+    for i = 1, #beforeSnap.handGuids do
+      beforeSet[beforeSnap.handGuids[i]] = true
+    end
+    local afterSet = {}
+    for i = 1, #afterSnap.handGuids do
+      afterSet[afterSnap.handGuids[i]] = true
+    end
+    local missing = {}
+    local extra = {}
+    for guid, _ in pairs(beforeSet) do
+      if afterSet[guid] ~= true then
+        missing[#missing + 1] = guid
+      end
+    end
+    for guid, _ in pairs(afterSet) do
+      if beforeSet[guid] ~= true then
+        extra[#extra + 1] = guid
+      end
+    end
+    if #missing > 0 or #extra > 0 then
+      fail("handMembership", {
+        beforeCount = #beforeSnap.handGuids,
+        afterCount = #afterSnap.handGuids,
+        missing = missing,
+        extra = extra,
+      })
+    else
+      ok("handMembership", #afterSnap.handGuids .. " cards still in Player.getHandObjects")
+    end
+
+    local zoneY = afterSnap.zonePos.y
+    for i = 1, #afterSnap.cards do
+      local c = afterSnap.cards[i]
+      local dy = math.abs((c.position.y or 0) - zoneY)
+      if dy > CFG.dropYEps + 2.0 then
+        -- large vertical separation from zone plane → likely dropped / parked wrong
+        fail("notDroppedY", c.guid .. " |ΔY|=" .. string.format("%.2f", dy) .. " vs zone")
+      end
+      local horiz = U.HorizontalDistance(afterSnap.zonePos, c.position)
+      local inHand = afterSet[c.guid] == true
+      if horiz > CFG.nearHorizEps and not inHand then
+        fail("orphaned", c.guid .. " horiz=" .. string.format("%.2f", horiz) .. " not in getHandObjects")
+      elseif horiz > CFG.nearHorizEps * 2 and inHand then
+        fail("farButHeld", c.guid .. " horiz=" .. string.format("%.2f", horiz) .. " still held (fan stretch?)")
+      end
+    end
+    local hasDropFail = false
+    for i = 1, #checks do
+      if checks[i].name == "notDroppedY" or checks[i].name == "orphaned" or checks[i].name == "farButHeld" then
+        hasDropFail = true
+        break
+      end
+    end
+    if not hasDropFail then
+      ok("proximity", "cards near zone / still held")
+    end
+
+    if expectRigid and expectedByGuid ~= nil then
+      for i = 1, #afterSnap.cards do
+        local c = afterSnap.cards[i]
+        local exp = expectedByGuid[c.guid]
+        if exp ~= nil then
+          local d = U.Distance(c.position, exp.position)
+          local yawErr = math.abs(shortestSignedYawDelta(c.rotation.y, exp.rotation.y))
+          if d > CFG.rigidPosEps or yawErr > CFG.rigidYawEps then
+            fail("rigidFidelity", {
+              guid = c.guid,
+              posErr = d,
+              yawErr = yawErr,
+              got = fmtVec(c.position),
+              expected = fmtVec(exp.position),
+            })
+          end
+        end
+      end
+      local hasRigidFail = false
+      for i = 1, #checks do
+        if checks[i].name == "rigidFidelity" and checks[i].ok == false then
+          hasRigidFail = true
+          break
+        end
+      end
+      if not hasRigidFail then
+        ok("rigidFidelity", "within eps")
+      end
+    end
+
+    local lockNotes = {}
+    for i = 1, #afterSnap.cards do
+      local c = afterSnap.cards[i]
+      lockNotes[#lockNotes + 1] = { guid = c.guid, locked = c.locked }
+    end
+    ok("lockReport", lockNotes)
+
+    return pass, checks
+  end
+
+  -- Recompute pass flag after assertSeat (assertSeat mutates via fail)
+  local function checksAllPass(checks)
+    for i = 1, #checks do
+      if checks[i].ok == false then
+        return false
+      end
+    end
+    return true
+  end
+
+  local function moveSeatOnce(color, strategy, poseMode, targetPos, targetRot, lockCards)
+    local hz = resolveHandZone(color)
+    if hz == nil then
+      error("HandLab: no hand zone for " .. tostring(color))
+    end
+    local hzBeforePos = vecCopy(hz.getPosition())
+    local hzBeforeRot = vecCopy(hz.getRotation())
+    local cards = collectHandCards(hz, color)
+    local captured = {}
+    local expectedByGuid = {}
+
+    for i = 1, #cards do
+      local obj = cards[i]
+      local before = {
+        position = vecCopy(obj.getPosition()),
+        rotation = vecCopy(obj.getRotation()),
+      }
+      captured[#captured + 1] = { obj = obj, before = before, guid = obj.getGUID() }
+      local expPos, expRot = expectedCardPose(hzBeforePos, hzBeforeRot, before, targetPos, targetRot)
+      expectedByGuid[obj.getGUID()] = { position = expPos, rotation = expRot }
+      if lockCards == true and obj.setLock ~= nil then
+        obj.setLock(true)
+      end
+    end
+
+    local function poseCardsRigid()
+      for i = 1, #captured do
+        local entry = captured[i]
+        local exp = expectedByGuid[entry.guid]
+        applyPose(entry.obj, exp.position, exp.rotation, poseMode)
+      end
+    end
+
+    if strategy == "zoneOnly" then
+      applyPose(hz, targetPos, targetRot, poseMode)
+    elseif strategy == "rigidCoMove" then
+      applyPose(hz, targetPos, targetRot, poseMode)
+      poseCardsRigid()
+    elseif strategy == "cardsThenZone" then
+      poseCardsRigid()
+      applyPose(hz, targetPos, targetRot, poseMode)
+    elseif strategy == "zoneThenCards" then
+      applyPose(hz, targetPos, targetRot, poseMode)
+      poseCardsRigid()
+    elseif strategy == "lockThenZoneOnly" then
+      applyPose(hz, targetPos, targetRot, poseMode)
+    elseif strategy == "lockThenRigid" then
+      applyPose(hz, targetPos, targetRot, poseMode)
+      poseCardsRigid()
+    else
+      error("HandLab: unknown strategy '" .. tostring(strategy) .. "'")
+    end
+
+    return expectedByGuid, captured
+  end
+
+  local function unlockCaptured(captured)
+    if captured == nil then
+      return
+    end
+    for i = 1, #captured do
+      local obj = captured[i].obj
+      if obj ~= nil and obj.setLock ~= nil then
+        obj.setLock(false)
+      end
+    end
+  end
+
+  local function runControlMovePlayerHand(colors, preset, smooth)
+    local results = {}
+    for i = 1, #colors do
+      local color = colors[i]
+      local home = HandLab.homes[color]
+      local targetPos, targetRot = targetFromHome(home.zonePos, home.zoneRot, preset)
+      local before = snapshotSeat(color)
+      U.movePlayerHand(color, targetPos, targetRot, { smooth = smooth == true })
+      results[color] = { before = before, targetPos = targetPos, targetRot = targetRot }
+    end
+    return results
+  end
+
+  local function runSetHandTransform(colors, preset)
+    local results = {}
+    for i = 1, #colors do
+      local color = colors[i]
+      local player = Player[color]
+      local home = HandLab.homes[color]
+      local targetPos, targetRot = targetFromHome(home.zonePos, home.zoneRot, preset)
+      local before = snapshotSeat(color)
+      if player == nil or type(player.setHandTransform) ~= "function" then
+        results[color] = {
+          before = before,
+          skipped = true,
+          reason = "Player.setHandTransform missing",
+        }
+      else
+        -- TTS setHandTransform expects {position, rotation, scale}; scale left nil/default
+        player.setHandTransform({
+          position = { x = targetPos.x, y = targetPos.y, z = targetPos.z },
+          rotation = { x = targetRot.x, y = targetRot.y, z = targetRot.z },
+        })
+        results[color] = {
+          before = before,
+          targetPos = targetPos,
+          targetRot = targetRot,
+          skipped = false,
+        }
+      end
+    end
+    return results
+  end
+
+  -------------------------------------------------------------------
+  -- Scenario catalog
+  -------------------------------------------------------------------
+
+  local SCENARIOS = {}
+
+  local function addScenario(id, def)
+    def.id = id
+    SCENARIOS[id] = def
+  end
+
+  -- A: zoneOnly × pose × distance (one seat)
+  addScenario("A1_zoneOnly_instant_nudge_one", {
+    tags = { "zoneOnly", "instant", "nudge", "one" },
+    intent = "Zone only, instant, tiny nudge — does TTS carry cards?",
+    strategy = "zoneOnly",
+    poseMode = "instant",
+    preset = "nudge",
+    concurrency = "one",
+  })
+  addScenario("A2_zoneOnly_instant_near_one", {
+    tags = { "zoneOnly", "instant", "near", "one" },
+    intent = "Zone only, instant, near translate+yaw",
+    strategy = "zoneOnly",
+    poseMode = "instant",
+    preset = "near",
+    concurrency = "one",
+  })
+  addScenario("A3_zoneOnly_instant_far_one", {
+    tags = { "zoneOnly", "instant", "far", "one" },
+    intent = "Zone only, instant, table-scale jump",
+    strategy = "zoneOnly",
+    poseMode = "instant",
+    preset = "far",
+    concurrency = "one",
+  })
+  addScenario("A4_zoneOnly_instant_yawOnly_one", {
+    tags = { "zoneOnly", "instant", "yawOnly", "one" },
+    intent = "Zone only, instant, 180 yaw in place",
+    strategy = "zoneOnly",
+    poseMode = "instant",
+    preset = "yawOnly",
+    concurrency = "one",
+  })
+  addScenario("A5_zoneOnly_instant_parkY_one", {
+    tags = { "zoneOnly", "instant", "parkY", "one" },
+    intent = "Zone only, instant, bury to Y=-200",
+    strategy = "zoneOnly",
+    poseMode = "instant",
+    preset = "parkY",
+    concurrency = "one",
+  })
+  addScenario("A6_zoneOnly_smoothFast_far_one", {
+    tags = { "zoneOnly", "smoothFast", "far", "one" },
+    intent = "Zone only, setPositionSmooth fast, far jump",
+    strategy = "zoneOnly",
+    poseMode = "smoothFast",
+    preset = "far",
+    concurrency = "one",
+  })
+  addScenario("A7_zoneOnly_smoothSlow_far_one", {
+    tags = { "zoneOnly", "smoothSlow", "far", "one" },
+    intent = "Zone only, setPositionSmooth slow, far jump",
+    strategy = "zoneOnly",
+    poseMode = "smoothSlow",
+    preset = "far",
+    concurrency = "one",
+  })
+  addScenario("A8_zoneOnly_lerp03_near_one", {
+    tags = { "zoneOnly", "lerp03", "near", "one" },
+    intent = "Zone only, U.setPositionSlow 0.3s near",
+    strategy = "zoneOnly",
+    poseMode = "lerp03",
+    preset = "near",
+    concurrency = "one",
+  })
+  addScenario("A9_zoneOnly_lerp15_far_one", {
+    tags = { "zoneOnly", "lerp15", "far", "one" },
+    intent = "Zone only, U.setPositionSlow 1.5s far",
+    strategy = "zoneOnly",
+    poseMode = "lerp15",
+    preset = "far",
+    concurrency = "one",
+  })
+
+  -- B: rigid co-move
+  addScenario("B1_rigid_instant_nudge_one", {
+    tags = { "rigidCoMove", "instant", "nudge", "one" },
+    intent = "Rigid zone+cards, instant nudge",
+    strategy = "rigidCoMove",
+    poseMode = "instant",
+    preset = "nudge",
+    concurrency = "one",
+    expectRigid = true,
+  })
+  addScenario("B2_rigid_instant_far_one", {
+    tags = { "rigidCoMove", "instant", "far", "one" },
+    intent = "Rigid zone+cards, instant far (production-like)",
+    strategy = "rigidCoMove",
+    poseMode = "instant",
+    preset = "far",
+    concurrency = "one",
+    expectRigid = true,
+  })
+  addScenario("B3_rigid_smoothFast_far_one", {
+    tags = { "rigidCoMove", "smoothFast", "far", "one" },
+    intent = "Rigid zone+cards, smooth fast far",
+    strategy = "rigidCoMove",
+    poseMode = "smoothFast",
+    preset = "far",
+    concurrency = "one",
+    expectRigid = true,
+  })
+  addScenario("B4_rigid_instant_parkY_one", {
+    tags = { "rigidCoMove", "instant", "parkY", "one" },
+    intent = "Rigid zone+cards to Y=-200",
+    strategy = "rigidCoMove",
+    poseMode = "instant",
+    preset = "parkY",
+    concurrency = "one",
+    expectRigid = true,
+  })
+  addScenario("B5_rigid_instant_yawOnly_one", {
+    tags = { "rigidCoMove", "instant", "yawOnly", "one" },
+    intent = "Rigid zone+cards, 180 yaw (card yaw snap to zone+180)",
+    strategy = "rigidCoMove",
+    poseMode = "instant",
+    preset = "yawOnly",
+    concurrency = "one",
+    expectRigid = true,
+  })
+
+  -- C: order of operations
+  addScenario("C1_cardsThenZone_instant_far_one", {
+    tags = { "cardsThenZone", "instant", "far", "one" },
+    intent = "Cards first then zone, instant far",
+    strategy = "cardsThenZone",
+    poseMode = "instant",
+    preset = "far",
+    concurrency = "one",
+    expectRigid = true,
+  })
+  addScenario("C2_zoneThenCards_instant_far_one", {
+    tags = { "zoneThenCards", "instant", "far", "one" },
+    intent = "Zone first then cards, instant far",
+    strategy = "zoneThenCards",
+    poseMode = "instant",
+    preset = "far",
+    concurrency = "one",
+    expectRigid = true,
+  })
+
+  -- D: lock hypothesis (TOR-590)
+  addScenario("D1_lock_zoneOnly_far_one", {
+    tags = { "lock", "zoneOnly", "far", "one" },
+    intent = "Lock cards, move zone only, unlock after settle",
+    strategy = "lockThenZoneOnly",
+    poseMode = "instant",
+    preset = "far",
+    concurrency = "one",
+    lockCards = true,
+  })
+  addScenario("D2_lock_rigid_far_one", {
+    tags = { "lock", "rigidCoMove", "far", "one" },
+    intent = "Lock cards, rigid co-move, unlock after settle",
+    strategy = "lockThenRigid",
+    poseMode = "instant",
+    preset = "far",
+    concurrency = "one",
+    lockCards = true,
+    expectRigid = true,
+  })
+
+  -- E: concurrency
+  addScenario("E1_zoneOnly_instant_far_pair", {
+    tags = { "zoneOnly", "instant", "far", "pair" },
+    intent = "Zone only, Red+Pink far same frame",
+    strategy = "zoneOnly",
+    poseMode = "instant",
+    preset = "far",
+    concurrency = "pair",
+  })
+  addScenario("E2_rigid_instant_far_pair", {
+    tags = { "rigidCoMove", "instant", "far", "pair" },
+    intent = "Rigid, Red+Pink far same frame",
+    strategy = "rigidCoMove",
+    poseMode = "instant",
+    preset = "far",
+    concurrency = "pair",
+    expectRigid = true,
+  })
+  addScenario("E3_zoneOnly_instant_far_allFive", {
+    tags = { "zoneOnly", "instant", "far", "allFive" },
+    intent = "Zone only, all five PCs far same frame",
+    strategy = "zoneOnly",
+    poseMode = "instant",
+    preset = "far",
+    concurrency = "allFive",
+  })
+  addScenario("E4_rigid_instant_far_allFive", {
+    tags = { "rigidCoMove", "instant", "far", "allFive" },
+    intent = "Rigid, all five PCs far same frame",
+    strategy = "rigidCoMove",
+    poseMode = "instant",
+    preset = "far",
+    concurrency = "allFive",
+    expectRigid = true,
+  })
+
+  -- F: pulse / frequency
+  addScenario("F1_zoneOnly_pulseFast_nudge_one", {
+    tags = { "zoneOnly", "pulse", "nudge", "one" },
+    intent = "Zone only, 5 rapid nudges (0.05s)",
+    strategy = "zoneOnly",
+    poseMode = "instant",
+    preset = "nudge",
+    concurrency = "one",
+    pulse = { count = CFG.pulseCount, dt = CFG.pulseFastDt },
+  })
+  addScenario("F2_zoneOnly_pulseSlow_nudge_one", {
+    tags = { "zoneOnly", "pulse", "nudge", "one" },
+    intent = "Zone only, 5 slow nudges (0.5s)",
+    strategy = "zoneOnly",
+    poseMode = "instant",
+    preset = "nudge",
+    concurrency = "one",
+    pulse = { count = CFG.pulseCount, dt = CFG.pulseSlowDt },
+  })
+  addScenario("F3_rigid_pulseFast_nudge_one", {
+    tags = { "rigidCoMove", "pulse", "nudge", "one" },
+    intent = "Rigid, 5 rapid nudges",
+    strategy = "rigidCoMove",
+    poseMode = "instant",
+    preset = "nudge",
+    concurrency = "one",
+    expectRigid = true,
+    pulse = { count = CFG.pulseCount, dt = CFG.pulseFastDt },
+  })
+  addScenario("F4_rigid_repeatFar_one", {
+    tags = { "rigidCoMove", "repeatFar", "far", "one" },
+    intent = "Rigid far jump applied 3× without mid-restore",
+    strategy = "rigidCoMove",
+    poseMode = "instant",
+    preset = "far",
+    concurrency = "one",
+    expectRigid = true,
+    repeatFar = CFG.repeatFarCount,
+  })
+
+  -- G: controls
+  addScenario("G1_control_movePlayerHand_far_one", {
+    tags = { "control", "movePlayerHand", "far", "one" },
+    intent = "Production U.movePlayerHand instant far (control)",
+    kind = "control_movePlayerHand",
+    preset = "far",
+    concurrency = "one",
+    smooth = false,
+    expectRigid = true,
+  })
+  addScenario("G2_control_movePlayerHand_smooth_near_one", {
+    tags = { "control", "movePlayerHand", "near", "one", "smooth" },
+    intent = "Production U.movePlayerHand smooth near",
+    kind = "control_movePlayerHand",
+    preset = "near",
+    concurrency = "one",
+    smooth = true,
+    expectRigid = true,
+  })
+  addScenario("G3_setHandTransform_near_one", {
+    tags = { "control", "setHandTransform", "near", "one" },
+    intent = "Player.setHandTransform near (skip if API missing)",
+    kind = "setHandTransform",
+    preset = "near",
+    concurrency = "one",
+  })
+
+  HandLab.SEATS = SEATS
+  HandLab.CFG = CFG
+  HandLab.PRESETS = PRESETS
+  HandLab.SCENARIOS = SCENARIOS
+
+  -------------------------------------------------------------------
+  -- Run / list / battery
+  -------------------------------------------------------------------
+
+  local function listScenarios(tagFilter)
+    local ids = {}
+    for id, def in pairs(SCENARIOS) do
+      local include = true
+      if type(tagFilter) == "string" and tagFilter ~= "" then
+        include = false
+        local tags = def.tags or {}
+        for i = 1, #tags do
+          if tags[i] == tagFilter or string.find(id, tagFilter, 1, true) then
+            include = true
+            break
+          end
+        end
+      end
+      if include then
+        ids[#ids + 1] = id
+      end
+    end
+    table.sort(ids)
+    local lines = {}
+    for i = 1, #ids do
+      local def = SCENARIOS[ids[i]]
+      lines[#lines + 1] = ids[i] .. " — " .. (def.intent or "")
+    end
+    print("[HandLab] Scenarios (" .. #lines .. "):")
+    for i = 1, #lines do
+      print("  " .. lines[i])
+    end
+    return ids
+  end
+
+  local function finishReport(id, def, seatReports, settleSec, onDone)
+    local overall = true
+    for _, sr in pairs(seatReports) do
+      if sr.skipped ~= true and sr.pass ~= true then
+        overall = false
+      end
+    end
+    local report = {
+      id = id,
+      intent = def.intent,
+      overallPass = overall,
+      settleSec = settleSec,
+      visualNote = "Look at the table: fan tidy / face-up are author judgment; leave displaced until next Run.",
+      seats = seatReports,
+    }
+    HandLab.lastReport = report
+    print("[HandLab] === RESULT " .. id .. " overallPass=" .. tostring(overall) .. " ===")
+    print(DEBUG.encodePretty(report))
+    if DEBUG ~= nil and type(DEBUG.writeWorkspaceFile) == "function" then
+      DEBUG.writeWorkspaceFile("hand_lab/last_report.json", report, "json", true)
+    end
+    if type(onDone) == "function" then
+      onDone(report)
+    end
+    return report
+  end
+
+  local function runScenario(id, onDone)
+    local def = SCENARIOS[id]
+    if def == nil then
+      error("HandLab_Run: unknown scenario '" .. tostring(id) .. "'. Call HandLab_List().")
+    end
+    if HandLab.homes == nil then
+      error("HandLab_Run: capture homes first via HandLab_CaptureHomes()")
+    end
+
+    print("[HandLab] Run " .. id .. " — " .. (def.intent or ""))
+    restoreHomes()
+
+    local colors = colorsForConcurrency(def.concurrency or "one")
+    local settleSec = settleSecondsForMode(def.poseMode, def.pulse and def.pulse.dt or nil, def.pulse and def.pulse.count or nil)
+    if def.repeatFar ~= nil then
+      settleSec = CFG.settleInstant * def.repeatFar + CFG.settleExtra
+    end
+    if def.kind == "control_movePlayerHand" then
+      settleSec = def.smooth and (1.0 + CFG.settleExtra) or CFG.settleInstant
+    end
+    if def.kind == "setHandTransform" then
+      settleSec = CFG.settleInstant
+    end
+
+    local beforeByColor = {}
+    local expectedByColor = {}
+    local capturedByColor = {}
+    local metaByColor = {}
+
+    for i = 1, #colors do
+      beforeByColor[colors[i]] = snapshotSeat(colors[i])
+    end
+
+    local function applyMoves()
+      if def.kind == "control_movePlayerHand" then
+        local ctrl = runControlMovePlayerHand(colors, def.preset, def.smooth)
+        for color, info in pairs(ctrl) do
+          metaByColor[color] = info
+          local before = beforeByColor[color]
+          local expected = {}
+          if before ~= nil and info.targetPos ~= nil then
+            for j = 1, #before.cards do
+              local c = before.cards[j]
+              local expPos, expRot = expectedCardPose(
+                before.zonePos,
+                before.zoneRot,
+                { position = c.position, rotation = c.rotation },
+                info.targetPos,
+                info.targetRot
+              )
+              expected[c.guid] = { position = expPos, rotation = expRot }
+            end
+          end
+          expectedByColor[color] = expected
+        end
+        return
+      end
+
+      if def.kind == "setHandTransform" then
+        local ctrl = runSetHandTransform(colors, def.preset)
+        for color, info in pairs(ctrl) do
+          metaByColor[color] = info
+        end
+        return
+      end
+
+      for i = 1, #colors do
+        local color = colors[i]
+        local home = HandLab.homes[color]
+        local targetPos, targetRot = targetFromHome(home.zonePos, home.zoneRot, def.preset)
+        local expected, captured = moveSeatOnce(
+          color,
+          def.strategy,
+          def.poseMode or "instant",
+          targetPos,
+          targetRot,
+          def.lockCards == true
+        )
+        expectedByColor[color] = expected
+        capturedByColor[color] = captured
+      end
+    end
+
+    -- Pulse needs timed steps — use U.chain
+    local function buildAndAssert()
+      local seatReports = {}
+      for i = 1, #colors do
+        local color = colors[i]
+        local meta = metaByColor[color]
+        if meta ~= nil and meta.skipped == true then
+          seatReports[color] = {
+            skipped = true,
+            reason = meta.reason,
+            pass = true,
+          }
+        else
+          local after = snapshotSeat(color)
+          local expectRigid = def.expectRigid == true
+          local _, checks = assertSeat(
+            color,
+            beforeByColor[color],
+            after,
+            expectRigid,
+            expectedByColor[color]
+          )
+          if def.lockCards == true then
+            unlockCaptured(capturedByColor[color])
+          end
+          seatReports[color] = {
+            pass = checksAllPass(checks),
+            checks = checks,
+            beforeHandCount = beforeByColor[color] and #beforeByColor[color].handGuids or 0,
+            afterHandCount = after and #after.handGuids or 0,
+            afterZone = after and fmtVec(after.zonePos) or nil,
+          }
+        end
+      end
+      return finishReport(id, def, seatReports, settleSec, onDone)
+    end
+
+    if def.pulse ~= nil then
+      local steps = {}
+      local pulse = def.pulse
+      local count = pulse.count or CFG.pulseCount
+      local dt = pulse.dt or CFG.pulseFastDt
+      for r = 1, count do
+        local stepIndex = r
+        steps[#steps + 1] = function()
+          for i = 1, #colors do
+            local color = colors[i]
+            local hz = resolveHandZone(color)
+            local cur = hz.getPosition()
+            local curRot = hz.getRotation()
+            local step = PRESETS.nudge
+            local targetPos = Vector({
+              x = cur.x + step.dx,
+              y = cur.y,
+              z = cur.z + step.dz,
+            })
+            local targetRot = Vector({
+              x = curRot.x,
+              y = curRot.y + step.dYaw,
+              z = curRot.z,
+            })
+            local expected, captured = moveSeatOnce(
+              color,
+              def.strategy,
+              def.poseMode or "instant",
+              targetPos,
+              targetRot,
+              def.lockCards == true
+            )
+            expectedByColor[color] = expected
+            capturedByColor[color] = captured
+          end
+          print("[HandLab] pulse step " .. tostring(stepIndex) .. "/" .. tostring(count))
+          if stepIndex < count then
+            return dt
+          end
+          return settleSecondsForMode(def.poseMode, nil, nil)
+        end
+      end
+      steps[#steps + 1] = function()
+        buildAndAssert()
+      end
+      U.chain(steps)
+      return
+    end
+
+    if def.repeatFar ~= nil then
+      local steps = {}
+      local n = def.repeatFar
+      for r = 1, n do
+        local stepIndex = r
+        steps[#steps + 1] = function()
+          for i = 1, #colors do
+            local color = colors[i]
+            local home = HandLab.homes[color]
+            local targetPos, targetRot = targetFromHome(home.zonePos, home.zoneRot, def.preset)
+            local expected, captured = moveSeatOnce(
+              color,
+              def.strategy,
+              def.poseMode or "instant",
+              targetPos,
+              targetRot,
+              def.lockCards == true
+            )
+            expectedByColor[color] = expected
+            capturedByColor[color] = captured
+          end
+          print("[HandLab] repeatFar step " .. tostring(stepIndex) .. "/" .. tostring(n))
+          return CFG.settleInstant
+        end
+      end
+      steps[#steps + 1] = function()
+        return CFG.settleExtra
+      end
+      steps[#steps + 1] = function()
+        buildAndAssert()
+      end
+      U.chain(steps)
+      return
+    end
+
+    -- Single-shot (and non-pulse controls)
+    applyMoves()
+    U.chain({
+      function()
+        return settleSec
+      end,
+      function()
+        buildAndAssert()
+      end,
+    })
+  end
+
+  local function battery(tagFilter)
+    local ids = listScenarios(tagFilter)
+    if #ids == 0 then
+      print("[HandLab] Battery: no scenarios matched filter " .. tostring(tagFilter))
+      return
+    end
+    print("[HandLab] Battery starting " .. #ids .. " scenarios (each restores at start; last left in place).")
+    local index = 1
+    local function runNext()
+      if index > #ids then
+        print("[HandLab] Battery complete.")
+        return
+      end
+      local sid = ids[index]
+      local cell = index
+      index = index + 1
+      print("[HandLab] Battery cell " .. tostring(cell) .. "/" .. tostring(#ids) .. " " .. sid)
+      runScenario(sid, function()
+        -- Brief pause so you can glance between cells; next cell restores at its start
+        U.await(function()
+          runNext()
+        end, 1.0)
+      end)
+    end
+    runNext()
+  end
+
+  HandLab.captureHomes = captureHomes
+  HandLab.restoreHomes = restoreHomes
+  HandLab.listScenarios = listScenarios
+  HandLab.runScenario = runScenario
+  HandLab.battery = battery
+  HandLab.snapshotSeat = snapshotSeat
+
+  print("[HandLab] Registered. Seats=" .. table.concat(SEATS, ",") .. " scenarios=" .. tostring((function()
+    local n = 0
+    for _ in pairs(SCENARIOS) do
+      n = n + 1
+    end
+    return n
+  end)()))
+  print("[HandLab] Next: HandLab_CaptureHomes() then HandLab_List() / HandLab_Run(\"A3_zoneOnly_instant_far_one\")")
+end
+
+function HandLab_CaptureHomes()
+  if HandLab == nil or HandLab.captureHomes == nil then
+    HandLab_Register()
+  end
+  return HandLab.captureHomes()
+end
+
+function HandLab_Restore()
+  if HandLab == nil or HandLab.restoreHomes == nil then
+    error("HandLab_Restore: call HandLab_Register() first")
+  end
+  return HandLab.restoreHomes()
+end
+
+function HandLab_List(tagFilter)
+  if HandLab == nil or HandLab.listScenarios == nil then
+    HandLab_Register()
+  end
+  return HandLab.listScenarios(tagFilter)
+end
+
+function HandLab_Run(id)
+  if HandLab == nil or HandLab.runScenario == nil then
+    HandLab_Register()
+  end
+  return HandLab.runScenario(id)
+end
+
+function HandLab_Battery(tagFilter)
+  if HandLab == nil or HandLab.battery == nil then
+    HandLab_Register()
+  end
+  return HandLab.battery(tagFilter)
+end
+
+-- =============================================================================
+-- USAGE EXAMPLES (select one call, uncomment, Execute Code)
+-- =============================================================================
+--
+-- HandLab_Register()
+-- HandLab_CaptureHomes()
+-- HandLab_List()
+-- HandLab_List("zoneOnly")
+-- HandLab_List("far")
+-- HandLab_Restore()
+--
+-- -- Zone only (does TTS carry cards?)
+-- HandLab_Run("A1_zoneOnly_instant_nudge_one")
+-- HandLab_Run("A2_zoneOnly_instant_near_one")
+-- HandLab_Run("A3_zoneOnly_instant_far_one")
+-- HandLab_Run("A4_zoneOnly_instant_yawOnly_one")
+-- HandLab_Run("A5_zoneOnly_instant_parkY_one")
+-- HandLab_Run("A6_zoneOnly_smoothFast_far_one")
+-- HandLab_Run("A7_zoneOnly_smoothSlow_far_one")
+-- HandLab_Run("A8_zoneOnly_lerp03_near_one")
+-- HandLab_Run("A9_zoneOnly_lerp15_far_one")
+--
+-- -- Rigid co-move
+-- HandLab_Run("B1_rigid_instant_nudge_one")
+-- HandLab_Run("B2_rigid_instant_far_one")
+-- HandLab_Run("B3_rigid_smoothFast_far_one")
+-- HandLab_Run("B4_rigid_instant_parkY_one")
+-- HandLab_Run("B5_rigid_instant_yawOnly_one")
+--
+-- -- Order of operations
+-- HandLab_Run("C1_cardsThenZone_instant_far_one")
+-- HandLab_Run("C2_zoneThenCards_instant_far_one")
+--
+-- -- Lock hypothesis
+-- HandLab_Run("D1_lock_zoneOnly_far_one")
+-- HandLab_Run("D2_lock_rigid_far_one")
+--
+-- -- Concurrency
+-- HandLab_Run("E1_zoneOnly_instant_far_pair")
+-- HandLab_Run("E2_rigid_instant_far_pair")
+-- HandLab_Run("E3_zoneOnly_instant_far_allFive")
+-- HandLab_Run("E4_rigid_instant_far_allFive")
+--
+-- -- Pulse / frequency
+-- HandLab_Run("F1_zoneOnly_pulseFast_nudge_one")
+-- HandLab_Run("F2_zoneOnly_pulseSlow_nudge_one")
+-- HandLab_Run("F3_rigid_pulseFast_nudge_one")
+-- HandLab_Run("F4_rigid_repeatFar_one")
+--
+-- -- Controls
+-- HandLab_Run("G1_control_movePlayerHand_far_one")
+-- HandLab_Run("G2_control_movePlayerHand_smooth_near_one")
+-- HandLab_Run("G3_setHandTransform_near_one")
+--
+-- -- Filtered battery (each cell restores at start; last result left in place)
+-- HandLab_Battery("zoneOnly")
+-- HandLab_Battery("rigidCoMove")
+-- HandLab_Battery("far")
+--
+-- #endregion
