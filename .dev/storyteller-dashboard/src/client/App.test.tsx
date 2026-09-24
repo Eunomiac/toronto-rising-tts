@@ -50,7 +50,7 @@ describe("App shell", () => {
     expect(screen.getByRole("button", { name: "Claim Port" })).toBeInTheDocument();
   });
 
-  it("shows Release Port when the dashboard holds 39998", async () => {
+  it("shows Release Port when the dashboard TTS bridge is connected", async () => {
     vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo) => {
       const url = String(input);
       if (url.includes("/api/tts-bridge-status")) {
@@ -58,8 +58,9 @@ describe("App shell", () => {
           ok: true,
           json: async () => ({
             usable: true,
-            editorPort: "held_by_dashboard",
-            message: "Dashboard holds port 39998; TTS command port is reachable."
+            mode: "gateway",
+            editorPort: "via_gateway",
+            message: "Connected through the TTS Tools gateway (Cursor)."
           })
         };
       }

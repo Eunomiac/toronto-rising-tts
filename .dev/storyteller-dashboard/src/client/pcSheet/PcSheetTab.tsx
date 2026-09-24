@@ -1,6 +1,6 @@
 import { gsap } from "gsap";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent, type ReactElement } from "react";
-import { fetchBridgeStatus, reclaimEditorPort, releaseEditorPort } from "../ttsBridge.js";
+import { fetchBridgeStatus, isBridgeConnected, reclaimEditorPort, releaseEditorPort } from "../ttsBridge.js";
 import { applySheetCommands, fetchLiveSnapshot } from "./bridge.js";
 import { applyLocal } from "./applyLocal.js";
 import { createApplyQueue } from "./applyQueue.js";
@@ -20,8 +20,8 @@ const POLL_MS = 2500;
 const emptyLiveSnapshot = (): SheetSnapshot => ({ ok: false, seats: [] });
 
 const friendlyBridgeMessage = (message: string): string => {
-  if (/Claim Port first|not holding port 39998/i.test(message)) {
-    return "Dashboard is not holding the editor port. Click Claim Port to talk to Tabletop Simulator.";
+  if (/Claim Port first|not holding port 39998|bridge is disconnected/i.test(message)) {
+    return "Dashboard is not connected to Tabletop Simulator. Click Claim Port to connect (uses the TTS Tools gateway when Cursor is open).";
   }
   if (/Command failed:|powershell\.exe|netstat\.exe/i.test(message)) {
     return "Could not inspect port 39998.";
@@ -70,12 +70,12 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
     inFlight.current = true;
     try {
       const bridge = await fetchBridgeStatus();
-      const holding = bridge.editorPort === "held_by_dashboard";
+      const holding = isBridgeConnected(bridge);
       setHoldingPort(holding);
       if (!holding) {
         showOffline(
           bridge.message ||
-            "Dashboard is not holding the editor port. Click Claim Port to talk to Tabletop Simulator."
+            "Dashboard is not connected to Tabletop Simulator. Click Claim Port to connect."
         );
         return;
       }
@@ -160,7 +160,7 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
     }
     setReclaiming(true);
     setBusy(true);
-    setStatus("Claiming port 39998…");
+    setStatus("Connecting TTS bridge…");
     try {
       const result = await reclaimEditorPort();
       setHoldingPort(result.listening);
@@ -170,7 +170,7 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
       await refresh(true);
     } catch (error: unknown) {
       setHoldingPort(false);
-      showOffline(error instanceof Error ? error.message : "Could not claim port 39998.");
+      showOffline(error instanceof Error ? error.message : "Could not connect the TTS bridge.");
     } finally {
       setBusy(false);
       setReclaiming(false);
@@ -183,13 +183,13 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
     }
     setReclaiming(true);
     setBusy(true);
-    setStatus("Releasing port 39998…");
+    setStatus("Disconnecting TTS bridge…");
     try {
       const result = await releaseEditorPort();
       setHoldingPort(false);
       showOffline(result.message);
     } catch (error: unknown) {
-      setStatus(error instanceof Error ? error.message : "Could not release port 39998.");
+      setStatus(error instanceof Error ? error.message : "Could not disconnect the TTS bridge.");
     } finally {
       setBusy(false);
       setReclaiming(false);
@@ -293,8 +293,8 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
             disabled={reclaiming}
             onClick={() => void (holdingPort ? releasePort() : claimPort())}
             title={holdingPort
-              ? "Release port 39998 so TTS Tools can use it"
-              : "Stop anything using port 39998, then try Tabletop Simulator again"}
+              ? "Disconnect the Dashboard TTS bridge (gateway or direct)"
+              : "Connect via the TTS Tools gateway when Cursor is open, or take port 39998 directly"}
           >
             {reclaiming ? (holdingPort ? "Releasing…" : "Claiming…") : (holdingPort ? "Release Port" : "Claim Port")}
           </button>

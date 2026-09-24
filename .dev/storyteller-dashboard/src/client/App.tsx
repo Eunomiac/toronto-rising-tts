@@ -290,7 +290,7 @@ export const App = (): ReactElement => {
       >
         <div className="lua-toolbar">
           <button id="lua-run" type="button">Run</button>
-          <div className="status idle" id="lua-status">Uses the same External Editor hook as Execute Code. Disable the TTS Tools extension first — only one editor can listen on 39998.</div>
+          <div className="status idle" id="lua-status">Uses the TTS Tools gateway when Cursor is open; otherwise binds editor port 39998 directly. Claim / Release on the PCs tab connects or disconnects this shared bridge.</div>
         </div>
         <textarea id="lua-script" spellCheck={false} placeholder={'print("Hello from the Storyteller Dashboard")'}></textarea>
         <pre className="lua-output" id="lua-output"></pre>

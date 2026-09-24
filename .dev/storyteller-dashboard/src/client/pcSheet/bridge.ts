@@ -167,7 +167,7 @@ const SNAPSHOT_SCRIPT = [
 export const fetchSheetSnapshot = async (): Promise<SheetSnapshot> => {
   const result = await executeLua(SNAPSHOT_SCRIPT);
   if (result.timedOut) {
-    throw new Error("TTS did not answer. Keep External Editor on and the TTS Tools extension off.");
+    throw new Error("TTS did not answer. Keep External Editor on; with Cursor open the Dashboard uses the TTS Tools gateway.");
   }
   return parseSnapshotJson(extractSnapshotJson(result));
 };
@@ -184,7 +184,7 @@ export const applySheetCommands = async (commands: readonly ApplyCommand[]): Pro
   ].join("\n");
   const result = await executeLua(script);
   if (result.timedOut) {
-    throw new Error("TTS did not answer. Keep External Editor on and the TTS Tools extension off.");
+    throw new Error("TTS did not answer. Keep External Editor on; with Cursor open the Dashboard uses the TTS Tools gateway.");
   }
   return parseSnapshotJson(extractSnapshotJson(result));
 };

@@ -8,8 +8,15 @@ export type ExecuteLuaResult = {
 export type BridgeStatus = {
   readonly usable: boolean;
   readonly message: string;
-  readonly editorPort?: "held_by_dashboard" | "free" | "in_use";
+  readonly mode?: "gateway" | "direct" | "disconnected";
+  readonly editorPort?: "via_gateway" | "held_by_dashboard" | "free" | "in_use";
 };
+
+/** True when the Dashboard has an active TTS link (gateway or direct). */
+export const isBridgeConnected = (status: BridgeStatus): boolean =>
+  status.usable === true
+  || status.editorPort === "via_gateway"
+  || status.editorPort === "held_by_dashboard";
 
 export const luaLongString = (value: string): string => {
   let n = 0;

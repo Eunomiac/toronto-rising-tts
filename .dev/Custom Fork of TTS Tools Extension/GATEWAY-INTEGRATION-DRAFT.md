@@ -1,6 +1,6 @@
 # TTS Tools Gateway — Integration Guide (DRAFT)
 
-> **Status:** Control protocol + failover implemented (`packages/tts-gateway`, `@tts-tools/gateway-client` **0.2.0**, extension **2.5.0**). **Not** Marketplace-published yet. APIs may still change before a public release.
+> **Status:** Control protocol + failover implemented (`packages/tts-gateway`, `@tts-tools/gateway-client` **0.2.0**, extension **2.5.0**). Storyteller Dashboard uses Layer 1 (`routeTag: DASHBOARD`). **Not** Marketplace-published yet. APIs may still change before a public release.
 
 **Who this is for:** Authors of local tools that want to talk to Tabletop Simulator’s External Editor API **at the same time** as the TTS Tools VS Code / Cursor extension (or other registered apps).
 
@@ -118,6 +118,8 @@ export async function getTts(): Promise<GatewaySession> {
 ```
 
 Use **one** bridge for the whole app. Do not open multiple competing 39998 listeners inside one process.
+
+**Reference implementation:** Toronto Rising Storyteller Dashboard (`.dev/storyteller-dashboard/src/server/ttsExecuteLua.ts`) — `routeTag: "DASHBOARD"`, Claim/Release as connect/disconnect only.
 
 ### Optional: tagged messages from Lua
 
@@ -264,3 +266,4 @@ Planned for Marketplace readiness: a user-local token so random processes cannot
 | draft-0 | Preliminary README aligned with fork design notes. Not implemented. |
 | draft-1 | Control port **39997** frozen; NDJSON shapes documented; source implementation in tts-tools 2.4.0. |
 | draft-2 | Epic D: failover modes `gateway` / `direct` / `disconnected`; PROTOCOL.md Layer 2; extension 2.5.0 / client 0.2.0. |
+| draft-3 | Epic E: Storyteller Dashboard single bridge via `@tts-tools/gateway-client` (`DASHBOARD` tag). |

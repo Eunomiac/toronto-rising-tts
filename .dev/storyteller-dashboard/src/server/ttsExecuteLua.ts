@@ -1,17 +1,9 @@
-import net, { type Server } from "node:net";
+import {
+  connectGateway,
+  type GatewaySession,
+  type GatewayStatus
+} from "@tts-tools/gateway-client";
 import { reclaimEditorPort } from "./ttsEditorPort.js";
-
-const TTS_COMMAND_PORT = 39999;
-const TTS_EDITOR_PORT = 39998;
-
-type SocketLike = {
-  on(event: string, cb: (data: Uint8Array) => void): void;
-  once(event: string, cb: (err?: Error) => void): void;
-  connect(port: number, host: string, cb: () => void): void;
-  write(payload: string, encoding: "utf8", cb: (err: Error | null | undefined) => void): void;
-  end(): void;
-  destroy(): void;
-};
 
 type ExecuteResult = {
   readonly prints: readonly string[];
@@ -20,147 +12,103 @@ type ExecuteResult = {
   readonly timedOut: boolean;
 };
 
-const asMessageId = (msg: Record<string, unknown>): number | undefined => {
-  const id = msg["messageID"];
-  if (typeof id === "number" && Number.isFinite(id)) {
-    return id;
-  }
-  if (typeof id === "string" && /^\d+$/.test(id)) {
-    return Number(id);
-  }
-  return undefined;
+export type DashboardBridgeStatus = {
+  readonly mode: GatewayStatus["mode"];
+  readonly editorPort: "via_gateway" | "held_by_dashboard" | "free";
+  readonly commandPort: "reachable" | "unreachable";
+  readonly usable: boolean;
+  readonly message: string;
 };
 
-const readJsonFromSocket = (socket: SocketLike): Promise<Record<string, unknown>> =>
-  new Promise((resolve, reject) => {
-    const chunks: Uint8Array[] = [];
-    socket.on("data", (data: Uint8Array) => {
-      chunks.push(data);
-    });
-    socket.once("end", () => {
-      const raw = Buffer.concat(chunks).toString("utf8");
-      if (raw.length === 0) {
-        reject(new Error("Empty JSON payload from TTS"));
-        return;
-      }
-      try {
-        const parsed: unknown = JSON.parse(raw);
-        if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
-          reject(new Error("TTS JSON root must be an object"));
-          return;
-        }
-        resolve(parsed as Record<string, unknown>);
-      } catch (error: unknown) {
-        reject(error instanceof Error ? error : new Error(String(error)));
-      }
-    });
-    socket.once("error", reject);
-  });
-
-const sendToTts = (message: object): Promise<void> =>
-  new Promise((resolve, reject) => {
-    const client: SocketLike = new net.Socket();
-    client.once("error", (error?: Error) => {
-      client.destroy();
-      const detail = error?.message ?? "socket error";
-      reject(new Error(
-        detail.includes("ECONNREFUSED")
-          ? "Could not reach Tabletop Simulator on localhost 39999. Load a game with External Editor enabled."
-          : detail
-      ));
-    });
-    client.connect(TTS_COMMAND_PORT, "127.0.0.1", () => {
-      client.write(JSON.stringify(message), "utf8", (writeErr: Error | null | undefined) => {
-        if (writeErr) {
-          client.destroy();
-          reject(writeErr);
-          return;
-        }
-        client.end();
-        resolve();
-      });
-    });
-  });
+const ROUTE_TAG = "DASHBOARD";
+const CLIENT_ID = "storyteller-dashboard";
+const EXECUTE_TIMEOUT_MS = 15_000;
 
 const wait = (ms: number): Promise<void> => new Promise((resolve) => {
   setTimeout(resolve, ms);
 });
 
+const statusMessage = (mode: GatewayStatus["mode"], detail?: string): string => {
+  if (mode === "gateway") {
+    return detail ?? "Connected through the TTS Tools gateway (Cursor).";
+  }
+  if (mode === "direct") {
+    return detail ?? "Connected directly on editor port 39998 (gateway not running).";
+  }
+  return detail ?? "Not connected to Tabletop Simulator. Click Claim Port to connect.";
+};
+
 /**
- * Same External Editor hook as TTS Tools Execute Code:
- * TTS listens on 39999; this dashboard listens on 39998 (only one editor at a time).
+ * Single Dashboard TTS bridge: thin wrapper over `@tts-tools/gateway-client`.
+ * Prefer gateway when Cursor/TTS Tools is up; otherwise bind 39998 directly and rejoin later.
  */
 export class DashboardTtsBridge {
-  private servers: Server[] = [];
-  private released = false;
-  private readonly inboundHandlers = new Set<(msg: Record<string, unknown>) => void>();
+  private session: GatewaySession | undefined;
+  private mode: GatewayStatus["mode"] = "disconnected";
+  private detail: string | undefined;
+  /** After Release Port — do not auto-connect until Claim. */
+  private optedOut = false;
+  private connectPromise: Promise<GatewaySession> | undefined;
   private chain: Promise<void> = Promise.resolve();
 
-  private get isListening(): boolean {
-    return this.servers.length > 0;
-  }
-
-  private attachSocketServer(): Server {
-    return net.createServer((socket: SocketLike) => {
-      void readJsonFromSocket(socket).then(
-        (msg) => {
-          for (const handler of this.inboundHandlers) {
-            handler(msg);
-          }
-        },
-        () => undefined
-      );
+  private bindSession = (session: GatewaySession): void => {
+    this.session = session;
+    this.mode = session.mode;
+    session.on("status", (status) => {
+      this.mode = status.mode;
+      this.detail = status.detail;
+      if (status.mode === "disconnected") {
+        this.session = undefined;
+      }
     });
-  }
+  };
 
-  private listenOn(host: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const server = this.attachSocketServer();
-      server.once("error", (error?: Error) => {
-        const detail = error?.message ?? "";
-        if (detail.includes("EADDRINUSE")) {
-          reject(new Error(
-            "Port 39998 is already in use. Disable the TTS Tools extension (or any other External Editor) while using this Lua tab."
-          ));
-          return;
-        }
-        reject(error ?? new Error("Could not listen on 39998."));
-      });
-      server.listen(TTS_EDITOR_PORT, host, () => {
-        this.servers.push(server);
-        resolve();
-      });
-    });
-  }
-
-  async ensureListening(hosts: readonly string[] = ["127.0.0.1"]): Promise<void> {
-    if (this.released) {
-      throw new Error("Dashboard is not holding port 39998. Click Claim Port first.");
-    }
-    if (this.isListening) {
+  private dropSession = async (): Promise<void> => {
+    const current = this.session;
+    this.session = undefined;
+    this.connectPromise = undefined;
+    this.mode = "disconnected";
+    this.detail = undefined;
+    if (!current) {
       return;
     }
-    const errors: string[] = [];
-    for (const host of hosts) {
-      try {
-        await this.listenOn(host);
-      } catch (error: unknown) {
-        errors.push(`${host}: ${error instanceof Error ? error.message : String(error)}`);
-      }
+    try {
+      await current.close();
+    } catch {
+      // ignore
     }
-    if (!this.isListening) {
-      throw new Error(errors[0] ?? "Could not listen on 39998.");
+  };
+
+  private openSession = async (): Promise<GatewaySession> => {
+    const session = await connectGateway({
+      routeTag: ROUTE_TAG,
+      clientId: CLIENT_ID,
+      failover: true
+    });
+    this.bindSession(session);
+    this.detail = undefined;
+    return session;
+  };
+
+  private ensureSession = async (): Promise<GatewaySession> => {
+    if (this.optedOut) {
+      throw new Error("Dashboard TTS bridge is disconnected. Click Claim Port to connect.");
     }
-  }
+    if (this.session && this.mode !== "disconnected") {
+      return this.session;
+    }
+    if (!this.connectPromise) {
+      this.connectPromise = this.openSession().finally(() => {
+        this.connectPromise = undefined;
+      });
+    }
+    return this.connectPromise;
+  };
 
-  async stopListening(): Promise<void> {
-    const servers = this.servers;
-    this.servers = [];
-    await Promise.all(servers.map((server) => new Promise<void>((resolve) => {
-      server.close(() => resolve());
-    })));
-  }
-
+  /**
+   * Connect (or reconnect). Tries the gateway/client first; only force-clears 39998
+   * if that fails (escape hatch when another tool holds the port and no gateway is up).
+   */
   async reclaimAndListen(): Promise<{
     readonly killed: readonly { readonly pid: number; readonly name: string }[];
     readonly leftover: readonly { readonly pid: number; readonly name: string }[];
@@ -168,94 +116,139 @@ export class DashboardTtsBridge {
     readonly listening: boolean;
     readonly message: string;
   }> {
-    this.released = false;
-    await this.stopListening();
-    let result: Awaited<ReturnType<typeof reclaimEditorPort>>;
+    this.optedOut = false;
+    await this.dropSession();
+
     try {
-      result = await reclaimEditorPort(process.pid);
-    } catch (error: unknown) {
-      try {
-        await this.ensureListening(["0.0.0.0", "::"]);
-      } catch {
-        await this.ensureListening();
-      }
-      const raw = error instanceof Error ? error.message : "Could not inspect port 39998.";
+      await this.ensureSession();
       return {
         killed: [],
         leftover: [],
         failed: [],
-        listening: this.isListening,
-        message: /Command failed:/i.test(raw) ? "Could not inspect port 39998." : raw
+        listening: this.mode !== "disconnected",
+        message: statusMessage(this.mode)
+      };
+    } catch (firstError: unknown) {
+      // Fall through to reclaim.
+      void firstError;
+    }
+
+    let killed: { pid: number; name: string }[] = [];
+    let leftover: { pid: number; name: string }[] = [];
+    let failed: { pid: number; error: string }[] = [];
+    let reclaimNote = "";
+
+    try {
+      const result = await reclaimEditorPort(process.pid);
+      killed = result.killed.map((row) => ({ pid: row.pid, name: row.name }));
+      leftover = result.leftover
+        .filter((row) => row.pid !== process.pid)
+        .map((row) => ({ pid: row.pid, name: row.name }));
+      failed = result.failed.map((row) => ({ pid: row.pid, error: row.error }));
+      const stopped = killed.length === 0
+        ? "No other process was using port 39998."
+        : `Stopped ${killed.map((row) => `${row.name} (${row.pid})`).join(", ")}.`;
+      const leftoverNote = leftover.length === 0
+        ? ""
+        : ` Still held by ${leftover.map((row) => `${row.name} (${row.pid})`).join(", ")}.`;
+      const failedNote = failed.length === 0
+        ? ""
+        : ` Could not stop ${failed.map((row) => String(row.pid)).join(", ")}.`;
+      reclaimNote = `${stopped}${leftoverNote}${failedNote} `;
+      await wait(400);
+    } catch (error: unknown) {
+      const raw = error instanceof Error ? error.message : "Could not inspect port 39998.";
+      reclaimNote = (/Command failed:/i.test(raw) ? "Could not inspect port 39998." : raw) + " ";
+    }
+
+    try {
+      await this.ensureSession();
+      return {
+        killed,
+        leftover,
+        failed,
+        listening: this.mode !== "disconnected",
+        message: `${reclaimNote}${statusMessage(this.mode)}`
+      };
+    } catch (error: unknown) {
+      const detail = error instanceof Error ? error.message : String(error);
+      return {
+        killed,
+        leftover,
+        failed,
+        listening: false,
+        message: `${reclaimNote}Could not connect: ${detail}`
       };
     }
-    await wait(400);
-    try {
-      await this.ensureListening(["0.0.0.0", "::"]);
-    } catch {
-      await wait(800);
-      await this.ensureListening(["0.0.0.0", "::"]);
-    }
-    const killed = result.killed.map((row) => ({ pid: row.pid, name: row.name }));
-    const leftover = result.leftover
-      .filter((row) => row.pid !== process.pid)
-      .map((row) => ({ pid: row.pid, name: row.name }));
-    const listening = this.isListening;
-    const stopped = killed.length === 0
-      ? "No other process was using port 39998."
-      : `Stopped ${killed.map((row) => `${row.name} (${row.pid})`).join(", ")}.`;
-    const leftoverNote = leftover.length === 0
-      ? ""
-      : ` Still held by ${leftover.map((row) => `${row.name} (${row.pid})`).join(", ")}.`;
-    const failedNote = result.failed.length === 0
-      ? ""
-      : ` Could not stop ${result.failed.map((row) => String(row.pid)).join(", ")}.`;
-    return {
-      killed,
-      leftover,
-      failed: result.failed,
-      listening,
-      message: listening
-        ? `${stopped}${leftoverNote}${failedNote} Dashboard now holds the editor port.`
-        : `${stopped}${leftoverNote}${failedNote} Could not take port 39998.`
-    };
   }
 
   async releasePort(): Promise<{ listening: boolean; message: string }> {
-    this.released = true;
-    await this.stopListening();
+    this.optedOut = true;
+    await this.dropSession();
     return {
       listening: false,
-      message: "Released port 39998. TTS Tools can take it again."
+      message: "Disconnected the Dashboard TTS bridge. TTS Tools / the gateway can use the editor port."
     };
   }
 
   /**
-   * Local hold state only — do **not** probe 39998/39999 here.
-   * Binding or connecting those ports from a status poll hitch TTS (and the editor).
-   * When the gateway exists, status can go through it without touching TTS.
+   * Local session state only — do **not** probe 39998/39999 here.
+   * Auto-connects when not opted out (gateway preferred, then direct).
    */
-  async getBridgeStatus(): Promise<{
-    editorPort: "held_by_dashboard" | "free" | "in_use";
-    commandPort: "reachable" | "unreachable";
-    usable: boolean;
-    message: string;
-  }> {
-    if (this.isListening) {
+  async getBridgeStatus(): Promise<DashboardBridgeStatus> {
+    if (this.optedOut) {
       return {
-        editorPort: "held_by_dashboard",
-        // Not probed — real reachability is proven on executeLua / snapshot.
+        mode: "disconnected",
+        editorPort: "free",
+        commandPort: "unreachable",
+        usable: false,
+        message: "Dashboard TTS bridge is disconnected. Click Claim Port to connect."
+      };
+    }
+
+    if (!this.session || this.mode === "disconnected") {
+      try {
+        await this.ensureSession();
+      } catch (error: unknown) {
+        const detail = error instanceof Error ? error.message : String(error);
+        return {
+          mode: "disconnected",
+          editorPort: "free",
+          commandPort: "unreachable",
+          usable: false,
+          message: detail.includes("EADDRINUSE") || /already in use/i.test(detail)
+            ? "Editor port 39998 is busy and no gateway answered. Click Claim Port to take it, or start Cursor with TTS Tools."
+            : `Not connected: ${detail}`
+        };
+      }
+    }
+
+    if (this.mode === "gateway") {
+      return {
+        mode: "gateway",
+        editorPort: "via_gateway",
         commandPort: "reachable",
         usable: true,
-        message: "Dashboard holds port 39998."
+        message: statusMessage("gateway", this.detail)
+      };
+    }
+
+    if (this.mode === "direct") {
+      return {
+        mode: "direct",
+        editorPort: "held_by_dashboard",
+        commandPort: "reachable",
+        usable: true,
+        message: statusMessage("direct", this.detail)
       };
     }
 
     return {
-      // "free" means the dashboard is not holding the port — not a live probe of who owns 39998.
+      mode: "disconnected",
       editorPort: "free",
       commandPort: "unreachable",
       usable: false,
-      message: "Dashboard is not holding port 39998. Click Claim Port to talk to Tabletop Simulator."
+      message: statusMessage("disconnected", this.detail)
     };
   }
 
@@ -269,81 +262,57 @@ export class DashboardTtsBridge {
   }
 
   private async runExecute(script: string): Promise<ExecuteResult> {
-    await this.ensureListening();
+    const session = await this.ensureSession();
+    const prints: string[] = [];
+    let luaError: string | undefined;
 
-    return new Promise((resolve, reject) => {
-      const prints: string[] = [];
-      let returnValue: unknown;
-      let luaError: string | undefined;
-      let done = false;
-      let idleTimer: ReturnType<typeof setTimeout> | undefined;
-      let maxTimer: ReturnType<typeof setTimeout> | undefined;
+    const onPrint = (message: string): void => {
+      prints.push(message);
+    };
+    const onError = (payload: Record<string, unknown>): void => {
+      if (typeof payload.error === "string") {
+        luaError = payload.error;
+      } else if (typeof payload.errorMessagePrefix === "string") {
+        luaError = payload.errorMessagePrefix;
+      }
+    };
 
-      const cleanup = (): void => {
-        if (idleTimer !== undefined) {
-          clearTimeout(idleTimer);
-        }
-        if (maxTimer !== undefined) {
-          clearTimeout(maxTimer);
-        }
-        this.inboundHandlers.delete(onMessage);
+    session.on("print", onPrint);
+    session.on("error", onError);
+
+    try {
+      const returnValue = await Promise.race([
+        session.executeLua(script),
+        wait(EXECUTE_TIMEOUT_MS).then(() => {
+          throw new Error("__dashboard_execute_timeout__");
+        })
+      ]);
+      const result: ExecuteResult = {
+        prints,
+        timedOut: false,
+        returnValue
       };
-
-      const finish = (timedOut: boolean): void => {
-        if (done) {
-          return;
-        }
-        done = true;
-        cleanup();
-        resolve({
+      if (luaError !== undefined) {
+        return { ...result, error: luaError };
+      }
+      return result;
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message === "__dashboard_execute_timeout__") {
+        return {
           prints,
-          timedOut,
-          ...(returnValue !== undefined ? { returnValue } : {}),
+          timedOut: true,
           ...(luaError !== undefined ? { error: luaError } : {})
-        });
-      };
-
-      const resetIdle = (ms: number): void => {
-        if (idleTimer !== undefined) {
-          clearTimeout(idleTimer);
-        }
-        idleTimer = setTimeout(() => finish(false), ms);
-      };
-
-      const onMessage = (msg: Record<string, unknown>): void => {
-        if (done) {
-          return;
-        }
-        const id = asMessageId(msg);
-        if (id === 2 || id === 3 || id === 4 || id === 5) {
-          resetIdle(2000);
-        }
-        if (id === 2 && typeof msg["message"] === "string") {
-          prints.push(msg["message"]);
-        }
-        if (id === 3 && typeof msg["error"] === "string") {
-          luaError = msg["error"];
-          finish(false);
-        }
-        if (id === 5 && "returnValue" in msg) {
-          returnValue = msg["returnValue"];
-          finish(false);
-        }
-      };
-
-      this.inboundHandlers.add(onMessage);
-      maxTimer = setTimeout(() => finish(true), 15000);
-
-      void sendToTts({ messageID: 3, guid: "-1", script })
-        .then(() => resetIdle(8000))
-        .catch((error: unknown) => {
-          if (!done) {
-            done = true;
-            cleanup();
-            reject(error instanceof Error ? error : new Error(String(error)));
-          }
-        });
-    });
+        };
+      }
+      if (luaError !== undefined) {
+        return { prints, timedOut: false, error: luaError };
+      }
+      throw error instanceof Error ? error : new Error(message);
+    } finally {
+      session.off("print", onPrint as (...args: unknown[]) => void);
+      session.off("error", onError as (...args: unknown[]) => void);
+    }
   }
 }
 

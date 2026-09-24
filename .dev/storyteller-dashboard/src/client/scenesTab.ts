@@ -1803,7 +1803,7 @@ export const initScenesTab = (): void => {
         throw new Error(result.error ?? `Import failed (${response.status})`);
       }
       if (result.timedOut) {
-        throw new Error("TTS did not answer. Disable TTS Tools and keep External Editor on.");
+        throw new Error("TTS did not answer. Keep External Editor on; with Cursor open the Dashboard uses the TTS Tools gateway.");
       }
       setStatus("success", typeof result.returnValue === "string" ? result.returnValue : "Imported into the scene library.");
     } catch (error: unknown) {
