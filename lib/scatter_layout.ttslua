@@ -181,6 +181,21 @@ end
 -- Arc steps from the midpoint: gold (slot 1) sits at 0; HUD row left→right is 5, 3, 1, 2, 4.
 local PC_SLOT_ARC_STEPS = { 0, 1, -1, 2, -2 }
 
+--- Join-order index → arc step from midpoint (same snake as PC slots).
+--- 1 → 0 (center), 2 → +1 (right), 3 → −1 (left), 4 → +2, 5 → −2, …
+--- @param joinIndex number 1-based order on the control board / orbit slot order
+--- @return number
+local function npcJoinIndexArcStep(joinIndex)
+    local i = math.floor(tonumber(joinIndex) or 0)
+    if i <= 1 then
+        return 0
+    end
+    if i % 2 == 0 then
+        return i / 2
+    end
+    return -(i - 1) / 2
+end
+
 --- Five stable PC slots (1–5) on PC_DEPLOYMENT_ARC. Slot 1 is the midpoint (gold).
 --- @param groupIndex number
 --- @return table[]|nil poses `{ slot, position, rotation }`, string|nil skipReason
@@ -216,10 +231,12 @@ function ScatterLayout.pcSlotPoses(groupIndex)
     return poses, nil
 end
 
---- NPC poses on NPC_DEPLOYMENT_ARC. `n=1` at midpoint; `n≥2` even with MIN/MAX clamp.
+--- NPC poses on NPC_DEPLOYMENT_ARC. Join order snakes from the midpoint (same as PC slots):
+--- 1st at center, 2nd right, 3rd left, 4th further right, …
+--- Spacing still uses MIN/MAX clamp of `NPC_DEPLOYMENT_ARC / (n − 1)`.
 --- @param groupIndex number
 --- @param npcCount number
---- @return table[] poses `{ index, position, rotation }`
+--- @return table[] poses `{ index, position, rotation }` (`index` = join order 1..n)
 function ScatterLayout.npcPoses(groupIndex, npcCount)
     local n = math.floor(tonumber(npcCount) or 0)
     if n < 1 then
@@ -257,11 +274,7 @@ function ScatterLayout.npcPoses(groupIndex, npcCount)
     end
     local poses = {}
     for i = 1, n do
-        local az = midAz
-        if n >= 2 then
-            local offset = (i - 1) - (n - 1) / 2
-            az = midAz + offset * spacing
-        end
+        local az = midAz + npcJoinIndexArcStep(i) * spacing
         local pos = U.rotateAroundPoint(G, rnpc, az, y)
         -- lookAtYawDeg already applies FIGURINE_YAW_OFFSET_DEG (180° mesh correction).
         -- Do not add a second +180 here — that double-flipped figurines while lights stayed correct.

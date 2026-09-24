@@ -337,10 +337,19 @@ The relevant positioning geometry is:
 
 - `n = 0`: nothing to place.
 - `n = 1`: that NPC occupies the midpoint.
-- `n ≥ 2`: unclamped spacing is `NPC_DEPLOYMENT_ARC / (n − 1)` (evenly, including endpoints, centered on the midpoint).
+- `n ≥ 2`: unclamped spacing is `NPC_DEPLOYMENT_ARC / (n − 1)` (angular gap between adjacent snake steps).
   - If that value is **greater** than `NPC_SPACING_MAX`, use `NPC_SPACING_MAX` (cluster around the midpoint; do not stretch across the whole arc).
   - If that value is **less** than `NPC_SPACING_MIN`, use `NPC_SPACING_MIN` (the line will run past the deployment arc) and **broadcast a non-stopping error**.
   - Otherwise use the unclamped value.
+
+**Join-order → arc position** (same center-out snake as PC slots / HUD portraits):
+
+- 1st NPC (control-board / orbit join order) → arc midpoint (step `0`)
+- 2nd → one step **right** of center (`+1`)
+- 3rd → one step **left** of center (`−1`)
+- 4th → further right (`+2`), 5th further left (`−2`), and so on
+
+So for five NPCs the left→right visual order is join indices `5, 3, 1, 2, 4`. Occupancy order on the board does not change; only world poses snake. HUD name lists stay in join order.
 
 NPC-only groups and empty groups are allowed.
 
