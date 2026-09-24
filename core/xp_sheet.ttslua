@@ -98,8 +98,9 @@ local function buildSessionMeta(pid)
   for i = 1, #sessions do
     local s = sessions[i]
     if type(s) == "table" then
-      local sn = math.floor(tonumber(s.sessionNum) or -1)
-      if sn >= 0 and sn < liveN then
+      local sn = math.floor(tonumber(s.sessionNum) or 0)
+      -- Finished = any key below the live session (includes negative pre-session keys).
+      if sn < liveN then
         local g = #(s.gains or {})
         local sp = #(s.spends or {})
         if g > 0 or sp > 0 then
@@ -177,14 +178,15 @@ end
 --- @param pid string
 local function paintLiveBlock(obj, pid)
   local liveN = liveSessionId()
+  local liveTok = XD.sessionIdToken(liveN)
   local stateSession = math.floor(tonumber(S.getStateVal("sessionNum")) or liveN)
   local block = XpLog.getSessionBlock(pid, stateSession)
   if block == nil then
-    setObjAttrs(obj, "xp_title_line_" .. liveN, { active = "false" })
-    setObjAttrs(obj, "xp_listing_wrapper_" .. liveN, { active = "false" })
+    setObjAttrs(obj, "xp_title_line_" .. liveTok, { active = "false" })
+    setObjAttrs(obj, "xp_listing_wrapper_" .. liveTok, { active = "false" })
     for i = 1, XD.LIVE_SLOT_CAP do
-      setObjAttrs(obj, "xp_item_left_" .. liveN .. "_" .. i, { active = "false" })
-      setObjAttrs(obj, "xp_item_right_" .. liveN .. "_" .. i, { active = "false" })
+      setObjAttrs(obj, "xp_item_left_" .. liveTok .. "_" .. i, { active = "false" })
+      setObjAttrs(obj, "xp_item_right_" .. liveTok .. "_" .. i, { active = "false" })
     end
     return
   end
@@ -193,48 +195,48 @@ local function paintLiveBlock(obj, pid)
   local spends = block.spends or {}
   local hasEntries = #gains > 0 or #spends > 0
   if not hasEntries then
-    setObjAttrs(obj, "xp_title_line_" .. liveN, { active = "false" })
-    setObjAttrs(obj, "xp_listing_wrapper_" .. liveN, { active = "false" })
+    setObjAttrs(obj, "xp_title_line_" .. liveTok, { active = "false" })
+    setObjAttrs(obj, "xp_listing_wrapper_" .. liveTok, { active = "false" })
     return
   end
 
-  setObjAttrs(obj, "xp_sessionNum_" .. liveN, {
+  setObjAttrs(obj, "xp_sessionNum_" .. liveTok, {
     text = XD.sessionTitleUpper(block.sessionDisplay, stateSession),
   })
-  setObjAttrs(obj, "xp_sessionDate_" .. liveN, {
+  setObjAttrs(obj, "xp_sessionDate_" .. liveTok, {
     text = XD.formatShortDate(block.date),
   })
-  setObjAttrs(obj, "xp_summation_" .. liveN, {
+  setObjAttrs(obj, "xp_summation_" .. liveTok, {
     text = XD.formatSummation(block.prevTotal, block.gainTotal, block.spendTotal),
   })
-  setObjAttrs(obj, "xp_total_" .. liveN, {
+  setObjAttrs(obj, "xp_total_" .. liveTok, {
     text = tostring(math.floor(tonumber(block.newTotal) or 0)) .. " XP",
   })
 
   for i = 1, XD.LIVE_SLOT_CAP do
     local g = gains[i]
     if g ~= nil then
-      setObjAttrs(obj, "xp_item_left_" .. liveN .. "_" .. i, { active = "true" })
-      setObjAttrs(obj, "xp_gainNum_" .. liveN .. "_" .. i, {
+      setObjAttrs(obj, "xp_item_left_" .. liveTok .. "_" .. i, { active = "true" })
+      setObjAttrs(obj, "xp_gainNum_" .. liveTok .. "_" .. i, {
         text = "+" .. tostring(g.amount) .. " XP",
       })
-      setObjAttrs(obj, "xp_gainDesc_" .. liveN .. "_" .. i, {
+      setObjAttrs(obj, "xp_gainDesc_" .. liveTok .. "_" .. i, {
         text = tostring(g.description or ""),
       })
     else
-      setObjAttrs(obj, "xp_item_left_" .. liveN .. "_" .. i, { active = "false" })
+      setObjAttrs(obj, "xp_item_left_" .. liveTok .. "_" .. i, { active = "false" })
     end
     local s = spends[i]
     if s ~= nil then
-      setObjAttrs(obj, "xp_item_right_" .. liveN .. "_" .. i, { active = "true" })
-      setObjAttrs(obj, "xp_spendNum_" .. liveN .. "_" .. i, {
+      setObjAttrs(obj, "xp_item_right_" .. liveTok .. "_" .. i, { active = "true" })
+      setObjAttrs(obj, "xp_spendNum_" .. liveTok .. "_" .. i, {
         text = "−" .. tostring(s.amount) .. " XP",
       })
-      setObjAttrs(obj, "xp_spendDesc_" .. liveN .. "_" .. i, {
+      setObjAttrs(obj, "xp_spendDesc_" .. liveTok .. "_" .. i, {
         text = tostring(s.description or ""),
       })
     else
-      setObjAttrs(obj, "xp_item_right_" .. liveN .. "_" .. i, { active = "false" })
+      setObjAttrs(obj, "xp_item_right_" .. liveTok .. "_" .. i, { active = "false" })
     end
   end
 
@@ -269,9 +271,10 @@ local function applyPagination(obj, pid, pageIndex)
     local sn = allNums[i]
     if not seen[sn] then
       seen[sn] = true
+      local tok = XD.sessionIdToken(sn)
       local active = onPage[sn] == true
-      setObjAttrs(obj, "xp_title_line_" .. sn, { active = active and "true" or "false" })
-      setObjAttrs(obj, "xp_listing_wrapper_" .. sn, { active = active and "true" or "false" })
+      setObjAttrs(obj, "xp_title_line_" .. tok, { active = active and "true" or "false" })
+      setObjAttrs(obj, "xp_listing_wrapper_" .. tok, { active = active and "true" or "false" })
     end
   end
 

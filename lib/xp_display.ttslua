@@ -86,14 +86,30 @@ function XD.numberToWords(n)
 end
 
 --- Session display title for state / sheet (title case, not uppercase).
+--- Pre-session negative keys should set `sessionDisplay` explicitly in authored data;
+--- the fallback here is only a last resort.
 --- @param sessionNum number
---- @return string e.g. "Character Creation", "Session One"
+--- @return string e.g. "Character Creation", "Session One", "Pre-Session One"
 function XD.sessionDisplayForNum(sessionNum)
   local n = math.floor(tonumber(sessionNum) or 0)
   if n == 0 then
     return "Character Creation"
   end
+  if n < 0 then
+    return "Pre-Session " .. XD.numberToWords(-n)
+  end
   return "Session " .. XD.numberToWords(n)
+end
+
+--- XmlUI-safe id token for a session key. Negatives become `m1` for -1 (no minus in the id).
+--- @param sessionNum number
+--- @return string
+function XD.sessionIdToken(sessionNum)
+  local n = math.floor(tonumber(sessionNum) or 0)
+  if n < 0 then
+    return "m" .. tostring(-n)
+  end
+  return tostring(n)
 end
 
 --- Uppercase form for sheet title bar.

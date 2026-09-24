@@ -37,7 +37,16 @@ The XP modal shows the most recent timeline entry for the current session with a
 
 ### Ids and bake
 
-Element ids use the **session number** (`xp_sessionNum_2`, `xp_gainNum_2_1`, …). Mid-week bake (`npm run csheet-xp-log:bake`) reads the latest TTS save’s `LuaScriptState`, writes finished sessions (`sessionNum < gameState.sessionNum`) into `lib/csheet_xp_log_baked.ttslua`, and stamps `bakedForSessionNum`. Live placeholders use that stamp’s session id. If `sessionNum` advances without a bake, warn the Storyteller only; the live placeholder block still receives current-session paint.
+Element ids use a **session id token** derived from the session key: positive/zero stay as digits (`xp_sessionNum_2`), negatives use an `m` prefix so XmlUI ids stay safe (`-1` → `xp_sessionNum_m1`). Mid-week bake (`npm run csheet-xp-log:bake`) reads the latest TTS save’s `LuaScriptState`, writes finished sessions (`session key < gameState.sessionNum`, including negatives) into `lib/csheet_xp_log_baked.ttslua`, and stamps `bakedForSessionNum`. Live placeholders use that stamp’s session id. If `sessionNum` advances without a bake, warn the Storyteller only; the live placeholder block still receives current-session paint.
+
+### Pre-session blocks (before Session One)
+
+When Character Creation / prologue XP needs more than one page (~20 lines), split it across **negative integer** session keys, oldest first:
+
+* `-2`, `-1`, then `0` (“Character Creation”), then `1` (“Session One”), …
+* Always set `"sessionDisplay"` yourself on negative keys (e.g. `"Prelude"`, `"Chargen — Merits"`). The fallback title is `"Pre-Session One"` etc., which is rarely what you want.
+* Chain `"prevTotal"` / `"newTotal"` across those blocks in authored order (more-negative → closer to zero).
+* Do **not** use decimal keys (`0.1`); they floor to `0` and collide.
 
 ### Oversized sessions
 

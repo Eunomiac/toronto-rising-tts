@@ -50,7 +50,15 @@ function numberToWords(n) {
 function sessionDisplayForNum(sessionNum) {
   const n = Math.floor(Number(sessionNum) || 0);
   if (n === 0) return "Character Creation";
+  if (n < 0) return `Pre-Session ${numberToWords(-n)}`;
   return `Session ${numberToWords(n)}`;
+}
+
+/** XmlUI-safe id token: -1 → "m1", 2 → "2" */
+function sessionIdToken(sessionNum) {
+  const n = Math.floor(Number(sessionNum) || 0);
+  if (n < 0) return `m${-n}`;
+  return String(n);
 }
 
 function sessionTitleUpper(sessionDisplay, sessionNum) {
@@ -92,6 +100,7 @@ const PAGE_LINE_BUDGET = 20;
 module.exports = {
   numberToWords,
   sessionDisplayForNum,
+  sessionIdToken,
   sessionTitleUpper,
   formatShortDate,
   formatSummation,

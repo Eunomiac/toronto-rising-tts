@@ -137,6 +137,7 @@ end
 --- @return string
 local function renderSessionBlock(sessionNum, session, active, isLive)
   local n = math.floor(tonumber(sessionNum) or 0)
+  local tok = XD.sessionIdToken(n)
   local activeAttr = active and "true" or "false"
   local title = esc(session.titleUpper or XD.sessionTitleUpper(session.sessionDisplay, n))
   local dateText = esc(session.dateDisplay or "")
@@ -145,41 +146,41 @@ local function renderSessionBlock(sessionNum, session, active, isLive)
 
   local parts = {}
   parts[#parts + 1] = string.format(
-    '<HorizontalLayout id="xp_title_line_%d" class="xp_title_line" active="%s">',
-    n,
+    '<HorizontalLayout id="xp_title_line_%s" class="xp_title_line" active="%s">',
+    tok,
     activeAttr
   )
   parts[#parts + 1] = '<HorizontalLayout class="xp_title_line_left">'
   parts[#parts + 1] = string.format(
-    '<Text id="xp_sessionNum_%d" class="xp_session_num" text="%s" />',
-    n,
+    '<Text id="xp_sessionNum_%s" class="xp_session_num" text="%s" />',
+    tok,
     title
   )
   parts[#parts + 1] = string.format(
-    '<Text id="xp_sessionDate_%d" class="xp_session_date" text="%s" />',
-    n,
+    '<Text id="xp_sessionDate_%s" class="xp_session_date" text="%s" />',
+    tok,
     dateText
   )
   parts[#parts + 1] = "</HorizontalLayout>"
   parts[#parts + 1] = '<HorizontalLayout class="xp_title_line_right">'
   parts[#parts + 1] = string.format(
-    '<Text id="xp_summation_%d" class="xp_summation" text="%s" />',
-    n,
+    '<Text id="xp_summation_%s" class="xp_summation" text="%s" />',
+    tok,
     summation
   )
   parts[#parts + 1] = string.format(
-    '<Text id="xp_total_%d" class="xp_total" text="%s" />',
-    n,
+    '<Text id="xp_total_%s" class="xp_total" text="%s" />',
+    tok,
     totalText
   )
   parts[#parts + 1] = "</HorizontalLayout></HorizontalLayout>"
 
   parts[#parts + 1] = string.format(
-    '<HorizontalLayout id="xp_listing_wrapper_%d" class="xp_listing_wrapper" active="%s">',
-    n,
+    '<HorizontalLayout id="xp_listing_wrapper_%s" class="xp_listing_wrapper" active="%s">',
+    tok,
     activeAttr
   )
-  parts[#parts + 1] = string.format('<GridLayout id="xp_listing_left_%d" class="xp_listing">', n)
+  parts[#parts + 1] = string.format('<GridLayout id="xp_listing_left_%s" class="xp_listing">', tok)
 
   local gains = session.gains or {}
   local spends = session.spends or {}
@@ -198,20 +199,20 @@ local function renderSessionBlock(sessionNum, session, active, isLive)
     local numText = g and esc("+" .. tostring(g.amount) .. " XP") or ""
     local descText = g and esc(g.description) or ""
     parts[#parts + 1] = string.format(
-      '<HorizontalLayout id="xp_item_left_%d_%d" class="xp_item" active="%s">',
-      n,
+      '<HorizontalLayout id="xp_item_left_%s_%d" class="xp_item" active="%s">',
+      tok,
       i,
       rowActive
     )
     parts[#parts + 1] = string.format(
-      '<Text id="xp_gainNum_%d_%d" class="xp_gain_num" text="%s" />',
-      n,
+      '<Text id="xp_gainNum_%s_%d" class="xp_gain_num" text="%s" />',
+      tok,
       i,
       numText
     )
     parts[#parts + 1] = string.format(
-      '<Text id="xp_gainDesc_%d_%d" class="xp_gain_desc" text="%s" />',
-      n,
+      '<Text id="xp_gainDesc_%s_%d" class="xp_gain_desc" text="%s" />',
+      tok,
       i,
       descText
     )
@@ -219,27 +220,27 @@ local function renderSessionBlock(sessionNum, session, active, isLive)
   end
   parts[#parts + 1] = "</GridLayout>"
 
-  parts[#parts + 1] = string.format('<GridLayout id="xp_listing_right_%d" class="xp_listing">', n)
+  parts[#parts + 1] = string.format('<GridLayout id="xp_listing_right_%s" class="xp_listing">', tok)
   for i = 1, spendSlots do
     local s = spends[i]
     local rowActive = (s ~= nil) and "true" or "false"
     local numText = s and esc("−" .. tostring(s.amount) .. " XP") or ""
     local descText = s and esc(s.description) or ""
     parts[#parts + 1] = string.format(
-      '<HorizontalLayout id="xp_item_right_%d_%d" class="xp_item" active="%s">',
-      n,
+      '<HorizontalLayout id="xp_item_right_%s_%d" class="xp_item" active="%s">',
+      tok,
       i,
       rowActive
     )
     parts[#parts + 1] = string.format(
-      '<Text id="xp_spendNum_%d_%d" class="xp_spend_num" text="%s" />',
-      n,
+      '<Text id="xp_spendNum_%s_%d" class="xp_spend_num" text="%s" />',
+      tok,
       i,
       numText
     )
     parts[#parts + 1] = string.format(
-      '<Text id="xp_spendDesc_%d_%d" class="xp_spend_desc" text="%s" />',
-      n,
+      '<Text id="xp_spendDesc_%s_%d" class="xp_spend_desc" text="%s" />',
+      tok,
       i,
       descText
     )
@@ -293,8 +294,9 @@ function M.buildPage6DocumentXml(_stats, seatColor, pd)
   for i = 1, #sessions do
     local s = sessions[i]
     if type(s) == "table" then
-      local sn = math.floor(tonumber(s.sessionNum) or -1)
-      if sn >= 0 and sn < liveN then
+      local sn = math.floor(tonumber(s.sessionNum) or 0)
+      -- Finished = any key below the live session (includes negative pre-session keys).
+      if sn < liveN then
         finished[#finished + 1] = s
       end
     end

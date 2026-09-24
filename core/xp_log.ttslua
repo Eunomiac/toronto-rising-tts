@@ -147,6 +147,25 @@ function XpLog.getCurrentXp(pid)
   return math.floor(tonumber(block.newTotal) or 0)
 end
 
+--- @param log table
+--- @param sessionNum number
+--- @return number newTotal of the latest session with key < sessionNum, else 0
+local function prevSessionNewTotal(log, sessionNum)
+  local n = math.floor(tonumber(sessionNum) or 0)
+  local bestKey = nil
+  local bestTotal = 0
+  for k, block in pairs(log) do
+    local kn = tonumber(k)
+    if kn ~= nil and kn < n and U.Type(block) == "table" then
+      if bestKey == nil or kn > bestKey then
+        bestKey = kn
+        bestTotal = math.floor(tonumber(block.newTotal) or 0)
+      end
+    end
+  end
+  return bestTotal
+end
+
 --- @param pid string
 --- @param sessionNum number
 --- @return table session block
@@ -164,13 +183,7 @@ function XpLog.ensureSessionBlock(pid, sessionNum)
     return existing
   end
 
-  local prevTotal = 0
-  if n > 0 then
-    local prev = getBlock(log, n - 1)
-    if prev ~= nil then
-      prevTotal = math.floor(tonumber(prev.newTotal) or 0)
-    end
-  end
+  local prevTotal = prevSessionNewTotal(log, n)
 
   local block = {
     sessionDisplay = XD.sessionDisplayForNum(n),
