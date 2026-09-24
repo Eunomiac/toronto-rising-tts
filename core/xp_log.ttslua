@@ -436,4 +436,26 @@ function XpLog.replaceLog(pid, raw)
   return true, nil
 end
 
+--- Experience Log shaped for JSON.encode (string session keys).
+--- Numeric Lua keys (including 0 / negatives) are unsafe for TTS JSON object fidelity.
+--- @param pid string|nil
+--- @return table
+function XpLog.exportLogForJson(pid)
+  if type(pid) ~= "string" or pid == "" then
+    return {}
+  end
+  local log = S.getStateVal("playerData", pid, "xp")
+  if U.Type(log) ~= "table" then
+    return {}
+  end
+  local out = {}
+  for k, block in pairs(log) do
+    local n = tonumber(k)
+    if n ~= nil and U.Type(block) == "table" then
+      out[tostring(math.floor(n))] = block
+    end
+  end
+  return out
+end
+
 return XpLog

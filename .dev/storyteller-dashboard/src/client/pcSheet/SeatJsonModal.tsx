@@ -12,17 +12,7 @@ type Props = {
 };
 
 export const SeatJsonModal = ({ seat, applying = false, onClose, onApply }: Props): ReactElement => {
-  // Sheet jewel uses banked `xp`; the modal shows the Experience Log under `xp` so Apply
-  // round-trips the authoring shape (session-keyed object), not the scalar.
-  const { xpLog, xp: bankedXp, ...seatRest } = seat;
-  const json = JSON.stringify(
-    {
-      ...seatRest,
-      xp: Object.keys(xpLog).length > 0 ? xpLog : bankedXp
-    },
-    null,
-    2
-  );
+  const json = JSON.stringify(seat, null, 2);
   const title = seat.charName || seat.charKey || seat.color;
   const [patchText, setPatchText] = useState("");
   const [error, setError] = useState<string | null>(null);

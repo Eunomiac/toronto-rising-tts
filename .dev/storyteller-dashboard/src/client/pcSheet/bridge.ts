@@ -71,9 +71,8 @@ const parseSeat = (value: unknown): SeatSnapshot | null => {
       }
     }
   }
-  // Lua sends banked XP as `xp` (number) and the Experience Log as `xpLog`.
-  const xpLog: Record<string, unknown> = isRecord(value.xpLog) ? { ...value.xpLog } : {};
-  const xp = asNumber(value.xp);
+  // Experience Log object (legacy scalar snapshots → empty log until Save & Play).
+  const xp: Record<string, unknown> = isRecord(value.xp) ? { ...value.xp } : {};
   return {
     color,
     playerId: asString(value.playerId) || undefined,
@@ -106,7 +105,6 @@ const parseSeat = (value: unknown): SeatSnapshot | null => {
     humanity: asTracker(value.humanity),
     bloodPotency: asRating(value.bloodPotency),
     xp,
-    xpLog,
     hunger: asNumber(value.hunger),
     hungerMax: asNumber(value.hungerMax, 5),
     resolvedStatChanges: resolved,

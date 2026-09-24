@@ -116,7 +116,8 @@ const patchSeat = (seat: SeatSnapshot, command: ApplyCommand): SeatSnapshot => {
       return { ...seat, humanity: { ...seat.humanity, base }, humanityMax: base };
     }
     case "xp":
-      return { ...seat, xp: clamp(seat.xp + command.delta, 0, 999) };
+      // Live XP edits go through the ST Experience Log modal; keep seat.xp as the log object.
+      return seat;
     case "hunger":
       return { ...seat, hunger: clamp(seat.hunger + command.delta, 0, seat.hungerMax) };
     case "desire":

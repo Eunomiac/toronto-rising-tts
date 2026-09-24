@@ -638,19 +638,10 @@ local function snapshotSeat(color)
     willpower = copyTracker(stats.willpower),
     humanity = copyTracker(stats.humanity),
     bloodPotency = copyRating(stats.bloodPotency),
+    -- Same Experience Log object as playerData.<pid>.xp (string keys for JSON.encode).
     xp = (function()
       local XpLog = require("core.xp_log")
-      return XpLog.getCurrentXp(pid)
-    end)(),
-    xpLog = (function()
-      if type(pid) ~= "string" then
-        return {}
-      end
-      local log = S.getStateVal("playerData", pid, "xp")
-      if type(log) ~= "table" then
-        return {}
-      end
-      return log
+      return XpLog.exportLogForJson(pid)
     end)(),
     hunger = num(type(pid) == "string" and S.getPlayerVal(color, "hunger") or 0),
     hungerMax = hungerMax,
