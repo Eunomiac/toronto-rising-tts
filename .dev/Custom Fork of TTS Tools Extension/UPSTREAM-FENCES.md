@@ -26,8 +26,9 @@ The author emailed Sebastian (`sebastian.stern.42@gmail.com`, from his own git c
 ### What it means for the fork (as of extension 2.5.0)
 
 - **Fences 1, 5, 6, 8:** Epic A/B already match his intent — `scriptStates` for Lua/XML, bundle write-back on Save & Play, `close()` on deactivate, `returnID` matching + single-flight import, still serial.
-- **Fence 2:** Our `objectSync` reconcile with `pruneMissing` on full `loadingANewGame` already covers the single-folder case: loading a different mod makes every old GUID "vanished," so it is pruned. No separate wipe needed — but worth stating explicitly if we send an upstream PR.
-- **New gap his answer exposes:** In incremental mode we fetch `getJSON` once per object only when `data.json` is **missing**, then reuse the cached file. **Update Object** (`ttsAdapter.updateObject`) bundles from that cached `data.json`, which can be stale if the object's contents changed on the table since. His suggestion — fetch fresh `getJSON` right before Update Object — fixes that and would let us skip the first-load `getJSON` pass entirely (or put it behind a setting).
+- **Fence 2 — partly covered:** `pruneMissing` only walks the **in-memory** loaded-object list (`plugin.getLoadedObjects()`), which starts empty on every Extension Host start and is never rebuilt from disk. So vanished GUIDs are pruned only if they were seen earlier in the **same session**; files from a previous session or a previously loaded mod stay on disk. Per his answer this is harmless for correctness — Save & Play sends only loaded objects (`ttsAdapter` iterates `getLoadedObjects()`), not whatever is on disk — but single-folder users (and agents grepping `.tts/`) can see orphan files. An upstream PR would need a disk-level "delete `*.guid.*` files whose GUID is not in this `scriptStates`" pass to fully replace the wipe.
+- **Regression vs upstream (Update Object):** Upstream refreshed every `data.json` on every load. In incremental mode the fork fetches `getJSON` only when `data.json` is **missing**, then reuses the cached file indefinitely (across sessions). **Update Object** (`ttsAdapter.updateObject`) bundles from that cached `data.json` plus current `.lua`/`.xml`, so if a bag's contents, states, or other properties changed on the table since the first fetch, Update Object can respawn the object with the **old** contents. Workaround today: **Get Object** (single live `getJSON`) or **Save & Play (Full Resync)** before Update Object. Proper fix is his suggestion — fetch live `getJSON` right before Update Object — which also lets the first-load `getJSON` pass become lazy or a setting.
+- **Fence 8 / parallel requests:** The extension's own import is still serial under `importMutex`. Concurrent Lua does now happen **across clients** (extension + Dashboard via the gateway), but every return is matched by `returnID` (`tts-gateway` `returnIds.ts`, `gateway-client` `directSession.ts`, extension `returnIdDemux.ts`) — the missing piece in `@matanlurey/tts-editor` that caused his scrambled-order memory. Relies on TTS echoing `returnID`, which the External Editor API documents and Epics C–E verification exercised.
 
 ### Follow-ups (not started)
 
@@ -188,7 +189,7 @@ Worth a shorter ask if talking savefile too:
 | Fence | Safe to change without asking? | Our plan stance |
 | --- | --- | --- |
 | 1 getJSON vs scriptStates | **Answered** — only for Update Object; he wanted scriptStates back | scriptStates for script/UI (done); follow-up: live `getJSON` at Update Object time |
-| 2 full wipe | **Answered** — legacy; incremental OK if single-folder users still get cleaned | Reconcile + prune vanished GUIDs (done) |
+| 2 full wipe | **Answered** — legacy; incremental OK if single-folder users still get cleaned | Reconcile + in-session prune (done); disk-level orphan prune still missing |
 | 3 reload after Save & Play | Can’t remove — TTS protocol | Skip *redundant* resync after *our* send |
 | 4 two Save & Play modes | Yes if UX-only | Keep |
 | 5 bundled write-back | **Answered** — not intentional | Fixed in fast Save & Play |
