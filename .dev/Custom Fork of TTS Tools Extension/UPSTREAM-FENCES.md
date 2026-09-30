@@ -9,6 +9,52 @@ Related plan: [Changes to TTS Tools Extension.md](./Changes%20to%20TTS%20Tools%2
 
 ---
 
+## Upstream reply — Sebastian Stern (received by 2026-09-29)
+
+The author emailed Sebastian (`sebastian.stern.42@gmail.com`, from his own git commits / original `package.json`) on 2026-09-23 with five numbered questions. He replied warmly: happy for the fork, **open to integrating the changes upstream**, and notes TTS scripting is low priority for him now.
+
+### Which question maps to which fence
+
+| Email # | Question we asked | Fence below | His answer (short) |
+| --- | --- | --- | --- |
+| 1 | Why per-object `getJSON` instead of `scriptStates` for Lua/XML? | Fence 1 | Done for **Update Object** (bags with nested scripted objects). Once he had `getData()`, he used it as the single source. Admits it made scripts slow/late; he meant to move back to `scriptStates`. |
+| 2 | Why wipe all of `.tts` on every load? | Fence 2 | Copied from the Atom / other VS Code extension. Some users keep **one folder for every mod**, so a "mod changed → clean everything" step is still needed for them. Incremental is fine otherwise; obsolete files are harmless because only loaded objects are sent. |
+| 3 | Why doesn't Save & Play write the sent bundle back for Go to Error? | Fence 5 | Not intentional — fine to change. |
+| 4 | Why doesn't deactivate close port 39998? | Fence 6 | Not intentional — assumed VS Code would close it. Closing on deactivate is sound. |
+| 5 | Why strictly serial `getJSON`? | Fence 8 | Vague memory of trying parallel and hitting **scrambled return order**; never fixed in `@matanlurey/tts-editor`. Won't vouch for parallel. Suggests dropping blanket `getData()` — **load it only on demand at Update Object time**, or make it a setting. |
+
+### What it means for the fork (as of extension 2.5.0)
+
+- **Fences 1, 5, 6, 8:** Epic A/B already match his intent — `scriptStates` for Lua/XML, bundle write-back on Save & Play, `close()` on deactivate, `returnID` matching + single-flight import, still serial.
+- **Fence 2:** Our `objectSync` reconcile with `pruneMissing` on full `loadingANewGame` already covers the single-folder case: loading a different mod makes every old GUID "vanished," so it is pruned. No separate wipe needed — but worth stating explicitly if we send an upstream PR.
+- **New gap his answer exposes:** In incremental mode we fetch `getJSON` once per object only when `data.json` is **missing**, then reuse the cached file. **Update Object** (`ttsAdapter.updateObject`) bundles from that cached `data.json`, which can be stale if the object's contents changed on the table since. His suggestion — fetch fresh `getJSON` right before Update Object — fixes that and would let us skip the first-load `getJSON` pass entirely (or put it behind a setting).
+
+### Follow-ups (not started)
+
+1. **Update Object fetches live data:** call `getJSON` for that GUID immediately before `bundleObject`, instead of trusting cached `data.json`. Then consider making the initial per-object `data.json` fetch opt-in (setting) or lazy.
+2. **Upstream contribution (author's call):** he is willing to merge. Options: one PR per epic (A: fast sync; B: port Claim/Release + deactivate close) against `Sebaestschjin/tts-tools`, or keep the fork separate and only publish the community fork. Gateway (Epics C–E) is likely too large for upstream without discussion.
+
+### His reply (verbatim)
+
+> Hi Ryan,
+>
+> Thanks for the heads up and nice to hear that you like the extension.
+> I'm happy to integrate your proposed changes, they sound great. Some of them I also wanted to do at some point but just never got around to it. Since there's not much time for TTS scripting for me for a while now, the priority just is very low. ^^"
+>
+> 1) The main reason for this decision was the "Update Object" feature. In my use-case I have bags with nested objects that have scripts attached and I wanted to easily update them without taking them out or building a new save file. Thus I needed the whole information from getData() so that I could easily change that. So I thought, if I already have and use the getData() part, it doesn't make sense to use information from two different sources and only use the data one. However, this wasn't the best decision as loading the information can then be slow and make the scripts available too late. I wanted to change that back to use the scriptState itself, but didn't get around to do it.
+>
+> 2) This was more of a leftover from how the Atom extension and the other VS Code extension works. The intended usage for this extension is having a separate folder/workspace for each TTS project you use. The other extension only has a single folder for all files. So that when you change mods and don't delete old stuff, you might end up with unnecessary files. Not everyone seems to be familiar with how workspaces work and thus I used the same approach as the other extension. It would be useful to have an incremental approach and it should be fine. Obsolete files wouldn't be a problem, as the extension only sends stuff that it actually loaded. However a "clean everything because the mod changed" is still required for single workspace use. Not sure right now, what the best approach for this would be.
+>
+> 3) Wasn't intentional and should be fine to do. I guess I just never thought about that.
+>
+> 4) Also not intentional. I think I just assumed that deactivating the extension would auto-close the socket on its own.I'm actually not super knowledgeable with the VS Code lifecycle, but I'd consider closing the socket on deactivation sound reasonable and safe to do.
+>
+> 5) Hm... I don't fully recall if I ever tried to parallelize it. I have a vague memory that I did and then ran into the scrambled return message order and didn't get around fixing this issue in the tts-editor package.I can't vouch that parallel is safe especially since I don't trust TTS enough to not fuck it up. ^^ I think a better approach in general might be to get rid of the getData() part for all objects and make that either a setting or only do this on demand. Since the only practical use-case for this is the "Update Object" feature, it might be worthwhile to think about if only at that point the data could be loaded from TTS, then the whole thing is bundled and sent back to TTS. Or at least making it toggleable so it isn't used in mod where it isn't required.
+>
+> Greetings,
+
+---
+
 ## Fence 1 — Ignore `scriptStates` Lua/XML for objects; `getJSON` per GUID instead
 
 **What you noticed:** After Save & Play / load, TTS already sends `scriptStates` with `script` / `ui` per object. Global uses that. Every other object calls `getObjectFromGUID(…).getJSON()` and rebuilds files from that (via `unbundleObject`). That is the multi-minute path.
@@ -141,14 +187,14 @@ Worth a shorter ask if talking savefile too:
 
 | Fence | Safe to change without asking? | Our plan stance |
 | --- | --- | --- |
-| 1 getJSON vs scriptStates | **No** — ask; change carefully | Use scriptStates for top-level script/UI speed; keep getJSON for data/nested/Full Resync |
-| 2 full wipe | Ask preferred; incremental is likely OK | Replace wipe with reconcile |
+| 1 getJSON vs scriptStates | **Answered** — only for Update Object; he wanted scriptStates back | scriptStates for script/UI (done); follow-up: live `getJSON` at Update Object time |
+| 2 full wipe | **Answered** — legacy; incremental OK if single-folder users still get cleaned | Reconcile + prune vanished GUIDs (done) |
 | 3 reload after Save & Play | Can’t remove — TTS protocol | Skip *redundant* resync after *our* send |
 | 4 two Save & Play modes | Yes if UX-only | Keep |
-| 5 bundled write-back | Likely yes | Fix in fast Save & Play |
-| 6 deactivate close | Ask; low risk | Do close / Claim-Release |
+| 5 bundled write-back | **Answered** — not intentional | Fixed in fast Save & Play |
+| 6 deactivate close | **Answered** — not intentional; closing is sound | Close on deactivate + Claim/Release (done) |
 | 7 objectCreated | Yes to leave alone | Ignore until needed |
-| 8 serial getJSON | Ask before parallelizing | Keep serial unless proven safe |
+| 8 serial getJSON | **Answered** — parallel likely scrambled returns; won't vouch | Keep serial; shrink `getJSON` use instead |
 | 9 `]]` escape | Keep | Keep |
 | 10 command ids | Keep for compatibility | Keep `ttsEditor.*` |
 

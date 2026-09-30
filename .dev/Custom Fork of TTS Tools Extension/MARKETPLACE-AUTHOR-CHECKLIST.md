@@ -33,9 +33,7 @@ Contact Sebastian Stern / the [Sebaestschjin/tts-tools](https://github.com/Sebae
 > Planned differences include faster Save & Play sync behavior and an optional local multi-client editor gateway. I’m collecting a few “why is it built this way?” questions (with context) so we don’t tear down intentional fences — full draft in the fork notes if useful as a separate issue.
 > I wanted to give you a heads-up out of courtesy. If you’d rather I not publish, or you’d like different naming/credit wording, please say so. Happy to collaborate or adjust.
 
-For the technical fence questions (expanded for someone who hasn’t touched the code in a while), copy from [UPSTREAM-FENCES.md](./UPSTREAM-FENCES.md) § **Suggested message for upstream**. You can send Marketplace courtesy and fences as one issue or two.
-
-Track their reply (if any) before you treat Marketplace publish as “cleared socially.”
+**Done (2026-09-23 sent, reply received by 2026-09-29).** Sebastian replied positively and is open to merging the changes upstream. His answers and our follow-ups: [UPSTREAM-FENCES.md](./UPSTREAM-FENCES.md) § **Upstream reply — Sebastian Stern**. Marketplace publish is cleared socially.
 
 ### 2. Confirm Marketplace publisher identity
 
@@ -115,6 +113,7 @@ For yourself and anyone else on the original:
 
 | Question | Your note |
 | --- | --- |
-| Did upstream reply / any naming preference? | |
+| Did upstream reply / any naming preference? | Yes — supportive, no naming objections, willing to integrate changes upstream |
+| Contribute back upstream (PRs) vs fork-only? | |
 | Publish now vs after Epic A / gateway? | |
 | Public Marketplace vs sideload-only for a while? | |

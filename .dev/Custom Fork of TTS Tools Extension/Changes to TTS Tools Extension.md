@@ -84,6 +84,8 @@ The extension is client #0 on the same protocol — not a special snowflake API.
 
 Work order is intentional. **Epic A is the first implementation step** — its job is to kill the multi-minute “Get Objects” / wipe-and-reimport after every Save & Play. Claim/Release and gateway come after that daily pain is gone.
 
+**Author status (2026-09-29):** Stern replied — supportive, open to merging upstream; confirmed fences 3/4 (write-back, deactivate close) were unintentional and suggested loading object data only on demand for Update Object. Details + follow-ups: [UPSTREAM-FENCES.md](./UPSTREAM-FENCES.md) § Upstream reply.
+
 **Author status (2026-09-23):** Fence email sent to Stern. C3 tag syntax accepted. Marketplace publish **deferred** until the fork is solid in daily TR use; still design/implement with eventual publication in mind (clean attribution, three-layer DX, no TR-only hacks in the public surface).
 
 ### Epic A — Fast Save & Play / incremental sync  ← **first build**
@@ -144,6 +146,7 @@ Work order is intentional. **Epic A is the first implementation step** — its j
 1. Local auth token for register (user-local file) so random processes can’t silently attach.
 2. Extension settings: control port, enable gateway, tag name.
 3. Public docs for third-party apps.
+4. **Update Object uses live data** (Stern's suggestion): fetch `getJSON` for that GUID right before bundling instead of trusting cached `data.json`; then make the first-load per-object `data.json` fetch lazy or a setting.
 
 ---
 
