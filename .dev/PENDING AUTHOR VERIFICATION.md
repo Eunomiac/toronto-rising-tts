@@ -194,6 +194,8 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **Second re-test (2026-10-01, cards swooped back to the table on Absent on):** At Y −200 the cards sit inside the floor. Unlocked cards get shoved out by the physics engine and fly to the table edge with the "swoop" sound, so it looked like they never moved. The single hand mover now locks the cards whenever it moves a hand to a parked height (Y −195 or lower), and unlocks them whenever it moves a hand anywhere higher. When you turn Absent **on**, there should be no swoop sound and no cards landing on the table edge; Red’s cards should quietly vanish under the table with the hand zone. When you turn Absent **off**, the cards should come back in Red’s fan, and you should be able to pick them up (they are not left locked).
 
+**Also in the same Save & Play (TOR-301, old seat layout code removed):** About 1,600 lines of old seat-layout code that nothing called anymore were deleted. Nothing should look different, but a removal like this can only fail in-game. While you are testing, switch the table once (for example Table A to Table B and back) and run `DEBUG.refreshSeatRigsFromReference()` once from Execute Code. Success is chairs, lights, figurines and hands landing where they did before, with no red "attempt to call a nil value" errors in the console.
+
 ## Cleared
 
 _Remove confirmed entries from Outstanding. In Linear, set **Fully Complete** by default; use **Complete (KEEP)** sparingly when the issue contains lasting information that should remain._
