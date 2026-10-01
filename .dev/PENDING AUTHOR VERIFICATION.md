@@ -198,6 +198,12 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **Also in the same Save & Play (TOR-301, old seat layout code removed):** About 1,600 lines of old seat-layout code that nothing called anymore were deleted. Nothing should look different, but a removal like this can only fail in-game. While you are testing, switch the table once (for example Table A to Table B and back) and run `DEBUG.refreshSeatRigsFromReference()` once from Execute Code. Success is chairs, lights, figurines and hands landing where they did before, with no red "attempt to call a nil value" errors in the console.
 
+#### TOR-630 — Scene Apply clears Absent and re-seats the player
+
+**How to verify:** Save & Play. On the PCs panel, mark one player **Absent** (their pile, hand and control-board token go under the table). Open the Scenes panel and **Apply** a different library scene in which that player's seat is active. The player should stay Absent: the Absent toggle stays on, no pile or chair appears for them, and their control-board token stays hidden. Then apply a Scatter scene and come back to a standard-table scene; they should still be Absent throughout. Finally, turn Absent off on the PCs panel: they should get a chair at the current table with their cards.
+
+**Context:** Applying a scene replaced the live seat rows with the library scene's copy, which wiped the Absent flag. Absent is now treated as a session fact: every scene change copies the live Absent flags onto the new scene's seats, and a scene's own Absent value is ignored. The control-board preview (THERE) also shows Absent players as Absent.
+
 ## Cleared
 
 _Remove confirmed entries from Outstanding. In Linear, set **Fully Complete** by default; use **Complete (KEEP)** sparingly when the issue contains lasting information that should remain._

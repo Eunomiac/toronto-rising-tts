@@ -133,6 +133,8 @@ function Preview.buildDraft(sceneKey, sessionScene)
         seatSlots = deepCopy(type(source.seatSlots) == "table" and source.seatSlots or {}),
         scatterPlacements = normalizeScatterPlacements(source.scatterPlacements),
     }
+    local S = require("core.state")
+    require("lib.figurine_seat_layout").carryLiveAbsenceOnto(draft.seatSlots, S.getStateVal("sessionScene", "seatSlots"))
     for _, seatKey in ipairs(C.PlayerColors or {}) do
         ensureDraftSeatRow(draft, seatKey).isPresent = seatPresence(source, seatKey)
     end

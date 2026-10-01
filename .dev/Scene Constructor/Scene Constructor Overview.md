@@ -197,7 +197,7 @@ Each key is a **seat id** (`C.PlayerColors` + `C.NPCSeats`). **Import** (`SceneL
 - `npcCharacterKey` — required when `isPlayingNPC` is true; ignored when `isPlayingNPC` is not true. Not used for NPC bench seats (`NPC1`…`NPC4`).
 - `isPresent` — optional boolean or null-equivalent: when **set**, drives `sessionScene.seatPresent[seat]` and thus lighting “present” checks.
 - `tableSlot` — integer chair number on the active table (1 is the reference figurine; even slots walk right, odd slots greater than 1 walk left). Required on import for every PC who is not `absentFromSession`. Live saves that omit it are filled from `C.DefaultTableSlots`.
-- `absentFromSession` — PC only. When **true**, this seat has no chair (`tableSlot` must be omitted). Distinct from `isPresent` (narrative lighting). The PCs panel **Absent** toggle writes this field.
+- `absentFromSession` — PC only. When **true**, this seat has no chair (`tableSlot` must be omitted). Distinct from `isPresent` (narrative lighting). The PCs panel **Absent** toggle writes this field. Absent is session-level: scene Apply, the Scatter stash restore, and Scatter → table seeding all copy the live value onto the incoming rows (`FSL.carryLiveAbsenceOnto`), so a scene change never re-seats an Absent player and a scene's own `absentFromSession` is ignored.
 
 **NPC seats (`NPC1` … `NPC4`):**
 

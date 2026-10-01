@@ -2070,6 +2070,13 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
         if lockNextSceneApply then
             S.setStateVal(U.merge({}, bundle), "sceneLibrary", "scenes", K, "sessionScene")
         end
+        if type(bundle.seatSlots) ~= "table" then
+            bundle.seatSlots = {}
+        end
+        require("lib.figurine_seat_layout").carryLiveAbsenceOnto(
+            bundle.seatSlots,
+            S.getStateVal("sessionScene", "seatSlots")
+        )
         S.setStateVal(bundle, "sessionScene")
         SceneLibrary.syncOccupiedNpcSlotsFromSeatSlots(bundle)
         SceneLibrary.setExclusiveLiveMirror(K)

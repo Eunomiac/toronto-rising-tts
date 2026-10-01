@@ -1176,4 +1176,24 @@ function FSL.setPlayerAbsentFromSession(color, absent)
     return true, nil
 end
 
+--- Absent is session-level (the player is not connected), never scene- or table-authored.
+--- Before incoming seat rows (library scene, Scatter stash, Scatter → table seed) replace the
+--- live ones, copy each PC's live Absent flag onto them: Absent stays Absent with no chair,
+--- and a stale authored Absent is cleared (`S.validateState` seeds the missing chair).
+--- @param seatSlots table incoming seat rows (mutated)
+--- @param liveSeatSlotsSnapshot table|nil live `sessionScene.seatSlots` before the overwrite
+function FSL.carryLiveAbsenceOnto(seatSlots, liveSeatSlotsSnapshot)
+    local live = U.Type(liveSeatSlotsSnapshot) == "table" and liveSeatSlotsSnapshot or {}
+    for _, color in ipairs(C.PlayerColors or {}) do
+        local liveRow = live[color]
+        local row = ensureSeatRow(seatSlots, color)
+        if U.Type(liveRow) == "table" and liveRow.absentFromSession == true then
+            row.absentFromSession = true
+            row.tableSlot = nil
+        else
+            row.absentFromSession = nil
+        end
+    end
+end
+
 return FSL

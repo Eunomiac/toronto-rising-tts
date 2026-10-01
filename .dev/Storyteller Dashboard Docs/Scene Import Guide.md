@@ -223,7 +223,7 @@ Keys are seat ids:
 
 `isPresent` vs `absentFromSession`:
 
-- **Absent from session** = no chair on the table (`tableSlot` omitted).
+- **Absent from session** = no chair on the table (`tableSlot` omitted). Absent is a **session** fact (the player is not connected), not a scene fact: on Apply, TTS overwrites every PC's `absentFromSession` with the live value set from the PCs panel or control-board Apply. A value authored in the scene JSON is accepted by the importer but has no effect on Apply.
 - **Not present** (`isPresent: false`) = still has a chair, but lights/conditions treat them as not narratively there. Used when the figurine is on stage but the homeland seat is kept.
 
 #### NPC bench row fields

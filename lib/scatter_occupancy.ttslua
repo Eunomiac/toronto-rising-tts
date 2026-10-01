@@ -758,6 +758,7 @@ function ScatterOccupancy.applyAuthoredScatterToStandard(destTableKey)
     for _, npcSeat in ipairs(C.NPCSeats or {}) do
         ss[npcSeat] = { slotEmpty = true }
     end
+    FSL.carryLiveAbsenceOnto(ss, S.getStateVal("sessionScene", "seatSlots"))
     S.setStateVal(ss, "sessionScene", "seatSlots")
     S.setStateVal({}, "seatLayout", "occupiedNPCSlots")
     S.setStateVal({}, "sessionScene", "npcRoleOverride")
@@ -792,7 +793,9 @@ function ScatterOccupancy.restoreStash(destTableKey)
     local livePack = S.getStateVal("sessionScene", "scatterPlacements")
     local stillHere = scatterNpcKeys(livePack)
     if type(stash.seatSlots) == "table" then
-        S.setStateVal(U.clone(stash.seatSlots, true), "sessionScene", "seatSlots")
+        local restored = U.merge({}, stash.seatSlots)
+        require("lib.figurine_seat_layout").carryLiveAbsenceOnto(restored, S.getStateVal("sessionScene", "seatSlots"))
+        S.setStateVal(restored, "sessionScene", "seatSlots")
     end
     if type(stash.seatPresent) == "table" then
         S.setStateVal(U.clone(stash.seatPresent, true), "sessionScene", "seatPresent")
