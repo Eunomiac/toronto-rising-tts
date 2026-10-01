@@ -2575,25 +2575,9 @@ end
 --- @param obj Object
 --- @param pos Vector|table
 --- @param rot Vector|table
---- @param smooth boolean
-local function poseObjectWithHand(obj, pos, rot, smooth)
-	local posTbl = { x = pos.x, y = pos.y, z = pos.z }
-	local rotTbl = { x = rot.x, y = rot.y, z = rot.z }
-	if smooth == true then
-		if obj.setPositionSmooth ~= nil then
-			obj.setPositionSmooth(posTbl, false, true)
-		else
-			obj.setPosition(posTbl)
-		end
-		if obj.setRotationSmooth ~= nil then
-			obj.setRotationSmooth(rotTbl, false, true)
-		else
-			obj.setRotation(rotTbl)
-		end
-		return
-	end
-	obj.setPosition(posTbl)
-	obj.setRotation(rotTbl)
+local function poseObjectWithHand(obj, pos, rot)
+	obj.setPosition({ x = pos.x, y = pos.y, z = pos.z })
+	obj.setRotation({ x = rot.x, y = rot.y, z = rot.z })
 end
 
 --- Hand-zone target Y at or below this is a parked (off-table) hand. Keep just above
@@ -2614,9 +2598,9 @@ end
 --- `setPosition` / `placeObjectExact` the zone first — that zeroes the delta and leaves cards behind.
 ---
 --- Behavior (Hand Lab `rigid_instant`): instant `setPosition`/`setRotation` on the zone and
---- every card (same rigid yaw + translation; card yaw snapped to zone Y + 180). Pass
---- `opts.smooth = true` only for a short on-table nudge that is meant to be seen (table-scale
---- jumps must stay instant).
+--- every card (same rigid yaw + translation; card yaw snapped to zone Y + 180). Always instant:
+--- smooth-moving a hand zone or its cards breaks the hand (Hand Lab). No waits — the whole
+--- move completes inside this call, before the next physics step.
 ---
 --- Held cards = cards the zone / player hand reports, plus every card tagged
 --- `LockedCard<Color>` (parked cards, which the hand no longer reports). Those tags are removed
@@ -2629,9 +2613,8 @@ end
 --- @param playerRef string|userdata seat color or Player
 --- @param position Vector|table world position of the hand zone
 --- @param rotation Vector|table world rotation of the hand zone
---- @param opts table|nil `{ smooth?: boolean }` default false (instant)
 --- @return table `{ position = Vector, rotation = Vector, cards = Object[] }` zone pose before the move
-function U.movePlayerHand(playerRef, position, rotation, opts)
+function U.movePlayerHand(playerRef, position, rotation)
 	local color = resolveHandSeatColor(playerRef)
 	local hz = U.getHandZone(color)
 	if hz == nil or hz.getPosition == nil or hz.setPosition == nil then
@@ -2643,15 +2626,10 @@ function U.movePlayerHand(playerRef, position, rotation, opts)
 	if rotation == nil or rotation.x == nil or rotation.y == nil or rotation.z == nil then
 		error("U.movePlayerHand: rotation must be a world vector")
 	end
-	opts = U.Type(opts) == "table" and opts or {}
-	local smooth = opts.smooth == true
 
 	local targetPos = Vector(position)
 	local targetRot = Vector(rotation)
 	local lockCards = targetPos.y <= HAND_PARKED_LOCK_Y
-	if smooth and lockCards then
-		error("U.movePlayerHand: parking a hand (target y <= " .. HAND_PARKED_LOCK_Y .. ") must be instant")
-	end
 	local hzBefore = {
 		position = Vector(hz.getPosition()),
 		rotation = Vector(hz.getRotation()),
@@ -2691,7 +2669,7 @@ function U.movePlayerHand(playerRef, position, rotation, opts)
 	end
 
 	local deltaYaw = shortestSignedYawDelta(hzBefore.rotation.y, targetRot.y)
-	poseObjectWithHand(hz, targetPos, targetRot, smooth)
+	poseObjectWithHand(hz, targetPos, targetRot)
 	-- Hand-zone facing is opposite card face yaw in TTS; snap card Y to zone Y ± 180
 	-- so rigid-transported cards sit square in the fan (TOR-590 follow-up).
 	local cardYaw = targetRot.y + 180
@@ -2705,7 +2683,7 @@ function U.movePlayerHand(playerRef, position, rotation, opts)
 		if entry.obj.getLock() == true then
 			entry.obj.setLock(false)
 		end
-		poseObjectWithHand(entry.obj, newPos, cardRot, smooth)
+		poseObjectWithHand(entry.obj, newPos, cardRot)
 		if lockCards then
 			entry.obj.setLock(true)
 			entry.obj.addTag(parkedTag)
