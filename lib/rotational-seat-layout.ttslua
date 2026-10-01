@@ -487,7 +487,9 @@ end
 --- Cold-load + layout tail: apply CSHEET / SIGNAL_FIRE hide protocol from world Y for every seat.
 function M.reconcileYStateSeatObjectVisibilityFromWorld()
   for i = 1, #(C.PlayerColors or {}) do
-    reconcileYStateSeatObjectVisibilityForSeat(C.PlayerColors[i])
+    if not FSL.isUnoccupiedPcPileStashed(C.PlayerColors[i]) then
+      reconcileYStateSeatObjectVisibilityForSeat(C.PlayerColors[i])
+    end
   end
   for i = 1, #(C.NPCSeats or {}) do
     reconcileYStateSeatObjectVisibilityForSeat(C.NPCSeats[i])
@@ -505,10 +507,15 @@ local function csheetPageOnY()
   return 3.20
 end
 
---- Pages 1 and 2 are the visible pair for every PC seat (TOR-586). Raise 1–2 to on-Y and park later pages.
+--- Pages 1 and 2 are the visible pair for every occupied PC seat (TOR-586). Raise 1–2 to on-Y and
+--- park later pages. Unoccupied PC seats (`absentFromSession`) keep their parked pile.
 --- @param seatKey string
 local function ensureMinVisibleCsheetPagesForSeat(seatKey)
   if not isPlayerSeatKey(seatKey) then
+    return
+  end
+  local seatRow = S.getStateVal("sessionScene", "seatSlots", seatKey)
+  if U.Type(seatRow) == "table" and seatRow.absentFromSession == true then
     return
   end
   local tag = objectTagForPlayerColor(seatKey)

@@ -1311,13 +1311,10 @@ function ScatterMode.applyWorldLayout()
     if #occupants > 0 then
         applyPcRigs(framesBySlot, occupants)
     else
-        for _, color in ipairs(C.PlayerColors or {}) do
-            FSL.setOccupantPileVisible(color, false)
-        end
         hideNpcSeatPiles()
     end
     for _, color in ipairs(C.PlayerColors or {}) do
-        if occupiedColors[color] ~= true then
+        if occupiedColors[color] ~= true and not FSL.isUnoccupiedPcPileStashed(color) then
             FSL.setOccupantPileVisible(color, false)
         end
     end

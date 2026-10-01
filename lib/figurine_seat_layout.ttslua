@@ -227,11 +227,27 @@ function FSL.tableBVariantIndexFromHighest(highestSlot)
     return idx
 end
 
---- Family `"Table B"` → B0 when highest slot is 0–5, B1 at 6, … B4 at 9.
+--- NPCs seated on a numbered chair.
+--- @param opts table|nil forwarded to collectOccupants
+--- @return number
+function FSL.seatedNpcCount(opts)
+    local n = 0
+    local occ = FSL.collectOccupants(opts)
+    for i = 1, #occ do
+        if occ[i].isPlayer ~= true then
+            n = n + 1
+        end
+    end
+    return n
+end
+
+--- Family `"Table B"` always seats all 5 PCs (an unoccupied PC leaves a gap) plus one chair per
+--- seated NPC: B0 with no NPCs … B4 with four. Grows further only when a chair is already beyond that.
 --- @param opts table|nil
 --- @return number 0..4
 function FSL.tableBVariantIndex(opts)
-    return FSL.tableBVariantIndexFromHighest(FSL.highestOccupiedTableSlot(opts))
+    local byNpcs = math.min(4, FSL.seatedNpcCount(opts))
+    return math.max(byNpcs, FSL.tableBVariantIndexFromHighest(FSL.highestOccupiedTableSlot(opts)))
 end
 
 --- True when this occupant currently has a tableSlot within this table's capacity.
@@ -337,29 +353,43 @@ function FSL.tableUsesRandomSeating(tableKey)
     return false
 end
 
---- Shuffle in-session occupants (PCs who are not Absent, plus occupied NPCs) into packed chairs 1..N.
---- Absent players keep no `tableSlot`. Call after `seedDefaultTableSlots`.
---- @return number packedCount
+--- Shuffle all 5 PCs plus seated NPCs into chairs 1..(5 + NPCs). An unoccupied PC
+--- (`absentFromSession`) draws a chair like everyone else but takes no `tableSlot`, so their
+--- chair stays an empty gap at a random position. Call after `seedDefaultTableSlots`.
+--- @return number chairCount
 function FSL.randomizePackedOccupancy()
     FSL.seedDefaultTableSlots()
-    local occ = FSL.collectOccupants()
-    for i = #occ, 2, -1 do
-        local j = math.random(i)
-        occ[i], occ[j] = occ[j], occ[i]
-    end
     local ss = liveSeatSlots()
-    local packed = {}
+    local draw = {}
+    for _, color in ipairs(C.PlayerColors or {}) do
+        draw[#draw + 1] = color
+    end
+    local occ = FSL.collectOccupants()
     for i = 1, #occ do
-        local row = ensureSeatRow(ss, occ[i].occupantKey)
-        row.tableSlot = i
-        packed[occ[i].occupantKey] = true
+        if occ[i].isPlayer ~= true then
+            draw[#draw + 1] = occ[i].occupantKey
+        end
+    end
+    for i = #draw, 2, -1 do
+        local j = math.random(i)
+        draw[i], draw[j] = draw[j], draw[i]
+    end
+    local seated = {}
+    for i = 1, #draw do
+        local row = ensureSeatRow(ss, draw[i])
+        if row.absentFromSession == true then
+            row.tableSlot = nil
+        else
+            row.tableSlot = i
+            seated[draw[i]] = true
+        end
     end
     for occupant, row in pairs(ss) do
-        if U.Type(row) == "table" and packed[occupant] ~= true then
+        if U.Type(row) == "table" and seated[occupant] ~= true then
             row.tableSlot = nil
         end
     end
-    return #occ
+    return #draw
 end
 
 --- @param seatSlots table|nil
@@ -584,6 +614,14 @@ function FSL.hasOccupancyStash(occupantKey)
     end
     local row = map[occupantKey]
     return U.Type(row) == "table" and next(row) ~= nil
+end
+
+--- Unoccupied PC (`absentFromSession`) whose pile is already parked — layout passes skip re-hiding it.
+--- @param color string
+--- @return boolean
+function FSL.isUnoccupiedPcPileStashed(color)
+    local row = liveSeatSlots()[color]
+    return U.Type(row) == "table" and row.absentFromSession == true and FSL.hasOccupancyStash(color)
 end
 
 --- @param occupantKey string
@@ -1043,7 +1081,7 @@ function FSL.applyOccupantRigs(bundle, helpers)
     end
 
     for _, color in ipairs(C.PlayerColors or {}) do
-        if occupied[color] ~= true then
+        if occupied[color] ~= true and not FSL.isUnoccupiedPcPileStashed(color) then
             FSL.setOccupantPileVisible(color, false)
         end
     end

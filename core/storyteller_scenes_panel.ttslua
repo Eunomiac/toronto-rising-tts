@@ -2112,6 +2112,11 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
                 bundle.scatterPlacements = pack
                 S.setStateVal(pack, "sessionScene", "scatterPlacements")
             end
+            -- Authored groups never seat an unoccupied PC; occupied PCs left out join an empty group.
+            Occupancy.reconcilePcConnectionInPack(
+                S.getStateVal("sessionScene", "scatterPlacements"),
+                S.getStateVal("sessionScene", "seatSlots")
+            )
             S.setStateVal("Scatter", "sessionScene", "tableKey")
             RSL.SetTableTo("Scatter", {
                 skipTransitionBlindfold = true,

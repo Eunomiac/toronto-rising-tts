@@ -44,7 +44,8 @@ Vocabulary rule: [`.cursor/rules/toronto-rising-seat-occupancy-terms.mdc`](../..
 | Connect (`PC.handleSeatConnected`) | Clear `absentFromSession`, assign a chair (fixed tables: `C.DefaultTableSlots[color]`; random tables: lowest free chair; Scatter: an empty scatter group), relayout, remirror token, `Sync.player` | Immediate — no blindfold |
 | Disconnect (`PC.handleSeatDisconnected`) | Seat darkens via effective presence; chair kept | Immediate |
 | Blindfold checkpoint (`PC.applyConnectionCheckpoint`) | Every PC still disconnected and not yet `absentFromSession`: set it, clear `tableSlot`, stash pile + hand + cards, park the control-board token beneath the board. Other seats do not shift. | Under cover, before transition work |
-| Load (`M.setupPlayers`) | Session start: checkpoint, then connect every connected seat | Immediate |
+| Load (`M.setupPlayers` → `PC.applySessionStartOccupancyState`) | Session start: checkpoint, then seat every connected PC — **state only**; the startup table sync lays out chairs and parks unoccupied piles | Immediate |
+| Debug mode switch / PCs-panel toggle | Same handlers as a real connect / disconnect, driven by simulated connection | Immediate |
 
 Checkpoint call sites:
 
@@ -56,7 +57,13 @@ Scenes, tables, and phases never author `absentFromSession`: every wholesale sea
 
 ## Table B
 
-A Table B variant always has chairs for **all five PCs plus every seated NPC** (5 + seated NPCs, at most B4 = 9), so a connecting PC can always sit down without a table transition. Random seating shuffles all five PCs and the seated NPCs into chairs 1..N; a disconnected PC's drawn chair stays empty.
+A Table B variant always has chairs for **all five PCs plus every seated NPC** (5 + seated NPCs, at most B4 = 9), so a connecting PC can always sit down without a table transition (`FSL.tableBVariantIndex` = seated NPC count, raised only when a chair number is already beyond that). Random seating (`FSL.randomizePackedOccupancy`) shuffles all five PCs and the seated NPCs into chairs 1..N; an unoccupied PC's drawn chair stays an empty gap at a random position, and the next connect fills it (lowest free chair).
+
+Layout passes skip re-hiding an unoccupied PC whose pile is already parked (`FSL.isUnoccupiedPcPileStashed`), and the cold-load character-sheet pass (`RSL.ensureMinVisibleCsheetPagesForAllSeats`) skips unoccupied PCs so their sheet stays parked.
+
+## Scatter
+
+Scatter has no chairs; group membership is the seat. `ScatterOccupancy.reconcilePcConnectionInPack` removes unoccupied PCs from their group and puts an occupied PC with no group into an empty group (six groups, five PCs). It runs on connect, at the checkpoint, on load, and on a Scatter scene Apply (authored packs never seat an unoccupied PC).
 
 ## Control-board PC tokens
 
