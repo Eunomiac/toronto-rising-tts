@@ -172,6 +172,8 @@ Separately, restart the Storyteller Dashboard with the TTS Tools extension **dis
 
 **Context:** Occupancy stash at Y=−200 was keeping satellites buried. relatedTo **TOR-507**.
 
+**Update (TOR-631):** The PCs panel **Absent** toggle is gone. "Absent on" is now: Debug panel in green **Assume Connected**, click the player's **Connected** button so it reads **Disconnected**, then advance a phase. "Absent off" is clicking the button again.
+
 #### ✅ Pink Tarot Consult: one delayed place at authored height (no new TOR — Linear quota; relatedTo TOR-411)
 
 **How to verify:** Save & Play so `lib/tarot_toggle.ttslua` reloads. Put Pink’s tarot away (deck at y ≈ −200). Confirm `C.ObjectPositions.TAROT_DECK_PINK.on.height` is the height you want (currently **8.5**).
@@ -198,11 +200,33 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **Also in the same Save & Play (TOR-301, old seat layout code removed):** About 1,600 lines of old seat-layout code that nothing called anymore were deleted. Nothing should look different, but a removal like this can only fail in-game. While you are testing, switch the table once (for example Table A to Table B and back) and run `DEBUG.refreshSeatRigsFromReference()` once from Execute Code. Success is chairs, lights, figurines and hands landing where they did before, with no red "attempt to call a nil value" errors in the console.
 
+**Update (TOR-631):** The PCs panel **Absent** toggle is gone, and a disconnected PC's control-board token now sits locked a few units beneath the board rather than at Y −200. "Absent on" is now: Debug panel in green **Assume Connected**, click the player's **Connected** button so it reads **Disconnected**, then advance a phase. "Absent off" is clicking the button again. Dragging a PC token to a different empty chair and clicking **Apply** still moves that player.
+
 #### TOR-630 — Scene Apply clears Absent and re-seats the player
 
 **How to verify:** Save & Play. On the PCs panel, mark one player **Absent** (their pile, hand and control-board token go under the table). Open the Scenes panel and **Apply** a different library scene in which that player's seat is active. The player should stay Absent: the Absent toggle stays on, no pile or chair appears for them, and their control-board token stays hidden. Then apply a Scatter scene and come back to a standard-table scene; they should still be Absent throughout. Finally, turn Absent off on the PCs panel: they should get a chair at the current table with their cards.
 
 **Context:** Applying a scene replaced the live seat rows with the library scene's copy, which wiped the Absent flag. Absent is now treated as a session fact: every scene change copies the live Absent flags onto the new scene's seats, and a scene's own Absent value is ignored. The control-board preview (THERE) also shows Absent players as Absent.
+
+**Update (TOR-631):** The PCs panel **Absent** toggle is gone. To make a player Absent (now called *unoccupied*) for this check, switch the Debug panel to green **Assume Connected**, click that player's **Connected** button on the PCs panel so it reads **Disconnected**, then advance a phase. To bring them back, click the button again.
+
+### Players & Connection
+
+#### TOR-631 — Connection-driven seat occupancy
+
+**How to verify:** Save & Play so the scripts and Global UI reload.
+
+1. Open the Debug panel. The connection button should read **By Connection Status** in yellow. Any PC whose player is not connected should have no chair: no pile at the table, and their control-board token locked a little beneath the board (you cannot pick it up).
+2. Click the button. It should turn green and read **Assume Connected**. Every PC should be seated straight away, with no blindfold.
+3. Open the PCs panel. Each seat now has a green **Connected** button where the Absent toggle used to be. Click Red's. It should turn red and read **Disconnected**. Red's seat should go dark, but the chair, sheet and hand stay put.
+4. Advance a phase (or apply a scene, or change table). Under the blindfold, Red should lose the chair: pile and hand go under the table, and Red's control-board token goes beneath the board. On Table B with random seating, Red's spot becomes an empty chair somewhere in the shuffle.
+5. Click Red's button again. Red should be seated at once at their usual chair (or the lowest free one if it is taken), with their cards back and no blindfold.
+6. On the control board, drag a connected PC's token off its chair onto the stage. It should snap back. Swap two PC tokens between chairs and click **Apply**. The two players should swap chairs at the table.
+7. In a Scatter scene, disconnect a PC and advance a phase. They should leave their group. Reconnect them; they should appear in an empty group.
+8. Click the Debug button back to yellow. The per-seat Connected buttons should disappear. Save, reload, and confirm the mode you left it in is remembered.
+9. Optional: the Storyteller Dashboard PCs tab no longer has an Absent checkbox. The player rail shows **Seated** or **Unoccupied**, plus **Disconnected** when relevant.
+
+**Context:** Whether a PC holds a chair is now decided only by connection; the Storyteller can no longer mark a PC Absent by hand. Present / Not Present (lit or dark seat) is unchanged and separate. Full model: `docs/solutions/seat-occupancy-and-connection.md`. relatedTo **TOR-630** and **TOR-513**.
 
 ## Cleared
 
