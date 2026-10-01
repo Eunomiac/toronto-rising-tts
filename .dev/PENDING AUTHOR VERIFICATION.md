@@ -10,7 +10,7 @@ Your TTS checklist for shipped work that still needs Save & Play / in-game confi
 | **❌** | Author | Still broken (+ **Author Comment:**) |
 | **⚠️** | Author | Bad expectations (+ **Author Comment:**) |
 | **⏰** | Agent | Not ready to verify yet — fix is open in Linear / Focus; **do not** Save & Play for this row until the watch is cleared |
-| **🚫** | Author | Irrelevant or obsolete - feature being tested is to be replaced by the Storyteller Dashboard; follow-up validation of this issue can be discarded |
+| **🚫** | Author | Irrelevant or obsolete - feature being tested is to be replaced by the Storyteller Dashboard; follow-up validation of this issue can be discarded (see **Author Comment**s for more details on how to handle the Linear issue) |
 
 Unmarked = shipped (or verification gate) and waiting for your first pass. Agents add a new unmarked row and set Linear to **Awaiting Author Review** whenever they ship in-game code. They process your **✅** / **❌** / **⚠️** marks on the next inbox. A **✅** moves the Linear issue to **Fully Complete** by default, or **Complete (KEEP)** when its Linear history should be retained. Agent policy: [PENDING AUTHOR VERIFICATION.agent.md](PENDING AUTHOR VERIFICATION.agent.md).
 
@@ -18,7 +18,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-09-24 — Experience Log + page 6 (TOR-92)._
+_Last populated: 2026-10-01 — session intro catalog lookup (TOR-632)._
 
 ### Character sheets / XP
 
@@ -40,7 +40,7 @@ _Last populated: 2026-09-24 — Experience Log + page 6 (TOR-92)._
 **Author Comment:** While this does work for standard single-player awards/spends, clicking "Undo" after an "Apply to All" gain only removes the gain from the player targeted by the modal, and not from all players. (Undoing an "Apply to All" should undo the entire "Apply to All" action)
 
 8. ✅ Mark another PC **Absent**, enter a gain, click **Apply to All**, and confirm the Absent seat did not change while present seats did.
-9. ⏰ _(Deferred until session 2 startup data is in place to avoid errors on attempting to start a sessionNum greater than 1)_ After you advance session number (End→Intermission), **without** re-baking, you should get a Storyteller warning about a stale page 6 bake; the live block still accepts new entries for the new session. After `npm run csheet-xp-log:bake` + Save & Play, the previous session should appear as a baked block in that character’s `page6_<charKey>.xml`.
+9. ✅ _(Deferred until session 2 startup data is in place to avoid errors on attempting to start a sessionNum greater than 1)_ After you advance session number (End→Intermission), **without** re-baking, you should get a Storyteller warning about a stale page 6 bake; the live block still accepts new entries for the new session. After `npm run csheet-xp-log:bake` + Save & Play, the previous session should appear as a baked block in that character’s `page6_<charKey>.xml`.
 10. ✅ Optional authoring check: on the Storyteller Dashboard **PCs** tab, open **JSON**. The bottom pane should be a dump of that seat’s raw `playerData` (including the full `xp` Experience Log with **string** session keys and **no** `timeline` field). Paste under `"xp": { … }`, **Apply**, re-open JSON, and confirm the dump matches. Then **Save** the game — onSave must succeed (no `noKeyConversion` JSON error). The sheet jewel still shows banked XP.
 
 **Context:** Scalar `stats.xp` removed; log is `playerData.<pid>.xp` with string session keys. Page 6 markup is **template-baked** (`ui/.templates/csheet/` → `page6_<charKey>.xml`); runtime paints live slots and pagination with `setAttribute` only (no Lua-built XML / no page-6 `setXml`).
@@ -62,7 +62,7 @@ _Last populated: 2026-09-24 — Experience Log + page 6 (TOR-92)._
 
 ### Scatter / table layout
 
-#### TOR-629 — Hand zone rigid co-move (no zone-only place first)
+#### ✅ TOR-629 — Hand zone rigid co-move (no zone-only place first)
 
 **How to verify:** Save & Play so scripts reload. Put a full hand of cards in at least two PC seats (for example Red and Pink).
 
@@ -85,7 +85,9 @@ _Last populated: 2026-09-24 — Experience Log + page 6 (TOR-92)._
 
 **Context:** Aligns Scatter with polar HERE/THERE (`previewDraft.scatterPlacements`). relatedTo **TOR-572** (in-game Scatter).
 
-#### 🚫 TOR-573 — Scatter import and live Standard↔Scatter switch
+**Author Comment:** I am planning to rely more heavily on the Storyteller Dashboard to control previewing and editing scenes. Please close this issue accordingly, noting that this functionality will soon be replaced by Storyteller Dashboard integration.
+
+#### ✅ TOR-573 — Scatter import and live Standard↔Scatter switch
 
 **How to verify:** Save & Play so scripts reload.
 
@@ -95,7 +97,7 @@ _Last populated: 2026-09-24 — Experience Log + page 6 (TOR-92)._
 
 **Context:** relatedTo **TOR-572** (in-game Scatter table) and **TOR-570** (dashboard scatter JSON). Dashboard Copy JSON can keep using `scatterPlacements`; chair-style import is the other legal paste.
 
-#### TOR-602 — Scatter Mode player HUD (group strip + click-to-move)
+#### ❌ TOR-602 — Scatter Mode player HUD (group strip + click-to-move)
 
 **How to verify:** Save & Play so Global XML and scripts reload. Confirm Custom UI assets exist for `scatterGroupToggle_inactive` / `_hover`, `scatterGroupSelector_hover`, `scatterGroupControl_bg`, and `scatterModeControlPC_lordLucien` / `rashid` / `aishe` / `fomorach` / `blackCaesar`. If any portrait or button is blank, that is a missing asset name in the save, not the Lua.
 
@@ -107,6 +109,8 @@ _Last populated: 2026-09-24 — Experience Log + page 6 (TOR-92)._
 6. Leave Scatter. The toggle and strip should disappear.
 
 **Context:** Gold is PC slot 1 (not 3). Occupancy written under the old slot-3 scheme will sit on the wrong hole until you re-enter Scatter or move that PC once. relatedTo **TOR-572**.
+
+**Author Comment:** Almost! Except the players' character sheets are all being disabled, leaving no sheets active -- the pages that were active when the Scatter transition began should be retained, as with any other table change.
 
 ### Character sheets
 
@@ -155,6 +159,8 @@ _Last populated: 2026-09-24 — Experience Log + page 6 (TOR-92)._
 Separately, restart the Storyteller Dashboard with the TTS Tools extension **disabled**. Gold highlights should appear after **Copy** or **Spawn in TTS**. **Clear Generics** should clear gold only. With the extension enabled again, **Spawn in TTS** and Lua **Run** should grey out and explain that port 39998 is busy.
 
 **Context:** Runtime spawn exception to the named-NPC preload pool. Seating / PC-as-NPC / Memoriam generics are still out of scope. Post-ship polish: import UI edge, spawn row flip/spacing, nickname after reload, fixed rotation, Snap toggle on at spawn. Generics park in the next free under-table bay (named NPCs keep their sorted stable slots).
+
+**Author Comment:** The importing of Generic NPCs, and their positioning on the control board, are going to be handled by the Storyteller Dashboard.
 
 ### High — session / join / first-load
 
@@ -238,6 +244,18 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 4. Optional: repeat in a Scatter scene. When Red rejoins a group, the same pages should come back.
 
 **Context:** When the pile was buried, the code noted which pages were showing. On the way back it checked "is this page under the table?" first, decided every page had been turned off on purpose, and then threw the note away. It now checks the note first. relatedTo **TOR-631** and **TOR-512**.
+
+### Soundscape / session start
+
+#### TOR-632 — Session intro track and splash art follow the session number
+
+**How to verify:** Save & Play so the scripts reload. Start on **Intermission**. Quick Transition on the Phases panel should be off.
+
+1. Set the session number to **1** and click **Advance**. You should hear Session Starter 1 (about 70 seconds). The cover, the session number, and the session title should be session 1’s pictures, and the splash should finish with the song.
+2. Go back to Intermission (Advance through the rest of the loop, or run `DEBUG.resetToIntermission()` from Execute Code). Set the session number to **4** and Advance again. You should hear the shorter Session Starter 4 (about 37 seconds), and the splash should be paced to that shorter song. Session **5** is the long one (about 77 seconds).
+3. Set the session number to **99** (no starter and, unless you have added them, no session 99 pictures) and Advance again. A Storyteller warning should name the missing track and say which of the five starters is playing instead. The splash length should match that chosen song. The cover should be the generic session-end picture (`overlay_sessionEndSplash_1`). The session number and session title should not appear (they stay in the animation, fully transparent). You should not see a white broken image box.
+
+**Context:** The song and its length now come from the sound catalog (`TR_SessionStart` plus the session number). The old constants that duplicated that are gone. A missing track is chosen at random from the session intros that are registered, and that choice stays the same for the rest of the splash. A missing start-splash image uses the generic end-splash picture. A missing session number or title stays invisible (fully transparent) so the rest of the splash still plays.
 
 ## Cleared
 
