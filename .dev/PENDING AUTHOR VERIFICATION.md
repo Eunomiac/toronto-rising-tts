@@ -10,6 +10,7 @@ Your TTS checklist for shipped work that still needs Save & Play / in-game confi
 | **❌** | Author | Still broken (+ **Author Comment:**) |
 | **⚠️** | Author | Bad expectations (+ **Author Comment:**) |
 | **⏰** | Agent | Not ready to verify yet — fix is open in Linear / Focus; **do not** Save & Play for this row until the watch is cleared |
+| **🚫** | Author | Irrelevant or obsolete - feature being tested is to be replaced by the Storyteller Dashboard; follow-up validation of this issue can be discarded |
 
 Unmarked = shipped (or verification gate) and waiting for your first pass. Agents add a new unmarked row and set Linear to **Awaiting Author Review** whenever they ship in-game code. They process your **✅** / **❌** / **⚠️** marks on the next inbox. A **✅** moves the Linear issue to **Fully Complete** by default, or **Complete (KEEP)** when its Linear history should be retained. Agent policy: [PENDING AUTHOR VERIFICATION.agent.md](PENDING AUTHOR VERIFICATION.agent.md).
 
@@ -71,7 +72,7 @@ _Last populated: 2026-09-24 — Experience Log + page 6 (TOR-92)._
 
 **Context:** Hand Lab showed rigid-instant works. `U.movePlayerHand` already did that; rotational layout was also `placeObjectExact`-ing the reference hand zone first (zero delta → cards left behind). relatedTo **TOR-590** (hand-zone co-move).
 
-#### TOR-628 — Scatter Mode HERE/THERE preview + token lifecycle
+#### 🚫 TOR-628 — Scatter Mode HERE/THERE preview + token lifecycle
 
 **How to verify:** Save & Play so scripts reload.
 
@@ -84,7 +85,7 @@ _Last populated: 2026-09-24 — Experience Log + page 6 (TOR-92)._
 
 **Context:** Aligns Scatter with polar HERE/THERE (`previewDraft.scatterPlacements`). relatedTo **TOR-572** (in-game Scatter).
 
-#### TOR-573 — Scatter import and live Standard↔Scatter switch
+#### 🚫 TOR-573 — Scatter import and live Standard↔Scatter switch
 
 **How to verify:** Save & Play so scripts reload.
 
@@ -109,7 +110,7 @@ _Last populated: 2026-09-24 — Experience Log + page 6 (TOR-92)._
 
 ### Character sheets
 
-#### UISet — batch / sequence UI attribute helper (no new TOR — Linear quota)
+#### ✅ UISet — batch / sequence UI attribute helper (no new TOR — Linear quota)
 
 **How to verify:** Save & Play so Global scripts reload. Open **Execute Lua** on Global.
 
@@ -119,7 +120,7 @@ _Last populated: 2026-09-24 — Experience Log + page 6 (TOR-92)._
 
 **Context:** Helper from the page-2 XML dump, shipped as `U.UISet` in `lib/util.ttslua` and Global `UISet`. Linear could not create a new issue (workspace free-issue limit).
 
-#### TOR-595 — Dashboard PCs tab: live-only sheet (no stand-in) + Ambition from gameState
+#### ✅ TOR-595 — Dashboard PCs tab: live-only sheet (no stand-in) + Ambition from gameState
 
 **How to verify:** Save & Play so the snapshot script reloads. Keep External Editor on. Restart the Storyteller Dashboard if it was already running.
 
@@ -147,7 +148,7 @@ _Last populated: 2026-09-24 — Experience Log + page 6 (TOR-92)._
 
 ### NPC / stage
 
-#### TOR-560 — Generic NPC import (spawn, scene library, Dashboard bridge)
+#### 🚫 TOR-560 — Generic NPC import (spawn, scene library, Dashboard bridge)
 
 **How to verify:** Save & Play so Global + CONTROL_BOARD UI update. The **Import** field should sit on the control-board edge **opposite** the Apply/Clear row (not stacked above those buttons). Paste a short key list from the Storyteller Dashboard (for example `dogGuard_01,academicsProfessor_02`) and click **Import** (or press Enter in the field). A Storyteller-only name popup should open with those rows pre-filled from sheet labels — change a name if you like, then confirm. You should get face-down tokens in a spaced row on the edge **opposite** the PC seat-token row (not on top of the PCs), with tooltip nicknames matching whatever you typed in the popup, rotation `{0, 0, 180}`, and **Toggles → Snap** on so they pull onto control-board snap points. Figurines should park under the table with lights off. Apply should place them from token positions like other stage NPCs. Leaving the scene (or Clear) should destroy those generic objects; applying that library scene again should recreate them with the same display names.
 
@@ -190,6 +191,8 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 **Context:** Absent was hiding the pile but leaving the hand zone (and often the cards) at the table, and parking the PC token on the board. Apply that only moved PC tokens also skipped seat layout because the NPC reconciler thought nothing had changed.
 
 **Re-test after the 2026-10-01 fix (Absent off left the cards behind):** Burying the hand used to tag the hand zone as a hidden object. A tagged hand zone stops holding its cards, so when Absent was turned off the zone came back to the chair and the cards stayed under the table. Absent now moves the hand zone and its cards with the same single hand mover the Hand Lab confirmed, and nothing tags the zone. When you re-run the steps above, the key check is: after Absent **off**, Red’s cards are back in Red’s fan at the chair and can be picked up. Use a player who was **not** already Absent before this Save & Play. Cards stranded by the old code may need to be fetched by hand once.
+
+**Second re-test (2026-10-01, cards swooped back to the table on Absent on):** At Y −200 the cards sit inside the floor. Unlocked cards get shoved out by the physics engine and fly to the table edge with the "swoop" sound, so it looked like they never moved. The single hand mover now locks the cards whenever it moves a hand to a parked height (Y −195 or lower), and unlocks them whenever it moves a hand anywhere higher. When you turn Absent **on**, there should be no swoop sound and no cards landing on the table edge; Red’s cards should quietly vanish under the table with the hand zone. When you turn Absent **off**, the cards should come back in Red’s fan, and you should be able to pick them up (they are not left locked).
 
 ## Cleared
 

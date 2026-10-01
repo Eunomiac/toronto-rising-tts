@@ -52,7 +52,7 @@ Satellites use `C.SeatRoleOffsets` (world-unit XZ + rotation vs the occupant fig
 Current placement behavior:
 
 - Each in-session occupant is moved to their numbered slot; furniture/anchors follow figurine-local offsets.
-- Live Y at or below −199 is a **feature-hide** override for character-sheet pages, signal fire, and hunger smoke — occupancy stash (Absent / unused NPC pile at Y=−200) is a different writer. On hide, in-session Y is stored on `seatLayout.absentPileY`; on restore, table-height roles use authored `defaultY` so lights, bags, and the chair come back with the figurine (TOR-512). The player hand zone also moves to Y=−200, and cards in that hand ride with it via `U.movePlayerHand` (TOR-513 / TOR-590).
+- Live Y at or below −199 is a **feature-hide** override for character-sheet pages, signal fire, and hunger smoke — occupancy stash (Absent / unused NPC pile at Y=−200) is a different writer. On hide, in-session Y is stored on `seatLayout.absentPileY`; on restore, table-height roles use authored `defaultY` so lights, bags, and the chair come back with the figurine (TOR-512). The player hand zone also moves to Y=−200, and cards in that hand ride with it via `U.movePlayerHand` (TOR-513 / TOR-590). `U.movePlayerHand` locks the cards whenever the target Y is ≤ −195 (they sit inside the floor there) and unlocks them on any higher target.
 - Pink tarot and PC dice drawers re-apply from `C.ObjectPositions` after anchors move (Consult on/off; tray open/closed).
 - Hand zones still use the dedicated hand-zone mover so cards in hand stay with the zone.
 

@@ -2596,14 +2596,23 @@ local function poseObjectWithHand(obj, pos, rot, smooth)
 	obj.setRotation(rotTbl)
 end
 
+--- Hand-zone target Y at or below this is a parked (off-table) hand. Keep just above
+--- `C.HIDDEN_OBJECT_WORLD_Y` (−200); util cannot require `lib.constants`.
+local HAND_PARKED_LOCK_Y = -195
+
 --- Move a player's hand zone and every card in that hand as one rigid body (TOR-590).
 --- Sole production writer for hand-zone pose + in-hand cards. Callers must not
 --- `setPosition` / `placeObjectExact` the zone first — that zeroes the delta and leaves cards behind.
 ---
 --- Behavior (Hand Lab `rigid_instant`): unlock any locked hand cards, then instant
 --- `setPosition`/`setRotation` on the zone and every card (same rigid yaw + translation;
---- card yaw snapped to zone Y + 180). Never locks. Pass `opts.smooth = true` only for a
---- short on-table nudge that is meant to be seen (table-scale jumps must stay instant).
+--- card yaw snapped to zone Y + 180). Pass `opts.smooth = true` only for a short on-table
+--- nudge that is meant to be seen (table-scale jumps must stay instant).
+---
+--- Target Y decides the card lock: at or below `HAND_PARKED_LOCK_Y` every card is locked in the
+--- same call as its teleport, before the next physics step — parked cards sit inside the floor,
+--- and unlocked ones get depenetrated and fly back to the table. Any higher target leaves them
+--- unlocked, so in-hand cards on the table are never locked.
 --- @param playerRef string|userdata seat color or Player
 --- @param position Vector|table world position of the hand zone
 --- @param rotation Vector|table world rotation of the hand zone
@@ -2626,6 +2635,10 @@ function U.movePlayerHand(playerRef, position, rotation, opts)
 
 	local targetPos = Vector(position)
 	local targetRot = Vector(rotation)
+	local lockCards = targetPos.y <= HAND_PARKED_LOCK_Y
+	if smooth and lockCards then
+		error("U.movePlayerHand: parking a hand (target y <= " .. HAND_PARKED_LOCK_Y .. ") must be instant")
+	end
 	local hzBefore = {
 		position = Vector(hz.getPosition()),
 		rotation = Vector(hz.getRotation()),
@@ -2662,6 +2675,9 @@ function U.movePlayerHand(playerRef, position, rotation, opts)
 		local cardRot = Vector(rotated.rotation)
 		cardRot.y = cardYaw
 		poseObjectWithHand(entry.obj, newPos, cardRot, smooth)
+		if lockCards and entry.obj.setLock ~= nil then
+			entry.obj.setLock(true)
+		end
 	end
 	return hzBefore
 end
