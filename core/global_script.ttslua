@@ -8392,7 +8392,7 @@ function onPlayerConnect(playerOrColor, forceRun)
         end
     end
 
-    -- TOR-293: default camera → effective presence (narrative restore + connection) before blindfold.
+    -- TOR-293: default camera → seat at once (unoccupied → occupied) and re-light before blindfold.
     local PlayerConnection = require("core.player_connection")
     local seatColor = nil
     if U.isPlayer(connected) then
@@ -8407,7 +8407,7 @@ function onPlayerConnect(playerOrColor, forceRun)
         if M ~= nil and type(M.setCamera) == "function" and U.isPlayer(connected) then
             M.setCamera(connected, "default")
         end
-        PlayerConnection.reconcileEffectivePresence(seatColor)
+        PlayerConnection.handleSeatConnected(seatColor)
     end
 
     -- TOR-319: Intermission keeps global blindfold up; other phases hide it.
@@ -8418,7 +8418,8 @@ function onPlayerConnect(playerOrColor, forceRun)
     end
 end
 
---- TTS: player disconnected — treat chronicle seat as scene-absent without mutating library isPresent (TOR-293).
+--- TTS: player disconnected — darken the chronicle seat only; the next connection checkpoint
+--- (blindfold transition) makes it unoccupied if they are still gone (TOR-293).
 function onPlayerDisconnect(player)
     if not U.isPlayer(player) then
         return
@@ -8438,5 +8439,5 @@ function onPlayerDisconnect(player)
     if type(RC.cancelRoll) == "function" then
         RC.cancelRoll(seatColor)
     end
-    PlayerConnection.reconcileEffectivePresence(seatColor)
+    PlayerConnection.handleSeatDisconnected(seatColor)
 end

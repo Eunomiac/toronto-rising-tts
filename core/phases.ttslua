@@ -613,21 +613,11 @@ local function runSpotlightExitToEndTransition(ctx)
         + (HUDBF.TRANSITION_SETTLE_DELAY_SEC or 10)
 end
 
---- Intermission → Play: solo Host auto-enables DEBUG Assume Players Connected (TOR-429).
---- @param ctx table|nil
+--- Connection checkpoint under the global cover: PCs still disconnected become unoccupied seats.
+--- @param _ctx table|nil
 --- @return boolean
-function Phases.maybeEnableAssumePlayersConnectedForSoloHost(ctx)
-    ctx = type(ctx) == "table" and ctx or {}
-    if ctx.from ~= C.Phases.INTERMISSION then
-        return true
-    end
-    local PlayerConnection = require("core.player_connection")
-    if type(PlayerConnection.enableAssumePlayersConnectedIfSoloHost) ~= "function" then
-        return true
-    end
-    if PlayerConnection.enableAssumePlayersConnectedIfSoloHost() then
-        U.AlertGM("Assume players connected: ON (solo Host)")
-    end
+function Phases.applyConnectionCheckpointUnderCover(_ctx)
+    require("core.player_connection").applyConnectionCheckpoint()
     return true
 end
 
@@ -815,6 +805,9 @@ Phases.onEnter[C.Phases.INTERMISSION] = function(ctx)
             return true
         end,
         function()
+            return Phases.applyConnectionCheckpointUnderCover(ctx)
+        end,
+        function()
             return Phases.applyNoSceneDefault(ctx, {
                 reason = "phase_intermission_enter",
                 skipSoundscape = true,
@@ -847,14 +840,14 @@ end
 Phases.onEnter[C.Phases.PLAY] = function(ctx)
     local steps = {
         function()
-            -- Before lighting apply so chronicle seats stay present under TOR-293.
-            return Phases.maybeEnableAssumePlayersConnectedForSoloHost(ctx)
-        end,
-        function()
             -- Phase is already PLAY (set before enter steps). Idempotent re-assert so any
             -- applyGlobalBlindfoldFromPhase race during the phase flip cannot lift early (TOR-363);
             -- no FadeIn when already up (TOR-398).
             return Phases.showGlobalBlindfold(ctx)
+        end,
+        function()
+            -- Before lighting apply so disconnected PCs are already unoccupied seats.
+            return Phases.applyConnectionCheckpointUnderCover(ctx)
         end,
         function()
             return Phases.armPlayHudBehindCover(ctx)

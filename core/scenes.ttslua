@@ -1165,7 +1165,7 @@ function Scenes.applyDefaultNoSceneEnvironment(opts)
         GameStateOverlay.reconcileFromState()
     end
 
-    -- TOR-293: empty chronicle seats stay narratively present in no-scene, but world is inactive.
+    -- TOR-293: disconnected PCs stay dark in no-scene even though narratively present.
     local PlayerConnection = require("core.player_connection")
     PlayerConnection.reconcileEffectivePresence(nil)
 

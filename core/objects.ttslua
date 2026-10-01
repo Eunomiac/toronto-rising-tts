@@ -264,7 +264,7 @@ local function resolveSeatPresenceForSeat(seatKey)
     end
     if U.isIn(seatKey, C.PlayerColors or {}) then
         local PlayerConnection = require("core.player_connection")
-        return PlayerConnection.isChronicleSeatConnected(seatKey)
+        return PlayerConnection.isSeatConnected(seatKey)
     end
     return true
 end

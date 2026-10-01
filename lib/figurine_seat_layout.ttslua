@@ -1149,30 +1149,61 @@ function FSL.tryAssignTableSlot(occupantKey, slot)
     return true, nil
 end
 
+--- Connection checkpoint: a PC who is still disconnected loses their chair (`absentFromSession`).
+--- Only `core.player_connection` calls this; nothing else may unoccupy a PC seat.
 --- @param color string
---- @param absent boolean
+function FSL.markPlayerDisconnected(color)
+    if not isPlayerSeatKey(color) then
+        error("FSL.markPlayerDisconnected: not a player seat: " .. tostring(color))
+    end
+    local row = ensureSeatRow(liveSeatSlots(), color)
+    row.absentFromSession = true
+    row.tableSlot = nil
+end
+
+--- Connect: clear `absentFromSession` and give the PC a chair on the current table at once.
+--- Fixed tables use the PC's default chair when free; random-seating tables (and a taken
+--- default) use the lowest free chair. Scatter has no chairs — group membership is the seat,
+--- and `S.validateState` seeds the standard chair kept for leaving Scatter.
+--- @param color string
 --- @return boolean ok
 --- @return string|nil err
-function FSL.setPlayerAbsentFromSession(color, absent)
+function FSL.seatConnectedPlayer(color)
     if not isPlayerSeatKey(color) then
-        return false, "absentFromSession is only for player seats"
+        return false, "FSL.seatConnectedPlayer: not a player seat: " .. tostring(color)
     end
-    local ss = liveSeatSlots()
-    local row = ensureSeatRow(ss, color)
-    if absent then
-        row.absentFromSession = true
-        row.tableSlot = nil
+    local row = ensureSeatRow(liveSeatSlots(), color)
+    row.absentFromSession = nil
+    if tonumber(row.tableSlot) ~= nil then
         return true, nil
     end
-    row.absentFromSession = nil
-    local tableCfg = currentTableCfg()
-    local free = FSL.lowestFreeTableSlot(tableCfg)
-    if free == nil then
-        row.absentFromSession = true
-        row.tableSlot = nil
-        return false, "No free table slot for " .. color .. " on this table. They stay Absent."
+    local Occupancy = require("lib.scatter_occupancy")
+    if Occupancy.isScatterLayoutActive() then
+        return true, nil
     end
-    row.tableSlot = free
+    local tableCfg, tableKey = currentTableCfg()
+    local slot = nil
+    if not FSL.tableUsesRandomSeating(tableKey) then
+        local preferred = FSL.DEFAULT_TABLE_SLOTS[color]
+        if type(preferred) == "number" and preferred <= FSL.getSlotCapacity(tableCfg) then
+            local taken = false
+            local occ = FSL.collectOccupants()
+            for i = 1, #occ do
+                if occ[i].tableSlot == preferred then
+                    taken = true
+                    break
+                end
+            end
+            if not taken then
+                slot = preferred
+            end
+        end
+    end
+    slot = slot or FSL.lowestFreeTableSlot(tableCfg)
+    if slot == nil then
+        return false, "No free chair for " .. color .. " on " .. tostring(tableKey) .. "."
+    end
+    row.tableSlot = slot
     return true, nil
 end
 

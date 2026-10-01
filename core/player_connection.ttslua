@@ -1,9 +1,15 @@
 --[[
-  Connection-aware PC seat presence (TOR-293).
+  Connection-driven seat occupancy (TOR-293). Canonical model:
+  docs/solutions/seat-occupancy-and-connection.md
 
-  Narrative `seatSlots.isPresent` stays authoritative for scene authoring / library mirror.
-  Effective presence (lights, hidden objects, hosted conditions) also requires the chronicle
-  Steam player for that seat color to be connected — unless DEBUG assumePlayersConnected.
+  Connection is the only authority for `seatSlots[color].absentFromSession` (not connected).
+  - Connect (incl. late join, load): clear the flag and seat the PC at once.
+  - Mid-session disconnect: darken the seat only (effective presence false).
+  - Connection checkpoint (under blindfold cover / load): a PC still disconnected becomes an
+    unoccupied seat — no chair, satellites parked, control token stashed beneath the board.
+
+  Debug connection mode (`debug.assumeConnected`): "Assume Connected" reads per-seat
+  `debug.simulatedConnection[color]` (default connected) instead of Steam.
 ]]
 
 local PC = {}
@@ -12,42 +18,38 @@ local S = require("core.state")
 local C = require("lib.constants")
 local U = require("lib.util")
 
+--- True in the Debug panel's "Assume Connected" mode; false in "By Connection Status".
 --- @return boolean
-function PC.assumePlayersConnected()
-  return S.getStateVal("debug", "assumePlayersConnected") == true
+function PC.isAssumeConnectedMode()
+  return S.getStateVal("debug", "assumeConnected") == true
 end
 
 --- @param on boolean
-function PC.setAssumePlayersConnected(on)
-  S.setStateVal(on == true, "debug", "assumePlayersConnected")
+function PC.setAssumeConnectedMode(on)
+  S.setStateVal(on == true, "debug", "assumeConnected")
 end
 
---- Toggle DEBUG flag; returns new value.
+--- Simulated connection for a PC seat in Assume Connected mode (default connected).
+--- @param color string
 --- @return boolean
-function PC.toggleAssumePlayersConnected()
-  local nextVal = not PC.assumePlayersConnected()
-  PC.setAssumePlayersConnected(nextVal)
-  return nextVal
+function PC.isSimulatedConnected(color)
+  local map = S.getStateVal("debug", "simulatedConnection")
+  return not (U.Type(map) == "table" and map[color] == false)
 end
 
---- Solo Host playtest helper (TOR-429): if exactly one seated player and they are Host,
---- turn assumePlayersConnected on and reconcile. No-op when already on or multiplayer.
---- @return boolean true when the flag was newly enabled
-function PC.enableAssumePlayersConnectedIfSoloHost()
-  if PC.assumePlayersConnected() then
-    return false
+--- @param color string
+--- @param connected boolean
+function PC.setSimulatedConnected(color, connected)
+  local map = S.getStateVal("debug", "simulatedConnection")
+  if U.Type(map) ~= "table" then
+    map = {}
+    S.setStateVal(map, "debug", "simulatedConnection")
   end
-  local seated = Player.getPlayers() or {}
-  if #seated ~= 1 then
-    return false
+  if connected == true then
+    map[color] = nil
+  else
+    map[color] = false
   end
-  local only = seated[1]
-  if not U.isPlayer(only) or only.host ~= true then
-    return false
-  end
-  PC.setAssumePlayersConnected(true)
-  PC.reconcileEffectivePresence(nil)
-  return true
 end
 
 --- Steam id mapped to this PC seat color in `C.PlayerData`, or nil if not a chronicle seat.
@@ -83,19 +85,35 @@ local function isSteamIdConnected(steamId)
   return false
 end
 
---- Chronicle-seat connection (ignores narrative). DEBUG assume → always true.
+--- Real Steam connection for a PC seat, ignoring the debug mode.
 --- Non-chronicle PC colors → true (no Steam lock).
 --- @param color string
 --- @return boolean
-function PC.isChronicleSeatConnected(color)
-  if PC.assumePlayersConnected() then
-    return true
-  end
+local function isSteamSeatConnected(color)
   local steamId = PC.steamIdForSeatColor(color)
   if steamId == nil then
     return true
   end
   return isSteamIdConnected(steamId)
+end
+
+--- Connection for a PC seat under the current debug mode (ignores narrative presence).
+--- @param color string
+--- @return boolean
+function PC.isSeatConnected(color)
+  if PC.isAssumeConnectedMode() then
+    return PC.isSimulatedConnected(color)
+  end
+  return isSteamSeatConnected(color)
+end
+
+--- Unoccupied PC seat: `absentFromSession` (not connected at a checkpoint).
+--- @param color string
+--- @return boolean
+function PC.isSeatUnoccupied(color)
+  local ss = S.getStateVal("sessionScene", "seatSlots")
+  local row = U.Type(ss) == "table" and ss[color] or nil
+  return U.Type(row) == "table" and row.absentFromSession == true
 end
 
 --- Narrative presence only (`seatSlots.isPresent` / `seatPresent`).
@@ -119,15 +137,14 @@ function PC.narrativePcSeatPresent(color)
   return true
 end
 
---- Effective PC presence: narrative AND connection (incl. no-scene defaults).
---- Does not write `isPresent` / library mirror.
+--- Effective PC presence (seat lit): narrative AND connected. Does not write `isPresent`.
 --- @param color string
 --- @return boolean
 function PC.effectivePcSeatPresent(color)
   if not PC.narrativePcSeatPresent(color) then
     return false
   end
-  return PC.isChronicleSeatConnected(color)
+  return PC.isSeatConnected(color)
 end
 
 --- Resolve chronicle PC color from a disconnected/connecting Player.
@@ -151,7 +168,8 @@ function PC.chronicleSeatColorForPlayer(player)
   return row.color
 end
 
---- After connect/disconnect/load/no-scene: reconcile world from effective presence (no library write).
+--- Reconcile world from effective presence for occupied PC seats (no library write).
+--- Unoccupied seats keep their parked satellites; only HUD/lights resync.
 --- @param color string|nil When nil, all PC seats.
 function PC.reconcileEffectivePresence(color)
   local Sync = require("core.sync")
@@ -165,14 +183,141 @@ function PC.reconcileEffectivePresence(color)
     end
   end
   for _, c in ipairs(colors) do
-    local present = PC.effectivePcSeatPresent(c)
-    if type(O.applyPcSeatHiddenObjectPresence) == "function" then
-      O.applyPcSeatHiddenObjectPresence(c, present)
+    if not PC.isSeatUnoccupied(c) then
+      O.applyPcSeatHiddenObjectPresence(c, PC.effectivePcSeatPresent(c))
     end
-    if type(Sync.player) == "function" then
-      Sync.player(c)
+    Sync.player(c)
+  end
+end
+
+--- Scatter: unoccupied PCs leave their group; occupied PCs without a group join an empty one.
+local function syncScatterPackToOccupancy()
+  local Occupancy = require("lib.scatter_occupancy")
+  if not Occupancy.isScatterLayoutActive() then
+    return
+  end
+  local pack = S.getStateVal("sessionScene", "scatterPlacements")
+  if U.Type(pack) == "table" then
+    Occupancy.reconcilePcConnectionInPack(pack, S.getStateVal("sessionScene", "seatSlots"))
+  end
+end
+
+--- Re-lay the table (or Scatter groups) and mirror control tokens after occupancy changed.
+local function relayoutAfterOccupancyChange()
+  S.validateState()
+  syncScatterPackToOccupancy()
+  local RSL = require("lib.rotational-seat-layout")
+  RSL.invalidateLayoutSyncCache()
+  RSL.SyncTable(nil, { force = true })
+  local Gameboard = require("core.npc_gameboard")
+  Gameboard.reconcileControlBoardFromState({ force = true, forceTokenMirror = true })
+end
+
+--- Seat a PC who is (or simulates being) connected: unoccupied → occupied at once, no blindfold.
+--- Already-occupied seats only re-light.
+--- @param color string
+--- @param opts table|nil `{ skipRelayout = boolean }` (batch callers relayout once)
+--- @return boolean relayoutNeeded
+function PC.handleSeatConnected(color, opts)
+  opts = opts or {}
+  if not U.isIn(color, C.PlayerColors or {}) then
+    return false
+  end
+  local seated = false
+  if PC.isSeatUnoccupied(color) and PC.isSeatConnected(color) then
+    local FSL = require("lib.figurine_seat_layout")
+    local ok, err = FSL.seatConnectedPlayer(color)
+    if not ok then
+      U.AlertGM("Connection: " .. tostring(err))
+      return false
+    end
+    seated = true
+  end
+  if seated and opts.skipRelayout ~= true then
+    relayoutAfterOccupancyChange()
+  end
+  if opts.skipRelayout ~= true then
+    PC.reconcileEffectivePresence(color)
+  end
+  return seated
+end
+
+--- Mid-session disconnect: darken the seat only. The checkpoint decides unoccupied.
+--- @param color string
+function PC.handleSeatDisconnected(color)
+  if not U.isIn(color, C.PlayerColors or {}) then
+    return
+  end
+  PC.reconcileEffectivePresence(color)
+end
+
+--- State only: every occupied PC seat that is not connected becomes unoccupied.
+--- @return string[] colors newly unoccupied
+local function markDisconnectedSeatsUnoccupied()
+  local FSL = require("lib.figurine_seat_layout")
+  local changed = {}
+  for _, color in ipairs(C.PlayerColors or {}) do
+    if not PC.isSeatUnoccupied(color) and not PC.isSeatConnected(color) then
+      FSL.markPlayerDisconnected(color)
+      changed[#changed + 1] = color
     end
   end
+  return changed
+end
+
+--- Connection checkpoint (under blindfold cover): every occupied PC seat that is not connected
+--- becomes unoccupied (`absentFromSession`, no chair, satellites parked, token stashed).
+--- @return string[] colors newly unoccupied
+function PC.applyConnectionCheckpoint()
+  local FSL = require("lib.figurine_seat_layout")
+  local changed = markDisconnectedSeatsUnoccupied()
+  if #changed == 0 then
+    return changed
+  end
+  for i = 1, #changed do
+    FSL.setOccupantPileVisible(changed[i], false)
+  end
+  relayoutAfterOccupancyChange()
+  for i = 1, #changed do
+    require("core.sync").player(changed[i])
+  end
+  return changed
+end
+
+--- Seat every connected PC who is unoccupied (load / mode switch), one relayout for the batch.
+--- @return string[] colors newly seated
+function PC.seatAllConnectedPlayers()
+  local seated = {}
+  for _, color in ipairs(C.PlayerColors or {}) do
+    if PC.isSeatUnoccupied(color) and PC.isSeatConnected(color) then
+      if PC.handleSeatConnected(color, { skipRelayout = true }) then
+        seated[#seated + 1] = color
+      end
+    end
+  end
+  if #seated > 0 then
+    relayoutAfterOccupancyChange()
+  end
+  PC.reconcileEffectivePresence(nil)
+  return seated
+end
+
+--- Session start (load), state only — the startup table sync lays out chairs and parks
+--- unoccupied piles, and startup Sync/board reconcile mirror tokens. Checkpoint, then seat
+--- everyone connected.
+function PC.applySessionStartOccupancyState()
+  markDisconnectedSeatsUnoccupied()
+  local FSL = require("lib.figurine_seat_layout")
+  for _, color in ipairs(C.PlayerColors or {}) do
+    if PC.isSeatUnoccupied(color) and PC.isSeatConnected(color) then
+      local ok, err = FSL.seatConnectedPlayer(color)
+      if not ok then
+        U.AlertGM("Connection: " .. tostring(err))
+      end
+    end
+  end
+  S.validateState()
+  syncScatterPackToOccupancy()
 end
 
 return PC

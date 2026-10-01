@@ -37,8 +37,6 @@ local BLINDFOLD_HEAVY_WORK_START_SEC = BLINDFOLD_SITE_CARD_COMPLETE_SEC + BLINDF
 --- old ambient crossfades with destination reveal (same clock when cards are Clear / End scene).
 --- Floored at parent FadeIn so work never starts during the blindfold panel FadeIn alone.
 local BLINDFOLD_DOWN_COMPLETE_SEC = math.max(BLINDFOLD_SLIDE_IN_SEC, BLINDFOLD_DISTRICT_CARD_DELAY_SEC)
---- Default lead-in for `runTransitionAfterLeadIn` (same gate as staged / simple transition).
-local TRANSITION_WORK_LEAD_IN_SEC = BLINDFOLD_DOWN_COMPLETE_SEC
 --- Staged transition (TOR-147 / TOR-434 / TOR-476): fade-out after district-card lead-in;
 --- heavy work after site card completes (+ pad); new audio fades in immediately after work (no silent settle first).
 local TRANSITION_FADE_OUT_SEC = 1
@@ -390,34 +388,13 @@ function HUDBF.estimateStagedTransitionSec(opts)
   return leadInDelaySec + fadeOutSec + siteGateSec + settleDelaySec
 end
 
---- Close panel + blindfold immediately; defer heavy work with `U.await` until blindfold-down
---- animations finish (TOR-434), then settle and lift.
---- @param workFn fun(): boolean, string|nil returns success and optional error message
---- @param opts table|nil { leadInDelaySec = number, settleDelaySec = number, variant = number|nil }
-function HUDBF.runTransitionAfterLeadIn(workFn, opts)
-  if type(workFn) ~= "function" then
-    error("hud_blindfold.runTransitionAfterLeadIn: workFn must be a function")
-  end
-  opts = opts or {}
-  local leadInDelaySec = resolveOptSec(opts.leadInDelaySec, TRANSITION_WORK_LEAD_IN_SEC)
-  local settleDelaySec = resolveOptSec(opts.settleDelaySec, TRANSITION_SETTLE_DELAY_SEC)
-
-  HUDBF.beginTransition(opts)
-
-  U.await(function()
-    local ok, errMsg = workFn()
-    if ok ~= true then
-      if type(errMsg) == "string" and errMsg ~= "" then
-        U.AlertGM(errMsg)
-      end
-      HUDBF.scheduleEnd(0)
-      return
-    end
-    HUDBF.scheduleEnd(settleDelaySec)
-  end, leadInDelaySec)
+--- Connection checkpoint under full cover, before transition work: PCs still disconnected become
+--- unoccupied seats so the incoming scene/table already sees them gone (TOR-293).
+local function applyConnectionCheckpointUnderCover()
+  require("core.player_connection").applyConnectionCheckpoint()
 end
 
---- Blindfold on → wait for slide/FadeIn → work → settle delay → blindfold off (TOR-434).
+--- Blindfold on → wait for slide/FadeIn → connection checkpoint → work → settle delay → blindfold off (TOR-434).
 --- Work is deferred via `U.chain` so XmlUI animations are not hitch-frozen.
 --- @param workFn fun(): boolean, string|nil returns success and optional error message
 --- @param opts table|nil `{ settleDelaySec?, variant?, districtKey?, siteKey?, leadInDelaySec? }`
@@ -436,6 +413,7 @@ function HUDBF.runTransition(workFn, opts)
       return leadInDelaySec
     end,
     function()
+      applyConnectionCheckpointUnderCover()
       local ok, errMsg = workFn()
       if ok ~= true then
         if type(errMsg) == "string" and errMsg ~= "" then
@@ -496,6 +474,7 @@ function HUDBF.runStagedTransition(phases, opts)
       -- TOR-368: snap default cameras in this covered window, not during card FadeIns.
       -- TOR-603: run layout work first so new seat cameraAngles exist, then
       -- `M.snapDefaultCamerasAfterLayout` recopies the occupied seat and lookAts.
+      applyConnectionCheckpointUnderCover()
       if type(phases.work) == "function" then
         local ok, errMsg = phases.work()
         if ok ~= true then

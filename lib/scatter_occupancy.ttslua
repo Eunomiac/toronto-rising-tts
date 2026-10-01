@@ -925,4 +925,78 @@ function ScatterOccupancy.prepareLeaveToStandard(destTableKey, opts)
     S.setStateVal("standard", "sessionScene", "placementMode")
 end
 
+--- First scatter group with no PCs, preferring one with no NPCs either (6 groups, 5 PCs).
+--- @param pack table
+--- @return number|nil groupIndex
+local function emptyPcGroupIndex(pack)
+    local fallback = nil
+    for g = 1, groupCount() do
+        local area = pack[ScatterLayout.areaKeyForGroup(g)]
+        local hasPc = U.Type(area) == "table" and U.Type(area.centerCharacters) == "table"
+            and next(area.centerCharacters) ~= nil
+        if not hasPc then
+            local hasNpc = U.Type(area) == "table" and U.Type(area.orbitCharacters) == "table"
+                and next(area.orbitCharacters) ~= nil
+            if not hasNpc then
+                return g
+            end
+            fallback = fallback or g
+        end
+    end
+    return fallback
+end
+
+--- Keep a scatter pack in step with PC seat occupancy: PCs with `absentFromSession` (not connected)
+--- leave their group; occupied PCs missing from every group join an empty group.
+--- @param pack table scatterPlacements (mutated)
+--- @param seatSlots table|nil live `sessionScene.seatSlots`
+--- @return boolean changed
+function ScatterOccupancy.reconcilePcConnectionInPack(pack, seatSlots)
+    if U.Type(pack) ~= "table" then
+        error("ScatterOccupancy.reconcilePcConnectionInPack: pack must be a table")
+    end
+    seatSlots = U.Type(seatSlots) == "table" and seatSlots or {}
+    local groupOfPc = {}
+    for g = 1, groupCount() do
+        local area = pack[ScatterLayout.areaKeyForGroup(g)]
+        if U.Type(area) == "table" and U.Type(area.centerCharacters) == "table" then
+            for pcKey, _ in pairs(area.centerCharacters) do
+                groupOfPc[pcKey] = g
+            end
+        end
+    end
+    local changed = false
+    for _, color in ipairs(C.PlayerColors or {}) do
+        local pcKey = pcKeyForColor(color)
+        if pcKey ~= nil then
+            local row = seatSlots[color]
+            local unoccupied = U.Type(row) == "table" and row.absentFromSession == true
+            local g = groupOfPc[pcKey]
+            if unoccupied and g ~= nil then
+                pack[ScatterLayout.areaKeyForGroup(g)].centerCharacters[pcKey] = nil
+                changed = true
+            elseif not unoccupied and g == nil then
+                local target = emptyPcGroupIndex(pack)
+                if target == nil then
+                    error("ScatterOccupancy: no scatter group without a PC for " .. color)
+                end
+                local areaKey = ScatterLayout.areaKeyForGroup(target)
+                local area = pack[areaKey]
+                if U.Type(area) ~= "table" then
+                    area = { centerCharacters = {}, orbitCharacters = {} }
+                    pack[areaKey] = area
+                end
+                area.centerCharacters = area.centerCharacters or {}
+                area.centerCharacters[pcKey] = {
+                    slot = ScatterLayout.nextFreePcWorldSlot({}),
+                    isPlayingNPC = false,
+                    isPresent = U.Type(row) ~= "table" or row.isPresent ~= false,
+                }
+                changed = true
+            end
+        end
+    end
+    return changed
+end
+
 return ScatterOccupancy

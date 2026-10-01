@@ -102,7 +102,7 @@ All of this runs **on the Host only** after the client is already in the session
 2. **TOR-430 Defer Connect** — O(1) Steam → chronicle PC color → if `connectionControls.deferConnectByColor[color]`, **return** (no seat/camera/presence/blindfold).
 3. Clear seat-HUD reveal cache; mark `pendingConnectSeatRefreshByPlayer`.
 4. `M.tryAutoAssignSeatFromChronicle` — skipped when **Defer Auto-Seat** (TOR-428) for target color; else Grey→chronicle seat (may fire `onPlayerChangeColor`).
-5. Default camera + `PlayerConnection.reconcileEffectivePresence` (TOR-293).
+5. Default camera + `PlayerConnection.handleSeatConnected` (TOR-293): an unoccupied PC seat is filled immediately (relayout + token mirror), then the seat re-lights. See [seat occupancy and connection](../../docs/solutions/seat-occupancy-and-connection.md).
 6. If not Intermission: `Phases.lowerBlindfoldForConnectingPlayer` (TOR-319).
 
 Manual **Connect** button: `M.manualRunPlayerConnect(color)` → `onPlayerConnect(player, true)` (bypasses Defer Connect).
