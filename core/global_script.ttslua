@@ -3519,6 +3519,12 @@ function onLoad(saved_data)
             syncDebugLastLoadClockLabel()
             return 0
         end,
+        function()
+            -- Startup ran with every PC seated; now unseat PCs who are not connected.
+            setStartupAction("startup-connection-checkpoint")
+            require("core.player_connection").finishStartupConnectionAssumption()
+            return 0
+        end,
         -- Each print in its own chain step: TTS reorders multiple prints from one function.
         function()
             local phase = S.getStateVal("currentPhase")
