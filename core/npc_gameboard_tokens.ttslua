@@ -418,28 +418,33 @@ local function isNearSeatRowUv(board, u, v)
     return math.abs(v - rowV) <= 0.08 and u >= (uMin - 0.05) and u <= (uMax + 0.05)
 end
 
---- @param token Object
---- @param locked boolean
-local function setControlTokenLock(token, locked)
-    if not Board.isGameObject(token) or token.setLock == nil then
-        return
-    end
-    token.setLock(locked == true)
-end
+--- World units beneath the CONTROL_BOARD center for an unoccupied PC's token.
+local PC_TOKEN_UNDER_BOARD_WORLD_DROP = 3
+--- Board-local units below the minimap surface (keeps the token outside the seat-row scan Y band).
+local PC_TOKEN_UNDER_BOARD_LOCAL_DROP = 2
 
---- Disable an Absent PC control token (locked, Y = −200). Keep last XZ so restore
---- can still snap to the occupancy chair (TOR-513).
+--- Unoccupied PC (not connected): lock the control token a few units beneath the CONTROL_BOARD,
+--- out of sight and not interactable. Documented exception to the Y = −200 hide/restore park
+--- (`docs/solutions/lua-hide-restore-policy.md`); `mirrorSeatRowControlToken` brings it back.
 --- @param token Object
-local function stashAbsentPcControlToken(token)
+local function stashDisconnectedPcControlToken(token)
     if not Board.isGameObject(token) then
         return
     end
-    local stashY = tonumber(DATA.MARKER_STASH_WORLD_Y) or C.HIDDEN_OBJECT_WORLD_Y
-    local pos = token.getPosition()
-    O.hideObject(token, {
-        parkPosition = { x = pos.x, y = stashY, z = pos.z },
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) then
+        error("stashDisconnectedPcControlToken: CONTROL_BOARD is missing")
+    end
+    local center = board.getPosition()
+    local surfaceY = tonumber(DATA.MINIMAP_SURFACE_LOCAL_Y) or 0.18
+    local localBelow = board.positionToWorld({ x = 0, y = surfaceY - PC_TOKEN_UNDER_BOARD_LOCAL_DROP, z = 0 })
+    local y = math.min(center.y - PC_TOKEN_UNDER_BOARD_WORLD_DROP, localBelow.y)
+    O.restoreObject(token, {
+        position = { x = center.x, y = y, z = center.z },
+        locked = true,
+        interactable = false,
     })
-    setControlTokenLock(token, true)
+    setHiddenFromPlayerColors(token)
 end
 
 --- Programmatic mirror onto a seat-row catalog entry (Apply / Clear / reconcile — manual drops use `rotation_snap` only).
@@ -502,7 +507,7 @@ Tokens.applySeatRowNpcControlTokenScale = applySeatRowNpcControlTokenScale
 Tokens.controlTokenScaleForCatalogEntry = controlTokenScaleForCatalogEntry
 Tokens.isNearSeatRowUv = isNearSeatRowUv
 Tokens.mirrorSeatRowControlToken = mirrorSeatRowControlToken
-Tokens.stashAbsentPcControlToken = stashAbsentPcControlToken
+Tokens.stashDisconnectedPcControlToken = stashDisconnectedPcControlToken
 Tokens.tokenPlacementOnBoard = tokenPlacementOnBoard
 Tokens.playerColorsHiddenFromControlBoard = playerColorsHiddenFromControlBoard
 Tokens.setHiddenFromPlayerColors = setHiddenFromPlayerColors

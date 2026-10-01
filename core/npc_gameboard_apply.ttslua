@@ -55,7 +55,7 @@ end
 
 --- Shared fast Sync.npcs path used by control-board interactions.
 --- Orchestrator fingerprint skip (npcReconcileFingerprint) applies when force is false.
---- That fingerprint includes PC occupancy (`tableSlot` / Absent) so PC-only Apply still
+--- That fingerprint includes PC occupancy (`tableSlot` / `absentFromSession`) so PC-only Apply still
 --- reaches seat layout (TOR-513). RSL layout force inside commitNpcSeatLayout (TOR-210)
 --- is separate and unchanged.
 --- @param reason string
@@ -135,7 +135,6 @@ local function applyOccupancyFromSeatRow(board, polarOnBoardByCharacter)
     end
 
     local NPCS = require("core.npcs")
-    local FSL = require("lib.figurine_seat_layout")
     local S = stateModule()
     local occupied = S.getStateVal("seatLayout", "occupiedNPCSlots")
     if type(occupied) ~= "table" then
@@ -226,23 +225,14 @@ local function applyOccupancyFromSeatRow(board, polarOnBoardByCharacter)
             row = {}
             ss[color] = row
         end
-        if rec ~= nil then
-            if row.absentFromSession == true or floorSlot(row.tableSlot) ~= floorSlot(rec.tableSlot) then
-                row.absentFromSession = nil
+        -- Tokens only move occupied PCs between chairs; connection alone unoccupies a PC seat.
+        if rec ~= nil and row.absentFromSession ~= true then
+            if floorSlot(row.tableSlot) ~= floorSlot(rec.tableSlot) then
                 row.tableSlot = rec.tableSlot
                 changed = true
             end
             if NPCS.resolvePlayerSeatPresence(color) ~= rec.present then
                 if NPCS.setPlayerSeatPresence(color, rec.present) then
-                    changed = true
-                end
-            end
-        else
-            if row.absentFromSession ~= true then
-                local ok, err = FSL.setPlayerAbsentFromSession(color, true)
-                if not ok then
-                    print("[Gameboard] Apply occupancy: Absent " .. color .. ": " .. tostring(err))
-                else
                     changed = true
                 end
             end

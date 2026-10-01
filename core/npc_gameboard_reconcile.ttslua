@@ -426,16 +426,22 @@ function Reconcile.buildParticipantSnapshot(board, baseSeatSlots)
         end
     end
 
+    -- PC occupancy follows live connection, never the board: tokens only move occupied PCs.
+    local liveSlots = stateModule().getStateVal("sessionScene", "seatSlots")
+    liveSlots = type(liveSlots) == "table" and liveSlots or {}
     for _, color in ipairs(C.PlayerColors or {}) do
         local base = type(baseSeatSlots[color]) == "table" and U.merge({}, baseSeatSlots[color]) or {}
-        local occ = pcOnSlot[color]
-        if occ ~= nil then
-            base.absentFromSession = nil
-            base.tableSlot = occ.tableSlot
-            base.isPresent = occ.present
-        else
+        local liveRow = liveSlots[color]
+        if type(liveRow) == "table" and liveRow.absentFromSession == true then
             base.absentFromSession = true
             base.tableSlot = nil
+        else
+            base.absentFromSession = nil
+            local occ = pcOnSlot[color]
+            if occ ~= nil then
+                base.tableSlot = occ.tableSlot
+                base.isPresent = occ.present
+            end
         end
         seatSlots[color] = base
     end
@@ -1243,7 +1249,7 @@ function Reconcile.mirrorControlBoardTokensFromModel(board, model)
                 if entry ~= nil then
                     Tokens.mirrorSeatRowControlToken(obj, board, entry, row.isPresent == true)
                 else
-                    Tokens.stashAbsentPcControlToken(obj)
+                    Tokens.stashDisconnectedPcControlToken(obj)
                 end
             end
         end

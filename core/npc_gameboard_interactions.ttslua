@@ -277,14 +277,10 @@ local function restorePcControlTokenHome(token, color)
     end
 
     local ScatterMode = require("core.scatter_mode")
-    if ScatterMode.wantsBoardScatterChrome() and type(ScatterMode.clearCharacterOccupancy) == "function" then
-        local pcKey = ScatterMode.pcKeyForColor(color)
-        ScatterMode.clearCharacterOccupancy(pcKey, { token = token, parkToPalette = false })
-        if type(token.setLock) == "function" then
-            token.setLock(false)
+    if ScatterMode.wantsBoardScatterChrome() then
+        if not ScatterMode.parkPcTokenHome(ScatterMode.pcKeyForColor(color)) then
+            Tokens.stashDisconnectedPcControlToken(token)
         end
-        token.interactable = true
-        Tokens.ensureDefaultNpcControlTokenScale(token)
         return true
     end
 
@@ -304,7 +300,7 @@ local function restorePcControlTokenHome(token, color)
     if type(entry) == "table" then
         Tokens.mirrorSeatRowControlToken(token, board, entry, row.isPresent == true)
     else
-        Tokens.stashAbsentPcControlToken(token)
+        Tokens.stashDisconnectedPcControlToken(token)
     end
     Reconcile.schedulePreviewDraftCapture()
     return true
@@ -1303,23 +1299,14 @@ function Interactions.onControlTokenPickUp(token)
             token.setLock(false)
         end
         token.interactable = true
-        -- Free the scatter hole as soon as the token leaves it so another NPC can claim that slot.
+        -- Free an NPC's scatter hole as soon as the token leaves it so another NPC can claim that slot.
         -- Do not palette-park yet (token is still in hand); off-parchment drop / dice-bag restore parks.
-        if Board.isTokenOnMinimapTokenSurface(board, token)
-            and type(ScatterMode.clearCharacterOccupancy) == "function" then
-            if Tokens.isNpcControlToken(token) then
-                ScatterMode.clearCharacterOccupancy(Tokens.resolveTokenCharacterKey(token), {
-                    token = token,
-                    parkToPalette = false,
-                })
-            elseif Tokens.isPcControlToken(token) then
-                local color = Tokens.resolvePcTokenSeatColor(token)
-                local pcKey = color and ScatterMode.pcKeyForColor(color) or nil
-                ScatterMode.clearCharacterOccupancy(pcKey, {
-                    token = token,
-                    parkToPalette = false,
-                })
-            end
+        -- PC tokens keep their group until dropped: the board never unoccupies a PC.
+        if Tokens.isNpcControlToken(token) and Board.isTokenOnMinimapTokenSurface(board, token) then
+            ScatterMode.clearCharacterOccupancy(Tokens.resolveTokenCharacterKey(token), {
+                token = token,
+                parkToPalette = false,
+            })
         end
     else
         Tokens.ensureDefaultNpcControlTokenScale(token)
@@ -1434,7 +1421,9 @@ local function applyControlTokenDropScaleByBoardPosition(token, board)
     end
 end
 
---- Global onObjectDrop hook: seat-row scale for PC columns (TOR-236 / TOR-199).
+--- Global onObjectDrop hook (TOR-236 / TOR-199). A PC token is either on a chair snap (Apply
+--- swaps/moves occupied PCs) or snaps straight back to its own chair — the board never
+--- unoccupies a PC. An unoccupied PC's token returns beneath the board.
 --- @param token Object
 --- @param playerColor string|nil
 function Interactions.onPcControlTokenDropped(token, playerColor)
@@ -1446,16 +1435,33 @@ function Interactions.onPcControlTokenDropped(token, playerColor)
     if not Board.isGameObject(board) then
         return
     end
+    local color = Tokens.resolvePcTokenSeatColor(token)
+    if type(color) ~= "string" or color == "" then
+        return
+    end
     local ScatterMode = require("core.scatter_mode")
     if ScatterMode.onControlTokenDropped(token, true) then
         return
     end
-    if ScatterMode.wantsBoardScatterChrome() and type(ScatterMode.clearCharacterOccupancy) == "function" then
-        local color = Tokens.resolvePcTokenSeatColor(token)
-        local pcKey = color and ScatterMode.pcKeyForColor(color) or nil
-        ScatterMode.clearCharacterOccupancy(pcKey, { token = token, parkToPalette = false })
+    if ScatterMode.wantsBoardScatterChrome() then
+        restorePcControlTokenHome(token, color)
+        return
     end
-    applyControlTokenDropScaleByBoardPosition(token, board)
+    local slots = Reconcile.getActiveBoardModel().seatSlots
+    local row = type(slots) == "table" and slots[color] or nil
+    if type(row) == "table" and row.absentFromSession == true then
+        Tokens.stashDisconnectedPcControlToken(token)
+        return
+    end
+    local fuzziness = Board.snapMatchFuzzinessForBoard(board)
+    local entry = Board.isTokenOnControlBoardSurface(board, token)
+        and Snaps.resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
+        or nil
+    if type(entry) == "table" and entry.snapKind == Snaps.SNAP_KIND_SEAT then
+        Tokens.applySeatRowNpcControlTokenScale(token)
+        return
+    end
+    restorePcControlTokenHome(token, color)
 end
 
 --- Live seat-row presence from a dropped NPC control token (TOR-333).

@@ -264,8 +264,9 @@ local function parkTokenOnPalette(token, characterKey)
     return false
 end
 
---- Public: free board/orbit slots when a control token leaves a scatter hole
---- (pick-up, off-parchment drop, or ST dice-bag roll). HERE also re-applies world layout
+--- Public: free board/orbit slots when an NPC control token leaves a scatter hole
+--- (pick-up, off-parchment drop, or ST dice-bag roll). PC tokens never clear occupancy — they
+--- snap home via `ScatterMode.parkPcTokenHome`. HERE also re-applies world layout
 --- and mirrors the linked library row; optional palette park for NPC tokens.
 --- @param characterKey string|nil
 --- @param opts table|nil `{ token?: Object, parkToPalette?: boolean }` — `parkToPalette` defaults true when `token` is set
@@ -1378,6 +1379,15 @@ function ScatterMode.parkTokensFromState()
             end
         end
     end
+    local seatSlots = S.getStateVal("sessionScene", "seatSlots")
+    if U.Type(seatSlots) == "table" then
+        for _, obj in ipairs(getObjectsWithTag(DATA.TAG_PC_CONTROL_TOKEN) or {}) do
+            local row = seatSlots[Tokens.resolvePcTokenSeatColor(obj) or ""]
+            if U.Type(row) == "table" and row.absentFromSession == true then
+                Tokens.stashDisconnectedPcControlToken(obj)
+            end
+        end
+    end
 end
 
 local boardFinishInProgress = false
@@ -1770,6 +1780,8 @@ function ScatterMode.applyFromControlBoard()
         return false, "scatter groups not calibrated"
     end
     local pack = ScatterMode.scanBoardToPlacements(board)
+    -- Connection, not the board, decides which PCs are seated.
+    require("lib.scatter_occupancy").reconcilePcConnectionInPack(pack, S.getStateVal("sessionScene", "seatSlots"))
     S.setStateVal(pack, "sessionScene", "scatterPlacements")
 
     ScatterMode.parkTokensFromState()
@@ -1819,6 +1831,11 @@ function ScatterMode.onControlTokenDropped(token, isPc)
         local color = Tokens.resolvePcTokenSeatColor(token)
         local pcKey = color and pcKeyForColor(color) or nil
         if pcKey == nil then
+            return true
+        end
+        local seatRow = S.getStateVal("sessionScene", "seatSlots", color)
+        if U.Type(seatRow) == "table" and seatRow.absentFromSession == true then
+            Tokens.stashDisconnectedPcControlToken(token)
             return true
         end
         removeCharacterFromAllGroups(pcKey)
@@ -2066,6 +2083,20 @@ local function parkPcTokenOnSlot(pcKey, groupIndex, slot)
             return
         end
     end
+end
+
+--- Return a PC's control token to its own hole in its scatter group (off-parchment drop, dice bag).
+--- @param pcKey string|nil
+--- @return boolean false when the PC has no scatter group (unoccupied seat)
+function ScatterMode.parkPcTokenHome(pcKey)
+    local gi = ScatterMode.groupIndexForPcKey(pcKey)
+    if gi == nil then
+        return false
+    end
+    local area = activePlacements()[ScatterLayout.areaKeyForGroup(gi)]
+    local slot = math.floor(tonumber(area.centerCharacters[pcKey].slot) or 0)
+    parkPcTokenOnSlot(pcKey, gi, slot)
+    return true
 end
 
 --- Move a PC into a scatter group. No-op if they are already there.

@@ -32,8 +32,6 @@ E2E_GB.FIXTURE = {
     uvTol = 0.002,
     yawTolDeg = 1,
     worldTol = 2.5,
-    --- PC seat-row token probe for TOR-152 / TOR-236 scene-load + reload checks.
-    pcAbsentColor = "Brown",
 }
 
 local TAG_TOKEN = DATA.TAG_NPC_CONTROL_TOKEN
@@ -315,7 +313,7 @@ local function seatRowCatalogByTableSlot(catalog)
 end
 
 --- Expected control-board pose for an in-session PC token (numbered chair).
---- Absent tokens are stashed at Y = −200, not parked on the board (TOR-513).
+--- A disconnected (unoccupied) PC's token is locked beneath the board, not on a chair.
 --- @param board Object
 --- @param color string
 --- @return table|nil `{ u, v }`
@@ -377,19 +375,25 @@ local function assertPcTokensMatchSeatPresence(failures, labelPrefix)
             end
             local ss = S.getStateVal("sessionScene", "seatSlots")
             local row = type(ss) == "table" and ss[color] or nil
-            local absent = type(row) == "table" and row.absentFromSession == true
-            if absent then
+            local unoccupied = type(row) == "table" and row.absentFromSession == true
+            if unoccupied then
                 local p = token.getPosition()
-                if p == nil or p.y == nil or p.y > -199 then
+                local boardY = board.getPosition().y
+                if p == nil or p.y == nil or p.y > boardY - 1 then
                     failures[#failures + 1] = prefix
                         .. ": "
                         .. color
-                        .. " Absent token not stashed at Y=-200 (y="
+                        .. " disconnected PC token not beneath the board (y="
                         .. tostring(p and p.y)
+                        .. ", board y="
+                        .. tostring(boardY)
                         .. ")"
                 end
                 if token.getLock ~= nil and token.getLock() ~= true then
-                    failures[#failures + 1] = prefix .. ": " .. color .. " Absent token is not locked"
+                    failures[#failures + 1] = prefix .. ": " .. color .. " disconnected PC token is not locked"
+                end
+                if token.interactable ~= false then
+                    failures[#failures + 1] = prefix .. ": " .. color .. " disconnected PC token is interactable"
                 end
             else
                 local entry = pcTokenHomePose(board, color)
