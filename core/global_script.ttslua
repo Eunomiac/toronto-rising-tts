@@ -3494,6 +3494,7 @@ function onLoad(saved_data)
             if RSL ~= nil and type(RSL.ensureMinVisibleCsheetPagesForAllSeats) == "function" then
                 RSL.ensureMinVisibleCsheetPagesForAllSeats()
             end
+            PCST.refreshConnectionModeButton()
             do
                 local Phases = require("core.phases")
                 if type(Phases.reconcileParticleEmitterFromPhase) == "function" then
@@ -5471,47 +5472,19 @@ function HUD_pcsDeferConnect(player, value, id)
     end
 end
 
-local function relayoutSeatsAfterOccupancyChange()
-    S.validateState()
-    local RSL = require("lib.rotational-seat-layout")
-    if type(RSL.invalidateLayoutSyncCache) == "function" then
-        RSL.invalidateLayoutSyncCache()
-    end
-    if type(RSL.SyncTable) == "function" then
-        RSL.SyncTable(nil, { force = true })
-    end
-    local Gameboard = require("core.npc_gameboard")
-    if type(Gameboard.reconcileControlBoardFromState) == "function" then
-        Gameboard.reconcileControlBoardFromState({ force = true, forceTokenMirror = true })
-    end
-end
-
---- PCs panel: mark a player seat Absent (no numbered table slot). TOR-507.
-function HUD_pcsAbsentFromSession(player, value, id)
-    if not requireStorytellerForMutation(player, "HUD_pcsAbsentFromSession") then
+--- PCs panel (Assume Connected mode only): simulate this PC connecting / disconnecting (TOR-293).
+--- Connect seats them at once; disconnect darkens until the next connection checkpoint.
+function HUD_pcsToggleSimulatedConnection(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_pcsToggleSimulatedConnection") then
         return
     end
-    local color = type(id) == "string" and id:match("^pcs_absent_(%a+)$") or nil
+    local color = type(id) == "string" and id:match("^pcs_(%a+)_connection$") or nil
     if color == nil or not U.isIn(color, C.PlayerColors) then
         return
     end
-    local on = coerceUiToggleBool(value)
-    if on == nil then
-        return
-    end
-    local FSL = require("lib.figurine_seat_layout")
-    local ok, err = FSL.setPlayerAbsentFromSession(color, on)
-    if not ok then
-        U.AlertGM(err or ("Could not change Absent for " .. color))
-        if PCST and PCST.refreshRow then
-            PCST.refreshRow(color)
-        end
-        return
-    end
-    relayoutSeatsAfterOccupancyChange()
-    if PCST and PCST.refreshRow then
-        PCST.refreshRow(color)
-    end
+    local PlayerConnection = require("core.player_connection")
+    PlayerConnection.simulateSeatConnection(color, not PlayerConnection.isSimulatedConnected(color))
+    PCST.refreshRow(color)
 end
 
 --- Reset game state
@@ -5696,16 +5669,19 @@ function HUD_toggleDebugAmbient(player, button, id)
     )
 end
 
---- TOR-293: when on, disconnected chronicle seats stay narratively "present" for lights/world (solo/hotseat).
-function HUD_toggleAssumePlayersConnected(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_toggleAssumePlayersConnected") then
+--- TOR-293 Debug panel: "Assume Connected" (PCs-panel simulated connection) vs "By Connection Status"
+--- (real Steam connection). Switching fires connect / disconnect handlers for every seat that changes.
+function HUD_toggleConnectionMode(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_toggleConnectionMode") then
         return
     end
     local PlayerConnection = require("core.player_connection")
-    local on = PlayerConnection.toggleAssumePlayersConnected()
-    PlayerConnection.reconcileEffectivePresence(nil)
+    local on = not PlayerConnection.isAssumeConnectedMode()
+    PlayerConnection.switchAssumeConnectedMode(on)
+    PCST.refreshConnectionModeButton()
+    PCST.refreshAllRows()
     broadcastToColor(
-        string.format("Assume players connected: %s", on and "ON" or "OFF"),
+        string.format("Connection mode: %s", on and "Assume Connected" or "By Connection Status"),
         player.color,
         { 0, 1, 1 }
     )

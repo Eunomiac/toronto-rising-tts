@@ -96,6 +96,7 @@ const parseSeat = (value: unknown): SeatSnapshot | null => {
     desire: asString(value.desire),
     ambition: asString(value.ambition),
     absentFromSession: asBool(value.absentFromSession),
+    connected: asBool(value.connected),
     deferAutoSeat: asBool(value.deferAutoSeat),
     deferConnect: asBool(value.deferConnect),
     attributes,

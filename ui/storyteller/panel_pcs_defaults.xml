@@ -43,7 +43,8 @@
   <Button class="pcs_btn_auto_seat" preferredWidth="88" minWidth="80" fontSize="10" height="18" preferredHeight="18" minHeight="18" text="Auto-Seat" />
   <Button class="pcs_btn_connect" preferredWidth="72" minWidth="64" fontSize="10" height="18" preferredHeight="18" minHeight="18" text="Connect" />
   <Toggle class="pcs_join_toggle" preferredWidth="128" minWidth="110" fontSize="11" height="18" preferredHeight="18" minHeight="18" textColor="#FFFFFF" />
-  <Toggle class="pcs_absent_toggle" preferredWidth="72" minWidth="64" fontSize="11" height="18" preferredHeight="18" minHeight="18" textColor="#FFFFFF" />
+  <!-- Assume Connected debug mode only (hidden in By Connection Status); PCST.refreshRow sets text/colors/active. -->
+  <Button class="pcs_btn_connection" onClick="HUD_pcsToggleSimulatedConnection" preferredWidth="96" minWidth="88" fontSize="10" height="18" preferredHeight="18" minHeight="18" textColor="#FFFFFF" text="Connected" active="false" colors="#1E5A2A|#2A7038|#3A9048|rgba(0.1,0.3,0.12,0.5)" />
 
   <Button class="pcs_btn_palette_agg" colors="#662222|#883333|#991111|rgba(0.5,0.1,0.1,0.4)" />
   <Button class="pcs_btn_palette_sup" colors="#444444|#555555|#666666|rgba(0.2,0.2,0.2,0.4)" />

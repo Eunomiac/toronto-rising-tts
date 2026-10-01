@@ -72,7 +72,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `GlobalImportGenericNpcs` / `HUD_genericNpcImportConfirm` / `HUD_genericNpcImportCancel` / `HUD_genericNpcImportLabelChanged` | B+C | 5 | TOR-560 generic import: parse keys → ST label modal → spawn token/figurine/light; Dashboard executeLua; LabelChanged stashes typed names |
 | `GlobalImportSceneJson` | B | 5 | TOR-570 Dashboard execute-lua: Scene Constructor JSON → `SceneLibrary.importConstructorJsonText` (library row only, no Apply). No Steam gate (no clicker). Same write path as in-game Import Scene. |
 | `GlobalDashboardPcSheetSnapshot` | B | — | Dashboard execute-lua (`dashboard.pc_sheet`): JSON snapshot of five PC seats (stats, Desire, Ambition, identity overlay, session flags, conditions). No Steam gate (no clicker). |
-| `GlobalDashboardPcSheetApply` | B+C | — | Dashboard execute-lua (`dashboard.pc_sheet`): one typed mutation **or a JSON array of mutations** (trackers, dots, disabled, ST badges, Hunger/XP, Desire, Absent/join, ST rolls, **`mergeSeat`** legacy sheet-shaped write, **`mergePlayerData`** developer JSON Apply: deep-merge assign into `gameState.playerData.<pid>` with **no** defaults/normalize/validateState) then one snapshot. Damage uses V5 overflow (super→agg). Stain add is a no-op while impaired. No Steam gate. Reuses `PCST` / `P` / `Sync.player` / `FSL.setPlayerAbsentFromSession` / `RC.initiateRoll`. |
+| `GlobalDashboardPcSheetApply` | B+C | — | Dashboard execute-lua (`dashboard.pc_sheet`): one typed mutation **or a JSON array of mutations** (trackers, dots, disabled, ST badges, Hunger/XP, Desire, join spike controls, ST rolls, **`mergeSeat`** legacy sheet-shaped write, **`mergePlayerData`** developer JSON Apply: deep-merge assign into `gameState.playerData.<pid>` with **no** defaults/normalize/validateState) then one snapshot. Damage uses V5 overflow (super→agg). Stain add is a no-op while impaired. No Steam gate. Reuses `PCST` / `P` / `Sync.player` / `RC.initiateRoll`. Seat occupancy is read-only here (`absentFromSession` + `connected` in the snapshot); connection is the sole authority. |
 | `GlobalGameboardInstallPaletteSnaps` | C | Done | palette snap install |
 | `GlobalGameboardSyncSnapsToggleLabel` | A | — | snaps + layout-lock toolbar labels |
 | `GlobalHideObject` | C | — | Unified off-table park (`O.hideObject`); object scripts pass `guid` + optional park opts |
@@ -135,7 +135,8 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | --- | --- | --- | --- |
 | `HUD_selectStorytellerPanel` | A | — | panel visibility |
 | `HUD_pcPanel` | B+C | Yes | PCs tracker apply; Desire Clear (`pcs_<Color>_desireClear`, TOR-97) |
-| `HUD_pcsAbsentFromSession` | B+C | Yes | TOR-507 / TOR-247 numbered table occupancy (Absent toggle; chairs are control-board tokens) |
+| `HUD_pcsToggleSimulatedConnection` | B+C | Yes | Assume Connected debug mode only: per-seat simulated connect (seats PC immediately) / disconnect (darken only) via `PlayerConnection.simulateSeatConnection` |
+| `HUD_toggleConnectionMode` | B+C | Yes | Debug panel: persisted `debug.assumeConnected`; seats newly connected PCs once, then one relayout (`PlayerConnection.switchAssumeConnectedMode`) |
 | `HUD_togglePanel` | A | — | XmlUI collapse |
 | `HUD_changeScene` | B+C | Yes | |
 | `HUD_selectAdminLightingScene` | B+C | Yes | |

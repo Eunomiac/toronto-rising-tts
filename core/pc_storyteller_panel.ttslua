@@ -13,6 +13,7 @@ local Sync = require("core.sync")
 local CI = require("lib.csheet_identity")
 local HUDP = require("core.hud_player")
 local XpLog = require("core.xp_log")
+local PlayerConnection = require("core.player_connection")
 
 --- @type table<string, table>
 local buffers = {}
@@ -103,6 +104,26 @@ end
 --- @param val string|number|boolean
 local function safeSetAttr(elementId, attr, val)
   U.setAttribute(elementId, attr, tostring(val))
+end
+
+local CONNECTION_BTN_COLORS_ON = "#1E5A2A|#2A7038|#3A9048|rgba(0.1,0.3,0.12,0.5)"
+local CONNECTION_BTN_COLORS_OFF = "#6A1E1E|#822828|#A03434|rgba(0.35,0.1,0.1,0.5)"
+
+--- Debug panel connection-mode button: green "Assume Connected" / yellow "By Connection Status".
+function PCST.refreshConnectionModeButton()
+  if PlayerConnection.isAssumeConnectedMode() then
+    U.setAttributes("debug_connectionMode", {
+      text = "Assume Connected",
+      textColor = "#FFFFFF",
+      colors = "#2E7D32|#388E3C|#43A047|rgba(0.1,0.3,0.1,0.5)",
+    })
+  else
+    U.setAttributes("debug_connectionMode", {
+      text = "By Connection Status",
+      textColor = "#000000",
+      colors = "#C9A227|#D8B23A|#E6C34F|rgba(0.4,0.32,0.08,0.5)",
+    })
+  end
 end
 
 --- Normalize Desire text: whitespace-only → "" (TOR-97).
@@ -201,10 +222,13 @@ function PCST.refreshRow(color)
   local deferConnect = S.getStateVal("connectionControls", "deferConnectByColor", color) == true
   U.setAttributes("pcs_deferConnect_" .. color, { isOn = deferConnect })
 
-  local ss = S.getStateVal("sessionScene", "seatSlots")
-  local row = U.Type(ss) == "table" and ss[color] or nil
-  local absent = U.Type(row) == "table" and row.absentFromSession == true
-  U.setAttributes("pcs_absent_" .. color, { isOn = absent })
+  local assumeConnected = PlayerConnection.isAssumeConnectedMode()
+  local simulatedConnected = PlayerConnection.isSimulatedConnected(color)
+  U.setAttributes("pcs_" .. color .. "_connection", {
+    active = assumeConnected and "true" or "false",
+    text = simulatedConnected and "Connected" or "Disconnected",
+    colors = simulatedConnected and CONNECTION_BTN_COLORS_ON or CONNECTION_BTN_COLORS_OFF,
+  })
 
   if pid == nil or pid == C.StorytellerID then
     safeSetValue("pcs_hungerDots_" .. color, "")

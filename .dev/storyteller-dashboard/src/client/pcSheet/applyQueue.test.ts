@@ -34,6 +34,7 @@ const okSnapshot = (hungerValue: number): SheetSnapshot => ({
     embraceYear: 0,
     convictions: [],
     absentFromSession: false,
+    connected: true,
     deferAutoSeat: false,
     deferConnect: false,
     attributes: {},

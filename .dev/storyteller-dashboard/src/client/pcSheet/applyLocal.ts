@@ -121,8 +121,6 @@ const patchSeat = (seat: SeatSnapshot, command: ApplyCommand): SeatSnapshot => {
       return { ...seat, hunger: clamp(seat.hunger + command.delta, 0, seat.hungerMax) };
     case "desire":
       return { ...seat, desire: command.text };
-    case "absent":
-      return { ...seat, absentFromSession: command.value };
     case "deferAutoSeat":
       return { ...seat, deferAutoSeat: command.value };
     case "deferConnect":

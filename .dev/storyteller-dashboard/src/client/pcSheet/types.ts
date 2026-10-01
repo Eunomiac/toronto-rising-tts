@@ -38,7 +38,10 @@ export type SeatSnapshot = {
   readonly convictions: readonly string[];
   readonly desire: string;
   readonly ambition: string;
+  /** Unoccupied seat (PC disconnected at a checkpoint). Read-only: connection is the sole authority. */
   readonly absentFromSession: boolean;
+  /** Steam connection, or the simulated value in Assume Connected debug mode. */
+  readonly connected: boolean;
   readonly deferAutoSeat: boolean;
   readonly deferConnect: boolean;
   readonly attributes: Record<string, Rating>;
@@ -93,7 +96,6 @@ export type ApplyCommand =
   | { op: "torporClear"; color: SeatColor }
   | { op: "toggleFrenzy"; color: SeatColor }
   | { op: "toggleBlindfold"; color: SeatColor }
-  | { op: "absent"; color: SeatColor; value: boolean }
   | { op: "deferAutoSeat"; color: SeatColor; value: boolean }
   | { op: "deferConnect"; color: SeatColor; value: boolean }
   | { op: "autoSeat"; color: SeatColor }

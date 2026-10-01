@@ -265,21 +265,6 @@ local function decodeCommand(jsonText)
   return parsed
 end
 
-local function relayoutSeatsAfterOccupancyChange()
-  S.validateState()
-  local RSL = require("lib.rotational-seat-layout")
-  if type(RSL.invalidateLayoutSyncCache) == "function" then
-    RSL.invalidateLayoutSyncCache()
-  end
-  if type(RSL.SyncTable) == "function" then
-    RSL.SyncTable(nil, { force = true })
-  end
-  local Gameboard = require("core.npc_gameboard")
-  if type(Gameboard.reconcileControlBoardFromState) == "function" then
-    Gameboard.reconcileControlBoardFromState({ force = true, forceTokenMirror = true })
-  end
-end
-
 local function afterTrackerChange(color)
   PCST.refreshCharacterSheetsForColor(color)
   PCST.refreshRow(color)
@@ -507,14 +492,6 @@ applyMergedSeat = function(color, seat)
     end
   end
 
-  if seat.absentFromSession ~= nil then
-    local FSL = require("lib.figurine_seat_layout")
-    local ok, err = FSL.setPlayerAbsentFromSession(color, seat.absentFromSession == true)
-    if not ok then
-      return err or ("Could not change Absent for " .. color)
-    end
-    relayoutSeatsAfterOccupancyChange()
-  end
   if seat.deferAutoSeat ~= nil then
     S.setStateVal(seat.deferAutoSeat == true, "connectionControls", "deferAutoSeatByColor", color)
   end
@@ -720,6 +697,7 @@ local function snapshotSeat(color)
     desire = PCST.normalizeDesire(type(pid) == "string" and S.getStateVal("playerData", pid, "desire") or ""),
     ambition = ambition,
     absentFromSession = U.Type(seatRow) == "table" and seatRow.absentFromSession == true,
+    connected = require("core.player_connection").isSeatConnected(color),
     deferAutoSeat = S.getStateVal("connectionControls", "deferAutoSeatByColor", color) == true,
     deferConnect = S.getStateVal("connectionControls", "deferConnectByColor", color) == true,
     attributes = attributes,
@@ -844,17 +822,6 @@ local function applyCommand(cmd)
     end
     afterTrackerChange(color)
     P.refreshHudOverlays()
-    return nil
-  end
-  if op == "absent" then
-    local FSL = require("lib.figurine_seat_layout")
-    local on = cmd.value == true
-    local ok, err = FSL.setPlayerAbsentFromSession(color, on)
-    if not ok then
-      return err or ("Could not change Absent for " .. color)
-    end
-    relayoutSeatsAfterOccupancyChange()
-    PCST.refreshRow(color)
     return nil
   end
   if op == "deferAutoSeat" then

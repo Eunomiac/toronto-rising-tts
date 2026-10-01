@@ -17,7 +17,7 @@ Source of truth:
 
 Verification:
 - `rg -n "SetTableTo|resolveTableKey|referenceFigurine|tableSlot|SeatRoleOffsets|ObjectPositions" lib core`
-- Save & Play table A/B/C seat order; Scenes table buttons; PCs panel Absent; control-board token occupancy (TOR-247)
+- Save & Play table A/B/C seat order; Scenes table buttons; connect/disconnect seat occupancy (PCs panel simulated connection in Assume Connected mode); control-board token occupancy (TOR-247)
 
 Status: current layout reference; production placement is figurine-offset (TOR-507). Generator helpers in `rotational-seat-layout.ttslua` remain for debug/compare.
 

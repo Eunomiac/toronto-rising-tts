@@ -21,7 +21,7 @@
           <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Brown_autoSeat" />
           <Toggle class="pcs_join_toggle" id="pcs_deferConnect_Brown" isOn="false" onValueChanged="HUD_pcsDeferConnect">Defer Connect</Toggle>
           <Button class="pcs_btn pcs_btn_connect pcs_btn_palette_join" id="pcs_Brown_connect" />
-          <Toggle class="pcs_absent_toggle" id="pcs_absent_Brown" isOn="false" onValueChanged="HUD_pcsAbsentFromSession">Absent</Toggle>
+          <Button class="pcs_btn_connection" id="pcs_Brown_connection" />
         </HorizontalLayout>
         <!-- Roll initiation row: each button starts a roll of that type in SETUP -->
         <HorizontalLayout class="pcs_stat_row">
@@ -103,7 +103,7 @@
           <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Orange_autoSeat" />
           <Toggle class="pcs_join_toggle" id="pcs_deferConnect_Orange" isOn="false" onValueChanged="HUD_pcsDeferConnect">Defer Connect</Toggle>
           <Button class="pcs_btn pcs_btn_connect pcs_btn_palette_join" id="pcs_Orange_connect" />
-          <Toggle class="pcs_absent_toggle" id="pcs_absent_Orange" isOn="false" onValueChanged="HUD_pcsAbsentFromSession">Absent</Toggle>
+          <Button class="pcs_btn_connection" id="pcs_Orange_connection" />
         </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">Roll:</Text>
@@ -184,7 +184,7 @@
           <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Red_autoSeat" />
           <Toggle class="pcs_join_toggle" id="pcs_deferConnect_Red" isOn="false" onValueChanged="HUD_pcsDeferConnect">Defer Connect</Toggle>
           <Button class="pcs_btn pcs_btn_connect pcs_btn_palette_join" id="pcs_Red_connect" />
-          <Toggle class="pcs_absent_toggle" id="pcs_absent_Red" isOn="false" onValueChanged="HUD_pcsAbsentFromSession">Absent</Toggle>
+          <Button class="pcs_btn_connection" id="pcs_Red_connection" />
         </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">Roll:</Text>
@@ -265,7 +265,7 @@
           <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Pink_autoSeat" />
           <Toggle class="pcs_join_toggle" id="pcs_deferConnect_Pink" isOn="false" onValueChanged="HUD_pcsDeferConnect">Defer Connect</Toggle>
           <Button class="pcs_btn pcs_btn_connect pcs_btn_palette_join" id="pcs_Pink_connect" />
-          <Toggle class="pcs_absent_toggle" id="pcs_absent_Pink" isOn="false" onValueChanged="HUD_pcsAbsentFromSession">Absent</Toggle>
+          <Button class="pcs_btn_connection" id="pcs_Pink_connection" />
         </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">Roll:</Text>
@@ -346,7 +346,7 @@
           <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Purple_autoSeat" />
           <Toggle class="pcs_join_toggle" id="pcs_deferConnect_Purple" isOn="false" onValueChanged="HUD_pcsDeferConnect">Defer Connect</Toggle>
           <Button class="pcs_btn pcs_btn_connect pcs_btn_palette_join" id="pcs_Purple_connect" />
-          <Toggle class="pcs_absent_toggle" id="pcs_absent_Purple" isOn="false" onValueChanged="HUD_pcsAbsentFromSession">Absent</Toggle>
+          <Button class="pcs_btn_connection" id="pcs_Purple_connection" />
         </HorizontalLayout>
         <HorizontalLayout class="pcs_stat_row">
           <Text class="pcs_prefix_wide">Roll:</Text>

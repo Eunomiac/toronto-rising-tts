@@ -19,6 +19,7 @@ const seat = (partial: Partial<SeatSnapshot>): SeatSnapshot => ({
   desire: "",
   ambition: "Create a legacy in Toronto that long outlasts me",
   absentFromSession: false,
+  connected: true,
   deferAutoSeat: false,
   deferConnect: false,
   attributes: {},

@@ -284,22 +284,50 @@ function PC.applyConnectionCheckpoint()
   return changed
 end
 
---- Seat every connected PC who is unoccupied (load / mode switch), one relayout for the batch.
---- @return string[] colors newly seated
-function PC.seatAllConnectedPlayers()
-  local seated = {}
+--- Run a connection-source change (debug mode switch, simulated toggle) and fire the same
+--- handlers a real connect / disconnect would: newly connected seats are seated at once
+--- (one relayout for the batch), newly disconnected seats only darken.
+--- @param mutate fun()
+local function applyConnectionSourceChange(mutate)
+  local before = {}
   for _, color in ipairs(C.PlayerColors or {}) do
-    if PC.isSeatUnoccupied(color) and PC.isSeatConnected(color) then
+    before[color] = PC.isSeatConnected(color)
+  end
+  mutate()
+  local seatedAny = false
+  for _, color in ipairs(C.PlayerColors or {}) do
+    if PC.isSeatConnected(color) and before[color] ~= true then
       if PC.handleSeatConnected(color, { skipRelayout = true }) then
-        seated[#seated + 1] = color
+        seatedAny = true
       end
     end
   end
-  if #seated > 0 then
+  if seatedAny then
     relayoutAfterOccupancyChange()
   end
   PC.reconcileEffectivePresence(nil)
-  return seated
+end
+
+--- Debug panel: switch between "Assume Connected" and "By Connection Status".
+--- @param on boolean true = Assume Connected
+function PC.switchAssumeConnectedMode(on)
+  applyConnectionSourceChange(function()
+    PC.setAssumeConnectedMode(on)
+  end)
+end
+
+--- PCs panel (Assume Connected only): simulate one PC connecting or disconnecting.
+--- @param color string
+--- @param connected boolean
+--- @return boolean false when not in Assume Connected mode (no-op)
+function PC.simulateSeatConnection(color, connected)
+  if not PC.isAssumeConnectedMode() then
+    return false
+  end
+  applyConnectionSourceChange(function()
+    PC.setSimulatedConnected(color, connected)
+  end)
+  return true
 end
 
 --- Session start (load), state only — the startup table sync lays out chairs and parks

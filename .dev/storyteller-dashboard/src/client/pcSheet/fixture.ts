@@ -23,6 +23,7 @@ export const emptySeat = (color: SeatColor): SeatSnapshot => ({
   desire: "",
   ambition: "",
   absentFromSession: false,
+  connected: true,
   deferAutoSeat: false,
   deferConnect: false,
   attributes: {

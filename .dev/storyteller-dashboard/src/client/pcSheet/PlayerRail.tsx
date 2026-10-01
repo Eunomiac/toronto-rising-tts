@@ -26,21 +26,14 @@ export const PlayerRail = ({ seats, selected, onSelect, onCommand }: Props): Rea
               <em>{seat.playerName || seat.color}</em>
             </span>
             <span className="pc-card-flags">
-              {seat.absentFromSession ? "Absent" : "Present"}
+              {seat.absentFromSession ? "Unoccupied" : "Seated"}
+              {seat.connected ? "" : " · Disconnected"}
               {seat.torpor ? " · Torpor" : ""}
               {seat.hudFrenzy ? " · Frenzy" : ""}
             </span>
           </button>
           {open ? (
             <div className="pc-card-tools">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={seat.absentFromSession}
-                  onChange={(event) => onCommand({ op: "absent", color: seat.color, value: event.target.checked })}
-                />
-                Absent
-              </label>
               <label>
                 <input
                   type="checkbox"
