@@ -635,6 +635,17 @@ local function clearOccupantPileY(occupantKey)
     end
 end
 
+--- True when the occupancy stash recorded this role at table height (it was showing before the
+--- pile was buried). A buried page/fire/smoke is parked like a feature-off one, so the stash row is
+--- the only record of which one to bring back.
+--- @param occupantKey string
+--- @param roleKey string|nil
+--- @return boolean
+local function wasShowingBeforeOccupancyStash(occupantKey, roleKey)
+    local stashY = peekOccupantPileY(occupantKey, roleKey)
+    return stashY ~= nil and not liveYIsHidden(stashY)
+end
+
 --- Occupancy stash Y vs feature-hide Y vs authored defaultY.
 --- @param occupantKey string
 --- @param roleKey string|nil
@@ -643,19 +654,18 @@ end
 --- @param worldY number|nil figurine frame Y (unused for Y; satellites keep authored defaultY)
 --- @return number
 local function resolveSatelliteY(occupantKey, roleKey, liveY, defaultY, worldY)
-    -- Feature-hide off (page, fire, smoke) beats occupancy stash — layout must not lift these.
-    if isFeatureHideRoleKey(roleKey) and liveYIsHidden(liveY) then
-        return liveY
-    end
-    local activeY = defaultY
     local stashY = peekOccupantPileY(occupantKey, roleKey)
     if stashY ~= nil then
         if liveYIsHidden(stashY) then
             return stashY
         end
-        return activeY
+        return defaultY
     end
-    return activeY
+    -- Feature-hide off (page, fire, smoke) with no stash row — layout must not lift these.
+    if isFeatureHideRoleKey(roleKey) and liveYIsHidden(liveY) then
+        return liveY
+    end
+    return defaultY
 end
 
 local function findFigurine(occupantKey)
@@ -712,9 +722,8 @@ local function applyOffsetToObject(obj, figFrame, figObj, offset, roleKey, occup
 
     if isFeatureHideRoleKey(roleKey) then
         local onPos = { x = world.x, y = defaultY, z = world.z }
-        local wantOff = (type(O.isHiddenObject) == "function" and O.isHiddenObject(obj))
-            or liveYIsHidden(livePos.y)
-            or liveYIsHidden(y)
+        local wantOff = not wasShowingBeforeOccupancyStash(occupantKey, roleKey)
+            and (O.isHiddenObject(obj) or liveYIsHidden(livePos.y) or liveYIsHidden(y))
         if wantOff then
             O.hideObject(obj, {
                 snapshotPosition = onPos,
@@ -724,6 +733,12 @@ local function applyOffsetToObject(obj, figFrame, figObj, offset, roleKey, occup
             })
         else
             placeObjectExact(obj, Vector({ x = world.x, y = y, z = world.z }), rot)
+            if O.isHiddenObject(obj) then
+                O.restoreObject(obj, {
+                    position = { x = world.x, y = y, z = world.z },
+                    rotation = rotTable,
+                })
+            end
         end
     else
         placeObjectExact(obj, Vector({ x = world.x, y = y, z = world.z }), rot)

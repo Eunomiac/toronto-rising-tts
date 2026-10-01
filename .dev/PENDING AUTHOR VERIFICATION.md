@@ -228,6 +228,17 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **Context:** Whether a PC holds a chair is now decided only by connection; the Storyteller can no longer mark a PC Absent by hand. Present / Not Present (lit or dark seat) is unchanged and separate. Full model: `docs/solutions/seat-occupancy-and-connection.md`. relatedTo **TOR-630** and **TOR-513**.
 
+#### TOR-633 — Character sheet pages come back when a PC's seat returns
+
+**How to verify:** Save & Play (every PC starts with sheet pages 1 and 2 showing). On the Debug panel, switch to green **Assume Connected**.
+
+1. On Red's character sheet, turn page 2 off so only page 1 is showing. If you want to check the signal fire too, light Red's signal fire.
+2. On the PCs panel, click Red's **Connected** button so it reads **Disconnected**, then advance a phase. Red's whole pile, including the sheet, should go under the table.
+3. Click Red's button again so it reads **Connected**. Red should be seated at once with **page 1 showing** and **page 2 still off**, the way it was before. If you lit the signal fire, it should be lit again.
+4. Optional: repeat in a Scatter scene. When Red rejoins a group, the same pages should come back.
+
+**Context:** When the pile was buried, the code noted which pages were showing. On the way back it checked "is this page under the table?" first, decided every page had been turned off on purpose, and then threw the note away. It now checks the note first. relatedTo **TOR-631** and **TOR-512**.
+
 ## Cleared
 
 _Remove confirmed entries from Outstanding. In Linear, set **Fully Complete** by default; use **Complete (KEEP)** sparingly when the issue contains lasting information that should remain._
