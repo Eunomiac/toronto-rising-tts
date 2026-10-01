@@ -114,6 +114,7 @@ Snapshot position is **not** the primary restore authority when a catalog pose o
 | **Spotlight seat figurines (visibility only)** | Stay at seat Y; active visibility from `C.HiddenObjects` only — not off-table park | `O.applyActiveVisibility` / `O.restoreObject` via `applySeatFigurineSpotlightVisibility` in `core/spotlight.ttslua` |
 | **Scatter floor / plinth** | Stay at playfield Y; PC+spectator invisibility only while Scatter is active | `ScatterMode` `applyScatterPlayfieldVisibility` (`setInvisibleTo` via `C.HideFromPcSeatsAndSpectators`) |
 | **BOTTOM_FOG emitter** | Authored at y ≈ −350 (below park threshold); Scatter plays AssetBundle Looping Effect 2/1 | `Scenes.applyFogEmitterLooping` via ScatterMode; `O.hideObject` refuses this GUID |
+| **Player hand zones (Absent stash)** | `O.hideObject` tags the zone; a tagged zone only holds objects sharing that tag, so the cards fall out of the hand and are left behind on restore | `U.movePlayerHand` only — rigid-instant move of zone + cards to Y = −200 (`stashHandZoneAndCards`) and back via the `HAND_ZONE` layout move in `lib/figurine_seat_layout.ttslua` |
 
 **Preload pool (in scope):** NPC figurines + paired lights at `preload` and dice under bags use `O.hideObject` / `O.restoreObject` via `applyNpcPairPhysicalPresentation` and `core/dice_preload_pool.ttslua` (`parkDie` / `claim`). `DPP.claim` must pass the staging `position` (bag hover / arc / ST tray) into `O.restoreObject` so recycled dice unhide at that pose — never replay the hide snapshot of the last tray slot.
 

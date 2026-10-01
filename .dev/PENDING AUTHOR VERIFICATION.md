@@ -9,7 +9,7 @@ Your TTS checklist for shipped work that still needs Save & Play / in-game confi
 | **✅** | Author | Confirmed in TTS — agents remove on next inbox |
 | **❌** | Author | Still broken (+ **Author Comment:**) |
 | **⚠️** | Author | Bad expectations (+ **Author Comment:**) |
-| **⌚** | Agent | Not ready to verify yet — fix is open in Linear / Focus; **do not** Save & Play for this row until the watch is cleared |
+| **⏰** | Agent | Not ready to verify yet — fix is open in Linear / Focus; **do not** Save & Play for this row until the watch is cleared |
 
 Unmarked = shipped (or verification gate) and waiting for your first pass. Agents add a new unmarked row and set Linear to **Awaiting Author Review** whenever they ship in-game code. They process your **✅** / **❌** / **⚠️** marks on the next inbox. A **✅** moves the Linear issue to **Fully Complete** by default, or **Complete (KEEP)** when its Linear history should be retained. Agent policy: [PENDING AUTHOR VERIFICATION.agent.md](PENDING AUTHOR VERIFICATION.agent.md).
 
@@ -21,22 +21,30 @@ _Last populated: 2026-09-24 — Experience Log + page 6 (TOR-92)._
 
 ### Character sheets / XP
 
-#### TOR-92 — Page 6 Experience Log + ST XP modal
+#### ⚠️ TOR-92 — Page 6 Experience Log + ST XP modal
 
 **How to verify:** Run `npm run csheet-xp-log:bake` (or a full build) so `ui/player/csheets/page6_lordLucien.xml` exists, then Save & Play so object Includes and scripts reload.
 
-1. Open **Lord Lucien**’s character sheet and go to **page 6**. You should see baked history (Rollover / Time of Legacy / etc.) immediately — no blank page. The Host console must **not** show a page-6 `setXml` remount for that tile. A **down** chevron should appear at the bottom when there are older sessions off-page.
-2. Click the **bottom** (down) chevron once. Sessions from page 1 should hide and the next older sessions (e.g. earlier negative session blocks) should appear; a **top** (up) chevron should become available to return.
-3. Click the **top** chevron to return to the newest page. Confirm the first-page sessions are back.
-4. Open the Storyteller **PCs** panel. Confirm each seat shows an **XP** button (not up/down/apply) and a current XP number.
-5. Click **XP** on one present PC. Enter a positive amount (e.g. `1`) and a short description, then **Apply**. The modal’s last-entry strip should show the line; page 1 `xp_text` and the panel XP value should rise by 1; page 6 should show the live session title and that gain (via `setAttribute` only).
-6. Log a spend with a negative amount (e.g. `-2`) and another description. Confirm the spend appears in red on page 6 and totals update (negative banked XP is allowed).
-7. Click **Undo** twice and confirm both lines disappear and totals return.
-8. Mark another PC **Absent**, enter a gain, click **Apply to All**, and confirm the Absent seat did not change while present seats did.
-9. After you advance session number (End→Intermission), **without** re-baking, you should get a Storyteller warning about a stale page 6 bake; the live block still accepts new entries for the new session. After `npm run csheet-xp-log:bake` + Save & Play, the previous session should appear as a baked block in that character’s `page6_<charKey>.xml`.
-10. Optional authoring check: on the Storyteller Dashboard **PCs** tab, open **JSON**. The bottom pane should be a dump of that seat’s raw `playerData` (including the full `xp` Experience Log with **string** session keys and **no** `timeline` field). Paste under `"xp": { … }`, **Apply**, re-open JSON, and confirm the dump matches. Then **Save** the game — onSave must succeed (no `noKeyConversion` JSON error). The sheet jewel still shows banked XP.
+1. ✅ Open **Lord Lucien**’s character sheet and go to **page 6**. You should see baked history (Rollover / Time of Legacy / etc.) immediately — no blank page. The Host console must **not** show a page-6 `setXml` remount for that tile. A **down** chevron should appear at the bottom when there are older sessions off-page.
+2. ✅ Click the **bottom** (down) chevron once. Sessions from page 1 should hide and the next older sessions (e.g. earlier negative session blocks) should appear; a **top** (up) chevron should become available to return.
+3. ✅ Click the **top** chevron to return to the newest page. Confirm the first-page sessions are back.
+4. ✅ Open the Storyteller **PCs** panel. Confirm each seat shows an **XP** button (not up/down/apply) and a current XP number.
+5. ⚠️ Click **XP** on one present PC. Enter a positive amount (e.g. `1`) and a short description, then **Apply**. The modal’s last-entry strip should show the line; page 1 `xp_text` and the panel XP value should rise by 1; page 6 should show the live session title and that gain (via `setAttribute` only).
+
+**Author Comment:** An X-close button should be available at the top right of the modal, which has the same effect as "Cancel" but without the connotation of cancelling work already done (because the modal doesn't close automatically on Apply)
+
+6. ✅ Log a spend with a negative amount (e.g. `-2`) and another description. Confirm the spend appears in red on page 6 and totals update (negative banked XP is allowed).
+7. ❌ Click **Undo** twice and confirm both lines disappear and totals return.
+
+**Author Comment:** While this does work for standard single-player awards/spends, clicking "Undo" after an "Apply to All" gain only removes the gain from the player targeted by the modal, and not from all players. (Undoing an "Apply to All" should undo the entire "Apply to All" action)
+
+8. ✅ Mark another PC **Absent**, enter a gain, click **Apply to All**, and confirm the Absent seat did not change while present seats did.
+9. ⏰ _(Deferred until session 2 startup data is in place to avoid errors on attempting to start a sessionNum greater than 1)_ After you advance session number (End→Intermission), **without** re-baking, you should get a Storyteller warning about a stale page 6 bake; the live block still accepts new entries for the new session. After `npm run csheet-xp-log:bake` + Save & Play, the previous session should appear as a baked block in that character’s `page6_<charKey>.xml`.
+10. ✅ Optional authoring check: on the Storyteller Dashboard **PCs** tab, open **JSON**. The bottom pane should be a dump of that seat’s raw `playerData` (including the full `xp` Experience Log with **string** session keys and **no** `timeline` field). Paste under `"xp": { … }`, **Apply**, re-open JSON, and confirm the dump matches. Then **Save** the game — onSave must succeed (no `noKeyConversion` JSON error). The sheet jewel still shows banked XP.
 
 **Context:** Scalar `stats.xp` removed; log is `playerData.<pid>.xp` with string session keys. Page 6 markup is **template-baked** (`ui/.templates/csheet/` → `page6_<charKey>.xml`); runtime paints live slots and pagination with `setAttribute` only (no Lua-built XML / no page-6 `setXml`).
+
+
 
 ### Phases / session end
 
@@ -149,7 +157,7 @@ Separately, restart the Storyteller Dashboard with the TTS Tools extension **dis
 
 ### High — session / join / first-load
 
-#### ⌚ TOR-439 — Join-stress re-verify after Global HUD remount weight cut
+#### ⏰ TOR-439 — Join-stress re-verify after Global HUD remount weight cut
 
 **Status:** Linear **In Progress** (verification gate; code already shipped). Needs other people at the table — not a solo Save & Play.
 
@@ -180,6 +188,8 @@ Separately, restart the Storyteller Dashboard with the TTS Tools extension **dis
 Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a different empty chair snap and click **Apply**. Red’s **live pile** on the table should move to that numbered chair, not only the token on the control board.
 
 **Context:** Absent was hiding the pile but leaving the hand zone (and often the cards) at the table, and parking the PC token on the board. Apply that only moved PC tokens also skipped seat layout because the NPC reconciler thought nothing had changed.
+
+**Re-test after the 2026-10-01 fix (Absent off left the cards behind):** Burying the hand used to tag the hand zone as a hidden object. A tagged hand zone stops holding its cards, so when Absent was turned off the zone came back to the chair and the cards stayed under the table. Absent now moves the hand zone and its cards with the same single hand mover the Hand Lab confirmed, and nothing tags the zone. When you re-run the steps above, the key check is: after Absent **off**, Red’s cards are back in Red’s fan at the chair and can be picked up. Use a player who was **not** already Absent before this Save & Play. Cards stranded by the old code may need to be fetched by hand once.
 
 ## Cleared
 

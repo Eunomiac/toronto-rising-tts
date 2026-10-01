@@ -860,11 +860,12 @@ local function layoutOccupantSatellites(occupantKey, figFrame, figObj, helpers)
             local defaultY = tonumber(offset.defaultY) or world.y
             local livePos = Vector(obj.getPosition())
             local y = resolveSatelliteY(occupantKey, roleKey, livePos.y, defaultY, world.y)
-            local moveOpts = nil
+            -- Saves stashed before the hand-zone hide exception still carry the HiddenObject tag;
+            -- a tagged zone ignores untagged cards, so clear it before collecting the hand.
             if O.isHiddenObject(obj) then
-                moveOpts = { smooth = false }
+                O.restoreObject(obj, { keepWorldPose = true })
             end
-            U.movePlayerHand(occupantKey, Vector({ x = world.x, y = y, z = world.z }), rot, moveOpts)
+            U.movePlayerHand(occupantKey, Vector({ x = world.x, y = y, z = world.z }), rot)
             return
         end
         applyOffsetToObject(obj, figFrame, figObj, offset, roleKey, occupantKey)
@@ -921,6 +922,8 @@ local function isHandZoneObject(obj)
 end
 
 --- Stash the player's hand zone and every card in that hand to occupancy Y (TOR-513 / TOR-590).
+--- Hand zones are a hide/restore exception: `O.hideObject` would tag the zone, and a tagged
+--- zone only holds objects sharing that tag — the cards drop out of the hand. Rigid move only.
 --- @param occupantKey string
 --- @param hiddenSeatY number
 local function stashHandZoneAndCards(occupantKey, hiddenSeatY)
@@ -929,26 +932,12 @@ local function stashHandZoneAndCards(occupantKey, hiddenSeatY)
         return
     end
     local p = hz.getPosition and hz.getPosition() or nil
-    if p == nil then
+    if p == nil or liveYIsHidden(p.y) then
         return
     end
-    if not liveYIsHidden(p.y) then
-        captureOccupantPileY(occupantKey, "HAND_ZONE", p.y)
-    end
+    captureOccupantPileY(occupantKey, "HAND_ZONE", p.y)
     local rot = hz.getRotation and Vector(hz.getRotation()) or Vector({ 0, 0, 0 })
-    local hideOpts = {
-        parkPosition = { x = p.x, y = hiddenSeatY, z = p.z },
-    }
-    if not liveYIsHidden(p.y) then
-        hideOpts.snapshotPosition = { x = p.x, y = p.y, z = p.z }
-    end
-    U.movePlayerHand(
-        occupantKey,
-        Vector({ x = p.x, y = hiddenSeatY, z = p.z }),
-        rot,
-        { smooth = false }
-    )
-    O.hideObject(hz, hideOpts)
+    U.movePlayerHand(occupantKey, Vector({ x = p.x, y = hiddenSeatY, z = p.z }), rot)
 end
 
 --- @param occupantKey string
@@ -985,15 +974,9 @@ function FSL.setOccupantPileVisible(occupantKey, visible)
             end
         end
     end
-    if isPlayerSeatKey(occupantKey) then
-        local hz = U.getHandZone(occupantKey)
-        if visible then
-            if hz ~= nil and O.isHiddenObject(hz) then
-                O.restoreObject(hz, { keepWorldPose = true })
-            end
-        else
-            stashHandZoneAndCards(occupantKey, hiddenSeatY)
-        end
+    -- Unstash of the hand zone + cards is the HAND_ZONE layout move (U.movePlayerHand).
+    if not visible and isPlayerSeatKey(occupantKey) then
+        stashHandZoneAndCards(occupantKey, hiddenSeatY)
     end
 end
 
