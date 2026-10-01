@@ -924,8 +924,9 @@ end
 --- Stash the player's hand zone and every card in that hand to occupancy Y (TOR-513 / TOR-590).
 --- Hand zones are a hide/restore exception: `O.hideObject` would tag the zone, and a tagged
 --- zone only holds objects sharing that tag — the cards drop out of the hand. Rigid move only.
---- `U.movePlayerHand` locks the cards because the target Y is parked (they sit inside the floor);
---- the HAND_ZONE layout move back to table Y unlocks them.
+--- `U.movePlayerHand` locks the cards and tags them `LockedCard<Color>` because the target Y is
+--- parked (they sit inside the floor); the HAND_ZONE layout move back to table Y finds them by
+--- that tag, untags and unlocks them.
 --- @param occupantKey string
 --- @param hiddenSeatY number
 local function stashHandZoneAndCards(occupantKey, hiddenSeatY)

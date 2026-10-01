@@ -2600,19 +2600,32 @@ end
 --- `C.HIDDEN_OBJECT_WORLD_Y` (−200); util cannot require `lib.constants`.
 local HAND_PARKED_LOCK_Y = -195
 
+--- Tag on cards parked (locked) with a seat's hand. Locked cards are invisible to both
+--- `handZone.getObjects()` and `Player.getHandObjects()`, so the tag is how the restore move
+--- finds them — it persists in the save across sessions. Only `U.movePlayerHand` writes it.
+--- @param seatColor string
+--- @return string
+local function parkedHandCardTag(seatColor)
+	return "LockedCard" .. seatColor
+end
+
 --- Move a player's hand zone and every card in that hand as one rigid body (TOR-590).
 --- Sole production writer for hand-zone pose + in-hand cards. Callers must not
 --- `setPosition` / `placeObjectExact` the zone first — that zeroes the delta and leaves cards behind.
 ---
---- Behavior (Hand Lab `rigid_instant`): unlock any locked hand cards, then instant
---- `setPosition`/`setRotation` on the zone and every card (same rigid yaw + translation;
---- card yaw snapped to zone Y + 180). Pass `opts.smooth = true` only for a short on-table
---- nudge that is meant to be seen (table-scale jumps must stay instant).
+--- Behavior (Hand Lab `rigid_instant`): instant `setPosition`/`setRotation` on the zone and
+--- every card (same rigid yaw + translation; card yaw snapped to zone Y + 180). Pass
+--- `opts.smooth = true` only for a short on-table nudge that is meant to be seen (table-scale
+--- jumps must stay instant).
 ---
---- Target Y decides the card lock: at or below `HAND_PARKED_LOCK_Y` every card is locked in the
---- same call as its teleport, before the next physics step — parked cards sit inside the floor,
---- and unlocked ones get depenetrated and fly back to the table. Any higher target leaves them
---- unlocked, so in-hand cards on the table are never locked.
+--- Held cards = cards the zone / player hand reports, plus every card tagged
+--- `LockedCard<Color>` (parked cards, which the hand no longer reports). Those tags are removed
+--- before anything moves, so a tagged card never meets the zone.
+---
+--- Target Y decides the card lock: at or below `HAND_PARKED_LOCK_Y` every card is locked and
+--- tagged `LockedCard<Color>` in the same call as its teleport, before the next physics step —
+--- parked cards sit inside the floor, and unlocked ones get depenetrated and fly back to the
+--- table. Any higher target unlocks each card right before its teleport and leaves it untagged.
 --- @param playerRef string|userdata seat color or Player
 --- @param position Vector|table world position of the hand zone
 --- @param rotation Vector|table world rotation of the hand zone
@@ -2644,15 +2657,29 @@ function U.movePlayerHand(playerRef, position, rotation, opts)
 		rotation = Vector(hz.getRotation()),
 		cards = {},
 	}
+	local parkedTag = parkedHandCardTag(color)
 	local cards = collectHandCards(hz, color)
+	local seenGuids = {}
+	for i = 1, #cards do
+		seenGuids[cards[i].getGUID()] = true
+	end
+	local tagged = getObjectsWithTag(parkedTag)
+	for i = 1, #tagged do
+		local obj = tagged[i]
+		if seenGuids[obj.getGUID()] ~= true then
+			seenGuids[obj.getGUID()] = true
+			cards[#cards + 1] = obj
+		end
+	end
+	for i = 1, #cards do
+		if cards[i].hasTag(parkedTag) then
+			cards[i].removeTag(parkedTag)
+		end
+	end
+
 	local captured = {}
 	for i = 1, #cards do
 		local obj = cards[i]
-		-- Locking in-hand cards prevents TTS from carrying them and can no-op setPosition
-		-- (Hand Lab D1 / TOR-590). Always unlock before the rigid teleport.
-		if obj.getLock ~= nil and obj.setLock ~= nil and obj.getLock() == true then
-			obj.setLock(false)
-		end
 		captured[#captured + 1] = {
 			obj = obj,
 			before = {
@@ -2674,9 +2701,14 @@ function U.movePlayerHand(playerRef, position, rotation, opts)
 		local newPos = Vector(rotated.position) + (targetPos - hzBefore.position)
 		local cardRot = Vector(rotated.rotation)
 		cardRot.y = cardYaw
+		-- A locked card can no-op setPosition (Hand Lab D1 / TOR-590): unlock right before its teleport.
+		if entry.obj.getLock() == true then
+			entry.obj.setLock(false)
+		end
 		poseObjectWithHand(entry.obj, newPos, cardRot, smooth)
-		if lockCards and entry.obj.setLock ~= nil then
+		if lockCards then
 			entry.obj.setLock(true)
+			entry.obj.addTag(parkedTag)
 		end
 	end
 	return hzBefore
