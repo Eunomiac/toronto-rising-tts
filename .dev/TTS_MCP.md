@@ -1,41 +1,31 @@
-# Tabletop Simulator MCP (manual only)
+# Tabletop Simulator MCP (TTS Tools extension)
 
 ## Agent Routing
 
 Read this when:
-- the author explicitly asks to use the TTS MCP bridge
-- changing `.tools/tts-mcp/` or `.tools/tts-bridge/`
-- debugging External Editor message flow or `.dev/.debug/` writes
+- running Lua in live TTS from an agent (`tts_execute_lua`)
+- interpreting MCP `prints` / `returnValue` / `TR_AGENT_V1` lines
+- debugging External Editor message flow or `.dev/.debug/` writes (`.tools/tts-bridge/`)
 
 Source of truth:
-- `.tools/tts-mcp/`
-- `.tools/tts-bridge/`
+- MCP server: `tts-tools/packages/tts-editor/src/mcp/` (fork of TTS Tools; docs `docs/modules/ROOT/pages/mcp.adoc`)
+- `.tools/tts-bridge/` (repo-local listener / write sink / scripts — not the MCP)
 - `.dev/tts-api/Getting Started/External Editor API.md`
 - `lib/util.ttslua` agent-output helpers
 
 Verification:
-- `npm run tts-mcp:build`
-- manual TTS session with External Editor enabled and port `39998` free
+- In `tts-tools/packages/tts-editor`: `npm run smoke:mcp` (TTS running, gateway up)
+- Agent: call `tts_status`, then `tts_execute_lua` with `return 1 + 1`
 
-Status: current manual-only MCP guide; do not enable/call MCP unless the author explicitly asks.
+Status: current.
 
-This repo includes an optional **Model Context Protocol** server that runs **Tabletop Simulator** Lua via the [External Editor API](tts-api/Getting%20Started/External%20Editor%20API.md) (localhost **39999** → TTS, **39998** ← TTS).
+The **TTS Tools extension** (fork, 2.6.0+) ships an MCP server named **`tts-tools`** and registers it with Cursor on activation — no `mcp.json` entry needed. It joins the local **TTS gateway** (control port **39997**) as route tag **`MCP`**, so it runs **alongside** the extension and the Storyteller Dashboard. It never binds **39998** itself: if the gateway is down (for example after **Release TTS Editor Port**), tool calls say so, and the next call reconnects once the gateway is back.
 
-**Default workflow:** use the **TTS Tools extension** (Save & Play) and in-game `lua DEBUG.*`. MCP is **off** unless you start it manually — it **conflicts** with the extension on port **39998**.
-
-## Not in the main build
-
-`npm run build` / `build:xml` / `build:full` / Ctrl+Shift+B **do not** compile or start MCP. Build MCP only when you change bridge code:
-
-```bash
-npm run tts-mcp:build
-```
-
-VS Code/Cursor task: **Manual: Build TTS MCP (Node)**.
+Requirements: TTS open with a save loaded, the TTS Tools extension active (it starts the gateway), `node` on PATH. Opt out with the extension setting `ttsEditor.mcp.enabled`.
 
 ## Port conflict (39998)
 
-Only **one** process may listen on a given bind of **39998** (TTS Tools extension **or** this bridge — not both on the same address). Cursor’s TTS Tools extension often holds IPv6 (`::`) while a leftover dashboard `node` holds IPv4 (`127.0.0.1`); those can coexist. To stop leftover **node** listeners (dashboard, `tts-bridge:listen`, MCP) without touching Cursor or Tabletop Simulator:
+The gateway helper holds **39998**; the extension, Dashboard, and MCP all share it through **39997**. Repo-local tools that bind **39998** directly (`npm run tts-bridge:listen`, `tts-bridge` scripts) still need the gateway released first. To stop leftover **node** listeners without touching Cursor or Tabletop Simulator:
 
 ```bash
 npm run tts-bridge:free-port
@@ -43,45 +33,17 @@ npm run tts-bridge:free-port
 
 Cursor **Run Task → FREE TTS EDITOR PORT (39998)** runs the same command. `npm run tts-bridge:free-port -- --dry-run` lists holders only. See [TTS_BUNDLING_SETUP.md — Issue 0b](TTS_BUNDLING_SETUP.md#issue-0b-port-39998-already-in-use-eaddrinuse).
 
-## Manual start (recommended)
-
-1. **Disable** the `toronto-rising-tts` MCP server in Cursor MCP settings while using Save & Play (or leave it enabled — tools return a clear error and do not bind **39998** on startup unless `TR_TTS_MCP_ALLOW=1`).
-2. Tabletop Simulator open with a save loaded.
-3. From repo root:
-
-```bash
-npm run tts-mcp:build
-npm run tts-mcp:start
-```
-
-`tts-mcp:start` runs `.tools/tts-mcp/scripts/start-manual.mjs`, which sets **`TR_TTS_MCP_ALLOW=1`** before loading the server. Tools refuse all requests without that env var.
-
-**Bridge only** (write sink to `.dev/.debug/`, no MCP): `npm run tts-bridge:listen` — still uses **39998**; disable the extension first.
-
-## Cursor MCP configuration (optional)
-
-Only when you want MCP in Cursor **and** the extension is disabled. Point at the **manual** entry script (not `dist/index.js` alone):
-
-```json
-{
-  "mcpServers": {
-    "toronto-rising-tts": {
-      "command": "node",
-      "args": ["D:/Projects/.CODING/toronto-rising-tts/.tools/tts-mcp/scripts/start-manual.mjs"],
-      "cwd": "D:/Projects/.CODING/toronto-rising-tts"
-    }
-  }
-}
-```
-
-Agents should not enable or call MCP unless the author explicitly requests it.
+**Bridge only** (write sink to `.dev/.debug/`, no MCP): `npm run tts-bridge:listen` — binds **39998**; release the extension's port first.
 
 ## Tools exposed
 
 | Tool | Purpose |
 |------|---------|
-| `tts_execute_lua` | Send `messageID: 3` execute with `script` and optional `guid` (default `"-1"` Global). **Timeouts:** `idleTimeoutMs` default 90000 — omit for long sequence gaps; pass ~2000–5000 for fast print-only probes. `maxWaitMs` default 30000 — raise toward 120000 for multi-minute `U.chain` flows. See **Return values** below — do not assume complex Lua `return` values always appear in `returnValue`. In mod Lua, prefer **`U.emitForAgent`** / **`U.mcpEmitResult`** (`TR_AGENT_V1` lines in `prints`) for structured output. Returns `prints`, `returnValue`, `error`, `customMessages`, `timedOut`. |
+| `tts_execute_lua` | Execute `script` in Global (default `guid` `"-1"`) or an object's script context. Waits for TTS to report the chunk finished — TTS **always** sends that, with `returnValue` when the chunk returns one — or a Lua error, or **`maxWaitMs`** (default 30000, max 120000). **`listenAfterReturnMs`** keeps collecting `prints` after the chunk returns (for `Wait.time` / `U.chain` output). Returns `returnValue`, `prints`, `error`, `customMessages`, `finishedBy`, `timedOut`. A Lua error marks the tool result as an error. In mod Lua, prefer **`U.emitForAgent`** / **`U.mcpEmitResult`** (`TR_AGENT_V1` lines in `prints`) for structured output. |
 | `tts_send_custom_message` | Send `messageID: 2` with a JSON object; TTS delivers it to `onExternalMessage` in Lua. Fire-and-forget (no output capture). |
+| `tts_status` | Whether the MCP is connected through the gateway. |
+
+**Prints are broadcast:** the gateway sends every TTS print to every client, so output from other scripts running at the same moment (Save & Play, Dashboard calls) can appear in `prints`. Lua can unicast a line with the `<@MCP@>` prefix.
 
 **Execute context:** The target object must already have a script slot in TTS, or execute fails (see External Editor API “Execute Lua Code”).
 
@@ -111,13 +73,12 @@ These issues showed up while running Toronto Rising Lua through **`tts_execute_l
 ### 4. Long-running sequences and timeouts
 
 - **`U.chain`** does **not** block until the sequence finishes; the execute chunk returns while coroutines run. Rely on **`onComplete`**, **`U.mcpEmitResult`**, and **`prints`** (see *Orchestration* and *Machine-readable agent lines*).
-- Use a high **`maxWaitMs`** (up to **120000**) and the default or higher **`idleTimeoutMs`** (**90000** in the bridge when omitted) for multi-step visual sequences. See the tools table above.
+- For multi-step visual sequences, raise **`maxWaitMs`** (up to **120000**) and set **`listenAfterReturnMs`** to the longest **quiet** gap between prints in the sequence (e.g. **10000–20000**). See the tools table above.
 
-### 5. Bridge “hangs” after the test looks done (`idleTimeoutMs`)
+### 5. Execute finished but the sequence did not (`listenAfterReturnMs`)
 
-- The bridge completes an execute when it receives **`messageID` 5** (`returnValue`), **or** when **`idleTimeoutMs`** elapses **with no new** inbound **`messageID` 2–5** (prints, errors, return, custom payloads all reset the idle timer).
-- Chunks that call **`U.chain`** return from the Lua chunk quickly while coroutines keep running. **`messageID` 5** (if any) therefore often reflects **“chunk returned”**, not **“animations + `onComplete` finished”**. The session then stays open until prints stop and **idle** fires.
-- If **`idleTimeoutMs`** is very large (e.g. **120000**), you can sit for **minutes after the last `TR_AGENT_V1` / `mcpEmitResult` line** with nothing left to observe — that is the timer waiting out silence, not TTS still working. Prefer a **moderate idle** (e.g. **10–20 s**) once you trust the longest **quiet** gap between prints in your sequence, or lower it when the final structured line is always last.
+- **`messageID` 5** reflects **“chunk returned”**, not **“animations + `onComplete` finished”**. Without `listenAfterReturnMs`, the tool returns right after the chunk (plus a 250 ms grace for trailing prints/errors), so later `U.chain` output is missed.
+- With `listenAfterReturnMs`, the call stays open until that much silence passes after the last print, capped by `maxWaitMs`. Too large a value means waiting out silence after the final `TR_AGENT_V1` line — not TTS still working.
 
 ### 6. Local harness (bridge smoke)
 
@@ -127,7 +88,7 @@ These issues showed up while running Toronto Rising Lua through **`tts_execute_l
 
 ## Return values (`messageID` 5) and structured data
 
-The [External Editor API](tts-api/Getting%20Started/External%20Editor%20API.md) states that executed Lua may send a **return** back as inbound **`messageID` 5** with a **`returnValue`** field. In practice (and in this repo’s **tts-bridge**), agents should treat that as **best-effort** only:
+The [External Editor API](tts-api/Getting%20Started/External%20Editor%20API.md) states that executed Lua may send a **return** back as inbound **`messageID` 5** with a **`returnValue`** field. In practice TTS sends `messageID` 5 after **every** execute (verified 2026-10-01 through the gateway, ~1.3 s round trip), but treat the **value** as **best-effort**:
 
 1. **Nested Lua tables** and other non–JSON-friendly values often **never show up** as `returnValue` on the Node side — the field may be **missing** or **`undefined`** even when the chunk ran successfully and printed output.
 2. **Primitives and simple JSON-like values** (strings, numbers, booleans, or values TTS already maps to JSON) are the reliable cases for raw `return`.
@@ -185,7 +146,7 @@ Multi-step table logic in this project often uses [`U.chain`](../lib/util.ttslua
 1. **Non-blocking execute:** A Lua snippet invoked through the External Editor **returns as soon as the chunk finishes**. `U.chain` **schedules** work in coroutines; it **does not** block the bridge until animations or waits finish. Treat completion as **asynchronous** unless you explicitly design otherwise.
 2. **Completion hooks:** Use **`U.chain(funcs, { onComplete = ... })`** for a single callback when the sequence finishes (`ok` plus optional `detail`: `step_error`, `step_timeout`, `sequence_timeout`, `cancelled`). You still get the returned **`isDone`** predicate: `local done = U.chain(...);` later `done()`.
 3. **Cancel / sequence timeout:** Pass **`cancelRegistry`** (`{ cancelled = false, reason = nil }`) and/or **`sequenceTimeoutSeconds`**. Waits use an **`abortCheck`** on `U.await` so timeouts and cancellation can end a step without waiting for the original condition.
-4. **MCP observation:** Prefer **`onComplete`** plus **`U.mcpEmitResult`** / **`U.emitForAgent`**, and generous **`maxWaitMs` / `idleTimeoutMs`** on `tts_execute_lua`, over assuming a **`return`** from the snippet finalizes after long sequences.
+4. **MCP observation:** Prefer **`onComplete`** plus **`U.mcpEmitResult`** / **`U.emitForAgent`**, and generous **`maxWaitMs` / `listenAfterReturnMs`** on `tts_execute_lua`, over assuming a **`return`** from the snippet finalizes after long sequences.
 5. **Console `print` order:** Multiple `print` calls in one Lua function do **not** reliably appear in source order in the TTS console / `prints` array. Inside `U.chain` / `U.stagger`, isolate each `print` / `printHeader` in its own step (see [Dice-E2E.md](E2E%20Playbooks/Dice-E2E.md)). Prefer `log` for table dumps, or `U.emitForAgent` / `U.mcpEmitResult` when order must be reconstructed via `seq` / `t`. Full rule: [TESTING.md § Console print ordering](TESTING.md#console-print-ordering-tts).
 
 ## Scripts (local)
@@ -194,17 +155,14 @@ Multi-step table logic in this project often uses [`U.chain`](../lib/util.ttslua
 |---------|-------------|
 | `npm run tts-bridge:build` | Compile only `tts-bridge`. |
 | `npm run tts-bridge:test` | Vitest suite for the bridge (mock TTS, no game). |
-| `npm run tts-mcp:compile` | Compile only `tts-mcp` (assumes `tts-bridge` already built). |
-| `npm run tts-mcp:build` | Build bridge + MCP (`tts-bridge:build` then `tts-mcp:compile`). |
-| `npm run build` | **Main** pipeline (default Ctrl+Shift+B): daily save backup, gates, object stub fix. Does **not** compile MCP. |
+| `npm run build` | **Main** pipeline (default Ctrl+Shift+B): daily save backup, gates, object stub fix. |
 | `npm run build:xml` | Main + UI XML / template generators + Global XmlUI embed. |
 | `npm run build:full` | Full tooling (backup + `build:all-tooling`): sheets, JSON embeds, XML, stubs, CustomUIAssets merge. |
 | `npm run build:all-tooling` | Full generator chain without the daily backup. |
-| `npm run tts-mcp:start` | Run the MCP server on stdio (normally Cursor spawns this; useful for debugging). |
 | `npm run tts-bridge:listen` | Bridge only: listen on **39998** and persist Lua **`sendExternalMessage`** `type: "write"` to **`.dev/.debug/`** (no MCP). |
-| `npm run tts-bridge:free-port` | Stop leftover **node** listeners on **39998** (dashboard / bridge / MCP). Leaves Cursor and Tabletop Simulator alone. `--dry-run` lists only. |
+| `npm run tts-bridge:free-port` | Stop leftover **node** listeners on **39998** (dashboard / bridge). Leaves Cursor and Tabletop Simulator alone. `--dry-run` lists only. |
 
-**File writes from Lua:** When the bridge holds **39998**, inbound **`messageID` 4** with `customMessage.type === "write"` is written under **`.dev/.debug/`** (see [DEBUG_FILE_LOGGING.md](DEBUG_FILE_LOGGING.md)). MCP startup calls **`ensureListening()`** so this works before the first `tts_execute_lua`.
+**File writes from Lua:** When the bridge holds **39998**, inbound **`messageID` 4** with `customMessage.type === "write"` is written under **`.dev/.debug/`** (see [DEBUG_FILE_LOGGING.md](DEBUG_FILE_LOGGING.md)). The bundled MCP server does not handle `write` messages.
 
 ## References
 

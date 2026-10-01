@@ -148,7 +148,7 @@ Work order is intentional. **Epic A is the first implementation step** — its j
 1. [x] Extension registers stdio MCP server `tts-tools` (Cursor `vscode.cursor.mcp.registerServer`; VS Code 1.101+ `mcpServerDefinitionProviders`). Opt out: `ttsEditor.mcp.enabled`.
 2. [x] Server joins the gateway as `routeTag: MCP` with `failover: false` — never grabs 39998, so it respects Release; reconnects on the next call.
 3. [x] Tools: `tts_execute_lua` (waits for TTS return — always sent — plus a 250 ms grace for trailing prints/errors; optional `listenAfterReturnMs`), `tts_send_custom_message`, `tts_status`.
-4. [ ] Decide whether the repo-local `.tools/tts-mcp` (`toronto-rising-tts` entry in user `mcp.json`, manual-only, binds 39998) is retired in favour of the bundled server. It still owns the `TR_AGENT_V1` write-sink.
+4. [x] Retired the repo-local `.tools/tts-mcp` server (and its `toronto-rising-tts` user `mcp.json` entry) in favour of the bundled server (author decision 2026-10-01). `.tools/tts-bridge` stays for `tts-bridge:listen` (`.dev/.debug/` write sink) and scripts. Agent guide: `.dev/TTS_MCP.md`.
 
 ### Epic F — Polish / Marketplace readiness (later)
 

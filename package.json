@@ -93,8 +93,6 @@
     "tts-bridge:build": "tsc -p .tools/tts-bridge/tsconfig.build.json",
     "tts-bridge:test": "vitest run --config .tools/tts-bridge/vitest.config.ts",
     "tts-bridge:run-sequence-test": "npm run tts-bridge:build && node .tools/tts-bridge/scripts/run-sequence-live-test.mjs",
-    "tts-mcp:compile": "tsc -p .tools/tts-mcp/tsconfig.json",
-    "tts-mcp:build": "npm run tts-bridge:build && npm run tts-mcp:compile",
     "build:gates": "npm run check:tts-object-stub-guids -- --quiet && npm run check:bundle-size-gate -- --quiet && npm run check:pcall-gate && npm run check:effective-stats-gate && npm run check:lua-local-limit-gate -- --quiet",
     "build:stubs": "node .dev/scripts/fix_tts_object_stubs.js --quiet",
     "build:xml-tooling": "npm run csheet-defaults:generate && npm run npc-control-board-ui:generate && npm run ui-xml-templates:embed && npm run debug-light-panel:generate && node .dev/scripts/princes_court_trait_placeholders.js && node .dev/scripts/extract_shared_princes_court.js && node .dev/scripts/xml_color_template_generator.js --templateDir ui/.templates && npm run roll-dashboard:generate && npm run roll-options-modal:generate && npm run ui-global-xml:embed",
@@ -103,7 +101,6 @@
     "build:xml": "npm run tts-save:backup-daily && npm run build:gates && npm run build:xml-tooling && npm run build:stubs",
     "build:full": "npm run tts-save:backup-daily && npm run build:all-tooling",
     "storyteller-dashboard:dev": "npm --prefix .dev/storyteller-dashboard run dev:open",
-    "tts-mcp:start": "node .tools/tts-mcp/scripts/start-manual.mjs",
     "tts:smoke": "node .tools/tts-bridge/scripts/smoke-test.mjs",
     "code-review:build": "tsc -p .tools/code-review/tsconfig.build.json",
     "code-review:test": "vitest run --config .tools/code-review/vitest.config.ts",
@@ -129,7 +126,6 @@
     "lib": "lib"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.28.0",
     "luaparse": "^0.3.1",
     "zod": "^4.3.6"
   },

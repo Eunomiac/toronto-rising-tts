@@ -177,17 +177,17 @@ Then File → Load. Do not Save & Play / inject-global before that load. Author 
 
 ### Issue 0b: Port 39998 already in use (EADDRINUSE)
 
-**Symptom**: Local tooling (for example the [TTS MCP server](TTS_MCP.md)) fails with `listen EADDRINUSE` on `127.0.0.1:39998`, or the MCP logs mention that **port 39998** is already in use.
+**Symptom**: Local tooling that binds the port directly (for example `npm run tts-bridge:listen`) fails with `listen EADDRINUSE` on `127.0.0.1:39998`. Gateway clients (TTS Tools extension, Storyteller Dashboard, the extension's bundled MCP) share the port through **39997** and do not hit this.
 
 **Root cause**: In the External Editor protocol, **your editor** (or bridge process) must listen on **39998** so Tabletop Simulator can open **outbound** connections to deliver `print` output, errors, return values, etc. Only **one** process at a time can bind that port.
 
 **What to do**:
 
 1. Quit or disable other External Editor integrations that listen on **39998** (e.g. another VS Code / Cursor extension talking to TTS at the same time).
-2. Or stop leftover **node** holders (Storyteller Dashboard, `tts-bridge:listen`, MCP) with `npm run tts-bridge:free-port` (Cursor **Run Task → FREE TTS EDITOR PORT (39998)**). That does **not** stop Cursor or Tabletop Simulator. Cursor’s TTS Tools bind is often IPv6 (`::`) and can coexist with an IPv4 `127.0.0.1` listener.
-3. Then start the MCP / bridge again if that is the tool you want on the port.
+2. Or stop leftover **node** holders (Storyteller Dashboard, `tts-bridge:listen`) with `npm run tts-bridge:free-port` (Cursor **Run Task → FREE TTS EDITOR PORT (39998)**). That does **not** stop Cursor or Tabletop Simulator. Cursor’s TTS Tools bind is often IPv6 (`::`) and can coexist with an IPv4 `127.0.0.1` listener.
+3. Then start the bridge again if that is the tool you want on the port.
 
-See [TTS_MCP.md](TTS_MCP.md) for setup and Cursor configuration.
+See [TTS_MCP.md](TTS_MCP.md) for the bundled MCP server and agent guidance.
 
 ### Issue 1: Extension Not Reading Your Script
 

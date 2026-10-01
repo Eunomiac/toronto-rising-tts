@@ -13,7 +13,7 @@ Source of truth:
 - `.tools/tts-bridge/`
 
 Verification:
-- `npm run tts-mcp:build`
+- `npm run tts-bridge:build`
 - manual bridge/TTS run when changing listener behavior
 
 Status: current logging workflow; `.dev/.debug/` output is ignored local runtime data.
@@ -26,8 +26,7 @@ The debug module uses TTS **`sendExternalMessage`** with **`type: "write"`** so 
 
 where **`name`** is the string Lua puts on the message (e.g. `debug_logs/debug_log.txt` → **`.dev/.debug/debug_logs/debug_log.txt`**).
 
-- **Cursor MCP:** the server calls **`ensureListening()`** on startup so this works as soon as the **toronto-rising-tts** MCP is connected.
-- **Without Cursor:** run **`npm run tts-bridge:listen`** from the repo root (after **`npm run tts-bridge:build`** or **`npm run tts-mcp:build`**).
+- Run **`npm run tts-bridge:listen`** from the repo root (after **`npm run tts-bridge:build`**). Release the TTS Tools extension's port first — the bridge binds **39998** itself. The extension's bundled MCP server does **not** handle `write` messages.
 - **Override root:** set env **`TTS_WORKSPACE_WRITE_ROOT`** to an absolute path or a path relative to the workspace folder.
 
 **Legacy:** The Sebaestschjin extension wrote **`type: "write"`** under **`.tts/output/<name>`**. That path is **not** used when the repo bridge owns **39998**.
@@ -173,15 +172,15 @@ JSON pretty-printed when `format` is `"auto"`.
 ## Requirements
 
 1. **Tabletop Simulator** with **External Editor** enabled (**Options → General → External Editor**).
-2. **Exactly one** process listening on **127.0.0.1:39998** — the repo **tts-bridge** (MCP or `npm run tts-bridge:listen`) **or** another tool, not both. See [TTS_MCP.md](TTS_MCP.md) and [TTS_BUNDLING_SETUP.md](TTS_BUNDLING_SETUP.md).
+2. **Exactly one** process listening on **127.0.0.1:39998** — the repo **tts-bridge** (`npm run tts-bridge:listen`) **or** the TTS Tools gateway, not both. See [TTS_BUNDLING_SETUP.md](TTS_BUNDLING_SETUP.md).
 
 ## Troubleshooting
 
 1. **Look under `.dev/.debug/`** — not `.tts/output/` or a top-level `debug_logs/` folder. Example: `toronto-rising-tts/.dev/.debug/debug_session.log`.
 2. **`sendExternalMessage` is nil** — Lua has **no path to the editor**; nothing is written and TTS prints a **`sendExternalMessage is nil`** line from `DEBUG.workspaceNdjsonBegin`. **Fix:** enable External Editor and ensure a bridge is listening on **39998** when you need file writes.
 3. **`require lib.workspace_ndjson_log` failed** or **invalid** — often the Save & Play **bundle omitted** that module because it was only required inside functions. `core/debug.ttslua` includes a **top-level** `require("lib.workspace_ndjson_log")` so the bundler pulls it in. If you still see **`require failed:`**, read the error text and see **`.dev/TTS_BUNDLING_SETUP.md` (Issue 2a)**.
-4. **Multi-root workspace** — run MCP / npm scripts with **`cwd`** set to this repo.
-5. **`EADDRINUSE` on 39998** — run **`npm run tts-bridge:free-port`** (Cursor **Run Task → FREE TTS EDITOR PORT (39998)**) to stop leftover **node** listeners (dashboard / `tts-bridge:listen` / MCP). That leaves Cursor and Tabletop Simulator alone. Disable the TTS Tools extension only if you need its IPv6 bind released.
+4. **Multi-root workspace** — run npm scripts with **`cwd`** set to this repo.
+5. **`EADDRINUSE` on 39998** — run **`npm run tts-bridge:free-port`** (Cursor **Run Task → FREE TTS EDITOR PORT (39998)**) to stop leftover **node** listeners (dashboard / `tts-bridge:listen`). That leaves Cursor and Tabletop Simulator alone. Disable the TTS Tools extension only if you need its IPv6 bind released.
 
 ### After Save & Play: still no file?
 
