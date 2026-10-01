@@ -222,8 +222,8 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **How to verify:** Save & Play so the scripts and Global UI reload.
 
-1. Open the Debug panel. The connection button should read **By Connection Status** in yellow. Any PC whose player is not connected should have no chair: no pile at the table, and their control-board token locked a little beneath the board (you cannot pick it up).
-2. Click the button. It should turn green and read **Assume Connected**. Every PC should be seated straight away, with no blindfold.
+1. Open the Debug panel. The connection button should read **Assume Connected** in green (the default), and every PC should be seated as before.
+2. Click the button. It should turn yellow and read **By Connection Status**. Nobody moves yet; disconnected players' seats only go dark. Advance a phase: any PC whose player is not connected should lose their chair (no pile at the table, control-board token locked a little beneath the board). Click the button back to green: every PC should be seated straight away, with no blindfold.
 3. Open the PCs panel. Each seat now has a green **Connected** button where the Absent toggle used to be. Click Red's. It should turn red and read **Disconnected**. Red's seat should go dark, but the chair, sheet and hand stay put.
 4. Advance a phase (or apply a scene, or change table). Under the blindfold, Red should lose the chair: pile and hand go under the table, and Red's control-board token goes beneath the board. On Table B with random seating, Red's spot becomes an empty chair somewhere in the shuffle.
 5. Click Red's button again. Red should be seated at once at their usual chair (or the lowest free one if it is taken), with their cards back and no blindfold.

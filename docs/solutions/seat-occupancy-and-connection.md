@@ -36,7 +36,7 @@ Vocabulary rule: [`.cursor/rules/toronto-rising-seat-occupancy-terms.mdc`](../..
 
 `PC.isSeatConnected(color)`:
 
-- Debug panel **Assume Connected** (`debug.assumeConnected == true`): returns `debug.simulatedConnection[color]` (default connected). The PCs panel shows a per-seat Connected / Disconnected button that flips it.
+- Debug panel **Assume Connected** (`debug.assumeConnected == true`, the default for new saves and saves without the key): returns `debug.simulatedConnection[color]` (default connected). The PCs panel shows a per-seat Connected / Disconnected button that flips it.
 - **By Connection Status** (live play): the chronicle Steam id for that color is connected. PCs-panel connection buttons are hidden.
 
 | Event | Effect | Timing |

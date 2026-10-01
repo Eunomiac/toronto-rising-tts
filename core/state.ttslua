@@ -476,7 +476,7 @@ function S.GetDefaultGameState()
             spotlightArrowsVisible = false,
             --- Connection mode (Debug panel). false = "By Connection Status" (real Steam connection);
             --- true = "Assume Connected" (each PC seat reads `simulatedConnection[color]`, default connected).
-            assumeConnected = false,
+            assumeConnected = true,
             --- Assume Connected only: `simulatedConnection[color] = false` simulates a disconnected PC.
             simulatedConnection = {},
         },
@@ -829,7 +829,7 @@ function S.validateState()
         gameState.debug.npcLightModes = {}
     end
     if type(gameState.debug.assumeConnected) ~= "boolean" then
-        gameState.debug.assumeConnected = false
+        gameState.debug.assumeConnected = true
     end
     if type(gameState.debug.simulatedConnection) ~= "table" then
         gameState.debug.simulatedConnection = {}
