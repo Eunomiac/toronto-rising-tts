@@ -229,7 +229,7 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 5. Click Red's button again. Red should be seated at once at their usual chair (or the lowest free one if it is taken), with their cards back and no blindfold.
 6. On the control board, drag a connected PC's token off its chair onto the stage. It should snap back. Swap two PC tokens between chairs and click **Apply**. The two players should swap chairs at the table.
 7. In a Scatter scene, disconnect a PC and advance a phase. They should leave their group. Reconnect them; they should appear in an empty group.
-8. Click the Debug button back to yellow. The per-seat Connected buttons should disappear. Save, reload, and confirm the mode you left it in is remembered.
+8. Click the Debug button back to yellow. The per-seat Connected buttons should disappear. Save, reload, and confirm the mode you left it in is remembered. During that reload every PC should be seated while the game sets up, even players who are not connected. Once the console prints **Startup readiness gate complete**, any PC whose player is not connected should lose their chair.
 9. Optional: the Storyteller Dashboard PCs tab no longer has an Absent checkbox. The player rail shows **Seated** or **Unoccupied**, plus **Disconnected** when relevant.
 
 **Context:** Whether a PC holds a chair is now decided only by connection; the Storyteller can no longer mark a PC Absent by hand. Present / Not Present (lit or dark seat) is unchanged and separate. Full model: `docs/solutions/seat-occupancy-and-connection.md`. relatedTo **TOR-630** and **TOR-513**.

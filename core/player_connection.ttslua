@@ -3,10 +3,12 @@
   docs/solutions/seat-occupancy-and-connection.md
 
   Connection is the only authority for `seatSlots[color].absentFromSession` (not connected).
-  - Connect (incl. late join, load): clear the flag and seat the PC at once.
+  - Load: every PC counts as connected (and is seated) while startup setup runs; the first
+    connection checkpoint runs once the startup readiness gate finishes.
+  - Connect (incl. late join): clear the flag and seat the PC at once.
   - Mid-session disconnect: darken the seat only (effective presence false).
-  - Connection checkpoint (under blindfold cover / load): a PC still disconnected becomes an
-    unoccupied seat — no chair, satellites parked, control token stashed beneath the board.
+  - Connection checkpoint (under blindfold cover / end of startup): a PC still disconnected becomes
+    an unoccupied seat — no chair, satellites parked, control token stashed beneath the board.
 
   Debug connection mode (`debug.assumeConnected`): "Assume Connected" reads per-seat
   `debug.simulatedConnection[color]` (default connected) instead of Steam.
@@ -17,6 +19,11 @@ local PC = {}
 local S = require("core.state")
 local C = require("lib.constants")
 local U = require("lib.util")
+
+--- Runtime only (the Global VM reloads on every load): startup layout, reference objects and
+--- seat rigs assume all five PCs are seated, so every PC counts as connected until
+--- `PC.finishStartupConnectionAssumption` runs at the end of the startup readiness gate.
+local startupAssumesAllConnected = true
 
 --- True in the Debug panel's "Assume Connected" mode; false in "By Connection Status".
 --- @return boolean
@@ -101,6 +108,9 @@ end
 --- @param color string
 --- @return boolean
 function PC.isSeatConnected(color)
+  if startupAssumesAllConnected then
+    return true
+  end
   if PC.isAssumeConnectedMode() then
     return PC.isSimulatedConnected(color)
   end
@@ -330,14 +340,12 @@ function PC.simulateSeatConnection(color, connected)
   return true
 end
 
---- Session start (load), state only — the startup table sync lays out chairs and parks
---- unoccupied piles, and startup Sync/board reconcile mirror tokens. Checkpoint, then seat
---- everyone connected.
-function PC.applySessionStartOccupancyState()
-  markDisconnectedSeatsUnoccupied()
+--- Load, state only: seat every PC (all count as connected during startup). The startup table
+--- sync lays out chairs and restores any pile parked by an earlier session.
+function PC.seatAllPlayersForStartup()
   local FSL = require("lib.figurine_seat_layout")
   for _, color in ipairs(C.PlayerColors or {}) do
-    if PC.isSeatUnoccupied(color) and PC.isSeatConnected(color) then
+    if PC.isSeatUnoccupied(color) then
       local ok, err = FSL.seatConnectedPlayer(color)
       if not ok then
         U.AlertGM("Connection: " .. tostring(err))
@@ -346,6 +354,14 @@ function PC.applySessionStartOccupancyState()
   end
   S.validateState()
   syncScatterPackToOccupancy()
+end
+
+--- End of the startup readiness gate: stop assuming everyone is connected and run the first
+--- connection checkpoint, so PCs who are not connected become unoccupied.
+--- @return string[] colors newly unoccupied
+function PC.finishStartupConnectionAssumption()
+  startupAssumesAllConnected = false
+  return PC.applyConnectionCheckpoint()
 end
 
 return PC

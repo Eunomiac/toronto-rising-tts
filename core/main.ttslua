@@ -54,10 +54,11 @@ function M.setupPlayers()
   -- onPlayerConnect does not re-fire for players already present after Save & Play.
   M.assignAllConnectedSeatsFromChronicle()
 
-  -- TOR-293: load is session start — disconnected PCs become unoccupied seats, connected PCs
-  -- are seated; the startup table sync below applies the layout.
+  -- Every PC is seated while startup setup runs (all count as connected); disconnected PCs
+  -- become unoccupied when the startup readiness gate finishes. The startup table sync below
+  -- applies the layout.
   local PlayerConnection = require("core.player_connection")
-  PlayerConnection.applySessionStartOccupancyState()
+  PlayerConnection.seatAllPlayersForStartup()
   PlayerConnection.reconcileEffectivePresence(nil)
 
   -- Objects on / above the Storyteller table: GM table + GM light use `C.HiddenObjects` via O.ApplyLockedAndHiddenFromConstants() in Global.onLoad.
