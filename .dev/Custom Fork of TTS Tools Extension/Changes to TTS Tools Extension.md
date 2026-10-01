@@ -141,6 +141,15 @@ Work order is intentional. **Epic A is the first implementation step** — its j
 3. [x] Emergency: Cursor up → gateway force-claims → library migrates Dashboard automatically (rejoin while connected).
 4. [x] Claim/Release kept as power-user escape hatch (Claim = connect / reclaim-if-needed; Release = opt out until Claim).
 
+### Bundled MCP server (extension 2.6.0)
+**Repo:** `tts-tools/packages/tts-editor` (`src/mcp/server.ts`, `src/mcp/register.ts`, docs `mcp.adoc`)
+**Status (2026-10-01):** Implemented; live smoke passed against the gateway (`npm run smoke:mcp`). Awaiting author check inside Cursor.
+
+1. [x] Extension registers stdio MCP server `tts-tools` (Cursor `vscode.cursor.mcp.registerServer`; VS Code 1.101+ `mcpServerDefinitionProviders`). Opt out: `ttsEditor.mcp.enabled`.
+2. [x] Server joins the gateway as `routeTag: MCP` with `failover: false` — never grabs 39998, so it respects Release; reconnects on the next call.
+3. [x] Tools: `tts_execute_lua` (waits for TTS return — always sent — plus a 250 ms grace for trailing prints/errors; optional `listenAfterReturnMs`), `tts_send_custom_message`, `tts_status`.
+4. [ ] Decide whether the repo-local `.tools/tts-mcp` (`toronto-rising-tts` entry in user `mcp.json`, manual-only, binds 39998) is retired in favour of the bundled server. It still owns the `TR_AGENT_V1` write-sink.
+
 ### Epic F — Polish / Marketplace readiness (later)
 
 1. Local auth token for register (user-local file) so random processes can’t silently attach.
