@@ -384,7 +384,7 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | `Soundscape.setLocationMusic(playlistKey)` | Set site-specific background music playlist | `Soundscape.setLocationMusic("CasaLoma")` |
 | `Soundscape.playFeaturedMusic(featureKey)` | Play featured music on the dedicated lane | `Soundscape.playFeaturedMusic("TR_Intro")` |
 | `Soundscape.stopFeaturedMusic(opts?)` | Stop the featured lane only; optional `{ fadeSeconds, resumeBackground }` | Intro/song cleanup; Intermission→Play uses `resumeBackground=false`. Default resume also restores location ambience (TOR-494). |
-| `Soundscape.playSessionIntro(trackKey?, opts?)` | Play the Intermission→Play overture on Music C at full volume (`fadeSeconds` 0 = set gain to catalog volume before `playTriggerEffect`, no fade-in). Omit key to use `C.SessionStartAnimationData[sessionNum].introKey`. Holds Main via `sessionIntroActive`. | `Soundscape.playSessionIntro("TR_SessionStart", { fadeSeconds = 0 })` |
+| `Soundscape.playSessionIntro(trackKey?, opts?)` | Play the Intermission→Play overture on Music C at full volume (`fadeSeconds` 0 = set gain to catalog volume before `playTriggerEffect`, no fade-in). Omit key to use `TR_SessionStart<sessionNum>` from the sound catalog (a missing track picks another session intro at random). Holds Main via `sessionIntroActive`. | `Soundscape.playSessionIntro(nil, { fadeSeconds = 0 })` |
 | `Soundscape.describeSessionIntro()` | Probe Music C GUID, live trigger/loop names, and name vs index resolve | Console: `inspectSessionIntro()` |
 | `Soundscape.stopSessionIntro(opts?)` | Silence Music C and clear the session-intro latch | Intermission enter / Spotlight silence |
 | `Soundscape.finishSessionIntro()` | Clear the session-intro latch after the sting ends (does not cut the clip) | Play enter after 71s, before Main |
@@ -408,9 +408,9 @@ Play enter paints HUD behind the cover first (`Phases.armPlayHudBehindCover`, TO
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
-| `SessionExplode.resolveAnimationData()` | `introKey` + `songDuration` for current `sessionNum`; missing index uses `[1]` | Play enter / `playAttribute` |
+| `SessionExplode.resolveAnimationData()` | `introKey` + `songDuration` for current `sessionNum` from catalog key `TR_SessionStart<sessionNum>`; missing key picks a random existing session-intro track | Play enter / `playAttribute` |
 | `Phases.armPlayHudBehindCover(_ctx)` | Paint game-state overlay + player HUD/overlays while the global cover is still up | Play enter after `showGlobalBlindfold` (TOR-532) |
-| `SessionExplode.playAttribute(songDuration?)` | Start the splash. Hides Host `adminControls` and `panel_STcamera` for the duration (TOR-596). Nil uses `C.SessionStartAnimationData` for the current session (fade TR_Loop, play Music C after the scaled lead-in). `0` is Quick Transition (timeRatio 0, skip Music C). | Default Play enter after lights; Quick Transition passes `0` |
+| `SessionExplode.playAttribute(songDuration?)` | Start the splash. Hides Host `adminControls` and `panel_STcamera` for the duration (TOR-596). Nil uses the catalog track `TR_SessionStart<sessionNum>` (duration from that entry; a missing track picks another at random) and refreshes the session splash images. `0` is Quick Transition (timeRatio 0, skip Music C). | Default Play enter after lights; Quick Transition passes `0` |
 | `SessionExplode.attributeSongLeadInSec(songDuration?)` | Seconds from splash start until Music C (`ATTRIBUTE_SONG_START_DELAY * timeRatio`) | Music C delay; loop fade is this divided by 0.75 |
 | `SessionExplode.fadeIntermissionLoopForAttributeIntro(songDuration?)` | Start TR_Loop fade lasting `leadIn / 0.75` so Music C begins at ~25% loop volume | Called from `playAttribute` |
 | `SessionExplode.attributeSequenceDurationSec(songDuration?)` | Wall-clock seconds Play enter should wait after `playAttribute()` | Play enter return value |

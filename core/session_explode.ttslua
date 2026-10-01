@@ -14,8 +14,8 @@
 local SessionExplode = {}
 
 local U = require("lib.util")
-local C = require("lib.constants")
 local S = require("core.state")
+local Catalog = require("lib.soundscape_catalog")
 
 local PANEL_ID = "overlay_sessionStart_panel"
 local COVER_ID = "overlay_sessionStartSplash"
@@ -144,7 +144,10 @@ local function runNumTitleSequence(gen, kind, timeRatio, waitSec)
   local imagePanelID = prefix .. "ImagePanel"
   local imageID = prefix
   local sessionNum = SessionExplode.resolveAnimationData().sessionNum
-  local imageRef = prefix .. "_" .. tostring(sessionNum)
+  local Phases = require("core.phases")
+  local numName, titleName = Phases.sessionNumberAndTitleImageNames(sessionNum)
+  local imageRef = isTitle and titleName or numName
+  local artColor = Phases.sessionArtColor(imageRef)
 
   local fullDuration = 40 * timeRatio
   local leadInBgGrow = 20 * timeRatio
@@ -185,7 +188,7 @@ local function runNumTitleSequence(gen, kind, timeRatio, waitSec)
     showAnimationDelay = leadInTextGrow,
     animationDuration = fullDuration - leadInTextGrow + imageGrowExtra,
   })
-  U.setAttributes(imageID, {
+  local imageAttrs = {
     active = "false",
     scale = "1",
     showAnimation = "FadeIn",
@@ -193,7 +196,9 @@ local function runNumTitleSequence(gen, kind, timeRatio, waitSec)
     animationDuration = 0.5,
     showAnimationDelay = leadInTextImage,
     image = imageRef,
-  })
+    color = artColor,
+  }
+  U.setAttributes(imageID, imageAttrs)
 
   local steps = {
     function()
@@ -203,6 +208,9 @@ local function runNumTitleSequence(gen, kind, timeRatio, waitSec)
       UI.show(containerID)
       UI.show(bgImageID)
       UI.show(imageID)
+      -- UI.show can reapply the class color (opaque white). Put transparency back
+      -- when this session has no number or title picture.
+      U.setAttributes(imageID, { color = artColor })
       return wallSec
     end,
   }
@@ -287,42 +295,90 @@ function SessionExplode.cancel()
   showStorytellerSessionChrome()
 end
 
---- introKey + songDuration for the current `sessionNum`. Missing index falls back to [1].
--- @return table `{ sessionNum, introKey, songDuration, usedIndex }`
+--- One chosen intro for this sessionNum, so later calls in the same splash
+--- keep the same random fallback (duration and playback must match).
+local cachedSessionIntro = nil
+
+local function trackDurationSeconds(track)
+  local songDuration = tonumber(track.durationSeconds)
+  if songDuration == nil then
+    songDuration = tonumber(track.duration)
+  end
+  return songDuration
+end
+
+local function sessionNumFromIntroKey(key)
+  return tonumber(tostring(key or ""):match("^TR_SessionStart(%d+)$"))
+end
+
+local function sessionIntroPlaylistTracks()
+  local playlist = Catalog.PLAYLISTS.sessionIntro
+  if type(playlist) ~= "table" or type(playlist.tracks) ~= "table" then
+    return {}
+  end
+  return playlist.tracks
+end
+
+--- introKey + songDuration for the current `sessionNum`.
+--- Key is `TR_SessionStart<sessionNum>` in the sound catalog. Duration is that
+--- track's catalog length. A missing key picks one existing session-intro track at random.
+-- @return table `{ sessionNum, introKey, songDuration, usedIndex, usedFallback }`
 function SessionExplode.resolveAnimationData()
   local sessionNum = math.floor(tonumber(S.getStateVal("sessionNum")) or 1)
   if sessionNum < 1 then
     sessionNum = 1
   end
-  local tableData = C.SessionStartAnimationData
-  if type(tableData) ~= "table" then
-    error("SessionExplode.resolveAnimationData: C.SessionStartAnimationData is missing")
+  local preferredKey = Catalog.sessionIntroKeyForSession(sessionNum)
+  local track = Catalog.getSessionIntroTrack(preferredKey)
+  local usedFallback = false
+  if type(track) ~= "table" then
+    if cachedSessionIntro ~= nil
+        and cachedSessionIntro.sessionNum == sessionNum
+        and cachedSessionIntro.usedFallback == true then
+      local cached = Catalog.getSessionIntroTrack(cachedSessionIntro.introKey)
+      if type(cached) == "table" then
+        track = cached
+        usedFallback = true
+      end
+    end
+    if type(track) ~= "table" then
+      local tracks = sessionIntroPlaylistTracks()
+      if #tracks == 0 then
+        error("SessionExplode.resolveAnimationData: no session intro tracks in the sound catalog")
+      end
+      track = tracks[math.random(1, #tracks)]
+      usedFallback = true
+    end
   end
-  local usedIndex = sessionNum
-  local entry = tableData[sessionNum]
-  if type(entry) ~= "table" then
-    usedIndex = 1
-    entry = tableData[1]
+  if type(track) ~= "table" or type(track.key) ~= "string" or track.key == "" then
+    error("SessionExplode.resolveAnimationData: session intro track for session " ..
+      tostring(sessionNum) .. " did not resolve")
   end
-  if type(entry) ~= "table" then
-    error("SessionExplode.resolveAnimationData: no animation data for session " ..
-    tostring(sessionNum) .. " and index 1 is missing")
-  end
-  local introKey = entry.introKey
-  if type(introKey) ~= "string" or introKey == "" then
-    error("SessionExplode.resolveAnimationData: introKey missing for index " .. tostring(usedIndex))
-  end
-  local songDuration = tonumber(entry.songDuration)
+  local songDuration = trackDurationSeconds(track)
   if songDuration == nil or songDuration <= 0 then
-    error("SessionExplode.resolveAnimationData: songDuration must be a positive number of seconds for index " ..
-    tostring(usedIndex))
+    error("SessionExplode.resolveAnimationData: catalog duration must be a positive number of seconds for " ..
+      track.key)
   end
-  return {
+  local shouldAlert = usedFallback == true and (
+    cachedSessionIntro == nil
+    or cachedSessionIntro.sessionNum ~= sessionNum
+    or cachedSessionIntro.introKey ~= track.key
+  )
+  local resolved = {
     sessionNum = sessionNum,
-    introKey = introKey,
+    introKey = track.key,
     songDuration = songDuration,
-    usedIndex = usedIndex,
+    usedIndex = sessionNumFromIntroKey(track.key) or sessionNum,
+    usedFallback = usedFallback,
   }
+  cachedSessionIntro = resolved
+  if shouldAlert then
+    U.AlertGM(
+      "Session " .. tostring(sessionNum) .. " has no intro track (" .. preferredKey
+      .. "). Playing " .. track.key .. " (" .. tostring(songDuration) .. " seconds) instead."
+    )
+  end
+  return resolved
 end
 
 --- Scale factor so song end matches splash end (TEST BED runIntroSequence).
@@ -510,14 +566,19 @@ local function runAttributeSequences(gen, timeRatio, waitSec, playSessionIntro)
 end
 
 --- Start the TTS-attribute Intermission→Play animation (TEST BED runIntroSequence).
---- songDuration nil uses C.SessionStartAnimationData for the current sessionNum
---- (session 1 is 71s): fades TR_Loop so Music C starts about 75% through that fade,
+--- songDuration nil uses the catalog track TR_SessionStart<sessionNum>
+--- (duration is that track's length; a missing track picks another at random):
+--- fades TR_Loop so Music C starts about 75% through that fade,
 --- and plays Music C when the scaled lead-in ends.
 --- songDuration 0 (Quick Transition) runs at timeRatio 0 and skips Music C.
 --- Returns immediately; wait attributeSequenceDurationSec(songDuration).
 -- @param songDuration number|nil
 -- @return number attributeSequenceDurationSec
 function SessionExplode.playAttribute(songDuration)
+  local Phases = require("core.phases")
+  if type(Phases.applySessionBlindfoldImages) == "function" then
+    Phases.applySessionBlindfoldImages(nil)
+  end
   if songDuration == nil then
     songDuration = SessionExplode.resolveAnimationData().songDuration
   end

@@ -687,16 +687,55 @@ Catalog.TRACKS = {
     volume = 0.25,
     order = 2,
   },
-  TR_SessionStart = {
-    key = "TR_SessionStart",
+  TR_SessionStart1 = {
+    key = "TR_SessionStart1",
     type = "sessionIntro",
-    --- Live TTS Trigger Effect name on Music C (object UI slot 2).
-    effect = "Session Starter",
+    effect = "Session Starter 1",
     isLooping = false,
-    duration = 71,
+    duration = 70,
     volume = 1,
     --- TTS `playTriggerEffect` is 0-based. Object UI slot 2 → Lua index 1.
     effectIndex = 1,
+  },
+  TR_SessionStart2 = {
+    key = "TR_SessionStart2",
+    type = "sessionIntro",
+    effect = "Session Starter 2",
+    isLooping = false,
+    duration = 61,
+    volume = 1,
+    --- TTS `playTriggerEffect` is 0-based. Object UI slot 2 → Lua index 1.
+    effectIndex = 2,
+  },
+  TR_SessionStart3 = {
+    key = "TR_SessionStart3",
+    type = "sessionIntro",
+    effect = "Session Starter 3",
+    isLooping = false,
+    duration = 41,
+    volume = 1,
+    --- TTS `playTriggerEffect` is 0-based. Object UI slot 2 → Lua index 1.
+    effectIndex = 3,
+  },
+  TR_SessionStart4 = {
+    key = "TR_SessionStart4",
+    type = "sessionIntro",
+    effect = "Session Starter 4",
+    isLooping = false,
+    duration = 37,
+    volume = 1,
+    --- TTS `playTriggerEffect` is 0-based. Object UI slot 2 → Lua index 1.
+    effectIndex = 4,
+  },
+  TR_SessionStart5 = {
+    key = "TR_SessionStart5",
+    type = "sessionIntro",
+    effect = "Session Starter 5",
+    isLooping = false,
+    duration = 77,
+    volume = 1,
+    --- TTS `playTriggerEffect` is 0-based. Object UI slot 2 → Lua index 1.
+    effectIndex = 5,
   },
   STB_HouseOfTheRisingSun = {
     key = "STB_HouseOfTheRisingSun",
@@ -1156,6 +1195,17 @@ end
 -- @return table|nil
 function Catalog.getSessionIntroTrack(trackKey)
   return getTrackByKey(Catalog.PLAYLISTS.sessionIntro, trackKey)
+end
+
+--- Catalog key for one session's start overture (`TR_SessionStart1`, …).
+-- @param sessionNum number
+-- @return string
+function Catalog.sessionIntroKeyForSession(sessionNum)
+  local n = math.floor(tonumber(sessionNum) or 1)
+  if n < 1 then
+    n = 1
+  end
+  return "TR_SessionStart" .. tostring(n)
 end
 
 --- Returns a weather track by layer and exact generated track key.

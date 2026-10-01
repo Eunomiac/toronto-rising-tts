@@ -330,6 +330,7 @@ test("soundscape Lua files parse as Lua 5.1", () => {
     "lib/soundscape_catalog.ttslua",
     "core/soundscape.ttslua",
     "core/phases.ttslua",
+    "core/session_explode.ttslua",
     "core/state.ttslua",
     "core/scenes.ttslua",
     "core/global_script.ttslua",
@@ -461,10 +462,11 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
   [
     "guidKey = \"SOUNDSCAPE_MUSIC_C\"",
     "kind = \"sessionIntro\"",
-    "TR_SessionStart",
-    "effect = \"Session Starter\"",
+    "TR_SessionStart1",
+    "effect = \"Session Starter 1\"",
     "effectIndex = 1",
     "function Catalog.getSessionIntroTrack(trackKey)",
+    "function Catalog.sessionIntroKeyForSession(sessionNum)",
   ].forEach((needle) => {
     assert.ok(catalog.includes(needle), `missing catalog session intro: ${needle}`);
   });
@@ -480,33 +482,35 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
   });
 
   [
-    "C.SessionStartIntroKey = \"TR_SessionStart\"",
-    "C.SessionStartIntroDurationSec = 71",
     "C.SessionStartBlindfoldLeadSec = 2",
-    "C.SessionStartBaseDuration = 71",
-    "C.SessionStartAnimationData = {",
-    "C.SessionStartIntroDelaySec = 0.25",
-    "C.SessionStartPlayEnterSettleSec = 0.5",
+    "C.SessionStartPlayEnterSettleSec = 2",
   ].forEach((needle) => {
     assert.ok(constants.includes(needle), `missing session intro constant: ${needle}`);
   });
+  [
+    "C.SessionStartIntroKey",
+    "C.SessionStartIntroDurationSec",
+    "C.SessionStartAnimationData",
+    "C.SessionStartBaseDuration",
+  ].forEach((needle) => {
+    assert.equal(
+      constants.includes(needle),
+      false,
+      `session intro timing now comes from the sound catalog, not ${needle}`,
+    );
+  });
 
   [
-    "local INTERMISSION_TO_PLAY_LOOP_FADE_SEC = 0.5",
-    "function Phases.fireSessionIntro(_ctx)",
-    "function Phases.fadeIntermissionLoopForPlayEnter(_ctx)",
-    "function Phases.sessionIntroBlindfoldHoldSec(_ctx)",
     "function Phases.armPlayHudBehindCover(_ctx)",
-    "SE.play()",
     "function Phases.startPlayMainAfterSessionIntro(_ctx)",
     "function Phases.applyPlayEnterNoSceneLights(_ctx)",
-    "Soundscape.playSessionIntro(key, { fadeSeconds = 0 })",
-    "resumeBackground = false",
-    "PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC",
-    "maxWait = PHASE_ADVANCE_CHAIN_MAX_WAIT_SEC",
     "function Phases.beginIntermissionThemeHandoff(_ctx",
     "function Phases.beginEndIntermissionAmbientFadeOut(",
     "outgoingFadeSeconds = fadeOutgoing and fadeSec or 0",
+    "SE.playAttribute()",
+    "UI.getCustomAssets",
+    "overlay_sessionEndSplash_1",
+    "rgba(0, 0, 0, 0)",
   ].forEach((needle) => {
     assert.ok(phases.includes(needle), `missing phase session intro: ${needle}`);
   });
@@ -515,25 +519,16 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
   const playEnterEnd = phases.indexOf("Phases.onExit[C.Phases.PLAY]");
   assert.ok(playEnterStart >= 0 && playEnterEnd > playEnterStart, "missing Play enter steps");
   const playEnter = phases.slice(playEnterStart, playEnterEnd);
-  assert.ok(playEnter.includes("SE.play()"), "Play enter should start SessionExplode.play with the overture");
-  const explodeKick = playEnter.indexOf("SE.play()");
-  const stingKick = playEnter.indexOf("Phases.fireSessionIntro(ctx)");
+  assert.ok(playEnter.includes("SE.playAttribute()"), "Play enter should start the catalog-timed splash");
+  const explodeKick = playEnter.indexOf("SE.playAttribute()");
   const lightsKick = playEnter.indexOf("Phases.applyPlayEnterNoSceneLights");
   assert.ok(
-    explodeKick >= 0 && stingKick > explodeKick,
-    "Play enter should kick the cover explode before the Music C sting (TOR-533)",
-  );
-  assert.ok(
     lightsKick >= 0 && explodeKick > lightsKick,
-    "Play enter should apply OutdoorDim behind the cover before explode/sting (TOR-535)",
+    "Play enter should apply OutdoorDim behind the cover before the splash",
   );
   assert.ok(
     playEnter.includes("return C.SessionStartPlayEnterSettleSec"),
-    "Play enter should wait SessionStartPlayEnterSettleSec after lights before explode (TOR-536)",
-  );
-  assert.ok(
-    playEnter.includes("return C.SessionStartIntroDelaySec"),
-    "Play enter should wait SessionStartIntroDelaySec after explode before the sting (TOR-534)",
+    "Play enter should wait SessionStartPlayEnterSettleSec after lights before the splash",
   );
   assert.ok(
     playEnter.includes("Phases.armPlayHudBehindCover"),
@@ -552,11 +547,12 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
 
   const explode = readRepoFile("core/session_explode.ttslua");
   [
-    "function SessionExplode.play()",
-    "function SessionExplode.explodeImage(id, config)",
+    "function SessionExplode.playAttribute(songDuration)",
     "function SessionExplode.resolveAnimationData()",
-    "overlay_globalBlindfold_sessionSplash_1_1_A",
-    "overlay_globalBlindfold_sessionSplash_1_6_B",
+    "Catalog.sessionIntroKeyForSession",
+    "Catalog.getSessionIntroTrack",
+    "math.random",
+    "resumeBackground = false",
   ].forEach((needle) => {
     assert.ok(explode.includes(needle), `missing session explode: ${needle}`);
   });
@@ -567,7 +563,7 @@ test("session-start overture uses Music C and holds Main until the sting ends", 
   );
 
   const playLightsStart = phases.indexOf("function Phases.applyPlayEnterNoSceneLights");
-  const playLightsEnd = phases.indexOf("function Phases.fireSessionIntro");
+  const playLightsEnd = phases.indexOf("function Phases.startPlayMainAfterSessionIntro");
   assert.ok(
     playLightsStart >= 0 && playLightsEnd > playLightsStart,
     "missing applyPlayEnterNoSceneLights body",

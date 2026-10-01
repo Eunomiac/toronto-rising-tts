@@ -701,8 +701,12 @@ local function armEndGlobalBlindfoldImage()
     if type(PhasesMod.endBlindfoldImageName) ~= "function" then
         return
     end
+    local endImage = PhasesMod.endBlindfoldImageName(nil)
+    if type(endImage) ~= "string" or endImage == "" then
+        return
+    end
     U.setAttributes(GLOBAL_BLINDFOLD_IMAGE_ID, {
-        image = PhasesMod.endBlindfoldImageName(nil),
+        image = endImage,
         active = "true",
         color = "White",
     })

@@ -4,12 +4,12 @@
 
 Read this when:
 - verifying Intermission→Play cover explode after TEST BED timings were ported
-- checking that `C.SessionStartAnimationData` is chosen from `sessionNum`
+- checking that `TR_SessionStart<sessionNum>` is chosen from the sound catalog
 
 Source of truth:
-- `core/session_explode.ttslua`
-- `core/phases.ttslua` (`fireSessionIntro`, Play enter)
-- `lib/constants.ttslua` (`C.SessionStartAnimationData`, `C.SessionStartBaseDuration`)
+- `core/session_explode.ttslua` (`SessionExplode.resolveAnimationData`)
+- `lib/soundscape_catalog.ttslua` (`TR_SessionStart1` … `TR_SessionStart5`)
+- `core/phases.ttslua` (Play enter)
 
 Verification:
 - this playbook after Save & Play
@@ -47,27 +47,29 @@ U.chain({
   end,
   function()
     local SE = require("core.session_explode")
+    local Catalog = require("lib.soundscape_catalog")
     local original = tonumber(S.getStateVal("sessionNum")) or 1
     S.setSessionNum(1)
     local a1 = SE.resolveAnimationData()
-    if a1.usedIndex ~= 1 then
-      error("[TOR-531 FAIL] session 1 should use index 1, got " .. tostring(a1.usedIndex))
+    if a1.introKey ~= "TR_SessionStart1" then
+      error("[TOR-531 FAIL] session 1 introKey " .. tostring(a1.introKey))
     end
-    if a1.introKey ~= C.SessionStartAnimationData[1].introKey then
-      error("[TOR-531 FAIL] session 1 introKey mismatch")
-    end
-    if a1.songDuration ~= C.SessionStartAnimationData[1].songDuration then
+    local track1 = Catalog.getSessionIntroTrack("TR_SessionStart1")
+    if a1.songDuration ~= tonumber(track1.durationSeconds) then
       error("[TOR-531 FAIL] session 1 songDuration mismatch")
     end
     S.setSessionNum(99)
     local a99 = SE.resolveAnimationData()
-    if a99.usedIndex ~= 1 then
-      error("[TOR-531 FAIL] missing session 99 should fall back to index 1, got " .. tostring(a99.usedIndex))
+    if a99.usedFallback ~= true then
+      error("[TOR-531 FAIL] missing session 99 should pick a random existing intro")
+    end
+    if Catalog.getSessionIntroTrack(a99.introKey) == nil then
+      error("[TOR-531 FAIL] fallback key is not in the catalog: " .. tostring(a99.introKey))
     end
     S.setSessionNum(original)
   end,
   function()
-    print("PASS — session 1 lookup and missing-index fallback both use the expected intro data")
+    print("PASS — session 1 uses TR_SessionStart1; a missing session number picks another catalog intro")
   end,
   function()
     DEBUG.resetToIntermission()
