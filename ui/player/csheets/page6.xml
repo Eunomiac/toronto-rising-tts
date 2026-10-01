@@ -15,10 +15,10 @@
   />
   <Image class="xp_navigate_forward"
     ignoreLayout="true"
-    rectAlignment="UpperCenter"
+    rectAlignment="MiddleCenter"
     width="100"
     height="40"
-    offsetXY="0 50"
+    offsetXY="0 -132"
     active="false"
     raycastTarget = "true"
   />
@@ -27,7 +27,7 @@
     rectAlignment="LowerCenter"
     width="100"
     height="40"
-    offsetXY="0 -50"
+    offsetXY="0 15"
     active="false"
     raycastTarget = "true"
   />

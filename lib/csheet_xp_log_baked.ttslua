@@ -7,11 +7,41 @@
 
 local BAKE = {
   bakedForSessionNum = 1,
-  bakeRevision = 1790273357150,
+  bakeRevision = 1790878150853,
   saveFileName = "TS_Save_230.json",
   byCharKey = {
     ["aishe"] = {
       sessions = {
+        {
+          sessionNum = 0,
+          lineCount = 2,
+          gainCount = 1,
+          spendCount = 0,
+        },
+        {
+          sessionNum = -1,
+          lineCount = 3,
+          gainCount = 1,
+          spendCount = 2,
+        },
+        {
+          sessionNum = -2,
+          lineCount = 2,
+          gainCount = 1,
+          spendCount = 1,
+        },
+        {
+          sessionNum = -3,
+          lineCount = 4,
+          gainCount = 1,
+          spendCount = 3,
+        },
+        {
+          sessionNum = -4,
+          lineCount = 5,
+          gainCount = 2,
+          spendCount = 4,
+        },
       },
     },
     ["blackCaesar"] = {
@@ -20,42 +50,90 @@ local BAKE = {
     },
     ["fomorach"] = {
       sessions = {
+        {
+          sessionNum = 0,
+          lineCount = 2,
+          gainCount = 1,
+          spendCount = 0,
+        },
+        {
+          sessionNum = -1,
+          lineCount = 3,
+          gainCount = 1,
+          spendCount = 2,
+        },
+        {
+          sessionNum = -2,
+          lineCount = 5,
+          gainCount = 2,
+          spendCount = 4,
+        },
+        {
+          sessionNum = -3,
+          lineCount = 4,
+          gainCount = 1,
+          spendCount = 3,
+        },
+        {
+          sessionNum = -4,
+          lineCount = 2,
+          gainCount = 1,
+          spendCount = 1,
+        },
+        {
+          sessionNum = -5,
+          lineCount = 4,
+          gainCount = 1,
+          spendCount = 3,
+        },
+        {
+          sessionNum = -6,
+          lineCount = 5,
+          gainCount = 2,
+          spendCount = 4,
+        },
       },
     },
     ["lordLucien"] = {
       sessions = {
         {
           sessionNum = 0,
-          lineCount = 3,
+          lineCount = 2,
           gainCount = 1,
-          spendCount = 2,
+          spendCount = 0,
         },
         {
           sessionNum = -1,
-          lineCount = 4,
-          gainCount = 2,
-          spendCount = 3,
+          lineCount = 3,
+          gainCount = 0,
+          spendCount = 2,
         },
         {
           sessionNum = -2,
-          lineCount = 5,
-          gainCount = 1,
-          spendCount = 4,
+          lineCount = 4,
+          gainCount = 2,
+          spendCount = 3,
         },
         {
           sessionNum = -3,
           lineCount = 5,
-          gainCount = 2,
+          gainCount = 1,
           spendCount = 4,
         },
         {
           sessionNum = -4,
+          lineCount = 5,
+          gainCount = 2,
+          spendCount = 4,
+        },
+        {
+          sessionNum = -5,
           lineCount = 4,
           gainCount = 2,
           spendCount = 3,
         },
         {
-          sessionNum = -5,
+          sessionNum = -6,
           lineCount = 6,
           gainCount = 2,
           spendCount = 5,
@@ -64,6 +142,48 @@ local BAKE = {
     },
     ["rashid"] = {
       sessions = {
+        {
+          sessionNum = 0,
+          lineCount = 2,
+          gainCount = 1,
+          spendCount = 0,
+        },
+        {
+          sessionNum = -1,
+          lineCount = 3,
+          gainCount = 1,
+          spendCount = 2,
+        },
+        {
+          sessionNum = -2,
+          lineCount = 4,
+          gainCount = 1,
+          spendCount = 3,
+        },
+        {
+          sessionNum = -3,
+          lineCount = 2,
+          gainCount = 1,
+          spendCount = 1,
+        },
+        {
+          sessionNum = -4,
+          lineCount = 4,
+          gainCount = 1,
+          spendCount = 3,
+        },
+        {
+          sessionNum = -5,
+          lineCount = 3,
+          gainCount = 1,
+          spendCount = 2,
+        },
+        {
+          sessionNum = -6,
+          lineCount = 5,
+          gainCount = 2,
+          spendCount = 4,
+        },
       },
     },
   },

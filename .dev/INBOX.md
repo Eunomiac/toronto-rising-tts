@@ -29,6 +29,8 @@ Verification:
   3. `defaultY` should be derived from existing `seat_role_offsets.ttslua` data, NOT from the game world, unless the object doesn't exist in the `offsets` table (this is because many objects are deactivated by setting their y-level to -200, making y-level data drawn from the game world unreliable).
   4. `scale` should be excluded from BOTH the dump file data, AND from the `offsets` table -- rotational coordinates never affect scale, making this an inappropriate location for scale settings. No code should expect to find `scale` data in the `offsets` table; scale should largely remain unchanged, unless scaling data is given in `C.ObjectPositions`.
 - [Stage Control Board] Right-clicking the "Clear" button is supposed to find all tokens in the game world that are not on the stage control board, and return them to their positions on the palette.  Currently, this only works if the tokens are already on the palette. Tokens dropped elsewhere in the game world should be included.
+- [Hunger Overlays] Players are still being shown the hunger = 0 overlay upon game start. Only when I click the "Refresh UI" button in the Debug panel are they set to their proper values.
+
 
 
 

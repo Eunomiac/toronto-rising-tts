@@ -15,10 +15,10 @@
   />
   <Image class="xp_navigate_forward"
     ignoreLayout="true"
-    rectAlignment="UpperCenter"
+    rectAlignment="MiddleCenter"
     width="100"
     height="40"
-    offsetXY="0 50"
+    offsetXY="0 -132"
     active="false"
     raycastTarget = "true"
   />
@@ -27,7 +27,7 @@
     rectAlignment="LowerCenter"
     width="100"
     height="40"
-    offsetXY="0 -50"
+    offsetXY="0 15"
     active="false"
     raycastTarget = "true"
   />
@@ -239,10 +239,10 @@
 <HorizontalLayout id="xp_title_line_0" class="xp_title_line" active="true">
   <HorizontalLayout class="xp_title_line_left">
     <Text id="xp_sessionNum_0" class="xp_session_num" text="PREGAME" />
-    <Text id="xp_sessionDate_0" class="xp_session_date" text="Apr. 2, 2026" />
+    <Text id="xp_sessionDate_0" class="xp_session_date" text="July 29, 2026" />
   </HorizontalLayout>
   <HorizontalLayout class="xp_title_line_right">
-    <Text id="xp_summation_0" class="xp_summation" text="15 XP + 18 − 15 =" />
+    <Text id="xp_summation_0" class="xp_summation" text="0 XP + 18 =" />
     <Text id="xp_total_0" class="xp_total" text="18 XP" />
   </HorizontalLayout>
 </HorizontalLayout>
@@ -256,64 +256,36 @@
 
   </GridLayout>
   <GridLayout id="xp_listing_right_0" class="xp_listing">
-    <!-- Spend row for one session slot. -->
-<HorizontalLayout id="xp_item_right_0_1" class="xp_item" active="true">
-  <Text id="xp_spendNum_0_1" class="xp_spend_num" text="−6 XP" />
-  <Text id="xp_spendDesc_0_1" class="xp_spend_desc" text="Merit: Mawla (Damien Abanda) 2" />
-</HorizontalLayout>
-
-<!-- Spend row for one session slot. -->
-<HorizontalLayout id="xp_item_right_0_2" class="xp_item" active="true">
-  <Text id="xp_spendNum_0_2" class="xp_spend_num" text="−9 XP" />
-  <Text id="xp_spendDesc_0_2" class="xp_spend_desc" text="Clan Discipline: Presence 3 (Second Power)" />
-</HorizontalLayout>
-
+    
   </GridLayout>
 </HorizontalLayout>
 
 <!-- Finished session block (token / active / title / date / summation / total / gain+spend rows). -->
 <HorizontalLayout id="xp_title_line_m1" class="xp_title_line" active="true">
   <HorizontalLayout class="xp_title_line_left">
-    <Text id="xp_sessionNum_m1" class="xp_session_num" text="TIME OF LEGACY" />
-    <Text id="xp_sessionDate_m1" class="xp_session_date" text="Mar. 27, 2026" />
+    <Text id="xp_sessionNum_m1" class="xp_session_num" text="ROLLOVER" />
+    <Text id="xp_sessionDate_m1" class="xp_session_date" text="Apr. 2, 2026" />
   </HorizontalLayout>
   <HorizontalLayout class="xp_title_line_right">
-    <Text id="xp_summation_m1" class="xp_summation" text="12 XP + 18 − 15 =" />
-    <Text id="xp_total_m1" class="xp_total" text="15 XP" />
+    <Text id="xp_summation_m1" class="xp_summation" text="15 XP − 15 =" />
+    <Text id="xp_total_m1" class="xp_total" text="0 XP" />
   </HorizontalLayout>
 </HorizontalLayout>
 <HorizontalLayout id="xp_listing_wrapper_m1" class="xp_listing_wrapper" active="true">
   <GridLayout id="xp_listing_left_m1" class="xp_listing">
-    <!-- Gain row for one session slot. -->
-<HorizontalLayout id="xp_item_left_m1_1" class="xp_item" active="true">
-  <Text id="xp_gainNum_m1_1" class="xp_gain_num" text="+12 XP" />
-  <Text id="xp_gainDesc_m1_1" class="xp_gain_desc" text="Time of Legacy (Loresheet Merits Only)" />
-</HorizontalLayout>
-
-<!-- Gain row for one session slot. -->
-<HorizontalLayout id="xp_item_left_m1_2" class="xp_item" active="true">
-  <Text id="xp_gainNum_m1_2" class="xp_gain_num" text="+6 XP" />
-  <Text id="xp_gainDesc_m1_2" class="xp_gain_desc" text="Time of Legacy (Loresheet Merits, Status Only)" />
-</HorizontalLayout>
-
+    
   </GridLayout>
   <GridLayout id="xp_listing_right_m1" class="xp_listing">
     <!-- Spend row for one session slot. -->
 <HorizontalLayout id="xp_item_right_m1_1" class="xp_item" active="true">
-  <Text id="xp_spendNum_m1_1" class="xp_spend_num" text="−3 XP" />
-  <Text id="xp_spendDesc_m1_1" class="xp_spend_desc" text="Loresheet Merit: Oral History (1)" />
+  <Text id="xp_spendNum_m1_1" class="xp_spend_num" text="−6 XP" />
+  <Text id="xp_spendDesc_m1_1" class="xp_spend_desc" text="Merit: Mawla (Damien Abanda) 2" />
 </HorizontalLayout>
 
 <!-- Spend row for one session slot. -->
 <HorizontalLayout id="xp_item_right_m1_2" class="xp_item" active="true">
-  <Text id="xp_spendNum_m1_2" class="xp_spend_num" text="−6 XP" />
-  <Text id="xp_spendDesc_m1_2" class="xp_spend_desc" text="Loresheet Merit: Ravnos Remains (2)" />
-</HorizontalLayout>
-
-<!-- Spend row for one session slot. -->
-<HorizontalLayout id="xp_item_right_m1_3" class="xp_item" active="true">
-  <Text id="xp_spendNum_m1_3" class="xp_spend_num" text="−6 XP" />
-  <Text id="xp_spendDesc_m1_3" class="xp_spend_desc" text="Background: Status (Toreador) 2" />
+  <Text id="xp_spendNum_m1_2" class="xp_spend_num" text="−9 XP" />
+  <Text id="xp_spendDesc_m1_2" class="xp_spend_desc" text="Clan Discipline: Presence 3 (Second Power)" />
 </HorizontalLayout>
 
   </GridLayout>
@@ -322,20 +294,26 @@
 <!-- Finished session block (token / active / title / date / summation / total / gain+spend rows). -->
 <HorizontalLayout id="xp_title_line_m2" class="xp_title_line" active="true">
   <HorizontalLayout class="xp_title_line_left">
-    <Text id="xp_sessionNum_m2" class="xp_session_num" text="TIME OF REINVENTION" />
+    <Text id="xp_sessionNum_m2" class="xp_session_num" text="TIME OF LEGACY" />
     <Text id="xp_sessionDate_m2" class="xp_session_date" text="Mar. 27, 2026" />
   </HorizontalLayout>
   <HorizontalLayout class="xp_title_line_right">
-    <Text id="xp_summation_m2" class="xp_summation" text="12 XP + 18 − 18 =" />
-    <Text id="xp_total_m2" class="xp_total" text="12 XP" />
+    <Text id="xp_summation_m2" class="xp_summation" text="12 XP + 18 − 15 =" />
+    <Text id="xp_total_m2" class="xp_total" text="15 XP" />
   </HorizontalLayout>
 </HorizontalLayout>
 <HorizontalLayout id="xp_listing_wrapper_m2" class="xp_listing_wrapper" active="true">
   <GridLayout id="xp_listing_left_m2" class="xp_listing">
     <!-- Gain row for one session slot. -->
 <HorizontalLayout id="xp_item_left_m2_1" class="xp_item" active="true">
-  <Text id="xp_gainNum_m2_1" class="xp_gain_num" text="+18 XP" />
-  <Text id="xp_gainDesc_m2_1" class="xp_gain_desc" text="Time of Reinvention" />
+  <Text id="xp_gainNum_m2_1" class="xp_gain_num" text="+12 XP" />
+  <Text id="xp_gainDesc_m2_1" class="xp_gain_desc" text="Time of Legacy (Loresheet Merits Only)" />
+</HorizontalLayout>
+
+<!-- Gain row for one session slot. -->
+<HorizontalLayout id="xp_item_left_m2_2" class="xp_item" active="true">
+  <Text id="xp_gainNum_m2_2" class="xp_gain_num" text="+6 XP" />
+  <Text id="xp_gainDesc_m2_2" class="xp_gain_desc" text="Time of Legacy (Loresheet Merits, Status Only)" />
 </HorizontalLayout>
 
   </GridLayout>
@@ -343,25 +321,19 @@
     <!-- Spend row for one session slot. -->
 <HorizontalLayout id="xp_item_right_m2_1" class="xp_item" active="true">
   <Text id="xp_spendNum_m2_1" class="xp_spend_num" text="−3 XP" />
-  <Text id="xp_spendDesc_m2_1" class="xp_spend_desc" text="Coterie Background: Status (Camarilla) 4 → 5" />
+  <Text id="xp_spendDesc_m2_1" class="xp_spend_desc" text="Loresheet Merit: Oral History (1)" />
 </HorizontalLayout>
 
 <!-- Spend row for one session slot. -->
 <HorizontalLayout id="xp_item_right_m2_2" class="xp_item" active="true">
   <Text id="xp_spendNum_m2_2" class="xp_spend_num" text="−6 XP" />
-  <Text id="xp_spendDesc_m2_2" class="xp_spend_desc" text="Coterie Merit: Transportation 2" />
+  <Text id="xp_spendDesc_m2_2" class="xp_spend_desc" text="Loresheet Merit: Ravnos Remains (2)" />
 </HorizontalLayout>
 
 <!-- Spend row for one session slot. -->
 <HorizontalLayout id="xp_item_right_m2_3" class="xp_item" active="true">
-  <Text id="xp_spendNum_m2_3" class="xp_spend_num" text="−3 XP" />
-  <Text id="xp_spendDesc_m2_3" class="xp_spend_desc" text="Merit: Linguistics 1" />
-</HorizontalLayout>
-
-<!-- Spend row for one session slot. -->
-<HorizontalLayout id="xp_item_right_m2_4" class="xp_item" active="true">
-  <Text id="xp_spendNum_m2_4" class="xp_spend_num" text="−6 XP" />
-  <Text id="xp_spendDesc_m2_4" class="xp_spend_desc" text="Background: Status (Camarilla) 3 → 5" />
+  <Text id="xp_spendNum_m2_3" class="xp_spend_num" text="−6 XP" />
+  <Text id="xp_spendDesc_m2_3" class="xp_spend_desc" text="Background: Status (Toreador) 2" />
 </HorizontalLayout>
 
   </GridLayout>
@@ -370,11 +342,11 @@
 <!-- Finished session block (token / active / title / date / summation / total / gain+spend rows). -->
 <HorizontalLayout id="xp_title_line_m3" class="xp_title_line" active="true">
   <HorizontalLayout class="xp_title_line_left">
-    <Text id="xp_sessionNum_m3" class="xp_session_num" text="TIME OF ADVERSITY" />
+    <Text id="xp_sessionNum_m3" class="xp_session_num" text="TIME OF REINVENTION" />
     <Text id="xp_sessionDate_m3" class="xp_session_date" text="Mar. 27, 2026" />
   </HorizontalLayout>
   <HorizontalLayout class="xp_title_line_right">
-    <Text id="xp_summation_m3" class="xp_summation" text="6 XP + 20 − 14 =" />
+    <Text id="xp_summation_m3" class="xp_summation" text="12 XP + 18 − 18 =" />
     <Text id="xp_total_m3" class="xp_total" text="12 XP" />
   </HorizontalLayout>
 </HorizontalLayout>
@@ -382,14 +354,8 @@
   <GridLayout id="xp_listing_left_m3" class="xp_listing">
     <!-- Gain row for one session slot. -->
 <HorizontalLayout id="xp_item_left_m3_1" class="xp_item" active="true">
-  <Text id="xp_gainNum_m3_1" class="xp_gain_num" text="+10 XP" />
-  <Text id="xp_gainDesc_m3_1" class="xp_gain_desc" text="Time of Adversity (Attributes, Skills Only)" />
-</HorizontalLayout>
-
-<!-- Gain row for one session slot. -->
-<HorizontalLayout id="xp_item_left_m3_2" class="xp_item" active="true">
-  <Text id="xp_gainNum_m3_2" class="xp_gain_num" text="+10 XP" />
-  <Text id="xp_gainDesc_m3_2" class="xp_gain_desc" text="Time of Adversity (Attributes, Disciplines Only)" />
+  <Text id="xp_gainNum_m3_1" class="xp_gain_num" text="+18 XP" />
+  <Text id="xp_gainDesc_m3_1" class="xp_gain_desc" text="Time of Reinvention" />
 </HorizontalLayout>
 
   </GridLayout>
@@ -397,73 +363,79 @@
     <!-- Spend row for one session slot. -->
 <HorizontalLayout id="xp_item_right_m3_1" class="xp_item" active="true">
   <Text id="xp_spendNum_m3_1" class="xp_spend_num" text="−3 XP" />
-  <Text id="xp_spendDesc_m3_1" class="xp_spend_desc" text="Skill: Performance 1" />
+  <Text id="xp_spendDesc_m3_1" class="xp_spend_desc" text="Coterie Background: Status (Camarilla) 4 → 5" />
 </HorizontalLayout>
 
 <!-- Spend row for one session slot. -->
 <HorizontalLayout id="xp_item_right_m3_2" class="xp_item" active="true">
-  <Text id="xp_spendNum_m3_2" class="xp_spend_num" text="−3 XP" />
-  <Text id="xp_spendDesc_m3_2" class="xp_spend_desc" text="Skill: Stealth 1" />
+  <Text id="xp_spendNum_m3_2" class="xp_spend_num" text="−6 XP" />
+  <Text id="xp_spendDesc_m3_2" class="xp_spend_desc" text="Coterie Merit: Transportation (2)" />
 </HorizontalLayout>
 
 <!-- Spend row for one session slot. -->
 <HorizontalLayout id="xp_item_right_m3_3" class="xp_item" active="true">
   <Text id="xp_spendNum_m3_3" class="xp_spend_num" text="−3 XP" />
-  <Text id="xp_spendDesc_m3_3" class="xp_spend_desc" text="Skill: Streetwise 1" />
+  <Text id="xp_spendDesc_m3_3" class="xp_spend_desc" text="Merit: Linguistics (1)" />
 </HorizontalLayout>
 
 <!-- Spend row for one session slot. -->
 <HorizontalLayout id="xp_item_right_m3_4" class="xp_item" active="true">
-  <Text id="xp_spendNum_m3_4" class="xp_spend_num" text="−5 XP" />
-  <Text id="xp_spendDesc_m3_4" class="xp_spend_desc" text="Clan Discipline: Celerity 1" />
+  <Text id="xp_spendNum_m3_4" class="xp_spend_num" text="−6 XP" />
+  <Text id="xp_spendDesc_m3_4" class="xp_spend_desc" text="Background: Status (Camarilla) 3 → 5" />
 </HorizontalLayout>
 
   </GridLayout>
 </HorizontalLayout>
 
 <!-- Finished session block (token / active / title / date / summation / total / gain+spend rows). -->
-<HorizontalLayout id="xp_title_line_m4" class="xp_title_line" active="false">
+<HorizontalLayout id="xp_title_line_m4" class="xp_title_line" active="true">
   <HorizontalLayout class="xp_title_line_left">
-    <Text id="xp_sessionNum_m4" class="xp_session_num" text="TIME OF LINEAGE" />
+    <Text id="xp_sessionNum_m4" class="xp_session_num" text="TIME OF ADVERSITY" />
     <Text id="xp_sessionDate_m4" class="xp_session_date" text="Mar. 27, 2026" />
   </HorizontalLayout>
   <HorizontalLayout class="xp_title_line_right">
-    <Text id="xp_summation_m4" class="xp_summation" text="3 XP + 21 − 18 =" />
-    <Text id="xp_total_m4" class="xp_total" text="6 XP" />
+    <Text id="xp_summation_m4" class="xp_summation" text="6 XP + 20 − 14 =" />
+    <Text id="xp_total_m4" class="xp_total" text="12 XP" />
   </HorizontalLayout>
 </HorizontalLayout>
-<HorizontalLayout id="xp_listing_wrapper_m4" class="xp_listing_wrapper" active="false">
+<HorizontalLayout id="xp_listing_wrapper_m4" class="xp_listing_wrapper" active="true">
   <GridLayout id="xp_listing_left_m4" class="xp_listing">
     <!-- Gain row for one session slot. -->
 <HorizontalLayout id="xp_item_left_m4_1" class="xp_item" active="true">
-  <Text id="xp_gainNum_m4_1" class="xp_gain_num" text="+12 XP" />
-  <Text id="xp_gainDesc_m4_1" class="xp_gain_desc" text="Time of Lineage (Clan Coterie, Bloodline Merits Only)" />
+  <Text id="xp_gainNum_m4_1" class="xp_gain_num" text="+10 XP" />
+  <Text id="xp_gainDesc_m4_1" class="xp_gain_desc" text="Time of Adversity (Attributes, Skills Only)" />
 </HorizontalLayout>
 
 <!-- Gain row for one session slot. -->
 <HorizontalLayout id="xp_item_left_m4_2" class="xp_item" active="true">
-  <Text id="xp_gainNum_m4_2" class="xp_gain_num" text="+9 XP" />
-  <Text id="xp_gainDesc_m4_2" class="xp_gain_desc" text="Time of Lineage (Clan Coterie, Bloodline Merits Only)" />
+  <Text id="xp_gainNum_m4_2" class="xp_gain_num" text="+10 XP" />
+  <Text id="xp_gainDesc_m4_2" class="xp_gain_desc" text="Time of Adversity (Attributes, Disciplines Only)" />
 </HorizontalLayout>
 
   </GridLayout>
   <GridLayout id="xp_listing_right_m4" class="xp_listing">
     <!-- Spend row for one session slot. -->
 <HorizontalLayout id="xp_item_right_m4_1" class="xp_item" active="true">
-  <Text id="xp_spendNum_m4_1" class="xp_spend_num" text="−12 XP" />
-  <Text id="xp_spendDesc_m4_1" class="xp_spend_desc" text="Bloodline Merit: Painting the Mind's Eye (4)" />
+  <Text id="xp_spendNum_m4_1" class="xp_spend_num" text="−3 XP" />
+  <Text id="xp_spendDesc_m4_1" class="xp_spend_desc" text="Skill: Performance 1" />
 </HorizontalLayout>
 
 <!-- Spend row for one session slot. -->
 <HorizontalLayout id="xp_item_right_m4_2" class="xp_item" active="true">
   <Text id="xp_spendNum_m4_2" class="xp_spend_num" text="−3 XP" />
-  <Text id="xp_spendDesc_m4_2" class="xp_spend_desc" text="Clan Coterie Merit: All-Access (1)" />
+  <Text id="xp_spendDesc_m4_2" class="xp_spend_desc" text="Skill: Stealth 1" />
 </HorizontalLayout>
 
 <!-- Spend row for one session slot. -->
 <HorizontalLayout id="xp_item_right_m4_3" class="xp_item" active="true">
   <Text id="xp_spendNum_m4_3" class="xp_spend_num" text="−3 XP" />
-  <Text id="xp_spendDesc_m4_3" class="xp_spend_desc" text="Bloodline Merit: Cosmopolitan Communicator (1)" />
+  <Text id="xp_spendDesc_m4_3" class="xp_spend_desc" text="Skill: Streetwise 1" />
+</HorizontalLayout>
+
+<!-- Spend row for one session slot. -->
+<HorizontalLayout id="xp_item_right_m4_4" class="xp_item" active="true">
+  <Text id="xp_spendNum_m4_4" class="xp_spend_num" text="−5 XP" />
+  <Text id="xp_spendDesc_m4_4" class="xp_spend_desc" text="Clan Discipline: Celerity 1" />
 </HorizontalLayout>
 
   </GridLayout>
@@ -472,58 +444,106 @@
 <!-- Finished session block (token / active / title / date / summation / total / gain+spend rows). -->
 <HorizontalLayout id="xp_title_line_m5" class="xp_title_line" active="false">
   <HorizontalLayout class="xp_title_line_left">
-    <Text id="xp_sessionNum_m5" class="xp_session_num" text="ANCILLA" />
+    <Text id="xp_sessionNum_m5" class="xp_session_num" text="TIME OF LINEAGE" />
     <Text id="xp_sessionDate_m5" class="xp_session_date" text="Mar. 27, 2026" />
   </HorizontalLayout>
   <HorizontalLayout class="xp_title_line_right">
-    <Text id="xp_summation_m5" class="xp_summation" text="0 XP + 42 − 39 =" />
-    <Text id="xp_total_m5" class="xp_total" text="3 XP" />
+    <Text id="xp_summation_m5" class="xp_summation" text="3 XP + 21 − 18 =" />
+    <Text id="xp_total_m5" class="xp_total" text="6 XP" />
   </HorizontalLayout>
 </HorizontalLayout>
 <HorizontalLayout id="xp_listing_wrapper_m5" class="xp_listing_wrapper" active="false">
   <GridLayout id="xp_listing_left_m5" class="xp_listing">
     <!-- Gain row for one session slot. -->
 <HorizontalLayout id="xp_item_left_m5_1" class="xp_item" active="true">
-  <Text id="xp_gainNum_m5_1" class="xp_gain_num" text="+15 XP" />
-  <Text id="xp_gainDesc_m5_1" class="xp_gain_desc" text="Predator Type (Disciplines Only)" />
+  <Text id="xp_gainNum_m5_1" class="xp_gain_num" text="+12 XP" />
+  <Text id="xp_gainDesc_m5_1" class="xp_gain_desc" text="Time of Lineage (Clan Coterie, Bloodline Merits Only)" />
 </HorizontalLayout>
 
 <!-- Gain row for one session slot. -->
 <HorizontalLayout id="xp_item_left_m5_2" class="xp_item" active="true">
-  <Text id="xp_gainNum_m5_2" class="xp_gain_num" text="+27 XP" />
-  <Text id="xp_gainDesc_m5_2" class="xp_gain_desc" text="Blood Potency 2 (Advantages Only)" />
+  <Text id="xp_gainNum_m5_2" class="xp_gain_num" text="+9 XP" />
+  <Text id="xp_gainDesc_m5_2" class="xp_gain_desc" text="Time of Lineage (Clan Coterie, Bloodline Merits Only)" />
 </HorizontalLayout>
 
   </GridLayout>
   <GridLayout id="xp_listing_right_m5" class="xp_listing">
     <!-- Spend row for one session slot. -->
 <HorizontalLayout id="xp_item_right_m5_1" class="xp_item" active="true">
-  <Text id="xp_spendNum_m5_1" class="xp_spend_num" text="−15 XP" />
-  <Text id="xp_spendDesc_m5_1" class="xp_spend_desc" text="Clan Discipline: Presence 2 → 3" />
+  <Text id="xp_spendNum_m5_1" class="xp_spend_num" text="−12 XP" />
+  <Text id="xp_spendDesc_m5_1" class="xp_spend_desc" text="Bloodline Merit: Painting the Mind's Eye (4)" />
 </HorizontalLayout>
 
 <!-- Spend row for one session slot. -->
 <HorizontalLayout id="xp_item_right_m5_2" class="xp_item" active="true">
   <Text id="xp_spendNum_m5_2" class="xp_spend_num" text="−3 XP" />
-  <Text id="xp_spendDesc_m5_2" class="xp_spend_desc" text="Coterie Background: Resources 4 → 5" />
+  <Text id="xp_spendDesc_m5_2" class="xp_spend_desc" text="Clan Coterie Merit: All-Access (1)" />
 </HorizontalLayout>
 
 <!-- Spend row for one session slot. -->
 <HorizontalLayout id="xp_item_right_m5_3" class="xp_item" active="true">
-  <Text id="xp_spendNum_m5_3" class="xp_spend_num" text="−6 XP" />
-  <Text id="xp_spendDesc_m5_3" class="xp_spend_desc" text="Merit: Beautiful (2)" />
+  <Text id="xp_spendNum_m5_3" class="xp_spend_num" text="−3 XP" />
+  <Text id="xp_spendDesc_m5_3" class="xp_spend_desc" text="Bloodline Merit: Cosmopolitan Communicator (1)" />
+</HorizontalLayout>
+
+  </GridLayout>
+</HorizontalLayout>
+
+<!-- Finished session block (token / active / title / date / summation / total / gain+spend rows). -->
+<HorizontalLayout id="xp_title_line_m6" class="xp_title_line" active="false">
+  <HorizontalLayout class="xp_title_line_left">
+    <Text id="xp_sessionNum_m6" class="xp_session_num" text="ANCILLA" />
+    <Text id="xp_sessionDate_m6" class="xp_session_date" text="Mar. 27, 2026" />
+  </HorizontalLayout>
+  <HorizontalLayout class="xp_title_line_right">
+    <Text id="xp_summation_m6" class="xp_summation" text="0 XP + 42 − 39 =" />
+    <Text id="xp_total_m6" class="xp_total" text="3 XP" />
+  </HorizontalLayout>
+</HorizontalLayout>
+<HorizontalLayout id="xp_listing_wrapper_m6" class="xp_listing_wrapper" active="false">
+  <GridLayout id="xp_listing_left_m6" class="xp_listing">
+    <!-- Gain row for one session slot. -->
+<HorizontalLayout id="xp_item_left_m6_1" class="xp_item" active="true">
+  <Text id="xp_gainNum_m6_1" class="xp_gain_num" text="+15 XP" />
+  <Text id="xp_gainDesc_m6_1" class="xp_gain_desc" text="Predator Type (Disciplines Only)" />
+</HorizontalLayout>
+
+<!-- Gain row for one session slot. -->
+<HorizontalLayout id="xp_item_left_m6_2" class="xp_item" active="true">
+  <Text id="xp_gainNum_m6_2" class="xp_gain_num" text="+27 XP" />
+  <Text id="xp_gainDesc_m6_2" class="xp_gain_desc" text="Blood Potency 2 (Advantages Only)" />
+</HorizontalLayout>
+
+  </GridLayout>
+  <GridLayout id="xp_listing_right_m6" class="xp_listing">
+    <!-- Spend row for one session slot. -->
+<HorizontalLayout id="xp_item_right_m6_1" class="xp_item" active="true">
+  <Text id="xp_spendNum_m6_1" class="xp_spend_num" text="−15 XP" />
+  <Text id="xp_spendDesc_m6_1" class="xp_spend_desc" text="Clan Discipline: Presence 2 → 3" />
 </HorizontalLayout>
 
 <!-- Spend row for one session slot. -->
-<HorizontalLayout id="xp_item_right_m5_4" class="xp_item" active="true">
-  <Text id="xp_spendNum_m5_4" class="xp_spend_num" text="−3 XP" />
-  <Text id="xp_spendDesc_m5_4" class="xp_spend_desc" text="Merit: Ingenue (1)" />
+<HorizontalLayout id="xp_item_right_m6_2" class="xp_item" active="true">
+  <Text id="xp_spendNum_m6_2" class="xp_spend_num" text="−3 XP" />
+  <Text id="xp_spendDesc_m6_2" class="xp_spend_desc" text="Coterie Background: Resources 4 → 5" />
 </HorizontalLayout>
 
 <!-- Spend row for one session slot. -->
-<HorizontalLayout id="xp_item_right_m5_5" class="xp_item" active="true">
-  <Text id="xp_spendNum_m5_5" class="xp_spend_num" text="−12 XP" />
-  <Text id="xp_spendDesc_m5_5" class="xp_spend_desc" text="Merit: Luck of the Devil (4)" />
+<HorizontalLayout id="xp_item_right_m6_3" class="xp_item" active="true">
+  <Text id="xp_spendNum_m6_3" class="xp_spend_num" text="−6 XP" />
+  <Text id="xp_spendDesc_m6_3" class="xp_spend_desc" text="Merit: Beautiful (2)" />
+</HorizontalLayout>
+
+<!-- Spend row for one session slot. -->
+<HorizontalLayout id="xp_item_right_m6_4" class="xp_item" active="true">
+  <Text id="xp_spendNum_m6_4" class="xp_spend_num" text="−3 XP" />
+  <Text id="xp_spendDesc_m6_4" class="xp_spend_desc" text="Merit: Ingenue (1)" />
+</HorizontalLayout>
+
+<!-- Spend row for one session slot. -->
+<HorizontalLayout id="xp_item_right_m6_5" class="xp_item" active="true">
+  <Text id="xp_spendNum_m6_5" class="xp_spend_num" text="−12 XP" />
+  <Text id="xp_spendDesc_m6_5" class="xp_spend_desc" text="Merit: Luck of the Devil (4)" />
 </HorizontalLayout>
 
   </GridLayout>
