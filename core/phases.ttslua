@@ -746,28 +746,21 @@ end
 --- Table/skybox prep already ran on Intermission enter (TOR-497).
 --- Ambient/main lights apply in Scenes.reconcileFromState; player seat lights need
 --- L.reconcileAllPlayers because U.applyLightingPreset only stores the seat preset map (TOR-504).
---- Runs before explode/sting so this force-reconcile cannot hitch the cover lerp (TOR-535).
---- Seat lights snap instantly (`transitionTime = 0`) so the default 2s lerp cannot overlap
---- the explode (TOR-536).
+--- Unchanged scene and seat-light fingerprints skip. A real preset change still uses
+--- `transitionTime = 0` so a 2s lerp cannot overlap the explode (TOR-536).
 function Phases.applyPlayEnterNoSceneLights(_ctx)
     S.setStateVal("default", "currentScene")
     S.setStateVal(nil, "sceneTransition")
     local Scenes = require("core.scenes")
-    if type(Scenes.invalidateReconcileCache) == "function" then
-        Scenes.invalidateReconcileCache()
-    end
     if type(Scenes.syncSessionLightingPresetForLocation) == "function" then
         Scenes.syncSessionLightingPresetForLocation()
     end
     if type(Scenes.reconcileFromState) == "function" then
-        Scenes.reconcileFromState({ force = true })
+        Scenes.reconcileFromState()
     end
     local L = require("core.lighting")
-    if type(L.invalidateReconcileCache) == "function" then
-        L.invalidateReconcileCache()
-    end
     if type(L.reconcileAllPlayers) == "function" then
-        L.reconcileAllPlayers({ force = true, transitionTime = 0 })
+        L.reconcileAllPlayers({ transitionTime = 0 })
     end
     return true
 end

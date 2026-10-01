@@ -1,0 +1,64 @@
+--[[
+    Opt-in host console trace for heavy sync entry points.
+
+    Persisted switch: gameState.debug.syncTraceEnabled
+    Console: DEBUG.setSyncTrace(true) / DEBUG.toggleSyncTrace()
+
+    One print per report. Object scripts must not require this module
+    (it reads core.state).
+]]
+
+local Trace = {}
+
+--- @return table|nil
+local function stateModule()
+    local loaded = require("core.state")
+    if type(loaded) == "table" and type(loaded.getStateVal) == "function" then
+        return loaded
+    end
+    return nil
+end
+
+--- @return boolean
+function Trace.isEnabled()
+    local S = stateModule()
+    if S == nil then
+        return false
+    end
+    local dbg = S.getStateVal("debug")
+    return type(dbg) == "table" and dbg.syncTraceEnabled == true
+end
+
+--- Persist the console trace switch.
+--- @param enabled boolean
+function Trace.setEnabled(enabled)
+    local S = stateModule()
+    if S == nil or type(S.setStateVal) ~= "function" then
+        return
+    end
+    S.setStateVal(enabled == true, "debug", "syncTraceEnabled")
+end
+
+--- One host print when the trace is on. `fields.outcome` should be `ran` or `skipped`.
+--- @param name string
+--- @param fields table|nil
+function Trace.report(name, fields)
+    if not Trace.isEnabled() then
+        return
+    end
+    local parts = { "[SyncTrace]", tostring(name) }
+    if type(fields) == "table" then
+        local keys = {}
+        for k in pairs(fields) do
+            keys[#keys + 1] = k
+        end
+        table.sort(keys)
+        for i = 1, #keys do
+            local k = keys[i]
+            parts[#parts + 1] = tostring(k) .. "=" .. tostring(fields[k])
+        end
+    end
+    print(table.concat(parts, " "))
+end
+
+return Trace

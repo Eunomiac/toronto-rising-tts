@@ -1333,6 +1333,10 @@ function Reconcile.reconcileControlBoardFromState(opts)
             Reconcile.syncControlBoardSnapsToggleLabel(board)
             Reconcile.syncControlBoardModeToolbar(board)
         end
+        require("lib.sync_trace").report("Reconcile.reconcileControlBoardFromState", {
+            force = tostring(opts.force == true),
+            outcome = "skipped",
+        })
         return
     end
     local scatterLive = ScatterMode.isActive()
@@ -1348,6 +1352,10 @@ function Reconcile.reconcileControlBoardFromState(opts)
             Reconcile.syncControlBoardModeToolbar(board)
             Reconcile.rebuildAnchorDropEligibilityCache(board)
         end
+        require("lib.sync_trace").report("Reconcile.reconcileControlBoardFromState", {
+            force = "false",
+            outcome = "skipped",
+        })
         return
     end
     if boardIsScatter then
@@ -1364,7 +1372,7 @@ function Reconcile.reconcileControlBoardFromState(opts)
         return
     end
     if not boardIsScatter then
-        Snaps.installPolarSnaps(board, { force = opts.force == true })
+        Snaps.installPolarSnaps(board, { forceSnaps = opts.forceSnaps == true })
     end
     Reconcile.ensureControlBoardObjectCallbacks(board)
     Reconcile.ensureControlBoardObjectUi(board, { force = opts.force == true })
@@ -1460,6 +1468,11 @@ function Reconcile.reconcileControlBoardFromState(opts)
     O.applyActiveVisibility(board)
     O.applyActiveVisibility(Board.getControlBoardPalette())
     Reconcile.rebuildAnchorDropEligibilityCache(board)
+    require("lib.sync_trace").report("Reconcile.reconcileControlBoardFromState", {
+        force = tostring(opts.force == true),
+        forceSnaps = tostring(opts.forceSnaps == true),
+        outcome = "ran",
+    })
 end
 
 --- TOR-449: on load, commit any saved THERE draft into its library row and restore HERE

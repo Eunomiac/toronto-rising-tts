@@ -40,6 +40,10 @@ Status: current performance audit; entries may be done, partial, or deferred as 
 
 Opt-in metrics: `Sync.setMetricsEnabled(true)` or `gameState.debug.syncMetricsEnabled` → `U.emitForAgent("sync_metrics", …)`. See [`.dev/TTS_MCP.md`](../TTS_MCP.md).
 
+Opt-in host console trace (separate from agent metrics): `DEBUG.setSyncTrace(true)` or `gameState.debug.syncTraceEnabled` prints one `[SyncTrace]` line per heavy entry (`Sync.full`, NPC reconcile, control-board reconcile, snap install, table layout, `L.reconcileAllPlayers`, scene restore, Spotlight reconcile, broad `UpdateUIDisplays`, `HO.syncAll`). `outcome=skipped` means that call returned on a fingerprint. `outcome=ran` means it did the work. Default off.
+
+**Sync skip pass (2026-10-01):** `opts.force` on `Sync.full` is the repair hatch (Storyteller sync-all). Load into Play no longer calls `reconcilePlaySessionOnEnter` (that rebuilt the empty table and force-synced). The startup gate runs one non-forced `Sync.full`, which includes the soundscape the initial sync skipped. Scene restore and the empty-table apply call `Sync.full` without wiping reconcile caches. Same-table `SetTableTo` does not force layout. Control-board snap install ignores token-mirror `force` unless `forceSnaps` (reload cleared the grid). Spotlight stand-ins that are already parked are not hidden again. After layout applies seat lights and overlays, `Sync.noteSeatPresentationReconciled()` primes the seat-presentation fingerprint. Connection relayout (`PC.relayoutAfterOccupancyChange`) still force-syncs the table.
+
 **Event listeners (TOR-197):** High-frequency TTS handlers (`onObjectDrop`, zones, etc.) must use O(1) guards before heavy work. See [Event Listener Policy](Event%20Listener%20Policy.md).
 
 **TTS API heavy-workload catalog (TOR-329):** For grep-friendly API names, doc evidence, tiers, guard patterns, and TOR-390 handoff rules, see [TTS API Heavy-Workload Catalog](TTS-API-Heavy-Workload-Catalog.md). Keep this page focused on Toronto Rising hotspots; do not duplicate the full API catalog here.

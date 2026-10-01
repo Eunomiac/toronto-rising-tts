@@ -687,6 +687,10 @@ function Scenes.reconcileFromState(opts)
         .. (allowDelays and "1" or "0")
 
     if not force and lastSceneReconcileFingerprint == desiredFingerprint then
+        require("lib.sync_trace").report("Scenes.reconcileFromState", {
+            force = "false",
+            outcome = "skipped",
+        })
         return true
     end
 
@@ -700,6 +704,10 @@ function Scenes.reconcileFromState(opts)
     end
 
     lastSceneReconcileFingerprint = desiredFingerprint
+    require("lib.sync_trace").report("Scenes.reconcileFromState", {
+        force = tostring(force),
+        outcome = "ran",
+    })
     return true
 end
 
@@ -1009,12 +1017,11 @@ end
 
 --- @param reason string|nil
 --- @param opts table|nil `{ skipSoundscape?: boolean }` — set when caller already eager-applied + primed soundscape
-local function syncFullForce(reason, opts)
+local function syncFullFromMutation(reason, opts)
     opts = type(opts) == "table" and opts or {}
     local Sync = require("core.sync")
     if type(Sync.full) == "function" then
         Sync.full({
-            force = true,
             reason = reason or "scenes",
             skipSoundscape = opts.skipSoundscape == true,
         })
@@ -1122,17 +1129,16 @@ end
 --- @return boolean
 function Scenes.applyDefaultNoSceneEnvironment(opts)
     opts = type(opts) == "table" and opts or {}
+    require("lib.sync_trace").report("Scenes.applyDefaultNoSceneEnvironment", {
+        reason = tostring(opts.reason or ""),
+        outcome = "ran",
+    })
 
     -- Must detach before mutating live sessionScene / Sync.full, or `hasLiveSceneOnTable` stays true
     -- (overlay shows Jan 1 2026 defaults) and mirror would write cleared keys into the library row (TOR-362).
     SceneLibrary.detachLiveTableFromLibraryMirror()
 
     mutateDefaultNoSceneSessionState(opts)
-
-    Scenes.invalidateReconcileCache()
-    if type(Soundscape.invalidateReconcileCache) == "function" then
-        Soundscape.invalidateReconcileCache()
-    end
 
     if opts.skipSoundscape ~= true then
         applyMainOnlySoundscapeIntent()
@@ -1159,7 +1165,7 @@ function Scenes.applyDefaultNoSceneEnvironment(opts)
         GameStateOverlay.resetRealTimeCarry()
     end
 
-    syncFullForce(opts.reason or "default_no_scene", { skipSoundscape = true })
+    syncFullFromMutation(opts.reason or "default_no_scene", { skipSoundscape = true })
 
     if type(GameStateOverlay.reconcileFromState) == "function" then
         GameStateOverlay.reconcileFromState()
@@ -1180,11 +1186,10 @@ function Scenes.restoreActiveSceneWorld(opts)
     if SceneLibrary.hasLiveSceneOnTable() ~= true then
         return Scenes.applyDefaultNoSceneEnvironment(opts)
     end
-
-    Scenes.invalidateReconcileCache()
-    if type(Soundscape.invalidateReconcileCache) == "function" then
-        Soundscape.invalidateReconcileCache()
-    end
+    require("lib.sync_trace").report("Scenes.restoreActiveSceneWorld", {
+        reason = tostring(opts.reason or ""),
+        outcome = "ran",
+    })
 
     local tk = trimSceneKey(S.getStateVal("sessionScene", "tableKey"))
     if tk ~= "" and (C.Tables[tk] ~= nil or RSL.isDynamicTableFamilyKey(tk)) then
@@ -1202,7 +1207,7 @@ function Scenes.restoreActiveSceneWorld(opts)
         GameStateOverlay.resetRealTimeCarry()
     end
 
-    syncFullForce(opts.reason or "restore_active_scene", { skipSoundscape = true })
+    syncFullFromMutation(opts.reason or "restore_active_scene", { skipSoundscape = true })
 
     if type(GameStateOverlay.stopTicker) == "function" then
         GameStateOverlay.stopTicker()

@@ -1264,6 +1264,24 @@ function DEBUG.showGlobalHudCanaries()
     print("Interpretation: large xmlLen+attrs but blank canvas → dead Global canvas; blindfold active → cover; UI.loading → asset race; only BLACK wrong → seat reveal skip; canary nil → TOR-384 missing mount (startup gate remounts).")
 end
 
+--- Host console trace of heavy sync calls (`[SyncTrace] ...`). Persists in `gameState.debug.syncTraceEnabled`.
+--- @param enabled boolean
+function DEBUG.setSyncTrace(enabled)
+    local Trace = require("lib.sync_trace")
+    Trace.setEnabled(enabled == true)
+    print("Sync trace: " .. ((enabled == true) and "ON" or "OFF"))
+end
+
+--- Flip the host sync trace and print the new state.
+--- @return boolean enabled after the toggle
+function DEBUG.toggleSyncTrace()
+    local Trace = require("lib.sync_trace")
+    local nextOn = not Trace.isEnabled()
+    Trace.setEnabled(nextOn)
+    print("Sync trace: " .. (nextOn and "ON" or "OFF"))
+    return nextOn
+end
+
 --- Print orchestrator reconcile skip-cache snapshot (fingerprints, layout, init-light retries).
 function DEBUG.dumpSyncCacheState()
     printTestHeader("Sync reconcile caches")
@@ -1595,7 +1613,7 @@ end
 function DEBUG.installNpcControlBoardSnaps(options)
     local Gameboard = require("core.npc_gameboard")
     return Gameboard.installPolarSnaps(nil, {
-        force = true,
+        forceSnaps = true,
         config = resolveDebugControlBoardSnapConfig(options),
     }) == true
 end

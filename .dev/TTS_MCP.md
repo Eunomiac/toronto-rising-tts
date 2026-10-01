@@ -139,6 +139,18 @@ NPC preload batches emit **`kind`** = **`npc_preload`** with **`characterCount`*
 
 **Verification:** Save and Play, run a hunger change or load, then parse MCP **`prints`** for `TR_AGENT_V1` lines (filter `kind === "sync_metrics"`). Compare before/after optimization work.
 
+### Sync call trace (`[SyncTrace]`)
+
+Separate from agent metrics. This prints on the host console so a Storyteller can see heavy sync calls without an agent listener.
+
+```lua
+DEBUG.setSyncTrace(true)
+-- or DEBUG.toggleSyncTrace()
+-- persists: gameState.debug.syncTraceEnabled
+```
+
+Each traced call prints one line: `[SyncTrace] Name key=value outcome=ran|skipped`. Turn it off with `DEBUG.setSyncTrace(false)` when you are done. It stays on across Save & Play until you turn it off.
+
 ## Orchestration (`U.chain`)
 
 Multi-step table logic in this project often uses [`U.chain`](../lib/util.ttslua) (coroutine-driven inter-step waits). Important for agents:

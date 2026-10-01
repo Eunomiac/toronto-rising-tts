@@ -18,7 +18,20 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-01 — session intro catalog lookup (TOR-632)._
+_Last populated: 2026-10-01 — skip unchanged sync work (TOR-634)._
+
+### Sync
+
+#### TOR-634 — Skip unchanged sync work, and a console trace for heavy calls
+
+**How to verify:** Save & Play so the new scripts load. In the host console (Execute Code), run `DEBUG.setSyncTrace(true)`. Lines that start with `[SyncTrace]` should appear when the game syncs. `outcome=skipped` means that call noticed nothing had changed and stopped. `outcome=ran` means it did the work. When you are finished looking, run `DEBUG.setSyncTrace(false)`. The switch is remembered across Save & Play until you turn it off.
+
+1. Load a save that is already in Play, with one chronicle player disconnected (or, on the Debug panel, turn on green **Assume Connected**, then on the PCs panel click that player's **Connected** button so it reads **Disconnected**). After load, that player should have no chair: their pile stays parked and their character-sheet pages stay down. The other players' seats should match the save (nobody gets reshuffled). In the log, the startup sync should be one `[SyncTrace] Sync.full` line with `force=false` and `reason=onLoad_startup_gate`. `Snaps.installPolarSnaps` should show `outcome=skipped`, or a single `outcome=ran`, not four installs in a row.
+2. With everyone connected, Apply a library scene that uses the same table and the same chairs. The layout trace (`RSL.resolveSeatObjectsFromTable`) should say `outcome=skipped`, and snap points should not be written twice. Then set one player to **Disconnected** (Assume Connected) and Apply a scene: under the cover they lose their chair, the layout trace should say `outcome=ran` for that chair change, and snaps should still not be rebuilt twice.
+3. Advance from Intermission to Play. Lights should still come up under the cover, including a dark seat for anyone the cover just unoccupied. If Intermission already applied that lighting, the scene reconcile trace should not say `force=true`.
+4. Enter Spotlight, then leave it. The carousel stand-ins should park once. A later scene Apply should trace `Spotlight.reconcileFromState` with `reparked=false` and `outcome=skipped`.
+
+**Context:** Full sync was rebuilding the stage control board's snap grid, redoing seat layout, and re-hiding Spotlight stand-ins even when nothing in the save had changed. Those calls now stop when their fingerprint matches. A connect or a connection checkpoint still forces a table layout, because that really did change who has a chair.
 
 ### Character sheets / XP
 

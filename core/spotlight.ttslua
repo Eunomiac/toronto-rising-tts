@@ -958,8 +958,26 @@ function Spotlight.activeCharName()
     return charNameForColor(color)
 end
 
+--- True when every carousel figurine and light is already parked.
+--- @return boolean
+local function standInsAlreadyParked()
+    for i = 1, #(C.PlayerColors or {}) do
+        local color = C.PlayerColors[i]
+        local fig = figureObject(color)
+        if U.isGameObject(fig) and O.isHiddenObject(fig) ~= true then
+            return false
+        end
+        local lit = lightObject(color)
+        if U.isGameObject(lit) and O.isHiddenObject(lit) ~= true then
+            return false
+        end
+    end
+    return true
+end
+
 --- Snap or park stand-ins, apply hide-list, refresh Host strip. Idempotent.
 function Spotlight.reconcileFromState()
+    local didWork = false
     if isSpotlightPhase() then
         local ok = Spotlight.auditStandins()
         if ok == true then
@@ -971,18 +989,25 @@ function Spotlight.reconcileFromState()
             }, "|")
             if fp ~= lastCarouselFingerprint and not rotating then
                 applyCarouselSnapFromState()
+                didWork = true
             end
         end
-    else
-        if not rotating then
+    elseif not rotating then
+        if not (lastCarouselFingerprint == "off" and standInsAlreadyParked()) then
             for i = 1, #(C.PlayerColors or {}) do
                 placeStandIn(C.PlayerColors[i], nil, "OFF")
             end
             lastCarouselFingerprint = "off"
+            didWork = true
         end
     end
     applyPlayfieldToysFromPhase()
     refreshHostControls()
+    require("lib.sync_trace").report("Spotlight.reconcileFromState", {
+        phase = tostring(S.getStateVal("currentPhase") or ""),
+        reparked = tostring(didWork and not isSpotlightPhase()),
+        outcome = didWork and "ran" or "skipped",
+    })
 end
 
 --- Play → Spotlight work under the transition cover.

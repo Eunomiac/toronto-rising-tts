@@ -1165,7 +1165,7 @@ function Snaps.setControlBoardSnapsEnabled(enabled, options)
         print("[Gameboard] Control-board snaps disabled (cleared on " .. tostring(board.getGUID()) .. ")")
         return false
     end
-    Snaps.installPolarSnaps(board, { force = true })
+    Snaps.installPolarSnaps(board, { forceSnaps = true })
     return true
 end
 
@@ -1211,7 +1211,11 @@ function Snaps.installPolarSnaps(board, options)
     end
     local cfg = resolveControlBoardSnapConfig(options.config)
     local fp = controlBoardSnapFingerprintFor(board, cfg)
-    if options.force ~= true and polarSnapInstallFingerprint == fp then
+    if options.forceSnaps ~= true and polarSnapInstallFingerprint == fp then
+        require("lib.sync_trace").report("Snaps.installPolarSnaps", {
+            guid = tostring(board.getGUID()),
+            outcome = "skipped",
+        })
         return true
     end
     invalidateDefaultSnapCatalogCache(board)
@@ -1233,6 +1237,11 @@ function Snaps.installPolarSnaps(board, options)
                 .. tostring(board.getGUID())
                 .. ")"
         )
+        require("lib.sync_trace").report("Snaps.installPolarSnaps", {
+            guid = tostring(board.getGUID()),
+            points = tostring(#points),
+            outcome = "ran",
+        })
     else
         print("[Gameboard] installPolarSnaps: setSnapPoints returned false on " .. tostring(board.getGUID()))
     end
@@ -1473,7 +1482,7 @@ function Snaps.remapControlBoardSnapsToConfig(oldConfig, newConfig, options)
         end
     end
 
-    Snaps.installPolarSnaps(board, { force = true, config = newCfg })
+    Snaps.installPolarSnaps(board, { forceSnaps = true, config = newCfg })
     local newCatalog = Snaps.buildControlBoardSnapCatalog(board, newCfg)
     local placements = {}
     local existing = stateModule().getStateVal("sessionScene", "npcWorld", "placements")

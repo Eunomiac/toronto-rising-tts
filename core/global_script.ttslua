@@ -3441,17 +3441,7 @@ function onLoad(saved_data)
         end,
         function()
             setStartupAction("startup-ready-final-sync-full")
-            local phase = S.getStateVal("currentPhase")
-            if phase == C.Phases.PLAY
-                and Scenes ~= nil
-                and type(Scenes.reconcilePlaySessionOnEnter) == "function" then
-                Scenes.reconcilePlaySessionOnEnter({
-                    reason = "onLoad_startup_gate",
-                    skipTransitionBlindfold = true,
-                })
-            else
-                Sync.full({ reason = "onLoad_startup_gate" })
-            end
+            Sync.full({ reason = "onLoad_startup_gate" })
             return 0
         end,
         function()
@@ -3527,12 +3517,6 @@ function onLoad(saved_data)
             end
             setStartupAction("startup-ready-complete")
             syncDebugLastLoadClockLabel()
-            return 0
-        end,
-        function()
-            -- Startup ran with every PC seated; now unseat PCs who are not connected.
-            setStartupAction("startup-connection-checkpoint")
-            require("core.player_connection").finishStartupConnectionAssumption()
             return 0
         end,
         -- Each print in its own chain step: TTS reorders multiple prints from one function.
@@ -6286,6 +6270,18 @@ function UpdateUIDisplays(delta)
     local refreshAll = (type(delta) ~= "table")
     local function wants(key)
         return refreshAll or delta[key] == true
+    end
+
+    local colors = type(delta) == "table" and delta.colors or nil
+    local hudUnscoped = refreshAll or (type(delta) == "table" and delta.playerHud == true and (type(colors) ~= "table" or #colors == 0))
+    local scenesPanel = refreshAll or (type(delta) == "table" and delta.scenesPanel == true)
+    if hudUnscoped or scenesPanel then
+        require("lib.sync_trace").report("UpdateUIDisplays", {
+            refreshAll = tostring(refreshAll),
+            scenesPanel = tostring(scenesPanel),
+            playerHud = tostring(hudUnscoped),
+            outcome = "ran",
+        })
     end
 
     --- @param seatColor string

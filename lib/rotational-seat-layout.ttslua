@@ -2396,6 +2396,11 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
   end
   local layoutFingerprint = computeLayoutSyncFingerprint(tableKey)
   if not force and layoutFingerprint ~= nil and layoutFingerprint == lastLayoutSyncFingerprint then
+    require("lib.sync_trace").report("RSL.resolveSeatObjectsFromTable", {
+      tableKey = tostring(tableKey),
+      force = "false",
+      outcome = "skipped",
+    })
     return nil
   end
   if opts.currentTableKey == nil then
@@ -2516,8 +2521,17 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
     if HO ~= nil and type(HO.syncAll) == "function" then
       HO.syncAll({ force = true })
     end
+    local Sync = require("core.sync")
+    if type(Sync.noteSeatPresentationReconciled) == "function" then
+      Sync.noteSeatPresentationReconciled()
+    end
   end
   lastLayoutSyncFingerprint = computeLayoutSyncFingerprint(tableKey)
+  require("lib.sync_trace").report("RSL.resolveSeatObjectsFromTable", {
+    tableKey = tostring(tableKey),
+    force = tostring(force),
+    outcome = "ran",
+  })
   local DPP = require("core.dice_preload_pool")
   if type(DPP.repositionAllAfterLayout) == "function" then
     DPP.repositionAllAfterLayout()
@@ -2749,6 +2763,12 @@ function M.SetTableTo(tableKey, opts)
   currentTableKey = S.getStateVal("seatLayout", "currentTableKey")
 
   local function doSwitch()
+    require("lib.sync_trace").report("RSL.SetTableTo", {
+      tableKey = tostring(resolvedKey),
+      sameTable = "false",
+      force = "true",
+      outcome = "ran",
+    })
     M.resolveSeatObjectsFromTable(resolvedKey, nil, { force = true })
     if shuffled then
       mirrorControlBoardAfterRandomSeating()
@@ -2759,7 +2779,13 @@ function M.SetTableTo(tableKey, opts)
   end
 
   if currentTableKey == resolvedKey then
-    local computed = M.SyncTable(resolvedKey, { force = true })
+    require("lib.sync_trace").report("RSL.SetTableTo", {
+      tableKey = tostring(resolvedKey),
+      sameTable = "true",
+      force = "false",
+      outcome = "ran",
+    })
+    local computed = M.SyncTable(resolvedKey)
     if shuffled then
       mirrorControlBoardAfterRandomSeating()
     end

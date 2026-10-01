@@ -654,13 +654,6 @@ local function clearPolarSnaps()
     end
 end
 
-local function restorePolarSnaps()
-    local Gameboard = require("core.npc_gameboard")
-    if type(Gameboard.installPolarSnaps) == "function" then
-        Gameboard.installPolarSnaps(nil, { force = true })
-    end
-end
-
 local function hideAllPhysicalTables()
     local RSL = require("lib.rotational-seat-layout")
     if type(RSL.applyAllTablesVisualState) == "function" then
@@ -1414,11 +1407,10 @@ finishStandardBoardAfterReload = function()
         return
     end
     boardFinishInProgress = true
-    restorePolarSnaps()
     applyScatterWorldChrome(false)
     local Gameboard = require("core.npc_gameboard")
     if type(Gameboard.reconcileControlBoardFromState) == "function" then
-        Gameboard.reconcileControlBoardFromState({ force = true })
+        Gameboard.reconcileControlBoardFromState({ force = true, forceSnaps = true })
     end
     -- Board reload finishes after SetTableTo already laid out seats; FACING bounds and
     -- hide-list chairs can still be mid-unpark. Re-apply the destination table once.
@@ -1480,11 +1472,10 @@ function ScatterMode.ensureStandardBoardImage(opts)
     local reloaded = applyControlBoardImage(scatterCfg().CONTROL_BOARD_IMAGE_STANDARD)
     if reloaded then
         runAfterControlBoardReady(function()
-            restorePolarSnaps()
             reapplyControlBoardCatalogVisibility()
             local Gameboard = require("core.npc_gameboard")
             if type(Gameboard.reconcileControlBoardFromState) == "function" then
-                local reconcileOpts = { force = true, forceTokenMirror = true }
+                local reconcileOpts = { force = true, forceTokenMirror = true, forceSnaps = true }
                 if opts.allowPreview == true then
                     reconcileOpts.allowPreview = true
                 end
@@ -1492,9 +1483,6 @@ function ScatterMode.ensureStandardBoardImage(opts)
             end
         end)
         return true
-    end
-    if controlBoardMeshReady() then
-        restorePolarSnaps()
     end
     reapplyControlBoardCatalogVisibility()
     return false
@@ -1575,7 +1563,6 @@ function ScatterMode.leave(opts)
         runAfterControlBoardReady(finishStandardBoardAfterReload)
         return
     end
-    restorePolarSnaps()
     reapplyControlBoardCatalogVisibility()
 end
 

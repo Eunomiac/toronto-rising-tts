@@ -479,6 +479,8 @@ function S.GetDefaultGameState()
             assumeConnected = true,
             --- Assume Connected only: `simulatedConnection[color] = false` simulates a disconnected PC.
             simulatedConnection = {},
+            --- Host console trace of heavy sync entry points (`DEBUG.setSyncTrace`). Default off.
+            syncTraceEnabled = false,
         },
         --- Memoriam Play subphase runtime (TOR-101). Modal draft is not stored here until Advance.
         memoriam = {

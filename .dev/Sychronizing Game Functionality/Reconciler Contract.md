@@ -78,9 +78,17 @@ The desired contract is "reconcilers do not write `gameState`." Current code sti
 
 `Sync.full` is a thin orchestrator. It delegates; it must not grow business rules.
 
+`opts.force` bypasses fingerprint skips. Use it for an explicit repair (the Storyteller sync-all control), not for an ordinary load, scene Apply, or phase change. Those flows mutate `gameState` and call `Sync.full` without force, so only slices whose inputs changed do world work.
+
+Load reconciles the save. `M.setupPlayers` writes connection occupancy, the startup `SyncTable` lays out chairs, and the startup gate runs one non-forced `Sync.full` (including soundscape, which the first sync skipped). It does not call `Scenes.reconcilePlaySessionOnEnter` or `applyDefaultNoSceneEnvironment`. The empty-table mutator stays on Intermission enter, after the connection checkpoint.
+
+After `resolveSeatObjectsFromTable` applies seat lights and overlays, it calls `Sync.noteSeatPresentationReconciled()` so the following `Sync.full` does not apply that presentation again.
+
+`DEBUG.setSyncTrace(true)` prints `[SyncTrace]` lines for the heavy entry points. That is separate from `sync_metrics`.
+
 Runtime order:
 
-1. Normalize `opts`; `force = opts.force == true`; print `opts.reason` when present.
+1. Normalize `opts`; `force = opts.force == true`. Reason is included on the `[SyncTrace]` line when the host trace is on, not printed on every sync.
 2. Build `reconcileOpts = { force = true }` only when forced, otherwise `{}`.
 3. `Scenes.reconcileFromState(reconcileOpts)`.
 4. `Scenes.reconcileTopFogFromState(reconcileOpts)`.

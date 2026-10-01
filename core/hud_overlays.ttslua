@@ -536,6 +536,10 @@ end
 --- @param opts table|nil forwarded to `HO.reconcileForSeat` (e.g. `{ force = true }`)
 function HO.syncAll(opts)
   opts = type(opts) == "table" and opts or {}
+  require("lib.sync_trace").report("HO.syncAll", {
+    force = tostring(opts.force == true),
+    outcome = "ran",
+  })
   for _, seatColor in ipairs(C.PlayerColors) do
     HO.reconcileForSeat(seatColor, opts)
   end

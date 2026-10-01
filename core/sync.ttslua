@@ -122,6 +122,12 @@ local function invalidateSeatPresentationFingerprint()
     lastSeatPresentationFingerprint = nil
 end
 
+--- After a layout pass already applied seat lights and overlays, prime the skip fingerprint
+--- so the following `Sync.full` does not apply that same presentation again.
+function Sync.noteSeatPresentationReconciled()
+    lastSeatPresentationFingerprint = computeSeatPresentationFingerprint()
+end
+
 --- Reconcile seat-light and hunger-overlay state from persisted game state.
 --- @param opts table|nil `{ force = boolean?, bootstrap = boolean?, skipTopFog = boolean? }`
 ---   forwarded to `L.reconcileAllPlayers` / `HO.syncAll`; `skipTopFog` is used when the caller already
@@ -450,6 +456,13 @@ function Sync.full(opts)
         reason = reason,
         force = force,
         presentationSkipped = presentationSkippedThisPass,
+    })
+
+    require("lib.sync_trace").report("Sync.full", {
+        reason = reason,
+        force = tostring(force),
+        skipSoundscape = tostring(skipSoundscape),
+        outcome = "ran",
     })
 end
 

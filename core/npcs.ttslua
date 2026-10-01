@@ -3700,6 +3700,11 @@ function NPCS.reconcileAllFromState(opts)
         if type(Gameboard.reconcileControlBoardFromState) == "function" then
             Gameboard.reconcileControlBoardFromState()
         end
+        require("lib.sync_trace").report("NPCS.reconcileAllFromState", {
+            force = "false",
+            reason = tostring(opts.reason or ""),
+            outcome = "skipped",
+        })
         return
     end
 
@@ -3754,6 +3759,11 @@ function NPCS.reconcileAllFromState(opts)
     if type(Gameboard.reconcileControlBoardFromState) == "function" then
         Gameboard.reconcileControlBoardFromState()
     end
+    require("lib.sync_trace").report("NPCS.reconcileAllFromState", {
+        force = tostring(force),
+        reason = tostring(opts.reason or ""),
+        outcome = "ran",
+    })
 end
 
 --- Read-only placement intent for debug/tests.
