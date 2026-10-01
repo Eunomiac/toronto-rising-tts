@@ -99,11 +99,11 @@ Steps run in this order:
 | **One** | Remove NPCs that should not remain in stage areas |
 | **Two** | Remove NPCs that should not remain physically at the table |
 | **Three** | Seat NPCs that are seat-bound |
-| **Layout commit A** | One table layout pass (`playerToPositionMap` rotation + `postCorrections`) |
+| **Layout commit A** | One table layout pass (`RSL.SyncTable` → figurine-offset occupant rigs) |
 | **Four** | Apply narrative presence (visibility / seat lights) on **assigned** seats |
 | **Five** | Stage placements, legacy areas, then preload pool (-200) |
 
-**Layout commits:** Rotational seating is table-wide. Do not treat Step Three as N independent moves. After Step Three finishes all tag/instance updates for seat-bound NPCs, run **one** layout sync for the active table, then apply `C.TableSourceObjects.postCorrections` / `postCorrectionsBySeatRole`. Step Five moves figurines out of seats/preload into areas; if any seat-bound NPC was incorrectly left at the table, do not run a second full layout unless Step Three runs again.
+**Layout commits:** Rotational seating is table-wide. Do not treat Step Three as N independent moves. After Step Three finishes all tag/instance updates for seat-bound NPCs, run **one** layout sync for the active table (seat objects placed from `C.SeatRoleOffsets` relative to each occupant figurine). Step Five moves figurines out of seats/preload into areas; if any seat-bound NPC was incorrectly left at the table, do not run a second full layout unless Step Three runs again.
 
 **Presence (Step Four)** runs after **Layout commit A** so seated pose exists before deactivation. It does not change assignment.
 
@@ -190,8 +190,8 @@ If any check fails, treat the seat as **needs placement** even when assignment d
 1. Confirm `tableHasSlot` for this seat. If false, stop (case 3 should have run in Step Two; do not seat).
 2. Ensure figurine is in **preload** (retreat from area if needed — normal procedures).
 3. Remove `npc_figurine`; add `NPC<#>Object`.
-4. Include figurine, `G.GUIDS.SEAT_CHAIR_NPC<#>`, `G.GUIDS.SEAT_LIGHT_1_NPC<#>`, and `G.GUIDS.SEAT_LIGHT_2_NPC<#>` in the next **Layout commit A** — rotational layout from Red reference objects per active table `playerToPositionMap`, then applicable `postCorrections` in `C.TableSourceObjects`.
-5. Show chair and figurine to all players (normal visibility procedures); scale as postCorrections require.
+4. Include figurine, `G.GUIDS.SEAT_CHAIR_NPC<#>`, `G.GUIDS.SEAT_LIGHT_1_NPC<#>`, and `G.GUIDS.SEAT_LIGHT_2_NPC<#>` in the next **Layout commit A** — each seat object is placed from its `C.SeatRoleOffsets` row relative to the occupant figurine at that numbered table slot.
+5. Show chair and figurine to all players (normal visibility procedures).
 6. Hide paired **area** spotlight while seated (normal procedures); workshop seat lights follow lighting mode after Step Four.
 
 After all seats for this pass are prepared, run **Layout commit A** once.

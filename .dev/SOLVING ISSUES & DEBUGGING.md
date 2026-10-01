@@ -51,10 +51,9 @@ Quick chat commands: `/dbcheck` (compact) and `/dbfullcheck` (full).
 - [ ] Are load-time restore paths re-stamping stale values?
 - [ ] For missing state records, is default behavior explicit and safe (never implicit)?
 
-### Rotational seat layout (`postCorrections`)
+### Table seat layout (figurine offsets)
 
-- **`C.TableSourceObjects.postCorrections`** — per-GUID overrides after layout; only seats in the current filtered layout pass (`computed.byColor`) run (empty NPC slots are skipped). `rotationDelta` uses `anchor` (PC hand-zone GUID) or `anchorSeatKey` (PC live hand zone / NPC virtual hand zone from layout).
-- **`C.TableSourceObjects.postCorrectionsBySeatRole`** — per-seat/role overrides after layout (including `SEAT_FIGURE` Y for PC workshop figurines and pooled NPC cutouts); only seats in the current filtered layout pass run.
+- **Live path:** `RSL.SyncTable` → `resolveSeatObjectsFromTable` → `FSL.applyOccupantRigs` (`lib/figurine_seat_layout.ttslua`). Every seat object is placed from `C.SeatRoleOffsets` (`lib/seat_role_offsets.ttslua`) relative to that seat's figurine — local XZ, rotation, and authored `defaultY`. A wrong chair height or facing is fixed in that role's offset (or `extraByOccupant` for one seat), not with per-GUID patches. The old copy-from-Red layout and its `postCorrections` tables are gone (TOR-301).
 - Seated NPC figurines: tag `NPCnObject` + GM Notes `SEAT_FIGURE_NPCn` + `NPCS.isPooledFigurineObject`; layout moves them as `SEAT_FIGURE`; unseat clears seat tags, restores `npcInstance:` GM Notes, returns to preload.
 
 ### Storyteller Scenes vs lighting preset

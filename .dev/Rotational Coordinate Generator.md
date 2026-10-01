@@ -56,7 +56,7 @@ Current placement behavior:
 - Pink tarot and PC dice drawers re-apply from `C.ObjectPositions` after anchors move (Consult on/off; tray open/closed).
 - Hand zones still use the dedicated hand-zone mover so cards in hand stay with the zone.
 
-Low-level helpers such as `generateRotationalCoordinates` and `resolveSeatObjects` still exist for debug/geometry workflows, but new production code should use the table-driven wrapper unless the task explicitly concerns those low-level helpers.
+`generateRotationalCoordinates` / `generateFacingCoordinates` remain only as diagnostic geometry generators (`compareHandFrames` / `DEBUG.compareLayoutPaths`); they no longer move objects. The old copy-from-Red placement (`resolveSeatObjects`, `applySimplifiedSeatLayout`) and the per-GUID `postCorrections` tables were removed (TOR-301). Fix chair/figurine height or facing in `C.SeatRoleOffsets`.
 
 ## Type Definitions
 
@@ -163,28 +163,15 @@ local computed = R.generateRotationalCoordinates(
 --   frameRefsRelativePath — workspace path for FrameReference Lua (default "debug_logs/seat_layout_frame_refs.lua")
 --   frameRefsVarName      — global name in generated file (default "SEAT_LAYOUT_FRAME_REFS")
 --   currentTableKey       — optional key written to gameState.seatLayout.currentTableKey
+-- Diagnostic only: returns frames; does not move objects.
 
-R.resolveSeatObjects(
-    computed,            -- return value from generateRotationalCoordinates
-    sourceObjects,       -- same nested table passed to generateRotationalCoordinates
-    options              -- optional table; omit to use default path + var name (see below)
-)
-
--- resolve options (all optional):
---   guidMapRelativePath — default "debug_logs/seat_layout_guids.lua"
---   guidMapVarName      — default "SEAT_LAYOUT_OBJECT_GUIDS"
---   guidTransformsVarName — default "SEAT_LAYOUT_OBJECT_TRANSFORMS" (appended to same output file)
---   guidFollowerTransformsVarName — default "SEAT_LAYOUT_FOLLOWER_OBJECT_TRANSFORMS" (same output file)
---   playerSeatRelativeObjectsBySeat — optional map: seatKey -> array of refs to rigidly follow that seat's hand-zone anchor
-
-
--- Main convenience API: wraps generateRotationalCoordinates + resolveSeatObjects, and then applies cameraModes.
+-- Production API: figurine-offset occupant rigs (FSL.applyOccupantRigs), table config poses, then cameraModes.
 --   It rotates bySeat presets into per-player data and into gameState.seatLayout.universalCameraAngles (<mode><seatKey>).
 --   Writes gameState.seatLayout.currentTableKey to the target table key **before** layout/visual steps so mid-resolve
 --   readers (e.g. lighting seat-presence) see the destination table. `SyncTable(nil)` infers from `activeTable` tags
 --   when state is empty and persists that key before resolving.
 R.resolveSeatObjectsFromTable(
-  tableRef,              -- table reference to a table object in C.Tables (which contains values for the other parameters required by `generateRotationalCoordinates`)
+  tableRef,              -- key in C.Tables or the table entry itself
   sourceObjects,         -- OPTIONAL sourceObjects table; defaults to C.TableSourceObjects if omitted
   options                -- optional table (as above); omit entirely to use defaults (see above)
 )
@@ -255,35 +242,10 @@ local computed = R.generateRotationalCoordinates(
         frameRefsVarName = "SEAT_LAYOUT_FRAME_REFS",
     }
 )
-
-R.resolveSeatObjects(
-    computed,
-    sourceObjects,
-    {
-        guidMapRelativePath = "debug_logs/seat_layout_guids.lua",
-        guidMapVarName = "SEAT_LAYOUT_OBJECT_GUIDS",
-        playerSeatRelativeObjectsBySeat = {
-            Pink = { getObjectFromGUID("abcdef") }, -- e.g. tarot deck follows Pink hand zone
-        },
-    }
-)
+-- computed.byColor[seat].slots[i].frame = rigid-rotated FrameReference (written to frameRefsRelativePath)
 ```
 
-**Low-level minimal call** (manual geometry path):
-
-```lua
-local computed = R.generateRotationalCoordinates(
-    sourceObjects,
-    { x = 0, y = 1.5, z = 0 },
-    8,
-    0,
-    { Red = 3, Blue = 5, Yellow = 1 },
-    "Red"
-)
-R.resolveSeatObjects(computed, sourceObjects)
-```
-
-**Recommended minimal call** (table-driven wrapper; applies object transforms + cameraModes):
+**Production call** (table-driven wrapper; applies object transforms + cameraModes):
 
 ```lua
 R.resolveSeatObjectsFromTable("Table A")
@@ -317,10 +279,10 @@ auto-resolution caps at `Table B4`; `Table B5` is manually selectable but never 
 ### FACING tables (TOR-267)
 
 `C.TableShapes.FACING` tables (e.g. `Table C`) seat players along **two opposing sides** instead of a
-ring. `resolveSeatObjectsFromTable` dispatches on `tableCfg.shape`: FACING → `R.generateFacingCoordinates`,
-everything else → `R.generateRotationalCoordinates`. Both return the **same** `computed` bundle (now always
-including `shape` and a per-seat `seatRigidByKey = { [seat] = { deltaDeg, shift } }`), so `resolveSeatObjects`
-and camera placement are shape-agnostic.
+ring. Live layout reads FACING bounds in `resolveSeatObjectsFromTable` and passes them to
+`FSL.computeSlotFrames`, which returns per-seat `seatRigidByKey = { [seat] = { deltaDeg, shift } }` so camera
+placement is shape-agnostic. The diagnostic generators split the same way (`generateFacingCoordinates` vs
+`generateRotationalCoordinates`).
 
 * **`playerToPositionMap[seat] = { side, index }`** — `side` is the side's outward azimuth (`0` = +Z, `180` = −Z);
   `index` (1-based) is the slot along that side. Each side is divided into **N equal segments** across the
@@ -375,27 +337,18 @@ All **horizontal angle** utilities that share the **`x = sin(θ)·r`, `z = cos(�
 * Each template object’s **GM Notes** must match **`^(.+)_([%u%d]+)$`**: non-empty **role** prefix, `_`, then an **uppercase alphanumeric** suffix (A–Z, 0–9). The suffix must equal **`string.upper(referencePlayerColor)`**. The role is everything before that final `_SUFFIX` (e.g. `HAND_ZONE_RED` → role `HAND_ZONE`, suffix `RED`; `CSHEET_PAGE_1_NPC1` → role `CSHEET_PAGE_1`, suffix `NPC1`).
 * **`playerToPositionMap` keys** are **not** validated against `Player.getAvailableColors()` or `C.PlayerColors`. Use any string labels you want (e.g. `Brown`, `NPC_RING_1`). They appear in exported Lua tables and in tags as `{key}Object`.
 * **`referencePlayerColor`** is which seat owns the placed templates: every template shares its suffix, and `playerToPositionMap[referencePlayerColor]` must match the segment inferred from the **anchor** within **3°**.
-* **`resolveSeatObjects`** only needs `computed` and `sourceObjects`; it uses `computed.referencePlayerColor`.
 
 ### Tags and cleanup
 
-* Every object in this workflow gets tag `{seatKey}Object` (e.g. `RedObject`, `NPC_WOLFObject` if you use that key — avoid characters TTS rejects in tags).
-* For each non-template seat, objects already tagged `{seatKey}Object` are **matched to template slots by role key** from **GM Notes** (`ROLE_SUFFIX` parsed; matching uses only `ROLE`, e.g. `PLAYER_HAND_ZONE_BROWN` matches template slot `PLAYER_HAND_ZONE_RED`). Suffix may differ per seat; role must be unique per seat tag. **Missing roles are skipped** (no clone/spawn); place workshop objects only on seats that need them. A log line lists skipped template slots per seat. Tagged seat objects **without** valid `ROLE_COLOR` GM Notes cause a hard error (no Name/Nickname fallback). Extra tagged objects that do not match any template role are **left in place**; a log line reports how many unmatched objects remain per seat.
+* Seat objects carry tag `{seatKey}Object` (e.g. `RedObject`, `NPC1Object`) and `ROLE_SUFFIX` GM Notes; figurine layout matches satellites to `C.SeatRoleOffsets` rows by that role. Hand zones are never tagged.
 * **Migration from Name/Nickname:** prefer **offline save migration** (same JSON parse → mutate → write pattern as the custom UI asset merge scripts). Repo copy: `npm run tts-save:migrate-seat-gmnotes:dry-run` then `npm run tts-save:migrate-seat-gmnotes`. Live TTS save: `node .dev/scripts/migrate_seat_layout_gmnotes_save.js --saveName 230` (uses `TTS_SAVES_DIR` or the default OneDrive Saves folder). Writes a timestamped backup beside the save. **Reload the save in TTS** after patching. In-game fallback: `lua DEBUG.migrateSeatLayoutRolesToGmNotes()` (preview with `{ dryRun = true }`).
-* When a hand-zone role is **moved or cloned** (role contains `HAND_ZONE`), the script attempts to set hand-zone ownership to that seat key via `setValue(seatKey)` (TTS Hand Zone behavior), and also applies `setColorTint(stringColorToRGB(seatKey))` as cosmetic best-effort. This only applies when `seatKey` is a valid TTS player color; non-player seats (e.g. `NPC_SEAT`) are left unchanged.
-* Moved/cloned objects are placed with collision disabled (`setPositionSmooth(..., false, true)` / `setRotationSmooth(..., false, true)` when available) to avoid physics bumping that can skew Y offsets.
 * **`clearGeneratedSeatObjects(sourceObjects, seatKeys, blacklist)`** removes every `{seatKey}Object` object for each seat id you list (same `seatKeys` shapes as `playerToPositionMap`: map keys or array of strings). **`sourceObjects` GUIDs are never destroyed** (templates). **`blacklist`** is optional: any seat id present as a **truthy map entry** (`{ NPC_SEAT = true }`) or as an **array element** (`{ "NPC_SEAT", "Brown" }`) is skipped for that call — no destructs for that tag. Returns the number of objects successfully destructed. Does **not** use `sendExternalMessage`.
 
 ### Workspace output (TTS Tools)
 
 * **Nothing is written from inside the TTS game executable.** The **External Editor** path delivers `sendExternalMessage` to whatever listens on **39998**; this repo’s **tts-bridge** writes each `name` under **`.dev/.debug/`** (e.g. `debug_logs/seat_layout_frame_refs.lua` → `toronto-rising-tts/.dev/.debug/debug_logs/seat_layout_frame_refs.lua`). See [`.dev/DEBUG_FILE_LOGGING.md`](DEBUG_FILE_LOGGING.md). If nothing listens on **39998** or External Editor is off, you may see **no file** even when Lua prints success.
-* If **`sendExternalMessage`** is **nil**, `generateRotationalCoordinates` / `resolveSeatObjects` **error** at write time. If it is a **non-nil stub** but nothing is listening, `DEBUG.writeWorkspaceFile` can still return **true** — check the TTS log for `DEBUG: Wrote .dev/.debug/...`.
+* If **`sendExternalMessage`** is **nil**, `generateRotationalCoordinates` **errors** at write time. If it is a **non-nil stub** but nothing is listening, `DEBUG.writeWorkspaceFile` can still return **true** — check the TTS log for `DEBUG: Wrote .dev/.debug/...`.
 * **Frame references** (after `generateRotationalCoordinates`): default `debug_logs/seat_layout_frame_refs.lua`, Lua table `SEAT_LAYOUT_FRAME_REFS` — **single level**: each key is `ROLEKEY_` .. `string.upper(seatKey)` (e.g. `HUNGER_SMOKE_BROWN` → `{ position = Vector(...), rotation = Vector(...) }`). If two role/seat pairs normalize to the same string, export **errors** (rare naming collision).
-* **GUID map output** (after `resolveSeatObjects`): default `debug_logs/seat_layout_guids.lua` now contains three tables:
-  * `SEAT_LAYOUT_OBJECT_GUIDS` — **single level** `ROLEKEY_` .. `string.upper(seatKey)` = `"guid"` (e.g. `HUNGER_SMOKE_BROWN = "abc123"`). Same flattening rule/collision behavior as frame refs.
-  * `SEAT_LAYOUT_OBJECT_TRANSFORMS` (or `guidTransformsVarName`) — nested `[seatKey][roleKey] = { position = Vector(...), rotation = Vector(...) }`, read from live objects at export time (moved/cloned objects plus reference seat templates).
-  * `SEAT_LAYOUT_FOLLOWER_OBJECT_TRANSFORMS` (or `guidFollowerTransformsVarName`) — nested `[seatKey][objectGuid] = { position = Vector(...), rotation = Vector(...) }` for objects moved via `playerSeatRelativeObjectsBySeat`.
-
 ---
 
 ## Original pseudocode (design sketch)
