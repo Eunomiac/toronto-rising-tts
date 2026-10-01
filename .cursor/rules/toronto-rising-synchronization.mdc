@@ -51,7 +51,8 @@ Do not duplicate hide protocol (Y + lock + `setInvisibleTo`) inside reconcilers 
 
 - Derive desired player light mode from current state priority, not restore stacks.
 - Current player-light priority is:
-  - `ROLLING` > `NPC-role exception (when implemented)` > `absent from seat layout` > `HUNGRY` > scene seat preset / `STANDARD`
+  - `ROLLING` > `NPC-role exception (when implemented)` > `seat dark` (unoccupied seat — disconnected PC with `absentFromSession` / removed NPC; or a disconnected PC still seated; or narratively absent) > `HUNGRY` > scene seat preset / `STANDARD`
+- Seat occupancy vocabulary (narrative absence vs. disconnected): [toronto-rising-seat-occupancy-terms.mdc](toronto-rising-seat-occupancy-terms.mdc).
 - Collapse seat-layout absence to `OFF`. Scene darkness is explicit in `C.LightModes.*.spotlights`, not inferred from preset key suffix.
 - Do not reintroduce `modeRestore`-style push/pop state.
 

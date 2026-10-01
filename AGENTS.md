@@ -26,6 +26,10 @@ This is a first-class project rule: [`.cursor/rules/toronto-rising-author-voice.
 
 Agent-first `.dev` routing docs may stay compact for other agents; anything the author is expected to act on must stay readable.
 
+## Seat occupancy terms (mandatory)
+
+"Absent" / "not present" mean a **connected** player who is narratively out of the scene (seat dark, chair kept). `absentFromSession` means a **disconnected** PC and may only be described with connection language ("disconnected", "not connected"); client connection is its only authority. When wording could mean either, ask. Rule: [`.cursor/rules/toronto-rising-seat-occupancy-terms.mdc`](.cursor/rules/toronto-rising-seat-occupancy-terms.mdc); model: [`docs/solutions/seat-occupancy-and-connection.md`](docs/solutions/seat-occupancy-and-connection.md).
+
 ## Current Workflows
 
 `/tr-start` is the current start command when the author wants to work on "the next task." It reads Focus, Linear context, and architecture policies before implementation.

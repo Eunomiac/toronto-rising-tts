@@ -1,0 +1,28 @@
+---
+description: Toronto Rising — seat occupancy vocabulary (narrative absence vs. disconnected) and when to push back
+alwaysApply: true
+---
+
+# Toronto Rising — seat occupancy terms (mandatory)
+
+Two states are easy to conflate. Keep a **bright line** between them in code, comments, docs, Linear, and chat.
+
+| Term | Meaning | Field / authority |
+| --- | --- | --- |
+| **Occupied seat** | A PC or NPC holds a numbered chair (`tableSlot`). | `sessionScene.seatSlots[seat].tableSlot` |
+| **Present** | Occupied and narratively in the scene — lit, fully visible. | `isPresent` (scene library + control-board token flip) |
+| **Absent / Not Present** | Occupied but narratively out of the scene — seat dark, chair/sheet/hand stay. Also: a seated NPC standing on the stage. | `isPresent == false` |
+| **Disconnected / Not Connected** | A PC whose client is not connected. Mid-session it only darkens the seat; at the next blindfold checkpoint it becomes `absentFromSession`. | `PC.isSeatConnected(color)` (`core/player_connection.ttslua`) |
+| **Unoccupied seat** | No chair: an NPC removed from the table, or a PC with `absentFromSession`. Pile stashed once; table transitions never move it. | NPC `slotEmpty`; PC `absentFromSession` |
+
+## The bright line
+
+- **"Absent", "not present", "out of the scene"** (alone) always mean the **narrative** state of a **connected** player. Flexible wording is fine here.
+- **`absentFromSession`** may only be described with **connection** language: "disconnected", "not connected". Never call it plain "Absent".
+- **Connection is the only authority** for `absentFromSession`. No scene, table, phase, control-board, or panel action may set or clear it. A connect clears it **immediately** (seat restored); a disconnect only darkens the seat until the next blindfold checkpoint sets it.
+
+## Push back on ambiguous wording
+
+When the author (or another agent's note) uses "absent", "remove", "unseat", "not at the table", or similar in a way that could mean **either** narrative absence **or** a disconnected PC, **stop and ask** which one is meant before writing code or docs. Quote the ambiguous phrase and offer the two readings in plain English. Do not guess.
+
+Canonical model, checkpoint list, and debug mode: [`docs/solutions/seat-occupancy-and-connection.md`](../../docs/solutions/seat-occupancy-and-connection.md).

@@ -218,12 +218,12 @@ Keys are seat ids:
 | `npcCharacterKey`   | If `isPlayingNPC` is `true`    | non-empty string | NPC being portrayed. Drives rebuilt `npcRoleOverride`. Ignored unless `isPlayingNPC` is `true`. Not used on NPC bench seats.                                                                                   |
 | `isPresent`         | No                             | boolean          | Narrative “this person is in the scene” for lighting / hosted conditions. Distinct from `absentFromSession`. If omitted, import treats the seat as present unless `seatPresent` says otherwise.                |
 | `tableSlot`         | Yes unless `absentFromSession` | integer          | Numbered chair. Slot **1** is the reference figurine. Even slots walk right; odd slots greater than 1 walk left.                                                                                               |
-| `absentFromSession` | No                             | boolean          | PC only. `true` = no chair this session (PCs-panel Absent). Must **not** be combined with `tableSlot`.                                                                                                         |
+| `absentFromSession` | No                             | boolean          | PC only. `true` = player disconnected (no chair). Live-only; ignored on Apply. Must **not** be combined with `tableSlot`.                                                                                                       |
 
 
 `isPresent` vs `absentFromSession`:
 
-- **Absent from session** = no chair on the table (`tableSlot` omitted). Absent is a **session** fact (the player is not connected), not a scene fact: on Apply, TTS overwrites every PC's `absentFromSession` with the live value set from the PCs panel or control-board Apply. A value authored in the scene JSON is accepted by the importer but has no effect on Apply.
+- **`absentFromSession`** = the player is **disconnected**: no chair on the table (`tableSlot` omitted). It is a **connection** fact, not a scene fact: on Apply, TTS overwrites every PC's `absentFromSession` with the live value, which only client connect / disconnect changes. A value authored in the scene JSON is accepted by the importer but has no effect on Apply. To keep a connected player out of a scene, use `isPresent: false`.
 - **Not present** (`isPresent: false`) = still has a chair, but lights/conditions treat them as not narratively there. Used when the figurine is on stage but the homeland seat is kept.
 
 #### NPC bench row fields
