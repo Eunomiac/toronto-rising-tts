@@ -18,7 +18,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-01 — skip unchanged sync work (TOR-634)._
+_Last populated: 2026-10-01 — inbox: indoor weather (TOR-635), Clear off-board tokens (TOR-636), XP modal X and Apply-to-All undo (TOR-92)._
 
 ### Sync
 
@@ -35,119 +35,28 @@ _Last populated: 2026-10-01 — skip unchanged sync work (TOR-634)._
 
 ### Character sheets / XP
 
-#### ⚠️ TOR-92 — Page 6 Experience Log + ST XP modal
+#### TOR-92 — Page 6 Experience Log + ST XP modal
 
-**How to verify:** Run `npm run csheet-xp-log:bake` (or a full build) so `ui/player/csheets/page6_lordLucien.xml` exists, then Save & Play so object Includes and scripts reload.
+The earlier page-6, single-player Apply, spend, and Apply-to-All checks passed on 2026-10-01. Two corrections from that pass are ready to re-check.
 
-1. ✅ Open **Lord Lucien**’s character sheet and go to **page 6**. You should see baked history (Rollover / Time of Legacy / etc.) immediately — no blank page. The Host console must **not** show a page-6 `setXml` remount for that tile. A **down** chevron should appear at the bottom when there are older sessions off-page.
-2. ✅ Click the **bottom** (down) chevron once. Sessions from page 1 should hide and the next older sessions (e.g. earlier negative session blocks) should appear; a **top** (up) chevron should become available to return.
-3. ✅ Click the **top** chevron to return to the newest page. Confirm the first-page sessions are back.
-4. ✅ Open the Storyteller **PCs** panel. Confirm each seat shows an **XP** button (not up/down/apply) and a current XP number.
-5. ⚠️ Click **XP** on one present PC. Enter a positive amount (e.g. `1`) and a short description, then **Apply**. The modal’s last-entry strip should show the line; page 1 `xp_text` and the panel XP value should rise by 1; page 6 should show the live session title and that gain (via `setAttribute` only).
+**How to verify:** Save & Play so the XP modal reloads.
 
-**Author Comment:** An X-close button should be available at the top right of the modal, which has the same effect as "Cancel" but without the connotation of cancelling work already done (because the modal doesn't close automatically on Apply)
+1. Open the Storyteller **PCs** panel and click **XP** on one present player. An **X** should sit at the top right of the modal. Click it. The modal should close. Entries you already applied should stay on the sheet. **Cancel** at the bottom still does the same close.
+2. Open **XP** again. Enter a gain (for example `1`) and a short description, then click **Apply to All**. Present players should gain that XP. Click **Undo** once. That same gain should disappear from every player who received it, not only the player whose modal you opened. A second **Undo** should remove only the latest entry on the player the modal is for, if they still have an older one.
 
-6. ✅ Log a spend with a negative amount (e.g. `-2`) and another description. Confirm the spend appears in red on page 6 and totals update (negative banked XP is allowed).
-7. ❌ Click **Undo** twice and confirm both lines disappear and totals return.
-
-**Author Comment:** While this does work for standard single-player awards/spends, clicking "Undo" after an "Apply to All" gain only removes the gain from the player targeted by the modal, and not from all players. (Undoing an "Apply to All" should undo the entire "Apply to All" action)
-
-8. ✅ Mark another PC **Absent**, enter a gain, click **Apply to All**, and confirm the Absent seat did not change while present seats did.
-9. ✅ _(Deferred until session 2 startup data is in place to avoid errors on attempting to start a sessionNum greater than 1)_ After you advance session number (End→Intermission), **without** re-baking, you should get a Storyteller warning about a stale page 6 bake; the live block still accepts new entries for the new session. After `npm run csheet-xp-log:bake` + Save & Play, the previous session should appear as a baked block in that character’s `page6_<charKey>.xml`.
-10. ✅ Optional authoring check: on the Storyteller Dashboard **PCs** tab, open **JSON**. The bottom pane should be a dump of that seat’s raw `playerData` (including the full `xp` Experience Log with **string** session keys and **no** `timeline` field). Paste under `"xp": { … }`, **Apply**, re-open JSON, and confirm the dump matches. Then **Save** the game — onSave must succeed (no `noKeyConversion` JSON error). The sheet jewel still shows banked XP.
-
-**Context:** Scalar `stats.xp` removed; log is `playerData.<pid>.xp` with string session keys. Page 6 markup is **template-baked** (`ui/.templates/csheet/` → `page6_<charKey>.xml`); runtime paints live slots and pagination with `setAttribute` only (no Lua-built XML / no page-6 `setXml`).
+**Context:** Apply does not close the modal, so the X is a close that does not sound like the work was thrown away. Undo remembers the last Apply to All until you Apply a single entry, close the modal, or that Undo runs.
 
 
-
-### Phases / session end
-
-#### ✅ End→Intermission: session music fades out with blackout FadeIn (no new TOR — Linear quota; comment on TOR-143 / TOR-506)
-
-**How to verify:** Save & Play so phase scripts reload. Advance through a session until you are on **End**, with location or Main music still audible (any scene bed is fine).
-
-1. Advance **End → Intermission**.
-2. As the screen goes black (about five seconds), that session music should **fade out** over the same stretch — not cut off, and not wait until the blackout lifts.
-3. When the blackout is fully up (brief hold), you should hear silence or near-silence — no TR_Loop yet.
-4. When the blackout starts fading out and the session-end splash appears, **TR_Loop** should fade in over those same five seconds (this part was already confirmed earlier).
-
-**Context:** Outgoing ambient used to wait for blackout FadeOut (with TR_Loop). FadeIn now owns the outgoing fade; FadeOut owns TR_Loop only. relatedTo **TOR-506**, **TOR-143**.
 
 ### Scatter / table layout
 
-#### ✅ TOR-629 — Hand zone rigid co-move (no zone-only place first)
+#### ⏰ TOR-602 — Scatter Mode player HUD (group strip + click-to-move)
 
-**How to verify:** Save & Play so scripts reload. Put a full hand of cards in at least two PC seats (for example Red and Pink).
+The group strip and click-to-move checks passed on 2026-10-01. Do not re-test until **TOR-641** (Scatter table change turns off every character sheet page) has shipped.
 
-1. Advance **Play → Spotlight** so the table changes. After the cover lifts, each colored hand-zone box should have its own white fan with it — cards should not be stranded at the old table.
-2. Advance **Spotlight → End**. Same check: boxes and cards arrive together and stay held (grabbable in the new fan).
-3. Optional: on the PCs panel, turn **Absent** on for one seated PC, then off. That seat’s hand zone and cards should bury and return together.
+**How to verify:** Save & Play. On a normal table, leave at least one character-sheet page open (and another page off, if you want the contrast). Switch the table to Scatter. The pages that were open should still be open. Pages that were off should stay off. The group strip from the earlier check should still work.
 
-**Context:** Hand Lab showed rigid-instant works. `U.movePlayerHand` already did that; rotational layout was also `placeObjectExact`-ing the reference hand zone first (zero delta → cards left behind). relatedTo **TOR-590** (hand-zone co-move).
-
-#### 🚫 TOR-628 — Scatter Mode HERE/THERE preview + token lifecycle
-
-**How to verify:** Save & Play so scripts reload.
-
-1. **Live Scatter (HERE):** Drop a PC or NPC control token onto a scatter group. Figurines should move right away. The PC token on a center hole should lock. If a library row is linked for live writes, that row’s `scatterPlacements` should update after the edit.
-2. **THERE preview:** Select a pending library row and switch the Control Board to **THERE**. Rearrange scatter tokens on the parchment — the live stage figurines should **not** move. Click **Reset** — tokens should match the library row’s pack again. Leave THERE (click THERE → HERE) — the pending row’s `scatterPlacements` should match what you left on the board.
-3. **Pending table while THERE:** On a Table A pending scene in THERE, click **Scatter** on the Scenes panel. The Control Board art should switch to Scatter (live wood table stays). Click **Table A** again. Board art should return to Standard. Apply that scene — you should **not** see `sessionScene.seatSlots.Brown.tableSlot: required…`.
-4. **Remove → palette:** Pick up an NPC token from a group and drop it on empty table space (not on a group). It should return to the **CONTROL_BOARD_PALETTE**. On HERE, that character’s figurine should leave the group immediately.
-5. **Dice bag roll:** From Scatter, drop an NPC token onto an ST dice bag to start a roll. The token should park on the **palette**, not snap back onto a Scatter hole. The roll should still open as usual.
-6. **Apply pending Scatter scene:** Apply a pending Scatter library row. The world should match the committed pack, and the board should return to HERE.
-
-**Context:** Aligns Scatter with polar HERE/THERE (`previewDraft.scatterPlacements`). relatedTo **TOR-572** (in-game Scatter).
-
-**Author Comment:** I am planning to rely more heavily on the Storyteller Dashboard to control previewing and editing scenes. Please close this issue accordingly, noting that this functionality will soon be replaced by Storyteller Dashboard integration.
-
-#### ✅ TOR-573 — Scatter import and live Standard↔Scatter switch
-
-**How to verify:** Save & Play so scripts reload.
-
-1. **Import a Scatter scene from chairs:** Paste v2 JSON whose `sessionScene.tableKey` is `Scatter` (you can omit `placementMode` if the table key is Scatter). Give two PCs the same `tableSlot`, and put a stage NPC in `npcWorld.placements` with `scatterGroup` 1–6 and no `u`/`v`. Import, then Apply. The wood table should hide. Those two PCs should share one scatter group; a lone PC in a group should stand on PC slot 1, which is now the gold hole.
-2. **Live switch:** Start from a normal table scene with people in chairs and NPCs on polar packs. Click **Scatter** on the Scenes panel. The cover should run, and the Host console should **not** print `Object reference not set to an instance of an object`. Chairs should become scatter groups by chair number (7 wraps to group 1). Polar packs should fill scatter groups in CENTER, then Mid Center, and so on; a seventh occupied pack should vanish as if you hit Clear. Click **Table A**. Same rule: no Object reference error. Everyone who was still in a scatter group should return to the chairs and packs they had before Scatter. NPCs you Cleared while in Scatter should stay gone.
-3. **Authored Scatter with no prior table:** Apply a Scatter library scene, then click Table A. PCs should sit Lucien 1, Rashid 2, Aishe 3, Fomorach 4, Black Caesar 5 (or shuffle if you pick a Table B size). NPCs should fill polar packs in that same family order; extra NPCs from one scatter group should take the next whole pack, and the following scatter group should skip that overflow pack.
-
-**Context:** relatedTo **TOR-572** (in-game Scatter table) and **TOR-570** (dashboard scatter JSON). Dashboard Copy JSON can keep using `scatterPlacements`; chair-style import is the other legal paste.
-
-#### ❌ TOR-602 — Scatter Mode player HUD (group strip + click-to-move)
-
-**How to verify:** Save & Play so Global XML and scripts reload. Confirm Custom UI assets exist for `scatterGroupToggle_inactive` / `_hover`, `scatterGroupSelector_hover`, `scatterGroupControl_bg`, and `scatterModeControlPC_lordLucien` / `rashid` / `aishe` / `fomorach` / `blackCaesar`. If any portrait or button is blank, that is a missing asset name in the save, not the Lua.
-
-1. Switch the table to Scatter. Each PC should see the **inactive** toggle near the top of **their** screen only. Hover it: it should become the hover graphic. The six-group strip starts closed.
-2. Open the toggle. The inactive toggle should disappear (that look is in the strip background). Hover the same spot: the hover graphic should appear. Portraits should match who is in each group and keep even spacing even when a group has empty holes (empty slots are transparent, not deactivated). The center portrait slot (`pc1`) is gold / first-join. Lucien’s face is `scatterModeControlPC_lordLucien`. Your current group should keep the selector hover graphic on (hovering it should dim it to half alpha), and its NPC names should use the brighter active-list style. Other groups should show only the background until you hover them.
-3. Click a **different** group. Your figurine, bags/sheet/camera, and PC token should move there immediately. An empty group uses the gold hole. The strip closes and the inactive toggle should return. Other players with the strip open should see you in the new group.
-4. Open the strip again and click the group you are **already** in. Nothing should move, and the strip should **stay open**.
-5. Storyteller: drop a PC token onto another group. That player’s figurine should move, and HUD portraits should follow without that player clicking.
-6. Leave Scatter. The toggle and strip should disappear.
-
-**Context:** Gold is PC slot 1 (not 3). Occupancy written under the old slot-3 scheme will sit on the wrong hole until you re-enter Scatter or move that PC once. relatedTo **TOR-572**.
-
-**Author Comment:** Almost! Except the players' character sheets are all being disabled, leaving no sheets active -- the pages that were active when the Scatter transition began should be retained, as with any other table change.
-
-### Character sheets
-
-#### ✅ UISet — batch / sequence UI attribute helper (no new TOR — Linear quota)
-
-**How to verify:** Save & Play so Global scripts reload. Open **Execute Lua** on Global.
-
-1. Pick any Global XmlUI element you can see change (for example a debug panel id). Run `UISet("<that_id>", { active = "true" })` then again with `active = "false"`. It should show and hide with no console error.
-2. Optional object form: with a character-sheet page GUID from the Objects pane, run `UISet("<guid>", "paper_root", { padding = "50 50 110 100" })` (or another real page-2 id). Confirm no `no object for GUID` / nil UI error.
-3. Optional sequence: `UISet("<guid>", "dot_rc_L_2_#", { image = "dot_yellow", active = "true" }, { ["#"] = { 1, 2, 3, 4, 5 } })` should light five dots if those ids exist on that page. With two placeholders, e.g. `dot_rc_#_@` and `{ ["#"] = { 1, 2 }, ["@"] = { "L", "R" } }`, all four combinations should update (cartesian product), not half-substituted ids.
-
-**Context:** Helper from the page-2 XML dump, shipped as `U.UISet` in `lib/util.ttslua` and Global `UISet`. Linear could not create a new issue (workspace free-issue limit).
-
-#### ✅ TOR-595 — Dashboard PCs tab: live-only sheet (no stand-in) + Ambition from gameState
-
-**How to verify:** Save & Play so the snapshot script reloads. Keep External Editor on. Restart the Storyteller Dashboard if it was already running.
-
-1. **Offline notice:** On the **PCs** tab, click **Release Port** (or leave the port unclaimed). You should see a blank spread titled **No live sheet** with a short reason (for example that the dashboard is not holding the editor port). You must **not** see fake character names, Desire, Ambition, or tracker dots from a stand-in sheet.
-2. **Live sheet:** Click **Claim Port**. The status should say it is live from Tabletop Simulator. Player cards and page 1 should fill from the table. Subtitles and chronology come from the live seat snapshot (PCS identity in TTS), not from a dashboard hardcode file.
-3. **Ambition:** In Execute Lua / TEST BED, run something like `SetPcAmbition("aishe", "Create a legacy in Toronto that long outlasts me")` for a few seats. After Claim Port (or wait a couple of seconds for the poll), each Ambition line under the name on page 1 should match what you set. Empty `playerData.ambition` shows no quote — it must not invent text from the PCS catalog.
-4. Optional: click **JSON** next to Claim/Release Port — a scrollable modal should show pretty-printed data for the seat on screen. Paste only `"ambition": "…"`, click **Apply**, and confirm Ambition updates **without** clearing the character name or other identity fields. Nested patches (for example `attributes.charisma.base`) should deep-merge. Escape or Close dismisses the modal.
-5. With the PCs tab open and Claim Port held, leave the table alone for about 30 seconds. Tabletop Simulator should **not** hitch every couple of seconds — the tab no longer polls execute-lua on a timer.
-
-**Context:** Follow-up on the live PCs bridge (**TOR-595**). Snapshot/apply live in `dashboard/pc_sheet.ttslua` (`require("dashboard.pc_sheet")`). Snapshot fields include identity + `ambition` from `playerData`. Dashboard never paints a fixture when TTS is unreachable. Partial `mergeSeat` patches must not rewrite empty `sheetOverlay` fields.
+**Context:** Author check: almost everything in the Scatter player HUD was right, except every character sheet turned off. relatedTo **TOR-572**.
 
 ### Memoriam
 
@@ -165,15 +74,11 @@ _Last populated: 2026-10-01 — skip unchanged sync work (TOR-634)._
 
 ### NPC / stage
 
-#### 🚫 TOR-560 — Generic NPC import (spawn, scene library, Dashboard bridge)
+#### TOR-636 — Right-click Clear returns NPC tokens dropped off the control board
 
-**How to verify:** Save & Play so Global + CONTROL_BOARD UI update. The **Import** field should sit on the control-board edge **opposite** the Apply/Clear row (not stacked above those buttons). Paste a short key list from the Storyteller Dashboard (for example `dogGuard_01,academicsProfessor_02`) and click **Import** (or press Enter in the field). A Storyteller-only name popup should open with those rows pre-filled from sheet labels — change a name if you like, then confirm. You should get face-down tokens in a spaced row on the edge **opposite** the PC seat-token row (not on top of the PCs), with tooltip nicknames matching whatever you typed in the popup, rotation `{0, 0, 180}`, and **Toggles → Snap** on so they pull onto control-board snap points. Figurines should park under the table with lights off. Apply should place them from token positions like other stage NPCs. Leaving the scene (or Clear) should destroy those generic objects; applying that library scene again should recreate them with the same display names.
+**How to verify:** Save & Play. Have an NPC who is on the stage (they still have a stage placement). Pick up that control token and drop it on the wood table, not on the control board and not on the palette. Right-click **Clear**. The token should go back to its palette slot. Tokens that are still on the control board should stay where they are. A normal left-click on **Clear** should still ask you to click again before it clears the scene.
 
-Separately, restart the Storyteller Dashboard with the TTS Tools extension **disabled**. Gold highlights should appear after **Copy** or **Spawn in TTS**. **Clear Generics** should clear gold only. With the extension enabled again, **Spawn in TTS** and Lua **Run** should grey out and explain that port 39998 is busy.
-
-**Context:** Runtime spawn exception to the named-NPC preload pool. Seating / PC-as-NPC / Memoriam generics are still out of scope. Post-ship polish: import UI edge, spawn row flip/spacing, nickname after reload, fixed rotation, Snap toggle on at spawn. Generics park in the next free under-table bay (named NPCs keep their sorted stable slots).
-
-**Author Comment:** The importing of Generic NPCs, and their positioning on the control board, are going to be handled by the Storyteller Dashboard.
+**Context:** Right-click used to skip any token that still had a stage placement, so only tokens already on the palette moved.
 
 ### High — session / join / first-load
 
@@ -192,16 +97,6 @@ Separately, restart the Storyteller Dashboard with the TTS Tools extension **dis
 **Context:** Occupancy stash at Y=−200 was keeping satellites buried. relatedTo **TOR-507**.
 
 **Update (TOR-631):** The PCs panel **Absent** toggle is gone. "Absent on" is now: Debug panel in green **Assume Connected**, click the player's **Connected** button so it reads **Disconnected**, then advance a phase. "Absent off" is clicking the button again.
-
-#### ✅ Pink Tarot Consult: one delayed place at authored height (no new TOR — Linear quota; relatedTo TOR-411)
-
-**How to verify:** Save & Play so `lib/tarot_toggle.ttslua` reloads. Put Pink’s tarot away (deck at y ≈ −200). Confirm `C.ObjectPositions.TAROT_DECK_PINK.on.height` is the height you want (currently **8.5**).
-
-1. Click **Consult the Tarot**. The **drawer** should start opening first. The **deck** should stay invisible for about **1.5 seconds** (`on.delay`), then appear **once** on the deck anchor at height **8.5** — not flash at the drawer surface and then hop up.
-2. Put it away again: park at −200. Consult again: same single delayed appear at 8.5.
-3. Optional: change `height` to another value, Save & Play, Consult — the deck should land at that new height on first appearance (no earlier wrong height).
-
-**Context:** Reveal was calling `GlobalRestoreObject` immediately (ignoring delay) and then `applyResolvedPose` again after `on.delay`, so the deck popped early at the wrong height and snapped a second time. relatedTo **TOR-512** / **TOR-411**.
 
 #### TOR-513 — Absent hand zone, PC token stash, and Apply PC reseat
 
@@ -257,6 +152,14 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 4. Optional: repeat in a Scatter scene. When Red rejoins a group, the same pages should come back.
 
 **Context:** When the pile was buried, the code noted which pages were showing. On the way back it checked "is this page under the table?" first, decided every page had been turned off on purpose, and then threw the note away. It now checks the note first. relatedTo **TOR-631** and **TOR-512**.
+
+### Soundscape / weather
+
+#### TOR-635 — Indoor sites fully silence weather and hide the weather panel
+
+**How to verify:** Save & Play. Go to an indoor location, including one that used to keep a little weather in the background. You should hear no weather, and the weather panel on the chronicle overlay should stay hidden. Then go to an outdoor location with rain or wind. Weather should be audible again, and the weather panel should show.
+
+**Context:** Indoor sites used to play weather at a reduced volume unless that site's ducking number was exactly zero. Indoors now always means silence. Outdoor sites still use their own ducking number.
 
 ### Soundscape / session start
 

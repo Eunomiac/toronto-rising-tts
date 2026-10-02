@@ -803,5 +803,14 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-09-23 | NOTE | quota | Still no MCP delete_issue. Ask author to trash Done+confirmed ids in Linear UI to free creates (e.g. TOR-604, TOR-590, TOR-593, TOR-596, TOR-581, TOR-527, TOR-598–601, TOR-605, TOR-603, TOR-597, TOR-594). |
 | 2026-09-23 | INBOX+SHIP | TOR-143 | Evening `/tr-inbox`: End→Intermission session ambient fades with blackout FadeIn (`beginEndIntermissionAmbientFadeOut`); TR_Loop handoff `fadeOutgoing=false`. CREATE blocked; comment on TOR-143 / TOR-506. Pending Save & Play. |
 | 2026-09-23 | `/tr-inbox` | PAVE | ✅ cleared Play→Spotlight inactive PC seat reactivate (TOR-98) + Scatter objectsToHide re-hide (TOR-572). |
+| 2026-10-01 | SHIP | TOR-635 | Indoor sites return weather multiplier 0 and hide the weather panel. relatedTo TOR-80 (link failed: archived). Pending Save & Play. |
+| 2026-10-01 | SHIP | TOR-636 | Right-click Clear parks off-board NPC tokens even when they still have a stage placement. relatedTo TOR-486 (link failed: trashed). Pending Save & Play. |
+| 2026-10-01 | SHIP | TOR-92 | XP modal X closes like Cancel. Undo after Apply to All pops that entry on every seat in the batch. Pending Save & Play. |
+| 2026-10-01 | PROMOTE | TOR-637 | Hunger overlay stays at 0 until Refresh UI. Focus #1. relatedTo TOR-582 (link failed: trashed). |
+| 2026-10-01 | PROMOTE | TOR-638 | Willpower reroll restores dice physics bumped. Focus #3. relatedTo TOR-165 (link failed: archived). |
+| 2026-10-01 | PROMOTE | TOR-639 | Rouse-initialized rolls cannot gain standard or hunger dice. Focus #4. |
+| 2026-10-01 | PROMOTE | TOR-640 | Seat-role offset dump matches offsets table; drop scale. Focus #5. parent TOR-30. |
+| 2026-10-01 | PROMOTE | TOR-641 | Scatter table change turns off every character sheet page. Focus #2. relatedTo TOR-602, TOR-633. PAVE TOR-602 marked not ready until this ships. |
+| 2026-10-01 | `/tr-inbox` | PAVE | ✅ Fully Complete: TOR-629, TOR-573, TOR-595. Comment-only confirm: End→Intermission music fade (TOR-143), UISet (no issue), Pink Tarot (TOR-411 if still open). 🚫 Canceled: TOR-628, TOR-560 (dashboard replaces them). |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
