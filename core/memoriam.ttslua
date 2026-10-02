@@ -1,10 +1,10 @@
 --[[
     Memoriam Play subphase runtime apply (TOR-101).
 
-    Enter: modal Advance (non–Just Smoke) → staged HUDBF with Custom Asset
-    `memoriamBlindfold_<skyboxKey>` → Table B0, seats, clock, panel skybox/weather/audio.
+    Enter: modal Advance → staged HUDBF with Custom Asset `memoriamBlindfold_<skyboxKey>`
+    → Table B0, seats, clock, panel skybox/weather/audio. Just Smoke (TOR-642) uses the
+    standard global blindfold and the `C.Skyboxes.JustSmoke` skybox, no weather, silent audio.
     Exit: stats conversion; restore prior library scene or Downtime no-scene.
-    Just Smoke never reaches this module (modal prints only).
 
     Agent guidance: .dev/Phases/Memoriam.md; phase chrome in .dev/Phases/Phases Overview.md.
 ]]
@@ -414,18 +414,24 @@ applyWorldUnderCover = function(payload, opts)
     local RSL = require("lib.rotational-seat-layout")
     local Sync = require("core.sync")
 
-    local skyboxKey = payload.skyboxKey
-    local panelKey = payload.panel
-    local entry = C.MemoriamSkyboxes and C.MemoriamSkyboxes[skyboxKey]
-    if type(entry) ~= "table" then
-        return false, "Memoriam period `" .. tostring(skyboxKey) .. "` is not in the catalog."
+    -- Just Smoke has no catalog panel: nil panel → no weather, indoors, silent audio.
+    local panel = nil
+    if payload.justSmoke == true then
+        Memoriam.justSmokeSkyboxURL()
+    else
+        local skyboxKey = payload.skyboxKey
+        local panelKey = payload.panel
+        local entry = C.MemoriamSkyboxes and C.MemoriamSkyboxes[skyboxKey]
+        if type(entry) ~= "table" then
+            return false, "Memoriam period `" .. tostring(skyboxKey) .. "` is not in the catalog."
+        end
+        panel = entry[panelKey]
+        if type(panel) ~= "table" then
+            return false, "Memoriam panel `" .. tostring(panelKey) .. "` is missing on `" .. tostring(skyboxKey) .. "`."
+        end
+        -- Loud miss: C.resolveMemoriamPanelURL errors when catalog/art is missing (TOR-564).
+        C.resolveMemoriamPanelURL(skyboxKey, panelKey)
     end
-    local panel = entry[panelKey]
-    if type(panel) ~= "table" then
-        return false, "Memoriam panel `" .. tostring(panelKey) .. "` is missing on `" .. tostring(skyboxKey) .. "`."
-    end
-    -- Loud miss: C.resolveMemoriamPanelURL errors when catalog/art is missing (TOR-564).
-    C.resolveMemoriamPanelURL(skyboxKey, panelKey)
 
     local returnSceneKey = nil
     local preClock = nil
@@ -533,7 +539,18 @@ function Memoriam.blindfoldImageName(skyboxKey)
     return "memoriamBlindfold_" .. tostring(skyboxKey)
 end
 
---- Apply Memoriam from a modal Advance payload (non–Just Smoke).
+--- Skybox URL for a Just Smoke Memoriam (`C.Skyboxes.JustSmoke`). Errors when the catalog row is missing.
+--- @return string
+function Memoriam.justSmokeSkyboxURL()
+    local entry = C.Skyboxes and C.Skyboxes.JustSmoke or nil
+    local url = type(entry) == "table" and entry.url or nil
+    if type(url) ~= "string" or url == "" then
+        error("Memoriam Just Smoke: `C.Skyboxes.JustSmoke` has no url")
+    end
+    return url
+end
+
+--- Apply Memoriam from a modal Advance payload (a period panel, or Just Smoke).
 --- @param payload table
 --- @return boolean
 function Memoriam.applyEnter(payload)
@@ -541,27 +558,29 @@ function Memoriam.applyEnter(payload)
         U.AlertGM("Memoriam.applyEnter: missing payload.")
         return false
     end
-    if payload.justSmoke == true then
-        U.AlertGM("Memoriam.applyEnter: Just Smoke does not apply a Memoriam scene.")
-        return false
-    end
     if S.getStateVal("currentPhase") ~= C.Phases.PLAY then
         U.AlertGM("Memoriam can only be applied during Play.")
         return false
     end
-    if type(payload.skyboxKey) ~= "string" or payload.skyboxKey == "" then
-        U.AlertGM("Memoriam Advance needs a skyboxKey.")
-        return false
-    end
-    if type(payload.panel) ~= "string" or payload.panel == "" then
-        U.AlertGM("Memoriam Advance needs a panel.")
-        return false
+    local justSmoke = payload.justSmoke == true
+    if not justSmoke then
+        if type(payload.skyboxKey) ~= "string" or payload.skyboxKey == "" then
+            U.AlertGM("Memoriam Advance needs a skyboxKey.")
+            return false
+        end
+        if type(payload.panel) ~= "string" or payload.panel == "" then
+            U.AlertGM("Memoriam Advance needs a panel.")
+            return false
+        end
     end
 
     local reinit = Memoriam.isActive()
     local HUDBF = require("core.hud_blindfold")
     local SS = require("core.soundscape")
-    local image = Memoriam.blindfoldImageName(payload.skyboxKey)
+    local image = nil
+    if not justSmoke then
+        image = Memoriam.blindfoldImageName(payload.skyboxKey)
+    end
 
     HUDBF.runStagedTransition({
         fadeOut = function()

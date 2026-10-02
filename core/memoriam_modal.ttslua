@@ -2,8 +2,9 @@
     Memoriam configuration popup (TOR-539 / TOR-540).
 
     Draft lives in this module until Advance. Cancel / Main / Downtime leave the
-    Play subphase unchanged. Advance prints the collected payload; Just Smoke
-    stops there. Non–Just Smoke Advance calls Memoriam.applyEnter (TOR-101).
+    Play subphase unchanged. Advance prints the collected payload and calls
+    Memoriam.applyEnter (TOR-101). Just Smoke is selected automatically while the
+    slider sits in a gap and can be picked by button inside a period (TOR-642).
     Assignments always include the subject (`kind = "self"` unless they play an
     NPC). Non-subject PCs may be marked present as themselves or assigned an NPC.
 
@@ -31,17 +32,6 @@ local BAR_SLOT_COUNT = 30
 local SCENE_COLUMN_COUNT = 14
 local NPC_PICKER_SLOTS = 10
 local JUST_SMOKE_BUTTON_ID = "memoriam_modal_just_smoke_button"
-
--- Placeholder default panel for Just Smoke. Fill in chronicle details later.
-local JUST_SMOKE_PANEL = {
-    display = "Just Smoke",
-    isOutdoors = false,
-    isDaytime = false,
-    weather = {},
-    locationAudio = "",
-    url = "",
-    location = "",
-}
 
 local PANEL_KEYS = { "panelA", "panelB", "panelC", "panelD" }
 local PC_KEYS = { "lucien", "rashid", "aishe", "fomorach", "blackCaesar" }
@@ -81,6 +71,10 @@ local PC_BUTTON_CLASS_SELECTED = PC_BUTTON_CLASS .. " selection_button_selected"
 local PRESENCE_BUTTON_CLASS = "memoriam_modal_npc_presence_button"
 local PRESENCE_BUTTON_CLASS_IDLE = PRESENCE_BUTTON_CLASS .. " selection_button_idle"
 local PRESENCE_BUTTON_CLASS_SELECTED = PRESENCE_BUTTON_CLASS .. " selection_button_selected"
+-- Own class (width + HUD_memoriamModalJustSmoke); the scene-button class would collapse it.
+local SMOKE_BUTTON_CLASS = "memoriam_modal_just_smoke_button"
+local SMOKE_BUTTON_CLASS_HIGHLIGHTED = SMOKE_BUTTON_CLASS .. " selection_button_highlighted"
+local SMOKE_BUTTON_CLASS_SELECTED = SMOKE_BUTTON_CLASS .. " selection_button_selected"
 -- Keep these hex values in sync with the matching Defaults in memoriam_modal.xml.
 local SCENE_BUTTON_FACE = {
     [SCENE_BUTTON_CLASS_IDLE] = "#999999",
@@ -91,6 +85,8 @@ local SCENE_BUTTON_FACE = {
     [PC_BUTTON_CLASS_SELECTED] = "#00FF00",
     [PRESENCE_BUTTON_CLASS_IDLE] = "#999999",
     [PRESENCE_BUTTON_CLASS_SELECTED] = "#00FF00",
+    [SMOKE_BUTTON_CLASS_HIGHLIGHTED] = "#FFFF00",
+    [SMOKE_BUTTON_CLASS_SELECTED] = "#00FF00",
 }
 local EMPTY_NPC_TEXT = "—"
 local SUBJECT_LABEL_COLOR = "#00FF00"
@@ -108,6 +104,8 @@ local currentSegmentIndex = nil
 local selectedPeriodIndex = nil
 local selectedPanelKey = nil
 local selectedJustSmoke = false
+-- True when Just Smoke came from the slider entering a gap (cleared again on leaving it).
+local justSmokeFromGap = false
 local assignments = {}
 local pickerTargetKey = nil
 local npcInputDraft = ""
@@ -150,7 +148,6 @@ local currentPeriodIndex
 local exclusiveYearsForPeriod
 local sliderValueForYearInPeriod
 local jumpSliderToPeriod
-local copyJustSmokePanel
 local periodLocation
 local applyJustSmokeButtonState
 local hideNpcAssignment
@@ -302,6 +299,7 @@ resetDraft = function()
     dateDisplay = ""
     locationDisplay = ""
     selectedJustSmoke = false
+    justSmokeFromGap = false
     sceneButtonPaint = {}
     sceneButtonClass = {}
     barPaint = {}
@@ -319,24 +317,6 @@ hideConfiguration = function()
     setAttr("memoriam_modal_scene_selection", "active", "false")
     setAttr("memoriam_modal_npc_assignment", "active", "false")
     hidePicker()
-end
-
-copyJustSmokePanel = function()
-    local weather = {}
-    if type(JUST_SMOKE_PANEL.weather) == "table" then
-        for i = 1, #JUST_SMOKE_PANEL.weather do
-            weather[i] = JUST_SMOKE_PANEL.weather[i]
-        end
-    end
-    return {
-        display = JUST_SMOKE_PANEL.display,
-        isOutdoors = JUST_SMOKE_PANEL.isOutdoors,
-        isDaytime = JUST_SMOKE_PANEL.isDaytime,
-        weather = weather,
-        locationAudio = JUST_SMOKE_PANEL.locationAudio,
-        url = JUST_SMOKE_PANEL.url,
-        location = JUST_SMOKE_PANEL.location,
-    }
 end
 
 periodLocation = function(entry)
@@ -1033,9 +1013,9 @@ local function applySceneButtonState(periodIndex, panelKey, defined, label)
 end
 
 applyJustSmokeButtonState = function()
-    local className = SCENE_BUTTON_CLASS_HIGHLIGHTED
+    local className = SMOKE_BUTTON_CLASS_HIGHLIGHTED
     if selectedJustSmoke then
-        className = SCENE_BUTTON_CLASS_SELECTED
+        className = SMOKE_BUTTON_CLASS_SELECTED
     end
     applyPanelButton(JUST_SMOKE_BUTTON_ID, className, {
         active = "true",
@@ -1114,6 +1094,22 @@ applyDateAndHighlights = function()
             selectedPanelKey = nil
             hideNpcAssignment()
         end
+    end
+
+    if seg.kind ~= "period" then
+        if not selectedJustSmoke then
+            selectedJustSmoke = true
+            justSmokeFromGap = true
+            selectedPeriodIndex = nil
+            selectedPanelKey = nil
+            clearNpcAssignments()
+            fillPickerFromPeriod(nil)
+            showNpcAssignmentRows()
+        end
+    elseif justSmokeFromGap then
+        selectedJustSmoke = false
+        justSmokeFromGap = false
+        hideNpcAssignment()
     end
 
     local year = calendarYearInSegment(seg, t)
@@ -1242,6 +1238,7 @@ configureForSubject = function(characterKey)
     selectedPeriodIndex = nil
     selectedPanelKey = nil
     selectedJustSmoke = false
+    justSmokeFromGap = false
     sliderValue = SLIDER_MAX
     lastRandomYear = nil
     lastRandomMonth = nil
@@ -1281,7 +1278,7 @@ missingAdvanceReasons = function()
     end
     local seg = currentSegmentIndex ~= nil and segments[currentSegmentIndex] or nil
     if seg == nil or seg.kind ~= "period" then
-        missing[#missing + 1] = "a time period (move the slider out of a gap)"
+        missing[#missing + 1] = "a time period"
     end
     if selectedPeriodIndex == nil or selectedPanelKey == nil then
         missing[#missing + 1] = "a scene panel"
@@ -1358,6 +1355,7 @@ function MemoriamModal.onSceneButton(id)
         end
     end
     selectedJustSmoke = false
+    justSmokeFromGap = false
     selectedPeriodIndex = periodIndex
     selectedPanelKey = panelKey
     clearNpcAssignments()
@@ -1373,13 +1371,16 @@ function MemoriamModal.onJustSmoke()
     if not modalOpen or subjectKey == nil then
         return
     end
-    selectedJustSmoke = true
-    selectedPeriodIndex = nil
-    selectedPanelKey = nil
-    clearNpcAssignments()
-    fillPickerFromPeriod(nil)
-    showNpcAssignmentRows()
-    applyDateAndHighlights()
+    justSmokeFromGap = false
+    if not selectedJustSmoke then
+        selectedJustSmoke = true
+        selectedPeriodIndex = nil
+        selectedPanelKey = nil
+        clearNpcAssignments()
+        fillPickerFromPeriod(nil)
+        showNpcAssignmentRows()
+        applyDateAndHighlights()
+    end
     reapplySelectedClassAfterClick(JUST_SMOKE_BUTTON_ID, function()
         applyJustSmokeButtonState()
     end)
@@ -1516,10 +1517,9 @@ function MemoriamModal.onConfirm()
         payload = {
             subjectKey = subjectKey,
             date = dateDisplay,
-            location = locationDisplay,
+            location = "",
             sliderValue = sliderValue,
             justSmoke = true,
-            panel = copyJustSmokePanel(),
             assignments = assignmentOut,
         }
     else
@@ -1536,9 +1536,6 @@ function MemoriamModal.onConfirm()
     end
     print("[Memoriam] " .. encodePayload(payload))
     MemoriamModal.close()
-    if selectedJustSmoke then
-        return
-    end
     local Memoriam = require("core.memoriam")
     Memoriam.applyEnter(payload)
 end

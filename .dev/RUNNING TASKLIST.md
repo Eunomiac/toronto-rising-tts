@@ -557,8 +557,9 @@ Standalone second-monitor web app (`.dev/storyteller-dashboard/`). Not the in-ta
 
 - [x] **Desires** ? page1 InputField ? `playerData[pid].desire`; unset class via `UI.setClass`; ST PCs row + Clear. Author verified 2026-07-26. _(TOR-97)_
 - [x] **Spotlight phase** — Play→Spotlight staged cover: narrative clear, Table A, Spotlight skybox, Main-only audio (no silence-all), in-session carousel + Host strip, ritual overlay. Spotlight→End: Table B0 + Generic skybox, overlay **EPILOGUE** (**TOR-599**; was DEBRIEF), bags/companions/decks stay parked until Intermission cover. Workshop stand-ins come from `DEBUG.populateSpotlightFigurines()` (paste GUIDs into `lib/guids.ttslua`); Advance does not auto-spawn. Author confirmed 2026-08-29. _(TOR-98)_
-- [x] **Memoriam runtime apply:** Advance (non–Just Smoke) → `memoriamBlindfold_<skyboxKey>` cover, Table B0, seats, clock/overlay, panel skybox/weather/audio; exit restores library scene or Downtime; Just Smoke print-only. Catalog `blindfoldURL` removed. LUT/sepia still **TOR-321**; PC-as-NPC still **TOR-95**. Pending Save & Play. _(TOR-101)_
+- [x] **Memoriam runtime apply:** Advance (non–Just Smoke) → `memoriamBlindfold_<skyboxKey>` cover, Table B0, seats, clock/overlay, panel skybox/weather/audio; exit restores library scene or Downtime. Catalog `blindfoldURL` removed. LUT/sepia still **TOR-321**; PC-as-NPC still **TOR-95**. Author confirmed 2026-10-02 except Just Smoke, which moved to **TOR-642**. _(TOR-101)_
 - [x] **Unmask Memoriam pcalls:** Enter/skybox reconcile call `C.resolveMemoriamPanelURL` and `S.getPlayerID` directly so missing panel art and lookup failures show in the log (pcall gate back to 24). relatedTo **TOR-101**, **TOR-564**. _(TOR-568)_
+- [x] **Memoriam Just Smoke (gap and button):** Just Smoke is selected automatically while the slider sits in a gap and by its own button inside a period (the button had collapsed to zero width after a class repaint). Advance enters Memoriam with the standard global blindfold, the `JustSmoke` skybox, no weather and silent audio; assignment rows still show. relatedTo **TOR-101**. Pending Save & Play. _(TOR-642)_
 
 ## Agent Reviews
 

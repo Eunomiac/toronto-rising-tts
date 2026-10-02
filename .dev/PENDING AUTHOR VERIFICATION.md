@@ -18,22 +18,20 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-02 — confirmed rows removed (TOR-602, TOR-631). Bugged rows left in place._
+_Last populated: 2026-10-02 — confirmed rows removed (TOR-602, TOR-631); TOR-101 row replaced by TOR-642 (Just Smoke re-test)._
 
 ### Memoriam
 
-#### ❌ TOR-101 — Memoriam runtime apply (enter / exit)
+#### TOR-642 — Memoriam Just Smoke (gap and button)
 
-**How to verify:** Save & Play so scripts and Global XML reload. Confirm Custom Assets include names like `memoriamBlindfold_rashid7` (Cloud sync job `memoriamBlindfolds`).
+**How to verify:** Save & Play so the new scripts and Global XML load. During Play, open Phases → Memoriam and pick a PC.
 
-1. ✅ **Real period Advance:** During Play, open Phases → Memoriam, pick a PC, pick a scene panel (not Just Smoke), set assignments if you like, click Advance. The global cover should show that period’s Memoriam blindfold art. Under the cover you should land on Table B0, the subject at seat 1, overlay showing the Memoriam location string (no site/weather row), a night clock on the Memoriam date, and the chosen panel skybox. Hunger should be unchanged; Health and Willpower should be full for PCs present as themselves.
-2. ❌ **Just Smoke:** Same flow but click Just Smoke then Advance. Host console should print `[Memoriam] …` and the world/subphase should **not** change.
-**Author Comment:** There is no "Just Smoke" option to select.  Additionally, any attempt to set the time slider in a "gap" that doesn't have a defined time period throws an error when I click "Advance" -- this is the situation where "Just Smoke" should be assigned automatically, and a standard global blindfold transition (i.e. without a memoriam splash image) should be shown as we transition to the new scene.
-3. ✅ **Exit restore:** Start Memoriam from an applied library scene, then click Main (or Downtime). You should return to that library scene (flushed evolving data). Start Memoriam with no live scene, then exit: Downtime + no-scene baseline.
-4. ✅ **Scene Apply while Memoriam:** Apply a library scene with NOW — time should use the clock from just before Memoriam began, not wall present-day. End Scene while Memoriam should clear Memoriam and apply the usual no-scene End path.
-5. ✅ **Re-select:** While already in Memoriam, open Memoriam again, pick a different period, Advance — new blindfold/world apply without dropping the original return-scene memory until you finally exit.
+1. **Button is there.** Under the scene grid there should be a yellow **Just Smoke** button. With the slider inside a defined period, click it. It should turn green, the period's scene buttons should all go back to unselected, and the PC assignment rows should appear (the NPC list for picking period NPCs will be empty).
+2. **Gap picks it automatically.** Drag the slider into a black gap between periods. **Just Smoke** should turn green on its own, the date should follow the slider, and the location line should be blank. Drag back into a period: Just Smoke should go back to yellow and the assignment rows should hide (unless you had clicked the Just Smoke button yourself in step 1, in which case it stays green).
+3. **Advance in a gap.** With the slider in a gap, mark another PC present if you like, and click Advance. You should see the **standard** global blindfold (no Memoriam splash art). Under it: Table B0, the subject at seat 1 (plus anyone you marked present), the overlay showing the gap date and no location, a night time on the clock, the **Just Smoke** skybox, no weather, and silence. Health and Willpower should be full for PCs present as themselves.
+4. **Leave again.** Click Main (or Downtime). You should return to the scene you were in before Memoriam, exactly as when leaving a normal period.
 
-**Context:** Catalog `blindfoldURL` removed. PC-as-NPC sheet swap still TOR-95; LUT/sepia still TOR-321.
+**Context:** Author check of **TOR-101** (Memoriam runtime apply): real-period Advance, exit restore, Scene Apply while in Memoriam, and re-selecting a period all passed. Only Just Smoke failed. The button had collapsed to zero width because the modal repainted it with the normal scene-button class, a gap could not Advance at all, and a Just Smoke Advance would have been rejected. Just Smoke now enters Memoriam for real.
 
 ### High — session / join / first-load
 

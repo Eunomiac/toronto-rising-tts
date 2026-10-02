@@ -13,23 +13,26 @@ Source of truth:
 - `lib/skyboxes_catalog.ttslua` — generated from `SKYBOXMEMORIAMCSV` (`npm run skyboxes:import`)
 - `core/phases.ttslua` / `HUD_setPlaySubPhase` — Memoriam click opens the popup; Main/Downtime while active call `Memoriam.applyExit`
 - `core/game_state_overlay.ttslua` — overlay while `Memoriam.isActive()`
-- `core/scenes.ttslua` — `reconcileSkyboxFromState` uses panel Cloud URL while Memoriam is active
+- `core/scenes.ttslua` — `reconcileSkyboxFromState` uses panel Cloud URL (or `C.Skyboxes.JustSmoke` for Just Smoke) while Memoriam is active
 - `core/storyteller_scenes_panel.ttslua` — Scene Apply handoff / End Scene
 - `core/state.ttslua` — `gameState.memoriam`
 
 Verification:
-- Save & Play → Phases **Memoriam** → configure → Advance (not Just Smoke)
+- Save & Play → Phases **Memoriam** → configure → Advance on a period panel
+- Advance with the slider in a gap (automatic Just Smoke), and with the Just Smoke button inside a period
 - Re-open Memoriam from an already-running Memoriam and Advance again
 - Exit via Main / Downtime, via Scenes Apply, and via End Scene
 - Phase chrome: [Phases Overview](Phases%20Overview.md)
 
-Status: current (TOR-101 / TOR-539–TOR-551 / TOR-564 / TOR-568). Remaining work is listed at the bottom — do not treat those items as shipped.
+Status: current (TOR-101 / TOR-539–TOR-551 / TOR-564 / TOR-568 / TOR-642). Remaining work is listed at the bottom — do not treat those items as shipped.
 
 ---
 
 ## What this is
 
-Memoriam is a **Play subphase**, not a scene-library row. Clicking **Memoriam** on the Phases panel opens the configuration popup. The live subphase stays Main or Downtime until **Advance**. **Just Smoke** prints the payload and closes; it never calls `Memoriam.applyEnter`.
+Memoriam is a **Play subphase**, not a scene-library row. Clicking **Memoriam** on the Phases panel opens the configuration popup. The live subphase stays Main or Downtime until **Advance**.
+
+**Just Smoke** (TOR-642) is a Memoriam with no period panel. The modal selects it automatically while the slider sits in a gap between periods (and drops it again when the slider moves back into a period), and the **Just Smoke** button picks it explicitly inside a period (that choice sticks while the slider moves). The PC assignment rows still show; the NPC picker is empty, so only library NPCs by key can be assigned.
 
 While Memoriam is active there is **no live library scene**. Applying a scene from the Scenes panel ends Memoriam first, then applies that scene. **End Scene** ends Memoriam and goes to Downtime no-scene.
 
@@ -37,7 +40,7 @@ While Memoriam is active there is **no live library scene**. Applying a scene fr
 
 ## Modal payload
 
-Advance (non–Just Smoke) prints and applies a table like:
+Advance on a period panel prints and applies a table like:
 
 ```lua
 {
@@ -56,7 +59,7 @@ Advance (non–Just Smoke) prints and applies a table like:
 }
 ```
 
-Just Smoke payloads set `justSmoke = true`, omit `skyboxKey` / `periodIndex`, and carry a copied Just Smoke `panel` table. They never reach `Memoriam.applyEnter`.
+Just Smoke payloads set `justSmoke = true`, set `location = ""`, and omit `skyboxKey` / `periodIndex` / `panel`. They go through `Memoriam.applyEnter` like any other payload.
 
 | Field | Meaning |
 | --- | --- |
@@ -103,7 +106,7 @@ Period `npcs` exist in the catalog (and Cloud can stamp figurine/token URLs). **
 
 ## Enter (`Memoriam.applyEnter`)
 
-Only during Play. Staged HUD blindfold (same fade pattern as a scene Apply) using `memoriamBlindfold_<skyboxKey>`. Work under the cover (`applyWorldUnderCover`):
+Only during Play. Staged HUD blindfold (same fade pattern as a scene Apply) using `memoriamBlindfold_<skyboxKey>`; Just Smoke uses the standard global blindfold (no custom image). Work under the cover (`applyWorldUnderCover`):
 
 1. Remember `sceneLibrary.lastAppliedKey` as `returnSceneKey` and clone the live clock as `preMemoriamNowClock` (skipped on **re-enter** — see below).
 2. Snapshot Health/Willpower for `"self"` assignees; flush the return scene’s library clock; `Scenes.clearLiveNarrativeForPhaseTransition`.
@@ -113,7 +116,7 @@ Only during Play. Staged HUD blindfold (same fade pattern as a scene Apply) usin
 6. Set Memoriam clock (below) and `SetTableTo("Table B")` without a second cover.
 7. Write `gameState.memoriam`, set Play subphase to `MEMORIAM`, `Sync.full` (soundscape skipped), then skybox + soundscape + overlay reconcile.
 
-Soundscape under cover: `Soundscape.applyContext` from the chosen panel (`isOutdoors` → indoor/outdoor ducking, first `weather[]` key or `"none"`, `locationAudio`). Empty `locationAudio` becomes **`silent`**. Weather audio and rain particles follow that weather key. Overlay weather chrome stays hidden.
+Soundscape under cover: `Soundscape.applyContext` from the chosen panel (`isOutdoors` → indoor/outdoor ducking, first `weather[]` key or `"none"`, `locationAudio`). Empty `locationAudio` becomes **`silent`**. Weather audio and rain particles follow that weather key. Overlay weather chrome stays hidden. Just Smoke has no panel: indoors, weather `none`, `silent`, skybox `C.Skyboxes.JustSmoke` (`Memoriam.justSmokeSkyboxURL`, errors loudly if the catalog row is missing).
 
 ### Re-selecting Memoriam
 

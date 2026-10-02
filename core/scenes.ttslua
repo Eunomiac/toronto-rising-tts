@@ -552,17 +552,27 @@ function Scenes.reconcileSkyboxFromState(opts)
     opts = type(opts) == "table" and opts or {}
     local force = opts.force == true
 
-    -- Memoriam: panel art URL from Cloud/catalog (TOR-101 / TOR-564).
+    -- Memoriam: panel art URL from Cloud/catalog (TOR-101 / TOR-564), or the Just Smoke skybox (TOR-642).
     local Memoriam = require("core.memoriam")
     if Memoriam.isActive() then
         local mem = S.getStateVal("memoriam")
         local payload = type(mem) == "table" and mem.payload or nil
-        if type(payload) == "table" and type(payload.skyboxKey) == "string" and type(payload.panel) == "string" then
-            local fingerprint = "memoriam:" .. payload.skyboxKey .. ":" .. payload.panel
+        local fingerprint = nil
+        local resolveURL = nil
+        if type(payload) == "table" and payload.justSmoke == true then
+            fingerprint = "memoriam:justSmoke"
+            resolveURL = Memoriam.justSmokeSkyboxURL
+        elseif type(payload) == "table" and type(payload.skyboxKey) == "string" and type(payload.panel) == "string" then
+            fingerprint = "memoriam:" .. payload.skyboxKey .. ":" .. payload.panel
+            resolveURL = function()
+                return C.resolveMemoriamPanelURL(payload.skyboxKey, payload.panel)
+            end
+        end
+        if fingerprint ~= nil then
             if not force and lastSkyboxReconcileFingerprint == fingerprint then
                 return true
             end
-            local url = C.resolveMemoriamPanelURL(payload.skyboxKey, payload.panel)
+            local url = resolveURL()
             if Backgrounds == nil or type(Backgrounds.setCustomURL) ~= "function" then
                 print("[Scenes] reconcileSkyboxFromState: Backgrounds.setCustomURL unavailable.")
                 return false
@@ -570,7 +580,7 @@ function Scenes.reconcileSkyboxFromState(opts)
             local ok = Backgrounds.setCustomURL(url)
             if ok ~= true then
                 print("[Scenes] reconcileSkyboxFromState: Backgrounds.setCustomURL failed for Memoriam `"
-                    .. tostring(payload.skyboxKey) .. "`.")
+                    .. fingerprint .. "`.")
                 return false
             end
             lastSkyboxReconcileFingerprint = fingerprint

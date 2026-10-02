@@ -127,7 +127,7 @@
 
   <HorizontalLayout class="memoriam_modal_just_smoke_row" preferredHeight="40" minHeight="40" flexibleHeight="0" childForceExpandWidth="false" childForceExpandHeight="false" childAlignment="MiddleCenter" />
 
-  <Button class="memoriam_modal_scene_selection_button_smoke" preferredWidth="85" minWidth="85" preferredHeight="40" minHeight="40" flexibleWidth="0" onClick="HUD_memoriamModalJustSmoke" />
+  <Button class="memoriam_modal_just_smoke_button" textAlignment="MiddleCenter" fontSize="10" fontStyle="Bold" preferredWidth="85" minWidth="85" preferredHeight="40" minHeight="40" flexibleWidth="0" onClick="HUD_memoriamModalJustSmoke" />
 
   <VerticalLayout class="memoriam_modal_npc_assignment"
     childForceExpandWidth = "false"
@@ -294,7 +294,7 @@
     </GridLayout>
 
     <HorizontalLayout class="memoriam_modal_just_smoke_row" >
-      <Button id="memoriam_modal_just_smoke_button" class="memoriam_modal_scene_selection_button memoriam_modal_scene_selection_button_smoke" text="Just Smoke" />
+      <Button id="memoriam_modal_just_smoke_button" class="memoriam_modal_just_smoke_button selection_button_highlighted" text="Just Smoke" />
     </HorizontalLayout>
 
   </VerticalLayout>
