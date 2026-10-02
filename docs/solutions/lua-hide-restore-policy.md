@@ -127,7 +127,7 @@ Snapshot position is **not** the primary restore authority when a catalog pose o
 
 **Rain particle emitter:** Off Play, `Phases.reconcileParticleEmitterFromPhase` parks `G.GUIDS.PARTICLE_EMITTER` with `O.hideObject`. On Play it restores at table-origin X/Z plus snapshot Y. While Scatter is active, Scatter's `objectsToHide` list stays in charge (do not un-park from Play restore).
 
-**PC seat absent (`C.HiddenObjects` catalog):** `O.applyPcSeatHiddenObjectPresence` / `O.reconcilePcSeatHiddenObjectsFromState` — when a PC seat is narratively absent or disconnected, every matching catalog GUID and `<Color>Object` tag entry uses **`O.hideObject`** (not on-table `setInvisibleTo`). When present again, **`O.restoreObject`** when tagged `HiddenObject`, else active catalog visibility via `O.activeVisibilityForGuid`.
+**PC seat absent (`C.HiddenObjects` catalog):** `O.applyPcSeatHiddenObjectPresence` / `O.reconcilePcSeatHiddenObjectsFromState` — when a PC seat is narratively absent or disconnected, every matching catalog GUID and `<Color>Object` tag entry uses **`O.hideObject`** (not on-table `setInvisibleTo`). When present again, **`O.restoreObject`** when tagged `HiddenObject`, else active catalog visibility via `O.activeVisibilityForGuid`. That restore passes no position, so it replays the hide snapshot: a reconciler that owns a catalog object's pose (Pink tarot button via `lib/tarot_toggle.ttslua` after seat layout) must, while the object is parked, re-park it under the new seat with `snapshotPosition` + `refreshSnapshotPosition` instead of moving it onto the table.
 
 When adding a **new** exception, document it here and in the cursor rule — do not silently reintroduce inline `-200` hides.
 

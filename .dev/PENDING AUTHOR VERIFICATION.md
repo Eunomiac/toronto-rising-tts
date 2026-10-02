@@ -20,6 +20,16 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 _Last populated: 2026-10-02 — TOR-644 spacing follow-up and TOR-647 (Memoriam cover) added. Confirmed rows removed._
 
+### Table objects
+
+#### TOR-648 — Pink tarot button follows Pink after a Memoriam
+
+**How to verify:** Save & Play. During Play, enter a Memoriam with a subject who is **not** Pink, and do not put Pink in it, so Pink loses her chair for the Memoriam. Then click End Scene.
+
+When the cover lifts in Downtime, Pink's tarot deck button should sit next to her tarot drawer at her new seat, like the rest of her objects. It should not be left behind at the seat she had before the Memoriam. Clicking it should still open and close the tarot set.
+
+**Context:** While Pink is not present, the button is parked and its spot is saved. The tarot step after the table layout used to move the parked button back onto the table without updating that saved spot, so when Pink came back the button was restored to her old seat. It now stays parked under her new seat and the saved spot is updated.
+
 ### Overlay
 
 #### ⚠️ TOR-644 — Downtime overlay sits in the right place after End Scene

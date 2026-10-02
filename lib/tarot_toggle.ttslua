@@ -267,6 +267,23 @@ local function applyObjectState(key, state, token, buttonGuid, opts)
             effectivePose.position = OP.mergePosition(obj, effectivePose.position)
         end
     end
+    -- Parked (seat presence / occupancy park): its restore replays the hide snapshot with no
+    -- position, so keep it parked under the new seat and point the snapshot at this pose.
+    if obj.hasTag ~= nil and obj.hasTag("HiddenObject") then
+        local pos = xyzTable(effectivePose.position)
+        if pos == nil then
+            print("[TarotToggle] Missing resolved position for parked key: " .. tostring(key))
+            return
+        end
+        Global.call("GlobalHideObject", {
+            guid = obj.getGUID(),
+            snapshotPosition = pos,
+            refreshSnapshotPosition = true,
+            parkPosition = { x = pos.x, y = C.HIDDEN_OBJECT_WORLD_Y, z = pos.z },
+            parkRotation = xyzTable(effectivePose.rotation),
+        })
+        return
+    end
     if opts.instant == true then
         effectivePose.delay = nil
         effectivePose.transitionDelay = nil

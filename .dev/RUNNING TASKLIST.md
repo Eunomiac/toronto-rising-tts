@@ -566,6 +566,7 @@ Standalone second-monitor web app (`.dev/storyteller-dashboard/`). Not the in-ta
 - [x] **Memoriam runtime apply:** Advance (non–Just Smoke) → `memoriamBlindfold_<skyboxKey>` cover, Table B0, seats, clock/overlay, panel skybox/weather/audio; exit restores library scene or Downtime. Catalog `blindfoldURL` removed. LUT/sepia still **TOR-321**; PC-as-NPC still **TOR-95**. Author confirmed 2026-10-02 except Just Smoke, which moved to **TOR-642**. _(TOR-101)_
 - [x] **Unmask Memoriam pcalls:** Enter/skybox reconcile call `C.resolveMemoriamPanelURL` and `S.getPlayerID` directly so missing panel art and lookup failures show in the log (pcall gate back to 24). relatedTo **TOR-101**, **TOR-564**. _(TOR-568)_
 - [x] **Memoriam Just Smoke (gap and button):** Just Smoke is selected automatically while the slider sits in a gap and by its own button inside a period (the button had collapsed to zero width after a class repaint). Advance enters Memoriam with the standard global blindfold, the `JustSmoke` skybox, no weather and silent audio; assignment rows still show. relatedTo **TOR-101**. Pending Save & Play. _(TOR-642)_
+- [x] **Pink tarot button follows Pink after a Memoriam:** the button is in `C.HiddenObjects`, so seat presence parks it and saves its spot; the tarot step after layout now keeps a parked button parked under the new seat and updates that saved spot, so the restore on End Scene no longer drops it at the pre-Memoriam seat. relatedTo **TOR-101**, **TOR-642**. Pending Save & Play. _(TOR-648)_
 
 ## Agent Reviews
 
