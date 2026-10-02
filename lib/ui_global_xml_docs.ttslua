@@ -8802,12 +8802,13 @@ UI.setAttributes("overlay_site_card_display", {rectAlignment = "MiddleRight", of
     <!-- ================================================================ -->
     <!-- Main Button Column (left side): Print State + debug test buttons  -->
     <!-- ================================================================ -->
-    <VerticalLayout class="storyteller_buttonControls" visibility="Host" height="370">
+    <VerticalLayout class="storyteller_buttonControls" visibility="Host" height="394">
       <Text class="hud_storyteller_header">== DEBUG ==</Text>
       <Text id="debug_lastLoadClock" fontSize="12" color="#AAAAAA" alignment="MiddleCenter" preferredHeight="18" minHeight="18" flexibleHeight="0" text="—" />
       <Button id="debug_overlayAlpha" class="hud_storyteller_button" onClick="HUD_toggleOverlayAlpha">Overlay Alpha: Full</Button>
       <Button class="hud_storyteller_button" onClick="HUD_printState">Print State</Button>
       <Button class="hud_storyteller_button" onClick="HUD_syncAll">Sync All (force)</Button>
+      <Button id="debug_syncTrace" class="hud_storyteller_button" onClick="HUD_toggleSyncTrace" textColor="#FFFFFF" colors="#6E6E6E|#7E7E7E|#5E5E5E|rgba(0.15,0.15,0.15,0.5)">Trace Sync</Button>
       <Button class="hud_storyteller_button" onClick="HUD_updateCoterieData">Update Coterie Data</Button>
       <Button class="hud_storyteller_button" onClick="HUD_clearLoadingOverlay">Clear Loading Overlay</Button>
       <Button class="hud_storyteller_button" onClick="HUD_refreshUi">Refresh UI</Button>

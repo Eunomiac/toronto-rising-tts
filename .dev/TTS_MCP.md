@@ -146,6 +146,7 @@ Separate from agent metrics. This prints on the host console so a Storyteller ca
 ```lua
 DEBUG.setSyncTrace(true)
 -- or DEBUG.toggleSyncTrace()
+-- or the Debug panel Trace Sync button (grey off, yellow on)
 -- persists: gameState.debug.syncTraceEnabled
 ```
 

@@ -137,6 +137,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_pcPanel` | B+C | Yes | PCs tracker apply; Desire Clear (`pcs_<Color>_desireClear`, TOR-97) |
 | `HUD_pcsToggleSimulatedConnection` | B+C | Yes | Assume Connected debug mode only: per-seat simulated connect (seats PC immediately) / disconnect (darken only) via `PlayerConnection.simulateSeatConnection` |
 | `HUD_toggleConnectionMode` | B+C | Yes | Debug panel: persisted `debug.assumeConnected`; seats newly connected PCs once, then one relayout (`PlayerConnection.switchAssumeConnectedMode`) |
+| `HUD_toggleSyncTrace` | A | Yes | Debug panel: persisted `debug.syncTraceEnabled`; grey off / yellow on; host `[SyncTrace]` prints only (TOR-634) |
 | `HUD_togglePanel` | A | — | XmlUI collapse |
 | `HUD_changeScene` | B+C | Yes | |
 | `HUD_selectAdminLightingScene` | B+C | Yes | |

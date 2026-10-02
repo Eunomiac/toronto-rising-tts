@@ -1264,11 +1264,26 @@ function DEBUG.showGlobalHudCanaries()
     print("Interpretation: large xmlLen+attrs but blank canvas → dead Global canvas; blindfold active → cover; UI.loading → asset race; only BLACK wrong → seat reveal skip; canary nil → TOR-384 missing mount (startup gate remounts).")
 end
 
+local SYNC_TRACE_BTN_OFF = "#6E6E6E|#7E7E7E|#5E5E5E|rgba(0.15,0.15,0.15,0.5)"
+local SYNC_TRACE_BTN_ON = "#C9A227|#D8B23A|#E6C34F|rgba(0.4,0.32,0.08,0.5)"
+
+--- Paint the Debug panel Trace Sync button: grey off, yellow on.
+function DEBUG.refreshSyncTraceButton()
+    local Trace = require("lib.sync_trace")
+    local on = Trace.isEnabled()
+    U.setAttributes("debug_syncTrace", {
+        text = "Trace Sync",
+        textColor = on and "#000000" or "#FFFFFF",
+        colors = on and SYNC_TRACE_BTN_ON or SYNC_TRACE_BTN_OFF,
+    })
+end
+
 --- Host console trace of heavy sync calls (`[SyncTrace] ...`). Persists in `gameState.debug.syncTraceEnabled`.
 --- @param enabled boolean
 function DEBUG.setSyncTrace(enabled)
     local Trace = require("lib.sync_trace")
     Trace.setEnabled(enabled == true)
+    DEBUG.refreshSyncTraceButton()
     print("Sync trace: " .. ((enabled == true) and "ON" or "OFF"))
 end
 
@@ -1278,6 +1293,7 @@ function DEBUG.toggleSyncTrace()
     local Trace = require("lib.sync_trace")
     local nextOn = not Trace.isEnabled()
     Trace.setEnabled(nextOn)
+    DEBUG.refreshSyncTraceButton()
     print("Sync trace: " .. (nextOn and "ON" or "OFF"))
     return nextOn
 end

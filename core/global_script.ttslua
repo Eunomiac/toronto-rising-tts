@@ -3489,6 +3489,9 @@ function onLoad(saved_data)
                 RSL.ensureMinVisibleCsheetPagesForAllSeats()
             end
             PCST.refreshConnectionModeButton()
+            if type(DEBUG.refreshSyncTraceButton) == "function" then
+                DEBUG.refreshSyncTraceButton()
+            end
             do
                 local Phases = require("core.phases")
                 if type(Phases.reconcileParticleEmitterFromPhase) == "function" then
@@ -5666,6 +5669,19 @@ function HUD_toggleDebugAmbient(player, button, id)
         string.format("Debug ambient: %s (intensity=%s).", debugAmbientBright and "bright" or "dark", tostring(intensity)),
         player.color,
         {0, 1, 1}
+    )
+end
+
+--- Debug panel: host console trace of heavy sync calls. Grey off, yellow on.
+function HUD_toggleSyncTrace(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_toggleSyncTrace") then
+        return
+    end
+    local on = DEBUG.toggleSyncTrace()
+    broadcastToColor(
+        string.format("Sync trace: %s", on and "on" or "off"),
+        player.color,
+        { 0, 1, 1 }
     )
 end
 
