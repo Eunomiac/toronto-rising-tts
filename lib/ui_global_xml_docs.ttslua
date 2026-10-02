@@ -15210,7 +15210,13 @@ UI.hide("sessionStartHeal_playerContainer_Orange")
 
   <VerticalLayout id="xpLog_content" spacing="8" padding="16 16 16 16" childForceExpandHeight="false">
 
-    <Text id="xpLog_title" fontSize="16" fontStyle="Bold" color="#FFD700" text="Experience" />
+    <HorizontalLayout spacing="8" preferredHeight="28" childForceExpandWidth="false">
+      <Text id="xpLog_title" fontSize="16" fontStyle="Bold" color="#FFD700" text="Experience" flexibleWidth="1" alignment="MiddleLeft" />
+      <Button id="xpLog_close" text="X" preferredWidth="28" preferredHeight="26" fontSize="14"
+        colors="#333333|#444444|#555555|rgba(0.2,0.2,0.2,0.5)" textColor="#FFFFFF"
+        tooltip="Close"
+        onClick="HUD_xpLogCancel" />
+    </HorizontalLayout>
 
     <HorizontalLayout spacing="8" preferredHeight="32" childForceExpandWidth="false">
       <Text fontSize="12" color="#CCCCCC" text="Amount" preferredWidth="80" alignment="MiddleLeft" />

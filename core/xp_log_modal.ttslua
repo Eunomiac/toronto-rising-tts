@@ -17,6 +17,10 @@ local draft = {
   description = "",
 }
 
+--- Last Apply to All, so one Undo removes that gain or spend from every seat it touched.
+--- @type { kind: string, amount: number, description: string, colors: string[] }|nil
+local lastApplyAll = nil
+
 local function setAttr(id, attrs)
   if type(U.setAttributes) == "function" then
     U.setAttributes(id, attrs)
@@ -81,6 +85,7 @@ function M.close()
   draft.color = nil
   draft.amountText = ""
   draft.description = ""
+  lastApplyAll = nil
   setAttr("xpLog_modal", { active = "false" })
 end
 
@@ -140,6 +145,7 @@ function M.apply()
     U.AlertGM(err or "XP apply failed")
     return false
   end
+  lastApplyAll = nil
   afterMutation({ color })
   refreshUndoStrip()
   draft.amountText = ""
@@ -179,13 +185,56 @@ function M.applyToAll()
     U.AlertGM(fail > 0 and "XP Apply to All: no entries applied" or "XP Apply to All: no present PCs")
     return false
   end
+  local _, _, signed, desc = XpLog.validateEntry(draft.amountText, draft.description)
+  lastApplyAll = {
+    kind = signed > 0 and "gain" or "spend",
+    amount = math.abs(signed),
+    description = desc,
+    colors = touched,
+  }
   afterMutation(touched)
   refreshUndoStrip()
   return true
 end
 
+--- Pop one player's latest entry only when it is still the Apply to All row.
+--- @param color string
+--- @param batch table
+--- @return boolean
+local function undoApplyAllForColor(color, batch)
+  local pid = C.GetPlayerID(color)
+  if type(pid) ~= "string" then
+    return false
+  end
+  local last = XpLog.getLastEntry(pid)
+  if last == nil or last.kind ~= batch.kind or last.amount ~= batch.amount or last.description ~= batch.description then
+    return false
+  end
+  local ok = XpLog.undoLastEntry(pid)
+  return ok == true
+end
+
 --- @return boolean
 function M.undo()
+  if lastApplyAll ~= nil and type(lastApplyAll.colors) == "table" and #lastApplyAll.colors > 0 then
+    local batch = lastApplyAll
+    lastApplyAll = nil
+    local touched = {}
+    for i = 1, #batch.colors do
+      local color = batch.colors[i]
+      if undoApplyAllForColor(color, batch) then
+        touched[#touched + 1] = color
+      end
+    end
+    if #touched == 0 then
+      U.AlertGM("Nothing to undo")
+      return false
+    end
+    afterMutation(touched)
+    refreshUndoStrip()
+    return true
+  end
+
   local color = draft.color
   if type(color) ~= "string" then
     return false
