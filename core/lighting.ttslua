@@ -2309,13 +2309,23 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
                 end
             elseif modeDef.enabled == false then
                 if compOn then
+                    -- Fade intensity to 0, then disable. Do not invent a spot angle:
+                    -- a mode that sets `angle` lerps to that value; a mode that omits
+                    -- it leaves the current cone alone (rewritten after disable).
                     afterVals.intensity = curI
                     afterVals.angle = getAngle(light)
                     modeDef.intensity = 0
-                    modeDef.angle = 0
                 else
                     modeDef.enabled = nil
                 end
+            end
+        end
+
+        local function applyAngleAfterDisable()
+            if modeDef.angle ~= nil then
+                setAngle(light, modeDef.angle)
+            elseif afterVals.angle ~= nil then
+                setAngle(light, afterVals.angle)
             end
         end
 
@@ -2344,11 +2354,13 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
                     setColor(light, Color(modeDef.color))
                 end
                 setIntensity(light, 0)
-                setAngle(light, 0)
+                if modeDef.angle ~= nil then
+                    setAngle(light, modeDef.angle)
+                end
                 applyRotationPos()
                 setEnabled(light, false)
                 setIntensity(light, afterVals.intensity)
-                setAngle(light, afterVals.angle)
+                applyAngleAfterDisable()
             else
                 if modeDef.range ~= nil then
                     setRange(light, modeDef.range)
@@ -2487,7 +2499,7 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
                 if modeDef.enabled == false then
                     setEnabled(light, false)
                     setIntensity(light, afterVals.intensity)
-                    setAngle(light, afterVals.angle)
+                    applyAngleAfterDisable()
                 end
             end
         })

@@ -18,7 +18,17 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-02 — TOR-650 (hunger overlay empty image) added._
+_Last populated: 2026-10-02 — TOR-651 (off fade keeps the mode's spot angle) added._
+
+### Lighting
+
+#### TOR-651 — A light turning off keeps the mode's spot angle
+
+**How to verify:** Save & Play. In the Spotlight phase, with more than one player on the carousel, advance so the front player steps off. Watch that player's overhead light during the move.
+
+The cone should open toward the wider off angle while the brightness fades. It should not snap shut. Then the light turns off.
+
+**Context:** Turning a light off was forcing the spot angle to 0 for the fade, even when the off mode is wider (45° going to 88°). The fade now follows the mode's angle. If a mode does not set an angle, the cone stays where it is. Seat lights whose off mode is stored at angle 0 still close, because that 0 is part of the mode.
 
 ### Overlay
 

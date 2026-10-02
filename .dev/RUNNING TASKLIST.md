@@ -292,6 +292,8 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## Lighting
 
+- [x] **Off fade keeps the mode's spot angle:** Turning a light off no longer forces the cone to 0. The fade follows the mode's angle, or leaves the cone alone when the mode does not set one. Pending Save & Play. _(TOR-651)_
+
 - [x] **Skip unchanged sync work:** Load, scene restore, and same-table switches no longer force a full rebuild when fingerprints match. Control-board snaps install only when the grid changed or a board reload cleared them. Debug panel **Trace Sync** (grey off, yellow on) prints `[SyncTrace]` lines for the heavy calls. Author confirmed 2026-10-02. _(TOR-634)_
 
 - [x] **playerLight1 anchor + lookAt modes:** `OP.resolveAnchoredWorldPoint` + `SetLightMode` materialize of `{ anchor, height }` / `lookAt` → world position + `lookAtTarget` / `U.lookAtRotation` (STANDARD seat anchors ↔ ROLLING dice-drawer anchors). Pending Save & Play. _(no new TOR — Linear quota)_
