@@ -2587,6 +2587,9 @@ end
 --- carrying it are dealt back — the player's own stored cards stay in the container.
 local STASHED_HAND_CARD_TAG = "StashedHandCard"
 
+--- Wait after an unparked hand zone is posed before dealing its stashed cards back.
+local HAND_DEAL_SETTLE_SECONDS = 0.5
+
 --- @param y number
 --- @return boolean
 local function isParkedHandY(y)
@@ -2644,18 +2647,24 @@ local function dealStashedHandCards(color, zonePos, zoneRot)
 			end
 		end
 	end
-	for i = 1, #guids do
-		container.takeObject({
-			guid = guids[i],
-			position = { x = zonePos.x, y = zonePos.y, z = zonePos.z },
-			rotation = { x = 0, y = zoneRot.y + 180, z = 0 },
-			smooth = false,
-			callback_function = function(card)
-				card.removeTag(STASHED_HAND_CARD_TAG)
-				card.deal(1, color)
-			end,
-		})
+	if #guids == 0 then
+		return 0
 	end
+	-- The zone needs a moment to settle at its new pose; cards dealt in the same frame land rotated.
+	U.await(function()
+		for i = 1, #guids do
+			container.takeObject({
+				guid = guids[i],
+				position = { x = zonePos.x, y = zonePos.y, z = zonePos.z },
+				rotation = { x = 0, y = zoneRot.y + 180, z = 0 },
+				smooth = false,
+				callback_function = function(card)
+					card.removeTag(STASHED_HAND_CARD_TAG)
+					card.deal(1, color)
+				end,
+			})
+		end
+	end, HAND_DEAL_SETTLE_SECONDS)
 	return #guids
 end
 
@@ -2671,7 +2680,7 @@ end
 --- Parking (TOR-631): a target at `C.HIDDEN_OBJECT_WORLD_Y` moves the zone alone — the in-hand
 --- cards are tagged `STASHED_HAND_CARD_TAG` and put into the player's storage container
 --- (`G.GetPlayerStorageContainerGUID`). Moving a parked zone back to the table deals those tagged
---- cards (only those) back into the hand.
+--- cards (only those) back into the hand after `HAND_DEAL_SETTLE_SECONDS` (the only wait here).
 --- @param playerRef string|userdata seat color or Player
 --- @param position Vector|table world position of the hand zone
 --- @param rotation Vector|table world rotation of the hand zone
