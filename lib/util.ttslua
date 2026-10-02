@@ -2620,7 +2620,9 @@ local function stashHandCardsInStorage(color, cards)
 	end
 end
 
---- Deal every `STASHED_HAND_CARD_TAG` card in the player's storage container into the hand zone.
+--- Deal every `STASHED_HAND_CARD_TAG` card in the player's storage container into the hand.
+--- `container.deal` only takes from the top (it would hand back the player's own stored cards),
+--- so each tagged card is taken by GUID and dealt individually with native `card.deal`.
 --- @param color string
 --- @param zonePos Vector
 --- @param zoneRot Vector
@@ -2650,6 +2652,7 @@ local function dealStashedHandCards(color, zonePos, zoneRot)
 			smooth = false,
 			callback_function = function(card)
 				card.removeTag(STASHED_HAND_CARD_TAG)
+				card.deal(1, color)
 			end,
 		})
 	end
