@@ -18,7 +18,17 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-02 — TOR-644 spacing follow-up and TOR-647 (Memoriam cover) added. Confirmed rows removed._
+_Last populated: 2026-10-02 — TOR-649 (page 2 rituals/ceremonies layout) added._
+
+### Character sheets
+
+#### TOR-649 — Page 2 rituals and ceremonies use the tuned row layout
+
+**How to verify:** Save & Play. Open page 2 of a character sheet for someone who has rituals or ceremonies (Black Caesar has both).
+
+The dot tracks should be the same width as the discipline dots above them. The names should sit in a tight stack under the divider, with no extra gap between rows, and the block should not stretch down to fill the rest of the page. Discipline dots on the same page should look the same as before.
+
+**Context:** The sizes you tuned in the sheet editor are now part of the single Defaults block that builds page 2, so the older 280px tracks and stretched rows cannot override them.
 
 ### Table objects
 
