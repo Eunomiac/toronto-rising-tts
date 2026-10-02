@@ -292,7 +292,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## Lighting
 
-- [x] **Off fade keeps the mode's spot angle:** Turning a light off no longer forces the cone to 0. Brightness is forced to 0 only when the destination leaves both intensity and angle above zero, so the light still fades instead of blinking off. Pending Save & Play. _(TOR-651)_
+- [x] **Off fade keeps the mode's spot angle:** Turning a light off no longer forces the cone to 0. Brightness is forced to 0 only when the destination leaves both intensity and angle above zero, so the light still fades instead of blinking off. Spotlight carousel moves blend the lamp's height and inward offset across the same two seconds. Pending Save & Play. _(TOR-651)_
 
 - [x] **Skip unchanged sync work:** Load, scene restore, and same-table switches no longer force a full rebuild when fingerprints match. Control-board snaps install only when the grid changed or a board reload cleared them. Debug panel **Trace Sync** (grey off, yellow on) prints `[SyncTrace]` lines for the heavy calls. Author confirmed 2026-10-02. _(TOR-634)_
 

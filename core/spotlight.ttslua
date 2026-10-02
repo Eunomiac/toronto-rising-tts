@@ -321,6 +321,16 @@ local function lightModeTemplate(modeKey)
     return U.clone(src, true)
 end
 
+--- @param modeKey string
+--- @return table|nil
+local function positioningForModeKey(modeKey)
+    local mode = lightModeTemplate(modeKey)
+    if type(mode) ~= "table" then
+        return nil
+    end
+    return mode.positioning
+end
+
 --- @param fig Object
 --- @param modeKey string
 --- @return table|nil
@@ -340,7 +350,8 @@ end
 --- @param color string
 --- @param modeKey string
 --- @param transitionTime number
-local function applyStandInLight(color, modeKey, transitionTime)
+--- @param opts table|nil `skipPose`: leave the lamp transform to the carousel blend
+local function applyStandInLight(color, modeKey, transitionTime, opts)
     local fig = figureObject(color)
     local lit = lightObject(color)
     local guid = lightGuid(color)
@@ -356,6 +367,11 @@ local function applyStandInLight(color, modeKey, transitionTime)
     local modeTable = resolvedLightModeTable(fig, modeKey)
     if type(modeTable) ~= "table" then
         return
+    end
+    if type(opts) == "table" and opts.skipPose == true then
+        modeTable.position = nil
+        modeTable.rotation = nil
+        modeTable.lookAtTarget = nil
     end
     local sec = tonumber(transitionTime) or 0
     L.SetLightMode(guid, modeTable, nil, sec)
@@ -694,10 +710,19 @@ local function rotateByDelta(delta)
             startPos = fig.getPosition()
             startRot = fig.getRotation()
         end
-        starts[color] = { pos = startPos, rot = startRot, endSlot = endSlot }
+        local startModeKey = lightModeForSlot(startSlot, n)
+        local endModeKey = lightModeForSlot(endSlot, n)
+        starts[color] = {
+            pos = startPos,
+            rot = startRot,
+            endSlot = endSlot,
+            startPositioning = positioningForModeKey(startModeKey),
+            endPositioning = positioningForModeKey(endModeKey),
+        }
         ends[color] = { pos = endPos, rot = endRot }
-        -- Intensity / cone ease on the same 2s sine-in-out as the move (pose from live figurine at start).
-        applyStandInLight(color, lightModeForSlot(endSlot, n), ROTATE_SEC)
+        -- Beam scalars ease over the move. Lamp height/inward is blended in the
+        -- carousel lerp below, so SetLightMode must not also pull the transform.
+        applyStandInLight(color, endModeKey, ROTATE_SEC, { skipPose = true })
     end
 
     U.Lerp(function(t)
@@ -710,12 +735,17 @@ local function rotateByDelta(delta)
             if U.isGameObject(fig) and type(st) == "table" and type(en) == "table" then
                 fig.setPosition(st.pos:lerp(en.pos, t))
                 fig.setRotation(U.lerpRotationShortest(st.rot, en.rot, t))
-                local destMode = lightModeTemplate(lightModeForSlot(st.endSlot, n))
-                if U.isGameObject(lit) and type(destMode) == "table" then
-                    local pose = NPCS.resolveFigurineLightPose(fig, destMode.positioning, nil)
-                    if type(pose) == "table" then
+                if U.isGameObject(lit) then
+                    local positioning = NPCS.lerpLightPositioning(st.startPositioning, st.endPositioning, t)
+                    if positioning == nil then
+                        positioning = st.endPositioning or st.startPositioning
+                    end
+                    local pose = NPCS.resolveFigurineLightPose(fig, positioning, nil)
+                    if type(pose) == "table" and pose.position ~= nil then
                         lit.setPosition(pose.position)
-                        if pose.rotation ~= nil then
+                        if pose.lookAtTarget ~= nil then
+                            lit.setRotation(U.lookAtRotation(pose.position, pose.lookAtTarget))
+                        elseif pose.rotation ~= nil then
                             lit.setRotation(pose.rotation)
                         end
                     end

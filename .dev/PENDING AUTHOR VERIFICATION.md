@@ -26,9 +26,9 @@ _Last populated: 2026-10-02 — TOR-651 (off fade keeps the mode's spot angle) a
 
 **How to verify:** Save & Play. In the Spotlight phase, with more than one player on the carousel, advance so the front player steps off. Watch that player's overhead light during the move.
 
-The cone should open toward the wider off angle while the brightness fades. It should not snap shut. Then the light turns off.
+The cone should open toward the wider off angle while the brightness fades, and the lamp should glide down from its high spotlight perch to the closer off position. It should not jump close on the first moment, and the cone should not snap shut. Then the light turns off.
 
-**Context:** Turning a light off was forcing the spot angle to 0 for the fade, even when the off mode is wider (45° going to 88°). The cone now follows the mode. A light still cannot blink off: if the destination intensity is already 0, brightness fades while the angle follows the mode; if the destination angle is already 0, the beam narrows away and intensity is left alone. Intensity is forced to 0 only when both would otherwise stay above zero.
+**Context:** Turning a light off was forcing the spot angle to 0 for the fade, even when the off mode is wider (45° going to 88°). The cone now follows the mode. A light still cannot blink off: if the destination intensity is already 0, brightness fades while the angle follows the mode; if the destination angle is already 0, the beam narrows away and intensity is left alone. Intensity is forced to 0 only when both would otherwise stay above zero. During a Spotlight carousel move, the lamp's height and inward offset blend from the old mode to the new one across the same two seconds, instead of jumping to the destination on the first frame.
 
 ### Overlay
 
