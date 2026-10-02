@@ -2309,12 +2309,17 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
                 end
             elseif modeDef.enabled == false then
                 if compOn then
-                    -- Fade intensity to 0, then disable. Do not invent a spot angle:
-                    -- a mode that sets `angle` lerps to that value; a mode that omits
-                    -- it leaves the current cone alone (rewritten after disable).
+                    -- Fade out, then disable. A beam vanishes by intensity hitting 0
+                    -- or by the cone narrowing to 0. Only when the destination leaves
+                    -- both above zero do we force intensity to 0, so the light cannot
+                    -- blink off. An omitted angle is not zero: the cone stays put.
                     afterVals.intensity = curI
                     afterVals.angle = getAngle(light)
-                    modeDef.intensity = 0
+                    local intensityFades = tonumber(modeDef.intensity) == 0
+                    local angleFades = tonumber(modeDef.angle) == 0
+                    if not intensityFades and not angleFades then
+                        modeDef.intensity = 0
+                    end
                 else
                     modeDef.enabled = nil
                 end
@@ -2353,7 +2358,9 @@ function L.SetLightMode(lightRef, mode, player, transitionTime)
                 if modeDef.color ~= nil then
                     setColor(light, Color(modeDef.color))
                 end
-                setIntensity(light, 0)
+                if modeDef.intensity ~= nil then
+                    setIntensity(light, modeDef.intensity)
+                end
                 if modeDef.angle ~= nil then
                     setAngle(light, modeDef.angle)
                 end
