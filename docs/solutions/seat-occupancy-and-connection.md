@@ -60,6 +60,10 @@ Scenes, tables, and phases never author `absentFromSession`: every wholesale sea
 
 A Table B variant always has chairs for **all five PCs plus every seated NPC** (5 + seated NPCs, at most B4 = 9), so a connecting PC can always sit down without a table transition (`FSL.tableBVariantIndex` = seated NPC count, raised only when a chair number is already beyond that). Random seating (`FSL.randomizePackedOccupancy`) shuffles all five PCs and the seated NPCs into chairs 1..N; an unoccupied PC's drawn chair stays an empty gap at a random position, and the next connect fills it (lowest free chair).
 
+Parking (`FSL.setOccupantPileVisible(color, false)`) moves the hand zone and in-hand cards first (`U.movePlayerHand` locks and tags them `LockedCard<Color>`), then hides every other `<Color>Object` — decks and loose cards included (Pink tarot deck, compulsion deck) — recording table Y in `seatLayout.absentPileY` (keyed by role, or `guid:<guid>` for role-less objects). On reconnect, objects layout lifted unhide in place; objects layout does not own (decks, dice drawers, tarot set) return to their hide snapshot only when the stash shows they were on the table, then their reconcilers re-pose them at the new chair.
+
+Anything that could lift a parked object skips unoccupied seats: `reconcileObjectPositionsOwnedAfterLayout` (dice drawers via `skipColors`, Pink tarot), `Compulsions.reconcileSelectedCardsToAnchors`, Scatter leave (`FSL.isInParkedPcPile` — Red's Prince scenery), `O.applyPcSeatHiddenObjectPresence(seat, true)`, spotlight seat figures (`isColorInSession`), hunger smoke (`syncHungerSmokeForSeat`), and dice bags (`DBV.reconcileForPlayer`).
+
 Layout passes skip re-hiding an unoccupied PC whose pile is already parked (`FSL.isUnoccupiedPcPileStashed`), and the cold-load character-sheet pass (`RSL.ensureMinVisibleCsheetPagesForAllSeats`) skips unoccupied PCs so their sheet stays parked. On load every PC is still seated when that pass runs, so all get pages 1 and 2; the end-of-startup checkpoint then parks a disconnected PC's pile with those pages recorded, ready to come back on connect.
 
 ## Scatter
