@@ -158,6 +158,15 @@ function HUDBF.getTransitionLocationCardImages()
   return nil, nil
 end
 
+--- Custom cover art for the active transition (Memoriam splash). Nil for a stock variant.
+--- @return string|nil
+function HUDBF.getTransitionCustomImage()
+  if type(transitionCustomImage) == "string" and transitionCustomImage ~= "" then
+    return transitionCustomImage
+  end
+  return nil
+end
+
 --- @param fn fun(playerID: string)
 local function forEachSeatedPlayer(fn)
   if type(fn) ~= "function" then

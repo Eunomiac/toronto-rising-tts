@@ -18,49 +18,27 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-02 — TOR-646 (prologue overlay after End Scene) added._
-
-### Scenes
-
-#### TOR-643 — A second scene Apply must keep the cover down
-
-**How to verify:** Save & Play. During Play, apply a scene and wait until the blindfold has started to rise (or is about to). Immediately apply a different scene.
-
-The cover should come back down and stay down while the second scene is set up. You should not see the table rearrange in the open between the two. When the second cover lifts, you should be in the second scene.
-
-**Context:** The first cover's timer kept running and lifted the blindfold while the second scene was still being applied. A new Apply now cancels that timer and the rest of the first sequence.
+_Last populated: 2026-10-02 — TOR-644 spacing follow-up and TOR-647 (Memoriam cover) added. Confirmed rows removed._
 
 ### Overlay
 
-#### TOR-646 — Prologue only on the first Downtime
-
-**How to verify:** Save & Play. Advance from Intermission into Play with no scene on the table. The center overlay should show PROLOGUE, with the session name in gold.
-
-Apply a scene. The phase should read Play / Main, and the overlay should show that scene's place and time.
-
-Click End Scene. When the cover lifts you should be in Downtime. The overlay should show the date and the word DOWNTIME. It should not show PROLOGUE or the gold session name.
-
-**Context:** Starting a scene was supposed to turn off the opening-Downtime flag, but that happened inside a follow-up sequence that never ran while the cover was working. The flag stayed on, so the next Downtime still used the prologue wording. Applying a scene now switches to Main immediately and turns the flag off. Ending a scene turns it off as well.
-
-#### TOR-644 — Downtime overlay looks right after End Scene
+#### TOR-644 — Downtime overlay sits in the right place after End Scene
 
 **How to verify:** Save & Play. During Play, with a scene on the table, click End Scene. When the cover lifts you should be in Downtime.
 
-The center time and location overlay should show the date and the word DOWNTIME in the usual Downtime styling (bright red, the time line tall enough for that word). It should not keep the gold title, the TORONTO RISING banner spacing, or a squashed/plain time line from the epilogue.
+The center overlay should show the date and the word DOWNTIME in the usual Downtime styling (bright red, the time line tall enough for that word). The date and DOWNTIME should sit where they do on a normal Downtime, not shifted up because the location line collapsed. It should not keep the gold title or the TORONTO RISING banner.
 
-**Context:** Writing the overlay text with setAttributes was clearing color, font, and height. Ordinary lines now use setValue, and the class is applied again after any attribute write.
+**Context:** The words were already right. The district and site line was empty, so that row took no height and the lines below it sat too high. Those texts now hold a blank space and stay shown, so the row keeps its height.
 
-### Character sheets
+### Scenes
 
-#### TOR-645 — Experience log returns to the top when page 6 is turned away
+#### TOR-647 — Memoriam splash stays up for the whole cover
 
-**How to verify:** Save & Play so the new scripts load. Sit a character whose experience log has more than one page (use the chevrons on page 6 until you are looking at an older session, not the newest one at the top).
+**How to verify:** Save & Play. During Play, enter a Memoriam (not Just Smoke, so a splash image is used). Watch the cover from the moment it starts to drop until it lifts.
 
-1. Turn the sheet forward from page 6, or back from page 5, so pages 5 and 6 leave the table.
-2. Turn back to pages 5 and 6.
-3. Page 6 should show the newest session at the top again, with the older-session chevron available if there is more than one page. It should not still be sitting on the older page you had open.
+You should see only the Memoriam splash. A generic scene blindfold should not slide in behind it, and it should not appear when the splash lifts.
 
-**Context:** The log remembered `xpLogPage` after the page was parked. Hiding page 6 now sets that back to page 1 and repaints the listing. The check uses the page being moved, so both the forward button on page 6 and the back button on page 5 count.
+**Context:** While the cover was down, a full refresh repainted it with a normal scene blindfold and dropped the splash. That refresh now keeps the splash until the cover lifts.
 
 ### High — session / join / first-load
 

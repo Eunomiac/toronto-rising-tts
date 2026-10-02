@@ -698,12 +698,16 @@ local function pushSpotlightLocationRow()
     })
 end
 
---- Empty district/site row (Downtime / Memoriam). Diamond separator stays off without a live scene.
+--- Empty district/site row (Downtime). A blank space, not "", so the line still has height (TOR-644).
+--- Diamond separator stays off without a live scene.
 local function pushEmptyLocationRow()
     reconcileSessionNumberFromState()
-    pushOverlayText("gameStateOverlay_district", "")
-    pushOverlayText("gameStateOverlay_parentSite", "")
-    pushOverlayText("gameStateOverlay_site", "")
+    pushOverlayText("gameStateOverlay_district", " ")
+    pushOverlayText("gameStateOverlay_parentSite", " ")
+    pushOverlayText("gameStateOverlay_site", " ")
+    pushOverlayActive("gameStateOverlay_district", true)
+    pushOverlayActive("gameStateOverlay_parentSite", true)
+    pushOverlayActive("gameStateOverlay_site", true)
     pushDistrictSeparator({
         text = DISTRICT_SEPARATOR_DIAMOND,
         classNames = CLASS_SEP_MAIN,

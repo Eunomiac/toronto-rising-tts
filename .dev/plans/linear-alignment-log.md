@@ -820,5 +820,8 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-10-02 | SHIP | TOR-643 | Second scene Apply cancels the in-flight cover chain so it cannot lift early. Pending Save & Play. |
 | 2026-10-02 | SHIP | TOR-644 | Overlay text/active writes re-apply setClass; ordinary lines use setValue. Pending Save & Play. |
 | 2026-10-02 | SHIP | TOR-646 | Scene Apply sets Main immediately and clears the session-start prologue flag; End Scene clears it too. relatedTo TOR-644 (TOR-598 / TOR-527 trashed, link skipped). Pending Save & Play. |
+| 2026-10-02 | `/tr-inbox` | PAVE | ✅ Fully Complete: TOR-643 (second scene Apply), TOR-645 (experience log), TOR-646 (prologue only on first Downtime). |
+| 2026-10-02 | SHIP | TOR-644 | Downtime location line uses a blank space so the row keeps its height. Author ⚠️ follow-up. Pending Save & Play. |
+| 2026-10-02 | SHIP | TOR-647 | Overlay sync keeps the Memoriam splash image while that cover is active. relatedTo TOR-642, TOR-643. Pending Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

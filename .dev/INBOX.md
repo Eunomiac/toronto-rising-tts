@@ -50,6 +50,8 @@ Verification:
 
 ## Processed
 
+2026-10-02 `/tr-inbox` — Immediate: Memoriam splash replaced by a generic blindfold → **TOR-647** (shipped). PAVE ✅ cleared **TOR-643** (second scene Apply), **TOR-645** (experience log), **TOR-646** (prologue only on first Downtime). PAVE ⚠️ **TOR-644** (Downtime overlay spacing) shipped on the same issue.
+
 2026-10-02 — Immediate: prologue overlay still showing after End Scene → **TOR-646** (shipped).
 
 2026-10-02 `/tr-inbox` — Immediate: rapid second scene Apply lifts the blindfold early → **TOR-643** (Focus #1). Downtime overlay formatting after End Scene → **TOR-644** (Focus #2). Page 6 experience log stays scrolled when the page is turned away → **TOR-645** (shipped). PAVE ✅ cleared **TOR-642** (Memoriam Just Smoke).
