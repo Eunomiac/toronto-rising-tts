@@ -2583,16 +2583,92 @@ local function poseObjectWithHand(obj, pos, rot)
 	obj.setRotation({ x = rot.x, y = rot.y, z = rot.z })
 end
 
+--- Tag on cards `U.movePlayerHand` stashed in a parked player's storage container. Only cards
+--- carrying it are dealt back — the player's own stored cards stay in the container.
+local STASHED_HAND_CARD_TAG = "StashedHandCard"
+
+--- @param y number
+--- @return boolean
+local function isParkedHandY(y)
+	return y <= C.HIDDEN_OBJECT_WORLD_Y + 5
+end
+
+--- @param color string
+--- @param required boolean error when the seat has no storage container
+--- @return Object|nil
+local function resolvePlayerStorageContainer(color, required)
+	local guid = G.GetPlayerStorageContainerGUID(color)
+	local container = guid ~= nil and getObjectFromGUID(guid) or nil
+	if container == nil and required then
+		error("U.movePlayerHand: no storage container for seat '" .. tostring(color) .. "' (G.GUIDS.PLAYER_STORAGE_CONTAINER_*)")
+	end
+	return container
+end
+
+--- Tag each in-hand card and put it into the player's storage container.
+--- @param color string
+--- @param cards Object[]
+local function stashHandCardsInStorage(color, cards)
+	if #cards == 0 then
+		return
+	end
+	local container = resolvePlayerStorageContainer(color, true)
+	for i = 1, #cards do
+		local card = cards[i]
+		card.addTag(STASHED_HAND_CARD_TAG)
+		container.putObject(card)
+	end
+end
+
+--- Deal every `STASHED_HAND_CARD_TAG` card in the player's storage container into the hand zone.
+--- @param color string
+--- @param zonePos Vector
+--- @param zoneRot Vector
+--- @return integer dealt card count
+local function dealStashedHandCards(color, zonePos, zoneRot)
+	local container = resolvePlayerStorageContainer(color, false)
+	if container == nil then
+		return 0
+	end
+	local contents = container.getObjects() or {}
+	local guids = {}
+	for i = #contents, 1, -1 do
+		local entry = contents[i]
+		local tags = entry.tags or {}
+		for t = 1, #tags do
+			if tags[t] == STASHED_HAND_CARD_TAG then
+				guids[#guids + 1] = entry.guid
+				break
+			end
+		end
+	end
+	for i = 1, #guids do
+		container.takeObject({
+			guid = guids[i],
+			position = { x = zonePos.x, y = zonePos.y, z = zonePos.z },
+			rotation = { x = 0, y = zoneRot.y + 180, z = 0 },
+			smooth = false,
+			callback_function = function(card)
+				card.removeTag(STASHED_HAND_CARD_TAG)
+			end,
+		})
+	end
+	return #guids
+end
+
 --- Move a player's hand zone and every card in that hand as one rigid body (TOR-590).
---- Sole production writer for hand-zone pose + in-hand cards — parking an unoccupied seat's hand
---- is just another destination. Callers must not `setPosition` / `placeObjectExact` the zone
---- first — that zeroes the delta and leaves cards behind.
+--- Sole production writer for hand-zone pose + in-hand cards. Callers must not `setPosition` /
+--- `placeObjectExact` the zone first — that zeroes the delta and leaves cards behind.
 ---
 --- Behavior (Hand Lab `rigid_instant`): instant `setPosition`/`setRotation` on the zone and
 --- every card (same rigid yaw + translation; card yaw snapped to zone Y + 180). Always instant:
---- smooth-moving a hand zone or its cards breaks the hand (Hand Lab). No waits — the whole
---- move completes inside this call, before the next physics step. Never lock the cards: a locked
---- card leaves the hand.
+--- smooth-moving a hand zone or its cards breaks the hand (Hand Lab). Never lock the cards: a
+--- locked card leaves the hand.
+---
+--- Parking (TOR-631): a target at `C.HIDDEN_OBJECT_WORLD_Y` moves the zone alone — the in-hand
+--- cards are tagged `STASHED_HAND_CARD_TAG` and put into the player's storage container
+--- (`G.GetPlayerStorageContainerGUID`). Moving a parked zone back to the table deals those tagged
+--- cards (only those) back into the hand.
 --- @param playerRef string|userdata seat color or Player
 --- @param position Vector|table world position of the hand zone
 --- @param rotation Vector|table world rotation of the hand zone
@@ -2624,6 +2700,21 @@ function U.movePlayerHand(playerRef, position, rotation, traceLabel)
 		color, tostring(traceLabel or "?"), hzBefore.position.y, targetPos.y,
 		sourceCounts.zone, sourceCounts.hand
 	))
+
+	if isParkedHandY(targetPos.y) then
+		stashHandCardsInStorage(color, cards)
+		hzBefore.cards = cards
+		poseObjectWithHand(hz, targetPos, targetRot)
+		print(string.format("[HandTrace] %s: parked hand zone; %d card(s) stashed in storage container", color, #cards))
+		return hzBefore
+	end
+
+	if isParkedHandY(hzBefore.position.y) then
+		poseObjectWithHand(hz, targetPos, targetRot)
+		local dealt = dealStashedHandCards(color, targetPos, targetRot)
+		print(string.format("[HandTrace] %s: unparked hand zone; dealing %d stashed card(s) back", color, dealt))
+		return hzBefore
+	end
 
 	local captured = {}
 	for i = 1, #cards do

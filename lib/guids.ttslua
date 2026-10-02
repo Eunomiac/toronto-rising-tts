@@ -279,6 +279,13 @@ G.GUIDS = {
     CSHEET_BASE_PURPLE = "bbb40e",
     CSHEET_BASE_RED = "bcc1e6",
 
+    -- Player Storage Containers
+    PLAYER_STORAGE_CONTAINER_BROWN = "41d532",
+    PLAYER_STORAGE_CONTAINER_ORANGE = "d53a52",
+    PLAYER_STORAGE_CONTAINER_RED = "ff0153",
+    PLAYER_STORAGE_CONTAINER_PINK = "e57e55",
+    PLAYER_STORAGE_CONTAINER_PURPLE = "4afa4a",
+
     -- Signal fires (for players to signal need for Storyteller attention)
     SIGNAL_FIRE_BROWN = "b0ffa8",
     SIGNAL_FIRE_ORANGE = "7aa4ed",
@@ -480,6 +487,16 @@ function G.GetHandZoneGUID(color)
     -- If GUID still contains placeholder markers, it hasn't been replaced yet
     -- Return it as-is (caller should handle placeholder case if needed)
     return guid
+end
+
+--- Gets the GUID string for a player's personal storage container (bag) by color.
+-- @param color string PC seat color
+-- @return string|nil GUID string, or nil when the seat has no storage container
+function G.GetPlayerStorageContainerGUID(color)
+    if type(color) ~= "string" or color == "" then
+        return nil
+    end
+    return G.GUIDS["PLAYER_STORAGE_CONTAINER_" .. string.upper(color)]
 end
 
 --- Gets the GUID string for a signal fire by color

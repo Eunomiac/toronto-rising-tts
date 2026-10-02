@@ -8,9 +8,9 @@
     Pose authority: if an object has a C.ObjectPositions entry (tarot deck/drawer/button,
     CSHEET_DICE_DRAWER_*, …), layout must not place it from SeatRoleOffsets. Layout moves
     anchors, then re-applies ObjectPositions on/off (TarotToggle / DiceDrawer).
-    Occupancy hide (unoccupied PC / unused NPC pile) stashes Y=-200 — the player hand zone and
-    the cards in it park high above the table at C.HIDDEN_HAND_ZONE_WORLD_Y (+200) — and records
-    in-session Y on seatLayout.absentPileY
+    Occupancy hide (unoccupied PC / unused NPC pile) stashes Y=-200 — including the player hand
+    zone, whose cards go into the player's storage container — and records in-session Y on
+    seatLayout.absentPileY
     so restore can lift table-height roles without flattening feature-hide Y
     (CSHEET pages, SIGNAL_FIRE, HUNGER_SMOKE) — TOR-512 / TOR-513.
     Cover transitions onto `isRandomSeating` tables (Table B) shuffle packed occupancy (TOR-537).
@@ -966,19 +966,19 @@ local function allLayerColors()
     return { "White", "Brown", "Red", "Orange", "Yellow", "Green", "Teal", "Blue", "Purple", "Pink", "Grey", "Black" }
 end
 
---- Park the player's hand zone and every card in that hand at `C.HIDDEN_HAND_ZONE_WORLD_Y`
---- (TOR-513 / TOR-590 / TOR-631). Hand zones are a hide/restore exception: `O.hideObject` would
---- tag the zone, and a tagged zone only holds objects sharing that tag. Parking is just another
---- `U.movePlayerHand` destination; the HAND_ZONE layout move brings zone and cards back.
+--- Park the player's hand zone at `C.HIDDEN_OBJECT_WORLD_Y` (TOR-513 / TOR-590 / TOR-631).
+--- Hand zones are a hide/restore exception: `O.hideObject` would tag the zone, and a tagged zone
+--- only holds objects sharing that tag. `U.movePlayerHand` stashes the in-hand cards in the
+--- player's storage container; the HAND_ZONE layout move back to the table deals them back.
 --- @param occupantKey string
 local function stashHandZoneAndCards(occupantKey)
     local hz = U.getHandZone(occupantKey)
     if hz == nil then
         return
     end
-    local parkY = C.HIDDEN_HAND_ZONE_WORLD_Y
+    local parkY = C.HIDDEN_OBJECT_WORLD_Y
     local p = hz.getPosition and hz.getPosition() or nil
-    if p == nil or p.y >= parkY - 1 then
+    if p == nil or liveYIsHidden(p.y) then
         print(string.format("[HandTrace] %s pile park: hand zone already parked (y %s) — hand not moved",
             occupantKey, p ~= nil and string.format("%.1f", p.y) or "?"))
         return
@@ -1004,7 +1004,8 @@ local function occupancyStashKey(obj, roleKey)
 end
 
 --- Park (`visible == false`) or bring back every `<Color>Object` in an occupant's pile.
---- Park: the hand zone and in-hand cards (untagged) go first via `U.movePlayerHand`; then every
+--- Park: the hand zone goes first via `U.movePlayerHand` (which stashes the in-hand cards in the
+--- player's storage container); then every
 --- other tagged object — decks and loose cards included — is hidden, recording its table Y in the
 --- occupancy stash. Bring back runs after layout: objects
 --- layout lifted unhide in place; objects layout does not own (decks, drawers, tarot) return to

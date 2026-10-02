@@ -148,7 +148,7 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | `U.getZoneBounds(zone)` | Get bounding box of zone | Zone size check |
 | `U.isInside(zone, pos, ignoreY)` | Check if position is inside zone | Containment test |
 | `U.getHandZone(color)` | Get player's hand zone | Access hand zone |
-| `U.movePlayerHand(playerRef, position, rotation, traceLabel?)` | Sole writer: always-instant rigid move (no smooth option, no waits) of Hand Zone + every card in that hand. Parking an unoccupied seat's hand (`C.HIDDEN_HAND_ZONE_WORLD_Y`, +200 above the table) is just another destination; cards are never locked. Do not `setPosition` the zone first. | Table/Scatter layout, unoccupied-seat park |
+| `U.movePlayerHand(playerRef, position, rotation, traceLabel?)` | Sole writer: always-instant rigid move (no smooth option, no waits) of Hand Zone + every card in that hand. Parking (target Y −200): the zone parks at Y −200 alone; the in-hand cards are tagged `StashedHandCard` and put into the player's storage container (`G.GetPlayerStorageContainerGUID`); moving the zone back to the table deals only the tagged cards back into the hand. Cards are never locked. Do not `setPosition` the zone first. | Table/Scatter layout, unoccupied-seat park |
 
 ### 1.7 String & Data Utilities
 

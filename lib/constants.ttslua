@@ -94,11 +94,6 @@ C.HideFromPcSeatsAndSpectators = {
 --- World Y for objects parked off-table via `O.hideObject` / `O.restoreObject`.
 C.HIDDEN_OBJECT_WORLD_Y = -200
 
---- World Y for an unoccupied PC's parked hand zone (moved with its cards by `U.movePlayerHand`).
---- High above the table (nothing else lives up there; ThirdPerson cameras cannot look up) so the
---- unlocked in-hand cards collide with nothing.
-C.HIDDEN_HAND_ZONE_WORLD_Y = 200
-
 --- Resolve playerRef to a storage / Steam ID string (Storyteller normalized to C.StorytellerID).
 -- Accepts a TTS Player, steam id key, nickname key in C.PlayerIDs, seat color, playerName, charKey, or "Host"/"Storyteller".
 -- @param playerRef Player|string

@@ -55,7 +55,7 @@ Caller opts → catalogs (`C.LockedObjects`) → snapshot fallback; active visib
 - Scatter `THE_FLOOR` / `TABLE_PLINTH` — visibility-only via `C.HideFromPcSeatsAndSpectators` while Scatter is active (stay at playfield Y)
 - `BOTTOM_FOG` / `TOP_FOG` — AssetBundle Looping Effect 2 on / Effect 1 off (`Scenes.applyFogEmitterLooping`); never `setState` or `O.hideObject` for BOTTOM_FOG (authored at y ≈ −350)
 - Disconnected PC control-board token — locked a few units beneath the CONTROL_BOARD via `Tokens.stashDisconnectedPcControlToken` (not the −200 park)
-- Player hand zones (Absent stash) — `U.movePlayerHand` only — parked high above the table at `C.HIDDEN_HAND_ZONE_WORLD_Y` (+200, nothing to collide with), cards never locked (a locked card leaves the hand); never `O.hideObject` (the tag makes the zone drop its cards)
+- Player hand zones (Absent stash) — `U.movePlayerHand` only — zone parked at −200 alone; in-hand cards go into the player's storage container tagged `StashedHandCard` and only those are dealt back on reconnect; cards never locked (a locked card leaves the hand); never `O.hideObject` (the tag makes the zone drop its cards)
 
 New exceptions must be added to `docs/solutions/lua-hide-restore-policy.md`.
 
