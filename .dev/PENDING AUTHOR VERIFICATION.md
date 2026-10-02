@@ -18,35 +18,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-01 — inbox: indoor weather (TOR-635), Clear off-board tokens (TOR-636), XP modal X and Apply-to-All undo (TOR-92)._
-
-### Sync
-
-#### TOR-634 — Skip unchanged sync work, and a console trace for heavy calls
-
-**How to verify:** Save & Play so the new scripts load. On the Debug panel, **Trace Sync** starts grey. Click it so it turns yellow. Lines that start with `[SyncTrace]` should appear when the game syncs. `outcome=skipped` means that call noticed nothing had changed and stopped. `outcome=ran` means it did the work. Click it again to turn it off (grey). The switch is remembered across Save & Play until you turn it off. The host console does the same thing: `DEBUG.setSyncTrace(true)` or `DEBUG.setSyncTrace(false)`, and the button color follows.
-
-1. Load a save that is already in Play, with one chronicle player disconnected (or, on the Debug panel, turn on green **Assume Connected**, then on the PCs panel click that player's **Connected** button so it reads **Disconnected**). After load, that player should have no chair: their pile stays parked and their character-sheet pages stay down. The other players' seats should match the save (nobody gets reshuffled). In the log, the startup sync should be one `[SyncTrace] Sync.full` line with `force=false` and `reason=onLoad_startup_gate`. `Snaps.installPolarSnaps` should show `outcome=skipped`, or a single `outcome=ran`, not four installs in a row.
-2. With everyone connected, Apply a library scene that uses the same table and the same chairs. The layout trace (`RSL.resolveSeatObjectsFromTable`) should say `outcome=skipped`, and snap points should not be written twice. Then set one player to **Disconnected** (Assume Connected) and Apply a scene: under the cover they lose their chair, the layout trace should say `outcome=ran` for that chair change, and snaps should still not be rebuilt twice.
-3. Advance from Intermission to Play. Lights should still come up under the cover, including a dark seat for anyone the cover just unoccupied. If Intermission already applied that lighting, the scene reconcile trace should not say `force=true`.
-4. Enter Spotlight, then leave it. The carousel stand-ins should park once. A later scene Apply should trace `Spotlight.reconcileFromState` with `reparked=false` and `outcome=skipped`.
-
-**Context:** Full sync was rebuilding the stage control board's snap grid, redoing seat layout, and re-hiding Spotlight stand-ins even when nothing in the save had changed. Those calls now stop when their fingerprint matches. A connect or a connection checkpoint still forces a table layout, because that really did change who has a chair.
-
-### Character sheets / XP
-
-#### TOR-92 — Page 6 Experience Log + ST XP modal
-
-The earlier page-6, single-player Apply, spend, and Apply-to-All checks passed on 2026-10-01. Two corrections from that pass are ready to re-check.
-
-**How to verify:** Save & Play so the XP modal reloads.
-
-1. Open the Storyteller **PCs** panel and click **XP** on one present player. An **X** should sit at the top right of the modal. Click it. The modal should close. Entries you already applied should stay on the sheet. **Cancel** at the bottom still does the same close.
-2. Open **XP** again. Enter a gain (for example `1`) and a short description, then click **Apply to All**. Present players should gain that XP. Click **Undo** once. That same gain should disappear from every player who received it, not only the player whose modal you opened. A second **Undo** should remove only the latest entry on the player the modal is for, if they still have an older one.
-
-**Context:** Apply does not close the modal, so the X is a close that does not sound like the work was thrown away. Undo remembers the last Apply to All until you Apply a single entry, close the modal, or that Undo runs.
-
-
+_Last populated: 2026-10-02 — confirmed rows removed (TOR-634, TOR-92, TOR-636, TOR-635, TOR-632). Bugged rows left in place._
 
 ### Scatter / table layout
 
@@ -60,25 +32,18 @@ The group strip and click-to-move checks passed on 2026-10-01. Do not re-test un
 
 ### Memoriam
 
-#### TOR-101 — Memoriam runtime apply (enter / exit)
+#### ❌ TOR-101 — Memoriam runtime apply (enter / exit)
 
 **How to verify:** Save & Play so scripts and Global XML reload. Confirm Custom Assets include names like `memoriamBlindfold_rashid7` (Cloud sync job `memoriamBlindfolds`).
 
-1. **Real period Advance:** During Play, open Phases → Memoriam, pick a PC, pick a scene panel (not Just Smoke), set assignments if you like, click Advance. The global cover should show that period’s Memoriam blindfold art. Under the cover you should land on Table B0, the subject at seat 1, overlay showing the Memoriam location string (no site/weather row), a night clock on the Memoriam date, and the chosen panel skybox. Hunger should be unchanged; Health and Willpower should be full for PCs present as themselves.
-2. **Just Smoke:** Same flow but click Just Smoke then Advance. Host console should print `[Memoriam] …` and the world/subphase should **not** change.
-3. **Exit restore:** Start Memoriam from an applied library scene, then click Main (or Downtime). You should return to that library scene (flushed evolving data). Start Memoriam with no live scene, then exit: Downtime + no-scene baseline.
-4. **Scene Apply while Memoriam:** Apply a library scene with NOW — time should use the clock from just before Memoriam began, not wall present-day. End Scene while Memoriam should clear Memoriam and apply the usual no-scene End path.
-5. **Re-select:** While already in Memoriam, open Memoriam again, pick a different period, Advance — new blindfold/world apply without dropping the original return-scene memory until you finally exit.
+1. ✅ **Real period Advance:** During Play, open Phases → Memoriam, pick a PC, pick a scene panel (not Just Smoke), set assignments if you like, click Advance. The global cover should show that period’s Memoriam blindfold art. Under the cover you should land on Table B0, the subject at seat 1, overlay showing the Memoriam location string (no site/weather row), a night clock on the Memoriam date, and the chosen panel skybox. Hunger should be unchanged; Health and Willpower should be full for PCs present as themselves.
+2. ❌ **Just Smoke:** Same flow but click Just Smoke then Advance. Host console should print `[Memoriam] …` and the world/subphase should **not** change.
+**Author Comment:** There is no "Just Smoke" option to select.  Additionally, any attempt to set the time slider in a "gap" that doesn't have a defined time period throws an error when I click "Advance" -- this is the situation where "Just Smoke" should be assigned automatically, and a standard global blindfold transition (i.e. without a memoriam splash image) should be shown as we transition to the new scene.
+3. ✅ **Exit restore:** Start Memoriam from an applied library scene, then click Main (or Downtime). You should return to that library scene (flushed evolving data). Start Memoriam with no live scene, then exit: Downtime + no-scene baseline.
+4. ✅ **Scene Apply while Memoriam:** Apply a library scene with NOW — time should use the clock from just before Memoriam began, not wall present-day. End Scene while Memoriam should clear Memoriam and apply the usual no-scene End path.
+5. ✅ **Re-select:** While already in Memoriam, open Memoriam again, pick a different period, Advance — new blindfold/world apply without dropping the original return-scene memory until you finally exit.
 
 **Context:** Catalog `blindfoldURL` removed. PC-as-NPC sheet swap still TOR-95; LUT/sepia still TOR-321.
-
-### NPC / stage
-
-#### TOR-636 — Right-click Clear returns NPC tokens dropped off the control board
-
-**How to verify:** Save & Play. Have an NPC who is on the stage (they still have a stage placement). Pick up that control token and drop it on the wood table, not on the control board and not on the palette. Right-click **Clear**. The token should go back to its palette slot. Tokens that are still on the control board should stay where they are. A normal left-click on **Clear** should still ask you to click again before it clears the scene.
-
-**Context:** Right-click used to skip any token that still had a stage placement, so only tokens already on the palette moved.
 
 ### High — session / join / first-load
 
@@ -90,7 +55,7 @@ The group strip and click-to-move checks passed on 2026-10-01. Do not re-test un
 
 **Context:** Earlier run: Assets, Emitters, and Figurines restore steps succeeded; step 2 timed out and drove **TOR-444**. Deferred from Focus until you can gather testers.
 
-#### TOR-512 — Absent off restores the full seat pile, including lights
+#### ❌ TOR-512 — Absent off restores the full seat pile, including lights
 
 **How to verify:** Save & Play so the new scripts load. On the PCs panel, turn **Absent** on for one player who is sitting at the table. Their whole pile should drop under the table and disappear, the same way an unused NPC seat does. Turn **Absent** off. That player should come back with the full pile at table height — figurine, character sheet, bags, chair, hand zone, **and seat lights** — not just the figurine. Lights should behave like a normal in-session seat. A sheet page that was already hidden should stay hidden; the page that was showing should still be showing. If a signal fire or hunger smoke was on before Absent, it should still be on after they return.
 
@@ -98,7 +63,9 @@ The group strip and click-to-move checks passed on 2026-10-01. Do not re-test un
 
 **Update (TOR-631):** The PCs panel **Absent** toggle is gone. "Absent on" is now: Debug panel in green **Assume Connected**, click the player's **Connected** button so it reads **Disconnected**, then advance a phase. "Absent off" is clicking the button again.
 
-#### TOR-513 — Absent hand zone, PC token stash, and Apply PC reseat
+**Author Comment:** There are several odd behaviors related to players "Connecting" and "Disconnecting" (via the buttons) -- please review all code paths and confirm that, when a player is "Disconnected", ALL of their seat objects are parked -- this includes seat objects that are unique to individual players, such as the Red player's additional scenery items, the Pink player's Tarot deck, and other player objects. Additionally, when a player disconnects during a scene (and they are dimmed out without fully parking all of their objects, in case they quickly reconnect), the full absent-from-session process should park their objects during the next blindfold transition.  This is not happening elegantly -- their cards-in-hand are not being locked and moved,  causing them to "swoop" in an attempt to find their hand zone.
+
+#### ❌ TOR-513 — Absent hand zone, PC token stash, and Apply PC reseat
 
 **How to verify:** Save & Play so the new scripts load. Put a few cards in Red’s hand. On the PCs panel, turn **Absent** on for Red. Red’s pile should drop under the table, the **hand zone should go with it** (Y about −200), and **those cards should move under the table too** — they should not stay floating at table height. Red’s PC token on the stage control board should disappear (locked under the board, not sitting in a park strip below the chairs). Turn Absent off: pile, hand zone, cards, and the PC token should all come back to Red’s chair.
 
@@ -116,7 +83,9 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **Update (TOR-631):** The PCs panel **Absent** toggle is gone, and a disconnected PC's control-board token now sits locked a few units beneath the board rather than at Y −200. "Absent on" is now: Debug panel in green **Assume Connected**, click the player's **Connected** button so it reads **Disconnected**, then advance a phase. "Absent off" is clicking the button again. Dragging a PC token to a different empty chair and clicking **Apply** still moves that player.
 
-#### TOR-630 — Scene Apply clears Absent and re-seats the player
+**Author Comment:** **PLEASE MERGE TOR-512 and TOR-513**; my comments under TOR 512 apply here.
+
+#### 🚫 TOR-630 — Scene Apply clears Absent and re-seats the player
 
 **How to verify:** Save & Play. On the PCs panel, mark one player **Absent** (their pile, hand and control-board token go under the table). Open the Scenes panel and **Apply** a different library scene in which that player's seat is active. The player should stay Absent: the Absent toggle stays on, no pile or chair appears for them, and their control-board token stays hidden. Then apply a Scatter scene and come back to a standard-table scene; they should still be Absent throughout. Finally, turn Absent off on the PCs panel: they should get a chair at the current table with their cards.
 
@@ -124,9 +93,11 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **Update (TOR-631):** The PCs panel **Absent** toggle is gone. To make a player Absent (now called *unoccupied*) for this check, switch the Debug panel to green **Assume Connected**, click that player's **Connected** button on the PCs panel so it reads **Disconnected**, then advance a phase. To bring them back, click the button again.
 
+**Author Comment:** This issue is irrelevant and superceded by the behavior being tested in TOR-512 and TOR-513.
+
 ### Players & Connection
 
-#### TOR-631 — Connection-driven seat occupancy
+#### 🚫 TOR-631 — Connection-driven seat occupancy
 
 **How to verify:** Save & Play so the scripts and Global UI reload.
 
@@ -142,7 +113,9 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **Context:** Whether a PC holds a chair is now decided only by connection; the Storyteller can no longer mark a PC Absent by hand. Present / Not Present (lit or dark seat) is unchanged and separate. Full model: `docs/solutions/seat-occupancy-and-connection.md`. relatedTo **TOR-630** and **TOR-513**.
 
-#### TOR-633 — Character sheet pages come back when a PC's seat returns
+**Author Comment:** **PLEASE MERGE WITH TOR-512 and TOR-513**; comments there apply here, as well.
+
+#### ❌ TOR-633 — Character sheet pages come back when a PC's seat returns
 
 **How to verify:** Save & Play (every PC starts with sheet pages 1 and 2 showing). On the Debug panel, switch to green **Assume Connected**.
 
@@ -153,25 +126,7 @@ Then, without changing any NPC tokens on the stage, drag Red’s PC token onto a
 
 **Context:** When the pile was buried, the code noted which pages were showing. On the way back it checked "is this page under the table?" first, decided every page had been turned off on purpose, and then threw the note away. It now checks the note first. relatedTo **TOR-631** and **TOR-512**.
 
-### Soundscape / weather
-
-#### TOR-635 — Indoor sites fully silence weather and hide the weather panel
-
-**How to verify:** Save & Play. Go to an indoor location, including one that used to keep a little weather in the background. You should hear no weather, and the weather panel on the chronicle overlay should stay hidden. Then go to an outdoor location with rain or wind. Weather should be audible again, and the weather panel should show.
-
-**Context:** Indoor sites used to play weather at a reduced volume unless that site's ducking number was exactly zero. Indoors now always means silence. Outdoor sites still use their own ducking number.
-
-### Soundscape / session start
-
-#### TOR-632 — Session intro track and splash art follow the session number
-
-**How to verify:** Save & Play so the scripts reload. Start on **Intermission**. Quick Transition on the Phases panel should be off.
-
-1. Set the session number to **1** and click **Advance**. You should hear Session Starter 1 (about 70 seconds). The cover, the session number, and the session title should be session 1’s pictures, and the splash should finish with the song.
-2. Go back to Intermission (Advance through the rest of the loop, or run `DEBUG.resetToIntermission()` from Execute Code). Set the session number to **4** and Advance again. You should hear the shorter Session Starter 4 (about 37 seconds), and the splash should be paced to that shorter song. Session **5** is the long one (about 77 seconds).
-3. Set the session number to **99** (no starter and, unless you have added them, no session 99 pictures) and Advance again. A Storyteller warning should name the missing track and say which of the five starters is playing instead. The splash length should match that chosen song. The cover should be the generic session-end picture (`overlay_sessionEndSplash_1`). The session number and session title should not appear (they stay in the animation, fully transparent). You should not see a white broken image box.
-
-**Context:** The song and its length now come from the sound catalog (`TR_SessionStart` plus the session number). The old constants that duplicated that are gone. A missing track is chosen at random from the session intros that are registered, and that choice stays the same for the rest of the splash. A missing start-splash image uses the generic end-splash picture. A missing session number or title stays invisible (fully transparent) so the rest of the splash still plays.
+**Author Comment:** Mostly working, but cards-in-hand are not properly restored due to the bug reported under TOR-512 where the cards are never locked and parked in the first place.
 
 ## Cleared
 

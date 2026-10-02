@@ -812,5 +812,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-10-01 | PROMOTE | TOR-640 | Seat-role offset dump matches offsets table; drop scale. Focus #5. parent TOR-30. |
 | 2026-10-01 | PROMOTE | TOR-641 | Scatter table change turns off every character sheet page. Focus #2. relatedTo TOR-602, TOR-633. PAVE TOR-602 marked not ready until this ships. |
 | 2026-10-01 | `/tr-inbox` | PAVE | ✅ Fully Complete: TOR-629, TOR-573, TOR-595. Comment-only confirm: End→Intermission music fade (TOR-143), UISet (no issue), Pink Tarot (TOR-411 if still open). 🚫 Canceled: TOR-628, TOR-560 (dashboard replaces them). |
+| 2026-10-02 | PAVE | confirm | Author ✅ cleared TOR-634, TOR-92, TOR-636, TOR-635, TOR-632 → Fully Complete. ❌ left on the checklist: TOR-101, TOR-512, TOR-513, TOR-633. 🚫 TOR-630 and TOR-631 left in place (superseded / merge notes, not confirmed). |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

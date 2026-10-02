@@ -51,7 +51,7 @@ _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred
 | 5 | **TOR-640** (Seat-role offset dump matches the offsets table and drops scale) | The debug dump should paste straight into the offsets table. |
 | 6 | **TOR-526** (Auto Rouse: lock 0.5s after table hit, 1s broadcast) | Leftover play-session dice work, after the new dice bugs. |
 
-**Also unblocked (not Focus top):** **TOR-141** (Dice + Scenes E2E playbooks, living doc). **TOR-81** (centralize light modes). **TOR-495** (spotlight tuner panel, already In Progress). **TOR-89** (PCs map location modal). Soft design waits: **TOR-92** / **TOR-99**. **Blocked:** **TOR-320**/ **TOR-321** wait on **TOR-81**; **TOR-330** waits on workshop **TOR-327**. **TOR-95** (play as NPC) is unblocked now that **TOR-247** shipped. Living docs: **TOR-141**, **TOR-464**. External: **TOR-88**, **TOR-463**, **TOR-454**, **TOR-456**, **TOR-455**, **TOR-303**.
+**Also unblocked (not Focus top):** **TOR-141** (Dice + Scenes E2E playbooks, living doc). **TOR-81** (centralize light modes). **TOR-495** (spotlight tuner panel, already In Progress). **TOR-89** (PCs map location modal). Soft design waits: **TOR-99**. **Blocked:** **TOR-320**/ **TOR-321** wait on **TOR-81**; **TOR-330** waits on workshop **TOR-327**. **TOR-95** (play as NPC) is unblocked now that **TOR-247** shipped. Living docs: **TOR-141**, **TOR-464**. External: **TOR-88**, **TOR-463**, **TOR-454**, **TOR-456**, **TOR-455**, **TOR-303**.
 
 **Also in cycle (below top stack):** **TOR-141** (E2E playbooks living doc). **TOR-423** (npc_gameboard split - author confirmed 2026-08-06). **TOR-439** (deferred from top; needs multiclient testing time).
 
@@ -219,7 +219,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Randomize Table B seating on cover transition:** Shuffle packed PC+NPC chairs into 1..N; pick the Table B size from occupied count; control-board chair tokens follow; Absent tokens stay hidden. Does not reshuffle on control-board Apply. relatedTo **TOR-507**, **TOR-247**. Pending Save & Play. _(TOR-537)_
 - [x] **Seat-role offset dump:** `DEBUG.dumpSeatRoleOffsets(color)` writes pasteable local XZ/rotation + current Y vs that seat’s figurine (Phase 0 of player-positioning). Author confirmed 2026-08-22. _(TOR-496)_
 - [ ] **Seat-role offset dump matches the offsets table:** Dumped rows should paste into `shared` / `player` / `extraByOccupant`. `defaultY` comes from the offsets table unless the object is new. Drop `scale` from the dump and from the offsets table. _(TOR-640)_
-- [x] **Right-click Clear returns off-board NPC tokens:** Tokens dropped anywhere except the control board go back to their palette slots, including characters that still have a stage placement. Tokens on the board stay put. Pending Save & Play. _(TOR-636)_
+- [x] **Right-click Clear returns off-board NPC tokens:** Tokens dropped anywhere except the control board go back to their palette slots, including characters that still have a stage placement. Tokens on the board stay put. Author confirmed 2026-10-02. _(TOR-636)_
 - [x] **Numbered table slots + figurine offsets (Phase 1):** Occupancy on `sessionScene.seatSlots` (`tableSlot` / `absentFromSession`); Table A dumps → `C.SeatRoleOffsets`; Table B from highest occupied slot; PCs-panel absent toggle; no Scatter. relatedTo **TOR-496**, **TOR-247**. Pending Save & Play. _(TOR-507)_
 - [x] **In-game Scatter Mode:** Table-change into no-table layout; CONTROL_BOARD art swap; hide tables/chairs and table miniatures; auto-park tokens on calibrated holes; debug snaps at inferred holes for Snap-mode check (play has none); figurine poses from nested-circle geometry; Storyteller dice tray on the World Ray between PC and NPC arcs (one live ST roll per group; steal oldest tray when all three are busy). relatedTo **TOR-507**, **TOR-570**. Pending Save & Play. _(TOR-572)_
 - [x] **Scatter objectsToHide survives PC pile layout:** `applyWorldLayout` re-parks chairs/Prince signet/curtain after figurine-seat satellites would restore them. relatedTo **TOR-572**. Pending Save & Play. Linear quota blocked a new Bug id — comment on **TOR-572**.
@@ -248,8 +248,8 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## Soundscape
 
-- [x] **Indoor sites fully silence weather:** Every indoor location mutes weather audio and hides the weather panel. Outdoor sites still use their weather-ducking multiplier. relatedTo **TOR-80**. Pending Save & Play. _(TOR-635)_
-- [ ] **Per-session intro from the sound catalog:** Intermission→Play plays `TR_SessionStart<sessionNum>` and scales the splash to that track's duration. A missing track picks a random catalog intro. A missing start-splash image uses `overlay_sessionEndSplash_1`. A missing session number or title stays in the animation fully transparent. Pending Save & Play. _(TOR-632)_
+- [x] **Indoor sites fully silence weather:** Every indoor location mutes weather audio and hides the weather panel. Outdoor sites still use their weather-ducking multiplier. relatedTo **TOR-80**. Author confirmed 2026-10-02. _(TOR-635)_
+- [x] **Per-session intro from the sound catalog:** Intermission→Play plays `TR_SessionStart<sessionNum>` and scales the splash to that track's duration. A missing track picks a random catalog intro. A missing start-splash image uses `overlay_sessionEndSplash_1`. A missing session number or title stays in the animation fully transparent. Author confirmed 2026-10-02. _(TOR-632)_
 - [x] **Play→Spotlight fades location music and restores Main:** `skipMoodIfAlreadyMain` only skips when Main is actually audible (not suppressed / siteSilent / locationMusic mode). Ravenwing nightclub bed crossfades out; Main fades in on cover lift. relatedTo **TOR-98**, **TOR-593**, **TOR-494**. Author confirmed 2026-09-23. Linear quota blocked a new Bug id — comment on **TOR-98**.
 - [x] **Play→Spotlight reactivates scene-inactive PC seats:** Narrative clear calls `applyDefaultPcSeatPresence` so non-Absent PC seats come back active under the Spotlight cover. Absent (`absentFromSession`) stays parked. relatedTo **TOR-98**, **TOR-256**. Pending Save & Play. Linear quota blocked a new Bug id — comment on **TOR-98**.
 - [x] **End→Intermission TR_Loop with blackout FadeOut:** Theme does not start under the opaque blackout; fade-in begins when blackout hides and lasts 5s (matches FadeOut). relatedTo **TOR-506**, **TOR-143**. Pending Save & Play. Linear quota blocked a new Bug id — comment on **TOR-143**.
@@ -294,7 +294,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## Lighting
 
-- [x] **Skip unchanged sync work:** Load, scene restore, and same-table switches no longer force a full rebuild when fingerprints match. Control-board snaps install only when the grid changed or a board reload cleared them. Debug panel **Trace Sync** (grey off, yellow on) prints `[SyncTrace]` lines for the heavy calls. Pending Save & Play. _(TOR-634)_
+- [x] **Skip unchanged sync work:** Load, scene restore, and same-table switches no longer force a full rebuild when fingerprints match. Control-board snaps install only when the grid changed or a board reload cleared them. Debug panel **Trace Sync** (grey off, yellow on) prints `[SyncTrace]` lines for the heavy calls. Author confirmed 2026-10-02. _(TOR-634)_
 
 - [x] **playerLight1 anchor + lookAt modes:** `OP.resolveAnchoredWorldPoint` + `SetLightMode` materialize of `{ anchor, height }` / `lookAt` → world position + `lookAtTarget` / `U.lookAtRotation` (STANDARD seat anchors ↔ ROLLING dice-drawer anchors). Pending Save & Play. _(no new TOR — Linear quota)_
 - [ ] **Spotlight tuner panel:** Selection grid (build-time 400-slot pool, 10 columns) plus Cartesian / spherical debug sliders; lighting reconcile skips the selected GUID while the panel is open. Labels via `U.setAttributes({ text, active })` after class (never `UI.setValue`). Pending Save & Play. _(TOR-495)_
@@ -497,7 +497,7 @@ _Blocked: author must define data binding approach before substantial implementa
 - [x] **sheetDisplay:false Status:** Temp/disabled overlays on page 3; list in Stats + Project Editor Advantages. _(TOR-385)_
 - [x] **Domain ratings in Stats + Project Editor:** Top-level `chasse` / `lien` / `portillon` / `haven` stakeable + listed when Coterie selected. _(TOR-386)_
 - [ ] **Coterie sheet notes:** Player-initiated notes on final page right ? compact by title, date-sorted; detail on click/hover. _(TOR-382 ? Future)_
-- [x] **Page 6:** Scrolling Experience Log (bake past sessions; live placeholders; ST XP modal). Character history is background art only. Pending Save & Play. _(TOR-92)_
+- [x] **Page 6:** Scrolling Experience Log (bake past sessions; live placeholders; ST XP modal). Character history is background art only. Author confirmed 2026-10-02. _(TOR-92)_
 - [ ] **Discipline card grimoire:** Drop zone + page navigation near sheet for stored power/ritual/ceremony cards. _(TOR-205)_
 - [x] **Decals:** Sheet object decals update from Blood Potency (state ? UI reconcile). _(TOR-70)_
 
