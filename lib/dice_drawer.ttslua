@@ -272,13 +272,15 @@ end
 
 --- After seat layout moved drawer anchors: re-apply ObjectPositions on/off from
 --- in-memory open flags. Does not run tray open/close choreography.
---- @param opts table|nil `{ instant?: boolean }` (default instant)
+--- @param opts table|nil `{ instant?: boolean, skipColors?: table<string, boolean> }` (default instant;
+---   `skipColors` = unoccupied seats whose drawer stays parked)
 function DD.reconcileAfterSeatLayout(opts)
   opts = type(opts) == "table" and opts or {}
   local instant = opts.instant ~= false
+  local skipColors = type(opts.skipColors) == "table" and opts.skipColors or {}
   for _, color in ipairs(C.PlayerColors or {}) do
     local wantOn = drawerOpenByColor[color] == true
-    local pose = getPoseEntry(color, wantOn)
+    local pose = skipColors[color] ~= true and getPoseEntry(color, wantOn) or nil
     if pose ~= nil then
       local obj = findDiceDrawerObject(color)
       if obj ~= nil then

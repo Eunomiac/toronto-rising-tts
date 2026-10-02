@@ -420,11 +420,15 @@ function HO.applyBlindfoldVariantForSeatedPlayers(variant, opts)
 end
 
 --- Keep hunger smoke synced to hunger threshold:
---- on for hunger >= 4; off for hunger < 4.
+--- on for hunger >= 4; off for hunger < 4. Unoccupied PC seats keep their smoke parked with the
+--- pile; the occupancy stash brings it back on reconnect.
 --- @param seatColor string
 --- @param hungerLevel number
 local function syncHungerSmokeForSeat(seatColor, hungerLevel)
   if type(seatColor) ~= "string" then
+    return
+  end
+  if require("core.player_connection").isSeatUnoccupied(seatColor) then
     return
   end
   local hg = tonumber(hungerLevel) or 0

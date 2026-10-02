@@ -272,10 +272,15 @@ end
 --- Applies `C.HiddenObjects` catalog entries for one PC seat (Step Four — NPC Reconciler Procedure).
 --- When absent: `O.hideObject` (y = −200, lock, full invisibility — no on-table invisible collision).
 --- When present: `O.restoreObject` when tagged hidden; else active catalog visibility only.
+--- An unoccupied PC seat (`absentFromSession`) is never shown — its pile stays parked until seat
+--- layout brings it back on connect.
 --- @param seatColor string Brown | Orange | …
 --- @param present boolean
 function O.applyPcSeatHiddenObjectPresence(seatColor, present)
     if U.Type(seatColor) ~= "string" or seatColor == "" then
+        return
+    end
+    if present == true and require("core.player_connection").isSeatUnoccupied(seatColor) then
         return
     end
     local hidden = C.HiddenObjects

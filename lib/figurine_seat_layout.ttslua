@@ -624,6 +624,23 @@ function FSL.isUnoccupiedPcPileStashed(color)
     return U.Type(row) == "table" and row.absentFromSession == true and FSL.hasOccupancyStash(color)
 end
 
+--- True when `obj` belongs to an unoccupied PC's parked pile (its `<Color>Object` tag), so a
+--- non-layout restore (Scatter leave, seat presence) must leave it parked. Chairs are excluded:
+--- table / Scatter layout owns chair hide.
+--- @param obj Object|nil
+--- @return boolean
+function FSL.isInParkedPcPile(obj)
+    if not U.isGameObject(obj) or obj.hasTag == nil then
+        return false
+    end
+    for _, color in ipairs(C.PlayerColors or {}) do
+        if obj.hasTag(color .. "Object") and FSL.isUnoccupiedPcPileStashed(color) then
+            return readSatelliteRoleKey(obj) ~= "SEAT_CHAIR"
+        end
+    end
+    return false
+end
+
 --- @param occupantKey string
 local function clearOccupantPileY(occupantKey)
     if type(occupantKey) ~= "string" then
@@ -918,7 +935,7 @@ local function layoutOccupantSatellites(occupantKey, figFrame, figObj, helpers)
             if O.isHiddenObject(obj) then
                 O.restoreObject(obj, { keepWorldPose = true })
             end
-            U.movePlayerHand(occupantKey, Vector({ x = world.x, y = y, z = world.z }), rot)
+            U.movePlayerHand(occupantKey, Vector({ x = world.x, y = y, z = world.z }), rot, "seat layout")
             return
         end
         applyOffsetToObject(obj, figFrame, figObj, offset, roleKey, occupantKey)
@@ -989,33 +1006,68 @@ local function stashHandZoneAndCards(occupantKey, hiddenSeatY)
     end
     local p = hz.getPosition and hz.getPosition() or nil
     if p == nil or liveYIsHidden(p.y) then
+        print(string.format("[HandTrace] %s pile park: hand zone already parked (y %s) — hand not moved",
+            occupantKey, p ~= nil and string.format("%.1f", p.y) or "?"))
         return
     end
     captureOccupantPileY(occupantKey, "HAND_ZONE", p.y)
     local rot = hz.getRotation and Vector(hz.getRotation()) or Vector({ 0, 0, 0 })
-    U.movePlayerHand(occupantKey, Vector({ x = p.x, y = hiddenSeatY, z = p.z }), rot)
+    U.movePlayerHand(occupantKey, Vector({ x = p.x, y = hiddenSeatY, z = p.z }), rot, "pile park")
 end
 
+--- Occupancy-stash key: the satellite role, or the GUID for role-less objects (decks, loose cards).
+--- @param obj Object
+--- @param roleKey string|nil
+--- @return string|nil
+local function occupancyStashKey(obj, roleKey)
+    if type(roleKey) == "string" and roleKey ~= "" then
+        return roleKey
+    end
+    local guid = obj.getGUID and obj.getGUID() or nil
+    if type(guid) == "string" and guid ~= "" then
+        return "guid:" .. guid
+    end
+    return nil
+end
+
+--- Park (`visible == false`) or bring back every `<Color>Object` in an occupant's pile.
+--- Park: the hand zone and in-hand cards go first (`U.movePlayerHand` locks and tags them
+--- `LockedCard<Color>`); then every other tagged object — decks and loose cards included — is
+--- hidden, recording its table Y in the occupancy stash. Bring back runs after layout: objects
+--- layout lifted unhide in place; objects layout does not own (decks, drawers, tarot) return to
+--- their hide-snapshot pose only when the stash shows they were on the table; anything hidden
+--- before the park (page off, tarot off, Scatter) stays hidden.
 --- @param occupantKey string
 --- @param visible boolean
 function FSL.setOccupantPileVisible(occupantKey, visible)
     local tag = occupantKey .. "Object"
-    local objs = getObjectsWithTag(tag) or {}
     local hiddenSeatY = C.HIDDEN_OBJECT_WORLD_Y
+    local isPcSeat = isPlayerSeatKey(occupantKey)
+    if not visible and isPcSeat then
+        stashHandZoneAndCards(occupantKey, hiddenSeatY)
+    end
+    local handCardTag = "LockedCard" .. occupantKey
+    local objs = getObjectsWithTag(tag) or {}
     for i = 1, #objs do
         local obj = objs[i]
         if not U.isGameObject(obj) then
             -- skip
-        elseif isCardLikeObject(obj) or isHandZoneObject(obj) then
-            -- hand zone handled below; cards move with zone only
+        elseif isHandZoneObject(obj) or (isCardLikeObject(obj) and obj.hasTag(handCardTag)) then
+            -- hand zone + in-hand cards move only with U.movePlayerHand
         else
             local isPooledFig = obj.hasTag ~= nil and obj.hasTag("npc_figurine")
             local roleKey = readSatelliteRoleKey(obj)
+            local stashKey = occupancyStashKey(obj, roleKey)
             if visible then
                 if roleKey == "SEAT_CHAIR" then
                     -- Chair hide is owned by table/scatter layout, not occupancy restore.
                 elseif O.isHiddenObject(obj) and not isFeatureHideRoleKey(roleKey) then
-                    O.restoreObject(obj, { keepWorldPose = true })
+                    local p = obj.getPosition and obj.getPosition() or nil
+                    if p ~= nil and not liveYIsHidden(p.y) then
+                        O.restoreObject(obj, { keepWorldPose = true })
+                    elseif wasShowingBeforeOccupancyStash(occupantKey, stashKey) then
+                        O.restoreObject(obj)
+                    end
                 end
             elseif not isPooledFig then
                 if isFeatureHideRoleKey(roleKey) and O.isHiddenObject(obj) then
@@ -1023,29 +1075,28 @@ function FSL.setOccupantPileVisible(occupantKey, visible)
                 else
                     local p = obj.getPosition and obj.getPosition() or nil
                     if p ~= nil and not liveYIsHidden(p.y) then
-                        captureOccupantPileY(occupantKey, roleKey, p.y)
+                        captureOccupantPileY(occupantKey, stashKey, p.y)
                     end
                     O.hideObject(obj)
                 end
             end
         end
     end
-    -- Unstash of the hand zone + cards is the HAND_ZONE layout move (U.movePlayerHand).
-    if not visible and isPlayerSeatKey(occupantKey) then
-        stashHandZoneAndCards(occupantKey, hiddenSeatY)
-    end
 end
 
---- Re-apply ObjectPositions-owned feature poses after anchors moved.
+--- Re-apply ObjectPositions-owned feature poses after anchors moved. Unoccupied PC seats keep
+--- their parked drawers and tarot set (their anchors are parked, but the poses use table height).
 local function reconcileObjectPositionsOwnedAfterLayout()
-    local TarotToggle = require("lib.tarot_toggle")
-    if TarotToggle ~= nil and type(TarotToggle.reconcileAfterSeatLayout) == "function" then
-        TarotToggle.reconcileAfterSeatLayout(G.GUIDS and G.GUIDS.TAROT_BUTTON_PINK)
+    local parkedColors = {}
+    for _, color in ipairs(C.PlayerColors or {}) do
+        if FSL.isUnoccupiedPcPileStashed(color) then
+            parkedColors[color] = true
+        end
     end
-    local DiceDrawer = require("lib.dice_drawer")
-    if DiceDrawer ~= nil and type(DiceDrawer.reconcileAfterSeatLayout) == "function" then
-        DiceDrawer.reconcileAfterSeatLayout({ instant = true })
+    if parkedColors.Pink ~= true then
+        require("lib.tarot_toggle").reconcileAfterSeatLayout(G.GUIDS.TAROT_BUTTON_PINK)
     end
+    require("lib.dice_drawer").reconcileAfterSeatLayout({ instant = true, skipColors = parkedColors })
 end
 
 --- @param bundle table from computeSlotFrames

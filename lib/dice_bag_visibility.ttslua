@@ -239,11 +239,15 @@ local function isInFrenzy(color)
     return S.getStateVal("playerData", pid, "conditions", "hudFrenzy") ~= nil
 end
 
---- Apply hunger / rouse / obliv bag visibility for one player seat.
+--- Apply hunger / rouse / obliv bag visibility for one player seat. Unoccupied PC seats keep
+--- their bags parked with the rest of the pile.
 -- @param color string
 -- @param active table|nil  active roll record
 function DBV.reconcileForPlayer(color, active)
     if type(color) ~= "string" or color == "Black" then
+        return
+    end
+    if require("core.player_connection").isSeatUnoccupied(color) then
         return
     end
 

@@ -552,7 +552,7 @@ end
 local function applySeatFigurineSpotlightVisibility()
     for i = 1, #(C.PlayerColors or {}) do
         local color = C.PlayerColors[i]
-        local fig = G.getObject(G.GUIDS["SEAT_FIGURE_" .. string.upper(color)])
+        local fig = isColorInSession(color) and G.getObject(G.GUIDS["SEAT_FIGURE_" .. string.upper(color)]) or nil
         if U.isGameObject(fig) then
             if O.isHiddenObject(fig) then
                 O.restoreObject(fig, { locked = true, interactable = false })
@@ -572,7 +572,7 @@ local function applyHideListOff()
     for i = 1, #(C.PlayerColors or {}) do
         local color = C.PlayerColors[i]
         local fig = G.getObject(G.GUIDS["SEAT_FIGURE_" .. string.upper(color)])
-        if O.isHiddenObject(fig) then
+        if isColorInSession(color) and O.isHiddenObject(fig) then
             O.restoreObject(fig, { locked = true, interactable = false })
         end
     end

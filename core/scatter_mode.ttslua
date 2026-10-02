@@ -689,13 +689,15 @@ local function applyScatterObjectsToHide()
     end
 end
 
---- Restore scatter hide-list objects via `O.restoreObject`.
+--- Restore scatter hide-list objects via `O.restoreObject`. Objects in an unoccupied PC's
+--- parked pile stay parked (seat layout brings them back when the PC reconnects).
 local function restoreScatterObjectsToHide()
     local O = require("core.objects")
+    local FSL = require("lib.figurine_seat_layout")
     local guids = scatterObjectsToHideGuids()
     for i = 1, #guids do
         local obj = G.getObject(guids[i])
-        if obj ~= nil and O.isHiddenObject(obj) then
+        if obj ~= nil and O.isHiddenObject(obj) and not FSL.isInParkedPcPile(obj) then
             O.restoreObject(obj)
         end
     end
