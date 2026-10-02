@@ -18,20 +18,19 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-02 — confirmed rows removed (TOR-602, TOR-631); TOR-101 row replaced by TOR-642 (Just Smoke re-test)._
+_Last populated: 2026-10-02 — TOR-642 confirmed and removed; TOR-645 (experience log reset) added._
 
-### Memoriam
+### Character sheets
 
-#### TOR-642 — Memoriam Just Smoke (gap and button)
+#### TOR-645 — Experience log returns to the top when page 6 is turned away
 
-**How to verify:** Save & Play so the new scripts and Global XML load. During Play, open Phases → Memoriam and pick a PC.
+**How to verify:** Save & Play so the new scripts load. Sit a character whose experience log has more than one page (use the chevrons on page 6 until you are looking at an older session, not the newest one at the top).
 
-1. **Button is there.** Under the scene grid there should be a yellow **Just Smoke** button. With the slider inside a defined period, click it. It should turn green, the period's scene buttons should all go back to unselected, and the PC assignment rows should appear (the NPC list for picking period NPCs will be empty).
-2. **Gap picks it automatically.** Drag the slider into a black gap between periods. **Just Smoke** should turn green on its own, the date should follow the slider, and the location line should be blank. Drag back into a period: Just Smoke should go back to yellow and the assignment rows should hide (unless you had clicked the Just Smoke button yourself in step 1, in which case it stays green).
-3. **Advance in a gap.** With the slider in a gap, mark another PC present if you like, and click Advance. You should see the **standard** global blindfold (no Memoriam splash art). Under it: Table B0, the subject at seat 1 (plus anyone you marked present), the overlay showing the gap date and no location, a night time on the clock, the **Just Smoke** skybox, no weather, and silence. Health and Willpower should be full for PCs present as themselves.
-4. **Leave again.** Click Main (or Downtime). You should return to the scene you were in before Memoriam, exactly as when leaving a normal period.
+1. Turn the sheet forward from page 6, or back from page 5, so pages 5 and 6 leave the table.
+2. Turn back to pages 5 and 6.
+3. Page 6 should show the newest session at the top again, with the older-session chevron available if there is more than one page. It should not still be sitting on the older page you had open.
 
-**Context:** Author check of **TOR-101** (Memoriam runtime apply): real-period Advance, exit restore, Scene Apply while in Memoriam, and re-selecting a period all passed. Only Just Smoke failed. The button had collapsed to zero width because the modal repainted it with the normal scene-button class, a gap could not Advance at all, and a Just Smoke Advance would have been rejected. Just Smoke now enters Memoriam for real.
+**Context:** The log remembered `xpLogPage` after the page was parked. Hiding page 6 now sets that back to page 1 and repaints the listing. The check uses the page being moved, so both the forward button on page 6 and the back button on page 5 count.
 
 ### High — session / join / first-load
 

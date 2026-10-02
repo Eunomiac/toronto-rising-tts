@@ -50,6 +50,8 @@ Verification:
 
 ## Processed
 
+2026-10-02 `/tr-inbox` — Immediate: rapid second scene Apply lifts the blindfold early → **TOR-643** (Focus #1). Downtime overlay formatting after End Scene → **TOR-644** (Focus #2). Page 6 experience log stays scrolled when the page is turned away → **TOR-645** (shipped). PAVE ✅ cleared **TOR-642** (Memoriam Just Smoke).
+
 2026-10-01 `/tr-inbox` — Immediate: indoor weather fully silent + weather panel hidden → **TOR-635** (shipped). Right-click Clear returns off-board NPC tokens → **TOR-636** (shipped). Hunger overlay stuck at 0 until Refresh UI → **TOR-637** (Focus #1). Willpower reroll physics bump → **TOR-638** (Focus #3). Rouse checks reject standard/hunger dice → **TOR-639** (Focus #4). Seat-role offset dump paste format + drop scale → **TOR-640** (Focus #5). PAVE ❌ **TOR-602** sheets off on Scatter → **TOR-641** (Focus #2). PAVE ⚠️ **TOR-92** X close + Undo Apply to All shipped on the same issue. PAVE ✅ cleared End→Intermission music fade (comment on **TOR-143**), **TOR-629**, **TOR-573**, **TOR-595**, UISet, Pink Tarot. PAVE 🚫 closed **TOR-628** and **TOR-560** (Storyteller Dashboard will replace them).
 
 2026-09-24 — Immediate: **Scatter Mode Fixes** (HERE/THERE, state writes, PC lock, remove→palette) + dice-bag ST roll parks on palette → shipped as **TOR-628** (Awaiting Author Review / PAVE). Focus #1.

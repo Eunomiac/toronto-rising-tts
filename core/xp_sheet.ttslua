@@ -349,4 +349,19 @@ function XpSheet.navigate(color, direction)
   return XpSheet.paintForColor(color)
 end
 
+--- Parked page 6 should reopen on the newest session (page 1).
+--- @param color string
+--- @return boolean
+function XpSheet.resetToFirstPage(color)
+  if type(color) ~= "string" or color == "" then
+    return false
+  end
+  local pid = C.GetPlayerID(color)
+  if type(pid) ~= "string" then
+    return false
+  end
+  S.setStateVal(1, "playerData", pid, "xpLogPage")
+  return XpSheet.paintForColor(color)
+end
+
 return XpSheet

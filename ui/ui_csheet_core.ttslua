@@ -306,17 +306,31 @@ local function applyCsheetPageState(obj, state)
   end
   local targetPos = CP.mergePosition(obj, posData.position)
   local visible = (targetPos.y >= 0)
+  local movedPageNum, movedColor = CI.readPageRoleFromObject(obj)
+  if movedPageNum == nil then
+    movedPageNum = pageNum
+  end
+  if type(movedColor) ~= "string" or movedColor == "" then
+    movedColor = seatColor
+  end
   local duration, delay = CP.resolveTransitionTiming(posData, 0, 0)
   CP.applyResolvedPose(obj, csheetPoseGeometryOnly(posData), 0, 0)
   CU.await(function()
     applyCsheetAfterPlacement(obj, visible)
-    -- Page 6 XP pagination/live paint must run when the tile comes on-table;
-    -- load-time paint often happens while the page is still parked at y=-200.
-    if visible and pageNum == 6 and type(seatColor) == "string" and Global ~= nil and type(Global.call) == "function" then
-      Global.call("GlobalPaintXpLogPage6", { color = seatColor })
+    if movedPageNum ~= 6 or type(movedColor) ~= "string" or Global == nil or type(Global.call) ~= "function" then
+      return
+    end
+    if visible then
+      -- Page 6 XP pagination/live paint must run when the tile comes on-table;
+      -- load-time paint often happens while the page is still parked at y=-200.
+      -- Use the moved tile's GM Notes: back from page 5 runs in page 5's script.
+      Global.call("GlobalPaintXpLogPage6", { color = movedColor })
       Wait.frames(function()
-        Global.call("GlobalPaintXpLogPage6", { color = seatColor })
+        Global.call("GlobalPaintXpLogPage6", { color = movedColor })
       end, 2)
+    else
+      -- Turning the sheet away resets the log to the newest session (TOR-645).
+      Global.call("GlobalResetXpLogPage", { color = movedColor })
     end
   end, delay + duration)
   return true

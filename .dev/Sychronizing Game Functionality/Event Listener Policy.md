@@ -149,6 +149,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_xpLogField` / `HUD_xpLogCancel` | A | — | XP modal draft / close (TOR-92) |
 | `HUD_xpLogApply` / `HUD_xpLogApplyAll` / `HUD_xpLogUndo` | B | Yes | XP log mutate + sheet live paint (TOR-92) |
 | `onXpLogNavigateForward` / `onXpLogNavigateBack` | A | — | CSHEET page 6 pagination (object XmlUI) |
+| `onPageForward` / `onPageBack` (page 6 hide) | B | — | Turning page 6 off the table calls `GlobalResetXpLogPage` so the experience log reopens on the newest session (TOR-645). Show still paints via `GlobalPaintXpLogPage6`, using the moved page's GM Notes. |
 | `HUD_projectsTarget` / `HUD_projectsBack` | A | — | Projects panel navigation |
 | `HUD_projectsAdd` / `HUD_projectsEdit` / `HUD_projectEditorConfirm` / `HUD_projectEditorDelete` / `HUD_projectEditorBegin` / `HUD_projectEditorComplete` / `HUD_projectEditorLaunchR` | B+C | Yes | project mutations / Launch roll |
 | `HUD_projectEditorField` / `HUD_projectDropdown` / `HUD_projectStakeDropdown` / `HUD_projectStakeAdvOpen` / `HUD_projectAdvPick` / `HUD_projectAdvPickCancel` / `HUD_projectEditorCancel` | A/B | Yes (field persist) | live project editor writes; advantage picker uses Buttons (TTS Dropdown Options do not refresh labels); Cancel may delete pre-inProgress |

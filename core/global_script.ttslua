@@ -357,6 +357,18 @@ function GlobalXpLogNavigate(params)
     return XpSheet.navigate(params.color or params.seatColor, params.direction) == true
 end
 
+--- Page-turn hide of CSHEET page 6: log returns to the newest session (TOR-645).
+--- @param params table|nil `{ color: string }` or bare color string
+--- @return boolean
+function GlobalResetXpLogPage(params)
+    local color = params
+    if type(params) == "table" then
+        color = params.color or params.seatColor
+    end
+    local XpSheet = require("core.xp_sheet")
+    return XpSheet.resetToFirstPage(color) == true
+end
+
 --- Set / clear a PC Desire from CSHEET InputField callbacks (TOR-97).
 --- Actor gate: sheet seat owner color or Storyteller steam player.
 --- Object scripts must pass `player_color` (Player userdata does not cross Global.call).
