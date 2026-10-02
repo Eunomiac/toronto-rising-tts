@@ -817,5 +817,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-10-02 | PROMOTE | TOR-644 | Downtime overlay formatting after End Scene. Focus #2. parent TOR-37. |
 | 2026-10-02 | SHIP | TOR-645 | Page 6 hide resets the experience log to page 1 and repaints. relatedTo TOR-92. Pending Save & Play. |
 | 2026-10-02 | `/tr-inbox` | PAVE | ✅ TOR-642 (Memoriam Just Smoke) → Fully Complete. |
+| 2026-10-02 | SHIP | TOR-643 | Second scene Apply cancels the in-flight cover chain so it cannot lift early. Pending Save & Play. |
+| 2026-10-02 | SHIP | TOR-644 | Overlay text/active writes re-apply setClass; ordinary lines use setValue. Pending Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

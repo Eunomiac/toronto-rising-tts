@@ -18,7 +18,27 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-02 — TOR-642 confirmed and removed; TOR-645 (experience log reset) added._
+_Last populated: 2026-10-02 — TOR-643 (second scene Apply) and TOR-644 (Downtime overlay) added._
+
+### Scenes
+
+#### TOR-643 — A second scene Apply must keep the cover down
+
+**How to verify:** Save & Play. During Play, apply a scene and wait until the blindfold has started to rise (or is about to). Immediately apply a different scene.
+
+The cover should come back down and stay down while the second scene is set up. You should not see the table rearrange in the open between the two. When the second cover lifts, you should be in the second scene.
+
+**Context:** The first cover's timer kept running and lifted the blindfold while the second scene was still being applied. A new Apply now cancels that timer and the rest of the first sequence.
+
+### Overlay
+
+#### TOR-644 — Downtime overlay looks right after End Scene
+
+**How to verify:** Save & Play. During Play, with a scene on the table, click End Scene. When the cover lifts you should be in Downtime.
+
+The center time and location overlay should show the date and the word DOWNTIME in the usual Downtime styling (bright red, the time line tall enough for that word). It should not keep the gold title, the TORONTO RISING banner spacing, or a squashed/plain time line from the epilogue.
+
+**Context:** Writing the overlay text with setAttributes was clearing color, font, and height. Ordinary lines now use setValue, and the class is applied again after any attribute write.
 
 ### Character sheets
 

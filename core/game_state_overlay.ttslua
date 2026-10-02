@@ -4,8 +4,9 @@
     (TOR-598). End uses the same bookend layout with **EPILOGUE** (TOR-599).
 
     Style chrome uses absolute `UI.setClass` lists from `ui/shared/game_state_overlay.xml` Defaults
-    (PLAY/MAIN baseline; Downtime / prologue / Spotlight APPLY strings). Copy uses `setAttributes`
-    `text` only — never `UI.setValue` (TOR-604 / TOR-600).
+    (PLAY/MAIN baseline; Downtime / prologue / Spotlight APPLY strings). Ordinary copy uses
+    `UI.setValue`. A run of spaces (prologue banner) uses `setAttributes` `text` only, then
+    `setClass` again — attribute writes reset color, font, and height (TOR-644 / TOR-600).
 
     Single writer: `GameStateOverlay.reconcileFromState()` — driven from `UpdateUIDisplays` / `Sync.ui`
     (see `core/sync.ttslua` incremental delta `gameStateOverlay`) so nothing else fights the overlay.
@@ -88,6 +89,23 @@ local lastSessionSceneOverlayFingerprint = nil
 local OVERLAY_TIME_LOCATION_ID = "gameStateOverlay_timeAndLocation"
 local OVERLAY_WEATHER_ID = "gameStateOverlay_weather"
 
+--- XML Defaults classes for elements that are not restyled per phase.
+--- `UI.setAttribute` / `setAttributes` reset sibling style attributes (color, font, height).
+--- Re-apply the class after every text or active write so that reset cannot stick (TOR-644).
+local OVERLAY_BASE_CLASS = {
+    gameStateOverlay_timeAndLocation = "gameStateOverlay_topCenter",
+    gameStateOverlay_weather = "gameStateOverlay_topRight",
+    gameStateOverlay_timeSpacer = "gameStateOverlay_timeSpacer",
+    gameStateOverlay_district = "small_white_text",
+    gameStateOverlay_parentSite = "small_white_text",
+    gameStateOverlay_parentSiteSeparator = "small_red_text",
+    gameStateOverlay_site = "small_white_text",
+    gameStateOverlay_weatherBase = "small_red_text",
+    gameStateOverlay_weatherWind = "small_red_text",
+    gameStateOverlay_temperatureC = "large_red_text",
+    gameStateOverlay_temperatureF = "small_red_text italic_text",
+}
+
 local WEEKDAY_NAMES = {
     "Sunday",
     "Monday",
@@ -166,35 +184,56 @@ local function isSessionStartDowntimeOverlay()
     return S.getStateVal("sessionStartDowntime") == true
 end
 
---- Overlay copy: always `text` via setAttributes (never setValue — collapses spaces; TOR-600 / TOR-601).
---- @param id string
---- @param text string
-local function pushOverlayText(id, text)
-    if UI == nil or UI.setAttributes == nil then
-        return
-    end
-    local nextVal = tostring(text)
-    if overlayTextCache[id] == nextVal then
-        return
-    end
-    U.setAttributes(id, { text = nextVal })
-    overlayTextCache[id] = nextVal
-end
-
 --- @param id string
 --- @param classNames string absolute space-separated class list
-local function pushOverlayClass(id, classNames)
+--- @param force boolean|nil when true, apply even if the cache already matches (after a text/active write)
+local function pushOverlayClass(id, classNames, force)
     if UI == nil or UI.setClass == nil then
         return
     end
     if type(classNames) ~= "string" or classNames == "" then
         return
     end
-    if overlayClassCache[id] == classNames then
+    if force ~= true and overlayClassCache[id] == classNames then
         return
     end
     UI.setClass(id, classNames)
     overlayClassCache[id] = classNames
+end
+
+--- Put the class back after setAttribute/setAttributes, which wipe color, font, and height.
+--- @param id string
+local function reapplyOverlayClass(id)
+    local classNames = overlayClassCache[id]
+    if type(classNames) ~= "string" or classNames == "" then
+        classNames = OVERLAY_BASE_CLASS[id]
+    end
+    if type(classNames) ~= "string" or classNames == "" then
+        return
+    end
+    pushOverlayClass(id, classNames, true)
+end
+
+--- Overlay copy. Ordinary lines use `UI.setValue`. A run of spaces (prologue banner / title)
+--- must use `setAttributes` `text` or TTS collapses it (TOR-600 / TOR-601). Either write is
+--- followed by `setClass`, because attribute writes reset style (TOR-644).
+--- @param id string
+--- @param text string
+local function pushOverlayText(id, text)
+    if UI == nil or UI.setValue == nil then
+        return
+    end
+    local nextVal = tostring(text)
+    if overlayTextCache[id] == nextVal then
+        return
+    end
+    if string.find(nextVal, "  ", 1, true) ~= nil and UI.setAttributes ~= nil then
+        U.setAttributes(id, { text = nextVal })
+    else
+        UI.setValue(id, nextVal)
+    end
+    overlayTextCache[id] = nextVal
+    reapplyOverlayClass(id)
 end
 
 --- @param id string
@@ -209,6 +248,7 @@ local function pushOverlayActive(id, active)
     end
     U.setAttribute(id, "active", nextVal)
     overlayActiveCache[id] = nextVal
+    reapplyOverlayClass(id)
 end
 
 --- District separator: absolute class list + text/active attributes only.
@@ -232,12 +272,18 @@ local function pushDistrictSeparator(attrs)
     end
     lastDistrictSeparatorFingerprint = fp
     pushOverlayClass("gameStateOverlay_districtSeparator", classNames)
-    U.setAttributes("gameStateOverlay_districtSeparator", {
-        active = active and "true" or "false",
-        text = text,
-    })
-    overlayTextCache["gameStateOverlay_districtSeparator"] = text
-    overlayActiveCache["gameStateOverlay_districtSeparator"] = active and "true" or "false"
+    local sepId = "gameStateOverlay_districtSeparator"
+    if string.find(text, "  ", 1, true) ~= nil and UI.setAttributes ~= nil then
+        U.setAttributes(sepId, { text = text })
+    elseif UI.setValue ~= nil then
+        UI.setValue(sepId, text)
+    end
+    if UI.setAttribute ~= nil then
+        U.setAttribute(sepId, "active", active and "true" or "false")
+    end
+    overlayTextCache[sepId] = text
+    overlayActiveCache[sepId] = active and "true" or "false"
+    reapplyOverlayClass(sepId)
 end
 
 --- Session / datetime / time chrome via absolute `UI.setClass` (TOR-604).

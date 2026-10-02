@@ -56,6 +56,10 @@ local TRANSITION_CONDITION_KEY = "hudBlindfold"
 
 local activeTransitionVariant = nil
 local pendingEndDelayId = nil
+--- Bumped when a new cover transition starts so a previous chain cannot lift the blindfold (TOR-643).
+local transitionEpoch = 0
+--- U.chain cancel table for the in-flight cover sequence. Superseded when another transition starts.
+local activeTransitionCancel = nil
 --- playerIDs that received `hudBlindfold` in the current (or last) beginTransition.
 --- Cleared on end even if those players left their seats mid-settle (hotseat orphan fix).
 local transitionBlindfoldPlayerIds = {}
@@ -345,6 +349,7 @@ end
 
 --- @param delaySec number
 function HUDBF.scheduleEnd(delaySec)
+  local epoch = transitionEpoch
   if pendingEndDelayId ~= nil then
     U.cancel(pendingEndDelayId)
     pendingEndDelayId = nil
@@ -358,6 +363,9 @@ function HUDBF.scheduleEnd(delaySec)
   end
   pendingEndDelayId = U.await(function()
     pendingEndDelayId = nil
+    if epoch ~= transitionEpoch then
+      return
+    end
     HUDBF.endTransition()
   end, d)
 end
@@ -394,6 +402,19 @@ local function applyConnectionCheckpointUnderCover()
   require("core.player_connection").applyConnectionCheckpoint()
 end
 
+--- Mark the in-flight cover chain cancelled and start a new epoch.
+--- The previous chain's remaining steps (including its lift) must not run (TOR-643).
+--- @return table cancelRegistry
+local function supersedeTransitionChain()
+  transitionEpoch = transitionEpoch + 1
+  if activeTransitionCancel ~= nil then
+    activeTransitionCancel.cancelled = true
+    activeTransitionCancel.reason = "superseded"
+  end
+  activeTransitionCancel = { cancelled = false, reason = nil }
+  return activeTransitionCancel
+end
+
 --- Blindfold on → wait for slide/FadeIn → connection checkpoint → work → settle delay → blindfold off (TOR-434).
 --- Work is deferred via `U.chain` so XmlUI animations are not hitch-frozen.
 --- @param workFn fun(): boolean, string|nil returns success and optional error message
@@ -405,14 +426,21 @@ function HUDBF.runTransition(workFn, opts)
   opts = opts or {}
   local settleDelaySec = resolveOptSec(opts.settleDelaySec, TRANSITION_SETTLE_DELAY_SEC)
   local leadInDelaySec = resolveOptSec(opts.leadInDelaySec, BLINDFOLD_DOWN_COMPLETE_SEC)
+  local cancel = supersedeTransitionChain()
 
   HUDBF.beginTransition(opts)
 
   U.chain({
     function()
+      if cancel.cancelled then
+        return
+      end
       return leadInDelaySec
     end,
     function()
+      if cancel.cancelled then
+        return
+      end
       applyConnectionCheckpointUnderCover()
       local ok, errMsg = workFn()
       if ok ~= true then
@@ -424,7 +452,7 @@ function HUDBF.runTransition(workFn, opts)
       end
       HUDBF.scheduleEnd(settleDelaySec)
     end,
-  })
+  }, { cancelRegistry = cancel })
 end
 
 --- Staged scene transition (TOR-147 / TOR-434 / TOR-476): blindfold down → district-card lead-in →
@@ -451,26 +479,39 @@ function HUDBF.runStagedTransition(phases, opts)
   local settleDelaySec = resolveOptSec(opts.settleDelaySec, TRANSITION_SETTLE_DELAY_SEC)
   -- Keep heavy work off the site-card FadeIn (complete 5.5) plus a 0.25s pad → start ~5.75.
   local siteCardGateSec = math.max(0, BLINDFOLD_HEAVY_WORK_START_SEC - leadInDelaySec - fadeOutSec)
+  local cancel = supersedeTransitionChain()
 
   HUDBF.beginTransition(opts)
 
   local workFailed = false
   U.chain({
     function()
+      if cancel.cancelled then
+        return
+      end
       -- Hold through parent FadeIn until district-card FadeIn starts (TOR-476 / TOR-434).
       return leadInDelaySec
     end,
     function()
+      if cancel.cancelled then
+        return
+      end
       if type(phases.fadeOut) == "function" then
         phases.fadeOut()
       end
       return fadeOutSec
     end,
     function()
+      if cancel.cancelled then
+        return
+      end
       -- Quiet hold until site card FadeIn finishes (+ pad; audio may already be fading out).
       return siteCardGateSec
     end,
     function()
+      if cancel.cancelled then
+        return 0
+      end
       -- TOR-368: snap default cameras in this covered window, not during card FadeIns.
       -- TOR-603: run layout work first so new seat cameraAngles exist, then
       -- `M.snapDefaultCamerasAfterLayout` recopies the occupied seat and lookAts.
@@ -489,6 +530,9 @@ function HUDBF.runStagedTransition(phases, opts)
       return 0
     end,
     function()
+      if cancel.cancelled then
+        return 0
+      end
       -- New-location ambient under the blindfold; wait fadeInSec so volume is full before remaining settle.
       if workFailed then
         return 0
@@ -499,6 +543,9 @@ function HUDBF.runStagedTransition(phases, opts)
       return fadeInSec
     end,
     function()
+      if cancel.cancelled then
+        return
+      end
       if workFailed then
         HUDBF.scheduleEnd(0)
         return
@@ -507,9 +554,12 @@ function HUDBF.runStagedTransition(phases, opts)
       return math.max(0, settleDelaySec - workSettleSec - fadeInSec)
     end,
     function()
+      if cancel.cancelled then
+        return
+      end
       HUDBF.scheduleEnd(0)
     end,
-  })
+  }, { cancelRegistry = cancel })
 end
 
 return HUDBF
