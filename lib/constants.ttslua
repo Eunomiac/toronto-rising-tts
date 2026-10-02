@@ -3381,7 +3381,7 @@ C.MemoriamSkyboxKeysByCharacter = buildMemoriamSkyboxKeysByCharacter(C.MemoriamS
 -- Optional `isSilent = true`: full ambient mute (background, location ambience, weather); featured music may still be played via Storyteller action. Merge with `Soundscape.applyContext(Soundscape.contextFromSite(site))`.
 -- Optional `soundscape.backgroundMusic.playlist = "none"`: silence background music only (location ambience and weather still apply). Omit `backgroundMusic` to use catalog default mood (`main`).
 -- Optional `isTopFogActive` (boolean): when set, `SceneLibrary.applySiteTopFogToSessionScene` writes `sessionScene.isTopFogActive` on location apply; when omitted, indoor sites default fog off and outdoor on.
--- `weatherDucking` (number 0..1): per-site weather volume multiplier via `Soundscape.applyContext` (`state.siteWeatherDucking`); when omitted, indoor/outdoor catalog defaults apply.
+-- `weatherDucking` (number 0..1): outdoor-only weather volume multiplier via `Soundscape.applyContext` (`state.siteWeatherDucking`). Indoor sites ignore this and fully silence weather (and hide the weather panel). When omitted on an outdoor site, the outdoor catalog default applies.
 -- Optional `mappable` (boolean, default true): when false, active PCs' map pins hide at this scene site; absent PCs may keep a cached mappable offset.
 
 --- @return string|nil trimmed non-empty URL from `C.GenericSkyboxes`, or nil

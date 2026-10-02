@@ -14,7 +14,7 @@
     When no narrative minute elapses, the tick returns without UI work. When only the time-of-day changes,
     only `gameStateOverlay_time` is updated; the date line updates when the calendar date changes.
     Weather panel (`gameStateOverlay_weather*`): `reconcileWeatherFromState()` parses the chronicle code via
-    `ChronicleWeather.resolveHudForClock`; hidden when the current site is indoors with `weatherDucking == 0`.
+    `ChronicleWeather.resolveHudForClock`; hidden for every indoor site (weather audio is fully silenced indoors).
     Phase gating toggles `gameStateOverlay_timeAndLocation` and `gameStateOverlay_weather` (not `gameStateOverlay_root`).
 ]]
 
@@ -566,7 +566,7 @@ local function resolveLocationLabelsFromState()
     return districtLabel, siteFull
 end
 
---- Indoor sites with `C.Sites[siteKey].weatherDucking == 0` suppress the weather HUD (fully ducked / inaudible outdoors).
+--- Every indoor site suppresses the weather HUD. Weather audio is fully silenced indoors, so the panel would only show a sound the table cannot hear.
 --- @return boolean
 local function shouldHideWeatherHudForCurrentSite()
     local sKey = resolveAppliedSiteKeyForOverlay()
@@ -577,14 +577,7 @@ local function shouldHideWeatherHudForCurrentSite()
     if type(site) ~= "table" then
         return false
     end
-    if site.isIndoors ~= true then
-        return false
-    end
-    local duck = tonumber(site.weatherDucking)
-    if duck == nil then
-        return false
-    end
-    return duck == 0
+    return site.isIndoors == true
 end
 
 --- Weather panel (top-right): parsed chronicle code for current clock hour.

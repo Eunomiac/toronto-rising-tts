@@ -256,17 +256,19 @@ local function updateChannelState(channelKey, patch)
 end
 
 --- Resolves the weather volume multiplier for the current site and indoors/outdoors mode.
+--- Every indoor site fully silences weather (multiplier 0), ignoring per-site `weatherDucking`.
+--- Outdoor sites use `state.siteWeatherDucking` when set, otherwise the outdoor catalog default.
 --- @param state table soundscape state from `ensureState()`
 --- @return number
 local function resolveWeatherDuckingMultiplier(state)
+    if state.isIndoors == true then
+        return 0
+    end
     local siteMult = tonumber(state.siteWeatherDucking)
     if siteMult ~= nil then
         return siteMult
     end
-    if state.isIndoors ~= true then
-        return tonumber(Catalog.DEFAULTS.weatherDucking.outdoorMultiplier) or 1
-    end
-    return tonumber(Catalog.DEFAULTS.weatherDucking.indoorMultiplier) or 1
+    return tonumber(Catalog.DEFAULTS.weatherDucking.outdoorMultiplier) or 1
 end
 
 --- Applies indoor/outdoor ducking to a **natural** weather volume (0..1).
