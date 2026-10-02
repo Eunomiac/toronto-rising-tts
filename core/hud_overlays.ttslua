@@ -9,6 +9,7 @@
   Do not UI.show children. Hide: parent UI.hide only; restore child defaults after ~3s.
 
   Hunger: one Image per seat + image= (TOR-444); clear/set `active` after show (TOR-340).
+  Write `image` after `UI.show`. Show restores the XML default `overlay_hunger_0`.
 ]]
 ---@diagnostic disable: undefined-global
 
@@ -170,7 +171,7 @@ function HO.invalidateOverlayInputCache()
 end
 
 --- Hunger uses one Image per seat (`overlay_hunger_<Seat>`) + `image=overlay_hunger_N` (TOR-444).
---- Always show + active=true (tier 0..5); guarded image write; clear image cache via invalidateSeatCache.
+--- Show, then active, then image. Show restores XML `overlay_hunger_0`, so the image write is last.
 --- @param seatColor string
 --- @param level number 0..5
 local function applyHungerOverlay(seatColor, level)
@@ -188,16 +189,16 @@ local function applyHungerOverlay(seatColor, level)
     lv = 5
   end
   local eid = hungerOverlayIdForSeat(seatColor)
-  local imageRef = "overlay_hunger_" .. lv
-  if lastHungerImageBySeat[seatColor] ~= imageRef then
-    if UI ~= nil and UI.setAttribute ~= nil then
-      UI.setAttribute(eid, "image", imageRef)
-    end
-    lastHungerImageBySeat[seatColor] = imageRef
-  end
+  local imageRef = "overlay_hunger_" .. tostring(math.floor(lv))
+  -- UI.show restores the XML image (overlay_hunger_0). The tier write has to come after it,
+  -- or the cache remembers the real hunger and leaves the empty picture up.
   UI.show(eid)
-  U.setAttribute(eid, "active", "true")
   lastVisible[eid] = true
+  U.setAttribute(eid, "active", "true")
+  if UI ~= nil and UI.setAttribute ~= nil then
+    UI.setAttribute(eid, "image", imageRef)
+  end
+  lastHungerImageBySeat[seatColor] = imageRef
 end
 
 --- @param playerID string|nil
@@ -534,6 +535,17 @@ function HO.reconcileForSeat(seatColor, opts)
   applyHungerOverlay(seatColor, hungerLevel)
   syncHungerSmokeForSeat(seatColor, hungerLevel)
   lastDesiredVisibilityFpBySeat[seatColor] = fp
+end
+
+--- After `UI.setXml`, hunger Images are the XML default `overlay_hunger_0` again.
+--- Drop the image cache and paint each seat from current Hunger.
+function HO.reapplyHungerAfterXmlRemount()
+  lastHungerImageBySeat = {}
+  lastDesiredVisibilityFpBySeat = {}
+  for _, seatColor in ipairs(C.PlayerColors or {}) do
+    lastVisible[hungerOverlayIdForSeat(seatColor)] = nil
+    HO.reconcileForSeat(seatColor, { force = true })
+  end
 end
 
 --- Refresh overlay visibility for every player color row; then shared transition blindfold.

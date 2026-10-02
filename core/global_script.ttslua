@@ -993,6 +993,9 @@ local function postMountGlobalUi(reason, armedMinimal)
     if type(ScatterMode.reconcileControlHudFromState) == "function" then
         ScatterMode.reconcileControlHudFromState()
     end
+    if type(HO.reapplyHungerAfterXmlRemount) == "function" then
+        HO.reapplyHungerAfterXmlRemount()
+    end
     print(string.format(
         "[SeatUI] Full UI resync sent (%s).",
         type(reason) == "string" and reason ~= "" and reason or "unspecified"

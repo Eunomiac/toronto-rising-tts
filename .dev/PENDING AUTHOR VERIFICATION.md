@@ -18,7 +18,17 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-02 — TOR-649 (page 2 rituals/ceremonies layout) added._
+_Last populated: 2026-10-02 — TOR-650 (hunger overlay empty image) added._
+
+### Overlay
+
+#### TOR-650 — Hunger overlay keeps each character's Hunger
+
+**How to verify:** Save & Play. Look at the hunger overlay for every seated character. Each one should match that character's Hunger, including anyone above zero. It should not sit on the empty hunger picture.
+
+Change someone's Hunger from the Storyteller PCs panel, or finish a Rouse check that raises Hunger. The overlay should follow that new number and stay there.
+
+**Context:** Showing the overlay was putting the empty picture back after the real one had been set, and the game then skipped writing it again. The real picture is written after the show. A full UI reload paints hunger again too.
 
 ### Character sheets
 
@@ -42,7 +52,7 @@ When the cover lifts in Downtime, Pink's tarot deck button should sit next to he
 
 ### Overlay
 
-#### ⚠️ TOR-644 — Downtime overlay sits in the right place after End Scene
+#### ✅ TOR-644 — Downtime overlay sits in the right place after End Scene
 
 **How to verify:** Save & Play. During Play, with a scene on the table, click End Scene. When the cover lifts you should be in Downtime.
 
