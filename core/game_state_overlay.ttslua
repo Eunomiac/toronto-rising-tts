@@ -4,9 +4,9 @@
     (TOR-598). End uses the same bookend layout with **EPILOGUE** (TOR-599).
 
     Style chrome uses absolute `UI.setClass` lists from `ui/shared/game_state_overlay.xml` Defaults
-    (PLAY/MAIN baseline; Downtime / prologue / Spotlight APPLY strings). Ordinary copy uses
-    `UI.setValue`. A run of spaces (prologue banner) uses `setAttributes` `text` only, then
-    `setClass` again — attribute writes reset color, font, and height (TOR-644 / TOR-600).
+    (PLAY/MAIN baseline; Downtime / prologue / Spotlight APPLY strings). Copy is the `text`
+    attribute only (`UI.setAttribute`); `UI.setValue` writes the element body and leaves `text`
+    stale (TOR-600 / TOR-644).
 
     Single writer: `GameStateOverlay.reconcileFromState()` — driven from `UpdateUIDisplays` / `Sync.ui`
     (see `core/sync.ttslua` incremental delta `gameStateOverlay`) so nothing else fights the overlay.
@@ -78,8 +78,7 @@ local CLASS_SEP_MAIN = "small_red_text"
 local CLASS_SEP_PROLOGUE = "small_red_text bright_red_text"
 local CLASS_SEP_SPOTLIGHT = "small_red_text normal_text"
 
--- Three ASCII spaces between words. Must be written with `text` via setAttributes;
--- `UI.setValue` collapses the run (TOR-600 / TOR-601).
+-- Three ASCII spaces between words. Written on the `text` attribute (TOR-600 / TOR-601).
 local OVERLAY_WORD_GAP = "   "
 local OVERLAY_PROLOGUE_BANNER = "T O R O N T O" .. OVERLAY_WORD_GAP .. "R I S I N G"
 
@@ -90,8 +89,8 @@ local OVERLAY_TIME_LOCATION_ID = "gameStateOverlay_timeAndLocation"
 local OVERLAY_WEATHER_ID = "gameStateOverlay_weather"
 
 --- XML Defaults classes for elements that are not restyled per phase.
---- `UI.setAttribute` / `setAttributes` reset sibling style attributes (color, font, height).
---- Re-apply the class after every text or active write so that reset cannot stick (TOR-644).
+--- A text-only `setAttribute` does not restyle the element. `active` is a different attribute;
+--- re-apply the class after that write so color, font, and height stay (TOR-644).
 local OVERLAY_BASE_CLASS = {
     gameStateOverlay_timeAndLocation = "gameStateOverlay_topCenter",
     gameStateOverlay_weather = "gameStateOverlay_topRight",
@@ -201,7 +200,7 @@ local function pushOverlayClass(id, classNames, force)
     overlayClassCache[id] = classNames
 end
 
---- Put the class back after setAttribute/setAttributes, which wipe color, font, and height.
+--- Put the class back after an `active` write.
 --- @param id string
 local function reapplyOverlayClass(id)
     local classNames = overlayClassCache[id]
@@ -214,26 +213,19 @@ local function reapplyOverlayClass(id)
     pushOverlayClass(id, classNames, true)
 end
 
---- Overlay copy. Ordinary lines use `UI.setValue`. A run of spaces (prologue banner / title)
---- must use `setAttributes` `text` or TTS collapses it (TOR-600 / TOR-601). Either write is
---- followed by `setClass`, because attribute writes reset style (TOR-644).
+--- Overlay copy. Text elements take their words from the `text` attribute only.
 --- @param id string
 --- @param text string
 local function pushOverlayText(id, text)
-    if UI == nil or UI.setValue == nil then
+    if UI == nil or UI.setAttribute == nil then
         return
     end
     local nextVal = tostring(text)
     if overlayTextCache[id] == nextVal then
         return
     end
-    if string.find(nextVal, "  ", 1, true) ~= nil and UI.setAttributes ~= nil then
-        U.setAttributes(id, { text = nextVal })
-    else
-        UI.setValue(id, nextVal)
-    end
+    UI.setAttribute(id, "text", nextVal)
     overlayTextCache[id] = nextVal
-    reapplyOverlayClass(id)
 end
 
 --- @param id string
@@ -271,19 +263,17 @@ local function pushDistrictSeparator(attrs)
         return
     end
     lastDistrictSeparatorFingerprint = fp
-    pushOverlayClass("gameStateOverlay_districtSeparator", classNames)
     local sepId = "gameStateOverlay_districtSeparator"
-    if string.find(text, "  ", 1, true) ~= nil and UI.setAttributes ~= nil then
-        U.setAttributes(sepId, { text = text })
-    elseif UI.setValue ~= nil then
-        UI.setValue(sepId, text)
-    end
+    pushOverlayClass(sepId, classNames)
     if UI.setAttribute ~= nil then
-        U.setAttribute(sepId, "active", active and "true" or "false")
+        UI.setAttribute(sepId, "active", active and "true" or "false")
     end
-    overlayTextCache[sepId] = text
     overlayActiveCache[sepId] = active and "true" or "false"
     reapplyOverlayClass(sepId)
+    if UI.setAttribute ~= nil then
+        UI.setAttribute(sepId, "text", text)
+    end
+    overlayTextCache[sepId] = text
 end
 
 --- Session / datetime / time chrome via absolute `UI.setClass` (TOR-604).
@@ -702,12 +692,12 @@ end
 --- Diamond separator stays off without a live scene.
 local function pushEmptyLocationRow()
     reconcileSessionNumberFromState()
-    pushOverlayText("gameStateOverlay_district", " ")
-    pushOverlayText("gameStateOverlay_parentSite", " ")
-    pushOverlayText("gameStateOverlay_site", " ")
     pushOverlayActive("gameStateOverlay_district", true)
     pushOverlayActive("gameStateOverlay_parentSite", true)
     pushOverlayActive("gameStateOverlay_site", true)
+    pushOverlayText("gameStateOverlay_district", " ")
+    pushOverlayText("gameStateOverlay_parentSite", " ")
+    pushOverlayText("gameStateOverlay_site", " ")
     pushDistrictSeparator({
         text = DISTRICT_SEPARATOR_DIAMOND,
         classNames = CLASS_SEP_MAIN,

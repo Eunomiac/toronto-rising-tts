@@ -22,17 +22,18 @@ _Last populated: 2026-10-02 — TOR-644 spacing follow-up and TOR-647 (Memoriam 
 
 ### Overlay
 
-#### TOR-644 — Downtime overlay sits in the right place after End Scene
+#### ⚠️ TOR-644 — Downtime overlay sits in the right place after End Scene
 
 **How to verify:** Save & Play. During Play, with a scene on the table, click End Scene. When the cover lifts you should be in Downtime.
 
 The center overlay should show the date and the word DOWNTIME in the usual Downtime styling (bright red, the time line tall enough for that word). The date and DOWNTIME should sit where they do on a normal Downtime, not shifted up because the location line collapsed. It should not keep the gold title or the TORONTO RISING banner.
 
-**Context:** The words were already right. The district and site line was empty, so that row took no height and the lines below it sat too high. Those texts now hold a blank space and stay shown, so the row keeps its height.
+**Context:** The words were already right, but they were written into the element body while the `text` attribute kept an older string. Overlay copy is the `text` attribute again, and only that attribute. The district and site line still holds a blank space so the row keeps its height.
 
+**Author Notes:** Still not quite right:  The session number is being pushed off the top of the screen, for some reason. I suspect I'll need to play around with the XML elements myself to figure this out -- don't worry about fixing this for now.
 ### Scenes
 
-#### TOR-647 — Memoriam splash stays up for the whole cover
+#### ✅ TOR-647 — Memoriam splash stays up for the whole cover
 
 **How to verify:** Save & Play. During Play, enter a Memoriam (not Just Smoke, so a splash image is used). Watch the cover from the moment it starts to drop until it lifts.
 

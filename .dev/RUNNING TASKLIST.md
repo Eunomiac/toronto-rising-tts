@@ -391,7 +391,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 ## UI Panels
 
 - [x] **Prologue overlay only on the first Downtime:** Intermission→Play with no scene still shows PROLOGUE. Applying a scene sets Main immediately and clears that flag, so End Scene returns to the date and the word DOWNTIME. relatedTo **TOR-644**. Author confirmed 2026-10-02. _(TOR-646)_
-- [x] **Downtime overlay formatting after End Scene:** Text writes no longer wipe Downtime color and height. The empty district/site line keeps a blank space so the date and DOWNTIME stay at their usual height. Pending Save & Play. _(TOR-644)_
+- [x] **Downtime overlay formatting after End Scene:** Overlay copy is the `text` attribute only. The empty district/site line keeps a blank space so the date and DOWNTIME stay at their usual height. Pending Save & Play. _(TOR-644)_
 
 - [x] **Scatter Mode HERE/THERE + token lifecycle:** Author closed 2026-10-01. Scene preview and editing are moving to the Storyteller Dashboard, so this in-game HERE/THERE pass will not be finished. _(TOR-628)_
 - [x] **Scatter Mode player HUD:** Scatter-only per-seat strip; gold / first-join is PC slot 1; click another group to move immediately; click own group is a no-op and does not close the strip. relatedTo **TOR-572**. Author check 2026-10-01 passed except character sheets, which all turned off — follow-up **TOR-641**. Author confirmed 2026-10-02 (sheets fixed too). _(TOR-602)_
