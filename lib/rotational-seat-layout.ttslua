@@ -2269,7 +2269,7 @@ local function applyReferenceHandPositionDelta(fromTableKey, toTableKey)
   end
 
   local handZoneRotation = handZone.getRotation and Vector(handZone.getRotation()) or Vector({ 0, 0, 0 })
-  local hzMove = U.movePlayerHand(refColor, toRef, handZoneRotation, "reference hand delta (debug)")
+  local hzMove = U.movePlayerHand(refColor, toRef, handZoneRotation)
 
   -- Prevent double-shifting cards/decks already moved with the hand zone.
   local movedWithHandZone = {}
@@ -3979,7 +3979,7 @@ function M.refreshSeatRigsFromReferenceSegment(opts)
           local hz = U.getHandZone(seatKey)
           if hz ~= nil then
             if not dryRun then
-              U.movePlayerHand(seatKey, Vector(handFrame.position), Vector(handFrame.rotation), "refresh seat rigs (debug)")
+              U.movePlayerHand(seatKey, Vector(handFrame.position), Vector(handFrame.rotation))
               maybeSetHandZoneSeatColor(hz, "HAND_ZONE_ANCHOR", seatKey)
             end
             movedCount = movedCount + 1

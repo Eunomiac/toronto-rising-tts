@@ -2534,16 +2534,13 @@ end
 --- @param hz Object
 --- @param seatColor string
 --- @return Object[] cards
---- @return table counts `{ zone = number, hand = number }` raw card counts per source (trace)
 local function collectHandCards(hz, seatColor)
 	local seen = {}
 	local out = {}
-	local counts = { zone = 0, hand = 0 }
-	local function consider(obj, source)
+	local function consider(obj)
 		if not isHandCardLikeObject(obj) then
 			return
 		end
-		counts[source] = counts[source] + 1
 		local guid = obj.getGUID and obj.getGUID() or nil
 		if type(guid) == "string" and guid ~= "" then
 			if seen[guid] == true then
@@ -2557,7 +2554,7 @@ local function collectHandCards(hz, seatColor)
 		local zoneObjects = hz.getObjects()
 		if U.Type(zoneObjects) == "table" then
 			for i = 1, #zoneObjects do
-				consider(zoneObjects[i], "zone")
+				consider(zoneObjects[i])
 			end
 		end
 	end
@@ -2567,12 +2564,12 @@ local function collectHandCards(hz, seatColor)
 			local handObjects = player.getHandObjects()
 			if U.Type(handObjects) == "table" then
 				for i = 1, #handObjects do
-					consider(handObjects[i], "hand")
+					consider(handObjects[i])
 				end
 			end
 		end
 	end
-	return out, counts
+	return out
 end
 
 --- @param obj Object
@@ -2629,11 +2626,10 @@ end
 --- @param color string
 --- @param zonePos Vector
 --- @param zoneRot Vector
---- @return integer dealt card count
 local function dealStashedHandCards(color, zonePos, zoneRot)
 	local container = resolvePlayerStorageContainer(color, false)
 	if container == nil then
-		return 0
+		return
 	end
 	local contents = container.getObjects() or {}
 	local guids = {}
@@ -2648,7 +2644,7 @@ local function dealStashedHandCards(color, zonePos, zoneRot)
 		end
 	end
 	if #guids == 0 then
-		return 0
+		return
 	end
 	-- The zone needs a moment to settle at its new pose; cards dealt in the same frame land rotated.
 	U.await(function()
@@ -2665,7 +2661,6 @@ local function dealStashedHandCards(color, zonePos, zoneRot)
 			})
 		end
 	end, HAND_DEAL_SETTLE_SECONDS)
-	return #guids
 end
 
 --- Move a player's hand zone and every card in that hand as one rigid body (TOR-590).
@@ -2684,9 +2679,8 @@ end
 --- @param playerRef string|userdata seat color or Player
 --- @param position Vector|table world position of the hand zone
 --- @param rotation Vector|table world rotation of the hand zone
---- @param traceLabel string|nil caller name for the hand-move console trace (TOR-631 diagnosis)
 --- @return table `{ position = Vector, rotation = Vector, cards = Object[] }` zone pose before the move
-function U.movePlayerHand(playerRef, position, rotation, traceLabel)
+function U.movePlayerHand(playerRef, position, rotation)
 	local color = resolveHandSeatColor(playerRef)
 	local hz = U.getHandZone(color)
 	if hz == nil or hz.getPosition == nil or hz.setPosition == nil then
@@ -2706,25 +2700,18 @@ function U.movePlayerHand(playerRef, position, rotation, traceLabel)
 		rotation = Vector(hz.getRotation()),
 		cards = {},
 	}
-	local cards, sourceCounts = collectHandCards(hz, color)
-	print(string.format(
-		"[HandTrace] %s via %s: zone y %.1f -> %.1f | zone.getObjects cards=%d, getHandObjects cards=%d",
-		color, tostring(traceLabel or "?"), hzBefore.position.y, targetPos.y,
-		sourceCounts.zone, sourceCounts.hand
-	))
+	local cards = collectHandCards(hz, color)
 
 	if isParkedHandY(targetPos.y) then
 		stashHandCardsInStorage(color, cards)
 		hzBefore.cards = cards
 		poseObjectWithHand(hz, targetPos, targetRot)
-		print(string.format("[HandTrace] %s: parked hand zone; %d card(s) stashed in storage container", color, #cards))
 		return hzBefore
 	end
 
 	if isParkedHandY(hzBefore.position.y) then
 		poseObjectWithHand(hz, targetPos, targetRot)
-		local dealt = dealStashedHandCards(color, targetPos, targetRot)
-		print(string.format("[HandTrace] %s: unparked hand zone; dealing %d stashed card(s) back", color, dealt))
+		dealStashedHandCards(color, targetPos, targetRot)
 		return hzBefore
 	end
 

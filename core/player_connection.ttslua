@@ -285,7 +285,6 @@ function PC.applyConnectionCheckpoint()
     return changed
   end
   for i = 1, #changed do
-    print("[HandTrace] Connection checkpoint: " .. changed[i] .. " is now an unoccupied seat; parking pile")
     FSL.setOccupantPileVisible(changed[i], false)
   end
   relayoutAfterOccupancyChange()

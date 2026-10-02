@@ -936,7 +936,7 @@ local function layoutOccupantSatellites(occupantKey, figFrame, figObj, helpers)
             if O.isHiddenObject(obj) then
                 O.restoreObject(obj, { keepWorldPose = true })
             end
-            U.movePlayerHand(occupantKey, Vector({ x = world.x, y = y, z = world.z }), rot, "seat layout")
+            U.movePlayerHand(occupantKey, Vector({ x = world.x, y = y, z = world.z }), rot)
             return
         end
         applyOffsetToObject(obj, figFrame, figObj, offset, roleKey, occupantKey)
@@ -979,13 +979,11 @@ local function stashHandZoneAndCards(occupantKey)
     local parkY = C.HIDDEN_OBJECT_WORLD_Y
     local p = hz.getPosition and hz.getPosition() or nil
     if p == nil or liveYIsHidden(p.y) then
-        print(string.format("[HandTrace] %s pile park: hand zone already parked (y %s) — hand not moved",
-            occupantKey, p ~= nil and string.format("%.1f", p.y) or "?"))
         return
     end
     captureOccupantPileY(occupantKey, "HAND_ZONE", p.y)
     local rot = hz.getRotation and Vector(hz.getRotation()) or Vector({ 0, 0, 0 })
-    U.movePlayerHand(occupantKey, Vector({ x = p.x, y = parkY, z = p.z }), rot, "pile park")
+    U.movePlayerHand(occupantKey, Vector({ x = p.x, y = parkY, z = p.z }), rot)
 end
 
 --- Occupancy-stash key: the satellite role, or the GUID for role-less objects (decks, loose cards).
