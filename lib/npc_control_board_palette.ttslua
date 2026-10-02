@@ -730,7 +730,7 @@ function Palette.isTokenOnPaletteBoard(board, token)
 end
 
 --- Park tokens that are off both CONTROL_BOARD and the palette (lost / fell off table).
---- Does not move tokens on the minimap or already on the palette; skips on-stage placement keys.
+--- Does not move tokens on the minimap or already on the palette. A stage placement does not keep an off-board token where it fell.
 --- @param palette Object
 --- @param opts table|nil `{ isOnControlBoard?: fun(token: Object): boolean }`
 --- @return number moved
@@ -740,7 +740,6 @@ function Palette.recoverStrayTokensToPalette(palette, opts)
     end
     opts = U.Type(opts) == "table" and opts or {}
     local isOnControlBoard = opts.isOnControlBoard
-    local placedOnStage = characterKeysWithStagePlacements()
     local assignments = Palette.buildTokenSnapAssignments()
     local snapIndices = uniqueAssignmentSnapIndices(assignments)
     local snapWorld = {}
@@ -758,17 +757,15 @@ function Palette.recoverStrayTokensToPalette(palette, opts)
                 -- Already on palette tile.
             else
                 local ck = tokenCharacterKey(token)
-                if placedOnStage[ck] ~= true then
-                    local wantIndex = ck ~= nil and assignments[ck] or nil
-                    if U.Type(wantIndex) == "number" and snapWorld[wantIndex] ~= nil then
-                        token.setPosition(snapWorld[wantIndex])
-                        Palette.applyPaletteParkingRotation(palette, token)
-                        Palette.applyPaletteParkingScale(token)
-                        if token.setInvisibleTo ~= nil then
-                            token.setInvisibleTo(C.PlayerColors or {})
-                        end
-                        moved = moved + 1
+                local wantIndex = ck ~= nil and assignments[ck] or nil
+                if U.Type(wantIndex) == "number" and snapWorld[wantIndex] ~= nil then
+                    token.setPosition(snapWorld[wantIndex])
+                    Palette.applyPaletteParkingRotation(palette, token)
+                    Palette.applyPaletteParkingScale(token)
+                    if token.setInvisibleTo ~= nil then
+                        token.setInvisibleTo(C.PlayerColors or {})
                     end
+                    moved = moved + 1
                 end
             end
         end
@@ -829,7 +826,7 @@ function Palette.resnapOnPaletteTokens(palette)
 end
 
 --- One tagged-token scan: park off-board strays and re-snap tokens already on the palette (TOR-486).
---- Does not move tokens on CONTROL_BOARD or on-stage placement keys. Does not wipe placements.
+--- Does not move tokens on CONTROL_BOARD. Off-board tokens return to the palette even when they still have a stage placement. Does not wipe placements.
 --- @param palette Object
 --- @param opts table|nil `{ isOnControlBoard?: fun(token: Object): boolean }`
 --- @return number moved
@@ -839,7 +836,6 @@ function Palette.recoverStraysAndResnapPalette(palette, opts)
     end
     opts = U.Type(opts) == "table" and opts or {}
     local isOnControlBoard = opts.isOnControlBoard
-    local placedOnStage = characterKeysWithStagePlacements()
     local assignments = Palette.buildTokenSnapAssignments()
     local snapIndices = uniqueAssignmentSnapIndices(assignments)
     local snapWorld = {}
@@ -882,16 +878,14 @@ function Palette.recoverStraysAndResnapPalette(palette, opts)
                             moved = moved + 1
                         end
                     end
-                elseif placedOnStage[ck] ~= true then
-                    if U.Type(wantIndex) == "number" and snapWorld[wantIndex] ~= nil then
-                        token.setPosition(snapWorld[wantIndex])
-                        Palette.applyPaletteParkingRotation(palette, token)
-                        Palette.applyPaletteParkingScale(token)
-                        if token.setInvisibleTo ~= nil then
-                            token.setInvisibleTo(C.PlayerColors or {})
-                        end
-                        moved = moved + 1
+                elseif U.Type(wantIndex) == "number" and snapWorld[wantIndex] ~= nil then
+                    token.setPosition(snapWorld[wantIndex])
+                    Palette.applyPaletteParkingRotation(palette, token)
+                    Palette.applyPaletteParkingScale(token)
+                    if token.setInvisibleTo ~= nil then
+                        token.setInvisibleTo(C.PlayerColors or {})
                     end
+                    moved = moved + 1
                 end
             end
         end
