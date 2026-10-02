@@ -2206,6 +2206,11 @@ function StorytellerScenesPanel.endSceneNarrative(player)
 
     do
         local Memoriam = require("core.memoriam")
+        local Phases = require("core.phases")
+        -- Captured before detach. Ending a live scene is past the session-start prologue.
+        if SceneLibrary.hasLiveSceneOnTable() == true or Memoriam.isActive() then
+            Phases.clearSessionStartDowntime()
+        end
         if Memoriam.isActive() then
             Memoriam.applyExit({ mode = "endScene", player = player })
         end

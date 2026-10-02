@@ -18,7 +18,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-02 — TOR-643 (second scene Apply) and TOR-644 (Downtime overlay) added._
+_Last populated: 2026-10-02 — TOR-646 (prologue overlay after End Scene) added._
 
 ### Scenes
 
@@ -31,6 +31,16 @@ The cover should come back down and stay down while the second scene is set up. 
 **Context:** The first cover's timer kept running and lifted the blindfold while the second scene was still being applied. A new Apply now cancels that timer and the rest of the first sequence.
 
 ### Overlay
+
+#### TOR-646 — Prologue only on the first Downtime
+
+**How to verify:** Save & Play. Advance from Intermission into Play with no scene on the table. The center overlay should show PROLOGUE, with the session name in gold.
+
+Apply a scene. The phase should read Play / Main, and the overlay should show that scene's place and time.
+
+Click End Scene. When the cover lifts you should be in Downtime. The overlay should show the date and the word DOWNTIME. It should not show PROLOGUE or the gold session name.
+
+**Context:** Starting a scene was supposed to turn off the opening-Downtime flag, but that happened inside a follow-up sequence that never ran while the cover was working. The flag stayed on, so the next Downtime still used the prologue wording. Applying a scene now switches to Main immediately and turns the flag off. Ending a scene turns it off as well.
 
 #### TOR-644 — Downtime overlay looks right after End Scene
 

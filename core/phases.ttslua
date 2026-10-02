@@ -581,6 +581,11 @@ local function writeSessionStartDowntime(on)
     S.setStateVal(on == true, "sessionStartDowntime")
 end
 
+--- A live scene, or ending that scene, is past the session-start prologue.
+function Phases.clearSessionStartDowntime()
+    writeSessionStartDowntime(false)
+end
+
 --- Copy chronicle present-day (or live session clock) into `gameState.downtimeClock`. Does not write present-day.
 function Phases.copyPresentDayIntoDowntimeClock()
     local pd = S.getStateVal("presentDayClock")
@@ -1085,15 +1090,20 @@ end
 
 --- Promote to Play without enter/exit events (scene Apply already owns the world).
 --- Always couples Main/Downtime to whether a library scene is live (TOR-527).
+--- Writes the subphase immediately. Apply runs this inside the cover's work step, where a
+--- nested `Phases.setPlaySubPhase` chain does not start, so the prologue flag would stay on
+--- through Main and the Downtime that follows End Scene.
 function Phases.ensurePlayPhaseForSceneApply()
     local desired = Phases.playSubPhaseForLiveScene()
-    local phase = S.getStateVal("currentPhase")
-    if phase == C.Phases.PLAY then
-        Phases.setPlaySubPhase(desired)
-        return
+    if S.getStateVal("currentPhase") ~= C.Phases.PLAY then
+        S.setCurrentPhase(C.Phases.PLAY)
     end
-    S.setCurrentPhase(C.Phases.PLAY)
-    S.setPlaySubPhase(desired)
+    if S.getStateVal("playSubPhase") ~= desired then
+        S.setPlaySubPhase(desired)
+    end
+    if desired ~= C.PlaySubPhases.DOWNTIME then
+        writeSessionStartDowntime(false)
+    end
     syncPhaseUi()
 end
 
