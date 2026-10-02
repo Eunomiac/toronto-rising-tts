@@ -825,5 +825,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-10-02 | SHIP | TOR-647 | Overlay sync keeps the Memoriam splash image while that cover is active. relatedTo TOR-642, TOR-643. Pending Save & Play. |
 | 2026-10-02 | CLOSE | TOR-637 | Author: hunger overlay stuck at 0 has not repeated. Fully Complete. No dependents. Focus → TOR-638. |
 | 2026-10-02 | SHIP | TOR-644 | Overlay copy is `UI.setAttribute` `text` only. `setValue` was leaving the text attribute stale. Pending Save & Play. |
+| 2026-10-02 | SHIP | TOR-644 | Leaving prologue/Spotlight sets `gameStateOverlay_time` class back to `large_red_text`. Pending Save & Play. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

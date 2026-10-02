@@ -71,7 +71,6 @@ local CLASS_DATETIME_DOWNTIME = "med_red_text bright_red_text"
 local CLASS_DATETIME_BOOKEND = "med_red_text gold_text bold_italic_text"
 local CLASS_DATETIME_SPOTLIGHT = CLASS_DATETIME_BOOKEND
 local CLASS_TIME_MAIN = "large_red_text"
-local CLASS_TIME_DOWNTIME = "large_red_text bright_red_text flex_tall_text"
 local CLASS_TIME_PROLOGUE = "large_red_text bright_red_text"
 local CLASS_TIME_SPOTLIGHT = "large_red_text med_white_text rigid_tall_text"
 local CLASS_SEP_MAIN = "small_red_text"
@@ -305,12 +304,14 @@ local function applyOverlayPhaseChrome(kind)
     if kind == "downtime" then
         pushOverlayClass("gameStateOverlay_sessionNumber", CLASS_SESSION_MAIN)
         pushOverlayClass("gameStateOverlay_datetime", CLASS_DATETIME_DOWNTIME)
-        pushOverlayClass("gameStateOverlay_time", CLASS_TIME_DOWNTIME)
+        -- Baseline class. Prologue and Spotlight add height classes; leaving those
+        -- on this line pushes the session number off the top (TOR-644).
+        pushOverlayClass("gameStateOverlay_time", CLASS_TIME_MAIN, true)
         return
     end
     pushOverlayClass("gameStateOverlay_sessionNumber", CLASS_SESSION_MAIN)
     pushOverlayClass("gameStateOverlay_datetime", CLASS_DATETIME_MAIN)
-    pushOverlayClass("gameStateOverlay_time", CLASS_TIME_MAIN)
+    pushOverlayClass("gameStateOverlay_time", CLASS_TIME_MAIN, true)
 end
 
 --- Build a cheap fingerprint for session scene fields that drive the center overlay.

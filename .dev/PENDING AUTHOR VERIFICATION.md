@@ -26,9 +26,9 @@ _Last populated: 2026-10-02 — TOR-644 spacing follow-up and TOR-647 (Memoriam 
 
 **How to verify:** Save & Play. During Play, with a scene on the table, click End Scene. When the cover lifts you should be in Downtime.
 
-The center overlay should show the date and the word DOWNTIME in the usual Downtime styling (bright red, the time line tall enough for that word). The date and DOWNTIME should sit where they do on a normal Downtime, not shifted up because the location line collapsed. It should not keep the gold title or the TORONTO RISING banner.
+The center overlay should show the date and the word DOWNTIME, and the session number should stay on screen. The time line's class should be `large_red_text` again. It should not keep the gold title or the TORONTO RISING banner.
 
-**Context:** The words were already right, but they were written into the element body while the `text` attribute kept an older string. Overlay copy is the `text` attribute again, and only that attribute. The district and site line still holds a blank space so the row keeps its height.
+**Context:** Leaving the prologue (or Spotlight) left a taller class on the time line, which pushed the session number off the top. That line is set back to `large_red_text` when that formatting is reversed. Overlay copy is still the `text` attribute only.
 
 **Author Notes:** Still not quite right:  The session number is being pushed off the top of the screen, for some reason. I suspect I'll need to play around with the XML elements myself to figure this out -- don't worry about fixing this for now.
 ### Scenes
