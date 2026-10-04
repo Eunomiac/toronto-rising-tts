@@ -702,7 +702,7 @@ Catalog.TRACKS = {
     type = "sessionIntro",
     effect = "Session Starter 2",
     isLooping = false,
-    duration = 61,
+    duration = 49,
     volume = 1,
     --- TTS `playTriggerEffect` is 0-based. Object UI slot 2 → Lua index 1.
     effectIndex = 2,
@@ -732,10 +732,120 @@ Catalog.TRACKS = {
     type = "sessionIntro",
     effect = "Session Starter 5",
     isLooping = false,
-    duration = 77,
+    duration = 78,
     volume = 1,
     --- TTS `playTriggerEffect` is 0-based. Object UI slot 2 → Lua index 1.
     effectIndex = 5,
+  },
+  TR_SessionStart6 = {
+    key = "TR_SessionStart6",
+    type = "sessionIntro",
+    effect = "Session Starter 6",
+    isLooping = false,
+    duration = 43,
+    volume = 1,
+    --- TTS `playTriggerEffect` is 0-based. Object UI slot 2 → Lua index 1.
+    effectIndex = 6,
+  },
+  TR_SessionStart7 = {
+    key = "TR_SessionStart7",
+    type = "sessionIntro",
+    effect = "Session Starter 7",
+    isLooping = false,
+    duration = 61,
+    volume = 1,
+    --- TTS `playTriggerEffect` is 0-based. Object UI slot 2 → Lua index 1.
+    effectIndex = 7,
+  },
+  TR_SessionStart8 = {
+    key = "TR_SessionStart8",
+    type = "sessionIntro",
+    effect = "Session Starter 8",
+    isLooping = false,
+    duration = 33,
+    volume = 1,
+    --- TTS `playTriggerEffect` is 0-based. Object UI slot 2 → Lua index 1.
+    effectIndex = 8,
+  },
+  TR_SessionStart9 = {
+    key = "TR_SessionStart9",
+    type = "sessionIntro",
+    effect = "Session Starter 9",
+    isLooping = false,
+    duration = 75,
+    volume = 1,
+    --- TTS `playTriggerEffect` is 0-based. Object UI slot 2 → Lua index 1.
+    effectIndex = 9,
+  },
+  TR_SessionStart10 = {
+    key = "TR_SessionStart10",
+    type = "sessionIntro",
+    effect = "Session Starter 10",
+    isLooping = false,
+    duration = 60,
+    volume = 1,
+    --- TTS `playTriggerEffect` is 0-based. Object UI slot 2 → Lua index 1.
+    effectIndex = 10,
+  },
+  TR_SessionStart11 = {
+    key = "TR_SessionStart11",
+    type = "sessionIntro",
+    effect = "Session Starter 11",
+    isLooping = false,
+    duration = 50,
+    volume = 1,
+    --- TTS `playTriggerEffect` is 0-based. Object UI slot 2 → Lua index 1.
+    effectIndex = 11,
+  },
+  TR_SessionStart12 = {
+    key = "TR_SessionStart12",
+    type = "sessionIntro",
+    effect = "Session Starter 12",
+    isLooping = false,
+    duration = 56,
+    volume = 1,
+    --- TTS `playTriggerEffect` is 0-based. Object UI slot 2 → Lua index 1.
+    effectIndex = 12,
+  },
+  TR_SessionStart13 = {
+    key = "TR_SessionStart13",
+    type = "sessionIntro",
+    effect = "Session Starter 13",
+    isLooping = false,
+    duration = 46,
+    volume = 1,
+    --- TTS `playTriggerEffect` is 0-based. Object UI slot 2 → Lua index 1.
+    effectIndex = 13,
+  },
+  TR_SessionStart14 = {
+    key = "TR_SessionStart14",
+    type = "sessionIntro",
+    effect = "Session Starter 14",
+    isLooping = false,
+    duration = 53,
+    volume = 1,
+    --- TTS `playTriggerEffect` is 0-based. Object UI slot 2 → Lua index 1.
+    effectIndex = 14,
+  },
+  TR_SessionStart15 = {
+    key = "TR_SessionStart15",
+    type = "sessionIntro",
+    effect = "Session Starter 15",
+    isLooping = false,
+    duration = 60,
+    volume = 1,
+    --- TTS `playTriggerEffect` is 0-based. Object UI slot 2 → Lua index 1.
+    effectIndex = 15,
+  },
+  TR_SessionStart16 = {
+    key = "TR_SessionStart16",
+    type = "sessionIntro",
+    effect = "Session Starter 16",
+    isLooping = false,
+    duration = 56,
+    volume = 1,
+    --- TTS `playTriggerEffect` is 0-based. Object UI slot 2 → Lua index 1.
+    effectIndex = 16,
   },
   STB_HouseOfTheRisingSun = {
     key = "STB_HouseOfTheRisingSun",

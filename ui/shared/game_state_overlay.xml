@@ -40,7 +40,7 @@
   <VerticalLayout id="gameStateOverlay_timeAndLocation" class="gameStateOverlay_topCenter">
     <Image id="gameStateOverlay_timeAndLocation_background" class="gameStateOverlay_background" image="bg_playerOverlay_timeLocation" />
     <Text id="gameStateOverlay_sessionNumber" class="small_red_text" text="− Ⅰ −" />
-    <HorizontalLayout class="gameStateOverlay_location">
+    <HorizontalLayout id="db_gameStateOverlay_location" class="gameStateOverlay_location">
       <Text id="gameStateOverlay_district" class="small_white_text" text="" />
       <Text id="gameStateOverlay_districtSeparator" class="small_red_text" text="◆" />
       <Text id="gameStateOverlay_parentSite" class="small_white_text" text="" active="false" />

@@ -1,0 +1,85 @@
+<!--
+  DumpGlobalXmlElement
+  elementId=gameStateOverlay_root
+  source=UI.getXml()
+  matches=1
+-->
+<Panel id="gameStateOverlay_root" class="gameStateOverlay">
+  <VerticalLayout id="gameStateOverlay_timeAndLocation" class="gameStateOverlay_topCenter" active="true">
+    <Image id="gameStateOverlay_timeAndLocation_background" class="gameStateOverlay_background" image="bg_playerOverlay_timeLocation" />
+    <Text id="gameStateOverlay_sessionNumber" class="small_red_text" text="T O R O N T O   R I S I N G">
+      − I I −
+    </Text>
+    <HorizontalLayout class="gameStateOverlay_location">
+      <Text id="gameStateOverlay_district" class="small_white_text" text="" active="true">
+      </Text>
+      <Text id="gameStateOverlay_districtSeparator" class="small_red_text normal_text" text="◆" active="true">
+        The Devils You Know
+      </Text>
+      <Text id="gameStateOverlay_parentSite" class="small_white_text" text="" active="false">
+      </Text>
+      <Text id="gameStateOverlay_parentSiteSeparator" class="small_red_text" text="◆" active="false" />
+      <Text id="gameStateOverlay_site" class="small_white_text" text="" active="true">
+      </Text>
+    </HorizontalLayout>
+    <Text id="gameStateOverlay_datetime" class="med_red_text gold_text bold_italic_text" text="T H E   D E V I L S   Y O U   K N O W">
+      S P O T L I G H T
+    </Text>
+    <Panel id="gameStateOverlay_timeSpacer" class="gameStateOverlay_timeSpacer" active="true" />
+    <Text id="gameStateOverlay_time" class="large_red_text med_white_text rigid_tall_text" text="">
+      Aishe Tache
+    </Text>
+  </VerticalLayout>
+  <VerticalLayout id="gameStateOverlay_weather" class="gameStateOverlay_topRight" active="false">
+    <Image class="gameStateOverlay_background" image="bg_playerOverlay_weather" />
+    <HorizontalLayout class="gameStateOverlay_weather">
+      <Text id="gameStateOverlay_weatherBase" class="small_red_text" text="" />
+      <Text id="gameStateOverlay_weatherWind" class="small_red_text" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout class="gameStateOverlay_temperature">
+      <Text id="gameStateOverlay_temperatureC" class="large_red_text" text="" />
+      <Text id="gameStateOverlay_temperatureF" class="small_red_text italic_text" text="" />
+    </HorizontalLayout>
+  </VerticalLayout>
+</Panel>
+
+
+
+<Panel id="gameStateOverlay_root" class="gameStateOverlay">
+  <VerticalLayout id="gameStateOverlay_timeAndLocation" class="gameStateOverlay_topCenter" active="true">
+    <Image id="gameStateOverlay_timeAndLocation_background" class="gameStateOverlay_background" image="bg_playerOverlay_timeLocation" />
+    <Text id="gameStateOverlay_sessionNumber" class="small_red_text" text="T O R O N T O   R I S I N G">
+      − I I −
+    </Text>
+    <HorizontalLayout class="gameStateOverlay_location">
+      <Text id="gameStateOverlay_district" class="small_white_text" text="" active="true">
+      </Text>
+      <Text id="gameStateOverlay_districtSeparator" class="small_red_text" text="◆" active="false">
+        ◆
+      </Text>
+      <Text id="gameStateOverlay_parentSite" class="small_white_text" text="" active="false">
+      </Text>
+      <Text id="gameStateOverlay_parentSiteSeparator" class="small_red_text" text="◆" active="false" />
+      <Text id="gameStateOverlay_site" class="small_white_text" text="" active="true">
+      </Text>
+    </HorizontalLayout>
+    <Text id="gameStateOverlay_datetime" class="med_red_text bright_red_text" text="T H E   D E V I L S   Y O U   K N O W">
+      Tuesday, September 22nd, 2026
+    </Text>
+    <Panel id="gameStateOverlay_timeSpacer" class="gameStateOverlay_timeSpacer" />
+    <Text id="gameStateOverlay_time" class="large_red_text bright_red_text flex_tall_text" text="">
+      DOWNTIME
+    </Text>
+  </VerticalLayout>
+  <VerticalLayout id="gameStateOverlay_weather" class="gameStateOverlay_topRight" active="false">
+    <Image class="gameStateOverlay_background" image="bg_playerOverlay_weather" />
+    <HorizontalLayout class="gameStateOverlay_weather">
+      <Text id="gameStateOverlay_weatherBase" class="small_red_text" text="" />
+      <Text id="gameStateOverlay_weatherWind" class="small_red_text" text="" />
+    </HorizontalLayout>
+    <HorizontalLayout class="gameStateOverlay_temperature">
+      <Text id="gameStateOverlay_temperatureC" class="large_red_text" text="" />
+      <Text id="gameStateOverlay_temperatureF" class="small_red_text italic_text" text="" />
+    </HorizontalLayout>
+  </VerticalLayout>
+</Panel>
