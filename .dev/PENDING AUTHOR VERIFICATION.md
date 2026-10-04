@@ -18,68 +18,19 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-02 — TOR-651 (off fade keeps the mode's spot angle) added._
+_Last populated: 2026-10-04 — TOR-652 (Storyteller toolbar closes before every blindfold) added; TOR-644 / TOR-647 / TOR-648 / TOR-649 / TOR-650 / TOR-651 cleared._
 
-### Lighting
+### UI & HUD
 
-#### TOR-651 — A light turning off keeps the mode's spot angle
+#### TOR-652 — The Storyteller toolbar closes before every blindfold
 
-**How to verify:** Save & Play. In the Spotlight phase, with more than one player on the carousel, advance so the front player steps off. Watch that player's overhead light during the move.
+**How to verify:** Save & Play. Open the Scenes panel, choose only a skybox (no site), and click Apply Location. The whole Storyteller toolbar, tabs included, should close before the blindfold slides down.
 
-The cone should open toward the wider off angle while the brightness fades, and the lamp should glide down from its high spotlight perch to the closer off position. It should not jump close on the first moment, and the cone should not snap shut. Then the light turns off.
+Then, during Play, open the Memoriam modal and click Advance. The toolbar should also be closed when the Memoriam cover drops.
 
-**Context:** Turning a light off was forcing the spot angle to 0 for the fade, even when the off mode is wider (45° going to 88°). The cone now follows the mode. A light still cannot blink off: if the destination intensity is already 0, brightness fades while the angle follows the mode; if the destination angle is already 0, the beam narrows away and intensity is left alone. Intensity is forced to 0 only when both would otherwise stay above zero. During a Spotlight carousel move, the lamp's height and inward offset blend from the old mode to the new one across the same two seconds, instead of jumping to the destination on the first frame.
+If you have a moment, also try one ordinary scene Apply, one table button, and one phase Advance. Each should still close the toolbar first, as before.
 
-### Overlay
-
-#### TOR-650 — Hunger overlay keeps each character's Hunger
-
-**How to verify:** Save & Play. Look at the hunger overlay for every seated character. Each one should match that character's Hunger, including anyone above zero. It should not sit on the empty hunger picture.
-
-Change someone's Hunger from the Storyteller PCs panel, or finish a Rouse check that raises Hunger. The overlay should follow that new number and stay there.
-
-**Context:** Showing the overlay was putting the empty picture back after the real one had been set, and the game then skipped writing it again. The real picture is written after the show. A full UI reload paints hunger again too.
-
-### Character sheets
-
-#### TOR-649 — Page 2 rituals and ceremonies use the tuned row layout
-
-**How to verify:** Save & Play. Open page 2 of a character sheet for someone who has rituals or ceremonies (Black Caesar has both).
-
-The dot tracks should be the same width as the discipline dots above them. The names should sit in a tight stack under the divider, with no extra gap between rows, and the block should not stretch down to fill the rest of the page. Discipline dots on the same page should look the same as before.
-
-**Context:** The sizes you tuned in the sheet editor are now part of the single Defaults block that builds page 2, so the older 280px tracks and stretched rows cannot override them.
-
-### Table objects
-
-#### TOR-648 — Pink tarot button follows Pink after a Memoriam
-
-**How to verify:** Save & Play. During Play, enter a Memoriam with a subject who is **not** Pink, and do not put Pink in it, so Pink loses her chair for the Memoriam. Then click End Scene.
-
-When the cover lifts in Downtime, Pink's tarot deck button should sit next to her tarot drawer at her new seat, like the rest of her objects. It should not be left behind at the seat she had before the Memoriam. Clicking it should still open and close the tarot set.
-
-**Context:** While Pink is not present, the button is parked and its spot is saved. The tarot step after the table layout used to move the parked button back onto the table without updating that saved spot, so when Pink came back the button was restored to her old seat. It now stays parked under her new seat and the saved spot is updated.
-
-### Overlay
-
-#### ✅ TOR-644 — Downtime overlay sits in the right place after End Scene
-
-**How to verify:** Save & Play. During Play, with a scene on the table, click End Scene. When the cover lifts you should be in Downtime.
-
-The center overlay should show the date and the word DOWNTIME, and the session number should stay on screen. The time line's class should be `large_red_text` again. It should not keep the gold title or the TORONTO RISING banner.
-
-**Context:** Leaving the prologue (or Spotlight) left a taller class on the time line, which pushed the session number off the top. That line is set back to `large_red_text` when that formatting is reversed. Overlay copy is still the `text` attribute only.
-
-**Author Notes:** Still not quite right:  The session number is being pushed off the top of the screen, for some reason. I suspect I'll need to play around with the XML elements myself to figure this out -- don't worry about fixing this for now.
-### Scenes
-
-#### ✅ TOR-647 — Memoriam splash stays up for the whole cover
-
-**How to verify:** Save & Play. During Play, enter a Memoriam (not Just Smoke, so a splash image is used). Watch the cover from the moment it starts to drop until it lifts.
-
-You should see only the Memoriam splash. A generic scene blindfold should not slide in behind it, and it should not appear when the splash lifts.
-
-**Context:** While the cover was down, a full refresh repainted it with a normal scene blindfold and dropped the splash. That refresh now keeps the splash until the cover lifts.
+**Context:** Most Storyteller buttons that start a blindfold already closed the toolbar. The skybox-only Apply Location and the Memoriam Advance did not. The blindfold itself now closes the toolbar as it starts, so every transition, including future ones, behaves the same way.
 
 ### High — session / join / first-load
 

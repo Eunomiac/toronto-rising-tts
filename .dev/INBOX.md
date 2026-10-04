@@ -50,6 +50,8 @@ Verification:
 
 ## Processed
 
+2026-10-04 `/tr-inbox` — Immediate: close the Storyteller toolbar before every blindfold transition → **TOR-652** (shipped). PAVE ✅ cleared **TOR-647** (Memoriam splash), **TOR-648** (Pink tarot button after Memoriam), **TOR-649** (page 2 rituals layout), **TOR-650** (hunger overlay), **TOR-651** (light-off spot angle). PAVE ✅ **TOR-644** (Downtime overlay) → Complete (KEEP) with your note that the session number is still pushed off the top (you will adjust the XML yourself).
+
 2026-10-02 `/tr-inbox` — Immediate: Memoriam splash replaced by a generic blindfold → **TOR-647** (shipped). PAVE ✅ cleared **TOR-643** (second scene Apply), **TOR-645** (experience log), **TOR-646** (prologue only on first Downtime). PAVE ⚠️ **TOR-644** (Downtime overlay spacing) shipped on the same issue.
 
 2026-10-02 — Immediate: prologue overlay still showing after End Scene → **TOR-646** (shipped).
