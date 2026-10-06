@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState, type ReactElement } from "react";
+import { DotLine } from "./DotLine.js";
 import { assetUrl } from "./layout.js";
+import type { DotFill, DotSlot } from "./paint.js";
 import type { PageContext } from "./pages.js";
 import { ProjectEditor } from "./ProjectEditor.js";
 import {
@@ -22,11 +24,14 @@ import { fetchProjectsSnapshot } from "./projectsBridge.js";
 
 type Editing = { readonly project?: Project; readonly draft: ProjectDraft };
 
-const STAKE_DOT: Record<StakeClass, string> = {
-  self: "dots/dot_white.webp",
-  coterie: "dots/dot_yellow.webp",
-  other: "dots/dot_grey.webp"
+const STAKE_DOT: Record<StakeClass, DotFill> = {
+  self: "dot_white",
+  coterie: "dot_yellow",
+  other: "dot_grey"
 };
+
+const filledDots = (count: number, image: DotFill): DotSlot[] =>
+  Array.from({ length: count }, () => ({ active: true, image }));
 
 const INCREMENT_TEXT = (snapshot: ProjectsSnapshot, key: string): string => {
   const label = snapshot.increments.find((inc) => inc.key === key)?.label ?? "";
@@ -64,7 +69,7 @@ const ProjectCard = ({
     >
       <div className="pc-proj-header">
         <span className="pc-proj-scope" aria-label={`Scope ${scope}`}>
-          {Array.from({ length: scope }, (_, i) => <img key={i} src={assetUrl("dots/dot_yellow.webp")} alt="" />)}
+          <DotLine slots={filledDots(scope, "dot_yellow")} />
         </span>
         <span className="pc-proj-goal">{project.goal || "(no goal yet)"}</span>
       </div>
@@ -84,9 +89,7 @@ const ProjectCard = ({
             return (
               <li key={i} className={cls}>
                 <span>{stakeLabel(row)}</span>
-                <span className="pc-proj-stake-dots">
-                  {Array.from({ length: Math.min(5, row.qty) }, (_, d) => <img key={d} src={assetUrl(STAKE_DOT[cls])} alt="" />)}
-                </span>
+                <DotLine slots={filledDots(Math.min(5, row.qty), STAKE_DOT[cls])} />
               </li>
             );
           })}
@@ -134,17 +137,19 @@ export const PageFive = ({ ctx }: { readonly ctx: PageContext }): ReactElement =
 
   return (
     <article className={`pc-page pc-sheet-page pc-page-five ${ctx.side}`}>
-      <div className="pc-proj-toolbar">
+      <div className="pc-divider">
         <h3 className="pc-section-title">Projects</h3>
-        <button type="button" className={`pc-add-text${coterie ? " active" : ""}`} onClick={() => setCoterie((v) => !v)}>
-          {coterie ? "Coterie ✓" : "Coterie"}
-        </button>
-        <button type="button" className="pc-add-text" disabled={!snapshot.ok} onClick={() => setEditing({ draft: emptyProjectDraft(newOwner, snapshot.presentDay) })}>
-          + Project
-        </button>
-        <button type="button" className="pc-add-text" disabled={loading} onClick={() => void load()}>
-          {loading ? "…" : "Refresh"}
-        </button>
+        <div className="pc-divider-actions">
+          <button type="button" className={`pc-add-text${coterie ? " active" : ""}`} onClick={() => setCoterie((v) => !v)}>
+            {coterie ? "Coterie ✓" : "Coterie"}
+          </button>
+          <button type="button" className="pc-add-text" disabled={!snapshot.ok} onClick={() => setEditing({ draft: emptyProjectDraft(newOwner, snapshot.presentDay) })}>
+            + Project
+          </button>
+          <button type="button" className="pc-add-text" disabled={loading} onClick={() => void load()}>
+            {loading ? "…" : "Refresh"}
+          </button>
+        </div>
       </div>
       {snapshot.presentDayText ? <p className="pc-proj-present">Present day: {snapshot.presentDayText}</p> : null}
       {error ? <p className="pc-sheet-error">{error}</p> : null}

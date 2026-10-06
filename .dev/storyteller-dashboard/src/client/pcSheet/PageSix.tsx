@@ -43,15 +43,17 @@ export const PageSix = ({ ctx }: { readonly ctx: PageContext }): ReactElement =>
   return (
     <article className={`pc-page pc-sheet-page pc-page-six ${ctx.side}`}>
       <div className="pc-divider">
-        <img src={assetUrl("sheet/divider_experienceLog.webp")} alt="Experience Log" />
+        <h3 className="pc-section-title">Experience Log</h3>
+        <button type="button" className="pc-add-text" onClick={() => setAdding(true)}>+ Entry</button>
       </div>
       <div className="pc-xp-head">
         <button type="button" className="pc-xp" title="Add an Experience Log entry" onClick={() => setAdding(true)}>
-          <img src={assetUrl("dots/xp_jewel.webp")} alt="" />
-          <strong>{bankedXpFromLog(ctx.seat.playerData.xp)}</strong>
+          <span className="pc-xp-jewel">
+            <img src={assetUrl("dots/xp_jewel.webp")} alt="" />
+            <strong>{bankedXpFromLog(ctx.seat.playerData.xp)}</strong>
+          </span>
           <span>XP</span>
         </button>
-        <button type="button" className="pc-add-text" onClick={() => setAdding(true)}>+ Entry</button>
       </div>
       <div className="pc-xp-log">
         {sessions.map((session) => <SessionBlock key={session.key} session={session} live={session.num === liveNum} />)}

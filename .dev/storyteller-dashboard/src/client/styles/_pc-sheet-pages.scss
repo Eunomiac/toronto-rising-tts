@@ -19,8 +19,7 @@
   gap: inherit;
   min-height: 0;
   overflow: hidden auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(196, 161, 90, 0.4) transparent;
+  scrollbar-width: none;
 }
 
 .pc-masonry {
@@ -73,6 +72,19 @@
 
     + .pc-add-text {
       bottom: -8px;
+    }
+  }
+
+  // Several small buttons side by side in the same bottom-right spot.
+  .pc-divider-actions {
+    position: absolute;
+    right: 0;
+    bottom: 7px;
+    display: flex;
+    gap: 0.2rem;
+
+    .pc-add-text {
+      position: static;
     }
   }
 }
@@ -209,10 +221,6 @@
 
   &:hover {
     color: #fce5c1;
-  }
-
-  sup {
-    color: #c4a15a;
   }
 }
 
@@ -571,20 +579,20 @@
 
 // ---------------------------------------------------------------- Page 5
 
-.pc-proj-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45rem;
+.pc-page-five,
+.pc-page-six {
+  .pc-divider {
+    margin-top: 0.2rem;
+  }
 
   .pc-section-title {
-    margin: 0 0.4rem 0 0;
+    margin: 0;
   }
+}
 
-  .pc-add-text.active {
-    border-color: #ffdd00;
-    color: #ffdd00;
-  }
+.pc-page-five .pc-add-text.active {
+  border-color: #ffdd00;
+  color: #ffdd00;
 }
 
 .pc-proj-present {
@@ -603,9 +611,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  padding-right: 0.2rem;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(196, 161, 90, 0.4) transparent;
+  scrollbar-width: none;
 }
 
 .pc-proj-card {
@@ -641,12 +647,6 @@
 .pc-proj-scope {
   display: flex;
   flex: 0 0 auto;
-  gap: 1px;
-
-  img {
-    width: 0.62rem;
-    height: 0.62rem;
-  }
 }
 
 .pc-proj-goal {
@@ -712,16 +712,6 @@
       color: #aaaaaa;
       font-style: italic;
     }
-  }
-}
-
-.pc-proj-stake-dots {
-  display: flex;
-  gap: 1px;
-
-  img {
-    width: 0.55rem;
-    height: 0.55rem;
   }
 }
 
@@ -835,7 +825,6 @@
 
   .pc-xp {
     top: 0;
-    padding: 0;
   }
 }
 
@@ -846,9 +835,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.55rem;
-  padding-right: 0.2rem;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(196, 161, 90, 0.4) transparent;
+  scrollbar-width: none;
 }
 
 .pc-xp-session {

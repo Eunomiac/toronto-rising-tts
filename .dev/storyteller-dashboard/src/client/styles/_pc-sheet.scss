@@ -615,6 +615,10 @@
     align-items: center;
     /* Balance text for prettier wrapping in supported browsers */
     text-wrap: balance;
+
+    &.small {
+      font-size: 0.6rem;
+    }
   }
 }
 
@@ -905,19 +909,26 @@
   }
 
   strong {
-    position: absolute;
     font-size: 2rem;
     font-weight: 800;
-    transform: translate(-50%, -50%);
-    top: 36px;
-    left: 39px;
+    line-height: 1;
     text-shadow: 2px 2px 0px black;
   }
 
-  span {
+  > span:last-child {
     font-family: "Abril Fatface", serif;
     letter-spacing: 0.16em;
     color: #FFFFFF;
+  }
+}
+
+// Image and number share one grid cell so the number sits in the jewel's centre.
+.pc-xp-jewel {
+  display: grid;
+  place-items: center;
+
+  > * {
+    grid-area: 1 / 1;
   }
 }
 

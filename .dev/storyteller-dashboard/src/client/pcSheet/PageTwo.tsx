@@ -83,7 +83,6 @@ const DisciplineCell = ({
                   onClick={() => onPopup({ kind: "power", key: row.key, entry: power })}
                 >
                   {power.name}
-                  {power.notes !== "" ? <sup>*</sup> : null}
                 </button>
               </span>
             ))}

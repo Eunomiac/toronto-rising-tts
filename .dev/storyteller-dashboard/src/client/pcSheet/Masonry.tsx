@@ -1,5 +1,6 @@
-import { useEffect, useLayoutEffect, useRef, useState, type ReactElement, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ReactElement, type ReactNode } from "react";
 import { masonryLayout } from "./masonryLayout.js";
+import { useFontsLoaded } from "./useFontsLoaded.js";
 
 export type MasonryItem = { readonly key: string; readonly node: ReactNode };
 
@@ -22,7 +23,7 @@ export const Masonry = ({ items, columns, columnGap, rowGap }: Props): ReactElem
   const measure = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
   const [heights, setHeights] = useState<readonly (readonly number[])[]>([]);
-  const [, setFontsLoaded] = useState(0);
+  useFontsLoaded();
 
   const cols = Math.min(columns, items.length);
   const colWidth = cols > 0 ? (width - columnGap * (cols - 1)) / cols : 0;
@@ -38,12 +39,6 @@ export const Masonry = ({ items, columns, columnGap, rowGap }: Props): ReactElem
     const observer = new ResizeObserver(update);
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const remeasure = (): void => setFontsLoaded((n) => n + 1);
-    document.fonts.addEventListener("loadingdone", remeasure);
-    return () => document.fonts.removeEventListener("loadingdone", remeasure);
   }, []);
 
   // Runs after every render: content edits change heights without changing keys.

@@ -1,4 +1,4 @@
-import { useEffect, useState, type MouseEvent, type ReactElement } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent, type ReactElement } from "react";
 import { bankedXpFromLog } from "./bankedXp.js";
 import { chronologyFor, identityFromSeat, subtitleFor } from "./identity.js";
 import { ATTRIBUTE_COLUMNS, ATTRIBUTE_LABELS, SKILL_COLUMNS, SKILL_LABELS, assetUrl } from "./layout.js";
@@ -7,6 +7,7 @@ import { paintDamageTrack, paintDotLine, paintHumanityTrack } from "./paint.js";
 import { formatBadge } from "./ringActions.js";
 import type { RingTarget, SeatSnapshot, Specialty } from "./types.js";
 import { termProps } from "../termImages/store.js";
+import { useFontsLoaded } from "./useFontsLoaded.js";
 
 type Props = {
   readonly seat: SeatSnapshot;
@@ -49,6 +50,29 @@ const SpecialtiesLine = ({ specs }: { readonly specs: readonly Specialty[] }): R
       ))}
     </span>
   );
+};
+
+const MAX_CONVICTION_LINES = 3;
+
+const wrappedLineCount = (el: HTMLElement): number => {
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  return new Set(Array.from(range.getClientRects(), (rect) => Math.round(rect.top))).size;
+};
+
+// Measured at full size; past three lines the conviction drops to the small size so it fits the header.
+const Conviction = ({ text }: { readonly text: string }): ReactElement => {
+  const ref = useRef<HTMLParagraphElement>(null);
+  const fontsLoaded = useFontsLoaded();
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) {
+      return;
+    }
+    el.classList.remove("small");
+    el.classList.toggle("small", wrappedLineCount(el) > MAX_CONVICTION_LINES);
+  }, [text, fontsLoaded]);
+  return <p ref={ref}>“{text}”</p>;
 };
 
 const BoxTrack = ({ boxes }: { readonly boxes: ReturnType<typeof paintDamageTrack> }): ReactElement => (
@@ -102,7 +126,7 @@ export const PageOne = ({ seat, side, onRing, onHunger, onXp, onDesire }: Props)
         />
         <div className="pc-convictions">
           {identity.convictions.map((text) => (
-            <p key={text}>“{text}”</p>
+            <Conviction key={text} text={text} />
           ))}
         </div>
       </header>
@@ -173,8 +197,10 @@ export const PageOne = ({ seat, side, onRing, onHunger, onXp, onDesire }: Props)
           title="Add an Experience Log entry"
           onClick={onXp}
         >
-          <img src={assetUrl("dots/xp_jewel.webp")} alt="" />
-          <strong>{bankedXpFromLog(seat.playerData.xp)}</strong>
+          <span className="pc-xp-jewel">
+            <img src={assetUrl("dots/xp_jewel.webp")} alt="" />
+            <strong>{bankedXpFromLog(seat.playerData.xp)}</strong>
+          </span>
           <span>XP</span>
         </button>
         <button className="pc-track" type="button" onClick={(event) => onRing(event, { kind: "damage", which: "willpower" })}>
