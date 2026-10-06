@@ -4,6 +4,7 @@ import { DotLine } from "./DotLine.js";
 import { assetUrl } from "./layout.js";
 import { Masonry } from "./Masonry.js";
 import type { PageContext } from "./pages.js";
+import { revealOverflowProps } from "./revealOverflow.js";
 import {
   ADVANTAGE_LABELS,
   advantageStakeKey,
@@ -41,8 +42,9 @@ const AdvantageBox = ({
           title="Edit"
           onClick={() => onEdit(entry)}
           {...termProps(ADVANTAGE_LABELS[entry.category], entry.name, advantageTitle(entry))}
+          {...revealOverflowProps}
         >
-          {advantageTitle(entry)}
+          <span className="pc-reveal-text">{advantageTitle(entry)}</span>
         </button>
         <button
           type="button"

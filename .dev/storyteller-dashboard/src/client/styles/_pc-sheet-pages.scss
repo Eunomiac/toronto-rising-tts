@@ -328,6 +328,23 @@
   }
 }
 
+// Truncated box headers (revealOverflow.ts): on hover the full text spills over neighbours in a
+// black, gold-edged strip. Negative margin cancels padding + border so the text does not move.
+.pc-sheet-page .pc-revealed {
+  overflow: visible;
+  text-overflow: clip;
+
+  .pc-reveal-text {
+    position: relative;
+    left: var(--pc-reveal-shift, 0);
+    z-index: 6;
+    margin-left: calc(-0.25rem - 1px);
+    padding: 0.05rem 0.25rem;
+    border: 1px solid #c4a15a;
+    background: #000000;
+  }
+}
+
 .pc-adv-box {
   padding: 2px;
   border: 1px solid #cb995c;

@@ -2,6 +2,7 @@ import { useState, type ReactElement } from "react";
 import { assetUrl } from "./layout.js";
 import { Masonry } from "./Masonry.js";
 import type { PageContext } from "./pages.js";
+import { revealOverflowProps } from "./revealOverflow.js";
 import { emptyRelationship, isBondLink, MAX_BOND_STRENGTH, relationshipSections } from "./relationships.js";
 import { portraitUrl, RelationshipModal } from "./RelationshipModal.js";
 import { termProps } from "../termImages/store.js";
@@ -39,7 +40,9 @@ const RelationshipBox = ({
   return (
     <div className="pc-rel-box">
       <button type="button" className="pc-rel-title" title="Edit" onClick={() => onEdit(row)}>
-        <span className="pc-rel-name" {...termProps("character", entry.headerLeft)}>{entry.headerLeft}</span>
+        <span className="pc-rel-name" {...termProps("character", entry.headerLeft)} {...revealOverflowProps}>
+          <span className="pc-reveal-text">{entry.headerLeft}</span>
+        </span>
         {bond ? <BondBoxes strength={entry.bondStrength ?? 0} /> : <span className="pc-rel-role">{entry.headerRight}</span>}
       </button>
       <div className="pc-rel-content">
