@@ -84,7 +84,6 @@ export const emptySeat = (color: SeatColor): SeatSnapshot => ({
   discBonus: 1,
   discReroll: 1,
   baneSeverity: 2,
-  clanBanes: [{ name: "The Curse of Fallen Blood", subtitleLabel: "", subtitleValue: "", notes: "" }],
   healthMax: 5,
   willpowerMax: 4,
   humanityMax: 7,

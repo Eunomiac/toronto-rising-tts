@@ -21,13 +21,6 @@ export type Specialty = {
   readonly decade?: number;
 };
 
-export type ClanBane = {
-  readonly name: string;
-  readonly subtitleLabel: string;
-  readonly subtitleValue: string;
-  readonly notes: string;
-};
-
 export type SeatSnapshot = {
   readonly color: SeatColor;
   readonly playerId?: string;
@@ -71,8 +64,6 @@ export type SeatSnapshot = {
   readonly discBonus: number;
   readonly discReroll: number;
   readonly baneSeverity: number;
-  /** Bane titles from PCS.json `clanBanes` (the rules text is not in the data). */
-  readonly clanBanes: readonly ClanBane[];
   readonly healthMax: number;
   readonly willpowerMax: number;
   readonly humanityMax: number;

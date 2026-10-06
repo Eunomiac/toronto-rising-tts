@@ -39,7 +39,6 @@ const seat = (partial: Partial<SeatSnapshot>): SeatSnapshot => ({
   discBonus: 0,
   discReroll: 0,
   baneSeverity: 0,
-  clanBanes: [],
   healthMax: 5,
   willpowerMax: 4,
   humanityMax: 7,

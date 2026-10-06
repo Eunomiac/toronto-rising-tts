@@ -54,7 +54,6 @@ const okSnapshot = (hungerValue: number): SheetSnapshot => ({
     discBonus: 0,
     discReroll: 0,
     baneSeverity: 0,
-    clanBanes: [],
     healthMax: 4,
     willpowerMax: 3,
     humanityMax: 7,

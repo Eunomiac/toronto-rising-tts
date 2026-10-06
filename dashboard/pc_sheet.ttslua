@@ -171,25 +171,6 @@ local function copyConvictionDescriptions(list)
   return out
 end
 
-local function copyClanBanes(list)
-  local out = {}
-  if type(list) ~= "table" then
-    return out
-  end
-  for i = 1, #list do
-    local row = list[i]
-    if type(row) == "table" and type(row.name) == "string" and row.name ~= "" then
-      out[#out + 1] = {
-        name = row.name,
-        subtitleLabel = type(row.subtitleLabel) == "string" and row.subtitleLabel or "",
-        subtitleValue = type(row.subtitleValue) == "string" and row.subtitleValue or "",
-        notes = type(row.notes) == "string" and row.notes or "",
-      }
-    end
-  end
-  return out
-end
-
 local function identityFromPcs(charKey, catalog)
   local pcs = type(charKey) == "string" and charKey ~= "" and PCS.getPC(charKey) or nil
   if type(pcs) ~= "table" then
@@ -218,7 +199,6 @@ local function identityFromPcs(charKey, catalog)
     embracePlace = type(pcs.embracePlace) == "string" and pcs.embracePlace or "",
     embraceYear = num(pcs.embraceYear),
     convictions = copyConvictionDescriptions(pcs.convictions),
-    clanBanes = copyClanBanes(pcs.clanBanes),
   }
 end
 
@@ -576,7 +556,6 @@ local function snapshotSeat(color)
     discBonus = num(bpDerived and bpDerived.discBonus),
     discReroll = num(bpDerived and bpDerived.discReroll),
     baneSeverity = num(bpDerived and bpDerived.baneSeverity),
-    clanBanes = identity.clanBanes,
     healthMax = PSC.trackerMaxFromStats(stats, resolved, "health"),
     willpowerMax = PSC.trackerMaxFromStats(stats, resolved, "willpower"),
     humanityMax = PSC.trackerMaxFromStats(stats, resolved, "humanity"),

@@ -259,63 +259,16 @@
   white-space: nowrap;
 }
 
+// Bottom of Page 2, left blank for the clan bane / compulsion / coterie merit artwork.
 .pc-banes {
-  margin-top: auto;
-  padding-bottom: 0.5rem;
-}
+  position: relative;
+  flex: 1 0 12rem;
 
-.pc-bane-list {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 1fr);
-  gap: 0.6rem;
-}
-
-.pc-bane {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 0;
-  color: #ffffff;
-  font-family: "Trajan Pro 3", serif;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-.pc-bane-prefix {
-  font-size: 0.6rem;
-  letter-spacing: 0.08em;
-}
-
-.pc-bane-name {
-  font-size: 1.05rem;
-  line-height: 1.1;
-}
-
-.pc-bane-box {
-  align-self: stretch;
-  margin-top: 0.3rem;
-  padding: 2px 4px;
-  border: 1px solid #cb995c;
-  background: #000000;
-  color: #dddddd;
-  font-family: "Arial Narrow", sans-serif;
-  font-size: 0.66rem;
-  line-height: 1.2;
-  text-transform: none;
-
-  p {
-    margin: 0;
+  .pc-bp-note {
+    position: absolute;
+    top: 0.3rem;
+    right: 0;
   }
-}
-
-.pc-bane-subtitle {
-  color: #e9cf9f;
-  font-weight: 700;
-}
-
-.pc-bane-notes {
-  font-style: italic;
 }
 
 .pc-rc-columns {
