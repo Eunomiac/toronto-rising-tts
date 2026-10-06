@@ -18,7 +18,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-06 — TOR-653 (dashboard sheet Pages 2–3 editing) and TOR-654 (dashboard sheet Page 6 XP log) added._
+_Last populated: 2026-10-06 — TOR-653 (dashboard sheet Pages 2–3 editing) TOR-654 (dashboard sheet Page 6 XP log) and TOR-655 (relationships in gameState, dashboard Page 4) added._
 
 ### High — session / join / first-load
 
@@ -41,6 +41,10 @@ Then click the **III · IV** tab. Page 3 should show the same Backgrounds, Merit
 #### TOR-654 — Dashboard sheet Page 6: Experience Log display and XP popup
 
 **How to verify:** Save & Play, open the dashboard PCs tab, pick a PC and click the **V · VI** tab. Page 6 should list the same sessions, entries and totals as that PC's in-game Page 6, newest session first, with the current session highlighted. Click the XP jewel (Page 1 or Page 6) to open the Experience popup. Choose Gain, enter 2 with the description "Dashboard test" and click **Apply**; the entry should appear on both the dashboard and the in-game Page 6 and the jewel total should rise by 2. Click **Undo** and check it disappears in both places. Then apply a 1 XP spend with **Apply to All**: every connected PC should get it and a disconnected PC should not. Click **Undo All** and check it is removed from every PC that got it.
+
+#### TOR-655 — Relationships move into gameState; dashboard sheet Page 4 editing
+
+**How to verify:** Save & Play, then open each PC's Page 4 in TTS and check it looks the same as before (relationships now load from the save rather than a data file). On the dashboard PCs tab, pick a PC and click **III · IV**; Page 4 should list the same relationships. Click **+ Childe**, give it a name, a line of text and a portrait, and click **Add**: it should appear on the in-game Page 4. Open it again, link a second PC as a Contact and save: the second PC's in-game Page 4 should show it under Other Relationships. Change a thrall's Bond Strength and check the red boxes update in-game. Delete the test entry and confirm it disappears from both sheets. Add a second touchstone to one PC and check Page 4 still builds with both stacked on the left. Finally save, reload the game, and confirm your edits stayed.
 
 ## Cleared
 

@@ -489,7 +489,7 @@ _Blocked: author must define data binding approach before substantial implementa
 - [x] **Character sheet pages restore to y = 3.20:** Catalog and layout use 3.20 (not 3.19). Pending Save & Play. _(TOR-585)_
 - [x] **Page 2 discipline rows do not stretch:** `page2_disc_row` Defaults include `flexibleHeight="0"`. Pending Save & Play. _(TOR-588)_
 - [x] **Character sheet pages all hide:** Seat layout was stamping reference-seat CSHEET Y onto other seats (desync vs `setInvisibleTo`). Propagate preserves per-page Y, reconciles visibility from Y, ensures ?2 pages visible. _(TOR-343)_
-- [ ] **Page 4:** PC relationships; Blood Bonds. _(Partial: `lib/json/PC_Relationships.json`, `lib/pcs_data.ttslua`.)_ _(TOR-93)_
+- [x] **Page 4:** PC relationships; Blood Bonds. Live builder shipped earlier; data moved into gameState under **TOR-655**. _(TOR-93)_
 - [ ] **Fomorach animal-form shapeshift toggle:** Sheet toggle applying author-defined stat deltas. `blockedBy` **TOR-327** (workshop stat deltas). _(TOR-330)_
 - [ ] **Page 5:** Projects; Equipment; Boons. _(TOR-99)_ ? implementation umbrella **TOR-232**
 - [x] **Projects ? ST panel + modal XML:** Agent-owned panel + editor modal including structured stake-row pool. _(TOR-228 ? Done 2026-07-10)_
@@ -544,6 +544,7 @@ Standalone second-monitor web app (`.dev/storyteller-dashboard/`). Not the in-ta
 - [x] **Stage NPCs hover preview:** 300px right column shows the full cutout on thumbnail hover. _(TOR-556)_
 - [x] **PCs tab sheet Pages 2–3 editing:** Spread tabs I·II / III·IV / V·VI; Page 2 disciplines, powers, rituals and ceremonies; Page 3 backgrounds, merits, flaws (shared Advantage popup, staked dots, Status strip); Lua ops in `dashboard/pc_sheet_traits.ttslua`; bootstrap keeps deletions. Pending Save & Play. _(TOR-653)_
 - [x] **PCs tab sheet Page 6 XP log:** All sessions newest first with the live one highlighted; XP jewel opens an Experience popup (Apply, Apply to All skipping disconnected PCs, Undo, Undo All) via `dashboard/pc_sheet_xp.ttslua`; dead scalar XP / `mergeSeat` paths removed. Pending Save & Play. _(TOR-654)_
+- [x] **Relationships in gameState + PCs tab sheet Page 4:** `gameState.relationships` seeded once from `PC_Relationships.json` (`core/relationships.ttslua`); Page 4 objects read via `GlobalGetRelationshipsForChar` and allow zero or several touchstones/sires; dashboard Page 4 with Relationship popup (per-PC links, bond strength, portrait picker). Pending Save & Play. _(TOR-655)_
 - [ ] **Stage NPCs saved tags + Lua Execute Code:** Persistent A–Z tag rail; Lua tab uses External Editor 39998/39999 (conflicts with TTS Tools extension — one at a time). Pending dashboard/TTS check. _(TOR-555)_
 
 ## Table Objects
