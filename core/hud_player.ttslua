@@ -878,6 +878,24 @@ function HUDP.reconcileAllPrincesCourtTrackers()
     HUDP.reconcilePrincesCourtTrackersForHudSeat(nil)
 end
 
+--- After Global `UI.setXml`, Court pages and tracker dots are the baked defaults again, and the
+--- tracker caches still hold the pre-remount values so a normal reconcile would skip them.
+function HUDP.reapplyPrincesCourtAfterXmlRemount()
+    lastPrincesCourtTrackerUiAttrs = {}
+    lastPrincesCourtTrackerFpByColumn = {}
+    princesCourtRootAudience = {}
+    princesCourtPageAudience = { {}, {}, {} }
+    for _, seatColor in ipairs(C.PlayerColors or {}) do
+        local pid = S.getPlayerID(seatColor)
+        if type(pid) == "string" and pid ~= "" then
+            HUDP.reconcilePrincesCourtPagesForSeat(seatColor, pid)
+        end
+    end
+    if anyHudHasPrincesCourtPage1() then
+        HUDP.reconcileAllPrincesCourtTrackers()
+    end
+end
+
 --- Sets right-sidebar button chrome via XmlUI `color` on the base Image (TOR-444).
 -- Priority: active > hover > idle. No `_hover` / `_active` sibling Images.
 local SIDEBAR_BTN_COLOR_IDLE = "#C9C9C9"
