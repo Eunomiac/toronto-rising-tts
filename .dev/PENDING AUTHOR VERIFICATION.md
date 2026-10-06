@@ -18,7 +18,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-06 — TOR-653 (dashboard sheet Page 2 editing) added._
+_Last populated: 2026-10-06 — TOR-653 (dashboard sheet Pages 2–3 editing) added._
 
 ### High — session / join / first-load
 
@@ -32,9 +32,11 @@ _Last populated: 2026-10-06 — TOR-653 (dashboard sheet Page 2 editing) added._
 
 ### Medium — Storyteller Dashboard character sheet
 
-#### TOR-653 — Dashboard sheet Page 2: edit disciplines, powers, rituals and ceremonies
+#### TOR-653 — Dashboard sheet Pages 2–3: edit disciplines, powers, rituals, ceremonies and advantages
 
-**How to verify:** Save & Play, open the dashboard PCs tab, pick a PC and click the **I · II** tab. Page 2 should list the same disciplines and powers as that PC's in-game sheet. Raise a discipline's base dot from its dot ring and check that the in-game Page 2 gains the dot. Use **+** under a discipline to add a power called "Test Power", then click it and delete it; it should appear and disappear on the in-game sheet too. For a PC with Blood Sorcery, add and remove a ritual the same way. Finally, add a discipline with **+ Discipline**, delete it, reload the save, and confirm it stays deleted.
+**How to verify:** Save & Play, open the dashboard PCs tab, pick a PC and click the **I · II** tab. Page 2 should list the same disciplines and powers as that PC's in-game sheet. Raise a discipline's base dot from its dot ring and check that the in-game Page 2 gains the dot. Use **+** under a discipline to add a power called "Test Power", then click it and delete it; it should appear and disappear on the in-game sheet too. For a PC with Blood Sorcery, add and remove a ritual the same way. Add a discipline with **+ Discipline**, delete it, reload the save, and confirm it stays deleted.
+
+Then click the **III · IV** tab. Page 3 should show the same Backgrounds, Merits and Flaws as the in-game sheet, with Camarilla and Clan Status as a dot strip at the top. Add a merit called "Test Merit" with two dots; it should appear in-game with that exact name. Open it, change the type to Flaw and save; it should move to Flaws (red dots) in both places. Disable one of its dots from the dot ring (a crossed-out grey dot should appear in-game), then delete it. The TTS Stats panel's Add button now also keeps the name you type.
 
 ## Cleared
 
