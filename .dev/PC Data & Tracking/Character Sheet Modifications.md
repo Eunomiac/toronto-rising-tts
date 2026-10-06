@@ -72,7 +72,7 @@ Pages with PCS-driven layout use a **separate object entry** so template builder
 | :-- | :-- | :-- | :-- |
 | 2 | `require("ui.ui_csheet_page2")` | `lib/csheet_page2_xml.ttslua` | Live (`self.UI.setXml`) — disciplines + rituals/ceremonies |
 | 3 | `require("ui.ui_csheet_page3")` | `lib/csheet_page3_xml.ttslua` | Live (`self.UI.setXml`) |
-| 4 | `require("ui.ui_csheet_page4")` | `lib/csheet_page4_xml.ttslua` | Live (`self.UI.setXml` from `lib/json/PC_Relationships.json`) |
+| 4 | `require("ui.ui_csheet_page4")` | `lib/csheet_page4_xml.ttslua` | Live (`self.UI.setXml` from `gameState.relationships` via `Global.call("GlobalGetRelationshipsForChar", charKey)`) |
 | 5 | `require("ui.ui_csheet_page5")` | `lib/csheet_page5_xml.ttslua` | Placeholder |
 | 6 | `require("ui.ui_csheet")` | Templates `ui/.templates/csheet/page6.xml` + partials → `ui/player/csheets/page6_<charKey>.xml` via `npm run csheet-xp-log:bake` | **Build-baked Include** + live `setAttribute` only (no runtime `setXml`) |
 
@@ -109,3 +109,7 @@ npm run cloud-asset-sync -- --job csheetPage1Overlays,csheetPage2Assets
 ```
 
 Runtime `UI.setXml` strings cannot resolve editor `<Include>`; pages 3–4 prepend `lib/csheet_defaults_xml` via Lua and must not embed `<Include src="csheet_defaults.xml" />` in `ui/.templates/csheet/pageN.xml`. Page 4 relationship portraits and dividers must exist on each `CSHEET_PAGE_4_*` object (`npm run custom-ui-assets:merge-object-assets` from `lib/json/PC_Relationship_Images.json`).
+
+### Page 4 relationships
+
+`gameState.relationships[entryKey]` is the authority (`core/relationships.ttslua`). `S.validateState` seeds it once from `lib/json/PC_Relationships.json` (embedded in `lib/pc_relationships_data.ttslua`) when a save has none; editing that JSON afterwards does not change a live save. Edit relationships from the Storyteller Dashboard PCs tab Page 4 (`relationshipUpsert` / `relationshipDelete` in `dashboard/pc_sheet_relationships.ttslua`), which refreshes the sheets of every PC linked before or after the edit. The page fingerprint covers every shown field, so any change repaints Page 4. A PC may have zero or several touchstones and sires; extras stack under the first in the same column using the indexed "other" partial (the singleton partials have fixed ids). The builder copies each entry into object-owned tables before sorting (same cross-script ownership rule as Page 2).

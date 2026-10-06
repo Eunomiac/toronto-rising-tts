@@ -24,6 +24,7 @@ local U = require("lib.util")
 local EXTENSIONS = {
   require("dashboard.pc_sheet_traits"),
   require("dashboard.pc_sheet_xp"),
+  require("dashboard.pc_sheet_relationships"),
 }
 
 local ATTRIBUTE_KEYS = {

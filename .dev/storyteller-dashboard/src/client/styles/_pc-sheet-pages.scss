@@ -358,6 +358,166 @@
   font-style: normal;
 }
 
+// ---------------------------------------------------------------- Page 4
+
+.pc-page-four {
+  gap: 0.2rem;
+
+  .pc-divider {
+    margin: 0.4rem 0 0.3rem;
+  }
+
+  .pc-section-title {
+    margin: 0;
+  }
+}
+
+.pc-rel-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 0.45rem;
+}
+
+.pc-rel-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.pc-rel-box {
+  border: 1px solid #cb995c;
+  background: #000000;
+  color: #dddddd;
+  font-family: "Franklin Gothic Demi Cond", sans-serif;
+  font-size: 0.66rem;
+  line-height: 1.25;
+}
+
+.pc-rel-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.25rem 0.4rem;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+  font: inherit;
+  text-align: left;
+
+  &:hover .pc-rel-name {
+    color: #fce5c1;
+  }
+}
+
+.pc-rel-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pc-rel-role {
+  flex: 0 1 auto;
+  color: #dddddd;
+  font-size: 0.7rem;
+}
+
+.pc-rel-bond {
+  display: flex;
+  align-items: center;
+  gap: 0.12rem;
+
+  img,
+  .pc-rel-bond-empty {
+    width: 0.7rem;
+    height: 0.7rem;
+  }
+
+  .pc-rel-bond-empty {
+    box-sizing: border-box;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+  }
+}
+
+.pc-rel-bond-label {
+  margin-right: 0.2rem;
+  color: #990000;
+  font-size: 0.6rem;
+  font-style: italic;
+}
+
+.pc-rel-content {
+  display: flex;
+  gap: 0.4rem;
+  padding: 0 0.4rem 0.35rem;
+}
+
+.pc-rel-portrait-img {
+  flex: 0 0 auto;
+  width: 3.4rem;
+  height: 5.1rem;
+  object-fit: cover;
+}
+
+.pc-rel-text {
+  flex: 1 1 auto;
+  min-width: 0;
+
+  p {
+    margin: 0.15rem 0 0;
+  }
+}
+
+.pc-rel-sub {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.4rem;
+  color: #aaaaaa;
+  font-weight: 700;
+}
+
+.pc-rel-link {
+  display: flex;
+  gap: 0.35rem;
+
+  > * {
+    flex: 1 1 0;
+  }
+}
+
+.pc-rel-portraits {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(3.2rem, 1fr));
+  gap: 0.3rem;
+  max-height: 12rem;
+  overflow-y: auto;
+}
+
+.pc-rel-portrait {
+  aspect-ratio: 2 / 3;
+  padding: 0;
+  border: 2px solid transparent;
+  background: rgba(0, 0, 0, 0.5);
+  color: #e9cf9f;
+  font-size: 0.65rem;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &.selected {
+    border-color: #c4a15a;
+  }
+}
+
 // ---------------------------------------------------------------- Page 6
 
 .pc-page-six {

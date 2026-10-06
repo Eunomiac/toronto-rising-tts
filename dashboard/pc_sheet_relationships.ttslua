@@ -1,0 +1,64 @@
+--[[
+  Storyteller Dashboard PCs tab — Page 4 relationship ops and the `relationships` snapshot field.
+  Writes go through core.relationships (gameState.relationships); every PC linked before or
+  after the edit gets its sheets refreshed so Page 4 repaints.
+]]
+
+local M = {}
+
+local C = require("lib.constants")
+local PCST = require("core.pc_storyteller_panel")
+local Relationships = require("core.relationships")
+
+local function charKeyFor(pid)
+  local catalog = C.PlayerData[pid]
+  if type(catalog) == "table" and type(catalog.charKey) == "string" then
+    return catalog.charKey
+  end
+  return nil
+end
+
+local function refreshColors(touched)
+  for _, color in ipairs(C.PlayerColors) do
+    if touched[color] then
+      PCST.refreshCharacterSheetsForColor(color)
+    end
+  end
+end
+
+M.ops = {}
+
+M.ops.relationshipUpsert = function(_color, _pid, cmd)
+  local _, err, touched = Relationships.upsert(cmd.key, cmd.expectHeader, cmd.entry)
+  if err ~= nil then
+    return err
+  end
+  refreshColors(touched)
+  return nil
+end
+
+M.ops.relationshipDelete = function(_color, _pid, cmd)
+  if type(cmd.key) ~= "string" or cmd.key == "" then
+    return "Missing relationship key"
+  end
+  local err, touched = Relationships.delete(cmd.key, cmd.expectHeader)
+  if err ~= nil then
+    return err
+  end
+  refreshColors(touched)
+  return nil
+end
+
+--- `relationships`: array of { key, entry } linked to this seat's PC, sorted by key.
+function M.snapshotFields(_color, pid, _stats)
+  local rows = {}
+  for key, entry in pairs(Relationships.listForChar(charKeyFor(pid))) do
+    rows[#rows + 1] = { key = key, entry = entry }
+  end
+  table.sort(rows, function(a, b)
+    return a.key < b.key
+  end)
+  return { relationships = rows }
+end
+
+return M

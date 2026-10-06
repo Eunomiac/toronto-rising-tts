@@ -75,7 +75,7 @@ The Storyteller Dashboard **PCs** tab must never paint a stand-in sheet when the
 
 JSON **Apply** deep-merges a patch into the seat's raw `playerData` dump (arrays replace; objects merge; JSON `null` deletes) and writes it through `GlobalDashboardPcSheetApply` `mergePlayerData` with no defaults or normalization. The PCs tab does **not** poll TTS on an interval — it loads once when the tab opens and after Claim Port / Apply.
 
-Sheet Pages 2, 3 and 6 read `playerData.stats.disciplines`, `stats.backgrounds|merits|flaws` and `playerData.xp` from that same dump and edit them through sibling extension modules (`dashboard/pc_sheet_traits.ttslua`, `dashboard/pc_sheet_xp.ttslua`; contract in [`dashboard/README.md`](../../dashboard/README.md)). XP entries use `XpLog.appendEntry` / `undoLastEntry` like the TTS XP popup; there is no scalar XP write.
+Sheet Pages 2, 3 and 6 read `playerData.stats.disciplines`, `stats.backgrounds|merits|flaws` and `playerData.xp` from that same dump and edit them through sibling extension modules (`dashboard/pc_sheet_traits.ttslua`, `dashboard/pc_sheet_xp.ttslua`; contract in [`dashboard/README.md`](../../dashboard/README.md)). XP entries use `XpLog.appendEntry` / `undoLastEntry` like the TTS XP popup; there is no scalar XP write. Page 4 reads and edits `gameState.relationships` (not `playerData`; seeded once from `lib/json/PC_Relationships.json`, so the generated **PC Reference** digest reflects the seed, not later in-game edits) through `dashboard/pc_sheet_relationships.ttslua`.
 
 ## `PCStatsPartA`: `stats.attributes`, `stats.skills`, and `stats.specialties`
 

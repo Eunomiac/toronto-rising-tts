@@ -327,6 +327,14 @@ function GlobalGetMergedPlayerData(playerID)
     return S.getPlayerData(playerID)
 end
 
+--- Page 4 relationship entries linked to one PC (`gameState.relationships`, filtered by pcLinks).
+--- @param charKey string
+--- @return table<string, table> entryKey -> entry
+function GlobalGetRelationshipsForChar(charKey)
+    local Relationships = require("core.relationships")
+    return Relationships.listForChar(charKey)
+end
+
 --- Current banked XP from the session log (replaces scalar stats.xp).
 --- @param playerID string|nil
 --- @return number

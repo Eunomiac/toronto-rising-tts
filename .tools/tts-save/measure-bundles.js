@@ -281,7 +281,7 @@ function main() {
     }
     if (sampleEntry.bytes > 100 * 1024) {
       if (sampleEntry.name === "CSHEET_PAGE_4_PINK.sample.lua") {
-        console.log(`  NOTE: page-4 sample ${formatBytes(sampleEntry.bytes)} — pc_relationships_data; expected over 100 KB until trimmed`);
+        console.log(`  NOTE: page-4 sample ${formatBytes(sampleEntry.bytes)} — page-4 XML templates; expected just over 100 KB`);
       } else {
         console.log(`  WARN: sample exceeds 100 KB Phase-5 gate (${formatBytes(sampleEntry.bytes)})`);
         process.exitCode = 2;

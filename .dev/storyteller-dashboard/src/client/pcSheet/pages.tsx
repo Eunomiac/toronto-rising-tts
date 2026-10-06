@@ -1,4 +1,5 @@
 import { useState, type MouseEvent, type ReactElement } from "react";
+import { PageFour } from "./PageFour.js";
 import { PageOne } from "./PageOne.js";
 import { PageSix } from "./PageSix.js";
 import { PageThree } from "./PageThree.js";
@@ -62,6 +63,8 @@ export const renderPage = (page: number, ctx: PageContext): ReactElement => {
       return <PageTwo ctx={ctx} />;
     case 3:
       return <PageThree ctx={ctx} />;
+    case 4:
+      return <PageFour ctx={ctx} />;
     case 6:
       return <PageSix ctx={ctx} />;
     default:

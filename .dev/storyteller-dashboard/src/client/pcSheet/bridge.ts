@@ -1,4 +1,5 @@
 import { executeLua, luaLongString } from "../ttsBridge.js";
+import { parseRelationshipRows } from "./relationships.js";
 import type { ApplyCommand, SeatColor, SeatSnapshot, SheetSnapshot, XpEntryRef } from "./types.js";
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -132,7 +133,8 @@ const parseSeat = (value: unknown): SeatSnapshot | null => {
     torpor: asBool(value.torpor),
     hudFrenzy: asBool(value.hudFrenzy),
     hudBlindfold: asBool(value.hudBlindfold),
-    projectStakes
+    projectStakes,
+    relationships: parseRelationshipRows(value.relationships)
   };
 };
 

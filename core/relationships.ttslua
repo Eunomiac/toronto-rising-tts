@@ -1,0 +1,168 @@
+--[[
+  PC relationships (character sheet Page 4) in `gameState.relationships[entryKey]`.
+
+  Entry shape (same as the seed file lib/json/PC_Relationships.json):
+    pcLinks = { [charKey] = linkType }   -- touchstone | sire | childe | thrall | regnant | any other word
+    portrait, headerLeft, headerRight, subheaderLeft, subheaderRight = string
+    body = string[]
+    bondStrength = 0..6 (thrall / regnant only)
+
+  Seeded once by S.validateState when the table is missing; after that, gameState is the
+  only authority (edit through this module, e.g. the Storyteller Dashboard Page 4 popup).
+  Page 4 object scripts read it via GlobalGetRelationshipsForChar.
+]]
+
+local R = {}
+
+local C = require("lib.constants")
+local S = require("core.state")
+
+local MAX_BOND_STRENGTH = 6
+local TEXT_FIELDS = { "portrait", "headerLeft", "headerRight", "subheaderLeft", "subheaderRight" }
+
+local function trim(s)
+  if type(s) ~= "string" then
+    return ""
+  end
+  return (s:gsub("^%s+", ""):gsub("%s+$", ""))
+end
+
+local function allEntries()
+  local all = S.getStateVal("relationships")
+  if type(all) ~= "table" then
+    error("[relationships] gameState.relationships missing (S.validateState seeds it)")
+  end
+  return all
+end
+
+--- camelCase key from the header ("Kade Phillips" -> "kadePhillips"), unique within `all`.
+local function newEntryKey(all, header)
+  local words = {}
+  for word in string.gmatch(header, "[%w]+") do
+    words[#words + 1] = word
+  end
+  local base = "relationship"
+  if #words > 0 then
+    base = string.lower(words[1])
+    for i = 2, #words do
+      base = base .. string.upper(string.sub(words[i], 1, 1)) .. string.lower(string.sub(words[i], 2))
+    end
+  end
+  local key = base
+  local n = 2
+  while all[key] ~= nil do
+    key = base .. tostring(n)
+    n = n + 1
+  end
+  return key
+end
+
+--- @return table|nil entry, string|nil err
+local function normalizeEntry(raw)
+  if type(raw) ~= "table" then
+    return nil, "Missing relationship"
+  end
+  local entry = {}
+  for _, field in ipairs(TEXT_FIELDS) do
+    entry[field] = trim(raw[field])
+  end
+  if entry.headerLeft == "" then
+    return nil, "A relationship needs a name"
+  end
+  local links = {}
+  local linked = false
+  if type(raw.pcLinks) == "table" then
+    for charKey, linkType in pairs(raw.pcLinks) do
+      local kind = trim(linkType)
+      if type(charKey) == "string" and charKey ~= "" and kind ~= "" then
+        links[charKey] = kind
+        linked = true
+      end
+    end
+  end
+  if not linked then
+    return nil, "Link the relationship to at least one PC"
+  end
+  entry.pcLinks = links
+  local body = {}
+  if type(raw.body) == "table" then
+    for i = 1, #raw.body do
+      local line = trim(raw.body[i])
+      if line ~= "" then
+        body[#body + 1] = line
+      end
+    end
+  end
+  entry.body = body
+  local bond = tonumber(raw.bondStrength)
+  if bond ~= nil then
+    entry.bondStrength = math.max(0, math.min(MAX_BOND_STRENGTH, math.floor(bond)))
+  end
+  return entry, nil
+end
+
+--- Seat colors whose PC appears in `entry.pcLinks`.
+local function linkedColors(entry, into)
+  if type(entry) ~= "table" or type(entry.pcLinks) ~= "table" then
+    return into
+  end
+  for _, color in ipairs(C.PlayerColors) do
+    local pid = C.GetPlayerID(color)
+    local catalog = type(pid) == "string" and C.PlayerData[pid] or nil
+    if type(catalog) == "table" and entry.pcLinks[catalog.charKey] ~= nil then
+      into[color] = true
+    end
+  end
+  return into
+end
+
+--- @return table<string, table> entryKey -> entry linked to this PC (live references)
+function R.listForChar(charKey)
+  local out = {}
+  if type(charKey) ~= "string" or charKey == "" then
+    return out
+  end
+  for key, entry in pairs(allEntries()) do
+    if type(entry) == "table" and type(entry.pcLinks) == "table" and entry.pcLinks[charKey] ~= nil then
+      out[key] = entry
+    end
+  end
+  return out
+end
+
+--- Add (key nil) or replace an entry. `expectHeader` guards against editing a changed entry.
+--- @return string|nil key, string|nil err, table|nil touchedColors set
+function R.upsert(key, expectHeader, raw)
+  local entry, err = normalizeEntry(raw)
+  if entry == nil then
+    return nil, err, nil
+  end
+  local all = allEntries()
+  local touched = {}
+  if key == nil or key == "" then
+    key = newEntryKey(all, entry.headerLeft)
+  else
+    local current = all[key]
+    if type(current) ~= "table" or (expectHeader ~= nil and current.headerLeft ~= expectHeader) then
+      return nil, "That relationship changed in TTS — refresh and try again", nil
+    end
+    linkedColors(current, touched)
+  end
+  S.setStateVal(entry, "relationships", key)
+  linkedColors(entry, touched)
+  return key, nil, touched
+end
+
+--- @return string|nil err, table|nil touchedColors set
+function R.delete(key, expectHeader)
+  local all = allEntries()
+  local current = all[key]
+  if type(current) ~= "table" or (expectHeader ~= nil and current.headerLeft ~= expectHeader) then
+    return "That relationship changed in TTS — refresh and try again", nil
+  end
+  local touched = linkedColors(current, {})
+  S.setStateVal(nil, "relationships", key)
+  return nil, touched
+end
+
+return R

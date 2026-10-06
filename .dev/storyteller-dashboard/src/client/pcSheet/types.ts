@@ -69,7 +69,23 @@ export type SeatSnapshot = {
   readonly hudBlindfold: boolean;
   /** Advantage dots held by holding-phase projects, keyed `${name}|${focus}`. */
   readonly projectStakes: Record<string, number>;
+  /** Page 4 entries from `gameState.relationships` linked to this PC, sorted by key. */
+  readonly relationships: readonly RelationshipRow[];
 };
+
+/** `gameState.relationships[key]`; `pcLinks` maps PC charKey -> link type (touchstone, sire, childe, thrall, …). */
+export type RelationshipDraft = {
+  pcLinks: Record<string, string>;
+  portrait: string;
+  headerLeft: string;
+  headerRight: string;
+  subheaderLeft: string;
+  subheaderRight: string;
+  body: string[];
+  bondStrength?: number;
+};
+
+export type RelationshipRow = { readonly key: string; readonly entry: RelationshipDraft };
 
 export type XpEntryRef = { readonly kind: "gain" | "spend"; readonly amount: number; readonly description: string };
 
@@ -126,6 +142,8 @@ export type ApplyCommand =
   | { op: "xpAppendAll"; color: SeatColor; amount: number; description: string }
   | { op: "xpUndo"; color: SeatColor; expect?: XpEntryRef }
   | { op: "xpUndoAll"; color: SeatColor; expect: XpEntryRef; colors: readonly SeatColor[] }
+  | { op: "relationshipUpsert"; color: SeatColor; key?: string; expectHeader?: string; entry: RelationshipDraft }
+  | { op: "relationshipDelete"; color: SeatColor; key: string; expectHeader: string }
   | { op: "hunger"; color: SeatColor; delta: number }
   | { op: "desire"; color: SeatColor; text: string }
   | { op: "torporClear"; color: SeatColor }

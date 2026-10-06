@@ -1,8 +1,10 @@
 --[[
-  Build character sheet page 4 UI XML from lib/json/PC_Relationships.json (embedded in lib/pc_relationships_data).
+  Build character sheet page 4 UI XML from gameState.relationships (core/relationships.ttslua),
+  read through Global.call("GlobalGetRelationshipsForChar", charKey).
   Consumed via require("ui.ui_csheet_page4") → self.UI.setXml in the object script VM.
 
   pcLinks keys (aishe, rashid, fomorach, lordLucien, blackCaesar, …) match C.PlayerData charKey.
+  Zero or several touchstones / sires are allowed; extras stack under the first in the same column.
 
   Layout: ui/.templates/csheet/page4.xml + partials (embedded at build time).
 ]]
@@ -12,12 +14,14 @@ local M = {}
 local CSHEET_DEFAULTS = require("lib.csheet_defaults_xml")
 local TPL = require("lib.ui_xml_template")
 TPL.registerPack(require("lib.ui_xml_templates_csheet_page4"))
-local PC_REL = require("lib.pc_relationships_data")
 
 local PAGE_NUM = 4
 local TEMPLATE_PAGE = "csheet/page4"
 
 local MAX_BOND_DOTS = 6
+--- Indexed-partial ids for extra touchstones / sires (kept clear of the section indexes).
+local EXTRA_TOUCHSTONE_INDEX = 100
+local EXTRA_SIRE_INDEX = 200
 
 --- Heuristic weights for 2-column greedy balancing (tunable).
 local W_TITLE = 10
@@ -277,12 +281,39 @@ local function buildBalancedTwoColumns(rows)
   return table.concat(cols[1].chunks), table.concat(cols[2].chunks)
 end
 
+--- Object-owned copy of a Global-owned entry (keeping Global tables in local arrays throws
+--- "resources owned by different scripts").
+--- @param src table
+--- @return table
+local function copyEntry(src)
+  local body = {}
+  if type(src.body) == "table" then
+    for i = 1, #src.body do
+      body[i] = tostring(src.body[i])
+    end
+  elseif type(src.body) == "string" then
+    body[1] = src.body
+  end
+  return {
+    portrait = type(src.portrait) == "string" and src.portrait or "",
+    headerLeft = tostring(src.headerLeft or ""),
+    headerRight = tostring(src.headerRight or ""),
+    subheaderLeft = tostring(src.subheaderLeft or ""),
+    subheaderRight = tostring(src.subheaderRight or ""),
+    body = body,
+    bondStrength = tonumber(src.bondStrength),
+  }
+end
+
 --- @param pcLinkKey string
 --- @return table sections with bloodBonds populated
 local function loadSectionsForPcLink(pcLinkKey)
-  local root = PC_REL.getDecoded()
-  local touchstone = nil
-  local sire = nil
+  local root = Global.call("GlobalGetRelationshipsForChar", pcLinkKey)
+  if type(root) ~= "table" then
+    error(string.format("[csheet_page4_xml] GlobalGetRelationshipsForChar returned no table for %s", pcLinkKey))
+  end
+  local touchstones = {}
+  local sires = {}
   local childer = {}
   local thralls = {}
   local regnants = {}
@@ -292,35 +323,16 @@ local function loadSectionsForPcLink(pcLinkKey)
     if type(entry) == "table" and type(entry.pcLinks) == "table" then
       local linkType = entry.pcLinks[pcLinkKey]
       if type(linkType) == "string" and linkType ~= "" then
+        linkType = tostring(linkType)
         local row = {
           sortKey = tostring(relKey),
-          entry = entry,
+          entry = copyEntry(entry),
           linkType = linkType,
         }
         if linkType == "touchstone" then
-          if touchstone ~= nil then
-            error(
-              string.format(
-                "[csheet_page4_xml] duplicate touchstone for pcLink %s (%s and %s)",
-                pcLinkKey,
-                touchstone.sortKey,
-                relKey
-              )
-            )
-          end
-          touchstone = row
+          touchstones[#touchstones + 1] = row
         elseif linkType == "sire" then
-          if sire ~= nil then
-            error(
-              string.format(
-                "[csheet_page4_xml] duplicate sire for pcLink %s (%s and %s)",
-                pcLinkKey,
-                sire.sortKey,
-                relKey
-              )
-            )
-          end
-          sire = row
+          sires[#sires + 1] = row
         elseif linkType == "childe" then
           childer[#childer + 1] = row
         elseif linkType == "thrall" then
@@ -334,6 +346,8 @@ local function loadSectionsForPcLink(pcLinkKey)
     end
   end
 
+  table.sort(touchstones, sortRelationshipRows)
+  table.sort(sires, sortRelationshipRows)
   table.sort(childer, sortRelationshipRows)
   table.sort(thralls, sortRelationshipRows)
   table.sort(regnants, sortRelationshipRows)
@@ -348,8 +362,8 @@ local function loadSectionsForPcLink(pcLinkKey)
   end
 
   return {
-    touchstone = touchstone,
-    sire = sire,
+    touchstones = touchstones,
+    sires = sires,
     childer = childer,
     bloodBonds = bloodBonds,
     others = others,
@@ -397,7 +411,29 @@ local function fingerprintRowList(rows)
   return table.concat(chunks)
 end
 
---- @param _stats table|nil unused (page 4 reads PC_Relationships, not stats)
+--- First row uses the singleton partial (fixed ids); extras use the indexed "other" partial.
+--- @param rows table[]
+--- @param linkType string "touchstone" | "sire"
+--- @param extraIndexBase integer
+--- @return string xml
+local function renderSingletonColumn(rows, linkType, extraIndexBase)
+  local chunks = {}
+  for i = 1, #rows do
+    local xml
+    if i == 1 then
+      xml = renderRelationshipBlock(rows[i].entry, linkType, nil)
+    else
+      xml = renderRelationshipBlock(rows[i].entry, "other", extraIndexBase + i)
+    end
+    chunks[#chunks + 1] = xml
+  end
+  return table.concat(chunks)
+end
+
+--- Sections loaded by the fingerprint, reused by the build that follows it in the same refresh.
+local lastSections = { pcLinkKey = nil, sections = nil }
+
+--- @param _stats table|nil unused (page 4 reads gameState.relationships, not stats)
 --- @param _seatColorRaw string|nil
 --- @param pd table|nil merged player row (charKey → pcLinks lookup)
 --- @return string
@@ -407,12 +443,14 @@ function M.fingerprintPage4Stats(_stats, _seatColorRaw, pd)
     return ""
   end
   local sections = loadSectionsForPcLink(pcLinkKey)
+  lastSections.pcLinkKey = pcLinkKey
+  lastSections.sections = sections
   return table.concat({
     pcLinkKey,
     "\3",
-    fingerprintSingletonRow(sections.touchstone),
+    fingerprintRowList(sections.touchstones),
     "\3",
-    fingerprintSingletonRow(sections.sire),
+    fingerprintRowList(sections.sires),
     "\3",
     fingerprintRowList(sections.childer),
     "\3",
@@ -432,19 +470,15 @@ function M.buildPage4DocumentXml(_stats, _seatColorRaw, pd)
     error("[csheet_page4_xml] buildPage4DocumentXml: missing pd.charKey for pcLinks lookup")
   end
 
-  local sections = loadSectionsForPcLink(pcLinkKey)
-  if sections.touchstone == nil then
-    error(string.format("[csheet_page4_xml] missing touchstone pcLink for %s", pcLinkKey))
+  local sections = lastSections.sections
+  if lastSections.pcLinkKey ~= pcLinkKey or sections == nil then
+    sections = loadSectionsForPcLink(pcLinkKey)
   end
-  if sections.sire == nil then
-    error(string.format("[csheet_page4_xml] missing sire pcLink for %s", pcLinkKey))
-  end
+  lastSections.pcLinkKey = nil
+  lastSections.sections = nil
 
-  local touchstoneXml = renderRelationshipBlock(sections.touchstone.entry, "touchstone", nil)
-  local sireXml = renderRelationshipBlock(sections.sire.entry, "sire", nil)
-  if touchstoneXml == "" or sireXml == "" then
-    error(string.format("[csheet_page4_xml] failed to render touchstone/sire for %s", pcLinkKey))
-  end
+  local touchstoneXml = renderSingletonColumn(sections.touchstones, "touchstone", EXTRA_TOUCHSTONE_INDEX)
+  local sireXml = renderSingletonColumn(sections.sires, "sire", EXTRA_SIRE_INDEX)
 
   local ch1, ch2 = buildBalancedTwoColumns(sections.childer)
   local bb1, bb2 = buildBalancedTwoColumns(sections.bloodBonds)

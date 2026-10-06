@@ -20,6 +20,7 @@ local S = {}
 local U = require("lib.util")
 local C = require("lib.constants")
 local PC_BOOT = require("lib.pc_bootstrap")
+local PC_REL = require("lib.pc_relationships_data")
 local SceneLibrary = require("core.scene_library")
 local NpcPlacementsConvert = require("lib.npc_placements_convert")
 local gameState = {}
@@ -824,6 +825,10 @@ function S.validateState()
     if not gameState.scene then gameState.scene = {} end
     if type(gameState.lastActiveMapPin) ~= "table" then gameState.lastActiveMapPin = {} end
     if type(gameState.projects) ~= "table" then gameState.projects = {} end
+    -- Seeded once from lib/json/PC_Relationships.json; gameState is the authority afterwards (core/relationships).
+    if type(gameState.relationships) ~= "table" then
+        gameState.relationships = PC_REL.decodeSeed()
+    end
     if type(gameState.debug) ~= "table" then
         gameState.debug = {}
     end
