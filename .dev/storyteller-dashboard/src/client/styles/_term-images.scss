@@ -1,0 +1,64 @@
+// Clipboard-image tooltips (src/client/termImages). Any element with data-term can carry one.
+
+.term-image-tip {
+  position: fixed;
+  z-index: 2000;
+  display: none;
+  padding: 0.25rem;
+  border: 1px solid #cb995c;
+  border-radius: 0.35rem;
+  background: #050507;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+
+  &.on {
+    display: block;
+  }
+
+  img {
+    display: block;
+    max-width: min(32rem, 42vw);
+    max-height: 70vh;
+    object-fit: contain;
+  }
+}
+
+.term-image-drop {
+  position: relative;
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 12rem;
+  padding: 0.6rem;
+  border: 1px dashed rgba(252, 229, 193, 0.35);
+  border-radius: 0.35rem;
+  background: #08080b;
+  color: rgba(252, 229, 193, 0.7);
+  font-size: 0.9rem;
+  text-align: center;
+
+  img {
+    max-width: 100%;
+    max-height: 60vh;
+    object-fit: contain;
+  }
+
+  kbd {
+    padding: 0.05rem 0.35rem;
+    border: 1px solid rgba(252, 229, 193, 0.4);
+    border-radius: 0.2rem;
+    font-size: 0.8rem;
+  }
+}
+
+.term-image-badge {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 0.25rem;
+  background: #132016;
+  color: #d5f5c4;
+  font-size: 0.72rem;
+}

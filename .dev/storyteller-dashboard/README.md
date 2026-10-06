@@ -57,6 +57,14 @@ A compact tab row sits flush with the top of the viewport:
 4. **Lua** — Execute Code into a live TTS session through the **same** shared bridge as PCs / Scenes. You do **not** need to disable TTS Tools when the gateway is running. Claim / Release on the PCs tab connects or disconnects that bridge. To stop a leftover dashboard `node` stuck on 39998 without closing Cursor: Run Task **FREE TTS EDITOR PORT (39998)**, or `npm run tts-bridge:free-port` from the repo root.
 5. **Generate NPC** — the existing OpenAI NPC generator (prompt, cards, session history).
 
+## Clipboard-image tooltips
+
+Right-click any tagged term (a discipline, power, skill, advantage, …) to open a popup, paste an image with **Ctrl+V** (or drop an image file), and Save. Hovering that term anywhere on the dashboard then shows the image. Right-click again to Replace or Remove it. **Shift+right-click** still opens the normal browser menu, and elements with their own right-click action (Hunger, the dot ring) keep it.
+
+- **Keys:** one image per term name, shared by every copy (`termProps(kind, name)` in `src/client/termImages/store.ts` adds `data-term="<kind>:<name>"`; normalisation in `src/shared/termKey.ts`). To tag a new element, spread `termProps(...)` onto it — the page-wide layer (`TermImageLayer.tsx`, mounted in `App.tsx`) handles right-click, paste and hover.
+- **Storage:** `data/term-images/` (image files + `index.json`), **git-ignored** because the remote is public and pasted images may be rulebook screenshots. Back the folder up yourself if you care about it. Routes: `GET` / `PUT ?key=` / `DELETE ?key=` on `/api/term-images`; images at `/term-images/<file>`. PNG, JPEG, WebP or GIF up to 15 MB.
+- **Tagged today:** PCs tab sheet Pages 1–4.
+
 ## What is included
 
 - Vite + React client with a local Node HTTP API so `OPENAI_API_KEY` stays server-side.

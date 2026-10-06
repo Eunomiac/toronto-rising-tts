@@ -9,6 +9,7 @@ import { loadEnvFile } from "./loadEnv.js";
 import { generateNpcImage, generateNpcs, rerollNpcField } from "./npcService.js";
 import { loadGenericNpcCatalog, resolveGenericNpcImagePath } from "./genericNpcCatalog.js";
 import { refreshGenericNpcCatalogOnStartup } from "./refreshGenericNpcCatalog.js";
+import { createTermImageStore, MAX_TERM_IMAGE_BYTES, TERM_IMAGE_CONTENT_TYPES, TermImageError } from "./termImages.js";
 import { dashboardTtsBridge } from "./ttsExecuteLua.js";
 import { parseGenerateImageRequest, parseGenerateNpcRequest, parseRerollFieldRequest } from "../shared/npc.js";
 
@@ -24,6 +25,7 @@ const controlBoardSnapsPath = path.join(dashboardRoot, "data", "control-board-sn
 const cataloguedNpcImageDir = path.join(repoRoot, "assets", "images", "NPCs", "Catalogued");
 const scenesAssetDir = path.join(dashboardRoot, "assets", "scenes");
 const pcSheetAssetDir = path.join(dashboardRoot, "assets");
+const termImages = createTermImageStore(path.join(dashboardRoot, "data", "term-images"));
 const publicDir = path.join(distDir, "public");
 const isDev = process.argv.includes("--dev");
 
@@ -62,6 +64,69 @@ const readRequestJson = async (request: IncomingMessage): Promise<unknown> => {
 
   const text = Buffer.concat(chunks).toString("utf8");
   return text.trim().length > 0 ? JSON.parse(text) as unknown : {};
+};
+
+const readRequestBuffer = async (request: IncomingMessage, maxBytes: number): Promise<Buffer> => {
+  const chunks: Buffer[] = [];
+  let total = 0;
+  for await (const chunk of request) {
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    total += buffer.length;
+    if (total > maxBytes) {
+      throw new TermImageError("That image is larger than 15 MB.", 413);
+    }
+    chunks.push(buffer);
+  }
+  return Buffer.concat(chunks);
+};
+
+const handleTermImages = async (request: IncomingMessage, response: ServerResponse, url: URL): Promise<void> => {
+  try {
+    if (request.method === "GET") {
+      sendJson(response, 200, await termImages.list());
+      return;
+    }
+    const key = url.searchParams.get("key") ?? "";
+    if (request.method === "PUT") {
+      const bytes = await readRequestBuffer(request, MAX_TERM_IMAGE_BYTES);
+      sendJson(response, 200, await termImages.put(key, request.headers["content-type"] ?? "", bytes));
+      return;
+    }
+    if (request.method === "DELETE") {
+      sendJson(response, 200, await termImages.remove(key));
+      return;
+    }
+    sendJson(response, 405, { error: "Method not allowed" });
+  } catch (error: unknown) {
+    if (error instanceof TermImageError) {
+      sendJson(response, error.status, { error: error.message });
+      return;
+    }
+    throw error;
+  }
+};
+
+const serveTermImage = async (response: ServerResponse, pathname: string): Promise<void> => {
+  const file = decodeURIComponent(pathname.slice("/term-images/".length));
+  const filePath = termImages.resolveFile(file);
+  if (!filePath) {
+    sendJson(response, 400, { error: "Invalid term image filename." });
+    return;
+  }
+  try {
+    const fileStat = await stat(filePath);
+    if (!fileStat.isFile()) {
+      sendJson(response, 404, { error: "Term image not found." });
+      return;
+    }
+    response.writeHead(200, {
+      "Content-Type": TERM_IMAGE_CONTENT_TYPES[path.extname(filePath)] ?? "application/octet-stream",
+      "Cache-Control": "public, max-age=31536000, immutable"
+    });
+    createReadStream(filePath).pipe(response);
+  } catch {
+    sendJson(response, 404, { error: "Term image not found." });
+  }
 };
 
 const serveFile = async (response: ServerResponse, requestPath: string): Promise<void> => {
@@ -276,8 +341,18 @@ const tryHandleDedicatedRoutes = async (request: IncomingMessage, response: Serv
   const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "127.0.0.1"}`);
   const pathname = url.pathname;
 
+  if (pathname === "/api/term-images") {
+    await handleTermImages(request, response, url);
+    return true;
+  }
+
   if (pathname.startsWith("/api/")) {
     await handleApi(request, response, pathname);
+    return true;
+  }
+
+  if (request.method === "GET" && pathname.startsWith("/term-images/")) {
+    await serveTermImage(response, pathname);
     return true;
   }
 

@@ -3,6 +3,7 @@ import { assetUrl } from "./layout.js";
 import type { PageContext } from "./pages.js";
 import { emptyRelationship, isBondLink, MAX_BOND_STRENGTH, packTwoColumns, relationshipSections } from "./relationships.js";
 import { portraitUrl, RelationshipModal } from "./RelationshipModal.js";
+import { termProps } from "../termImages/store.js";
 import type { RelationshipDraft, RelationshipRow } from "./types.js";
 
 type Popup = { readonly row?: RelationshipRow; readonly draft: RelationshipDraft };
@@ -33,7 +34,7 @@ const RelationshipBox = ({
   return (
     <div className="pc-rel-box">
       <button type="button" className="pc-rel-title" title="Edit" onClick={() => onEdit(row)}>
-        <span className="pc-rel-name">{entry.headerLeft}</span>
+        <span className="pc-rel-name" {...termProps("character", entry.headerLeft)}>{entry.headerLeft}</span>
         {bond ? <BondBoxes strength={entry.bondStrength ?? 0} /> : <span className="pc-rel-role">{entry.headerRight}</span>}
       </button>
       <div className="pc-rel-content">

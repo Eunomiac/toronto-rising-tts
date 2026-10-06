@@ -20,6 +20,7 @@ import {
   type RitualKind,
   type RitualSlot
 } from "./sheetData.js";
+import { termProps } from "../termImages/store.js";
 
 type Popup =
   | { kind: "addDiscipline" }
@@ -45,6 +46,7 @@ const DisciplineCell = ({
           type="button"
           className="pc-disc-name"
           title={`Edit ${DISCIPLINE_LABELS[row.key]}`}
+          {...termProps("discipline", DISCIPLINE_LABELS[row.key])}
           onClick={() => onPopup({ kind: "editDiscipline", key: row.key })}
         >
           <img src={assetUrl(`sheet/discName_${row.key}.webp`)} alt={DISCIPLINE_LABELS[row.key]} />
@@ -76,6 +78,7 @@ const DisciplineCell = ({
                   type="button"
                   className="pc-power"
                   title={power.notes !== "" ? power.notes : `Level ${power.level}`}
+                  {...termProps("power", power.name)}
                   onClick={() => onPopup({ kind: "power", key: row.key, entry: power })}
                 >
                   {power.name}
@@ -103,7 +106,7 @@ const RitualRow = ({ slot, onEdit }: { readonly slot: RitualSlot; readonly onEdi
       onClick={() => onEdit(slot)}
     >
       <DotLine slots={dots} />
-      <span className="pc-rc-name">{slot.entry.name}</span>
+      <span className="pc-rc-name" {...termProps(slot.kind === "rituals" ? "ritual" : "ceremony", slot.entry.name)}>{slot.entry.name}</span>
     </button>
   );
 };

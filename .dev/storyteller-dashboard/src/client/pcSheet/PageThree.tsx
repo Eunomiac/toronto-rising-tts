@@ -17,6 +17,7 @@ import {
   type AdvantageCategory,
   type AdvantageEntry
 } from "./sheetData.js";
+import { termProps } from "../termImages/store.js";
 
 type Popup = { readonly entry?: AdvantageEntry; readonly type: AdvantageCategory };
 
@@ -37,7 +38,13 @@ const AdvantageBox = ({
   return (
     <div className={`pc-adv-box ${entry.category}`}>
       <header className="pc-adv-title">
-        <button type="button" className="pc-adv-name" title="Edit" onClick={() => onEdit(entry)}>
+        <button
+          type="button"
+          className="pc-adv-name"
+          title="Edit"
+          onClick={() => onEdit(entry)}
+          {...termProps(ADVANTAGE_LABELS[entry.category], entry.name, advantageTitle(entry))}
+        >
           {advantageTitle(entry)}
         </button>
         <button

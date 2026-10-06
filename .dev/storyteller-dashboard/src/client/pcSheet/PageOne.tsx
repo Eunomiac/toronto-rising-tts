@@ -6,6 +6,7 @@ import { DotLine } from "./DotLine.js";
 import { paintDamageTrack, paintDotLine, paintHumanityTrack } from "./paint.js";
 import { formatBadge } from "./ringActions.js";
 import type { RingTarget, SeatSnapshot, Specialty } from "./types.js";
+import { termProps } from "../termImages/store.js";
 
 type Props = {
   readonly seat: SeatSnapshot;
@@ -40,7 +41,7 @@ const SpecialtiesLine = ({ specs }: { readonly specs: readonly Specialty[] }): R
       {specs.map((spec, index) => (
         <span key={`${spec.name}-${spec.decade ?? index}`}>
           {index > 0 ? <span className="pc-spec-sep"> ◆ </span> : null}
-          <span className={`pc-spec ${spec.type}`}>
+          <span className={`pc-spec ${spec.type}`} {...termProps("specialty", spec.name)}>
             {spec.name}
             {spec.type === "archaic" ? <i>{decadeLabel(spec.decade)}</i> : null}
           </span>
@@ -121,7 +122,7 @@ export const PageOne = ({ seat, side, onRing, onHunger, onXp, onDesire }: Props)
                   onClick={(event) => onRing(event, { kind: "trait", family: "attributes", key })}
                 >
                   <span className="pc-trait-copy">
-                    <span className="pc-trait-label">{ATTRIBUTE_LABELS[key]}</span>
+                    <span className="pc-trait-label" {...termProps("attribute", ATTRIBUTE_LABELS[key] ?? key)}>{ATTRIBUTE_LABELS[key]}</span>
                     {badge !== 0 ? <span className="pc-badge">{formatBadge(badge)}</span> : null}
                   </span>
                   <DotLine slots={paintDotLine(key, rating)} />
@@ -148,7 +149,7 @@ export const PageOne = ({ seat, side, onRing, onHunger, onXp, onDesire }: Props)
                   onClick={(event) => onRing(event, { kind: "trait", family: "skills", key })}
                 >
                   <span className="pc-trait-copy">
-                    <span className="pc-trait-label">{SKILL_LABELS[key]}</span>
+                    <span className="pc-trait-label" {...termProps("skill", SKILL_LABELS[key] ?? key)}>{SKILL_LABELS[key]}</span>
                     {badge !== 0 ? <span className="pc-badge">{formatBadge(badge)}</span> : null}
                     <SpecialtiesLine specs={specs} />
                   </span>
@@ -162,7 +163,7 @@ export const PageOne = ({ seat, side, onRing, onHunger, onXp, onDesire }: Props)
 
       <footer className="pc-trackers">
         <button className="pc-track" type="button" onClick={(event) => onRing(event, { kind: "damage", which: "health" })}>
-          <span className="pc-track-label">Health</span>
+          <span className="pc-track-label" {...termProps("tracker", "Health")}>Health</span>
           <BoxTrack boxes={healthBoxes} />
           <span className="pc-track-note">Mend for <b>+{seat.mending}</b></span>
         </button>
@@ -177,16 +178,16 @@ export const PageOne = ({ seat, side, onRing, onHunger, onXp, onDesire }: Props)
           <span>XP</span>
         </button>
         <button className="pc-track" type="button" onClick={(event) => onRing(event, { kind: "damage", which: "willpower" })}>
-          <span className="pc-track-label">Willpower</span>
+          <span className="pc-track-label" {...termProps("tracker", "Willpower")}>Willpower</span>
           <BoxTrack boxes={willBoxes} />
         </button>
         <button className="pc-track" type="button" onClick={(event) => onRing(event, { kind: "humanity" })}>
-          <span className="pc-track-label">Humanity</span>
+          <span className="pc-track-label" {...termProps("tracker", "Humanity")}>Humanity</span>
           <BoxTrack boxes={humanityBoxes} />
         </button>
         <div className="pc-track-stack">
           <button className="pc-track" type="button" onClick={(event) => onRing(event, { kind: "bloodPotency" })}>
-            <span className="pc-track-label">Blood Potency</span>
+            <span className="pc-track-label" {...termProps("tracker", "Blood Potency")}>Blood Potency</span>
             <DotLine slots={bpDots} large />
             <span className="pc-track-note">Blood Surge for <b>+{seat.bloodSurge}</b></span>
           </button>

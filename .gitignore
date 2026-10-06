@@ -91,6 +91,8 @@ build/
 # Local Storyteller dashboard build output
 .dev/storyteller-dashboard/dist/
 .dev/storyteller-dashboard/public/client/
+# Clipboard-image tooltips (may hold rulebook screenshots; remote is public)
+.dev/storyteller-dashboard/data/term-images/
 
 assets/images/Clipboard Image.jpg
 # Local Sheets Obsidian dashboard runtime artifacts

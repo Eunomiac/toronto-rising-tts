@@ -4,6 +4,7 @@ import { initLuaTab } from "./luaTab";
 import { PcSheetTab } from "./pcSheet/PcSheetTab";
 import { initScenesTab } from "./scenesTab";
 import { initStageNpcs } from "./stageNpcs";
+import { TermImageLayer } from "./termImages/TermImageLayer";
 
 const DEFAULT_TAB_ID = "tab-stage-npcs";
 
@@ -330,6 +331,7 @@ export const App = (): ReactElement => {
       </section>
 
       <div id="modal-root"></div>
+      <TermImageLayer />
     </>
   );
 };
