@@ -2410,14 +2410,6 @@ function U.isStorytellerSteamPlayer(playerRef)
 	return tostring(p.steam_id) == storytellerSteamId()
 end
 
---- Storyteller / GM interaction gate — seated Storyteller color is `Black` (`C.StorytellerColor`).
---- `Host` is the TTS spectator alias when the GM is not seated at Black.
---- @param color string|nil
---- @return boolean
-function U.isStorytellerPlayerColor(color)
-	return color == "Black" or color == "Host"
-end
-
 function U.getZoneBounds(zone)
 	local zoneExtent = U.map(zone.getScale(), function(val) return 0.5 * val end)
 	local zonePos = zone.getPosition()

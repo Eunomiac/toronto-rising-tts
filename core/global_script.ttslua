@@ -3754,12 +3754,6 @@ local function isStorytellerSteamPlayer(playerRef)
     return U.isStorytellerSteamPlayer(playerRef)
 end
 
---- @param color string|nil
---- @return boolean true for Storyteller seat (`Black`) or Host spectator alias (XmlUI / legacy)
-local function isStorytellerPlayerColor(color)
-    return U.isStorytellerPlayerColor(color)
-end
-
 --- Storyteller XmlUI: steam identity before ST-only state/world mutation.
 --- @param player Player|nil
 --- @param context string|nil unused; kept for call-site labels
@@ -7974,8 +7968,7 @@ end
 --- ST roll panel: toggle die highlight for selective reroll (POST_ROLL).
 -- id format: rollPanelST_die_<n>
 function HUD_rollStDieClick(player, value, id)
-    if player == nil or type(id) ~= "string" then return end
-    if player.color ~= "Black" and player.color ~= "Host" then return end
+    if type(id) ~= "string" then return end
     local slotStr = string.match(id, "^rollPanelST_die_(%d+)$")
     if slotStr == nil then return end
     local slotIndex = tonumber(slotStr)
@@ -7987,8 +7980,6 @@ end
 
 --- ST roll panel: reroll highlighted dice (host world I/O via Global.call).
 function HUD_rollStRerollSelected(player, value, id)
-    if player == nil then return end
-    if player.color ~= "Black" and player.color ~= "Host" then return end
     Global.call("GlobalStRerollDiceByGuids", { color = "Black" })
     RUI.refreshPlayerRollPanel("Black")
 end
@@ -8078,19 +8069,19 @@ end
 
 function HUD_postRollCellMouseEnter(player, value, id)
     if RUI.onPostRollCellMouseEnter then
-        RUI.onPostRollCellMouseEnter(player, id)
+        RUI.onPostRollCellMouseEnter(id)
     end
 end
 
 function HUD_postRollCellMouseExit(player, value, id)
     if RUI.onPostRollCellMouseExit then
-        RUI.onPostRollCellMouseExit(player, id)
+        RUI.onPostRollCellMouseExit(id)
     end
 end
 
 function HUD_postRollCellMouseDown(player, value, id)
     if RUI.onPostRollCellMouseDown then
-        RUI.onPostRollCellMouseDown(player, id)
+        RUI.onPostRollCellMouseDown(id)
     end
 end
 
@@ -8100,7 +8091,7 @@ function HUD_postRollCellMouseUp(player, value, id)
     end
     local color, action = nil, nil
     if RUI.onPostRollCellMouseUp then
-        color, action = RUI.onPostRollCellMouseUp(player, id)
+        color, action = RUI.onPostRollCellMouseUp(id)
     end
     if type(color) == "string" and type(action) == "string" then
         Global.call("GlobalPostRollModifyPool", { color = color, action = action })

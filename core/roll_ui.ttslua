@@ -2193,15 +2193,6 @@ end
 -- ST ROLL PANEL — GRID STRIP CONTROLS (rollPanelST context)
 -- ============================================================================
 
---- @param player table|nil
---- @return boolean
-local function isStRollPanelInteractor(player)
-    if player == nil or type(player.color) ~= "string" then
-        return false
-    end
-    return player.color == "Black" or player.color == "Host"
-end
-
 --- @return table|nil active roll for Black seat
 local function getBlackActiveRoll()
     local pid = S.getPlayerID("Black")
@@ -2277,9 +2268,6 @@ function RUI.refreshStRollGridStrips(active)
 end
 
 local function stPoolStripCanInteract(_ctx)
-    if not isStRollPanelInteractor(_ctx.player) then
-        return false
-    end
     local active = getBlackActiveRoll()
     if active == nil then
         return false
@@ -2288,9 +2276,6 @@ local function stPoolStripCanInteract(_ctx)
 end
 
 local function stDifficultyStripCanInteract(_ctx)
-    if not isStRollPanelInteractor(_ctx.player) then
-        return false
-    end
     local active = getBlackActiveRoll()
     if active == nil then
         return false
@@ -2399,13 +2384,9 @@ local function paintPostRollDashCell(cellId, actionKey, hovered, pressed)
     end
 end
 
---- @param player table|nil
 --- @param color string|nil
 --- @return boolean
-local function canUsePostRollDashStrip(player, color)
-    if not isStRollPanelInteractor(player) then
-        return false
-    end
+local function canUsePostRollDashStrip(color)
     if type(color) ~= "string" then
         return false
     end
@@ -2414,16 +2395,16 @@ local function canUsePostRollDashStrip(player, color)
 end
 
 --- ST dashboard post-roll strip: hover highlight.
-function RUI.onPostRollCellMouseEnter(player, id)
+function RUI.onPostRollCellMouseEnter(id)
     local color, action = parsePostRollDashCellId(id)
-    if not canUsePostRollDashStrip(player, color) then
+    if not canUsePostRollDashStrip(color) then
         return
     end
     paintPostRollDashCell(id, action, true, postRollDashPressedCellId == id)
 end
 
 --- ST dashboard post-roll strip: clear hover.
-function RUI.onPostRollCellMouseExit(player, id)
+function RUI.onPostRollCellMouseExit(id)
     local color, action = parsePostRollDashCellId(id)
     if color == nil then
         return
@@ -2435,9 +2416,9 @@ function RUI.onPostRollCellMouseExit(player, id)
 end
 
 --- ST dashboard post-roll strip: press highlight.
-function RUI.onPostRollCellMouseDown(player, id)
+function RUI.onPostRollCellMouseDown(id)
     local color, action = parsePostRollDashCellId(id)
-    if not canUsePostRollDashStrip(player, color) then
+    if not canUsePostRollDashStrip(color) then
         return
     end
     postRollDashPressedCellId = id
@@ -2445,7 +2426,7 @@ function RUI.onPostRollCellMouseDown(player, id)
 end
 
 --- ST dashboard post-roll strip: add/remove one pool die.
-function RUI.onPostRollCellMouseUp(player, id)
+function RUI.onPostRollCellMouseUp(id)
     local color, action = parsePostRollDashCellId(id)
     local wasPressed = postRollDashPressedCellId == id
     postRollDashPressedCellId = nil
@@ -2453,7 +2434,7 @@ function RUI.onPostRollCellMouseUp(player, id)
         return
     end
     paintPostRollDashCell(id, action, false, false)
-    if not wasPressed or not canUsePostRollDashStrip(player, color) then
+    if not wasPressed or not canUsePostRollDashStrip(color) then
         return
     end
     return color, action
@@ -2461,10 +2442,7 @@ end
 
 --- @param color string
 --- @return boolean
-local function dashDifficultyStripCanInteract(color, player)
-    if not isStRollPanelInteractor(player) then
-        return false
-    end
+local function dashDifficultyStripCanInteract(color)
     local active = getPcActiveRoll(color)
     if active == nil then
         return false
@@ -2486,8 +2464,8 @@ local function registerRollDashGridStripContext(color)
                 maxValue = 10,
                 baseAlpha = 0.15,
                 leadingZeroTransparent = true,
-                canInteract = function(ctx)
-                    return dashDifficultyStripCanInteract(color, ctx.player)
+                canInteract = function(_ctx)
+                    return dashDifficultyStripCanInteract(color)
                 end,
                 getSelectedValue = function(_ctx)
                     local active = getPcActiveRoll(color)

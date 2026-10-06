@@ -18,7 +18,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-06 — TOR-657 (Trace Sync timing) added; earlier today TOR-653 (dashboard sheet Pages 2–3 editing) TOR-654 (dashboard sheet Page 6 XP log) TOR-655 (relationships in gameState, dashboard Page 4) and TOR-656 (dashboard sheet Page 5 projects) added._
+_Last populated: 2026-10-06 — TOR-658 (ST roll dashboard usable from any seat) added; TOR-657 (Trace Sync timing) added; earlier today TOR-653 (dashboard sheet Pages 2–3 editing) TOR-654 (dashboard sheet Page 6 XP log) TOR-655 (relationships in gameState, dashboard Page 4) and TOR-656 (dashboard sheet Page 5 projects) added._
 
 ### High — session / join / first-load
 
@@ -35,6 +35,12 @@ _Last populated: 2026-10-06 — TOR-657 (Trace Sync timing) added; earlier today
 #### TOR-657 — Trace Sync: timed, nested, filterable output
 
 **How to verify:** Save & Play. In the TTS Tools output panel, type `SyncTrace` into the output filter box so only trace lines show. Click **Trace Sync** on the Debug panel (it turns yellow). The first trace line should say "trace ON" and give a clock resolution; if the resolution is well under 1 ms the timings are trustworthy, and if it says around 15 ms, tell me. Now add a few NPCs to the Stage Control Board and press **Apply**. You should see one block of lines that all share the same `#` number, starting with `Sync.npcs` and indented underneath with `NPCS.reconcileAllFromState`, the control-board reconcile, and so on, each with a time in ms. Slow calls say `>1 frame`. The old always-on `[Sync.npcs] reason=...` line should no longer appear. Next, change a PC's Hunger from the Storyteller PCs panel and press its Apply. Expect several separate blocks in a row (`Sync.player`, `HO.reconcileForSeat`, `PCST.refreshCharacterSheetsForColor`, `PCST.refreshRow`, `HO.syncAll`), each with its own `#` number. That is the scattered refresh pattern we discussed, now visible with times. Finally click **Trace Sync** again to turn it off (grey). A `SUMMARY` table should print, listing each function with how many times it was called and how long it took in total, slowest first. Please paste me that summary along with the Apply block, since they are the starting numbers for the performance work.
+
+### Medium — dice & rolls
+
+#### TOR-658 — Storyteller roll dashboard usable from any seat
+
+**How to verify:** Save & Play. Use the Debug panel seat buttons to move to a PC seat such as Red. Start a Storyteller roll from the dashboard and set its pool and difficulty by clicking the grid strips on the ST roll panel; the cells should respond. Roll it, click a couple of dice on the ST panel so they highlight, and press **REROLL**; only those dice should reroll. Then start a roll for a PC from the dashboard, change the difficulty strip on that PC's row, roll it, and use the post-roll add/remove-die cells; they should highlight on hover and change the pool. Everything should behave exactly as it does when you sit at Black.
 
 ### Medium — Storyteller Dashboard character sheet
 

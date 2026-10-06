@@ -78,7 +78,6 @@ TTS runs **all mod Lua on the Host only**. When the Host writes `gameState` (pla
 | Function | Location | Use |
 | --- | --- | --- |
 | `U.isStorytellerSteamPlayer(playerRef)` | `lib/util.ttslua` | Gate ST-only **interaction**. Accept `Player` instance (preferred) or seat color string. |
-| `U.isStorytellerPlayerColor(color)` | `lib/util.ttslua` | Legacy XmlUI alias: `Black` / `Host`. Prefer steam when `Player` is available. |
 | `GlobalIsStorytellerSteamPlayer(params)` | `core/global_script.ttslua` | Bundle-safe steam check from object scripts (`params.player` or `params.player_color`). |
 | `M.tryAutoAssignSeatFromChronicle(player, opts?)` | `core/main.ttslua` | Steam ID → `C.PlayerData.color` (ST → Black; unregistered → White). Called from `onPlayerConnect`. |
 | `M.assignAllConnectedSeatsFromChronicle()` | `core/main.ttslua` | Load-time two-pass assign (`M.setupPlayers`); `onPlayerConnect` does not re-fire for already-connected players. |
@@ -89,7 +88,7 @@ TTS runs **all mod Lua on the Host only**. When the Host writes `gameState` (pla
 | `Sync.npcs` / `Sync.lighting` / `Sync.soundscape` | `core/sync.ttslua` | Domain reconcilers. |
 | `Sync.ui(delta)` | `core/sync.ttslua` | UI-only refresh. |
 
-**Per-client UI (not Lua gating):** XmlUI `visibility` = `Black`/`Admin`/`<Color>` — engine-level per-client rendering; ST panel to ST, PC HUD to its seat.
+**Per-client UI (not Lua gating):** XmlUI `visibility` = `Black`/`Admin`/`<Color>` — engine-level per-client rendering; ST panel to ST, PC HUD to its seat. The ST roll dashboard / ST roll panel handlers do **not** check the clicker's seat color, so the Storyteller can test rolls from any seat; `visibility` alone keeps players off those controls.
 
 **Object-script routing:** PC-initiated mutations use `Global.call("Global…")` so orchestration stays in Global (bundle-size), not because join clients run object Lua.
 
