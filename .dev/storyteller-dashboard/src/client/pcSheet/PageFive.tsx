@@ -147,7 +147,7 @@ export const PageFive = ({ ctx }: { readonly ctx: PageContext }): ReactElement =
         </button>
       </div>
       {snapshot.presentDayText ? <p className="pc-proj-present">Present day: {snapshot.presentDayText}</p> : null}
-      {error ? <p className="pc-empty-note">{error}</p> : null}
+      {error ? <p className="pc-sheet-error">{error}</p> : null}
       <div className="pc-proj-list">
         {projects.map((project) => (
           <ProjectCard
@@ -157,9 +157,7 @@ export const PageFive = ({ ctx }: { readonly ctx: PageContext }): ReactElement =
             viewerKey={viewerKey}
             onEdit={(p) => setEditing({ project: p, draft: draftFromProject(p) })}
           />
-        ))}
-        {snapshot.ok && projects.length === 0 ? <p className="pc-empty-note">No projects for {coterie ? "the coterie" : ctx.seat.charName}.</p> : null}
-      </div>
+        ))}      </div>
       {editing ? (
         <ProjectEditor
           snapshot={snapshot}

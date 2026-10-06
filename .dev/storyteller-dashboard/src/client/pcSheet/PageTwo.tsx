@@ -214,9 +214,7 @@ export const PageTwo = ({ ctx }: { readonly ctx: PageContext }): ReactElement =>
                 </div>
               ))}
             </div>
-          ) : (
-            <p className="pc-empty-note">No rituals or ceremonies yet.</p>
-          )}
+          ) : null}
         </section>
       ) : null}
       {renderPopup()}

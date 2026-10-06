@@ -1,4 +1,4 @@
-import { useState, type ReactElement } from "react";
+import { useState, type ReactElement, type ReactNode } from "react";
 import { AdvantageModal } from "./AdvantageModal.js";
 import { DotLine } from "./DotLine.js";
 import { assetUrl } from "./layout.js";
@@ -8,7 +8,6 @@ import {
   advantageStakeKey,
   advantageTitle,
   advantageWeight,
-  formatSourceLine,
   isStatusEntry,
   packColumns,
   parseAdvantages,
@@ -33,7 +32,6 @@ const AdvantageBox = ({
   readonly ctx: PageContext;
   readonly onEdit: (entry: AdvantageEntry) => void;
 }): ReactElement => {
-  const source = formatSourceLine(entry.source);
   const staked = stakeFor(ctx, entry);
   return (
     <div className={`pc-adv-box ${entry.category}`}>
@@ -60,32 +58,32 @@ const AdvantageBox = ({
         <p className="pc-adv-flavor">{entry.description.join("\n")}</p>
       ) : null}
       {entry.rules.length > 0 ? <p className="pc-adv-rules">{entry.rules.join("\n")}</p> : null}
-      {source ? <p className="pc-adv-source">{source}</p> : null}
     </div>
   );
 };
 
-const SECTION_DIVIDER: Record<AdvantageCategory, (color: string) => string | null> = {
-  backgrounds: () => null,
-  merits: () => "divider_merits",
-  flaws: (color) => `divider_flaws_${color}`
+/** Sections without an image divider get a text header in the Backgrounds style. */
+const SECTION_DIVIDER: Partial<Record<AdvantageCategory, string>> = {
+  merits: "divider_merits"
 };
 
 const AdvantageSection = ({
   category,
   entries,
   ctx,
-  onPopup
+  onPopup,
+  lead
 }: {
   readonly category: AdvantageCategory;
   readonly entries: readonly AdvantageEntry[];
   readonly ctx: PageContext;
   readonly onPopup: (popup: Popup) => void;
+  readonly lead?: ReactNode;
 }): ReactElement => {
   const shown = entries.filter((entry) => entry.sheetDisplay);
   const hidden = entries.filter((entry) => !entry.sheetDisplay && !isStatusEntry(entry));
   const columns = packColumns(shown, advantageWeight);
-  const divider = SECTION_DIVIDER[category](ctx.seat.color);
+  const divider = SECTION_DIVIDER[category];
   const label = ADVANTAGE_LABELS[category];
   const edit = (entry: AdvantageEntry): void => onPopup({ entry, type: category });
   return (
@@ -98,6 +96,7 @@ const AdvantageSection = ({
           + {label}
         </button>
       </div>
+      {lead}
       {shown.length > 0 ? (
         <div className="pc-adv-columns">
           {columns.map((column, index) => (
@@ -108,9 +107,7 @@ const AdvantageSection = ({
             </div>
           ))}
         </div>
-      ) : (
-        <p className="pc-empty-note">No {label.toLowerCase()}s on the sheet.</p>
-      )}
+      ) : null}
       {hidden.length > 0 ? (
         <p className="pc-adv-hidden">
           Not printed:{" "}
@@ -175,8 +172,13 @@ export const PageThree = ({ ctx }: { readonly ctx: PageContext }): ReactElement 
   const flaws = parseAdvantages(ctx.seat.playerData, "flaws");
   return (
     <article className={`pc-page pc-sheet-page pc-page-three ${ctx.side}`}>
-      <StatusStrip backgrounds={backgrounds} ctx={ctx} onPopup={setPopup} />
-      <AdvantageSection category="backgrounds" entries={backgrounds} ctx={ctx} onPopup={setPopup} />
+      <AdvantageSection
+        category="backgrounds"
+        entries={backgrounds}
+        ctx={ctx}
+        onPopup={setPopup}
+        lead={<StatusStrip backgrounds={backgrounds} ctx={ctx} onPopup={setPopup} />}
+      />
       <AdvantageSection category="merits" entries={merits} ctx={ctx} onPopup={setPopup} />
       <AdvantageSection category="flaws" entries={flaws} ctx={ctx} onPopup={setPopup} />
       {popup ? (

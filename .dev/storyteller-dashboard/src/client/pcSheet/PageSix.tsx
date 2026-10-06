@@ -54,9 +54,7 @@ export const PageSix = ({ ctx }: { readonly ctx: PageContext }): ReactElement =>
         <button type="button" className="pc-add-text" onClick={() => setAdding(true)}>+ Entry</button>
       </div>
       <div className="pc-xp-log">
-        {sessions.length > 0
-          ? sessions.map((session) => <SessionBlock key={session.key} session={session} live={session.num === liveNum} />)
-          : <p className="pc-empty-note">No Experience Log yet.</p>}
+        {sessions.map((session) => <SessionBlock key={session.key} session={session} live={session.num === liveNum} />)}
       </div>
       {adding ? <XpModal seat={ctx.seat} snapshot={ctx.snapshot} send={ctx.applyNow} onClose={() => setAdding(false)} /> : null}
     </article>
