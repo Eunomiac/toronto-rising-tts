@@ -297,7 +297,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Skip unchanged sync work:** Load, scene restore, and same-table switches no longer force a full rebuild when fingerprints match. Control-board snaps install only when the grid changed or a board reload cleared them. Debug panel **Trace Sync** (grey off, yellow on) prints `[SyncTrace]` lines for the heavy calls. Author confirmed 2026-10-02. _(TOR-634)_
 
 - [x] **playerLight1 anchor + lookAt modes:** `OP.resolveAnchoredWorldPoint` + `SetLightMode` materialize of `{ anchor, height }` / `lookAt` → world position + `lookAtTarget` / `U.lookAtRotation` (STANDARD seat anchors ↔ ROLLING dice-drawer anchors). Pending Save & Play. _(no new TOR — Linear quota)_
-- [x] **Spotlight tuner panel:** Canceled by the author 2026-10-06 — no longer necessary. _(TOR-495)_
+- [x] **Spotlight tuner panel:** Selection grid (build-time 400-slot pool, 10 columns) plus Cartesian / spherical debug sliders; lighting reconcile skips the selected GUID while the panel is open. Opened from the **Debug Light** button on the Storyteller debug toolbar. Author confirmed 2026-10-06 (works well enough for debugging). _(TOR-495)_
 - [x] Reconciler lighting updates lerped (default 2s). _( `core/lighting.ttslua` `L.DEFAULT_RECONCILE_LERP_SECONDS`.)_ _(TOR-59)_
 - [x] Test-bed helpers to apply seat-light settings from Red to all active seats. _( `TestBed_applyPlayerSeatLightsFromRed`.)_ _(TOR-61)_
 - [x] **Storyteller camera strip + Black presets:** Host `panel_storyteller_camera` ? `HUD_STcamera`; `M.setCamera` / spoof / seat sync use `C.StorytellerCameraAngles` for Black (fixes E2E `rollE2eSeatPrep("Black")`). _(TOR-348)_
