@@ -164,6 +164,24 @@ export const powersByLevel = (powers: readonly PowerEntry[]): readonly PowerLeve
 export const ritualsOf = (rows: readonly DisciplineRow[], kind: RitualKind): readonly PowerEntry[] =>
   rows.find((row) => row.key === RITUAL_HOST[kind])?.[kind] ?? [];
 
+/** Kinds whose host discipline (Blood Sorcery / Oblivion) has any dots. */
+export const heldRitualKinds = (rows: readonly DisciplineRow[]): readonly RitualKind[] =>
+  (["rituals", "ceremonies"] as const).filter((kind) =>
+    rows.some((row) => row.key === RITUAL_HOST[kind] && row.base + row.temp > 0));
+
+export type RitualDivider = "divider_ritualsAndCeremonies" | "divider_rituals" | "divider_ceremonies";
+
+/** The header follows the disciplines held, so it shows even before the first ritual or ceremony. */
+export const ritualDivider = (kinds: readonly RitualKind[]): RitualDivider | null => {
+  if (kinds.length === 2) {
+    return "divider_ritualsAndCeremonies";
+  }
+  if (kinds.length === 1) {
+    return kinds[0] === "rituals" ? "divider_rituals" : "divider_ceremonies";
+  }
+  return null;
+};
+
 /** Page 2 capacity: 5 + 5 when both kinds exist, otherwise up to 10 of one kind. */
 export const validRitualCounts = (rituals: number, ceremonies: number): boolean =>
   rituals > 0 && ceremonies > 0 ? rituals <= 5 && ceremonies <= 5 : rituals <= 10 && ceremonies <= 10;
@@ -174,7 +192,6 @@ export const canAddRitual = (kind: RitualKind, rituals: number, ceremonies: numb
 export type RitualSlot = { readonly kind: RitualKind; readonly entry: PowerEntry } | null;
 
 export type RitualLayout = {
-  readonly divider: "divider_ritualsAndCeremonies" | "divider_rituals" | "divider_ceremonies";
   readonly left: readonly RitualSlot[];
   readonly right: readonly RitualSlot[];
 } | null;
@@ -195,11 +212,10 @@ export const ritualLayout = (rituals: readonly PowerEntry[], ceremonies: readonl
     return null;
   }
   if (r.length > 0 && c.length > 0) {
-    return { divider: "divider_ritualsAndCeremonies", left: padFive(r), right: padFive(c) };
+    return { left: padFive(r), right: padFive(c) };
   }
   const only = r.length > 0 ? r : c;
   return {
-    divider: r.length > 0 ? "divider_rituals" : "divider_ceremonies",
     left: padFive(only.slice(0, 5)),
     right: padFive(only.slice(5, 10))
   };

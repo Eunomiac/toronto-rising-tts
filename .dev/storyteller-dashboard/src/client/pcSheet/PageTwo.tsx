@@ -7,10 +7,11 @@ import type { PageContext } from "./pages.js";
 import {
   canAddRitual,
   DISCIPLINE_LABELS,
+  heldRitualKinds,
   MAX_DISCIPLINES,
   parseDisciplines,
   powersByLevel,
-  RITUAL_HOST,
+  ritualDivider,
   ritualLayout,
   ritualsOf,
   unownedDisciplines,
@@ -120,7 +121,8 @@ export const PageTwo = ({ ctx }: { readonly ctx: PageContext }): ReactElement =>
   const layout = ritualLayout(rituals, ceremonies);
   const cells: Array<DisciplineRow | null> = Array.from({ length: MAX_DISCIPLINES }, (_, i) => rows[i] ?? null);
   const close = (): void => setPopup(null);
-  const ritualKinds = (["rituals", "ceremonies"] as const).filter((kind) => rows.some((row) => row.key === RITUAL_HOST[kind]));
+  const ritualKinds = heldRitualKinds(rows);
+  const divider = ritualDivider(ritualKinds);
 
   const renderPopup = (): ReactElement | null => {
     if (popup === null) {
@@ -181,10 +183,10 @@ export const PageTwo = ({ ctx }: { readonly ctx: PageContext }): ReactElement =>
         ))}
       </section>
 
-      {layout || ritualKinds.length > 0 ? (
+      {layout || divider ? (
         <section className="pc-rc" aria-label="Rituals and Ceremonies">
           <div className="pc-divider">
-            {layout ? <img src={assetUrl(`sheet/${layout.divider}.webp`)} alt="" /> : null}
+            {divider ? <img src={assetUrl(`sheet/${divider}.webp`)} alt="" /> : null}
             {ritualKinds.map((kind) => (
               <button
                 key={kind}

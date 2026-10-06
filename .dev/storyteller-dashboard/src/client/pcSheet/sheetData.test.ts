@@ -3,11 +3,13 @@ import {
   advantageTitle,
   canAddRitual,
   formatSourceLine,
+  heldRitualKinds,
   packColumns,
   parseAdvantages,
   parseDisciplines,
   parseXpLog,
   powersByLevel,
+  ritualDivider,
   ritualLayout,
   ritualsOf,
   statusDotSlots,
@@ -123,10 +125,18 @@ describe("ritual capacity and layout", () => {
   it("spills a single kind into the right column", () => {
     const entries = Array.from({ length: 7 }, (_, i) => ({ index: i + 1, name: `R${i + 1}`, level: 1, notes: "" }));
     const layout = ritualLayout(entries, []);
-    expect(layout?.divider).toBe("divider_rituals");
     expect(layout?.right[1]?.entry.name).toBe("R7");
     expect(layout?.right[2]).toBeNull();
     expect(ritualLayout([], [])).toBeNull();
+  });
+
+  it("picks the header from Blood Sorcery / Oblivion dots, not from entries", () => {
+    const row = (key: "bloodSorcery" | "oblivion", base: number) =>
+      ({ key, base, temp: 0, powers: [], rituals: [], ceremonies: [] });
+    expect(ritualDivider(heldRitualKinds([row("bloodSorcery", 1)]))).toBe("divider_rituals");
+    expect(ritualDivider(heldRitualKinds([row("oblivion", 2)]))).toBe("divider_ceremonies");
+    expect(ritualDivider(heldRitualKinds([row("bloodSorcery", 1), row("oblivion", 1)]))).toBe("divider_ritualsAndCeremonies");
+    expect(ritualDivider(heldRitualKinds([row("bloodSorcery", 0)]))).toBeNull();
   });
 });
 
