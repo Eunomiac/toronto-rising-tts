@@ -24,6 +24,9 @@ local PC_REL = require("lib.pc_relationships_data")
 local SceneLibrary = require("core.scene_library")
 local NpcPlacementsConvert = require("lib.npc_placements_convert")
 local gameState = {}
+-- False until S.InitializeGameState / S.resetGameState fill gameState. The Global chunk (and every
+-- Global.* entry) is live for many seconds before onLoad on a save load; see S.isReady.
+local stateReady = false
 
 -- ============================================================================
 -- INTERNAL HELPER FUNCTIONS (Nested State Access)
@@ -667,6 +670,7 @@ function S.InitializeGameState(saved_data)
 
     -- Ensure all required fields exist (validation/sanitization)
     S.validateState()
+    stateReady = true
 
     print("State: Current phase is " .. S.getStateVal("currentPhase"))
 end
@@ -677,6 +681,15 @@ function S.resetGameState()
     print("State: Resetting game state to defaults.")
     gameState = S.GetDefaultGameState()
     S.validateState()
+    stateReady = true
+end
+
+--- True once gameState holds the loaded save (or fresh defaults). External callers that can run
+--- before onLoad (Storyteller Dashboard execute-lua) must refuse while this is false: reads see an
+--- empty state and writes are discarded when S.InitializeGameState replaces gameState.
+--- @return boolean
+function S.isReady()
+    return stateReady
 end
 
 --- Merges `sessionScene.seatSlots` with `seatPresent` and applies NPC slot occupancy hints into `seatLayout`.

@@ -17,6 +17,7 @@ type Props = {
 };
 
 const emptyLiveSnapshot = (): SheetSnapshot => ({ ok: false, seats: [] });
+const LOADING_RETRY_MS = 3000;
 
 const friendlyBridgeMessage = (message: string): string => {
   if (/Claim Port first|not holding port 39998|bridge is disconnected/i.test(message)) {
@@ -47,6 +48,7 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
   const inFlight = useRef(false);
   const skipLive = useRef(false);
   const syncingRef = useRef(false);
+  const retryTimer = useRef<number | null>(null);
 
   const showOffline = useCallback((message: string): void => {
     skipLive.current = true;
@@ -97,6 +99,12 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
         return;
       }
       showOffline(result.message);
+      if (result.loading && retryTimer.current === null) {
+        retryTimer.current = window.setTimeout(() => {
+          retryTimer.current = null;
+          void refreshRef.current(true);
+        }, LOADING_RETRY_MS);
+      }
     } catch (error: unknown) {
       showOffline(error instanceof Error ? error.message : "Could not reach TTS.");
     } finally {
@@ -134,8 +142,15 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
     if (!active) {
       return;
     }
-    // One-shot load when the tab opens. Do not poll execute-lua — that stalls TTS.
+    // One-shot load when the tab opens (plus slow retries while TTS reports it is still loading).
+    // Do not poll execute-lua otherwise — that stalls TTS.
     void refresh(true);
+    return () => {
+      if (retryTimer.current !== null) {
+        window.clearTimeout(retryTimer.current);
+        retryTimer.current = null;
+      }
+    };
   }, [active, refresh]);
 
   useLayoutEffect(() => {

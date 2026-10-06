@@ -18,7 +18,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-06 — TOR-658 (ST roll dashboard usable from any seat) added; TOR-657 (Trace Sync timing) added; earlier today TOR-653 (dashboard sheet Pages 2–3 editing) TOR-654 (dashboard sheet Page 6 XP log) TOR-655 (relationships in gameState, dashboard Page 4) and TOR-656 (dashboard sheet Page 5 projects) added._
+_Last populated: 2026-10-06 — TOR-659 (dashboard requests refused until the save finishes loading) added; TOR-658 (ST roll dashboard usable from any seat) added; TOR-657 (Trace Sync timing) added; earlier today TOR-653 (dashboard sheet Pages 2–3 editing) TOR-654 (dashboard sheet Page 6 XP log) TOR-655 (relationships in gameState, dashboard Page 4) and TOR-656 (dashboard sheet Page 5 projects) added._
 
 ### High — session / join / first-load
 
@@ -29,6 +29,10 @@ _Last populated: 2026-10-06 — TOR-658 (ST roll dashboard usable from any seat)
 **How to verify:** Run the multiclient control/treatment playbook in [TOR-439-join-xml-spike-verify.md](Step-By-Step Playbooks/TOR-439-join-xml-spike-verify.md). On the Host, arm the minimal join XML, have the struggling client connect, then restore in stages. Especially watch **step 2 (HUD / Refresh UI)** after the **TOR-444** remount-weight reduction: does that client stay connected through the full Global HUD remount? Optionally also try a normal (unarmed) full-HUD join to see whether the Arm pipeline is still needed at all.
 
 **Context:** Earlier run: Assets, Emitters, and Figurines restore steps succeeded; step 2 timed out and drove **TOR-444**. Deferred from Focus until you can gather testers.
+
+#### TOR-659 — Dashboard requests refused until the save has finished loading
+
+**How to verify:** Open the dashboard on any tab other than PCs. Press Save & Play, and while TTS is still loading (before the console shows "Module Loaded"), click the dashboard's **PCs** tab. The tab should say "TTS is still loading the save. Try again in a moment." instead of showing an error, and the TTS Editor output should show a `[Dashboard] Request refused: the save has not finished loading.` line, not a red `relationships missing` Lua error. Leave the PCs tab open: within a few seconds of the load finishing, the sheets should fill in by themselves without you clicking anything. Then use the dashboard normally (change a tracker, open Page 5) to confirm nothing is refused once the game has loaded.
 
 ### Medium — debug tooling
 

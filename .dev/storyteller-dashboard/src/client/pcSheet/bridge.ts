@@ -144,7 +144,7 @@ const parseSnapshotJson = (raw: string): SheetSnapshot => {
     throw new Error("Sheet snapshot was not an object.");
   }
   if (parsed.ok === false) {
-    return { ok: false, error: asString(parsed.error, "Apply failed"), seats: [] };
+    return { ok: false, error: asString(parsed.error, "Apply failed"), seats: [], ...(parsed.loading === true ? { loading: true } : {}) };
   }
   const seats = Array.isArray(parsed.seats)
     ? parsed.seats.map(parseSeat).filter((seat): seat is SeatSnapshot => seat !== null)
@@ -212,14 +212,15 @@ export const applySheetCommands = async (commands: readonly ApplyCommand[]): Pro
 export const applySheetCommand = async (command: ApplyCommand): Promise<SheetSnapshot> =>
   applySheetCommands([command]);
 
-export const fetchLiveSnapshot = async (): Promise<{ snapshot: SheetSnapshot; live: boolean; message: string }> => {
+export const fetchLiveSnapshot = async (): Promise<{ snapshot: SheetSnapshot; live: boolean; message: string; loading?: boolean }> => {
   try {
     const snapshot = await fetchSheetSnapshot();
     if (!snapshot.ok) {
       return {
         snapshot: { ok: false, error: snapshot.error, seats: [] },
         live: false,
-        message: snapshot.error ?? "Tabletop Simulator returned an empty sheet snapshot."
+        message: snapshot.error ?? "Tabletop Simulator returned an empty sheet snapshot.",
+        ...(snapshot.loading ? { loading: true } : {})
       };
     }
     return { snapshot, live: true, message: "Live from Tabletop Simulator." };

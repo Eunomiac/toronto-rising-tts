@@ -10,6 +10,15 @@ Execute-lua modules used by the Storyteller Dashboard (`.dev/storyteller-dashboa
 | `pc_sheet_relationships.ttslua` | `dashboard.pc_sheet_relationships` | none — `EXTENSIONS` (Page 4 `relationshipUpsert` / `relationshipDelete` via `core.relationships`, `relationships` snapshot rows) |
 | `projects.ttslua` | `dashboard.projects` | `GlobalDashboardProjectsSnapshot` / `GlobalDashboardProjectsApply` — sheet Page 5 projects (own snapshot, not a seat extension: projects span owners and the coterie) |
 
+## Load guard
+
+TTS runs the Global chunk (so every `Global*` entry is callable) many seconds before `onLoad` reads the save into `gameState`. Dashboard execute-lua that lands in that gap would read an empty state, and any write would be discarded when `S.InitializeGameState` replaces `gameState`. Every dashboard entry above, plus `GlobalImportSceneJson` and `GlobalImportGenericNpcs`, therefore checks `S.isReady()` first (`dashboardLoadingRefusal` / `requireDashboardReady` in `core/global_script.ttslua`):
+
+- JSON entries (`GlobalDashboard*Snapshot` / `*Apply`) return `{ ok = false, loading = true, error = "TTS is still loading the save…" }`. The PCs tab shows that message and retries every 3 seconds while the tab is open.
+- The two import entries raise that message as a Lua error (their callers only detect failure that way).
+
+New dashboard Global entries must start with the same guard.
+
 ## PC sheet extensions
 
 `pc_sheet.ttslua` keeps the seat snapshot and the Page 1 ops. Each sibling module in its `EXTENSIONS` list exports:

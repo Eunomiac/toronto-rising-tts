@@ -92,6 +92,8 @@ export type XpEntryRef = { readonly kind: "gain" | "spend"; readonly amount: num
 export type SheetSnapshot = {
   readonly ok: boolean;
   readonly error?: string;
+  /** TTS refused because the save has not finished loading (S.isReady false); retry shortly. */
+  readonly loading?: boolean;
   readonly seats: readonly SeatSnapshot[];
   /** `gameState.sessionNum`: new XP entries land in this session's block. */
   readonly sessionNum?: number;
