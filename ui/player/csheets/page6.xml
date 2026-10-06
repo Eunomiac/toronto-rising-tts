@@ -98,138 +98,138 @@
   <Button id="pageInner" class="page_navigation page_inner_left" />
   <VerticalLayout id="db_vertical_section_container" class="vertical_section_container">
     <!-- Live session placeholders: title + 10 gain + 10 spend slots start inactive. -->
-<HorizontalLayout id="xp_title_line_1" class="xp_title_line" active="false">
+<HorizontalLayout id="xp_title_line_8" class="xp_title_line" active="false">
   <HorizontalLayout class="xp_title_line_left">
-    <Text id="xp_sessionNum_1" class="xp_session_num" text="SESSION ONE" />
-    <Text id="xp_sessionDate_1" class="xp_session_date" text="" />
+    <Text id="xp_sessionNum_8" class="xp_session_num" text="SESSION EIGHT" />
+    <Text id="xp_sessionDate_8" class="xp_session_date" text="" />
   </HorizontalLayout>
   <HorizontalLayout class="xp_title_line_right">
-    <Text id="xp_summation_1" class="xp_summation" text="" />
-    <Text id="xp_total_1" class="xp_total" text="" />
+    <Text id="xp_summation_8" class="xp_summation" text="" />
+    <Text id="xp_total_8" class="xp_total" text="" />
   </HorizontalLayout>
 </HorizontalLayout>
-<HorizontalLayout id="xp_listing_wrapper_1" class="xp_listing_wrapper" active="false">
-  <GridLayout id="xp_listing_left_1" class="xp_listing">
+<HorizontalLayout id="xp_listing_wrapper_8" class="xp_listing_wrapper" active="false">
+  <GridLayout id="xp_listing_left_8" class="xp_listing">
     <!-- Gain row for one session slot. -->
-<HorizontalLayout id="xp_item_left_1_1" class="xp_item" active="false">
-  <Text id="xp_gainNum_1_1" class="xp_gain_num" text="" />
-  <Text id="xp_gainDesc_1_1" class="xp_gain_desc" text="" />
+<HorizontalLayout id="xp_item_left_8_1" class="xp_item" active="false">
+  <Text id="xp_gainNum_8_1" class="xp_gain_num" text="" />
+  <Text id="xp_gainDesc_8_1" class="xp_gain_desc" text="" />
 </HorizontalLayout>
 
 <!-- Gain row for one session slot. -->
-<HorizontalLayout id="xp_item_left_1_2" class="xp_item" active="false">
-  <Text id="xp_gainNum_1_2" class="xp_gain_num" text="" />
-  <Text id="xp_gainDesc_1_2" class="xp_gain_desc" text="" />
+<HorizontalLayout id="xp_item_left_8_2" class="xp_item" active="false">
+  <Text id="xp_gainNum_8_2" class="xp_gain_num" text="" />
+  <Text id="xp_gainDesc_8_2" class="xp_gain_desc" text="" />
 </HorizontalLayout>
 
 <!-- Gain row for one session slot. -->
-<HorizontalLayout id="xp_item_left_1_3" class="xp_item" active="false">
-  <Text id="xp_gainNum_1_3" class="xp_gain_num" text="" />
-  <Text id="xp_gainDesc_1_3" class="xp_gain_desc" text="" />
+<HorizontalLayout id="xp_item_left_8_3" class="xp_item" active="false">
+  <Text id="xp_gainNum_8_3" class="xp_gain_num" text="" />
+  <Text id="xp_gainDesc_8_3" class="xp_gain_desc" text="" />
 </HorizontalLayout>
 
 <!-- Gain row for one session slot. -->
-<HorizontalLayout id="xp_item_left_1_4" class="xp_item" active="false">
-  <Text id="xp_gainNum_1_4" class="xp_gain_num" text="" />
-  <Text id="xp_gainDesc_1_4" class="xp_gain_desc" text="" />
+<HorizontalLayout id="xp_item_left_8_4" class="xp_item" active="false">
+  <Text id="xp_gainNum_8_4" class="xp_gain_num" text="" />
+  <Text id="xp_gainDesc_8_4" class="xp_gain_desc" text="" />
 </HorizontalLayout>
 
 <!-- Gain row for one session slot. -->
-<HorizontalLayout id="xp_item_left_1_5" class="xp_item" active="false">
-  <Text id="xp_gainNum_1_5" class="xp_gain_num" text="" />
-  <Text id="xp_gainDesc_1_5" class="xp_gain_desc" text="" />
+<HorizontalLayout id="xp_item_left_8_5" class="xp_item" active="false">
+  <Text id="xp_gainNum_8_5" class="xp_gain_num" text="" />
+  <Text id="xp_gainDesc_8_5" class="xp_gain_desc" text="" />
 </HorizontalLayout>
 
 <!-- Gain row for one session slot. -->
-<HorizontalLayout id="xp_item_left_1_6" class="xp_item" active="false">
-  <Text id="xp_gainNum_1_6" class="xp_gain_num" text="" />
-  <Text id="xp_gainDesc_1_6" class="xp_gain_desc" text="" />
+<HorizontalLayout id="xp_item_left_8_6" class="xp_item" active="false">
+  <Text id="xp_gainNum_8_6" class="xp_gain_num" text="" />
+  <Text id="xp_gainDesc_8_6" class="xp_gain_desc" text="" />
 </HorizontalLayout>
 
 <!-- Gain row for one session slot. -->
-<HorizontalLayout id="xp_item_left_1_7" class="xp_item" active="false">
-  <Text id="xp_gainNum_1_7" class="xp_gain_num" text="" />
-  <Text id="xp_gainDesc_1_7" class="xp_gain_desc" text="" />
+<HorizontalLayout id="xp_item_left_8_7" class="xp_item" active="false">
+  <Text id="xp_gainNum_8_7" class="xp_gain_num" text="" />
+  <Text id="xp_gainDesc_8_7" class="xp_gain_desc" text="" />
 </HorizontalLayout>
 
 <!-- Gain row for one session slot. -->
-<HorizontalLayout id="xp_item_left_1_8" class="xp_item" active="false">
-  <Text id="xp_gainNum_1_8" class="xp_gain_num" text="" />
-  <Text id="xp_gainDesc_1_8" class="xp_gain_desc" text="" />
+<HorizontalLayout id="xp_item_left_8_8" class="xp_item" active="false">
+  <Text id="xp_gainNum_8_8" class="xp_gain_num" text="" />
+  <Text id="xp_gainDesc_8_8" class="xp_gain_desc" text="" />
 </HorizontalLayout>
 
 <!-- Gain row for one session slot. -->
-<HorizontalLayout id="xp_item_left_1_9" class="xp_item" active="false">
-  <Text id="xp_gainNum_1_9" class="xp_gain_num" text="" />
-  <Text id="xp_gainDesc_1_9" class="xp_gain_desc" text="" />
+<HorizontalLayout id="xp_item_left_8_9" class="xp_item" active="false">
+  <Text id="xp_gainNum_8_9" class="xp_gain_num" text="" />
+  <Text id="xp_gainDesc_8_9" class="xp_gain_desc" text="" />
 </HorizontalLayout>
 
 <!-- Gain row for one session slot. -->
-<HorizontalLayout id="xp_item_left_1_10" class="xp_item" active="false">
-  <Text id="xp_gainNum_1_10" class="xp_gain_num" text="" />
-  <Text id="xp_gainDesc_1_10" class="xp_gain_desc" text="" />
+<HorizontalLayout id="xp_item_left_8_10" class="xp_item" active="false">
+  <Text id="xp_gainNum_8_10" class="xp_gain_num" text="" />
+  <Text id="xp_gainDesc_8_10" class="xp_gain_desc" text="" />
 </HorizontalLayout>
 
   </GridLayout>
-  <GridLayout id="xp_listing_right_1" class="xp_listing">
+  <GridLayout id="xp_listing_right_8" class="xp_listing">
     <!-- Spend row for one session slot. -->
-<HorizontalLayout id="xp_item_right_1_1" class="xp_item" active="false">
-  <Text id="xp_spendNum_1_1" class="xp_spend_num" text="" />
-  <Text id="xp_spendDesc_1_1" class="xp_spend_desc" text="" />
+<HorizontalLayout id="xp_item_right_8_1" class="xp_item" active="false">
+  <Text id="xp_spendNum_8_1" class="xp_spend_num" text="" />
+  <Text id="xp_spendDesc_8_1" class="xp_spend_desc" text="" />
 </HorizontalLayout>
 
 <!-- Spend row for one session slot. -->
-<HorizontalLayout id="xp_item_right_1_2" class="xp_item" active="false">
-  <Text id="xp_spendNum_1_2" class="xp_spend_num" text="" />
-  <Text id="xp_spendDesc_1_2" class="xp_spend_desc" text="" />
+<HorizontalLayout id="xp_item_right_8_2" class="xp_item" active="false">
+  <Text id="xp_spendNum_8_2" class="xp_spend_num" text="" />
+  <Text id="xp_spendDesc_8_2" class="xp_spend_desc" text="" />
 </HorizontalLayout>
 
 <!-- Spend row for one session slot. -->
-<HorizontalLayout id="xp_item_right_1_3" class="xp_item" active="false">
-  <Text id="xp_spendNum_1_3" class="xp_spend_num" text="" />
-  <Text id="xp_spendDesc_1_3" class="xp_spend_desc" text="" />
+<HorizontalLayout id="xp_item_right_8_3" class="xp_item" active="false">
+  <Text id="xp_spendNum_8_3" class="xp_spend_num" text="" />
+  <Text id="xp_spendDesc_8_3" class="xp_spend_desc" text="" />
 </HorizontalLayout>
 
 <!-- Spend row for one session slot. -->
-<HorizontalLayout id="xp_item_right_1_4" class="xp_item" active="false">
-  <Text id="xp_spendNum_1_4" class="xp_spend_num" text="" />
-  <Text id="xp_spendDesc_1_4" class="xp_spend_desc" text="" />
+<HorizontalLayout id="xp_item_right_8_4" class="xp_item" active="false">
+  <Text id="xp_spendNum_8_4" class="xp_spend_num" text="" />
+  <Text id="xp_spendDesc_8_4" class="xp_spend_desc" text="" />
 </HorizontalLayout>
 
 <!-- Spend row for one session slot. -->
-<HorizontalLayout id="xp_item_right_1_5" class="xp_item" active="false">
-  <Text id="xp_spendNum_1_5" class="xp_spend_num" text="" />
-  <Text id="xp_spendDesc_1_5" class="xp_spend_desc" text="" />
+<HorizontalLayout id="xp_item_right_8_5" class="xp_item" active="false">
+  <Text id="xp_spendNum_8_5" class="xp_spend_num" text="" />
+  <Text id="xp_spendDesc_8_5" class="xp_spend_desc" text="" />
 </HorizontalLayout>
 
 <!-- Spend row for one session slot. -->
-<HorizontalLayout id="xp_item_right_1_6" class="xp_item" active="false">
-  <Text id="xp_spendNum_1_6" class="xp_spend_num" text="" />
-  <Text id="xp_spendDesc_1_6" class="xp_spend_desc" text="" />
+<HorizontalLayout id="xp_item_right_8_6" class="xp_item" active="false">
+  <Text id="xp_spendNum_8_6" class="xp_spend_num" text="" />
+  <Text id="xp_spendDesc_8_6" class="xp_spend_desc" text="" />
 </HorizontalLayout>
 
 <!-- Spend row for one session slot. -->
-<HorizontalLayout id="xp_item_right_1_7" class="xp_item" active="false">
-  <Text id="xp_spendNum_1_7" class="xp_spend_num" text="" />
-  <Text id="xp_spendDesc_1_7" class="xp_spend_desc" text="" />
+<HorizontalLayout id="xp_item_right_8_7" class="xp_item" active="false">
+  <Text id="xp_spendNum_8_7" class="xp_spend_num" text="" />
+  <Text id="xp_spendDesc_8_7" class="xp_spend_desc" text="" />
 </HorizontalLayout>
 
 <!-- Spend row for one session slot. -->
-<HorizontalLayout id="xp_item_right_1_8" class="xp_item" active="false">
-  <Text id="xp_spendNum_1_8" class="xp_spend_num" text="" />
-  <Text id="xp_spendDesc_1_8" class="xp_spend_desc" text="" />
+<HorizontalLayout id="xp_item_right_8_8" class="xp_item" active="false">
+  <Text id="xp_spendNum_8_8" class="xp_spend_num" text="" />
+  <Text id="xp_spendDesc_8_8" class="xp_spend_desc" text="" />
 </HorizontalLayout>
 
 <!-- Spend row for one session slot. -->
-<HorizontalLayout id="xp_item_right_1_9" class="xp_item" active="false">
-  <Text id="xp_spendNum_1_9" class="xp_spend_num" text="" />
-  <Text id="xp_spendDesc_1_9" class="xp_spend_desc" text="" />
+<HorizontalLayout id="xp_item_right_8_9" class="xp_item" active="false">
+  <Text id="xp_spendNum_8_9" class="xp_spend_num" text="" />
+  <Text id="xp_spendDesc_8_9" class="xp_spend_desc" text="" />
 </HorizontalLayout>
 
 <!-- Spend row for one session slot. -->
-<HorizontalLayout id="xp_item_right_1_10" class="xp_item" active="false">
-  <Text id="xp_spendNum_1_10" class="xp_spend_num" text="" />
-  <Text id="xp_spendDesc_1_10" class="xp_spend_desc" text="" />
+<HorizontalLayout id="xp_item_right_8_10" class="xp_item" active="false">
+  <Text id="xp_spendNum_8_10" class="xp_spend_num" text="" />
+  <Text id="xp_spendDesc_8_10" class="xp_spend_desc" text="" />
 </HorizontalLayout>
 
   </GridLayout>

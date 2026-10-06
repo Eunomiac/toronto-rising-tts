@@ -18,7 +18,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-06 — TOR-661 (Prince's Court haven traits display) added; TOR-660 (dashboard Page 2 Blood Potency effects) added; TOR-659 (dashboard requests refused until the save finishes loading) added; TOR-658 (ST roll dashboard usable from any seat) added; TOR-657 (Trace Sync timing) added; earlier today TOR-653 (dashboard sheet Pages 2–3 editing) TOR-654 (dashboard sheet Page 6 XP log) TOR-655 (relationships in gameState, dashboard Page 4) and TOR-656 (dashboard sheet Page 5 projects) added._
+_Last populated: 2026-10-06 — TOR-662 (Black Caesar's page 6 Experience Log missing) added; TOR-661 (Prince's Court haven traits display) added; TOR-660 (dashboard Page 2 Blood Potency effects) added; TOR-659 (dashboard requests refused until the save finishes loading) added; TOR-658 (ST roll dashboard usable from any seat) added; TOR-657 (Trace Sync timing) added; earlier today TOR-653 (dashboard sheet Pages 2–3 editing) TOR-654 (dashboard sheet Page 6 XP log) TOR-655 (relationships in gameState, dashboard Page 4) and TOR-656 (dashboard sheet Page 5 projects) added._
 
 ### High — session / join / first-load
 
@@ -51,6 +51,12 @@ _Last populated: 2026-10-06 — TOR-661 (Prince's Court haven traits display) ad
 #### TOR-658 — Storyteller roll dashboard usable from any seat
 
 **How to verify:** Save & Play. Use the Debug panel seat buttons to move to a PC seat such as Red. Start a Storyteller roll from the dashboard and set its pool and difficulty by clicking the grid strips on the ST roll panel; the cells should respond. Roll it, click a couple of dice on the ST panel so they highlight, and press **REROLL**; only those dice should reroll. Then start a roll for a PC from the dashboard, change the difficulty strip on that PC's row, roll it, and use the post-roll add/remove-die cells; they should highlight on hover and change the pool. Everything should behave exactly as it does when you sit at Black.
+
+### Medium — character sheets
+
+#### TOR-662 — Black Caesar's Experience Log missing from character sheet page 6
+
+**How to verify:** Save & Play, then open Black Caesar's character sheet and turn to page 6. The Experience Log should now list his past sessions, starting with **PREGAME** at the top and going back through Time of Dominion, Time of Faith, Time of Excess, Time of Lineage and Time of Violence to **ANCILLA**, spread across pages you can step through with the down chevron. The entries and totals should match what the dashboard shows on his **V · VI** tab. Glance at one other PC's page 6 (for example Aishe) to confirm it still looks the same as before.
 
 ### Medium — Storyteller Dashboard character sheet
 

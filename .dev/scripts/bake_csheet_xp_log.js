@@ -53,7 +53,7 @@ function loadSteamIdToCharKey() {
   const map = {};
   const dataBlock = text.match(/C\.PlayerData\s*=\s*\{([\s\S]*?)\n\}/);
   if (!dataBlock) return map;
-  const entryRe = /\[C\.PlayerIDs\.(\w+)\]\s*=\s*\{([\s\S]*?)\n\s*\},/g;
+  const entryRe = /\[C\.PlayerIDs\.(\w+)\]\s*=\s*\{([\s\S]*?)\n\s*\},?/g;
   let m;
   while ((m = entryRe.exec(dataBlock[1])) !== null) {
     const nick = m[1];

@@ -6,8 +6,8 @@
 ]]
 
 local BAKE = {
-  bakedForSessionNum = 1,
-  bakeRevision = 1791319527908,
+  bakedForSessionNum = 8,
+  bakeRevision = 1791320566171,
   saveFileName = "TS_Save_230.json",
   byCharKey = {
     ["aishe"] = {
@@ -46,6 +46,48 @@ local BAKE = {
     },
     ["blackCaesar"] = {
       sessions = {
+        {
+          sessionNum = 0,
+          lineCount = 3,
+          gainCount = 1,
+          spendCount = 2,
+        },
+        {
+          sessionNum = -1,
+          lineCount = 5,
+          gainCount = 1,
+          spendCount = 4,
+        },
+        {
+          sessionNum = -2,
+          lineCount = 4,
+          gainCount = 1,
+          spendCount = 3,
+        },
+        {
+          sessionNum = -3,
+          lineCount = 4,
+          gainCount = 2,
+          spendCount = 3,
+        },
+        {
+          sessionNum = -4,
+          lineCount = 3,
+          gainCount = 1,
+          spendCount = 2,
+        },
+        {
+          sessionNum = -5,
+          lineCount = 3,
+          gainCount = 1,
+          spendCount = 2,
+        },
+        {
+          sessionNum = -6,
+          lineCount = 9,
+          gainCount = 3,
+          spendCount = 8,
+        },
       },
     },
     ["fomorach"] = {
