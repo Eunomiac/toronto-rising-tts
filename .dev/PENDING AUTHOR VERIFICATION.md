@@ -18,7 +18,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-06 — TOR-660 (dashboard Page 2 Blood Potency effects) added; TOR-659 (dashboard requests refused until the save finishes loading) added; TOR-658 (ST roll dashboard usable from any seat) added; TOR-657 (Trace Sync timing) added; earlier today TOR-653 (dashboard sheet Pages 2–3 editing) TOR-654 (dashboard sheet Page 6 XP log) TOR-655 (relationships in gameState, dashboard Page 4) and TOR-656 (dashboard sheet Page 5 projects) added._
+_Last populated: 2026-10-06 — TOR-661 (Prince's Court haven traits display) added; TOR-660 (dashboard Page 2 Blood Potency effects) added; TOR-659 (dashboard requests refused until the save finishes loading) added; TOR-658 (ST roll dashboard usable from any seat) added; TOR-657 (Trace Sync timing) added; earlier today TOR-653 (dashboard sheet Pages 2–3 editing) TOR-654 (dashboard sheet Page 6 XP log) TOR-655 (relationships in gameState, dashboard Page 4) and TOR-656 (dashboard sheet Page 5 projects) added._
 
 ### High — session / join / first-load
 
@@ -39,6 +39,12 @@ _Last populated: 2026-10-06 — TOR-660 (dashboard Page 2 Blood Potency effects)
 #### TOR-657 — Trace Sync: timed, nested, filterable output
 
 **How to verify:** Save & Play. In the TTS Tools output panel, type `SyncTrace` into the output filter box so only trace lines show. Click **Trace Sync** on the Debug panel (it turns yellow). The first trace line should say "trace ON" and give a clock resolution; if the resolution is well under 1 ms the timings are trustworthy, and if it says around 15 ms, tell me. Now add a few NPCs to the Stage Control Board and press **Apply**. You should see one block of lines that all share the same `#` number, starting with `Sync.npcs` and indented underneath with `NPCS.reconcileAllFromState`, the control-board reconcile, and so on, each with a time in ms. Slow calls say `>1 frame`. The old always-on `[Sync.npcs] reason=...` line should no longer appear. Next, change a PC's Hunger from the Storyteller PCs panel and press its Apply. Expect several separate blocks in a row (`Sync.player`, `HO.reconcileForSeat`, `PCST.refreshCharacterSheetsForColor`, `PCST.refreshRow`, `HO.syncAll`), each with its own `#` number. That is the scattered refresh pattern we discussed, now visible with times. Finally click **Trace Sync** again to turn it off (grey). A `SUMMARY` table should print, listing each function with how many times it was called and how long it took in total, slowest first. Please paste me that summary along with the Apply block, since they are the starting numbers for the performance work.
+
+### Medium — Prince's Court sheet
+
+#### TOR-661 — Haven Backgrounds / Merits / Flaws show on the Prince's Court sheet
+
+**How to verify:** Save & Play. From the right sidebar, open The Court and click the right arrow once to reach the second spread (Domain on the left, Haven on the right). Under the Haven header on the right-hand page you should now see a **Haven Merits** divider with three merits side by side: **Cells** (2 dots), **Warding (Animals)** and **Watchmen** (2 dots), each with its flavour and rules text. There should be no Haven Backgrounds or Haven Flaws dividers, because those are empty. Then open the Storyteller **Stats** panel, pick Coterie, and add a Haven Flaw called "Test Flaw" with one dot: a **Haven Flaws** divider should appear on the Court page with the red-dot flaw beneath it. Delete the test flaw and check that the divider disappears again. The Domain Merits and Flaws on the left-hand page should look exactly as before.
 
 ### Medium — dice & rolls
 

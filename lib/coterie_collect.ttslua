@@ -15,6 +15,13 @@ local MAX_DOMAIN_DOTS = 5
 --- Must match `lib/princes_court_trait_xml.ttslua` build opts so blank `setAttribute` ids align with baked XML.
 local TRAIT_ACTIVE_OPTS = { visibilityMode = "active" }
 
+--- Sections baked with only in-session blank slots: divider starts `active="false"` and shows once any slot is used.
+local RUNTIME_SECTION_DIVIDERS = {
+  { arrayKey = "havenBackgrounds", id = "divider_havenBackgrounds" },
+  { arrayKey = "havenMerits", id = "divider_havenMerits" },
+  { arrayKey = "havenFlaws", id = "divider_havenFlaws" },
+}
+
 --- Committed project stakes occupy a separate project-dot band on Prince's Court (same as CSHEET).
 --- @param entry table
 --- @return integer
@@ -139,7 +146,32 @@ function CC.collectPrincesCourtTraitBlankUpdates(coterieData, hudSeatColor)
   return updates
 end
 
---- Build UI updates for domain rating dots (page 2) and blank trait slots.
+--- @param arr table|nil
+--- @return boolean
+local function traitArrayHasDisplayedEntry(arr)
+  if type(arr) ~= "table" then
+    return false
+  end
+  for _, entry in ipairs(arr) do
+    if type(entry) == "table" and (entry.blank ~= true or entry.active == true) then
+      return true
+    end
+  end
+  return false
+end
+
+--- @param updates table[]
+--- @param coterieData table|nil
+local function addRuntimeDividerUpdates(updates, coterieData)
+  for _, divider in ipairs(RUNTIME_SECTION_DIVIDERS) do
+    local arr = type(coterieData) == "table" and coterieData[divider.arrayKey] or nil
+    addUpdate(updates, divider.id, {
+      active = traitArrayHasDisplayedEntry(arr) and "true" or "false",
+    })
+  end
+end
+
+--- Build UI updates for domain rating dots (page 2), haven section dividers, and blank trait slots.
 -- Shared Court (TOR-444): `dot_on_<key>_<slot>` with no seat suffix.
 -- @param coterieData table|nil `gameState.coterieData`
 -- @param hudSeatColor string|nil ignored (call-site compat)
@@ -183,6 +215,8 @@ function CC.collectPrincesCourtHudUpdates(coterieData, hudSeatColor)
             end
         end
     end
+
+    addRuntimeDividerUpdates(updates, coterieData)
 
     local blankUpdates = CC.collectPrincesCourtTraitBlankUpdates(coterieData, hudSeatColor)
     for i = 1, #blankUpdates do
