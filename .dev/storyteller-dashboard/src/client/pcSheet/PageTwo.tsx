@@ -164,26 +164,30 @@ export const PageTwo = ({ ctx }: { readonly ctx: PageContext }): ReactElement =>
     );
   };
 
-  const firstEmpty = cells.findIndex((cell) => cell === null);
+  const full = rows.length >= MAX_DISCIPLINES;
   return (
     <article className={`pc-page pc-sheet-page pc-page-two ${ctx.side}`}>
       <div className="pc-sheet-scroll">
+        <div className="pc-divider">
+          <h3 className="pc-section-title">Disciplines</h3>
+          <button
+            type="button"
+            className="pc-add-text"
+            title={full ? `Page 2 holds ${MAX_DISCIPLINES} disciplines` : "Add a discipline"}
+            disabled={full}
+            onClick={() => setPopup({ kind: "addDiscipline" })}
+          >
+            + Discipline
+          </button>
+        </div>
         <section className="pc-disc-grid" aria-label="Disciplines">
           {cells.map((row, index) => (
             row
               ? <DisciplineCell key={row.key} row={row} ctx={ctx} onPopup={setPopup} />
-              : (
-                <div key={`empty-${index}`} className="pc-disc-cell empty">
-                  {index === firstEmpty ? (
-                    <button type="button" className="pc-disc-add" onClick={() => setPopup({ kind: "addDiscipline" })}>
-                      + Discipline
-                    </button>
-                  ) : null}
-                </div>
-              )
+              : <div key={`empty-${index}`} className="pc-disc-cell empty" />
           ))}
         </section>
-  
+
         {layout || divider ? (
           <section className="pc-rc" aria-label="Rituals and Ceremonies">
             <div className="pc-divider">

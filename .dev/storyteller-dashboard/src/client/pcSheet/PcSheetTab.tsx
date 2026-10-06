@@ -285,6 +285,11 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
 
   const ringActions = ring && seat ? actionsForRing(seat, ring.target) : [];
 
+  const goToSpread = (index: number): void => {
+    setRing(null);
+    setSpread(index);
+  };
+
   return (
     <div className="pc-sheet-workspace">
       {live && snapshot.seats.length > 0 ? (
@@ -309,6 +314,32 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
               };
               return <Fragment key={page}>{renderPage(page, ctx)}</Fragment>;
             })}
+            {spread > 0 ? (
+              <button
+                type="button"
+                className="pc-spread-home"
+                title={`Back to pages ${SPREADS[0].label}`}
+                aria-label={`Back to pages ${SPREADS[0].label}`}
+                onClick={() => goToSpread(0)}
+              />
+            ) : null}
+            {([["prev", spread - 1], ["next", spread + 1]] as const).map(([dir, target]) => {
+              const row = SPREADS[target];
+              return row ? (
+                <button
+                  key={dir}
+                  type="button"
+                  className={`pc-spread-arrow ${dir}`}
+                  title={`Pages ${row.label}`}
+                  aria-label={`Pages ${row.label}`}
+                  onClick={() => goToSpread(target)}
+                >
+                  <svg viewBox="0 0 24 40" aria-hidden="true">
+                    <path d={dir === "prev" ? "M21 3 L3 20 L21 37 Z" : "M3 3 L21 20 L3 37 Z"} />
+                  </svg>
+                </button>
+              ) : null;
+            })}
           </div>
         ) : (
           <div className="pc-spread pc-spread-offline" role="status">
@@ -316,24 +347,6 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
             <p className="pc-offline-body">{status}</p>
           </div>
         )}
-        {live && seat ? (
-          <nav className="pc-spread-tabs" aria-label="Character sheet pages">
-            {SPREADS.map((row, index) => (
-              <button
-                key={row.label}
-                type="button"
-                className={index === spread ? "active" : undefined}
-                aria-pressed={index === spread}
-                onClick={() => {
-                  setRing(null);
-                  setSpread(index);
-                }}
-              >
-                {row.label}
-              </button>
-            ))}
-          </nav>
-        ) : null}
         <div className="pc-bridge-bar">
           <div className={`status ${live ? "success" : "idle"}`}>{status}{syncing ? "  Updating Tabletop Simulator…" : ""}{busy ? "  Sending…" : ""}</div>
           <button

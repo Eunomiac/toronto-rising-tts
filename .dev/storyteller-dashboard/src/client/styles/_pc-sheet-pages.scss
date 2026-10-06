@@ -124,6 +124,10 @@
 
 .pc-page-two {
   gap: 0.4rem;
+
+  .pc-section-title {
+    margin: 0;
+  }
 }
 
 .pc-disc-grid {
@@ -139,20 +143,8 @@
   min-width: 0;
 
   &.empty {
-    align-items: center;
-    justify-content: center;
     border: 1px dashed rgba(196, 161, 90, 0.18);
   }
-}
-
-.pc-disc-add {
-  padding: 0.25rem 0.6rem;
-  border: 1px solid rgba(196, 161, 90, 0.6);
-  background: rgba(0, 0, 0, 0.55);
-  color: #e9cf9f;
-  font-family: "Trajan Pro 3", serif;
-  font-size: 0.62rem;
-  letter-spacing: 0.08em;
 }
 
 .pc-disc-header {
