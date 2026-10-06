@@ -4,7 +4,7 @@ export const formatBadge = (value: number): string => (value > 0 ? `+${value}` :
 
 const traitButtons = (
   seat: SeatSnapshot,
-  family: "attributes" | "skills" | "bloodPotency",
+  family: "attributes" | "skills" | "bloodPotency" | "disciplines",
   key: string,
   includeBadge: boolean
 ): readonly RingAction[] => {
@@ -33,14 +33,16 @@ const traitButtons = (
       left: left("temp", 1),
       right: left("temp", -1)
     },
-    {
+  ];
+  if (family !== "disciplines") {
+    actions.push({
       id: "disable",
       label: "Disable",
       image: "buttons/trait_disable.webp",
       left: left("disabled", 1),
       right: left("disabled", -1)
-    }
-  ];
+    });
+  }
   if (includeBadge) {
     const current = seat.badges[key] ?? 0;
     actions.push({
@@ -113,6 +115,9 @@ export const actionsForRing = (seat: SeatSnapshot, target: RingTarget): readonly
   }
   if (target.kind === "bloodPotency") {
     return traitButtons(seat, "bloodPotency", "bloodPotency", false);
+  }
+  if (target.kind === "discipline") {
+    return traitButtons(seat, "disciplines", target.key, false);
   }
   if (target.kind === "damage") {
     return damageButtons(seat, target.which);

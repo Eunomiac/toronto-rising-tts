@@ -85,8 +85,16 @@ export type DamageMode =
   | "mend"
   | "refresh";
 
+export type PowerDraft = { name: string; level: number; notes: string };
+
 export type ApplyCommand =
-  | { op: "dotDelta"; color: SeatColor; family: "attributes" | "skills" | "bloodPotency"; key: string; field: "base" | "temp" | "disabled"; delta: number }
+  | { op: "dotDelta"; color: SeatColor; family: "attributes" | "skills" | "bloodPotency" | "disciplines"; key: string; field: "base" | "temp" | "disabled"; delta: number }
+  | { op: "disciplineAdd"; color: SeatColor; key: string }
+  | { op: "disciplineRemove"; color: SeatColor; key: string }
+  | { op: "disciplinePowerUpsert"; color: SeatColor; key: string; index?: number; power: PowerDraft }
+  | { op: "disciplinePowerRemove"; color: SeatColor; key: string; index: number }
+  | { op: "ritualUpsert"; color: SeatColor; kind: "rituals" | "ceremonies"; index?: number; entry: PowerDraft }
+  | { op: "ritualRemove"; color: SeatColor; kind: "rituals" | "ceremonies"; index: number }
   | { op: "badgeDelta"; color: SeatColor; key: string; delta: number }
   | { op: "damage"; color: SeatColor; which: "health" | "willpower"; mode: DamageMode }
   | { op: "humanity"; color: SeatColor; kind: "stain" | "base" | "remorse"; delta?: number; remorse?: "pass" | "fail" }
@@ -107,6 +115,7 @@ export type ApplyCommand =
 export type RingTarget =
   | { kind: "trait"; family: "attributes" | "skills"; key: string }
   | { kind: "bloodPotency" }
+  | { kind: "discipline"; key: string }
   | { kind: "damage"; which: "health" | "willpower" }
   | { kind: "humanity" };
 

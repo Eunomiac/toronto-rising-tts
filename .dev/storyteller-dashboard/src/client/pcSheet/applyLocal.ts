@@ -74,9 +74,34 @@ const deltasForDamageMode = (seat: SeatSnapshot, which: "health" | "willpower", 
   }
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+/** Discipline dots live only in the raw playerData dump (Page 2 reads them from there). */
+const patchDiscipline = (seat: SeatSnapshot, key: string, field: "base" | "temp" | "disabled", delta: number): SeatSnapshot => {
+  const stats = isRecord(seat.playerData.stats) ? seat.playerData.stats : {};
+  const discs = isRecord(stats.disciplines) ? stats.disciplines : {};
+  const row = discs[key];
+  if (!isRecord(row) || field === "disabled") {
+    return seat;
+  }
+  const current = typeof row[field] === "number" ? row[field] : 0;
+  const next = clamp(current + delta, field === "temp" ? -5 : 0, 5);
+  return {
+    ...seat,
+    playerData: {
+      ...seat.playerData,
+      stats: { ...stats, disciplines: { ...discs, [key]: { ...row, [field]: next } } }
+    }
+  };
+};
+
 const patchSeat = (seat: SeatSnapshot, command: ApplyCommand): SeatSnapshot => {
   switch (command.op) {
     case "dotDelta": {
+      if (command.family === "disciplines") {
+        return patchDiscipline(seat, command.key, command.field, command.delta);
+      }
       if (command.family === "bloodPotency") {
         return { ...seat, bloodPotency: bumpRating(seat.bloodPotency, command.field, command.delta, 10) };
       }

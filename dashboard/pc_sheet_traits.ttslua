@@ -1,0 +1,238 @@
+--[[
+  Storyteller Dashboard PCs tab — Page 2 (disciplines, powers, rituals, ceremonies) apply ops.
+  Registered into dashboard.pc_sheet; every op returns nil on success or a plain-English error.
+  Page limits mirror lib/csheet_page2_xml.ttslua (it errors past them).
+]]
+
+local M = {}
+
+local S = require("core.state")
+local PCST = require("core.pc_storyteller_panel")
+local PSC = require("lib.pc_sheet_collect")
+
+local MAX_DISCIPLINES = 6
+local RITUAL_HOST = { rituals = "bloodSorcery", ceremonies = "oblivion" }
+local RITUAL_HOST_LABEL = { rituals = "Blood Sorcery", ceremonies = "Oblivion" }
+
+local function trim(value)
+  if type(value) ~= "string" then
+    return ""
+  end
+  return (value:gsub("^%s+", ""):gsub("%s+$", ""))
+end
+
+local function clampInt(value, lo, hi)
+  local n = math.floor(tonumber(value) or lo)
+  return math.max(lo, math.min(hi, n))
+end
+
+local function afterSheetChange(color)
+  PCST.refreshCharacterSheetsForColor(color)
+  PCST.refreshRow(color)
+end
+
+local function disciplines(pid)
+  local discs = S.getStateVal("playerData", pid, "stats", "disciplines")
+  if type(discs) ~= "table" then
+    return nil
+  end
+  return discs
+end
+
+local function ownedCount(discs)
+  local n = 0
+  for key, row in pairs(discs or {}) do
+    if PSC.DISCIPLINE_DOT_KEYS[key] == true and type(row) == "table" then
+      n = n + 1
+    end
+  end
+  return n
+end
+
+local function ownedRow(pid, key)
+  local discs = disciplines(pid)
+  local row = discs and discs[key] or nil
+  if type(row) ~= "table" then
+    return nil
+  end
+  return row
+end
+
+local function listCount(list)
+  return type(list) == "table" and #list or 0
+end
+
+--- Page 2 holds 5 + 5 when both kinds exist, otherwise up to 10 of one kind.
+local function validRitualCounts(rituals, ceremonies)
+  if rituals > 0 and ceremonies > 0 then
+    return rituals <= 5 and ceremonies <= 5
+  end
+  return rituals <= 10 and ceremonies <= 10
+end
+
+--- @return table|nil entry
+--- @return string|nil err
+local function powerFromCommand(raw, maxLevel)
+  if type(raw) ~= "table" then
+    return nil, "Missing entry"
+  end
+  local name = trim(raw.name)
+  if name == "" then
+    return nil, "Name is required"
+  end
+  return {
+    name = name,
+    level = clampInt(raw.level, 1, maxLevel),
+    notes = trim(raw.notes),
+  }, nil
+end
+
+--- Write `entry` at `index` (1-based) or append; keep any stored `source`.
+local function upsertListEntry(list, index, entry)
+  local idx = tonumber(index)
+  if idx ~= nil then
+    idx = math.floor(idx)
+    local existing = list[idx]
+    if type(existing) ~= "table" then
+      return "That entry no longer exists — refresh and try again"
+    end
+    entry.source = existing.source
+    list[idx] = entry
+    return nil
+  end
+  list[#list + 1] = entry
+  return nil
+end
+
+local function removeListEntry(list, index)
+  local idx = math.floor(tonumber(index) or 0)
+  if type(list) ~= "table" or idx < 1 or idx > #list then
+    return "That entry no longer exists — refresh and try again"
+  end
+  table.remove(list, idx)
+  return nil
+end
+
+M.ops = {}
+
+M.ops.disciplineAdd = function(color, pid, cmd)
+  local key = cmd.key
+  if PSC.DISCIPLINE_DOT_KEYS[key] ~= true then
+    return "Unknown discipline"
+  end
+  local discs = disciplines(pid) or {}
+  if type(discs[key]) == "table" then
+    return "That discipline is already on the sheet"
+  end
+  if ownedCount(discs) >= MAX_DISCIPLINES then
+    return "Page 2 holds at most 6 disciplines"
+  end
+  discs[key] = { base = 1, temp = 0, powers = {} }
+  S.setStateVal(discs, "playerData", pid, "stats", "disciplines")
+  afterSheetChange(color)
+  return nil
+end
+
+M.ops.disciplineRemove = function(color, pid, cmd)
+  local key = cmd.key
+  if ownedRow(pid, key) == nil then
+    return "That discipline is not on the sheet"
+  end
+  S.setStateVal(nil, "playerData", pid, "stats", "disciplines", key)
+  afterSheetChange(color)
+  return nil
+end
+
+M.ops.disciplinePowerUpsert = function(color, pid, cmd)
+  local row = ownedRow(pid, cmd.key)
+  if row == nil then
+    return "That discipline is not on the sheet"
+  end
+  local entry, err = powerFromCommand(cmd.power, 5)
+  if entry == nil then
+    return err
+  end
+  if type(row.powers) ~= "table" then
+    row.powers = {}
+  end
+  local writeErr = upsertListEntry(row.powers, cmd.index, entry)
+  if writeErr ~= nil then
+    return writeErr
+  end
+  S.setStateVal(row.powers, "playerData", pid, "stats", "disciplines", cmd.key, "powers")
+  afterSheetChange(color)
+  return nil
+end
+
+M.ops.disciplinePowerRemove = function(color, pid, cmd)
+  local row = ownedRow(pid, cmd.key)
+  if row == nil then
+    return "That discipline is not on the sheet"
+  end
+  local err = removeListEntry(row.powers, cmd.index)
+  if err ~= nil then
+    return err
+  end
+  S.setStateVal(row.powers, "playerData", pid, "stats", "disciplines", cmd.key, "powers")
+  afterSheetChange(color)
+  return nil
+end
+
+M.ops.ritualUpsert = function(color, pid, cmd)
+  local kind = cmd.kind
+  local hostKey = RITUAL_HOST[kind]
+  if hostKey == nil then
+    return "Unknown ritual kind"
+  end
+  local row = ownedRow(pid, hostKey)
+  if row == nil then
+    return "Add " .. RITUAL_HOST_LABEL[kind] .. " to the sheet first"
+  end
+  local entry, err = powerFromCommand(cmd.entry, 5)
+  if entry == nil then
+    return err
+  end
+  if type(row[kind]) ~= "table" then
+    row[kind] = {}
+  end
+  if tonumber(cmd.index) == nil then
+    local rituals = listCount((ownedRow(pid, RITUAL_HOST.rituals) or {}).rituals)
+    local ceremonies = listCount((ownedRow(pid, RITUAL_HOST.ceremonies) or {}).ceremonies)
+    if kind == "rituals" then
+      rituals = rituals + 1
+    else
+      ceremonies = ceremonies + 1
+    end
+    if not validRitualCounts(rituals, ceremonies) then
+      return "Page 2 is full: it holds 10 rituals or ceremonies of one kind, or 5 of each"
+    end
+  end
+  local writeErr = upsertListEntry(row[kind], cmd.index, entry)
+  if writeErr ~= nil then
+    return writeErr
+  end
+  S.setStateVal(row[kind], "playerData", pid, "stats", "disciplines", hostKey, kind)
+  afterSheetChange(color)
+  return nil
+end
+
+M.ops.ritualRemove = function(color, pid, cmd)
+  local kind = cmd.kind
+  local hostKey = RITUAL_HOST[kind]
+  if hostKey == nil then
+    return "Unknown ritual kind"
+  end
+  local row = ownedRow(pid, hostKey)
+  if row == nil then
+    return "Add " .. RITUAL_HOST_LABEL[kind] .. " to the sheet first"
+  end
+  local err = removeListEntry(row[kind], cmd.index)
+  if err ~= nil then
+    return err
+  end
+  S.setStateVal(row[kind], "playerData", pid, "stats", "disciplines", hostKey, kind)
+  afterSheetChange(color)
+  return nil
+end
+
+return M

@@ -66,10 +66,11 @@ function BOOT.statsFromPcsChar(pcsChar)
   return stats
 end
 
+--- Missing only: an empty list is a Storyteller edit (every entry deleted) and must persist.
 --- @param arr table|nil
 --- @return boolean
-local function narrativeTraitArrayEmpty(arr)
-  return type(arr) ~= "table" or #arr == 0
+local function narrativeTraitArrayMissing(arr)
+  return type(arr) ~= "table"
 end
 
 --- Copy page-3 narrative arrays from embedded PCS (explicit reset / debug).
@@ -88,7 +89,7 @@ function BOOT.resetNarrativeTraitsFromPcs(stats, charKey)
   stats.flaws = deepCloneTable(pcsChar.flaws or {})
 end
 
---- Seed page-3 narrative arrays from PCS only when missing or empty (preserves ST edits).
+--- Seed page-3 narrative arrays from PCS only when missing (preserves ST edits, including deletes).
 --- @param stats table
 --- @param charKey string
 function BOOT.hydrateNarrativeTraits(stats, charKey)
@@ -99,19 +100,20 @@ function BOOT.hydrateNarrativeTraits(stats, charKey)
   if type(pcsChar) ~= "table" then
     return
   end
-  if narrativeTraitArrayEmpty(stats.backgrounds) then
+  if narrativeTraitArrayMissing(stats.backgrounds) then
     stats.backgrounds = deepCloneTable(pcsChar.backgrounds or {})
   end
-  if narrativeTraitArrayEmpty(stats.merits) then
+  if narrativeTraitArrayMissing(stats.merits) then
     stats.merits = deepCloneTable(pcsChar.merits or {})
   end
-  if narrativeTraitArrayEmpty(stats.flaws) then
+  if narrativeTraitArrayMissing(stats.flaws) then
     stats.flaws = deepCloneTable(pcsChar.flaws or {})
   end
 end
 
 --- Merge powers / rituals / ceremonies from PCS into live discipline rows (keep base/temp).
---- Needed when older saves stripped those fields at bootstrap.
+--- Needed when older saves stripped those fields at bootstrap. Only fills rows that already
+--- exist: a discipline the Storyteller removed must not come back on load.
 --- @param stats table
 --- @param charKey string
 function BOOT.hydrateDisciplineDetails(stats, charKey)
@@ -123,14 +125,13 @@ function BOOT.hydrateDisciplineDetails(stats, charKey)
     return
   end
   if type(stats.disciplines) ~= "table" then
-    stats.disciplines = {}
+    stats.disciplines = deepCloneTable(pcsChar.disciplines)
+    return
   end
   for key, pcsRow in pairs(pcsChar.disciplines) do
     if type(key) == "string" and type(pcsRow) == "table" then
       local live = stats.disciplines[key]
-      if type(live) ~= "table" then
-        stats.disciplines[key] = deepCloneTable(pcsRow)
-      else
+      if type(live) == "table" then
         if live.powers == nil and pcsRow.powers ~= nil then
           live.powers = deepCloneTable(pcsRow.powers)
         end

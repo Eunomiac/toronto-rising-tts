@@ -51,6 +51,166 @@
   }
 }
 
+.pc-add-text {
+  padding: 0.12rem 0.5rem;
+  border: 1px solid #c4a15a;
+  border-radius: 0.25rem;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fce5c1;
+  font-family: "Trajan Pro 3", serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+
+  &:disabled {
+    opacity: 0.3;
+  }
+}
+
+// ---------------------------------------------------------------- Page 2
+
+.pc-page-two {
+  gap: 0.4rem;
+}
+
+.pc-disc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: minmax(9.5rem, auto);
+  gap: 0.5rem 0.65rem;
+}
+
+.pc-disc-cell {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  &.empty {
+    align-items: center;
+    justify-content: center;
+    border: 1px dashed rgba(196, 161, 90, 0.18);
+  }
+}
+
+.pc-disc-add {
+  padding: 0.25rem 0.6rem;
+  border: 1px solid rgba(196, 161, 90, 0.6);
+  background: rgba(0, 0, 0, 0.55);
+  color: #e9cf9f;
+  font-family: "Trajan Pro 3", serif;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+}
+
+.pc-disc-header {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+
+  button {
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+}
+
+.pc-disc-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+
+  img {
+    max-width: 100%;
+    height: 1.25rem;
+    object-fit: contain;
+    object-position: left center;
+  }
+}
+
+.pc-disc-dots {
+  flex: 0 0 auto;
+  display: flex;
+}
+
+.pc-disc-powers {
+  margin: 0.25rem 0 0;
+  padding: 0 0 0 0.6rem;
+  list-style: none;
+  color: #aaaaaa;
+  font-family: "Franklin Gothic Demi Cond", sans-serif;
+  font-size: 0.66rem;
+  line-height: 1.3;
+  text-transform: uppercase;
+
+  li {
+    margin-bottom: 0.12rem;
+  }
+
+  .pc-power-sep {
+    font-size: 0.5rem;
+    color: #ffffff;
+  }
+}
+
+.pc-power {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: 0.02em;
+  text-align: left;
+
+  &:hover {
+    color: #fce5c1;
+  }
+
+  sup {
+    color: #c4a15a;
+  }
+}
+
+.pc-rc {
+  margin-top: auto;
+
+  .pc-divider img {
+    height: 2.4rem;
+  }
+}
+
+.pc-rc-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 1rem;
+}
+
+.pc-rc-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.pc-rc-row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 1.35rem;
+  padding: 0.05rem 0.2rem;
+  border: 0;
+  background: transparent;
+  color: #ffffff;
+  text-align: left;
+
+  &:not(.empty):hover {
+    background: rgba(196, 161, 90, 0.08);
+  }
+}
+
+.pc-rc-name {
+  font-family: "Cormorant Garamond", serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
 .pc-empty-note {
   margin: 0.4rem 0;
   color: rgba(255, 255, 255, 0.45);

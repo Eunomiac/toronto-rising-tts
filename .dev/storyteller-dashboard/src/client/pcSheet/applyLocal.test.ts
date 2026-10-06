@@ -59,6 +59,21 @@ describe("applyLocal", () => {
     expect(next.seats.find((seat) => seat.color === "Pink")?.badges.etiquette).toBe(5);
   });
 
+  it("bumps an owned discipline inside playerData and ignores unowned ones", () => {
+    const base = fixtureSnapshot();
+    const seeded = {
+      ...base,
+      seats: base.seats.map((seat) => seat.color === "Pink"
+        ? { ...seat, playerData: { stats: { disciplines: { auspex: { base: 2, temp: 0 } } } } }
+        : seat)
+    };
+    const next = applyLocal(seeded, { op: "dotDelta", color: "Pink", family: "disciplines", key: "auspex", field: "base", delta: 9 });
+    const stats = next.seats.find((seat) => seat.color === "Pink")?.playerData.stats as { disciplines: Record<string, { base: number }> };
+    expect(stats.disciplines.auspex?.base).toBe(5);
+    const untouched = applyLocal(seeded, { op: "dotDelta", color: "Pink", family: "disciplines", key: "celerity", field: "base", delta: 1 });
+    expect(untouched.seats.find((seat) => seat.color === "Pink")?.playerData).toEqual({ stats: { disciplines: { auspex: { base: 2, temp: 0 } } } });
+  });
+
   it("mends up to the current mending value", () => {
     let snapshot = fixtureSnapshot();
     for (let i = 0; i < 4; i += 1) {

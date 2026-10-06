@@ -19,6 +19,12 @@ local Sync = require("core.sync")
 local ES = require("lib.effective_stats")
 local U = require("lib.util")
 
+--- Sibling modules: `ops[op] = function(color, pid, cmd) -> err|nil` and optional
+--- `snapshotFields(color, pid, stats) -> table` merged into each seat snapshot.
+local EXTENSIONS = {
+  require("dashboard.pc_sheet_traits"),
+}
+
 local ATTRIBUTE_KEYS = {
   "strength", "dexterity", "stamina",
   "charisma", "manipulation", "composure",
@@ -679,7 +685,7 @@ local function snapshotSeat(color)
   local identity = identityFromPcs(charKey, catalog)
   local overlay = type(pid) == "string" and S.getStateVal("playerData", pid, "sheetOverlay") or nil
   local ambition = PCST.normalizeDesire(type(pid) == "string" and S.getStateVal("playerData", pid, "ambition") or "")
-  return {
+  local seat = {
     color = color,
     playerId = pid,
     charKey = charKey,
@@ -725,6 +731,18 @@ local function snapshotSeat(color)
     hudFrenzy = type(pid) == "string" and S.getStateVal("playerData", pid, "conditions", "hudFrenzy") ~= nil,
     hudBlindfold = type(pid) == "string" and S.getStateVal("playerData", pid, "conditions", "hudBlindfold") ~= nil,
   }
+  if type(pid) == "string" and pid ~= C.StorytellerID then
+    for i = 1, #EXTENSIONS do
+      local fields = type(EXTENSIONS[i].snapshotFields) == "function"
+        and EXTENSIONS[i].snapshotFields(color, pid, stats) or nil
+      if type(fields) == "table" then
+        for key, value in pairs(fields) do
+          seat[key] = value
+        end
+      end
+    end
+  end
+  return seat
 end
 
 function Dash.snapshot()
@@ -741,16 +759,36 @@ local function applyCommand(cmd)
     return "Unknown seat color"
   end
   local op = cmd.op
+  for i = 1, #EXTENSIONS do
+    local handler = EXTENSIONS[i].ops[op]
+    if handler ~= nil then
+      local pid = C.GetPlayerID(color)
+      if type(pid) ~= "string" or pid == C.StorytellerID then
+        return "No player for color " .. tostring(color)
+      end
+      return handler(color, pid, cmd)
+    end
+  end
   if op == "dotDelta" then
     local family = cmd.family
     local key = cmd.key
     local field = cmd.field
-    if (family ~= "attributes" and family ~= "skills" and family ~= "bloodPotency")
+    if (family ~= "attributes" and family ~= "skills" and family ~= "bloodPotency" and family ~= "disciplines")
       or (field ~= "base" and field ~= "temp" and field ~= "disabled") then
       return "Invalid dotDelta"
     end
     if family ~= "bloodPotency" and type(key) ~= "string" then
       return "Invalid dot key"
+    end
+    if family == "disciplines" then
+      local pid = C.GetPlayerID(color)
+      if field == "disabled" then
+        return "Discipline dots cannot be disabled"
+      end
+      if type(pid) ~= "string"
+        or type(S.getStateVal("playerData", pid, "stats", "disciplines", key)) ~= "table" then
+        return "That discipline is not on the sheet"
+      end
     end
     return applyDotDelta(color, family, key, field, num(cmd.delta))
   end
