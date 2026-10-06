@@ -11,11 +11,15 @@ type Popup = { readonly row?: RelationshipRow; readonly draft: RelationshipDraft
 const BondBoxes = ({ strength }: { readonly strength: number }): ReactElement => (
   <span className="pc-rel-bond" title={`Bond Strength ${strength}`}>
     <span className="pc-rel-bond-label">Bond Strength:</span>
-    {Array.from({ length: MAX_BOND_STRENGTH }, (_, i) =>
-      i < strength
-        ? <img key={i} src={assetUrl("boxes/box_red.webp")} alt="" />
-        : <span key={i} className="pc-rel-bond-empty" />
-    )}
+    <span className="pc-boxes">
+      {Array.from({ length: MAX_BOND_STRENGTH }, (_, i) => (
+        <span
+          key={i}
+          className={`pc-box${i < strength ? " on" : ""}`}
+          style={i < strength ? { backgroundImage: `url("${assetUrl("boxes/box_red.webp")}")` } : undefined}
+        />
+      ))}
+    </span>
   </span>
 );
 
@@ -62,10 +66,10 @@ const Columns = ({
   readonly charKey: string;
   readonly onEdit: (row: RelationshipRow) => void;
 }): ReactElement => {
-  const [left, right] = packTwoColumns(rows);
+  const columns = packTwoColumns(rows).filter((column) => column.length > 0);
   return (
     <div className="pc-rel-columns">
-      {[left, right].map((column, index) => (
+      {columns.map((column, index) => (
         <div key={index} className="pc-rel-col">
           {column.map((row) => <RelationshipBox key={row.key} row={row} charKey={charKey} onEdit={onEdit} />)}
         </div>

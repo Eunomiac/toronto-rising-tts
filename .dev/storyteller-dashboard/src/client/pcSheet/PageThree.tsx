@@ -82,7 +82,7 @@ const AdvantageSection = ({
 }): ReactElement => {
   const shown = entries.filter((entry) => entry.sheetDisplay);
   const hidden = entries.filter((entry) => !entry.sheetDisplay && !isStatusEntry(entry));
-  const columns = packColumns(shown, advantageWeight);
+  const columns = packColumns(shown, advantageWeight).filter((column) => column.length > 0);
   const divider = SECTION_DIVIDER[category];
   const label = ADVANTAGE_LABELS[category];
   const edit = (entry: AdvantageEntry): void => onPopup({ entry, type: category });
