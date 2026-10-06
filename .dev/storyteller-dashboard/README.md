@@ -41,6 +41,19 @@ A compact tab row sits flush with the top of the viewport:
 1. **Stage NPCs** (default) — searchable generic cutout grid, saved search tags, 300px hover preview of the full cutout, selection queue, copy comma-separated keys. Catalogue refreshes from **Generics Export** when this server starts. See [Generic NPCs.md](../Storyteller%20Dashboard%20Docs/Generic%20NPCs.md).
 2. **Scenes** — Standard / Scatter control-board editor with labeled chrome (placement, table, clock, weather, location). The library id (`sceneKey`) is derived from the title. Copy JSON or Import in TTS writes a **library row only** (does not Apply). Catalogs are generated from Lua plus the live **STAGE_BOARD** size in your TTS save (`npm run dashboard:scene-catalogs`, also on `npm run dev` / `npm run build`). Token dragging uses **GSAP Draggable**. See [Scene Import Guide.md](../Storyteller%20Dashboard%20Docs/Scene%20Import%20Guide.md).
 3. **PCs** — live play sheet only: left player rail plus a two-page spread, filled **exclusively** from Tabletop Simulator (`GlobalDashboardPcSheetSnapshot`). If the TTS bridge is not connected or TTS does not answer, the tab shows an empty notice — never a stand-in sheet. Clicks update the dashboard immediately and queue `GlobalDashboardPcSheetApply`; clicks that pile up while TTS is busy go in one JSON array. The Dashboard uses **`@tts-tools/gateway-client`**: with Cursor / TTS Tools open it registers on the local gateway; otherwise it binds **39998** directly and rejoins when the gateway returns. **Claim Port** connects (and only force-clears 39998 if needed). **Release Port** disconnects until you Claim again.
+
+   Spread tabs **I · II**, **III · IV**, **V · VI** show sheet Pages 1–6 (`src/client/pcSheet/pages.tsx` registry). Pages 7–8 are art only and stay placeholders.
+
+   | Page | Shows / edits | Lua bridge |
+   | --- | --- | --- |
+   | 1 | Identity, attributes, skills, trackers, Hunger, Desire, XP jewel | `dashboard/pc_sheet.ttslua` |
+   | 2 | Disciplines, powers, Blood Sorcery rituals, Oblivion ceremonies (dot ring + add/edit popups) | `dashboard/pc_sheet_traits.ttslua` |
+   | 3 | Backgrounds, Merits, Flaws, Status strip (shared Advantage popup with type dropdown) | `dashboard/pc_sheet_traits.ttslua` |
+   | 4 | Touchstone, Sire, Childer, Blood Bonds, Other Relationships (Relationship popup) | `dashboard/pc_sheet_relationships.ttslua` (`gameState.relationships`) |
+   | 5 | Project cards + Coterie view; Project editor (R, Lock & Begin, Complete, Delete). Equipment / Boons not yet | `dashboard/projects.ttslua` — **own** snapshot (`GlobalDashboardProjectsSnapshot` / `Apply`), fetched when Page 5 opens and after each change |
+   | 6 | Experience Log (all sessions) + Experience popup (Apply / Apply to All / Undo) | `dashboard/pc_sheet_xp.ttslua` |
+
+   Pages 1–4 and 6 ride the seat snapshot (`pc_sheet.ttslua` `EXTENSIONS`; see [`dashboard/README.md`](../../dashboard/README.md)). Popup edits wait for TTS and show its error in the popup; dot clicks paint at once and queue. The TTS Storyteller Projects and Stats panels still work alongside these pages until they are retired.
 4. **Lua** — Execute Code into a live TTS session through the **same** shared bridge as PCs / Scenes. You do **not** need to disable TTS Tools when the gateway is running. Claim / Release on the PCs tab connects or disconnects that bridge. To stop a leftover dashboard `node` stuck on 39998 without closing Cursor: Run Task **FREE TTS EDITOR PORT (39998)**, or `npm run tts-bridge:free-port` from the repo root.
 5. **Generate NPC** — the existing OpenAI NPC generator (prompt, cards, session history).
 
