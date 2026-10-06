@@ -55,6 +55,7 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 ✔️ SD-Sheet Page 2. Discipline grid with powers by level, dot ring for base/temp, add/remove discipline, power and ritual/ceremony popups (Lua half: TOR-653).
 ✔️ SD-Sheet Page 3. Backgrounds / Merits / Flaws in three greedy-packed columns, mirrored title-bar dots (temp, staked, disabled), Status strip, "not printed" chips, one shared Advantage popup with type change (Lua half: TOR-653).
 ✔️ SD-Sheet Page 4. Touchstone / Sire, Childer, Blood Bonds (bond boxes) and Other Relationships in two packed columns, shared Relationship popup with per-PC link types and a portrait picker over `assets/portraits` (Lua half: TOR-655).
+✔️ SD-Sheet Page 5. Project cards in sheet order (scope dots, Win/Crit badge, die, self/coterie/other stake rows, dates), Coterie chip, full Project editor replacing the TTS panel controls (R, Lock & Begin, Complete, Delete; commit on blur; own `projectsBridge.ts` snapshot). Equipment and Boons not yet (Lua half: TOR-656).
 ✔️ SD-Sheet Page 6. Experience Log port of `lib/csheet_xp_display` (all sessions, live highlight, summation line), Experience popup from the XP jewel with Apply / Apply to All / Undo / Undo All (Lua half: TOR-654).
 
 SD-Push. Live push channel from TTS to the dashboard (no polling). Design draft: [Live Push Channel.md](../../Storyteller%20Dashboard%20Docs/Live%20Push%20Channel.md).
