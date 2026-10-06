@@ -18,7 +18,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-06 — TOR-653 (dashboard sheet Pages 2–3 editing) added._
+_Last populated: 2026-10-06 — TOR-653 (dashboard sheet Pages 2–3 editing) and TOR-654 (dashboard sheet Page 6 XP log) added._
 
 ### High — session / join / first-load
 
@@ -37,6 +37,10 @@ _Last populated: 2026-10-06 — TOR-653 (dashboard sheet Pages 2–3 editing) ad
 **How to verify:** Save & Play, open the dashboard PCs tab, pick a PC and click the **I · II** tab. Page 2 should list the same disciplines and powers as that PC's in-game sheet. Raise a discipline's base dot from its dot ring and check that the in-game Page 2 gains the dot. Use **+** under a discipline to add a power called "Test Power", then click it and delete it; it should appear and disappear on the in-game sheet too. For a PC with Blood Sorcery, add and remove a ritual the same way. Add a discipline with **+ Discipline**, delete it, reload the save, and confirm it stays deleted.
 
 Then click the **III · IV** tab. Page 3 should show the same Backgrounds, Merits and Flaws as the in-game sheet, with Camarilla and Clan Status as a dot strip at the top. Add a merit called "Test Merit" with two dots; it should appear in-game with that exact name. Open it, change the type to Flaw and save; it should move to Flaws (red dots) in both places. Disable one of its dots from the dot ring (a crossed-out grey dot should appear in-game), then delete it. The TTS Stats panel's Add button now also keeps the name you type.
+
+#### TOR-654 — Dashboard sheet Page 6: Experience Log display and XP popup
+
+**How to verify:** Save & Play, open the dashboard PCs tab, pick a PC and click the **V · VI** tab. Page 6 should list the same sessions, entries and totals as that PC's in-game Page 6, newest session first, with the current session highlighted. Click the XP jewel (Page 1 or Page 6) to open the Experience popup. Choose Gain, enter 2 with the description "Dashboard test" and click **Apply**; the entry should appear on both the dashboard and the in-game Page 6 and the jewel total should rise by 2. Click **Undo** and check it disappears in both places. Then apply a 1 XP spend with **Apply to All**: every connected PC should get it and a disconnected PC should not. Click **Undo All** and check it is removed from every PC that got it.
 
 ## Cleared
 

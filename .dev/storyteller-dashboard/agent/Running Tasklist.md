@@ -54,6 +54,7 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 ✔️ SD-Sheet framework. Spread tabs (I·II, III·IV, V·VI), page registry (`pcSheet/pages.tsx`), shared `SheetModal` + form fields, typed `playerData` parsers (`pcSheet/sheetData.ts`), sheet art fetched by `scripts/fetch-sheet-assets.mjs`.
 ✔️ SD-Sheet Page 2. Discipline grid with powers by level, dot ring for base/temp, add/remove discipline, power and ritual/ceremony popups (Lua half: TOR-653).
 ✔️ SD-Sheet Page 3. Backgrounds / Merits / Flaws in three greedy-packed columns, mirrored title-bar dots (temp, staked, disabled), Status strip, "not printed" chips, one shared Advantage popup with type change (Lua half: TOR-653).
+✔️ SD-Sheet Page 6. Experience Log port of `lib/csheet_xp_display` (all sessions, live highlight, summation line), Experience popup from the XP jewel with Apply / Apply to All / Undo / Undo All (Lua half: TOR-654).
 
 SD-Push. Live push channel from TTS to the dashboard (no polling). Design draft: [Live Push Channel.md](../../Storyteller%20Dashboard%20Docs/Live%20Push%20Channel.md).
 🤖 Waiting on author review of § 8 "Open decisions" before building Phase 1 (PCs live). The Lua half will get a Linear issue when implementation starts.
