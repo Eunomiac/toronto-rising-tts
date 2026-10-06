@@ -542,6 +542,7 @@ Standalone second-monitor web app (`.dev/storyteller-dashboard/`). Not the in-ta
 - [x] **Generic NPC import (v1):** Author closed 2026-10-01. Import and control-board placement of generic NPCs will be handled by the Storyteller Dashboard. _(TOR-560)_
 - [x] **Build pipelines Main / XML / Full:** Default Ctrl+Shift+B is Main (backup + gates + stubs); `build:xml` adds UI/XML generators; `build:full` is the former all-tooling chain. _(TOR-557)_
 - [x] **Stage NPCs hover preview:** 300px right column shows the full cutout on thumbnail hover. _(TOR-556)_
+- [x] **PCs tab sheet Page 2 editing:** Spread tabs I·II / III·IV / V·VI; Page 2 disciplines, powers, rituals and ceremonies with add/edit popups; Lua ops in `dashboard/pc_sheet_traits.ttslua`; bootstrap keeps deletions. Pending Save & Play. _(TOR-653)_
 - [ ] **Stage NPCs saved tags + Lua Execute Code:** Persistent A–Z tag rail; Lua tab uses External Editor 39998/39999 (conflicts with TTS Tools extension — one at a time). Pending dashboard/TTS check. _(TOR-555)_
 
 ## Table Objects

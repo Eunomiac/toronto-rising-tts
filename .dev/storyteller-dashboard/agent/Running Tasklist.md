@@ -51,6 +51,9 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 ✔️ SD-PCs apply batch. Rapid PCs-tab clicks that pile up while TTS is busy go in one `GlobalDashboardPcSheetApply` array (TOR-595). Dashboard still paints immediately.
 ✔️ SD-PCs Absent checkbox removed. Seat occupancy is now driven only by player connection in TTS, so the bridge dropped the `absent` op and `mergeSeat` no longer writes `absentFromSession`. The player rail shows **Seated** / **Unoccupied** plus **Disconnected** from the new read-only `connected` snapshot field.
 
+✔️ SD-Sheet framework. Spread tabs (I·II, III·IV, V·VI), page registry (`pcSheet/pages.tsx`), shared `SheetModal` + form fields, typed `playerData` parsers (`pcSheet/sheetData.ts`), sheet art fetched by `scripts/fetch-sheet-assets.mjs`.
+✔️ SD-Sheet Page 2. Discipline grid with powers by level, dot ring for base/temp, add/remove discipline, power and ritual/ceremony popups (Lua half: TOR-653).
+
 SD-Push. Live push channel from TTS to the dashboard (no polling). Design draft: [Live Push Channel.md](../../Storyteller%20Dashboard%20Docs/Live%20Push%20Channel.md).
 🤖 Waiting on author review of § 8 "Open decisions" before building Phase 1 (PCs live). The Lua half will get a Linear issue when implementation starts.
 

@@ -18,7 +18,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-06 — TOR-652 (Storyteller toolbar closes before every blindfold) cleared._
+_Last populated: 2026-10-06 — TOR-653 (dashboard sheet Page 2 editing) added._
 
 ### High — session / join / first-load
 
@@ -29,6 +29,12 @@ _Last populated: 2026-10-06 — TOR-652 (Storyteller toolbar closes before every
 **How to verify:** Run the multiclient control/treatment playbook in [TOR-439-join-xml-spike-verify.md](Step-By-Step Playbooks/TOR-439-join-xml-spike-verify.md). On the Host, arm the minimal join XML, have the struggling client connect, then restore in stages. Especially watch **step 2 (HUD / Refresh UI)** after the **TOR-444** remount-weight reduction: does that client stay connected through the full Global HUD remount? Optionally also try a normal (unarmed) full-HUD join to see whether the Arm pipeline is still needed at all.
 
 **Context:** Earlier run: Assets, Emitters, and Figurines restore steps succeeded; step 2 timed out and drove **TOR-444**. Deferred from Focus until you can gather testers.
+
+### Medium — Storyteller Dashboard character sheet
+
+#### TOR-653 — Dashboard sheet Page 2: edit disciplines, powers, rituals and ceremonies
+
+**How to verify:** Save & Play, open the dashboard PCs tab, pick a PC and click the **I · II** tab. Page 2 should list the same disciplines and powers as that PC's in-game sheet. Raise a discipline's base dot from its dot ring and check that the in-game Page 2 gains the dot. Use **+** under a discipline to add a power called "Test Power", then click it and delete it; it should appear and disappear on the in-game sheet too. For a PC with Blood Sorcery, add and remove a ritual the same way. Finally, add a discipline with **+ Discipline**, delete it, reload the save, and confirm it stays deleted.
 
 ## Cleared
 
