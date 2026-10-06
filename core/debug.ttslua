@@ -1278,24 +1278,34 @@ function DEBUG.refreshSyncTraceButton()
     })
 end
 
---- Host console trace of heavy sync calls (`[SyncTrace] ...`). Persists in `gameState.debug.syncTraceEnabled`.
+--- Timed host console trace of sync calls (`[SyncTrace] #N ...`). Persists in `gameState.debug.syncTraceEnabled`.
+--- Turning it off prints the per-function summary.
 --- @param enabled boolean
 function DEBUG.setSyncTrace(enabled)
     local Trace = require("lib.sync_trace")
     Trace.setEnabled(enabled == true)
     DEBUG.refreshSyncTraceButton()
-    print("Sync trace: " .. ((enabled == true) and "ON" or "OFF"))
 end
 
---- Flip the host sync trace and print the new state.
+--- Flip the host sync trace.
 --- @return boolean enabled after the toggle
 function DEBUG.toggleSyncTrace()
     local Trace = require("lib.sync_trace")
     local nextOn = not Trace.isEnabled()
     Trace.setEnabled(nextOn)
     DEBUG.refreshSyncTraceButton()
-    print("Sync trace: " .. (nextOn and "ON" or "OFF"))
     return nextOn
+end
+
+--- Print per-function sync trace totals so far without turning the trace off.
+function DEBUG.printSyncTraceSummary()
+    require("lib.sync_trace").printSummary()
+end
+
+--- Zero the sync trace totals (e.g. right before reproducing one action).
+function DEBUG.resetSyncTraceSummary()
+    require("lib.sync_trace").resetStats()
+    print("[SyncTrace] summary totals reset")
 end
 
 --- Print orchestrator reconcile skip-cache snapshot (fingerprints, layout, init-light retries).

@@ -3333,6 +3333,7 @@ function onLoad(saved_data)
     -- Initialize game state from saved data or defaults (all clients — HUD reads gameState).
     setStartupAction("initialize-game-state")
     S.InitializeGameState(saved_data)
+    require("lib.sync_trace").installIfEnabled()
 
     -- TOR-439: armed save load — remount minimal Global XmlUI + slim CustomUIAssets before
     -- the rest of startup UI work. Persist via File → Save after Arm (not Save & Play /

@@ -18,7 +18,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-06 — TOR-653 (dashboard sheet Pages 2–3 editing) TOR-654 (dashboard sheet Page 6 XP log) TOR-655 (relationships in gameState, dashboard Page 4) and TOR-656 (dashboard sheet Page 5 projects) added._
+_Last populated: 2026-10-06 — TOR-657 (Trace Sync timing) added; earlier today TOR-653 (dashboard sheet Pages 2–3 editing) TOR-654 (dashboard sheet Page 6 XP log) TOR-655 (relationships in gameState, dashboard Page 4) and TOR-656 (dashboard sheet Page 5 projects) added._
 
 ### High — session / join / first-load
 
@@ -29,6 +29,12 @@ _Last populated: 2026-10-06 — TOR-653 (dashboard sheet Pages 2–3 editing) TO
 **How to verify:** Run the multiclient control/treatment playbook in [TOR-439-join-xml-spike-verify.md](Step-By-Step Playbooks/TOR-439-join-xml-spike-verify.md). On the Host, arm the minimal join XML, have the struggling client connect, then restore in stages. Especially watch **step 2 (HUD / Refresh UI)** after the **TOR-444** remount-weight reduction: does that client stay connected through the full Global HUD remount? Optionally also try a normal (unarmed) full-HUD join to see whether the Arm pipeline is still needed at all.
 
 **Context:** Earlier run: Assets, Emitters, and Figurines restore steps succeeded; step 2 timed out and drove **TOR-444**. Deferred from Focus until you can gather testers.
+
+### Medium — debug tooling
+
+#### TOR-657 — Trace Sync: timed, nested, filterable output
+
+**How to verify:** Save & Play. In the TTS Tools output panel, type `SyncTrace` into the output filter box so only trace lines show. Click **Trace Sync** on the Debug panel (it turns yellow). The first trace line should say "trace ON" and give a clock resolution; if the resolution is well under 1 ms the timings are trustworthy, and if it says around 15 ms, tell me. Now add a few NPCs to the Stage Control Board and press **Apply**. You should see one block of lines that all share the same `#` number, starting with `Sync.npcs` and indented underneath with `NPCS.reconcileAllFromState`, the control-board reconcile, and so on, each with a time in ms. Slow calls say `>1 frame`. The old always-on `[Sync.npcs] reason=...` line should no longer appear. Next, change a PC's Hunger from the Storyteller PCs panel and press its Apply. Expect several separate blocks in a row (`Sync.player`, `HO.reconcileForSeat`, `PCST.refreshCharacterSheetsForColor`, `PCST.refreshRow`, `HO.syncAll`), each with its own `#` number. That is the scattered refresh pattern we discussed, now visible with times. Finally click **Trace Sync** again to turn it off (grey). A `SUMMARY` table should print, listing each function with how many times it was called and how long it took in total, slowest first. Please paste me that summary along with the Apply block, since they are the starting numbers for the performance work.
 
 ### Medium — Storyteller Dashboard character sheet
 

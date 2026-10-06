@@ -343,9 +343,6 @@ function Sync.npcs(opts)
     opts = type(opts) == "table" and opts or {}
     local t0 = os.clock()
     local reason = type(opts.reason) == "string" and opts.reason or ""
-    if reason ~= "" then
-        print("[Sync.npcs] reason=" .. reason .. " force=" .. tostring(opts.force == true))
-    end
     callIfFunction(NPCS.reconcileAllFromState, {
         deferUiRefresh = opts.deferUiRefresh == true,
         force = opts.force == true,

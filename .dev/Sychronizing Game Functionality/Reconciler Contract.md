@@ -84,7 +84,7 @@ Load reconciles the save. `M.setupPlayers` writes connection occupancy, the star
 
 After `resolveSeatObjectsFromTable` applies seat lights and overlays, it calls `Sync.noteSeatPresentationReconciled()` so the following `Sync.full` does not apply that presentation again.
 
-`DEBUG.setSyncTrace(true)` prints `[SyncTrace]` lines for the heavy entry points. That is separate from `sync_metrics`.
+`DEBUG.setSyncTrace(true)` prints timed, nested `[SyncTrace]` blocks for the sync entry points and their reconcilers, plus a summary when turned off ([TTS_MCP.md § Sync call trace](../TTS_MCP.md#sync-call-trace-synctrace)). That is separate from `sync_metrics`.
 
 Runtime order:
 

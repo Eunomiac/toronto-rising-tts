@@ -141,16 +141,36 @@ NPC preload batches emit **`kind`** = **`npc_preload`** with **`characterCount`*
 
 ### Sync call trace (`[SyncTrace]`)
 
-Separate from agent metrics. This prints on the host console so a Storyteller can see heavy sync calls without an agent listener.
+Separate from agent metrics. This prints timed sync calls on the host console so a Storyteller can see them without an agent listener. Source: `lib/sync_trace.ttslua` (TOR-634, TOR-657).
 
 ```lua
-DEBUG.setSyncTrace(true)
--- or DEBUG.toggleSyncTrace()
--- or the Debug panel Trace Sync button (grey off, yellow on)
--- persists: gameState.debug.syncTraceEnabled
+DEBUG.setSyncTrace(true)          -- or the Debug panel Trace Sync button (grey off, yellow on)
+DEBUG.toggleSyncTrace()
+DEBUG.printSyncTraceSummary()     -- totals so far, trace stays on
+DEBUG.resetSyncTraceSummary()     -- zero totals right before reproducing one action
+-- persists: gameState.debug.syncTraceEnabled (stays on across Save & Play)
 ```
 
-Each traced call prints one line: `[SyncTrace] Name key=value outcome=ran|skipped`. Turn it off with `DEBUG.setSyncTrace(false)` when you are done. It stays on across Save & Play until you turn it off.
+While on, the functions in `targetList()` are wrapped with timing spans (removed when off, so no cost when off). Each outermost traced call prints **one** block, so line order is reliable:
+
+```
+[SyncTrace] #12 Sync.npcs 34.6ms (self 0.6ms) >1 frame force=false reason=gameboard_apply
+[SyncTrace] #12   NPCS.reconcileAllFromState 25.0ms (self 20.7ms) >1 frame ran reason=gameboard_apply
+[SyncTrace] #12     Reconcile.reconcileControlBoardFromState 4.3ms (self 4.2ms) ran
+[SyncTrace] #12       Snaps.installPolarSnaps 0.1ms skipped guid=bea29a
+[SyncTrace] #12   HO.syncAll 9.1ms (self 2.0ms) force=true
+[SyncTrace] #12     HO.reconcileForSeat x6 total 7.1ms max 1.3ms (ran 1, skipped 5)
+```
+
+- Every line starts with `[SyncTrace]`; filter the editor output on that tag. `#N` groups one block.
+- Time is `os.clock()` host Lua time (`os.time()` is whole seconds). Engine work handed to later frames (XmlUI layout, physics, spawns) is not counted. Turning the trace on prints the measured clock resolution.
+- `self` = time not spent in traced children. `>1 frame` = over 16.7 ms.
+- `ran` / `skipped` and extra keys come from in-function `Trace.report` calls (fingerprint skips). `* Name` = a report with no matching open span.
+- Repeated leaf calls under one parent collapse to `xN total max (ran, skipped)`.
+- A block marked `UNFINISHED` means a traced call errored (it is flushed on the next frame).
+- Turning the trace off prints a `SUMMARY` table: calls, ran, skipped, total, self, max per function, slowest total first.
+
+To trace a new function, add it to `targetList()` (module table + field). Calls made through a local copy of the function are not wrapped; wrap the copy's table too (see the Gameboard facade rows).
 
 ## Orchestration (`U.chain`)
 

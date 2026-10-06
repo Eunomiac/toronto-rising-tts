@@ -1,14 +1,40 @@
 --[[
-    Opt-in host console trace for heavy sync entry points.
+    Opt-in host console trace for sync entry points (TOR-634, TOR-657).
 
     Persisted switch: gameState.debug.syncTraceEnabled
-    Console: DEBUG.setSyncTrace(true) / DEBUG.toggleSyncTrace()
+    Console: DEBUG.setSyncTrace(true) / DEBUG.toggleSyncTrace() / DEBUG.printSyncTraceSummary()
+    Debug panel: Trace Sync (grey off, yellow on). Turning it off prints the session summary.
 
-    One print per report. Object scripts must not require this module
-    (it reads core.state).
+    While on, every function in `targetList()` is wrapped with a timing span. Nested traced
+    calls print as ONE indented block when the outermost traced call returns (a single print,
+    so line order is reliable). Every line starts with "[SyncTrace] #<block id>" so the editor
+    output can be filtered to the trace alone. Turning the trace off removes the wrappers.
+
+    Times are os.clock() deltas: host Lua time only. Engine work a call hands to later frames
+    (XmlUI layout, physics, spawns, object reloads) is not counted.
+
+    Object scripts must not require this module (it reads core.state and wraps core modules).
 ]]
 
 local Trace = {}
+
+local TAG = "[SyncTrace]"
+local FRAME_MS = 1000 / 60
+--- Traced calls are synchronous: a root span still open in a later frame (or after this long,
+--- when `Time` is unavailable) errored or yielded. Flush it so tracing recovers.
+local STALE_ROOT_SEC = 10
+local MAX_BLOCK_LINES = 150
+local MAX_ARG_VALUES = 3
+local MAX_FLAG_KEYS = 6
+
+--- Open spans, innermost last.
+local stack = {}
+local blockCounter = 0
+--- label -> { calls, ran, skipped, timedCalls, totalMs, selfMs, maxMs }
+local stats = {}
+local statsStartClock = nil
+--- { tbl, field, original } for every wrapper currently installed.
+local installed = {}
 
 --- @return table|nil
 local function stateModule()
@@ -17,6 +43,68 @@ local function stateModule()
         return loaded
     end
     return nil
+end
+
+--- Functions wrapped while the trace is on: { module table, field, label }.
+--- Labels match the in-function `Trace.report` names so reports annotate the open span.
+--- @return table
+local function targetList()
+    local Sync = require("core.sync")
+    local Scenes = require("core.scenes")
+    local Soundscape = require("core.soundscape")
+    local L = require("core.lighting")
+    local HO = require("core.hud_overlays")
+    local HUDP = require("core.hud_player")
+    local NPCS = require("core.npcs")
+    local Gameboard = require("core.npc_gameboard")
+    local Reconcile = require("core.npc_gameboard_reconcile")
+    local Snaps = require("core.npc_gameboard_snaps")
+    local RSL = require("lib.rotational-seat-layout")
+    local Spotlight = require("core.spotlight")
+    local Coterie = require("core.coterie")
+    local Projects = require("core.projects")
+    local SceneLibrary = require("core.scene_library")
+    local Phases = require("core.phases")
+    local PCST = require("core.pc_storyteller_panel")
+    return {
+        { Sync, "full", "Sync.full" },
+        { Sync, "player", "Sync.player" },
+        { Sync, "npcs", "Sync.npcs" },
+        { Sync, "lighting", "Sync.lighting" },
+        { Sync, "soundscape", "Sync.soundscape" },
+        { Sync, "ui", "Sync.ui" },
+        { Scenes, "reconcileFromState", "Scenes.reconcileFromState" },
+        { Scenes, "reconcileTopFogFromState", "Scenes.reconcileTopFogFromState" },
+        { Scenes, "reconcileSkyboxFromState", "Scenes.reconcileSkyboxFromState" },
+        { Scenes, "applyDefaultNoSceneEnvironment", "Scenes.applyDefaultNoSceneEnvironment" },
+        { Scenes, "restoreActiveSceneWorld", "Scenes.restoreActiveSceneWorld" },
+        { Soundscape, "reconcileFromState", "Soundscape.reconcileFromState" },
+        { L, "InitLights", "L.InitLights" },
+        { L, "reconcileAllPlayers", "L.reconcileAllPlayers" },
+        { L, "reconcileForPlayer", "L.reconcileForPlayer" },
+        { HO, "syncAll", "HO.syncAll" },
+        { HO, "reconcileForSeat", "HO.reconcileForSeat" },
+        { HUDP, "updatePlayerUI", "HUDP.updatePlayerUI" },
+        { NPCS, "reconcileAllFromState", "NPCS.reconcileAllFromState" },
+        -- The Gameboard facade holds copies of these functions; wrap both entry points.
+        { Gameboard, "reconcileControlBoardFromState", "Reconcile.reconcileControlBoardFromState" },
+        { Reconcile, "reconcileControlBoardFromState", "Reconcile.reconcileControlBoardFromState" },
+        { Gameboard, "installPolarSnaps", "Snaps.installPolarSnaps" },
+        { Snaps, "installPolarSnaps", "Snaps.installPolarSnaps" },
+        { RSL, "SetTableTo", "RSL.SetTableTo" },
+        { RSL, "SyncTable", "RSL.SyncTable" },
+        { RSL, "resolveSeatObjectsFromTable", "RSL.resolveSeatObjectsFromTable" },
+        { Spotlight, "reconcileFromState", "Spotlight.reconcileFromState" },
+        { Coterie, "reconcileAll", "Coterie.reconcileAll" },
+        { Projects, "reconcileCourtProjectsAll", "Projects.reconcileCourtProjectsAll" },
+        { SceneLibrary, "mirrorActiveLibrarySessionSceneFromLiveIfLinked", "SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked" },
+        { Phases, "reconcileParticleEmitterFromPhase", "Phases.reconcileParticleEmitterFromPhase" },
+        { PCST, "refreshCharacterSheetsForColor", "PCST.refreshCharacterSheetsForColor" },
+        { PCST, "refreshAllCharacterSheets", "PCST.refreshAllCharacterSheets" },
+        { PCST, "refreshRow", "PCST.refreshRow" },
+        { PCST, "refreshAllRows", "PCST.refreshAllRows" },
+        { _G, "UpdateUIDisplays", "UpdateUIDisplays" },
+    }
 end
 
 --- @return boolean
@@ -29,36 +117,500 @@ function Trace.isEnabled()
     return type(dbg) == "table" and dbg.syncTraceEnabled == true
 end
 
---- Persist the console trace switch.
---- @param enabled boolean
-function Trace.setEnabled(enabled)
-    local S = stateModule()
-    if S == nil or type(S.setStateVal) ~= "function" then
-        return
+--- @param ms number
+--- @return string
+local function formatMs(ms)
+    if ms >= 100 then
+        return string.format("%.0fms", ms)
     end
-    S.setStateVal(enabled == true, "debug", "syncTraceEnabled")
+    return string.format("%.1fms", ms)
 end
 
---- One host print when the trace is on. `fields.outcome` should be `ran` or `skipped`.
+--- `key=value` pairs sorted by key; `outcome` is shown separately.
+--- @param fields table|nil
+--- @return string
+local function fieldText(fields)
+    if type(fields) ~= "table" then
+        return ""
+    end
+    local keys = {}
+    for k in pairs(fields) do
+        if k ~= "outcome" then
+            keys[#keys + 1] = tostring(k)
+        end
+    end
+    table.sort(keys)
+    local parts = {}
+    for i = 1, #keys do
+        parts[#parts + 1] = keys[i] .. "=" .. tostring(fields[keys[i]])
+    end
+    return table.concat(parts, " ")
+end
+
+--- Positional string/number/boolean args become `(Red, 2)`; option tables contribute
+--- `force` / `reason`, `colors`, and up to MAX_FLAG_KEYS keys whose value is `true`.
+--- @return string argText, table fields
+local function describeArgs(...)
+    local values = {}
+    local fields = {}
+    local n = select("#", ...)
+    for i = 1, n do
+        local v = select(i, ...)
+        local tv = type(v)
+        if (tv == "string" or tv == "number" or tv == "boolean") and #values < MAX_ARG_VALUES then
+            values[#values + 1] = tostring(v)
+        elseif tv == "table" then
+            if v.force ~= nil then
+                fields.force = tostring(v.force == true)
+            end
+            if type(v.reason) == "string" and v.reason ~= "" then
+                fields.reason = v.reason
+            end
+            if type(v.colors) == "table" and #v.colors > 0 then
+                fields.colors = table.concat(v.colors, ",")
+            end
+            local flags = {}
+            for k, fv in pairs(v) do
+                if fv == true and type(k) == "string" and k ~= "force" then
+                    flags[#flags + 1] = k
+                end
+            end
+            if #flags > 0 then
+                table.sort(flags)
+                if #flags > MAX_FLAG_KEYS then
+                    local extra = #flags - MAX_FLAG_KEYS
+                    for j = #flags, MAX_FLAG_KEYS + 1, -1 do
+                        flags[j] = nil
+                    end
+                    flags[#flags + 1] = "+" .. tostring(extra)
+                end
+                fields.flags = table.concat(flags, ",")
+            end
+        end
+    end
+    local argText = #values > 0 and ("(" .. table.concat(values, ", ") .. ")") or ""
+    return argText, fields
+end
+
+--- @param label string
+--- @return table
+local function statsRow(label)
+    local row = stats[label]
+    if row == nil then
+        row = { calls = 0, ran = 0, skipped = 0, timedCalls = 0, totalMs = 0, selfMs = 0, maxMs = 0 }
+        stats[label] = row
+    end
+    return row
+end
+
+--- @param span table
+local function recordStats(span)
+    local row = statsRow(span.label)
+    row.calls = row.calls + 1
+    local outcome = span.fields.outcome
+    if outcome == "ran" then
+        row.ran = row.ran + 1
+    elseif outcome == "skipped" then
+        row.skipped = row.skipped + 1
+    end
+    if type(span.ms) == "number" then
+        row.timedCalls = row.timedCalls + 1
+        row.totalMs = row.totalMs + span.ms
+        row.selfMs = row.selfMs + (span.selfMs or span.ms)
+        if span.ms > row.maxMs then
+            row.maxMs = span.ms
+        end
+    end
+end
+
+--- @param depth number
+--- @param blockId number
+--- @return string
+local function linePrefix(depth, blockId)
+    return TAG .. " #" .. tostring(blockId) .. " " .. string.rep("  ", depth)
+end
+
+--- @param span table
+--- @param depth number
+--- @param blockId number
+--- @return string
+local function spanLine(span, depth, blockId)
+    local parts = { linePrefix(depth, blockId) .. (span.instant and "* " or "") .. span.label .. (span.argText or "") }
+    if span.instant ~= true then
+        if type(span.ms) == "number" then
+            local timeText = formatMs(span.ms)
+            if #span.children > 0 and type(span.selfMs) == "number" then
+                timeText = timeText .. " (self " .. formatMs(span.selfMs) .. ")"
+            end
+            if span.ms > FRAME_MS then
+                timeText = timeText .. " >1 frame"
+            end
+            parts[#parts + 1] = timeText
+        else
+            parts[#parts + 1] = "UNFINISHED"
+        end
+    end
+    if span.fields.outcome ~= nil then
+        parts[#parts + 1] = tostring(span.fields.outcome)
+    end
+    local extra = fieldText(span.fields)
+    if extra ~= "" then
+        parts[#parts + 1] = extra
+    end
+    return table.concat(parts, " ")
+end
+
+--- One line for N leaf calls of the same function under one parent.
+--- @param group table `{ label, items }`
+--- @param depth number
+--- @param blockId number
+--- @return string
+local function groupLine(group, depth, blockId)
+    local total, maxMs, ran, skipped = 0, 0, 0, 0
+    for _, item in ipairs(group.items) do
+        local ms = tonumber(item.ms) or 0
+        total = total + ms
+        if ms > maxMs then
+            maxMs = ms
+        end
+        if item.fields.outcome == "ran" then
+            ran = ran + 1
+        elseif item.fields.outcome == "skipped" then
+            skipped = skipped + 1
+        end
+    end
+    local text = string.format(
+        "%s%s x%d total %s max %s",
+        linePrefix(depth, blockId),
+        group.label,
+        #group.items,
+        formatMs(total),
+        formatMs(maxMs)
+    )
+    if maxMs > FRAME_MS then
+        text = text .. " >1 frame"
+    end
+    if ran + skipped > 0 then
+        text = text .. string.format(" (ran %d, skipped %d)", ran, skipped)
+    end
+    return text
+end
+
+local renderSpan
+
+--- Leaf children that repeat the same function collapse into one group line.
+--- @param lines table
+--- @param children table
+--- @param depth number
+--- @param blockId number
+local function renderChildren(lines, children, depth, blockId)
+    local groups = {}
+    local order = {}
+    for _, child in ipairs(children) do
+        if #child.children == 0 and child.instant ~= true then
+            local group = groups[child.label]
+            if group == nil then
+                group = { label = child.label, items = {} }
+                groups[child.label] = group
+                order[#order + 1] = group
+            end
+            group.items[#group.items + 1] = child
+        else
+            order[#order + 1] = child
+        end
+    end
+    for _, entry in ipairs(order) do
+        if entry.items ~= nil then
+            if #entry.items == 1 then
+                renderSpan(lines, entry.items[1], depth, blockId)
+            else
+                lines[#lines + 1] = groupLine(entry, depth, blockId)
+            end
+        else
+            renderSpan(lines, entry, depth, blockId)
+        end
+    end
+end
+
+renderSpan = function(lines, span, depth, blockId)
+    lines[#lines + 1] = spanLine(span, depth, blockId)
+    renderChildren(lines, span.children, depth + 1, blockId)
+end
+
+--- Print one root span and its subtree as a single message.
+--- @param root table
+local function flushRoot(root)
+    if root.flushed == true then
+        return
+    end
+    root.flushed = true
+    local lines = {}
+    renderSpan(lines, root, 0, root.blockId)
+    if #lines > MAX_BLOCK_LINES then
+        local dropped = #lines - MAX_BLOCK_LINES
+        for i = #lines, MAX_BLOCK_LINES + 1, -1 do
+            lines[i] = nil
+        end
+        lines[#lines + 1] = TAG .. " #" .. tostring(root.blockId) .. " ... " .. tostring(dropped) .. " more line(s) cut"
+    end
+    print(table.concat(lines, "\n"))
+end
+
+--- TTS frame start time (constant within one frame), or nil outside TTS.
+--- @return number|nil
+local function frameStamp()
+    if Time ~= nil and type(Time.time) == "number" then
+        return Time.time
+    end
+    return nil
+end
+
+--- Open a timing span. Returns nil when the trace is off.
+--- @param label string
+--- @param fields table|nil
+--- @param argText string|nil
+--- @return table|nil
+function Trace.begin(label, fields, argText)
+    if not Trace.isEnabled() then
+        return nil
+    end
+    local now = os.clock()
+    local frame = frameStamp()
+    local root = stack[1]
+    if root ~= nil then
+        local otherFrame = frame ~= nil and root.frame ~= nil and frame ~= root.frame
+        if otherFrame or now - root.t0 > STALE_ROOT_SEC then
+            flushRoot(root)
+            stack = {}
+        end
+    end
+    local span = {
+        label = tostring(label),
+        argText = argText,
+        t0 = now,
+        frame = frame,
+        fields = type(fields) == "table" and fields or {},
+        children = {},
+    }
+    local parent = stack[#stack]
+    if parent ~= nil then
+        parent.children[#parent.children + 1] = span
+    else
+        blockCounter = blockCounter + 1
+        span.blockId = blockCounter
+    end
+    stack[#stack + 1] = span
+    return span
+end
+
+--- Close a span from `Trace.begin`; prints the block when it is the outermost span.
+--- @param span table|nil
+function Trace.finish(span)
+    if span == nil then
+        return
+    end
+    span.ms = (os.clock() - span.t0) * 1000
+    local childMs = 0
+    for _, child in ipairs(span.children) do
+        childMs = childMs + (tonumber(child.ms) or 0)
+    end
+    span.selfMs = math.max(0, span.ms - childMs)
+    recordStats(span)
+    for i = #stack, 1, -1 do
+        if stack[i] == span then
+            for j = #stack, i, -1 do
+                stack[j] = nil
+            end
+            break
+        end
+    end
+    if span.blockId ~= nil then
+        flushRoot(span)
+    end
+end
+
+--- Annotate the open span with the same name (outcome, keys). Otherwise record an untimed
+--- event under the open span, or print it alone when nothing is open.
+--- `fields.outcome` should be `ran` or `skipped`.
 --- @param name string
 --- @param fields table|nil
 function Trace.report(name, fields)
     if not Trace.isEnabled() then
         return
     end
-    local parts = { "[SyncTrace]", tostring(name) }
-    if type(fields) == "table" then
-        local keys = {}
-        for k in pairs(fields) do
-            keys[#keys + 1] = k
+    fields = type(fields) == "table" and fields or {}
+    local top = stack[#stack]
+    if top ~= nil and top.label == name then
+        for k, v in pairs(fields) do
+            top.fields[k] = v
         end
-        table.sort(keys)
-        for i = 1, #keys do
-            local k = keys[i]
-            parts[#parts + 1] = tostring(k) .. "=" .. tostring(fields[k])
+        return
+    end
+    local event = { label = tostring(name), fields = fields, children = {}, instant = true }
+    recordStats(event)
+    if top ~= nil then
+        top.children[#top.children + 1] = event
+        return
+    end
+    blockCounter = blockCounter + 1
+    print(spanLine(event, 0, blockCounter))
+end
+
+--- @param span table|nil
+--- @return any
+local function finishReturning(span, ...)
+    Trace.finish(span)
+    return ...
+end
+
+--- @param label string
+--- @param fn function
+--- @return function
+local function makeWrapper(label, fn)
+    return function(...)
+        if not Trace.isEnabled() then
+            return fn(...)
+        end
+        local argText, fields = describeArgs(...)
+        local span = Trace.begin(label, fields, argText)
+        return finishReturning(span, fn(...))
+    end
+end
+
+--- Wrap every target with a timing span (idempotent).
+function Trace.install()
+    if #installed > 0 then
+        return
+    end
+    local missing = {}
+    for _, target in ipairs(targetList()) do
+        local tbl, field, label = target[1], target[2], target[3]
+        local fn = type(tbl) == "table" and tbl[field] or nil
+        if type(fn) == "function" then
+            installed[#installed + 1] = { tbl = tbl, field = field, original = fn }
+            tbl[field] = makeWrapper(label, fn)
+        else
+            missing[#missing + 1] = label
         end
     end
-    print(table.concat(parts, " "))
+    if #missing > 0 then
+        print(TAG .. " target(s) not found (renamed?): " .. table.concat(missing, ", "))
+    end
+end
+
+--- Restore the original functions.
+function Trace.uninstall()
+    for i = #installed, 1, -1 do
+        local row = installed[i]
+        row.tbl[row.field] = row.original
+        installed[i] = nil
+    end
+    stack = {}
+end
+
+--- Smallest observed os.clock step, in ms (nil when the clock never ticked in the window).
+--- @return number|nil
+local function measureClockResolutionMs()
+    local start = os.clock()
+    local prev = start
+    local smallest = nil
+    local ticks = 0
+    for _ = 1, 100000 do
+        local now = os.clock()
+        if now ~= prev then
+            local step = now - prev
+            if smallest == nil or step < smallest then
+                smallest = step
+            end
+            prev = now
+            ticks = ticks + 1
+            if ticks >= 5 or now - start > 0.05 then
+                break
+            end
+        end
+    end
+    return smallest and smallest * 1000 or nil
+end
+
+function Trace.resetStats()
+    stats = {}
+    statsStartClock = os.clock()
+end
+
+--- Per-function totals since the trace was turned on, slowest total first. One print.
+function Trace.printSummary()
+    local labels = {}
+    for label in pairs(stats) do
+        labels[#labels + 1] = label
+    end
+    if #labels == 0 then
+        print(TAG .. " SUMMARY no traced calls")
+        return
+    end
+    table.sort(labels, function(a, b)
+        return stats[a].totalMs > stats[b].totalMs
+    end)
+    local elapsed = statsStartClock and (os.clock() - statsStartClock) or 0
+    local lines = {
+        string.format("%s SUMMARY %d function(s) over %.1fs", TAG, #labels, elapsed),
+        string.format("%s SUMMARY %6s %5s %5s %10s %10s %9s  %s", TAG, "calls", "ran", "skip", "total", "self", "max", "function"),
+    }
+    for _, label in ipairs(labels) do
+        local row = stats[label]
+        lines[#lines + 1] = string.format(
+            "%s SUMMARY %6d %5d %5d %10s %10s %9s  %s",
+            TAG,
+            row.calls,
+            row.ran,
+            row.skipped,
+            row.timedCalls > 0 and formatMs(row.totalMs) or "-",
+            row.timedCalls > 0 and formatMs(row.selfMs) or "-",
+            row.timedCalls > 0 and formatMs(row.maxMs) or "-",
+            label
+        )
+    end
+    print(table.concat(lines, "\n"))
+end
+
+--- Install wrappers on load when the persisted switch is on.
+function Trace.installIfEnabled()
+    if Trace.isEnabled() then
+        Trace.install()
+        Trace.resetStats()
+        print(TAG .. " trace is ON (saved setting); turn it off to print the summary")
+    end
+end
+
+--- Persist the switch. On: install wrappers, reset totals, report clock resolution.
+--- Off: print the session summary, remove wrappers.
+--- @param enabled boolean
+function Trace.setEnabled(enabled)
+    local S = stateModule()
+    if S == nil or type(S.setStateVal) ~= "function" then
+        return
+    end
+    local on = enabled == true
+    local wasOn = Trace.isEnabled()
+    S.setStateVal(on, "debug", "syncTraceEnabled")
+    if on then
+        Trace.install()
+        if not wasOn then
+            Trace.resetStats()
+            local resolution = measureClockResolutionMs()
+            print(
+                TAG
+                    .. " trace ON; clock resolution "
+                    .. (resolution and string.format("%.3fms", resolution) or "coarser than 50ms (timings unreliable)")
+                    .. "; one frame = "
+                    .. formatMs(FRAME_MS)
+            )
+        end
+    else
+        if wasOn then
+            Trace.printSummary()
+        end
+        Trace.uninstall()
+    end
 end
 
 return Trace
