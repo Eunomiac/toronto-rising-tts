@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { packTwoColumns, parseRelationshipRows, relationshipSections } from "./relationships.js";
+import { parseRelationshipRows, relationshipSections } from "./relationships.js";
 
 const row = (key: string, pcLinks: Record<string, string>, extra: Record<string, unknown> = {}) => ({
   key,
@@ -38,18 +38,5 @@ describe("relationshipSections", () => {
     expect(sections.bloodBonds.map((r) => r.key)).toEqual(["thrallB", "regnantA"]);
     expect(sections.others.map((r) => r.key)).toEqual(["kiera"]);
     expect(relationshipSections(rows, "aishe").touchstones.map((r) => r.key)).toEqual(["kiera"]);
-  });
-});
-
-describe("packTwoColumns", () => {
-  it("places the heaviest entries first into the lighter column", () => {
-    const rows = parseRelationshipRows([
-      row("light", { a: "childe" }, { body: [] }),
-      row("heavy", { a: "childe" }, { body: ["1", "2", "3", "4"] }),
-      row("mid", { a: "childe" }, { body: ["1", "2"] })
-    ]);
-    const [left, right] = packTwoColumns(rows);
-    expect(left.map((r) => r.key)).toEqual(["heavy"]);
-    expect(right.map((r) => r.key)).toEqual(["mid", "light"]);
   });
 });

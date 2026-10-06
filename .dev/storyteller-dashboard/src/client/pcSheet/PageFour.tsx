@@ -1,7 +1,8 @@
 import { useState, type ReactElement } from "react";
 import { assetUrl } from "./layout.js";
+import { Masonry } from "./Masonry.js";
 import type { PageContext } from "./pages.js";
-import { emptyRelationship, isBondLink, MAX_BOND_STRENGTH, packTwoColumns, relationshipSections } from "./relationships.js";
+import { emptyRelationship, isBondLink, MAX_BOND_STRENGTH, relationshipSections } from "./relationships.js";
 import { portraitUrl, RelationshipModal } from "./RelationshipModal.js";
 import { termProps } from "../termImages/store.js";
 import type { RelationshipDraft, RelationshipRow } from "./types.js";
@@ -65,18 +66,14 @@ const Columns = ({
   readonly rows: readonly RelationshipRow[];
   readonly charKey: string;
   readonly onEdit: (row: RelationshipRow) => void;
-}): ReactElement => {
-  const columns = packTwoColumns(rows).filter((column) => column.length > 0);
-  return (
-    <div className="pc-rel-columns">
-      {columns.map((column, index) => (
-        <div key={index} className="pc-rel-col">
-          {column.map((row) => <RelationshipBox key={row.key} row={row} charKey={charKey} onEdit={onEdit} />)}
-        </div>
-      ))}
-    </div>
-  );
-};
+}): ReactElement => (
+  <Masonry
+    columns={2}
+    columnGap={5}
+    rowGap={2}
+    items={rows.map((row) => ({ key: row.key, node: <RelationshipBox row={row} charKey={charKey} onEdit={onEdit} /> }))}
+  />
+);
 
 type AddButton = { readonly label: string; readonly linkType: string };
 
@@ -111,27 +108,29 @@ export const PageFour = ({ ctx }: { readonly ctx: PageContext }): ReactElement =
     rows.map((row) => <RelationshipBox key={row.key} row={row} charKey={charKey} onEdit={edit} />);
   return (
     <article className={`pc-page pc-sheet-page pc-page-four ${ctx.side}`}>
-      <div className="pc-rel-columns">
-        <div className="pc-rel-col">
-          <Divider label="Touchstone" adds={[{ label: "Touchstone", linkType: "touchstone" }]} onAdd={add} />
-          {stack(sections.touchstones)}
+      <div className="pc-sheet-scroll">
+        <div className="pc-rel-columns">
+          <div className="pc-rel-col">
+            <Divider label="Touchstone" adds={[{ label: "Touchstone", linkType: "touchstone" }]} onAdd={add} />
+            {stack(sections.touchstones)}
+          </div>
+          <div className="pc-rel-col">
+            <Divider label="Sire" adds={[{ label: "Sire", linkType: "sire" }]} onAdd={add} />
+            {stack(sections.sires)}
+          </div>
         </div>
-        <div className="pc-rel-col">
-          <Divider label="Sire" adds={[{ label: "Sire", linkType: "sire" }]} onAdd={add} />
-          {stack(sections.sires)}
-        </div>
+        <Divider image="divider_childer" label="Childer" adds={[{ label: "Childe", linkType: "childe" }]} onAdd={add} />
+        {sections.childer.length > 0 ? <Columns rows={sections.childer} charKey={charKey} onEdit={edit} /> : null}
+        <Divider
+          image="divider_bloodBonds"
+          label="Blood Bonds"
+          adds={[{ label: "Thrall", linkType: "thrall" }, { label: "Regnant", linkType: "regnant" }]}
+          onAdd={add}
+        />
+        {sections.bloodBonds.length > 0 ? <Columns rows={sections.bloodBonds} charKey={charKey} onEdit={edit} /> : null}
+        <Divider image="divider_otherRelationships" label="Other Relationships" adds={[{ label: "Relationship", linkType: "contact" }]} onAdd={add} />
+        {sections.others.length > 0 ? <Columns rows={sections.others} charKey={charKey} onEdit={edit} /> : null}
       </div>
-      <Divider image="divider_childer" label="Childer" adds={[{ label: "Childe", linkType: "childe" }]} onAdd={add} />
-      {sections.childer.length > 0 ? <Columns rows={sections.childer} charKey={charKey} onEdit={edit} /> : null}
-      <Divider
-        image="divider_bloodBonds"
-        label="Blood Bonds"
-        adds={[{ label: "Thrall", linkType: "thrall" }, { label: "Regnant", linkType: "regnant" }]}
-        onAdd={add}
-      />
-      {sections.bloodBonds.length > 0 ? <Columns rows={sections.bloodBonds} charKey={charKey} onEdit={edit} /> : null}
-      <Divider image="divider_otherRelationships" label="Other Relationships" adds={[{ label: "Relationship", linkType: "contact" }]} onAdd={add} />
-      {sections.others.length > 0 ? <Columns rows={sections.others} charKey={charKey} onEdit={edit} /> : null}
       {popup ? (
         <RelationshipModal
           seat={ctx.seat}

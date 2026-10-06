@@ -78,24 +78,6 @@ export const relationshipSections = (rows: readonly RelationshipRow[], charKey: 
   };
 };
 
-/** Same weights as `lib/csheet_page4_xml.ttslua` (title 10, each subheader 2, each body line 3). */
-export const relationshipWeight = (entry: RelationshipDraft): number =>
-  10 + (entry.subheaderLeft !== "" ? 2 : 0) + (entry.subheaderRight !== "" ? 2 : 0)
-  + entry.body.filter((line) => line.trim() !== "").length * 3;
-
-/** Heaviest first into the lighter of two columns (ties go left), like the TTS builder. */
-export const packTwoColumns = (rows: readonly RelationshipRow[]): readonly [RelationshipRow[], RelationshipRow[]] => {
-  const columns: [RelationshipRow[], RelationshipRow[]] = [[], []];
-  const totals = [0, 0];
-  const sorted = [...rows].sort((a, b) => relationshipWeight(b.entry) - relationshipWeight(a.entry));
-  for (const row of sorted) {
-    const best = (totals[1] ?? 0) < (totals[0] ?? 0) ? 1 : 0;
-    columns[best].push(row);
-    totals[best] = (totals[best] ?? 0) + relationshipWeight(row.entry);
-  }
-  return columns;
-};
-
 /** Link types that carry Bond Strength boxes. */
 export const isBondLink = (linkType: string | undefined): boolean => linkType === "thrall" || linkType === "regnant";
 

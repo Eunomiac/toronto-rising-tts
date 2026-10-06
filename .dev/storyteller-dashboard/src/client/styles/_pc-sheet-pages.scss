@@ -4,12 +4,46 @@
   display: flex;
   flex-direction: column;
   padding: 15px;
-  overflow: hidden auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(196, 161, 90, 0.4) transparent;
+  overflow: hidden;
 
   button {
     border-radius: 0;
+  }
+}
+
+// Scrolls inside the page so the frame corners (.pc-page::before/::after) stay put.
+.pc-sheet-scroll {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: inherit;
+  min-height: 0;
+  overflow: hidden auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(196, 161, 90, 0.4) transparent;
+}
+
+.pc-masonry {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+// Hidden copies at each span width, measured by Masonry; zero height so they never add scroll.
+.pc-masonry-measure {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.pc-masonry-item {
+  position: absolute;
+
+  > * {
+    height: 100%;
   }
 }
 
@@ -294,26 +328,6 @@
   }
 }
 
-// Only non-empty columns render, so one or two boxes span the full width; the last box in each
-// column stretches so every column ends level.
-.pc-adv-columns {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(0, 1fr);
-  gap: 0.1rem;
-}
-
-.pc-adv-col {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  min-width: 0;
-
-  > .pc-adv-box:last-child {
-    flex-grow: 1;
-  }
-}
-
 .pc-adv-box {
   padding: 2px;
   border: 1px solid #cb995c;
@@ -411,7 +425,7 @@
   }
 }
 
-// Same fill rules as .pc-adv-columns.
+// Touchstone | Sire row; the last box in each column stretches so both end level.
 .pc-rel-columns {
   display: grid;
   grid-auto-flow: column;
@@ -564,10 +578,6 @@
 }
 
 // ---------------------------------------------------------------- Page 5
-
-.pc-page-five {
-  overflow: hidden;
-}
 
 .pc-proj-toolbar {
   display: flex;
@@ -823,10 +833,6 @@
 }
 
 // ---------------------------------------------------------------- Page 6
-
-.pc-page-six {
-  overflow: hidden;
-}
 
 .pc-xp-head {
   display: flex;

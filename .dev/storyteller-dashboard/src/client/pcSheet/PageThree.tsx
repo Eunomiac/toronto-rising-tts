@@ -2,14 +2,13 @@ import { useState, type ReactElement, type ReactNode } from "react";
 import { AdvantageModal } from "./AdvantageModal.js";
 import { DotLine } from "./DotLine.js";
 import { assetUrl } from "./layout.js";
+import { Masonry } from "./Masonry.js";
 import type { PageContext } from "./pages.js";
 import {
   ADVANTAGE_LABELS,
   advantageStakeKey,
   advantageTitle,
-  advantageWeight,
   isStatusEntry,
-  packColumns,
   parseAdvantages,
   statusDotSlots,
   traitDotSlots,
@@ -82,7 +81,6 @@ const AdvantageSection = ({
 }): ReactElement => {
   const shown = entries.filter((entry) => entry.sheetDisplay);
   const hidden = entries.filter((entry) => !entry.sheetDisplay && !isStatusEntry(entry));
-  const columns = packColumns(shown, advantageWeight).filter((column) => column.length > 0);
   const divider = SECTION_DIVIDER[category];
   const label = ADVANTAGE_LABELS[category];
   const edit = (entry: AdvantageEntry): void => onPopup({ entry, type: category });
@@ -97,17 +95,15 @@ const AdvantageSection = ({
         </button>
       </div>
       {lead}
-      {shown.length > 0 ? (
-        <div className="pc-adv-columns">
-          {columns.map((column, index) => (
-            <div key={index} className="pc-adv-col">
-              {column.map((entry) => (
-                <AdvantageBox key={`${entry.index}-${entry.name}`} entry={entry} ctx={ctx} onEdit={edit} />
-              ))}
-            </div>
-          ))}
-        </div>
-      ) : null}
+      <Masonry
+        columns={3}
+        columnGap={2}
+        rowGap={2}
+        items={shown.map((entry) => ({
+          key: `${entry.index}-${entry.name}`,
+          node: <AdvantageBox entry={entry} ctx={ctx} onEdit={edit} />
+        }))}
+      />
       {hidden.length > 0 ? (
         <p className="pc-adv-hidden">
           Not printed:{" "}
@@ -172,15 +168,17 @@ export const PageThree = ({ ctx }: { readonly ctx: PageContext }): ReactElement 
   const flaws = parseAdvantages(ctx.seat.playerData, "flaws");
   return (
     <article className={`pc-page pc-sheet-page pc-page-three ${ctx.side}`}>
-      <AdvantageSection
-        category="backgrounds"
-        entries={backgrounds}
-        ctx={ctx}
-        onPopup={setPopup}
-        lead={<StatusStrip backgrounds={backgrounds} ctx={ctx} onPopup={setPopup} />}
-      />
-      <AdvantageSection category="merits" entries={merits} ctx={ctx} onPopup={setPopup} />
-      <AdvantageSection category="flaws" entries={flaws} ctx={ctx} onPopup={setPopup} />
+      <div className="pc-sheet-scroll">
+        <AdvantageSection
+          category="backgrounds"
+          entries={backgrounds}
+          ctx={ctx}
+          onPopup={setPopup}
+          lead={<StatusStrip backgrounds={backgrounds} ctx={ctx} onPopup={setPopup} />}
+        />
+        <AdvantageSection category="merits" entries={merits} ctx={ctx} onPopup={setPopup} />
+        <AdvantageSection category="flaws" entries={flaws} ctx={ctx} onPopup={setPopup} />
+      </div>
       {popup ? (
         <AdvantageModal
           color={ctx.seat.color}

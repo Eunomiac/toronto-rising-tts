@@ -167,58 +167,60 @@ export const PageTwo = ({ ctx }: { readonly ctx: PageContext }): ReactElement =>
   const firstEmpty = cells.findIndex((cell) => cell === null);
   return (
     <article className={`pc-page pc-sheet-page pc-page-two ${ctx.side}`}>
-      <section className="pc-disc-grid" aria-label="Disciplines">
-        {cells.map((row, index) => (
-          row
-            ? <DisciplineCell key={row.key} row={row} ctx={ctx} onPopup={setPopup} />
-            : (
-              <div key={`empty-${index}`} className="pc-disc-cell empty">
-                {index === firstEmpty ? (
-                  <button type="button" className="pc-disc-add" onClick={() => setPopup({ kind: "addDiscipline" })}>
-                    + Discipline
-                  </button>
-                ) : null}
-              </div>
-            )
-        ))}
-      </section>
-
-      {layout || divider ? (
-        <section className="pc-rc" aria-label="Rituals and Ceremonies">
-          <div className="pc-divider">
-            {divider ? <img src={assetUrl(`sheet/${divider}.webp`)} alt="" /> : null}
-            {ritualKinds.map((kind) => (
-              <button
-                key={kind}
-                type="button"
-                className="pc-add-text"
-                title={canAddRitual(kind, rituals.length, ceremonies.length)
-                  ? `Add a ${RITUAL_KIND_LABEL[kind]}`
-                  : "Page 2 is full: 10 of one kind, or 5 of each"}
-                disabled={!canAddRitual(kind, rituals.length, ceremonies.length)}
-                onClick={() => setPopup({ kind: "ritual", ritual: kind })}
-              >
-                + {RITUAL_KIND_LABEL[kind]}
-              </button>
-            ))}
-          </div>
-          {layout ? (
-            <div className="pc-rc-columns">
-              {[layout.left, layout.right].map((column, columnIndex) => (
-                <div key={columnIndex} className="pc-rc-col">
-                  {column.map((slot, rowIndex) => (
-                    <RitualRow
-                      key={rowIndex}
-                      slot={slot}
-                      onEdit={(picked) => setPopup({ kind: "ritual", ritual: picked.kind, entry: picked.entry })}
-                    />
-                  ))}
+      <div className="pc-sheet-scroll">
+        <section className="pc-disc-grid" aria-label="Disciplines">
+          {cells.map((row, index) => (
+            row
+              ? <DisciplineCell key={row.key} row={row} ctx={ctx} onPopup={setPopup} />
+              : (
+                <div key={`empty-${index}`} className="pc-disc-cell empty">
+                  {index === firstEmpty ? (
+                    <button type="button" className="pc-disc-add" onClick={() => setPopup({ kind: "addDiscipline" })}>
+                      + Discipline
+                    </button>
+                  ) : null}
                 </div>
+              )
+          ))}
+        </section>
+  
+        {layout || divider ? (
+          <section className="pc-rc" aria-label="Rituals and Ceremonies">
+            <div className="pc-divider">
+              {divider ? <img src={assetUrl(`sheet/${divider}.webp`)} alt="" /> : null}
+              {ritualKinds.map((kind) => (
+                <button
+                  key={kind}
+                  type="button"
+                  className="pc-add-text"
+                  title={canAddRitual(kind, rituals.length, ceremonies.length)
+                    ? `Add a ${RITUAL_KIND_LABEL[kind]}`
+                    : "Page 2 is full: 10 of one kind, or 5 of each"}
+                  disabled={!canAddRitual(kind, rituals.length, ceremonies.length)}
+                  onClick={() => setPopup({ kind: "ritual", ritual: kind })}
+                >
+                  + {RITUAL_KIND_LABEL[kind]}
+                </button>
               ))}
             </div>
-          ) : null}
-        </section>
-      ) : null}
+            {layout ? (
+              <div className="pc-rc-columns">
+                {[layout.left, layout.right].map((column, columnIndex) => (
+                  <div key={columnIndex} className="pc-rc-col">
+                    {column.map((slot, rowIndex) => (
+                      <RitualRow
+                        key={rowIndex}
+                        slot={slot}
+                        onEdit={(picked) => setPopup({ kind: "ritual", ritual: picked.kind, entry: picked.entry })}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </section>
+        ) : null}
+      </div>
       {renderPopup()}
     </article>
   );

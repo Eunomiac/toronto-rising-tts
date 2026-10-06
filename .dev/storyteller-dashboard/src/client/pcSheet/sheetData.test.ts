@@ -2,9 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   advantageTitle,
   canAddRitual,
-  formatSourceLine,
   heldRitualKinds,
-  packColumns,
   parseAdvantages,
   parseDisciplines,
   parseXpLog,
@@ -55,13 +53,6 @@ describe("advantage dots", () => {
   it("paints the Status strip left to right with filled slots only", () => {
     const status = advantage({ category: "backgrounds", name: "Status", base: 2, temp: 1, disabled: 1, sheetDisplay: false });
     expect(images(statusDotSlots(status, 0))).toEqual(["dot_yellow", "dot_yellow", "dot_grey_red_x"]);
-  });
-});
-
-describe("packColumns", () => {
-  it("drops each item, heaviest first, into the lightest column", () => {
-    const columns = packColumns([5, 30, 12, 10, 3], (n) => n);
-    expect(columns).toEqual([[30], [12, 3], [10, 5]]);
   });
 });
 
@@ -145,7 +136,7 @@ describe("parseAdvantages", () => {
     const merits = parseAdvantages(playerData, "merits");
     expect(merits).toHaveLength(1);
     expect(merits[0]?.rules).toEqual(["One rule"]);
-    expect(formatSourceLine(merits[0]?.source)).toBe("VTM, p.182");
+    expect(merits[0]?.source).toEqual({ book: "VTM", page: 182 });
     const bg = parseAdvantages(playerData, "backgrounds")[0];
     expect(bg?.sheetDisplay).toBe(false);
     expect(bg ? advantageTitle(bg) : "").toBe("STATUS: CAMARILLA");

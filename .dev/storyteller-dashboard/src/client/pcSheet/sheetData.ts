@@ -281,19 +281,6 @@ export const advantageTitle = (entry: Pick<AdvantageEntry, "name" | "focus">): s
   return (focus !== "" ? `${entry.name}: ${focus}` : entry.name).toUpperCase();
 };
 
-export const formatSourceLine = (source?: AdvantageSource): string | null => {
-  if (!source) {
-    return null;
-  }
-  if (source.book === "" && source.page === 0) {
-    return null;
-  }
-  if (source.book === "") {
-    return `p.${source.page}`;
-  }
-  return source.page ? `${source.book}, p.${source.page}` : source.book;
-};
-
 /** Stake key shared with the Lua snapshot (`projectStakes`); focus is compared untrimmed there. */
 export const advantageStakeKey = (name: string, focus: string): string => `${name}|${focus}`;
 
@@ -354,29 +341,6 @@ export const statusDotSlots = (entry: AdvantageEntry, projectQty: number): reado
     return { active: true, image: slot <= base ? "dot_yellow" : "dot_white" };
   });
 };
-
-/** Packing weight (`TRAIT.buildTraitBlockParams`): title 10, description line 3, rule line 2, source 2. */
-export const advantageWeight = (entry: AdvantageEntry): number =>
-  10 + entry.description.length * 3 + entry.rules.length * 2 + (formatSourceLine(entry.source) ? 2 : 0);
-
-/** Heaviest first, each into the lightest of three columns (`packItemsGreedy`). */
-export const packColumns = <T>(items: readonly T[], weight: (item: T) => number): readonly [T[], T[], T[]] => {
-  const columns: [T[], T[], T[]] = [[], [], []];
-  const totals = [0, 0, 0];
-  const sorted = [...items].sort((a, b) => weight(b) - weight(a));
-  for (const item of sorted) {
-    let best = 0;
-    for (let c = 1; c < 3; c += 1) {
-      if ((totals[c] ?? 0) < (totals[best] ?? 0)) {
-        best = c;
-      }
-    }
-    columns[best]?.push(item);
-    totals[best] = (totals[best] ?? 0) + weight(item);
-  }
-  return columns;
-};
-
 // ---------------------------------------------------------------- Experience Log
 
 export type XpEntry = { readonly amount: number; readonly description: string };
