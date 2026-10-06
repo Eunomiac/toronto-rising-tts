@@ -13,6 +13,7 @@ Source of truth (planned):
 - `core/coterie.ttslua`, `lib/coterie_data.ttslua`, `lib/json/Coterie.json` (coterie advantages)
 - `core/state.ttslua`, `core/present_day_clock.ttslua`
 - existing roll path: `C.RollType.LAUNCH` / Storyteller PC Launch
+- `core/projects.ttslua`, `core/storyteller_projects_panel.ttslua`, `dashboard/projects.ttslua` (Storyteller Dashboard bridge)
 
 Verification:
 - no implementation verification yet; human-gated planning document
@@ -61,6 +62,17 @@ XML: `ui/storyteller/project_editor_modal.xml`.
 | **Delete** | Always destroy project and release stakes; close modal. |
 | **Lock & Begin** | Enabled only in `postLaunch` when Begin eligibility is met (see phase machine). Sets `phase = "inProgress"`, locks Result/Margin, starts project-die derivation. |
 | **Complete** | Enabled only for `inProgress`. Sets `phase = "complete"` and releases stakes. Allowed regardless of current project die. |
+
+### Storyteller Dashboard (sheet Page 5)
+
+Second ST surface for the same `gameState.projects`; the TTS panel above keeps working until it is retired.
+
+- **Bridge:** `dashboard/projects.ttslua` via `GlobalDashboardProjectsSnapshot` / `GlobalDashboardProjectsApply` (Event Listener Policy rows). Snapshot carries every project plus Lua-derived values (auto phase, required stake, project die, start/end text, Begin eligibility + message, launch eligibility), per-source advantages with free dots, the present day, and `listForDisplaySource` order — the dashboard does no calendar or stake math.
+- **Ops:** `create`, `patch`, `setStakeRows`, `begin`, `complete`, `delete`, `launchRoll` — same gates as the panel (`isBeginEligible`, in-progress-only Complete, Result/Margin locked once begun, scope runs `applyScopeDifficulty`, R only in `preLaunch`).
+- **Lifecycle difference:** a new project is **not** written to `gameState` until the first Save (`create`); Cancel on an unsaved project discards nothing in TTS. On a saved project, field edits commit on blur and Cancel just closes (no pre-begin delete — use Delete).
+- **Dashboard UI:** `.dev/storyteller-dashboard/src/client/pcSheet/PageFive.tsx` (cards in display order + Coterie chip) and `ProjectEditor.tsx`.
+
+Every mutation path (panel or dashboard) ends with `Projects.refreshAfterMutation()` — all PC sheets, the coterie sheet, and the Court cards. `PJP.onPresentDayChanged` also refreshes the Court cards so their project dice follow the clock.
 
 ---
 
@@ -254,7 +266,8 @@ For a given sheet source S, show projects where `displayFor` contains S.
 
 | Surface | Wired? |
 | --- | --- |
-| PC character sheet page 5 | Yes — `Projects.buildPage5DocumentXml` |
+| PC character sheet page 5 | Yes — `Projects.buildPage5DocumentXml`; repaint gated by `Projects.fingerprintPage5` (order, owner, phase, goal, scope, result, margin, start/end dates, increment, die, stake rows) |
+| Storyteller Dashboard sheet page 5 | Yes — `dashboard/projects.ttslua` snapshot (see ST surface) |
 | ST Projects panel list for Coterie target | Yes — `listForDisplaySource("coterie")` |
 | Prince’s Court HUD (page 3 left / coterie sheet art) | Yes — fixed 8-slot pool (0-based indices) from `ui/.templates/princes_court/partials/project_block.xml` in a CSHEET-style `VerticalLayout.vertical_project_container` (no scroll view); project classes from Global `ui/defaults_classes.xml`; `Projects.reconcileCourtProjectsAll` applies `listForDisplaySource("coterie")` through `U.setAttribute` |
 

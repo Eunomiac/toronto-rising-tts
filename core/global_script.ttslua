@@ -1668,6 +1668,25 @@ function GlobalDashboardPcSheetApply(params)
     return Dash.apply(jsonText)
 end
 
+--- Storyteller Dashboard sheet Page 5: every project with Lua-derived phase/stake/die/date values.
+--- @return string JSON
+function GlobalDashboardProjectsSnapshot()
+    local DashProjects = require("dashboard.projects")
+    return DashProjects.snapshot()
+end
+
+--- Storyteller Dashboard sheet Page 5: apply one project command, then return a fresh snapshot JSON.
+--- @param params string|table JSON text, or `{ json = "..." }`
+--- @return string JSON
+function GlobalDashboardProjectsApply(params)
+    local jsonText = params
+    if type(params) == "table" then
+        jsonText = params.json or params[1]
+    end
+    local DashProjects = require("dashboard.projects")
+    return DashProjects.apply(jsonText)
+end
+
 function HUD_genericNpcImportConfirm(player, button, id)
     if not U.isStorytellerSteamPlayer(player) then
         return

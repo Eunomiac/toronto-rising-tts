@@ -8,6 +8,7 @@ Execute-lua modules used by the Storyteller Dashboard (`.dev/storyteller-dashboa
 | `pc_sheet_traits.ttslua` | `dashboard.pc_sheet_traits` | none — registered in `pc_sheet.ttslua` `EXTENSIONS` (Page 2 disciplines/powers/rituals, Page 3 advantages, `projectStakes`) |
 | `pc_sheet_xp.ttslua` | `dashboard.pc_sheet_xp` | none — `EXTENSIONS` (Experience Log append / Apply to All / undo, `lastXpEntry`) |
 | `pc_sheet_relationships.ttslua` | `dashboard.pc_sheet_relationships` | none — `EXTENSIONS` (Page 4 `relationshipUpsert` / `relationshipDelete` via `core.relationships`, `relationships` snapshot rows) |
+| `projects.ttslua` | `dashboard.projects` | `GlobalDashboardProjectsSnapshot` / `GlobalDashboardProjectsApply` — sheet Page 5 projects (own snapshot, not a seat extension: projects span owners and the coterie) |
 
 ## PC sheet extensions
 

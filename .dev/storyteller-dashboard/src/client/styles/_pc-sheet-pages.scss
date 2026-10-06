@@ -518,6 +518,265 @@
   }
 }
 
+// ---------------------------------------------------------------- Page 5
+
+.pc-page-five {
+  overflow: hidden;
+}
+
+.pc-proj-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+
+  .pc-section-title {
+    margin: 0 0.4rem 0 0;
+  }
+
+  .pc-add-text.active {
+    border-color: #ffdd00;
+    color: #ffdd00;
+  }
+}
+
+.pc-proj-present {
+  margin: 0.2rem 0 0.35rem;
+  color: #999999;
+  font-family: "Perpetua", serif;
+  font-size: 0.72rem;
+  font-style: italic;
+  text-align: center;
+}
+
+.pc-proj-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-right: 0.2rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(196, 161, 90, 0.4) transparent;
+}
+
+.pc-proj-card {
+  position: relative;
+  flex: 0 0 auto;
+  min-height: 7.2rem;
+  padding: 0 0 1.7rem;
+  border: 1px solid #cb995c;
+  background: #000000;
+  cursor: pointer;
+  text-align: left;
+
+  &:hover,
+  &:focus-visible {
+    box-shadow: 0 0 0.5rem rgba(203, 153, 92, 0.55);
+    outline: none;
+  }
+
+  &.phase-complete {
+    opacity: 0.6;
+  }
+}
+
+.pc-proj-header {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 1.5rem;
+  padding: 0.15rem 4.2rem 0.15rem 0.45rem;
+  border-bottom: 1px solid #cb995c;
+}
+
+.pc-proj-scope {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 1px;
+
+  img {
+    width: 0.62rem;
+    height: 0.62rem;
+  }
+}
+
+.pc-proj-goal {
+  color: #ffffff;
+  font-family: "Franklin Gothic Demi Cond", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.pc-proj-die {
+  position: absolute;
+  right: 0.3rem;
+  bottom: 1.75rem;
+  width: 42%;
+  max-height: 4.4rem;
+  object-fit: contain;
+  object-position: right center;
+  pointer-events: none;
+}
+
+.pc-proj-result {
+  position: absolute;
+  top: -0.35rem;
+  right: 0.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+
+  img {
+    height: 2.1rem;
+  }
+
+  b {
+    color: #ffffff;
+    font-family: "Franklin Gothic Demi Cond", sans-serif;
+    font-size: 1.15rem;
+  }
+}
+
+.pc-proj-stakes {
+  display: block;
+  width: 58%;
+  margin: 0.25rem 0 0;
+  padding: 0 0 0 0.45rem;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #ffffff;
+    font-family: "Franklin Gothic Demi Cond", sans-serif;
+    font-size: 0.66rem;
+    font-weight: 700;
+    line-height: 1.35;
+
+    &.coterie {
+      color: #ffdd00;
+    }
+
+    &.other {
+      color: #aaaaaa;
+      font-style: italic;
+    }
+  }
+}
+
+.pc-proj-stake-dots {
+  display: flex;
+  gap: 1px;
+
+  img {
+    width: 0.55rem;
+    height: 0.55rem;
+  }
+}
+
+.pc-proj-dates {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: 70%;
+  justify-content: center;
+  padding: 0.12rem 0.4rem;
+  border: 1px solid #cb995c;
+  background: #000000;
+  color: #ffffff;
+  font-family: "Franklin Gothic Demi Cond", sans-serif;
+  font-size: 0.64rem;
+  font-weight: 700;
+
+  .start,
+  .increment {
+    color: #999999;
+    font-style: italic;
+  }
+
+  .increment {
+    font-weight: 400;
+  }
+}
+
+.pc-proj-phase {
+  position: absolute;
+  left: 0.45rem;
+  bottom: 0.25rem;
+  color: #c4a15a;
+  font-family: "Trajan Pro 3", serif;
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+// Project editor (sheet modal body is already a two-column grid).
+.pc-proj-form {
+  display: contents;
+
+  .wide {
+    grid-column: 1 / -1;
+  }
+}
+
+.pc-proj-stakes-edit {
+  gap: 0.35rem;
+
+  .pc-add-text {
+    align-self: flex-start;
+  }
+}
+
+.pc-proj-stake-edit {
+  display: grid;
+  grid-template-columns: 10rem minmax(0, 1fr) 4.5rem 1.8rem;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.pc-proj-row-remove {
+  padding: 0.2rem 0;
+  color: #ffb4bc;
+}
+
+.pc-proj-derived {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.2rem 0.8rem;
+  margin: 0;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid rgba(203, 153, 92, 0.3);
+  border-radius: 0.35rem;
+  font-size: 0.82rem;
+
+  dt {
+    color: #c4a15a;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 0;
+
+    &.ok {
+      color: #9fd37d;
+    }
+
+    &.warn {
+      color: #ffcf7a;
+    }
+  }
+}
+
 // ---------------------------------------------------------------- Page 6
 
 .pc-page-six {

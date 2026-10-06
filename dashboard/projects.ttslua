@@ -1,0 +1,426 @@
+--[[
+  Storyteller Dashboard — Projects bridge (sheet Page 5 + coterie projects).
+  Global entries: GlobalDashboardProjectsSnapshot / GlobalDashboardProjectsApply (core/global_script.ttslua).
+
+  Snapshot carries every project plus Lua-derived values (auto phase, required stake, project die,
+  end date, Begin eligibility + message), per-source advantage lists with free dots, the present day,
+  and the owner/source order, so the dashboard does no calendar or stake math.
+
+  Ops mirror the TTS Storyteller Projects panel (core/storyteller_projects_panel.ttslua): create,
+  patch, setStakeRows, begin, complete, delete, launchRoll. Every op ends with the panel list refresh
+  plus Projects.refreshAfterMutation (sheets, coterie sheet, Court cards).
+]]
+
+local M = {}
+
+local C = require("lib.constants")
+local Projects = require("core.projects")
+local PJP = require("core.storyteller_projects_panel")
+local PresentDayClock = require("core.present_day_clock")
+local RC = require("core.roll_controller")
+
+local MONTH_ABBR = { "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec" }
+local RESULTS = { [C.ResultClass.WIN] = true, [C.ResultClass.CRITICAL_WIN] = true }
+
+local function encode(payload)
+  local encoded = JSON.encode(payload)
+  if type(encoded) ~= "string" or encoded == "" then
+    error("dashboard.projects: JSON.encode returned empty")
+  end
+  return encoded
+end
+
+local function charNameFor(charKey)
+  for _, row in pairs(C.PlayerData) do
+    if type(row) == "table" and row.charKey == charKey and type(row.charName) == "string" then
+      return row.charName
+    end
+  end
+  return charKey
+end
+
+local function isSourceKey(key)
+  if key == "coterie" then
+    return true
+  end
+  for _, charKey in ipairs(Projects.CHAR_KEYS) do
+    if charKey == key then
+      return true
+    end
+  end
+  return false
+end
+
+local function clockDate(clock)
+  if type(clock) ~= "table" then
+    return nil
+  end
+  return { year = clock.year, month = clock.month, day = clock.day }
+end
+
+local function projectRow(p)
+  local die, endDate = Projects.deriveDieAndEnd(p)
+  local _, beginMessage = Projects.validateStakesForBegin(p)
+  local stakeRows = {}
+  if type(p.stakeRows) == "table" then
+    for i = 1, #p.stakeRows do
+      local row = p.stakeRows[i]
+      if type(row) == "table" then
+        stakeRows[#stakeRows + 1] = {
+          source = row.source,
+          name = row.name,
+          focus = row.focus,
+          qty = math.floor(tonumber(row.qty) or 0),
+        }
+      end
+    end
+  end
+  return {
+    id = p.id,
+    owner = p.owner,
+    phase = p.phase,
+    goal = p.goal or "",
+    scope = tonumber(p.scope),
+    startDate = clockDate(p.startDate),
+    increment = p.increment,
+    projectDieMod = math.floor(tonumber(p.projectDieMod) or 0),
+    launchRollSkill = p.launchRollSkill or "",
+    launchRollAdvantage = p.launchRollAdvantage or "",
+    launchRollDifficulty = tonumber(p.launchRollDifficulty),
+    numContributors = math.max(1, math.floor(tonumber(p.numContributors) or 1)),
+    launchRollResult = p.launchRollResult,
+    launchRollMargin = tonumber(p.launchRollMargin),
+    stakeRows = stakeRows,
+    derived = {
+      autoPhase = Projects.computeAutoPhase(p),
+      requiredStake = Projects.computeRequiredStake(p),
+      sumStake = Projects.sumStakeQty(p),
+      die = die,
+      startText = Projects.formatStartDate(p.startDate),
+      endText = endDate and Projects.formatStartDate(endDate) or "",
+      beginEligible = Projects.isBeginEligible(p),
+      beginMessage = beginMessage,
+      launchEligible = Projects.computeAutoPhase(p) == Projects.PHASE.PRE_LAUNCH,
+      launchRollDisplay = Projects.launchRollDisplay(p),
+      displayFor = Projects.computeDisplayFor(p),
+    },
+  }
+end
+
+local function snapshotPayload(extra)
+  local sources = {}
+  local advantages = {}
+  local order = {}
+  local keys = {}
+  for _, charKey in ipairs(Projects.CHAR_KEYS) do
+    keys[#keys + 1] = charKey
+  end
+  keys[#keys + 1] = "coterie"
+  for _, key in ipairs(keys) do
+    local color = key ~= "coterie" and Projects.colorForCharKey(key) or nil
+    sources[#sources + 1] = { key = key, label = key == "coterie" and "Coterie" or charNameFor(key), color = color }
+    local list = {}
+    for _, adv in ipairs(Projects.listAdvantagesForSource(key)) do
+      list[#list + 1] = {
+        name = adv.name,
+        focus = adv.focus or "",
+        label = adv.label,
+        free = Projects.freeDotsForAdvantage(key, adv.name, adv.focus, nil),
+      }
+    end
+    advantages[key] = list
+    local ids = {}
+    for _, p in ipairs(Projects.listForDisplaySource(key)) do
+      ids[#ids + 1] = p.id
+    end
+    order[key] = ids
+  end
+  local projects = {}
+  for _, p in pairs(Projects.ensureProjectsTable()) do
+    if type(p) == "table" and type(p.id) == "string" then
+      projects[#projects + 1] = projectRow(p)
+    end
+  end
+  table.sort(projects, function(a, b)
+    return a.id < b.id
+  end)
+  local increments = {}
+  for _, key in ipairs(Projects.INCREMENT) do
+    increments[#increments + 1] = { key = key, label = Projects.INCREMENT_LABELS[key] }
+  end
+  local present = PresentDayClock.getPresentDay()
+  local payload = {
+    ok = true,
+    presentDay = clockDate(present),
+    presentDayText = present and Projects.formatStartDate(present) or "",
+    sources = sources,
+    advantages = advantages,
+    order = order,
+    projects = projects,
+    increments = increments,
+  }
+  if type(extra) == "table" then
+    for k, v in pairs(extra) do
+      payload[k] = v
+    end
+  end
+  return payload
+end
+
+--- "" clears a field (JSON null does not survive decode).
+local function optNumber(value)
+  if value == "" or value == nil then
+    return nil
+  end
+  return tonumber(value)
+end
+
+--- @return string|nil err
+local function applyFields(project, fields)
+  if type(fields) ~= "table" then
+    return nil
+  end
+  local locked = project.phase == Projects.PHASE.IN_PROGRESS or project.phase == Projects.PHASE.COMPLETE
+  if fields.owner ~= nil then
+    if fields.owner == "" then
+      project.owner = nil
+    elseif isSourceKey(fields.owner) and fields.owner ~= "coterie" then
+      project.owner = fields.owner
+    else
+      return "Unknown owner " .. tostring(fields.owner)
+    end
+  end
+  if fields.goal ~= nil then
+    project.goal = tostring(fields.goal)
+  end
+  if fields.scope ~= nil then
+    Projects.applyScopeDifficulty(project, optNumber(fields.scope))
+  end
+  if fields.increment ~= nil then
+    if fields.increment == "" then
+      project.increment = nil
+    elseif Projects.INCREMENT_LABELS[fields.increment] ~= nil then
+      project.increment = fields.increment
+    else
+      return "Unknown increment " .. tostring(fields.increment)
+    end
+  end
+  if fields.startDate ~= nil then
+    if fields.startDate == "" then
+      project.startDate = nil
+    else
+      local d = fields.startDate
+      local month = type(d) == "table" and MONTH_ABBR[math.floor(tonumber(d.month) or 0)] or nil
+      local parsed = month and Projects.parseStartDateString(
+        string.format("%s %d %d", month, math.floor(tonumber(d.day) or 0), math.floor(tonumber(d.year) or 0))
+      ) or nil
+      if parsed == nil then
+        return "Start date is not a real calendar date"
+      end
+      project.startDate = parsed
+    end
+  end
+  if fields.launchRollSkill ~= nil then
+    project.launchRollSkill = tostring(fields.launchRollSkill)
+  end
+  if fields.launchRollAdvantage ~= nil then
+    project.launchRollAdvantage = tostring(fields.launchRollAdvantage)
+  end
+  if fields.launchRollDifficulty ~= nil then
+    project.launchRollDifficulty = optNumber(fields.launchRollDifficulty)
+  end
+  if fields.numContributors ~= nil then
+    project.numContributors = math.max(1, math.floor(tonumber(fields.numContributors) or 1))
+  end
+  if fields.projectDieMod ~= nil then
+    project.projectDieMod = math.floor(tonumber(fields.projectDieMod) or 0)
+  end
+  if fields.launchRollResult ~= nil or fields.launchRollMargin ~= nil then
+    if locked then
+      return "Result and Margin are locked once the project has begun"
+    end
+    if fields.launchRollResult ~= nil then
+      if fields.launchRollResult == "" then
+        project.launchRollResult = nil
+      elseif RESULTS[fields.launchRollResult] then
+        project.launchRollResult = fields.launchRollResult
+      else
+        return "Result must be Win or Critical Win"
+      end
+    end
+    if fields.launchRollMargin ~= nil then
+      project.launchRollMargin = optNumber(fields.launchRollMargin)
+    end
+  end
+  return nil
+end
+
+--- @return string|nil err
+local function applyStakeRows(project, rows)
+  if type(rows) ~= "table" then
+    return "Missing stake rows"
+  end
+  if #rows > Projects.STAKE_ROW_POOL then
+    return "At most " .. tostring(Projects.STAKE_ROW_POOL) .. " stake rows"
+  end
+  local out = {}
+  for i = 1, #rows do
+    local row = rows[i]
+    if type(row) == "table" and type(row.source) == "string" and row.source ~= "" then
+      if not isSourceKey(row.source) then
+        return "Stake row " .. tostring(i) .. ": unknown source " .. row.source
+      end
+      local name = type(row.name) == "string" and row.name ~= "" and row.name or nil
+      out[#out + 1] = {
+        source = row.source,
+        name = name,
+        focus = name and (type(row.focus) == "string" and row.focus or "") or nil,
+        qty = name and math.max(0, math.floor(tonumber(row.qty) or 0)) or 0,
+      }
+    end
+  end
+  project.stakeRows = out
+  return nil
+end
+
+local function save(project)
+  Projects.recomputeDerived(project)
+  Projects.saveProject(project)
+end
+
+local function projectFor(cmd)
+  local project = Projects.getProject(cmd.id)
+  if project == nil then
+    return nil, "That project no longer exists in TTS — refresh and try again"
+  end
+  return project, nil
+end
+
+local OPS = {}
+
+OPS.create = function(cmd)
+  local owner = type(cmd.fields) == "table" and cmd.fields.owner or nil
+  local project = Projects.createProject(isSourceKey(owner) and owner ~= "coterie" and owner or nil)
+  local err = applyFields(project, cmd.fields)
+  if err == nil and cmd.stakeRows ~= nil then
+    err = applyStakeRows(project, cmd.stakeRows)
+  end
+  if err ~= nil then
+    Projects.deleteProject(project.id)
+    return err
+  end
+  save(project)
+  return nil, { createdId = project.id }
+end
+
+OPS.patch = function(cmd)
+  local project, err = projectFor(cmd)
+  if project == nil then
+    return err
+  end
+  err = applyFields(project, cmd.fields)
+  if err ~= nil then
+    return err
+  end
+  save(project)
+  return nil
+end
+
+OPS.setStakeRows = function(cmd)
+  local project, err = projectFor(cmd)
+  if project == nil then
+    return err
+  end
+  err = applyStakeRows(project, cmd.rows)
+  if err ~= nil then
+    return err
+  end
+  save(project)
+  return nil
+end
+
+OPS.begin = function(cmd)
+  local project, err = projectFor(cmd)
+  if project == nil then
+    return err
+  end
+  Projects.recomputeDerived(project)
+  if not Projects.isBeginEligible(project) then
+    local _, message = Projects.validateStakesForBegin(project)
+    return "Cannot begin yet: " .. tostring(message)
+  end
+  project.phase = Projects.PHASE.IN_PROGRESS
+  save(project)
+  return nil
+end
+
+OPS.complete = function(cmd)
+  local project, err = projectFor(cmd)
+  if project == nil then
+    return err
+  end
+  if project.phase ~= Projects.PHASE.IN_PROGRESS then
+    return "Only an in-progress project can be completed"
+  end
+  project.phase = Projects.PHASE.COMPLETE
+  save(project)
+  return nil
+end
+
+OPS.delete = function(cmd)
+  local _, err = projectFor(cmd)
+  if err ~= nil then
+    return err
+  end
+  Projects.deleteProject(cmd.id)
+  return nil
+end
+
+OPS.launchRoll = function(cmd)
+  local project, err = projectFor(cmd)
+  if project == nil then
+    return err
+  end
+  Projects.recomputeDerived(project)
+  if Projects.computeAutoPhase(project) ~= Projects.PHASE.PRE_LAUNCH then
+    return "The launch roll needs every setup field filled and no result yet"
+  end
+  local color = Projects.colorForCharKey(project.owner)
+  if color == nil then
+    return "The project owner is not seated"
+  end
+  local label = Projects.launchRollDisplay(project)
+  RC.initiateRoll(color, {
+    rollType = C.RollType.LAUNCH,
+    initiator = "storyteller",
+    difficulty = math.floor(tonumber(project.launchRollDifficulty) or 0),
+    label = label == "" and "Launch Roll" or ("Roll " .. label),
+  })
+  return nil
+end
+
+function M.snapshot()
+  return encode(snapshotPayload(nil))
+end
+
+function M.apply(jsonText)
+  local cmd = type(jsonText) == "string" and JSON.decode(jsonText) or nil
+  if type(cmd) ~= "table" or type(cmd.op) ~= "string" then
+    return encode({ ok = false, error = "Expected a project command" })
+  end
+  local handler = OPS[cmd.op]
+  if handler == nil then
+    return encode({ ok = false, error = "Unknown projects op: " .. cmd.op })
+  end
+  local err, extra = handler(cmd)
+  if err ~= nil then
+    return encode({ ok = false, error = err })
+  end
+  if cmd.op ~= "launchRoll" then
+    PJP.refresh()
+    Projects.refreshAfterMutation()
+  end
+  return encode(snapshotPayload(extra))
+end
+
+return M

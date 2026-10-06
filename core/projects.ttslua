@@ -55,6 +55,8 @@ local MONTH_SHORT = {
 }
 
 local CHAR_KEYS = { "lordLucien", "rashid", "aishe", "fomorach", "blackCaesar" }
+--- Owner / stake-source order (TTS dropdowns and the Storyteller Dashboard).
+M.CHAR_KEYS = CHAR_KEYS
 
 --- Owner / stake source dropdown: 1 blank, 2..6 PCs, 7 coterie
 local SOURCE_BY_INDEX = {
@@ -1290,16 +1292,45 @@ function M.fingerprintPage5(seatColorRaw)
   end
   local list = M.listForDisplaySource(charKey)
   local parts = { charKey }
+  -- Every field buildPage5DocumentXml paints (order, stake classes, dates, result, die, scope, stakes).
   for i = 1, #list do
     local p = list[i]
-    local die = M.deriveDieAndEnd(p)
+    local die, endDate = M.deriveDieAndEnd(p)
     parts[#parts + 1] = tostring(p.id)
+    parts[#parts + 1] = tostring(p.owner)
     parts[#parts + 1] = tostring(p.phase)
     parts[#parts + 1] = tostring(p.goal)
+    parts[#parts + 1] = tostring(p.scope)
+    parts[#parts + 1] = tostring(p.launchRollResult)
+    parts[#parts + 1] = tostring(p.launchRollMargin)
+    parts[#parts + 1] = M.formatStartDate(p.startDate)
+    parts[#parts + 1] = endDate and M.formatStartDate(endDate) or ""
+    parts[#parts + 1] = tostring(p.increment)
     parts[#parts + 1] = tostring(die)
-    parts[#parts + 1] = tostring(p.projectDieMod)
+    local rows = p.stakeRows
+    if type(rows) == "table" then
+      for ri = 1, #rows do
+        local row = rows[ri]
+        if type(row) == "table" then
+          parts[#parts + 1] = table.concat({
+            tostring(row.source), tostring(row.name), tostring(row.focus), tostring(row.qty),
+          }, "\2")
+        end
+      end
+    end
   end
   return table.concat(parts, "\1")
+end
+
+--- After any project mutation: repaint every PC's sheets (Page 5 + staked dots on Page 3),
+--- the coterie sheet, and the Court project cards. Callers with their own panel refresh it first.
+function M.refreshAfterMutation()
+  local PCST = require("core.pc_storyteller_panel")
+  for _, color in ipairs(C.PlayerColors) do
+    PCST.refreshCharacterSheetsForColor(color)
+  end
+  require("core.coterie").reconcileAll()
+  M.reconcileCourtProjectsAll()
 end
 
 --- Fixed XmlUI pool size for Prince's Court page 3 (TOR-371). Indices are 0-based like CSHEET.

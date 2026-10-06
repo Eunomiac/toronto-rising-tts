@@ -391,18 +391,7 @@ end
 
 refreshAfterMutation = function()
   PJP.refresh()
-  for _, color in ipairs(C.PlayerColors) do
-    PCST.refreshCharacterSheetsForColor(color)
-  end
-  local Coterie = require("core.coterie")
-  if Coterie.reconcileAll then
-    Coterie.reconcileAll()
-  end
-  -- TOR-371: keep Court page 3 in sync with ST project mutations.
-  local Projects = require("core.projects")
-  if Projects.reconcileCourtProjectsAll then
-    Projects.reconcileCourtProjectsAll()
-  end
+  Projects.refreshAfterMutation()
 end
 
 function PJP.refresh()
@@ -670,7 +659,7 @@ function PJP.onLaunchR()
   })
 end
 
---- Present-day clock moved: refresh open editor die + all PC sheets (page 5).
+--- Present-day clock moved: refresh open editor die + all PC sheets (page 5) + Court project cards.
 function PJP.onPresentDayChanged()
   if editingId ~= nil then
     refreshDerivedFields()
@@ -678,6 +667,7 @@ function PJP.onPresentDayChanged()
   for _, color in ipairs(C.PlayerColors) do
     PCST.refreshCharacterSheetsForColor(color)
   end
+  Projects.reconcileCourtProjectsAll()
 end
 
 return PJP
