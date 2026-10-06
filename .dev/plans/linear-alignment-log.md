@@ -829,6 +829,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-10-02 | SHIP | TOR-650 | Hunger image is written after UI.show, and a full UI remount repaints hunger. relatedTo TOR-637. Pending Save & Play. |
 | 2026-10-04 | SHIP | TOR-652 | INBOX Immediate: `HUDBF.beginTransition` collapses the whole Storyteller toolbar before every blindfold (skybox-only Apply Location + Memoriam Advance were missing it). Awaiting Author Review. Commit 81a15ef8. |
 | 2026-10-04 | CLOSE | TOR-647, TOR-648, TOR-649, TOR-650, TOR-651 | PAVE ✅ → Fully Complete. No open dependents. |
+| 2026-10-06 | CLOSE | TOR-652 | PAVE ✅ → Fully Complete. No dependents. INBOX and PAV both empty (only TOR-439 ⏰ multiclient gate remains). |
 | 2026-10-04 | CLOSE | TOR-644 | PAVE ✅ → Complete (KEEP): author note that the Downtime session number is still pushed off the top; author will adjust the XML by hand. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

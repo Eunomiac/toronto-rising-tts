@@ -18,19 +18,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-04 — TOR-652 (Storyteller toolbar closes before every blindfold) added; TOR-644 / TOR-647 / TOR-648 / TOR-649 / TOR-650 / TOR-651 cleared._
-
-### UI & HUD
-
-#### TOR-652 — The Storyteller toolbar closes before every blindfold
-
-**How to verify:** Save & Play. Open the Scenes panel, choose only a skybox (no site), and click Apply Location. The whole Storyteller toolbar, tabs included, should close before the blindfold slides down.
-
-Then, during Play, open the Memoriam modal and click Advance. The toolbar should also be closed when the Memoriam cover drops.
-
-If you have a moment, also try one ordinary scene Apply, one table button, and one phase Advance. Each should still close the toolbar first, as before.
-
-**Context:** Most Storyteller buttons that start a blindfold already closed the toolbar. The skybox-only Apply Location and the Memoriam Advance did not. The blindfold itself now closes the toolbar as it starts, so every transition, including future ones, behaves the same way.
+_Last populated: 2026-10-06 — TOR-652 (Storyteller toolbar closes before every blindfold) cleared._
 
 ### High — session / join / first-load
 
