@@ -15,6 +15,9 @@ local MAX_DOMAIN_DOTS = 5
 --- Must match `lib/princes_court_trait_xml.ttslua` build opts so blank `setAttribute` ids align with baked XML.
 local TRAIT_ACTIVE_OPTS = { visibilityMode = "active" }
 
+--- Blank-slot XML blocks are baked from `makeBlankEntry()`, so they carry exactly this many dot images.
+local BLANK_BLOCK_BAKED_DOTS = CoterieHydrate.makeBlankEntry().max
+
 --- Sections baked with only in-session blank slots: divider starts `active="false"` and shows once any slot is used.
 local RUNTIME_SECTION_DIVIDERS = {
   { arrayKey = "havenBackgrounds", id = "divider_havenBackgrounds" },
@@ -69,6 +72,7 @@ local function addUpdate(updates, id, attrs)
 end
 
 --- Push dot `image` (+ `active`) updates for every included trait row (real + blank).
+--- Blank slots hide baked dots above `max`; real rows only have `max` dots baked.
 --- @param updates table[]
 --- @param entry table
 --- @param pageNum integer
@@ -87,6 +91,11 @@ local function addTraitDotUpdates(updates, entry, pageNum, sectionKey, traitInde
       image = img,
       active = "true",
     })
+  end
+  if entry.blank == true then
+    for slot = slotCount + 1, BLANK_BLOCK_BAKED_DOTS do
+      addUpdate(updates, traitDotId(pageNum, sectionKey, traitIndex, slot), { active = "false" })
+    end
   end
 end
 
