@@ -87,7 +87,8 @@ export const emptySeat = (color: SeatColor): SeatSnapshot => ({
   humanityMax: 7,
   torpor: false,
   hudFrenzy: false,
-  hudBlindfold: false
+  hudBlindfold: false,
+  projectStakes: {}
 });
 
 export const fixtureSnapshot = (): SheetSnapshot => ({

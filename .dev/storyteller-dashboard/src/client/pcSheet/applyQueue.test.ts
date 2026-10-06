@@ -57,7 +57,8 @@ const okSnapshot = (hungerValue: number): SheetSnapshot => ({
     humanityMax: 7,
     torpor: false,
     hudFrenzy: false,
-    hudBlindfold: false
+    hudBlindfold: false,
+    projectStakes: {}
   }]
 });
 

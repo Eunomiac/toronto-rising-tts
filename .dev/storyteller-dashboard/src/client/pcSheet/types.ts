@@ -67,6 +67,8 @@ export type SeatSnapshot = {
   readonly torpor: boolean;
   readonly hudFrenzy: boolean;
   readonly hudBlindfold: boolean;
+  /** Advantage dots held by holding-phase projects, keyed `${name}|${focus}`. */
+  readonly projectStakes: Record<string, number>;
 };
 
 export type SheetSnapshot = {
@@ -87,6 +89,21 @@ export type DamageMode =
 
 export type PowerDraft = { name: string; level: number; notes: string };
 
+export type AdvantageType = "backgrounds" | "merits" | "flaws";
+
+export type AdvantageDraft = {
+  name: string;
+  focus: string;
+  base: number;
+  max: number;
+  temp: number;
+  disabled: number;
+  description: string[];
+  rules: string[];
+  source?: { book: string; page: number };
+  sheetDisplay: boolean;
+};
+
 export type ApplyCommand =
   | { op: "dotDelta"; color: SeatColor; family: "attributes" | "skills" | "bloodPotency" | "disciplines"; key: string; field: "base" | "temp" | "disabled"; delta: number }
   | { op: "disciplineAdd"; color: SeatColor; key: string }
@@ -95,6 +112,9 @@ export type ApplyCommand =
   | { op: "disciplinePowerRemove"; color: SeatColor; key: string; index: number }
   | { op: "ritualUpsert"; color: SeatColor; kind: "rituals" | "ceremonies"; index?: number; entry: PowerDraft }
   | { op: "ritualRemove"; color: SeatColor; kind: "rituals" | "ceremonies"; index: number }
+  | { op: "advantageUpsert"; color: SeatColor; type: AdvantageType; index?: number; fromType?: AdvantageType; expectName?: string; entry: AdvantageDraft }
+  | { op: "advantageDelete"; color: SeatColor; type: AdvantageType; index: number; expectName: string }
+  | { op: "advantageDotDelta"; color: SeatColor; type: AdvantageType; index: number; expectName: string; field: "base" | "temp" | "disabled"; delta: number }
   | { op: "badgeDelta"; color: SeatColor; key: string; delta: number }
   | { op: "damage"; color: SeatColor; which: "health" | "willpower"; mode: DamageMode }
   | { op: "humanity"; color: SeatColor; kind: "stain" | "base" | "remorse"; delta?: number; remorse?: "pass" | "fail" }
@@ -116,6 +136,7 @@ export type RingTarget =
   | { kind: "trait"; family: "attributes" | "skills"; key: string }
   | { kind: "bloodPotency" }
   | { kind: "discipline"; key: string }
+  | { kind: "advantage"; type: AdvantageType; index: number; name: string }
   | { kind: "damage"; which: "health" | "willpower" }
   | { kind: "humanity" };
 

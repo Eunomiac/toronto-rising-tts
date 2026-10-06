@@ -3,6 +3,8 @@
  * (Pages 2, 3 and 6 read these; the host stays the source of truth).
  */
 
+import type { DotFill, DotSlot } from "./paint.js";
+
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -276,8 +278,88 @@ export const formatSourceLine = (source?: AdvantageSource): string | null => {
   return source.page ? `${source.book}, p.${source.page}` : source.book;
 };
 
-/** Stake key shared with the Lua snapshot (`projectStakes`). */
-export const advantageStakeKey = (name: string, focus: string): string => `${name}|${focus.trim()}`;
+/** Stake key shared with the Lua snapshot (`projectStakes`); focus is compared untrimmed there. */
+export const advantageStakeKey = (name: string, focus: string): string => `${name}|${focus}`;
+
+export const MAX_TITLE_DOTS = 6;
+
+/** Status entries hidden from the sheet render as the Camarilla / Clan dot strip. */
+export const isStatusEntry = (entry: AdvantageEntry): boolean => entry.name === "Status" && !entry.sheetDisplay;
+
+/** Same clamps as `TRAIT.slotBaseTempDisabledProject`. */
+export const traitCounts = (entry: AdvantageEntry, projectQty: number) => {
+  const rawSlots = entry.max ?? entry.base;
+  const slots = Math.min(MAX_TITLE_DOTS, Math.max(1, Math.floor(rawSlots)));
+  const base = Math.max(0, Math.min(entry.base, slots));
+  const temp = Math.min(Math.max(0, entry.temp), Math.max(0, slots - base));
+  const filled = base + temp;
+  const disabled = Math.min(Math.max(0, entry.disabled), filled);
+  const project = Math.min(Math.max(0, projectQty), Math.max(0, filled - disabled));
+  return { slots, base, temp, disabled, project };
+};
+
+/**
+ * Title-bar dots in visual left-to-right order. The TTS title bar is mirrored (slot `i` sits at
+ * visual position `slots - i`), so this walks `TRAIT.dotImageForTraitSlot` with that index:
+ * base, temp, project-staked, disabled, then blanks.
+ */
+export const traitDotSlots = (entry: AdvantageEntry, projectQty: number): readonly DotSlot[] => {
+  const { slots, base, temp, disabled, project } = traitCounts(entry, projectQty);
+  const filled = base + temp;
+  const firstFilled = slots - filled + 1;
+  const fill: DotFill = entry.category === "flaws" ? "dot_red" : "dot_yellow";
+  return Array.from({ length: slots }, (_, visual): DotSlot => {
+    const i = slots - visual;
+    if (filled <= 0 || i < firstFilled) {
+      return { active: false };
+    }
+    if (i < firstFilled + disabled) {
+      return { active: true, image: "dot_grey_red_x" };
+    }
+    if (i < firstFilled + disabled + project) {
+      return { active: true, image: "dot_project" };
+    }
+    return { active: true, image: i <= slots - base ? "dot_white" : fill };
+  });
+};
+
+/** Status strip (mirrors `TRAIT.dotImageForDomainSlot`): left to right, filled slots only. */
+export const statusDotSlots = (entry: AdvantageEntry, projectQty: number): readonly DotSlot[] => {
+  const { base, temp, disabled, project } = traitCounts({ ...entry, max: entry.max ?? 5 }, projectQty);
+  const filled = base + temp;
+  return Array.from({ length: filled }, (_, index) => {
+    const slot = index + 1;
+    if (slot > filled - disabled) {
+      return { active: true, image: "dot_grey_red_x" };
+    }
+    if (slot > filled - disabled - project) {
+      return { active: true, image: "dot_project" };
+    }
+    return { active: true, image: slot <= base ? "dot_yellow" : "dot_white" };
+  });
+};
+
+/** Packing weight (`TRAIT.buildTraitBlockParams`): title 10, description line 3, rule line 2, source 2. */
+export const advantageWeight = (entry: AdvantageEntry): number =>
+  10 + entry.description.length * 3 + entry.rules.length * 2 + (formatSourceLine(entry.source) ? 2 : 0);
+
+/** Heaviest first, each into the lightest of three columns (`packItemsGreedy`). */
+export const packColumns = <T>(items: readonly T[], weight: (item: T) => number): readonly [T[], T[], T[]] => {
+  const columns: [T[], T[], T[]] = [[], [], []];
+  const totals = [0, 0, 0];
+  const sorted = [...items].sort((a, b) => weight(b) - weight(a));
+  for (const item of sorted) {
+    let best = 0;
+    for (let c = 1; c < 3; c += 1) {
+      if ((totals[c] ?? 0) < (totals[best] ?? 0)) {
+        best = c;
+      }
+    }
+    columns[best]?.push(item);
+    totals[best] = (totals[best] ?? 0) + weight(item);
+  }
+  return columns;
+};
 
 // ---------------------------------------------------------------- Experience Log
 

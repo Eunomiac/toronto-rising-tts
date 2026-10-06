@@ -119,6 +119,23 @@ export const actionsForRing = (seat: SeatSnapshot, target: RingTarget): readonly
   if (target.kind === "discipline") {
     return traitButtons(seat, "disciplines", target.key, false);
   }
+  if (target.kind === "advantage") {
+    const { type, index, name } = target;
+    const nudge = (field: "base" | "temp" | "disabled", delta: number): ApplyCommand => ({
+      op: "advantageDotDelta",
+      color: seat.color,
+      type,
+      index,
+      expectName: name,
+      field,
+      delta
+    });
+    return [
+      { id: "base", label: "Base", image: "buttons/trait_base.webp", left: nudge("base", 1), right: nudge("base", -1) },
+      { id: "temp", label: "Temp", image: "buttons/trait_temp.webp", left: nudge("temp", 1), right: nudge("temp", -1) },
+      { id: "disable", label: "Disable", image: "buttons/trait_disable.webp", left: nudge("disabled", 1), right: nudge("disabled", -1) }
+    ];
+  }
   if (target.kind === "damage") {
     return damageButtons(seat, target.which);
   }

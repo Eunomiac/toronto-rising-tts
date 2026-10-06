@@ -1,6 +1,6 @@
 import type { Rating, Tracker } from "./types.js";
 
-export type DotFill = "dot_yellow" | "dot_white" | "dot_grey" | "dot_red";
+export type DotFill = "dot_yellow" | "dot_white" | "dot_grey" | "dot_red" | "dot_grey_red_x" | "dot_project";
 
 export type DotSlot = {
   readonly active: boolean;

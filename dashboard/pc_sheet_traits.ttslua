@@ -1,16 +1,22 @@
 --[[
-  Storyteller Dashboard PCs tab — Page 2 (disciplines, powers, rituals, ceremonies) apply ops.
+  Storyteller Dashboard PCs tab — Page 2 (disciplines, powers, rituals, ceremonies) and
+  Page 3 (backgrounds, merits, flaws) apply ops plus the `projectStakes` snapshot field.
   Registered into dashboard.pc_sheet; every op returns nil on success or a plain-English error.
-  Page limits mirror lib/csheet_page2_xml.ttslua (it errors past them).
+  Page 2 limits mirror lib/csheet_page2_xml.ttslua (it errors past them).
 ]]
 
 local M = {}
 
+local C = require("lib.constants")
 local S = require("core.state")
 local PCST = require("core.pc_storyteller_panel")
 local PSC = require("lib.pc_sheet_collect")
+local PCAdv = require("lib.pc_advantages")
+local Projects = require("core.projects")
 
 local MAX_DISCIPLINES = 6
+local MAX_TITLE_DOTS = 6
+local ADVANTAGE_CATEGORY = { backgrounds = true, merits = true, flaws = true }
 local RITUAL_HOST = { rituals = "bloodSorcery", ceremonies = "oblivion" }
 local RITUAL_HOST_LABEL = { rituals = "Blood Sorcery", ceremonies = "Oblivion" }
 
@@ -111,6 +117,78 @@ local function removeListEntry(list, index)
   end
   table.remove(list, idx)
   return nil
+end
+
+local function stringLines(raw)
+  local out = {}
+  if type(raw) ~= "table" then
+    return out
+  end
+  for i = 1, #raw do
+    local line = raw[i]
+    if type(line) == "string" and not line:match("^%s*$") then
+      out[#out + 1] = line
+    end
+  end
+  return out
+end
+
+--- Live advantage row addressed by category + 1-based index; `expectName` guards against
+--- the list shifting under the dashboard (another edit landed first).
+--- @return table|nil entry
+--- @return string|nil err
+local function advantageAt(pid, category, index, expectName)
+  if ADVANTAGE_CATEGORY[category] ~= true then
+    return nil, "Unknown advantage type"
+  end
+  local idx = math.floor(tonumber(index) or 0)
+  local entry = PCAdv.getEntries(pid, category)[idx]
+  if type(entry) ~= "table" then
+    return nil, "That entry no longer exists — refresh and try again"
+  end
+  if type(expectName) == "string" and entry.name ~= expectName then
+    return nil, "That entry changed in TTS — refresh and try again"
+  end
+  return entry, nil
+end
+
+--- Overlay the modal fields onto `base` (keeps fields the modal does not edit, e.g. `blank`, `active`).
+--- @return table|nil entry
+--- @return string|nil err
+local function advantageFromCommand(raw, base)
+  if type(raw) ~= "table" then
+    return nil, "Missing entry"
+  end
+  local name = trim(raw.name)
+  if name == "" then
+    return nil, "Name is required"
+  end
+  local entry = {}
+  for k, v in pairs(base or {}) do
+    entry[k] = v
+  end
+  entry.name = name
+  entry.focus = trim(raw.focus)
+  entry.max = clampInt(raw.max, 1, MAX_TITLE_DOTS)
+  entry.base = clampInt(raw.base, 0, entry.max)
+  entry.temp = clampInt(raw.temp, 0, MAX_TITLE_DOTS)
+  entry.disabled = clampInt(raw.disabled, 0, MAX_TITLE_DOTS)
+  entry.description = stringLines(raw.description)
+  entry.rules = stringLines(raw.rules)
+  if raw.sheetDisplay == false then
+    entry.sheetDisplay = false
+  else
+    entry.sheetDisplay = nil
+  end
+  local source = raw.source
+  local book = type(source) == "table" and trim(source.book) or ""
+  local page = type(source) == "table" and math.floor(tonumber(source.page) or 0) or 0
+  if book ~= "" or page > 0 then
+    entry.source = { book = book, page = page }
+  else
+    entry.source = nil
+  end
+  return entry, nil
 end
 
 M.ops = {}
@@ -233,6 +311,91 @@ M.ops.ritualRemove = function(color, pid, cmd)
   S.setStateVal(row[kind], "playerData", pid, "stats", "disciplines", hostKey, kind)
   afterSheetChange(color)
   return nil
+end
+
+--- Add (no index) or edit (index + fromType) an advantage. Changing type moves the
+--- entry from `fromType` to the end of `type`.
+M.ops.advantageUpsert = function(color, pid, cmd)
+  local category = cmd.type
+  if ADVANTAGE_CATEGORY[category] ~= true then
+    return "Unknown advantage type"
+  end
+  if tonumber(cmd.index) == nil then
+    local entry, err = advantageFromCommand(cmd.entry, nil)
+    if entry == nil then
+      return err
+    end
+    if PCAdv.addEntry(pid, category, entry) == nil then
+      return "Could not add the advantage"
+    end
+    afterSheetChange(color)
+    return nil
+  end
+  local fromType = type(cmd.fromType) == "string" and cmd.fromType or category
+  local existing, findErr = advantageAt(pid, fromType, cmd.index, cmd.expectName)
+  if existing == nil then
+    return findErr
+  end
+  local entry, err = advantageFromCommand(cmd.entry, existing)
+  if entry == nil then
+    return err
+  end
+  if fromType == category then
+    PCAdv.setEntry(pid, category, cmd.index, entry)
+  else
+    PCAdv.deleteEntry(pid, fromType, cmd.index)
+    PCAdv.addEntry(pid, category, entry)
+  end
+  afterSheetChange(color)
+  return nil
+end
+
+M.ops.advantageDelete = function(color, pid, cmd)
+  local existing, err = advantageAt(pid, cmd.type, cmd.index, cmd.expectName)
+  if existing == nil then
+    return err
+  end
+  PCAdv.deleteEntry(pid, cmd.type, cmd.index)
+  afterSheetChange(color)
+  return nil
+end
+
+M.ops.advantageDotDelta = function(color, pid, cmd)
+  local existing, err = advantageAt(pid, cmd.type, cmd.index, cmd.expectName)
+  if existing == nil then
+    return err
+  end
+  local field = cmd.field
+  if field ~= "base" and field ~= "temp" and field ~= "disabled" then
+    return "Invalid advantage dot field"
+  end
+  local maxDots = clampInt(existing.max or MAX_TITLE_DOTS, 1, MAX_TITLE_DOTS)
+  local nextVal = clampInt((tonumber(existing[field]) or 0) + (tonumber(cmd.delta) or 0), 0, maxDots)
+  S.setStateVal(nextVal, "playerData", pid, "stats", cmd.type, math.floor(tonumber(cmd.index)), field)
+  afterSheetChange(color)
+  return nil
+end
+
+--- `projectStakes["<name>|<focus>"] = qty` for this PC's staked advantages (Page 3 `dot_project`).
+function M.snapshotFields(_color, pid, _stats)
+  local catalog = C.PlayerData[pid]
+  local sourceKey = type(catalog) == "table" and catalog.charKey or nil
+  local stakes = {}
+  if type(sourceKey) ~= "string" or sourceKey == "" then
+    return { projectStakes = stakes }
+  end
+  for category in pairs(ADVANTAGE_CATEGORY) do
+    local rows = PCAdv.listVisibleEntries(pid, category)
+    for i = 1, #rows do
+      local entry = rows[i].entry
+      local focus = type(entry.focus) == "string" and entry.focus or ""
+      local qty = Projects.stakeQtyForAdvantage(sourceKey, entry.name, focus, nil)
+      if qty > 0 then
+        stakes[entry.name .. "|" .. focus] = qty
+      end
+    end
+  end
+  return { projectStakes = stakes }
 end
 
 return M

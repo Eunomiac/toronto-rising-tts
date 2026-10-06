@@ -71,6 +71,15 @@ const parseSeat = (value: unknown): SeatSnapshot | null => {
       }
     }
   }
+  // Lua encodes an empty table as [], so only object entries count.
+  const projectStakes: Record<string, number> = {};
+  if (isRecord(value.projectStakes) && !Array.isArray(value.projectStakes)) {
+    for (const [key, qty] of Object.entries(value.projectStakes)) {
+      if (typeof qty === "number" && qty > 0) {
+        projectStakes[key] = qty;
+      }
+    }
+  }
   // Experience Log lives under playerData.xp; seat.xp is banked XP for the jewel.
   const playerData: Record<string, unknown> = isRecord(value.playerData) ? { ...value.playerData } : {};
   const xp = asNumber(value.xp);
@@ -119,7 +128,8 @@ const parseSeat = (value: unknown): SeatSnapshot | null => {
     humanityMax: asNumber(value.humanityMax, asTracker(value.humanity).base),
     torpor: asBool(value.torpor),
     hudFrenzy: asBool(value.hudFrenzy),
-    hudBlindfold: asBool(value.hudBlindfold)
+    hudBlindfold: asBool(value.hudBlindfold),
+    projectStakes
   };
 };
 

@@ -151,6 +151,7 @@ function M.setEntry(pid, category, index, entry)
   return true
 end
 
+--- Append an entry; a missing or blank name becomes a unique "New <Category>" name.
 --- @param pid string
 --- @param category string
 --- @param entry table|nil
@@ -161,7 +162,9 @@ function M.addEntry(pid, category, entry)
   end
   local arr = M.getEntries(pid, category)
   entry = type(entry) == "table" and U.clone(entry, true) or M.makeDefaultEntry(category, M.uniqueDefaultName(category, arr))
-  entry.name = M.uniqueDefaultName(category, arr)
+  if type(entry.name) ~= "string" or entry.name:match("^%s*$") then
+    entry.name = M.uniqueDefaultName(category, arr)
+  end
   arr[#arr + 1] = entry
   S.setStateVal(arr, "playerData", pid, "stats", category)
   return #arr

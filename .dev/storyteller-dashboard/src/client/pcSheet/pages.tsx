@@ -1,5 +1,6 @@
 import type { MouseEvent, ReactElement } from "react";
 import { PageOne } from "./PageOne.js";
+import { PageThree } from "./PageThree.js";
 import { PageTwo } from "./PageTwo.js";
 import type { ApplyCommand, RingTarget, SeatSnapshot, SheetSnapshot } from "./types.js";
 
@@ -47,6 +48,8 @@ export const renderPage = (page: number, ctx: PageContext): ReactElement => {
       );
     case 2:
       return <PageTwo ctx={ctx} />;
+    case 3:
+      return <PageThree ctx={ctx} />;
     default:
       return <Placeholder page={page} side={ctx.side} />;
   }

@@ -43,6 +43,7 @@ const seat = (partial: Partial<SeatSnapshot>): SeatSnapshot => ({
   torpor: false,
   hudFrenzy: false,
   hudBlindfold: false,
+  projectStakes: {},
   ...partial
 });
 

@@ -3,14 +3,65 @@ import {
   advantageTitle,
   canAddRitual,
   formatSourceLine,
+  packColumns,
   parseAdvantages,
   parseDisciplines,
   parseXpLog,
   powersByLevel,
   ritualLayout,
   ritualsOf,
-  unownedDisciplines
+  statusDotSlots,
+  traitDotSlots,
+  unownedDisciplines,
+  type AdvantageEntry
 } from "./sheetData.js";
+
+const advantage = (partial: Partial<AdvantageEntry>): AdvantageEntry => ({
+  category: "merits",
+  index: 1,
+  name: "Test",
+  focus: "",
+  base: 0,
+  temp: 0,
+  disabled: 0,
+  description: [],
+  rules: [],
+  sheetDisplay: true,
+  ...partial
+});
+
+const images = (slots: readonly { active: boolean; image?: string }[]): string[] =>
+  slots.map((slot) => (slot.active ? slot.image ?? "?" : "blank"));
+
+describe("advantage dots", () => {
+  it("paints title-bar dots base then temp from the left, blanks on the right", () => {
+    expect(images(traitDotSlots(advantage({ base: 2, temp: 2, max: 6 }), 0))).toEqual([
+      "dot_yellow", "dot_yellow", "dot_white", "dot_white", "blank", "blank"
+    ]);
+  });
+
+  it("lets disabled then staked dots replace the rightmost filled dots (temp first)", () => {
+    expect(images(traitDotSlots(advantage({ base: 2, temp: 2, disabled: 1, max: 6 }), 1))).toEqual([
+      "dot_yellow", "dot_yellow", "dot_project", "dot_grey_red_x", "blank", "blank"
+    ]);
+  });
+
+  it("uses red for flaws and base as the slot count when max is missing", () => {
+    expect(images(traitDotSlots(advantage({ category: "flaws", base: 2 }), 0))).toEqual(["dot_red", "dot_red"]);
+  });
+
+  it("paints the Status strip left to right with filled slots only", () => {
+    const status = advantage({ category: "backgrounds", name: "Status", base: 2, temp: 1, disabled: 1, sheetDisplay: false });
+    expect(images(statusDotSlots(status, 0))).toEqual(["dot_yellow", "dot_yellow", "dot_grey_red_x"]);
+  });
+});
+
+describe("packColumns", () => {
+  it("drops each item, heaviest first, into the lightest column", () => {
+    const columns = packColumns([5, 30, 12, 10, 3], (n) => n);
+    expect(columns).toEqual([[30], [12, 3], [10, 5]]);
+  });
+});
 
 const playerData = {
   stats: {

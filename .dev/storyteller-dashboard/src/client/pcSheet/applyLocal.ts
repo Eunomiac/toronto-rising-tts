@@ -96,8 +96,26 @@ const patchDiscipline = (seat: SeatSnapshot, key: string, field: "base" | "temp"
   };
 };
 
+/** Same clamps as the Lua `advantageDotDelta`: 0..max (max defaults to 6). */
+const patchAdvantage = (seat: SeatSnapshot, command: Extract<ApplyCommand, { op: "advantageDotDelta" }>): SeatSnapshot => {
+  const stats = isRecord(seat.playerData.stats) ? seat.playerData.stats : {};
+  const list = stats[command.type];
+  const offset = command.index - 1;
+  const rows: unknown[] = Array.isArray(list) ? [...list] : [];
+  const row = rows[offset];
+  if (!isRecord(row) || row.name !== command.expectName) {
+    return seat;
+  }
+  const max = clamp(typeof row.max === "number" ? row.max : 6, 1, 6);
+  const current = typeof row[command.field] === "number" ? row[command.field] as number : 0;
+  rows[offset] = { ...row, [command.field]: clamp(current + command.delta, 0, max) };
+  return { ...seat, playerData: { ...seat.playerData, stats: { ...stats, [command.type]: rows } } };
+};
+
 const patchSeat = (seat: SeatSnapshot, command: ApplyCommand): SeatSnapshot => {
   switch (command.op) {
+    case "advantageDotDelta":
+      return patchAdvantage(seat, command);
     case "dotDelta": {
       if (command.family === "disciplines") {
         return patchDiscipline(seat, command.key, command.field, command.delta);

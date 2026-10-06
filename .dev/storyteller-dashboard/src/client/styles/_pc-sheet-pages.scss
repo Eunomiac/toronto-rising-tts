@@ -211,6 +211,153 @@
   font-weight: 700;
 }
 
+// ---------------------------------------------------------------- Page 3
+
+.pc-page-three {
+  gap: 0.2rem;
+}
+
+.pc-status-strip {
+  display: flex;
+  justify-content: space-around;
+  gap: 1rem;
+  margin-bottom: 0.2rem;
+}
+
+.pc-status-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+
+  button {
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+}
+
+.pc-status-label {
+  color: #e9cf9f;
+  font-family: "Trajan Pro 3", serif;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+
+  &:disabled {
+    opacity: 0.45;
+  }
+}
+
+.pc-status-dots {
+  display: flex;
+  min-height: 0.9rem;
+}
+
+.pc-status-none {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.pc-adv-section .pc-section-title {
+  margin: 0;
+}
+
+.pc-adv-columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  gap: 0.4rem;
+}
+
+.pc-adv-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.pc-adv-box {
+  padding: 0.3rem 0.4rem 0.25rem;
+  border: 1px solid #cb995c;
+  background: #000000;
+  color: #dddddd;
+  font-family: "Franklin Gothic Demi Cond", sans-serif;
+  font-size: 0.66rem;
+  line-height: 1.25;
+}
+
+.pc-adv-title {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+
+  button {
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+}
+
+.pc-adv-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: #ffffff;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &:hover {
+    color: #fce5c1;
+  }
+}
+
+.pc-adv-dots {
+  flex: 0 0 auto;
+  display: flex;
+}
+
+.pc-adv-flavor,
+.pc-adv-rules {
+  margin: 0.2rem 0 0;
+  white-space: pre-line;
+}
+
+.pc-adv-flavor {
+  color: #ffffff;
+  font-style: italic;
+  font-weight: 700;
+}
+
+.pc-adv-source {
+  margin: 0.15rem 0 0;
+  color: rgba(221, 221, 221, 0.6);
+  font-size: 0.56rem;
+  text-align: right;
+}
+
+.pc-adv-hidden {
+  margin: 0.3rem 0 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: "Perpetua", serif;
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+.pc-adv-chip {
+  margin: 0 0.25rem;
+  padding: 0.05rem 0.35rem;
+  border: 1px dashed rgba(196, 161, 90, 0.5);
+  background: transparent;
+  color: #e9cf9f;
+  font-family: "Franklin Gothic Demi Cond", sans-serif;
+  font-size: 0.6rem;
+  font-style: normal;
+}
+
 .pc-empty-note {
   margin: 0.4rem 0;
   color: rgba(255, 255, 255, 0.45);
