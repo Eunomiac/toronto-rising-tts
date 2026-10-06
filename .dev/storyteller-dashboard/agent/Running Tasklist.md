@@ -59,6 +59,8 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 ✔️ SD-Sheet Page 6. Experience Log port of `lib/csheet_xp_display` (all sessions, live highlight, summation line), Experience popup from the XP jewel with Apply / Apply to All / Undo / Undo All (Lua half: TOR-654).
 ✔️ SD-TermImages. Right-click a tagged term → paste (Ctrl+V) or drop an image → hover shows it ever after. One image per term name, shared everywhere (`termProps(kind, name)` → `data-term`). Stored in git-ignored `data/term-images/` via `/api/term-images` (PUT / DELETE / GET) and served from `/term-images/`. Tagged so far: sheet Pages 1–4 (attributes, skills, specialties, trackers except Hunger, disciplines, powers, rituals, ceremonies, advantages, relationship names). Shift+right-click keeps the browser menu.
 
+✔️ SD-TermTooltipText. Term tooltips gain optional markdown text (popup textarea + live preview; `PUT /api/term-images/text`; `DELETE ?part=image` clears just the image). Tooltip layout follows the image shape (landscape → text below, portrait → text column right) and placement flips at edges then clamps inside the viewport.
+
 SD-Push. Live push channel from TTS to the dashboard (no polling). Design draft: [Live Push Channel.md](../../Storyteller%20Dashboard%20Docs/Live%20Push%20Channel.md).
 🤖 Waiting on author review of § 8 "Open decisions" before building Phase 1 (PCs live). The Lua half will get a Linear issue when implementation starts.
 

@@ -82,18 +82,31 @@ const readRequestBuffer = async (request: IncomingMessage, maxBytes: number): Pr
 
 const handleTermImages = async (request: IncomingMessage, response: ServerResponse, url: URL): Promise<void> => {
   try {
+    const key = url.searchParams.get("key") ?? "";
+    if (url.pathname === "/api/term-images/text") {
+      if (request.method !== "PUT") {
+        sendJson(response, 405, { error: "Method not allowed" });
+        return;
+      }
+      const body = await readRequestJson(request);
+      const text = typeof body === "object" && body !== null ? (body as { text?: unknown }).text : undefined;
+      if (typeof text !== "string") {
+        throw new TermImageError("Expected a JSON body with a text string.", 400);
+      }
+      sendJson(response, 200, await termImages.putText(key, text));
+      return;
+    }
     if (request.method === "GET") {
       sendJson(response, 200, await termImages.list());
       return;
     }
-    const key = url.searchParams.get("key") ?? "";
     if (request.method === "PUT") {
       const bytes = await readRequestBuffer(request, MAX_TERM_IMAGE_BYTES);
       sendJson(response, 200, await termImages.put(key, request.headers["content-type"] ?? "", bytes));
       return;
     }
     if (request.method === "DELETE") {
-      sendJson(response, 200, await termImages.remove(key));
+      sendJson(response, 200, await termImages.remove(key, url.searchParams.get("part") === "image" ? "image" : "all"));
       return;
     }
     sendJson(response, 405, { error: "Method not allowed" });
@@ -341,7 +354,7 @@ const tryHandleDedicatedRoutes = async (request: IncomingMessage, response: Serv
   const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "127.0.0.1"}`);
   const pathname = url.pathname;
 
-  if (pathname === "/api/term-images") {
+  if (pathname === "/api/term-images" || pathname === "/api/term-images/text") {
     await handleTermImages(request, response, url);
     return true;
   }

@@ -1,11 +1,25 @@
-import { useEffect, useRef, useState, type ReactElement } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactElement } from "react";
 import { createPortal } from "react-dom";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { Field } from "../pcSheet/fields.js";
 import { SheetModal } from "../pcSheet/SheetModal.js";
-import { loadTermImages, removeTermImage, saveTermImage, subscribeTermImages, termImageUrl } from "./store.js";
+import {
+  loadTermImages,
+  removeTermImage,
+  saveTermImage,
+  saveTermText,
+  subscribeTermImages,
+  termTooltip,
+  type TermTooltip
+} from "./store.js";
 
 const ACCEPTED = new Set(["image/png", "image/jpeg", "image/webp", "image/gif"]);
+const EDGE_MARGIN = 8;
+const CURSOR_GAP = 18;
 
 type Target = { readonly key: string; readonly label: string };
+type Orientation = "wide" | "tall";
 
 const termElement = (target: EventTarget | null): HTMLElement | null =>
   target instanceof Element ? target.closest<HTMLElement>("[data-term]") : null;
@@ -27,10 +41,22 @@ const imageFrom = (items: DataTransferItemList | null | undefined, files: FileLi
   return Array.from(files ?? []).find((file) => ACCEPTED.has(file.type)) ?? null;
 };
 
+const isEditable = (target: EventTarget | null): boolean =>
+  target instanceof HTMLElement && (target.isContentEditable || target.tagName === "TEXTAREA" || target.tagName === "INPUT");
+
+/** Markdown with GFM; raw HTML in the text is shown as text, never rendered. */
+const TermMarkdown = ({ text }: { readonly text: string }): ReactElement => (
+  <div className="term-md">
+    <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
+  </div>
+);
+
 const TermImageModal = ({ target, onClose }: { readonly target: Target; readonly onClose: () => void }): ReactElement => {
-  const current = termImageUrl(target.key);
+  const current = termTooltip(target.key);
   const [image, setImage] = useState<File | null>(null);
+  const [clearImage, setClearImage] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
+  const [text, setText] = useState(current?.text ?? "");
   const [notice, setNotice] = useState<string | null>(null);
 
   useEffect(() => {
@@ -49,8 +75,9 @@ const TermImageModal = ({ target, onClose }: { readonly target: Target; readonly
       if (file) {
         event.preventDefault();
         setImage(file);
+        setClearImage(false);
         setNotice(null);
-      } else {
+      } else if (!isEditable(event.target)) {
         setNotice("The clipboard has no image. Copy an image (or a screenshot) and press Ctrl+V again.");
       }
     };
@@ -58,21 +85,31 @@ const TermImageModal = ({ target, onClose }: { readonly target: Target; readonly
     return () => window.removeEventListener("paste", onPaste);
   }, []);
 
-  const shown = preview ?? current;
+  const keptImage = clearImage ? undefined : current?.imageUrl;
+  const shown = preview ?? keptImage;
   return (
     <SheetModal
       title={target.label}
-      subtitle={`Tooltip image · ${target.key}`}
-      submitLabel={current ? "Replace" : "Save"}
+      subtitle={`Tooltip · ${target.key}`}
+      submitLabel={current ? "Update" : "Save"}
+      wide
       onClose={onClose}
       onSubmit={async () => {
-        if (!image) {
-          throw new Error("Paste an image first (Ctrl+V).");
+        const nextText = text.replace(/\s+$/, "");
+        if (!image && !keptImage && nextText === "") {
+          throw new Error(current ? "Nothing would be left — use Remove tooltip instead." : "Paste an image or write some text first.");
         }
-        await saveTermImage(target.key, image);
+        if (nextText !== (current?.text ?? "")) {
+          await saveTermText(target.key, nextText);
+        }
+        if (image) {
+          await saveTermImage(target.key, image);
+        } else if (clearImage && current?.imageUrl) {
+          await removeTermImage(target.key, "image");
+        }
         onClose();
       }}
-      {...(current ? { onDelete: async () => { await removeTermImage(target.key); onClose(); }, deleteLabel: "Remove image" } : {})}
+      {...(current ? { onDelete: async () => { await removeTermImage(target.key); onClose(); }, deleteLabel: "Remove tooltip" } : {})}
     >
       <div
         className="term-image-drop"
@@ -82,47 +119,84 @@ const TermImageModal = ({ target, onClose }: { readonly target: Target; readonly
           const file = imageFrom(event.dataTransfer.items, event.dataTransfer.files);
           if (file) {
             setImage(file);
+            setClearImage(false);
             setNotice(null);
           }
         }}
       >
         {shown ? <img src={shown} alt={target.label} /> : <p>Press <kbd>Ctrl</kbd>+<kbd>V</kbd> to paste an image, or drop an image file here.</p>}
-        {preview && current ? <span className="term-image-badge">New — not saved yet</span> : null}
+        {preview ? <span className="term-image-badge">New — not saved yet</span> : null}
+        {shown ? (
+          <button
+            type="button"
+            className="term-image-clear"
+            onClick={() => {
+              setImage(null);
+              setClearImage(true);
+            }}
+          >
+            Clear image
+          </button>
+        ) : null}
       </div>
       {notice ? <p className="sheet-modal-note">{notice}</p> : null}
+      <Field label="Tooltip text" hint="Markdown: **bold**, *italic*, # headings, - lists, tables. Ctrl+Enter saves.">
+        <textarea
+          className="sheet-input term-md-input"
+          rows={10}
+          value={text}
+          placeholder="Optional notes shown with the image."
+          onChange={(event) => setText(event.target.value)}
+        />
+      </Field>
+      <div className="term-md-preview">
+        <span className="sheet-field-label">Preview</span>
+        {text.trim() !== "" ? <TermMarkdown text={text} /> : <p className="term-md-empty">Nothing to preview yet.</p>}
+      </div>
       <p className="sheet-modal-note">Shared by every “{target.label}” of this kind on the dashboard. Shift+right-click opens the normal browser menu.</p>
     </SheetModal>
   );
 };
 
-/** Mount once: right-click on `[data-term]` opens the paste popup; hover shows the saved image. */
+/** Mount once: right-click on `[data-term]` opens the tooltip editor; hover shows the saved image and text. */
 export const TermImageLayer = (): ReactElement | null => {
   const [editing, setEditing] = useState<Target | null>(null);
-  const [tipUrl, setTipUrl] = useState<string | null>(null);
+  const [tip, setTip] = useState<TermTooltip | null>(null);
+  const [shape, setShape] = useState<{ readonly url: string; readonly orientation: Orientation } | null>(null);
   const tipRef = useRef<HTMLDivElement>(null);
   const hoverRef = useRef<HTMLElement | null>(null);
   const pointer = useRef({ x: 0, y: 0 });
 
+  /** Beside the cursor, flipped to the other side when it would cross an edge, then clamped inside the viewport. */
+  const place = (): void => {
+    const el = tipRef.current;
+    if (!el) {
+      return;
+    }
+    const { x, y } = pointer.current;
+    const viewW = document.documentElement.clientWidth;
+    const viewH = document.documentElement.clientHeight;
+    const w = el.offsetWidth;
+    const h = el.offsetHeight;
+    const axis = (at: number, size: number, view: number): number => {
+      let start = at + CURSOR_GAP;
+      if (start + size > view - EDGE_MARGIN && at - CURSOR_GAP - size >= EDGE_MARGIN) {
+        start = at - CURSOR_GAP - size;
+      }
+      return Math.max(EDGE_MARGIN, Math.min(start, view - EDGE_MARGIN - size));
+    };
+    el.style.left = `${axis(x, w, viewW)}px`;
+    el.style.top = `${axis(y, h, viewH)}px`;
+  };
+  const placeRef = useRef(place);
+  placeRef.current = place;
+
   useEffect(() => {
     loadTermImages().catch((error: unknown) => console.error("Term images:", error));
 
-    const place = (): void => {
-      const tip = tipRef.current;
-      if (!tip) {
-        return;
-      }
-      const { x, y } = pointer.current;
-      const flipX = x > window.innerWidth / 2;
-      const flipY = y > window.innerHeight / 2;
-      tip.style.left = `${x}px`;
-      tip.style.top = `${y}px`;
-      tip.style.transform = `translate(${flipX ? "calc(-100% - 18px)" : "18px"}, ${flipY ? "calc(-100% - 18px)" : "18px"})`;
-    };
-
     const refreshTip = (): void => {
-      const el = hoverRef.current;
-      const key = el?.dataset.term;
-      setTipUrl(key ? termImageUrl(key) ?? null : null);
+      const key = hoverRef.current?.dataset.term;
+      setTip(key ? termTooltip(key) ?? null : null);
     };
 
     const onOver = (event: MouseEvent): void => {
@@ -133,18 +207,18 @@ export const TermImageLayer = (): ReactElement | null => {
       hoverRef.current = el;
       pointer.current = { x: event.clientX, y: event.clientY };
       refreshTip();
-      place();
+      placeRef.current();
     };
     const onMove = (event: MouseEvent): void => {
       if (hoverRef.current) {
         pointer.current = { x: event.clientX, y: event.clientY };
-        place();
+        placeRef.current();
       }
     };
     const onLeave = (event: MouseEvent): void => {
       if (event.relatedTarget === null) {
         hoverRef.current = null;
-        setTipUrl(null);
+        setTip(null);
       }
     };
     const onContext = (event: MouseEvent): void => {
@@ -158,7 +232,7 @@ export const TermImageLayer = (): ReactElement | null => {
       }
       event.preventDefault();
       hoverRef.current = null;
-      setTipUrl(null);
+      setTip(null);
       setEditing(target);
     };
 
@@ -176,14 +250,36 @@ export const TermImageLayer = (): ReactElement | null => {
     };
   }, []);
 
-  const tip = (
-    <div ref={tipRef} className={`term-image-tip${tipUrl && !editing ? " on" : ""}`} aria-hidden="true">
-      {tipUrl ? <img src={tipUrl} alt="" /> : null}
+  const orientation = shape !== null && shape.url === tip?.imageUrl ? shape.orientation : null;
+  useLayoutEffect(() => place(), [tip, orientation]);
+
+  const measure = useCallback((img: HTMLImageElement | null): void => {
+    if (!img?.complete || img.naturalWidth === 0) {
+      return;
+    }
+    const url = img.getAttribute("src") ?? "";
+    const next: Orientation = img.naturalWidth >= img.naturalHeight ? "wide" : "tall";
+    setShape((prev) => (prev?.url === url && prev.orientation === next ? prev : { url, orientation: next }));
+  }, []);
+
+  const ready = tip !== null && !editing && (!tip.imageUrl || orientation !== null);
+  const classes = [
+    "term-image-tip",
+    ready ? "on" : "",
+    tip?.imageUrl ? orientation ?? "" : "text-only",
+    tip?.text ? "has-text" : ""
+  ].filter(Boolean).join(" ");
+  const tipNode = (
+    <div ref={tipRef} className={classes} aria-hidden="true">
+      {tip?.imageUrl ? (
+        <img key={tip.imageUrl} ref={measure} src={tip.imageUrl} alt="" onLoad={(event) => measure(event.currentTarget)} />
+      ) : null}
+      {tip?.text ? <TermMarkdown text={tip.text} /> : null}
     </div>
   );
   return (
     <>
-      {createPortal(tip, document.body)}
+      {createPortal(tipNode, document.body)}
       {editing ? <TermImageModal target={editing} onClose={() => setEditing(null)} /> : null}
     </>
   );

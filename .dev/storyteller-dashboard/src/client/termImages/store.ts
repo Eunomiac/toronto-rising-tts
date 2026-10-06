@@ -1,11 +1,13 @@
 import { normalizeTermKey, termKey } from "../../shared/termKey.js";
 
 /**
- * Clipboard-image tooltips: any element with `data-term` (see `termProps`) can carry a pasted image.
+ * Term tooltips: any element with `data-term` (see `termProps`) can carry a pasted image and/or markdown text.
  * Index lives on the dashboard server (`/api/term-images`); images are served from `/term-images/`.
  */
 
-type Entry = { readonly file: string; readonly updatedAt: string };
+type Entry = { readonly file?: string; readonly text?: string; readonly updatedAt: string };
+
+export type TermTooltip = { readonly imageUrl?: string; readonly text?: string };
 
 let index: Readonly<Record<string, Entry>> = {};
 const listeners = new Set<() => void>();
@@ -15,7 +17,11 @@ const setIndex = (value: unknown): void => {
   const next: Record<string, Entry> = {};
   if (typeof terms === "object" && terms !== null) {
     for (const [key, entry] of Object.entries(terms)) {
-      if (typeof entry === "object" && entry !== null && typeof (entry as Entry).file === "string") {
+      if (typeof entry !== "object" || entry === null) {
+        continue;
+      }
+      const { file, text } = entry as Entry;
+      if (typeof file === "string" || typeof text === "string") {
         next[key] = entry as Entry;
       }
     }
@@ -35,13 +41,22 @@ const readJson = async (response: Response): Promise<unknown> => {
   return body;
 };
 
+const keyParam = (key: string): string => `key=${encodeURIComponent(normalizeTermKey(key))}`;
+
 export const loadTermImages = async (): Promise<void> => {
   setIndex(await readJson(await fetch("/api/term-images")));
 };
 
-export const termImageUrl = (key: string): string | undefined => {
+/** Saved tooltip content for a term, or undefined when nothing is saved. */
+export const termTooltip = (key: string): TermTooltip | undefined => {
   const entry = index[normalizeTermKey(key)];
-  return entry ? `/term-images/${encodeURIComponent(entry.file)}` : undefined;
+  if (!entry) {
+    return undefined;
+  }
+  return {
+    ...(entry.file ? { imageUrl: `/term-images/${encodeURIComponent(entry.file)}` } : {}),
+    ...(entry.text ? { text: entry.text } : {})
+  };
 };
 
 export const subscribeTermImages = (listener: () => void): (() => void) => {
@@ -50,7 +65,7 @@ export const subscribeTermImages = (listener: () => void): (() => void) => {
 };
 
 export const saveTermImage = async (key: string, image: Blob): Promise<void> => {
-  const response = await fetch(`/api/term-images?key=${encodeURIComponent(normalizeTermKey(key))}`, {
+  const response = await fetch(`/api/term-images?${keyParam(key)}`, {
     method: "PUT",
     headers: { "Content-Type": image.type },
     body: image
@@ -58,11 +73,21 @@ export const saveTermImage = async (key: string, image: Blob): Promise<void> => 
   setIndex(await readJson(response));
 };
 
-export const removeTermImage = async (key: string): Promise<void> => {
-  const response = await fetch(`/api/term-images?key=${encodeURIComponent(normalizeTermKey(key))}`, { method: "DELETE" });
+/** Blank text clears the term's text (the image, if any, stays). */
+export const saveTermText = async (key: string, text: string): Promise<void> => {
+  const response = await fetch(`/api/term-images/text?${keyParam(key)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text })
+  });
   setIndex(await readJson(response));
 };
 
-/** Spread onto any element to make it right-click-able for a pasted tooltip image. */
+export const removeTermImage = async (key: string, part: "all" | "image" = "all"): Promise<void> => {
+  const response = await fetch(`/api/term-images?${keyParam(key)}${part === "image" ? "&part=image" : ""}`, { method: "DELETE" });
+  setIndex(await readJson(response));
+};
+
+/** Spread onto any element to make it right-click-able for a tooltip image / text. */
 export const termProps = (kind: string, name: string, label: string = name): Record<string, string> =>
   name.trim() === "" ? {} : { "data-term": termKey(kind, name), "data-term-label": label };

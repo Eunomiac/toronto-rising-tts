@@ -49,6 +49,24 @@ describe("createTermImageStore", () => {
     expect(await readdir(dir)).toEqual(["index.json"]);
   });
 
+  it("keeps text and image independently", async () => {
+    const store = createTermImageStore(dir);
+    const textOnly = await store.putText("power:compel", "**Bold** line\n\n");
+    expect(textOnly.terms["power:compel"]).toMatchObject({ text: "**Bold** line" });
+    expect(textOnly.terms["power:compel"]?.file).toBeUndefined();
+
+    const withImage = await store.put("power:compel", "image/png", PNG);
+    const file = withImage.terms["power:compel"]?.file ?? "";
+    expect(withImage.terms["power:compel"]).toMatchObject({ file, text: "**Bold** line" });
+
+    const imageGone = await store.remove("power:compel", "image");
+    expect(imageGone.terms["power:compel"]).toMatchObject({ text: "**Bold** line" });
+    expect(await readdir(dir)).toEqual(["index.json"]);
+
+    expect((await store.putText("power:compel", "   ")).terms).toEqual({});
+    expect((await store.list()).terms).toEqual({});
+  });
+
   it("rejects bad keys, types and file names", async () => {
     const store = createTermImageStore(dir);
     await expect(store.put("Brawl", "image/png", PNG)).rejects.toBeInstanceOf(TermImageError);

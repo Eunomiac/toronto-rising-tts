@@ -1,25 +1,182 @@
-// Clipboard-image tooltips (src/client/termImages). Any element with data-term can carry one.
+// Term tooltips (src/client/termImages). Any element with data-term can carry an image and/or markdown text.
+
+$tip-edge: 16px; // twice EDGE_MARGIN in TermImageLayer.tsx
 
 .term-image-tip {
   position: fixed;
+  top: 0;
+  left: 0;
   z-index: 2000;
-  display: none;
+  display: flex;
+  gap: 0.6rem;
+  max-width: calc(100vw - #{$tip-edge});
+  max-height: calc(100vh - #{$tip-edge});
+  overflow: hidden;
   padding: 0.25rem;
   border: 1px solid #cb995c;
   border-radius: 0.35rem;
   background: #050507;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.7);
   pointer-events: none;
+  visibility: hidden;
 
   &.on {
-    display: block;
+    visibility: visible;
   }
 
   img {
     display: block;
-    max-width: min(32rem, 42vw);
-    max-height: 70vh;
+    flex: none;
     object-fit: contain;
+  }
+
+  .term-md {
+    min-height: 0;
+    overflow: hidden;
+    padding: 0.2rem 0.45rem 0.35rem;
+  }
+
+  // Landscape image: text below, wrapped to the image width (but never narrower than a readable column).
+  &.wide {
+    flex-direction: column;
+
+    img {
+      align-self: center;
+      max-width: min(32rem, calc(100vw - #{$tip-edge} - 0.5rem));
+      max-height: 70vh;
+    }
+
+    &.has-text {
+      min-width: min(18rem, calc(100vw - #{$tip-edge}));
+
+      img {
+        max-height: 55vh;
+      }
+    }
+
+    .term-md {
+      width: 0;
+      min-width: 100%;
+    }
+  }
+
+  // Portrait image: text in a column to the right.
+  &.tall {
+    flex-direction: row;
+    align-items: flex-start;
+
+    img {
+      max-width: 40vw;
+      max-height: min(70vh, calc(100vh - #{$tip-edge} - 0.5rem));
+    }
+
+    .term-md {
+      width: min(22rem, 40vw);
+      max-height: calc(100vh - #{$tip-edge} - 0.5rem);
+    }
+  }
+
+  &.text-only .term-md {
+    max-width: min(28rem, calc(100vw - #{$tip-edge} - 0.5rem));
+  }
+}
+
+.term-md {
+  color: #fce5c1;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+
+  > :first-child {
+    margin-top: 0;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+
+  p,
+  ul,
+  ol,
+  blockquote,
+  table,
+  pre {
+    margin: 0 0 0.5em;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin: 0.6em 0 0.3em;
+    color: #cb995c;
+    font-size: 1em;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  h1 {
+    font-size: 1.2em;
+  }
+
+  h2 {
+    font-size: 1.08em;
+  }
+
+  ul,
+  ol {
+    padding-left: 1.2em;
+  }
+
+  li + li {
+    margin-top: 0.15em;
+  }
+
+  strong {
+    color: #fff3dd;
+  }
+
+  a {
+    color: #e2b77c;
+  }
+
+  code {
+    padding: 0 0.25em;
+    border-radius: 0.2em;
+    background: rgba(252, 229, 193, 0.1);
+    font-size: 0.88em;
+  }
+
+  pre code {
+    display: block;
+    padding: 0.4em 0.5em;
+    white-space: pre-wrap;
+  }
+
+  blockquote {
+    padding-left: 0.6em;
+    border-left: 2px solid rgba(203, 153, 92, 0.6);
+    color: rgba(252, 229, 193, 0.8);
+  }
+
+  hr {
+    margin: 0.6em 0;
+    border: 0;
+    border-top: 1px solid rgba(203, 153, 92, 0.4);
+  }
+
+  table {
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    padding: 0.15em 0.45em;
+    border: 1px solid rgba(203, 153, 92, 0.35);
+    text-align: left;
   }
 }
 
@@ -40,7 +197,7 @@
 
   img {
     max-width: 100%;
-    max-height: 60vh;
+    max-height: 45vh;
     object-fit: contain;
   }
 
@@ -61,4 +218,41 @@
   background: #132016;
   color: #d5f5c4;
   font-size: 0.72rem;
+}
+
+.term-image-clear {
+  position: absolute;
+  bottom: 0.4rem;
+  right: 0.4rem;
+  font-size: 0.75rem;
+}
+
+.term-md-input {
+  min-height: 12rem;
+  resize: vertical;
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: 0.85rem;
+}
+
+.term-md-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+
+  .term-md {
+    max-height: 18rem;
+    overflow: auto;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid rgba(203, 153, 92, 0.35);
+    border-radius: 0.35rem;
+    background: #050507;
+  }
+}
+
+.term-md-empty {
+  margin: 0;
+  color: rgba(252, 229, 193, 0.5);
+  font-size: 0.85rem;
+  font-style: italic;
 }
