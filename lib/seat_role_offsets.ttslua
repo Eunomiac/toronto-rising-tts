@@ -16,7 +16,7 @@ local offsets = {
       defaultY = 17.0400
     },
     CSHEET_DICE_DRAWER_ANCHOR_ON = {
-      localXZ = { x = 0, z = -45.3241 },
+      localXZ = { x = 0, z = -39.6241 },
       localRotation = { x = 0, y = -180, z = 0 },
       defaultY = 200
     },
@@ -195,28 +195,28 @@ local offsets = {
     },
     Pink = {
       TAROT_BUTTON_ANCHOR_OFF = {
-        localXZ = { x = -8.2958, z = -29.9693 },
+        localXZ = { x = -8.30, z = -29.9693 },
         localRotation = { x = 0, y = 180, z = 0 },
         defaultY = 200
       },
       TAROT_BUTTON_ANCHOR_ON = {
-        localXZ = { x = -8.2958, z = -29.9693 },
+        localXZ = { x = -8.30, z = -29.9693 },
         localRotation = { x = 0, y = 0, z = 180 },
         defaultY = 200
       },
       TAROT_DECK_ANCHOR = {
-        localXZ = { x = -5.6408, z = -36.0964 },
-        localRotation = { x = 17.6000, y = -0.0141, z = 180 },
+        localXZ = { x = -8.30, z = -37.47 },
+        localRotation = { x = 26.97, y = 0, z = 180 },
         defaultY = 200
       },
       TAROT_DRAWER_ANCHOR_OFF = {
-        localXZ = { x = -5.6446, z = -25.3428 },
+        localXZ = { x = -8.30, z = -25.3428 },
         localRotation = { x = 0, y = 180, z = 0 },
         defaultY = 200
       },
       TAROT_DRAWER_ANCHOR_ON = {
-        localXZ = { x = -5.6408, z = -37.0811 },
-        localRotation = { x = -14.6501, y = 180, z = 0 },
+        localXZ = { x = -8.30, z = -37.47 },
+        localRotation = { x = 333, y = 180, z = 0 },
         defaultY = 200
       },
       SEAT_CHAIR = {

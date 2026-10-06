@@ -970,7 +970,7 @@ C.ObjectPositions = {
     },
     off = {
       anchor = G.GUIDS.TAROT_DRAWER_ANCHOR_OFF_PINK,
-      height = { y = 2.41 },
+      height = { y = 0 },
       scale = Vector({ 7.49, 0.01, 5.72 })
     }
   },

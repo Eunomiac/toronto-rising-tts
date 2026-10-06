@@ -5739,6 +5739,11 @@ function HUD_toggleDebugAmbient(player, button, id)
     end
     debugAmbientBright = not debugAmbientBright
     local intensity = debugAmbientBright and 2 or 0
+    if debugAmbientBright then
+        UI.setClass("debug_ambient", "hud_storyteller_button toggled_active")
+    else
+        UI.setClass("debug_ambient", "hud_storyteller_button toggled_inactive")
+    end
     U.changeLighting({ ambient_intensity = intensity })
     broadcastToColor(
         string.format("Debug ambient: %s (intensity=%s).", debugAmbientBright and "bright" or "dark", tostring(intensity)),
@@ -5814,6 +5819,27 @@ function HUD_toggleRunTestPanel(player, button, id)
         return
     end
     U.toggleXmlElement("panel_runtest", button)
+end
+
+function HUD_toggleInteraction(player, button, id)
+  if not requireStorytellerForMutation(player, "HUD_toggleInteraction") then
+      return
+  end
+
+  local isInteractable = button == "-1"
+
+  if isInteractable then
+    UI.setClass("debug_interaction", "hud_storyteller_button toggled_active")
+  else
+    UI.setClass("debug_interaction", "hud_storyteller_button toggled_inactive")
+  end
+
+  for _, guid in ipairs(C.LockedObjects or {}) do
+    local obj = G.getObject(guid)
+    if obj ~= nil then
+      obj.interactable = isInteractable
+    end
+  end
 end
 
 --- Stash step/suite InputField text for campaign arm (`input_runtest_step`).

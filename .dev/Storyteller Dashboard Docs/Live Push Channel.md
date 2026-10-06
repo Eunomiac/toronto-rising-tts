@@ -57,6 +57,8 @@ Note on routing: the gateway's `<@TAG@>` "send only to one client" prefix only w
 
 ### 3.1 Subscribe handshake: no pushes unless the dashboard is listening
 
+> **AUTHOR COMMENT:** I am wary of overengineering this check -- I intend to be running the Storyteller Dashboard as a critical co-component when I run the game and, as such, cannot imagine a time or reason why Toronto Rising would be running in TTS without the dashboard.  I'm okay with a small check that prevents a full crash if the Dashboard happens to be offline or down for some reason, but anything beyond that risks introducing new problems to fix imagined problems that aren't likely to exist. Assume that the Dashboard _will_ be open when the mod is running.
+
 Lua should not send dashboard pushes when no dashboard is running. That keeps the cost at zero for sessions without the dashboard and avoids the open question of what TTS does when nothing is listening on 39998.
 
 1. **On load:** at the end of `onLoad`, Lua sends one unconditional `{ type = "dashboard", topic = "ready", session = <id> }` message. `session` is a fresh random id each time Lua starts.
@@ -80,6 +82,8 @@ sendExternalMessage({
 ```
 
 ### 3.3 Batch changes into one push per frame
+
+> **AUTHOR COMMENT:** I think we can relax the strictness of this somewhat. The payloads sent by TTS are not large nor do they come with much performance overhead (after all, the entire console is pushed to the editor at all times). Before we introduce a major refactor to bundle up payloads or otherwise overengineer them to be hyperefficient, perhaps we should simply see if doing things the naive way 'simply works'.
 
 Hot paths only **mark something dirty**. They never build or send a payload directly.
 
@@ -107,7 +111,13 @@ Important finding: **PC sheet changes do not all pass through `Sync.player`.** F
 | `PCST.refreshRow(color)` | `core/pc_storyteller_panel.ttslua` | in-game Storyteller PCs row; tracker, hunger, desire, connection changes |
 | `PCST.refreshCharacterSheetsForColor(color)` | `core/pc_storyteller_panel.ttslua` | every path that must repaint the CSHEET pages |
 
+> **AUTHOR COMMENT:** This "PC sheet changes do not all pass through `Sync.player`" observation is a great indication of where I would prefer our focus to be. Because there are two ways to  deal with this:
+> 1. We could perform an audit to find out all of the different places in the code where sheet changes are made, and add the necessary code to communicate those changes to the dashboard, as you suggest here:
+
 **Audit required before building:** trace each way PC data changes in play (CSHEET clicks, roll outcomes such as hunger, Rouse, and willpower damage, conditions, XP log, Storyteller panel buttons, dashboard apply). Confirm every one reaches at least one hook point above. Any path that reaches none is also a stale in-game panel bug and should be filed separately.
+
+> **AUTHOR COMMENT:** ... **OR**,
+> 2. We could take a step back and ask ourselves: 'Why _aren't_ all sheet changes passing through Sync.player? Isn't that a violation of single authority?' If the Lua code is improperly or inefficiently designed, we shouldn't compound that error by piling new code for the dashboard on top -- we should resolve the inefficient design and streamline the system so that the Dashboard integration requires less dedicated code.
 
 ### 3.5 Topics (proposed)
 
@@ -153,7 +163,7 @@ Important finding: **PC sheet changes do not all pass through `Sync.player`.** F
 - **Heavy-workload docs:** reclassify `sendExternalMessage` from "debug-only" to "sanctioned for dashboard push with subscribe gate + per-frame coalescing" in `TTS-API-Heavy-Workload-Catalog.md` and `TTS-API-Heavy-Workload-Usage-Inventory.md`.
 - **Event Listener Policy:** add a row for the `onExternalMessage` `data.dashboard` subscribe branch (host-executed, Tier A runtime flag).
 - **Multiplayer:** all mod Lua runs on the host, and the dashboard runs on the host machine. No per-client concerns.
-- **Tracking:** the Lua side is TTS-observable (in-game emitter + subscribe branch), so it needs a Linear issue and a Pending Author Verification row when it ships. Dashboard-only parts stay on the dashboard tasklist.
+- **Tracking:** the Lua side is TTS-observable (in-game emitter + subscribe branch), so it needs a Linear issue and a Pending Author Verification row when it ships. Dashboard-only parts stay on the dashboard tasklist.p
 
 ## 6. Rollout
 

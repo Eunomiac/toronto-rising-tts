@@ -4,6 +4,21 @@
 <!-- Left-side game phase controls + debug panels -->
 <!-- Also includes sidebar (reference toggles) and camera bar via sub-includes -->
 
+<Defaults>
+   <Button class="toggled_inactive"
+     colors="#6E6E6E|#7E7E7E|#5E5E5E|rgba(0.15,0.15,0.15,0.5)"
+     textColor="#FFFFFF"
+   />
+   <Button class="toggled_off"
+     colors="#770000|#880000|#550000|rgba(0.1,0.1,0.1,0.5)"
+     textColor="#FFFFFF"
+   />
+   <Button class="toggled_active"
+     colors="#007700|#008800|#005500|rgba(0.1,0.1,0.1,0.5)"
+     textColor="#FFFFFF"
+   />
+</Defaults>
+
 <Panel id="adminControls" visibility="Host">
   <HorizontalLayout class="debug_seat_color_row">
     <Button id="debugSeat_Black" class="debug_seat_color_button" colors="#1A1A1A|#2A2A2A|#0F0F0F|#1A1A1A" onClick="HUD_debugSeatColor" />
@@ -17,22 +32,26 @@
   </VerticalLayout>
   <Panel id="adminControlsBody" active="false">
 
+<!--
+UI.setAttributes("debug_buttonControls", {})
+
+-->
     <!-- ================================================================ -->
     <!-- Main Button Column (left side): Print State + debug test buttons  -->
     <!-- ================================================================ -->
-    <VerticalLayout class="storyteller_buttonControls" visibility="Host" height="394">
+    <VerticalLayout id="debug_buttonControls" class="storyteller_buttonControls" visibility="Host">
       <Text class="hud_storyteller_header">== DEBUG ==</Text>
       <Text id="debug_lastLoadClock" fontSize="12" color="#AAAAAA" alignment="MiddleCenter" preferredHeight="18" minHeight="18" flexibleHeight="0" text="—" />
       <Button id="debug_overlayAlpha" class="hud_storyteller_button" onClick="HUD_toggleOverlayAlpha">Overlay Alpha: Full</Button>
       <Button class="hud_storyteller_button" onClick="HUD_printState">Print State</Button>
       <Button class="hud_storyteller_button" onClick="HUD_syncAll">Sync All (force)</Button>
-      <Button id="debug_syncTrace" class="hud_storyteller_button" onClick="HUD_toggleSyncTrace" textColor="#FFFFFF" colors="#6E6E6E|#7E7E7E|#5E5E5E|rgba(0.15,0.15,0.15,0.5)">Trace Sync</Button>
+      <Button id="debug_syncTrace" class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleSyncTrace">Trace Sync</Button>
       <Button class="hud_storyteller_button" onClick="HUD_updateCoterieData">Update Coterie Data</Button>
       <Button class="hud_storyteller_button" onClick="HUD_clearLoadingOverlay">Clear Loading Overlay</Button>
       <Button class="hud_storyteller_button" onClick="HUD_refreshUi">Refresh UI</Button>
-      <Button class="hud_storyteller_button" onClick="HUD_toggleDebugAmbient">Toggle Lights</Button>
-      <Button id="debug_connectionMode" class="hud_storyteller_button" onClick="HUD_toggleConnectionMode" textColor="#FFFFFF" colors="#2E7D32|#388E3C|#43A047|rgba(0.1,0.3,0.1,0.5)">Assume Connected</Button>
-      <Button class="hud_storyteller_button" onClick="HUD_toggleRunTestPanel">RunTest</Button>
+      <Button class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleDebugAmbient">Toggle Lights</Button>
+      <Button id="debug_connectionMode" class="hud_storyteller_button toggled_active" onClick="HUD_toggleConnectionMode">Assume Connected</Button>
+      <Button class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleInteraction">Toggle Interaction</Button>
       <Button class="hud_storyteller_button" onClick="HUD_toggleAllAnchors">Toggle Anchors</Button>
       <Button class="hud_storyteller_button" onClick="HUD_toggleAllSpotlights">Toggle Spotlights</Button>
       <Button class="hud_storyteller_button" onClick="HUD_debugCameraActivate">Debug Camera</Button>

@@ -112,17 +112,9 @@ local CONNECTION_BTN_COLORS_OFF = "#6A1E1E|#822828|#A03434|rgba(0.35,0.1,0.1,0.5
 --- Debug panel connection-mode button: green "Assume Connected" / yellow "By Connection Status".
 function PCST.refreshConnectionModeButton()
   if PlayerConnection.isAssumeConnectedMode() then
-    U.setAttributes("debug_connectionMode", {
-      text = "Assume Connected",
-      textColor = "#FFFFFF",
-      colors = "#2E7D32|#388E3C|#43A047|rgba(0.1,0.3,0.1,0.5)",
-    })
+    UI.setClass("debug_connectionMode", "hud_storyteller_button toggled_active")
   else
-    U.setAttributes("debug_connectionMode", {
-      text = "By Connection Status",
-      textColor = "#000000",
-      colors = "#C9A227|#D8B23A|#E6C34F|rgba(0.4,0.32,0.08,0.5)",
-    })
+    UI.setClass("debug_connectionMode", "hud_storyteller_button toggled_inactive")
   end
 end
 

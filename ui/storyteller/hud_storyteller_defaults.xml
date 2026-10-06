@@ -147,7 +147,8 @@
     childAlignment="LowerRight"
     width="200"
     height="400"
-    offsetXY="-70 110"
+    ignoreLayout = "true"
+    offsetXY = "-1650 250"
     childForceExpandWidth="true"
     childForceExpandHeight="true" />
 

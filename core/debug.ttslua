@@ -1270,12 +1270,11 @@ local SYNC_TRACE_BTN_ON = "#C9A227|#D8B23A|#E6C34F|rgba(0.4,0.32,0.08,0.5)"
 --- Paint the Debug panel Trace Sync button: grey off, yellow on.
 function DEBUG.refreshSyncTraceButton()
     local Trace = require("lib.sync_trace")
-    local on = Trace.isEnabled()
-    U.setAttributes("debug_syncTrace", {
-        text = "Trace Sync",
-        textColor = on and "#000000" or "#FFFFFF",
-        colors = on and SYNC_TRACE_BTN_ON or SYNC_TRACE_BTN_OFF,
-    })
+    if Trace.isEnabled() then
+      UI.setClass("debug_syncTrace", "hud_storyteller_button toggled_active")
+    else
+      UI.setClass("debug_syncTrace", "hud_storyteller_button toggled_inactive")
+    end
 end
 
 --- Timed host console trace of sync calls (`[SyncTrace] #N ...`). Persists in `gameState.debug.syncTraceEnabled`.
