@@ -234,7 +234,7 @@ closeEditor = function()
   setAttr("statsEditor_modal", "active", "false")
 end
 
-applyEditorConfirm = function()
+applyEditorConfirm = function(playerColor)
   local ctx = editorContext
   if type(ctx) ~= "table" then
     return false
@@ -280,6 +280,11 @@ applyEditorConfirm = function()
     if ctx.isNew == true then
       local idx = Coterie.activateBlankEntry(ctx.arrayKey, entry)
       if idx == nil then
+        local label = COTERIE_CATEGORY_LABELS[ctx.arrayKey] or tostring(ctx.arrayKey)
+        broadcastToColor(string.format(
+          "%s is full (%d entries). Delete one before adding another.",
+          label, CoterieHydrate.BLANK_SLOTS_PER_ARRAY
+        ), type(playerColor) == "string" and playerColor or "Black", { 1, 0.35, 0.35 })
         return false
       end
     else
@@ -424,8 +429,9 @@ function ST.onEditorField(id, value)
   editorDraft[field] = tostring(value or "")
 end
 
-function ST.onEditorConfirm()
-  applyEditorConfirm()
+--- @param playerColor string|nil clicker color for the "section full" message
+function ST.onEditorConfirm(playerColor)
+  applyEditorConfirm(playerColor)
 end
 
 function ST.onEditorCancel()

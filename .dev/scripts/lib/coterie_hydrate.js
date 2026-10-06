@@ -17,7 +17,7 @@ const TRAIT_ARRAY_KEYS = [
   "havenFlaws",
 ];
 
-const BLANK_SLOTS_PER_ARRAY = 3;
+const BLANK_SLOTS_PER_ARRAY = 6;
 
 const DOMAIN_RATING_KEYS = ["chasse", "lien", "portillon", "haven"];
 

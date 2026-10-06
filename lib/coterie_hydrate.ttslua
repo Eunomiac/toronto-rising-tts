@@ -19,7 +19,8 @@ M.TRAIT_ARRAY_KEYS = {
   "havenFlaws",
 }
 
-M.BLANK_SLOTS_PER_ARRAY = 3
+--- Must match the blank blocks baked per section in ui/shared/panel_ref_princes_court.xml.
+M.BLANK_SLOTS_PER_ARRAY = 6
 
 M.DOMAIN_RATING_KEYS = { "chasse", "lien", "portillon", "haven" }
 

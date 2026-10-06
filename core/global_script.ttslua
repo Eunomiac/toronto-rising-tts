@@ -4127,7 +4127,7 @@ function HUD_statsEditorConfirm(player, button, id)
         return
     end
     if StorytellerStatsPanel and StorytellerStatsPanel.onEditorConfirm then
-        StorytellerStatsPanel.onEditorConfirm()
+        StorytellerStatsPanel.onEditorConfirm(player and player.color or "Black")
     end
 end
 

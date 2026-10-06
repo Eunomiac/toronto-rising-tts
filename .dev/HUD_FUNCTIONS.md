@@ -180,7 +180,7 @@ Storyteller **Stats** panel: edit PC backgrounds/merits/flaws and coterie advant
 | `HUD_statsEdit` | `stats_pc_*_row_*_edit`, `stats_coterie_*_row_*_edit` | `(player, button, id)` | Opens Advantage Editor populated from state. |
 | `HUD_statsEditRating` | `stats_rating_*_edit` | `(player, button, id)` | Opens dot-only editor for domain rating (`chasse`, `lien`, `portillon`, `haven`). |
 | `HUD_statsEditorField` | `statsEditor_*` InputFields | `(player, value, id)` | Stashes field into editor draft (no host guard — read-only stash). |
-| `HUD_statsEditorConfirm` | `statsEditor_confirm` | `(player, button, id)` | Writes draft to `gameState`; PC path refreshes csheet page 3 via `PCST.refreshCharacterSheetsForColor`; coterie path `Coterie.reconcileAll`. |
+| `HUD_statsEditorConfirm` | `statsEditor_confirm` | `(player, button, id)` | Writes draft to `gameState`; PC path refreshes csheet page 3 via `PCST.refreshCharacterSheetsForColor`; coterie path `Coterie.reconcileAll`; a full coterie section broadcasts "… is full" to the clicker and keeps the editor open. |
 | `HUD_statsEditorCancel` | `statsEditor_cancel` | `(player, button, id)` | Closes modal without writes. |
 | `HUD_statsEditorDelete` | `statsEditor_delete` | `(player, button, id)` | Double-click confirm (5s); removes PC array row or deactivates coterie blank. |
 

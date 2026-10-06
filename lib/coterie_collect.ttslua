@@ -20,6 +20,7 @@ local BLANK_BLOCK_BAKED_DOTS = CoterieHydrate.makeBlankEntry().max
 
 --- Sections baked with only in-session blank slots: divider starts `active="false"` and shows once any slot is used.
 local RUNTIME_SECTION_DIVIDERS = {
+  { arrayKey = "domainBackgrounds", id = "divider_domainBackgrounds" },
   { arrayKey = "havenBackgrounds", id = "divider_havenBackgrounds" },
   { arrayKey = "havenMerits", id = "divider_havenMerits" },
   { arrayKey = "havenFlaws", id = "divider_havenFlaws" },
@@ -180,7 +181,7 @@ local function addRuntimeDividerUpdates(updates, coterieData)
   end
 end
 
---- Build UI updates for domain rating dots (page 2), haven section dividers, and blank trait slots.
+--- Build UI updates for domain rating dots (page 2), runtime section dividers, and blank trait slots.
 -- Shared Court (TOR-444): `dot_on_<key>_<slot>` with no seat suffix.
 -- @param coterieData table|nil `gameState.coterieData`
 -- @param hudSeatColor string|nil ignored (call-site compat)

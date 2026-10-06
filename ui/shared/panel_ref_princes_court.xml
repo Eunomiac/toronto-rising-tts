@@ -308,8 +308,66 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </VerticalLayout>
   
   
+</VerticalLayout><VerticalLayout id="pc_p2_bg_4" class="box_text_container" active="false">
+  <HorizontalLayout id="db_p2_bg_4_title_bar" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_4_title" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_4_panel_title_dotline" class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_bg_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_bg_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_bg_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_bg_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_bg_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_4_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_4_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
 </VerticalLayout></VerticalLayout>
-          <VerticalLayout class="box_column"></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_bg_5" class="box_text_container" active="false">
+  <HorizontalLayout id="db_p2_bg_5_title_bar" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_5_title" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_5_panel_title_dotline" class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_bg_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_bg_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_bg_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_bg_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_bg_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_5_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_5_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_bg_1" class="box_text_container" active="false">
   <HorizontalLayout id="db_p2_bg_1_title_bar" class="box_text_title_bar 5_dots">
     <Text id="pc_p2_bg_1_title" class="box_text_title_text" text="" />
@@ -397,6 +455,35 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </VerticalLayout>
   
   
+</VerticalLayout><VerticalLayout id="pc_p2_bg_6" class="box_text_container" active="false">
+  <HorizontalLayout id="db_p2_bg_6_title_bar" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_6_title" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_6_panel_title_dotline" class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_bg_6_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_bg_6_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_bg_6_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_bg_6_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_bg_6_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_6_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_6_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
 </VerticalLayout></VerticalLayout>
         </HorizontalLayout>
 
@@ -440,6 +527,35 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   
+</VerticalLayout><VerticalLayout id="pc_p2_merit_8" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_merit_8_title" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_merit_8_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_merit_8_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_merit_8_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_merit_8_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_merit_8_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_8_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_8_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_merit_1" class="box_text_container" active="true">
   <HorizontalLayout class="box_text_title_bar 3_dots">
@@ -477,6 +593,35 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
       
     </Panel>
   </HorizontalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p2_merit_9" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_merit_9_title" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_merit_9_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_merit_9_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_merit_9_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_merit_9_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_merit_9_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_9_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_9_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
   
   
 </VerticalLayout></VerticalLayout>
@@ -585,6 +730,35 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </VerticalLayout>
   
   
+</VerticalLayout><VerticalLayout id="pc_p2_merit_10" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_merit_10_title" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_merit_10_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_merit_10_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_merit_10_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_merit_10_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_merit_10_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_10_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_10_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
 </VerticalLayout></VerticalLayout>
         </HorizontalLayout>
 
@@ -624,8 +798,66 @@ Expect to feel their influence at least once per story." />
   </VerticalLayout>
   
   
+</VerticalLayout><VerticalLayout id="pc_p2_flaw_4" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_flaw_4_title" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_flaw_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_flaw_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_flaw_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_flaw_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_flaw_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_4_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_4_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
 </VerticalLayout></VerticalLayout>
-          <VerticalLayout class="box_column"></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_flaw_5" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_flaw_5_title" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_flaw_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_flaw_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_flaw_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_flaw_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_flaw_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_5_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_5_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_flaw_1" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
     <Text id="pc_p2_flaw_1_title" class="box_text_title_text flaw_title" text="" />
@@ -713,6 +945,35 @@ Expect to feel their influence at least once per story." />
   </VerticalLayout>
   
   
+</VerticalLayout><VerticalLayout id="pc_p2_flaw_6" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_flaw_6_title" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_flaw_6_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_flaw_6_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_flaw_6_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_flaw_6_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_flaw_6_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_6_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_6_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
 </VerticalLayout></VerticalLayout>
         </HorizontalLayout>
 
@@ -770,7 +1031,186 @@ UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
       <VerticalLayout id="page_2_left" class="page page_left" padding = "8 8 150 50">
 
         <!-- Domain Backgrounds -->
-        
+        <Image id="divider_domainBackgrounds" image="divider_domainBackgrounds" class="divider_image" active="false" />
+        <HorizontalLayout class="box_column_container">
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_bg_0" class="box_text_container" active="false">
+  <HorizontalLayout id="db_p3_bg_0_title_bar" class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_bg_0_title" class="box_text_title_text" text="" />
+    <Panel id="db_p3_bg_0_panel_title_dotline" class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_bg_0_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_bg_0_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_bg_0_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_bg_0_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_bg_0_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_bg_0_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_bg_0_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p3_bg_3" class="box_text_container" active="false">
+  <HorizontalLayout id="db_p3_bg_3_title_bar" class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_bg_3_title" class="box_text_title_text" text="" />
+    <Panel id="db_p3_bg_3_panel_title_dotline" class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_bg_3_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_bg_3_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_bg_3_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_bg_3_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_bg_3_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_bg_3_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_bg_3_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_bg_1" class="box_text_container" active="false">
+  <HorizontalLayout id="db_p3_bg_1_title_bar" class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_bg_1_title" class="box_text_title_text" text="" />
+    <Panel id="db_p3_bg_1_panel_title_dotline" class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_bg_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_bg_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_bg_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_bg_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_bg_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_bg_1_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_bg_1_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p3_bg_4" class="box_text_container" active="false">
+  <HorizontalLayout id="db_p3_bg_4_title_bar" class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_bg_4_title" class="box_text_title_text" text="" />
+    <Panel id="db_p3_bg_4_panel_title_dotline" class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_bg_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_bg_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_bg_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_bg_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_bg_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_bg_4_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_bg_4_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_bg_2" class="box_text_container" active="false">
+  <HorizontalLayout id="db_p3_bg_2_title_bar" class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_bg_2_title" class="box_text_title_text" text="" />
+    <Panel id="db_p3_bg_2_panel_title_dotline" class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_bg_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_bg_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_bg_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_bg_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_bg_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_bg_2_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_bg_2_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p3_bg_5" class="box_text_container" active="false">
+  <HorizontalLayout id="db_p3_bg_5_title_bar" class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_bg_5_title" class="box_text_title_text" text="" />
+    <Panel id="db_p3_bg_5_panel_title_dotline" class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_bg_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_bg_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_bg_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_bg_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_bg_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_bg_5_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_bg_5_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+        </HorizontalLayout>
 
         <!-- Domain Claims -->
         <Image id="divider_domainClaims" image="divider_domainClaims" class="divider_claims_image" raycastTarget="true" onMouseEnter="HUD_playerPrincesCourt_domainClaimsDivider_hoverOn" onMouseExit="HUD_playerPrincesCourt_domainClaimsDivider_hoverOff" />
@@ -803,8 +1243,66 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
   </VerticalLayout>
   
   
+</VerticalLayout><VerticalLayout id="pc_p3_merit_4" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_merit_4_title" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_merit_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_merit_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_merit_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_merit_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_merit_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_4_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_4_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
 </VerticalLayout></VerticalLayout>
-          <VerticalLayout class="box_column"></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_5" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_merit_5_title" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_merit_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_merit_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_merit_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_merit_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_merit_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_5_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_5_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_1" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
     <Text id="pc_p3_merit_1_title" class="box_text_title_text" text="" />
@@ -892,6 +1390,35 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
   </VerticalLayout>
   
   
+</VerticalLayout><VerticalLayout id="pc_p3_merit_6" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_merit_6_title" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_merit_6_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_merit_6_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_merit_6_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_merit_6_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_merit_6_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_6_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_6_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
 </VerticalLayout></VerticalLayout>
         </HorizontalLayout>
         
@@ -924,8 +1451,66 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
   </VerticalLayout>
   
   
+</VerticalLayout><VerticalLayout id="pc_p3_flaw_4" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_flaw_4_title" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_flaw_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_flaw_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_flaw_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_flaw_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_flaw_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_4_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_4_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
 </VerticalLayout></VerticalLayout>
-          <VerticalLayout class="box_column"></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_flaw_5" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_flaw_5_title" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_flaw_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_flaw_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_flaw_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_flaw_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_flaw_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_5_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_5_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_flaw_1" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
     <Text id="pc_p3_flaw_1_title" class="box_text_title_text flaw_title" text="" />
@@ -1013,6 +1598,35 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
   </VerticalLayout>
   
   
+</VerticalLayout><VerticalLayout id="pc_p3_flaw_6" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_flaw_6_title" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_flaw_6_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_flaw_6_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_flaw_6_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_flaw_6_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_flaw_6_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_6_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_6_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
 </VerticalLayout></VerticalLayout>
         </HorizontalLayout>
         
@@ -1053,6 +1667,35 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
   </VerticalLayout>
   
   
+</VerticalLayout><VerticalLayout id="pc_p4_bg_3" class="box_text_container" active="false">
+  <HorizontalLayout id="db_p4_bg_3_title_bar" class="box_text_title_bar 5_dots">
+    <Text id="pc_p4_bg_3_title" class="box_text_title_text" text="" />
+    <Panel id="db_p4_bg_3_panel_title_dotline" class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p4_bg_3_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p4_bg_3_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p4_bg_3_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p4_bg_3_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p4_bg_3_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p4_bg_3_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p4_bg_3_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p4_bg_1" class="box_text_container" active="false">
   <HorizontalLayout id="db_p4_bg_1_title_bar" class="box_text_title_bar 5_dots">
@@ -1083,6 +1726,35 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
   </VerticalLayout>
   
   
+</VerticalLayout><VerticalLayout id="pc_p4_bg_4" class="box_text_container" active="false">
+  <HorizontalLayout id="db_p4_bg_4_title_bar" class="box_text_title_bar 5_dots">
+    <Text id="pc_p4_bg_4_title" class="box_text_title_text" text="" />
+    <Panel id="db_p4_bg_4_panel_title_dotline" class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p4_bg_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p4_bg_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p4_bg_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p4_bg_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p4_bg_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p4_bg_4_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p4_bg_4_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p4_bg_2" class="box_text_container" active="false">
   <HorizontalLayout id="db_p4_bg_2_title_bar" class="box_text_title_bar 5_dots">
@@ -1110,6 +1782,35 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p4_bg_2_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
     <Text id="pc_p4_bg_2_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p4_bg_5" class="box_text_container" active="false">
+  <HorizontalLayout id="db_p4_bg_5_title_bar" class="box_text_title_bar 5_dots">
+    <Text id="pc_p4_bg_5_title" class="box_text_title_text" text="" />
+    <Panel id="db_p4_bg_5_panel_title_dotline" class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p4_bg_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p4_bg_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p4_bg_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p4_bg_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p4_bg_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p4_bg_5_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p4_bg_5_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -1148,6 +1849,35 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
   </VerticalLayout>
   
   
+</VerticalLayout><VerticalLayout id="pc_p4_merit_3" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p4_merit_3_title" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p4_merit_3_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p4_merit_3_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p4_merit_3_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p4_merit_3_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p4_merit_3_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p4_merit_3_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p4_merit_3_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p4_merit_1" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
@@ -1178,6 +1908,35 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
   </VerticalLayout>
   
   
+</VerticalLayout><VerticalLayout id="pc_p4_merit_4" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p4_merit_4_title" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p4_merit_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p4_merit_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p4_merit_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p4_merit_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p4_merit_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p4_merit_4_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p4_merit_4_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p4_merit_2" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
@@ -1205,6 +1964,35 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p4_merit_2_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
     <Text id="pc_p4_merit_2_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p4_merit_5" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p4_merit_5_title" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p4_merit_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p4_merit_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p4_merit_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p4_merit_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p4_merit_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p4_merit_5_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p4_merit_5_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -1243,6 +2031,35 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
   </VerticalLayout>
   
   
+</VerticalLayout><VerticalLayout id="pc_p4_flaw_3" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p4_flaw_3_title" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p4_flaw_3_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p4_flaw_3_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p4_flaw_3_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p4_flaw_3_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p4_flaw_3_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p4_flaw_3_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p4_flaw_3_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p4_flaw_1" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
@@ -1273,6 +2090,35 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
   </VerticalLayout>
   
   
+</VerticalLayout><VerticalLayout id="pc_p4_flaw_4" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p4_flaw_4_title" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p4_flaw_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p4_flaw_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p4_flaw_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p4_flaw_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p4_flaw_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p4_flaw_4_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p4_flaw_4_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
 </VerticalLayout></VerticalLayout>
           <VerticalLayout class="box_column"><VerticalLayout id="pc_p4_flaw_2" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
@@ -1300,6 +2146,35 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p4_flaw_2_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
     <Text id="pc_p4_flaw_2_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p4_flaw_5" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p4_flaw_5_title" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p4_flaw_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p4_flaw_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p4_flaw_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p4_flaw_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p4_flaw_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p4_flaw_5_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p4_flaw_5_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
