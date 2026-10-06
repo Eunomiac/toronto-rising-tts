@@ -1,0 +1,166 @@
+[load+18.604s] --- VTM5E Module Loaded at 2:13:07 PM ---
+[load+18.605s] Startup step: initialize-game-state
+[load+81.159s] State: Loading saved game state.
+State: Current phase is Intermission
+[SyncTrace] trace is ON (saved setting); turn it off to print the summary
+[load+94.477s] Startup step: st-dice-drawers-deactivate-flags
+[load+94.511s] Main: Core module loaded.
+[SyncTrace] #2 Sync.player(Orange) 238ms (self 35.6ms) >1 frame
+[SyncTrace] #2   L.reconcileForPlayer(Orange) 200ms >1 frame
+[SyncTrace] #2   HUDP.updatePlayerUI(Orange) 0.0ms
+[SyncTrace] #2   HO.reconcileForSeat(Orange) 2.5ms
+[SyncTrace] #2   UpdateUIDisplays 0.0ms colors=Orange flags=playerStats
+[load+94.493s] Startup step: conditions-validate-and-reconcile
+[load+94.511s] Main: Setting up players.
+[load+94.511s] Startup step: main-onload
+[SyncTrace] #1 Sync.player(Brown) 63.8ms (self 35.4ms) >1 frame
+[SyncTrace] #1   L.reconcileForPlayer(Brown) 25.9ms >1 frame
+[SyncTrace] #1   HUDP.updatePlayerUI(Brown) 0.0ms
+[SyncTrace] #1   HO.reconcileForSeat(Brown) 1.5ms
+[SyncTrace] #1   UpdateUIDisplays 1.0ms colors=Brown flags=playerStats
+[load+94.501s] Startup step: soundscape-bootstrap-silence
+[SyncTrace] #3 Sync.player(Red) 61.3ms (self 35.7ms) >1 frame
+[SyncTrace] #3   L.reconcileForPlayer(Red) 24.6ms >1 frame
+[SyncTrace] #3   HUDP.updatePlayerUI(Red) 0.0ms
+[SyncTrace] #3   HO.reconcileForSeat(Red) 1.0ms
+[SyncTrace] #3   UpdateUIDisplays 0.0ms colors=Red flags=playerStats
+[SyncTrace] #4 Sync.player(Pink) 53.8ms (self 34.3ms) >1 frame
+[SyncTrace] #4   L.reconcileForPlayer(Pink) 16.9ms >1 frame
+[SyncTrace] #4   HUDP.updatePlayerUI(Pink) 1.0ms
+[SyncTrace] #4   HO.reconcileForSeat(Pink) 1.6ms
+[SyncTrace] #4   UpdateUIDisplays 0.0ms colors=Pink flags=playerStats
+[SyncTrace] #5 Sync.player(Purple) 54.5ms (self 36.0ms) >1 frame
+[SyncTrace] #5   L.reconcileForPlayer(Purple) 16.5ms
+[SyncTrace] #5   HUDP.updatePlayerUI(Purple) 0.0ms
+[SyncTrace] #5   HO.reconcileForSeat(Purple) 2.0ms
+[SyncTrace] #5   UpdateUIDisplays 0.0ms colors=Purple flags=playerStats
+[load+95.027s] Main: Module initialization complete.
+[load+95.027s] Main: Syncing phase - Intermission sub=Downtime
+[load+95.027s] Startup step: schedule-table-sync
+[load+95.027s] Startup step: initial-sync-full
+[load+98.488s] [Gameboard] Control-board snaps installed (63 points on bea29a)
+[load+99.027s] Startup step: dice-bag-visibility-defaults
+[load+99.028s] Startup step: waiting-for-table-sync
+[load+99.027s] Startup step: initial-sync-full-complete
+[SyncTrace] #6 Sync.full 3997ms (self 98.8ms) >1 frame ran flags=skipSoundscape force=false reason=onLoad_initial skipSoundscape=true
+[SyncTrace] #6   Scenes.reconcileFromState 77.9ms >1 frame ran force=false
+[SyncTrace] #6   Scenes.reconcileTopFogFromState 0.0ms
+[SyncTrace] #6   Scenes.reconcileSkyboxFromState 0.5ms
+[SyncTrace] #6   Phases.reconcileParticleEmitterFromPhase 0.0ms
+[SyncTrace] #6   L.InitLights 403ms (self 141ms) >1 frame
+[SyncTrace] #6     L.reconcileAllPlayers 262ms (self 1.0ms) >1 frame ran force=false
+[SyncTrace] #6       L.reconcileForPlayer x9 total 261ms max 168ms >1 frame
+[SyncTrace] #6   L.reconcileAllPlayers 40.9ms (self 1.5ms) >1 frame ran flags=skipNpcSeats force=false
+[SyncTrace] #6     L.reconcileForPlayer x5 total 39.4ms max 9.7ms
+[SyncTrace] #6   HO.syncAll 7.1ms (self 1.0ms) ran flags=skipNpcSeats force=false
+[SyncTrace] #6     HO.reconcileForSeat x5 total 6.1ms max 1.5ms
+[SyncTrace] #6   NPCS.reconcileAllFromState 3263ms (self 1500ms) >1 frame ran flags=deferUiRefresh force=false reason=
+[SyncTrace] #6     RSL.SyncTable(Table B0) 1240ms (self 2.0ms) >1 frame force=true
+[SyncTrace] #6       RSL.resolveSeatObjectsFromTable(Table B0) 1238ms (self 1144ms) >1 frame ran force=true tableKey=Table B0
+[SyncTrace] #6         L.reconcileAllPlayers 78.8ms (self 2.6ms) >1 frame ran flags=skipNpcSeats,skipStageBoundNpcSeats force=false
+[SyncTrace] #6           L.reconcileForPlayer x5 total 76.2ms max 18.4ms >1 frame
+[SyncTrace] #6         HO.syncAll 15.4ms (self 0.9ms) ran force=true
+[SyncTrace] #6           HO.reconcileForSeat x5 total 14.5ms max 3.6ms
+[SyncTrace] #6     Reconcile.reconcileControlBoardFromState 523ms (self 416ms) >1 frame ran force=false forceSnaps=false
+[SyncTrace] #6       Snaps.installPolarSnaps 107ms >1 frame ran guid=bea29a points=63
+[SyncTrace] #6   Spotlight.reconcileFromState 33.8ms >1 frame ran phase=Intermission reparked=true
+[SyncTrace] #6   SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked 0.0ms
+[SyncTrace] #6   Coterie.reconcileAll 17.4ms >1 frame
+[SyncTrace] #6   Projects.reconcileCourtProjectsAll 4.1ms
+[SyncTrace] #6   Sync.ui 49.5ms (self 0.0ms) >1 frame flags=adminLighting,gameStateOverlay,phase,playerHud,playerStats,scene,+2
+[SyncTrace] #6     UpdateUIDisplays 49.5ms (self 25.9ms) >1 frame ran flags=adminLighting,gameStateOverlay,phase,playerHud,playerStats,scene,+2 playerHud=true refreshAll=false scenesPanel=true
+[SyncTrace] #6       HUDP.updatePlayerUI(Black) 23.6ms >1 frame
+Syncing 83 scripts (echo)
+[XP] Page 6 XP bake is for session 1 but gameState sessionNum is 14. Run mid-week bake (npm run csheet-xp-log:bake) then Save & Play. Finished sessions since the last bake will not show on the sheet.
+[load+104.864s] Startup step: startup-loose-dice-cleanup
+[SyncTrace] #7 L.reconcileForPlayer(Purple) 9.0ms
+[SyncTrace] #8 L.reconcileForPlayer(Red) 10.1ms
+[SyncTrace] #9 L.reconcileForPlayer(Pink) 7.4ms
+[SyncTrace] #10 L.reconcileForPlayer(Orange) 7.8ms
+[SyncTrace] #11 L.reconcileForPlayer(Brown) 11.1ms
+[SyncTrace] #12 L.reconcileForPlayer(Brown) 8.7ms
+[SyncTrace] #13 L.reconcileForPlayer(Orange) 7.1ms
+[load+105.053s] [Startup] loose-dice cleanup: lowered 5 PC tray(s), restored 3 ST drawer(s), swept 0 on-table d10
+[SyncTrace] #16 L.reconcileForPlayer(Purple) 6.7ms
+[SyncTrace] #14 L.reconcileForPlayer(Red) 10.1ms
+[SyncTrace] #15 L.reconcileForPlayer(Pink) 7.6ms
+[load+105.053s] Startup step: run-table-sync
+[SyncTrace] #17 RSL.SyncTable 3.0ms (self 0.0ms)
+[SyncTrace] #17   RSL.resolveSeatObjectsFromTable(Table B0) 3.0ms skipped force=false tableKey=Table B0
+[load+105.120s] Startup step: startup-ready-final-sync-full
+[load+105.120s] Startup step: startup-ready-ensure-global-xml
+[load+105.057s] Startup step: st-dice-drawers-workshop-home
+[load+105.120s] Startup step: startup-ready-conditions-met
+[SyncTrace] #18 Sync.full 609ms (self 45.4ms) >1 frame ran force=false reason=onLoad_startup_gate skipSoundscape=false
+[SyncTrace] #18   Scenes.reconcileFromState 1.3ms skipped force=false
+[SyncTrace] #18   Scenes.reconcileTopFogFromState 0.0ms
+[SyncTrace] #18   Scenes.reconcileSkyboxFromState 0.0ms
+[SyncTrace] #18   Phases.reconcileParticleEmitterFromPhase 1.0ms
+[SyncTrace] #18   Soundscape.reconcileFromState 1.5ms
+[SyncTrace] #18   NPCS.reconcileAllFromState 413ms (self 128ms) >1 frame skipped flags=deferUiRefresh force=false reason=
+[SyncTrace] #18     Reconcile.reconcileControlBoardFromState 284ms >1 frame skipped force=false
+[SyncTrace] #18   Spotlight.reconcileFromState 2.6ms skipped phase=Intermission reparked=false
+[SyncTrace] #18   SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked 0.0ms
+[SyncTrace] #18   Coterie.reconcileAll 27.5ms >1 frame
+[SyncTrace] #18   Projects.reconcileCourtProjectsAll 9.1ms
+[SyncTrace] #18   Sync.ui 108ms (self 0.0ms) >1 frame flags=adminLighting,gameStateOverlay,phase,playerHud,playerStats,scene,+2
+[SyncTrace] #18     UpdateUIDisplays 108ms (self 57.2ms) >1 frame ran flags=adminLighting,gameStateOverlay,phase,playerHud,playerStats,scene,+2 playerHud=true refreshAll=false scenesPanel=true
+[SyncTrace] #18       HUDP.updatePlayerUI(Black) 50.5ms >1 frame
+[load+105.736s] Startup step: startup-ready-wait-locked-objects
+[load+105.061s] Startup step: table-sync-complete
+[load+105.748s] Startup step: apply-locked-objects-at-startup-gate
+[load+105.765s] Startup step: startup-ready-final-locked-objects-pass
+[load+105.777s] Startup step: dice-preload-pool-warm
+[DPP] reconcile parked dice: adopted=264 culled=0 orphans=0 (scan=264)
+[load+106.273s] Dice preload pool warmed 0 bag(s).
+[load+106.273s] Startup step: startup-ready-reconcile-parked-hide
+[SyncTrace] #19 Phases.reconcileParticleEmitterFromPhase 0.0ms
+[load+106.508s] Preload NPC hide reconciled for 109 instance(s).
+[load+106.508s] Startup step: startup-ready-apply-session-blindfold-images
+[load+106.550s] Startup step: startup-ready-apply-global-blindfold-from-phase
+[load+106.552s] Startup step: startup-ready-intermission-theme
+[SyncTrace] #20 Sync.full 513ms (self 48.3ms) >1 frame ran flags=skipSoundscape force=false reason=phase_intermission_dark skipSoundscape=true
+[SyncTrace] #20   Scenes.reconcileFromState 55.4ms >1 frame ran force=false
+[SyncTrace] #20   Scenes.reconcileTopFogFromState 0.0ms
+[SyncTrace] #20   Scenes.reconcileSkyboxFromState 1.0ms
+[SyncTrace] #20   Phases.reconcileParticleEmitterFromPhase 0.0ms
+[SyncTrace] #20   NPCS.reconcileAllFromState 344ms (self 130ms) >1 frame skipped flags=deferUiRefresh force=false reason=
+[SyncTrace] #20     Reconcile.reconcileControlBoardFromState 214ms >1 frame skipped force=false
+[SyncTrace] #20   Spotlight.reconcileFromState 1.0ms skipped phase=Intermission reparked=false
+[SyncTrace] #20   SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked 0.0ms
+[SyncTrace] #20   Coterie.reconcileAll 11.7ms
+[SyncTrace] #20   Projects.reconcileCourtProjectsAll 3.0ms
+[SyncTrace] #20   Sync.ui 48.2ms (self 1.0ms) >1 frame flags=adminLighting,gameStateOverlay,phase,playerHud,playerStats,scene,+2
+[SyncTrace] #20     UpdateUIDisplays 47.2ms (self 23.5ms) >1 frame ran flags=adminLighting,gameStateOverlay,phase,playerHud,playerStats,scene,+2 playerHud=true refreshAll=false scenesPanel=true
+[SyncTrace] #20       HUDP.updatePlayerUI(Black) 23.7ms >1 frame
+[load+107.098s] Startup step: startup-ready-complete
+[load+107.098s] Startup step: startup-connection-checkpoint
+[load+107.100s] Startup readiness gate complete (global blindfold follows phase=Intermission).
+[load+108.272s] === VTM5E Module Loading Complete ===
+[SyncTrace] SUMMARY 24 function(s) over 20.7s
+[SyncTrace] SUMMARY  calls   ran  skip      total       self       max  function
+[SyncTrace] SUMMARY      3     3     0     5118ms      192ms    3997ms  Sync.full
+[SyncTrace] SUMMARY      3     1     2     4020ms     1758ms    3263ms  NPCS.reconcileAllFromState
+[SyncTrace] SUMMARY      2     0     0     1243ms      2.0ms    1240ms  RSL.SyncTable
+[SyncTrace] SUMMARY      2     1     1     1241ms     1147ms    1238ms  RSL.resolveSeatObjectsFromTable
+[SyncTrace] SUMMARY      3     1     2     1022ms      914ms     523ms  Reconcile.reconcileControlBoardFromState
+[SyncTrace] SUMMARY     34     0     0      747ms      747ms     200ms  L.reconcileForPlayer
+[SyncTrace] SUMMARY      5     0     0      472ms      177ms     238ms  Sync.player
+[SyncTrace] SUMMARY      1     0     0      403ms      141ms     403ms  L.InitLights
+[SyncTrace] SUMMARY      3     3     0      382ms      5.2ms     262ms  L.reconcileAllPlayers
+[SyncTrace] SUMMARY      3     0     0      205ms      1.0ms     108ms  Sync.ui
+[SyncTrace] SUMMARY      8     3     0      205ms      108ms     108ms  UpdateUIDisplays
+[SyncTrace] SUMMARY      3     2     1      135ms      135ms    77.9ms  Scenes.reconcileFromState
+[SyncTrace] SUMMARY      1     1     0      107ms      107ms     107ms  Snaps.installPolarSnaps
+[SyncTrace] SUMMARY      8     0     0     98.7ms     98.7ms    50.5ms  HUDP.updatePlayerUI
+[SyncTrace] SUMMARY      3     0     0     56.7ms     56.7ms    27.5ms  Coterie.reconcileAll
+[SyncTrace] SUMMARY      3     1     2     37.4ms     37.4ms    33.8ms  Spotlight.reconcileFromState
+[SyncTrace] SUMMARY     15     0     0     29.3ms     29.3ms     3.6ms  HO.reconcileForSeat
+[SyncTrace] SUMMARY      2     2     0     22.5ms      1.9ms    15.4ms  HO.syncAll
+[SyncTrace] SUMMARY      3     0     0     16.3ms     16.3ms     9.1ms  Projects.reconcileCourtProjectsAll
+[SyncTrace] SUMMARY      1     0     0      1.5ms      1.5ms     1.5ms  Soundscape.reconcileFromState
+[SyncTrace] SUMMARY      3     0     0      1.5ms      1.5ms     1.0ms  Scenes.reconcileSkyboxFromState
+[SyncTrace] SUMMARY      4     0     0      1.0ms      1.0ms     1.0ms  Phases.reconcileParticleEmitterFromPhase
+[SyncTrace] SUMMARY      3     0     0      0.0ms      0.0ms     0.0ms  SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked
+[SyncTrace] SUMMARY      3     0     0      0.0ms      0.0ms     0.0ms  Scenes.reconcileTopFogFromState
+Sync trace: off

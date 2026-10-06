@@ -1,0 +1,39 @@
+[SyncTrace] trace ON; clock resolution 0.538ms; one frame = 16.7ms
+Sync trace: on
+[Gameboard] palette drop: ring 2 defaultLightMode OFF
+[Gameboard] anchor spread palette light: zuriOluwusi ring 2 OFF
+[Gameboard] anchor spread palette light: adrianVarga ring 2 OFF
+[Gameboard] anchor spread palette light: stirlingSiskin ring 2 OFF
+[Gameboard] anchor spread palette light: jesseSharp ring 2 OFF
+[Gameboard] anchor spread: placed 4 token(s) for group fiveKeys
+[Gameboard] group flip: family 2:3 → STANDARD (4 sibling face change(s))
+[NPCS] figurine stage placement Adrian Varga (npcInstance:adrianVarga) u=0.5151 v=0.5825 ringYaw=183.7 worldYaw=3.7 ground=-40.000 → world (24.09, -40.00, 109.77)
+[NPCS] figurine stage placement Jesse Sharp (npcInstance:jesseSharp) u=0.5321 v=0.5965 ringYaw=187.4 worldYaw=7.4 ground=-40.000 → world (51.32, -40.00, 117.83)
+[NPCS] figurine stage placement Mylene 'the Puck' Hamelin (npcInstance:myleneHamelin) u=0.5000 v=0.5660 ringYaw=180.0 worldYaw=0.0 ground=-40.000 → world (0.00, -40.00, 100.23)
+[NPCS] figurine stage placement Stirling Siskin (npcInstance:stirlingSiskin) u=0.4679 v=0.5965 ringYaw=172.6 worldYaw=352.6 ground=-40.000 → world (-51.32, -40.00, 117.83)
+[NPCS] figurine stage placement Zuri Oluwusi (npcInstance:zuriOluwusi) u=0.4849 v=0.5825 ringYaw=176.3 worldYaw=356.3 ground=-40.000 → world (-24.09, -40.00, 109.77)
+[NPCStageLerp] no animations for 5 stage target(s); snaps used. skips: not_already_on_stage=5
+[SyncTrace] #21 Sync.npcs 2747ms (self 1.5ms) >1 frame flags=animateStageMoves,deferUiRefresh,skipPreloadPopulate force=false reason=gameboard_apply
+[SyncTrace] #21   NPCS.reconcileAllFromState 2745ms (self 755ms) >1 frame ran flags=animateStageMoves,deferUiRefresh,skipPreloadPopulate force=false reason=gameboard_apply
+[SyncTrace] #21     RSL.SyncTable(Table B0) 1365ms (self 0.0ms) >1 frame force=true
+[SyncTrace] #21       RSL.resolveSeatObjectsFromTable(Table B0) 1365ms (self 1313ms) >1 frame ran force=true tableKey=Table B0
+[SyncTrace] #21         L.reconcileAllPlayers 43.1ms (self 3.0ms) >1 frame ran flags=skipNpcSeats,skipStageBoundNpcSeats force=false
+[SyncTrace] #21           L.reconcileForPlayer x5 total 40.0ms max 9.8ms
+[SyncTrace] #21         HO.syncAll 8.7ms (self 2.0ms) ran force=true
+[SyncTrace] #21           HO.reconcileForSeat x5 total 6.7ms max 2.6ms
+[SyncTrace] #21     Reconcile.reconcileControlBoardFromState 626ms (self 621ms) >1 frame ran force=false forceSnaps=false
+[SyncTrace] #21       Snaps.installPolarSnaps 4.0ms skipped guid=bea29a
+[Gameboard] Apply: 5 stage token(s) → Sync.npcs
+[SyncTrace] SUMMARY 10 function(s) over 21.9s
+[SyncTrace] SUMMARY  calls   ran  skip      total       self       max  function
+[SyncTrace] SUMMARY      1     0     0     2747ms      1.5ms    2747ms  Sync.npcs
+[SyncTrace] SUMMARY      1     1     0     2745ms      755ms    2745ms  NPCS.reconcileAllFromState
+[SyncTrace] SUMMARY      1     1     0     1365ms     1313ms    1365ms  RSL.resolveSeatObjectsFromTable
+[SyncTrace] SUMMARY      1     0     0     1365ms      0.0ms    1365ms  RSL.SyncTable
+[SyncTrace] SUMMARY      1     1     0      626ms      621ms     626ms  Reconcile.reconcileControlBoardFromState
+[SyncTrace] SUMMARY      1     1     0     43.1ms      3.0ms    43.1ms  L.reconcileAllPlayers
+[SyncTrace] SUMMARY      5     0     0     40.0ms     40.0ms     9.8ms  L.reconcileForPlayer
+[SyncTrace] SUMMARY      1     1     0      8.7ms      2.0ms     8.7ms  HO.syncAll
+[SyncTrace] SUMMARY      5     0     0      6.7ms      6.7ms     2.6ms  HO.reconcileForSeat
+[SyncTrace] SUMMARY      1     0     1      4.0ms      4.0ms     4.0ms  Snaps.installPolarSnaps
+Sync trace: off

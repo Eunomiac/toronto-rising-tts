@@ -5647,6 +5647,13 @@ function HUD_toggleOverlayAlpha(player, button, id)
     end
 end
 
+function HUD_resetToIntermission()
+  U.chain({
+    DEBUG.resetToIntermission,
+    HUD_phaseRefreshXml,
+  })
+end
+
 --- Pretty-print full game state to workspace file (same path as DEBUG.logStateToFile).
 -- Writes **.dev/.debug/debug_logs/game_state.txt** when the tts-bridge listens on 39998 (overwrites each click). See .dev/DEBUG_FILE_LOGGING.md.
 -- Called when the Storyteller left-panel "Print State" button is clicked.

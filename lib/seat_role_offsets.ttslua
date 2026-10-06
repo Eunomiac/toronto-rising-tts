@@ -205,7 +205,7 @@ local offsets = {
         defaultY = 200
       },
       TAROT_DECK_ANCHOR = {
-        localXZ = { x = -8.30, z = -37.47 },
+        localXZ = { x = -8.30, z = -36.5 },
         localRotation = { x = 26.97, y = 0, z = 180 },
         defaultY = 200
       },

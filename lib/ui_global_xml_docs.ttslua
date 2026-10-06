@@ -5685,14 +5685,289 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
       <VerticalLayout id="page_2_right" class="page page_right" padding = "8 8 200 50">
 
         <!-- Haven Backgrounds -->
-        
+        <Image id="divider_havenBackgrounds" image="divider_havenBackgrounds" class="divider_image" active="false" />
+        <HorizontalLayout class="box_column_container">
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p4_bg_0" class="box_text_container" active="false">
+  <HorizontalLayout id="db_p4_bg_0_title_bar" class="box_text_title_bar 5_dots">
+    <Text id="pc_p4_bg_0_title" class="box_text_title_text" text="" />
+    <Panel id="db_p4_bg_0_panel_title_dotline" class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p4_bg_0_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p4_bg_0_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p4_bg_0_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p4_bg_0_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p4_bg_0_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p4_bg_0_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p4_bg_0_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p4_bg_1" class="box_text_container" active="false">
+  <HorizontalLayout id="db_p4_bg_1_title_bar" class="box_text_title_bar 5_dots">
+    <Text id="pc_p4_bg_1_title" class="box_text_title_text" text="" />
+    <Panel id="db_p4_bg_1_panel_title_dotline" class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p4_bg_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p4_bg_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p4_bg_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p4_bg_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p4_bg_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p4_bg_1_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p4_bg_1_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p4_bg_2" class="box_text_container" active="false">
+  <HorizontalLayout id="db_p4_bg_2_title_bar" class="box_text_title_bar 5_dots">
+    <Text id="pc_p4_bg_2_title" class="box_text_title_text" text="" />
+    <Panel id="db_p4_bg_2_panel_title_dotline" class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p4_bg_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p4_bg_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p4_bg_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p4_bg_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p4_bg_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p4_bg_2_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p4_bg_2_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+        </HorizontalLayout>
 
         <!-- Haven Merits -->
-        
+        <Image id="divider_havenMerits" image="divider_havenMerits" class="divider_image" active="false" />
+        <HorizontalLayout class="box_column_container">
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p4_merit_0" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p4_merit_0_title" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p4_merit_0_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p4_merit_0_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p4_merit_0_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p4_merit_0_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p4_merit_0_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p4_merit_0_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p4_merit_0_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p4_merit_1" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p4_merit_1_title" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p4_merit_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p4_merit_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p4_merit_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p4_merit_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p4_merit_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p4_merit_1_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p4_merit_1_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p4_merit_2" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p4_merit_2_title" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p4_merit_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p4_merit_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p4_merit_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p4_merit_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p4_merit_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p4_merit_2_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p4_merit_2_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+        </HorizontalLayout>
 
         <!-- Haven Flaws -->
-        
-
+        <Image id="divider_havenFlaws" image="divider_havenFlaws" class="divider_image" active="false" />
+        <HorizontalLayout class="box_column_container">
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p4_flaw_0" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p4_flaw_0_title" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p4_flaw_0_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p4_flaw_0_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p4_flaw_0_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p4_flaw_0_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p4_flaw_0_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p4_flaw_0_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p4_flaw_0_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p4_flaw_1" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p4_flaw_1_title" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p4_flaw_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p4_flaw_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p4_flaw_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p4_flaw_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p4_flaw_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p4_flaw_1_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p4_flaw_1_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p4_flaw_2" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p4_flaw_2_title" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p4_flaw_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p4_flaw_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p4_flaw_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p4_flaw_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p4_flaw_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p4_flaw_2_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p4_flaw_2_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+        </HorizontalLayout>
       </VerticalLayout>
 
       <Image id="playerHud_navigate_page2_prev" class="navButton navButton_left" image="navigate_left" raycastTarget="true" onMouseEnter="HUD_playerPrincesCourt_nav_hoverOn" onMouseExit="HUD_playerPrincesCourt_nav_hoverOff" onClick="HUD_playerPrincesCourt_navigate" />
@@ -8825,21 +9100,19 @@ UI.setAttributes("debug_buttonControls", {})
     <VerticalLayout id="debug_buttonControls" class="storyteller_buttonControls" visibility="Host">
       <Text class="hud_storyteller_header">== DEBUG ==</Text>
       <Text id="debug_lastLoadClock" fontSize="12" color="#AAAAAA" alignment="MiddleCenter" preferredHeight="18" minHeight="18" flexibleHeight="0" text="—" />
-      <Button id="debug_overlayAlpha" class="hud_storyteller_button" onClick="HUD_toggleOverlayAlpha">Overlay Alpha: Full</Button>
+      <Button id="debug_resetToIntermission" class="hud_storyteller_button" onClick="HUD_resetToIntermission">Overlay Alpha: Full</Button>
       <Button class="hud_storyteller_button" onClick="HUD_printState">Print State</Button>
       <Button class="hud_storyteller_button" onClick="HUD_syncAll">Sync All (force)</Button>
       <Button id="debug_syncTrace" class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleSyncTrace">Trace Sync</Button>
       <Button class="hud_storyteller_button" onClick="HUD_updateCoterieData">Update Coterie Data</Button>
       <Button class="hud_storyteller_button" onClick="HUD_clearLoadingOverlay">Clear Loading Overlay</Button>
       <Button class="hud_storyteller_button" onClick="HUD_refreshUi">Refresh UI</Button>
-      <Button class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleDebugAmbient">Toggle Lights</Button>
+      <Button id="debug_ambient" class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleDebugAmbient">Toggle Lights</Button>
       <Button id="debug_connectionMode" class="hud_storyteller_button toggled_active" onClick="HUD_toggleConnectionMode">Assume Connected</Button>
-      <Button class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleInteraction">Toggle Interaction</Button>
+      <Button id="debug_interaction" class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleInteraction">Toggle Interaction</Button>
       <Button class="hud_storyteller_button" onClick="HUD_toggleAllAnchors">Toggle Anchors</Button>
       <Button class="hud_storyteller_button" onClick="HUD_toggleAllSpotlights">Toggle Spotlights</Button>
       <Button class="hud_storyteller_button" onClick="HUD_debugCameraActivate">Debug Camera</Button>
-      <Button class="hud_storyteller_button" onClick="HUD_debugLightActivate">Debug Light</Button>
-      <Button class="hud_storyteller_button" onClick="HUD_debugScatterActivate">Debug Scatter</Button>
     </VerticalLayout>
 
     

@@ -1,0 +1,28 @@
+[SyncTrace] trace ON; clock resolution 0.542ms; one frame = 16.7ms
+Sync trace: on
+[SyncTrace] #22 PCST.refreshAllRows 17.9ms (self 0.0ms) >1 frame
+[SyncTrace] #22   PCST.refreshRow x5 total 17.9ms max 4.5ms
+[SyncTrace] #23 PCST.refreshRow(Brown) 3.2ms
+[SyncTrace] #24 PCST.refreshRow(Brown) 3.6ms
+[SyncTrace] #25 Sync.player(Brown) 57.3ms (self 46.4ms) >1 frame
+[SyncTrace] #25   L.reconcileForPlayer(Brown) 9.9ms
+[SyncTrace] #25   HUDP.updatePlayerUI(Brown) 0.0ms
+[SyncTrace] #25   HO.reconcileForSeat(Brown) 1.0ms
+[SyncTrace] #25   UpdateUIDisplays 0.0ms colors=Brown flags=playerStats
+[SyncTrace] #26 HO.reconcileForSeat(Brown) 1.0ms force=true
+[SyncTrace] #27 PCST.refreshCharacterSheetsForColor(Brown) 56.8ms >1 frame
+[SyncTrace] #28 PCST.refreshRow(Brown) 2.5ms
+[XP] Page 6 XP bake is for session 1 but gameState sessionNum is 12. Run mid-week bake (npm run csheet-xp-log:bake) then Save & Play. Finished sessions since the last bake will not show on the sheet.
+[SyncTrace] #29 PCST.refreshAllRows 16.6ms (self 0.0ms)
+[SyncTrace] #29   PCST.refreshRow x5 total 16.6ms max 3.9ms
+[SyncTrace] SUMMARY 8 function(s) over 11.6s
+[SyncTrace] SUMMARY  calls   ran  skip      total       self       max  function
+[SyncTrace] SUMMARY      1     0     0     57.3ms     46.4ms    57.3ms  Sync.player
+[SyncTrace] SUMMARY      1     0     0     56.8ms     56.8ms    56.8ms  PCST.refreshCharacterSheetsForColor
+[SyncTrace] SUMMARY     13     0     0     43.8ms     43.8ms     4.5ms  PCST.refreshRow
+[SyncTrace] SUMMARY      2     0     0     34.5ms      0.0ms    17.9ms  PCST.refreshAllRows
+[SyncTrace] SUMMARY      1     0     0      9.9ms      9.9ms     9.9ms  L.reconcileForPlayer
+[SyncTrace] SUMMARY      2     0     0      2.0ms      2.0ms     1.0ms  HO.reconcileForSeat
+[SyncTrace] SUMMARY      1     0     0      0.0ms      0.0ms     0.0ms  HUDP.updatePlayerUI
+[SyncTrace] SUMMARY      1     0     0      0.0ms      0.0ms     0.0ms  UpdateUIDisplays
+Sync trace: off

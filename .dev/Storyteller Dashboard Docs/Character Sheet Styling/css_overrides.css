@@ -1,0 +1,108 @@
+
+/* We want really compact styles: */
+.pc-sheet-page {
+  padding: 15px;
+}
+
+.pc-adv-columns {
+  gap: 0.1rem;
+}
+
+.pc-rel-columns {
+  gap: 0.3rem;
+}
+
+.pc-adv-col, .pc-rel-col {
+  gap: 0.1rem;
+}
+
+.pc-adv-box, .pc-rel-box {
+  padding: 2px;
+  line-height: 1.1;
+  font-family: Arial Narrow;
+}
+
+/* The 'section' and 'divider' elements should be positioned relative, so that the 'add' buttons can be absolutely positioned within them */
+.pc-adv-section, .pc-divider {
+  position: relative;
+}
+
+button.pc-add-text { /* Style for all 'add' buttons: Very small, green, aligned with bottom right of header */
+  position: absolute;
+  right: 0px;
+  bottom: 7px;
+  font-size: 0.4rem;
+  padding: 3px 2px 0px 2px;
+  border-color: #9fd37d;
+  color: #9fd37d;
+}
+
+button.pc-add-text + .pc-add-text { /* Sequential 'add' buttons should appear beneath the previous one */
+  bottom: -8px;
+}
+
+.pc-divider img { /* With above padding changes, divider images should expand to full width */
+  max-width: 100%;
+}
+
+.pc-rel-col .pc-divider {
+  justify-content: flex-start;
+}
+
+.pc-adv-section.flaws .pc-divider img {  /* The Flaws image on the character sheet should be omitted ... */
+  display: none;
+}
+
+.pc-adv-section.flaws .pc-divider { /* ... and a header (in the same style as Backgrounds) should be included instead, with a divider line */
+  border-top: 2px solid #c3a76f;
+}
+
+
+p.pc-adv-source { /* The 'source' text should be hidden */
+  display: none;
+}
+
+p.pc-adv-flavor { /* More compact styling for the 'flavor' text */
+  letter-spacing: 0.5px;
+  white-space: normal;
+  text-wrap: pretty;
+  margin: 0.25rem 0 0.25rem 0;
+  font-weight: 100;
+}
+
+button { /* All buttons should be rectangular */
+  border-radius: 0 !important;
+}
+
+button.pc-adv-name, button.pc-rel-title { /* More compact styling for the button text */
+  padding: 0;
+  font-family: Arial Narrow;
+  letter-spacing: -0.5px;
+  text-shadow: 0 0 1px black, 0 0 1px black, 0 0 1px black, 0 0 1px black;
+  color: #e9cf9f;
+}
+
+.pc-adv-box.flaws button.pc-adv-name { /* The Flaws section should have a red text color */
+  color: red;
+}
+
+
+/* No need for placeholder notes */
+p.pc-empty-note {
+  display: none;
+}
+
+/* The "Backgrounds" section header should appear above the status strip, since statuses are backgrounds. */
+.pc-status-strip {
+  transform: scale(1.5);
+  width: 66%;
+  transform-origin: 0% 0;
+  margin-bottom: 0.75rem;
+  margin-top: 0.15rem;
+}
+
+button.pc-status-label {
+  white-space: nowrap;
+  letter-spacing: -0.5px;
+  font-size: 0.5rem;
+}
