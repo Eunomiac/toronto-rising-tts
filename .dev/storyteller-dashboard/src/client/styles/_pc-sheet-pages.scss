@@ -1,0 +1,60 @@
+// Pages 2–6 of the PCs tab spread. Page 1 lives in _pc-sheet.scss.
+
+.pc-sheet-page {
+  display: flex;
+  flex-direction: column;
+  padding: 1.3rem 1.35rem 1rem;
+  overflow: hidden auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(196, 161, 90, 0.4) transparent;
+}
+
+.pc-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin: 0.55rem 0 0.35rem;
+
+  img {
+    height: 1.9rem;
+    max-width: 82%;
+    object-fit: contain;
+  }
+}
+
+.pc-section-title {
+  margin: 0.4rem 0 0.25rem;
+  font-family: "Trajan Pro 3", serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-align: center;
+  text-transform: uppercase;
+  color: #e9cf9f;
+}
+
+.pc-add {
+  flex: 0 0 auto;
+  width: 1.35rem;
+  height: 1.35rem;
+  padding: 0;
+  border: 1px solid #c4a15a;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fce5c1;
+  font-size: 0.85rem;
+  line-height: 1;
+
+  &:disabled {
+    opacity: 0.3;
+  }
+}
+
+.pc-empty-note {
+  margin: 0.4rem 0;
+  color: rgba(255, 255, 255, 0.45);
+  font-family: "Perpetua", serif;
+  font-style: italic;
+  text-align: center;
+}

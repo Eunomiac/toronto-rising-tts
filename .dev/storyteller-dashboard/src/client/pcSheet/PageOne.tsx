@@ -8,6 +8,7 @@ import type { RingTarget, SeatSnapshot, Specialty } from "./types.js";
 
 type Props = {
   readonly seat: SeatSnapshot;
+  readonly side: "left" | "right";
   readonly onRing: (event: MouseEvent<HTMLElement>, target: RingTarget) => void;
   readonly onCommand: (deltaHungerOrXp: { op: "hunger" | "xp"; delta: number }) => void;
   readonly onDesire: (text: string) => void;
@@ -59,7 +60,7 @@ const BoxTrack = ({ boxes }: { readonly boxes: ReturnType<typeof paintDamageTrac
   </span>
 );
 
-export const PageOne = ({ seat, onRing, onCommand, onDesire }: Props): ReactElement => {
+export const PageOne = ({ seat, side, onRing, onCommand, onDesire }: Props): ReactElement => {
   const [desireDraft, setDesireDraft] = useState(seat.desire);
   useEffect(() => {
     setDesireDraft(seat.desire);
@@ -83,7 +84,7 @@ export const PageOne = ({ seat, onRing, onCommand, onDesire }: Props): ReactElem
   };
 
   return (
-    <article className="pc-page pc-page-one">
+    <article className={`pc-page pc-page-one ${side}`}>
       <header className="pc-header">
         <h1 className="pc-name">{identity.fullName}</h1>
         {subtitle !== "" ? <p className="pc-subtitle">{subtitle}</p> : null}

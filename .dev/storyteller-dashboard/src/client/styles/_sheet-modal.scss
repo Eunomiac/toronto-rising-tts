@@ -1,0 +1,163 @@
+.sheet-modal {
+  width: min(40rem, 94vw);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(203, 153, 92, 0.55);
+  border-radius: 0.5rem;
+  background: #0c0c10;
+  color: #fce5c1;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+
+  &.wide {
+    width: min(64rem, 96vw);
+  }
+
+  &-header {
+    padding: 0.85rem 1.1rem 0.6rem;
+    border-bottom: 1px solid rgba(203, 153, 92, 0.3);
+
+    h2 {
+      margin: 0;
+      font-family: "Trajan Pro 3", serif;
+      font-size: 1.2rem;
+      letter-spacing: 0.05em;
+    }
+
+    p {
+      margin: 0.2rem 0 0;
+      color: rgba(252, 229, 193, 0.6);
+      font-size: 0.82rem;
+    }
+  }
+
+  &-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem 0.9rem;
+    padding: 0.9rem 1.1rem;
+    align-content: start;
+  }
+
+  &-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.1rem;
+    border-top: 1px solid rgba(203, 153, 92, 0.3);
+
+    button {
+      padding: 0.4rem 0.85rem;
+      font-size: 0.78rem;
+    }
+  }
+
+  &-spacer {
+    flex: 1;
+  }
+
+  &-error {
+    flex: 1;
+    margin: 0;
+    color: #ffb4bc;
+    font-size: 0.8rem;
+  }
+
+  &-submit {
+    border-color: #9fd37d !important;
+    background: #132016 !important;
+    color: #d5f5c4 !important;
+  }
+
+  &-delete {
+    border-color: #7a2a30 !important;
+    color: #ffb4bc !important;
+
+    &.armed {
+      background: #5a1018 !important;
+      color: #fff !important;
+    }
+  }
+}
+
+.sheet-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+
+  &.wide {
+    grid-column: 1 / -1;
+  }
+
+  &-label {
+    color: #c4a15a;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  &-hint {
+    color: rgba(252, 229, 193, 0.5);
+    font-size: 0.72rem;
+  }
+}
+
+.sheet-input {
+  width: 100%;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid rgba(252, 229, 193, 0.22);
+  border-radius: 0.35rem;
+  background: #08080b;
+  color: #f5ebd6;
+  font-size: 0.88rem;
+
+  &:focus {
+    outline: 1px solid #c4a15a;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
+
+  &.sheet-lines {
+    padding: 0.45rem 0.55rem;
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+}
+
+.sheet-number {
+  display: flex;
+  align-items: stretch;
+  gap: 0.25rem;
+
+  .sheet-input {
+    width: 4.2rem;
+    text-align: center;
+    appearance: textfield;
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      appearance: none;
+    }
+  }
+
+  button {
+    width: 2rem;
+    padding: 0;
+    font-size: 1rem;
+  }
+}
+
+.sheet-check {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+}

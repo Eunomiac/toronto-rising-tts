@@ -1,11 +1,11 @@
 import { gsap } from "gsap";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent, type ReactElement } from "react";
+import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent, type ReactElement } from "react";
 import { fetchBridgeStatus, isBridgeConnected, reclaimEditorPort, releaseEditorPort } from "../ttsBridge.js";
 import { applySheetCommands, fetchLiveSnapshot } from "./bridge.js";
 import { applyLocal } from "./applyLocal.js";
 import { createApplyQueue } from "./applyQueue.js";
 import { deepMerge } from "./deepMerge.js";
-import { PageOne } from "./PageOne.js";
+import { renderPage, SPREADS, type PageContext } from "./pages.js";
 import { PlayerRail } from "./PlayerRail.js";
 import { SeatJsonModal } from "./SeatJsonModal.js";
 import { actionsForRing } from "./ringActions.js";
@@ -43,6 +43,7 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
   const [holdingPort, setHoldingPort] = useState(false);
   const [ring, setRing] = useState<{ x: number; y: number; target: RingTarget } | null>(null);
   const [jsonOpen, setJsonOpen] = useState(false);
+  const [spread, setSpread] = useState(0);
   const inFlight = useRef(false);
   const skipLive = useRef(false);
   const syncingRef = useRef(false);
@@ -146,7 +147,7 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
       gsap.fromTo(root.querySelectorAll(".pc-page"), { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45, stagger: 0.08, ease: "power2.out" });
     }, root);
     return () => ctx.revert();
-  }, [active, live]);
+  }, [active, live, spread]);
 
   const claimPort = async (): Promise<void> => {
     if (reclaiming) {
@@ -201,6 +202,29 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
     applyQueue.enqueue(command);
   };
 
+  /** Wait for TTS and surface host errors to the caller (modals) instead of dropping offline. */
+  const applyNow = async (command: ApplyCommand): Promise<void> => {
+    if (!live) {
+      throw new Error("No live sheet to apply into.");
+    }
+    setBusy(true);
+    try {
+      const next = await applySheetCommands([command]);
+      if (!next.ok) {
+        const detail = next.error ?? `${command.op} apply failed`;
+        if (/Unknown op/i.test(detail)) {
+          throw new Error(`${detail}. Save & Play in Tabletop Simulator so the latest dashboard bridge loads, then try again.`);
+        }
+        throw new Error(detail);
+      }
+      setSnapshot(next);
+      setLive(true);
+      setStatus("Live from Tabletop Simulator.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const applyPlayerDataJsonPatch = async (patch: Record<string, unknown>): Promise<void> => {
     if (!live) {
       throw new Error("No live sheet to apply into.");
@@ -222,30 +246,12 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
         partial[key] = merged[key];
       }
     }
-    const command: ApplyCommand = {
+    await applyNow({
       op: "mergePlayerData",
       color: current.color,
       patch: partial,
       ...(deleteKeys.length > 0 ? { deleteKeys } : {})
-    };
-    setBusy(true);
-    try {
-      const next = await applySheetCommands([command]);
-      if (!next.ok) {
-        const detail = next.error ?? "mergePlayerData apply failed";
-        if (/Unknown op/i.test(detail)) {
-          throw new Error(
-            `${detail}. Save & Play in Tabletop Simulator so the dashboard.pc_sheet bridge (mergePlayerData) loads, then try Apply again.`
-          );
-        }
-        throw new Error(detail);
-      }
-      setSnapshot(next);
-      setLive(true);
-      setStatus("Live from Tabletop Simulator.");
-    } finally {
-      setBusy(false);
-    }
+    });
   };
 
   const seat: SeatSnapshot | undefined = live
@@ -277,19 +283,17 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
       <div className="pc-spread-wrap">
         {live && seat ? (
           <div ref={spreadRef} className="pc-spread">
-            <PageOne
-              seat={seat}
-              onRing={openRing}
-              onCommand={({ op, delta }) => void apply({ op, color: seat.color, delta })}
-              onDesire={(text) => {
-                if (text !== seat.desire) {
-                  void apply({ op: "desire", color: seat.color, text });
-                }
-              }}
-            />
-            <article className="pc-page pc-page-two" aria-hidden="true">
-              <span>II</span>
-            </article>
+            {(SPREADS[spread] ?? SPREADS[0]).pages.map((page, index) => {
+              const ctx: PageContext = {
+                seat,
+                snapshot,
+                side: index === 0 ? "left" : "right",
+                onRing: openRing,
+                apply: (command) => apply(command),
+                applyNow
+              };
+              return <Fragment key={page}>{renderPage(page, ctx)}</Fragment>;
+            })}
           </div>
         ) : (
           <div className="pc-spread pc-spread-offline" role="status">
@@ -297,6 +301,24 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
             <p className="pc-offline-body">{status}</p>
           </div>
         )}
+        {live && seat ? (
+          <nav className="pc-spread-tabs" aria-label="Character sheet pages">
+            {SPREADS.map((row, index) => (
+              <button
+                key={row.label}
+                type="button"
+                className={index === spread ? "active" : undefined}
+                aria-pressed={index === spread}
+                onClick={() => {
+                  setRing(null);
+                  setSpread(index);
+                }}
+              >
+                {row.label}
+              </button>
+            ))}
+          </nav>
+        ) : null}
         <div className="pc-bridge-bar">
           <div className={`status ${live ? "success" : "idle"}`}>{status}{syncing ? "  Updating Tabletop Simulator…" : ""}{busy ? "  Sending…" : ""}</div>
           <button
