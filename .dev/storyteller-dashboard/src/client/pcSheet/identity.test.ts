@@ -29,7 +29,6 @@ const seat = (partial: Partial<SeatSnapshot>): SeatSnapshot => ({
   willpower: { base: 4, temp: 0, disabled: 0, superficial: 0, aggravated: 0, stains: 0 },
   humanity: { base: 7, temp: 0, disabled: 0, superficial: 0, aggravated: 0, stains: 0 },
   bloodPotency: { base: 2, temp: 0, disabled: 0 },
-  xp: 0,
   playerData: {},
   hunger: 1,
   hungerMax: 5,

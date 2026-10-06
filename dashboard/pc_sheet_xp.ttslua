@@ -1,0 +1,126 @@
+--[[
+  Storyteller Dashboard PCs tab — Experience Log ops (Page 1 XP jewel, Page 6) and the
+  `lastXpEntry` snapshot field. Same writes as the TTS XP popup (core.xp_log_modal):
+  entries always land in the current `gameState.sessionNum` block.
+]]
+
+local M = {}
+
+local C = require("lib.constants")
+local XpLog = require("core.xp_log")
+local XpModal = require("core.xp_log_modal")
+
+local function charName(color, pid)
+  local catalog = C.PlayerData[pid]
+  if type(catalog) == "table" and type(catalog.charName) == "string" and catalog.charName ~= "" then
+    return catalog.charName
+  end
+  return color
+end
+
+--- @return string|nil err
+local function appendFor(color, pid, amount, description)
+  local ok, err, info = XpLog.appendEntry(pid, amount, description)
+  if not ok then
+    return err or "XP entry failed"
+  end
+  if info and info.overCap then
+    XpLog.warnStoryteller(string.format(
+      "%s: more than %d %s entries this session — extras are stored but hidden on page 6 until rebuild.",
+      charName(color, pid), XpLog.LIVE_SLOT_CAP, info.kind
+    ))
+  end
+  return nil
+end
+
+--- True when this seat's latest entry still matches `expect` ({ kind, amount, description }).
+local function lastMatches(pid, expect)
+  if type(expect) ~= "table" then
+    return true
+  end
+  local last = XpLog.getLastEntry(pid)
+  return last ~= nil
+    and last.kind == expect.kind
+    and math.floor(tonumber(last.amount) or 0) == math.floor(tonumber(expect.amount) or -1)
+    and last.description == expect.description
+end
+
+M.ops = {}
+
+M.ops.xpAppend = function(color, pid, cmd)
+  local err = appendFor(color, pid, cmd.amount, cmd.description)
+  if err ~= nil then
+    return err
+  end
+  XpModal.refreshAfterMutation({ color })
+  return nil
+end
+
+--- Every seat except disconnected PCs (`absentFromSession`), like the TTS Apply to All.
+M.ops.xpAppendAll = function(_color, _pid, cmd)
+  local ok, err = XpLog.validateEntry(cmd.amount, cmd.description)
+  if not ok then
+    return err
+  end
+  local touched = {}
+  local colors = XpLog.presentPcColors()
+  for i = 1, #colors do
+    local seatPid = C.GetPlayerID(colors[i])
+    if type(seatPid) == "string" and seatPid ~= C.StorytellerID then
+      if appendFor(colors[i], seatPid, cmd.amount, cmd.description) == nil then
+        touched[#touched + 1] = colors[i]
+      end
+    end
+  end
+  if #touched == 0 then
+    return "No connected PCs to give XP to"
+  end
+  XpModal.refreshAfterMutation(touched)
+  return nil
+end
+
+--- Undo this seat's latest current-session entry, only if it still matches `expect`.
+M.ops.xpUndo = function(color, pid, cmd)
+  if not lastMatches(pid, cmd.expect) then
+    return "The latest XP entry changed in TTS — refresh and try again"
+  end
+  local ok, err = XpLog.undoLastEntry(pid)
+  if not ok then
+    return err or "Nothing to undo"
+  end
+  XpModal.refreshAfterMutation({ color })
+  return nil
+end
+
+--- Undo an Apply to All: pop `expect` from every listed seat whose latest entry is still that row.
+M.ops.xpUndoAll = function(_color, _pid, cmd)
+  if type(cmd.expect) ~= "table" or type(cmd.colors) ~= "table" then
+    return "Undo All needs the entry and the seats it was applied to"
+  end
+  local touched = {}
+  for i = 1, #cmd.colors do
+    local seatColor = cmd.colors[i]
+    local seatPid = C.GetPlayerID(seatColor)
+    if type(seatPid) == "string" and seatPid ~= C.StorytellerID and lastMatches(seatPid, cmd.expect)
+      and XpLog.undoLastEntry(seatPid) then
+      touched[#touched + 1] = seatColor
+    end
+  end
+  if #touched == 0 then
+    return "Nothing to undo"
+  end
+  XpModal.refreshAfterMutation(touched)
+  return nil
+end
+
+function M.snapshotFields(_color, pid, _stats)
+  local last = XpLog.getLastEntry(pid)
+  if last == nil then
+    return {}
+  end
+  return {
+    lastXpEntry = { kind = last.kind, amount = last.amount, description = last.description },
+  }
+end
+
+return M

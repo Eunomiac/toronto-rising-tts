@@ -358,6 +358,112 @@
   font-style: normal;
 }
 
+// ---------------------------------------------------------------- Page 6
+
+.pc-page-six {
+  overflow: hidden;
+}
+
+.pc-xp-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.4rem;
+
+  .pc-xp {
+    top: 0;
+    padding: 0;
+  }
+}
+
+.pc-xp-log {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding-right: 0.2rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(196, 161, 90, 0.4) transparent;
+}
+
+.pc-xp-session {
+  border: 1px solid rgba(203, 153, 92, 0.45);
+  background: rgba(0, 0, 0, 0.55);
+
+  &.live {
+    border-color: #fce5c1;
+    box-shadow: 0 0 0.6rem rgba(252, 229, 193, 0.35);
+  }
+}
+
+.pc-xp-session-title {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.2rem 0.5rem;
+  background: #d8c39b;
+  color: #1a1209;
+  font-family: "Trajan Pro 3", serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.pc-xp-date {
+  font-family: "Perpetua", serif;
+  font-size: 0.72rem;
+  letter-spacing: 0;
+}
+
+.pc-xp-bins {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 0.8rem;
+  padding: 0.3rem 0.5rem 0;
+}
+
+.pc-xp-entries {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: "Franklin Gothic Demi Cond", sans-serif;
+  font-size: 0.68rem;
+  line-height: 1.3;
+  color: #dddddd;
+
+  li {
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  b {
+    flex: 0 0 3.2rem;
+  }
+
+  &.gain b {
+    color: #e3b34a;
+  }
+
+  &.spend b {
+    color: #e06060;
+  }
+}
+
+.pc-xp-sum {
+  margin: 0.25rem 0 0;
+  padding: 0.15rem 0.5rem 0.25rem;
+  color: #c5c799;
+  font-family: "Franklin Gothic Demi Cond", sans-serif;
+  font-size: 0.7rem;
+  text-align: right;
+
+  b {
+    color: #ffffff;
+  }
+}
+
 .pc-empty-note {
   margin: 0.4rem 0;
   color: rgba(255, 255, 255, 0.45);

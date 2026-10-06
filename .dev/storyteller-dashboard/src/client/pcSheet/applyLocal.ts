@@ -158,8 +158,6 @@ const patchSeat = (seat: SeatSnapshot, command: ApplyCommand): SeatSnapshot => {
       const base = clamp(seat.humanity.base + (command.delta ?? 0), 0, 10);
       return { ...seat, humanity: { ...seat.humanity, base }, humanityMax: base };
     }
-    case "xp":
-      return { ...seat, xp: clamp(seat.xp + command.delta, 0, 999) };
     case "hunger":
       return { ...seat, hunger: clamp(seat.hunger + command.delta, 0, seat.hungerMax) };
     case "desire":
@@ -174,8 +172,6 @@ const patchSeat = (seat: SeatSnapshot, command: ApplyCommand): SeatSnapshot => {
       return { ...seat, hudBlindfold: !seat.hudBlindfold };
     case "torporClear":
       return { ...seat, torpor: false };
-    case "mergeSeat":
-      return command.seat.color === seat.color ? command.seat : seat;
     case "mergePlayerData":
       return seat;
     default:
@@ -184,6 +180,7 @@ const patchSeat = (seat: SeatSnapshot, command: ApplyCommand): SeatSnapshot => {
 };
 
 export const applyLocal = (snapshot: SheetSnapshot, command: ApplyCommand): SheetSnapshot => ({
+  ...snapshot,
   ok: true,
   seats: snapshot.seats.map((seat) => (seat.color === command.color ? patchSeat(seat, command) : seat))
 });

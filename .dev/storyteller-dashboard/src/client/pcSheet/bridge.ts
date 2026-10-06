@@ -1,5 +1,5 @@
 import { executeLua, luaLongString } from "../ttsBridge.js";
-import type { ApplyCommand, SeatColor, SeatSnapshot, SheetSnapshot } from "./types.js";
+import type { ApplyCommand, SeatColor, SeatSnapshot, SheetSnapshot, XpEntryRef } from "./types.js";
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
@@ -80,9 +80,12 @@ const parseSeat = (value: unknown): SeatSnapshot | null => {
       }
     }
   }
-  // Experience Log lives under playerData.xp; seat.xp is banked XP for the jewel.
+  // The Experience Log lives under playerData.xp (banked XP comes from bankedXpFromLog).
   const playerData: Record<string, unknown> = isRecord(value.playerData) ? { ...value.playerData } : {};
-  const xp = asNumber(value.xp);
+  const last = isRecord(value.lastXpEntry) ? value.lastXpEntry : null;
+  const lastXpEntry: XpEntryRef | undefined = last && (last.kind === "gain" || last.kind === "spend")
+    ? { kind: last.kind, amount: asNumber(last.amount), description: asString(last.description) }
+    : undefined;
   return {
     color,
     playerId: asString(value.playerId) || undefined,
@@ -115,8 +118,8 @@ const parseSeat = (value: unknown): SeatSnapshot | null => {
     willpower: asTracker(value.willpower),
     humanity: asTracker(value.humanity),
     bloodPotency: asRating(value.bloodPotency),
-    xp,
     playerData,
+    ...(lastXpEntry ? { lastXpEntry } : {}),
     hunger: asNumber(value.hunger),
     hungerMax: asNumber(value.hungerMax, 5),
     resolvedStatChanges: resolved,
@@ -144,7 +147,7 @@ const parseSnapshotJson = (raw: string): SheetSnapshot => {
   const seats = Array.isArray(parsed.seats)
     ? parsed.seats.map(parseSeat).filter((seat): seat is SeatSnapshot => seat !== null)
     : [];
-  return { ok: true, seats };
+  return { ok: true, seats, sessionNum: Math.floor(asNumber(parsed.sessionNum, 1)) };
 };
 
 export const extractSnapshotJson = (result: { returnValue?: unknown; prints: readonly string[]; error?: string }): string => {

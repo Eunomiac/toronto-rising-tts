@@ -23,6 +23,7 @@ local U = require("lib.util")
 --- `snapshotFields(color, pid, stats) -> table` merged into each seat snapshot.
 local EXTENSIONS = {
   require("dashboard.pc_sheet_traits"),
+  require("dashboard.pc_sheet_xp"),
 }
 
 local ATTRIBUTE_KEYS = {
@@ -224,31 +225,6 @@ local function overlayStringList(overlay, key, fallback)
   return fallback
 end
 
-local applyMergedSeat
-
-local function writeRating(pid, pathFamily, pathKey, rating)
-  local row = copyRating(rating)
-  if pathFamily ~= nil then
-    S.setStateVal(row.base, "playerData", pid, "stats", pathFamily, pathKey, "base")
-    S.setStateVal(row.temp, "playerData", pid, "stats", pathFamily, pathKey, "temp")
-    S.setStateVal(row.disabled, "playerData", pid, "stats", pathFamily, pathKey, "disabled")
-  else
-    S.setStateVal(row.base, "playerData", pid, "stats", pathKey, "base")
-    S.setStateVal(row.temp, "playerData", pid, "stats", pathKey, "temp")
-    S.setStateVal(row.disabled, "playerData", pid, "stats", pathKey, "disabled")
-  end
-end
-
-local function writeTracker(pid, which, tracker)
-  local row = copyTracker(tracker)
-  S.setStateVal(row.base, "playerData", pid, "stats", which, "base")
-  S.setStateVal(row.temp, "playerData", pid, "stats", which, "temp")
-  S.setStateVal(row.disabled, "playerData", pid, "stats", which, "disabled")
-  S.setStateVal(row.superficial, "playerData", pid, "stats", which, "superficial")
-  S.setStateVal(row.aggravated, "playerData", pid, "stats", which, "aggravated")
-  S.setStateVal(row.stains, "playerData", pid, "stats", which, "stains")
-end
-
 local function encodeSnapshot(payload)
   if JSON == nil or type(JSON.encode) ~= "function" then
     error("dashboard.pc_sheet: JSON.encode unavailable")
@@ -364,150 +340,6 @@ local function applyMergedPlayerData(color, patch, deleteKeys)
   if type(PCST.paintXpLogPage6ForColor) == "function" then
     PCST.paintXpLogPage6ForColor(color)
   end
-  return nil
-end
-
---- Absolute write of a dashboard-merged seat into gameState (legacy sheet-shaped Apply).
-applyMergedSeat = function(color, seat)
-  local pid = C.GetPlayerID(color)
-  if type(pid) ~= "string" or pid == C.StorytellerID then
-    return "No player for color " .. tostring(color)
-  end
-  if type(seat) ~= "table" then
-    return "mergeSeat requires a seat object"
-  end
-
-  if type(seat.attributes) == "table" then
-    for key, rating in pairs(seat.attributes) do
-      if type(key) == "string" then
-        writeRating(pid, "attributes", key, rating)
-      end
-    end
-  end
-  if type(seat.skills) == "table" then
-    for key, rating in pairs(seat.skills) do
-      if type(key) == "string" then
-        writeRating(pid, "skills", key, rating)
-      end
-    end
-  end
-  if seat.bloodPotency ~= nil then
-    writeRating(pid, nil, "bloodPotency", seat.bloodPotency)
-  end
-  if seat.health ~= nil then
-    writeTracker(pid, "health", seat.health)
-  end
-  if seat.willpower ~= nil then
-    writeTracker(pid, "willpower", seat.willpower)
-  end
-  if seat.humanity ~= nil then
-    writeTracker(pid, "humanity", seat.humanity)
-  end
-  if seat.specialties ~= nil then
-    S.setStateVal(copySpecialties(seat.specialties), "playerData", pid, "stats", "specialties")
-  end
-  if type(seat.badges) == "table" then
-    local badges = {}
-    for key, value in pairs(seat.badges) do
-      if type(key) == "string" then
-        local n = math.floor(num(value))
-        if n ~= 0 then
-          badges[key] = math.max(-5, math.min(5, n))
-        end
-      end
-    end
-    S.setStateVal(badges, "playerData", pid, "stats", "badges")
-  end
-  if seat.xp ~= nil then
-    if type(seat.xp) == "table" then
-      local XpLog = require("core.xp_log")
-      local ok, err = XpLog.replaceLog(pid, seat.xp)
-      if not ok then
-        return err or "Could not replace Experience Log"
-      end
-      if type(PCST.paintXpLogPage6ForColor) == "function" then
-        PCST.paintXpLogPage6ForColor(color)
-      end
-    else
-      return "XP patch must be an Experience Log object (session-number keys), not a single number — use the PCs panel XP button for live gains/spends"
-    end
-  end
-  if seat.hunger ~= nil then
-    local maxDots = tonumber(C.MAX_HUNGER) or 5
-    local nx = math.max(0, math.min(maxDots, math.floor(num(seat.hunger))))
-    S.setPlayerVal(color, "hunger", nx)
-  end
-  if seat.desire ~= nil then
-    PCST.setDesireForColor(color, tostring(seat.desire or ""))
-  end
-  if seat.ambition ~= nil then
-    S.setStateVal(PCST.normalizeDesire(tostring(seat.ambition or "")), "playerData", pid, "ambition")
-  end
-
-  -- Only touch sheetOverlay keys that the patch actually included. A full replace of
-  -- empty defaults wiped charName / titles / etc. when the author patched ambition alone.
-  local overlayKeys = {
-    "charName", "clan", "bloodline", "titles", "generation",
-    "birthPlace", "birthYear", "embracePlace", "embraceYear", "convictions",
-  }
-  local hasOverlayPatch = false
-  for i = 1, #overlayKeys do
-    if seat[overlayKeys[i]] ~= nil then
-      hasOverlayPatch = true
-      break
-    end
-  end
-  if hasOverlayPatch then
-    local overlay = S.getStateVal("playerData", pid, "sheetOverlay")
-    if type(overlay) ~= "table" then
-      overlay = {}
-    end
-    if seat.charName ~= nil then
-      overlay.charName = type(seat.charName) == "string" and seat.charName or ""
-    end
-    if seat.clan ~= nil then
-      overlay.clan = type(seat.clan) == "string" and seat.clan or ""
-    end
-    if seat.bloodline ~= nil then
-      overlay.bloodline = type(seat.bloodline) == "string" and seat.bloodline or ""
-    end
-    if seat.titles ~= nil then
-      overlay.titles = copyStringList(seat.titles)
-    end
-    if seat.generation ~= nil then
-      overlay.generation = type(seat.generation) == "string" and seat.generation or ""
-    end
-    if seat.birthPlace ~= nil then
-      overlay.birthPlace = type(seat.birthPlace) == "string" and seat.birthPlace or ""
-    end
-    if seat.birthYear ~= nil then
-      overlay.birthYear = num(seat.birthYear)
-    end
-    if seat.embracePlace ~= nil then
-      overlay.embracePlace = type(seat.embracePlace) == "string" and seat.embracePlace or ""
-    end
-    if seat.embraceYear ~= nil then
-      overlay.embraceYear = num(seat.embraceYear)
-    end
-    if seat.convictions ~= nil then
-      overlay.convictions = copyStringList(seat.convictions)
-    end
-    S.setStateVal(overlay, "playerData", pid, "sheetOverlay")
-    if type(overlay.charName) == "string" and overlay.charName ~= "" then
-      S.setStateVal(overlay.charName, "playerData", pid, "charName")
-    end
-  end
-
-  if seat.deferAutoSeat ~= nil then
-    S.setStateVal(seat.deferAutoSeat == true, "connectionControls", "deferAutoSeatByColor", color)
-  end
-  if seat.deferConnect ~= nil then
-    S.setStateVal(seat.deferConnect == true, "connectionControls", "deferConnectByColor", color)
-  end
-
-  Sync.player(color)
-  P.refreshHudOverlaysForSeat(color)
-  afterTrackerChange(color)
   return nil
 end
 
@@ -713,10 +545,6 @@ local function snapshotSeat(color)
     willpower = copyTracker(stats.willpower),
     humanity = copyTracker(stats.humanity),
     bloodPotency = copyRating(stats.bloodPotency),
-    xp = (function()
-      local XpLog = require("core.xp_log")
-      return XpLog.getCurrentXp(pid)
-    end)(),
     playerData = playerDataForJson(pid),
     hunger = num(type(pid) == "string" and S.getPlayerVal(color, "hunger") or 0),
     hungerMax = hungerMax,
@@ -745,12 +573,16 @@ local function snapshotSeat(color)
   return seat
 end
 
-function Dash.snapshot()
+local function snapshotPayload()
   local seats = {}
   for i = 1, #C.PlayerColors do
     seats[#seats + 1] = snapshotSeat(C.PlayerColors[i])
   end
-  return encodeSnapshot({ ok = true, seats = seats })
+  return { ok = true, seats = seats, sessionNum = math.floor(num(S.getStateVal("sessionNum"), 1)) }
+end
+
+function Dash.snapshot()
+  return encodeSnapshot(snapshotPayload())
 end
 
 local function applyCommand(cmd)
@@ -804,9 +636,6 @@ local function applyCommand(cmd)
   end
   if op == "humanity" then
     return applyHumanityOp(color, cmd.kind, cmd.delta, cmd.remorse)
-  end
-  if op == "xp" then
-    return "XP is managed via the Experience Log (PCs panel XP button); dashboard scalar XP writes are disabled"
   end
   if op == "hunger" then
     local cur = num(S.getPlayerVal(color, "hunger"))
@@ -894,9 +723,6 @@ local function applyCommand(cmd)
     RC.initiateRoll(color, { rollType = rollType, initiator = "storyteller" })
     return nil
   end
-  if op == "mergeSeat" then
-    return applyMergedSeat(color, cmd.seat)
-  end
   if op == "mergePlayerData" then
     return applyMergedPlayerData(color, cmd.patch, cmd.deleteKeys)
   end
@@ -928,11 +754,7 @@ function Dash.apply(jsonText)
       return encodeSnapshot({ ok = false, error = applyErr })
     end
   end
-  local seats = {}
-  for i = 1, #C.PlayerColors do
-    seats[#seats + 1] = snapshotSeat(C.PlayerColors[i])
-  end
-  return encodeSnapshot({ ok = true, seats = seats })
+  return encodeSnapshot(snapshotPayload())
 end
 
 return Dash

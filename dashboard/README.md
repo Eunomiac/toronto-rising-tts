@@ -5,7 +5,8 @@ Execute-lua modules used by the Storyteller Dashboard (`.dev/storyteller-dashboa
 | Module | Require | Global entry |
 | --- | --- | --- |
 | `pc_sheet.ttslua` | `dashboard.pc_sheet` | `GlobalDashboardPcSheetSnapshot` / `GlobalDashboardPcSheetApply` |
-| `pc_sheet_traits.ttslua` | `dashboard.pc_sheet_traits` | none — registered in `pc_sheet.ttslua` `EXTENSIONS` (Page 2 disciplines/powers/rituals, Page 3 advantages) |
+| `pc_sheet_traits.ttslua` | `dashboard.pc_sheet_traits` | none — registered in `pc_sheet.ttslua` `EXTENSIONS` (Page 2 disciplines/powers/rituals, Page 3 advantages, `projectStakes`) |
+| `pc_sheet_xp.ttslua` | `dashboard.pc_sheet_xp` | none — `EXTENSIONS` (Experience Log append / Apply to All / undo, `lastXpEntry`) |
 
 ## PC sheet extensions
 

@@ -73,7 +73,9 @@ The steam ID numbers (used as keys in the `playerData` table) are stored in the 
 
 The Storyteller Dashboard **PCs** tab must never paint a stand-in sheet when the editor bridge is down. If port 39998 is unclaimed or TTS does not return a snapshot, the tab shows an empty **No live sheet** notice with the bridge reason. Identity (name, clan, chronology, convictions) and trackers all come from `GlobalDashboardPcSheetSnapshot` (`dashboard/pc_sheet.ttslua`, required as `dashboard.pc_sheet`).
 
-JSON **Apply** deep-merges a patch into the current seat (arrays replace; objects merge) and writes through `GlobalDashboardPcSheetApply` `mergeSeat`. Only keys present in the patch are written. Identity fields, when patched, merge into `playerData[steamId].sheetOverlay` (empty overlay values fall back to the PCS catalog). The PCs tab does **not** poll TTS on an interval — it loads once when the tab opens and after Claim Port / Apply.
+JSON **Apply** deep-merges a patch into the seat's raw `playerData` dump (arrays replace; objects merge; JSON `null` deletes) and writes it through `GlobalDashboardPcSheetApply` `mergePlayerData` with no defaults or normalization. The PCs tab does **not** poll TTS on an interval — it loads once when the tab opens and after Claim Port / Apply.
+
+Sheet Pages 2, 3 and 6 read `playerData.stats.disciplines`, `stats.backgrounds|merits|flaws` and `playerData.xp` from that same dump and edit them through sibling extension modules (`dashboard/pc_sheet_traits.ttslua`, `dashboard/pc_sheet_xp.ttslua`; contract in [`dashboard/README.md`](../../dashboard/README.md)). XP entries use `XpLog.appendEntry` / `undoLastEntry` like the TTS XP popup; there is no scalar XP write.
 
 ## `PCStatsPartA`: `stats.attributes`, `stats.skills`, and `stats.specialties`
 

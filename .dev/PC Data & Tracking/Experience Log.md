@@ -34,6 +34,10 @@ If an entry already exists in the player's data for the current session number, 
 
 The XP modal shows the most recent entry for the current session with an **Undo** button. Each Undo removes the last row from the bin that was most recently appended (`gains` or `spends`). Gains and spends are independent columns — there is no interleaved timeline of when each was logged relative to the other.
 
+### Storyteller Dashboard
+
+The dashboard PCs tab shows the full log on its Page 6 (all sessions, newest first, the current session highlighted) and adds entries from an **Experience** popup opened by the XP jewel on Page 1 or Page 6. The popup sends `xpAppend`, `xpAppendAll` (every PC except disconnected ones, same as Apply to All), `xpUndo` and `xpUndoAll` through `dashboard/pc_sheet_xp.ttslua`, which calls `XpLog.appendEntry` / `undoLastEntry` and the same after-change refresh as the TTS popup (`xp_log_modal.refreshAfterMutation`). Undo carries the expected entry and is refused if the latest entry changed in TTS meanwhile. Banked XP on the jewel is the latest session's `newTotal` (`bankedXpFromLog`); there is no scalar XP write path.
+
 ### Ids and bake
 
 Element ids use a **session id token** derived from the session key: positive/zero stay as digits (`xp_sessionNum_2`), negatives use an `m` prefix so XmlUI ids stay safe (`-1` → `xp_sessionNum_m1`). Mid-week bake (`npm run csheet-xp-log:bake`) reads the latest TTS save’s `LuaScriptState`, fills templates under `ui/.templates/csheet/` (`page6.xml` + `partials/xp_*.xml`), and writes:

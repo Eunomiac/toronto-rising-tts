@@ -100,6 +100,8 @@ function M.onField(id, value)
   end
 end
 
+--- Repaint PCs panel rows, sheets and Page 6 after Experience Log writes (also used by the dashboard).
+--- @param colors string[]
 local function afterMutation(colors)
   for i = 1, #colors do
     local color = colors[i]
@@ -110,6 +112,8 @@ local function afterMutation(colors)
     end
   end
 end
+
+M.refreshAfterMutation = afterMutation
 
 local function applyOne(pid, color)
   local ok, err, info = XpLog.appendEntry(pid, draft.amountText, draft.description)

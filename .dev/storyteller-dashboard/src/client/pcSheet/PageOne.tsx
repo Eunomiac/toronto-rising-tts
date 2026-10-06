@@ -1,4 +1,5 @@
 import { useEffect, useState, type MouseEvent, type ReactElement } from "react";
+import { bankedXpFromLog } from "./bankedXp.js";
 import { chronologyFor, identityFromSeat, subtitleFor } from "./identity.js";
 import { ATTRIBUTE_COLUMNS, ATTRIBUTE_LABELS, SKILL_COLUMNS, SKILL_LABELS, assetUrl } from "./layout.js";
 import { DotLine } from "./DotLine.js";
@@ -10,7 +11,8 @@ type Props = {
   readonly seat: SeatSnapshot;
   readonly side: "left" | "right";
   readonly onRing: (event: MouseEvent<HTMLElement>, target: RingTarget) => void;
-  readonly onCommand: (deltaHungerOrXp: { op: "hunger" | "xp"; delta: number }) => void;
+  readonly onHunger: (delta: number) => void;
+  readonly onXp: () => void;
   readonly onDesire: (text: string) => void;
 };
 
@@ -60,7 +62,7 @@ const BoxTrack = ({ boxes }: { readonly boxes: ReturnType<typeof paintDamageTrac
   </span>
 );
 
-export const PageOne = ({ seat, side, onRing, onCommand, onDesire }: Props): ReactElement => {
+export const PageOne = ({ seat, side, onRing, onHunger, onXp, onDesire }: Props): ReactElement => {
   const [desireDraft, setDesireDraft] = useState(seat.desire);
   useEffect(() => {
     setDesireDraft(seat.desire);
@@ -78,9 +80,9 @@ export const PageOne = ({ seat, side, onRing, onCommand, onDesire }: Props): Rea
     image: "dot_red" as const
   }));
 
-  const nudge = (op: "hunger" | "xp", event: MouseEvent<HTMLElement>, delta: number): void => {
+  const nudgeHunger = (event: MouseEvent<HTMLElement>, delta: number): void => {
     event.preventDefault();
-    onCommand({ op, delta });
+    onHunger(delta);
   };
 
   return (
@@ -167,11 +169,11 @@ export const PageOne = ({ seat, side, onRing, onCommand, onDesire }: Props): Rea
         <button
           className="pc-xp"
           type="button"
-          onClick={(event) => nudge("xp", event, 1)}
-          onContextMenu={(event) => nudge("xp", event, -1)}
+          title="Add an Experience Log entry"
+          onClick={onXp}
         >
           <img src={assetUrl("dots/xp_jewel.webp")} alt="" />
-          <strong>{seat.xp}</strong>
+          <strong>{bankedXpFromLog(seat.playerData.xp)}</strong>
           <span>XP</span>
         </button>
         <button className="pc-track" type="button" onClick={(event) => onRing(event, { kind: "damage", which: "willpower" })}>
@@ -191,8 +193,8 @@ export const PageOne = ({ seat, side, onRing, onCommand, onDesire }: Props): Rea
           <button
             className="pc-track hunger"
             type="button"
-            onClick={(event) => nudge("hunger", event, 1)}
-            onContextMenu={(event) => nudge("hunger", event, -1)}
+            onClick={(event) => nudgeHunger(event, 1)}
+            onContextMenu={(event) => nudgeHunger(event, -1)}
           >
             <span className="pc-track-label">Hunger</span>
             <DotLine slots={hungerDots} />

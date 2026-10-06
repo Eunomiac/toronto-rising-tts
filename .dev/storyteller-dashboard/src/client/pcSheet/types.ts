@@ -51,10 +51,10 @@ export type SeatSnapshot = {
   readonly willpower: Tracker;
   readonly humanity: Tracker;
   readonly bloodPotency: Rating;
-  /** Banked XP for the sheet jewel (latest session newTotal). */
-  readonly xp: number;
   /** Raw `gameState.playerData.<pid>` for the JSON modal (dump + merge target). */
   readonly playerData: Record<string, unknown>;
+  /** Latest current-session Experience Log entry (the Undo target). */
+  readonly lastXpEntry?: XpEntryRef;
   readonly hunger: number;
   readonly hungerMax: number;
   readonly resolvedStatChanges: Record<string, number>;
@@ -71,10 +71,14 @@ export type SeatSnapshot = {
   readonly projectStakes: Record<string, number>;
 };
 
+export type XpEntryRef = { readonly kind: "gain" | "spend"; readonly amount: number; readonly description: string };
+
 export type SheetSnapshot = {
   readonly ok: boolean;
   readonly error?: string;
   readonly seats: readonly SeatSnapshot[];
+  /** `gameState.sessionNum`: new XP entries land in this session's block. */
+  readonly sessionNum?: number;
 };
 
 export type DamageMode =
@@ -118,7 +122,10 @@ export type ApplyCommand =
   | { op: "badgeDelta"; color: SeatColor; key: string; delta: number }
   | { op: "damage"; color: SeatColor; which: "health" | "willpower"; mode: DamageMode }
   | { op: "humanity"; color: SeatColor; kind: "stain" | "base" | "remorse"; delta?: number; remorse?: "pass" | "fail" }
-  | { op: "xp"; color: SeatColor; delta: number }
+  | { op: "xpAppend"; color: SeatColor; amount: number; description: string }
+  | { op: "xpAppendAll"; color: SeatColor; amount: number; description: string }
+  | { op: "xpUndo"; color: SeatColor; expect?: XpEntryRef }
+  | { op: "xpUndoAll"; color: SeatColor; expect: XpEntryRef; colors: readonly SeatColor[] }
   | { op: "hunger"; color: SeatColor; delta: number }
   | { op: "desire"; color: SeatColor; text: string }
   | { op: "torporClear"; color: SeatColor }
@@ -129,7 +136,6 @@ export type ApplyCommand =
   | { op: "autoSeat"; color: SeatColor }
   | { op: "connect"; color: SeatColor }
   | { op: "initiateRoll"; color: SeatColor; rollType: string }
-  | { op: "mergeSeat"; color: SeatColor; seat: SeatSnapshot }
   | { op: "mergePlayerData"; color: SeatColor; patch: Record<string, unknown>; deleteKeys?: readonly string[] };
 
 export type RingTarget =

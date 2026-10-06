@@ -1,8 +1,10 @@
-import type { MouseEvent, ReactElement } from "react";
+import { useState, type MouseEvent, type ReactElement } from "react";
 import { PageOne } from "./PageOne.js";
+import { PageSix } from "./PageSix.js";
 import { PageThree } from "./PageThree.js";
 import { PageTwo } from "./PageTwo.js";
 import type { ApplyCommand, RingTarget, SeatSnapshot, SheetSnapshot } from "./types.js";
+import { XpModal } from "./XpModal.js";
 
 /** Shared props for every sheet page component. */
 export type PageContext = {
@@ -30,26 +32,38 @@ const Placeholder = ({ page, side }: { readonly page: number; readonly side: "le
   </article>
 );
 
+const PageOneSlot = ({ ctx }: { readonly ctx: PageContext }): ReactElement => {
+  const [addingXp, setAddingXp] = useState(false);
+  const color = ctx.seat.color;
+  return (
+    <>
+      <PageOne
+        seat={ctx.seat}
+        side={ctx.side}
+        onRing={ctx.onRing}
+        onHunger={(delta) => ctx.apply({ op: "hunger", color, delta })}
+        onXp={() => setAddingXp(true)}
+        onDesire={(text) => {
+          if (text !== ctx.seat.desire) {
+            ctx.apply({ op: "desire", color, text });
+          }
+        }}
+      />
+      {addingXp ? <XpModal seat={ctx.seat} snapshot={ctx.snapshot} send={ctx.applyNow} onClose={() => setAddingXp(false)} /> : null}
+    </>
+  );
+};
+
 export const renderPage = (page: number, ctx: PageContext): ReactElement => {
   switch (page) {
     case 1:
-      return (
-        <PageOne
-          seat={ctx.seat}
-          side={ctx.side}
-          onRing={ctx.onRing}
-          onCommand={({ op, delta }) => ctx.apply({ op, color: ctx.seat.color, delta })}
-          onDesire={(text) => {
-            if (text !== ctx.seat.desire) {
-              ctx.apply({ op: "desire", color: ctx.seat.color, text });
-            }
-          }}
-        />
-      );
+      return <PageOneSlot ctx={ctx} />;
     case 2:
       return <PageTwo ctx={ctx} />;
     case 3:
       return <PageThree ctx={ctx} />;
+    case 6:
+      return <PageSix ctx={ctx} />;
     default:
       return <Placeholder page={page} side={ctx.side} />;
   }
