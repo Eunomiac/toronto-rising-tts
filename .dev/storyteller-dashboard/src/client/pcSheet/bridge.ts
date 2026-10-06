@@ -127,6 +127,19 @@ const parseSeat = (value: unknown): SeatSnapshot | null => {
     badges,
     bloodSurge: asNumber(value.bloodSurge),
     mending: asNumber(value.mending),
+    discBonus: asNumber(value.discBonus),
+    discReroll: asNumber(value.discReroll),
+    baneSeverity: asNumber(value.baneSeverity),
+    clanBanes: Array.isArray(value.clanBanes)
+      ? value.clanBanes.flatMap((row) => isRecord(row) && asString(row.name) !== ""
+        ? [{
+          name: asString(row.name),
+          subtitleLabel: asString(row.subtitleLabel),
+          subtitleValue: asString(row.subtitleValue),
+          notes: asString(row.notes)
+        }]
+        : [])
+      : [],
     healthMax: asNumber(value.healthMax, asTracker(value.health).base),
     willpowerMax: asNumber(value.willpowerMax, asTracker(value.willpower).base),
     humanityMax: asNumber(value.humanityMax, asTracker(value.humanity).base),

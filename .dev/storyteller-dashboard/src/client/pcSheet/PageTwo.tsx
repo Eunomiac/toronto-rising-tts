@@ -22,6 +22,7 @@ import {
   type RitualSlot
 } from "./sheetData.js";
 import { termProps } from "../termImages/store.js";
+import type { ClanBane } from "./types.js";
 
 type Popup =
   | { kind: "addDiscipline" }
@@ -111,6 +112,26 @@ const RitualRow = ({ slot, onEdit }: { readonly slot: RitualSlot; readonly onEdi
   );
 };
 
+const CURSE_PREFIX = /^(the curse of)\s+/i;
+
+const BaneCard = ({ bane }: { readonly bane: ClanBane }): ReactElement => {
+  const prefix = CURSE_PREFIX.exec(bane.name)?.[1];
+  const title = prefix ? bane.name.slice(prefix.length).trim() : bane.name;
+  const subtitle = [bane.subtitleLabel, bane.subtitleValue].filter((part) => part !== "").join(": ");
+  return (
+    <div className="pc-bane">
+      {prefix ? <span className="pc-bane-prefix">{prefix}</span> : null}
+      <span className="pc-bane-name" {...termProps("bane", bane.name)}>{title}</span>
+      {subtitle !== "" || bane.notes !== "" ? (
+        <div className="pc-bane-box">
+          {subtitle !== "" ? <p className="pc-bane-subtitle">{subtitle}</p> : null}
+          {bane.notes !== "" ? <p className="pc-bane-notes">{bane.notes}</p> : null}
+        </div>
+      ) : null}
+    </div>
+  );
+};
+
 export const PageTwo = ({ ctx }: { readonly ctx: PageContext }): ReactElement => {
   const [popup, setPopup] = useState<Popup | null>(null);
   const color = ctx.seat.color;
@@ -168,16 +189,22 @@ export const PageTwo = ({ ctx }: { readonly ctx: PageContext }): ReactElement =>
     <article className={`pc-page pc-sheet-page pc-page-two ${ctx.side}`}>
       <div className="pc-sheet-scroll">
         <div className="pc-divider">
+          <div className="pc-divider-side left">
+            <span className="pc-track-note pc-bp-note">Reroll Level <b>{ctx.seat.discReroll}</b></span>
+          </div>
           <h3 className="pc-section-title">Disciplines</h3>
-          <button
-            type="button"
-            className="pc-add-text"
-            title={full ? `Page 2 holds ${MAX_DISCIPLINES} disciplines` : "Add a discipline"}
-            disabled={full}
-            onClick={() => setPopup({ kind: "addDiscipline" })}
-          >
-            + Discipline
-          </button>
+          <div className="pc-divider-side right">
+            <span className="pc-track-note pc-bp-note"><b>+{ctx.seat.discBonus}</b> Discipline Bonus</span>
+            <button
+              type="button"
+              className="pc-add-text"
+              title={full ? `Page 2 holds ${MAX_DISCIPLINES} disciplines` : "Add a discipline"}
+              disabled={full}
+              onClick={() => setPopup({ kind: "addDiscipline" })}
+            >
+              + Discipline
+            </button>
+          </div>
         </div>
         <section className="pc-disc-grid" aria-label="Disciplines">
           {cells.map((row, index) => (
@@ -223,6 +250,18 @@ export const PageTwo = ({ ctx }: { readonly ctx: PageContext }): ReactElement =>
             ) : null}
           </section>
         ) : null}
+
+        <section className="pc-banes" aria-label="Clan Banes">
+          <div className="pc-divider">
+            <h3 className="pc-section-title">Clan Banes</h3>
+            <div className="pc-divider-side right">
+              <span className="pc-track-note pc-bp-note">Bane Severity <b>{ctx.seat.baneSeverity}</b></span>
+            </div>
+          </div>
+          <div className="pc-bane-list">
+            {ctx.seat.clanBanes.map((bane) => <BaneCard key={bane.name} bane={bane} />)}
+          </div>
+        </section>
       </div>
       {renderPopup()}
     </article>

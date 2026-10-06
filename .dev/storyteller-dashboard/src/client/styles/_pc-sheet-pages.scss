@@ -75,6 +75,28 @@
     }
   }
 
+  // Notes and buttons grouped on one side of the header, vertically centred.
+  .pc-divider-side {
+    position: absolute;
+    top: 50%;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transform: translateY(-50%);
+
+    &.left {
+      left: 0;
+    }
+
+    &.right {
+      right: 0;
+    }
+
+    .pc-add-text {
+      position: static;
+    }
+  }
+
   // Several small buttons side by side in the same bottom-right spot.
   .pc-divider-actions {
     position: absolute;
@@ -225,11 +247,75 @@
 }
 
 .pc-rc {
-  margin-top: auto;
-
   .pc-divider img {
     height: 2.4rem;
   }
+}
+
+// Blood Potency effects in Page 1 .pc-track-note lettering, beside a header's buttons.
+.pc-bp-note {
+  margin: 0;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.pc-banes {
+  margin-top: auto;
+  padding-bottom: 0.5rem;
+}
+
+.pc-bane-list {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 0.6rem;
+}
+
+.pc-bane {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  color: #ffffff;
+  font-family: "Trajan Pro 3", serif;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.pc-bane-prefix {
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+}
+
+.pc-bane-name {
+  font-size: 1.05rem;
+  line-height: 1.1;
+}
+
+.pc-bane-box {
+  align-self: stretch;
+  margin-top: 0.3rem;
+  padding: 2px 4px;
+  border: 1px solid #cb995c;
+  background: #000000;
+  color: #dddddd;
+  font-family: "Arial Narrow", sans-serif;
+  font-size: 0.66rem;
+  line-height: 1.2;
+  text-transform: none;
+
+  p {
+    margin: 0;
+  }
+}
+
+.pc-bane-subtitle {
+  color: #e9cf9f;
+  font-weight: 700;
+}
+
+.pc-bane-notes {
+  font-style: italic;
 }
 
 .pc-rc-columns {
