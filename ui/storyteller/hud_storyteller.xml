@@ -42,7 +42,7 @@ UI.setAttributes("debug_buttonControls", {})
     <VerticalLayout id="debug_buttonControls" class="storyteller_buttonControls" visibility="Host">
       <Text class="hud_storyteller_header">== DEBUG ==</Text>
       <Text id="debug_lastLoadClock" fontSize="12" color="#AAAAAA" alignment="MiddleCenter" preferredHeight="18" minHeight="18" flexibleHeight="0" text="—" />
-      <Button id="debug_resetToIntermission" class="hud_storyteller_button" onClick="HUD_resetToIntermission">Overlay Alpha: Full</Button>
+      <Button id="debug_resetToIntermission" class="hud_storyteller_button" onClick="HUD_resetToIntermission">Reset to Intermission</Button>
       <Button class="hud_storyteller_button" onClick="HUD_printState">Print State</Button>
       <Button class="hud_storyteller_button" onClick="HUD_syncAll">Sync All (force)</Button>
       <Button id="debug_syncTrace" class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleSyncTrace">Trace Sync</Button>

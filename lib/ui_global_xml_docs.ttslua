@@ -4971,124 +4971,6 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </VerticalLayout>
   
   
-</VerticalLayout><VerticalLayout id="pc_p2_bg_4" class="box_text_container" active="false">
-  <HorizontalLayout id="db_p2_bg_4_title_bar" class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_4_title" class="box_text_title_text" text="" />
-    <Panel id="db_p2_bg_4_panel_title_dotline" class="box_text_panel_title_dotline">
-      
-      <Image id="pc_p2_bg_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
-      <Image id="pc_p2_bg_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
-      <Image id="pc_p2_bg_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
-      <Image id="pc_p2_bg_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p2_bg_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
-    </Panel>
-  </HorizontalLayout>
-  
-  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
-    <Text id="pc_p2_bg_4_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-    <Text id="pc_p2_bg_4_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-  </VerticalLayout>
-  
-  
-</VerticalLayout></VerticalLayout>
-          <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_bg_5" class="box_text_container" active="false">
-  <HorizontalLayout id="db_p2_bg_5_title_bar" class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_5_title" class="box_text_title_text" text="" />
-    <Panel id="db_p2_bg_5_panel_title_dotline" class="box_text_panel_title_dotline">
-      
-      <Image id="pc_p2_bg_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
-      <Image id="pc_p2_bg_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
-      <Image id="pc_p2_bg_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
-      <Image id="pc_p2_bg_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p2_bg_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
-    </Panel>
-  </HorizontalLayout>
-  
-  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
-    <Text id="pc_p2_bg_5_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-    <Text id="pc_p2_bg_5_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-  </VerticalLayout>
-  
-  
-</VerticalLayout></VerticalLayout>
-          <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_bg_1" class="box_text_container" active="false">
-  <HorizontalLayout id="db_p2_bg_1_title_bar" class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_1_title" class="box_text_title_text" text="" />
-    <Panel id="db_p2_bg_1_panel_title_dotline" class="box_text_panel_title_dotline">
-      
-      <Image id="pc_p2_bg_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
-      <Image id="pc_p2_bg_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
-      <Image id="pc_p2_bg_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
-      <Image id="pc_p2_bg_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p2_bg_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
-    </Panel>
-  </HorizontalLayout>
-  
-  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
-    <Text id="pc_p2_bg_1_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-    <Text id="pc_p2_bg_1_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-  </VerticalLayout>
-  
-  
-</VerticalLayout><VerticalLayout id="pc_p2_bg_2" class="box_text_container" active="false">
-  <HorizontalLayout id="db_p2_bg_2_title_bar" class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_bg_2_title" class="box_text_title_text" text="" />
-    <Panel id="db_p2_bg_2_panel_title_dotline" class="box_text_panel_title_dotline">
-      
-      <Image id="pc_p2_bg_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
-      <Image id="pc_p2_bg_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
-      <Image id="pc_p2_bg_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
-      <Image id="pc_p2_bg_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p2_bg_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
-    </Panel>
-  </HorizontalLayout>
-  
-  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
-    <Text id="pc_p2_bg_2_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-    <Text id="pc_p2_bg_2_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-  </VerticalLayout>
-  
-  
 </VerticalLayout><VerticalLayout id="pc_p2_bg_3" class="box_text_container" active="false">
   <HorizontalLayout id="db_p2_bg_3_title_bar" class="box_text_title_bar 5_dots">
     <Text id="pc_p2_bg_3_title" class="box_text_title_text" text="" />
@@ -5148,6 +5030,124 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   
   
 </VerticalLayout></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_bg_1" class="box_text_container" active="false">
+  <HorizontalLayout id="db_p2_bg_1_title_bar" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_1_title" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_1_panel_title_dotline" class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_bg_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_bg_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_bg_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_bg_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_bg_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_1_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_1_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p2_bg_4" class="box_text_container" active="false">
+  <HorizontalLayout id="db_p2_bg_4_title_bar" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_4_title" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_4_panel_title_dotline" class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_bg_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_bg_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_bg_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_bg_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_bg_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_4_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_4_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_bg_2" class="box_text_container" active="false">
+  <HorizontalLayout id="db_p2_bg_2_title_bar" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_2_title" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_2_panel_title_dotline" class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_bg_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_bg_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_bg_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_bg_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_bg_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_2_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_2_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p2_bg_5" class="box_text_container" active="false">
+  <HorizontalLayout id="db_p2_bg_5_title_bar" class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_bg_5_title" class="box_text_title_text" text="" />
+    <Panel id="db_p2_bg_5_panel_title_dotline" class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_bg_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_bg_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_bg_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_bg_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_bg_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_bg_5_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_bg_5_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
         </HorizontalLayout>
 
         
@@ -5190,32 +5190,61 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   </HorizontalLayout>
   
   
-</VerticalLayout><VerticalLayout id="pc_p2_merit_8" class="box_text_container" active="false">
+</VerticalLayout><VerticalLayout id="pc_p2_merit_6" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_merit_8_title" class="box_text_title_text" text="" />
+    <Text id="pc_p2_merit_6_title" class="box_text_title_text" text="" />
     <Panel class="box_text_panel_title_dotline">
       
-      <Image id="pc_p2_merit_8_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      <Image id="pc_p2_merit_6_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
       
       
-      <Image id="pc_p2_merit_8_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      <Image id="pc_p2_merit_6_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
       
       
-      <Image id="pc_p2_merit_8_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      <Image id="pc_p2_merit_6_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
       
       
-      <Image id="pc_p2_merit_8_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      <Image id="pc_p2_merit_6_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
       
       
-      <Image id="pc_p2_merit_8_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      <Image id="pc_p2_merit_6_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
       
       
     </Panel>
   </HorizontalLayout>
   
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
-    <Text id="pc_p2_merit_8_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-    <Text id="pc_p2_merit_8_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_6_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_6_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p2_merit_9" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_merit_9_title" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_merit_9_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_merit_9_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_merit_9_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_merit_9_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_merit_9_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_9_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_9_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -5256,112 +5285,6 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
       
     </Panel>
   </HorizontalLayout>
-  
-  
-</VerticalLayout><VerticalLayout id="pc_p2_merit_9" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_merit_9_title" class="box_text_title_text" text="" />
-    <Panel class="box_text_panel_title_dotline">
-      
-      <Image id="pc_p2_merit_9_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
-      <Image id="pc_p2_merit_9_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
-      <Image id="pc_p2_merit_9_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
-      <Image id="pc_p2_merit_9_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p2_merit_9_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
-    </Panel>
-  </HorizontalLayout>
-  
-  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
-    <Text id="pc_p2_merit_9_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-    <Text id="pc_p2_merit_9_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-  </VerticalLayout>
-  
-  
-</VerticalLayout></VerticalLayout>
-          <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_merit_2" class="box_text_container" active="true">
-  <HorizontalLayout class="box_text_title_bar 2_dots">
-    <Text id="pc_p2_merit_2_title" class="box_text_title_text" text="CONTEXTUAL CONTACT" />
-    <Panel class="box_text_panel_title_dotline">
-      
-      <Image id="pc_p2_merit_2_dot_1" image="dot_yellow" class="dot box_text_title_dot dot_1" />
-      
-      
-      <Image id="pc_p2_merit_2_dot_2" image="dot_yellow" class="dot box_text_title_dot dot_2" />
-      
-      
-      
-      
-      
-    </Panel>
-  </HorizontalLayout>
-  
-  
-</VerticalLayout><VerticalLayout id="pc_p2_merit_5" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_merit_5_title" class="box_text_title_text" text="" />
-    <Panel class="box_text_panel_title_dotline">
-      
-      <Image id="pc_p2_merit_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
-      <Image id="pc_p2_merit_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
-      <Image id="pc_p2_merit_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
-      <Image id="pc_p2_merit_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p2_merit_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
-    </Panel>
-  </HorizontalLayout>
-  
-  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
-    <Text id="pc_p2_merit_5_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-    <Text id="pc_p2_merit_5_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-  </VerticalLayout>
-  
-  
-</VerticalLayout><VerticalLayout id="pc_p2_merit_6" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_merit_6_title" class="box_text_title_text" text="" />
-    <Panel class="box_text_panel_title_dotline">
-      
-      <Image id="pc_p2_merit_6_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
-      <Image id="pc_p2_merit_6_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
-      <Image id="pc_p2_merit_6_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
-      <Image id="pc_p2_merit_6_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p2_merit_6_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
-    </Panel>
-  </HorizontalLayout>
-  
-  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
-    <Text id="pc_p2_merit_6_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-    <Text id="pc_p2_merit_6_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-  </VerticalLayout>
   
   
 </VerticalLayout><VerticalLayout id="pc_p2_merit_7" class="box_text_container" active="false">
@@ -5423,6 +5346,83 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
   
   
 </VerticalLayout></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_merit_2" class="box_text_container" active="true">
+  <HorizontalLayout class="box_text_title_bar 2_dots">
+    <Text id="pc_p2_merit_2_title" class="box_text_title_text" text="CONTEXTUAL CONTACT" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_merit_2_dot_1" image="dot_yellow" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_merit_2_dot_2" image="dot_yellow" class="dot box_text_title_dot dot_2" />
+      
+      
+      
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p2_merit_5" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_merit_5_title" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_merit_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_merit_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_merit_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_merit_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_merit_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_5_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_5_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p2_merit_8" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_merit_8_title" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_merit_8_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_merit_8_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_merit_8_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_merit_8_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_merit_8_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_merit_8_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_merit_8_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
         </HorizontalLayout>
 
         
@@ -5458,124 +5458,6 @@ UI.setAttributes("page_1_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15
     <Text id="pc_p2_flaw_0_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="Your rise to power has earned the enmity of a very powerful, very mysterious enemy who will act towards your destruction at every opportunity." />
     <Text id="pc_p2_flaw_0_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="Your enemy is a Difficulty 6 (!) monstrous elder, vengeful methuselah, embittered Justicar, or the equivalent, and their traits are thus free to break usual statistical limitations.
 Expect to feel their influence at least once per story." />
-  </VerticalLayout>
-  
-  
-</VerticalLayout><VerticalLayout id="pc_p2_flaw_4" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_4_title" class="box_text_title_text flaw_title" text="" />
-    <Panel class="box_text_panel_title_dotline">
-      
-      <Image id="pc_p2_flaw_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
-      <Image id="pc_p2_flaw_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
-      <Image id="pc_p2_flaw_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
-      <Image id="pc_p2_flaw_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p2_flaw_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
-    </Panel>
-  </HorizontalLayout>
-  
-  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
-    <Text id="pc_p2_flaw_4_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-    <Text id="pc_p2_flaw_4_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-  </VerticalLayout>
-  
-  
-</VerticalLayout></VerticalLayout>
-          <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_flaw_5" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_5_title" class="box_text_title_text flaw_title" text="" />
-    <Panel class="box_text_panel_title_dotline">
-      
-      <Image id="pc_p2_flaw_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
-      <Image id="pc_p2_flaw_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
-      <Image id="pc_p2_flaw_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
-      <Image id="pc_p2_flaw_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p2_flaw_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
-    </Panel>
-  </HorizontalLayout>
-  
-  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
-    <Text id="pc_p2_flaw_5_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-    <Text id="pc_p2_flaw_5_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-  </VerticalLayout>
-  
-  
-</VerticalLayout></VerticalLayout>
-          <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_flaw_1" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_1_title" class="box_text_title_text flaw_title" text="" />
-    <Panel class="box_text_panel_title_dotline">
-      
-      <Image id="pc_p2_flaw_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
-      <Image id="pc_p2_flaw_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
-      <Image id="pc_p2_flaw_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
-      <Image id="pc_p2_flaw_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p2_flaw_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
-    </Panel>
-  </HorizontalLayout>
-  
-  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
-    <Text id="pc_p2_flaw_1_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-    <Text id="pc_p2_flaw_1_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-  </VerticalLayout>
-  
-  
-</VerticalLayout><VerticalLayout id="pc_p2_flaw_2" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p2_flaw_2_title" class="box_text_title_text flaw_title" text="" />
-    <Panel class="box_text_panel_title_dotline">
-      
-      <Image id="pc_p2_flaw_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
-      <Image id="pc_p2_flaw_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
-      <Image id="pc_p2_flaw_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
-      <Image id="pc_p2_flaw_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p2_flaw_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
-    </Panel>
-  </HorizontalLayout>
-  
-  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
-    <Text id="pc_p2_flaw_2_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-    <Text id="pc_p2_flaw_2_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -5634,6 +5516,124 @@ Expect to feel their influence at least once per story." />
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p2_flaw_6_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
     <Text id="pc_p2_flaw_6_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_flaw_1" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_flaw_1_title" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_flaw_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_flaw_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_flaw_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_flaw_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_flaw_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_1_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_1_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p2_flaw_4" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_flaw_4_title" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_flaw_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_flaw_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_flaw_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_flaw_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_flaw_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_4_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_4_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p2_flaw_2" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_flaw_2_title" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_flaw_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_flaw_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_flaw_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_flaw_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_flaw_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_2_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_2_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p2_flaw_5" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p2_flaw_5_title" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p2_flaw_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p2_flaw_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p2_flaw_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p2_flaw_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p2_flaw_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p2_flaw_5_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p2_flaw_5_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -5906,124 +5906,6 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
   </VerticalLayout>
   
   
-</VerticalLayout><VerticalLayout id="pc_p3_merit_4" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_4_title" class="box_text_title_text" text="" />
-    <Panel class="box_text_panel_title_dotline">
-      
-      <Image id="pc_p3_merit_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
-      <Image id="pc_p3_merit_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
-      <Image id="pc_p3_merit_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
-      <Image id="pc_p3_merit_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p3_merit_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
-    </Panel>
-  </HorizontalLayout>
-  
-  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
-    <Text id="pc_p3_merit_4_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-    <Text id="pc_p3_merit_4_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-  </VerticalLayout>
-  
-  
-</VerticalLayout></VerticalLayout>
-          <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_5" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_5_title" class="box_text_title_text" text="" />
-    <Panel class="box_text_panel_title_dotline">
-      
-      <Image id="pc_p3_merit_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
-      <Image id="pc_p3_merit_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
-      <Image id="pc_p3_merit_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
-      <Image id="pc_p3_merit_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p3_merit_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
-    </Panel>
-  </HorizontalLayout>
-  
-  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
-    <Text id="pc_p3_merit_5_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-    <Text id="pc_p3_merit_5_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-  </VerticalLayout>
-  
-  
-</VerticalLayout></VerticalLayout>
-          <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_1" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_1_title" class="box_text_title_text" text="" />
-    <Panel class="box_text_panel_title_dotline">
-      
-      <Image id="pc_p3_merit_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
-      <Image id="pc_p3_merit_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
-      <Image id="pc_p3_merit_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
-      <Image id="pc_p3_merit_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p3_merit_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
-    </Panel>
-  </HorizontalLayout>
-  
-  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
-    <Text id="pc_p3_merit_1_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-    <Text id="pc_p3_merit_1_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-  </VerticalLayout>
-  
-  
-</VerticalLayout><VerticalLayout id="pc_p3_merit_2" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_merit_2_title" class="box_text_title_text" text="" />
-    <Panel class="box_text_panel_title_dotline">
-      
-      <Image id="pc_p3_merit_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
-      <Image id="pc_p3_merit_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
-      <Image id="pc_p3_merit_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
-      <Image id="pc_p3_merit_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p3_merit_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
-    </Panel>
-  </HorizontalLayout>
-  
-  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
-    <Text id="pc_p3_merit_2_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-    <Text id="pc_p3_merit_2_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-  </VerticalLayout>
-  
-  
 </VerticalLayout><VerticalLayout id="pc_p3_merit_3" class="box_text_container" active="false">
   <HorizontalLayout class="box_text_title_bar 5_dots">
     <Text id="pc_p3_merit_3_title" class="box_text_title_text" text="" />
@@ -6083,6 +5965,124 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
   
   
 </VerticalLayout></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_1" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_merit_1_title" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_merit_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_merit_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_merit_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_merit_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_merit_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_1_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_1_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p3_merit_4" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_merit_4_title" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_merit_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_merit_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_merit_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_merit_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_merit_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_4_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_4_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_merit_2" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_merit_2_title" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_merit_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_merit_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_merit_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_merit_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_merit_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_2_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_2_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p3_merit_5" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_merit_5_title" class="box_text_title_text" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_merit_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_merit_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_merit_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_merit_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_merit_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_merit_5_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_merit_5_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
         </HorizontalLayout>
         
 
@@ -6111,124 +6111,6 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p3_flaw_0_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="Your domain comes with certain inconvenient responsibilities: You must secure the main entry points of Union Station and the Billy Bishop Ferry (from Billy Bishop Airport, on Centre Island) against unauthorized entry by Kindred of any sect." />
     <Text id="pc_p3_flaw_0_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="You gain no benefits from fulfilling your obligations, but every failure to do so will cost your coterie a dot of Status until you have made amends." />
-  </VerticalLayout>
-  
-  
-</VerticalLayout><VerticalLayout id="pc_p3_flaw_4" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_flaw_4_title" class="box_text_title_text flaw_title" text="" />
-    <Panel class="box_text_panel_title_dotline">
-      
-      <Image id="pc_p3_flaw_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
-      <Image id="pc_p3_flaw_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
-      <Image id="pc_p3_flaw_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
-      <Image id="pc_p3_flaw_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p3_flaw_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
-    </Panel>
-  </HorizontalLayout>
-  
-  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
-    <Text id="pc_p3_flaw_4_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-    <Text id="pc_p3_flaw_4_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-  </VerticalLayout>
-  
-  
-</VerticalLayout></VerticalLayout>
-          <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_flaw_5" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_flaw_5_title" class="box_text_title_text flaw_title" text="" />
-    <Panel class="box_text_panel_title_dotline">
-      
-      <Image id="pc_p3_flaw_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
-      <Image id="pc_p3_flaw_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
-      <Image id="pc_p3_flaw_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
-      <Image id="pc_p3_flaw_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p3_flaw_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
-    </Panel>
-  </HorizontalLayout>
-  
-  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
-    <Text id="pc_p3_flaw_5_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-    <Text id="pc_p3_flaw_5_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-  </VerticalLayout>
-  
-  
-</VerticalLayout></VerticalLayout>
-          <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_flaw_1" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_flaw_1_title" class="box_text_title_text flaw_title" text="" />
-    <Panel class="box_text_panel_title_dotline">
-      
-      <Image id="pc_p3_flaw_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
-      <Image id="pc_p3_flaw_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
-      <Image id="pc_p3_flaw_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
-      <Image id="pc_p3_flaw_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p3_flaw_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
-    </Panel>
-  </HorizontalLayout>
-  
-  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
-    <Text id="pc_p3_flaw_1_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-    <Text id="pc_p3_flaw_1_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-  </VerticalLayout>
-  
-  
-</VerticalLayout><VerticalLayout id="pc_p3_flaw_2" class="box_text_container" active="false">
-  <HorizontalLayout class="box_text_title_bar 5_dots">
-    <Text id="pc_p3_flaw_2_title" class="box_text_title_text flaw_title" text="" />
-    <Panel class="box_text_panel_title_dotline">
-      
-      <Image id="pc_p3_flaw_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
-      
-      
-      <Image id="pc_p3_flaw_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
-      
-      
-      <Image id="pc_p3_flaw_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
-      
-      
-      <Image id="pc_p3_flaw_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
-      
-      
-      <Image id="pc_p3_flaw_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
-      
-      
-    </Panel>
-  </HorizontalLayout>
-  
-  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
-    <Text id="pc_p3_flaw_2_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
-    <Text id="pc_p3_flaw_2_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -6287,6 +6169,124 @@ Once per story, you can call upon a rare or expensive vehicle such as a helicopt
   <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
     <Text id="pc_p3_flaw_6_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
     <Text id="pc_p3_flaw_6_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_flaw_1" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_flaw_1_title" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_flaw_1_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_flaw_1_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_flaw_1_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_flaw_1_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_flaw_1_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_1_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_1_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p3_flaw_4" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_flaw_4_title" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_flaw_4_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_flaw_4_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_flaw_4_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_flaw_4_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_flaw_4_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_4_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_4_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout></VerticalLayout>
+          <VerticalLayout class="box_column"><VerticalLayout id="pc_p3_flaw_2" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_flaw_2_title" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_flaw_2_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_flaw_2_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_flaw_2_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_flaw_2_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_flaw_2_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_2_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_2_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+  </VerticalLayout>
+  
+  
+</VerticalLayout><VerticalLayout id="pc_p3_flaw_5" class="box_text_container" active="false">
+  <HorizontalLayout class="box_text_title_bar 5_dots">
+    <Text id="pc_p3_flaw_5_title" class="box_text_title_text flaw_title" text="" />
+    <Panel class="box_text_panel_title_dotline">
+      
+      <Image id="pc_p3_flaw_5_dot_1" image="dot_blank" class="dot box_text_title_dot dot_1" />
+      
+      
+      <Image id="pc_p3_flaw_5_dot_2" image="dot_blank" class="dot box_text_title_dot dot_2" />
+      
+      
+      <Image id="pc_p3_flaw_5_dot_3" image="dot_blank" class="dot box_text_title_dot dot_3" />
+      
+      
+      <Image id="pc_p3_flaw_5_dot_4" image="dot_blank" class="dot box_text_title_dot dot_4" />
+      
+      
+      <Image id="pc_p3_flaw_5_dot_5" image="dot_blank" class="dot box_text_title_dot dot_5" />
+      
+      
+    </Panel>
+  </HorizontalLayout>
+  
+  <VerticalLayout class="box_text_panel_body" childForceExpandHeight="false">
+    <Text id="pc_p3_flaw_5_flavor" class="box_text flavor_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
+    <Text id="pc_p3_flaw_5_rules" class="box_text rules_text" flexibleHeight="0" childForceExpandHeight="false" text="" />
   </VerticalLayout>
   
   
@@ -9975,7 +9975,7 @@ UI.setAttributes("debug_buttonControls", {})
     <VerticalLayout id="debug_buttonControls" class="storyteller_buttonControls" visibility="Host">
       <Text class="hud_storyteller_header">== DEBUG ==</Text>
       <Text id="debug_lastLoadClock" fontSize="12" color="#AAAAAA" alignment="MiddleCenter" preferredHeight="18" minHeight="18" flexibleHeight="0" text="—" />
-      <Button id="debug_resetToIntermission" class="hud_storyteller_button" onClick="HUD_resetToIntermission">Overlay Alpha: Full</Button>
+      <Button id="debug_resetToIntermission" class="hud_storyteller_button" onClick="HUD_resetToIntermission">Reset to Intermission</Button>
       <Button class="hud_storyteller_button" onClick="HUD_printState">Print State</Button>
       <Button class="hud_storyteller_button" onClick="HUD_syncAll">Sync All (force)</Button>
       <Button id="debug_syncTrace" class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleSyncTrace">Trace Sync</Button>
