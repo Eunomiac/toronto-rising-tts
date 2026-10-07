@@ -45,6 +45,7 @@ local C    = require("lib.constants")
 local U    = require("lib.util")
 local RO   = require("lib.roll_options")
 local DK   = require("lib.dice_kinds")
+local DF   = require("lib.die_face")
 local RouseOutcomes = require("lib.rouse_outcomes")
 local G    = require("lib.guids")
 local P    = require("lib.pc_stats")
@@ -295,6 +296,7 @@ local function seedWillpowerBlock(active)
         wpWaveId              = 0,
         wpRerollWave          = false,
         rerollRandomizedGuids = {},
+        waveStartFaces        = {},
     }
 end
 
@@ -314,6 +316,9 @@ local function ensureWillpowerShape(active)
     end
     if type(active.willpower.rerollRandomizedGuids) ~= "table" then
         active.willpower.rerollRandomizedGuids = {}
+    end
+    if type(active.willpower.waveStartFaces) ~= "table" then
+        active.willpower.waveStartFaces = {}
     end
     active.willpower.wpWaveId     = tonumber(active.willpower.wpWaveId) or 0
     active.willpower.wpRerollWave = active.willpower.wpRerollWave == true
@@ -347,27 +352,14 @@ local function ownerTagForActive(color, active)
     return color .. "Object"
 end
 
---- Reads a physical die face for pool scans (custom dice may lack numeric getValue before first roll).
+--- Reads a physical die face for pool scans (0 when unreadable).
 -- @param obj Object
 -- @return number|nil
 local function readPhysicalDieFace(obj)
     if obj == nil then
         return nil
     end
-    local val = obj.getValue()
-    if type(val) == "number" then
-        return val
-    end
-    if obj.getRotationValue ~= nil then
-        local rv = obj.getRotationValue()
-        if type(rv) == "number" then
-            return math.floor(rv)
-        end
-        if type(rv) == "string" then
-            return tonumber(rv)
-        end
-    end
-    return 0
+    return DF.read(obj) or 0
 end
 
 --- Physics lock plus whether a player can pick the die up.
@@ -406,6 +398,8 @@ end
 local function applyWpRerollWaveStart(color, active)
     cancelWpDieLockWaitsForColor(color)
     active.willpower.rerollRandomizedGuids = {}
+    local startFaces = {}
+    active.willpower.waveStartFaces = startFaces
     local canHunger = type(active.rollPolicy) == "table"
         and active.rollPolicy.wpCanRerollHunger == true
     local scope = wpRerollScopeForActive(active)
@@ -413,6 +407,7 @@ local function applyWpRerollWaveStart(color, active)
     for _, kind in ipairs(diceKindsForActive(active)) do
         for _, o in ipairs(objsByKind[kind] or {}) do
             if o ~= nil then
+                startFaces[o.getGUID()] = DF.read(o)
                 local face = o.getValue()
                 local unlock = DK.canRerollWithWillpower(kind, face)
                 if kind == DK.KIND_HUNGER and not canHunger then
@@ -1841,6 +1836,32 @@ local function allChosenWpDiceLocked(color, active)
     return hasChosen
 end
 
+--- Puts back any die the player did not reroll whose face changed during the wave
+--- (a neighbouring die bumped it), using the faces recorded at Spend Willpower.
+-- @param color string
+-- @param active table
+local function restoreBumpedWpDice(color, active)
+    local startFaces = active.willpower.waveStartFaces
+    if type(startFaces) ~= "table" then
+        return
+    end
+    local rerolled = active.willpower.rerollRandomizedGuids or {}
+    local objsByKind = RC._getDiceObjectsByKindForRoll(color, active.id)
+    for _, kind in ipairs(diceKindsForActive(active)) do
+        for _, o in ipairs(objsByKind[kind] or {}) do
+            local guid = o ~= nil and o.getGUID() or nil
+            local startFace = guid ~= nil and startFaces[guid] or nil
+            if startFace ~= nil and not rerolled[guid] and DF.read(o) ~= startFace then
+                print(string.format("[RC] Willpower reroll: %s die %s was bumped to %s; restoring %d",
+                    color, guid, tostring(DF.read(o)), startFace))
+                DF.set(o, startFace, "[RC] Willpower reroll:")
+            end
+        end
+    end
+    active.willpower.waveStartFaces = {}
+    setActive(color, active)
+end
+
 --- Lock pool and run recalculate so ROLLING + wpRerollWave → POST_ROLL.
 local function finishWpRerollWaveFromRolling(color)
     local active = getActive(color)
@@ -1850,6 +1871,7 @@ local function finishWpRerollWaveFromRolling(color)
     if active.willpower == nil or active.willpower.wpRerollWave ~= true then
         return false
     end
+    restoreBumpedWpDice(color, active)
     cancelDebounce(color)
     lockAllRollDiceObjects(color, active.id)
     RC.recalculate(color)

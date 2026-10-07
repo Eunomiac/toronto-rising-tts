@@ -56,6 +56,7 @@ Use this bucket for **rules that only change how pool math / result class is com
   - **Display refresh** — `RC.recalculate(color, true)` (`previewOnly`) rebuilds `diceFaces`/`result` and `notifyStateChanged` so the player panel updates **without** leaving the wave (stays ROLLING).
   - **Cap auto-finish** — when the `numberOfDiceRerolled` cap **N** is reached and all chosen dice are locked, `finishWpRerollWaveFromRolling` → full `recalculate` → POST_ROLL (no Confirm needed).
   - **Confirm** — for fewer-than-cap (or `wpRerollScope` "all") waves, **Confirm** is the only way forward; `confirmRoll` detects ROLLING + `wpRerollWave` and ends the wave → POST_ROLL.
+  - **Bumped dice go back (TOR-638)** — `applyWpRerollWaveStart` records every die's face in `willpower.waveStartFaces`. `finishWpRerollWaveFromRolling` (both the cap and Confirm paths) first calls `restoreBumpedWpDice`: any die not in `rerollRandomizedGuids` whose face changed is snapped back with `DF.set` (`lib/die_face.ttslua`, instant `setRotation` from the die's RotationValues, current yaw kept).
 
 - **Rouse checks stay Rouse checks (TOR-639):** a roll whose `rollType` is `ROUSE` or `ROUSE_OBLIVION` never gains standard or hunger dice. `GlobalDiceBagClick` ignores the Normal and Hunger bags, `GlobalRollSpawnDieRequest` refuses those kinds, and `RC.setPoolKindCount` / `RC.adjustPoolKindCount` refuse raising them (Storyteller paths). Adding rouse dice to a Standard or Discipline roll is still allowed; `rollType` stays as it was, so it becomes a combined roll.
 

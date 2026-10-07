@@ -673,6 +673,8 @@ U.chain({
 })
 ```
 
+**I1 variant: bumped dice go back (TOR-638).** Run I1 again, but reroll only one die: pick it up and drop it onto a neighbour so the neighbour tumbles, wait for it to settle, then click **Confirm**. The neighbour must read **4** again, and the console should print `[RC] Willpower reroll: Brown die <guid> was bumped to <n>; restoring 4`.
+
 ```lua
 U.chain({
   function()

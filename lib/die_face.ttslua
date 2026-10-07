@@ -1,0 +1,86 @@
+--- Physical d10 face read / instant face set (Global only).
+-- Do not require from object-hosted scripts; route through Global.call instead.
+local DF = {}
+
+--- Normalizes a custom-die rotation label (TTS may use string or number).
+-- @param v string|number|nil
+-- @return number|nil
+local function faceNumber(v)
+    if type(v) == "number" then
+        return math.floor(v)
+    end
+    if type(v) == "string" then
+        return tonumber(v)
+    end
+    return nil
+end
+
+--- Reads a die face as an integer (custom dice may lack numeric getValue before first roll).
+-- @param obj Object|nil
+-- @return number|nil
+function DF.read(obj)
+    if obj == nil then
+        return nil
+    end
+    local val = faceNumber(obj.getValue())
+    if val ~= nil then
+        return val
+    end
+    if obj.getRotationValue ~= nil then
+        return faceNumber(obj.getRotationValue())
+    end
+    return nil
+end
+
+--- Snaps a die to a face with an instant setRotation from its RotationValues entry.
+-- setValue / setRotationValue animate (lift, spin, drop), so getValue right after still reads the old face.
+-- Keeps the die's current yaw so only the face-up changes. A locked die is unlocked for the snap and re-locked.
+-- @param obj Object
+-- @param face number
+-- @param logTag string|nil  console prefix for warnings
+-- @return boolean true when the read-back matches
+function DF.set(obj, face, logTag)
+    local tag = logTag or "[DieFace]"
+    if obj == nil or type(face) ~= "number" then
+        return false
+    end
+    local target = math.floor(face)
+
+    local snapRot = nil
+    if obj.getRotationValues ~= nil then
+        local rotValues = obj.getRotationValues()
+        if type(rotValues) == "table" then
+            for _, entry in ipairs(rotValues) do
+                if type(entry) == "table" and faceNumber(entry.value) == target then
+                    snapRot = entry.rotation
+                    break
+                end
+            end
+        end
+    end
+    if snapRot == nil or type(snapRot.x) ~= "number" then
+        print(string.format("%s WARN: no RotationValues entry for face %d (guid=%s)",
+            tag, target, tostring(obj.getGUID())))
+        return false
+    end
+
+    local wasLocked = obj.getLock()
+    if wasLocked then
+        obj.setLock(false)
+    end
+    local yaw = obj.getRotation().y
+    obj.setRotation({ x = snapRot.x, y = yaw, z = snapRot.z })
+
+    local actual = obj.getRotationValue ~= nil and faceNumber(obj.getRotationValue()) or DF.read(obj)
+    if wasLocked then
+        obj.setLock(true)
+    end
+    if actual ~= target then
+        print(string.format("%s WARN: snap face %d read back as %s (guid=%s)",
+            tag, target, tostring(actual), tostring(obj.getGUID())))
+        return false
+    end
+    return true
+end
+
+return DF

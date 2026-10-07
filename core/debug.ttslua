@@ -3362,106 +3362,7 @@ function DEBUG.rollState(color)
     end
 end
 
---- Normalizes a custom-die rotation label (TTS may use string or number).
--- @param v string|number|nil
--- @return number|nil
-local function e2eFaceValueNumber(v)
-    if type(v) == "number" then
-        return math.floor(v)
-    end
-    if type(v) == "string" then
-        return tonumber(v)
-    end
-    return nil
-end
-
---- True when a rotation-value entry matches the target face (1–10).
--- @param entryValue string|number
--- @param target number
--- @return boolean
-local function e2eRotationEntryMatches(entryValue, target)
-    local n = e2eFaceValueNumber(entryValue)
-    return n ~= nil and n == target
-end
-
---- Reads a custom die face as integer 1–10 (E2E preset verify only).
--- @param obj Object
--- @return number|nil
-local function e2eReadDieFaceValue(obj)
-    if obj == nil then
-        return nil
-    end
-    local raw = nil
-    if obj.getRotationValue ~= nil then
-        raw = obj.getRotationValue()
-    end
-    if raw == nil and obj.getValue ~= nil then
-        raw = obj.getValue()
-    end
-    return e2eFaceValueNumber(raw)
-end
-
---- Applies one custom-die face via instant setRotation (not setRotationValue).
--- setValue/setRotationValue animate (lift/spin/drop); immediate getValue still reads the old face.
--- Bag-spawned dice are locked until panel Roll — unlock briefly for the snap.
--- @param obj Object
--- @param faceVal number 1–10
--- @return boolean true when read-back matches target
-local function e2eSetDieFaceValue(obj, faceVal)
-    if obj == nil or type(faceVal) ~= "number" then
-        return false
-    end
-    local target = math.floor(faceVal)
-    if target < 1 or target > 10 then
-        return false
-    end
-
-    local snapRot = nil
-    if obj.getRotationValues ~= nil then
-        local rotValues = obj.getRotationValues()
-        if type(rotValues) == "table" then
-            for _, entry in ipairs(rotValues) do
-                if type(entry) == "table" and e2eRotationEntryMatches(entry.value, target) then
-                    snapRot = entry.rotation
-                    break
-                end
-            end
-        end
-    end
-    if snapRot == nil or type(snapRot.x) ~= "number" then
-        print(string.format(
-            "[DEBUG.rollSetFaces] WARN: no RotationValues entry for face %d (guid=%s)",
-            target, tostring(obj.getGUID())))
-        return false
-    end
-
-    local wasLocked = obj.getLock()
-    if wasLocked then
-        obj.setLock(false)
-    end
-    if obj.setRotation ~= nil then
-        obj.setRotation({ x = snapRot.x, y = snapRot.y, z = snapRot.z })
-    elseif obj.setRotationSmooth ~= nil then
-        obj.setRotationSmooth({ x = snapRot.x, y = snapRot.y, z = snapRot.z }, false, true)
-    else
-        if wasLocked then
-            obj.setLock(true)
-        end
-        return false
-    end
-
-    local actual = e2eReadDieFaceValue(obj)
-    if wasLocked then
-        obj.setLock(true)
-    end
-    if actual ~= target then
-        print(string.format(
-            "[DEBUG.rollSetFaces] WARN: snap face %d read back as %s (guid=%s)",
-            target, tostring(actual), tostring(obj.getGUID())))
-        return false
-    end
-    return true
-end
+local DF = require("lib.die_face")
 
 --- Locks rouse-family dice so Take Half + rouse `recalculate` gate passes after E2E face preset.
 -- @param color string
@@ -3526,7 +3427,7 @@ function DEBUG.rollSetFaces(color, facesByKind)
                         print(string.format(
                             "[DEBUG.rollSetFaces] WARN: no %s die #%d on table for face %d",
                             tostring(kind), i, faceVal))
-                    elseif e2eSetDieFaceValue(obj, faceVal) then
+                    elseif DF.set(obj, faceVal, "[DEBUG.rollSetFaces]") then
                         setCount = setCount + 1
                     end
                 end
