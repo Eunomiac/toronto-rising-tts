@@ -56,6 +56,7 @@ local CD = require("lib.condition_defs")
 local PCST = require("core.pc_storyteller_panel")
 local PRTL = require("lib.pc_roll_tray_lower")
 local Sync = require("core.sync")
+local WPG = require("core.wp_reroll_glow")
 
 -- ============================================================================
 -- CALLBACK HOOKS (set by global_script after all modules are loaded)
@@ -421,7 +422,7 @@ local function clearWpRerollHighlights(color, rollId)
     local objsByKind = RC._getDiceObjectsByKindForRoll(color, rollId)
     for _, list in pairs(objsByKind) do
         for _, o in ipairs(list) do
-            o.highlightOff()
+            WPG.clear(o)
         end
     end
 end
@@ -450,9 +451,9 @@ local function applyWpRerollWaveStart(color, active)
                 setRollDiePlayerAccess(o, unlock)
                 if unlock then
                     eligible[guid] = true
-                    o.highlightOn(C.WP_REROLL_ELIGIBLE_HIGHLIGHT)
+                    WPG.setEligible(o, color)
                 else
-                    o.highlightOff()
+                    WPG.clear(o)
                 end
             end
         end
@@ -479,7 +480,7 @@ local function lockDiceOutsideRerollSelection(color, active)
         for _, o in ipairs(objsByKind[kind] or {}) do
             if o ~= nil and not chosen[o.getGUID()] then
                 setRollDiePlayerAccess(o, false)
-                o.highlightOff()
+                WPG.clear(o)
             end
         end
     end
@@ -1912,7 +1913,7 @@ local function dropUnchosenWpHighlights(active)
         if not chosen[guid] then
             local o = G.getObject(guid)
             if o ~= nil then
-                o.highlightOff()
+                WPG.clear(o)
             end
         end
     end
@@ -2336,9 +2337,7 @@ function RC.onWpRerollDieRandomized(color, obj)
     end
 
     active.willpower.rerollRandomizedGuids[guid] = true
-    if type(active.willpower.waveEligibleGuids) == "table" and active.willpower.waveEligibleGuids[guid] then
-        obj.highlightOn(C.WP_REROLL_CHOSEN_HIGHLIGHT)
-    end
+    WPG.setChosen(obj)
     RollConditionHandlers.run("onWpDieRandomized", color, active)
     setActive(color, active)
 

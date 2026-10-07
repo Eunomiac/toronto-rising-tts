@@ -841,6 +841,7 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-10-07 | SHIP | TOR-639 | Author follow-up: Normal bag hidden during Rouse checks (DBV). f17f4960. Stays Awaiting Author Review. |
 | 2026-10-07 | SHIP | TOR-526 | Author ⚠️: result too short (fade-in ate the 1s hold) → 2s hold. fe0f0993. Stays Awaiting Author Review. |
 | 2026-10-07 | SHIP | TOR-665 | New feature: Willpower reroll highlights (blue eligible, cyan rerolled); single eligibility check. parent TOR-31, relatedTo TOR-638. 9ecb3c8c; Awaiting Author Review. |
+| 2026-10-07 | SHIP | TOR-673 | New improvement: Willpower glow brightens under the rolling player's cursor (`onObjectHover` → `core/wp_reroll_glow`). parent TOR-31, relatedTo TOR-665. Awaiting Author Review. |
 | 2026-10-07 | FOCUS | — | Whole Focus stack shipped; no dependents, no open unstarted bugs. Stack left empty; proposed TOR-81, TOR-301, TOR-466 (not promoted). |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

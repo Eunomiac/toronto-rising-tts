@@ -1,0 +1,90 @@
+--[[
+    Willpower reroll die highlights (TOR-665, TOR-673).
+
+    Owns every highlightOn / highlightOff for Willpower reroll dice. A script highlight hides
+    TTS's own hover outline, so `WPG.onObjectHover` repaints an eligible die brighter while
+    the rolling player's cursor is over it.
+
+    Glow state is a runtime cache (highlights are not saved with the game), keyed by GUID so
+    the hover handler stays O(1). Global-only: object scripts must not require this module.
+]]
+
+local C = require("lib.constants")
+local G = require("lib.guids")
+
+local WPG = {}
+
+--- guid -> { color = rolling player color, chosen = boolean }
+local glowByGuid = {}
+--- player color -> glowing GUID under that player's cursor
+local hoveredGuidByColor = {}
+
+--- @param obj Object
+--- @param glow table
+local function paint(obj, glow)
+    if glow.chosen then
+        obj.highlightOn(C.WP_REROLL_CHOSEN_HIGHLIGHT)
+    elseif hoveredGuidByColor[glow.color] == obj.getGUID() then
+        obj.highlightOn(C.WP_REROLL_ELIGIBLE_HOVER_HIGHLIGHT)
+    else
+        obj.highlightOn(C.WP_REROLL_ELIGIBLE_HIGHLIGHT)
+    end
+end
+
+--- Deep blue: the rolling player may reroll this die.
+--- @param obj Object
+--- @param color string  Rolling player color (only their hover brightens it)
+function WPG.setEligible(obj, color)
+    local glow = { color = color, chosen = false }
+    glowByGuid[obj.getGUID()] = glow
+    paint(obj, glow)
+end
+
+--- Cyan: the player rerolled this die. No-op unless it is currently glowing.
+--- @param obj Object
+function WPG.setChosen(obj)
+    local glow = glowByGuid[obj.getGUID()]
+    if glow == nil then return end
+    glow.chosen = true
+    paint(obj, glow)
+end
+
+--- @param obj Object
+function WPG.clear(obj)
+    local guid = obj.getGUID()
+    local glow = glowByGuid[guid]
+    if glow ~= nil then
+        glowByGuid[guid] = nil
+        if hoveredGuidByColor[glow.color] == guid then
+            hoveredGuidByColor[glow.color] = nil
+        end
+    end
+    obj.highlightOff()
+end
+
+--- Global `onObjectHover` relay. Fires for every pointer move of every player, so it exits
+--- in O(1) unless a Willpower glow exists or this player was hovering one.
+--- @param playerColor string
+--- @param obj Object|nil
+function WPG.onObjectHover(playerColor, obj)
+    local prevGuid = hoveredGuidByColor[playerColor]
+    if prevGuid == nil and next(glowByGuid) == nil then return end
+
+    local guid = obj ~= nil and obj.getGUID() or nil
+    if guid == prevGuid then return end
+
+    if prevGuid ~= nil then
+        hoveredGuidByColor[playerColor] = nil
+        local prevGlow = glowByGuid[prevGuid]
+        local prevObj = prevGlow ~= nil and G.getObject(prevGuid) or nil
+        if prevObj ~= nil then paint(prevObj, prevGlow) end
+    end
+
+    local glow = guid ~= nil and glowByGuid[guid] or nil
+    if glow ~= nil and glow.color == playerColor and not glow.chosen then
+        hoveredGuidByColor[playerColor] = guid
+        paint(obj, glow)
+    end
+end
+
+return WPG

@@ -18,6 +18,7 @@ local DPP = {}
 local G = require("lib.guids")
 local DK = require("lib.dice_kinds")
 local O = require("core.objects")
+local WPG = require("core.wp_reroll_glow")
 
 --- Dice per bag — matches player MAX_DICE_PER_ARC headroom.
 local POOL_SIZE = 12
@@ -100,7 +101,7 @@ local function parkDie(die, bagGuid, slotIndex)
     local pos = parkPositionForBag(bagGuid, slotIndex)
     die.script_state = DK.SCRIPT_STATE_PRELOAD_POOL
     DK.setDieTagsForPreloadPool(die)
-    die.highlightOff()
+    WPG.clear(die)
     O.hideObject(die, {
         parkPosition = pos,
         parkRotation = { x = 0, y = 180, z = 0 },

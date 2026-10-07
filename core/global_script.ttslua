@@ -184,6 +184,7 @@ PCST = require("core.pc_storyteller_panel")
 local DiceDrawer = require("lib.dice_drawer")
 local STD = require("lib.st_dice_drawer")
 local DBV = require("lib.dice_bag_visibility")
+local WPG = require("core.wp_reroll_glow")
 local UiGlobalXmlDocs = require("lib.ui_global_xml_docs")
 
 --- Park a roll die into the preload pool, or destroy overflow / unknown dice (TOR-308).
@@ -6814,6 +6815,14 @@ end
 function onObjectCollisionEnter(registeredObject, collisionInfo)
     if registeredObject == nil or RC == nil then return end
     RC.onAutoRouseDieCollision(registeredObject, collisionInfo)
+end
+
+--- Fires on every pointer move of every player; WPG exits in O(1) unless a Willpower reroll
+--- glow exists (TOR-673).
+-- @param playerColor string
+-- @param obj Object|nil
+function onObjectHover(playerColor, obj)
+    WPG.onObjectHover(playerColor, obj)
 end
 
 --- Called by TTS when any object leaves a container (bag, deck, etc.).

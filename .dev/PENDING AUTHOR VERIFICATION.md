@@ -18,7 +18,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-07 — /tr-inbox cleared ten author-confirmed rows: TOR-653 (dashboard sheet Pages 2–3 editing), TOR-654 (dashboard sheet Page 6 XP log), TOR-655 (relationships in gameState, dashboard Page 4), TOR-656 (dashboard sheet Page 5 projects), TOR-657 (Trace Sync timing), TOR-658 (ST roll dashboard from any seat), TOR-659 (dashboard requests refused until loaded), TOR-660 (dashboard Page 2 Blood Potency effects), TOR-661 (Prince's Court haven traits), TOR-662 (Black Caesar's page 6 Experience Log). TOR-663 (Refresh XML repaints The Court) still waiting for your first pass. Later the same day the whole Focus stack shipped: TOR-638 (willpower reroll restores bumped dice), TOR-639 (Rouse checks stay Rouse checks), TOR-526 (quick Rouse locks on impact, 1s result), TOR-640 (seat-role offset dump matches the offsets table, no scale). After your first pass: TOR-639 now hides the Normal bag, TOR-526's result holds longer, and two new rows: TOR-664 (hunger smoke crash) and TOR-665 (Willpower reroll highlights)._
+_Last populated: 2026-10-07 — /tr-inbox cleared ten author-confirmed rows: TOR-653 (dashboard sheet Pages 2–3 editing), TOR-654 (dashboard sheet Page 6 XP log), TOR-655 (relationships in gameState, dashboard Page 4), TOR-656 (dashboard sheet Page 5 projects), TOR-657 (Trace Sync timing), TOR-658 (ST roll dashboard from any seat), TOR-659 (dashboard requests refused until loaded), TOR-660 (dashboard Page 2 Blood Potency effects), TOR-661 (Prince's Court haven traits), TOR-662 (Black Caesar's page 6 Experience Log). TOR-663 (Refresh XML repaints The Court) still waiting for your first pass. Later the same day the whole Focus stack shipped: TOR-638 (willpower reroll restores bumped dice), TOR-639 (Rouse checks stay Rouse checks), TOR-526 (quick Rouse locks on impact, 1s result), TOR-640 (seat-role offset dump matches the offsets table, no scale). After your first pass: TOR-639 now hides the Normal bag, TOR-526's result holds longer, and two new rows: TOR-664 (hunger smoke crash) and TOR-665 (Willpower reroll highlights); then TOR-673 (blue glow brightens under the rolling player's cursor)._
 
 ### High — session / join / first-load
 
@@ -51,6 +51,12 @@ _Last populated: 2026-10-07 — /tr-inbox cleared ten author-confirmed rows: TOR
 #### TOR-665 — Willpower reroll dice glow blue, then cyan
 
 **How to verify:** Save & Play. From a player seat, make a roll with three or more normal dice (with a Hunger die too, if you like) and let it settle. Click **Spend Willpower**. Every die you are allowed to reroll should glow deep blue; Hunger dice (and anything else you can't reroll) should not glow. Pick up one blue die and roll it: the moment it is thrown, its glow should brighten to cyan. If the roll has a reroll limit, reaching it should make the remaining blue dice stop glowing as they lock. Click **Confirm**: all glows should disappear when the result shows. Also start a Willpower reroll and then cancel the roll: no die should be left glowing, including on the next roll.
+
+#### TOR-673 — Blue Willpower glow brightens under your cursor
+
+**Context:** Your follow-up on the glows above: the blue glow was hiding TTS's normal hover outline, so you could no longer tell which die your cursor was on. Test it in the same session as TOR-665.
+
+**How to verify:** Save & Play. From a player seat, roll some dice and click **Spend Willpower** so the rerollable dice glow deep blue. Move your cursor over one blue die: its glow should brighten to a lighter blue straight away, and drop back to deep blue as soon as the cursor moves off it. Sweep the cursor across several blue dice: only the one under the cursor should be bright. A die you have already rerolled (cyan) should stay cyan when hovered. If you have a second seat or a hotseat swap handy, hovering the dice from a different color should not brighten them. Everyone at the table sees the brightening, since TTS highlights can't be shown to just one player.
 
 #### TOR-526 — Quick Rouse result stays readable for a full second
 
