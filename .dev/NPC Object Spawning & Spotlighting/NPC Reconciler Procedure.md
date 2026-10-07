@@ -105,6 +105,8 @@ Steps run in this order:
 
 **Layout commits:** Rotational seating is table-wide. Do not treat Step Three as N independent moves. After Step Three finishes all tag/instance updates for seat-bound NPCs, run **one** layout sync for the active table (seat objects placed from `C.SeatRoleOffsets` relative to each occupant figurine). Step Five moves figurines out of seats/preload into areas; if any seat-bound NPC was incorrectly left at the table, do not run a second full layout unless Step Three runs again.
 
+**When layout commit A forces the layout (TOR-668):** `commitNpcSeatLayout` calls `RSL.SyncTable({ force = true })` only when one of these holds — the orchestrator was called with `force`; Step Two cleared a seat or Step Three assigned one this pass (`npcSeatWorkThisPass`); the commit key changed (table key + occupied NPC seats + per-seat `physicalSeatAllowed` + `FSL.occupancyFingerprint()`); or `RSL.isLayoutSyncCurrent()` is false. Otherwise (for example a stage-only Apply) it skips the layout and runs only the layout's tail: `L.reconcileAllPlayers({ skipNpcSeats = true, skipStageBoundNpcSeats = true })` and `HO.syncAll()`. Trace Sync reports the decision as `NPCS.commitNpcSeatLayout` (`outcome = layout | skipped`).
+
 **Presence (Step Four)** runs after **Layout commit A** so seated pose exists before deactivation. It does not change assignment.
 
 ---
@@ -242,7 +244,7 @@ Characters with active **placements** rows are **not** preload targets; park the
 
 ### Stage-bound characters who were seated or tagged for a seat
 
-When Step Zero marks a character **stage-bound** but they still have seat tags or a prior seat assignment, Step One retreats them to preload before pass (a) places them at u,v.
+When Step Zero marks a character **stage-bound** but they still have seat tags or a prior seat assignment, Step One retreats them to preload before pass (a) places them at u,v. Pass (a) runs its preload prep (`ensureNpcInPreloadZone`) only for figurines that are neither on `STAGE_BOARD` nor already parked in preload.
 
 Stage placement runs **after** Step Three and Layout commit A so seat-bound and stage-bound targets are not applied in the same pass for the same character.
 

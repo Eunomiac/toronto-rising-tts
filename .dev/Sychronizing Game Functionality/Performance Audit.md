@@ -121,7 +121,7 @@ Do not reintroduce TOR-391 duplicates: no broad `StorytellerScenesPanel.refresh(
 
 - `resolveTokenSnapCatalogEntry` rebuilds full snap catalog per call (~9 `buildControlBoardSnapCatalog` sites + ~10 resolver sites).
 - `syncNpcsFromControlBoard` passed `force = true`, bypassing `npcReconcileFingerprint` skip in `NPCS.reconcileAllFromState`.
-- Separate load-bearing force: `commitNpcSeatLayout` → `RSL.SyncTable({ force = true })` (TOR-210) — do not conflate.
+- Separate load-bearing force: `commitNpcSeatLayout` → `RSL.SyncTable({ force = true })` (TOR-210) — do not conflate. Since TOR-668 it forces only on real seat work or a commit-key change; stage-only Apply runs just the light/overlay tail.
 - Partial fixes already shipped: empty-diff early return (Apply L1123, Clear L1208); drop scale-only path (`b16f26b`).
 
 **Tier 1 shipped / in progress**
