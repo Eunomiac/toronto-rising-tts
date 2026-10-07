@@ -112,6 +112,14 @@ For large subsystems, put helpers in `core/*.ttslua` or `lib/*.ttslua` and expos
 
 See also [`.dev/SOLVING ISSUES & DEBUGGING.md`](../../.dev/SOLVING%20ISSUES%20&%20DEBUGGING.md) § Root-cause discipline.
 
+## Sibling trap: require cycles return nil
+
+“attempt to **index** a nil value” on a module alias (`OP.resolveStatePose`, `X.foo`) with correct local order usually means a **require cycle**. luabundle marks a module as loading; a second `require` of it during that load returns **`nil`**, and the requester keeps that nil for the whole session. Which side breaks depends on Global load order, not file order.
+
+- Incident (TOR-664): `lib/object_positions.ttslua` requires `core/objects.ttslua` (hide/restore) and `core/objects.ttslua` required `lib/object_positions.ttslua`. Global loads object positions first (scenes → lighting → object positions), so `OP` in `core/objects.ttslua` was nil and turning hunger smoke on crashed.
+- Fix: the lower-level module looks the other up inside the functions that need it (`require` at call time), never at top level.
+- Check: walk top-level `require` lines depth-first from `core/global_script.ttslua`; any module requested while it is still loading is a nil hand-off.
+
 ## Related docs
 
 - [`core/global_script.ttslua`](../../core/global_script.ttslua) — file header points here first
