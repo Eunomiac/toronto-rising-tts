@@ -100,6 +100,7 @@ local function parkDie(die, bagGuid, slotIndex)
     local pos = parkPositionForBag(bagGuid, slotIndex)
     die.script_state = DK.SCRIPT_STATE_PRELOAD_POOL
     DK.setDieTagsForPreloadPool(die)
+    die.highlightOff()
     O.hideObject(die, {
         parkPosition = pos,
         parkRotation = { x = 0, y = 180, z = 0 },

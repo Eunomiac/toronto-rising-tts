@@ -851,6 +851,9 @@ C.DICE_SETTLE_DEBOUNCE_SECONDS = 3
 C.WP_REROLL_DIE_REST_MAX_WAIT_SECONDS = 45
 
 --- Idle-bag quick Rouse: seconds after a die first hits something other than another die before it is locked.
+-- Willpower reroll die highlights: deep blue = unlocked for the player to reroll; cyan = rerolled this wave.
+C.WP_REROLL_ELIGIBLE_HIGHLIGHT = { r = 0.05, g = 0.15, b = 0.7 }
+C.WP_REROLL_CHOSEN_HIGHLIGHT = { r = 0, g = 1, b = 1 }
 C.AUTO_ROUSE_LOCK_AFTER_IMPACT_SECONDS = 0.5
 --- Idle-bag quick Rouse: seconds after the toss to lock a die that never reported an impact.
 C.AUTO_ROUSE_IMPACT_FALLBACK_SECONDS = 2

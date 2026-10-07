@@ -302,6 +302,7 @@ local function seedWillpowerBlock(active)
         wpRerollWave          = false,
         rerollRandomizedGuids = {},
         waveStartFaces        = {},
+        waveEligibleGuids     = {},
     }
 end
 
@@ -324,6 +325,9 @@ local function ensureWillpowerShape(active)
     end
     if type(active.willpower.waveStartFaces) ~= "table" then
         active.willpower.waveStartFaces = {}
+    end
+    if type(active.willpower.waveEligibleGuids) ~= "table" then
+        active.willpower.waveEligibleGuids = {}
     end
     active.willpower.wpWaveId     = tonumber(active.willpower.wpWaveId) or 0
     active.willpower.wpRerollWave = active.willpower.wpRerollWave == true
@@ -395,8 +399,36 @@ local function lockAllRollDiceObjects(color, rollId)
     end
 end
 
+--- Whether the player may reroll this die with Willpower on this roll (face rule + hunger policy).
+-- @param active table
+-- @param kind string  DK.KIND_*
+-- @param obj Object
+-- @return boolean
+local function isWpRerollEligibleDie(active, kind, obj)
+    if not DK.canRerollWithWillpower(kind, obj.getValue()) then
+        return false
+    end
+    if kind == DK.KIND_HUNGER then
+        return type(active.rollPolicy) == "table" and active.rollPolicy.wpCanRerollHunger == true
+    end
+    return true
+end
+
+--- Removes Willpower reroll highlights from every die of this roll.
+-- @param color string
+-- @param rollId string
+local function clearWpRerollHighlights(color, rollId)
+    local objsByKind = RC._getDiceObjectsByKindForRoll(color, rollId)
+    for _, list in pairs(objsByKind) do
+        for _, o in ipairs(list) do
+            o.highlightOff()
+        end
+    end
+end
+
 --- After initial POST_ROLL settle, all dice are locked (see recalculate). Here we unlock
---- normals for rerolling and lock hunger unless rollPolicy.wpCanRerollHunger (applied now, not carried from prior phase).
+--- the dice `isWpRerollEligibleDie` allows (applied now, not carried from prior phase),
+--- record them in `willpower.waveEligibleGuids`, and highlight them deep blue.
 -- Eligible dice are also made interactable so the player can pick them up.
 -- @param color string
 -- @param active table
@@ -405,20 +437,23 @@ local function applyWpRerollWaveStart(color, active)
     active.willpower.rerollRandomizedGuids = {}
     local startFaces = {}
     active.willpower.waveStartFaces = startFaces
-    local canHunger = type(active.rollPolicy) == "table"
-        and active.rollPolicy.wpCanRerollHunger == true
+    local eligible = {}
+    active.willpower.waveEligibleGuids = eligible
     local scope = wpRerollScopeForActive(active)
     local objsByKind = RC._getDiceObjectsByKindForRoll(color, active.id)
     for _, kind in ipairs(diceKindsForActive(active)) do
         for _, o in ipairs(objsByKind[kind] or {}) do
             if o ~= nil then
-                startFaces[o.getGUID()] = DF.read(o)
-                local face = o.getValue()
-                local unlock = DK.canRerollWithWillpower(kind, face)
-                if kind == DK.KIND_HUNGER and not canHunger then
-                    unlock = false
-                end
+                local guid = o.getGUID()
+                startFaces[guid] = DF.read(o)
+                local unlock = isWpRerollEligibleDie(active, kind, o)
                 setRollDiePlayerAccess(o, unlock)
+                if unlock then
+                    eligible[guid] = true
+                    o.highlightOn(C.WP_REROLL_ELIGIBLE_HIGHLIGHT)
+                else
+                    o.highlightOff()
+                end
             end
         end
     end
@@ -430,7 +465,8 @@ local function applyWpRerollWaveStart(color, active)
     RollConditionHandlers.run("onWpRerollWaveStart", color, active)
 end
 
---- When reroll cap N>0 is reached, lock all dice not yet marked as having randomized this wave.
+--- When reroll cap N>0 is reached, lock all dice not yet marked as having randomized this wave
+--- and drop their eligible highlight (chosen dice keep cyan).
 -- @param color string
 -- @param active table
 local function lockDiceOutsideRerollSelection(color, active)
@@ -443,6 +479,7 @@ local function lockDiceOutsideRerollSelection(color, active)
         for _, o in ipairs(objsByKind[kind] or {}) do
             if o ~= nil and not chosen[o.getGUID()] then
                 setRollDiePlayerAccess(o, false)
+                o.highlightOff()
             end
         end
     end
@@ -1867,6 +1904,20 @@ local function restoreBumpedWpDice(color, active)
     setActive(color, active)
 end
 
+--- Wave over: dice the player did not reroll lose the eligible highlight; rerolled dice keep cyan until the result.
+-- @param active table
+local function dropUnchosenWpHighlights(active)
+    local chosen = active.willpower.rerollRandomizedGuids or {}
+    for guid, _ in pairs(active.willpower.waveEligibleGuids or {}) do
+        if not chosen[guid] then
+            local o = G.getObject(guid)
+            if o ~= nil then
+                o.highlightOff()
+            end
+        end
+    end
+end
+
 --- Lock pool and run recalculate so ROLLING + wpRerollWave → POST_ROLL.
 local function finishWpRerollWaveFromRolling(color)
     local active = getActive(color)
@@ -1877,6 +1928,7 @@ local function finishWpRerollWaveFromRolling(color)
         return false
     end
     restoreBumpedWpDice(color, active)
+    dropUnchosenWpHighlights(active)
     cancelDebounce(color)
     lockAllRollDiceObjects(color, active.id)
     RC.recalculate(color)
@@ -2284,6 +2336,9 @@ function RC.onWpRerollDieRandomized(color, obj)
     end
 
     active.willpower.rerollRandomizedGuids[guid] = true
+    if type(active.willpower.waveEligibleGuids) == "table" and active.willpower.waveEligibleGuids[guid] then
+        obj.highlightOn(C.WP_REROLL_CHOSEN_HIGHLIGHT)
+    end
     RollConditionHandlers.run("onWpDieRandomized", color, active)
     setActive(color, active)
 
@@ -2679,6 +2734,7 @@ function RC.confirmRoll(color)
     active.phase       = C.RollPhase.RESOLVED
     active.batonHolder = C.BatonHolder.AUTO
     setActive(color, active)
+    clearWpRerollHighlights(color, active.id)
     notifyStateChanged(color)
 
     local finalResult         = active.result

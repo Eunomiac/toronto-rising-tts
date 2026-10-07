@@ -6,53 +6,21 @@
 ---@diagnostic disable: undefined-global
 local RollConditionHandlers = {}
 
-local DK = require("lib.dice_kinds")
-
---- Collect GUIDs of dice eligible for WP reroll on this roll.
---- @param color string
---- @param active table
---- @param canHunger boolean
---- @return table<string, boolean>
-local function collectEligibleDieGuids(color, active, canHunger)
-  local required = {}
-  local objsByKind = require("core.roll_controller")._getDiceObjectsByKindForRoll(color, active.id)
-  local kinds
-  if active.rollType == require("lib.constants").RollType.WEREWOLF then
-    kinds = { DK.KIND_WEREWOLF, DK.KIND_RAGE }
-  else
-    kinds = {
-      DK.KIND_NORMAL, DK.KIND_HUNGER, DK.KIND_ROUSE, DK.KIND_OBLIV_ROUSE,
-    }
-  end
-  for _, kind in ipairs(kinds) do
-    for _, o in ipairs(objsByKind[kind] or {}) do
-      if o ~= nil then
-        local face = o.getValue()
-        local unlock = DK.canRerollWithWillpower(kind, face)
-        if kind == DK.KIND_HUNGER and not canHunger then
-          unlock = false
-        end
-        if unlock then
-          required[o.getGUID()] = true
-        end
-      end
-    end
-  end
-  return required
-end
-
 --- Mandatory full reroll: player must reroll every eligible die before confirm.
 RollConditionHandlers.HANDLERS = {
   mandatoryFullWpReroll = {
-    --- @param color string
+    --- Required set = the dice the roll controller unlocked this wave (`willpower.waveEligibleGuids`).
+    --- @param _color string
     --- @param active table
-    onWpRerollWaveStart = function(color, active)
+    onWpRerollWaveStart = function(_color, active)
       if type(active.willpower) ~= "table" then
         return
       end
-      local canHunger = type(active.rollPolicy) == "table"
-        and active.rollPolicy.wpCanRerollHunger == true
-      active.willpower.mandatoryFullRerollRequired = collectEligibleDieGuids(color, active, canHunger)
+      local required = {}
+      for guid, _ in pairs(active.willpower.waveEligibleGuids or {}) do
+        required[guid] = true
+      end
+      active.willpower.mandatoryFullRerollRequired = required
       active.willpower.mandatoryFullRerollComplete = false
     end,
 
