@@ -3129,10 +3129,9 @@ function RC._applyRouseOutcomeStrips(color, active)
     if stainDelta > 0 then
         P.applyHumanityStainDelta(color, stainDelta)
     end
-    Sync.player(color)
+    Sync.player(color, { forceOverlays = true })
     PCST.refreshCharacterSheetsForColor(color)
     PCST.refreshRow(color)
-    P.refreshHudOverlaysForSeat(color)
 end
 
 --- Confirms Oblivion (D) choice: hunger or stain (not both).
@@ -3174,10 +3173,9 @@ function RC.confirmOblivionChoice(color, choice)
     elseif choice == "stain" then
         P.applyHumanityStainDelta(color, 1)
     end
-    Sync.player(color)
+    Sync.player(color, { forceOverlays = true })
     PCST.refreshCharacterSheetsForColor(color)
     PCST.refreshRow(color)
-    P.refreshHudOverlaysForSeat(color)
     if type(active.result) == "table" then
         active.result.rouseNarrative = choiceNarrative
     end

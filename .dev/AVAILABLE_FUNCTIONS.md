@@ -489,7 +489,7 @@ Animated Scene Time jumps (TOR-222 / TOR-470). Mid-lerp: overlay date/time text 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
 | `Sync.full(opts?)` | Orchestrate scene + soundscape + seat presentation + UI; `opts.force == true` bypasses fingerprints and runs full `UpdateUIDisplays` | Debug **Sync All (force)**; routine paths omit `force` |
-| `Sync.player(color)` | Per-seat lighting + HUD + overlays | Seat-scoped refresh |
+| `Sync.player(color, opts?)` | Per-seat lighting + HUD + overlays; `opts.forceOverlays` clears the seat's overlay cache first | Seat-scoped refresh; hunger changes pass `{ forceOverlays = true }` |
 | `Sync.ui(delta?)` | Passthrough to `UpdateUIDisplays` | Targeted UI deltas |
 | `Sync.soundscape(opts?)` | `Soundscape.reconcileFromState(opts)` | Audio-focused repair |
 

@@ -335,8 +335,7 @@ local function applyMergedPlayerData(color, patch, deleteKeys)
   end
 
   -- Refresh presentation only — do not reshape what was just written.
-  Sync.player(color)
-  P.refreshHudOverlaysForSeat(color)
+  Sync.player(color, { forceOverlays = true })
   afterTrackerChange(color)
   if type(PCST.paintXpLogPage6ForColor) == "function" then
     PCST.paintXpLogPage6ForColor(color)
@@ -646,8 +645,7 @@ local function applyCommand(cmd)
     local maxDots = tonumber(C.MAX_HUNGER) or 5
     local nx = math.max(0, math.min(maxDots, math.floor(cur + num(cmd.delta))))
     S.setPlayerVal(color, "hunger", nx)
-    Sync.player(color)
-    P.refreshHudOverlaysForSeat(color)
+    Sync.player(color, { forceOverlays = true })
     afterTrackerChange(color)
     return nil
   end

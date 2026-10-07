@@ -276,7 +276,9 @@ end
 
 --- Reconcile one player scope (per-seat lights, HUD, overlays, storyteller stat row).
 --- @param color string Seat color (e.g., "Red")
-function Sync.player(color)
+--- @param opts table|nil `{ forceOverlays? }` — clear this seat's overlay cache first so hunger/condition
+---   UI.hide / active writes re-apply even when the cache already matches (TOR-340 hunger changes).
+function Sync.player(color, opts)
     if type(color) ~= "string" or color == "" then
         return
     end
@@ -290,10 +292,13 @@ function Sync.player(color)
         callIfFunction(HUDP.updatePlayerUI, player, color)
     end
 
+    if type(opts) == "table" and opts.forceOverlays == true then
+        HO.invalidateSeatCache(color)
+    end
     callIfFunction(HO.reconcileForSeat, color)
 
-    -- Keep orchestrator presentation fingerprint aligned after per-seat mutation.
-    lastSeatPresentationFingerprint = computeSeatPresentationFingerprint()
+    -- Other seats were not reconciled here; let the next `Sync.full` re-check presentation.
+    invalidateSeatPresentationFingerprint()
 
     if type(UpdateUIDisplays) == "function" then
         UpdateUIDisplays({
