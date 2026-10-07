@@ -1153,13 +1153,13 @@ Playbook.steps = {
             rollCancel("Purple")
           end,
           function() printHeader("", 2) end,
-          function() printHeader("K3a - Normal bag promotes to compound standard roll", 2) end,
-          -- Promote requires PRE_ROLL (RC.promoteDedicatedRouseToStandard); do not skipOpen (TOR-357).
+          function() printHeader("K3a - Normal bag refused on a Rouse check", 2) end,
+          -- A Rouse check stays a Rouse check (TOR-639); PRE_ROLL so the refusal is the only reason the die is missing.
           function() rollTest("Brown", 1, C.RollType.ROUSE, "E2E K3a") end,
           function()
             rollE2eSeatPrep("Brown")
             M.setCamera("ALL", "rollBrown")
-            printHeader("[HUMAN] Left-click Rouse bag 2 times, then left-click Normal bag 1 time (PRE_ROLL — promote)", 3)
+            printHeader("[HUMAN] Left-click Rouse bag 2 times, then left-click Normal bag 1 time (PRE_ROLL — no die should appear)", 3)
           end
         },
     -- step 31
@@ -1168,9 +1168,9 @@ Playbook.steps = {
             rollConfirm("Brown", {
               phase = "preRoll",
               active = {
-                rollType = C.RollType.STANDARD,
+                rollType = C.RollType.ROUSE,
                 batonHolder = "player",
-                pool = { rouse = 3, normal = 1 },
+                pool = { rouse = 3, normal = 0 },
               },
             })
             rollCancel("Brown")
@@ -1191,13 +1191,13 @@ Playbook.steps = {
             rollCancel("Brown")
           end,
           function() printHeader("", 2) end,
-          function() printHeader("K3c - Oblivion dedicated: Normal promotes (Purple)", 2) end,
-          -- Same as K3a: Normal promote is PRE_ROLL-only (TOR-357).
+          function() printHeader("K3c - Oblivion Rouse check: Normal bag refused (Purple)", 2) end,
+          -- Same as K3a (TOR-639).
           function() rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E K3c") end,
           function()
             rollE2eSeatPrep("Purple")
             M.setCamera("ALL", "rollPurple")
-            printHeader("[HUMAN] Left-click Oblivion-Rouse bag 1 time, then left-click Normal bag 1 time (PRE_ROLL — promote)", 3)
+            printHeader("[HUMAN] Left-click Oblivion-Rouse bag 1 time, then left-click Normal bag 1 time (PRE_ROLL — no die should appear)", 3)
           end
         },
     -- step 33
@@ -1206,9 +1206,9 @@ Playbook.steps = {
             rollConfirm("Purple", {
               phase = "preRoll",
               active = {
-                rollType = C.RollType.STANDARD,
+                rollType = C.RollType.ROUSE_OBLIVION,
                 batonHolder = "player",
-                pool = { oblivRouse = 2, normal = 1 },
+                pool = { oblivRouse = 2, normal = 0 },
               },
             })
             rollCancel("Purple")

@@ -1313,6 +1313,17 @@ function RC.setPool(color, normal, hunger)
     return true
 end
 
+--- A Rouse or Oblivion Rouse check never gains standard or hunger dice (lowering to 0 is allowed).
+-- @param active table
+-- @param kind string  DK.KIND_* value
+-- @param nextCount number
+-- @return boolean
+local function rouseCheckRefusesPoolKind(active, kind, nextCount)
+    return RO.isRouseFamilyRoll(active.rollType)
+        and (kind == DK.KIND_NORMAL or kind == DK.KIND_HUNGER)
+        and nextCount > 0
+end
+
 --- Updates one pool kind count (PRE_ROLL / SETUP).
 -- @param color string
 -- @param kind string  DK.KIND_* value
@@ -1325,6 +1336,9 @@ function RC.setPoolKindCount(color, kind, count)
     local active = getActive(color)
     if active == nil then return false end
     if active.phase ~= C.RollPhase.SETUP and active.phase ~= C.RollPhase.PRE_ROLL then
+        return false
+    end
+    if rouseCheckRefusesPoolKind(active, kind, math.floor(count)) then
         return false
     end
     ensureActiveShape(active)
@@ -1351,6 +1365,9 @@ function RC.adjustPoolKindCount(color, kind, delta)
     ensureActiveShape(active)
     local pool = DK.normalizePool(active.pool)
     local nextVal = math.max(0, math.floor((pool[kind] or 0) + delta))
+    if delta > 0 and rouseCheckRefusesPoolKind(active, kind, nextVal) then
+        return false
+    end
     active.pool[kind] = nextVal
     setActive(color, active)
     notifyStateChanged(color)
@@ -3083,28 +3100,6 @@ function RC.confirmBrutalChoice(color, choice)
     setActive(color, active)
     notifyStateChanged(color)
     return RC.confirmRoll(color)
-end
-
---- Promotes a dedicated Rouse/Oblivion check to a compound STANDARD roll when main-pool dice are added.
--- Preserves rouse-family dice; optional ST difficulty (implicit 1 when unset at resolve).
--- @param color string
--- @return boolean
-function RC.promoteDedicatedRouseToStandard(color)
-    local active = getActive(color)
-    if active == nil then return false end
-    if active.phase ~= C.RollPhase.PRE_ROLL then return false end
-    if not RO.isRouseFamilyRoll(active.rollType) then return false end
-
-    active.rollType = C.RollType.STANDARD
-    active.difficulty = nil
-    RO.seedActiveRoll(active)
-    active.rollConditionOverlay = { forceOn = {}, forceOff = {} }
-    RC.computeEffectiveRollState(color, active)
-    RO.syncStructuralOverlayFromActive(active)
-    seedWillpowerBlock(active)
-    setActive(color, active)
-    notifyStateChanged(color)
-    return true
 end
 
 --- Activates Blood Surge on a standard roll (Hunger bag left-click when surge is off).

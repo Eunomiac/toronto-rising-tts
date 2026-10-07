@@ -57,6 +57,8 @@ Use this bucket for **rules that only change how pool math / result class is com
   - **Cap auto-finish** — when the `numberOfDiceRerolled` cap **N** is reached and all chosen dice are locked, `finishWpRerollWaveFromRolling` → full `recalculate` → POST_ROLL (no Confirm needed).
   - **Confirm** — for fewer-than-cap (or `wpRerollScope` "all") waves, **Confirm** is the only way forward; `confirmRoll` detects ROLLING + `wpRerollWave` and ends the wave → POST_ROLL.
 
+- **Rouse checks stay Rouse checks (TOR-639):** a roll whose `rollType` is `ROUSE` or `ROUSE_OBLIVION` never gains standard or hunger dice. `GlobalDiceBagClick` ignores the Normal and Hunger bags, `GlobalRollSpawnDieRequest` refuses those kinds, and `RC.setPoolKindCount` / `RC.adjustPoolKindCount` refuse raising them (Storyteller paths). Adding rouse dice to a Standard or Discipline roll is still allowed; `rollType` stays as it was, so it becomes a combined roll.
+
 Use this bucket for **what happens on the table** between phases, independent of success counting.
 
 ### D. Condition roll policies (`active.rollPolicy`)

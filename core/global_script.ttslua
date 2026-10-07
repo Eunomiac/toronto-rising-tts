@@ -1954,6 +1954,10 @@ function GlobalRollSpawnDieRequest(params)
 
     local RO = require("lib.roll_options")
 
+    if RO.isRouseFamilyRoll(active.rollType) then
+        return nil
+    end
+
     if not RO.getForActive(active, RO.ROLL_HUNGER_DICE) then
         if requested == DK.KIND_HUNGER then
             return nil
@@ -2375,12 +2379,8 @@ function GlobalDiceBagClick(params)
     if active == nil then return end
 
     if RO.isRouseFamilyRoll(active.rollType) then
-        if dieKind == DK.KIND_HUNGER then
-            return
-        end
-        if dieKind == DK.KIND_NORMAL then
-            RC.promoteDedicatedRouseToStandard(color)
-            spawnRequestedDie(color, dieKind)
+        -- A Rouse check stays a Rouse check: Normal and Hunger bags are silent no-ops.
+        if dieKind == DK.KIND_HUNGER or dieKind == DK.KIND_NORMAL then
             return
         end
         if active.rollType == C.RollType.ROUSE and dieKind == DK.KIND_ROUSE then
