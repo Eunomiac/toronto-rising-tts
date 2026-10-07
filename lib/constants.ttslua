@@ -859,7 +859,9 @@ C.AUTO_ROUSE_IMPACT_FALLBACK_SECONDS = 2
 -- Must match the delayed cleanup in global_script (dice destroy + drawer close).
 C.ROLL_RESULT_BROADCAST_SECONDS = 6
 -- Hold for the idle-bag quick Rouse result (same cleanup coupling as above).
-C.AUTO_ROUSE_RESULT_BROADCAST_SECONDS = 1
+-- The hold starts at UI.show; rollRes_screen spends its first 1s on showAnimationDelay 0.5
+-- + FadeIn 0.5 (ui/shared/panel_roll_results.xml), so 2 leaves about 1s fully visible.
+C.AUTO_ROUSE_RESULT_BROADCAST_SECONDS = 2
 
 -- Delay after UI.hide before clearing rollRes_* content (panel_roll_results.xml animationDuration is 0.5).
 C.ROLL_RESULT_BROADCAST_HIDE_CLEANUP_SECONDS = 1
