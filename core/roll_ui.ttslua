@@ -1878,7 +1878,7 @@ pumpBroadcastQueue = function()
             broadcastBusy = false
             pumpBroadcastQueue()
         end, C.ROLL_RESULT_BROADCAST_HIDE_CLEANUP_SECONDS)
-    end, C.ROLL_RESULT_BROADCAST_SECONDS)
+    end, payload.holdSeconds or C.ROLL_RESULT_BROADCAST_SECONDS)
 end
 
 --- Queue a snapshot and start the pump if it is idle.
@@ -1896,12 +1896,15 @@ end
 -- @param result table|nil  Resolved result record (may be nil for Take Half with no difficulty)
 -- @param label string|nil  Optional roll label
 -- @param historyEntryOverride table|nil  Specific history row (manual ST broadcast)
+-- @param holdSeconds number|nil  Visible time (default C.ROLL_RESULT_BROADCAST_SECONDS)
 -- @usage RUI.showResultBroadcast("Red", result, "Stealth vs Guard")
-function RUI.showResultBroadcast(color, result, label, historyEntryOverride)
+function RUI.showResultBroadcast(color, result, label, historyEntryOverride, holdSeconds)
     U.Val("RUI.showResultBroadcast()", {color = color},
         U.Type(color) == "string", "color must be a string")
 
-    enqueueBroadcast(snapshotBroadcastPayload(color, result, label, historyEntryOverride))
+    local payload = snapshotBroadcastPayload(color, result, label, historyEntryOverride)
+    payload.holdSeconds = holdSeconds
+    enqueueBroadcast(payload)
 end
 
 --- Shows the broadcast panel from a specific history entry (manual ST broadcast by rollId).

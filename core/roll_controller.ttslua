@@ -102,6 +102,11 @@ local _stRerollBatchPending = {}
 -- Re-entrancy guard when auto-broadcast chains into confirmRoll from recalculate.
 local _autoConfirmDepth = 0
 
+-- Idle-bag quick Rouse impact locks: per color { rollId, dice = { [guid] = { locked, fallback } } }.
+local _autoRouseImpact = {}
+-- Collision-registered auto-Rouse dice: guid → color (O(1) gate for onObjectCollisionEnter).
+local _autoRouseImpactByGuid = {}
+
 -- ============================================================================
 -- INTERNAL HELPERS
 -- ============================================================================
@@ -123,9 +128,9 @@ end
 
 --- Fires the roll-resolved callback.
 -- Same rationale as notifyStateChanged — no pcall.
-local function notifyRollResolved(color, result, label)
+local function notifyRollResolved(color, result, label, holdSeconds)
     if RC.onRollResolved and U.Type(RC.onRollResolved) == "function" then
-        RC.onRollResolved(color, result, label)
+        RC.onRollResolved(color, result, label, holdSeconds)
     end
 end
 
@@ -1931,6 +1936,88 @@ function RC.isPhysicalDieRandomizeEvent(obj)
     return false
 end
 
+--- Stops collision events for one auto-Rouse die and drops it from the GUID gate.
+-- @param guid string
+local function releaseAutoRouseCollision(guid)
+    _autoRouseImpactByGuid[guid] = nil
+    local o = G.getObject(guid)
+    if U.isGameObject(o) and o.unregisterCollisions ~= nil then
+        o.unregisterCollisions()
+    end
+end
+
+--- Locks one idle-bag quick Rouse die; once every tossed die is locked, resolves the roll.
+-- @param color string
+-- @param guid string
+local function lockAutoRouseDie(color, guid)
+    local entry = _autoRouseImpact[color]
+    local die = entry ~= nil and entry.dice[guid] or nil
+    if die == nil or die.locked then
+        return
+    end
+    die.locked = true
+    if die.fallback ~= nil then
+        U.cancel(die.fallback)
+        die.fallback = nil
+    end
+    releaseAutoRouseCollision(guid)
+    setRollDiePlayerAccess(G.getObject(guid), false)
+    for _, d in pairs(entry.dice) do
+        if not d.locked then
+            return
+        end
+    end
+    _autoRouseImpact[color] = nil
+    local active = getActive(color)
+    if active ~= nil and active.id == entry.rollId and active.phase == C.RollPhase.ROLLING then
+        RC.onDiceSettled(color)
+    end
+end
+
+--- Idle-bag quick Rouse toss: watch this die for its first impact instead of waiting for rest.
+-- @param color string
+-- @param active table
+-- @param obj Object
+local function armAutoRouseImpactLock(color, active, obj)
+    local guid = obj.getGUID()
+    local entry = _autoRouseImpact[color]
+    if entry == nil or entry.rollId ~= active.id then
+        entry = { rollId = active.id, dice = {} }
+        _autoRouseImpact[color] = entry
+    end
+    if entry.dice[guid] ~= nil then
+        return
+    end
+    local die = { locked = false }
+    entry.dice[guid] = die
+    _autoRouseImpactByGuid[guid] = color
+    obj.registerCollisions(false)
+    die.fallback = U.await(function()
+        die.fallback = nil
+        lockAutoRouseDie(color, guid)
+    end, C.AUTO_ROUSE_IMPACT_FALLBACK_SECONDS)
+end
+
+--- First impact of an idle-bag quick Rouse die (from Global onObjectCollisionEnter).
+-- Die-on-die contact in the air is ignored; the lock starts when it hits the tray or table.
+-- @param obj Object  collision-registered object
+-- @param info table|nil  TTS collision_info
+function RC.onAutoRouseDieCollision(obj, info)
+    local guid = obj.getGUID()
+    local color = _autoRouseImpactByGuid[guid]
+    if color == nil then
+        return
+    end
+    local other = type(info) == "table" and info.collision_object or nil
+    if other ~= nil and other.hasTag ~= nil and other.hasTag("d10") then
+        return
+    end
+    releaseAutoRouseCollision(guid)
+    U.await(function()
+        lockAutoRouseDie(color, guid)
+    end, C.AUTO_ROUSE_LOCK_AFTER_IMPACT_SECONDS)
+end
+
 --- Triggered by onObjectRandomize (via global_script) when any of a player's dice
 -- settle. Resets the debounce timer that fires RC.onDiceSettled → RC.recalculate.
 --
@@ -1964,6 +2051,12 @@ function RC.onDieSettledSignal(color, obj)
 
     -- ST selective reroll: per-die settle callback drives preview recalculate + re-lock.
     if type(active.stSelectiveReroll) == "table" and active.stSelectiveReroll.inProgress == true then
+        return
+    end
+
+    -- Idle-bag quick Rouse: lock shortly after impact and resolve, no rest wait (TOR-526).
+    if active.phase == C.RollPhase.ROLLING and obj ~= nil and PRTL.isIdleBagAutoRouse(active) then
+        armAutoRouseImpactLock(color, active, obj)
         return
     end
 
@@ -2621,7 +2714,8 @@ function RC.confirmRoll(color)
             STR.markSlotPendingBroadcast(active.stDrawerSlot, finalRollId)
         end
     else
-        notifyRollResolved(color, finalResult, finalLabel)
+        local holdSeconds = PRTL.isIdleBagAutoRouse(active) and C.AUTO_ROUSE_RESULT_BROADCAST_SECONDS or nil
+        notifyRollResolved(color, finalResult, finalLabel, holdSeconds)
     end
 
     if color ~= "Black" and PRTL.getLivePcColor() == color then

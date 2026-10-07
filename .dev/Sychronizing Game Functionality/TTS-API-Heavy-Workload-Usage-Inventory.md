@@ -99,7 +99,9 @@ Important false-positive rules:
 | `Component.set` aliases | CONTEXT | `core/lighting.ttslua:1395`, `:1400`, `:1405`, `:1410`, `:1415`, `:2489`; `core/soundscape.ttslua:425`, `:426`, `:427`, `:439`, `:443`, `:445`; `core/soundscape_emitter_object.ttslua:58`, `:59`, `:60`, `:73`, `:77`, `:78` | warm; light and AudioSource property mutation | bounded component lists; lighting lacks per-property dirty check; soundscape fades are controlled by channel generation | `cache` / `debounce` |
 | `AssetBundle.playLoopingEffect` | MODERATE | `core/npcs.ttslua:2348`; `core/soundscape.ttslua:593`, `:855`, `:913`; `core/soundscape_emitter_object.ttslua:151` | warm/cold; NPC light spawn, soundscape emitter playback, outdoor rain particles (TOR-498) | explicit effect index resolution; soundscape uses silent-arm pattern, generation counters, and `getLoopingEffectIndex` skip on rain particles | `keep` / `inspect` |
 
-No current source call sites were found for `registerCollisions`, `Material.set`, or `Container.search`.
+| `registerCollisions` / `unregisterCollisions` | CONTEXT | `core/roll_controller.ttslua` (`armAutoRouseImpactLock`, `releaseAutoRouseCollision`) | hot (roll toss); idle-bag quick Rouse dice only (TOR-526) | `stay=false`; one or two dice per toss; unregistered on first non-die impact or after the 2s fallback | `keep` |
+
+No current source call sites were found for `Material.set` or `Container.search`.
 
 ### Physics And Spatial
 
@@ -148,7 +150,7 @@ No current source call sites were found for `WebRequest.*`, `Notes.*`, `Tables.s
 
 ## Callback Scan Notes
 
-No active `onUpdate`, `onFixedUpdate`, `onDrag`, `onCollisionStay`, `onObjectCollisionStay`, or `registerCollisions` call sites were found in `core/`, `lib/`, `objects/`, `ui/`, `global/`, or `.dev/testbed/`.
+`onObjectCollisionEnter` (Global) serves only the idle-bag quick Rouse impact lock above (O(1) GUID gate). No active `onUpdate`, `onFixedUpdate`, `onDrag`, `onCollisionStay`, or `onObjectCollisionStay` call sites were found in `core/`, `lib/`, `objects/`, `ui/`, `global/`, or `.dev/testbed/`.
 
 The `onValueChanged` surface is the main high-frequency callback surface currently present. Most input-field handlers are draft-stash only, but these deserve TOR-391 inspection because they can run many times while someone drags or types:
 

@@ -6659,9 +6659,9 @@ RC.onRollCamera = function(color, modeName)
     end
 end
 
-RC.onRollResolved = function(color, result, label)
+RC.onRollResolved = function(color, result, label, holdSeconds)
     GlobalRollSeatCamera({ color = color, mode = "default" })
-    RUI.showResultBroadcast(color, result, label)
+    RUI.showResultBroadcast(color, result, label, nil, holdSeconds)
     -- Storyteller rolls stay on the table until the ST cancels the slot manually.
     if color == "Black" then
         return
@@ -6685,7 +6685,7 @@ RC.onRollResolved = function(color, result, label)
         pendingRollCleanup[color] = nil
         pendingRollCleanupTimerIds[color] = nil
         finishPostBroadcastRollCleanup(color, rollId)
-    end, C.ROLL_RESULT_BROADCAST_SECONDS)
+    end, holdSeconds or C.ROLL_RESULT_BROADCAST_SECONDS)
 end
 
 RC.onBlackSecretDiceSettled = function(color, rollId)
@@ -6805,6 +6805,15 @@ function onObjectRandomize(obj, playerColor)
 
     -- Delegate debounce reset to roll controller
     RC.onDieSettledSignal(color, obj)
+end
+
+--- Fires only for objects that called registerCollisions: idle-bag quick Rouse dice while
+--- airborne (TOR-526). RC drops unknown GUIDs in O(1) and unregisters after the first impact.
+-- @param registeredObject Object
+-- @param collisionInfo table
+function onObjectCollisionEnter(registeredObject, collisionInfo)
+    if registeredObject == nil or RC == nil then return end
+    RC.onAutoRouseDieCollision(registeredObject, collisionInfo)
 end
 
 --- Called by TTS when any object leaves a container (bag, deck, etc.).
