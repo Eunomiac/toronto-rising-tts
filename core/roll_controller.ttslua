@@ -661,15 +661,19 @@ local function autoDifficultyForRollType(rollType)
     return nil
 end
 
---- True when SETUP can be skipped: auto pool + auto difficulty, both locked at initiate (Remorse only today).
+--- True when the roll opens at PRE_ROLL with no Storyteller Open: auto difficulty, nothing for
+--- the ST to set. Remorse (locked pool) and Rouse-family checks (player may still add or remove
+--- rouse dice at the bag before Roll).
 -- @param rollType string
 -- @return boolean
 function RC.shouldSkipSetupForRollType(rollType)
     return rollType == C.RollType.REMORSE
+        or rollType == C.RollType.ROUSE
+        or rollType == C.RollType.ROUSE_OBLIVION
 end
 
 --- True when drawer / auto-spawn / bag visibility should run at roll initiation (not deferred to openRoll).
--- Player-initiated rolls: SETUP entry. Locked rolls (Remorse): instant PRE_ROLL regardless of initiator.
+-- Player-initiated rolls: SETUP entry. Skip-SETUP types (Remorse, Rouse family): instant PRE_ROLL regardless of initiator.
 -- @param active table|nil
 -- @return boolean
 function RC.shouldResolvePhysicalPrepAtInitiate(active)
@@ -1064,7 +1068,8 @@ end
 -- ============================================================================
 
 --- Initiates a new roll for a player.
--- Sets phase = SETUP, batonHolder = STORYTELLER.
+-- Sets phase = SETUP, batonHolder = STORYTELLER, unless `RC.shouldSkipSetupForRollType`
+-- (then PRE_ROLL, batonHolder = PLAYER).
 -- Pool is auto-computed for SIMPLE_CHECK, ROUSE, ROUSE_OBLIVION, and REMORSE roll types.
 -- Fails (returns false) if the player already has an active roll.
 --

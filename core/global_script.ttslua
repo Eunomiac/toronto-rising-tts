@@ -2198,10 +2198,6 @@ local function startQuickDedicatedRouseCheck(color, dieKind)
     if ok ~= true then
         return
     end
-    -- Player-initiated Rouse-family stays in SETUP for ST Open; this shortcut Opens then auto-tosses.
-    if RC.openRoll(color) ~= true then
-        return
-    end
     HUD_rollRollButton(nil, "-2", "rollControl_btnRoll_" .. color)
 end
 

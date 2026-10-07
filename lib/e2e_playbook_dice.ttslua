@@ -916,10 +916,10 @@ Playbook.steps = {
     -- step 16
         {
           function()
-            -- Cold bag initiate → SETUP (player initiator); only Remorse skips SETUP.
+            -- Cold bag initiate → PRE_ROLL: Rouse checks skip ST Open (TOR-674).
             rollConfirm("Brown", {
-              phase = "setup",
-              active = { rollType = C.RollType.ROUSE, batonHolder = "storyteller", pool = { rouse = 1 } },
+              phase = "preRoll",
+              active = { rollType = C.RollType.ROUSE, batonHolder = "player", pool = { rouse = 1 } },
             })
             rollCancel("Brown")
           end,

@@ -2531,7 +2531,7 @@ function DEBUG.rollTest(color, difficulty, rollType, label, hungerLevel)
         rollE2eReturnHostSeat()
         return
     end
-    if opts.skipOpen ~= true then
+    if opts.skipOpen ~= true and not RC.shouldSkipSetupForRollType(rType) then
         RC.openRoll(color)
     end
     RC.setDifficulty(color, diff)
@@ -2580,7 +2580,7 @@ function DEBUG.rollTestNoDiff(color, rollType, label, hungerLevel)
         rollE2eReturnHostSeat()
         return
     end
-    if opts.skipOpen ~= true then
+    if opts.skipOpen ~= true and not RC.shouldSkipSetupForRollType(rType) then
         RC.openRoll(color)
     end
     rollE2eSpawnDefaultPoolIfNeeded(color, rType)

@@ -18,7 +18,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-07 — /tr-inbox cleared ten author-confirmed rows: TOR-653 (dashboard sheet Pages 2–3 editing), TOR-654 (dashboard sheet Page 6 XP log), TOR-655 (relationships in gameState, dashboard Page 4), TOR-656 (dashboard sheet Page 5 projects), TOR-657 (Trace Sync timing), TOR-658 (ST roll dashboard from any seat), TOR-659 (dashboard requests refused until loaded), TOR-660 (dashboard Page 2 Blood Potency effects), TOR-661 (Prince's Court haven traits), TOR-662 (Black Caesar's page 6 Experience Log). TOR-663 (Refresh XML repaints The Court) still waiting for your first pass. Later the same day the whole Focus stack shipped: TOR-638 (willpower reroll restores bumped dice), TOR-639 (Rouse checks stay Rouse checks), TOR-526 (quick Rouse locks on impact, 1s result), TOR-640 (seat-role offset dump matches the offsets table, no scale). After your first pass: TOR-639 now hides the Normal bag, TOR-526's result holds longer, and two new rows: TOR-664 (hunger smoke crash) and TOR-665 (Willpower reroll highlights); then TOR-673 (blue glow brightens under the rolling player's cursor)._
+_Last populated: 2026-10-07 — /tr-inbox cleared ten author-confirmed rows: TOR-653 (dashboard sheet Pages 2–3 editing), TOR-654 (dashboard sheet Page 6 XP log), TOR-655 (relationships in gameState, dashboard Page 4), TOR-656 (dashboard sheet Page 5 projects), TOR-657 (Trace Sync timing), TOR-658 (ST roll dashboard from any seat), TOR-659 (dashboard requests refused until loaded), TOR-660 (dashboard Page 2 Blood Potency effects), TOR-661 (Prince's Court haven traits), TOR-662 (Black Caesar's page 6 Experience Log). TOR-663 (Refresh XML repaints The Court) still waiting for your first pass. Later the same day the whole Focus stack shipped: TOR-638 (willpower reroll restores bumped dice), TOR-639 (Rouse checks stay Rouse checks), TOR-526 (quick Rouse locks on impact, 1s result), TOR-640 (seat-role offset dump matches the offsets table, no scale). After your first pass: TOR-639 now hides the Normal bag, TOR-526's result holds longer, and two new rows: TOR-664 (hunger smoke crash) and TOR-665 (Willpower reroll highlights); then TOR-673 (blue glow brightens under the rolling player's cursor) and TOR-674 (Rouse checks open without waiting for the Storyteller)._
 
 ### High — session / join / first-load
 
@@ -57,6 +57,12 @@ _Last populated: 2026-10-07 — /tr-inbox cleared ten author-confirmed rows: TOR
 **Context:** Your follow-up on the glows above: the blue glow was hiding TTS's normal hover outline, so you could no longer tell which die your cursor was on. Test it in the same session as TOR-665.
 
 **How to verify:** Save & Play. From a player seat, roll some dice and click **Spend Willpower** so the rerollable dice glow deep blue. Move your cursor over one blue die: its glow should brighten to a lighter blue straight away, and drop back to deep blue as soon as the cursor moves off it. Sweep the cursor across several blue dice: only the one under the cursor should be bright. A die you have already rerolled (cyan) should stay cyan when hovered. If you have a second seat or a hotseat swap handy, hovering the dice from a different color should not brighten them. Everyone at the table sees the brightening, since TTS highlights can't be shown to just one player.
+
+#### TOR-674 — Rouse checks open without waiting for the Storyteller
+
+**Context:** A Rouse check has nothing for the Storyteller to set (difficulty is always 1), so it no longer waits for the ST to click Open. This applies however the Rouse check starts: player bag click, ST-started, or the ST's own Rouse roll.
+
+**How to verify:** Save & Play. At a player seat with no roll in progress, left-click the Rouse bag. The roll panel should appear straight away with the **Roll** button usable, not greyed out with "Awaiting Storyteller", and the Storyteller should not need to do anything. Left-click the Rouse bag once or twice more to add dice, then click Roll: the check should resolve as normal. Do the same with the Oblivion Rouse bag. A normal roll (left-click the Normal bag) should still wait for the Storyteller as before. The right-click quick Rouse should still toss and resolve on its own.
 
 #### TOR-526 — Quick Rouse result stays readable for a full second
 

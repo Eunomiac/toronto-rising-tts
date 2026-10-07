@@ -410,9 +410,9 @@ active = {
 | --- | --- | --- |
 | Player | No | `initiateRoll` (SETUP entry) |
 | Storyteller | No | `openRoll` (PRE_ROLL entry) |
-| Either | Yes (Remorse only — locked pool + difficulty) | `initiateRoll` |
+| Either | Yes (Remorse, Rouse, Oblivion Rouse — auto difficulty) | `initiateRoll` |
 
-`RC.shouldSkipSetupForRollType` is **Remorse only**. Rouse, Simple Check, and Frenzy keep SETUP so pool/difficulty can still be adjusted before ST opens the roll.
+`RC.shouldSkipSetupForRollType` covers **Remorse** (locked pool + difficulty) and **Rouse / Oblivion Rouse** (difficulty 1, nothing for the ST to set; the player can still add or remove rouse dice at the bag before Roll — TOR-674). Simple Check and Frenzy keep SETUP so pool/difficulty can still be adjusted before ST opens the roll.
 
 Entry points: `RC.initiateRoll` (`shouldResolvePhysicalPrepAtInitiate`), `RC.openRoll`, `RC.changeRollType` (when prep due).
 
@@ -1029,7 +1029,7 @@ Oblivion variant: same, but on TOTAL_FAILURE also S.setPlayerVal(color, "stains"
 2. RC.initiateRoll(color, {rollType=REMORSE}):
    → Pool auto-computed: max(1, 10 - currentHumanity - stains) Normal dice, 0 Hunger
    → difficulty auto-set to 0 on dashboard (implicit 1 for classification; any success = preserve Humanity)
-   → phase=PRE_ROLL at initiate (only roll type that skips SETUP — locked pool + difficulty)
+   → phase=PRE_ROLL at initiate (skips SETUP — locked pool + difficulty; Rouse checks also skip it)
    → GlobalResolveRollPhysicalPrep: drawer + bag visibility + auto-spawn (immediate for any initiator)
 
 3. Player rolls their dice
