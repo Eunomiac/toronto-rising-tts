@@ -103,7 +103,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | API | Behavior |
 | --- | --- |
 | `Sync.full` | Full reconcile (state → world) |
-| `Sync.npcs` / `Sync.lighting` | Domain reconcilers |
+| `Sync.npcs` | Domain reconcilers |
 | `Sync.soundscape` / `Sync.lightRef` / `Sync.npcCutouts` | Domain reconcilers |
 | `Sync.player` | Per-player: lights + HUD/overlays |
 | `Sync.ui` | UI-only refresh |

@@ -274,11 +274,9 @@ local function findSelectedCompulsionForColor(color)
     if tag == nil then
         return nil
     end
-    for _, obj in ipairs(getObjects() or {}) do
+    for _, obj in ipairs(getObjectsWithTag(tag) or {}) do
         if obj ~= nil
             and (obj.type == "Card" or obj.tag == "Card")
-            and obj.hasTag ~= nil
-            and obj.hasTag(tag) == true
             and obj.getGMNotes ~= nil
         then
             local parsed = Compulsions.parseNotes(obj.getGMNotes())

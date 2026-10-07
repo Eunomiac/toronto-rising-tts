@@ -642,8 +642,15 @@ end
 --- @param ref any
 --- @param referencePlayerColor string
 --- @param label string
+--- @param roleIndex table|nil `SRI.buildRoleIdentityIndex()` result; avoids one full object scan per role
 --- @return Object|nil
-local function resolveObjectRefWithRoleSupport(ref, referencePlayerColor, label)
+local function resolveObjectRefWithRoleSupport(ref, referencePlayerColor, label, roleIndex)
+  local function findRole(identity)
+    if roleIndex ~= nil then
+      return roleIndex[string.upper(identity)]
+    end
+    return SRI.findObjectByRoleIdentity(identity)
+  end
   local obj = U.getObject(ref, true)
   if obj ~= nil then
     return obj
@@ -674,11 +681,11 @@ local function resolveObjectRefWithRoleSupport(ref, referencePlayerColor, label)
   local attemptedRoleIdentity = nil
   if SRI.matchesRoleColorPattern(refTrim) then
     attemptedRoleIdentity = refTrim
-    obj = SRI.findObjectByRoleIdentity(refTrim)
+    obj = findRole(refTrim)
   elseif string.match(refTrim, "^[%u%d_]+$") ~= nil then
     local roleName = refTrim .. "_" .. refUpperColor
     attemptedRoleIdentity = roleName
-    obj = SRI.findObjectByRoleIdentity(roleName)
+    obj = findRole(roleName)
   end
   -- Returns nil when unresolved. Callers must decide: skip (TOR-381 template/sync paths) or error.
   return obj
@@ -2151,13 +2158,15 @@ local function enforceNPCSeatObjectVisibility(sourceObjects, occupiedNPCSlots, t
       .. tostring(refKeyErr))
   end
   local templateGuidSet = {}
+  local roleIndex = SRI.buildRoleIdentityIndex()
   for _, group in ipairs(allSourceRefs) do
     for i = 1, #group do
       if not isFrameEntry(group[i]) then
         local obj = resolveObjectRefWithRoleSupport(
           group[i],
           referenceColor,
-          "source template entry [" .. tostring(i) .. "] for NPC visibility"
+          "source template entry [" .. tostring(i) .. "] for NPC visibility",
+          roleIndex
         )
         if obj ~= nil and obj.getGUID ~= nil then
           local g = obj.getGUID()
@@ -2176,7 +2185,7 @@ local function enforceNPCSeatObjectVisibility(sourceObjects, occupiedNPCSlots, t
       for _, obj in ipairs(objs) do
         if obj ~= nil and obj.setInvisibleTo ~= nil then
           local guid = obj.getGUID and obj.getGUID() or ""
-          -- Never hide template source refs; they are needed for cloning.
+          -- Reference-seat template objects keep their visibility.
           local isTemplateSource = templateGuidSet[guid] == true
           if NPCS.isPooledFigurineObject(obj) then
             if visible then

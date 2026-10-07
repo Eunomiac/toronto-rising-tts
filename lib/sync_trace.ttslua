@@ -76,7 +76,6 @@ local function targetList()
         { Sync, "full", "Sync.full" },
         { Sync, "player", "Sync.player" },
         { Sync, "npcs", "Sync.npcs" },
-        { Sync, "lighting", "Sync.lighting" },
         { Sync, "soundscape", "Sync.soundscape" },
         { Sync, "ui", "Sync.ui" },
         { Scenes, "reconcileFromState", "Scenes.reconcileFromState" },

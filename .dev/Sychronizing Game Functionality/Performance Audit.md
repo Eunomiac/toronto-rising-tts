@@ -261,7 +261,7 @@ Do not reintroduce TOR-391 duplicates: no broad `StorytellerScenesPanel.refresh(
 **Top call sites**
 
 1. Bootstrap `Sync.full` -> `NPCS.restoreAfterStateLoad`: `core/sync.ttslua`.
-2. Scene library apply -> `Sync.full` -> `NPCS.reconcileSessionSceneNpcWorldFromState`.
+2. Scene library apply -> `Sync.full` -> `NPCS.reconcileAllFromState`.
 3. NPC panel/group actions call `spawnOrMoveIndividual`, `moveNpcToArea`, or `spawnGroup`.
 
 **Why it was costly:** Runtime `spawnObjectData` for every catalog NPC plus per-placement `reload()` on all figurines. Workshop-baked pool removes both.
@@ -271,7 +271,7 @@ Do not reintroduce TOR-391 duplicates: no broad `StorytellerScenesPanel.refresh(
 - **Quick win:** Add debug counters for character count, missing preload count, spawn pairs issued, spawn callbacks completed, and light-ready delay completions. Emit through `U.emitForAgent` / TTS MCP for measured runs.
 - **Structural:** Batch missing preload spawns across short scheduled slices instead of spawning every missing NPC pair in one frame. Keep the same reconciler-owned preload intent.
 - **Structural:** Split `restoreAfterStateLoad` into "register existing restored pool" and "spawn missing preload pool" so `Sync.full` bootstrap can report exactly which part is expensive and can resume batching if interrupted.
-- **Do not:** Spawn scene NPCs directly from scene handlers outside `NPCS.reconcileSessionSceneNpcWorldFromState`; improve batching inside the NPC reconciler.
+- **Do not:** Spawn scene NPCs directly from scene handlers outside `NPCS.reconcileAllFromState`; improve batching inside the NPC reconciler.
 
 ## 6. `UpdateUIDisplays` broad deltas and full refresh fallbacks
 

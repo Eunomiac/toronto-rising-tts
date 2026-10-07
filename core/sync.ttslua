@@ -305,16 +305,6 @@ function Sync.player(color)
     finishSyncMetrics("player", t0, { color = color })
 end
 
---- Shared lighting pass (scene-level and non-player-scoped light systems).
---- @param opts table|nil forwarded to `Scenes.reconcileFromState` (e.g. `{ force = true }`).
-function Sync.lighting(opts)
-    opts = type(opts) == "table" and opts or {}
-    callIfFunction(Scenes.reconcileFromState, opts)
-    callIfFunction(Scenes.reconcileTopFogFromState, opts)
-    callIfFunction(Scenes.reconcileSkyboxFromState, opts)
-    callIfFunction(L.InitLights)
-end
-
 --- Reconcile a single registered light reference from persisted state.
 --- @param lightRef string
 --- @param transitionTime number|nil

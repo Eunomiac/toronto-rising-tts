@@ -45,8 +45,6 @@ Reconcile.previewDraftCaptureGeneration = 0
 
 --- Injected by facade (interaction profile counters).
 Reconcile.noteInteractionTagScan = function(_count) end
---- Injected by facade (anchor-drop eligibility cache).
-Reconcile.rebuildAnchorDropEligibilityCache = function(_board) end
 
 --- NPC seat-row tokens on CONTROL_BOARD (`snapKind = seat`, `kind = npc` columns only).
 --- @param board Object
@@ -1350,7 +1348,6 @@ function Reconcile.reconcileControlBoardFromState(opts)
         if Board.isMeshReady(board) then
             Reconcile.syncControlBoardSnapsToggleLabel(board)
             Reconcile.syncControlBoardModeToolbar(board)
-            Reconcile.rebuildAnchorDropEligibilityCache(board)
         end
         require("lib.sync_trace").report("Reconcile.reconcileControlBoardFromState", {
             force = "false",
@@ -1467,7 +1464,6 @@ function Reconcile.reconcileControlBoardFromState(opts)
     Tokens.applyControlBoardComponentPlayerInvisibility()
     O.applyActiveVisibility(board)
     O.applyActiveVisibility(Board.getControlBoardPalette())
-    Reconcile.rebuildAnchorDropEligibilityCache(board)
     require("lib.sync_trace").report("Reconcile.reconcileControlBoardFromState", {
         force = tostring(opts.force == true),
         forceSnaps = tostring(opts.forceSnaps == true),

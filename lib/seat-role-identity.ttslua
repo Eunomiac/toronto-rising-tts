@@ -105,6 +105,23 @@ function SRI.findObjectByRoleIdentity(roleIdentity)
   return nil
 end
 
+--- One `getAllObjects` pass: upper-cased trimmed GM Notes -> first object carrying them
+--- (same first-match order as `SRI.findObjectByRoleIdentity`). Use when resolving many roles at once.
+--- @return table<string, Object>
+function SRI.buildRoleIdentityIndex()
+  local index = {}
+  local all = getAllObjects() or {}
+  for _, obj in ipairs(all) do
+    if obj ~= nil and obj.getGMNotes ~= nil then
+      local notesUpper = string.upper(trim(obj.getGMNotes() or ""))
+      if notesUpper ~= "" and index[notesUpper] == nil then
+        index[notesUpper] = obj
+      end
+    end
+  end
+  return index
+end
+
 --- @param roleIdentity string
 --- @param label string error context
 --- @return Object

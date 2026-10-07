@@ -1923,6 +1923,41 @@ function D.getNpcCharacters()
     return out
 end
 
+--- Lower-cased key / fullName / name -> D.characters key. `D.characters` is static after load.
+--- Keys win over full names, full names over short names.
+local displayNameIndex = nil
+
+--- @return table<string, string>
+local function getDisplayNameIndex()
+    if displayNameIndex ~= nil then
+        return displayNameIndex
+    end
+    local index = {}
+    local function add(label, key)
+        if type(label) == "string" then
+            local lower = string.lower(label)
+            if index[lower] == nil then
+                index[lower] = key
+            end
+        end
+    end
+    local characters = D.characters or {}
+    for key in pairs(characters) do
+        if type(key) == "string" then
+            add(key, key)
+        end
+    end
+    for _, field in ipairs({ "fullName", "name" }) do
+        for key, def in pairs(characters) do
+            if type(key) == "string" and type(def) == "table" then
+                add(def[field], key)
+            end
+        end
+    end
+    displayNameIndex = index
+    return index
+end
+
 --- Case-insensitive display name → D.characters key (CustomUIAssets cutout name).
 -- @param displayName string
 -- @return string|nil
@@ -1934,23 +1969,7 @@ function D.resolveCharacterKeyByDisplayName(displayName)
     if needle == "" then
         return nil
     end
-    local lower = string.lower(needle)
-    for key, def in pairs(D.characters or {}) do
-        if type(key) == "string" and string.lower(key) == lower then
-            return key
-        end
-        if type(def) == "table" then
-            local fullName = type(def.fullName) == "string" and def.fullName or nil
-            local name = type(def.name) == "string" and def.name or nil
-            if fullName ~= nil and string.lower(fullName) == lower then
-                return key
-            end
-            if name ~= nil and string.lower(name) == lower then
-                return key
-            end
-        end
-    end
-    return nil
+    return getDisplayNameIndex()[string.lower(needle)]
 end
 
 return D

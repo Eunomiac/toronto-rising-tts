@@ -45,7 +45,6 @@ local tokenBoardFamilyAtPickUp = {}
 local groupMoveHotkeyHeld = false
 
 --- Forward declaration (Lua local-function order): defined after helper dependencies.
-local rebuildAnchorDropEligibilityCache
 local tokensOccupyingPolarFamily
 local emptyPolarFamilySnaps
 local buildGroupMoveEvictionFamilyPriority
@@ -397,25 +396,17 @@ local function logAnchorSpreadResult(result)
     print("[Gameboard] anchor spread skipped: " .. detail)
 end
 
---- Build fast lookup for drop events: only group-leading (slotIndex 1) tokens that are currently off CONTROL_BOARD.
---- @param board Object|nil
-rebuildAnchorDropEligibilityCache = function(board)
-    anchorDropEligibleByTokenGuid = {}
-    if not Board.isGameObject(board) then
-        return
+--- A drop may trigger anchor-family spread only for a group-leading (slotIndex 1) token picked up off CONTROL_BOARD.
+--- @param token Object
+--- @return boolean
+local function isAnchorDropEligibleAtPickUp(token)
+    local characterKey = Tokens.resolveTokenCharacterKey(token)
+    if type(characterKey) ~= "string" or characterKey == "" then
+        return false
     end
-    local byKey = Reconcile.buildTokenByCharacterKey()
-    for characterKey, token in pairs(byKey) do
-        if Board.isGameObject(token) and not Board.isTokenOnControlBoardSurface(board, token) then
-            local _, slotIndex = Palette.resolveGroupForCharacterKey(characterKey)
-            if tonumber(slotIndex) == 1 then
-                anchorDropEligibleByTokenGuid[tostring(token.getGUID())] = true
-            end
-        end
-    end
+    local _, slotIndex = Palette.resolveGroupForCharacterKey(characterKey)
+    return tonumber(slotIndex) == 1
 end
-
-Interactions.rebuildAnchorDropEligibilityCache = rebuildAnchorDropEligibilityCache
 
 --- Extra board-local Y when re-seating after Flip (TTS FlipOver can leave tiles slightly below surface).
 local CONTROL_TOKEN_FLIP_RESEAT_EXTRA_LOCAL_Y = 0.05
@@ -1317,8 +1308,14 @@ function Interactions.onControlTokenPickUp(token)
     local guid = tostring(token.getGUID() or "")
     if guid ~= "" then
         tokenBoardFamilyAtPickUp[guid] = nil
+        anchorDropEligibleByTokenGuid[guid] = nil
     end
-    if Board.isGameObject(board) and Board.isTokenOnControlBoardSurface(board, token) then
+    local boardReady = Board.isGameObject(board)
+    if boardReady and guid ~= "" and not Board.isTokenOnControlBoardSurface(board, token)
+        and isAnchorDropEligibleAtPickUp(token) then
+        anchorDropEligibleByTokenGuid[guid] = true
+    end
+    if boardReady and Board.isTokenOnControlBoardSurface(board, token) then
         local fuzziness = Board.snapMatchFuzzinessForBoard(board)
         local entry = Snaps.resolveTokenSnapCatalogEntry(board, token, fuzziness, nil)
         if type(entry) == "table"

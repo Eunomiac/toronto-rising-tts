@@ -62,7 +62,6 @@ Apply.beginInteractionProfile = beginInteractionProfile
 Apply.finishInteractionProfile = finishInteractionProfile
 Interactions.beginInteractionProfile = beginInteractionProfile
 Interactions.finishInteractionProfile = finishInteractionProfile
-Reconcile.rebuildAnchorDropEligibilityCache = Interactions.rebuildAnchorDropEligibilityCache
 
 --- @return table|nil
 function Gameboard.getLastInteractionProfile()

@@ -85,7 +85,7 @@ TTS runs **all mod Lua on the Host only**. When the Host writes `gameState` (pla
 | `Phases.lowerBlindfoldForConnectingPlayer` | `core/phases.ttslua` | Connect policy when not Intermission (TOR-319). |
 | `Sync.full(opts)` | `core/sync.ttslua` | Full reconcile (state → world). |
 | `Sync.player(color)` | `core/sync.ttslua` | Per-player reconcile: lights + HUD/overlays/`UpdateUIDisplays`. |
-| `Sync.npcs` / `Sync.lighting` / `Sync.soundscape` | `core/sync.ttslua` | Domain reconcilers. |
+| `Sync.npcs` / `Sync.soundscape` | `core/sync.ttslua` | Domain reconcilers. |
 | `Sync.ui(delta)` | `core/sync.ttslua` | UI-only refresh. |
 
 **Per-client UI (not Lua gating):** XmlUI `visibility` = `Black`/`Admin`/`<Color>` — engine-level per-client rendering; ST panel to ST, PC HUD to its seat. The ST roll dashboard / ST roll panel handlers do **not** check the clicker's seat color, so the Storyteller can test rolls from any seat; `visibility` alone keeps players off those controls.

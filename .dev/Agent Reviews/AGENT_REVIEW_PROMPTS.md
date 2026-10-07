@@ -66,7 +66,7 @@ Create or fully replace:
    - `Soundscape.reconcileFromState`
    - `L.reconcileForPlayer`, `L.reconcileAllPlayers`, `L.reconcileLightRef`
    - `HO.syncAll` (document whether it is reconciler-shaped or needs rename)
-   - `NPCS.reconcileSessionSceneNpcWorldFromState`, `NPCS.restoreAfterStateLoad`
+   - `NPCS.reconcileAllFromState`, `NPCS.restoreAfterStateLoad`
    - `GameStateOverlay.reconcileFromState`
    - `HUDP.reconcileCameraOverlaySelfMatchRowsFromXmlDefaults`, `HUDP.updatePlayerUI`
    - `SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked`
@@ -139,7 +139,7 @@ Update **`.dev/Sychronizing Game Functionality/Dual_apply_survey.md`** with a fr
    - [`lib/chronicle_weather.ttslua`](../../lib/chronicle_weather.ttslua) + clock tick paths
    - [`core/scenes.ttslua`](../../core/scenes.ttslua) — confirm `loadScene` / `fadeToScene` are state-only
    - [`core/lighting.ttslua`](../../core/lighting.ttslua) — any eager apply outside reconcile
-   - [`core/npcs.ttslua`](../../core/npcs.ttslua) — panel spawn vs `reconcileSessionSceneNpcWorldFromState`
+   - [`core/npcs.ttslua`](../../core/npcs.ttslua) — panel spawn vs `reconcileAllFromState`
    - [`core/global_script.ttslua`](../../core/global_script.ttslua) onLoad / bootstrap
 
 6. Produce a **risk matrix** (subsystem, state keys, world I/O, eager entrypoints, reconcile entrypoint, risk, mitigation, priority) — extend the existing table, do not duplicate stale rows.
@@ -235,7 +235,7 @@ Identify **expensive or repeatedly-triggered** sync/world/UI paths and recommend
    - [`core/sync.ttslua`](../../core/sync.ttslua) — `Sync.full`, bootstrap deferred schedules (`U.scheduleAtOffsets` 0.35–8s), incremental UI delta vs force
    - [`core/lighting.ttslua`](../../core/lighting.ttslua) — `L.reconcileForPlayer`, `L.reconcileAllPlayers`, `DEFAULT_RECONCILE_LERP_SECONDS`, per-seat loops
    - [`core/hud_overlays.ttslua`](../../core/hud_overlays.ttslua) — `HO.syncAll` (all seats when one player changes?)
-   - [`core/npcs.ttslua`](../../core/npcs.ttslua) — preload pool, `reconcileSessionSceneNpcWorldFromState`, spawn batches
+   - [`core/npcs.ttslua`](../../core/npcs.ttslua) — preload pool, `reconcileAllFromState`, spawn batches
    - [`core/soundscape.ttslua`](../../core/soundscape.ttslua) — deferred reconcile, crossfade generations
    - [`core/global_script.ttslua`](../../core/global_script.ttslua) — `UpdateUIDisplays`, who calls `Sync.full` and how often
    - [`core/hud_player.ttslua`](../../core/hud_player.ttslua) — per-player UI refresh cost

@@ -86,9 +86,6 @@ NPCS.SCATTER_AREA_KEY = SCATTER_AREA_KEY
 NPCS.NPC_DISABLE_WORLD_Y = -200
 local NPC_DISABLE_WORLD_Y = -200
 
---- Fingerprint of authored `sessionScene.npcWorld` so repeated `Sync.full` does not re-run stash/spawn.
-local lastSessionNpcWorldFingerprint = nil
-
 --- Unified NPC reconcile fingerprint (placements + seats + table + presence).
 local lastNpcReconcileFingerprint = nil
 
@@ -399,6 +396,10 @@ local function characterIsGeneric(npcName)
     return U.Type(def) == "table" and def.isGeneric == true
 end
 
+--- Named character key -> sorted preload bay. Named keys are fixed at load; generics never enter it.
+--- @type table<string, number>|nil
+local stablePreloadSlotByName = nil
+
 --- Deterministic preload grid slot per **named** character key (sorted non-generic `NPCS.characters` keys).
 --- Generics return nil — they park in the next free bay via `resolvePreloadSlotForMove`.
 --- Must precede `assignNpcToSeat` / `resolvePreloadSlotForMove` (Lua local scope).
@@ -411,19 +412,20 @@ local function stablePreloadSlotIndex(npcName)
     if characterIsGeneric(npcName) then
         return nil
     end
-    local keys = {}
-    for k, def in pairs(NPCS.characters or {}) do
-        if U.Type(def) == "table" and def.isGeneric ~= true then
-            keys[#keys + 1] = k
+    if stablePreloadSlotByName == nil then
+        local keys = {}
+        for k, def in pairs(NPCS.characters or {}) do
+            if U.Type(def) == "table" and def.isGeneric ~= true then
+                keys[#keys + 1] = k
+            end
+        end
+        table.sort(keys)
+        stablePreloadSlotByName = {}
+        for i, k in ipairs(keys) do
+            stablePreloadSlotByName[k] = i
         end
     end
-    table.sort(keys)
-    for i, k in ipairs(keys) do
-        if k == npcName then
-            return i
-        end
-    end
-    return nil
+    return stablePreloadSlotByName[npcName]
 end
 
 local seatSyncQueued = false
@@ -1805,14 +1807,19 @@ local function resolveSlotForMove(areaKey, preferred, excludeNpcName)
         return nil
     end
     local n = #area.positions
+    local occ = NPCS.getOccupiedSlots(areaKey)
     if U.Type(preferred) == "number" and preferred >= 1 and preferred <= n then
-        local occ = NPCS.getOccupiedSlots(areaKey)
-        local holder = occ and occ[preferred]
+        local holder = occ[preferred]
         if holder == nil or (U.Type(excludeNpcName) == "string" and holder == excludeNpcName) then
             return preferred
         end
     end
-    return NPCS.findNextFreeSlotIndex(areaKey)
+    for i = 1, n do
+        if occ[i] == nil then
+            return i
+        end
+    end
+    return nil
 end
 
 --- Named NPCs: stable sorted bay when free; otherwise first free slot.
@@ -3114,16 +3121,6 @@ function NPCS.ensureNpcInPreloadZone(npcName, opts)
     return false, missingPooledFigurineErr(npcName)
 end
 
---- Applies `gameState.sessionScene.npcWorld.placements`: forwards to unified orchestrator.
---- @param opts table|nil `deferUiRefresh`, `forceSessionNpcWorld` (bypass fingerprint and re-apply)
-function NPCS.reconcileSessionSceneNpcWorldFromState(opts)
-    opts = U.Type(opts) == "table" and opts or {}
-    NPCS.reconcileAllFromState({
-        deferUiRefresh = opts.deferUiRefresh == true,
-        force = opts.forceSessionNpcWorld == true or opts.force == true,
-    })
-end
-
 --- Fingerprint of `seatLayout.occupiedNPCSlots` (from session `seatSlots` via `S.validateState`).
 --- @return string
 occupiedNpcSeatsFingerprint = function()
@@ -3747,7 +3744,6 @@ function NPCS.reconcileAllFromState(opts)
 
     if allOk then
         lastNpcReconcileFingerprint = fp
-        lastSessionNpcWorldFingerprint = sessionNpcWorldFingerprint()
     else
         print("[NPCS] reconcileAllFromState incomplete; fingerprint not committed (will retry on next Sync.full)")
     end
@@ -3782,17 +3778,6 @@ end
 --- @return boolean
 function NPCS.isReconcileOrchestratorInProgress()
     return npcReconcileInProgress
-end
-
---- Places pooled NPC figurines into table seats from `seatLayout.occupiedNPCSlots`.
---- Legacy entry; forwards to unified orchestrator.
---- @param opts table|nil `deferUiRefresh`, `forceOccupiedNpcSeats` or `force` (bypass fingerprint)
-function NPCS.reconcileOccupiedNpcSeatsFromState(opts)
-    opts = U.Type(opts) == "table" and opts or {}
-    NPCS.reconcileAllFromState({
-        deferUiRefresh = opts.deferUiRefresh == true,
-        force = opts.forceOccupiedNpcSeats == true or opts.force == true,
-    })
 end
 
 --- @param npcName string
