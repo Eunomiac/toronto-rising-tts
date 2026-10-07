@@ -2096,10 +2096,13 @@ function L.reconcileLightRef(lightRef, transitionTime, opts)
     return true
 end
 
---- Toggle rolling context and immediately reconcile this player's lights.
+--- Toggle rolling context and immediately reconcile this player's lights (no-op when unchanged).
 --- @param playerColor string
 --- @param drawerOpen boolean
 function L.onDiceDrawerStateChanged(playerColor, drawerOpen)
+    if getPlayerRollingState(playerColor) == (drawerOpen == true) then
+        return
+    end
     setPlayerRollingState(playerColor, drawerOpen == true)
     L.reconcileForPlayer(playerColor)
 end

@@ -205,7 +205,7 @@ local function cleanupLooseDiceBeforeTableSync()
     local stTraysRestored = STD.reconcileAllToWorkshopHome({ instant = true })
     local stowed = 0
     for _, color in ipairs(C.PlayerColors) do
-        destroyBagDice(color)
+        destroyBagDice(color, { drawerAlreadyClosed = true })
         stowed = stowed + 1
     end
     destroyBagDice("Black")
@@ -3533,6 +3533,9 @@ function onLoad(saved_data)
         end,
         function()
             setStartupAction("startup-ready-final-sync-full")
+            if S.getStateVal("currentPhase") == C.Phases.INTERMISSION then
+                require("core.phases").writeAllLightsDarkState()
+            end
             Sync.full({ reason = "onLoad_startup_gate" })
             return 0
         end,
@@ -7821,7 +7824,8 @@ end
 --- Destroys all hovering dice for a player.
 -- Called on: cancel, Take Half (no pending Rouse), pool reset (roll type change), and post-resolution cleanup.
 -- @param color string
--- @param opts table|nil  { keepDrawerOpen?: boolean } — when true, tray stays raised (pool reset / roll-type switch)
+-- @param opts table|nil  { keepDrawerOpen?: boolean, drawerAlreadyClosed?: boolean } — `keepDrawerOpen`:
+--   tray stays raised (pool reset / roll-type switch); `drawerAlreadyClosed`: caller already lowered it
 function destroyBagDice(color, opts)
     cancelPendingRollCleanup(color)
     if color == "Black" then
@@ -7829,7 +7833,7 @@ function destroyBagDice(color, opts)
         STR.destroyStagedBagDice()
         return
     end
-    if type(opts) ~= "table" or opts.keepDrawerOpen ~= true then
+    if type(opts) ~= "table" or (opts.keepDrawerOpen ~= true and opts.drawerAlreadyClosed ~= true) then
         DiceDrawer.forceClose(color)
     end
     callBagFunction(color, "destroyDice")

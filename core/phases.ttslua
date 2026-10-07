@@ -416,10 +416,16 @@ function Phases.lowerBlindfoldForConnectingPlayer(player)
     Phases.hideGlobalBlindfold(nil)
 end
 
-function Phases.applyAllLightsDark(_ctx)
+--- State only: Intermission darkness (scene `dark`, `AdminDark` preset, no transition).
+function Phases.writeAllLightsDarkState()
     S.setStateVal("dark", "currentScene")
     S.setStateVal("AdminDark", "sessionScene", "lightingPresetKey")
     S.setStateVal(nil, "sceneTransition")
+end
+
+--- End → Intermission Advance: write darkness, then sync it.
+function Phases.applyAllLightsDark(_ctx)
+    Phases.writeAllLightsDarkState()
     local Scenes = require("core.scenes")
     if type(Scenes.invalidateReconcileCache) == "function" then
         Scenes.invalidateReconcileCache()
@@ -633,12 +639,12 @@ function Phases.startIntermissionThemePlaylistLoop(_ctx)
     return true
 end
 
---- Load-time Intermission ambient: hard-reset emitters then fade in TR_Loop (no cover to sync with).
+--- Load-time Intermission ambient: fade in TR_Loop (no cover to sync with). Darkness is written
+--- before the startup gate `Sync.full` (`Phases.writeAllLightsDarkState`), so no extra sync here.
 function Phases.reconcileIntermissionAmbientOnLoad()
     if S.getStateVal("currentPhase") ~= C.Phases.INTERMISSION then
         return false
     end
-    Phases.applyAllLightsDark(nil)
     return Phases.startIntermissionThemePlaylistLoop(nil)
 end
 

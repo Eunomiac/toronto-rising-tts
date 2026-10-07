@@ -388,8 +388,10 @@ function Sync.full(opts)
     presentationOpts.skipTopFog = true
     if not didBootstrapFullSync then
         callIfFunction(NPCS.registerRestoredInstancesFromState)
+        -- `L.InitLights` ends with `L.reconcileAllPlayers()`, so only overlays remain for seat presentation.
         callIfFunction(L.InitLights)
-        presentationSkippedThisPass = reconcileSeatPresentationFromState(presentationOpts) == false
+        callIfFunction(HO.syncAll, presentationOpts)
+        Sync.noteSeatPresentationReconciled()
         scheduleBootstrapCoordinator()
     else
         presentationSkippedThisPass = reconcileSeatPresentationFromState(presentationOpts) == false

@@ -55,11 +55,10 @@ function M.setupPlayers()
   M.assignAllConnectedSeatsFromChronicle()
 
   -- Every PC is seated while startup setup runs (all count as connected); disconnected PCs
-  -- become unoccupied when the startup readiness gate finishes. The startup table sync below
-  -- applies the layout.
+  -- become unoccupied when the startup readiness gate finishes. State only: the startup table
+  -- sync and the full sync apply layout, seat presence, lights and HUD.
   local PlayerConnection = require("core.player_connection")
   PlayerConnection.seatAllPlayersForStartup()
-  PlayerConnection.reconcileEffectivePresence(nil)
 
   -- Objects on / above the Storyteller table: GM table + GM light use `C.HiddenObjects` via O.ApplyLockedAndHiddenFromConstants() in Global.onLoad.
   U.forEach(

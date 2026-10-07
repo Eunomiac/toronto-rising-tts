@@ -107,10 +107,11 @@ local function isDrawerPhysicallyOff(obj)
     return true
   end
   local scale = obj.getScale()
-  if type(scale) ~= "userdata" or type(scale.y) ~= "number" then
+  local sy = scale ~= nil and (scale.y or scale[2]) or nil
+  if type(sy) ~= "number" then
     return false
   end
-  return scale.y <= DRAWER_OFF_SCALE_Y_MAX
+  return sy <= DRAWER_OFF_SCALE_Y_MAX
 end
 
 --- @param color string
@@ -260,6 +261,7 @@ function DD.reconcileAllToOff(opts)
       if type(color) == "string" then
         if isDrawerPhysicallyOff(obj) then
           drawerOpenByColor[color] = false
+          L.onDiceDrawerStateChanged(color, false)
         else
           applyClosePose(color, { instant = opts.instant, obj = obj })
           closed = closed + 1
