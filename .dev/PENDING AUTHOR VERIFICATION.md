@@ -18,7 +18,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-07 — /tr-inbox cleared ten author-confirmed rows: TOR-653 (dashboard sheet Pages 2–3 editing), TOR-654 (dashboard sheet Page 6 XP log), TOR-655 (relationships in gameState, dashboard Page 4), TOR-656 (dashboard sheet Page 5 projects), TOR-657 (Trace Sync timing), TOR-658 (ST roll dashboard from any seat), TOR-659 (dashboard requests refused until loaded), TOR-660 (dashboard Page 2 Blood Potency effects), TOR-661 (Prince's Court haven traits), TOR-662 (Black Caesar's page 6 Experience Log). TOR-663 (Refresh XML repaints The Court) still waiting for your first pass. Later the same day the whole Focus stack shipped: TOR-638 (willpower reroll restores bumped dice), TOR-639 (Rouse checks stay Rouse checks), TOR-526 (quick Rouse locks on impact, 1s result), TOR-640 (seat-role offset dump matches the offsets table, no scale). After your first pass: TOR-639 now hides the Normal bag, TOR-526's result holds longer, and two new rows: TOR-664 (hunger smoke crash) and TOR-665 (Willpower reroll highlights); then TOR-673 (blue glow brightens under the rolling player's cursor) and TOR-674 (Rouse checks open without waiting for the Storyteller)._
+_Last populated: 2026-10-07 — /tr-inbox cleared ten author-confirmed rows: TOR-653 (dashboard sheet Pages 2–3 editing), TOR-654 (dashboard sheet Page 6 XP log), TOR-655 (relationships in gameState, dashboard Page 4), TOR-656 (dashboard sheet Page 5 projects), TOR-657 (Trace Sync timing), TOR-658 (ST roll dashboard from any seat), TOR-659 (dashboard requests refused until loaded), TOR-660 (dashboard Page 2 Blood Potency effects), TOR-661 (Prince's Court haven traits), TOR-662 (Black Caesar's page 6 Experience Log). TOR-663 (Refresh XML repaints The Court) still waiting for your first pass. Later the same day the whole Focus stack shipped: TOR-638 (willpower reroll restores bumped dice), TOR-639 (Rouse checks stay Rouse checks), TOR-526 (quick Rouse locks on impact, 1s result), TOR-640 (seat-role offset dump matches the offsets table, no scale). After your first pass: TOR-639 now hides the Normal bag, TOR-526's result holds longer, and two new rows: TOR-664 (hunger smoke crash) and TOR-665 (Willpower reroll highlights); then TOR-673 (blue glow brightens under the rolling player's cursor) and TOR-674 (Rouse checks open without waiting for the Storyteller). Then the sync speed-up plan shipped as seven rows, TOR-666 through TOR-672 (tracing, whole-table scans, NPC Apply layout, cheap skipped passes, startup trims, a single startup sync, per-seat hunger refresh)._
 
 ### High — session / join / first-load
 
@@ -29,6 +29,42 @@ _Last populated: 2026-10-07 — /tr-inbox cleared ten author-confirmed rows: TOR
 **How to verify:** Run the multiclient control/treatment playbook in [TOR-439-join-xml-spike-verify.md](Step-By-Step Playbooks/TOR-439-join-xml-spike-verify.md). On the Host, arm the minimal join XML, have the struggling client connect, then restore in stages. Especially watch **step 2 (HUD / Refresh UI)** after the **TOR-444** remount-weight reduction: does that client stay connected through the full Global HUD remount? Optionally also try a normal (unarmed) full-HUD join to see whether the Arm pipeline is still needed at all.
 
 **Context:** Earlier run: Assets, Emitters, and Figurines restore steps succeeded; step 2 timed out and drove **TOR-444**. Deferred from Focus until you can gather testers.
+
+### High — sync speed-ups (one test session covers all seven)
+
+**Context:** These seven rows are one plan: make the slowest sync calls cheaper. Test them together. Turn on **Trace Sync** (Debug panel button, yellow when on) before you load, then capture the same three traces as before (a full load from the main menu, one NPC Apply on the Gameboard, and one Storyteller hunger change) into `.dev/Performance Audits/Trace Sync/`, so the agent can compare them with the old ones. The rows below list what should still *work*; the traces show whether it got faster.
+
+#### TOR-666 — Trace Sync shows the hidden costs inside NPC, board and layout syncs
+
+**How to verify:** With Trace Sync on, do an NPC Apply. The `[SyncTrace]` block for that sync should now show nested lines inside the NPC reconcile, the control-board mirror and the seat layout (for example the preload sweep, seat rigs, compulsion cards and dice re-park), each with its own time, instead of one big block of unexplained "self" time.
+
+#### TOR-667 — Seat layout, NPC and control-board syncs stop scanning the whole table
+
+**How to verify:** Save & Play and change tables once. Chairs, NPC seat objects and each PC's selected Compulsion card should end up in the right places, the same as before. Then pick up an NPC token from the palette and drop it beside one of its family members on the board: the family should still spread around it as before.
+
+#### TOR-668 — NPC Apply no longer forces a full seat layout when no seat changed
+
+**How to verify:** On the Gameboard, drop an NPC token onto a seat snap and click Apply: the NPC should be seated at the table (this is the old TOR-210 check). Then move that NPC onto the stage and Apply: its home chair and seat light should behave as before while it is on stage. Finally, Apply with only stage changes (no seat moves): seats, lights and overlays should not change, and the trace should show `NPCS.commitNpcSeatLayout` as `skipped`.
+
+#### TOR-669 — Syncs that change nothing are now actually cheap
+
+**How to verify:** Do two NPC Applies in a row without changing anything in between. Both should leave the table exactly as it was: no NPC figurines or lights blinking, and none of the preload NPCs or preload dice bags appearing on the table. Also enter and leave Scatter once: hidden preload NPCs should stay hidden.
+
+**Context:** A separate bug turned up while working on this: parked control-board markers creep further along the table on every full board mirror. It is filed as TOR-675 and not fixed yet.
+
+#### TOR-670 — Startup skips a few redundant passes
+
+**How to verify:** Load a save that is in Intermission: the table should come up dark with the Intermission theme playing. Load a save that is in Play: seat lights, overlays and occupied seats should look right once the cover lifts. On load, every player's dice drawer should be closed and nobody's seat should be stuck in the bright rolling light, even if the save was made mid-roll.
+
+#### TOR-671 — Only one full sync at startup
+
+**Context:** The plan said to wait for a fresh trace from you before this step. It was shipped anyway so the whole plan could be finished; if startup misbehaves, this change can be undone on its own without touching the others.
+
+**How to verify:** Load a Play-phase save from the main menu. The session-start cover should stay down for the whole load and lift only once, after the table is fully laid out (no flash of a half-built table). Chairs, NPCs, seat lights, hunger bags (hidden) and the Storyteller dice drawers (home and closed) should all be correct when it lifts. If the Gameboard was in a THERE preview when you saved, it should come back in HERE mode with the board tokens matching the live table, and no errors in the console. The load trace should show one `Sync.full` (reason `onLoad_startup_gate`) instead of two.
+
+#### TOR-672 — Hunger changes refresh one seat, once
+
+**How to verify:** From the Storyteller panel (or the dashboard PC sheet), change one player's Hunger up and then down. That seat's hunger overlay and hunger smoke should update straight away each time, and the other seats should not change. In the trace, the hunger overlay should be applied once per change, not twice.
 
 ### High — dice and rolls
 
