@@ -833,5 +833,10 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-10-06 | CLOSE | TOR-644 | Author resolved the leftover session-number position → Complete (KEEP) moved to Fully Complete. |
 | 2026-10-06 | CLOSE | TOR-652 | PAVE ✅ → Fully Complete. No dependents. INBOX and PAV both empty (only TOR-439 ⏰ multiclient gate remains). |
 | 2026-10-04 | CLOSE | TOR-644 | PAVE ✅ → Complete (KEEP): author note that the Downtime session number is still pushed off the top; author will adjust the XML by hand. |
+| 2026-10-07 | SHIP | TOR-639 | Rouse-family rolls refuse Normal/Hunger dice (bag, spawn gate, pool counters); promote path removed. Awaiting Author Review. Commit 72faccb2. |
+| 2026-10-07 | SHIP | TOR-638 | Willpower reroll records start faces and restores bumped, un-rerolled dice before resolve; new `lib/die_face.ttslua`. Awaiting Author Review. Commit 588b879c. |
+| 2026-10-07 | SHIP | TOR-526 | Idle-bag quick Rouse locks dice 0.5s after first impact (2s fallback) and shows a 1s result. New `onObjectCollisionEnter` handler. Awaiting Author Review. Commit 74a655e0. |
+| 2026-10-07 | SHIP | TOR-640 | Seat-role offset dump writes table-shaped rows routed into shared/player/extraByOccupant with table defaultY; scale removed from offsets and layout. Awaiting Author Review. Commit 9524368a. |
+| 2026-10-07 | FOCUS | — | Whole Focus stack shipped; no dependents, no open unstarted bugs. Stack left empty; proposed TOR-81, TOR-301, TOR-466 (not promoted). |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.
