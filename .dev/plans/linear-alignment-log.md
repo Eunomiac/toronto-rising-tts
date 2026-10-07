@@ -837,6 +837,10 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-10-07 | SHIP | TOR-638 | Willpower reroll records start faces and restores bumped, un-rerolled dice before resolve; new `lib/die_face.ttslua`. Awaiting Author Review. Commit 588b879c. |
 | 2026-10-07 | SHIP | TOR-526 | Idle-bag quick Rouse locks dice 0.5s after first impact (2s fallback) and shows a 1s result. New `onObjectCollisionEnter` handler. Awaiting Author Review. Commit 74a655e0. |
 | 2026-10-07 | SHIP | TOR-640 | Seat-role offset dump writes table-shaped rows routed into shared/player/extraByOccupant with table defaultY; scale removed from offsets and layout. Awaiting Author Review. Commit 9524368a. |
+| 2026-10-07 | BUG | TOR-664 | New: hunger smoke / signal fire nil-index crash from the objects ↔ object_positions require cycle (since 64581ba8). relatedTo TOR-526. Fixed d7a937e2; Awaiting Author Review. |
+| 2026-10-07 | SHIP | TOR-639 | Author follow-up: Normal bag hidden during Rouse checks (DBV). f17f4960. Stays Awaiting Author Review. |
+| 2026-10-07 | SHIP | TOR-526 | Author ⚠️: result too short (fade-in ate the 1s hold) → 2s hold. fe0f0993. Stays Awaiting Author Review. |
+| 2026-10-07 | SHIP | TOR-665 | New feature: Willpower reroll highlights (blue eligible, cyan rerolled); single eligibility check. parent TOR-31, relatedTo TOR-638. 9ecb3c8c; Awaiting Author Review. |
 | 2026-10-07 | FOCUS | — | Whole Focus stack shipped; no dependents, no open unstarted bugs. Stack left empty; proposed TOR-81, TOR-301, TOR-466 (not promoted). |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

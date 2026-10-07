@@ -18,7 +18,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-07 — /tr-inbox cleared ten author-confirmed rows: TOR-653 (dashboard sheet Pages 2–3 editing), TOR-654 (dashboard sheet Page 6 XP log), TOR-655 (relationships in gameState, dashboard Page 4), TOR-656 (dashboard sheet Page 5 projects), TOR-657 (Trace Sync timing), TOR-658 (ST roll dashboard from any seat), TOR-659 (dashboard requests refused until loaded), TOR-660 (dashboard Page 2 Blood Potency effects), TOR-661 (Prince's Court haven traits), TOR-662 (Black Caesar's page 6 Experience Log). TOR-663 (Refresh XML repaints The Court) still waiting for your first pass. Later the same day the whole Focus stack shipped: TOR-638 (willpower reroll restores bumped dice), TOR-639 (Rouse checks stay Rouse checks), TOR-526 (quick Rouse locks on impact, 1s result), TOR-640 (seat-role offset dump matches the offsets table, no scale)._
+_Last populated: 2026-10-07 — /tr-inbox cleared ten author-confirmed rows: TOR-653 (dashboard sheet Pages 2–3 editing), TOR-654 (dashboard sheet Page 6 XP log), TOR-655 (relationships in gameState, dashboard Page 4), TOR-656 (dashboard sheet Page 5 projects), TOR-657 (Trace Sync timing), TOR-658 (ST roll dashboard from any seat), TOR-659 (dashboard requests refused until loaded), TOR-660 (dashboard Page 2 Blood Potency effects), TOR-661 (Prince's Court haven traits), TOR-662 (Black Caesar's page 6 Experience Log). TOR-663 (Refresh XML repaints The Court) still waiting for your first pass. Later the same day the whole Focus stack shipped: TOR-638 (willpower reroll restores bumped dice), TOR-639 (Rouse checks stay Rouse checks), TOR-526 (quick Rouse locks on impact, 1s result), TOR-640 (seat-role offset dump matches the offsets table, no scale). After your first pass: TOR-639 now hides the Normal bag, TOR-526's result holds longer, and two new rows: TOR-664 (hunger smoke crash) and TOR-665 (Willpower reroll highlights)._
 
 ### High — session / join / first-load
 
@@ -36,13 +36,27 @@ _Last populated: 2026-10-07 — /tr-inbox cleared ten author-confirmed rows: TOR
 
 **How to verify:** Save & Play. From a player seat, make a roll with three or more normal dice and let it settle. Click **Spend Willpower**. Pick up one die and drop it onto a neighbouring die so the neighbour tumbles to a new number. Wait for everything to settle, then click **Confirm**. The neighbour should snap back to its original number, the result should use that original number, and the console should show a line saying the die "was bumped ... restoring". The die you actually rerolled should keep its new number.
 
-#### TOR-639 — Rouse checks stay Rouse checks
+#### TOR-639 — Normal bag disappears during a Rouse check
 
-**How to verify:** Save & Play. At a player seat, left-click the Rouse bag twice to start a Rouse check, then left-click the Normal dice bag. No standard die should appear, and the roll panel should still call it a Rouse check. Try the Hunger bag too: nothing should happen. Repeat with the Oblivion Rouse bag if that seat has one. Then start a normal roll with the Normal bag and add a Rouse die: that should still work and become a combined roll.
+**Context:** Your follow-up: instead of a Normal bag that silently ignores clicks, the bag is now hidden for the whole Rouse check.
 
-#### TOR-526 — Quick Rouse locks half a second after landing and shows a one-second result
+**How to verify:** Save & Play. At a player seat, left-click the Rouse bag to start a Rouse check. The Normal dice bag should vanish straight away, and the Rouse dice should still line up in their usual spot. Finish or cancel the roll: the Normal bag should come back in its normal place. Do the same with the Oblivion Rouse bag if that seat has one, and once with the idle right-click quick Rouse. Then start a normal roll with the Normal bag and add a Rouse die: the Normal bag should stay visible, and it should become a combined roll.
 
-**How to verify:** Save & Play. Sit at a player seat with no roll in progress and right-click the Rouse dice bag. The die should freeze about half a second after it hits the tray, even if it is still wobbling, and the result should appear straight away. The fullscreen result should disappear after about one second, and the die should be cleared at about the same time. Try the Oblivion Rouse bag too if the seat has one. Finally, make an ordinary roll and confirm it still waits for the dice to stop and shows its result for the usual six seconds. (If a six-second result is already on screen, the one-second Rouse result waits for it to finish first — that is expected.)
+#### TOR-664 — No more error when hunger smoke should turn on
+
+**Context:** The "attempt to index a nil value" error you hit after a quick Rouse. It was older than tonight's work: since mid-September, the code that turns hunger smoke on (and part of the signal fire code) was calling a helper that never finished loading. A failed Rouse that raises Hunger simply walks into it.
+
+**How to verify:** Save & Play. At a player seat with low Hunger, do quick Rouse checks (right-click the Rouse bag) until one fails and raises Hunger. There should be no red error in the console, the result should show, and that seat's hunger smoke should appear if the new Hunger level calls for it. Also toggle a player's signal fire on and off once: no errors.
+
+#### TOR-665 — Willpower reroll dice glow blue, then cyan
+
+**How to verify:** Save & Play. From a player seat, make a roll with three or more normal dice (with a Hunger die too, if you like) and let it settle. Click **Spend Willpower**. Every die you are allowed to reroll should glow deep blue; Hunger dice (and anything else you can't reroll) should not glow. Pick up one blue die and roll it: the moment it is thrown, its glow should brighten to cyan. If the roll has a reroll limit, reaching it should make the remaining blue dice stop glowing as they lock. Click **Confirm**: all glows should disappear when the result shows. Also start a Willpower reroll and then cancel the roll: no die should be left glowing, including on the next roll.
+
+#### TOR-526 — Quick Rouse result stays readable for a full second
+
+**Context:** You confirmed the half-second lock works. The first version's result vanished almost as soon as it finished fading in, because the panel spends its first second waiting and fading in. The hold is now two seconds, so the result sits fully visible for about one second.
+
+**How to verify:** Save & Play. Sit at a player seat with no roll in progress and right-click the Rouse dice bag. Once the result has faded in, it should stay fully visible for about a second, long enough to read comfortably, then fade out. The die should be cleared at about the same time. Ordinary rolls should still show their result for the usual six seconds.
 
 ### Medium — seat layout tooling
 
