@@ -593,11 +593,33 @@ local function dumpSeatObjectTagsCsv(obj)
     return table.concat(parts, ",")
 end
 
+--- Which `C.SeatRoleOffsets` section owns a role for this occupant (same order as `FSL.lookupOffset`).
+--- @param occupantKey string
+--- @param roleKey string
+--- @return string section `"extraByOccupant"` | `"player"` | `"shared"`
+--- @return table|nil row existing offsets row, or nil when the role is new
+local function dumpLookupSeatRoleOffset(occupantKey, roleKey)
+    local pack = C.SeatRoleOffsets or {}
+    local extra = pack.extraByOccupant and pack.extraByOccupant[occupantKey]
+    if U.Type(extra) == "table" and extra[roleKey] ~= nil then
+        return "extraByOccupant", extra[roleKey]
+    end
+    if U.isIn(occupantKey, C.PlayerColors or {}) and pack.player and pack.player[roleKey] ~= nil then
+        return "player", pack.player[roleKey]
+    end
+    if pack.shared and pack.shared[roleKey] ~= nil then
+        return "shared", pack.shared[roleKey]
+    end
+    return "extraByOccupant", nil
+end
+
 --- Capture `{occupant}Object` poses relative to that seat's figurine (Phase 0 player-positioning).
 --- `localXZ` is world-unit XZ in the figurine yaw frame (`lib.figurine_frame`) — the inverse of layout apply.
 --- Do not use Figurine_Custom:positionToLocal (that space is not world inches).
---- Writes pasteable Lua to `.dev/.debug/debug_logs/seat_role_offsets_<OCCUPANT>.lua`.
---- Hidden objects may dump `defaultY = -200`; edit those by hand to the in-use height.
+--- Writes `.dev/.debug/debug_logs/seat_role_offsets_<OCCUPANT>.lua`, shaped like `lib/seat_role_offsets.ttslua`:
+--- rows sit under `shared` / `player` / `extraByOccupant.<Occupant>` where the table already has them
+--- (new roles go under `extraByOccupant`). `defaultY` comes from the table; only new roles use live Y
+--- (hidden objects read -200), and those are listed in the header.
 --- @param occupantRaw string|nil player color or NPC1..NPC4 (default `"Red"`)
 --- @return boolean ok
 --- @return string resultMessage
@@ -659,8 +681,7 @@ function DEBUG.dumpSeatRoleOffsets(occupantRaw)
         end
     end
 
-    local roleUsed = {}
-    local rows = {}
+    local candidates = {}
     local skipped = {}
     for i = 1, #objects do
         local obj = objects[i]
@@ -688,41 +709,50 @@ function DEBUG.dumpSeatRoleOffsets(occupantRaw)
                 position = figPos,
                 rotation = figRot,
             }, pos)
-            local lx = tonumber(lp.x) or 0
-            local lz = tonumber(lp.z) or 0
-            local key = roleKey
-            if roleUsed[key] == true then
-                key = roleKey .. "__" .. guid
-            end
-            roleUsed[roleKey] = true
-            roleUsed[key] = true
-            local scale = nil
-            if type(obj.getScale) == "function" then
-                scale = obj.getScale()
-            end
-            rows[#rows + 1] = {
-                key = key,
+            candidates[#candidates + 1] = {
                 roleKey = roleKey,
                 guid = guid,
-                localX = lx,
-                localZ = lz,
+                localX = tonumber(lp.x) or 0,
+                localZ = tonumber(lp.z) or 0,
                 localRotX = dumpSeatRoleOffsetAngDeltaDeg(figRot.x, rot.x),
                 localRotY = dumpSeatRoleOffsetAngDeltaDeg(figRot.y, rot.y),
                 localRotZ = dumpSeatRoleOffsetAngDeltaDeg(figRot.z, rot.z),
-                defaultY = tonumber(pos.y) or 0,
-                worldX = tonumber(pos.x) or 0,
-                worldY = tonumber(pos.y) or 0,
-                worldZ = tonumber(pos.z) or 0,
-                scale = scale,
+                liveY = tonumber(pos.y) or 0,
             }
         end
     end
-    table.sort(rows, function(a, b)
-        return tostring(a.key) < tostring(b.key)
+    table.sort(candidates, function(a, b)
+        if a.roleKey ~= b.roleKey then
+            return a.roleKey < b.roleKey
+        end
+        return a.guid < b.guid
     end)
     table.sort(skipped, function(a, b)
         return tostring(a.guid) < tostring(b.guid)
     end)
+
+    local rowsBySection = { shared = {}, player = {}, extraByOccupant = {} }
+    local newRoles = {}
+    local duplicates = {}
+    local roleUsed = {}
+    local rowCount = 0
+    for i = 1, #candidates do
+        local r = candidates[i]
+        if roleUsed[r.roleKey] then
+            duplicates[#duplicates + 1] = r.roleKey .. " (" .. r.guid .. ")"
+        else
+            roleUsed[r.roleKey] = true
+            local section, tableRow = dumpLookupSeatRoleOffset(occupantKey, r.roleKey)
+            r.defaultY = tableRow ~= nil and tonumber(tableRow.defaultY) or nil
+            if r.defaultY == nil then
+                r.defaultY = r.liveY
+                newRoles[#newRoles + 1] = r.roleKey
+            end
+            local list = rowsBySection[section]
+            list[#list + 1] = r
+            rowCount = rowCount + 1
+        end
+    end
 
     local function fmtN(n)
         return formatCameraNumber(n)
@@ -730,73 +760,60 @@ function DEBUG.dumpSeatRoleOffsets(occupantRaw)
     local function fmtVec3(x, y, z)
         return "{ x = " .. fmtN(x) .. ", y = " .. fmtN(y) .. ", z = " .. fmtN(z) .. " }"
     end
+    local function rowLine(indent, r)
+        return indent
+            .. r.roleKey
+            .. " = { localXZ = { x = " .. fmtN(r.localX) .. ", z = " .. fmtN(r.localZ) .. " }"
+            .. ", localRotation = " .. fmtVec3(r.localRotX, r.localRotY, r.localRotZ)
+            .. ", defaultY = " .. fmtN(r.defaultY)
+            .. " },"
+    end
 
     local lines = {
-        "-- Phase 0 seat-role offset dump (current layout still running).",
+        "-- Seat-role offset dump, shaped like the offsets table in lib/seat_role_offsets.ttslua.",
         "-- lua DEBUG.dumpSeatRoleOffsets(\"" .. occupantKey .. "\")",
         "-- localXZ is world-unit XZ vs the figurine yaw frame (lib.figurine_frame; same as layout apply).",
-        "-- Do not use Figurine_Custom:positionToLocal — that space is not world inches.",
-        "-- Hidden objects may have defaultY = -200; replace those with the in-use height before pasting.",
-        "-- Copy roles into C.SeatRoleOffsets.shared / .player / .extraByOccupant[\"" .. occupantKey .. "\"].",
+        "-- Paste rows into the matching section of the offsets table. defaultY comes from that table.",
         "-- occupant=" .. occupantKey
             .. " tableKey="
             .. tostring(tableKey)
             .. " figurineGuid="
             .. figGuid,
-        "",
-        "local DUMP_SEAT_ROLE_OFFSETS = {",
-        "  occupant = " .. string.format("%q", occupantKey) .. ",",
-        "  tableKey = " .. string.format("%q", tostring(tableKey or "")) .. ",",
-        "  referenceFigurine = {",
-        "    guid = " .. string.format("%q", figGuid) .. ",",
-        "    position = Vector(" .. fmtVec3(figPos.x, figPos.y, figPos.z) .. "),",
-        "    rotation = Vector(" .. fmtVec3(figRot.x, figRot.y, figRot.z) .. "),",
-        "  },",
-        "  roles = {",
+        "-- figurine position " .. fmtVec3(figPos.x, figPos.y, figPos.z)
+            .. " rotation " .. fmtVec3(figRot.x, figRot.y, figRot.z),
     }
-
-    for i = 1, #rows do
-        local r = rows[i]
-        lines[#lines + 1] = "    [" .. string.format("%q", r.key) .. "] = {"
-        lines[#lines + 1] = "      roleKey = " .. string.format("%q", r.roleKey) .. ","
-        lines[#lines + 1] = "      guid = " .. string.format("%q", r.guid) .. ","
-        lines[#lines + 1] = "      localXZ = { x = " .. fmtN(r.localX) .. ", z = " .. fmtN(r.localZ) .. " },"
-        lines[#lines + 1] = "      localRotation = { x = "
-            .. fmtN(r.localRotX)
-            .. ", y = "
-            .. fmtN(r.localRotY)
-            .. ", z = "
-            .. fmtN(r.localRotZ)
-            .. " },"
-        lines[#lines + 1] = "      defaultY = " .. fmtN(r.defaultY) .. ","
-        lines[#lines + 1] = "      -- world "
-            .. fmtN(r.worldX)
-            .. ", "
-            .. fmtN(r.worldY)
-            .. ", "
-            .. fmtN(r.worldZ)
-        if r.scale ~= nil then
-            local sx = tonumber(r.scale.x) or tonumber(r.scale[1])
-            local sy = tonumber(r.scale.y) or tonumber(r.scale[2])
-            local sz = tonumber(r.scale.z) or tonumber(r.scale[3])
-            if sx ~= nil and sy ~= nil and sz ~= nil then
-                lines[#lines + 1] = "      scale = { x = " .. fmtN(sx) .. ", y = " .. fmtN(sy) .. ", z = " .. fmtN(sz) .. " },"
-            end
-        end
-        lines[#lines + 1] = "    },"
+    if #newRoles > 0 then
+        lines[#lines + 1] = "-- NEW roles (not in the offsets table; defaultY is the live Y, -200 if hidden — check before pasting): "
+            .. table.concat(newRoles, ", ")
     end
-    lines[#lines + 1] = "  },"
-    lines[#lines + 1] = "  skippedNoRole = {"
+    for i = 1, #duplicates do
+        lines[#lines + 1] = "-- duplicate role, first object kept: " .. duplicates[i]
+    end
     for i = 1, #skipped do
         local s = skipped[i]
-        lines[#lines + 1] = "    { guid = "
-            .. string.format("%q", s.guid)
-            .. ", name = "
-            .. string.format("%q", s.name)
-            .. ", tags = "
-            .. string.format("%q", s.tags)
-            .. " },"
+        lines[#lines + 1] = "-- skipped (no role): guid=" .. s.guid .. " name=" .. string.format("%q", s.name) .. " tags=" .. s.tags
     end
+    lines[#lines + 1] = ""
+    lines[#lines + 1] = "local DUMP_SEAT_ROLE_OFFSETS = {"
+    local plainSections = { "shared", "player" }
+    for si = 1, #plainSections do
+        local section = plainSections[si]
+        local list = rowsBySection[section]
+        if #list > 0 then
+            lines[#lines + 1] = "  " .. section .. " = {"
+            for i = 1, #list do
+                lines[#lines + 1] = rowLine("    ", list[i])
+            end
+            lines[#lines + 1] = "  },"
+        end
+    end
+    lines[#lines + 1] = "  extraByOccupant = {"
+    lines[#lines + 1] = "    " .. occupantKey .. " = {"
+    local extraRows = rowsBySection.extraByOccupant
+    for i = 1, #extraRows do
+        lines[#lines + 1] = rowLine("      ", extraRows[i])
+    end
+    lines[#lines + 1] = "    },"
     lines[#lines + 1] = "  },"
     lines[#lines + 1] = "}"
     lines[#lines + 1] = ""
@@ -808,7 +825,7 @@ function DEBUG.dumpSeatRoleOffsets(occupantRaw)
         "DEBUG.dumpSeatRoleOffsets: occupant="
             .. occupantKey
             .. " roles="
-            .. tostring(#rows)
+            .. tostring(rowCount)
             .. " skipped="
             .. tostring(#skipped)
             .. " figurine="
@@ -6423,7 +6440,7 @@ function DEBUG.help()
     print("  logToFile(level, msg, filename?) - Log a message to file")
     print("  logStateToFile(filename?)       - Log game state to file (JSON)")
     print("  dumpCustomAssetsToFile(path?)   - Dump UI.getCustomAssets() → .dev/.debug/debug_logs/custom_ui_assets.json")
-    print("  dumpSeatRoleOffsets(color?)     - Seat objects vs figurine (world-unit XZ/rot + Y) → debug_logs/seat_role_offsets_<COLOR>.lua")
+    print("  dumpSeatRoleOffsets(color?)     - Seat objects vs figurine, shaped like lib/seat_role_offsets → debug_logs/seat_role_offsets_<COLOR>.lua")
     print("  logNpcPlacementIntentToFile(filename?) - Log Step Zero NPC placement intent (reconcile verify)")
     print("  exportNpcSeatFigurinesToFile(path?)     - Export NPC#Object figurines (name + GUID) to debug_logs")
     print("  exportControlBoardSnapGroupsToFile(filename?, config?) - CSV polar snap groups (logStateToFile path)")

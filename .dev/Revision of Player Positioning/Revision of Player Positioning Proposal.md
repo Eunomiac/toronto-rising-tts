@@ -152,7 +152,7 @@ The new rule: **one authored offset table** per role, shared by every occupant t
 
 Because the offsets live in data, **slot 1 does not need to be occupied**, and the occupant in slot 1 does not need to be a player. We do not copy from a live occupant.
 
-Authoring aid: `DEBUG.dumpSeatRoleOffsets(color)` reads that color’s live figurine, then writes every `{color}Object`-tagged object in pasteable form: **world-unit XZ** in the figurine yaw frame (`lib.figurine_frame`, same math layout apply uses) and rotation relative to the figurine, plus the object’s **current absolute Y**. Do not dump with `Figurine_Custom:positionToLocal`. Run it on **any** player color (and later NPC occupants if needed). Red is the usual source for **shared** and **player** roles; Pink, Purple, Brown, etc. are for **`extraByOccupant`** pieces that only exist at that seat (tarot, companion tokens, Oblivion-Rouse bag, Prince signet, …). Capture a seat that already looks correct (after today’s post-corrections). Deactivated objects will dump `y = -200`; those rows are edited by hand to the default (in-use) height. The dump does not special-case or omit them.
+Authoring aid: `DEBUG.dumpSeatRoleOffsets(color)` reads that color’s live figurine, then writes every `{color}Object`-tagged object in pasteable form: **world-unit XZ** in the figurine yaw frame (`lib.figurine_frame`, same math layout apply uses) and rotation relative to the figurine, plus the object’s **current absolute Y**. Do not dump with `Figurine_Custom:positionToLocal`. Run it on **any** player color (and later NPC occupants if needed). Red is the usual source for **shared** and **player** roles; Pink, Purple, Brown, etc. are for **`extraByOccupant`** pieces that only exist at that seat (tarot, companion tokens, Oblivion-Rouse bag, Prince signet, …). Capture a seat that already looks correct (after today’s post-corrections). Rows are placed in the table section that already owns the role, and `defaultY` is taken from the offsets table, so parked objects (`y = -200`) do not corrupt it. Only roles new to the table use the live Y; the dump header lists them for hand editing.
 
 `postCorrections` / `postCorrectionsBySeatRole` should shrink to nothing, or to a tiny authored exception list, once chair and figurine offsets are correct relative to `referenceFigurine`. If a throne mesh is authored 180° off, fix that mesh or put 180° in that role’s offset — do not keep per-GUID patches.
 
@@ -222,7 +222,7 @@ C.SeatRoleOffsets = {
 
 - `localXZ` / `localRotation` — world-unit XZ in the **figurine yaw frame** (dump via `lib.figurine_frame` / `DEBUG.dumpSeatRoleOffsets`; same math layout apply uses). Do **not** dump with `Figurine_Custom:positionToLocal` — that space is not world inches.
 - `defaultY` — absolute world Y when the object is in use. Never store `-200` here.
-- Optional `scale` only if a role actually needs it.
+- No `scale`. Layout never resizes satellites; each object keeps its authored scale unless `C.ObjectPositions` sets one (TOR-640).
 
 Cameras are **not** in this table. Existing `C.ReferenceCameraAngles` / `cameraModes.bySeat` keep their mode keys; they are applied with the same slot yaw-and-shift around `centerPoint` as the figurine (authored as if slot 1 is the figurine, not the hand).
 
@@ -271,7 +271,7 @@ Occupant identity (Red, NPC1) does not change when the token moves to a differen
 
 #### Delivery phases
 
-**Phase 0 — capture (old layout still running).** `DEBUG.dumpSeatRoleOffsets(color)` is available. Pass any player color (`"Red"`, `"Pink"`, `"Purple"`, …) or NPC seat (`"NPC1"`). From the TTS console after Save & Play: `lua DEBUG.dumpSeatRoleOffsets("Red")`. It writes pasteable Lua to `.dev/.debug/debug_logs/seat_role_offsets_<COLOR>.lua` (same bridge as other DEBUG dumps): every `{color}Object` as world-unit `localXZ` (figurine yaw frame), `localRotation`, and current absolute Y, plus the live figurine pose as a `referenceFigurine` candidate. Player-color dumps also include the hand zone as `HAND_ZONE` even if it is not tagged.
+**Phase 0 — capture (old layout still running).** `DEBUG.dumpSeatRoleOffsets(color)` is available. Pass any player color (`"Red"`, `"Pink"`, `"Purple"`, …) or NPC seat (`"NPC1"`). From the TTS console after Save & Play: `lua DEBUG.dumpSeatRoleOffsets("Red")`. It writes Lua to `.dev/.debug/debug_logs/seat_role_offsets_<COLOR>.lua` (same bridge as other DEBUG dumps) shaped like the offsets table in `lib/seat_role_offsets.ttslua` (TOR-640): one-line rows `ROLE = { localXZ, localRotation, defaultY },` under `shared` / `player` / `extraByOccupant.<Occupant>`, placed wherever the table already has that role (same lookup order as `FSL.lookupOffset`). Roles the table does not have yet go under `extraByOccupant`. `defaultY` is copied from the table; only new roles use the live Y, and the header lists them. The header also records the live figurine pose (a `referenceFigurine` candidate), duplicate roles, and objects with no role. Player-color dumps also include the hand zone as `HAND_ZONE` even if it is not tagged.
 
 Typical capture:
 
@@ -281,7 +281,7 @@ Typical capture:
 - **Red** (or Brown) again if needed for Prince signet / other one-offs.
 - Any other color that has unique tagged objects.
 
-Hidden objects will show `defaultY = -200`; those rows are edited by hand to the real default height. **Do not change `resolveSeatObjectsFromTable` in this phase.** Author `C.SeatRoleOffsets` and each table’s `referenceFigurine` / `slotCapacity` / `usedBySlot` from these dumps before Phase 1 ships.
+A hidden object whose role is new (listed in the header) will show `defaultY = -200`; edit that row by hand to the real default height. **Do not change `resolveSeatObjectsFromTable` in this phase.** Author `C.SeatRoleOffsets` and each table’s `referenceFigurine` / `slotCapacity` / `usedBySlot` from these dumps before Phase 1 ships.
 
 **Phase 1 — new mover.** Switch layout to numbered slots + figurine offsets + occupancy in `seatSlots`; Table B mapping and leaf rule above; validation errors; absent toggle; cameras follow the new slot rigid transform. No Scatter.
 
@@ -334,4 +334,4 @@ Resolved and folded into **Phase 1 contract**:
 - Empty geometric slots: leaves on, no spare throne.
 - Absent-from-session: stash like unused NPC piles; PCs-panel toggle in phase 1; distinct from `isPresent`.
 - Live save / import: loud error naming occupant and field.
-- Offset dump: Phase 0; run per color as needed; local XZ/rotation + absolute Y; `-200` edited by hand to `defaultY`; extras land in `extraByOccupant`.
+- Offset dump: run per color as needed; table-shaped rows (local XZ/rotation + `defaultY` from the offsets table); new roles land in `extraByOccupant` with live Y flagged in the header; no `scale`.

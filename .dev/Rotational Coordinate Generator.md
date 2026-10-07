@@ -27,7 +27,7 @@ This document describes layout math for player object groups around a table cent
 
 | Table | Owns |
 | --- | --- |
-| **`C.SeatRoleOffsets`** | Always-on seat furniture and **anchors** (figurine-local XZ / yaw / `defaultY`) |
+| **`C.SeatRoleOffsets`** | Always-on seat furniture and **anchors** (figurine-local XZ / rotation / `defaultY`). Never scale — layout leaves each object's authored scale alone (TOR-640). `DEBUG.dumpSeatRoleOffsets` writes rows in this table's shape. |
 | **`C.ObjectPositions`** | Full on/off (or Consult) pose for feature objects — XZ from the live anchor, Y from `height` / `position` |
 
 **Rule:** If an object has a `C.ObjectPositions` entry (Pink tarot deck/drawer/button, `CSHEET_DICE_DRAWER_<COLOR>`, …), seat layout must **not** place it from a SeatRoleOffsets role row. Layout moves anchors first, then re-applies ObjectPositions via `TarotToggle.reconcileAfterSeatLayout` / `DiceDrawer` open/close.

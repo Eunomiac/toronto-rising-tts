@@ -768,14 +768,6 @@ local function applyOffsetToObject(obj, figFrame, figObj, offset, roleKey, occup
             })
         end
     end
-    -- Companion tiles and dice bags keep authored workshop scale (never layout setScale).
-    if offset.scale ~= nil and type(obj.setScale) == "function"
-        and roleKey ~= "SIGNAL_FIRE"
-        and not (type(roleKey) == "string" and string.match(roleKey, "^COMPANION_TOGGLE"))
-        and not (type(roleKey) == "string" and string.match(roleKey, "^DICEBAG_"))
-    then
-        obj.setScale(Vector(offset.scale))
-    end
 end
 
 --- Compute figurine frames + occupant rigid transforms for cameras.
