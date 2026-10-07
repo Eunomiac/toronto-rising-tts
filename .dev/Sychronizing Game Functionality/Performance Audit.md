@@ -42,7 +42,7 @@ Opt-in metrics: `Sync.setMetricsEnabled(true)` or `gameState.debug.syncMetricsEn
 
 Opt-in host console trace (separate from agent metrics): `DEBUG.setSyncTrace(true)` or `gameState.debug.syncTraceEnabled` wraps the `Sync.*` entry points, scene/soundscape/light/overlay reconcilers, NPC and control-board reconcile, snap install, table layout, Spotlight, character-sheet and Storyteller-panel refreshes, `HUDP.updatePlayerUI`, and `UpdateUIDisplays` with `os.clock` timing spans. Each outermost call prints one nested `[SyncTrace] #N` block (ms, self ms, `>1 frame`, `ran`/`skipped`); turning it off prints a per-function summary. `skipped` means that call returned on a fingerprint. Default off; wrappers are removed when off. Format: [TTS_MCP.md § Sync call trace](../TTS_MCP.md#sync-call-trace-synctrace) (TOR-657).
 
-**Sync skip pass (2026-10-01):** `opts.force` on `Sync.full` is the repair hatch (Storyteller sync-all). Load into Play no longer calls `reconcilePlaySessionOnEnter` (that rebuilt the empty table and force-synced). The startup gate runs one non-forced `Sync.full`, which includes the soundscape the initial sync skipped. Scene restore and the empty-table apply call `Sync.full` without wiping reconcile caches. Same-table `SetTableTo` does not force layout. Control-board snap install ignores token-mirror `force` unless `forceSnaps` (reload cleared the grid). Spotlight stand-ins that are already parked are not hidden again. After layout applies seat lights and overlays, `Sync.noteSeatPresentationReconciled()` primes the seat-presentation fingerprint. Connection relayout (`PC.relayoutAfterOccupancyChange`) still force-syncs the table.
+**Sync skip pass (2026-10-01):** `opts.force` on `Sync.full` is the repair hatch (Storyteller sync-all). Load into Play no longer calls `reconcilePlaySessionOnEnter` (that rebuilt the empty table and force-synced). The startup gate runs the only startup `Sync.full` (non-forced, including soundscape; TOR-671 removed the initial pass). Scene restore and the empty-table apply call `Sync.full` without wiping reconcile caches. Same-table `SetTableTo` does not force layout. Control-board snap install ignores token-mirror `force` unless `forceSnaps` (reload cleared the grid). Spotlight stand-ins that are already parked are not hidden again. After layout applies seat lights and overlays, `Sync.noteSeatPresentationReconciled()` primes the seat-presentation fingerprint. Connection relayout (`PC.relayoutAfterOccupancyChange`) still force-syncs the table.
 
 **Event listeners (TOR-197):** High-frequency TTS handlers (`onObjectDrop`, zones, etc.) must use O(1) guards before heavy work. See [Event Listener Policy](Event%20Listener%20Policy.md).
 
@@ -162,11 +162,13 @@ Do not reintroduce TOR-391 duplicates: no broad `StorytellerScenesPanel.refresh(
 
 ## 2. Startup `Sync.full` plus deferred retry stacks
 
-**Symptom:** Load runs an initial `Sync.full`, schedules two retry stacks, independently schedules table sync, then runs a final startup-gate `Sync.full`. This is safe for late TTS objects, but it layers repeated lighting, overlays, NPC/UI, and soundscape checks into the first seconds of every load.
+**Status (TOR-671, 2026-10-07):** Startup now runs a single `Sync.full({ reason = "onLoad_startup_gate" })`; the initial pass and the standalone scheduled `R.SyncTable()` were removed (the gate pass lays out the table through the NPC layout commit). The history below describes the earlier shape.
 
-**Evidence**
+**Symptom (historical):** Load ran an initial `Sync.full`, scheduled two retry stacks, independently scheduled table sync, then ran a final startup-gate `Sync.full`. This was safe for late TTS objects, but it layered repeated lighting, overlays, NPC/UI, and soundscape checks into the first seconds of every load.
 
-- First on-load full sync: `Sync.full({ reason = "onLoad_initial" })`. Final startup-gate sync: `Sync.full({ reason = "onLoad_startup_gate" })`. See `core/global_script.ttslua:542-580`.
+**Evidence (historical)**
+
+- First on-load full sync: `Sync.full({ reason = "onLoad_initial" })`. Final startup-gate sync: `Sync.full({ reason = "onLoad_startup_gate" })`.
 - Bootstrap branch calls `NPCS.registerRestoredInstancesFromState`, `L.InitLights`, fingerprint-aware `reconcileSeatPresentationFromState`, then `scheduleBootstrapCoordinator()` (readiness poll, early exit when spotlights resolve). See `core/sync.ttslua`.
 - `requestSeatLayoutSync` and deferred `R.SyncTable` no-op when `RSL.isLayoutSyncCurrent()` — gate still waits for deferred attempt, not full layout work.
 - `global_script` separately schedules `R.SyncTable()` at `0.5`; `R.SyncTable` ends by calling `L.reconcileAllPlayers()` and `HO.syncAll()`. See `core/global_script.ttslua:526-536` and `lib/rotational-seat-layout.ttslua:2876-2888`.

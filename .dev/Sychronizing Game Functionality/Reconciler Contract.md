@@ -80,7 +80,7 @@ The desired contract is "reconcilers do not write `gameState`." Current code sti
 
 `opts.force` bypasses fingerprint skips. Use it for an explicit repair (the Storyteller sync-all control), not for an ordinary load, scene Apply, or phase change. Those flows mutate `gameState` and call `Sync.full` without force, so only slices whose inputs changed do world work.
 
-Load reconciles the save. `M.setupPlayers` writes connection occupancy, the startup `SyncTable` lays out chairs, and the startup gate runs one non-forced `Sync.full` (including soundscape, which the first sync skipped). It does not call `Scenes.reconcilePlaySessionOnEnter` or `applyDefaultNoSceneEnvironment`. The empty-table mutator stays on Intermission enter, after the connection checkpoint.
+Load reconciles the save. `M.setupPlayers` writes connection occupancy (state only), a deferred step stows trays and loose dice, and the startup gate runs the **only** startup `Sync.full` (non-forced, including soundscape; TOR-671). That pass lays out chairs through the NPC layout commit, which forces `RSL.SyncTable` because no layout has run yet. Preview-draft recovery and the Intermission dark-state write run just before it; ST drawer homes and the hunger-bag hide run just after it. The session-start cover cannot lift until the gate clears `startupCoverHeld`. It does not call `Scenes.reconcilePlaySessionOnEnter` or `applyDefaultNoSceneEnvironment`. The empty-table mutator stays on Intermission enter, after the connection checkpoint.
 
 After `resolveSeatObjectsFromTable` applies seat lights and overlays, it calls `Sync.noteSeatPresentationReconciled()` so the following `Sync.full` does not apply that presentation again.
 

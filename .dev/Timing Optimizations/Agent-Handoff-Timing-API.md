@@ -74,7 +74,7 @@ U.cancel(handle)
 U.await(function()
   revealHud()
 end, function()
-  return startupTableSyncDone and startupSeatLightsReady()
+  return startupLooseDiceCleanupDone and startupSeatLightsReady()
 end, { maxWait = 60 })
 
 -- Object settled (replaces runAfterObjectPhysicsSettled)
@@ -174,8 +174,7 @@ end, 4)
 U.chain({
   function()
     return function()
-      return startupTableSyncDone
-        and startupInitialSyncDone
+      return startupLooseDiceCleanupDone
         and startupSeatLightsReadyForReveal()
     end
   end,
