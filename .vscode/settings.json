@@ -6,6 +6,7 @@
   "ttslua.fileManagement.includePaths": ["${workspaceFolder}"],
   "TTSLua.includeOtherFilesPaths": ["${workspaceFolder}"],
   "ttslua.misc.debugSearchPaths": true,
+  "ttsEditor.sync.preserveGlobalStubs": true,
   "ttslua.fileManagement.luaSearchPattern": [
     "?",
     "?.lua",
