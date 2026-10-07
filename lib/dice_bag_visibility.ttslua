@@ -12,6 +12,7 @@ local G = require("lib.guids")
 local C = require("lib.constants")
 local S = require("core.state")
 local O = require("core.objects")
+local RO = require("lib.roll_options")
 
 DBV.DISABLED_Y = C.HIDDEN_OBJECT_WORLD_Y
 --- World Y above this threshold means the bag is already active (visible at rest).
@@ -48,6 +49,9 @@ local function restYFromNormalBag(color)
         return nil
     end
     local normalGuid = G.GetDiceNormalGUID(color)
+    if type(normalGuid) == "string" and restYByGuid[normalGuid] ~= nil then
+        return restYByGuid[normalGuid]
+    end
     local normalBag = bagObject(normalGuid)
     if normalBag == nil then
         return nil
@@ -139,6 +143,12 @@ local function setBagEnabled(guid, enabled, color)
     end
     if enabled then
         local restY = resolveRestY(guid, bag, color)
+        if type(restY) ~= "number" and O.isHiddenObject(bag) then
+            -- Loaded while parked with no live rest Y: the hide snapshot holds the rest pose.
+            O.restoreObject(bag, { locked = true })
+            ensureBagLocked(bag)
+            return
+        end
         if type(restY) ~= "number" then
             print(string.format(
                 "[DBV] setBagEnabled: cannot raise bag %s — no rest Y (seat %s)",
@@ -289,10 +299,21 @@ function DBV.reconcileForPlayer(color, active)
         oblivOn = false
     end
 
+    -- A Rouse check stays a Rouse check: hide the Normal bag from initiation until the roll ends.
+    local normalOn = not RO.isRouseFamilyRoll(rollType)
+
+    local normalGuid = bagGuidForKind(color, DK.KIND_NORMAL)
     local hungerGuid = bagGuidForKind(color, DK.KIND_HUNGER)
     local rouseGuid = bagGuidForKind(color, DK.KIND_ROUSE)
     local oblivGuid = bagGuidForKind(color, DK.KIND_OBLIV_ROUSE)
 
+    if type(normalGuid) == "string" then
+        -- Other bags borrow the Normal bag's rest Y; remember it before it can be parked.
+        cacheRestY(normalGuid, bagObject(normalGuid))
+        if normalOn then
+            setBagEnabled(normalGuid, true, color)
+        end
+    end
     if type(hungerGuid) == "string" then
         setBagEnabled(hungerGuid, hungerOn, color)
     end
@@ -301,6 +322,9 @@ function DBV.reconcileForPlayer(color, active)
     end
     if type(oblivGuid) == "string" then
         setBagEnabled(oblivGuid, oblivOn, color)
+    end
+    if type(normalGuid) == "string" and not normalOn then
+        setBagEnabled(normalGuid, false, color)
     end
 end
 

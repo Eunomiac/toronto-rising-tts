@@ -1199,13 +1199,13 @@ U.chain({
     rollCancel("Purple")
   end,
   function() printHeader("", 2) end,
-  function() printHeader("K3a - Normal bag refused on a Rouse check", 2) end,
-  -- A Rouse check stays a Rouse check (TOR-639); PRE_ROLL so the refusal is the only reason the die is missing.
+  function() printHeader("K3a - Normal bag hidden during a Rouse check", 2) end,
+  -- A Rouse check stays a Rouse check (TOR-639): the Normal bag is parked from initiation until the roll ends.
   function() rollTest("Brown", 1, C.RollType.ROUSE, "E2E K3a") end,
   function()
     rollE2eSeatPrep("Brown")
     M.setCamera("ALL", "rollBrown")
-    printHeader("[HUMAN] Left-click Rouse bag 2 times, then left-click Normal bag 1 time (PRE_ROLL — no die should appear)", 3)
+    printHeader("[HUMAN] Left-click Rouse bag 2 times (the Normal bag should be gone)", 3)
   end
 })
 ```
@@ -1221,7 +1221,9 @@ U.chain({
         pool = { rouse = 3, normal = 0 },
       },
     })
+    rollE2eConfirmBagEnabled("Brown", "normal", false)
     rollCancel("Brown")
+    rollE2eConfirmBagEnabled("Brown", "normal", true)
   end,
   function() printHeader("", 2) end,
   function() printHeader("K3b - Rouse bag right removes last rouse", 2) end,
@@ -1241,13 +1243,13 @@ U.chain({
     rollCancel("Brown")
   end,
   function() printHeader("", 2) end,
-  function() printHeader("K3c - Oblivion Rouse check: Normal bag refused (Purple)", 2) end,
+  function() printHeader("K3c - Oblivion Rouse check: Normal bag hidden (Purple)", 2) end,
   -- Same as K3a (TOR-639).
   function() rollTest("Purple", 1, C.RollType.ROUSE_OBLIVION, "E2E K3c") end,
   function()
     rollE2eSeatPrep("Purple")
     M.setCamera("ALL", "rollPurple")
-    printHeader("[HUMAN] Left-click Oblivion-Rouse bag 1 time, then left-click Normal bag 1 time (PRE_ROLL — no die should appear)", 3)
+    printHeader("[HUMAN] Left-click Oblivion-Rouse bag 1 time (the Normal bag should be gone)", 3)
   end
 })
 ```
@@ -1263,7 +1265,9 @@ U.chain({
         pool = { oblivRouse = 2, normal = 0 },
       },
     })
+    rollE2eConfirmBagEnabled("Purple", "normal", false)
     rollCancel("Purple")
+    rollE2eConfirmBagEnabled("Purple", "normal", true)
   end,
   function() printHeader("", 2) end,
   function() printHeader("K4 - Empty pool right-click cancels roll", 2) end,
