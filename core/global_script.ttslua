@@ -3592,7 +3592,7 @@ function onLoad(saved_data)
             end
             local NPCS = require("core.npcs")
             if NPCS ~= nil and type(NPCS.reconcilePreloadPoolHideFromState) == "function" then
-                local preloadHidden = NPCS.reconcilePreloadPoolHideFromState()
+                local preloadHidden = NPCS.reconcilePreloadPoolHideFromState({ force = true })
                 print(
                     U.loadElapsedPrefix()
                         .. "Preload NPC hide reconciled for "

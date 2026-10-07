@@ -104,6 +104,10 @@ local npcReconcileInProgress = false
 --- Set by Steps Two/Three when they clear or assign a seat this pass; forces the layout commit.
 local npcSeatWorkThisPass = false
 
+--- True after a preload park/adopt or an ImageScalar `reload()` (which can reset hide); load starts dirty.
+--- `NPCS.reconcilePreloadPoolHideFromState` skips its sweep while clean unless forced.
+local preloadPoolHideDirty = true
+
 --- One-shot layout context for `lib.rotational-seat-layout` during orchestrated reconcile.
 local npcReconcileLayoutContext = nil
 
@@ -864,6 +868,7 @@ local function applyFigurineImageScalarIfNeeded(fig, targetScalar)
         image_scalar = target,
     }
     fig.setCustomObject(params)
+    preloadPoolHideDirty = true
     fig.reload()
     return true
 end
@@ -992,6 +997,27 @@ local function applyPreloadPairHide(fig, lit)
     end
 end
 
+--- True when a parked preload pair already has the hide protocol, preload scale, and target ImageScalar,
+--- so `applyNpcPairPhysicalPresentation` would change nothing. ImageScalar `reload()` dirties the
+--- preload hide sweep, which re-applies visibility.
+--- @param fig Object
+--- @param lit Object
+--- @param npcName string
+--- @return boolean
+local function preloadPairPresentationMatches(fig, lit, npcName)
+    if not O.isHiddenObject(fig) or not O.isHiddenObject(lit) or fig.loading_custom == true then
+        return false
+    end
+    local fs = fig.getScale and fig.getScale() or nil
+    local ls = lit.getScale and lit.getScale() or nil
+    if fs == nil or ls == nil
+        or math.abs((fs.x or fs[1] or 0) - NPC_PRELOAD_FIGURE_SCALE) > 0.001
+        or math.abs((ls.x or ls[1] or 0) - NPC_PRELOAD_LIGHT_SCALE) > 0.001 then
+        return false
+    end
+    return figurineImageScalarMatches(readFigurineImageScalar(fig), figurineImageScalarForNpc(npcName))
+end
+
 --- Figurine Transform scale + tooltip and paired spotlight scale (preload = small, tooltips off; active areas/seats = full, tooltips on).
 --- ImageScalar (figurine custom-property scale) applied separately when placement changes — see `applyNpcFigurineImageScalarForPlacement`.
 --- @param fig Object|nil
@@ -1015,6 +1041,7 @@ local function applyNpcPairPhysicalPresentation(fig, lit, areaKey, npcName)
     ensureNpcFigurinePhysicsLocked(fig)
     local reloaded = applyNpcFigurineImageScalarForPlacement(fig, npcName, areaKey) == true
     if isPreload then
+        preloadPoolHideDirty = true
         applyPreloadPairHide(fig, lit)
         if reloaded and U.isGameObject(fig) then
             U.chain({
@@ -3083,6 +3110,9 @@ function NPCS.ensureNpcInPreloadZone(npcName, opts)
         if ak == PRELOAD_AREA_KEY and U.Type(rec.slotIndex) == "number" and rec.slotIndex == resolvedSlot
             and not seated and figurinePhysicallyAtPreloadSlot(fig, resolvedSlot) then
             local lit = G.getObject(rec.lightGuid or "")
+            if lit ~= nil and preloadPairPresentationMatches(fig, lit, npcName) then
+                return true, nil
+            end
             if lit == nil then
                 local litErr
                 lit, litErr = ensurePooledSpotlightForNpc(npcName, resolvedSlot)
@@ -3788,8 +3818,7 @@ function NPCS.reconcileAllFromState(opts)
         print("[NPCS] reconcileAllFromState incomplete; fingerprint not committed (will retry on next Sync.full)")
     end
 
-
-    NPCS.reconcilePreloadPoolHideFromState()
+    NPCS.reconcilePreloadPoolHideFromState({ force = force })
 
     local Gameboard = require("core.npc_gameboard")
     if type(Gameboard.reconcileControlBoardFromState) == "function" then
@@ -4724,7 +4753,7 @@ function NPCS.restoreAfterStateLoad()
         local GenericNpcs = require("core.generic_npcs")
         GenericNpcs.ensureLiveFromMembership()
     end
-    NPCS.reconcilePreloadPoolHideFromState()
+    NPCS.reconcilePreloadPoolHideFromState({ force = true })
 end
 
 --- True when a pooled figurine sits in the under-table preload grid (not on a seat tag).
@@ -4741,26 +4770,18 @@ local function figurineInPreloadWorldPool(fig)
     return (pos.y or 0) <= (C.HIDDEN_OBJECT_WORLD_Y + 50)
 end
 
---- @param figGuid string
---- @return table|nil rec
-local function instanceRecordForFigurineGuid(figGuid)
-    if U.Type(figGuid) ~= "string" or figGuid == "" then
-        return nil
-    end
-    for _, rec in pairs(getInstances()) do
-        if U.Type(rec) == "table" and rec.figurineGuid == figGuid then
-            return rec
-        end
-    end
-    return nil
-end
-
 --- Re-apply hide protocol for every NPC instance parked in the preload pool (load + layout).
 --- Audit/adopt only runs `ensureNpcInPreloadZone` for missing instance rows; existing preload
 --- rows skip that path, so visibility must be refreshed explicitly when already at y = -200.
 --- Also scans in-world preload figurines (ImageScalar `reload()` can reset hide until mesh settles).
+--- Skipped while `preloadPoolHideDirty` is clear unless `opts.force` (load bootstrap, Scatter layout).
+--- @param opts table|nil `{ force? }`
 --- @return number pairs reconciled
-function NPCS.reconcilePreloadPoolHideFromState()
+function NPCS.reconcilePreloadPoolHideFromState(opts)
+    if not (U.Type(opts) == "table" and opts.force == true) and not preloadPoolHideDirty then
+        return 0
+    end
+    preloadPoolHideDirty = false
     local instances = getInstances()
     local touchedFigGuids = {}
     local count = 0
@@ -4779,10 +4800,16 @@ function NPCS.reconcilePreloadPoolHideFromState()
         end
     end
 
+    local recByFigGuid = {}
     if U.Type(instances) == "table" then
         for _, rec in pairs(instances) do
-            if U.Type(rec) == "table" and rec.areaKey == PRELOAD_AREA_KEY then
-                markAndHide(G.getObject(rec.figurineGuid or ""), G.getObject(rec.lightGuid or ""))
+            if U.Type(rec) == "table" then
+                if U.Type(rec.figurineGuid) == "string" and rec.figurineGuid ~= "" then
+                    recByFigGuid[rec.figurineGuid] = rec
+                end
+                if rec.areaKey == PRELOAD_AREA_KEY then
+                    markAndHide(G.getObject(rec.figurineGuid or ""), G.getObject(rec.lightGuid or ""))
+                end
             end
         end
     end
@@ -4790,9 +4817,9 @@ function NPCS.reconcilePreloadPoolHideFromState()
     local figs = getObjectsWithTag(TAG_FIG) or {}
     for i = 1, #figs do
         local fig = figs[i]
-        if figurineInPreloadWorldPool(fig) then
-            local figGuid = fig.getGUID and fig.getGUID() or ""
-            local rec = instanceRecordForFigurineGuid(figGuid)
+        local figGuid = fig ~= nil and fig.getGUID and fig.getGUID() or ""
+        if touchedFigGuids[figGuid] ~= true and figurineInPreloadWorldPool(fig) then
+            local rec = recByFigGuid[figGuid]
             local lit = rec ~= nil and G.getObject(rec.lightGuid or "") or nil
             markAndHide(fig, lit)
         end

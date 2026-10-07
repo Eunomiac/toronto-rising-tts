@@ -41,6 +41,9 @@ local warmedBags = {}
 --- True after one-world scan adopts/culls saved `d10Preload` dice (per Save & Play).
 local worldParkedReconciled = false
 
+--- @type table<string, table>  bagGuid → `{ x, z }` bag position at the last layout reposition.
+local repositionedBagXZ = {}
+
 --- @return string[]
 local function enumerateAllDiceBagGuids()
     local out = {}
@@ -270,14 +273,24 @@ function DPP.warmAll()
     return count
 end
 
---- Repark every pooled die near its bag (after table layout moves bags).
+--- Repark pooled dice near their bag after table layout, only for bags whose X/Z changed since
+--- the last reposition (`repositionedBagXZ`).
 function DPP.repositionAllAfterLayout()
     for bagGuid, stack in pairs(availableByBag) do
-        if type(stack) == "table" then
-            for slotIndex, die in ipairs(stack) do
-                if die ~= nil then
-                    parkDie(die, bagGuid, slotIndex)
+        if type(stack) == "table" and #stack > 0 then
+            local bag = G.getObject(bagGuid)
+            local p = bag ~= nil and bag.getPosition ~= nil and bag.getPosition() or nil
+            local last = repositionedBagXZ[bagGuid]
+            local moved = p == nil or last == nil
+                or math.abs((p.x or 0) - last.x) > 0.01
+                or math.abs((p.z or 0) - last.z) > 0.01
+            if moved then
+                for slotIndex, die in ipairs(stack) do
+                    if die ~= nil then
+                        parkDie(die, bagGuid, slotIndex)
+                    end
                 end
+                repositionedBagXZ[bagGuid] = p ~= nil and { x = p.x or 0, z = p.z or 0 } or nil
             end
         end
     end

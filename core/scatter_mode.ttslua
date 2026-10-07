@@ -1316,7 +1316,7 @@ function ScatterMode.applyWorldLayout()
     end
     local NPCS = require("core.npcs")
     if type(NPCS.reconcilePreloadPoolHideFromState) == "function" then
-        NPCS.reconcilePreloadPoolHideFromState()
+        NPCS.reconcilePreloadPoolHideFromState({ force = true })
     end
     -- PC rig layout restores HiddenObject satellites to catalog visibility; re-park chairs/Prince props.
     applyScatterObjectsToHide()
