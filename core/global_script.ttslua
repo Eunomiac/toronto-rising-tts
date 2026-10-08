@@ -1712,6 +1712,19 @@ function GlobalDashboardPcSheetSnapshot()
     return Dash.snapshot()
 end
 
+--- Storyteller Dashboard: every world push slice (phase, scene, clock, soundscape, seats) for a tab
+--- that opens mid-session. Later changes arrive as push topics.
+--- @return string JSON `{ ok = true, phase, scene, clock, soundscape, seats }`
+function GlobalDashboardWorldSnapshot()
+    local refusal = dashboardLoadingRefusal()
+    if refusal then
+        return refusal
+    end
+    local out = require("dashboard.world_snapshot").snapshot()
+    out.ok = true
+    return JSON.encode(out)
+end
+
 --- Storyteller Dashboard PCs tab: apply one mutation or a JSON array of mutations, then return a fresh snapshot JSON.
 --- @param params string|table JSON text, or `{ json = "..." }`
 --- @return string JSON
