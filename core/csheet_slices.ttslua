@@ -5,8 +5,8 @@
     object, so a refresh where nothing a page shows has changed costs no cross-VM round trips.
 
     Each slice covers everything that page (and its decals) reads:
-      [1] / [2]  stats (minus hunger + badges), conditions, resolved statChanges (includes
-                 scene-hosted conditions), seat color, desire, current XP
+      [1] / [2]  stats (minus hunger, badges and the page-3 trait lists), conditions, resolved
+                 statChanges (includes scene-hosted conditions), seat color, desire, current XP
       [3]        backgrounds / merits / flaws + project stake quantity per entry
       [4]        relationship entries linked to the character
       [5]        Projects.fingerprintPage5 (already covers present-day dates)
@@ -22,10 +22,11 @@ local S = require("core.state")
 --- Pages refreshed from Global, in call order.
 CSL.PAGES = { 1, 2, 3, 4, 5, 6 }
 
---- @type table<string, boolean>
-local STATS_SKIP_KEYS = { hunger = true, badges = true }
-
 local TRAIT_KEYS = { "backgrounds", "merits", "flaws" }
+
+--- Stats keys pages 1-2 never draw (trait lists are page 3 only).
+--- @type table<string, boolean>
+local STATS_SKIP_KEYS = { hunger = true, badges = true, backgrounds = true, merits = true, flaws = true }
 
 --- Deterministic serialization (sorted keys). `skip` applies at every depth.
 --- @param v any
