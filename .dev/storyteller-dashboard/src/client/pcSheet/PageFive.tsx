@@ -21,6 +21,7 @@ import {
   type StakeClass
 } from "./projects.js";
 import { fetchProjectsSnapshot } from "./projectsBridge.js";
+import { subscribeTtsEvents } from "../ttsEvents.js";
 
 type Editing = { readonly project?: Project; readonly draft: ProjectDraft };
 
@@ -130,6 +131,12 @@ export const PageFive = ({ ctx }: { readonly ctx: PageContext }): ReactElement =
   useEffect(() => {
     void load();
   }, [load, ctx.seat.color]);
+
+  useEffect(() => subscribeTtsEvents((event) => {
+    if (event.topic === "projects" || event.topic === "reload") {
+      void load();
+    }
+  }), [load]);
 
   const viewerKey = coterie ? COTERIE : ctx.seat.charKey;
   const projects = snapshot.ok ? projectsForSource(snapshot, viewerKey) : [];

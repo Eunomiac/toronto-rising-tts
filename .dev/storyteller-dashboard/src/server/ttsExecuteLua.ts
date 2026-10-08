@@ -4,6 +4,7 @@ import {
   type GatewayStatus
 } from "@tts-tools/gateway-client";
 import { reclaimEditorPort } from "./ttsEditorPort.js";
+import { parseDashboardPush, ttsEventHub } from "./ttsEvents.js";
 
 type ExecuteResult = {
   readonly prints: readonly string[];
@@ -59,6 +60,15 @@ export class DashboardTtsBridge {
       if (status.mode === "disconnected") {
         this.session = undefined;
       }
+    });
+    session.on("customMessage", (payload) => {
+      const event = parseDashboardPush(payload);
+      if (event) {
+        ttsEventHub.publish(event);
+      }
+    });
+    session.on("loadingANewGame", () => {
+      ttsEventHub.gameLoading();
     });
   };
 

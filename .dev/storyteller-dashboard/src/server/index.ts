@@ -11,6 +11,7 @@ import { loadGenericNpcCatalog, resolveGenericNpcImagePath } from "./genericNpcC
 import { refreshGenericNpcCatalogOnStartup } from "./refreshGenericNpcCatalog.js";
 import { createTermImageStore, MAX_TERM_IMAGE_BYTES, TERM_IMAGE_CONTENT_TYPES, TermImageError } from "./termImages.js";
 import { dashboardTtsBridge } from "./ttsExecuteLua.js";
+import { ttsEventHub } from "./ttsEvents.js";
 import { parseGenerateImageRequest, parseGenerateNpcRequest, parseRerollFieldRequest } from "../shared/npc.js";
 
 loadEnvFile();
@@ -280,6 +281,13 @@ const handleApi = async (request: IncomingMessage, response: ServerResponse, pat
   if (request.method === "GET" && pathname === "/api/tts-bridge-status") {
     const status = await dashboardTtsBridge.getBridgeStatus();
     sendJson(response, 200, status);
+    return;
+  }
+
+  if (request.method === "GET" && pathname === "/api/tts/events") {
+    ttsEventHub.subscribe(response);
+    // Auto-connect so TTS pushes reach this server even before any tab calls execute-lua.
+    void dashboardTtsBridge.getBridgeStatus();
     return;
   }
 

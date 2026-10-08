@@ -1,10 +1,12 @@
 import { gsap } from "gsap";
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent, type ReactElement } from "react";
 import { fetchBridgeStatus, isBridgeConnected, reclaimEditorPort, releaseEditorPort } from "../ttsBridge.js";
+import { subscribeTtsEvents } from "../ttsEvents.js";
 import { applySheetCommands, fetchLiveSnapshot } from "./bridge.js";
 import { applyLocal } from "./applyLocal.js";
 import { createApplyQueue } from "./applyQueue.js";
 import { deepMerge } from "./deepMerge.js";
+import { mergeSeatPush } from "./livePush.js";
 import { renderPage, SPREADS, type PageContext } from "./pages.js";
 import { PlayerRail } from "./PlayerRail.js";
 import { SeatJsonModal } from "./SeatJsonModal.js";
@@ -48,6 +50,7 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
   const inFlight = useRef(false);
   const skipLive = useRef(false);
   const syncingRef = useRef(false);
+  const applyingNow = useRef(false);
   const retryTimer = useRef<number | null>(null);
 
   const showOffline = useCallback((message: string): void => {
@@ -153,6 +156,24 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
     };
   }, [active, refresh]);
 
+  useEffect(() => {
+    if (!active) {
+      return;
+    }
+    // TTS announces every seat change (Sync.player → DashPush.seat). While our own apply is in
+    // flight its returned snapshot is authoritative, so pushes are dropped until it settles.
+    return subscribeTtsEvents((event) => {
+      if (event.topic === "reload") {
+        void refreshRef.current(true);
+        return;
+      }
+      if (event.topic !== "pcSeat" || syncingRef.current || applyingNow.current) {
+        return;
+      }
+      setSnapshot((current) => mergeSeatPush(current, event.color, event.data));
+    });
+  }, [active]);
+
   useLayoutEffect(() => {
     const root = spreadRef.current;
     if (!root || !active || !live) {
@@ -223,6 +244,7 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
       throw new Error("No live sheet to apply into.");
     }
     setBusy(true);
+    applyingNow.current = true;
     try {
       const next = await applySheetCommands([command]);
       if (!next.ok) {
@@ -236,6 +258,7 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
       setLive(true);
       setStatus("Live from Tabletop Simulator.");
     } finally {
+      applyingNow.current = false;
       setBusy(false);
     }
   };
