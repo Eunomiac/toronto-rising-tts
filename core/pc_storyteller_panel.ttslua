@@ -42,29 +42,6 @@ local function playerIdForColor(color)
   return C.GetPlayerID(color)
 end
 
---- Clicks that only adjust ST panel buffers (not committed state). Skip HUD overlay refresh so
---- players do not see hunger/condition overlays flicker while the ST adjusts values.
---- @type table<string, boolean>
-local ACTIONS_SKIP_OVERLAY_REFRESH = {
-  hpAggUp = true,
-  hpAggDown = true,
-  hpSupUp = true,
-  hpSupDown = true,
-  wpAggUp = true,
-  wpAggDown = true,
-  wpSupUp = true,
-  wpSupDown = true,
-  humUp = true,
-  humDown = true,
-  hungerUp = true,
-  hungerDown = true,
-  -- hungerApply uses Sync.player with forceOverlays (TOR-340).
-  hungerApply = true,
-  autoSeat = true,
-  connect = true,
-  desireClear = true,
-}
-
 --- Last refreshed slice fingerprint per seat color and page (`CSL.compute`).
 --- @type table<string, table<number, string>>
 local lastSheetSliceFp = {}
@@ -105,6 +82,17 @@ function PCST.refreshCharacterSheetsForColor(seatColor, opts)
     end
   end
   lastSheetSliceFp[seatColor] = slices
+  local changedList = {}
+  for _, pageNum in ipairs(CSL.PAGES) do
+    if changed[pageNum] then
+      changedList[#changedList + 1] = tostring(pageNum)
+    end
+  end
+  require("lib.sync_trace").report("PCST.refreshCharacterSheetsForColor", {
+    color = seatColor,
+    pages = anyChanged and table.concat(changedList, ",") or "none",
+    outcome = anyChanged and "ran" or "skipped",
+  })
   if anyChanged then
     local tagged = getObjectsWithTag(tag)
     if type(tagged) == "table" then
@@ -193,10 +181,11 @@ function PCST.getDesireForColor(color)
   return PCST.normalizeDesire(S.getStateVal("playerData", pid, "desire"))
 end
 
---- Persist Desire and refresh ST row (+ optional page1 CSHEET).
+--- Persist Desire and announce the seat (`Sync.player`).
 --- @param color string
 --- @param rawText any
---- @param opts table|nil `{ refreshSheets?: boolean }` default refreshSheets true
+--- @param opts table|nil `{ refreshSheets = false }` — typing in the CSHEET Desire field: that page
+---   already shows the text, so only the ST row repaints (no per-keystroke seat announce)
 --- @return string normalized desire
 function PCST.setDesireForColor(color, rawText, opts)
   local pid = playerIdForColor(color)
@@ -205,13 +194,10 @@ function PCST.setDesireForColor(color, rawText, opts)
   end
   local desire = PCST.normalizeDesire(rawText)
   S.setStateVal(desire, "playerData", pid, "desire")
-  PCST.refreshRow(color)
-  local refreshSheets = true
   if type(opts) == "table" and opts.refreshSheets == false then
-    refreshSheets = false
-  end
-  if refreshSheets then
-    PCST.refreshCharacterSheetsForColor(color)
+    PCST.refreshRow(color)
+  else
+    Sync.player(color)
   end
   return desire
 end
@@ -329,6 +315,7 @@ function PCST.onHudClick(player, _button, id)
     U.AlertGM("PC panel: no player for color " .. color)
     return
   end
+  local announce = false
 
   if action == "hpAggUp" then
     b.hAgg = b.hAgg + 1
@@ -342,7 +329,7 @@ function PCST.onHudClick(player, _button, id)
     P.applyDamageOrHeal(color, "health", b.hSup, b.hAgg)
     b.hSup = 0
     b.hAgg = 0
-    PCST.refreshCharacterSheetsForColor(color)
+    announce = true
   elseif action == "wpAggUp" then
     b.wAgg = b.wAgg + 1
   elseif action == "wpAggDown" then
@@ -355,7 +342,7 @@ function PCST.onHudClick(player, _button, id)
     P.applyDamageOrHeal(color, "willpower", b.wSup, b.wAgg)
     b.wSup = 0
     b.wAgg = 0
-    PCST.refreshCharacterSheetsForColor(color)
+    announce = true
   elseif action == "humUp" then
     b.hum = b.hum + 1
   elseif action == "humDown" then
@@ -363,17 +350,17 @@ function PCST.onHudClick(player, _button, id)
   elseif action == "humApply" then
     P.applyHumanityStainDelta(color, b.hum)
     b.hum = 0
-    PCST.refreshCharacterSheetsForColor(color)
+    announce = true
   elseif action == "humClear" then
     P.clearHumanityStains(color)
     b.hum = 0
-    PCST.refreshCharacterSheetsForColor(color)
+    announce = true
   elseif action == "humBaseUp" then
     P.applyHumanityBaseDelta(color, 1)
-    PCST.refreshCharacterSheetsForColor(color)
+    announce = true
   elseif action == "humBaseDown" then
     P.applyHumanityBaseDelta(color, -1)
-    PCST.refreshCharacterSheetsForColor(color)
+    announce = true
   elseif action == "xpOpen" then
     local XpModal = require("core.xp_log_modal")
     XpModal.open(color)
@@ -386,20 +373,21 @@ function PCST.onHudClick(player, _button, id)
       local cur = tonumber(S.getPlayerVal(color, "hunger")) or 0
       local nx = math.max(0, math.min(C.MAX_HUNGER or 5, cur + b.hunger))
       S.setPlayerVal(color, "hunger", nx)
-      Sync.player(color, { forceOverlays = true })
     end
     b.hunger = 0
-    PCST.refreshCharacterSheetsForColor(color)
+    Sync.player(color, { forceOverlays = true })
+    return
   elseif action == "torporClear" then
     P.storytellerClearTorpor(color)
-    PCST.refreshCharacterSheetsForColor(color)
+    announce = true
   elseif action == "frenzyToggle" then
+    -- Conditions.* announce the seat themselves (Conditions.afterChange → Sync.player).
     if S.getStateVal("playerData", pid, "conditions", "hudFrenzy") ~= nil then
       Conditions.clear(pid, "hudFrenzy")
     else
       Conditions.setManual(pid, "hudFrenzy", true)
     end
-    PCST.refreshCharacterSheetsForColor(color)
+    return
   elseif action == "blindfoldToggle" then
     if S.getStateVal("playerData", pid, "conditions", "hudBlindfold") ~= nil then
       Conditions.clear(pid, "hudBlindfold")
@@ -413,9 +401,10 @@ function PCST.onHudClick(player, _button, id)
         end, 1.5)
       end
     end
-    PCST.refreshCharacterSheetsForColor(color)
+    return
   elseif action == "desireClear" then
     PCST.setDesireForColor(color, "")
+    return
   elseif action == "autoSeat" then
     local Main = require("core.main")
     Main.manualAssignSeatForColor(color)
@@ -424,9 +413,11 @@ function PCST.onHudClick(player, _button, id)
     Main.manualRunPlayerConnect(color)
   end
 
-  PCST.refreshRow(color)
-  if not ACTIONS_SKIP_OVERLAY_REFRESH[action] then
-    P.refreshHudOverlays()
+  if announce then
+    Sync.player(color)
+  else
+    -- Buffer-only clicks (and seat / connect actions, which announce through their own flows).
+    PCST.refreshRow(color)
   end
 end
 return PCST

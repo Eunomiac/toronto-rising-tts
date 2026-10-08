@@ -22,7 +22,6 @@ local PresentDayClock = require("core.present_day_clock")
 local Scenes = require("core.scenes")
 local StorytellerPanelUI = require("core.storyteller_panel_ui")
 local HUDBF = require("core.hud_blindfold")
-local PCST = require("core.pc_storyteller_panel")
 local MapPins = require("core.map_pins")
 local NPCS = require("core.npcs")
 
@@ -32,34 +31,21 @@ local function isPlayDowntime()
     return type(Phases.isPlayDowntime) == "function" and Phases.isPlayDowntime() == true
 end
 --- Reconcile hosted PC conditions (location + scene) after session location, scene bundle, or seat presence changes.
+--- @return string[] seat colors whose hosted conditions changed
 local function reconcileHostedConditions(opts)
-    local Conditions = require("core.conditions")
-    if type(Conditions.reconcileHostedForSession) == "function" then
-        return Conditions.reconcileHostedForSession(opts)
-    elseif type(Conditions.reconcileLocationHostedForScene) == "function" then
-        return Conditions.reconcileLocationHostedForScene(opts)
-    end
-    return nil
+    return require("core.conditions").reconcileHostedForSession(opts)
 end
 
---- CSHEET page 1/2 dots and BP decals after hosted reconcile used skipPresentation.
---- @param changedSeatColors string[]|nil nil means the reconciler could not report scope.
+--- Announce seats whose hosted conditions changed (CSHEET dots / BP decals, PCs row, dashboard
+--- push) after a skipPresentation hosted reconcile.
+--- @param changedSeatColors string[]|nil
 local function refreshCharacterSheetsAfterHostedReconcile(changedSeatColors)
-    if not PCST then
-        return
-    end
-    if type(changedSeatColors) == "table" then
-        for _, seatColor in ipairs(changedSeatColors) do
-            if type(PCST.refreshCharacterSheetsForColor) == "function" then
-                PCST.refreshCharacterSheetsForColor(seatColor)
-            end
-        end
-    elseif type(PCST.refreshAllCharacterSheets) == "function" then
-        PCST.refreshAllCharacterSheets()
+    for _, seatColor in ipairs(changedSeatColors or {}) do
+        Sync.player(seatColor)
     end
 end
 
---- `Sync.full` then refresh all character sheets (caller already ran hosted reconcile).
+--- `Sync.full` then announce the seats whose hosted conditions changed (caller already ran hosted reconcile).
 --- @param reason string
 --- @param opts table|nil `{ skipSoundscape?: boolean }` — set during staged scene transitions where the
 ---   `fadeIn` phase is the sole soundscape authority (TOR-147), so the work-phase sync must not re-apply

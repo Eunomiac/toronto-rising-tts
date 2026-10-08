@@ -36,7 +36,6 @@ local SYNC_INCREMENTAL_UI_DELTA = {
     scenesPanel = true,
     gameStateOverlay = true,
     soundscape = true,
-    playerStats = true,
     playerHud = true,
 }
 
@@ -274,7 +273,10 @@ local function scheduleBootstrapCoordinator()
     }, BOOTSTRAP_MAX_WAIT_SEC, BOOTSTRAP_POLL_INTERVAL_SEC)
 end
 
---- Reconcile one player scope (per-seat lights, HUD, overlays, storyteller stat row).
+--- Per-seat announcer: after any mutation of one PC's state, this is the single call that brings
+--- every display of that seat up to date. Each display owner skips cheaply when its input is
+--- unchanged (light mode, HUD cache, overlay cache, dice bag rest state, sheet slice fingerprints,
+--- hidden panel). Mutators stay state-only and call this once.
 --- @param color string Seat color (e.g., "Red")
 --- @param opts table|nil `{ forceOverlays? }` — clear this seat's overlay cache first so hunger/condition
 ---   UI.hide / active writes re-apply even when the cache already matches (TOR-340 hunger changes).
@@ -297,15 +299,22 @@ function Sync.player(color, opts)
     end
     callIfFunction(HO.reconcileForSeat, color)
 
+    local PCST = require("core.pc_storyteller_panel")
+    local pid = C.GetPlayerIDOrNil(color)
+    if pid ~= nil and pid ~= C.StorytellerID then
+        -- Frenzy hides Rouse / Oblivion-Rouse bags; already-at-rest bags no-op.
+        require("lib.dice_bag_visibility").reconcileForPlayer(
+            color,
+            S.getStateVal("playerData", pid, "hud", "rollData", "active")
+        )
+        PCST.refreshCharacterSheetsForColor(color)
+    end
+    if U.isIn(color, C.PlayerColors) then
+        PCST.refreshRow(color)
+    end
+
     -- Other seats were not reconciled here; let the next `Sync.full` re-check presentation.
     invalidateSeatPresentationFingerprint()
-
-    if type(UpdateUIDisplays) == "function" then
-        UpdateUIDisplays({
-            playerStats = true,
-            colors = { color },
-        })
-    end
 
     finishSyncMetrics("player", t0, { color = color })
 end

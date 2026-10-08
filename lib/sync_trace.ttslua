@@ -66,6 +66,12 @@ local function targetList()
     local SceneLibrary = require("core.scene_library")
     local Phases = require("core.phases")
     local PCST = require("core.pc_storyteller_panel")
+    local CSL = require("core.csheet_slices")
+    local Conditions = require("core.conditions")
+    local DBV = require("lib.dice_bag_visibility")
+    local StatsPanel = require("core.storyteller_stats_panel")
+    local ProjectsPanel = require("core.storyteller_projects_panel")
+    local ScenesPanel = require("core.storyteller_scenes_panel")
     local O = require("core.objects")
     local FSL = require("lib.figurine_seat_layout")
     local SRI = require("lib.seat-role-identity")
@@ -121,6 +127,12 @@ local function targetList()
         { PCST, "refreshAllCharacterSheets", "PCST.refreshAllCharacterSheets" },
         { PCST, "refreshRow", "PCST.refreshRow" },
         { PCST, "refreshAllRows", "PCST.refreshAllRows" },
+        { CSL, "compute", "CSL.compute" },
+        { Conditions, "afterChange", "Conditions.afterChange" },
+        { DBV, "reconcileForPlayer", "DBV.reconcileForPlayer" },
+        { StatsPanel, "refresh", "ST.refresh" },
+        { ProjectsPanel, "refresh", "PJP.refresh" },
+        { ScenesPanel, "refresh", "StorytellerScenesPanel.refresh" },
         { _G, "UpdateUIDisplays", "UpdateUIDisplays" },
     }
 end

@@ -8,7 +8,7 @@ local PJP = {}
 local C = require("lib.constants")
 local U = require("lib.util")
 local Projects = require("core.projects")
-local PCST = require("core.pc_storyteller_panel")
+local Sync = require("core.sync")
 local PanelUI = require("core.storyteller_panel_ui")
 local RC = require("core.roll_controller")
 
@@ -664,13 +664,14 @@ function PJP.onLaunchR()
   })
 end
 
---- Present-day clock moved: refresh open editor die + all PC sheets (page 5) + Court project cards.
+--- Present-day clock moved: refresh open editor die + announce every PC seat (page 5 dates) +
+--- Court project cards.
 function PJP.onPresentDayChanged()
   if editingId ~= nil then
     refreshDerivedFields()
   end
   for _, color in ipairs(C.PlayerColors) do
-    PCST.refreshCharacterSheetsForColor(color)
+    Sync.player(color)
   end
   Projects.reconcileCourtProjectsAll()
 end

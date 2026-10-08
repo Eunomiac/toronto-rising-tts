@@ -172,6 +172,9 @@ healSelfTracks = function(enterStats)
             if wSup ~= 0 or wAgg ~= 0 then
                 P.applyDamageOrHeal(color, "willpower", -wSup, -wAgg)
             end
+            if hSup ~= 0 or hAgg ~= 0 or wSup ~= 0 or wAgg ~= 0 then
+                require("core.sync").player(color)
+            end
         end
     end
 end
@@ -206,6 +209,7 @@ applyExitStatConversion = function(enterStats)
             if addWSup ~= 0 or addWAgg ~= 0 then
                 P.applyDamageOrHeal(color, "willpower", addWSup, addWAgg)
             end
+            require("core.sync").player(color)
         end
     end
 end

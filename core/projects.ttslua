@@ -1322,12 +1322,13 @@ function M.fingerprintPage5(seatColorRaw)
   return table.concat(parts, "\1")
 end
 
---- After any project mutation: repaint every PC's sheets (Page 5 + staked dots on Page 3),
---- the coterie sheet, and the Court project cards. Callers with their own panel refresh it first.
+--- After any project mutation: announce every PC seat (Page 5 + staked dots on Page 3 repaint
+--- only where their slice changed), the coterie sheet, and the Court project cards. Callers with
+--- their own panel refresh it first.
 function M.refreshAfterMutation()
-  local PCST = require("core.pc_storyteller_panel")
+  local Sync = require("core.sync")
   for _, color in ipairs(C.PlayerColors) do
-    PCST.refreshCharacterSheetsForColor(color)
+    Sync.player(color)
   end
   require("core.coterie").reconcileAll()
   M.reconcileCourtProjectsAll()

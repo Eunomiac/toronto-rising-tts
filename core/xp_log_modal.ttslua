@@ -6,7 +6,7 @@ local S = require("core.state")
 local U = require("lib.util")
 local C = require("lib.constants")
 local XpLog = require("core.xp_log")
-local PCST = require("core.pc_storyteller_panel")
+local Sync = require("core.sync")
 
 local M = {}
 
@@ -100,13 +100,11 @@ function M.onField(id, value)
   end
 end
 
---- Repaint PCs panel rows and sheets (page 6 included) after Experience Log writes (also used by the dashboard).
+--- Announce each seat after Experience Log writes (also used by the dashboard).
 --- @param colors string[]
 local function afterMutation(colors)
   for i = 1, #colors do
-    local color = colors[i]
-    PCST.refreshRow(color)
-    PCST.refreshCharacterSheetsForColor(color)
+    Sync.player(colors[i])
   end
 end
 

@@ -2,6 +2,7 @@
   Storyteller Dashboard PCs tab — Page 2 (disciplines, powers, rituals, ceremonies) and
   Page 3 (backgrounds, merits, flaws) apply ops plus the `projectStakes` snapshot field.
   Registered into dashboard.pc_sheet; every op returns nil on success or a plain-English error.
+  Ops write state only — Dash.apply announces the seat (Sync.player) after the batch.
   Page 2 limits mirror lib/csheet_page2_xml.ttslua (it errors past them).
 ]]
 
@@ -9,7 +10,6 @@ local M = {}
 
 local C = require("lib.constants")
 local S = require("core.state")
-local PCST = require("core.pc_storyteller_panel")
 local PSC = require("lib.pc_sheet_collect")
 local PCAdv = require("lib.pc_advantages")
 local Projects = require("core.projects")
@@ -30,11 +30,6 @@ end
 local function clampInt(value, lo, hi)
   local n = math.floor(tonumber(value) or lo)
   return math.max(lo, math.min(hi, n))
-end
-
-local function afterSheetChange(color)
-  PCST.refreshCharacterSheetsForColor(color)
-  PCST.refreshRow(color)
 end
 
 local function disciplines(pid)
@@ -207,7 +202,6 @@ M.ops.disciplineAdd = function(color, pid, cmd)
   end
   discs[key] = { base = 1, temp = 0, powers = {} }
   S.setStateVal(discs, "playerData", pid, "stats", "disciplines")
-  afterSheetChange(color)
   return nil
 end
 
@@ -217,7 +211,6 @@ M.ops.disciplineRemove = function(color, pid, cmd)
     return "That discipline is not on the sheet"
   end
   S.setStateVal(nil, "playerData", pid, "stats", "disciplines", key)
-  afterSheetChange(color)
   return nil
 end
 
@@ -238,7 +231,6 @@ M.ops.disciplinePowerUpsert = function(color, pid, cmd)
     return writeErr
   end
   S.setStateVal(row.powers, "playerData", pid, "stats", "disciplines", cmd.key, "powers")
-  afterSheetChange(color)
   return nil
 end
 
@@ -252,7 +244,6 @@ M.ops.disciplinePowerRemove = function(color, pid, cmd)
     return err
   end
   S.setStateVal(row.powers, "playerData", pid, "stats", "disciplines", cmd.key, "powers")
-  afterSheetChange(color)
   return nil
 end
 
@@ -290,7 +281,6 @@ M.ops.ritualUpsert = function(color, pid, cmd)
     return writeErr
   end
   S.setStateVal(row[kind], "playerData", pid, "stats", "disciplines", hostKey, kind)
-  afterSheetChange(color)
   return nil
 end
 
@@ -309,7 +299,6 @@ M.ops.ritualRemove = function(color, pid, cmd)
     return err
   end
   S.setStateVal(row[kind], "playerData", pid, "stats", "disciplines", hostKey, kind)
-  afterSheetChange(color)
   return nil
 end
 
@@ -328,7 +317,6 @@ M.ops.advantageUpsert = function(color, pid, cmd)
     if PCAdv.addEntry(pid, category, entry) == nil then
       return "Could not add the advantage"
     end
-    afterSheetChange(color)
     return nil
   end
   local fromType = type(cmd.fromType) == "string" and cmd.fromType or category
@@ -346,7 +334,6 @@ M.ops.advantageUpsert = function(color, pid, cmd)
     PCAdv.deleteEntry(pid, fromType, cmd.index)
     PCAdv.addEntry(pid, category, entry)
   end
-  afterSheetChange(color)
   return nil
 end
 
@@ -356,7 +343,6 @@ M.ops.advantageDelete = function(color, pid, cmd)
     return err
   end
   PCAdv.deleteEntry(pid, cmd.type, cmd.index)
-  afterSheetChange(color)
   return nil
 end
 
@@ -372,7 +358,6 @@ M.ops.advantageDotDelta = function(color, pid, cmd)
   local maxDots = clampInt(existing.max or MAX_TITLE_DOTS, 1, MAX_TITLE_DOTS)
   local nextVal = clampInt((tonumber(existing[field]) or 0) + (tonumber(cmd.delta) or 0), 0, maxDots)
   S.setStateVal(nextVal, "playerData", pid, "stats", cmd.type, math.floor(tonumber(cmd.index)), field)
-  afterSheetChange(color)
   return nil
 end
 

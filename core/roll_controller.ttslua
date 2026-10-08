@@ -53,7 +53,6 @@ local ES   = require("lib.effective_stats")
 local Conditions = require("core.conditions")
 local RollConditionHandlers = require("core.roll_condition_handlers")
 local CD = require("lib.condition_defs")
-local PCST = require("core.pc_storyteller_panel")
 local PRTL = require("lib.pc_roll_tray_lower")
 local Sync = require("core.sync")
 local WPG = require("core.wp_reroll_glow")
@@ -2635,7 +2634,7 @@ function RC.spendWillpower(color)
     -- Apply 1 Superficial Willpower damage when Auto-WP is enabled (full tracker pipeline + HUD refresh).
     if RO.getPermanent(RO.PERM_AUTO_WP) then
         P.applyDamageOrHeal(color, "willpower", 1, 0)
-        PCST.refreshCharacterSheetsForColor(color)
+        Sync.player(color)
     end
 
     active.willpower.rerollsRemaining = active.willpower.rerollsRemaining - 1
@@ -2941,13 +2940,13 @@ function RC._applyRollConsequences(color, active)
         if not passes then
             P.applyHumanityBaseDelta(color, -1)
         end
-        PCST.refreshCharacterSheetsForColor(color)
+        Sync.player(color)
     elseif active.rollType == C.RollType.FRENZY then
         local pid = S.getPlayerID(color)
         if pid == nil then return end
         if rc == C.ResultClass.FAILURE or rc == C.ResultClass.TOTAL_FAILURE then
+            -- Conditions.setManual announces the seat (Sync.player).
             Conditions.setManual(pid, "hudFrenzy", true)
-            Sync.player(color)
         end
     end
 end
@@ -3130,8 +3129,6 @@ function RC._applyRouseOutcomeStrips(color, active)
         P.applyHumanityStainDelta(color, stainDelta)
     end
     Sync.player(color, { forceOverlays = true })
-    PCST.refreshCharacterSheetsForColor(color)
-    PCST.refreshRow(color)
 end
 
 --- Confirms Oblivion (D) choice: hunger or stain (not both).
@@ -3174,8 +3171,6 @@ function RC.confirmOblivionChoice(color, choice)
         P.applyHumanityStainDelta(color, 1)
     end
     Sync.player(color, { forceOverlays = true })
-    PCST.refreshCharacterSheetsForColor(color)
-    PCST.refreshRow(color)
     if type(active.result) == "table" then
         active.result.rouseNarrative = choiceNarrative
     end

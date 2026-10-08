@@ -1,5 +1,7 @@
 --[[
     PC tracker math, VTM5e damage overflow, humanity stains, condition sync.
+    Mutators write state only (stats + derived conditions); callers announce the seat with
+    `Sync.player(color)`.
     Agent guidance: .dev/PC Data & Tracking/PC Tracking & State Behavior.md
 ]]
 
@@ -7,7 +9,6 @@
 local P = {}
 local S = require("core.state")
 local C = require("lib.constants")
-local HO = require("core.hud_overlays")
 local Conditions = require("core.conditions")
 local Derive = require("lib.condition_derive")
 local PSC = require("lib.pc_sheet_collect")
@@ -50,10 +51,8 @@ local function humanityTrackGlyphs()
   return "_", "O", "*", "I"
 end
 
---- Push Global UI overlay visibility (UI.show/hide) after PC state changes.
-function P.refreshHudOverlays()
-  HO.syncAll()
-end
+--- Derived-condition reconcile options for mutators (no presentation).
+local STATE_ONLY = { skipPresentation = true }
 
 --- @param msg string
 local function warnGm(msg)
@@ -146,8 +145,7 @@ function P.applyDamageOrHeal(playerRef, which, superficialDelta, aggravatedDelta
   local ns, na = applyTrackDeltasV5(tr, maxBoxes, superficialDelta, aggravatedDelta)
   S.setStateVal(ns, "playerData", playerID, "stats", which, "superficial")
   S.setStateVal(na, "playerData", playerID, "stats", which, "aggravated")
-  Conditions.reconcileDerivedForPlayer(playerID)
-  Conditions.afterChange(playerID)
+  Conditions.reconcileDerivedForPlayer(playerID, STATE_ONLY)
 end
 
 --- @param playerRef any
@@ -164,8 +162,7 @@ function P.applyHumanityStainDelta(playerRef, stainDelta)
   local hu = stats.humanity
   local stains = math.max(0, (tonumber(hu.stains) or 0) + (tonumber(stainDelta) or 0))
   S.setStateVal(stains, "playerData", playerID, "stats", "humanity", "stains")
-  Conditions.reconcileDerivedForPlayer(playerID)
-  Conditions.afterChange(playerID)
+  Conditions.reconcileDerivedForPlayer(playerID, STATE_ONLY)
 end
 
 --- Whether collision creates impaired box (last humanity slot touched by stains from right).
@@ -184,8 +181,7 @@ function P.clearHumanityStains(playerRef)
     return
   end
   S.setStateVal(0, "playerData", playerID, "stats", "humanity", "stains")
-  Conditions.reconcileDerivedForPlayer(playerID)
-  Conditions.afterChange(playerID)
+  Conditions.reconcileDerivedForPlayer(playerID, STATE_ONLY)
 end
 
 --- @param playerRef any
@@ -201,8 +197,7 @@ function P.applyHumanityBaseDelta(playerRef, delta)
   end
   local b = math.max(0, math.min(10, (tonumber(hu.base) or 0) + (tonumber(delta) or 0)))
   S.setStateVal(b, "playerData", playerID, "stats", "humanity", "base")
-  Conditions.reconcileDerivedForPlayer(playerID)
-  Conditions.afterChange(playerID)
+  Conditions.reconcileDerivedForPlayer(playerID, STATE_ONLY)
 end
 
 --- Undamaged boxes on a health or willpower damage track (max − superficial − aggravated).
@@ -340,8 +335,8 @@ function P.storytellerClearTorpor(playerRef)
   if not playerID then
     return
   end
-  Conditions.clear(playerID, "torpor")
-  Conditions.reconcileDerivedForPlayer(playerID)
+  Conditions.clear(playerID, "torpor", { skipAfterChange = true })
+  Conditions.reconcileDerivedForPlayer(playerID, STATE_ONLY)
 end
 
 return P

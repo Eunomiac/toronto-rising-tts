@@ -5546,9 +5546,7 @@ function HUD_pcsDeferAutoSeat(player, value, id)
     end
     S.setStateVal(on, "connectionControls", "deferAutoSeatByColor", color)
     print(string.format("[JoinControls] Defer Auto-Seat %s = %s", color, tostring(on)))
-    if PCST and PCST.refreshRow then
-        PCST.refreshRow(color)
-    end
+    Sync.player(color)
 end
 
 --- PCs panel: persist Defer Connect per seat color. TOR-430.
@@ -5566,9 +5564,7 @@ function HUD_pcsDeferConnect(player, value, id)
     end
     S.setStateVal(on, "connectionControls", "deferConnectByColor", color)
     print(string.format("[JoinControls] Defer Connect %s = %s", color, tostring(on)))
-    if PCST and PCST.refreshRow then
-        PCST.refreshRow(color)
-    end
+    Sync.player(color)
 end
 
 --- PCs panel (Assume Connected mode only): simulate this PC connecting / disconnecting (TOR-293).
@@ -5583,7 +5579,7 @@ function HUD_pcsToggleSimulatedConnection(player, button, id)
     end
     local PlayerConnection = require("core.player_connection")
     PlayerConnection.simulateSeatConnection(color, not PlayerConnection.isSimulatedConnected(color))
-    PCST.refreshRow(color)
+    Sync.player(color)
 end
 
 --- Reset game state
@@ -6413,8 +6409,8 @@ end
 -- Called after state changes (phase, scene, etc.)
 -- Exposed globally for testing/debugging.
 -- Optional `delta` flags allow targeted refreshes:
---   phase, scene, adminLighting, soundscape, playerStats, playerHud, overlays, pcstRows, pcstSheets, gameStateOverlay
--- Optional `delta.colors` — array of seat color strings; when set, `playerStats` / `playerHud` loop only those seats.
+--   phase, scene, adminLighting, soundscape, playerHud, overlays, pcstRows, pcstSheets, gameStateOverlay
+-- Optional `delta.colors` — array of seat color strings; when set, `playerHud` loops only those seats.
 -- When omitted, all sections refresh (legacy behavior).
 -- @param delta table|nil
 function UpdateUIDisplays(delta)
@@ -6500,29 +6496,9 @@ function UpdateUIDisplays(delta)
         syncSoundscapeControls()
     end
 
-    if wants("playerStats") or wants("playerHud") then
+    if wants("playerHud") then
         M.forPlayers(function(player, color)
-            if not wantsSeatColor(color) then
-                return
-            end
-            local pid = S.getPlayerID(player) or S.getPlayerID(color)
-            local hunger = pid and S.getPlayerVal(color, "hunger") or 0
-            local willpower = 5
-            local health = 7
-            if pid then
-                local ES = require("lib.effective_stats")
-                local ctx = ES.forPlayer(pid)
-                willpower = ctx.trackerMax("willpower")
-                health = ctx.trackerMax("health")
-            end
-
-            if wants("playerStats") then
-                setValueCached("hungerVal_" .. color, tostring(hunger))
-                setValueCached("willpowerVal_" .. color, tostring(willpower))
-                setValueCached("healthVal_" .. color, tostring(health))
-            end
-
-            if wants("playerHud") then
+            if wantsSeatColor(color) then
                 -- Player HUD (Right Sidebar + Core/Reference visibility)
                 HUDP.updatePlayerUI(player, color)
             end

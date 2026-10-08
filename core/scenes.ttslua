@@ -1018,10 +1018,18 @@ local function applyRandomGenericSkybox()
     return ok == true
 end
 
+--- @return string[] seat colors whose hosted conditions changed
 local function reconcileHostedConditionsSkipPresentation()
-    local Conditions = require("core.conditions")
-    if type(Conditions.reconcileHostedForSession) == "function" then
-        Conditions.reconcileHostedForSession({ skipPresentation = true })
+    return require("core.conditions").reconcileHostedForSession({ skipPresentation = true })
+end
+
+--- Announce seats whose hosted conditions changed (sheets, PCs row, dashboard push); run after
+--- `Sync.full`, which already applied lights / overlays for every seat.
+--- @param colors string[]
+local function announceHostedConditionSeats(colors)
+    local Sync = require("core.sync")
+    for _, color in ipairs(colors) do
+        Sync.player(color)
     end
 end
 
@@ -1165,7 +1173,7 @@ function Scenes.applyDefaultNoSceneEnvironment(opts)
     if opts.activateGenericSkybox ~= true then
         applyRandomGenericSkybox()
     end
-    reconcileHostedConditionsSkipPresentation()
+    local hostedChangedSeats = reconcileHostedConditionsSkipPresentation()
 
     local GameStateOverlay = require("core.game_state_overlay")
     if type(GameStateOverlay.stopTicker) == "function" then
@@ -1176,6 +1184,7 @@ function Scenes.applyDefaultNoSceneEnvironment(opts)
     end
 
     syncFullFromMutation(opts.reason or "default_no_scene", { skipSoundscape = true })
+    announceHostedConditionSeats(hostedChangedSeats)
 
     if type(GameStateOverlay.reconcileFromState) == "function" then
         GameStateOverlay.reconcileFromState()
@@ -1207,7 +1216,7 @@ function Scenes.restoreActiveSceneWorld(opts)
     end
 
     Scenes.applyActiveSceneSoundscapeFromSession()
-    reconcileHostedConditionsSkipPresentation()
+    local hostedChangedSeats = reconcileHostedConditionsSkipPresentation()
 
     local MapPins = require("core.map_pins")
     MapPins.onSceneApplied()
@@ -1218,6 +1227,7 @@ function Scenes.restoreActiveSceneWorld(opts)
     end
 
     syncFullFromMutation(opts.reason or "restore_active_scene", { skipSoundscape = true })
+    announceHostedConditionSeats(hostedChangedSeats)
 
     if type(GameStateOverlay.stopTicker) == "function" then
         GameStateOverlay.stopTicker()

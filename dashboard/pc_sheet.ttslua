@@ -248,9 +248,15 @@ local function decodeCommand(jsonText)
   return parsed
 end
 
-local function afterTrackerChange(color)
-  PCST.refreshCharacterSheetsForColor(color)
-  PCST.refreshRow(color)
+--- Seats changed by the current `Dash.apply` batch → forceOverlays flag. Ops write state only;
+--- `Dash.apply` announces each touched seat once (`Sync.player`) after the batch.
+--- @type table<string, boolean>
+local touchedSeats = {}
+
+--- @param color string
+--- @param forceOverlays boolean|nil
+local function markTouched(color, forceOverlays)
+  touchedSeats[color] = touchedSeats[color] == true or forceOverlays == true
 end
 
 local function deepCopyValue(value)
@@ -335,8 +341,7 @@ local function applyMergedPlayerData(color, patch, deleteKeys)
   end
 
   -- Refresh presentation only — do not reshape what was just written.
-  Sync.player(color, { forceOverlays = true })
-  afterTrackerChange(color)
+  markTouched(color, true)
   return nil
 end
 
@@ -372,7 +377,6 @@ local function applyDotDelta(color, family, key, field, delta)
   else
     S.setStateVal(nextVal, "playerData", pid, "stats", pathKey, field)
   end
-  afterTrackerChange(color)
   return nil
 end
 
@@ -387,7 +391,6 @@ local function applyBadgeDelta(color, key, delta)
   local current = num(S.getStateVal("playerData", pid, "stats", "badges", key))
   local nextVal = math.max(-5, math.min(5, math.floor(current + num(delta))))
   S.setStateVal(nextVal, "playerData", pid, "stats", "badges", key)
-  afterTrackerChange(color)
   return nil
 end
 
@@ -440,8 +443,6 @@ local function applyDamageMode(color, which, mode)
     return "Invalid damage mode"
   end
   P.applyDamageOrHeal(color, which, ds, da)
-  afterTrackerChange(color)
-  P.refreshHudOverlays()
   return nil
 end
 
@@ -478,8 +479,6 @@ local function applyHumanityOp(color, kind, delta, remorse)
   else
     return "Invalid humanity kind"
   end
-  afterTrackerChange(color)
-  P.refreshHudOverlays()
   return nil
 end
 
@@ -642,8 +641,7 @@ local function applyCommand(cmd)
     local maxDots = tonumber(C.MAX_HUNGER) or 5
     local nx = math.max(0, math.min(maxDots, math.floor(cur + num(cmd.delta))))
     S.setPlayerVal(color, "hunger", nx)
-    Sync.player(color, { forceOverlays = true })
-    afterTrackerChange(color)
+    markTouched(color, true)
     return nil
   end
   if op == "desire" then
@@ -652,8 +650,6 @@ local function applyCommand(cmd)
   end
   if op == "torporClear" then
     P.storytellerClearTorpor(color)
-    afterTrackerChange(color)
-    P.refreshHudOverlays()
     return nil
   end
   if op == "toggleFrenzy" then
@@ -666,8 +662,6 @@ local function applyCommand(cmd)
     else
       Conditions.setManual(pid, "hudFrenzy", true)
     end
-    afterTrackerChange(color)
-    P.refreshHudOverlays()
     return nil
   end
   if op == "toggleBlindfold" then
@@ -686,30 +680,24 @@ local function applyCommand(cmd)
         end, 1.5)
       end
     end
-    afterTrackerChange(color)
-    P.refreshHudOverlays()
     return nil
   end
   if op == "deferAutoSeat" then
     S.setStateVal(cmd.value == true, "connectionControls", "deferAutoSeatByColor", color)
-    PCST.refreshRow(color)
     return nil
   end
   if op == "deferConnect" then
     S.setStateVal(cmd.value == true, "connectionControls", "deferConnectByColor", color)
-    PCST.refreshRow(color)
     return nil
   end
   if op == "autoSeat" then
     local Main = require("core.main")
     Main.manualAssignSeatForColor(color)
-    PCST.refreshRow(color)
     return nil
   end
   if op == "connect" then
     local Main = require("core.main")
     Main.manualRunPlayerConnect(color)
-    PCST.refreshRow(color)
     return nil
   end
   if op == "initiateRoll" then
@@ -747,11 +735,25 @@ function Dash.apply(jsonText)
   if #list == 0 then
     return encodeSnapshot({ ok = false, error = "Expected command JSON" })
   end
+  touchedSeats = {}
+  local applyErr = nil
   for i = 1, #list do
-    local applyErr = applyCommand(list[i])
+    applyErr = applyCommand(list[i])
     if applyErr ~= nil then
-      return encodeSnapshot({ ok = false, error = applyErr })
+      break
     end
+    local color = canonColor(list[i].color)
+    if color ~= nil then
+      markTouched(color, false)
+    end
+  end
+  -- Commands before a failing one already wrote state; announce those seats either way.
+  for color, forceOverlays in pairs(touchedSeats) do
+    Sync.player(color, forceOverlays and { forceOverlays = true } or nil)
+  end
+  touchedSeats = {}
+  if applyErr ~= nil then
+    return encodeSnapshot({ ok = false, error = applyErr })
   end
   return encodeSnapshot(snapshotPayload())
 end

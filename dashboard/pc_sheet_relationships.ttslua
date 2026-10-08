@@ -1,13 +1,13 @@
 --[[
   Storyteller Dashboard PCs tab — Page 4 relationship ops and the `relationships` snapshot field.
   Writes go through core.relationships (gameState.relationships); every PC linked before or
-  after the edit gets its sheets refreshed so Page 4 repaints.
+  after the edit is announced (Sync.player) so Page 4 repaints.
 ]]
 
 local M = {}
 
 local C = require("lib.constants")
-local PCST = require("core.pc_storyteller_panel")
+local Sync = require("core.sync")
 local Relationships = require("core.relationships")
 
 local function charKeyFor(pid)
@@ -21,7 +21,7 @@ end
 local function refreshColors(touched)
   for _, color in ipairs(C.PlayerColors) do
     if touched[color] then
-      PCST.refreshCharacterSheetsForColor(color)
+      Sync.player(color)
     end
   end
 end

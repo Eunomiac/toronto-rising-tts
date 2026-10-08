@@ -326,8 +326,8 @@ function Conditions.clear(playerID, conditionId, opts)
   Conditions.afterChange(playerID)
 end
 
---- Apply per-player presentation after condition mutation.
---- Mirrors `Sync.player` without requiring `core.sync` (load-time cycle: sync → hud_overlays → conditions).
+--- Announce one PC's seat after a condition mutation (`Sync.player`). Lazy require: load-time
+--- cycle sync → hud_overlays → conditions.
 --- @param playerID string
 function Conditions.afterChange(playerID)
   if playerID == C.StorytellerID then
@@ -337,47 +337,14 @@ function Conditions.afterChange(playerID)
   if type(col) ~= "string" or col == "" then
     return
   end
-
-  local L = require("core.lighting")
-  if type(L.reconcileForPlayer) == "function" then
-    L.reconcileForPlayer(col)
-  end
-
-  local HUDP = require("core.hud_player")
-  local player = Player and Player[col] or nil
-  if player ~= nil and type(HUDP.updatePlayerUI) == "function" then
-    HUDP.updatePlayerUI(player, col)
-  end
-
-  local HO = require("core.hud_overlays")
-  if type(HO.reconcileForSeat) == "function" then
-    HO.reconcileForSeat(col)
-  end
-
-  -- Frenzy overlay hides Rouse / Oblivion-Rouse bags; other conditions no-op via already-at-rest skip.
-  local DBV = require("lib.dice_bag_visibility")
-  if type(DBV.reconcileForPlayer) == "function" then
-    local active = S.getStateVal("playerData", playerID, "hud", "rollData", "active")
-    DBV.reconcileForPlayer(col, active)
-  end
-
-  if type(UpdateUIDisplays) == "function" then
-    UpdateUIDisplays({
-      playerStats = true,
-      colors = { col },
-    })
-  end
-
-  local PCST = require("core.pc_storyteller_panel")
-  if type(PCST.refreshCharacterSheetsForColor) == "function" then
-    PCST.refreshCharacterSheetsForColor(col)
-  end
+  require("core.sync").player(col)
 end
 
 --- Reconcile derived condition keys from stats + registry rules.
 --- @param playerID string
+--- @param opts table|nil `{ skipPresentation = true }` writes state only; the caller announces the seat
 --- @return boolean changed
-function Conditions.reconcileDerivedForPlayer(playerID)
+function Conditions.reconcileDerivedForPlayer(playerID, opts)
   if playerID == C.StorytellerID then
     return false
   end
@@ -414,7 +381,7 @@ function Conditions.reconcileDerivedForPlayer(playerID)
     end
   end
 
-  if changed then
+  if changed and not (type(opts) == "table" and opts.skipPresentation == true) then
     Conditions.afterChange(playerID)
   end
   return changed
@@ -621,11 +588,6 @@ function Conditions.reconcileHostedForSession(opts)
     end
   end
   return changedSeatColors
-end
-
---- @deprecated use `reconcileHostedForSession` — retained for call-site compatibility.
-function Conditions.reconcileLocationHostedForScene(opts)
-  return Conditions.reconcileHostedForSession(opts)
 end
 
 return Conditions

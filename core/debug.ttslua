@@ -2230,8 +2230,6 @@ function DEBUG.setHunger(color, value)
 
     setHungerAndSync(color, value)
     print("Set " .. color .. " player (ID: " .. playerID .. ") hunger to " .. tostring(value))
-
-    UpdateUIDisplays()
 end
 
 --- Debug helper: Move an object to a world-angle position around table center
@@ -3053,8 +3051,7 @@ function DEBUG.setHumanityStains(color, value)
     local n = math.max(0, math.floor(value))
     S.setStateVal(n, "playerData", pid, "stats", "humanity", "stains")
     local Conditions = require("core.conditions")
-    Conditions.reconcileDerivedForPlayer(pid)
-    Conditions.afterChange(pid)
+    Conditions.reconcileDerivedForPlayer(pid, { skipPresentation = true })
     Sync.player(color)
     print(string.format("[setHumanityStains] %s stains=%d", color, n))
 end
@@ -3076,8 +3073,7 @@ function DEBUG.setWillpowerSuperficial(color, value)
     local n = math.max(0, math.floor(value))
     S.setStateVal(n, "playerData", pid, "stats", "willpower", "superficial")
     local Conditions = require("core.conditions")
-    Conditions.reconcileDerivedForPlayer(pid)
-    Conditions.afterChange(pid)
+    Conditions.reconcileDerivedForPlayer(pid, { skipPresentation = true })
     Sync.player(color)
     print(string.format("[setWillpowerSuperficial] %s superficial=%d", color, n))
 end
