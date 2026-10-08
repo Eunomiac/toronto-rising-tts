@@ -1,0 +1,141 @@
+--[[
+    Character-sheet slice fingerprints (Global VM only).
+
+    `PCST.refreshCharacterSheetsForColor` compares these per page before calling into any CSHEET
+    object, so a refresh where nothing a page shows has changed costs no cross-VM round trips.
+
+    Each slice covers everything that page (and its decals) reads:
+      [1] / [2]  stats (minus hunger + badges), conditions, resolved statChanges (includes
+                 scene-hosted conditions), seat color, desire, current XP
+      [3]        backgrounds / merits / flaws + project stake quantity per entry
+      [4]        relationship entries linked to the character
+      [5]        Projects.fingerprintPage5 (already covers present-day dates)
+      [6]        live-session XP block, xpLogPage, sessionNum
+    Pages 7-8 paint nothing and are never called from Global.
+]]
+
+local CSL = {}
+
+local C = require("lib.constants")
+local S = require("core.state")
+
+--- Pages refreshed from Global, in call order.
+CSL.PAGES = { 1, 2, 3, 4, 5, 6 }
+
+--- @type table<string, boolean>
+local STATS_SKIP_KEYS = { hunger = true, badges = true }
+
+local TRAIT_KEYS = { "backgrounds", "merits", "flaws" }
+
+--- Deterministic serialization (sorted keys). `skip` applies at every depth.
+--- @param v any
+--- @param out table string parts
+--- @param skip table<string, boolean>|nil
+local function serialize(v, out, skip)
+    local t = type(v)
+    if t ~= "table" then
+        out[#out + 1] = t == "string" and ("'" .. v) or tostring(v)
+        return
+    end
+    local keys = {}
+    for k, _ in pairs(v) do
+        if not (skip ~= nil and type(k) == "string" and skip[k]) then
+            keys[#keys + 1] = k
+        end
+    end
+    table.sort(keys, function(a, b)
+        return tostring(a) < tostring(b)
+    end)
+    out[#out + 1] = "{"
+    for i = 1, #keys do
+        local k = keys[i]
+        out[#out + 1] = tostring(k)
+        out[#out + 1] = "="
+        serialize(v[k], out, skip)
+        out[#out + 1] = ";"
+    end
+    out[#out + 1] = "}"
+end
+
+--- @param v any
+--- @param skip table<string, boolean>|nil
+--- @return string
+local function fp(v, skip)
+    local out = {}
+    serialize(v, out, skip)
+    return table.concat(out)
+end
+
+--- @param stats table
+--- @param charKey string|nil
+--- @return string
+local function traitsSlice(stats, charKey)
+    local parts = { tostring(charKey) }
+    local Projects = require("core.projects")
+    for _, traitKey in ipairs(TRAIT_KEYS) do
+        local list = stats[traitKey]
+        parts[#parts + 1] = traitKey
+        parts[#parts + 1] = fp(list, nil)
+        if type(list) == "table" and type(charKey) == "string" then
+            for i = 1, #list do
+                local entry = list[i]
+                if type(entry) == "table" then
+                    parts[#parts + 1] = tostring(
+                        Projects.stakeQtyForAdvantage(charKey, entry.name, entry.focus, nil)
+                    )
+                end
+            end
+        end
+    end
+    return table.concat(parts, "\1")
+end
+
+--- Per-page fingerprints for one seat, or nil when the seat has no PC (unseated / Storyteller).
+--- @param color string
+--- @return table<number, string>|nil
+function CSL.compute(color)
+    local pid = C.GetPlayerIDOrNil(color)
+    if pid == nil or pid == C.StorytellerID then
+        return nil
+    end
+    local pd = S.getPlayerData(pid)
+    if type(pd) ~= "table" or type(pd.stats) ~= "table" then
+        return nil
+    end
+    local stats = pd.stats
+    local XpLog = require("core.xp_log")
+
+    local main = table.concat({
+        color,
+        fp(stats, STATS_SKIP_KEYS),
+        fp(pd.conditions, nil),
+        fp(require("lib.effective_stats").forPlayer(pid).statChanges, nil),
+        tostring(pd.desire),
+        tostring(XpLog.getCurrentXp(pid)),
+    }, "\1")
+
+    local charKey = require("core.projects").charKeyForColor(color)
+    local relCharKey = pd.charKey
+    local rel = ""
+    if type(relCharKey) == "string" and relCharKey ~= "" then
+        rel = relCharKey .. "\1" .. fp(require("core.relationships").listForChar(relCharKey), nil)
+    end
+
+    local sessionNum = math.floor(tonumber(S.getStateVal("sessionNum")) or 1)
+    local xp = table.concat({
+        tostring(sessionNum),
+        tostring(pd.xpLogPage),
+        fp(XpLog.getSessionBlock(pid, sessionNum), nil),
+    }, "\1")
+
+    return {
+        [1] = main,
+        [2] = main,
+        [3] = traitsSlice(stats, charKey),
+        [4] = rel,
+        [5] = require("core.projects").fingerprintPage5(color),
+        [6] = xp,
+    }
+end
+
+return CSL

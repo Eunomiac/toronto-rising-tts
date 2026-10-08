@@ -11,6 +11,7 @@ local PCS = require("lib.pcs_data")
 local U = require("lib.util")
 local Sync = require("core.sync")
 local CI = require("lib.csheet_identity")
+local CSL = require("core.csheet_slices")
 local HUDP = require("core.hud_player")
 local XpLog = require("core.xp_log")
 local PlayerConnection = require("core.player_connection")
@@ -63,9 +64,26 @@ local ACTIONS_SKIP_OVERLAY_REFRESH = {
   desireClear = true,
 }
 
---- Scan character sheets for a seat color (GM Notes `CSHEET_PAGE_*_<COLOR>`) and refresh embedded UI.
+--- Last refreshed slice fingerprint per seat color and page (`CSL.compute`).
+--- @type table<string, table<number, string>>
+local lastSheetSliceFp = {}
+
+--- Forget sheet slice fingerprints so the next refresh calls every page (one color, or all).
+--- @param seatColor string|nil
+function PCST.invalidateCharacterSheetCache(seatColor)
+  if type(seatColor) == "string" then
+    lastSheetSliceFp[seatColor] = nil
+  else
+    lastSheetSliceFp = {}
+  end
+end
+
+--- Refresh the CSHEET pages for a seat color whose slice changed since the last refresh.
+--- Page 3 gets `forceRebuild` when its slice changed, because its own fingerprint cannot see
+--- project stake quantities.
 --- @param seatColor string e.g. "Brown"
-function PCST.refreshCharacterSheetsForColor(seatColor)
+--- @param opts table|nil `{ force = true }` calls every page regardless of slice fingerprints
+function PCST.refreshCharacterSheetsForColor(seatColor, opts)
   if type(seatColor) ~= "string" then
     return
   end
@@ -73,15 +91,34 @@ function PCST.refreshCharacterSheetsForColor(seatColor)
   if tag == nil then
     return
   end
-  local tagged = getObjectsWithTag(tag)
-  if type(tagged) ~= "table" then
-    return
+  local force = type(opts) == "table" and opts.force == true
+  local slices = CSL.compute(seatColor)
+  local prev = lastSheetSliceFp[seatColor]
+  local changed = {}
+  local anyChanged = false
+  for _, pageNum in ipairs(CSL.PAGES) do
+    local now = slices ~= nil and slices[pageNum] or nil
+    if force or slices == nil or prev == nil or prev[pageNum] ~= now then
+      changed[pageNum] = true
+      anyChanged = true
+    end
   end
-  for _, obj in ipairs(tagged) do
-    if obj ~= nil then
-      local _, pageColor = CI.readPageRoleFromObject(obj)
-      if type(pageColor) == "string" and CI.seatColorMatchesPageRole(seatColor, pageColor) then
-        obj.call("refreshFromGameState")
+  lastSheetSliceFp[seatColor] = slices
+  if anyChanged then
+    local tagged = getObjectsWithTag(tag)
+    if type(tagged) == "table" then
+      for _, obj in ipairs(tagged) do
+        if obj ~= nil then
+          local pageNum, pageColor = CI.readPageRoleFromObject(obj)
+          if type(pageColor) == "string" and changed[pageNum]
+              and CI.seatColorMatchesPageRole(seatColor, pageColor) then
+            if pageNum == 3 and prev ~= nil then
+              obj.call("refreshFromGameState", { forceRebuild = true })
+            else
+              obj.call("refreshFromGameState")
+            end
+          end
+        end
       end
     end
   end
@@ -89,9 +126,10 @@ function PCST.refreshCharacterSheetsForColor(seatColor)
 end
 
 --- Refresh every seat's CSHEET objects (after scene/location reconcile with skipPresentation).
-function PCST.refreshAllCharacterSheets()
+--- @param opts table|nil passed to `refreshCharacterSheetsForColor`
+function PCST.refreshAllCharacterSheets(opts)
   for _, col in ipairs(C.PlayerColors or {}) do
-    PCST.refreshCharacterSheetsForColor(col)
+    PCST.refreshCharacterSheetsForColor(col, opts)
   end
 end
 
@@ -383,19 +421,4 @@ function PCST.onHudClick(player, _button, id)
     P.refreshHudOverlays()
   end
 end
-
---- Paint page 6 live XP slots + pagination (no remount).
---- @param color string
-function PCST.paintXpLogPage6ForColor(color)
-  if type(color) ~= "string" then
-    return
-  end
-  if Global ~= nil and type(Global.call) == "function" then
-    Global.call("GlobalPaintXpLogPage6", { color = color })
-  else
-    local XpSheet = require("core.xp_sheet")
-    XpSheet.paintForColor(color)
-  end
-end
-
 return PCST

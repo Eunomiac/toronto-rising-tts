@@ -100,16 +100,13 @@ function M.onField(id, value)
   end
 end
 
---- Repaint PCs panel rows, sheets and Page 6 after Experience Log writes (also used by the dashboard).
+--- Repaint PCs panel rows and sheets (page 6 included) after Experience Log writes (also used by the dashboard).
 --- @param colors string[]
 local function afterMutation(colors)
   for i = 1, #colors do
     local color = colors[i]
     PCST.refreshRow(color)
     PCST.refreshCharacterSheetsForColor(color)
-    if type(PCST.paintXpLogPage6ForColor) == "function" then
-      PCST.paintXpLogPage6ForColor(color)
-    end
   end
 end
 

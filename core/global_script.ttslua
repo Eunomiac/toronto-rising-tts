@@ -5357,6 +5357,7 @@ function HUD_sessionNumInput(player, value, id)
     end
     UpdateUIDisplays({ phase = true, gameStateOverlay = true })
     syncStorytellerPhaseButtons()
+    PCST.refreshAllCharacterSheets()
 end
 
 --- Session name InputField (TOR-98). Shown on the End overlay datetime row.
@@ -6535,7 +6536,8 @@ function UpdateUIDisplays(delta)
     end
 
     if wants("pcstSheets") and PCST and PCST.refreshAllCharacterSheets then
-        PCST.refreshAllCharacterSheets()
+        -- Undelta'd UpdateUIDisplays is the repair path: bypass sheet slice fingerprints.
+        PCST.refreshAllCharacterSheets(refreshAll and { force = true } or nil)
     end
 
     if refreshAll or wants("gameStateOverlay") or wants("phase") or wants("scenesPanel") then

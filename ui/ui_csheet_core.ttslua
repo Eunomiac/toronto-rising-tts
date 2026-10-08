@@ -883,7 +883,12 @@ function CSHEET.onLoad()
   end, 30)
 end
 
-function CSHEET.refreshFromGameState()
+--- @param params table|nil `{ forceRebuild = true }` rebuilds this page's dynamic XML even when its
+--- stats fingerprint is unchanged (Global decides; page 3 stake quantities live outside stats).
+function CSHEET.refreshFromGameState(params)
+  if type(params) == "table" and params.forceRebuild == true and pageNum ~= nil then
+    lastPageDynamicXmlFingerprint[pageNum] = nil
+  end
   refreshCharacterSheetUi()
 end
 
@@ -959,8 +964,8 @@ function onPageInnerClick(player, value, id)
   CSHEET.onPageInnerClick(player, value, id)
 end
 
-function refreshFromGameState()
-  CSHEET.refreshFromGameState()
+function refreshFromGameState(params)
+  CSHEET.refreshFromGameState(params)
 end
 
 --- Desire InputField (page1): live typed text only arrives here (TOR-97).

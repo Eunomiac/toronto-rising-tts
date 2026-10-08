@@ -337,9 +337,6 @@ local function applyMergedPlayerData(color, patch, deleteKeys)
   -- Refresh presentation only — do not reshape what was just written.
   Sync.player(color, { forceOverlays = true })
   afterTrackerChange(color)
-  if type(PCST.paintXpLogPage6ForColor) == "function" then
-    PCST.paintXpLogPage6ForColor(color)
-  end
   return nil
 end
 
