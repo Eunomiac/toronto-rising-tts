@@ -12,7 +12,7 @@ Source of truth:
 - author marks in the **You** column below (they override the agent's suggestion)
 - current behavior: `core/storyteller_scenes_panel.ttslua`, `core/scene_library.ttslua`, `core/npc_gameboard*.ttslua`, `core/control_board_preview.ttslua`, `core/narrative_clock_lerp.ttslua`, `.dev/storyteller-dashboard/src/client/scenesTab.ts`
 
-Status: current — round 0 (author priorities in; follow-up questions open)
+Status: current — round 0 complete (all questions answered); round 1 sketches next
 
 ## What this is
 
@@ -308,7 +308,7 @@ Answer inline the same way, with a line starting **Answer:**.
 These summarise the answers above. Round 1 sketches follow them.
 
 **Data and safety**
-- The dashboard owns the scene library as a JSON file on disk. It stays git-ignored, because the repo is public. Term tooltips also stay git-ignored. History comes from local backups (see last questions, item 1).
+- The dashboard owns the scene library as a JSON file on disk. It stays git-ignored, because the repo is public. Term tooltips also stay git-ignored. History comes from local backups (see **Settled in the last round** below).
 - Use double-confirm buttons wherever a careless click could overwrite or clear data. The button turns red, and a second click within one to two seconds acts.
 - Button labels say exactly what they do. Never a bare "Apply".
 
@@ -354,26 +354,13 @@ These summarise the answers above. Round 1 sketches follow them.
 - The debug tools and the board reticule are actively hidden.
 - The Soundscape panel moves into this tab (section 7a). Your blank marks there accept my suggestions.
 
-## Last few questions
-
-1. **Backup location.** Where should the dashboard back up the scene library, term tooltips and weather overrides? Options:
-   - (a) a `Dashboard Data` folder inside your existing TTS backup folder (`!! Backup Saves`, already set in `tts-assets.config.json`);
-   - (b) somewhere else you name.
-
-   My plan is a timestamped copy after changes, at most once every 10 minutes, keeping the last 50 copies plus one per day.
-
-2. **Weather override length.** Since overrides belong to the timeline, how long does one last?
-   - (a) You set a start and end time ("thunderstorm from 11 pm to 3 am").
-   - (b) From the moment you set it until the next dawn.
-   - (c) From the moment you set it until you clear it.
-
-   Also still open from before: should snow be added in TTS as part of this work, or stay hidden for now?
-
-3. **Stage NPCs tab.** Your answer says the generic NPCs tab merges into the Stage NPCs tab. The dashboard's **Stage NPCs** tab already *is* the generic NPC grid, so I want to be sure I read it right. I think you mean: the separate Stage NPCs tab goes away, and its grid (search, saved tags, hover preview) becomes the **Generic NPCs** section inside the new Scenes tab. Correct?
-
-4. **In-game token placement.** You said "yes to both". I read that as: on-stage NPC tokens appear on the in-game board in positions that mirror the dashboard layout (then you can move them), and PC tokens are removed. Correct?
-
-5. **NPC rolls from the dashboard.** You were right, sorry. Dropping an NPC token on a Storyteller dice bag starts a Storyteller roll (`core/storyteller_rolls.ttslua`). The bag decides the roll type: standard, discipline, willpower, frenzy, rouse, remorse / Oblivion rouse, or werewolf for werewolf-tagged NPCs. Up to three rolls can be open at once in the Storyteller dice drawers. For this redesign, I'd have the dashboard **start** the roll: right-click, pick the roll type. Building the pool and pressing Roll would stay in TTS's existing roll panels for now. Is that the right scope? And should the dashboard show which NPCs have an open roll in a drawer, for example with a die badge on their token?
+**Settled in the last round**
+- Backups go to a `Dashboard Data` folder inside the configured `backupDir` (`!! Backup Saves`). The dashboard writes a timestamped copy after changes, at most once every 10 minutes, and keeps the last 50 copies plus one per day. This covers the scene library, term tooltips, weather overrides and in-progress preview panels.
+- A weather override lasts from the moment it's set **until the next dawn**, then the schedule resumes.
+- Snow stays hidden until TTS supports it. That's a separate later decision.
+- The **Stage NPCs** tab is merged into the new Scenes tab as one of its components, and the separate tab goes away.
+- On-stage NPC tokens appear on the in-game board in positions that mirror the dashboard layout, at a larger size, and you can then move them freely. PC tokens are removed from the in-game board.
+- **Rolls:** every Storyteller-facing roll tool (choosing a roll type, building the pool, rolling, the three Storyteller dice drawers) eventually moves to the dashboard, as a **later step** after this redesign. For now, layouts only **reserve room** for a roll area and show where right-clicking a character would start a roll. The roll tools themselves aren't designed in this round.
 
 ## Next rounds
 
