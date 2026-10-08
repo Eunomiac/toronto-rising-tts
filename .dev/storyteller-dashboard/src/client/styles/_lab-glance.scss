@@ -1450,11 +1450,10 @@ $lab-queued: #e8c547;
     cursor: pointer;
   }
 
-  // Seat pitch (headshot + border + gap) matches CAROUSEL_PITCH in glance.tsx.
+  // The gap is set inline from CAROUSEL_GAP in glance.tsx, which also steps the ring.
   &-track {
     position: relative;
     display: flex;
-    gap: 4px;
   }
 
   &-pc {

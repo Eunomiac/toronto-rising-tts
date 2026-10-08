@@ -1925,8 +1925,10 @@ const SPOTLIGHT_ORDER: readonly { readonly color: keyof typeof SEAT_ACCENT; read
   { color: "Purple", characterKey: "blackCaesar" }
 ];
 
-/** Distance between carousel seats: headshot, its border, and the gap. */
-const CAROUSEL_PITCH = 34;
+/** A carousel seat is the 24px headshot inside a 2px border; the gap is set here so the ring's step always matches it. */
+const CAROUSEL_SEAT = 28;
+const CAROUSEL_GAP = 4;
+const CAROUSEL_PITCH = CAROUSEL_SEAT + CAROUSEL_GAP;
 
 /** Mirrors the TTS Spotlight controls: PCs keep their places; ‹ and › (or a click) move the glowing ring. */
 const SpotlightCarousel = (): ReactElement => {
@@ -1937,7 +1939,7 @@ const SpotlightCarousel = (): ReactElement => {
   return (
     <span className="lab-carousel">
       <button type="button" className="lab-carousel-step" title="Previous PC" onClick={() => step(-1)}>‹</button>
-      <span className="lab-carousel-track">
+      <span className="lab-carousel-track" style={{ gap: CAROUSEL_GAP }}>
         {SPOTLIGHT_ORDER.map((pc, index) => (
           <button
             key={pc.color}
