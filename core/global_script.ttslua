@@ -1741,6 +1741,21 @@ function GlobalDashboardPcSheetApply(params)
     return Dash.apply(jsonText)
 end
 
+--- Storyteller Dashboard Scenes tab: phase, spotlight, clock, soundscape, seat presence, scene play/end.
+--- @param params table|string `{ json = string }` (one op or an array of ops; see `dashboard/scenes.ttslua`)
+--- @return string JSON `{ ok, error? }`
+function GlobalDashboardScenesApply(params)
+    local refusal = dashboardLoadingRefusal()
+    if refusal then
+        return refusal
+    end
+    local jsonText = params
+    if type(params) == "table" then
+        jsonText = params.json or params[1]
+    end
+    return require("dashboard.scenes").apply(jsonText)
+end
+
 --- Storyteller Dashboard sheet Page 5: every project with Lua-derived phase/stake/die/date values.
 --- @return string JSON
 function GlobalDashboardProjectsSnapshot()

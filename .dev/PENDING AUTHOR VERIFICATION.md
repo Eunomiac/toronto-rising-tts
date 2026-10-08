@@ -172,6 +172,20 @@ _Last populated: 2026-10-08 — /tr-inbox cleared eight author-confirmed rows: T
 
   Step 1 should show no `DashPush.world` lines (unless the clock happened to reach a new hour, which shows one `clock` and one `scene` line). Each of steps 2 to 5 should show `DashPush.world … sent` once for each kind of update that changed: `clock` in step 2, `seats` in step 3, `soundscape` in step 4 (a few lines while you drag is fine), `phase` and `clock` in step 5. Anything that did not change in that step shows `skipped` or nothing at all.
 
+#### TOR-680 — The dashboard's new Scenes tab can drive TTS
+
+**Context:** The dashboard's first tab is now **Scenes**, the Lab layout you designed, drawn from what TTS broadcasts. It can now also send commands back: advance the phase, turn the spotlight carousel, switch real time on or off and pick its speed, move the scene clock, set present day, change music, featured track, ambience and volumes, stop all sound, take a seated character out of the scene or bring them back, and end the scene. Each one calls the same TTS code as the in-game button. The dusk and dawn times in the clock panel and the temperature in the weather panel now come from TTS too. Two small in-game changes ride along: the in-game Scenes panel's seat toggle and real-time toggle now share their code with the dashboard, so please also click each of them once in TTS.
+
+**How to verify:** Restart the dashboard server (`npm run dev`), then Save & Play, and sit at the Storyteller seat. Open the dashboard's **Scenes** tab. Then try each of these and watch both TTS and the dashboard:
+
+1. **Sound:** drag the Music slider. TTS's music volume should follow, and the slider should not jump back while you drag. Pick **Combat** in the music list; the music should change and the list should stay on Combat. Pick a featured track and press ▶, then ■. Click the Ambient button and choose another loop.
+2. **Clock:** click the small clock button at the top right of the clock panel. Real time should start in TTS at 2×. Right-click it and pick 5×. Click it again to stop. Then drag the moon to another time tonight and press the ▶ that appears: the TTS clock should animate to that time and the dashboard should follow. The dusk and dawn times in the bottom corners should look right for the date.
+3. **Seats:** right-click a seated PC on the stage drawing. That PC should go dark in TTS (out of the scene) and look absent on the dashboard. Right-click again to bring them back.
+4. **Phase:** from Intermission, click the Advance button twice. TTS should move to Play. In the Spotlight phase, click › and then a headshot; the TTS spotlight carousel should turn each time.
+5. **In TTS itself:** open the Storyteller Scenes panel, click a seat's presence toggle and the real-time clock toggle once each. Both should work as before.
+
+If something fails, the dashboard shows TTS's message in the right-hand column with an **OK** button.
+
 ### High — dice and rolls
 
 #### TOR-674 — Rouse checks open without waiting, and the result is as short as a quick Rouse

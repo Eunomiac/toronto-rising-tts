@@ -1,0 +1,237 @@
+--[[
+  Storyteller Dashboard Scenes tab commands (Global VM only).
+
+  `Dash.apply(jsonText)` runs one op or an array of ops in order and stops at the first failure.
+  Ops call the same mutation + sync entry points as the in-game HUD; the live push channel then
+  carries the resulting world slices back to the dashboard, so replies are only `{ ok, error? }`.
+
+  Ops (field `op`):
+    phaseAdvance                          next top-level phase (Intermission → Play → Spotlight → End)
+    playSubPhase      subPhase            Play subphase
+    spotlightRotate   delta               turn the carousel (Spotlight phase only)
+    spotlightFront    color               bring that PC to the front
+    realTime          running, speed?     live real-time clock on/off and narrative minutes per minute
+    clockTo           datetime            animate the live scene clock to a datetime
+    presentDay        datetime            set chronicle present day
+    musicMood         mood                background music mood (`main` / `combat` / `intrigue`)
+    musicSilent                           suppress background music
+    laneVolume        lane, volume        Storyteller lane volume 0..1
+    featuredPlay      key                 featured track
+    featuredStop                          stop featured, background resumes
+    ambience          key                 location ambience (`none` stops it)
+    stopAll                               silence every soundscape layer
+    seatPresence      seat, present       narrative presence of an occupied seat (never disconnection)
+    playScene         key, clockMode?     select a library scene and apply it to the table
+    endScene                              end the live scene
+
+  Several in-game entry points are Steam-gated to the Storyteller; ops that reach them pass the
+  connected Storyteller player and fail when the Storyteller is not in the game.
+
+  Design: .dev/Storyteller Dashboard Docs/Listening to TTS.md § Commands
+]]
+
+local Dash = {}
+
+local U = require("lib.util")
+local S = require("core.state")
+
+--- @param payload table
+--- @return string
+local function encodeReply(payload)
+  if JSON == nil or type(JSON.encode) ~= "function" then
+    error("dashboard.scenes: JSON.encode unavailable")
+  end
+  return JSON.encode(payload)
+end
+
+--- @return any|nil player
+local function storytellerPlayer()
+  for _, p in ipairs(Player.getPlayers()) do
+    if U.isStorytellerSteamPlayer(p) then
+      return p
+    end
+  end
+  return nil
+end
+
+--- @param ok boolean
+--- @param message string|nil
+--- @return string|nil error
+local function soundResult(ok, message)
+  local SS = require("core.soundscape")
+  SS.commitEagerSteadyState(ok)
+  UpdateUIDisplays({ soundscape = true })
+  if not ok then
+    return tostring(message or "Soundscape command failed.")
+  end
+  return nil
+end
+
+--- @param dt any
+--- @return table|nil
+local function datetimeArg(dt)
+  if type(dt) ~= "table" then
+    return nil
+  end
+  local out = {
+    year = tonumber(dt.year),
+    month = tonumber(dt.month),
+    day = tonumber(dt.day),
+    hour = tonumber(dt.hour),
+    minute = tonumber(dt.minute),
+  }
+  if out.year == nil or out.month == nil or out.day == nil or out.hour == nil or out.minute == nil then
+    return nil
+  end
+  return out
+end
+
+--- @param cmd table
+--- @return string|nil error
+local function applyCommand(cmd)
+  local op = cmd.op
+
+  if op == "phaseAdvance" then
+    local Phases = require("core.phases")
+    if Phases.isAdvancing() then
+      return "A phase change is already running."
+    end
+    if Phases.advanceNext() ~= true then
+      return "TTS refused the phase change (see the in-game Storyteller alert)."
+    end
+    return nil
+  end
+  if op == "playSubPhase" then
+    if require("core.phases").setPlaySubPhase(cmd.subPhase) ~= true then
+      return "Could not switch to subphase `" .. tostring(cmd.subPhase) .. "`."
+    end
+    return nil
+  end
+
+  if op == "spotlightRotate" then
+    return require("core.spotlight").rotateBy(cmd.delta)
+  end
+  if op == "spotlightFront" then
+    return require("core.spotlight").bringToFront(cmd.color)
+  end
+
+  if op == "realTime" then
+    return require("core.storyteller_scenes_panel").setLiveRealTimeClock(cmd.running == true, tonumber(cmd.speed))
+  end
+  if op == "clockTo" then
+    local dt = datetimeArg(cmd.datetime)
+    if dt == nil then
+      return "clockTo needs a full datetime."
+    end
+    local ok, err = require("core.narrative_clock_lerp").startToTarget(dt)
+    if not ok then
+      return tostring(err)
+    end
+    return nil
+  end
+  if op == "presentDay" then
+    local dt = datetimeArg(cmd.datetime)
+    if dt == nil then
+      return "presentDay needs a full datetime."
+    end
+    local ok, err = require("core.present_day_clock").setPresentDay(dt)
+    if not ok then
+      return tostring(err)
+    end
+    UpdateUIDisplays({ gameStateOverlay = true })
+    return nil
+  end
+
+  local SS = require("core.soundscape")
+  if op == "musicMood" then
+    return soundResult(SS.setMusicMood(cmd.mood))
+  end
+  if op == "musicSilent" then
+    return soundResult(SS.setLocationMusic("none"))
+  end
+  if op == "laneVolume" then
+    local volume = tonumber(cmd.volume)
+    if volume == nil then
+      return "laneVolume needs a volume."
+    end
+    local ok, message = SS.setStorytellerLaneVolume(cmd.lane, math.max(0, math.min(1, volume)))
+    UpdateUIDisplays({ soundscape = true })
+    if not ok then
+      return tostring(message)
+    end
+    return nil
+  end
+  if op == "featuredPlay" then
+    local ok, message = SS.playFeaturedMusic(cmd.key)
+    UpdateUIDisplays({ soundscape = true })
+    if not ok then
+      return tostring(message)
+    end
+    return nil
+  end
+  if op == "featuredStop" then
+    local ok, message = SS.stopFeaturedMusic()
+    UpdateUIDisplays({ soundscape = true })
+    if not ok then
+      return tostring(message)
+    end
+    return nil
+  end
+  if op == "ambience" then
+    return soundResult(SS.setLocationAudio(type(cmd.key) == "string" and cmd.key or "none"))
+  end
+  if op == "stopAll" then
+    return soundResult(SS.stopAll())
+  end
+
+  if op == "seatPresence" then
+    return require("core.storyteller_scenes_panel").setLiveSeatPresence(cmd.seat, cmd.present == true)
+  end
+
+  if op == "playScene" or op == "endScene" then
+    local player = storytellerPlayer()
+    if player == nil then
+      return "The Storyteller must be in the game for this command."
+    end
+    local Panel = require("core.storyteller_scenes_panel")
+    if op == "endScene" then
+      Panel.endSceneNarrative(player)
+      return nil
+    end
+    if type(cmd.key) ~= "string" or type(S.getStateVal("sceneLibrary", "scenes", cmd.key)) ~= "table" then
+      return "No library scene `" .. tostring(cmd.key) .. "`."
+    end
+    S.setStateVal(cmd.key, "sceneLibrary", "activeKey")
+    S.validateState()
+    Panel.refresh()
+    Panel.applyActiveLibraryScene(player, type(cmd.clockMode) == "string" and cmd.clockMode or "scene")
+    return nil
+  end
+
+  return "Unknown op: " .. tostring(op)
+end
+
+--- @param jsonText string one op object or an array of ops
+--- @return string JSON `{ ok = true }` or `{ ok = false, error = string }`
+function Dash.apply(jsonText)
+  if type(jsonText) ~= "string" or jsonText == "" then
+    return encodeReply({ ok = false, error = "Expected command JSON" })
+  end
+  local parsed = JSON.decode(jsonText)
+  if type(parsed) ~= "table" then
+    return encodeReply({ ok = false, error = "Command JSON did not decode to a table" })
+  end
+  local list = type(parsed.op) == "string" and { parsed } or parsed
+  if #list == 0 then
+    return encodeReply({ ok = false, error = "Expected command JSON" })
+  end
+  for i = 1, #list do
+    local err = applyCommand(list[i])
+    if err ~= nil then
+      return encodeReply({ ok = false, error = err, failedIndex = i })
+    end
+  end
+  return encodeReply({ ok = true })
+end
+
+return Dash

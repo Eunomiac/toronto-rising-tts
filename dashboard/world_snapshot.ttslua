@@ -104,6 +104,17 @@ local function buildClock()
     and active.useRealTime == true
     and speed > 0
     and require("core.game_state_overlay").isTickerRunning() == true
+  -- Night-block sun times and scheduled temperature for the running clock's date and hour; they only
+  -- change at hour rollovers, which already re-push this slice.
+  local now = clockDatetime(active)
+  local dusk, dawn, temperatureC
+  if now ~= nil and now.year ~= nil then
+    local Lerp = require("core.narrative_clock_lerp")
+    dusk = clockDatetime(Lerp.resolveDawnDuskTarget(now, 0, false))
+    dawn = clockDatetime(Lerp.resolveDawnDuskTarget(now, 0, true))
+    local resolved = require("lib.chronicle_weather").resolveForClock(now.month, now.day, now.hour)
+    temperatureC = type(resolved) == "table" and tonumber(resolved.tempC) or nil
+  end
   return {
     activeClock = downtime and "downtime" or "scene",
     running = running,
@@ -113,6 +124,9 @@ local function buildClock()
     scene = clockDatetime(sceneClock),
     downtime = downtime and clockDatetime(downtimeClock) or nil,
     presentDay = clockDatetime(require("core.present_day_clock").getPresentDay()),
+    dusk = dusk,
+    dawn = dawn,
+    temperatureC = temperatureC,
   }
 end
 

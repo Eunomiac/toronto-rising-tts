@@ -1133,6 +1133,34 @@ function Spotlight.applyExitWorld()
     return true, nil
 end
 
+--- Turns the spotlight carousel by `delta` places (Storyteller Dashboard; caller owns actor identity).
+--- @param delta integer
+--- @return string|nil error
+function Spotlight.rotateBy(delta)
+    if not isSpotlightPhase() then
+        return "The spotlight carousel only turns during the Spotlight phase."
+    end
+    rotateByDelta(math.floor(tonumber(delta) or 0))
+    return nil
+end
+
+--- Brings the PC seated at `color` to the front of the carousel.
+--- @param color string
+--- @return string|nil error
+function Spotlight.bringToFront(color)
+    if not isSpotlightPhase() then
+        return "The spotlight carousel only turns during the Spotlight phase."
+    end
+    local rec = ensureSpotlightState()
+    for i, c in ipairs(rec.order) do
+        if c == color then
+            rotateByDelta(i - rec.frontIndex)
+            return nil
+        end
+    end
+    return "`" .. tostring(color) .. "` is not in the spotlight carousel."
+end
+
 --- @param player any
 --- @param id string
 function Spotlight.onHudClick(player, id)

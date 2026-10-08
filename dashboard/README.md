@@ -9,7 +9,8 @@ Execute-lua modules used by the Storyteller Dashboard (`.dev/storyteller-dashboa
 | `pc_sheet_xp.ttslua` | `dashboard.pc_sheet_xp` | none — `EXTENSIONS` (Experience Log append / Apply to All / undo, `lastXpEntry`) |
 | `pc_sheet_relationships.ttslua` | `dashboard.pc_sheet_relationships` | none — `EXTENSIONS` (Page 4 `relationshipUpsert` / `relationshipDelete` via `core.relationships`, `relationships` snapshot rows) |
 | `projects.ttslua` | `dashboard.projects` | `GlobalDashboardProjectsSnapshot` / `GlobalDashboardProjectsApply` — sheet Page 5 projects (own snapshot, not a seat extension: projects span owners and the coterie) |
-| `world_snapshot.ttslua` | `dashboard.world_snapshot` | `GlobalDashboardWorldSnapshot` — phase, scene, clock anchor, soundscape and seats slices; the same builders feed the world push topics |
+| `world_snapshot.ttslua` | `dashboard.world_snapshot` | `GlobalDashboardWorldSnapshot` — phase, scene, clock anchor (plus tonight's dusk/dawn and scheduled temperature), soundscape and seats slices; the same builders feed the world push topics |
+| `scenes.ttslua` | `dashboard.scenes` | `GlobalDashboardScenesApply` — Scenes tab commands (phase, spotlight, clock, soundscape, seat presence, play/end scene); replies `{ ok, error? }` and the push channel carries the result |
 | `push.ttslua` | `dashboard.push` | none — live push (`DashPush.seat`, `DashPush.projects`, `DashPush.markWorldDirty`); see `.dev/Storyteller Dashboard Docs/Live Push Channel.md` |
 
 ## Load guard

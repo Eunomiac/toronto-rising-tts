@@ -12,6 +12,7 @@ Source of truth:
 - Server relay and cache: `.dev/storyteller-dashboard/src/server/ttsEvents.ts`, routes in `src/server/index.ts`
 - Client: `src/client/ttsEvents.ts` (`subscribeTtsEvents`), `src/client/worldState.ts` (`useWorldState`, `refreshWorldSnapshot`, `clockNow`), `src/client/pcSheet/livePush.ts` (`mergeSeatPush`)
 - Transport design, mark sites and guardrails: [Live Push Channel.md](Live%20Push%20Channel.md)
+- Commands back to TTS (Scenes tab): `dashboard/scenes.ttslua` via `GlobalDashboardScenesApply`; client `src/client/scenesPanel/bridge.ts` + `commands.ts`, queue `src/client/applyQueue.ts`
 
 Verification:
 - `npm test` in `.dev/storyteller-dashboard/` (`ttsEvents.test.ts`, `worldState.test.ts`, `livePush.test.ts`)
@@ -37,7 +38,7 @@ Every event reaching a tab has the shape `{ topic, color?, data?, at }`, where `
 | `reload` | none | TTS starts loading a game (server-generated) | Per load. Drop everything and refetch once |
 | `phase` | `phase`, `subPhase`, `sessionNum`, `sessionName`, `sessionStartDowntime`, `memoriamActive` | Phase or subphase change, Memoriam enter/leave, full UI refresh (session number and name ride along) | Rare |
 | `scene` | `liveKey`, `liveTitle`, `liveLinked` (library row receives live writes), `districtKey`, `siteKey`, `tableKey`, `placementMode`, `lightingPresetKey`, `skyboxOverride`, `topFog`, `weather { weather, rain, wind, thunder, indoors }` | Scene Apply, location/table/lighting/skybox/fog edits, weather changes, hour rollover (scheduled weather) | Low; bursts coalesce into one |
-| `clock` | Anchor: `activeClock` (`scene`/`downtime`), `running`, `speed`, `catchUpToPresentDay`, `isPresentDay`, `scene`, `downtime`, `presentDay` datetimes | Clock Apply or jump, pause/resume, speed change, scene Apply, phase change, **each hour rollover** | About once per narrative hour while running, plus edits |
+| `clock` | Anchor: `activeClock` (`scene`/`downtime`), `running`, `speed`, `catchUpToPresentDay`, `isPresentDay`, `scene`, `downtime`, `presentDay` datetimes; tonight's `dusk` / `dawn` datetimes (before sunrise: last night's) and the chronicle-scheduled `temperatureC` for the running clock's hour | Clock Apply or jump, pause/resume, speed change, scene Apply, phase change, **each hour rollover** | About once per narrative hour while running, plus edits |
 | `soundscape` | `musicMode`, `musicMood`, `musicEnabled`, `musicSuppressed`, `locationMusic`, `location`, `siteSilent`, `featuredKey`, `featuredActive`, `sessionIntroKey`, `sessionIntroActive`, `lanes[] { id, volume, naturalVolume, ducked, active }` | Any Sound panel change (including volume drags), scene soundscape apply | Several per second at most while dragging a slider |
 | `seats` | `seats[]` (five PC rows then four NPC rows: `seat`, `kind`, `tableSlot`, `isPresent`; PC: `playerId`, `charKey`, `absentFromSession`, `playingNpcKey`; NPC: `characterKey`, `slotEmpty`), `stage[] { characterKey, u, v, lightMode }`, `spotlightOrder`, `spotlightFrontIndex` | Scene/table/seat changes through the Scenes panel, control board Apply/Clear (`Sync.npcs`), Spotlight shuffle and rotation | Low |
 
@@ -67,6 +68,13 @@ World topics (`phase` … `seats`) are built by `dashboard/world_snapshot.ttslua
 | `reload` | Clear local copies and refetch once (the world store clears itself) |
 
 All subscribers share one `EventSource`; the browser reconnects it on its own and the server replays its cache, so a reconnect needs no special handling.
+
+## 3a. Sending commands
+
+Commands use execute-lua into a `GlobalDashboard…Apply` entry, behind the shared serial queue (`createApplyQueue` in `src/client/applyQueue.ts`): one call in flight, clicks made meanwhile go in the next batch. Every entry starts with the load guard and replies `{ ok, error? }`.
+
+- **PCs tab:** `GlobalDashboardPcSheetApply` replies with a fresh sheet snapshot.
+- **Scenes tab:** `GlobalDashboardScenesApply` (`dashboard/scenes.ttslua`) replies only `{ ok, error? }`; the world push brings the new state back. Panels read the sender from `ScenesCommandContext`; without one (the Lab) they keep their mock behaviour. `coalesceCommands` drops superseded lane volumes and real-time settings from a batch, and dragged sliders hold their local value for 1.5 s so the echo does not jump under the pointer. Ops are listed at the top of `dashboard/scenes.ttslua`.
 
 ## 4. Design checklist for a new dashboard view
 

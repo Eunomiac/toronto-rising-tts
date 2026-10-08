@@ -2343,16 +2343,34 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
             U.AlertGM("Seat `" .. seatKey .. "` presence saved on `" .. activeKey .. "` (applies on Activate).")
             return
         end
-        local nextPresent = not resolveSeatNarrativePresence(seatKey)
-        setSeatNarrativePresence(seatKey, nextPresent)
-        S.validateState()
-        local O = require("core.objects")
-        if U.isIn(seatKey, C.PlayerColors or {}) and type(O.applyPcSeatHiddenObjectPresence) == "function" then
-            O.applyPcSeatHiddenObjectPresence(seatKey, nextPresent)
-        end
-        reconcileHostedSyncAndPresentSheets("StorytellerScenesPanel.seatPresence")
+        StorytellerScenesPanel.setLiveSeatPresence(seatKey, not resolveSeatNarrativePresence(seatKey))
         return
     end
+end
+
+--- Narrative presence on the live table (never a pending library row, never `absentFromSession`).
+--- Shared by the in-game Scenes panel and the Storyteller Dashboard.
+--- @param seatKey string player color or NPC seat key
+--- @param present boolean
+--- @return string|nil error
+function StorytellerScenesPanel.setLiveSeatPresence(seatKey, present)
+    if not U.isIn(seatKey, C.PlayerColors or {}) and not U.isIn(seatKey, C.NPCSeats or {}) then
+        return "Unknown seat `" .. tostring(seatKey) .. "`."
+    end
+    if not canToggleNpcSeatForDisplay(S.getStateVal("sessionScene"), seatKey, false) then
+        return "No one is seated at `" .. seatKey .. "`."
+    end
+    if resolveSeatNarrativePresence(seatKey) == present then
+        return nil
+    end
+    setSeatNarrativePresence(seatKey, present)
+    S.validateState()
+    local O = require("core.objects")
+    if U.isIn(seatKey, C.PlayerColors or {}) and type(O.applyPcSeatHiddenObjectPresence) == "function" then
+        O.applyPcSeatHiddenObjectPresence(seatKey, present)
+    end
+    reconcileHostedSyncAndPresentSheets("StorytellerScenesPanel.seatPresence")
+    return nil
 end
 
 --- Site-modal buckets are flowing `<VerticalLayout>` containers (TOR-83); toggling `active`/`visibility="None"` removes the inactive district buckets from layout so only the matching district bucket and the generic bucket render, stacked without overlap.
@@ -2989,41 +3007,60 @@ function StorytellerScenesPanel.confirmForkConstructorModal(player)
     U.AlertGM("Scene forked: active mirror is now `" .. newKey .. "`.")
 end
 
---- Toggles `useRealTime` on the pending activation draft or live `sessionScene.clock`.
+--- Live real-time clock (Downtime copy or `sessionScene.clock`; never a pending library row).
+--- Shared by the in-game Scenes panel toggle and the Storyteller Dashboard.
+--- @param running boolean
+--- @param speed number|nil narrative minutes per real minute; nil keeps the current speed
+--- @return string|nil error
+function StorytellerScenesPanel.setLiveRealTimeClock(running, speed)
+    if clockLerpBusy() then
+        return "The clock is still animating to its new time; try again when it settles."
+    end
+    local downtime = isPlayDowntime()
+    local ck
+    if downtime then
+        ck = S.getStateVal("downtimeClock")
+    else
+        ck = S.getStateVal("sessionScene", "clock")
+    end
+    if type(ck) ~= "table" then
+        ck = {}
+    end
+    local wasRunning = ck.useRealTime == true
+    ck.useRealTime = running == true
+    if type(speed) == "number" and speed > 0 then
+        ck.realTimeSpeed = speed
+    end
+    if downtime then
+        S.setStateVal(ck, "downtimeClock")
+    else
+        S.setStateVal(ck, "sessionScene", "clock")
+    end
+    clockDraft.useRealTime = ck.useRealTime
+    StorytellerScenesPanel.refresh()
+    if ck.useRealTime then
+        if not wasRunning and GameStateOverlay and type(GameStateOverlay.resetRealTimeCarry) == "function" then
+            GameStateOverlay.resetRealTimeCarry()
+        end
+        if GameStateOverlay and type(GameStateOverlay.ensureTicker) == "function" then
+            GameStateOverlay.ensureTicker()
+        end
+    elseif wasRunning and GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
+        GameStateOverlay.stopTicker()
+    end
+    if Sync and type(Sync.ui) == "function" then
+        Sync.ui({ gameStateOverlay = true })
+    end
+    return nil
+end
+
+--- Toggles `useRealTime` on the pending activation draft or the live clock.
 function StorytellerScenesPanel.toggleRealTimeClock()
     if clockLerpBusy() then
         return
     end
-    if isPlayDowntime() then
-        local ck = S.getStateVal("downtimeClock")
-        if type(ck) ~= "table" then
-            ck = {}
-        end
-        ck.useRealTime = not (ck.useRealTime == true)
-        S.setStateVal(ck, "downtimeClock")
-        clockDraft.useRealTime = ck.useRealTime == true
-        StorytellerScenesPanel.refresh()
-        if ck.useRealTime == true then
-            if GameStateOverlay and type(GameStateOverlay.resetRealTimeCarry) == "function" then
-                GameStateOverlay.resetRealTimeCarry()
-            end
-            if GameStateOverlay and type(GameStateOverlay.ensureTicker) == "function" then
-                GameStateOverlay.ensureTicker()
-            end
-        else
-            if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
-                GameStateOverlay.stopTicker()
-            end
-        end
-        if Sync and type(Sync.ui) == "function" then
-            Sync.ui({ gameStateOverlay = true })
-        end
-        U.AlertGM(ck.useRealTime and "Downtime real-time clock: ON." or "Downtime real-time clock: OFF.")
-        return
-    end
     local activeKey = getActiveLibraryKey()
-
-    if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
+    if not isPlayDowntime() and type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
         local base = getLibraryRowClock(activeKey) or {}
         local current = clockDraft.useRealTime
         if current == nil then
@@ -3043,30 +3080,12 @@ function StorytellerScenesPanel.toggleRealTimeClock()
         return
     end
 
-    local ck = S.getStateVal("sessionScene", "clock")
-    if type(ck) ~= "table" then
-        ck = {}
-    end
-    ck.useRealTime = not (ck.useRealTime == true)
-    S.setStateVal(ck, "sessionScene", "clock")
-    clockDraft.useRealTime = ck.useRealTime == true
-    StorytellerScenesPanel.refresh()
-    if ck.useRealTime == true then
-        if GameStateOverlay and type(GameStateOverlay.resetRealTimeCarry) == "function" then
-            GameStateOverlay.resetRealTimeCarry()
-        end
-        if GameStateOverlay and type(GameStateOverlay.ensureTicker) == "function" then
-            GameStateOverlay.ensureTicker()
-        end
-    else
-        if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
-            GameStateOverlay.stopTicker()
-        end
-    end
-    if Sync and type(Sync.ui) == "function" then
-        Sync.ui({ gameStateOverlay = true })
-    end
-    U.AlertGM(ck.useRealTime and "Real-time narrative clock: ON." or "Real-time narrative clock: OFF.")
+    local downtime = isPlayDowntime()
+    local ck = downtime and S.getStateVal("downtimeClock") or S.getStateVal("sessionScene", "clock")
+    local nextRunning = not (type(ck) == "table" and ck.useRealTime == true)
+    StorytellerScenesPanel.setLiveRealTimeClock(nextRunning, nil)
+    local label = downtime and "Downtime real-time clock: " or "Real-time narrative clock: "
+    U.AlertGM(label .. (nextRunning and "ON." or "OFF."))
 end
 
 --- E2E / harness: whether Scenes panel would enable an NPC seat toggle.

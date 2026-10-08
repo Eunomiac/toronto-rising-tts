@@ -87,7 +87,7 @@ Not pushed: Scenes library row selection, pickers and other Storyteller-panel-on
 
 ### 3b. Clock anchor
 
-TTS does not stream the ticking clock. The `clock` slice is an anchor: `scene`, `downtime` (Downtime only) and `presentDay` datetimes, `activeClock` (`scene` / `downtime`), `running`, `speed` (narrative minutes per real minute, same unit as the TTS ticker), `catchUpToPresentDay`, `isPresentDay`. The dashboard computes the current time with `clockNow(anchor, Date.now())`: base + `floor(speed × elapsed real minutes since at)`, with calendar rollover, stopping at `presentDay` during catch-up. TTS re-anchors on jumps (clock Apply, scene Apply), pause/resume, speed changes, and each hour rollover, which also corrects drift.
+TTS does not stream the ticking clock. The `clock` slice is an anchor: `scene`, `downtime` (Downtime only) and `presentDay` datetimes, `activeClock` (`scene` / `downtime`), `running`, `speed` (narrative minutes per real minute, same unit as the TTS ticker), `catchUpToPresentDay`, `isPresentDay`. It also carries tonight's `dusk` / `dawn` datetimes (`NarrativeClockLerp.resolveDawnDuskTarget`, before sunrise: last night's) and the scheduled `temperatureC` (`ChronicleWeather.resolveForClock`) for the running clock; both only change at hour rollovers, which already re-anchor. The dashboard computes the current time with `clockNow(anchor, Date.now())`: base + `floor(speed × elapsed real minutes since at)`, with calendar rollover, stopping at `presentDay` during catch-up. TTS re-anchors on jumps (clock Apply, scene Apply), pause/resume, speed changes, and each hour rollover, which also corrects drift.
 
 ### 3c. Cache and mid-session tabs
 
