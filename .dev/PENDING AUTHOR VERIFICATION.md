@@ -80,19 +80,77 @@ _Last populated: 2026-10-07 — /tr-inbox cleared ten author-confirmed rows: TOR
 
 ### High — one refresh per seat change, and the dashboard stays live (one test session covers all three)
 
-**Context:** One plan in three parts. Every change to a PC now ends in a single "this seat changed" refresh, which updates the lights, HUD, overlays, dice bags, character sheets, the PCs panel row and the dashboard together. Each of those skips its own work when nothing it shows has changed. Turn **Trace Sync** on before you start; if anything looks wrong, copy the trace into `.dev/Performance Audits/Trace Sync/`. Restart the dashboard (`npm run dev`) so its server picks up the new live channel.
+**Context:** One plan in three parts. Every change to a PC now ends in a single "this seat changed" refresh, which updates the lights, HUD, overlays, dice bags, character sheets, the PCs panel row and the dashboard together. Each of those skips its own work when nothing it shows has changed. Restart the dashboard (`npm run dev`) so its server picks up the new live channel.
+
+**Trace setup for all five traces below:** Trace Sync stays on across Save & Play, so make sure its button on the Debug panel is **grey (off)** while you set up each trace's Initial Conditions. Then click it **yellow (on)**, do the Trace Actions exactly as listed, click it grey again, and copy the console output into `.dev/Performance Audits/Trace Sync/Seat Announcer/` under the file name given for that trace. The steps call the test player **Pink**; any seated PC works, as long as you use the same one throughout a trace.
 
 #### TOR-677 — One refresh per seat change; character sheets skip pages that didn't change
 
-**How to verify:** Save & Play. Open the Storyteller PCs panel and use each of its buttons on one player (Health and Willpower damage, Humanity stain and base, Hunger, Frenzy, Blind, Desire clear, Torpor clear): the row and that player's character sheet should both update each time. Then, from that player's seat, make rolls that cause a Rouse stain, a Remorse check, a failed Frenzy, and a Spend Willpower reroll: the sheet (and the PCs row, if the panel is open) should follow every one. Move a project stake on a Background or Merit: page 3 of the sheet should now show the change (it never did before). Change the session number on the Phases panel: page 6 (Experience Log) should follow it. Exit Memoriam once, and have a player disconnect and reconnect: the PCs row should show it. In the trace, a Hunger change should show `PCST.refreshCharacterSheetsForColor` with no pages listed, and a trait edit from the dashboard should list only page 3.
+**How to verify:** Save & Play. Open the Storyteller PCs panel and use each of its buttons on one player (Health and Willpower damage, Humanity stain and base, Hunger, Frenzy, Blind, Desire clear, Torpor clear): the row and that player's character sheet should both update each time. Then, from that player's seat, make rolls that cause a Rouse stain, a Remorse check, a failed Frenzy, and a Spend Willpower reroll: the sheet (and the PCs row, if the panel is open) should follow every one. Move a project stake on a Background or Merit: page 3 of the sheet should now show the change (it never did before). Change the session number on the Phases panel: page 6 (Experience Log) should follow it. Exit Memoriam once, and have a player disconnect and reconnect: the PCs row should show it. The two traces below check that each change refreshes only the sheet pages it affects.
+
+**Trace 1 — Hunger and Health from the PCs panel** (save as `TOR-677 Trace 1.txt`)
+
+* **Initial Conditions:** Save & Play into a Play-phase save. Pink is seated, has Hunger between 1 and 4, and has at least one empty Health box. No roll is in progress. Open the Storyteller **PCs** panel. As a warm-up (so the sheet has a starting point to compare against), click Pink's **Hg ▲**, then Pink's Hunger **Apply**, then **Hg ▼**, then Hunger **Apply** again. Pink's Hunger should be back where it started.
+* **Trace Actions:**
+  1. On Pink's row, click **Hg ▲** once, then the Hunger **Apply** button.
+  2. Click **Hg ▼** once, then the Hunger **Apply** button.
+  3. On Pink's **HP** row, click the **superficial ▲** (the second ▲ on that row, beside the plain `+0`) once, then the HP **Apply** button (the last button on the HP row).
+  4. Click the HP **superficial ▼** once, then the HP **Apply** button.
+
+  Steps 1–2 should show `PCST.refreshCharacterSheetsForColor skipped … pages=none` (Hunger isn't printed on the sheet pages). Steps 3–4 should list `pages=1,2` and `PCST.refreshRow ran`, with no `HO.syncAll` anywhere.
+
+**Trace 2 — a trait edit from the dashboard** (save as `TOR-677 Trace 2.txt`)
+
+* **Initial Conditions:** Save & Play, with the dashboard running and its **PCs** tab showing Pink on pages **III · IV**. Pink has at least one Merit or Background. The in-game Storyteller panels can be open or closed.
+* **Trace Actions:**
+  1. On dashboard page III, click the dots beside the name of Pink's first Merit (or Background) to open the ring menu.
+  2. **Left-click Temp** once (adds a temporary dot).
+  3. **Right-click Temp** once (removes it again).
+  4. Click empty space on the page to close the ring.
+
+  Each of steps 2 and 3 should show one `Sync.player` block whose `PCST.refreshCharacterSheetsForColor` line lists `pages=3` only.
 
 #### TOR-678 — Backup Storyteller panels only refresh while they're open
 
-**How to verify:** Save & Play. With all Storyteller panels closed, change a player's Health from the dashboard and apply a scene. The trace should show `PCST.refreshRow`, `ST.refresh`, `PJP.refresh` and `StorytellerScenesPanel.refresh` as `skipped reason=hidden` (or not at all). Now open each panel in turn (PCs, Scenes, Stats, Projects): each should show current values the moment it opens. Make a change while a panel is open: it should update live as before. Close the whole Storyteller toolbar with its hotkey, change something, then bring the toolbar back with the hotkey: the open panel should show the change straight away. Clicking a panel's own tab to close it should not cause a flicker or error. The Scenes panel clock should still be right after it was closed while the clock moved.
+**How to verify:** Save & Play. Open each panel in turn (PCs, Scenes, Stats, Projects): each should show current values the moment it opens. Make a change while a panel is open: it should update live as before. Close the whole Storyteller toolbar with its hotkey, change something, then bring the toolbar back with the hotkey: the open panel should show the change straight away. Clicking a panel's own tab to close it should not cause a flicker or error. The Scenes panel clock should still be right after it was closed while the clock moved. The two traces below check that closed panels do no work.
+
+**Trace 1 — everything closed** (save as `TOR-678 Trace 1.txt`)
+
+* **Initial Conditions:** Save & Play into a Play-phase save. Close every Storyteller toolbar panel: if any tab is lit, click it again so the toolbar collapses. Open the **Debug panel** (its hotkey), which is separate from the toolbar. The dashboard is running with its **PCs** tab showing Pink on pages **I · II**.
+* **Trace Actions:**
+  1. On dashboard page I, click Pink's **Health** tracker (bottom of the page) to open the ring menu, and **left-click Superficial** once.
+  2. **Right-click Superficial** once, then click empty space to close the ring.
+  3. On the Debug panel, click **Sync All (force)** and wait about five seconds for it to finish.
+
+  Steps 1–2 should show `PCST.refreshRow skipped reason=hidden`. Step 3 should show the PCs, Scenes, Stats and Projects refreshes (`PCST.refreshAllRows`, `StorytellerScenesPanel.refresh`, `ST.refresh`, `PJP.refresh`) as `skipped reason=hidden`.
+
+**Trace 2 — toolbar hotkey and closing a tab** (save as `TOR-678 Trace 2.txt`)
+
+* **Initial Conditions:** Save & Play. Open the Storyteller **PCs** panel and leave it open. The **Storyteller toolbar (toggle)** hotkey is bound in Options → Game Keys. Open the Debug panel. The dashboard **PCs** tab shows Pink on pages **I · II**.
+* **Trace Actions:**
+  1. Press the **Storyteller toolbar (toggle)** hotkey. The toolbar disappears.
+  2. On dashboard page I, click Pink's **Health** tracker (bottom of the page), **left-click Superficial** once, then click empty space to close the ring.
+  3. Press the hotkey again. The toolbar comes back, and Pink's PCs row should already show the new damage.
+  4. On dashboard page I, open the Health ring again and **right-click Superficial** once, then close the ring. The PCs row should update live.
+  5. Click the lit **PCs** tab on the toolbar to close the panel.
+
+  Step 2 should show `PCST.refreshRow skipped reason=hidden`. Step 3 should show `PCST.refreshAllRows ran`. Step 4 should show `PCST.refreshRow ran`. Step 5 should show no `PCST.refreshAllRows` after the close.
 
 #### TOR-676 — TTS pushes seat changes to the dashboard
 
-**How to verify:** Start the dashboard and Save & Play, then open the dashboard's PCs tab. In TTS, change a player in ways the dashboard didn't cause: damage from the in-game PCs panel, a Rouse stain from a roll, a dot click on the character sheet, typing a new Desire on the sheet (it updates when you finish editing). The dashboard tab should update within about a second without you pressing anything. Edit a project in TTS: the dashboard's page 5 should refresh. Reload the save in TTS: the dashboard should refresh once on its own. In the trace, each change should show one `DashPush.seat … sent`, and repeating a change that alters nothing should show `skipped`. Last, close the dashboard server and play for a few minutes: TTS should not stutter while nothing is listening.
+**How to verify:** Start the dashboard and Save & Play, then open the dashboard's PCs tab. In TTS, change a player in ways the dashboard didn't cause: damage from the in-game PCs panel, a Rouse stain from a roll, a dot click on the character sheet, typing a new Desire on the sheet (it updates when you finish editing). The dashboard tab should update within about a second without you pressing anything. Edit a project in TTS: the dashboard's page 5 should refresh. Reload the save in TTS: the dashboard should refresh once on its own. Last, close the dashboard server and play for a few minutes: TTS should not stutter while nothing is listening. The trace below checks that a push goes out only when the seat actually changed.
+
+**Trace 1 — pushes from in-game changes** (save as `TOR-676 Trace 1.txt`)
+
+* **Initial Conditions:** Restart the dashboard (`npm run dev`), then Save & Play into a Play-phase save. Open the dashboard's **PCs** tab on Pink, pages **I · II**. In TTS, open the Storyteller **PCs** panel. Pink has at least one empty Health box. Do the same warm-up as TOR-677 Trace 1 (Hunger up, Apply, down, Apply).
+* **Trace Actions:**
+  1. On Pink's PCs row in TTS, click the HP **superficial ▲** once, then the HP **Apply** button. The dashboard should show the new damage within about a second.
+  2. With both HP buffers back at `+0`, click the HP **Apply** button again. Nothing changes.
+  3. Click the HP **superficial ▼** once, then the HP **Apply** button. The dashboard should show the damage gone.
+  4. On Pink's in-game character sheet, click into the **Desire** field, add the word ` TEST` at the end, then click outside the field. The dashboard should show the new Desire.
+  5. Click into the Desire field again, delete ` TEST`, and click outside the field.
+
+  Steps 1, 3, 4 and 5 should each show one `DashPush.seat … sent`. Step 2 should show `DashPush.seat … skipped` (and `pages=none`). While you type in steps 4 and 5, each keystroke should show only a small `PCST.refreshRow` line, with no `Sync.player` block; the `DashPush.seat` line appears once, when you click outside the field.
 
 ### High — dice and rolls
 
