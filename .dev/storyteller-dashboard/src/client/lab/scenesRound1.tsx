@@ -16,6 +16,7 @@ import {
   Seats,
   Sound,
   Weather,
+  WideBoard,
   type SketchState
 } from "./sketch";
 
@@ -78,7 +79,10 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen }
   const stripH = 132;
   const bodyY = 8 + stripH + 8;
   const bodyH = 1042 - bodyY - 8;
-  const boardW = Math.round(bodyH * BOARD_ASPECT_STAGE_ONLY);
+  const stageX = 356;
+  const stageW = 1647 - 8 - stageX;
+  const boardW = stageW - 16;
+  const boardH = Math.round(boardW * 0.56);
   return (
     <>
       <Box x={8} y={8} w={380} h={stripH} title="Scene" tier="A" className="lab-strip">
@@ -101,12 +105,14 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen }
       <Box x={8} y={bodyY} w={340} h={bodyH} title="NPC roster" tier="A" lines={["Collapses to a thin rail when not dragging."]}>
         <Roster />
       </Box>
-      <Box x={356} y={bodyY} w={boardW} h={bodyH} title="Stage only (seat row moved out → wider crop)" tier="A">
-        <Board w={boardW - 16} h={bodyH - 44} withSeats={false} />
-      </Box>
-      <Box x={356 + boardW + 8} y={bodyY} w={300} h={bodyH} title="Table: Table B2 (click to switch)" tier="A"
-        lines={["Click a seat: present ↔ absent. Drag an NPC here to seat them."]}>
-        <Seats direction="column" rowHeight={78} />
+      <Box x={stageX} y={bodyY} w={stageW} h={bodyH} title="Stage + table (real 2:1 board; seats float above the Far zones)" tier="A"
+        lines={["Click a seat: present ↔ absent. Drag an NPC onto a seat to seat them.", "Double-click lights / unlights; drag a pack handle to move a whole pack."]}>
+        <WideBoard w={boardW} h={boardH} />
+        <div className="lab-row">
+          <Btn>Table: Table B2 ▾</Btn>
+          <Btn>Placement: Standard ▾</Btn>
+          <span className="lab-note">Spare height below the board in this layout: about 90 px.</span>
+        </div>
       </Box>
       <Box x={1647} y={bodyY} w={265} h={420} title="Queued changes" tier="A">
         <Queue narrow />
@@ -131,7 +137,7 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen }
         </Box>
       )}
       {previewOpen && (
-        <PreviewPanel x={8} y={bodyY} w={356 + boardW - 8} h={bodyH} />
+        <PreviewPanel x={8} y={bodyY} w={stageX + stageW - 8} h={bodyH} wide />
       )}
     </>
   );
@@ -213,7 +219,7 @@ export const SCENES_ROUND_1: readonly LabSketch[] = [
   {
     id: "scenes-r1-b",
     label: "B · Glance strip",
-    summary: "Everything you need at a glance in one top strip; click a section for its controls. Seats get their own rich column, so the board drops the seat row and grows wider.",
+    summary: "Everything you need at a glance in one top strip; click a section for its controls. The board is drawn at its real 2:1 shape, with the seat row floating above the Far zones.",
     render: (state) => <GlanceStrip {...state} />
   },
   {

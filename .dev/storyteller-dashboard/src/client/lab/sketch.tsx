@@ -169,6 +169,68 @@ export const Board = ({ w, h, withSeats }: { w: number; h: number; withSeats: bo
   );
 };
 
+/** Standard-placement packs at their in-game positions (u, v as fractions of the wide board). */
+const WIDE_PACKS: readonly { label: string; u: number; v: number; far: boolean; lit?: number }[] = [
+  { label: "Far Center-Left", u: 0.36, v: 0.29, far: true, lit: 2 },
+  { label: "Far Center-Right", u: 0.64, v: 0.29, far: true },
+  { label: "Far Left", u: 0.13, v: 0.58, far: true },
+  { label: "Far Right", u: 0.87, v: 0.58, far: true },
+  { label: "Mid Left", u: 0.32, v: 0.63, far: false },
+  { label: "Mid Center", u: 0.5, v: 0.56, far: false, lit: 3 },
+  { label: "Mid Right", u: 0.68, v: 0.63, far: false },
+  { label: "Center Left", u: 0.3, v: 0.81, far: false, lit: 1 },
+  { label: "CENTER", u: 0.5, v: 0.75, far: false, lit: 5 },
+  { label: "Center Right", u: 0.7, v: 0.81, far: false }
+];
+
+const WIDE_SEAT_BAND = 0.17;
+
+/**
+ * The control board at its real in-game shape (scaled 2:1), with the seat row floating along the top margin
+ * above the Far zones instead of along the bottom. Far packs are ellipses of six; mid and center packs are five.
+ */
+export const WideBoard = ({ w, h }: { w: number; h: number }): ReactElement => {
+  const dot = Math.max(5, w / 150);
+  return (
+    <div className="lab-board" style={{ width: w, height: h }}>
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
+        {WIDE_PACKS.map((pack) => {
+          const cx = pack.u * w;
+          const cy = pack.v * h;
+          const rx = pack.far ? w * 0.075 : w * 0.032;
+          const ry = pack.far ? h * 0.075 : w * 0.032;
+          const size = pack.far ? 6 : 5;
+          return (
+            <g key={pack.label}>
+              {pack.far
+                ? <ellipse cx={cx} cy={cy} rx={rx} ry={ry} className="lab-board-ring" />
+                : <circle cx={cx} cy={cy} r={rx} className="lab-board-pack" />}
+              {Array.from({ length: size }, (_, index) => {
+                const angle = (index / size) * Math.PI * 2 - Math.PI / 2;
+                const lit = index < (pack.lit ?? 0);
+                const reach = pack.far ? 1 : 0.62;
+                return (
+                  <circle
+                    key={index}
+                    cx={cx + Math.cos(angle) * rx * reach}
+                    cy={cy + Math.sin(angle) * ry * reach}
+                    r={dot * 0.75}
+                    className={lit ? "lab-board-npc lit" : (pack.lit !== undefined ? "lab-board-npc" : "lab-board-snap")}
+                  />
+                );
+              })}
+              <text x={cx} y={cy + (pack.far ? 4 : ry + 14)} className="lab-board-label">{pack.label}</text>
+            </g>
+          );
+        })}
+      </svg>
+      <div className="lab-board-seats floating" style={{ top: 8, height: h * WIDE_SEAT_BAND }}>
+        <Seats direction="row" />
+      </div>
+    </div>
+  );
+};
+
 /* ---------- modules ---------- */
 
 export const ClockReadout = ({ differs, big }: { differs: boolean; big: boolean }): ReactElement => (
@@ -309,13 +371,15 @@ export const PreviewTabs = (): ReactElement => (
 );
 
 /** Slide-out editor for a library scene that is not on the table (blue = not live). */
-export const PreviewPanel = ({ x, y, w, h }: { x: number; y: number; w: number; h: number }): ReactElement => (
+export const PreviewPanel = ({ x, y, w, h, wide = false }: { x: number; y: number; w: number; h: number; wide?: boolean }): ReactElement => (
   <Box x={x} y={y} w={w} h={h} title="Preview panel: Rack — Kensington (not on the table)" tone="preview" tier="B">
     <div className="lab-preview-body">
       <PreviewTabs />
       <div className="lab-preview-grid">
         <div>
-          <Board w={Math.round(w * 0.62)} h={Math.round((w * 0.62) / 0.9)} withSeats />
+          {wide
+            ? <WideBoard w={Math.round(w * 0.7)} h={Math.round(w * 0.7 * 0.56)} />
+            : <Board w={Math.round(w * 0.62)} h={Math.round((w * 0.62) / 0.9)} withSeats />}
           <p className="lab-note">Same board, blue frame: edits change the library scene only.</p>
         </div>
         <div className="lab-preview-side">

@@ -346,6 +346,18 @@ $lab-pin: #f5b13d;
     right: 8px;
     display: flex;
     align-items: center;
+
+    &.floating {
+      padding: 4px;
+      border: 1px solid #5a5244;
+      border-radius: 8px;
+      background: rgb(20 18 15 / 85%);
+      box-shadow: 0 4px 12px rgb(0 0 0 / 50%);
+
+      .lab-seats {
+        height: 100%;
+      }
+    }
   }
 }
 

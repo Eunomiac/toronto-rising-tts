@@ -12,7 +12,7 @@ Source of truth:
 - author marks in the **You** column below (they override the agent's suggestion)
 - current behavior: `core/storyteller_scenes_panel.ttslua`, `core/scene_library.ttslua`, `core/npc_gameboard*.ttslua`, `core/control_board_preview.ttslua`, `core/narrative_clock_lerp.ttslua`, `.dev/storyteller-dashboard/src/client/scenesTab.ts`
 
-Status: current — round 0 complete; round 1 sketches (A / B / C) in the dashboard Lab, waiting on author pins
+Status: current — round 1: author chose layout **B**; seat row moved onto the stage; waiting on author pins
 
 ## What this is
 
@@ -371,10 +371,12 @@ The main problem all three solve differently: the control board (stage + seat ro
 | Sketch | Idea | Board size | Trade-off |
 | --- | --- | --- | --- |
 | **A · Stage in the middle** | Scene bar on top; roster left; board with its seat row in the centre; When / Where / Weather / Sound / Queue stacked on the right. | 866×962 | Familiar (closest to today); the right rail is busy and every module is medium-sized. |
-| **B · Glance strip** | One strip across the top shows Scene / Where / When / Weather / Sound as read-outs; clicking one opens its editor as a pop-up. Seats move into a column beside a stage-only board. | 975×886 | Biggest board and everything readable in one sweep; editing costs one extra click. |
+| **B · Glance strip** | One strip across the top shows Scene / Where / When / Weather / Sound as read-outs; clicking one opens its editor as a pop-up. The board is drawn at its real 2:1 shape with the seat row floating along its top, above the Far zones. | 1267×710 | Biggest board and everything readable in one sweep; editing costs one extra click. |
 | **C · Library rail + big clock** | Scene library always visible on the left; smaller board; seats as a row under it; a large clock column on the right. | 660×600 | Best for switching between prepared scenes and for time; the board is smallest. |
 
 Lab toggles (tab bar): **Preview panel** (blue slide-out for a library scene that isn't on the table), **Scene ≠ present day** (small present-day line above the scene time), **Weather override** (stark striped red), **Example pop-up** (B's clock controls).
+
+**Author choice (round 1):** layout **B**, with one change made before pinning: the seats column became a row floating at the top of the stage, above the Far zones, and the stage widened into the freed space. The in-game control board is scaled 2:1, so B now draws it as a real 2:1 rectangle (`WideBoard` in `sketch.tsx`), with the Standard packs placed as they sit in TTS (Far Center-Left / Center-Right on top, Far Left / Right lower at the sides, Mid and Center rows in the middle). The PC pentagon and the old bottom seat row are gone from this drawing. About 86 px of height is spare under the board. A and C stay in the Lab for borrowing ideas.
 
 Feedback wanted: which layout's overall shape feels right, which modules are too big or too small, and anything that should move between them. Pins can say "take X from B into A".
 
