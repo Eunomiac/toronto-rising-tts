@@ -379,9 +379,9 @@ function readNumberField(body, field) {
  * @returns {string|null}
  */
 function readStringField(body, field) {
-  const match = body.match(new RegExp(`${field}\\s*=\\s*"([^"]*)"`));
+  const match = body.match(new RegExp(`${field}\\s*=\\s*"((?:[^"\\\\]|\\\\.)*)"`));
   if (match) {
-    return match[1];
+    return match[1].replace(/\\(.)/g, "$1");
   }
   const ident = body.match(new RegExp(`${field}\\s*=\\s*([A-Za-z_][A-Za-z0-9_.]*)`));
   if (ident && ident[1] !== "true" && ident[1] !== "false" && ident[1] !== "nil") {
