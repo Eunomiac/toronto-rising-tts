@@ -81,7 +81,7 @@ Do not conflate them. Hunger TOR-340 sticky-`active` under empty-seat `visibilit
 - Shared map sidebar idle chrome: fixed-height slot Panels (base always present) + empty-sentinel visibility on overlaid hover/active (no parallel VerticalLayout columns — TOR-462).
 - `U.showTo(elemId, color)` / `U.hideFrom(elemId, color)` — add/remove one color; if `visibility` is missing/blank (remount unread / TTS unrestricted), heal from empty then mutate (do not use on truly unrestricted panels)
 - Change-guard: skip write if serialized union unchanged (after unrestricted heal)
-- Shared panels: keep Lua-side audience sets; write full unions (don’t rely only on live `getAttribute`). Court page spreads (`applyPrincesCourtPageVisibility` in `core/hud_player.ttslua`) are the canonical example — stale reads left page2 active so its next button showed on the last spread. Court also toggles `active` when the union is empty; map chrome keeps layout with empty-sentinel visibility instead.
+- Shared panels: keep Lua-side audience sets; write full unions (don’t rely only on live `getAttribute`). Court page spreads (`applyPrincesCourtPageVisibility` in `core/hud_player.ttslua`) are the canonical example — stale reads left page2 active so its next button showed on the last spread. Court also toggles `active` when the union is empty and never uses `UI.show` / `UI.hide` on those panels (those re-apply XML defaults and can reveal the Court to every client — TOR-663). Map chrome keeps layout with empty-sentinel visibility instead.
 
 ### Animation contract
 

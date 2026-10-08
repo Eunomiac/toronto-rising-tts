@@ -311,7 +311,7 @@ Shared XmlUI overlay (TOR-444) toggled from the right sidebar (`toggle_PrincesCo
 | 2 | 3–4 | prev + next |
 | 3 | 5–6 | prev only (no next) |
 
-State: `playerData.hud.reference.princesCourt` (`nil` = closed, table = open) and `princesCourtPage` (`1`–`3`, default `1`, persists while closed). Navigate: `HUD_playerPrincesCourt_navigate` → writes page on the clicker's storage id → `applyPrincesCourtPageVisibility` (Lua-side root/page audience unions + `U.setVisibleTo`; do not trust live `getAttribute` after remount). Element ids are **shared** (no seat suffix) except seat-column trackers on page 1.
+State: `playerData.hud.reference.princesCourt` (`nil` = closed, table = open) and `princesCourtPage` (`1`–`3`, default `1`, persists while closed). Navigate: `HUD_playerPrincesCourt_navigate` → writes page on the clicker's storage id → `applyPrincesCourtPageVisibility` (Lua-side root/page audience unions + `U.setVisibleTo` + `active`; never `UI.show` / `UI.hide`, which re-apply XML defaults and can drop the audience gate — TOR-663). Do not trust live `getAttribute` after remount. Element ids are **shared** (no seat suffix) except seat-column trackers on page 1.
 
 **Coterie chronicle data (`gameState.coterieData`):** Seeded on load from `lib/json/Coterie.json` (embedded via `lib/coterie_data.ttslua`; regenerate with `node .dev/scripts/generate_coterie_data_lua.js`). Reconciled to Global UI by `core/coterie.ttslua` (`Coterie.reconcileAll` on `Sync.full`, per-seat refresh in `HUDP.updatePlayerUI`).
 
