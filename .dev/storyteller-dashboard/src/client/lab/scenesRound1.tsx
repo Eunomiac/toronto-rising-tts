@@ -1,5 +1,19 @@
-import { useState, type ReactElement } from "react";
-import { AdvanceModal, LocationCards, MasonryRoster, PhaseStrip, QueuePanel, SoundMixer, WeatherPanel, WhenPanel } from "./glance";
+import { useEffect, useState, type ReactElement } from "react";
+import {
+  AdvanceModal,
+  AspectRow,
+  FLASHBACK_TIME,
+  LocationPanel,
+  MasonryRoster,
+  PhaseStrip,
+  PRESENT_DAY,
+  QueuePanel,
+  SCENE_LOCATION,
+  SoundMixer,
+  WeatherPanel,
+  WhenPanel,
+  type LabLocation
+} from "./glance";
 import {
   Overlay,
   Board,
@@ -80,61 +94,73 @@ const StageInTheMiddle = ({ previewOpen, clockDiffers, weatherOverride }: Sketch
 };
 
 /**
- * Glance strip, pin pass 2: no panel titles; Where (card crops) over a masonry roster on the left; When,
- * Weather, and Sound across the top; a phase strip between the stage and the PC panel.
+ * Glance strip, pin pass 3: Where (names + resonances) over a masonry roster on the left; When, Weather, and
+ * Sound across the top; the four aspects in a row above the stage; a phase strip between the stage and the
+ * PC panel. Scene time and location live here so every panel reads the same values.
  */
 const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen, ttsDisconnected }: SketchState): ReactElement => {
   const [advanceOpen, setAdvanceOpen] = useState(false);
   const [preparing, setPreparing] = useState(false);
+  const [sceneTime, setSceneTime] = useState(PRESENT_DAY);
+  const [location, setLocation] = useState<LabLocation>(SCENE_LOCATION);
+  useEffect(() => setSceneTime(clockDiffers ? FLASHBACK_TIME : PRESENT_DAY), [clockDiffers]);
   const leftW = 380;
-  const whereH = 444;
   const stripX = 8 + leftW + 8;
   const stripH = 132;
   const bodyY = 8 + stripH + 8;
   const bodyH = 1042 - bodyY - 8;
   const rightX = 1647;
   const stageW = rightX - 8 - stripX;
-  const boardW = stageW - 18;
-  const boardH = Math.round(boardW * WIDE_BOARD_RATIO);
-  const stageH = boardH + 14;
-  const phaseY = bodyY + stageH + 8;
+  const aspectH = 118;
+  const stageY = bodyY + aspectH + 8;
+  const pcH = 112;
+  const pcY = 1042 - 8 - pcH;
   const phaseH = 38;
-  const pcY = phaseY + phaseH + 8;
+  const phaseY = pcY - 8 - phaseH;
+  const stageH = phaseY - 8 - stageY;
+  const boardW = stageW - 18;
+  const boardH = stageH - 14;
   const queueH = 420;
   const whenW = 470;
   const weatherW = 380;
   const soundX = stripX + whenW + 8 + weatherW + 8;
   return (
     <>
-      <Box x={8} y={8} w={leftW} h={whereH} className="lab-where-box">
-        <LocationCards width={leftW - 18} />
+      <Box x={8} y={8} w={leftW} h={stripH} className="lab-backdrop-box">
+        <LocationPanel
+          location={location}
+          overridden={location.districtKey !== SCENE_LOCATION.districtKey || location.siteKey !== SCENE_LOCATION.siteKey}
+          onChange={setLocation}
+          onRelease={() => setLocation(SCENE_LOCATION)}
+        />
       </Box>
-      <Box x={8} y={8 + whereH + 8} w={leftW} h={1042 - 8 - (8 + whereH + 8)}>
+      <Box x={8} y={bodyY} w={leftW} h={bodyH}>
         <MasonryRoster />
       </Box>
 
       <Box x={stripX} y={8} w={whenW} h={stripH} className="lab-backdrop-box">
-        <WhenPanel differs={clockDiffers} forceOpen={popoverOpen} w={whenW - 2} h={stripH - 2} />
+        <WhenPanel at={sceneTime} onChange={setSceneTime} forceOpen={popoverOpen} w={whenW - 2} h={stripH - 2} />
       </Box>
       <Box x={stripX + whenW + 8} y={8} w={weatherW} h={stripH} className="lab-backdrop-box">
-        <WeatherPanel override={weatherOverride} w={weatherW - 2} h={stripH - 2} />
+        <WeatherPanel at={sceneTime} forceOverride={weatherOverride} w={weatherW - 2} h={stripH - 2} />
       </Box>
       <Box x={soundX} y={8} w={1912 - soundX} h={stripH}>
         <SoundMixer indoors />
       </Box>
 
-      <Box x={stripX} y={bodyY} w={stageW} h={stageH}>
+      <Box x={stripX} y={bodyY} w={stageW} h={aspectH} className="lab-aspects-box">
+        <AspectRow location={location} />
+      </Box>
+      <Box x={stripX} y={stageY} w={stageW} h={stageH}>
         <WideBoard w={boardW} h={boardH} />
       </Box>
       <Box x={stripX} y={phaseY} w={stageW} h={phaseH} className="lab-phase-box">
         <PhaseStrip onAdvance={() => setAdvanceOpen(true)} />
       </Box>
-      <Box x={stripX} y={pcY} w={stageW} h={1042 - 8 - pcY}>
+      <Box x={stripX} y={pcY} w={stageW} h={pcH}>
         <PcPanel />
       </Box>
-      <Box x={rightX} y={bodyY} w={265} h={bodyH - queueH - 8} tone="reserved">
-        <RollsReserved />
-      </Box>
+      <Box x={rightX} y={bodyY} w={265} h={bodyH - queueH - 8} tone="reserved" />
       <Box x={rightX} y={bodyY + bodyH - queueH} w={265} h={queueH} className={`lab-queue-box ${ttsDisconnected ? "disconnected" : "connected"}`}>
         <QueuePanel connected={!ttsDisconnected} />
       </Box>

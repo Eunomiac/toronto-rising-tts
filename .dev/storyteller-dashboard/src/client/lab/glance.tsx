@@ -1,9 +1,21 @@
-import { useEffect, useId, useMemo, useState, type CSSProperties, type ReactElement } from "react";
+import { useEffect, useId, useMemo, useState, type CSSProperties, type MouseEvent, type ReactElement } from "react";
 import { Headshot } from "../headshots/Headshot";
 import type { CatalogCharacter, SceneCatalogs } from "../scenes/types";
-import { Btn, Chip, Overlay } from "./sketch";
+import {
+  useChronicleLocations,
+  useWeatherCalendar,
+  type ChronicleLocations,
+  type Resonance,
+  type SheetDistrict,
+  type SheetSite,
+  type WeatherCalendar
+} from "./chronicleSheets";
+import { Btn, Chip, Overlay, canvasPoint } from "./sketch";
 
-/** Panels for the Glance strip sketch (scenes-r1-b), pin pass 2: real art and working Lab interactions. */
+/**
+ * Panels for the Glance strip sketch (scenes-r1-b), pin pass 3: location and weather read live from the
+ * chronicle sheets; overrides shown the same way everywhere (red glow + "Release override" in the corner).
+ */
 
 const seeded = (seed: number): (() => number) => {
   let state = seed | 0;
@@ -14,136 +26,6 @@ const seeded = (seed: number): (() => number) => {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 };
-
-/* ---------- Where: layered crops of the District and Site cards ---------- */
-
-type CardRect = readonly [x: number, y: number, w: number, h: number];
-type CardArt = { readonly src: string; readonly width: number };
-
-const cardUrl = (path: string): string =>
-  `https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/${path}`;
-
-/** Source rectangles in card pixels. District cards share one template; Site cards come in more than one. */
-const DISTRICT = {
-  art: { src: cardUrl("Districts/DupontByTheCastle.webp"), width: 1920 },
-  name: [480, 116, 960, 94],
-  resonanceUp: [50, 700, 350, 50],
-  resonanceDown: [1600, 700, 270, 50],
-  aspects: [44, 654, 1264].map((x) => ({ title: [x, 762, 612, 50] as CardRect, full: [x, 762, 612, 248] as CardRect }))
-} as const;
-
-/**
- * Site cards (1952×882) come in two fixed layouts. Unique sites (with a district) carry a street map on the
- * right: name right-aligned along the top, an optional sub-location line under it, resonance under the map.
- * Generic sites have a centred name and the resonance bottom-left. The rule box never moves; only the text
- * inside it sits higher or lower.
- */
-type SiteLayout = { readonly name: CardRect; readonly sub?: CardRect; readonly aspect: CardRect; readonly resonance: CardRect };
-
-type SiteLayoutKey = "unique" | "generic";
-
-const SITE_LAYOUTS: Record<SiteLayoutKey, SiteLayout> = {
-  unique: { name: [200, 26, 1240, 100], sub: [900, 126, 540, 114], aspect: [690, 545, 660, 300], resonance: [1330, 785, 460, 70] },
-  generic: { name: [400, 20, 1152, 110], sub: [730, 132, 492, 64], aspect: [1050, 572, 875, 285], resonance: [200, 790, 470, 70] }
-};
-
-/** Sites whose card art does not follow the district rule (district but no map). */
-const SITE_LAYOUT_EXCEPTIONS: Readonly<Record<string, SiteLayoutKey>> = {
-  HockeyHallOfFame: "generic",
-  WarrensAntechamber: "generic",
-  WarrensDrakes: "generic",
-  WarrensFomorach: "generic",
-  WarrensIQs: "generic",
-  WarrensLabyrinth: "generic",
-  WarrensPalis: "generic",
-  WarrensSpawningPool: "generic",
-  WarrensTunnelJunction: "generic"
-};
-
-type SiteCard = { readonly key: string; readonly name: string; readonly districtKey?: string };
-
-const siteLayoutFor = (site: SiteCard): SiteLayoutKey =>
-  SITE_LAYOUT_EXCEPTIONS[site.key] ?? (site.districtKey ? "unique" : "generic");
-
-/** The card prints a sub-location line only when the name has one ("Casa Loma: Great Hall"). */
-const siteHasSub = (site: SiteCard): boolean => site.name.includes(": ");
-
-const SAMPLE_SITES: readonly SiteCard[] = [
-  { key: "CLGreatHall", name: "Casa Loma: Great Hall", districtKey: "DupontByTheCastle" },
-  { key: "Drake", name: "The Drake Hotel", districtKey: "WestQueenWest" },
-  { key: "AnarchBar", name: "Anarch Dive Bar" },
-  { key: "WarrensLabyrinth", name: "The Nosferatu Warrens: Labyrinth", districtKey: "Sewers" },
-  { key: "WealthyEstate3", name: "Wealthy Estate" }
-];
-
-const CardCrop = ({ art, rect, width }: { art: CardArt; rect: CardRect; width: number }): ReactElement => {
-  const [x, y, w, h] = rect;
-  const scale = width / w;
-  return (
-    <span className="lab-card-crop" style={{ width, height: Math.round(h * scale) }}>
-      <img src={art.src} alt="" draggable={false} style={{ width: art.width * scale, left: -x * scale, top: -y * scale }} />
-    </span>
-  );
-};
-
-const SiteCrops = ({ site, width }: { site: SiteCard; width: number }): ReactElement => {
-  const art: CardArt = { src: cardUrl(`Sites/${site.key}.webp`), width: 1952 };
-  const layout = SITE_LAYOUTS[siteLayoutFor(site)];
-  const scale = width / layout.name[2];
-  const resonanceW = Math.round(layout.resonance[2] * scale * 1.15);
-  return (
-    <>
-      <CardCrop art={art} rect={layout.name} width={width} />
-      <div className="lab-where-row spread">
-        {siteHasSub(site) && layout.sub && (
-          <CardCrop art={art} rect={layout.sub} width={Math.min(Math.round(layout.sub[2] * scale * 1.15), width - resonanceW - 6)} />
-        )}
-        <span className="lab-where-site-side">
-          <CardCrop art={art} rect={layout.resonance} width={resonanceW} />
-        </span>
-      </div>
-      <CardCrop art={art} rect={layout.aspect} width={width} />
-    </>
-  );
-};
-
-/**
- * District name, resonances, and aspect titles (hover for the full rule), then the Site's name, resonance, and
- * rule. In the Lab, clicking the Site part cycles through sample sites of both card layouts.
- */
-export const LocationCards = ({ width }: { width: number }): ReactElement => {
-  const [siteIndex, setSiteIndex] = useState(0);
-  const site = SAMPLE_SITES[siteIndex % SAMPLE_SITES.length] ?? SAMPLE_SITES[0];
-  const resonanceScale = (width * 0.44) / DISTRICT.resonanceUp[2];
-  return (
-    <div className="lab-where">
-      <CardCrop art={DISTRICT.art} rect={DISTRICT.name} width={width} />
-      <div className="lab-where-row spread">
-        <CardCrop art={DISTRICT.art} rect={DISTRICT.resonanceUp} width={Math.round(DISTRICT.resonanceUp[2] * resonanceScale)} />
-        <CardCrop art={DISTRICT.art} rect={DISTRICT.resonanceDown} width={Math.round(DISTRICT.resonanceDown[2] * resonanceScale)} />
-      </div>
-      <div className="lab-where-aspects">
-        {DISTRICT.aspects.map((aspect) => (
-          <span key={aspect.title[0]} className="lab-where-aspect" tabIndex={0}>
-            <CardCrop art={DISTRICT.art} rect={aspect.title} width={width} />
-            <span className="lab-where-zoom">
-              <CardCrop art={DISTRICT.art} rect={aspect.full} width={460} />
-            </span>
-          </span>
-        ))}
-      </div>
-      {site && (
-        <div className="lab-where-site" title="Lab: click to cycle sample sites" onClick={() => setSiteIndex(siteIndex + 1)}>
-          <SiteCrops site={site} width={width} />
-        </div>
-      )}
-    </div>
-  );
-};
-
-/* ---------- NPC roster: masonry of closed groups ---------- */
-
-type NpcGroup = { readonly key: string; readonly label: string; readonly members: readonly CatalogCharacter[] };
 
 const useSceneCatalogs = (): { catalogs: SceneCatalogs | null; error: string | null } => {
   const [catalogs, setCatalogs] = useState<SceneCatalogs | null>(null);
@@ -161,9 +43,211 @@ const useSceneCatalogs = (): { catalogs: SceneCatalogs | null; error: string | n
   return { catalogs, error };
 };
 
-const CLUSTER_SIZE = 4;
+/* ---------- shared: override corner button and ring menu ---------- */
 
-/** Every NPC group as a closed cluster of overlapping tokens; click one to open it in place and pick a token. */
+export const ReleaseOverride = ({ onRelease }: { onRelease: () => void }): ReactElement => (
+  <button
+    type="button"
+    className="lab-override-release"
+    onClick={(event) => {
+      event.stopPropagation();
+      onRelease();
+    }}
+  >
+    Release override
+  </button>
+);
+
+type RingOption<T> = { readonly value: T; readonly label: string };
+type Point = { readonly x: number; readonly y: number };
+
+/** Choices spread evenly around the click point; the current choice is highlighted. */
+const RingMenu = <T,>({ at, options, current, onPick, onClose }: {
+  at: Point;
+  options: readonly RingOption<T>[];
+  current: T;
+  onPick: (value: T) => void;
+  onClose: () => void;
+}): ReactElement => (
+  <Overlay onClose={onClose}>
+    <div className="lab-ring" style={{ left: Math.min(Math.max(at.x, 170), 1920 - 170), top: Math.max(at.y, 86) }}>
+      <button type="button" className="lab-ring-hub" title="Close" onClick={onClose}>×</button>
+      {options.map((option, index) => {
+        const angle = -Math.PI / 2 + (index * 2 * Math.PI) / options.length;
+        return (
+          <button
+            key={String(option.value)}
+            type="button"
+            className={`lab-ring-item spoke${option.value === current ? " current" : ""}`}
+            style={{ left: Math.cos(angle) * 100, top: Math.sin(angle) * 64 }}
+            onClick={() => {
+              onPick(option.value);
+              onClose();
+            }}
+          >
+            {option.label}
+          </button>
+        );
+      })}
+    </div>
+  </Overlay>
+);
+
+/* ---------- Where: District and Site names over their card art; aspects in their own row ---------- */
+
+export type LabLocation = { readonly districtKey: string; readonly siteKey: string };
+
+export const SCENE_LOCATION: LabLocation = { districtKey: "DupontByTheCastle", siteKey: "CLGreatHall" };
+
+const cardUrl = (path: string): string =>
+  `https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/${path}`;
+
+const resolveLocation = (data: ChronicleLocations, location: LabLocation): { district: SheetDistrict; site: SheetSite } | string => {
+  const district = data.districts.find((entry) => entry.key === location.districtKey);
+  const site = data.sites.find((entry) => entry.key === location.siteKey);
+  if (!district || !site) {
+    return `Location ${location.districtKey} / ${location.siteKey} is not in the chronicle sheet.`;
+  }
+  return { district, site };
+};
+
+const siteLabel = (site: SheetSite): string => (site.subtitle ? `${site.title}: ${site.subtitle}` : site.title);
+
+const ResonanceTags = ({ list }: { list: readonly Resonance[] }): ReactElement => (
+  <span className="lab-res">
+    {list.map((resonance) => (
+      <span key={`${resonance.type}${resonance.up ? "+" : "-"}`} className={`lab-res-tag ${resonance.up ? "up" : "down"}`}>
+        {resonance.up ? "▲" : "▼"} {resonance.type}
+      </span>
+    ))}
+  </span>
+);
+
+const LocationPicker = ({ data, location, onPick, onClose }: {
+  data: ChronicleLocations;
+  location: LabLocation;
+  onPick: (next: LabLocation) => void;
+  onClose: () => void;
+}): ReactElement => {
+  const { catalogs } = useSceneCatalogs();
+  const [districtKey, setDistrictKey] = useState(location.districtKey);
+  const [siteKey, setSiteKey] = useState(location.siteKey);
+  const pickSite = (key: string): void => {
+    setSiteKey(key);
+    const home = catalogs?.sites.find((entry) => entry.key === key)?.districtKey;
+    if (home) {
+      setDistrictKey(home);
+    }
+  };
+  return (
+    <Overlay onClose={onClose}>
+      <div className="lab-modal lab-location-modal">
+        <span className="lab-modal-title">Change location</span>
+        <div className="lab-location-cols">
+          <label>
+            District
+            <select size={16} className="lab-select tall" value={districtKey} onChange={(event) => setDistrictKey(event.target.value)}>
+              {data.districts.map((district) => <option key={district.key} value={district.key}>{district.name}</option>)}
+            </select>
+          </label>
+          <label>
+            Site <span className="lab-note">(a unique site also selects its District)</span>
+            <select size={16} className="lab-select tall" value={siteKey} onChange={(event) => pickSite(event.target.value)}>
+              <optgroup label="Unique sites">
+                {data.sites.filter((site) => site.unique).map((site) => <option key={site.key} value={site.key}>{siteLabel(site)}</option>)}
+              </optgroup>
+              <optgroup label="Generic sites">
+                {data.sites.filter((site) => !site.unique).map((site) => <option key={site.key} value={site.key}>{siteLabel(site)}</option>)}
+              </optgroup>
+            </select>
+          </label>
+        </div>
+        <div className="lab-row">
+          <button type="button" className="lab-btn primary" onClick={() => onPick({ districtKey, siteKey })}>Use this location</button>
+          <button type="button" className="lab-btn" onClick={onClose}>Cancel</button>
+        </div>
+      </div>
+    </Overlay>
+  );
+};
+
+/** District and Site names with their resonances; click to change either (an override of the scene's location). */
+export const LocationPanel = ({ location, overridden, onChange, onRelease }: {
+  location: LabLocation;
+  overridden: boolean;
+  onChange: (next: LabLocation) => void;
+  onRelease: () => void;
+}): ReactElement => {
+  const { data, error } = useChronicleLocations();
+  const [picking, setPicking] = useState(false);
+  if (error || !data) {
+    return <p className="lab-note lab-where-wait">{error ?? "Reading locations from the chronicle sheet…"}</p>;
+  }
+  const found = resolveLocation(data, location);
+  if (typeof found === "string") {
+    return <p className="lab-note lab-where-wait">{found}</p>;
+  }
+  const { district, site } = found;
+  return (
+    <div className={`lab-where${overridden ? " lab-overridden" : ""}`} title="Click to change the District or Site" onClick={() => setPicking(true)}>
+      <div className="lab-where-band" style={{ backgroundImage: `url("${cardUrl(`Districts/${district.key}.webp`)}")` }}>
+        <span className="lab-where-name">{district.name}</span>
+        <ResonanceTags list={district.resonances} />
+      </div>
+      <div className="lab-where-band" style={{ backgroundImage: `url("${cardUrl(`Sites/${site.key}.webp`)}")` }}>
+        <span className="lab-where-name">
+          {site.title}
+          {site.subtitle && <span className="lab-where-sub">{site.subtitle}</span>}
+        </span>
+        <ResonanceTags list={site.resonances} />
+      </div>
+      {overridden && <ReleaseOverride onRelease={onRelease} />}
+      {picking && (
+        <LocationPicker
+          data={data}
+          location={location}
+          onPick={(next) => {
+            onChange(next);
+            setPicking(false);
+          }}
+          onClose={() => setPicking(false)}
+        />
+      )}
+    </div>
+  );
+};
+
+/** The three District aspects and the Site aspect, always readable. */
+export const AspectRow = ({ location }: { location: LabLocation }): ReactElement => {
+  const { data, error } = useChronicleLocations();
+  if (error || !data) {
+    return <p className="lab-note">{error ?? "Reading aspects from the chronicle sheet…"}</p>;
+  }
+  const found = resolveLocation(data, location);
+  if (typeof found === "string") {
+    return <p className="lab-note">{found}</p>;
+  }
+  const blocks = [
+    ...found.district.aspects.map((aspect) => ({ aspect, source: "district" })),
+    { aspect: found.site.aspect, source: "site" }
+  ];
+  return (
+    <div className="lab-aspects">
+      {blocks.map(({ aspect, source }) => (
+        <div key={`${source}:${aspect.title}`} className={`lab-aspect ${source}`}>
+          <span className="lab-aspect-title">{aspect.title}</span>
+          <span className="lab-aspect-text">{aspect.text}</span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+/* ---------- NPC roster: masonry of closed groups ---------- */
+
+type NpcGroup = { readonly key: string; readonly label: string; readonly members: readonly CatalogCharacter[] };
+
+/** Every NPC group as a closed stack of all its tokens; click one to open it in place and pick a token. */
 export const MasonryRoster = (): ReactElement => {
   const { catalogs, error } = useSceneCatalogs();
   const [open, setOpen] = useState<string | null>("beesHive");
@@ -205,10 +289,9 @@ export const MasonryRoster = (): ReactElement => {
         ) : (
           <button key={group.key} type="button" className="lab-group" onClick={() => setOpen(group.key)} title={group.members.map((npc) => npc.fullName).join(", ")}>
             <span className="lab-group-cluster">
-              {group.members.slice(0, CLUSTER_SIZE).map((npc) => (
+              {group.members.map((npc) => (
                 <Headshot key={npc.characterKey} className="lab-group-head" characterKey={npc.characterKey} />
               ))}
-              {group.members.length > CLUSTER_SIZE && <span className="lab-group-more">+{group.members.length - CLUSTER_SIZE}</span>}
             </span>
             <span className="lab-group-label">{group.label}</span>
           </button>
@@ -218,23 +301,59 @@ export const MasonryRoster = (): ReactElement => {
   );
 };
 
-/* ---------- Weather: stackable procedural layers ---------- */
+/* ---------- Weather: two axes over one always-drawn scene ---------- */
 
 type Level = 0 | 1 | 2 | 3;
-type WeatherSample = { readonly label: string; readonly rain: Level; readonly wind: Level; readonly snow: Level; readonly thunder: boolean };
+type Precip = "none" | "lightRain" | "heavyRain" | "lightSnow" | "heavySnow";
+type WeatherAxes = { readonly precip: Precip; readonly wind: Level };
 
-const WEATHER_SAMPLES: readonly WeatherSample[] = [
-  { label: "Light rain · low wind", rain: 1, wind: 1, snow: 0, thunder: false },
-  { label: "Clear · calm", rain: 0, wind: 0, snow: 0, thunder: false },
-  { label: "Windy", rain: 0, wind: 3, snow: 0, thunder: false },
-  { label: "Medium rain · moderate wind", rain: 2, wind: 2, snow: 0, thunder: false },
-  { label: "Heavy rain · high wind", rain: 3, wind: 3, snow: 0, thunder: false },
-  { label: "Light snow", rain: 0, wind: 1, snow: 1, thunder: false },
-  { label: "Medium snow", rain: 0, wind: 1, snow: 2, thunder: false },
-  { label: "Blizzard", rain: 0, wind: 3, snow: 3, thunder: false }
-];
+const PRECIP: Record<Precip, { readonly label: string; readonly rain: Level; readonly snow: Level }> = {
+  none: { label: "No rain or snow", rain: 0, snow: 0 },
+  lightRain: { label: "Light rain", rain: 1, snow: 0 },
+  heavyRain: { label: "Heavy rain", rain: 3, snow: 0 },
+  lightSnow: { label: "Light snow", rain: 0, snow: 1 },
+  heavySnow: { label: "Heavy snow", rain: 0, snow: 3 }
+};
 
-const STORM: WeatherSample = { label: "Thunderstorm", rain: 3, wind: 3, snow: 0, thunder: true };
+const WIND_LABEL: Record<Level, string> = { 0: "No wind", 1: "Low wind", 2: "Medium wind", 3: "Max wind" };
+
+const PRECIP_OPTIONS: readonly RingOption<Precip>[] = (Object.keys(PRECIP) as Precip[]).map((value) => ({ value, label: PRECIP[value].label }));
+const WIND_OPTIONS: readonly RingOption<Level>[] = ([0, 1, 2, 3] as const).map((value) => ({ value, label: WIND_LABEL[value] }));
+
+/** Hourly calendar code → the two axes (decoding as `C.WEATHER`: base weather, temperature delta, wind). */
+const PRECIP_BY_BASE: Readonly<Record<string, Precip>> = { x: "none", c: "none", w: "lightRain", p: "heavyRain", t: "heavyRain", s: "lightSnow", b: "heavySnow" };
+const WIND_BY_CODE: Readonly<Record<string, Level>> = { x: 0, s: 1, b: 1, w: 2, g: 2, h: 3, v: 3 };
+
+const temperatureDelta = (ch: string): number => {
+  if (ch === "0") {
+    return 0;
+  }
+  if (ch >= "A" && ch <= "Z") {
+    return ch.charCodeAt(0) - 64;
+  }
+  if (ch >= "a" && ch <= "z") {
+    return -(ch.charCodeAt(0) - 96);
+  }
+  return Number.NaN;
+};
+
+type Scheduled = WeatherAxes & { readonly celsius: number; readonly thunder: boolean };
+
+const scheduledWeather = (calendar: WeatherCalendar, at: Date): Scheduled | string => {
+  const month = at.getMonth() + 1;
+  const code = calendar.codes.get(`${month}-${at.getDate()}`)?.[at.getHours()];
+  const average = calendar.avgTemp.get(month);
+  if (!code || average === undefined) {
+    return `The WEATHER tab has no entry for ${month}/${at.getDate()} at ${at.getHours()}:00.`;
+  }
+  const precip = PRECIP_BY_BASE[code.charAt(0)];
+  const wind = WIND_BY_CODE[code.charAt(4)];
+  const delta = temperatureDelta(code.charAt(2));
+  if (precip === undefined || wind === undefined || Number.isNaN(delta)) {
+    return `Unknown weather code "${code}".`;
+  }
+  return { precip, wind, celsius: average + delta, thunder: code.charAt(0) === "t" };
+};
 
 type FallLayer = { readonly count: number; readonly size: number; readonly opacity: number; readonly seconds: number };
 
@@ -283,63 +402,115 @@ const Fall = ({ id, layer, kind, w, h, slant, seed }: { id: string; layer: FallL
   );
 };
 
-/** Laundry on a line plus a flag: they lean and flap harder as the wind rises. */
-const Wind = ({ level, w, h }: { level: Level; w: number; h: number }): ReactElement => {
-  const lean = [0, 14, 30, 55][level];
-  const seconds = [0, 2.4, 1.2, 0.55][level];
-  const cloths = [0.14, 0.27, 0.4, 0.55].map((u, index) => ({ x: u * w, y: 22 + Math.sin(u * Math.PI) * 14, wide: index % 2 === 0 ? 16 : 11, tall: index % 2 === 0 ? 20 : 26 }));
+/**
+ * The same scene in every weather: laundry on a line tied to a flagpole. Still air leaves the cloths hanging
+ * and the flag slumped around the pole; wind (blowing right to left) lifts and flaps them.
+ */
+const WindScene = ({ level, w, h }: { level: Level; w: number; h: number }): ReactElement => {
+  const poleX = w - 22;
+  const poleTop = 40;
+  const p0 = { x: -10, y: 68 };
+  const p1 = { x: w * 0.42, y: 104 };
+  const p2 = { x: poleX, y: poleTop + 20 };
+  const along = (t: number): Point => ({
+    x: (1 - t) ** 2 * p0.x + 2 * (1 - t) * t * p1.x + t ** 2 * p2.x,
+    y: (1 - t) ** 2 * p0.y + 2 * (1 - t) * t * p1.y + t ** 2 * p2.y
+  });
+  const cloths = [0.16, 0.3, 0.44, 0.6].map((t, index) => ({ ...along(t), wide: index % 2 === 0 ? 16 : 11, tall: index % 2 === 0 ? 20 : 26 }));
+  const lean = [0, 14, 30, 55][level] ?? 0;
+  const seconds = [0, 2.4, 1.2, 0.55][level] ?? 0;
+  const droop = [0, 60, 28, 6][level] ?? 0;
   return (
-    <svg className="lab-wx-layer lab-wx-wind" width={w} height={h} aria-hidden="true" style={{ "--lean": `${lean}deg`, "--flap": `${seconds}s` } as CSSProperties}>
-      <path d={`M -10 20 Q ${w * 0.35} 44 ${w * 0.7} 18`} className="lab-wx-line" />
+    <svg
+      className={`lab-wx-layer lab-wx-wind${level === 0 ? " still" : ""}`}
+      width={w}
+      height={h}
+      aria-hidden="true"
+      style={{ "--lean": `${lean}deg`, "--flap": `${seconds}s` } as CSSProperties}
+    >
+      <path d={`M ${p0.x} ${p0.y} Q ${p1.x} ${p1.y} ${p2.x} ${p2.y}`} className="lab-wx-line" />
       {cloths.map((cloth, index) => (
-        <rect key={index} className="lab-wx-cloth" x={cloth.x} y={cloth.y} width={cloth.wide} height={cloth.tall} rx={1.5} style={{ animationDelay: `${index * -0.27}s` }} />
+        <rect key={index} className="lab-wx-cloth" x={cloth.x - cloth.wide / 2} y={cloth.y - 1} width={cloth.wide} height={cloth.tall} rx={1.5} style={{ animationDelay: `${index * -0.27}s` }} />
       ))}
-      <line x1={w - 34} y1={14} x2={w - 34} y2={h} className="lab-wx-pole" />
-      <path className="lab-wx-flag" d={`M ${w - 33} 15 h 30 l -5 9 l 5 9 h -30 Z`} />
+      <line x1={poleX} y1={poleTop - 3} x2={poleX} y2={h} className="lab-wx-pole" />
+      <circle cx={poleX} cy={poleTop - 4} r={2} className="lab-wx-finial" />
+      <circle cx={p2.x} cy={p2.y} r={1.8} className="lab-wx-finial" />
+      {level === 0 ? (
+        <path className="lab-wx-flag slumped" d={`M ${poleX - 1} ${poleTop} q -6 4 -5 14 q 1 9 -2 15 l 6 1 q 2 -15 2 -30 Z`} />
+      ) : (
+        <g transform={`rotate(${-droop} ${poleX} ${poleTop})`}>
+          <path className="lab-wx-flag" d={`M ${poleX - 1} ${poleTop} h -30 l 5 9 l -5 9 h 30 Z`} />
+        </g>
+      )}
     </svg>
   );
 };
 
-export const WeatherBackdrop = ({ sample, w, h }: { sample: WeatherSample; w: number; h: number }): ReactElement => {
+const WeatherBackdrop = ({ axes, thunder, w, h }: { axes: WeatherAxes; thunder: boolean; w: number; h: number }): ReactElement => {
   const id = useId().replace(/[^a-zA-Z0-9]/g, "");
-  const slant = WIND_SLANT[sample.wind];
+  const slant = WIND_SLANT[axes.wind];
+  const { rain, snow } = PRECIP[axes.precip];
   return (
     <div className="lab-wx" aria-hidden="true">
-      {sample.wind > 0 && <Wind level={sample.wind} w={w} h={h} />}
-      {RAIN_LAYERS[sample.rain].map((layer, index) => (
+      <WindScene level={axes.wind} w={w} h={h} />
+      {RAIN_LAYERS[rain].map((layer, index) => (
         <Fall key={`r${index}`} id={`${id}r${index}`} layer={layer} kind="rain" w={w} h={h} slant={slant} seed={11 + index} />
       ))}
-      {SNOW_LAYERS[sample.snow].map((layer, index) => (
+      {SNOW_LAYERS[snow].map((layer, index) => (
         <Fall key={`s${index}`} id={`${id}s${index}`} layer={layer} kind="snow" w={w} h={h} slant={slant * 0.6} seed={31 + index} />
       ))}
-      {sample.thunder && <span className="lab-wx-flash" />}
+      {thunder && <span className="lab-wx-flash" />}
     </div>
   );
 };
 
-/** Weather cell: the backdrop shows the conditions; the Lab cycles sample weather on click. */
-export const WeatherPanel = ({ override, w, h }: { override: boolean; w: number; h: number }): ReactElement => {
-  const [index, setIndex] = useState(0);
-  const sample = override ? STORM : WEATHER_SAMPLES[index] ?? STORM;
+/**
+ * Weather for the scene's date and hour from the WEATHER calendar. Click either label for a ring of choices;
+ * choosing something other than the calendar's value overrides it until released.
+ */
+export const WeatherPanel = ({ at, forceOverride, w, h }: { at: Date; forceOverride: boolean; w: number; h: number }): ReactElement => {
+  const { data, error } = useWeatherCalendar();
+  const [override, setOverride] = useState<WeatherAxes | null>(null);
+  const [ring, setRing] = useState<{ axis: "precip" | "wind"; at: Point } | null>(null);
+  useEffect(() => setOverride(forceOverride ? { precip: "heavyRain", wind: 3 } : null), [forceOverride]);
+  if (error || !data) {
+    return <div className="lab-wx-panel"><p className="lab-note">{error ?? "Reading the weather calendar…"}</p></div>;
+  }
+  const scheduled = scheduledWeather(data, at);
+  if (typeof scheduled === "string") {
+    return <div className="lab-wx-panel"><p className="lab-note">{scheduled}</p></div>;
+  }
+  const axes = override ?? scheduled;
+  const overridden = override !== null && (override.precip !== scheduled.precip || override.wind !== scheduled.wind);
+  const openRing = (axis: "precip" | "wind") => (event: MouseEvent<HTMLButtonElement>): void => setRing({ axis, at: canvasPoint(event) });
   return (
-    <div className={`lab-wx-panel${override ? " override" : ""}`} onClick={() => setIndex((index + 1) % WEATHER_SAMPLES.length)}>
-      <WeatherBackdrop sample={sample} w={w} h={h} />
-      <span className="lab-wx-label">{sample.label}</span>
-      <span className="lab-wx-source">
-        {override ? "Override until dawn (6:58 AM)" : "Following the schedule"}
-        {override && <Btn tone="danger">Back to schedule</Btn>}
+    <div className={`lab-wx-panel${overridden ? " lab-overridden" : ""}`}>
+      <WeatherBackdrop axes={axes} thunder={!overridden && scheduled.thunder} w={w} h={h} />
+      <span className="lab-wx-axes">
+        <button type="button" className="lab-wx-axis" onClick={openRing("precip")}>{PRECIP[axes.precip].label}</button>
+        <button type="button" className="lab-wx-axis" onClick={openRing("wind")}>{WIND_LABEL[axes.wind]}</button>
       </span>
-      <span className="lab-wx-hint">{override ? "Thunder flash is a stand-in for your animated webp" : "Lab: click to cycle sample weather"}</span>
+      <span className="lab-wx-temp">
+        {scheduled.celsius}°C<sup>{Math.round(scheduled.celsius * 1.8 + 32)}°F</sup>
+      </span>
+      {overridden && <ReleaseOverride onRelease={() => setOverride(null)} />}
+      {ring?.axis === "precip" && (
+        <RingMenu at={ring.at} options={PRECIP_OPTIONS} current={axes.precip} onPick={(precip) => setOverride({ ...axes, precip })} onClose={() => setRing(null)} />
+      )}
+      {ring?.axis === "wind" && (
+        <RingMenu at={ring.at} options={WIND_OPTIONS} current={axes.wind} onPick={(wind) => setOverride({ ...axes, wind })} onClose={() => setRing(null)} />
+      )}
     </div>
   );
 };
 
 /* ---------- When: scene time over a night skyline ---------- */
 
+export const PRESENT_DAY = new Date(2026, 9, 9, 23, 40);
+export const FLASHBACK_TIME = new Date(2026, 8, 22, 20, 15);
+
 const DUSK = 19 * 60 + 2;
 const DAWN = 24 * 60 + 6 * 60 + 58;
-const PRESENT_DAY = { date: new Date(2026, 9, 9), minutes: 23 * 60 + 40 };
-const FLASHBACK = { date: new Date(2026, 8, 22), minutes: 20 * 60 + 15 };
 
 const SKY_STOPS: readonly (readonly [t: number, top: string, bottom: string])[] = [
   [0, "#2a3466", "#a0566e"],
@@ -396,7 +567,7 @@ const skyline = (w: number, h: number): readonly Building[] => {
 };
 
 /** Sky from dusk to dawn: the moon crosses, city windows go dark one by one, and the horizon warms before dawn. */
-export const NightSky = ({ minutes, w, h }: { minutes: number; w: number; h: number }): ReactElement => {
+const NightSky = ({ minutes, w, h }: { minutes: number; w: number; h: number }): ReactElement => {
   const id = useId().replace(/[^a-zA-Z0-9]/g, "");
   const city = useMemo(() => skyline(w, h), [w, h]);
   const stars = useMemo(() => {
@@ -443,43 +614,40 @@ export const NightSky = ({ minutes, w, h }: { minutes: number; w: number; h: num
   );
 };
 
-const formatTime = (minutes: number): string => {
-  const ofDay = ((minutes % 1440) + 1440) % 1440;
-  const hour = Math.floor(ofDay / 60);
-  return `${hour % 12 === 0 ? 12 : hour % 12}:${String(ofDay % 60).padStart(2, "0")} ${hour < 12 ? "AM" : "PM"}`;
-};
+const formatTime = (at: Date): string => at.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
 
-const formatDate = (base: Date, minutes: number): string => {
-  const date = new Date(base);
-  date.setDate(date.getDate() + Math.floor(minutes / 1440));
-  return date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
-};
+const formatDate = (at: Date): string => at.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
 
 const formatSpan = (minutes: number): string => `${Math.floor(minutes / 60)}h ${String(minutes % 60).padStart(2, "0")}m`;
+
+const sameDay = (a: Date, b: Date): boolean => a.toDateString() === b.toDateString();
+
+const shift = (at: Date, minutes: number): Date => new Date(at.getTime() + minutes * 60_000);
 
 const JUMPS: readonly (readonly [label: string, minutes: number])[] = [
   ["10m", 10], ["20m", 20], ["30m", 30], ["1h", 60], ["2h", 120], ["4h", 240], ["1d", 1440], ["3d", 4320], ["1w", 10080]
 ];
 
-/** When cell plus its clock pop-up; the jump buttons really move scene time so the sky can be previewed. */
-export const WhenPanel = ({ differs, forceOpen, w, h }: { differs: boolean; forceOpen: boolean; w: number; h: number }): ReactElement => {
-  const scene = differs ? FLASHBACK : PRESENT_DAY;
-  const [minutes, setMinutes] = useState(scene.minutes);
+/**
+ * Scene date and time over the sky. Present-day time appears (green) only when it differs from scene time;
+ * a scene set before the present day is a flashback (yellow glow). Click for the clock pop-up.
+ */
+export const WhenPanel = ({ at, onChange, forceOpen, w, h }: { at: Date; onChange: (next: Date) => void; forceOpen: boolean; w: number; h: number }): ReactElement => {
   const [open, setOpen] = useState(false);
-  useEffect(() => setMinutes(scene.minutes), [scene.minutes]);
-  const same = !differs && minutes === PRESENT_DAY.minutes;
-  const ofDay = ((minutes % 1440) + 1440) % 1440;
-  const untilDawn = (ofDay >= 12 * 60 ? DAWN : DAWN - 1440) - ofDay;
+  const minutes = at.getHours() * 60 + at.getMinutes();
+  const differs = at.getTime() !== PRESENT_DAY.getTime();
+  const flashback = at.getTime() < PRESENT_DAY.getTime();
+  const untilDawn = (minutes >= 12 * 60 ? DAWN : DAWN - 1440) - minutes;
   const night = nightFraction(minutes) !== null;
   return (
     <>
-      <div className="lab-when" onClick={() => setOpen(true)}>
+      <div className={`lab-when${flashback ? " lab-flashback" : ""}`} onClick={() => setOpen(true)}>
         <NightSky minutes={minutes} w={w} h={h} />
-        <span className="lab-when-present">Present day · {formatDate(PRESENT_DAY.date, PRESENT_DAY.minutes)} · {formatTime(PRESENT_DAY.minutes)}</span>
-        <span className="lab-when-time">{formatTime(minutes)}</span>
-        <span className="lab-when-date">
-          {same ? "Scene time is present day" : `${formatDate(scene.date, minutes)}${differs ? " · flashback" : ""}`}
+        <span className={`lab-when-present${differs ? "" : " hidden"}`}>
+          {sameDay(at, PRESENT_DAY) ? formatTime(PRESENT_DAY) : `${formatDate(PRESENT_DAY)} · ${formatTime(PRESENT_DAY)}`}
         </span>
+        <span className="lab-when-date">{formatDate(at)}</span>
+        <span className="lab-when-time">{formatTime(at)}</span>
         <span className="lab-when-dawn">
           <Chip tone={night ? "warn" : "accent"}>{night ? `Dawn in ${formatSpan(untilDawn)}` : "Daylight"}</Chip>
         </span>
@@ -487,7 +655,7 @@ export const WhenPanel = ({ differs, forceOpen, w, h }: { differs: boolean; forc
       {(open || forceOpen) && (
         <Overlay onClose={() => setOpen(false)}>
           <div className="lab-modal lab-clock-modal">
-            <span className="lab-modal-title">Scene clock · {formatTime(minutes)}</span>
+            <span className="lab-modal-title">Scene clock · {formatTime(at)}</span>
             <span className="lab-note">Click to jump forward, right-click to jump back.</span>
             <div className="lab-row">
               {JUMPS.map(([label, step]) => (
@@ -495,21 +663,21 @@ export const WhenPanel = ({ differs, forceOpen, w, h }: { differs: boolean; forc
                   key={label}
                   type="button"
                   className="lab-btn"
-                  onClick={() => setMinutes(minutes + step)}
+                  onClick={() => onChange(shift(at, step))}
                   onContextMenu={(event) => {
                     event.preventDefault();
-                    setMinutes(minutes - step);
+                    onChange(shift(at, -step));
                   }}
                 >
                   ±{label}
                 </button>
               ))}
-              <button type="button" className="lab-btn" onClick={() => setMinutes(minutes + (untilDawn > 0 ? untilDawn - 15 : 0))}>15m before dawn</button>
-              <button type="button" className="lab-btn" onClick={() => setMinutes(DUSK + 1440 * Math.floor(minutes / 1440))}>Dusk</button>
+              <button type="button" className="lab-btn" onClick={() => onChange(shift(at, untilDawn > 15 ? untilDawn - 15 : 0))}>15m before dawn</button>
+              <button type="button" className="lab-btn" onClick={() => onChange(shift(at, DUSK - minutes))}>Dusk</button>
             </div>
             <div className="lab-row">
               <Btn>Type scene date / time…</Btn>
-              <button type="button" className="lab-btn" onClick={() => setMinutes(PRESENT_DAY.minutes)}>Set scene time to present day</button>
+              <button type="button" className="lab-btn" onClick={() => onChange(PRESENT_DAY)}>Set scene time to present day</button>
               <Btn>Set present day to scene time</Btn>
               <Btn>Real-time: off</Btn>
             </div>
@@ -589,14 +757,13 @@ export const QueuePanel = ({ connected }: { connected: boolean }): ReactElement 
           </>
         )}
       </div>
-      {live ? <p className="lab-queue-hint">Every change goes straight to TTS.</p> : (
+      {!live && (
         <ol className="lab-queue-list">
           <li>Light Victor (Mid Center)</li>
           <li>Black Caesar: present → absent</li>
           <li>Weather: rain → heavy</li>
         </ol>
       )}
-      <p className="lab-queue-hint">Play Scene, End Scene, table / location changes, clock jumps, Clear Stage and rolls skip the queue.</p>
     </div>
   );
 };
