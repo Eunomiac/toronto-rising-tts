@@ -352,6 +352,11 @@ const handleApi = async (request: IncomingMessage, response: ServerResponse, pat
     return;
   }
 
+  if (request.method === "GET" && pathname === "/api/tts/cache") {
+    sendJson(response, 200, ttsEventHub.cached());
+    return;
+  }
+
   if (request.method === "POST" && pathname === "/api/tts/release-editor-port") {
     const result = await dashboardTtsBridge.releasePort();
     sendJson(response, 200, result);

@@ -1,0 +1,91 @@
+import { describe, expect, it } from "vitest";
+import { applyWorldEvent, clockNow, mergeWorldSnapshot, type ClockAnchor, type WorldState } from "./worldState.js";
+
+const MINUTE = 60_000;
+
+const anchor = (overrides: Partial<ClockAnchor> = {}): ClockAnchor => ({
+  activeClock: "scene",
+  running: true,
+  speed: 1,
+  catchUpToPresentDay: false,
+  isPresentDay: false,
+  scene: { year: 2026, month: 3, day: 14, hour: 21, minute: 30 },
+  at: 1_000_000,
+  ...overrides
+});
+
+describe("applyWorldEvent", () => {
+  it("replaces one slice per world topic and stamps the clock with the server time", () => {
+    let state: WorldState = {};
+    state = applyWorldEvent(state, { topic: "phase", data: { phase: "Play", sessionName: "", sessionStartDowntime: false, memoriamActive: false } });
+    state = applyWorldEvent(state, { topic: "clock", data: { activeClock: "scene", running: false, speed: 0 }, at: 42 });
+    expect(state.phase?.phase).toBe("Play");
+    expect(state.clock?.at).toBe(42);
+    state = applyWorldEvent(state, { topic: "phase", data: { phase: "Intermission", sessionName: "", sessionStartDowntime: false, memoriamActive: false } });
+    expect(state.phase?.phase).toBe("Intermission");
+    expect(state.clock?.at).toBe(42);
+  });
+
+  it("turns Lua empty tables into empty lists", () => {
+    const state = applyWorldEvent({}, { topic: "seats", data: { seats: {}, stage: {}, spotlightOrder: {} } });
+    expect(state.seats).toEqual({ seats: [], stage: [], spotlightOrder: [] });
+    const sound = applyWorldEvent({}, { topic: "soundscape", data: { lanes: {} } });
+    expect(sound.soundscape?.lanes).toEqual([]);
+  });
+
+  it("clears on reload and ignores other topics", () => {
+    const state = applyWorldEvent({}, { topic: "scene", data: { liveKey: "elysium" } });
+    expect(applyWorldEvent(state, { topic: "pcSeat", color: "Red", data: {} })).toBe(state);
+    expect(applyWorldEvent(state, { topic: "scene" })).toBe(state);
+    expect(applyWorldEvent(state, { topic: "reload" })).toEqual({});
+  });
+});
+
+describe("mergeWorldSnapshot", () => {
+  it("fills only slices no push has delivered", () => {
+    const pushed = applyWorldEvent({}, { topic: "scene", data: { liveKey: "pushed" } });
+    const merged = mergeWorldSnapshot(pushed, {
+      ok: true,
+      scene: { liveKey: "stale" },
+      clock: { activeClock: "scene", running: false, speed: 0 }
+    }, 7);
+    expect(merged.scene).toEqual({ liveKey: "pushed" });
+    expect(merged.clock?.at).toBe(7);
+  });
+});
+
+describe("clockNow", () => {
+  it("returns the anchor while paused", () => {
+    const clock = anchor({ running: false });
+    expect(clockNow(clock, clock.at + 90 * MINUTE)).toEqual(clock.scene);
+  });
+
+  it("advances speed narrative minutes per real minute", () => {
+    expect(clockNow(anchor(), 1_000_000 + 5 * MINUTE + 59_000)).toEqual({ year: 2026, month: 3, day: 14, hour: 21, minute: 35 });
+    expect(clockNow(anchor({ speed: 5 }), 1_000_000 + 3 * MINUTE)).toEqual({ year: 2026, month: 3, day: 14, hour: 21, minute: 45 });
+  });
+
+  it("rolls over midnight, month end and leap day", () => {
+    const leap = anchor({ scene: { year: 2028, month: 2, day: 28, hour: 23, minute: 50 } });
+    expect(clockNow(leap, leap.at + 20 * MINUTE)).toEqual({ year: 2028, month: 2, day: 29, hour: 0, minute: 10 });
+    const plain = anchor({ scene: { year: 2026, month: 2, day: 28, hour: 23, minute: 50 } });
+    expect(clockNow(plain, plain.at + 20 * MINUTE)).toEqual({ year: 2026, month: 3, day: 1, hour: 0, minute: 10 });
+    const newYear = anchor({ scene: { year: 2026, month: 12, day: 31, hour: 23, minute: 59 } });
+    expect(clockNow(newYear, newYear.at + MINUTE)).toEqual({ year: 2027, month: 1, day: 1, hour: 0, minute: 0 });
+  });
+
+  it("stops at the present day during catch-up", () => {
+    const clock = anchor({
+      speed: 5,
+      catchUpToPresentDay: true,
+      presentDay: { year: 2026, month: 3, day: 14, hour: 22, minute: 0 }
+    });
+    expect(clockNow(clock, clock.at + 60 * MINUTE)).toEqual(clock.presentDay);
+  });
+
+  it("follows the Downtime clock in Downtime", () => {
+    const clock = anchor({ activeClock: "downtime", downtime: { year: 2026, month: 4, day: 1, hour: 20, minute: 0 } });
+    expect(clockNow(clock, clock.at + 2 * MINUTE)).toEqual({ year: 2026, month: 4, day: 1, hour: 20, minute: 2 });
+    expect(clockNow(anchor({ activeClock: "downtime" }), 0)).toBeUndefined();
+  });
+});

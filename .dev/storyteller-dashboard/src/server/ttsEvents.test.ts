@@ -22,14 +22,16 @@ describe("parseDashboardPush", () => {
 });
 
 describe("TtsEventHub", () => {
-  it("keeps the latest event per topic and color, and clears on game load", () => {
+  it("keeps the latest event per topic and color, stamped with its receive time, and clears on game load", () => {
     const hub = new TtsEventHub();
-    hub.publish({ topic: "pcSeat", color: "Red", data: 1 });
-    hub.publish({ topic: "pcSeat", color: "Pink", data: 2 });
-    hub.publish({ topic: "pcSeat", color: "Red", data: 3 });
+    hub.publish({ topic: "pcSeat", color: "Red", data: 1 }, 100);
+    hub.publish({ topic: "pcSeat", color: "Pink", data: 2 }, 200);
+    hub.publish({ topic: "pcSeat", color: "Red", data: 3 }, 300);
+    hub.publish({ topic: "clock", data: { hour: 21 } }, 400);
     expect(hub.cached()).toEqual([
-      { topic: "pcSeat", color: "Red", data: 3 },
-      { topic: "pcSeat", color: "Pink", data: 2 }
+      { topic: "pcSeat", color: "Red", data: 3, at: 300 },
+      { topic: "pcSeat", color: "Pink", data: 2, at: 200 },
+      { topic: "clock", data: { hour: 21 }, at: 400 }
     ]);
     hub.gameLoading();
     expect(hub.cached()).toEqual([]);

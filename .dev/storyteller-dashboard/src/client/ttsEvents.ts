@@ -1,8 +1,12 @@
-/** One TTS push relayed by the dashboard server (`GET /api/tts/events`). */
+/**
+ * One TTS push relayed by the dashboard server (`GET /api/tts/events`). `at` is the server receive
+ * time (epoch ms). Topics and payloads: `.dev/Storyteller Dashboard Docs/Listening to TTS.md`.
+ */
 export type TtsPushEvent = {
   readonly topic: string;
   readonly color?: string;
   readonly data?: unknown;
+  readonly at?: number;
 };
 
 type Listener = (event: TtsPushEvent) => void;

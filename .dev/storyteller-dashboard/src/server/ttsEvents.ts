@@ -2,12 +2,14 @@ import type { ServerResponse } from "node:http";
 
 /**
  * One relayed TTS push event (Lua `dashboard/push.ttslua` → gateway `customMessage` → here → SSE).
- * `reload` is synthesized by the server when TTS loads a game.
+ * `reload` is synthesized by the server when TTS loads a game. `at` is the server receive time
+ * (epoch ms), stamped on publish; the clock topic extrapolates from it.
  */
 export type TtsPushEvent = {
   readonly topic: string;
   readonly color?: string;
   readonly data?: unknown;
+  readonly at?: number;
 };
 
 const HEARTBEAT_MS = 25_000;
@@ -54,9 +56,10 @@ export class TtsEventHub {
   private readonly clients = new Set<ServerResponse>();
   private readonly latest = new Map<string, TtsPushEvent>();
 
-  publish(event: TtsPushEvent): void {
-    this.latest.set(cacheKey(event), event);
-    this.broadcast(event);
+  publish(event: TtsPushEvent, now: number = Date.now()): void {
+    const stamped: TtsPushEvent = { ...event, at: now };
+    this.latest.set(cacheKey(stamped), stamped);
+    this.broadcast(stamped);
   }
 
   gameLoading(): void {
