@@ -1,0 +1,143 @@
+
+
+[load+19.493s] --- VTM5E Module Loaded at 7:05:13 AM ---
+[load+19.493s] Startup step: initialize-game-state
+[load+89.669s] State: Loading saved game state.
+State: Current phase is Intermission
+[SyncTrace] trace is ON (saved setting); turn it off to print the summary
+[load+103.554s] Startup step: st-dice-drawers-deactivate-flags
+[load+103.585s] Startup step: main-onload
+[load+103.574s] Startup step: soundscape-bootstrap-silence
+[load+103.613s] Main: Module initialization complete.
+[load+103.585s] Main: Setting up players.
+[load+103.566s] Startup step: conditions-validate-and-reconcile
+[load+103.613s] Startup step: schedule-loose-dice-cleanup
+[load+103.613s] Main: Syncing phase - Intermission sub=Downtime
+[load+103.585s] Main: Core module loaded.
+[load+103.614s] Startup step: waiting-for-loose-dice-cleanup
+[SyncTrace] #1 Palette.installSnaps 47.6ms >1 frame force=true
+Syncing 83 scripts (incremental)
+[load+108.969s] Startup step: startup-loose-dice-cleanup
+[load+108.984s] [Startup] loose-dice cleanup: lowered 0 PC tray(s), restored 3 ST drawer(s), swept 0 on-table d10
+[load+108.984s] Startup step: loose-dice-cleanup-complete
+[load+109.012s] Startup step: startup-ready-ensure-global-xml
+[load+109.012s] Startup step: startup-ready-conditions-met
+[load+109.012s] Startup step: startup-ready-recover-preview-draft
+[load+109.013s] Startup step: startup-ready-final-sync-full
+[load+111.519s] Startup step: st-dice-drawers-workshop-home
+[load+111.189s] [Gameboard] Control-board snaps installed (63 points on bea29a)
+[SyncTrace] #2 Sync.full 2448ms (self 59.5ms) >1 frame ran force=false reason=onLoad_startup_gate skipSoundscape=false
+[SyncTrace] #2   Scenes.reconcileFromState 50.0ms >1 frame ran force=false
+[SyncTrace] #2   Scenes.reconcileTopFogFromState 0.5ms
+[SyncTrace] #2   Scenes.reconcileSkyboxFromState 0.0ms
+[SyncTrace] #2   Phases.reconcileParticleEmitterFromPhase 0.0ms
+[SyncTrace] #2   Soundscape.reconcileFromState 1.0ms
+[SyncTrace] #2   L.InitLights 531ms (self 60.1ms) >1 frame
+[SyncTrace] #2     L.reconcileAllPlayers 471ms (self 0.0ms) >1 frame ran force=false
+[SyncTrace] #2       L.reconcileForPlayer x9 total 471ms max 218ms >1 frame
+[SyncTrace] #2   HO.syncAll 10.0ms (self 2.0ms) ran flags=skipTopFog force=false
+[SyncTrace] #2     HO.reconcileForSeat x5 total 8.0ms max 3.1ms
+[SyncTrace] #2   L.computePcSeatPresentationInputFingerprint 42.7ms >1 frame
+[SyncTrace] #2   HO.computeOverlayInputFingerprint 1.5ms
+[SyncTrace] #2   NPCS.reconcileAllFromState 1619ms (self 272ms) >1 frame ran flags=deferUiRefresh force=false reason=
+[SyncTrace] #2     NPCS.reconcileFamilyOffSpotlight x9 total 8.3ms max 1.6ms
+[SyncTrace] #2     RSL.SyncTable(Table B0) 784ms (self 1.0ms) >1 frame force=true
+[SyncTrace] #2       RSL.resolveSeatObjectsFromTable(Table B0) 783ms (self 211ms) >1 frame ran force=true tableKey=Table B0
+[SyncTrace] #2         FSL.applyOccupantRigs 196ms >1 frame
+[SyncTrace] #2         Compulsions.reconcileSelectedCardsToAnchors 8.1ms
+[SyncTrace] #2         RSL.reconcileYStateSeatObjectVisibilityFromWorld 274ms >1 frame
+[SyncTrace] #2         L.reconcileAllPlayers 42.0ms (self 0.0ms) >1 frame ran flags=skipNpcSeats,skipStageBoundNpcSeats force=false
+[SyncTrace] #2           L.reconcileForPlayer x5 total 42.0ms max 10.7ms
+[SyncTrace] #2         HO.syncAll 8.7ms (self 1.0ms) ran force=true
+[SyncTrace] #2           HO.reconcileForSeat x5 total 7.7ms max 2.0ms
+[SyncTrace] #2         L.computePcSeatPresentationInputFingerprint 42.5ms >1 frame
+[SyncTrace] #2         HO.computeOverlayInputFingerprint 2.0ms
+[SyncTrace] #2         DPP.repositionAllAfterLayout 0.0ms
+[SyncTrace] #2     * NPCS.commitNpcSeatLayout layout seatWork=false
+[SyncTrace] #2     O.reconcilePcSeatHiddenObjectsFromState 15.4ms
+[SyncTrace] #2     NPCS.ensureNpcInPreloadZone x82 total 137ms max 3.4ms
+[SyncTrace] #2     NPCS.ensureNpcInPreloadZone(alexandra) 12.2ms (self 12.2ms) flags=deferUiRefresh,skipSeatSync
+[SyncTrace] #2       NPCS.reconcileFamilyOffSpotlight(0) 0.0ms force=false
+[SyncTrace] #2     NPCS.ensureNpcInPreloadZone(alexisHoltt) 13.5ms (self 12.5ms) flags=deferUiRefresh,skipSeatSync
+[SyncTrace] #2       NPCS.reconcileFamilyOffSpotlight(0) 1.0ms force=false
+[SyncTrace] #2     NPCS.ensureNpcInPreloadZone(chokesOnMoonlight) 13.3ms (self 12.3ms) flags=deferUiRefresh,skipSeatSync
+[SyncTrace] #2       NPCS.reconcileFamilyOffSpotlight(0) 1.0ms force=false
+[SyncTrace] #2     NPCS.ensureNpcInPreloadZone(iq) 13.6ms (self 13.0ms) flags=deferUiRefresh,skipSeatSync
+[SyncTrace] #2       NPCS.reconcileFamilyOffSpotlight(0) 0.5ms force=false
+[SyncTrace] #2     NPCS.ensureNpcInPreloadZone(jesseSharp) 13.6ms (self 12.5ms) flags=deferUiRefresh,skipSeatSync
+[SyncTrace] #2       NPCS.reconcileFamilyOffSpotlight(0) 1.0ms force=false
+[SyncTrace] #2     NPCS.ensureNpcInPreloadZone(maxFloyd) 15.1ms (self 14.0ms) flags=deferUiRefresh,skipSeatSync
+[SyncTrace] #2       NPCS.reconcileFamilyOffSpotlight(0) 1.1ms force=false
+[SyncTrace] #2     NPCS.ensureNpcInPreloadZone(myleneHamelin) 12.7ms (self 11.7ms) flags=deferUiRefresh,skipSeatSync
+[SyncTrace] #2       NPCS.reconcileFamilyOffSpotlight(0) 1.0ms force=false
+[SyncTrace] #2     NPCS.ensureNpcInPreloadZone(sageSam) 14.6ms (self 13.1ms) flags=deferUiRefresh,skipSeatSync
+[SyncTrace] #2       NPCS.reconcileFamilyOffSpotlight(0) 1.5ms force=false
+[SyncTrace] #2     NPCS.reconcilePreloadPoolHideFromState 63.5ms >1 frame force=false
+[SyncTrace] #2     Reconcile.reconcileControlBoardFromState 230ms (self 84.6ms) >1 frame ran force=false forceSnaps=false
+[SyncTrace] #2       Snaps.installPolarSnaps 107ms >1 frame ran guid=bea29a points=63
+[SyncTrace] #2       Palette.installSnaps 38.8ms >1 frame force=false
+[SyncTrace] #2   Spotlight.reconcileFromState 40.0ms (self 23.5ms) >1 frame ran phase=Intermission reparked=true
+[SyncTrace] #2     O.reconcilePcSeatHiddenObjectsFromState 16.6ms
+[SyncTrace] #2   SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked 1.5ms
+[SyncTrace] #2   Coterie.reconcileAll 28.8ms >1 frame
+[SyncTrace] #2   Projects.reconcileCourtProjectsAll 1.0ms
+[SyncTrace] #2   Sync.ui 60.8ms (self 0.5ms) >1 frame flags=adminLighting,gameStateOverlay,phase,playerHud,playerStats,scene,+2
+[SyncTrace] #2     UpdateUIDisplays 60.3ms (self 25.3ms) >1 frame ran flags=adminLighting,gameStateOverlay,phase,playerHud,playerStats,scene,+2 playerHud=true refreshAll=false scenesPanel=true
+[SyncTrace] #2       HUDP.updatePlayerUI(Black) 35.0ms >1 frame
+[load+111.528s] Startup step: dice-bag-visibility-defaults
+[load+111.550s] Startup step: startup-ready-wait-locked-objects
+[load+111.565s] Startup step: apply-locked-objects-at-startup-gate
+[load+111.590s] Startup step: startup-ready-final-locked-objects-pass
+[DPP] reconcile parked dice: adopted=264 culled=0 orphans=0 (scan=264)
+[load+112.075s] Dice preload pool warmed 0 bag(s).
+[load+112.075s] Startup step: startup-ready-reconcile-parked-hide
+[SyncTrace] #3 RSL.reconcileYStateSeatObjectVisibilityFromWorld 108ms >1 frame
+[load+111.599s] Startup step: dice-preload-pool-warm
+[SyncTrace] #4 Phases.reconcileParticleEmitterFromPhase 0.0ms
+[SyncTrace] #5 NPCS.reconcilePreloadPoolHideFromState 174ms >1 frame force=true
+[load+112.460s] Startup step: startup-ready-apply-session-blindfold-images
+[load+112.746s] Startup step: startup-ready-complete
+[load+112.460s] Preload NPC hide reconciled for 109 instance(s).
+[load+112.551s] Startup step: startup-ready-intermission-theme
+[load+112.544s] Startup step: startup-ready-apply-global-blindfold-from-phase
+[load+112.746s] Startup step: startup-connection-checkpoint
+[load+112.746s] Startup readiness gate complete (global blindfold follows phase=Intermission).
+[load+113.948s] === VTM5E Module Loading Complete ===
+[SyncTrace] SUMMARY 35 function(s) over 18.0s
+[SyncTrace] SUMMARY  calls   ran  skip      total       self       max  function
+[SyncTrace] SUMMARY      1     1     0     2448ms     59.5ms    2448ms  Sync.full
+[SyncTrace] SUMMARY      1     1     0     1619ms      272ms    1619ms  NPCS.reconcileAllFromState
+[SyncTrace] SUMMARY      1     0     0      784ms      1.0ms     784ms  RSL.SyncTable
+[SyncTrace] SUMMARY      1     1     0      783ms      211ms     783ms  RSL.resolveSeatObjectsFromTable
+[SyncTrace] SUMMARY      1     0     0      531ms     60.1ms     531ms  L.InitLights
+[SyncTrace] SUMMARY     14     0     0      513ms      513ms     218ms  L.reconcileForPlayer
+[SyncTrace] SUMMARY      2     2     0      513ms      0.0ms     471ms  L.reconcileAllPlayers
+[SyncTrace] SUMMARY      2     0     0      382ms      382ms     274ms  RSL.reconcileYStateSeatObjectVisibilityFromWorld
+[SyncTrace] SUMMARY     90     0     0      246ms      238ms    15.1ms  NPCS.ensureNpcInPreloadZone
+[SyncTrace] SUMMARY      2     0     0      238ms      238ms     174ms  NPCS.reconcilePreloadPoolHideFromState
+[SyncTrace] SUMMARY      1     1     0      230ms     84.6ms     230ms  Reconcile.reconcileControlBoardFromState
+[SyncTrace] SUMMARY      1     0     0      196ms      196ms     196ms  FSL.applyOccupantRigs
+[SyncTrace] SUMMARY      1     1     0      107ms      107ms     107ms  Snaps.installPolarSnaps
+[SyncTrace] SUMMARY      2     0     0     86.4ms     86.4ms    47.6ms  Palette.installSnaps
+[SyncTrace] SUMMARY      2     0     0     85.3ms     85.3ms    42.7ms  L.computePcSeatPresentationInputFingerprint
+[SyncTrace] SUMMARY      1     0     0     60.8ms      0.5ms    60.8ms  Sync.ui
+[SyncTrace] SUMMARY      1     1     0     60.3ms     25.3ms    60.3ms  UpdateUIDisplays
+[SyncTrace] SUMMARY      1     1     0     50.0ms     50.0ms    50.0ms  Scenes.reconcileFromState
+[SyncTrace] SUMMARY      1     1     0     40.0ms     23.5ms    40.0ms  Spotlight.reconcileFromState
+[SyncTrace] SUMMARY      1     0     0     35.0ms     35.0ms    35.0ms  HUDP.updatePlayerUI
+[SyncTrace] SUMMARY      2     0     0     32.0ms     32.0ms    16.6ms  O.reconcilePcSeatHiddenObjectsFromState
+[SyncTrace] SUMMARY      1     0     0     28.8ms     28.8ms    28.8ms  Coterie.reconcileAll
+[SyncTrace] SUMMARY      2     2     0     18.8ms      3.0ms    10.0ms  HO.syncAll
+[SyncTrace] SUMMARY     10     0     0     15.8ms     15.8ms     3.1ms  HO.reconcileForSeat
+[SyncTrace] SUMMARY     17     0     0     15.6ms     15.6ms     1.6ms  NPCS.reconcileFamilyOffSpotlight
+[SyncTrace] SUMMARY      1     0     0      8.1ms      8.1ms     8.1ms  Compulsions.reconcileSelectedCardsToAnchors
+[SyncTrace] SUMMARY      2     0     0      3.6ms      3.6ms     2.0ms  HO.computeOverlayInputFingerprint
+[SyncTrace] SUMMARY      1     0     0      1.5ms      1.5ms     1.5ms  SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked
+[SyncTrace] SUMMARY      1     0     0      1.0ms      1.0ms     1.0ms  Projects.reconcileCourtProjectsAll
+[SyncTrace] SUMMARY      1     0     0      1.0ms      1.0ms     1.0ms  Soundscape.reconcileFromState
+[SyncTrace] SUMMARY      1     0     0      0.5ms      0.5ms     0.5ms  Scenes.reconcileTopFogFromState
+[SyncTrace] SUMMARY      1     0     0      0.0ms      0.0ms     0.0ms  Scenes.reconcileSkyboxFromState
+[SyncTrace] SUMMARY      1     0     0          -          -         -  NPCS.commitNpcSeatLayout
+[SyncTrace] SUMMARY      2     0     0      0.0ms      0.0ms     0.0ms  Phases.reconcileParticleEmitterFromPhase
+[SyncTrace] SUMMARY      1     0     0      0.0ms      0.0ms     0.0ms  DPP.repositionAllAfterLayout
+Sync trace: off
