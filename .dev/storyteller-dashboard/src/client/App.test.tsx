@@ -7,6 +7,7 @@ vi.mock("./scenesTab", () => ({ initScenesTab: vi.fn() }));
 vi.mock("./luaTab", () => ({ initLuaTab: vi.fn() }));
 vi.mock("./generateNpcTab", () => ({ initGenerateNpc: vi.fn() }));
 vi.mock("./lab/LabTab", () => ({ LabTab: () => null }));
+vi.mock("./scenesPanel/ScenesPanel", () => ({ ScenesPanel: () => null }));
 
 import { App } from "./App";
 
@@ -18,15 +19,16 @@ describe("App shell", () => {
     })));
   });
 
-  it("shows Storyteller tabs with Stage NPCs selected", () => {
+  it("shows Storyteller tabs with Scenes selected", () => {
     render(<App />);
-    expect(screen.getByRole("tab", { name: "Stage NPCs" })).toHaveAttribute("aria-selected", "true");
-    expect(screen.getByRole("tab", { name: "Scenes" })).toHaveAttribute("aria-selected", "false");
+    expect(screen.getByRole("tab", { name: "Scenes" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Stage NPCs" })).toHaveAttribute("aria-selected", "false");
+    expect(screen.getByRole("tab", { name: "Scenes (old)" })).toHaveAttribute("aria-selected", "false");
     expect(screen.getByRole("tab", { name: "PCs" })).toHaveAttribute("aria-selected", "false");
     expect(document.getElementById("panel-scenes")).toHaveAttribute("hidden");
   });
 
-  it("keeps panels mounted when switching to Scenes", async () => {
+  it("keeps panels mounted when switching to the old Scenes tab", async () => {
     const user = userEvent.setup();
     render(<App />);
     const scenesTab = document.getElementById("tab-scenes");

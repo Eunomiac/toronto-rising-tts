@@ -73,6 +73,10 @@ export const Btn = ({ children, tone }: { children: ReactNode; tone?: "primary" 
   <span className={`lab-btn${tone ? ` ${tone}` : ""}`}>{children}</span>
 );
 
+/** The visible canvas: the Lab and the Scenes tab each have one, and only the active tab's is laid out. */
+export const activeCanvas = (): HTMLElement | null =>
+  Array.from(document.querySelectorAll<HTMLElement>(".lab-canvas")).find((canvas) => canvas.offsetParent !== null) ?? null;
+
 /** Canvas-relative point for a mouse event, for placing pop-ups rendered through `Overlay`. */
 export const canvasPoint = (event: MouseEvent<HTMLElement>): { x: number; y: number } => {
   const canvas = event.currentTarget.closest(".lab-canvas");
@@ -88,7 +92,7 @@ export const canvasPoint = (event: MouseEvent<HTMLElement>): { x: number; y: num
  * Escape to close. Rendered into the Lab canvas (sketch coordinates) below the pins, so pop-ups can be pinned.
  */
 export const Overlay = ({ onClose, children }: { onClose: () => void; children: ReactNode }): ReactElement => {
-  const canvas = document.querySelector(".lab-canvas");
+  const canvas = activeCanvas();
   if (!canvas) {
     throw new Error("Lab overlay needs the Lab canvas.");
   }
@@ -137,7 +141,7 @@ type PcTrackers = {
   readonly hunger: number;
 };
 
-type SeatSketch = {
+export type SeatSketch = {
   readonly slot: number;
   readonly name?: string;
   readonly characterKey?: string;
@@ -288,8 +292,9 @@ const SeatContent = ({ seat }: { seat: SeatSketch }): ReactElement => (
  * disconnected seats are told apart by border style and image treatment. Clicking a PC seat opens that PC's
  * tracker controls; clicking anywhere else closes them.
  */
-export const Seats = (): ReactElement => {
-  const [sheet, setSheet] = useState(labSheet);
+export const Seats = ({ seats = SEATS, liveSheet }: { seats?: readonly SeatSketch[]; liveSheet?: SheetSnapshot }): ReactElement => {
+  const [labState, setSheet] = useState(labSheet);
+  const sheet = liveSheet ?? labState;
   const [openColor, setOpenColor] = useState<SeatColor | null>(null);
   const [ring, setRing] = useState<TrackRing | null>(null);
   useEffect(() => {
@@ -306,14 +311,14 @@ export const Seats = (): ReactElement => {
     return () => document.removeEventListener("pointerdown", onPointerDown);
   }, [openColor]);
   const openSeat = sheet.seats.find((seat) => seat.color === openColor);
-  const canvas = document.querySelector(".lab-canvas");
+  const canvas = activeCanvas();
   return (
     <div className="lab-seats">
-      {SEATS.filter((seat) => seat.kind !== "nochair").map((seat) => {
+      {seats.filter((seat) => seat.kind !== "nochair").map((seat) => {
         const className = `lab-seat ${seat.kind}${seat.state ? ` ${seat.state}` : ""}${seat.playedBy ? " role" : ""}`;
         const style = seat.color ? ({ "--seat-color": SEAT_ACCENT[seat.color] } as CSSProperties) : undefined;
         const open = seat.color !== undefined && seat.color === openColor;
-        const controllable = seat.color !== undefined && seat.trackers !== undefined;
+        const controllable = seat.color !== undefined && sheet.seats.some((entry) => entry.color === seat.color);
         return (
           <div
             key={seat.slot}
@@ -474,7 +479,7 @@ const packSlots = (pack: WidePack, w: number, h: number): readonly { x: number; 
   });
 };
 
-type StageToken = {
+export type StageToken = {
   readonly characterKey: string;
   readonly name: string;
   readonly lit: boolean;
@@ -529,7 +534,14 @@ const Token = ({ token, x, y, color, boss }: { token: StageToken; x: number; y: 
  * on the players' side of the stage (the Far zones are furthest from them). Token positions map straight to stage positions in the game world, so tokens can sit
  * anywhere; pack slots are mild snap points and group drop targets.
  */
-export const WideBoard = ({ w, h }: { w: number; h: number }): ReactElement => {
+export type LiveBoard = {
+  readonly seats: readonly SeatSketch[];
+  readonly sheet: SheetSnapshot;
+  readonly tokens: readonly StageToken[];
+  readonly table: string;
+};
+
+export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoard }): ReactElement => {
   const [ring, setRing] = useState<{ x: number; y: number } | null>(null);
   const [placement, setPlacement] = useState<"Standard" | "Scatter">("Standard");
   const [clearArmed, setClearArmed] = useState(false);
@@ -565,7 +577,7 @@ export const WideBoard = ({ w, h }: { w: number; h: number }): ReactElement => {
         );
       })}
     </svg>
-    {STAGE_TOKENS.map((token) => {
+    {(live?.tokens ?? STAGE_TOKENS).map((token) => {
       const point = tokenPoint(token, w, h);
       const group = tokenGroup(token.characterKey);
       return (
@@ -580,10 +592,10 @@ export const WideBoard = ({ w, h }: { w: number; h: number }): ReactElement => {
       );
     })}
     <div className="lab-board-seats floating bottom" style={{ top: h - h * WIDE_SEAT_BAND - 8, height: h * WIDE_SEAT_BAND }}>
-      <Seats />
+      {live ? <Seats seats={live.seats} liveSheet={live.sheet} /> : <Seats />}
     </div>
     <span className="lab-board-table top">
-      <Btn>Table B2 ▾</Btn>
+      <Btn>{live?.table ?? "Table B2"} ▾</Btn>
     </span>
     <span className="lab-help" tabIndex={0}>
       ?

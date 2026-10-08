@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { SceneCatalogs } from "../scenes/types";
 import type { SeatsSlice, SoundscapeSlice } from "../worldState";
-import { liveSeats, liveTokens, soundView, spotlightView, toDate, weatherAxes } from "./liveScene";
+import { boardToStage, liveSeats, liveTokens, soundView, spotlightView, toDate, weatherAxes } from "./liveScene";
 
 const catalogs = {
   pcs: [
@@ -83,6 +83,16 @@ describe("soundView", () => {
     expect(view.playing.featured).toBe(true);
     expect(view.ambient).toBeUndefined();
     expect(soundView({ ...sound, musicEnabled: false }).playlist).toBe("Silent");
+  });
+});
+
+describe("boardToStage", () => {
+  it("puts the board's pack anchors where the drawing has its packs", () => {
+    const center = boardToStage(0.5, 0.45);
+    expect(center.u).toBeCloseTo(0.5, 2);
+    expect(center.v).toBeCloseTo(0.61, 2);
+    expect(boardToStage(0.29, 0.56).u).toBeCloseTo(0.12, 2);
+    expect(boardToStage(0.41, 0.75).v).toBeCloseTo(0.17, 2);
   });
 });
 

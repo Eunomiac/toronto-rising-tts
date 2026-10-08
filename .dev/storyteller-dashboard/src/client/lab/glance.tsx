@@ -27,6 +27,7 @@ import {
   type Odds
 } from "./huntOdds";
 import { Btn, Overlay, canvasPoint } from "./sketch";
+import type { SoundView, SpotlightView } from "../scenesPanel/liveScene";
 
 /**
  * Panels for the Glance strip sketch (scenes-r1-b), pin pass 3: location and weather read live from the
@@ -177,11 +178,12 @@ const LocationPicker = ({ data, location, onPick, onClose }: {
  * District and Site names with their resonances over the Site card's illustration; click to change either
  * (an override of the scene's location).
  */
-export const LocationPanel = ({ location, overridden, onChange, onRelease }: {
+export const LocationPanel = ({ location, overridden, onChange, onRelease, readOnly = false }: {
   location: LabLocation;
   overridden: boolean;
   onChange: (next: LabLocation) => void;
   onRelease: () => void;
+  readOnly?: boolean;
 }): ReactElement => {
   const { data, error } = useChronicleLocations();
   const [picking, setPicking] = useState(false);
@@ -196,9 +198,9 @@ export const LocationPanel = ({ location, overridden, onChange, onRelease }: {
   return (
     <div
       className={`lab-where${overridden ? " lab-overridden" : ""}`}
-      title="Click to change the District or Site"
+      title={readOnly ? undefined : "Click to change the District or Site"}
       style={{ backgroundImage: `url("${cardUrl(`Sites/${site.key}.webp`)}")` }}
-      onClick={() => setPicking(true)}
+      onClick={() => setPicking(!readOnly)}
     >
       <div className="lab-where-band">
         <span className="lab-where-name district">{district.name}</span>
@@ -1171,10 +1173,12 @@ const ExtremeTemperature = ({ extreme, filterId }: { extreme: Extreme; filterId:
  * choices; choosing something other than the calendar's value overrides it until released. Fog always
  * follows the calendar (TTS draws no fog for weather).
  */
-export const WeatherPanel = ({ at, forceOverride, forceCelsius, w, h }: {
+export const WeatherPanel = ({ at, forceOverride, forceCelsius, live, w, h }: {
   at: Date;
   forceOverride: boolean;
   forceCelsius: number | null;
+  /** The weather TTS is playing; the calendar then only supplies temperature and fog. Overrides wait for the TTS command bridge. */
+  live?: WeatherAxes;
   w: number;
   h: number;
 }): ReactElement => {
@@ -1190,9 +1194,14 @@ export const WeatherPanel = ({ at, forceOverride, forceCelsius, w, h }: {
   if (typeof scheduled === "string") {
     return <div className="lab-wx-panel"><p className="lab-note">{scheduled}</p></div>;
   }
-  const axes: WeatherAxes = override ?? { precip: scheduled.precip, wind: scheduled.wind, thunder: scheduled.thunder };
-  const overridden = override !== null && !sameAxes(override, scheduled);
-  const openRing = (axis: "precip" | "wind") => (event: MouseEvent<HTMLButtonElement>): void => setRing({ axis, at: canvasPoint(event) });
+  const base: WeatherAxes = live ?? { precip: scheduled.precip, wind: scheduled.wind, thunder: scheduled.thunder };
+  const axes: WeatherAxes = override ?? base;
+  const overridden = override !== null && !sameAxes(override, base);
+  const openRing = (axis: "precip" | "wind") => (event: MouseEvent<HTMLButtonElement>): void => {
+    if (!live) {
+      setRing({ axis, at: canvasPoint(event) });
+    }
+  };
   const celsius = forceCelsius ?? scheduled.celsius;
   const extreme = extremeFor(celsius);
   return (
@@ -1471,18 +1480,23 @@ const REAL_TIME_RATES: readonly RingOption<RealTimeRate>[] = [
  * present day is a flashback (yellow glow). Drag the moon to pick a time tonight, then press play over the
  * clock to run the time animation. Click anywhere else for the calendar pop-up.
  */
-export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, w, h }: {
+export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, live, w, h }: {
   at: Date;
   present: Date;
   onChange: (next: Date) => void;
   onSetPresent: (next: Date) => void;
   forceOpen: boolean;
+  /** TTS's real-time state; the caller advances `at`. Without commands the panel is read-only (no calendar, no moon drag). */
+  live?: { readonly running: boolean; readonly speed: number; readonly readOnly: boolean };
   w: number;
   h: number;
 }): ReactElement => {
   const [open, setOpen] = useState(false);
-  const [realTime, setRealTime] = useState(false);
-  const [rate, setRate] = useState<RealTimeRate>(2);
+  const [localRealTime, setRealTime] = useState(false);
+  const [localRate, setRate] = useState<RealTimeRate>(2);
+  const realTime = live ? live.running : localRealTime;
+  const rate = live ? live.speed : localRate;
+  const readOnly = live?.readOnly === true;
   const [rateRing, setRateRing] = useState<Point | null>(null);
   const [target, setTarget] = useState<number | null>(null);
   const [playing, setPlaying] = useState<{ from: number; to: number } | null>(null);
@@ -1509,12 +1523,12 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, w, h
   const atRef = useRef(at);
   atRef.current = at;
   useEffect(() => {
-    if (!realTime) {
+    if (!realTime || live) {
       return undefined;
     }
     const id = window.setInterval(() => changeRef.current(new Date(atRef.current.getTime() + 1000 * rate)), 1000);
     return () => window.clearInterval(id);
-  }, [realTime, rate]);
+  }, [realTime, rate, live]);
   const minutes = at.getHours() * 60 + at.getMinutes();
   const differs = at.getTime() !== present.getTime();
   const flashback = at.getTime() < present.getTime();
@@ -1531,8 +1545,8 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, w, h
   };
   return (
     <>
-      <div className={`lab-when${flashback ? " lab-flashback" : ""}`} onClick={() => setOpen(true)}>
-        <NightSky minutes={minutes} w={w} h={h} drag={{ target: playing ? null : target, onDrag: setTarget }} />
+      <div className={`lab-when${flashback ? " lab-flashback" : ""}`} onClick={() => setOpen(!readOnly)}>
+        <NightSky minutes={minutes} w={w} h={h} drag={{ target: playing ? null : target, onDrag: readOnly ? () => undefined : setTarget }} />
         <span className={`lab-when-present${differs ? "" : " hidden"}`}>
           {sameDay(at, present) ? formatTime(present) : `${formatDate(present)} · ${formatTime(present)}`}
         </span>
@@ -1545,18 +1559,22 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, w, h
           title={`${realTime ? `Real time is on: scene time runs at ${rate}× the real clock` : "Real time is off"}. Right-click to set the speed.`}
           onClick={(event) => {
             event.stopPropagation();
-            setRealTime(!realTime);
+            if (!readOnly) {
+              setRealTime(!realTime);
+            }
           }}
           onContextMenu={(event) => {
             event.preventDefault();
             event.stopPropagation();
-            setRateRing(canvasPoint(event));
+            if (!readOnly) {
+              setRateRing(canvasPoint(event));
+            }
           }}
         >
           {realTime ? <span className="lab-when-rate">{rate}×</span> : <Icon name="clock" />}
         </button>
         {rateRing && (
-          <RingMenu at={rateRing} options={REAL_TIME_RATES} current={rate} onPick={setRate} onClose={() => setRateRing(null)} />
+          <RingMenu at={rateRing} options={REAL_TIME_RATES} current={localRate} onPick={setRate} onClose={() => setRateRing(null)} />
         )}
         {targetTime && (
           <span className="lab-when-play">
@@ -1597,7 +1615,13 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, w, h
 
 /* ---------- Sound: one row per channel ---------- */
 
-type Overridable<T> = { readonly value: T; readonly set: (next: T) => void; readonly overridden: boolean; readonly release: () => void };
+type Overridable<T> = {
+  readonly value: T;
+  readonly set: (next: T) => void;
+  readonly overridden: boolean;
+  readonly release: () => void;
+  readonly readOnly?: boolean;
+};
 
 /** A sound value that starts at the scene's value; any other value is an override until released. */
 const useOverridable = <T,>(base: T): Overridable<T> => {
@@ -1605,9 +1629,15 @@ const useOverridable = <T,>(base: T): Overridable<T> => {
   return { value, set, overridden: value !== base, release: () => set(base) };
 };
 
+const noop = (): void => undefined;
+
+/** A value shown as TTS reports it, with no local edits (until the command bridge carries sound changes). */
+const fixed = <T,>(value: T): Overridable<T> => ({ value, set: noop, overridden: false, release: noop, readOnly: true });
+
 const Slider = ({ level }: { level: Overridable<number> }): ReactElement => (
   <input
     type="range"
+    disabled={level.readOnly === true}
     className="lab-slider"
     min={0}
     max={100}
@@ -1646,6 +1676,18 @@ const AMBIENT_TRACKS = [
 ] as const;
 
 const AMBIENT_GRID_WIDTH = 660;
+
+/** Catalog keys of `FEATURED_TRACKS`, in the same order. */
+const FEATURED_KEYS = ["TR_Full", "TR_Intro", "TR_Loop", "STB_HouseOfTheRisingSun"] as const;
+
+const featuredLabel = (key: string | undefined): string => {
+  const index = FEATURED_KEYS.findIndex((entry) => entry === key);
+  return FEATURED_TRACKS[index] ?? key ?? FEATURED_TRACKS[0];
+};
+
+/** Location catalog keys are the labels in camelCase (`softIndoor` → "Soft Indoor"). */
+const ambientLabel = (key: string): string =>
+  AMBIENT_TRACKS.find((label) => label.replace(/ /g, "").toLowerCase() === key.toLowerCase()) ?? key;
 
 /**
  * Every ambience loop as a button grid, opened under the Ambient button: the playing loop is lit and the site's
@@ -1692,45 +1734,62 @@ const RowLabel = ({ icon, label }: { icon: IconName; label: string }): ReactElem
  * the scene library's choice (usually Main) unless changed here. Featured tracks only play on demand (▶).
  * Ambient shows the site's ambience loop; picking another is an override.
  */
-export const SoundMixer = ({ indoors, scenePlaylist = "Main", sceneAmbience = "Soft Indoor" }: {
+export const SoundMixer = ({ indoors, scenePlaylist = "Main", sceneAmbience = "Soft Indoor", live }: {
   indoors: boolean;
   scenePlaylist?: string;
   sceneAmbience?: string;
+  /** What TTS is playing. Read-only until the TTS command bridge carries sound changes. */
+  live?: SoundView;
 }): ReactElement => {
-  const [featured, setFeatured] = useState(false);
-  const [featuredTrack, setFeaturedTrack] = useState<string>("TR Loop");
-  const ambientTrack = useOverridable(sceneAmbience);
+  const [labFeatured, setFeatured] = useState(false);
+  const [labFeaturedTrack, setFeaturedTrack] = useState<string>("TR Loop");
+  const labAmbientTrack = useOverridable(sceneAmbience);
   const [ambientGridAt, setAmbientGridAt] = useState<{ x: number; y: number } | null>(null);
   const [muted, setMuted] = useState(false);
-  const playlist = useOverridable(scenePlaylist);
-  const music = useOverridable(70);
-  const featuredLevel = useOverridable(80);
-  const rain = useOverridable(60);
-  const wind = useOverridable(40);
-  const thunder = useOverridable(75);
-  const ambience = useOverridable(55);
-  const rainPlaying = true;
+  const labPlaylist = useOverridable(scenePlaylist);
+  const labMusic = useOverridable(70);
+  const labFeaturedLevel = useOverridable(80);
+  const labRain = useOverridable(60);
+  const labWind = useOverridable(40);
+  const labThunder = useOverridable(75);
+  const labAmbience = useOverridable(55);
+  const playlist = live ? fixed(live.playlist) : labPlaylist;
+  const music = live ? fixed(live.levels.music) : labMusic;
+  const featuredLevel = live ? fixed(live.levels.featured) : labFeaturedLevel;
+  const rain = live ? fixed(live.levels.rain) : labRain;
+  const wind = live ? fixed(live.levels.wind) : labWind;
+  const thunder = live ? fixed(0) : labThunder;
+  const ambience = live ? fixed(live.levels.location) : labAmbience;
+  const ambientTrack = live ? fixed(live.ambient ? ambientLabel(live.ambient) : "Silent") : labAmbientTrack;
+  const featured = live ? live.featuredPlaying : labFeatured;
+  const featuredTrack = live ? featuredLabel(live.featuredKey) : labFeaturedTrack;
+  const rainPlaying = live ? live.playing.rain : true;
   const thunderPlaying = false;
   const audible = !muted;
   const weatherAudible = audible && !indoors;
+  const musicPlaying = live ? live.playing.music : audible && !featured;
+  const ambientPlaying = live ? live.playing.location : audible;
+  const windPlaying = live ? live.playing.wind : weatherAudible;
+  const readOnly = live !== undefined;
   return (
     <div className="lab-mixer">
       <div className="lab-mixer-row">
         <RowLabel icon="music" label="Music" />
-        <MixerGroup playing={audible && !featured} values={[playlist, music]}>
-          <select className="lab-select" value={playlist.value} onChange={(event) => playlist.set(event.target.value)}>
+        <MixerGroup playing={musicPlaying} values={[playlist, music]}>
+          <select className="lab-select" disabled={readOnly} value={playlist.value} onChange={(event) => playlist.set(event.target.value)}>
             {MUSIC_PLAYLISTS.map((name) => <option key={name}>{name}</option>)}
           </select>
           <Slider level={music} />
         </MixerGroup>
         <MixerGroup playing={audible && featured} values={[featuredLevel]}>
-          <select className="lab-select" value={featuredTrack} title="Featured track" onChange={(event) => setFeaturedTrack(event.target.value)}>
+          <select className="lab-select" disabled={readOnly} value={featuredTrack} title="Featured track" onChange={(event) => setFeaturedTrack(event.target.value)}>
             {FEATURED_TRACKS.map((name) => <option key={name}>{name}</option>)}
           </select>
           <button
             type="button"
             className={`lab-btn lab-mixer-play${featured ? " primary" : ""}`}
             title={featured ? "Stop the featured track" : "Play the featured track"}
+            disabled={readOnly}
             onClick={() => setFeatured(!featured)}
           >
             {featured ? "■" : "▶"}
@@ -1744,7 +1803,7 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main", sceneAmbience = "S
           <Icon name="rain" className="lab-mixer-icon" title="Rain" />
           <Slider level={rain} />
         </MixerGroup>
-        <MixerGroup playing={weatherAudible} values={[wind]}>
+        <MixerGroup playing={windPlaying} values={[wind]}>
           <Icon name="wind" className="lab-mixer-icon" title="Wind" />
           <Slider level={wind} />
         </MixerGroup>
@@ -1755,9 +1814,10 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main", sceneAmbience = "S
       </div>
       <div className="lab-mixer-row">
         <RowLabel icon="ambient" label="Ambient" />
-        <MixerGroup playing={audible} values={[ambientTrack, ambience]}>
+        <MixerGroup playing={ambientPlaying} values={[ambientTrack, ambience]}>
           <button
             type="button"
+            disabled={readOnly}
             className="lab-select lab-ambient-pick"
             title="Ambient track: click to choose another"
             onClick={(event) => {
@@ -1788,6 +1848,7 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main", sceneAmbience = "S
         type="button"
         className={`lab-mixer-mute${muted ? " on" : ""}`}
         title={muted ? "All sound muted: click to restore" : "Mute all sound"}
+        disabled={readOnly}
         onClick={() => setMuted(!muted)}
       >
         <Icon name="mute" />
@@ -1931,16 +1992,23 @@ const CAROUSEL_GAP = 4;
 const CAROUSEL_PITCH = CAROUSEL_SEAT + CAROUSEL_GAP;
 
 /** Mirrors the TTS Spotlight controls: PCs keep their places; ‹ and › (or a click) move the glowing ring. */
-const SpotlightCarousel = (): ReactElement => {
-  const [front, setFront] = useState(0);
-  const count = SPOTLIGHT_ORDER.length;
+const SpotlightCarousel = ({ live }: { live?: SpotlightView }): ReactElement => {
+  const [labFront, setLabFront] = useState(0);
+  const order = live?.order ?? SPOTLIGHT_ORDER;
+  const front = live ? live.front : labFront;
+  const setFront = (index: number): void => {
+    if (!live) {
+      setLabFront(index);
+    }
+  };
+  const count = order.length;
   const step = (by: number): void => setFront((front + by + count) % count);
-  const lit = SPOTLIGHT_ORDER[front];
+  const lit = order[front];
   return (
     <span className="lab-carousel">
       <button type="button" className="lab-carousel-step" title="Previous PC" onClick={() => step(-1)}>‹</button>
       <span className="lab-carousel-track" style={{ gap: CAROUSEL_GAP }}>
-        {SPOTLIGHT_ORDER.map((pc, index) => (
+        {order.map((pc, index) => (
           <button
             key={pc.color}
             type="button"
@@ -1962,6 +2030,17 @@ const SpotlightCarousel = (): ReactElement => {
   );
 };
 
+/** TTS's phase bar state (`phase` and `seats` world slices). */
+export type LivePhase = {
+  readonly phase: string;
+  readonly subPhase?: string;
+  readonly sessionNum?: number;
+  readonly sessionName: string;
+  readonly spotlight: SpotlightView;
+};
+
+const isPhase = (value: string): value is Phase => value in NEXT_PHASE;
+
 /** Scenes live in TTS: the one on the table, plus any on deck to switch to in one click. */
 export type LiveScenes = { readonly live: readonly string[]; readonly current: string | null };
 
@@ -1972,18 +2051,23 @@ export type LiveScenes = { readonly live: readonly string[]; readonly current: s
  * Advance opens a ring: Scene (scene picker), Memoriam (Memoriam set-up), or Spotlight (click twice). In any
  * other phase, Advance names the next phase and needs a second click.
  */
-export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPrepare }: {
+export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPrepare, live }: {
   library: readonly string[];
   scenes: LiveScenes;
   onSwitch: (title: string) => void;
   onEndScene: () => void;
   onPlay: (title: string) => void;
   onPrepare: () => void;
+  /** TTS's phase, session, and spotlight. Phase and scene buttons wait for the TTS command bridge. */
+  live?: LivePhase;
 }): ReactElement => {
-  const [phase, setPhase] = useState<Phase>("Play");
+  const [labPhase, setPhase] = useState<Phase>("Play");
   const [ring, setRing] = useState<Point | null>(null);
   const [modal, setModal] = useState<"scene" | "memoriam" | null>(null);
-  const [session, setSession] = useState({ number: 43, title: "" });
+  const [labSession, setSession] = useState({ number: 43, title: "" });
+  const phase: Phase = live ? (isPhase(live.phase) ? live.phase : "Intermission") : labPhase;
+  const session = live ? { number: live.sessionNum ?? 1, title: live.sessionName } : labSession;
+  const waiting = live ? "Arrives with the TTS command bridge" : undefined;
   const next = NEXT_PHASE[phase];
   const open = (which: "scene" | "memoriam") => (): void => {
     setRing(null);
@@ -1993,7 +2077,7 @@ export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPr
     <div className="lab-phase">
       <span className="lab-phase-tag">
         {phase}
-        {phase === "Play" && <span className="lab-phase-sub">Main</span>}
+        {phase === "Play" && <span className="lab-phase-sub">{live ? live.subPhase ?? "" : "Main"}</span>}
       </span>
       <span className="lab-phase-now">
         {phase === "Play" && (
@@ -2014,6 +2098,7 @@ export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPr
                 type="number"
                 className="lab-select lab-phase-session-number"
                 min={1}
+                readOnly={live !== undefined}
                 value={session.number}
                 onChange={(event) => setSession({ ...session, number: Number(event.target.value) })}
               />
@@ -2021,21 +2106,24 @@ export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPr
             <input
               className="lab-select lab-phase-session-title"
               placeholder="Session title"
+              readOnly={live !== undefined}
               value={session.title}
               onChange={(event) => setSession({ ...session, title: event.target.value })}
             />
           </span>
         )}
-        {phase === "Spotlight" && <SpotlightCarousel />}
+        {phase === "Spotlight" && <SpotlightCarousel live={live?.spotlight} />}
       </span>
       <span className="lab-phase-advance">
         {phase === "Play" && (
-          <button type="button" className="lab-btn danger" title="Main / Memoriam → Downtime" disabled={!scenes.current} onClick={onEndScene}>
+          <button type="button" className="lab-btn danger" title={waiting ?? "Main / Memoriam → Downtime"} disabled={!scenes.current || live !== undefined} onClick={onEndScene}>
             End Scene
           </button>
         )}
         {phase === "Play" ? (
-          <button type="button" className="lab-btn primary" onClick={(event) => setRing(canvasPoint(event))}>Advance ▸</button>
+          <button type="button" className="lab-btn primary" title={waiting} disabled={live !== undefined} onClick={(event) => setRing(canvasPoint(event))}>Advance ▸</button>
+        ) : live ? (
+          <button type="button" className="lab-btn primary" title={waiting} disabled>{next} ▸</button>
         ) : (
           <ConfirmButton key={phase} label={`${next} ▸`} className="lab-btn primary" onConfirm={() => setPhase(next)} />
         )}

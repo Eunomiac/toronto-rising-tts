@@ -3,16 +3,18 @@ import { initGenerateNpc } from "./generateNpcTab";
 import { LabTab } from "./lab/LabTab";
 import { initLuaTab } from "./luaTab";
 import { PcSheetTab } from "./pcSheet/PcSheetTab";
+import { ScenesPanel } from "./scenesPanel/ScenesPanel";
 import { initScenesTab } from "./scenesTab";
 import { initStageNpcs } from "./stageNpcs";
 import { TermImageLayer } from "./termImages/TermImageLayer";
 
-const DEFAULT_TAB_ID = "tab-stage-npcs";
+const DEFAULT_TAB_ID = "tab-scene-control";
 const LAB_TAB_ID = "tab-lab";
 
 const ALL_TABS = [
+  { id: DEFAULT_TAB_ID, panelId: "panel-scene-control", label: "Scenes" },
   { id: "tab-stage-npcs", panelId: "panel-stage-npcs", label: "Stage NPCs" },
-  { id: "tab-scenes", panelId: "panel-scenes", label: "Scenes" },
+  { id: "tab-scenes", panelId: "panel-scenes", label: "Scenes (old)" },
   { id: "tab-pcs", panelId: "panel-pcs", label: "PCs" },
   { id: "tab-lua", panelId: "panel-lua", label: "Lua" },
   { id: "tab-generate-npc", panelId: "panel-generate-npc", label: "Generate NPC" },
@@ -43,7 +45,7 @@ export const App = (): ReactElement => {
 
   useLayoutEffect(() => {
     window.dispatchEvent(new Event("resize"));
-    if (activeTab === DEFAULT_TAB_ID) {
+    if (activeTab === "tab-stage-npcs") {
       document.getElementById("generic-npc-search")?.focus();
     }
   }, [activeTab]);
@@ -86,6 +88,16 @@ export const App = (): ReactElement => {
         })}
         {import.meta.env.DEV && <div id="lab-controls" className="app-tabs-extra" />}
       </nav>
+
+      <section
+        id="panel-scene-control"
+        className="tab-panel lab-panel"
+        role="tabpanel"
+        aria-labelledby={DEFAULT_TAB_ID}
+        hidden={activeTab !== DEFAULT_TAB_ID}
+      >
+        <ScenesPanel active={activeTab === DEFAULT_TAB_ID} />
+      </section>
 
       <section
         id="panel-stage-npcs"
