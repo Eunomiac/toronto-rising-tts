@@ -95,7 +95,7 @@ See the **checklist** in [Conditions System Guide §0](../../.dev/PC%20Data%20&%
 
 - **Derived reconcile** runs only on explicit triggers (damage/heal, humanity changes, load, torpor clear) — not on every `stats` write (e.g. hunger/XP alone do not reconcile).
 - **Location reconcile** runs when session location, seat presence, or active table layout changes (see above).
-- **Presentation** runs on `Conditions.afterChange` after mutations, and via on-demand `resolveForPlayer` during sheet/light/HUD reconcile.
+- **Presentation** runs on `Sync.player(color)` after mutations (`Conditions.afterChange` simply calls it), and via on-demand `resolveForPlayer` during sheet/light/HUD reconcile.
 
 ## Roll policy
 

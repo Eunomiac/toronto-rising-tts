@@ -113,11 +113,11 @@ Runtime order:
     - Overlay-only UI retries are folded into the unified bootstrap retry schedule (step 5 above).
 13. Set `didBootstrapFullSync = true`.
 
-`SYNC_INCREMENTAL_UI_DELTA` contains `phase`, `scene`, `adminLighting`, `scenesPanel`, `gameStateOverlay`, `soundscape`, `playerStats`, and `playerHud`. It intentionally omits `overlays` because `HO.syncAll()` already ran in the seat presentation step.
+`SYNC_INCREMENTAL_UI_DELTA` contains `phase`, `scene`, `adminLighting`, `scenesPanel`, `gameStateOverlay`, `soundscape`, and `playerHud`. It intentionally omits `overlays` because `HO.syncAll()` already ran in the seat presentation step.
 
-## `Sync.player(color)` scope
+## `Sync.player(color)` scope — the single per-seat announcer
 
-`Sync.player(color)` is a cheap per-seat path for hunger, roll, condition, and player HUD changes.
+`Sync.player(color, opts?)` is **the** "this seat changed" call (TOR-677). Mutators write state only, then call it once per touched seat. Every per-seat display owner runs from here and skips cheaply when its own input is unchanged; the announcer never decides what changed.
 
 Order:
 
@@ -125,10 +125,14 @@ Order:
 2. `L.reconcileForPlayer(color)`.
 3. `HUDP.updatePlayerUI(Player[color], color)` only when `Player[color]` exists.
 4. `HO.reconcileForSeat(color)` — preceded by `HO.invalidateSeatCache(color)` when `opts.forceOverlays` (hunger changes, TOR-340).
-5. Clear the `Sync.full` seat-presentation fingerprint (other seats were not reconciled; TOR-672 replaced the all-seat recompute).
-6. `UpdateUIDisplays({ playerStats = true, colors = { color } })` when the global exists (no `overlays` or all-player `playerHud` — those are covered by steps 3–4).
+5. When the seat has a PC: `DBV.reconcileForPlayer` (Rouse / Oblivion-Rouse bag visibility), then `PCST.refreshCharacterSheetsForColor(color)` — Global slice fingerprints (`core/csheet_slices.ttslua`) call only CSHEET pages whose slice changed; Prince's Court trackers always reconcile (they show hunger).
+6. `PCST.refreshRow(color)` for `C.PlayerColors` — returns immediately unless the PCs panel is visible (TOR-678).
+7. Clear the `Sync.full` seat-presentation fingerprint (other seats were not reconciled; TOR-672).
+8. `DashPush.seat(color)` (`dashboard/push.ttslua`) — slim seat snapshot to the Storyteller Dashboard via `sendExternalMessage`, skipped when the encoded payload is unchanged (TOR-676).
 
-It skips scene ambient lighting, top fog, soundscape, NPC scene layout, scene-library mirroring, bootstrap light initialization, deferred retries, and full Storyteller panel refresh. Those domains do not depend on a single PC hunger/roll/HUD mutation.
+It skips scene ambient lighting, top fog, soundscape, NPC scene layout, scene-library mirroring, bootstrap light initialization, deferred retries, and the Scenes / Stats / Projects panels. Those domains do not depend on a single PC mutation.
+
+`Conditions.afterChange(playerID)` resolves the seat color and calls `Sync.player` — there is no second presentation path. `lib/pc_stats` mutators and `Conditions.reconcileDerivedForPlayer(pid, { skipPresentation = true })` are state-only; the caller announces. Genuinely multi-seat batched paths (blindfold transitions with `skipAfterChange` + `HO.syncAll`, seat assignment, `Sync.full`) stay batched.
 
 When `Sync.full({ force = true })`, `Sync.invalidateAllReconcileCaches()` runs before domain reconcilers, and `NPCS.reconcileAllFromState` receives `force = true`.
 
@@ -170,7 +174,8 @@ When `Sync.full({ force = true })`, `Sync.invalidateAllReconcileCaches()` runs b
 | Action / feature | Required mutation | Required sync sequence | Notes |
 |---|---|---|---|
 | Hunger change from PC/ST panel or rouse | `S.setPlayerVal(color, "hunger", nextValue)` | `Sync.player(color, { forceOverlays = true })` — clears that seat's overlay cache before its single overlay apply (TOR-340, TOR-672) | Covers seat light priority, player HUD, overlays, and hunger smoke. Existing examples: `core/pc_storyteller_panel.ttslua`, `core/roll_controller.ttslua`, `core/debug.ttslua`. |
-| Condition changes with HUD or lighting effects | Write condition data under `gameState.playerData[id].conditions` through the owning condition/stat API | `Sync.player(color)` | Lighting reads `lightingModeChanges`; overlays read `hudChanges`. |
+| Condition changes with HUD or lighting effects | Write condition data under `gameState.playerData[id].conditions` through the owning condition/stat API | `Sync.player(color)` — `Conditions.setManual` / `setEvent` / `clear` already announce via `Conditions.afterChange` unless `skipAfterChange` | Lighting reads `lightingModeChanges`; overlays read `hudChanges`. |
+| Any PC sheet / tracker change (damage, humanity, dots, traits, XP, relationships, desire, projects) | `lib/pc_stats` mutator or dashboard op (state only; derived conditions via `reconcileDerivedForPlayer(pid, { skipPresentation = true })`) | `Sync.player(color)` once per touched seat after all mutations (`Dash.apply` batches per seat) | Do not call `PCST.refreshCharacterSheetsForColor`, `PCST.refreshRow`, `HO.syncAll`, or `UpdateUIDisplays` after it — the announcer covers sheets, the PCs row, overlays and the dashboard push. |
 | Admin light scene change | `S.setStateVal(sceneName, "currentScene")`, `S.setStateVal(presetKey, "sessionScene", "lightingPresetKey")`, clear `sceneTransition` | `Sync.full({ reason = "..." })` | Do not call `Lighting.set` directly from the handler. |
 | Storyteller scene library Apply | Replace `gameState.sessionScene` / linked scene state through the scene-library panel path | Close panel + `HUDBF.beginTransition` immediately (`hudBlindfold` state write with `skipAfterChange`, then one armed parent `UI.show`); staged/simple transitions wait TOR-434 lead-in before fade-out / heavy work / `Sync.full`; settle then single blindfold lift | Parent Panel `UI.show` once (TOR-431 / TOR-441); camera reset is not during table geometry. |
 | Site/location Apply | `S.setStateVal(districtKey or nil, "sessionScene", "districtKey")`, `S.setStateVal(siteKey, "sessionScene", "siteKey")` | `Soundscape.applyContext(ctx)`, `Soundscape.markReconciledToCurrentState()`, `Sync.full({ reason = "StorytellerScenesPanel.location" })` | If new code can avoid eager soundscape apply, prefer state-only mutation plus `Sync.full`. |
@@ -192,6 +197,7 @@ Use these patterns before accepting sync-affecting work:
 | `function S\\.|S\\.setStateVal.*Sync\\.|S\\.setPlayerVal.*Sync\\.` in setters/state modules | Hidden setter-side reconciliation reintroduces dual authority. | Mutation site calls `Sync.*` explicitly after the state write. |
 | `UpdateUIDisplays\\(\\)` immediately after `Sync.full\\(\\)` | Full sync already runs UI refresh; an extra full UI pass can duplicate overlay/HUD work. | Use the existing `Sync.full` result, or choose a narrow `Sync.ui(delta)` when only UI changed. |
 | `HO\\.syncAll\\(\\)` in a flow that also calls incremental `Sync.full()` | `Sync.full` already runs overlays through seat presentation. | Call `Sync.player(color)` for hunger/condition work, or rely on `Sync.full`. |
+| `PCST\\.refreshCharacterSheetsForColor|PCST\\.refreshRow|DashPush\\.seat` next to `Sync\\.player` | `Sync.player` already runs sheets, the PCs row and the dashboard push; a second call repeats the slice compute and push encode for nothing. | Mutate state, then one `Sync.player(color)`. Buffer-only PCs panel clicks may call `PCST.refreshRow` alone. |
 | Direct writes to `gameState.playerData[color]` or `S.state.playerData[color]` | Per-player state must be keyed by Steam ID, not seat color. | Resolve ID and write through `S.setPlayerVal` or `S.setStateVal("playerData", playerID, ...)`. |
 
 ## Dual-apply survey status
@@ -206,6 +212,7 @@ See [Dual_apply_survey.md](Dual_apply_survey.md) for the source inventory.
 | Lighting seats | Open minor redundancy: `Sync.full` and some scoped handlers may reconcile seats in adjacent calls, but `L.reconcileForPlayer` is state-derived and transition-epoch guarded. | Avoid adding direct `L.SetLightMode` calls in panel handlers. |
 | NPC session layout | Mitigated by `NPCS.reconcileAllFromState` unified fingerprint and Step Zero–Five ordering. | Keep authored layout through the orchestrator; do not call legacy split reconcilers from new code. |
 | Overlays / HUD | Open minor redundancy: UI-only double refresh is usually no-op. | Prefer narrow deltas and avoid `HO.syncAll` next to `Sync.full`. |
+| Per-seat presentation (sheets, PCs row, dice bags, dashboard) | Mitigated (TOR-677): one announcer, `Sync.player`; `Conditions.afterChange` delegates to it; pc_stats mutators are state-only. | Each owner fingerprints its own input (sheet slices, panel visibility, push payload). |
 | End scene narrative | Intentional force re-sync after manual ambience clears. | Keep `invalidateReconcileCache` only because live world was deliberately driven outside the normal snapshot. |
 | Table layout | Documented exception. `RSL.SetTableTo` owns physical table movement; `Sync.full` reasserts state-derived lighting/overlay presentation afterward. | Do not add a second table movement path in `Sync.full`. |
 

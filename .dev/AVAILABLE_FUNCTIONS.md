@@ -295,12 +295,12 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | `EffectiveStats.trackerMaxFromStats(stats, statChanges, key)` | Pure helper (derive, tests) |
 | `Conditions.effectiveStatDelta(playerID, dotKey)` | Legacy: temp + condition delta for dot lines |
 | `Conditions.effectiveAggregateDelta(playerID, trackerKey)` | Legacy: temp + condition delta for trackers |
-| `Conditions.reconcileDerivedForPlayer(playerID)` | Recompute derived condition keys from stats |
+| `Conditions.reconcileDerivedForPlayer(playerID, opts?)` | Recompute derived condition keys from stats; `opts.skipPresentation` leaves the `Sync.player` call to the caller |
 | `Conditions.reconcileHostedForSession(opts?)` | Apply hosted (`location` + `scene`) conditions for present PCs; pass `{ skipPresentation = true }` when caller runs `Sync.full` |
 | `Conditions.setManual(playerID, id, value)` | ST toggle manual condition |
 | `Conditions.setEvent(playerID, id, instance)` | Scene-driven event condition |
 | `Conditions.clear(playerID, id)` | Remove condition key |
-| `Conditions.afterChange(playerID)` | Sync + sheet refresh after mutation |
+| `Conditions.afterChange(playerID)` | Resolves the seat color and calls `Sync.player` (the only per-seat presentation path) |
 
 **Roll controller:** `RC.applyRollPolicyToActive(active)` seeds `rollOptions` from `active.rollPolicy`.
 
@@ -489,7 +489,7 @@ Animated Scene Time jumps (TOR-222 / TOR-470). Mid-lerp: overlay date/time text 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
 | `Sync.full(opts?)` | Orchestrate scene + soundscape + seat presentation + UI; `opts.force == true` bypasses fingerprints and runs full `UpdateUIDisplays` | Debug **Sync All (force)**; routine paths omit `force` |
-| `Sync.player(color, opts?)` | Per-seat lighting + HUD + overlays; `opts.forceOverlays` clears the seat's overlay cache first | Seat-scoped refresh; hunger changes pass `{ forceOverlays = true }` |
+| `Sync.player(color, opts?)` | **The** per-seat announcer: lighting, HUD, overlays, dice-bag visibility, CSHEET pages (slice-fingerprinted), PCs panel row (only while visible), dashboard push; `opts.forceOverlays` clears the seat's overlay cache first | Call once per touched seat after state-only mutations; hunger changes pass `{ forceOverlays = true }` |
 | `Sync.ui(delta?)` | Passthrough to `UpdateUIDisplays` | Targeted UI deltas |
 | `Sync.soundscape(opts?)` | `Soundscape.reconcileFromState(opts)` | Audio-focused repair |
 
@@ -571,6 +571,15 @@ TTS also exposes **`UI.setAttributes`** natively; use **`U.setAttributes`** when
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
 | `StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen?)` | Mutually exclusive bottom-bar panels; optional `forceOpen` skips “click same tab to close” | `StorytellerPanelUI.selectStorytellerPanel("npcs")` |
+| `StorytellerPanelUI.isPanelVisible(panelKey)` | True only when the toolbar body, content area and that panel are all active; errors on an unknown key. Guards the PCs row, Stats, Projects and Scenes paints | `if not StorytellerPanelUI.isPanelVisible("pcs") then return end` |
+| `StorytellerPanelUI.selectedPanelKey()` | Currently selected panel key, or nil | Reopen paint after the toolbar hotkey |
+
+### Storyteller Dashboard push (`dashboard/push.ttslua`, Global only)
+
+| Function | Description | Usage Example |
+| :--------- | :------------- | :--------------- |
+| `DashPush.seat(color)` | Sends the slim seat snapshot when it differs from the last one sent. Called by `Sync.player`; do not call from mutation sites | (internal to `Sync.player`) |
+| `DashPush.projects()` | Tells the dashboard the project list changed | `Projects.refreshAfterMutation` |
 
 ---
 

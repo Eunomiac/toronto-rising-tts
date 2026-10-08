@@ -36,7 +36,10 @@ Status: current performance audit; entries may be done, partial, or deferred as 
 | — | Reconciler invalidation hub | **Done** — `Sync.invalidateAllReconcileCaches()`; `DEBUG.dumpSyncCacheState()` |
 | — | Scene-panel duplicate refreshes | **Done (TOR-391)** — scene apply/table/seat/location/clock live paths rely on `Sync.full` incremental `scenesPanel`/`playerHud` deltas instead of immediate duplicate `StorytellerScenesPanel.refresh()` / all-HUD calls |
 | — | Top-fog duplicate force reconcile | **Done (TOR-391)** — `Sync.full` reconciles top fog once in the scene phase and passes `skipTopFog` to seat presentation |
-| — | Hosted-condition CSHEET refresh scope | **Done (TOR-391)** — hosted-condition reconcile returns changed seat colors; scene/table/location/seat paths refresh only changed CSHEET seats after `skipPresentation` |
+| — | Hosted-condition CSHEET refresh scope | **Done (TOR-391)** — hosted-condition reconcile returns changed seat colors; scene/table/location/seat paths announce only those seats (`Sync.player`) after `skipPresentation` |
+| — | Seat announcer + CSHEET slice skip | **Done (TOR-677)** — `Sync.player` is the only per-seat presentation path (`Conditions.afterChange` delegates; pc_stats mutators state-only; `Dash.apply` announces once per touched seat). `core/csheet_slices.ttslua` fingerprints each page's inputs in Global, so unchanged CSHEET pages get no `obj.call` (each page refresh was ~46 `Global.call` round trips). Page 3 includes project stakes |
+| — | Soft-retired panel paints | **Done (TOR-678)** — PCs row, Stats, Projects and Scenes paints return early unless `StorytellerPanelUI.isPanelVisible`; reopening (click or toolbar hotkey) repaints. Scenes `clockDraft` resync still runs while closed |
+| — | Dashboard push | **Done (TOR-676)** — `DashPush.seat` at the end of `Sync.player`; one `JSON.encode` of the slim seat per call, send skipped when unchanged |
 
 Opt-in metrics: `Sync.setMetricsEnabled(true)` or `gameState.debug.syncMetricsEnabled` → `U.emitForAgent("sync_metrics", …)`. See [`.dev/TTS_MCP.md`](../TTS_MCP.md).
 
@@ -62,7 +65,7 @@ Resolved:
 
 Deferred:
 
-- `HUD_selectStorytellerPanel` one-frame delayed refreshes remain unchanged. They are visibility/layout refreshes after panel selection, and this pass did not find a concrete mutation path that double-refreshes the same panel in one interaction.
+- `HUD_selectStorytellerPanel` one-frame delayed refreshes remain (now in `refreshStorytellerPanelOnOpen`). They are the reopen paint that TOR-678's visibility guards rely on; a closing click skips them.
 - Broader HUD decomposition (`reconcileSeatHud`, `reconcileCrossSeatRows`, location dock split) remains deferred. TOR-391 removed duplicate broad calls without changing cross-seat HUD ownership.
 - Temporary sequence instrumentation was not added because the duplicate call chains were clear from the current call graph and the fixes were local.
 
@@ -134,6 +137,8 @@ Do not reintroduce TOR-391 duplicates: no broad `StorytellerScenesPanel.refresh(
 **Measure before Tier 2:** If hitch remains after Tier 1, document spans before Phase A/B or registry work.
 
 ## 1. `Sync.player(color)` double all-seat overlay/HUD fan-out
+
+> **Resolved** (status table rank 1, then TOR-677). The evidence below is the original 2026-05 snapshot; current `Sync.player` scope lives in [Reconciler Contract § Sync.player](Reconciler%20Contract.md#syncplayercolor-scope--the-single-per-seat-announcer).
 
 **Symptom:** A single player-scoped mutation can trigger one seat light pass, one direct player HUD refresh, **two** all-seat overlay passes, and an all-player HUD loop.
 

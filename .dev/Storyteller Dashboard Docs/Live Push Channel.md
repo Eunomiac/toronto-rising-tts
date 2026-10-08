@@ -1,187 +1,87 @@
-# Live Push Channel — TTS to Storyteller Dashboard (design draft)
+# Live Push Channel — TTS to Storyteller Dashboard
 
 ## Agent Routing
 
 Read this when:
 - making the Storyteller Dashboard stay current with live play without polling TTS
-- adding `sendExternalMessage` calls outside debug tooling
-- adding a dashboard tab that shows live `gameState` (PCs, connection, phase, scene, rolls)
+- adding a `sendExternalMessage` call or a new push topic
+- adding a dashboard tab that shows live `gameState`
 
-Source of truth (once built):
-- Lua emitter: `dashboard/push.ttslua` (Global-only; planned)
-- Subscribe handshake: `onExternalMessage` in `lib/console.lua` (planned `data.dashboard` branch)
-- Dashboard server relay: `.dev/storyteller-dashboard/src/server/ttsExecuteLua.ts` (`customMessage` listener) + an SSE route in `src/server/index.ts`
+Source of truth:
+- Seat announcer: `Sync.player` in `core/sync.ttslua` (last step calls `DashPush.seat`)
+- Lua emitter: `dashboard/push.ttslua` (Global-only)
+- Slim seat payload: `Dash.slimSeatSnapshot` in `dashboard/pc_sheet.ttslua` (same builder as the fetched snapshot, minus `playerData`)
+- Dashboard server relay: `.dev/storyteller-dashboard/src/server/ttsEvents.ts` (hub + SSE), listeners in `bindSession` of `src/server/ttsExecuteLua.ts`, route `GET /api/tts/events` in `src/server/index.ts`
+- Dashboard client: `src/client/ttsEvents.ts` (shared `EventSource`), `src/client/pcSheet/livePush.ts` (`mergeSeatPush`), `PcSheetTab.tsx`, `PageFive.tsx`
 - Gateway fan-out: `tts-tools/packages/tts-gateway/src/fanout/router.ts`
 
 Verification:
-- see § Verification plan below
+- § Verification below; Trace Sync shows `DashPush.seat` rows with `sent` / `skipped`
+- `npm test` in `.dev/storyteller-dashboard/` (`livePush.test.ts`, `ttsEvents.test.ts`)
 
 Status:
-- **design draft — awaiting author review.** Nothing in this doc is implemented yet.
+- current (TOR-676 Lua half; SD-Push dashboard half)
 
 ---
 
-## 1. The problem
+## 1. Why push, not poll
 
-The dashboard is becoming the Storyteller's main admin surface during play, so it needs to show what is happening at the table without the Storyteller pressing Refresh.
+Every dashboard request is an **Execute Lua** command: TTS compiles a script, runs it on the game's main thread, and sends back the answer. A poll loop has stalled TTS before. The rule stays: **the dashboard never polls TTS on a timer.** It fetches once when a tab opens, after Claim Port, and after a game load; everything else arrives as a push.
 
-The obvious approach is polling: ask TTS for a fresh snapshot every few seconds. We already know that hurts. Every dashboard request is an **Execute Lua** command: TTS receives a script on port 39999, compiles it, runs it on the game's main thread, encodes the answer, and sends it back. A PCs-tab poll storm has already stalled TTS once (see the dashboard tasklist entry "PCs JSON Apply hang"). The rule stays: **the dashboard never polls TTS on a timer.**
-
-## 2. The channel that already exists
-
-TTS has a second, one-way path that runs the other direction. It is how the TTS Tools extension shows console output without slowing the game:
-
-- When Lua calls `print(...)`, TTS opens a short local connection to port **39998**, writes one JSON message, and closes it. Nothing waits for a reply, and nothing is queued inside TTS.
-- Lua can send its **own** messages on the same path with `sendExternalMessage({ ... })`. These arrive as "custom messages" (External Editor API `messageID` 4).
-
-Everything after TTS is already built:
+## 2. The path
 
 ```
-TTS Lua ──sendExternalMessage──▶ port 39998 ──▶ TTS Tools gateway ──▶ every registered client
-                                                 (Cursor extension)      ├─ TTS Tools extension (ignores unknown types)
-                                                                         └─ Storyteller Dashboard server (registered as DASHBOARD)
-                                                                                   │
-                                                                                   ▼  Server-Sent Events (local, cheap)
-                                                                             Dashboard browser tab
+Mutation (state only)
+  → Sync.player(color)                    one announcer per touched seat
+      → … lights, HUD, overlays, dice bags, CSHEET slices, PCs row …
+      → DashPush.seat(color)              skip if encoded payload unchanged
+          → sendExternalMessage({...})    one-way, port 39998, no reply
+              → TTS Tools gateway          broadcasts table custom messages to every client
+                  → dashboard server       keeps type == "dashboard", caches latest per topic/seat
+                      → SSE /api/tts/events → browser tab merges the seat
 ```
 
-- The gateway broadcasts custom messages to all registered clients (`fanOutEvent` in `router.ts`).
-- `@tts-tools/gateway-client` already raises a `customMessage` event; the dashboard just doesn't listen for it yet.
-- The TTS Tools extension only acts on custom messages whose `type` is `object` or `write`, so a `type = "dashboard"` message passes through it harmlessly.
+- `print` and `sendExternalMessage` use the same one-way connection the TTS Tools console already uses. Nothing in TTS waits for a reply.
+- The gateway's `<@TAG@>` unicast only works on text bodies, so table pushes are broadcast. The TTS Tools extension acts only on `type` `object` / `write`, so dashboard messages pass through it harmlessly.
 - When the gateway is down, the dashboard binds 39998 itself (direct mode) and receives the same messages.
-- TTS also announces **loading a new game** (`messageID` 1) and **game saved** (`messageID` 6) on its own. The dashboard can react to those for free.
+- TTS's own **loading a new game** event (`messageID` 1) becomes a `reload` topic on the dashboard.
 
-Note on routing: the gateway's `<@TAG@>` "send only to one client" prefix only works on **text** bodies. `sendExternalMessage` sends a table, so dashboard pushes are broadcast. That's fine because other clients ignore them. A small gateway change could route on a table field later if needed.
+There is **no subscribe handshake, session id, sequence number or per-frame batching**. The author runs the dashboard as a co-component of every session, and pushes are small. The only guard against an absent extension is a one-time printed notice when `sendExternalMessage` is nil.
 
-## 3. Design
+## 3. Messages
 
-### 3.1 Subscribe handshake: no pushes unless the dashboard is listening
+| Topic | Sent by | Payload | Dashboard reaction |
+| --- | --- | --- | --- |
+| `pcSeat` | `DashPush.seat(color)` from `Sync.player` | `color`, `data` = slim seat snapshot (`snapshotSeat` without `playerData`) | PCs tab replaces that seat, keeping the previous `playerData` (only full fetches carry it) |
+| `projects` | `DashPush.projects()` from `Projects.refreshAfterMutation` and `PJP.onPresentDayChanged` | none | Page 5 refetches the projects snapshot (only while it is mounted) |
+| `reload` | dashboard server, on gateway `loadingANewGame` | none | Server clears its cache; PCs tab runs its one-shot `refresh(true)`; page 5 refetches |
 
-> **AUTHOR COMMENT:** I am wary of overengineering this check -- I intend to be running the Storyteller Dashboard as a critical co-component when I run the game and, as such, cannot imagine a time or reason why Toronto Rising would be running in TTS without the dashboard.  I'm okay with a small check that prevents a full crash if the Dashboard happens to be offline or down for some reason, but anything beyond that risks introducing new problems to fix imagined problems that aren't likely to exist. Assume that the Dashboard _will_ be open when the mod is running.
+Envelope from Lua: `{ type = "dashboard", v = 1, topic = "...", color?, data? }`. The server forwards `{ topic, color?, data? }` as one SSE `data:` line.
 
-Lua should not send dashboard pushes when no dashboard is running. That keeps the cost at zero for sessions without the dashboard and avoids the open question of what TTS does when nothing is listening on 39998.
+`DashPush.seat` ignores colors outside `C.PlayerColors`, seats with no player id, and the Storyteller. It keeps the last encoded payload per color, so repeat `Sync.player` calls with no visible change send nothing. `GlobalSetPlayerDesire` with `syncText = true` (end of desire editing on the CSHEET) calls `DashPush.seat` directly, because desire keystrokes deliberately skip the full announcer.
 
-1. **On load:** at the end of `onLoad`, Lua sends one unconditional `{ type = "dashboard", topic = "ready", session = <id> }` message. `session` is a fresh random id each time Lua starts.
-2. **Dashboard subscribes:** when the dashboard server connects to TTS, or sees `ready` or `loadingANewGame`, it sends one small custom message to TTS: `{ dashboard = { subscribe = true, topics = { ... } } }`. TTS delivers this to `onExternalMessage` as a plain table. There's no script compile, unlike Execute Lua.
-3. **Lua keeps one in-memory flag** (`DashboardPush.subscribed`, with the topic list). This is runtime only, not `gameState`, and it resets naturally on reload.
-4. **Unsubscribe** on **Release Port**: `{ dashboard = { subscribe = false } }`. If the dashboard crashes without unsubscribing, Lua keeps sending small messages nobody reads. That's harmless and costs about the same as a `print`.
+## 4. Dashboard server and client
 
-Commands into TTS happen only on connect, reload, and release. There is no keep-alive ping.
+- **Server:** `bindSession` adds `customMessage` and `loadingANewGame` listeners next to `status`. `parseDashboardPush` keeps only `type == "dashboard"` and `v == 1`. `TtsEventHub` caches the latest event per `topic:color`, replays the cache to each new SSE client, and sends a comment heartbeat every 25 seconds (server-side only — nothing reaches TTS). Opening the SSE stream auto-connects the bridge (`getBridgeStatus`), so pushes arrive even before a tab calls execute-lua.
+- **Client:** one shared `EventSource` opened by the first subscriber and closed with the last. The browser reconnects it automatically; the server replay brings the tab current.
+- **Optimistic edits win:** while the PCs tab's apply queue or a modal `applyNow` is in flight, `pcSeat` pushes are dropped. TTS runs the apply (which announces the seat) before it answers, so the apply's returned snapshot already includes that state.
 
-### 3.2 Message envelope
+## 5. Guardrails
 
-```lua
-sendExternalMessage({
-  type = "dashboard",   -- lets the extension and other clients ignore it
-  v = 1,                -- envelope version
-  session = "<id>",     -- changes on every Lua start; dashboard resyncs when it changes
-  seq = 1234,           -- increases by one per push within a session; a gap means a lost message
-  topic = "pcSeat",
-  data = { ... },
-})
-```
+- `dashboard/push.ttslua` is **Global-only**. Object scripts never `require` it; their mutations already go through `Global.call` mutators that reach `Sync.player`.
+- Push is reconciliation-side output. It never writes `gameState` and is never called from state setters.
+- New per-seat data reaches the dashboard by being in `snapshotSeat` — do not add `DashPush.seat` calls at mutation sites. Call `Sync.player(color)` instead.
+- A new topic must name its single Lua call site and the dashboard reaction in § 3.
+- Heavy-workload rows: `sendExternalMessage` and `JSON.encode` in `TTS-API-Heavy-Workload-Catalog.md` / `TTS-API-Heavy-Workload-Usage-Inventory.md`.
 
-### 3.3 Batch changes into one push per frame
+## 6. Verification
 
-> **AUTHOR COMMENT:** I think we can relax the strictness of this somewhat. The payloads sent by TTS are not large nor do they come with much performance overhead (after all, the entire console is pushed to the editor at all times). Before we introduce a major refactor to bundle up payloads or otherwise overengineer them to be hyperefficient, perhaps we should simply see if doing things the naive way 'simply works'.
+1. With the dashboard PCs tab open, change a PC in TTS (damage from the in-game PCs panel, a Rouse stain from a roll, a CSHEET dot). The tab updates within about a second without pressing anything.
+2. Trace Sync shows one `Sync.player` and one `DashPush.seat … sent` per change; a repeat with no visible change shows `skipped`.
+3. Reload the save in TTS. The PCs tab refreshes once.
+4. Edit a project in TTS (Projects panel). Page 5 on the dashboard refetches.
+5. Close the dashboard server and play a few minutes. TTS should show no hitch while nothing listens on port 39998 (not yet confirmed in a live session).
 
-Hot paths only **mark something dirty**. They never build or send a payload directly.
+## 7. Future topics (not built)
 
-```lua
-DashboardPush.markDirty("pcSeat", color)   -- cheap: one table write, no-op when not subscribed
-```
-
-The first `markDirty` in a burst schedules one flush on the next frame with `U.await(flush, 0)`. The flush builds one payload per dirty topic and key, sends it, and clears the dirty set. Twenty rapid character-sheet clicks on Red therefore send **one** Red push, not twenty.
-
-Rules:
-
-- `markDirty` returns immediately when not subscribed or when the topic is not subscribed.
-- Payload builders read `gameState` only. No `getObjects`, `getObjectsWithTag`, casts, or UI reads.
-- `DashboardPush` never writes `gameState`. It is a reconciliation-side output, like a HUD refresh.
-
-### 3.4 Where Lua marks things dirty
-
-The dashboard is one more **presentation surface**, so it should be told at the same points where the in-game presentation is told. It should not hook state setters, because the sync contract forbids hidden side effects there.
-
-Important finding: **PC sheet changes do not all pass through `Sync.player`.** For example, dashboard dot and damage edits call `afterTrackerChange` → `PCST.refreshCharacterSheetsForColor` + `PCST.refreshRow`, never `Sync.player`. The candidate hook points for the `pcSeat` topic are therefore:
-
-| Hook point | File | Why |
-| --- | --- | --- |
-| `UpdateUIDisplays` when `playerStats` is set with `colors` | `core/global_script.ttslua` | `Sync.player(color)` ends here |
-| `PCST.refreshRow(color)` | `core/pc_storyteller_panel.ttslua` | in-game Storyteller PCs row; tracker, hunger, desire, connection changes |
-| `PCST.refreshCharacterSheetsForColor(color)` | `core/pc_storyteller_panel.ttslua` | every path that must repaint the CSHEET pages |
-
-> **AUTHOR COMMENT:** This "PC sheet changes do not all pass through `Sync.player`" observation is a great indication of where I would prefer our focus to be. Because there are two ways to  deal with this:
-> 1. We could perform an audit to find out all of the different places in the code where sheet changes are made, and add the necessary code to communicate those changes to the dashboard, as you suggest here:
-
-**Audit required before building:** trace each way PC data changes in play (CSHEET clicks, roll outcomes such as hunger, Rouse, and willpower damage, conditions, XP log, Storyteller panel buttons, dashboard apply). Confirm every one reaches at least one hook point above. Any path that reaches none is also a stale in-game panel bug and should be filed separately.
-
-> **AUTHOR COMMENT:** ... **OR**,
-> 2. We could take a step back and ask ourselves: 'Why _aren't_ all sheet changes passing through Sync.player? Isn't that a violation of single authority?' If the Lua code is improperly or inefficiently designed, we shouldn't compound that error by piling new code for the dashboard on top -- we should resolve the inefficient design and streamline the system so that the Dashboard integration requires less dedicated code.
-
-### 3.5 Topics (proposed)
-
-| Topic | Key | Payload | Hook | Phase |
-| --- | --- | --- | --- | --- |
-| `ready` | — | `session` only | end of `onLoad` | 1 |
-| `pcSeat` | seat color | **slim** seat snapshot (below) | § 3.4 | 1 |
-| `connection` | seat color | `connected`, `absentFromSession` | player connect/disconnect handlers + blindfold checkpoint | 1 (can fold into `pcSeat`) |
-| `phase` | — | current phase key | phase advance | 2 |
-| `scene` | — | active library scene key, applied/linked flag | scene Apply / library link | 2 |
-| `roll` | roll id | roller, type, pool, outcome | roll resolve | 3 (optional event feed) |
-
-**Slim seat snapshot:** the same shape `dashboard/pc_sheet.ttslua` `snapshotSeat` returns today, **minus `playerData`**. `playerData` is a deep copy of the whole player record, used only by the JSON debug modal. That modal keeps fetching on demand with the existing one-shot call. Pull the shared parts of `snapshotSeat` into a function both paths use, so the pushed shape and the fetched shape never drift.
-
-**Size budget:** aim for under ~8 KB per message, and measure real sizes during the first slice. If a future topic can't fit, push a short "changed" notice instead (`{ topic = "x", key = k, changed = true }`). The dashboard then fetches once, and only if that tab is visible.
-
-### 3.6 Dashboard server and client
-
-- **Server:** register one `customMessage` listener on the gateway session, separate from the per-call print and error listeners in `runExecute`. Drop anything without `type == "dashboard"`. Keep the **latest payload per topic and key** in memory. Relay to browsers over **Server-Sent Events** (`GET /api/tts/events`, a one-way stream from server to browser).
-- **New browser tab or reload:** the server replays its cached latest payloads first. A browser reload then costs TTS nothing.
-- **Client:** one shared `EventSource`. Each tab handles its own topics. The PCs tab merges incoming `pcSeat` payloads into its seat list.
-- **Optimistic edits:** the PCs tab paints clicks immediately and queues `GlobalDashboardPcSheetApply`. While an apply is pending for a seat, keep the local overlay on top of incoming pushes for that seat. Drop the overlay when the apply returns. The push that follows reflects the applied state.
-
-### 3.7 When the dashboard still asks TTS directly (one-shot, never on a timer)
-
-- When a tab first opens, or after the bridge connects (existing PCs behavior).
-- When `session` changes (TTS reloaded) or `seq` has a gap (a message was lost).
-- When the author opens the JSON debug modal (full `playerData`).
-
-## 4. Performance guardrails
-
-- No pushes while unsubscribed (§ 3.1).
-- One flush per frame at most, one message per dirty topic and key (§ 3.3).
-- Builders read `gameState` only, with no world scans.
-- Nothing calls `sendExternalMessage` directly from hot handlers (`onObjectDrop`, `onObjectPickUp`, timers). They call `markDirty` only.
-- A debug toggle (`DashboardPush.setEnabled(false)`) for A/B hitch testing.
-- Optional counters (messages and bytes per minute) reported through the existing `Sync.setMetricsEnabled` metrics path.
-
-## 5. Repo rules this touches
-
-- **Bundling:** `dashboard/push.ttslua` is **Global-only**. Object scripts never `require` it. If an object-script path changes PC data, it already goes through a `Global.call` mutator, which reaches the hook points.
-- **Sync contract:** push is reconciliation-side output. It never writes state and is never called from `S.setStateVal` / `S.setPlayerVal`.
-- **Heavy-workload docs:** reclassify `sendExternalMessage` from "debug-only" to "sanctioned for dashboard push with subscribe gate + per-frame coalescing" in `TTS-API-Heavy-Workload-Catalog.md` and `TTS-API-Heavy-Workload-Usage-Inventory.md`.
-- **Event Listener Policy:** add a row for the `onExternalMessage` `data.dashboard` subscribe branch (host-executed, Tier A runtime flag).
-- **Multiplayer:** all mod Lua runs on the host, and the dashboard runs on the host machine. No per-client concerns.
-- **Tracking:** the Lua side is TTS-observable (in-game emitter + subscribe branch), so it needs a Linear issue and a Pending Author Verification row when it ships. Dashboard-only parts stay on the dashboard tasklist.p
-
-## 6. Rollout
-
-1. **Phase 1 — PCs live.** Subscribe handshake, `ready`, `pcSeat` (with connection fields), server SSE relay, PCs tab merge. Includes the § 3.4 hook audit and a size and hitch measurement.
-2. **Phase 2 — table context.** `phase` and `scene` topics; Scenes tab shows which library scene is live.
-3. **Phase 3 — optional event feed.** `roll` and similar events as a scrolling log on the dashboard.
-
-## 7. Verification plan (Phase 1)
-
-1. **No dashboard running:** Save & Play, play normally. Lua sends only the single `ready` message, with no other dashboard traffic.
-2. **Dashboard connected:** the server log shows subscribe sent, then `pcSeat` pushes as you click a character sheet in TTS. The dashboard PCs tab updates within about a second, without pressing anything.
-3. **Burst test:** click one seat's character sheet about 20 times quickly. The server log shows a handful of pushes (one per frame at most), and TTS shows no visible hitch compared with the same test with `DashboardPush.setEnabled(false)`.
-4. **Reload test:** reload the save in TTS. The dashboard sees a new `session`, resubscribes, and fetches one fresh snapshot.
-5. **Release test:** press Release Port. Pushes stop (unsubscribe sent) and TTS Tools keeps working.
-
-## 8. Open decisions for the author
-
-1. **Phase 1 scope:** PCs tab only (recommended), or also connection and phase in the first slice?
-2. **Inline payloads vs "changed" notices:** recommended inline slim seat snapshots for `pcSeat`, with "changed" notices only for large future topics.
-3. **Event feed:** do you want a running log of rolls and connections on the dashboard eventually (Phase 3), or just current state?
-4. **Missing-refresh paths:** if the § 3.4 audit finds PC changes that don't refresh the in-game Storyteller panel either, fix them as part of Phase 1 or file them separately?
+`phase`, `scene` (which library scene is live), and a `roll` event feed. Each would follow § 5: one Lua call site in the owning announcer or reconciler, a short entry in § 3.

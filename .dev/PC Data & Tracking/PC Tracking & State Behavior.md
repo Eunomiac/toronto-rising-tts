@@ -326,10 +326,10 @@ type PlayerConditions = Partial<Record<ConditionId, PersistedCondition>>;
 | `Conditions.setManual(playerID, id, true \| instance)` | Storyteller toggles (`hudFrenzy`, `hudBlindfold`) |
 | `Conditions.setEvent(playerID, id, instance)` | Scene transition blindfold |
 | `Conditions.clear(playerID, id)` | Remove any condition (incl. ST torpor clear) |
-| `Conditions.reconcileDerivedForPlayer(playerID)` | Sync derived keys from stats |
+| `Conditions.reconcileDerivedForPlayer(playerID, opts?)` | Sync derived keys from stats; `{ skipPresentation = true }` when the caller announces with `Sync.player` |
 | `Conditions.reconcileDerivedAllPlayers()` | Load / bulk repair |
 | `Conditions.reconcileHostedForSession(opts?)` | Apply/remove hosted (`location` + `scene`) keys for present PCs; `skipPresentation` when followed by `Sync.full` |
-| `Conditions.afterChange(playerID)` | Per-player presentation (lights, HUD, overlays, sheets, Rouse/Oblivion-Rouse bags) — mirrors `Sync.player` |
+| `Conditions.afterChange(playerID)` | Resolves the seat color and calls `Sync.player` (lights, HUD, overlays, sheets, Rouse/Oblivion-Rouse bags, PCs row, dashboard push) |
 | `Conditions.resolveForPlayer(playerID)` | Merged statChanges / HUD ids / lighting modes |
 | `EffectiveStats.forPlayer(playerID)` / `forSeat(color)` | **Preferred** read-time stat math (tracker max, BP, dots) |
 | `Conditions.effectiveStatDelta` / `effectiveAggregateDelta` | Legacy delegates to `EffectiveStats` |
@@ -340,11 +340,11 @@ type PlayerConditions = Partial<Record<ConditionId, PersistedCondition>>;
 
 | Event | What runs |
 | --- | --- |
-| Health/willpower Apply (ST panel) | `reconcileDerivedForPlayer` → `afterChange` |
-| Humanity stain/base/clear Apply | `reconcileDerivedForPlayer` → `afterChange` |
-| ST torpor clear | `clear("torpor")` → `reconcileDerivedForPlayer` |
-| ST frenzy/blindfold toggle | `setManual` / `clear` → `afterChange` (no derive) |
-| Scene transition blindfold | `setEvent` / `clear` → `afterChange` |
+| Health/willpower Apply (ST panel) | `reconcileDerivedForPlayer(pid, { skipPresentation = true })` → caller `Sync.player` |
+| Humanity stain/base/clear Apply | `reconcileDerivedForPlayer(pid, { skipPresentation = true })` → caller `Sync.player` |
+| ST torpor clear | `clear("torpor", { skipAfterChange = true })` → `reconcileDerivedForPlayer` (state only) → caller `Sync.player` |
+| ST frenzy/blindfold toggle | `setManual` / `clear` → `afterChange` → `Sync.player` (no derive) |
+| Scene transition blindfold | `setEvent` / `clear` with `skipAfterChange` → batched `HO.syncAll` (multi-seat) |
 | Game load | `validateAllPersisted` → `reconcileDerivedAllPlayers` → `reconcileHostedForSession` |
 | Location Apply / scene bundle / End scene | `reconcileHostedForSession` |
 | Seat presence toggle / table switch | `reconcileHostedForSession` (present-only hosted keys) |
@@ -354,7 +354,7 @@ type PlayerConditions = Partial<Record<ConditionId, PersistedCondition>>;
 
 1. **Derive (mutation)** — recompute which *derived* IDs belong in `playerData.conditions` from current `stats` (+ `suppressedBy` / `deriveSticky`).
 2. **Hosted (mutation)** — add/remove `location` and `scene` ids from district/site rows and `sessionScene.conditions` for PCs **present** in the active scene (`L.isPlayerPresentInActiveSeatLayout`).
-3. **Apply (presentation)** — `afterChange` reconciles seat lights, HUD, overlays, character sheets, and Rouse/Oblivion-Rouse bag visibility for that PC. Consumers also **read** resolved effects on demand (`resolveForPlayer`, `resolveRollPolicy`) during sheet collect, lighting reconcile, and rolls.
+3. **Apply (presentation)** — `Sync.player(color)` (directly, or via `afterChange`) reconciles seat lights, HUD, overlays, character sheets, Rouse/Oblivion-Rouse bag visibility, the PCs panel row and the dashboard push for that PC. Consumers also **read** resolved effects on demand (`resolveForPlayer`, `resolveRollPolicy`) during sheet collect, lighting reconcile, and rolls.
 
 **Load policy:** Unknown ids or legacy inline payloads (`statChanges`, `hudChanges`, `lightingModeChanges`, …) → **`error(...)`** (no migrator). One-time fix: clear `conditions = {}` or restore a pre-migration save.
 
@@ -526,7 +526,7 @@ conditions = {
 }
 ```
 
-`Conditions.reconcileDerivedForPlayer` runs after damage/heal; **`Conditions.afterChange`** drives HUD, lighting, and sheets for that seat.
+`Conditions.reconcileDerivedForPlayer` runs after damage/heal (state only); the caller's **`Sync.player(color)`** drives HUD, lighting, sheets and the dashboard for that seat.
 
 ### Humanity Controls
 

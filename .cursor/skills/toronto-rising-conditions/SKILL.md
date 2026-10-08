@@ -10,11 +10,11 @@ Before adding or changing any condition, read the **Agent quick guide** in [`.de
 
 - **Registry:** `lib/condition_defs.ttslua` — `canApplyManually` (boolean), effect channels (`statChanges`, `hud`, `lighting`, `roll`).
 - **Persisted:** `playerData.conditions` stores active ids (+ instance data only); never inline effect payloads.
-- **Mutation:** reconcile / `setManual` / `setEvent` / `clear` / location reconcile — then `Conditions.afterChange` (per-player presentation; mirrors `Sync.player` without requiring `core.sync`).
+- **Mutation:** reconcile / `setManual` / `setEvent` / `clear` / hosted reconcile — then `Sync.player(color)`, the single per-seat announcer. `setManual` / `setEvent` / `clear` reach it through `Conditions.afterChange` unless `skipAfterChange`; `reconcileDerivedForPlayer(pid, { skipPresentation = true })` leaves it to the caller.
 - **Presentation:** consumers call `Conditions.resolveForPlayer(playerID)` — do not scatter `CD.Defs` reads.
 - **Read-time stat math:** use `EffectiveStats.forPlayer(playerID)` / `forSeat(color)` for condition-aware tracker max, dot ratings, BP derived row — see Conditions Guide §9.
 - **Roll FSM:** snapshot `Conditions.resolveRollPolicy(playerID)` on `RC.initiateRoll` → `active.rollPolicy`; `RC` reads policy only, not raw condition tables.
-- **Location reconcile + `Sync.full`:** pass `{ skipPresentation = true }` to `reconcileLocationHostedForScene` so presentation runs once in the caller's sync pass.
+- **Hosted reconcile + `Sync.full`:** pass `{ skipPresentation = true }` to `reconcileHostedForSession`, then `Sync.player` the changed seats it returns after `Sync.full`.
 
 ## Modules
 

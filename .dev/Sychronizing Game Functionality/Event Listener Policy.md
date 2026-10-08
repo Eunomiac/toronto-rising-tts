@@ -75,7 +75,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `GlobalImportSceneJson` | B | 5 | TOR-570 Dashboard execute-lua: Scene Constructor JSON → `SceneLibrary.importConstructorJsonText` (library row only, no Apply). No Steam gate (no clicker). Same write path as in-game Import Scene. |
 | *(load guard)* | — | — | Every Dashboard execute-lua entry in this block (`GlobalImportGenericNpcs`, `GlobalImportSceneJson`, `GlobalDashboard*`) refuses until `S.isReady()` — the Global chunk is callable before `onLoad` fills `gameState`. JSON entries return `ok=false, loading=true`; the imports raise. See [`dashboard/README.md`](../../dashboard/README.md) § Load guard. |
 | `GlobalDashboardPcSheetSnapshot` | B | — | Dashboard execute-lua (`dashboard.pc_sheet`): JSON snapshot of five PC seats (stats, Desire, Ambition, identity overlay, session flags, conditions). No Steam gate (no clicker). |
-| `GlobalDashboardPcSheetApply` | B+C | — | Dashboard execute-lua (`dashboard.pc_sheet`): one typed mutation **or a JSON array of mutations** (trackers, dots, disabled, ST badges, Hunger, Desire, join spike controls, ST rolls; Page 2–3 discipline/power/ritual/advantage ops in `dashboard.pc_sheet_traits`; Experience Log append/undo in `dashboard.pc_sheet_xp`; Page 4 `relationshipUpsert` / `relationshipDelete` in `dashboard.pc_sheet_relationships` (refreshes every linked PC's sheets); **`mergePlayerData`** developer JSON Apply: deep-merge assign into `gameState.playerData.<pid>` with **no** defaults/normalize/validateState) then one snapshot. Damage uses V5 overflow (super→agg). Stain add is a no-op while impaired. No Steam gate. Reuses `PCST` / `P` / `Sync.player` / `RC.initiateRoll`. Seat occupancy is read-only here (`absentFromSession` + `connected` in the snapshot); connection is the sole authority. |
+| `GlobalDashboardPcSheetApply` | B+C | — | Dashboard execute-lua (`dashboard.pc_sheet`): one typed mutation **or a JSON array of mutations** (trackers, dots, disabled, ST badges, Hunger, Desire, join spike controls, ST rolls; Page 2–3 discipline/power/ritual/advantage ops in `dashboard.pc_sheet_traits`; Experience Log append/undo in `dashboard.pc_sheet_xp`; Page 4 `relationshipUpsert` / `relationshipDelete` in `dashboard.pc_sheet_relationships` (refreshes every linked PC's sheets); **`mergePlayerData`** developer JSON Apply: deep-merge assign into `gameState.playerData.<pid>` with **no** defaults/normalize/validateState) then one snapshot. Ops are state-only; after the batch, `Dash.apply` calls `Sync.player` once per touched seat (which also pushes the seat to the dashboard). Damage uses V5 overflow (super→agg). Stain add is a no-op while impaired. No Steam gate. Reuses `P` / `Sync.player` / `RC.initiateRoll`. Seat occupancy is read-only here (`absentFromSession` + `connected` in the snapshot); connection is the sole authority. |
 | `GlobalDashboardProjectsSnapshot` | B | — | Dashboard execute-lua (`dashboard.projects`): JSON of every project with Lua-derived auto phase, required stake, project die, start/end text, Begin eligibility + message, launch eligibility; per-source advantage lists with free dots; present day; owner/source order; `listForDisplaySource` id order per source. Read-only. No Steam gate (no clicker). |
 | `GlobalDashboardProjectsApply` | B+C | — | Dashboard execute-lua (`dashboard.projects`): one command — `create` (first Save only), `patch` (any field; scope runs `applyScopeDifficulty`; Result/Margin refused once begun), `setStakeRows` (≤8), `begin` (`isBeginEligible`), `complete` (in progress only), `delete`, `launchRoll` (`RC.initiateRoll` LAUNCH, same as the panel R button; pre-launch only). Mutations end with `PJP.refresh` + `Projects.refreshAfterMutation` (all PC sheets, coterie sheet, Court cards); `launchRoll` skips the refresh. Returns a fresh snapshot. No Steam gate. |
 | `GlobalGameboardInstallPaletteSnaps` | C | Done | palette snap install |
@@ -105,7 +105,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `Sync.full` | Full reconcile (state → world) |
 | `Sync.npcs` | Domain reconcilers |
 | `Sync.soundscape` / `Sync.lightRef` / `Sync.npcCutouts` | Domain reconcilers |
-| `Sync.player` | Per-player: lights + HUD/overlays |
+| `Sync.player` | Per-seat announcer: lights, HUD, overlays, dice bags, CSHEET slices, PCs row (visible only), `DashPush.seat` (TOR-677 / TOR-676) |
 | `Sync.ui` | UI-only refresh |
 
 ### Object scripts
@@ -118,7 +118,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `ui_signal_candle.ttslua` | clicker → Global.call | Global callee | 5 |
 | `ui_tarot_button.ttslua` | clicker → `GlobalApplyTarotState` | Global callee | W2 |
 | `ui_companion_toggle.ttslua` | clicker → `GlobalApplyCompanionToggleClick` | Global callee | TOR-288 |
-| `ui_csheet_core.ttslua` | clicker → Global.call; Desire InputField onValueChanged/onEndEdit → `GlobalSetPlayerDesire`; onLoad layout | Global mutators; seat owner or ST steam for Desire | W4 / TOR-97 |
+| `ui_csheet_core.ttslua` | clicker → Global.call; Desire InputField onValueChanged/onEndEdit → `GlobalSetPlayerDesire` (end-edit `syncText` also pushes the seat to the dashboard); onLoad layout; `refreshFromGameState({ forceRebuild })` called by Global only when that page's slice changed | Global mutators; seat owner or ST steam for Desire | W4 / TOR-97 |
 
 ### HUD handlers (summary)
 
@@ -138,7 +138,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 
 | Handler | Tier | ST steam | Notes |
 | --- | --- | --- | --- |
-| `HUD_selectStorytellerPanel` | A | — | panel visibility |
+| `HUD_selectStorytellerPanel` | A | — | panel visibility; repaints the panel on open only (closing click skips refresh). Toolbar hotkey repaints the selected panel when it shows the toolbar body (TOR-678) |
 | `HUD_pcPanel` | B+C | Yes | PCs tracker apply; Desire Clear (`pcs_<Color>_desireClear`, TOR-97) |
 | `HUD_pcsToggleSimulatedConnection` | B+C | Yes | Assume Connected debug mode only: per-seat simulated connect (seats PC immediately) / disconnect (darken only) via `PlayerConnection.simulateSeatConnection` |
 | `HUD_toggleConnectionMode` | B+C | Yes | Debug panel: persisted `debug.assumeConnected`; seats newly connected PCs once, then one relayout (`PlayerConnection.switchAssumeConnectedMode`) |

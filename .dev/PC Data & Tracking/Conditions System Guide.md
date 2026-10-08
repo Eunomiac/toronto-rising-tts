@@ -122,7 +122,7 @@ Changes confirm gating or mandatory full reroll lifecycle?
 Two phases on every change:
 
 1. **Mutation** — write/remove keys in `playerData.conditions` (derive reconcile, location reconcile, setManual, setEvent, clear).
-2. **Presentation** — `Conditions.afterChange` applies per-player lights/HUD/overlays/sheets and dice-bag visibility (same slice as `Sync.player`, without requiring `core.sync`); consumers read **`Conditions.resolveForPlayer`** or **`Conditions.resolveRollPolicy`** on demand.
+2. **Presentation** — `Sync.player(color)`, the single per-seat announcer (lights, HUD, overlays, sheets, dice-bag visibility, PCs row, dashboard push). `setManual` / `setEvent` / `clear` reach it through `Conditions.afterChange` unless `skipAfterChange`; `reconcileDerivedForPlayer(pid, { skipPresentation = true })` leaves it to the caller. Consumers read **`Conditions.resolveForPlayer`** or **`Conditions.resolveRollPolicy`** on demand.
 
 Do not embed world side effects in `S.setStateVal` for stats without an explicit sync/reconcile call afterward.
 
@@ -182,11 +182,11 @@ See §6. Snapshot on `active.rollPolicy` at roll initiate; `RC` reads policy onl
 
 | Event | What runs |
 | --- | --- |
-| Health/willpower Apply | `reconcileDerivedForPlayer` → `afterChange` |
-| Humanity stain/base/clear | `reconcileDerivedForPlayer` → `afterChange` |
-| ST torpor clear | `clear("torpor")` → `reconcileDerivedForPlayer` |
-| ST frenzy/blindfold | `setManual` / `clear` → `afterChange` |
-| Scene transition blindfold | `setEvent` / `clear` → `afterChange` |
+| Health/willpower Apply | `reconcileDerivedForPlayer(pid, { skipPresentation = true })` → caller `Sync.player` |
+| Humanity stain/base/clear | `reconcileDerivedForPlayer(pid, { skipPresentation = true })` → caller `Sync.player` |
+| ST torpor clear | `clear("torpor", { skipAfterChange = true })` → `reconcileDerivedForPlayer` → caller `Sync.player` |
+| ST frenzy/blindfold | `setManual` / `clear` → `afterChange` → `Sync.player` |
+| Scene transition blindfold | `setEvent` / `clear` with `skipAfterChange` → batched `HO.syncAll` (multi-seat) |
 | Game load | `validateAllPersisted` → `reconcileDerivedAllPlayers` → `reconcileHostedForSession` |
 | Location / scene apply / End scene | `reconcileHostedForSession` |
 | Seat presence / table switch | `reconcileHostedForSession` |
