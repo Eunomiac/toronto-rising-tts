@@ -9,6 +9,7 @@ import { loadEnvFile } from "./loadEnv.js";
 import { generateNpcImage, generateNpcs, rerollNpcField } from "./npcService.js";
 import { loadGenericNpcCatalog, resolveGenericNpcImagePath } from "./genericNpcCatalog.js";
 import { refreshGenericNpcCatalogOnStartup } from "./refreshGenericNpcCatalog.js";
+import { createLabNoteStore, LabNoteError, parseLabNoteCreate, parseLabNotePatch } from "./labNotes.js";
 import { createTermImageStore, MAX_TERM_IMAGE_BYTES, TERM_IMAGE_CONTENT_TYPES, TermImageError } from "./termImages.js";
 import { dashboardTtsBridge } from "./ttsExecuteLua.js";
 import { ttsEventHub } from "./ttsEvents.js";
@@ -27,6 +28,7 @@ const cataloguedNpcImageDir = path.join(repoRoot, "assets", "images", "NPCs", "C
 const scenesAssetDir = path.join(dashboardRoot, "assets", "scenes");
 const pcSheetAssetDir = path.join(dashboardRoot, "assets");
 const termImages = createTermImageStore(path.join(dashboardRoot, "data", "term-images"));
+const labNotes = createLabNoteStore(path.join(dashboardRoot, "agent", "lab-notes.json"));
 const publicDir = path.join(distDir, "public");
 const isDev = process.argv.includes("--dev");
 
@@ -113,6 +115,38 @@ const handleTermImages = async (request: IncomingMessage, response: ServerRespon
     sendJson(response, 405, { error: "Method not allowed" });
   } catch (error: unknown) {
     if (error instanceof TermImageError) {
+      sendJson(response, error.status, { error: error.message });
+      return;
+    }
+    throw error;
+  }
+};
+
+const handleLabNotes = async (request: IncomingMessage, response: ServerResponse, url: URL): Promise<void> => {
+  try {
+    const id = Number(url.searchParams.get("id"));
+    if (request.method === "GET") {
+      sendJson(response, 200, await labNotes.list());
+      return;
+    }
+    if (request.method === "POST") {
+      sendJson(response, 200, await labNotes.add(parseLabNoteCreate(await readRequestJson(request))));
+      return;
+    }
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new LabNoteError("Expected ?id=<note number>.", 400);
+    }
+    if (request.method === "PATCH") {
+      sendJson(response, 200, await labNotes.update(id, parseLabNotePatch(await readRequestJson(request))));
+      return;
+    }
+    if (request.method === "DELETE") {
+      sendJson(response, 200, await labNotes.remove(id));
+      return;
+    }
+    sendJson(response, 405, { error: "Method not allowed" });
+  } catch (error: unknown) {
+    if (error instanceof LabNoteError) {
       sendJson(response, error.status, { error: error.message });
       return;
     }
@@ -364,6 +398,11 @@ const tryHandleDedicatedRoutes = async (request: IncomingMessage, response: Serv
 
   if (pathname === "/api/term-images" || pathname === "/api/term-images/text") {
     await handleTermImages(request, response, url);
+    return true;
+  }
+
+  if (pathname === "/api/lab-notes" && isDev) {
+    await handleLabNotes(request, response, url);
     return true;
   }
 

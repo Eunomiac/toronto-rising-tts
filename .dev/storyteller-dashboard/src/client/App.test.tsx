@@ -6,6 +6,7 @@ vi.mock("./stageNpcs", () => ({ initStageNpcs: vi.fn() }));
 vi.mock("./scenesTab", () => ({ initScenesTab: vi.fn() }));
 vi.mock("./luaTab", () => ({ initLuaTab: vi.fn() }));
 vi.mock("./generateNpcTab", () => ({ initGenerateNpc: vi.fn() }));
+vi.mock("./lab/LabTab", () => ({ LabTab: () => null }));
 
 import { App } from "./App";
 

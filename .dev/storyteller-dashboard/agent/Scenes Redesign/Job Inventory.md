@@ -12,7 +12,7 @@ Source of truth:
 - author marks in the **You** column below (they override the agent's suggestion)
 - current behavior: `core/storyteller_scenes_panel.ttslua`, `core/scene_library.ttslua`, `core/npc_gameboard*.ttslua`, `core/control_board_preview.ttslua`, `core/narrative_clock_lerp.ttslua`, `.dev/storyteller-dashboard/src/client/scenesTab.ts`
 
-Status: current — round 0 complete (all questions answered); round 1 sketches next
+Status: current — round 0 complete; round 1 sketches (A / B / C) in the dashboard Lab, waiting on author pins
 
 ## What this is
 
@@ -362,9 +362,25 @@ These summarise the answers above. Round 1 sketches follow them.
 - On-stage NPC tokens appear on the in-game board in positions that mirror the dashboard layout, at a larger size, and you can then move them freely. PC tokens are removed from the in-game board.
 - **Rolls:** every Storyteller-facing roll tool (choosing a roll type, building the pool, rolling, the three Storyteller dice drawers) eventually moves to the dashboard, as a **later step** after this redesign. For now, layouts only **reserve room** for a roll area and show where right-clicking a character would start a roll. The roll tools themselves aren't designed in this round.
 
+## Round 1 — Lab sketches
+
+Open the dashboard dev server and go to `http://127.0.0.1:8788/?lab=scenes-r1-a` (or click the **Lab** tab). Sketch code: `src/client/lab/scenesRound1.tsx`; shared grey boxes: `src/client/lab/sketch.tsx`. Every box shows its tier and its real pixel size.
+
+The main problem all three solve differently: the control board (stage + seat row) is roughly square (about 0.9 wide per 1 tall), while the screen is wide. Without the seat row the stage alone is about 1.1 wide per 1 tall.
+
+| Sketch | Idea | Board size | Trade-off |
+| --- | --- | --- | --- |
+| **A · Stage in the middle** | Scene bar on top; roster left; board with its seat row in the centre; When / Where / Weather / Sound / Queue stacked on the right. | 866×962 | Familiar (closest to today); the right rail is busy and every module is medium-sized. |
+| **B · Glance strip** | One strip across the top shows Scene / Where / When / Weather / Sound as read-outs; clicking one opens its editor as a pop-up. Seats move into a column beside a stage-only board. | 975×886 | Biggest board and everything readable in one sweep; editing costs one extra click. |
+| **C · Library rail + big clock** | Scene library always visible on the left; smaller board; seats as a row under it; a large clock column on the right. | 660×600 | Best for switching between prepared scenes and for time; the board is smallest. |
+
+Lab toggles (tab bar): **Preview panel** (blue slide-out for a library scene that isn't on the table), **Scene ≠ present day** (small present-day line above the scene time), **Weather override** (stark striped red), **Example pop-up** (B's clock controls).
+
+Feedback wanted: which layout's overall shape feels right, which modules are too big or too small, and anything that should move between them. Pins can say "take X from B into A".
+
 ## Next rounds
 
-- **Round 1** — three rough grey-box layouts at 1920×1080 in a dev-only **Lab** view of the dashboard, plus click-to-comment feedback pins. Each layout gives the **A** jobs above a different arrangement.
+- **Round 1** — three rough grey-box layouts at 1920×1080 in a dev-only **Lab** view of the dashboard, plus click-to-comment feedback pins. Each layout gives the **A** jobs above a different arrangement. (Built — see above.)
 - **Round 2** — pick one (or a blend), add real art, icons and fake data, make it clickable.
 - **Round 3** — plain-language behavior tables for the tricky rules (queue, preparing vs. live, seat/stage duplicates).
 - **Build** — promote the Lab version into the real Scenes tab; Lua bridge work for the new commands gets Linear issues and Pending Author Verification rows.

@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactElement } from "react";
 import { initGenerateNpc } from "./generateNpcTab";
+import { LabTab } from "./lab/LabTab";
 import { initLuaTab } from "./luaTab";
 import { PcSheetTab } from "./pcSheet/PcSheetTab";
 import { initScenesTab } from "./scenesTab";
@@ -7,19 +8,26 @@ import { initStageNpcs } from "./stageNpcs";
 import { TermImageLayer } from "./termImages/TermImageLayer";
 
 const DEFAULT_TAB_ID = "tab-stage-npcs";
+const LAB_TAB_ID = "tab-lab";
 
-const TABS = [
+const ALL_TABS = [
   { id: "tab-stage-npcs", panelId: "panel-stage-npcs", label: "Stage NPCs" },
   { id: "tab-scenes", panelId: "panel-scenes", label: "Scenes" },
   { id: "tab-pcs", panelId: "panel-pcs", label: "PCs" },
   { id: "tab-lua", panelId: "panel-lua", label: "Lua" },
-  { id: "tab-generate-npc", panelId: "panel-generate-npc", label: "Generate NPC" }
+  { id: "tab-generate-npc", panelId: "panel-generate-npc", label: "Generate NPC" },
+  { id: LAB_TAB_ID, panelId: "panel-lab", label: "Lab" }
 ] as const;
 
-type TabId = (typeof TABS)[number]["id"];
+type TabId = (typeof ALL_TABS)[number]["id"];
+
+const TABS = ALL_TABS.filter((tab) => tab.id !== LAB_TAB_ID || import.meta.env.DEV);
+
+const initialTab = (): TabId =>
+  import.meta.env.DEV && new URLSearchParams(window.location.search).has("lab") ? LAB_TAB_ID : DEFAULT_TAB_ID;
 
 export const App = (): ReactElement => {
-  const [activeTab, setActiveTab] = useState<TabId>(DEFAULT_TAB_ID);
+  const [activeTab, setActiveTab] = useState<TabId>(initialTab);
   const started = useRef(false);
 
   useLayoutEffect(() => {
@@ -76,6 +84,7 @@ export const App = (): ReactElement => {
             </button>
           );
         })}
+        {import.meta.env.DEV && <div id="lab-controls" className="app-tabs-extra" />}
       </nav>
 
       <section
@@ -329,6 +338,18 @@ export const App = (): ReactElement => {
           </aside>
         </main>
       </section>
+
+      {import.meta.env.DEV && (
+        <section
+          id="panel-lab"
+          className="tab-panel lab-panel"
+          role="tabpanel"
+          aria-labelledby={LAB_TAB_ID}
+          hidden={activeTab !== LAB_TAB_ID}
+        >
+          <LabTab active={activeTab === LAB_TAB_ID} />
+        </section>
+      )}
 
       <div id="modal-root"></div>
       <TermImageLayer />
