@@ -65,7 +65,7 @@ export const computeAutoCrop = (rgba: ArrayLike<number>, imageWidth: number, ima
     }
     return total / rows;
   });
-  const rowWidth = (y: number): number => sm[Math.max(0, Math.min(imageHeight - 1, y))] ?? 0;
+  const rowWidth = (y: number): number => sm[y] ?? 0;
 
   let headMax = at(0.03);
   for (let y = at(0.03); y <= at(0.12); y += 1) {

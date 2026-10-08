@@ -8,7 +8,7 @@ import { ANALYSIS_HEIGHT, computeAutoCrop, type AutoCrop } from "./autoCrop";
 
 export type ResolvedHeadshot = {
   readonly crop: HeadshotCrop;
-  /** Cutout width ÷ height, needed to place the full image behind a crop window. */
+  /** Cutout width divided by height, needed to place the full image behind a crop window. */
   readonly aspect: number;
   readonly source: "manual" | "auto";
   readonly auto: AutoCrop;
@@ -22,7 +22,6 @@ const FALLBACK_ASPECT = 0.3;
 const analyses = new Map<string, Promise<Analysis>>();
 const analysed = new Map<string, Analysis>();
 let manual: Record<string, HeadshotCrop> = {};
-let manualReady = false;
 let manualLoad: Promise<void> | null = null;
 const listeners = new Set<(characterKey: string) => void>();
 
@@ -58,7 +57,7 @@ const analyse = (characterKey: string): Promise<Analysis> => {
     const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = ANALYSIS_HEIGHT;
-    const context = canvas.getContext("2d", { willReadFrequently: true });
+    const context = canvas.getContext("2d");
     if (!context) {
       throw new Error("Canvas 2D is unavailable.");
     }
@@ -81,14 +80,9 @@ const loadManual = (): Promise<void> => {
           throw new Error(`Headshot crops failed to load (${response.status}).`);
         }
         manual = { ...((await response.json()) as HeadshotCropFile).crops };
-        manualReady = true;
         for (const key of Object.keys(manual)) {
           notify(key);
         }
-      })
-      .catch((error: unknown) => {
-        manualLoad = null;
-        throw error;
       });
   }
   return manualLoad;
@@ -104,11 +98,22 @@ const combine = (characterKey: string, analysis: Analysis): ResolvedHeadshot => 
 /** Synchronous answer when the cutout has already been measured, so re-rendered tokens never flash. */
 export const peekHeadshot = (characterKey: string): ResolvedHeadshot | null => {
   const analysis = analysed.get(characterKey);
-  return analysis && manualReady ? combine(characterKey, analysis) : null;
+  return analysis ? combine(characterKey, analysis) : null;
 };
 
+let manualFailureReported = false;
+
+/** Automatic crops never wait on the corrections file; a failed load is reported once (reload the page to retry). */
 export const resolveHeadshot = async (characterKey: string): Promise<ResolvedHeadshot> => {
-  const [analysis] = await Promise.all([analyse(characterKey), loadManual()]);
+  const [analysis] = await Promise.all([
+    analyse(characterKey),
+    loadManual().catch((error: unknown) => {
+      if (!manualFailureReported) {
+        manualFailureReported = true;
+        console.error("Headshot corrections unavailable; showing automatic crops only.", error);
+      }
+    })
+  ]);
   return combine(characterKey, analysis);
 };
 
@@ -119,7 +124,6 @@ const writeCrops = async (characterKey: string, init: RequestInit): Promise<void
     throw new Error(body.error ?? `Saving the headshot failed (${response.status}).`);
   }
   manual = { ...body.crops };
-  manualReady = true;
   notify(characterKey);
 };
 
