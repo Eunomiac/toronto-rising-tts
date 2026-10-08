@@ -4,13 +4,16 @@
   One-way messages to the dashboard server through the TTS Tools gateway (port 39998):
     { type = "dashboard", v = 1, topic = "pcSeat", color, json }  — slim seat snapshot (JSON string)
     { type = "dashboard", v = 1, topic = "projects" }             — project list changed; refetch
+    { type = "dashboard", v = 1, topic = <world slice>, json }    — phase / scene / clock / soundscape / seats
   Messages must stay flat: a nested table in sendExternalMessage never reaches the gateway, so
   payloads travel as a JSON string field.
   No handshake, session id or sequence number: the dashboard refetches its full snapshot on
-  game load, and each pcSeat message carries the whole seat.
+  game load, and each message carries its whole seat or slice.
 
   `DashPush.seat` is the last step of `Sync.player`, so every per-seat mutation reaches the
-  dashboard through the seat announcer. Unchanged payloads are not resent.
+  dashboard through the seat announcer. World slices are marked dirty from `UpdateUIDisplays`
+  and a few bypass paths, then built and sent together after a short delay
+  (`DashPush.markWorldDirty`). Unchanged payloads are not resent.
   Design: .dev/Storyteller Dashboard Docs/Live Push Channel.md
 ]]
 
@@ -71,6 +74,67 @@ end
 --- Tell the dashboard the project list changed (it refetches projects on demand).
 function DashPush.projects()
   send({ type = "dashboard", v = 1, topic = "projects" })
+end
+
+--- Marks within this window share one flush, so a burst of syncs sends each slice at most once.
+local WORLD_FLUSH_DELAY_SEC = 0.25
+
+--- Last sent encoded payload per world slice.
+--- @type table<string, string>
+local lastWorldPayload = {}
+
+--- @type table<string, boolean>
+local dirtyWorld = {}
+
+local worldFlushPending = false
+
+local function flushWorld()
+  worldFlushPending = false
+  local W = require("dashboard.world_snapshot")
+  local Trace = require("lib.sync_trace")
+  local dirty = dirtyWorld
+  dirtyWorld = {}
+  for _, slice in ipairs(W.SLICES) do
+    if dirty[slice] == true then
+      local encoded = JSON.encode(W.build(slice))
+      if lastWorldPayload[slice] == encoded then
+        Trace.report("DashPush.world", { slice = slice, outcome = "skipped" })
+      elseif send({ type = "dashboard", v = 1, topic = slice, json = encoded }) then
+        lastWorldPayload[slice] = encoded
+        Trace.report("DashPush.world", { slice = slice, bytes = tostring(#encoded), outcome = "sent" })
+      end
+    end
+  end
+end
+
+--- Mark world slices for the next coalesced push. O(1) per slice; building, encoding and the
+--- unchanged-payload check happen once in the flush.
+--- @param slices table<string, boolean> set of slice names from `dashboard.world_snapshot` `SLICES`
+function DashPush.markWorldDirty(slices)
+  local W = require("dashboard.world_snapshot")
+  for slice, on in pairs(slices) do
+    if not U.isIn(slice, W.SLICES) then
+      error("DashPush.markWorldDirty: unknown slice " .. tostring(slice), 2)
+    end
+    if on == true then
+      dirtyWorld[slice] = true
+    end
+  end
+  if worldFlushPending or next(dirtyWorld) == nil then
+    return
+  end
+  worldFlushPending = true
+  U.await(flushWorld, WORLD_FLUSH_DELAY_SEC)
+end
+
+--- Mark every world slice (game load, full UI refresh).
+function DashPush.markAllWorldDirty()
+  local W = require("dashboard.world_snapshot")
+  local all = {}
+  for _, slice in ipairs(W.SLICES) do
+    all[slice] = true
+  end
+  DashPush.markWorldDirty(all)
 end
 
 return DashPush

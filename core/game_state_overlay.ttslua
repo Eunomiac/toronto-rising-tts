@@ -1221,6 +1221,12 @@ function GameStateOverlay.stopTicker()
     lastRealTickClock = nil
 end
 
+--- True while the real-time wall loop is scheduled (the narrative clock is advancing).
+--- @return boolean
+function GameStateOverlay.isTickerRunning()
+    return tickerHandle ~= nil
+end
+
 --- Clears fractional carry when the narrative clock is set manually (Apply clock) so we do not double-apply drift.
 --- Also re-baselines the real-time anchor so the next tick measures elapsed from now (no catch-up jump).
 function GameStateOverlay.resetRealTimeCarry()

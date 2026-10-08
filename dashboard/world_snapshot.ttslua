@@ -1,0 +1,233 @@
+--[[
+  Storyteller Dashboard world slices (Global VM only).
+
+  Each builder returns one whole slice of live table state for a push topic. `DashPush` encodes
+  them, skips unchanged ones, and sends the rest; `GlobalDashboardWorldSnapshot` returns all of
+  them for a dashboard tab that opens mid-session. Builders only read state.
+
+    phase       phase, Play subphase, session number/name, Memoriam active
+    scene       live library scene, location, table, lighting, skybox override, top fog, weather
+    clock       clock anchor: scene / present-day / Downtime clocks, which one runs, speed
+    soundscape  music, location, featured, intro, weather layers, lane volumes
+    seats       PC and NPC seat occupancy and presence, stage NPCs, spotlight carousel
+
+  Design: .dev/Storyteller Dashboard Docs/Live Push Channel.md
+]]
+
+local W = {}
+
+local C = require("lib.constants")
+local S = require("core.state")
+
+--- Push topics, in send order.
+W.SLICES = { "phase", "scene", "clock", "soundscape", "seats" }
+
+--- @param clock table|nil
+--- @return table|nil
+local function clockDatetime(clock)
+  if type(clock) ~= "table" then
+    return nil
+  end
+  return {
+    year = tonumber(clock.year),
+    month = tonumber(clock.month),
+    day = tonumber(clock.day),
+    hour = tonumber(clock.hour),
+    minute = tonumber(clock.minute),
+  }
+end
+
+--- @param v any
+--- @return number|nil
+local function round2(v)
+  local n = tonumber(v)
+  if n == nil then
+    return nil
+  end
+  return math.floor(n * 100 + 0.5) / 100
+end
+
+local function buildPhase()
+  return {
+    phase = S.getStateVal("currentPhase"),
+    subPhase = S.getStateVal("playSubPhase"),
+    sessionNum = tonumber(S.getStateVal("sessionNum")),
+    sessionName = S.getStateVal("sessionName") or "",
+    sessionStartDowntime = S.getStateVal("sessionStartDowntime") == true,
+    memoriamActive = S.getStateVal("memoriam", "active") == true,
+  }
+end
+
+local function buildScene()
+  local liveKey = S.getStateVal("sceneLibrary", "lastAppliedKey")
+  local liveRow = type(liveKey) == "string" and S.getStateVal("sceneLibrary", "scenes", liveKey) or nil
+  if type(liveRow) ~= "table" then
+    liveKey = nil
+    liveRow = nil
+  end
+  local ss = S.getStateVal("sessionScene") or {}
+  local snd = S.getStateVal("soundscape") or {}
+  return {
+    liveKey = liveKey,
+    liveTitle = liveRow and liveRow.title or nil,
+    liveLinked = liveRow ~= nil and liveRow.receivesLiveWrites == true,
+    districtKey = ss.districtKey,
+    siteKey = ss.siteKey,
+    tableKey = ss.tableKey,
+    placementMode = ss.placementMode,
+    lightingPresetKey = ss.lightingPresetKey,
+    skyboxOverride = ss.skyboxOverride,
+    topFog = ss.isTopFogActive == true,
+    weather = {
+      weather = snd.weather,
+      rain = snd.rain,
+      wind = snd.wind,
+      thunder = snd.thunderEnabled == true,
+      indoors = snd.isIndoors == true,
+    },
+  }
+end
+
+local function buildClock()
+  local Phases = require("core.phases")
+  local downtime = Phases.isPlayDowntime() == true
+  local sceneClock = S.getStateVal("sessionScene", "clock")
+  local downtimeClock = S.getStateVal("downtimeClock")
+  local active = downtime and downtimeClock or sceneClock
+  local speed = 0
+  local catchUp = false
+  if type(active) == "table" then
+    speed = tonumber(active.realTimeSpeed) or 1
+    catchUp = active.catchUpToPresentDay == true
+  end
+  local running = type(active) == "table"
+    and active.useRealTime == true
+    and speed > 0
+    and require("core.game_state_overlay").isTickerRunning() == true
+  return {
+    activeClock = downtime and "downtime" or "scene",
+    running = running,
+    speed = speed,
+    catchUpToPresentDay = catchUp,
+    isPresentDay = type(sceneClock) == "table" and sceneClock.isPresentDay == true,
+    scene = clockDatetime(sceneClock),
+    downtime = downtime and clockDatetime(downtimeClock) or nil,
+    presentDay = clockDatetime(require("core.present_day_clock").getPresentDay()),
+  }
+end
+
+local function buildSoundscape()
+  local snd = S.getStateVal("soundscape") or {}
+  local lanes = {}
+  for _, row in ipairs(require("core.soundscape").getPlayingLanesForUi()) do
+    lanes[#lanes + 1] = {
+      id = row.id,
+      volume = round2(row.appliedVolume),
+      naturalVolume = round2(row.naturalVolume),
+      ducked = row.isDucked == true,
+      active = row.active == true,
+    }
+  end
+  return {
+    musicMode = snd.backgroundMusicMode,
+    musicMood = snd.musicMood,
+    musicEnabled = snd.backgroundMusicEnabled == true,
+    musicSuppressed = snd.backgroundMusicSuppressed == true,
+    locationMusic = snd.locationMusic,
+    location = snd.location,
+    siteSilent = snd.siteSilent == true,
+    featuredKey = snd.featuredMusic,
+    featuredActive = snd.featuredActive == true,
+    sessionIntroKey = snd.sessionIntroKey,
+    sessionIntroActive = snd.sessionIntroActive == true,
+    lanes = lanes,
+  }
+end
+
+--- @param seatKey string
+--- @param row table|nil
+--- @param isPc boolean
+--- @return table
+local function seatRow(seatKey, row, isPc)
+  row = type(row) == "table" and row or {}
+  local out = {
+    seat = seatKey,
+    kind = isPc and "pc" or "npc",
+    tableSlot = tonumber(row.tableSlot),
+    isPresent = row.isPresent ~= false,
+  }
+  if isPc then
+    local pid = C.GetPlayerIDOrNil(seatKey)
+    out.playerId = pid
+    out.charKey = pid ~= nil and C.PlayerData[pid] ~= nil and C.PlayerData[pid].charKey or nil
+    out.absentFromSession = row.absentFromSession == true
+    out.playingNpcKey = row.isPlayingNPC == true and row.npcCharacterKey or nil
+  else
+    out.characterKey = row.slotEmpty ~= true and row.characterKey or nil
+    out.slotEmpty = row.slotEmpty == true or row.characterKey == nil
+  end
+  return out
+end
+
+local function buildSeats()
+  local slots = S.getStateVal("sessionScene", "seatSlots") or {}
+  local seats = {}
+  for _, color in ipairs(C.PlayerColors) do
+    seats[#seats + 1] = seatRow(color, slots[color], true)
+  end
+  for _, seatKey in ipairs(C.NPCSeats) do
+    seats[#seats + 1] = seatRow(seatKey, slots[seatKey], false)
+  end
+  local stage = {}
+  local placements = S.getStateVal("sessionScene", "npcWorld", "placements") or {}
+  for characterKey, p in pairs(placements) do
+    if type(p) == "table" then
+      stage[#stage + 1] = {
+        characterKey = characterKey,
+        u = round2(p.u),
+        v = round2(p.v),
+        lightMode = p.npcLightMode,
+      }
+    end
+  end
+  table.sort(stage, function(a, b)
+    return tostring(a.characterKey) < tostring(b.characterKey)
+  end)
+  local spotlight = S.getStateVal("spotlight") or {}
+  return {
+    seats = seats,
+    stage = stage,
+    spotlightOrder = spotlight.order or {},
+    spotlightFrontIndex = tonumber(spotlight.frontIndex),
+  }
+end
+
+local BUILDERS = {
+  phase = buildPhase,
+  scene = buildScene,
+  clock = buildClock,
+  soundscape = buildSoundscape,
+  seats = buildSeats,
+}
+
+--- @param slice string one of `W.SLICES`
+--- @return table
+function W.build(slice)
+  local builder = BUILDERS[slice]
+  if builder == nil then
+    error("dashboard.world_snapshot: unknown slice " .. tostring(slice), 2)
+  end
+  return builder()
+end
+
+--- Every slice, keyed by topic name.
+--- @return table<string, table>
+function W.snapshot()
+  local out = {}
+  for _, slice in ipairs(W.SLICES) do
+    out[slice] = W.build(slice)
+  end
+  return out
+end
+
+return W
