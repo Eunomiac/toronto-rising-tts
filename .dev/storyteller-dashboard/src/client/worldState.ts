@@ -133,10 +133,20 @@ const asList = <T>(value: unknown): readonly T[] => (Array.isArray(value) ? (val
 
 const isWorldTopic = (topic: string): topic is WorldTopic => (WORLD_TOPICS as readonly string[]).includes(topic);
 
+/** A clock TTS does not hold arrives as an empty table, which Lua encodes as `[]`. */
+const asDatetime = (value: unknown): ClockDatetime | undefined =>
+  isRecord(value) && typeof value.year === "number" ? (value as ClockDatetime) : undefined;
+
 const normalizeSlice = (topic: WorldTopic, data: Record<string, unknown>, at: number): WorldState[WorldTopic] => {
   switch (topic) {
     case "clock":
-      return { ...(data as Omit<ClockAnchor, "at">), at };
+      return {
+        ...(data as Omit<ClockAnchor, "at">),
+        scene: asDatetime(data.scene),
+        downtime: asDatetime(data.downtime),
+        presentDay: asDatetime(data.presentDay),
+        at
+      };
     case "soundscape":
       return { ...(data as Omit<SoundscapeSlice, "lanes">), lanes: asList<SoundLane>(data.lanes) };
     case "seats":

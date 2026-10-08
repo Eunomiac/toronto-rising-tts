@@ -1,0 +1,80 @@
+# Scenes Redesign — Build Plan (layout B → the real Scenes tab)
+
+## Agent Routing
+
+Read this when:
+
+- building, wiring, or retiring anything in the new dashboard **Scenes** tab (Lab layout B promoted)
+- adding a dashboard → TTS scene command, or a dashboard-owned scene file
+
+Source of truth:
+
+- design decisions: [Job Inventory.md](Job%20Inventory.md) (author marks + pin passes)
+- what TTS broadcasts: [Listening to TTS.md](../../../Storyteller%20Dashboard%20Docs/Listening%20to%20TTS.md)
+- panels: `src/client/lab/glance.tsx`, `labNotes.tsx`, `labPreview.tsx`, `sketch.tsx` (`WideBoard`), styles `_lab-glance.scss`
+- live tab: `src/client/scenesPanel/` (new)
+
+Status: current — build in progress (started 2026-10-08)
+
+## Author decisions for the build (2026-10-08)
+
+- The mockup becomes the **default** Scenes control panel.
+- **Live scenes (on deck) and scene notes** are stored by the dashboard in JSON files under `data/` (git-ignored, the repo is public), with local backups. They survive any TTS reload. TTS still decides which scene is on the table; a live scene TTS reports that the list lacks is added to it.
+- **Hunt roll broadcasts** are not built yet. The hunt roller stays a dashboard-side preview.
+- **Commands** use the standard path: execute-lua into a `GlobalDashboard…Apply` entry point, behind the serial apply queue (the PCs tab pattern).
+- **Scene editing** moves entirely to the dashboard. Scene editing in TTS is retired afterwards (Lua clean-up with its own Linear issue).
+
+## Phases
+
+Each phase ends usable and committed. Dashboard-only phases need no Linear / PAV; any Lua phase gets a Linear issue and a Pending Author Verification row.
+
+### Phase 1 — Live read-only tab (dashboard only)
+
+- New React tab **Scenes** (default tab) rendering layout B at 1920×1042 from live data. The old vanilla Scenes tab stays reachable as **Scenes (old)** until Phase 6.
+- `scenesPanel/liveScene.ts`: pure adapters from `WorldState` to panel inputs (phase, live title, clock → `Date`s, weather axes, sound lanes, location keys, seats, stage tokens, spotlight order). Unit-tested.
+- Panels take their values as props; the Lab keeps feeding them mock values.
+- Missing slices show a quiet "waiting for TTS" state and call `refreshWorldSnapshot()` once.
+- Clock: scene time animates locally with `clockNow`; an empty Lua table (`[]`) for a datetime means "none".
+
+### Phase 2 — Dashboard-owned files
+
+- Server store `data/scene-deck.json` (git-ignored): live (on-deck) scene list, scene notes (tabbed documents per scene), roster categories / group colours / leaders.
+- Routes `GET/PUT /api/scene-deck`; atomic writes (tmp + rename), as `labNotes.ts`.
+- Backups: timestamped copy to `<backupDir>/Dashboard Data` at most every 10 minutes, keep the last 50 plus one per day (Job Inventory "Settled in the last round").
+
+### Phase 3 — Commands (Lua + dashboard; Linear + PAV)
+
+- `dashboard/scenes.ttslua` + `GlobalDashboardScenesApply(json)`: one op list, each op calls the existing mutation + sync path (no re-implementation), returns `{ ok, error? }`. Pushes arrive through the existing world slices.
+- Client `scenesPanel/bridge.ts` + the generic apply queue (extracted from `pcSheet/applyQueue.ts`).
+- Ops, in order of value: phase advance / subphase, spotlight rotate / bring to front, play library scene, end scene, clock set / present day / real time + speed, sound (music lane, volumes live + throttled, featured play / stop, ambience, mute), seat present / absent, table layout, location / skybox / fog / lighting.
+- Slice additions TTS lacks today: weather temperature (°C) and tonight's dusk / dawn on the clock slice.
+- Queue semantics (Job Inventory): small changes queue (Send / Live toggle); multi-step actions (Play Scene, End Scene, table switch, location change, clock jumps, Clear Stage) fire at once after flushing the queue; volumes always live, throttled.
+
+### Phase 4 — Library owned by the dashboard
+
+- Scene library JSON on disk (git-ignored, backed up), seeded once from TTS `sceneLibrary`.
+- Preview panels edit the dashboard copy (Save / On deck / Play Scene / Discard). Play Scene = import the row into TTS (`GlobalImportSceneJson`) then apply it.
+- Default names from District — Site, numbered on repeat.
+
+### Phase 5 — Stage editing
+
+- WideBoard tokens from the `seats.stage` slice (u, v, lightMode) on the control-board UV frame (`data/control-board-snaps.json`, `scenes/boardDrag.ts`).
+- Drag to place / move, double-click to light, group drop on packs, Clear Stage — through the existing NPC gameboard Apply path.
+- Generic NPC quick-add (Stage NPCs tab merged in).
+
+### Phase 6 — Retire
+
+- Remove the old vanilla Scenes tab and the Stage NPCs tab once their jobs live in the new tab.
+- Lua: retire scene editing in the in-game Scenes panel (Linear issue, PAV row).
+- Move shared panels out of `lab/` into `scenesPanel/`; the Lab keeps only what it still sketches.
+
+## Gaps and risks
+
+- **Library scale:** TTS shows 40 library rows; the dashboard has no limit.
+- **Echoes while dragging sliders:** ignore `soundscape` pushes for a lane while its slider is being dragged (Listening to TTS § 4.5).
+- **Weather override storage** belongs to the timeline (until next dawn), not the scene — new Lua state; Phase 3 or later.
+- **Snow** stays hidden until TTS supports it.
+
+## Progress log
+
+- 2026-10-08 — plan written; Phase 1 started.

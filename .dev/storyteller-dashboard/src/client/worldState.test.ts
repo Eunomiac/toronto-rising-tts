@@ -33,6 +33,16 @@ describe("applyWorldEvent", () => {
     expect(sound.soundscape?.lanes).toEqual([]);
   });
 
+  it("reads a clock encoded as an empty Lua table as no clock", () => {
+    const state = applyWorldEvent({}, {
+      topic: "clock",
+      data: { activeClock: "scene", running: false, speed: 1, scene: [], presentDay: { year: 2026, month: 9, day: 22, hour: 5, minute: 33 } },
+      at: 1
+    });
+    expect(state.clock?.scene).toBeUndefined();
+    expect(state.clock?.presentDay?.day).toBe(22);
+  });
+
   it("clears on reload and ignores other topics", () => {
     const state = applyWorldEvent({}, { topic: "scene", data: { liveKey: "elysium" } });
     expect(applyWorldEvent(state, { topic: "pcSeat", color: "Red", data: {} })).toBe(state);
