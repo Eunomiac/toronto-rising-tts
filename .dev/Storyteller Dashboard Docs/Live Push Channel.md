@@ -52,11 +52,13 @@ There is **no subscribe handshake, session id, sequence number or per-frame batc
 
 | Topic | Sent by | Payload | Dashboard reaction |
 | --- | --- | --- | --- |
-| `pcSeat` | `DashPush.seat(color)` from `Sync.player` | `color`, `data` = slim seat snapshot (`snapshotSeat` without `playerData`) | PCs tab replaces that seat, keeping the previous `playerData` (only full fetches carry it) |
+| `pcSeat` | `DashPush.seat(color)` from `Sync.player` | `color`, `json` = slim seat snapshot (`snapshotSeat` without `playerData`) as a JSON string | PCs tab replaces that seat, keeping the previous `playerData` (only full fetches carry it) |
 | `projects` | `DashPush.projects()` from `Projects.refreshAfterMutation` and `PJP.onPresentDayChanged` | none | Page 5 refetches the projects snapshot (only while it is mounted) |
 | `reload` | dashboard server, on gateway `loadingANewGame` | none | Server clears its cache; PCs tab runs its one-shot `refresh(true)`; page 5 refetches |
 
-Envelope from Lua: `{ type = "dashboard", v = 1, topic = "...", color?, data? }`. The server forwards `{ topic, color?, data? }` as one SSE `data:` line.
+Envelope from Lua: `{ type = "dashboard", v = 1, topic = "...", color?, json? }`. The server parses `json` into `data` and forwards `{ topic, color?, data? }` as one SSE `data:` line.
+
+**The envelope must stay flat.** A `sendExternalMessage` table that contains a nested table never reaches any gateway client (tested 2026-10-08: a flat message and a flat message with a 7 KB JSON string field both arrived; `{ data = { hunger = 2 } }` did not). Any structured payload travels as a JSON string field. `DashPush.seat` already encodes the seat for its unchanged-payload check, so it sends that string.
 
 `DashPush.seat` ignores colors outside `C.PlayerColors`, seats with no player id, and the Storyteller. It keeps the last encoded payload per color, so repeat `Sync.player` calls with no visible change send nothing. `GlobalSetPlayerDesire` with `syncText = true` (end of desire editing on the CSHEET) calls `DashPush.seat` directly, because desire keystrokes deliberately skip the full announcer.
 

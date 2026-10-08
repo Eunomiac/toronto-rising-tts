@@ -16,8 +16,9 @@ const cacheKey = (event: TtsPushEvent): string => `${event.topic}:${event.color 
 
 /**
  * Pull a dashboard push out of a gateway `customMessage` payload
- * (`{ customMessage: { type: "dashboard", v: 1, topic, color?, data? } }`). Other custom messages
- * (debug file writes, editor requests) return undefined.
+ * (`{ customMessage: { type: "dashboard", v: 1, topic, color?, json? } }`). `json` is the payload as a
+ * JSON string: TTS drops `sendExternalMessage` tables that contain nested tables. Other custom
+ * messages (debug file writes, editor requests) return undefined.
  */
 export const parseDashboardPush = (payload: Record<string, unknown>): TtsPushEvent | undefined => {
   const message = payload.customMessage;
@@ -28,10 +29,19 @@ export const parseDashboardPush = (payload: Record<string, unknown>): TtsPushEve
   if (row.type !== "dashboard" || row.v !== 1 || typeof row.topic !== "string" || row.topic === "") {
     return undefined;
   }
+  let data: unknown;
+  if (typeof row.json === "string") {
+    try {
+      data = JSON.parse(row.json) as unknown;
+    } catch (error: unknown) {
+      console.error(`[tts-events] dropped ${row.topic} push: bad json field`, error);
+      return undefined;
+    }
+  }
   return {
     topic: row.topic,
     ...(typeof row.color === "string" ? { color: row.color } : {}),
-    ...(row.data !== undefined ? { data: row.data } : {})
+    ...(data !== undefined ? { data } : {})
   };
 };
 

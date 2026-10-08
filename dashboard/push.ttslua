@@ -2,8 +2,10 @@
   Storyteller Dashboard live push (Global VM only).
 
   One-way messages to the dashboard server through the TTS Tools gateway (port 39998):
-    { type = "dashboard", v = 1, topic = "pcSeat", color, data }  — slim seat snapshot
+    { type = "dashboard", v = 1, topic = "pcSeat", color, json }  — slim seat snapshot (JSON string)
     { type = "dashboard", v = 1, topic = "projects" }             — project list changed; refetch
+  Messages must stay flat: a nested table in sendExternalMessage never reaches the gateway, so
+  payloads travel as a JSON string field.
   No handshake, session id or sequence number: the dashboard refetches its full snapshot on
   game load, and each pcSeat message carries the whole seat.
 
@@ -56,7 +58,7 @@ function DashPush.seat(color)
     require("lib.sync_trace").report("DashPush.seat", { color = color, outcome = "skipped" })
     return
   end
-  if send({ type = "dashboard", v = 1, topic = "pcSeat", color = color, data = data }) then
+  if send({ type = "dashboard", v = 1, topic = "pcSeat", color = color, json = encoded }) then
     lastSeatPayload[color] = encoded
     require("lib.sync_trace").report("DashPush.seat", {
       color = color,

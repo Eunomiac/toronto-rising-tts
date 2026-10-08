@@ -3,10 +3,15 @@ import { parseDashboardPush, TtsEventHub } from "./ttsEvents.js";
 
 describe("parseDashboardPush", () => {
   it("accepts dashboard v1 pushes", () => {
-    expect(parseDashboardPush({ customMessage: { type: "dashboard", v: 1, topic: "pcSeat", color: "Red", data: { hunger: 2 } } }))
+    expect(parseDashboardPush({ customMessage: { type: "dashboard", v: 1, topic: "pcSeat", color: "Red", json: "{\"hunger\":2}" } }))
       .toEqual({ topic: "pcSeat", color: "Red", data: { hunger: 2 } });
     expect(parseDashboardPush({ customMessage: { type: "dashboard", v: 1, topic: "projects" } }))
       .toEqual({ topic: "projects" });
+  });
+
+  it("drops a push whose json field does not parse", () => {
+    expect(parseDashboardPush({ customMessage: { type: "dashboard", v: 1, topic: "pcSeat", color: "Red", json: "{oops" } }))
+      .toBeUndefined();
   });
 
   it("ignores other custom messages", () => {
