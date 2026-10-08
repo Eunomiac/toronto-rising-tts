@@ -674,6 +674,7 @@ function PJP.onPresentDayChanged()
     Sync.player(color)
   end
   Projects.reconcileCourtProjectsAll()
+  require("dashboard.push").projects()
 end
 
 return PJP

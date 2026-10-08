@@ -482,7 +482,10 @@ local function applyHumanityOp(color, kind, delta, remorse)
   return nil
 end
 
-local function snapshotSeat(color)
+--- @param color string
+--- @param includePlayerData boolean false for the slim push payload (no raw playerData JSON dump)
+--- @return table
+local function snapshotSeat(color, includePlayerData)
   local pid = C.GetPlayerID(color)
   local catalog = type(pid) == "string" and C.PlayerData[pid] or nil
   local stats = type(pid) == "string" and S.getStateVal("playerData", pid, "stats") or nil
@@ -541,7 +544,7 @@ local function snapshotSeat(color)
     willpower = copyTracker(stats.willpower),
     humanity = copyTracker(stats.humanity),
     bloodPotency = copyRating(stats.bloodPotency),
-    playerData = playerDataForJson(pid),
+    playerData = includePlayerData and playerDataForJson(pid) or nil,
     hunger = num(type(pid) == "string" and S.getPlayerVal(color, "hunger") or 0),
     hungerMax = hungerMax,
     resolvedStatChanges = copyStatChanges(resolved),
@@ -575,13 +578,20 @@ end
 local function snapshotPayload()
   local seats = {}
   for i = 1, #C.PlayerColors do
-    seats[#seats + 1] = snapshotSeat(C.PlayerColors[i])
+    seats[#seats + 1] = snapshotSeat(C.PlayerColors[i], true)
   end
   return { ok = true, seats = seats, sessionNum = math.floor(num(S.getStateVal("sessionNum"), 1)) }
 end
 
 function Dash.snapshot()
   return encodeSnapshot(snapshotPayload())
+end
+
+--- One seat's snapshot without the raw `playerData` dump (dashboard push payload).
+--- @param color string
+--- @return table
+function Dash.slimSeatSnapshot(color)
+  return snapshotSeat(color, false)
 end
 
 local function applyCommand(cmd)

@@ -1332,6 +1332,7 @@ function M.refreshAfterMutation()
   end
   require("core.coterie").reconcileAll()
   M.reconcileCourtProjectsAll()
+  require("dashboard.push").projects()
 end
 
 --- Fixed XmlUI pool size for Prince's Court page 3 (TOR-371). Indices are 0-based like CSHEET.

@@ -423,6 +423,10 @@ function GlobalSetPlayerDesire(params)
     end
 
     local desire = PCST.setDesireForColor(canon, params.text, { refreshSheets = false })
+    if params.syncText == true then
+        -- End of edit: tell the dashboard (per-keystroke updates skip the seat announcer).
+        require("dashboard.push").seat(canon)
+    end
     return {
         ok = true,
         text = desire,

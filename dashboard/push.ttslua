@@ -1,0 +1,74 @@
+--[[
+  Storyteller Dashboard live push (Global VM only).
+
+  One-way messages to the dashboard server through the TTS Tools gateway (port 39998):
+    { type = "dashboard", v = 1, topic = "pcSeat", color, data }  — slim seat snapshot
+    { type = "dashboard", v = 1, topic = "projects" }             — project list changed; refetch
+  No handshake, session id or sequence number: the dashboard refetches its full snapshot on
+  game load, and each pcSeat message carries the whole seat.
+
+  `DashPush.seat` is the last step of `Sync.player`, so every per-seat mutation reaches the
+  dashboard through the seat announcer. Unchanged payloads are not resent.
+  Design: .dev/Storyteller Dashboard Docs/Live Push Channel.md
+]]
+
+local DashPush = {}
+
+local C = require("lib.constants")
+local U = require("lib.util")
+
+--- Last sent encoded seat payload per color.
+--- @type table<string, string>
+local lastSeatPayload = {}
+
+local warnedSendMissing = false
+
+--- @param message table
+--- @return boolean sent
+local function send(message)
+  ---@diagnostic disable-next-line: undefined-global
+  if sendExternalMessage == nil then
+    if not warnedSendMissing then
+      warnedSendMissing = true
+      print("[DashPush] sendExternalMessage is unavailable — Storyteller Dashboard live updates are off (TTS Tools extension not connected).")
+    end
+    return false
+  end
+  ---@diagnostic disable-next-line: undefined-global
+  sendExternalMessage(message)
+  return true
+end
+
+--- Push one PC seat's slim snapshot when it differs from the last one sent.
+--- Storyteller and colors without a PC are ignored.
+--- @param color string
+function DashPush.seat(color)
+  if not U.isIn(color, C.PlayerColors) then
+    return
+  end
+  local pid = C.GetPlayerIDOrNil(color)
+  if pid == nil or pid == C.StorytellerID then
+    return
+  end
+  local data = require("dashboard.pc_sheet").slimSeatSnapshot(color)
+  local encoded = JSON.encode(data)
+  if lastSeatPayload[color] == encoded then
+    require("lib.sync_trace").report("DashPush.seat", { color = color, outcome = "skipped" })
+    return
+  end
+  if send({ type = "dashboard", v = 1, topic = "pcSeat", color = color, data = data }) then
+    lastSeatPayload[color] = encoded
+    require("lib.sync_trace").report("DashPush.seat", {
+      color = color,
+      bytes = tostring(#encoded),
+      outcome = "sent",
+    })
+  end
+end
+
+--- Tell the dashboard the project list changed (it refetches projects on demand).
+function DashPush.projects()
+  send({ type = "dashboard", v = 1, topic = "projects" })
+end
+
+return DashPush
