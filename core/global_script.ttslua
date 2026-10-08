@@ -3713,8 +3713,10 @@ function onLoad(saved_data)
                 if not U.isStorytellerSteamPlayer(playerColor) then
                     return
                 end
+                -- UI.getAttribute returns the old value until next frame: read before toggling.
+                local wasExpanded = U.isXmlElementExpanded("storytellerToolbarBody")
                 U.toggleXmlElement("storytellerToolbarBody", "-1")
-                if U.isXmlElementExpanded("storytellerToolbarBody") then
+                if not wasExpanded then
                     refreshStorytellerPanelOnOpen(StorytellerPanelUI.selectedPanelKey())
                 end
             end,
@@ -3729,8 +3731,9 @@ function onLoad(saved_data)
                 if not U.isStorytellerSteamPlayer(playerColor) then
                     return
                 end
+                local wasExpanded = U.isXmlElementExpanded("adminControlsBody")
                 U.toggleXmlElement("adminControlsBody", "-1")
-                if U.isXmlElementExpanded("adminControlsBody") then
+                if not wasExpanded then
                     syncDebugLastLoadClockLabel()
                     syncDebugSeatColorButtons()
                 end
@@ -4082,12 +4085,14 @@ end
 -- @param forceOpen boolean|nil If true, always open (skip same-tab collapse). Use after remount / playbook reopen.
 function HUD_selectStorytellerPanel(player, button, id, forceOpen)
     local panelKey = string.gsub(id, "^toggle_", "")
+    -- UI.getAttribute returns the old value until next frame: read before selecting.
+    local wasOpen = StorytellerPanelUI.selectedPanelKey() == panelKey
     -- TOR-449: false when Scenes leave/close is blocked (THERE); skip target-panel refreshes.
     if StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen == true) == false then
         return
     end
     -- Same-tab click closed the panel: nothing to repaint.
-    if StorytellerPanelUI.selectedPanelKey() ~= panelKey then
+    if wasOpen and forceOpen ~= true then
         return
     end
     refreshStorytellerPanelOnOpen(panelKey)
@@ -4354,9 +4359,10 @@ end
 function HUD_togglePanel(player, button, id)
     -- Extract the element ID by removing "toggleElem_" prefix
     local elemID = string.gsub(id, "^toggleElem_", "")
+    local wasExpanded = U.isXmlElementExpanded(elemID)
     U.toggleXmlElement(elemID, button)
     -- Debug body starts collapsed; inactive Text may ignore earlier setValue (TOR-406).
-    if elemID == "adminControlsBody" and U.isXmlElementExpanded("adminControlsBody") then
+    if elemID == "adminControlsBody" and not wasExpanded then
         syncDebugLastLoadClockLabel()
         syncDebugSeatColorButtons()
     end
