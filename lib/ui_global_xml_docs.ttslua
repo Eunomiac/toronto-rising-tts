@@ -9979,7 +9979,6 @@ UI.setAttributes("debug_buttonControls", {})
       <Button class="hud_storyteller_button" onClick="HUD_printState">Print State</Button>
       <Button class="hud_storyteller_button" onClick="HUD_syncAll">Sync All (force)</Button>
       <Button id="debug_syncTrace" class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleSyncTrace">Trace Sync</Button>
-      <Button class="hud_storyteller_button" onClick="HUD_updateCoterieData">Update Coterie Data</Button>
       <Button class="hud_storyteller_button" onClick="HUD_clearLoadingOverlay">Clear Loading Overlay</Button>
       <Button class="hud_storyteller_button" onClick="HUD_refreshUi">Refresh UI</Button>
       <Button id="debug_ambient" class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleDebugAmbient">Toggle Lights</Button>

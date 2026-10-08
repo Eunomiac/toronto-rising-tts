@@ -202,16 +202,17 @@ _Last populated: 2026-10-07 — /tr-inbox cleared ten author-confirmed rows: TOR
 
 ### Medium — seat layout tooling
 
-#### TOR-640 — Seat-role offset dump pastes straight into the offsets table; no more scale
+#### ✅ TOR-640 — Seat-role offset dump pastes straight into the offsets table; no more scale
 
 **How to verify:** Save & Play. Look around the table at each occupied seat: chairs (including Red's Prince throne, curtain and signet), signal candles and fires, famulus figurines, storage tomes and hand zones should all be the same size as before. Change tables once and back, and check that none of them change size. Then run `lua DEBUG.dumpSeatRoleOffsets("Red")` in the console and open `.dev/.debug/debug_logs/seat_role_offsets_RED.lua`. You should see one-line rows grouped under `shared`, `player` and `extraByOccupant = { Red = { ... } }`, with no `scale`, `guid` or `roleKey` anywhere, and a hidden object such as the signal fire should show its normal table height rather than -200.
 
 ### Medium — Prince's Court sheet
 
-#### TOR-663 — Refresh XML puts The Court back the way it was
+#### ❌ TOR-663 — Refresh XML puts The Court back the way it was
 
 **How to verify:** Save & Play. Open The Court and go to the second spread so your Haven Merits are showing. On the Storyteller Phases panel, press **Refresh XML**. The Court should still be open on that same spread, with the same merits, dots, and text. Then press Refresh XML while The Court is closed: it should stay closed, and opening it afterwards should still show the current merits rather than the original blank page.
 
+**Author Comment:** Refreshing the XML now reveals the panel to all until it is toggled on and  then off again to reset it.
 
 ## Cleared
 
