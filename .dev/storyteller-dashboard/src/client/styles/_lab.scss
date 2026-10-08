@@ -210,6 +210,7 @@ $lab-pin: #f5b13d;
 }
 
 .lab-seat {
+  --headshot-reserve: 24px;
   position: relative;
   background-color: #2a2a32;
   flex: 1 1 0;
@@ -272,6 +273,10 @@ $lab-pin: #f5b13d;
     }
   }
 
+  &.role {
+    --headshot-reserve: 36px;
+  }
+
   &.empty,
   &.nochair {
     border-style: dashed;
@@ -284,14 +289,14 @@ $lab-pin: #f5b13d;
   }
 
   &.absent {
-    border-color: #444;
-    filter: brightness(0.4);
-  }
-
-  &.disconnected {
     border-style: dotted;
     border-color: #c08a2a;
     filter: grayscale(1) brightness(0.7);
+  }
+
+  &.disconnected {
+    border-color: #444;
+    filter: brightness(0.4);
   }
 }
 
@@ -344,24 +349,20 @@ $lab-pin: #f5b13d;
     stroke-width: 1.5;
   }
 
-  &-corner {
+  &-table {
     position: absolute;
+    left: 50%;
     bottom: 8px;
-    display: flex;
-    gap: 6px;
-    margin: 0;
+    transform: translateX(-50%);
+  }
 
-    &.left {
-      left: 8px;
-    }
-
-    &.right {
-      right: 8px;
-      max-width: 330px;
-      font-size: 11px;
-      color: #8a826f;
-      text-align: right;
-    }
+  &-mode {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #f2c44e;
   }
 
   &-seats {
@@ -476,17 +477,17 @@ $lab-pin: #f5b13d;
     font-weight: 800;
   }
 
-  &.absent &-head {
-    filter: brightness(0.4);
-  }
-
-  &.disconnected {
+  &.absent {
     border-style: dotted;
     border-color: #c08a2a;
 
     .lab-pc-head {
       filter: grayscale(1) brightness(0.7);
     }
+  }
+
+  &.disconnected &-head {
+    filter: brightness(0.4);
   }
 }
 
@@ -501,32 +502,25 @@ $lab-pin: #f5b13d;
     color: #8a8a96;
   }
 
+  // Character sheet box art carries wide transparent margins, hence the 2.5× scale (as on the sheet).
   &-box {
-    width: 14px;
-    height: 14px;
-    border: 1px solid #6a6a76;
-    background: #111;
-
-    &.sup {
-      background: linear-gradient(135deg, #111 45%, #c33 45% 55%, #111 55%);
-    }
-
-    &.agg {
-      background: #8a1c24;
-    }
+    width: 13px;
+    height: 13px;
+    margin-right: 1px;
+    background: center / contain no-repeat;
+    transform: scale(2.5);
   }
 }
 
-.lab-hunger-die {
+.lab-hunger-dot {
   width: 14px;
   height: 14px;
-  border: 1px solid #6a3a3a;
-  border-radius: 3px;
-  background: #1a1010;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgb(196 196 196 / 55%);
 
   &.on {
-    border-color: #ff4a4a;
-    background: #a01a1a;
+    background: var(--lab-dot) center / 250% 250% no-repeat;
+    box-shadow: none;
   }
 }
 

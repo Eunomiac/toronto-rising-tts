@@ -13,13 +13,20 @@ const SKETCHES = SCENES_ROUND_1;
 const STATE_KEY = "tr-lab-state";
 
 const STATE_LABELS: readonly { key: keyof SketchState; label: string }[] = [
-  { key: "previewOpen", label: "Preview panel" },
-  { key: "clockDiffers", label: "Scene ≠ present day" },
+  { key: "previewOpen", label: "Preview" },
+  { key: "clockDiffers", label: "Flashback" },
   { key: "weatherOverride", label: "Weather override" },
-  { key: "popoverOpen", label: "Example pop-up" }
+  { key: "popoverOpen", label: "Pop-up" },
+  { key: "ttsDisconnected", label: "TTS offline" }
 ];
 
-const DEFAULT_STATE: SketchState = { previewOpen: false, clockDiffers: false, weatherOverride: false, popoverOpen: false };
+const DEFAULT_STATE: SketchState = {
+  previewOpen: false,
+  clockDiffers: false,
+  weatherOverride: false,
+  popoverOpen: false,
+  ttsDisconnected: false
+};
 
 const initialSketchId = (): string => {
   const requested = new URLSearchParams(window.location.search).get("lab");

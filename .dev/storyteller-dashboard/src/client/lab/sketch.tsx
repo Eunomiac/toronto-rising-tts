@@ -1,5 +1,7 @@
-import type { CSSProperties, ReactElement, ReactNode } from "react";
+import { useEffect, useState, type CSSProperties, type MouseEvent, type ReactElement, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { Headshot } from "../headshots/Headshot";
+import { assetUrl } from "../pcSheet/layout";
 
 /**
  * Grey-box building blocks for Lab sketches. Every sketch is laid out in absolute pixels on the
@@ -17,6 +19,7 @@ export type SketchState = {
   readonly clockDiffers: boolean;
   readonly weatherOverride: boolean;
   readonly popoverOpen: boolean;
+  readonly ttsDisconnected: boolean;
 };
 
 type BoxProps = {
@@ -24,7 +27,8 @@ type BoxProps = {
   readonly y: number;
   readonly w: number;
   readonly h: number;
-  readonly title: string;
+  /** Omit for a bare panel with no title line (the panel's purpose is evident from its contents). */
+  readonly title?: string;
   readonly tier?: Tier;
   readonly tone?: BoxTone;
   readonly lines?: readonly string[];
@@ -34,11 +38,13 @@ type BoxProps = {
 
 export const Box = ({ x, y, w, h, title, tier, tone = "plain", lines, children, className }: BoxProps): ReactElement => (
   <section className={`lab-box ${tone}${className ? ` ${className}` : ""}`} style={{ left: x, top: y, width: w, height: h }}>
-    <header className="lab-box-head">
-      <span className="lab-box-title">{title}</span>
-      {tier && <span className={`lab-box-tier tier-${tier}`}>{tier}</span>}
-      <span className="lab-box-size">{w}×{h}</span>
-    </header>
+    {title !== undefined && (
+      <header className="lab-box-head">
+        <span className="lab-box-title">{title}</span>
+        {tier && <span className={`lab-box-tier tier-${tier}`}>{tier}</span>}
+        <span className="lab-box-size">{w}×{h}</span>
+      </header>
+    )}
     {children && <div className="lab-box-body">{children}</div>}
     {lines && lines.length > 0 && (
       <ul className="lab-box-lines">
@@ -57,6 +63,57 @@ export const Btn = ({ children, tone }: { children: ReactNode; tone?: "primary" 
   <span className={`lab-btn${tone ? ` ${tone}` : ""}`}>{children}</span>
 );
 
+/** Canvas-relative point for a mouse event, for placing pop-ups rendered through `Overlay`. */
+export const canvasPoint = (event: MouseEvent<HTMLElement>): { x: number; y: number } => {
+  const canvas = event.currentTarget.closest(".lab-canvas");
+  if (!canvas) {
+    throw new Error("Lab pop-up opened outside the Lab canvas.");
+  }
+  const rect = canvas.getBoundingClientRect();
+  return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+};
+
+/**
+ * Pop-ups take focus until dismissed, so they dim everything behind them. Click the dimmed area or press
+ * Escape to close. Rendered into the Lab canvas (sketch coordinates) below the pins, so pop-ups can be pinned.
+ */
+export const Overlay = ({ onClose, children }: { onClose: () => void; children: ReactNode }): ReactElement => {
+  const canvas = document.querySelector(".lab-canvas");
+  if (!canvas) {
+    throw new Error("Lab overlay needs the Lab canvas.");
+  }
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent): void => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  return createPortal(
+    <div
+      className="lab-scrim"
+      onClick={(event) => {
+        event.stopPropagation();
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+      onContextMenu={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      {children}
+    </div>,
+    canvas
+  );
+};
+
 /* ---------- seats ---------- */
 
 type SeatSketch = {
@@ -65,7 +122,8 @@ type SeatSketch = {
   readonly characterKey?: string;
   readonly kind: "pc" | "npc" | "empty" | "nochair";
   readonly state?: "absent" | "disconnected";
-  readonly role?: string;
+  /** The player's PC name when they are playing an NPC role; `name` and the image are then the NPC's. */
+  readonly playedBy?: string;
 };
 
 /**
@@ -75,7 +133,7 @@ type SeatSketch = {
 export const SEATS: readonly SeatSketch[] = [
   { slot: 9, kind: "nochair" },
   { slot: 7, name: "Lexi Madi", characterKey: "lexiMadi", kind: "npc" },
-  { slot: 5, name: "Aishe Tache", characterKey: "aishe", kind: "pc", role: "as Adrian Varga" },
+  { slot: 5, name: "Adrian Varga", characterKey: "adrianVarga", kind: "pc", playedBy: "Aishe Tache" },
   { slot: 3, name: "Fomórach", characterKey: "fomorach", kind: "pc", state: "disconnected" },
   { slot: 1, name: "Black Caesar", characterKey: "blackCaesar", kind: "pc", state: "absent" },
   { slot: 2, name: "Lord Lucien", characterKey: "lordLucien", kind: "pc" },
@@ -88,21 +146,22 @@ const SeatContent = ({ seat }: { seat: SeatSketch }): ReactElement => (
   <>
     <span className="lab-seat-badge">{seat.slot}</span>
     <span className="lab-seat-text">
+      {seat.playedBy && <span className="lab-seat-flag role">{seat.playedBy} as</span>}
       {seat.name && <span className="lab-seat-name">{seat.name}</span>}
       {seat.kind === "empty" && <span className="lab-seat-flag">empty chair</span>}
       {seat.kind === "nochair" && <span className="lab-seat-flag">no chair at Table B2</span>}
-      {seat.state === "absent" && <span className="lab-seat-flag">absent (dark)</span>}
-      {seat.state === "disconnected" && <span className="lab-seat-flag warn">disconnected</span>}
-      {seat.role && <span className="lab-seat-flag role">{seat.role}</span>}
     </span>
   </>
 );
 
-/** One cell per chair, sharing the row width evenly; the figurine headshot fills the cell. */
+/**
+ * One cell per chair, sharing the row width evenly; the figurine headshot fills the cell above the name.
+ * Absent (out of the scene) and disconnected seats are told apart by styling alone.
+ */
 export const Seats = (): ReactElement => (
   <div className="lab-seats">
     {SEATS.map((seat) => {
-      const className = `lab-seat ${seat.kind}${seat.state ? ` ${seat.state}` : ""}`;
+      const className = `lab-seat ${seat.kind}${seat.state ? ` ${seat.state}` : ""}${seat.playedBy ? " role" : ""}`;
       return seat.characterKey ? (
         <Headshot key={seat.slot} characterKey={seat.characterKey} className={className}>
           <SeatContent seat={seat} />
@@ -271,8 +330,23 @@ const Token = ({ token, x, y }: { token: StageToken; x: number; y: number }): Re
  * above the Far zones. Token positions map straight to stage positions in the game world, so tokens can sit
  * anywhere; pack slots are mild snap points and group drop targets.
  */
-export const WideBoard = ({ w, h }: { w: number; h: number }): ReactElement => (
-  <div className="lab-board wide" style={{ width: w, height: h }}>
+export const WideBoard = ({ w, h }: { w: number; h: number }): ReactElement => {
+  const [ring, setRing] = useState<{ x: number; y: number } | null>(null);
+  const [placement, setPlacement] = useState<"Standard" | "Scatter">("Standard");
+  const [clearArmed, setClearArmed] = useState(false);
+  const closeRing = (): void => {
+    setRing(null);
+    setClearArmed(false);
+  };
+  const openRing = (event: MouseEvent<HTMLDivElement>): void => {
+    event.preventDefault();
+    if ((event.target as HTMLElement).closest(".lab-token, .lab-board-seats, .lab-board-table, .lab-help")) {
+      return;
+    }
+    setRing(canvasPoint(event));
+  };
+  return (
+  <div className="lab-board wide" style={{ width: w, height: h }} onContextMenu={openRing}>
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
       {WIDE_PACKS.map((pack) => {
         const cx = pack.u * w;
@@ -295,16 +369,47 @@ export const WideBoard = ({ w, h }: { w: number; h: number }): ReactElement => (
     <div className="lab-board-seats floating" style={{ top: 8, height: h * WIDE_SEAT_BAND }}>
       <Seats />
     </div>
-    <div className="lab-board-corner left">
-      <Btn>Table: Table B2 ▾</Btn>
-      <Btn>Placement: Standard ▾</Btn>
-    </div>
-    <p className="lab-board-corner right">
-      Drag anywhere; tokens snap only when dropped over a slot. Drop a whole group on a pack to arrange it.
-      Double-click to light / unlight. Hover a token to enlarge it.
-    </p>
+    <span className="lab-board-table">
+      <Btn>Table B2 ▾</Btn>
+    </span>
+    <span className="lab-help" tabIndex={0}>
+      ?
+      <span className="lab-help-tip">
+        Drag anywhere; tokens snap only when dropped over a slot. Drop a whole group on a pack to arrange it.
+        Double-click to light / unlight. Hover a token to enlarge it. Right-click empty stage for placement,
+        Clear Stage, and Reset to Library.
+      </span>
+    </span>
+    {placement === "Scatter" && <span className="lab-board-mode">Scatter placement</span>}
+    {ring && (
+      <Overlay onClose={closeRing}>
+        <div className="lab-ring" style={{ left: ring.x, top: ring.y }}>
+          <button type="button" className="lab-ring-hub" title="Close" onClick={closeRing}>×</button>
+          <button
+            type="button"
+            className="lab-ring-item top"
+            onClick={() => {
+              setPlacement(placement === "Standard" ? "Scatter" : "Standard");
+              closeRing();
+            }}
+          >
+            <span className="lab-ring-small">Placement</span>
+            {placement} ⇄ {placement === "Standard" ? "Scatter" : "Standard"}
+          </button>
+          <button
+            type="button"
+            className={`lab-ring-item left${clearArmed ? " armed" : ""}`}
+            onClick={() => (clearArmed ? closeRing() : setClearArmed(true))}
+          >
+            {clearArmed ? "Click again to clear" : "Clear Stage"}
+          </button>
+          <button type="button" className="lab-ring-item right" onClick={closeRing}>Reset to Library</button>
+        </div>
+      </Overlay>
+    )}
   </div>
-);
+  );
+};
 
 /* ---------- modules ---------- */
 
@@ -493,35 +598,41 @@ const PC_CELLS: readonly PcCell[] = [
   { slot: 4, name: "Rashid", characterKey: "rashid", health: { max: 7, sup: 0, agg: 0 }, willpower: { max: 5, sup: 0, agg: 1 }, hunger: 0 }
 ];
 
+/** Same box art as the character sheet trackers (aggravated first, then superficial, then undamaged). */
+const trackBoxImage = (index: number, agg: number, sup: number): string =>
+  index < agg ? "box_red_x" : index < agg + sup ? "box_grey_slash" : "box_white";
+
 const Track = ({ label, max, sup, agg }: { label: string; max: number; sup: number; agg: number }): ReactElement => (
   <span className="lab-track">
     <span className="lab-track-label">{label}</span>
     {Array.from({ length: max }, (_, index) => (
-      <span key={index} className={`lab-track-box${index < agg ? " agg" : index < agg + sup ? " sup" : ""}`} />
+      <span
+        key={index}
+        className="lab-track-box"
+        style={{ backgroundImage: `url("${assetUrl(`boxes/${trackBoxImage(index, agg, sup)}.webp`)}")` }}
+      />
     ))}
   </span>
 );
+
+const HUNGER_DOT = { "--lab-dot": `url("${assetUrl("dots/dot_red.webp")}")` } as CSSProperties;
 
 /** Abbreviated PC control panel: one cell per PC with Health, Willpower, and Hunger one click away. */
 export const PcPanel = (): ReactElement => (
   <div className="lab-pcs">
     {PC_CELLS.map((pc) => (
       <div key={pc.slot} className={`lab-pc${pc.state ? ` ${pc.state}` : ""}`}>
-        <Headshot className="lab-pc-head" characterKey={pc.characterKey}>
+        <Headshot className="lab-pc-head" characterKey={pc.characterKey} anchor="crown">
           <span className="lab-seat-badge">{pc.slot}</span>
         </Headshot>
         <span className="lab-pc-body">
-          <span className="lab-pc-name">
-            {pc.name}
-            {pc.state === "absent" && <span className="lab-seat-flag">absent</span>}
-            {pc.state === "disconnected" && <span className="lab-seat-flag warn">disconnected</span>}
-          </span>
+          <span className="lab-pc-name">{pc.name}</span>
           <Track label="Health" {...pc.health} />
           <Track label="Willpower" {...pc.willpower} />
           <span className="lab-track">
             <span className="lab-track-label">Hunger</span>
             {Array.from({ length: 5 }, (_, index) => (
-              <span key={index} className={`lab-hunger-die${index < pc.hunger ? " on" : ""}`} />
+              <span key={index} className={`lab-hunger-dot${index < pc.hunger ? " on" : ""}`} style={HUNGER_DOT} />
             ))}
           </span>
         </span>

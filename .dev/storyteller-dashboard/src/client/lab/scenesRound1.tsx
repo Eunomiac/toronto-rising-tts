@@ -1,5 +1,7 @@
-import type { ReactElement } from "react";
+import { useState, type ReactElement } from "react";
+import { AdvanceModal, LocationCards, MasonryRoster, PhaseStrip, QueuePanel, SoundMixer, WeatherPanel, WhenPanel } from "./glance";
 import {
+  Overlay,
   Board,
   Box,
   Btn,
@@ -77,69 +79,80 @@ const StageInTheMiddle = ({ previewOpen, clockDiffers, weatherOverride }: Sketch
   );
 };
 
-const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen }: SketchState): ReactElement => {
+/**
+ * Glance strip, pin pass 2: no panel titles; Where (card crops) over a masonry roster on the left; When,
+ * Weather, and Sound across the top; a phase strip between the stage and the PC panel.
+ */
+const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen, ttsDisconnected }: SketchState): ReactElement => {
+  const [advanceOpen, setAdvanceOpen] = useState(false);
+  const [preparing, setPreparing] = useState(false);
+  const leftW = 380;
+  const whereH = 420;
+  const stripX = 8 + leftW + 8;
   const stripH = 132;
   const bodyY = 8 + stripH + 8;
   const bodyH = 1042 - bodyY - 8;
-  const stageX = 356;
-  const stageW = 1647 - 8 - stageX;
-  const boardW = stageW - 16;
+  const rightX = 1647;
+  const stageW = rightX - 8 - stripX;
+  const boardW = stageW - 18;
   const boardH = Math.round(boardW * WIDE_BOARD_RATIO);
-  const stageH = boardH + 38;
-  const pcY = bodyY + stageH + 8;
+  const stageH = boardH + 14;
+  const phaseY = bodyY + stageH + 8;
+  const phaseH = 38;
+  const pcY = phaseY + phaseH + 8;
   const queueH = 420;
+  const whenW = 470;
+  const weatherW = 380;
+  const soundX = stripX + whenW + 8 + weatherW + 8;
   return (
     <>
-      <Box x={8} y={8} w={380} h={stripH} title="Scene" tier="A" className="lab-strip">
-        <SceneTitle withLibrary />
-        <p className="lab-note">2 scenes being prepared · click to open</p>
+      <Box x={8} y={8} w={leftW} h={whereH} className="lab-where-box">
+        <LocationCards width={leftW - 18} />
       </Box>
-      <Box x={396} y={8} w={400} h={stripH} title="Where (click to edit)" tier="A" className="lab-strip">
-        <Location stacked={false} />
-      </Box>
-      <Box x={804} y={8} w={440} h={stripH} title="When (click for clock controls)" tier="A" className="lab-strip">
-        <ClockReadout differs={clockDiffers} big={false} />
-      </Box>
-      <Box x={1252} y={8} w={320} h={stripH} title="Weather (click to override)" tier="A" className="lab-strip">
-        <Weather override={weatherOverride} />
-      </Box>
-      <Box x={1580} y={8} w={332} h={stripH} title="Sound (click for volumes)" tier="A" className="lab-strip">
-        <Sound withVolumes={false} />
+      <Box x={8} y={8 + whereH + 8} w={leftW} h={1042 - 8 - (8 + whereH + 8)}>
+        <MasonryRoster />
       </Box>
 
-      <Box x={8} y={bodyY} w={340} h={bodyH} title="NPC roster" tier="A" lines={["Collapses to a thin rail when not dragging."]}>
-        <Roster />
+      <Box x={stripX} y={8} w={whenW} h={stripH} className="lab-backdrop-box">
+        <WhenPanel differs={clockDiffers} forceOpen={popoverOpen} w={whenW - 2} h={stripH - 2} />
       </Box>
-      <Box x={stageX} y={bodyY} w={stageW} h={stageH} title="Stage + table (real 2:1 board; seats float above the Far zones)" tier="A">
+      <Box x={stripX + whenW + 8} y={8} w={weatherW} h={stripH} className="lab-backdrop-box">
+        <WeatherPanel override={weatherOverride} w={weatherW - 2} h={stripH - 2} />
+      </Box>
+      <Box x={soundX} y={8} w={1912 - soundX} h={stripH}>
+        <SoundMixer indoors />
+      </Box>
+
+      <Box x={stripX} y={bodyY} w={stageW} h={stageH}>
         <WideBoard w={boardW} h={boardH} />
       </Box>
-      <Box x={stageX} y={pcY} w={stageW} h={1042 - 8 - pcY} title="PCs (quick controls)" tier="A">
+      <Box x={stripX} y={phaseY} w={stageW} h={phaseH} className="lab-phase-box">
+        <PhaseStrip onAdvance={() => setAdvanceOpen(true)} />
+      </Box>
+      <Box x={stripX} y={pcY} w={stageW} h={1042 - 8 - pcY}>
         <PcPanel />
       </Box>
-      <Box x={1647} y={bodyY} w={265} h={bodyH - queueH - 8} title="Rolls" tone="reserved">
+      <Box x={rightX} y={bodyY} w={265} h={bodyH - queueH - 8} tone="reserved">
         <RollsReserved />
       </Box>
-      <Box x={1647} y={bodyY + bodyH - queueH} w={265} h={queueH} title="Queued changes" tier="A">
-        <Queue narrow />
+      <Box x={rightX} y={bodyY + bodyH - queueH} w={265} h={queueH} className={`lab-queue-box ${ttsDisconnected ? "disconnected" : "connected"}`}>
+        <QueuePanel connected={!ttsDisconnected} />
       </Box>
 
-      {popoverOpen && (
-        <Box x={804} y={bodyY} w={540} h={230} title="Pop-up: clock controls (opened from When)" tone="popover" tier="B">
-          <ClockJumps compact={false} />
-          <div className="lab-row">
-            <Btn>Type scene date / time…</Btn>
-            <Btn>Set scene time to present day</Btn>
-            <Btn>Set present day to scene time</Btn>
-          </div>
-          <div className="lab-row">
-            <Btn>Real-time: off</Btn>
-            <Chip tone="dim">speed ×1</Chip>
-            <Btn>Years…</Btn>
-          </div>
-        </Box>
+      {advanceOpen && (
+        <AdvanceModal
+          library={LIBRARY}
+          onClose={() => setAdvanceOpen(false)}
+          onPrepare={() => {
+            setAdvanceOpen(false);
+            setPreparing(true);
+          }}
+        />
       )}
-      {previewOpen && (
-        <PreviewPanel x={8} y={bodyY} w={stageX + stageW - 8} h={bodyH} wide />
+      {(previewOpen || preparing) && (
+        <Overlay onClose={() => setPreparing(false)}>
+          <PreviewPanel x={8} y={bodyY} w={stripX + stageW - 8} h={bodyH} wide />
+        </Overlay>
       )}
     </>
   );
@@ -214,19 +227,19 @@ const LibraryRailAndClock = ({ previewOpen, clockDiffers, weatherOverride }: Ske
 export const SCENES_ROUND_1: readonly LabSketch[] = [
   {
     id: "scenes-r1-a",
-    label: "A · Stage in the middle",
+    label: "A · Middle",
     summary: "Closest to today: roster left, the board (with its seat row) as large as the height allows, every widget stacked in a right rail.",
     render: (state) => <StageInTheMiddle {...state} />
   },
   {
     id: "scenes-r1-b",
-    label: "B · Glance strip",
+    label: "B · Glance",
     summary: "Everything you need at a glance in one top strip; click a section for its controls. The board is drawn at its real 2:1 shape, with the seat row floating above the Far zones.",
     render: (state) => <GlanceStrip {...state} />
   },
   {
     id: "scenes-r1-c",
-    label: "C · Library rail + big clock",
+    label: "C · Rail",
     summary: "Scene library always open on the left, a large clock column on the right, the stage smaller in the middle with seats and trays beneath it.",
     render: (state) => <LibraryRailAndClock {...state} />
   }

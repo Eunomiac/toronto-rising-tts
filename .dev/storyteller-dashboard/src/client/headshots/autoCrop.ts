@@ -10,6 +10,8 @@ export type AutoCrop = {
   readonly confidence: HeadshotConfidence;
   /** Plain-English reason shown in the editor when the crop is not confident. */
   readonly reason: string;
+  /** Topmost opaque row (the crown of the head, hat, or hair) as a fraction of image height. */
+  readonly crown: number;
 };
 
 /** Neck-width multiple for the crop side: the median ratio across the catalogued cutouts with a real neck. */
@@ -47,7 +49,7 @@ export const computeAutoCrop = (rgba: ArrayLike<number>, imageWidth: number, ima
     }
   }
   if (top < 0 || bottom - top < 20) {
-    return { crop: { cx: 0.5, cy: 0.09, size: 0.14 }, confidence: "guessed", reason: "no figure found" };
+    return { crop: { cx: 0.5, cy: 0.09, size: 0.14 }, confidence: "guessed", reason: "no figure found", crown: 0.02 };
   }
 
   const H = bottom - top;
@@ -156,5 +158,10 @@ export const computeAutoCrop = (rgba: ArrayLike<number>, imageWidth: number, ima
     cx = meanX(top, top + Math.round(0.8 * L));
     cy = top + 0.56 * L;
   }
-  return { crop: { cx: cx / imageWidth, cy: cy / imageHeight, size: side / imageHeight }, confidence, reason };
+  return {
+    crop: { cx: cx / imageWidth, cy: cy / imageHeight, size: side / imageHeight },
+    confidence,
+    reason,
+    crown: top / imageHeight
+  };
 };

@@ -136,12 +136,19 @@ export const resetHeadshotCrop = (characterKey: string): Promise<void> => writeC
  * Inline style for the full cutout `<img>` inside a crop window whose width is the crop square's side.
  * Horizontal values are % of the window width; `margin-top` % is also of the window width, which keeps the
  * maths aspect-independent when the window is not square.
+ *
+ * By default the crop centre sits in the middle of the window, less any `--headshot-reserve` (a label strip
+ * along the bottom). Pass `crown` to pin the top of the head to the window's top edge instead.
  */
-export const headshotImgStyle = (crop: HeadshotCrop, aspect: number): Record<"width" | "left" | "top" | "marginTop", string> => ({
+export const headshotImgStyle = (
+  crop: HeadshotCrop,
+  aspect: number,
+  crown?: number
+): Record<"width" | "left" | "top" | "marginTop", string> => ({
   width: `${(aspect / crop.size) * 100}%`,
   left: `${50 - ((crop.cx * aspect) / crop.size) * 100}%`,
-  top: "50%",
-  marginTop: `${-(crop.cy / crop.size) * 100}%`
+  top: crown === undefined ? "calc((100% - var(--headshot-reserve, 0px)) / 2)" : "0",
+  marginTop: `${-((crown ?? crop.cy) / crop.size) * 100}%`
 });
 
 export const fallbackImgStyle = (): ReturnType<typeof headshotImgStyle> => headshotImgStyle(FALLBACK_CROP, FALLBACK_ASPECT);

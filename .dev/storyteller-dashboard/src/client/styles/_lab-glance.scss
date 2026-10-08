@@ -1,0 +1,745 @@
+// Lab: Glance strip (scenes-r1-b) panels — pop-ups, card crops, roster masonry, weather and sky backdrops.
+
+$lab-live: #4caf6a;
+
+/* ---------- pop-ups ---------- */
+
+.lab-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  background: rgb(0 0 0 / 62%);
+}
+
+.lab-modal {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid #c9c9d4;
+  border-radius: 8px;
+  background: #1d1d24;
+  box-shadow: 0 12px 40px rgb(0 0 0 / 70%);
+
+  &-title {
+    font-size: 16px;
+    font-weight: 800;
+  }
+
+  button.lab-btn {
+    cursor: pointer;
+    color: inherit;
+  }
+}
+
+.lab-clock-modal {
+  width: 640px;
+}
+
+.lab-advance {
+  width: 980px;
+
+  &-cols {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr;
+    gap: 16px;
+
+    section {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+    }
+
+    h4 {
+      margin: 0;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #9d9daa;
+    }
+  }
+
+  &-list {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 8px;
+      border: 1px solid #2f2f38;
+      border-radius: 5px;
+
+      &.live {
+        border-color: $lab-live;
+      }
+
+      &.prep {
+        border-color: #2c4a7a;
+      }
+    }
+  }
+}
+
+/* ---------- stage ring menu and help ---------- */
+
+.lab-ring {
+  position: absolute;
+  width: 0;
+  height: 0;
+
+  button {
+    position: absolute;
+    cursor: pointer;
+    color: #eee;
+  }
+
+  &-hub {
+    left: -16px;
+    top: -16px;
+    width: 32px;
+    height: 32px;
+    border: 1px solid #6a604e;
+    border-radius: 50%;
+    background: #24211c;
+  }
+
+  &-item {
+    width: 150px;
+    padding: 7px 8px;
+    border: 1px solid #6a604e;
+    border-radius: 18px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #2e2a23;
+    box-shadow: 0 4px 14px rgb(0 0 0 / 60%);
+
+    &:hover {
+      border-color: #f2c44e;
+    }
+
+    &.top {
+      left: -75px;
+      top: -92px;
+    }
+
+    &.left {
+      left: -190px;
+      top: 30px;
+    }
+
+    &.right {
+      left: 40px;
+      top: 30px;
+    }
+
+    &.armed {
+      border-color: var(--red-bright);
+      background: var(--red);
+    }
+  }
+
+  &-small {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    color: #b8b0a0;
+  }
+}
+
+.lab-help {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgb(255 255 255 / 25%);
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 20px;
+  text-align: center;
+  color: rgb(255 255 255 / 45%);
+  cursor: help;
+
+  &-tip {
+    position: absolute;
+    right: 0;
+    bottom: 30px;
+    width: 300px;
+    padding: 8px 10px;
+    border: 1px solid #5a5244;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.4;
+    text-align: left;
+    color: #d8d2c4;
+    background: #1d1a14;
+    visibility: hidden;
+  }
+
+  &:hover &-tip,
+  &:focus &-tip {
+    visibility: visible;
+  }
+}
+
+/* ---------- Where: card crops ---------- */
+
+.lab-where-box {
+  overflow: visible;
+}
+
+.lab-card-crop {
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 3px;
+
+  > img {
+    position: absolute;
+    max-width: none;
+    pointer-events: none;
+  }
+}
+
+.lab-where {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  &-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+
+    &.spread {
+      justify-content: space-between;
+    }
+
+    &.site {
+      margin-top: 6px;
+    }
+  }
+
+  &-site-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    margin-left: auto;
+  }
+
+  &-aspects {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  &-aspect {
+    position: relative;
+    display: block;
+    cursor: zoom-in;
+  }
+
+  &-zoom {
+    position: absolute;
+    left: calc(100% + 14px);
+    top: -60px;
+    z-index: 30;
+    display: none;
+    border: 1px solid #8a6a3a;
+    border-radius: 4px;
+    box-shadow: 0 10px 30px rgb(0 0 0 / 75%);
+  }
+
+  &-aspect:hover &-zoom,
+  &-aspect:focus &-zoom {
+    display: block;
+  }
+}
+
+/* ---------- roster masonry ---------- */
+
+.lab-mroster {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+
+  &-head {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    .lab-search {
+      flex: 1 1 auto;
+    }
+  }
+}
+
+.lab-masonry {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 6px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.lab-group {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 6px 3px;
+  border: 1px solid #2f2f38;
+  border-radius: 6px;
+  color: inherit;
+  background: #1c1c22;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #6a6a76;
+  }
+
+  &-cluster {
+    display: flex;
+    align-items: center;
+  }
+
+  &-head {
+    width: 30px;
+    height: 30px;
+    border: 2px solid #4a4a55;
+    border-radius: 50%;
+    background-color: #2a2a32;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 60%);
+  }
+
+  &-cluster &-head + &-head {
+    margin-left: -13px;
+  }
+
+  &-more {
+    margin-left: 3px;
+    font-size: 11px;
+    font-weight: 800;
+    color: #9d9daa;
+  }
+
+  &-label {
+    padding: 0;
+    border: 0;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    color: #b8b8c4;
+    background: none;
+  }
+
+  &.open {
+    flex-basis: 100%;
+    align-items: stretch;
+    border-color: #9c7bd6;
+    cursor: default;
+
+    .lab-group-label {
+      cursor: pointer;
+      text-align: left;
+      color: #e2d4ff;
+    }
+  }
+
+  &-tokens {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 4px;
+    padding-top: 4px;
+  }
+
+  &-token {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 58px;
+    cursor: grab;
+
+    .lab-group-head {
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  &-name {
+    max-width: 58px;
+    overflow: hidden;
+    font-size: 10px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: #c8c8d0;
+  }
+}
+
+/* ---------- backdrop cells (When, Weather) ---------- */
+
+.lab-backdrop-box {
+  padding: 0;
+  border-style: solid;
+}
+
+.lab-when,
+.lab-wx-panel {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 5px;
+  cursor: pointer;
+  text-shadow: 0 1px 3px #000, 0 0 8px #000;
+
+  > svg,
+  > .lab-wx {
+    position: absolute;
+    inset: 0;
+  }
+}
+
+.lab-when {
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  justify-items: center;
+  padding: 5px 10px 8px;
+
+  > span {
+    position: relative;
+  }
+
+  &-present {
+    font-size: 11px;
+    color: #c8c8d4;
+  }
+
+  &-time {
+    align-self: end;
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+    color: #fff;
+  }
+
+  &-date {
+    font-size: 13px;
+    font-weight: 700;
+    color: #e6e0f0;
+  }
+
+  &-dawn {
+    position: absolute !important;
+    right: 8px;
+    bottom: 8px;
+  }
+}
+
+.lab-sky {
+  display: block;
+}
+
+.lab-wx {
+  pointer-events: none;
+
+  &-layer {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  &-fall {
+    animation: lab-wx-fall linear infinite;
+  }
+
+  &-line {
+    fill: none;
+    stroke: #8a8a8a;
+    stroke-width: 1;
+  }
+
+  &-cloth {
+    fill: #c9b9a0;
+    fill-opacity: 0.8;
+    transform-box: fill-box;
+    transform-origin: 50% 0;
+    animation: lab-wx-flap var(--flap) ease-in-out infinite alternate;
+
+    &:nth-of-type(2n) {
+      fill: #7d93b5;
+    }
+  }
+
+  &-pole {
+    stroke: #777;
+    stroke-width: 2;
+  }
+
+  &-flag {
+    fill: #a8323c;
+    transform-box: fill-box;
+    transform-origin: 0 50%;
+    animation: lab-wx-wave var(--flap) ease-in-out infinite alternate;
+  }
+
+  &-flash {
+    position: absolute;
+    inset: 0;
+    background: #e8f0ff;
+    opacity: 0;
+    animation: lab-wx-flash 7s linear infinite;
+  }
+}
+
+.lab-wx-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 2px;
+  padding: 8px 10px;
+  background: linear-gradient(#1a2130, #0e1118);
+
+  > span:not(.lab-wx) {
+    position: relative;
+  }
+
+  &.override {
+    outline: 2px solid var(--red-bright);
+    outline-offset: -2px;
+  }
+}
+
+.lab-wx-label {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.lab-wx-source {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #c8c8d4;
+}
+
+.lab-wx-hint {
+  font-size: 10px;
+  color: #8a8a96;
+}
+
+@keyframes lab-wx-fall {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(72px);
+  }
+}
+
+@keyframes lab-wx-flap {
+  from {
+    transform: rotate(calc(var(--lean) * -1)) scaleX(1);
+  }
+
+  to {
+    transform: rotate(calc(var(--lean) * -0.6)) scaleX(0.82);
+  }
+}
+
+@keyframes lab-wx-wave {
+  from {
+    transform: skewY(-6deg) scaleX(1);
+  }
+
+  to {
+    transform: skewY(6deg) scaleX(0.9);
+  }
+}
+
+@keyframes lab-wx-flash {
+  0%,
+  88%,
+  91%,
+  93%,
+  100% {
+    opacity: 0;
+  }
+
+  89% {
+    opacity: 0.55;
+  }
+
+  92% {
+    opacity: 0.35;
+  }
+}
+
+/* ---------- sound mixer ---------- */
+
+.lab-mixer {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  height: 100%;
+
+  &-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    &.muted {
+      opacity: 0.4;
+    }
+  }
+
+  &-label {
+    width: 62px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #9d9daa;
+  }
+
+  &-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+
+    &.idle {
+      opacity: 0.45;
+    }
+  }
+
+  &-track {
+    font-size: 12px;
+    color: #c8c8d4;
+  }
+
+  button.lab-btn {
+    cursor: pointer;
+    color: inherit;
+  }
+}
+
+.lab-select {
+  padding: 2px 4px;
+  border: 1px solid #34343e;
+  border-radius: 4px;
+  font-size: 12px;
+  color: inherit;
+  background: #1e1e25;
+}
+
+.lab-slider {
+  width: 110px;
+  accent-color: #c9a24a;
+}
+
+/* ---------- queue + connection light ---------- */
+
+.lab-queue-box {
+  &.connected {
+    border: 1px solid #2f6a3f;
+    background: #13201a;
+  }
+
+  &.disconnected {
+    border: 1px solid #7a2a33;
+    background: #241216;
+  }
+}
+
+.lab-conn-light {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 2px solid currentcolor;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+
+  &.on {
+    color: $lab-live;
+  }
+
+  &.off {
+    color: var(--red-bright);
+  }
+
+  &.live {
+    background: currentcolor;
+    box-shadow: 0 0 10px 2px currentcolor;
+  }
+}
+
+/* ---------- phase strip ---------- */
+
+.lab-phase-box {
+  padding: 4px 6px;
+}
+
+.lab-phase {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+
+  &-now {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &-tag {
+    padding: 1px 7px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #c9f2d3;
+    background: #1d4a2a;
+  }
+
+  &-sub {
+    font-weight: 800;
+  }
+
+  &-scene {
+    font-size: 15px;
+    font-weight: 800;
+  }
+
+  button.lab-btn {
+    cursor: pointer;
+    color: inherit;
+  }
+}
