@@ -864,7 +864,8 @@ C.AUTO_ROUSE_IMPACT_FALLBACK_SECONDS = 2
 -- Seconds the shared roll-result broadcast panel stays visible after a resolve.
 -- Must match the delayed cleanup in global_script (dice destroy + drawer close).
 C.ROLL_RESULT_BROADCAST_SECONDS = 6
--- Hold for the idle-bag quick Rouse result (same cleanup coupling as above).
+-- Hold for dedicated Rouse / Oblivion Rouse results (left-click, ST-started, and
+-- idle-bag quick Rouse). Same cleanup coupling as ROLL_RESULT_BROADCAST_SECONDS.
 -- The hold starts at UI.show; rollRes_screen spends its first 1s on showAnimationDelay 0.5
 -- + FadeIn 0.5 (ui/shared/panel_roll_results.xml), so 2 leaves about 1s fully visible.
 C.AUTO_ROUSE_RESULT_BROADCAST_SECONDS = 2

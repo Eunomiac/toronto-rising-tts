@@ -412,7 +412,7 @@ active = {
 | Storyteller | No | `openRoll` (PRE_ROLL entry) |
 | Either | Yes (Remorse, Rouse, Oblivion Rouse — auto difficulty) | `initiateRoll` |
 
-`RC.shouldSkipSetupForRollType` covers **Remorse** (locked pool + difficulty) and **Rouse / Oblivion Rouse** (difficulty 1, nothing for the ST to set; the player can still add or remove rouse dice at the bag before Roll — TOR-674). Simple Check and Frenzy keep SETUP so pool/difficulty can still be adjusted before ST opens the roll.
+`RC.shouldSkipSetupForRollType` covers **Remorse** (locked pool + difficulty) and **Rouse / Oblivion Rouse** (difficulty 1, nothing for the ST to set; the player can still add or remove rouse dice at the bag before Roll — TOR-674). Dedicated Rouse results use the same short broadcast hold as idle-bag quick Rouse. Simple Check and Frenzy keep SETUP so pool/difficulty can still be adjusted before ST opens the roll.
 
 Entry points: `RC.initiateRoll` (`shouldResolvePhysicalPrepAtInitiate`), `RC.openRoll`, `RC.changeRollType` (when prep due).
 

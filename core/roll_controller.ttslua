@@ -2773,7 +2773,9 @@ function RC.confirmRoll(color)
             STR.markSlotPendingBroadcast(active.stDrawerSlot, finalRollId)
         end
     else
-        local holdSeconds = PRTL.isIdleBagAutoRouse(active) and C.AUTO_ROUSE_RESULT_BROADCAST_SECONDS or nil
+        -- Dedicated Rouse / Oblivion Rouse (left-click, ST-started, and idle-bag quick Rouse)
+        -- use the short result hold. Mixed rolls that only include a rouse die keep the usual 6s.
+        local holdSeconds = RO.isRouseFamilyRoll(active.rollType) and C.AUTO_ROUSE_RESULT_BROADCAST_SECONDS or nil
         notifyRollResolved(color, finalResult, finalLabel, holdSeconds)
     end
 
