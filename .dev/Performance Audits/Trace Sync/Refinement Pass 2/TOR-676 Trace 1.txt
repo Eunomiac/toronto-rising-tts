@@ -1,0 +1,52 @@
+[SyncTrace] trace ON; clock resolution 0.504ms; one frame = 16.7ms
+Sync trace: on
+[SyncTrace] #22 PCST.refreshRow(Pink) 4.3ms
+[SyncTrace] #23 Sync.player(Pink) 180ms (self 28.0ms) >1 frame
+[SyncTrace] #23   L.reconcileForPlayer(Pink) 7.3ms
+[SyncTrace] #23   HUDP.updatePlayerUI(Pink) 37.1ms >1 frame
+[SyncTrace] #23   HO.reconcileForSeat(Pink) 2.0ms
+[SyncTrace] #23   DBV.reconcileForPlayer(Pink) 1.0ms
+[SyncTrace] #23   PCST.refreshCharacterSheetsForColor(Pink) 101ms (self 41.2ms) >1 frame ran color=Pink pages=1,2
+[SyncTrace] #23     CSL.compute(Pink) 60.2ms >1 frame
+[SyncTrace] #23   PCST.refreshRow(Pink) 3.5ms
+[SyncTrace] #23   * DashPush.seat sent bytes=4842 color=Pink
+[SyncTrace] #24 Sync.player(Pink) 137ms (self 27.8ms) >1 frame
+[SyncTrace] #24   L.reconcileForPlayer(Pink) 7.7ms
+[SyncTrace] #24   HUDP.updatePlayerUI(Pink) 34.5ms >1 frame
+[SyncTrace] #24   HO.reconcileForSeat(Pink) 1.8ms
+[SyncTrace] #24   DBV.reconcileForPlayer(Pink) 2.0ms
+[SyncTrace] #24   PCST.refreshCharacterSheetsForColor(Pink) 61.1ms (self 1.0ms) >1 frame skipped color=Pink pages=none
+[SyncTrace] #24     CSL.compute(Pink) 60.1ms >1 frame
+[SyncTrace] #24   PCST.refreshRow(Pink) 2.0ms
+[SyncTrace] #24   * DashPush.seat skipped color=Pink
+[SyncTrace] #25 PCST.refreshRow(Pink) 8.0ms
+[SyncTrace] #26 Sync.player(Pink) 339ms (self 32.1ms) >1 frame
+[SyncTrace] #26   L.reconcileForPlayer(Pink) 16.6ms
+[SyncTrace] #26   HUDP.updatePlayerUI(Pink) 179ms >1 frame
+[SyncTrace] #26   HO.reconcileForSeat(Pink) 2.6ms
+[SyncTrace] #26   DBV.reconcileForPlayer(Pink) 1.5ms
+[SyncTrace] #26   PCST.refreshCharacterSheetsForColor(Pink) 103ms (self 39.3ms) >1 frame ran color=Pink pages=1,2
+[SyncTrace] #26     CSL.compute(Pink) 63.4ms >1 frame
+[SyncTrace] #26   PCST.refreshRow(Pink) 4.5ms
+[SyncTrace] #26   * DashPush.seat sent bytes=4842 color=Pink
+[SyncTrace] #27 PCST.refreshRow(Pink) 4.5ms
+[SyncTrace] #28 PCST.refreshRow(Pink) 3.6ms
+[SyncTrace] #29 PCST.refreshRow(Pink) 4.0ms
+[SyncTrace] #30 PCST.refreshRow(Pink) 4.0ms
+[SyncTrace] #31 PCST.refreshRow(Pink) 4.7ms
+[SyncTrace] #32 * DashPush.seat sent bytes=4846 color=Pink
+[SyncTrace] #33 PCST.refreshRow(Pink) 4.0ms
+[SyncTrace] #34 PCST.refreshRow(Pink) 4.1ms
+[SyncTrace] #35 * DashPush.seat sent bytes=4842 color=Pink
+[SyncTrace] SUMMARY 9 function(s) over 100.6s
+[SyncTrace] SUMMARY  calls   ran  skip      total       self       max  function
+[SyncTrace] SUMMARY      3     0     0      656ms     88.0ms     339ms  Sync.player
+[SyncTrace] SUMMARY      3     2     1      265ms     81.5ms     103ms  PCST.refreshCharacterSheetsForColor
+[SyncTrace] SUMMARY      3     0     0      250ms      250ms     179ms  HUDP.updatePlayerUI
+[SyncTrace] SUMMARY      3     0     0      184ms      184ms    63.4ms  CSL.compute
+[SyncTrace] SUMMARY     12     0     0     51.4ms     51.4ms     8.0ms  PCST.refreshRow
+[SyncTrace] SUMMARY      3     0     0     31.6ms     31.6ms    16.6ms  L.reconcileForPlayer
+[SyncTrace] SUMMARY      3     0     0      6.4ms      6.4ms     2.6ms  HO.reconcileForSeat
+[SyncTrace] SUMMARY      3     0     0      4.5ms      4.5ms     2.0ms  DBV.reconcileForPlayer
+[SyncTrace] SUMMARY      5     0     1          -          -         -  DashPush.seat
+Sync trace: off

@@ -1,0 +1,32 @@
+[SyncTrace] trace ON; clock resolution 0.535ms; one frame = 16.7ms
+Sync trace: on
+[SyncTrace] #10 Sync.player(Pink) 219ms (self 24.5ms) >1 frame
+[SyncTrace] #10   L.reconcileForPlayer(Pink) 8.7ms
+[SyncTrace] #10   HUDP.updatePlayerUI(Pink) 36.1ms >1 frame
+[SyncTrace] #10   HO.reconcileForSeat(Pink) 1.6ms
+[SyncTrace] #10   DBV.reconcileForPlayer(Pink) 2.0ms
+[SyncTrace] #10   PCST.refreshCharacterSheetsForColor(Pink) 146ms (self 87.0ms) >1 frame ran color=Pink pages=1,2,3
+[SyncTrace] #10     CSL.compute(Pink) 58.7ms >1 frame
+[SyncTrace] #10   PCST.refreshRow(Pink) 0.0ms skipped reason=hidden
+[SyncTrace] #10   * DashPush.seat skipped color=Pink
+[SyncTrace] #11 Sync.player(Pink) 196ms (self 26.6ms) >1 frame
+[SyncTrace] #11   L.reconcileForPlayer(Pink) 7.0ms
+[SyncTrace] #11   HUDP.updatePlayerUI(Pink) 33.8ms >1 frame
+[SyncTrace] #11   HO.reconcileForSeat(Pink) 1.5ms
+[SyncTrace] #11   DBV.reconcileForPlayer(Pink) 1.5ms
+[SyncTrace] #11   PCST.refreshCharacterSheetsForColor(Pink) 126ms (self 66.5ms) >1 frame ran color=Pink pages=1,2,3
+[SyncTrace] #11     CSL.compute(Pink) 59.4ms >1 frame
+[SyncTrace] #11   PCST.refreshRow(Pink) 0.0ms skipped reason=hidden
+[SyncTrace] #11   * DashPush.seat skipped color=Pink
+[SyncTrace] SUMMARY 9 function(s) over 37.2s
+[SyncTrace] SUMMARY  calls   ran  skip      total       self       max  function
+[SyncTrace] SUMMARY      2     0     0      415ms     51.1ms     219ms  Sync.player
+[SyncTrace] SUMMARY      2     2     0      272ms      153ms     146ms  PCST.refreshCharacterSheetsForColor
+[SyncTrace] SUMMARY      2     0     0      118ms      118ms    59.4ms  CSL.compute
+[SyncTrace] SUMMARY      2     0     0     69.9ms     69.9ms    36.1ms  HUDP.updatePlayerUI
+[SyncTrace] SUMMARY      2     0     0     15.7ms     15.7ms     8.7ms  L.reconcileForPlayer
+[SyncTrace] SUMMARY      2     0     0      3.5ms      3.5ms     2.0ms  DBV.reconcileForPlayer
+[SyncTrace] SUMMARY      2     0     0      3.1ms      3.1ms     1.6ms  HO.reconcileForSeat
+[SyncTrace] SUMMARY      2     0     2      0.0ms      0.0ms     0.0ms  PCST.refreshRow
+[SyncTrace] SUMMARY      2     0     2          -          -         -  DashPush.seat
+Sync trace: off

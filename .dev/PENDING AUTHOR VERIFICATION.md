@@ -82,7 +82,7 @@ _Last populated: 2026-10-07 — /tr-inbox cleared ten author-confirmed rows: TOR
 
 **Context:** One plan in three parts. Every change to a PC now ends in a single "this seat changed" refresh, which updates the lights, HUD, overlays, dice bags, character sheets, the PCs panel row and the dashboard together. Each of those skips its own work when nothing it shows has changed. Restart the dashboard (`npm run dev`) so its server picks up the new live channel.
 
-**Trace setup for all five traces below:** Trace Sync stays on across Save & Play, so make sure its button on the Debug panel is **grey (off)** while you set up each trace's Initial Conditions. Then click it **yellow (on)**, do the Trace Actions exactly as listed, click it grey again, and copy the console output into `.dev/Performance Audits/Trace Sync/Seat Announcer/` under the file name given for that trace. The steps call the test player **Pink**; any seated PC works, as long as you use the same one throughout a trace.
+**Trace setup for all five traces below:** Trace Sync stays on across Save & Play, so make sure its button on the Debug panel is **grey (off)** while you set up each trace's Initial Conditions. Then click it **yellow (on)**, do the Trace Actions exactly as listed, click it grey again, and copy the console output into `.dev/Performance Audits/Trace Sync/Refinement Pass 3/` under the file name given for that trace. You don't need a Save & Play between traces; one Save & Play after pulling new code is enough. The steps call the test player **Pink**; any seated PC works, as long as you use the same one throughout a trace.
 
 #### TOR-677 — One refresh per seat change; character sheets skip pages that didn't change
 
@@ -110,6 +110,8 @@ _Last populated: 2026-10-07 — /tr-inbox cleared ten author-confirmed rows: TOR
 
   Each of steps 2 and 3 should show one `Sync.player` block whose `PCST.refreshCharacterSheetsForColor` line lists `pages=3` only.
 
+**Trace check (2026-10-08, Refinement Pass 2):** Trace 1 passed as written: Hunger changes refreshed no sheet pages, Health changes refreshed pages 1 and 2 only, the PCs row repainted, and no all-seat overlay pass ran. Trace 2 refreshed pages 1, 2 **and** 3, because the page 1–2 check also looked at the Merit, Background and Flaw lists that only page 3 draws. That is fixed now; please re-run **Trace 2 only**.
+
 #### TOR-678 — Backup Storyteller panels only refresh while they're open
 
 **How to verify:** Save & Play. Open each panel in turn (PCs, Scenes, Stats, Projects): each should show current values the moment it opens. Make a change while a panel is open: it should update live as before. Close the whole Storyteller toolbar with its hotkey, change something, then bring the toolbar back with the hotkey: the open panel should show the change straight away. Clicking a panel's own tab to close it should not cause a flicker or error. The Scenes panel clock should still be right after it was closed while the clock moved. The two traces below check that closed panels do no work.
@@ -136,9 +138,11 @@ _Last populated: 2026-10-07 — /tr-inbox cleared ten author-confirmed rows: TOR
 
   Step 2 should show `PCST.refreshRow skipped reason=hidden`. Step 3 should show `PCST.refreshAllRows ran`. Step 4 should show `PCST.refreshRow ran`. Step 5 should show no `PCST.refreshAllRows` after the close.
 
+**Trace check (2026-10-08, Refinement Pass 2):** Trace 1 passed: dashboard damage skipped the closed PCs row, and Sync All skipped all four closed panels. Trace 2 showed the open/close logic backwards. TTS reports a panel's old open/closed state until the next frame, so the hotkey refreshed the panel when hiding it and not when showing it, and closing a tab queued a refresh. The same bug meant **opening a panel by its tab did not repaint it**. All of these now read the state before toggling. Please re-run **Trace 2**, and also open each panel by its tab once to confirm it shows current values. (Trace 2 had no entry for step 4, the second dashboard change; if you skipped it, that's fine.)
+
 #### TOR-676 — TTS pushes seat changes to the dashboard
 
-**How to verify:** Start the dashboard and Save & Play, then open the dashboard's PCs tab. In TTS, change a player in ways the dashboard didn't cause: damage from the in-game PCs panel, a Rouse stain from a roll, a dot click on the character sheet, typing a new Desire on the sheet (it updates when you finish editing). The dashboard tab should update within about a second without you pressing anything. Edit a project in TTS: the dashboard's page 5 should refresh. Reload the save in TTS: the dashboard should refresh once on its own. Last, close the dashboard server and play for a few minutes: TTS should not stutter while nothing is listening. The trace below checks that a push goes out only when the seat actually changed.
+**How to verify:** Start the dashboard and Save & Play, then open the dashboard's PCs tab. In TTS, change a player in ways the dashboard didn't cause: damage from the in-game PCs panel, a Rouse stain from a roll, a roll started from the character sheet, typing a new Desire on the sheet (it updates when you finish editing). The dashboard tab should update within about a second without you pressing anything. Edit a project in TTS: the dashboard's page 5 should refresh. Reload the save in TTS: the dashboard should refresh once on its own. Last, close the dashboard server and play for a few minutes: TTS should not stutter while nothing is listening. The trace below checks that a push goes out only when the seat actually changed.
 
 **Trace 1 — pushes from in-game changes** (save as `TOR-676 Trace 1.txt`)
 
@@ -151,6 +155,8 @@ _Last populated: 2026-10-07 — /tr-inbox cleared ten author-confirmed rows: TOR
   5. Click into the Desire field again, delete ` TEST`, and click outside the field.
 
   Steps 1, 3, 4 and 5 should each show one `DashPush.seat … sent`. Step 2 should show `DashPush.seat … skipped` (and `pages=none`). While you type in steps 4 and 5, each keystroke should show only a small `PCST.refreshRow` line, with no `Sync.player` block; the `DashPush.seat` line appears once, when you click outside the field.
+
+**Trace check (2026-10-08, Refinement Pass 2):** You reported the dashboard only showed PCs-panel changes after a page refresh, even though TTS logged `DashPush.seat sent`. Live tests found the cause: TTS silently drops any `sendExternalMessage` table that contains another table, and the seat data is one. Flat messages arrive fine. Seat pushes now travel as a JSON string, which a 7 KB test confirmed arrives intact. **Restart the dashboard server** (`npm run dev`) so it can read the new format, Save & Play, then run this trace.
 
 ### High — dice and rolls
 
