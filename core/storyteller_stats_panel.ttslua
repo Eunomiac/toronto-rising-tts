@@ -303,6 +303,7 @@ end
 --- No-op while the Stats panel is hidden; opening the panel repaints it.
 function ST.refresh()
   if not PanelUI.isPanelVisible("stats") then
+    require("lib.sync_trace").report("ST.refresh", { outcome = "skipped", reason = "hidden" })
     return
   end
   if selectedTarget == nil then

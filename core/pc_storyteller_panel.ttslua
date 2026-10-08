@@ -232,6 +232,7 @@ end
 --- @param color string
 function PCST.refreshRow(color)
   if not PanelUI.isPanelVisible("pcs") then
+    require("lib.sync_trace").report("PCST.refreshRow", { outcome = "skipped", reason = "hidden" })
     return
   end
   local pid = playerIdForColor(color)
@@ -290,6 +291,7 @@ end
 
 function PCST.refreshAllRows()
   if not PanelUI.isPanelVisible("pcs") then
+    require("lib.sync_trace").report("PCST.refreshAllRows", { outcome = "skipped", reason = "hidden" })
     return
   end
   for _, col in ipairs(C.PlayerColors) do

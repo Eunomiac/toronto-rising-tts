@@ -398,6 +398,7 @@ end
 --- No-op while the Projects panel is hidden; opening the panel repaints it.
 function PJP.refresh()
   if not PanelUI.isPanelVisible("projects") then
+    require("lib.sync_trace").report("PJP.refresh", { outcome = "skipped", reason = "hidden" })
     return
   end
   if selectedTarget == nil then

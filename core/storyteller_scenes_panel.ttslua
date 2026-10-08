@@ -1412,6 +1412,7 @@ function StorytellerScenesPanel.refresh()
 
     syncClockDraftWithState()
     if not StorytellerPanelUI.isPanelVisible("scenes") then
+        require("lib.sync_trace").report("StorytellerScenesPanel.refresh", { outcome = "skipped", reason = "hidden" })
         return
     end
 
