@@ -14,6 +14,8 @@ For any agent working in this repo:
 
 Storyteller Dashboard (second-monitor ST app, never a player surface): [`.dev/storyteller-dashboard/README.md`](.dev/storyteller-dashboard/README.md), [`.dev/storyteller-dashboard/PLAYWRIGHT.md`](.dev/storyteller-dashboard/PLAYWRIGHT.md) (dedicated Playwright Chrome, no extension banner), rules `toronto-rising-dashboard*.mdc`. Same git/GitHub repo as the TTS mod; dashboard-only work uses [`.dev/storyteller-dashboard/agent/Running Tasklist.md`](.dev/storyteller-dashboard/agent/Running%20Tasklist.md), not Linear.
 
+**UI design iteration — use the Lab (author favourite).** The author *loves* the Lab's "pin a comment anywhere" loop: build a sketch in the dashboard's dev-only **Lab** tab, the author drops numbered pins on it, the agent implements them (asking about anything ambiguous), answers in a pin's `reply` field if needed, and clears resolved pins. Prefer this loop for any dashboard or UI design work instead of long chat descriptions. Mechanics: README § Tabs → Lab in [`.dev/storyteller-dashboard/README.md`](.dev/storyteller-dashboard/README.md) (pins live in `agent/lab-notes.json`, API `/api/lab-notes`).
+
 Multi-root Cursor workspaces may include **Toronto Rising (Project)** and **TTS (Documents)** alongside this repo. Treat those folders as walled browse roots: do not Glob, Grep, Read, Write, or Delete there unless the author explicitly points you at a path. Node tooling still uses absolute paths from `tts-assets.config.json`. Full policy: [`.cursor/rules/toronto-rising-walled-workspace-roots.mdc`](.cursor/rules/toronto-rising-walled-workspace-roots.mdc) (including the `Saves/` exception for save inspection).
 
 ## Author voice (mandatory)
