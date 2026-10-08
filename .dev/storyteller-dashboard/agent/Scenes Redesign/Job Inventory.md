@@ -376,7 +376,17 @@ The main problem all three solve differently: the control board (stage + seat ro
 
 Lab toggles (tab bar): **Preview panel** (blue slide-out for a library scene that isn't on the table), **Scene ≠ present day** (small present-day line above the scene time), **Weather override** (stark striped red), **Example pop-up** (B's clock controls).
 
-**Author choice (round 1):** layout **B**, with one change made before pinning: the seats column became a row floating at the top of the stage, above the Far zones, and the stage widened into the freed space. The in-game control board is scaled 2:1, so B now draws it as a real 2:1 rectangle (`WideBoard` in `sketch.tsx`), with the Standard packs placed as they sit in TTS (Far Center-Left / Center-Right on top, Far Left / Right lower at the sides, Mid and Center rows in the middle). The PC pentagon and the old bottom seat row are gone from this drawing. About 86 px of height is spare under the board. A and C stay in the Lab for borrowing ideas.
+**Author choice (round 1):** layout **B**, with one change made before pinning: the seats column became a row floating at the top of the stage, above the Far zones, and the stage widened into the freed space. The in-game control board is scaled 2:1, so B now draws it as a real 2:1 rectangle (`WideBoard` in `sketch.tsx`), with the Standard packs placed as they sit in TTS (Far Center-Left / Center-Right on top, Far Left / Right lower at the sides, Mid and Center rows in the middle). The PC pentagon and the old bottom seat row are gone from this drawing. A and C stay in the Lab for borrowing ideas.
+
+**Pin pass 1 (seven notes, implemented in B and cleared):**
+- **Seats:** each chair cell is filled by a head crop of the occupant's figurine cutout, with the name and flags over a dark fade at the bottom. Seats are numbered only (no colour names); the number is a small badge in the top corner. Left-to-right order stays as today's control board, renumbered **9 7 5 3 1 2 4 6 8**: PC chairs keep 1–5 from the centre outward, and the old NPC1–NPC4 chairs become 6–9. Chairs beyond the current table's size show as "no chair". Absent = darkened; disconnected = greyscale with a dotted amber border.
+- **Stage tokens:** a small round head crop of the full-body figurine with the name underneath; hovering enlarges the head about 3.4×. Gold ring + glow = lit.
+- **Free placement (Standard mode):** token positions map straight to stage positions in the game world, so a token can be dragged anywhere. Pack slots stay, drawn as small rings, and do two jobs: dropping a whole group on a pack arranges it automatically, and a token dropped over a slot snaps to it (mild snapping, nowhere else).
+- **Larger stage labels** (17 px pack names).
+- **Right column:** Rolls on top, Queued changes underneath, with Send / Clear at the top of the queue panel.
+- **PC quick-controls panel** under the stage: one cell per PC in the same order as their chairs, with headshot, seat badge, Health and Willpower boxes (superficial = slash, aggravated = filled) and Hunger 0–5.
+- Table and Placement menus moved onto the board's empty bottom-left corner.
+- Head crop is one CSS rule (`%lab-headshot`: 230% width, anchored near the top). Most cutouts are tall and narrow (about 1:3) and crop well; a few are wide (Christianne is 1873×1499), so the real build needs a per-character crop override.
 
 Feedback wanted: which layout's overall shape feels right, which modules are too big or too small, and anything that should move between them. Pins can say "take X from B into A".
 

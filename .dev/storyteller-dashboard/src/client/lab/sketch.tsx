@@ -58,40 +58,51 @@ export const Btn = ({ children, tone }: { children: ReactNode; tone?: "primary" 
 
 /* ---------- seats ---------- */
 
+/** Full-body figurine cutout served by the dashboard; CSS crops it to the head. */
+export const figurineUrl = (characterKey: string): string => `/catalogued-npc-images/${characterKey}.webp`;
+
+/** Head-and-shoulders crop of a full-body figurine cutout, used for seats, tokens, and PC cells. */
+export const headshotStyle = (characterKey: string): CSSProperties => ({ backgroundImage: `url("${figurineUrl(characterKey)}")` });
+
 type SeatSketch = {
-  readonly seat: string;
-  readonly who: string;
-  readonly kind: "pc" | "npc" | "empty";
+  readonly slot: number;
+  readonly name?: string;
+  readonly characterKey?: string;
+  readonly kind: "pc" | "npc" | "empty" | "nochair";
   readonly state?: "absent" | "disconnected";
   readonly role?: string;
 };
 
-/** Left-to-right order of the control board seat row. */
+/**
+ * Left-to-right order of the control board seat row: today's colour seats renumbered, PC chairs 1–5 from the
+ * centre outward and the old NPC1–NPC4 chairs as 6–9. Table B2 has seven chairs, so 8 and 9 have none.
+ */
 export const SEATS: readonly SeatSketch[] = [
-  { seat: "NPC4", who: "empty", kind: "empty" },
-  { seat: "NPC2", who: "Lexie", kind: "npc" },
-  { seat: "Purple", who: "Ana", kind: "pc", role: "as Prince Vargas" },
-  { seat: "Pink", who: "Jo", kind: "pc", state: "disconnected" },
-  { seat: "Red", who: "Sam", kind: "pc", state: "absent" },
-  { seat: "Orange", who: "Dee", kind: "pc" },
-  { seat: "Brown", who: "Kai", kind: "pc" },
-  { seat: "NPC1", who: "Rashid", kind: "npc" },
-  { seat: "NPC3", who: "empty", kind: "empty" }
+  { slot: 9, kind: "nochair" },
+  { slot: 7, name: "Lexi Madi", characterKey: "lexiMadi", kind: "npc" },
+  { slot: 5, name: "Aishe Tache", characterKey: "aishe", kind: "pc", role: "as Adrian Varga" },
+  { slot: 3, name: "Fomórach", characterKey: "fomorach", kind: "pc", state: "disconnected" },
+  { slot: 1, name: "Black Caesar", characterKey: "blackCaesar", kind: "pc", state: "absent" },
+  { slot: 2, name: "Lord Lucien", characterKey: "lordLucien", kind: "pc" },
+  { slot: 4, name: "Rashid", characterKey: "rashid", kind: "pc" },
+  { slot: 6, kind: "empty" },
+  { slot: 8, kind: "nochair" }
 ];
 
-/** Row seats share the width evenly; column seats take `rowHeight` each. */
-export const Seats = ({ direction, rowHeight }: { direction: "row" | "column"; rowHeight?: number }): ReactElement => (
-  <div className={`lab-seats ${direction}`}>
+/** One cell per chair, sharing the row width evenly; the figurine headshot fills the cell. */
+export const Seats = (): ReactElement => (
+  <div className="lab-seats">
     {SEATS.map((seat) => (
       <div
-        key={seat.seat}
+        key={seat.slot}
         className={`lab-seat ${seat.kind}${seat.state ? ` ${seat.state}` : ""}`}
-        style={rowHeight === undefined ? undefined : { height: rowHeight }}
+        style={seat.characterKey ? headshotStyle(seat.characterKey) : undefined}
       >
-        <span className="lab-seat-token" />
+        <span className="lab-seat-badge">{seat.slot}</span>
         <span className="lab-seat-text">
-          <span className="lab-seat-name">{seat.who}</span>
-          <span className="lab-seat-key">{seat.seat}</span>
+          {seat.name && <span className="lab-seat-name">{seat.name}</span>}
+          {seat.kind === "empty" && <span className="lab-seat-flag">empty chair</span>}
+          {seat.kind === "nochair" && <span className="lab-seat-flag">no chair at Table B2</span>}
           {seat.state === "absent" && <span className="lab-seat-flag">absent (dark)</span>}
           {seat.state === "disconnected" && <span className="lab-seat-flag warn">disconnected</span>}
           {seat.role && <span className="lab-seat-flag role">{seat.role}</span>}
@@ -162,74 +173,134 @@ export const Board = ({ w, h, withSeats }: { w: number; h: number; withSeats: bo
       </svg>
       {withSeats && (
         <div className="lab-board-seats" style={{ top: stageH, height: h - stageH }}>
-          <Seats direction="row" />
+          <Seats />
         </div>
       )}
     </div>
   );
 };
 
+/** Height of the wide board as a fraction of its width: the 2:1 stage plus a little margin for the seat row. */
+export const WIDE_BOARD_RATIO = 0.52;
+
+type WidePack = { readonly label: string; readonly u: number; readonly v: number; readonly far: boolean };
+
 /** Standard-placement packs at their in-game positions (u, v as fractions of the wide board). */
-const WIDE_PACKS: readonly { label: string; u: number; v: number; far: boolean; lit?: number }[] = [
-  { label: "Far Center-Left", u: 0.36, v: 0.29, far: true, lit: 2 },
-  { label: "Far Center-Right", u: 0.64, v: 0.29, far: true },
-  { label: "Far Left", u: 0.13, v: 0.58, far: true },
-  { label: "Far Right", u: 0.87, v: 0.58, far: true },
-  { label: "Mid Left", u: 0.32, v: 0.63, far: false },
-  { label: "Mid Center", u: 0.5, v: 0.56, far: false, lit: 3 },
-  { label: "Mid Right", u: 0.68, v: 0.63, far: false },
-  { label: "Center Left", u: 0.3, v: 0.81, far: false, lit: 1 },
-  { label: "CENTER", u: 0.5, v: 0.75, far: false, lit: 5 },
-  { label: "Center Right", u: 0.7, v: 0.81, far: false }
+const WIDE_PACKS: readonly WidePack[] = [
+  { label: "Far Center-Left", u: 0.36, v: 0.33, far: true },
+  { label: "Far Center-Right", u: 0.64, v: 0.33, far: true },
+  { label: "Far Left", u: 0.12, v: 0.6, far: true },
+  { label: "Far Right", u: 0.88, v: 0.6, far: true },
+  { label: "Mid Left", u: 0.3, v: 0.62, far: false },
+  { label: "Mid Center", u: 0.5, v: 0.55, far: false },
+  { label: "Mid Right", u: 0.7, v: 0.62, far: false },
+  { label: "Center Left", u: 0.29, v: 0.84, far: false },
+  { label: "CENTER", u: 0.5, v: 0.77, far: false },
+  { label: "Center Right", u: 0.71, v: 0.84, far: false }
 ];
 
-const WIDE_SEAT_BAND = 0.17;
+const WIDE_SEAT_BAND = 0.18;
+const SLOT_SPACING = 56;
+
+/** Snap slots: six around each Far ellipse; five on a shallow arc (centre slot lowest) for mid and center packs. */
+const packSlots = (pack: WidePack, w: number, h: number): readonly { x: number; y: number }[] => {
+  const cx = pack.u * w;
+  const cy = pack.v * h;
+  if (pack.far) {
+    return Array.from({ length: 6 }, (_, index) => {
+      const angle = (index / 6) * Math.PI * 2 - Math.PI / 2;
+      return { x: cx + Math.cos(angle) * w * 0.075, y: cy + Math.sin(angle) * h * 0.09 };
+    });
+  }
+  return Array.from({ length: 5 }, (_, index) => {
+    const offset = index - 2;
+    return { x: cx + offset * SLOT_SPACING, y: cy - Math.abs(offset) * 9 };
+  });
+};
+
+type StageToken = {
+  readonly characterKey: string;
+  readonly name: string;
+  readonly lit: boolean;
+  readonly at: { readonly pack: string; readonly slot: number } | { readonly u: number; readonly v: number };
+};
+
+/** Sample stage: most tokens snapped to pack slots, two dragged freely to spots of the Storyteller's choosing. */
+const STAGE_TOKENS: readonly StageToken[] = [
+  { characterKey: "drake", name: "Drake", lit: true, at: { pack: "Far Center-Left", slot: 5 } },
+  { characterKey: "mara", name: "Mara", lit: true, at: { pack: "Far Center-Left", slot: 1 } },
+  { characterKey: "victorVex", name: "Victor", lit: true, at: { pack: "Mid Center", slot: 1 } },
+  { characterKey: "bee", name: "Bee", lit: true, at: { pack: "Mid Center", slot: 2 } },
+  { characterKey: "eddie", name: "Eddie", lit: false, at: { pack: "Mid Center", slot: 3 } },
+  { characterKey: "ren", name: "Ren", lit: true, at: { pack: "CENTER", slot: 2 } },
+  { characterKey: "kai", name: "Kai", lit: true, at: { pack: "CENTER", slot: 1 } },
+  { characterKey: "carol", name: "Carol", lit: false, at: { pack: "CENTER", slot: 3 } },
+  { characterKey: "rosie", name: "Rosie", lit: true, at: { pack: "Center Left", slot: 2 } },
+  { characterKey: "terry", name: "Terry", lit: false, at: { pack: "Far Right", slot: 4 } },
+  { characterKey: "scarlett", name: "Scarlett", lit: true, at: { u: 0.2, v: 0.36 } },
+  { characterKey: "drIrenaVoss", name: "Dr. Voss", lit: false, at: { u: 0.86, v: 0.86 } }
+];
+
+const tokenPoint = (token: StageToken, w: number, h: number): { x: number; y: number } => {
+  if ("u" in token.at) {
+    return { x: token.at.u * w, y: token.at.v * h };
+  }
+  const { pack: label, slot } = token.at;
+  const pack = WIDE_PACKS.find((entry) => entry.label === label);
+  const point = pack ? packSlots(pack, w, h)[slot] : undefined;
+  if (!point) {
+    throw new Error(`Lab stage token ${token.characterKey}: no slot ${slot} in pack ${label}`);
+  }
+  return point;
+};
+
+/** A figurine headshot with the name under it; hovering enlarges the headshot. Gold ring = lit. */
+const Token = ({ token, x, y }: { token: StageToken; x: number; y: number }): ReactElement => (
+  <div className={`lab-token${token.lit ? " lit" : ""}`} style={{ left: x, top: y }}>
+    <span className="lab-token-head" style={headshotStyle(token.characterKey)} />
+    <span className="lab-token-name">{token.name}</span>
+  </div>
+);
 
 /**
  * The control board at its real in-game shape (scaled 2:1), with the seat row floating along the top margin
- * above the Far zones instead of along the bottom. Far packs are ellipses of six; mid and center packs are five.
+ * above the Far zones. Token positions map straight to stage positions in the game world, so tokens can sit
+ * anywhere; pack slots are mild snap points and group drop targets.
  */
-export const WideBoard = ({ w, h }: { w: number; h: number }): ReactElement => {
-  const dot = Math.max(5, w / 150);
-  return (
-    <div className="lab-board" style={{ width: w, height: h }}>
-      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
-        {WIDE_PACKS.map((pack) => {
-          const cx = pack.u * w;
-          const cy = pack.v * h;
-          const rx = pack.far ? w * 0.075 : w * 0.032;
-          const ry = pack.far ? h * 0.075 : w * 0.032;
-          const size = pack.far ? 6 : 5;
-          return (
-            <g key={pack.label}>
-              {pack.far
-                ? <ellipse cx={cx} cy={cy} rx={rx} ry={ry} className="lab-board-ring" />
-                : <circle cx={cx} cy={cy} r={rx} className="lab-board-pack" />}
-              {Array.from({ length: size }, (_, index) => {
-                const angle = (index / size) * Math.PI * 2 - Math.PI / 2;
-                const lit = index < (pack.lit ?? 0);
-                const reach = pack.far ? 1 : 0.62;
-                return (
-                  <circle
-                    key={index}
-                    cx={cx + Math.cos(angle) * rx * reach}
-                    cy={cy + Math.sin(angle) * ry * reach}
-                    r={dot * 0.75}
-                    className={lit ? "lab-board-npc lit" : (pack.lit !== undefined ? "lab-board-npc" : "lab-board-snap")}
-                  />
-                );
-              })}
-              <text x={cx} y={cy + (pack.far ? 4 : ry + 14)} className="lab-board-label">{pack.label}</text>
-            </g>
-          );
-        })}
-      </svg>
-      <div className="lab-board-seats floating" style={{ top: 8, height: h * WIDE_SEAT_BAND }}>
-        <Seats direction="row" />
-      </div>
+export const WideBoard = ({ w, h }: { w: number; h: number }): ReactElement => (
+  <div className="lab-board wide" style={{ width: w, height: h }}>
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
+      {WIDE_PACKS.map((pack) => {
+        const cx = pack.u * w;
+        const cy = pack.v * h;
+        return (
+          <g key={pack.label}>
+            {pack.far && <ellipse cx={cx} cy={cy} rx={w * 0.075} ry={h * 0.09} className="lab-board-ring" />}
+            {packSlots(pack, w, h).map((slot, index) => (
+              <circle key={index} cx={slot.x} cy={slot.y} r={5} className="lab-board-snap" />
+            ))}
+            <text x={cx} y={pack.far ? cy + 6 : cy + 52} className="lab-board-label">{pack.label}</text>
+          </g>
+        );
+      })}
+    </svg>
+    {STAGE_TOKENS.map((token) => {
+      const point = tokenPoint(token, w, h);
+      return <Token key={token.characterKey} token={token} x={point.x} y={point.y} />;
+    })}
+    <div className="lab-board-seats floating" style={{ top: 8, height: h * WIDE_SEAT_BAND }}>
+      <Seats />
     </div>
-  );
-};
+    <div className="lab-board-corner left">
+      <Btn>Table: Table B2 ▾</Btn>
+      <Btn>Placement: Standard ▾</Btn>
+    </div>
+    <p className="lab-board-corner right">
+      Drag anywhere; tokens snap only when dropped over a slot. Drop a whole group on a pack to arrange it.
+      Double-click to light / unlight. Hover a token to enlarge it.
+    </p>
+  </div>
+);
 
 /* ---------- modules ---------- */
 
@@ -320,15 +391,15 @@ export const Queue = ({ narrow }: { narrow: boolean }): ReactElement => (
       <Chip tone="on">TTS connected</Chip>
       <span className="lab-queue-live"><span className="lab-toggle" /> Live</span>
     </div>
-    <ol className="lab-queue-list">
-      <li>Light Lexie (Mid C)</li>
-      <li>Sam: present → absent</li>
-      <li>Weather: rain → heavy</li>
-    </ol>
     <div className="lab-queue-actions">
       <Btn tone="primary">Send 3 changes</Btn>
       <Btn>Clear queue</Btn>
     </div>
+    <ol className="lab-queue-list">
+      <li>Light Victor (Mid Center)</li>
+      <li>Black Caesar: present → absent</li>
+      <li>Weather: rain → heavy</li>
+    </ol>
     <p className="lab-queue-hint">Play Scene, End Scene, table / location changes, clock jumps, Clear Stage and rolls skip the queue.</p>
   </div>
 );
@@ -378,7 +449,7 @@ export const PreviewPanel = ({ x, y, w, h, wide = false }: { x: number; y: numbe
       <div className="lab-preview-grid">
         <div>
           {wide
-            ? <WideBoard w={Math.round(w * 0.7)} h={Math.round(w * 0.7 * 0.56)} />
+            ? <WideBoard w={Math.round(w * 0.7)} h={Math.round(w * 0.7 * WIDE_BOARD_RATIO)} />
             : <Board w={Math.round(w * 0.62)} h={Math.round((w * 0.62) / 0.9)} withSeats />}
           <p className="lab-note">Same board, blue frame: edits change the library scene only.</p>
         </div>
@@ -397,6 +468,62 @@ export const PreviewPanel = ({ x, y, w, h, wide = false }: { x: number; y: numbe
       </div>
     </div>
   </Box>
+);
+
+type PcCell = {
+  readonly slot: number;
+  readonly name: string;
+  readonly characterKey: string;
+  readonly state?: "absent" | "disconnected";
+  readonly health: { readonly max: number; readonly sup: number; readonly agg: number };
+  readonly willpower: { readonly max: number; readonly sup: number; readonly agg: number };
+  readonly hunger: number;
+};
+
+/** Same left-to-right order as the PC chairs in the seat row, so each cell sits under its chair. */
+const PC_CELLS: readonly PcCell[] = [
+  { slot: 5, name: "Aishe Tache", characterKey: "aishe", health: { max: 7, sup: 2, agg: 0 }, willpower: { max: 6, sup: 1, agg: 0 }, hunger: 2 },
+  { slot: 3, name: "Fomórach", characterKey: "fomorach", state: "disconnected", health: { max: 8, sup: 0, agg: 0 }, willpower: { max: 5, sup: 0, agg: 0 }, hunger: 3 },
+  { slot: 1, name: "Black Caesar", characterKey: "blackCaesar", state: "absent", health: { max: 9, sup: 1, agg: 1 }, willpower: { max: 7, sup: 0, agg: 0 }, hunger: 1 },
+  { slot: 2, name: "Lord Lucien", characterKey: "lordLucien", health: { max: 6, sup: 0, agg: 0 }, willpower: { max: 8, sup: 3, agg: 0 }, hunger: 4 },
+  { slot: 4, name: "Rashid", characterKey: "rashid", health: { max: 7, sup: 0, agg: 0 }, willpower: { max: 5, sup: 0, agg: 1 }, hunger: 0 }
+];
+
+const Track = ({ label, max, sup, agg }: { label: string; max: number; sup: number; agg: number }): ReactElement => (
+  <span className="lab-track">
+    <span className="lab-track-label">{label}</span>
+    {Array.from({ length: max }, (_, index) => (
+      <span key={index} className={`lab-track-box${index < agg ? " agg" : index < agg + sup ? " sup" : ""}`} />
+    ))}
+  </span>
+);
+
+/** Abbreviated PC control panel: one cell per PC with Health, Willpower, and Hunger one click away. */
+export const PcPanel = (): ReactElement => (
+  <div className="lab-pcs">
+    {PC_CELLS.map((pc) => (
+      <div key={pc.slot} className={`lab-pc${pc.state ? ` ${pc.state}` : ""}`}>
+        <span className="lab-pc-head" style={headshotStyle(pc.characterKey)}>
+          <span className="lab-seat-badge">{pc.slot}</span>
+        </span>
+        <span className="lab-pc-body">
+          <span className="lab-pc-name">
+            {pc.name}
+            {pc.state === "absent" && <span className="lab-seat-flag">absent</span>}
+            {pc.state === "disconnected" && <span className="lab-seat-flag warn">disconnected</span>}
+          </span>
+          <Track label="Health" {...pc.health} />
+          <Track label="Willpower" {...pc.willpower} />
+          <span className="lab-track">
+            <span className="lab-track-label">Hunger</span>
+            {Array.from({ length: 5 }, (_, index) => (
+              <span key={index} className={`lab-hunger-die${index < pc.hunger ? " on" : ""}`} />
+            ))}
+          </span>
+        </span>
+      </div>
+    ))}
+  </div>
 );
 
 export const RollsReserved = (): ReactElement => (

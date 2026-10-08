@@ -14,8 +14,10 @@ import {
   Roster,
   SceneTitle,
   Seats,
+  PcPanel,
   Sound,
   Weather,
+  WIDE_BOARD_RATIO,
   WideBoard,
   type SketchState
 } from "./sketch";
@@ -82,7 +84,10 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen }
   const stageX = 356;
   const stageW = 1647 - 8 - stageX;
   const boardW = stageW - 16;
-  const boardH = Math.round(boardW * 0.56);
+  const boardH = Math.round(boardW * WIDE_BOARD_RATIO);
+  const stageH = boardH + 38;
+  const pcY = bodyY + stageH + 8;
+  const queueH = 420;
   return (
     <>
       <Box x={8} y={8} w={380} h={stripH} title="Scene" tier="A" className="lab-strip">
@@ -105,20 +110,17 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen }
       <Box x={8} y={bodyY} w={340} h={bodyH} title="NPC roster" tier="A" lines={["Collapses to a thin rail when not dragging."]}>
         <Roster />
       </Box>
-      <Box x={stageX} y={bodyY} w={stageW} h={bodyH} title="Stage + table (real 2:1 board; seats float above the Far zones)" tier="A"
-        lines={["Click a seat: present ↔ absent. Drag an NPC onto a seat to seat them.", "Double-click lights / unlights; drag a pack handle to move a whole pack."]}>
+      <Box x={stageX} y={bodyY} w={stageW} h={stageH} title="Stage + table (real 2:1 board; seats float above the Far zones)" tier="A">
         <WideBoard w={boardW} h={boardH} />
-        <div className="lab-row">
-          <Btn>Table: Table B2 ▾</Btn>
-          <Btn>Placement: Standard ▾</Btn>
-          <span className="lab-note">Spare height below the board in this layout: about 90 px.</span>
-        </div>
       </Box>
-      <Box x={1647} y={bodyY} w={265} h={420} title="Queued changes" tier="A">
-        <Queue narrow />
+      <Box x={stageX} y={pcY} w={stageW} h={1042 - 8 - pcY} title="PCs (quick controls)" tier="A">
+        <PcPanel />
       </Box>
-      <Box x={1647} y={bodyY + 428} w={265} h={bodyH - 428} title="Rolls" tone="reserved">
+      <Box x={1647} y={bodyY} w={265} h={bodyH - queueH - 8} title="Rolls" tone="reserved">
         <RollsReserved />
+      </Box>
+      <Box x={1647} y={bodyY + bodyH - queueH} w={265} h={queueH} title="Queued changes" tier="A">
+        <Queue narrow />
       </Box>
 
       {popoverOpen && (
@@ -185,7 +187,7 @@ const LibraryRailAndClock = ({ previewOpen, clockDiffers, weatherOverride }: Ske
         <Weather override={weatherOverride} />
       </Box>
       <Box x={316} y={boardH + 60} w={952} h={118} title="Table: Table B2 (click to switch)" tier="A">
-        <Seats direction="row" />
+        <Seats />
       </Box>
       <Box x={316} y={boardH + 186} w={952} h={1042 - 8 - (boardH + 186)} title="NPC roster (horizontal trays)" tier="A">
         <Roster grid />
