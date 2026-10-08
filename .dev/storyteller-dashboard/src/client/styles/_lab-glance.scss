@@ -24,10 +24,9 @@ $lab-live: #4caf6a;
   transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 14px 16px;
+  gap: 4px;
+  padding: 10px 12px;
   border: 1px solid #c9c9d4;
-  border-radius: 8px;
   background: #1d1d24;
   box-shadow: 0 12px 40px rgb(0 0 0 / 70%);
 
@@ -97,7 +96,6 @@ $lab-live: #4caf6a;
       justify-content: space-between;
       padding: 4px 8px;
       border: 1px solid #2f2f38;
-      border-radius: 5px;
 
       &.live {
         border-color: $lab-live;
@@ -249,7 +247,6 @@ $lab-live: #4caf6a;
     width: 300px;
     padding: 8px 10px;
     border: 1px solid #5a5244;
-    border-radius: 6px;
     font-size: 12px;
     font-weight: 400;
     line-height: 1.4;
@@ -284,7 +281,6 @@ $lab-live: #4caf6a;
   z-index: 3;
   padding: 2px 8px;
   border: 1px solid var(--red-bright);
-  border-radius: 4px;
   font-size: 11px;
   font-weight: 700;
   color: #ffd9dc;
@@ -305,7 +301,6 @@ $lab-live: #4caf6a;
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  border-radius: 5px;
   // Site cards are 1952×882 with the illustration on the left; this window shows art only, no card text.
   background: #111 7% 40% / 244% auto no-repeat;
   cursor: pointer;
@@ -327,7 +322,7 @@ $lab-live: #4caf6a;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
+    gap: 5px;
     padding: 4px 10px;
     text-shadow: 0 1px 3px #000, 0 0 8px #000;
   }
@@ -409,13 +404,13 @@ $lab-live: #4caf6a;
 /* ---------- aspects row above the stage ---------- */
 
 .lab-aspects-box {
-  padding: 5px;
+  padding: 3px;
 }
 
 .lab-aspects {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
+  gap: 4px;
   height: 100%;
 }
 
@@ -424,10 +419,9 @@ $lab-live: #4caf6a;
   flex-direction: column;
   gap: 3px;
   min-height: 0;
-  padding: 5px 9px;
+  padding: 3px 6px;
   overflow-y: auto;
   border: 1px solid #4a3a2a;
-  border-radius: 5px;
   background: linear-gradient(#2a1418, #18100f);
 
   &.site {
@@ -460,7 +454,7 @@ $lab-live: #4caf6a;
 .lab-mroster {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
   height: 100%;
   min-height: 0;
 
@@ -478,7 +472,7 @@ $lab-live: #4caf6a;
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
-    gap: 8px;
+    gap: 5px;
     min-height: 0;
     overflow-x: hidden;
     overflow-y: auto;
@@ -496,7 +490,7 @@ $lab-live: #4caf6a;
 .lab-cat-draft {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 
   .lab-select {
     flex: 1 1 auto;
@@ -510,7 +504,6 @@ $lab-live: #4caf6a;
   height: 26px;
   padding: 0;
   border: 1px solid #34343e;
-  border-radius: 4px;
   background: none;
   cursor: pointer;
 }
@@ -518,10 +511,10 @@ $lab-live: #4caf6a;
 .lab-cat {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 
   &:not(.unsorted) {
-    padding: 0 0 6px 8px;
+    padding: 0 0 4px 6px;
     border-left: 3px solid var(--cat);
   }
 }
@@ -530,10 +523,9 @@ $lab-live: #4caf6a;
 .lab-cat-head {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   padding: 4px 6px;
   border: 1px solid color-mix(in srgb, var(--cat, #4a4a55) 55%, transparent);
-  border-radius: 5px;
   font-weight: 800;
   color: #fff;
   background: color-mix(in srgb, var(--cat, #4a4a55) 22%, #16161b);
@@ -583,7 +575,7 @@ $lab-live: #4caf6a;
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
-  gap: 6px;
+  gap: 4px;
 }
 
 // A closed group is at least as wide as its token stack and its name in three lines; rows stretch to full width.
@@ -599,7 +591,6 @@ $lab-live: #4caf6a;
   gap: 2px;
   padding: 4px 6px 3px;
   border: 1px solid #2f2f38;
-  border-radius: 6px;
   color: inherit;
   background: #1c1c22;
   cursor: pointer;
@@ -750,7 +741,6 @@ $lab-live: #4caf6a;
   width: 100%;
   height: 100%;
   overflow: hidden;
-  border-radius: 5px;
   cursor: pointer;
   text-shadow: 0 1px 3px #000, 0 0 8px #000;
 
@@ -766,7 +756,7 @@ $lab-live: #4caf6a;
   display: grid;
   grid-template-rows: 20px 1fr auto auto;
   justify-items: center;
-  padding: 5px 10px 10px;
+  padding: 3px 8px 6px;
 
   > span {
     position: relative;
@@ -886,7 +876,6 @@ $lab-live: #4caf6a;
 
     button {
       border: 1px solid #f2c44e;
-      border-radius: 6px;
       font-weight: 800;
       color: #1a1408;
       text-shadow: none;
@@ -989,7 +978,7 @@ $lab-live: #4caf6a;
 }
 
 .lab-wx-panel {
-  padding: 8px 10px;
+  padding: 5px 7px;
   background: linear-gradient(#1a2130, #0e1118);
   cursor: default;
 }
@@ -1128,7 +1117,6 @@ $lab-live: #4caf6a;
 .lab-wx-axis {
   padding: 0 4px;
   border: 1px solid transparent;
-  border-radius: 3px;
   font: inherit;
   color: #f0f0f6;
   text-shadow: inherit;
@@ -1233,7 +1221,7 @@ $lab-live: #4caf6a;
   &-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 5px;
 
     &:has(+ .lab-mixer-mute) {
       padding-right: 40px;
@@ -1265,11 +1253,10 @@ $lab-live: #4caf6a;
     display: flex;
     flex: 1 1 0;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     min-width: 0;
     padding: 2px 5px;
     border: 1px solid transparent;
-    border-radius: 5px;
     font-size: 12px;
 
     &.playing {
@@ -1330,7 +1317,6 @@ $lab-live: #4caf6a;
     height: 32px;
     padding: 0;
     border: 1px solid #5a3036;
-    border-radius: 6px;
     color: #d98a91;
     background: #2a1619;
     cursor: pointer;
@@ -1361,7 +1347,6 @@ $lab-live: #4caf6a;
 .lab-select {
   padding: 2px 4px;
   border: 1px solid #34343e;
-  border-radius: 4px;
   font-size: 12px;
   color: inherit;
   background: #1e1e25;
@@ -1428,7 +1413,7 @@ $lab-queued: #e8c547;
 .lab-phase-session {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 
   label {
     display: flex;
@@ -1457,7 +1442,6 @@ $lab-queued: #e8c547;
   &-step {
     padding: 0 6px;
     border: 1px solid #34343e;
-    border-radius: 4px;
     font-family: inherit;
     font-size: 18px;
     line-height: 26px;
@@ -1470,7 +1454,7 @@ $lab-queued: #e8c547;
   &-track {
     position: relative;
     display: flex;
-    gap: 6px;
+    gap: 4px;
   }
 
   &-pc {
@@ -1584,7 +1568,7 @@ $lab-queued: #e8c547;
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
     min-width: 0;
   }
 
@@ -1709,14 +1693,14 @@ $lab-queued: #e8c547;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 10px;
+  gap: 4px;
   height: 100%;
 
   &-now {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 5px;
   }
 
   &-tag {
@@ -1762,7 +1746,7 @@ $lab-queued: #e8c547;
 .lab-cal {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 
   &-head {
     display: flex;
@@ -1788,7 +1772,6 @@ $lab-queued: #e8c547;
   &-day {
     height: 34px;
     border: 1px solid #2f2f38;
-    border-radius: 4px;
     font-size: 13px;
     color: inherit;
     background: #24242c;
@@ -1814,7 +1797,7 @@ $lab-queued: #e8c547;
   &-time {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 5px;
     font-size: 12px;
     font-weight: 700;
   }
@@ -1836,7 +1819,7 @@ $lab-queued: #e8c547;
 .lab-memoriam {
   width: 1000px;
   align-items: stretch;
-  gap: 8px;
+  gap: 5px;
   border-color: #cb995c;
   background: #000;
 
@@ -1850,7 +1833,7 @@ $lab-queued: #e8c547;
   &-pcs {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 8px;
+    gap: 5px;
 
     .lab-memoriam-pick {
       height: 36px;
@@ -1860,7 +1843,6 @@ $lab-queued: #e8c547;
 
   &-pick {
     border: 0;
-    border-radius: 3px;
     font-size: 10px;
     font-weight: 800;
     color: #000;
@@ -1953,7 +1935,6 @@ $lab-queued: #e8c547;
     width: 24px;
     height: 24px;
     border: 0;
-    border-radius: 3px;
     background: #999;
     cursor: pointer;
 
@@ -1986,7 +1967,7 @@ $lab-queued: #e8c547;
   &-row {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 5px;
     font-size: 12px;
     font-weight: 700;
 
@@ -2019,7 +2000,7 @@ $lab-queued: #e8c547;
 
   &-notes {
     position: absolute;
-    inset: 0 0 0 42px;
+    inset: 0 0 0 14px;
   }
 
   &-roster {
@@ -2028,14 +2009,13 @@ $lab-queued: #e8c547;
     bottom: 0;
     left: 0;
     z-index: 15;
-    width: 34px;
+    width: 11px;
     transition: width 0.16s ease;
 
     &.open {
       width: 100%;
-      padding: 6px;
+      padding: 4px;
       border: 1px solid #3a3a44;
-      border-radius: 8px;
       background: #121216;
       box-shadow: 8px 0 24px rgb(0 0 0 / 60%);
     }
@@ -2045,264 +2025,221 @@ $lab-queued: #e8c547;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 3px;
     width: 100%;
     height: 100%;
-    padding: 10px 0;
-    border: 1px solid #34343e;
-    border-radius: 6px;
+    padding: 6px 0;
+    border: none;
+    border-right: 1px solid #34343e;
     font-family: inherit;
-    color: #c8c8d2;
+    color: #9a9aa6;
     background: #18181e;
     cursor: pointer;
 
     &:hover:not(:disabled) {
-      border-color: #6a6a76;
-      background: #202028;
+      color: #e0e0e8;
+      background: #24242c;
     }
 
     &-label {
-      margin-bottom: 6px;
-      font-size: 12px;
+      margin-bottom: 4px;
+      font-size: 9px;
       font-weight: 800;
-      letter-spacing: 0.12em;
+      line-height: 1;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
       writing-mode: vertical-rl;
       transform: rotate(180deg);
     }
 
     &-cat {
-      width: 12px;
-      height: 12px;
-      border-radius: 3px;
+      width: 5px;
+      height: 10px;
       background: var(--cat);
     }
   }
 }
 
-/* ---------- scene notes ---------- */
+/* ---------- scene notes: rich-text documents in tabs ---------- */
 
-.lab-notes {
+.lab-doc {
   display: flex;
   flex-direction: column;
-  gap: 8px;
   height: 100%;
-  min-height: 0;
+  border: 1px solid #2c2c35;
+  background: #121216;
 
-  &-head {
+  &-tabs {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: stretch;
+    overflow-x: auto;
+    border-bottom: 1px solid #2c2c35;
+    background: #0d0d10;
+    scrollbar-width: none;
+  }
+
+  &-tab {
     display: flex;
     align-items: center;
-    gap: 6px;
-
-    .lab-select {
-      width: 110px;
-      padding: 3px 4px;
-    }
-  }
-
-  &-title {
-    flex: 1 1 auto;
-    font-family: "Franklin Gothic Demi Cond", "Arial Narrow", sans-serif;
-    font-size: 20px;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    color: #e9e2d4;
-  }
-
-  &-chips {
-    display: flex;
-    flex-wrap: wrap;
     gap: 4px;
-  }
-
-  &-chip {
-    --note: #6a6a74;
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 8px;
-    border: 1px solid color-mix(in srgb, var(--note) 60%, transparent);
-    border-radius: 999px;
-    font-family: inherit;
+    padding: 3px 9px;
+    border-right: 1px solid #2c2c35;
     font-size: 12px;
     font-weight: 700;
-    color: #d8d8de;
-    background: color-mix(in srgb, var(--note) 14%, #18181e);
+    white-space: nowrap;
+    color: #8a8a96;
     cursor: pointer;
+    user-select: none;
 
-    button {
-      padding: 0;
-      border: none;
-      font: inherit;
-      color: inherit;
-      background: none;
-      cursor: pointer;
+    &:hover {
+      color: #d8d8e0;
     }
 
     &.on {
-      border-color: var(--note);
       color: #fff;
-      background: color-mix(in srgb, var(--note) 40%, #18181e);
+      background: #121216;
+      box-shadow: inset 0 2px 0 var(--red-bright);
     }
 
-    &.add {
-      padding: 2px 9px;
+    &-close {
+      padding: 0 3px;
+      border: none;
+      font-size: 12px;
       font-weight: 800;
-    }
+      line-height: 1;
+      color: #8a8a96;
+      background: none;
 
-    &-remove {
-      display: none;
-      margin-left: 5px;
-      color: #8a8a96 !important;
+      &:hover:not(:disabled) {
+        color: #fff;
+        background: #3a3a44;
+      }
 
-      &:hover {
-        color: #ff8a8a !important;
+      &.armed {
+        color: #fff;
+        background: var(--red);
       }
     }
 
-    &:hover &-remove {
-      display: inline;
+    &-add {
+      padding: 0 9px;
+      border: none;
+      font-size: 15px;
+      line-height: 1;
+      color: #8a8a96;
+      background: none;
+
+      &:hover:not(:disabled) {
+        color: #fff;
+        background: #24242c;
+      }
+    }
+
+    &-rename {
+      width: 110px;
+      padding: 2px 6px;
+      border: 1px solid var(--red-bright);
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      background: #1e1e25;
+      outline: none;
     }
   }
 
-  &-add {
+  &-tools {
     display: flex;
+    flex: 0 0 auto;
     align-items: center;
-    gap: 6px;
+    gap: 1px;
+    padding: 2px 4px;
+    border-bottom: 1px solid #22222a;
 
-    .lab-select {
-      flex: 1 1 auto;
-      padding: 6px 8px;
-      border-left: 3px solid var(--note);
-      font-size: 13px;
+    &-sep {
+      width: 1px;
+      height: 14px;
+      margin: 0 4px;
+      background: #34343e;
+    }
+  }
+
+  &-tool {
+    min-width: 22px;
+    height: 20px;
+    padding: 0 4px;
+    border: none;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0;
+    color: #a8a8b4;
+    background: none;
+
+    &:hover:not(:disabled) {
+      color: #fff;
+      background: #2a2a33;
+    }
+
+    &.on {
+      color: #fff;
+      background: #4a1c22;
     }
   }
 
   &-body {
-    display: flex;
     flex: 1 1 auto;
-    flex-direction: column;
-    gap: 10px;
     min-height: 0;
     overflow-y: auto;
-  }
 
-  &-list {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
+    .tiptap {
+      min-height: 100%;
+      padding: 6px 9px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: #dcdce4;
+      outline: none;
 
-  &-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
+      > :first-child {
+        margin-top: 0;
+      }
 
-    &-head {
-      padding: 3px 6px;
-      border: 1px dashed transparent;
-      border-bottom: 1px solid var(--note);
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      color: var(--note);
+      p {
+        margin: 0 0 4px;
+      }
 
-      &.drop {
-        border: 1px dashed #fff;
+      h3 {
+        margin: 8px 0 3px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #e8c0c4;
+      }
+
+      ul,
+      ol {
+        margin: 0 0 4px;
+        padding-left: 18px;
+      }
+
+      li p {
+        margin: 0;
+      }
+
+      blockquote {
+        margin: 4px 0;
+        padding-left: 8px;
+        border-left: 2px solid var(--red-bright);
+        color: #b8b8c4;
+      }
+
+      p.is-editor-empty:first-child::before {
+        content: attr(data-placeholder);
+        float: left;
+        height: 0;
+        color: #5a5a66;
+        pointer-events: none;
       }
     }
   }
-
-  &-empty {
-    margin: 0;
-    font-size: 12px;
-    color: #8a8a96;
-  }
-}
-
-.lab-note {
-  --note: #6a6a74;
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  padding: 6px 6px 6px 8px;
-  border: 1px solid #2c2c34;
-  border-left: 3px solid var(--note);
-  border-radius: 5px;
-  font-size: 13px;
-  line-height: 1.35;
-  background: #1a1a20;
-
-  &[draggable="true"] {
-    cursor: grab;
-  }
-
-  &.drop {
-    box-shadow: 0 -2px 0 #fff;
-  }
-
-  &-text {
-    flex: 1 1 auto;
-    min-width: 0;
-    overflow-wrap: anywhere;
-  }
-
-  &-edit {
-    flex: 1 1 auto;
-    min-height: 54px;
-    padding: 4px;
-    border: 1px solid #55555f;
-    border-radius: 4px;
-    font: inherit;
-    color: inherit;
-    background: #121216;
-    resize: vertical;
-  }
-
-  &-remove {
-    padding: 0 2px;
-    border: none;
-    font-family: inherit;
-    font-size: 14px;
-    line-height: 1;
-    color: #8a8a96;
-    background: none;
-    cursor: pointer;
-    opacity: 0;
-
-    &:hover {
-      color: #ff8a8a;
-    }
-  }
-
-  &:hover &-remove {
-    opacity: 1;
-  }
-
-  // A dot in the category colour with a transparent picker over it.
-  &-dot {
-    position: relative;
-    flex: 0 0 auto;
-    width: 12px;
-    height: 12px;
-    margin-top: 3px;
-    border-radius: 50%;
-    background: var(--note);
-
-    select {
-      position: absolute;
-      inset: -3px;
-      width: calc(100% + 6px);
-      height: calc(100% + 6px);
-      opacity: 0;
-      cursor: pointer;
-    }
-  }
-}
-
-.lab-notes-add .lab-note-dot {
-  margin-top: 0;
 }

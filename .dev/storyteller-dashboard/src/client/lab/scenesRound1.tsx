@@ -111,30 +111,32 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
     setSceneTime(next);
     setPresentDay((present) => (next.getTime() > present.getTime() ? next : present));
   };
+  const G = 4;
   const leftW = 380;
-  const stripX = 8 + leftW + 8;
+  const stripX = G + leftW + G;
   const stripH = 132;
-  const bodyY = 8 + stripH + 8;
-  const bodyH = 1042 - bodyY - 8;
-  const rightX = 1647;
-  const stageW = rightX - 8 - stripX;
-  const phaseH = 38;
-  const mainY = bodyY + phaseH + 8;
-  const aspectH = 118;
-  const stageY = mainY + aspectH + 8;
-  const stageH = 1042 - 8 - stageY;
-  const boardW = stageW - 18;
-  const boardH = stageH - 14;
+  const bodyY = G + stripH + G;
+  const bodyH = 1042 - bodyY - G;
+  const rightW = 265;
+  const rightX = 1920 - G - rightW;
+  const stageW = rightX - G - stripX;
+  const phaseH = 34;
+  const mainY = bodyY + phaseH + G;
+  const aspectH = 114;
+  const stageY = mainY + aspectH + G;
+  const stageH = 1042 - G - stageY;
+  const boardW = stageW - 12;
+  const boardH = stageH - 10;
   const queueH = 420;
-  const rightH = 1042 - 8 - mainY;
-  const huntH = 64;
-  const rosterY = bodyY + huntH + 8;
+  const rightH = 1042 - G - mainY;
+  const huntH = 74;
+  const rosterY = bodyY + huntH + G;
   const whenW = 470;
   const weatherW = 380;
-  const soundX = stripX + whenW + 8 + weatherW + 8;
+  const soundX = stripX + whenW + G + weatherW + G;
   return (
     <>
-      <Box x={8} y={8} w={leftW} h={stripH} className="lab-backdrop-box">
+      <Box x={G} y={G} w={leftW} h={stripH} className="lab-backdrop-box">
         <LocationPanel
           location={location}
           overridden={location.districtKey !== SCENE_LOCATION.districtKey || location.siteKey !== SCENE_LOCATION.siteKey}
@@ -142,14 +144,14 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
           onRelease={() => setLocation(SCENE_LOCATION)}
         />
       </Box>
-      <Box x={8} y={bodyY} w={leftW} h={huntH} className="lab-hunt-box lab-borderless">
+      <Box x={G} y={bodyY} w={leftW} h={huntH} className="lab-hunt-box lab-borderless">
         <HuntRoller location={location} />
       </Box>
-      <Box x={8} y={rosterY} w={leftW} h={1042 - 8 - rosterY} className="lab-borderless lab-dock-box">
+      <Box x={G} y={rosterY} w={leftW} h={1042 - G - rosterY} className="lab-borderless lab-dock-box">
         <RosterDock scene={SCENE_NAME} />
       </Box>
 
-      <Box x={stripX} y={8} w={whenW} h={stripH} className="lab-backdrop-box">
+      <Box x={stripX} y={G} w={whenW} h={stripH} className="lab-backdrop-box">
         <WhenPanel
           at={sceneTime}
           present={presentDay}
@@ -160,14 +162,14 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
           h={stripH - 2}
         />
       </Box>
-      <Box x={stripX + whenW + 8} y={8} w={weatherW} h={stripH} className="lab-backdrop-box">
+      <Box x={stripX + whenW + G} y={G} w={weatherW} h={stripH} className="lab-backdrop-box">
         <WeatherPanel at={sceneTime} forceOverride={weatherOverride} forceCelsius={heatWave ? 34 : coldSnap ? -27 : null} w={weatherW - 2} h={stripH - 2} />
       </Box>
-      <Box x={soundX} y={8} w={1912 - soundX} h={stripH}>
+      <Box x={soundX} y={G} w={1920 - G - soundX} h={stripH}>
         <SoundMixer indoors />
       </Box>
 
-      <Box x={stripX} y={bodyY} w={1912 - stripX} h={phaseH} className="lab-phase-box lab-borderless">
+      <Box x={stripX} y={bodyY} w={1920 - G - stripX} h={phaseH} className="lab-phase-box lab-borderless">
         <PhaseStrip library={LIBRARY} onPrepare={() => setPreparing(true)} />
       </Box>
       <Box x={stripX} y={mainY} w={stageW} h={aspectH} className="lab-aspects-box lab-borderless">
@@ -176,14 +178,13 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
       <Box x={stripX} y={stageY} w={stageW} h={stageH} className="lab-borderless">
         <WideBoard w={boardW} h={boardH} />
       </Box>
-      <Box x={rightX} y={mainY} w={265} h={rightH - queueH - 8} tone="reserved" />
-      <Box x={rightX} y={mainY + rightH - queueH} w={265} h={queueH} className="lab-queue-box">
+      <Box x={rightX} y={mainY} w={rightW} h={rightH - queueH - G} tone="reserved" />
+      <Box x={rightX} y={mainY + rightH - queueH} w={rightW} h={queueH} className="lab-queue-box">
         <QueuePanel connected={!ttsDisconnected} />
       </Box>
-
       {(previewOpen || preparing) && (
         <Overlay onClose={() => setPreparing(false)}>
-          <PreviewPanel x={8} y={bodyY} w={stripX + stageW - 8} h={bodyH} wide />
+          <PreviewPanel x={G} y={bodyY} w={stripX + stageW - G} h={bodyH} wide />
         </Overlay>
       )}
     </>

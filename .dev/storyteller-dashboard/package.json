@@ -15,6 +15,11 @@
     "dev:open": "node scripts/dev-and-open.mjs"
   },
   "dependencies": {
+    "@tiptap/core": "^3.31.4",
+    "@tiptap/extensions": "^3.31.4",
+    "@tiptap/pm": "^3.31.4",
+    "@tiptap/react": "^3.31.4",
+    "@tiptap/starter-kit": "^3.31.4",
     "@tts-tools/gateway-client": "file:../../../tts-tools/packages/gateway-client",
     "gsap": "^3.15.0",
     "react": "^19.1.1",
