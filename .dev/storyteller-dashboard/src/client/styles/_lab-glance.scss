@@ -74,10 +74,51 @@ $lab-live: #4caf6a;
 
 /* ---------- stage ring menu and help ---------- */
 
+@keyframes lab-ring-track-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+}
+
+@keyframes lab-ring-spoke-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+}
+
 .lab-ring {
   position: absolute;
   width: 0;
   height: 0;
+
+  // The ellipse the spokes sit on, and a dot where the click landed.
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: lab-ring-track-in 0.18s ease-out;
+  }
+
+  &::before {
+    width: 224px;
+    height: 128px;
+    border: 1px solid rgb(242 196 78 / 22%);
+    background: radial-gradient(closest-side, rgb(10 10 12 / 55%), rgb(10 10 12 / 15%) 70%, transparent);
+  }
+
+  &::after {
+    width: 7px;
+    height: 7px;
+    background: #f2c44e;
+    box-shadow: 0 0 8px 2px rgb(242 196 78 / 60%);
+  }
 
   button {
     position: absolute;
@@ -85,60 +126,46 @@ $lab-live: #4caf6a;
     color: #eee;
   }
 
-  &-hub {
-    left: -16px;
-    top: -16px;
-    width: 32px;
-    height: 32px;
-    border: 1px solid #6a604e;
-    border-radius: 50%;
-    background: #24211c;
-  }
-
   &-item {
-    width: 150px;
-    padding: 7px 8px;
-    border: 1px solid #6a604e;
-    border-radius: 18px;
+    z-index: 1;
+    padding: 4px 12px;
+    border: 1px solid rgb(242 196 78 / 30%);
+    border-radius: 999px;
+    font-family: inherit;
     font-size: 12px;
     font-weight: 700;
-    background: #2e2a23;
-    box-shadow: 0 4px 14px rgb(0 0 0 / 60%);
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+    background: linear-gradient(180deg, rgb(52 48 40 / 96%), rgb(24 22 19 / 96%));
+    box-shadow: 0 6px 16px rgb(0 0 0 / 65%), inset 0 1px 0 rgb(255 255 255 / 8%);
+    backdrop-filter: blur(4px);
+    transition: border-color 0.12s ease, box-shadow 0.12s ease, color 0.12s ease;
 
-    &:hover {
+    // :not(:disabled) matches the global button hover rule's weight so the gold wins.
+    &:hover:not(:disabled) {
       border-color: #f2c44e;
-    }
-
-    &.top {
-      left: -75px;
-      top: -92px;
-    }
-
-    &.left {
-      left: -190px;
-      top: 30px;
-    }
-
-    &.right {
-      left: 40px;
-      top: 30px;
+      color: #fff3c8;
+      box-shadow: 0 6px 16px rgb(0 0 0 / 65%), 0 0 12px 1px rgb(242 196 78 / 40%), inset 0 1px 0 rgb(255 255 255 / 12%);
     }
 
     &.spoke {
-      width: 124px;
-      padding: 6px 8px;
       transform: translate(-50%, -50%);
+      animation: lab-ring-spoke-in 0.2s ease-out backwards;
+      animation-delay: calc(var(--i, 0) * 35ms);
     }
 
     &.current {
       border-color: #f2c44e;
-      color: #fff3c8;
-      background: #4a3d1e;
+      color: #1a1408;
+      background: linear-gradient(180deg, #f6d77a, #d9a93a);
+      box-shadow: 0 6px 16px rgb(0 0 0 / 65%), 0 0 12px 2px rgb(242 196 78 / 45%);
     }
 
     &.armed {
       border-color: var(--red-bright);
-      background: var(--red);
+      color: #fff;
+      background: linear-gradient(180deg, #b0262f, #7a141b);
+      box-shadow: 0 6px 16px rgb(0 0 0 / 65%), 0 0 12px 2px rgb(230 60 70 / 50%);
     }
   }
 
@@ -360,10 +387,14 @@ $lab-live: #4caf6a;
   }
 
   &-title {
+    padding-bottom: 2px;
+    margin-bottom: 2px;
+    border-bottom: 1px solid rgb(255 255 255 / 85%);
     font-family: Georgia, "Times New Roman", serif;
     font-size: 15px;
     font-weight: 700;
     font-variant: small-caps;
+    text-align: center;
     color: #f3e6cf;
   }
 
@@ -400,6 +431,7 @@ $lab-live: #4caf6a;
     flex-direction: column;
     gap: 8px;
     min-height: 0;
+    overflow-x: hidden;
     overflow-y: auto;
   }
 }
@@ -507,6 +539,8 @@ $lab-live: #4caf6a;
 
 // A closed group is at least as wide as its token stack and its name in three lines; rows stretch to full width.
 .lab-group {
+  --group: #7a7a86;
+  position: relative;
   display: flex;
   flex: 1 0 auto;
   flex-direction: column;
@@ -525,6 +559,69 @@ $lab-live: #4caf6a;
     border-color: #6a6a76;
   }
 
+  &.tinted {
+    border-color: color-mix(in srgb, var(--group) 55%, transparent);
+    background: color-mix(in srgb, var(--group) 14%, #1c1c22);
+
+    &:hover {
+      border-color: var(--group);
+    }
+  }
+
+  // "+" picks a colour for this group alone (shown on hover); ↺ goes back to the category colour.
+  &-colors {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    display: flex;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.12s ease;
+  }
+
+  &:hover &-colors {
+    opacity: 1;
+  }
+
+  &-color,
+  &-color-reset {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border: 1px solid #6a6a76;
+    border-radius: 50%;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+    color: #d8d8de;
+    background: #1e1e25;
+    cursor: pointer;
+  }
+
+  &-color {
+    &.own {
+      border-color: #fff;
+      background: var(--group);
+    }
+
+    input {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+  }
+
+  &-color-reset {
+    font-size: 11px;
+  }
+
   &-cluster {
     display: flex;
     align-items: center;
@@ -533,10 +630,18 @@ $lab-live: #4caf6a;
   &-head {
     width: 30px;
     height: 30px;
-    border: 2px solid #4a4a55;
+    border: 2px solid var(--group);
     border-radius: 50%;
     background-color: #2a2a32;
     box-shadow: 0 1px 3px rgb(0 0 0 / 60%);
+
+    &.boss {
+      position: relative;
+      z-index: 1;
+      border-width: 3px;
+      border-color: color-mix(in srgb, var(--group) 65%, #fff);
+      box-shadow: 0 1px 3px rgb(0 0 0 / 60%), 0 0 6px 1px color-mix(in srgb, var(--group) 70%, transparent);
+    }
   }
 
   &-cluster &-head + &-head {
@@ -559,7 +664,7 @@ $lab-live: #4caf6a;
     flex-basis: 100%;
     width: auto;
     align-items: stretch;
-    border-color: #9c7bd6;
+    border-color: var(--group);
     cursor: default;
 
     .lab-group-label {
@@ -658,24 +763,21 @@ $lab-live: #4caf6a;
     color: #fff;
   }
 
-  // Dusk and dawn: time only, on a black triangle filling each bottom corner. The outer span carries the gold
-  // glow along the slanted edge, since a filter on the clipped shape itself would be clipped away.
+  // Dusk and dawn: time only, tucked into the bottom corners over a black fade that is darkest in the corner.
   &-edge {
     position: absolute !important;
     bottom: 0;
-    filter: drop-shadow(0 0 1px #f2c44e) drop-shadow(0 0 5px rgb(242 196 78 / 50%));
 
     > span {
       display: grid;
       align-items: end;
-      width: 132px;
-      height: 58px;
-      padding: 0 7px 6px;
-      font-size: 15px;
+      width: 88px;
+      height: 36px;
+      padding: 0 4px 2px;
+      font-size: 12px;
       font-weight: 800;
       color: #f2c44e;
-      text-shadow: none;
-      background: #000;
+      text-shadow: 0 1px 2px #000;
     }
 
     &.dusk {
@@ -683,7 +785,7 @@ $lab-live: #4caf6a;
 
       > span {
         justify-items: start;
-        clip-path: polygon(0 0, 100% 100%, 0 100%);
+        background: radial-gradient(farthest-side at 0 100%, rgb(0 0 0 / 92%), rgb(0 0 0 / 55%) 55%, transparent);
       }
     }
 
@@ -692,7 +794,7 @@ $lab-live: #4caf6a;
 
       > span {
         justify-items: end;
-        clip-path: polygon(100% 0, 100% 100%, 0 100%);
+        background: radial-gradient(farthest-side at 100% 100%, rgb(0 0 0 / 92%), rgb(0 0 0 / 55%) 55%, transparent);
       }
     }
   }
@@ -999,6 +1101,19 @@ $lab-live: #4caf6a;
 
 /* ---------- sound mixer ---------- */
 
+@keyframes lab-playing {
+  0%,
+  100% {
+    border-color: rgb(242 196 78 / 18%);
+    box-shadow: 0 0 3px 0 rgb(242 196 78 / 12%);
+  }
+
+  50% {
+    border-color: rgb(242 196 78 / 50%);
+    box-shadow: 0 0 10px 1px rgb(242 196 78 / 32%);
+  }
+}
+
 // Rows run full width and every slider takes the spare space; mute sits in the bottom-right corner.
 .lab-mixer {
   position: relative;
@@ -1011,10 +1126,6 @@ $lab-live: #4caf6a;
     display: flex;
     align-items: center;
     gap: 8px;
-
-    &.muted {
-      opacity: 0.4;
-    }
 
     &:has(+ .lab-mixer-mute) {
       padding-right: 40px;
@@ -1053,13 +1164,19 @@ $lab-live: #4caf6a;
     border-radius: 5px;
     font-size: 12px;
 
-    &.idle {
-      opacity: 0.45;
+    &.playing {
+      animation: lab-playing 2.6s ease-in-out infinite;
     }
 
     &.overridden {
       border-color: var(--red-bright);
       box-shadow: 0 0 10px 1px rgb(230 60 70 / 50%);
+      animation: none;
+    }
+
+    .lab-select {
+      flex: 0 0 auto;
+      width: 100px;
     }
 
     .lab-slider {
@@ -1241,6 +1358,13 @@ $lab-queued: #e8c547;
     cursor: pointer;
   }
 
+  // Seat pitch (headshot + border + gap) matches CAROUSEL_PITCH in glance.tsx.
+  &-track {
+    position: relative;
+    display: flex;
+    gap: 6px;
+  }
+
   &-pc {
     padding: 0;
     border: 2px solid var(--seat-color);
@@ -1248,10 +1372,10 @@ $lab-queued: #e8c547;
     background: none;
     opacity: 0.6;
     cursor: pointer;
+    transition: opacity 0.3s ease;
 
     &.front {
       opacity: 1;
-      box-shadow: 0 0 0 2px #000, 0 0 10px 3px var(--seat-color);
     }
   }
 
@@ -1263,9 +1387,18 @@ $lab-queued: #e8c547;
     background-color: #2a2a32;
   }
 
-  &-pc.front &-head {
-    width: 30px;
-    height: 30px;
+  &-ring {
+    position: absolute;
+    top: 50%;
+    left: -3px;
+    width: 34px;
+    height: 34px;
+    margin-top: -17px;
+    border: 2px solid var(--seat-color);
+    border-radius: 50%;
+    box-shadow: 0 0 10px 3px var(--seat-color), inset 0 0 6px var(--seat-color);
+    pointer-events: none;
+    transition: transform 0.35s cubic-bezier(0.3, 0.7, 0.2, 1), border-color 0.35s ease, box-shadow 0.35s ease;
   }
 }
 
@@ -1391,28 +1524,31 @@ $lab-queued: #e8c547;
 }
 
 .lab-phase {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 10px;
   height: 100%;
 
   &-now {
     display: flex;
-    flex: 1 1 auto;
     align-items: center;
     justify-content: center;
     gap: 8px;
   }
 
   &-tag {
-    padding: 1px 7px;
-    border-radius: 3px;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.08em;
+    justify-self: start;
+    font-family: "Franklin Gothic Demi Cond", "Arial Narrow", sans-serif;
+    font-size: 26px;
+    line-height: 1;
+    letter-spacing: 0.03em;
     text-transform: uppercase;
     color: #c9f2d3;
-    background: #1d4a2a;
+  }
+
+  &-advance {
+    justify-self: end;
   }
 
   &-sub {
@@ -1422,10 +1558,6 @@ $lab-queued: #e8c547;
   &-scene {
     font-size: 15px;
     font-weight: 800;
-  }
-
-  > .lab-btn {
-    margin-left: auto;
   }
 
   button.lab-btn {

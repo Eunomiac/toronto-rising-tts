@@ -453,6 +453,17 @@ Lab toggles (tab bar): **Preview** (blue slide-out for a library scene that isn'
 - **Where:** no divider between District and Site.
 - **Phases:** in Intermission the middle holds the next session's number and title; in Spotlight it holds the carousel (‹, the five PCs in shuffled order with the front PC highlighted, ›; clicking a PC brings them to the front), mirroring the TTS Spotlight controls.
 
+**Pin pass 7 (13 notes, implemented in B and cleared, 2026-10-08).**
+- **When:** dusk and dawn are half the size, the times sit right in the bottom corners, and the backing is a black fade that is darkest in the corner (no shape, no gold edge), so the skyline shows. The moon's arc is shorter and stays above the skyline from dusk to dawn, so it can always be grabbed.
+- **Ring menus** (weather, phase Advance, stage right-click): no × hub (clicking off closes them). A faint gold ellipse marks the ring with a dot at the click point; choices are slim glassy pills that fade in one after another, gold-filled when current, red when armed.
+- **Group colours:** a group takes its category's colour (tinted cell, coloured border). "+" on a group cell (shown on hover) gives it its own colour, starting from the category's; ↺ goes back. Every token in the group, in the roster and on the stage, is ringed in that colour; a lit stage token adds a gold halo. **Bosses** (the "Boss?" column of the chronicle sheet's NPCs tab, listed in `labRoster.ts` for now) get a thicker, brighter ring. The real build should carry the boss flag in the scene catalog export.
+- **Borders:** the stage, hunt bar, roster, aspects row, and phase bar lose their dashed panel outlines. Scrollbars are thin and quiet; the roster never scrolls sideways.
+- **Aspects:** titles are centred over a white rule.
+- **Sound:** drop-downs are a fixed narrow width so sliders take the rest. Nothing is greyed out; channels that are actually playing pulse with a soft yellow glow (none while muted; weather channels not while indoors).
+- **Queue:** Send is centred above the list and Clear queue centred below it. Each entry has × to remove it; later entries re-read what they change from, so removing "rain → heavy rain" turns "heavy rain → thunderstorm" into "rain → thunderstorm", and an entry left with nothing to do drops out.
+- **Carousel:** PCs keep their places; a glowing ring in the spotlit PC's colour slides along as ‹ / › are pressed (or a PC is clicked).
+- **Phase bar:** the phase name sits at the far left as a large condensed label (no chip). The scene name is centred with End Scene right beside it.
+
 Feedback wanted: which layout's overall shape feels right, which modules are too big or too small, and anything that should move between them. Pins can say "take X from B into A".
 
 ## Next rounds

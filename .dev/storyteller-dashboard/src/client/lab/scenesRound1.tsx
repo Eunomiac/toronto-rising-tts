@@ -141,10 +141,10 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen, 
           onRelease={() => setLocation(SCENE_LOCATION)}
         />
       </Box>
-      <Box x={8} y={bodyY} w={leftW} h={huntH} className="lab-hunt-box">
+      <Box x={8} y={bodyY} w={leftW} h={huntH} className="lab-hunt-box lab-borderless">
         <HuntRoller />
       </Box>
-      <Box x={8} y={rosterY} w={leftW} h={1042 - 8 - rosterY}>
+      <Box x={8} y={rosterY} w={leftW} h={1042 - 8 - rosterY} className="lab-borderless">
         <MasonryRoster />
       </Box>
 
@@ -166,13 +166,13 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen, 
         <SoundMixer indoors />
       </Box>
 
-      <Box x={stripX} y={bodyY} w={1912 - stripX} h={phaseH} className="lab-phase-box">
+      <Box x={stripX} y={bodyY} w={1912 - stripX} h={phaseH} className="lab-phase-box lab-borderless">
         <PhaseStrip library={LIBRARY} onPrepare={() => setPreparing(true)} />
       </Box>
-      <Box x={stripX} y={mainY} w={stageW} h={aspectH} className="lab-aspects-box">
+      <Box x={stripX} y={mainY} w={stageW} h={aspectH} className="lab-aspects-box lab-borderless">
         <AspectRow location={location} />
       </Box>
-      <Box x={stripX} y={stageY} w={stageW} h={stageH}>
+      <Box x={stripX} y={stageY} w={stageW} h={stageH} className="lab-borderless">
         <WideBoard w={boardW} h={boardH} />
       </Box>
       <Box x={rightX} y={mainY} w={265} h={rightH - queueH - 8} tone="reserved" />

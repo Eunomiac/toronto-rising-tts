@@ -12,6 +12,7 @@ import {
 } from "./chronicleSheets";
 import { SEAT_ACCENT } from "../pcSheet/layout";
 import { Icon, type IconName } from "./icons";
+import { GROUP_BOSSES, groupColor, setRosterLayout, useRosterLayout, useSceneCatalogs, type RosterCategory } from "./labRoster";
 import { Btn, Overlay, canvasPoint } from "./sketch";
 
 /**
@@ -27,22 +28,6 @@ const seeded = (seed: number): (() => number) => {
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
-};
-
-const useSceneCatalogs = (): { catalogs: SceneCatalogs | null; error: string | null } => {
-  const [catalogs, setCatalogs] = useState<SceneCatalogs | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    fetch("/api/scene-catalogs")
-      .then(async (response) => {
-        if (!response.ok) {
-          throw new Error(`Scene catalogs failed to load (${response.status}).`);
-        }
-        setCatalogs((await response.json()) as SceneCatalogs);
-      })
-      .catch((reason: unknown) => setError(reason instanceof Error ? reason.message : String(reason)));
-  }, []);
-  return { catalogs, error };
 };
 
 /* ---------- shared: override corner button and ring menu ---------- */
@@ -66,7 +51,7 @@ const RING_EDGE = 180;
 type RingOption<T> = { readonly value: T; readonly label: string };
 type Point = { readonly x: number; readonly y: number };
 
-/** Choices spread evenly around the click point; the current choice is highlighted. */
+/** Choices spread evenly around the click point; the current choice is highlighted. Clicking off closes it. */
 const RingMenu = <T,>({ at, options, current, onPick, onClose }: {
   at: Point;
   options: readonly RingOption<T>[];
@@ -76,7 +61,6 @@ const RingMenu = <T,>({ at, options, current, onPick, onClose }: {
 }): ReactElement => (
   <Overlay onClose={onClose}>
     <div className="lab-ring" style={{ left: Math.min(Math.max(at.x, RING_EDGE), 1920 - RING_EDGE), top: Math.max(at.y, 86) }}>
-      <button type="button" className="lab-ring-hub" title="Close" onClick={onClose}>×</button>
       {options.map((option, index) => {
         const angle = -Math.PI / 2 + (index * 2 * Math.PI) / options.length;
         return (
@@ -84,7 +68,7 @@ const RingMenu = <T,>({ at, options, current, onPick, onClose }: {
             key={String(option.value)}
             type="button"
             className={`lab-ring-item spoke${option.value === current ? " current" : ""}`}
-            style={{ left: Math.cos(angle) * 112, top: Math.sin(angle) * 64 }}
+            style={{ left: Math.cos(angle) * 112, top: Math.sin(angle) * 64, "--i": index } as CSSProperties}
             onClick={() => {
               onPick(option.value);
               onClose();
@@ -307,17 +291,25 @@ const groupLabelWidth = (text: string): number => {
   return Math.ceil(high) + 2;
 };
 
-type RosterCategory = { readonly id: string; readonly name: string; readonly color: string; readonly open: boolean };
-type RosterLayout = { readonly categories: readonly RosterCategory[]; readonly assigned: Readonly<Record<string, string>> };
-
-const ROSTER_LAYOUT_KEY = "tr-lab-roster-categories";
 const GROUP_DRAG_TYPE = "application/x-tr-npc-group";
 const NEW_CATEGORY_COLOR = "#9c7bd6";
+const UNSORTED_GROUP_COLOR = "#7a7a86";
 
-const readRosterLayout = (): RosterLayout => {
-  const saved = window.localStorage.getItem(ROSTER_LAYOUT_KEY);
-  return saved ? (JSON.parse(saved) as RosterLayout) : { categories: [], assigned: {} };
-};
+/** Colour picker on a group cell: "+" until the group has its own colour, which starts from the category's. */
+const GroupColorPicker = ({ color, own, onPick, onReset }: {
+  color: string;
+  own: boolean;
+  onPick: (next: string) => void;
+  onReset: () => void;
+}): ReactElement => (
+  <span className="lab-group-colors" onClick={(event) => event.stopPropagation()}>
+    <label className={`lab-group-color${own ? " own" : ""}`} title={own ? "Group colour" : "Give this group its own colour"}>
+      {own ? "" : "+"}
+      <input type="color" value={color} onChange={(event) => onPick(event.target.value)} />
+    </label>
+    {own && <button type="button" className="lab-group-color-reset" title="Back to the category colour" onClick={onReset}>↺</button>}
+  </span>
+);
 
 /** Category header: twirl to show or hide its groups; drop a group on it to file the group there. */
 const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove }: {
@@ -362,16 +354,14 @@ const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove }: {
  * Every NPC group as a closed stack of all its tokens, stretched to fill its row; names wrap to three lines at
  * most (the group widens instead). Click one to open it in place and pick a token. Groups start Unsorted; "+"
  * creates a coloured category, dragging a group onto a category header files it there, and each category's
- * twirl shows or hides its groups. The Lab keeps the categories in this browser's local storage.
+ * twirl shows or hides its groups. A group takes its category's colour unless given its own ("+" on the cell);
+ * its tokens are ringed in that colour, and a boss's ring is thicker and brighter.
  */
 export const MasonryRoster = (): ReactElement => {
   const { catalogs, error } = useSceneCatalogs();
   const [open, setOpen] = useState<string | null>("beesHive");
-  const [layout, setLayout] = useState<RosterLayout>(readRosterLayout);
+  const layout = useRosterLayout();
   const [draft, setDraft] = useState<{ name: string; color: string } | null>(null);
-  useEffect(() => {
-    window.localStorage.setItem(ROSTER_LAYOUT_KEY, JSON.stringify(layout));
-  }, [layout]);
   const fileGroup = (categoryId: string | null) => (groupKey: string): void => {
     const assigned = { ...layout.assigned };
     if (categoryId) {
@@ -379,12 +369,22 @@ export const MasonryRoster = (): ReactElement => {
     } else {
       delete assigned[groupKey];
     }
-    setLayout({ ...layout, assigned });
+    setRosterLayout({ ...layout, assigned });
+  };
+  const setGroupColor = (groupKey: string, color: string | null): void => {
+    const groupColors = { ...layout.groupColors };
+    if (color) {
+      groupColors[groupKey] = color;
+    } else {
+      delete groupColors[groupKey];
+    }
+    setRosterLayout({ ...layout, groupColors });
   };
   const updateCategory = (id: string, change: Partial<RosterCategory>): void =>
-    setLayout({ ...layout, categories: layout.categories.map((category) => (category.id === id ? { ...category, ...change } : category)) });
+    setRosterLayout({ ...layout, categories: layout.categories.map((category) => (category.id === id ? { ...category, ...change } : category)) });
   const removeCategory = (id: string): void =>
-    setLayout({
+    setRosterLayout({
+      ...layout,
       categories: layout.categories.filter((category) => category.id !== id),
       assigned: Object.fromEntries(Object.entries(layout.assigned).filter(([, categoryId]) => categoryId !== id))
     });
@@ -393,7 +393,7 @@ export const MasonryRoster = (): ReactElement => {
       return;
     }
     const category: RosterCategory = { id: `cat-${Date.now()}`, name: draft.name.trim(), color: draft.color, open: true };
-    setLayout({ ...layout, categories: [...layout.categories, category] });
+    setRosterLayout({ ...layout, categories: [...layout.categories, category] });
     setDraft(null);
   };
   const groups = useMemo((): readonly NpcGroup[] => {
@@ -412,38 +412,53 @@ export const MasonryRoster = (): ReactElement => {
     });
   }, [catalogs]);
 
+  const tokenClass = (group: NpcGroup, npc: CatalogCharacter): string =>
+    `lab-group-head${GROUP_BOSSES[group.key] === npc.characterKey ? " boss" : ""}`;
   const masonry = (list: readonly NpcGroup[]): ReactElement => (
     <div className="lab-masonry">
-      {list.map((group) => group.key === open ? (
-        <div key={group.key} className="lab-group open">
-          <button type="button" className="lab-group-label" onClick={() => setOpen(null)}>{group.label} ▴</button>
-          <span className="lab-group-tokens">
-            {group.members.map((npc) => (
-              <span key={npc.characterKey} className="lab-group-token" title={npc.fullName}>
-                <Headshot className="lab-group-head" characterKey={npc.characterKey} />
-                <span className="lab-group-name">{npc.fullName}</span>
-              </span>
-            ))}
-          </span>
-        </div>
-      ) : (
-        <button
-          key={group.key}
-          type="button"
-          className="lab-group"
-          draggable
-          onDragStart={(event) => event.dataTransfer.setData(GROUP_DRAG_TYPE, group.key)}
-          onClick={() => setOpen(group.key)}
-          title={group.members.map((npc) => npc.fullName).join(", ")}
-        >
-          <span className="lab-group-cluster">
-            {group.members.map((npc) => (
-              <Headshot key={npc.characterKey} className="lab-group-head" characterKey={npc.characterKey} />
-            ))}
-          </span>
-          <span className="lab-group-label" style={{ minWidth: group.labelWidth }}>{group.label}</span>
-        </button>
-      ))}
+      {list.map((group) => {
+        const color = groupColor(layout, group.key);
+        const style = { "--group": color ?? UNSORTED_GROUP_COLOR } as CSSProperties;
+        const tinted = color ? " tinted" : "";
+        return group.key === open ? (
+          <div key={group.key} className={`lab-group open${tinted}`} style={style}>
+            <button type="button" className="lab-group-label" onClick={() => setOpen(null)}>{group.label} ▴</button>
+            <span className="lab-group-tokens">
+              {group.members.map((npc) => (
+                <span key={npc.characterKey} className="lab-group-token" title={npc.fullName}>
+                  <Headshot className={tokenClass(group, npc)} characterKey={npc.characterKey} />
+                  <span className="lab-group-name">{npc.fullName}</span>
+                </span>
+              ))}
+            </span>
+          </div>
+        ) : (
+          <div
+            key={group.key}
+            role="button"
+            tabIndex={0}
+            className={`lab-group${tinted}`}
+            style={style}
+            draggable
+            onDragStart={(event) => event.dataTransfer.setData(GROUP_DRAG_TYPE, group.key)}
+            onClick={() => setOpen(group.key)}
+            title={group.members.map((npc) => npc.fullName).join(", ")}
+          >
+            <GroupColorPicker
+              color={color ?? NEW_CATEGORY_COLOR}
+              own={group.key in layout.groupColors}
+              onPick={(next) => setGroupColor(group.key, next)}
+              onReset={() => setGroupColor(group.key, null)}
+            />
+            <span className="lab-group-cluster">
+              {group.members.map((npc) => (
+                <Headshot key={npc.characterKey} className={tokenClass(group, npc)} characterKey={npc.characterKey} />
+              ))}
+            </span>
+            <span className="lab-group-label" style={{ minWidth: group.labelWidth }}>{group.label}</span>
+          </div>
+        );
+      })}
     </div>
   );
   const knownCategories = new Set(layout.categories.map((category) => category.id));
@@ -936,11 +951,14 @@ const skyline = (w: number, h: number): readonly Building[] => {
   return buildings;
 };
 
-/** The moon rises out of the bottom-left corner at dusk, crosses the full width, and sets off the bottom right at dawn. */
-const MOON_SET_MARGIN = 14;
+/**
+ * The moon's arc, as fractions of the sky: it appears low at the left at dusk and is still low at the right at
+ * dawn, always above the skyline so it can be grabbed at any hour.
+ */
+const MOON_ARC = { left: 0.08, right: 0.92, low: 0.4, high: 0.16 } as const;
 const moonPosition = (t: number, w: number, h: number): Point => ({
-  x: -MOON_SET_MARGIN + (w + 2 * MOON_SET_MARGIN) * t,
-  y: h + MOON_SET_MARGIN - (h * 0.82 + MOON_SET_MARGIN) * Math.sin(Math.PI * t)
+  x: w * (MOON_ARC.left + (MOON_ARC.right - MOON_ARC.left) * t),
+  y: h * (MOON_ARC.low - (MOON_ARC.low - MOON_ARC.high) * Math.sin(Math.PI * t))
 });
 
 type MoonDrag = { readonly target: number | null; readonly onDrag: (t: number) => void };
@@ -970,7 +988,7 @@ const NightSky = ({ minutes, w, h, drag }: { minutes: number; w: number; h: numb
       throw new Error("NightSky: svg not mounted during a moon drag");
     }
     const x = ((event.clientX - rect.left) / rect.width) * w;
-    return Math.min(1, Math.max(0, (x + MOON_SET_MARGIN) / (w + 2 * MOON_SET_MARGIN)));
+    return Math.min(1, Math.max(0, (x / w - MOON_ARC.left) / (MOON_ARC.right - MOON_ARC.left)));
   };
   return (
     <svg ref={svgRef} className="lab-sky" width={w} height={h} aria-hidden="true">
@@ -1218,23 +1236,22 @@ const useOverridable = <T,>(base: T): Overridable<T> => {
   return { value, set, overridden: value !== base, release: () => set(base) };
 };
 
-const Slider = ({ level, disabled = false }: { level: Overridable<number>; disabled?: boolean }): ReactElement => (
+const Slider = ({ level }: { level: Overridable<number> }): ReactElement => (
   <input
     type="range"
     className="lab-slider"
     min={0}
     max={100}
     value={level.value}
-    disabled={disabled}
     onChange={(event) => level.set(Number(event.target.value))}
   />
 );
 
-/** One mixer control group; an override glows red and gets a release button in its corner. */
-const MixerGroup = ({ idle = false, values, children }: { idle?: boolean; values: readonly Pick<Overridable<unknown>, "overridden" | "release">[]; children: ReactNode }): ReactElement => {
+/** One mixer control group; a playing channel pulses yellow, an override glows red with a release button in its corner. */
+const MixerGroup = ({ playing = false, values, children }: { playing?: boolean; values: readonly Pick<Overridable<unknown>, "overridden" | "release">[]; children: ReactNode }): ReactElement => {
   const overridden = values.some((value) => value.overridden);
   return (
-    <span className={`lab-mixer-group${idle ? " idle" : ""}${overridden ? " overridden" : ""}`}>
+    <span className={`lab-mixer-group${playing ? " playing" : ""}${overridden ? " overridden" : ""}`}>
       {children}
       {overridden && (
         <button type="button" className="lab-mixer-release" title="Release override" onClick={() => values.forEach((value) => value.release())}>
@@ -1288,17 +1305,19 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main", sceneAmbience = "S
   const ambience = useOverridable(55);
   const rainPlaying = true;
   const thunderPlaying = false;
+  const audible = !muted;
+  const weatherAudible = audible && !indoors;
   return (
     <div className="lab-mixer">
       <div className="lab-mixer-row">
         <RowLabel icon="music" label="Music" />
-        <MixerGroup idle={featured} values={[playlist, music]}>
+        <MixerGroup playing={audible && !featured} values={[playlist, music]}>
           <select className="lab-select" value={playlist.value} onChange={(event) => playlist.set(event.target.value)}>
             {MUSIC_PLAYLISTS.map((name) => <option key={name}>{name}</option>)}
           </select>
           <Slider level={music} />
         </MixerGroup>
-        <MixerGroup idle={!featured} values={[featuredLevel]}>
+        <MixerGroup playing={audible && featured} values={[featuredLevel]}>
           <select className="lab-select" value={featuredTrack} title="Featured track" onChange={(event) => setFeaturedTrack(event.target.value)}>
             {FEATURED_TRACKS.map((name) => <option key={name}>{name}</option>)}
           </select>
@@ -1313,24 +1332,24 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main", sceneAmbience = "S
           <Slider level={featuredLevel} />
         </MixerGroup>
       </div>
-      <div className={`lab-mixer-row${indoors ? " muted" : ""}`} title={indoors ? "Indoors: weather sounds are not playing" : undefined}>
+      <div className="lab-mixer-row" title={indoors ? "Indoors: weather sounds are not playing" : undefined}>
         <RowLabel icon="weather" label="Weather" />
-        <MixerGroup idle={!rainPlaying || indoors} values={[rain]}>
+        <MixerGroup playing={weatherAudible && rainPlaying} values={[rain]}>
           <Icon name="rain" className="lab-mixer-icon" title="Rain" />
-          <Slider level={rain} disabled={indoors || !rainPlaying} />
+          <Slider level={rain} />
         </MixerGroup>
-        <MixerGroup idle={indoors} values={[wind]}>
+        <MixerGroup playing={weatherAudible} values={[wind]}>
           <Icon name="wind" className="lab-mixer-icon" title="Wind" />
-          <Slider level={wind} disabled={indoors} />
+          <Slider level={wind} />
         </MixerGroup>
-        <MixerGroup idle={!thunderPlaying || indoors} values={[thunder]}>
+        <MixerGroup playing={weatherAudible && thunderPlaying} values={[thunder]}>
           <Icon name="thunder" className="lab-mixer-icon" title="Thunder" />
-          <Slider level={thunder} disabled={indoors || !thunderPlaying} />
+          <Slider level={thunder} />
         </MixerGroup>
       </div>
       <div className="lab-mixer-row">
         <RowLabel icon="ambient" label="Ambient" />
-        <MixerGroup values={[ambientTrack, ambience]}>
+        <MixerGroup playing={audible} values={[ambientTrack, ambience]}>
           <select className="lab-select" value={ambientTrack.value} title="Ambient track" onChange={(event) => ambientTrack.set(event.target.value)}>
             {AMBIENT_TRACKS.map((name) => <option key={name}>{name}</option>)}
           </select>
@@ -1351,9 +1370,41 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main", sceneAmbience = "S
 
 /* ---------- Queue: connection light doubles as the live / queued switch ---------- */
 
+type QueuedChange = { readonly id: number; readonly subject: string; readonly to: string; readonly label?: string };
+
+/** What the table shows now, before any queued change is sent. */
+const QUEUE_BASE: Readonly<Record<string, string>> = { Victor: "unlit", "Black Caesar": "present", Weather: "rain" };
+
+const QUEUE_SAMPLE: readonly QueuedChange[] = [
+  { id: 1, subject: "Victor", to: "lit", label: "Light Victor (Mid Center)" },
+  { id: 2, subject: "Black Caesar", to: "absent" },
+  { id: 3, subject: "Weather", to: "heavy rain" },
+  { id: 4, subject: "Weather", to: "thunderstorm" }
+];
+
+/**
+ * Each change reads its "from" value from the table plus the changes queued before it, so removing one rewrites
+ * the ones after it; a change left with nothing to do drops out.
+ */
+const describeQueue = (queue: readonly QueuedChange[]): readonly { readonly id: number; readonly text: string }[] => {
+  const state: Record<string, string> = { ...QUEUE_BASE };
+  const lines: { id: number; text: string }[] = [];
+  for (const change of queue) {
+    const from = state[change.subject];
+    if (from === change.to) {
+      continue;
+    }
+    lines.push({ id: change.id, text: change.label ?? `${change.subject}: ${from ?? "?"} → ${change.to}` });
+    state[change.subject] = change.to;
+  }
+  return lines;
+};
+
 /** Offline (red) while TTS is not connected; otherwise queued (yellow) or live (green). The light is always lit. */
 export const QueuePanel = ({ connected }: { connected: boolean }): ReactElement => {
   const [live, setLive] = useState(false);
+  const [queue, setQueue] = useState(QUEUE_SAMPLE);
+  const lines = describeQueue(queue);
   const mode = !connected ? "offline" : live ? "live" : "queued";
   return (
     <div className={`lab-queue ${mode}`}>
@@ -1365,18 +1416,32 @@ export const QueuePanel = ({ connected }: { connected: boolean }): ReactElement 
       />
       <div className="lab-queue-actions">
         {live ? <Btn tone="live">Live</Btn> : (
-          <>
-            <Btn tone="primary">Send 3 changes</Btn>
-            <Btn>Clear queue</Btn>
-          </>
+          <Btn tone="primary">{lines.length === 0 ? "Nothing queued" : `Send ${lines.length} change${lines.length === 1 ? "" : "s"}`}</Btn>
         )}
       </div>
       {!live && (
-        <ol className="lab-queue-list">
-          <li>Light Victor (Mid Center)</li>
-          <li>Black Caesar: present → absent</li>
-          <li>Weather: rain → heavy</li>
-        </ol>
+        <>
+          <ol className="lab-queue-list">
+            {lines.map((line) => (
+              <li key={line.id}>
+                <span>{line.text}</span>
+                <button
+                  type="button"
+                  className="lab-queue-remove"
+                  title="Remove from the queue"
+                  onClick={() => setQueue(queue.filter((change) => change.id !== line.id))}
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ol>
+          {lines.length > 0 && (
+            <div className="lab-queue-actions">
+              <button type="button" className="lab-btn" onClick={() => setQueue([])}>Clear queue</button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -1432,37 +1497,44 @@ const SPOTLIGHT_ORDER: readonly { readonly color: keyof typeof SEAT_ACCENT; read
   { color: "Purple", characterKey: "blackCaesar" }
 ];
 
-const rotate = <T,>(list: readonly T[], by: number): readonly T[] => {
-  const shift = ((by % list.length) + list.length) % list.length;
-  return [...list.slice(shift), ...list.slice(0, shift)];
-};
+/** Distance between carousel seats: headshot, its border, and the gap. */
+const CAROUSEL_PITCH = 34;
 
-/** Mirrors the TTS Spotlight controls: ‹ and › turn the carousel; clicking a PC brings them to the front. */
+/** Mirrors the TTS Spotlight controls: PCs keep their places; ‹ and › (or a click) move the glowing ring. */
 const SpotlightCarousel = (): ReactElement => {
-  const [order, setOrder] = useState(SPOTLIGHT_ORDER);
+  const [front, setFront] = useState(0);
+  const count = SPOTLIGHT_ORDER.length;
+  const step = (by: number): void => setFront((front + by + count) % count);
+  const lit = SPOTLIGHT_ORDER[front];
   return (
     <span className="lab-carousel">
-      <button type="button" className="lab-carousel-step" title="Previous PC" onClick={() => setOrder(rotate(order, -1))}>‹</button>
-      {order.map((pc, index) => (
-        <button
-          key={pc.color}
-          type="button"
-          className={`lab-carousel-pc${index === 0 ? " front" : ""}`}
-          style={{ "--seat-color": SEAT_ACCENT[pc.color] } as CSSProperties}
-          title={index === 0 ? `${pc.color} has the spotlight` : `Give ${pc.color} the spotlight`}
-          onClick={() => setOrder(rotate(order, index))}
-        >
-          <Headshot className="lab-carousel-head" characterKey={pc.characterKey} />
-        </button>
-      ))}
-      <button type="button" className="lab-carousel-step" title="Next PC" onClick={() => setOrder(rotate(order, 1))}>›</button>
+      <button type="button" className="lab-carousel-step" title="Previous PC" onClick={() => step(-1)}>‹</button>
+      <span className="lab-carousel-track">
+        {SPOTLIGHT_ORDER.map((pc, index) => (
+          <button
+            key={pc.color}
+            type="button"
+            className={`lab-carousel-pc${index === front ? " front" : ""}`}
+            style={{ "--seat-color": SEAT_ACCENT[pc.color] } as CSSProperties}
+            title={index === front ? `${pc.color} has the spotlight` : `Give ${pc.color} the spotlight`}
+            onClick={() => setFront(index)}
+          >
+            <Headshot className="lab-carousel-head" characterKey={pc.characterKey} />
+          </button>
+        ))}
+        <span
+          className="lab-carousel-ring"
+          style={{ transform: `translateX(${front * CAROUSEL_PITCH}px)`, "--seat-color": lit ? SEAT_ACCENT[lit.color] : undefined } as CSSProperties}
+        />
+      </span>
+      <button type="button" className="lab-carousel-step" title="Next PC" onClick={() => step(1)}>›</button>
     </span>
   );
 };
 
 /**
- * Current phase in the middle. During Intermission the middle holds the next session's number and title; during
- * Spotlight it holds the carousel. In Play, Advance opens a ring: Scene (scene picker), Memoriam (Memoriam set-up),
+ * Phase name at the far left. The middle holds the scene name with End Scene beside it (Play), the next session's
+ * number and title (Intermission), or the carousel (Spotlight). In Play, Advance opens a ring: Scene (scene picker), Memoriam (Memoriam set-up),
  * or Spotlight (click twice). In any other phase, Advance names the next phase and needs a second click.
  */
 export const PhaseStrip = ({ library, onPrepare }: { library: readonly string[]; onPrepare: () => void }): ReactElement => {
@@ -1477,13 +1549,13 @@ export const PhaseStrip = ({ library, onPrepare }: { library: readonly string[];
   };
   return (
     <div className="lab-phase">
-      {phase === "Play" && <span title="Main / Memoriam → Downtime"><Btn tone="danger">End Scene</Btn></span>}
+      <span className="lab-phase-tag">{phase}</span>
       <span className="lab-phase-now">
-        <span className="lab-phase-tag">{phase}</span>
         {phase === "Play" && (
           <>
             <span className="lab-phase-sub">Main</span>
             <span className="lab-phase-scene">Elysium — Casa Loma: Great Hall</span>
+            <span title="Main / Memoriam → Downtime"><Btn tone="danger">End Scene</Btn></span>
           </>
         )}
         {phase === "Intermission" && (
@@ -1508,21 +1580,22 @@ export const PhaseStrip = ({ library, onPrepare }: { library: readonly string[];
         )}
         {phase === "Spotlight" && <SpotlightCarousel />}
       </span>
-      {phase === "Play" ? (
-        <button type="button" className="lab-btn primary" onClick={(event) => setRing(canvasPoint(event))}>Advance ▸</button>
-      ) : (
-        <ConfirmButton key={phase} label={`${next} ▸`} className="lab-btn primary" onConfirm={() => setPhase(next)} />
-      )}
+      <span className="lab-phase-advance">
+        {phase === "Play" ? (
+          <button type="button" className="lab-btn primary" onClick={(event) => setRing(canvasPoint(event))}>Advance ▸</button>
+        ) : (
+          <ConfirmButton key={phase} label={`${next} ▸`} className="lab-btn primary" onConfirm={() => setPhase(next)} />
+        )}
+      </span>
       {ring && (
         <Overlay onClose={() => setRing(null)}>
           <div className="lab-ring" style={{ left: Math.min(Math.max(ring.x, RING_EDGE), 1920 - RING_EDGE), top: Math.max(ring.y, 86) }}>
-            <button type="button" className="lab-ring-hub" title="Close" onClick={() => setRing(null)}>×</button>
-            <button type="button" className="lab-ring-item spoke" style={{ left: 0, top: -64 }} onClick={open("scene")}>Scene…</button>
-            <button type="button" className="lab-ring-item spoke" style={{ left: -112, top: 40 }} onClick={open("memoriam")}>Memoriam…</button>
+            <button type="button" className="lab-ring-item spoke" style={{ left: 0, top: -64, "--i": 0 } as CSSProperties} onClick={open("scene")}>Scene…</button>
+            <button type="button" className="lab-ring-item spoke" style={{ left: -112, top: 40, "--i": 1 } as CSSProperties} onClick={open("memoriam")}>Memoriam…</button>
             <ConfirmButton
               label="Spotlight ▸"
               className="lab-ring-item spoke"
-              style={{ left: 112, top: 40 }}
+              style={{ left: 112, top: 40, "--i": 2 } as CSSProperties}
               onConfirm={() => {
                 setRing(null);
                 setPhase("Spotlight");

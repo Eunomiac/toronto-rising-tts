@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Headshot } from "../headshots/Headshot";
 import { SEAT_ACCENT, assetUrl } from "../pcSheet/layout";
 import { Icon, type IconName } from "./icons";
+import { GROUP_BOSSES, groupColor, useRosterLayout, useSceneCatalogs } from "./labRoster";
 
 /**
  * Grey-box building blocks for Lab sketches. Every sketch is laid out in absolute pixels on the
@@ -381,9 +382,15 @@ const tokenPoint = (token: StageToken, w: number, h: number): { x: number; y: nu
   return point;
 };
 
-/** A figurine headshot with the name under it; hovering enlarges the headshot. Gold ring = lit. */
-const Token = ({ token, x, y }: { token: StageToken; x: number; y: number }): ReactElement => (
-  <div className={`lab-token${token.lit ? " lit" : ""}`} style={{ left: x, top: y }}>
+/**
+ * A figurine headshot with the name under it; hovering enlarges the headshot. The ring is the token's group
+ * colour (thicker and brighter for the group's boss); a gold halo means lit.
+ */
+const Token = ({ token, x, y, color, boss }: { token: StageToken; x: number; y: number; color: string | undefined; boss: boolean }): ReactElement => (
+  <div
+    className={`lab-token${token.lit ? " lit" : ""}${boss ? " boss" : ""}`}
+    style={{ left: x, top: y, ...(color ? { "--group": color } : {}) } as CSSProperties}
+  >
     <Headshot className="lab-token-head" characterKey={token.characterKey} />
     <span className="lab-token-name">{token.name}</span>
   </div>
@@ -398,6 +405,10 @@ export const WideBoard = ({ w, h }: { w: number; h: number }): ReactElement => {
   const [ring, setRing] = useState<{ x: number; y: number } | null>(null);
   const [placement, setPlacement] = useState<"Standard" | "Scatter">("Standard");
   const [clearArmed, setClearArmed] = useState(false);
+  const { catalogs } = useSceneCatalogs();
+  const roster = useRosterLayout();
+  const tokenGroup = (characterKey: string): string | undefined =>
+    catalogs?.namedNpcs.find((npc) => npc.characterKey === characterKey)?.pickerGroups[0];
   const closeRing = (): void => {
     setRing(null);
     setClearArmed(false);
@@ -428,7 +439,17 @@ export const WideBoard = ({ w, h }: { w: number; h: number }): ReactElement => {
     </svg>
     {STAGE_TOKENS.map((token) => {
       const point = tokenPoint(token, w, h);
-      return <Token key={token.characterKey} token={token} x={point.x} y={point.y} />;
+      const group = tokenGroup(token.characterKey);
+      return (
+        <Token
+          key={token.characterKey}
+          token={token}
+          x={point.x}
+          y={point.y}
+          color={group ? groupColor(roster, group) : undefined}
+          boss={group !== undefined && GROUP_BOSSES[group] === token.characterKey}
+        />
+      );
     })}
     <div className="lab-board-seats floating" style={{ top: 8, height: h * WIDE_SEAT_BAND }}>
       <Seats />
@@ -447,10 +468,10 @@ export const WideBoard = ({ w, h }: { w: number; h: number }): ReactElement => {
     {ring && (
       <Overlay onClose={closeRing}>
         <div className="lab-ring" style={{ left: ring.x, top: ring.y }}>
-          <button type="button" className="lab-ring-hub" title="Close" onClick={closeRing}>×</button>
           <button
             type="button"
-            className="lab-ring-item top"
+            className="lab-ring-item spoke"
+            style={{ left: 0, top: -64, "--i": 0 } as CSSProperties}
             onClick={() => {
               setPlacement(placement === "Standard" ? "Scatter" : "Standard");
               closeRing();
@@ -461,12 +482,15 @@ export const WideBoard = ({ w, h }: { w: number; h: number }): ReactElement => {
           </button>
           <button
             type="button"
-            className={`lab-ring-item left${clearArmed ? " armed" : ""}`}
+            className={`lab-ring-item spoke${clearArmed ? " armed" : ""}`}
+            style={{ left: -112, top: 40, "--i": 1 } as CSSProperties}
             onClick={() => (clearArmed ? closeRing() : setClearArmed(true))}
           >
             {clearArmed ? "Click again to clear" : "Clear Stage"}
           </button>
-          <button type="button" className="lab-ring-item right" onClick={closeRing}>Reset to Library</button>
+          <button type="button" className="lab-ring-item spoke" style={{ left: 112, top: 40, "--i": 2 } as CSSProperties} onClick={closeRing}>
+            Reset to Library
+          </button>
         </div>
       </Overlay>
     )}
