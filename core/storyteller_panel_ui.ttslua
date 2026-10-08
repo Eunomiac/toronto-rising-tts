@@ -36,6 +36,34 @@ local function storytellerUiElementIsActive(elementId)
     return string.lower(tostring(v)) == "true"
 end
 
+--- True when the Storyteller can currently see this toolbar panel (toolbar body, content area and
+--- panel all active). Panel paints skip when false; opening the panel repaints it.
+--- @param panelKey string One of the STORYTELLER_PANELS keys ("pcs", "scenes", "stats", …)
+--- @return boolean
+function StorytellerPanelUI.isPanelVisible(panelKey)
+    local ids = STORYTELLER_PANELS[panelKey]
+    if ids == nil then
+        error("StorytellerPanelUI.isPanelVisible: unknown panelKey " .. tostring(panelKey), 2)
+    end
+    return storytellerUiElementIsActive(STORYTELLER_TOOLBAR_BODY_ID)
+        and storytellerUiElementIsActive(STORYTELLER_CONTENT_AREA_ID)
+        and storytellerUiElementIsActive(ids.panel)
+end
+
+--- Key of the panel currently shown in the content area (ignores toolbar body), or nil.
+--- @return string|nil
+function StorytellerPanelUI.selectedPanelKey()
+    if not storytellerUiElementIsActive(STORYTELLER_CONTENT_AREA_ID) then
+        return nil
+    end
+    for key, ids in pairs(STORYTELLER_PANELS) do
+        if storytellerUiElementIsActive(ids.panel) then
+            return key
+        end
+    end
+    return nil
+end
+
 --- Inactive toggle button colors (dark grey/gold border)
 local TOGGLE_COLORS_INACTIVE = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
 

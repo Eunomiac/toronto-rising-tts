@@ -3365,6 +3365,37 @@ function GlobalSetSheetCamera(params)
     M.setCamera(clickerColor, modeStem .. canonSeat)
 end
 
+--- Repaint one Storyteller toolbar panel a frame after it becomes visible (panel paints skip
+--- while hidden, so every open path must call this).
+--- @param panelKey string|nil
+local function refreshStorytellerPanelOnOpen(panelKey)
+    if panelKey == "phases" then
+        Wait.frames(function()
+            syncStorytellerPhaseButtons()
+        end, 1)
+    elseif panelKey == "pcs" then
+        Wait.frames(function()
+            PCST.refreshAllRows()
+        end, 1)
+    elseif panelKey == "soundscape" then
+        Wait.frames(function()
+            UpdateUIDisplays({ soundscape = true })
+        end, 1)
+    elseif panelKey == "scenes" then
+        Wait.frames(function()
+            UpdateUIDisplays({ scenesPanel = true, adminLighting = true })
+        end, 1)
+    elseif panelKey == "stats" then
+        Wait.frames(function()
+            UpdateUIDisplays({ statsPanel = true })
+        end, 1)
+    elseif panelKey == "projects" then
+        Wait.frames(function()
+            UpdateUIDisplays({ projectsPanel = true })
+        end, 1)
+    end
+end
+
 function onLoad(saved_data)
     U.clearHostConsole()
     print(
@@ -3679,6 +3710,9 @@ function onLoad(saved_data)
                     return
                 end
                 U.toggleXmlElement("storytellerToolbarBody", "-1")
+                if U.isXmlElementExpanded("storytellerToolbarBody") then
+                    refreshStorytellerPanelOnOpen(StorytellerPanelUI.selectedPanelKey())
+                end
             end,
             false
         )
@@ -4048,36 +4082,11 @@ function HUD_selectStorytellerPanel(player, button, id, forceOpen)
     if StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen == true) == false then
         return
     end
-    if panelKey == "phases" then
-        Wait.frames(function()
-            syncStorytellerPhaseButtons()
-        end, 1)
+    -- Same-tab click closed the panel: nothing to repaint.
+    if StorytellerPanelUI.selectedPanelKey() ~= panelKey then
+        return
     end
-    if panelKey == "pcs" and PCST and PCST.refreshAllRows then
-        Wait.frames(function()
-            PCST.refreshAllRows()
-        end, 1)
-    end
-    if panelKey == "soundscape" then
-        Wait.frames(function()
-            UpdateUIDisplays({ soundscape = true })
-        end, 1)
-    end
-    if panelKey == "scenes" then
-        Wait.frames(function()
-            UpdateUIDisplays({ scenesPanel = true, adminLighting = true })
-        end, 1)
-    end
-    if panelKey == "stats" then
-        Wait.frames(function()
-            UpdateUIDisplays({ statsPanel = true })
-        end, 1)
-    end
-    if panelKey == "projects" then
-        Wait.frames(function()
-            UpdateUIDisplays({ projectsPanel = true })
-        end, 1)
-    end
+    refreshStorytellerPanelOnOpen(panelKey)
 end
 
 --- Stats panel: select PC or Coterie target (`stats_target_Brown`, …).

@@ -10,6 +10,7 @@ local S = require("core.state")
 local U = require("lib.util")
 local PCAdv = require("lib.pc_advantages")
 local PCST = require("core.pc_storyteller_panel")
+local PanelUI = require("core.storyteller_panel_ui")
 local Coterie = require("core.coterie")
 local CoterieHydrate = require("lib.coterie_hydrate")
 local TRAIT = require("lib.trait_sheet_xml")
@@ -299,7 +300,11 @@ applyEditorConfirm = function(playerColor)
   return false
 end
 
+--- No-op while the Stats panel is hidden; opening the panel repaints it.
 function ST.refresh()
+  if not PanelUI.isPanelVisible("stats") then
+    return
+  end
   if selectedTarget == nil then
     showLanding()
     return

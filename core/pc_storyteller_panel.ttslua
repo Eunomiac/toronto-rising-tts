@@ -15,6 +15,7 @@ local CSL = require("core.csheet_slices")
 local HUDP = require("core.hud_player")
 local XpLog = require("core.xp_log")
 local PlayerConnection = require("core.player_connection")
+local PanelUI = require("core.storyteller_panel_ui")
 
 --- @type table<string, table>
 local buffers = {}
@@ -240,9 +241,13 @@ local function characterFullNameForPlayerId(pid)
   return ""
 end
 
---- Refresh labels for one PC row from state + buffers.
+--- Refresh labels for one PC row from state + buffers. No-op while the PCs panel is hidden;
+--- opening the panel repaints every row.
 --- @param color string
 function PCST.refreshRow(color)
+  if not PanelUI.isPanelVisible("pcs") then
+    return
+  end
   local pid = playerIdForColor(color)
   local charFull = characterFullNameForPlayerId(pid)
   safeSetValue("pcs_charFullName_" .. color, charFull ~= "" and charFull or "—")
@@ -298,6 +303,9 @@ function PCST.refreshRow(color)
 end
 
 function PCST.refreshAllRows()
+  if not PanelUI.isPanelVisible("pcs") then
+    return
+  end
   for _, col in ipairs(C.PlayerColors) do
     PCST.refreshRow(col)
   end

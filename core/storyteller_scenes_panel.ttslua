@@ -1396,8 +1396,36 @@ function StorytellerScenesPanel.onClockInputChanged(player, value, id)
 end
 
 --- Push storyteller panel visuals from selected library preview (pending) or live `sessionScene`.
+--- Keep `clockDraft` aligned with the selected library row / live clock. Runs even while the
+--- panel is hidden: Apply and scene transitions read the draft.
+local function syncClockDraftWithState()
+    local activeKey = getActiveLibraryKey()
+    if activeKey ~= nil and clockDraft.sceneKey ~= activeKey then
+        resetClockDraftForLibrarySelection(activeKey)
+    end
+    if clockLerpBusy() then
+        return
+    end
+    if activeKey == nil then
+        -- TOR-453: present-day or blank — never invent Jan 1 2026 from cleared live clock.
+        StorytellerScenesPanel.syncClockDraftFromPresentDayOrBlank()
+        return
+    end
+    local ck = resolvePanelDisplayClock()
+    if type(ck) == "table" and clockDraft.sceneKey == activeKey and clockDraft.dirty ~= true then
+        StorytellerScenesPanel.syncClockDraftFromClock(ck)
+    end
+end
+
+--- Repaint the Scenes panel. While it is hidden only the clock draft is synced; opening the
+--- panel repaints it.
 function StorytellerScenesPanel.refresh()
     if UI == nil or UI.setAttribute == nil or UI.getAttributes == nil or UI.setAttributes == nil then
+        return
+    end
+
+    syncClockDraftWithState()
+    if not StorytellerPanelUI.isPanelVisible("scenes") then
         return
     end
 
@@ -1462,17 +1490,10 @@ function StorytellerScenesPanel.refresh()
         local skyLabel = resolveSkyboxDisplayLabel(displayBundle)
         U.setAttribute("scenes_skyboxNameDisplay", "text", skyLabel)
 
-        local activeKeyForClock = getActiveLibraryKey()
-        if activeKeyForClock ~= nil and clockDraft.sceneKey ~= activeKeyForClock then
-            resetClockDraftForLibrarySelection(activeKeyForClock)
-        end
-
         if not clockLerpBusy() then
             local ck = resolvePanelDisplayClock()
             local activeKey = getActiveLibraryKey()
             if activeKey == nil then
-                -- TOR-453: present-day or blank — never invent Jan 1 2026 from cleared live clock.
-                StorytellerScenesPanel.syncClockDraftFromPresentDayOrBlank()
                 if type(ck) == "table" and PresentDayClock.clockHasDatetime(ck) then
                     local mo = math.floor(tonumber(ck.month) or 1)
                     for m = 1, 12 do
@@ -1516,10 +1537,6 @@ function StorytellerScenesPanel.refresh()
                     refreshLerpSunLabels(nil, nil)
                 end
             elseif type(ck) == "table" then
-                if clockDraft.sceneKey == activeKey and clockDraft.dirty ~= true then
-                    StorytellerScenesPanel.syncClockDraftFromClock(ck)
-                end
-
                 local mo = math.floor(tonumber(ck.month) or 1)
                 for m = 1, 12 do
                     U.setAttributes("scenes_month_" .. tostring(m), {

@@ -9,6 +9,7 @@ local C = require("lib.constants")
 local U = require("lib.util")
 local Projects = require("core.projects")
 local PCST = require("core.pc_storyteller_panel")
+local PanelUI = require("core.storyteller_panel_ui")
 local RC = require("core.roll_controller")
 
 local ROW_POOL = 12
@@ -394,7 +395,11 @@ refreshAfterMutation = function()
   Projects.refreshAfterMutation()
 end
 
+--- No-op while the Projects panel is hidden; opening the panel repaints it.
 function PJP.refresh()
+  if not PanelUI.isPanelVisible("projects") then
+    return
+  end
   if selectedTarget == nil then
     showLanding()
     return
