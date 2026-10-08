@@ -723,8 +723,8 @@ const segmentFlex = (chance: number, winner: boolean, settled: boolean, minWidth
  * the odds with the scene location's resonances. The top bar is the flavor, each possible flavor's segment as
  * long as its chance; click a flavor to mark it as the one the player is seeking (again to clear). The lower
  * bar is the intensity, darker to brighter. Right-click either bar and both markers slide and settle; the
- * winners widen and glow, the rest fade, and Confirm clears the bars (the real build broadcasts the result in
- * TTS).
+ * winners widen and glow, the rest fade, and Confirm clears the bars, sets the margin to 0, and drops the sought
+ * flavor (the real build broadcasts the result in TTS).
  */
 export const HuntRoller = ({ location }: { location: LabLocation }): ReactElement => {
   const { data } = useChronicleLocations();
@@ -896,7 +896,16 @@ export const HuntRoller = ({ location }: { location: LabLocation }): ReactElemen
         </button>
       </div>
       {settled && (
-        <button type="button" className="lab-btn primary lab-hunt-confirm" title="Clear the bars (the real build broadcasts the result in TTS)" onClick={reset}>
+        <button
+          type="button"
+          className="lab-btn primary lab-hunt-confirm"
+          title="Clear the bars, the margin, and the sought flavor (the real build broadcasts the result in TTS)"
+          onClick={() => {
+            reset();
+            setMargin(0);
+            setTarget(null);
+          }}
+        >
           Confirm
         </button>
       )}
