@@ -32,12 +32,28 @@ const DISTRICT = {
   aspects: [44, 654, 1264].map((x) => ({ title: [x, 762, 612, 50] as CardRect, full: [x, 762, 612, 248] as CardRect }))
 } as const;
 
-const SITE = {
-  art: { src: cardUrl("Sites/CLGreatHall.webp"), width: 1952 },
-  name: [1000, 36, 430, 200],
-  aspect: [810, 564, 530, 166],
-  resonance: [1430, 790, 300, 60]
-} as const;
+/**
+ * Site cards (1952×882) come in two fixed layouts. Unique sites (with a district) carry a street map on the
+ * right: name right-aligned along the top, an optional sub-location line under it, resonance under the map.
+ * Generic sites have a centred name and the resonance bottom-left. The rule box never moves; only the text
+ * inside it sits higher or lower.
+ */
+type SiteLayout = { readonly name: CardRect; readonly sub?: CardRect; readonly aspect: CardRect; readonly resonance: CardRect };
+
+const SITE_LAYOUTS: Record<"unique" | "generic", SiteLayout> = {
+  unique: { name: [200, 26, 1240, 100], sub: [900, 126, 540, 114], aspect: [690, 545, 660, 300], resonance: [1330, 785, 460, 70] },
+  generic: { name: [400, 20, 1152, 110], aspect: [1050, 572, 875, 285], resonance: [200, 790, 470, 70] }
+};
+
+/** Sub-location line only when the site name has one ("Casa Loma: Great Hall"). */
+type SampleSite = { readonly key: string; readonly layout: keyof typeof SITE_LAYOUTS; readonly hasSub: boolean };
+
+const SAMPLE_SITES: readonly SampleSite[] = [
+  { key: "CLGreatHall", layout: "unique", hasSub: true },
+  { key: "Drake", layout: "unique", hasSub: false },
+  { key: "AnarchBar", layout: "generic", hasSub: false },
+  { key: "WealthyEstate3", layout: "generic", hasSub: false }
+];
 
 const CardCrop = ({ art, rect, width }: { art: CardArt; rect: CardRect; width: number }): ReactElement => {
   const [x, y, w, h] = rect;
@@ -49,8 +65,31 @@ const CardCrop = ({ art, rect, width }: { art: CardArt; rect: CardRect; width: n
   );
 };
 
-/** District name, resonances, and aspect titles (hover for the full rule), then the Site's name, resonance, and rule. */
+const SiteCrops = ({ site, width }: { site: SampleSite; width: number }): ReactElement => {
+  const art: CardArt = { src: cardUrl(`Sites/${site.key}.webp`), width: 1952 };
+  const layout = SITE_LAYOUTS[site.layout];
+  const scale = width / layout.name[2];
+  return (
+    <>
+      <CardCrop art={art} rect={layout.name} width={width} />
+      <div className="lab-where-row spread">
+        {site.hasSub && layout.sub && <CardCrop art={art} rect={layout.sub} width={Math.round(layout.sub[2] * scale * 1.15)} />}
+        <span className="lab-where-site-side">
+          <CardCrop art={art} rect={layout.resonance} width={Math.round(layout.resonance[2] * scale * 1.15)} />
+        </span>
+      </div>
+      <CardCrop art={art} rect={layout.aspect} width={width} />
+    </>
+  );
+};
+
+/**
+ * District name, resonances, and aspect titles (hover for the full rule), then the Site's name, resonance, and
+ * rule. In the Lab, clicking the Site part cycles through sample sites of both card layouts.
+ */
 export const LocationCards = ({ width }: { width: number }): ReactElement => {
+  const [siteIndex, setSiteIndex] = useState(0);
+  const site = SAMPLE_SITES[siteIndex % SAMPLE_SITES.length] ?? SAMPLE_SITES[0];
   const resonanceScale = (width * 0.44) / DISTRICT.resonanceUp[2];
   return (
     <div className="lab-where">
@@ -69,14 +108,11 @@ export const LocationCards = ({ width }: { width: number }): ReactElement => {
           </span>
         ))}
       </div>
-      <div className="lab-where-row site">
-        <CardCrop art={SITE.art} rect={SITE.name} width={Math.round(width * 0.54)} />
-        <span className="lab-where-site-side">
-          <CardCrop art={SITE.art} rect={SITE.resonance} width={Math.round(width * 0.42)} />
-          <Chip tone="dim">indoors</Chip>
-        </span>
-      </div>
-      <CardCrop art={SITE.art} rect={SITE.aspect} width={width} />
+      {site && (
+        <div className="lab-where-site" title="Lab: click to cycle sample sites" onClick={() => setSiteIndex(siteIndex + 1)}>
+          <SiteCrops site={site} width={width} />
+        </div>
+      )}
     </div>
   );
 };

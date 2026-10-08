@@ -230,10 +230,14 @@ $lab-live: #4caf6a;
     &.spread {
       justify-content: space-between;
     }
+  }
 
-    &.site {
-      margin-top: 6px;
-    }
+  &-site {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 6px;
+    cursor: pointer;
   }
 
   &-site-side {
