@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent, type ReactElement, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type DragEvent, type MouseEvent, type PointerEvent, type ReactElement, type ReactNode } from "react";
 import { Headshot } from "../headshots/Headshot";
 import type { CatalogCharacter, SceneCatalogs } from "../scenes/types";
 import {
@@ -305,6 +305,23 @@ const groupLabelWidth = (text: string): number => {
 };
 
 const GROUP_DRAG_TYPE = "application/x-tr-npc-group";
+
+/**
+ * Drags show a copy of the group cell held off-screen. Chrome's own drag picture of an element inside a scrolled
+ * list can take in whatever lies under it (the categories below), so it is not used.
+ */
+const setGroupDragImage = (event: DragEvent<HTMLElement>): void => {
+  const source = event.currentTarget;
+  const holder = document.createElement("div");
+  holder.className = "lab-canvas lab-drag-ghost";
+  const copy = source.cloneNode(true) as HTMLElement;
+  copy.style.width = `${source.offsetWidth}px`;
+  holder.append(copy);
+  document.body.append(holder);
+  const rect = source.getBoundingClientRect();
+  event.dataTransfer.setDragImage(copy, event.clientX - rect.left, event.clientY - rect.top);
+  window.setTimeout(() => holder.remove(), 0);
+};
 const NEW_CATEGORY_COLOR = "#9c7bd6";
 const UNSORTED_GROUP_COLOR = "#7a7a86";
 
@@ -487,6 +504,7 @@ export const MasonryRoster = (): ReactElement => {
             draggable
             onDragStart={(event) => {
               event.dataTransfer.setData(GROUP_DRAG_TYPE, group.key);
+              setGroupDragImage(event);
               setDragging(true);
             }}
             onDragEnd={() => setDragging(false)}

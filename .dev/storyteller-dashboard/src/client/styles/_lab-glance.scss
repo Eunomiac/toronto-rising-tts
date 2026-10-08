@@ -2030,6 +2030,14 @@ $lab-queued: #e8c547;
   overflow: visible;
 }
 
+.lab-drag-ghost {
+  position: fixed;
+  top: -2000px;
+  left: 0;
+  height: auto;
+  pointer-events: none;
+}
+
 .lab-dock {
   position: relative;
   height: 100%;
@@ -2047,6 +2055,16 @@ $lab-queued: #e8c547;
     z-index: 15;
     width: 11px;
     transition: width 0.16s ease;
+
+    // Carries the hover zone out to the screen's left edge.
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: -12px;
+      width: 12px;
+    }
 
     &.open {
       width: 100%;
