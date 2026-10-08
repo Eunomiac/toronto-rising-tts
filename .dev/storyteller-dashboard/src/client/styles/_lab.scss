@@ -239,12 +239,16 @@ $lab-pin: #f5b13d;
   min-width: 0;
   height: 100%;
 
-  &:hover {
+  &.controllable {
+    cursor: pointer;
+  }
+
+  &.open {
     z-index: 20;
   }
 }
 
-// PC trackers float under the seat while the pointer is over it.
+// A PC's tracker controls, open under the seat until the next click elsewhere.
 .lab-seat-pop {
   position: absolute;
   top: calc(100% + 6px);
@@ -259,16 +263,38 @@ $lab-pin: #f5b13d;
   box-shadow: 0 6px 18px rgb(0 0 0 / 70%);
   transform: translateX(-50%);
   white-space: nowrap;
-  pointer-events: none;
+  cursor: default;
 
   &-name {
     font-weight: 800;
     color: #fff;
   }
 
-  .lab-seat-slot:hover > & {
+  .lab-seat-slot.open > & {
     display: flex;
   }
+
+  .lab-track {
+    min-height: 26px;
+    padding: 2px 14px 2px 4px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      border-color: rgb(255 255 255 / 25%);
+      background: rgb(255 255 255 / 7%);
+    }
+  }
+}
+
+// Above the seat pop-up, so a tracker's ring opens over it.
+.lab-trait-ring-host {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
 }
 
 .lab-seat {
@@ -506,6 +532,10 @@ $lab-pin: #f5b13d;
       fill: #8fb4e8;
     }
 
+    &.humanity {
+      fill: #b48ae8;
+    }
+
     &.hunger {
       fill: #c4141c;
     }
@@ -518,6 +548,10 @@ $lab-pin: #f5b13d;
     height: 13px;
     background: center / contain no-repeat;
     transform: scale(2.5);
+
+    &.off {
+      opacity: 0.25;
+    }
   }
 }
 

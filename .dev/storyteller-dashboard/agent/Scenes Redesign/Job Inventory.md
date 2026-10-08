@@ -464,6 +464,12 @@ Lab toggles (tab bar): **Preview** (blue slide-out for a library scene that isn'
 - **Carousel:** PCs keep their places; a glowing ring in the spotlit PC's colour slides along as ‹ / › are pressed (or a PC is clicked).
 - **Phase bar:** the phase name sits at the far left as a large condensed label (no chip). The scene name is centred with End Scene right beside it.
 
+**Pin pass 8 (4 notes, implemented in B and cleared, 2026-10-08).**
+- **PC trackers:** clicking a PC seat opens a control pop-up under it (Health, Willpower, Humanity, Hunger in character sheet box art; Humanity shows all ten boxes with the unfilled ones faint). It stays open until a click elsewhere. Health, Willpower, and Humanity open the PCs tab's own ring (`TraitRing` with `actionsForRing`, changes applied by `applyLocal`), so the buttons and damage rules match that tab; Hunger is left-click up, right-click down, as on the PCs tab. The real build sends the same sheet commands the PCs tab sends.
+- **Phase bar:** the subphase ("Main") sits right after the phase name in the same face, a darker green.
+- **When:** the corner fades were working but covered too little of the skyline to see; they are now larger (about 150x64) and darker, so the windows around each time go dark.
+- **Sound:** the Ambient track is a button showing the playing loop; it opens a four-column grid of every ambience loop under it, with the playing loop lit and the site's own loop outlined in dashed gold. Picking one plays it and closes the grid.
+
 Feedback wanted: which layout's overall shape feels right, which modules are too big or too small, and anything that should move between them. Pins can say "take X from B into A".
 
 ## Next rounds

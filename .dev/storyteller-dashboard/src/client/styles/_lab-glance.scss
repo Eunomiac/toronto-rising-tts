@@ -40,6 +40,38 @@ $lab-live: #4caf6a;
   width: 470px;
 }
 
+.lab-ambient-pick {
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+// Anchored under the Ambient button rather than centred; width matches AMBIENT_GRID_WIDTH in glance.tsx.
+.lab-ambient-grid {
+  width: 660px;
+  transform: none;
+
+  &-tracks {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+
+    .lab-btn {
+      padding: 5px 6px;
+      font-size: 12px;
+      cursor: pointer;
+      color: inherit;
+    }
+
+    .lab-btn.site:not(.primary) {
+      border-style: dashed;
+      border-color: #c9a94e;
+    }
+  }
+}
+
 .lab-advance {
   width: 620px;
   align-items: flex-start;
@@ -771,9 +803,9 @@ $lab-live: #4caf6a;
     > span {
       display: grid;
       align-items: end;
-      width: 88px;
-      height: 36px;
-      padding: 0 4px 2px;
+      width: 150px;
+      height: 64px;
+      padding: 0 5px 3px;
       font-size: 12px;
       font-weight: 800;
       color: #f2c44e;
@@ -785,7 +817,7 @@ $lab-live: #4caf6a;
 
       > span {
         justify-items: start;
-        background: radial-gradient(farthest-side at 0 100%, rgb(0 0 0 / 92%), rgb(0 0 0 / 55%) 55%, transparent);
+        background: radial-gradient(farthest-side at 0 100%, rgb(0 0 0 / 97%) 25%, rgb(0 0 0 / 80%) 50%, rgb(0 0 0 / 40%) 75%, transparent);
       }
     }
 
@@ -794,7 +826,7 @@ $lab-live: #4caf6a;
 
       > span {
         justify-items: end;
-        background: radial-gradient(farthest-side at 100% 100%, rgb(0 0 0 / 92%), rgb(0 0 0 / 55%) 55%, transparent);
+        background: radial-gradient(farthest-side at 100% 100%, rgb(0 0 0 / 97%) 25%, rgb(0 0 0 / 80%) 50%, rgb(0 0 0 / 40%) 75%, transparent);
       }
     }
   }
@@ -1552,7 +1584,8 @@ $lab-queued: #e8c547;
   }
 
   &-sub {
-    font-weight: 800;
+    margin-left: 0.3em;
+    color: #6f9c7b;
   }
 
   &-scene {

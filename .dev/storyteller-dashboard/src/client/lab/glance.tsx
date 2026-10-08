@@ -1276,6 +1276,42 @@ const AMBIENT_TRACKS = [
   "Tinkle", "Urban Dark", "Warrens", "Waterside", "Whisper Ghosts"
 ] as const;
 
+const AMBIENT_GRID_WIDTH = 660;
+
+/**
+ * Every ambience loop as a button grid, opened under the Ambient button: the playing loop is lit and the site's
+ * own loop is marked. Picking one plays it and closes the grid.
+ */
+const AmbientGrid = ({ at, current, siteTrack, onPick, onClose }: {
+  at: { readonly x: number; readonly y: number };
+  current: string;
+  siteTrack: string;
+  onPick: (track: string) => void;
+  onClose: () => void;
+}): ReactElement => (
+  <Overlay onClose={onClose}>
+    <div className="lab-modal lab-ambient-grid" style={{ left: Math.min(at.x, 1920 - AMBIENT_GRID_WIDTH - 8), top: at.y }}>
+      <span className="lab-modal-title">Ambient track</span>
+      <div className="lab-ambient-grid-tracks">
+        {AMBIENT_TRACKS.map((track) => (
+          <button
+            key={track}
+            type="button"
+            className={`lab-btn${track === current ? " primary" : ""}${track === siteTrack ? " site" : ""}`}
+            title={track === siteTrack ? "The site's own ambience" : undefined}
+            onClick={() => {
+              onPick(track);
+              onClose();
+            }}
+          >
+            {track}
+          </button>
+        ))}
+      </div>
+    </div>
+  </Overlay>
+);
+
 const RowLabel = ({ icon, label }: { icon: IconName; label: string }): ReactElement => (
   <span className="lab-mixer-label" title={label}>
     <Icon name={icon} title={label} />
@@ -1295,6 +1331,7 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main", sceneAmbience = "S
   const [featured, setFeatured] = useState(false);
   const [featuredTrack, setFeaturedTrack] = useState<string>("TR Loop");
   const ambientTrack = useOverridable(sceneAmbience);
+  const [ambientGridAt, setAmbientGridAt] = useState<{ x: number; y: number } | null>(null);
   const [muted, setMuted] = useState(false);
   const playlist = useOverridable(scenePlaylist);
   const music = useOverridable(70);
@@ -1350,12 +1387,34 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main", sceneAmbience = "S
       <div className="lab-mixer-row">
         <RowLabel icon="ambient" label="Ambient" />
         <MixerGroup playing={audible} values={[ambientTrack, ambience]}>
-          <select className="lab-select" value={ambientTrack.value} title="Ambient track" onChange={(event) => ambientTrack.set(event.target.value)}>
-            {AMBIENT_TRACKS.map((name) => <option key={name}>{name}</option>)}
-          </select>
+          <button
+            type="button"
+            className="lab-select lab-ambient-pick"
+            title="Ambient track: click to choose another"
+            onClick={(event) => {
+              const canvas = event.currentTarget.closest(".lab-canvas");
+              if (!canvas) {
+                throw new Error("Ambient grid needs the Lab canvas.");
+              }
+              const button = event.currentTarget.getBoundingClientRect();
+              const origin = canvas.getBoundingClientRect();
+              setAmbientGridAt({ x: button.left - origin.left, y: button.bottom - origin.top + 6 });
+            }}
+          >
+            {ambientTrack.value} ▾
+          </button>
           <Slider level={ambience} />
         </MixerGroup>
       </div>
+      {ambientGridAt && (
+        <AmbientGrid
+          at={ambientGridAt}
+          current={ambientTrack.value}
+          siteTrack={sceneAmbience}
+          onPick={ambientTrack.set}
+          onClose={() => setAmbientGridAt(null)}
+        />
+      )}
       <button
         type="button"
         className={`lab-mixer-mute${muted ? " on" : ""}`}
@@ -1549,11 +1608,13 @@ export const PhaseStrip = ({ library, onPrepare }: { library: readonly string[];
   };
   return (
     <div className="lab-phase">
-      <span className="lab-phase-tag">{phase}</span>
+      <span className="lab-phase-tag">
+        {phase}
+        {phase === "Play" && <span className="lab-phase-sub">Main</span>}
+      </span>
       <span className="lab-phase-now">
         {phase === "Play" && (
           <>
-            <span className="lab-phase-sub">Main</span>
             <span className="lab-phase-scene">Elysium — Casa Loma: Great Hall</span>
             <span title="Main / Memoriam → Downtime"><Btn tone="danger">End Scene</Btn></span>
           </>

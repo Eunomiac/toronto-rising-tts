@@ -1,7 +1,13 @@
 import { useEffect, useState, type CSSProperties, type MouseEvent, type ReactElement, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Headshot } from "../headshots/Headshot";
+import { applyLocal } from "../pcSheet/applyLocal";
+import { emptySeat } from "../pcSheet/fixture";
 import { SEAT_ACCENT, assetUrl } from "../pcSheet/layout";
+import { paintDamageTrack, paintHumanityTrack, type BoxSlot } from "../pcSheet/paint";
+import { actionsForRing } from "../pcSheet/ringActions";
+import { TraitRing } from "../pcSheet/TraitRing";
+import type { RingTarget, SeatColor, SeatSnapshot, SheetSnapshot } from "../pcSheet/types";
 import { Icon, type IconName } from "./icons";
 import { GROUP_BOSSES, groupColor, useRosterLayout, useSceneCatalogs } from "./labRoster";
 
@@ -118,10 +124,16 @@ export const Overlay = ({ onClose, children }: { onClose: () => void; children: 
 
 /* ---------- seats ---------- */
 
-type Tracker = { readonly max: number; readonly sup: number; readonly agg: number };
-
-/** The PC's own trackers, even while they play an NPC role. */
-type PcTracks = { readonly health: Tracker; readonly willpower: Tracker; readonly hunger: number };
+/**
+ * The PC's own trackers, even while they play an NPC role: Health and Willpower as [boxes, superficial,
+ * aggravated], Humanity as [rating, stains].
+ */
+type PcTrackers = {
+  readonly health: readonly [number, number, number];
+  readonly willpower: readonly [number, number, number];
+  readonly humanity: readonly [number, number];
+  readonly hunger: number;
+};
 
 type SeatSketch = {
   readonly slot: number;
@@ -131,8 +143,8 @@ type SeatSketch = {
   readonly state?: "absent" | "disconnected";
   /** The player's PC name when they are playing an NPC role; `name` and the image are then the NPC's. */
   readonly playedBy?: string;
-  readonly color?: keyof typeof SEAT_ACCENT;
-  readonly tracks?: PcTracks;
+  readonly color?: SeatColor;
+  readonly trackers?: PcTrackers;
 };
 
 /**
@@ -144,60 +156,107 @@ export const SEATS: readonly SeatSketch[] = [
   { slot: 7, name: "Lexi Madi", characterKey: "lexiMadi", kind: "npc" },
   {
     slot: 5, name: "Adrian Varga", characterKey: "adrianVarga", kind: "pc", playedBy: "Aishe Tache", color: "Pink",
-    tracks: { health: { max: 7, sup: 2, agg: 0 }, willpower: { max: 6, sup: 1, agg: 0 }, hunger: 2 }
+    trackers: { health: [7, 2, 0], willpower: [6, 1, 0], humanity: [7, 1], hunger: 2 }
   },
   {
     slot: 3, name: "Fomórach", characterKey: "fomorach", kind: "pc", state: "disconnected", color: "Brown",
-    tracks: { health: { max: 8, sup: 0, agg: 0 }, willpower: { max: 5, sup: 0, agg: 0 }, hunger: 3 }
+    trackers: { health: [8, 0, 0], willpower: [5, 0, 0], humanity: [5, 0], hunger: 3 }
   },
   {
     slot: 1, name: "Black Caesar", characterKey: "blackCaesar", kind: "pc", state: "absent", color: "Purple",
-    tracks: { health: { max: 9, sup: 1, agg: 1 }, willpower: { max: 7, sup: 0, agg: 0 }, hunger: 1 }
+    trackers: { health: [9, 1, 1], willpower: [7, 0, 0], humanity: [6, 2], hunger: 1 }
   },
   {
     slot: 2, name: "Lord Lucien", characterKey: "lordLucien", kind: "pc", color: "Red",
-    tracks: { health: { max: 6, sup: 0, agg: 0 }, willpower: { max: 8, sup: 3, agg: 0 }, hunger: 4 }
+    trackers: { health: [6, 0, 0], willpower: [8, 3, 0], humanity: [8, 0], hunger: 4 }
   },
   {
     slot: 4, name: "Rashid", characterKey: "rashid", kind: "pc", color: "Orange",
-    tracks: { health: { max: 7, sup: 0, agg: 0 }, willpower: { max: 5, sup: 0, agg: 1 }, hunger: 0 }
+    trackers: { health: [7, 0, 0], willpower: [5, 0, 1], humanity: [7, 3], hunger: 0 }
   },
   { slot: 6, kind: "empty" },
   { slot: 8, kind: "nochair" }
 ];
 
-/** Same box art as the character sheet trackers (aggravated first, then superficial, then undamaged). */
-const trackBoxImage = (index: number, agg: number, sup: number): string =>
-  index < agg ? "box_red_x" : index < agg + sup ? "box_grey_slash" : "box_white";
+/** Lab stand-in for the live sheet: the PC tab's seat shape carrying each PC's sample trackers. */
+const labSheet = (): SheetSnapshot => ({
+  ok: true,
+  seats: SEATS.flatMap((seat) => {
+    if (!seat.color || !seat.trackers) {
+      return [];
+    }
+    const { health, willpower, humanity, hunger } = seat.trackers;
+    const tracker = (base: number, superficial: number, aggravated: number, stains = 0) =>
+      ({ base, temp: 0, disabled: 0, superficial, aggravated, stains });
+    const sheet: SeatSnapshot = {
+      ...emptySeat(seat.color),
+      charName: seat.playedBy ?? seat.name ?? "",
+      health: tracker(...health),
+      healthMax: health[0],
+      willpower: tracker(...willpower),
+      willpowerMax: willpower[0],
+      humanity: tracker(humanity[0], 0, 0, humanity[1]),
+      humanityMax: humanity[0],
+      hunger
+    };
+    return [sheet];
+  })
+});
 
-const Track = ({ icon, label, max, sup, agg }: { icon: IconName; label: string } & Tracker): ReactElement => (
-  <span className="lab-track">
-    <Icon name={icon} className={`lab-track-icon ${icon}`} title={label} />
-    {Array.from({ length: max }, (_, index) => (
-      <span
-        key={index}
-        className="lab-track-box"
-        style={{ backgroundImage: `url("${assetUrl(`boxes/${trackBoxImage(index, agg, sup)}.webp`)}")` }}
-      />
-    ))}
-  </span>
+/** Character sheet box art; Humanity shows all ten boxes, unfilled ones faint. */
+const BoxRow = ({ boxes, showEmpty = false }: { boxes: readonly BoxSlot[]; showEmpty?: boolean }): ReactElement => (
+  <>
+    {boxes.map((box, index) => box.active && box.image ? (
+      <span key={index} className="lab-track-box" style={{ backgroundImage: `url("${assetUrl(`boxes/${box.image}.webp`)}")` }} />
+    ) : showEmpty ? (
+      <span key={index} className="lab-track-box off" style={{ backgroundImage: `url("${assetUrl("boxes/box_white.webp")}")` }} />
+    ) : null)}
+  </>
 );
 
 const HUNGER_DOT = { "--lab-dot": `url("${assetUrl("dots/dot_red.webp")}")` } as CSSProperties;
 
-/** Health, Willpower, and Hunger for a PC's seat, shown while the pointer is over the seat. */
-const TrackerPopup = ({ name, tracks }: { name: string; tracks: PcTracks }): ReactElement => (
-  <span className="lab-seat-pop">
-    <span className="lab-seat-pop-name">{name}</span>
-    <Track icon="health" label="Health" {...tracks.health} />
-    <Track icon="willpower" label="Willpower" {...tracks.willpower} />
-    <span className="lab-track">
+type TrackRing = { readonly x: number; readonly y: number; readonly target: RingTarget };
+
+/**
+ * A PC's trackers as controls, as on the PCs tab: click Health, Willpower, or Humanity for that tracker's ring
+ * (left-click a button to add, right-click to remove); left-click Hunger to raise it, right-click to lower it.
+ */
+const TrackerPopup = ({ seat, onRing, onHunger }: {
+  seat: SeatSnapshot;
+  onRing: (event: MouseEvent<HTMLElement>, target: RingTarget) => void;
+  onHunger: (delta: number) => void;
+}): ReactElement => (
+  <div className="lab-seat-pop" role="dialog" aria-label={`${seat.charName} trackers`}>
+    <span className="lab-seat-pop-name">{seat.charName}</span>
+    <button type="button" className="lab-track" onClick={(event) => onRing(event, { kind: "damage", which: "health" })}>
+      <Icon name="health" className="lab-track-icon health" title="Health" />
+      <BoxRow boxes={paintDamageTrack(seat.health, seat.healthMax)} />
+    </button>
+    <button type="button" className="lab-track" onClick={(event) => onRing(event, { kind: "damage", which: "willpower" })}>
+      <Icon name="willpower" className="lab-track-icon willpower" title="Willpower" />
+      <BoxRow boxes={paintDamageTrack(seat.willpower, seat.willpowerMax)} />
+    </button>
+    <button type="button" className="lab-track" onClick={(event) => onRing(event, { kind: "humanity" })}>
+      <Icon name="humanity" className="lab-track-icon humanity" title="Humanity" />
+      <BoxRow boxes={paintHumanityTrack(seat.humanity, seat.humanityMax)} showEmpty />
+    </button>
+    <button
+      type="button"
+      className="lab-track"
+      title="Left-click to raise Hunger, right-click to lower it"
+      onClick={() => onHunger(1)}
+      onContextMenu={(event) => {
+        event.preventDefault();
+        onHunger(-1);
+      }}
+    >
       <Icon name="hunger" className="lab-track-icon hunger" title="Hunger" />
-      {Array.from({ length: 5 }, (_, index) => (
-        <span key={index} className={`lab-hunger-dot${index < tracks.hunger ? " on" : ""}`} style={HUNGER_DOT} />
+      {Array.from({ length: seat.hungerMax }, (_, index) => (
+        <span key={index} className={`lab-hunger-dot${index < seat.hunger ? " on" : ""}`} style={HUNGER_DOT} />
       ))}
-    </span>
-  </span>
+    </button>
+  </div>
 );
 
 const SeatContent = ({ seat }: { seat: SeatSketch }): ReactElement => (
@@ -214,31 +273,88 @@ const SeatContent = ({ seat }: { seat: SeatSketch }): ReactElement => (
  * One cell per chair, each a ninth of the row (the most chairs any table has); positions the table lacks are
  * left out rather than drawn, and the rest stay centred. The figurine headshot fills the cell above the name.
  * PC seats are bordered in the player's colour, NPC seats in muted grey; absent (out of the scene) and
- * disconnected seats are told apart by border style and image treatment. Hovering a PC seat shows that PC's
- * trackers.
+ * disconnected seats are told apart by border style and image treatment. Clicking a PC seat opens that PC's
+ * tracker controls; clicking anywhere else closes them.
  */
-export const Seats = (): ReactElement => (
-  <div className="lab-seats">
-    {SEATS.filter((seat) => seat.kind !== "nochair").map((seat) => {
-      const className = `lab-seat ${seat.kind}${seat.state ? ` ${seat.state}` : ""}${seat.playedBy ? " role" : ""}`;
-      const style = seat.color ? ({ "--seat-color": SEAT_ACCENT[seat.color] } as CSSProperties) : undefined;
-      return (
-        <div key={seat.slot} className="lab-seat-slot" style={style}>
-          {seat.characterKey ? (
-            <Headshot characterKey={seat.characterKey} className={className}>
-              <SeatContent seat={seat} />
-            </Headshot>
-          ) : (
-            <div className={className}>
-              <SeatContent seat={seat} />
-            </div>
-          )}
-          {seat.tracks && <TrackerPopup name={seat.playedBy ?? seat.name ?? ""} tracks={seat.tracks} />}
-        </div>
-      );
-    })}
-  </div>
-);
+export const Seats = (): ReactElement => {
+  const [sheet, setSheet] = useState(labSheet);
+  const [openColor, setOpenColor] = useState<SeatColor | null>(null);
+  const [ring, setRing] = useState<TrackRing | null>(null);
+  useEffect(() => {
+    if (!openColor) {
+      return undefined;
+    }
+    const onPointerDown = (event: PointerEvent): void => {
+      if (!(event.target as HTMLElement).closest(".lab-seat-slot.open, .pc-ring-layer")) {
+        setOpenColor(null);
+        setRing(null);
+      }
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [openColor]);
+  const openSeat = sheet.seats.find((seat) => seat.color === openColor);
+  const canvas = document.querySelector(".lab-canvas");
+  return (
+    <div className="lab-seats">
+      {SEATS.filter((seat) => seat.kind !== "nochair").map((seat) => {
+        const className = `lab-seat ${seat.kind}${seat.state ? ` ${seat.state}` : ""}${seat.playedBy ? " role" : ""}`;
+        const style = seat.color ? ({ "--seat-color": SEAT_ACCENT[seat.color] } as CSSProperties) : undefined;
+        const open = seat.color !== undefined && seat.color === openColor;
+        const controllable = seat.color !== undefined && seat.trackers !== undefined;
+        return (
+          <div
+            key={seat.slot}
+            className={`lab-seat-slot${controllable ? " controllable" : ""}${open ? " open" : ""}`}
+            style={style}
+            title={controllable && !open ? "Click for this PC's trackers" : undefined}
+            onClick={(event) => {
+              if (!controllable || (event.target as HTMLElement).closest(".lab-seat-pop")) {
+                return;
+              }
+              setRing(null);
+              setOpenColor(open ? null : seat.color ?? null);
+            }}
+          >
+            {seat.characterKey ? (
+              <Headshot characterKey={seat.characterKey} className={className}>
+                <SeatContent seat={seat} />
+              </Headshot>
+            ) : (
+              <div className={className}>
+                <SeatContent seat={seat} />
+              </div>
+            )}
+            {open && openSeat && (
+              <TrackerPopup
+                seat={openSeat}
+                onRing={(event, target) => setRing({ ...canvasPoint(event), target })}
+                onHunger={(delta) => setSheet(applyLocal(sheet, { op: "hunger", color: openSeat.color, delta }))}
+              />
+            )}
+          </div>
+        );
+      })}
+      {ring && openSeat && canvas && createPortal(
+        <div className="lab-trait-ring-host">
+          <TraitRing
+            x={ring.x}
+            y={ring.y}
+            actions={actionsForRing(openSeat, ring.target)}
+            onPick={(action, button) => {
+              setSheet(applyLocal(sheet, button === "right" ? (action.right ?? action.left) : action.left));
+              if (action.closeOnPick === true) {
+                setRing(null);
+              }
+            }}
+            onClose={() => setRing(null)}
+          />
+        </div>,
+        canvas
+      )}
+    </div>
+  );
+};
 
 /* ---------- stage board ---------- */
 
