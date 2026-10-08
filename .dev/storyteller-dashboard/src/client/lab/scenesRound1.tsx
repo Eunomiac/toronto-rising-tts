@@ -4,10 +4,10 @@ import {
   FLASHBACK_TIME,
   HuntRoller,
   LocationPanel,
-  MasonryRoster,
   PhaseStrip,
   PRESENT_DAY,
   QueuePanel,
+  RosterDock,
   SCENE_LOCATION,
   SoundMixer,
   WeatherPanel,
@@ -93,9 +93,10 @@ const StageInTheMiddle = ({ previewOpen, clockDiffers, weatherOverride }: Sketch
 };
 
 /**
- * Glance strip: Where (names + resonances), the hunt roll, and a masonry roster on the left; When, Weather, and
- * Sound across the top; the phase bar right beneath them; then the four aspects and the stage. PC trackers pop
- * up over their seats. Scene time and location live here so every panel reads the same values.
+ * Glance strip: Where (names + resonances), the hunt roll, and scene notes (with the roster folded to a rail
+ * beside them) on the left; When, Weather, and Sound across the top; the phase bar right beneath them; then the
+ * four aspects and the stage. PC trackers pop up over their seats. Scene time and location live here so every
+ * panel reads the same values.
  */
 const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen, ttsDisconnected }: SketchState): ReactElement => {
   const [preparing, setPreparing] = useState(false);
@@ -144,8 +145,8 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen, 
       <Box x={8} y={bodyY} w={leftW} h={huntH} className="lab-hunt-box lab-borderless">
         <HuntRoller />
       </Box>
-      <Box x={8} y={rosterY} w={leftW} h={1042 - 8 - rosterY} className="lab-borderless">
-        <MasonryRoster />
+      <Box x={8} y={rosterY} w={leftW} h={1042 - 8 - rosterY} className="lab-borderless lab-dock-box">
+        <RosterDock scene={SCENE_NAME} />
       </Box>
 
       <Box x={stripX} y={8} w={whenW} h={stripH} className="lab-backdrop-box">
@@ -188,6 +189,8 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen, 
     </>
   );
 };
+
+const SCENE_NAME = "Elysium — Casa Loma: Great Hall";
 
 const LIBRARY = [
   "Elysium — The Annex",

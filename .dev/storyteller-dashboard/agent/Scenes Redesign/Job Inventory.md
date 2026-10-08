@@ -470,6 +470,14 @@ Lab toggles (tab bar): **Preview** (blue slide-out for a library scene that isn'
 - **When:** the corner fades were working but covered too little of the skyline to see; they are now larger (about 150x64) and darker, so the windows around each time go dark.
 - **Sound:** the Ambient track is a button showing the playing loop; it opens a four-column grid of every ambience loop under it, with the playing loop lit and the site's own loop outlined in dashed gold. Picking one plays it and closes the grid.
 
+**Pin pass 9 (6 notes, implemented in B and cleared, 2026-10-08).**
+- **Stage:** the seat row moves back to the bottom edge, on the players' side, so the Far zones are furthest from them; the stage packs move up to make room, Table B2 sits top centre, and "?" top right. Tracker pop-ups open upward and sit above the stage tokens; none of their clicks (left, right, or double), nor the tracker ring's, reach the stage beneath.
+- **Roster leaders:** each group's leader comes first in its stack and in the open group. "+" on a group cell now opens a small editor with the colour and a Leader drop-down (anyone in the group, or no leader); the chronicle sheet's boss is the default. Stage tokens use the same leader for their thicker ring.
+- **Unsorted** only shows while it holds groups, or while a group is being dragged (so a group can still be dropped back there).
+- **Real time:** while it runs, the clock button shows its speed ("1×", "2×", "5×") instead of the clock icon, and scene time actually advances at that speed. Right-click the button for a 1x / 2x / 5x ring.
+- **Left column:** the NPC roster folds to a narrow rail (with a tick per category colour) whenever it isn't in use, and a **Scene notes** panel fills the column. Hovering or clicking the rail opens the roster over the notes; it folds back a moment after the pointer leaves (not while typing in it or with one of its pop-ups open), or on a click elsewhere.
+- **Scene notes:** add a note with Enter (the dot beside the field picks its category); double-click a note to edit; click a note's dot to recategorise; × deletes. Category chips filter the list, "+" adds a category, and × on a chip removes it (its notes keep no category). Sort by My order (drag to reorder), Newest first, or By category (drag a note onto a heading to file it there). The Lab keeps notes in this browser per scene, with categories shared by every scene; the real build stores a scene's notes with that scene in the library.
+
 Feedback wanted: which layout's overall shape feels right, which modules are too big or too small, and anything that should move between them. Pins can say "take X from B into A".
 
 ## Next rounds

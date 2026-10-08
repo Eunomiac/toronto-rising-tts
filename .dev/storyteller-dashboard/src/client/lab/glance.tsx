@@ -12,7 +12,8 @@ import {
 } from "./chronicleSheets";
 import { SEAT_ACCENT } from "../pcSheet/layout";
 import { Icon, type IconName } from "./icons";
-import { GROUP_BOSSES, groupColor, setRosterLayout, useRosterLayout, useSceneCatalogs, type RosterCategory } from "./labRoster";
+import { groupColor, groupLeader, setRosterLayout, useRosterLayout, useSceneCatalogs, type RosterCategory } from "./labRoster";
+import { SceneNotes } from "./labNotes";
 import { Btn, Overlay, canvasPoint } from "./sketch";
 
 /**
@@ -295,20 +296,43 @@ const GROUP_DRAG_TYPE = "application/x-tr-npc-group";
 const NEW_CATEGORY_COLOR = "#9c7bd6";
 const UNSORTED_GROUP_COLOR = "#7a7a86";
 
-/** Colour picker on a group cell: "+" until the group has its own colour, which starts from the category's. */
-const GroupColorPicker = ({ color, own, onPick, onReset }: {
+const GROUP_EDITOR_WIDTH = 270;
+
+/**
+ * A group's colour and leader. The colour starts from the category's until the group is given its own (↺ goes
+ * back); the leader defaults to the chronicle sheet's boss and can be anyone in the group, or nobody.
+ */
+const GroupEditor = ({ group, at, color, own, leader, onColor, onLeader, onClose }: {
+  group: NpcGroup;
+  at: Point;
   color: string;
   own: boolean;
-  onPick: (next: string) => void;
-  onReset: () => void;
+  leader: string | undefined;
+  onColor: (next: string | null) => void;
+  onLeader: (characterKey: string) => void;
+  onClose: () => void;
 }): ReactElement => (
-  <span className="lab-group-colors" onClick={(event) => event.stopPropagation()}>
-    <label className={`lab-group-color${own ? " own" : ""}`} title={own ? "Group colour" : "Give this group its own colour"}>
-      {own ? "" : "+"}
-      <input type="color" value={color} onChange={(event) => onPick(event.target.value)} />
-    </label>
-    {own && <button type="button" className="lab-group-color-reset" title="Back to the category colour" onClick={onReset}>↺</button>}
-  </span>
+  <Overlay onClose={onClose}>
+    <div className="lab-modal lab-group-edit" style={{ left: Math.min(at.x, 1920 - GROUP_EDITOR_WIDTH - 8), top: at.y }}>
+      <span className="lab-modal-title">{group.label}</span>
+      <label className="lab-group-edit-row">
+        <span>Colour</span>
+        <input type="color" className="lab-cat-color" value={color} onChange={(event) => onColor(event.target.value)} />
+        {own && (
+          <button type="button" className="lab-btn" title="Back to the category colour" onClick={() => onColor(null)}>
+            ↺ Category colour
+          </button>
+        )}
+      </label>
+      <label className="lab-group-edit-row">
+        <span>Leader</span>
+        <select className="lab-select" value={leader ?? ""} onChange={(event) => onLeader(event.target.value)}>
+          <option value="">No leader</option>
+          {group.members.map((npc) => <option key={npc.characterKey} value={npc.characterKey}>{npc.fullName}</option>)}
+        </select>
+      </label>
+    </div>
+  </Overlay>
 );
 
 /** Category header: twirl to show or hide its groups; drop a group on it to file the group there. */
@@ -354,14 +378,17 @@ const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove }: {
  * Every NPC group as a closed stack of all its tokens, stretched to fill its row; names wrap to three lines at
  * most (the group widens instead). Click one to open it in place and pick a token. Groups start Unsorted; "+"
  * creates a coloured category, dragging a group onto a category header files it there, and each category's
- * twirl shows or hides its groups. A group takes its category's colour unless given its own ("+" on the cell);
- * its tokens are ringed in that colour, and a boss's ring is thicker and brighter.
+ * twirl shows or hides its groups; Unsorted only shows while it has groups (or a group is being dragged). "+" on
+ * a group cell edits its colour and leader. A group takes its category's colour unless given its own; its
+ * tokens are ringed in that colour, and the leader comes first with a thicker, brighter ring.
  */
 export const MasonryRoster = (): ReactElement => {
   const { catalogs, error } = useSceneCatalogs();
   const [open, setOpen] = useState<string | null>("beesHive");
   const layout = useRosterLayout();
   const [draft, setDraft] = useState<{ name: string; color: string } | null>(null);
+  const [editing, setEditing] = useState<{ key: string; at: Point } | null>(null);
+  const [dragging, setDragging] = useState(false);
   const fileGroup = (categoryId: string | null) => (groupKey: string): void => {
     const assigned = { ...layout.assigned };
     if (categoryId) {
@@ -380,6 +407,8 @@ export const MasonryRoster = (): ReactElement => {
     }
     setRosterLayout({ ...layout, groupColors });
   };
+  const setGroupLeader = (groupKey: string, characterKey: string): void =>
+    setRosterLayout({ ...layout, leaders: { ...layout.leaders, [groupKey]: characterKey } });
   const updateCategory = (id: string, change: Partial<RosterCategory>): void =>
     setRosterLayout({ ...layout, categories: layout.categories.map((category) => (category.id === id ? { ...category, ...change } : category)) });
   const removeCategory = (id: string): void =>
@@ -412,8 +441,12 @@ export const MasonryRoster = (): ReactElement => {
     });
   }, [catalogs]);
 
+  const leaderFirst = (group: NpcGroup): readonly CatalogCharacter[] => {
+    const leader = groupLeader(layout, group.key);
+    return [...group.members].sort((a, b) => Number(b.characterKey === leader) - Number(a.characterKey === leader));
+  };
   const tokenClass = (group: NpcGroup, npc: CatalogCharacter): string =>
-    `lab-group-head${GROUP_BOSSES[group.key] === npc.characterKey ? " boss" : ""}`;
+    `lab-group-head${groupLeader(layout, group.key) === npc.characterKey ? " boss" : ""}`;
   const masonry = (list: readonly NpcGroup[]): ReactElement => (
     <div className="lab-masonry">
       {list.map((group) => {
@@ -424,7 +457,7 @@ export const MasonryRoster = (): ReactElement => {
           <div key={group.key} className={`lab-group open${tinted}`} style={style}>
             <button type="button" className="lab-group-label" onClick={() => setOpen(null)}>{group.label} ▴</button>
             <span className="lab-group-tokens">
-              {group.members.map((npc) => (
+              {leaderFirst(group).map((npc) => (
                 <span key={npc.characterKey} className="lab-group-token" title={npc.fullName}>
                   <Headshot className={tokenClass(group, npc)} characterKey={npc.characterKey} />
                   <span className="lab-group-name">{npc.fullName}</span>
@@ -440,18 +473,29 @@ export const MasonryRoster = (): ReactElement => {
             className={`lab-group${tinted}`}
             style={style}
             draggable
-            onDragStart={(event) => event.dataTransfer.setData(GROUP_DRAG_TYPE, group.key)}
+            onDragStart={(event) => {
+              event.dataTransfer.setData(GROUP_DRAG_TYPE, group.key);
+              setDragging(true);
+            }}
+            onDragEnd={() => setDragging(false)}
             onClick={() => setOpen(group.key)}
             title={group.members.map((npc) => npc.fullName).join(", ")}
           >
-            <GroupColorPicker
-              color={color ?? NEW_CATEGORY_COLOR}
-              own={group.key in layout.groupColors}
-              onPick={(next) => setGroupColor(group.key, next)}
-              onReset={() => setGroupColor(group.key, null)}
-            />
+            <span className="lab-group-colors">
+              <button
+                type="button"
+                className={`lab-group-color${group.key in layout.groupColors ? " own" : ""}`}
+                title="Group colour and leader"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setEditing({ key: group.key, at: canvasPoint(event) });
+                }}
+              >
+                {group.key in layout.groupColors ? "" : "+"}
+              </button>
+            </span>
             <span className="lab-group-cluster">
-              {group.members.map((npc) => (
+              {leaderFirst(group).map((npc) => (
                 <Headshot key={npc.characterKey} className={tokenClass(group, npc)} characterKey={npc.characterKey} />
               ))}
             </span>
@@ -463,6 +507,7 @@ export const MasonryRoster = (): ReactElement => {
   );
   const knownCategories = new Set(layout.categories.map((category) => category.id));
   const unsorted = groups.filter((group) => !knownCategories.has(layout.assigned[group.key] ?? ""));
+  const editingGroup = editing ? groups.find((group) => group.key === editing.key) : undefined;
 
   return (
     <div className="lab-mroster">
@@ -510,10 +555,90 @@ export const MasonryRoster = (): ReactElement => {
             </section>
           );
         })}
-        <section className="lab-cat unsorted">
-          {layout.categories.length > 0 && <CategoryHeader category={null} count={unsorted.length} onDrop={fileGroup(null)} />}
-          {masonry(unsorted)}
-        </section>
+        {(unsorted.length > 0 || dragging) && (
+          <section className="lab-cat unsorted">
+            {layout.categories.length > 0 && <CategoryHeader category={null} count={unsorted.length} onDrop={fileGroup(null)} />}
+            {masonry(unsorted)}
+          </section>
+        )}
+      </div>
+      {editing && editingGroup && (
+        <GroupEditor
+          group={editingGroup}
+          at={editing.at}
+          color={groupColor(layout, editingGroup.key) ?? NEW_CATEGORY_COLOR}
+          own={editingGroup.key in layout.groupColors}
+          leader={groupLeader(layout, editingGroup.key)}
+          onColor={(next) => setGroupColor(editingGroup.key, next)}
+          onLeader={(characterKey) => setGroupLeader(editingGroup.key, characterKey)}
+          onClose={() => setEditing(null)}
+        />
+      )}
+    </div>
+  );
+};
+
+const RAIL_OPEN_MS = 150;
+const RAIL_CLOSE_MS = 500;
+
+/**
+ * The left column below the hunt roll: scene notes, with the NPC roster folded to a rail along their left
+ * edge. Hovering or clicking the rail opens the roster over the notes. It folds back once the pointer has been
+ * off it for a moment (not while you are typing in it or one of its pop-ups is open), or on a click elsewhere.
+ */
+export const RosterDock = ({ scene }: { scene: string }): ReactElement => {
+  const layout = useRosterLayout();
+  const [open, setOpen] = useState(false);
+  const timer = useRef(0);
+  const clickedInside = useRef(false);
+  const later = (next: boolean, ms: number): void => {
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => {
+      if (!next && document.activeElement?.matches(".lab-dock-roster :is(input, select), .lab-group-edit :is(input, select)")) {
+        return;
+      }
+      setOpen(next);
+    }, ms);
+  };
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+  useEffect(() => {
+    if (!open) {
+      return undefined;
+    }
+    const onPointerDown = (): void => {
+      if (clickedInside.current) {
+        clickedInside.current = false;
+        return;
+      }
+      window.clearTimeout(timer.current);
+      setOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [open]);
+  return (
+    <div className="lab-dock">
+      <div className="lab-dock-notes">
+        <SceneNotes scene={scene} />
+      </div>
+      <div
+        className={`lab-dock-roster${open ? " open" : ""}`}
+        onPointerDownCapture={() => {
+          clickedInside.current = true;
+        }}
+        onMouseEnter={() => later(true, open ? 0 : RAIL_OPEN_MS)}
+        onMouseLeave={() => later(false, RAIL_CLOSE_MS)}
+      >
+        {open ? (
+          <MasonryRoster />
+        ) : (
+          <button type="button" className="lab-dock-rail" title="NPC roster" onClick={() => setOpen(true)}>
+            <span className="lab-dock-rail-label">NPC Roster</span>
+            {layout.categories.map((category) => (
+              <span key={category.id} className="lab-dock-rail-cat" style={{ "--cat": category.color } as CSSProperties} title={category.name} />
+            ))}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -1115,9 +1240,18 @@ const easeInOut = (f: number): number => (f < 0.5 ? 2 * f * f : 1 - (-2 * f + 2)
 
 const toMinute = (ms: number): Date => new Date(Math.round(ms / 60_000) * 60_000);
 
+type RealTimeRate = 1 | 2 | 5;
+
+const REAL_TIME_RATES: readonly RingOption<RealTimeRate>[] = [
+  { value: 1, label: "1x" },
+  { value: 2, label: "2x" },
+  { value: 5, label: "5x" }
+];
+
 /**
  * Scene date and time over the sky, with tonight's dusk (left) and dawn (right) in the bottom corners and
- * the real-time toggle (clock icon) top right. Present-day time appears (green) only when it differs from
+ * the real-time toggle top right (a clock while off, its speed while running; right-click it for 1x / 2x / 5x).
+ * Present-day time appears (green) only when it differs from
  * scene time; scene time can never pass it (the caller moves present day forward). A scene before the
  * present day is a flashback (yellow glow). Drag the moon to pick a time tonight, then press play over the
  * clock to run the time animation. Click anywhere else for the calendar pop-up.
@@ -1133,6 +1267,8 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, w, h
 }): ReactElement => {
   const [open, setOpen] = useState(false);
   const [realTime, setRealTime] = useState(false);
+  const [rate, setRate] = useState<RealTimeRate>(1);
+  const [rateRing, setRateRing] = useState<Point | null>(null);
   const [target, setTarget] = useState<number | null>(null);
   const [playing, setPlaying] = useState<{ from: number; to: number } | null>(null);
   const changeRef = useRef(onChange);
@@ -1155,6 +1291,15 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, w, h
     frame = requestAnimationFrame(step);
     return () => cancelAnimationFrame(frame);
   }, [playing]);
+  const atRef = useRef(at);
+  atRef.current = at;
+  useEffect(() => {
+    if (!realTime) {
+      return undefined;
+    }
+    const id = window.setInterval(() => changeRef.current(new Date(atRef.current.getTime() + 1000 * rate)), 1000);
+    return () => window.clearInterval(id);
+  }, [realTime, rate]);
   const minutes = at.getHours() * 60 + at.getMinutes();
   const differs = at.getTime() !== present.getTime();
   const flashback = at.getTime() < present.getTime();
@@ -1181,14 +1326,22 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, w, h
         <button
           type="button"
           className={`lab-when-realtime${realTime ? " on" : ""}`}
-          title={realTime ? "Real time is on: scene time advances with the real clock" : "Real time is off"}
+          title={`${realTime ? `Real time is on: scene time runs at ${rate}× the real clock` : "Real time is off"}. Right-click to set the speed.`}
           onClick={(event) => {
             event.stopPropagation();
             setRealTime(!realTime);
           }}
+          onContextMenu={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setRateRing(canvasPoint(event));
+          }}
         >
-          <Icon name="clock" />
+          {realTime ? <span className="lab-when-rate">{rate}×</span> : <Icon name="clock" />}
         </button>
+        {rateRing && (
+          <RingMenu at={rateRing} options={REAL_TIME_RATES} current={rate} onPick={setRate} onClose={() => setRateRing(null)} />
+        )}
         {targetTime && (
           <span className="lab-when-play">
             <button type="button" className="lab-when-play-go" onClick={play} title="Run the time animation in TTS">

@@ -27,11 +27,15 @@ export const useSceneCatalogs = (): { catalogs: SceneCatalogs | null; error: str
 
 export type RosterCategory = { readonly id: string; readonly name: string; readonly color: string; readonly open: boolean };
 
-/** Roster categories, which category each group is filed in, and colours picked for individual groups. */
+/**
+ * Roster categories, which category each group is filed in, colours picked for individual groups, and leaders
+ * picked for individual groups ("" means the group has no leader).
+ */
 export type RosterLayout = {
   readonly categories: readonly RosterCategory[];
   readonly assigned: Readonly<Record<string, string>>;
   readonly groupColors: Readonly<Record<string, string>>;
+  readonly leaders: Readonly<Record<string, string>>;
 };
 
 const ROSTER_LAYOUT_KEY = "tr-lab-roster-categories";
@@ -39,7 +43,12 @@ const ROSTER_LAYOUT_KEY = "tr-lab-roster-categories";
 const readRosterLayout = (): RosterLayout => {
   const saved = window.localStorage.getItem(ROSTER_LAYOUT_KEY);
   const parsed = saved ? (JSON.parse(saved) as Partial<RosterLayout>) : {};
-  return { categories: parsed.categories ?? [], assigned: parsed.assigned ?? {}, groupColors: parsed.groupColors ?? {} };
+  return {
+    categories: parsed.categories ?? [],
+    assigned: parsed.assigned ?? {},
+    groupColors: parsed.groupColors ?? {},
+    leaders: parsed.leaders ?? {}
+  };
 };
 
 let rosterLayout: RosterLayout | null = null;
@@ -69,10 +78,10 @@ export const groupColor = (layout: RosterLayout, groupKey: string): string | und
   layout.groupColors[groupKey] ?? layout.categories.find((category) => category.id === layout.assigned[groupKey])?.color;
 
 /**
- * Group leaders, keyed by picker group: the NPCs marked "Boss?" in the chronicle sheet's NPCs tab that have a
- * catalogued token. The real build should carry this flag in the scene catalog export instead.
+ * Default group leaders, keyed by picker group: the NPCs marked "Boss?" in the chronicle sheet's NPCs tab that
+ * have a catalogued token. The real build should carry this flag in the scene catalog export instead.
  */
-export const GROUP_BOSSES: Readonly<Record<string, string>> = {
+const GROUP_BOSSES: Readonly<Record<string, string>> = {
   beesHive: "bee",
   colorBlitz: "rubyRouge",
   fiveKeys: "myleneHamelin",
@@ -87,4 +96,10 @@ export const GROUP_BOSSES: Readonly<Record<string, string>> = {
   scarlettAndTheBoys: "oliverGagnon",
   theLine: "sageSam",
   wychwoodHecata: "bacchusGiovanni"
+};
+
+/** The group's leader: the one picked in the roster, else the chronicle sheet's boss; undefined for none. */
+export const groupLeader = (layout: RosterLayout, groupKey: string): string | undefined => {
+  const picked = layout.leaders[groupKey];
+  return picked === undefined ? GROUP_BOSSES[groupKey] : picked || undefined;
 };

@@ -9,7 +9,7 @@ import { actionsForRing } from "../pcSheet/ringActions";
 import { TraitRing } from "../pcSheet/TraitRing";
 import type { RingTarget, SeatColor, SeatSnapshot, SheetSnapshot } from "../pcSheet/types";
 import { Icon, type IconName } from "./icons";
-import { GROUP_BOSSES, groupColor, useRosterLayout, useSceneCatalogs } from "./labRoster";
+import { groupColor, groupLeader, useRosterLayout, useSceneCatalogs } from "./labRoster";
 
 /**
  * Grey-box building blocks for Lab sketches. Every sketch is laid out in absolute pixels on the
@@ -218,6 +218,16 @@ const HUNGER_DOT = { "--lab-dot": `url("${assetUrl("dots/dot_red.webp")}")` } as
 
 type TrackRing = { readonly x: number; readonly y: number; readonly target: RingTarget };
 
+/** Tracker controls float over the stage; none of their clicks (left, right, or double) may reach it. */
+const swallowClicks = {
+  onClick: (event: MouseEvent) => event.stopPropagation(),
+  onDoubleClick: (event: MouseEvent) => event.stopPropagation(),
+  onContextMenu: (event: MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+};
+
 /**
  * A PC's trackers as controls, as on the PCs tab: click Health, Willpower, or Humanity for that tracker's ring
  * (left-click a button to add, right-click to remove); left-click Hunger to raise it, right-click to lower it.
@@ -227,7 +237,7 @@ const TrackerPopup = ({ seat, onRing, onHunger }: {
   onRing: (event: MouseEvent<HTMLElement>, target: RingTarget) => void;
   onHunger: (delta: number) => void;
 }): ReactElement => (
-  <div className="lab-seat-pop" role="dialog" aria-label={`${seat.charName} trackers`}>
+  <div className="lab-seat-pop" role="dialog" aria-label={`${seat.charName} trackers`} {...swallowClicks}>
     <span className="lab-seat-pop-name">{seat.charName}</span>
     <button type="button" className="lab-track" onClick={(event) => onRing(event, { kind: "damage", which: "health" })}>
       <Icon name="health" className="lab-track-icon health" title="Health" />
@@ -336,7 +346,7 @@ export const Seats = (): ReactElement => {
         );
       })}
       {ring && openSeat && canvas && createPortal(
-        <div className="lab-trait-ring-host">
+        <div className="lab-trait-ring-host" {...swallowClicks}>
           <TraitRing
             x={ring.x}
             y={ring.y}
@@ -431,16 +441,16 @@ type WidePack = { readonly label: string; readonly u: number; readonly v: number
 
 /** Standard-placement packs at their in-game positions (u, v as fractions of the wide board). */
 const WIDE_PACKS: readonly WidePack[] = [
-  { label: "Far Center-Left", u: 0.36, v: 0.33, far: true },
-  { label: "Far Center-Right", u: 0.64, v: 0.33, far: true },
-  { label: "Far Left", u: 0.12, v: 0.6, far: true },
-  { label: "Far Right", u: 0.88, v: 0.6, far: true },
-  { label: "Mid Left", u: 0.3, v: 0.62, far: false },
-  { label: "Mid Center", u: 0.5, v: 0.55, far: false },
-  { label: "Mid Right", u: 0.7, v: 0.62, far: false },
-  { label: "Center Left", u: 0.29, v: 0.84, far: false },
-  { label: "CENTER", u: 0.5, v: 0.77, far: false },
-  { label: "Center Right", u: 0.71, v: 0.84, far: false }
+  { label: "Far Center-Left", u: 0.36, v: 0.17, far: true },
+  { label: "Far Center-Right", u: 0.64, v: 0.17, far: true },
+  { label: "Far Left", u: 0.12, v: 0.44, far: true },
+  { label: "Far Right", u: 0.88, v: 0.44, far: true },
+  { label: "Mid Left", u: 0.3, v: 0.46, far: false },
+  { label: "Mid Center", u: 0.5, v: 0.39, far: false },
+  { label: "Mid Right", u: 0.7, v: 0.46, far: false },
+  { label: "Center Left", u: 0.29, v: 0.68, far: false },
+  { label: "CENTER", u: 0.5, v: 0.61, far: false },
+  { label: "Center Right", u: 0.71, v: 0.68, far: false }
 ];
 
 const WIDE_SEAT_BAND = 0.18;
@@ -481,8 +491,8 @@ const STAGE_TOKENS: readonly StageToken[] = [
   { characterKey: "carol", name: "Carol", lit: false, at: { pack: "CENTER", slot: 3 } },
   { characterKey: "rosie", name: "Rosie", lit: true, at: { pack: "Center Left", slot: 2 } },
   { characterKey: "terry", name: "Terry", lit: false, at: { pack: "Far Right", slot: 4 } },
-  { characterKey: "scarlett", name: "Scarlett", lit: true, at: { u: 0.2, v: 0.36 } },
-  { characterKey: "drIrenaVoss", name: "Dr. Voss", lit: false, at: { u: 0.86, v: 0.86 } }
+  { characterKey: "scarlett", name: "Scarlett", lit: true, at: { u: 0.2, v: 0.2 } },
+  { characterKey: "drIrenaVoss", name: "Dr. Voss", lit: false, at: { u: 0.86, v: 0.7 } }
 ];
 
 const tokenPoint = (token: StageToken, w: number, h: number): { x: number; y: number } => {
@@ -513,8 +523,8 @@ const Token = ({ token, x, y, color, boss }: { token: StageToken; x: number; y: 
 );
 
 /**
- * The control board at its real in-game shape (scaled 2:1), with the seat row floating along the top margin
- * above the Far zones. Token positions map straight to stage positions in the game world, so tokens can sit
+ * The control board at its real in-game shape (scaled 2:1), with the seat row floating along the bottom edge,
+ * on the players' side of the stage (the Far zones are furthest from them). Token positions map straight to stage positions in the game world, so tokens can sit
  * anywhere; pack slots are mild snap points and group drop targets.
  */
 export const WideBoard = ({ w, h }: { w: number; h: number }): ReactElement => {
@@ -563,14 +573,14 @@ export const WideBoard = ({ w, h }: { w: number; h: number }): ReactElement => {
           x={point.x}
           y={point.y}
           color={group ? groupColor(roster, group) : undefined}
-          boss={group !== undefined && GROUP_BOSSES[group] === token.characterKey}
+          boss={group !== undefined && groupLeader(roster, group) === token.characterKey}
         />
       );
     })}
-    <div className="lab-board-seats floating" style={{ top: 8, height: h * WIDE_SEAT_BAND }}>
+    <div className="lab-board-seats floating bottom" style={{ top: h - h * WIDE_SEAT_BAND - 8, height: h * WIDE_SEAT_BAND }}>
       <Seats />
     </div>
-    <span className="lab-board-table">
+    <span className="lab-board-table top">
       <Btn>Table B2 ▾</Btn>
     </span>
     <span className="lab-help" tabIndex={0}>

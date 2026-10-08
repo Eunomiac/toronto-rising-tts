@@ -209,6 +209,12 @@ $lab-live: #4caf6a;
   }
 }
 
+// Top right on the wide board, clear of the seat row along its bottom.
+.lab-board.wide .lab-help {
+  top: 10px;
+  bottom: auto;
+}
+
 .lab-help {
   position: absolute;
   right: 10px;
@@ -615,8 +621,7 @@ $lab-live: #4caf6a;
     opacity: 1;
   }
 
-  &-color,
-  &-color-reset {
+  &-color {
     position: relative;
     display: grid;
     place-items: center;
@@ -634,25 +639,11 @@ $lab-live: #4caf6a;
     cursor: pointer;
   }
 
-  &-color {
-    &.own {
-      border-color: #fff;
-      background: var(--group);
-    }
-
-    input {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      opacity: 0;
-      cursor: pointer;
-    }
+  &-color.own {
+    border-color: #fff;
+    background: var(--group);
   }
 
-  &-color-reset {
-    font-size: 11px;
-  }
 
   &-cluster {
     display: flex;
@@ -863,6 +854,14 @@ $lab-live: #4caf6a;
         stroke-width: 12px;
       }
     }
+  }
+
+  // The real-time speed, in place of the clock icon while real time runs.
+  &-rate {
+    font-size: 15px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.02em;
   }
 
   &-play {
@@ -1822,4 +1821,335 @@ $lab-queued: #e8c547;
   &-actions {
     justify-content: center;
   }
+}
+
+/* ---------- roster group editor (colour + leader) ---------- */
+
+// Anchored at the "+" that opened it; width matches GROUP_EDITOR_WIDTH in glance.tsx.
+.lab-group-edit {
+  width: 270px;
+  transform: none;
+
+  &-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+
+    > span {
+      flex: 0 0 52px;
+    }
+
+    .lab-select {
+      flex: 1 1 auto;
+      padding: 4px 6px;
+      font-size: 13px;
+    }
+
+    .lab-btn {
+      cursor: pointer;
+      color: inherit;
+    }
+  }
+}
+
+/* ---------- left dock: scene notes with the roster folded to a rail ---------- */
+
+.lab-box.lab-dock-box {
+  overflow: visible;
+}
+
+.lab-dock {
+  position: relative;
+  height: 100%;
+
+  &-notes {
+    position: absolute;
+    inset: 0 0 0 42px;
+  }
+
+  &-roster {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 15;
+    width: 34px;
+    transition: width 0.16s ease;
+
+    &.open {
+      width: 100%;
+      padding: 6px;
+      border: 1px solid #3a3a44;
+      border-radius: 8px;
+      background: #121216;
+      box-shadow: 8px 0 24px rgb(0 0 0 / 60%);
+    }
+  }
+
+  &-rail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    height: 100%;
+    padding: 10px 0;
+    border: 1px solid #34343e;
+    border-radius: 6px;
+    font-family: inherit;
+    color: #c8c8d2;
+    background: #18181e;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      border-color: #6a6a76;
+      background: #202028;
+    }
+
+    &-label {
+      margin-bottom: 6px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+    }
+
+    &-cat {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      background: var(--cat);
+    }
+  }
+}
+
+/* ---------- scene notes ---------- */
+
+.lab-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+
+  &-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    .lab-select {
+      width: 110px;
+      padding: 3px 4px;
+    }
+  }
+
+  &-title {
+    flex: 1 1 auto;
+    font-family: "Franklin Gothic Demi Cond", "Arial Narrow", sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #e9e2d4;
+  }
+
+  &-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  &-chip {
+    --note: #6a6a74;
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border: 1px solid color-mix(in srgb, var(--note) 60%, transparent);
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    color: #d8d8de;
+    background: color-mix(in srgb, var(--note) 14%, #18181e);
+    cursor: pointer;
+
+    button {
+      padding: 0;
+      border: none;
+      font: inherit;
+      color: inherit;
+      background: none;
+      cursor: pointer;
+    }
+
+    &.on {
+      border-color: var(--note);
+      color: #fff;
+      background: color-mix(in srgb, var(--note) 40%, #18181e);
+    }
+
+    &.add {
+      padding: 2px 9px;
+      font-weight: 800;
+    }
+
+    &-remove {
+      display: none;
+      margin-left: 5px;
+      color: #8a8a96 !important;
+
+      &:hover {
+        color: #ff8a8a !important;
+      }
+    }
+
+    &:hover &-remove {
+      display: inline;
+    }
+  }
+
+  &-add {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    .lab-select {
+      flex: 1 1 auto;
+      padding: 6px 8px;
+      border-left: 3px solid var(--note);
+      font-size: 13px;
+    }
+  }
+
+  &-body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  &-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    &-head {
+      padding: 3px 6px;
+      border: 1px dashed transparent;
+      border-bottom: 1px solid var(--note);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--note);
+
+      &.drop {
+        border: 1px dashed #fff;
+      }
+    }
+  }
+
+  &-empty {
+    margin: 0;
+    font-size: 12px;
+    color: #8a8a96;
+  }
+}
+
+.lab-note {
+  --note: #6a6a74;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 6px 6px 8px;
+  border: 1px solid #2c2c34;
+  border-left: 3px solid var(--note);
+  border-radius: 5px;
+  font-size: 13px;
+  line-height: 1.35;
+  background: #1a1a20;
+
+  &[draggable="true"] {
+    cursor: grab;
+  }
+
+  &.drop {
+    box-shadow: 0 -2px 0 #fff;
+  }
+
+  &-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  &-edit {
+    flex: 1 1 auto;
+    min-height: 54px;
+    padding: 4px;
+    border: 1px solid #55555f;
+    border-radius: 4px;
+    font: inherit;
+    color: inherit;
+    background: #121216;
+    resize: vertical;
+  }
+
+  &-remove {
+    padding: 0 2px;
+    border: none;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1;
+    color: #8a8a96;
+    background: none;
+    cursor: pointer;
+    opacity: 0;
+
+    &:hover {
+      color: #ff8a8a;
+    }
+  }
+
+  &:hover &-remove {
+    opacity: 1;
+  }
+
+  // A dot in the category colour with a transparent picker over it.
+  &-dot {
+    position: relative;
+    flex: 0 0 auto;
+    width: 12px;
+    height: 12px;
+    margin-top: 3px;
+    border-radius: 50%;
+    background: var(--note);
+
+    select {
+      position: absolute;
+      inset: -3px;
+      width: calc(100% + 6px);
+      height: calc(100% + 6px);
+      opacity: 0;
+      cursor: pointer;
+    }
+  }
+}
+
+.lab-notes-add .lab-note-dot {
+  margin-top: 0;
 }

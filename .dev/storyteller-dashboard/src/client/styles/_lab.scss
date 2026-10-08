@@ -431,14 +431,27 @@ $lab-pin: #f5b13d;
     left: 50%;
     bottom: 8px;
     transform: translateX(-50%);
+
+    &.top {
+      top: 8px;
+      bottom: auto;
+    }
   }
 
+  // Above the stage tokens, so the seats and their tracker pop-ups are never covered by one.
   &-seats {
     position: absolute;
     left: 8px;
     right: 8px;
+    z-index: 10;
     display: flex;
     align-items: center;
+
+    // Along the bottom edge, tracker pop-ups open upward.
+    &.bottom .lab-seat-pop {
+      top: auto;
+      bottom: calc(100% + 6px);
+    }
 
     &.floating {
       padding: 4px;
