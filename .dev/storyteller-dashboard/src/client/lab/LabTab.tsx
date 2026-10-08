@@ -16,6 +16,8 @@ const STATE_LABELS: readonly { key: keyof SketchState; label: string }[] = [
   { key: "previewOpen", label: "Preview" },
   { key: "clockDiffers", label: "Flashback" },
   { key: "weatherOverride", label: "Weather override" },
+  { key: "heatWave", label: "Heat wave" },
+  { key: "coldSnap", label: "Cold snap" },
   { key: "popoverOpen", label: "Pop-up" },
   { key: "ttsDisconnected", label: "TTS offline" }
 ];
@@ -24,8 +26,22 @@ const DEFAULT_STATE: SketchState = {
   previewOpen: false,
   clockDiffers: false,
   weatherOverride: false,
+  heatWave: false,
+  coldSnap: false,
   popoverOpen: false,
   ttsDisconnected: false
+};
+
+/** Heat wave and cold snap are opposite extremes, so turning one on turns the other off. */
+const toggled = (state: SketchState, key: keyof SketchState): SketchState => {
+  const next = { ...state, [key]: !state[key] };
+  if (key === "heatWave" && next.heatWave) {
+    next.coldSnap = false;
+  }
+  if (key === "coldSnap" && next.coldSnap) {
+    next.heatWave = false;
+  }
+  return next;
 };
 
 const initialSketchId = (): string => {
@@ -83,7 +99,7 @@ export const LabTab = ({ active }: { active: boolean }): ReactElement => {
       <span className="lab-controls-sep" />
       {STATE_LABELS.map(({ key, label }) => (
         <label key={key} className="lab-controls-toggle">
-          <input type="checkbox" checked={state[key]} onChange={() => setState({ ...state, [key]: !state[key] })} />
+          <input type="checkbox" checked={state[key]} onChange={() => setState(toggled(state, key))} />
           {label}
         </label>
       ))}

@@ -219,6 +219,11 @@ $lab-live: #4caf6a;
 .lab-board.wide .lab-help {
   top: 10px;
   bottom: auto;
+
+  .lab-help-tip {
+    top: 30px;
+    bottom: auto;
+  }
 }
 
 .lab-help {
@@ -853,7 +858,7 @@ $lab-live: #4caf6a;
       border-color: #9df0a8;
       color: #000;
       background: $lab-live;
-      animation: lab-realtime-pulse 1.6s ease-in-out infinite;
+      animation: lab-realtime-pulse 1s ease-in-out infinite;
 
       .lab-icon {
         stroke: #000;
@@ -987,6 +992,72 @@ $lab-live: #4caf6a;
   padding: 8px 10px;
   background: linear-gradient(#1a2130, #0e1118);
   cursor: default;
+}
+
+/* Extreme temperatures (heat wave, cold snap) */
+
+.lab-wx-scene {
+  position: absolute;
+  inset: 0;
+
+  &.cold {
+    filter: saturate(0.45) brightness(1.15);
+  }
+}
+
+.lab-wx-extreme {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  // Amber glow rising off the ground, swelling slowly.
+  &.heat {
+    background:
+      linear-gradient(to top, rgb(255 110 20 / 45%), rgb(255 140 40 / 12%) 55%, transparent 80%),
+      radial-gradient(ellipse 60% 40% at 50% 100%, rgb(255 200 90 / 30%), transparent 70%);
+    animation: lab-wx-heat-swell 4s ease-in-out infinite alternate;
+  }
+
+  // Blue chill over the scene with frost thickening at the edges.
+  &.cold {
+    background: rgb(150 200 255 / 14%);
+    box-shadow: inset 0 0 26px 6px rgb(210 235 255 / 55%);
+    animation: lab-wx-cold-breathe 6s ease-in-out infinite alternate;
+  }
+}
+
+.lab-wx-frost {
+  opacity: 0.9;
+}
+
+.lab-wx-panel.heat .lab-wx-temp {
+  color: #ffd2a0;
+  text-shadow: 0 0 6px #ff7a1a, 0 0 14px rgb(255 90 20 / 80%);
+}
+
+.lab-wx-panel.cold .lab-wx-temp {
+  color: #eaf6ff;
+  text-shadow: 0 0 6px #8fd0ff, 0 0 14px rgb(120 190 255 / 80%);
+}
+
+@keyframes lab-wx-heat-swell {
+  from {
+    opacity: 0.7;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes lab-wx-cold-breathe {
+  from {
+    opacity: 0.8;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .lab-wx-axes {
@@ -1444,35 +1515,43 @@ $lab-queued: #e8c547;
 // The result label rises above the strip, so this panel must not clip it.
 .lab-box.lab-hunt-box {
   z-index: 6;
-  padding: 6px;
+  padding: 2px 4px;
   overflow: visible;
 }
 
 .lab-hunt {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   height: 100%;
 
+  // Hover and spin the mouse wheel to change it.
   &-successes {
-    width: 44px;
-    height: 32px;
-    padding: 0 4px;
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 40px;
+    height: 34px;
     border: 1px solid #34343e;
-    border-radius: 4px;
-    font-family: inherit;
-    font-size: 15px;
+    font-size: 17px;
     font-weight: 800;
-    text-align: center;
-    color: inherit;
     background: #1e1e25;
+    cursor: ns-resize;
+    user-select: none;
+
+    &:hover,
+    &:focus-visible {
+      border-color: #8a8a96;
+      outline: none;
+      background: #26262f;
+    }
   }
 
   &-crit {
     display: grid;
     flex: 0 0 auto;
     place-items: center;
-    width: 30px;
+    width: 28px;
     height: 100%;
     padding: 0;
     border: none;
@@ -1501,13 +1580,20 @@ $lab-queued: #e8c547;
     }
   }
 
-  // Flavor names sit alternately above and below the bar, so the track is taller than the bar.
+  &-bars {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  // Flavor names sit alternately above and below the flavor bar, so the track is taller than the bar.
   &-track {
     position: relative;
     display: flex;
-    flex: 1 1 auto;
     align-items: center;
-    height: 100%;
+    height: 48px;
   }
 
   &-flavor {
@@ -1520,7 +1606,7 @@ $lab-queued: #e8c547;
     line-height: 1;
     letter-spacing: 0.03em;
     white-space: nowrap;
-    color: var(--flavor);
+    color: #e6a3a8;
     background: none;
     text-shadow: 0 1px 2px #000;
     cursor: pointer;
@@ -1544,45 +1630,52 @@ $lab-queued: #e8c547;
       text-underline-offset: 2px;
       text-shadow: 0 0 6px #f2c44e, 0 1px 2px #000;
     }
-
-    &.choleric { --flavor: #f0a060; }
-    &.melancholic { --flavor: #a4a4f4; }
-    &.phlegmatic { --flavor: #5fd0c8; }
-    &.sanguine { --flavor: #f26a78; }
-    &.ischemic { --flavor: #e07aa8; }
-    &.mercurial { --flavor: #c8d0da; }
-    &.primal { --flavor: #9cd866; }
   }
 
   &-bar {
     position: relative;
     display: flex;
     flex: 1 1 auto;
-    height: 22px;
+    height: 18px;
     padding: 0;
     border: 1px solid #000;
-    border-radius: 4px;
     font-family: inherit;
     background: #111;
     cursor: pointer;
+
+    &.intensity {
+      flex: 0 0 auto;
+      height: 16px;
+    }
   }
 
   &-seg {
     flex-basis: 0;
     min-width: 0;
+    overflow: hidden;
+    font-family: "Bebas Neue", "Arial Narrow", sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 14px;
+    letter-spacing: 0.04em;
+    text-align: center;
+    white-space: nowrap;
+    color: rgb(255 255 255 / 80%);
     transition: flex-grow 0.4s ease;
 
-    & + & {
-      border-left: 1px solid rgb(0 0 0 / 60%);
+    // Flavors: one red, light and dark in turn along the bar.
+    &.light { background: #b22a35; }
+    &.dark { background: #5a1219; }
+
+    &.sought {
+      box-shadow: inset 0 0 0 2px #f2c44e;
     }
 
-    &.choleric { background: #c8641e; }
-    &.melancholic { background: #45449a; }
-    &.phlegmatic { background: #1f8a84; }
-    &.sanguine { background: #b3202c; }
-    &.ischemic { background: #6e1c45; }
-    &.mercurial { background: #7f8a97; }
-    &.primal { background: #4c7a2c; }
+    // Intensity: darker to brighter as the resonance strengthens.
+    &.none { color: #8a8a96; background: #24242b; }
+    &.fleeting { background: #4e1a20; }
+    &.intense { background: #8c2430; }
+    &.acute { color: #fff; background: #d8303e; }
   }
 
   &-marker {
@@ -1591,7 +1684,6 @@ $lab-queued: #e8c547;
     bottom: -4px;
     width: 3px;
     margin-left: -1.5px;
-    border-radius: 2px;
     background: #fff;
     box-shadow: 0 0 0 1px #000, 0 0 6px #fff;
     pointer-events: none;
@@ -1603,7 +1695,6 @@ $lab-queued: #e8c547;
     left: 50%;
     padding: 3px 9px;
     border: 1px solid #fff;
-    border-radius: 5px;
     font-size: 13px;
     font-weight: 800;
     white-space: nowrap;
@@ -1639,6 +1730,8 @@ $lab-queued: #e8c547;
   }
 
   &-advance {
+    display: flex;
+    gap: 4px;
     justify-self: end;
   }
 

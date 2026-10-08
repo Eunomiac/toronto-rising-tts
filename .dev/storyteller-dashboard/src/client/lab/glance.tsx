@@ -672,6 +672,9 @@ const OUTCOMES: readonly HuntOutcome[] = ["basic", "critical", "messy"];
 const OUTCOME_LABEL: Record<HuntOutcome, string> = { basic: "Normal win", critical: "Critical win", messy: "Messy critical" };
 const SPIN_MS = 2400;
 const FLAVOR_FONT = '15px "Bebas Neue"';
+const INTENSITY_FONT = '13px "Bebas Neue"';
+const INTENSITY_SHORT: Record<Intensity, string> = { none: "None", fleeting: "Fleeting", intense: "Intense", acute: "Acute" };
+const MAX_MARGIN = 15;
 const FLAVOR_GAP = 6;
 
 /** Folds a travelled distance back and forth across 0..1, so the marker bounces off the bar's ends. */
@@ -688,17 +691,18 @@ const travelTo = (from: number, to: number, least: number): number => {
   return Math.min(forward, back) - from;
 };
 
-let flavorMeasure: CanvasRenderingContext2D | null = null;
-const flavorWidth = (text: string): number => {
-  if (!flavorMeasure) {
-    flavorMeasure = document.createElement("canvas").getContext("2d");
-    if (!flavorMeasure) {
-      throw new Error("HuntRoller: no 2D canvas context to measure flavor names");
+let textMeasure: CanvasRenderingContext2D | null = null;
+const textWidth = (text: string, font: string): number => {
+  if (!textMeasure) {
+    textMeasure = document.createElement("canvas").getContext("2d");
+    if (!textMeasure) {
+      throw new Error("HuntRoller: no 2D canvas context to measure labels");
     }
   }
-  flavorMeasure.font = FLAVOR_FONT;
-  return Math.ceil(flavorMeasure.measureText(text).width) + 2;
+  textMeasure.font = font;
+  return Math.ceil(textMeasure.measureText(text).width) + 2;
 };
+const flavorWidth = (text: string): number => textWidth(text, FLAVOR_FONT);
 
 type FlavorLabel = { readonly flavor: Flavor; readonly text: string; readonly left: number; readonly below: boolean };
 
@@ -738,22 +742,34 @@ const placeFlavorLabels = (flavors: readonly Flavor[], odds: Odds<Flavor>, barW:
 
 const percent = (value: number): string => `${(value * 100).toFixed(value < 0.1 ? 1 : 0)}%`;
 
+/** The longest of "Fleeting 30%", "Fleeting", "F" that fits inside its intensity segment, or nothing. */
+const intensityText = (intensity: Intensity, chance: number, barW: number): string => {
+  const room = chance * barW - 6;
+  const name = INTENSITY_SHORT[intensity];
+  return [`${name} ${percent(chance)}`, name, name.slice(0, 1)].find((text) => textWidth(text, INTENSITY_FONT) <= room) ?? "";
+};
+
+/** Starting from `from`, eases along `travel` over SPIN_MS and bounces across the bar; returns the position at `t`. */
+const spinAt = (from: number, travel: number, t: number): number => pingPong(from + travel * (1 - (1 - t) ** 3));
+
 /**
- * Hunt roll: the margin (number box) and outcome (star: normal, critical, messy critical) set the odds with the
- * scene location's resonances; each possible flavor's segment is as long as its chance. Click a flavor's name
- * to mark it as the one the player is seeking (click again to clear). Click the bar and the marker slides,
- * slows, and stops on the flavor; the intensity is drawn separately and pops up with it.
+ * Hunt roll: the margin (hover and spin the mouse wheel) and outcome (star: normal, critical, messy critical) set
+ * the odds with the scene location's resonances. The top bar is the flavor, each possible flavor's segment as
+ * long as its chance; click a flavor's name to mark it as the one the player is seeking (click again to clear).
+ * The lower bar is the intensity. Click either bar and both markers slide, slow, and settle on a flavor and an
+ * intensity.
  */
 export const HuntRoller = ({ location }: { location: LabLocation }): ReactElement => {
   const { data } = useChronicleLocations();
   const [margin, setMargin] = useState(3);
   const [outcome, setOutcome] = useState<HuntOutcome>("basic");
   const [target, setTarget] = useState<Flavor | null>(null);
-  const [marker, setMarker] = useState<number | null>(null);
+  const [markers, setMarkers] = useState<{ flavor: number; intensity: number } | null>(null);
   const [result, setResult] = useState<string | null>(null);
   const [barW, setBarW] = useState(0);
   const [fontReady, setFontReady] = useState(false);
   const barRef = useRef<HTMLButtonElement>(null);
+  const marginRef = useRef<HTMLSpanElement>(null);
   const frame = useRef<number | null>(null);
   useEffect(() => () => {
     if (frame.current !== null) {
@@ -761,7 +777,7 @@ export const HuntRoller = ({ location }: { location: LabLocation }): ReactElemen
     }
   }, []);
   useEffect(() => {
-    void document.fonts.load(FLAVOR_FONT).then(() => setFontReady(true));
+    void Promise.all([document.fonts.load(FLAVOR_FONT), document.fonts.load(INTENSITY_FONT)]).then(() => setFontReady(true));
   }, []);
   useEffect(() => {
     const bar = barRef.current;
@@ -772,6 +788,24 @@ export const HuntRoller = ({ location }: { location: LabLocation }): ReactElemen
     observer.observe(bar);
     return () => observer.disconnect();
   }, []);
+  // React's wheel listener is passive, so it cannot stop the page from scrolling.
+  useEffect(() => {
+    const box = marginRef.current;
+    if (!box) {
+      return undefined;
+    }
+    const onWheel = (event: WheelEvent): void => {
+      event.preventDefault();
+      if (event.deltaY === 0) {
+        return;
+      }
+      const step = event.deltaY < 0 ? 1 : -1;
+      setMargin((value) => Math.min(MAX_MARGIN, Math.max(0, value + step)));
+      setResult(null);
+    };
+    box.addEventListener("wheel", onWheel, { passive: false });
+    return () => box.removeEventListener("wheel", onWheel);
+  }, []);
 
   const found = data ? resolveLocation(data, location) : null;
   const { modifiers, unknown } = netModifiers(found && typeof found !== "string" ? [...found.district.resonances, ...found.site.resonances] : []);
@@ -780,22 +814,23 @@ export const HuntRoller = ({ location }: { location: LabLocation }): ReactElemen
   const odds = flavorOdds({ modifiers, target: seeking, margin, outcome });
   const intensity = intensityOdds(margin, outcome);
   const labels = fontReady && barW > 0 ? placeFlavorLabels(flavors, odds, barW) : [];
-  const intensitySummary = INTENSITIES.map((key) => `${INTENSITY_LABEL[key]} ${percent(intensity[key])}`).join(" · ");
 
   const spin = (): void => {
     if (frame.current !== null) {
       cancelAnimationFrame(frame.current);
     }
     setResult(null);
-    const to = Math.random();
-    const landed = sample(odds, flavors, to);
-    const strength = sample(intensity, INTENSITIES, Math.random());
-    const from = marker ?? 0;
-    const travel = travelTo(from, to, 1.5 + Math.random() * 2);
+    const flavorTo = Math.random();
+    const intensityTo = Math.random();
+    const landed = sample(odds, flavors, flavorTo);
+    const strength = sample(intensity, INTENSITIES, intensityTo);
+    const from = markers ?? { flavor: 0, intensity: 0 };
+    const flavorTravel = travelTo(from.flavor, flavorTo, 1.5 + Math.random() * 2);
+    const intensityTravel = travelTo(from.intensity, intensityTo, 1.5 + Math.random() * 2);
     const start = performance.now();
     const step = (now: number): void => {
       const t = Math.min(1, (now - start) / SPIN_MS);
-      setMarker(pingPong(from + travel * (1 - (1 - t) ** 3)));
+      setMarkers({ flavor: spinAt(from.flavor, flavorTravel, t), intensity: spinAt(from.intensity, intensityTravel, t) });
       if (t < 1) {
         frame.current = requestAnimationFrame(step);
         return;
@@ -805,20 +840,26 @@ export const HuntRoller = ({ location }: { location: LabLocation }): ReactElemen
     };
     frame.current = requestAnimationFrame(step);
   };
+  const changeMargin = (step: number): void => {
+    setMargin((value) => Math.min(MAX_MARGIN, Math.max(0, value + step)));
+    setResult(null);
+  };
   return (
     <div className="lab-hunt">
-      <input
-        type="number"
+      <span
+        ref={marginRef}
         className="lab-hunt-successes"
-        min={0}
-        max={15}
-        value={margin}
-        title="Margin on the hunt roll (successes over the difficulty)"
-        onChange={(event) => {
-          setMargin(Math.max(0, Number(event.target.value)));
-          setResult(null);
+        tabIndex={0}
+        title="Margin on the hunt roll (successes over the difficulty). Hover and spin the mouse wheel to change it."
+        onKeyDown={(event) => {
+          if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+            event.preventDefault();
+            changeMargin(event.key === "ArrowUp" ? 1 : -1);
+          }
         }}
-      />
+      >
+        {margin}
+      </span>
       <button
         type="button"
         className={`lab-hunt-crit ${outcome}`}
@@ -832,31 +873,45 @@ export const HuntRoller = ({ location }: { location: LabLocation }): ReactElemen
           <polygon points="12,2.6 14.8,8.7 21.4,9.4 16.5,13.9 17.8,20.5 12,17.2 6.2,20.5 7.5,13.9 2.6,9.4 9.2,8.7" />
         </svg>
       </button>
-      <div className="lab-hunt-track">
-        {labels.map((label) => (
-          <button
-            key={label.flavor}
-            type="button"
-            className={`lab-hunt-flavor ${label.flavor}${label.below ? " below" : ""}${label.flavor === seeking ? " sought" : ""}`}
-            style={{ left: label.left }}
-            title={`${FLAVOR_LABEL[label.flavor]} ${percent(odds[label.flavor])}: ${label.flavor === seeking ? "sought (click to stop seeking)" : "click if the player is seeking it"}`}
-            onClick={() => {
-              setTarget(label.flavor === seeking ? null : label.flavor);
-              setResult(null);
-            }}
-          >
-            {label.text}
-          </button>
-        ))}
-        <button ref={barRef} type="button" className="lab-hunt-bar" title={`Click to roll for resonance. ${intensitySummary}`} onClick={spin}>
-          {flavors.map((flavor) => (
-            <span key={flavor} className={`lab-hunt-seg ${flavor}`} style={{ flexGrow: odds[flavor] }} />
+      <div className="lab-hunt-bars">
+        <div className="lab-hunt-track">
+          {labels.map((label) => (
+            <button
+              key={label.flavor}
+              type="button"
+              className={`lab-hunt-flavor${label.below ? " below" : ""}${label.flavor === seeking ? " sought" : ""}`}
+              style={{ left: label.left }}
+              title={`${FLAVOR_LABEL[label.flavor]} ${percent(odds[label.flavor])}: ${label.flavor === seeking ? "sought (click to stop seeking)" : "click if the player is seeking it"}`}
+              onClick={() => {
+                setTarget(label.flavor === seeking ? null : label.flavor);
+                setResult(null);
+              }}
+            >
+              {label.text}
+            </button>
           ))}
-          {marker !== null && (
-            <span className="lab-hunt-marker" style={{ left: `${marker * 100}%` }}>
-              {result && <span className="lab-hunt-result">{result}</span>}
+          <button ref={barRef} type="button" className="lab-hunt-bar" title="Click to roll for resonance" onClick={spin}>
+            {flavors.map((flavor, index) => (
+              <span
+                key={flavor}
+                className={`lab-hunt-seg ${index % 2 === 0 ? "light" : "dark"}${flavor === seeking ? " sought" : ""}`}
+                style={{ flexGrow: odds[flavor] }}
+              />
+            ))}
+            {markers && (
+              <span className="lab-hunt-marker" style={{ left: `${markers.flavor * 100}%` }}>
+                {result && <span className="lab-hunt-result">{result}</span>}
+              </span>
+            )}
+          </button>
+        </div>
+        <button type="button" className="lab-hunt-bar intensity" title="Click to roll for resonance" onClick={spin}>
+          {INTENSITIES.map((key) => (
+            <span key={key} className={`lab-hunt-seg ${key}`} style={{ flexGrow: intensity[key] }} title={`${INTENSITY_LABEL[key]} ${percent(intensity[key])}`}>
+              {fontReady && barW > 0 ? intensityText(key, intensity[key], barW) : ""}
             </span>
-          )}
+          ))}
+          {markers && <span className="lab-hunt-marker" style={{ left: `${markers.intensity * 100}%` }} />}
         </button>
       </div>
       {unknown.length > 0 && <span className="lab-note">Unknown resonance in the sheet: {unknown.join(", ")}</span>}
@@ -1059,13 +1114,58 @@ const WeatherBackdrop = ({ axes, fog, w, h }: { axes: WeatherAxes; fog: boolean;
   );
 };
 
+type Extreme = "heat" | "cold";
+const HEAT_WAVE_C = 30;
+const COLD_SNAP_C = -15;
+const extremeFor = (celsius: number): Extreme | null => (celsius >= HEAT_WAVE_C ? "heat" : celsius <= COLD_SNAP_C ? "cold" : null);
+
+/** Heat: the scene wavers in a rising haze over an amber glow. Cold: frost creeps in from the edges. */
+const ExtremeTemperature = ({ extreme, filterId }: { extreme: Extreme; filterId: string }): ReactElement => (
+  <div className={`lab-wx-extreme ${extreme}`} aria-hidden="true">
+    <svg className="lab-wx-layer">
+      <defs>
+        {extreme === "heat" ? (
+          <filter id={filterId}>
+            <feTurbulence type="fractalNoise" baseFrequency="0.012 0.07" numOctaves="2" seed="4">
+              <animate attributeName="baseFrequency" values="0.012 0.07;0.016 0.1;0.012 0.07" dur="3.5s" repeatCount="indefinite" />
+            </feTurbulence>
+            <feDisplacementMap in="SourceGraphic" scale="7" />
+          </filter>
+        ) : (
+          <>
+            <filter id={filterId} x="0" y="0" width="100%" height="100%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" seed="9" />
+              <feColorMatrix values="0 0 0 0 0.86  0 0 0 0 0.94  0 0 0 0 1  0 0 0 2.6 -1.3" />
+            </filter>
+            <radialGradient id={`${filterId}m`} cx="50%" cy="50%" r="72%">
+              <stop offset="45%" stopColor="#000" />
+              <stop offset="100%" stopColor="#fff" />
+            </radialGradient>
+            <mask id={`${filterId}k`}>
+              <rect width="100%" height="100%" fill={`url(#${filterId}m)`} />
+            </mask>
+          </>
+        )}
+      </defs>
+      {extreme === "cold" && <rect className="lab-wx-frost" width="100%" height="100%" filter={`url(#${filterId})`} mask={`url(#${filterId}k)`} />}
+    </svg>
+  </div>
+);
+
 /**
  * Weather for the scene's date and hour from the WEATHER calendar. Click rain/snow or wind for a ring of
  * choices; choosing something other than the calendar's value overrides it until released. Fog always
  * follows the calendar (TTS draws no fog for weather).
  */
-export const WeatherPanel = ({ at, forceOverride, w, h }: { at: Date; forceOverride: boolean; w: number; h: number }): ReactElement => {
+export const WeatherPanel = ({ at, forceOverride, forceCelsius, w, h }: {
+  at: Date;
+  forceOverride: boolean;
+  forceCelsius: number | null;
+  w: number;
+  h: number;
+}): ReactElement => {
   const { data, error } = useWeatherCalendar();
+  const hazeId = useId().replace(/[^a-zA-Z0-9]/g, "");
   const [override, setOverride] = useState<WeatherAxes | null>(null);
   const [ring, setRing] = useState<{ axis: "precip" | "wind"; at: Point } | null>(null);
   useEffect(() => setOverride(forceOverride ? { precip: "heavyRain", wind: 3, thunder: true } : null), [forceOverride]);
@@ -1079,9 +1179,14 @@ export const WeatherPanel = ({ at, forceOverride, w, h }: { at: Date; forceOverr
   const axes: WeatherAxes = override ?? { precip: scheduled.precip, wind: scheduled.wind, thunder: scheduled.thunder };
   const overridden = override !== null && !sameAxes(override, scheduled);
   const openRing = (axis: "precip" | "wind") => (event: MouseEvent<HTMLButtonElement>): void => setRing({ axis, at: canvasPoint(event) });
+  const celsius = forceCelsius ?? scheduled.celsius;
+  const extreme = extremeFor(celsius);
   return (
-    <div className={`lab-wx-panel${overridden ? " lab-overridden" : ""}`}>
-      <WeatherBackdrop axes={axes} fog={scheduled.fog} w={w} h={h} />
+    <div className={`lab-wx-panel${overridden ? " lab-overridden" : ""}${extreme ? ` ${extreme}` : ""}`}>
+      <div className={`lab-wx-scene${extreme ? ` ${extreme}` : ""}`} style={extreme === "heat" ? { filter: `url(#${hazeId})` } : undefined}>
+        <WeatherBackdrop axes={axes} fog={scheduled.fog} w={w} h={h} />
+      </div>
+      {extreme && <ExtremeTemperature extreme={extreme} filterId={hazeId} />}
       <span className="lab-wx-axes">
         <button type="button" className="lab-wx-axis" onClick={openRing("precip")}>{PRECIP[axes.precip].label}</button>
         <span className="lab-wx-sep">◆</span>
@@ -1094,7 +1199,7 @@ export const WeatherPanel = ({ at, forceOverride, w, h }: { at: Date; forceOverr
         )}
       </span>
       <span className="lab-wx-temp">
-        {scheduled.celsius}°C<sup>{Math.round(scheduled.celsius * 1.8 + 32)}°F</sup>
+        {celsius}°C<sup>{Math.round(celsius * 1.8 + 32)}°F</sup>
       </span>
       {overridden && <ReleaseOverride onRelease={() => setOverride(null)} />}
       {ring?.axis === "precip" && (
@@ -1419,6 +1524,7 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, w, h
         <button
           type="button"
           className={`lab-when-realtime${realTime ? " on" : ""}`}
+          style={realTime ? { animationDuration: `${1 / rate}s` } : undefined}
           title={`${realTime ? `Real time is on: scene time runs at ${rate}× the real clock` : "Real time is off"}. Right-click to set the speed.`}
           onClick={(event) => {
             event.stopPropagation();
@@ -1838,8 +1944,8 @@ const SpotlightCarousel = (): ReactElement => {
 };
 
 /**
- * Phase name at the far left. The middle holds the scene name with End Scene beside it (Play), the next session's
- * number and title (Intermission), or the carousel (Spotlight). In Play, Advance opens a ring: Scene (scene picker), Memoriam (Memoriam set-up),
+ * Phase name at the far left. The middle holds the scene name (Play), the next session's number and title
+ * (Intermission), or the carousel (Spotlight). In Play, End Scene sits just left of Advance, and Advance opens a ring: Scene (scene picker), Memoriam (Memoriam set-up),
  * or Spotlight (click twice). In any other phase, Advance names the next phase and needs a second click.
  */
 export const PhaseStrip = ({ library, onPrepare }: { library: readonly string[]; onPrepare: () => void }): ReactElement => {
@@ -1859,12 +1965,7 @@ export const PhaseStrip = ({ library, onPrepare }: { library: readonly string[];
         {phase === "Play" && <span className="lab-phase-sub">Main</span>}
       </span>
       <span className="lab-phase-now">
-        {phase === "Play" && (
-          <>
-            <span className="lab-phase-scene">Elysium — Casa Loma: Great Hall</span>
-            <span title="Main / Memoriam → Downtime"><Btn tone="danger">End Scene</Btn></span>
-          </>
-        )}
+        {phase === "Play" && <span className="lab-phase-scene">Elysium — Casa Loma: Great Hall</span>}
         {phase === "Intermission" && (
           <span className="lab-phase-session">
             <label>
@@ -1888,6 +1989,7 @@ export const PhaseStrip = ({ library, onPrepare }: { library: readonly string[];
         {phase === "Spotlight" && <SpotlightCarousel />}
       </span>
       <span className="lab-phase-advance">
+        {phase === "Play" && <span title="Main / Memoriam → Downtime"><Btn tone="danger">End Scene</Btn></span>}
         {phase === "Play" ? (
           <button type="button" className="lab-btn primary" onClick={(event) => setRing(canvasPoint(event))}>Advance ▸</button>
         ) : (

@@ -98,7 +98,7 @@ const StageInTheMiddle = ({ previewOpen, clockDiffers, weatherOverride }: Sketch
  * four aspects and the stage. PC trackers pop up over their seats. Scene time and location live here so every
  * panel reads the same values.
  */
-const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen, ttsDisconnected }: SketchState): ReactElement => {
+const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, coldSnap, popoverOpen, ttsDisconnected }: SketchState): ReactElement => {
   const [preparing, setPreparing] = useState(false);
   const [sceneTime, setSceneTime] = useState(PRESENT_DAY);
   const [presentDay, setPresentDay] = useState(PRESENT_DAY);
@@ -161,7 +161,7 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen, 
         />
       </Box>
       <Box x={stripX + whenW + 8} y={8} w={weatherW} h={stripH} className="lab-backdrop-box">
-        <WeatherPanel at={sceneTime} forceOverride={weatherOverride} w={weatherW - 2} h={stripH - 2} />
+        <WeatherPanel at={sceneTime} forceOverride={weatherOverride} forceCelsius={heatWave ? 34 : coldSnap ? -27 : null} w={weatherW - 2} h={stripH - 2} />
       </Box>
       <Box x={soundX} y={8} w={1912 - soundX} h={stripH}>
         <SoundMixer indoors />

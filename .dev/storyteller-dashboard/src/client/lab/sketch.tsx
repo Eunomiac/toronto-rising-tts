@@ -26,6 +26,8 @@ export type SketchState = {
   readonly previewOpen: boolean;
   readonly clockDiffers: boolean;
   readonly weatherOverride: boolean;
+  readonly heatWave: boolean;
+  readonly coldSnap: boolean;
   readonly popoverOpen: boolean;
   readonly ttsDisconnected: boolean;
 };
