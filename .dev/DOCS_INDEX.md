@@ -86,6 +86,7 @@ Always verify important claims against code before changing behavior.
 
 | Area | Path | Notes |
 |---|---|---|
+| Chronicle Google Sheets (source of truth for aspects, resonance, characters, weather, V5 rules) | [`Chronicle Data/Google Sheets.md`](Chronicle%20Data/Google%20Sheets.md) | Sheet ids, tab map, Drive MCP and public CSV access, privacy rule |
 | Chronicle/campaign material | [`Chronicle Data/`](Chronicle%20Data/) | Human review preferred; not engineering source of truth unless code explicitly consumes generated data |
 | TTS API reference | [`tts-api/`](tts-api/) and [`TTS-Scripting-Guide.htm`](TTS-Scripting-Guide.htm) | Vendored/reference material |
 | Positioning guide | [`User Guides/TTS-3D-Positioning-Coordinate-Utilities.md`](User%20Guides/TTS-3D-Positioning-Coordinate-Utilities.md) | Useful for coordinate/math tasks |
