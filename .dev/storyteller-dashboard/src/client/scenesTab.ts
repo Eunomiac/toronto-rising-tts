@@ -19,12 +19,13 @@ import { moveSeatOccupant, swapOntoPolarSnap } from "./scenes/tokenSwap.js";
 import { formatNameOffsetsClipboard, roundOffset } from "./scenes/nameOffsets.js";
 import { tokenStackZIndex } from "./scenes/tokenStack.js";
 import { locationConditionIds, mergeLocationConditions } from "./scenes/locationConditions.js";
+import { openHeadshotEditor } from "./headshots/headshotEditor.js";
+import { bindHeadshotImg } from "./headshots/headshots.js";
 import {
   boardUvFromEvent,
   buildImportPayload,
   characterLabel,
   createDefaultDraft,
-  cutoutUrl,
   familyHandleLayoutFor,
   layoutBoardFrame,
   polarAreaNameForFamily,
@@ -307,13 +308,21 @@ export const initScenesTab = (): void => {
     }
     const bg = document.createElement("span");
     bg.className = "scenes-token-bg";
-    const cutout = document.createElement("img");
-    cutout.className = "scenes-token-cutout";
-    cutout.alt = fullName || characterKey;
-    cutout.draggable = false;
-    cutout.src = cutoutUrl(characterKey);
+    const cutout = document.createElement("span");
+    cutout.className = "scenes-token-cutout headshot";
+    const cutoutImg = document.createElement("img");
+    cutoutImg.alt = fullName || characterKey;
+    cutoutImg.draggable = false;
+    bindHeadshotImg(cutoutImg, characterKey);
+    cutout.append(cutoutImg);
     if (!ghost) {
-      cutout.addEventListener("error", () => markCutoutError(characterKey));
+      cutoutImg.addEventListener("error", () => markCutoutError(characterKey));
+      button.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+        void openHeadshotEditor(characterKey, fullName || (catalogs ? characterLabel(catalogs, characterKey) : characterKey)).catch((error: unknown) => {
+          setStatus("error", error instanceof Error ? error.message : `Could not open the crop editor for ${characterKey}.`);
+        });
+      });
     }
     const frame = document.createElement("img");
     frame.className = "scenes-token-frame";

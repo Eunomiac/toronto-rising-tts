@@ -9,6 +9,7 @@ import { loadEnvFile } from "./loadEnv.js";
 import { generateNpcImage, generateNpcs, rerollNpcField } from "./npcService.js";
 import { loadGenericNpcCatalog, resolveGenericNpcImagePath } from "./genericNpcCatalog.js";
 import { refreshGenericNpcCatalogOnStartup } from "./refreshGenericNpcCatalog.js";
+import { createHeadshotCropStore, HeadshotCropError, parseHeadshotCrop, requireHeadshotKey } from "./headshotCrops.js";
 import { createLabNoteStore, LabNoteError, parseLabNoteCreate, parseLabNotePatch } from "./labNotes.js";
 import { createTermImageStore, MAX_TERM_IMAGE_BYTES, TERM_IMAGE_CONTENT_TYPES, TermImageError } from "./termImages.js";
 import { dashboardTtsBridge } from "./ttsExecuteLua.js";
@@ -29,6 +30,7 @@ const scenesAssetDir = path.join(dashboardRoot, "assets", "scenes");
 const pcSheetAssetDir = path.join(dashboardRoot, "assets");
 const termImages = createTermImageStore(path.join(dashboardRoot, "data", "term-images"));
 const labNotes = createLabNoteStore(path.join(dashboardRoot, "agent", "lab-notes.json"));
+const headshotCrops = createHeadshotCropStore(path.join(dashboardRoot, "data", "headshot-crops.json"));
 const publicDir = path.join(distDir, "public");
 const isDev = process.argv.includes("--dev");
 
@@ -147,6 +149,31 @@ const handleLabNotes = async (request: IncomingMessage, response: ServerResponse
     sendJson(response, 405, { error: "Method not allowed" });
   } catch (error: unknown) {
     if (error instanceof LabNoteError) {
+      sendJson(response, error.status, { error: error.message });
+      return;
+    }
+    throw error;
+  }
+};
+
+const handleHeadshotCrops = async (request: IncomingMessage, response: ServerResponse, url: URL): Promise<void> => {
+  try {
+    if (request.method === "GET") {
+      sendJson(response, 200, await headshotCrops.list());
+      return;
+    }
+    const key = requireHeadshotKey(url.searchParams.get("key"));
+    if (request.method === "PUT") {
+      sendJson(response, 200, await headshotCrops.put(key, parseHeadshotCrop(await readRequestJson(request))));
+      return;
+    }
+    if (request.method === "DELETE") {
+      sendJson(response, 200, await headshotCrops.remove(key));
+      return;
+    }
+    sendJson(response, 405, { error: "Method not allowed" });
+  } catch (error: unknown) {
+    if (error instanceof HeadshotCropError) {
       sendJson(response, error.status, { error: error.message });
       return;
     }
@@ -398,6 +425,11 @@ const tryHandleDedicatedRoutes = async (request: IncomingMessage, response: Serv
 
   if (pathname === "/api/term-images" || pathname === "/api/term-images/text") {
     await handleTermImages(request, response, url);
+    return true;
+  }
+
+  if (pathname === "/api/headshot-crops") {
+    await handleHeadshotCrops(request, response, url);
     return true;
   }
 

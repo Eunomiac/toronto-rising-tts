@@ -203,14 +203,6 @@ $lab-pin: #f5b13d;
   background: #0e0e12;
 }
 
-// Crops a full-body figurine cutout (set inline as background-image) to head and shoulders.
-%lab-headshot {
-  background-color: #2a2a32;
-  background-repeat: no-repeat;
-  background-size: 230% auto;
-  background-position: 50% 3%;
-}
-
 .lab-seats {
   display: flex;
   gap: 4px;
@@ -218,9 +210,8 @@ $lab-pin: #f5b13d;
 }
 
 .lab-seat {
-  @extend %lab-headshot;
-
   position: relative;
+  background-color: #2a2a32;
   flex: 1 1 0;
   min-width: 0;
   height: 100%;
@@ -252,6 +243,7 @@ $lab-pin: #f5b13d;
   }
 
   &-text {
+    position: relative;
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -403,9 +395,8 @@ $lab-pin: #f5b13d;
   pointer-events: auto;
 
   &-head {
-    @extend %lab-headshot;
-
     flex: 0 0 auto;
+    background-color: #2a2a32;
     width: 32px;
     height: 32px;
     margin-top: -16px;
@@ -463,10 +454,9 @@ $lab-pin: #f5b13d;
   background: #1c1c22;
 
   &-head {
-    @extend %lab-headshot;
-
     position: relative;
     flex: 0 0 auto;
+    background-color: #2a2a32;
     width: 64px;
     border: 2px solid #c9a24a;
     border-radius: 5px;

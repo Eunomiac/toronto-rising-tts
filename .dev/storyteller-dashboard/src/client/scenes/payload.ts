@@ -40,9 +40,6 @@ export const characterLabel = (catalogs: SceneCatalogs, characterKey: string): s
   return npc?.fullName ?? characterKey;
 };
 
-export const cutoutUrl = (characterKey: string): string =>
-  `/catalogued-npc-images/${characterKey}.webp`;
-
 export const sceneKeyFromTitle = (title: string): string => {
   const words = title
     .normalize("NFKD")

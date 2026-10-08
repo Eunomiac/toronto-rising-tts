@@ -594,14 +594,14 @@
     background: linear-gradient(135deg, #e8d6a4 0%, #c4a35a 48%, #7a5a22 100%);
   }
 
-  &-cutout {
+  .scenes-token-cutout {
+    position: absolute;
     left: 4.5%;
     top: 4.5%;
     width: 91%;
     height: 91%;
-    object-fit: cover;
-    object-position: center top;
     border-radius: 50%;
+    pointer-events: none;
   }
 
   &-frame {

@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactElement, ReactNode } from "react";
+import { Headshot } from "../headshots/Headshot";
 
 /**
  * Grey-box building blocks for Lab sketches. Every sketch is laid out in absolute pixels on the
@@ -58,12 +59,6 @@ export const Btn = ({ children, tone }: { children: ReactNode; tone?: "primary" 
 
 /* ---------- seats ---------- */
 
-/** Full-body figurine cutout served by the dashboard; CSS crops it to the head. */
-export const figurineUrl = (characterKey: string): string => `/catalogued-npc-images/${characterKey}.webp`;
-
-/** Head-and-shoulders crop of a full-body figurine cutout, used for seats, tokens, and PC cells. */
-export const headshotStyle = (characterKey: string): CSSProperties => ({ backgroundImage: `url("${figurineUrl(characterKey)}")` });
-
 type SeatSketch = {
   readonly slot: number;
   readonly name?: string;
@@ -89,26 +84,35 @@ export const SEATS: readonly SeatSketch[] = [
   { slot: 8, kind: "nochair" }
 ];
 
+const SeatContent = ({ seat }: { seat: SeatSketch }): ReactElement => (
+  <>
+    <span className="lab-seat-badge">{seat.slot}</span>
+    <span className="lab-seat-text">
+      {seat.name && <span className="lab-seat-name">{seat.name}</span>}
+      {seat.kind === "empty" && <span className="lab-seat-flag">empty chair</span>}
+      {seat.kind === "nochair" && <span className="lab-seat-flag">no chair at Table B2</span>}
+      {seat.state === "absent" && <span className="lab-seat-flag">absent (dark)</span>}
+      {seat.state === "disconnected" && <span className="lab-seat-flag warn">disconnected</span>}
+      {seat.role && <span className="lab-seat-flag role">{seat.role}</span>}
+    </span>
+  </>
+);
+
 /** One cell per chair, sharing the row width evenly; the figurine headshot fills the cell. */
 export const Seats = (): ReactElement => (
   <div className="lab-seats">
-    {SEATS.map((seat) => (
-      <div
-        key={seat.slot}
-        className={`lab-seat ${seat.kind}${seat.state ? ` ${seat.state}` : ""}`}
-        style={seat.characterKey ? headshotStyle(seat.characterKey) : undefined}
-      >
-        <span className="lab-seat-badge">{seat.slot}</span>
-        <span className="lab-seat-text">
-          {seat.name && <span className="lab-seat-name">{seat.name}</span>}
-          {seat.kind === "empty" && <span className="lab-seat-flag">empty chair</span>}
-          {seat.kind === "nochair" && <span className="lab-seat-flag">no chair at Table B2</span>}
-          {seat.state === "absent" && <span className="lab-seat-flag">absent (dark)</span>}
-          {seat.state === "disconnected" && <span className="lab-seat-flag warn">disconnected</span>}
-          {seat.role && <span className="lab-seat-flag role">{seat.role}</span>}
-        </span>
-      </div>
-    ))}
+    {SEATS.map((seat) => {
+      const className = `lab-seat ${seat.kind}${seat.state ? ` ${seat.state}` : ""}`;
+      return seat.characterKey ? (
+        <Headshot key={seat.slot} characterKey={seat.characterKey} className={className}>
+          <SeatContent seat={seat} />
+        </Headshot>
+      ) : (
+        <div key={seat.slot} className={className}>
+          <SeatContent seat={seat} />
+        </div>
+      );
+    })}
   </div>
 );
 
@@ -257,7 +261,7 @@ const tokenPoint = (token: StageToken, w: number, h: number): { x: number; y: nu
 /** A figurine headshot with the name under it; hovering enlarges the headshot. Gold ring = lit. */
 const Token = ({ token, x, y }: { token: StageToken; x: number; y: number }): ReactElement => (
   <div className={`lab-token${token.lit ? " lit" : ""}`} style={{ left: x, top: y }}>
-    <span className="lab-token-head" style={headshotStyle(token.characterKey)} />
+    <Headshot className="lab-token-head" characterKey={token.characterKey} />
     <span className="lab-token-name">{token.name}</span>
   </div>
 );
@@ -503,9 +507,9 @@ export const PcPanel = (): ReactElement => (
   <div className="lab-pcs">
     {PC_CELLS.map((pc) => (
       <div key={pc.slot} className={`lab-pc${pc.state ? ` ${pc.state}` : ""}`}>
-        <span className="lab-pc-head" style={headshotStyle(pc.characterKey)}>
+        <Headshot className="lab-pc-head" characterKey={pc.characterKey}>
           <span className="lab-seat-badge">{pc.slot}</span>
-        </span>
+        </Headshot>
         <span className="lab-pc-body">
           <span className="lab-pc-name">
             {pc.name}

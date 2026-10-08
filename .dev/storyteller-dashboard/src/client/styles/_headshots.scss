@@ -1,0 +1,116 @@
+// Figurine headshot crop windows (Scenes tokens, Lab sketches) and the token crop editor.
+
+.headshot {
+  position: relative;
+  overflow: hidden;
+
+  > img {
+    position: absolute;
+    max-width: none;
+    height: auto;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+}
+
+.headshot-editor-backdrop {
+  z-index: 120;
+}
+
+.modal-card.headshot-editor {
+  width: max-content;
+  max-width: none;
+  max-height: none;
+  overflow: hidden;
+}
+
+.headshot-editor-body {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+
+.headshot-editor-stage {
+  position: relative;
+  flex: none;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  background: #1b1b21;
+  cursor: grab;
+  touch-action: none;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.headshot-editor-figure {
+  position: absolute;
+  max-width: none;
+  height: auto;
+  pointer-events: none;
+  user-select: none;
+}
+
+.headshot-editor-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border: 3px solid #f2c44e;
+  border-radius: 50%;
+  box-shadow: 0 0 0 9999px rgb(0 0 0 / 62%);
+  pointer-events: none;
+}
+
+.headshot-editor-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 17rem;
+}
+
+.headshot-editor-status {
+  margin: 0;
+  font-weight: 700;
+}
+
+.headshot-editor-help {
+  margin: 0;
+  color: var(--muted, #aaa);
+  font-size: 0.9rem;
+}
+
+.headshot-editor-previews {
+  display: flex;
+  gap: 0.9rem;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background: #2a2a32;
+}
+
+.headshot-editor-preview {
+  display: block;
+  flex: none;
+  border-radius: 50%;
+  background: #3c3c44;
+  box-shadow: 0 0 0 2px #f2c44e;
+}
+
+.headshot-editor-error {
+  margin: 0;
+  color: #ff6b6b;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.headshot-editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: auto;
+}
