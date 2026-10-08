@@ -668,6 +668,7 @@ local function shuffleAndCommitOrder()
     rec.order = order
     rec.frontIndex = 1
     S.setStateVal(rec, "spotlight")
+    require("dashboard.push").markWorldDirty({ seats = true })
 end
 
 --- @param delta number integer step along the occupied arc (no wrap)
@@ -695,6 +696,7 @@ local function rotateByDelta(delta)
     local startFront = rec.frontIndex
     rec.frontIndex = dest
     S.setStateVal(rec, "spotlight")
+    require("dashboard.push").markWorldDirty({ seats = true })
     rotating = true
 
     local starts = {}

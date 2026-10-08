@@ -658,6 +658,7 @@ function Phases.freezeClock(_ctx)
     if type(GameStateOverlay.reconcileFromState) == "function" then
         GameStateOverlay.reconcileFromState()
     end
+    require("dashboard.push").markWorldDirty({ clock = true })
     return true
 end
 

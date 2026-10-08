@@ -1140,21 +1140,30 @@ function GameStateOverlay.tickRealTimeClock()
             PresentDayClock.clearCatchUpAndRestore(nextClock)
         end
     end
+    -- The dashboard animates the clock from its last anchor; re-anchor on rollovers only.
+    local rolledOver = h ~= oldHour or d ~= oldDay
     if clockKey == "downtimeClock" then
         S.setStateVal(nextClock, "downtimeClock")
         GameStateOverlay.reconcileFromState()
+        if rolledOver then
+            require("dashboard.push").markWorldDirty({ clock = true })
+        end
         return true
     end
     S.setStateVal(nextClock, "sessionScene", "clock")
     PresentDayClock.tryAdvance(nextClock)
-    if nextClock.catchUpToPresentDay ~= true and ck.catchUpToPresentDay == true then
+    local catchUpEnded = nextClock.catchUpToPresentDay ~= true and ck.catchUpToPresentDay == true
+    if catchUpEnded then
         -- Catch-up just finished: re-baseline ticker / maybe stop if useRealTime restored false.
         GameStateOverlay.resetRealTimeCarry()
         GameStateOverlay.stopTicker()
         GameStateOverlay.ensureTicker()
     end
-    if h ~= oldHour or d ~= oldDay then
+    if rolledOver then
         ChronicleWeather.applyScheduledWeather({ force = false })
+    end
+    if rolledOver or catchUpEnded then
+        require("dashboard.push").markWorldDirty({ clock = true, scene = true })
     end
 
     reconcileOverlayAfterClockTick(prevY, prevMo, prevD, oldHour, y, mo, d, h, m)

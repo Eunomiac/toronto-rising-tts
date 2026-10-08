@@ -357,6 +357,7 @@ function Sync.npcs(opts)
         reason = reason,
         animateStageMoves = opts.animateStageMoves == true,
     })
+    require("dashboard.push").markWorldDirty({ seats = true })
     finishSyncMetrics("npcs", t0, { reason = reason })
 end
 

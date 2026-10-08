@@ -4721,6 +4721,7 @@ local function syncSoundscapeControls()
     if SS == nil or SS.getState == nil then
         return
     end
+    require("dashboard.push").markWorldDirty({ soundscape = true })
     local state = SS.getState()
     local summary = SS.getSummaryText()
     if UI ~= nil and UI.setValue ~= nil then
@@ -6539,6 +6540,20 @@ function UpdateUIDisplays(delta)
         if GameStateOverlay and type(GameStateOverlay.reconcileFromState) == "function" then
             GameStateOverlay.reconcileFromState()
         end
+    end
+
+    local DashPush = require("dashboard.push")
+    if refreshAll then
+        DashPush.markAllWorldDirty()
+    else
+        local phaseOrClock = wants("phase") or wants("gameStateOverlay")
+        DashPush.markWorldDirty({
+            phase = phaseOrClock,
+            clock = phaseOrClock or scenesPanel,
+            scene = scenesPanel or wants("scene") or wants("adminLighting"),
+            seats = scenesPanel,
+            soundscape = wants("soundscape"),
+        })
     end
 end
 

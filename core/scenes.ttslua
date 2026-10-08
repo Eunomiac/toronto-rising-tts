@@ -1137,6 +1137,7 @@ function Scenes.applyActiveSceneSoundscapeFromSession()
     if type(Sync.ui) == "function" then
         Sync.ui({ gameStateOverlay = true })
     end
+    require("dashboard.push").markWorldDirty({ soundscape = true, scene = true })
 end
 
 --- Applies the defined no-scene environment: Table B0 (dynamic Table B, zero NPC seats), five PCs, empty NPC world, OutdoorDim, Main only.
