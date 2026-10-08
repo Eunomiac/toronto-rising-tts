@@ -721,8 +721,8 @@ const segmentFlex = (chance: number, winner: boolean, settled: boolean, minWidth
 /**
  * Hunt roll: the margin (hover and spin the mouse wheel) and outcome (star: normal, critical, messy critical) set
  * the odds with the scene location's resonances. The top bar is the flavor, each possible flavor's segment as
- * long as its chance; right-click a flavor to mark it as the one the player is seeking (again to clear). The
- * lower bar is the intensity, darker to brighter. Click either bar and both markers slide and settle; the
+ * long as its chance; click a flavor to mark it as the one the player is seeking (again to clear). The lower
+ * bar is the intensity, darker to brighter. Right-click either bar and both markers slide and settle; the
  * winners widen and glow, the rest fade, and Confirm clears the bars (the real build broadcasts the result in
  * TTS).
  */
@@ -816,6 +816,10 @@ export const HuntRoller = ({ location }: { location: LabLocation }): ReactElemen
     };
     frame.current = requestAnimationFrame(step);
   };
+  const rollOnRightClick = (event: MouseEvent<HTMLButtonElement>): void => {
+    event.preventDefault();
+    spin();
+  };
   return (
     <div className="lab-hunt">
       <span
@@ -851,8 +855,8 @@ export const HuntRoller = ({ location }: { location: LabLocation }): ReactElemen
           ref={barRef}
           type="button"
           className="lab-hunt-bar"
-          title={settled ? undefined : "Click to roll for resonance. Right-click a flavor to mark it as the one the player is seeking."}
-          onClick={spin}
+          title={settled ? undefined : "Right-click to roll for resonance. Click a flavor to mark it as the one the player is seeking."}
+          onContextMenu={rollOnRightClick}
         >
           {flavors.map((flavor, index) => {
             const won = result?.flavor === flavor;
@@ -863,8 +867,7 @@ export const HuntRoller = ({ location }: { location: LabLocation }): ReactElemen
                 className={`lab-hunt-seg ${index % 2 === 0 ? "light" : "dark"}${flavor === seeking ? " sought" : ""}${won ? " won" : ""}`}
                 style={segmentFlex(odds[flavor], won, settled, measured ? textWidth(name, FLAVOR_FONT) + WINNER_PAD : 0, barW)}
                 title={`${name} ${percent(odds[flavor])}${flavor === seeking ? " (sought)" : ""}`}
-                onContextMenu={(event) => {
-                  event.preventDefault();
+                onClick={() => {
                   setTarget(flavor === seeking ? null : flavor);
                   reset();
                 }}
@@ -875,7 +878,7 @@ export const HuntRoller = ({ location }: { location: LabLocation }): ReactElemen
           })}
           {markers && !settled && <span className="lab-hunt-marker" style={{ left: `${markers.flavor * 100}%` }} />}
         </button>
-        <button type="button" className="lab-hunt-bar intensity" title={settled ? undefined : "Click to roll for resonance"} onClick={spin}>
+        <button type="button" className="lab-hunt-bar intensity" title={settled ? undefined : "Right-click to roll for resonance"} onContextMenu={rollOnRightClick}>
           {INTENSITIES.map((key) => {
             const won = result?.intensity === key;
             return (
