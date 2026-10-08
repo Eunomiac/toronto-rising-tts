@@ -40,19 +40,40 @@ const DISTRICT = {
  */
 type SiteLayout = { readonly name: CardRect; readonly sub?: CardRect; readonly aspect: CardRect; readonly resonance: CardRect };
 
-const SITE_LAYOUTS: Record<"unique" | "generic", SiteLayout> = {
+type SiteLayoutKey = "unique" | "generic";
+
+const SITE_LAYOUTS: Record<SiteLayoutKey, SiteLayout> = {
   unique: { name: [200, 26, 1240, 100], sub: [900, 126, 540, 114], aspect: [690, 545, 660, 300], resonance: [1330, 785, 460, 70] },
-  generic: { name: [400, 20, 1152, 110], aspect: [1050, 572, 875, 285], resonance: [200, 790, 470, 70] }
+  generic: { name: [400, 20, 1152, 110], sub: [730, 132, 492, 64], aspect: [1050, 572, 875, 285], resonance: [200, 790, 470, 70] }
 };
 
-/** Sub-location line only when the site name has one ("Casa Loma: Great Hall"). */
-type SampleSite = { readonly key: string; readonly layout: keyof typeof SITE_LAYOUTS; readonly hasSub: boolean };
+/** Sites whose card art does not follow the district rule (district but no map). */
+const SITE_LAYOUT_EXCEPTIONS: Readonly<Record<string, SiteLayoutKey>> = {
+  HockeyHallOfFame: "generic",
+  WarrensAntechamber: "generic",
+  WarrensDrakes: "generic",
+  WarrensFomorach: "generic",
+  WarrensIQs: "generic",
+  WarrensLabyrinth: "generic",
+  WarrensPalis: "generic",
+  WarrensSpawningPool: "generic",
+  WarrensTunnelJunction: "generic"
+};
 
-const SAMPLE_SITES: readonly SampleSite[] = [
-  { key: "CLGreatHall", layout: "unique", hasSub: true },
-  { key: "Drake", layout: "unique", hasSub: false },
-  { key: "AnarchBar", layout: "generic", hasSub: false },
-  { key: "WealthyEstate3", layout: "generic", hasSub: false }
+type SiteCard = { readonly key: string; readonly name: string; readonly districtKey?: string };
+
+const siteLayoutFor = (site: SiteCard): SiteLayoutKey =>
+  SITE_LAYOUT_EXCEPTIONS[site.key] ?? (site.districtKey ? "unique" : "generic");
+
+/** The card prints a sub-location line only when the name has one ("Casa Loma: Great Hall"). */
+const siteHasSub = (site: SiteCard): boolean => site.name.includes(": ");
+
+const SAMPLE_SITES: readonly SiteCard[] = [
+  { key: "CLGreatHall", name: "Casa Loma: Great Hall", districtKey: "DupontByTheCastle" },
+  { key: "Drake", name: "The Drake Hotel", districtKey: "WestQueenWest" },
+  { key: "AnarchBar", name: "Anarch Dive Bar" },
+  { key: "WarrensLabyrinth", name: "The Nosferatu Warrens: Labyrinth", districtKey: "Sewers" },
+  { key: "WealthyEstate3", name: "Wealthy Estate" }
 ];
 
 const CardCrop = ({ art, rect, width }: { art: CardArt; rect: CardRect; width: number }): ReactElement => {
@@ -65,17 +86,20 @@ const CardCrop = ({ art, rect, width }: { art: CardArt; rect: CardRect; width: n
   );
 };
 
-const SiteCrops = ({ site, width }: { site: SampleSite; width: number }): ReactElement => {
+const SiteCrops = ({ site, width }: { site: SiteCard; width: number }): ReactElement => {
   const art: CardArt = { src: cardUrl(`Sites/${site.key}.webp`), width: 1952 };
-  const layout = SITE_LAYOUTS[site.layout];
+  const layout = SITE_LAYOUTS[siteLayoutFor(site)];
   const scale = width / layout.name[2];
+  const resonanceW = Math.round(layout.resonance[2] * scale * 1.15);
   return (
     <>
       <CardCrop art={art} rect={layout.name} width={width} />
       <div className="lab-where-row spread">
-        {site.hasSub && layout.sub && <CardCrop art={art} rect={layout.sub} width={Math.round(layout.sub[2] * scale * 1.15)} />}
+        {siteHasSub(site) && layout.sub && (
+          <CardCrop art={art} rect={layout.sub} width={Math.min(Math.round(layout.sub[2] * scale * 1.15), width - resonanceW - 6)} />
+        )}
         <span className="lab-where-site-side">
-          <CardCrop art={art} rect={layout.resonance} width={Math.round(layout.resonance[2] * scale * 1.15)} />
+          <CardCrop art={art} rect={layout.resonance} width={resonanceW} />
         </span>
       </div>
       <CardCrop art={art} rect={layout.aspect} width={width} />
