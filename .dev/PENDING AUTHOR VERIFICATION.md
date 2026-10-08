@@ -18,7 +18,7 @@ Unmarked = shipped (or verification gate) and waiting for your first pass. Agent
 
 ## Outstanding
 
-_Last populated: 2026-10-07 — /tr-inbox cleared ten author-confirmed rows: TOR-653 (dashboard sheet Pages 2–3 editing), TOR-654 (dashboard sheet Page 6 XP log), TOR-655 (relationships in gameState, dashboard Page 4), TOR-656 (dashboard sheet Page 5 projects), TOR-657 (Trace Sync timing), TOR-658 (ST roll dashboard from any seat), TOR-659 (dashboard requests refused until loaded), TOR-660 (dashboard Page 2 Blood Potency effects), TOR-661 (Prince's Court haven traits), TOR-662 (Black Caesar's page 6 Experience Log). TOR-663 (Refresh XML repaints The Court) still waiting for your first pass. Later the same day the whole Focus stack shipped: TOR-638 (willpower reroll restores bumped dice), TOR-639 (Rouse checks stay Rouse checks), TOR-526 (quick Rouse locks on impact, 1s result), TOR-640 (seat-role offset dump matches the offsets table, no scale). After your first pass: TOR-639 now hides the Normal bag, TOR-526's result holds longer, and two new rows: TOR-664 (hunger smoke crash) and TOR-665 (Willpower reroll highlights); then TOR-673 (blue glow brightens under the rolling player's cursor) and TOR-674 (Rouse checks open without waiting for the Storyteller). Then the sync speed-up plan shipped as seven rows, TOR-666 through TOR-672 (tracing, whole-table scans, NPC Apply layout, cheap skipped passes, startup trims, a single startup sync, per-seat hunger refresh)._
+_Last populated: 2026-10-07 — /tr-inbox cleared ten author-confirmed rows: TOR-653 (dashboard sheet Pages 2–3 editing), TOR-654 (dashboard sheet Page 6 XP log), TOR-655 (relationships in gameState, dashboard Page 4), TOR-656 (dashboard sheet Page 5 projects), TOR-657 (Trace Sync timing), TOR-658 (ST roll dashboard from any seat), TOR-659 (dashboard requests refused until loaded), TOR-660 (dashboard Page 2 Blood Potency effects), TOR-661 (Prince's Court haven traits), TOR-662 (Black Caesar's page 6 Experience Log). TOR-663 (Refresh XML repaints The Court) still waiting for your first pass. Later the same day the whole Focus stack shipped: TOR-638 (willpower reroll restores bumped dice), TOR-639 (Rouse checks stay Rouse checks), TOR-526 (quick Rouse locks on impact, 1s result), TOR-640 (seat-role offset dump matches the offsets table, no scale). After your first pass: TOR-639 now hides the Normal bag, TOR-526's result holds longer, and two new rows: TOR-664 (hunger smoke crash) and TOR-665 (Willpower reroll highlights); then TOR-673 (blue glow brightens under the rolling player's cursor) and TOR-674 (Rouse checks open without waiting for the Storyteller). Then the sync speed-up plan shipped as seven rows, TOR-666 through TOR-672 (tracing, whole-table scans, NPC Apply layout, cheap skipped passes, startup trims, a single startup sync, per-seat hunger refresh). On 2026-10-08 the seat announcer plan shipped as three rows: TOR-677 (one refresh per seat change, sheets skip unchanged pages), TOR-678 (backup panels refresh only while open), TOR-676 (TTS pushes seat changes to the dashboard)._
 
 ### High — session / join / first-load
 
@@ -78,6 +78,22 @@ _Last populated: 2026-10-07 — /tr-inbox cleared ten author-confirmed rows: TOR
 
 **Trace check (2026-10-08):** Confirmed: one overlay apply per change (was two), and the seat sync fell from 57 ms to 16 ms. Still to check by eye: the overlay and hunger smoke actually changed on that seat, and no other seat changed.
 
+### High — one refresh per seat change, and the dashboard stays live (one test session covers all three)
+
+**Context:** One plan in three parts. Every change to a PC now ends in a single "this seat changed" refresh, which updates the lights, HUD, overlays, dice bags, character sheets, the PCs panel row and the dashboard together. Each of those skips its own work when nothing it shows has changed. Turn **Trace Sync** on before you start; if anything looks wrong, copy the trace into `.dev/Performance Audits/Trace Sync/`. Restart the dashboard (`npm run dev`) so its server picks up the new live channel.
+
+#### TOR-677 — One refresh per seat change; character sheets skip pages that didn't change
+
+**How to verify:** Save & Play. Open the Storyteller PCs panel and use each of its buttons on one player (Health and Willpower damage, Humanity stain and base, Hunger, Frenzy, Blind, Desire clear, Torpor clear): the row and that player's character sheet should both update each time. Then, from that player's seat, make rolls that cause a Rouse stain, a Remorse check, a failed Frenzy, and a Spend Willpower reroll: the sheet (and the PCs row, if the panel is open) should follow every one. Move a project stake on a Background or Merit: page 3 of the sheet should now show the change (it never did before). Change the session number on the Phases panel: page 6 (Experience Log) should follow it. Exit Memoriam once, and have a player disconnect and reconnect: the PCs row should show it. In the trace, a Hunger change should show `PCST.refreshCharacterSheetsForColor` with no pages listed, and a trait edit from the dashboard should list only page 3.
+
+#### TOR-678 — Backup Storyteller panels only refresh while they're open
+
+**How to verify:** Save & Play. With all Storyteller panels closed, change a player's Health from the dashboard and apply a scene. The trace should show `PCST.refreshRow`, `ST.refresh`, `PJP.refresh` and `StorytellerScenesPanel.refresh` as `skipped reason=hidden` (or not at all). Now open each panel in turn (PCs, Scenes, Stats, Projects): each should show current values the moment it opens. Make a change while a panel is open: it should update live as before. Close the whole Storyteller toolbar with its hotkey, change something, then bring the toolbar back with the hotkey: the open panel should show the change straight away. Clicking a panel's own tab to close it should not cause a flicker or error. The Scenes panel clock should still be right after it was closed while the clock moved.
+
+#### TOR-676 — TTS pushes seat changes to the dashboard
+
+**How to verify:** Start the dashboard and Save & Play, then open the dashboard's PCs tab. In TTS, change a player in ways the dashboard didn't cause: damage from the in-game PCs panel, a Rouse stain from a roll, a dot click on the character sheet, typing a new Desire on the sheet (it updates when you finish editing). The dashboard tab should update within about a second without you pressing anything. Edit a project in TTS: the dashboard's page 5 should refresh. Reload the save in TTS: the dashboard should refresh once on its own. In the trace, each change should show one `DashPush.seat … sent`, and repeating a change that alters nothing should show `skipped`. Last, close the dashboard server and play for a few minutes: TTS should not stutter while nothing is listening.
+
 ### High — dice and rolls
 
 #### ✅ TOR-638 — Willpower reroll puts back dice that got knocked
@@ -131,6 +147,7 @@ _Last populated: 2026-10-07 — /tr-inbox cleared ten author-confirmed rows: TOR
 #### TOR-663 — Refresh XML puts The Court back the way it was
 
 **How to verify:** Save & Play. Open The Court and go to the second spread so your Haven Merits are showing. On the Storyteller Phases panel, press **Refresh XML**. The Court should still be open on that same spread, with the same merits, dots, and text. Then press Refresh XML while The Court is closed: it should stay closed, and opening it afterwards should still show the current merits rather than the original blank page.
+
 
 ## Cleared
 
