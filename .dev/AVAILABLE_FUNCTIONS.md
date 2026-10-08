@@ -580,6 +580,16 @@ TTS also exposes **`UI.setAttributes`** natively; use **`U.setAttributes`** when
 | :--------- | :------------- | :--------------- |
 | `DashPush.seat(color)` | Sends the slim seat snapshot when it differs from the last one sent. Called by `Sync.player`; do not call from mutation sites | (internal to `Sync.player`) |
 | `DashPush.projects()` | Tells the dashboard the project list changed | `Projects.refreshAfterMutation` |
+| `DashPush.markWorldDirty(slices)` | Marks world slices (`phase`, `scene`, `clock`, `soundscape`, `seats`) for one coalesced push 0.25 s later; unchanged slices are skipped; errors on an unknown slice. Only needed where a mutation bypasses `UpdateUIDisplays` | `require("dashboard.push").markWorldDirty({ seats = true })` |
+| `DashPush.markAllWorldDirty()` | Marks every world slice (full `UpdateUIDisplays`) | (internal to `UpdateUIDisplays`) |
+
+### Storyteller Dashboard world slices (`dashboard/world_snapshot.ttslua`, Global only)
+
+| Function | Description | Usage Example |
+| :--------- | :------------- | :--------------- |
+| `W.build(slice)` | Builds one world slice table from `gameState` (read-only) | `W.build("clock")` |
+| `W.snapshot()` | All slices keyed by topic | `GlobalDashboardWorldSnapshot` |
+| `GlobalDashboardWorldSnapshot()` | Execute-lua entry: JSON of every slice with `ok = true`, or the loading refusal JSON | Dashboard `refreshWorldSnapshot()` |
 
 ---
 

@@ -851,5 +851,6 @@ Agents shipped ~24 commits referencing phantom Linear ids `TOR-123`–`TOR-146` 
 | 2026-10-08 | SHIP | TOR-674 | Author ⚠️: left-click Rouse result should use the same short broadcast as idle-bag quick Rouse (`RO.isRouseFamilyRoll` → `C.AUTO_ROUSE_RESULT_BROADCAST_SECONDS`). Stays Awaiting Author Review. |
 | 2026-10-08 | SHIP | TOR-663 | Author ❌: Refresh XML revealed The Court to everyone (`UI.show` re-applied XML defaults). Court pages now use `setVisibleTo` + `active` only. Stays Awaiting Author Review. |
 | 2026-10-08 | FOCUS | — | Capture empty; two Immediate follow-ups shipped. Stack left empty; proposed TOR-81, TOR-301, TOR-466 (not promoted). |
+| 2026-10-08 | SHIP | TOR-679 | Scene-level push topics, parent TOR-31, relatedTo TOR-676: world slice builders + coalesced flush (fd99664f), mark sites (b219b68e), `GlobalDashboardWorldSnapshot` (ecba5497). Dashboard plumbing is dashboard-only (SD-Push-World, 52365a5f). Awaiting Author Review; one PAV row. |
 
 See `.dev/DEVELOPMENT_WORKFLOW.md` § Linear synchronization, § Inbox capture & triage, and § Focus & backlog prioritization — diff RUNNING TASKLIST against Linear monthly or before releases; run **“process the inbox”** when Active or unanswered **Needs clarification** items pile up; re-stack **Focus** before play sessions or ~weekly.

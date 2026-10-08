@@ -154,6 +154,24 @@ _Last populated: 2026-10-08 — /tr-inbox cleared eight author-confirmed rows: T
 
 **Trace check (2026-10-08, Refinement Pass 2):** You reported the dashboard only showed PCs-panel changes after a page refresh, even though TTS logged `DashPush.seat sent`. Live tests found the cause: TTS silently drops any `sendExternalMessage` table that contains another table, and the seat data is one. Flat messages arrive fine. Seat pushes now travel as a JSON string, which a 7 KB test confirmed arrives intact. Your trace confirms the TTS side is right: real changes each sent one push, the empty Apply was skipped, and Desire typing sent one push per edit with no seat refresh per keystroke. **No trace re-run needed.** Restart the dashboard server (`npm run dev`) so it can read the new format, Save & Play, then repeat steps 1, 3 and 4 by eye. The dashboard should follow each change within about a second without a page refresh.
 
+#### TOR-679 — TTS pushes phase, scene, clock, sound and seat changes to the dashboard
+
+**Context:** This is plumbing only. TTS now sends five more kinds of update to the dashboard server (phase, scene, clock, soundscape, seats), but no dashboard screen shows them yet, so you check them in Trace Sync and on a plain JSON page the server provides. Changes that land close together are sent once, about a quarter of a second later, and anything that didn't actually change is not sent. The clock is not sent every minute: TTS sends the time and speed, and the dashboard will run the clock itself. TTS sends the clock again only when it jumps, pauses, changes speed, or reaches a new hour.
+
+**How to verify:** Restart the dashboard server, then Save & Play. Do the trace below. Afterwards, open `http://127.0.0.1:8788/api/tts/cache` in any browser tab. It should list entries for `phase`, `scene`, `clock`, `soundscape` and `seats`, and they should match the table (for example, the Play subphase reads `Downtime` after the last trace step). Play normally for a few minutes with the clock running: TTS should not stutter.
+
+**Trace 1 — world pushes** (save as `TOR-679 Trace 1.txt`)
+
+* **Initial Conditions:** Restart the dashboard (`npm run dev`), then Save & Play into a Play-phase save in the **Main** subphase. A library scene is live on the table and its clock runs in real time. At least one NPC token is on the control board. Open the Storyteller **Scenes** panel.
+* **Trace Actions:**
+  1. Wait one full minute without touching anything while the clock runs.
+  2. In the Scenes panel, set the clock one hour later and click **Apply clock**.
+  3. On the control board, move one NPC token to a different spot on the stage, then click the board's **Apply**.
+  4. Open the Storyteller **Sound** panel and drag the **Music** volume slider about halfway along, then let go.
+  5. On the Storyteller **Phases** panel, switch the Play subphase to **Downtime**.
+
+  Step 1 should show no `DashPush.world` lines (unless the clock happened to reach a new hour, which shows one `clock` and one `scene` line). Each of steps 2 to 5 should show `DashPush.world … sent` once for each kind of update that changed: `clock` in step 2, `seats` in step 3, `soundscape` in step 4 (a few lines while you drag is fine), `phase` and `clock` in step 5. Anything that did not change in that step shows `skipped` or nothing at all.
+
 ### High — dice and rolls
 
 #### TOR-674 — Rouse checks open without waiting, and the result is as short as a quick Rouse

@@ -76,6 +76,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | *(load guard)* | — | — | Every Dashboard execute-lua entry in this block (`GlobalImportGenericNpcs`, `GlobalImportSceneJson`, `GlobalDashboard*`) refuses until `S.isReady()` — the Global chunk is callable before `onLoad` fills `gameState`. JSON entries return `ok=false, loading=true`; the imports raise. See [`dashboard/README.md`](../../dashboard/README.md) § Load guard. |
 | `GlobalDashboardPcSheetSnapshot` | B | — | Dashboard execute-lua (`dashboard.pc_sheet`): JSON snapshot of five PC seats (stats, Desire, Ambition, identity overlay, session flags, conditions). No Steam gate (no clicker). |
 | `GlobalDashboardPcSheetApply` | B+C | — | Dashboard execute-lua (`dashboard.pc_sheet`): one typed mutation **or a JSON array of mutations** (trackers, dots, disabled, ST badges, Hunger, Desire, join spike controls, ST rolls; Page 2–3 discipline/power/ritual/advantage ops in `dashboard.pc_sheet_traits`; Experience Log append/undo in `dashboard.pc_sheet_xp`; Page 4 `relationshipUpsert` / `relationshipDelete` in `dashboard.pc_sheet_relationships` (refreshes every linked PC's sheets); **`mergePlayerData`** developer JSON Apply: deep-merge assign into `gameState.playerData.<pid>` with **no** defaults/normalize/validateState) then one snapshot. Ops are state-only; after the batch, `Dash.apply` calls `Sync.player` once per touched seat (which also pushes the seat to the dashboard). Damage uses V5 overflow (super→agg). Stain add is a no-op while impaired. No Steam gate. Reuses `P` / `Sync.player` / `RC.initiateRoll`. Seat occupancy is read-only here (`absentFromSession` + `connected` in the snapshot); connection is the sole authority. |
+| `GlobalDashboardWorldSnapshot` | B | — | Dashboard execute-lua (`dashboard.world_snapshot`): JSON of the five world push slices (phase, scene, clock anchor, soundscape, seats) for a tab that opens before the server has cached them. Read-only. No Steam gate (no clicker). TOR-679. |
 | `GlobalDashboardProjectsSnapshot` | B | — | Dashboard execute-lua (`dashboard.projects`): JSON of every project with Lua-derived auto phase, required stake, project die, start/end text, Begin eligibility + message, launch eligibility; per-source advantage lists with free dots; present day; owner/source order; `listForDisplaySource` id order per source. Read-only. No Steam gate (no clicker). |
 | `GlobalDashboardProjectsApply` | B+C | — | Dashboard execute-lua (`dashboard.projects`): one command — `create` (first Save only), `patch` (any field; scope runs `applyScopeDifficulty`; Result/Margin refused once begun), `setStakeRows` (≤8), `begin` (`isBeginEligible`), `complete` (in progress only), `delete`, `launchRoll` (`RC.initiateRoll` LAUNCH, same as the panel R button; pre-launch only). Mutations end with `PJP.refresh` + `Projects.refreshAfterMutation` (all PC sheets, coterie sheet, Court cards); `launchRoll` skips the refresh. Returns a fresh snapshot. No Steam gate. |
 | `GlobalGameboardInstallPaletteSnaps` | C | Done | palette snap install |
@@ -103,10 +104,10 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | API | Behavior |
 | --- | --- |
 | `Sync.full` | Full reconcile (state → world) |
-| `Sync.npcs` | Domain reconcilers |
+| `Sync.npcs` | Domain reconcilers; marks the dashboard `seats` slice |
 | `Sync.soundscape` / `Sync.lightRef` / `Sync.npcCutouts` | Domain reconcilers |
 | `Sync.player` | Per-seat announcer: lights, HUD, overlays, dice bags, CSHEET slices, PCs row (visible only), `DashPush.seat` (TOR-677 / TOR-676) |
-| `Sync.ui` | UI-only refresh |
+| `Sync.ui` | UI-only refresh; `UpdateUIDisplays` ends by marking the matching dashboard world slices (`DashPush.markWorldDirty`, one coalesced flush, TOR-679) |
 
 ### Object scripts
 

@@ -40,6 +40,7 @@ Status: current performance audit; entries may be done, partial, or deferred as 
 | — | Seat announcer + CSHEET slice skip | **Done (TOR-677)** — `Sync.player` is the only per-seat presentation path (`Conditions.afterChange` delegates; pc_stats mutators state-only; `Dash.apply` announces once per touched seat). `core/csheet_slices.ttslua` fingerprints each page's inputs in Global, so unchanged CSHEET pages get no `obj.call` (each page refresh was ~46 `Global.call` round trips). Page 3 includes project stakes |
 | — | Soft-retired panel paints | **Done (TOR-678)** — PCs row, Stats, Projects and Scenes paints return early unless `StorytellerPanelUI.isPanelVisible`; reopening (click or toolbar hotkey) repaints. Scenes `clockDraft` resync still runs while closed |
 | — | Dashboard push | **Done (TOR-676)** — `DashPush.seat` at the end of `Sync.player`; one `JSON.encode` of the slim seat per call, send skipped when unchanged |
+| — | Dashboard world push | **Done (TOR-679)** — `DashPush.markWorldDirty` is an O(1) set write; one `U.await` flush 0.25 s later builds and encodes only dirty slices and skips unchanged ones. The real-time clock ticker marks only on hour/day rollover or catch-up end; the dashboard animates minutes from the clock anchor |
 
 Opt-in metrics: `Sync.setMetricsEnabled(true)` or `gameState.debug.syncMetricsEnabled` → `U.emitForAgent("sync_metrics", …)`. See [`.dev/TTS_MCP.md`](../TTS_MCP.md).
 
