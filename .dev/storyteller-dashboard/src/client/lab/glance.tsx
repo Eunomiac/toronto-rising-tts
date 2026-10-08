@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useState, type CSSProperties, type MouseEvent, type ReactElement } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent, type ReactElement, type ReactNode } from "react";
 import { Headshot } from "../headshots/Headshot";
 import type { CatalogCharacter, SceneCatalogs } from "../scenes/types";
 import {
@@ -10,7 +10,7 @@ import {
   type SheetSite,
   type WeatherCalendar
 } from "./chronicleSheets";
-import { Btn, Chip, Overlay, canvasPoint } from "./sketch";
+import { Btn, Overlay, canvasPoint } from "./sketch";
 
 /**
  * Panels for the Glance strip sketch (scenes-r1-b), pin pass 3: location and weather read live from the
@@ -79,7 +79,7 @@ const RingMenu = <T,>({ at, options, current, onPick, onClose }: {
             key={String(option.value)}
             type="button"
             className={`lab-ring-item spoke${option.value === current ? " current" : ""}`}
-            style={{ left: Math.cos(angle) * 100, top: Math.sin(angle) * 64 }}
+            style={{ left: Math.cos(angle) * 112, top: Math.sin(angle) * 64 }}
             onClick={() => {
               onPick(option.value);
               onClose();
@@ -305,20 +305,32 @@ export const MasonryRoster = (): ReactElement => {
 
 type Level = 0 | 1 | 2 | 3;
 type Precip = "none" | "lightRain" | "heavyRain" | "lightSnow" | "heavySnow";
-type WeatherAxes = { readonly precip: Precip; readonly wind: Level };
+/** A thunderstorm always blows at max wind, so it is chosen on the wind axis. */
+type WeatherAxes = { readonly precip: Precip; readonly wind: Level; readonly thunder: boolean };
+type WindChoice = Level | "storm";
 
 const PRECIP: Record<Precip, { readonly label: string; readonly rain: Level; readonly snow: Level }> = {
-  none: { label: "No rain or snow", rain: 0, snow: 0 },
-  lightRain: { label: "Light rain", rain: 1, snow: 0 },
-  heavyRain: { label: "Heavy rain", rain: 3, snow: 0 },
-  lightSnow: { label: "Light snow", rain: 0, snow: 1 },
-  heavySnow: { label: "Heavy snow", rain: 0, snow: 3 }
+  none: { label: "Clear", rain: 0, snow: 0 },
+  lightRain: { label: "Light Rain", rain: 1, snow: 0 },
+  heavyRain: { label: "Heavy Rain", rain: 3, snow: 0 },
+  lightSnow: { label: "Light Snow", rain: 0, snow: 1 },
+  heavySnow: { label: "Heavy Snow", rain: 0, snow: 3 }
 };
 
-const WIND_LABEL: Record<Level, string> = { 0: "No wind", 1: "Low wind", 2: "Medium wind", 3: "Max wind" };
+const WIND_LABEL: Record<WindChoice, string> = { 0: "No Wind", 1: "Low Wind", 2: "Medium Wind", 3: "Max Wind", storm: "Thunderstorm" };
 
 const PRECIP_OPTIONS: readonly RingOption<Precip>[] = (Object.keys(PRECIP) as Precip[]).map((value) => ({ value, label: PRECIP[value].label }));
-const WIND_OPTIONS: readonly RingOption<Level>[] = ([0, 1, 2, 3] as const).map((value) => ({ value, label: WIND_LABEL[value] }));
+const WIND_OPTIONS: readonly RingOption<WindChoice>[] = ([0, 1, 2, 3, "storm"] as const).map((value) => ({ value, label: WIND_LABEL[value] }));
+
+const windChoice = (axes: WeatherAxes): WindChoice => (axes.thunder ? "storm" : axes.wind);
+
+/** A thunderstorm brings heavy rain when the sky was clear (TTS thunder always plays with heavy rain). */
+const withWind = (axes: WeatherAxes, choice: WindChoice): WeatherAxes =>
+  choice === "storm"
+    ? { precip: axes.precip === "none" ? "heavyRain" : axes.precip, wind: 3, thunder: true }
+    : { ...axes, wind: choice, thunder: false };
+
+const sameAxes = (a: WeatherAxes, b: WeatherAxes): boolean => a.precip === b.precip && a.wind === b.wind && a.thunder === b.thunder;
 
 /** Hourly calendar code → the two axes (decoding as `C.WEATHER`: base weather, temperature delta, wind). */
 const PRECIP_BY_BASE: Readonly<Record<string, Precip>> = { x: "none", c: "none", w: "lightRain", p: "heavyRain", t: "heavyRain", s: "lightSnow", b: "heavySnow" };
@@ -337,7 +349,7 @@ const temperatureDelta = (ch: string): number => {
   return Number.NaN;
 };
 
-type Scheduled = WeatherAxes & { readonly celsius: number; readonly thunder: boolean };
+type Scheduled = WeatherAxes & { readonly celsius: number; readonly fog: boolean };
 
 const scheduledWeather = (calendar: WeatherCalendar, at: Date): Scheduled | string => {
   const month = at.getMonth() + 1;
@@ -352,7 +364,7 @@ const scheduledWeather = (calendar: WeatherCalendar, at: Date): Scheduled | stri
   if (precip === undefined || wind === undefined || Number.isNaN(delta)) {
     return `Unknown weather code "${code}".`;
   }
-  return { precip, wind, celsius: average + delta, thunder: code.charAt(0) === "t" };
+  return { precip, wind, celsius: average + delta, thunder: code.charAt(0) === "t", fog: code.charAt(1) === "f" };
 };
 
 type FallLayer = { readonly count: number; readonly size: number; readonly opacity: number; readonly seconds: number };
@@ -373,9 +385,19 @@ const SNOW_LAYERS: Record<Level, readonly FallLayer[]> = {
 
 const TILE = 72;
 const WIND_SLANT: Record<Level, number> = { 0: 0, 1: 8, 2: 18, 3: 30 };
+const WIND_SPEEDUP: Record<Level, number> = { 0: 1, 1: 1.3, 2: 1.75, 3: 2.4 };
 
 /** One falling layer: a tiled pattern of streaks or flakes, slanted by the wind, sliding down one tile per loop. */
-const Fall = ({ id, layer, kind, w, h, slant, seed }: { id: string; layer: FallLayer; kind: "rain" | "snow"; w: number; h: number; slant: number; seed: number }): ReactElement => {
+const Fall = ({ id, layer, kind, w, h, slant, speedup, seed }: {
+  id: string;
+  layer: FallLayer;
+  kind: "rain" | "snow";
+  w: number;
+  h: number;
+  slant: number;
+  speedup: number;
+  seed: number;
+}): ReactElement => {
   const random = seeded(seed);
   const marks = Array.from({ length: layer.count }, () => ({ x: random() * TILE, y: random() * (TILE - layer.size) }));
   return (
@@ -395,7 +417,7 @@ const Fall = ({ id, layer, kind, w, h, slant, seed }: { id: string; layer: FallL
           width={w * 3}
           height={h + TILE * 4}
           fill={`url(#${id})`}
-          style={{ animationDuration: `${layer.seconds}s` }}
+          style={{ animationDuration: `${layer.seconds / speedup}s` }}
         />
       </g>
     </svg>
@@ -446,33 +468,44 @@ const WindScene = ({ level, w, h }: { level: Level; w: number; h: number }): Rea
   );
 };
 
-const WeatherBackdrop = ({ axes, thunder, w, h }: { axes: WeatherAxes; thunder: boolean; w: number; h: number }): ReactElement => {
+/** Drifting mist banks, thicker toward the ground. */
+const Fog = (): ReactElement => (
+  <span className="lab-wx-fog">
+    <span className="lab-wx-fog-bank far" />
+    <span className="lab-wx-fog-bank near" />
+  </span>
+);
+
+const WeatherBackdrop = ({ axes, fog, w, h }: { axes: WeatherAxes; fog: boolean; w: number; h: number }): ReactElement => {
   const id = useId().replace(/[^a-zA-Z0-9]/g, "");
   const slant = WIND_SLANT[axes.wind];
+  const speedup = WIND_SPEEDUP[axes.wind];
   const { rain, snow } = PRECIP[axes.precip];
   return (
     <div className="lab-wx" aria-hidden="true">
       <WindScene level={axes.wind} w={w} h={h} />
+      {fog && <Fog />}
       {RAIN_LAYERS[rain].map((layer, index) => (
-        <Fall key={`r${index}`} id={`${id}r${index}`} layer={layer} kind="rain" w={w} h={h} slant={slant} seed={11 + index} />
+        <Fall key={`r${index}`} id={`${id}r${index}`} layer={layer} kind="rain" w={w} h={h} slant={slant} speedup={speedup} seed={11 + index} />
       ))}
       {SNOW_LAYERS[snow].map((layer, index) => (
-        <Fall key={`s${index}`} id={`${id}s${index}`} layer={layer} kind="snow" w={w} h={h} slant={slant * 0.6} seed={31 + index} />
+        <Fall key={`s${index}`} id={`${id}s${index}`} layer={layer} kind="snow" w={w} h={h} slant={slant * 0.6} speedup={speedup} seed={31 + index} />
       ))}
-      {thunder && <span className="lab-wx-flash" />}
+      {axes.thunder && <span className="lab-wx-flash" />}
     </div>
   );
 };
 
 /**
- * Weather for the scene's date and hour from the WEATHER calendar. Click either label for a ring of choices;
- * choosing something other than the calendar's value overrides it until released.
+ * Weather for the scene's date and hour from the WEATHER calendar. Click rain/snow or wind for a ring of
+ * choices; choosing something other than the calendar's value overrides it until released. Fog always
+ * follows the calendar (TTS draws no fog for weather).
  */
 export const WeatherPanel = ({ at, forceOverride, w, h }: { at: Date; forceOverride: boolean; w: number; h: number }): ReactElement => {
   const { data, error } = useWeatherCalendar();
   const [override, setOverride] = useState<WeatherAxes | null>(null);
   const [ring, setRing] = useState<{ axis: "precip" | "wind"; at: Point } | null>(null);
-  useEffect(() => setOverride(forceOverride ? { precip: "heavyRain", wind: 3 } : null), [forceOverride]);
+  useEffect(() => setOverride(forceOverride ? { precip: "heavyRain", wind: 3, thunder: true } : null), [forceOverride]);
   if (error || !data) {
     return <div className="lab-wx-panel"><p className="lab-note">{error ?? "Reading the weather calendar…"}</p></div>;
   }
@@ -480,15 +513,22 @@ export const WeatherPanel = ({ at, forceOverride, w, h }: { at: Date; forceOverr
   if (typeof scheduled === "string") {
     return <div className="lab-wx-panel"><p className="lab-note">{scheduled}</p></div>;
   }
-  const axes = override ?? scheduled;
-  const overridden = override !== null && (override.precip !== scheduled.precip || override.wind !== scheduled.wind);
+  const axes: WeatherAxes = override ?? { precip: scheduled.precip, wind: scheduled.wind, thunder: scheduled.thunder };
+  const overridden = override !== null && !sameAxes(override, scheduled);
   const openRing = (axis: "precip" | "wind") => (event: MouseEvent<HTMLButtonElement>): void => setRing({ axis, at: canvasPoint(event) });
   return (
     <div className={`lab-wx-panel${overridden ? " lab-overridden" : ""}`}>
-      <WeatherBackdrop axes={axes} thunder={!overridden && scheduled.thunder} w={w} h={h} />
+      <WeatherBackdrop axes={axes} fog={scheduled.fog} w={w} h={h} />
       <span className="lab-wx-axes">
         <button type="button" className="lab-wx-axis" onClick={openRing("precip")}>{PRECIP[axes.precip].label}</button>
-        <button type="button" className="lab-wx-axis" onClick={openRing("wind")}>{WIND_LABEL[axes.wind]}</button>
+        <span className="lab-wx-sep">◆</span>
+        <button type="button" className="lab-wx-axis" onClick={openRing("wind")}>{WIND_LABEL[windChoice(axes)]}</button>
+        {scheduled.fog && (
+          <>
+            <span className="lab-wx-sep">◆</span>
+            <span className="lab-wx-fixed">Fog</span>
+          </>
+        )}
       </span>
       <span className="lab-wx-temp">
         {scheduled.celsius}°C<sup>{Math.round(scheduled.celsius * 1.8 + 32)}°F</sup>
@@ -498,7 +538,7 @@ export const WeatherPanel = ({ at, forceOverride, w, h }: { at: Date; forceOverr
         <RingMenu at={ring.at} options={PRECIP_OPTIONS} current={axes.precip} onPick={(precip) => setOverride({ ...axes, precip })} onClose={() => setRing(null)} />
       )}
       {ring?.axis === "wind" && (
-        <RingMenu at={ring.at} options={WIND_OPTIONS} current={axes.wind} onPick={(wind) => setOverride({ ...axes, wind })} onClose={() => setRing(null)} />
+        <RingMenu at={ring.at} options={WIND_OPTIONS} current={windChoice(axes)} onPick={(choice) => setOverride(withWind(axes, choice))} onClose={() => setRing(null)} />
       )}
     </div>
   );
@@ -566,9 +606,17 @@ const skyline = (w: number, h: number): readonly Building[] => {
   return buildings;
 };
 
-/** Sky from dusk to dawn: the moon crosses, city windows go dark one by one, and the horizon warms before dawn. */
-const NightSky = ({ minutes, w, h }: { minutes: number; w: number; h: number }): ReactElement => {
+const moonPosition = (t: number, w: number, h: number): Point => ({ x: w * (0.06 + 0.88 * t), y: h * (0.78 - 0.5 * Math.sin(Math.PI * t)) });
+
+type MoonDrag = { readonly target: number | null; readonly onDrag: (t: number) => void };
+
+/**
+ * Sky from dusk to dawn: the moon crosses, city windows go dark one by one, and the horizon warms before dawn.
+ * The moon can be dragged along its arc (shown while a target is set) to pick a later or earlier time tonight.
+ */
+const NightSky = ({ minutes, w, h, drag }: { minutes: number; w: number; h: number; drag: MoonDrag }): ReactElement => {
   const id = useId().replace(/[^a-zA-Z0-9]/g, "");
+  const svgRef = useRef<SVGSVGElement>(null);
   const city = useMemo(() => skyline(w, h), [w, h]);
   const stars = useMemo(() => {
     const random = seeded(3);
@@ -579,9 +627,18 @@ const NightSky = ({ minutes, w, h }: { minutes: number; w: number; h: number }):
   const lit = t === null ? 0.04 : Math.max(0.04, 0.82 - 0.85 * t);
   const starAlpha = t === null ? 0 : Math.sin(Math.PI * t) * 0.9;
   const dawnGlow = t === null ? 0 : Math.max(0, (t - 0.72) / 0.28);
-  const moon = t === null ? null : { x: w * (0.06 + 0.88 * t), y: h * (0.78 - 0.5 * Math.sin(Math.PI * t)) };
+  const moon = t === null ? null : moonPosition(drag.target ?? t, w, h);
+  const arc = Array.from({ length: 25 }, (_, index) => moonPosition(index / 24, w, h)).map((p) => `${p.x},${p.y}`).join(" ");
+  const fractionAt = (event: PointerEvent<Element>): number => {
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (!rect) {
+      throw new Error("NightSky: svg not mounted during a moon drag");
+    }
+    const x = ((event.clientX - rect.left) / rect.width) * w;
+    return Math.min(1, Math.max(0, (x / w - 0.06) / 0.88));
+  };
   return (
-    <svg className="lab-sky" width={w} height={h} aria-hidden="true">
+    <svg ref={svgRef} className="lab-sky" width={w} height={h} aria-hidden="true">
       <defs>
         <linearGradient id={`${id}sky`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor={sky.top} />
@@ -594,6 +651,7 @@ const NightSky = ({ minutes, w, h }: { minutes: number; w: number; h: number }):
       </defs>
       <rect width={w} height={h} fill={`url(#${id}sky)`} />
       {stars.map((star, index) => <circle key={index} cx={star.x} cy={star.y} r={star.r} fill="#fff" fillOpacity={starAlpha * (0.4 + (index % 3) * 0.25)} />)}
+      {moon && drag.target !== null && <polyline points={arc} className="lab-sky-arc" />}
       {moon && (
         <g>
           <circle cx={moon.x} cy={moon.y} r={20} fill="#fff6d8" fillOpacity={0.12} />
@@ -610,6 +668,26 @@ const NightSky = ({ minutes, w, h }: { minutes: number; w: number; h: number }):
           ))}
         </g>
       ))}
+      {moon && (
+        <circle
+          className="lab-sky-moon"
+          cx={moon.x}
+          cy={moon.y}
+          r={14}
+          fill="transparent"
+          onClick={(event) => event.stopPropagation()}
+          onPointerDown={(event) => {
+            event.stopPropagation();
+            event.currentTarget.setPointerCapture(event.pointerId);
+            drag.onDrag(fractionAt(event));
+          }}
+          onPointerMove={(event) => {
+            if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+              drag.onDrag(fractionAt(event));
+            }
+          }}
+        />
+      )}
     </svg>
   );
 };
@@ -618,7 +696,7 @@ const formatTime = (at: Date): string => at.toLocaleTimeString("en-US", { hour: 
 
 const formatDate = (at: Date): string => at.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
 
-const formatSpan = (minutes: number): string => `${Math.floor(minutes / 60)}h ${String(minutes % 60).padStart(2, "0")}m`;
+const formatClock = (minutes: number): string => formatTime(new Date(2000, 0, 1, Math.floor(minutes / 60) % 24, minutes % 60));
 
 const sameDay = (a: Date, b: Date): boolean => a.toDateString() === b.toDateString();
 
@@ -628,28 +706,102 @@ const JUMPS: readonly (readonly [label: string, minutes: number])[] = [
   ["10m", 10], ["20m", 20], ["30m", 30], ["1h", 60], ["2h", 120], ["4h", 240], ["1d", 1440], ["3d", 4320], ["1w", 10080]
 ];
 
+const NIGHT_MINUTES = DAWN - DUSK;
+const PLAY_MS = 1800;
+const FIVE_MINUTES = 300_000;
+
+const easeInOut = (f: number): number => (f < 0.5 ? 2 * f * f : 1 - (-2 * f + 2) ** 2 / 2);
+
+const toMinute = (ms: number): Date => new Date(Math.round(ms / 60_000) * 60_000);
+
 /**
- * Scene date and time over the sky. Present-day time appears (green) only when it differs from scene time;
- * a scene set before the present day is a flashback (yellow glow). Click for the clock pop-up.
+ * Scene date and time over the sky, with tonight's dusk (left) and dawn (right) in the bottom corners.
+ * Present-day time appears (green) only when it differs from scene time; scene time can never pass it (the
+ * caller moves present day forward). A scene before the present day is a flashback (yellow glow).
+ * Drag the moon to pick a time tonight, then press play over the clock to run the time animation.
+ * Click anywhere else for the clock pop-up.
  */
-export const WhenPanel = ({ at, onChange, forceOpen, w, h }: { at: Date; onChange: (next: Date) => void; forceOpen: boolean; w: number; h: number }): ReactElement => {
+export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, w, h }: {
+  at: Date;
+  present: Date;
+  onChange: (next: Date) => void;
+  onSetPresent: (next: Date) => void;
+  forceOpen: boolean;
+  w: number;
+  h: number;
+}): ReactElement => {
   const [open, setOpen] = useState(false);
+  const [target, setTarget] = useState<number | null>(null);
+  const [playing, setPlaying] = useState<{ from: number; to: number } | null>(null);
+  const changeRef = useRef(onChange);
+  changeRef.current = onChange;
+  useEffect(() => {
+    if (!playing) {
+      return undefined;
+    }
+    const started = performance.now();
+    let frame = 0;
+    const step = (now: number): void => {
+      const f = Math.min(1, (now - started) / PLAY_MS);
+      changeRef.current(toMinute(playing.from + (playing.to - playing.from) * easeInOut(f)));
+      if (f < 1) {
+        frame = requestAnimationFrame(step);
+      } else {
+        setPlaying(null);
+      }
+    };
+    frame = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frame);
+  }, [playing]);
   const minutes = at.getHours() * 60 + at.getMinutes();
-  const differs = at.getTime() !== PRESENT_DAY.getTime();
-  const flashback = at.getTime() < PRESENT_DAY.getTime();
+  const differs = at.getTime() !== present.getTime();
+  const flashback = at.getTime() < present.getTime();
   const untilDawn = (minutes >= 12 * 60 ? DAWN : DAWN - 1440) - minutes;
-  const night = nightFraction(minutes) !== null;
+  const tonight = nightFraction(minutes);
+  const targetTime = target === null || tonight === null
+    ? null
+    : new Date(Math.round(shift(at, (target - tonight) * NIGHT_MINUTES).getTime() / FIVE_MINUTES) * FIVE_MINUTES);
+  const play = (event: MouseEvent<HTMLButtonElement>): void => {
+    event.stopPropagation();
+    if (targetTime) {
+      setPlaying({ from: at.getTime(), to: targetTime.getTime() });
+    }
+    setTarget(null);
+  };
   return (
     <>
       <div className={`lab-when${flashback ? " lab-flashback" : ""}`} onClick={() => setOpen(true)}>
-        <NightSky minutes={minutes} w={w} h={h} />
+        <NightSky minutes={minutes} w={w} h={h} drag={{ target: playing ? null : target, onDrag: setTarget }} />
         <span className={`lab-when-present${differs ? "" : " hidden"}`}>
-          {sameDay(at, PRESENT_DAY) ? formatTime(PRESENT_DAY) : `${formatDate(PRESENT_DAY)} · ${formatTime(PRESENT_DAY)}`}
+          {sameDay(at, present) ? formatTime(present) : `${formatDate(present)} · ${formatTime(present)}`}
         </span>
         <span className="lab-when-date">{formatDate(at)}</span>
         <span className="lab-when-time">{formatTime(at)}</span>
-        <span className="lab-when-dawn">
-          <Chip tone={night ? "warn" : "accent"}>{night ? `Dawn in ${formatSpan(untilDawn)}` : "Daylight"}</Chip>
+        {targetTime && (
+          <span className="lab-when-play">
+            <button type="button" className="lab-when-play-go" onClick={play} title="Run the time animation in TTS">
+              ▶ {formatTime(targetTime)}
+            </button>
+            <button
+              type="button"
+              className="lab-when-play-cancel"
+              title="Cancel"
+              onClick={(event) => {
+                event.stopPropagation();
+                setTarget(null);
+              }}
+            >
+              ×
+            </button>
+          </span>
+        )}
+        <span className="lab-when-edge dusk">
+          <small>Dusk</small>
+          {formatClock(DUSK)}
+        </span>
+        <span className="lab-when-edge dawn">
+          <small>Dawn</small>
+          {formatClock(DAWN)}
         </span>
       </div>
       {(open || forceOpen) && (
@@ -677,8 +829,8 @@ export const WhenPanel = ({ at, onChange, forceOpen, w, h }: { at: Date; onChang
             </div>
             <div className="lab-row">
               <Btn>Type scene date / time…</Btn>
-              <button type="button" className="lab-btn" onClick={() => onChange(PRESENT_DAY)}>Set scene time to present day</button>
-              <Btn>Set present day to scene time</Btn>
+              <button type="button" className="lab-btn" onClick={() => onChange(present)}>Set scene time to present day</button>
+              <button type="button" className="lab-btn" onClick={() => onSetPresent(at)}>Set present day to scene time</button>
               <Btn>Real-time: off</Btn>
             </div>
           </div>
@@ -690,47 +842,87 @@ export const WhenPanel = ({ at, onChange, forceOpen, w, h }: { at: Date; onChang
 
 /* ---------- Sound: one row per channel ---------- */
 
-const Slider = ({ value, disabled = false }: { value: number; disabled?: boolean }): ReactElement => (
-  <input type="range" className="lab-slider" min={0} max={100} defaultValue={value} disabled={disabled} />
+type Overridable<T> = { readonly value: T; readonly set: (next: T) => void; readonly overridden: boolean; readonly release: () => void };
+
+/** A sound value that starts at the scene's value; any other value is an override until released. */
+const useOverridable = <T,>(base: T): Overridable<T> => {
+  const [value, set] = useState(base);
+  return { value, set, overridden: value !== base, release: () => set(base) };
+};
+
+const Slider = ({ level, disabled = false }: { level: Overridable<number>; disabled?: boolean }): ReactElement => (
+  <input
+    type="range"
+    className="lab-slider"
+    min={0}
+    max={100}
+    value={level.value}
+    disabled={disabled}
+    onChange={(event) => level.set(Number(event.target.value))}
+  />
 );
 
-/** Music and Featured share a row because only one of them plays at a time. */
-export const SoundMixer = ({ indoors }: { indoors: boolean }): ReactElement => {
+/** One mixer control group; an override glows red and gets a release button in its corner. */
+const MixerGroup = ({ idle = false, values, children }: { idle?: boolean; values: readonly Pick<Overridable<unknown>, "overridden" | "release">[]; children: ReactNode }): ReactElement => {
+  const overridden = values.some((value) => value.overridden);
+  return (
+    <span className={`lab-mixer-group${idle ? " idle" : ""}${overridden ? " overridden" : ""}`}>
+      {children}
+      {overridden && (
+        <button type="button" className="lab-mixer-release" title="Release override" onClick={() => values.forEach((value) => value.release())}>
+          ↺
+        </button>
+      )}
+    </span>
+  );
+};
+
+const MUSIC_PLAYLISTS = ["Main", "Combat", "Intrigue", "Silent"] as const;
+
+/**
+ * Music and Featured share a row because only one of them plays at a time. The playlist shows what is playing:
+ * the scene library's choice (usually Main) unless changed here.
+ */
+export const SoundMixer = ({ indoors, scenePlaylist = "Main" }: { indoors: boolean; scenePlaylist?: string }): ReactElement => {
   const [featured, setFeatured] = useState(false);
+  const playlist = useOverridable(scenePlaylist);
+  const music = useOverridable(70);
+  const featuredLevel = useOverridable(80);
+  const rain = useOverridable(60);
+  const wind = useOverridable(40);
+  const thunder = useOverridable(75);
+  const ambience = useOverridable(55);
   const rainPlaying = true;
   const thunderPlaying = false;
   return (
     <div className="lab-mixer">
       <div className="lab-mixer-row">
         <span className="lab-mixer-label">Music</span>
-        <span className={`lab-mixer-group${featured ? " idle" : ""}`}>
-          <select className="lab-select" defaultValue="default">
-            <option value="default">(default)</option>
-            <option>Main</option>
-            <option>Combat</option>
-            <option>Intrigue</option>
+        <MixerGroup idle={featured} values={[playlist, music]}>
+          <select className="lab-select" value={playlist.value} onChange={(event) => playlist.set(event.target.value)}>
+            {MUSIC_PLAYLISTS.map((name) => <option key={name}>{name}</option>)}
           </select>
-          <Slider value={70} />
-        </span>
-        <span className={`lab-mixer-group${featured ? "" : " idle"}`}>
+          <Slider level={music} />
+        </MixerGroup>
+        <MixerGroup idle={!featured} values={[featuredLevel]}>
           <button type="button" className={`lab-btn${featured ? " primary" : ""}`} onClick={() => setFeatured(!featured)}>
             {featured ? "★ TR Loop" : "Featured…"}
           </button>
-          <Slider value={80} />
-        </span>
+          <Slider level={featuredLevel} />
+        </MixerGroup>
       </div>
       <div className={`lab-mixer-row${indoors ? " muted" : ""}`} title={indoors ? "Indoors: weather sounds are not playing" : undefined}>
         <span className="lab-mixer-label">Weather</span>
-        <span className={`lab-mixer-group${rainPlaying && !indoors ? "" : " idle"}`}>Rain <Slider value={60} disabled={indoors || !rainPlaying} /></span>
-        <span className={`lab-mixer-group${indoors ? " idle" : ""}`}>Wind <Slider value={40} disabled={indoors} /></span>
-        <span className={`lab-mixer-group${thunderPlaying && !indoors ? "" : " idle"}`}>Thunder <Slider value={75} disabled={indoors || !thunderPlaying} /></span>
+        <MixerGroup idle={!rainPlaying || indoors} values={[rain]}>Rain <Slider level={rain} disabled={indoors || !rainPlaying} /></MixerGroup>
+        <MixerGroup idle={indoors} values={[wind]}>Wind <Slider level={wind} disabled={indoors} /></MixerGroup>
+        <MixerGroup idle={!thunderPlaying || indoors} values={[thunder]}>Thunder <Slider level={thunder} disabled={indoors || !thunderPlaying} /></MixerGroup>
       </div>
       <div className="lab-mixer-row">
         <span className="lab-mixer-label">Location</span>
-        <span className="lab-mixer-group">
+        <MixerGroup values={[ambience]}>
           <span className="lab-mixer-track">Soft indoor</span>
-          <Slider value={55} />
-        </span>
+          <Slider level={ambience} />
+        </MixerGroup>
         <Btn tone="danger">Stop all</Btn>
       </div>
     </div>

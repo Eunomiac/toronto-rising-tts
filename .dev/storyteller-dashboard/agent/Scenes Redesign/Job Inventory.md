@@ -423,6 +423,13 @@ Lab toggles (tab bar): **Preview** (blue slide-out for a library scene that isn'
 - **Stage:** the "?" tooltip draws above the tokens.
 - **Queue and Rolls:** the instruction text is gone; the Rolls cell is an empty reserved box.
 
+**Pin pass 4 (6 notes plus 3 chat requests, implemented in B and cleared, 2026-10-08).**
+- **Weather readout** is one row: `Clear ◆ Low Wind ◆ Fog` ("Clear" means no rain or snow, even when foggy). **Fog** follows the calendar (second letter of the hourly code is `f`) and draws as drifting mist banks; it has no override because TTS draws no weather fog. **Thunderstorm** is the fifth choice in the wind ring: it sets max wind and, if the sky was clear, heavy rain. Rain and snow fall faster as the wind rises (×1 / 1.3 / 1.75 / 2.4).
+- **When:** tonight's dusk (bottom left) and dawn (bottom right) in smaller yellow type, replacing the "Dawn in…" chip. Dusk and dawn are still fixed sample times, not per-date. **Scene time can never pass present day:** any change that would put it ahead moves present day forward with it (matches the Lua rule). "Set present day to scene time" now works in the Lab.
+- **Moon drag:** drag the moon along its arc (dotted while a target is set) to pick a time tonight, snapped to 5 minutes. A yellow **▶ time** button then covers the clock; pressing it runs the time animation (in the Lab, the clock and sky sweep there over about 2 seconds). × cancels. Only at night (no moon in daylight).
+- **Sound:** every value starts at the scene's value; a changed value glows red with a small ↺ release button on that control. Music shows the playlist actually playing (the scene library's choice, usually Main) with Main / Combat / Intrigue / Silent; "(default)" is gone.
+- **Aspect text** uses the serif face, slightly larger and brighter, for legibility.
+
 Feedback wanted: which layout's overall shape feels right, which modules are too big or too small, and anything that should move between them. Pins can say "take X from B into A".
 
 ## Next rounds

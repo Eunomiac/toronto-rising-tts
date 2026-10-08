@@ -388,9 +388,10 @@ $lab-live: #4caf6a;
   }
 
   &-text {
-    font-size: 12.5px;
-    line-height: 1.35;
-    color: #ddd4c4;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 13px;
+    line-height: 1.3;
+    color: #f1eadc;
   }
 }
 
@@ -574,15 +575,84 @@ $lab-live: #4caf6a;
     color: #fff;
   }
 
-  &-dawn {
+  &-edge {
     position: absolute !important;
-    right: 8px;
-    bottom: 8px;
+    bottom: 9px;
+    display: flex;
+    flex-direction: column;
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.05;
+    color: #f2c44e;
+
+    small {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    &.dusk {
+      left: 10px;
+      align-items: flex-start;
+    }
+
+    &.dawn {
+      right: 10px;
+      align-items: flex-end;
+    }
+  }
+
+  &-play {
+    position: absolute !important;
+    bottom: 10px;
+    left: 50%;
+    z-index: 2;
+    display: flex;
+    gap: 4px;
+    transform: translateX(-50%);
+
+    button {
+      border: 1px solid #f2c44e;
+      border-radius: 6px;
+      font-weight: 800;
+      color: #1a1408;
+      text-shadow: none;
+      background: #f2c44e;
+      cursor: pointer;
+    }
+  }
+
+  &-play-go {
+    padding: 4px 14px;
+    font-size: 22px;
+    box-shadow: 0 0 16px rgb(242 196 78 / 60%);
+  }
+
+  &-play-cancel {
+    padding: 0 8px;
+    font-size: 16px;
   }
 }
 
 .lab-sky {
   display: block;
+
+  &-moon {
+    cursor: grab;
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  &-arc {
+    fill: none;
+    stroke: #f4ecd0;
+    stroke-width: 1;
+    stroke-dasharray: 3 4;
+    stroke-opacity: 0.55;
+  }
 }
 
 .lab-wx {
@@ -654,21 +724,74 @@ $lab-live: #4caf6a;
 
 .lab-wx-axes {
   position: absolute;
-  top: 6px;
-  left: 8px;
+  top: 8px;
+  left: 6px;
   z-index: 1;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
+  align-items: center;
+  gap: 3px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.lab-wx-sep {
+  font-size: 9px;
+  color: #c8c8d4;
+}
+
+.lab-wx-fixed {
+  padding: 0 4px;
+  color: #f0f0f6;
+}
+
+.lab-wx-fog {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+
+  &-bank {
+    position: absolute;
+    left: -50%;
+    width: 200%;
+    background:
+      radial-gradient(ellipse 18% 60% at 15% 60%, rgb(210 215 225 / 55%), transparent 70%),
+      radial-gradient(ellipse 22% 55% at 45% 50%, rgb(210 215 225 / 45%), transparent 70%),
+      radial-gradient(ellipse 16% 65% at 70% 65%, rgb(210 215 225 / 55%), transparent 70%),
+      radial-gradient(ellipse 20% 50% at 92% 55%, rgb(210 215 225 / 45%), transparent 70%);
+    animation: lab-wx-drift linear infinite alternate;
+
+    &.far {
+      top: 30%;
+      height: 50%;
+      opacity: 0.55;
+      animation-duration: 26s;
+    }
+
+    &.near {
+      bottom: -10%;
+      height: 55%;
+      opacity: 0.85;
+      animation-duration: 17s;
+      animation-direction: alternate-reverse;
+    }
+  }
+}
+
+@keyframes lab-wx-drift {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(25%);
+  }
 }
 
 .lab-wx-axis {
   padding: 0 4px;
   border: 1px solid transparent;
   border-radius: 3px;
-  font-size: 15px;
-  font-weight: 800;
+  font: inherit;
   color: #f0f0f6;
   text-shadow: inherit;
   background: none;
@@ -774,13 +897,42 @@ $lab-live: #4caf6a;
   }
 
   &-group {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 6px;
+    padding: 2px 5px;
+    border: 1px solid transparent;
+    border-radius: 5px;
     font-size: 12px;
 
     &.idle {
       opacity: 0.45;
+    }
+
+    &.overridden {
+      border-color: var(--red-bright);
+      box-shadow: 0 0 10px 1px rgb(230 60 70 / 50%);
+    }
+  }
+
+  &-release {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border: 1px solid var(--red-bright);
+    border-radius: 50%;
+    font-size: 11px;
+    line-height: 14px;
+    color: #ffd9dc;
+    background: rgb(80 16 22 / 95%);
+    cursor: pointer;
+
+    &:hover {
+      background: var(--red);
     }
   }
 

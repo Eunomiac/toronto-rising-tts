@@ -102,8 +102,16 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen, 
   const [advanceOpen, setAdvanceOpen] = useState(false);
   const [preparing, setPreparing] = useState(false);
   const [sceneTime, setSceneTime] = useState(PRESENT_DAY);
+  const [presentDay, setPresentDay] = useState(PRESENT_DAY);
   const [location, setLocation] = useState<LabLocation>(SCENE_LOCATION);
-  useEffect(() => setSceneTime(clockDiffers ? FLASHBACK_TIME : PRESENT_DAY), [clockDiffers]);
+  useEffect(() => {
+    setPresentDay(PRESENT_DAY);
+    setSceneTime(clockDiffers ? FLASHBACK_TIME : PRESENT_DAY);
+  }, [clockDiffers]);
+  const changeSceneTime = (next: Date): void => {
+    setSceneTime(next);
+    setPresentDay((present) => (next.getTime() > present.getTime() ? next : present));
+  };
   const leftW = 380;
   const stripX = 8 + leftW + 8;
   const stripH = 132;
@@ -139,7 +147,15 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen, 
       </Box>
 
       <Box x={stripX} y={8} w={whenW} h={stripH} className="lab-backdrop-box">
-        <WhenPanel at={sceneTime} onChange={setSceneTime} forceOpen={popoverOpen} w={whenW - 2} h={stripH - 2} />
+        <WhenPanel
+          at={sceneTime}
+          present={presentDay}
+          onChange={changeSceneTime}
+          onSetPresent={setPresentDay}
+          forceOpen={popoverOpen}
+          w={whenW - 2}
+          h={stripH - 2}
+        />
       </Box>
       <Box x={stripX + whenW + 8} y={8} w={weatherW} h={stripH} className="lab-backdrop-box">
         <WeatherPanel at={sceneTime} forceOverride={weatherOverride} w={weatherW - 2} h={stripH - 2} />
