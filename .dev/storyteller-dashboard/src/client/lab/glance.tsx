@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type DragEvent, type MouseEvent, type PointerEvent, type ReactElement, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type DragEvent, type InputHTMLAttributes, type MouseEvent, type PointerEvent, type ReactElement, type ReactNode } from "react";
 import { Headshot } from "../headshots/Headshot";
 import type { CatalogCharacter, SceneCatalogs } from "../scenes/types";
 import {
@@ -2171,6 +2171,32 @@ const isPhase = (value: string): value is Phase => value in NEXT_PHASE;
 /** Scenes live in TTS: the one on the table, plus any on deck to switch to in one click. */
 export type LiveScenes = { readonly live: readonly string[]; readonly current: string | null };
 
+/** Edits stay in the field until Enter or leaving it, then send once; Escape restores TTS's value, as does a push. */
+const CommitInput = ({ value, onCommit, ...rest }: Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "defaultValue"> & {
+  value: string;
+  onCommit: (text: string) => void;
+}): ReactElement => (
+  <input
+    {...rest}
+    key={value}
+    defaultValue={value}
+    onBlur={(event) => {
+      if (event.target.value !== value) {
+        onCommit(event.target.value);
+      }
+    }}
+    onKeyDown={(event) => {
+      if (event.key === "Enter") {
+        event.currentTarget.blur();
+      }
+      if (event.key === "Escape") {
+        event.currentTarget.value = value;
+        event.currentTarget.blur();
+      }
+    }}
+  />
+);
+
 /**
  * Phase name at the far left. The middle holds the live scenes (Play): the one on the table, then a button for
  * each scene on deck to switch to it. Intermission shows the next session's number and title; Spotlight the
@@ -2224,22 +2250,41 @@ export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPr
           <span className="lab-phase-session">
             <label>
               Session
-              <input
-                type="number"
-                className="lab-select lab-phase-session-number"
-                min={1}
-                readOnly={live !== undefined}
-                value={session.number}
-                onChange={(event) => setSession({ ...session, number: Number(event.target.value) })}
-              />
+              {command ? (
+                <CommitInput
+                  type="number"
+                  className="lab-select lab-phase-session-number"
+                  min={1}
+                  value={String(session.number)}
+                  onCommit={(text) => command({ op: "sessionNum", num: Number(text) })}
+                />
+              ) : (
+                <input
+                  type="number"
+                  className="lab-select lab-phase-session-number"
+                  min={1}
+                  readOnly={live !== undefined}
+                  value={session.number}
+                  onChange={(event) => setSession({ ...session, number: Number(event.target.value) })}
+                />
+              )}
             </label>
-            <input
-              className="lab-select lab-phase-session-title"
-              placeholder="Session title"
-              readOnly={live !== undefined}
-              value={session.title}
-              onChange={(event) => setSession({ ...session, title: event.target.value })}
-            />
+            {command ? (
+              <CommitInput
+                className="lab-select lab-phase-session-title"
+                placeholder="Session title"
+                value={session.title}
+                onCommit={(text) => command({ op: "sessionName", name: text.trim() })}
+              />
+            ) : (
+              <input
+                className="lab-select lab-phase-session-title"
+                placeholder="Session title"
+                readOnly={live !== undefined}
+                value={session.title}
+                onChange={(event) => setSession({ ...session, title: event.target.value })}
+              />
+            )}
           </span>
         )}
         {phase === "Spotlight" && <SpotlightCarousel live={live?.spotlight} />}

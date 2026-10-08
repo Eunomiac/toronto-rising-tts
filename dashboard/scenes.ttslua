@@ -8,6 +8,8 @@
   Ops (field `op`):
     phaseAdvance                          next top-level phase (Intermission → Play → Spotlight → End)
     playSubPhase      subPhase            Play subphase
+    sessionNum        num                 session number (Intermission blindfold images follow)
+    sessionName       name                session title
     spotlightRotate   delta               turn the carousel (Spotlight phase only)
     spotlightFront    color               bring that PC to the front
     realTime          running, speed?     live real-time clock on/off and narrative minutes per minute
@@ -186,6 +188,23 @@ local function applyCommand(cmd)
 
   if op == "seatPresence" then
     return require("core.storyteller_scenes_panel").setLiveSeatPresence(cmd.seat, cmd.present == true)
+  end
+
+  if op == "sessionNum" or op == "sessionName" then
+    local player = storytellerPlayer()
+    if player == nil then
+      return "The Storyteller must be in the game for this command."
+    end
+    if op == "sessionNum" then
+      local n = math.floor(tonumber(cmd.num) or 0)
+      if n < 1 then
+        return "The session number must be 1 or more."
+      end
+      HUD_sessionNumInput(player, tostring(n), "dashboard")
+    else
+      HUD_sessionNameInput(player, type(cmd.name) == "string" and cmd.name or "", "dashboard")
+    end
+    return nil
   end
 
   if op == "playScene" or op == "endScene" then

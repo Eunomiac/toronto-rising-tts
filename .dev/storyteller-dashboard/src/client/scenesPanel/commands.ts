@@ -8,6 +8,8 @@ export type SoundLane = "music" | "location" | "featured" | "rain" | "wind";
 export type ScenesCommand =
   | { readonly op: "phaseAdvance" }
   | { readonly op: "playSubPhase"; readonly subPhase: string }
+  | { readonly op: "sessionNum"; readonly num: number }
+  | { readonly op: "sessionName"; readonly name: string }
   | { readonly op: "spotlightRotate"; readonly delta: number }
   | { readonly op: "spotlightFront"; readonly color: string }
   | { readonly op: "realTime"; readonly running: boolean; readonly speed?: number }

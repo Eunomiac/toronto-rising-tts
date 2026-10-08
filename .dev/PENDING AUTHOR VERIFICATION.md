@@ -181,8 +181,9 @@ _Last populated: 2026-10-08 — /tr-inbox cleared eight author-confirmed rows: T
 1. **Sound:** drag the Music slider. TTS's music volume should follow, and the slider should not jump back while you drag. Pick **Combat** in the music list; the music should change and the list should stay on Combat. Pick a featured track and press ▶, then ■. Click the Ambient button and choose another loop.
 2. **Clock:** click the small clock button at the top right of the clock panel. Real time should start in TTS at 2×. Right-click it and pick 5×. Click it again to stop. Then drag the moon to another time tonight and press the ▶ that appears: the TTS clock should animate to that time and the dashboard should follow. The dusk and dawn times in the bottom corners should look right for the date.
 3. **Seats:** right-click a seated PC on the stage drawing. That PC should go dark in TTS (out of the scene) and look absent on the dashboard. Right-click again to bring them back.
-4. **Phase:** from Intermission, click the Advance button twice. TTS should move to Play. In the Spotlight phase, click › and then a headshot; the TTS spotlight carousel should turn each time.
-5. **In TTS itself:** open the Storyteller Scenes panel, click a seat's presence toggle and the real-time clock toggle once each. Both should work as before.
+4. **Phase:** during Intermission, change the session number or title in the phase bar and press Enter; TTS's session number and title (in-game panel and overlay) should change to match. Then click the Advance button twice. TTS should move to Play. In the Spotlight phase, click › and then a headshot; the TTS spotlight carousel should turn each time.
+5. **Switching live scenes:** play one library scene from the in-game panel, then another. Both titles should appear in the dashboard's phase bar (the first as a button). Click the first one's button: TTS should switch the table back to it. Click **End Scene** twice: the scene should end in TTS and leave the dashboard's list.
+6. **In TTS itself:** open the Storyteller Scenes panel, click a seat's presence toggle and the real-time clock toggle once each. Both should work as before.
 
 If something fails, the dashboard shows TTS's message in the right-hand column with an **OK** button.
 
