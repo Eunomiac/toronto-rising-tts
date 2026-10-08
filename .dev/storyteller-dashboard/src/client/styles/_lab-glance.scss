@@ -2122,6 +2122,13 @@ $lab-queued: #e8c547;
   border: 1px solid #2c2c35;
   background: #121216;
 
+  &.lab-doc-waiting {
+    align-items: center;
+    justify-content: center;
+    color: #8a8a96;
+    font-style: italic;
+  }
+
   &-tabs {
     display: flex;
     flex: 0 0 auto;

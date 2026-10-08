@@ -1,4 +1,6 @@
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
+import type { RosterLayout } from "../../shared/sceneDeck";
+import { setSceneDeckSection, useSceneDeck } from "../sceneDeck";
 import type { SceneCatalogs } from "../scenes/types";
 
 let catalogsRequest: Promise<SceneCatalogs> | null = null;
@@ -25,53 +27,12 @@ export const useSceneCatalogs = (): { catalogs: SceneCatalogs | null; error: str
   return { catalogs, error };
 };
 
-export type RosterCategory = { readonly id: string; readonly name: string; readonly color: string; readonly open: boolean };
+export type { RosterCategory, RosterLayout } from "../../shared/sceneDeck";
 
-/**
- * Roster categories, which category each group is filed in, colours picked for individual groups, and leaders
- * picked for individual groups ("" means the group has no leader).
- */
-export type RosterLayout = {
-  readonly categories: readonly RosterCategory[];
-  readonly assigned: Readonly<Record<string, string>>;
-  readonly groupColors: Readonly<Record<string, string>>;
-  readonly leaders: Readonly<Record<string, string>>;
-};
+export const setRosterLayout = (next: RosterLayout): void => setSceneDeckSection("roster", next);
 
-const ROSTER_LAYOUT_KEY = "tr-lab-roster-categories";
-
-const readRosterLayout = (): RosterLayout => {
-  const saved = window.localStorage.getItem(ROSTER_LAYOUT_KEY);
-  const parsed = saved ? (JSON.parse(saved) as Partial<RosterLayout>) : {};
-  return {
-    categories: parsed.categories ?? [],
-    assigned: parsed.assigned ?? {},
-    groupColors: parsed.groupColors ?? {},
-    leaders: parsed.leaders ?? {}
-  };
-};
-
-let rosterLayout: RosterLayout | null = null;
-const listeners = new Set<() => void>();
-
-const rosterSnapshot = (): RosterLayout => {
-  rosterLayout ??= readRosterLayout();
-  return rosterLayout;
-};
-
-const subscribe = (listener: () => void): (() => void) => {
-  listeners.add(listener);
-  return () => listeners.delete(listener);
-};
-
-export const setRosterLayout = (next: RosterLayout): void => {
-  rosterLayout = next;
-  window.localStorage.setItem(ROSTER_LAYOUT_KEY, JSON.stringify(next));
-  listeners.forEach((listener) => listener());
-};
-
-/** The Lab keeps the roster layout in this browser's local storage; every subscriber sees the same copy. */
-export const useRosterLayout = (): RosterLayout => useSyncExternalStore(subscribe, rosterSnapshot);
+/** The roster layout from the dashboard's scene deck file; every subscriber sees the same copy. */
+export const useRosterLayout = (): RosterLayout => useSceneDeck().roster;
 
 /** The group's own colour, else its category's colour; undefined while unsorted and uncoloured. */
 export const groupColor = (layout: RosterLayout, groupKey: string): string | undefined =>

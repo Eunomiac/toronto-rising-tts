@@ -10,6 +10,8 @@ import { generateNpcImage, generateNpcs, rerollNpcField } from "./npcService.js"
 import { loadGenericNpcCatalog, resolveGenericNpcImagePath } from "./genericNpcCatalog.js";
 import { refreshGenericNpcCatalogOnStartup } from "./refreshGenericNpcCatalog.js";
 import { createHeadshotCropStore, HeadshotCropError, parseHeadshotCrop, requireHeadshotKey } from "./headshotCrops.js";
+import { createSceneDeckStore, resolveSceneDeckBackupDir } from "./sceneDeck.js";
+import { parseSceneDeckPatch } from "../shared/sceneDeck.js";
 import { createLabNoteStore, LabNoteError, parseLabNoteCreate, parseLabNotePatch } from "./labNotes.js";
 import { createTermImageStore, MAX_TERM_IMAGE_BYTES, TERM_IMAGE_CONTENT_TYPES, TermImageError } from "./termImages.js";
 import { dashboardTtsBridge } from "./ttsExecuteLua.js";
@@ -31,6 +33,12 @@ const pcSheetAssetDir = path.join(dashboardRoot, "assets");
 const termImages = createTermImageStore(path.join(dashboardRoot, "data", "term-images"));
 const labNotes = createLabNoteStore(path.join(dashboardRoot, "agent", "lab-notes.json"));
 const headshotCrops = createHeadshotCropStore(path.join(dashboardRoot, "data", "headshot-crops.json"));
+const sceneDeck = resolveSceneDeckBackupDir(repoRoot).then((backupDir) => {
+  if (!backupDir) {
+    console.warn("tts-assets.config.json has no backupDir; scene deck backups are off.");
+  }
+  return createSceneDeckStore(path.join(dashboardRoot, "data", "scene-deck.json"), backupDir);
+});
 const publicDir = path.join(distDir, "public");
 const isDev = process.argv.includes("--dev");
 
@@ -179,6 +187,26 @@ const handleHeadshotCrops = async (request: IncomingMessage, response: ServerRes
     }
     throw error;
   }
+};
+
+const handleSceneDeck = async (request: IncomingMessage, response: ServerResponse): Promise<void> => {
+  const store = await sceneDeck;
+  if (request.method === "GET") {
+    sendJson(response, 200, await store.get());
+    return;
+  }
+  if (request.method === "PUT") {
+    let patch;
+    try {
+      patch = parseSceneDeckPatch(await readRequestJson(request));
+    } catch (error: unknown) {
+      sendJson(response, 400, { error: error instanceof Error ? error.message : "Bad scene deck body." });
+      return;
+    }
+    sendJson(response, 200, await store.patch(patch));
+    return;
+  }
+  sendJson(response, 405, { error: "Method not allowed" });
 };
 
 const serveTermImage = async (response: ServerResponse, pathname: string): Promise<void> => {
@@ -435,6 +463,11 @@ const tryHandleDedicatedRoutes = async (request: IncomingMessage, response: Serv
 
   if (pathname === "/api/headshot-crops") {
     await handleHeadshotCrops(request, response, url);
+    return true;
+  }
+
+  if (pathname === "/api/scene-deck") {
+    await handleSceneDeck(request, response);
     return true;
   }
 

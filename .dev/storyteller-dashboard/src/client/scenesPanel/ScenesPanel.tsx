@@ -4,9 +4,11 @@ import { AspectRow, HuntRoller, LocationPanel, PhaseStrip, RosterDock, SoundMixe
 import { useSceneCatalogs } from "../lab/labRoster";
 import { Box, WideBoard, type LiveBoard } from "../lab/sketch";
 import type { SheetSnapshot } from "../pcSheet/types";
+import { setSceneDeckSection, useSceneDeck, useSceneDeckStatus } from "../sceneDeck";
 import { clockNow, refreshWorldSnapshot, useWorldState, WORLD_TOPICS, type WorldState } from "../worldState";
 import { sendScenesCommands, type ScenesReply } from "./bridge";
 import { ScenesCommandContext, type ScenesCommand, type ScenesSend } from "./commands";
+import { withoutScene, withTableScene } from "./deck";
 import { boardToStage, liveSeats, liveTokens, soundView, spotlightView, toDate, weatherAxes } from "./liveScene";
 
 /**
@@ -87,6 +89,27 @@ const useNow = (running: boolean): number => {
   return now;
 };
 
+/** The on-deck list, kept in the dashboard's scene deck file; TTS's table scene joins it once that file has loaded. */
+const useLiveScenes = (liveKey: string | undefined, title: string | null) => {
+  const { deck } = useSceneDeck();
+  const { loaded } = useSceneDeckStatus();
+  useEffect(() => {
+    if (!loaded || !liveKey || !title) {
+      return;
+    }
+    const next = withTableScene(deck, liveKey, title);
+    if (next !== deck) {
+      setSceneDeckSection("deck", next);
+    }
+  }, [loaded, deck, liveKey, title]);
+  const titles = deck.map((scene) => scene.title);
+  return {
+    live: title && !titles.includes(title) ? [...titles, title] : titles,
+    keyOf: (sceneTitle: string): string | undefined => deck.find((scene) => scene.title === sceneTitle)?.key,
+    remove: (key: string) => setSceneDeckSection("deck", withoutScene(deck, key))
+  };
+};
+
 const Waiting = ({ text }: { text: string }): ReactElement => <p className="lab-note scenes-live-wait">{text}</p>;
 
 /**
@@ -132,6 +155,8 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const at = sceneNow ? toDate(sceneNow) : present;
   const location: LabLocation | null = scene?.districtKey && scene.siteKey ? { districtKey: scene.districtKey, siteKey: scene.siteKey } : null;
   const title = scene?.liveTitle ?? null;
+  const liveScenes = useLiveScenes(scene?.liveKey, title);
+  const deckError = useSceneDeckStatus().error;
   const board = useMemo((): LiveBoard | null => {
     if (!seats) {
       return null;
@@ -207,9 +232,19 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
             {phase && seats ? (
               <PhaseStrip
                 library={[]}
-                scenes={{ live: title ? [title] : [], current: title }}
-                onSwitch={() => undefined}
-                onEndScene={() => undefined}
+                scenes={{ live: liveScenes.live, current: title }}
+                onSwitch={(sceneTitle) => {
+                  const key = liveScenes.keyOf(sceneTitle);
+                  if (key) {
+                    commands.send({ op: "playScene", key });
+                  }
+                }}
+                onEndScene={() => {
+                  commands.send({ op: "endScene" });
+                  if (scene?.liveKey) {
+                    liveScenes.remove(scene.liveKey);
+                  }
+                }}
                 onPlay={() => undefined}
                 onPrepare={() => undefined}
                 live={{
@@ -232,6 +267,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
           </Box>
           <Box x={RIGHT_X} y={MAIN_Y} w={RIGHT_W} h={1042 - G - MAIN_Y} tone="reserved">
             <CommandStatus pending={commands.pending} error={commands.error} onDismiss={commands.clearError} />
+            {deckError && <div className="scenes-live-status error" role="alert">{deckError}</div>}
           </Box>
         </>
       )}

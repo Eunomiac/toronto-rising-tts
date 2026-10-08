@@ -2246,7 +2246,7 @@ export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPr
       </span>
       <span className="lab-phase-advance">
         {phase === "Play" && (command && scenes.current ? (
-          <ConfirmButton label="End Scene" className="lab-btn danger" onConfirm={() => command({ op: "endScene" })} />
+          <ConfirmButton label="End Scene" className="lab-btn danger" onConfirm={onEndScene} />
         ) : (
           <button type="button" className="lab-btn danger" title={waiting ?? "Main / Memoriam → Downtime"} disabled={!scenes.current || waiting !== undefined} onClick={onEndScene}>
             End Scene
