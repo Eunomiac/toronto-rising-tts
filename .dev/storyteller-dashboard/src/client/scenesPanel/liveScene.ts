@@ -8,6 +8,9 @@ import type { ClockDatetime, SeatRow, SeatsSlice, SceneSlice, SoundscapeSlice, S
 
 export const toDate = (dt: ClockDatetime): Date => new Date(dt.year, dt.month - 1, dt.day, dt.hour, dt.minute);
 
+export const fromDate = (date: Date): ClockDatetime =>
+  ({ year: date.getFullYear(), month: date.getMonth() + 1, day: date.getDate(), hour: date.getHours(), minute: date.getMinutes() });
+
 export type Precip = "none" | "lightRain" | "heavyRain" | "lightSnow" | "heavySnow";
 export type Level = 0 | 1 | 2 | 3;
 export type WeatherAxes = { readonly precip: Precip; readonly wind: Level; readonly thunder: boolean };
@@ -53,6 +56,8 @@ export type SeatColor = "Brown" | "Orange" | "Red" | "Pink" | "Purple";
 
 export type LiveSeat = {
   readonly slot: number;
+  /** TTS seat key (player colour or NPC seat) for presence commands; absent on an unoccupied chair. */
+  readonly seatKey?: string;
   readonly name?: string;
   readonly characterKey?: string;
   readonly kind: "pc" | "npc" | "empty" | "nochair";
@@ -83,13 +88,14 @@ export const liveSeats = (seats: SeatsSlice, tableKey: string | undefined, catal
     }
     const state = row.isPresent ? undefined : "absent";
     if (row.kind === "npc") {
-      return { slot, kind: "npc", characterKey: row.characterKey, name: nameOf(row.characterKey), ...(state ? { state } : {}) };
+      return { slot, seatKey: row.seat, kind: "npc", characterKey: row.characterKey, name: nameOf(row.characterKey), ...(state ? { state } : {}) };
     }
     const color = PC_COLORS.includes(row.seat) ? (row.seat as SeatColor) : undefined;
     const pcName = nameOf(row.charKey);
     const playing = row.playingNpcKey;
     return {
       slot,
+      seatKey: row.seat,
       kind: "pc",
       characterKey: playing ?? row.charKey,
       name: playing ? nameOf(playing) : pcName,

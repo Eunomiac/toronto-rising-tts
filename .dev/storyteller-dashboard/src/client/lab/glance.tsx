@@ -27,7 +27,8 @@ import {
   type Odds
 } from "./huntOdds";
 import { Btn, Overlay, canvasPoint } from "./sketch";
-import type { SoundView, SpotlightView } from "../scenesPanel/liveScene";
+import { useScenesCommand, type ScenesSend, type SoundLane } from "../scenesPanel/commands";
+import { fromDate, type SoundView, type SpotlightView } from "../scenesPanel/liveScene";
 
 /**
  * Panels for the Glance strip sketch (scenes-r1-b), pin pass 3: location and weather read live from the
@@ -1486,17 +1487,27 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, live
   onChange: (next: Date) => void;
   onSetPresent: (next: Date) => void;
   forceOpen: boolean;
-  /** TTS's real-time state; the caller advances `at`. Without commands the panel is read-only (no calendar, no moon drag). */
-  live?: { readonly running: boolean; readonly speed: number; readonly readOnly: boolean };
+  /**
+   * TTS's real-time state and tonight's sun times; the caller advances `at`. Changes go to TTS when the Scenes tab
+   * provides a command sender; without one the panel is read-only (no calendar, no moon drag).
+   */
+  live?: { readonly running: boolean; readonly speed: number; readonly dusk?: Date; readonly dawn?: Date };
   w: number;
   h: number;
 }): ReactElement => {
   const [open, setOpen] = useState(false);
   const [localRealTime, setRealTime] = useState(false);
   const [localRate, setRate] = useState<RealTimeRate>(2);
+  const send = useScenesCommand();
+  const command: ScenesSend | null = live && send ? send : null;
   const realTime = live ? live.running : localRealTime;
   const rate = live ? live.speed : localRate;
-  const readOnly = live?.readOnly === true;
+  const readOnly = live !== undefined && command === null;
+  const [draft, setDraft] = useState<Date | null>(null);
+  const closeCalendar = (): void => {
+    setOpen(false);
+    setDraft(null);
+  };
   const [rateRing, setRateRing] = useState<Point | null>(null);
   const [target, setTarget] = useState<number | null>(null);
   const [playing, setPlaying] = useState<{ from: number; to: number } | null>(null);
@@ -1538,7 +1549,9 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, live
     : new Date(Math.round(shift(at, (target - tonight) * NIGHT_MINUTES).getTime() / FIVE_MINUTES) * FIVE_MINUTES);
   const play = (event: MouseEvent<HTMLButtonElement>): void => {
     event.stopPropagation();
-    if (targetTime) {
+    if (targetTime && command) {
+      command({ op: "clockTo", datetime: fromDate(targetTime) });
+    } else if (targetTime) {
       setPlaying({ from: at.getTime(), to: targetTime.getTime() });
     }
     setTarget(null);
@@ -1559,7 +1572,10 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, live
           title={`${realTime ? `Real time is on: scene time runs at ${rate}× the real clock` : "Real time is off"}. Right-click to set the speed.`}
           onClick={(event) => {
             event.stopPropagation();
-            if (!readOnly) {
+            if (command) {
+              // Turning real time on starts at 2x unless a faster speed was picked.
+              command({ op: "realTime", running: !realTime, speed: realTime || rate > 1 ? rate : 2 });
+            } else if (!readOnly) {
               setRealTime(!realTime);
             }
           }}
@@ -1574,7 +1590,13 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, live
           {realTime ? <span className="lab-when-rate">{rate}×</span> : <Icon name="clock" />}
         </button>
         {rateRing && (
-          <RingMenu at={rateRing} options={REAL_TIME_RATES} current={localRate} onPick={setRate} onClose={() => setRateRing(null)} />
+          <RingMenu
+            at={rateRing}
+            options={REAL_TIME_RATES}
+            current={(live ? live.speed : localRate) as RealTimeRate}
+            onPick={(next) => (command ? command({ op: "realTime", running: realTime, speed: next }) : setRate(next))}
+            onClose={() => setRateRing(null)}
+          />
         )}
         {targetTime && (
           <span className="lab-when-play">
@@ -1594,17 +1616,45 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, live
             </button>
           </span>
         )}
-        <span className="lab-when-edge dusk" title="Dusk"><span>{formatClock(DUSK)}</span></span>
-        <span className="lab-when-edge dawn" title="Dawn"><span>{formatClock(DAWN)}</span></span>
+        <span className="lab-when-edge dusk" title="Dusk"><span>{live?.dusk ? formatTime(live.dusk) : formatClock(DUSK)}</span></span>
+        <span className="lab-when-edge dawn" title="Dawn"><span>{live?.dawn ? formatTime(live.dawn) : formatClock(DAWN)}</span></span>
       </div>
       {(open || forceOpen) && (
-        <Overlay onClose={() => setOpen(false)}>
+        <Overlay onClose={closeCalendar}>
           <div className="lab-modal lab-clock-modal">
             <span className="lab-modal-title">Scene date · {formatLongDate(at)} · {formatTime(at)}</span>
-            <SceneCalendar at={at} present={present} onPick={onChange} />
+            {/* Live picks are a draft: each TTS clock move runs an animation, so one Move button sends the choice. */}
+            <SceneCalendar at={command ? draft ?? at : at} present={present} onPick={command ? setDraft : onChange} />
             <div className="lab-row">
-              <button type="button" className="lab-btn" onClick={() => onChange(present)}>Set scene time to present day</button>
-              <button type="button" className="lab-btn" onClick={() => onSetPresent(at)}>Set present day to scene time</button>
+              {command && (
+                <button
+                  type="button"
+                  className="lab-btn primary"
+                  disabled={draft === null}
+                  onClick={() => {
+                    if (draft) {
+                      command({ op: "clockTo", datetime: fromDate(draft) });
+                    }
+                    closeCalendar();
+                  }}
+                >
+                  {draft ? `Move the scene to ${formatDate(draft)} · ${formatTime(draft)}` : "Pick a new scene time"}
+                </button>
+              )}
+              <button
+                type="button"
+                className="lab-btn"
+                onClick={() => (command ? command({ op: "clockTo", datetime: fromDate(present) }) : onChange(present))}
+              >
+                Set scene time to present day
+              </button>
+              <button
+                type="button"
+                className="lab-btn"
+                onClick={() => (command ? command({ op: "presentDay", datetime: fromDate(at) }) : onSetPresent(at))}
+              >
+                Set present day to scene time
+              </button>
             </div>
           </div>
         </Overlay>
@@ -1631,8 +1681,32 @@ const useOverridable = <T,>(base: T): Overridable<T> => {
 
 const noop = (): void => undefined;
 
-/** A value shown as TTS reports it, with no local edits (until the command bridge carries sound changes). */
+/** A value shown as TTS reports it, with no local edits. */
 const fixed = <T,>(value: T): Overridable<T> => ({ value, set: noop, overridden: false, release: noop, readOnly: true });
+
+/** A value shown as TTS reports it that sends a command when changed (the push brings the new value back). */
+const commanded = <T,>(value: T, set: (next: T) => void): Overridable<T> => ({ value, set, overridden: false, release: noop });
+
+const LEVEL_ECHO_MS = 1500;
+
+/**
+ * A live level the Storyteller can drag: shows the dragged value until TTS has had a moment to echo it back, so
+ * the slider does not jump under the pointer. Without a sender it is shown as TTS reports it.
+ */
+const useLiveLevel = (value: number, onSet: ((next: number) => void) | null): Overridable<number> => {
+  const [held, setHeld] = useState<number | null>(null);
+  const timer = useRef(0);
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+  if (!onSet) {
+    return fixed(value);
+  }
+  return commanded(held ?? value, (next) => {
+    setHeld(next);
+    onSet(next);
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setHeld(null), LEVEL_ECHO_MS);
+  });
+};
 
 const Slider = ({ level }: { level: Overridable<number> }): ReactElement => (
   <input
@@ -1689,6 +1763,13 @@ const featuredLabel = (key: string | undefined): string => {
 const ambientLabel = (key: string): string =>
   AMBIENT_TRACKS.find((label) => label.replace(/ /g, "").toLowerCase() === key.toLowerCase()) ?? key;
 
+const ambientKey = (label: string): string =>
+  label === "Silent" ? "none" : label.charAt(0).toLowerCase() + label.slice(1).replace(/ /g, "");
+
+const featuredKey = (label: string): string => FEATURED_KEYS[FEATURED_TRACKS.findIndex((entry) => entry === label)] ?? label;
+
+const MOODS: Readonly<Record<string, "main" | "combat" | "intrigue">> = { Main: "main", Combat: "combat", Intrigue: "intrigue" };
+
 /**
  * Every ambience loop as a button grid, opened under the Ambient button: the playing loop is lit and the site's
  * own loop is marked. Picking one plays it and closes the grid.
@@ -1738,7 +1819,7 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main", sceneAmbience = "S
   indoors: boolean;
   scenePlaylist?: string;
   sceneAmbience?: string;
-  /** What TTS is playing. Read-only until the TTS command bridge carries sound changes. */
+  /** What TTS is playing; changes go to TTS when the Scenes tab provides a command sender. */
   live?: SoundView;
 }): ReactElement => {
   const [labFeatured, setFeatured] = useState(false);
@@ -1753,16 +1834,51 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main", sceneAmbience = "S
   const labWind = useOverridable(40);
   const labThunder = useOverridable(75);
   const labAmbience = useOverridable(55);
-  const playlist = live ? fixed(live.playlist) : labPlaylist;
-  const music = live ? fixed(live.levels.music) : labMusic;
-  const featuredLevel = live ? fixed(live.levels.featured) : labFeaturedLevel;
-  const rain = live ? fixed(live.levels.rain) : labRain;
-  const wind = live ? fixed(live.levels.wind) : labWind;
+  const send = useScenesCommand();
+  const command: ScenesSend | null = live && send ? send : null;
+  const laneSetter = (lane: SoundLane) => (command ? (next: number) => command({ op: "laneVolume", lane, volume: next / 100 }) : null);
+  const liveMusic = useLiveLevel(live?.levels.music ?? 0, laneSetter("music"));
+  const liveFeaturedLevel = useLiveLevel(live?.levels.featured ?? 0, laneSetter("featured"));
+  const liveRain = useLiveLevel(live?.levels.rain ?? 0, laneSetter("rain"));
+  const liveWind = useLiveLevel(live?.levels.wind ?? 0, laneSetter("wind"));
+  const liveAmbience = useLiveLevel(live?.levels.location ?? 0, laneSetter("location"));
+  const [liveFeaturedPick, setLiveFeaturedPick] = useState<string | null>(null);
+  const livePlaylist = (value: string): Overridable<string> => command
+    ? commanded(value, (next) => {
+      const mood = MOODS[next];
+      command(mood ? { op: "musicMood", mood } : { op: "musicSilent" });
+    })
+    : fixed(value);
+  const liveAmbientTrack = (value: string): Overridable<string> => command
+    ? commanded(value, (next) => command({ op: "ambience", key: ambientKey(next) }))
+    : fixed(value);
+  const playlist = live ? livePlaylist(live.playlist) : labPlaylist;
+  const music = live ? liveMusic : labMusic;
+  const featuredLevel = live ? liveFeaturedLevel : labFeaturedLevel;
+  const rain = live ? liveRain : labRain;
+  const wind = live ? liveWind : labWind;
   const thunder = live ? fixed(0) : labThunder;
-  const ambience = live ? fixed(live.levels.location) : labAmbience;
-  const ambientTrack = live ? fixed(live.ambient ? ambientLabel(live.ambient) : "Silent") : labAmbientTrack;
+  const ambience = live ? liveAmbience : labAmbience;
+  const ambientTrack = live ? liveAmbientTrack(live.ambient ? ambientLabel(live.ambient) : "Silent") : labAmbientTrack;
   const featured = live ? live.featuredPlaying : labFeatured;
-  const featuredTrack = live ? featuredLabel(live.featuredKey) : labFeaturedTrack;
+  const featuredTrack = live ? liveFeaturedPick ?? featuredLabel(live.featuredKey) : labFeaturedTrack;
+  const pickFeatured = (label: string): void => {
+    if (!live) {
+      setFeaturedTrack(label);
+      return;
+    }
+    setLiveFeaturedPick(label);
+    if (featured) {
+      command?.({ op: "featuredPlay", key: featuredKey(label) });
+    }
+  };
+  const toggleFeatured = (): void => {
+    if (!live) {
+      setFeatured(!featured);
+      return;
+    }
+    command?.(featured ? { op: "featuredStop" } : { op: "featuredPlay", key: featuredKey(featuredTrack) });
+  };
   const rainPlaying = live ? live.playing.rain : true;
   const thunderPlaying = false;
   const audible = !muted;
@@ -1770,7 +1886,7 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main", sceneAmbience = "S
   const musicPlaying = live ? live.playing.music : audible && !featured;
   const ambientPlaying = live ? live.playing.location : audible;
   const windPlaying = live ? live.playing.wind : weatherAudible;
-  const readOnly = live !== undefined;
+  const readOnly = live !== undefined && command === null;
   return (
     <div className="lab-mixer">
       <div className="lab-mixer-row">
@@ -1782,7 +1898,7 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main", sceneAmbience = "S
           <Slider level={music} />
         </MixerGroup>
         <MixerGroup playing={audible && featured} values={[featuredLevel]}>
-          <select className="lab-select" disabled={readOnly} value={featuredTrack} title="Featured track" onChange={(event) => setFeaturedTrack(event.target.value)}>
+          <select className="lab-select" disabled={readOnly} value={featuredTrack} title="Featured track" onChange={(event) => pickFeatured(event.target.value)}>
             {FEATURED_TRACKS.map((name) => <option key={name}>{name}</option>)}
           </select>
           <button
@@ -1790,7 +1906,7 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main", sceneAmbience = "S
             className={`lab-btn lab-mixer-play${featured ? " primary" : ""}`}
             title={featured ? "Stop the featured track" : "Play the featured track"}
             disabled={readOnly}
-            onClick={() => setFeatured(!featured)}
+            onClick={toggleFeatured}
           >
             {featured ? "■" : "▶"}
           </button>
@@ -1847,9 +1963,9 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main", sceneAmbience = "S
       <button
         type="button"
         className={`lab-mixer-mute${muted ? " on" : ""}`}
-        title={muted ? "All sound muted: click to restore" : "Mute all sound"}
+        title={command ? "Silence every sound layer in TTS" : muted ? "All sound muted: click to restore" : "Mute all sound"}
         disabled={readOnly}
-        onClick={() => setMuted(!muted)}
+        onClick={() => (command ? command({ op: "stopAll" }) : setMuted(!muted))}
       >
         <Icon name="mute" />
       </button>
@@ -1994,15 +2110,26 @@ const CAROUSEL_PITCH = CAROUSEL_SEAT + CAROUSEL_GAP;
 /** Mirrors the TTS Spotlight controls: PCs keep their places; ‹ and › (or a click) move the glowing ring. */
 const SpotlightCarousel = ({ live }: { live?: SpotlightView }): ReactElement => {
   const [labFront, setLabFront] = useState(0);
+  const send = useScenesCommand();
+  const command: ScenesSend | null = live && send ? send : null;
   const order = live?.order ?? SPOTLIGHT_ORDER;
   const front = live ? live.front : labFront;
   const setFront = (index: number): void => {
-    if (!live) {
+    const pc = order[index];
+    if (command && pc) {
+      command({ op: "spotlightFront", color: pc.color });
+    } else if (!live) {
       setLabFront(index);
     }
   };
   const count = order.length;
-  const step = (by: number): void => setFront((front + by + count) % count);
+  const step = (by: number): void => {
+    if (command) {
+      command({ op: "spotlightRotate", delta: by });
+    } else {
+      setFront((front + by + count) % count);
+    }
+  };
   const lit = order[front];
   return (
     <span className="lab-carousel">
@@ -2058,7 +2185,7 @@ export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPr
   onEndScene: () => void;
   onPlay: (title: string) => void;
   onPrepare: () => void;
-  /** TTS's phase, session, and spotlight. Phase and scene buttons wait for the TTS command bridge. */
+  /** TTS's phase, session, and spotlight; buttons send commands when the Scenes tab provides a sender. */
   live?: LivePhase;
 }): ReactElement => {
   const [labPhase, setPhase] = useState<Phase>("Play");
@@ -2067,7 +2194,10 @@ export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPr
   const [labSession, setSession] = useState({ number: 43, title: "" });
   const phase: Phase = live ? (isPhase(live.phase) ? live.phase : "Intermission") : labPhase;
   const session = live ? { number: live.sessionNum ?? 1, title: live.sessionName } : labSession;
-  const waiting = live ? "Arrives with the TTS command bridge" : undefined;
+  const send = useScenesCommand();
+  const command: ScenesSend | null = live && send ? send : null;
+  const waiting = live && !command ? "Arrives with the TTS command bridge" : undefined;
+  const advance = (): void => (command ? command({ op: "phaseAdvance" }) : setPhase(next));
   const next = NEXT_PHASE[phase];
   const open = (which: "scene" | "memoriam") => (): void => {
     setRing(null);
@@ -2115,17 +2245,19 @@ export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPr
         {phase === "Spotlight" && <SpotlightCarousel live={live?.spotlight} />}
       </span>
       <span className="lab-phase-advance">
-        {phase === "Play" && (
-          <button type="button" className="lab-btn danger" title={waiting ?? "Main / Memoriam → Downtime"} disabled={!scenes.current || live !== undefined} onClick={onEndScene}>
+        {phase === "Play" && (command && scenes.current ? (
+          <ConfirmButton label="End Scene" className="lab-btn danger" onConfirm={() => command({ op: "endScene" })} />
+        ) : (
+          <button type="button" className="lab-btn danger" title={waiting ?? "Main / Memoriam → Downtime"} disabled={!scenes.current || waiting !== undefined} onClick={onEndScene}>
             End Scene
           </button>
-        )}
+        ))}
         {phase === "Play" ? (
-          <button type="button" className="lab-btn primary" title={waiting} disabled={live !== undefined} onClick={(event) => setRing(canvasPoint(event))}>Advance ▸</button>
-        ) : live ? (
+          <button type="button" className="lab-btn primary" title={waiting} disabled={waiting !== undefined} onClick={(event) => setRing(canvasPoint(event))}>Advance ▸</button>
+        ) : waiting ? (
           <button type="button" className="lab-btn primary" title={waiting} disabled>{next} ▸</button>
         ) : (
-          <ConfirmButton key={phase} label={`${next} ▸`} className="lab-btn primary" onConfirm={() => setPhase(next)} />
+          <ConfirmButton key={phase} label={`${next} ▸`} className="lab-btn primary" onConfirm={advance} />
         )}
       </span>
       {ring && (
@@ -2139,7 +2271,7 @@ export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPr
               style={{ left: 112, top: 40, "--i": 2 } as CSSProperties}
               onConfirm={() => {
                 setRing(null);
-                setPhase("Spotlight");
+                advance();
               }}
             />
           </div>

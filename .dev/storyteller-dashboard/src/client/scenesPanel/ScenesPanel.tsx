@@ -1,9 +1,12 @@
-import { useEffect, useMemo, useRef, useState, type ReactElement } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from "react";
+import { createApplyQueue } from "../applyQueue";
 import { AspectRow, HuntRoller, LocationPanel, PhaseStrip, RosterDock, SoundMixer, WeatherPanel, WhenPanel, type LabLocation } from "../lab/glance";
 import { useSceneCatalogs } from "../lab/labRoster";
 import { Box, WideBoard, type LiveBoard } from "../lab/sketch";
 import type { SheetSnapshot } from "../pcSheet/types";
 import { clockNow, refreshWorldSnapshot, useWorldState, WORLD_TOPICS, type WorldState } from "../worldState";
+import { sendScenesCommands, type ScenesReply } from "./bridge";
+import { ScenesCommandContext, type ScenesCommand, type ScenesSend } from "./commands";
 import { boardToStage, liveSeats, liveTokens, soundView, spotlightView, toDate, weatherAxes } from "./liveScene";
 
 /**
@@ -86,10 +89,41 @@ const useNow = (running: boolean): number => {
 
 const Waiting = ({ text }: { text: string }): ReactElement => <p className="lab-note scenes-live-wait">{text}</p>;
 
+/**
+ * Commands go through the serial apply queue (one execute-lua in flight; clicks made meanwhile go in the next
+ * batch). Replies only say whether TTS accepted them; the push channel brings the new state back.
+ */
+const useScenesQueue = (): { send: ScenesSend; pending: number; error: string | null; clearError: () => void } => {
+  const [pending, setPending] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const queue = useMemo(() => createApplyQueue<ScenesCommand, ScenesReply>({
+    send: sendScenesCommands,
+    onSettled: () => setError(null),
+    onFailure: (failure) => setError(failure.message),
+    onPendingChange: setPending
+  }), []);
+  const send = useCallback((command: ScenesCommand) => queue.enqueue(command), [queue]);
+  const clearError = useCallback(() => setError(null), []);
+  return { send, pending, error, clearError };
+};
+
+const CommandStatus = ({ pending, error, onDismiss }: { pending: number; error: string | null; onDismiss: () => void }): ReactElement | null => {
+  if (error) {
+    return (
+      <div className="scenes-live-status error" role="alert">
+        <span>{error}</span>
+        <button type="button" className="lab-btn" onClick={onDismiss}>OK</button>
+      </div>
+    );
+  }
+  return pending > 0 ? <div className="scenes-live-status">Sending to TTS…</div> : null;
+};
+
 export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const world = useWorldState();
   const { catalogs } = useSceneCatalogs();
   const snapshotError = useWorldSnapshotOnce(active, world);
+  const commands = useScenesQueue();
   const now = useNow(world.clock?.running === true);
   const { phase, scene, clock, soundscape, seats } = world;
 
@@ -112,6 +146,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const waitText = snapshotError ?? "Waiting for TTS…";
 
   return (
+    <ScenesCommandContext.Provider value={commands.send}>
     <div className="lab-canvas scenes-live">
       {active && (
         <>
@@ -137,7 +172,12 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
                 onChange={() => undefined}
                 onSetPresent={() => undefined}
                 forceOpen={false}
-                live={{ running: clock.running, speed: clock.speed, readOnly: true }}
+                live={{
+                  running: clock.running,
+                  speed: clock.speed,
+                  ...(clock.dusk ? { dusk: toDate(clock.dusk) } : {}),
+                  ...(clock.dawn ? { dawn: toDate(clock.dawn) } : {})
+                }}
                 w={WHEN_W - 2}
                 h={STRIP_H - 2}
               />
@@ -147,7 +187,14 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
           </Box>
           <Box x={STRIP_X + WHEN_W + G} y={G} w={WEATHER_W} h={STRIP_H} className="lab-backdrop-box">
             {at && scene ? (
-              <WeatherPanel at={at} forceOverride={false} forceCelsius={null} live={weatherAxes(scene.weather)} w={WEATHER_W - 2} h={STRIP_H - 2} />
+              <WeatherPanel
+                at={at}
+                forceOverride={false}
+                forceCelsius={clock?.temperatureC ?? null}
+                live={weatherAxes(scene.weather)}
+                w={WEATHER_W - 2}
+                h={STRIP_H - 2}
+              />
             ) : (
               <Waiting text={waitText} />
             )}
@@ -183,9 +230,12 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
           <Box x={STRIP_X} y={STAGE_Y} w={STAGE_W} h={STAGE_H} className="lab-borderless">
             {board ? <WideBoard w={STAGE_W - 12} h={STAGE_H - 10} live={board} /> : <Waiting text={waitText} />}
           </Box>
-          <Box x={RIGHT_X} y={MAIN_Y} w={RIGHT_W} h={1042 - G - MAIN_Y} tone="reserved" />
+          <Box x={RIGHT_X} y={MAIN_Y} w={RIGHT_W} h={1042 - G - MAIN_Y} tone="reserved">
+            <CommandStatus pending={commands.pending} error={commands.error} onDismiss={commands.clearError} />
+          </Box>
         </>
       )}
     </div>
+    </ScenesCommandContext.Provider>
   );
 };

@@ -8,6 +8,7 @@ import { paintDamageTrack, paintHumanityTrack, type BoxSlot } from "../pcSheet/p
 import { actionsForRing } from "../pcSheet/ringActions";
 import { TraitRing } from "../pcSheet/TraitRing";
 import type { RingTarget, SeatColor, SeatSnapshot, SheetSnapshot } from "../pcSheet/types";
+import { useScenesCommand } from "../scenesPanel/commands";
 import { Icon, type IconName } from "./icons";
 import { groupColor, groupLeader, useRosterLayout, useSceneCatalogs } from "./labRoster";
 
@@ -143,6 +144,8 @@ type PcTrackers = {
 
 export type SeatSketch = {
   readonly slot: number;
+  /** TTS seat key (player colour or NPC seat); live seats only. */
+  readonly seatKey?: string;
   readonly name?: string;
   readonly characterKey?: string;
   readonly kind: "pc" | "npc" | "empty" | "nochair";
@@ -290,11 +293,13 @@ const SeatContent = ({ seat }: { seat: SeatSketch }): ReactElement => (
  * left out rather than drawn, and the rest stay centred. The figurine headshot fills the cell above the name.
  * PC seats are bordered in the player's colour, NPC seats in muted grey; absent (out of the scene) and
  * disconnected seats are told apart by border style and image treatment. Clicking a PC seat opens that PC's
- * tracker controls; clicking anywhere else closes them.
+ * tracker controls; clicking anywhere else closes them. On the live table, right-clicking an occupied seat takes
+ * that character out of the scene or brings them back (narrative presence only, never connection).
  */
 export const Seats = ({ seats = SEATS, liveSheet }: { seats?: readonly SeatSketch[]; liveSheet?: SheetSnapshot }): ReactElement => {
   const [labState, setSheet] = useState(labSheet);
   const sheet = liveSheet ?? labState;
+  const send = useScenesCommand();
   const [openColor, setOpenColor] = useState<SeatColor | null>(null);
   const [ring, setRing] = useState<TrackRing | null>(null);
   useEffect(() => {
@@ -319,12 +324,25 @@ export const Seats = ({ seats = SEATS, liveSheet }: { seats?: readonly SeatSketc
         const style = seat.color ? ({ "--seat-color": SEAT_ACCENT[seat.color] } as CSSProperties) : undefined;
         const open = seat.color !== undefined && seat.color === openColor;
         const controllable = seat.color !== undefined && sheet.seats.some((entry) => entry.color === seat.color);
+        const presenceKey = send && seat.seatKey && seat.state !== "disconnected" ? seat.seatKey : undefined;
+        const hints = [
+          controllable && !open ? "Click for this PC's trackers" : undefined,
+          presenceKey ? (seat.state === "absent" ? "Right-click to bring them into the scene" : "Right-click to take them out of the scene") : undefined
+        ].filter(Boolean);
         return (
           <div
             key={seat.slot}
             className={`lab-seat-slot${controllable ? " controllable" : ""}${open ? " open" : ""}`}
             style={style}
-            title={controllable && !open ? "Click for this PC's trackers" : undefined}
+            title={hints.length > 0 ? hints.join(". ") : undefined}
+            onContextMenu={(event) => {
+              if (!send || !presenceKey) {
+                return;
+              }
+              event.preventDefault();
+              event.stopPropagation();
+              send({ op: "seatPresence", seat: presenceKey, present: seat.state === "absent" });
+            }}
             onClick={(event) => {
               if (!controllable || (event.target as HTMLElement).closest(".lab-seat-pop")) {
                 return;

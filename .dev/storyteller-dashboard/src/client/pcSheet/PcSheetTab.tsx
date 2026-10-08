@@ -4,7 +4,7 @@ import { fetchBridgeStatus, isBridgeConnected, reclaimEditorPort, releaseEditorP
 import { subscribeTtsEvents } from "../ttsEvents.js";
 import { applySheetCommands, fetchLiveSnapshot } from "./bridge.js";
 import { applyLocal } from "./applyLocal.js";
-import { createApplyQueue } from "./applyQueue.js";
+import { createApplyQueue } from "../applyQueue.js";
 import { deepMerge } from "./deepMerge.js";
 import { mergeSeatPush } from "./livePush.js";
 import { renderPage, SPREADS, type PageContext } from "./pages.js";

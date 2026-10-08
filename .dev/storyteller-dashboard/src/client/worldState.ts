@@ -62,6 +62,11 @@ export type ClockAnchor = {
   readonly scene?: ClockDatetime;
   readonly downtime?: ClockDatetime;
   readonly presentDay?: ClockDatetime;
+  /** Tonight's dusk and dawn for the running clock (before sunrise: last night's). */
+  readonly dusk?: ClockDatetime;
+  readonly dawn?: ClockDatetime;
+  /** Chronicle-scheduled temperature for the running clock's hour. */
+  readonly temperatureC?: number;
   readonly at: number;
 };
 
@@ -145,6 +150,9 @@ const normalizeSlice = (topic: WorldTopic, data: Record<string, unknown>, at: nu
         scene: asDatetime(data.scene),
         downtime: asDatetime(data.downtime),
         presentDay: asDatetime(data.presentDay),
+        dusk: asDatetime(data.dusk),
+        dawn: asDatetime(data.dawn),
+        temperatureC: typeof data.temperatureC === "number" ? data.temperatureC : undefined,
         at
       };
     case "soundscape":

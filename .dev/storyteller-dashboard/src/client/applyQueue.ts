@@ -1,13 +1,14 @@
-import type { ApplyCommand, SheetSnapshot } from "./types.js";
-
-export type ApplyQueue = {
-  enqueue: (command: ApplyCommand) => void;
+export type ApplyQueue<Command> = {
+  enqueue: (command: Command) => void;
   get pending(): number;
 };
 
-type Options = {
-  send: (commands: readonly ApplyCommand[]) => Promise<SheetSnapshot>;
-  onSettled: (snapshot: SheetSnapshot) => void;
+/** Every TTS apply entry replies `{ ok, error? }`; the PCs tab's reply also carries the fresh sheet. */
+export type ApplyReply = { readonly ok: boolean; readonly error?: string };
+
+type Options<Command, Reply extends ApplyReply> = {
+  send: (commands: readonly Command[]) => Promise<Reply>;
+  onSettled: (reply: Reply) => void;
   onFailure: (error: Error) => void;
   onPendingChange: (pending: number) => void;
 };
@@ -17,8 +18,8 @@ type Options = {
  * While a send is in flight, later clicks accumulate. The next send flushes the whole waiting
  * list in one round-trip so three rapid Health clicks become at most two TTS calls, not three.
  */
-export const createApplyQueue = (options: Options): ApplyQueue => {
-  const waiting: ApplyCommand[] = [];
+export const createApplyQueue = <Command, Reply extends ApplyReply>(options: Options<Command, Reply>): ApplyQueue<Command> => {
+  const waiting: Command[] = [];
   let running = false;
 
   const pendingCount = (): number => waiting.length + (running ? 1 : 0);
@@ -44,13 +45,13 @@ export const createApplyQueue = (options: Options): ApplyQueue => {
       while (waiting.length > 0) {
         const batch = waiting.splice(0, waiting.length);
         notify();
-        const snapshot = await options.send(batch);
-        if (!snapshot.ok) {
-          failAndClear(new Error(snapshot.error ?? "Apply failed."));
+        const reply = await options.send(batch);
+        if (!reply.ok) {
+          failAndClear(new Error(reply.error ?? "Apply failed."));
           return;
         }
         if (waiting.length === 0) {
-          options.onSettled(snapshot);
+          options.onSettled(reply);
         }
       }
     } catch (error: unknown) {
@@ -68,7 +69,7 @@ export const createApplyQueue = (options: Options): ApplyQueue => {
   };
 
   return {
-    enqueue(command: ApplyCommand): void {
+    enqueue(command: Command): void {
       waiting.push(command);
       notify();
       void drain();

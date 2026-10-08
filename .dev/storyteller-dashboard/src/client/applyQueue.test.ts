@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createApplyQueue } from "./applyQueue.js";
-import type { ApplyCommand, SheetSnapshot } from "./types.js";
+import type { ApplyCommand, SheetSnapshot } from "./pcSheet/types.js";
 
 const hunger = (delta: number): ApplyCommand => ({ op: "hunger", color: "Pink", delta });
 
