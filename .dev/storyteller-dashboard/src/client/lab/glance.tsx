@@ -14,6 +14,18 @@ import { SEAT_ACCENT } from "../pcSheet/layout";
 import { Icon, type IconName } from "./icons";
 import { groupColor, groupLeader, setRosterLayout, useRosterLayout, useSceneCatalogs, type RosterCategory } from "./labRoster";
 import { SceneNotes } from "./labNotes";
+import {
+  INTENSITIES,
+  eligibleFlavors,
+  flavorOdds,
+  intensityOdds,
+  netModifiers,
+  sample,
+  type Flavor,
+  type HuntOutcome,
+  type Intensity,
+  type Odds
+} from "./huntOdds";
 import { Btn, Overlay, canvasPoint } from "./sketch";
 
 /**
@@ -644,23 +656,23 @@ export const RosterDock = ({ scene }: { scene: string }): ReactElement => {
   );
 };
 
-/* ---------- Hunt roll: resonance randomiser (placeholder odds) ---------- */
+/* ---------- Hunt roll: resonance odds from the location, the margin, and the outcome ---------- */
 
-const RESONANCES = [
-  { key: "choleric", label: "Choleric" },
-  { key: "melancholic", label: "Melancholic" },
-  { key: "phlegmatic", label: "Phlegmatic" },
-  { key: "sanguine", label: "Sanguine" }
-] as const;
-const INTENSITIES = ["Fleeting", "Intense", "Acute"] as const;
-const SPIN_MS = 2400;
-
-/** Placeholder until the real hunt formula arrives: random shares of the bar that sum to 1. */
-const mockOdds = (): readonly number[] => {
-  const raw = RESONANCES.map(() => 0.3 + Math.random());
-  const total = raw.reduce((sum, value) => sum + value, 0);
-  return raw.map((value) => value / total);
+const FLAVOR_LABEL: Record<Flavor, string> = {
+  choleric: "Choleric",
+  melancholic: "Melancholic",
+  phlegmatic: "Phlegmatic",
+  sanguine: "Sanguine",
+  ischemic: "Ischemic",
+  mercurial: "Mercurial",
+  primal: "Primal"
 };
+const INTENSITY_LABEL: Record<Intensity, string> = { none: "No resonance", fleeting: "Fleeting", intense: "Intense", acute: "Acute" };
+const OUTCOMES: readonly HuntOutcome[] = ["basic", "critical", "messy"];
+const OUTCOME_LABEL: Record<HuntOutcome, string> = { basic: "Normal win", critical: "Critical win", messy: "Messy critical" };
+const SPIN_MS = 2400;
+const FLAVOR_FONT = '15px "Bebas Neue"';
+const FLAVOR_GAP = 6;
 
 /** Folds a travelled distance back and forth across 0..1, so the marker bounces off the bar's ends. */
 const pingPong = (distance: number): number => {
@@ -668,58 +680,128 @@ const pingPong = (distance: number): number => {
   return folded > 1 ? 2 - folded : folded;
 };
 
-const segmentAt = (odds: readonly number[], at: number): number => {
-  let edge = 0;
-  for (const [index, share] of odds.entries()) {
-    edge += share;
-    if (at <= edge) {
-      return index;
-    }
-  }
-  return odds.length - 1;
+/** The shortest travel of at least `least` from `from` that leaves the bouncing marker exactly at `to`. */
+const travelTo = (from: number, to: number, least: number): number => {
+  const base = from + least;
+  const forward = 2 * Math.ceil((base - to) / 2) + to;
+  const back = 2 * Math.ceil((base - (2 - to)) / 2) + 2 - to;
+  return Math.min(forward, back) - from;
 };
 
+let flavorMeasure: CanvasRenderingContext2D | null = null;
+const flavorWidth = (text: string): number => {
+  if (!flavorMeasure) {
+    flavorMeasure = document.createElement("canvas").getContext("2d");
+    if (!flavorMeasure) {
+      throw new Error("HuntRoller: no 2D canvas context to measure flavor names");
+    }
+  }
+  flavorMeasure.font = FLAVOR_FONT;
+  return Math.ceil(flavorMeasure.measureText(text).width) + 2;
+};
+
+type FlavorLabel = { readonly flavor: Flavor; readonly text: string; readonly left: number; readonly below: boolean };
+
 /**
- * Hunt roll: successes (number box) and critical (star) set the odds; each resonance's segment is as long as
- * its chance. Click the bar and the marker slides, slows, and stops; the resonance and its intensity
- * (fleeting, intense, or acute) pop up above it. Odds and intensity are random placeholders for now.
+ * One label per possible flavor, centred on its segment and alternating above and below the bar. Labels that
+ * would overlap a neighbour on their side shorten to three letters and a dot ("Isc.").
  */
-export const HuntRoller = (): ReactElement => {
-  const [successes, setSuccesses] = useState(3);
-  const [critical, setCritical] = useState(false);
-  const [odds, setOdds] = useState(mockOdds);
+const placeFlavorLabels = (flavors: readonly Flavor[], odds: Odds<Flavor>, barW: number): readonly FlavorLabel[] => {
+  const centres: number[] = [];
+  let edge = 0;
+  for (const flavor of flavors) {
+    centres.push((edge + odds[flavor] / 2) * barW);
+    edge += odds[flavor];
+  }
+  const short = new Set<Flavor>();
+  const layout = (): FlavorLabel[] => flavors.map((flavor, index) => {
+    const text = short.has(flavor) ? `${FLAVOR_LABEL[flavor].slice(0, 3)}.` : FLAVOR_LABEL[flavor];
+    const width = flavorWidth(text);
+    const left = Math.min(Math.max((centres[index] ?? 0) - width / 2, 0), Math.max(0, barW - width));
+    return { flavor, text, left, below: index % 2 === 1 };
+  });
+  for (let pass = 0; pass < 2; pass += 1) {
+    const labels = layout();
+    for (const below of [false, true]) {
+      const row = labels.filter((label) => label.below === below);
+      row.forEach((label, index) => {
+        const next = row[index + 1];
+        if (next && label.left + flavorWidth(label.text) + FLAVOR_GAP > next.left) {
+          short.add(label.flavor);
+          short.add(next.flavor);
+        }
+      });
+    }
+  }
+  return layout();
+};
+
+const percent = (value: number): string => `${(value * 100).toFixed(value < 0.1 ? 1 : 0)}%`;
+
+/**
+ * Hunt roll: the margin (number box) and outcome (star: normal, critical, messy critical) set the odds with the
+ * scene location's resonances; each possible flavor's segment is as long as its chance. Click a flavor's name
+ * to mark it as the one the player is seeking (click again to clear). Click the bar and the marker slides,
+ * slows, and stops on the flavor; the intensity is drawn separately and pops up with it.
+ */
+export const HuntRoller = ({ location }: { location: LabLocation }): ReactElement => {
+  const { data } = useChronicleLocations();
+  const [margin, setMargin] = useState(3);
+  const [outcome, setOutcome] = useState<HuntOutcome>("basic");
+  const [target, setTarget] = useState<Flavor | null>(null);
   const [marker, setMarker] = useState<number | null>(null);
   const [result, setResult] = useState<string | null>(null);
+  const [barW, setBarW] = useState(0);
+  const [fontReady, setFontReady] = useState(false);
+  const barRef = useRef<HTMLButtonElement>(null);
   const frame = useRef<number | null>(null);
   useEffect(() => () => {
     if (frame.current !== null) {
       cancelAnimationFrame(frame.current);
     }
   }, []);
-  const reroll = (): void => {
-    setOdds(mockOdds());
-    setResult(null);
-  };
+  useEffect(() => {
+    void document.fonts.load(FLAVOR_FONT).then(() => setFontReady(true));
+  }, []);
+  useEffect(() => {
+    const bar = barRef.current;
+    if (!bar) {
+      return undefined;
+    }
+    const observer = new ResizeObserver(() => setBarW(bar.clientWidth));
+    observer.observe(bar);
+    return () => observer.disconnect();
+  }, []);
+
+  const found = data ? resolveLocation(data, location) : null;
+  const { modifiers, unknown } = netModifiers(found && typeof found !== "string" ? [...found.district.resonances, ...found.site.resonances] : []);
+  const flavors = eligibleFlavors(modifiers);
+  const seeking = target !== null && flavors.includes(target) ? target : null;
+  const odds = flavorOdds({ modifiers, target: seeking, margin, outcome });
+  const intensity = intensityOdds(margin, outcome);
+  const labels = fontReady && barW > 0 ? placeFlavorLabels(flavors, odds, barW) : [];
+  const intensitySummary = INTENSITIES.map((key) => `${INTENSITY_LABEL[key]} ${percent(intensity[key])}`).join(" · ");
+
   const spin = (): void => {
     if (frame.current !== null) {
       cancelAnimationFrame(frame.current);
     }
     setResult(null);
+    const to = Math.random();
+    const landed = sample(odds, flavors, to);
+    const strength = sample(intensity, INTENSITIES, Math.random());
     const from = marker ?? 0;
-    const travel = 1.5 + Math.random() * 2.5;
+    const travel = travelTo(from, to, 1.5 + Math.random() * 2);
     const start = performance.now();
     const step = (now: number): void => {
       const t = Math.min(1, (now - start) / SPIN_MS);
-      const at = pingPong(from + travel * (1 - (1 - t) ** 3));
-      setMarker(at);
+      setMarker(pingPong(from + travel * (1 - (1 - t) ** 3)));
       if (t < 1) {
         frame.current = requestAnimationFrame(step);
         return;
       }
       frame.current = null;
-      const resonance = RESONANCES[segmentAt(odds, at)]?.label ?? "";
-      const intensity = INTENSITIES[Math.floor(Math.random() * INTENSITIES.length)] ?? "Fleeting";
-      setResult(`${intensity} ${resonance}`);
+      setResult(strength === "none" ? INTENSITY_LABEL.none : `${INTENSITY_LABEL[strength]} ${FLAVOR_LABEL[landed]}`);
     };
     frame.current = requestAnimationFrame(step);
   };
@@ -730,43 +812,54 @@ export const HuntRoller = (): ReactElement => {
         className="lab-hunt-successes"
         min={0}
         max={15}
-        value={successes}
-        title="Successes on the hunt roll"
+        value={margin}
+        title="Margin on the hunt roll (successes over the difficulty)"
         onChange={(event) => {
-          setSuccesses(Number(event.target.value));
-          reroll();
+          setMargin(Math.max(0, Number(event.target.value)));
+          setResult(null);
         }}
       />
       <button
         type="button"
-        className={`lab-hunt-crit${critical ? " on" : ""}`}
-        title={critical ? "Critical hunt: on" : "Critical hunt: off"}
+        className={`lab-hunt-crit ${outcome}`}
+        title={`${OUTCOME_LABEL[outcome]} (click for ${OUTCOME_LABEL[OUTCOMES[(OUTCOMES.indexOf(outcome) + 1) % OUTCOMES.length] ?? "basic"].toLowerCase()})`}
         onClick={() => {
-          setCritical(!critical);
-          reroll();
+          setOutcome(OUTCOMES[(OUTCOMES.indexOf(outcome) + 1) % OUTCOMES.length] ?? "basic");
+          setResult(null);
         }}
       >
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <polygon points="12,2.6 14.8,8.7 21.4,9.4 16.5,13.9 17.8,20.5 12,17.2 6.2,20.5 7.5,13.9 2.6,9.4 9.2,8.7" />
         </svg>
       </button>
-      <button type="button" className="lab-hunt-bar" title="Click to roll for resonance" onClick={spin}>
-        {RESONANCES.map((resonance, index) => (
-          <span
-            key={resonance.key}
-            className={`lab-hunt-seg ${resonance.key}`}
-            style={{ flexGrow: odds[index] ?? 0 }}
-            title={`${resonance.label}: ${Math.round((odds[index] ?? 0) * 100)}%`}
+      <div className="lab-hunt-track">
+        {labels.map((label) => (
+          <button
+            key={label.flavor}
+            type="button"
+            className={`lab-hunt-flavor ${label.flavor}${label.below ? " below" : ""}${label.flavor === seeking ? " sought" : ""}`}
+            style={{ left: label.left }}
+            title={`${FLAVOR_LABEL[label.flavor]} ${percent(odds[label.flavor])}: ${label.flavor === seeking ? "sought (click to stop seeking)" : "click if the player is seeking it"}`}
+            onClick={() => {
+              setTarget(label.flavor === seeking ? null : label.flavor);
+              setResult(null);
+            }}
           >
-            {resonance.label}
-          </span>
+            {label.text}
+          </button>
         ))}
-        {marker !== null && (
-          <span className="lab-hunt-marker" style={{ left: `${marker * 100}%` }}>
-            {result && <span className="lab-hunt-result">{result}</span>}
-          </span>
-        )}
-      </button>
+        <button ref={barRef} type="button" className="lab-hunt-bar" title={`Click to roll for resonance. ${intensitySummary}`} onClick={spin}>
+          {flavors.map((flavor) => (
+            <span key={flavor} className={`lab-hunt-seg ${flavor}`} style={{ flexGrow: odds[flavor] }} />
+          ))}
+          {marker !== null && (
+            <span className="lab-hunt-marker" style={{ left: `${marker * 100}%` }}>
+              {result && <span className="lab-hunt-result">{result}</span>}
+            </span>
+          )}
+        </button>
+      </div>
+      {unknown.length > 0 && <span className="lab-note">Unknown resonance in the sheet: {unknown.join(", ")}</span>}
     </div>
   );
 };

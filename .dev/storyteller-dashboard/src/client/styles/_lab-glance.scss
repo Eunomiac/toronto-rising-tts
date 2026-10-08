@@ -4,6 +4,12 @@ $lab-live: #4caf6a;
 
 /* ---------- pop-ups ---------- */
 
+@font-face {
+  font-family: "Bebas Neue";
+  src: url("/pc-sheet-assets/fonts/BebasNeue/BebasNeue%20Regular.ttf") format("truetype");
+  font-weight: 400;
+}
+
 .lab-scrim {
   position: absolute;
   inset: 0;
@@ -1450,7 +1456,7 @@ $lab-queued: #e8c547;
 
   &-successes {
     width: 44px;
-    height: 100%;
+    height: 32px;
     padding: 0 4px;
     border: 1px solid #34343e;
     border-radius: 4px;
@@ -1482,18 +1488,77 @@ $lab-queued: #e8c547;
       stroke-linejoin: round;
     }
 
-    &.on svg {
+    &.critical svg {
       fill: #ffd84a;
       stroke: #fff1a8;
       filter: drop-shadow(0 0 4px #ffd84a) drop-shadow(0 0 9px rgb(255 216 74 / 60%));
     }
+
+    &.messy svg {
+      fill: #d81f2c;
+      stroke: #ff9aa0;
+      filter: drop-shadow(0 0 4px #ff3a46) drop-shadow(0 0 9px rgb(255 40 55 / 60%));
+    }
+  }
+
+  // Flavor names sit alternately above and below the bar, so the track is taller than the bar.
+  &-track {
+    position: relative;
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    height: 100%;
+  }
+
+  &-flavor {
+    position: absolute;
+    top: 0;
+    padding: 0;
+    border: none;
+    font-family: "Bebas Neue", "Arial Narrow", sans-serif;
+    font-size: 15px;
+    line-height: 1;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    color: var(--flavor);
+    background: none;
+    text-shadow: 0 1px 2px #000;
+    cursor: pointer;
+    opacity: 0.85;
+
+    &.below {
+      top: auto;
+      bottom: 0;
+    }
+
+    &:hover:not(:disabled) {
+      opacity: 1;
+      background: none;
+    }
+
+    // The flavor the player is seeking.
+    &.sought {
+      color: #fff;
+      opacity: 1;
+      text-decoration: underline 2px #f2c44e;
+      text-underline-offset: 2px;
+      text-shadow: 0 0 6px #f2c44e, 0 1px 2px #000;
+    }
+
+    &.choleric { --flavor: #f0a060; }
+    &.melancholic { --flavor: #a4a4f4; }
+    &.phlegmatic { --flavor: #5fd0c8; }
+    &.sanguine { --flavor: #f26a78; }
+    &.ischemic { --flavor: #e07aa8; }
+    &.mercurial { --flavor: #c8d0da; }
+    &.primal { --flavor: #9cd866; }
   }
 
   &-bar {
     position: relative;
     display: flex;
     flex: 1 1 auto;
-    height: 100%;
+    height: 22px;
     padding: 0;
     border: 1px solid #000;
     border-radius: 4px;
@@ -1503,16 +1568,8 @@ $lab-queued: #e8c547;
   }
 
   &-seg {
-    display: grid;
     flex-basis: 0;
-    place-items: center;
     min-width: 0;
-    overflow: hidden;
-    font-size: 11px;
-    font-weight: 800;
-    color: rgb(255 255 255 / 88%);
-    text-shadow: 0 1px 2px #000;
-    white-space: nowrap;
     transition: flex-grow 0.4s ease;
 
     & + & {
@@ -1523,6 +1580,9 @@ $lab-queued: #e8c547;
     &.melancholic { background: #45449a; }
     &.phlegmatic { background: #1f8a84; }
     &.sanguine { background: #b3202c; }
+    &.ischemic { background: #6e1c45; }
+    &.mercurial { background: #7f8a97; }
+    &.primal { background: #4c7a2c; }
   }
 
   &-marker {

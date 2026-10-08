@@ -127,7 +127,7 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen, 
   const boardH = stageH - 14;
   const queueH = 420;
   const rightH = 1042 - 8 - mainY;
-  const huntH = 44;
+  const huntH = 64;
   const rosterY = bodyY + huntH + 8;
   const whenW = 470;
   const weatherW = 380;
@@ -143,7 +143,7 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen, 
         />
       </Box>
       <Box x={8} y={bodyY} w={leftW} h={huntH} className="lab-hunt-box lab-borderless">
-        <HuntRoller />
+        <HuntRoller location={location} />
       </Box>
       <Box x={8} y={rosterY} w={leftW} h={1042 - 8 - rosterY} className="lab-borderless lab-dock-box">
         <RosterDock scene={SCENE_NAME} />
