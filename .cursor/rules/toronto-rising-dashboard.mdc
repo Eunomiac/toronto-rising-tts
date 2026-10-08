@@ -29,6 +29,7 @@ The GitHub remote is **public**. Never commit `.env`, API keys, vector-store sec
 - **Tests:** [toronto-rising-dashboard-testing.mdc](toronto-rising-dashboard-testing.mdc).
 - Control-board tokens stay a **GSAP Draggable** island (do not re-render React on every pointer move).
 - `gameState` stays in TTS. The dashboard holds drafts and sends small host commands.
+- Live game data arrives as TTS pushes, never by polling. Before designing a view that shows live state, read [Listening to TTS.md](../../.dev/Storyteller%20Dashboard%20Docs/Listening%20to%20TTS.md) (what is broadcast, how to listen, what to do when a value is missing).
 
 Canonical prose: [`.dev/storyteller-dashboard/README.md`](../../.dev/storyteller-dashboard/README.md).
 

@@ -5,6 +5,7 @@
 Read this when:
 - running or modifying the standalone Storyteller second-monitor dashboard
 - adding a dashboard tab or moving tools between tabs
+- showing live game state in a view (read [Listening to TTS.md](../Storyteller%20Dashboard%20Docs/Listening%20to%20TTS.md) first)
 - debugging OpenAI-backed NPC generation, image generation, local server behavior, or vector-store chronicle retrieval
 
 Source of truth:
@@ -33,6 +34,8 @@ The GitHub remote is public. Never commit `.env`, API keys, or private chronicle
 - **Tests:** [TESTING.md](TESTING.md). Vitest for logic and the React shell; Playwright MCP for the visual board. Do not steal OS focus from the existing Chrome window.
 
 `gameState` stays in TTS. The dashboard holds drafts and sends small host commands.
+
+Live game state reaches the dashboard as TTS pushes relayed over `GET /api/tts/events` (cache at `GET /api/tts/cache`); the dashboard never polls TTS. What is broadcast and how a view should listen: [Listening to TTS.md](../Storyteller%20Dashboard%20Docs/Listening%20to%20TTS.md). Transport design: [Live Push Channel.md](../Storyteller%20Dashboard%20Docs/Live%20Push%20Channel.md).
 
 ## Tabs
 
