@@ -1,7 +1,7 @@
 import { useEffect, useState, type CSSProperties, type MouseEvent, type ReactElement, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Headshot } from "../headshots/Headshot";
-import { assetUrl } from "../pcSheet/layout";
+import { SEAT_ACCENT, assetUrl } from "../pcSheet/layout";
 import { Icon, type IconName } from "./icons";
 
 /**
@@ -117,6 +117,11 @@ export const Overlay = ({ onClose, children }: { onClose: () => void; children: 
 
 /* ---------- seats ---------- */
 
+type Tracker = { readonly max: number; readonly sup: number; readonly agg: number };
+
+/** The PC's own trackers, even while they play an NPC role. */
+type PcTracks = { readonly health: Tracker; readonly willpower: Tracker; readonly hunger: number };
+
 type SeatSketch = {
   readonly slot: number;
   readonly name?: string;
@@ -125,6 +130,8 @@ type SeatSketch = {
   readonly state?: "absent" | "disconnected";
   /** The player's PC name when they are playing an NPC role; `name` and the image are then the NPC's. */
   readonly playedBy?: string;
+  readonly color?: keyof typeof SEAT_ACCENT;
+  readonly tracks?: PcTracks;
 };
 
 /**
@@ -134,14 +141,63 @@ type SeatSketch = {
 export const SEATS: readonly SeatSketch[] = [
   { slot: 9, kind: "nochair" },
   { slot: 7, name: "Lexi Madi", characterKey: "lexiMadi", kind: "npc" },
-  { slot: 5, name: "Adrian Varga", characterKey: "adrianVarga", kind: "pc", playedBy: "Aishe Tache" },
-  { slot: 3, name: "Fomórach", characterKey: "fomorach", kind: "pc", state: "disconnected" },
-  { slot: 1, name: "Black Caesar", characterKey: "blackCaesar", kind: "pc", state: "absent" },
-  { slot: 2, name: "Lord Lucien", characterKey: "lordLucien", kind: "pc" },
-  { slot: 4, name: "Rashid", characterKey: "rashid", kind: "pc" },
+  {
+    slot: 5, name: "Adrian Varga", characterKey: "adrianVarga", kind: "pc", playedBy: "Aishe Tache", color: "Pink",
+    tracks: { health: { max: 7, sup: 2, agg: 0 }, willpower: { max: 6, sup: 1, agg: 0 }, hunger: 2 }
+  },
+  {
+    slot: 3, name: "Fomórach", characterKey: "fomorach", kind: "pc", state: "disconnected", color: "Brown",
+    tracks: { health: { max: 8, sup: 0, agg: 0 }, willpower: { max: 5, sup: 0, agg: 0 }, hunger: 3 }
+  },
+  {
+    slot: 1, name: "Black Caesar", characterKey: "blackCaesar", kind: "pc", state: "absent", color: "Purple",
+    tracks: { health: { max: 9, sup: 1, agg: 1 }, willpower: { max: 7, sup: 0, agg: 0 }, hunger: 1 }
+  },
+  {
+    slot: 2, name: "Lord Lucien", characterKey: "lordLucien", kind: "pc", color: "Red",
+    tracks: { health: { max: 6, sup: 0, agg: 0 }, willpower: { max: 8, sup: 3, agg: 0 }, hunger: 4 }
+  },
+  {
+    slot: 4, name: "Rashid", characterKey: "rashid", kind: "pc", color: "Orange",
+    tracks: { health: { max: 7, sup: 0, agg: 0 }, willpower: { max: 5, sup: 0, agg: 1 }, hunger: 0 }
+  },
   { slot: 6, kind: "empty" },
   { slot: 8, kind: "nochair" }
 ];
+
+/** Same box art as the character sheet trackers (aggravated first, then superficial, then undamaged). */
+const trackBoxImage = (index: number, agg: number, sup: number): string =>
+  index < agg ? "box_red_x" : index < agg + sup ? "box_grey_slash" : "box_white";
+
+const Track = ({ icon, label, max, sup, agg }: { icon: IconName; label: string } & Tracker): ReactElement => (
+  <span className="lab-track">
+    <Icon name={icon} className={`lab-track-icon ${icon}`} title={label} />
+    {Array.from({ length: max }, (_, index) => (
+      <span
+        key={index}
+        className="lab-track-box"
+        style={{ backgroundImage: `url("${assetUrl(`boxes/${trackBoxImage(index, agg, sup)}.webp`)}")` }}
+      />
+    ))}
+  </span>
+);
+
+const HUNGER_DOT = { "--lab-dot": `url("${assetUrl("dots/dot_red.webp")}")` } as CSSProperties;
+
+/** Health, Willpower, and Hunger for a PC's seat, shown while the pointer is over the seat. */
+const TrackerPopup = ({ name, tracks }: { name: string; tracks: PcTracks }): ReactElement => (
+  <span className="lab-seat-pop">
+    <span className="lab-seat-pop-name">{name}</span>
+    <Track icon="health" label="Health" {...tracks.health} />
+    <Track icon="willpower" label="Willpower" {...tracks.willpower} />
+    <span className="lab-track">
+      <Icon name="hunger" className="lab-track-icon hunger" title="Hunger" />
+      {Array.from({ length: 5 }, (_, index) => (
+        <span key={index} className={`lab-hunger-dot${index < tracks.hunger ? " on" : ""}`} style={HUNGER_DOT} />
+      ))}
+    </span>
+  </span>
+);
 
 const SeatContent = ({ seat }: { seat: SeatSketch }): ReactElement => (
   <>
@@ -156,19 +212,27 @@ const SeatContent = ({ seat }: { seat: SeatSketch }): ReactElement => (
 /**
  * One cell per chair, each a ninth of the row (the most chairs any table has); positions the table lacks are
  * left out rather than drawn, and the rest stay centred. The figurine headshot fills the cell above the name.
- * Absent (out of the scene) and disconnected seats are told apart by styling alone.
+ * PC seats are bordered in the player's colour, NPC seats in muted grey; absent (out of the scene) and
+ * disconnected seats are told apart by border style and image treatment. Hovering a PC seat shows that PC's
+ * trackers.
  */
 export const Seats = (): ReactElement => (
   <div className="lab-seats">
     {SEATS.filter((seat) => seat.kind !== "nochair").map((seat) => {
       const className = `lab-seat ${seat.kind}${seat.state ? ` ${seat.state}` : ""}${seat.playedBy ? " role" : ""}`;
-      return seat.characterKey ? (
-        <Headshot key={seat.slot} characterKey={seat.characterKey} className={className}>
-          <SeatContent seat={seat} />
-        </Headshot>
-      ) : (
-        <div key={seat.slot} className={className}>
-          <SeatContent seat={seat} />
+      const style = seat.color ? ({ "--seat-color": SEAT_ACCENT[seat.color] } as CSSProperties) : undefined;
+      return (
+        <div key={seat.slot} className="lab-seat-slot" style={style}>
+          {seat.characterKey ? (
+            <Headshot characterKey={seat.characterKey} className={className}>
+              <SeatContent seat={seat} />
+            </Headshot>
+          ) : (
+            <div className={className}>
+              <SeatContent seat={seat} />
+            </div>
+          )}
+          {seat.tracks && <TrackerPopup name={seat.playedBy ?? seat.name ?? ""} tracks={seat.tracks} />}
         </div>
       );
     })}
@@ -576,66 +640,6 @@ export const PreviewPanel = ({ x, y, w, h, wide = false }: { x: number; y: numbe
       </div>
     </div>
   </Box>
-);
-
-type PcCell = {
-  readonly slot: number;
-  readonly name: string;
-  readonly characterKey: string;
-  readonly state?: "absent" | "disconnected";
-  readonly health: { readonly max: number; readonly sup: number; readonly agg: number };
-  readonly willpower: { readonly max: number; readonly sup: number; readonly agg: number };
-  readonly hunger: number;
-};
-
-/** Same left-to-right order as the PC chairs in the seat row, so each cell sits under its chair. */
-const PC_CELLS: readonly PcCell[] = [
-  { slot: 5, name: "Aishe Tache", characterKey: "aishe", health: { max: 7, sup: 2, agg: 0 }, willpower: { max: 6, sup: 1, agg: 0 }, hunger: 2 },
-  { slot: 3, name: "Fomórach", characterKey: "fomorach", state: "disconnected", health: { max: 8, sup: 0, agg: 0 }, willpower: { max: 5, sup: 0, agg: 0 }, hunger: 3 },
-  { slot: 1, name: "Black Caesar", characterKey: "blackCaesar", state: "absent", health: { max: 9, sup: 1, agg: 1 }, willpower: { max: 7, sup: 0, agg: 0 }, hunger: 1 },
-  { slot: 2, name: "Lord Lucien", characterKey: "lordLucien", health: { max: 6, sup: 0, agg: 0 }, willpower: { max: 8, sup: 3, agg: 0 }, hunger: 4 },
-  { slot: 4, name: "Rashid", characterKey: "rashid", health: { max: 7, sup: 0, agg: 0 }, willpower: { max: 5, sup: 0, agg: 1 }, hunger: 0 }
-];
-
-/** Same box art as the character sheet trackers (aggravated first, then superficial, then undamaged). */
-const trackBoxImage = (index: number, agg: number, sup: number): string =>
-  index < agg ? "box_red_x" : index < agg + sup ? "box_grey_slash" : "box_white";
-
-const Track = ({ icon, label, max, sup, agg }: { icon: IconName; label: string; max: number; sup: number; agg: number }): ReactElement => (
-  <span className="lab-track">
-    <Icon name={icon} className={`lab-track-icon ${icon}`} title={label} />
-    {Array.from({ length: max }, (_, index) => (
-      <span
-        key={index}
-        className="lab-track-box"
-        style={{ backgroundImage: `url("${assetUrl(`boxes/${trackBoxImage(index, agg, sup)}.webp`)}")` }}
-      />
-    ))}
-  </span>
-);
-
-const HUNGER_DOT = { "--lab-dot": `url("${assetUrl("dots/dot_red.webp")}")` } as CSSProperties;
-
-/** Abbreviated PC control panel: one cell per PC with Health, Willpower, and Hunger one click away. */
-export const PcPanel = (): ReactElement => (
-  <div className="lab-pcs">
-    {PC_CELLS.map((pc) => (
-      <div key={pc.slot} className={`lab-pc${pc.state ? ` ${pc.state}` : ""}`}>
-        <Headshot className="lab-pc-head" characterKey={pc.characterKey} anchor="crown" />
-        <span className="lab-pc-body">
-          <span className="lab-pc-name">{pc.name}</span>
-          <Track icon="health" label="Health" {...pc.health} />
-          <Track icon="willpower" label="Willpower" {...pc.willpower} />
-          <span className="lab-track">
-            <Icon name="hunger" className="lab-track-icon hunger" title="Hunger" />
-            {Array.from({ length: 5 }, (_, index) => (
-              <span key={index} className={`lab-hunger-dot${index < pc.hunger ? " on" : ""}`} style={HUNGER_DOT} />
-            ))}
-          </span>
-        </span>
-      </div>
-    ))}
-  </div>
 );
 
 export const RollsReserved = (): ReactElement => (

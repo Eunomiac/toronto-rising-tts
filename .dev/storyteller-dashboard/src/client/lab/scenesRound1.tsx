@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactElement } from "react";
 import {
   AspectRow,
   FLASHBACK_TIME,
+  HuntRoller,
   LocationPanel,
   MasonryRoster,
   PhaseStrip,
@@ -29,7 +30,6 @@ import {
   Roster,
   SceneTitle,
   Seats,
-  PcPanel,
   Sound,
   Weather,
   WIDE_BOARD_RATIO,
@@ -93,9 +93,9 @@ const StageInTheMiddle = ({ previewOpen, clockDiffers, weatherOverride }: Sketch
 };
 
 /**
- * Glance strip, pin pass 3: Where (names + resonances) over a masonry roster on the left; When, Weather, and
- * Sound across the top; the phase bar right beneath them; then the four aspects and the stage, with the PC
- * panel full width along the bottom (room for full-size tracker boxes). Scene time and location live here so every panel reads the same values.
+ * Glance strip: Where (names + resonances), the hunt roll, and a masonry roster on the left; When, Weather, and
+ * Sound across the top; the phase bar right beneath them; then the four aspects and the stage. PC trackers pop
+ * up over their seats. Scene time and location live here so every panel reads the same values.
  */
 const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen, ttsDisconnected }: SketchState): ReactElement => {
   const [preparing, setPreparing] = useState(false);
@@ -121,13 +121,13 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen, 
   const mainY = bodyY + phaseH + 8;
   const aspectH = 118;
   const stageY = mainY + aspectH + 8;
-  const pcH = 112;
-  const pcY = 1042 - 8 - pcH;
-  const stageH = pcY - 8 - stageY;
+  const stageH = 1042 - 8 - stageY;
   const boardW = stageW - 18;
   const boardH = stageH - 14;
-  const queueH = 300;
-  const rightH = pcY - 8 - mainY;
+  const queueH = 420;
+  const rightH = 1042 - 8 - mainY;
+  const huntH = 44;
+  const rosterY = bodyY + huntH + 8;
   const whenW = 470;
   const weatherW = 380;
   const soundX = stripX + whenW + 8 + weatherW + 8;
@@ -141,7 +141,10 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen, 
           onRelease={() => setLocation(SCENE_LOCATION)}
         />
       </Box>
-      <Box x={8} y={bodyY} w={leftW} h={bodyH}>
+      <Box x={8} y={bodyY} w={leftW} h={huntH} className="lab-hunt-box">
+        <HuntRoller />
+      </Box>
+      <Box x={8} y={rosterY} w={leftW} h={1042 - 8 - rosterY}>
         <MasonryRoster />
       </Box>
 
@@ -171,9 +174,6 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen, 
       </Box>
       <Box x={stripX} y={stageY} w={stageW} h={stageH}>
         <WideBoard w={boardW} h={boardH} />
-      </Box>
-      <Box x={stripX} y={pcY} w={1912 - stripX} h={pcH}>
-        <PcPanel />
       </Box>
       <Box x={rightX} y={mainY} w={265} h={rightH - queueH - 8} tone="reserved" />
       <Box x={rightX} y={mainY + rightH - queueH} w={265} h={queueH} className="lab-queue-box">

@@ -10,6 +10,7 @@ import {
   type SheetSite,
   type WeatherCalendar
 } from "./chronicleSheets";
+import { SEAT_ACCENT } from "../pcSheet/layout";
 import { Icon, type IconName } from "./icons";
 import { Btn, Overlay, canvasPoint } from "./sketch";
 
@@ -306,13 +307,95 @@ const groupLabelWidth = (text: string): number => {
   return Math.ceil(high) + 2;
 };
 
+type RosterCategory = { readonly id: string; readonly name: string; readonly color: string; readonly open: boolean };
+type RosterLayout = { readonly categories: readonly RosterCategory[]; readonly assigned: Readonly<Record<string, string>> };
+
+const ROSTER_LAYOUT_KEY = "tr-lab-roster-categories";
+const GROUP_DRAG_TYPE = "application/x-tr-npc-group";
+const NEW_CATEGORY_COLOR = "#9c7bd6";
+
+const readRosterLayout = (): RosterLayout => {
+  const saved = window.localStorage.getItem(ROSTER_LAYOUT_KEY);
+  return saved ? (JSON.parse(saved) as RosterLayout) : { categories: [], assigned: {} };
+};
+
+/** Category header: twirl to show or hide its groups; drop a group on it to file the group there. */
+const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove }: {
+  category: RosterCategory | null;
+  count: number;
+  onToggle?: () => void;
+  onDrop: (groupKey: string) => void;
+  onRemove?: () => void;
+}): ReactElement => {
+  const [over, setOver] = useState(false);
+  return (
+    <div
+      className={`lab-cat-head${over ? " drop" : ""}${category ? "" : " unsorted"}`}
+      onDragOver={(event) => {
+        if (event.dataTransfer.types.includes(GROUP_DRAG_TYPE)) {
+          event.preventDefault();
+          setOver(true);
+        }
+      }}
+      onDragLeave={() => setOver(false)}
+      onDrop={(event) => {
+        setOver(false);
+        const key = event.dataTransfer.getData(GROUP_DRAG_TYPE);
+        if (key) {
+          onDrop(key);
+        }
+      }}
+    >
+      {onToggle && (
+        <button type="button" className="lab-cat-twirl" title={category?.open ? "Hide groups" : "Show groups"} onClick={onToggle}>
+          {category?.open ? "▾" : "▸"}
+        </button>
+      )}
+      <span className="lab-cat-name">{category ? category.name : "Unsorted"}</span>
+      <span className="lab-cat-count">{count}</span>
+      {onRemove && <button type="button" className="lab-cat-remove" title="Remove category (its groups go back to Unsorted)" onClick={onRemove}>×</button>}
+    </div>
+  );
+};
+
 /**
  * Every NPC group as a closed stack of all its tokens, stretched to fill its row; names wrap to three lines at
- * most (the group widens instead). Click one to open it in place and pick a token.
+ * most (the group widens instead). Click one to open it in place and pick a token. Groups start Unsorted; "+"
+ * creates a coloured category, dragging a group onto a category header files it there, and each category's
+ * twirl shows or hides its groups. The Lab keeps the categories in this browser's local storage.
  */
 export const MasonryRoster = (): ReactElement => {
   const { catalogs, error } = useSceneCatalogs();
   const [open, setOpen] = useState<string | null>("beesHive");
+  const [layout, setLayout] = useState<RosterLayout>(readRosterLayout);
+  const [draft, setDraft] = useState<{ name: string; color: string } | null>(null);
+  useEffect(() => {
+    window.localStorage.setItem(ROSTER_LAYOUT_KEY, JSON.stringify(layout));
+  }, [layout]);
+  const fileGroup = (categoryId: string | null) => (groupKey: string): void => {
+    const assigned = { ...layout.assigned };
+    if (categoryId) {
+      assigned[groupKey] = categoryId;
+    } else {
+      delete assigned[groupKey];
+    }
+    setLayout({ ...layout, assigned });
+  };
+  const updateCategory = (id: string, change: Partial<RosterCategory>): void =>
+    setLayout({ ...layout, categories: layout.categories.map((category) => (category.id === id ? { ...category, ...change } : category)) });
+  const removeCategory = (id: string): void =>
+    setLayout({
+      categories: layout.categories.filter((category) => category.id !== id),
+      assigned: Object.fromEntries(Object.entries(layout.assigned).filter(([, categoryId]) => categoryId !== id))
+    });
+  const createCategory = (): void => {
+    if (!draft || draft.name.trim() === "") {
+      return;
+    }
+    const category: RosterCategory = { id: `cat-${Date.now()}`, name: draft.name.trim(), color: draft.color, open: true };
+    setLayout({ ...layout, categories: [...layout.categories, category] });
+    setDraft(null);
+  };
   const groups = useMemo((): readonly NpcGroup[] => {
     if (!catalogs) {
       return [];
@@ -329,6 +412,43 @@ export const MasonryRoster = (): ReactElement => {
     });
   }, [catalogs]);
 
+  const masonry = (list: readonly NpcGroup[]): ReactElement => (
+    <div className="lab-masonry">
+      {list.map((group) => group.key === open ? (
+        <div key={group.key} className="lab-group open">
+          <button type="button" className="lab-group-label" onClick={() => setOpen(null)}>{group.label} ▴</button>
+          <span className="lab-group-tokens">
+            {group.members.map((npc) => (
+              <span key={npc.characterKey} className="lab-group-token" title={npc.fullName}>
+                <Headshot className="lab-group-head" characterKey={npc.characterKey} />
+                <span className="lab-group-name">{npc.fullName}</span>
+              </span>
+            ))}
+          </span>
+        </div>
+      ) : (
+        <button
+          key={group.key}
+          type="button"
+          className="lab-group"
+          draggable
+          onDragStart={(event) => event.dataTransfer.setData(GROUP_DRAG_TYPE, group.key)}
+          onClick={() => setOpen(group.key)}
+          title={group.members.map((npc) => npc.fullName).join(", ")}
+        >
+          <span className="lab-group-cluster">
+            {group.members.map((npc) => (
+              <Headshot key={npc.characterKey} className="lab-group-head" characterKey={npc.characterKey} />
+            ))}
+          </span>
+          <span className="lab-group-label" style={{ minWidth: group.labelWidth }}>{group.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+  const knownCategories = new Set(layout.categories.map((category) => category.id));
+  const unsorted = groups.filter((group) => !knownCategories.has(layout.assigned[group.key] ?? ""));
+
   return (
     <div className="lab-mroster">
       <div className="lab-mroster-head">
@@ -336,32 +456,177 @@ export const MasonryRoster = (): ReactElement => {
         <Btn>Generic</Btn>
         <Btn>Memoriam</Btn>
         <span className="lab-search">Search every NPC…</span>
+        <button type="button" className="lab-btn lab-cat-add" title="New category" onClick={() => setDraft({ name: "", color: NEW_CATEGORY_COLOR })}>+</button>
       </div>
+      {draft && (
+        <form
+          className="lab-cat-draft"
+          onSubmit={(event) => {
+            event.preventDefault();
+            createCategory();
+          }}
+        >
+          <input
+            className="lab-select"
+            autoFocus
+            placeholder="Category name"
+            value={draft.name}
+            onChange={(event) => setDraft({ ...draft, name: event.target.value })}
+          />
+          <input type="color" className="lab-cat-color" value={draft.color} title="Category colour" onChange={(event) => setDraft({ ...draft, color: event.target.value })} />
+          <button type="submit" className="lab-btn primary">Create</button>
+          <button type="button" className="lab-btn" onClick={() => setDraft(null)}>Cancel</button>
+        </form>
+      )}
       {error && <p className="lab-note">{error}</p>}
-      <div className="lab-masonry">
-        {groups.map((group) => group.key === open ? (
-          <div key={group.key} className="lab-group open">
-            <button type="button" className="lab-group-label" onClick={() => setOpen(null)}>{group.label} ▴</button>
-            <span className="lab-group-tokens">
-              {group.members.map((npc) => (
-                <span key={npc.characterKey} className="lab-group-token" title={npc.fullName}>
-                  <Headshot className="lab-group-head" characterKey={npc.characterKey} />
-                  <span className="lab-group-name">{npc.fullName}</span>
-                </span>
-              ))}
-            </span>
-          </div>
-        ) : (
-          <button key={group.key} type="button" className="lab-group" onClick={() => setOpen(group.key)} title={group.members.map((npc) => npc.fullName).join(", ")}>
-            <span className="lab-group-cluster">
-              {group.members.map((npc) => (
-                <Headshot key={npc.characterKey} className="lab-group-head" characterKey={npc.characterKey} />
-              ))}
-            </span>
-            <span className="lab-group-label" style={{ minWidth: group.labelWidth }}>{group.label}</span>
-          </button>
-        ))}
+      <div className="lab-mroster-body">
+        {layout.categories.map((category) => {
+          const members = groups.filter((group) => layout.assigned[group.key] === category.id);
+          return (
+            <section key={category.id} className="lab-cat" style={{ "--cat": category.color } as CSSProperties}>
+              <CategoryHeader
+                category={category}
+                count={members.length}
+                onToggle={() => updateCategory(category.id, { open: !category.open })}
+                onDrop={fileGroup(category.id)}
+                onRemove={() => removeCategory(category.id)}
+              />
+              {category.open && members.length > 0 && masonry(members)}
+            </section>
+          );
+        })}
+        <section className="lab-cat unsorted">
+          {layout.categories.length > 0 && <CategoryHeader category={null} count={unsorted.length} onDrop={fileGroup(null)} />}
+          {masonry(unsorted)}
+        </section>
       </div>
+    </div>
+  );
+};
+
+/* ---------- Hunt roll: resonance randomiser (placeholder odds) ---------- */
+
+const RESONANCES = [
+  { key: "choleric", label: "Choleric" },
+  { key: "melancholic", label: "Melancholic" },
+  { key: "phlegmatic", label: "Phlegmatic" },
+  { key: "sanguine", label: "Sanguine" }
+] as const;
+const INTENSITIES = ["Fleeting", "Intense", "Acute"] as const;
+const SPIN_MS = 2400;
+
+/** Placeholder until the real hunt formula arrives: random shares of the bar that sum to 1. */
+const mockOdds = (): readonly number[] => {
+  const raw = RESONANCES.map(() => 0.3 + Math.random());
+  const total = raw.reduce((sum, value) => sum + value, 0);
+  return raw.map((value) => value / total);
+};
+
+/** Folds a travelled distance back and forth across 0..1, so the marker bounces off the bar's ends. */
+const pingPong = (distance: number): number => {
+  const folded = ((distance % 2) + 2) % 2;
+  return folded > 1 ? 2 - folded : folded;
+};
+
+const segmentAt = (odds: readonly number[], at: number): number => {
+  let edge = 0;
+  for (const [index, share] of odds.entries()) {
+    edge += share;
+    if (at <= edge) {
+      return index;
+    }
+  }
+  return odds.length - 1;
+};
+
+/**
+ * Hunt roll: successes (number box) and critical (star) set the odds; each resonance's segment is as long as
+ * its chance. Click the bar and the marker slides, slows, and stops; the resonance and its intensity
+ * (fleeting, intense, or acute) pop up above it. Odds and intensity are random placeholders for now.
+ */
+export const HuntRoller = (): ReactElement => {
+  const [successes, setSuccesses] = useState(3);
+  const [critical, setCritical] = useState(false);
+  const [odds, setOdds] = useState(mockOdds);
+  const [marker, setMarker] = useState<number | null>(null);
+  const [result, setResult] = useState<string | null>(null);
+  const frame = useRef<number | null>(null);
+  useEffect(() => () => {
+    if (frame.current !== null) {
+      cancelAnimationFrame(frame.current);
+    }
+  }, []);
+  const reroll = (): void => {
+    setOdds(mockOdds());
+    setResult(null);
+  };
+  const spin = (): void => {
+    if (frame.current !== null) {
+      cancelAnimationFrame(frame.current);
+    }
+    setResult(null);
+    const from = marker ?? 0;
+    const travel = 1.5 + Math.random() * 2.5;
+    const start = performance.now();
+    const step = (now: number): void => {
+      const t = Math.min(1, (now - start) / SPIN_MS);
+      const at = pingPong(from + travel * (1 - (1 - t) ** 3));
+      setMarker(at);
+      if (t < 1) {
+        frame.current = requestAnimationFrame(step);
+        return;
+      }
+      frame.current = null;
+      const resonance = RESONANCES[segmentAt(odds, at)]?.label ?? "";
+      const intensity = INTENSITIES[Math.floor(Math.random() * INTENSITIES.length)] ?? "Fleeting";
+      setResult(`${intensity} ${resonance}`);
+    };
+    frame.current = requestAnimationFrame(step);
+  };
+  return (
+    <div className="lab-hunt">
+      <input
+        type="number"
+        className="lab-hunt-successes"
+        min={0}
+        max={15}
+        value={successes}
+        title="Successes on the hunt roll"
+        onChange={(event) => {
+          setSuccesses(Number(event.target.value));
+          reroll();
+        }}
+      />
+      <button
+        type="button"
+        className={`lab-hunt-crit${critical ? " on" : ""}`}
+        title={critical ? "Critical hunt: on" : "Critical hunt: off"}
+        onClick={() => {
+          setCritical(!critical);
+          reroll();
+        }}
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <polygon points="12,2.6 14.8,8.7 21.4,9.4 16.5,13.9 17.8,20.5 12,17.2 6.2,20.5 7.5,13.9 2.6,9.4 9.2,8.7" />
+        </svg>
+      </button>
+      <button type="button" className="lab-hunt-bar" title="Click to roll for resonance" onClick={spin}>
+        {RESONANCES.map((resonance, index) => (
+          <span
+            key={resonance.key}
+            className={`lab-hunt-seg ${resonance.key}`}
+            style={{ flexGrow: odds[index] ?? 0 }}
+            title={`${resonance.label}: ${Math.round((odds[index] ?? 0) * 100)}%`}
+          >
+            {resonance.label}
+          </span>
+        ))}
+        {marker !== null && (
+          <span className="lab-hunt-marker" style={{ left: `${marker * 100}%` }}>
+            {result && <span className="lab-hunt-result">{result}</span>}
+          </span>
+        )}
+      </button>
     </div>
   );
 };
@@ -924,8 +1189,8 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, w, h
             </button>
           </span>
         )}
-        <span className="lab-when-edge dusk" title="Dusk">{formatClock(DUSK)}</span>
-        <span className="lab-when-edge dawn" title="Dawn">{formatClock(DAWN)}</span>
+        <span className="lab-when-edge dusk" title="Dusk"><span>{formatClock(DUSK)}</span></span>
+        <span className="lab-when-edge dawn" title="Dawn"><span>{formatClock(DAWN)}</span></span>
       </div>
       {(open || forceOpen) && (
         <Overlay onClose={() => setOpen(false)}>
@@ -982,6 +1247,18 @@ const MixerGroup = ({ idle = false, values, children }: { idle?: boolean; values
 
 const MUSIC_PLAYLISTS = ["Main", "Combat", "Intrigue", "Silent"] as const;
 
+/** Featured tracks in `lib/soundscape_catalog.ttslua` (type `featureMusic`). */
+const FEATURED_TRACKS = ["TR Theme (full)", "TR Theme (intro)", "TR Loop", "House of the Rising Sun"] as const;
+
+/** Location ambience loops in `lib/soundscape_catalog.ttslua` (type `location`), alphabetical. */
+const AMBIENT_TRACKS = [
+  "Silent", "Airport", "Apothecary", "Autoshop", "Church", "City Chatter", "City Park", "City Revelers", "City Suburb",
+  "City Traffic", "City Walking", "Computer Lab", "Crickets", "Dive Bar", "Dungeon", "Eerie Forest", "Fast Clock",
+  "Fireplace", "Hospital", "Indoor Market", "Industry", "Laboratory", "Library", "Low Wind Ambient", "Medical Clinic",
+  "Nightclub", "Office", "Quiet City", "Ritual Room", "Rooftop", "Sewers", "Soft Hum", "Soft Indoor", "Subway",
+  "Tinkle", "Urban Dark", "Warrens", "Waterside", "Whisper Ghosts"
+] as const;
+
 const RowLabel = ({ icon, label }: { icon: IconName; label: string }): ReactElement => (
   <span className="lab-mixer-label" title={label}>
     <Icon name={icon} title={label} />
@@ -990,10 +1267,17 @@ const RowLabel = ({ icon, label }: { icon: IconName; label: string }): ReactElem
 
 /**
  * Music and Featured share a row because only one of them plays at a time. The playlist shows what is playing:
- * the scene library's choice (usually Main) unless changed here.
+ * the scene library's choice (usually Main) unless changed here. Featured tracks only play on demand (▶).
+ * Ambient shows the site's ambience loop; picking another is an override.
  */
-export const SoundMixer = ({ indoors, scenePlaylist = "Main" }: { indoors: boolean; scenePlaylist?: string }): ReactElement => {
+export const SoundMixer = ({ indoors, scenePlaylist = "Main", sceneAmbience = "Soft Indoor" }: {
+  indoors: boolean;
+  scenePlaylist?: string;
+  sceneAmbience?: string;
+}): ReactElement => {
   const [featured, setFeatured] = useState(false);
+  const [featuredTrack, setFeaturedTrack] = useState<string>("TR Loop");
+  const ambientTrack = useOverridable(sceneAmbience);
   const [muted, setMuted] = useState(false);
   const playlist = useOverridable(scenePlaylist);
   const music = useOverridable(70);
@@ -1015,8 +1299,16 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main" }: { indoors: boole
           <Slider level={music} />
         </MixerGroup>
         <MixerGroup idle={!featured} values={[featuredLevel]}>
-          <button type="button" className={`lab-btn${featured ? " primary" : ""}`} onClick={() => setFeatured(!featured)}>
-            {featured ? "★ TR Loop" : "Featured…"}
+          <select className="lab-select" value={featuredTrack} title="Featured track" onChange={(event) => setFeaturedTrack(event.target.value)}>
+            {FEATURED_TRACKS.map((name) => <option key={name}>{name}</option>)}
+          </select>
+          <button
+            type="button"
+            className={`lab-btn lab-mixer-play${featured ? " primary" : ""}`}
+            title={featured ? "Stop the featured track" : "Play the featured track"}
+            onClick={() => setFeatured(!featured)}
+          >
+            {featured ? "■" : "▶"}
           </button>
           <Slider level={featuredLevel} />
         </MixerGroup>
@@ -1038,8 +1330,10 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main" }: { indoors: boole
       </div>
       <div className="lab-mixer-row">
         <RowLabel icon="ambient" label="Ambient" />
-        <MixerGroup values={[ambience]}>
-          <span className="lab-mixer-track">Soft indoor</span>
+        <MixerGroup values={[ambientTrack, ambience]}>
+          <select className="lab-select" value={ambientTrack.value} title="Ambient track" onChange={(event) => ambientTrack.set(event.target.value)}>
+            {AMBIENT_TRACKS.map((name) => <option key={name}>{name}</option>)}
+          </select>
           <Slider level={ambience} />
         </MixerGroup>
       </div>
@@ -1129,14 +1423,53 @@ const ConfirmButton = ({ label, className = "", onConfirm, style }: {
   );
 };
 
+/** Spotlight carousel order as TTS shuffled it (mock); the front PC holds the spotlight. */
+const SPOTLIGHT_ORDER: readonly { readonly color: keyof typeof SEAT_ACCENT; readonly characterKey: string }[] = [
+  { color: "Orange", characterKey: "rashid" },
+  { color: "Red", characterKey: "lordLucien" },
+  { color: "Pink", characterKey: "aishe" },
+  { color: "Brown", characterKey: "fomorach" },
+  { color: "Purple", characterKey: "blackCaesar" }
+];
+
+const rotate = <T,>(list: readonly T[], by: number): readonly T[] => {
+  const shift = ((by % list.length) + list.length) % list.length;
+  return [...list.slice(shift), ...list.slice(0, shift)];
+};
+
+/** Mirrors the TTS Spotlight controls: ‹ and › turn the carousel; clicking a PC brings them to the front. */
+const SpotlightCarousel = (): ReactElement => {
+  const [order, setOrder] = useState(SPOTLIGHT_ORDER);
+  return (
+    <span className="lab-carousel">
+      <button type="button" className="lab-carousel-step" title="Previous PC" onClick={() => setOrder(rotate(order, -1))}>‹</button>
+      {order.map((pc, index) => (
+        <button
+          key={pc.color}
+          type="button"
+          className={`lab-carousel-pc${index === 0 ? " front" : ""}`}
+          style={{ "--seat-color": SEAT_ACCENT[pc.color] } as CSSProperties}
+          title={index === 0 ? `${pc.color} has the spotlight` : `Give ${pc.color} the spotlight`}
+          onClick={() => setOrder(rotate(order, index))}
+        >
+          <Headshot className="lab-carousel-head" characterKey={pc.characterKey} />
+        </button>
+      ))}
+      <button type="button" className="lab-carousel-step" title="Next PC" onClick={() => setOrder(rotate(order, 1))}>›</button>
+    </span>
+  );
+};
+
 /**
- * Current phase in the middle. In Play, Advance opens a ring: Scene (scene picker), Memoriam (Memoriam set-up),
+ * Current phase in the middle. During Intermission the middle holds the next session's number and title; during
+ * Spotlight it holds the carousel. In Play, Advance opens a ring: Scene (scene picker), Memoriam (Memoriam set-up),
  * or Spotlight (click twice). In any other phase, Advance names the next phase and needs a second click.
  */
 export const PhaseStrip = ({ library, onPrepare }: { library: readonly string[]; onPrepare: () => void }): ReactElement => {
   const [phase, setPhase] = useState<Phase>("Play");
   const [ring, setRing] = useState<Point | null>(null);
   const [modal, setModal] = useState<"scene" | "memoriam" | null>(null);
+  const [session, setSession] = useState({ number: 43, title: "" });
   const next = NEXT_PHASE[phase];
   const open = (which: "scene" | "memoriam") => (): void => {
     setRing(null);
@@ -1153,6 +1486,27 @@ export const PhaseStrip = ({ library, onPrepare }: { library: readonly string[];
             <span className="lab-phase-scene">Elysium — Casa Loma: Great Hall</span>
           </>
         )}
+        {phase === "Intermission" && (
+          <span className="lab-phase-session">
+            <label>
+              Session
+              <input
+                type="number"
+                className="lab-select lab-phase-session-number"
+                min={1}
+                value={session.number}
+                onChange={(event) => setSession({ ...session, number: Number(event.target.value) })}
+              />
+            </label>
+            <input
+              className="lab-select lab-phase-session-title"
+              placeholder="Session title"
+              value={session.title}
+              onChange={(event) => setSession({ ...session, title: event.target.value })}
+            />
+          </span>
+        )}
+        {phase === "Spotlight" && <SpotlightCarousel />}
       </span>
       {phase === "Play" ? (
         <button type="button" className="lab-btn primary" onClick={(event) => setRing(canvasPoint(event))}>Advance ▸</button>

@@ -205,7 +205,10 @@ $lab-pin: #f5b13d;
 
 .lab-search {
   display: block;
+  min-width: 0;
+  overflow: hidden;
   padding: 4px 8px;
+  white-space: nowrap;
   border: 1px solid #34343e;
   border-radius: 4px;
   color: #6c6c78;
@@ -220,22 +223,55 @@ $lab-pin: #f5b13d;
 }
 
 // A ninth of the row (the most chairs a table has), so missing chairs never widen the others.
+.lab-seat-slot {
+  position: relative;
+  flex: 0 0 calc((100% - 32px) / 9);
+  min-width: 0;
+  height: 100%;
+
+  &:hover {
+    z-index: 20;
+  }
+}
+
+// PC trackers float under the seat while the pointer is over it.
+.lab-seat-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  padding: 7px 10px;
+  border: 2px solid var(--seat-color, #6a6a74);
+  border-radius: 8px;
+  background: rgb(16 16 20 / 96%);
+  box-shadow: 0 6px 18px rgb(0 0 0 / 70%);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  pointer-events: none;
+
+  &-name {
+    font-weight: 800;
+    color: #fff;
+  }
+
+  .lab-seat-slot:hover > & {
+    display: flex;
+  }
+}
+
 .lab-seat {
   --headshot-reserve: 24px;
   position: relative;
   background-color: #2a2a32;
-  flex: 0 0 calc((100% - 32px) / 9);
-  min-width: 0;
+  width: 100%;
   height: 100%;
   display: flex;
   align-items: flex-end;
   overflow: hidden;
-  border: 2px solid #c9a24a;
+  border: 2px solid var(--seat-color, #6a6a74);
   border-radius: 6px;
-
-  &.npc {
-    border-color: #9c7bd6;
-  }
 
   &-badge {
     position: absolute;
@@ -296,12 +332,11 @@ $lab-pin: #f5b13d;
 
   &.absent {
     border-style: dotted;
-    border-color: #c08a2a;
     filter: grayscale(1) brightness(0.7);
   }
 
   &.disconnected {
-    border-color: #444;
+    border-style: dashed;
     filter: brightness(0.4);
   }
 }
@@ -435,65 +470,11 @@ $lab-pin: #f5b13d;
   }
 }
 
-.lab-pcs {
-  display: flex;
-  gap: 6px;
-  height: 100%;
-}
-
-.lab-pc {
-  flex: 1 1 0;
-  min-width: 0;
-  display: flex;
-  gap: 8px;
-  padding: 5px;
-  border: 1px solid #3a3a44;
-  border-radius: 6px;
-  background: #1c1c22;
-
-  &-head {
-    position: relative;
-    flex: 0 0 auto;
-    background-color: #2a2a32;
-    width: 64px;
-    border: 2px solid #c9a24a;
-    border-radius: 5px;
-  }
-
-  &-body {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: column;
-    justify-content: space-between;
-    min-width: 0;
-  }
-
-  &-name {
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
-    font-weight: 800;
-  }
-
-  &.absent {
-    border-style: dotted;
-    border-color: #c08a2a;
-
-    .lab-pc-head {
-      filter: grayscale(1) brightness(0.7);
-    }
-  }
-
-  &.disconnected &-head {
-    filter: brightness(0.4);
-  }
-}
-
 // The right padding holds the last box's scaled-up transparent margin.
 .lab-track {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 0;
   padding-right: 10px;
 
   &-icon {
@@ -503,7 +484,7 @@ $lab-pin: #f5b13d;
     margin-right: 6px;
 
     &.health {
-      fill: #d24a55;
+      fill: #ece6da;
     }
 
     &.willpower {
@@ -511,7 +492,7 @@ $lab-pin: #f5b13d;
     }
 
     &.hunger {
-      fill: #e8e2d4;
+      fill: #c4141c;
     }
   }
 
@@ -520,7 +501,6 @@ $lab-pin: #f5b13d;
     flex: 0 0 auto;
     width: 13px;
     height: 13px;
-    margin-right: 1px;
     background: center / contain no-repeat;
     transform: scale(2.5);
   }
@@ -529,6 +509,7 @@ $lab-pin: #f5b13d;
 .lab-hunger-dot {
   width: 14px;
   height: 14px;
+  margin-right: 1px;
   border-radius: 50%;
   box-shadow: inset 0 0 0 1px rgb(196 196 196 / 55%);
 

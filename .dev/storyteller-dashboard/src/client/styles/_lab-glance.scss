@@ -254,10 +254,6 @@ $lab-live: #4caf6a;
     gap: 8px;
     padding: 4px 10px;
     text-shadow: 0 1px 3px #000, 0 0 8px #000;
-
-    & + & {
-      border-top: 1px solid rgb(255 255 255 / 12%);
-    }
   }
 
   &-name {
@@ -397,6 +393,109 @@ $lab-live: #4caf6a;
       flex: 1 1 auto;
     }
   }
+
+  &-body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 0;
+    overflow-y: auto;
+  }
+}
+
+/* ---------- roster categories ---------- */
+
+.lab-cat-add {
+  min-width: 28px;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.lab-cat-draft {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  .lab-select {
+    flex: 1 1 auto;
+    padding: 4px 6px;
+    font-size: 13px;
+  }
+}
+
+.lab-cat-color {
+  width: 34px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid #34343e;
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+}
+
+.lab-cat {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &:not(.unsorted) {
+    padding: 0 0 6px 8px;
+    border-left: 3px solid var(--cat);
+  }
+}
+
+// A category header is also where groups are dropped.
+.lab-cat-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border: 1px solid color-mix(in srgb, var(--cat, #4a4a55) 55%, transparent);
+  border-radius: 5px;
+  font-weight: 800;
+  color: #fff;
+  background: color-mix(in srgb, var(--cat, #4a4a55) 22%, #16161b);
+
+  &.unsorted {
+    font-weight: 600;
+    color: #a8a8b4;
+    border-style: dashed;
+  }
+
+  &.drop {
+    border-color: #fff;
+    box-shadow: 0 0 10px color-mix(in srgb, var(--cat, #ffffff) 70%, transparent);
+  }
+}
+
+.lab-cat-twirl,
+.lab-cat-remove {
+  padding: 0 4px;
+  border: none;
+  font-family: inherit;
+  font-size: 14px;
+  color: inherit;
+  background: none;
+  cursor: pointer;
+}
+
+.lab-cat-name {
+  flex: 1 1 auto;
+}
+
+.lab-cat-count {
+  font-size: 11px;
+  font-weight: 600;
+  color: #a8a8b4;
+}
+
+.lab-cat-remove {
+  color: #8a8a96;
+
+  &:hover {
+    color: #ff8a8a;
+  }
 }
 
 .lab-masonry {
@@ -404,8 +503,6 @@ $lab-live: #4caf6a;
   flex-wrap: wrap;
   align-content: flex-start;
   gap: 6px;
-  min-height: 0;
-  overflow-y: auto;
 }
 
 // A closed group is at least as wide as its token stack and its name in three lines; rows stretch to full width.
@@ -561,27 +658,42 @@ $lab-live: #4caf6a;
     color: #fff;
   }
 
-  // Dusk and dawn: time only, on a black rhombus tucked into the bottom corners.
+  // Dusk and dawn: time only, on a black triangle filling each bottom corner. The outer span carries the gold
+  // glow along the slanted edge, since a filter on the clipped shape itself would be clipped away.
   &-edge {
     position: absolute !important;
-    bottom: 3px;
-    display: grid;
-    place-items: center;
-    width: 92px;
-    height: 34px;
-    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
-    font-size: 14px;
-    font-weight: 800;
-    color: #f2c44e;
-    text-shadow: none;
-    background: #000;
+    bottom: 0;
+    filter: drop-shadow(0 0 1px #f2c44e) drop-shadow(0 0 5px rgb(242 196 78 / 50%));
+
+    > span {
+      display: grid;
+      align-items: end;
+      width: 132px;
+      height: 58px;
+      padding: 0 7px 6px;
+      font-size: 15px;
+      font-weight: 800;
+      color: #f2c44e;
+      text-shadow: none;
+      background: #000;
+    }
 
     &.dusk {
-      left: 3px;
+      left: 0;
+
+      > span {
+        justify-items: start;
+        clip-path: polygon(0 0, 100% 100%, 0 100%);
+      }
     }
 
     &.dawn {
-      right: 3px;
+      right: 0;
+
+      > span {
+        justify-items: end;
+        clip-path: polygon(100% 0, 100% 100%, 0 100%);
+      }
     }
   }
 
@@ -607,9 +719,15 @@ $lab-live: #4caf6a;
     }
 
     &.on {
-      border-color: $lab-live;
-      color: #9df0a8;
+      border-color: #9df0a8;
+      color: #000;
+      background: $lab-live;
       animation: lab-realtime-pulse 1.6s ease-in-out infinite;
+
+      .lab-icon {
+        stroke: #000;
+        stroke-width: 12px;
+      }
     }
   }
 
@@ -1080,6 +1198,196 @@ $lab-queued: #e8c547;
 
 .lab-phase-box {
   padding: 4px 6px;
+}
+
+.lab-phase-session {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: #a8a8b4;
+  }
+
+  &-number {
+    width: 52px;
+  }
+
+  &-title {
+    width: 240px;
+  }
+}
+
+/* ---------- Spotlight carousel (mirrors the TTS Spotlight controls) ---------- */
+
+.lab-carousel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  &-step {
+    padding: 0 6px;
+    border: 1px solid #34343e;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 18px;
+    line-height: 26px;
+    color: inherit;
+    background: #1e1e25;
+    cursor: pointer;
+  }
+
+  &-pc {
+    padding: 0;
+    border: 2px solid var(--seat-color);
+    border-radius: 50%;
+    background: none;
+    opacity: 0.6;
+    cursor: pointer;
+
+    &.front {
+      opacity: 1;
+      box-shadow: 0 0 0 2px #000, 0 0 10px 3px var(--seat-color);
+    }
+  }
+
+  &-head {
+    display: block;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: #2a2a32;
+  }
+
+  &-pc.front &-head {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+/* ---------- hunt roll ---------- */
+
+// The result label rises above the strip, so this panel must not clip it.
+.lab-box.lab-hunt-box {
+  z-index: 6;
+  padding: 6px;
+  overflow: visible;
+}
+
+.lab-hunt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+
+  &-successes {
+    width: 44px;
+    height: 100%;
+    padding: 0 4px;
+    border: 1px solid #34343e;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 800;
+    text-align: center;
+    color: inherit;
+    background: #1e1e25;
+  }
+
+  &-crit {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 30px;
+    height: 100%;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+
+    svg {
+      width: 24px;
+      height: 24px;
+      fill: none;
+      stroke: #8a8a96;
+      stroke-width: 1.6;
+      stroke-linejoin: round;
+    }
+
+    &.on svg {
+      fill: #ffd84a;
+      stroke: #fff1a8;
+      filter: drop-shadow(0 0 4px #ffd84a) drop-shadow(0 0 9px rgb(255 216 74 / 60%));
+    }
+  }
+
+  &-bar {
+    position: relative;
+    display: flex;
+    flex: 1 1 auto;
+    height: 100%;
+    padding: 0;
+    border: 1px solid #000;
+    border-radius: 4px;
+    font-family: inherit;
+    background: #111;
+    cursor: pointer;
+  }
+
+  &-seg {
+    display: grid;
+    flex-basis: 0;
+    place-items: center;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 11px;
+    font-weight: 800;
+    color: rgb(255 255 255 / 88%);
+    text-shadow: 0 1px 2px #000;
+    white-space: nowrap;
+    transition: flex-grow 0.4s ease;
+
+    & + & {
+      border-left: 1px solid rgb(0 0 0 / 60%);
+    }
+
+    &.choleric { background: #c8641e; }
+    &.melancholic { background: #45449a; }
+    &.phlegmatic { background: #1f8a84; }
+    &.sanguine { background: #b3202c; }
+  }
+
+  &-marker {
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    width: 3px;
+    margin-left: -1.5px;
+    border-radius: 2px;
+    background: #fff;
+    box-shadow: 0 0 0 1px #000, 0 0 6px #fff;
+    pointer-events: none;
+  }
+
+  &-result {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    padding: 3px 9px;
+    border: 1px solid #fff;
+    border-radius: 5px;
+    font-size: 13px;
+    font-weight: 800;
+    white-space: nowrap;
+    color: #fff;
+    background: #0d0d10;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 70%);
+    transform: translateX(-50%);
+  }
 }
 
 .lab-phase {
