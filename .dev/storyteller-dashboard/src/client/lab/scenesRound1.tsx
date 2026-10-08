@@ -1,6 +1,5 @@
 import { useEffect, useState, type ReactElement } from "react";
 import {
-  AdvanceModal,
   AspectRow,
   FLASHBACK_TIME,
   LocationPanel,
@@ -95,11 +94,10 @@ const StageInTheMiddle = ({ previewOpen, clockDiffers, weatherOverride }: Sketch
 
 /**
  * Glance strip, pin pass 3: Where (names + resonances) over a masonry roster on the left; When, Weather, and
- * Sound across the top; the four aspects in a row above the stage; a phase strip between the stage and the
- * PC panel. Scene time and location live here so every panel reads the same values.
+ * Sound across the top; the phase bar right beneath them; then the four aspects and the stage, with the PC
+ * panel full width along the bottom (room for full-size tracker boxes). Scene time and location live here so every panel reads the same values.
  */
 const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen, ttsDisconnected }: SketchState): ReactElement => {
-  const [advanceOpen, setAdvanceOpen] = useState(false);
   const [preparing, setPreparing] = useState(false);
   const [sceneTime, setSceneTime] = useState(PRESENT_DAY);
   const [presentDay, setPresentDay] = useState(PRESENT_DAY);
@@ -119,16 +117,17 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen, 
   const bodyH = 1042 - bodyY - 8;
   const rightX = 1647;
   const stageW = rightX - 8 - stripX;
+  const phaseH = 38;
+  const mainY = bodyY + phaseH + 8;
   const aspectH = 118;
-  const stageY = bodyY + aspectH + 8;
+  const stageY = mainY + aspectH + 8;
   const pcH = 112;
   const pcY = 1042 - 8 - pcH;
-  const phaseH = 38;
-  const phaseY = pcY - 8 - phaseH;
-  const stageH = phaseY - 8 - stageY;
+  const stageH = pcY - 8 - stageY;
   const boardW = stageW - 18;
   const boardH = stageH - 14;
-  const queueH = 420;
+  const queueH = 300;
+  const rightH = pcY - 8 - mainY;
   const whenW = 470;
   const weatherW = 380;
   const soundX = stripX + whenW + 8 + weatherW + 8;
@@ -164,33 +163,23 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, popoverOpen, 
         <SoundMixer indoors />
       </Box>
 
-      <Box x={stripX} y={bodyY} w={stageW} h={aspectH} className="lab-aspects-box">
+      <Box x={stripX} y={bodyY} w={1912 - stripX} h={phaseH} className="lab-phase-box">
+        <PhaseStrip library={LIBRARY} onPrepare={() => setPreparing(true)} />
+      </Box>
+      <Box x={stripX} y={mainY} w={stageW} h={aspectH} className="lab-aspects-box">
         <AspectRow location={location} />
       </Box>
       <Box x={stripX} y={stageY} w={stageW} h={stageH}>
         <WideBoard w={boardW} h={boardH} />
       </Box>
-      <Box x={stripX} y={phaseY} w={stageW} h={phaseH} className="lab-phase-box">
-        <PhaseStrip onAdvance={() => setAdvanceOpen(true)} />
-      </Box>
-      <Box x={stripX} y={pcY} w={stageW} h={pcH}>
+      <Box x={stripX} y={pcY} w={1912 - stripX} h={pcH}>
         <PcPanel />
       </Box>
-      <Box x={rightX} y={bodyY} w={265} h={bodyH - queueH - 8} tone="reserved" />
-      <Box x={rightX} y={bodyY + bodyH - queueH} w={265} h={queueH} className={`lab-queue-box ${ttsDisconnected ? "disconnected" : "connected"}`}>
+      <Box x={rightX} y={mainY} w={265} h={rightH - queueH - 8} tone="reserved" />
+      <Box x={rightX} y={mainY + rightH - queueH} w={265} h={queueH} className="lab-queue-box">
         <QueuePanel connected={!ttsDisconnected} />
       </Box>
 
-      {advanceOpen && (
-        <AdvanceModal
-          library={LIBRARY}
-          onClose={() => setAdvanceOpen(false)}
-          onPrepare={() => {
-            setAdvanceOpen(false);
-            setPreparing(true);
-          }}
-        />
-      )}
       {(previewOpen || preparing) && (
         <Overlay onClose={() => setPreparing(false)}>
           <PreviewPanel x={8} y={bodyY} w={stripX + stageW - 8} h={bodyH} wide />

@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties, type MouseEvent, type ReactEle
 import { createPortal } from "react-dom";
 import { Headshot } from "../headshots/Headshot";
 import { assetUrl } from "../pcSheet/layout";
+import { Icon, type IconName } from "./icons";
 
 /**
  * Grey-box building blocks for Lab sketches. Every sketch is laid out in absolute pixels on the
@@ -148,19 +149,18 @@ const SeatContent = ({ seat }: { seat: SeatSketch }): ReactElement => (
     <span className="lab-seat-text">
       {seat.playedBy && <span className="lab-seat-flag role">{seat.playedBy} as</span>}
       {seat.name && <span className="lab-seat-name">{seat.name}</span>}
-      {seat.kind === "empty" && <span className="lab-seat-flag">empty chair</span>}
-      {seat.kind === "nochair" && <span className="lab-seat-flag">no chair at Table B2</span>}
     </span>
   </>
 );
 
 /**
- * One cell per chair, sharing the row width evenly; the figurine headshot fills the cell above the name.
+ * One cell per chair, each a ninth of the row (the most chairs any table has); positions the table lacks are
+ * left out rather than drawn, and the rest stay centred. The figurine headshot fills the cell above the name.
  * Absent (out of the scene) and disconnected seats are told apart by styling alone.
  */
 export const Seats = (): ReactElement => (
   <div className="lab-seats">
-    {SEATS.map((seat) => {
+    {SEATS.filter((seat) => seat.kind !== "nochair").map((seat) => {
       const className = `lab-seat ${seat.kind}${seat.state ? ` ${seat.state}` : ""}${seat.playedBy ? " role" : ""}`;
       return seat.characterKey ? (
         <Headshot key={seat.slot} characterKey={seat.characterKey} className={className}>
@@ -380,7 +380,6 @@ export const WideBoard = ({ w, h }: { w: number; h: number }): ReactElement => {
         Clear Stage, and Reset to Library.
       </span>
     </span>
-    {placement === "Scatter" && <span className="lab-board-mode">Scatter placement</span>}
     {ring && (
       <Overlay onClose={closeRing}>
         <div className="lab-ring" style={{ left: ring.x, top: ring.y }}>
@@ -602,9 +601,9 @@ const PC_CELLS: readonly PcCell[] = [
 const trackBoxImage = (index: number, agg: number, sup: number): string =>
   index < agg ? "box_red_x" : index < agg + sup ? "box_grey_slash" : "box_white";
 
-const Track = ({ label, max, sup, agg }: { label: string; max: number; sup: number; agg: number }): ReactElement => (
+const Track = ({ icon, label, max, sup, agg }: { icon: IconName; label: string; max: number; sup: number; agg: number }): ReactElement => (
   <span className="lab-track">
-    <span className="lab-track-label">{label}</span>
+    <Icon name={icon} className={`lab-track-icon ${icon}`} title={label} />
     {Array.from({ length: max }, (_, index) => (
       <span
         key={index}
@@ -622,15 +621,13 @@ export const PcPanel = (): ReactElement => (
   <div className="lab-pcs">
     {PC_CELLS.map((pc) => (
       <div key={pc.slot} className={`lab-pc${pc.state ? ` ${pc.state}` : ""}`}>
-        <Headshot className="lab-pc-head" characterKey={pc.characterKey} anchor="crown">
-          <span className="lab-seat-badge">{pc.slot}</span>
-        </Headshot>
+        <Headshot className="lab-pc-head" characterKey={pc.characterKey} anchor="crown" />
         <span className="lab-pc-body">
           <span className="lab-pc-name">{pc.name}</span>
-          <Track label="Health" {...pc.health} />
-          <Track label="Willpower" {...pc.willpower} />
+          <Track icon="health" label="Health" {...pc.health} />
+          <Track icon="willpower" label="Willpower" {...pc.willpower} />
           <span className="lab-track">
-            <span className="lab-track-label">Hunger</span>
+            <Icon name="hunger" className="lab-track-icon hunger" title="Hunger" />
             {Array.from({ length: 5 }, (_, index) => (
               <span key={index} className={`lab-hunger-dot${index < pc.hunger ? " on" : ""}`} style={HUNGER_DOT} />
             ))}

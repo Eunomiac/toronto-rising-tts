@@ -10,6 +10,7 @@ import {
   type SheetSite,
   type WeatherCalendar
 } from "./chronicleSheets";
+import { Icon, type IconName } from "./icons";
 import { Btn, Overlay, canvasPoint } from "./sketch";
 
 /**
@@ -58,6 +59,9 @@ export const ReleaseOverride = ({ onRelease }: { onRelease: () => void }): React
   </button>
 );
 
+/** Keeps the widest spoke (radius 112 plus half its width) inside the canvas. */
+const RING_EDGE = 180;
+
 type RingOption<T> = { readonly value: T; readonly label: string };
 type Point = { readonly x: number; readonly y: number };
 
@@ -70,7 +74,7 @@ const RingMenu = <T,>({ at, options, current, onPick, onClose }: {
   onClose: () => void;
 }): ReactElement => (
   <Overlay onClose={onClose}>
-    <div className="lab-ring" style={{ left: Math.min(Math.max(at.x, 170), 1920 - 170), top: Math.max(at.y, 86) }}>
+    <div className="lab-ring" style={{ left: Math.min(Math.max(at.x, RING_EDGE), 1920 - RING_EDGE), top: Math.max(at.y, 86) }}>
       <button type="button" className="lab-ring-hub" title="Close" onClick={onClose}>×</button>
       {options.map((option, index) => {
         const angle = -Math.PI / 2 + (index * 2 * Math.PI) / options.length;
@@ -171,7 +175,10 @@ const LocationPicker = ({ data, location, onPick, onClose }: {
   );
 };
 
-/** District and Site names with their resonances; click to change either (an override of the scene's location). */
+/**
+ * District and Site names with their resonances over the Site card's illustration; click to change either
+ * (an override of the scene's location).
+ */
 export const LocationPanel = ({ location, overridden, onChange, onRelease }: {
   location: LabLocation;
   overridden: boolean;
@@ -189,12 +196,17 @@ export const LocationPanel = ({ location, overridden, onChange, onRelease }: {
   }
   const { district, site } = found;
   return (
-    <div className={`lab-where${overridden ? " lab-overridden" : ""}`} title="Click to change the District or Site" onClick={() => setPicking(true)}>
-      <div className="lab-where-band" style={{ backgroundImage: `url("${cardUrl(`Districts/${district.key}.webp`)}")` }}>
-        <span className="lab-where-name">{district.name}</span>
+    <div
+      className={`lab-where${overridden ? " lab-overridden" : ""}`}
+      title="Click to change the District or Site"
+      style={{ backgroundImage: `url("${cardUrl(`Sites/${site.key}.webp`)}")` }}
+      onClick={() => setPicking(true)}
+    >
+      <div className="lab-where-band">
+        <span className="lab-where-name district">{district.name}</span>
         <ResonanceTags list={district.resonances} />
       </div>
-      <div className="lab-where-band" style={{ backgroundImage: `url("${cardUrl(`Sites/${site.key}.webp`)}")` }}>
+      <div className="lab-where-band">
         <span className="lab-where-name">
           {site.title}
           {site.subtitle && <span className="lab-where-sub">{site.subtitle}</span>}
@@ -245,9 +257,59 @@ export const AspectRow = ({ location }: { location: LabLocation }): ReactElement
 
 /* ---------- NPC roster: masonry of closed groups ---------- */
 
-type NpcGroup = { readonly key: string; readonly label: string; readonly members: readonly CatalogCharacter[] };
+type NpcGroup = {
+  readonly key: string;
+  readonly label: string;
+  readonly labelWidth: number;
+  readonly members: readonly CatalogCharacter[];
+};
 
-/** Every NPC group as a closed stack of all its tokens; click one to open it in place and pick a token. */
+const GROUP_LABEL_FONT = "700 11px";
+const GROUP_LABEL_LINES = 3;
+let labelMeasure: CanvasRenderingContext2D | null = null;
+
+/** Narrowest width that word-wraps a group name onto at most three lines (greedy wrapping, as the browser does). */
+const groupLabelWidth = (text: string): number => {
+  if (!labelMeasure) {
+    labelMeasure = document.createElement("canvas").getContext("2d");
+    if (!labelMeasure) {
+      throw new Error("MasonryRoster: no 2D canvas context to measure group names");
+    }
+    labelMeasure.font = `${GROUP_LABEL_FONT} ${getComputedStyle(document.body).fontFamily}`;
+  }
+  const measure = labelMeasure;
+  const space = measure.measureText(" ").width;
+  const words = text.split(/\s+/).map((word) => measure.measureText(word).width);
+  const linesAt = (limit: number): number => {
+    let lines = 1;
+    let line = 0;
+    for (const word of words) {
+      if (line > 0 && line + space + word > limit) {
+        lines += 1;
+        line = word;
+      } else {
+        line = line > 0 ? line + space + word : word;
+      }
+    }
+    return lines;
+  };
+  let low = Math.max(...words);
+  let high = words.reduce((sum, word) => sum + word, 0) + space * (words.length - 1);
+  while (high - low > 0.5) {
+    const mid = (low + high) / 2;
+    if (linesAt(mid) <= GROUP_LABEL_LINES) {
+      high = mid;
+    } else {
+      low = mid;
+    }
+  }
+  return Math.ceil(high) + 2;
+};
+
+/**
+ * Every NPC group as a closed stack of all its tokens, stretched to fill its row; names wrap to three lines at
+ * most (the group widens instead). Click one to open it in place and pick a token.
+ */
 export const MasonryRoster = (): ReactElement => {
   const { catalogs, error } = useSceneCatalogs();
   const [open, setOpen] = useState<string | null>("beesHive");
@@ -261,7 +323,10 @@ export const MasonryRoster = (): ReactElement => {
         byKey.set(key, [...(byKey.get(key) ?? []), npc]);
       }
     }
-    return [...byKey].map(([key, members]) => ({ key, label: catalogs.pickerGroupLabels[key] ?? key, members }));
+    return [...byKey].map(([key, members]) => {
+      const label = catalogs.pickerGroupLabels[key] ?? key;
+      return { key, label, labelWidth: groupLabelWidth(label), members };
+    });
   }, [catalogs]);
 
   return (
@@ -293,7 +358,7 @@ export const MasonryRoster = (): ReactElement => {
                 <Headshot key={npc.characterKey} className="lab-group-head" characterKey={npc.characterKey} />
               ))}
             </span>
-            <span className="lab-group-label">{group.label}</span>
+            <span className="lab-group-label" style={{ minWidth: group.labelWidth }}>{group.label}</span>
           </button>
         ))}
       </div>
@@ -606,7 +671,12 @@ const skyline = (w: number, h: number): readonly Building[] => {
   return buildings;
 };
 
-const moonPosition = (t: number, w: number, h: number): Point => ({ x: w * (0.06 + 0.88 * t), y: h * (0.78 - 0.5 * Math.sin(Math.PI * t)) });
+/** The moon rises out of the bottom-left corner at dusk, crosses the full width, and sets off the bottom right at dawn. */
+const MOON_SET_MARGIN = 14;
+const moonPosition = (t: number, w: number, h: number): Point => ({
+  x: -MOON_SET_MARGIN + (w + 2 * MOON_SET_MARGIN) * t,
+  y: h + MOON_SET_MARGIN - (h * 0.82 + MOON_SET_MARGIN) * Math.sin(Math.PI * t)
+});
 
 type MoonDrag = { readonly target: number | null; readonly onDrag: (t: number) => void };
 
@@ -635,7 +705,7 @@ const NightSky = ({ minutes, w, h, drag }: { minutes: number; w: number; h: numb
       throw new Error("NightSky: svg not mounted during a moon drag");
     }
     const x = ((event.clientX - rect.left) / rect.width) * w;
-    return Math.min(1, Math.max(0, (x / w - 0.06) / 0.88));
+    return Math.min(1, Math.max(0, (x + MOON_SET_MARGIN) / (w + 2 * MOON_SET_MARGIN)));
   };
   return (
     <svg ref={svgRef} className="lab-sky" width={w} height={h} aria-hidden="true">
@@ -696,15 +766,63 @@ const formatTime = (at: Date): string => at.toLocaleTimeString("en-US", { hour: 
 
 const formatDate = (at: Date): string => at.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
 
+const formatLongDate = (at: Date): string => at.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric", year: "numeric" });
+
 const formatClock = (minutes: number): string => formatTime(new Date(2000, 0, 1, Math.floor(minutes / 60) % 24, minutes % 60));
 
 const sameDay = (a: Date, b: Date): boolean => a.toDateString() === b.toDateString();
 
 const shift = (at: Date, minutes: number): Date => new Date(at.getTime() + minutes * 60_000);
 
-const JUMPS: readonly (readonly [label: string, minutes: number])[] = [
-  ["10m", 10], ["20m", 20], ["30m", 30], ["1h", 60], ["2h", 120], ["4h", 240], ["1d", 1440], ["3d", 4320], ["1w", 10080]
-];
+const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"] as const;
+
+const pad2 = (n: number): string => String(n).padStart(2, "0");
+
+/** Month grid for picking the scene's date (keeps the time of day); the present day is ringed in green. */
+const SceneCalendar = ({ at, present, onPick }: { at: Date; present: Date; onPick: (next: Date) => void }): ReactElement => {
+  const [month, setMonth] = useState(() => new Date(at.getFullYear(), at.getMonth(), 1));
+  const lead = month.getDay();
+  const days = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+  const cells = [...Array.from({ length: lead }, () => null), ...Array.from({ length: days }, (_, index) => index + 1)];
+  const dayDate = (day: number): Date => new Date(month.getFullYear(), month.getMonth(), day, at.getHours(), at.getMinutes());
+  const step = (delta: number): void => setMonth(new Date(month.getFullYear(), month.getMonth() + delta, 1));
+  return (
+    <div className="lab-cal">
+      <div className="lab-cal-head">
+        <button type="button" className="lab-btn" onClick={() => step(-1)}>‹</button>
+        <span>{month.toLocaleDateString("en-US", { month: "long", year: "numeric" })}</span>
+        <button type="button" className="lab-btn" onClick={() => step(1)}>›</button>
+      </div>
+      <div className="lab-cal-grid">
+        {WEEKDAYS.map((day) => <span key={day} className="lab-cal-dow">{day}</span>)}
+        {cells.map((day, index) => day === null ? <span key={`lead${index}`} /> : (
+          <button
+            key={day}
+            type="button"
+            className={`lab-cal-day${sameDay(dayDate(day), at) ? " scene" : ""}${sameDay(dayDate(day), present) ? " present" : ""}`}
+            onClick={() => onPick(dayDate(day))}
+          >
+            {day}
+          </button>
+        ))}
+      </div>
+      <label className="lab-cal-time">
+        Time
+        <input
+          type="time"
+          className="lab-select"
+          value={`${pad2(at.getHours())}:${pad2(at.getMinutes())}`}
+          onChange={(event) => {
+            const [hours, mins] = event.target.value.split(":").map(Number);
+            if (hours !== undefined && mins !== undefined) {
+              onPick(new Date(at.getFullYear(), at.getMonth(), at.getDate(), hours, mins));
+            }
+          }}
+        />
+      </label>
+    </div>
+  );
+};
 
 const NIGHT_MINUTES = DAWN - DUSK;
 const PLAY_MS = 1800;
@@ -715,11 +833,11 @@ const easeInOut = (f: number): number => (f < 0.5 ? 2 * f * f : 1 - (-2 * f + 2)
 const toMinute = (ms: number): Date => new Date(Math.round(ms / 60_000) * 60_000);
 
 /**
- * Scene date and time over the sky, with tonight's dusk (left) and dawn (right) in the bottom corners.
- * Present-day time appears (green) only when it differs from scene time; scene time can never pass it (the
- * caller moves present day forward). A scene before the present day is a flashback (yellow glow).
- * Drag the moon to pick a time tonight, then press play over the clock to run the time animation.
- * Click anywhere else for the clock pop-up.
+ * Scene date and time over the sky, with tonight's dusk (left) and dawn (right) in the bottom corners and
+ * the real-time toggle (clock icon) top right. Present-day time appears (green) only when it differs from
+ * scene time; scene time can never pass it (the caller moves present day forward). A scene before the
+ * present day is a flashback (yellow glow). Drag the moon to pick a time tonight, then press play over the
+ * clock to run the time animation. Click anywhere else for the calendar pop-up.
  */
 export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, w, h }: {
   at: Date;
@@ -731,6 +849,7 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, w, h
   h: number;
 }): ReactElement => {
   const [open, setOpen] = useState(false);
+  const [realTime, setRealTime] = useState(false);
   const [target, setTarget] = useState<number | null>(null);
   const [playing, setPlaying] = useState<{ from: number; to: number } | null>(null);
   const changeRef = useRef(onChange);
@@ -756,7 +875,6 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, w, h
   const minutes = at.getHours() * 60 + at.getMinutes();
   const differs = at.getTime() !== present.getTime();
   const flashback = at.getTime() < present.getTime();
-  const untilDawn = (minutes >= 12 * 60 ? DAWN : DAWN - 1440) - minutes;
   const tonight = nightFraction(minutes);
   const targetTime = target === null || tonight === null
     ? null
@@ -775,8 +893,19 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, w, h
         <span className={`lab-when-present${differs ? "" : " hidden"}`}>
           {sameDay(at, present) ? formatTime(present) : `${formatDate(present)} · ${formatTime(present)}`}
         </span>
-        <span className="lab-when-date">{formatDate(at)}</span>
+        <span className="lab-when-date">{formatLongDate(at)}</span>
         <span className="lab-when-time">{formatTime(at)}</span>
+        <button
+          type="button"
+          className={`lab-when-realtime${realTime ? " on" : ""}`}
+          title={realTime ? "Real time is on: scene time advances with the real clock" : "Real time is off"}
+          onClick={(event) => {
+            event.stopPropagation();
+            setRealTime(!realTime);
+          }}
+        >
+          <Icon name="clock" />
+        </button>
         {targetTime && (
           <span className="lab-when-play">
             <button type="button" className="lab-when-play-go" onClick={play} title="Run the time animation in TTS">
@@ -795,43 +924,17 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, w, h
             </button>
           </span>
         )}
-        <span className="lab-when-edge dusk">
-          <small>Dusk</small>
-          {formatClock(DUSK)}
-        </span>
-        <span className="lab-when-edge dawn">
-          <small>Dawn</small>
-          {formatClock(DAWN)}
-        </span>
+        <span className="lab-when-edge dusk" title="Dusk">{formatClock(DUSK)}</span>
+        <span className="lab-when-edge dawn" title="Dawn">{formatClock(DAWN)}</span>
       </div>
       {(open || forceOpen) && (
         <Overlay onClose={() => setOpen(false)}>
           <div className="lab-modal lab-clock-modal">
-            <span className="lab-modal-title">Scene clock · {formatTime(at)}</span>
-            <span className="lab-note">Click to jump forward, right-click to jump back.</span>
+            <span className="lab-modal-title">Scene date · {formatLongDate(at)} · {formatTime(at)}</span>
+            <SceneCalendar at={at} present={present} onPick={onChange} />
             <div className="lab-row">
-              {JUMPS.map(([label, step]) => (
-                <button
-                  key={label}
-                  type="button"
-                  className="lab-btn"
-                  onClick={() => onChange(shift(at, step))}
-                  onContextMenu={(event) => {
-                    event.preventDefault();
-                    onChange(shift(at, -step));
-                  }}
-                >
-                  ±{label}
-                </button>
-              ))}
-              <button type="button" className="lab-btn" onClick={() => onChange(shift(at, untilDawn > 15 ? untilDawn - 15 : 0))}>15m before dawn</button>
-              <button type="button" className="lab-btn" onClick={() => onChange(shift(at, DUSK - minutes))}>Dusk</button>
-            </div>
-            <div className="lab-row">
-              <Btn>Type scene date / time…</Btn>
               <button type="button" className="lab-btn" onClick={() => onChange(present)}>Set scene time to present day</button>
               <button type="button" className="lab-btn" onClick={() => onSetPresent(at)}>Set present day to scene time</button>
-              <Btn>Real-time: off</Btn>
             </div>
           </div>
         </Overlay>
@@ -879,12 +982,19 @@ const MixerGroup = ({ idle = false, values, children }: { idle?: boolean; values
 
 const MUSIC_PLAYLISTS = ["Main", "Combat", "Intrigue", "Silent"] as const;
 
+const RowLabel = ({ icon, label }: { icon: IconName; label: string }): ReactElement => (
+  <span className="lab-mixer-label" title={label}>
+    <Icon name={icon} title={label} />
+  </span>
+);
+
 /**
  * Music and Featured share a row because only one of them plays at a time. The playlist shows what is playing:
  * the scene library's choice (usually Main) unless changed here.
  */
 export const SoundMixer = ({ indoors, scenePlaylist = "Main" }: { indoors: boolean; scenePlaylist?: string }): ReactElement => {
   const [featured, setFeatured] = useState(false);
+  const [muted, setMuted] = useState(false);
   const playlist = useOverridable(scenePlaylist);
   const music = useOverridable(70);
   const featuredLevel = useOverridable(80);
@@ -897,7 +1007,7 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main" }: { indoors: boole
   return (
     <div className="lab-mixer">
       <div className="lab-mixer-row">
-        <span className="lab-mixer-label">Music</span>
+        <RowLabel icon="music" label="Music" />
         <MixerGroup idle={featured} values={[playlist, music]}>
           <select className="lab-select" value={playlist.value} onChange={(event) => playlist.set(event.target.value)}>
             {MUSIC_PLAYLISTS.map((name) => <option key={name}>{name}</option>)}
@@ -912,32 +1022,50 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main" }: { indoors: boole
         </MixerGroup>
       </div>
       <div className={`lab-mixer-row${indoors ? " muted" : ""}`} title={indoors ? "Indoors: weather sounds are not playing" : undefined}>
-        <span className="lab-mixer-label">Weather</span>
-        <MixerGroup idle={!rainPlaying || indoors} values={[rain]}>Rain <Slider level={rain} disabled={indoors || !rainPlaying} /></MixerGroup>
-        <MixerGroup idle={indoors} values={[wind]}>Wind <Slider level={wind} disabled={indoors} /></MixerGroup>
-        <MixerGroup idle={!thunderPlaying || indoors} values={[thunder]}>Thunder <Slider level={thunder} disabled={indoors || !thunderPlaying} /></MixerGroup>
+        <RowLabel icon="weather" label="Weather" />
+        <MixerGroup idle={!rainPlaying || indoors} values={[rain]}>
+          <Icon name="rain" className="lab-mixer-icon" title="Rain" />
+          <Slider level={rain} disabled={indoors || !rainPlaying} />
+        </MixerGroup>
+        <MixerGroup idle={indoors} values={[wind]}>
+          <Icon name="wind" className="lab-mixer-icon" title="Wind" />
+          <Slider level={wind} disabled={indoors} />
+        </MixerGroup>
+        <MixerGroup idle={!thunderPlaying || indoors} values={[thunder]}>
+          <Icon name="thunder" className="lab-mixer-icon" title="Thunder" />
+          <Slider level={thunder} disabled={indoors || !thunderPlaying} />
+        </MixerGroup>
       </div>
       <div className="lab-mixer-row">
-        <span className="lab-mixer-label">Location</span>
+        <RowLabel icon="ambient" label="Ambient" />
         <MixerGroup values={[ambience]}>
           <span className="lab-mixer-track">Soft indoor</span>
           <Slider level={ambience} />
         </MixerGroup>
-        <Btn tone="danger">Stop all</Btn>
       </div>
+      <button
+        type="button"
+        className={`lab-mixer-mute${muted ? " on" : ""}`}
+        title={muted ? "All sound muted: click to restore" : "Mute all sound"}
+        onClick={() => setMuted(!muted)}
+      >
+        <Icon name="mute" />
+      </button>
     </div>
   );
 };
 
 /* ---------- Queue: connection light doubles as the live / queued switch ---------- */
 
+/** Offline (red) while TTS is not connected; otherwise queued (yellow) or live (green). The light is always lit. */
 export const QueuePanel = ({ connected }: { connected: boolean }): ReactElement => {
   const [live, setLive] = useState(false);
+  const mode = !connected ? "offline" : live ? "live" : "queued";
   return (
-    <div className="lab-queue">
+    <div className={`lab-queue ${mode}`}>
       <button
         type="button"
-        className={`lab-conn-light${connected ? " on" : " off"}${live ? " live" : ""}`}
+        className="lab-conn-light"
         title={`${connected ? "TTS connected" : "TTS not connected"} · click for ${live ? "queued" : "live"} mode`}
         onClick={() => setLive(!live)}
       />
@@ -960,55 +1088,230 @@ export const QueuePanel = ({ connected }: { connected: boolean }): ReactElement 
   );
 };
 
-/* ---------- Phases: strip between the stage and the PC panel ---------- */
+/* ---------- Phases: bar under the top strip ---------- */
 
-export const PhaseStrip = ({ onAdvance }: { onAdvance: () => void }): ReactElement => (
-  <div className="lab-phase">
-    <span title="Main / Memoriam → Downtime"><Btn tone="danger">End Scene</Btn></span>
-    <span className="lab-phase-now">
-      <span className="lab-phase-tag">Play</span>
-      <span className="lab-phase-sub">Main</span>
-      <span className="lab-phase-scene">Elysium — Casa Loma: Great Hall</span>
-      <span className="lab-note">2 scenes prepared</span>
-    </span>
-    <button type="button" className="lab-btn primary" onClick={onAdvance}>Advance ▸</button>
-  </div>
-);
+type Phase = "Intermission" | "Play" | "Spotlight" | "End";
+const NEXT_PHASE: Record<Phase, Phase> = { Intermission: "Play", Play: "Spotlight", Spotlight: "End", End: "Intermission" };
+const ARM_MS = 2500;
 
-export const AdvanceModal = ({ library, onClose, onPrepare }: { library: readonly string[]; onClose: () => void; onPrepare: () => void }): ReactElement => (
+/** A button that only acts on a second click (a double-click works too); it disarms itself after a moment. */
+const ConfirmButton = ({ label, className = "", onConfirm, style }: {
+  label: string;
+  className?: string;
+  onConfirm: () => void;
+  style?: CSSProperties;
+}): ReactElement => {
+  const [armed, setArmed] = useState(false);
+  useEffect(() => {
+    if (!armed) {
+      return undefined;
+    }
+    const timer = window.setTimeout(() => setArmed(false), ARM_MS);
+    return () => window.clearTimeout(timer);
+  }, [armed]);
+  return (
+    <button
+      type="button"
+      className={`${className}${armed ? " armed" : ""}`}
+      style={style}
+      title="Click twice to confirm"
+      onClick={() => {
+        if (armed) {
+          setArmed(false);
+          onConfirm();
+        } else {
+          setArmed(true);
+        }
+      }}
+    >
+      {armed ? `Confirm: ${label}` : label}
+    </button>
+  );
+};
+
+/**
+ * Current phase in the middle. In Play, Advance opens a ring: Scene (scene picker), Memoriam (Memoriam set-up),
+ * or Spotlight (click twice). In any other phase, Advance names the next phase and needs a second click.
+ */
+export const PhaseStrip = ({ library, onPrepare }: { library: readonly string[]; onPrepare: () => void }): ReactElement => {
+  const [phase, setPhase] = useState<Phase>("Play");
+  const [ring, setRing] = useState<Point | null>(null);
+  const [modal, setModal] = useState<"scene" | "memoriam" | null>(null);
+  const next = NEXT_PHASE[phase];
+  const open = (which: "scene" | "memoriam") => (): void => {
+    setRing(null);
+    setModal(which);
+  };
+  return (
+    <div className="lab-phase">
+      {phase === "Play" && <span title="Main / Memoriam → Downtime"><Btn tone="danger">End Scene</Btn></span>}
+      <span className="lab-phase-now">
+        <span className="lab-phase-tag">{phase}</span>
+        {phase === "Play" && (
+          <>
+            <span className="lab-phase-sub">Main</span>
+            <span className="lab-phase-scene">Elysium — Casa Loma: Great Hall</span>
+          </>
+        )}
+      </span>
+      {phase === "Play" ? (
+        <button type="button" className="lab-btn primary" onClick={(event) => setRing(canvasPoint(event))}>Advance ▸</button>
+      ) : (
+        <ConfirmButton key={phase} label={`${next} ▸`} className="lab-btn primary" onConfirm={() => setPhase(next)} />
+      )}
+      {ring && (
+        <Overlay onClose={() => setRing(null)}>
+          <div className="lab-ring" style={{ left: Math.min(Math.max(ring.x, RING_EDGE), 1920 - RING_EDGE), top: Math.max(ring.y, 86) }}>
+            <button type="button" className="lab-ring-hub" title="Close" onClick={() => setRing(null)}>×</button>
+            <button type="button" className="lab-ring-item spoke" style={{ left: 0, top: -64 }} onClick={open("scene")}>Scene…</button>
+            <button type="button" className="lab-ring-item spoke" style={{ left: -112, top: 40 }} onClick={open("memoriam")}>Memoriam…</button>
+            <ConfirmButton
+              label="Spotlight ▸"
+              className="lab-ring-item spoke"
+              style={{ left: 112, top: 40 }}
+              onConfirm={() => {
+                setRing(null);
+                setPhase("Spotlight");
+              }}
+            />
+          </div>
+        </Overlay>
+      )}
+      {modal === "scene" && (
+        <SceneModal
+          library={library}
+          onClose={() => setModal(null)}
+          onPrepare={() => {
+            setModal(null);
+            onPrepare();
+          }}
+        />
+      )}
+      {modal === "memoriam" && <MemoriamModal onClose={() => setModal(null)} />}
+    </div>
+  );
+};
+
+const SceneModal = ({ library, onClose, onPrepare }: { library: readonly string[]; onClose: () => void; onPrepare: () => void }): ReactElement => (
   <Overlay onClose={onClose}>
     <div className="lab-modal lab-advance">
-      <span className="lab-modal-title">Advance from Play · Main</span>
-      <div className="lab-advance-cols">
-        <section>
-          <h4>Play a scene</h4>
-          <span className="lab-search">Search the scene library…</span>
-          <ul className="lab-advance-list">
-            {library.map((title, index) => (
-              <li key={title} className={index === 0 ? "live" : index < 3 ? "prep" : undefined}>
-                <span>{title}{index === 0 ? " (on the table)" : index < 3 ? " (prepared)" : ""}</span>
-                <span className="lab-row">
-                  <Btn tone="live">Play</Btn>
-                  <button type="button" className="lab-btn" onClick={onPrepare}>Edit</button>
-                </span>
-              </li>
-            ))}
-          </ul>
-          <button type="button" className="lab-btn" onClick={onPrepare}>+ Prepare a new scene…</button>
-        </section>
-        <section>
-          <h4>Switch subphase</h4>
-          <button type="button" className="lab-btn primary">Main (current)</button>
-          <button type="button" className="lab-btn" onClick={onClose}>Downtime</button>
-          <button type="button" className="lab-btn" onClick={onClose}>Memoriam</button>
-        </section>
-        <section>
-          <h4>Next phase</h4>
-          <button type="button" className="lab-btn" onClick={onClose}>Spotlight ▸</button>
-          <p className="lab-note">Intermission → Play → Spotlight → End → Intermission</p>
-        </section>
-      </div>
-      <p className="lab-note">From Intermission, Spotlight, or End, Advance moves straight to the next phase with no pop-up.</p>
+      <span className="lab-modal-title">Play a scene</span>
+      <span className="lab-search">Search the scene library…</span>
+      <ul className="lab-advance-list">
+        {library.map((title, index) => (
+          <li key={title} className={index === 0 ? "live" : index < 3 ? "prep" : undefined}>
+            <span>{title}{index === 0 ? " (on the table)" : index < 3 ? " (prepared)" : ""}</span>
+            <span className="lab-row">
+              <Btn tone="live">Play</Btn>
+              <button type="button" className="lab-btn" onClick={onPrepare}>Edit</button>
+            </span>
+          </li>
+        ))}
+      </ul>
+      <button type="button" className="lab-btn" onClick={onPrepare}>+ Prepare a new scene…</button>
     </div>
   </Overlay>
 );
+
+/* ---------- Memoriam set-up: same layout as the TTS Memoriam modal (placeholder data) ---------- */
+
+const MEMORIAM_PCS = ["Lord Lucien", "Rashid Abdulrahman", "Aishe Tache", "Fomórach", "Black Caesar"] as const;
+const MEMORIAM_PERIODS = 14;
+const MEMORIAM_PANELS = ["A", "B", "C", "D"] as const;
+const PERIOD_MARKS = 30;
+const PERIOD_SLIDER_MAX = 5000;
+
+/** Placeholder: which periods have a memoriam for the chosen PC, and which panels each period has. */
+const memoriamPanelCount = (pcIndex: number, period: number): number => ((pcIndex * 7 + period * 3) % 5);
+
+const MemoriamModal = ({ onClose }: { onClose: () => void }): ReactElement => {
+  const [pc, setPc] = useState<number | null>(null);
+  const [slider, setSlider] = useState(0);
+  const [scene, setScene] = useState<string | null>(null);
+  const [present, setPresent] = useState<readonly boolean[]>(MEMORIAM_PCS.map(() => false));
+  const mark = Math.min(PERIOD_MARKS - 1, Math.floor((slider / PERIOD_SLIDER_MAX) * PERIOD_MARKS));
+  const year = 1600 + Math.round((slider / PERIOD_SLIDER_MAX) * 400);
+  return (
+    <Overlay onClose={onClose}>
+      <div className="lab-modal lab-memoriam">
+        <span className="lab-memoriam-title">Memoriam</span>
+        <div className="lab-memoriam-pcs">
+          {MEMORIAM_PCS.map((name, index) => (
+            <button
+              key={name}
+              type="button"
+              className={`lab-memoriam-pick${pc === index ? " selected" : ""}`}
+              onClick={() => {
+                setPc(index);
+                setScene(null);
+              }}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+        <span className="lab-memoriam-date">{pc === null ? "Choose a character" : `Autumn ${year}`}</span>
+        <span className="lab-memoriam-place">{pc === null ? "\u00a0" : "Placeholder location"}</span>
+        <div className="lab-memoriam-marks">
+          {Array.from({ length: PERIOD_MARKS }, (_, index) => (
+            <span key={index} className={index === mark ? "highlighted" : undefined} />
+          ))}
+        </div>
+        <input
+          type="range"
+          className="lab-memoriam-slider"
+          min={0}
+          max={PERIOD_SLIDER_MAX}
+          value={slider}
+          onChange={(event) => setSlider(Number(event.target.value))}
+        />
+        <div className="lab-memoriam-grid">
+          {Array.from({ length: MEMORIAM_PERIODS }, (_, period) => (
+            <div key={period} className="lab-memoriam-period">
+              {MEMORIAM_PANELS.map((panel, panelIndex) => {
+                const id = `${period + 1}${panel}`;
+                const exists = pc !== null && panelIndex < memoriamPanelCount(pc, period);
+                return exists ? (
+                  <button
+                    key={panel}
+                    type="button"
+                    className={`lab-memoriam-pick${scene === id ? " selected" : ""}`}
+                    onClick={() => setScene(id)}
+                  >
+                    {id}
+                  </button>
+                ) : <span key={panel} className="lab-memoriam-pick empty" />;
+              })}
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          className={`lab-memoriam-pick smoke${scene === "smoke" ? " selected" : " highlighted"}`}
+          onClick={() => setScene("smoke")}
+        >
+          Just Smoke
+        </button>
+        <div className="lab-memoriam-cast">
+          {MEMORIAM_PCS.map((name, index) => (
+            <div key={name} className="lab-memoriam-cast-row">
+              <button
+                type="button"
+                className={`lab-memoriam-presence${present[index] ? " selected" : ""}`}
+                title="Present in this memoriam"
+                onClick={() => setPresent(present.map((value, at) => (at === index ? !value : value)))}
+              />
+              <span className="lab-memoriam-pc">{name}</span>
+              <span className="lab-memoriam-npc">—</span>
+              <Btn>+</Btn>
+            </div>
+          ))}
+        </div>
+        <div className="lab-row lab-memoriam-actions">
+          <button type="button" className="lab-btn primary" disabled={scene === null} onClick={onClose}>Advance</button>
+          <button type="button" className="lab-btn" onClick={onClose}>Cancel</button>
+        </div>
+      </div>
+    </Overlay>
+  );
+};

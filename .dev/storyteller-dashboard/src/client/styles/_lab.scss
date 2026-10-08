@@ -140,6 +140,15 @@ $lab-pin: #f5b13d;
   color: #8a8a96;
 }
 
+.lab-icon {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 1em;
+  height: 1em;
+  fill: currentcolor;
+  vertical-align: middle;
+}
+
 .lab-chip,
 .lab-btn {
   display: inline-flex;
@@ -205,15 +214,17 @@ $lab-pin: #f5b13d;
 
 .lab-seats {
   display: flex;
+  justify-content: center;
   gap: 4px;
   width: 100%;
 }
 
+// A ninth of the row (the most chairs a table has), so missing chairs never widen the others.
 .lab-seat {
   --headshot-reserve: 24px;
   position: relative;
   background-color: #2a2a32;
-  flex: 1 1 0;
+  flex: 0 0 calc((100% - 32px) / 9);
   min-width: 0;
   height: 100%;
   display: flex;
@@ -277,15 +288,10 @@ $lab-pin: #f5b13d;
     --headshot-reserve: 36px;
   }
 
-  &.empty,
-  &.nochair {
+  &.empty {
     border-style: dashed;
     border-color: #4a4a55;
     background: transparent;
-  }
-
-  &.nochair {
-    opacity: 0.45;
   }
 
   &.absent {
@@ -354,15 +360,6 @@ $lab-pin: #f5b13d;
     left: 50%;
     bottom: 8px;
     transform: translateX(-50%);
-  }
-
-  &-mode {
-    position: absolute;
-    left: 10px;
-    bottom: 10px;
-    font-size: 12px;
-    font-weight: 700;
-    color: #f2c44e;
   }
 
   &-seats {
@@ -465,6 +462,7 @@ $lab-pin: #f5b13d;
 
   &-body {
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
     justify-content: space-between;
     min-width: 0;
@@ -491,19 +489,35 @@ $lab-pin: #f5b13d;
   }
 }
 
+// The right padding holds the last box's scaled-up transparent margin.
 .lab-track {
   display: flex;
   align-items: center;
   gap: 3px;
+  padding-right: 10px;
 
-  &-label {
-    width: 62px;
-    font-size: 11px;
-    color: #8a8a96;
+  &-icon {
+    flex: 0 0 auto;
+    width: 17px;
+    height: 17px;
+    margin-right: 6px;
+
+    &.health {
+      fill: #d24a55;
+    }
+
+    &.willpower {
+      fill: #8fb4e8;
+    }
+
+    &.hunger {
+      fill: #e8e2d4;
+    }
   }
 
   // Character sheet box art carries wide transparent margins, hence the 2.5× scale (as on the sheet).
   &-box {
+    flex: 0 0 auto;
     width: 13px;
     height: 13px;
     margin-right: 1px;

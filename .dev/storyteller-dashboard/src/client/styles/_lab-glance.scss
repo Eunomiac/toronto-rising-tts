@@ -37,33 +37,12 @@ $lab-live: #4caf6a;
 }
 
 .lab-clock-modal {
-  width: 640px;
+  width: 470px;
 }
 
 .lab-advance {
-  width: 980px;
-
-  &-cols {
-    display: grid;
-    grid-template-columns: 1.6fr 1fr 1fr;
-    gap: 16px;
-
-    section {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 6px;
-    }
-
-    h4 {
-      margin: 0;
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #9d9daa;
-    }
-  }
+  width: 620px;
+  align-items: flex-start;
 
   &-list {
     align-self: stretch;
@@ -251,7 +230,16 @@ $lab-live: #4caf6a;
   height: 100%;
   overflow: hidden;
   border-radius: 5px;
+  // Site cards are 1952×882 with the illustration on the left; this window shows art only, no card text.
+  background: #111 7% 40% / 244% auto no-repeat;
   cursor: pointer;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgb(8 8 12 / 80%) 0%, rgb(8 8 12 / 40%) 60%, rgb(8 8 12 / 70%) 100%);
+  }
 
   &-wait {
     padding: 8px;
@@ -265,19 +253,7 @@ $lab-live: #4caf6a;
     justify-content: space-between;
     gap: 8px;
     padding: 4px 10px;
-    background: center / cover no-repeat;
     text-shadow: 0 1px 3px #000, 0 0 8px #000;
-
-    &::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(90deg, rgb(8 8 12 / 88%) 0%, rgb(8 8 12 / 55%) 60%, rgb(8 8 12 / 78%) 100%);
-    }
-
-    > * {
-      position: relative;
-    }
 
     & + & {
       border-top: 1px solid rgb(255 255 255 / 12%);
@@ -294,6 +270,14 @@ $lab-live: #4caf6a;
     font-variant: small-caps;
     line-height: 1.1;
     color: #f3e6cf;
+
+    &.district {
+      font-size: 15px;
+      font-variant: normal;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #e2c48f;
+    }
   }
 
   &-sub {
@@ -424,11 +408,12 @@ $lab-live: #4caf6a;
   overflow-y: auto;
 }
 
-// A closed group is as wide as its full token stack; the name wraps under it.
+// A closed group is at least as wide as its token stack and its name in three lines; rows stretch to full width.
 .lab-group {
   display: flex;
-  flex: 0 0 auto;
+  flex: 1 0 auto;
   flex-direction: column;
+  font-family: inherit;
   width: min-content;
   align-items: center;
   gap: 2px;
@@ -464,6 +449,7 @@ $lab-live: #4caf6a;
   &-label {
     padding: 0;
     border: 0;
+    font-family: inherit;
     font-size: 11px;
     font-weight: 700;
     line-height: 1.15;
@@ -563,7 +549,7 @@ $lab-live: #4caf6a;
 
   &-date {
     align-self: end;
-    font-size: 15px;
+    font-size: 19px;
     font-weight: 700;
     color: #e6e0f0;
   }
@@ -575,31 +561,55 @@ $lab-live: #4caf6a;
     color: #fff;
   }
 
+  // Dusk and dawn: time only, on a black rhombus tucked into the bottom corners.
   &-edge {
     position: absolute !important;
-    bottom: 9px;
-    display: flex;
-    flex-direction: column;
-    font-size: 17px;
+    bottom: 3px;
+    display: grid;
+    place-items: center;
+    width: 92px;
+    height: 34px;
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    font-size: 14px;
     font-weight: 800;
-    line-height: 1.05;
     color: #f2c44e;
-
-    small {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
+    text-shadow: none;
+    background: #000;
 
     &.dusk {
-      left: 10px;
-      align-items: flex-start;
+      left: 3px;
     }
 
     &.dawn {
-      right: 10px;
-      align-items: flex-end;
+      right: 3px;
+    }
+  }
+
+  &-realtime {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid #55555f;
+    border-radius: 50%;
+    color: #7a7a84;
+    background: rgb(10 10 14 / 70%);
+    cursor: pointer;
+
+    .lab-icon {
+      width: 18px;
+      height: 18px;
+    }
+
+    &.on {
+      border-color: $lab-live;
+      color: #9df0a8;
+      animation: lab-realtime-pulse 1.6s ease-in-out infinite;
     }
   }
 
@@ -871,7 +881,9 @@ $lab-live: #4caf6a;
 
 /* ---------- sound mixer ---------- */
 
+// Rows run full width and every slider takes the spare space; mute sits in the bottom-right corner.
 .lab-mixer {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-around;
@@ -880,27 +892,44 @@ $lab-live: #4caf6a;
   &-row {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 
     &.muted {
       opacity: 0.4;
     }
+
+    &:has(+ .lab-mixer-mute) {
+      padding-right: 40px;
+    }
   }
 
   &-label {
-    width: 62px;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: #9d9daa;
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 30px;
+    color: #c9a24a;
+
+    .lab-icon {
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  &-icon {
+    flex: 0 0 auto;
+    width: 17px;
+    height: 17px;
+    color: #c8c8d4;
   }
 
   &-group {
     position: relative;
     display: flex;
+    flex: 1 1 0;
     align-items: center;
     gap: 6px;
+    min-width: 0;
     padding: 2px 5px;
     border: 1px solid transparent;
     border-radius: 5px;
@@ -913,6 +942,12 @@ $lab-live: #4caf6a;
     &.overridden {
       border-color: var(--red-bright);
       box-shadow: 0 0 10px 1px rgb(230 60 70 / 50%);
+    }
+
+    .lab-slider {
+      flex: 1 1 auto;
+      width: auto;
+      min-width: 40px;
     }
   }
 
@@ -937,8 +972,41 @@ $lab-live: #4caf6a;
   }
 
   &-track {
+    flex: 0 0 auto;
     font-size: 12px;
     color: #c8c8d4;
+  }
+
+  &-mute {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid #5a3036;
+    border-radius: 6px;
+    color: #d98a91;
+    background: #2a1619;
+    cursor: pointer;
+
+    .lab-icon {
+      width: 20px;
+      height: 20px;
+    }
+
+    &:hover {
+      border-color: var(--red-bright);
+    }
+
+    &.on {
+      border-color: var(--red-bright);
+      color: #fff;
+      background: var(--red);
+      box-shadow: 0 0 12px 2px rgb(230 60 70 / 55%);
+    }
   }
 
   button.lab-btn {
@@ -961,17 +1029,36 @@ $lab-live: #4caf6a;
   accent-color: #c9a24a;
 }
 
-/* ---------- queue + connection light ---------- */
+/* ---------- queue: offline red, queued yellow, live green; the light always glows ---------- */
 
-.lab-queue-box {
-  &.connected {
-    border: 1px solid #2f6a3f;
-    background: #13201a;
+$lab-queued: #e8c547;
+
+.lab-queue-box:has(.lab-queue.offline) {
+  border: 1px solid #7a2a33;
+  background: #241216;
+}
+
+.lab-queue-box:has(.lab-queue.queued) {
+  border: 1px solid #7a6626;
+  background: #221e10;
+}
+
+.lab-queue-box:has(.lab-queue.live) {
+  border: 1px solid #2f6a3f;
+  background: #13201a;
+}
+
+.lab-queue {
+  &.offline {
+    --queue-light: var(--red-bright);
   }
 
-  &.disconnected {
-    border: 1px solid #7a2a33;
-    background: #241216;
+  &.queued {
+    --queue-light: #{$lab-queued};
+  }
+
+  &.live {
+    --queue-light: #{$lab-live};
   }
 }
 
@@ -982,26 +1069,14 @@ $lab-live: #4caf6a;
   width: 16px;
   height: 16px;
   padding: 0;
-  border: 2px solid currentcolor;
+  border: 0;
   border-radius: 50%;
-  background: transparent;
+  background: var(--queue-light);
+  box-shadow: 0 0 10px 2px var(--queue-light);
   cursor: pointer;
-
-  &.on {
-    color: $lab-live;
-  }
-
-  &.off {
-    color: var(--red-bright);
-  }
-
-  &.live {
-    background: currentcolor;
-    box-shadow: 0 0 10px 2px currentcolor;
-  }
 }
 
-/* ---------- phase strip ---------- */
+/* ---------- phase bar ---------- */
 
 .lab-phase-box {
   padding: 4px 6px;
@@ -1010,12 +1085,14 @@ $lab-live: #4caf6a;
 .lab-phase {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 10px;
   height: 100%;
 
   &-now {
     display: flex;
+    flex: 1 1 auto;
     align-items: center;
+    justify-content: center;
     gap: 8px;
   }
 
@@ -1039,8 +1116,237 @@ $lab-live: #4caf6a;
     font-weight: 800;
   }
 
+  > .lab-btn {
+    margin-left: auto;
+  }
+
   button.lab-btn {
     cursor: pointer;
     color: inherit;
+  }
+
+  button.lab-btn.armed {
+    border-color: var(--red-bright);
+    color: #fff;
+    background: var(--red);
+  }
+}
+
+/* ---------- calendar (scene date pop-up) ---------- */
+
+.lab-cal {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 800;
+  }
+
+  &-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+  }
+
+  &-dow {
+    font-size: 10px;
+    font-weight: 800;
+    text-align: center;
+    text-transform: uppercase;
+    color: #8a8a96;
+  }
+
+  &-day {
+    height: 34px;
+    border: 1px solid #2f2f38;
+    border-radius: 4px;
+    font-size: 13px;
+    color: inherit;
+    background: #24242c;
+    cursor: pointer;
+
+    &:hover {
+      border-color: #8a8a96;
+    }
+
+    &.present {
+      border-color: $lab-live;
+      color: #9df0a8;
+    }
+
+    &.scene {
+      border-color: #f2c44e;
+      color: #1a1408;
+      font-weight: 800;
+      background: #f2c44e;
+    }
+  }
+
+  &-time {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+}
+
+@keyframes lab-realtime-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 4px 1px rgb(76 175 106 / 45%);
+  }
+
+  50% {
+    box-shadow: 0 0 14px 4px rgb(76 175 106 / 85%);
+  }
+}
+
+/* ---------- Memoriam set-up (mirrors the TTS Memoriam modal) ---------- */
+
+.lab-memoriam {
+  width: 1000px;
+  align-items: stretch;
+  gap: 8px;
+  border-color: #cb995c;
+  background: #000;
+
+  &-title {
+    font-size: 24px;
+    font-weight: 800;
+    text-align: center;
+    color: #cb995c;
+  }
+
+  &-pcs {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+
+    .lab-memoriam-pick {
+      height: 36px;
+      font-size: 14px;
+    }
+  }
+
+  &-pick {
+    border: 0;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 800;
+    color: #000;
+    background: #999;
+    cursor: pointer;
+
+    &.highlighted {
+      background: #ff0;
+    }
+
+    &.selected {
+      background: #0f0;
+    }
+
+    &.empty {
+      background: transparent;
+      cursor: default;
+    }
+
+    &.smoke {
+      align-self: center;
+      width: 85px;
+      height: 34px;
+    }
+  }
+
+  &-date {
+    font-size: 26px;
+    font-weight: 800;
+    font-style: italic;
+    text-align: center;
+  }
+
+  &-place {
+    font-size: 19px;
+    font-weight: 800;
+    font-style: italic;
+    text-align: center;
+  }
+
+  &-marks {
+    display: flex;
+    gap: 2px;
+    height: 12px;
+    padding: 0 10px;
+
+    span {
+      flex: 1 1 0;
+      background: #333;
+
+      &.highlighted {
+        background: #ff0;
+      }
+    }
+  }
+
+  &-slider {
+    accent-color: #cb995c;
+  }
+
+  &-grid {
+    display: flex;
+    justify-content: center;
+  }
+
+  &-period {
+    display: grid;
+    grid-template-rows: repeat(4, 34px);
+    gap: 2px;
+    width: 64px;
+    padding: 0 1px;
+  }
+
+  &-cast {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 4px 120px;
+  }
+
+  &-cast-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  &-presence {
+    width: 24px;
+    height: 24px;
+    border: 0;
+    border-radius: 3px;
+    background: #999;
+    cursor: pointer;
+
+    &.selected {
+      background: #0f0;
+    }
+  }
+
+  &-pc {
+    width: 300px;
+  }
+
+  &-npc {
+    flex: 1 1 auto;
+    color: #cb995c;
+  }
+
+  &-actions {
+    justify-content: center;
   }
 }
