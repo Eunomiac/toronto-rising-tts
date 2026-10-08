@@ -673,9 +673,9 @@ const OUTCOME_LABEL: Record<HuntOutcome, string> = { basic: "Normal win", critic
 const SPIN_MS = 2400;
 const FLAVOR_FONT = '15px "Bebas Neue"';
 const INTENSITY_FONT = '13px "Bebas Neue"';
-const INTENSITY_SHORT: Record<Intensity, string> = { none: "None", fleeting: "Fleeting", intense: "Intense", acute: "Acute" };
 const MAX_MARGIN = 15;
-const FLAVOR_GAP = 6;
+const SEGMENT_PAD = 6;
+const WINNER_PAD = 16;
 
 /** Folds a travelled distance back and forth across 0..1, so the marker bounces off the bar's ends. */
 const pingPong = (distance: number): number => {
@@ -691,6 +691,9 @@ const travelTo = (from: number, to: number, least: number): number => {
   return Math.min(forward, back) - from;
 };
 
+/** Starting from `from`, eases along `travel` and bounces across the bar; returns the position at `t` (0..1). */
+const spinAt = (from: number, travel: number, t: number): number => pingPong(from + travel * (1 - (1 - t) ** 3));
+
 let textMeasure: CanvasRenderingContext2D | null = null;
 const textWidth = (text: string, font: string): number => {
   if (!textMeasure) {
@@ -702,62 +705,26 @@ const textWidth = (text: string, font: string): number => {
   textMeasure.font = font;
   return Math.ceil(textMeasure.measureText(text).width) + 2;
 };
-const flavorWidth = (text: string): number => textWidth(text, FLAVOR_FONT);
 
-type FlavorLabel = { readonly flavor: Flavor; readonly text: string; readonly left: number; readonly below: boolean };
-
-/**
- * One label per possible flavor, centred on its segment and alternating above and below the bar. Labels that
- * would overlap a neighbour on their side shorten to three letters and a dot ("Isc.").
- */
-const placeFlavorLabels = (flavors: readonly Flavor[], odds: Odds<Flavor>, barW: number): readonly FlavorLabel[] => {
-  const centres: number[] = [];
-  let edge = 0;
-  for (const flavor of flavors) {
-    centres.push((edge + odds[flavor] / 2) * barW);
-    edge += odds[flavor];
-  }
-  const short = new Set<Flavor>();
-  const layout = (): FlavorLabel[] => flavors.map((flavor, index) => {
-    const text = short.has(flavor) ? `${FLAVOR_LABEL[flavor].slice(0, 3)}.` : FLAVOR_LABEL[flavor];
-    const width = flavorWidth(text);
-    const left = Math.min(Math.max((centres[index] ?? 0) - width / 2, 0), Math.max(0, barW - width));
-    return { flavor, text, left, below: index % 2 === 1 };
-  });
-  for (let pass = 0; pass < 2; pass += 1) {
-    const labels = layout();
-    for (const below of [false, true]) {
-      const row = labels.filter((label) => label.below === below);
-      row.forEach((label, index) => {
-        const next = row[index + 1];
-        if (next && label.left + flavorWidth(label.text) + FLAVOR_GAP > next.left) {
-          short.add(label.flavor);
-          short.add(next.flavor);
-        }
-      });
-    }
-  }
-  return layout();
-};
+/** The flavor's name if it fits inside its segment, else its first letter, else nothing. */
+const segmentText = (name: string, room: number): string =>
+  [name, name.slice(0, 1)].find((text) => textWidth(text, FLAVOR_FONT) + SEGMENT_PAD <= room) ?? "";
 
 const percent = (value: number): string => `${(value * 100).toFixed(value < 0.1 ? 1 : 0)}%`;
 
-/** The longest of "Fleeting 30%", "Fleeting", "F" that fits inside its intensity segment, or nothing. */
-const intensityText = (intensity: Intensity, chance: number, barW: number): string => {
-  const room = chance * barW - 6;
-  const name = INTENSITY_SHORT[intensity];
-  return [`${name} ${percent(chance)}`, name, name.slice(0, 1)].find((text) => textWidth(text, INTENSITY_FONT) <= room) ?? "";
-};
+type HuntResult = { readonly flavor: Flavor | null; readonly intensity: Intensity };
 
-/** Starting from `from`, eases along `travel` over SPIN_MS and bounces across the bar; returns the position at `t`. */
-const spinAt = (from: number, travel: number, t: number): number => pingPong(from + travel * (1 - (1 - t) ** 3));
+/** Segment sizing: losers share what the winner leaves; the winner is at least wide enough for its full name. */
+const segmentFlex = (chance: number, winner: boolean, settled: boolean, minWidth: number, barW: number): CSSProperties =>
+  settled && winner ? { flexGrow: 0, flexBasis: Math.max(chance * barW, minWidth) } : { flexGrow: chance, flexBasis: 0 };
 
 /**
  * Hunt roll: the margin (hover and spin the mouse wheel) and outcome (star: normal, critical, messy critical) set
  * the odds with the scene location's resonances. The top bar is the flavor, each possible flavor's segment as
- * long as its chance; click a flavor's name to mark it as the one the player is seeking (click again to clear).
- * The lower bar is the intensity. Click either bar and both markers slide, slow, and settle on a flavor and an
- * intensity.
+ * long as its chance; right-click a flavor to mark it as the one the player is seeking (again to clear). The
+ * lower bar is the intensity, darker to brighter. Click either bar and both markers slide and settle; the
+ * winners widen and glow, the rest fade, and Confirm clears the bars (the real build broadcasts the result in
+ * TTS).
  */
 export const HuntRoller = ({ location }: { location: LabLocation }): ReactElement => {
   const { data } = useChronicleLocations();
@@ -765,12 +732,20 @@ export const HuntRoller = ({ location }: { location: LabLocation }): ReactElemen
   const [outcome, setOutcome] = useState<HuntOutcome>("basic");
   const [target, setTarget] = useState<Flavor | null>(null);
   const [markers, setMarkers] = useState<{ flavor: number; intensity: number } | null>(null);
-  const [result, setResult] = useState<string | null>(null);
+  const [result, setResult] = useState<HuntResult | null>(null);
   const [barW, setBarW] = useState(0);
   const [fontReady, setFontReady] = useState(false);
   const barRef = useRef<HTMLButtonElement>(null);
   const marginRef = useRef<HTMLSpanElement>(null);
   const frame = useRef<number | null>(null);
+  const reset = (): void => {
+    if (frame.current !== null) {
+      cancelAnimationFrame(frame.current);
+      frame.current = null;
+    }
+    setMarkers(null);
+    setResult(null);
+  };
   useEffect(() => () => {
     if (frame.current !== null) {
       cancelAnimationFrame(frame.current);
@@ -796,12 +771,10 @@ export const HuntRoller = ({ location }: { location: LabLocation }): ReactElemen
     }
     const onWheel = (event: WheelEvent): void => {
       event.preventDefault();
-      if (event.deltaY === 0) {
-        return;
+      if (event.deltaY !== 0) {
+        setMargin((value) => Math.min(MAX_MARGIN, Math.max(0, value + (event.deltaY < 0 ? 1 : -1))));
+        reset();
       }
-      const step = event.deltaY < 0 ? 1 : -1;
-      setMargin((value) => Math.min(MAX_MARGIN, Math.max(0, value + step)));
-      setResult(null);
     };
     box.addEventListener("wheel", onWheel, { passive: false });
     return () => box.removeEventListener("wheel", onWheel);
@@ -813,13 +786,16 @@ export const HuntRoller = ({ location }: { location: LabLocation }): ReactElemen
   const seeking = target !== null && flavors.includes(target) ? target : null;
   const odds = flavorOdds({ modifiers, target: seeking, margin, outcome });
   const intensity = intensityOdds(margin, outcome);
-  const labels = fontReady && barW > 0 ? placeFlavorLabels(flavors, odds, barW) : [];
+  const settled = result !== null;
+  const measured = fontReady && barW > 0;
 
   const spin = (): void => {
+    if (settled) {
+      return;
+    }
     if (frame.current !== null) {
       cancelAnimationFrame(frame.current);
     }
-    setResult(null);
     const flavorTo = Math.random();
     const intensityTo = Math.random();
     const landed = sample(odds, flavors, flavorTo);
@@ -836,13 +812,9 @@ export const HuntRoller = ({ location }: { location: LabLocation }): ReactElemen
         return;
       }
       frame.current = null;
-      setResult(strength === "none" ? INTENSITY_LABEL.none : `${INTENSITY_LABEL[strength]} ${FLAVOR_LABEL[landed]}`);
+      setResult({ flavor: strength === "none" ? null : landed, intensity: strength });
     };
     frame.current = requestAnimationFrame(step);
-  };
-  const changeMargin = (step: number): void => {
-    setMargin((value) => Math.min(MAX_MARGIN, Math.max(0, value + step)));
-    setResult(null);
   };
   return (
     <div className="lab-hunt">
@@ -854,7 +826,8 @@ export const HuntRoller = ({ location }: { location: LabLocation }): ReactElemen
         onKeyDown={(event) => {
           if (event.key === "ArrowUp" || event.key === "ArrowDown") {
             event.preventDefault();
-            changeMargin(event.key === "ArrowUp" ? 1 : -1);
+            setMargin((value) => Math.min(MAX_MARGIN, Math.max(0, value + (event.key === "ArrowUp" ? 1 : -1))));
+            reset();
           }
         }}
       >
@@ -866,54 +839,64 @@ export const HuntRoller = ({ location }: { location: LabLocation }): ReactElemen
         title={`${OUTCOME_LABEL[outcome]} (click for ${OUTCOME_LABEL[OUTCOMES[(OUTCOMES.indexOf(outcome) + 1) % OUTCOMES.length] ?? "basic"].toLowerCase()})`}
         onClick={() => {
           setOutcome(OUTCOMES[(OUTCOMES.indexOf(outcome) + 1) % OUTCOMES.length] ?? "basic");
-          setResult(null);
+          reset();
         }}
       >
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <polygon points="12,2.6 14.8,8.7 21.4,9.4 16.5,13.9 17.8,20.5 12,17.2 6.2,20.5 7.5,13.9 2.6,9.4 9.2,8.7" />
         </svg>
       </button>
-      <div className="lab-hunt-bars">
-        <div className="lab-hunt-track">
-          {labels.map((label) => (
-            <button
-              key={label.flavor}
-              type="button"
-              className={`lab-hunt-flavor${label.below ? " below" : ""}${label.flavor === seeking ? " sought" : ""}`}
-              style={{ left: label.left }}
-              title={`${FLAVOR_LABEL[label.flavor]} ${percent(odds[label.flavor])}: ${label.flavor === seeking ? "sought (click to stop seeking)" : "click if the player is seeking it"}`}
-              onClick={() => {
-                setTarget(label.flavor === seeking ? null : label.flavor);
-                setResult(null);
-              }}
-            >
-              {label.text}
-            </button>
-          ))}
-          <button ref={barRef} type="button" className="lab-hunt-bar" title="Click to roll for resonance" onClick={spin}>
-            {flavors.map((flavor, index) => (
+      <div className={`lab-hunt-bars${settled ? " settled" : ""}`}>
+        <button
+          ref={barRef}
+          type="button"
+          className="lab-hunt-bar"
+          title={settled ? undefined : "Click to roll for resonance. Right-click a flavor to mark it as the one the player is seeking."}
+          onClick={spin}
+        >
+          {flavors.map((flavor, index) => {
+            const won = result?.flavor === flavor;
+            const name = FLAVOR_LABEL[flavor];
+            return (
               <span
                 key={flavor}
-                className={`lab-hunt-seg ${index % 2 === 0 ? "light" : "dark"}${flavor === seeking ? " sought" : ""}`}
-                style={{ flexGrow: odds[flavor] }}
-              />
-            ))}
-            {markers && (
-              <span className="lab-hunt-marker" style={{ left: `${markers.flavor * 100}%` }}>
-                {result && <span className="lab-hunt-result">{result}</span>}
+                className={`lab-hunt-seg ${index % 2 === 0 ? "light" : "dark"}${flavor === seeking ? " sought" : ""}${won ? " won" : ""}`}
+                style={segmentFlex(odds[flavor], won, settled, measured ? textWidth(name, FLAVOR_FONT) + WINNER_PAD : 0, barW)}
+                title={`${name} ${percent(odds[flavor])}${flavor === seeking ? " (sought)" : ""}`}
+                onContextMenu={(event) => {
+                  event.preventDefault();
+                  setTarget(flavor === seeking ? null : flavor);
+                  reset();
+                }}
+              >
+                {measured && (won ? name : settled ? "" : segmentText(name, odds[flavor] * barW))}
               </span>
-            )}
-          </button>
-        </div>
-        <button type="button" className="lab-hunt-bar intensity" title="Click to roll for resonance" onClick={spin}>
-          {INTENSITIES.map((key) => (
-            <span key={key} className={`lab-hunt-seg ${key}`} style={{ flexGrow: intensity[key] }} title={`${INTENSITY_LABEL[key]} ${percent(intensity[key])}`}>
-              {fontReady && barW > 0 ? intensityText(key, intensity[key], barW) : ""}
-            </span>
-          ))}
-          {markers && <span className="lab-hunt-marker" style={{ left: `${markers.intensity * 100}%` }} />}
+            );
+          })}
+          {markers && !settled && <span className="lab-hunt-marker" style={{ left: `${markers.flavor * 100}%` }} />}
+        </button>
+        <button type="button" className="lab-hunt-bar intensity" title={settled ? undefined : "Click to roll for resonance"} onClick={spin}>
+          {INTENSITIES.map((key) => {
+            const won = result?.intensity === key;
+            return (
+              <span
+                key={key}
+                className={`lab-hunt-seg ${key}${won ? " won" : ""}`}
+                style={segmentFlex(intensity[key], won, settled, measured ? textWidth(INTENSITY_LABEL[key], INTENSITY_FONT) + WINNER_PAD : 0, barW)}
+                title={`${INTENSITY_LABEL[key]} ${percent(intensity[key])}`}
+              >
+                {won ? INTENSITY_LABEL[key] : ""}
+              </span>
+            );
+          })}
+          {markers && !settled && <span className="lab-hunt-marker" style={{ left: `${markers.intensity * 100}%` }} />}
         </button>
       </div>
+      {settled && (
+        <button type="button" className="lab-btn primary lab-hunt-confirm" title="Clear the bars (the real build broadcasts the result in TTS)" onClick={reset}>
+          Confirm
+        </button>
+      )}
       {unknown.length > 0 && <span className="lab-note">Unknown resonance in the sheet: {unknown.join(", ")}</span>}
     </div>
   );
@@ -1122,7 +1105,7 @@ const extremeFor = (celsius: number): Extreme | null => (celsius >= HEAT_WAVE_C 
 /** Heat: the scene wavers in a rising haze over an amber glow. Cold: frost creeps in from the edges. */
 const ExtremeTemperature = ({ extreme, filterId }: { extreme: Extreme; filterId: string }): ReactElement => (
   <div className={`lab-wx-extreme ${extreme}`} aria-hidden="true">
-    <svg className="lab-wx-layer">
+    <svg className="lab-wx-layer" width="100%" height="100%">
       <defs>
         {extreme === "heat" ? (
           <filter id={filterId}>
@@ -1381,6 +1364,7 @@ const sameDay = (a: Date, b: Date): boolean => a.toDateString() === b.toDateStri
 const shift = (at: Date, minutes: number): Date => new Date(at.getTime() + minutes * 60_000);
 
 const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"] as const;
+const CALENDAR_CELLS = 42;
 
 const pad2 = (n: number): string => String(n).padStart(2, "0");
 
@@ -1389,7 +1373,9 @@ const SceneCalendar = ({ at, present, onPick }: { at: Date; present: Date; onPic
   const [month, setMonth] = useState(() => new Date(at.getFullYear(), at.getMonth(), 1));
   const lead = month.getDay();
   const days = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+  // Always six weeks, so the pop-up keeps its height from month to month.
   const cells = [...Array.from({ length: lead }, () => null), ...Array.from({ length: days }, (_, index) => index + 1)];
+  cells.push(...Array.from({ length: CALENDAR_CELLS - cells.length }, () => null));
   const dayDate = (day: number): Date => new Date(month.getFullYear(), month.getMonth(), day, at.getHours(), at.getMinutes());
   const step = (delta: number): void => setMonth(new Date(month.getFullYear(), month.getMonth() + delta, 1));
   return (
@@ -1865,7 +1851,7 @@ const NEXT_PHASE: Record<Phase, Phase> = { Intermission: "Play", Play: "Spotligh
 const ARM_MS = 2500;
 
 /** A button that only acts on a second click (a double-click works too); it disarms itself after a moment. */
-const ConfirmButton = ({ label, className = "", onConfirm, style }: {
+export const ConfirmButton = ({ label, className = "", onConfirm, style }: {
   label: string;
   className?: string;
   onConfirm: () => void;
@@ -1943,12 +1929,24 @@ const SpotlightCarousel = (): ReactElement => {
   );
 };
 
+/** Scenes live in TTS: the one on the table, plus any on deck to switch to in one click. */
+export type LiveScenes = { readonly live: readonly string[]; readonly current: string | null };
+
 /**
- * Phase name at the far left. The middle holds the scene name (Play), the next session's number and title
- * (Intermission), or the carousel (Spotlight). In Play, End Scene sits just left of Advance, and Advance opens a ring: Scene (scene picker), Memoriam (Memoriam set-up),
- * or Spotlight (click twice). In any other phase, Advance names the next phase and needs a second click.
+ * Phase name at the far left. The middle holds the live scenes (Play): the one on the table, then a button for
+ * each scene on deck to switch to it. Intermission shows the next session's number and title; Spotlight the
+ * carousel. In Play, End Scene (takes the current scene out of the live list) sits just left of Advance, and
+ * Advance opens a ring: Scene (scene picker), Memoriam (Memoriam set-up), or Spotlight (click twice). In any
+ * other phase, Advance names the next phase and needs a second click.
  */
-export const PhaseStrip = ({ library, onPrepare }: { library: readonly string[]; onPrepare: () => void }): ReactElement => {
+export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPrepare }: {
+  library: readonly string[];
+  scenes: LiveScenes;
+  onSwitch: (title: string) => void;
+  onEndScene: () => void;
+  onPlay: (title: string) => void;
+  onPrepare: () => void;
+}): ReactElement => {
   const [phase, setPhase] = useState<Phase>("Play");
   const [ring, setRing] = useState<Point | null>(null);
   const [modal, setModal] = useState<"scene" | "memoriam" | null>(null);
@@ -1965,7 +1963,16 @@ export const PhaseStrip = ({ library, onPrepare }: { library: readonly string[];
         {phase === "Play" && <span className="lab-phase-sub">Main</span>}
       </span>
       <span className="lab-phase-now">
-        {phase === "Play" && <span className="lab-phase-scene">Elysium — Casa Loma: Great Hall</span>}
+        {phase === "Play" && (
+          <span className="lab-phase-scenes">
+            <span className={`lab-phase-scene${scenes.current ? "" : " none"}`}>{scenes.current ?? "No scene on the table"}</span>
+            {scenes.live.filter((title) => title !== scenes.current).map((title) => (
+              <button key={title} type="button" className="lab-phase-deck" title={`Switch the table to ${title}`} onClick={() => onSwitch(title)}>
+                {title}
+              </button>
+            ))}
+          </span>
+        )}
         {phase === "Intermission" && (
           <span className="lab-phase-session">
             <label>
@@ -1989,7 +1996,11 @@ export const PhaseStrip = ({ library, onPrepare }: { library: readonly string[];
         {phase === "Spotlight" && <SpotlightCarousel />}
       </span>
       <span className="lab-phase-advance">
-        {phase === "Play" && <span title="Main / Memoriam → Downtime"><Btn tone="danger">End Scene</Btn></span>}
+        {phase === "Play" && (
+          <button type="button" className="lab-btn danger" title="Main / Memoriam → Downtime" disabled={!scenes.current} onClick={onEndScene}>
+            End Scene
+          </button>
+        )}
         {phase === "Play" ? (
           <button type="button" className="lab-btn primary" onClick={(event) => setRing(canvasPoint(event))}>Advance ▸</button>
         ) : (
@@ -2016,7 +2027,12 @@ export const PhaseStrip = ({ library, onPrepare }: { library: readonly string[];
       {modal === "scene" && (
         <SceneModal
           library={library}
+          scenes={scenes}
           onClose={() => setModal(null)}
+          onPlay={(title) => {
+            setModal(null);
+            onPlay(title);
+          }}
           onPrepare={() => {
             setModal(null);
             onPrepare();
@@ -2028,17 +2044,23 @@ export const PhaseStrip = ({ library, onPrepare }: { library: readonly string[];
   );
 };
 
-const SceneModal = ({ library, onClose, onPrepare }: { library: readonly string[]; onClose: () => void; onPrepare: () => void }): ReactElement => (
+const SceneModal = ({ library, scenes, onClose, onPlay, onPrepare }: {
+  library: readonly string[];
+  scenes: LiveScenes;
+  onClose: () => void;
+  onPlay: (title: string) => void;
+  onPrepare: () => void;
+}): ReactElement => (
   <Overlay onClose={onClose}>
     <div className="lab-modal lab-advance">
       <span className="lab-modal-title">Play a scene</span>
       <span className="lab-search">Search the scene library…</span>
       <ul className="lab-advance-list">
-        {library.map((title, index) => (
-          <li key={title} className={index === 0 ? "live" : index < 3 ? "prep" : undefined}>
-            <span>{title}{index === 0 ? " (on the table)" : index < 3 ? " (prepared)" : ""}</span>
+        {library.map((title) => (
+          <li key={title} className={title === scenes.current ? "live" : scenes.live.includes(title) ? "prep" : undefined}>
+            <span>{title}{title === scenes.current ? " (on the table)" : scenes.live.includes(title) ? " (on deck)" : ""}</span>
             <span className="lab-row">
-              <Btn tone="live">Play</Btn>
+              <button type="button" className="lab-btn live" disabled={title === scenes.current} onClick={() => onPlay(title)}>Play</button>
               <button type="button" className="lab-btn" onClick={onPrepare}>Edit</button>
             </span>
           </li>

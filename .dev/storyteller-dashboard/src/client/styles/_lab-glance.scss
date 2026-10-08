@@ -1002,8 +1002,8 @@ $lab-live: #4caf6a;
   // Amber glow rising off the ground, swelling slowly.
   &.heat {
     background:
-      linear-gradient(to top, rgb(255 110 20 / 45%), rgb(255 140 40 / 12%) 55%, transparent 80%),
-      radial-gradient(ellipse 60% 40% at 50% 100%, rgb(255 200 90 / 30%), transparent 70%);
+      linear-gradient(to top, rgb(190 20 10 / 60%), rgb(170 25 15 / 18%) 55%, transparent 85%),
+      radial-gradient(ellipse 60% 40% at 50% 100%, rgb(255 70 30 / 35%), transparent 70%);
     animation: lab-wx-heat-swell 4s ease-in-out infinite alternate;
   }
 
@@ -1020,8 +1020,8 @@ $lab-live: #4caf6a;
 }
 
 .lab-wx-panel.heat .lab-wx-temp {
-  color: #ffd2a0;
-  text-shadow: 0 0 6px #ff7a1a, 0 0 14px rgb(255 90 20 / 80%);
+  color: #ffc4b4;
+  text-shadow: 0 0 6px #e0281a, 0 0 14px rgb(200 20 10 / 85%);
 }
 
 .lab-wx-panel.cold .lab-wx-temp {
@@ -1496,7 +1496,7 @@ $lab-queued: #e8c547;
 
 /* ---------- hunt roll ---------- */
 
-// The result label rises above the strip, so this panel must not clip it.
+// The winners' glow spills past the strip, so this panel must not clip it.
 .lab-box.lab-hunt-box {
   z-index: 6;
   padding: 2px 4px;
@@ -1572,55 +1572,11 @@ $lab-queued: #e8c547;
     min-width: 0;
   }
 
-  // Flavor names sit alternately above and below the flavor bar, so the track is taller than the bar.
-  &-track {
-    position: relative;
-    display: flex;
-    align-items: center;
-    height: 48px;
-  }
-
-  &-flavor {
-    position: absolute;
-    top: 0;
-    padding: 0;
-    border: none;
-    font-family: "Bebas Neue", "Arial Narrow", sans-serif;
-    font-size: 15px;
-    line-height: 1;
-    letter-spacing: 0.03em;
-    white-space: nowrap;
-    color: #e6a3a8;
-    background: none;
-    text-shadow: 0 1px 2px #000;
-    cursor: pointer;
-    opacity: 0.85;
-
-    &.below {
-      top: auto;
-      bottom: 0;
-    }
-
-    &:hover:not(:disabled) {
-      opacity: 1;
-      background: none;
-    }
-
-    // The flavor the player is seeking.
-    &.sought {
-      color: #fff;
-      opacity: 1;
-      text-decoration: underline 2px #f2c44e;
-      text-underline-offset: 2px;
-      text-shadow: 0 0 6px #f2c44e, 0 1px 2px #000;
-    }
-  }
-
   &-bar {
     position: relative;
     display: flex;
-    flex: 1 1 auto;
-    height: 18px;
+    flex: 0 0 auto;
+    height: 22px;
     padding: 0;
     border: 1px solid #000;
     font-family: inherit;
@@ -1628,38 +1584,68 @@ $lab-queued: #e8c547;
     cursor: pointer;
 
     &.intensity {
-      flex: 0 0 auto;
-      height: 16px;
+      height: 15px;
     }
   }
 
+  &-bars.settled &-bar {
+    cursor: default;
+  }
+
   &-seg {
-    flex-basis: 0;
+    position: relative;
     min-width: 0;
     overflow: hidden;
     font-family: "Bebas Neue", "Arial Narrow", sans-serif;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 400;
-    line-height: 14px;
+    line-height: 20px;
     letter-spacing: 0.04em;
     text-align: center;
     white-space: nowrap;
-    color: rgb(255 255 255 / 80%);
-    transition: flex-grow 0.4s ease;
+    color: rgb(255 255 255 / 85%);
+    text-shadow: 0 1px 2px rgb(0 0 0 / 70%);
+    transition: flex-grow 0.45s ease, flex-basis 0.45s ease, opacity 0.45s ease, box-shadow 0.45s ease;
 
     // Flavors: one red, light and dark in turn along the bar.
     &.light { background: #b22a35; }
     &.dark { background: #5a1219; }
 
     &.sought {
+      color: #ffe7a6;
       box-shadow: inset 0 0 0 2px #f2c44e;
     }
 
     // Intensity: darker to brighter as the resonance strengthens.
-    &.none { color: #8a8a96; background: #24242b; }
+    &.none { background: #24242b; }
     &.fleeting { background: #4e1a20; }
     &.intense { background: #8c2430; }
-    &.acute { color: #fff; background: #d8303e; }
+    &.acute { background: #d8303e; }
+
+    .lab-hunt-bar.intensity & {
+      font-size: 13px;
+      line-height: 13px;
+    }
+  }
+
+  // After a spin: the winners widen and glow; everything else fades.
+  &-bars.settled &-seg {
+    opacity: 0.18;
+
+    &.won {
+      z-index: 1;
+      overflow: visible;
+      color: #fff;
+      opacity: 1;
+      box-shadow: inset 0 0 0 1px rgb(255 255 255 / 85%), 0 0 10px 2px rgb(255 70 80 / 75%), 0 0 22px 4px rgb(255 40 55 / 40%);
+      animation: lab-hunt-won 1.6s ease-in-out infinite alternate;
+    }
+  }
+
+  &-confirm {
+    flex: 0 0 auto;
+    align-self: center;
+    animation: lab-hunt-confirm-in 0.3s ease;
   }
 
   &-marker {
@@ -1672,20 +1658,27 @@ $lab-queued: #e8c547;
     box-shadow: 0 0 0 1px #000, 0 0 6px #fff;
     pointer-events: none;
   }
+}
 
-  &-result {
-    position: absolute;
-    bottom: calc(100% + 6px);
-    left: 50%;
-    padding: 3px 9px;
-    border: 1px solid #fff;
-    font-size: 13px;
-    font-weight: 800;
-    white-space: nowrap;
-    color: #fff;
-    background: #0d0d10;
-    box-shadow: 0 4px 12px rgb(0 0 0 / 70%);
-    transform: translateX(-50%);
+@keyframes lab-hunt-won {
+  from {
+    filter: brightness(1);
+  }
+
+  to {
+    filter: brightness(1.3);
+  }
+}
+
+@keyframes lab-hunt-confirm-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
@@ -1724,9 +1717,50 @@ $lab-queued: #e8c547;
     color: #6f9c7b;
   }
 
+  &-scenes {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+  }
+
   &-scene {
-    font-size: 15px;
-    font-weight: 800;
+    font-family: "Bebas Neue", "Arial Narrow", sans-serif;
+    font-size: 26px;
+    line-height: 1;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    color: #fff;
+
+    &.none {
+      color: #6a6a74;
+    }
+  }
+
+  // A live scene on deck: one click puts it on the table.
+  &-deck {
+    padding: 2px 8px;
+    border: 1px dashed #4a6a54;
+    font-family: "Bebas Neue", "Arial Narrow", sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    color: #8fbf9c;
+    background: rgb(76 175 106 / 8%);
+
+    &::before {
+      content: "▸ ";
+      font-size: 11px;
+    }
+
+    &:hover:not(:disabled) {
+      border-style: solid;
+      border-color: #4caf6a;
+      color: #fff;
+      background: rgb(76 175 106 / 22%);
+    }
   }
 
   button.lab-btn {
@@ -1755,9 +1789,11 @@ $lab-queued: #e8c547;
     font-weight: 800;
   }
 
+  // Weekday row plus six weeks of fixed height, so blank weeks still take their space.
   &-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
+    grid-template-rows: auto repeat(6, 34px);
     gap: 3px;
   }
 
@@ -2240,6 +2276,115 @@ $lab-queued: #e8c547;
         color: #5a5a66;
         pointer-events: none;
       }
+    }
+  }
+}
+
+/* ---------- Preview: a prepared scene laid out like the table, framed in blue ---------- */
+
+.lab-gpreview {
+  position: absolute;
+  border: 2px solid #4a8dff;
+  background: #0b0f18;
+  box-shadow: 0 0 0 1px #000, 0 12px 40px rgb(0 0 0 / 80%), 0 0 24px rgb(74 141 255 / 25%);
+
+  .lab-box:not(.lab-borderless) {
+    border: 1px solid #22345a;
+  }
+
+  &-head {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 40px;
+    padding: 0 8px;
+    border-bottom: 1px solid #22345a;
+    background: linear-gradient(#14203a, #0e1628);
+  }
+
+  &-tag {
+    padding: 2px 8px;
+    font-family: "Bebas Neue", "Arial Narrow", sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.12em;
+    color: #0b0f18;
+    background: #4a8dff;
+  }
+
+  &-tabs {
+    display: flex;
+    flex: 1 1 auto;
+    align-self: stretch;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  &-tab {
+    padding: 0 12px;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-family: "Bebas Neue", "Arial Narrow", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    color: #7f93b8;
+    background: none;
+
+    &:hover:not(:disabled) {
+      color: #d6e2fa;
+      background: rgb(74 141 255 / 10%);
+    }
+
+    &.on {
+      border-bottom-color: #4a8dff;
+      font-size: 24px;
+      color: #fff;
+    }
+
+    // Already live (on deck or on the table): a small green light.
+    &.live::after {
+      content: "";
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      margin-left: 6px;
+      border-radius: 50%;
+      vertical-align: middle;
+      background: #4caf6a;
+      box-shadow: 0 0 6px #4caf6a;
+    }
+
+    &.add {
+      font-size: 16px;
+      color: #5a6e94;
+    }
+  }
+
+  &-actions {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 4px;
+
+    .lab-btn {
+      cursor: pointer;
+      color: inherit;
+    }
+
+    .lab-btn:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+    .lab-btn.armed {
+      border-color: var(--red-bright);
+      color: #fff;
+      background: var(--red);
     }
   }
 }

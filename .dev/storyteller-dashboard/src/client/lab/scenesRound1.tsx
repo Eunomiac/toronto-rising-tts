@@ -12,8 +12,10 @@ import {
   SoundMixer,
   WeatherPanel,
   WhenPanel,
-  type LabLocation
+  type LabLocation,
+  type LiveScenes
 } from "./glance";
+import { ScenePreview, type PreparedScene } from "./labPreview";
 import {
   Overlay,
   Board,
@@ -103,6 +105,11 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
   const [sceneTime, setSceneTime] = useState(PRESENT_DAY);
   const [presentDay, setPresentDay] = useState(PRESENT_DAY);
   const [location, setLocation] = useState<LabLocation>(SCENE_LOCATION);
+  const [scenes, setScenes] = useState<LiveScenes>({ live: [SCENE_NAME, "Mod Club — Little Italy"], current: SCENE_NAME });
+  const play = (title: string): void => {
+    setScenes((now) => ({ live: now.live.includes(title) ? now.live : [...now.live, title], current: title }));
+    setPreparing(false);
+  };
   useEffect(() => {
     setPresentDay(PRESENT_DAY);
     setSceneTime(clockDiffers ? FLASHBACK_TIME : PRESENT_DAY);
@@ -129,7 +136,7 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
   const boardH = stageH - 10;
   const queueH = 420;
   const rightH = 1042 - G - mainY;
-  const huntH = 74;
+  const huntH = 48;
   const rosterY = bodyY + huntH + G;
   const whenW = 470;
   const weatherW = 380;
@@ -148,7 +155,7 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
         <HuntRoller location={location} />
       </Box>
       <Box x={G} y={rosterY} w={leftW} h={1042 - G - rosterY} className="lab-borderless lab-dock-box">
-        <RosterDock scene={SCENE_NAME} />
+        <RosterDock scene={scenes.current ?? SCENE_NAME} />
       </Box>
 
       <Box x={stripX} y={G} w={whenW} h={stripH} className="lab-backdrop-box">
@@ -170,7 +177,17 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
       </Box>
 
       <Box x={stripX} y={bodyY} w={1920 - G - stripX} h={phaseH} className="lab-phase-box lab-borderless">
-        <PhaseStrip library={LIBRARY} onPrepare={() => setPreparing(true)} />
+        <PhaseStrip
+          library={LIBRARY}
+          scenes={scenes}
+          onSwitch={(title) => setScenes((now) => ({ ...now, current: title }))}
+          onEndScene={() => setScenes((now) => {
+            const live = now.live.filter((title) => title !== now.current);
+            return { live, current: live[0] ?? null };
+          })}
+          onPlay={play}
+          onPrepare={() => setPreparing(true)}
+        />
       </Box>
       <Box x={stripX} y={mainY} w={stageW} h={aspectH} className="lab-aspects-box lab-borderless">
         <AspectRow location={location} />
@@ -184,7 +201,17 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
       </Box>
       {(previewOpen || preparing) && (
         <Overlay onClose={() => setPreparing(false)}>
-          <PreviewPanel x={G} y={bodyY} w={stripX + stageW - G} h={bodyH} wide />
+          <ScenePreview
+            x={G}
+            y={bodyY}
+            w={1920 - 2 * G}
+            h={bodyH}
+            prepared={PREPARED}
+            scenes={scenes}
+            onDeck={(title) => setScenes((now) => ({ ...now, live: now.live.includes(title) ? now.live : [...now.live, title] }))}
+            onPlay={play}
+            onClose={() => setPreparing(false)}
+          />
         </Overlay>
       )}
     </>
@@ -192,6 +219,11 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
 };
 
 const SCENE_NAME = "Elysium — Casa Loma: Great Hall";
+
+const PREPARED: readonly PreparedScene[] = [
+  { title: "Rack — Kensington Market", location: { districtKey: "HarbordVillage", siteKey: "Kensington" }, indoors: false },
+  { title: "Mod Club — Little Italy", location: { districtKey: "LittleItaly", siteKey: "ModClub" }, indoors: true }
+];
 
 const LIBRARY = [
   "Elysium — The Annex",
