@@ -1,3 +1,304 @@
 {
-  "crops": {}
+  "crops": {
+    "averyInnis": {
+      "cx": 0.5928,
+      "cy": 0.0984,
+      "size": 0.1827
+    },
+    "bacchusGiovanni": {
+      "cx": 0.5667,
+      "cy": 0.0905,
+      "size": 0.1698
+    },
+    "bee": {
+      "cx": 0.5318,
+      "cy": 0.0946,
+      "size": 0.1851
+    },
+    "blackCaesar": {
+      "cx": 0.4368,
+      "cy": 0.1132,
+      "size": 0.136
+    },
+    "calvinWallace": {
+      "cx": 0.4446,
+      "cy": 0.0951,
+      "size": 0.1356
+    },
+    "chokesOnMoonlightGarou": {
+      "cx": 0.4734,
+      "cy": 0.2625,
+      "size": 0.5556
+    },
+    "christianne": {
+      "cx": 0.4889,
+      "cy": 0.1253,
+      "size": 0.1155
+    },
+    "daevaNasirKhan": {
+      "cx": 0.5285,
+      "cy": 0.0905,
+      "size": 0.1639
+    },
+    "damienAbanda": {
+      "cx": 0.44,
+      "cy": 0.0922,
+      "size": 0.127
+    },
+    "damienKline": {
+      "cx": 0.499,
+      "cy": 0.1126,
+      "size": 0.1461
+    },
+    "deaconReal": {
+      "cx": 0.4746,
+      "cy": 0.0959,
+      "size": 0.1337
+    },
+    "emilyTheDuskRose": {
+      "cx": 0.5108,
+      "cy": 0.0855,
+      "size": 0.1674
+    },
+    "evanescentBlue": {
+      "cx": 0.3757,
+      "cy": 0.1035,
+      "size": 0.1674
+    },
+    "evangelineDupont": {
+      "cx": 0.4891,
+      "cy": 0.0874,
+      "size": 0.152
+    },
+    "fangsAtTheCradle": {
+      "cx": 0.5836,
+      "cy": 0.136,
+      "size": 0.2223
+    },
+    "fangsAtTheCradleGarou": {
+      "cx": 0.6138,
+      "cy": 0.36,
+      "size": 0.7986
+    },
+    "fatherDiaz": {
+      "cx": 0.4616,
+      "cy": 0.0834,
+      "size": 0.1921
+    },
+    "fomorach": {
+      "cx": 0.6155,
+      "cy": 0.0777,
+      "size": 0.1628
+    },
+    "georgieStJames": {
+      "cx": 0.4937,
+      "cy": 0.1237,
+      "size": 0.1348
+    },
+    "ianRammond": {
+      "cx": 0.2622,
+      "cy": 0.102,
+      "size": 0.1674
+    },
+    "iq": {
+      "cx": 0.453,
+      "cy": 0.1017,
+      "size": 0.1727
+    },
+    "jeanDucheskiIII": {
+      "cx": 0.4751,
+      "cy": 0.092,
+      "size": 0.1715
+    },
+    "jezdimirDucheski": {
+      "cx": 0.4745,
+      "cy": 0.1094,
+      "size": 0.2187
+    },
+    "kieraVaughan": {
+      "cx": 0.5134,
+      "cy": 0.0833,
+      "size": 0.1276
+    },
+    "kingstonBlack": {
+      "cx": 0.4847,
+      "cy": 0.0833,
+      "size": 0.1531
+    },
+    "laz": {
+      "cx": 0.3821,
+      "cy": 0.1253,
+      "size": 0.2625
+    },
+    "mamboAbigail": {
+      "cx": 0.4793,
+      "cy": 0.133,
+      "size": 0.1639
+    },
+    "mara": {
+      "cx": 0.4442,
+      "cy": 0.0566,
+      "size": 0.098
+    },
+    "marieBouschard": {
+      "cx": 0.5074,
+      "cy": 0.0925,
+      "size": 0.1902
+    },
+    "masonSchmidt": {
+      "cx": 0.4445,
+      "cy": 0.0948,
+      "size": 0.1289
+    },
+    "maxFloyd": {
+      "cx": 0.5366,
+      "cy": 0.1046,
+      "size": 0.1553
+    },
+    "miriamRavenscroft": {
+      "cx": 0.4961,
+      "cy": 0.0912,
+      "size": 0.1544
+    },
+    "moltsInShadow": {
+      "cx": 0.4056,
+      "cy": 0.1123,
+      "size": 0.1913
+    },
+    "moltsInShadowGarou": {
+      "cx": 0.3669,
+      "cy": 0.2598,
+      "size": 0.6353
+    },
+    "mrEasy": {
+      "cx": 0.5473,
+      "cy": 0.0996,
+      "size": 0.1377
+    },
+    "myleneHamelin": {
+      "cx": 0.4726,
+      "cy": 0.0935,
+      "size": 0.1566
+    },
+    "nasirKhan": {
+      "cx": 0.4759,
+      "cy": 0.1065,
+      "size": 0.1642
+    },
+    "niccoloGiovanni": {
+      "cx": 0.5024,
+      "cy": 0.1008,
+      "size": 0.1347
+    },
+    "oliverGagnon": {
+      "cx": 0.3579,
+      "cy": 0.082,
+      "size": 0.1423
+    },
+    "osborneLowell": {
+      "cx": 0.4545,
+      "cy": 0.0826,
+      "size": 0.172
+    },
+    "ponticulus": {
+      "cx": 0.4492,
+      "cy": 0.334,
+      "size": 0.4706
+    },
+    "rebeccaRossellini": {
+      "cx": 0.51,
+      "cy": 0.1324,
+      "size": 0.3001
+    },
+    "rosie": {
+      "cx": 0.472,
+      "cy": 0.1762,
+      "size": 0.1308
+    },
+    "rotInTheRiver": {
+      "cx": 0.5557,
+      "cy": 0.1068,
+      "size": 0.1945
+    },
+    "rotInTheRiverGarou": {
+      "cx": 0.5765,
+      "cy": 0.2892,
+      "size": 0.6353
+    },
+    "severinKoslov": {
+      "cx": 0.463,
+      "cy": 0.0838,
+      "size": 0.1413
+    },
+    "sisterCicione": {
+      "cx": 0.4726,
+      "cy": 0.1115,
+      "size": 0.118
+    },
+    "stalksTheTangle": {
+      "cx": 0.5587,
+      "cy": 0.1149,
+      "size": 0.2296
+    },
+    "stalksTheTangleGarou": {
+      "cx": 0.5367,
+      "cy": 0.3276,
+      "size": 0.7502
+    },
+    "suyin": {
+      "cx": 0.4873,
+      "cy": 0.0987,
+      "size": 0.1748
+    },
+    "terry": {
+      "cx": 0.4927,
+      "cy": 0.0978,
+      "size": 0.1595
+    },
+    "theAristocrat": {
+      "cx": 0.4106,
+      "cy": 0.1058,
+      "size": 0.1674
+    },
+    "theIslandDevil": {
+      "cx": 0.6209,
+      "cy": 0.1665,
+      "size": 0.2625
+    },
+    "tommy": {
+      "cx": 0.5401,
+      "cy": 0.1091,
+      "size": 0.1945
+    },
+    "twist": {
+      "cx": 0.4378,
+      "cy": 0.1022,
+      "size": 0.2259
+    },
+    "tyler": {
+      "cx": 0.4644,
+      "cy": 0.0969,
+      "size": 0.1242
+    },
+    "uwuByteMe": {
+      "cx": 0.4694,
+      "cy": 0.1037,
+      "size": 0.2198
+    },
+    "victorVex": {
+      "cx": 0.4886,
+      "cy": 0.1327,
+      "size": 0.1356
+    },
+    "xavierWhitchurch": {
+      "cx": 0.5685,
+      "cy": 0.1162,
+      "size": 0.1251
+    },
+    "zuriOluwusi": {
+      "cx": 0.5892,
+      "cy": 0.0771,
+      "size": 0.1354
+    }
+  }
 }
