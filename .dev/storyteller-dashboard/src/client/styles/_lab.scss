@@ -553,6 +553,136 @@ $lab-pin: #f5b13d;
       visibility: hidden;
     }
   }
+
+  &.editable {
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+  }
+
+  // A token in hand follows the pointer at its normal size, above everything else on the stage.
+  &.dragging {
+    z-index: 20;
+    cursor: grabbing;
+
+    .lab-token-head {
+      transform: none;
+      box-shadow: 0 4px 12px rgb(0 0 0 / 70%);
+    }
+
+    .lab-token-name {
+      visibility: visible;
+    }
+  }
+
+  &.pc &-head {
+    border-color: #c9b98f;
+    border-radius: 6px;
+  }
+}
+
+// Editing layer over the board drawing; seats, table pickers and help sit above it.
+.lab-stage-layer {
+  position: absolute;
+  inset: 0;
+
+  &.drop {
+    outline: 2px dashed #f2c44e;
+    outline-offset: -4px;
+  }
+}
+
+.lab-pack-handle {
+  position: absolute;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  padding: 0 4px;
+  font-size: 17px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: #8a826f;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+
+  &:hover {
+    color: #c9bfa8;
+  }
+
+  &.dragging {
+    z-index: 20;
+    color: #f2c44e;
+    cursor: grabbing;
+  }
+}
+
+.lab-scatter-group {
+  position: absolute;
+  border: 2px dashed #5a5244;
+  border-radius: 50%;
+  background: rgb(46 42 35 / 45%);
+  pointer-events: none;
+}
+
+.lab-scatter-label {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 15px;
+  font-weight: 700;
+  color: #8a826f;
+  pointer-events: none;
+}
+
+.lab-generic {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  &-head {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8a8a96;
+  }
+
+  &-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 4px;
+    border-radius: 3px;
+
+    &:hover {
+      background: rgb(255 255 255 / 5%);
+    }
+
+    &.naming input {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+  }
+
+  &-label {
+    flex: 0 0 auto;
+    font-weight: 700;
+  }
+
+  &-tags {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 12px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: #8a8a96;
+  }
 }
 
 // The right padding holds the last box's scaled-up transparent margin.

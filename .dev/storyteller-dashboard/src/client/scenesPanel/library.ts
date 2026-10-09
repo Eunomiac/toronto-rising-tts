@@ -1,7 +1,7 @@
 import type { LibraryScene } from "../../shared/sceneLibrary";
 import { sceneKeyFromTitle } from "../scenes/payload";
 import { isWinterWind, resolveWindCatalogKey } from "../scenes/weatherAxes";
-import type { ClockDatetime, SceneSlice } from "../worldState";
+import type { ClockDatetime, SceneSlice, StageNpc } from "../worldState";
 import type { ScenesCommand, SoundLane } from "./commands";
 import { LOCATION_MUSIC_LABEL, MOOD_LABEL, type SoundView } from "./liveScene";
 
@@ -199,10 +199,53 @@ export const applyToDraft = (scene: LibraryScene, command: ScenesCommand): Libra
       return withNarrative(scene, {}, ["backgroundMusic"]);
     case "ambience":
       return command.key === "none" ? withNarrative(scene, {}, ["location"]) : withNarrative(scene, { location: command.key });
+    case "stage": {
+      if ("reset" in command) {
+        return scene;
+      }
+      const placements: Record<string, unknown> = "clear" in command ? {} : { ...draftPlacements(scene) };
+      if ("changes" in command) {
+        for (const [key, change] of Object.entries(command.changes)) {
+          const before = placements[key];
+          const prior = isRecord(before) ? before : {};
+          if ("remove" in change) {
+            delete placements[key];
+          } else {
+            placements[key] = { u: change.u, v: change.v, npcLightMode: change.lightMode ?? str(prior.npcLightMode) ?? "STANDARD" };
+          }
+        }
+      }
+      return withPlacements(scene, placements);
+    }
     default:
       return scene;
   }
 };
+
+/** The draft's stage placements (`sessionScene.npcWorld.placements`). */
+const draftPlacements = (scene: LibraryScene): Readonly<Record<string, unknown>> => {
+  const npcWorld = scene.sessionScene.npcWorld;
+  return isRecord(npcWorld) && isRecord(npcWorld.placements) ? npcWorld.placements : {};
+};
+
+/** Replace the draft's stage placements, keeping the rest of `npcWorld`. */
+export const withPlacements = (scene: LibraryScene, placements: Readonly<Record<string, unknown>>): LibraryScene => {
+  const npcWorld = isRecord(scene.sessionScene.npcWorld) ? scene.sessionScene.npcWorld : {};
+  return withSession(scene, { npcWorld: { ...npcWorld, placements } });
+};
+
+/** The saved row's placements, for a draft's Reset to Library. */
+export const savedPlacements = (scene: LibraryScene | null): Readonly<Record<string, unknown>> => (scene ? draftPlacements(scene) : {});
+
+/** The draft's stage as the push's stage list, so the preview board reads it like the table's. */
+export const draftStage = (scene: LibraryScene): readonly StageNpc[] =>
+  Object.entries(draftPlacements(scene)).flatMap(([characterKey, row]) => {
+    if (!isRecord(row) || typeof row.u !== "number" || typeof row.v !== "number") {
+      return [];
+    }
+    const lightMode = str(row.npcLightMode);
+    return [{ characterKey, u: row.u, v: row.v, ...(lightMode ? { lightMode } : {}) }];
+  });
 
 const str = (value: unknown): string | undefined => (typeof value === "string" ? value : undefined);
 

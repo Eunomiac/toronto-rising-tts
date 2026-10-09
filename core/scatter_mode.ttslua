@@ -2138,4 +2138,37 @@ function ScatterMode.movePcToGroup(pcKey, groupIndex)
     return true
 end
 
+--- Move an NPC into a scatter group, or off every group (`groupIndex` nil). Same commit as a token drop:
+--- the control token parks on its hole (or the palette), the world re-poses, the linked library row follows.
+--- @param npcKey string
+--- @param groupIndex number|nil
+--- @return string|nil error
+function ScatterMode.moveNpcToGroup(npcKey, groupIndex)
+    if type(npcKey) ~= "string" or npcKey == "" then
+        return "moveNpcToGroup needs an NPC key."
+    end
+    if groupIndex == nil then
+        local token = require("core.npc_gameboard_reconcile").buildTokenByCharacterKey()[npcKey]
+        ScatterMode.clearCharacterOccupancy(npcKey, { token = token })
+        return nil
+    end
+    local gi = math.floor(tonumber(groupIndex) or 0)
+    if gi < 1 or gi > ScatterLayout.groupCount() then
+        return "No scatter group " .. tostring(groupIndex) .. "."
+    end
+    if ScatterMode.groupIndexForNpcCharacter(npcKey) == gi then
+        return nil
+    end
+    removeCharacterFromAllGroups(npcKey)
+    areaForGroup(gi).orbitCharacters[npcKey] = {
+        slot = nextFreeNpcHoleSlot(gi),
+        npcLightMode = "STANDARD",
+    }
+    ScatterMode.parkTokensFromState()
+    maybeApplyWorldFromScatter()
+    maybeMirrorLiveScatterToLibrary()
+    ScatterMode.reconcileControlHudFromState()
+    return nil
+end
+
 return ScatterMode

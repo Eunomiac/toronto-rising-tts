@@ -36,6 +36,16 @@ export type MemoriamPayload = {
   readonly assignments: Readonly<Record<string, MemoriamAssignment>>;
 } & ({ readonly skyboxKey: string; readonly panel: string } | { readonly justSmoke: true });
 
+export type StageLight = "OFF" | "STANDARD" | "SPOTLIGHT";
+
+/** A stage NPC's new spot in control-board (u, v); no `lightMode` keeps their light as it is. */
+export type StagePlace = { readonly u: number; readonly v: number; readonly lightMode?: StageLight };
+
+export type StageChange = StagePlace | { readonly remove: true };
+
+/** Stage changes by NPC `characterKey`. */
+export type StageChanges = Readonly<Record<string, StageChange>>;
+
 /** One Scenes tab command for `GlobalDashboardScenesApply` (`dashboard/scenes.ttslua` lists what each does). */
 export type ScenesCommand =
   | { readonly op: "phaseAdvance" }
@@ -76,7 +86,12 @@ export type ScenesCommand =
   }
   | { readonly op: "deleteScene"; readonly key: string }
   | { readonly op: "unlinkScene" }
-  | { readonly op: "forkScene"; readonly newTitle: string; readonly oldTitle?: string };
+  | { readonly op: "forkScene"; readonly newTitle: string; readonly oldTitle?: string }
+  | { readonly op: "stage"; readonly changes: StageChanges }
+  | { readonly op: "stage"; readonly clear: true }
+  | { readonly op: "stage"; readonly reset: true }
+  | { readonly op: "scatterPlace"; readonly characterKey: string; readonly kind: "pc" | "npc"; readonly group?: number }
+  | { readonly op: "genericAdd"; readonly keys: readonly string[]; readonly labels: Readonly<Record<string, string>> };
 
 export type ScenesSend = (command: ScenesCommand) => void;
 
@@ -85,10 +100,46 @@ export const ScenesCommandContext = createContext<ScenesSend | null>(null);
 
 export const useScenesCommand = (): ScenesSend | null => useContext(ScenesCommandContext);
 
+export const isStageChanges = (command: ScenesCommand): command is Extract<ScenesCommand, { op: "stage"; changes: StageChanges }> =>
+  command.op === "stage" && "changes" in command;
+
+/** Every stage change in the list merged in order (a later change to the same NPC wins). */
+export const mergedStageChanges = (commands: readonly ScenesCommand[]): StageChanges =>
+  commands.reduce<StageChanges>((merged, command) => (isStageChanges(command) ? { ...merged, ...command.changes } : merged), {});
+
+/**
+ * Stage changes between two whole-stage commands (Clear, Reset) become one stage write at the place of the last
+ * of them, so their figurines move together in one animation.
+ */
+const mergeStageRuns = (commands: readonly ScenesCommand[]): readonly ScenesCommand[] => {
+  const out: ScenesCommand[] = [];
+  let run: StageChanges | null = null;
+  let runAt = -1;
+  const close = (): void => {
+    if (run) {
+      out.splice(runAt, 0, { op: "stage", changes: run });
+      run = null;
+    }
+  };
+  for (const command of commands) {
+    if (isStageChanges(command)) {
+      run = { ...(run ?? {}), ...command.changes };
+      runAt = out.length;
+    } else {
+      if (command.op === "stage") {
+        close();
+      }
+      out.push(command);
+    }
+  }
+  close();
+  return out;
+};
+
 /**
  * A batch the queue gathered while TTS was busy. A dragged slider queues a volume per frame and a speed ring can
- * be clicked twice, so only the last volume per lane and the last real-time setting are worth sending; every
- * other command keeps its place.
+ * be clicked twice, so only the last volume per lane and the last real-time setting are worth sending; stage
+ * edits merge into one write; every other command keeps its place.
  */
 export const coalesceCommands = (commands: readonly ScenesCommand[]): readonly ScenesCommand[] => {
   const supersededKey = (command: ScenesCommand): string | null =>
@@ -100,8 +151,8 @@ export const coalesceCommands = (commands: readonly ScenesCommand[]): readonly S
       lastIndex.set(key, index);
     }
   });
-  return commands.filter((command, index) => {
+  return mergeStageRuns(commands.filter((command, index) => {
     const key = supersededKey(command);
     return key === null || lastIndex.get(key) === index;
-  });
+  }));
 };

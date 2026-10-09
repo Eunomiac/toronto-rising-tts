@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseScenesReply } from "./bridge";
-import { coalesceCommands, type ScenesCommand } from "./commands";
+import { coalesceCommands, mergedStageChanges, type ScenesCommand } from "./commands";
 
 describe("coalesceCommands", () => {
   it("keeps only the last volume per lane and the last real-time setting, in place", () => {
@@ -23,6 +23,32 @@ describe("coalesceCommands", () => {
   it("never drops one-shot commands", () => {
     const batch: ScenesCommand[] = [{ op: "spotlightRotate", delta: 1 }, { op: "spotlightRotate", delta: 1 }];
     expect(coalesceCommands(batch)).toHaveLength(2);
+  });
+
+  it("merges stage edits into one write, split at Clear and Reset", () => {
+    const batch: ScenesCommand[] = [
+      { op: "stage", changes: { a: { u: 0.1, v: 0.1 } } },
+      { op: "lighting", presetKey: "AdminDark" },
+      { op: "stage", changes: { a: { u: 0.2, v: 0.2 }, b: { remove: true } } },
+      { op: "stage", clear: true },
+      { op: "stage", changes: { c: { u: 0.3, v: 0.3, lightMode: "STANDARD" } } }
+    ];
+    expect(coalesceCommands(batch)).toEqual([
+      { op: "lighting", presetKey: "AdminDark" },
+      { op: "stage", changes: { a: { u: 0.2, v: 0.2 }, b: { remove: true } } },
+      { op: "stage", clear: true },
+      { op: "stage", changes: { c: { u: 0.3, v: 0.3, lightMode: "STANDARD" } } }
+    ]);
+  });
+});
+
+describe("mergedStageChanges", () => {
+  it("folds queued stage edits, later ones winning", () => {
+    expect(mergedStageChanges([
+      { op: "stage", changes: { a: { u: 0.1, v: 0.1 } } },
+      { op: "topFog", on: true },
+      { op: "stage", changes: { a: { remove: true } } }
+    ])).toEqual({ a: { remove: true } });
   });
 });
 

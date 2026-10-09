@@ -361,6 +361,7 @@ function GenericNpcs.destroyLiveKey(characterKey, opts)
             placements[characterKey] = nil
             S.setStateVal(placements, "sessionScene", "npcWorld", "placements")
         end
+        require("dashboard.push").markWorldDirty({ seats = true })
     end
 end
 
@@ -529,6 +530,7 @@ function GenericNpcs.confirmImport(labelOverrides)
         end
     end
     setMembership(membership)
+    require("dashboard.push").markWorldDirty({ seats = true })
     pendingImport = nil
     pendingLabelDrafts = {}
     GenericNpcs.hideLabelModal()
@@ -545,6 +547,35 @@ function GenericNpcs.confirmImport(labelOverrides)
         print("[GenericNpcs] Imported " .. tostring(spawned) .. " generic NPC(s).")
     end
     return spawned > 0, nil
+end
+
+--- Storyteller Dashboard: spawn generic NPCs with the names the Storyteller typed (no in-game label modal).
+--- @param keys string[] catalog keys
+--- @param labels table|nil key → display name
+--- @return string|nil error
+function GenericNpcs.importNamed(keys, labels)
+    if type(keys) ~= "table" or #keys < 1 then
+        return "Pick at least one generic NPC."
+    end
+    local valid, invalid, duplicates = GenericNpcs.parseImportKeys(table.concat(keys, ","))
+    if #invalid > 0 then
+        return "Unknown generic NPC: " .. table.concat(invalid, ", ")
+    end
+    if #duplicates > 0 then
+        return "Already in this scene: " .. table.concat(duplicates, ", ")
+    end
+    local pendingKeys = {}
+    local defaults = {}
+    for i = 1, #valid do
+        pendingKeys[i] = valid[i].key
+        defaults[valid[i].key] = valid[i].label
+    end
+    pendingImport = { keys = pendingKeys, defaults = defaults }
+    local ok, err = GenericNpcs.confirmImport(type(labels) == "table" and labels or {})
+    if not ok then
+        return err or "No generic NPC spawned (see the in-game Storyteller alert)."
+    end
+    return nil
 end
 
 function GenericNpcs.cancelImport()

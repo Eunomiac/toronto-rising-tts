@@ -23,12 +23,16 @@ export const commandKind = (command: ScenesCommand): CommandKind => {
     case "lighting":
     case "conditions":
     case "weatherOverride":
+    case "scatterPlace":
       return "queue";
+    case "stage":
+      return "changes" in command ? "queue" : "flush";
     case "laneVolume":
     case "realTime":
     case "spotlightRotate":
     case "spotlightFront":
     case "stopAll":
+    case "genericAdd":
       return "direct";
     case "phaseAdvance":
     case "playSubPhase":
@@ -61,6 +65,10 @@ export const queueTarget = (command: ScenesCommand): string => {
     case "featuredPlay":
     case "featuredStop":
       return "featured";
+    case "stage":
+      return "changes" in command ? `stage:${Object.keys(command.changes).sort().join(",")}` : "stage";
+    case "scatterPlace":
+      return `scatter:${command.characterKey}`;
     default:
       return command.op;
   }

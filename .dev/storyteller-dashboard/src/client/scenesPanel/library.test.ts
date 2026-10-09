@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { LibraryScene } from "../../shared/sceneLibrary";
-import { applyToDraft, draftSceneSlice, mergeFromTts, newLibraryScene, newSceneKey, newSceneTitle, parseTtsLibrarySnapshot, scenesFromTts } from "./library";
+import { applyToDraft, draftSceneSlice, draftStage, mergeFromTts, newLibraryScene, newSceneKey, newSceneTitle, parseTtsLibrarySnapshot, scenesFromTts } from "./library";
 
 const scene = (key: string, extra: Partial<LibraryScene> = {}): LibraryScene => ({
   key,
@@ -106,5 +106,19 @@ describe("applyToDraft", () => {
   it("ignores commands that have no library meaning", () => {
     const draft = scene("a");
     expect(applyToDraft(draft, { op: "laneVolume", lane: "music", volume: 0.5 })).toBe(draft);
+  });
+
+  it("edits the draft's stage placements", () => {
+    let draft = scene("a", { sessionScene: { npcWorld: { placements: { old: { u: 0.1, v: 0.2, npcLightMode: "OFF" } }, other: 1 } } });
+    draft = applyToDraft(draft, { op: "stage", changes: { old: { u: 0.3, v: 0.4 }, fresh: { u: 0.5, v: 0.6, lightMode: "STANDARD" } } });
+    expect(draftStage(draft)).toEqual([
+      { characterKey: "old", u: 0.3, v: 0.4, lightMode: "OFF" },
+      { characterKey: "fresh", u: 0.5, v: 0.6, lightMode: "STANDARD" }
+    ]);
+    draft = applyToDraft(draft, { op: "stage", changes: { old: { remove: true } } });
+    expect(draftStage(draft).map((npc) => npc.characterKey)).toEqual(["fresh"]);
+    draft = applyToDraft(draft, { op: "stage", clear: true });
+    expect(draftStage(draft)).toEqual([]);
+    expect(draft.sessionScene.npcWorld).toEqual({ placements: {}, other: 1 });
   });
 });

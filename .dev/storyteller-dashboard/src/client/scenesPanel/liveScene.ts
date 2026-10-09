@@ -1,6 +1,6 @@
 import type { SceneCatalogs } from "../scenes/types";
 import type { LightingPreset, RainKey, SoundLane } from "./commands";
-import type { ClockDatetime, SeatRow, SeatsSlice, SceneSlice, SoundscapeSlice, StageNpc } from "../worldState";
+import type { ClockDatetime, GenericNpc, SeatRow, SeatsSlice, SceneSlice, SoundscapeSlice, StageNpc } from "../worldState";
 
 /**
  * Pure adapters from the live world slices (`worldState.ts`) to what the Scenes tab panels draw.
@@ -168,14 +168,23 @@ export const liveSeats = (seats: SeatsSlice, tableKey: string | undefined, catal
 
 export type LiveToken = { readonly characterKey: string; readonly name: string; readonly lit: boolean; readonly u: number; readonly v: number };
 
+/** A stage token's short name: a named NPC's first name, a generic NPC's whole name, else the key. */
+export const stageName = (characterKey: string, catalogs: SceneCatalogs | null, generics: readonly GenericNpc[]): string => {
+  const generic = generics.find((entry) => entry.characterKey === characterKey);
+  if (generic) {
+    return generic.name;
+  }
+  const full = catalogs?.namedNpcs.find((entry) => entry.characterKey === characterKey)?.fullName ?? characterKey;
+  return full.split(" ")[0] ?? full;
+};
+
 /** Stage NPCs with a board position; `u`, `v` are fractions of the control board (`lightMode` OFF = unlit). */
-export const liveTokens = (stage: readonly StageNpc[], catalogs: SceneCatalogs | null): readonly LiveToken[] =>
+export const liveTokens = (stage: readonly StageNpc[], catalogs: SceneCatalogs | null, generics: readonly GenericNpc[] = []): readonly LiveToken[] =>
   stage.flatMap((npc) => {
     if (typeof npc.u !== "number" || typeof npc.v !== "number") {
       return [];
     }
-    const full = catalogs?.namedNpcs.find((entry) => entry.characterKey === npc.characterKey)?.fullName ?? npc.characterKey;
-    return [{ characterKey: npc.characterKey, name: full.split(" ")[0] ?? full, lit: npc.lightMode !== "OFF", u: npc.u, v: npc.v }];
+    return [{ characterKey: npc.characterKey, name: stageName(npc.characterKey, catalogs, generics), lit: npc.lightMode !== "OFF", u: npc.u, v: npc.v }];
   });
 
 

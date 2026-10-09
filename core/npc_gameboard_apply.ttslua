@@ -479,6 +479,86 @@ function Apply.applyFromControlBoard()
     return true, nil
 end
 
+local STAGE_LIGHT_MODES = { OFF = true, STANDARD = true, SPOTLIGHT = true }
+
+--- Storyteller Dashboard stage edit: per-NPC changes → `sessionScene.npcWorld.placements` → Sync.npcs.
+--- Commits like control-board Apply (homeland seat darkening, animated stage moves), so several edits in
+--- one call move their figurines together. NPCs leaving the stage get their seat back unless they stood dark.
+--- @param changes table|nil characterKey → `{ u?, v?, lightMode? }`, or `{ remove = true }` to take them off
+--- @param opts table|nil `{ clear?: boolean, base?: table }` — `clear` empties the stage first; `base` replaces it
+--- @return string|nil error
+function Apply.applyStageChanges(changes, opts)
+    opts = type(opts) == "table" and opts or {}
+    local S = stateModule()
+    local NPCS = require("core.npcs")
+    local existing = S.getStateVal("sessionScene", "npcWorld", "placements")
+    existing = type(existing) == "table" and existing or {}
+    local nextMap = {}
+    local start = existing
+    if opts.clear == true then
+        start = {}
+    elseif type(opts.base) == "table" then
+        start = opts.base
+    end
+    for ck, row in pairs(start) do
+        if type(row) == "table" then
+            nextMap[ck] = row
+        end
+    end
+    for ck, change in pairs(type(changes) == "table" and changes or {}) do
+        if type(ck) ~= "string" or NPCS.characters[ck] == nil then
+            return "Unknown NPC `" .. tostring(ck) .. "`."
+        end
+        if type(change) ~= "table" then
+            return "Stage change for `" .. ck .. "` must be a table."
+        end
+        if change.remove == true then
+            nextMap[ck] = nil
+        else
+            local prev = nextMap[ck]
+            local u = tonumber(change.u) or (prev and tonumber(prev.u))
+            local v = tonumber(change.v) or (prev and tonumber(prev.v))
+            if u == nil or v == nil then
+                return "Stage change for `" .. ck .. "` needs a position."
+            end
+            local mode = change.lightMode or (prev and prev.npcLightMode) or "STANDARD"
+            if not STAGE_LIGHT_MODES[mode] then
+                return "Unknown light mode `" .. tostring(mode) .. "`."
+            end
+            local row = { u = u, v = v, yaw = Snaps.placementBoardRelYawDeg(u, v), npcLightMode = mode }
+            local groundLevel = Snaps.groundLevelForSnapUv(u, v)
+            if groundLevel ~= nil then
+                row.groundLevel = groundLevel
+            end
+            nextMap[ck] = row
+        end
+    end
+    if Reconcile.placementsMapsEqual(nextMap, existing) then
+        if opts.clear == true then
+            require("core.generic_npcs").destroyAllLiveAndClearMembership()
+        end
+        return nil
+    end
+    local leaving = {}
+    for ck, row in pairs(existing) do
+        if nextMap[ck] == nil then
+            leaving[ck] = row
+        end
+    end
+    local seatChanged = applyHomelandSeatPresenceAfterStageClear(leaving)
+    if deactivateHomelandSeatsForStagePlacements(nextMap) then
+        seatChanged = true
+    end
+    S.setStateVal(nextMap, "sessionScene", "npcWorld", "placements")
+    if opts.clear == true then
+        require("core.generic_npcs").destroyAllLiveAndClearMembership()
+    end
+    Reconcile.lastControlBoardMirrorFingerprint = nil
+    syncNpcsFromControlBoard("gameboard_apply", { seatMutation = seatChanged, placementMutation = true })
+    resetPlayerStageLookCycle()
+    return nil
+end
+
 --- Toggle HERE/THERE. Enter requires a pending Scenes Panel selection; leave commits the draft.
 --- @return boolean changed
 --- @return string mode

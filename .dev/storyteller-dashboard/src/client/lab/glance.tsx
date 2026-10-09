@@ -31,6 +31,8 @@ import { Btn, Overlay, canvasPoint } from "./sketch";
 import { useScenesCommand, type SceneClockMode, type ScenesSend, type SoundLane } from "../scenesPanel/commands";
 import type { SendMode } from "../scenesPanel/queue";
 import { LOCATION_MUSIC_LABEL, MOOD_LABEL, fromDate, rainKey, type SoundView, type SpotlightView } from "../scenesPanel/liveScene";
+import { GROUP_DRAG_TYPE, NPC_DRAG_TYPE } from "../scenesPanel/stage";
+import { useWorldState } from "../worldState";
 
 /**
  * Panels for the Glance strip sketch (scenes-r1-b), pin pass 3: location and weather read live from the
@@ -409,7 +411,114 @@ const groupLabelWidth = (text: string): number => {
   return Math.ceil(high) + 2;
 };
 
-const GROUP_DRAG_TYPE = "application/x-tr-npc-group";
+/** One roster NPC, draggable onto the stage. */
+const RosterToken = ({ characterKey, name, className }: { characterKey: string; name: string; className: string }): ReactElement => (
+  <span
+    className="lab-group-token"
+    title={`${name}: drag onto the stage`}
+    draggable
+    onDragStart={(event) => {
+      event.dataTransfer.setData(NPC_DRAG_TYPE, characterKey);
+      event.dataTransfer.effectAllowed = "move";
+    }}
+  >
+    <Headshot className={className} characterKey={characterKey} />
+    <span className="lab-group-name">{name}</span>
+  </span>
+);
+
+type GenericEntry = { readonly key: string; readonly label: string; readonly tags: string };
+
+let genericCatalog: Promise<readonly GenericEntry[]> | null = null;
+
+const loadGenericCatalog = (): Promise<readonly GenericEntry[]> => {
+  genericCatalog ??= fetch("/api/generic-npcs").then(async (response) => {
+    const body = await response.json() as { npcs?: readonly GenericEntry[]; error?: string };
+    if (!response.ok || !body.npcs) {
+      throw new Error(body.error ?? `The generic NPC catalog failed to load (${response.status}).`);
+    }
+    return body.npcs;
+  });
+  genericCatalog.catch(() => {
+    genericCatalog = null;
+  });
+  return genericCatalog;
+};
+
+const GENERIC_MATCH_LIMIT = 60;
+
+/**
+ * Generic NPCs: the ones already spawned into the scene (drag them onto the stage like anyone else), then the
+ * generic catalog to add more. Adding asks for the name the players will see, then spawns the figurine in TTS.
+ */
+const GenericRoster = ({ query }: { query: string }): ReactElement => {
+  const send = useScenesCommand();
+  const inScene = useWorldState().seats?.generics ?? [];
+  const [catalog, setCatalog] = useState<readonly GenericEntry[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [naming, setNaming] = useState<{ key: string; name: string } | null>(null);
+  useEffect(() => {
+    loadGenericCatalog().then(setCatalog, (reason: unknown) => setError(reason instanceof Error ? reason.message : String(reason)));
+  }, []);
+  const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const spawned = new Set(inScene.map((npc) => npc.characterKey));
+  const matches = (catalog ?? [])
+    .filter((npc) => !spawned.has(npc.key))
+    .filter((npc) => terms.every((term) => `${npc.label} ${npc.tags} ${npc.key}`.toLowerCase().includes(term)))
+    .slice(0, GENERIC_MATCH_LIMIT);
+  const add = (): void => {
+    if (!naming || !send || naming.name.trim() === "") {
+      return;
+    }
+    send({ op: "genericAdd", keys: [naming.key], labels: { [naming.key]: naming.name.trim() } });
+    setNaming(null);
+  };
+  return (
+    <div className="lab-generic">
+      <span className="lab-generic-head">In this scene</span>
+      {inScene.length === 0 ? (
+        <span className="lab-note">No generic NPCs yet.</span>
+      ) : (
+        <div className="lab-search-results">
+          {inScene.map((npc) => <RosterToken key={npc.characterKey} characterKey={npc.characterKey} name={npc.name} className="lab-group-head" />)}
+        </div>
+      )}
+      <span className="lab-generic-head">Add from the catalog</span>
+      {!send && <span className="lab-note">Adding spawns figurines in TTS, so it only works in the Scenes tab.</span>}
+      {error && <span className="lab-note">{error}</span>}
+      <div className="lab-generic-list">
+        {matches.map((npc) => naming?.key === npc.key ? (
+          <form
+            key={npc.key}
+            className="lab-generic-row naming"
+            onSubmit={(event) => {
+              event.preventDefault();
+              add();
+            }}
+          >
+            <input
+              className="lab-select"
+              autoFocus
+              value={naming.name}
+              title="The name the players will see"
+              onChange={(event) => setNaming({ key: npc.key, name: event.target.value })}
+              onKeyDown={(event) => event.key === "Escape" && setNaming(null)}
+            />
+            <button type="submit" className="lab-btn primary" disabled={!send}>Add</button>
+            <button type="button" className="lab-btn" onClick={() => setNaming(null)}>Cancel</button>
+          </form>
+        ) : (
+          <div key={npc.key} className="lab-generic-row" title={npc.key}>
+            <span className="lab-generic-label">{npc.label}</span>
+            <span className="lab-generic-tags">{npc.tags}</span>
+            <button type="button" className="lab-btn" disabled={!send} onClick={() => setNaming({ key: npc.key, name: npc.label })}>+ Add</button>
+          </div>
+        ))}
+        {catalog && matches.length === 0 && <span className="lab-note">No generic NPC matches.</span>}
+      </div>
+    </div>
+  );
+};
 
 /**
  * Drags show a copy of the group cell held off-screen. Chrome's own drag picture of an element inside a scrolled
@@ -524,6 +633,7 @@ export const MasonryRoster = (): ReactElement => {
   const [editing, setEditing] = useState<{ key: string; at: Point } | null>(null);
   const [dragging, setDragging] = useState(false);
   const [query, setQuery] = useState("");
+  const [view, setView] = useState<"main" | "generic">("main");
   const fileGroup = (categoryId: string | null) => (groupKey: string): void => {
     const assigned = { ...layout.assigned };
     if (categoryId) {
@@ -593,10 +703,7 @@ export const MasonryRoster = (): ReactElement => {
             <button type="button" className="lab-group-label" onClick={() => setOpen(null)}>{group.label} ▴</button>
             <span className="lab-group-tokens">
               {leaderFirst(group).map((npc) => (
-                <span key={npc.characterKey} className="lab-group-token" title={npc.fullName}>
-                  <Headshot className={tokenClass(group, npc)} characterKey={npc.characterKey} />
-                  <span className="lab-group-name">{npc.fullName}</span>
-                </span>
+                <RosterToken key={npc.characterKey} characterKey={npc.characterKey} name={npc.fullName} className={tokenClass(group, npc)} />
               ))}
             </span>
           </div>
@@ -654,13 +761,13 @@ export const MasonryRoster = (): ReactElement => {
   return (
     <div className="lab-mroster">
       <div className="lab-mroster-head">
-        <Btn tone="primary">Main</Btn>
-        <Btn>Generic</Btn>
+        <button type="button" className={`lab-btn${view === "main" ? " primary" : ""}`} onClick={() => setView("main")}>Main</button>
+        <button type="button" className={`lab-btn${view === "generic" ? " primary" : ""}`} onClick={() => setView("generic")}>Generic</button>
         <Btn>Memoriam</Btn>
         <input
           type="search"
           className="lab-search"
-          placeholder="Search every NPC…"
+          placeholder={view === "generic" ? "Search generic NPCs…" : "Search every NPC…"}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           onKeyDown={(event) => event.key === "Escape" && setQuery("")}
@@ -689,18 +796,16 @@ export const MasonryRoster = (): ReactElement => {
       )}
       {error && <p className="lab-note">{error}</p>}
       <div className="lab-mroster-body">
-        {found && (
+        {view === "generic" && <GenericRoster query={query} />}
+        {view === "main" && found && (
           <div className="lab-search-results">
             {found.length === 0 && <span className="lab-note">No NPC matches "{query.trim()}".</span>}
             {found.map((npc) => (
-              <span key={npc.characterKey} className="lab-group-token" title={npc.fullName}>
-                <Headshot className="lab-group-head" characterKey={npc.characterKey} />
-                <span className="lab-group-name">{npc.fullName}</span>
-              </span>
+              <RosterToken key={npc.characterKey} characterKey={npc.characterKey} name={npc.fullName} className="lab-group-head" />
             ))}
           </div>
         )}
-        {!found && layout.categories.map((category) => {
+        {view === "main" && !found && layout.categories.map((category) => {
           const members = groups.filter((group) => layout.assigned[group.key] === category.id);
           return (
             <section key={category.id} className="lab-cat" style={{ "--cat": category.color } as CSSProperties}>
@@ -715,7 +820,7 @@ export const MasonryRoster = (): ReactElement => {
             </section>
           );
         })}
-        {!found && (unsorted.length > 0 || dragging) && (
+        {view === "main" && !found && (unsorted.length > 0 || dragging) && (
           <section className="lab-cat unsorted">
             {layout.categories.length > 0 && <CategoryHeader category={null} count={unsorted.length} onDrop={fileGroup(null)} />}
             {masonry(unsorted)}

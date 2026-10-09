@@ -126,9 +126,20 @@ export type StageNpc = {
   readonly lightMode?: string;
 };
 
+/** A generic NPC spawned into the scene; `characterKey` is its generic catalog key. */
+export type GenericNpc = { readonly characterKey: string; readonly name: string };
+
+/** A PC (`characterKey` = their charKey) or NPC in a Scatter group, by hole `slot`. */
+export type ScatterMember = { readonly characterKey: string; readonly slot?: number };
+
+export type ScatterGroup = { readonly group: number; readonly pcs: readonly ScatterMember[]; readonly npcs: readonly ScatterMember[] };
+
 export type SeatsSlice = {
   readonly seats: readonly SeatRow[];
   readonly stage: readonly StageNpc[];
+  readonly generics: readonly GenericNpc[];
+  /** Scatter groups 1–6 (`sessionScene.scatterPlacements`); present outside Scatter too. */
+  readonly scatter: readonly ScatterGroup[];
   readonly spotlightOrder: readonly string[];
   readonly spotlightFrontIndex?: number;
 };
@@ -170,9 +181,15 @@ const normalizeSlice = (topic: WorldTopic, data: Record<string, unknown>, at: nu
       return { ...(data as Omit<SoundscapeSlice, "lanes">), lanes: asList<SoundLane>(data.lanes) };
     case "seats":
       return {
-        ...(data as Omit<SeatsSlice, "seats" | "stage" | "spotlightOrder">),
+        ...(data as Omit<SeatsSlice, "seats" | "stage" | "generics" | "scatter" | "spotlightOrder">),
         seats: asList<SeatRow>(data.seats),
         stage: asList<StageNpc>(data.stage),
+        generics: asList<GenericNpc>(data.generics),
+        scatter: asList<Record<string, unknown>>(data.scatter).map((group) => ({
+          group: Number(group.group),
+          pcs: asList<ScatterMember>(group.pcs),
+          npcs: asList<ScatterMember>(group.npcs)
+        })),
         spotlightOrder: asList<string>(data.spotlightOrder)
       };
     default:

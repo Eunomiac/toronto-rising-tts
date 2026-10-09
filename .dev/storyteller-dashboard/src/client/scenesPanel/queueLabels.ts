@@ -1,10 +1,24 @@
 import { ambientLabel, featuredLabel } from "../lab/glance";
 import type { SceneCatalogs } from "../scenes/types";
 import type { WorldState } from "../worldState";
-import { LIGHTING_LABEL, type ScenesCommand } from "./commands";
-import { LOCATION_MUSIC_LABEL, MOOD_LABEL, lightingPreset, precipOf, sceneConditions, skyLabel, soundView, weatherOverride, weatherText } from "./liveScene";
+import { LIGHTING_LABEL, type ScenesCommand, type StageChange } from "./commands";
+import {
+  LOCATION_MUSIC_LABEL,
+  MOOD_LABEL,
+  lightingPreset,
+  precipOf,
+  sceneConditions,
+  skyLabel,
+  soundView,
+  stageName,
+  weatherOverride,
+  weatherText
+} from "./liveScene";
 import type { Describe } from "./queue";
+import { isRemoval, spotLabel } from "./stage";
+import { boardToStage, type StagePack } from "./stageFrame";
 
+const OFF_STAGE = "off the stage";
 const IN_SCENE = "in the scene";
 const OUT_OF_SCENE = "out of the scene";
 const STOPPED = "stopped";
@@ -14,7 +28,7 @@ const SCHEDULE = "schedule";
 const UNKNOWN = "?";
 
 /** Reads each queued change's current value from the world TTS last pushed, so a removed entry re-reads cleanly. */
-export const describeQueued = (world: WorldState, catalogs: SceneCatalogs | null): Describe => {
+export const describeQueued = (world: WorldState, catalogs: SceneCatalogs | null, packs: readonly StagePack[] = []): Describe => {
   const people = [...(catalogs?.pcs ?? []), ...(catalogs?.namedNpcs ?? [])];
   const nameOf = (key: string | undefined): string =>
     key ? people.find((entry) => entry.characterKey === key)?.fullName ?? key : UNKNOWN;
@@ -74,6 +88,42 @@ export const describeQueued = (world: WorldState, catalogs: SceneCatalogs | null
           subject: "Weather",
           from: scene ? (held ? weatherText(held) : SCHEDULE) : UNKNOWN,
           to: "release" in command ? SCHEDULE : weatherText({ precip: precipOf(command.rain), wind: command.wind, thunder: command.thunder })
+        };
+      }
+      case "stage": {
+        if (!("changes" in command)) {
+          throw new Error("Scenes queue: Clear and Reset are never queued.");
+        }
+        const keys = Object.keys(command.changes).sort();
+        const stage = world.seats?.stage ?? [];
+        const where = (key: string, change?: StageChange): string => {
+          if (change && isRemoval(change)) {
+            return OFF_STAGE;
+          }
+          const now = stage.find((npc) => npc.characterKey === key);
+          const u = change?.u ?? now?.u;
+          const v = change?.v ?? now?.v;
+          if (u === undefined || v === undefined) {
+            return OFF_STAGE;
+          }
+          const lit = change?.lightMode ?? now?.lightMode ?? "STANDARD";
+          return `${spotLabel(boardToStage(u, v), packs)}${lit === "OFF" ? " (dark)" : ""}`;
+        };
+        const names = keys.map((key) => stageName(key, catalogs, world.seats?.generics ?? []));
+        return {
+          subject: names.length > 3 ? `${names.slice(0, 3).join(", ")} +${names.length - 3}` : names.join(", "),
+          from: keys.map((key) => where(key)).join("; "),
+          to: keys.map((key) => where(key, command.changes[key])).join("; ")
+        };
+      }
+      case "scatterPlace": {
+        const group = world.seats?.scatter.find((entry) =>
+          [...entry.pcs, ...entry.npcs].some((member) => member.characterKey === command.characterKey));
+        const groupText = (n: number | undefined): string => (n === undefined ? OFF_STAGE : `group ${n}`);
+        return {
+          subject: command.kind === "pc" ? nameOf(command.characterKey) : stageName(command.characterKey, catalogs, world.seats?.generics ?? []),
+          from: groupText(group?.group),
+          to: groupText(command.group)
         };
       }
       default:

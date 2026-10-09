@@ -16,7 +16,7 @@ import {
   type QueueView
 } from "../lab/glance";
 import { ScenePreview } from "../lab/labPreview";
-import { useSceneCatalogs } from "../lab/labRoster";
+import { useControlBoardSnaps, useSceneCatalogs } from "../lab/labRoster";
 import type { SceneCatalogs } from "../scenes/types";
 import { Box, Overlay, WideBoard, type LiveBoard } from "../lab/sketch";
 import type { SheetSnapshot } from "../pcSheet/types";
@@ -26,7 +26,7 @@ import { DraftPanels } from "./DraftPanels";
 import { useLibraryActions } from "./useLibraryActions";
 import { clockNow, refreshWorldSnapshot, useWorldState, WORLD_TOPICS, type WorldState } from "../worldState";
 import { sendScenesCommands, type ScenesReply } from "./bridge";
-import { ScenesCommandContext, type ScenesCommand, type ScenesSend } from "./commands";
+import { mergedStageChanges, ScenesCommandContext, type ScenesCommand, type ScenesSend } from "./commands";
 import { withoutScene, withTableScene } from "./deck";
 import {
   isScatter,
@@ -42,7 +42,7 @@ import {
 } from "./liveScene";
 import { addToQueue, commandKind, commandsToSend, loadSendMode, queueLines, saveSendMode, type QueueEntry, type SendMode } from "./queue";
 import { describeQueued } from "./queueLabels";
-import { boardToStage } from "./stageFrame";
+import { boardToStage, stagePacks, type StagePack } from "./stageFrame";
 
 /**
  * The Scenes tab: Lab layout B (`lab/scenesRound1.tsx` GlanceStrip) drawn from what TTS broadcasts.
@@ -173,12 +173,14 @@ const useScenesQueue = (): { send: ScenesSend; sendAll: (commands: readonly Scen
 const useSendMode = (
   transport: { send: ScenesSend; sendAll: (commands: readonly ScenesCommand[]) => void },
   world: WorldState,
-  catalogs: SceneCatalogs | null
-): { send: ScenesSend; sendBatch: (commands: readonly ScenesCommand[]) => void; view: QueueView } => {
+  catalogs: SceneCatalogs | null,
+  packs: readonly StagePack[]
+): { send: ScenesSend; sendBatch: (commands: readonly ScenesCommand[]) => void; view: QueueView; queued: readonly ScenesCommand[] } => {
   const [mode, setModeState] = useState<SendMode>(loadSendMode);
   const [entries, setEntries] = useState<readonly QueueEntry[]>([]);
   const nextId = useRef(1);
-  const lines = useMemo(() => queueLines(entries, describeQueued(world, catalogs)), [entries, world, catalogs]);
+  const lines = useMemo(() => queueLines(entries, describeQueued(world, catalogs, packs)), [entries, world, catalogs, packs]);
+  const queued = useMemo(() => entries.map((entry) => entry.command), [entries]);
   const latest = useRef({ entries, lines, mode, transport });
   latest.current = { entries, lines, mode, transport };
   const takeQueue = useCallback((): readonly ScenesCommand[] => {
@@ -211,7 +213,7 @@ const useSendMode = (
     remove: (id) => setEntries((previous) => previous.filter((entry) => entry.id !== id)),
     clear: () => setEntries([])
   };
-  return { send, sendBatch, view };
+  return { send, sendBatch, view, queued };
 };
 
 const CommandStatus = ({ pending, error, onDismiss }: { pending: number; error: string | null; onDismiss: () => void }): ReactElement | null => {
@@ -231,7 +233,9 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const { catalogs } = useSceneCatalogs();
   const snapshotError = useWorldSnapshotOnce(active, world);
   const commands = useScenesQueue();
-  const { send, sendBatch, view: queueView } = useSendMode(commands, world, catalogs);
+  const { snaps } = useControlBoardSnaps();
+  const packs = useMemo(() => (snaps ? stagePacks(snaps) : []), [snaps]);
+  const { send, sendBatch, view: queueView, queued } = useSendMode(commands, world, catalogs, packs);
   const now = useNow(world.clock?.running === true);
   const { phase, scene, clock, soundscape, seats } = world;
 
@@ -252,6 +256,17 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const library = useLibraryActions({ scene, sendBatch, removeFromDeck: liveScenes.remove });
   const libraryError = useSceneLibraryStatus().error;
   const presentNow = present ?? new Date();
+  const stageTokens = useMemo(
+    () => (seats ? liveTokens(seats.stage, catalogs, seats.generics).map((token) => ({ ...token, at: boardToStage(token.u, token.v) })) : []),
+    [seats, catalogs]
+  );
+  const pendingStage = useMemo(() => mergedStageChanges(queued), [queued]);
+  const pendingScatter = useMemo(
+    () => queued.flatMap((command) => (command.op === "scatterPlace"
+      ? [command.group === undefined ? { characterKey: command.characterKey, kind: command.kind } : { characterKey: command.characterKey, kind: command.kind, group: command.group }]
+      : [])),
+    [queued]
+  );
   const board = useMemo((): LiveBoard | null => {
     if (!seats) {
       return null;
@@ -259,7 +274,11 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
     return {
       seats: liveSeats(seats, scene?.tableKey, catalogs),
       sheet: NO_SHEET,
-      tokens: liveTokens(seats.stage, catalogs).map((token) => ({ ...token, at: boardToStage(token.u, token.v) })),
+      tokens: stageTokens,
+      pending: pendingStage,
+      pendingScatter,
+      generics: seats.generics,
+      scatter: seats.scatter,
       env: {
         tableKey: scene?.tableKey ?? "",
         scatter: scene ? isScatter(scene) : false,
@@ -267,7 +286,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
         lighting: (scene && lightingPreset(scene)) ?? ""
       }
     };
-  }, [seats, scene, catalogs]);
+  }, [seats, scene, catalogs, stageTokens, pendingStage, pendingScatter]);
   const libraryLocation = scene?.library?.districtKey && scene.library.siteKey
     ? { districtKey: scene.library.districtKey, siteKey: scene.library.siteKey }
     : null;

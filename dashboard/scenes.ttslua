@@ -25,7 +25,8 @@
     featuredStop                          stop featured, background resumes
     ambience          key                 location ambience (`none` stops it)
     stopAll                               silence every soundscape layer
-    seatPresence      seat, present       narrative presence of an occupied seat (never disconnection)
+    seatPresence      seat, present       narrative presence of an occupied seat (never disconnection); lighting
+                                          a seated NPC's seat takes their copy off the stage
     location          districtKey?, siteKey   change the live location behind a blindfold
     skybox            key                 sky override (`none` = the site's own sky)
     topFog            on                  top fog on / off
@@ -34,6 +35,14 @@
     conditions        ids                 scene conditions (`sessionScene.conditions`), hosted on present PCs
     weatherOverride   rain, wind, thunder hold weather until the next dawn (wind 0–3)
                       release             back to the schedule (or the scene's authored weather)
+    stage             changes?, clear?, reset?
+                                          stage NPCs: characterKey → { u, v, lightMode? } or { remove = true }
+                                          (control-board u, v); `clear` empties the stage, `reset` starts from
+                                          the table's library row. One op = one animated figurine move.
+    scatterPlace      characterKey, kind, group?
+                                          Scatter: move an NPC (`kind` npc; no group = off) or PC (`kind` pc,
+                                          characterKey = the PC's charKey) into a scatter group 1–6
+    genericAdd        keys, labels?       spawn generic NPCs (catalog keys) named by the Storyteller
     playScene         key, clockMode?     select a library scene and apply it to the table
     endScene                              end the live scene
     upsertScene       key, title, placementMode, sessionScene
@@ -260,6 +269,17 @@ local function applyCommand(cmd)
 
   local Panel = require("core.storyteller_scenes_panel")
   if op == "seatPresence" then
+    -- A seated NPC may stand on the stage only while their seat is dark: lighting the seat takes them off it.
+    if cmd.present == true and U.isIn(cmd.seat, C.NPCSeats or {}) then
+      local characterKey = S.getStateVal("seatLayout", "occupiedNPCSlots", cmd.seat)
+      local placements = S.getStateVal("sessionScene", "npcWorld", "placements")
+      if type(characterKey) == "string" and type(placements) == "table" and type(placements[characterKey]) == "table" then
+        local err = require("core.npc_gameboard_apply").applyStageChanges({ [characterKey] = { remove = true } })
+        if err then
+          return err
+        end
+      end
+    end
     return Panel.setLiveSeatPresence(cmd.seat, cmd.present == true)
   end
   if op == "location" then
@@ -289,6 +309,42 @@ local function applyCommand(cmd)
   end
   if op == "weatherOverride" then
     return weatherOverride(cmd)
+  end
+
+  if op == "stage" then
+    local opts = { clear = cmd.clear == true }
+    if cmd.reset == true then
+      local SceneLibrary = require("core.scene_library")
+      local key = SceneLibrary.resolveMirrorSceneKey() or S.getStateVal("sceneLibrary", "lastAppliedKey")
+      local row = type(key) == "string" and S.getStateVal("sceneLibrary", "scenes", key) or nil
+      local session = type(row) == "table" and row.sessionScene or nil
+      local npcWorld = type(session) == "table" and session.npcWorld or nil
+      if type(npcWorld) ~= "table" then
+        return "The scene on the table has no library row to reset the stage from."
+      end
+      opts.base = U.clone(type(npcWorld.placements) == "table" and npcWorld.placements or {}, true)
+    end
+    local err = require("core.npc_gameboard_apply").applyStageChanges(cmd.changes, opts)
+    require("dashboard.push").markWorldDirty({ scene = true })
+    return err
+  end
+  if op == "scatterPlace" then
+    local ScatterMode = require("core.scatter_mode")
+    if not ScatterMode.isActive() then
+      return "Scatter is not on."
+    end
+    require("dashboard.push").markWorldDirty({ seats = true, scene = true })
+    if cmd.kind == "pc" then
+      if type(cmd.group) ~= "number" then
+        return "A PC always stands in a scatter group; pick one."
+      end
+      ScatterMode.movePcToGroup(cmd.characterKey, cmd.group)
+      return nil
+    end
+    return ScatterMode.moveNpcToGroup(cmd.characterKey, type(cmd.group) == "number" and cmd.group or nil)
+  end
+  if op == "genericAdd" then
+    return require("core.generic_npcs").importNamed(cmd.keys, cmd.labels)
   end
 
   if op == "upsertScene" then

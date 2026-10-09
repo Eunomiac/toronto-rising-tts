@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties, type MouseEvent, type ReactElement, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type ReactElement, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Headshot } from "../headshots/Headshot";
 import { applyLocal } from "../pcSheet/applyLocal";
@@ -8,11 +8,14 @@ import { paintDamageTrack, paintHumanityTrack, type BoxSlot } from "../pcSheet/p
 import { actionsForRing } from "../pcSheet/ringActions";
 import { TraitRing } from "../pcSheet/TraitRing";
 import type { RingTarget, SeatColor, SeatSnapshot, SheetSnapshot } from "../pcSheet/types";
-import { LIGHTING_LABEL, useScenesCommand, type LightingPreset } from "../scenesPanel/commands";
-import { GENERIC_SKY } from "../scenesPanel/liveScene";
+import { LIGHTING_LABEL, useScenesCommand, type LightingPreset, type StageChanges } from "../scenesPanel/commands";
+import { GENERIC_SKY, stageName } from "../scenesPanel/liveScene";
+import { moveInScatter, withChanges, type ScatterMove, type StageSpot } from "../scenesPanel/stage";
 import { stagePacks, type StagePack } from "../scenesPanel/stageFrame";
+import type { GenericNpc, ScatterGroup } from "../worldState";
 import { Icon, type IconName } from "./icons";
-import { groupColor, groupLeader, useControlBoardSnaps, useRosterLayout, useSceneCatalogs } from "./labRoster";
+import { useControlBoardSnaps, useSceneCatalogs } from "./labRoster";
+import { farRadii, ScatterLayer, StageLayer } from "./stageEdit";
 
 /**
  * Grey-box building blocks for Lab sketches. Every sketch is laid out in absolute pixels on the
@@ -505,36 +508,22 @@ const tokenPoint = (token: StageToken, packs: readonly StagePack[], w: number, h
   return { x: point.u * w, y: point.v * h };
 };
 
-/** Half-axes of the ellipse drawn through a Far pack's six slots. */
-const farRadii = (pack: StagePack, w: number, h: number): { rx: number; ry: number } => ({
-  rx: Math.max(...pack.slots.map((slot) => Math.abs(slot.u - pack.center.u))) * w,
-  ry: Math.max(...pack.slots.map((slot) => Math.abs(slot.v - pack.center.v))) * h
-});
-
-/**
- * A figurine headshot with the name under it; hovering enlarges the headshot. The ring is the token's group
- * colour (thicker and brighter for the group's boss); a gold halo means lit.
- */
-const Token = ({ token, x, y, color, boss }: { token: StageToken; x: number; y: number; color: string | undefined; boss: boolean }): ReactElement => (
-  <div
-    className={`lab-token${token.lit ? " lit" : ""}${boss ? " boss" : ""}`}
-    style={{ left: x, top: y, ...(color ? { "--group": color } : {}) } as CSSProperties}
-  >
-    <Headshot className="lab-token-head" characterKey={token.characterKey} />
-    <span className="lab-token-name">{token.name}</span>
-  </div>
-);
-
 /**
  * The control board at its real in-game shape (scaled 2:1), with the seat row floating along the bottom edge,
- * on the players' side of the stage (the Far zones are furthest from them). Token positions map straight to stage positions in the game world, so tokens can sit
- * anywhere; pack slots are mild snap points and group drop targets.
+ * on the players' side of the stage (the Far zones are furthest from them). Token positions map straight to stage
+ * positions in the game world, so tokens can sit anywhere; pack slots are mild snap points and group drop targets.
  */
 export type LiveBoard = {
   readonly seats: readonly SeatSketch[];
   readonly sheet: SheetSnapshot;
   readonly tokens: readonly StageToken[];
   readonly env: StageEnv;
+  /** Stage changes waiting in the Send queue, drawn as if sent. */
+  readonly pending: StageChanges;
+  /** Scatter moves waiting in the Send queue. */
+  readonly pendingScatter: readonly ScatterMove[];
+  readonly generics: readonly GenericNpc[];
+  readonly scatter: readonly ScatterGroup[];
 };
 
 /** The stage's surroundings: table, sky override ("" = the Site's own sky), and lighting preset ("" = the scene's). */
@@ -547,10 +536,27 @@ export type StageEnv = {
 
 const LAB_ENV: StageEnv = { tableKey: "Table B2", scatter: false, sky: "", lighting: "" };
 
+/** Lab Scatter: the sample PCs spread over the groups with a few NPCs. */
+const LAB_SCATTER: readonly ScatterGroup[] = [
+  { group: 1, pcs: [{ characterKey: "adrianVarga" }], npcs: [{ characterKey: "drake" }, { characterKey: "mara" }] },
+  { group: 2, pcs: [{ characterKey: "lordLucien" }, { characterKey: "rashid" }], npcs: [] },
+  { group: 3, pcs: [], npcs: [{ characterKey: "victorVex" }] },
+  { group: 4, pcs: [{ characterKey: "blackCaesar" }], npcs: [{ characterKey: "bee" }] },
+  { group: 5, pcs: [], npcs: [] },
+  { group: 6, pcs: [{ characterKey: "fomorach" }], npcs: [] }
+];
+
+/** An edit stays drawn until TTS pushes the stage back, or this long if it never does (TTS refused it). */
+const OPTIMISTIC_MS = 6000;
+
 export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoard }): ReactElement => {
   const [ring, setRing] = useState<{ x: number; y: number } | null>(null);
   const [labEnv, setLabEnv] = useState<StageEnv>(LAB_ENV);
+  const [labScatter, setLabScatter] = useState<readonly ScatterGroup[]>(LAB_SCATTER);
   const [clearArmed, setClearArmed] = useState(false);
+  const [local, setLocal] = useState<StageChanges>({});
+  const [localScatter, setLocalScatter] = useState<readonly ScatterMove[]>([]);
+  const board = useRef<HTMLDivElement>(null);
   const send = useScenesCommand();
   const command = live && send ? send : null;
   const env = live?.env ?? labEnv;
@@ -562,56 +568,110 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoa
   const { catalogs } = useSceneCatalogs();
   const { snaps, error: snapsError } = useControlBoardSnaps();
   const packs = useMemo(() => (snaps ? stagePacks(snaps) : []), [snaps]);
-  const roster = useRosterLayout();
-  const tokenGroup = (characterKey: string): string | undefined =>
-    catalogs?.namedNpcs.find((npc) => npc.characterKey === characterKey)?.pickerGroups[0];
+
+  const liveTokens = live?.tokens;
+  const livePending = live?.pending;
+  const liveGroups = live?.scatter;
+  useEffect(() => {
+    if (liveTokens) {
+      setLocal((previous) => (Object.keys(previous).length === 0 ? previous : {}));
+    }
+  }, [liveTokens, livePending]);
+  useEffect(() => {
+    if (liveGroups) {
+      setLocalScatter((previous) => (previous.length === 0 ? previous : []));
+    }
+  }, [liveGroups]);
+  const editing = live !== undefined && (Object.keys(local).length > 0 || localScatter.length > 0);
+  useEffect(() => {
+    if (!editing) {
+      return undefined;
+    }
+    const id = window.setTimeout(() => {
+      setLocal({});
+      setLocalScatter([]);
+    }, OPTIMISTIC_MS);
+    return () => window.clearTimeout(id);
+  }, [editing, local, localScatter]);
+
+  const baseTokens = liveTokens ?? STAGE_TOKENS;
+  const generics = live?.generics ?? [];
+  const nameOf = (characterKey: string): string =>
+    baseTokens.find((token) => token.characterKey === characterKey)?.name
+    ?? catalogs?.pcs.find((pc) => pc.characterKey === characterKey)?.fullName
+    ?? stageName(characterKey, catalogs, generics);
+  const spots = withChanges(
+    baseTokens.flatMap((token): StageSpot[] => {
+      const point = tokenPoint(token, packs, 1, 1);
+      return point ? [{ characterKey: token.characterKey, lit: token.lit, u: point.x, v: point.y }] : [];
+    }),
+    { ...livePending, ...local }
+  );
+  const edit = (changes: StageChanges): void => {
+    if (Object.keys(changes).length === 0) {
+      return;
+    }
+    setLocal((previous) => ({ ...previous, ...changes }));
+    command?.({ op: "stage", changes });
+  };
+  const groups = [...(live?.pendingScatter ?? []), ...localScatter].reduce(moveInScatter, liveGroups ?? labScatter);
+  const placeScatter = (characterKey: string, kind: "pc" | "npc", group: number | undefined): void => {
+    const move: ScatterMove = group === undefined ? { characterKey, kind } : { characterKey, kind, group };
+    if (!command) {
+      setLabScatter((previous) => moveInScatter(previous, move));
+      return;
+    }
+    setLocalScatter((previous) => [...previous, move]);
+    command({ op: "scatterPlace", ...move });
+  };
+  const clearStage = (): void => {
+    if (env.scatter) {
+      for (const entry of groups) {
+        for (const npc of entry.npcs) {
+          placeScatter(npc.characterKey, "npc", undefined);
+        }
+      }
+      return;
+    }
+    setLocal(Object.fromEntries(spots.map((spot) => [spot.characterKey, { remove: true } as const])));
+    command?.({ op: "stage", clear: true });
+  };
+  const resetStage = (): void => {
+    setLocal({});
+    command?.({ op: "stage", reset: true });
+  };
+
   const closeRing = (): void => {
     setRing(null);
     setClearArmed(false);
   };
   const openRing = (event: MouseEvent<HTMLDivElement>): void => {
     event.preventDefault();
-    if ((event.target as HTMLElement).closest(".lab-token, .lab-board-seats, .lab-board-table, .lab-help")) {
+    if ((event.target as HTMLElement).closest(".lab-token, .lab-pack-handle, .lab-board-seats, .lab-board-table, .lab-help")) {
       return;
     }
     setRing(canvasPoint(event));
   };
   return (
-  <div className="lab-board wide" style={{ width: w, height: h }} onContextMenu={openRing}>
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
-      {packs.map((pack) => {
-        const cx = pack.center.u * w;
-        const cy = pack.center.v * h;
-        const lowest = Math.max(...pack.slots.map((slot) => slot.v)) * h;
-        return (
+  <div ref={board} className="lab-board wide" style={{ width: w, height: h }} onContextMenu={openRing}>
+    {!env.scatter && (
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
+        {packs.map((pack) => (
           <g key={pack.familyId}>
-            {pack.far && <ellipse cx={cx} cy={cy} {...farRadii(pack, w, h)} className="lab-board-ring" />}
+            {pack.far && <ellipse cx={pack.center.u * w} cy={pack.center.v * h} {...farRadii(pack, w, h)} className="lab-board-ring" />}
             {pack.slots.map((slot) => (
               <circle key={slot.snapIndex} cx={slot.u * w} cy={slot.v * h} r={5} className="lab-board-snap" />
             ))}
-            <text x={cx} y={pack.far ? cy + 6 : lowest + 30} className="lab-board-label">{pack.label}</text>
           </g>
-        );
-      })}
-    </svg>
+        ))}
+      </svg>
+    )}
     {snapsError && <span className="lab-board-error">{snapsError}</span>}
-    {(live?.tokens ?? STAGE_TOKENS).map((token) => {
-      const point = tokenPoint(token, packs, w, h);
-      if (!point) {
-        return null;
-      }
-      const group = tokenGroup(token.characterKey);
-      return (
-        <Token
-          key={token.characterKey}
-          token={token}
-          x={point.x}
-          y={point.y}
-          color={group ? groupColor(roster, group) : undefined}
-          boss={group !== undefined && groupLeader(roster, group) === token.characterKey}
-        />
-      );
-    })}
+    {env.scatter ? (
+      <ScatterLayer w={w} h={h} board={board} groups={groups} catalogs={catalogs} nameOf={nameOf} onPlace={placeScatter} />
+    ) : (
+      <StageLayer w={w} h={h} board={board} packs={packs} spots={spots} catalogs={catalogs} nameOf={nameOf} onEdit={edit} />
+    )}
     <div className="lab-board-seats floating bottom" style={{ top: h - h * WIDE_SEAT_BAND - 8, height: h * WIDE_SEAT_BAND }}>
       {live ? <Seats seats={live.seats} liveSheet={live.sheet} /> : <Seats />}
     </div>
@@ -651,9 +711,10 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoa
     <span className="lab-help" tabIndex={0}>
       ?
       <span className="lab-help-tip">
-        Drag anywhere; tokens snap only when dropped over a slot. Drop a whole group on a pack to arrange it.
-        Double-click to light / unlight. Hover a token to enlarge it. Right-click empty stage for placement,
-        Clear Stage, and Reset to Library.
+        {env.scatter
+          ? "Drag a PC or NPC into another group to move them there; drag an NPC out of every group to take them off. Drop roster NPCs or a whole group into a circle."
+          : "Drag tokens anywhere; they snap only when dropped over a slot, and leave the stage when dropped off it. Drag a pack's name to move the whole pack. Drop a roster NPC anywhere, or a whole group on a pack (the leader takes the anchor). Double-click to light / darken."}
+        {" "}Right-click empty stage for placement, Clear Stage{env.scatter ? "" : ", and Reset to Library"}.
       </span>
     </span>
     {ring && (
@@ -675,13 +736,31 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoa
             type="button"
             className={`lab-ring-item spoke${clearArmed ? " armed" : ""}`}
             style={{ left: -112, top: 40, "--i": 1 } as CSSProperties}
-            onClick={() => (clearArmed ? closeRing() : setClearArmed(true))}
+            onClick={() => {
+              if (clearArmed) {
+                clearStage();
+                closeRing();
+              } else {
+                setClearArmed(true);
+              }
+            }}
           >
             {clearArmed ? "Click again to clear" : "Clear Stage"}
           </button>
-          <button type="button" className="lab-ring-item spoke" style={{ left: 112, top: 40, "--i": 2 } as CSSProperties} onClick={closeRing}>
-            Reset to Library
-          </button>
+          {!env.scatter && (
+            <button
+              type="button"
+              className="lab-ring-item spoke"
+              style={{ left: 112, top: 40, "--i": 2 } as CSSProperties}
+              title="Put the stage back the way the scene's library row has it"
+              onClick={() => {
+                resetStage();
+                closeRing();
+              }}
+            >
+              Reset to Library
+            </button>
+          )}
         </div>
       </Overlay>
     )}

@@ -241,6 +241,23 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 7. **Unlink and Fork:** click the table's scene title on the phase bar. Choose **Unlink from the library**: an **unlinked** tag should appear next to the title, and the in-game library row should show as unlinked. Click the title again, choose **Fork…**, give the new and old names and press **Fork**: the phase bar should now show the new name, and the in-game library should list both scenes.
 8. **Delete:** in the picker, press **Delete** twice on a scene that is not on the table. It should disappear from the dashboard's list and from the in-game scene library.
 
+#### TOR-685 — Move, light, spread and clear stage NPCs from the dashboard
+
+**Context:** The stage drawing on the dashboard's Scenes tab is now where you arrange NPCs. Every edit uses the same TTS code as the control board's Apply button: a seated NPC you put on the stage has their seat go dark, and taking them off brings the seat back. In Queued mode, several stage edits sent together reach TTS as one change, so the figurines glide into place together. Scatter groups can be rearranged the same way, and generic NPCs are added from the roster's new **Generic** view (you type the name the players will see; there is no in-game naming pop-up). The in-game control board still works as before; turning it into a plain mirror of the dashboard comes later, with the clean-up of in-game scene editing.
+
+**How to verify:** Save & Play into a live scene and open the dashboard's **Scenes** tab.
+
+1. **Move:** drag an NPC token somewhere else on the stage and let go. In Live mode (the light at the bottom right is green) the figurine should glide there in TTS. Dropping right on top of a small slot circle snaps the token onto it; dropping on a slot that someone else is on swaps the two.
+2. **Light:** double-click a token. Its gold halo should go away and the figurine's light should go out in TTS. Double-click again to light it.
+3. **Off the stage:** drag a token below the stage (onto the seat row) or outside the drawing. The NPC should leave the stage in TTS. If they hold a seat at the table, their seat should light back up.
+4. **Seated NPC onto the stage:** open the roster on the left, find an NPC who is sitting at the table, and drag their headshot onto the stage. Their seat should go dark and their figurine should appear on the stage. Now right-click their seat on the dashboard and make them present again: their stage figurine should leave the stage and the seat should light up.
+5. **Group spread:** drag a whole group from the roster onto a pack (for example Far Left). The group's leader should stand on the pack's middle slot and the rest spread out beside them; anyone already on that pack should step over, unlit, to the nearest free spots.
+6. **Pack move:** drag a pack's name (for example **Mid Left**) onto another pack. Everyone on the first pack should move across together.
+7. **Queued moves together:** click the light at the bottom right to switch to Queued mode. Move three or four tokens; they move on the drawing and appear in the queue list. Press **Send**: all the figurines should glide at the same time.
+8. **Clear and Reset:** right-click empty stage. **Clear Stage** (click it twice) should take everyone off the stage and remove any generic NPCs. **Reset to Library** should put the stage back the way the scene's library row has it.
+9. **Scatter:** right-click empty stage and choose **Placement** to switch to Scatter. Six group circles appear. Drag a PC or an NPC from one circle into another: in TTS they should move to that group. Drag an NPC out of every circle: they should leave the stage. Switch Placement back afterwards.
+10. **Generic NPCs:** hover the roster on the left and press **Generic**. Find a figurine in **Add from the catalog**, press **+ Add**, type a name and press **Add**. A generic NPC should spawn in TTS and appear under **In this scene**; drag it onto the stage like anyone else.
+
 ### Medium — Prince's Court sheet
 
 #### TOR-663 — Refresh XML keeps The Court on the people who had it open

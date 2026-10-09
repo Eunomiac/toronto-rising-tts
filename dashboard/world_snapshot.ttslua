@@ -10,7 +10,8 @@
                 top fog, scene conditions, weather, Storyteller weather override
     clock       clock anchor: scene / present-day / Downtime clocks, which one runs, speed
     soundscape  music, location, featured, intro, weather layers, lane volumes
-    seats       PC and NPC seat occupancy and presence, stage NPCs, spotlight carousel
+    seats       PC and NPC seat occupancy and presence, stage NPCs, generic NPCs in the scene, Scatter
+                groups, spotlight carousel
 
   Design: .dev/Storyteller Dashboard Docs/Live Push Channel.md
 ]]
@@ -236,10 +237,44 @@ local function buildSeats()
   table.sort(stage, function(a, b)
     return tostring(a.characterKey) < tostring(b.characterKey)
   end)
+  local generics = {}
+  for key, row in pairs(S.getStateVal("sessionScene", "npcWorld", "genericMembership") or {}) do
+    if type(row) == "table" then
+      generics[#generics + 1] = { characterKey = key, name = row.displayName or key }
+    end
+  end
+  table.sort(generics, function(a, b)
+    return a.characterKey < b.characterKey
+  end)
+  local scatter = {}
+  local pack = S.getStateVal("sessionScene", "scatterPlacements")
+  if type(pack) == "table" then
+    local ScatterLayout = require("lib.scatter_layout")
+    for i = 1, ScatterLayout.groupCount() do
+      local area = pack[ScatterLayout.areaKeyForGroup(i)]
+      local pcs, npcs = {}, {}
+      if type(area) == "table" then
+        for pcKey, row in pairs(type(area.centerCharacters) == "table" and area.centerCharacters or {}) do
+          pcs[#pcs + 1] = { characterKey = pcKey, slot = type(row) == "table" and tonumber(row.slot) or nil }
+        end
+        for npcKey, row in pairs(type(area.orbitCharacters) == "table" and area.orbitCharacters or {}) do
+          npcs[#npcs + 1] = { characterKey = npcKey, slot = type(row) == "table" and tonumber(row.slot) or nil }
+        end
+      end
+      local bySlot = function(a, b)
+        return (a.slot or 99) < (b.slot or 99)
+      end
+      table.sort(pcs, bySlot)
+      table.sort(npcs, bySlot)
+      scatter[#scatter + 1] = { group = i, pcs = pcs, npcs = npcs }
+    end
+  end
   local spotlight = S.getStateVal("spotlight") or {}
   return {
     seats = seats,
     stage = stage,
+    generics = generics,
+    scatter = scatter,
     spotlightOrder = spotlight.order or {},
     spotlightFrontIndex = tonumber(spotlight.frontIndex),
   }

@@ -25,6 +25,8 @@ const seats: SeatsSlice = {
     { characterKey: "kai", u: 0.1, v: 0.2, lightMode: "OFF" },
     { characterKey: "nowhere" }
   ],
+  generics: [],
+  scatter: [],
   spotlightOrder: ["Pink", "Orange", "Red"],
   spotlightFrontIndex: 2
 };

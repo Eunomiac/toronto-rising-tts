@@ -6,8 +6,9 @@ import { previewLayout } from "../lab/labPreview";
 import { Box, WideBoard, type LiveBoard } from "../lab/sketch";
 import type { SceneCatalogs } from "../scenes/types";
 import { ScenesCommandContext, type ScenesCommand } from "./commands";
-import { applyToDraft, draftAtPresentDay, draftClock, draftSceneSlice, draftSoundView } from "./library";
-import { isScatter, lightingPreset, sceneConditions, toDate, weatherAxes } from "./liveScene";
+import { applyToDraft, draftAtPresentDay, draftClock, draftSceneSlice, draftSoundView, draftStage, savedPlacements, withPlacements } from "./library";
+import { isScatter, lightingPreset, liveTokens, sceneConditions, toDate, weatherAxes } from "./liveScene";
+import { boardToStage } from "./stageFrame";
 
 const NO_SHEET = { ok: true, seats: [] } as const;
 
@@ -20,8 +21,8 @@ const sameMinute = (a: Date, b: Date): boolean => Math.floor(a.getTime() / 60000
 
 /**
  * One preview: the table's panels reading a draft library row. Every panel command rewrites the draft
- * (`onCommand`); nothing goes to TTS until Save, On deck or Play Scene. The stage shows the draft's table, sky and
- * lighting; its seats and tokens arrive with stage editing.
+ * (`onChange`); nothing goes to TTS until Save, On deck or Play Scene. The stage edits the draft's NPC placements,
+ * table, sky and lighting; seats and Scatter groups stay the table's business (Scatter drafts show no groups).
  */
 export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }: {
   draft: LibraryScene;
@@ -43,6 +44,10 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }:
   const at = clock ? toDate(clock) : present;
   const savedLocation = saved ? locationOf(saved) : null;
   const send = (command: ScenesCommand): void => {
+    if (command.op === "stage" && "reset" in command) {
+      onChange((scene) => withPlacements(scene, savedPlacements(saved ?? null)));
+      return;
+    }
     // "Set scene time to present day" makes the draft follow present day rather than pin this minute.
     const followPresent = command.op === "clockTo" && sameMinute(toDate(command.datetime), present);
     onChange((scene) => (followPresent ? draftAtPresentDay(scene) : applyToDraft(scene, command)));
@@ -50,7 +55,11 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }:
   const board: LiveBoard = {
     seats: [],
     sheet: NO_SHEET,
-    tokens: [],
+    tokens: liveTokens(draftStage(draft), catalogs).map((token) => ({ ...token, at: boardToStage(token.u, token.v) })),
+    pending: {},
+    pendingScatter: [],
+    generics: [],
+    scatter: [],
     env: { tableKey: slice.tableKey ?? "", scatter: isScatter(slice), sky: slice.skyboxOverride ?? "", lighting: lightingPreset(slice) ?? "" }
   };
   return (
