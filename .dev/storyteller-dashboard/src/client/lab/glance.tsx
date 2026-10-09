@@ -28,6 +28,7 @@ import {
 } from "./huntOdds";
 import { Btn, Overlay, canvasPoint } from "./sketch";
 import { useScenesCommand, type SceneClockMode, type ScenesSend, type SoundLane } from "../scenesPanel/commands";
+import type { SendMode } from "../scenesPanel/queue";
 import { LOCATION_MUSIC_LABEL, MOOD_LABEL, fromDate, type SoundView, type SpotlightView } from "../scenesPanel/liveScene";
 
 /**
@@ -1838,7 +1839,7 @@ const AMBIENT_GRID_WIDTH = 660;
 /** Catalog keys of `FEATURED_TRACKS`, in the same order. */
 const FEATURED_KEYS = ["TR_Full", "TR_Intro", "TR_Loop", "STB_HouseOfTheRisingSun"] as const;
 
-const featuredLabel = (key: string | undefined): string => {
+export const featuredLabel = (key: string | undefined): string => {
   const index = FEATURED_KEYS.findIndex((entry) => entry === key);
   return FEATURED_TRACKS[index] ?? key ?? FEATURED_TRACKS[0];
 };
@@ -2100,11 +2101,26 @@ const describeQueue = (queue: readonly QueuedChange[]): readonly { readonly id: 
   return lines;
 };
 
-/** Offline (red) while TTS is not connected; otherwise queued (yellow) or live (green). The light is always lit. */
-export const QueuePanel = ({ connected }: { connected: boolean }): ReactElement => {
-  const [live, setLive] = useState(false);
+/** The Scenes tab's queue: its mode, the lines to show, and what Send, × and Clear do. */
+export type QueueView = {
+  readonly mode: SendMode;
+  readonly lines: readonly { readonly id: number; readonly text: string }[];
+  readonly setMode: (mode: SendMode) => void;
+  readonly send: () => void;
+  readonly remove: (id: number) => void;
+  readonly clear: () => void;
+};
+
+/**
+ * Offline (red) while TTS is not connected; otherwise queued (yellow) or live (green). The light is always lit;
+ * click it to switch modes. Without `live` (the Lab) it shows a sample queue.
+ */
+export const QueuePanel = ({ connected, live: view }: { connected: boolean; live?: QueueView }): ReactElement => {
+  const [labLive, setLabLive] = useState(false);
   const [queue, setQueue] = useState(QUEUE_SAMPLE);
-  const lines = describeQueue(queue);
+  const live = view ? view.mode === "live" : labLive;
+  const lines = view ? view.lines : describeQueue(queue);
+  const remove = (id: number): void => (view ? view.remove(id) : setQueue(queue.filter((change) => change.id !== id)));
   const mode = !connected ? "offline" : live ? "live" : "queued";
   return (
     <div className={`lab-queue ${mode}`}>
@@ -2112,11 +2128,13 @@ export const QueuePanel = ({ connected }: { connected: boolean }): ReactElement 
         type="button"
         className="lab-conn-light"
         title={`${connected ? "TTS connected" : "TTS not connected"} · click for ${live ? "queued" : "live"} mode`}
-        onClick={() => setLive(!live)}
+        onClick={() => (view ? view.setMode(live ? "queued" : "live") : setLabLive(!live))}
       />
       <div className="lab-queue-actions">
         {live ? <Btn tone="live">Live</Btn> : (
-          <Btn tone="primary">{lines.length === 0 ? "Nothing queued" : `Send ${lines.length} change${lines.length === 1 ? "" : "s"}`}</Btn>
+          <button type="button" className="lab-btn primary" disabled={lines.length === 0 || !connected} onClick={() => view?.send()}>
+            {lines.length === 0 ? "Nothing queued" : `Send ${lines.length} change${lines.length === 1 ? "" : "s"}`}
+          </button>
         )}
       </div>
       {!live && (
@@ -2129,7 +2147,7 @@ export const QueuePanel = ({ connected }: { connected: boolean }): ReactElement 
                   type="button"
                   className="lab-queue-remove"
                   title="Remove from the queue"
-                  onClick={() => setQueue(queue.filter((change) => change.id !== line.id))}
+                  onClick={() => remove(line.id)}
                 >
                   ×
                 </button>
@@ -2138,7 +2156,7 @@ export const QueuePanel = ({ connected }: { connected: boolean }): ReactElement 
           </ol>
           {lines.length > 0 && (
             <div className="lab-queue-actions">
-              <button type="button" className="lab-btn" onClick={() => setQueue([])}>Clear queue</button>
+              <button type="button" className="lab-btn" onClick={() => (view ? view.clear() : setQueue([]))}>Clear queue</button>
             </div>
           )}
         </>

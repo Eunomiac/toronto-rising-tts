@@ -107,6 +107,14 @@ describe("createApplyQueue", () => {
     expect(onFailure).not.toHaveBeenCalled();
   });
 
+  it("sends an enqueueAll group in one call", () => {
+    const send = vi.fn(() => deferred<SheetSnapshot>().promise);
+    const queue = createApplyQueue({ send, onSettled: vi.fn(), onFailure: vi.fn(), onPendingChange: vi.fn() });
+    queue.enqueueAll([hunger(1), hunger(-1), hunger(1)]);
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(send).toHaveBeenNthCalledWith(1, [hunger(1), hunger(-1), hunger(1)]);
+  });
+
   it("drops remaining commands and reports failure when TTS rejects an apply", async () => {
     const first = deferred<SheetSnapshot>();
     const send = vi.fn(() => first.promise);

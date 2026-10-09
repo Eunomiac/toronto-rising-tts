@@ -1,5 +1,7 @@
 export type ApplyQueue<Command> = {
   enqueue: (command: Command) => void;
+  /** Several commands that must reach TTS in one call (or, while a call is in flight, in the next one). */
+  enqueueAll: (commands: readonly Command[]) => void;
   get pending(): number;
 };
 
@@ -71,6 +73,14 @@ export const createApplyQueue = <Command, Reply extends ApplyReply>(options: Opt
   return {
     enqueue(command: Command): void {
       waiting.push(command);
+      notify();
+      void drain();
+    },
+    enqueueAll(commands: readonly Command[]): void {
+      if (commands.length === 0) {
+        return;
+      }
+      waiting.push(...commands);
       notify();
       void drain();
     },

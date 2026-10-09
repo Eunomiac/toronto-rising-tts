@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from "react";
 import { createApplyQueue } from "../applyQueue";
-import { ambientLabel, AspectRow, HuntRoller, LocationPanel, PhaseStrip, RosterDock, SoundMixer, WeatherPanel, WhenPanel, type LabLocation } from "../lab/glance";
+import { ambientLabel, AspectRow, HuntRoller, LocationPanel, PhaseStrip, QueuePanel, RosterDock, SoundMixer, WeatherPanel, WhenPanel, type LabLocation, type QueueView } from "../lab/glance";
 import { useSceneCatalogs } from "../lab/labRoster";
+import type { SceneCatalogs } from "../scenes/types";
 import { Box, WideBoard, type LiveBoard } from "../lab/sketch";
 import type { SheetSnapshot } from "../pcSheet/types";
 import { setSceneDeckSection, useSceneDeck, useSceneDeckStatus } from "../sceneDeck";
@@ -10,6 +11,8 @@ import { sendScenesCommands, type ScenesReply } from "./bridge";
 import { ScenesCommandContext, type ScenesCommand, type ScenesSend } from "./commands";
 import { withoutScene, withTableScene } from "./deck";
 import { liveSeats, liveTokens, soundView, spotlightView, toDate, weatherAxes } from "./liveScene";
+import { addToQueue, commandKind, commandsToSend, loadSendMode, queueLines, saveSendMode, type QueueEntry, type SendMode } from "./queue";
+import { describeQueued } from "./queueLabels";
 import { boardToStage } from "./stageFrame";
 
 /**
@@ -30,6 +33,8 @@ const MAIN_Y = BODY_Y + PHASE_H + G;
 const ASPECT_H = 114;
 const STAGE_Y = MAIN_Y + ASPECT_H + G;
 const STAGE_H = 1042 - G - STAGE_Y;
+const RIGHT_H = 1042 - G - MAIN_Y;
+const QUEUE_H = 420;
 const HUNT_H = 48;
 const ROSTER_Y = BODY_Y + HUNT_H + G;
 const WHEN_W = 470;
@@ -117,7 +122,7 @@ const Waiting = ({ text }: { text: string }): ReactElement => <p className="lab-
  * Commands go through the serial apply queue (one execute-lua in flight; clicks made meanwhile go in the next
  * batch). Replies only say whether TTS accepted them; the push channel brings the new state back.
  */
-const useScenesQueue = (): { send: ScenesSend; pending: number; error: string | null; clearError: () => void } => {
+const useScenesQueue = (): { send: ScenesSend; sendAll: (commands: readonly ScenesCommand[]) => void; pending: number; error: string | null; clearError: () => void } => {
   const [pending, setPending] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const queue = useMemo(() => createApplyQueue<ScenesCommand, ScenesReply>({
@@ -127,8 +132,56 @@ const useScenesQueue = (): { send: ScenesSend; pending: number; error: string | 
     onPendingChange: setPending
   }), []);
   const send = useCallback((command: ScenesCommand) => queue.enqueue(command), [queue]);
+  const sendAll = useCallback((commands: readonly ScenesCommand[]) => queue.enqueueAll(commands), [queue]);
   const clearError = useCallback(() => setError(null), []);
-  return { send, pending, error, clearError };
+  return { send, sendAll, pending, error, clearError };
+};
+
+/**
+ * Send / Live mode (remembered; Live by default). Queued mode holds the small changes `commandKind` marks "queue"
+ * until Send; a multi-step action sends the queue first, in the same batch. Switching to Live sends what is queued.
+ */
+const useSendMode = (
+  transport: { send: ScenesSend; sendAll: (commands: readonly ScenesCommand[]) => void },
+  world: WorldState,
+  catalogs: SceneCatalogs | null
+): { send: ScenesSend; view: QueueView } => {
+  const [mode, setModeState] = useState<SendMode>(loadSendMode);
+  const [entries, setEntries] = useState<readonly QueueEntry[]>([]);
+  const nextId = useRef(1);
+  const lines = useMemo(() => queueLines(entries, describeQueued(world, catalogs)), [entries, world, catalogs]);
+  const latest = useRef({ entries, lines, mode, transport });
+  latest.current = { entries, lines, mode, transport };
+  const takeQueue = useCallback((): readonly ScenesCommand[] => {
+    const pending = commandsToSend(latest.current.entries, latest.current.lines);
+    setEntries([]);
+    return pending;
+  }, []);
+  const send = useCallback<ScenesSend>((command) => {
+    const kind = commandKind(command);
+    if (kind === "queue" && latest.current.mode === "queued") {
+      setEntries((previous) => addToQueue(previous, command, nextId.current++));
+    } else if (kind === "flush") {
+      latest.current.transport.sendAll([...takeQueue(), command]);
+    } else {
+      latest.current.transport.send(command);
+    }
+  }, [takeQueue]);
+  const view: QueueView = {
+    mode,
+    lines: lines.map((line) => ({ id: line.id, text: `${line.subject}: ${line.from} → ${line.to}` })),
+    setMode: (next) => {
+      if (next === "live") {
+        transport.sendAll(takeQueue());
+      }
+      saveSendMode(next);
+      setModeState(next);
+    },
+    send: () => transport.sendAll(takeQueue()),
+    remove: (id) => setEntries((previous) => previous.filter((entry) => entry.id !== id)),
+    clear: () => setEntries([])
+  };
+  return { send, view };
 };
 
 const CommandStatus = ({ pending, error, onDismiss }: { pending: number; error: string | null; onDismiss: () => void }): ReactElement | null => {
@@ -148,6 +201,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const { catalogs } = useSceneCatalogs();
   const snapshotError = useWorldSnapshotOnce(active, world);
   const commands = useScenesQueue();
+  const { send, view: queueView } = useSendMode(commands, world, catalogs);
   const now = useNow(world.clock?.running === true);
   const { phase, scene, clock, soundscape, seats } = world;
 
@@ -177,9 +231,10 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
     };
   }, [seats, scene?.tableKey, catalogs]);
   const waitText = snapshotError ?? "Waiting for TTS…";
+  const connected = snapshotError === null && Object.keys(world).length > 0;
 
   return (
-    <ScenesCommandContext.Provider value={commands.send}>
+    <ScenesCommandContext.Provider value={send}>
     <div className="lab-canvas scenes-live">
       {active && (
         <>
@@ -245,11 +300,11 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
                 onSwitch={(sceneTitle, clockMode) => {
                   const key = liveScenes.keyOf(sceneTitle);
                   if (key) {
-                    commands.send({ op: "playScene", key, clockMode });
+                    send({ op: "playScene", key, clockMode });
                   }
                 }}
                 onEndScene={() => {
-                  commands.send({ op: "endScene" });
+                  send({ op: "endScene" });
                   if (scene?.liveKey) {
                     liveScenes.remove(scene.liveKey);
                   }
@@ -274,9 +329,12 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
           <Box x={STRIP_X} y={STAGE_Y} w={STAGE_W} h={STAGE_H} className="lab-borderless">
             {board ? <WideBoard w={STAGE_W - 12} h={STAGE_H - 10} live={board} /> : <Waiting text={waitText} />}
           </Box>
-          <Box x={RIGHT_X} y={MAIN_Y} w={RIGHT_W} h={1042 - G - MAIN_Y} tone="reserved">
+          <Box x={RIGHT_X} y={MAIN_Y} w={RIGHT_W} h={RIGHT_H - QUEUE_H - G} tone="reserved">
             <CommandStatus pending={commands.pending} error={commands.error} onDismiss={commands.clearError} />
             {deckError && <div className="scenes-live-status error" role="alert">{deckError}</div>}
+          </Box>
+          <Box x={RIGHT_X} y={MAIN_Y + RIGHT_H - QUEUE_H} w={RIGHT_W} h={QUEUE_H} className="lab-queue-box">
+            <QueuePanel connected={connected} live={queueView} />
           </Box>
         </>
       )}
