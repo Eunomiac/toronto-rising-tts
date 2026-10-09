@@ -102,7 +102,7 @@ The catalogue is the **Generic** view of the roster in the **Scenes** tab (`Gene
 
 - **In this scene** lists the generic NPCs already spawned (from the `seats` push's `generics`); drag them onto the stage like any other token.
 - **Add from the catalog** filters the catalogue by the roster search box: every whitespace-separated term must match (AND) against label + tags + key (case-insensitive). At most 60 matches show.
-- **+ Add** asks for the name the players will see, then sends the `genericAdd` scene op (`GenericNpcs.importNamed` in Lua), which spawns the figurine. It obeys the Send / Live queue like every other scene command.
+- **+ Add** asks for the name the players will see, then sends the `genericAdd` scene op (`GenericNpcs.importNamed` in Lua), which spawns the figurine. It goes to TTS at once; only stage moves wait in the stage queue.
 - Token headshots come from the existing Generic folder (`/generic-npc-images/…`).
 
 The old standalone **Stage NPCs** tab (thumbnail grid, saved search tags, full-cutout hover preview, Copy keys) was retired when the Scenes tab took over generic NPCs.

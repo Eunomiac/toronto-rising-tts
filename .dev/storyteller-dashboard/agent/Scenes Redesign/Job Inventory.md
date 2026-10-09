@@ -383,7 +383,7 @@ Lab toggles (tab bar): **Preview** (blue slide-out for a library scene that isn'
 - **Stage tokens:** a small round head crop of the full-body figurine with the name underneath; hovering enlarges the head about 3.4×. Gold ring + glow = lit.
 - **Free placement (Standard mode):** token positions map straight to stage positions in the game world, so a token can be dragged anywhere. Pack slots stay, drawn as small rings, and do two jobs: dropping a whole group on a pack arranges it automatically, and a token dropped over a slot snaps to it (mild snapping, nowhere else).
 - **Larger stage labels** (17 px pack names).
-- **Right column:** Rolls on top, Queued changes underneath, with Send / Clear at the top of the queue panel.
+- **Right column:** Conditions, then Rolls down to the bottom. Stage edits queue in a pop-up over the stage board's bottom-left (Send / Clear), shown only while something waits.
 - **PC quick-controls panel** under the stage: one cell per PC in the same order as their chairs, with headshot, seat badge, Health and Willpower boxes (superficial = slash, aggravated = filled) and Hunger 0–5.
 - Table and Placement menus moved onto the board's empty bottom-left corner.
 - Head crop is one CSS rule (`%lab-headshot`: 230% width, anchored near the top). Most cutouts are tall and narrow (about 1:3) and crop well; a few are wide (Christianne is 1873×1499), so the real build needs a per-character crop override.
@@ -436,7 +436,6 @@ Lab toggles (tab bar): **Preview** (blue slide-out for a library scene that isn'
 - **Roster:** a closed group's name wraps to at most three lines; the group widens as needed (measured on a canvas), and each row of groups stretches to the full column width.
 - **When:** dusk and dawn show only the time, on small black rhombuses in the bottom corners. The date line is larger, with the weekday spelled out. A clock icon at the top right is the **real-time toggle**: pulsing green glow when on, muted grey when off. The pop-up is now a month calendar (scene day in yellow, present day in green, a time field) plus "Set scene time to present day" and "Set present day to scene time"; the jump buttons, typed date, and real-time control are gone.
 - **Sound:** row labels are icons (music notes, rain cloud, sound waves); "Location" became **Ambient**. Rain / Wind / Thunder are icons too. Each slider takes all the spare width in its row. "Stop all" is a **mute** button in the panel's bottom-right corner (red glow while muted).
-- **Queue:** red when TTS is offline, yellow in queued mode, green in live mode; the light is always solid and glowing in the same colour.
 - **PC panel** (removed in pass 6): Health is a heart icon, Willpower a brain, Hunger fangs. Seat numbers are gone.
 - **Seats:** a table with no chair at a position omits that cell; every cell keeps a ninth of the row and the row is centred. An empty chair is a blank cell (no "empty chair" text).
 - **Stage:** Scatter mode shows no label.

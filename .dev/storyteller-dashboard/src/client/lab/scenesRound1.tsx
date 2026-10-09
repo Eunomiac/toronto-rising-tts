@@ -7,10 +7,10 @@ import {
   LocationPanel,
   PhaseStrip,
   PRESENT_DAY,
-  QueuePanel,
   RosterDock,
   SCENE_LOCATION,
   SoundMixer,
+  StageQueue,
   WeatherPanel,
   WhenPanel,
   type HuntPc,
@@ -164,7 +164,6 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
   const stageH = 1042 - G - stageY;
   const boardW = stageW - 12;
   const boardH = stageH - 10;
-  const queueH = 420;
   const rightH = 1042 - G - mainY;
   const huntH = 48;
   const rosterY = bodyY + huntH + G;
@@ -222,7 +221,7 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
           onPlay={play}
           onEdit={() => setPreparing(true)}
           onPrepare={(at, districtName, siteName) => {
-            const title = `${districtName} — ${siteName}`;
+            const title = `${districtName} - ${siteName}`;
             setPrepared((now) => [...now, { key: title, title, location: at, indoors: true }]);
             setPreparing(true);
           }}
@@ -238,11 +237,9 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
       <Box x={stripX} y={stageY} w={stageW} h={stageH} className="lab-borderless">
         <WideBoard w={boardW} h={boardH} />
       </Box>
-      <Box x={rightX} y={mainY + aspectH + G} w={rightW} h={rightH - queueH - G - aspectH - G} className="roll-box">
+      <StageQueue x={stripX + G} bottom={1042 - stageY - stageH + G} connected={!ttsDisconnected} />
+      <Box x={rightX} y={mainY + aspectH + G} w={rightW} h={rightH - aspectH - G} className="roll-box">
         <RollsCell rolls={rolls} send={(command) => setRolls((current) => labRollsApply(current, command))} options={LAB_ROLL_OPTIONS} />
-      </Box>
-      <Box x={rightX} y={mainY + rightH - queueH} w={rightW} h={queueH} className="lab-queue-box">
-        <QueuePanel connected={!ttsDisconnected} />
       </Box>
       {(previewOpen || preparing) && (
         <Overlay onClose={() => setPreparing(false)}>

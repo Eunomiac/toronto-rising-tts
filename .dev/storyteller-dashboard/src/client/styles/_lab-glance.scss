@@ -1552,51 +1552,22 @@ $lab-live: #4caf6a;
   accent-color: #c9a24a;
 }
 
-/* ---------- queue: offline red, queued yellow, live green; the light always glows ---------- */
+/* ---------- stage queue: pop-up over the stage board's bottom-left while stage edits wait ---------- */
 
-$lab-queued: #e8c547;
-
-.lab-queue-box:has(.lab-queue.offline) {
-  border: 1px solid #7a2a33;
-  background: #241216;
-}
-
-.lab-queue-box:has(.lab-queue.queued) {
-  border: 1px solid #7a6626;
-  background: #221e10;
-}
-
-.lab-queue-box:has(.lab-queue.live) {
-  border: 1px solid #2f6a3f;
-  background: #13201a;
-}
-
-.lab-queue {
-  &.offline {
-    --queue-light: var(--red-bright);
-  }
-
-  &.queued {
-    --queue-light: #{$lab-queued};
-  }
-
-  &.live {
-    --queue-light: #{$lab-live};
-  }
-}
-
-.lab-conn-light {
+.stage-queue {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 16px;
-  height: 16px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: var(--queue-light);
-  box-shadow: 0 0 10px 2px var(--queue-light);
-  cursor: pointer;
+  z-index: 20;
+  width: 360px;
+  max-height: 320px;
+  padding: 6px 8px;
+  overflow-y: auto;
+  border: 1px solid #7a6626;
+  background: rgb(34 30 16 / 94%);
+  box-shadow: 0 4px 14px rgb(0 0 0 / 60%);
+
+  .lab-queue-actions {
+    justify-content: flex-end;
+  }
 }
 
 /* ---------- phase bar ---------- */

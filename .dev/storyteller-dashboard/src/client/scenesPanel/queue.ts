@@ -1,70 +1,22 @@
 import type { ScenesCommand } from "./commands";
 
 /**
- * Send / Live queue for the Scenes tab. In Live mode every command goes to TTS at once; in Queued mode the small
- * changes below wait for Send so a group of them lands together. Multi-step actions never wait: they send the
- * queue first, then themselves. Volumes, real time and the spotlight carousel always go straight through.
+ * The stage queue. Stage board edits (moves, lights, adding and removing NPCs, Scatter groups) wait in a pop-up
+ * over the board until Send, so a group of them lands together. Clear and Reset send the queue first, then
+ * themselves. Every other command goes to TTS at once.
  */
-export type SendMode = "live" | "queued";
-
 export type CommandKind = "queue" | "flush" | "direct";
 
 export const commandKind = (command: ScenesCommand): CommandKind => {
-  switch (command.op) {
-    case "seatPresence":
-    case "musicMood":
-    case "musicSilent":
-    case "locationMusic":
-    case "featuredPlay":
-    case "featuredStop":
-    case "ambience":
-    case "skybox":
-    case "topFog":
-    case "lighting":
-    case "conditions":
-    case "weatherOverride":
-    case "scatterPlace":
-      return "queue";
-    case "stage":
-      return "changes" in command ? "queue" : "flush";
-    case "laneVolume":
-    case "realTime":
-    case "spotlightRotate":
-    case "spotlightFront":
-    case "stopAll":
-    case "genericAdd":
-      return "direct";
-    case "phaseAdvance":
-    case "playSubPhase":
-    case "memoriam":
-    case "location":
-    case "table":
-    case "sessionNum":
-    case "sessionName":
-    case "clockTo":
-    case "presentDay":
-    case "playScene":
-    case "endScene":
-    case "upsertScene":
-    case "deleteScene":
-    case "unlinkScene":
-    case "forkScene":
-      return "flush";
+  if (command.op === "stage") {
+    return "changes" in command ? "queue" : "flush";
   }
+  return command.op === "scatterPlace" ? "queue" : "direct";
 };
 
 /** Queued commands with the same target replace each other, so the queue holds one entry per thing changed. */
 export const queueTarget = (command: ScenesCommand): string => {
   switch (command.op) {
-    case "seatPresence":
-      return `seat:${command.seat}`;
-    case "musicMood":
-    case "musicSilent":
-    case "locationMusic":
-      return "music";
-    case "featuredPlay":
-    case "featuredStop":
-      return "featured";
     case "stage":
       return "changes" in command ? `stage:${Object.keys(command.changes).sort().join(",")}` : "stage";
     case "scatterPlace":
@@ -91,7 +43,7 @@ export type QueueLine = { readonly id: number; readonly subject: string; readonl
 
 export type Describe = (command: ScenesCommand) => { readonly subject: string; readonly from: string; readonly to: string };
 
-/** Lines for the panel; a change that would leave the table as it is drops out of the count. */
+/** Lines for the pop-up; a change that would leave the table as it is drops out of the count. */
 export const queueLines = (entries: readonly QueueEntry[], describe: Describe): readonly QueueLine[] =>
   entries.flatMap((entry) => {
     const line = describe(entry.command);
@@ -103,9 +55,3 @@ export const commandsToSend = (entries: readonly QueueEntry[], lines: readonly Q
   const live = new Set(lines.map((line) => line.id));
   return entries.filter((entry) => live.has(entry.id)).map((entry) => entry.command);
 };
-
-const MODE_KEY = "tr-scenes-send-mode";
-
-export const loadSendMode = (): SendMode => (window.localStorage.getItem(MODE_KEY) === "queued" ? "queued" : "live");
-
-export const saveSendMode = (mode: SendMode): void => window.localStorage.setItem(MODE_KEY, mode);

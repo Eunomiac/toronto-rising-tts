@@ -29,7 +29,6 @@ import {
 import { MemoriamModal } from "./memoriamModal";
 import { Btn, Overlay, canvasPoint } from "./sketch";
 import { useScenesCommand, type SceneClockMode, type ScenesSend, type SoundLane } from "./commands";
-import type { SendMode } from "./queue";
 import { LOCATION_MUSIC_LABEL, MOOD_LABEL, fromDate, rainKey, type SoundView, type SpotlightView } from "./liveScene";
 import { GROUP_DRAG_TYPE, NPC_DRAG_TYPE } from "./stage";
 import { useWorldState } from "../worldState";
@@ -2116,7 +2115,7 @@ const AMBIENT_GRID_WIDTH = 660;
 /** Catalog keys of `FEATURED_TRACKS`, in the same order. */
 const FEATURED_KEYS = ["TR_Full", "TR_Intro", "TR_Loop", "STB_HouseOfTheRisingSun"] as const;
 
-export const featuredLabel = (key: string | undefined): string => {
+const featuredLabel = (key: string | undefined): string => {
   const index = FEATURED_KEYS.findIndex((entry) => entry === key);
   return FEATURED_TRACKS[index] ?? key ?? FEATURED_TRACKS[0];
 };
@@ -2346,98 +2345,56 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main", sceneAmbience = "S
   );
 };
 
-/* ---------- Queue: connection light doubles as the live / queued switch ---------- */
+/* ---------- Stage queue: pop-up over the stage board while stage edits wait ---------- */
 
-type QueuedChange = { readonly id: number; readonly subject: string; readonly to: string; readonly label?: string };
-
-/** What the table shows now, before any queued change is sent. */
-const QUEUE_BASE: Readonly<Record<string, string>> = { Victor: "unlit", "Black Caesar": "present", Weather: "rain" };
-
-const QUEUE_SAMPLE: readonly QueuedChange[] = [
-  { id: 1, subject: "Victor", to: "lit", label: "Light Victor (Mid Center)" },
-  { id: 2, subject: "Black Caesar", to: "absent" },
-  { id: 3, subject: "Weather", to: "heavy rain" },
-  { id: 4, subject: "Weather", to: "thunderstorm" }
-];
-
-/**
- * Each change reads its "from" value from the table plus the changes queued before it, so removing one rewrites
- * the ones after it; a change left with nothing to do drops out.
- */
-const describeQueue = (queue: readonly QueuedChange[]): readonly { readonly id: number; readonly text: string }[] => {
-  const state: Record<string, string> = { ...QUEUE_BASE };
-  const lines: { id: number; text: string }[] = [];
-  for (const change of queue) {
-    const from = state[change.subject];
-    if (from === change.to) {
-      continue;
-    }
-    lines.push({ id: change.id, text: change.label ?? `${change.subject}: ${from ?? "?"} → ${change.to}` });
-    state[change.subject] = change.to;
-  }
-  return lines;
-};
-
-/** The Scenes tab's queue: its mode, the lines to show, and what Send, × and Clear do. */
-export type QueueView = {
-  readonly mode: SendMode;
+/** The stage queue's lines and what Send, × and Clear do. */
+export type StageQueueView = {
   readonly lines: readonly { readonly id: number; readonly text: string }[];
-  readonly setMode: (mode: SendMode) => void;
   readonly send: () => void;
   readonly remove: (id: number) => void;
   readonly clear: () => void;
 };
 
+const STAGE_QUEUE_SAMPLE: readonly { readonly id: number; readonly text: string }[] = [
+  { id: 1, text: "Victor: off the stage → Mid Center" },
+  { id: 2, text: "Black Caesar: Front Left → Front Left (dark)" }
+];
+
 /**
- * Offline (red) while TTS is not connected; otherwise queued (yellow) or live (green). The light is always lit;
- * click it to switch modes. Without `live` (the Lab) it shows a sample queue.
+ * Stage board edits waiting for Send, listed in order; it shows only while something waits. Without `live` (the
+ * Lab) it shows a sample queue.
  */
-export const QueuePanel = ({ connected, live: view }: { connected: boolean; live?: QueueView }): ReactElement => {
-  const [labLive, setLabLive] = useState(false);
-  const [queue, setQueue] = useState(QUEUE_SAMPLE);
-  const live = view ? view.mode === "live" : labLive;
-  const lines = view ? view.lines : describeQueue(queue);
-  const remove = (id: number): void => (view ? view.remove(id) : setQueue(queue.filter((change) => change.id !== id)));
-  const mode = !connected ? "offline" : live ? "live" : "queued";
+export const StageQueue = ({ x, bottom, connected, live: view }: { x: number; bottom: number; connected: boolean; live?: StageQueueView }): ReactElement | null => {
+  const [sample, setSample] = useState(STAGE_QUEUE_SAMPLE);
+  const lines = view ? view.lines : sample;
+  if (lines.length === 0) {
+    return null;
+  }
+  const remove = (id: number): void => (view ? view.remove(id) : setSample(sample.filter((line) => line.id !== id)));
   return (
-    <div className={`lab-queue ${mode}`}>
-      <button
-        type="button"
-        className="lab-conn-light"
-        title={`${connected ? "TTS connected" : "TTS not connected"} · click for ${live ? "queued" : "live"} mode`}
-        onClick={() => (view ? view.setMode(live ? "queued" : "live") : setLabLive(!live))}
-      />
+    <div className="lab-queue stage-queue" style={{ left: x, bottom }}>
+      <ol className="lab-queue-list">
+        {lines.map((line) => (
+          <li key={line.id}>
+            <span>{line.text}</span>
+            <button type="button" className="lab-queue-remove" title="Remove from the queue" onClick={() => remove(line.id)}>
+              ×
+            </button>
+          </li>
+        ))}
+      </ol>
       <div className="lab-queue-actions">
-        {live ? <Btn tone="live">Live</Btn> : (
-          <button type="button" className="lab-btn primary" disabled={lines.length === 0 || !connected} onClick={() => view?.send()}>
-            {lines.length === 0 ? "Nothing queued" : `Send ${lines.length} change${lines.length === 1 ? "" : "s"}`}
-          </button>
-        )}
+        <button type="button" className="lab-btn" onClick={() => (view ? view.clear() : setSample([]))}>Clear</button>
+        <button
+          type="button"
+          className="lab-btn primary"
+          disabled={!connected}
+          title={connected ? undefined : "TTS is not connected"}
+          onClick={() => (view ? view.send() : setSample([]))}
+        >
+          {`Send ${lines.length} change${lines.length === 1 ? "" : "s"}`}
+        </button>
       </div>
-      {!live && (
-        <>
-          <ol className="lab-queue-list">
-            {lines.map((line) => (
-              <li key={line.id}>
-                <span>{line.text}</span>
-                <button
-                  type="button"
-                  className="lab-queue-remove"
-                  title="Remove from the queue"
-                  onClick={() => remove(line.id)}
-                >
-                  ×
-                </button>
-              </li>
-            ))}
-          </ol>
-          {lines.length > 0 && (
-            <div className="lab-queue-actions">
-              <button type="button" className="lab-btn" onClick={() => (view ? view.clear() : setQueue([]))}>Clear queue</button>
-            </div>
-          )}
-        </>
-      )}
     </div>
   );
 };

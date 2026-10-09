@@ -7,14 +7,14 @@ import {
   HuntRoller,
   LocationPanel,
   PhaseStrip,
-  QueuePanel,
   RosterDock,
   SoundMixer,
+  StageQueue,
   WeatherPanel,
   WhenPanel,
   type LabLocation,
   type LiveScenes,
-  type QueueView
+  type StageQueueView
 } from "./glance";
 import { ScenePreview } from "./preview";
 import { useControlBoardSnaps, useSceneCatalogs } from "./roster";
@@ -45,7 +45,7 @@ import {
   toDate,
   weatherAxes
 } from "./liveScene";
-import { addToQueue, commandKind, commandsToSend, loadSendMode, queueLines, saveSendMode, type QueueEntry, type SendMode } from "./queue";
+import { addToQueue, commandKind, commandsToSend, queueLines, type QueueEntry } from "./queue";
 import { describeQueued } from "./queueLabels";
 import { boardToStage, stagePacks, type StagePack } from "./stageFrame";
 
@@ -68,9 +68,8 @@ const ASPECT_H = 114;
 const STAGE_Y = MAIN_Y + ASPECT_H + G;
 const STAGE_H = 1042 - G - STAGE_Y;
 const RIGHT_H = 1042 - G - MAIN_Y;
-const QUEUE_H = 420;
 const ROLLS_Y = MAIN_Y + ASPECT_H + G;
-const ROLLS_H = RIGHT_H - QUEUE_H - G - ASPECT_H - G;
+const ROLLS_H = RIGHT_H - ASPECT_H - G;
 const HUNT_H = 48;
 const ROSTER_Y = BODY_Y + HUNT_H + G;
 const WHEN_W = 470;
@@ -196,22 +195,21 @@ const useRollsQueue = (): { send: RollsSend; options: OptionsAccess; pending: nu
 };
 
 /**
- * Send / Live mode (remembered; Live by default). Queued mode holds the small changes `commandKind` marks "queue"
- * until Send; a multi-step action sends the queue first, in the same batch. Switching to Live sends what is queued.
+ * Stage board edits (`commandKind` "queue") wait in the stage queue pop-up until Send; Clear and Reset send the
+ * queue first, in the same batch. Everything else goes straight to TTS.
  */
-const useSendMode = (
+const useStageQueue = (
   transport: { send: ScenesSend; sendAll: (commands: readonly ScenesCommand[]) => void },
   world: WorldState,
   catalogs: SceneCatalogs | null,
   packs: readonly StagePack[]
-): { send: ScenesSend; sendBatch: (commands: readonly ScenesCommand[]) => void; view: QueueView; queued: readonly ScenesCommand[] } => {
-  const [mode, setModeState] = useState<SendMode>(loadSendMode);
+): { send: ScenesSend; view: StageQueueView; queued: readonly ScenesCommand[] } => {
   const [entries, setEntries] = useState<readonly QueueEntry[]>([]);
   const nextId = useRef(1);
   const lines = useMemo(() => queueLines(entries, describeQueued(world, catalogs, packs)), [entries, world, catalogs, packs]);
   const queued = useMemo(() => entries.map((entry) => entry.command), [entries]);
-  const latest = useRef({ entries, lines, mode, transport });
-  latest.current = { entries, lines, mode, transport };
+  const latest = useRef({ entries, lines, transport });
+  latest.current = { entries, lines, transport };
   const takeQueue = useCallback((): readonly ScenesCommand[] => {
     const pending = commandsToSend(latest.current.entries, latest.current.lines);
     setEntries([]);
@@ -219,7 +217,7 @@ const useSendMode = (
   }, []);
   const send = useCallback<ScenesSend>((command) => {
     const kind = commandKind(command);
-    if (kind === "queue" && latest.current.mode === "queued") {
+    if (kind === "queue") {
       setEntries((previous) => addToQueue(previous, command, nextId.current++));
     } else if (kind === "flush") {
       latest.current.transport.sendAll([...takeQueue(), command]);
@@ -227,22 +225,13 @@ const useSendMode = (
       latest.current.transport.send(command);
     }
   }, [takeQueue]);
-  const sendBatch = useCallback((commands: readonly ScenesCommand[]) => latest.current.transport.sendAll([...takeQueue(), ...commands]), [takeQueue]);
-  const view: QueueView = {
-    mode,
+  const view: StageQueueView = {
     lines: lines.map((line) => ({ id: line.id, text: `${line.subject}: ${line.from} → ${line.to}` })),
-    setMode: (next) => {
-      if (next === "live") {
-        transport.sendAll(takeQueue());
-      }
-      saveSendMode(next);
-      setModeState(next);
-    },
     send: () => transport.sendAll(takeQueue()),
     remove: (id) => setEntries((previous) => previous.filter((entry) => entry.id !== id)),
     clear: () => setEntries([])
   };
-  return { send, sendBatch, view, queued };
+  return { send, view, queued };
 };
 
 const CommandStatus = ({ pending, error, onDismiss }: { pending: number; error: string | null; onDismiss: () => void }): ReactElement | null => {
@@ -266,7 +255,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const { snaps } = useControlBoardSnaps();
   const liveSheet = useLiveSheet();
   const packs = useMemo(() => (snaps ? stagePacks(snaps) : []), [snaps]);
-  const { send, sendBatch, view: queueView, queued } = useSendMode(commands, world, catalogs, packs);
+  const { send, view: queueView, queued } = useStageQueue(commands, world, catalogs, packs);
   const now = useNow(world.clock?.running === true);
   const { phase, scene, clock, soundscape, seats, rolls } = world;
 
@@ -284,7 +273,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const title = scene?.liveTitle ?? null;
   const liveScenes = useLiveScenes(scene?.liveKey, title);
   const deckError = useSceneDeckStatus().error;
-  const library = useLibraryActions({ scene, sendBatch, removeFromDeck: liveScenes.remove });
+  const library = useLibraryActions({ scene, sendBatch: commands.sendAll, removeFromDeck: liveScenes.remove });
   const libraryError = useSceneLibraryStatus().error;
   const presentNow = present ?? new Date();
   const stageTokens = useMemo(
@@ -445,6 +434,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
           <Box x={STRIP_X} y={STAGE_Y} w={STAGE_W} h={STAGE_H} className="lab-borderless">
             {board ? <WideBoard w={STAGE_W - 12} h={STAGE_H - 10} live={board} /> : <Waiting text={waitText} />}
           </Box>
+          <StageQueue x={STRIP_X + G} bottom={1042 - STAGE_Y - STAGE_H + G} connected={connected} live={queueView} />
           <Box x={RIGHT_X} y={ROLLS_Y} w={RIGHT_W} h={ROLLS_H} className="roll-box">
             <CommandStatus pending={commands.pending} error={commands.error} onDismiss={commands.clearError} />
             <CommandStatus pending={rollCommands.pending} error={rollCommands.error} onDismiss={rollCommands.clearError} />
@@ -457,9 +447,6 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
               </div>
             )}
             <RollsCell rolls={rolls} pending={rollCommands.pending} send={rollCommands.send} options={rollCommands.options} />
-          </Box>
-          <Box x={RIGHT_X} y={MAIN_Y + RIGHT_H - QUEUE_H} w={RIGHT_W} h={QUEUE_H} className="lab-queue-box">
-            <QueuePanel connected={connected} live={queueView} />
           </Box>
           {library.previewKey !== null && library.previews.length > 0 && (
             <Overlay onClose={library.closePreview}>

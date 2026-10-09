@@ -2,53 +2,55 @@ import { describe, expect, it } from "vitest";
 import type { ScenesCommand } from "./commands";
 import { addToQueue, commandKind, commandsToSend, queueLines, type Describe, type QueueEntry } from "./queue";
 
-const absent = (seat: string): ScenesCommand => ({ op: "seatPresence", seat, present: false });
+const move = (key: string, u: number): ScenesCommand => ({ op: "stage", changes: { [key]: { u, v: 0.5 } } });
+const scatter = (key: string, group?: number): ScenesCommand =>
+  group === undefined ? { op: "scatterPlace", characterKey: key, kind: "npc" } : { op: "scatterPlace", characterKey: key, kind: "npc", group };
 
-/** Every seat starts in the scene; music starts on Main. */
+/** Every NPC starts at u 0.1, outside any Scatter group. */
 const describeAgainstTable: Describe = (command) => {
-  if (command.op === "seatPresence") {
-    return { subject: command.seat, from: "in", to: command.present ? "in" : "out" };
+  if (command.op === "stage" && "changes" in command) {
+    const [key, change] = Object.entries(command.changes)[0] ?? [];
+    return { subject: key ?? "", from: "0.1", to: change && "u" in change ? String(change.u) : "off" };
   }
-  if (command.op === "musicMood") {
-    return { subject: "Music", from: "main", to: command.mood };
+  if (command.op === "scatterPlace") {
+    return { subject: command.characterKey, from: "none", to: String(command.group ?? "none") };
   }
   throw new Error(`unexpected ${command.op}`);
 };
 
 describe("commandKind", () => {
-  it("queues small changes, flushes before multi-step actions and never holds volumes", () => {
-    expect(commandKind(absent("Red"))).toBe("queue");
-    expect(commandKind({ op: "ambience", key: "none" })).toBe("queue");
-    expect(commandKind({ op: "playScene", key: "s1" })).toBe("flush");
-    expect(commandKind({ op: "clockTo", datetime: { year: 2026, month: 9, day: 1, hour: 21, minute: 0 } })).toBe("flush");
-    expect(commandKind({ op: "laneVolume", lane: "rain", volume: 0.5 })).toBe("direct");
+  it("queues only stage board edits; Clear and Reset send the queue first; the rest goes straight to TTS", () => {
+    expect(commandKind(move("victor", 0.4))).toBe("queue");
+    expect(commandKind(scatter("victor", 2))).toBe("queue");
+    expect(commandKind({ op: "stage", clear: true })).toBe("flush");
+    expect(commandKind({ op: "seatPresence", seat: "Red", present: false })).toBe("direct");
+    expect(commandKind({ op: "lighting", presetKey: "AdminDark" })).toBe("direct");
+    expect(commandKind({ op: "playScene", key: "s1" })).toBe("direct");
   });
 });
 
 describe("queue entries", () => {
   it("collapses repeated edits of one target in place", () => {
     let entries: readonly QueueEntry[] = [];
-    entries = addToQueue(entries, absent("Red"), 1);
-    entries = addToQueue(entries, { op: "musicMood", mood: "combat" }, 2);
-    entries = addToQueue(entries, { op: "musicSilent" }, 3);
-    expect(entries.map((entry) => entry.id)).toEqual([1, 3]);
-    expect(entries[1]?.command.op).toBe("musicSilent");
+    entries = addToQueue(entries, move("victor", 0.4), 1);
+    entries = addToQueue(entries, scatter("mira", 1), 2);
+    entries = addToQueue(entries, move("victor", 0.6), 3);
+    expect(entries.map((entry) => entry.id)).toEqual([3, 2]);
   });
 
   it("drops a change that would leave the table as it is, and Send skips it", () => {
     let entries: readonly QueueEntry[] = [];
-    entries = addToQueue(entries, absent("Red"), 1);
-    entries = addToQueue(entries, { op: "musicMood", mood: "main" }, 2);
-    entries = addToQueue(entries, absent("Pink"), 3);
+    entries = addToQueue(entries, move("victor", 0.4), 1);
+    entries = addToQueue(entries, move("mira", 0.1), 2);
+    entries = addToQueue(entries, scatter("rex", 3), 3);
     const lines = queueLines(entries, describeAgainstTable);
     expect(lines.map((line) => line.id)).toEqual([1, 3]);
-    expect(lines[0]).toMatchObject({ subject: "Red", from: "in", to: "out" });
-    expect(commandsToSend(entries, lines)).toEqual([absent("Red"), absent("Pink")]);
+    expect(commandsToSend(entries, lines)).toEqual([move("victor", 0.4), scatter("rex", 3)]);
   });
 
-  it("toggling a seat back cancels its queued change", () => {
-    let entries: readonly QueueEntry[] = addToQueue([], absent("Red"), 1);
-    entries = addToQueue(entries, { op: "seatPresence", seat: "Red", present: true }, 2);
+  it("moving an NPC back to where it stands cancels its queued change", () => {
+    let entries: readonly QueueEntry[] = addToQueue([], move("victor", 0.4), 1);
+    entries = addToQueue(entries, move("victor", 0.1), 2);
     expect(queueLines(entries, describeAgainstTable)).toEqual([]);
   });
 });
