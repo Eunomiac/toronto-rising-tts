@@ -1,5 +1,5 @@
-// Scenes tab Rolls cell: PC roll rows, the Storyteller dice drawers, the live NPC roll, the dice ring and the
-// options pop-up. A roll's phase is its background and glow, never text.
+// Scenes tab Rolls cell: PC roll cards, the Storyteller dice drawers, the live NPC roll card, the dice ring and
+// the options pop-up. A roll's phase is its background and glow, never text. Compact: almost no padding, Bebas Neue.
 
 $phase-red: #ff3434;
 $phase-gold: #e8b83c;
@@ -16,10 +16,26 @@ $phase-blue-bright: #8cc0ff;
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: 6px;
+  gap: 3px;
   min-height: 0;
-  padding: 6px;
+  padding: 6px 7px 4px 4px;
   overflow-y: auto;
+
+  // Pencil-thin scroll bar. The standard properties must be back at auto or Chrome ignores the ::-webkit ones.
+  scrollbar-color: auto;
+  scrollbar-width: auto;
+
+  &::-webkit-scrollbar {
+    width: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #55555f;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
 }
 
 @keyframes roll-pulse-gold {
@@ -44,7 +60,7 @@ $phase-blue-bright: #8cc0ff;
   }
 }
 
-// Shared by PC rows, the NPC panel and the drawer chips.
+// Shared by the roll cards and the drawer chips.
 @mixin roll-phases {
   &.phase-setup {
     border-color: $phase-red;
@@ -90,84 +106,165 @@ $phase-blue-bright: #8cc0ff;
   }
 }
 
-.roll-row,
-.roll-npc {
+// A roll card: type down the left edge, name / pool / difficulty + result / dice in the body, actions down the
+// right edge, close button just outside the top-right corner on hover.
+.roll-card {
+  position: relative;
   display: flex;
   flex: 0 0 auto;
-  flex-direction: column;
-  gap: 3px;
-  padding: 3px 4px;
+  align-items: stretch;
+  min-height: 0;
   border: 1px solid #34343e;
-  border-left: 3px solid var(--seat-color, #8a8a96);
+  border-left: 0;
   background: #1a1a20;
 
   @include roll-phases;
-}
 
-.roll-row {
-  // Finished but not yet shown to the table: dim, dashed, waiting on Broadcast or dismiss.
   &.held {
     border-style: dashed;
-    border-left-style: solid;
     border-color: #6a4a4a;
     background: #1c1618;
     opacity: 0.85;
   }
 
-  &[class*="phase-"] {
-    border-left-color: var(--seat-color, #8a8a96);
+  &.has-acts .roll-body {
+    padding-right: 22px;
+  }
+
+  &:hover .roll-close {
+    opacity: 1;
+    pointer-events: auto;
   }
 }
 
-.roll-npc {
-  border-left-color: #c9c9d4;
+.roll-edge {
+  display: flex;
+  flex: 0 0 13px;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-right: 1px solid color-mix(in srgb, var(--seat-color, #8a8a96) 55%, transparent);
+  color: var(--seat-color, #a8a8b4);
+  background: color-mix(in srgb, var(--seat-color, #8a8a96) 16%, #121216);
+  cursor: pointer;
+
+  span {
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 11px;
+    line-height: 1;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    text-transform: uppercase;
+    transform: rotate(180deg);
+    writing-mode: vertical-rl;
+  }
+
+  &:hover:not(:disabled) {
+    color: #fff;
+  }
+
+  &:disabled {
+    cursor: default;
+  }
 }
 
-.roll-row-head,
-.roll-row-line {
+.roll-card.npc .roll-edge {
+  --seat-color: #c9c9d4;
+}
+
+.roll-card.collapsed .roll-edge span {
+  font-size: 9px;
+}
+
+.roll-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  padding: 1px 3px 2px;
+}
+
+.roll-head {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  min-width: 0;
+}
+
+.roll-name {
+  flex: 0 1 auto;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  color: #f2f2f6;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 19px;
+  line-height: 1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  background: none;
+  cursor: pointer;
+
+  &:hover {
+    color: #fff;
+    text-shadow: 0 0 6px rgb(255 255 255 / 35%);
+  }
+}
+
+.roll-card.collapsed .roll-name {
+  font-size: 16px;
+}
+
+// "No Take Half ◆ No WP Reroll": tiny condensed italics, brighter diamonds between.
+.roll-conds {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: #9a9aa8;
+  font-family: "Arial Narrow", sans-serif;
+  font-size: 9px;
+  font-style: italic;
+  text-align: right;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.roll-conds-dia {
+  margin: 0 3px;
+  color: #fff;
+  font-size: 7px;
+  font-style: normal;
+}
+
+.roll-flags {
+  display: inline-flex;
+  gap: 3px;
+  color: #c9c9d4;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+
+  span {
+    padding: 0 2px;
+    border: 1px solid #6a6a78;
+  }
+}
+
+.roll-line {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+  min-height: 20px;
 }
 
-.roll-row-line {
-  flex-wrap: wrap;
-  justify-content: space-between;
-  min-height: 18px;
-}
-
-.roll-row-name {
-  overflow: hidden;
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.roll-row-type {
-  flex: 1 1 auto;
-  overflow: hidden;
-  color: #a8a8b4;
-  font-size: 11px;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.roll-flag {
-  padding: 0 3px;
-  border: 1px solid #6a6a78;
-  color: #c9c9d4;
-  font-size: 9px;
-  font-weight: 700;
-}
-
-.roll-row-sub {
-  color: #c9c9d4;
-  font-size: 11px;
-
-  &.dim {
-    color: #8a8a96;
-  }
+.roll-sub {
+  font-size: 10px;
 
   &.warn {
     color: #e0b04a;
@@ -175,18 +272,19 @@ $phase-blue-bright: #8cc0ff;
 }
 
 .roll-result {
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: 0.03em;
   white-space: nowrap;
 
   &.criticalWin,
   &.win {
-    color: #7fd18b;
+    color: #5fe07a;
   }
 
   &.messyCritical {
-    color: #e0b04a;
+    color: #f2c44e;
   }
 
   &.failure,
@@ -200,54 +298,68 @@ $phase-blue-bright: #8cc0ff;
   }
 }
 
-.roll-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 3px;
+.roll-card.collapsed .roll-result {
+  font-size: 16px;
+}
 
-  &.end {
-    justify-content: flex-end;
-    margin-top: 6px;
+// The result text is the override menu: an invisible native select lies over it.
+.roll-result-pick {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+
+  select {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  &:hover .roll-result {
+    text-decoration: underline dotted;
+    text-underline-offset: 3px;
   }
 }
 
-.roll-choice {
-  display: inline-flex;
-  gap: 2px;
-  margin-left: 6px;
-  padding-left: 6px;
-  border-left: 1px solid #44444f;
+// Actions down the right edge: icons that name themselves on hover, sliding out to the left.
+.roll-acts {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
 }
 
-.roll-icon-btn {
+.roll-act {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  flex: 0 0 auto;
-  padding: 2px;
-  border: 1px solid #44444f;
-  color: #e4e4ec;
-  background: #24242c;
+  height: 19px;
+  padding: 0 2px;
+  border: 1px solid transparent;
+  color: #d4d4de;
+  background: none;
   cursor: pointer;
 
   .lab-icon {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
+    flex: 0 0 auto;
     fill: currentcolor;
   }
 
-  &.glyph {
-    font-size: 14px;
-    font-weight: 800;
-    line-height: 1;
-  }
-
   &:hover:not(:disabled) {
-    border-color: #8a8a96;
-    background: #2e2e38;
+    border-color: #6a6a78;
+    color: #fff;
+    background: #24242c;
+
+    .roll-act-label {
+      max-width: 180px;
+      margin-right: 4px;
+    }
   }
 
   &:disabled {
@@ -255,10 +367,8 @@ $phase-blue-bright: #8cc0ff;
     cursor: default;
   }
 
-  &.primary {
-    border-color: #a8873a;
+  &.gold {
     color: #f2c44e;
-    background: #2e2614;
   }
 
   &.wp {
@@ -276,49 +386,126 @@ $phase-blue-bright: #8cc0ff;
   &.danger {
     color: #d57a7a;
   }
+}
 
-  &.danger:hover:not(:disabled) {
-    border-color: #d57a7a;
+.roll-act-label {
+  max-width: 0;
+  overflow: hidden;
+  font-size: 11px;
+  white-space: nowrap;
+  transition: max-width 0.15s ease;
+}
+
+.roll-act-glyph {
+  width: 14px;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+}
+
+// Close: a small red square just outside the top-right corner, shown while the card is hovered.
+.roll-close {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  padding: 0;
+  border: 1px solid #ff5a5a;
+  color: #ff5a5a;
+  background: #2a1214;
+  opacity: 0;
+  cursor: pointer;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+
+  .lab-icon {
+    width: 9px;
+    height: 9px;
+    fill: currentcolor;
+  }
+
+  &:hover {
+    color: #fff;
+    background: #8a2020;
   }
 }
 
-.roll-override {
-  height: 20px;
-  padding: 0 4px;
-  border: 1px solid #44444f;
-  color: #e4e4ec;
-  font-size: 11px;
-  background: #24242c;
+.roll-buttons.end {
+  display: flex;
+  justify-content: flex-end;
+  gap: 3px;
+  margin-top: 6px;
 }
 
+// Difficulty: the strip until picked, then "vs. N"; reopened, the strip lies over the result line.
 .roll-strip {
   display: flex;
+  flex: 1 1 auto;
   align-items: center;
   gap: 1px;
 
-  &.disabled {
-    opacity: 0.45;
+  &.over {
+    position: absolute;
+    inset: 0 0 0 0;
+    z-index: 1;
+    background: #16161c;
   }
 }
 
 .roll-strip-cell {
   flex: 1 1 0;
   min-width: 0;
+  height: 18px;
   padding: 0;
   border: 1px solid #34343e;
   color: #c9c9d4;
-  font-size: 10px;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 13px;
+  line-height: 1;
   background: #202027;
   cursor: pointer;
 
   &.on {
     border-color: #c9c9d4;
     color: #fff;
-    font-weight: 800;
     background: #4a4a6a;
   }
 
+  &:hover {
+    border-color: #8a8a96;
+  }
+}
+
+.roll-vs {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: #a8a8b4;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 13px;
+}
+
+.roll-vs-box {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 3px;
+  border: 1px solid #c9c9d4;
+  color: #fff;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 15px;
+  line-height: 1;
+  background: #3a3a5a;
+  cursor: pointer;
+
   &:disabled {
+    border-color: #6a6a78;
+    background: #26262e;
     cursor: default;
   }
 }
@@ -488,9 +675,8 @@ $phase-blue-bright: #8cc0ff;
     outline: 1px solid #c9c9d4;
   }
 
-  .roll-icon-btn {
-    width: 18px;
-    height: 18px;
+  .roll-act {
+    height: 16px;
 
     .lab-icon {
       width: 12px;

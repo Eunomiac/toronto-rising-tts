@@ -1,17 +1,19 @@
-import { useEffect, useState, type CSSProperties, type MouseEvent, type ReactElement } from "react";
+import { useEffect, useState, type CSSProperties, type MouseEvent, type ReactElement, type ReactNode } from "react";
 import { Icon, type IconName } from "../icons";
 import { canvasPoint, Overlay } from "../sketch";
 import { SEAT_ACCENT } from "../../pcSheet/layout";
-import type { PcRoll, PoolKind, RollsSlice, StLiveRoll, StRollSlot } from "../../worldState";
+import type { PcRoll, PoolKind, RollResult, RollsSlice, StLiveRoll, StRollSlot } from "../../worldState";
 import type { RollOptionsView } from "./bridge";
 import type { PoolDieAction, RollsSend } from "./commands";
 import { DiceRing, PoolDiamonds, RolledDice } from "./dice";
 import {
+  conditionList,
   draftFromView,
   PERMANENT_OPTIONS,
   poolRingChoices,
   RESULT_CLASSES,
   rollPhaseLabel,
+  rollTypeEdge,
   rollTypeLabel,
   STRUCTURAL_OPTIONS,
   toggleCondition,
@@ -20,10 +22,12 @@ import {
 } from "./view";
 
 /**
- * The Scenes tab's Rolls cell: every Storyteller roll control. PC rolls get one row each (the difficulty strip
- * doubles as approval for a roll waiting in setup); the three Storyteller dice drawers sit below, then the live
- * NPC roll. A row's background and glow tell its phase; clicking an editable pool opens its dice ring. Dice still
- * roll physically in TTS.
+ * The Scenes tab's Rolls cell: every Storyteller roll control. Each PC roll and the live NPC roll is a compact
+ * card: the roll type runs down its left edge (click it for the roll options), the name collapses the card to
+ * one line, the close button shows on hover, difficulty folds to "vs. N" once picked, the result text is itself
+ * the override menu, and the actions stack down the right edge as icons that name themselves on hover. The
+ * three Storyteller dice drawers sit between the PC rolls and the NPC roll. A card's background and glow tell
+ * its phase. Dice still roll physically in TTS.
  */
 
 export type OptionsAccess = {
@@ -44,53 +48,159 @@ const phaseClass = (phase: string | undefined, wpReroll: boolean): string =>
 const phaseTitle = (phase: string | undefined, wpReroll: boolean): string =>
   wpReroll ? `${rollPhaseLabel(phase)} (Willpower reroll)` : rollPhaseLabel(phase);
 
-const DifficultyStrip = ({ value, disabled, title, onPick }: {
+/**
+ * Difficulty: the 0–10 strip until one is picked, then a "vs. N" box; clicking the box slides the strip open
+ * again over the result line, and picking folds it.
+ */
+const Difficulty = ({ value, editable, title, onPick }: {
   value: number | undefined;
-  disabled?: boolean;
+  editable: boolean;
   title: string;
   onPick: (n: number) => void;
-}): ReactElement => (
-  <div className={`roll-strip${disabled ? " disabled" : ""}`} title={title}>
-    {range(0, DIFFICULTY_MAX).map((n) => (
-      <button key={n} type="button" className={`roll-strip-cell${n === value ? " on" : ""}`} disabled={disabled} onClick={() => onPick(n)}>
-        {n}
+}): ReactElement | null => {
+  const [open, setOpen] = useState(false);
+  if (editable && (value === undefined || open)) {
+    return (
+      <div className={`roll-strip${value === undefined ? "" : " over"}`} title={title}>
+        {range(0, DIFFICULTY_MAX).map((n) => (
+          <button
+            key={n}
+            type="button"
+            className={`roll-strip-cell${n === value ? " on" : ""}`}
+            onClick={() => {
+              setOpen(false);
+              onPick(n);
+            }}
+          >
+            {n}
+          </button>
+        ))}
+      </div>
+    );
+  }
+  if (value === undefined) {
+    return null;
+  }
+  return (
+    <span className="roll-vs">
+      vs.
+      <button type="button" className="roll-vs-box" disabled={!editable} title={editable ? "Change the difficulty" : "Difficulty"} onClick={() => setOpen(true)}>
+        {value}
       </button>
-    ))}
-  </div>
-);
+    </span>
+  );
+};
 
-const IconBtn = ({ icon, title, className, disabled, onClick, onContextMenu }: {
-  icon: IconName;
-  title: string;
-  className?: string;
-  disabled?: boolean;
-  onClick: (event: MouseEvent<HTMLButtonElement>) => void;
-  onContextMenu?: (event: MouseEvent<HTMLButtonElement>) => void;
-}): ReactElement => (
+/** The result headline; when the Storyteller may override it, the text itself opens the result menu. */
+const ResultText = ({ result, onOverride }: { result: RollResult | undefined; onOverride?: (resultClass: string) => void }): ReactElement | null => {
+  if (!result?.text) {
+    return null;
+  }
+  const text = <span className={`roll-result ${result.resultClass ?? ""}`}>{result.text}</span>;
+  return onOverride ? (
+    <label className="roll-result-pick" title="Click to override the result">
+      {text}
+      <select
+        value={result.resultClass ?? ""}
+        onChange={(event) => onOverride(event.target.value)}
+        aria-label="Override the result"
+      >
+        {RESULT_CLASSES.map((entry) => <option key={entry.key} value={entry.key}>{entry.label}</option>)}
+      </select>
+    </label>
+  ) : text;
+};
+
+/** One action down a card's right edge: an icon (or glyph) that names itself on hover. */
+type CardAction = {
+  readonly key: string;
+  readonly label: string;
+  readonly icon?: IconName;
+  readonly glyph?: string;
+  readonly tone?: string;
+  readonly disabled?: boolean;
+  /** Still shown on a collapsed one-line card. */
+  readonly keep?: boolean;
+  readonly onClick: () => void;
+  /** Right-click runs the quiet variant (secret dice / no broadcast). */
+  readonly onQuiet?: () => void;
+};
+
+const ActionButton = ({ action }: { action: CardAction }): ReactElement => (
   <button
     type="button"
-    className={`roll-icon-btn${className ? ` ${className}` : ""}`}
-    title={title}
-    aria-label={title}
-    disabled={disabled}
-    onClick={onClick}
-    onContextMenu={onContextMenu}
+    className={`roll-act${action.tone ? ` ${action.tone}` : ""}`}
+    title={action.label}
+    aria-label={action.label}
+    disabled={action.disabled}
+    onClick={action.onClick}
+    onContextMenu={action.onQuiet ? (event) => {
+      event.preventDefault();
+      action.onQuiet?.();
+    } : undefined}
   >
-    <Icon name={icon} />
+    <span className="roll-act-label">{action.label}</span>
+    {action.icon ? <Icon name={action.icon} /> : <span className="roll-act-glyph">{action.glyph}</span>}
   </button>
 );
 
-/** Right-click runs the quiet variant of an action (secret dice / no broadcast). */
-const quietClick = (run: (quiet: boolean) => void) => ({
-  onClick: () => run(false),
-  onContextMenu: (event: MouseEvent) => {
-    event.preventDefault();
-    run(true);
-  }
-});
-
-const ResultLine = ({ text, resultClass }: { text: string; resultClass: string | undefined }): ReactElement | null =>
-  text ? <span className={`roll-result ${resultClass ?? ""}`}>{text}</span> : null;
+const RollCard = ({ className, style, title, rollType, onType, name, flags, conditions, result, collapsed, onToggle, actions, onClose, closeLabel, children }: {
+  className: string;
+  style?: CSSProperties;
+  title: string;
+  rollType: string | undefined;
+  onType?: (event: MouseEvent<HTMLElement>) => void;
+  name: string;
+  flags?: ReactNode;
+  conditions: string;
+  result: ReactNode;
+  collapsed: boolean;
+  onToggle: () => void;
+  actions: readonly CardAction[];
+  onClose: () => void;
+  closeLabel: string;
+  children: ReactNode;
+}): ReactElement => {
+  const shown = collapsed ? actions.filter((action) => action.keep === true) : actions;
+  const conditionParts = conditionList(conditions);
+  return (
+    <div className={`roll-card ${className}${collapsed ? " collapsed" : ""}${shown.length > 0 ? " has-acts" : ""}`} style={style} title={title}>
+      <button
+        type="button"
+        className="roll-edge"
+        disabled={!onType}
+        title={onType ? `${rollTypeLabel(rollType)}: click for the roll options` : rollTypeLabel(rollType)}
+        onClick={onType}
+      >
+        <span>{rollTypeEdge(rollType, collapsed)}</span>
+      </button>
+      <div className="roll-body">
+        <div className="roll-head">
+          <button type="button" className="roll-name" title={collapsed ? "Show the whole roll" : "Fold to one line"} onClick={onToggle}>
+            {name}
+          </button>
+          {flags}
+          {collapsed ? result : conditionParts.length > 0 && (
+            <span className="roll-conds">
+              {conditionParts.map((part, index) => (
+                <span key={part}>{index > 0 && <span className="roll-conds-dia">◆</span>}{part}</span>
+              ))}
+            </span>
+          )}
+        </div>
+        {!collapsed && children}
+      </div>
+      {shown.length > 0 && (
+        <div className="roll-acts">
+          {shown.map((action) => <ActionButton key={action.key} action={action} />)}
+        </div>
+      )}
+      <button type="button" className="roll-close" title={closeLabel} aria-label={closeLabel} onClick={onClose}>
+        <Icon name="cancel" />
+      </button>
+    </div>
+  );
+};
 
 const pendingText = (pending: string | undefined): string | null =>
   pending === "oblivHungerStain" ? "Waiting for the player: Hunger or Stain"
@@ -104,9 +214,11 @@ const PC_POOL_ACTIONS: Readonly<Partial<Record<PoolKind, readonly [PoolDieAction
   normal: ["addStandardDie", "remStandardDie"]
 };
 
-const PcRollRow = ({ roll, send, onOptions, onPool }: {
+const PcRollRow = ({ roll, send, collapsed, onToggle, onOptions, onPool }: {
   roll: PcRoll;
   send: RollsSend;
+  collapsed: boolean;
+  onToggle: () => void;
   onOptions: (event: MouseEvent<HTMLElement>, roll: PcRoll) => void;
   onPool: (event: MouseEvent<HTMLElement>, color: string) => void;
 }): ReactElement => {
@@ -118,53 +230,45 @@ const PcRollRow = ({ roll, send, onOptions, onPool }: {
   const title = roll.held
     ? "Held result: the roll is finished but not yet shown to the table. Broadcast it, or dismiss it."
     : phaseTitle(roll.phase, roll.wpReroll);
+  const overridable = !roll.held && roll.canModifyPool;
+  const result = (
+    <ResultText
+      result={roll.result}
+      {...(overridable ? { onOverride: (resultClass: string) => send({ op: "override", color, resultClass }) } : {})}
+    />
+  );
+  const actions: CardAction[] = roll.held
+    ? [{ key: "broadcast", icon: "broadcast", label: "Broadcast to the table", tone: "gold", keep: true, onClick: () => send({ op: "broadcast", color }) }]
+    : [];
   return (
-    <div className={`roll-row ${roll.held ? "held" : phaseClass(roll.phase, roll.wpReroll)}`} style={style} title={title}>
-      <div className="roll-row-head">
-        <span className="roll-row-name">{roll.name}</span>
-        <span className="roll-row-type" title={roll.label}>{rollTypeLabel(roll.rollType)}</span>
-        {roll.held ? (
-          <IconBtn icon="broadcast" title="Broadcast: show this result to the table" onClick={() => send({ op: "broadcast", color })} />
-        ) : (
-          <IconBtn icon="options" title="Roll options" onClick={(event) => onOptions(event, roll)} />
-        )}
-        <IconBtn
-          icon="cancel"
-          className="danger"
-          title={roll.held ? "Dismiss this result" : "Cancel this roll"}
-          onClick={() => send({ op: "cancel", color })}
-        />
-      </div>
-      <div className="roll-row-line">
-        <PoolDiamonds pool={roll.pool} onClick={!roll.held && roll.canModifyPool ? (event) => onPool(event, color) : undefined} />
-        <ResultLine text={roll.result?.text ?? ""} resultClass={roll.result?.resultClass} />
-      </div>
-      {roll.conditions && <div className="roll-row-sub dim">{roll.conditions}</div>}
-      <RolledDice dice={roll.dice} pickable={false} />
-      {waiting && <div className="roll-row-sub warn">{waiting}</div>}
-      {!roll.held && roll.canModifyPool && (
-        <select
-          className="roll-override"
-          title="Override the result"
-          value=""
-          onChange={(event) => {
-            if (event.target.value) {
-              send({ op: "override", color, resultClass: event.target.value });
-            }
-          }}
-        >
-          <option value="">Override…</option>
-          {RESULT_CLASSES.map((entry) => <option key={entry.key} value={entry.key}>{entry.label}</option>)}
-        </select>
-      )}
-      {!roll.held && !roll.canModifyPool && !resolved && (
-        <DifficultyStrip
+    <RollCard
+      className={`pc ${roll.held ? "held" : phaseClass(roll.phase, roll.wpReroll)}`}
+      style={style}
+      title={title}
+      rollType={roll.rollType}
+      {...(roll.held ? {} : { onType: (event: MouseEvent<HTMLElement>) => onOptions(event, roll) })}
+      name={roll.name}
+      conditions={roll.conditions}
+      result={result}
+      collapsed={collapsed}
+      onToggle={onToggle}
+      actions={actions}
+      onClose={() => send({ op: "cancel", color })}
+      closeLabel={roll.held ? "Dismiss this result" : "Cancel this roll"}
+    >
+      <PoolDiamonds pool={roll.pool} onClick={overridable ? (event) => onPool(event, color) : undefined} />
+      <div className="roll-line">
+        <Difficulty
           value={roll.difficulty}
+          editable={!roll.held && !roll.canModifyPool && !resolved}
           title={setup ? "Pick a difficulty to approve the roll and open it to the player" : "Difficulty"}
           onPick={(value) => send({ op: "difficulty", color, value })}
         />
-      )}
-    </div>
+        {result}
+      </div>
+      <RolledDice dice={roll.dice} pickable={false} />
+      {waiting && <div className="roll-sub warn">{waiting}</div>}
+    </RollCard>
   );
 };
 
@@ -176,64 +280,89 @@ const SlotChip = ({ slot, send }: { slot: StRollSlot; send: RollsSend }): ReactE
     <span className="roll-slot-index">{slot.index}</span>
     <span className="roll-slot-label">{slot.label ?? "—"}</span>
     {slot.canBroadcast && (
-      <IconBtn icon="broadcast" title="Broadcast: show this held result to the table" onClick={() => send({ op: "slotBroadcast", slot: slot.index })} />
+      <button type="button" className="roll-act gold" title="Broadcast this held result to the table" aria-label="Broadcast" onClick={() => send({ op: "slotBroadcast", slot: slot.index })}>
+        <Icon name="broadcast" />
+      </button>
     )}
-    <IconBtn icon="cancel" className="danger" title="Clear this drawer" onClick={() => send({ op: "slotCancel", slot: slot.index })} />
+    <button type="button" className="roll-act danger" title="Clear this drawer" aria-label="Clear this drawer" onClick={() => send({ op: "slotCancel", slot: slot.index })}>
+      <Icon name="cancel" />
+    </button>
   </div>
 );
 
-const NpcRollPanel = ({ live, send, onPool }: { live: StLiveRoll; send: RollsSend; onPool: (event: MouseEvent<HTMLElement>) => void }): ReactElement => {
-  const editable = live.phase === "setup" || live.phase === "preRoll";
+const npcActions = (live: StLiveRoll, send: RollsSend): CardAction[] => {
   const a = live.actions;
+  const actions: CardAction[] = [];
+  if (a.roll) {
+    actions.push({ key: "roll", icon: "roll", label: "Roll (right-click: secret dice)", tone: "gold", disabled: !a.rollEnabled, keep: true, onClick: () => send({ op: "npcRoll", secret: false }), onQuiet: () => send({ op: "npcRoll", secret: true }) });
+  }
+  if (a.half) {
+    actions.push({ key: "half", glyph: "½", label: "Take Half (right-click: no broadcast)", onClick: () => send({ op: "npcHalf", quiet: false }), onQuiet: () => send({ op: "npcHalf", quiet: true }) });
+  }
+  if (a.wp) {
+    actions.push({ key: "wp", icon: "willpower", label: "Spend Willpower to reroll", tone: "wp", onClick: () => send({ op: "npcWp" }) });
+  }
+  if (a.recalc) {
+    actions.push({ key: "recalc", icon: "recalc", label: "Recalculate from the table", onClick: () => send({ op: "npcRecalc" }) });
+  }
+  if (a.reroll) {
+    actions.push({ key: "reroll", icon: "reroll", label: "Reroll the picked dice", disabled: !a.rerollEnabled, onClick: () => send({ op: "npcReroll" }) });
+  }
+  if (a.confirm) {
+    actions.push({ key: "confirm", icon: "confirm", label: "Confirm (right-click: hold the result)", tone: "gold", keep: true, onClick: () => send({ op: "npcConfirm", quiet: false }), onQuiet: () => send({ op: "npcConfirm", quiet: true }) });
+  }
+  if (a.oblivChoice) {
+    actions.push(
+      { key: "obHunger", icon: "hunger", label: "Oblivion: take Hunger", tone: "hunger", keep: true, onClick: () => send({ op: "choice", color: "Black", choice: "hunger" }) },
+      { key: "obStain", icon: "humanity", label: "Oblivion: take a Stain", tone: "humanity", keep: true, onClick: () => send({ op: "choice", color: "Black", choice: "stain" }) }
+    );
+  }
+  if (a.brutalChoice) {
+    actions.push(
+      { key: "brFail", icon: "cancel", label: "Brutal: take the failure", keep: true, onClick: () => send({ op: "choice", color: "Black", choice: "fail" }) },
+      { key: "brViolence", icon: "violence", label: "Brutal: turn to violence", tone: "danger", keep: true, onClick: () => send({ op: "choice", color: "Black", choice: "violence" }) }
+    );
+  }
+  return actions;
+};
+
+const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool }: {
+  live: StLiveRoll;
+  send: RollsSend;
+  collapsed: boolean;
+  onToggle: () => void;
+  onPool: (event: MouseEvent<HTMLElement>) => void;
+}): ReactElement => {
+  const editable = live.phase === "setup" || live.phase === "preRoll";
+  const result = <ResultText result={live.result} />;
+  const flags = (live.secret || live.quiet) && (
+    <span className="roll-flags">
+      {live.secret && <span title="Secret dice: hidden from the players">Secret</span>}
+      {live.quiet && <span title="No broadcast: the result is held">Held</span>}
+    </span>
+  );
   return (
-    <div className={`roll-npc ${phaseClass(live.phase, live.wpReroll)}`} title={live.hint}>
-      <div className="roll-row-head">
-        <span className="roll-row-name">{live.label ?? "NPC"}</span>
-        <span className="roll-row-type">{rollTypeLabel(live.rollType)}</span>
-        {live.secret && <span className="roll-flag" title="Secret dice: hidden from the players">S</span>}
-        {live.quiet && <span className="roll-flag" title="No broadcast: the result is held">Q</span>}
-        <IconBtn icon="cancel" className="danger" title="Cancel this roll and clear its drawer" onClick={() => send({ op: "npcCancel" })} />
+    <RollCard
+      className={`npc ${phaseClass(live.phase, live.wpReroll)}`}
+      title={live.hint ?? phaseTitle(live.phase, live.wpReroll)}
+      rollType={live.rollType}
+      name={live.label ?? "NPC"}
+      flags={flags}
+      conditions=""
+      result={result}
+      collapsed={collapsed}
+      onToggle={onToggle}
+      actions={npcActions(live, send)}
+      onClose={() => send({ op: "npcCancel" })}
+      closeLabel="Cancel this roll and clear its drawer"
+    >
+      <PoolDiamonds pool={live.pool} onClick={editable ? onPool : undefined} />
+      <div className="roll-line">
+        <Difficulty value={live.difficulty} editable={live.phase !== "resolved"} title="Difficulty" onPick={(value) => send({ op: "npcDifficulty", value })} />
+        {result}
       </div>
-      <div className="roll-row-line">
-        <PoolDiamonds pool={live.pool} onClick={editable ? onPool : undefined} />
-        <ResultLine text={live.result?.text ?? ""} resultClass={live.result?.resultClass} />
-      </div>
-      <DifficultyStrip
-        value={live.difficulty}
-        disabled={live.phase === "resolved"}
-        title="Difficulty"
-        onPick={(value) => send({ op: "npcDifficulty", value })}
-      />
-      <RolledDice dice={live.dice} pickable={a.reroll} onPick={(index) => send({ op: "npcDie", index })} />
-      <div className="roll-buttons">
-        {a.roll && (
-          <IconBtn icon="roll" className="primary" disabled={!a.rollEnabled} title="Roll (right-click: secret dice, hidden from the players)" {...quietClick((secret) => send({ op: "npcRoll", secret }))} />
-        )}
-        {a.half && (
-          <button type="button" className="roll-icon-btn glyph" title="Take Half (right-click: no broadcast)" aria-label="Take Half" {...quietClick((quiet) => send({ op: "npcHalf", quiet }))}>
-            ½
-          </button>
-        )}
-        {a.wp && <IconBtn icon="willpower" className="wp" title="Spend Willpower to reroll" onClick={() => send({ op: "npcWp" })} />}
-        {a.reroll && <IconBtn icon="reroll" disabled={!a.rerollEnabled} title="Reroll the picked dice" onClick={() => send({ op: "npcReroll" })} />}
-        {a.recalc && <IconBtn icon="recalc" title="Recalculate: re-read the dice on the table" onClick={() => send({ op: "npcRecalc" })} />}
-        {a.confirm && (
-          <IconBtn icon="confirm" className="primary" title="Confirm (right-click: hold the result instead of broadcasting it)" {...quietClick((quiet) => send({ op: "npcConfirm", quiet }))} />
-        )}
-        {a.oblivChoice && (
-          <span className="roll-choice" title="Oblivion: take Hunger or a Stain">
-            <IconBtn icon="hunger" className="hunger" title="Oblivion: take Hunger" onClick={() => send({ op: "choice", color: "Black", choice: "hunger" })} />
-            <IconBtn icon="humanity" className="humanity" title="Oblivion: take a Stain" onClick={() => send({ op: "choice", color: "Black", choice: "stain" })} />
-          </span>
-        )}
-        {a.brutalChoice && (
-          <span className="roll-choice" title="Brutal: fail the roll or turn to violence">
-            <IconBtn icon="cancel" title="Brutal: take the failure" onClick={() => send({ op: "choice", color: "Black", choice: "fail" })} />
-            <IconBtn icon="violence" className="danger" title="Brutal: turn to violence" onClick={() => send({ op: "choice", color: "Black", choice: "violence" })} />
-          </span>
-        )}
-      </div>
-    </div>
+      <RolledDice dice={live.dice} pickable={live.actions.reroll} onPick={(index) => send({ op: "npcDie", index })} />
+    </RollCard>
   );
 };
 
@@ -376,12 +505,23 @@ const RollOptions = ({ popup, access, send, onClose }: { popup: OptionsPopup; ac
 
 
 const POPUP_W = 420;
+/** Fold key for the live NPC roll (PC rolls fold by seat colour). */
+const NPC_FOLD = "npc";
 /** Keeps the dice ring's side spokes on the canvas. */
 const POOL_RING_MARGIN = 110;
 
 export const RollsCell = ({ rolls, send, options }: { rolls: RollsSlice | undefined; send: RollsSend; options: OptionsAccess }): ReactElement => {
   const [popup, setPopup] = useState<OptionsPopup | null>(null);
   const [poolRing, setPoolRing] = useState<PoolRing | null>(null);
+  const [folded, setFolded] = useState<ReadonlySet<string>>(() => new Set());
+  const toggleFold = (key: string): void =>
+    setFolded((current) => {
+      const next = new Set(current);
+      if (!next.delete(key)) {
+        next.add(key);
+      }
+      return next;
+    });
   const openPoolRing = (event: MouseEvent<HTMLElement>, target: PoolRing["target"]): void => {
     const point = canvasPoint(event);
     setPoolRing({ x: Math.min(Math.max(point.x, POOL_RING_MARGIN), 1920 - POOL_RING_MARGIN), y: point.y, target });
@@ -419,6 +559,8 @@ export const RollsCell = ({ rolls, send, options }: { rolls: RollsSlice | undefi
           key={roll.color}
           roll={roll}
           send={send}
+          collapsed={folded.has(roll.color)}
+          onToggle={() => toggleFold(roll.color)}
           onOptions={openOptions}
           onPool={(event, color) => openPoolRing(event, { kind: "pc", color })}
         />
@@ -429,7 +571,13 @@ export const RollsCell = ({ rolls, send, options }: { rolls: RollsSlice | undefi
         </div>
       )}
       {live && (
-        <NpcRollPanel live={live} send={send} onPool={(event) => openPoolRing(event, { kind: "npc" })} />
+        <NpcRollPanel
+          live={live}
+          send={send}
+          collapsed={folded.has(NPC_FOLD)}
+          onToggle={() => toggleFold(NPC_FOLD)}
+          onPool={(event) => openPoolRing(event, { kind: "npc" })}
+        />
       )}
       {popup && <RollOptions popup={popup} access={options} send={send} onClose={() => setPopup(null)} />}
       {poolRing && ringRoll && (

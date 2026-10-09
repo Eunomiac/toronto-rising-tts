@@ -20,6 +20,31 @@ export const ROLL_TYPE_LABEL: Readonly<Record<string, string>> = {
 
 export const rollTypeLabel = (rollType: string | undefined): string => (rollType ? ROLL_TYPE_LABEL[rollType] ?? rollType : "");
 
+/** Roll types as they fit down the edge of a roll card (short forms on a collapsed one-line card). */
+const ROLL_TYPE_EDGE: Readonly<Record<string, readonly [string, string]>> = {
+  standard: ["Standard", "Std."],
+  discipline: ["Discipline", "Disc."],
+  simpleCheck: ["Check", "Chk."],
+  rouse: ["Rouse", "Rouse"],
+  rouseOblivion: ["Obliv. Rouse", "Obl."],
+  remorse: ["Remorse", "Rem."],
+  willpowerRoll: ["Willpower", "WP"],
+  humanityRoll: ["Humanity", "Hum."],
+  frenzy: ["Frenzy", "Frnz."],
+  werewolf: ["Werewolf", "Wolf"],
+  launch: ["Launch", "Lnch."],
+  goal: ["Goal", "Goal"]
+};
+
+export const rollTypeEdge = (rollType: string | undefined, short: boolean): string => {
+  const entry = rollType ? ROLL_TYPE_EDGE[rollType] : undefined;
+  return entry ? entry[short ? 1 : 0] : rollTypeLabel(rollType);
+};
+
+/** The effective roll conditions TTS sends as one comma-separated string. */
+export const conditionList = (text: string): readonly string[] =>
+  text.split(",").map((part) => part.trim()).filter((part) => part !== "");
+
 /** `C.RollPhase` as the Storyteller reads it. */
 export const ROLL_PHASE_LABEL: Readonly<Record<string, string>> = {
   setup: "Awaiting approval",

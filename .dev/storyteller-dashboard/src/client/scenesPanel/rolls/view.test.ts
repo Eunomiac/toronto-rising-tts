@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseRollOptions } from "./bridge";
 import {
+  conditionList,
   dieFaceSrc,
   draftFromView,
   huntHeadline,
@@ -8,6 +9,7 @@ import {
   poolRingChoices,
   poolText,
   ringChoices,
+  rollTypeEdge,
   rollTypeLabel,
   toggleCondition,
   toggleStructural
@@ -75,9 +77,17 @@ describe("roll labels", () => {
     expect(poolText({})).toBe("—");
   });
 
+  it("splits the comma-separated roll conditions", () => {
+    expect(conditionList("No Take Half, No WP Reroll")).toEqual(["No Take Half", "No WP Reroll"]);
+    expect(conditionList("")).toEqual([]);
+  });
+
   it("names roll types and hunt results", () => {
     expect(rollTypeLabel("willpowerRoll")).toBe("Willpower");
     expect(rollTypeLabel("mystery")).toBe("mystery");
+    expect(rollTypeEdge("standard", false)).toBe("Standard");
+    expect(rollTypeEdge("standard", true)).toBe("Std.");
+    expect(rollTypeEdge("mystery", true)).toBe("mystery");
     expect(huntHeadline("Sanguine", "intense")).toBe("INTENSE SANGUINE");
     expect(huntHeadline(null, "none")).toBe("NO RESONANCE");
   });
