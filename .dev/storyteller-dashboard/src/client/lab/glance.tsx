@@ -28,7 +28,7 @@ import {
 } from "./huntOdds";
 import { Btn, Overlay, canvasPoint } from "./sketch";
 import { useScenesCommand, type SceneClockMode, type ScenesSend, type SoundLane } from "../scenesPanel/commands";
-import { fromDate, type SoundView, type SpotlightView } from "../scenesPanel/liveScene";
+import { LOCATION_MUSIC_LABEL, MOOD_LABEL, fromDate, type SoundView, type SpotlightView } from "../scenesPanel/liveScene";
 
 /**
  * Panels for the Glance strip sketch (scenes-r1-b), pin pass 3: location and weather read live from the
@@ -1780,7 +1780,8 @@ const MixerGroup = ({ playing = false, values, children }: { playing?: boolean; 
   );
 };
 
-const MUSIC_PLAYLISTS = ["Main", "Combat", "Intrigue", "Silent"] as const;
+const MOOD_PLAYLISTS = Object.values(MOOD_LABEL);
+const LOCATION_PLAYLISTS = Object.values(LOCATION_MUSIC_LABEL);
 
 /** Featured tracks in `lib/soundscape_catalog.ttslua` (type `featureMusic`). */
 const FEATURED_TRACKS = ["TR Theme (full)", "TR Theme (intro)", "TR Loop", "House of the Rising Sun"] as const;
@@ -1814,6 +1815,9 @@ const ambientKey = (label: string): string =>
 const featuredKey = (label: string): string => FEATURED_KEYS[FEATURED_TRACKS.findIndex((entry) => entry === label)] ?? label;
 
 const MOODS: Readonly<Record<string, "main" | "combat" | "intrigue">> = { Main: "main", Combat: "combat", Intrigue: "intrigue" };
+
+const locationMusicKey = (label: string): string | undefined =>
+  Object.keys(LOCATION_MUSIC_LABEL).find((key) => LOCATION_MUSIC_LABEL[key] === label);
 
 /**
  * Every ambience loop as a button grid, opened under the Ambient button: the playing loop is lit and the site's
@@ -1891,7 +1895,8 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main", sceneAmbience = "S
   const livePlaylist = (value: string): Overridable<string> => command
     ? commanded(value, (next) => {
       const mood = MOODS[next];
-      command(mood ? { op: "musicMood", mood } : { op: "musicSilent" });
+      const site = locationMusicKey(next);
+      command(mood ? { op: "musicMood", mood } : site ? { op: "locationMusic", key: site } : { op: "musicSilent" });
     })
     : fixed(value);
   const liveAmbientTrack = (value: string): Overridable<string> => command
@@ -1938,7 +1943,13 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main", sceneAmbience = "S
         <RowLabel icon="music" label="Music" />
         <MixerGroup playing={musicPlaying} values={[playlist, music]}>
           <select className="lab-select" disabled={readOnly} value={playlist.value} onChange={(event) => playlist.set(event.target.value)}>
-            {MUSIC_PLAYLISTS.map((name) => <option key={name}>{name}</option>)}
+            <optgroup label="Mood">
+              {MOOD_PLAYLISTS.map((name) => <option key={name}>{name}</option>)}
+            </optgroup>
+            <optgroup label="Location">
+              {LOCATION_PLAYLISTS.map((name) => <option key={name}>{name}</option>)}
+            </optgroup>
+            <option>Silent</option>
           </select>
           <Slider level={music} />
         </MixerGroup>

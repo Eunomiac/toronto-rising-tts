@@ -83,6 +83,7 @@ describe("soundView", () => {
     expect(view.playing.featured).toBe(true);
     expect(view.ambient).toBeUndefined();
     expect(soundView({ ...sound, musicEnabled: false }).playlist).toBe("Silent");
+    expect(soundView({ ...sound, musicMode: "locationMusic", locationMusic: "gioEstate" }).playlist).toBe("Giovanni Estate");
   });
 });
 

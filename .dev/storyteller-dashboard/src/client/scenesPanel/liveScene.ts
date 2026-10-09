@@ -35,14 +35,31 @@ export type SoundView = {
   readonly playing: Readonly<Record<"music" | "location" | "featured" | "rain" | "wind", boolean>>;
 };
 
-const MOOD_LABEL: Readonly<Record<string, string>> = { main: "Main", combat: "Combat", intrigue: "Intrigue" };
+export const MOOD_LABEL: Readonly<Record<string, string>> = { main: "Main", combat: "Combat", intrigue: "Intrigue" };
+
+/** Site background playlists in `lib/soundscape_catalog.ttslua` (`PLAYLISTS.backgroundMusic`, not a mood). */
+export const LOCATION_MUSIC_LABEL: Readonly<Record<string, string>> = {
+  casaLoma: "Casa Loma",
+  gioEstate: "Giovanni Estate",
+  gioCatacombs: "Giovanni Catacombs"
+};
+
+const musicLabel = (sound: SoundscapeSlice): string => {
+  if (!sound.musicEnabled) {
+    return "Silent";
+  }
+  if (sound.musicMode === "locationMusic" && sound.locationMusic) {
+    return LOCATION_MUSIC_LABEL[sound.locationMusic] ?? sound.locationMusic;
+  }
+  return MOOD_LABEL[sound.musicMood ?? ""] ?? sound.musicMood ?? "Main";
+};
 
 export const soundView = (sound: SoundscapeSlice): SoundView => {
   const lane = (id: string) => sound.lanes.find((entry) => entry.id === id);
   const level = (id: string): number => Math.round((lane(id)?.volume ?? 0) * 100);
   const playing = (id: string): boolean => lane(id)?.active === true;
   return {
-    playlist: !sound.musicEnabled ? "Silent" : MOOD_LABEL[sound.musicMood ?? ""] ?? sound.musicMood ?? "Main",
+    playlist: musicLabel(sound),
     musicPlaying: playing("music"),
     featuredKey: sound.featuredKey,
     featuredPlaying: sound.featuredActive,

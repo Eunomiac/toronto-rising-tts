@@ -28,6 +28,7 @@ export type ScenesCommand =
   | { readonly op: "presentDay"; readonly datetime: ClockDatetime }
   | { readonly op: "musicMood"; readonly mood: "main" | "combat" | "intrigue" }
   | { readonly op: "musicSilent" }
+  | { readonly op: "locationMusic"; readonly key: string }
   | { readonly op: "laneVolume"; readonly lane: SoundLane; readonly volume: number }
   | { readonly op: "featuredPlay"; readonly key: string }
   | { readonly op: "featuredStop" }

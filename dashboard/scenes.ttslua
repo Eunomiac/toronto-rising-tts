@@ -17,6 +17,7 @@
     presentDay        datetime            set chronicle present day
     musicMood         mood                background music mood (`main` / `combat` / `intrigue`)
     musicSilent                           suppress background music
+    locationMusic     key                 site background playlist (`casaLoma`, `gioEstate`, `gioCatacombs`)
     laneVolume        lane, volume        Storyteller lane volume 0..1
     featuredPlay      key                 featured track
     featuredStop                          stop featured, background resumes
@@ -150,6 +151,12 @@ local function applyCommand(cmd)
   end
   if op == "musicSilent" then
     return soundResult(SS.setLocationMusic("none"))
+  end
+  if op == "locationMusic" then
+    if type(cmd.key) ~= "string" or cmd.key == "none" then
+      return "locationMusic needs a playlist key."
+    end
+    return soundResult(SS.setLocationMusic(cmd.key))
   end
   if op == "laneVolume" then
     local volume = tonumber(cmd.volume)
