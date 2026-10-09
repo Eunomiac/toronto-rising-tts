@@ -2445,11 +2445,13 @@ const NEXT_PHASE: Record<Phase, Phase> = { Intermission: "Play", Play: "Spotligh
 const ARM_MS = 2500;
 
 /** A button that only acts on a second click (a double-click works too); it disarms itself after a moment. */
-export const ConfirmButton = ({ label, className = "", onConfirm, style }: {
+export const ConfirmButton = ({ label, className = "", onConfirm, style, title }: {
   label: string;
   className?: string;
   onConfirm: () => void;
   style?: CSSProperties;
+  /** What the button does; "click twice" is added. */
+  title?: string;
 }): ReactElement => {
   const [armed, setArmed] = useState(false);
   useEffect(() => {
@@ -2464,7 +2466,7 @@ export const ConfirmButton = ({ label, className = "", onConfirm, style }: {
       type="button"
       className={`${className}${armed ? " armed" : ""}`}
       style={style}
-      title="Click twice to confirm"
+      title={title ? `${title} (click twice to confirm)` : "Click twice to confirm"}
       onClick={() => {
         if (armed) {
           setArmed(false);
@@ -2612,7 +2614,8 @@ const CommitInput = ({ value, onCommit, ...rest }: Omit<InputHTMLAttributes<HTML
 /**
  * Phase name at the far left. The middle holds the live scenes (Play): the one on the table, then a button for
  * each scene on deck to switch to it. Intermission shows the next session's number and title; Spotlight the
- * carousel. In Play, End Scene (takes the current scene out of the live list) sits just left of Advance, and
+ * carousel. In Play, End Scene (takes the current scene out of the live list; in a Memoriam, ends it and goes
+ * back to the scene or Downtime it interrupted) sits just left of Advance, and
  * Advance opens a ring: Scene (scene picker), Memoriam (Memoriam set-up), or Spotlight (click twice). In any
  * other phase, Advance names the next phase and needs a second click. Switching to a deck scene or playing one
  * from the picker first asks how to set the clock (`SceneTimingRing`). Right-click a deck scene to open its
@@ -2732,7 +2735,14 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
         {phase === "Spotlight" && <SpotlightCarousel live={live?.spotlight} />}
       </span>
       <span className="lab-phase-advance">
-        {phase === "Play" && (command && scenes.current ? (
+        {phase === "Play" && (subPhase === "Memoriam" && (command || !live) ? (
+          <ConfirmButton
+            label="End Scene"
+            className="lab-btn danger"
+            title="End the Memoriam and go back to the scene (or Downtime) it interrupted"
+            onConfirm={() => (command ? command({ op: "playSubPhase", subPhase: "Main" }) : setLabSub("Main"))}
+          />
+        ) : command && scenes.current ? (
           <ConfirmButton label="End Scene" className="lab-btn danger" onConfirm={onEndScene} />
         ) : (
           <button type="button" className="lab-btn danger" title={waiting ?? "Main / Memoriam → Downtime"} disabled={!scenes.current || waiting !== undefined} onClick={onEndScene}>

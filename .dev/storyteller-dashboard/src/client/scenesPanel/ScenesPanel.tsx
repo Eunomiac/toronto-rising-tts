@@ -259,8 +259,10 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const now = useNow(world.clock?.running === true);
   const { phase, scene, clock, soundscape, seats, rolls } = world;
 
-  // With no live scene (Intermission, Downtime, nothing on the table) the clock panel works on present day.
-  const sceneActive = scene?.liveKey !== undefined && clock?.activeClock === "scene";
+  // With no live scene (Intermission, Downtime, nothing on the table) the clock panel works on present day. A
+  // Memoriam has no library scene but runs on the scene clock (set to its own date).
+  const inMemoriam = phase?.phase === "Play" && phase.subPhase === "Memoriam";
+  const sceneActive = (scene?.liveKey !== undefined || inMemoriam) && clock?.activeClock === "scene";
   const sceneNow = sceneActive && clock ? clockNow(clock, now) : undefined;
   const sceneAt = sceneNow ? toDate(sceneNow) : null;
   // TTS moves present day forward with a scene that passes it, but only re-pushes the clock on rollovers.
