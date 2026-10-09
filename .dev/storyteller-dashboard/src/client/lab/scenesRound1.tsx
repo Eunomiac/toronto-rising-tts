@@ -338,7 +338,7 @@ const labRollsApply = (rolls: RollsSlice, command: RollsCommand): RollsSlice => 
   const live = rolls.storyteller.live;
   if (command.op === "npcPool" && live) {
     const kind: PoolKind = live.rollType === "werewolf" ? (command.kind === "hunger" ? "rage" : "werewolf") : command.kind;
-    return { ...rolls, storyteller: { ...rolls.storyteller, live: { ...live, pool: bumpPool(live.pool, kind, command.count) } } };
+    return { ...rolls, storyteller: { ...rolls.storyteller, live: { ...live, pool: bumpPool(live.pool, kind, (live.pool[kind] ?? 0) + command.delta) } } };
   }
   return rolls;
 };

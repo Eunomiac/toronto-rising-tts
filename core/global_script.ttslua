@@ -6797,6 +6797,40 @@ local function getBagSpawnedCountStoryteller(dieTypeName)
     return result
 end
 
+local STORYTELLER_BAG_KINDS = { "normal", "hunger", "rouse", "oblivRouse", "werewolf", "rage" }
+
+--- Storyteller dice bags this pool draws from that are not on the table (deleted, or a stale GUID).
+-- @param pool table  normalized pool
+-- @return string[] die kinds
+local function missingStorytellerBagKinds(pool)
+    local missing = {}
+    for _, kind in ipairs(STORYTELLER_BAG_KINDS) do
+        if (pool[kind] or 0) > 0 then
+            local guid = G.GetDiceStorytellerBagGUID(kind)
+            if type(guid) ~= "string" or G.getObject(guid) == nil then
+                missing[#missing + 1] = string.format("%s (%s)", kind, tostring(guid))
+            end
+        end
+    end
+    return missing
+end
+
+--- Message naming the Storyteller dice bags the live Black pool needs but cannot find, or nil.
+-- @return string|nil
+function GlobalMissingStorytellerDiceBagsMessage()
+    local pid = S.getPlayerID("Black")
+    local active = pid and S.getStateVal("playerData", pid, "hud", "rollData", "active") or nil
+    if type(active) ~= "table" then
+        return nil
+    end
+    local missing = missingStorytellerBagKinds(DK.normalizePool(active.pool))
+    if #missing == 0 then
+        return nil
+    end
+    return "Storyteller dice bags missing from the table: " .. table.concat(missing, ", ")
+        .. ". Restore them in the save, then roll again."
+end
+
 --- Auto-spawns missing pool dice for Black (Storyteller bags).
 -- @param pool table
 -- @param opts table|nil  `{ deferTrayPlacement?: boolean }` omit arc center until a later reposition step
@@ -6808,17 +6842,8 @@ local function autoSpawnBlackPool(pool, opts)
     if arcCenter == nil and opts.deferTrayPlacement ~= true then
         print("[Roll] autoSpawnBlackPool: no ST drawer arc center (missing stDrawerSlot?)")
     end
-    local spawnPlan = {
-        { "normal", pool.normal },
-        { "hunger", pool.hunger },
-        { "rouse", pool.rouse },
-        { "oblivRouse", pool.oblivRouse },
-        { "werewolf", pool.werewolf },
-        { "rage", pool.rage },
-    }
-    for _, entry in ipairs(spawnPlan) do
-        local kind = entry[1]
-        local target = entry[2] or 0
+    for _, kind in ipairs(STORYTELLER_BAG_KINDS) do
+        local target = pool[kind] or 0
         local needed = target - getBagSpawnedCountStoryteller(kind)
         if needed > 0 then
             local guid = G.GetDiceStorytellerBagGUID(kind)
@@ -7076,6 +7101,12 @@ local function runBlackRollSequence(physicsColor)
         return
     end
     if blackRollSequenceRunning then
+        return
+    end
+    local missingBags = GlobalMissingStorytellerDiceBagsMessage()
+    if missingBags ~= nil then
+        print("[Roll] " .. missingBags)
+        broadcastToColor(missingBags, "Black", { 1, 0.35, 0.35 })
         return
     end
     blackRollSequenceRunning = true

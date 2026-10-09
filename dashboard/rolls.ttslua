@@ -24,7 +24,7 @@
     npcInitiate   label, rollType, characterKey?
                                         start an NPC roll in a free drawer; Werewolf NPCs
                                         (`werewolf = true` in lib/npcs_data) always roll Werewolf
-    npcPool       kind, count           `hunger` (Rage for Werewolf) or `normal` (Werewolf dice) count
+    npcPool       kind, delta           add (1) or remove (-1) one `hunger` (Rage for Werewolf) or `normal` (Werewolf) die
     npcDifficulty value                 difficulty 0–10
     npcRoll       secret?               ROLL (secret = dice hidden from players)
     npcHalf       quiet?                Take Half (quiet = no broadcast)
@@ -323,9 +323,9 @@ local function applyNpcCommand(cmd)
     if active.phase ~= C.RollPhase.SETUP and active.phase ~= C.RollPhase.PRE_ROLL then
       return "The NPC pool is fixed once the dice are rolled."
     end
-    local count = tonumber(cmd.count)
-    if count == nil or count < 0 then
-      return "Pool count must be a number."
+    local delta = tonumber(cmd.delta)
+    if delta ~= 1 and delta ~= -1 then
+      return "Pool delta must be 1 or -1."
     end
     local DK = require("lib.dice_kinds")
     local werewolf = active.rollType == C.RollType.WEREWOLF
@@ -337,7 +337,7 @@ local function applyNpcCommand(cmd)
     else
       return "Unknown pool kind: " .. tostring(cmd.kind)
     end
-    RC.setPoolKindCount(ST_COLOR, kind, math.floor(count))
+    RC.adjustPoolKindCount(ST_COLOR, kind, delta)
   elseif op == "npcDifficulty" then
     local value = tonumber(cmd.value)
     if value == nil or value < 0 then
@@ -347,6 +347,10 @@ local function applyNpcCommand(cmd)
       return "Could not set the NPC roll's difficulty."
     end
   elseif op == "npcRoll" then
+    local missingBags = GlobalMissingStorytellerDiceBagsMessage()
+    if missingBags ~= nil then
+      return missingBags
+    end
     HUD_rollRollButton(player, cmd.secret == true and "-2" or "-1", "rollPanelST_btnRoll")
   elseif op == "npcHalf" then
     HUD_rollTakeHalf(player, cmd.quiet == true and "-2" or "-1", "rollPanelST_btnHalf")

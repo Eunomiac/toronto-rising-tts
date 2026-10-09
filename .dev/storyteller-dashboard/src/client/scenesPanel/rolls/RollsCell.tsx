@@ -1,14 +1,16 @@
-import { useEffect, useState, type CSSProperties, type MouseEvent, type ReactElement, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type MouseEvent, type ReactElement, type ReactNode } from "react";
 import { Icon, type IconName } from "../icons";
 import { canvasPoint, Overlay } from "../sketch";
 import { SEAT_ACCENT } from "../../pcSheet/layout";
-import type { PcRoll, PoolKind, RollResult, RollsSlice, StLiveRoll, StRollSlot } from "../../worldState";
+import type { PcRoll, PoolKind, RollPool, RollResult, RollsSlice, StLiveRoll, StRollSlot } from "../../worldState";
 import type { RollOptionsView } from "./bridge";
 import type { PoolDieAction, RollsSend } from "./commands";
 import { DiceRing, PoolDiamonds, RolledDice } from "./dice";
 import {
+  bumpPool,
   conditionList,
   draftFromView,
+  NPC_POOL_KEY,
   PERMANENT_OPTIONS,
   poolRingChoices,
   RESULT_CLASSES,
@@ -18,6 +20,7 @@ import {
   STRUCTURAL_OPTIONS,
   toggleCondition,
   toggleStructural,
+  withLocalPools,
   type RollOptionsDraft
 } from "./view";
 
@@ -510,7 +513,47 @@ const NPC_FOLD = "npc";
 /** Keeps the dice ring's side spokes on the canvas. */
 const POOL_RING_MARGIN = 110;
 
-export const RollsCell = ({ rolls, send, options }: { rolls: RollsSlice | undefined; send: RollsSend; options: OptionsAccess }): ReactElement => {
+/** After the roll queue drains, TTS's push takes over the painted pools; this long without one, they clear anyway. */
+const LOCAL_POOL_HOLD_MS = 2000;
+
+/**
+ * Dice-ring clicks paint the pool at once, so quick clicks count up while their commands queue for TTS. Pushes
+ * that land mid-queue are hidden behind the paint; the first push after the queue drains replaces it.
+ */
+const useLocalPools = (rolls: RollsSlice | undefined, pending: number): {
+  shown: RollsSlice | undefined;
+  paint: (key: string, base: RollPool, kind: PoolKind, delta: 1 | -1) => void;
+} => {
+  const [local, setLocal] = useState<ReadonlyMap<string, RollPool>>(() => new Map());
+  const drained = useRef(false);
+  useEffect(() => {
+    if (pending > 0 || local.size === 0) {
+      drained.current = false;
+      return undefined;
+    }
+    drained.current = true;
+    const timer = window.setTimeout(() => setLocal(new Map()), LOCAL_POOL_HOLD_MS);
+    return () => window.clearTimeout(timer);
+  }, [pending, local]);
+  useEffect(() => {
+    if (drained.current) {
+      drained.current = false;
+      setLocal(new Map());
+    }
+  }, [rolls]);
+  const paint = (key: string, base: RollPool, kind: PoolKind, delta: 1 | -1): void =>
+    setLocal((current) => new Map(current).set(key, bumpPool(current.get(key) ?? base, kind, delta)));
+  return { shown: rolls && withLocalPools(rolls, local), paint };
+};
+
+export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
+  rolls: RollsSlice | undefined;
+  /** Roll commands not yet answered by TTS. */
+  pending?: number;
+  send: RollsSend;
+  options: OptionsAccess;
+}): ReactElement => {
+  const { shown: rolls, paint } = useLocalPools(pushed, pending);
   const [popup, setPopup] = useState<OptionsPopup | null>(null);
   const [poolRing, setPoolRing] = useState<PoolRing | null>(null);
   const [folded, setFolded] = useState<ReadonlySet<string>>(() => new Set());
@@ -544,11 +587,12 @@ export const RollsCell = ({ rolls, send, options }: { rolls: RollsSlice | undefi
     if (ringPc) {
       const actions = PC_POOL_ACTIONS[kind];
       if (actions) {
+        paint(ringPc.color, ringPc.pool, kind, delta);
         send({ op: "poolDie", color: ringPc.color, action: delta > 0 ? actions[0] : actions[1] });
       }
     } else if (ringNpc) {
-      const count = Math.max(0, (ringNpc.pool[kind] ?? 0) + delta);
-      send({ op: "npcPool", kind: kind === "hunger" || kind === "rage" ? "hunger" : "normal", count });
+      paint(NPC_POOL_KEY, ringNpc.pool, kind, delta);
+      send({ op: "npcPool", kind: kind === "hunger" || kind === "rage" ? "hunger" : "normal", delta });
     }
   };
   return (

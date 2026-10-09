@@ -1,4 +1,4 @@
-import type { PoolKind, RollPool } from "../../worldState.js";
+import type { PoolKind, RollPool, RollsSlice } from "../../worldState.js";
 import type { RollOptionsApply } from "./commands.js";
 import type { RollOptionsView } from "./bridge.js";
 
@@ -194,6 +194,32 @@ export const poolRingChoices = (rollType: string | undefined): readonly PoolRing
   rollType === "werewolf"
     ? [{ kind: "rage", label: "Rage" }, { kind: "werewolf", label: "Werewolf" }]
     : [{ kind: "hunger", label: "Hunger" }, { kind: "normal", label: "Normal" }];
+
+/** Key for a roll's locally painted pool: the PC's seat colour, or this for the live NPC roll. */
+export const NPC_POOL_KEY = "npc";
+
+/** A pool with one die of `kind` added (1) or removed (-1), never below zero. */
+export const bumpPool = (pool: RollPool, kind: PoolKind, delta: 1 | -1): RollPool => ({
+  ...pool,
+  [kind]: Math.max(0, (pool[kind] ?? 0) + delta)
+});
+
+/** The rolls slice as the Storyteller's dice-ring clicks left it, before TTS has answered them. */
+export const withLocalPools = (rolls: RollsSlice, local: ReadonlyMap<string, RollPool>): RollsSlice => {
+  if (local.size === 0) {
+    return rolls;
+  }
+  const live = rolls.storyteller.live;
+  const npcPool = local.get(NPC_POOL_KEY);
+  return {
+    ...rolls,
+    pcs: rolls.pcs.map((roll) => {
+      const pool = local.get(roll.color);
+      return pool ? { ...roll, pool } : roll;
+    }),
+    storyteller: live && npcPool ? { ...rolls.storyteller, live: { ...live, pool: npcPool } } : rolls.storyteller
+  };
+};
 
 /** Hunt result headline, as the TTS banner shows it. */
 export const huntHeadline = (flavor: string | null, intensity: string): string =>

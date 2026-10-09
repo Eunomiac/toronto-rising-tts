@@ -456,7 +456,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
                 <button type="button" className="lab-btn" onClick={library.clearNotice}>OK</button>
               </div>
             )}
-            <RollsCell rolls={rolls} send={rollCommands.send} options={rollCommands.options} />
+            <RollsCell rolls={rolls} pending={rollCommands.pending} send={rollCommands.send} options={rollCommands.options} />
           </Box>
           <Box x={RIGHT_X} y={MAIN_Y + RIGHT_H - QUEUE_H} w={RIGHT_W} h={QUEUE_H} className="lab-queue-box">
             <QueuePanel connected={connected} live={queueView} />

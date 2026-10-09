@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { parseRollOptions } from "./bridge";
+import type { RollsSlice } from "../../worldState";
 import {
+  bumpPool,
   conditionList,
   dieFaceSrc,
   draftFromView,
   huntHeadline,
+  NPC_POOL_KEY,
   poolDiamonds,
   poolRingChoices,
   poolText,
@@ -12,8 +15,41 @@ import {
   rollTypeEdge,
   rollTypeLabel,
   toggleCondition,
-  toggleStructural
+  toggleStructural,
+  withLocalPools
 } from "./view";
+
+describe("locally painted pools", () => {
+  const rolls: RollsSlice = {
+    pcs: [
+      { color: "Red", name: "Red", pool: { normal: 2 }, conditions: "", wpReroll: false, held: false, canModifyPool: true, dice: [] },
+      { color: "Pink", name: "Pink", pool: { normal: 4 }, conditions: "", wpReroll: false, held: false, canModifyPool: true, dice: [] }
+    ],
+    storyteller: {
+      canInitiate: true,
+      slots: [],
+      live: { hint: "", wpReroll: false, pool: { hunger: 1 }, dice: [], secret: false, quiet: false,
+        actions: { roll: true, rollEnabled: true, half: false, wp: false, recalc: false, reroll: false, rerollEnabled: false, confirm: false, oblivChoice: false, brutalChoice: false } }
+    },
+    werewolves: [],
+    oblivionSeats: []
+  };
+
+  it("bumps one kind and never goes below zero", () => {
+    expect(bumpPool({ normal: 2 }, "normal", 1)).toEqual({ normal: 3 });
+    expect(bumpPool({}, "hunger", -1)).toEqual({ hunger: 0 });
+  });
+
+  it("overlays painted pools on the matching PC and the live NPC roll only", () => {
+    const shown = withLocalPools(rolls, new Map([["Red", { normal: 5 }], [NPC_POOL_KEY, { hunger: 3, normal: 2 }]]));
+    expect(shown.pcs.map((roll) => roll.pool)).toEqual([{ normal: 5 }, { normal: 4 }]);
+    expect(shown.storyteller.live?.pool).toEqual({ hunger: 3, normal: 2 });
+  });
+
+  it("returns the pushed slice untouched when nothing is painted", () => {
+    expect(withLocalPools(rolls, new Map())).toBe(rolls);
+  });
+});
 
 const NEGATING = { takeHalf: "noTakeHalf", wpReroll: "noWPReroll" };
 

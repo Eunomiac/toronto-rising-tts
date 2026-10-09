@@ -30,7 +30,7 @@ export type RollsCommand =
   | { readonly op: "cancel"; readonly color: string }
   | { readonly op: "broadcast"; readonly color: string }
   | { readonly op: "npcInitiate"; readonly label: string; readonly rollType: string; readonly characterKey?: string }
-  | { readonly op: "npcPool"; readonly kind: "hunger" | "normal"; readonly count: number }
+  | { readonly op: "npcPool"; readonly kind: "hunger" | "normal"; readonly delta: 1 | -1 }
   | { readonly op: "npcDifficulty"; readonly value: number }
   | { readonly op: "npcRoll"; readonly secret?: boolean }
   | { readonly op: "npcHalf"; readonly quiet?: boolean }
