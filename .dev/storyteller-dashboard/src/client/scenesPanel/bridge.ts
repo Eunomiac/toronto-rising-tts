@@ -6,8 +6,11 @@ export type ScenesReply = ApplyReply & { readonly loading?: boolean };
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null;
 
-/** `GlobalDashboardScenesApply` returns `{ ok, error? }` as a JSON string (or a refusal while TTS loads the save). */
-export const parseScenesReply = (result: { returnValue?: unknown; error?: string; timedOut?: boolean }): ScenesReply => {
+/**
+ * The dashboard apply entries (`GlobalDashboardScenesApply`, `GlobalDashboardRollsApply`) return `{ ok, error? }` as a
+ * JSON string (or a refusal while TTS loads the save). `what` names the commands in error text.
+ */
+export const parseApplyReply = (result: { returnValue?: unknown; error?: string; timedOut?: boolean }, what: string): ScenesReply => {
   if (result.timedOut) {
     return { ok: false, error: "TTS did not answer. Keep External Editor on; with Cursor open the Dashboard uses the TTS Tools gateway." };
   }
@@ -22,10 +25,13 @@ export const parseScenesReply = (result: { returnValue?: unknown; error?: string
     }
   }
   if (result.error) {
-    return { ok: false, error: /nil value/.test(result.error) ? "TTS has not loaded the Scenes commands yet. Save & Play once." : result.error };
+    return { ok: false, error: /nil value/.test(result.error) ? `TTS has not loaded the ${what} commands yet. Save & Play once.` : result.error };
   }
-  return { ok: false, error: "TTS returned nothing for the Scenes command." };
+  return { ok: false, error: `TTS returned nothing for the ${what} command.` };
 };
+
+export const parseScenesReply = (result: { returnValue?: unknown; error?: string; timedOut?: boolean }): ScenesReply =>
+  parseApplyReply(result, "Scenes");
 
 export const sendScenesCommands = async (commands: readonly ScenesCommand[]): Promise<ScenesReply> => {
   const batch = coalesceCommands(commands);

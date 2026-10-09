@@ -1176,6 +1176,37 @@ local function panelResultDisplayText(rollType, result, difficulty)
     return string.format("%s %s", headline, signed)
 end
 
+--- Roll-panel result line ("WIN +2", "FAILURE −1", …); "" before a result.
+-- @param rollType string|nil
+-- @param result table|nil
+-- @param difficulty number|nil
+-- @return string
+function RUI.resultText(rollType, result, difficulty)
+    return panelResultDisplayText(rollType, result, difficulty)
+end
+
+--- Character name for a seat (charName, then playerName, then the colour).
+-- @param color string
+-- @return string
+function RUI.characterName(color)
+    return characterName(S.getPlayerID(color), color)
+end
+
+--- Instruction line the roll panel shows for the current phase.
+-- @param active table|nil
+-- @param color string
+-- @return string
+function RUI.phaseHint(active, color)
+    return phaseLabel(active, color)
+end
+
+--- Compact pool text ("3N+2H", "—").
+-- @param pool table|nil
+-- @return string
+function RUI.poolText(pool)
+    return formatPoolCompact(pool)
+end
+
 --- Returns the result label and successes display string, or empty strings if no result.
 -- @param rollType string|nil  C.RollType value (used for narrative label overrides)
 -- @param result table|nil     Classified result record
@@ -1238,6 +1269,58 @@ local function refreshStRollPanelPendingButtons(active)
     end
 end
 
+--- Which Storyteller roll-panel actions the live Black roll allows (shared by rollPanelST and the dashboard).
+-- @param active table
+-- @return table { roll, rollEnabled, half, wp, recalc, reroll, rerollEnabled, confirm, oblivChoice, brutalChoice }
+function RUI.stRollPanelActions(active)
+    local isPreRoll  = active.phase == C.RollPhase.PRE_ROLL
+    local isRolling  = active.phase == C.RollPhase.ROLLING
+    local isPostRoll = active.phase == C.RollPhase.POST_ROLL
+    local oblivChoice = isPostRoll and active.pendingResolution == C.PendingResolution.OBLIV_HUNGER_STAIN
+    local brutalChoice = isPostRoll and active.pendingResolution == C.PendingResolution.BRUTAL_FAIL_VIOLENCE
+    local pendingChoice = oblivChoice or brutalChoice
+
+    local facesHaveGuid = false
+    if type(active.diceFaces) == "table" then
+        for _, face in ipairs(active.diceFaces) do
+            if type(face.guid) == "string" and face.guid ~= "" then
+                facesHaveGuid = true
+                break
+            end
+        end
+    end
+
+    local pool = DK.normalizePool(active.pool)
+    local hasPool = DK.poolTotal(pool) > 0
+    local surgeActive = active.meta ~= nil and active.meta.bloodSurgeActive == true
+    local wpAvailable = isPostRoll and active.willpower ~= nil and active.willpower.available == true
+    local isWpWaveRolling = isRolling and active.willpower ~= nil and active.willpower.wpRerollWave == true
+    local rerollInProgress = type(active.stSelectiveReroll) == "table" and active.stSelectiveReroll.inProgress == true
+    local canReroll = isPostRoll and not pendingChoice and facesHaveGuid and not rerollInProgress
+    local selectedCount = 0
+    if canReroll and type(active.stSelectiveReroll) == "table" and type(active.stSelectiveReroll.selectedGuids) == "table" then
+        for _ in pairs(active.stSelectiveReroll.selectedGuids) do
+            selectedCount = selectedCount + 1
+        end
+    end
+
+    return {
+        roll = isPreRoll,
+        rollEnabled = isPreRoll and hasPool,
+        half = isPreRoll and hasPool and not surgeActive
+            and C.RollTypesNoTakeHalf[active.rollType] ~= true
+            and RO.getForActive(active, RO.ROLL_TAKE_HALF) == true,
+        -- TOR-224: selective reroll (click dice + REROLL) replaces the WP wave when faces are mapped.
+        wp = wpAvailable and not (facesHaveGuid and not pendingChoice),
+        recalc = (isRolling or isPostRoll) and (not active.tookHalf or active.takeHalfAwaitingRouse == true),
+        reroll = canReroll,
+        rerollEnabled = canReroll and selectedCount > 0,
+        confirm = (isPostRoll or isWpWaveRolling) and not pendingChoice,
+        oblivChoice = oblivChoice,
+        brutalChoice = brutalChoice,
+    }
+end
+
 --- Refreshes the live Storyteller roll panel (rollPanelST) for Black-seat NPC rolls.
 -- @param active table|nil
 local function refreshStRollPanel(active)
@@ -1269,24 +1352,7 @@ local function refreshStRollPanel(active)
         or {}
     refreshStDieSlots(active.diceFaces, selectedGuids)
 
-    local isPreRoll  = active.phase == C.RollPhase.PRE_ROLL
-    local isRolling  = active.phase == C.RollPhase.ROLLING
     local isPostRoll = active.phase == C.RollPhase.POST_ROLL
-
-    local pendingChoice = isPostRoll and (
-        active.pendingResolution == C.PendingResolution.OBLIV_HUNGER_STAIN
-        or active.pendingResolution == C.PendingResolution.BRUTAL_FAIL_VIOLENCE
-    )
-
-    local facesHaveGuid = false
-    if type(active.diceFaces) == "table" then
-        for _, face in ipairs(active.diceFaces) do
-            if type(face.guid) == "string" and face.guid ~= "" then
-                facesHaveGuid = true
-                break
-            end
-        end
-    end
 
     local result = active.result
     if result ~= nil and isPostRoll then
@@ -1311,48 +1377,16 @@ local function refreshStRollPanel(active)
             result.successes, result.successes == 1 and "" or "es"))
     end
 
-    local hasPool    = DK.poolTotal(pool) > 0
-    local surgeActive = active.meta ~= nil and active.meta.bloodSurgeActive == true
-    local canHalf    = isPreRoll
-        and hasPool
-        and not surgeActive
-        and C.RollTypesNoTakeHalf[active.rollType] ~= true
-        and RO.getForActive(active, RO.ROLL_TAKE_HALF)
-    local canRecalc  = (isRolling or isPostRoll)
-        and (not active.tookHalf or active.takeHalfAwaitingRouse == true)
-
-    uiSetActive("rollPanelST_btnRoll", isPreRoll)
-    uiSetInteractable("rollPanelST_btnRoll", hasPool)
-    uiSetActive("rollPanelST_btnHalf", canHalf)
-
-    local wpAvailable = isPostRoll
-        and active.willpower ~= nil
-        and active.willpower.available == true
-    local isWpWaveRolling = isRolling
-        and active.willpower ~= nil
-        and active.willpower.wpRerollWave == true
-    -- TOR-224: ST panel selective reroll (click dice + REROLL) replaces WP wave when faces are mapped.
-    local showStWp = wpAvailable and not (facesHaveGuid and not pendingChoice)
-    uiSetActive("rollPanelST_btnWP", showStWp)
-    uiSetActive("rollPanelST_btnRecalc", canRecalc)
-
-    local stRerollInProgress = type(active.stSelectiveReroll) == "table"
-        and active.stSelectiveReroll.inProgress == true
-    local canStSelectiveReroll = isPostRoll and not pendingChoice and facesHaveGuid
-        and not stRerollInProgress
-    local selectedCount = 0
-    if canStSelectiveReroll and type(selectedGuids) == "table" then
-        for _ in pairs(selectedGuids) do
-            selectedCount = selectedCount + 1
-        end
-    end
-    local showStReroll = canStSelectiveReroll and selectedCount > 0
-    uiSetActive("rollPanelST_btnReroll", canStSelectiveReroll)
-    uiSetInteractable("rollPanelST_btnReroll", showStReroll)
-
-    local showConfirm = (isPostRoll or isWpWaveRolling) and not pendingChoice
-    uiSetActive("rollPanelST_btnConfirm", showConfirm)
-    uiSetInteractable("rollPanelST_btnConfirm", showConfirm)
+    local actions = RUI.stRollPanelActions(active)
+    uiSetActive("rollPanelST_btnRoll", actions.roll)
+    uiSetInteractable("rollPanelST_btnRoll", actions.rollEnabled)
+    uiSetActive("rollPanelST_btnHalf", actions.half)
+    uiSetActive("rollPanelST_btnWP", actions.wp)
+    uiSetActive("rollPanelST_btnRecalc", actions.recalc)
+    uiSetActive("rollPanelST_btnReroll", actions.reroll)
+    uiSetInteractable("rollPanelST_btnReroll", actions.rerollEnabled)
+    uiSetActive("rollPanelST_btnConfirm", actions.confirm)
+    uiSetInteractable("rollPanelST_btnConfirm", actions.confirm)
     refreshStRollPanelPendingButtons(active)
     uiSetActive("rollPanelST_btnCancel", true)
 
@@ -1810,8 +1844,8 @@ local function applyBroadcastPayload(payload)
 
     applyRollResLayoutForRollType(rollTypeKey)
 
-    uiSetValue("rollRes_rollType", C.RollTypeLabel[rollTypeKey] or "")
-    uiSetValue("rollRes_rollIntro", rollerName .. " rolls …")
+    uiSetValue("rollRes_rollType", payload.heading or C.RollTypeLabel[rollTypeKey] or "")
+    uiSetValue("rollRes_rollIntro", payload.intro or (rollerName .. " rolls …"))
 
     if isRouseOnlyBroadcast(rollTypeKey, diceFaces) then
         refreshBroadcastRousePanels({})
@@ -1849,8 +1883,8 @@ local function applyBroadcastPayload(payload)
         end
     else
         uiSetActive("rollRes_successesContainer", false)
-        uiSetClass("rollRes_resultDisplay", "roll_text rollRes_resultDisplay")
-        uiSetValue("rollRes_resultDisplay", "ROLL COMPLETE")
+        uiSetClass("rollRes_resultDisplay", payload.headlineClass or "roll_text rollRes_resultDisplay")
+        uiSetValue("rollRes_resultDisplay", payload.headline or "ROLL COMPLETE")
     end
 
     UI.show("rollRes_panel")
@@ -1915,6 +1949,27 @@ function RUI.showResultBroadcastFromEntry(color, entry)
         return
     end
     RUI.showResultBroadcast(color, entry.result, entry.label, entry)
+end
+
+local HUNT_HEADLINE_CLASS = {
+    fleeting = "roll_text rollRes_resultDisplay rollRes_result_win",
+    intense = "roll_text rollRes_resultDisplay rollRes_result_criticalWin",
+    acute = "roll_text rollRes_resultDisplay rollRes_result_messyCritical",
+}
+
+--- Broadcasts a hunt's resonance on the roll result panel (no dice; queued like roll results).
+-- @param color string  hunting PC's seat
+-- @param headline string  e.g. "INTENSE SANGUINE" or "NO RESONANCE"
+-- @param intensity string  none | fleeting | intense | acute (headline styling)
+function RUI.showHuntBroadcast(color, headline, intensity)
+    U.Val("RUI.showHuntBroadcast()", { color = color, headline = headline },
+        U.Type(color) == "string" and U.Type(headline) == "string", "color and headline must be strings")
+    local payload = snapshotBroadcastPayload(color, nil, nil, {})
+    payload.heading = "Hunt"
+    payload.intro = payload.rollerName .. " feeds …"
+    payload.headline = headline
+    payload.headlineClass = HUNT_HEADLINE_CLASS[intensity]
+    enqueueBroadcast(payload)
 end
 
 --- Immediately hides the Roll Result Broadcast Panel and drops any queued items.

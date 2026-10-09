@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type ReactElement, type ReactNode } from "react";
+import { useContext, useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type ReactElement, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Headshot } from "../headshots/Headshot";
 import { applyLocal } from "../pcSheet/applyLocal";
@@ -10,6 +10,8 @@ import { TraitRing } from "../pcSheet/TraitRing";
 import type { RingTarget, SeatColor, SeatSnapshot, SheetSnapshot } from "../pcSheet/types";
 import { LIGHTING_LABEL, useScenesCommand, type LightingPreset, type StageChanges } from "../scenesPanel/commands";
 import { GENERIC_SKY, stageName } from "../scenesPanel/liveScene";
+import { RollsCommandContext } from "../scenesPanel/rolls/commands";
+import { ringChoices } from "../scenesPanel/rolls/view";
 import { moveInScatter, withChanges, type ScatterMove, type StageSpot } from "../scenesPanel/stage";
 import { stagePacks, type StagePack } from "../scenesPanel/stageFrame";
 import type { GenericNpc, ScatterGroup } from "../worldState";
@@ -298,13 +300,16 @@ const SeatContent = ({ seat }: { seat: SeatSketch }): ReactElement => (
  * left out rather than drawn, and the rest stay centred. The figurine headshot fills the cell above the name.
  * PC seats are bordered in the player's colour, NPC seats in muted grey; absent (out of the scene) and
  * disconnected seats are told apart by border style and image treatment. Clicking a PC seat opens that PC's
- * tracker controls; clicking anywhere else closes them. On the live table, right-clicking an occupied seat takes
- * that character out of the scene or brings them back (narrative presence only, never connection).
+ * tracker controls; clicking anywhere else closes them. Right-clicking an occupied seat hands it to `onMenu`
+ * (the wide board's roll ring, which also takes the character out of the scene or brings them back).
  */
-export const Seats = ({ seats = SEATS, liveSheet }: { seats?: readonly SeatSketch[]; liveSheet?: SheetSnapshot }): ReactElement => {
+export const Seats = ({ seats = SEATS, liveSheet, onMenu }: {
+  seats?: readonly SeatSketch[];
+  liveSheet?: SheetSnapshot;
+  onMenu?: (event: MouseEvent<HTMLElement>, seat: SeatSketch) => void;
+}): ReactElement => {
   const [labState, setSheet] = useState(labSheet);
   const sheet = liveSheet ?? labState;
-  const send = useScenesCommand();
   const [openColor, setOpenColor] = useState<SeatColor | null>(null);
   const [ring, setRing] = useState<TrackRing | null>(null);
   useEffect(() => {
@@ -329,10 +334,10 @@ export const Seats = ({ seats = SEATS, liveSheet }: { seats?: readonly SeatSketc
         const style = seat.color ? ({ "--seat-color": SEAT_ACCENT[seat.color] } as CSSProperties) : undefined;
         const open = seat.color !== undefined && seat.color === openColor;
         const controllable = seat.color !== undefined && sheet.seats.some((entry) => entry.color === seat.color);
-        const presenceKey = send && seat.seatKey && seat.state !== "disconnected" ? seat.seatKey : undefined;
+        const menu = onMenu && (seat.kind === "pc" || seat.kind === "npc") ? onMenu : undefined;
         const hints = [
           controllable && !open ? "Click for this PC's trackers" : undefined,
-          presenceKey ? (seat.state === "absent" ? "Right-click to bring them into the scene" : "Right-click to take them out of the scene") : undefined
+          menu ? "Right-click to roll, or to take them out of the scene / bring them back" : undefined
         ].filter(Boolean);
         return (
           <div
@@ -341,12 +346,12 @@ export const Seats = ({ seats = SEATS, liveSheet }: { seats?: readonly SeatSketc
             style={style}
             title={hints.length > 0 ? hints.join(". ") : undefined}
             onContextMenu={(event) => {
-              if (!send || !presenceKey) {
+              if (!menu) {
                 return;
               }
               event.preventDefault();
               event.stopPropagation();
-              send({ op: "seatPresence", seat: presenceKey, present: seat.state === "absent" });
+              menu(event, seat);
             }}
             onClick={(event) => {
               if (!controllable || (event.target as HTMLElement).closest(".lab-seat-pop")) {
@@ -524,7 +529,38 @@ export type LiveBoard = {
   readonly pendingScatter: readonly ScatterMove[];
   readonly generics: readonly GenericNpc[];
   readonly scatter: readonly ScatterGroup[];
+  readonly rollRing: RollRingData;
 };
+
+/** What a character's right-click roll ring needs to pick its roll types. */
+export type RollRingData = {
+  /** NPC keys whose control token is tagged Werewolf. */
+  readonly werewolves: readonly string[];
+  /** PC seats with an Oblivion-Rouse dice bag. */
+  readonly oblivionSeats: readonly string[];
+  /** The End phase turns the Oblivion-Rouse bag into Remorse. */
+  readonly endPhase: boolean;
+};
+
+const LAB_ROLL_RING: RollRingData = { werewolves: ["drake"], oblivionSeats: ["Pink"], endPhase: false };
+
+type CharacterRing = {
+  readonly x: number;
+  readonly y: number;
+  readonly name: string;
+  readonly roller: { readonly kind: "pc"; readonly color: string } | { readonly kind: "npc"; readonly characterKey: string };
+  /** Narrative presence toggle for an occupied seat (never connection). */
+  readonly presence?: { readonly seat: string; readonly present: boolean };
+};
+
+const RING_RX = 150;
+const RING_RY = 86;
+
+/** Keep the whole roll ring (spokes included) on the canvas. */
+const ringCentre = (point: { x: number; y: number }): { x: number; y: number } => ({
+  x: Math.min(Math.max(point.x, RING_RX + 70), CANVAS_W - RING_RX - 70),
+  y: Math.min(Math.max(point.y, RING_RY + 20), CANVAS_H - RING_RY - 20)
+});
 
 /** The stage's surroundings: table, sky override ("" = the Site's own sky), and lighting preset ("" = the scene's). */
 export type StageEnv = {
@@ -551,6 +587,8 @@ const OPTIMISTIC_MS = 6000;
 
 export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoard }): ReactElement => {
   const [ring, setRing] = useState<{ x: number; y: number } | null>(null);
+  const [charRing, setCharRing] = useState<CharacterRing | null>(null);
+  const rollsSend = useContext(RollsCommandContext);
   const [labEnv, setLabEnv] = useState<StageEnv>(LAB_ENV);
   const [labScatter, setLabScatter] = useState<readonly ScatterGroup[]>(LAB_SCATTER);
   const [clearArmed, setClearArmed] = useState(false);
@@ -652,6 +690,51 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoa
     }
     setRing(canvasPoint(event));
   };
+  const seats = live?.seats ?? SEATS;
+  const rollRing = live?.rollRing ?? LAB_ROLL_RING;
+  const openSeatRing = (event: MouseEvent<HTMLElement>, seat: SeatSketch): void => {
+    const roller = seat.kind === "pc" && seat.color
+      ? { kind: "pc" as const, color: seat.color }
+      : seat.characterKey ? { kind: "npc" as const, characterKey: seat.characterKey } : null;
+    if (!roller) {
+      return;
+    }
+    setCharRing({
+      ...ringCentre(canvasPoint(event)),
+      name: seat.playedBy ?? seat.name ?? seat.characterKey ?? "",
+      roller,
+      ...(seat.seatKey && seat.state !== "disconnected" ? { presence: { seat: seat.seatKey, present: seat.state === "absent" } } : {})
+    });
+  };
+  const openTokenRing = (event: MouseEvent<HTMLElement>, characterKey: string, kind: "pc" | "npc"): void => {
+    event.preventDefault();
+    event.stopPropagation();
+    const color = kind === "pc" ? seats.find((seat) => seat.characterKey === characterKey && seat.color)?.color : undefined;
+    if (kind === "pc" && !color) {
+      return;
+    }
+    setCharRing({
+      ...ringCentre(canvasPoint(event)),
+      name: nameOf(characterKey),
+      roller: color ? { kind: "pc", color } : { kind: "npc", characterKey }
+    });
+  };
+  // A draft preview's board (live data, no roll transport) offers no rolls; the Lab shows them inert.
+  const ringRolls = charRing && (!live || rollsSend)
+    ? ringChoices({
+      werewolf: charRing.roller.kind === "npc" && rollRing.werewolves.includes(charRing.roller.characterKey),
+      oblivion: charRing.roller.kind === "pc" && rollRing.oblivionSeats.includes(charRing.roller.color),
+      endPhase: rollRing.endPhase
+    })
+    : [];
+  const startRoll = (target: CharacterRing, rollType: string): void => {
+    if (!live || !rollsSend) {
+      return;
+    }
+    rollsSend(target.roller.kind === "pc"
+      ? { op: "initiate", color: target.roller.color, rollType }
+      : { op: "npcInitiate", label: target.name, rollType, characterKey: target.roller.characterKey });
+  };
   return (
   <div ref={board} className="lab-board wide" style={{ width: w, height: h }} onContextMenu={openRing}>
     {!env.scatter && (
@@ -668,12 +751,12 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoa
     )}
     {snapsError && <span className="lab-board-error">{snapsError}</span>}
     {env.scatter ? (
-      <ScatterLayer w={w} h={h} board={board} groups={groups} catalogs={catalogs} nameOf={nameOf} onPlace={placeScatter} />
+      <ScatterLayer w={w} h={h} board={board} groups={groups} catalogs={catalogs} nameOf={nameOf} onPlace={placeScatter} onMenu={openTokenRing} />
     ) : (
-      <StageLayer w={w} h={h} board={board} packs={packs} spots={spots} catalogs={catalogs} nameOf={nameOf} onEdit={edit} />
+      <StageLayer w={w} h={h} board={board} packs={packs} spots={spots} catalogs={catalogs} nameOf={nameOf} onEdit={edit} onMenu={openTokenRing} />
     )}
     <div className="lab-board-seats floating bottom" style={{ top: h - h * WIDE_SEAT_BAND - 8, height: h * WIDE_SEAT_BAND }}>
-      {live ? <Seats seats={live.seats} liveSheet={live.sheet} /> : <Seats />}
+      {live ? <Seats seats={live.seats} liveSheet={live.sheet} onMenu={openSeatRing} /> : <Seats onMenu={openSeatRing} />}
     </div>
     <span className="lab-board-table top">
       <select
@@ -761,6 +844,39 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoa
               Reset to Library
             </button>
           )}
+        </div>
+      </Overlay>
+    )}
+    {charRing && (
+      <Overlay onClose={() => setCharRing(null)}>
+        <div className="lab-ring wide" style={{ left: charRing.x, top: charRing.y }}>
+          <span className="lab-ring-name">{charRing.name}</span>
+          {[
+            ...ringRolls.map((choice) => ({ key: choice.rollType, label: choice.label, run: () => startRoll(charRing, choice.rollType) })),
+            ...(charRing.presence && command
+              ? [{
+                key: "presence",
+                label: charRing.presence.present ? "Into the scene" : "Out of the scene",
+                run: () => charRing.presence && command({ op: "seatPresence", ...charRing.presence })
+              }]
+              : [])
+          ].map((item, index, items) => {
+            const angle = -Math.PI / 2 + (index / items.length) * Math.PI * 2;
+            return (
+              <button
+                key={item.key}
+                type="button"
+                className="lab-ring-item spoke"
+                style={{ left: Math.cos(angle) * RING_RX, top: Math.sin(angle) * RING_RY, "--i": index } as CSSProperties}
+                onClick={() => {
+                  item.run();
+                  setCharRing(null);
+                }}
+              >
+                {item.label}
+              </button>
+            );
+          })}
         </div>
       </Overlay>
     )}

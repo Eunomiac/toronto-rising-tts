@@ -976,11 +976,19 @@ const segmentFlex = (chance: number, winner: boolean, settled: boolean, minWidth
  * the odds with the scene location's resonances. The top bar is the flavor, each possible flavor's segment as
  * long as its chance; click a flavor to mark it as the one the player is seeking (again to clear). The lower
  * bar is the intensity, darker to brighter. Right-click either bar and both markers slide and settle; the
- * winners widen and glow, the rest fade, and Confirm clears the bars, sets the margin to 0 and the star to normal,
- * and drops the sought flavor (the real build broadcasts the result in TTS).
+ * winners widen and glow, the rest fade, and Confirm sends the result for the hunting PC (picked in the PC menu),
+ * then clears the bars, sets the margin to 0 and the star to normal, and drops the sought flavor and the PC.
  */
-export const HuntRoller = ({ location }: { location: LabLocation }): ReactElement => {
+export type HuntPc = { readonly color: string; readonly name: string };
+export type HuntConfirm = { readonly color: string; readonly flavor: string | null; readonly intensity: Intensity; readonly margin: number };
+
+export const HuntRoller = ({ location, pcs, onConfirm }: {
+  location: LabLocation;
+  pcs: readonly HuntPc[];
+  onConfirm: (hunt: HuntConfirm) => void;
+}): ReactElement => {
   const { data } = useChronicleLocations();
+  const [hunter, setHunter] = useState("");
   const [margin, setMargin] = useState(0);
   const [outcome, setOutcome] = useState<HuntOutcome>("basic");
   const [target, setTarget] = useState<Flavor | null>(null);
@@ -1073,8 +1081,18 @@ export const HuntRoller = ({ location }: { location: LabLocation }): ReactElemen
     event.preventDefault();
     spin();
   };
+  const hunterPc = pcs.find((pc) => pc.color === hunter);
   return (
     <div className="lab-hunt">
+      <select
+        className="lab-hunt-pc"
+        title="The hunting PC (the result is broadcast for them and kept on their sheet)"
+        value={hunterPc ? hunter : ""}
+        onChange={(event) => setHunter(event.target.value)}
+      >
+        <option value="">PC…</option>
+        {pcs.map((pc) => <option key={pc.color} value={pc.color}>{pc.name}</option>)}
+      </select>
       <span
         ref={marginRef}
         className="lab-hunt-successes"
@@ -1152,12 +1170,20 @@ export const HuntRoller = ({ location }: { location: LabLocation }): ReactElemen
         <button
           type="button"
           className="lab-btn primary lab-hunt-confirm"
-          title="Clear the bars, the margin, the outcome star, and the sought flavor (the real build broadcasts the result in TTS)"
+          disabled={!hunterPc}
+          title={hunterPc
+            ? `Broadcast ${hunterPc.name}'s resonance in TTS, then clear the bars, the margin, the outcome star, and the sought flavor`
+            : "Pick the hunting PC first"}
           onClick={() => {
+            if (!hunterPc || !result) {
+              return;
+            }
+            onConfirm({ color: hunterPc.color, flavor: result.flavor ? FLAVOR_LABEL[result.flavor] : null, intensity: result.intensity, margin });
             reset();
             setMargin(0);
             setOutcome("basic");
             setTarget(null);
+            setHunter("");
           }}
         >
           Confirm

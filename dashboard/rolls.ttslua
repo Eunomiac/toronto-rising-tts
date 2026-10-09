@@ -1,0 +1,516 @@
+--[[
+  Storyteller Dashboard roll commands (Global VM only).
+
+  `Rolls.apply(jsonText)` runs one op or an array of ops in order and stops at the first failure.
+  Ops call the roll controller (`core.roll_controller`), the Storyteller drawer rolls
+  (`core.storyteller_rolls`) and the same HUD handlers the in-game roll panels use; the `rolls` push
+  slice (`dashboard/world_snapshot.ttslua`) carries the new state back, so replies are only `{ ok, error? }`.
+  Dice still roll physically in TTS.
+
+  PC rolls (field `color` = PC seat):
+    initiate      color, rollType       start a Storyteller-initiated roll (waits in setup)
+    difficulty    color, value          set the difficulty; on a roll still in setup this also opens it
+                                        to the player (the dashboard's approval)
+    open          color                 open a setup roll to the player without a difficulty
+    rollType      color, rollType       change the roll type
+    options       color, permanent, structural, conditions, rerolls, diceRerolled
+                                        the roll options pop-up (`Rolls.options` reads its values)
+    poolDie       color, action         post-roll add / remove one die (`addDie`, `remHungerDie`, …)
+    override      color, resultClass    override the classified result (post-roll)
+    confirm       color                 confirm the result
+    cancel        color                 cancel the roll, or dismiss the held result row
+    broadcast     color                 broadcast a held (resolved) PC result
+
+  Storyteller (NPC) rolls on the Black seat:
+    npcInitiate   label, rollType, characterKey?
+                                        start an NPC roll in a free drawer; Werewolf-tagged NPCs
+                                        always roll Werewolf (as when their token drops on a bag)
+    npcPool       kind, count           `hunger` (Rage for Werewolf) or `normal` (Werewolf dice) count
+    npcDifficulty value                 difficulty 0–10
+    npcRoll       secret?               ROLL (secret = dice hidden from players)
+    npcHalf       quiet?                Take Half (quiet = no broadcast)
+    npcWp                               Spend Willpower
+    npcDie        index                 pick / unpick a die (1-based, roll face order) for a reroll
+    npcReroll                           reroll the picked dice
+    npcRecalc                           re-read the dice on the table
+    npcConfirm    quiet?                confirm (quiet = hold the result instead of broadcasting)
+    npcCancel                           cancel the live NPC roll (clears its drawer)
+    slotCancel    slot                  clear drawer slot 1–3
+    slotBroadcast slot                  broadcast a drawer slot's held result
+    choice        color, choice         Oblivion (`hunger` / `stain`) or Brutal (`fail` / `violence`)
+
+  Hunt:
+    hunt          color, flavor?, intensity, margin
+                                        broadcast the hunt's resonance on the roll result banner and
+                                        record it on the PC (`playerData[pid].huntResonance`)
+
+  Design: .dev/Storyteller Dashboard Docs/Listening to TTS.md § Commands
+]]
+
+local Rolls = {}
+
+local C = require("lib.constants")
+local U = require("lib.util")
+local S = require("core.state")
+
+local ST_COLOR = "Black"
+
+local PERMANENT_KEYS = { "autoApplyRouseOutcomes", "autoWp", "autoRemorse", "autoHunger" }
+local STRUCTURAL_KEYS = { "takeHalf", "wpReroll", "hungerDice", "crits" }
+
+--- Roll types in the options pop-up, in the TTS modal's order.
+local OPTION_ROLL_TYPES = {
+  C.RollType.STANDARD, C.RollType.DISCIPLINE, C.RollType.WILLPOWER_ROLL, C.RollType.FRENZY,
+  C.RollType.HUMANITY_ROLL, C.RollType.ROUSE, C.RollType.ROUSE_OBLIVION, C.RollType.REMORSE,
+  C.RollType.LAUNCH, C.RollType.GOAL, C.RollType.SIMPLE_CHECK,
+}
+
+local INTENSITIES = { none = true, fleeting = true, intense = true, acute = true }
+
+--- Werewolf-tagged NPC keys, read from the control tokens once per load (tags are authored in the save).
+--- @type table<string, boolean>|nil
+local werewolfCache = nil
+
+--- @param payload table
+--- @return string
+local function encodeReply(payload)
+  if JSON == nil or type(JSON.encode) ~= "function" then
+    error("dashboard.rolls: JSON.encode unavailable")
+  end
+  return JSON.encode(payload)
+end
+
+--- @return any|nil player
+local function storytellerPlayer()
+  for _, p in ipairs(Player.getPlayers()) do
+    if U.isStorytellerSteamPlayer(p) then
+      return p
+    end
+  end
+  return nil
+end
+
+--- @param color string
+--- @return table|nil
+local function activeRoll(color)
+  local pid = S.getPlayerID(color)
+  return pid ~= nil and S.getStateVal("playerData", pid, "hud", "rollData", "active") or nil
+end
+
+--- @param color any
+--- @return string|nil error
+local function pcColorError(color)
+  if not U.isIn(color, C.PlayerColors) then
+    return "Unknown PC seat: " .. tostring(color)
+  end
+  return nil
+end
+
+--- @param rollType any
+--- @return boolean
+local function isRollType(rollType)
+  for _, value in pairs(C.RollType) do
+    if value == rollType then
+      return true
+    end
+  end
+  return false
+end
+
+--- @return table<string, boolean>
+function Rolls.werewolfKeys()
+  if werewolfCache ~= nil then
+    return werewolfCache
+  end
+  local Tokens = require("core.npc_gameboard_tokens")
+  local keys = {}
+  for _, obj in ipairs(getObjectsWithTag("Werewolf") or {}) do
+    if Tokens.isNpcControlToken(obj) then
+      local key = Tokens.resolveTokenCharacterKey(obj)
+      if type(key) == "string" and key ~= "" then
+        keys[key] = true
+      end
+    end
+  end
+  werewolfCache = keys
+  return keys
+end
+
+--- Seats whose save has an Oblivion-Rouse dice bag (the roll type needs one).
+--- @return table list of colours
+function Rolls.oblivionSeats()
+  local G = require("lib.guids")
+  local out = {}
+  for _, color in ipairs(C.PlayerColors) do
+    if type(G.GetDiceOblivRouseGUID(color)) == "string" then
+      out[#out + 1] = color
+    end
+  end
+  return out
+end
+
+--- Values for the roll options pop-up (same draft the TTS options modal opens with).
+--- @param color string PC seat
+--- @return table `{ ok, … }`
+function Rolls.options(color)
+  local err = pcColorError(color)
+  if err then
+    return { ok = false, error = err }
+  end
+  local RC = require("core.roll_controller")
+  local RO = require("lib.roll_options")
+  local CD = require("lib.condition_defs")
+  local Conditions = require("core.conditions")
+  local pid = S.getPlayerID(color)
+  local active = activeRoll(color)
+  if pid == nil or active == nil then
+    return { ok = false, error = color .. " has no roll in progress." }
+  end
+  RC.computeEffectiveRollState(color, active)
+  RO.syncStructuralOverlayFromActive(active)
+
+  local permanent = {}
+  for _, key in ipairs(PERMANENT_KEYS) do
+    permanent[key] = RO.getPermanent(key) == true
+  end
+  local structural = {}
+  for _, key in ipairs(STRUCTURAL_KEYS) do
+    structural[key] = RO.getForActive(active, key) == true
+  end
+  local conditions = {}
+  for _, id in ipairs(CD.listRollConditionIds()) do
+    local on = Conditions.isRollConditionEffective(pid, active, id) == true
+    conditions[#conditions + 1] = { id = id, label = CD.Defs[id].displayName or id, on = on }
+    local structuralKey = CD.STRUCTURAL_NEGATING_REVERSE[id]
+    if type(structuralKey) == "string" then
+      structural[structuralKey] = not on
+    end
+  end
+  local hasOblivion = type(require("lib.guids").GetDiceOblivRouseGUID(color)) == "string"
+  local rollTypes = {}
+  for _, rollType in ipairs(OPTION_ROLL_TYPES) do
+    if rollType ~= C.RollType.ROUSE_OBLIVION or hasOblivion then
+      rollTypes[#rollTypes + 1] = { key = rollType, label = C.RollTypeLabel[rollType] or rollType }
+    end
+  end
+  return {
+    ok = true,
+    color = color,
+    rollType = active.rollType,
+    rollTypes = rollTypes,
+    permanent = permanent,
+    structural = structural,
+    locked = { takeHalf = RO.isTakeHalfLocked(active.rollType) == true, hungerDice = RO.isHungerDiceLocked(active.rollType) == true },
+    conditions = conditions,
+    negating = CD.STRUCTURAL_NEGATING,
+    rerolls = RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_REROLLS),
+    diceRerolled = RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_DICE_REROLLED),
+  }
+end
+
+--- @param cmd table
+--- @return string|nil error
+local function applyOptions(cmd)
+  local RC = require("core.roll_controller")
+  local RO = require("lib.roll_options")
+  local permanent = type(cmd.permanent) == "table" and cmd.permanent or {}
+  local structural = type(cmd.structural) == "table" and cmd.structural or {}
+  local conditions = type(cmd.conditions) == "table" and cmd.conditions or {}
+  local rerolls = tonumber(cmd.rerolls)
+  local diceRerolled = tonumber(cmd.diceRerolled)
+  if rerolls == nil or diceRerolled == nil then
+    return "Reroll numbers must be numbers."
+  end
+  if activeRoll(cmd.color) == nil then
+    return cmd.color .. " has no roll in progress."
+  end
+  local perm = {}
+  for _, key in ipairs(PERMANENT_KEYS) do
+    perm[key] = permanent[key] == true
+  end
+  RO.setPermanentAll(perm)
+  local opts = {
+    canRerollHunger = conditions.canRerollHunger == true,
+    bestialNull = conditions.bestialNull == true,
+    [RO.ROLL_NUMBER_OF_REROLLS] = math.max(0, math.floor(rerolls)),
+    [RO.ROLL_NUMBER_OF_DICE_REROLLED] = math.floor(diceRerolled),
+  }
+  for _, key in ipairs(STRUCTURAL_KEYS) do
+    opts[key] = structural[key] == true
+  end
+  RC.setRollOptions(cmd.color, opts)
+  require("core.roll_ui").refreshAll()
+  return nil
+end
+
+--- @param cmd table
+--- @return string|nil error
+local function applyHunt(cmd)
+  local err = pcColorError(cmd.color)
+  if err then
+    return err
+  end
+  if not INTENSITIES[cmd.intensity] then
+    return "Unknown hunt intensity: " .. tostring(cmd.intensity)
+  end
+  local flavor = type(cmd.flavor) == "string" and cmd.flavor ~= "" and cmd.flavor or nil
+  if cmd.intensity ~= "none" and flavor == nil then
+    return "A hunt with resonance needs a flavor."
+  end
+  local pid = S.getPlayerID(cmd.color)
+  if pid == nil then
+    return cmd.color .. " has no player data."
+  end
+  local clock = S.getStateVal("sessionScene", "clock")
+  S.setStateVal({
+    flavor = cmd.intensity ~= "none" and flavor or nil,
+    intensity = cmd.intensity,
+    margin = tonumber(cmd.margin) or 0,
+    at = type(clock) == "table" and {
+      year = tonumber(clock.year), month = tonumber(clock.month), day = tonumber(clock.day),
+      hour = tonumber(clock.hour), minute = tonumber(clock.minute),
+    } or nil,
+  }, "playerData", pid, "huntResonance")
+  local headline = cmd.intensity == "none" and "NO RESONANCE"
+    or string.upper(cmd.intensity .. " " .. flavor)
+  require("core.roll_ui").showHuntBroadcast(cmd.color, headline, cmd.intensity)
+  require("dashboard.push").seat(cmd.color)
+  return nil
+end
+
+--- @param cmd table
+--- @return string|nil error
+local function applyNpcCommand(cmd)
+  local op = cmd.op
+  local RC = require("core.roll_controller")
+  local RUI = require("core.roll_ui")
+  local STR = require("core.storyteller_rolls")
+  local player = storytellerPlayer()
+
+  if op == "npcInitiate" then
+    if type(cmd.label) ~= "string" or cmd.label == "" then
+      return "An NPC roll needs a name."
+    end
+    local characterKey = type(cmd.characterKey) == "string" and cmd.characterKey ~= "" and cmd.characterKey or nil
+    local rollType = cmd.rollType
+    if characterKey ~= nil and Rolls.werewolfKeys()[characterKey] == true then
+      rollType = C.RollType.WEREWOLF
+    end
+    if not isRollType(rollType) then
+      return "Unknown roll type: " .. tostring(rollType)
+    end
+    if STR.initiateNpcRoll(cmd.label, rollType, characterKey) ~= true then
+      return "No free Storyteller dice drawer, or an NPC roll is still in progress."
+    end
+    return nil
+  end
+
+  if op == "slotCancel" or op == "slotBroadcast" then
+    local slot = tonumber(cmd.slot)
+    if slot == nil or slot < 1 or slot > 3 then
+      return "Unknown drawer slot: " .. tostring(cmd.slot)
+    end
+    if op == "slotCancel" then
+      STR.cancelSlot(slot)
+    else
+      RC.broadcastHeldResult(slot)
+    end
+    return nil
+  end
+
+  local active = activeRoll(ST_COLOR)
+  if active == nil then
+    return "No NPC roll is in progress."
+  end
+
+  if op == "npcPool" then
+    if active.phase ~= C.RollPhase.SETUP and active.phase ~= C.RollPhase.PRE_ROLL then
+      return "The NPC pool is fixed once the dice are rolled."
+    end
+    local count = tonumber(cmd.count)
+    if count == nil or count < 0 then
+      return "Pool count must be a number."
+    end
+    local DK = require("lib.dice_kinds")
+    local werewolf = active.rollType == C.RollType.WEREWOLF
+    local kind
+    if cmd.kind == "hunger" then
+      kind = werewolf and DK.KIND_RAGE or DK.KIND_HUNGER
+    elseif cmd.kind == "normal" then
+      kind = werewolf and DK.KIND_WEREWOLF or DK.KIND_NORMAL
+    else
+      return "Unknown pool kind: " .. tostring(cmd.kind)
+    end
+    RC.setPoolKindCount(ST_COLOR, kind, math.floor(count))
+  elseif op == "npcDifficulty" then
+    local value = tonumber(cmd.value)
+    if value == nil or value < 0 then
+      return "Difficulty must be 0 or more."
+    end
+    if RC.setDifficulty(ST_COLOR, math.floor(value)) ~= true then
+      return "Could not set the NPC roll's difficulty."
+    end
+  elseif op == "npcRoll" then
+    HUD_rollRollButton(player, cmd.secret == true and "-2" or "-1", "rollPanelST_btnRoll")
+  elseif op == "npcHalf" then
+    HUD_rollTakeHalf(player, cmd.quiet == true and "-2" or "-1", "rollPanelST_btnHalf")
+  elseif op == "npcWp" then
+    HUD_rollSpendWP(player, "-1", "rollPanelST_btnWP")
+  elseif op == "npcDie" then
+    if RC.toggleStSelectiveDie(ST_COLOR, tonumber(cmd.index)) then
+      RUI.refreshPlayerRollPanel(ST_COLOR)
+    end
+  elseif op == "npcReroll" then
+    GlobalStRerollDiceByGuids({ color = ST_COLOR })
+    RUI.refreshPlayerRollPanel(ST_COLOR)
+  elseif op == "npcRecalc" then
+    RC.recalculate(ST_COLOR)
+  elseif op == "npcConfirm" then
+    HUD_rollConfirm(player, cmd.quiet == true and "-2" or "-1", "rollPanelST_btnConfirm")
+  elseif op == "npcCancel" then
+    HUD_rollCancel(player, "-1", "rollPanelST_btnCancel")
+  else
+    return "Unknown op: " .. tostring(op)
+  end
+  return nil
+end
+
+--- @param cmd table
+--- @return string|nil error
+local function applyCommand(cmd)
+  if type(cmd) ~= "table" or type(cmd.op) ~= "string" then
+    return "Each command needs an op"
+  end
+  local op = cmd.op
+
+  if op == "hunt" then
+    return applyHunt(cmd)
+  end
+  if string.sub(op, 1, 3) == "npc" or op == "slotCancel" or op == "slotBroadcast" then
+    return applyNpcCommand(cmd)
+  end
+  if op == "choice" then
+    if cmd.color ~= ST_COLOR then
+      local err = pcColorError(cmd.color)
+      if err then
+        return err
+      end
+    end
+    local RC = require("core.roll_controller")
+    if cmd.choice == "hunger" or cmd.choice == "stain" then
+      RC.confirmOblivionChoice(cmd.color, cmd.choice)
+    elseif cmd.choice == "fail" or cmd.choice == "violence" then
+      RC.confirmBrutalChoice(cmd.color, cmd.choice)
+    else
+      return "Unknown choice: " .. tostring(cmd.choice)
+    end
+    return nil
+  end
+
+  local err = pcColorError(cmd.color)
+  if err then
+    return err
+  end
+  local color = cmd.color
+  local RC = require("core.roll_controller")
+
+  if op == "initiate" then
+    if not isRollType(cmd.rollType) then
+      return "Unknown roll type: " .. tostring(cmd.rollType)
+    end
+    if RC.initiateRoll(color, { rollType = cmd.rollType, initiator = "storyteller" }) ~= true then
+      return "Could not start a roll for " .. color .. " (another roll may be in progress)."
+    end
+    return nil
+  end
+  if op == "options" then
+    return applyOptions(cmd)
+  end
+
+  local active = activeRoll(color)
+  if op == "broadcast" then
+    RC.broadcastPcDashResult(color)
+    return nil
+  end
+  if op == "cancel" then
+    -- With no roll in progress this dismisses the held result row.
+    RC.cancelRoll(color)
+    return nil
+  end
+  if active == nil then
+    return color .. " has no roll in progress."
+  end
+
+  if op == "difficulty" then
+    local value = tonumber(cmd.value)
+    if value == nil or value < 0 then
+      return "Difficulty must be 0 or more."
+    end
+    local openAfter = active.phase == C.RollPhase.SETUP
+    if RC.setDifficulty(color, math.floor(value)) ~= true then
+      return "Could not set " .. color .. "'s difficulty."
+    end
+    if openAfter then
+      RC.openRoll(color)
+    end
+  elseif op == "open" then
+    RC.openRoll(color)
+  elseif op == "rollType" then
+    if not isRollType(cmd.rollType) then
+      return "Unknown roll type: " .. tostring(cmd.rollType)
+    end
+    if RC.changeRollType(color, cmd.rollType) ~= true then
+      return "Could not change " .. color .. "'s roll type."
+    end
+    require("core.roll_ui").refreshAll()
+  elseif op == "poolDie" then
+    if RC.canPostRollModifyPool(color, active) ~= true then
+      return "Dice can only be added or removed after the roll."
+    end
+    if type(cmd.action) ~= "string" or GlobalPostRollModifyPool({ color = color, action = cmd.action }) ~= true then
+      return "Could not change " .. color .. "'s dice."
+    end
+  elseif op == "override" then
+    if RC.overrideResult(color, cmd.resultClass) ~= true then
+      return "Could not override " .. color .. "'s result."
+    end
+  elseif op == "confirm" then
+    RC.confirmRoll(color)
+  else
+    return "Unknown op: " .. tostring(op)
+  end
+  return nil
+end
+
+--- @param jsonText string one op object or an array of ops
+--- @return string JSON `{ ok = true }` or `{ ok = false, error = string }`
+function Rolls.apply(jsonText)
+  if type(jsonText) ~= "string" or jsonText == "" then
+    return encodeReply({ ok = false, error = "Expected command JSON" })
+  end
+  local parsed = JSON.decode(jsonText)
+  if type(parsed) ~= "table" then
+    return encodeReply({ ok = false, error = "Command JSON did not decode to a table" })
+  end
+  local list = type(parsed.op) == "string" and { parsed } or parsed
+  if #list == 0 then
+    return encodeReply({ ok = false, error = "Expected command JSON" })
+  end
+  local DashPush = require("dashboard.push")
+  for i = 1, #list do
+    local err = applyCommand(list[i])
+    DashPush.markWorldDirty({ rolls = true })
+    if err ~= nil then
+      return encodeReply({ ok = false, error = err, failedIndex = i })
+    end
+  end
+  return encodeReply({ ok = true })
+end
+
+--- @param color string
+--- @return string JSON options reply
+function Rolls.optionsJson(color)
+  return encodeReply(Rolls.options(color))
+end
+
+return Rolls

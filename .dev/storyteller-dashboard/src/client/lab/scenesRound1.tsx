@@ -12,6 +12,7 @@ import {
   SoundMixer,
   WeatherPanel,
   WhenPanel,
+  type HuntPc,
   type LabLocation,
   type LibraryActions,
   type LibraryEntry,
@@ -19,6 +20,9 @@ import {
   type SceneRef
 } from "./glance";
 import { PreparedPanels, ScenePreview, type PreparedScene } from "./labPreview";
+import type { RollOptionsView } from "../scenesPanel/rolls/bridge";
+import { RollsCell, type OptionsAccess } from "../scenesPanel/rolls/RollsCell";
+import type { RollsSlice } from "../worldState";
 import {
   Overlay,
   Board,
@@ -34,6 +38,7 @@ import {
   RollsReserved,
   Roster,
   SceneTitle,
+  SEATS,
   Seats,
   Sound,
   Weather,
@@ -175,7 +180,7 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
         />
       </Box>
       <Box x={G} y={bodyY} w={leftW} h={huntH} className="lab-hunt-box lab-borderless">
-        <HuntRoller location={location} />
+        <HuntRoller location={location} pcs={LAB_HUNTERS} onConfirm={() => undefined} />
       </Box>
       <Box x={G} y={rosterY} w={leftW} h={1042 - G - rosterY} className="lab-borderless lab-dock-box">
         <RosterDock scene={scenes.current?.title ?? SCENE_NAME} />
@@ -227,7 +232,9 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
       <Box x={stripX} y={stageY} w={stageW} h={stageH} className="lab-borderless">
         <WideBoard w={boardW} h={boardH} />
       </Box>
-      <Box x={rightX} y={mainY} w={rightW} h={rightH - queueH - G} tone="reserved" />
+      <Box x={rightX} y={mainY} w={rightW} h={rightH - queueH - G} className="roll-box">
+        <RollsCell rolls={LAB_ROLLS} send={() => undefined} options={LAB_ROLL_OPTIONS} />
+      </Box>
       <Box x={rightX} y={mainY + rightH - queueH} w={rightW} h={queueH} className="lab-queue-box">
         <QueuePanel connected={!ttsDisconnected} />
       </Box>
@@ -260,6 +267,56 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
 };
 
 const SCENE_NAME = "Elysium — Casa Loma: Great Hall";
+
+const LAB_HUNTERS: readonly HuntPc[] = SEATS.flatMap((seat) =>
+  seat.kind === "pc" && seat.color ? [{ color: seat.color, name: (seat.playedBy ?? seat.name ?? seat.color).split(" ")[0] ?? seat.color }] : []);
+
+const LAB_ROLLS: RollsSlice = {
+  pcs: [
+    { color: "Pink", name: "Aishe Tache", rollType: "discipline", phase: "setup", pool: { normal: 4, hunger: 2 }, conditions: "", held: false, canModifyPool: false, dice: [] },
+    {
+      color: "Brown", name: "Lord Lucien", rollType: "standard", phase: "postRoll", pool: { normal: 5, hunger: 1 }, difficulty: 3,
+      conditions: "No Take Half", result: { resultClass: "win", successes: 4, margin: 1, text: "WIN +1" }, held: false, canModifyPool: true,
+      dice: [{ value: 8, kind: "normal" }, { value: 10, kind: "hunger" }]
+    },
+    { color: "Red", name: "Rashid", rollType: "rouse", phase: "resolved", pool: { rouse: 1 }, conditions: "", result: { text: "ROUSED" }, held: true, canModifyPool: false, dice: [] }
+  ],
+  storyteller: {
+    canInitiate: true,
+    slots: [
+      { index: 1, label: "Drake", rollType: "standard", phase: "postRoll", live: true, canBroadcast: false, pendingBroadcast: false },
+      { index: 2, label: "Mara", rollType: "frenzy", phase: "resolved", live: false, canBroadcast: true, pendingBroadcast: true }
+    ],
+    live: {
+      rollType: "standard", label: "Drake", slot: 1, phase: "postRoll", hint: "Pick dice to reroll, or Confirm.",
+      pool: { normal: 4, hunger: 2 }, difficulty: 4, result: { resultClass: "messyCritical", successes: 5, margin: 1, text: "MESSY CRITICAL +1" },
+      dice: [{ value: 10, kind: "normal" }, { value: 3, kind: "normal", selected: true }, { value: 6, kind: "normal" }, { value: 7, kind: "normal" }, { value: 10, kind: "hunger" }, { value: 1, kind: "hunger" }],
+      actions: { roll: false, rollEnabled: false, half: false, wp: true, recalc: true, reroll: true, rerollEnabled: true, confirm: true, oblivChoice: false, brutalChoice: false },
+      secret: false,
+      quiet: false
+    }
+  },
+  werewolves: ["drake"],
+  oblivionSeats: ["Pink"]
+};
+
+const LAB_OPTIONS_VIEW: RollOptionsView = {
+  color: "Pink",
+  rollType: "discipline",
+  rollTypes: [{ key: "standard", label: "Standard" }, { key: "discipline", label: "Discipline" }, { key: "frenzy", label: "Frenzy" }],
+  permanent: { autoApplyRouseOutcomes: true, autoWp: false, autoRemorse: true, autoHunger: true },
+  structural: { takeHalf: true, wpReroll: true, hungerDice: true, crits: true },
+  locked: { takeHalf: false, hungerDice: false },
+  conditions: [{ id: "noTakeHalf", label: "No Take Half", on: false }, { id: "canRerollHunger", label: "Can reroll Hunger", on: false }],
+  negating: { takeHalf: "noTakeHalf", wpReroll: "noWPReroll", hungerDice: "noHungerDice", crits: "noCriticals" },
+  rerolls: 1,
+  diceRerolled: 3
+};
+
+const LAB_ROLL_OPTIONS: OptionsAccess = {
+  load: () => Promise.resolve(LAB_OPTIONS_VIEW),
+  changeType: (_color, rollType) => Promise.resolve({ ...LAB_OPTIONS_VIEW, rollType })
+};
 
 /** Lab scenes use their title as their key. */
 const ref = (title: string): SceneRef => ({ key: title, title });

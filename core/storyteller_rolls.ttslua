@@ -45,6 +45,7 @@ end
 --- @param root table
 local function saveRoot(root)
     S.setStateVal(root, "storytellerRolls")
+    require("dashboard.push").markWorldDirty({ rolls = true })
 end
 
 --- Finds a history row by roll id for a seat color.

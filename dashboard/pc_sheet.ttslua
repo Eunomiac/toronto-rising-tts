@@ -560,6 +560,7 @@ local function snapshotSeat(color, includePlayerData)
     torpor = type(pid) == "string" and S.getStateVal("playerData", pid, "conditions", "torpor") ~= nil,
     hudFrenzy = type(pid) == "string" and S.getStateVal("playerData", pid, "conditions", "hudFrenzy") ~= nil,
     hudBlindfold = type(pid) == "string" and S.getStateVal("playerData", pid, "conditions", "hudBlindfold") ~= nil,
+    huntResonance = type(pid) == "string" and S.getStateVal("playerData", pid, "huntResonance") or nil,
   }
   if type(pid) == "string" and pid ~= C.StorytellerID then
     for i = 1, #EXTENSIONS do

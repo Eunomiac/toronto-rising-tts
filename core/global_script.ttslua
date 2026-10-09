@@ -1756,6 +1756,33 @@ function GlobalDashboardScenesApply(params)
     return require("dashboard.scenes").apply(jsonText)
 end
 
+--- Storyteller Dashboard roll commands (one op or an array; ops in `dashboard/rolls.ttslua`).
+--- @param params table|string `{ json = "..." }` or JSON text
+--- @return string JSON `{ ok, error? }`
+function GlobalDashboardRollsApply(params)
+    local refusal = dashboardLoadingRefusal()
+    if refusal then
+        return refusal
+    end
+    local jsonText = params
+    if type(params) == "table" then
+        jsonText = params.json or params[1]
+    end
+    return require("dashboard.rolls").apply(jsonText)
+end
+
+--- Storyteller Dashboard roll options pop-up: the values the TTS options modal would open with.
+--- @param params table|string `{ color = "Red" }` or the seat colour
+--- @return string JSON `{ ok, … }`
+function GlobalDashboardRollOptions(params)
+    local refusal = dashboardLoadingRefusal()
+    if refusal then
+        return refusal
+    end
+    local color = type(params) == "table" and (params.color or params[1]) or params
+    return require("dashboard.rolls").optionsJson(color)
+end
+
 --- Storyteller Dashboard scene library: TTS's library rows (seed the dashboard's copy; refresh the linked row).
 --- @param params table|string|nil `{ json = "[\"key\", …]" }` for some rows; nil for all
 --- @return string JSON `{ ok = true, order, liveKey, scenes }`
@@ -6684,6 +6711,7 @@ RC.onRollStateChanged = function(color)
         local STR = require("core.storyteller_rolls")
         STR.onRollStateChanged()
     end
+    require("dashboard.push").markWorldDirty({ rolls = true })
 end
 
 RC.onLiveConcurrencyChanged = function()

@@ -1,4 +1,4 @@
-import { useRef, useState, type CSSProperties, type DragEvent, type PointerEvent, type ReactElement, type RefObject } from "react";
+import { useRef, useState, type CSSProperties, type DragEvent, type MouseEvent, type PointerEvent, type ReactElement, type RefObject } from "react";
 import { Headshot } from "../headshots/Headshot";
 import type { SceneCatalogs } from "../scenes/types";
 import type { StageChange, StageChanges } from "../scenesPanel/commands";
@@ -105,19 +105,24 @@ type TokenProps = {
   readonly pc?: boolean;
   readonly handlers?: PointerHandlers;
   readonly onDoubleClick?: () => void;
+  readonly onContextMenu?: (event: MouseEvent<HTMLElement>) => void;
 };
+
+/** Right-click on a stage token: the board opens that character's roll ring. */
+export type TokenMenu = (event: MouseEvent<HTMLElement>, characterKey: string, kind: "pc" | "npc") => void;
 
 /**
  * A figurine headshot with the name under it; hovering enlarges the headshot. The ring is the token's group
  * colour (thicker and brighter for the group's boss); a gold halo means lit.
  */
-export const StageTokenView = ({ characterKey, name, lit, x, y, color, boss, dragging, pc, handlers, onDoubleClick }: TokenProps): ReactElement => (
+export const StageTokenView = ({ characterKey, name, lit, x, y, color, boss, dragging, pc, handlers, onDoubleClick, onContextMenu }: TokenProps): ReactElement => (
   <div
     className={`lab-token${lit ? " lit" : ""}${boss ? " boss" : ""}${dragging ? " dragging" : ""}${pc ? " pc" : ""}${handlers ? " editable" : ""}`}
     style={{ left: x, top: y, ...(color ? { "--group": color } : {}) } as CSSProperties}
-    title={handlers ? `${name}: drag to move, double-click to ${lit ? "darken" : "light"}` : name}
+    title={handlers ? `${name}: drag to move, double-click to ${lit ? "darken" : "light"}, right-click to roll` : name}
     {...handlers}
     {...(onDoubleClick ? { onDoubleClick } : {})}
+    {...(onContextMenu ? { onContextMenu } : {})}
   >
     <Headshot className="lab-token-head" characterKey={characterKey} />
     <span className="lab-token-name">{name}</span>
@@ -143,10 +148,11 @@ type StageLayerProps = {
   readonly catalogs: SceneCatalogs | null;
   readonly nameOf: (characterKey: string) => string;
   readonly onEdit: (changes: StageChanges) => void;
+  readonly onMenu: TokenMenu;
 };
 
 /** Standard placement: tokens anywhere on the stage, packs as mild snap points and group drop targets. */
-export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit }: StageLayerProps): ReactElement => {
+export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit, onMenu }: StageLayerProps): ReactElement => {
   const roster = useRosterLayout();
   const [over, setOver] = useState(false);
   const place = (key: string, point: StagePoint): void => {
@@ -244,6 +250,7 @@ export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit
               const at = stageToBoard(spot.u, spot.v);
               onEdit({ [spot.characterKey]: { u: at.u, v: at.v, lightMode: spot.lit ? "OFF" : "STANDARD" } });
             }}
+            onContextMenu={(event) => onMenu(event, spot.characterKey, "npc")}
           />
         );
       })}
@@ -259,6 +266,7 @@ type ScatterLayerProps = {
   readonly catalogs: SceneCatalogs | null;
   readonly nameOf: (characterKey: string) => string;
   readonly onPlace: (characterKey: string, kind: "pc" | "npc", group: number | undefined) => void;
+  readonly onMenu: TokenMenu;
 };
 
 /** A dropped token joins the group whose circle it lands in (a little slack around the edge). */
@@ -276,7 +284,7 @@ const groupAt = (point: StagePoint, count: number, w: number, h: number, radius:
  * Scatter placement: six groups, each a circle of PCs and NPCs. Drag a token into another circle to move it there;
  * drag an NPC out of every circle to take them off. PCs always stand in a group.
  */
-export const ScatterLayer = ({ w, h, board, groups, catalogs, nameOf, onPlace }: ScatterLayerProps): ReactElement => {
+export const ScatterLayer = ({ w, h, board, groups, catalogs, nameOf, onPlace, onMenu }: ScatterLayerProps): ReactElement => {
   const roster = useRosterLayout();
   const [over, setOver] = useState(false);
   const radius = Math.min(w, h) * 0.13;
@@ -346,6 +354,7 @@ export const ScatterLayer = ({ w, h, board, groups, catalogs, nameOf, onPlace }:
                   pc={member.kind === "pc"}
                   dragging={dragging !== null}
                   handlers={drag.handlers(member)}
+                  onContextMenu={(event) => onMenu(event, member.key, member.kind)}
                 />
               );
             })}

@@ -6,6 +6,7 @@ import { previewLayout } from "../lab/labPreview";
 import { Box, WideBoard, type LiveBoard } from "../lab/sketch";
 import type { SceneCatalogs } from "../scenes/types";
 import { ScenesCommandContext, type ScenesCommand } from "./commands";
+import { RollsCommandContext } from "./rolls/commands";
 import { applyToDraft, draftAtPresentDay, draftClock, draftSceneSlice, draftSoundView, draftStage, savedPlacements, withPlacements } from "./library";
 import { isScatter, lightingPreset, liveTokens, sceneConditions, toDate, weatherAxes } from "./liveScene";
 import { boardToStage } from "./stageFrame";
@@ -60,10 +61,12 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }:
     pendingScatter: [],
     generics: [],
     scatter: [],
-    env: { tableKey: slice.tableKey ?? "", scatter: isScatter(slice), sky: slice.skyboxOverride ?? "", lighting: lightingPreset(slice) ?? "" }
+    env: { tableKey: slice.tableKey ?? "", scatter: isScatter(slice), sky: slice.skyboxOverride ?? "", lighting: lightingPreset(slice) ?? "" },
+    rollRing: { werewolves: [], oblivionSeats: [], endPhase: false }
   };
   return (
     <ScenesCommandContext.Provider value={send}>
+    <RollsCommandContext.Provider value={null}>
       <Box {...box.location} className="lab-backdrop-box">
         {location ? (
           <LocationPanel
@@ -112,6 +115,7 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }:
       <Box {...box.board} className="lab-borderless">
         <WideBoard w={box.board.w - 12} h={box.board.h - 10} live={board} />
       </Box>
+    </RollsCommandContext.Provider>
     </ScenesCommandContext.Provider>
   );
 };

@@ -33,6 +33,34 @@ describe("applyWorldEvent", () => {
     expect(sound.soundscape?.lanes).toEqual([]);
   });
 
+  it("reads the rolls slice, with Lua empty tables as empty lists and missing flags as false", () => {
+    const empty = applyWorldEvent({}, { topic: "rolls", data: { pcs: {}, storyteller: { canInitiate: true, slots: {} }, werewolves: {}, oblivionSeats: {} } });
+    expect(empty.rolls).toEqual({ pcs: [], storyteller: { canInitiate: true, slots: [] }, werewolves: [], oblivionSeats: [] });
+    const state = applyWorldEvent({}, {
+      topic: "rolls",
+      data: {
+        pcs: [{ color: "Red", name: "Rashid", rollType: "standard", phase: "setup", pool: { normal: 4, hunger: 0, bogus: 2 }, dice: {} }],
+        storyteller: {
+          canInitiate: false,
+          slots: [{ index: 1, label: "Drake", live: true, canBroadcast: false, pendingBroadcast: false }],
+          live: { rollType: "werewolf", hint: "Pick the pool.", pool: { werewolf: 3, rage: 1 }, dice: {}, actions: {}, secret: true }
+        },
+        werewolves: ["drake"],
+        oblivionSeats: {}
+      }
+    });
+    const pc = state.rolls?.pcs[0];
+    expect(pc?.pool).toEqual({ normal: 4 });
+    expect(pc?.dice).toEqual([]);
+    expect(pc?.conditions).toBe("");
+    expect(pc?.held).toBe(false);
+    expect(pc?.canModifyPool).toBe(false);
+    expect(state.rolls?.storyteller.live?.pool).toEqual({ werewolf: 3, rage: 1 });
+    expect(state.rolls?.storyteller.live?.secret).toBe(true);
+    expect(state.rolls?.storyteller.live?.quiet).toBe(false);
+    expect(state.rolls?.werewolves).toEqual(["drake"]);
+  });
+
   it("reads a clock encoded as an empty Lua table as no clock", () => {
     const state = applyWorldEvent({}, {
       topic: "clock",

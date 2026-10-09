@@ -44,6 +44,8 @@ export type SeatSnapshot = {
   readonly connected: boolean;
   readonly deferAutoSeat: boolean;
   readonly deferConnect: boolean;
+  /** Last hunt result the Storyteller confirmed on the Scenes tab (`flavor` absent for no resonance). */
+  readonly huntResonance?: { readonly flavor?: string; readonly intensity: string; readonly margin: number; readonly at?: unknown };
   readonly attributes: Record<string, Rating>;
   readonly skills: Record<string, Rating>;
   readonly specialties: readonly Specialty[];

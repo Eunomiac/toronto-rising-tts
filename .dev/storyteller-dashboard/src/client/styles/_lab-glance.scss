@@ -1659,6 +1659,14 @@ $lab-queued: #e8c547;
   gap: 4px;
   height: 100%;
 
+  &-pc {
+    flex: 0 0 auto;
+    width: 62px;
+    height: 34px;
+    padding: 0 2px;
+    font-size: 12px;
+  }
+
   // Hover and spin the mouse wheel to change it.
   &-successes {
     display: grid;

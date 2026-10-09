@@ -28,7 +28,11 @@ import { clockNow, refreshWorldSnapshot, useWorldState, WORLD_TOPICS, type World
 import { sendScenesCommands, type ScenesReply } from "./bridge";
 import { mergedStageChanges, ScenesCommandContext, type ScenesCommand, type ScenesSend } from "./commands";
 import { withoutScene, withTableScene } from "./deck";
+import { RollsCell, type OptionsAccess } from "./rolls/RollsCell";
+import { loadRollOptions, sendRollsCommands } from "./rolls/bridge";
+import { RollsCommandContext, type RollsCommand, type RollsSend } from "./rolls/commands";
 import {
+  huntPcs,
   isScatter,
   lightingPreset,
   liveSeats,
@@ -166,6 +170,31 @@ const useScenesQueue = (): { send: ScenesSend; sendAll: (commands: readonly Scen
   return { send, sendAll, pending, error, clearError };
 };
 
+/** Roll commands skip the Send queue (dice are live play) but share its one-in-flight transport pattern. */
+const useRollsQueue = (): { send: RollsSend; options: OptionsAccess; pending: number; error: string | null; clearError: () => void } => {
+  const [pending, setPending] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const queue = useMemo(() => createApplyQueue<RollsCommand, ScenesReply>({
+    send: sendRollsCommands,
+    onSettled: () => setError(null),
+    onFailure: (failure) => setError(failure.message),
+    onPendingChange: setPending
+  }), []);
+  const send = useCallback((command: RollsCommand) => queue.enqueue(command), [queue]);
+  const options = useMemo((): OptionsAccess => ({
+    load: loadRollOptions,
+    changeType: async (color, rollType) => {
+      const reply = await sendRollsCommands([{ op: "rollType", color, rollType }]);
+      if (!reply.ok) {
+        throw new Error(reply.error ?? "TTS refused the roll type.");
+      }
+      return loadRollOptions(color);
+    }
+  }), []);
+  const clearError = useCallback(() => setError(null), []);
+  return { send, options, pending, error, clearError };
+};
+
 /**
  * Send / Live mode (remembered; Live by default). Queued mode holds the small changes `commandKind` marks "queue"
  * until Send; a multi-step action sends the queue first, in the same batch. Switching to Live sends what is queued.
@@ -233,11 +262,12 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const { catalogs } = useSceneCatalogs();
   const snapshotError = useWorldSnapshotOnce(active, world);
   const commands = useScenesQueue();
+  const rollCommands = useRollsQueue();
   const { snaps } = useControlBoardSnaps();
   const packs = useMemo(() => (snaps ? stagePacks(snaps) : []), [snaps]);
   const { send, sendBatch, view: queueView, queued } = useSendMode(commands, world, catalogs, packs);
   const now = useNow(world.clock?.running === true);
-  const { phase, scene, clock, soundscape, seats } = world;
+  const { phase, scene, clock, soundscape, seats, rolls } = world;
 
   // With no live scene (Intermission, Downtime, nothing on the table) the clock panel works on present day.
   const sceneActive = scene?.liveKey !== undefined && clock?.activeClock === "scene";
@@ -284,9 +314,15 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
         scatter: scene ? isScatter(scene) : false,
         sky: scene?.skyboxOverride ?? "",
         lighting: (scene && lightingPreset(scene)) ?? ""
+      },
+      rollRing: {
+        werewolves: rolls?.werewolves ?? [],
+        oblivionSeats: rolls?.oblivionSeats ?? [],
+        endPhase: phase?.phase === "End"
       }
     };
-  }, [seats, scene, catalogs, stageTokens, pendingStage, pendingScatter]);
+  }, [seats, scene, catalogs, stageTokens, pendingStage, pendingScatter, rolls?.werewolves, rolls?.oblivionSeats, phase?.phase]);
+  const hunters = useMemo(() => (seats ? huntPcs(seats, catalogs) : []), [seats, catalogs]);
   const libraryLocation = scene?.library?.districtKey && scene.library.siteKey
     ? { districtKey: scene.library.districtKey, siteKey: scene.library.siteKey }
     : null;
@@ -295,6 +331,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
 
   return (
     <ScenesCommandContext.Provider value={send}>
+    <RollsCommandContext.Provider value={rollCommands.send}>
     <div className="lab-canvas scenes-live">
       {active && (
         <>
@@ -316,7 +353,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
             )}
           </Box>
           <Box x={G} y={BODY_Y} w={LEFT_W} h={HUNT_H} className="lab-hunt-box lab-borderless">
-            {location && <HuntRoller location={location} />}
+            {location && <HuntRoller location={location} pcs={hunters} onConfirm={(hunt) => rollCommands.send({ op: "hunt", ...hunt })} />}
           </Box>
           <Box x={G} y={ROSTER_Y} w={LEFT_W} h={1042 - G - ROSTER_Y} className="lab-borderless lab-dock-box">
             <RosterDock scene={title ?? NO_SCENE} />
@@ -402,8 +439,9 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
           <Box x={STRIP_X} y={STAGE_Y} w={STAGE_W} h={STAGE_H} className="lab-borderless">
             {board ? <WideBoard w={STAGE_W - 12} h={STAGE_H - 10} live={board} /> : <Waiting text={waitText} />}
           </Box>
-          <Box x={RIGHT_X} y={MAIN_Y} w={RIGHT_W} h={RIGHT_H - QUEUE_H - G} tone="reserved">
+          <Box x={RIGHT_X} y={MAIN_Y} w={RIGHT_W} h={RIGHT_H - QUEUE_H - G} className="roll-box">
             <CommandStatus pending={commands.pending} error={commands.error} onDismiss={commands.clearError} />
+            <CommandStatus pending={rollCommands.pending} error={rollCommands.error} onDismiss={rollCommands.clearError} />
             {deckError && <div className="scenes-live-status error" role="alert">{deckError}</div>}
             {libraryError && <div className="scenes-live-status error" role="alert">{libraryError}</div>}
             {library.notice && (
@@ -412,6 +450,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
                 <button type="button" className="lab-btn" onClick={library.clearNotice}>OK</button>
               </div>
             )}
+            <RollsCell rolls={rolls} send={rollCommands.send} options={rollCommands.options} />
           </Box>
           <Box x={RIGHT_X} y={MAIN_Y + RIGHT_H - QUEUE_H} w={RIGHT_W} h={QUEUE_H} className="lab-queue-box">
             <QueuePanel connected={connected} live={queueView} />
@@ -454,6 +493,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
         </>
       )}
     </div>
+    </RollsCommandContext.Provider>
     </ScenesCommandContext.Provider>
   );
 };

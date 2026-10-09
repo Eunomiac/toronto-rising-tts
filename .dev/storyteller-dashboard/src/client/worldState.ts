@@ -8,7 +8,7 @@ import { subscribeTtsEvents, type TtsPushEvent } from "./ttsEvents.js";
  * Field meanings and when each topic fires: `.dev/Storyteller Dashboard Docs/Listening to TTS.md`.
  */
 
-export const WORLD_TOPICS = ["phase", "scene", "clock", "soundscape", "seats"] as const;
+export const WORLD_TOPICS = ["phase", "scene", "clock", "soundscape", "seats", "rolls"] as const;
 export type WorldTopic = (typeof WORLD_TOPICS)[number];
 
 export type PhaseSlice = {
@@ -144,12 +144,103 @@ export type SeatsSlice = {
   readonly spotlightFrontIndex?: number;
 };
 
+export const POOL_KINDS = ["normal", "hunger", "rouse", "oblivRouse", "bloodSurgeRouse", "werewolf", "rage"] as const;
+export type PoolKind = (typeof POOL_KINDS)[number];
+
+/** Dice in a roll's pool by kind; kinds with no dice are absent. */
+export type RollPool = Partial<Record<PoolKind, number>>;
+
+/** One die of a rolled pool, in the roll's face order (`npcDie` picks by this 1-based index). */
+export type RollDie = { readonly value?: number; readonly kind: string; readonly selected?: boolean };
+
+export type RollResult = {
+  readonly resultClass?: string;
+  readonly successes?: number;
+  readonly margin?: number;
+  /** The roll panel's result line ("WIN +2"). */
+  readonly text: string;
+};
+
+/** A PC's live roll, or (`held`) the last resolved one the Storyteller may still broadcast. */
+export type PcRoll = {
+  readonly color: string;
+  readonly name: string;
+  readonly rollId?: string;
+  readonly rollType?: string;
+  /** `setup` / `preRoll` / `rolling` / `postRoll` / `resolved`. */
+  readonly phase?: string;
+  readonly initiator?: string;
+  readonly label?: string;
+  readonly pool: RollPool;
+  readonly difficulty?: number;
+  /** Effective roll conditions, comma-separated. */
+  readonly conditions: string;
+  readonly result?: RollResult;
+  /** `oblivHungerStain` / `brutalFailViolence` while the player must choose. */
+  readonly pending?: string;
+  readonly held: boolean;
+  readonly canModifyPool: boolean;
+  readonly dice: readonly RollDie[];
+};
+
+/** What the live Storyteller roll allows (the in-game panel's button rules). */
+export type StRollActions = {
+  readonly roll: boolean;
+  readonly rollEnabled: boolean;
+  readonly half: boolean;
+  readonly wp: boolean;
+  readonly recalc: boolean;
+  readonly reroll: boolean;
+  readonly rerollEnabled: boolean;
+  readonly confirm: boolean;
+  readonly oblivChoice: boolean;
+  readonly brutalChoice: boolean;
+};
+
+export type StRollSlot = {
+  readonly index: number;
+  readonly label?: string;
+  readonly rollType?: string;
+  readonly phase?: string;
+  readonly live: boolean;
+  readonly canBroadcast: boolean;
+  readonly pendingBroadcast: boolean;
+};
+
+export type StLiveRoll = {
+  readonly rollId?: string;
+  readonly rollType?: string;
+  readonly label?: string;
+  readonly npcCharacterKey?: string;
+  readonly slot?: number;
+  readonly phase?: string;
+  /** The in-game panel's instruction line for this phase. */
+  readonly hint: string;
+  readonly pool: RollPool;
+  readonly difficulty?: number;
+  readonly result?: RollResult;
+  readonly dice: readonly RollDie[];
+  readonly actions: StRollActions;
+  readonly secret: boolean;
+  readonly quiet: boolean;
+};
+
+export type RollsSlice = {
+  readonly pcs: readonly PcRoll[];
+  readonly storyteller: { readonly canInitiate: boolean; readonly slots: readonly StRollSlot[]; readonly live?: StLiveRoll };
+  /** NPC keys whose control token is tagged Werewolf: every roll they start is a Werewolf roll. */
+  readonly werewolves: readonly string[];
+  /** PC seats with an Oblivion-Rouse dice bag. */
+  readonly oblivionSeats: readonly string[];
+};
+
 export type WorldState = {
   readonly phase?: PhaseSlice;
   readonly scene?: SceneSlice;
   readonly clock?: ClockAnchor;
   readonly soundscape?: SoundscapeSlice;
   readonly seats?: SeatsSlice;
+  readonly rolls?: RollsSlice;
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -164,8 +255,55 @@ const isWorldTopic = (topic: string): topic is WorldTopic => (WORLD_TOPICS as re
 const asDatetime = (value: unknown): ClockDatetime | undefined =>
   isRecord(value) && typeof value.year === "number" ? (value as ClockDatetime) : undefined;
 
+const asPool = (value: unknown): RollPool => {
+  const pool: Partial<Record<PoolKind, number>> = {};
+  if (isRecord(value)) {
+    for (const kind of POOL_KINDS) {
+      const count = value[kind];
+      if (typeof count === "number" && count > 0) {
+        pool[kind] = count;
+      }
+    }
+  }
+  return pool;
+};
+
+const normalizeRolls = (data: Record<string, unknown>): RollsSlice => {
+  const st = isRecord(data.storyteller) ? data.storyteller : {};
+  const live = isRecord(st.live) ? st.live : undefined;
+  return {
+    pcs: asList<Record<string, unknown>>(data.pcs).map((row) => ({
+      ...(row as Omit<PcRoll, "pool" | "dice" | "conditions">),
+      pool: asPool(row.pool),
+      dice: asList<RollDie>(row.dice),
+      conditions: typeof row.conditions === "string" ? row.conditions : "",
+      held: row.held === true,
+      canModifyPool: row.canModifyPool === true
+    })),
+    storyteller: {
+      canInitiate: st.canInitiate === true,
+      slots: asList<StRollSlot>(st.slots),
+      ...(live
+        ? {
+          live: {
+            ...(live as Omit<StLiveRoll, "pool" | "dice" | "secret" | "quiet">),
+            pool: asPool(live.pool),
+            dice: asList<RollDie>(live.dice),
+            secret: live.secret === true,
+            quiet: live.quiet === true
+          }
+        }
+        : {})
+    },
+    werewolves: asList<string>(data.werewolves),
+    oblivionSeats: asList<string>(data.oblivionSeats)
+  };
+};
+
 const normalizeSlice = (topic: WorldTopic, data: Record<string, unknown>, at: number): WorldState[WorldTopic] => {
   switch (topic) {
+    case "rolls":
+      return normalizeRolls(data);
     case "clock":
       return {
         ...(data as Omit<ClockAnchor, "at">),

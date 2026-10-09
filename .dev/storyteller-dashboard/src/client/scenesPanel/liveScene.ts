@@ -198,3 +198,13 @@ export const spotlightView = (seats: SeatsSlice): SpotlightView => ({
   }),
   front: Math.max(0, (seats.spotlightFrontIndex ?? 1) - 1)
 });
+
+/** PCs who can hunt: every connected PC seat with a character (seated, standing or out of the scene alike). */
+export const huntPcs = (seats: SeatsSlice, catalogs: SceneCatalogs | null): readonly { readonly color: string; readonly name: string }[] =>
+  seats.seats.flatMap((row) => {
+    if (row.kind !== "pc" || !row.charKey || row.absentFromSession === true || !PC_COLORS.includes(row.seat)) {
+      return [];
+    }
+    const name = catalogs?.pcs.find((pc) => pc.characterKey === row.charKey)?.fullName ?? row.seat;
+    return [{ color: row.seat, name: name.split(" ")[0] ?? name }];
+  });

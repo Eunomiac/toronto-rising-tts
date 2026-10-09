@@ -12,6 +12,9 @@
     soundscape  music, location, featured, intro, weather layers, lane volumes
     seats       PC and NPC seat occupancy and presence, stage NPCs, generic NPCs in the scene, Scatter
                 groups, spotlight carousel
+    rolls       each PC's live roll (or the last resolved one held for broadcast), the three Storyteller
+                drawer slots, the live Storyteller (NPC) roll with the actions its panel allows,
+                Werewolf-tagged NPC keys, and the seats with an Oblivion-Rouse dice bag
 
   Design: .dev/Storyteller Dashboard Docs/Live Push Channel.md
 ]]
@@ -22,7 +25,7 @@ local C = require("lib.constants")
 local S = require("core.state")
 
 --- Push topics, in send order.
-W.SLICES = { "phase", "scene", "clock", "soundscape", "seats" }
+W.SLICES = { "phase", "scene", "clock", "soundscape", "seats", "rolls" }
 
 --- @param clock table|nil
 --- @return table|nil
@@ -280,12 +283,159 @@ local function buildSeats()
   }
 end
 
+local POOL_KINDS = { "normal", "hunger", "rouse", "oblivRouse", "bloodSurgeRouse", "werewolf", "rage" }
+
+--- @param pool table|nil
+--- @return table counts by die kind (zeros omitted)
+local function poolCounts(pool)
+  local normalized = require("lib.dice_kinds").normalizePool(pool)
+  local out = {}
+  for _, kind in ipairs(POOL_KINDS) do
+    local n = tonumber(normalized[kind]) or 0
+    if n > 0 then
+      out[kind] = n
+    end
+  end
+  return out
+end
+
+--- @param faces table|nil
+--- @param selected table|nil guid → true (Storyteller dice picked for a reroll)
+--- @return table one row per die, in the roll's face order (the reroll pick uses that index)
+local function diceRows(faces, selected)
+  local out = {}
+  for i, face in ipairs(type(faces) == "table" and faces or {}) do
+    local row = type(face) == "table" and face or {}
+    out[i] = {
+      value = tonumber(row.value),
+      kind = row.kind or (row.isHunger == true and "hunger" or "normal"),
+      selected = type(selected) == "table" and type(row.guid) == "string" and selected[row.guid] == true or nil,
+    }
+  end
+  return out
+end
+
+--- @param roll table
+--- @return table|nil
+local function resultRow(roll)
+  local result = roll.result
+  if type(result) ~= "table" then
+    return nil
+  end
+  return {
+    resultClass = result.resultClass,
+    successes = tonumber(result.successes),
+    margin = tonumber(result.margin),
+    text = require("core.roll_ui").resultText(roll.rollType, result, roll.difficulty),
+  }
+end
+
+--- @param color string
+--- @param pid string|nil
+--- @param roll table live active roll, or the Storyteller dashboard's resolved snapshot
+--- @param held boolean true for the resolved snapshot (only Broadcast / Cancel apply)
+--- @return table
+local function pcRollRow(color, pid, roll, held)
+  local RUI = require("core.roll_ui")
+  return {
+    color = color,
+    name = RUI.characterName(color),
+    rollId = roll.id or roll.rollId,
+    rollType = roll.rollType,
+    phase = roll.phase,
+    initiator = roll.initiator,
+    label = roll.label,
+    pool = poolCounts(roll.pool),
+    difficulty = tonumber(roll.difficulty),
+    conditions = pid ~= nil and RUI.formatEffectiveRollConditionLabels(pid, roll) or "",
+    result = resultRow(roll),
+    pending = roll.pendingResolution,
+    held = held,
+    canModifyPool = not held and require("core.roll_controller").canPostRollModifyPool(color, roll) == true,
+    dice = diceRows(roll.diceFaces),
+  }
+end
+
+local function buildRolls()
+  local root = S.getStateVal("storytellerRolls") or {}
+  local pcDash = type(root.pcDash) == "table" and root.pcDash or {}
+  local pcs = {}
+  for _, color in ipairs(C.PlayerColors) do
+    local pid = S.getPlayerID(color)
+    local active = pid ~= nil and S.getStateVal("playerData", pid, "hud", "rollData", "active") or nil
+    if type(active) == "table" then
+      pcs[#pcs + 1] = pcRollRow(color, pid, active, false)
+    elseif type(pcDash[color]) == "table" then
+      pcs[#pcs + 1] = pcRollRow(color, pid, pcDash[color], true)
+    end
+  end
+
+  local slots = {}
+  for i = 1, 3 do
+    local slot = type(root.slots) == "table" and root.slots[i] or nil
+    if type(slot) == "table" and slot.cleared ~= true then
+      slots[#slots + 1] = {
+        index = i,
+        label = slot.label,
+        rollType = slot.rollType,
+        phase = slot.confirmed == true and C.RollPhase.RESOLVED or slot.phase,
+        live = root.liveSlotIndex == i,
+        canBroadcast = slot.confirmed == true and type(slot.rollId) == "string" and slot.rollId ~= "",
+        pendingBroadcast = slot.pendingBroadcast == true,
+      }
+    end
+  end
+
+  local live = nil
+  local blackPid = S.getPlayerID("Black")
+  local active = blackPid ~= nil and S.getStateVal("playerData", blackPid, "hud", "rollData", "active") or nil
+  if type(active) == "table" then
+    local RUI = require("core.roll_ui")
+    local meta = type(active.meta) == "table" and active.meta or {}
+    live = {
+      rollId = active.id,
+      rollType = active.rollType,
+      label = active.label,
+      npcCharacterKey = active.npcCharacterKey,
+      slot = tonumber(active.stDrawerSlot),
+      phase = active.phase,
+      hint = RUI.phaseHint(active, "Black"),
+      pool = poolCounts(active.pool),
+      difficulty = tonumber(active.difficulty),
+      result = resultRow(active),
+      dice = diceRows(active.diceFaces, type(active.stSelectiveReroll) == "table" and active.stSelectiveReroll.selectedGuids or nil),
+      actions = RUI.stRollPanelActions(active),
+      secret = meta.secretDice == true,
+      quiet = meta.suppressBroadcast == true,
+    }
+  end
+
+  local DashRolls = require("dashboard.rolls")
+  local werewolves = {}
+  for key in pairs(DashRolls.werewolfKeys()) do
+    werewolves[#werewolves + 1] = key
+  end
+  table.sort(werewolves)
+
+  return {
+    pcs = pcs,
+    storyteller = {
+      canInitiate = require("core.storyteller_rolls").canInitiate(),
+      slots = slots,
+      live = live,
+    },
+    werewolves = werewolves,
+    oblivionSeats = DashRolls.oblivionSeats(),
+  }
+end
+
 local BUILDERS = {
   phase = buildPhase,
   scene = buildScene,
   clock = buildClock,
   soundscape = buildSoundscape,
   seats = buildSeats,
+  rolls = buildRolls,
 }
 
 --- @param slice string one of `W.SLICES`
