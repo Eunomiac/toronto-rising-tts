@@ -1799,27 +1799,37 @@ function StorytellerScenesPanel.clearLibraryPreviewSelection(player)
 end
 
 --- Sets `receivesLiveWrites = false` on the row currently mirroring (see Scene Constructor Overview).
+--- Shared by the in-game Unlink button and the Storyteller Dashboard.
+--- @return string|nil sceneKey the unlinked row
+--- @return string|nil error
+function StorytellerScenesPanel.unlinkLiveMirror()
+    local K = SceneLibrary.resolveMirrorSceneKey()
+    if K == nil then
+        K = S.getStateVal("sceneLibrary", "activeKey")
+    end
+    if type(K) ~= "string" or K == "" then
+        return nil, "no library scene is linked — click a row in Scene library first."
+    end
+    if type(S.getStateVal("sceneLibrary", "scenes", K)) ~= "table" then
+        return nil, "linked row is missing from state."
+    end
+    S.setStateVal(false, "sceneLibrary", "scenes", K, "receivesLiveWrites")
+    S.validateState()
+    StorytellerScenesPanel.refresh()
+    return K, nil
+end
+
 --- @param player Player
 function StorytellerScenesPanel.unlinkActiveMirror(player)
     if not U.isStorytellerSteamPlayer(player) then
         U.AlertGM("Only the Storyteller can unlink a library scene.")
         return
     end
-    local K = SceneLibrary.resolveMirrorSceneKey()
-    if K == nil then
-        K = S.getStateVal("sceneLibrary", "activeKey")
-    end
-    if type(K) ~= "string" or K == "" then
-        U.AlertGM("Unlink: no library scene is linked — click a row in Scene library first.")
+    local K, err = StorytellerScenesPanel.unlinkLiveMirror()
+    if err ~= nil then
+        U.AlertGM("Unlink: " .. err)
         return
     end
-    if type(S.getStateVal("sceneLibrary", "scenes", K)) ~= "table" then
-        U.AlertGM("Unlink: linked row is missing from state.")
-        return
-    end
-    S.setStateVal(false, "sceneLibrary", "scenes", K, "receivesLiveWrites")
-    S.validateState()
-    StorytellerScenesPanel.refresh()
     U.AlertGM("Unlinked `" .. K .. "` (mirroring stopped; stored bundle unchanged).")
 end
 
@@ -3024,27 +3034,26 @@ function StorytellerScenesPanel.onConstructorForkTitleChanged(player, value, id)
     end
 end
 
---- @param player Player
-function StorytellerScenesPanel.confirmForkConstructorModal(player)
-    if not U.isStorytellerSteamPlayer(player) then
-        U.AlertGM("Only the Storyteller can fork scenes.")
-        return
-    end
-    local newTitle = type(ctorDraft.forkTitleNew) == "string" and string.gsub(ctorDraft.forkTitleNew, "^%s+", "") or ""
-    newTitle = string.gsub(newTitle, "%s+$", "")
-    local oldTitle = type(ctorDraft.forkTitleOld) == "string" and string.gsub(ctorDraft.forkTitleOld, "^%s+", "") or ""
-    oldTitle = string.gsub(oldTitle, "%s+$", "")
+--- Fork the live scene: the source row `sourceKey` keeps a snapshot of the table now (unlinked, optionally retitled
+--- `oldTitle`), and a new row titled `newTitle` takes over live writes. Shared by the in-game Fork modal and the
+--- Storyteller Dashboard.
+--- @param sourceKey string|nil
+--- @param newTitle string
+--- @param oldTitle string|nil
+--- @return string|nil newKey
+--- @return string|nil error
+function StorytellerScenesPanel.forkLiveScene(sourceKey, newTitle, oldTitle)
+    newTitle = string.gsub(string.gsub(type(newTitle) == "string" and newTitle or "", "^%s+", ""), "%s+$", "")
+    oldTitle = string.gsub(string.gsub(type(oldTitle) == "string" and oldTitle or "", "^%s+", ""), "%s+$", "")
     if newTitle == "" then
-        U.AlertGM("Fork: new scene title cannot be empty.")
-        return
+        return nil, "new scene title cannot be empty."
     end
     local F = S.getStateVal("sessionScene")
     if type(F) ~= "table" then
-        U.AlertGM("Fork: sessionScene state is invalid.")
-        return
+        return nil, "sessionScene state is invalid."
     end
     F = U.clone(F, true)
-    local K = ctorDraft.forkSourceActiveKey
+    local K = sourceKey
     local scenes = S.getStateVal("sceneLibrary", "scenes")
     if type(scenes) ~= "table" then
         scenes = {}
@@ -3082,10 +3091,28 @@ function StorytellerScenesPanel.confirmForkConstructorModal(player)
     end
     S.setStateVal(order, "sceneLibrary", "order")
     S.setStateVal(newKey, "sceneLibrary", "activeKey")
+    if SceneLibrary.hasLiveSceneOnTable() then
+        -- The table now plays the fork.
+        S.setStateVal(newKey, "sceneLibrary", "lastAppliedKey")
+    end
     S.validateState()
     resetClockDraftForLibrarySelection(newKey)
-    StorytellerScenesPanel.closeForkConstructorModal()
     StorytellerScenesPanel.refresh()
+    return newKey, nil
+end
+
+--- @param player Player
+function StorytellerScenesPanel.confirmForkConstructorModal(player)
+    if not U.isStorytellerSteamPlayer(player) then
+        U.AlertGM("Only the Storyteller can fork scenes.")
+        return
+    end
+    local newKey, err = StorytellerScenesPanel.forkLiveScene(ctorDraft.forkSourceActiveKey, ctorDraft.forkTitleNew, ctorDraft.forkTitleOld)
+    if err ~= nil then
+        U.AlertGM("Fork: " .. err)
+        return
+    end
+    StorytellerScenesPanel.closeForkConstructorModal()
     U.AlertGM("Scene forked: active mirror is now `" .. newKey .. "`.")
 end
 

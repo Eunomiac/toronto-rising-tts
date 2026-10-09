@@ -1,0 +1,127 @@
+--[[
+  Storyteller Dashboard scene library bridge (Global VM only).
+
+  The dashboard keeps the master copy of the scene library (`data/scene-library.json` beside the dashboard);
+  TTS's `gameState.sceneLibrary` holds the rows it has been asked to play. Rows travel in TTS's own shape
+  (`{ title, placementMode, receivesLiveWrites, sessionScene }`), the same table TTS JSON-encodes on every save.
+
+  - `snapshot(keys?)`  rows for seeding the dashboard and for refreshing the row linked to the table
+  - `upsert(cmd)`      write a dashboard row before Play Scene (op `upsertScene`)
+  - `remove(key)`      delete a row (op `deleteScene`)
+
+  Design: .dev/Storyteller Dashboard Docs/Listening to TTS.md § Scene library
+]]
+
+local Lib = {}
+
+local U = require("lib.util")
+local S = require("core.state")
+local SceneLibrary = require("core.scene_library")
+
+local KEY_PATTERN = "^[a-zA-Z][a-zA-Z0-9_]*$"
+
+--- In-game library list and the dashboard's scene slice (`liveTitle`, `liveLinked`).
+local function afterLibraryWrite()
+  S.validateState()
+  require("core.storyteller_scenes_panel").refresh()
+  require("dashboard.push").markWorldDirty({ scene = true })
+end
+
+--- @param keys table|nil array of scene keys; nil for every row
+--- @return table `{ order, liveKey, scenes = { [key] = row } }`
+function Lib.snapshot(keys)
+  local scenes = S.getStateVal("sceneLibrary", "scenes") or {}
+  local out = {}
+  if type(keys) == "table" then
+    for _, key in ipairs(keys) do
+      if type(scenes[key]) == "table" then
+        out[key] = scenes[key]
+      end
+    end
+  else
+    out = scenes
+  end
+  return {
+    order = S.getStateVal("sceneLibrary", "order") or {},
+    liveKey = SceneLibrary.hasLiveSceneOnTable() and S.getStateVal("sceneLibrary", "lastAppliedKey") or nil,
+    scenes = out,
+  }
+end
+
+--- Writes a dashboard row by key. The row linked to the live table only takes its title: the table keeps
+--- writing its `sessionScene`.
+--- @param cmd table `{ key, title, placementMode, sessionScene }`
+--- @return string|nil error
+function Lib.upsert(cmd)
+  local key = cmd.key
+  if type(key) ~= "string" or string.match(key, KEY_PATTERN) == nil then
+    return "upsertScene: the key must start with a letter and use only letters, digits and underscores."
+  end
+  local title = type(cmd.title) == "string" and string.gsub(string.gsub(cmd.title, "^%s+", ""), "%s+$", "") or ""
+  if title == "" then
+    return "upsertScene: the scene needs a title."
+  end
+  local existing = S.getStateVal("sceneLibrary", "scenes", key)
+  if type(existing) == "table" and existing.receivesLiveWrites == true and SceneLibrary.resolveMirrorSceneKey() == key then
+    S.setStateVal(title, "sceneLibrary", "scenes", key, "title")
+    afterLibraryWrite()
+    return nil
+  end
+  if cmd.placementMode ~= "standard" and cmd.placementMode ~= "scatter" then
+    return "upsertScene: placementMode must be standard or scatter."
+  end
+  if type(cmd.sessionScene) ~= "table" then
+    return "upsertScene: sessionScene must be an object."
+  end
+  local okClock, errClock = SceneLibrary.validateSessionSceneClock(cmd.sessionScene.clock)
+  if not okClock then
+    return "upsertScene: " .. tostring(errClock)
+  end
+  S.setStateVal({
+    title = title,
+    placementMode = cmd.placementMode,
+    receivesLiveWrites = type(existing) == "table" and existing.receivesLiveWrites == true,
+    sessionScene = cmd.sessionScene,
+  }, "sceneLibrary", "scenes", key)
+  local order = S.getStateVal("sceneLibrary", "order") or {}
+  local listed = false
+  for _, k in ipairs(order) do
+    if k == key then
+      listed = true
+      break
+    end
+  end
+  if not listed then
+    local nextOrder = U.clone(order, true)
+    nextOrder[#nextOrder + 1] = key
+    S.setStateVal(nextOrder, "sceneLibrary", "order")
+  end
+  afterLibraryWrite()
+  return nil
+end
+
+--- @param key string
+--- @return string|nil error
+function Lib.remove(key)
+  if type(key) ~= "string" or type(S.getStateVal("sceneLibrary", "scenes", key)) ~= "table" then
+    return nil
+  end
+  if SceneLibrary.hasLiveSceneOnTable() and S.getStateVal("sceneLibrary", "lastAppliedKey") == key then
+    return "That scene is on the table; end it before deleting it."
+  end
+  local order = {}
+  for _, k in ipairs(S.getStateVal("sceneLibrary", "order") or {}) do
+    if k ~= key then
+      order[#order + 1] = k
+    end
+  end
+  S.setStateVal(order, "sceneLibrary", "order")
+  S.setStateVal(nil, "sceneLibrary", "scenes", key)
+  if S.getStateVal("sceneLibrary", "activeKey") == key then
+    S.setStateVal(nil, "sceneLibrary", "activeKey")
+  end
+  afterLibraryWrite()
+  return nil
+end
+
+return Lib

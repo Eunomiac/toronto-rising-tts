@@ -1756,6 +1756,21 @@ function GlobalDashboardScenesApply(params)
     return require("dashboard.scenes").apply(jsonText)
 end
 
+--- Storyteller Dashboard scene library: TTS's library rows (seed the dashboard's copy; refresh the linked row).
+--- @param params table|string|nil `{ json = "[\"key\", …]" }` for some rows; nil for all
+--- @return string JSON `{ ok = true, order, liveKey, scenes }`
+function GlobalDashboardSceneLibrarySnapshot(params)
+    local refusal = dashboardLoadingRefusal()
+    if refusal then
+        return refusal
+    end
+    local jsonText = type(params) == "table" and (params.json or params[1]) or params
+    local keys = type(jsonText) == "string" and jsonText ~= "" and JSON.decode(jsonText) or nil
+    local out = require("dashboard.scene_library").snapshot(type(keys) == "table" and keys or nil)
+    out.ok = true
+    return JSON.encode(out)
+end
+
 --- Storyteller Dashboard sheet Page 5: every project with Lua-derived phase/stake/die/date values.
 --- @return string JSON
 function GlobalDashboardProjectsSnapshot()

@@ -36,6 +36,11 @@
                       release             back to the schedule (or the scene's authored weather)
     playScene         key, clockMode?     select a library scene and apply it to the table
     endScene                              end the live scene
+    upsertScene       key, title, placementMode, sessionScene
+                                          write a dashboard library row (`dashboard/scene_library.ttslua`)
+    deleteScene       key                 delete a library row (not the scene on the table)
+    unlinkScene                           stop live writes into the table's library row
+    forkScene         newTitle, oldTitle? the table continues as a new row; the old row keeps a snapshot
 
   Several in-game entry points are Steam-gated to the Storyteller; ops that reach them pass the
   connected Storyteller player and fail when the Storyteller is not in the game.
@@ -284,6 +289,28 @@ local function applyCommand(cmd)
   end
   if op == "weatherOverride" then
     return weatherOverride(cmd)
+  end
+
+  if op == "upsertScene" then
+    return require("dashboard.scene_library").upsert(cmd)
+  end
+  if op == "deleteScene" then
+    return require("dashboard.scene_library").remove(cmd.key)
+  end
+  if op == "unlinkScene" then
+    local _, err = Panel.unlinkLiveMirror()
+    require("dashboard.push").markWorldDirty({ scene = true })
+    return err
+  end
+  if op == "forkScene" then
+    local SceneLibrary = require("core.scene_library")
+    if not SceneLibrary.hasLiveSceneOnTable() then
+      return "There is no scene on the table to fork."
+    end
+    local source = SceneLibrary.resolveMirrorSceneKey() or S.getStateVal("sceneLibrary", "lastAppliedKey")
+    local _, err = Panel.forkLiveScene(source, cmd.newTitle, cmd.oldTitle)
+    require("dashboard.push").markWorldDirty({ scene = true })
+    return err
   end
 
   if op == "sessionNum" or op == "sessionName" then

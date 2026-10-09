@@ -1,3 +1,5 @@
+import { parseLibraryScene, type LibraryScene } from "./sceneLibrary.js";
+
 /**
  * Dashboard-owned Scenes tab data, kept by the server in `data/scene-deck.json` (git-ignored: chronicle content,
  * and the repo is public). TTS never sees it, so it survives every TTS reload.
@@ -28,6 +30,8 @@ export type SceneDeck = {
   /** Scene notes keyed by scene title. */
   readonly notes: Readonly<Record<string, SceneDocs>>;
   readonly roster: RosterLayout;
+  /** Preview panels in progress: unsaved drafts of library scenes (or new scenes not yet in the library). */
+  readonly previews: readonly LibraryScene[];
   /** Set once this browser's old Lab copies (local storage) have been copied in. */
   readonly seeded: boolean;
 };
@@ -35,7 +39,7 @@ export type SceneDeck = {
 export type SceneDeckPatch = Partial<SceneDeck>;
 
 export const EMPTY_ROSTER: RosterLayout = { categories: [], assigned: {}, groupColors: {}, leaders: {} };
-export const EMPTY_SCENE_DECK: SceneDeck = { deck: [], notes: {}, roster: EMPTY_ROSTER, seeded: false };
+export const EMPTY_SCENE_DECK: SceneDeck = { deck: [], notes: {}, roster: EMPTY_ROSTER, previews: [], seeded: false };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
@@ -88,6 +92,9 @@ export const parseRosterLayout = (value: unknown): RosterLayout => {
   return { categories, assigned: stringRecord(value.assigned), groupColors: stringRecord(value.groupColors), leaders: stringRecord(value.leaders) };
 };
 
+const parsePreviews = (value: unknown): readonly LibraryScene[] =>
+  Array.isArray(value) ? value.map(parseLibraryScene).filter((scene): scene is LibraryScene => scene !== null) : [];
+
 /** Reads whatever is on disk, dropping malformed parts rather than failing the whole tab. */
 export const normalizeSceneDeck = (value: unknown): SceneDeck => {
   if (!isRecord(value)) {
@@ -97,6 +104,7 @@ export const normalizeSceneDeck = (value: unknown): SceneDeck => {
     deck: parseDeck(value.deck),
     notes: parseNotes(value.notes),
     roster: parseRosterLayout(value.roster),
+    previews: parsePreviews(value.previews),
     seeded: value.seeded === true
   };
 };
@@ -106,13 +114,15 @@ export const parseSceneDeckPatch = (value: unknown): SceneDeckPatch => {
   if (!isRecord(value)) {
     throw new Error("Expected a JSON object.");
   }
-  const allowed = new Set(["deck", "notes", "roster", "seeded"]);
+  const allowed = new Set(["deck", "notes", "roster", "previews", "seeded"]);
   const unknown = Object.keys(value).filter((key) => !allowed.has(key));
   if (unknown.length > 0) {
     throw new Error(`Unknown scene deck section: ${unknown.join(", ")}.`);
   }
-  if (value.deck !== undefined && !Array.isArray(value.deck)) {
-    throw new Error("deck must be an array.");
+  for (const key of ["deck", "previews"] as const) {
+    if (value[key] !== undefined && !Array.isArray(value[key])) {
+      throw new Error(`${key} must be an array.`);
+    }
   }
   for (const key of ["notes", "roster"] as const) {
     if (value[key] !== undefined && !isRecord(value[key])) {
@@ -126,6 +136,7 @@ export const parseSceneDeckPatch = (value: unknown): SceneDeckPatch => {
     ...(value.deck !== undefined ? { deck: parseDeck(value.deck) } : {}),
     ...(value.notes !== undefined ? { notes: parseNotes(value.notes) } : {}),
     ...(value.roster !== undefined ? { roster: parseRosterLayout(value.roster) } : {}),
+    ...(value.previews !== undefined ? { previews: parsePreviews(value.previews) } : {}),
     ...(value.seeded !== undefined ? { seeded: value.seeded } : {})
   };
 };

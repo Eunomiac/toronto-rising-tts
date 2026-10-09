@@ -10,8 +10,9 @@ import { generateNpcImage, generateNpcs, rerollNpcField } from "./npcService.js"
 import { loadGenericNpcCatalog, resolveGenericNpcImagePath } from "./genericNpcCatalog.js";
 import { refreshGenericNpcCatalogOnStartup } from "./refreshGenericNpcCatalog.js";
 import { createHeadshotCropStore, HeadshotCropError, parseHeadshotCrop, requireHeadshotKey } from "./headshotCrops.js";
-import { createSceneDeckStore, resolveSceneDeckBackupDir } from "./sceneDeck.js";
-import { parseSceneDeckPatch } from "../shared/sceneDeck.js";
+import { createDataFileStore, resolveDashboardBackupDir, type DataFileStore } from "./dataFileStore.js";
+import { normalizeSceneDeck, parseSceneDeckPatch, type SceneDeck } from "../shared/sceneDeck.js";
+import { normalizeSceneLibrary, parseSceneLibraryPatch, type SceneLibrary } from "../shared/sceneLibrary.js";
 import { createLabNoteStore, LabNoteError, parseLabNoteCreate, parseLabNotePatch } from "./labNotes.js";
 import { createTermImageStore, MAX_TERM_IMAGE_BYTES, TERM_IMAGE_CONTENT_TYPES, TermImageError } from "./termImages.js";
 import { dashboardTtsBridge } from "./ttsExecuteLua.js";
@@ -33,12 +34,24 @@ const pcSheetAssetDir = path.join(dashboardRoot, "assets");
 const termImages = createTermImageStore(path.join(dashboardRoot, "data", "term-images"));
 const labNotes = createLabNoteStore(path.join(dashboardRoot, "agent", "lab-notes.json"));
 const headshotCrops = createHeadshotCropStore(path.join(dashboardRoot, "data", "headshot-crops.json"));
-const sceneDeck = resolveSceneDeckBackupDir(repoRoot).then((backupDir) => {
+const dashboardBackupDir = resolveDashboardBackupDir(repoRoot).then((backupDir) => {
   if (!backupDir) {
-    console.warn("tts-assets.config.json has no backupDir; scene deck backups are off.");
+    console.warn("tts-assets.config.json has no backupDir; scene deck and scene library backups are off.");
   }
-  return createSceneDeckStore(path.join(dashboardRoot, "data", "scene-deck.json"), backupDir);
+  return backupDir;
 });
+const sceneDeck = dashboardBackupDir.then((backupDir) => createDataFileStore<SceneDeck>({
+  filePath: path.join(dashboardRoot, "data", "scene-deck.json"),
+  backupDir,
+  backupPrefix: "scene-deck",
+  normalize: normalizeSceneDeck
+}));
+const sceneLibrary = dashboardBackupDir.then((backupDir) => createDataFileStore<SceneLibrary>({
+  filePath: path.join(dashboardRoot, "data", "scene-library.json"),
+  backupDir,
+  backupPrefix: "scene-library",
+  normalize: normalizeSceneLibrary
+}));
 const publicDir = path.join(distDir, "public");
 const isDev = process.argv.includes("--dev");
 
@@ -189,18 +202,23 @@ const handleHeadshotCrops = async (request: IncomingMessage, response: ServerRes
   }
 };
 
-const handleSceneDeck = async (request: IncomingMessage, response: ServerResponse): Promise<void> => {
-  const store = await sceneDeck;
+/** GET the whole file; PUT replaces the sections in the body. */
+const handleDataFile = async <T extends object>(
+  request: IncomingMessage,
+  response: ServerResponse,
+  store: DataFileStore<T>,
+  parsePatch: (value: unknown) => Partial<T>
+): Promise<void> => {
   if (request.method === "GET") {
     sendJson(response, 200, await store.get());
     return;
   }
   if (request.method === "PUT") {
-    let patch;
+    let patch: Partial<T>;
     try {
-      patch = parseSceneDeckPatch(await readRequestJson(request));
+      patch = parsePatch(await readRequestJson(request));
     } catch (error: unknown) {
-      sendJson(response, 400, { error: error instanceof Error ? error.message : "Bad scene deck body." });
+      sendJson(response, 400, { error: error instanceof Error ? error.message : "Bad request body." });
       return;
     }
     sendJson(response, 200, await store.patch(patch));
@@ -467,7 +485,12 @@ const tryHandleDedicatedRoutes = async (request: IncomingMessage, response: Serv
   }
 
   if (pathname === "/api/scene-deck") {
-    await handleSceneDeck(request, response);
+    await handleDataFile(request, response, await sceneDeck, parseSceneDeckPatch);
+    return true;
+  }
+
+  if (pathname === "/api/scene-library") {
+    await handleDataFile(request, response, await sceneLibrary, parseSceneLibraryPatch);
     return true;
   }
 

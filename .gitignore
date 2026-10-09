@@ -94,6 +94,8 @@ build/
 # Clipboard-image tooltips (may hold rulebook screenshots; remote is public)
 .dev/storyteller-dashboard/data/term-images/
 .dev/storyteller-dashboard/data/scene-deck.json
+.dev/storyteller-dashboard/data/scene-library.json
+.dev/storyteller-dashboard/data/*.tmp
 
 assets/images/Clipboard Image.jpg
 # Local Sheets Obsidian dashboard runtime artifacts
