@@ -8,7 +8,8 @@ import { paintDamageTrack, paintHumanityTrack, type BoxSlot } from "../pcSheet/p
 import { actionsForRing } from "../pcSheet/ringActions";
 import { TraitRing } from "../pcSheet/TraitRing";
 import type { RingTarget, SeatColor, SeatSnapshot, SheetSnapshot } from "../pcSheet/types";
-import { useScenesCommand } from "../scenesPanel/commands";
+import { LIGHTING_LABEL, useScenesCommand, type LightingPreset } from "../scenesPanel/commands";
+import { GENERIC_SKY } from "../scenesPanel/liveScene";
 import { stagePacks, type StagePack } from "../scenesPanel/stageFrame";
 import { Icon, type IconName } from "./icons";
 import { groupColor, groupLeader, useControlBoardSnaps, useRosterLayout, useSceneCatalogs } from "./labRoster";
@@ -533,13 +534,31 @@ export type LiveBoard = {
   readonly seats: readonly SeatSketch[];
   readonly sheet: SheetSnapshot;
   readonly tokens: readonly StageToken[];
-  readonly table: string;
+  readonly env: StageEnv;
 };
+
+/** The stage's surroundings: table, sky override ("" = the Site's own sky), and lighting preset ("" = the scene's). */
+export type StageEnv = {
+  readonly tableKey: string;
+  readonly scatter: boolean;
+  readonly sky: string;
+  readonly lighting: LightingPreset | "";
+};
+
+const LAB_ENV: StageEnv = { tableKey: "Table B2", scatter: false, sky: "", lighting: "" };
 
 export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoard }): ReactElement => {
   const [ring, setRing] = useState<{ x: number; y: number } | null>(null);
-  const [placement, setPlacement] = useState<"Standard" | "Scatter">("Standard");
+  const [labEnv, setLabEnv] = useState<StageEnv>(LAB_ENV);
   const [clearArmed, setClearArmed] = useState(false);
+  const send = useScenesCommand();
+  const command = live && send ? send : null;
+  const env = live?.env ?? labEnv;
+  const placement = env.scatter ? "Scatter" : "Standard";
+  const setTable = (key: string): void =>
+    command ? command({ op: "table", key }) : setLabEnv({ ...labEnv, tableKey: key === "Scatter" ? labEnv.tableKey : key, scatter: key === "Scatter" });
+  const setSky = (key: string): void => (command ? command({ op: "skybox", key: key || "none" }) : setLabEnv({ ...labEnv, sky: key }));
+  const setLighting = (presetKey: LightingPreset): void => (command ? command({ op: "lighting", presetKey }) : setLabEnv({ ...labEnv, lighting: presetKey }));
   const { catalogs } = useSceneCatalogs();
   const { snaps, error: snapsError } = useControlBoardSnaps();
   const packs = useMemo(() => (snaps ? stagePacks(snaps) : []), [snaps]);
@@ -597,7 +616,37 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoa
       {live ? <Seats seats={live.seats} liveSheet={live.sheet} /> : <Seats />}
     </div>
     <span className="lab-board-table top">
-      <Btn>{live?.table ?? "Table B2"} ▾</Btn>
+      <select
+        title={env.scatter ? "Scatter is on; pick a table to set the stage back down" : "The table the seats gather around"}
+        value={env.scatter ? "" : env.tableKey}
+        onChange={(event) => setTable(event.target.value)}
+      >
+        {env.scatter && <option value="">Scatter</option>}
+        {(catalogs?.tables ?? []).filter((table) => table.key !== "Scatter").map((table) => (
+          <option key={table.key} value={table.key}>{table.key}</option>
+        ))}
+        {!catalogs?.tables.some((table) => table.key === env.tableKey) && !env.scatter && <option value={env.tableKey}>{env.tableKey}</option>}
+      </select>
+      <select title="The sky over the scene" value={env.sky} onChange={(event) => setSky(event.target.value)}>
+        <option value="">Site sky</option>
+        <option value={GENERIC_SKY}>Generic sky</option>
+        {(catalogs?.skyboxes ?? []).filter((sky) => sky.key !== GENERIC_SKY).map((sky) => (
+          <option key={sky.key} value={sky.key}>{sky.display}</option>
+        ))}
+      </select>
+      <select
+        title="Room lighting"
+        value={env.lighting}
+        onChange={(event) => {
+          const key = event.target.value;
+          if (key === "AdminDark" || key === "AdminStandard" || key === "AdminBright") {
+            setLighting(key);
+          }
+        }}
+      >
+        {env.lighting === "" && <option value="">Scene lighting</option>}
+        {(Object.keys(LIGHTING_LABEL) as LightingPreset[]).map((key) => <option key={key} value={key}>{LIGHTING_LABEL[key]}</option>)}
+      </select>
     </span>
     <span className="lab-help" tabIndex={0}>
       ?
@@ -615,7 +664,7 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoa
             className="lab-ring-item spoke"
             style={{ left: 0, top: -64, "--i": 0 } as CSSProperties}
             onClick={() => {
-              setPlacement(placement === "Standard" ? "Scatter" : "Standard");
+              setTable(env.scatter ? "Table B" : "Scatter");
               closeRing();
             }}
           >

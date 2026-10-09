@@ -898,6 +898,28 @@ function main() {
       display: readStringField(entry.body, "display") || entry.key,
     }));
 
+  const memoriamPeriods = parseTopLevelEntries(extractBlock(skyboxesSrc, "SkyboxesCatalog.MemoriamSkyboxes ="))
+    .map((entry) => {
+      const startYear = readNumberField(entry.body, "startYear");
+      const endYear = readNumberField(entry.body, "endYear");
+      const location = readStringField(entry.body, "location");
+      if (startYear === null || endYear === null || !location) {
+        throw new Error(`SkyboxesCatalog.MemoriamSkyboxes.${entry.key} is missing startYear/endYear/location.`);
+      }
+      const panels = ["panelA", "panelB", "panelC", "panelD"].flatMap((panelKey) => {
+        if (!entry.body.includes(`${panelKey} =`)) {
+          return [];
+        }
+        const display = readStringField(extractBlock(entry.body, `${panelKey} =`), "display");
+        if (!display) {
+          throw new Error(`SkyboxesCatalog.MemoriamSkyboxes.${entry.key}.${panelKey} is missing display.`);
+        }
+        return [{ key: panelKey, display }];
+      });
+      return { key: entry.key, characters: readStringListField(entry.body, "characters"), startYear, endYear, location, panels };
+    })
+    .sort((a, b) => a.startYear - b.startYear || a.endYear - b.endYear);
+
   const locationTracks = parseTopLevelEntries(extractBlock(soundscapeSrc, "Catalog.TRACKS ="))
     .filter((entry) => readStringField(entry.body, "type") === "location")
     .map((entry) => ({
@@ -1020,6 +1042,9 @@ function main() {
   if (locationTracks.length === 0) {
     throw new Error("Catalog.TRACKS location extract is empty.");
   }
+  if (memoriamPeriods.length === 0) {
+    throw new Error("SkyboxesCatalog.MemoriamSkyboxes extract is empty.");
+  }
   if (conditions.length === 0) {
     throw new Error("CD.Defs extract found no canApplyManually conditions.");
   }
@@ -1047,6 +1072,7 @@ function main() {
     tables,
     lightModes,
     skyboxes,
+    memoriamPeriods,
     locationTracks,
     backgroundMoods,
     weatherConditions,

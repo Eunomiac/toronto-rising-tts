@@ -4148,6 +4148,1346 @@
       "display": "P.A.T.H."
     }
   ],
+  "memoriamPeriods": [
+    {
+      "key": "blackCaesar6",
+      "characters": [
+        "blackCaesar"
+      ],
+      "startYear": 1720,
+      "endYear": 1734,
+      "location": "Carribean",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Pirate deck"
+        },
+        {
+          "key": "panelB",
+          "display": "Nassau tavern"
+        },
+        {
+          "key": "panelC",
+          "display": "Captured ship interior"
+        },
+        {
+          "key": "panelD",
+          "display": "Mangrove hideout"
+        }
+      ]
+    },
+    {
+      "key": "blackCaesar8",
+      "characters": [
+        "blackCaesar"
+      ],
+      "startYear": 1734,
+      "endYear": 1744,
+      "location": "St. Augustine, United States",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Maroon refuge"
+        },
+        {
+          "key": "panelB",
+          "display": "Castillo prison yard"
+        },
+        {
+          "key": "panelC",
+          "display": "Harbor tavern street"
+        },
+        {
+          "key": "panelD",
+          "display": "Jervais's haven"
+        }
+      ]
+    },
+    {
+      "key": "blackCaesar9",
+      "characters": [
+        "blackCaesar"
+      ],
+      "startYear": 1744,
+      "endYear": 1752,
+      "location": "Vienna, Austria",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Prime Chantry archive"
+        },
+        {
+          "key": "panelB",
+          "display": "Audience chamber"
+        },
+        {
+          "key": "panelC",
+          "display": "Alchemical laboratory"
+        },
+        {
+          "key": "panelD",
+          "display": "Palace street café"
+        }
+      ]
+    },
+    {
+      "key": "blackCaesar10",
+      "characters": [
+        "blackCaesar"
+      ],
+      "startYear": 1752,
+      "endYear": 1789,
+      "location": "Sailing the Oceans",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Corsair deck"
+        },
+        {
+          "key": "panelB",
+          "display": "Kingston naval shipyard"
+        }
+      ]
+    },
+    {
+      "key": "fomorach1",
+      "characters": [
+        "fomorach"
+      ],
+      "startYear": 1769,
+      "endYear": 1786,
+      "location": "Belfast to the East Coast Colonies",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Belfast homestead"
+        },
+        {
+          "key": "panelB",
+          "display": "Belfast marketplace"
+        },
+        {
+          "key": "panelC",
+          "display": "Atlantic emigrant ship"
+        },
+        {
+          "key": "panelD",
+          "display": "Colonial settlement"
+        }
+      ]
+    },
+    {
+      "key": "rashid1",
+      "characters": [
+        "rashid"
+      ],
+      "startYear": 1774,
+      "endYear": 1811,
+      "location": "Diriyah, the First Saudi State",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Family courtyard"
+        },
+        {
+          "key": "panelB",
+          "display": "Night souq"
+        },
+        {
+          "key": "panelC",
+          "display": "Sufi study"
+        },
+        {
+          "key": "panelD",
+          "display": "Oasis city gate"
+        }
+      ]
+    },
+    {
+      "key": "fomorach5",
+      "characters": [
+        "fomorach"
+      ],
+      "startYear": 1786,
+      "endYear": 1793,
+      "location": "East Coast Colonies, United States",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Early settlement"
+        },
+        {
+          "key": "panelB",
+          "display": "Winter collapse"
+        },
+        {
+          "key": "panelC",
+          "display": "Settlement meetinghouse"
+        },
+        {
+          "key": "panelD",
+          "display": "Ravine refuge"
+        }
+      ]
+    },
+    {
+      "key": "blackCaesar13",
+      "characters": [
+        "blackCaesar"
+      ],
+      "startYear": 1789,
+      "endYear": 1796,
+      "location": "New South Wales, Australia",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Penal settlement"
+        },
+        {
+          "key": "panelB",
+          "display": "Harbor boatyard"
+        },
+        {
+          "key": "panelC",
+          "display": "Bush frontier"
+        },
+        {
+          "key": "panelD",
+          "display": "Government compound"
+        }
+      ]
+    },
+    {
+      "key": "fomorach8",
+      "characters": [
+        "fomorach"
+      ],
+      "startYear": 1793,
+      "endYear": 1846,
+      "location": "Fort York, Canada",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Fort York landing"
+        },
+        {
+          "key": "panelB",
+          "display": "War-damaged fort"
+        },
+        {
+          "key": "panelC",
+          "display": "Market and civic street"
+        },
+        {
+          "key": "panelD",
+          "display": "Underground refuge"
+        }
+      ]
+    },
+    {
+      "key": "blackCaesar18",
+      "characters": [
+        "blackCaesar"
+      ],
+      "startYear": 1796,
+      "endYear": 1846,
+      "location": "Port-au-Prince, Haiti",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Revolutionary square"
+        },
+        {
+          "key": "panelB",
+          "display": "House High Saturday"
+        },
+        {
+          "key": "panelC",
+          "display": "Harbor district"
+        },
+        {
+          "key": "panelD",
+          "display": "Market and civic street"
+        }
+      ]
+    },
+    {
+      "key": "aishe2",
+      "characters": [
+        "aishe"
+      ],
+      "startYear": 1799,
+      "endYear": 1833,
+      "location": "Brașov, Romania",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Father's townhouse"
+        },
+        {
+          "key": "panelB",
+          "display": "Strandza townhouse"
+        },
+        {
+          "key": "panelC",
+          "display": "Market square"
+        },
+        {
+          "key": "panelD",
+          "display": "Posting-inn courtyard"
+        }
+      ]
+    },
+    {
+      "key": "rashid4",
+      "characters": [
+        "rashid"
+      ],
+      "startYear": 1811,
+      "endYear": 1818,
+      "location": "Diriyah, the First Saudi State",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Warrior Caste residence"
+        },
+        {
+          "key": "panelB",
+          "display": "Wartime ration market"
+        },
+        {
+          "key": "panelC",
+          "display": "Gatehouse watchtower"
+        },
+        {
+          "key": "panelD",
+          "display": "Intelligence study"
+        }
+      ]
+    },
+    {
+      "key": "rashid6",
+      "characters": [
+        "rashid"
+      ],
+      "startYear": 1818,
+      "endYear": 1818,
+      "location": "Diriyah, the First Saudi State",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Ruined district"
+        },
+        {
+          "key": "panelB",
+          "display": "Military camp"
+        },
+        {
+          "key": "panelC",
+          "display": "Shattered mosque"
+        },
+        {
+          "key": "panelD",
+          "display": "Burial ground"
+        }
+      ]
+    },
+    {
+      "key": "rashid7",
+      "characters": [
+        "rashid"
+      ],
+      "startYear": 1819,
+      "endYear": 1839,
+      "location": "Alamut, Afghanistan",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Fortress courtyard"
+        },
+        {
+          "key": "panelB",
+          "display": "Manuscript library"
+        },
+        {
+          "key": "panelC",
+          "display": "Blood Sorcery chamber"
+        },
+        {
+          "key": "panelD",
+          "display": "Mountain training yard"
+        }
+      ]
+    },
+    {
+      "key": "aishe7",
+      "characters": [
+        "aishe"
+      ],
+      "startYear": 1833,
+      "endYear": 1865,
+      "location": "New Orleans",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "French Quarter courtyard"
+        },
+        {
+          "key": "panelB",
+          "display": "Aveline's salon"
+        },
+        {
+          "key": "panelC",
+          "display": "Mississippi levee"
+        },
+        {
+          "key": "panelD",
+          "display": "Union-occupied mansion"
+        }
+      ]
+    },
+    {
+      "key": "rashid9",
+      "characters": [
+        "rashid"
+      ],
+      "startYear": 1839,
+      "endYear": 1893,
+      "location": "Constantinople, Ottoman Empire",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Bosphorus salon"
+        },
+        {
+          "key": "panelB",
+          "display": "Nephilim library"
+        },
+        {
+          "key": "panelC",
+          "display": "Ministry avenue"
+        },
+        {
+          "key": "panelD",
+          "display": "Bazaar and quay"
+        }
+      ]
+    },
+    {
+      "key": "fomorach15",
+      "characters": [
+        "fomorach"
+      ],
+      "startYear": 1846,
+      "endYear": 1849,
+      "location": "United Kingdom",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Ruined Belfast homestead"
+        },
+        {
+          "key": "panelB",
+          "display": "Dockside rookery"
+        },
+        {
+          "key": "panelC",
+          "display": "Lodging house and gin room"
+        },
+        {
+          "key": "panelD",
+          "display": "Merritt's Elysium"
+        }
+      ]
+    },
+    {
+      "key": "blackCaesar19",
+      "characters": [
+        "blackCaesar"
+      ],
+      "startYear": 1846,
+      "endYear": 1871,
+      "location": "Sailing the Oceans",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Sailing vessel deck"
+        },
+        {
+          "key": "panelB",
+          "display": "Captain's ritual cabin"
+        },
+        {
+          "key": "panelC",
+          "display": "Port-au-Prince harbor"
+        },
+        {
+          "key": "panelD",
+          "display": "Pirate attack deck"
+        }
+      ]
+    },
+    {
+      "key": "fomorach22",
+      "characters": [
+        "fomorach"
+      ],
+      "startYear": 1849,
+      "endYear": 1958,
+      "location": "Toronto, Canada",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Railway and sewer works"
+        },
+        {
+          "key": "panelB",
+          "display": "Great Fire cellar"
+        },
+        {
+          "key": "panelC",
+          "display": "Streetcar tunnel cache"
+        },
+        {
+          "key": "panelD",
+          "display": "Postwar utility room"
+        }
+      ]
+    },
+    {
+      "key": "aishe13",
+      "characters": [
+        "aishe"
+      ],
+      "startYear": 1865,
+      "endYear": 1911,
+      "location": "New Orleans",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Bayou trading post"
+        },
+        {
+          "key": "panelB",
+          "display": "Boardinghouse fortune room"
+        },
+        {
+          "key": "panelC",
+          "display": "Doran's Elysium"
+        },
+        {
+          "key": "panelD",
+          "display": "Oracle theatre"
+        }
+      ]
+    },
+    {
+      "key": "blackCaesar21",
+      "characters": [
+        "blackCaesar"
+      ],
+      "startYear": 1871,
+      "endYear": 1880,
+      "location": "St. Augustine, United States",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Plaza and harbor street"
+        },
+        {
+          "key": "panelB",
+          "display": "Coastal house office"
+        },
+        {
+          "key": "panelC",
+          "display": "Empty waterfront warehouse"
+        },
+        {
+          "key": "panelD",
+          "display": "Black church and school"
+        }
+      ]
+    },
+    {
+      "key": "blackCaesar22",
+      "characters": [
+        "blackCaesar"
+      ],
+      "startYear": 1880,
+      "endYear": 1894,
+      "location": "New Orleans, United States",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Creole townhouse"
+        },
+        {
+          "key": "panelB",
+          "display": "Mississippi riverfront"
+        },
+        {
+          "key": "panelC",
+          "display": "Cemetery ritual grounds"
+        },
+        {
+          "key": "panelD",
+          "display": "Market entertainment street"
+        }
+      ]
+    },
+    {
+      "key": "lucien2",
+      "characters": [
+        "lucien"
+      ],
+      "startYear": 1884,
+      "endYear": 1899,
+      "location": "Paris, France",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Outdoor boulevard"
+        },
+        {
+          "key": "panelB",
+          "display": "Boarding house"
+        },
+        {
+          "key": "panelC",
+          "display": "Gagnon's salon"
+        },
+        {
+          "key": "panelD",
+          "display": "Nighttime alleyway"
+        }
+      ]
+    },
+    {
+      "key": "rashid12",
+      "characters": [
+        "rashid"
+      ],
+      "startYear": 1893,
+      "endYear": 1901,
+      "location": "Alamut, Afghanistan",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Fortress courtyard"
+        },
+        {
+          "key": "panelB",
+          "display": "Manuscript library"
+        },
+        {
+          "key": "panelC",
+          "display": "Blood Sorcery chamber"
+        },
+        {
+          "key": "panelD",
+          "display": "Mountain training yard"
+        }
+      ]
+    },
+    {
+      "key": "blackCaesar23",
+      "characters": [
+        "blackCaesar"
+      ],
+      "startYear": 1894,
+      "endYear": 1912,
+      "location": "Vienna, Austria",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Chantry audience chamber"
+        },
+        {
+          "key": "panelB",
+          "display": "Intelligence archive"
+        },
+        {
+          "key": "panelC",
+          "display": "Occult laboratory"
+        },
+        {
+          "key": "panelD",
+          "display": "Boulevard railway café"
+        }
+      ]
+    },
+    {
+      "key": "lucien6",
+      "characters": [
+        "lucien"
+      ],
+      "startYear": 1899,
+      "endYear": 1915,
+      "location": "Paris, France",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Blackout boulevard"
+        },
+        {
+          "key": "panelB",
+          "display": "Gagnon's townhouse"
+        },
+        {
+          "key": "panelC",
+          "display": "Gare de l'Est"
+        },
+        {
+          "key": "panelD",
+          "display": "Military hospital"
+        }
+      ]
+    },
+    {
+      "key": "rashid13",
+      "characters": [
+        "rashid"
+      ],
+      "startYear": 1901,
+      "endYear": 1922,
+      "location": "Constantinople, Ottoman Empire",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Blood-memory chamber"
+        },
+        {
+          "key": "panelB",
+          "display": "Newspaper avenue"
+        },
+        {
+          "key": "panelC",
+          "display": "Wartime harbor"
+        },
+        {
+          "key": "panelD",
+          "display": "Occupation checkpoint"
+        }
+      ]
+    },
+    {
+      "key": "aishe18",
+      "characters": [
+        "aishe"
+      ],
+      "startYear": 1911,
+      "endYear": 1931,
+      "location": "New Orleans",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Consultation salon"
+        },
+        {
+          "key": "panelB",
+          "display": "Wartime port ward"
+        },
+        {
+          "key": "panelC",
+          "display": "Jazz Age Elysium"
+        },
+        {
+          "key": "panelD",
+          "display": "Flood relief camp"
+        }
+      ]
+    },
+    {
+      "key": "blackCaesar27",
+      "characters": [
+        "blackCaesar"
+      ],
+      "startYear": 1912,
+      "endYear": 1930,
+      "location": "Milwaukee, United States",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Tremere chantry"
+        },
+        {
+          "key": "panelB",
+          "display": "Industrial freight corridor"
+        },
+        {
+          "key": "panelC",
+          "display": "Prohibition speakeasy"
+        },
+        {
+          "key": "panelD",
+          "display": "Farmhouse forest road"
+        }
+      ]
+    },
+    {
+      "key": "lucien7",
+      "characters": [
+        "lucien"
+      ],
+      "startYear": 1915,
+      "endYear": 1930,
+      "location": "Celaya, Mexico",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Occupied central plaza"
+        },
+        {
+          "key": "panelB",
+          "display": "Bombarded rail yard"
+        },
+        {
+          "key": "panelC",
+          "display": "Cantina courtyard"
+        },
+        {
+          "key": "panelD",
+          "display": "Field hospital camp"
+        }
+      ]
+    },
+    {
+      "key": "rashid18",
+      "characters": [
+        "rashid"
+      ],
+      "startYear": 1922,
+      "endYear": 1952,
+      "location": "Various Locations, Europe",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Continental occult archive"
+        },
+        {
+          "key": "panelB",
+          "display": "Interwar hotel café"
+        },
+        {
+          "key": "panelC",
+          "display": "Old-city tram square"
+        },
+        {
+          "key": "panelD",
+          "display": "International border station"
+        }
+      ]
+    },
+    {
+      "key": "blackCaesar28",
+      "characters": [
+        "blackCaesar"
+      ],
+      "startYear": 1930,
+      "endYear": 1936,
+      "location": "Toledo, Spain",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Cloister ritual cellar"
+        },
+        {
+          "key": "panelB",
+          "display": "Toledo street plaza"
+        },
+        {
+          "key": "panelC",
+          "display": "Union tavern"
+        },
+        {
+          "key": "panelD",
+          "display": "Railway checkpoint"
+        }
+      ]
+    },
+    {
+      "key": "lucien11",
+      "characters": [
+        "lucien"
+      ],
+      "startYear": 1930,
+      "endYear": 1944,
+      "location": "Los Angeles, United States",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Anarch nightclub"
+        },
+        {
+          "key": "panelB",
+          "display": "Ruined Elysium"
+        },
+        {
+          "key": "panelC",
+          "display": "Revolt-torn boulevard"
+        },
+        {
+          "key": "panelD",
+          "display": "Intact Elysium"
+        }
+      ]
+    },
+    {
+      "key": "aishe22",
+      "characters": [
+        "aishe"
+      ],
+      "startYear": 1931,
+      "endYear": 1955,
+      "location": "New Orleans",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Depression-era Elysium"
+        },
+        {
+          "key": "panelB",
+          "display": "Wartime shipyard"
+        },
+        {
+          "key": "panelC",
+          "display": "Postwar neighborhood"
+        },
+        {
+          "key": "panelD",
+          "display": "Doran's funeral Elysium"
+        }
+      ]
+    },
+    {
+      "key": "fomorach23",
+      "characters": [
+        "fomorach"
+      ],
+      "startYear": 1932,
+      "endYear": 1936,
+      "location": "Kharkiv, Ukraine",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Starving village"
+        },
+        {
+          "key": "panelB",
+          "display": "Empty farmhouse"
+        },
+        {
+          "key": "panelC",
+          "display": "Grain depot"
+        },
+        {
+          "key": "panelD",
+          "display": "Soviet office and clinic"
+        }
+      ]
+    },
+    {
+      "key": "blackCaesar29",
+      "characters": [
+        "blackCaesar"
+      ],
+      "startYear": 1936,
+      "endYear": 1998,
+      "location": "Montreal, Canada",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Sabbat temple"
+        },
+        {
+          "key": "panelB",
+          "display": "Wartime harbor district"
+        },
+        {
+          "key": "panelC",
+          "display": "Neon club district"
+        },
+        {
+          "key": "panelD",
+          "display": "Goratrix laboratory"
+        }
+      ]
+    },
+    {
+      "key": "fomorach24",
+      "characters": [
+        "fomorach"
+      ],
+      "startYear": 1945,
+      "endYear": 1951,
+      "location": "Jaffa, Israel",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "War-damaged street"
+        },
+        {
+          "key": "panelB",
+          "display": "Jaffa port"
+        },
+        {
+          "key": "panelC",
+          "display": "Refugee shelter"
+        },
+        {
+          "key": "panelD",
+          "display": "Checkpoint clinic"
+        }
+      ]
+    },
+    {
+      "key": "rashid21",
+      "characters": [
+        "rashid"
+      ],
+      "startYear": 1952,
+      "endYear": 1997,
+      "location": "Toronto, Canada",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Hidden court"
+        },
+        {
+          "key": "panelB",
+          "display": "Immigrant commercial street"
+        },
+        {
+          "key": "panelC",
+          "display": "Training room"
+        },
+        {
+          "key": "panelD",
+          "display": "Operations archive"
+        }
+      ]
+    },
+    {
+      "key": "lucien14",
+      "characters": [
+        "lucien",
+        "fomorach"
+      ],
+      "startYear": 1955,
+      "endYear": 1958,
+      "location": "Mojave Desert, USA",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Desert excavation"
+        },
+        {
+          "key": "panelB",
+          "display": "Abandoned mining camp"
+        },
+        {
+          "key": "panelC",
+          "display": "Desert search camp"
+        },
+        {
+          "key": "panelD",
+          "display": "Collapsed mine chamber"
+        }
+      ]
+    },
+    {
+      "key": "aishe26",
+      "characters": [
+        "aishe"
+      ],
+      "startYear": 1955,
+      "endYear": 1983,
+      "location": "New Orleans",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Fortune shop"
+        },
+        {
+          "key": "panelB",
+          "display": "Civil-rights meeting room"
+        },
+        {
+          "key": "panelC",
+          "display": "Disco club"
+        },
+        {
+          "key": "panelD",
+          "display": "Guilbeau's court"
+        }
+      ]
+    },
+    {
+      "key": "lucien15",
+      "characters": [
+        "lucien",
+        "fomorach"
+      ],
+      "startYear": 1958,
+      "endYear": 1962,
+      "location": "On the Road, Lower USA",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Route 66 motor court"
+        },
+        {
+          "key": "panelB",
+          "display": "Roadside diner"
+        },
+        {
+          "key": "panelC",
+          "display": "Southern gas station"
+        },
+        {
+          "key": "panelD",
+          "display": "Pine campsite"
+        }
+      ]
+    },
+    {
+      "key": "lucien16",
+      "characters": [
+        "lucien",
+        "fomorach"
+      ],
+      "startYear": 1962,
+      "endYear": 1967,
+      "location": "On the Road, Upper USA",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Great Lakes motor court"
+        },
+        {
+          "key": "panelB",
+          "display": "Interstate restaurant"
+        },
+        {
+          "key": "panelC",
+          "display": "Industrial waterfront"
+        },
+        {
+          "key": "panelD",
+          "display": "Border crossing"
+        }
+      ]
+    },
+    {
+      "key": "lucien17",
+      "characters": [
+        "lucien",
+        "fomorach"
+      ],
+      "startYear": 1967,
+      "endYear": 1980,
+      "location": "Toronto, Canada",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Union Station"
+        },
+        {
+          "key": "panelB",
+          "display": "Downtown street"
+        },
+        {
+          "key": "panelC",
+          "display": "Camarilla receiving room"
+        },
+        {
+          "key": "panelD",
+          "display": "Rail-corridor haven"
+        }
+      ]
+    },
+    {
+      "key": "fomorach27",
+      "characters": [
+        "fomorach"
+      ],
+      "startYear": 1967,
+      "endYear": 1998,
+      "location": "Toronto, Canada",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Subway excavation"
+        },
+        {
+          "key": "panelB",
+          "display": "Subway maintenance depot"
+        },
+        {
+          "key": "panelC",
+          "display": "Utility nexus"
+        },
+        {
+          "key": "panelD",
+          "display": "Intelligence refuge"
+        }
+      ]
+    },
+    {
+      "key": "lucien19",
+      "characters": [
+        "lucien"
+      ],
+      "startYear": 1980,
+      "endYear": 1999,
+      "location": "Montreal, Canada",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Neon nightlife street"
+        },
+        {
+          "key": "panelB",
+          "display": "Biker clubhouse"
+        },
+        {
+          "key": "panelC",
+          "display": "Jazz club"
+        },
+        {
+          "key": "panelD",
+          "display": "Sabbat chapel"
+        }
+      ]
+    },
+    {
+      "key": "aishe28",
+      "characters": [
+        "aishe"
+      ],
+      "startYear": 1983,
+      "endYear": 1997,
+      "location": "New Orleans",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Guilbeau's Elysium"
+        },
+        {
+          "key": "panelB",
+          "display": "Fortune shop"
+        },
+        {
+          "key": "panelC",
+          "display": "Nightlife street"
+        },
+        {
+          "key": "panelD",
+          "display": "1997 back office"
+        }
+      ]
+    },
+    {
+      "key": "aishe30",
+      "characters": [
+        "aishe"
+      ],
+      "startYear": 1997,
+      "endYear": 2016,
+      "location": "Toronto, Canada",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Union Station arrival"
+        },
+        {
+          "key": "panelB",
+          "display": "Occult storefront"
+        },
+        {
+          "key": "panelC",
+          "display": "Iron Prince's court"
+        },
+        {
+          "key": "panelD",
+          "display": "Condominium haven"
+        }
+      ]
+    },
+    {
+      "key": "blackCaesar37",
+      "characters": [
+        "blackCaesar"
+      ],
+      "startYear": 1998,
+      "endYear": 2002,
+      "location": "Milwaukee, United States",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Milwaukee safehouse"
+        },
+        {
+          "key": "panelB",
+          "display": "Tremere archive"
+        },
+        {
+          "key": "panelC",
+          "display": "Diner and bar"
+        },
+        {
+          "key": "panelD",
+          "display": "Waterfront parking structure"
+        }
+      ]
+    },
+    {
+      "key": "lucien23",
+      "characters": [
+        "lucien"
+      ],
+      "startYear": 1999,
+      "endYear": 1999,
+      "location": "Kingston, Canada",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Illusory service station"
+        },
+        {
+          "key": "panelB",
+          "display": "Illusory quarry campground"
+        }
+      ]
+    },
+    {
+      "key": "rashid26",
+      "characters": [
+        "rashid"
+      ],
+      "startYear": 2013,
+      "endYear": 2013,
+      "location": "Odense, Denmark",
+      "panels": [
+        {
+          "key": "panelA",
+          "display": "Pact negotiation chamber"
+        },
+        {
+          "key": "panelB",
+          "display": "Odense old town"
+        },
+        {
+          "key": "panelC",
+          "display": "Hotel caucus lounge"
+        },
+        {
+          "key": "panelD",
+          "display": "Harbor Kindred venue"
+        }
+      ]
+    }
+  ],
   "locationTracks": [
     {
       "key": "silent",

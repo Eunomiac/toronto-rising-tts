@@ -10,7 +10,18 @@ import { clockNow, refreshWorldSnapshot, useWorldState, WORLD_TOPICS, type World
 import { sendScenesCommands, type ScenesReply } from "./bridge";
 import { ScenesCommandContext, type ScenesCommand, type ScenesSend } from "./commands";
 import { withoutScene, withTableScene } from "./deck";
-import { liveSeats, liveTokens, soundView, spotlightView, toDate, weatherAxes } from "./liveScene";
+import {
+  isScatter,
+  lightingPreset,
+  liveSeats,
+  liveTokens,
+  locationOverridden,
+  sceneConditions,
+  soundView,
+  spotlightView,
+  toDate,
+  weatherAxes
+} from "./liveScene";
 import { addToQueue, commandKind, commandsToSend, loadSendMode, queueLines, saveSendMode, type QueueEntry, type SendMode } from "./queue";
 import { describeQueued } from "./queueLabels";
 import { boardToStage } from "./stageFrame";
@@ -227,9 +238,17 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
       seats: liveSeats(seats, scene?.tableKey, catalogs),
       sheet: NO_SHEET,
       tokens: liveTokens(seats.stage, catalogs).map((token) => ({ ...token, at: boardToStage(token.u, token.v) })),
-      table: scene?.tableKey ?? "No table"
+      env: {
+        tableKey: scene?.tableKey ?? "",
+        scatter: scene ? isScatter(scene) : false,
+        sky: scene?.skyboxOverride ?? "",
+        lighting: (scene && lightingPreset(scene)) ?? ""
+      }
     };
-  }, [seats, scene?.tableKey, catalogs]);
+  }, [seats, scene, catalogs]);
+  const libraryLocation = scene?.library?.districtKey && scene.library.siteKey
+    ? { districtKey: scene.library.districtKey, siteKey: scene.library.siteKey }
+    : null;
   const waitText = snapshotError ?? "Waiting for TTS…";
   const connected = snapshotError === null && Object.keys(world).length > 0;
 
@@ -239,8 +258,18 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
       {active && (
         <>
           <Box x={G} y={G} w={LEFT_W} h={STRIP_H} className="lab-backdrop-box">
-            {location ? (
-              <LocationPanel location={location} overridden={false} onChange={() => undefined} onRelease={() => undefined} readOnly />
+            {location && scene ? (
+              <LocationPanel
+                location={location}
+                overridden={locationOverridden(scene)}
+                onChange={(next) => send({ op: "location", districtKey: next.districtKey, siteKey: next.siteKey })}
+                onRelease={() => {
+                  if (libraryLocation) {
+                    send({ op: "location", ...libraryLocation });
+                  }
+                }}
+                fog={{ on: scene.topFog, onToggle: () => send({ op: "topFog", on: !scene.topFog }) }}
+              />
             ) : (
               <Waiting text={scene ? "No location on the table." : waitText} />
             )}
@@ -281,6 +310,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
                 forceOverride={false}
                 forceCelsius={clock?.temperatureC ?? null}
                 live={weatherAxes(scene.weather)}
+                held={scene.weatherOverride !== undefined}
                 w={WEATHER_W - 2}
                 h={STRIP_H - 2}
               />
@@ -316,7 +346,8 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
                   subPhase: phase.subPhase,
                   sessionNum: phase.sessionNum,
                   sessionName: phase.sessionName,
-                  spotlight: spotlightView(seats)
+                  spotlight: spotlightView(seats),
+                  ...(present ? { presentYear: present.getFullYear() } : {})
                 }}
               />
             ) : (
@@ -324,7 +355,9 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
             )}
           </Box>
           <Box x={STRIP_X} y={MAIN_Y} w={STAGE_W} h={ASPECT_H} className="lab-aspects-box lab-borderless">
-            {location && <AspectRow location={location} />}
+            {location && scene && (
+              <AspectRow location={location} conditions={sceneConditions(scene)} onConditions={(ids) => send({ op: "conditions", ids })} />
+            )}
           </Box>
           <Box x={STRIP_X} y={STAGE_Y} w={STAGE_W} h={STAGE_H} className="lab-borderless">
             {board ? <WideBoard w={STAGE_W - 12} h={STAGE_H - 10} live={board} /> : <Waiting text={waitText} />}

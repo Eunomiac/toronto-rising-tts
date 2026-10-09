@@ -41,6 +41,7 @@ const catalogs = {
   tables: [{ key: "Table A", slotCapacity: 9 }],
   lightModes: ["IndoorDim"],
   skyboxes: [],
+  memoriamPeriods: [],
   locationTracks: [],
   backgroundMoods: [],
   weatherConditions: [],

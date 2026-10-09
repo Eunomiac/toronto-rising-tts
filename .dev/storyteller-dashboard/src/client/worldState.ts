@@ -24,6 +24,17 @@ export type SceneSlice = {
   readonly liveKey?: string;
   readonly liveTitle?: string;
   readonly liveLinked: boolean;
+  /** The live library row's own location; differs from the live one after an unlinked override. */
+  readonly library?: { readonly districtKey?: string; readonly siteKey?: string };
+  /** Scene condition ids; TTS encodes an empty list as `{}`, so read through `sceneConditions`. */
+  readonly conditions?: readonly string[];
+  /** Storyteller weather held over the schedule until `untilDatetime` (the next dawn). */
+  readonly weatherOverride?: {
+    readonly rain: string;
+    readonly wind: string;
+    readonly thunder: boolean;
+    readonly untilDatetime?: ClockDatetime;
+  };
   readonly districtKey?: string;
   readonly siteKey?: string;
   readonly tableKey?: string;

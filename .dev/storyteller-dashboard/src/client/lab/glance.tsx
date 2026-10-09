@@ -26,10 +26,11 @@ import {
   type Intensity,
   type Odds
 } from "./huntOdds";
+import { MemoriamModal } from "./memoriamModal";
 import { Btn, Overlay, canvasPoint } from "./sketch";
 import { useScenesCommand, type SceneClockMode, type ScenesSend, type SoundLane } from "../scenesPanel/commands";
 import type { SendMode } from "../scenesPanel/queue";
-import { LOCATION_MUSIC_LABEL, MOOD_LABEL, fromDate, type SoundView, type SpotlightView } from "../scenesPanel/liveScene";
+import { LOCATION_MUSIC_LABEL, MOOD_LABEL, fromDate, rainKey, type SoundView, type SpotlightView } from "../scenesPanel/liveScene";
 
 /**
  * Panels for the Glance strip sketch (scenes-r1-b), pin pass 3: location and weather read live from the
@@ -209,12 +210,14 @@ const LocationPicker = ({ data, location, onPick, onClose }: {
  * District and Site names with their resonances over the Site card's illustration; click to change either
  * (an override of the scene's location).
  */
-export const LocationPanel = ({ location, overridden, onChange, onRelease, readOnly = false }: {
+export const LocationPanel = ({ location, overridden, onChange, onRelease, readOnly = false, fog }: {
   location: LabLocation;
   overridden: boolean;
   onChange: (next: LabLocation) => void;
   onRelease: () => void;
   readOnly?: boolean;
+  /** The top-fog switch in the panel's corner. */
+  fog?: { readonly on: boolean; readonly onToggle: () => void };
 }): ReactElement => {
   const { data, error } = useChronicleLocations();
   const [picking, setPicking] = useState(false);
@@ -244,6 +247,19 @@ export const LocationPanel = ({ location, overridden, onChange, onRelease, readO
         </span>
         <ResonanceTags list={site.resonances} />
       </div>
+      {fog && (
+        <button
+          type="button"
+          className={`lab-where-fog${fog.on ? " on" : ""}`}
+          title={fog.on ? "Top fog is on — click to clear it" : "Top fog is off — click to roll it in"}
+          onClick={(event) => {
+            event.stopPropagation();
+            fog.onToggle();
+          }}
+        >
+          ≋ Fog
+        </button>
+      )}
       {overridden && <ReleaseOverride onRelease={onRelease} />}
       {picking && (
         <LocationPicker
@@ -260,8 +276,61 @@ export const LocationPanel = ({ location, overridden, onChange, onRelease, readO
   );
 };
 
-/** The three District aspects and the Site aspect, always readable. */
-export const AspectRow = ({ location }: { location: LabLocation }): ReactElement => {
+/**
+ * The scene's conditions: those the District and Site carry are fixed; the Storyteller adds or removes the rest.
+ * Without `onChange` (the Lab) the list is local.
+ */
+const ConditionChips = ({ location, scene, onChange }: {
+  location: LabLocation;
+  scene: readonly string[];
+  onChange?: (ids: readonly string[]) => void;
+}): ReactElement => {
+  const { catalogs } = useSceneCatalogs();
+  const [labIds, setLabIds] = useState<readonly string[]>(scene);
+  const ids = onChange ? scene : labIds;
+  const change = onChange ?? setLabIds;
+  const nameOf = (id: string): string => catalogs?.conditions.find((condition) => condition.id === id)?.displayName ?? id;
+  const hosted = [
+    ...(catalogs?.districts.find((district) => district.key === location.districtKey)?.conditions ?? []),
+    ...(catalogs?.sites.find((site) => site.key === location.siteKey)?.conditions ?? [])
+  ];
+  const addable = (catalogs?.conditions ?? []).filter((condition) => !ids.includes(condition.id) && !hosted.includes(condition.id));
+  return (
+    <div className="lab-conditions">
+      <span className="lab-conditions-head">Conditions</span>
+      {hosted.map((id) => (
+        <span key={`hosted:${id}`} className="lab-condition hosted" title="Carried by the District or Site">{nameOf(id)}</span>
+      ))}
+      {ids.map((id) => (
+        <span key={id} className="lab-condition">
+          {nameOf(id)}
+          <button type="button" title="Remove from the scene" onClick={() => change(ids.filter((other) => other !== id))}>×</button>
+        </span>
+      ))}
+      {addable.length > 0 && (
+        <select
+          className="lab-condition-add"
+          value=""
+          onChange={(event) => {
+            if (event.target.value) {
+              change([...ids, event.target.value]);
+            }
+          }}
+        >
+          <option value="">+ condition</option>
+          {addable.map((condition) => <option key={condition.id} value={condition.id}>{condition.displayName}</option>)}
+        </select>
+      )}
+    </div>
+  );
+};
+
+/** The three District aspects and the Site aspect, always readable, then the scene's conditions. */
+export const AspectRow = ({ location, conditions = [], onConditions }: {
+  location: LabLocation;
+  conditions?: readonly string[];
+  onConditions?: (ids: readonly string[]) => void;
+}): ReactElement => {
   const { data, error } = useChronicleLocations();
   if (error || !data) {
     return <p className="lab-note">{error ?? "Reading aspects from the chronicle sheet…"}</p>;
@@ -282,6 +351,7 @@ export const AspectRow = ({ location }: { location: LabLocation }): ReactElement
           <span className="lab-aspect-text">{aspect.text}</span>
         </div>
       ))}
+      <ConditionChips location={location} scene={conditions} {...(onConditions ? { onChange: onConditions } : {})} />
     </div>
   );
 };
@@ -1229,16 +1299,20 @@ const ExtremeTemperature = ({ extreme, filterId }: { extreme: Extreme; filterId:
  * choices; choosing something other than the calendar's value overrides it until released. Fog always
  * follows the calendar (TTS draws no fog for weather).
  */
-export const WeatherPanel = ({ at, forceOverride, forceCelsius, live, w, h }: {
+export const WeatherPanel = ({ at, forceOverride, forceCelsius, live, held = false, w, h }: {
   at: Date;
   forceOverride: boolean;
   forceCelsius: number | null;
-  /** The weather TTS is playing; the calendar then only supplies temperature and fog. Overrides wait for the TTS command bridge. */
+  /** The weather TTS is playing; the calendar then only supplies temperature and fog. Picks hold weather until dawn. */
   live?: WeatherAxes;
+  /** TTS is holding the Storyteller's weather over the schedule. */
+  held?: boolean;
   w: number;
   h: number;
 }): ReactElement => {
   const { data, error } = useWeatherCalendar();
+  const send = useScenesCommand();
+  const command = live && send ? send : null;
   const hazeId = useId().replace(/[^a-zA-Z0-9]/g, "");
   const [override, setOverride] = useState<WeatherAxes | null>(null);
   const [ring, setRing] = useState<{ axis: "precip" | "wind"; at: Point } | null>(null);
@@ -1251,13 +1325,23 @@ export const WeatherPanel = ({ at, forceOverride, forceCelsius, live, w, h }: {
     return <div className="lab-wx-panel"><p className="lab-note">{scheduled}</p></div>;
   }
   const base: WeatherAxes = live ?? { precip: scheduled.precip, wind: scheduled.wind, thunder: scheduled.thunder };
-  const axes: WeatherAxes = override ?? base;
-  const overridden = override !== null && !sameAxes(override, base);
+  const axes: WeatherAxes = live ?? override ?? base;
+  const overridden = live ? held : override !== null && !sameAxes(override, base);
+  const pick = (next: WeatherAxes): void => {
+    if (command) {
+      command({ op: "weatherOverride", rain: rainKey(next.precip), wind: next.wind, thunder: next.thunder });
+    } else {
+      setOverride(next);
+    }
+  };
+  const release = (): void => (command ? command({ op: "weatherOverride", release: true }) : setOverride(null));
   const openRing = (axis: "precip" | "wind") => (event: MouseEvent<HTMLButtonElement>): void => {
-    if (!live) {
+    if (!live || command) {
       setRing({ axis, at: canvasPoint(event) });
     }
   };
+  // TTS has rain layers only; snow waits for its own layer.
+  const precipOptions = live ? PRECIP_OPTIONS.filter((option) => option.value !== "lightSnow" && option.value !== "heavySnow") : PRECIP_OPTIONS;
   const celsius = forceCelsius ?? scheduled.celsius;
   const extreme = extremeFor(celsius);
   return (
@@ -1280,12 +1364,12 @@ export const WeatherPanel = ({ at, forceOverride, forceCelsius, live, w, h }: {
       <span className="lab-wx-temp">
         {celsius}°C<sup>{Math.round(celsius * 1.8 + 32)}°F</sup>
       </span>
-      {overridden && <ReleaseOverride onRelease={() => setOverride(null)} />}
+      {overridden && <ReleaseOverride onRelease={release} />}
       {ring?.axis === "precip" && (
-        <RingMenu at={ring.at} options={PRECIP_OPTIONS} current={axes.precip} onPick={(precip) => setOverride({ ...axes, precip })} onClose={() => setRing(null)} />
+        <RingMenu at={ring.at} options={precipOptions} current={axes.precip} onPick={(precip) => pick({ ...axes, precip })} onClose={() => setRing(null)} />
       )}
       {ring?.axis === "wind" && (
-        <RingMenu at={ring.at} options={WIND_OPTIONS} current={windChoice(axes)} onPick={(choice) => setOverride(withWind(axes, choice))} onClose={() => setRing(null)} />
+        <RingMenu at={ring.at} options={WIND_OPTIONS} current={windChoice(axes)} onPick={(choice) => pick(withWind(axes, choice))} onClose={() => setRing(null)} />
       )}
     </div>
   );
@@ -2277,6 +2361,8 @@ export type LivePhase = {
   readonly sessionNum?: number;
   readonly sessionName: string;
   readonly spotlight: SpotlightView;
+  /** The Memoriam slider's right end. */
+  readonly presentYear?: number;
 };
 
 const isPhase = (value: string): value is Phase => value in NEXT_PHASE;
@@ -2329,12 +2415,14 @@ export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPr
   live?: LivePhase;
 }): ReactElement => {
   const [labPhase, setPhase] = useState<Phase>("Play");
+  const [labSub, setLabSub] = useState("Main");
   const [ring, setRing] = useState<Point | null>(null);
   const [modal, setModal] = useState<"scene" | "memoriam" | null>(null);
   const [timing, setTiming] = useState<SceneTiming | null>(null);
   const [labSession, setSession] = useState({ number: 43, title: "" });
   const phase: Phase = live ? (isPhase(live.phase) ? live.phase : "Intermission") : labPhase;
   const session = live ? { number: live.sessionNum ?? 1, title: live.sessionName } : labSession;
+  const subPhase = live ? live.subPhase ?? "Main" : labSub;
   const send = useScenesCommand();
   const command: ScenesSend | null = live && send ? send : null;
   const waiting = live && !command ? "Arrives with the TTS command bridge" : undefined;
@@ -2348,7 +2436,7 @@ export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPr
     <div className="lab-phase">
       <span className="lab-phase-tag">
         {phase}
-        {phase === "Play" && <span className="lab-phase-sub">{live ? live.subPhase ?? "" : "Main"}</span>}
+        {phase === "Play" && <span className="lab-phase-sub">{subPhase}</span>}
       </span>
       <span className="lab-phase-now">
         {phase === "Play" && (
@@ -2425,6 +2513,24 @@ export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPr
           <div className="lab-ring" style={{ left: Math.min(Math.max(ring.x, RING_EDGE), 1920 - RING_EDGE), top: Math.max(ring.y, 86) }}>
             <button type="button" className="lab-ring-item spoke" style={{ left: 0, top: -64, "--i": 0 } as CSSProperties} onClick={open("scene")}>Scene…</button>
             <button type="button" className="lab-ring-item spoke" style={{ left: -112, top: 40, "--i": 1 } as CSSProperties} onClick={open("memoriam")}>Memoriam…</button>
+            {subPhase !== "Main" && (
+              <button
+                type="button"
+                className="lab-ring-item spoke"
+                title={subPhase === "Memoriam" ? "Leave the Memoriam and return to the scene it interrupted" : "Back to the scene"}
+                style={{ left: 0, top: 64, "--i": 3 } as CSSProperties}
+                onClick={() => {
+                  setRing(null);
+                  if (command) {
+                    command({ op: "playSubPhase", subPhase: "Main" });
+                  } else {
+                    setLabSub("Main");
+                  }
+                }}
+              >
+                Main ▸
+              </button>
+            )}
             <ConfirmButton
               label="Spotlight ▸"
               className="lab-ring-item spoke"
@@ -2452,7 +2558,13 @@ export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPr
           }}
         />
       )}
-      {modal === "memoriam" && <MemoriamModal onClose={() => setModal(null)} />}
+      {modal === "memoriam" && (
+        <MemoriamModal
+          presentYear={live?.presentYear ?? PRESENT_DAY.getFullYear()}
+          onClose={() => setModal(null)}
+          onAdvance={(payload) => (command ? command({ op: "memoriam", payload }) : setLabSub("Memoriam"))}
+        />
+      )}
       {timing && <SceneTimingRing timing={timing} onClose={() => setTiming(null)} />}
     </div>
   );
@@ -2484,106 +2596,3 @@ const SceneModal = ({ library, scenes, onClose, onPlay, onPrepare }: {
     </div>
   </Overlay>
 );
-
-/* ---------- Memoriam set-up: same layout as the TTS Memoriam modal (placeholder data) ---------- */
-
-const MEMORIAM_PCS = ["Lord Lucien", "Rashid Abdulrahman", "Aishe Tache", "Fomórach", "Black Caesar"] as const;
-const MEMORIAM_PERIODS = 14;
-const MEMORIAM_PANELS = ["A", "B", "C", "D"] as const;
-const PERIOD_MARKS = 30;
-const PERIOD_SLIDER_MAX = 5000;
-
-/** Placeholder: which periods have a memoriam for the chosen PC, and which panels each period has. */
-const memoriamPanelCount = (pcIndex: number, period: number): number => ((pcIndex * 7 + period * 3) % 5);
-
-const MemoriamModal = ({ onClose }: { onClose: () => void }): ReactElement => {
-  const [pc, setPc] = useState<number | null>(null);
-  const [slider, setSlider] = useState(0);
-  const [scene, setScene] = useState<string | null>(null);
-  const [present, setPresent] = useState<readonly boolean[]>(MEMORIAM_PCS.map(() => false));
-  const mark = Math.min(PERIOD_MARKS - 1, Math.floor((slider / PERIOD_SLIDER_MAX) * PERIOD_MARKS));
-  const year = 1600 + Math.round((slider / PERIOD_SLIDER_MAX) * 400);
-  return (
-    <Overlay onClose={onClose}>
-      <div className="lab-modal lab-memoriam">
-        <span className="lab-memoriam-title">Memoriam</span>
-        <div className="lab-memoriam-pcs">
-          {MEMORIAM_PCS.map((name, index) => (
-            <button
-              key={name}
-              type="button"
-              className={`lab-memoriam-pick${pc === index ? " selected" : ""}`}
-              onClick={() => {
-                setPc(index);
-                setScene(null);
-              }}
-            >
-              {name}
-            </button>
-          ))}
-        </div>
-        <span className="lab-memoriam-date">{pc === null ? "Choose a character" : `Autumn ${year}`}</span>
-        <span className="lab-memoriam-place">{pc === null ? "\u00a0" : "Placeholder location"}</span>
-        <div className="lab-memoriam-marks">
-          {Array.from({ length: PERIOD_MARKS }, (_, index) => (
-            <span key={index} className={index === mark ? "highlighted" : undefined} />
-          ))}
-        </div>
-        <input
-          type="range"
-          className="lab-memoriam-slider"
-          min={0}
-          max={PERIOD_SLIDER_MAX}
-          value={slider}
-          onChange={(event) => setSlider(Number(event.target.value))}
-        />
-        <div className="lab-memoriam-grid">
-          {Array.from({ length: MEMORIAM_PERIODS }, (_, period) => (
-            <div key={period} className="lab-memoriam-period">
-              {MEMORIAM_PANELS.map((panel, panelIndex) => {
-                const id = `${period + 1}${panel}`;
-                const exists = pc !== null && panelIndex < memoriamPanelCount(pc, period);
-                return exists ? (
-                  <button
-                    key={panel}
-                    type="button"
-                    className={`lab-memoriam-pick${scene === id ? " selected" : ""}`}
-                    onClick={() => setScene(id)}
-                  >
-                    {id}
-                  </button>
-                ) : <span key={panel} className="lab-memoriam-pick empty" />;
-              })}
-            </div>
-          ))}
-        </div>
-        <button
-          type="button"
-          className={`lab-memoriam-pick smoke${scene === "smoke" ? " selected" : " highlighted"}`}
-          onClick={() => setScene("smoke")}
-        >
-          Just Smoke
-        </button>
-        <div className="lab-memoriam-cast">
-          {MEMORIAM_PCS.map((name, index) => (
-            <div key={name} className="lab-memoriam-cast-row">
-              <button
-                type="button"
-                className={`lab-memoriam-presence${present[index] ? " selected" : ""}`}
-                title="Present in this memoriam"
-                onClick={() => setPresent(present.map((value, at) => (at === index ? !value : value)))}
-              />
-              <span className="lab-memoriam-pc">{name}</span>
-              <span className="lab-memoriam-npc">—</span>
-              <Btn>+</Btn>
-            </div>
-          ))}
-        </div>
-        <div className="lab-row lab-memoriam-actions">
-          <button type="button" className="lab-btn primary" disabled={scene === null} onClick={onClose}>Advance</button>
-          <button type="button" className="lab-btn" onClick={onClose}>Cancel</button>
-        </div>
-      </div>
-    </Overlay>
-  );
-};

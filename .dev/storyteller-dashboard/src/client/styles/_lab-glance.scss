@@ -359,6 +359,28 @@ $lab-live: #4caf6a;
     font-variant: normal;
     color: #d9cbb2;
   }
+
+  &-fog {
+    position: absolute;
+    top: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+    padding: 1px 6px;
+    border: 1px solid rgb(255 255 255 / 25%);
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #8a8478;
+    background: rgb(8 8 12 / 70%);
+    cursor: pointer;
+
+    &.on {
+      border-color: #b8c4d6;
+      color: #e8eef7;
+      background: rgb(90 104 128 / 75%);
+    }
+  }
 }
 
 .lab-res {
@@ -414,9 +436,66 @@ $lab-live: #4caf6a;
 
 .lab-aspects {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, 1fr) minmax(150px, 0.7fr);
   gap: 4px;
   height: 100%;
+}
+
+.lab-conditions {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 3px;
+  min-height: 0;
+  padding: 3px 5px;
+  overflow-y: auto;
+  border: 1px solid #3a3a4a;
+  background: linear-gradient(#16161f, #0f0f14);
+
+  &-head {
+    width: 100%;
+    padding-bottom: 2px;
+    border-bottom: 1px solid rgb(255 255 255 / 40%);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 15px;
+    font-weight: 700;
+    font-variant: small-caps;
+    text-align: center;
+    color: #f3e6cf;
+  }
+}
+
+.lab-condition {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border: 1px solid #8a6a3a;
+  border-radius: 9px;
+  font-size: 12px;
+  color: #f1e2c4;
+  background: #2a1f12;
+
+  &.hosted {
+    border-color: #555;
+    color: #c8c2b4;
+    background: #1d1d1d;
+  }
+
+  button {
+    padding: 0;
+    border: 0;
+    font-size: 13px;
+    line-height: 1;
+    color: #d98a8a;
+    background: none;
+    cursor: pointer;
+  }
+
+  &-add {
+    max-width: 100%;
+    font-size: 12px;
+  }
 }
 
 .lab-aspect {
@@ -1947,6 +2026,10 @@ $lab-queued: #e8c547;
       flex: 1 1 0;
       background: #333;
 
+      &.period {
+        background: #776;
+      }
+
       &.highlighted {
         background: #ff0;
       }
@@ -1960,6 +2043,7 @@ $lab-queued: #e8c547;
   &-grid {
     display: flex;
     justify-content: center;
+    overflow-x: auto;
   }
 
   &-period {
@@ -1967,7 +2051,17 @@ $lab-queued: #e8c547;
     grid-template-rows: repeat(4, 34px);
     gap: 2px;
     width: 64px;
+    flex: 0 0 auto;
     padding: 0 1px;
+
+    &.current {
+      outline: 1px solid #cb995c;
+    }
+  }
+
+  button:disabled {
+    opacity: 0.45;
+    cursor: default;
   }
 
   &-cast {
@@ -1999,11 +2093,10 @@ $lab-queued: #e8c547;
 
   &-pc {
     width: 300px;
-  }
 
-  &-npc {
-    flex: 1 1 auto;
-    color: #cb995c;
+    &.subject {
+      color: #cb995c;
+    }
   }
 
   &-actions {

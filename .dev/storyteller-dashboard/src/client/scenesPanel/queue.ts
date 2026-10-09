@@ -18,6 +18,11 @@ export const commandKind = (command: ScenesCommand): CommandKind => {
     case "featuredPlay":
     case "featuredStop":
     case "ambience":
+    case "skybox":
+    case "topFog":
+    case "lighting":
+    case "conditions":
+    case "weatherOverride":
       return "queue";
     case "laneVolume":
     case "realTime":
@@ -27,6 +32,9 @@ export const commandKind = (command: ScenesCommand): CommandKind => {
       return "direct";
     case "phaseAdvance":
     case "playSubPhase":
+    case "memoriam":
+    case "location":
+    case "table":
     case "sessionNum":
     case "sessionName":
     case "clockTo":

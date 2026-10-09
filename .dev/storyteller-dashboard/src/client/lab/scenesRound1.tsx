@@ -118,6 +118,7 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
     setSceneTime(next);
     setPresentDay((present) => (next.getTime() > present.getTime() ? next : present));
   };
+  const [fog, setFog] = useState(false);
   const G = 4;
   const leftW = 380;
   const stripX = G + leftW + G;
@@ -149,6 +150,7 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
           overridden={location.districtKey !== SCENE_LOCATION.districtKey || location.siteKey !== SCENE_LOCATION.siteKey}
           onChange={setLocation}
           onRelease={() => setLocation(SCENE_LOCATION)}
+          fog={{ on: fog, onToggle: () => setFog(!fog) }}
         />
       </Box>
       <Box x={G} y={bodyY} w={leftW} h={huntH} className="lab-hunt-box lab-borderless">

@@ -19,6 +19,7 @@ const WEATHER_W = 380;
 const PreparedPanels = ({ scene, w, h }: { scene: PreparedScene; w: number; h: number }): ReactElement => {
   const [location, setLocation] = useState(scene.location);
   const [at, setAt] = useState(PRESENT_DAY);
+  const [fog, setFog] = useState(false);
   const top = HEAD_H + G;
   const rightX = G + LEFT_W + G;
   const rightW = w - rightX - G;
@@ -34,6 +35,7 @@ const PreparedPanels = ({ scene, w, h }: { scene: PreparedScene; w: number; h: n
           overridden={location.districtKey !== scene.location.districtKey || location.siteKey !== scene.location.siteKey}
           onChange={setLocation}
           onRelease={() => setLocation(scene.location)}
+          fog={{ on: fog, onToggle: () => setFog(!fog) }}
         />
       </Box>
       <Box x={G} y={aspectY} w={LEFT_W} h={h - aspectY - G} className="lab-borderless lab-gpreview-notes">

@@ -15,10 +15,39 @@ export type SceneClockMode =
 /** Storyteller lanes `Soundscape.setStorytellerLaneVolume` accepts. */
 export type SoundLane = "music" | "location" | "featured" | "rain" | "wind" | "thunder";
 
+/** Storyteller lighting presets (`HUD_selectAdminLightingScene`). */
+export type LightingPreset = "AdminDark" | "AdminStandard" | "AdminBright";
+
+export const LIGHTING_LABEL: Readonly<Record<LightingPreset, string>> = { AdminDark: "Dark", AdminStandard: "Standard", AdminBright: "Bright" };
+
+/** Rain layers TTS has (no snow yet). */
+export type RainKey = "none" | "rainLight" | "rainHeavy";
+
+/** Who plays whom in a Memoriam; the subject is always listed. */
+export type MemoriamAssignment = { readonly kind: "self" };
+
+/** The TTS Memoriam modal's Advance payload (`Memoriam.applyEnter`). */
+export type MemoriamPayload = {
+  readonly subjectKey: string;
+  /** `Month D, YYYY`. */
+  readonly date: string;
+  readonly location: string;
+  readonly assignments: Readonly<Record<string, MemoriamAssignment>>;
+} & ({ readonly skyboxKey: string; readonly panel: string } | { readonly justSmoke: true });
+
 /** One Scenes tab command for `GlobalDashboardScenesApply` (`dashboard/scenes.ttslua` lists what each does). */
 export type ScenesCommand =
   | { readonly op: "phaseAdvance" }
-  | { readonly op: "playSubPhase"; readonly subPhase: string }
+  | { readonly op: "playSubPhase"; readonly subPhase: "Main" | "Downtime" }
+  | { readonly op: "memoriam"; readonly payload: MemoriamPayload }
+  | { readonly op: "location"; readonly districtKey: string; readonly siteKey: string }
+  | { readonly op: "skybox"; readonly key: string }
+  | { readonly op: "topFog"; readonly on: boolean }
+  | { readonly op: "lighting"; readonly presetKey: LightingPreset }
+  | { readonly op: "table"; readonly key: string }
+  | { readonly op: "conditions"; readonly ids: readonly string[] }
+  | { readonly op: "weatherOverride"; readonly rain: RainKey; readonly wind: 0 | 1 | 2 | 3; readonly thunder: boolean }
+  | { readonly op: "weatherOverride"; readonly release: true }
   | { readonly op: "sessionNum"; readonly num: number }
   | { readonly op: "sessionName"; readonly name: string }
   | { readonly op: "spotlightRotate"; readonly delta: number }

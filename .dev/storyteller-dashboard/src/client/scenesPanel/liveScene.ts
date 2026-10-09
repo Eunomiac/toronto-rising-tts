@@ -1,5 +1,5 @@
 import type { SceneCatalogs } from "../scenes/types";
-import type { SoundLane } from "./commands";
+import type { LightingPreset, RainKey, SoundLane } from "./commands";
 import type { ClockDatetime, SeatRow, SeatsSlice, SceneSlice, SoundscapeSlice, StageNpc } from "../worldState";
 
 /**
@@ -16,13 +16,55 @@ export type Precip = "none" | "lightRain" | "heavyRain" | "lightSnow" | "heavySn
 export type Level = 0 | 1 | 2 | 3;
 export type WeatherAxes = { readonly precip: Precip; readonly wind: Level; readonly thunder: boolean };
 
+const windLevel = (wind: string): Level => (/Max$/.test(wind) ? 3 : /Med$/.test(wind) ? 2 : /Low$/.test(wind) ? 1 : 0);
+
+export const precipOf = (rain: string): Precip => (rain === "rainHeavy" ? "heavyRain" : rain === "rainLight" ? "lightRain" : "none");
+
 /** TTS weather layers: rain `none | rainLight | rainHeavy`; wind `none | wind[Winter]Low | Med | Max`. TTS has no snow yet. */
-export const weatherAxes = (weather: SceneSlice["weather"]): WeatherAxes => {
-  const rain = weather.rain ?? "none";
-  const wind = weather.wind ?? "none";
-  const precip: Precip = rain === "rainHeavy" ? "heavyRain" : rain === "rainLight" ? "lightRain" : "none";
-  const level: Level = /Max$/.test(wind) ? 3 : /Med$/.test(wind) ? 2 : /Low$/.test(wind) ? 1 : 0;
-  return { precip, wind: level, thunder: weather.thunder };
+export const weatherAxes = (weather: SceneSlice["weather"]): WeatherAxes =>
+  ({ precip: precipOf(weather.rain ?? "none"), wind: windLevel(weather.wind ?? "none"), thunder: weather.thunder });
+
+/** The Storyteller's held weather, or null while the schedule (or the scene's own weather) runs. */
+export const weatherOverride = (scene: SceneSlice): WeatherAxes | null => {
+  const held = scene.weatherOverride;
+  return held ? { precip: precipOf(held.rain), wind: windLevel(held.wind), thunder: held.thunder } : null;
+};
+
+/** TTS rain layer for a precipitation choice; snow has no layer yet, so it falls back to the nearest rain. */
+export const rainKey = (precip: Precip): RainKey =>
+  precip === "heavyRain" || precip === "heavySnow" ? "rainHeavy" : precip === "lightRain" || precip === "lightSnow" ? "rainLight" : "none";
+
+const WIND_TEXT = ["calm", "breeze", "wind", "gale"] as const;
+
+export const weatherText = (axes: WeatherAxes): string =>
+  [axes.precip === "heavyRain" ? "heavy rain" : axes.precip === "lightRain" ? "light rain" : "dry", WIND_TEXT[axes.wind], ...(axes.thunder ? ["thunder"] : [])].join(", ");
+
+/** Scene condition ids (TTS sends an empty list as an object). */
+export const sceneConditions = (scene: SceneSlice): readonly string[] => (Array.isArray(scene.conditions) ? scene.conditions : []);
+
+/** An unlinked scene whose live location no longer matches its library row. */
+export const locationOverridden = (scene: SceneSlice): boolean =>
+  !scene.liveLinked &&
+  scene.library !== undefined &&
+  (scene.library.districtKey !== scene.districtKey || scene.library.siteKey !== scene.siteKey);
+
+export const isScatter = (scene: SceneSlice): boolean => scene.placementMode === "scatter" || scene.tableKey === "Scatter";
+
+export const lightingPreset = (scene: SceneSlice): LightingPreset | undefined =>
+  scene.lightingPresetKey === "AdminDark" || scene.lightingPresetKey === "AdminStandard" || scene.lightingPresetKey === "AdminBright"
+    ? scene.lightingPresetKey
+    : undefined;
+
+/** `C.SKYBOX_GENERIC_KEY`. */
+export const GENERIC_SKY = "Generic";
+
+/** The sky override's name, or "Site sky" when the site's own sky shows. */
+export const skyLabel = (scene: SceneSlice, catalogs: SceneCatalogs | null): string => {
+  const key = scene.skyboxOverride;
+  if (!key) {
+    return "Site sky";
+  }
+  return key === GENERIC_SKY ? "Generic sky" : catalogs?.skyboxes.find((sky) => sky.key === key)?.display ?? key;
 };
 
 export type SoundView = {

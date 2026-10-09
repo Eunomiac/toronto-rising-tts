@@ -25,6 +25,17 @@ export type CatalogSite = {
   readonly conditions: readonly string[];
 };
 
+export type MemoriamPeriod = {
+  /** Skybox key the Memoriam payload sends (`lucien2`, …). */
+  readonly key: string;
+  /** Memoriam PC keys (`lucien`, `rashid`, `aishe`, `fomorach`, `blackCaesar`). */
+  readonly characters: readonly string[];
+  readonly startYear: number;
+  readonly endYear: number;
+  readonly location: string;
+  readonly panels: readonly { readonly key: string; readonly display: string }[];
+};
+
 export type SceneCatalogs = {
   readonly generatedBy: string;
   readonly playerColors: readonly PlayerColor[];
@@ -36,6 +47,8 @@ export type SceneCatalogs = {
   readonly tables: readonly { readonly key: string; readonly slotCapacity: number }[];
   readonly lightModes: readonly string[];
   readonly skyboxes: readonly { readonly key: string; readonly display: string }[];
+  /** Memoriam periods (`SkyboxesCatalog.MemoriamSkyboxes`), earliest first. */
+  readonly memoriamPeriods: readonly MemoriamPeriod[];
   readonly locationTracks: readonly { readonly key: string; readonly id: string }[];
   readonly backgroundMoods: readonly string[];
   readonly weatherConditions: readonly {
