@@ -274,7 +274,7 @@ local function applyCommand(cmd)
       local characterKey = S.getStateVal("seatLayout", "occupiedNPCSlots", cmd.seat)
       local placements = S.getStateVal("sessionScene", "npcWorld", "placements")
       if type(characterKey) == "string" and type(placements) == "table" and type(placements[characterKey]) == "table" then
-        local err = require("core.npc_gameboard_apply").applyStageChanges({ [characterKey] = { remove = true } })
+        local err = require("core.npc_stage_apply").applyStageChanges({ [characterKey] = { remove = true } })
         if err then
           return err
         end
@@ -324,7 +324,7 @@ local function applyCommand(cmd)
       end
       opts.base = U.clone(type(npcWorld.placements) == "table" and npcWorld.placements or {}, true)
     end
-    local err = require("core.npc_gameboard_apply").applyStageChanges(cmd.changes, opts)
+    local err = require("core.npc_stage_apply").applyStageChanges(cmd.changes, opts)
     require("dashboard.push").markWorldDirty({ scene = true })
     return err
   end

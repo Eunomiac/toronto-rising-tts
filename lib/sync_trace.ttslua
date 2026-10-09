@@ -56,9 +56,7 @@ local function targetList()
     local HO = require("core.hud_overlays")
     local HUDP = require("core.hud_player")
     local NPCS = require("core.npcs")
-    local Gameboard = require("core.npc_gameboard")
-    local Reconcile = require("core.npc_gameboard_reconcile")
-    local Snaps = require("core.npc_gameboard_snaps")
+    local StageTokens = require("core.stage_tokens")
     local RSL = require("lib.rotational-seat-layout")
     local Spotlight = require("core.spotlight")
     local Coterie = require("core.coterie")
@@ -77,7 +75,6 @@ local function targetList()
     local SRI = require("lib.seat-role-identity")
     local Compulsions = require("core.compulsions")
     local DPP = require("core.dice_preload_pool")
-    local Palette = require("lib.npc_control_board_palette")
     return {
         { Sync, "full", "Sync.full" },
         { Sync, "player", "Sync.player" },
@@ -102,7 +99,6 @@ local function targetList()
         { NPCS, "moveNpcToStagePlacement", "NPCS.moveNpcToStagePlacement" },
         { NPCS, "reconcileFamilyOffSpotlight", "NPCS.reconcileFamilyOffSpotlight" },
         { O, "reconcilePcSeatHiddenObjectsFromState", "O.reconcilePcSeatHiddenObjectsFromState" },
-        { Palette, "installSnaps", "Palette.installSnaps" },
         { FSL, "applyOccupantRigs", "FSL.applyOccupantRigs" },
         { Compulsions, "reconcileSelectedCardsToAnchors", "Compulsions.reconcileSelectedCardsToAnchors" },
         { DPP, "repositionAllAfterLayout", "DPP.repositionAllAfterLayout" },
@@ -110,11 +106,7 @@ local function targetList()
         { SRI, "findObjectByRoleIdentity", "SRI.findObjectByRoleIdentity" },
         { L, "computePcSeatPresentationInputFingerprint", "L.computePcSeatPresentationInputFingerprint" },
         { HO, "computeOverlayInputFingerprint", "HO.computeOverlayInputFingerprint" },
-        -- The Gameboard facade holds copies of these functions; wrap both entry points.
-        { Gameboard, "reconcileControlBoardFromState", "Reconcile.reconcileControlBoardFromState" },
-        { Reconcile, "reconcileControlBoardFromState", "Reconcile.reconcileControlBoardFromState" },
-        { Gameboard, "installPolarSnaps", "Snaps.installPolarSnaps" },
-        { Snaps, "installPolarSnaps", "Snaps.installPolarSnaps" },
+        { StageTokens, "reconcileFromState", "StageTokens.reconcileFromState" },
         { RSL, "SetTableTo", "RSL.SetTableTo" },
         { RSL, "SyncTable", "RSL.SyncTable" },
         { RSL, "resolveSeatObjectsFromTable", "RSL.resolveSeatObjectsFromTable" },

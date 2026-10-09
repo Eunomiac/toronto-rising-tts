@@ -143,10 +143,9 @@ G.GUIDS = {
     -- Storyteller Table
     GM_TABLE = "e157b5",
 
-    --- Storyteller NPC gameboards
+    --- Stage playfield + Stage Control board (spotlight token surface)
     STAGE_BOARD = "3d2aef",
     CONTROL_BOARD = "bea29a",
-    CONTROL_BOARD_PALETTE = "ee686e",
 
     -- Light objects (for scene lighting)
     MAIN_LIGHT_LEFT = "573771",

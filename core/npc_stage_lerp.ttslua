@@ -536,7 +536,7 @@ end
 --- @return string|nil skipReason when candidate is nil (TOR-367 diagnostics)
 function NPCStageLerp.evaluateCandidate(npcName, rec, placement, opts)
     opts = type(opts) == "table" and opts or {}
-    if opts.reason ~= "gameboard_apply" or opts.animateStageMoves ~= true then
+    if opts.reason ~= "stage_apply" or opts.animateStageMoves ~= true then
         return nil, "not_apply_animate"
     end
     if type(rec) ~= "table" or type(placement) ~= "table" then

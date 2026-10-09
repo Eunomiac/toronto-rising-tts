@@ -21,9 +21,9 @@ local G = require("lib.guids")
 local MapPins = require("core.map_pins")
 local O = require("core.objects")
 
---- NPC-only roster (PCs flagged `isPC` are excluded). The stage pool, preload grid, palette
---- tokens, and NPC group enumeration are all keyed off this, so PC characters never generate
---- NPC figurines or control-board tokens. PC-inclusive lookups use `DATA.characters` directly.
+--- NPC-only roster (PCs flagged `isPC` are excluded). The stage pool, preload grid, and NPC group
+--- enumeration are keyed off this, so PC characters never generate NPC figurines or stage tokens.
+--- PC-inclusive lookups use `DATA.characters` directly.
 NPCS.characters = DATA.getNpcCharacters()
 NPCS.lights = DATA.lights or {}
 NPCS.stageLights = DATA.stageLights or {}
@@ -3762,10 +3762,7 @@ function NPCS.reconcileAllFromState(opts)
         --- Skipping these violated sync contract when homeland cache was invalidated alone.
         reconcileNpcHomelandSeatSpotlightsWhenStageBound()
         NPCS.reconcilePreloadPoolHideFromState()
-        local Gameboard = require("core.npc_gameboard")
-        if type(Gameboard.reconcileControlBoardFromState) == "function" then
-            Gameboard.reconcileControlBoardFromState()
-        end
+        require("core.stage_tokens").reconcileFromState()
         require("lib.sync_trace").report("NPCS.reconcileAllFromState", {
             force = "false",
             reason = tostring(opts.reason or ""),
@@ -3819,11 +3816,7 @@ function NPCS.reconcileAllFromState(opts)
     end
 
     NPCS.reconcilePreloadPoolHideFromState({ force = force })
-
-    local Gameboard = require("core.npc_gameboard")
-    if type(Gameboard.reconcileControlBoardFromState) == "function" then
-        Gameboard.reconcileControlBoardFromState()
-    end
+    require("core.stage_tokens").reconcileFromState({ force = force })
     require("lib.sync_trace").report("NPCS.reconcileAllFromState", {
         force = tostring(force),
         reason = tostring(opts.reason or ""),
@@ -4359,30 +4352,6 @@ function NPCS.destroyAllWorldAndState()
     S.setStateVal(lights, "lights")
 end
 
---- Preview NPC spotlight when a control token lands on a ring after palette pick-up (TOR-172).
---- Apply still reads flip via `scanControlBoardTokens`; only affects instances already on STAGE_BOARD.
---- @param npcName string character key
---- @param mode string OFF|STANDARD
-function NPCS.applyControlTokenLightMode(npcName, mode)
-    if mode ~= "OFF" and mode ~= "STANDARD" then
-        return
-    end
-    if not validateNpcNameKey(npcName) then
-        return
-    end
-    local rec = getInstances()[npcName]
-    if U.Type(rec) ~= "table" or rec.areaKey ~= STAGE_BOARD_AREA_KEY then
-        return
-    end
-    if rec.npcLightMode == mode then
-        NPCS.applyCurrentLightMode(npcName, 0)
-        return
-    end
-    rec.npcLightMode = mode
-    setInstanceRecord(npcName, rec)
-    NPCS.applyCurrentLightMode(npcName, 0)
-end
-
 --- @param npcName string
 function NPCS.toggleOffStandard(npcName)
     local rec = getInstances()[npcName]
@@ -4524,7 +4493,7 @@ function NPCS.resolvePlayerSeatPresence(color)
     return resolveSeatPresenceForSeat(color)
 end
 
---- Activate/deactivate a PC seat from the CONTROL_BOARD `pc_control_token` (TOR-236).
+--- Set a PC seat's narrative presence (TOR-236).
 --- @param color string player color in `C.PlayerColors`
 --- @param present boolean
 --- @return boolean

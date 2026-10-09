@@ -4,7 +4,6 @@
 // Report NPC asset registry gaps after manifest / inject:
 // - disk groups skipped (not in D.characters)
 // - registry keys missing complete disk groups
-// - optional: tokens missing from save (from inject report)
 
 const fs = require("fs");
 const path = require("path");
@@ -69,15 +68,10 @@ async function main() {
 
   /** @type {string[]} */
   let registryMissingDiskGroup = [];
-  /** @type {string[]} */
-  let tokensMissing = [];
   if (fs.existsSync(injectReportPath)) {
     const injectReport = JSON.parse(fs.readFileSync(injectReportPath, "utf8"));
     if (Array.isArray(injectReport.registryMissingDiskGroup)) {
       registryMissingDiskGroup = injectReport.registryMissingDiskGroup.map((k) => String(k));
-    }
-    if (Array.isArray(injectReport.tokensMissing)) {
-      tokensMissing = injectReport.tokensMissing.map((k) => String(k));
     }
     if (
       skippedUnregisteredKeys.length === 0
@@ -115,11 +109,6 @@ async function main() {
       ? registryMissingDiskGroup.map((k) => `- ${k}`).join("\n")
       : "(none)",
     "",
-    "## Registry keys with no npc_control_token in save (inject)",
-    tokensMissing.length > 0
-      ? tokensMissing.map((k) => `- ${k} (run npm run custom-ui-assets:apply-npc-hosted-world after upload)`).join("\n")
-      : "(none — or inject report not found)",
-    "",
   ];
 
   const reportText = `${lines.join("\n")}\n`;
@@ -131,8 +120,7 @@ async function main() {
 
   const hasGaps =
     skippedUnregisteredKeys.length > 0
-    || registryMissingDiskGroup.length > 0
-    || tokensMissing.length > 0;
+    || registryMissingDiskGroup.length > 0;
   if (hasGaps) {
     process.exitCode = 1;
   }

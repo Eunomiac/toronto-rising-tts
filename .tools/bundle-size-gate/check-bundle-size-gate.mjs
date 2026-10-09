@@ -100,18 +100,6 @@ const GATE_ENTRIES = [
     forbidConstants: true,
   },
   {
-    id: "objects.npc_control_board",
-    entry: 'require("objects.npc_control_board")\n',
-    maxBytes: 10 * 1024,
-    forbidCore: true,
-  },
-  {
-    id: "objects.npc_control_board_palette",
-    entry: 'require("objects.npc_control_board_palette")\n',
-    maxBytes: 10 * 1024,
-    forbidCore: true,
-  },
-  {
     id: "core.soundscape_emitter_object",
     entry: 'require("core.soundscape_emitter_object")\n',
     maxBytes: 50 * 1024,

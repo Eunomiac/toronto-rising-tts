@@ -24,7 +24,6 @@
     <Button id="button_STcamera_default" class="STcamera_button" onClick="HUD_STcamera">Main</Button>
     <Button id="button_STcamera_mid" class="STcamera_button" onClick="HUD_STcamera">Mid</Button>
     <Button id="button_STcamera_stage_control" class="STcamera_button" onClick="HUD_STcamera">Stage</Button>
-    <Button id="button_STcamera_palette" class="STcamera_button" onClick="HUD_STcamera">Palette</Button>
     <Button id="button_STcamera_rolls" class="STcamera_button" onClick="HUD_STcamera">Rolls</Button>
   </HorizontalLayout>
 

@@ -7,7 +7,6 @@
  * for managed objects comes from companion `.data.json` → `GMNotes` (e.g. `CSHEET_PAGE_1_PINK`).
  *
  * - **XML:** `GMNotes` `CSHEET_PAGE_<n>_*` → `<Include src="ui/player/csheets/page<n>.xml" />`
- * - **XML:** `CONTROL_BOARD` → npc control board Include; `CONTROL_BOARD_PALETTE` → `<Panel />`
  * - **XML:** remove stray `.xml` for Lua-only roles (`DICEBAG_*`, `SIGNAL_CANDLE_*`, …)
  * - **Lua:** one-line `require("...")` from role prefix (see `LUA_STUB_RULES`).
  *
@@ -46,8 +45,6 @@ const LUA_ONLY_NO_XML_PREFIXES = [
 ];
 
 const LUA_STUB_RULES = [
-  { prefix: "CONTROL_BOARD_PALETTE", line: `require("objects.npc_control_board_palette")` },
-  { prefix: "CONTROL_BOARD", line: `require("objects.npc_control_board")` },
   { prefix: "SIGNAL_CANDLE", line: `require("ui.ui_signal_candle")` },
   { prefix: "SOUNDSCAPE", line: `require("core.soundscape_emitter_object")` },
   { prefix: "TAROT_BUTTON", line: `require("ui.ui_tarot_button")` },
@@ -123,35 +120,6 @@ function isLuaOnlyObjectXmlStubForRole(roleKey) {
 }
 
 /**
- * @param {string|null} roleKey
- * @returns {string | null}
- */
-function expectedControlBoardPaletteXmlLine(roleKey) {
-  if (roleKey === null || !roleKey.toUpperCase().startsWith("CONTROL_BOARD_PALETTE")) {
-    return null;
-  }
-  return `<Panel />`;
-}
-
-/**
- * @param {string|null} roleKey
- * @returns {string | null}
- */
-function expectedControlBoardXmlIncludeLine(roleKey) {
-  if (roleKey === null) {
-    return null;
-  }
-  const upper = roleKey.toUpperCase();
-  if (upper.startsWith("CONTROL_BOARD_PALETTE")) {
-    return null;
-  }
-  if (!upper.startsWith("CONTROL_BOARD")) {
-    return null;
-  }
-  return `<Include src="ui/objects/npc_control_board.xml" />`;
-}
-
-/**
  * @param {string} roleKey
  * @returns {string | null}
  */
@@ -220,22 +188,6 @@ function collectCsheetXmlTargets(objectsDir) {
     }
     const roleKey = resolveRoleKeyForStub(objectsDir, stub.displayStem, stub.guid);
     if (isLuaOnlyObjectXmlStubForRole(roleKey)) {
-      continue;
-    }
-    const paletteXmlWant = expectedControlBoardPaletteXmlLine(roleKey);
-    if (paletteXmlWant !== null) {
-      out.push({
-        fullPath: path.join(objectsDir, stub.fileName),
-        want: paletteXmlWant,
-      });
-      continue;
-    }
-    const controlBoardWant = expectedControlBoardXmlIncludeLine(roleKey);
-    if (controlBoardWant !== null) {
-      out.push({
-        fullPath: path.join(objectsDir, stub.fileName),
-        want: controlBoardWant,
-      });
       continue;
     }
     if (roleKey === null) {

@@ -1920,8 +1920,8 @@ function D.initGenericNPCs()
 end
 
 --- NPC-only view of `D.characters` (excludes PCs flagged `isPC = true`).
---- Stage management — preload pool, control-board palette/token generation, NPC group
---- enumeration — must use this so PC characters do not generate NPC figurines or palette tokens.
+--- Stage management — preload pool, stage tokens, NPC group enumeration — must use this so PC
+--- characters do not generate NPC figurines or stage tokens.
 --- Keyed lookups (`D.characters[key]`) and display-name resolution still use the full table.
 --- @return table<string, table> characterKey -> def (NPCs only)
 function D.getNpcCharacters()

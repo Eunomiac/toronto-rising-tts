@@ -1,0 +1,209 @@
+--[[
+    Stage NPC placements from the Storyteller Dashboard (TOR-687).
+
+    `applyStageChanges` writes `sessionScene.npcWorld.placements` (u,v on the stage map), keeps homeland
+    seats dark while their NPC stands on the stage, then `Sync.npcs` animates the figurines. Spotlight
+    tokens on the Stage Control board follow placements through `core.stage_tokens`.
+]]
+
+local StageApply = {}
+
+local C = require("lib.constants")
+local Snaps = require("core.npc_gameboard_snaps")
+
+--- First `require("core.state")` during luabundle registration can return nil (circular load).
+--- @type table|nil
+local stateModuleCache = nil
+
+--- @return table
+local function stateModule()
+    if type(stateModuleCache) == "table" and type(stateModuleCache.getStateVal) == "function" then
+        return stateModuleCache
+    end
+    local loaded = require("core.state")
+    if type(loaded) == "table" then
+        stateModuleCache = loaded
+    end
+    return loaded
+end
+
+--- @param row table|nil
+--- @return table|nil normalized row for comparison
+local function normalizePlacementRow(row)
+    if type(row) ~= "table" then
+        return nil
+    end
+    local u = tonumber(row.u)
+    local v = tonumber(row.v)
+    if u == nil or v == nil then
+        return nil
+    end
+    local out = {
+        u = u,
+        v = v,
+        yaw = tonumber(row.yaw) or 0,
+        npcLightMode = row.npcLightMode,
+    }
+    local groundLevel = tonumber(row.groundLevel)
+    if groundLevel ~= nil then
+        out.groundLevel = groundLevel
+    end
+    if out.npcLightMode ~= "OFF" and out.npcLightMode ~= "STANDARD" and out.npcLightMode ~= "SPOTLIGHT" then
+        out.npcLightMode = "STANDARD"
+    end
+    return out
+end
+
+--- @param a table|nil
+--- @param b table|nil
+--- @return boolean
+local function placementRowsEqual(a, b)
+    local na = normalizePlacementRow(a)
+    local nb = normalizePlacementRow(b)
+    if na == nil or nb == nil then
+        return false
+    end
+    if math.abs(na.u - nb.u) > 0.0001 or math.abs(na.v - nb.v) > 0.0001 then
+        return false
+    end
+    if math.abs(na.yaw - nb.yaw) > 0.5 then
+        return false
+    end
+    if na.npcLightMode ~= nb.npcLightMode then
+        return false
+    end
+    return (na.groundLevel or nil) == (nb.groundLevel or nil)
+end
+
+--- @param nextMap table|nil
+--- @param prevMap table|nil
+--- @return boolean
+local function placementsMapsEqual(nextMap, prevMap)
+    nextMap = type(nextMap) == "table" and nextMap or {}
+    prevMap = type(prevMap) == "table" and prevMap or {}
+    for key in pairs(nextMap) do
+        if not placementRowsEqual(nextMap[key], prevMap[key]) then
+            return false
+        end
+    end
+    for key in pairs(prevMap) do
+        if nextMap[key] == nil then
+            return false
+        end
+    end
+    return true
+end
+
+--- A seated NPC standing on the stage leaves their seat dark (TOR-250). One leaving the stage gets the
+--- seat lit again unless they stood dark there (TOR-281).
+--- @param staged table<string, table> placements after the change
+--- @param leaving table<string, table> placements of the NPCs leaving the stage
+local function reconcileHomelandSeats(staged, leaving)
+    local NPCS = require("core.npcs")
+    local occupied = stateModule().getStateVal("seatLayout", "occupiedNPCSlots")
+    if type(occupied) ~= "table" then
+        return
+    end
+    for _, seatKey in ipairs(C.NPCSeats or {}) do
+        local characterKey = occupied[seatKey]
+        if type(characterKey) == "string" and characterKey ~= "" then
+            local lit = NPCS.resolveSeatNarrativePresence(seatKey)
+            if type(staged[characterKey]) == "table" then
+                if lit then
+                    NPCS.setNpcSeatNarrativePresence(seatKey, false)
+                end
+            elseif type(leaving[characterKey]) == "table" and not lit
+                and (leaving[characterKey].npcLightMode or "STANDARD") ~= "OFF" then
+                NPCS.setNpcSeatNarrativePresence(seatKey, true)
+            end
+        end
+    end
+end
+
+local STAGE_LIGHT_MODES = { OFF = true, STANDARD = true, SPOTLIGHT = true }
+
+--- Storyteller Dashboard stage edit: per-NPC changes → `sessionScene.npcWorld.placements` → Sync.npcs.
+--- Several edits in one call move their figurines together.
+--- @param changes table|nil characterKey → `{ u?, v?, lightMode? }`, or `{ remove = true }` to take them off
+--- @param opts table|nil `{ clear?: boolean, base?: table }` — `clear` empties the stage first; `base` replaces it
+--- @return string|nil error
+function StageApply.applyStageChanges(changes, opts)
+    opts = type(opts) == "table" and opts or {}
+    local S = stateModule()
+    local NPCS = require("core.npcs")
+    local existing = S.getStateVal("sessionScene", "npcWorld", "placements")
+    existing = type(existing) == "table" and existing or {}
+    local start = existing
+    if opts.clear == true then
+        start = {}
+    elseif type(opts.base) == "table" then
+        start = opts.base
+    end
+    local nextMap = {}
+    for ck, row in pairs(start) do
+        if type(row) == "table" then
+            nextMap[ck] = row
+        end
+    end
+    for ck, change in pairs(type(changes) == "table" and changes or {}) do
+        if type(ck) ~= "string" or NPCS.characters[ck] == nil then
+            return "Unknown NPC `" .. tostring(ck) .. "`."
+        end
+        if type(change) ~= "table" then
+            return "Stage change for `" .. ck .. "` must be a table."
+        end
+        if change.remove == true then
+            nextMap[ck] = nil
+        else
+            local prev = nextMap[ck]
+            local u = tonumber(change.u) or (prev and tonumber(prev.u))
+            local v = tonumber(change.v) or (prev and tonumber(prev.v))
+            if u == nil or v == nil then
+                return "Stage change for `" .. ck .. "` needs a position."
+            end
+            local mode = change.lightMode or (prev and prev.npcLightMode) or "STANDARD"
+            if not STAGE_LIGHT_MODES[mode] then
+                return "Unknown light mode `" .. tostring(mode) .. "`."
+            end
+            local row = { u = u, v = v, yaw = Snaps.placementBoardRelYawDeg(u, v), npcLightMode = mode }
+            local groundLevel = Snaps.groundLevelForSnapUv(u, v)
+            if groundLevel ~= nil then
+                row.groundLevel = groundLevel
+            end
+            nextMap[ck] = row
+        end
+    end
+    if placementsMapsEqual(nextMap, existing) then
+        if opts.clear == true then
+            require("core.generic_npcs").destroyAllLiveAndClearMembership()
+        end
+        return nil
+    end
+    local leaving = {}
+    for ck, row in pairs(existing) do
+        if nextMap[ck] == nil then
+            leaving[ck] = row
+        end
+    end
+    reconcileHomelandSeats(nextMap, leaving)
+    S.setStateVal(nextMap, "sessionScene", "npcWorld", "placements")
+    if opts.clear == true then
+        require("core.generic_npcs").destroyAllLiveAndClearMembership()
+    end
+    -- Steps Two–Four keep homeland chairs and lights in step with the stage (TOR-178).
+    require("core.sync").npcs({
+        reason = "stage_apply",
+        force = false,
+        onlySteps = { 1, 2, 3, 4, 5 },
+        deferUiRefresh = true,
+        skipPreloadPopulate = true,
+        animateStageMoves = true,
+    })
+    -- The overlay camera's right-click walk over stage NPCs restarts from the first (TOR-538 / TOR-562).
+    require("core.hud_player").resetStageLookCycle()
+    return nil
+end
+
+StageApply.normalizePlacementRow = normalizePlacementRow
+
+return StageApply

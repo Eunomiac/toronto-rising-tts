@@ -15,7 +15,6 @@ const path = require("path");
 const MANAGED_KEY_PREFIXES = [
   "DICEBAG_",
   "CSHEET_PAGE_",
-  "CONTROL_BOARD",
   "SIGNAL_CANDLE_",
   "SOUNDSCAPE_",
   "TAROT_BUTTON_",

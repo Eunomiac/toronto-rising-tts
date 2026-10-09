@@ -8,8 +8,6 @@ local StorytellerScenesPanel = {}
 local C = require("lib.constants")
 local U = require("lib.util")
 local S = require("core.state")
-local HUDP = require("core.hud_player")
-
 local RSL = require("lib.rotational-seat-layout")
 local Sync = require("core.sync")
 local SS = require("core.soundscape")
@@ -85,7 +83,7 @@ local function setInputFieldText(elementId, value)
     U.setAttribute(elementId, "text", tostring(value or ""))
 end
 
---- Collapses the storyteller Scenes tab after Apply / End scene (TOR-449 THERE guard + deselect).
+--- Collapses the storyteller Scenes tab after Apply / End scene (TOR-449 deselect).
 local function closeScenesPanel()
     StorytellerScenesPanel.tryCloseScenesPanelOrBlock()
 end
@@ -524,30 +522,8 @@ local function scatterPackHasOccupancy(pack)
     return false
 end
 
---- While THERE, reload the draft from the pending library row and remirror the Control Board
---- (table markers / Scatter art) without touching the live stage.
---- @param activeKey string
-local function refreshThereBoardFromPendingLibrary(activeKey)
-    local Preview = require("core.control_board_preview")
-    local draft = Preview.getDraft()
-    if type(draft) ~= "table" or draft.sceneKey ~= activeKey then
-        return
-    end
-    if Preview.reset() == nil then
-        return
-    end
-    local Gameboard = require("core.npc_gameboard")
-    if type(Gameboard.reconcileControlBoardFromState) == "function" then
-        Gameboard.reconcileControlBoardFromState({
-            force = true,
-            forceTokenMirror = true,
-            allowPreview = true,
-        })
-    end
-end
-
---- Pending Scenes table toggle: write tableKey + placementMode, seed scatter/standard occupancy,
---- and refresh the THERE Control Board immediately (no live SetTableTo).
+--- Pending Scenes table toggle: write tableKey + placementMode, seed scatter/standard occupancy
+--- (no live SetTableTo).
 --- @param activeKey string
 --- @param tableKey string
 --- @param isScatter boolean
@@ -602,7 +578,6 @@ local function applyPendingLibraryTableChoice(activeKey, tableKey, isScatter)
     end
 
     S.validateState()
-    refreshThereBoardFromPendingLibrary(activeKey)
     return true
 end
 
@@ -641,13 +616,6 @@ local function setPendingLibrarySeatPresence(seatKey, present)
     sp[seatKey] = present == true
     S.setStateVal(sp, "sceneLibrary", "scenes", activeKey, "sessionScene", "seatPresent")
     S.validateState()
-    local Preview = require("core.control_board_preview")
-    local draft = Preview.getDraft()
-    if type(draft) == "table" and draft.sceneKey == activeKey then
-        Preview.syncPresenceFromLibrary()
-        local Gameboard = require("core.npc_gameboard")
-        Gameboard.syncPreviewSeatTokenFaces()
-    end
     return true
 end
 
@@ -1651,54 +1619,23 @@ function StorytellerScenesPanel.onLibrarySlotClick(player, button, id)
         return
     end
     local priorKey = getActiveLibraryKey()
-    local wasEditingPreview = false
     if type(priorKey) == "string" and priorKey ~= key then
         local flushOk, flushErr = flushPendingLibraryClockDraftIfDirty(priorKey)
         if not flushOk then
             U.AlertGM("Clock not saved on `" .. priorKey .. "`: " .. tostring(flushErr))
             return
         end
-        local Preview = require("core.control_board_preview")
-        local draft = Preview.getDraft()
-        if type(draft) == "table" and draft.sceneKey == priorKey then
-            local Gameboard = require("core.npc_gameboard")
-            Gameboard.capturePreviewDraftNow()
-            if not Preview.commit() then
-                U.AlertGM("Control Board preview could not be saved on `" .. priorKey .. "`.")
-                return
-            end
-            wasEditingPreview = true
-        end
     end
     S.setStateVal(key, "sceneLibrary", "activeKey")
     S.validateState()
     resetClockDraftForLibrarySelection(key)
-    if wasEditingPreview then
-        local Preview = require("core.control_board_preview")
-        local Gameboard = require("core.npc_gameboard")
-        if SceneLibrary.isPendingSelection(key) and Preview.enter(key) then
-            Gameboard.reconcileControlBoardFromState({
-                force = true,
-                forceTokenMirror = true,
-                allowPreview = true,
-            })
-        else
-            Preview.clear()
-            Gameboard.reconcileControlBoardFromState({ force = true, forceTokenMirror = true })
-        end
-    end
     StorytellerScenesPanel.refresh()
     U.AlertGM("Active library scene: `" .. key .. "`. Use Apply to switch the live table to this bundle.")
 end
 
---- TOR-449: leave Scenes without closing UI — block while THERE; deselect pending preview when HERE.
+--- TOR-449: leave Scenes without closing UI — deselect the pending preview row.
 --- @return boolean false when blocked
 function StorytellerScenesPanel.prepareLeaveScenesPanelOrBlock()
-    local Preview = require("core.control_board_preview")
-    if Preview.isThere() then
-        U.AlertGM("Resolve Control Board THERE (click THERE → HERE) before closing Scenes.")
-        return false
-    end
     local activeKey = getActiveLibraryKey()
     if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
         StorytellerScenesPanel.deselectPendingPreview({ silent = true })
@@ -1706,7 +1643,7 @@ function StorytellerScenesPanel.prepareLeaveScenesPanelOrBlock()
     return true
 end
 
---- TOR-449: deselect pending (or clear activeKey) and collapse all ST panels; block while THERE.
+--- TOR-449: deselect pending (or clear activeKey) and collapse all ST panels.
 --- @return boolean false when blocked
 function StorytellerScenesPanel.tryCloseScenesPanelOrBlock()
     if StorytellerScenesPanel.prepareLeaveScenesPanelOrBlock() ~= true then
@@ -1719,21 +1656,16 @@ function StorytellerScenesPanel.tryCloseScenesPanelOrBlock()
 end
 
 --- TOR-449: restore green/live library selection, or clear activeKey entirely (End scene).
---- Commits an active THERE draft for the selected row when present.
 --- @param opts table|nil `{ silent?: boolean, clearActiveKey?: boolean }`
 --- @return boolean
 function StorytellerScenesPanel.deselectPendingPreview(opts)
     opts = type(opts) == "table" and opts or {}
     local silent = opts.silent == true
     local clearActiveKey = opts.clearActiveKey == true
-    local Preview = require("core.control_board_preview")
     local activeKey = getActiveLibraryKey()
     local pending = type(activeKey) == "string" and isPendingSceneActivation(activeKey)
 
     if not clearActiveKey and not pending then
-        if Preview.isThere() then
-            Preview.forceHere({ commit = true })
-        end
         return true
     end
 
@@ -1742,15 +1674,6 @@ function StorytellerScenesPanel.deselectPendingPreview(opts)
         if not flushOk and not silent then
             U.AlertGM("Clock not saved on `" .. activeKey .. "`: " .. tostring(flushErr))
             return false
-        end
-        local draft = Preview.getDraft()
-        if type(draft) == "table" and draft.sceneKey == activeKey then
-            local Gameboard = require("core.npc_gameboard")
-            Gameboard.capturePreviewDraftNow()
-            if not Preview.commit() and not silent then
-                U.AlertGM("Control Board preview could not be saved on `" .. activeKey .. "`.")
-                return false
-            end
         end
     end
 
@@ -1772,10 +1695,7 @@ function StorytellerScenesPanel.deselectPendingPreview(opts)
         end
     end
 
-    Preview.clear()
     S.validateState()
-    local Gameboard = require("core.npc_gameboard")
-    Gameboard.reconcileControlBoardFromState({ force = true, forceTokenMirror = true })
     StorytellerScenesPanel.refresh()
     if not silent then
         U.AlertGM("Scene preview cleared — panel shows live table controls.")
@@ -1964,26 +1884,6 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
     if RSL.alertAndBlockIfDiceOnTable("apply a library scene") then
         return
     end
-    local Preview = require("core.control_board_preview")
-    local previewDraft = Preview.getDraft()
-    local applyingControlBoardPreview = type(previewDraft) == "table" and previewDraft.sceneKey == K
-    if applyingControlBoardPreview then
-        local Gameboard = require("core.npc_gameboard")
-        Gameboard.capturePreviewDraftNow()
-        if not Preview.commit() then
-            U.AlertGM("Apply: Control Board preview could not be saved on `" .. K .. "`.")
-            return
-        end
-        ent = S.getStateVal("sceneLibrary", "scenes", K)
-        if type(ent) ~= "table" or type(ent.sessionScene) ~= "table" then
-            U.AlertGM("Apply: committed preview scene is no longer available.")
-            return
-        end
-    end
-
-    -- TOR-449: leave THERE before closing Scenes so the close guard does not block Apply.
-    Preview.forceHere({ commit = true })
-
     -- Clear any in-flight ×5 catch-up immediately (including mid-settle re-Apply), before blindfold work.
     PresentDayClock.cancelCatchUpOnLiveClock()
     if GameStateOverlay and type(GameStateOverlay.resetRealTimeCarry) == "function" then
@@ -2051,17 +1951,6 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
         -- Deep copy: `U.clone(..., true)` is shallow only (see `lib/util.ttslua`); `U.merge` recurses nested tables.
         local bundle = U.merge({}, ent.sessionScene)
         bundle.placementMode = ent.placementMode or "standard"
-        local lockNextSceneApply = S.getStateVal("controlBoard", "lockNextSceneApply") == true
-        if lockNextSceneApply then
-            local liveParticipants = U.merge({}, S.getStateVal("sessionScene") or {})
-            local Gameboard = require("core.npc_gameboard")
-            bundle = Preview.mergeLockedParticipants(liveParticipants, bundle, {
-                npcSeats = C.NPCSeats,
-                playerColors = C.PlayerColors,
-                placementIdentity = Gameboard.lockedPlacementIdentity,
-                uvTolerance = 0.002,
-            })
-        end
         SceneLibrary.syncNpcRoleOverrideFromSeatSlots(bundle)
         local lightingKey, lightingErr = validateLightingPresetKey(bundle.lightingPresetKey)
         if lightingKey == nil then
@@ -2081,9 +1970,6 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
             return false, "Apply failed: " .. tostring(clockErr)
         end
 
-        if lockNextSceneApply then
-            S.setStateVal(U.merge({}, bundle), "sceneLibrary", "scenes", K, "sessionScene")
-        end
         if type(bundle.seatSlots) ~= "table" then
             bundle.seatSlots = {}
         end
@@ -2182,18 +2068,6 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
             skipSoundscape = true,
             changedSeatColors = changedSeatColors,
         })
-        local Gameboard = nil
-        if lockNextSceneApply then
-            S.setStateVal(false, "controlBoard", "lockNextSceneApply")
-            Gameboard = require("core.npc_gameboard")
-            Gameboard.syncControlBoardModeToolbar()
-        end
-        if applyingControlBoardPreview then
-            Preview.clear()
-            Gameboard = Gameboard or require("core.npc_gameboard")
-            Gameboard.reconcileControlBoardFromState({ force = true, forceTokenMirror = true })
-        end
-
         if GameStateOverlay and type(GameStateOverlay.stopTicker) == "function" then
             GameStateOverlay.stopTicker()
         end
@@ -2230,9 +2104,7 @@ function StorytellerScenesPanel.endSceneNarrative(player)
         end
     end
 
-    -- TOR-449: force HERE, then close without THERE block; deselect after detach (below).
-    local Preview = require("core.control_board_preview")
-    Preview.forceHere({ commit = true })
+    -- TOR-449: close panels now; deselect after detach (below).
     if type(StorytellerPanelUI.closeAllPanelsUnconditionally) == "function" then
         StorytellerPanelUI.closeAllPanelsUnconditionally()
     end

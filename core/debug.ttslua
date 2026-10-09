@@ -833,99 +833,6 @@ function DEBUG.dumpSeatRoleOffsets(occupantRaw)
     return true, relativePath
 end
 
---- Measure one Scatter group’s gold, upper-left white, and top NPC holes from three control tokens.
---- Group `1` is world 270° (−X, far left). Writes pasteable Lua under `.dev/.debug/debug_logs/`.
---- @param scatterGroupNum number 1–6
-function DEBUG.calibrateScatterGroup(scatterGroupNum)
-    local ScatterMode = require("core.scatter_mode")
-    local ScatterLayout = require("lib.scatter_layout")
-    local Board = require("core.npc_gameboard_board")
-    local n = math.floor(tonumber(scatterGroupNum) or 0)
-    if n < 1 or n > ScatterLayout.groupCount() then
-        error("DEBUG.calibrateScatterGroup: group must be 1.." .. tostring(ScatterLayout.groupCount()))
-    end
-    if not ScatterMode.isActive() then
-        error("DEBUG.calibrateScatterGroup: enter Scatter Mode first (apply a scatter scene, or SetTableTo(\"Scatter\")).")
-    end
-    local board = Board.getControlBoard()
-    if not Board.isGameObject(board) or type(board.positionToLocal) ~= "function" then
-        error("DEBUG.calibrateScatterGroup: CONTROL_BOARD is missing")
-    end
-    local found = {}
-    local tokens = ScatterMode.controlTokensOnScatterBoard(board)
-    for _, obj in ipairs(tokens) do
-        local loc = board.positionToLocal(obj.getPosition())
-        found[#found + 1] = {
-            x = loc.x or loc[1] or 0,
-            y = loc.y or loc[2] or 0,
-            z = loc.z or loc[3] or 0,
-            localX = loc.x or loc[1] or 0,
-            localY = loc.y or loc[2] or 0,
-            localZ = loc.z or loc[3] or 0,
-        }
-    end
-    if #found ~= 3 then
-        error(
-            "DEBUG.calibrateScatterGroup: expected exactly three pc_control_token / npc_control_token objects on the board, found "
-                .. tostring(#found)
-        )
-    end
-    local gold, ul, topNpc = ScatterMode.sortCalibrationLocals(found)
-    local inferred = ScatterMode.inferHolesFromAnchors(board, gold, ul, topNpc)
-    ScatterMode.rememberDebugCalibrationHoles(n, inferred)
-    local function fmtN(v)
-        return string.format("%.4f", tonumber(v) or 0)
-    end
-    local function fmtHole(h, indent)
-        indent = indent or "    "
-        return indent
-            .. "{ localX = "
-            .. fmtN(h.localX)
-            .. ", localY = "
-            .. fmtN(h.localY)
-            .. ", localZ = "
-            .. fmtN(h.localZ)
-            .. ", u = "
-            .. fmtN(h.u)
-            .. ", v = "
-            .. fmtN(h.v)
-            .. " }"
-    end
-    local areaKey = ScatterLayout.areaKeyForGroup(n)
-    local lines = {
-        "-- Scatter group " .. tostring(n) .. " (" .. areaKey .. ") calibration. Paste into D.SCATTER_BOARD.areas.",
-        areaKey .. " = {",
-        "  calibrated = true,",
-        "  origin = { u = " .. fmtN(inferred.gold.u) .. ", v = " .. fmtN(inferred.gold.v) .. " },",
-        "  gold = " .. fmtHole(inferred.gold, "") .. ",",
-        "  whites = {",
-    }
-    for i = 1, #inferred.whites do
-        local comma = i < #inferred.whites and "," or ""
-        lines[#lines + 1] = fmtHole(inferred.whites[i], "    ") .. comma
-    end
-    lines[#lines + 1] = "  },"
-    lines[#lines + 1] = "  npcHoles = {"
-    for i = 1, #inferred.npcHoles do
-        local comma = i < #inferred.npcHoles and "," or ""
-        lines[#lines + 1] = fmtHole(inferred.npcHoles[i], "    ") .. comma
-    end
-    lines[#lines + 1] = "  },"
-    lines[#lines + 1] = "},"
-    lines[#lines + 1] = ""
-    local relativePath = "debug_logs/scatter_group_" .. tostring(n) .. "_calibration.lua"
-    local body = table.concat(lines, "\n")
-    local okWrite = DEBUG.writeWorkspaceFile(relativePath, body, "none", false)
-    print("DEBUG.calibrateScatterGroup: wrote " .. areaKey .. " (" .. tostring(#inferred.npcHoles) .. " NPC holes)")
-    print(
-        "DEBUG.calibrateScatterGroup: debug snap points are on CONTROL_BOARD — turn on Snap mode to confirm they sit on the printed holes. Do not paste this dump into D.SCATTER_BOARD until they do."
-    )
-    if not okWrite then
-        error("DEBUG.calibrateScatterGroup: failed to write file (is tts-bridge listening?)")
-    end
-    return true, relativePath
-end
-
 --- Capture the player's current view and export a paste-ready Lua snippet.
 --- The output can be pasted into C.UniversalCameraAngles or C.ReferenceCameraAngles.
 --- @param player Player
@@ -1487,7 +1394,7 @@ end
 
 --- Dump `sessionScene.npcWorld.placements` and live instance stage poses.
 function DEBUG.dumpNpcPlacements()
-    printTestHeader("NPC gameboard placements")
+    printTestHeader("Stage NPC placements")
     local placements = S.getStateVal("sessionScene", "npcWorld", "placements")
     if type(placements) ~= "table" then
         print("placements: (none)")
@@ -1514,228 +1421,6 @@ function DEBUG.dumpNpcPlacements()
     if NPCS ~= nil and type(NPCS.collectSessionStagePlacements) == "function" then
         print("collectSessionStagePlacements rows: " .. tostring(#NPCS.collectSessionStagePlacements()))
     end
-end
-
---[[ Gameboard & Stage E2E (TOR-141 / TOR-169) — see .dev/E2E Playbooks/Gameboard-E2E.md ]]
-local E2E_GB = require("lib.e2e_gameboard")
-
---- Assert gameboard/state probes; prints `[gbConfirm] PASS` / `FAIL`.
---- @param labelOrExpected string|table test label, or `{ placements = … }` only
---- @param maybeExpected table|nil
---- @return boolean
-function DEBUG.gbConfirm(labelOrExpected, maybeExpected)
-    if type(labelOrExpected) == "table" and maybeExpected == nil then
-        return E2E_GB.confirm("gbConfirm", labelOrExpected)
-    end
-    return E2E_GB.confirm(tostring(labelOrExpected), maybeExpected or {})
-end
-
---- Prerequisite check (boards, tokens, fixture NPCs, scene library row).
---- @return boolean
-function DEBUG.gbE2ePrereqCheck()
-    return E2E_GB.runPrereqCheck()
-end
-
---- Deterministic baseline before suites.
---- @return boolean
-function DEBUG.gbE2eReset()
-    return E2E_GB.reset()
-end
-
---- Smoke macro (automated blocks + scene Apply human gate).
---- @return boolean
-function DEBUG.gbE2eRunSmoke()
-    return E2E_GB.runSmoke()
-end
-
---- Full macro (deep suites + optional reload human gate).
---- @return boolean
-function DEBUG.gbE2eRunFull()
-    return E2E_GB.runFull()
-end
-
---- Deferred expected-FAIL probes (TOR-172/173/175/174/D177b).
---- @return boolean
-function DEBUG.gbE2eRunDeferred()
-    return E2E_GB.runDeferred()
-end
-
---- Resume after human gate (`_G.gbE2ePending`).
---- @return boolean
-function DEBUG.gbE2eContinue()
-    return E2E_GB.runContinue()
-end
-
---- Verify each `pc_control_token` is pinned to its occupancy chair (or stashed at Y=−200 when Absent) with flip matching `seatSlots[color].isPresent` (TOR-247 / TOR-513).
---- @return boolean
-function DEBUG.gbE2eVerifyPcTokens()
-    return E2E_GB.verifyPcTokensFromSeatState()
-end
-
---- Print last gameboard interaction profile (Apply/Clear/token drop).
---- @param label string|nil optional prefix for console line
---- @return table|nil
-local function printGameboardInteractionProfile(label)
-    local Gameboard = require("core.npc_gameboard")
-    local profile = Gameboard.getLastInteractionProfile()
-    if type(profile) ~= "table" then
-        print("[DEBUG] gameboard profile: (none — run Apply, Clear, or drop a token first)")
-        return nil
-    end
-    local prefix = type(label) == "string" and label ~= "" and (label .. " ") or ""
-    print(
-        "[DEBUG] "
-            .. prefix
-            .. "gameboard profile reason="
-            .. tostring(profile.reason)
-            .. " phaseA_ms="
-            .. string.format("%.2f", tonumber(profile.phaseA_ms) or 0)
-            .. " catalog_builds="
-            .. tostring(profile.catalog_builds or 0)
-            .. " tag_scans="
-            .. tostring(profile.tag_scans or 0)
-    )
-    return profile
-end
-
---- Reset gameboard interaction profile snapshot.
-function DEBUG.resetGameboardProfile()
-    local Gameboard = require("core.npc_gameboard")
-    Gameboard.resetInteractionProfile()
-    print("[DEBUG] gameboard profile reset")
-end
-
---- Run Apply and print interaction profile (seat Apply hitch baseline).
---- @return boolean ok
-function DEBUG.profileGameboardApply()
-    local Gameboard = require("core.npc_gameboard")
-    Gameboard.resetInteractionProfile()
-    local ok = Gameboard.applyFromControlBoard()
-    printGameboardInteractionProfile("Apply")
-    return ok == true
-end
-
---- Run Clear and print interaction profile.
---- @return boolean ok
-function DEBUG.profileGameboardClear()
-    local Gameboard = require("core.npc_gameboard")
-    Gameboard.resetInteractionProfile()
-    local ok = Gameboard.clearControlBoard()
-    printGameboardInteractionProfile("Clear")
-    return ok == true
-end
-
---- Print last token-drop profile (drop a control token first, then call).
---- @return table|nil
-function DEBUG.profileGameboardTokenDrop()
-    return printGameboardInteractionProfile("TokenDrop")
-end
-
---- Snap table from DEBUG.installNpcControlBoardSnaps options (flat fields or `{ config = … }`).
---- @param options table|nil
---- @return table|nil
-local function resolveDebugControlBoardSnapConfig(options)
-    options = type(options) == "table" and options or {}
-    if type(options.config) == "table" then
-        return options.config
-    end
-    if type(options.origin) == "table" or type(options.snapGroups) == "table" or options.rings ~= nil then
-        return options
-    end
-    return nil
-end
-
---- Force CONTROL_BOARD snap grid (normally runs from reconcile / Sync.npcs).
---- @param options table|nil Full `CONTROL_BOARD_SNAP` table, or `{ config?: table }` — overrides `DATA.CONTROL_BOARD_SNAP` for IDE iteration
---- @return boolean
-function DEBUG.installNpcControlBoardSnaps(options)
-    local Gameboard = require("core.npc_gameboard")
-    return Gameboard.installPolarSnaps(nil, {
-        forceSnaps = true,
-        config = resolveDebugControlBoardSnapConfig(options),
-    }) == true
-end
-
---- Install a new CONTROL_BOARD snap grid, remap tokens by ring + spread offset, sync stage figurines.
---- A. Logs each token's ring (old config catalog match).
---- B. `installPolarSnaps` with `options` / `options.config` as the new snap table.
---- C. Moves tokens + `sessionScene.npcWorld.placements` to best-matching snaps on the same ring; missing rings → palette; `Sync.npcs` unless `skipSync`.
---- @param options table|nil New `CONTROL_BOARD_SNAP` (or `{ config = … }`); optional `oldConfig` for matching override; by default old config comes from currently installed board snaps; `skipSync` to skip figurine reconcile
---- @return table|nil stats from Gameboard.remapControlBoardSnapsToConfig
-function DEBUG.installAndRemapNpcControlBoardSnaps(options)
-    options = type(options) == "table" and options or {}
-    local Gameboard = require("core.npc_gameboard")
-    local newConfig = resolveDebugControlBoardSnapConfig(options)
-    if type(newConfig) ~= "table" then
-        print("[DEBUG] installAndRemapNpcControlBoardSnaps: pass a CONTROL_BOARD_SNAP table or { config = … }")
-        return nil
-    end
-    local oldConfig = type(options.oldConfig) == "table" and options.oldConfig or nil
-    local hasInstalled = Gameboard.getInstalledControlBoardSnapConfig() ~= nil
-    local sourceLabel = hasInstalled and "installed snaps" or "DATA fallback"
-    if oldConfig ~= nil then
-        sourceLabel = "options.oldConfig"
-    end
-    print("[DEBUG] installAndRemapNpcControlBoardSnaps: begin (" .. sourceLabel .. " → new config)")
-    return Gameboard.remapControlBoardSnapsToConfig(oldConfig, newConfig, {
-        skipSync = options.skipSync == true,
-    })
-end
-
---- Print control-board table-component marker decisions (table leaves, etc.) and optionally force a debug reconcile pass.
---- @param options table|nil `{ includeTagless?: boolean, forceReconcile?: boolean }`
---- @return table|nil
-function DEBUG.previewControlBoardSnapCount(config)
-    local Gameboard = require("core.npc_gameboard")
-    local total, perRing = Gameboard.countControlBoardSnapPoints(config)
-    print("[DEBUG] CONTROL_BOARD snap count: " .. tostring(total))
-    for ringIndex, ringTotal in ipairs(perRing) do
-        print("  ring " .. tostring(ringIndex) .. ": " .. tostring(ringTotal))
-    end
-end
-
---- Print Lua table or CSV of snap family roles → world X/Z (STAGE) for tuning or migration.
---- @param config table|nil Full CONTROL_BOARD_SNAP table or nil for DATA default
---- @param options table|nil `{ useInterpolatedRings?: boolean, format?: "lua"|"csv" }`
-function DEBUG.exportControlBoardSnapFamilies(config, options)
-    local Gameboard = require("core.npc_gameboard")
-    options = type(options) == "table" and options or {}
-    local byRole = Gameboard.exportSnapFamiliesByRole(config, options)
-    local format = options.format == "csv" and "csv" or "lua"
-    local text = format == "csv"
-        and Gameboard.formatSnapFamiliesCsv(byRole)
-        or Gameboard.formatSnapFamiliesLua(byRole)
-    print("[DEBUG] CONTROL_BOARD snap families (world X/Z on STAGE, " .. format .. "):")
-    print(text)
-    return byRole
-end
-
---- Write CONTROL_BOARD polar snap groups to CSV content via `writeToFile` (same path as `logStateToFile`).
---- Group/index ordering matches anchor-family coterie spread (`orderFamilySnapsForAnchorSpread`).
---- Requires TTS Tools extension / External Editor (`sendExternalMessage`); see `.dev/DEBUG_FILE_LOGGING.md`.
---- @param filename string|nil Basename without extension (default: `control_board_snap_groups` → `debug_logs/control_board_snap_groups.txt`)
---- @param config table|nil Full `CONTROL_BOARD_SNAP` table or nil for DATA default
---- @return table[] rows written
-function DEBUG.exportControlBoardSnapGroupsToFile(filename, config)
-    filename = (type(filename) == "string" and filename ~= "") and filename or "control_board_snap_groups"
-    local Gameboard = require("core.npc_gameboard")
-    local rows = Gameboard.buildControlBoardSnapGroupExportRows(config)
-    local csv = Gameboard.formatControlBoardSnapGroupsCsv(rows)
-    writeToFile(filename, csv, "none", false)
-    print(
-        "DEBUG: CONTROL_BOARD snap groups logged to "
-            .. WORKSPACE_DEBUG_WRITE_ROOT
-            .. "/"
-            .. LOG_DIR
-            .. "/"
-            .. filename
-            .. "."
-            .. LOG_EXTENSION
-            .. " ("
-            .. tostring(#rows)
-            .. " row(s), CSV body)"
-    )
-    return rows
 end
 
 --- Toggle all Anchor-tagged objects:
@@ -4229,7 +3914,7 @@ local function normalizeE2eSuiteId(suiteId)
     return nil
 end
 
---- Normalize playbook campaign name (Dice, Scenes, Gameboard).
+--- Normalize playbook campaign name (Dice, Scenes).
 -- @param name string|nil
 -- @return string|nil
 local function normalizeE2eCampaignName(name)
@@ -4247,14 +3932,11 @@ local function normalizeE2eCampaignName(name)
     if lower == "scenes" then
         return "Scenes"
     end
-    if lower == "gameboard" then
-        return "Gameboard"
-    end
     return nil
 end
 
 --- Load generated playbook module for a prepared campaign.
--- @param campaign string Dice | Scenes | Gameboard
+-- @param campaign string Dice | Scenes
 -- @return table|nil playbook
 -- @return string|nil err
 local function e2eLoadPlaybookModule(campaign)
@@ -4272,14 +3954,6 @@ local function e2eLoadPlaybookModule(campaign)
         local mod = require("lib.e2e_playbook_scenes")
         if type(mod) ~= "table" or type(mod.steps) ~= "table" or type(mod.stepCount) ~= "number" then
             return nil, "lib.e2e_playbook_scenes is missing steps/stepCount — regenerate playbook Lua"
-        end
-        return mod, nil
-    end
-    if campaign == "Gameboard" then
-        -- Generated by npm run e2e-playbook:generate (committed lib/e2e_playbook_gameboard.ttslua).
-        local mod = require("lib.e2e_playbook_gameboard")
-        if type(mod) ~= "table" or type(mod.steps) ~= "table" or type(mod.stepCount) ~= "number" then
-            return nil, "lib.e2e_playbook_gameboard is missing steps/stepCount — regenerate playbook Lua"
         end
         return mod, nil
     end
@@ -4340,7 +4014,7 @@ end
 -- With a campaign name: cancel any in-flight step, reset index, arm the playbook (does not run a step).
 -- Optional second arg: 1-based step index (8) or top-level suite id ("H", "E2") before the first RunTest().
 -- With no args: advance index by one and execute the next U.chain from the armed campaign.
--- @param campaignName string|nil "Dice" | "Scenes" | "Gameboard"
+-- @param campaignName string|nil "Dice" | "Scenes"
 -- @param startAt number|string|nil Step index or suite id when initializing
 -- @usage lua RunTest("Dice")
 -- @usage lua RunTest("Dice", 8)
@@ -4351,7 +4025,7 @@ function DEBUG.RunTest(campaignName, startAt)
         local key = normalizeE2eCampaignName(campaignName)
         if key == nil then
             print(string.format(
-                "[RunTest] Unknown campaign '%s'. Known: Dice, Scenes, Gameboard",
+                "[RunTest] Unknown campaign '%s'. Known: Dice, Scenes",
                 tostring(campaignName)
             ))
             return false
@@ -5394,7 +5068,6 @@ local DEBUG_UPLOAD_MANIFEST_MODULE = "lib.custom_ui_upload_manifest"
 local CUSTOM_UI_UPLOAD_MANIFEST = require("lib.custom_ui_upload_manifest")
 local NPC_TOKEN_UPLOAD_MANIFEST = require("lib.npc_token_upload_manifest")
 local NPC_GROUP_UPLOAD_MANIFEST = require("lib.npc_group_upload_manifest")
-local NPC_TOKEN_HOSTED_URLS = require("lib.npc_token_hosted_urls")
 DEBUG.customUiUploadManifest = CUSTOM_UI_UPLOAD_MANIFEST
 
 --- Parse an optional options table for upload spawn settings.
@@ -5855,389 +5528,6 @@ function DEBUG.clearCustomUiUploadTokens()
     return deleted
 end
 
---[[
-    NPC control-board tokens (paired front/back Custom_Tile on CONTROL_BOARD).
-    Distinct from upload-batch Custom_Token spawns (Cloud Manager upload only).
-]]
-
-local NPC_GAMEBOARD_DATA = require("lib.npc_gameboard_data")
-
---- Lazy: avoid loading gameboard during `core.state` registration (see `lib.npc_placements_convert`).
---- @return table
-local function npcGameboardModule()
-    return require("core.npc_gameboard")
-end
-local NPC_CONTROL_TOKEN_TAG = NPC_GAMEBOARD_DATA.TAG_NPC_CONTROL_TOKEN
-local NPC_TOKEN_GM_PREFIX = NPC_GAMEBOARD_DATA.TOKEN_GM_PREFIX
-local NPC_TOKEN_MANIFEST_MODULE = "lib.npc_token_upload_manifest"
---- Custom_Tile.Type: 0 square, 1 hex, 2 circle (round), 3 rounded square (.dev/tts-api Custom Tile).
-local NPC_CONTROL_TOKEN_TILE_TYPE = 2
-local NPC_CONTROL_TOKEN_TILE_THICKNESS = 0.1
-
---- @param url string|nil
---- @return boolean
-local function isFileUrl(url)
-    return U.Type(url) == "string" and string.find(url, "^file:///") ~= nil
-end
-
---- @param url string|nil
---- @return boolean
-local function isHostedSteamUrl(url)
-    return U.Type(url) == "string"
-        and string.find(url, "^https?://") ~= nil
-        and (
-            string.find(url, "steamusercontent") ~= nil
-            or string.find(url, "steamusercontent%-a%.akamaihd%.net") ~= nil
-        )
-end
-
---- @param manifest table
---- @return table|nil characterKey -> { front: string, back: string }
-local function indexNpcTokenPairsFromManifest(manifest)
-    if U.Type(manifest) ~= "table" then
-        return nil
-    end
-    local assets = manifest.assets
-    if U.Type(assets) ~= "table" then
-        return nil
-    end
-    local pairsByKey = {}
-    for _, asset in ipairs(assets) do
-        if U.Type(asset) == "table" then
-            local characterKey = asset.characterKey
-            local side = asset.side
-            local fileUrl = asset.fileUrl or asset.url or asset.URL
-            if U.Type(characterKey) == "string" and characterKey ~= "" and U.Type(fileUrl) == "string" and fileUrl ~= "" then
-                local row = pairsByKey[characterKey]
-                if row == nil then
-                    row = {}
-                    pairsByKey[characterKey] = row
-                end
-                if side == "front" then
-                    row.front = fileUrl
-                elseif side == "back" then
-                    row.back = fileUrl
-                end
-            end
-        end
-    end
-    return pairsByKey
-end
-
---- Prefer Steam URLs from lib.npc_token_hosted_urls; else file:/// rows from upload manifest.
---- @param options table|nil { preferHosted?: boolean }
---- @return table|nil pairsByKey, string sourceLabel
-local function loadNpcControlTokenPairUrls(options)
-    local opts = options or {}
-    local preferHosted = opts.preferHosted
-    if preferHosted == nil then
-        preferHosted = true
-    end
-
-    if preferHosted and U.Type(NPC_TOKEN_HOSTED_URLS) == "table" then
-        local hosted = NPC_TOKEN_HOSTED_URLS
-        local pairsByKey = {}
-        for characterKey, row in pairs(hosted) do
-            if U.Type(characterKey) == "string" and U.Type(row) == "table" then
-                local front = row.front or row.Front
-                local back = row.back or row.Back
-                if isHostedSteamUrl(front) and isHostedSteamUrl(back) then
-                    pairsByKey[characterKey] = { front = front, back = back }
-                end
-            end
-        end
-        local count = 0
-        for _ in pairs(pairsByKey) do
-            count = count + 1
-        end
-        if count > 0 then
-            return pairsByKey, "lib.npc_token_hosted_urls"
-        end
-    end
-
-    local manifest = DEBUG.loadCustomUiUploadManifest(NPC_TOKEN_MANIFEST_MODULE, true)
-    if manifest == nil then
-        return nil, "none"
-    end
-    return indexNpcTokenPairsFromManifest(manifest), NPC_TOKEN_MANIFEST_MODULE
-end
-
---- @param pairsByKey table
---- @return string[] sorted character keys with both sides
-local function sortedCompleteNpcTokenKeys(pairsByKey)
-    local npcChars = require("lib.npcs_data").getNpcCharacters()
-    local keys = {}
-    for characterKey, row in pairs(pairsByKey) do
-        if U.Type(row) == "table" and npcChars[characterKey] ~= nil then
-            local frontOk = isFileUrl(row.front) or isHostedSteamUrl(row.front)
-            local backOk = isFileUrl(row.back) or isHostedSteamUrl(row.back)
-            if frontOk and backOk then
-                keys[#keys + 1] = characterKey
-            end
-        end
-    end
-    table.sort(keys)
-    return keys
-end
-
---- Save-format spawn data for a flip-capable NPC control token (matches dual-image Custom_Tile in save).
---- @param worldPos { x: number, y: number, z: number }
---- @param yawDeg number
---- @param characterKey string
---- @param frontUrl string
---- @param backUrl string
---- @param scale number|nil
---- @param faceUp boolean|nil
---- @return table
-local function buildNpcControlTokenSpawnData(worldPos, yawDeg, characterKey, frontUrl, backUrl, scale, faceUp)
-    local s = tonumber(scale)
-    if s == nil or s ~= s or s <= 0 then
-        s = 0.38
-    end
-    local showFront = faceUp ~= false
-    return {
-        GUID = "",
-        Name = "Custom_Tile",
-        Transform = {
-            posX = worldPos.x,
-            posY = worldPos.y,
-            posZ = worldPos.z,
-            rotX = 0,
-            rotY = yawDeg,
-            rotZ = showFront and 0 or 180,
-            scaleX = s,
-            scaleY = 1,
-            scaleZ = s,
-        },
-        Nickname = characterKey,
-        Description = "",
-        GMNotes = NPC_TOKEN_GM_PREFIX .. characterKey,
-        AltLookAngle = { x = 0, y = 0, z = 0 },
-        ColorDiffuse = { r = 1, g = 1, b = 1 },
-        LayoutGroupSortIndex = 0,
-        Value = 0,
-        Locked = false,
-        Grid = false,
-        Snap = false,
-        IgnoreFoW = false,
-        MeasureMovement = false,
-        DragSelectable = true,
-        Autoraise = true,
-        Sticky = false,
-        Tooltip = true,
-        GridProjection = false,
-        HideWhenFaceDown = false,
-        Hands = false,
-        CustomImage = {
-            ImageURL = frontUrl,
-            ImageSecondaryURL = backUrl,
-            ImageScalar = 1,
-            WidthScale = 0,
-            CustomTile = {
-                Type = NPC_CONTROL_TOKEN_TILE_TYPE,
-                Thickness = NPC_CONTROL_TOKEN_TILE_THICKNESS,
-                Stackable = false,
-                Stretch = true,
-            },
-        },
-        LuaScript = "",
-        LuaScriptState = "",
-        XmlUI = "",
-        Tags = { NPC_CONTROL_TOKEN_TAG },
-    }
-end
-
---- Enforce round Custom_Tile (type 2) and thin thickness on an NPC control token.
---- spawnObjectData can omit CustomTile fields; setCustomObject + reload applies them in-game.
---- @param obj Object
---- @param frontUrl string
---- @param backUrl string
---- @return boolean
-local function applyNpcControlTokenTileShape(obj, frontUrl, backUrl)
-    if obj == nil or obj.setCustomObject == nil then
-        return false
-    end
-    obj.setCustomObject({
-        image = frontUrl,
-        image_bottom = backUrl,
-        type = NPC_CONTROL_TOKEN_TILE_TYPE,
-        thickness = NPC_CONTROL_TOKEN_TILE_THICKNESS,
-        stackable = false,
-        stretch = true,
-    })
-    if obj.reload ~= nil then
-        obj.reload()
-    end
-    return true
-end
-
---- @return Object|nil
-local function getControlBoardObject()
-    local guid = G.GUIDS and G.GUIDS.CONTROL_BOARD
-    if U.Type(guid) ~= "string" or guid == "" then
-        return nil
-    end
-    local board = G.getObject(guid)
-    if board == nil then
-        return nil
-    end
-    return board
-end
-
---- Delete every `npc_control_token` on or off the control board.
--- @return number
-function DEBUG.clearNpcControlBoardTokens()
-    local deleted = 0
-    local tagObjs = getObjectsWithTag(NPC_CONTROL_TOKEN_TAG) or {}
-    for _, obj in ipairs(tagObjs) do
-        if obj ~= nil and obj.destruct ~= nil then
-            obj.destruct()
-            deleted = deleted + 1
-        end
-    end
-    print("DEBUG.clearNpcControlBoardTokens: Deleted " .. tostring(deleted) .. " control-board token(s)")
-    return deleted
-end
-
---- Apply hosted front/back URLs to existing control-board tokens (after merge + extract).
--- @return number count updated
-function DEBUG.applyNpcControlTokenHostedImages()
-    local pairsByKey, source = loadNpcControlTokenPairUrls({ preferHosted = true })
-    if pairsByKey == nil then
-        print("DEBUG.applyNpcControlTokenHostedImages: no hosted URL pairs (" .. tostring(source) .. ")")
-        return 0
-    end
-    local updated = 0
-    local tagObjs = getObjectsWithTag(NPC_CONTROL_TOKEN_TAG) or {}
-    for _, obj in ipairs(tagObjs) do
-        if obj ~= nil and obj.getGMNotes ~= nil and obj.setCustomObject ~= nil then
-            local notes = obj.getGMNotes()
-            if U.Type(notes) == "string" and string.find(notes, "^" .. NPC_TOKEN_GM_PREFIX) ~= nil then
-                local characterKey = string.sub(notes, #NPC_TOKEN_GM_PREFIX + 1)
-                local row = pairsByKey[characterKey]
-                if U.Type(row) == "table" and isHostedSteamUrl(row.front) and isHostedSteamUrl(row.back) then
-                    if applyNpcControlTokenTileShape(obj, row.front, row.back) then
-                        npcGameboardModule().setHiddenFromPlayerColors(obj)
-                        updated = updated + 1
-                    end
-                end
-            end
-        end
-    end
-    print("DEBUG.applyNpcControlTokenHostedImages: Updated " .. tostring(updated) .. " token(s) from " .. tostring(source))
-    return updated
-end
-
---- Spawn paired front/back NPC control tokens on CONTROL_BOARD (palette UV grid on the minimap).
--- Uses `lib.npc_token_hosted_urls` when populated; otherwise `lib.npc_token_upload_manifest` file:/// URLs.
--- Tiles: Custom_Tile type 2 (circle), thickness 0.1 — enforced via spawn data + setCustomObject after spawn.
--- @param options table|nil { destroyExisting?, columns?, total?, uMin?, uMax?, vMin?, vMax?, scale?, preferHosted?, faceUp?, boardYaw? }
--- @return number spawned
-function DEBUG.spawnNpcControlBoardTokens(options)
-    local opts = options or {}
-    if opts.destroyExisting ~= false then
-        DEBUG.clearNpcControlBoardTokens()
-    end
-
-    local palette = G.getObject(G.GUIDS.CONTROL_BOARD_PALETTE)
-    if palette == nil then
-        print(
-            "DEBUG.spawnNpcControlBoardTokens: CONTROL_BOARD_PALETTE missing (GUID "
-                .. tostring(G.GUIDS.CONTROL_BOARD_PALETTE)
-                .. ")"
-        )
-        return 0
-    end
-    npcGameboardModule().installPaletteSnaps(palette, { force = true })
-
-    local pairsByKey, source = loadNpcControlTokenPairUrls(opts)
-    if pairsByKey == nil then
-        print("DEBUG.spawnNpcControlBoardTokens: no token URL pairs — run npm run custom-ui-assets:manifest-npc-tokens")
-        return 0
-    end
-
-    local keys = sortedCompleteNpcTokenKeys(pairsByKey)
-    if #keys == 0 then
-        print("DEBUG.spawnNpcControlBoardTokens: manifest has no complete front+back pairs")
-        return 0
-    end
-
-    local paletteRot = palette.getRotation()
-    local boardYaw = (paletteRot and paletteRot.y) or 0
-    if U.Type(opts.boardYaw) == "number" then
-        boardYaw = opts.boardYaw
-    end
-
-    local faceUp = opts.faceUp
-    if faceUp == nil then
-        faceUp = true
-    end
-
-    local Palette = require("lib.npc_control_board_palette")
-    local spawnPos = Palette.worldPositionForSnapIndex(palette, 0)
-    if spawnPos == nil then
-        print("DEBUG.spawnNpcControlBoardTokens: could not resolve palette snap world position")
-        return 0
-    end
-
-    local spawned = 0
-    local skipped = 0
-    for i, characterKey in ipairs(keys) do
-        local row = pairsByKey[characterKey]
-        local worldPos = Vector(spawnPos.x, spawnPos.y, spawnPos.z)
-        local data = buildNpcControlTokenSpawnData(
-            { x = worldPos.x, y = worldPos.y, z = worldPos.z },
-            boardYaw,
-            characterKey,
-            row.front,
-            row.back,
-            opts.scale,
-            faceUp
-        )
-        ---@diagnostic disable-next-line: undefined-global
-        local obj = spawnObjectData({ data = data })
-        if obj == nil then
-            print("DEBUG.spawnNpcControlBoardTokens: spawn failed for " .. characterKey)
-            skipped = skipped + 1
-        else
-            applyNpcControlTokenTileShape(obj, row.front, row.back)
-            if obj.setTags ~= nil then
-                obj.setTags({ NPC_CONTROL_TOKEN_TAG })
-            end
-            if obj.setGMNotes ~= nil then
-                obj.setGMNotes(NPC_TOKEN_GM_PREFIX .. characterKey)
-            end
-            if obj.setName ~= nil then
-                obj.setName(characterKey)
-            end
-            npcGameboardModule().setHiddenFromPlayerColors(obj)
-            spawned = spawned + 1
-        end
-    end
-
-    local parked = npcGameboardModule().syncTokensToPalette()
-    print(
-        "DEBUG.spawnNpcControlBoardTokens: Spawned "
-            .. tostring(spawned)
-            .. "/"
-            .. tostring(#keys)
-            .. " → parked on CONTROL_BOARD_PALETTE ("
-            .. tostring(source)
-            .. "; tile type="
-            .. tostring(NPC_CONTROL_TOKEN_TILE_TYPE)
-            .. " circle, thickness="
-            .. tostring(NPC_CONTROL_TOKEN_TILE_THICKNESS)
-            .. "; layout sync moved "
-            .. tostring(parked)
-            .. ")"
-    )
-    if skipped > 0 then
-        print("DEBUG.spawnNpcControlBoardTokens: Skipped " .. tostring(skipped))
-    end
-    print("  Drag tokens onto CONTROL_BOARD polar snaps, then Apply (or lua GlobalGameboardApply())")
-    return spawned
-end
-
 --- One-time: copy seat-layout `ROLE_COLOR` from Name/Nickname into GM Notes (see `.dev/Rotational Coordinate Generator.md`).
 --- @param options table|nil `{ dryRun?: boolean, clearLegacy?: boolean }`
 --- @return table summary
@@ -6444,8 +5734,8 @@ function DEBUG.help()
     print("  logAllToFiles()                   - Log all debug info to files")
     print("  clearAllLogs()                    - Clear all log files (starts new session)")
     print("\nDICE DEBUG (solo — no second player):")
-    print("  RunTest(\"Dice\") / RunTest(\"Scenes\") / RunTest(\"Gameboard\") - Arm generated E2E playbook")
-    print("  RunTest(\"Dice\", 8) / RunTest(\"Scenes\", \"F\") / RunTest(\"Gameboard\", \"B\") - Arm at step or suite")
+    print("  RunTest(\"Dice\") / RunTest(\"Scenes\") - Arm generated E2E playbook")
+    print("  RunTest(\"Dice\", 8) / RunTest(\"Scenes\", \"F\") - Arm at step or suite")
     print("  RunTest()                  - Run next playbook step; stops step on console FAIL")
     print("  rollTest(color, diff?, type?, label?, hungerLevel?) - Arm PRE_ROLL (auto seat + camera prep)")
     print("  rollTestNoDiff(color, type?, label?, hungerLevel?) - Arm PRE_ROLL without ST difficulty")
@@ -6468,20 +5758,8 @@ function DEBUG.help()
     print("  printHeader(text, level) - E2E banner (level 1..3: *, =, -; 100 chars or lead+text when long)")
     print("  rollStTest(label?, type?) - ST NPC roll on Black (e2e seat/camera prep)")
     print("  rollStSlots()            - Print gameState.storytellerRolls")
-    print("\nGAMEBOARD E2E (TOR-141 — .dev/E2E Playbooks/Gameboard-E2E.md):")
-    print("  gbE2ePrereqCheck()       - Boards, tokens, fixture NPCs, scene row")
-    print("  gbE2eReset()             - Empty placements + fixture preload baseline")
-    print("  gbE2eRunSmoke()          - Smoke macro; then human scene Apply + gbE2eContinue()")
-    print("  gbE2eRunFull()           - Deep reconcile suites (+ optional reload gate)")
-    print("  gbE2eRunDeferred()       - Expected FAIL until TOR-172/173/175/174 dedupe")
-    print("  gbE2eContinue()          - Resume after HUMAN GATE (scene_apply / reload)")
-    print("  gbE2eVerifyPcTokens()    - PC control tokens pinned to occupancy home + flip matches seat presence")
-    print("  gbConfirm(label, expected) - Single assert (placements, intent, probes)")
+    print("\nSTAGE NPCS:")
     print("  dumpNpcPlacements()      - Print sessionScene.npcWorld.placements")
-    print("  profileGameboardApply()  - Apply + hitch profile (phaseA_ms, catalog_builds) _(TOR-201)_")
-    print("  profileGameboardClear()  - Clear + hitch profile")
-    print("  profileGameboardTokenDrop() - Last token-drop profile (drop first)")
-    print("  resetGameboardProfile()  - Clear profile snapshot")
     print("\nQUICK SETTERS (prefer Scenes/Sound panels for narrative apply):")
     print("  setHunger(color, value)  - Set player hunger (e.g., setHunger('Red', 3))")
     print("  soundscapeMusic(mood)    - Set music mood: main, intrigue, combat")
@@ -6521,12 +5799,6 @@ function DEBUG.help()
     print("                          - Spawn tokenFront_* / tokenBack_* from lib.npc_token_upload_manifest")
     print("  DEBUG.spawnNpcGroupUploadBatch(options?)")
     print("                          - Spawn Figurine_Custom pairs + token temps from lib.npc_group_upload_manifest")
-    print("  DEBUG.spawnNpcControlBoardTokens(options?)")
-    print("                          - Spawn 61 paired gameboard tokens on CONTROL_BOARD (palette grid)")
-    print("  DEBUG.clearNpcControlBoardTokens()")
-    print("                          - Delete npc_control_token objects")
-    print("  DEBUG.applyNpcControlTokenHostedImages()")
-    print("                          - After upload+extract, refresh token images from hosted URLs")
     print("  DEBUG.clearCustomUiUploadTokens()")
     print("                          - Delete temporary upload tokens created by debug uploader")
     print("\nSPOTLIGHT WORKSHOP:")

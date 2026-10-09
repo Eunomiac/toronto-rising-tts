@@ -1,173 +1,27 @@
 --[[
-    Storyteller NPC gameboard facade (TOR-423).
+    Stage map facade (TOR-423 / TOR-687).
 
-    Re-exports domain siblings; consumers keep `require("core.npc_gameboard")`.
-    Siblings: board, tokens, snaps, reconcile, apply, interactions, spotlight.
-
-    Authority: gameState.sessionScene.npcWorld.placements — never figurines directly on Apply.
-    Reconcile: NPCS.reconcileAllFromState then mirror via reconcileControlBoardFromState.
+    Stage placements live in `gameState.sessionScene.npcWorld.placements` as u,v on the stage map; the
+    Storyteller Dashboard writes them (`core.npc_stage_apply`). This facade re-exports the u,v maths
+    (`core.npc_gameboard_board`, `core.npc_gameboard_snaps`) and the spotlight hold hotkey.
 ]]
 
 local Gameboard = {}
 
 local Board = require("core.npc_gameboard_board")
-local Tokens = require("core.npc_gameboard_tokens")
 local Snaps = require("core.npc_gameboard_snaps")
-local Reconcile = require("core.npc_gameboard_reconcile")
-local Apply = require("core.npc_gameboard_apply")
-local Interactions = require("core.npc_gameboard_interactions")
 local Spotlight = require("core.npc_gameboard_spotlight")
 
---- @type table|nil Last completed interaction profile snapshot (Apply/Clear/drop).
-local lastInteractionProfile = nil
---- @type table|nil In-flight profile counters for the current interaction.
-local activeInteractionProfile = nil
-
---- Bind interaction profile counter for catalog builds (Snaps catalog cache).
-Snaps.getActiveInteractionProfile = function()
-    return activeInteractionProfile
-end
-
---- @param reason string
-local function beginInteractionProfile(reason)
-    activeInteractionProfile = {
-        reason = reason,
-        catalog_builds = 0,
-        tag_scans = 0,
-        startedAt = os.clock(),
-    }
-end
-
---- @param t0 number os.clock at interaction start
-local function finishInteractionProfile(t0)
-    if type(activeInteractionProfile) ~= "table" then
-        return
-    end
-    activeInteractionProfile.phaseA_ms = (os.clock() - (t0 or activeInteractionProfile.startedAt)) * 1000
-    lastInteractionProfile = activeInteractionProfile
-    activeInteractionProfile = nil
-end
-
---- @param count number|nil defaults to 1
-local function noteInteractionTagScan(count)
-    if type(activeInteractionProfile) ~= "table" then
-        return
-    end
-    activeInteractionProfile.tag_scans = (activeInteractionProfile.tag_scans or 0) + (tonumber(count) or 1)
-end
-
---- Sibling hooks into facade interaction profile.
-Reconcile.noteInteractionTagScan = noteInteractionTagScan
-Apply.beginInteractionProfile = beginInteractionProfile
-Apply.finishInteractionProfile = finishInteractionProfile
-Interactions.beginInteractionProfile = beginInteractionProfile
-Interactions.finishInteractionProfile = finishInteractionProfile
-
---- @return table|nil
-function Gameboard.getLastInteractionProfile()
-    return lastInteractionProfile
-end
-
---- Clear profile snapshot (does not affect catalog cache).
-function Gameboard.resetInteractionProfile()
-    lastInteractionProfile = nil
-    activeInteractionProfile = nil
-end
-
---- Public board UV / placement APIs (TOR-423 Board sibling).
 Gameboard.worldFromUv = Board.worldFromUv
 Gameboard.stageFigurineWorldYawDeg = Board.stageFigurineWorldYawDeg
-Gameboard.getStageBoardYawDeg = Board.getStageBoardYawDeg
-Gameboard.uvFromWorldFallback = Board.uvFromWorldFallback
-Gameboard.uvFromWorld = Board.uvFromWorld
-Gameboard.worldOnControlBoard = Board.worldOnControlBoard
 
---- Public token hide API (TOR-423 Tokens sibling).
-Gameboard.setHiddenFromPlayerColors = Tokens.setHiddenFromPlayerColors
-
---- Public snaps APIs (TOR-423 Snaps sibling).
-Gameboard.minimapScaleRatios = Snaps.minimapScaleRatios
-Gameboard.countControlBoardSnapPoints = Snaps.countControlBoardSnapPoints
-Gameboard.exportSnapFamiliesByRole = Snaps.exportSnapFamiliesByRole
-Gameboard.formatSnapFamiliesLua = Snaps.formatSnapFamiliesLua
-Gameboard.formatSnapFamiliesCsv = Snaps.formatSnapFamiliesCsv
-Gameboard.getSeatRowCatalogMaps = Snaps.getSeatRowCatalogMaps
-Gameboard.buildControlBoardSnapPoints = Snaps.buildControlBoardSnapPoints
-Gameboard.areControlBoardSnapsEnabled = Snaps.areControlBoardSnapsEnabled
-Gameboard.setControlBoardSnapsEnabled = Snaps.setControlBoardSnapsEnabled
-Gameboard.toggleControlBoardSnaps = Snaps.toggleControlBoardSnaps
-Gameboard.installPolarSnaps = Snaps.installPolarSnaps
-Gameboard.installControlBoardSnaps = Snaps.installControlBoardSnaps
-Gameboard.getInstalledControlBoardSnapConfig = Snaps.getInstalledControlBoardSnapConfig
-Gameboard.logControlBoardTokenSnapRings = Snaps.logControlBoardTokenSnapRings
-Gameboard.remapControlBoardSnapsToConfig = Snaps.remapControlBoardSnapsToConfig
 Gameboard.groundLevelForSnapUv = Snaps.groundLevelForSnapUv
-Gameboard.resolveSnapRingIndexForUv = Snaps.resolveSnapRingIndexForUv
 Gameboard.placementBoardRelYawDeg = Snaps.placementBoardRelYawDeg
 Gameboard.resolvePlacementSnapCatalogEntry = Snaps.resolvePlacementSnapCatalogEntry
-Gameboard.lockedPlacementIdentity = Snaps.lockedPlacementIdentity
 Gameboard.stageLerpFamilyGroupSortKey = Snaps.stageLerpFamilyGroupSortKey
 Gameboard.stageAreaGroupForPlacement = Snaps.stageAreaGroupForPlacement
 Gameboard.orderFamilySnapsForAnchorSpread = Snaps.orderFamilySnapsForAnchorSpread
-Gameboard.anchorSpreadUsesCenterOutOrdering = Snaps.anchorSpreadUsesCenterOutOrdering
-Gameboard.buildControlBoardSnapGroupExportRows = Snaps.buildControlBoardSnapGroupExportRows
-Gameboard.formatControlBoardSnapGroupsCsv = Snaps.formatControlBoardSnapGroupsCsv
 
---- Public reconcile APIs (TOR-423 Reconcile sibling).
-Gameboard.scanControlBoardTokens = Reconcile.scanControlBoardTokens
-Gameboard.controlBoardMirrorFingerprint = Reconcile.controlBoardMirrorFingerprint
-Gameboard.getActiveBoardModel = Reconcile.getActiveBoardModel
-Gameboard.buildParticipantSnapshot = Reconcile.buildParticipantSnapshot
-Gameboard.capturePreviewDraftNow = Reconcile.capturePreviewDraftNow
-Gameboard.schedulePreviewDraftCapture = Reconcile.schedulePreviewDraftCapture
-Gameboard.syncPreviewSeatTokenFaces = Reconcile.syncPreviewSeatTokenFaces
-Gameboard.recoverPreviewDraftOnLoad = Reconcile.recoverPreviewDraftOnLoad
-Gameboard.mirrorControlBoardTokensFromModel = Reconcile.mirrorControlBoardTokensFromModel
-Gameboard.reconcileControlBoardFromState = Reconcile.reconcileControlBoardFromState
-Gameboard.ensureControlBoardObjectCallbacks = Reconcile.ensureControlBoardObjectCallbacks
-Gameboard.ensureControlBoardObjectUi = Reconcile.ensureControlBoardObjectUi
-Gameboard.syncControlBoardSnapsToggleLabel = Reconcile.syncControlBoardSnapsToggleLabel
-Gameboard.syncControlBoardModeToolbar = Reconcile.syncControlBoardModeToolbar
-
---- Public apply APIs (TOR-423 Apply sibling).
-Gameboard.applyFromControlBoard = Apply.applyFromControlBoard
-Gameboard.clearControlBoard = Apply.clearControlBoard
-Gameboard.tryConfirmClear = Apply.tryConfirmClear
-Gameboard.loadControlBoardFromState = Apply.loadControlBoardFromState
-Gameboard.togglePreviewMode = Apply.togglePreviewMode
-Gameboard.forceHere = function(opts)
-    local Preview = require("core.control_board_preview")
-    return Preview.forceHere(opts)
-end
-Gameboard.isNextSceneApplyLocked = Apply.isNextSceneApplyLocked
-Gameboard.toggleNextSceneApplyLock = Apply.toggleNextSceneApplyLock
-Gameboard.syncTokensToPalette = Apply.syncTokensToPalette
-Gameboard.installPaletteSnaps = Apply.installPaletteSnaps
-Gameboard.recoverStrayNpcTokensToPalette = Apply.recoverStrayNpcTokensToPalette
-Gameboard.resnapPaletteTokensOnPalette = Apply.resnapPaletteTokensOnPalette
-Gameboard.recoverStraysAndResnapPalette = Apply.recoverStraysAndResnapPalette
-Gameboard.relocateHomelandSeatTokensAfterClear = Apply.relocateHomelandSeatTokensAfterClear
-Gameboard.populateControlBoardFromPlacements = Apply.populateControlBoardFromPlacements
-
---- Public interaction APIs (TOR-423 Interactions sibling).
-Gameboard.restoreNpcControlTokenHome = Interactions.restoreNpcControlTokenHome
-Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag = Interactions.tryNpcControlTokenDroppedOnStorytellerDiceBag
-Gameboard.restorePcControlTokenHome = Interactions.restorePcControlTokenHome
-Gameboard.tryPcControlTokenDroppedOnStorytellerDiceBag = Interactions.tryPcControlTokenDroppedOnStorytellerDiceBag
-Gameboard.tryAnchorFamilyGroupSpread = Interactions.tryAnchorFamilyGroupSpread
-Gameboard.tryBoardFamilyGroupRelocate = Interactions.tryBoardFamilyGroupRelocate
-Gameboard.tryBoardFamilyGroupFlip = Interactions.tryBoardFamilyGroupFlip
-Gameboard.onNpcControlTokenRotated = Interactions.onNpcControlTokenRotated
-Gameboard.onControlTokenRotated = Interactions.onControlTokenRotated
-Gameboard.onNpcControlTokenPickUp = Interactions.onNpcControlTokenPickUp
-Gameboard.onControlTokenPickUp = Interactions.onControlTokenPickUp
-Gameboard.onGroupMoveHotkey = Interactions.onGroupMoveHotkey
-Gameboard.isGroupMoveHotkeyHeld = Interactions.isGroupMoveHotkeyHeld
-Gameboard.applySnapGroupDefaultLightOnPaletteDrop = Interactions.applySnapGroupDefaultLightOnPaletteDrop
-Gameboard.onPcControlTokenDropped = Interactions.onPcControlTokenDropped
-Gameboard.onNpcControlTokenDropped = Interactions.onNpcControlTokenDropped
-
---- Public spotlight API (TOR-423 Spotlight sibling / TOR-238).
 Gameboard.onControlBoardSpotlightHotkey = Spotlight.onControlBoardSpotlightHotkey
 
 return Gameboard

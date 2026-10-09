@@ -1638,45 +1638,6 @@ function M.generateFacingCoordinates(sourceObjects, tableCfg, filteredMap, optio
   }
 end
 
---- World XZ (Vector) of a FACING-table seat's segment center, from the active table's **live** bounds.
---- Mirrors `generateFacingCoordinates` X-segmentation; the row Z is derived from `referenceHand.position`.
---- Returns nil if bounds are unavailable (e.g. the table is not the active table). Intended for minimap /
---- control-board markers; seat-object placement uses the generator's per-template frames, not this.
---- @param tableCfg table
---- @param sideAngleDeg number
---- @param index1Based number
---- @return Vector|nil
-function M.facingSeatWorldXZ(tableCfg, sideAngleDeg, index1Based)
-  if U.Type(tableCfg) ~= "table" or U.Type(tableCfg.guid) ~= "string" or tableCfg.centerPoint == nil then
-    return nil
-  end
-  if U.Type(sideAngleDeg) ~= "number" or U.Type(index1Based) ~= "number" then
-    return nil
-  end
-  local obj = G.getObject(tableCfg.guid)
-  if obj == nil or type(obj.getBounds) ~= "function" then
-    return nil
-  end
-  local bounds = obj.getBounds()
-  if U.Type(bounds) ~= "table" or bounds.center == nil or bounds.size == nil then
-    return nil
-  end
-  local cp = Vector(tableCfg.centerPoint)
-  local bc = Vector(bounds.center)
-  local bs = Vector(bounds.size)
-  local xMin = bc.x - bs.x / 2
-  local xMax = bc.x + bs.x / 2
-  local nSeats = facingMaxIndexForSide(M.getSeatToPositionMap(tableCfg), sideAngleDeg)
-  local x = facingSegmentCenterX(sideAngleDeg, index1Based, nSeats, xMin, xMax)
-  local rowDist = 0
-  local refFig = FSL.getReferenceFigurineFrame(tableCfg)
-  if refFig ~= nil and refFig.position ~= nil then
-    rowDist = U.HorizontalDistance(cp, Vector(refFig.position))
-  end
-  local z = cp.z + math.cos(math.rad(sideAngleDeg)) * rowDist
-  return Vector(x, cp.y, z)
-end
-
 --- Count occupied NPC seats (truthy character key in `seatLayout.occupiedNPCSlots`).
 --- Counts `C.NPCSeats` only (NPC1..NPC4); narrative presence / enabled state is irrelevant.
 --- @param slots table|nil defaults to `gameState.seatLayout.occupiedNPCSlots`
@@ -2603,13 +2564,6 @@ function M.SyncTable(tableKey, opts)
   if Occupancy.isScatterTableKey(key) or key == ScatterMode.TABLE_KEY then
     if ScatterMode.isActive() then
       ScatterMode.applyWorldLayout()
-      if type(ScatterMode.reconcileControlBoardFromState) == "function" then
-        local Board = require("core.npc_gameboard_board")
-        local board = Board.getControlBoard and Board.getControlBoard() or nil
-        if board ~= nil then
-          ScatterMode.reconcileControlBoardFromState(board, opts)
-        end
-      end
       return { scatter = true }
     end
     ScatterMode.enter(opts)
@@ -2618,7 +2572,7 @@ function M.SyncTable(tableKey, opts)
   local leavingScatter = ScatterMode.isActive()
   if leavingScatter then
     Occupancy.prepareLeaveToStandard(key, { skipRestore = opts.skipScatterRestore == true })
-    ScatterMode.leave(opts)
+    ScatterMode.leave()
   end
   if inferredFromTags then
     S.setStateVal(key, "seatLayout", "currentTableKey")
@@ -2713,18 +2667,11 @@ local function applyRandomSeatingOccupancy(tableKey)
   return resolveKey
 end
 
-local function mirrorControlBoardAfterRandomSeating()
-  local Gameboard = require("core.npc_gameboard")
-  if type(Gameboard) == "table" and type(Gameboard.reconcileControlBoardFromState) == "function" then
-    Gameboard.reconcileControlBoardFromState({ force = true, forceTokenMirror = true })
-  end
-end
-
 --- Production entrypoint for table switching.
 --- If `tableKey` is already active, a full sync is run in case the scene drifted.
 --- Otherwise resolves seat geometry synchronously; transition blindfold is owned by `core.hud_blindfold`
 --- (scene apply and manual table toggles call `HUDBF.runTransition` with `skipTransitionBlindfold`).
---- `opts.randomizeSeating` shuffles packed Table B occupancy (TOR-537) and mirrors control-board tokens.
+--- `opts.randomizeSeating` shuffles packed Table B occupancy (TOR-537).
 --- @param tableKey string
 --- @param opts table|nil { skipTransitionBlindfold = boolean, randomizeSeating = boolean }
 --- @return table|nil computed when immediate sync/switch path is used
@@ -2761,12 +2708,10 @@ function M.SetTableTo(tableKey, opts)
   local leavingScatter = Occupancy.isScatterTableKey(currentTableKey)
   if leavingScatter then
     Occupancy.prepareLeaveToStandard(destKey, { skipRestore = opts.skipScatterRestore == true })
-    ScatterMode.leave(opts)
+    ScatterMode.leave()
   end
-  local shuffled = false
   if leavingScatter ~= true and shouldRandomizeSeating(destKey, opts) then
     destKey = applyRandomSeatingOccupancy(destKey)
-    shuffled = true
   end
   local resolvedKey, _ = resolveTableRef(destKey)
   currentTableKey = S.getStateVal("seatLayout", "currentTableKey")
@@ -2779,9 +2724,6 @@ function M.SetTableTo(tableKey, opts)
       outcome = "ran",
     })
     M.resolveSeatObjectsFromTable(resolvedKey, nil, { force = true })
-    if shuffled then
-      mirrorControlBoardAfterRandomSeating()
-    end
     if leavingScatter then
       schedulePostScatterSeatLayout(resolvedKey)
     end
@@ -2795,9 +2737,6 @@ function M.SetTableTo(tableKey, opts)
       outcome = "ran",
     })
     local computed = M.SyncTable(resolvedKey)
-    if shuffled then
-      mirrorControlBoardAfterRandomSeating()
-    end
     if leavingScatter then
       schedulePostScatterSeatLayout(resolvedKey)
     end

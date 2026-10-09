@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 "use strict";
 
-// Patch or create workshop npc_figurine objects and npc_control_token CustomImage URLs
-// with local file:/// paths from assets/images/NPCs (4-file groups, D.characters only).
+// Patch or create workshop npc_figurine objects with local file:/// paths from assets/images/NPCs (4-file groups, D.characters only).
 //
 // Usage:
 //   node .tools/custom-ui-assets/inject-npc-world-from-groups.js --saveName 230
@@ -24,7 +23,6 @@ const {
   figurineYawDegreesForArea,
   indexExistingNpcObjects,
   patchFigurineObject,
-  patchTokenObject,
 } = require("./lib/npc-asset-helpers");
 
 /**
@@ -100,9 +98,7 @@ function main() {
 
   /** @type {Map<string, Record<string, unknown>>} */
   const figurinesByKey = new Map();
-  /** @type {Map<string, Record<string, unknown>>} */
-  const tokensByKey = new Map();
-  indexExistingNpcObjects(saveRoot.ObjectStates, figurinesByKey, tokensByKey);
+  indexExistingNpcObjects(saveRoot.ObjectStates, figurinesByKey);
 
   const yawDeg = figurineYawDegreesForArea(preloadArea);
 
@@ -110,10 +106,6 @@ function main() {
   const figurinesPatched = [];
   /** @type {string[]} */
   const figurinesCreated = [];
-  /** @type {string[]} */
-  const tokensPatched = [];
-  /** @type {string[]} */
-  const tokensPendingHosted = [];
   /** @type {string[]} */
   const registryMissingDiskGroup = [];
   /** @type {string[]} */
@@ -131,8 +123,6 @@ function main() {
     const pos = computePreloadSlotWorldPosition(preloadArea, slotIndex);
     const frontUrl = absoluteOsPathToFileUrl(group.figurineFrontPath);
     const backUrl = absoluteOsPathToFileUrl(group.figurineBackPath);
-    const tokenFrontUrl = absoluteOsPathToFileUrl(group.tokenFrontPath);
-    const tokenBackUrl = absoluteOsPathToFileUrl(group.tokenBackPath);
 
     const existingFig = figurinesByKey.get(characterKey);
     if (existingFig) {
@@ -153,14 +143,6 @@ function main() {
       figurinesByKey.set(characterKey, created);
       figurinesCreated.push(characterKey);
     }
-
-    const existingToken = tokensByKey.get(characterKey);
-    if (existingToken) {
-      patchTokenObject(existingToken, tokenFrontUrl, tokenBackUrl);
-      tokensPatched.push(characterKey);
-    } else {
-      tokensPendingHosted.push(characterKey);
-    }
   }
 
   for (const characterKey of sortedRegistryKeys) {
@@ -180,10 +162,6 @@ function main() {
   }
   console.log(`Figurines patched: ${figurinesPatched.length}`);
   console.log(`Figurines created: ${figurinesCreated.length}`);
-  console.log(`Tokens patched: ${tokensPatched.length}`);
-  console.log(
-    `Tokens pending (created after upload via apply-npc-hosted-world): ${tokensPendingHosted.length}`,
-  );
 
   if (skippedUnregisteredKeys.length > 0) {
     console.log("");
@@ -199,13 +177,6 @@ function main() {
       console.log(`  - ${key}`);
     }
   }
-  if (tokensPendingHosted.length > 0) {
-    console.log("");
-    console.log("Registry keys awaiting hosted-world apply (post-merge pipeline step):");
-    for (const key of tokensPendingHosted) {
-      console.log(`  - ${key}`);
-    }
-  }
 
   const reportPath = path.resolve(
     args.reportOut || ".dev/custom-ui-assets/npc-inject-report.json",
@@ -216,9 +187,6 @@ function main() {
     inputDirectory: dirPath,
     figurinesPatched,
     figurinesCreated,
-    tokensPatched,
-    tokensPendingHosted,
-    tokensMissing: tokensPendingHosted,
     skippedUnregisteredKeys: skippedUnregisteredKeys.sort((a, b) => a.localeCompare(b, "en")),
     registryMissingDiskGroup,
     registryMissingFigurineAfter,
@@ -232,7 +200,7 @@ function main() {
     return;
   }
 
-  if (figurinesPatched.length + figurinesCreated.length + tokensPatched.length === 0) {
+  if (figurinesPatched.length + figurinesCreated.length === 0) {
     console.log("No changes to write.");
     return;
   }
@@ -240,7 +208,7 @@ function main() {
   fs.writeFileSync(savePath, `${JSON.stringify(saveRoot)}\n`, "utf8");
   console.log(`Save updated: ${savePath}`);
   console.log(">>> Reload save in TTS, then Cloud Manager → Upload All Loaded Files → save again.");
-  console.log(">>> After merge, run apply-npc-hosted-world to create missing tokens with hosted URLs.");
+  console.log(">>> After merge, run apply-npc-hosted-world to point figurines at hosted URLs.");
 }
 
 main();

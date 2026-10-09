@@ -1,0 +1,189 @@
+--[[
+    Spotlight tokens on the Stage Control board (TOR-687).
+
+    One token per NPC in `sessionScene.npcWorld.placements`, spawned at the NPC's u,v on CONTROL_BOARD,
+    face down when the NPC stands dark. Tokens exist only for the Storyteller's spotlight hold hotkey
+    (`core.npc_gameboard_spotlight`); moving one does nothing. Hidden from PC seats.
+
+    `reconcileFromState` spawns / moves / flips / destroys only the rows that changed since the last pass.
+]]
+
+local StageTokens = {}
+
+local C = require("lib.constants")
+local G = require("lib.guids")
+local U = require("lib.util")
+local DATA = require("lib.npc_gameboard_data")
+local NPC_DATA = require("lib.npcs_data")
+local HOSTED_TOKEN_ART = require("lib.npc_token_hosted_urls")
+local Board = require("core.npc_gameboard_board")
+
+local TAG = DATA.TAG_STAGE_TOKEN
+local GM_PREFIX = DATA.TOKEN_GM_PREFIX
+local TOKEN_LIFT_LOCAL_Y = 0.05
+
+--- @type table<string, string>|nil characterKey → token GUID; rebuilt from the tag on the first pass after load.
+local tokenGuidByKey = nil
+--- @type table<string, string> characterKey → row signature last applied to the world.
+local appliedSigByKey = {}
+
+--- @return table
+local function stateModule()
+    return require("core.state")
+end
+
+--- @param obj Object|nil
+--- @return string|nil characterKey
+local function characterKeyForToken(obj)
+    if not U.isGameObject(obj) or obj.hasTag == nil or obj.hasTag(TAG) ~= true then
+        return nil
+    end
+    local notes = obj.getGMNotes and obj.getGMNotes() or ""
+    if type(notes) ~= "string" or string.sub(notes, 1, #GM_PREFIX) ~= GM_PREFIX then
+        return nil
+    end
+    local key = string.sub(notes, #GM_PREFIX + 1)
+    return key ~= "" and key or nil
+end
+
+--- Cold path: once per load, adopt tokens already on the table (duplicates are destroyed).
+local function ensureIndex()
+    if tokenGuidByKey ~= nil then
+        return
+    end
+    tokenGuidByKey = {}
+    appliedSigByKey = {}
+    for _, obj in ipairs(getObjectsWithTag(TAG) or {}) do
+        local key = characterKeyForToken(obj)
+        if key == nil or tokenGuidByKey[key] ~= nil then
+            obj.destruct()
+        else
+            tokenGuidByKey[key] = obj.getGUID()
+        end
+    end
+end
+
+--- @param key string
+--- @return table|nil `{ front, back }`
+local function tokenArt(key)
+    local hosted = HOSTED_TOKEN_ART[key]
+    if type(hosted) == "table" then
+        return hosted
+    end
+    local entry = NPC_DATA.resolveGenericNpcEntry(key)
+    if type(entry) == "table" and type(entry.token) == "table" then
+        return entry.token
+    end
+    return nil
+end
+
+--- @param key string
+--- @return string
+local function displayName(key)
+    local def = require("core.npcs").characters[key]
+    return type(def) == "table" and (def.fullName or def.name) or key
+end
+
+--- @param row table placement row
+--- @return string
+local function rowSig(row)
+    return string.format("%.4f|%.4f|%s", tonumber(row.u) or 0, tonumber(row.v) or 0, tostring(row.npcLightMode))
+end
+
+--- @param board Object
+--- @param row table
+--- @return Vector position, Vector rotation
+local function tokenPose(board, row)
+    local pos = Board.worldOnControlBoard(board, tonumber(row.u) or 0.5, tonumber(row.v) or 0.5, {
+        extraLocalY = TOKEN_LIFT_LOCAL_Y,
+    })
+    local faceUp = row.npcLightMode ~= "OFF"
+    return pos, Vector(0, Board.objectYawDeg(board), faceUp and 0 or 180)
+end
+
+--- @param key string
+--- @param board Object
+--- @param row table
+--- @return Object|nil
+local function spawnToken(key, board, row)
+    local art = tokenArt(key)
+    if art == nil then
+        print("[StageTokens] no token art for `" .. key .. "` — no spotlight token on the Stage Control board.")
+        return nil
+    end
+    local pos, rot = tokenPose(board, row)
+    local scale = DATA.STAGE_TOKEN_SCALE
+    local obj = spawnObject({
+        type = "Custom_Tile",
+        position = pos,
+        rotation = rot,
+        scale = { scale.x, scale.y, scale.z },
+        sound = false,
+    })
+    obj.setCustomObject({
+        image = art.front,
+        image_bottom = art.back,
+        type = 2,
+        thickness = 0.1,
+        stackable = false,
+        stretch = true,
+    })
+    obj.setName(displayName(key))
+    obj.setGMNotes(GM_PREFIX .. key)
+    obj.addTag(TAG)
+    obj.setInvisibleTo(C.PlayerColors)
+    return obj
+end
+
+--- Spawn, move, flip and destroy spotlight tokens so they match the stage placements.
+--- @param opts table|nil `{ force?: boolean }` — force re-applies every row's pose
+function StageTokens.reconcileFromState(opts)
+    local placements = stateModule().getStateVal("sessionScene", "npcWorld", "placements")
+    placements = type(placements) == "table" and placements or {}
+    local board = G.getObject(G.GUIDS.CONTROL_BOARD)
+    if not U.isGameObject(board) then
+        return
+    end
+    ensureIndex()
+    local force = type(opts) == "table" and opts.force == true
+    for key, guid in pairs(tokenGuidByKey) do
+        if type(placements[key]) ~= "table" then
+            local obj = G.getObject(guid)
+            if U.isGameObject(obj) then
+                obj.destruct()
+            end
+            tokenGuidByKey[key] = nil
+        end
+    end
+    for key in pairs(appliedSigByKey) do
+        if type(placements[key]) ~= "table" then
+            appliedSigByKey[key] = nil
+        end
+    end
+    for key, row in pairs(placements) do
+        if type(row) == "table" then
+            local sig = rowSig(row)
+            local guid = tokenGuidByKey[key]
+            local obj = guid and G.getObject(guid) or nil
+            if not U.isGameObject(obj) then
+                -- A row with no art is retried only when it changes; a deleted token is respawned.
+                if guid ~= nil or force or appliedSigByKey[key] ~= sig then
+                    obj = spawnToken(key, board, row)
+                    tokenGuidByKey[key] = obj and obj.getGUID() or nil
+                end
+                appliedSigByKey[key] = sig
+            elseif force or appliedSigByKey[key] ~= sig then
+                local pos, rot = tokenPose(board, row)
+                obj.setPositionSmooth(pos, false, true)
+                obj.setRotationSmooth(rot, false, true)
+                appliedSigByKey[key] = sig
+            end
+        end
+    end
+end
+
+--- @param obj Object|nil
+--- @return string|nil characterKey when `obj` is a spotlight token
+StageTokens.characterKeyForToken = characterKeyForToken
+
+return StageTokens

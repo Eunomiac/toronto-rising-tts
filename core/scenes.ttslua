@@ -852,9 +852,6 @@ local function clearLiveNpcWorldPlacements()
     end
     npcWorld.placements = {}
     npcWorld.byArea = {}
-    if npcWorld.controlBoardSnapsEnabled == nil then
-        npcWorld.controlBoardSnapsEnabled = true
-    end
     S.setStateVal(npcWorld, "sessionScene", "npcWorld")
 end
 

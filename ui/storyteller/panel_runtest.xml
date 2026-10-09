@@ -41,7 +41,6 @@
   <HorizontalLayout id="panel_runtest_start" class="runtest_button_row" rectAlignment="LowerLeft" offsetXY = "20 20" width="500" height="40">
     <Button id="button_runtest_Dice" class="runtest_button" onClick="HUD_runtest">Dice</Button>
     <Button id="button_runtest_Scenes" class="runtest_button" onClick="HUD_runtest">Scenes</Button>
-    <Button id="button_runtest_Gameboard" class="runtest_button" onClick="HUD_runtest">Gameboard</Button>
 
     <InputField id="input_runtest_step" class="runtest_input" onValueChanged="HUD_runtest_step" onEndEdit="HUD_runtest_step" text="1" />
   </HorizontalLayout>

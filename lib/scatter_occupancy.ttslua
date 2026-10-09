@@ -458,14 +458,6 @@ local function clearNpcFromStage(characterKey)
     if type(NPCS.ensureNpcInPreloadZone) == "function" then
         NPCS.ensureNpcInPreloadZone(characterKey, { deferUiRefresh = true, skipSeatSync = true, forceNpcLightMode = "OFF" })
     end
-    local Tokens = require("core.npc_gameboard_tokens")
-    local Board = require("core.npc_gameboard_board")
-    local Palette = require("lib.npc_control_board_palette")
-    local token = Tokens.controlTokenForCharacterKey(characterKey)
-    local palette = Board.getControlBoardPalette()
-    if token ~= nil and Board.isGameObject(palette) then
-        Palette.parkTokenAtAssignedSnap(palette, token, characterKey)
-    end
 end
 
 ScatterOccupancy.clearNpcFromStage = clearNpcFromStage

@@ -496,7 +496,6 @@ C.LockedObjects = {
   G.GUIDS.TABLES.TABLE_A_LEAF_FAR_RIGHT,
   G.GUIDS.GM_TABLE,
   G.GUIDS.STAGE_BOARD,
-  G.GUIDS.CONTROL_BOARD_PALETTE,
   G.GUIDS.CSHEET_BASE_BACK_BROWN,
   G.GUIDS.CSHEET_BASE_BACK_ORANGE,
   G.GUIDS.CSHEET_BASE_BACK_PINK,
@@ -627,7 +626,6 @@ C.HiddenObjects = {
   [G.GUIDS.PRINCE_CURTAIN_RED] = { "Red" },
   [G.GUIDS.STAGE_BOARD] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
   [G.GUIDS.CONTROL_BOARD] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
-  [G.GUIDS.CONTROL_BOARD_PALETTE] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
   [G.GUIDS.DEBUG_LIGHT_FOCAL_POINT] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
   [G.GUIDS.DICEBAG_NORMAL_STORYTELLER] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
   [G.GUIDS.DICEBAG_HUNGER_STORYTELLER] = { "Brown", "Orange", "Pink", "Purple", "Red", "White", "Grey" },
@@ -1639,13 +1637,6 @@ local cData = {
     yaw      = 180,
     distance = 20,
   },
-  -- Storyteller Palette
-  palette = {
-    position = {x=9.5,y=105,z=132.5},
-    pitch    = 45,
-    yaw      = 180,
-    distance = 17,
-  },
   -- Storyteller Rolls
   rolls = {
     position = {x=-3,y=100,z=122},
@@ -1654,7 +1645,6 @@ local cData = {
     distance = 34,
   }
 }
-Player.Black.lookAt(cData.palette)
 
 
 
@@ -1663,7 +1653,6 @@ Player.Black.lookAt(cData.palette)
 Player.Black.lookAt(cData.default)
 Player.Black.lookAt(cData.mid)
 Player.Black.lookAt(cData.stage_control)
-Player.Black.lookAt(cData.palette)
 Player.Black.lookAt(cData.rolls)
 
 
@@ -1690,13 +1679,6 @@ C.StorytellerCameraAngles = {
     pitch    = 90,
     yaw      = 180,
     distance = 20,
-  },
-  -- Storyteller Palette
-  palette = {
-    position = {x=9.5,y=105,z=132.5},
-    pitch    = 45,
-    yaw      = 180,
-    distance = 17,
   },
   -- Storyteller Rolls
   rolls = {
@@ -1784,10 +1766,6 @@ C.Tables = {
   ["Table A"] = {
     guid = G.GUIDS.TABLES.TABLE_A, -- required
     shape = C.TableShapes.CIRCULAR, -- required
-    -- Minimap (control-board companion) marker mimics the playfield object's euler per axis. The
-    -- playfield Table A model is authored 180° opposite the Table B family on Y, so its companion
-    -- marker faces backward unless we add this offset. Other tables need no offset (default 0).
-    minimapRotationOffsetYDeg = 180,
     centerPoint = Vector({ 0, 0, 50 }), -- required
     activePosition = Vector({ 0.00, 0.00, 53.66 }), -- required
     inactivePosition = Vector({ 0.00, -200, 100 }), -- required
@@ -2264,7 +2242,7 @@ C.Tables = {
     --- Live save TS_Save_230: `{ x = 0, z = 62.0977 }`.
     STAGE_BOARD_HOME_XZ = { x = 0, z = 62.0977 },
     GROUP_COUNT = 6,
-    --- Outer NPC holes on the Scatter CONTROL_BOARD art (counted on Stage Control Board in Scatter Mode.jpg).
+    --- NPC orbit slots per scatter group (slot numbering for `orbitCharacters`).
     BOARD_NPC_HOLE_COUNT = 12,
     --- First group world azimuth. CONTROL_BOARD yaw 180° puts group 1 at far left (-X = 270°), then clockwise 60°.
     FIRST_GROUP_AZIMUTH_DEG = 285,
@@ -2284,10 +2262,6 @@ C.Tables = {
     ST_DICE_TRAY_YAW_OFFSET_DEG = 0,
     --- Custom tile mesh looks along -Z at yaw 0; look-at toward a point needs +180 (same as stage figurines).
     FIGURINE_YAW_OFFSET_DEG = 180,
-    --- Control tokens parked on a scatter group hole (palette default is polar 0.2).
-    TOKEN_SCALE = { x = 0.5, y = 1, z = 0.5 },
-    CONTROL_BOARD_IMAGE_STANDARD = "https://steamusercontent-a.akamaihd.net/ugc/13248133772831882366/6F672A9E951B9AC21C6DE9091659FE913AD29268/",
-    CONTROL_BOARD_IMAGE_SCATTER = "https://steamusercontent-a.akamaihd.net/ugc/15826341776223196067/84A1D7EF997F4D44D279D50B0D5AF2C829CF0949/",
     --- Occupied polar packs map to scatter groups 1–6 in this order (inbox TOR-573).
     POLAR_FAMILY_ORDER = {
       "CENTER",

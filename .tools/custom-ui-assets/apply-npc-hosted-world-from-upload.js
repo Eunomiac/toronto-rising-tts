@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 "use strict";
 
-// After Cloud upload + merge: patch/create npc_figurine + npc_control_token objects in the
-// save JSON using hosted Steam URLs from CustomUIAssets (replaces in-TTS spawn/apply steps).
+// After Cloud upload + merge: patch/create npc_figurine objects in the save JSON using hosted
+// Steam URLs from CustomUIAssets (replaces in-TTS spawn/apply steps). Stage spotlight tokens are
+// spawned at runtime by `core/stage_tokens.ttslua` from the same hosted URLs — not saved objects.
 //
 // Usage:
 //   node .tools/custom-ui-assets/apply-npc-hosted-world-from-upload.js --saveName 230
@@ -12,23 +13,16 @@ const fs = require("fs");
 const path = require("path");
 const { resolveSavePath } = require("../tts-save/resolve-save-path");
 const {
-  CONTROL_BOARD_PALETTE_GUID,
   extractCharacterKeysFromNpcsData,
   extractCharacterMetaFromNpcsData,
   parsePreloadAreaFromNpcsData,
   computePreloadSlotWorldPosition,
   figurineYawDegreesForArea,
-  readCustomUiAssetMap,
   buildNpcFigurineObjectState,
-  buildNpcControlTokenObjectState,
-  buildTokenSnapAssignmentsFromNpcsData,
-  paletteParkingPoseForCharacter,
   hostedNpcGroupUrlsForCharacter,
   loadHostedNpcGroupAssetMap,
   indexExistingNpcObjects,
-  findSaveObjectByGuid,
   patchFigurineObject,
-  patchTokenObject,
   generateTtsGuid,
   isHostedSteamUrl,
 } = require("./lib/npc-asset-helpers");
@@ -76,7 +70,6 @@ function main() {
   const metaByKey = extractCharacterMetaFromNpcsData(npcsText);
   const preloadArea = parsePreloadAreaFromNpcsData(npcsText);
   const sortedRegistryKeys = [...knownKeys].sort((a, b) => a.localeCompare(b, "en"));
-  const snapAssignments = buildTokenSnapAssignmentsFromNpcsData(npcsText);
   const figurineYawDeg = figurineYawDegreesForArea(preloadArea);
 
   const saveRoot = JSON.parse(fs.readFileSync(savePath, "utf8"));
@@ -88,31 +81,17 @@ function main() {
     saveRoot,
     args.assetsOut || ".dev/custom-ui-assets/npc-group-generated-assets.json",
   );
-  const paletteObj = findSaveObjectByGuid(saveRoot.ObjectStates, CONTROL_BOARD_PALETTE_GUID);
-  if (paletteObj === null) {
-    throw new Error(
-      `CONTROL_BOARD_PALETTE (GUID ${CONTROL_BOARD_PALETTE_GUID}) not found in save — cannot place new control tokens.`,
-    );
-  }
 
   /** @type {Map<string, Record<string, unknown>>} */
   const figurinesByKey = new Map();
-  /** @type {Map<string, Record<string, unknown>>} */
-  const tokensByKey = new Map();
-  indexExistingNpcObjects(saveRoot.ObjectStates, figurinesByKey, tokensByKey);
+  indexExistingNpcObjects(saveRoot.ObjectStates, figurinesByKey);
 
   /** @type {string[]} */
   const figurinesPatched = [];
   /** @type {string[]} */
   const figurinesCreated = [];
   /** @type {string[]} */
-  const tokensPatched = [];
-  /** @type {string[]} */
-  const tokensCreated = [];
-  /** @type {string[]} */
   const skippedNoHostedQuartet = [];
-  /** @type {string[]} */
-  const skippedNoPaletteSnap = [];
 
   for (const characterKey of sortedRegistryKeys) {
     const hosted = hostedNpcGroupUrlsForCharacter(assetMap, characterKey);
@@ -136,53 +115,20 @@ function main() {
         figurineYawDeg,
       );
       figurinesPatched.push(characterKey);
-    } else {
-      const guid = generateTtsGuid();
-      const created = buildNpcFigurineObjectState(
-        characterKey,
-        meta,
-        preloadArea,
-        slotIndex,
-        hosted.figurineFront,
-        hosted.figurineBack,
-        guid,
-      );
-      saveRoot.ObjectStates.push(created);
-      figurinesByKey.set(characterKey, created);
-      figurinesCreated.push(characterKey);
-    }
-
-    const existingToken = tokensByKey.get(characterKey);
-    if (existingToken) {
-      patchTokenObject(existingToken, hosted.tokenFront, hosted.tokenBack);
-      tokensPatched.push(characterKey);
       continue;
     }
-
-    const snapIndex = snapAssignments.get(characterKey);
-    if (snapIndex === undefined) {
-      skippedNoPaletteSnap.push(characterKey);
-      continue;
-    }
-    const pose = paletteParkingPoseForCharacter(paletteObj, snapIndex, snapAssignments);
-    if (pose === null) {
-      skippedNoPaletteSnap.push(characterKey);
-      continue;
-    }
-
-    const tokenGuid = generateTtsGuid();
-    const tokenObj = buildNpcControlTokenObjectState(
-      pose.worldPos,
-      pose.yawDeg,
-      pose.rotZDeg,
+    const created = buildNpcFigurineObjectState(
       characterKey,
-      hosted.tokenFront,
-      hosted.tokenBack,
-      tokenGuid,
+      meta,
+      preloadArea,
+      slotIndex,
+      hosted.figurineFront,
+      hosted.figurineBack,
+      generateTtsGuid(),
     );
-    saveRoot.ObjectStates.push(tokenObj);
-    tokensByKey.set(characterKey, tokenObj);
-    tokensCreated.push(characterKey);
+    saveRoot.ObjectStates.push(created);
+    figurinesByKey.set(characterKey, created);
+    figurinesCreated.push(characterKey);
   }
 
   const reportPath = path.resolve(
@@ -193,10 +139,7 @@ function main() {
     savePath,
     figurinesPatched,
     figurinesCreated,
-    tokensPatched,
-    tokensCreated,
     skippedNoHostedQuartet,
-    skippedNoPaletteSnap,
     hostedAssetCount: [...assetMap.values()].filter(isHostedSteamUrl).length,
   };
 
@@ -207,19 +150,10 @@ function main() {
   console.log(`Registry keys: ${sortedRegistryKeys.length}`);
   console.log(`Figurines patched: ${figurinesPatched.length}`);
   console.log(`Figurines created: ${figurinesCreated.length}`);
-  console.log(`Tokens patched: ${tokensPatched.length}`);
-  console.log(`Tokens created: ${tokensCreated.length}`);
   console.log(`Skipped (no hosted quartet in save): ${skippedNoHostedQuartet.length}`);
-  if (skippedNoPaletteSnap.length > 0) {
-    console.log(`Skipped token create (no palette snap): ${skippedNoPaletteSnap.length}`);
-    for (const key of skippedNoPaletteSnap) {
-      console.log(`  - ${key}`);
-    }
-  }
   console.log(`Report: ${reportPath}`);
 
-  const changed =
-    figurinesPatched.length + figurinesCreated.length + tokensPatched.length + tokensCreated.length;
+  const changed = figurinesPatched.length + figurinesCreated.length;
 
   if (dryRun) {
     console.log("Dry run — save not written.");
@@ -227,13 +161,13 @@ function main() {
   }
 
   if (changed === 0) {
-    console.log("No figurine/token world objects to update.");
+    console.log("No figurine world objects to update.");
     return;
   }
 
   fs.writeFileSync(savePath, `${JSON.stringify(saveRoot)}\n`, "utf8");
   console.log(`Save updated: ${savePath}`);
-  console.log(">>> Reload save in TTS (Save & Play). No DEBUG.spawnNpcControlBoardTokens needed.");
+  console.log(">>> Reload save in TTS (Save & Play).");
 }
 
 main();

@@ -1,56 +1,25 @@
 --[[
-    Static layout for Storyteller NPC gameboards (STAGE_BOARD / CONTROL_BOARD).
-    Workshop objects must match these tags; GUIDs live in lib/guids.ttslua.
+    Static layout for the Stage Control board (CONTROL_BOARD) and the stage playfield (STAGE_BOARD).
+    Polar snap families drive dashboard stage editing + stage figurine poses; stage_token tiles are
+    spawned by core.stage_tokens for the spotlight hotkey. GUIDs live in lib/guids.ttslua.
 
     Agent: .dev/NPC Object Spawning & Spotlighting/Storyteller Gameboard Control.md
 ]]
 
-local C = require("lib.constants")
-
 local D = {}
 
---- Object tags (workshop).
-D.TAG_NPC_CONTROL_BOARD = "npc_control_board"
-D.TAG_NPC_CONTROL_TOKEN = "npc_control_token"
-D.TAG_PC_CONTROL_TOKEN = "pc_control_token"
-D.TAG_GAMEBOARD_PC_SEAT = "gameboard_pc_seat"
-D.TAG_GAMEBOARD_NPC_SEAT = "gameboard_npc_seat"
-D.TAG_GAMEBOARD_TABLE = "gameboard_table"
-D.TAG_GAMEBOARD_TABLE_COMPONENT = "gameboard_table_component"
-
---- GM notes / description prefixes for marker identity.
+--- GM notes prefix on stage spotlight tokens (`npcToken:<characterKey>`).
 D.TOKEN_GM_PREFIX = "npcToken:"
---- PC control tokens are color-bound: GM Notes `pcToken:<Color>` (e.g. `pcToken:Red`) pins the token to that PC seat-row column.
-D.PC_TOKEN_GM_PREFIX = "pcToken:"
-D.MARKER_TABLE_PREFIX = "gameboardTable:"
-D.MARKER_COMPONENT_PREFIX = "gameboardComponent:"
-D.MARKER_PC_SEAT_PREFIX = "gameboardPcSeat:"
-D.MARKER_NPC_SEAT_PREFIX = "gameboardNpcSeat:"
 
---- Parked minimap markers for inactive / empty NPC seats (matches NPC figurine off-table Y).
-D.MARKER_STASH_WORLD_Y = -200
-
---- Extra world Y yaw (degrees) for stage figurines from control-board token facing (`Figurine_Custom` front/back vs tile).
+--- Extra world Y yaw (degrees) for stage figurines vs board-relative placement yaw (Figurine_Custom front/back vs tile).
 D.STAGE_FIGURINE_YAW_OFFSET_DEG = 180
 
---- Minimap marker Y-scale = playfield source `getScale().y` ÷ this.
---- X/Z minimap marker scale now uses live STAGE_BOARD:CONTROL_BOARD axis ratios.
-D.MINIMAP_SCALE_DIVISOR = 40
-
---- Local Y above CONTROL_BOARD tile surface for minimap marker placement (object-local units).
--- TOR-393: 0.18 sat tokens slightly inside CONTROL_BOARD mesh on scene mirror;
--- +0.06 matches MINIMAP_TABLE_EXTRA_LOCAL_Y precedent so snaps + mirrors lift together.
+--- Local Y above the CONTROL_BOARD tile surface for objects placed on it (object-local units).
 D.MINIMAP_SURFACE_LOCAL_Y = 0.24
 
---- Extra local Y for table markers (thick mesh pivot sits below center).
-D.MINIMAP_TABLE_EXTRA_LOCAL_Y = 0.06
-
---- Local Y above CONTROL_BOARD_PALETTE surface for token snaps.
-D.PALETTE_SURFACE_LOCAL_Y = 0.18
-
---- NPC control token scale on CONTROL_BOARD polar/stage snaps vs seat-assignment row (TOR-199).
-D.NPC_CONTROL_TOKEN_SCALE_POLAR = { x = 0.2, y = 1, z = 0.2 }
-D.NPC_CONTROL_TOKEN_SCALE_SEAT_ROW = { x = 0.7, y = 1, z = 0.7 }
+--- Spotlight tokens spawned on the Stage Control board for stage NPCs (core.stage_tokens).
+D.TAG_STAGE_TOKEN = "stage_token"
+D.STAGE_TOKEN_SCALE = { x = 0.45, y = 1, z = 0.45 }
 
 --- Fallback world XZ footprint when STAGE_BOARD is not in the save yet.
 D.DEFAULT_STAGE_WORLD = {
@@ -105,30 +74,9 @@ D.CONTROL_BOARD_SNAP = {
   }
 }
 
---- CONTROL_BOARD_PALETTE: 20×40 logical grid for coterie row layout; physical snaps = one per token slot.
---- Columns span the parking u band; rows use the **actual** layout row count, evenly spaced on v.
---- `parkingEdgePadding` (normalized 0–1) insets snap centers from the marble edges so token discs
---- do not overhang (added on top of `uMargin` / `vMargin`). Tune if chips still clip a corner.
-D.CONTROL_BOARD_PALETTE_SNAP = {
-  columns = 20,
-  rows = 40,
-  uMargin = 0.02,
-  vMargin = 0.02,
-  parkingEdgePadding = 0.06,
-  --- Optional u/v band for token parking only (0–1 on tile). Omit to use margins + edge padding.
-  --- Example top-half only after shortening Z: parkingVMin = 0.52, parkingVMax = 0.98
-  parkingVMin = nil,
-  parkingVMax = nil,
-  --- Board-local +Z toward vMax; default ≈ half polar token diameter (tile ~1u × scale 0.2).
-  parkingSnapLocalZOffset = 0.1,
-  snapYawOffsetDeg = 180,
-}
-
---- Horizontal seat-assignment row on CONTROL_BOARD (TOR-180 / TOR-247).
---- Each column is a numbered table chair (`tableSlot`). Token identity (pcToken color /
---- npcToken character) is the occupant; Apply writes `seatSlots` / `occupiedNPCSlots`.
---- `seatKey` is the default occupant for that chair (minimap labels).
---- PC token flip still drives `isPresent` (TOR-236). Slot > current table `slotCapacity` is not installed.
+--- Horizontal seat row in board u/v (dashboard stage layout, seat-kind snap catalog entries).
+--- Each column is a numbered table chair (`tableSlot`); `seatKey` is the default occupant for that chair.
+--- Slot > current table `slotCapacity` is not installed.
 D.CONTROL_BOARD_SEAT_ROW = {
   v = 0.12,
   uMin = 0.05,
@@ -150,10 +98,9 @@ D.CONTROL_BOARD_SEAT_ROW = {
   },
 }
 
---- Scatter-mode overlay on CONTROL_BOARD (Dashboard Scenes tab + in-game holes).
---- Until a group is calibrated (`calibrated = true` + gold/whites/npcHoles from
---- DEBUG.calibrateScatterGroup), auto-park loud-errors. Dashboard overlay uses origin +
---- whiteRadius / orbitRadius to draw gold + square whites + NPC ring (not a pentagon).
+--- Scatter group geometry in board u/v for the Dashboard Scenes tab (parsed by
+--- .dev/scripts/generate_dashboard_scene_catalogs.js). Explicit gold/whites/npcHoles win; otherwise
+--- the dashboard draws gold at origin + square whites (whiteRadius) + NPC ring (orbitRadius).
 --- Group 1 = world 270° (−X, far left) after CONTROL_BOARD yaw 180°; remaining groups clockwise 60°.
 --- Approximate UV origins match the six dashed circles (left = scatter1).
 D.SCATTER_BOARD = {
@@ -317,13 +264,7 @@ D.SCATTER_BOARD = {
   },
 }
 
---- Groups excluded when picking palette row membership from `npcs_data` character `groups`.
---- After filtering, a single remaining group wins; if multiple remain, `pairs()` picks one.
-D.PALETTE_GROUP_BLACKLIST = {
-  princesCourt = true,
-}
-
---- Stage figurine placement lerp on CONTROL_BOARD Apply (TOR-173). Tune in Save & Play without logic edits.
+--- Stage figurine placement lerp on dashboard stage apply (TOR-173). Tune in Save & Play without logic edits.
 D.STAGE_PLACEMENT_LERP = {
   positionDurationSec = 1.2,
   modeOnlyDurationSec = 0.8,
@@ -338,74 +279,5 @@ D.STAGE_PLACEMENT_LERP = {
   pathFps = 60,
   ease = "sineInOut",
 }
-
---- Enumerate every table key and component name from C.Tables (for marker registry).
---- @return table[] { tableKey, componentKey? }
-function D.enumerateTableMarkerEntries()
-  local out = {}
-  local keys = {}
-  for tableKey, _ in pairs(C.Tables or {}) do
-    keys[#keys + 1] = tableKey
-  end
-  table.sort(keys)
-  for _, tableKey in ipairs(keys) do
-    out[#out + 1] = { tableKey = tableKey, componentKey = nil }
-    local cfg = C.Tables[tableKey]
-    local comps = type(cfg) == "table" and cfg.components or nil
-    if type(comps) == "table" then
-      local compNames = {}
-      for compName, _ in pairs(comps) do
-        compNames[#compNames + 1] = compName
-      end
-      table.sort(compNames)
-      for _, compName in ipairs(compNames) do
-        out[#out + 1] = { tableKey = tableKey, componentKey = compName }
-      end
-    end
-  end
-  return out
-end
-
---- @param slot number|nil
---- @return table|nil column `{ seatKey, kind, tableSlot }`
-function D.seatRowColumnForTableSlot(slot)
-  slot = math.floor(tonumber(slot) or 0)
-  if slot < 1 then
-    return nil
-  end
-  local cols = D.CONTROL_BOARD_SEAT_ROW and D.CONTROL_BOARD_SEAT_ROW.columns
-  if type(cols) ~= "table" then
-    return nil
-  end
-  for i = 1, #cols do
-    local col = cols[i]
-    if type(col) == "table" and math.floor(tonumber(col.tableSlot) or 0) == slot then
-      return col
-    end
-  end
-  return nil
-end
-
---- @param seatKey string|nil
---- @return number|nil tableSlot
-function D.tableSlotForSeatRowSeatKey(seatKey)
-  if type(seatKey) ~= "string" or seatKey == "" then
-    return nil
-  end
-  local cols = D.CONTROL_BOARD_SEAT_ROW and D.CONTROL_BOARD_SEAT_ROW.columns
-  if type(cols) ~= "table" then
-    return nil
-  end
-  for i = 1, #cols do
-    local col = cols[i]
-    if type(col) == "table" and col.seatKey == seatKey then
-      local slot = tonumber(col.tableSlot)
-      if slot ~= nil then
-        return math.floor(slot)
-      end
-    end
-  end
-  return nil
-end
 
 return D

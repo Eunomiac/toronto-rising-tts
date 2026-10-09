@@ -8,7 +8,7 @@
   - Connect (incl. late join): clear the flag and seat the PC at once.
   - Mid-session disconnect: darken the seat only (effective presence false).
   - Connection checkpoint (under blindfold cover / end of startup): a PC still disconnected becomes
-    an unoccupied seat — no chair, satellites parked, control token stashed beneath the board.
+    an unoccupied seat — no chair, satellites parked.
 
   Debug connection mode (`debug.assumeConnected`): "Assume Connected" reads per-seat
   `debug.simulatedConnection[color]` (default connected) instead of Steam.
@@ -212,15 +212,13 @@ local function syncScatterPackToOccupancy()
   end
 end
 
---- Re-lay the table (or Scatter groups) and mirror control tokens after occupancy changed.
+--- Re-lay the table (or Scatter groups) after occupancy changed.
 local function relayoutAfterOccupancyChange()
   S.validateState()
   syncScatterPackToOccupancy()
   local RSL = require("lib.rotational-seat-layout")
   RSL.invalidateLayoutSyncCache()
   RSL.SyncTable(nil, { force = true })
-  local Gameboard = require("core.npc_gameboard")
-  Gameboard.reconcileControlBoardFromState({ force = true, forceTokenMirror = true })
 end
 
 --- Seat a PC who is (or simulates being) connected: unoccupied → occupied at once, no blindfold.
@@ -276,7 +274,7 @@ local function markDisconnectedSeatsUnoccupied()
 end
 
 --- Connection checkpoint (under blindfold cover): every occupied PC seat that is not connected
---- becomes unoccupied (`absentFromSession`, no chair, satellites parked, token stashed).
+--- becomes unoccupied (`absentFromSession`, no chair, satellites parked).
 --- @return string[] colors newly unoccupied
 function PC.applyConnectionCheckpoint()
   local FSL = require("lib.figurine_seat_layout")

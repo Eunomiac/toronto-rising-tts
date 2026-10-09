@@ -1628,22 +1628,6 @@ function GlobalInferTarotState(params)
     return TarotToggle.inferCurrentState(params.buttonGuid, params.fallback == true)
 end
 
---- NPC gameboard: Apply tokens on CONTROL_BOARD → `sessionScene.npcWorld.placements` → `Sync.npcs`.
---- @param params table|nil
---- @return boolean
-function GlobalGameboardApply(params)
-    local Gameboard = require("core.npc_gameboard")
-    local ok = Gameboard.applyFromControlBoard()
-    if type(ok) == "boolean" then
-        return ok
-    end
-    return ok == true
-end
-
---- Generic NPC import (CONTROL_BOARD paste / Storyteller Dashboard executeLua). TOR-560.
---- Opens the ST label modal; Confirm spawns token+figurine+light.
---- @param params string|table|nil comma-delimited keys, or `{ keys = "..." }`
---- @return boolean
 -- Storyteller Dashboard execute-lua can land after the Global chunk runs but before onLoad loads the
 -- save (TTS spawns every object first). Dashboard entries refuse until S.isReady().
 local DASHBOARD_LOADING_MESSAGE = "TTS is still loading the save. Try again in a moment."
@@ -1662,22 +1646,6 @@ local function requireDashboardReady()
     if dashboardLoadingRefusal() ~= nil then
         error(DASHBOARD_LOADING_MESSAGE, 0)
     end
-end
-
-function GlobalImportGenericNpcs(params)
-    requireDashboardReady()
-    local GenericNpcs = require("core.generic_npcs")
-    local keys = params
-    if type(params) == "table" then
-        keys = params.keys or params[1]
-    end
-    local ok = GenericNpcs.beginImport(keys)
-    return ok == true
-end
-
---- Alias for External Editor / Dashboard: `lua GlobalImportGenericNpcs("key_01,key_02")`
-function GlobalImportGenericNpcsFromString(keysString)
-    return GlobalImportGenericNpcs(keysString)
 end
 
 --- Storyteller Dashboard / External Editor: import Scene Constructor JSON into the library (no Apply).
@@ -1825,150 +1793,10 @@ function GlobalDashboardProjectsApply(params)
     return DashProjects.apply(jsonText)
 end
 
-function HUD_genericNpcImportConfirm(player, button, id)
-    if not U.isStorytellerSteamPlayer(player) then
-        return
-    end
-    local GenericNpcs = require("core.generic_npcs")
-    GenericNpcs.confirmImportFromModal()
-end
-
-function HUD_genericNpcImportCancel(player, button, id)
-    if not U.isStorytellerSteamPlayer(player) then
-        return
-    end
-    local GenericNpcs = require("core.generic_npcs")
-    GenericNpcs.cancelImport()
-end
-
---- InputField onValueChanged / onEndEdit for generic import label modal (stash typed text).
-function HUD_genericNpcImportLabelChanged(player, value, id)
-    if not U.isStorytellerSteamPlayer(player) then
-        return
-    end
-    local GenericNpcs = require("core.generic_npcs")
-    if type(GenericNpcs.onLabelFieldChanged) == "function" then
-        GenericNpcs.onLabelFieldChanged(player, value, id)
-    end
-end
-
---- TOR-173: single orchestrator coroutine for stage placement lerp batches on Apply.
+--- TOR-173: single orchestrator coroutine for stage placement lerp batches.
 function GlobalStageLerpOrchestrator()
     local NPCStageLerp = require("core.npc_stage_lerp")
     return NPCStageLerp.runOrchestratorCoroutine()
-end
-
---- NPC gameboard: Clear with double-click confirm (object `click_clear` → Global.call).
---- @param params table|nil `{ player_color?: string }`
---- @return boolean
-function GlobalGameboardClearClick(params)
-    local color = type(params) == "table" and params.player_color or "Black"
-    local Gameboard = require("core.npc_gameboard")
-    if not Gameboard.tryConfirmClear(color) then
-        return false
-    end
-    return GlobalGameboardClear(params)
-end
-
---- NPC gameboard: right-click Clear — park stray tokens to palette (no placement wipe) (TOR-485).
---- Also re-snaps tokens already on the palette; ST feedback even when zero moves (TOR-486).
---- @param params table|nil `{ player_color?: string }`
---- @return number moved
-function GlobalGameboardRecoverStrays(params)
-    params = type(params) == "table" and params or {}
-    local color = type(params.player_color) == "string" and params.player_color or "Black"
-    local Gameboard = require("core.npc_gameboard")
-    local total = tonumber(Gameboard.recoverStraysAndResnapPalette()) or 0
-    if broadcastToColor ~= nil then
-        if total > 0 then
-            broadcastToColor("Recovered " .. tostring(total) .. " token(s) to the palette.", color, { 0, 1, 1 })
-        else
-            broadcastToColor("No stray tokens — palette slots re-checked.", color, { 0, 1, 1 })
-        end
-    end
-    return total
-end
-
---- NPC gameboard: Clear placements (expects confirmed Clear from object UI).
---- @param params table|nil
---- @return boolean
-function GlobalGameboardClear(params)
-    local Gameboard = require("core.npc_gameboard")
-    local ok = Gameboard.clearControlBoard()
-    if type(ok) == "boolean" then
-        return ok
-    end
-    return ok == true
-end
-
---- NPC gameboard: refresh XmlUI snaps toggle label on CONTROL_BOARD (object onLoad / reconcile).
---- @param params table|nil `{ boardGuid?: string }`
-function GlobalGameboardSyncSnapsToggleLabel(params)
-    local Gameboard = require("core.npc_gameboard")
-    local board = nil
-    if type(params) == "table" and type(params.boardGuid) == "string" then
-        board = G.getObject(params.boardGuid)
-    end
-    Gameboard.syncControlBoardSnapsToggleLabel(board)
-    Gameboard.syncControlBoardModeToolbar(board)
-end
-
---- NPC gameboard: toggle HERE/THERE scope.
---- @param params table|nil
---- @return table `{ changed, mode }`
-function GlobalGameboardToggleScope(params)
-    local Gameboard = require("core.npc_gameboard")
-    local changed, mode = Gameboard.togglePreviewMode()
-    return { changed = changed == true, mode = mode }
-end
-
---- NPC gameboard: arm/disarm one-shot participant carry for the next successful scene Apply.
---- @param params table|nil `{ boardGuid?: string }`
---- @return boolean locked after toggle
-function GlobalGameboardToggleNextSceneApplyLock(params)
-    local Gameboard = require("core.npc_gameboard")
-    local board = nil
-    if type(params) == "table" and type(params.boardGuid) == "string" then
-        board = G.getObject(params.boardGuid)
-    end
-    local locked = Gameboard.toggleNextSceneApplyLock()
-    Gameboard.syncControlBoardModeToolbar(board)
-    return locked
-end
-
---- NPC gameboard: mirror the persisted active board model onto CONTROL_BOARD tokens.
---- @param params table|nil
---- @return boolean
-function GlobalGameboardLoad(params)
-    local Gameboard = require("core.npc_gameboard")
-    local ok = Gameboard.loadControlBoardFromState()
-    if type(ok) == "boolean" then
-        return ok
-    end
-    return ok == true
-end
-
---- NPC gameboard: toggle CONTROL_BOARD snap grid (object XmlUI `click_snaps_toggle`).
---- @param params table|nil `{ boardGuid?: string }`
---- @return boolean enabled after toggle
-function GlobalGameboardToggleControlBoardSnaps(params)
-    local Gameboard = require("core.npc_gameboard")
-    local board = nil
-    if type(params) == "table" and type(params.boardGuid) == "string" then
-        board = G.getObject(params.boardGuid)
-    end
-    local enabled = Gameboard.toggleControlBoardSnaps({ board = board })
-    Gameboard.syncControlBoardSnapsToggleLabel(board)
-    return enabled
-end
-
---- NPC gameboard: install palette parking snaps (CONTROL_BOARD_PALETTE object onLoad).
---- @param params table|nil `{ force?: boolean }`
---- @return boolean
-function GlobalGameboardInstallPaletteSnaps(params)
-    local Gameboard = require("core.npc_gameboard")
-    local force = type(params) == "table" and params.force == true
-    return Gameboard.installPaletteSnaps(nil, { force = force })
 end
 
 --- Returns the phase string of a player's active roll, or nil if no roll is active.
@@ -3623,8 +3451,6 @@ function onLoad(saved_data)
             return waitEnsureGlobalHudDocumentMounted()
         end,
         function()
-            setStartupAction("startup-ready-recover-preview-draft")
-            require("core.npc_gameboard").recoverPreviewDraftOnLoad()
             if S.getStateVal("currentPhase") == C.Phases.INTERMISSION then
                 require("core.phases").writeAllLightsDarkState()
             end
@@ -3753,24 +3579,7 @@ function onLoad(saved_data)
                 if not U.isStorytellerSteamPlayer(playerColor) then
                     return
                 end
-                local Gameboard = require("core.npc_gameboard")
-                if type(Gameboard.onControlBoardSpotlightHotkey) == "function" then
-                    Gameboard.onControlBoardSpotlightHotkey(playerColor, hoveredObject, isKeyUp == true)
-                end
-            end,
-            true
-        )
-        -- Bind in TTS Options (e.g. mouse side button). Hold while dropping a board token to relocate its snap family (TOR-412).
-        addHotkey(
-            "Group move (hold)",
-            function(playerColor, hoveredObject, pointerPosition, isKeyUp)
-                if not U.isStorytellerSteamPlayer(playerColor) then
-                    return
-                end
-                local Gameboard = require("core.npc_gameboard")
-                if type(Gameboard.onGroupMoveHotkey) == "function" then
-                    Gameboard.onGroupMoveHotkey(playerColor, hoveredObject, isKeyUp == true)
-                end
+                require("core.npc_gameboard").onControlBoardSpotlightHotkey(playerColor, hoveredObject, isKeyUp == true)
             end,
             true
         )
@@ -3926,134 +3735,6 @@ local function requireStorytellerForMutation(player, context)
     return true
 end
 
---- TOR-174: O(1) world-XZ proximity to Storyteller dice bags (global pre-gate before `require("core.npc_gameboard")`).
---- @param pos Vector|table|nil
---- @return string|nil bag kind when within hit radius
-local function storytellerDiceBagKindNearPosition(pos)
-    if pos == nil then
-        return nil
-    end
-    local radius = 3
-    local bestKind = nil
-    local bestDist = radius
-    local bags = G.GetAllStorytellerDiceBagGUIDs()
-    for kind, guid in pairs(bags) do
-        if type(kind) == "string" and type(guid) == "string" and guid ~= "" then
-            local bag = G.getObject(guid)
-            if bag ~= nil and bag.getPosition ~= nil then
-                local dist = U.HorizontalDistance(pos, bag.getPosition())
-                if dist < bestDist then
-                    bestDist = dist
-                    bestKind = kind
-                end
-            end
-        end
-    end
-    return bestKind
-end
-
---- Palette → CONTROL_BOARD drops: remember pick-up origin for per-ring defaultLightMode (TOR-172).
-function onObjectPickUp(player_color, object)
-    if not isStorytellerSteamPlayer(player_color) then
-        return
-    end
-    if object == nil or object.hasTag == nil then
-        return
-    end
-    if object.hasTag("npc_control_token") == true or object.hasTag("pc_control_token") == true then
-        local Gameboard = require("core.npc_gameboard")
-        if type(Gameboard.onControlTokenPickUp) == "function" then
-            Gameboard.onControlTokenPickUp(object)
-        elseif type(Gameboard.onNpcControlTokenPickUp) == "function" then
-            Gameboard.onNpcControlTokenPickUp(object)
-        end
-    end
-end
-
---- TOR-174: NPC control token on Storyteller dice bag → restore home + initiate roll.
---- @param params table `{ token: Object, playerColor?: string }`
---- @return boolean true when the drop was consumed
-function GlobalGameboardTokenDroppedOnDiceBag(params)
-    if type(params) ~= "table" then
-        return false
-    end
-    local token = params.token
-    local playerColor = params.playerColor
-    if type(playerColor) ~= "string" or not isStorytellerSteamPlayer(playerColor) then
-        return false
-    end
-    if token == nil or token.hasTag == nil or token.hasTag("npc_control_token") ~= true then
-        return false
-    end
-    local Gameboard = require("core.npc_gameboard")
-    if type(Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag) ~= "function" then
-        return false
-    end
-    local ok = Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag(token, playerColor, { skipRestore = true })
-    if ok ~= true then
-        return false
-    end
-    local tokenGuid = tostring(token.getGUID() or "")
-    if tokenGuid ~= "" and type(Gameboard.restoreNpcControlTokenHome) == "function" then
-        Wait.frames(function()
-            local tok = getObjectFromGUID(tokenGuid)
-            if tok ~= nil then
-                Gameboard.restoreNpcControlTokenHome(tok, nil)
-            end
-        end, 1)
-    end
-    return true
-end
-
---- PC control token on a Storyteller dice bag → always return the token to its control-board
---- home (color column + present/absent flip); on the Normal/Hunger bag also initiate a Standard
---- roll for that PC, as if the "Standard" button were pressed in the ST PCs panel (TOR-236).
---- @param params table `{ token: Object, playerColor?: string }`
---- @return boolean true when the drop was consumed
-function GlobalGameboardPcTokenDroppedOnDiceBag(params)
-    if type(params) ~= "table" then
-        return false
-    end
-    local token = params.token
-    local playerColor = params.playerColor
-    if type(playerColor) ~= "string" or not isStorytellerSteamPlayer(playerColor) then
-        return false
-    end
-    if token == nil or token.hasTag == nil or token.hasTag("pc_control_token") ~= true then
-        return false
-    end
-    local Gameboard = require("core.npc_gameboard")
-    if type(Gameboard.tryPcControlTokenDroppedOnStorytellerDiceBag) ~= "function" then
-        return false
-    end
-    local consumed, rollColor, rollType = Gameboard.tryPcControlTokenDroppedOnStorytellerDiceBag(
-        token,
-        playerColor,
-        { skipRestore = true }
-    )
-    if consumed ~= true then
-        return false
-    end
-    if type(rollColor) == "string" and rollColor ~= ""
-        and type(rollType) == "string" and rollType ~= ""
-        and RC ~= nil then
-        local ok = RC.initiateRoll(rollColor, { rollType = rollType, initiator = "storyteller" })
-        if ok then
-            GlobalRollSeatCamera({ color = rollColor, mode = "roll" })
-        end
-    end
-    local tokenGuid = tostring(token.getGUID() or "")
-    if tokenGuid ~= "" and type(Gameboard.restorePcControlTokenHome) == "function" then
-        Wait.frames(function()
-            local tok = getObjectFromGUID(tokenGuid)
-            if tok ~= nil then
-                Gameboard.restorePcControlTokenHome(tok, rollColor)
-            end
-        end, 1)
-    end
-    return true
-end
-
 --- When a figurine is dropped after dragging, refresh its paired NPC spotlight.
 function onObjectDrop(playerColor, object)
     if not isStorytellerSteamPlayer(playerColor) then
@@ -4065,81 +3746,6 @@ function onObjectDrop(playerColor, object)
     -- TOR-197: O(1) tag gate — do not call NPCS for tokens, dice, cards, etc.
     if object.hasTag("npc_figurine") == true and NPCS and NPCS.onObjectDropped then
         NPCS.onObjectDropped(object)
-    end
-    if object.hasTag("npc_control_token") == true then
-        local pos = object.getPosition ~= nil and object.getPosition() or nil
-        if pos ~= nil and storytellerDiceBagKindNearPosition(pos) ~= nil then
-            local tokenGuid = tostring(object.getGUID() or "")
-            Wait.frames(function()
-                if type(tokenGuid) ~= "string" or tokenGuid == "" then
-                    return
-                end
-                local tok = getObjectFromGUID(tokenGuid)
-                if tok == nil then
-                    return
-                end
-                if GlobalGameboardTokenDroppedOnDiceBag({ token = tok, playerColor = playerColor }) then
-                    return
-                end
-            end, 1)
-            return
-        end
-        local Gameboard = require("core.npc_gameboard")
-        if Gameboard.onNpcControlTokenDropped then
-            Gameboard.onNpcControlTokenDropped(object, playerColor)
-        end
-        return
-    end
-    if object.hasTag("pc_control_token") == true then
-        local pos = object.getPosition ~= nil and object.getPosition() or nil
-        if pos ~= nil and storytellerDiceBagKindNearPosition(pos) ~= nil then
-            local tokenGuid = tostring(object.getGUID() or "")
-            Wait.frames(function()
-                if type(tokenGuid) ~= "string" or tokenGuid == "" then
-                    return
-                end
-                local tok = getObjectFromGUID(tokenGuid)
-                if tok == nil then
-                    return
-                end
-                GlobalGameboardPcTokenDroppedOnDiceBag({ token = tok, playerColor = playerColor })
-            end, 1)
-            return
-        end
-        local Gameboard = require("core.npc_gameboard")
-        if type(Gameboard.onPcControlTokenDropped) == "function" then
-            Gameboard.onPcControlTokenDropped(object, playerColor)
-        end
-        return
-    end
-end
-
---- Control-token rotation: persist THERE edits; with Group-move held, match NPC family faces.
-function onObjectRotate(object, spin, flip, player_color, old_spin, old_flip)
-    if not isStorytellerSteamPlayer(player_color) then
-        return
-    end
-    if object == nil or object.hasTag == nil then
-        return
-    end
-    local isNpcToken = object.hasTag("npc_control_token") == true
-    local isPcToken = object.hasTag("pc_control_token") == true
-    if not isNpcToken and not isPcToken then
-        return
-    end
-    local Gameboard = require("core.npc_gameboard")
-    if type(Gameboard.onControlTokenRotated) == "function" then
-        Gameboard.onControlTokenRotated(object)
-    end
-    if not isNpcToken then
-        return
-    end
-    -- Fail closed: missing API or hotkey not held → no family flip (TOR-414).
-    if type(Gameboard.isGroupMoveHotkeyHeld) ~= "function" or Gameboard.isGroupMoveHotkeyHeld() ~= true then
-        return
-    end
-    if type(Gameboard.onNpcControlTokenRotated) == "function" then
-        Gameboard.onNpcControlTokenRotated(object, player_color, flip, old_flip)
     end
 end
 
@@ -5976,7 +5582,7 @@ end
 --- RunTest panel buttons: arm campaign, Continue, or Stop.
 -- @param player Player
 -- @param button string|nil
--- @param id string button_runtest_Dice|Scenes|Gameboard|Next|Stop
+-- @param id string button_runtest_Dice|Scenes|Next|Stop
 function HUD_runtest(player, button, id)
     if not requireStorytellerForMutation(player, "HUD_runtest") then
         return
@@ -6013,7 +5619,7 @@ function HUD_runtest(player, button, id)
     end
 
     local campaign = string.match(id, "^button_runtest_(.+)$")
-    if campaign ~= "Dice" and campaign ~= "Scenes" and campaign ~= "Gameboard" then
+    if campaign ~= "Dice" and campaign ~= "Scenes" then
         return
     end
 
