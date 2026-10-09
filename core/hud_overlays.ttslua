@@ -172,6 +172,8 @@ end
 
 --- Hunger uses one Image per seat (`overlay_hunger_<Seat>`) + `image=overlay_hunger_N` (TOR-444).
 --- Show, then active, then image. Show restores XML `overlay_hunger_0`, so the image write is last.
+--- Both are cached: `UI.show` replays the fade and resets the picture, so repeating it on every
+--- seat refresh makes the overlay flicker. Clear `lastVisible` / `lastHungerImageBySeat` to repaint.
 --- @param seatColor string
 --- @param level number 0..5
 local function applyHungerOverlay(seatColor, level)
@@ -190,15 +192,18 @@ local function applyHungerOverlay(seatColor, level)
   end
   local eid = hungerOverlayIdForSeat(seatColor)
   local imageRef = "overlay_hunger_" .. tostring(math.floor(lv))
-  -- UI.show restores the XML image (overlay_hunger_0). The tier write has to come after it,
-  -- or the cache remembers the real hunger and leaves the empty picture up.
-  UI.show(eid)
-  lastVisible[eid] = true
-  U.setAttribute(eid, "active", "true")
-  if UI ~= nil and UI.setAttribute ~= nil then
-    UI.setAttribute(eid, "image", imageRef)
+  if lastVisible[eid] ~= true then
+    -- UI.show restores the XML image (overlay_hunger_0). The tier write has to come after it,
+    -- or the cache remembers the real hunger and leaves the empty picture up.
+    UI.show(eid)
+    lastVisible[eid] = true
+    U.setAttribute(eid, "active", "true")
+    lastHungerImageBySeat[seatColor] = nil
   end
-  lastHungerImageBySeat[seatColor] = imageRef
+  if lastHungerImageBySeat[seatColor] ~= imageRef then
+    UI.setAttribute(eid, "image", imageRef)
+    lastHungerImageBySeat[seatColor] = imageRef
+  end
 end
 
 --- @param playerID string|nil
@@ -507,9 +512,14 @@ function HO.reconcileForSeat(seatColor, opts)
   local want = computeDesiredVisibility(playerID, seatColor)
   local hungerLevel = resolveHungerLevel(playerID, seatColor)
   local fpSkip = opts.force ~= true and lastDesiredVisibilityFpBySeat[seatColor] == fp
+  if opts.force == true then
+    local hungerEid = hungerOverlayIdForSeat(seatColor)
+    lastVisible[hungerEid] = nil
+    lastHungerImageBySeat[seatColor] = nil
+  end
 
-  -- Fingerprint skip must not leave world smoke / XmlUI hunger stale after layout
-  -- repositions smoke or TTS hide fails (BUG 7 / BUG 8).
+  -- Fingerprint skip must not leave world smoke stale after layout repositions it (BUG 8);
+  -- the hunger image skips its own UI writes when nothing changed.
   if fpSkip then
     applyHungerOverlay(seatColor, hungerLevel)
     syncHungerSmokeForSeat(seatColor, hungerLevel)

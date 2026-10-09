@@ -72,7 +72,7 @@ Second ST surface for the same `gameState.projects`; the TTS panel above keeps w
 - **Lifecycle difference:** a new project is **not** written to `gameState` until the first Save (`create`); Cancel on an unsaved project discards nothing in TTS. On a saved project, field edits commit on blur and Cancel just closes (no pre-begin delete — use Delete).
 - **Dashboard UI:** `.dev/storyteller-dashboard/src/client/pcSheet/PageFive.tsx` (cards in display order + Coterie chip) and `ProjectEditor.tsx`.
 
-Every mutation path (panel or dashboard) ends with `Projects.refreshAfterMutation()` — all PC sheets, the coterie sheet, and the Court cards. `PJP.onPresentDayChanged` also refreshes the Court cards so their project dice follow the clock.
+Every mutation path (panel or dashboard) ends with `Projects.refreshAfterMutation()` — all PC sheets, the coterie sheet, and the Court cards. `PJP.onPresentDayChanged` also refreshes the Court cards so their project dice follow the clock. It announces a PC seat (`Sync.player`) only when that seat's `Projects.fingerprintPage5` changed since the last present-day move, because a running real-time clock moves present day every narrative minute (TOR-681).
 
 ---
 

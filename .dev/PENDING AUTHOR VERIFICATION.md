@@ -195,6 +195,14 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 
 **How to verify:** Save & Play. At a player seat with no roll in progress, left-click the Rouse bag. The roll panel should appear straight away with the **Roll** button usable, not greyed out with "Awaiting Storyteller". Add one or two more Rouse dice if you like, then click Roll. After the result fades in, it should stay fully visible for about a second, then fade out — the same timing as a right-click quick Rouse, not the long six-second ordinary-roll result. Do the same with the Oblivion Rouse bag. A normal roll (left-click the Normal bag) should still wait for the Storyteller, and its result should still last about six seconds.
 
+### High — hunger overlay
+
+#### TOR-681 — Hunger overlays stop flickering while the real-time clock runs
+
+**Context:** You noticed the hunger overlays flickering slightly about once a minute while idling in a live scene. With the real-time clock running, every narrative minute moved present day forward, and every present-day move refreshed all five player seats in full so project dates on sheet page 5 stayed current. Each of those refreshes re-showed the hunger overlay, which replays its fade-in and briefly shows the empty picture. Now the overlay is only re-shown when hunger actually changes, and a present-day move only refreshes a seat whose page 5 projects actually changed (for example, a project's countdown die ticking down).
+
+**How to verify:** Save & Play. Play a scene with at least one PC whose Hunger is above zero, and turn on the real-time clock (any speed). Watch that player's hunger overlay for two or three minutes: it should stay perfectly still. Then change that PC's Hunger from the PCs panel or with a Rouse check: the overlay should switch to the new level straight away. Finally, if a PC has a project in progress, open sheet page 5 and move present day forward a whole day from the clock: the project's countdown die should still update.
+
 ### Medium — Prince's Court sheet
 
 #### TOR-663 — Refresh XML keeps The Court on the people who had it open

@@ -665,14 +665,21 @@ function PJP.onLaunchR()
   })
 end
 
---- Present-day clock moved: refresh open editor die + announce every PC seat (page 5 dates) +
---- Court project cards.
+--- Page 5 fingerprint per seat at the last present-day announcement.
+local presentDayPage5BySeat = {}
+
+--- Present-day clock moved: refresh open editor die + announce the PC seats whose page 5 changed
+--- (a running real-time clock moves present day every narrative minute) + Court project cards.
 function PJP.onPresentDayChanged()
   if editingId ~= nil then
     refreshDerivedFields()
   end
   for _, color in ipairs(C.PlayerColors) do
-    Sync.player(color)
+    local fp = Projects.fingerprintPage5(color)
+    if presentDayPage5BySeat[color] ~= fp then
+      presentDayPage5BySeat[color] = fp
+      Sync.player(color)
+    end
   end
   Projects.reconcileCourtProjectsAll()
   require("dashboard.push").projects()
