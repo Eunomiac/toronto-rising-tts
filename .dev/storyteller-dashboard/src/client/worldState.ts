@@ -161,7 +161,7 @@ export type RollResult = {
   readonly text: string;
 };
 
-/** A PC's live roll, or (`held`) the last resolved one the Storyteller may still broadcast. */
+/** A PC's live roll, or (`done`) their last finished one, already broadcast, that the Storyteller may broadcast again. */
 export type PcRoll = {
   readonly color: string;
   readonly name: string;
@@ -180,7 +180,7 @@ export type PcRoll = {
   readonly pending?: string;
   /** A Willpower reroll is under way (the roll is back in `rolling` for the picked dice). */
   readonly wpReroll: boolean;
-  readonly held: boolean;
+  readonly done: boolean;
   readonly canModifyPool: boolean;
   readonly dice: readonly RollDie[];
 };
@@ -281,7 +281,7 @@ const normalizeRolls = (data: Record<string, unknown>): RollsSlice => {
       dice: asList<RollDie>(row.dice),
       conditions: typeof row.conditions === "string" ? row.conditions : "",
       wpReroll: row.wpReroll === true,
-      held: row.held === true,
+      done: row.done === true,
       canModifyPool: row.canModifyPool === true
     })),
     storyteller: {

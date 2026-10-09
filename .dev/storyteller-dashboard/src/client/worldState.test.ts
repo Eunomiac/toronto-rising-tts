@@ -53,7 +53,7 @@ describe("applyWorldEvent", () => {
     expect(pc?.pool).toEqual({ normal: 4 });
     expect(pc?.dice).toEqual([]);
     expect(pc?.conditions).toBe("");
-    expect(pc?.held).toBe(false);
+    expect(pc?.done).toBe(false);
     expect(pc?.canModifyPool).toBe(false);
     expect(pc?.wpReroll).toBe(false);
     expect(state.rolls?.storyteller.live?.wpReroll).toBe(true);

@@ -22,8 +22,8 @@ import {
 describe("locally painted pools", () => {
   const rolls: RollsSlice = {
     pcs: [
-      { color: "Red", name: "Red", pool: { normal: 2 }, conditions: "", wpReroll: false, held: false, canModifyPool: true, dice: [] },
-      { color: "Pink", name: "Pink", pool: { normal: 4 }, conditions: "", wpReroll: false, held: false, canModifyPool: true, dice: [] }
+      { color: "Red", name: "Red", pool: { normal: 2 }, conditions: "", wpReroll: false, done: false, canModifyPool: true, dice: [] },
+      { color: "Pink", name: "Pink", pool: { normal: 4 }, conditions: "", wpReroll: false, done: false, canModifyPool: true, dice: [] }
     ],
     storyteller: {
       canInitiate: true,

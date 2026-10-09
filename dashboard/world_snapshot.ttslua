@@ -330,12 +330,31 @@ local function resultRow(roll)
   }
 end
 
+--- The player's last finished roll (already broadcast), with its result and dice from the roll history.
+--- @param color string
+--- @param snapshot table `storytellerRolls.pcDash[color]`
+--- @return table roll-shaped record for pcRollRow
+local function finishedPcRoll(color, snapshot)
+  local entry = require("core.storyteller_rolls").findHistoryEntry(color, snapshot.rollId) or {}
+  local result = type(entry.result) == "table" and entry.result or nil
+  local margin = result ~= nil and tonumber(result.margin) or nil
+  local successes = result ~= nil and tonumber(result.successes) or nil
+  local finished = {}
+  for key, value in pairs(snapshot) do
+    finished[key] = value
+  end
+  finished.result = result
+  finished.diceFaces = entry.diceFaces
+  finished.difficulty = (margin ~= nil and successes ~= nil) and (successes - margin) or nil
+  return finished
+end
+
 --- @param color string
 --- @param pid string|nil
---- @param roll table live active roll, or the Storyteller dashboard's resolved snapshot
---- @param held boolean true for the resolved snapshot (only Broadcast / Cancel apply)
+--- @param roll table live active roll, or the player's last finished roll
+--- @param done boolean true for the finished roll (only Broadcast again / Dismiss apply)
 --- @return table
-local function pcRollRow(color, pid, roll, held)
+local function pcRollRow(color, pid, roll, done)
   local RUI = require("core.roll_ui")
   return {
     color = color,
@@ -351,8 +370,8 @@ local function pcRollRow(color, pid, roll, held)
     result = resultRow(roll),
     pending = roll.pendingResolution,
     wpReroll = type(roll.willpower) == "table" and roll.willpower.wpRerollWave == true or nil,
-    held = held,
-    canModifyPool = not held and require("core.roll_controller").canPostRollModifyPool(color, roll) == true,
+    done = done,
+    canModifyPool = not done and require("core.roll_controller").canPostRollModifyPool(color, roll) == true,
     dice = diceRows(roll.diceFaces),
   }
 end
@@ -367,7 +386,7 @@ local function buildRolls()
     if type(active) == "table" then
       pcs[#pcs + 1] = pcRollRow(color, pid, active, false)
     elseif type(pcDash[color]) == "table" then
-      pcs[#pcs + 1] = pcRollRow(color, pid, pcDash[color], true)
+      pcs[#pcs + 1] = pcRollRow(color, pid, finishedPcRoll(color, pcDash[color]), true)
     end
   end
 

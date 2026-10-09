@@ -10,6 +10,7 @@ import {
   bumpPool,
   conditionList,
   draftFromView,
+  isRouseCheck,
   NPC_POOL_KEY,
   PERMANENT_OPTIONS,
   poolRingChoices,
@@ -230,26 +231,26 @@ const PcRollRow = ({ roll, send, collapsed, onToggle, onOptions, onPool }: {
   const setup = roll.phase === "setup";
   const resolved = roll.phase === "resolved";
   const waiting = pendingText(roll.pending);
-  const title = roll.held
-    ? "Held result: the roll is finished but not yet shown to the table. Broadcast it, or dismiss it."
+  const title = roll.done
+    ? "Finished: shown here until this player rolls again. Broadcast it again, or dismiss it."
     : phaseTitle(roll.phase, roll.wpReroll);
-  const overridable = !roll.held && roll.canModifyPool;
+  const overridable = !roll.done && roll.canModifyPool;
   const result = (
     <ResultText
       result={roll.result}
       {...(overridable ? { onOverride: (resultClass: string) => send({ op: "override", color, resultClass }) } : {})}
     />
   );
-  const actions: CardAction[] = roll.held
-    ? [{ key: "broadcast", icon: "broadcast", label: "Broadcast to the table", tone: "gold", keep: true, onClick: () => send({ op: "broadcast", color }) }]
+  const actions: CardAction[] = roll.done
+    ? [{ key: "broadcast", icon: "broadcast", label: "Broadcast again", tone: "gold", keep: true, onClick: () => send({ op: "broadcast", color }) }]
     : [];
   return (
     <RollCard
-      className={`pc ${roll.held ? "held" : phaseClass(roll.phase, roll.wpReroll)}`}
+      className={`pc ${phaseClass(roll.phase, roll.wpReroll)}`}
       style={style}
       title={title}
       rollType={roll.rollType}
-      {...(roll.held ? {} : { onType: (event: MouseEvent<HTMLElement>) => onOptions(event, roll) })}
+      {...(roll.done ? {} : { onType: (event: MouseEvent<HTMLElement>) => onOptions(event, roll) })}
       name={roll.name}
       conditions={roll.conditions}
       result={result}
@@ -257,19 +258,19 @@ const PcRollRow = ({ roll, send, collapsed, onToggle, onOptions, onPool }: {
       onToggle={onToggle}
       actions={actions}
       onClose={() => send({ op: "cancel", color })}
-      closeLabel={roll.held ? "Dismiss this result" : "Cancel this roll"}
+      closeLabel={roll.done ? "Dismiss this result" : "Cancel this roll"}
     >
       <PoolDiamonds pool={roll.pool} onClick={overridable ? (event) => onPool(event, color) : undefined} />
       <div className="roll-line">
         <Difficulty
           value={roll.difficulty}
-          editable={!roll.held && !roll.canModifyPool && !resolved}
+          editable={!roll.done && !roll.canModifyPool && !resolved}
           title={setup ? "Pick a difficulty to approve the roll and open it to the player" : "Difficulty"}
           onPick={(value) => send({ op: "difficulty", color, value })}
         />
         {result}
       </div>
-      <RolledDice dice={roll.dice} pickable={false} />
+      {!isRouseCheck(roll.rollType) && <RolledDice dice={roll.dice} pickable={false} />}
       {waiting && <div className="roll-sub warn">{waiting}</div>}
     </RollCard>
   );
@@ -364,7 +365,7 @@ const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool }: {
         <Difficulty value={live.difficulty} editable={live.phase !== "resolved"} title="Difficulty" onPick={(value) => send({ op: "npcDifficulty", value })} />
         {result}
       </div>
-      <RolledDice dice={live.dice} pickable={live.actions.reroll} onPick={(index) => send({ op: "npcDie", index })} />
+      {!isRouseCheck(live.rollType) && <RolledDice dice={live.dice} pickable={live.actions.reroll} onPick={(index) => send({ op: "npcDie", index })} />}
     </RollCard>
   );
 };

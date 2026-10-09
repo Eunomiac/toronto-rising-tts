@@ -279,24 +279,24 @@ const LAB_HUNTERS: readonly HuntPc[] = SEATS.flatMap((seat) =>
 
 const LAB_ROLLS: RollsSlice = {
   pcs: [
-    { color: "Pink", name: "Adrian Varga", rollType: "discipline", phase: "setup", pool: { normal: 4, hunger: 2 }, conditions: "", wpReroll: false, held: false, canModifyPool: false, dice: [] },
+    { color: "Pink", name: "Adrian Varga", rollType: "discipline", phase: "setup", pool: { normal: 4, hunger: 2 }, conditions: "", wpReroll: false, done: false, canModifyPool: false, dice: [] },
     {
       color: "Purple", name: "Black Caesar", rollType: "standard", phase: "preRoll", pool: { normal: 5, hunger: 2, rouse: 1 }, difficulty: 3,
-      conditions: "", wpReroll: false, held: false, canModifyPool: false, dice: []
+      conditions: "", wpReroll: false, done: false, canModifyPool: false, dice: []
     },
     {
       color: "Brown", name: "Fomórach", rollType: "standard", phase: "rolling", pool: { normal: 4, hunger: 1 }, difficulty: 2,
-      conditions: "", wpReroll: true, held: false, canModifyPool: false,
+      conditions: "", wpReroll: true, done: false, canModifyPool: false,
       dice: [{ value: 7, kind: "normal" }, { kind: "normal" }, { value: 3, kind: "normal" }, { kind: "normal" }, { value: 6, kind: "hunger" }]
     },
     {
       color: "Red", name: "Lord Lucien", rollType: "standard", phase: "postRoll", pool: { normal: 5, hunger: 1 }, difficulty: 3,
-      conditions: "No Take Half", result: { resultClass: "win", successes: 4, margin: 1, text: "WIN +1" }, wpReroll: false, held: false, canModifyPool: true,
+      conditions: "No Take Half", result: { resultClass: "win", successes: 4, margin: 1, text: "WIN +1" }, wpReroll: false, done: false, canModifyPool: true,
       dice: [{ value: 8, kind: "normal" }, { value: 2, kind: "normal" }, { value: 6, kind: "normal" }, { value: 4, kind: "normal" }, { value: 9, kind: "normal" }, { value: 10, kind: "hunger" }]
     },
     {
       color: "Orange", name: "Rashid", rollType: "rouse", phase: "resolved", pool: { rouse: 1 }, conditions: "", result: { text: "ROUSED" },
-      wpReroll: false, held: true, canModifyPool: false, dice: [{ value: 3, kind: "rouse" }]
+      wpReroll: false, done: true, canModifyPool: false, dice: [{ value: 3, kind: "rouse" }]
     }
   ],
   storyteller: {

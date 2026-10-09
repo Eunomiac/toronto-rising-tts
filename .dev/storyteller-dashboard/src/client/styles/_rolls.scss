@@ -120,12 +120,6 @@ $phase-blue-bright: #8cc0ff;
 
   @include roll-phases;
 
-  &.held {
-    border-style: dashed;
-    border-color: #6a4a4a;
-    background: #1c1618;
-  }
-
   &.has-acts .roll-body {
     padding-right: 22px;
   }

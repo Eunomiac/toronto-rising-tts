@@ -20,6 +20,9 @@ export const ROLL_TYPE_LABEL: Readonly<Record<string, string>> = {
 
 export const rollTypeLabel = (rollType: string | undefined): string => (rollType ? ROLL_TYPE_LABEL[rollType] ?? rollType : "");
 
+/** Rouse checks show only their pool diamonds and outcome, never dice faces. */
+export const isRouseCheck = (rollType: string | undefined): boolean => rollType === "rouse" || rollType === "rouseOblivion";
+
 /** Roll types as they fit down the edge of a roll card (short forms on a collapsed one-line card). */
 const ROLL_TYPE_EDGE: Readonly<Record<string, readonly [string, string]>> = {
   standard: ["Standard", "Std."],
