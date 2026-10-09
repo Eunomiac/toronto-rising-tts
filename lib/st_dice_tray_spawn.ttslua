@@ -9,7 +9,7 @@
 
 local STS = {}
 
---- Tray-surface Y for ST staged dice (unlocked; TOR-448 pop). Not the PC hover height of 8.
+--- Tray-surface Y for ST staged dice (TOR-448). Not the PC hover height of 8.
 STS.STAGING_BASE_Y = 2.04
 
 --- Inset from drawer edges as a fraction of playable half-extent (author target 15–20%).
@@ -87,7 +87,7 @@ function STS.traySpecFromDrawer(drawer)
     }
 end
 
---- Merge drawer spec into the arc-center table passed to dice bags.
+--- Merge drawer spec into the arc-center table passed to `core/st_dice`.
 -- @param traySpec table|nil
 -- @return table|nil  { x, y, z, radiusX, radiusZ }
 function STS.arcCenterFromTraySpec(traySpec)
@@ -105,7 +105,7 @@ end
 
 --- World position for one staged die on the ST tray.
 -- @param arcCenter table  { x, y, z, radiusX, radiusZ }
--- @param globalIndex number  1-based across all ST bags on this tray
+-- @param globalIndex number  1-based across every die kind on this tray
 -- @param total number
 -- @return table|nil  { x, y, z }
 function STS.worldPositionForTrayDie(arcCenter, globalIndex, total)

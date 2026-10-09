@@ -60,7 +60,7 @@ UI.setAttributes("db_rollPanelST", {width = "600"})
     UI.setAttributes("db_rollPanelST_roller", {})
     -->
     <Text id="db_rollPanelST_roller" class="rollPanelST_roller_text" text = "Mason Schmidt" />
-    <Text id="db_rollPanelST_phase" class="rollPanelST_phase_text" text="Spawn dice from ST bags" />
+    <Text id="db_rollPanelST_phase" class="rollPanelST_phase_text" text="Configure pool, then ROLL" />
   </HorizontalLayout>
 
   <!--

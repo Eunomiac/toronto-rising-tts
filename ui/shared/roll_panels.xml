@@ -68,25 +68,6 @@
 <!-- ============================================================================ -->
 <Include src="session_start_heal_broadcast.xml" />
 
-<!-- Storyteller roll name modal (bag click without live roll) -->
-<Panel id="rollStName_modal" active="False" visibility="Black|Host"
-  rectAlignment="MiddleCenter" width="400" padding="16 16 16 16" color="#1a1a1a">
-  <VerticalLayout spacing="10" childAlignment="MiddleCenter">
-    <Text fontSize="14" fontStyle="Bold" color="#C9A84C" text="Storyteller Roll Name" />
-    <InputField id="rollStName_input" class="hud_storyteller_input" fontSize="14"
-      preferredWidth="360" minWidth="360" preferredHeight="34" minHeight="34"
-      flexibleWidth="1" lineType="SingleLine" text=""
-      onValueChanged="HUD_rollStNameInputChanged" onEndEdit="HUD_rollStNameInputChanged"
-      placeholder="Character / NPC name" />
-    <HorizontalLayout spacing="12" childAlignment="MiddleCenter">
-      <Button id="rollStName_btnApply" fontSize="12" preferredWidth="100" preferredHeight="28"
-        onClick="HUD_rollStNameApply" text="START ROLL" />
-      <Button id="rollStName_btnCancel" fontSize="12" preferredWidth="80" preferredHeight="28"
-        onClick="HUD_rollStNameCancel" text="CANCEL" />
-    </HorizontalLayout>
-  </VerticalLayout>
-</Panel>
-
 <!-- ============================================================================ -->
 <!-- ASSET PRELOAD PANEL                                                           -->
 <!-- References all 7 die face image asset names so TTS loads them into memory    -->

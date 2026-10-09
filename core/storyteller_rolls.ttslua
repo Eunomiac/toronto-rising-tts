@@ -17,7 +17,6 @@ local S = require("core.state")
 local C = require("lib.constants")
 local U = require("lib.util")
 local DK = require("lib.dice_kinds")
-local G = require("lib.guids")
 local STD = require("lib.st_dice_drawer")
 
 local ST_COLOR = "Black"
@@ -261,34 +260,6 @@ local function prepareScatterDrawerSlot(groupKey)
     return firstFreeSlot(root.slots)
 end
 
---- Maps ST dice-bag kind to `C.RollType` for the bag name modal.
--- Normal→STANDARD, Hunger→DISCIPLINE, Werewolf bag→WILLPOWER_ROLL,
--- Rage→FRENZY, Rouse→ROUSE, Obliv-Rouse→REMORSE at SessionEnd else ROUSE_OBLIVION.
--- @param dieKind string|nil
--- @return string rollType
-function STR.rollTypeForStorytellerBagDrop(dieKind)
-    if dieKind == DK.KIND_HUNGER then
-        return C.RollType.DISCIPLINE
-    end
-    if dieKind == DK.KIND_ROUSE then
-        return C.RollType.ROUSE
-    end
-    if dieKind == DK.KIND_OBLIV_ROUSE then
-        local phase = S.getStateVal("currentPhase")
-        if phase == C.Phases.END then
-            return C.RollType.REMORSE
-        end
-        return C.RollType.ROUSE_OBLIVION
-    end
-    if dieKind == DK.KIND_WEREWOLF then
-        return C.RollType.WILLPOWER_ROLL
-    end
-    if dieKind == DK.KIND_RAGE then
-        return C.RollType.FRENZY
-    end
-    return C.RollType.STANDARD
-end
-
 --- @param rollType string
 -- @return boolean
 local function skipSetupForRollType(rollType)
@@ -329,7 +300,7 @@ local function resolveActiveNpcSeatForCharacter(characterKey)
     return nil
 end
 
---- Activates drawer + light on first die spawn for the live slot.
+--- Raises the drawer + tray light for the live slot (ST Roll click).
 -- @param slotIndex number
 function STR.activateDrawerForSlot(slotIndex)
     if type(slotIndex) ~= "number" then
@@ -437,18 +408,6 @@ function STR.initiateNpcRoll(rawLabel, rollType, npcCharacterKey)
     return true
 end
 
---- Initiates from ST bag click after name modal (or direct if roll already live).
--- @param label string
--- @param dieKind string
--- @return boolean
-function STR.initiateFromBagLabel(label, dieKind)
-    local ScatterMode = require("core.scatter_mode")
-    if hasLiveBlackRoll() and ScatterMode.isActive() ~= true then
-        return false
-    end
-    return STR.initiateNpcRoll(label, STR.rollTypeForStorytellerBagDrop(dieKind))
-end
-
 --- Syncs slot metadata from the live Black active roll.
 function STR.syncSlotsFromActive()
     local active = getBlackActive()
@@ -539,19 +498,6 @@ function STR.clearSlot(slotIndex)
     saveRoot(root)
 end
 
---- Destroys staged dice in all Storyteller bags.
-function STR.destroyStagedBagDice()
-    local bags = G.GetAllStorytellerDiceBagGUIDs()
-    for _, guid in pairs(bags) do
-        if type(guid) == "string" then
-            local bag = G.getObject(guid)
-            if bag ~= nil then
-                bag.call("destroyDice")
-            end
-        end
-    end
-end
-
 --- Destroys all physical dice on the table for the active Black roll.
 function STR.destroyTableDiceForActive()
     local active = getBlackActive()
@@ -566,210 +512,26 @@ function STR.destroyTableDiceForActive()
             local candidates = getObjectsWithAllTags({ dieTag, "d10", ownerTag })
             for _, obj in ipairs(candidates) do
                 if obj ~= nil and DK.gmNotesMatchRoll(obj.getGMNotes(), rollId) then
-                    local DPP = require("core.dice_preload_pool")
-                    DPP.releaseOrDestroy(obj)
+                    destroyObject(obj)
                 end
             end
         end
     end
 end
 
---- Full cleanup for cancel: bag staged dice first (pool return), then tray sweep, optional drawer close via clearSlot.
+--- Full cleanup for cancel: staged tray dice first, then tray sweep, optional drawer close via clearSlot.
 function STR.cleanupLiveRoll()
     local active = getBlackActive()
     if active ~= nil and type(active.id) == "string" then
         Global.call("GlobalRestoreSecretRollDiceVisibility", { rollId = active.id })
     end
-    STR.destroyStagedBagDice()
+    require("core.st_dice").destroyStaged()
     STR.destroyTableDiceForActive()
-end
-
---- Delay between ST programmatic die rolls (seconds). Stagger helps avoid pile-ups.
-local ST_PHYSICAL_ROLL_STAGGER_SEC = 0.1
-
---- Resolve staged die GUIDs captured before ST bag `releaseDice` cleared tracking.
--- @param dieGuids string[]|nil
--- @return Object[]
-local function resolveStagedDieObjects(dieGuids)
-    if type(dieGuids) ~= "table" or #dieGuids == 0 then
-        return {}
-    end
-    local list = {}
-    for _, guid in ipairs(dieGuids) do
-        if type(guid) == "string" then
-            local obj = G.getObject(guid)
-            if obj ~= nil then
-                list[#list + 1] = obj
-            end
-        end
-    end
-    return list
-end
-
---- Collect physical dice for the active Black roll (staged GUIDs first, then tag scan).
--- @param rollId string
--- @param dieGuids string[]|nil
--- @return Object[]
-local function collectTrayDiceForPhysicalRoll(rollId, dieGuids)
-    local diceList = resolveStagedDieObjects(dieGuids)
-    if #diceList > 0 then
-        return diceList
-    end
-
-    local RC = require("core.roll_controller")
-    local _, objectsByKind = RC._getDicePoolsForRoll(ST_COLOR, rollId)
-    for _, kind in ipairs(DK.ALL_KINDS) do
-        for _, obj in ipairs(objectsByKind[kind] or {}) do
-            if obj ~= nil then
-                diceList[#diceList + 1] = obj
-            end
-        end
-    end
-    return diceList
-end
-
---- Physical roll for every die in the active tray (TTS `Object.randomize`, same as R key).
--- Dice must be unlocked first; call only after `releaseBagDice("Black")` has waited for the ST drawer.
--- Each die is lifted, tumbles, and settles; `onObjectRandomize` drives RC debounce/recalculate.
--- @param opts table|nil  { dieGuids?: string[] } GUIDs from bags before release (preferred)
-function STR.physicalRollTrayDice(opts)
-    opts = type(opts) == "table" and opts or {}
-    local active = getBlackActive()
-    if active == nil or type(active.id) ~= "string" then
-        return
-    end
-    if active.phase ~= C.RollPhase.ROLLING then
-        return
-    end
-
-    local rollId = active.id
-    local dieGuids = opts.dieGuids
-
-    local function runPhysicalRoll()
-        active = getBlackActive()
-        if active == nil or active.phase ~= C.RollPhase.ROLLING then
-            return
-        end
-
-        local diceList = collectTrayDiceForPhysicalRoll(rollId, dieGuids)
-        if #diceList == 0 then
-            return
-        end
-
-        local index = 1
-        local function rollNextDie()
-            if index > #diceList then
-                return
-            end
-            local obj = diceList[index]
-            index = index + 1
-            if obj ~= nil then
-                if obj.getLock ~= nil and obj.getLock() == true then
-                    obj.setLock(false)
-                end
-                if obj.randomize ~= nil then
-                    local ok = obj.randomize(ST_COLOR)
-                    if ok ~= true then
-                        obj.randomize()
-                    end
-                end
-            end
-            if index <= #diceList then
-                U.await(rollNextDie, ST_PHYSICAL_ROLL_STAGGER_SEC)
-            end
-        end
-
-        rollNextDie()
-    end
-
-    local diceList = collectTrayDiceForPhysicalRoll(rollId, dieGuids)
-    if #diceList > 0 then
-        runPhysicalRoll()
-        return
-    end
-
-    -- Tag scan can lag briefly after unlock; retry once before giving up.
-    U.await(runPhysicalRoll, 0.15)
 end
 
 --- Called when Black roll state changes (hooked from global_script).
 function STR.onRollStateChanged()
     STR.syncSlotsFromActive()
-end
-
---- First die leaves ST bag during live roll — open assigned drawer.
-function STR.onFirstDieSpawned()
-    local active = getBlackActive()
-    if active == nil or type(active.stDrawerSlot) ~= "number" then
-        return
-    end
-    if active.phase == C.RollPhase.PRE_ROLL or active.phase == C.RollPhase.ROLLING then
-        STR.activateDrawerForSlot(active.stDrawerSlot)
-    end
-end
-
---- ST bag click while a live Black roll is in SETUP / PRE_ROLL (pool state only until Roll).
--- @param params table  { dieKind }
-function STR.onDiceBagClick(params)
-    if type(params) ~= "table" then return end
-    local dieKind = params.dieKind
-    if type(dieKind) ~= "string" then return end
-
-    local active = getBlackActive()
-    if active == nil then
-        local RUI = require("core.roll_ui")
-        if RUI.isStRollUiEnabled() then
-            RUI.openStRollNameModal(dieKind)
-        else
-            broadcastToColor("Start NPC rolls from the Storyteller Dashboard (or turn on In-game ST Rolls in the debug panel).", ST_COLOR, { 1, 0.8, 0.3 })
-        end
-        return
-    end
-    if active.phase ~= C.RollPhase.PRE_ROLL and active.phase ~= C.RollPhase.SETUP then
-        return
-    end
-
-    local pool = DK.normalizePool(active.pool)
-    if active.rollType == C.RollType.WEREWOLF then
-        if dieKind ~= DK.KIND_WEREWOLF and dieKind ~= DK.KIND_RAGE then
-            print("[StorytellerRolls] Werewolf rolls only accept Werewolf and Rage dice.")
-            return
-        end
-    elseif DK.poolHasWerewolfKind(pool) then
-        print("[StorytellerRolls] Cannot mix Werewolf/Rage dice with other types on this roll.")
-        return
-    elseif (dieKind == DK.KIND_WEREWOLF or dieKind == DK.KIND_RAGE) and DK.poolHasVampireKind(pool) then
-        print("[StorytellerRolls] Cannot add Werewolf/Rage dice to a non-Werewolf roll.")
-        return
-    end
-
-    Global.call("GlobalAdjustStorytellerPoolKind", { dieKind = dieKind, delta = 1 })
-end
-
---- ST bag right-click while a live Black roll is in SETUP / PRE_ROLL (remove one die from pool state).
--- @param params table  { dieKind }
-function STR.onDiceBagRightClick(params)
-    if type(params) ~= "table" then return end
-    local dieKind = params.dieKind
-    if type(dieKind) ~= "string" then return end
-
-    local active = getBlackActive()
-    if active == nil or (active.phase ~= C.RollPhase.PRE_ROLL and active.phase ~= C.RollPhase.SETUP) then
-        return
-    end
-
-    local pool = DK.normalizePool(active.pool)
-    if active.rollType == C.RollType.WEREWOLF then
-        if dieKind ~= DK.KIND_WEREWOLF and dieKind ~= DK.KIND_RAGE then
-            return
-        end
-    elseif DK.poolHasWerewolfKind(pool) then
-        return
-    elseif (dieKind == DK.KIND_WEREWOLF or dieKind == DK.KIND_RAGE) and DK.poolHasVampireKind(pool) then
-        return
-    end
-
-    Global.call("GlobalAdjustStorytellerPoolKind", { dieKind = dieKind, delta = -1 })
 end
 
 --- Cancel a occupied slot from the ST slot panel (may or may not be live).
@@ -812,8 +574,7 @@ function STR.destroyTableDiceForRollId(rollId)
             local candidates = getObjectsWithAllTags({ dieTag, "d10", ownerTag })
             for _, obj in ipairs(candidates) do
                 if obj ~= nil and DK.gmNotesMatchRoll(obj.getGMNotes(), rollId) then
-                    local DPP = require("core.dice_preload_pool")
-                    DPP.releaseOrDestroy(obj)
+                    destroyObject(obj)
                 end
             end
         end

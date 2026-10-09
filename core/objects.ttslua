@@ -593,6 +593,12 @@ local function clearHideSnapshot(guid)
     map[guid] = nil
 end
 
+--- Drops the hide snapshot for a parked object that is being destroyed rather than restored.
+--- @param guid string
+function O.forgetHiddenObject(guid)
+    clearHideSnapshot(guid)
+end
+
 --- Park object at `y = C.HIDDEN_OBJECT_WORLD_Y` with lock / non-interactable / parked visibility.
 --- @param obj Object|nil
 --- @param opts table|nil `{ parkPosition?, parkRotation?, snapshotPosition? }`

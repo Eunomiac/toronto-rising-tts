@@ -191,10 +191,6 @@ end
 -- Color whose roll options modal is open (nil when closed).
 local rollOptsTargetColor = nil
 
--- Pending die kind when ST name modal is open (from bag click without live roll).
-local stRollNamePendingDieKind = nil
-local stRollNameDraft = ""
-
 --- Stashed roll options modal draft (Toggle buttons use setClass, not isOn).
 local rollOptsDraft = {
     permanent = {},
@@ -907,7 +903,7 @@ local function phaseLabel(active, color)
         elseif phase == C.RollPhase.PRE_ROLL then
             local pool = DK.normalizePool(active.pool)
             if DK.poolTotal(pool) == 0 then
-                return "Configure pool via strips or ST bags, then ROLL"
+                return "Configure pool via strips, then ROLL"
             end
             local noTakeHalf = C.RollTypesNoTakeHalf[active.rollType]
             local surgeActive = active.meta ~= nil and active.meta.bloodSurgeActive == true
@@ -1597,7 +1593,7 @@ function RUI.shouldAutoProceedSoleAction(active, color)
     return true, inv.soleAction
 end
 
---- In-game Storyteller roll panels (dashboard rows, live NPC roll panel, bag-click name modal) are a
+--- In-game Storyteller roll panels (dashboard rows, live NPC roll panel) are a
 --- fallback for the Storyteller Dashboard. While off they do no UI work at all.
 --- @return boolean
 function RUI.isStRollUiEnabled()
@@ -2113,52 +2109,6 @@ function RUI.formatEffectiveRollConditionLabels(pid, active)
     return table.concat(labels, ", ")
 end
 
--- ============================================================================
--- ST ROLL NAME MODAL (bag click without live roll)
--- ============================================================================
-
---- Opens the Storyteller roll name modal before initiating from a bag.
--- @param dieKind string
-function RUI.openStRollNameModal(dieKind)
-    if type(dieKind) ~= "string" then
-        return
-    end
-    stRollNamePendingDieKind = dieKind
-    stRollNameDraft = ""
-    uiSetInputField("rollStName_input", "")
-    uiSetActive("rollStName_modal", true)
-end
-
---- Stashes ST name modal input.
--- @param player Player
--- @param value string|nil
--- @param id string|nil
-function RUI.onStRollNameInputChanged(player, value, id)
-    if id == "rollStName_input" and type(value) == "string" then
-        stRollNameDraft = value
-    end
-end
-
---- Applies ST name modal and initiates roll.
--- @return boolean
-function RUI.applyStRollNameModal()
-    local label = stRollNameDraft
-    if type(label) ~= "string" or trimLabel(label) == "" then
-        print("[StorytellerRolls] Roll name is required.")
-        return false
-    end
-    local dieKind = stRollNamePendingDieKind
-    stRollNamePendingDieKind = nil
-    uiSetActive("rollStName_modal", false)
-    local STR = require("core.storyteller_rolls")
-    return STR.initiateFromBagLabel(trimLabel(label), dieKind or DK.KIND_NORMAL)
-end
-
-function RUI.closeStRollNameModal()
-    stRollNamePendingDieKind = nil
-    uiSetActive("rollStName_modal", false)
-end
-
 --- Stashes roll options modal InputField text from `onValueChanged` / `onEndEdit`.
 -- @param player Player
 -- @param value string|nil
@@ -2247,7 +2197,6 @@ function RUI.applyStRollUiEnabled()
     end
     uiSetActive("rollDash_ST", false)
     uiSetActive("rollPanelST", false)
-    uiSetActive("rollStName_modal", false)
 end
 
 -- ============================================================================

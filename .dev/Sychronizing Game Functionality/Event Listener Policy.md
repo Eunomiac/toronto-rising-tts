@@ -84,9 +84,9 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `GlobalToggleSignalFireState` | C | 5 | signal lights; on/off via hide/restore — seat layout preserves per-seat Y (TOR-380), no gameState reconciler |
 | `GlobalApplyTarotState` | C | — | Pink tarot drawer/deck/button poses (TOR-144 W2) |
 | `GlobalApplyCompanionToggleClick` | C | — | Red/Brown famulus companion left/right click (TOR-288) |
-| `GlobalDiceBagClick/RightClick/StorytellerDiceBagClick` | B+C | 5 | rolls; idle Rouse / Oblivion-Rouse right-click = 1-die check + Open + auto-toss (TOR-490 / TOR-491); concurrent idle-bag auto-Rouse exception (TOR-493) |
+| `GlobalDiceBagClick/RightClick` | B+C | 5 | rolls; idle Rouse / Oblivion-Rouse right-click = 1-die check + Open + auto-toss (TOR-490 / TOR-491); concurrent idle-bag auto-Rouse exception (TOR-493) |
 | `GlobalSpawn*` / `GlobalDestroy*` / `GlobalRelease*` / `GlobalTagDie*` / `GlobalOnBagDie*` | C | 5 | dice |
-| `GlobalInitiateRoll` / `GlobalRollSpawnDieRequest` / `GlobalAdjustStorytellerPoolKind` | B+C | 5 | rolls |
+| `GlobalInitiateRoll` / `GlobalRollSpawnDieRequest` | B+C | 5 | rolls |
 | `GlobalResolveRollPhysicalPrep` | C | 5 | rolls — coupled drawer + DBV + auto-spawn; tray open also moves Compulsion → LIVEROLL + companion state 1→2 (TOR-452 via `DiceDrawer`) |
 | `DiceDrawer.openForRoll` / `applyClosePose` | C | — | PC tray open/close; TOR-452 Compulsion + companion choreography (host-only) |
 | `GlobalRollSeatCamera` | A | — | per-seat camera |
@@ -208,7 +208,6 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `NPCS.onObjectDropped` | `core/npcs.ttslua` | **Pass** | Global `npc_figurine` tag only (seated figurines use seat `*Object` tag, not drop path) |
 | `NPCS.isPooledFigurineObject` | `core/npcs.ttslua` | **Pass** | `npc_figurine` **or** seat `*Object` tag + `Figurine_Custom` + (`npcInstance:` GM Notes **or** instance `figurineGuid` registry when seated) |
 | `NPCS.resolveNpcNameFromFigurine` | `core/npcs.ttslua` | **Pass** | GM Notes, then O(1) `figurineGuidToNpcName` cache (rebuilt on bulk instance replace) |
-| `GlobalRepositionStorytellerTrayDice` | `core/global_script.ttslua` | **Pass** | Tier C tray layout across all ST bags |
 | `Compulsions.onGenericDrawn` / `onPresentedEnteredHand` / `onSelectedEnteredHand` | `core/compulsions.ttslua` | **Pass** | Called only after Global Card + `Compulsion:` prefix gates (TOR-204); selected path requires `<Color>Object` tag |
 
 ## Object-script handlers

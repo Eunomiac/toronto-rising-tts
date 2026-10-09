@@ -60,15 +60,6 @@ local function enumerateAllDiceBagGuids()
             end
         end
     end
-    local stBags = G.GetAllStorytellerDiceBagGUIDs()
-    if type(stBags) == "table" then
-        for _, guid in pairs(stBags) do
-            if type(guid) == "string" and seen[guid] ~= true then
-                seen[guid] = true
-                out[#out + 1] = guid
-            end
-        end
-    end
     return out
 end
 
@@ -166,6 +157,7 @@ local function reconcileAllParkedFromWorld()
         if die ~= nil then
             local bagGuid = DPP.resolveBagGuidForDie(die)
             if type(bagGuid) ~= "string" then
+                O.forgetHiddenObject(die.getGUID())
                 destroyObject(die)
                 orphans = orphans + 1
             else
@@ -370,7 +362,8 @@ function DPP.resolveBagGuidForDie(die)
     end
     local tags = die.getTags()
     local owner = DK.ownerFromTags(tags, { "Brown", "Orange", "Red", "Pink", "Purple" })
-    if owner == nil then
+    -- Storyteller dice have no bag (core/st_dice), so saved parked ones resolve to nil and are culled.
+    if owner == nil or owner == "storyteller" then
         return nil
     end
     local kind = nil
@@ -389,9 +382,6 @@ function DPP.resolveBagGuidForDie(die)
     -- Blood-surge rouse dice share the rouse bag.
     if kind == DK.KIND_BLOOD_SURGE_ROUSE then
         kind = DK.KIND_ROUSE
-    end
-    if owner == "storyteller" then
-        return G.GetDiceStorytellerBagGUID(kind)
     end
     local bags = G.GetAllPlayerDiceBagGUIDs(owner)
     return type(bags) == "table" and bags[kind] or nil

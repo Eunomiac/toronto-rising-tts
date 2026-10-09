@@ -30,13 +30,11 @@ Extended dice and their corresponding dice bags follow the naming and tagging co
 * all dice objects are tagged `d10`, `<Color>Object`, and `<DiceType>Die`
 * all dice bags are tagged `<Color>Object` and `<DiceType>Die`
 
-An exception to the above has to be made with the introduction of Storyteller dice, which are dice bags containing dice that are intended to be used by the Storyteller when rolling for NPCs.
+Storyteller dice (used when rolling for NPCs) are the exception: they have **no bags**. `core/st_dice.ttslua` spawns each die from a built-in definition straight onto the drawer tray when the Storyteller presses Roll.
 
-* all Storyteller dice bags are named `DICEBAG_<DICETYPE>_STORYTELLER`
-* all dice objects are tagged `d10`, `StorytellerObject`, and `<DiceType>Die`
-* all dice bags are tagged `StorytellerObject` and `<DiceType>Die`.
+* all Storyteller dice are tagged `d10`, `StorytellerObject`, and `<DiceType>Die`
 
-All extended dice bags, including Storyteller dice bags, use the shared object script `objects/dice_bag.ttslua`. Die-kind metadata and display mapping live in `lib/dice_kinds.ttslua`; roll and outcome behavior is dispatched through the controller and Storyteller modules listed in Agent Routing.
+All player dice bags use the shared object script `objects/dice_bag.ttslua`. Die-kind metadata and display mapping live in `lib/dice_kinds.ttslua`; roll and outcome behavior is dispatched through the controller and Storyteller modules listed in Agent Routing.
 
 ## Die Types
 
@@ -80,9 +78,9 @@ Results of rolling oblivion-rouse dice are identical to the current system of us
 
 ### Werewolf Dice
 
-In addition to having Storyteller versions of all player dice bags (i.e. Normal, Hunger, Rouse, and Oblivion-Rouse), the Storyteller also has two dice bags containing dice specific to _Werewolf: the Apocalypse_ — to be used when making rolls for werewolf NPCs. The first die type, "Werewolf Dice", is the "Normal" dice type rolled by werewolves.
+In addition to Storyteller versions of all player dice (i.e. Normal, Hunger, Rouse, and Oblivion-Rouse), the Storyteller also has two die kinds specific to _Werewolf: the Apocalypse_ — to be used when making rolls for werewolf NPCs. The first die type, "Werewolf Dice", is the "Normal" dice type rolled by werewolves.
 
-Thus, the Storyteller has a `DICEBAG_WEREWOLF_STORYTELLER` bag containing `WerewolfDie` and `StorytellerObject`-tagged dice. How the Werewolf dice system differs from the Vampire system is explained in more detail below, but for now, the images to be displayed for dice in the HUD panels are as follows:
+Thus, the Storyteller spawns `WerewolfDie` and `StorytellerObject`-tagged dice. How the Werewolf dice system differs from the Vampire system is explained in more detail below, but for now, the images to be displayed for dice in the HUD panels are as follows:
 
 | Face | Image Reference |
 | :--: | :--: |
@@ -204,12 +202,9 @@ In general, the same rules described above for player rolls apply to Storyteller
 
 ### Initiating a Storyteller Roll
 
-A Storyteller roll can be triggered from the NPC panel (by clicking the "R" button next to an NPC), or in the same way a player initiates a roll -- by clicking on one of the Storyteller dice bags.
+A Storyteller roll is started for an NPC (Storyteller Dashboard, or the in-game fallback panels). The roll is tagged with the name of the NPC, both for displaying the results and to distinguish this roll from any simultaneous rolls the Storyteller might initiate for other NPCs.
 
-* **Initiation via NPC Panel:** The roll should be tagged with the name of the NPC, both for displaying the results and to distinguish this roll from any simultaneous rolls the Storyteller might initiate for other NPCs.
-* **Initiation via Clicking Dice Bag:** A popup modal containing an input box should be presented to the Storyteller, where the name of the character making the roll should be entered. As above, this name should be used to distinguish this roll from any other parallel rolls the Storyteller might initiate.
-
-In both cases, if a second roll is initiated with the same name as a roll that has yet to be cleared from the table, a parenthetical index number should be appended to the end.  (E.g. if I initiate a roll by "Evangeline Dupont", that should be the roll's name. If I then initiate a second roll by "Evangeline Dupont", that roll should be named "Evangeline Dupont (2)")
+If a second roll is initiated with the same name as a roll that has yet to be cleared from the table, a parenthetical index number should be appended to the end.  (E.g. if I initiate a roll by "Evangeline Dupont", that should be the roll's name. If I then initiate a second roll by "Evangeline Dupont", that roll should be named "Evangeline Dupont (2)")
 
 Importantly, the Storyteller can only ever have one "live" roll active at a time. A "live" roll is defined as a roll that has not been confirmed and its results broadcast. Unlike player rolls, Storyteller rolls should not automatically be cleared off the table after a delay once the result is broadcast: The Storyteller must clear the roll by cancelling it in the Storyteller panel (this means that, unlike for player rolls, Storyteller rolls must remain in the Storyteller panel even after they have completed, so the Storyteller can remove them when appropriate.)
 
@@ -219,9 +214,9 @@ Up to three Storyteller rolls can exist at the same time. If the Storyteller att
 
 There are three dice drawer objects, one for each of the three simultaneous Storyteller rolls allowed, and each dice drawer has a corresponding dice drawer light. When a Storyteller initiates a Storyteller roll, it should be assigned to the next available slot (i.e. Dice Drawer 1, 2 or 3), and it becomes the "live" roll (recall: the Storyteller cannot initiate a new roll if a "live" roll already exists, so there will only ever be one "live" roll).
 
-The first time the Storyteller adds a die to the "live" roll, its dice drawer and dice drawer light should be activated. GUIDs for the dice drawers and lights are provided in `G.GUIDS`, the active and inactive positions for each dice drawer are given in `C.ObjectPositions`, and the "OFF" (inactive) and "STANDARD" (active) modes for each drawer light are given in `L.LIGHTMODES`.
+When the Storyteller presses Roll, the live roll's dice drawer and dice drawer light are activated. GUIDs for the dice drawers and lights are provided in `G.GUIDS`, the active and inactive positions for each dice drawer are given in `C.ObjectPositions`, and the "OFF" (inactive) and "STANDARD" (active) modes for each drawer light are given in `L.LIGHTMODES`.
 
-Importantly, unlike with player dice bags, the Storyteller dice bags are not located near the dice drawer. When spawning dice into a Storyteller roll, layout uses `lib/st_dice_tray_spawn.ttslua`: drawer **X/Z center** as origin (drawers are not Y-rotated), padded `getBounds()` half-extents as the outer ellipse radii, staging **Y = 5** unchanged. Dice fill **full 360°** rings (10 + 8 + 6 per Y layer, then +2 Y and repeat). `GlobalRepositionStorytellerTrayDice` orders dice across all ST bags before placing.
+Storyteller dice spawn directly on the tray (`STDICE.spawnPool`), laid out by `lib/st_dice_tray_spawn.ttslua`: drawer **X/Z center** as origin (drawers are not Y-rotated), padded `getBounds()` half-extents as the outer ellipse radii, tray surface **Y = 2.04**. Dice fill **full 360°** rings (10 + 8 + 6 per Y layer, then +2 Y and repeat), ordered Normal, Hunger, Rouse, Oblivion-Rouse, Werewolf, Rage.
 
 ### Rolling Storyteller Rolls
 
@@ -231,9 +226,7 @@ Unlike with player rolls, when the Storyteller clicks "Roll", the dice should be
 
 A "Werewolf Roll" is a roll that contains some combination of Werewolf Dice and/or Rage Dice. Only the Storyteller can initiate Werewolf Rolls, and they count as Storyteller rolls, so the mechanics described in the preceding section apply to these rolls as well.
 
-The Storyteller has full control of the number of Werewolf Dice and Rage Dice present in the pool: They spawn in whichever quantity of each they desire by clicking the respective Storyteller dice bag during dice assembly.
-
-**Spawn geometry (`objects/dice_bag.ttslua`):** Werewolf rolls mirror the vampire arc layout — **Werewolf dice share the Normal (outer) staging arc** and **Rage dice share the Hunger (inner) arc** (`radiusForSpawnKind` maps `KIND_WEREWOLF → SPAWN_RING_NORMAL`, `KIND_RAGE → SPAWN_RING_HUNGER`) so the two kinds do not overlap. Storyteller drawer-tray arcs are tighter than player rings, so each ST arc holds at most `MAX_DICE_PER_ARC_ST` (7) dice before overflowing onto a higher concentric arc; player arcs use `MAX_DICE_PER_ARC` (10).
+The Storyteller has full control of the number of Werewolf Dice and Rage Dice present in the pool: They set whichever quantity of each they desire while assembling the pool; the dice spawn on the tray when the roll is made.
 
 Werewolf and Rage dice cannot be combined with any other dice type, and vice versa: Attempting to add a different dice type to a Werewolf Roll, or attempting to add Werewolf or Rage dice to a non-Werewolf roll, should be denied with an alert to the Storyteller.
 
@@ -283,14 +276,14 @@ If "Confirm Violence" is clicked, **four additional successes** should be added 
 Code paths: `lib/dice_kinds.ttslua`, `lib/rouse_outcomes.ttslua`, `core/roll_controller.ttslua`, `core/storyteller_rolls.ttslua`, `lib/st_dice_drawer.ttslua`, `objects/dice_bag.ttslua`, `core/global_script.ttslua`, `core/roll_ui.ttslua`, `ui/shared/roll_panels.xml`.
 
 - **ST rolls** use seat `Black` + `gameState.storytellerRolls` (three drawer slots). Resolved dice are **not** auto-destroyed; clear via dashboard slot **CLEAR** (`STR.cancelSlot`). **Table Mode** refuses a new ST roll when no tray is free. **Scatter Mode** keeps the three-tray cap and adds one roll per scatter group: a new roll at a busy group replaces that group’s roll; if all three trays are elsewhere, the oldest roll is cleared and that tray moves to the new group. Scatter tray pose is the World Ray midpoint between the PC and NPC deployment arcs (`ScatterLayout.storytellerTrayPose`); off-stage NPCs use un-rotated World Origin.
-- **ST dashboard ROLL** unlocks tray dice, then calls `Object.randomize()` per die (physical tumble, same as R key), staggered ~0.1s — not a silent face assignment.
+- **ST dashboard ROLL** spawns the pool on the tray, unlocks it, then calls `Object.randomize()` on every die at once (physical tumble, same as R key) — not a silent face assignment.
 - **ST roll control panel** (`rollPanelST`, `Black|Host`): same controls as player panels (pool, ROLL, **TAKE HALF**, WP, RECALCULATE, CONFIRM, Obliv/Brutal) alongside the sidebar dashboard. Take Half uses the same rules as player rolls (PRE_ROLL, difficulty set, roll type allowed, roll option enabled).
 - **ST slot CLEAR** (`rollDash_stCancel_1..3` → `HUD_rollCancel`): must be handled before `colorFromRollElementId` (slot ids have no `_<Color>` suffix).
-- **Dice bag right-click** (`objects/dice_bag.ttslua` `click_roll` `alt_click`): routes to `GlobalDiceBagRightClick` / `STR.onDiceBagRightClick` — remove last staged die; empty pool cancels **player-initiated** rolls (ST-initiated rolls keep an empty pool). Idle **Rouse** / **Oblivion-Rouse** bag right-click starts a 1-die check, Opens it, and auto-tosses (**TOR-490**, **TOR-491**) without showing the player roll-control panel (**TOR-500**). Several seats may overlap that shortcut when every live player roll is also an idle-bag auto-Rouse (**TOR-493**). Hunger 5 still blocks Oblivion-Rouse.
+- **Dice bag right-click** (`objects/dice_bag.ttslua` `click_roll` `alt_click`): routes to `GlobalDiceBagRightClick` — remove last staged die; empty pool cancels **player-initiated** rolls (ST-initiated rolls keep an empty pool). Idle **Rouse** / **Oblivion-Rouse** bag right-click starts a 1-die check, Opens it, and auto-tosses (**TOR-490**, **TOR-491**) without showing the player roll-control panel (**TOR-500**). Several seats may overlap that shortcut when every live player roll is also an idle-bag auto-Rouse (**TOR-493**). Hunger 5 still blocks Oblivion-Rouse.
 - **Brutal Outcome confirm** (`RC.confirmBrutalChoice` → `RC.confirmRoll`): `confirmRoll` must **not** call `recalculate` after a brutal choice; result carries `brutalNarrative` for broadcast (e.g. "Brutal Win") and adjusted successes/margin.
 - **Frenzy queue** (`maybeQueueFrenzyOnHungerCap`): after rouse hunger increases, queue Frenzy only when hunger was **already at** `C.MAX_HUNGER` before the bump (would exceed cap; not on first transition to max). That queued roll auto-opens as Storyteller-initiated at Difficulty 4 with no player Cancel (**TOR-499**).
-- **ST bag → name modal** when no live roll; **NPC panel R** → `STR.initiateNpcRoll`.
-- **First die in pool (any kind):** `GlobalOnBagDieSpawned` opens the player `DiceDrawer` or ST slot drawer when pool total goes from 0 → >0 in `PRE_ROLL`/`ROLLING` (covers Auto-Hunger hunger-bag spawns, not only normal-bag leave-container). `onObjectLeaveContainer` still opens as a backup on bag takeObject.
+- **NPC roll start** → `STR.initiateNpcRoll`.
+- **First die in pool (any kind):** `GlobalOnBagDieSpawned` opens the player `DiceDrawer` when pool total goes from 0 → >0 in `PRE_ROLL`/`ROLLING` (covers Auto-Hunger hunger-bag spawns, not only normal-bag leave-container). `onObjectLeaveContainer` still opens as a backup on bag takeObject.
 - **ST-initiated Rouse/Obliv (PCS panel or NPC roll):** after `RC.initiateRoll`, call `GlobalSpawnDefaultPoolDiceForActive` so the default staged die spawns and the drawer opens on first pool die.
 - **Single rouse check:** `RC._buildRouseStripsForActive` emits one **Rouse** strip (all `pool.rouse` dice) and one **Oblivion Rouse** strip when applicable — no separate Blood Surge rouse strip.
 - **Rouse/Obliv exclusivity:** `DK.rouseKindBlockedByPool` + `GlobalRollSpawnDieRequest` return `nil` (silent bag fail).

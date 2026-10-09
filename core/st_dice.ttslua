@@ -1,0 +1,181 @@
+--[[
+    Storyteller dice (core/st_dice.ttslua)
+
+    NPC roll dice have no bags and no under-table preload. On Roll each die is spawned from its
+    definition below straight onto the live drawer tray, locked and tagged for the roll; this
+    module tracks those staged dice until the roll releases (unlocks) them. After release the dice
+    are ordinary table dice, found by tag and roll id (`STR.destroyTableDiceForRollId`).
+]]
+
+---@diagnostic disable: undefined-global
+
+local DK = require("lib.dice_kinds")
+local STS = require("lib.st_dice_tray_spawn")
+
+local STDICE = {}
+
+--- Tray layout order (outer ring first).
+STDICE.KINDS = {
+    DK.KIND_NORMAL,
+    DK.KIND_HUNGER,
+    DK.KIND_ROUSE,
+    DK.KIND_OBLIV_ROUSE,
+    DK.KIND_WEREWOLF,
+    DK.KIND_RAGE,
+}
+
+local SCALE = 1.75
+
+--- Face art per kind (TTS Custom_Dice d10 sheets; same art the retired Storyteller bags held).
+local DIE_ART = {
+    [DK.KIND_NORMAL] = {
+        nickname = "Normal Die",
+        image = "https://steamusercontent-a.akamaihd.net/ugc/14995346915324003056/9F355C854A6C5C9318D21B6522DB5C52349B0CAA/",
+    },
+    [DK.KIND_HUNGER] = {
+        nickname = "Hunger Die",
+        image = "https://steamusercontent-a.akamaihd.net/ugc/13660575892430173909/242FDF0006D8801E435CE5460C8472307A5C9D4A/",
+    },
+    [DK.KIND_ROUSE] = {
+        nickname = "Rouse Die",
+        image = "https://steamusercontent-a.akamaihd.net/ugc/12959840262182905547/8FAF9DEB7CFF0107C10B8F7DAA91A4D9083B8F46/",
+    },
+    [DK.KIND_OBLIV_ROUSE] = {
+        nickname = "Oblivion-Rouse Die",
+        image = "https://steamusercontent-a.akamaihd.net/ugc/15248465584943954888/1044D4BFD8D96A2231C145D546B3CBED72B8364A/",
+    },
+    [DK.KIND_WEREWOLF] = {
+        nickname = "Werewolf Die",
+        image = "https://steamusercontent-a.akamaihd.net/ugc/11831377631149613521/BD31A5610E46D645D057D5196928239164DE6F1F/",
+    },
+    [DK.KIND_RAGE] = {
+        nickname = "Rage Die",
+        image = "https://steamusercontent-a.akamaihd.net/ugc/17939182065163013962/2133453BBF13F9A1A998A6366F2E6AAD38C8267A/",
+    },
+}
+
+--- Face rotations for the d10 sheet layout (values 1–10).
+local ROTATION_VALUES = {
+    { Value = "1", Rotation = { x = -38, y = 0, z = 234 } },
+    { Value = "2", Rotation = { x = 38, y = 180, z = -233 } },
+    { Value = "3", Rotation = { x = -38, y = 0, z = 20 } },
+    { Value = "4", Rotation = { x = 38, y = 180, z = -17 } },
+    { Value = "5", Rotation = { x = -38, y = 0, z = 90 } },
+    { Value = "6", Rotation = { x = 38, y = 180, z = -161 } },
+    { Value = "7", Rotation = { x = -38, y = 0, z = 307 } },
+    { Value = "8", Rotation = { x = 38, y = 180, z = -304 } },
+    { Value = "9", Rotation = { x = -38, y = 0, z = 163 } },
+    { Value = "10", Rotation = { x = 38, y = 180, z = -90 } },
+}
+
+--- @type table[]  `{ kind, die }` in tray order, spawned and not yet released
+local staged = {}
+
+--- @param kind string
+--- @param rollId string
+--- @return table
+local function dieData(kind, rollId)
+    local art = DIE_ART[kind]
+    return {
+        Name = "Custom_Dice",
+        Nickname = art.nickname,
+        Locked = true,
+        GMNotes = DK.encodeGmNotes(rollId, false),
+        Tags = { DK.kindToTag(kind), DK.TAG_D10, DK.OWNER_STORYTELLER_TAG },
+        ColorDiffuse = { r = 1, g = 1, b = 1 },
+        CustomImage = {
+            ImageURL = art.image,
+            ImageSecondaryURL = "",
+            ImageScalar = 1,
+            WidthScale = 0,
+            CustomDice = { Type = 3 },
+        },
+        RotationValues = ROTATION_VALUES,
+        Transform = {
+            posX = 0, posY = 0, posZ = 0,
+            rotX = 0, rotY = 0, rotZ = 0,
+            scaleX = SCALE, scaleY = SCALE, scaleZ = SCALE,
+        },
+    }
+end
+
+--- Staged dice of one kind.
+--- @param kind string
+--- @return number
+function STDICE.stagedCount(kind)
+    local n = 0
+    for _, entry in ipairs(staged) do
+        if entry.kind == kind and entry.die ~= nil then
+            n = n + 1
+        end
+    end
+    return n
+end
+
+--- Spawns the pool's missing dice on the tray around `arcCenter`, locked and non-interactable, and
+--- lays every staged die out on the tray rings.
+--- @param pool table  normalized pool
+--- @param arcCenter table  `{ x, y, z, radiusX, radiusZ }` (`STD.arcCenterForSlot`)
+--- @param rollId string
+--- @return number spawned
+function STDICE.spawnPool(pool, arcCenter, rollId)
+    local plan = {}
+    for _, kind in ipairs(STDICE.KINDS) do
+        for _ = 1, (pool[kind] or 0) - STDICE.stagedCount(kind) do
+            plan[#plan + 1] = kind
+        end
+    end
+    local ordered = {}
+    for _, kind in ipairs(STDICE.KINDS) do
+        for _, entry in ipairs(staged) do
+            if entry.kind == kind and entry.die ~= nil then
+                ordered[#ordered + 1] = entry
+            end
+        end
+        for _, planned in ipairs(plan) do
+            if planned == kind then
+                ordered[#ordered + 1] = { kind = kind }
+            end
+        end
+    end
+    local total = #ordered
+    for i, entry in ipairs(ordered) do
+        local pos = STS.worldPositionForTrayDie(arcCenter, i, total)
+        if entry.die ~= nil then
+            entry.die.setPosition(pos)
+        else
+            entry.die = spawnObjectData({
+                data = dieData(entry.kind, rollId),
+                position = pos,
+                rotation = { math.random(0, 359), math.random(0, 359), math.random(0, 359) },
+                scale = { SCALE, SCALE, SCALE },
+            })
+            entry.die.interactable = false
+        end
+    end
+    staged = ordered
+    return #plan
+end
+
+--- Unlocks every staged die for the roll and stops tracking them.
+function STDICE.release()
+    for _, entry in ipairs(staged) do
+        if entry.die ~= nil then
+            entry.die.interactable = true
+            entry.die.setLock(false)
+        end
+    end
+    staged = {}
+end
+
+--- Destroys every staged (unreleased) die.
+function STDICE.destroyStaged()
+    for _, entry in ipairs(staged) do
+        if entry.die ~= nil then
+            destroyObject(entry.die)
+        end
+    end
+    staged = {}
+end
+
+return STDICE

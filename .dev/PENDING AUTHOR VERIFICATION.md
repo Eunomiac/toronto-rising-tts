@@ -269,7 +269,7 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 3. **Options:** click the gear icon on the row. The pop-up should open with the same toggles as the TTS options window. Change one and press **Apply**; the TTS options window should show the change.
 4. **After the roll:** have the player roll. While the dice tumble the row pulses gold; once they settle it turns plain red and shows the dice as coffin faces with the result. Click the diamonds: a small ring with a red and a white die appears. Left-click the white die to add a normal die, right-click to remove one; the pool in TTS should follow. Try **Override…** and pick a different result.
 5. **Held result:** let the roll finish without broadcasting it. The row goes dim and dashed. The megaphone icon broadcasts it to the table; the cancel icon dismisses it.
-6. **NPC roll:** right-click an NPC on the stage and pick a roll type. The NPC panel appears under the drawer list. Click the diamonds (or the **+**) and build a pool with the dice ring: click several times quickly. Every click should count straight away on the ring and the diamonds, and TTS should end with the same pool once it catches up. Pick a difficulty, then press the dice icon to roll (right-click it for secret dice the players cannot see). The dice should spawn in the drawer and roll. (The Storyteller dice bags must be in the save for this. If any is missing, the roll stops before the drawer opens, and the dashboard and TTS name the missing bags.) Afterwards click a die to pick it, press the circular-arrows icon to reroll it, and press the tick to confirm (right-click the tick to hold the result instead of broadcasting it).
+6. **NPC roll:** right-click an NPC on the stage and pick a roll type. The NPC panel appears under the drawer list. Click the diamonds (or the **+**) and build a pool with the dice ring: click several times quickly. Every click should count straight away on the ring and the diamonds, and TTS should end with the same pool once it catches up. Pick a difficulty, then press the dice icon to roll (right-click it for secret dice the players cannot see). The dice should spawn in the drawer and roll. Afterwards click a die to pick it, press the circular-arrows icon to reroll it, and press the tick to confirm (right-click the tick to hold the result instead of broadcasting it).
 7. **Willpower reroll:** have a player spend Willpower on a rolled PC roll (or press the Willpower icon on a rolled NPC roll). The row should turn blue and pulse while the reroll is under way, then go back to plain red.
 8. **Hunt:** in the hunt panel under the location card, click a resonance flavor and pick the hunting PC from the ring (the flavor gets an outline in that PC's seat colour), press the circling-arrows button to roll, then press the broadcast (loudspeaker) button. TTS should show the resonance on the roll result banner, and the hunt bar should go back to its starting state. (If no flavor was picked, the broadcast button asks for the PC with the same ring.)
 
@@ -285,8 +285,19 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 2. **Hold hotkey:** hover one of those tokens and hold the "Spotlight NPC (hold)" key. That NPC's figurine should be spotlit until you let go.
 3. **Werewolf rolls:** on the dashboard, right-click a Werewolf NPC on the stage. The roll ring should offer the Werewolf roll.
 4. **Scatter:** switch the table to Scatter, then move a PC and an NPC to other groups on the dashboard. Their figurines should move in TTS.
-5. **Roll fallback:** with **In-game ST Rolls** off, click a Storyteller dice bag. No pop-up should open, and a message should tell you to use the dashboard. Turn the button on and click the bag again: the roll name pop-up should open as before.
+5. **Roll fallback:** with **In-game ST Rolls** off, the in-game Storyteller roll dashboard and roll panel should stay hidden, even while an NPC roll is live. Turn the button on: they should appear and work as before. (Starting a roll by clicking a Storyteller dice bag is gone — see **TOR-688** below.)
 6. **Scenes panel fallback:** in the in-game Scenes panel, apply a scene, then close the panel. Both should work normally, and there should be no THERE button.
+
+#### TOR-688 — Storyteller dice spawn without bags
+
+**Context:** The Storyteller no longer has dice bags. When you roll for an NPC, each die is created straight onto the drawer tray, then unlocked and tossed as before. The 72 spare Storyteller dice that used to be parked under the table are removed automatically the first time you load. Clicking a Storyteller dice bag to start a roll, and its roll-name pop-up, are gone. If the six Storyteller dice bags are still anywhere in your save, you can delete them.
+
+**How to verify:** Save & Play into a live scene.
+
+1. **Spares removed:** loading should finish with no errors in the console. If you want to check the count, run `print(#getObjectsWithTag("d10Preload"))` in Execute Code: it should print 192 (only the player bags' spares) instead of 264.
+2. **NPC roll:** on the dashboard, right-click an NPC on the stage, pick **Standard**, build a pool with some normal and hunger dice, set a difficulty and press the dice icon. The drawer should rise, the tray light come on, and the dice appear on the tray in rings, then tumble. The result should match the dice on the tray. The first roll of a session may show grey dice for a moment while the textures load; tell me if that bothers you.
+3. **Other dice kinds:** repeat with a Rouse roll, and with a Werewolf roll on a Werewolf NPC (Werewolf and Rage dice). Each kind should look right.
+4. **Clear:** cancel a finished NPC roll from its drawer slot on the dashboard. Its dice should disappear from the table and the drawer should close.
 
 ### Medium — Prince's Court sheet
 

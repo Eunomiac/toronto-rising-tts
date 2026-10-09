@@ -347,10 +347,6 @@ local function applyNpcCommand(cmd)
       return "Could not set the NPC roll's difficulty."
     end
   elseif op == "npcRoll" then
-    local missingBags = GlobalMissingStorytellerDiceBagsMessage()
-    if missingBags ~= nil then
-      return missingBags
-    end
     HUD_rollRollButton(player, cmd.secret == true and "-2" or "-1", "rollPanelST_btnRoll")
   elseif op == "npcHalf" then
     HUD_rollTakeHalf(player, cmd.quiet == true and "-2" or "-1", "rollPanelST_btnHalf")

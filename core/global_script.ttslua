@@ -183,6 +183,7 @@ NPCS = require("core.npcs")
 PCST = require("core.pc_storyteller_panel")
 local DiceDrawer = require("lib.dice_drawer")
 local STD = require("lib.st_dice_drawer")
+local STDICE = require("core.st_dice")
 local DBV = require("lib.dice_bag_visibility")
 local WPG = require("core.wp_reroll_glow")
 local UiGlobalXmlDocs = require("lib.ui_global_xml_docs")
@@ -1911,60 +1912,6 @@ local function storytellerArcCenterForActive()
     }
 end
 
-local ST_BAG_KIND_ORDER = { "normal", "hunger", "rouse", "oblivRouse", "werewolf", "rage" }
-
---- Repositions all locked ST staged dice on the active drawer tray (full ellipse rings).
--- @param params table|nil  { arcCenter?: table }
-function GlobalRepositionStorytellerTrayDice(params)
-    params = type(params) == "table" and params or {}
-    local arcCenter = params.arcCenter
-    if type(arcCenter) ~= "table" then
-        arcCenter = storytellerArcCenterForActive()
-    elseif type(arcCenter.radiusX) ~= "number" or type(arcCenter.radiusZ) ~= "number" then
-        local full = storytellerArcCenterForActive()
-        if type(full) == "table" then
-            arcCenter = full
-        end
-    end
-    if type(arcCenter) ~= "table" or type(arcCenter.x) ~= "number" then
-        return
-    end
-
-    local STS = require("lib.st_dice_tray_spawn")
-    local ordered = {}
-    for _, kind in ipairs(ST_BAG_KIND_ORDER) do
-        local guid = G.GetDiceStorytellerBagGUID(kind)
-        if type(guid) == "string" then
-            local bag = G.getObject(guid)
-            if bag ~= nil and bag.call ~= nil then
-                local guids = bag.call("getStagedDiceGuids")
-                if type(guids) == "table" then
-                    for _, dieGuid in ipairs(guids) do
-                        if type(dieGuid) == "string" then
-                            local die = G.getObject(dieGuid)
-                            if die ~= nil then
-                                ordered[#ordered + 1] = die
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-
-    local total = #ordered
-    if total < 1 then
-        return
-    end
-
-    for i, die in ipairs(ordered) do
-        local pos = STS.worldPositionForTrayDie(arcCenter, i, total)
-        if type(pos) == "table" then
-            die.setPosition(pos)
-        end
-    end
-end
-
 --- Removes the last staged die from the bag for a logical die kind.
 -- @param color string
 -- @param dieKind string  DK.KIND_*
@@ -1974,9 +1921,7 @@ local function removeDieFromBag(color, dieKind)
         return false
     end
     local guid = nil
-    if color == "Black" then
-        guid = G.GetDiceStorytellerBagGUID(dieKind)
-    elseif dieKind == DK.KIND_NORMAL then
+    if dieKind == DK.KIND_NORMAL then
         guid = G.GetDiceNormalGUID(color)
     elseif dieKind == DK.KIND_HUNGER then
         guid = G.GetDiceHungerGUID(color)
@@ -1992,8 +1937,7 @@ local function removeDieFromBag(color, dieKind)
     if bag == nil then
         return false
     end
-    local arcCenter = (color == "Black") and storytellerArcCenterForActive() or nil
-    return bag.call("removeLastSpawnedDie", { arcCenter = arcCenter }) == true
+    return bag.call("removeLastSpawnedDie") == true
 end
 
 --- Cancels the active roll when the assembled pool is empty (after removing a die).
@@ -2338,57 +2282,6 @@ function GlobalDiceBagClick(params)
     spawnRequestedDie(color, dieKind)
 end
 
---- Spawns one die from a Storyteller dice bag (Werewolf / Rage / ST vampire bags).
--- Black rolls defer physical spawn until Roll (`fromRollClick`); bag clicks adjust pool state only.
--- @param params table  { dieKind: string, fromRollClick?: boolean }
-function GlobalSpawnDieFromStorytellerBag(params)
-    if type(params) ~= "table" then return end
-    if params.fromRollClick ~= true then
-        return
-    end
-    local dieKind = params.dieKind
-    if type(dieKind) ~= "string" then return end
-    local guid = G.GetDiceStorytellerBagGUID(dieKind)
-    if type(guid) ~= "string" then return end
-    local bag = G.getObject(guid)
-    if bag == nil then return end
-
-    local arcCenter = nil
-    local pid = S.getPlayerID("Black")
-    if pid ~= nil then
-        local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
-        if type(active) == "table" and type(active.stDrawerSlot) == "number" then
-            local STD = require("lib.st_dice_drawer")
-            arcCenter = STD.arcCenterForSlot(active.stDrawerSlot)
-        end
-    end
-
-    bag.call("spawnDieRedirect", {
-        bagColor = "Black",
-        dieType = dieKind,
-        arcCenter = arcCenter,
-    })
-end
-
---- Adjusts Black active-roll pool counts from ST bag clicks (no physical spawn until Roll).
--- @param params table  { dieKind: string, delta: number }
-function GlobalAdjustStorytellerPoolKind(params)
-    if type(params) ~= "table" then return end
-    local dieKind = params.dieKind
-    local delta = tonumber(params.delta)
-    if type(dieKind) ~= "string" or delta == nil then return end
-
-    local pid = S.getPlayerID("Black")
-    if pid == nil then return end
-    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
-    if active == nil then return end
-    if active.phase ~= C.RollPhase.SETUP and active.phase ~= C.RollPhase.PRE_ROLL then
-        return
-    end
-
-    RC.adjustPoolKindCount("Black", dieKind, delta)
-end
-
 --- Writes active roll id to a spawned die's GM Notes (leave-container backup for programmatic takeObject).
 -- @param params table  { color: string, dieGuid: string, bloodSurgeRouse?: boolean }
 function GlobalTagDieForActiveRoll(params)
@@ -2421,37 +2314,6 @@ function GlobalTagDieForActiveRoll(params)
     local isSurgeRouse = params.bloodSurgeRouse == true
         or die.script_state == DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE
     die.setGMNotes(DK.encodeGmNotes(active.id, isSurgeRouse))
-end
-
---- True while Black physical bag spawn runs from the Roll button (gates drawer hooks).
-local blackRollPhysicalSpawnActive = false
-
---- Opens the seat dice tray when the active pool has staged dice (SETUP / PRE_ROLL / ROLLING).
--- Player seats: tray opens via GlobalResolveRollPhysicalPrep (coupled with bags + auto-spawn).
--- Black: only during Roll-click spawn (`blackRollPhysicalSpawnActive`); Roll handler opens drawer after spawn.
--- @param color string
--- @param active table  active roll after pool mutation
-local function openDiceTrayOnFirstPoolDie(color, active)
-    if type(color) ~= "string" or type(active) ~= "table" then
-        return
-    end
-    if active.phase ~= C.RollPhase.SETUP
-        and active.phase ~= C.RollPhase.PRE_ROLL
-        and active.phase ~= C.RollPhase.ROLLING then
-        return
-    end
-    if DK.poolTotal(DK.normalizePool(active.pool)) < 1 then
-        return
-    end
-    if color == "Black" then
-        if not blackRollPhysicalSpawnActive then
-            return
-        end
-        if type(active.stDrawerSlot) == "number" then
-            local STR = require("core.storyteller_rolls")
-            STR.onFirstDieSpawned()
-        end
-    end
 end
 
 --- Bag spawn hook: delta pool counts (rouse vs bloodSurgeRouse) or staged count for other kinds.
@@ -2501,10 +2363,7 @@ function GlobalOnBagDieSpawned(params)
         if active ~= nil then
             local poolAfter = DK.normalizePool(active.pool)
             if DK.poolTotal(poolAfter) > 0 then
-                if color ~= "Black" or blackRollPhysicalSpawnActive then
-                    openDiceTrayOnFirstPoolDie(color, active)
-                end
-                if prevTotal == 0 and color ~= "Black" then
+                if prevTotal == 0 then
                     GlobalRollSeatCamera({ color = color, mode = "roll" })
                 end
             end
@@ -2539,10 +2398,7 @@ end
 --- Seconds to hold a post-roll correction die locked above the tray before randomize (ST roll hover).
 local POST_ROLL_DIE_HOVER_SEC = 1
 
---- After ST bag spawn before tray ring layout (original TOR-448 timescale).
-local ST_ROLL_SPAWN_SETTLE_SEC = 0.5
-
---- After ST tray ring layout before unlock → randomize (original TOR-448 timescale).
+--- After ST dice spawn on the tray before unlock → randomize (original TOR-448 timescale).
 local ST_ROLL_TRAY_SETTLE_SEC = 1
 
 --- After unlock before randomize (matches PC autoRollOnRelease).
@@ -2969,17 +2825,6 @@ function GlobalRemoveDieFromBag(params)
     end
 end
 
---- Storyteller dice bag click (delegates to core/storyteller_rolls.ttslua).
--- @param params table  { dieKind, clickedBy?, alt_click?: boolean }
-function GlobalStorytellerDiceBagClick(params)
-    local STR = require("core.storyteller_rolls")
-    if type(params) == "table" and params.alt_click == true then
-        STR.onDiceBagRightClick(params)
-    else
-        STR.onDiceBagClick(params)
-    end
-end
-
 --- Removes Blood Surge dice for a roll: tagged rouse + surge-spawned normal/hunger only.
 -- Bags first (while surge script_state is intact), then table-scan orphans.
 -- @param params table  { color, rollId }
@@ -2997,14 +2842,9 @@ function GlobalDestroyBloodSurgeDice(params)
     local remHunger = math.max(0, math.floor(tonumber(params.removeHunger) or 0))
     local preferCounts = params.removeNormal ~= nil or params.removeHunger ~= nil
     local ownerTag = color .. "Object"
-    local arcCenter = (color == "Black") and storytellerArcCenterForActive() or nil
 
     local function bagDestroyParams(scriptState)
-        local destroyParams = { scriptState = scriptState }
-        if arcCenter ~= nil then
-            destroyParams.arcCenter = arcCenter
-        end
-        return destroyParams
+        return { scriptState = scriptState }
     end
 
     -- Always remove Blood Surge rouse dice.
@@ -3026,7 +2866,6 @@ function GlobalDestroyBloodSurgeDice(params)
             if bag ~= nil then
                 bag.call("destroyLastStagedDice", {
                     count = remNormal,
-                    arcCenter = arcCenter,
                 })
             end
         end
@@ -3037,7 +2876,6 @@ function GlobalDestroyBloodSurgeDice(params)
                 bag.call("destroyLastStagedDice", {
                     count = remHunger,
                     preferScriptState = DK.SCRIPT_STATE_BLOOD_SURGE_POOL,
-                    arcCenter = arcCenter,
                 })
             end
         end
@@ -6573,14 +6411,6 @@ function onObjectLeaveContainer(container, obj)
     if active.phase == C.RollPhase.RESOLVED then return end
     local isSurgeRouse = obj.script_state == DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE
     obj.setGMNotes(DK.encodeGmNotes(active.id, isSurgeRouse))
-
-    -- Black drawer opens on Roll-click spawn path only (TOR-305: PC tray opens at PRE_ROLL entry).
-    if active.phase == C.RollPhase.PRE_ROLL or active.phase == C.RollPhase.ROLLING then
-        if color == "Black" and blackRollPhysicalSpawnActive and type(active.stDrawerSlot) == "number" then
-            local STR = require("core.storyteller_rolls")
-            STR.onFirstDieSpawned()
-        end
-    end
 end
 
 --- TOR-204: presented Compulsion card Drawn into a seat hand zone → finish pick-and-present.
@@ -6778,87 +6608,6 @@ local function getBagSpawnedCount(color, dieTypeName)
     return result
 end
 
---- Spawned count for a Storyteller bag by logical kind.
--- @param dieTypeName string
--- @return number
-local function getBagSpawnedCountStoryteller(dieTypeName)
-    local guid = G.GetDiceStorytellerBagGUID(dieTypeName)
-    if type(guid) ~= "string" then
-        return 0
-    end
-    local bag = G.getObject(guid)
-    if bag == nil then
-        return 0
-    end
-    local result = bag.call("getSpawnedCount")
-    if type(result) ~= "number" then
-        return 0
-    end
-    return result
-end
-
-local STORYTELLER_BAG_KINDS = { "normal", "hunger", "rouse", "oblivRouse", "werewolf", "rage" }
-
---- Storyteller dice bags this pool draws from that are not on the table (deleted, or a stale GUID).
--- @param pool table  normalized pool
--- @return string[] die kinds
-local function missingStorytellerBagKinds(pool)
-    local missing = {}
-    for _, kind in ipairs(STORYTELLER_BAG_KINDS) do
-        if (pool[kind] or 0) > 0 then
-            local guid = G.GetDiceStorytellerBagGUID(kind)
-            if type(guid) ~= "string" or G.getObject(guid) == nil then
-                missing[#missing + 1] = string.format("%s (%s)", kind, tostring(guid))
-            end
-        end
-    end
-    return missing
-end
-
---- Message naming the Storyteller dice bags the live Black pool needs but cannot find, or nil.
--- @return string|nil
-function GlobalMissingStorytellerDiceBagsMessage()
-    local pid = S.getPlayerID("Black")
-    local active = pid and S.getStateVal("playerData", pid, "hud", "rollData", "active") or nil
-    if type(active) ~= "table" then
-        return nil
-    end
-    local missing = missingStorytellerBagKinds(DK.normalizePool(active.pool))
-    if #missing == 0 then
-        return nil
-    end
-    return "Storyteller dice bags missing from the table: " .. table.concat(missing, ", ")
-        .. ". Restore them in the save, then roll again."
-end
-
---- Auto-spawns missing pool dice for Black (Storyteller bags).
--- @param pool table
--- @param opts table|nil  `{ deferTrayPlacement?: boolean }` omit arc center until a later reposition step
--- @return boolean true if any autoSpawn ran
-local function autoSpawnBlackPool(pool, opts)
-    opts = type(opts) == "table" and opts or {}
-    local didAutoSpawn = false
-    local arcCenter = opts.deferTrayPlacement == true and nil or storytellerArcCenterForActive()
-    if arcCenter == nil and opts.deferTrayPlacement ~= true then
-        print("[Roll] autoSpawnBlackPool: no ST drawer arc center (missing stDrawerSlot?)")
-    end
-    for _, kind in ipairs(STORYTELLER_BAG_KINDS) do
-        local target = pool[kind] or 0
-        local needed = target - getBagSpawnedCountStoryteller(kind)
-        if needed > 0 then
-            local guid = G.GetDiceStorytellerBagGUID(kind)
-            if type(guid) == "string" then
-                local bag = G.getObject(guid)
-                if bag ~= nil then
-                    bag.call("autoSpawn", { count = needed, arcCenter = arcCenter })
-                    didAutoSpawn = true
-                end
-            end
-        end
-    end
-    return didAutoSpawn
-end
-
 --- Bag GUID lookup for player pool auto-spawn by logical kind name.
 -- @param color string
 -- @param kindName string  "normal"|"hunger"|"rouse"|"oblivRouse"
@@ -6924,6 +6673,22 @@ local function spawnMissingPoolDiceForColor(color)
     return didAutoSpawn
 end
 
+--- Spawns the live Storyteller pool's missing dice onto its drawer tray (`core/st_dice`; no bags).
+-- @return boolean true if any die spawned
+local function spawnBlackPoolOnTray()
+    local pid = S.getPlayerID("Black")
+    local active = pid ~= nil and S.getStateVal("playerData", pid, "hud", "rollData", "active") or nil
+    if type(active) ~= "table" or type(active.id) ~= "string" then
+        return false
+    end
+    local arcCenter = storytellerArcCenterForActive()
+    if arcCenter == nil then
+        print("[Roll] Storyteller roll has no drawer tray (missing stDrawerSlot?)")
+        return false
+    end
+    return STDICE.spawnPool(DK.normalizePool(active.pool), arcCenter, active.id) > 0
+end
+
 --- Spawns staged dice to match active.pool in PRE_ROLL (all roll types).
 -- Player seats: spawn only missing dice per bag (target − staged). Same path for dedicated
 -- Rouse/Oblivion/Simple Check and compound Standard rolls — rollType must not fork spawn logic.
@@ -6948,29 +6713,16 @@ local function spawnActivePoolDiceForActive(color, opts)
         return false
     end
     if color == "Black" then
-        if opts.fromRollClick ~= true then
+        if opts.fromRollClick ~= true or active.phase ~= C.RollPhase.PRE_ROLL then
             return false
         end
-        if active.phase ~= C.RollPhase.PRE_ROLL then
-            return false
-        end
+        return spawnBlackPoolOnTray()
     end
-    local pool = DK.normalizePool(active.pool)
-    local didSpawn = false
-    if color == "Black" then
-        blackRollPhysicalSpawnActive = true
-        didSpawn = autoSpawnBlackPool(pool)
-        blackRollPhysicalSpawnActive = false
-    else
-        DBV.reconcileForPlayer(color, active)
-        didSpawn = spawnMissingPoolDiceForColor(color)
-    end
-    -- Re-read after autoSpawn: bag hooks sync pool via GlobalOnBagDieSpawned (stagedCount).
-    active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
-    return didSpawn
+    DBV.reconcileForPlayer(color, active)
+    return spawnMissingPoolDiceForColor(color)
 end
 
---- Global.call entry: spawn active pool dice for SETUP / PRE_ROLL (player + ST bags).
+--- Global.call entry: spawn active pool dice for SETUP / PRE_ROLL (player bags; Storyteller tray).
 -- @param params table  { color: string, fromRollClick?: boolean }
 -- @return boolean|nil  true if any auto-spawn ran
 function GlobalSpawnActivePoolDiceForActive(params)
@@ -6983,46 +6735,6 @@ end
 local DRAWER_RELEASE_MIN_Y = 2.5
 --- FIFO jobs for `GlobalWaitDrawerThenReleaseBagDice` (one coroutine per enqueue; local `job` per run).
 local drawerReleaseJobQueue = {}
-
---- Ensures roll tags on all ST staged dice before unlock/randomize.
-local function ensureBlackStagedRollTags()
-    local bags = G.GetAllStorytellerDiceBagGUIDs()
-    for _, guid in pairs(bags) do
-        if type(guid) == "string" then
-            local bag = G.getObject(guid)
-            if bag ~= nil then
-                bag.call("ensureRollTagsOnStagedDice")
-            end
-        end
-    end
-end
-
---- Instant snap of locked ST staged dice to the drawer tray ellipse (setPosition, not smooth).
-local function instantRepositionBlackStagedDice()
-    GlobalRepositionStorytellerTrayDice({})
-end
-
---- Spawns missing ST pool dice locked at the bag (tray placement deferred to a later step).
-local function spawnBlackPoolLocked()
-    local pid = S.getPlayerID("Black")
-    if pid == nil then
-        return
-    end
-    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
-    if active == nil then
-        return
-    end
-    local pool = DK.normalizePool(active.pool)
-    blackRollPhysicalSpawnActive = true
-    autoSpawnBlackPool(pool, { deferTrayPlacement = true })
-    blackRollPhysicalSpawnActive = false
-end
-
---- Instantly snaps locked ST staged dice onto the drawer tray arc and tags them for the roll.
-local function moveBlackStagedDiceToTray()
-    instantRepositionBlackStagedDice()
-    ensureBlackStagedRollTags()
-end
 
 --- Randomize every die in the active roll at once (Global context; fires onObjectRandomize).
 -- @param color string
@@ -7054,20 +6766,11 @@ local function randomizeBlackTrayDiceSimultaneous(rollId, physicsColor)
     randomizeAllRollDiceForColor("Black", rollId, physicsColor)
 end
 
---- Unlocks staged bag dice for one seat (drawer must already be opening or open).
+--- Unlocks staged dice for one seat (drawer must already be opening or open).
 -- @param color string
 local function unlockStagedBagDice(color)
     if color == "Black" then
-        ensureBlackStagedRollTags()
-        local bags = G.GetAllStorytellerDiceBagGUIDs()
-        for _, guid in pairs(bags) do
-            if type(guid) == "string" then
-                local bag = G.getObject(guid)
-                if bag ~= nil then
-                    bag.call("releaseDice")
-                end
-            end
-        end
+        STDICE.release()
         return
     end
     callBagFunction(color, "ensureRollTagsOnStagedDice")
@@ -7085,8 +6788,8 @@ local function blackRollWaitDrawerRaised(slot)
     end
 end
 
---- ST Roll click: open → fully raised + light → spawn unlocked on tray (y=2.04) →
---- ring layout → settle → unlock → 0.15s → randomize (TOR-448).
+--- ST Roll click: open → fully raised + light → spawn locked on the tray rings (y=2.04) →
+--- settle → unlock → 0.15s → randomize (TOR-448).
 -- @param physicsColor string|nil  HUD clicker seat for Object.randomize toss
 local function runBlackRollSequence(physicsColor)
     local pid = S.getPlayerID("Black")
@@ -7103,12 +6806,6 @@ local function runBlackRollSequence(physicsColor)
     if blackRollSequenceRunning then
         return
     end
-    local missingBags = GlobalMissingStorytellerDiceBagsMessage()
-    if missingBags ~= nil then
-        print("[Roll] " .. missingBags)
-        broadcastToColor(missingBags, "Black", { 1, 0.35, 0.35 })
-        return
-    end
     blackRollSequenceRunning = true
     local slot = active.stDrawerSlot
     local rollId = active.id
@@ -7123,14 +6820,7 @@ local function runBlackRollSequence(physicsColor)
         function()
             -- Light with tray arrival (deferred from openForSlot).
             STD.applyTrayLightForSlot(slot, true, 0.25)
-            spawnBlackPoolLocked()
-            return ST_ROLL_SPAWN_SETTLE_SEC
-        end,
-        function()
-            return blackRollWaitDrawerRaised(slot)
-        end,
-        function()
-            moveBlackStagedDiceToTray()
+            spawnBlackPoolOnTray()
             return ST_ROLL_TRAY_SETTLE_SEC
         end,
         function()
@@ -7165,7 +6855,7 @@ local function runBlackRollSequence(physicsColor)
 end
 
 --- Advances to ROLLING and unlocks staged dice (drawer must already be raised when applicable).
--- Black legacy/debug path: startRolling → tray settle → unlock → 0.15s → randomize (same as PC auto-roll).
+-- Black (drawer-release queue): startRolling → tray settle → unlock → 0.15s → randomize (same as PC auto-roll).
 -- PC path: live tray elevation + startRolling must complete before unlock (TOR-262).
 -- @param color string
 -- @param physicsColor string|nil  ST only: acting seat for toss impulse
@@ -7548,8 +7238,7 @@ end
 function destroyBagDice(color, opts)
     cancelPendingRollCleanup(color)
     if color == "Black" then
-        local STR = require("core.storyteller_rolls")
-        STR.destroyStagedBagDice()
+        STDICE.destroyStaged()
         return
     end
     if type(opts) ~= "table" or (opts.keepDrawerOpen ~= true and opts.drawerAlreadyClosed ~= true) then
@@ -8060,25 +7749,6 @@ end
 function HUD_rollOptsToggle(player, value, id)
     if RUI and RUI.toggleRollOptsButton then
         RUI.toggleRollOptsButton(id)
-    end
-end
-
-function HUD_rollStNameInputChanged(player, value, id)
-    if RUI.onStRollNameInputChanged then
-        RUI.onStRollNameInputChanged(player, value, id)
-    end
-end
-
-function HUD_rollStNameApply(player, value, id)
-    if RUI.applyStRollNameModal then
-        RUI.applyStRollNameModal()
-        RUI.refreshSTDashboard()
-    end
-end
-
-function HUD_rollStNameCancel(player, value, id)
-    if RUI.closeStRollNameModal then
-        RUI.closeStRollNameModal()
     end
 end
 
