@@ -1,7 +1,8 @@
 import { useState, type ReactElement } from "react";
-import { AspectRow, ConfirmButton, LocationPanel, PRESENT_DAY, SoundMixer, WeatherPanel, WhenPanel, type LabLocation, type LiveScenes } from "./glance";
+import type { SceneClockMode } from "../scenesPanel/commands";
+import { AspectRow, ConfirmButton, LocationPanel, PRESENT_DAY, SceneTimingRing, SoundMixer, WeatherPanel, WhenPanel, type LabLocation, type LiveScenes, type SceneTiming } from "./glance";
 import { SceneNotes } from "./labNotes";
-import { Box, WideBoard } from "./sketch";
+import { Box, WideBoard, canvasPoint } from "./sketch";
 
 /** A library scene being prepared away from the table. */
 export type PreparedScene = { readonly title: string; readonly location: LabLocation; readonly indoors: boolean };
@@ -59,7 +60,8 @@ const PreparedPanels = ({ scene, w, h }: { scene: PreparedScene; w: number; h: n
 
 /**
  * Preview: prepared scenes in tabs across the top, each laid out like the table. On deck adds the scene to the
- * live scenes in the phase bar without switching to it; Play Scene puts it on the table.
+ * live scenes in the phase bar without switching to it; Play Scene asks how to set the clock, then puts it on the
+ * table.
  */
 export const ScenePreview = ({ x, y, w, h, prepared, scenes, onDeck, onPlay, onClose }: {
   x: number;
@@ -69,10 +71,11 @@ export const ScenePreview = ({ x, y, w, h, prepared, scenes, onDeck, onPlay, onC
   prepared: readonly PreparedScene[];
   scenes: LiveScenes;
   onDeck: (title: string) => void;
-  onPlay: (title: string) => void;
+  onPlay: (title: string, clockMode: SceneClockMode) => void;
   onClose: () => void;
 }): ReactElement => {
   const [activeTitle, setActiveTitle] = useState(prepared[0]?.title ?? "");
+  const [timing, setTiming] = useState<SceneTiming | null>(null);
   const active = prepared.find((scene) => scene.title === activeTitle) ?? prepared[0];
   const onTable = active !== undefined && active.title === scenes.current;
   const onDeckAlready = active !== undefined && scenes.live.includes(active.title);
@@ -104,13 +107,21 @@ export const ScenePreview = ({ x, y, w, h, prepared, scenes, onDeck, onPlay, onC
           >
             {onTable ? "On the table" : onDeckAlready ? "On deck ✓" : "On deck"}
           </button>
-          <button type="button" className="lab-btn live" disabled={!active || onTable} onClick={() => active && onPlay(active.title)}>
+          <button type="button" className="lab-btn live" disabled={!active || onTable}
+            onClick={(event) => {
+              if (active) {
+                const title = active.title;
+                setTiming({ at: canvasPoint(event), go: (mode) => onPlay(title, mode) });
+              }
+            }}
+          >
             Play Scene
           </button>
           <ConfirmButton label="Discard" className="lab-btn danger" onConfirm={onClose} />
         </span>
       </div>
       {active && <PreparedPanels key={active.title} scene={active} w={w} h={h} />}
+      {timing && <SceneTimingRing timing={timing} onClose={() => setTiming(null)} />}
     </div>
   );
 };

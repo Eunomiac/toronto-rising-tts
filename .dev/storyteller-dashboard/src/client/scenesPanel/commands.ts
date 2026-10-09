@@ -1,6 +1,17 @@
 import { createContext, useContext } from "react";
 import type { ClockDatetime } from "../worldState";
 
+/** How a scene switch sets the clock (`PresentDayClock.resolveAndApplyActivationClock`). */
+export type SceneClockMode =
+  | "scene"
+  | "x5"
+  | "setPresent"
+  | "present"
+  | "presentPlus15"
+  | "presentPlus30"
+  | "presentPlus60"
+  | "presentPlus120";
+
 /** Storyteller lanes `Soundscape.setStorytellerLaneVolume` accepts. */
 export type SoundLane = "music" | "location" | "featured" | "rain" | "wind";
 
@@ -23,7 +34,7 @@ export type ScenesCommand =
   | { readonly op: "ambience"; readonly key: string }
   | { readonly op: "stopAll" }
   | { readonly op: "seatPresence"; readonly seat: string; readonly present: boolean }
-  | { readonly op: "playScene"; readonly key: string; readonly clockMode?: string }
+  | { readonly op: "playScene"; readonly key: string; readonly clockMode?: SceneClockMode }
   | { readonly op: "endScene" };
 
 export type ScenesSend = (command: ScenesCommand) => void;

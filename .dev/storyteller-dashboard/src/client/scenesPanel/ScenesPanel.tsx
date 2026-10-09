@@ -239,10 +239,10 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
               <PhaseStrip
                 library={[]}
                 scenes={{ live: liveScenes.live, current: title }}
-                onSwitch={(sceneTitle) => {
+                onSwitch={(sceneTitle, clockMode) => {
                   const key = liveScenes.keyOf(sceneTitle);
                   if (key) {
-                    commands.send({ op: "playScene", key });
+                    commands.send({ op: "playScene", key, clockMode });
                   }
                 }}
                 onEndScene={() => {

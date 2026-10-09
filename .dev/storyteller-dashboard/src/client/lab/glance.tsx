@@ -27,7 +27,7 @@ import {
   type Odds
 } from "./huntOdds";
 import { Btn, Overlay, canvasPoint } from "./sketch";
-import { useScenesCommand, type ScenesSend, type SoundLane } from "../scenesPanel/commands";
+import { useScenesCommand, type SceneClockMode, type ScenesSend, type SoundLane } from "../scenesPanel/commands";
 import { fromDate, type SoundView, type SpotlightView } from "../scenesPanel/liveScene";
 
 /**
@@ -62,39 +62,68 @@ export const ReleaseOverride = ({ onRelease }: { onRelease: () => void }): React
 
 /** Keeps the widest spoke (radius 112 plus half its width) inside the canvas. */
 const RING_EDGE = 180;
+/** The wide ring (eight or more choices) spreads its spokes on a larger ellipse. */
+const WIDE_RING_EDGE = 220;
 
 type RingOption<T> = { readonly value: T; readonly label: string };
 type Point = { readonly x: number; readonly y: number };
 
 /** Choices spread evenly around the click point; the current choice is highlighted. Clicking off closes it. */
-const RingMenu = <T,>({ at, options, current, onPick, onClose }: {
+const RingMenu = <T,>({ at, options, current, onPick, onClose, wide = false }: {
   at: Point;
   options: readonly RingOption<T>[];
   current: T;
   onPick: (value: T) => void;
   onClose: () => void;
-}): ReactElement => (
-  <Overlay onClose={onClose}>
-    <div className="lab-ring" style={{ left: Math.min(Math.max(at.x, RING_EDGE), 1920 - RING_EDGE), top: Math.max(at.y, 86) }}>
-      {options.map((option, index) => {
-        const angle = -Math.PI / 2 + (index * 2 * Math.PI) / options.length;
-        return (
-          <button
-            key={String(option.value)}
-            type="button"
-            className={`lab-ring-item spoke${option.value === current ? " current" : ""}`}
-            style={{ left: Math.cos(angle) * 112, top: Math.sin(angle) * 64, "--i": index } as CSSProperties}
-            onClick={() => {
-              onPick(option.value);
-              onClose();
-            }}
-          >
-            {option.label}
-          </button>
-        );
-      })}
-    </div>
-  </Overlay>
+  wide?: boolean;
+}): ReactElement => {
+  const edge = wide ? WIDE_RING_EDGE : RING_EDGE;
+  const [rx, ry] = wide ? [156, 92] : [112, 64];
+  return (
+    <Overlay onClose={onClose}>
+      <div className={`lab-ring${wide ? " wide" : ""}`} style={{ left: Math.min(Math.max(at.x, edge), 1920 - edge), top: Math.max(at.y, ry + 22) }}>
+        {options.map((option, index) => {
+          const angle = -Math.PI / 2 + (index * 2 * Math.PI) / options.length;
+          return (
+            <button
+              key={String(option.value)}
+              type="button"
+              className={`lab-ring-item spoke${option.value === current ? " current" : ""}`}
+              style={{ left: Math.cos(angle) * rx, top: Math.sin(angle) * ry, "--i": index } as CSSProperties}
+              onClick={() => {
+                onPick(option.value);
+                onClose();
+              }}
+            >
+              {option.label}
+            </button>
+          );
+        })}
+      </div>
+    </Overlay>
+  );
+};
+
+const SCENE_CLOCK_MODES: readonly RingOption<SceneClockMode>[] = [
+  { value: "scene", label: "Scene Time" },
+  { value: "x5", label: "×5 To Now" },
+  { value: "setPresent", label: "Set Now" },
+  { value: "present", label: "NOW" },
+  { value: "presentPlus15", label: "Now +15" },
+  { value: "presentPlus30", label: "Now +30" },
+  { value: "presentPlus60", label: "Now +60" },
+  { value: "presentPlus120", label: "Now +120" }
+];
+
+/** A scene switch waiting for its clock choice: where the ring opens and what to run once a mode is picked. */
+export type SceneTiming = { readonly at: Point; readonly go: (mode: SceneClockMode) => void };
+
+/**
+ * Every scene switch from the dashboard asks how to set the clock: keep the scene's own time, catch up at ×5,
+ * make the scene's time the new present day, or jump to present day (optionally some minutes later).
+ */
+export const SceneTimingRing = ({ timing, onClose }: { timing: SceneTiming; onClose: () => void }): ReactElement => (
+  <RingMenu at={timing.at} options={SCENE_CLOCK_MODES} current="scene" onPick={timing.go} onClose={onClose} wide />
 );
 
 /* ---------- Where: District and Site names over their card art; aspects in their own row ---------- */
@@ -2218,14 +2247,15 @@ const CommitInput = ({ value, onCommit, ...rest }: Omit<InputHTMLAttributes<HTML
  * each scene on deck to switch to it. Intermission shows the next session's number and title; Spotlight the
  * carousel. In Play, End Scene (takes the current scene out of the live list) sits just left of Advance, and
  * Advance opens a ring: Scene (scene picker), Memoriam (Memoriam set-up), or Spotlight (click twice). In any
- * other phase, Advance names the next phase and needs a second click.
+ * other phase, Advance names the next phase and needs a second click. Switching to a deck scene or playing one
+ * from the picker first asks how to set the clock (`SceneTimingRing`).
  */
 export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPrepare, live }: {
   library: readonly string[];
   scenes: LiveScenes;
-  onSwitch: (title: string) => void;
+  onSwitch: (title: string, clockMode: SceneClockMode) => void;
   onEndScene: () => void;
-  onPlay: (title: string) => void;
+  onPlay: (title: string, clockMode: SceneClockMode) => void;
   onPrepare: () => void;
   /** TTS's phase, session, and spotlight; buttons send commands when the Scenes tab provides a sender. */
   live?: LivePhase;
@@ -2233,6 +2263,7 @@ export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPr
   const [labPhase, setPhase] = useState<Phase>("Play");
   const [ring, setRing] = useState<Point | null>(null);
   const [modal, setModal] = useState<"scene" | "memoriam" | null>(null);
+  const [timing, setTiming] = useState<SceneTiming | null>(null);
   const [labSession, setSession] = useState({ number: 43, title: "" });
   const phase: Phase = live ? (isPhase(live.phase) ? live.phase : "Intermission") : labPhase;
   const session = live ? { number: live.sessionNum ?? 1, title: live.sessionName } : labSession;
@@ -2256,7 +2287,7 @@ export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPr
           <span className="lab-phase-scenes">
             <span className={`lab-phase-scene${scenes.current ? "" : " none"}`}>{scenes.current ?? "No scene on the table"}</span>
             {scenes.live.filter((title) => title !== scenes.current).map((title) => (
-              <button key={title} type="button" className="lab-phase-deck" title={`Switch the table to ${title}`} onClick={() => onSwitch(title)}>
+              <button key={title} type="button" className="lab-phase-deck" title={`Switch the table to ${title}`} onClick={(event) => setTiming({ at: canvasPoint(event), go: (mode) => onSwitch(title, mode) })}>
                 {title}
               </button>
             ))}
@@ -2343,9 +2374,9 @@ export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPr
           library={library}
           scenes={scenes}
           onClose={() => setModal(null)}
-          onPlay={(title) => {
+          onPlay={(title, at) => {
             setModal(null);
-            onPlay(title);
+            setTiming({ at, go: (mode) => onPlay(title, mode) });
           }}
           onPrepare={() => {
             setModal(null);
@@ -2354,6 +2385,7 @@ export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPr
         />
       )}
       {modal === "memoriam" && <MemoriamModal onClose={() => setModal(null)} />}
+      {timing && <SceneTimingRing timing={timing} onClose={() => setTiming(null)} />}
     </div>
   );
 };
@@ -2362,7 +2394,7 @@ const SceneModal = ({ library, scenes, onClose, onPlay, onPrepare }: {
   library: readonly string[];
   scenes: LiveScenes;
   onClose: () => void;
-  onPlay: (title: string) => void;
+  onPlay: (title: string, at: Point) => void;
   onPrepare: () => void;
 }): ReactElement => (
   <Overlay onClose={onClose}>
@@ -2374,7 +2406,7 @@ const SceneModal = ({ library, scenes, onClose, onPlay, onPrepare }: {
           <li key={title} className={title === scenes.current ? "live" : scenes.live.includes(title) ? "prep" : undefined}>
             <span>{title}{title === scenes.current ? " (on the table)" : scenes.live.includes(title) ? " (on deck)" : ""}</span>
             <span className="lab-row">
-              <button type="button" className="lab-btn live" disabled={title === scenes.current} onClick={() => onPlay(title)}>Play</button>
+              <button type="button" className="lab-btn live" disabled={title === scenes.current} onClick={(event) => onPlay(title, canvasPoint(event))}>Play</button>
               <button type="button" className="lab-btn" onClick={onPrepare}>Edit</button>
             </span>
           </li>

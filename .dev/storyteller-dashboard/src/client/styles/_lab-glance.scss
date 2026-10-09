@@ -149,6 +149,11 @@ $lab-live: #4caf6a;
     background: radial-gradient(closest-side, rgb(10 10 12 / 55%), rgb(10 10 12 / 15%) 70%, transparent);
   }
 
+  &.wide::before {
+    width: 312px;
+    height: 184px;
+  }
+
   &::after {
     width: 7px;
     height: 7px;
