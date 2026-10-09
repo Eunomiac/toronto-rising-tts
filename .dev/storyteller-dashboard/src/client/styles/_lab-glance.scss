@@ -255,6 +255,11 @@ $lab-live: #4caf6a;
       box-shadow: 0 6px 16px rgb(0 0 0 / 65%), 0 0 12px 2px rgb(242 196 78 / 45%);
     }
 
+    &.accented,
+    &.accented:hover:not(:disabled) {
+      border: 2px solid var(--accent);
+    }
+
     &.armed {
       border-color: var(--red-bright);
       color: #fff;
@@ -938,10 +943,11 @@ $lab-live: #4caf6a;
   }
 }
 
-// Fixed rows: the present-day line keeps its row when hidden, so nothing moves.
+// Date and time sit centred vertically; the present-day line above them keeps its row when hidden (balanced by an
+// equal empty row below), so nothing moves.
 .lab-when {
   display: grid;
-  grid-template-rows: 20px 1fr auto auto;
+  grid-template-rows: 1fr 20px auto auto 20px 1fr;
   justify-items: center;
   padding: 3px 8px 6px;
 
@@ -950,6 +956,7 @@ $lab-live: #4caf6a;
   }
 
   &-present {
+    grid-row: 2;
     font-size: 15px;
     font-weight: 800;
     font-style: italic;
@@ -961,13 +968,14 @@ $lab-live: #4caf6a;
   }
 
   &-date {
-    align-self: end;
+    grid-row: 3;
     font-size: 19px;
     font-weight: 700;
     color: #e6e0f0;
   }
 
   &-time {
+    grid-row: 4;
     font-size: 36px;
     font-weight: 800;
     line-height: 1;
@@ -1695,14 +1703,6 @@ $lab-queued: #e8c547;
   gap: 4px;
   height: 100%;
 
-  &-pc {
-    flex: 0 0 auto;
-    width: 62px;
-    height: 34px;
-    padding: 0 2px;
-    font-size: 12px;
-  }
-
   // Hover and spin the mouse wheel to change it.
   &-successes {
     display: grid;
@@ -1775,15 +1775,14 @@ $lab-queued: #e8c547;
     border: 1px solid #000;
     font-family: inherit;
     background: #111;
-    cursor: pointer;
 
     &.intensity {
       height: 15px;
     }
   }
 
-  &-bars.settled &-bar {
-    cursor: default;
+  &-bars:not(.settled) &-bar:not(.intensity) &-seg {
+    cursor: pointer;
   }
 
   &-seg {
@@ -1805,9 +1804,10 @@ $lab-queued: #e8c547;
     &.light { background: #b22a35; }
     &.dark { background: #5a1219; }
 
+    // Outlined in the hunting PC's seat colour.
     &.sought {
-      color: #ffe7a6;
-      box-shadow: inset 0 0 0 2px #f2c44e;
+      color: #fff;
+      box-shadow: inset 0 0 0 3px var(--hunter, #f2c44e);
     }
 
     // Intensity: darker to brighter as the resonance strengthens.
@@ -1836,10 +1836,47 @@ $lab-queued: #e8c547;
     }
   }
 
-  &-confirm {
+  // Roll; after a roll it splits into Broadcast and Cancel.
+  &-acts {
+    display: flex;
     flex: 0 0 auto;
-    align-self: center;
-    animation: lab-hunt-confirm-in 0.3s ease;
+    gap: 3px;
+    animation: lab-hunt-acts-in 0.3s ease;
+  }
+
+  &-act {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 32px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid #34343e;
+    background: #1e1e25;
+    cursor: pointer;
+
+    svg {
+      width: 20px;
+      height: 20px;
+      fill: #c9c9d2;
+    }
+
+    &:hover:not(:disabled) {
+      border-color: #8a8a96;
+      background: #26262f;
+    }
+
+    &:disabled {
+      cursor: default;
+
+      svg {
+        fill: #f2c44e;
+        animation: lab-hunt-roll-spin 0.8s linear infinite;
+      }
+    }
+
+    &.broadcast svg { fill: #f2c44e; }
+    &.cancel svg { fill: #e05561; }
   }
 
   &-marker {
@@ -1864,7 +1901,13 @@ $lab-queued: #e8c547;
   }
 }
 
-@keyframes lab-hunt-confirm-in {
+@keyframes lab-hunt-roll-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes lab-hunt-acts-in {
   from {
     opacity: 0;
     transform: translateX(-8px);

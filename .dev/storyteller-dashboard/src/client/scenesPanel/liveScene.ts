@@ -205,6 +205,5 @@ export const huntPcs = (seats: SeatsSlice, catalogs: SceneCatalogs | null): read
     if (row.kind !== "pc" || !row.charKey || row.absentFromSession === true || !PC_COLORS.includes(row.seat)) {
       return [];
     }
-    const name = catalogs?.pcs.find((pc) => pc.characterKey === row.charKey)?.fullName ?? row.seat;
-    return [{ color: row.seat, name: name.split(" ")[0] ?? name }];
+    return [{ color: row.seat, name: catalogs?.pcs.find((pc) => pc.characterKey === row.charKey)?.fullName ?? row.seat }];
   });

@@ -271,7 +271,7 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 5. **Held result:** let the roll finish without broadcasting it. The row goes dim and dashed. The megaphone icon broadcasts it to the table; the cancel icon dismisses it.
 6. **NPC roll:** right-click an NPC on the stage and pick a roll type. The NPC panel appears under the drawer list. Click the diamonds (or the **+**) and build a pool with the dice ring, pick a difficulty, then press the dice icon to roll (right-click it for secret dice the players cannot see). Afterwards click a die to pick it, press the circular-arrows icon to reroll it, and press the tick to confirm (right-click the tick to hold the result instead of broadcasting it).
 7. **Willpower reroll:** have a player spend Willpower on a rolled PC roll (or press the Willpower icon on a rolled NPC roll). The row should turn blue and pulse while the reroll is under way, then go back to plain red.
-8. **Hunt:** in the hunt panel under the location card, pick the hunting PC from the drop-down, roll the hunt bar, and press **Confirm**. TTS should show the resonance on the roll result banner.
+8. **Hunt:** in the hunt panel under the location card, click a resonance flavor and pick the hunting PC from the ring (the flavor gets an outline in that PC's seat colour), press the circling-arrows button to roll, then press the broadcast (loudspeaker) button. TTS should show the resonance on the roll result banner, and the hunt bar should go back to its starting state. (If no flavor was picked, the broadcast button asks for the PC with the same ring.)
 
 ### Medium — Prince's Court sheet
 

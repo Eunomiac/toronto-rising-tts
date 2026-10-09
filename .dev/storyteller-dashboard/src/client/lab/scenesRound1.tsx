@@ -275,7 +275,7 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
 const SCENE_NAME = "Elysium — Casa Loma: Great Hall";
 
 const LAB_HUNTERS: readonly HuntPc[] = SEATS.flatMap((seat) =>
-  seat.kind === "pc" && seat.color ? [{ color: seat.color, name: (seat.playedBy ?? seat.name ?? seat.color).split(" ")[0] ?? seat.color }] : []);
+  seat.kind === "pc" && seat.color ? [{ color: seat.color, name: seat.playedBy ?? seat.name ?? seat.color }] : []);
 
 const LAB_ROLLS: RollsSlice = {
   pcs: [

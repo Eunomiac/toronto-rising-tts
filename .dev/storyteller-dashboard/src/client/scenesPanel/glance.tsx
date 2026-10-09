@@ -69,7 +69,8 @@ const RING_EDGE = 180;
 /** The wide ring (eight or more choices) spreads its spokes on a larger ellipse. */
 const WIDE_RING_EDGE = 220;
 
-type RingOption<T> = { readonly value: T; readonly label: string };
+/** `accent` rings the spoke in that colour (a PC's seat colour). */
+type RingOption<T> = { readonly value: T; readonly label: string; readonly accent?: string };
 type Point = { readonly x: number; readonly y: number };
 
 /** Choices spread evenly around the click point; the current choice is highlighted. Clicking off closes it. */
@@ -92,8 +93,8 @@ const RingMenu = <T,>({ at, options, current, onPick, onClose, wide = false }: {
             <button
               key={String(option.value)}
               type="button"
-              className={`lab-ring-item spoke${option.value === current ? " current" : ""}`}
-              style={{ left: Math.cos(angle) * rx, top: Math.sin(angle) * ry, "--i": index } as CSSProperties}
+              className={`lab-ring-item spoke${option.value === current ? " current" : ""}${option.accent ? " accented" : ""}`}
+              style={{ left: Math.cos(angle) * rx, top: Math.sin(angle) * ry, "--i": index, "--accent": option.accent } as CSSProperties}
               onClick={() => {
                 onPick(option.value);
                 onClose();
@@ -992,10 +993,12 @@ const segmentFlex = (chance: number, winner: boolean, settled: boolean, minWidth
 /**
  * Hunt roll: the margin (hover and spin the mouse wheel) and outcome (star: normal, critical, messy critical) set
  * the odds with the scene location's resonances. The top bar is the flavor, each possible flavor's segment as
- * long as its chance; click a flavor to mark it as the one the player is seeking (again to clear). The lower
- * bar is the intensity, darker to brighter. Right-click either bar and both markers slide and settle; the
- * winners widen and glow, the rest fade, and Confirm sends the result for the hunting PC (picked in the PC menu),
- * then clears the bars, sets the margin to 0 and the star to normal, and drops the sought flavor and the PC.
+ * long as its chance; click a flavor (either button) to pick, from a ring, the PC who is hunting for it (the
+ * flavor is then outlined in their seat colour; click it again to clear). The lower bar is the intensity, darker
+ * to brighter. The circling-arrows button rolls: both markers slide and settle, the winners widen and glow and the
+ * rest fade, and the button splits into Broadcast (sends the result for the hunting PC, asking with the same ring
+ * when no flavor was sought) and Cancel (ignores it). Both put the bar back to its default: margin 0, normal
+ * outcome, no sought flavor or PC.
  */
 export type HuntPc = { readonly color: string; readonly name: string };
 export type HuntConfirm = { readonly color: string; readonly flavor: string | null; readonly intensity: Intensity; readonly margin: number };
@@ -1007,6 +1010,7 @@ export const HuntRoller = ({ location, pcs, onConfirm }: {
 }): ReactElement => {
   const { data } = useChronicleLocations();
   const [hunter, setHunter] = useState("");
+  const [pcRing, setPcRing] = useState<{ at: Point; seek: Flavor | null } | null>(null);
   const [margin, setMargin] = useState(0);
   const [outcome, setOutcome] = useState<HuntOutcome>("basic");
   const [target, setTarget] = useState<Flavor | null>(null);
@@ -1014,7 +1018,7 @@ export const HuntRoller = ({ location, pcs, onConfirm }: {
   const [result, setResult] = useState<HuntResult | null>(null);
   const [barW, setBarW] = useState(0);
   const [fontReady, setFontReady] = useState(false);
-  const barRef = useRef<HTMLButtonElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
   const marginRef = useRef<HTMLSpanElement>(null);
   const frame = useRef<number | null>(null);
   const reset = (): void => {
@@ -1095,22 +1099,38 @@ export const HuntRoller = ({ location, pcs, onConfirm }: {
     };
     frame.current = requestAnimationFrame(step);
   };
-  const rollOnRightClick = (event: MouseEvent<HTMLButtonElement>): void => {
-    event.preventDefault();
-    spin();
-  };
+  const spinning = markers !== null && !settled;
   const hunterPc = pcs.find((pc) => pc.color === hunter);
+  const clearAll = (): void => {
+    reset();
+    setMargin(0);
+    setOutcome("basic");
+    setTarget(null);
+    setHunter("");
+  };
+  const confirm = (color: string): void => {
+    if (!result) {
+      return;
+    }
+    onConfirm({ color, flavor: result.flavor ? FLAVOR_LABEL[result.flavor] : null, intensity: result.intensity, margin });
+    clearAll();
+  };
+  // Left and right click do the same thing on a flavor.
+  const pickFlavor = (event: MouseEvent<HTMLElement>, flavor: Flavor): void => {
+    event.preventDefault();
+    if (settled || spinning) {
+      return;
+    }
+    if (flavor === seeking) {
+      setTarget(null);
+      setHunter("");
+      return;
+    }
+    setPcRing({ at: canvasPoint(event), seek: flavor });
+  };
+  const pcOptions = pcs.map((pc) => ({ value: pc.color, label: pc.name, accent: SEAT_ACCENT[pc.color] }));
   return (
     <div className="lab-hunt">
-      <select
-        className="lab-hunt-pc"
-        title="The hunting PC (the result is broadcast for them and kept on their sheet)"
-        value={hunterPc ? hunter : ""}
-        onChange={(event) => setHunter(event.target.value)}
-      >
-        <option value="">PC…</option>
-        {pcs.map((pc) => <option key={pc.color} value={pc.color}>{pc.name}</option>)}
-      </select>
       <span
         ref={marginRef}
         className="lab-hunt-successes"
@@ -1140,34 +1160,30 @@ export const HuntRoller = ({ location, pcs, onConfirm }: {
         </svg>
       </button>
       <div className={`lab-hunt-bars${settled ? " settled" : ""}`}>
-        <button
-          ref={barRef}
-          type="button"
-          className="lab-hunt-bar"
-          title={settled ? undefined : "Right-click to roll for resonance. Click a flavor to mark it as the one the player is seeking."}
-          onContextMenu={rollOnRightClick}
-        >
+        <div ref={barRef} className="lab-hunt-bar">
           {flavors.map((flavor, index) => {
             const won = result?.flavor === flavor;
             const name = FLAVOR_LABEL[flavor];
+            const sought = flavor === seeking;
             return (
               <span
                 key={flavor}
-                className={`lab-hunt-seg ${index % 2 === 0 ? "light" : "dark"}${flavor === seeking ? " sought" : ""}${won ? " won" : ""}`}
-                style={segmentFlex(odds[flavor], won, settled, measured ? textWidth(name, FLAVOR_FONT) + WINNER_PAD : 0, barW)}
-                title={`${name} ${percent(odds[flavor])}${flavor === seeking ? " (sought)" : ""}`}
-                onClick={() => {
-                  setTarget(flavor === seeking ? null : flavor);
-                  reset();
-                }}
+                className={`lab-hunt-seg ${index % 2 === 0 ? "light" : "dark"}${sought ? " sought" : ""}${won ? " won" : ""}`}
+                style={{
+                  ...segmentFlex(odds[flavor], won, settled, measured ? textWidth(name, FLAVOR_FONT) + WINNER_PAD : 0, barW),
+                  "--hunter": sought && hunterPc ? SEAT_ACCENT[hunterPc.color] : undefined
+                } as CSSProperties}
+                title={settled ? undefined : `${name} ${percent(odds[flavor])}: ${sought && hunterPc ? `sought by ${hunterPc.name}; click to clear` : "click to pick the PC hunting for it"}`}
+                onClick={(event) => pickFlavor(event, flavor)}
+                onContextMenu={(event) => pickFlavor(event, flavor)}
               >
                 {measured && (won ? name : settled ? "" : segmentText(name, odds[flavor] * barW))}
               </span>
             );
           })}
           {markers && !settled && <span className="lab-hunt-marker" style={{ left: `${markers.flavor * 100}%` }} />}
-        </button>
-        <button type="button" className="lab-hunt-bar intensity" title={settled ? undefined : "Right-click to roll for resonance"} onContextMenu={rollOnRightClick}>
+        </div>
+        <div className="lab-hunt-bar intensity">
           {INTENSITIES.map((key) => {
             const won = result?.intensity === key;
             return (
@@ -1182,30 +1198,50 @@ export const HuntRoller = ({ location, pcs, onConfirm }: {
             );
           })}
           {markers && !settled && <span className="lab-hunt-marker" style={{ left: `${markers.intensity * 100}%` }} />}
-        </button>
+        </div>
       </div>
-      {settled && (
-        <button
-          type="button"
-          className="lab-btn primary lab-hunt-confirm"
-          disabled={!hunterPc}
-          title={hunterPc
-            ? `Broadcast ${hunterPc.name}'s resonance in TTS, then clear the bars, the margin, the outcome star, and the sought flavor`
-            : "Pick the hunting PC first"}
-          onClick={() => {
-            if (!hunterPc || !result) {
+      {settled ? (
+        <span className="lab-hunt-acts">
+          <button
+            type="button"
+            className="lab-hunt-act broadcast"
+            title={hunterPc
+              ? `Broadcast ${hunterPc.name}'s resonance in TTS and reset the hunt bar`
+              : "Pick the hunting PC, broadcast their resonance in TTS and reset the hunt bar"}
+            onClick={(event) => {
+              if (hunterPc) {
+                confirm(hunterPc.color);
+              } else {
+                setPcRing({ at: canvasPoint(event), seek: null });
+              }
+            }}
+          >
+            <Icon name="broadcast" />
+          </button>
+          <button type="button" className="lab-hunt-act cancel" title="Ignore this result and reset the hunt bar" onClick={clearAll}>
+            <Icon name="cancel" />
+          </button>
+        </span>
+      ) : (
+        <button type="button" className="lab-hunt-act roll" title="Roll for resonance" disabled={spinning} onClick={spin}>
+          <Icon name="reroll" />
+        </button>
+      )}
+      {pcRing && (
+        <RingMenu
+          at={pcRing.at}
+          options={pcOptions}
+          current={hunter}
+          onPick={(color) => {
+            if (pcRing.seek === null) {
+              confirm(color);
               return;
             }
-            onConfirm({ color: hunterPc.color, flavor: result.flavor ? FLAVOR_LABEL[result.flavor] : null, intensity: result.intensity, margin });
-            reset();
-            setMargin(0);
-            setOutcome("basic");
-            setTarget(null);
-            setHunter("");
+            setTarget(pcRing.seek);
+            setHunter(color);
           }}
-        >
-          Confirm
-        </button>
+          onClose={() => setPcRing(null)}
+        />
       )}
       {unknown.length > 0 && <span className="lab-note">Unknown resonance in the sheet: {unknown.join(", ")}</span>}
     </div>
