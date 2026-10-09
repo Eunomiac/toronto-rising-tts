@@ -469,6 +469,8 @@ function S.GetDefaultGameState()
             slots = {},
             liveSlotIndex = nil,
             pcDash = {},
+            --- In-game ST roll panels (fallback for the dashboard); off = no ST roll UI work. See RUI.isStRollUiEnabled.
+            inGameUi = false,
         },
         --- Runtime debug bag (persists across Save & Play). Used by console DEBUG helpers.
         --- `npcLightModes`: optional per-mode patches (`OFF` / `STANDARD` / `SPOTLIGHT` / `OFFSPOTLIGHT`)

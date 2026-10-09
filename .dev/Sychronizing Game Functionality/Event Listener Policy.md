@@ -148,6 +148,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_pcsToggleSimulatedConnection` | B+C | Yes | Assume Connected debug mode only: per-seat simulated connect (seats PC immediately) / disconnect (darken only) via `PlayerConnection.simulateSeatConnection` |
 | `HUD_toggleConnectionMode` | B+C | Yes | Debug panel: persisted `debug.assumeConnected`; seats newly connected PCs once, then one relayout (`PlayerConnection.switchAssumeConnectedMode`) |
 | `HUD_toggleSyncTrace` | A | Yes | Debug panel: persisted `debug.syncTraceEnabled`; grey off / yellow on; on installs timing wrappers on sync targets, off removes them and prints the summary; host `[SyncTrace]` prints only (TOR-634, TOR-657) |
+| `HUD_toggleStRollUi` | A+B | Yes | Debug panel: persisted `storytellerRolls.inGameUi`; grey off / green on. In-game ST roll panels are a dashboard fallback and do no UI work while off; on repaints them once (`RUI.applyStRollUiEnabled`) (TOR-687) |
 | `HUD_togglePanel` | A | — | XmlUI collapse |
 | `HUD_changeScene` | B+C | Yes | |
 | `HUD_selectAdminLightingScene` | B+C | Yes | |

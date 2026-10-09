@@ -148,29 +148,6 @@ local function refreshStPoolDots(pool)
     end
 end
 
---- Pool dot Text ids per dice kind (legacy rollPanel_Black / roll_panels.xml).
-local POOL_DOT_FIELDS = {
-    { poolKey = "bloodSurgeRouse", idSuffix = "surgeRouse" },
-    { poolKey = "rouse",      idSuffix = "rouse" },
-    { poolKey = "normal",     idSuffix = "normal" },
-    { poolKey = "hunger",     idSuffix = "hunger" },
-    { poolKey = "oblivRouse", idSuffix = "obliv" },
-    { poolKey = "werewolf",   idSuffix = "werewolf" },
-    { poolKey = "rage",       idSuffix = "rage" },
-}
-
---- Updates colored pool-dot Text elements for one roll panel.
--- @param color string  Seat color (Brown, Black, …)
--- @param pool table    Normalized pool counts from DK.normalizePool
-local function refreshPoolDots(color, pool)
-    pool = DK.normalizePool(pool)
-    for _, field in ipairs(POOL_DOT_FIELDS) do
-        local count = pool[field.poolKey] or 0
-        local id = string.format("rollPanel_pool_%s_%s", field.idSuffix, color)
-        uiSetValue(id, diamonds(count))
-    end
-end
-
 --- @param s string
 -- @return string
 local function trimLabel(s)
@@ -1226,17 +1203,15 @@ local function resultDisplayStrings(rollType, result)
     return label, succStr, margStr
 end
 
---- Shows or hides pending-resolution confirm buttons on a roll panel (PC rollControl_* or ST rollPanel_*).
+--- Shows or hides pending-resolution confirm buttons on a PC roll control panel (rollControl_*).
 -- @param color string
 -- @param active table|nil
--- @param useControlPanel boolean  true for PC rollControl_* ids; false for rollPanel_Black
-local function refreshPendingResolutionButtons(color, active, useControlPanel)
-    local idPrefix = useControlPanel and "rollControl" or "rollPanel"
-    local oblivHunger = string.format("%s_btnOblivHunger_%s", idPrefix, color)
-    local oblivStain  = string.format("%s_btnOblivStain_%s", idPrefix, color)
-    local brutalFail  = string.format("%s_btnBrutalFail_%s", idPrefix, color)
-    local brutalViol  = string.format("%s_btnBrutalViolence_%s", idPrefix, color)
-    local confirm     = string.format("%s_btnConfirm_%s", idPrefix, color)
+local function refreshPendingResolutionButtons(color, active)
+    local oblivHunger = string.format("rollControl_btnOblivHunger_%s", color)
+    local oblivStain  = string.format("rollControl_btnOblivStain_%s", color)
+    local brutalFail  = string.format("rollControl_btnBrutalFail_%s", color)
+    local brutalViol  = string.format("rollControl_btnBrutalViolence_%s", color)
+    local confirm     = string.format("rollControl_btnConfirm_%s", color)
 
     local pending = active ~= nil and active.pendingResolution or nil
     local isPostRoll = active ~= nil and active.phase == C.RollPhase.POST_ROLL
@@ -1325,8 +1300,6 @@ end
 -- @param active table|nil
 local function refreshStRollPanel(active)
     local panelId = "rollPanelST"
-
-    uiSetActive("rollPanel_Black", false)
 
     if active == nil then
         uiSetActive(panelId, false)
@@ -1506,7 +1479,7 @@ local function refreshPcRollControlPanel(color, active)
     local canConfirm = showConfirm and (playerHoldsBaton or isWpWaveRolling)
     uiSetActive(string.format("rollControl_btnConfirm_%s", color), showConfirm)
     uiSetInteractable(string.format("rollControl_btnConfirm_%s", color), canConfirm)
-    refreshPendingResolutionButtons(color, active, true)
+    refreshPendingResolutionButtons(color, active)
     local showCancel = active.takeHalfAwaitingRouse ~= true
         and active.initiator == "player"
         and not PRTL.isIdleBagAutoRouse(active)
@@ -1624,6 +1597,13 @@ function RUI.shouldAutoProceedSoleAction(active, color)
     return true, inv.soleAction
 end
 
+--- In-game Storyteller roll panels (dashboard rows, live NPC roll panel, bag-click name modal) are a
+--- fallback for the Storyteller Dashboard. While off they do no UI work at all.
+--- @return boolean
+function RUI.isStRollUiEnabled()
+    return S.getStateVal("storytellerRolls", "inGameUi") == true
+end
+
 --- Refreshes a player's roll panel to match their current rollData.active.
 -- Shows the panel when a roll is active; hides it otherwise.
 -- Updates phase label, pool display, difficulty, dice display, result, and button visibility.
@@ -1645,7 +1625,9 @@ function RUI.refreshPlayerRollPanel(color)
         return
     end
 
-    refreshStRollPanel(active)
+    if RUI.isStRollUiEnabled() then
+        refreshStRollPanel(active)
+    end
 end
 
 -- ============================================================================
@@ -1662,6 +1644,9 @@ end
 --- Refreshes the three Storyteller drawer slot summary rows.
 -- @return boolean true when at least one uncleared slot needs CLEAR
 function RUI.refreshSTSlotRows()
+    if not RUI.isStRollUiEnabled() then
+        return false
+    end
     local root = S.getStateVal("storytellerRolls") or {}
     local slots = type(root.slots) == "table" and root.slots or {}
     local hasAny = false
@@ -1694,6 +1679,9 @@ function RUI.refreshSTSlotRows()
 end
 
 function RUI.refreshSTDashboard()
+    if not RUI.isStRollUiEnabled() then
+        return
+    end
     local hasAnyActive = RUI.refreshSTSlotRows()
     local dashRoot = S.getStateVal("storytellerRolls") or {}
     local pcDash = type(dashRoot.pcDash) == "table" and dashRoot.pcDash or {}
@@ -2245,6 +2233,21 @@ function RUI.refreshAll()
         RUI.refreshPlayerRollPanel(color)
     end
     RUI.refreshSTDashboard()
+end
+
+--- Applies the in-game Storyteller roll fallback switch: button colour, then either a full repaint
+--- of the Storyteller roll panels (on) or hiding them (off).
+function RUI.applyStRollUiEnabled()
+    local on = RUI.isStRollUiEnabled()
+    UI.setClass("debug_stRollUi", on and "hud_storyteller_button toggled_active" or "hud_storyteller_button toggled_inactive")
+    if on then
+        RUI.refreshPlayerRollPanel("Black")
+        RUI.refreshSTDashboard()
+        return
+    end
+    uiSetActive("rollDash_ST", false)
+    uiSetActive("rollPanelST", false)
+    uiSetActive("rollStName_modal", false)
 end
 
 -- ============================================================================

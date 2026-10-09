@@ -3685,6 +3685,7 @@ function onLoad(saved_data)
                 RSL.ensureMinVisibleCsheetPagesForAllSeats()
             end
             PCST.refreshConnectionModeButton()
+            RUI.applyStRollUiEnabled()
             if type(DEBUG.refreshSyncTraceButton) == "function" then
                 DEBUG.refreshSyncTraceButton()
             end
@@ -5854,6 +5855,21 @@ function HUD_toggleSyncTrace(player, button, id)
     local on = DEBUG.toggleSyncTrace()
     broadcastToColor(
         string.format("Sync trace: %s", on and "on" or "off"),
+        player.color,
+        { 0, 1, 1 }
+    )
+end
+
+--- Debug panel: in-game Storyteller roll panels (fallback for the Storyteller Dashboard). Grey off, green on.
+function HUD_toggleStRollUi(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_toggleStRollUi") then
+        return
+    end
+    local on = not RUI.isStRollUiEnabled()
+    S.setStateVal(on, "storytellerRolls", "inGameUi")
+    RUI.applyStRollUiEnabled()
+    broadcastToColor(
+        string.format("In-game Storyteller roll panels: %s", on and "on" or "off"),
         player.color,
         { 0, 1, 1 }
     )

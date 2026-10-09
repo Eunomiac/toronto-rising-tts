@@ -741,6 +741,8 @@ function RUI.hideResultBroadcast() end
 function RUI.restoreLastResult(color) end
 ```
 
+**In-game Storyteller roll panels are a fallback (TOR-687).** The Storyteller Dashboard owns Storyteller roll control. The in-game ST surfaces (`rollDash_ST`, `rollPanelST`, the bag-click name modal `rollStName_modal`) only work while `gameState.storytellerRolls.inGameUi` is true, switched by the **In-game ST Rolls** button in the Storyteller debug panel (`HUD_toggleStRollUi`). While off, `RUI.refreshSTDashboard`, `RUI.refreshSTSlotRows` and the Black branch of `RUI.refreshPlayerRollPanel` return at once, and an ST bag click with no live roll points to the dashboard. `RUI.applyStRollUiEnabled()` paints the button and either repaints or hides the panels; it runs on the toggle and once at load. PC roll panels are unaffected.
+
 ### 8.2 UI Element ID Conventions
 
 All roll-related UI element IDs follow a consistent naming pattern:
@@ -753,7 +755,7 @@ All roll-related UI element IDs follow a consistent naming pattern:
 | ST dashboard difficulty strip | `gridStrip_rollDash<Color>_difficulty` | Grid strip (0–10); SETUP click sets difficulty and opens roll (`RC.openRoll`) |
 | ST open/confirm button | `rollDash_btn_<Color>` | Removed from dashboard; confirm/cancel live on player roll panel |
 | Player Roll Panel (PC) | `rollControl_root_<Color>` | Generated: `ui/player/panel_roll_controls.xml` from `ui/.templates/panel_roll_controls.xml`; visibility `"<Color>"` |
-| ST live roll panel | `rollPanel_Black` | In `ui/shared/roll_panels.xml`; includes Recalculate |
+| ST live roll panel | `rollPanelST` | In `ui/storyteller/panel_storyteller_roll_controls.xml`; fallback only (see below) |
 | Player roll type | `rollControl_rollType_<Color>` | Title-case `C.RollTypeLabel` |
 | Player instructions | `rollControl_rollInstructions_<Color>` | Phase guidance (title case) |
 | Player pool dots | `rollControl_*Dice_<Color>` | Colored ◆ per kind; see template comments |
@@ -880,7 +882,7 @@ function HUD_rollInitiate(player, value, id) end
 
 ## 10. UI XML Design
 
-**ST dashboard, `rollPanel_Black`, and result broadcast:** [`ui/shared/roll_panels.xml`](../../ui/shared/roll_panels.xml) (included from `ui/Global.xml` at root level). Dashboard **rows** are generated [`ui/shared/roll_dash_generated.xml`](../../ui/shared/roll_dash_generated.xml) from [`ui/.templates/roll/`](../../ui/.templates/roll/) (`npm run roll-dashboard:generate`).
+**ST dashboard and result broadcast:** [`ui/shared/roll_panels.xml`](../../ui/shared/roll_panels.xml) (included from `ui/Global.xml` at root level). Dashboard **rows** are generated [`ui/shared/roll_dash_generated.xml`](../../ui/shared/roll_dash_generated.xml) from [`ui/.templates/roll/`](../../ui/.templates/roll/) (`npm run roll-dashboard:generate`).
 
 **PC player roll control panels:** generated [`ui/player/panel_roll_controls.xml`](../../ui/player/panel_roll_controls.xml) from [`ui/.templates/panel_roll_controls.xml`](../../ui/.templates/panel_roll_controls.xml) (`xml_color_template_generator.js`); included inside `HUD_PANEL_PLAYER` in `ui/Global.xml`.
 

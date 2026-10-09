@@ -727,10 +727,10 @@ function STR.onDiceBagClick(params)
     local active = getBlackActive()
     if active == nil then
         local RUI = require("core.roll_ui")
-        if RUI.openStRollNameModal ~= nil then
+        if RUI.isStRollUiEnabled() then
             RUI.openStRollNameModal(dieKind)
         else
-            print("[StorytellerRolls] Start a roll from the ST roll row or drop an NPC token on a dice bag first.")
+            broadcastToColor("Start NPC rolls from the Storyteller Dashboard (or turn on In-game ST Rolls in the debug panel).", ST_COLOR, { 1, 0.8, 0.3 })
         end
         return
     end
