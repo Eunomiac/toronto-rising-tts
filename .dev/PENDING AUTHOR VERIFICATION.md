@@ -211,6 +211,12 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 
 **How to verify:** Save & Play. Note the present-day time on the game-state overlay. Set a live scene's clock to ten minutes before present day (from the dashboard calendar or the backup Scenes panel). The scene clock should jump straight to present day instead of staying ten minutes behind. Then set it to an hour before present day: it should stay an hour behind. With the real-time clock on and the scene catching up with ×5, the scene should land exactly on present day and then follow it, never stopping a few minutes short.
 
+#### TOR-683 — The dashboard's Scenes tab: thunder volume and exact stage positions
+
+**Context:** Two small TTS changes for the dashboard's Scenes tab. First, thunder now has its own volume: a new **Thunder** slider in the in-game Storyteller Sound panel (under Wind) and the thunder slider on the dashboard both scale how loud each thunder clap is, starting from the next clap. Second, TTS now sends NPC stage positions to the dashboard precisely, so the NPC tokens on the dashboard's stage drawing sit exactly on the snap circles (they were off by up to half a slot).
+
+**How to verify:** Restart the dashboard server (`npm run dev`), then Save & Play into a live scene with at least one NPC on the stage. Open the dashboard's **Scenes** tab. Each NPC token on the stage drawing should sit right on top of one of the small snap circles, in the same pack as on the in-game control board. Then turn on a thunderstorm (for example from the in-game weather controls). The dashboard's thunder group should light up. Drag its slider low: the next thunder clap should be quieter, and the in-game Sound panel's new Thunder slider should show the same level. Drag it back up and the claps should be loud again.
+
 ### Medium — Prince's Court sheet
 
 #### TOR-663 — Refresh XML keeps The Court on the people who had it open

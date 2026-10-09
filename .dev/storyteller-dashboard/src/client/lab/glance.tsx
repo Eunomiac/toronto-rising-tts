@@ -450,6 +450,7 @@ export const MasonryRoster = (): ReactElement => {
   const [draft, setDraft] = useState<{ name: string; color: string } | null>(null);
   const [editing, setEditing] = useState<{ key: string; at: Point } | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [query, setQuery] = useState("");
   const fileGroup = (categoryId: string | null) => (groupKey: string): void => {
     const assigned = { ...layout.assigned };
     if (categoryId) {
@@ -567,6 +568,12 @@ export const MasonryRoster = (): ReactElement => {
       })}
     </div>
   );
+  const needle = query.trim().toLowerCase();
+  const found = needle === "" || !catalogs
+    ? null
+    : catalogs.namedNpcs
+      .filter((npc) => npc.fullName.toLowerCase().includes(needle))
+      .sort((a, b) => a.fullName.localeCompare(b.fullName));
   const knownCategories = new Set(layout.categories.map((category) => category.id));
   const unsorted = groups.filter((group) => !knownCategories.has(layout.assigned[group.key] ?? ""));
   const editingGroup = editing ? groups.find((group) => group.key === editing.key) : undefined;
@@ -577,7 +584,14 @@ export const MasonryRoster = (): ReactElement => {
         <Btn tone="primary">Main</Btn>
         <Btn>Generic</Btn>
         <Btn>Memoriam</Btn>
-        <span className="lab-search">Search every NPC…</span>
+        <input
+          type="search"
+          className="lab-search"
+          placeholder="Search every NPC…"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          onKeyDown={(event) => event.key === "Escape" && setQuery("")}
+        />
         <button type="button" className="lab-btn lab-cat-add" title="New category" onClick={() => setDraft({ name: "", color: NEW_CATEGORY_COLOR })}>+</button>
       </div>
       {draft && (
@@ -602,7 +616,18 @@ export const MasonryRoster = (): ReactElement => {
       )}
       {error && <p className="lab-note">{error}</p>}
       <div className="lab-mroster-body">
-        {layout.categories.map((category) => {
+        {found && (
+          <div className="lab-search-results">
+            {found.length === 0 && <span className="lab-note">No NPC matches "{query.trim()}".</span>}
+            {found.map((npc) => (
+              <span key={npc.characterKey} className="lab-group-token" title={npc.fullName}>
+                <Headshot className="lab-group-head" characterKey={npc.characterKey} />
+                <span className="lab-group-name">{npc.fullName}</span>
+              </span>
+            ))}
+          </div>
+        )}
+        {!found && layout.categories.map((category) => {
           const members = groups.filter((group) => layout.assigned[group.key] === category.id);
           return (
             <section key={category.id} className="lab-cat" style={{ "--cat": category.color } as CSSProperties}>
@@ -617,7 +642,7 @@ export const MasonryRoster = (): ReactElement => {
             </section>
           );
         })}
-        {(unsorted.length > 0 || dragging) && (
+        {!found && (unsorted.length > 0 || dragging) && (
           <section className="lab-cat unsorted">
             {layout.categories.length > 0 && <CategoryHeader category={null} count={unsorted.length} onDrop={fileGroup(null)} />}
             {masonry(unsorted)}
@@ -1270,8 +1295,21 @@ export const WeatherPanel = ({ at, forceOverride, forceCelsius, live, w, h }: {
 export const PRESENT_DAY = new Date(2026, 9, 9, 23, 40);
 export const FLASHBACK_TIME = new Date(2026, 8, 22, 20, 15);
 
-const DUSK = 19 * 60 + 2;
-const DAWN = 24 * 60 + 6 * 60 + 58;
+/** Tonight's sun times in minutes from midnight; dawn is on the next day, so it is above 1440. */
+type SunTimes = { readonly dusk: number; readonly dawn: number };
+
+const SKETCH_SUN: SunTimes = { dusk: 19 * 60 + 2, dawn: 24 * 60 + 6 * 60 + 58 };
+
+const minuteOfDay = (at: Date): number => at.getHours() * 60 + at.getMinutes();
+
+const sunTimes = (dusk: Date | undefined, dawn: Date | undefined): SunTimes => {
+  if (!dusk || !dawn) {
+    return SKETCH_SUN;
+  }
+  const duskMinutes = minuteOfDay(dusk);
+  const dawnMinutes = minuteOfDay(dawn);
+  return { dusk: duskMinutes, dawn: dawnMinutes > duskMinutes ? dawnMinutes : dawnMinutes + 1440 };
+};
 
 const SKY_STOPS: readonly (readonly [t: number, top: string, bottom: string])[] = [
   [0, "#2a3466", "#a0566e"],
@@ -1300,10 +1338,10 @@ const skyAt = (t: number): { top: string; bottom: string } => {
 };
 
 /** Fraction of the night elapsed (0 at dusk, 1 at dawn); null in daylight. */
-const nightFraction = (minutes: number): number | null => {
+const nightFraction = (minutes: number, sun: SunTimes): number | null => {
   const ofDay = ((minutes % 1440) + 1440) % 1440;
-  const sinceDusk = ofDay >= 12 * 60 ? ofDay - DUSK : ofDay + 1440 - DUSK;
-  const t = sinceDusk / (DAWN - DUSK);
+  const sinceDusk = ofDay >= 12 * 60 ? ofDay - sun.dusk : ofDay + 1440 - sun.dusk;
+  const t = sinceDusk / (sun.dawn - sun.dusk);
   return t >= 0 && t <= 1 ? t : null;
 };
 
@@ -1343,7 +1381,7 @@ type MoonDrag = { readonly target: number | null; readonly onDrag: (t: number) =
  * Sky from dusk to dawn: the moon crosses, city windows go dark one by one, and the horizon warms before dawn.
  * The moon can be dragged along its arc (shown while a target is set) to pick a later or earlier time tonight.
  */
-const NightSky = ({ minutes, w, h, drag }: { minutes: number; w: number; h: number; drag: MoonDrag }): ReactElement => {
+const NightSky = ({ minutes, sun, w, h, drag }: { minutes: number; sun: SunTimes; w: number; h: number; drag: MoonDrag }): ReactElement => {
   const id = useId().replace(/[^a-zA-Z0-9]/g, "");
   const svgRef = useRef<SVGSVGElement>(null);
   const city = useMemo(() => skyline(w, h), [w, h]);
@@ -1351,7 +1389,7 @@ const NightSky = ({ minutes, w, h, drag }: { minutes: number; w: number; h: numb
     const random = seeded(3);
     return Array.from({ length: 46 }, () => ({ x: random() * w, y: random() * h * 0.55, r: 0.4 + random() * 0.8 }));
   }, [w, h]);
-  const t = nightFraction(minutes);
+  const t = nightFraction(minutes, sun);
   const sky = t === null ? { top: "#6fa8dc", bottom: "#d6e6f2" } : skyAt(t);
   const lit = t === null ? 0.04 : Math.max(0.04, 0.82 - 0.85 * t);
   const starAlpha = t === null ? 0 : Math.sin(Math.PI * t) * 0.9;
@@ -1486,7 +1524,6 @@ const SceneCalendar = ({ at, present, onPick }: { at: Date; present: Date; onPic
   );
 };
 
-const NIGHT_MINUTES = DAWN - DUSK;
 const PLAY_MS = 1800;
 const FIVE_MINUTES = 300_000;
 
@@ -1571,13 +1608,14 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, pres
     const id = window.setInterval(() => changeRef.current(new Date(atRef.current.getTime() + 1000 * rate)), 1000);
     return () => window.clearInterval(id);
   }, [realTime, rate, live]);
-  const minutes = at.getHours() * 60 + at.getMinutes();
+  const minutes = minuteOfDay(at);
+  const sun = sunTimes(live?.dusk, live?.dawn);
   const differs = at.getTime() !== present.getTime();
   const flashback = at.getTime() < present.getTime();
-  const tonight = nightFraction(minutes);
+  const tonight = nightFraction(minutes, sun);
   const targetTime = target === null || tonight === null
     ? null
-    : new Date(Math.round(shift(at, (target - tonight) * NIGHT_MINUTES).getTime() / FIVE_MINUTES) * FIVE_MINUTES);
+    : new Date(Math.round(shift(at, (target - tonight) * (sun.dawn - sun.dusk)).getTime() / FIVE_MINUTES) * FIVE_MINUTES);
   /** Live: TTS animates scene moves itself; present-day moves are instant. */
   const moveTo = (next: Date): void => {
     if (command) {
@@ -1598,7 +1636,7 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, pres
   return (
     <>
       <div className={`lab-when${flashback ? " lab-flashback" : ""}`} onClick={() => setOpen(!readOnly)}>
-        <NightSky minutes={minutes} w={w} h={h} drag={{ target: playing ? null : target, onDrag: readOnly ? () => undefined : setTarget }} />
+        <NightSky minutes={minutes} sun={sun} w={w} h={h} drag={{ target: playing ? null : target, onDrag: readOnly ? () => undefined : setTarget }} />
         <span className={`lab-when-present${differs ? "" : " hidden"}`}>
           {sameDay(at, present) ? formatTime(present) : `${formatDate(present)} · ${formatTime(present)}`}
         </span>
@@ -1655,8 +1693,8 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, pres
             </button>
           </span>
         )}
-        <span className="lab-when-edge dusk" title="Dusk"><span>{live?.dusk ? formatTime(live.dusk) : formatClock(DUSK)}</span></span>
-        <span className="lab-when-edge dawn" title="Dawn"><span>{live?.dawn ? formatTime(live.dawn) : formatClock(DAWN)}</span></span>
+        <span className="lab-when-edge dusk" title="Dusk"><span>{formatClock(sun.dusk)}</span></span>
+        <span className="lab-when-edge dawn" title="Dawn"><span>{formatClock(sun.dawn)}</span></span>
       </div>
       {(open || forceOpen) && (
         <Overlay onClose={closeCalendar}>
@@ -1806,7 +1844,7 @@ const featuredLabel = (key: string | undefined): string => {
 };
 
 /** Location catalog keys are the labels in camelCase (`softIndoor` → "Soft Indoor"). */
-const ambientLabel = (key: string): string =>
+export const ambientLabel = (key: string): string =>
   AMBIENT_TRACKS.find((label) => label.replace(/ /g, "").toLowerCase() === key.toLowerCase()) ?? key;
 
 const ambientKey = (label: string): string =>
@@ -1890,6 +1928,7 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main", sceneAmbience = "S
   const liveFeaturedLevel = useLiveLevel(live?.levels.featured ?? 0, laneSetter("featured"));
   const liveRain = useLiveLevel(live?.levels.rain ?? 0, laneSetter("rain"));
   const liveWind = useLiveLevel(live?.levels.wind ?? 0, laneSetter("wind"));
+  const liveThunder = useLiveLevel(live?.levels.thunder ?? 0, laneSetter("thunder"));
   const liveAmbience = useLiveLevel(live?.levels.location ?? 0, laneSetter("location"));
   const [liveFeaturedPick, setLiveFeaturedPick] = useState<string | null>(null);
   const livePlaylist = (value: string): Overridable<string> => command
@@ -1907,7 +1946,7 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main", sceneAmbience = "S
   const featuredLevel = live ? liveFeaturedLevel : labFeaturedLevel;
   const rain = live ? liveRain : labRain;
   const wind = live ? liveWind : labWind;
-  const thunder = live ? fixed(0) : labThunder;
+  const thunder = live ? liveThunder : labThunder;
   const ambience = live ? liveAmbience : labAmbience;
   const ambientTrack = live ? liveAmbientTrack(live.ambient ? ambientLabel(live.ambient) : "Silent") : labAmbientTrack;
   const featured = live ? live.featuredPlaying : labFeatured;
@@ -1930,7 +1969,7 @@ export const SoundMixer = ({ indoors, scenePlaylist = "Main", sceneAmbience = "S
     command?.(featured ? { op: "featuredStop" } : { op: "featuredPlay", key: featuredKey(featuredTrack) });
   };
   const rainPlaying = live ? live.playing.rain : true;
-  const thunderPlaying = false;
+  const thunderPlaying = live ? live.playing.thunder : false;
   const audible = !muted;
   const weatherAudible = audible && !indoors;
   const musicPlaying = live ? live.playing.music : audible && !featured;

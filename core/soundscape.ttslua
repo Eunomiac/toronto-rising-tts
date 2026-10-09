@@ -206,6 +206,8 @@ local function defaultState()
         rain = Catalog.DEFAULTS.rain,
         wind = Catalog.DEFAULTS.wind,
         thunderEnabled = Catalog.DEFAULTS.thunderEnabled,
+        --- Storyteller scale (0..1) on every thunder hit's catalog volume; the `thunder` lane.
+        thunderVolume = 1,
         location = Catalog.DEFAULTS.location,
         isIndoors = Catalog.DEFAULTS.isIndoors,
         --- Indoor weather volume multiplier from `C.Sites[siteKey].weatherDucking` when set via `applyContext`.
@@ -2060,10 +2062,14 @@ function Soundscape.getPlayingLanesForUi()
     end
     add("wind", "Wind", wNat, wApp, weatherDucked, windActive == true)
 
+    local thunderScale = tonumber(state.thunderVolume) or 1
+    add("thunder", "Thunder", thunderScale, thunderScale, weatherDucked, state.thunderEnabled == true)
+
     return rows
 end
 
---- Sets volume for a Storyteller panel lane id (`music`, `location`, `featured`, `rain`, `wind`).
+--- Sets volume for a Storyteller panel lane id (`music`, `location`, `featured`, `rain`, `wind`, `thunder`).
+--- Thunder is a scale on each hit's catalog volume, applied from the next hit.
 -- @param laneId string
 -- @param volume01 number|string
 -- @return boolean
@@ -2080,6 +2086,9 @@ function Soundscape.setStorytellerLaneVolume(laneId, volume01)
         return setChannelImmediateVolume("weatherRain", v)
     elseif laneId == "wind" then
         return setChannelImmediateVolume("weatherWind", v)
+    elseif laneId == "thunder" then
+        ensureState().thunderVolume = v
+        return true, "Thunder volume: " .. tostring(v)
     end
     return false, "Unknown sound lane: " .. tostring(laneId)
 end
@@ -2716,7 +2725,7 @@ function Soundscape.triggerThunder(hitKey)
     if thunder == nil then
         return false, "Unknown thunder hit: " .. tostring(hitKey)
     end
-    local naturalVol = tonumber(thunder.volume) or 0.7
+    local naturalVol = (tonumber(thunder.volume) or 0.7) * (tonumber(ensureState().thunderVolume) or 1)
     return playCatalogEntry("weatherThunder", thunder, weatherVolume(naturalVol), 0)
 end
 

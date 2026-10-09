@@ -1,4 +1,5 @@
 import type { SceneCatalogs } from "../scenes/types";
+import type { SoundLane } from "./commands";
 import type { ClockDatetime, SeatRow, SeatsSlice, SceneSlice, SoundscapeSlice, StageNpc } from "../worldState";
 
 /**
@@ -31,8 +32,8 @@ export type SoundView = {
   readonly featuredPlaying: boolean;
   readonly ambient: string | undefined;
   /** Lane volumes as 0–100 slider values. */
-  readonly levels: Readonly<Record<"music" | "location" | "featured" | "rain" | "wind", number>>;
-  readonly playing: Readonly<Record<"music" | "location" | "featured" | "rain" | "wind", boolean>>;
+  readonly levels: Readonly<Record<SoundLane, number>>;
+  readonly playing: Readonly<Record<SoundLane, boolean>>;
 };
 
 export const MOOD_LABEL: Readonly<Record<string, string>> = { main: "Main", combat: "Combat", intrigue: "Intrigue" };
@@ -64,8 +65,8 @@ export const soundView = (sound: SoundscapeSlice): SoundView => {
     featuredKey: sound.featuredKey,
     featuredPlaying: sound.featuredActive,
     ambient: sound.location === "none" ? undefined : sound.location,
-    levels: { music: level("music"), location: level("location"), featured: level("featured"), rain: level("rain"), wind: level("wind") },
-    playing: { music: playing("music"), location: playing("location"), featured: playing("featured"), rain: playing("rain"), wind: playing("wind") }
+    levels: { music: level("music"), location: level("location"), featured: level("featured"), rain: level("rain"), wind: level("wind"), thunder: level("thunder") },
+    playing: { music: playing("music"), location: playing("location"), featured: playing("featured"), rain: playing("rain"), wind: playing("wind"), thunder: playing("thunder") }
   };
 };
 

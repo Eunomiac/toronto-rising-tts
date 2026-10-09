@@ -54,6 +54,10 @@
       <Text id="soundscapeLaneLbl_wind" preferredWidth="150" minWidth="150" fontSize="14" color="#DDDDDD">Wind</Text>
       <Slider id="soundscapeSlider_wind" minValue="0" maxValue="1" value="0" flexibleWidth="1" onValueChanged="HUD_soundscapeLaneSlider" />
     </HorizontalLayout>
+    <HorizontalLayout spacing="6" childForceExpandWidth="true">
+      <Text id="soundscapeLaneLbl_thunder" preferredWidth="150" minWidth="150" fontSize="14" color="#DDDDDD">Thunder</Text>
+      <Slider id="soundscapeSlider_thunder" minValue="0" maxValue="1" value="1" flexibleWidth="1" onValueChanged="HUD_soundscapeLaneSlider" />
+    </HorizontalLayout>
 
     <HorizontalLayout class="hud_storyteller_button_row" spacing="4">
       <Button text="Inspect" minWidth="62" preferredWidth="62" onClick="HUD_soundscapeInspect" />

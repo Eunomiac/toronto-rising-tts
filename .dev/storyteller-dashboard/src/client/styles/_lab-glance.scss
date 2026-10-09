@@ -470,6 +470,13 @@ $lab-live: #4caf6a;
 
     .lab-search {
       flex: 1 1 auto;
+      font: inherit;
+      color: #c8c8d0;
+      outline: none;
+
+      &::placeholder {
+        color: #6c6c78;
+      }
     }
   }
 
@@ -731,6 +738,13 @@ $lab-live: #4caf6a;
     text-overflow: ellipsis;
     color: #c8c8d0;
   }
+}
+
+.lab-search-results {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 3px;
+  padding: 4px 2px;
 }
 
 /* ---------- backdrop cells (When, Weather) ---------- */

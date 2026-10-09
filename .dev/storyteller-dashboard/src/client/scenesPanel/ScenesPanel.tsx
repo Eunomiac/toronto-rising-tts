@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from "react";
 import { createApplyQueue } from "../applyQueue";
-import { AspectRow, HuntRoller, LocationPanel, PhaseStrip, RosterDock, SoundMixer, WeatherPanel, WhenPanel, type LabLocation } from "../lab/glance";
+import { ambientLabel, AspectRow, HuntRoller, LocationPanel, PhaseStrip, RosterDock, SoundMixer, WeatherPanel, WhenPanel, type LabLocation } from "../lab/glance";
 import { useSceneCatalogs } from "../lab/labRoster";
 import { Box, WideBoard, type LiveBoard } from "../lab/sketch";
 import type { SheetSnapshot } from "../pcSheet/types";
@@ -160,6 +160,8 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const present = pushedPresent && sceneAt && sceneAt > pushedPresent ? sceneAt : pushedPresent;
   const at = sceneAt ?? present;
   const location: LabLocation | null = scene?.districtKey && scene.siteKey ? { districtKey: scene.districtKey, siteKey: scene.siteKey } : null;
+  const siteTrack = catalogs?.sites.find((site) => site.key === scene?.siteKey)?.locationTrack;
+  const siteAmbience = siteTrack ? ambientLabel(siteTrack) : "Silent";
   const title = scene?.liveTitle ?? null;
   const liveScenes = useLiveScenes(scene?.liveKey, title);
   const deckError = useSceneDeckStatus().error;
@@ -232,7 +234,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
             )}
           </Box>
           <Box x={SOUND_X} y={G} w={1920 - G - SOUND_X} h={STRIP_H}>
-            {soundscape ? <SoundMixer indoors={scene?.weather.indoors === true} live={soundView(soundscape)} /> : <Waiting text={waitText} />}
+            {soundscape ? <SoundMixer indoors={scene?.weather.indoors === true} sceneAmbience={siteAmbience} live={soundView(soundscape)} /> : <Waiting text={waitText} />}
           </Box>
 
           <Box x={STRIP_X} y={BODY_Y} w={1920 - G - STRIP_X} h={PHASE_H} className="lab-phase-box lab-borderless">

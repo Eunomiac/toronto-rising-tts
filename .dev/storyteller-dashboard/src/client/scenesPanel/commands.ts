@@ -13,7 +13,7 @@ export type SceneClockMode =
   | "presentPlus120";
 
 /** Storyteller lanes `Soundscape.setStorytellerLaneVolume` accepts. */
-export type SoundLane = "music" | "location" | "featured" | "rain" | "wind";
+export type SoundLane = "music" | "location" | "featured" | "rain" | "wind" | "thunder";
 
 /** One Scenes tab command for `GlobalDashboardScenesApply` (`dashboard/scenes.ttslua` lists what each does). */
 export type ScenesCommand =

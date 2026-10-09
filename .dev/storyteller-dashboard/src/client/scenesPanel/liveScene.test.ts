@@ -75,12 +75,17 @@ describe("soundView", () => {
     const sound: SoundscapeSlice = {
       musicMood: "combat", musicEnabled: true, musicSuppressed: false, siteSilent: false, featuredActive: true, featuredKey: "TR_Loop",
       sessionIntroActive: false, location: "none",
-      lanes: [{ id: "featured", volume: 0.25, naturalVolume: 0.25, ducked: false, active: true }]
+      lanes: [
+        { id: "featured", volume: 0.25, naturalVolume: 0.25, ducked: false, active: true },
+        { id: "thunder", volume: 0.6, naturalVolume: 0.6, ducked: false, active: false }
+      ]
     };
     const view = soundView(sound);
     expect(view.playlist).toBe("Combat");
     expect(view.levels.featured).toBe(25);
     expect(view.playing.featured).toBe(true);
+    expect(view.levels.thunder).toBe(60);
+    expect(view.playing.thunder).toBe(false);
     expect(view.ambient).toBeUndefined();
     expect(soundView({ ...sound, musicEnabled: false }).playlist).toBe("Silent");
     expect(soundView({ ...sound, musicMode: "locationMusic", locationMusic: "gioEstate" }).playlist).toBe("Giovanni Estate");

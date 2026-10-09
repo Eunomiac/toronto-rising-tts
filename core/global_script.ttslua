@@ -4689,7 +4689,8 @@ local function syncSoundscapeLaneUi()
     local rows = SS.getPlayingLanesForUi()
     local duckHint = ""
     for _, row in ipairs(rows) do
-        if row.isDucked == true and (row.id == "rain" or row.id == "wind") and duckHint == "" then
+        local weatherLane = row.id == "rain" or row.id == "wind" or row.id == "thunder"
+        if row.isDucked == true and weatherLane and duckHint == "" then
             duckHint = "Weather ducked (indoors)"
         end
         local suffix = ""
@@ -4701,7 +4702,7 @@ local function syncSoundscapeLaneUi()
         if UI.setValue ~= nil then
             UI.setValue("soundscapeLaneLbl_" .. row.id, line)
         end
-        if row.isDucked == true and (row.id == "rain" or row.id == "wind") then
+        if row.isDucked == true and weatherLane then
             UI.setAttribute("soundscapeLaneLbl_" .. row.id, "color", "#CCCC66")
         else
             UI.setAttribute("soundscapeLaneLbl_" .. row.id, "color", "#DDDDDD")
@@ -4914,7 +4915,7 @@ function HUD_soundscapeStopFeatured(player, button, id)
     syncSoundscapeControls()
 end
 
---- Storyteller Sound: volume sliders (`soundscapeSlider_<lane>` lane = music|location|featured|rain|wind).
+--- Storyteller Sound: volume sliders (`soundscapeSlider_<lane>` lane = music|location|featured|rain|wind|thunder).
 function HUD_soundscapeLaneSlider(player, value, id)
     if not requireStorytellerForMutation(player, "HUD_soundscapeLaneSlider") then
         return

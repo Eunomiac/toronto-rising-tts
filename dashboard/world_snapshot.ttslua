@@ -47,7 +47,7 @@ local function round2(v)
   return math.floor(n * 100 + 0.5) / 100
 end
 
---- Board positions keep four places: two places is up to a slot's width off on the dashboard's stage.
+--- Board positions keep four places: two places can put a token half a slot off its snap on the dashboard's stage.
 --- @param v any
 --- @return number|nil
 local function round4(v)
