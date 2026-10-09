@@ -3,7 +3,7 @@
 ## Agent Routing
 
 Read this when:
-- touching `absentFromSession`, `tableSlot`, `isPresent`, PC seat piles, hand stash, or control-board PC tokens
+- touching `absentFromSession`, `tableSlot`, `isPresent`, PC seat piles, or hand stash
 - touching player connect / disconnect handlers, load-time seating, or blindfold transitions
 - touching the Debug panel connection mode or PCs-panel connection buttons
 
@@ -13,7 +13,7 @@ Source of truth:
 - `core/hud_blindfold.ttslua`, `core/phases.ttslua` — checkpoint call sites
 
 Verification:
-- Solo, Debug panel in **Assume Connected**: toggle a PC Disconnected on the PCs panel → seat darkens, nothing moves; Apply a scene → seat Unoccupied (pile, hand, cards stashed; token under the board); toggle Connected → chair, pile, hand return at once
+- Solo, Debug panel in **Assume Connected**: toggle a PC Disconnected on the PCs panel → seat darkens, nothing moves; Apply a scene → seat Unoccupied (pile, hand, cards stashed); toggle Connected → chair, pile, hand return at once
 - Multiclient: [`.dev/E2E Playbooks/Multiplayer-Session.md`](../../.dev/E2E%20Playbooks/Multiplayer-Session.md)
 
 Status:
@@ -41,9 +41,9 @@ Vocabulary rule: [`.cursor/rules/toronto-rising-seat-occupancy-terms.mdc`](../..
 
 | Event | Effect | Timing |
 | --- | --- | --- |
-| Connect (`PC.handleSeatConnected`) | Clear `absentFromSession`, assign a chair (fixed tables: `C.DefaultTableSlots[color]`; random tables: lowest free chair; Scatter: an empty scatter group), relayout, remirror token, `Sync.player` | Immediate — no blindfold |
+| Connect (`PC.handleSeatConnected`) | Clear `absentFromSession`, assign a chair (fixed tables: `C.DefaultTableSlots[color]`; random tables: lowest free chair; Scatter: an empty scatter group), relayout, `Sync.player` | Immediate — no blindfold |
 | Disconnect (`PC.handleSeatDisconnected`) | Seat darkens via effective presence; chair kept | Immediate |
-| Blindfold checkpoint (`PC.applyConnectionCheckpoint`) | Every PC still disconnected and not yet `absentFromSession`: set it, clear `tableSlot`, stash pile + hand + cards, park the control-board token beneath the board. Other seats do not shift. | Under cover, before transition work |
+| Blindfold checkpoint (`PC.applyConnectionCheckpoint`) | Every PC still disconnected and not yet `absentFromSession`: set it, clear `tableSlot`, stash pile + hand + cards. Other seats do not shift. | Under cover, before transition work |
 | Load (`M.setupPlayers` → `PC.seatAllPlayersForStartup`) | Session start: every PC counts as connected while startup setup runs (layout, reference objects and seat rigs assume a full table), so all are seated — **state only** (no per-seat presence pass or `Sync.player` here); the startup gate's single `Sync.full` lays out chairs (restoring any parked pile) and applies presence, lights and HUD | Immediate |
 | End of startup readiness gate (`PC.finishStartupConnectionAssumption`) | Stops the startup assumption and runs the first connection checkpoint: PCs who are not connected become unoccupied | After the gate's final step (no extra cover) |
 | Debug mode switch / PCs-panel toggle | Same handlers as a real connect / disconnect, driven by simulated connection | Immediate |
@@ -54,7 +54,7 @@ Checkpoint call sites:
 - `Phases.onEnter[PLAY]` after the session cover is raised (Intermission → Play)
 - `Phases.onEnter[INTERMISSION]` before the no-scene default (End → Intermission)
 
-Scenes, tables, and phases never author `absentFromSession`: every wholesale seat-row replacement runs `FSL.carryLiveAbsenceOnto` (scene Apply, Scatter stash restore, Scatter → table seeding, control-board preview draft).
+Scenes, tables, and phases never author `absentFromSession`: every wholesale seat-row replacement runs `FSL.carryLiveAbsenceOnto` (scene Apply, Scatter stash restore, Scatter → table seeding).
 
 ## Table B
 
@@ -69,9 +69,3 @@ Layout passes skip re-hiding an unoccupied PC whose pile is already parked (`FSL
 ## Scatter
 
 Scatter has no chairs; group membership is the seat. `ScatterOccupancy.reconcilePcConnectionInPack` removes unoccupied PCs from their group and puts an occupied PC with no group into an empty group (six groups, five PCs). It runs on connect, at the checkpoint, on load, and on a Scatter scene Apply (authored packs never seat an unoccupied PC).
-
-## Control-board PC tokens
-
-- A connected PC's token always sits on a chair snap. Dropping it anywhere else snaps it straight back to its chair. Swapping two PC tokens between chairs and clicking Apply reseats them.
-- A disconnected (`absentFromSession`) PC's token is locked a few units beneath the control board (hidden from view). It is not part of the Y = −200 hide/restore park.
-- No control-board action can make a PC Unoccupied.

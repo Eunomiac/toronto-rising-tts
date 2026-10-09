@@ -31,7 +31,6 @@ Use `O.hideObject` / `O.restoreObject` when code would otherwise:
 - Move an object to `y = -200` (or any off-table stash Y used as a hide)
 - Lock + disable + hide from players as a unit (bags, drawers, markers, absent piles, scatter hide-list, etc.)
 - Apply `ObjectPositions` / CSHEET `isHidden == true` poses
-- Stash gameboard control tokens or minimap markers off the board surface
 
 ## API (Global / object scripts)
 
@@ -114,7 +113,6 @@ Snapshot position is **not** the primary restore authority when a catalog pose o
 | **Spotlight seat figurines (visibility only)** | Stay at seat Y; active visibility from `C.HiddenObjects` only — not off-table park | `O.applyActiveVisibility` / `O.restoreObject` via `applySeatFigurineSpotlightVisibility` in `core/spotlight.ttslua` |
 | **Scatter floor / plinth** | Stay at playfield Y; PC+spectator invisibility only while Scatter is active | `ScatterMode` `applyScatterPlayfieldVisibility` (`setInvisibleTo` via `C.HideFromPcSeatsAndSpectators`) |
 | **BOTTOM_FOG emitter** | Authored at y ≈ −350 (below park threshold); Scatter plays AssetBundle Looping Effect 2/1 | `Scenes.applyFogEmitterLooping` via ScatterMode; `O.hideObject` refuses this GUID |
-| **Disconnected PC control-board token** | An unoccupied PC's token (`absentFromSession`, not connected) belongs to the board, not the off-table park; it must stay out of the seat-row scan Y band | `Tokens.stashDisconnectedPcControlToken` in `core/npc_gameboard_tokens.ttslua` — `O.restoreObject` with an explicit position a few units beneath the CONTROL_BOARD center, `locked = true`, `interactable = false`; `mirrorSeatRowControlToken` brings it back to its chair on connect |
 | **Player hand zones (Absent stash)** | `O.hideObject` tags the zone; a tagged zone only holds objects sharing that tag, so the cards fall out of the hand and are left behind on restore | `U.movePlayerHand` only (`stashHandZoneAndCards` to park, the `HAND_ZONE` layout move in `lib/figurine_seat_layout.ttslua` to restore): the zone parks at Y −200 alone; the in-hand cards are tagged `StashedHandCard` and put into the player's storage container (`G.GetPlayerStorageContainerGUID`); moving the zone back to the table deals only the tagged cards back into the hand. Cards are never locked: a locked card leaves the hand |
 
 **Preload pool (in scope):** NPC figurines + paired lights at `preload` and dice under bags use `O.hideObject` / `O.restoreObject` via `applyNpcPairPhysicalPresentation` and `core/dice_preload_pool.ttslua` (`parkDie` / `claim`). `DPP.claim` must pass the staging `position` (bag hover / arc / ST tray) into `O.restoreObject` so recycled dice unhide at that pose — never replay the hide snapshot of the last tray slot. `DPP.repositionAllAfterLayout` re-parks a bag's dice only when that bag's X/Z moved since the last layout. The NPC preload re-hide sweep (`NPCS.reconcilePreloadPoolHideFromState`) runs only after a preload park/adopt or an ImageScalar `reload()` (dirty flag), or when forced by load bootstrap and Scatter layout; `ensureNpcInPreloadZone` skips re-presentation for a pair already hidden at preload scale with the right ImageScalar (TOR-669).

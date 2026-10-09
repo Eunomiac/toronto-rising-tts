@@ -343,7 +343,7 @@ function Sync.npcCutouts()
     callIfFunction(NPCS.restoreAfterStateLoad)
 end
 
---- Narrow NPC + gameboard mirror pass (Apply/Clear, placement-only edits).
+--- Narrow NPC + spotlight-token pass (Dashboard stage edits, placement-only changes).
 --- @param opts table|nil `{ force?, reason?, deferUiRefresh?, onlySteps?, skipPreloadPopulate?, animateStageMoves? }`
 function Sync.npcs(opts)
     opts = type(opts) == "table" and opts or {}

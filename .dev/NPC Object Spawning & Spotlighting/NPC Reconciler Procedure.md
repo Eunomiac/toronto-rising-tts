@@ -8,14 +8,14 @@ Read this when:
 
 Source of truth:
 - `core/npcs.ttslua`
-- `core/npc_gameboard.ttslua`
+- `core/npc_stage_apply.ttslua` (Dashboard stage edits), `core/npc_gameboard.ttslua` (u,v maths)
 - `core/state.ttslua`
 - `lib/rotational-seat-layout.ttslua`
 
 Verification:
 - `npm run build`
-- `.dev/E2E Playbooks/Gameboard-E2E.md`
-- relevant NPC/control-board step-by-step playbooks in `.dev/Step-By-Step Playbooks/`
+- Scenes tab stage edits from the Storyteller Dashboard ([Scenes-E2E](../E2E%20Playbooks/Scenes-E2E.md))
+- relevant NPC step-by-step playbooks in `.dev/Step-By-Step Playbooks/`
 
 This document defines the **control flow** for reconciling NPC figurines in two locations: **NPC areas** in front of the table, and **NPC seats** around the table. It describes intended outcomes (where each NPC should end up, and what state should record), not the low-level mechanism for hiding objects or applying light modes — those may continue to use existing helpers as long as the outcomes match.
 
@@ -149,7 +149,7 @@ Do **not** use the case 1–2 state clear for case 3.
 The assigned character has a row in `sessionScene.npcWorld.placements` (stage-bound) but is still listed in `occupiedNPCSlots` for a table seat.
 
 - **Physical:** Remove figurine from the seat (untag `NPC<#>Object`, hide seat spotlight pairing) — same as case 3 physical off.
-- **State:** **Keep** `occupiedNPCSlots` / `seatSlots` so **Clear** or empty `placements` returns the NPC to that seat (Step Three), not preload/palette as the end state.
+- **State:** **Keep** `occupiedNPCSlots` / `seatSlots` so **Clear** or empty `placements` returns the NPC to that seat (Step Three), not preload as the end state.
 - **Step One:** When stage intent drops and resolved target is **Seat**, do not park the **figurine** to preload before Step Three (Step Three seats from stage or preload). Step Three still **parks the pooled area spotlight** to preload (OFF, hidden) via `parkPooledSpotlightForSeatedNpc`.
 
 ### Narrative absence — do not unseat
@@ -235,12 +235,12 @@ Step Five runs two passes (implementation order):
 
 | Pass | Target | Action |
 | --- | --- | --- |
-| **(a) Stage** | `sessionScene.npcWorld.placements` (gameboard u/v) | **Instant:** `moveNpcToStagePlacement` for preload→stage, seat→stage, load, blindfold, Clear, non-Apply sync. **Lerp (TOR-173):** when `Sync.npcs` passes `reason = gameboard_apply` + `animateStageMoves` and `NPCStageLerp.evaluateCandidate` passes — commit state first, then one `GlobalStageLerpOrchestrator` batch (area-grouped, center-out). Preload prep (`ensureNpcInPreloadZone`) runs only when the figurine is **not** already on `STAGE_BOARD` — otherwise stage→stage would clear `areaKey` and force snaps (`not_already_on_stage`). |
+| **(a) Stage** | `sessionScene.npcWorld.placements` (gameboard u/v) | **Instant:** `moveNpcToStagePlacement` for preload→stage, seat→stage, load, blindfold, Clear, non-Apply sync. **Lerp (TOR-173):** when `Sync.npcs` passes `reason = stage_apply` + `animateStageMoves` and `NPCStageLerp.evaluateCandidate` passes — commit state first, then one `GlobalStageLerpOrchestrator` batch (area-grouped, center-out). Preload prep (`ensureNpcInPreloadZone`) runs only when the figurine is **not** already on `STAGE_BOARD` — otherwise stage→stage would clear `areaKey` and force snaps (`not_already_on_stage`). |
 | **(b) Preload** | Step Zero target **Preload** | `ensureNpcInPreloadZone` — world Y = `areas.preload.groundLevel` (**-200**) |
 
-**Stage lerp eligibility (Apply only):** figurine already on `STAGE_BOARD`; no blindfold/transition; start or end light involves `STANDARD` (or `SPOTLIGHT` when held); position/yaw and/or mode change. Same-snap mode-only changes animate light (G/H timing) with frozen position. Escape hatch: blindfold or re-Apply mid-flight → snap all to committed state. Large batches stay on the lerp path; `staggerCandidateScale` / `staggerScaleMax` stretch **between-family** delays only. **Grouping:** anchor-family `familyId` (same as anchor spread / `tryAnchorFamilyGroupSpread`); leader (`familyK == 0`) moves first, siblings follow in `orderFamilySnapsForAnchorSpread` center-out order with even `withinFamilyStaggerSec`. Multiple families order center-out on destination anchor distance (tie-break: anchor travel). Tunables: `lib/npc_gameboard_data.ttslua` → `D.STAGE_PLACEMENT_LERP`.
+**Stage lerp eligibility (Dashboard stage edits only):** figurine already on `STAGE_BOARD`; no blindfold/transition; start or end light involves `STANDARD` (or `SPOTLIGHT` when held); position/yaw and/or mode change. Same-snap mode-only changes animate light (G/H timing) with frozen position. Escape hatch: blindfold or re-Apply mid-flight → snap all to committed state. Large batches stay on the lerp path; `staggerCandidateScale` / `staggerScaleMax` stretch **between-family** delays only. **Grouping:** anchor-family `familyId` (same as anchor spread / `tryAnchorFamilyGroupSpread`); leader (`familyK == 0`) moves first, siblings follow in `orderFamilySnapsForAnchorSpread` center-out order with even `withinFamilyStaggerSec`. Multiple families order center-out on destination anchor distance (tie-break: anchor travel). Tunables: `lib/npc_gameboard_data.ttslua` → `D.STAGE_PLACEMENT_LERP`.
 
-Characters with active **placements** rows are **not** preload targets; park them only after Clear / empty `placements`. Control-board tokens mirror from `placements` in `Gameboard.reconcileControlBoardFromState`.
+Characters with active **placements** rows are **not** preload targets; park them only after Clear / empty `placements`. Spotlight tokens on the Stage Control board mirror `placements` in `StageTokens.reconcileFromState`.
 
 ### Stage-bound characters who were seated or tagged for a seat
 

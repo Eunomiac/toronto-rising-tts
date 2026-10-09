@@ -11,13 +11,13 @@ Read this when:
 
 **Policy:** [Preparing For Multiplayer](../Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md) — P1–P10, solo audits, high-risk paths.
 
-Also: [Phases Overview](../Phases/Phases%20Overview.md), [Event Listener Policy](../Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md), Dice/Gameboard/Scenes E2E for solo prerequisites.
+Also: [Phases Overview](../Phases/Phases%20Overview.md), [Event Listener Policy](../Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md), Dice/Scenes E2E for solo prerequisites.
 
 Verification:
 - two real TTS clients via [Multiclient Session Script](Multiplayer-Session.md)
 - solo Host regression when the multiclient matrix is not required for the touched behavior
 
-**Prerequisites:** Solo Host suites pass ([Dice-E2E](Dice-E2E.md), [Gameboard-E2E](Gameboard-E2E.md), [Scenes-E2E](Scenes-E2E.md)). **TOR-284**, **TOR-345**, **TOR-143** / **TOR-319** shipped.
+**Prerequisites:** Solo Host suites pass ([Dice-E2E](Dice-E2E.md), [Scenes-E2E](Scenes-E2E.md)). **TOR-284**, **TOR-345**, **TOR-143** / **TOR-319** shipped.
 
 Status: agent checklist; **initial TOR-144 / TOR-249 pass Done (2026-07-13)**. Reuse for regressions. Residual join HUD: **TOR-381**. Step tables live only in Multiclient Session Script (avoid dual scripts).
 
@@ -37,8 +37,7 @@ Maps scenarios → session step ids. **Do not** treat this as a second runbook �
 | Steam auto-seat (TOR-345) | A1–A2, E2 | Chronicle color (or White); ST stays Black |
 | Connect blindfold (TOR-319) | A4 | Up in Intermission; lower otherwise |
 | ST Advance → Play | B0 | Single transition; no stacked audio/lights |
-| ST Apply / Clear gameboard | B1–B2 | Single stage layout / clear |
-| ST token drop | B3 | Token settles once |
+| ST Dashboard stage edit / clear | B1–B3 | Single stage layout / clear |
 | ST scene change | B4 | World matches; HUD lag → document P10 |
 | Signal candle | B5 | One light transition |
 | ST soundscape mood | B6 | One fade |
@@ -59,7 +58,7 @@ print("currentPhase=" .. tostring(S.getStateVal("currentPhase")))
 print("playSubPhase=" .. tostring(S.getStateVal("playSubPhase")))
 ```
 
-**Pass if:** ST actions (phase Advance, scene apply, gameboard Apply, dice spawn) succeed — no silent no-ops.
+**Pass if:** ST actions (phase Advance, scene apply, Dashboard stage edit, dice spawn) succeed — no silent no-ops.
 
 After ST Apply (session **D2**; optional on join client):
 
@@ -81,7 +80,7 @@ end
 
 ## Regression (solo Host)
 
-Re-run Gameboard smoke Apply/Clear and one Dice suite step after multiplayer-related changes. Hotseat with **2+ seats** is the minimum when touching ST panels, phases, seat assign, or `Sync.*`. Solo cannot fully prove TOR-345 join-client assign or Intermission connect blindfold on a second machine.
+Re-run one Dashboard stage edit + clear and one Dice suite step after multiplayer-related changes. Hotseat with **2+ seats** is the minimum when touching ST panels, phases, seat assign, or `Sync.*`. Solo cannot fully prove TOR-345 join-client assign or Intermission connect blindfold on a second machine.
 
 ## Related
 

@@ -94,13 +94,13 @@ TTS runs **all mod Lua on the Host only**. When the Host writes `gameState` (pla
 
 ### 1.3 High-risk code paths (audit before inviting a friend)
 
-When touching these areas, verify P1–P10 and run solo smoke (Apply/Clear, one roll). Friend-session coverage: [Multiclient Session Script](../E2E%20Playbooks/Multiplayer-Session.md). Agent checklist: [Multiplayer-E2E](../E2E%20Playbooks/Multiplayer-E2E.md).
+When touching these areas, verify P1–P10 and run solo smoke (one Dashboard stage edit, one roll). Friend-session coverage: [Multiclient Session Script](../E2E%20Playbooks/Multiplayer-Session.md). Agent checklist: [Multiplayer-E2E](../E2E%20Playbooks/Multiplayer-E2E.md).
 
 | Area | Key files / entry points | Solo check |
 | --- | --- | --- |
 | **Load / bootstrap** | `global_script.onLoad`, chunk `trEarlySilence*`, `SS.bootstrapSilenceStrayEmitterLoops`, `main.onLoad` → `M.setupPlayers` / `M.assignAllConnectedSeatsFromChronicle`, `sync.ttslua` `Sync.full` | Bootstrap completes; soundscape silence runs; connected players land on chronicle seats (TOR-345) |
-| **Gameboard Apply/Clear** | `GlobalGameboardApply`, `GlobalGameboardClear`, `core/npc_gameboard.ttslua`, `Sync.npcs` | ST-only steam on Global mutators; board `click_*` → `Global.call` |
-| **Token drop / pick-up** | `onObjectDrop`, `onObjectPickUp`, `NPCS.onObjectDropped`, `Gameboard.onNpcControlTokenDropped` | Tag gates (`npc_figurine`, `npc_control_token`) **then** steam when ST-only |
+| **Dashboard stage edits** | `GlobalDashboardScenesApply`, `core/npc_stage_apply.ttslua`, `core/stage_tokens.ttslua`, `Sync.npcs` | Dashboard bridge runs on host; stage tokens follow placements (no token-drop handlers) |
+| **Figurine drop** | `onObjectDrop`, `NPCS.onObjectDropped` | Steam ST gate, then O(1) `npc_figurine` tag gate |
 | **Scene / soundscape** | `HUD_changeScene`, `HUD_scenesLibApply`, `HUD_soundscape*`, `StorytellerScenesPanel`, `Sync.full` | Eager soundscape uses `commitEagerSteadyState` / fingerprint per dual-apply survey |
 | **Phases / session lifecycle** | `core/phases.ttslua`, `HUD_phaseAdvance`, `HUD_setPlaySubPhase`, `HUD_sessionNumInput`, Phases panel | ST Advance once (e.g. Intermission→Play): single light/theme/blindfold transition; scene Apply promotes to Play silently via `Phases.ensurePlayPhaseForSceneApply` (TOR-143) |
 | **Dice / rolls** | `HUD_roll*`, `GlobalDiceBagClick`, `GlobalSpawn*`, `GlobalReleaseBagDice`, `onObjectRandomize`, `objects/dice_bag.ttslua` `onLoad`, `core/roll_controller.ttslua` | PC roll clicks use `Global.call`; bag onLoad destroy via Global |
@@ -120,7 +120,7 @@ Before merging Lua that reacts to players or objects:
 5. **Object script?** Route mutations via `Global.call`; expose actor-identity via `GlobalIsStorytellerSteamPlayer`.
 6. **Lua local function order:** helpers above callers in the same chunk ([lua-local-function-order](../../docs/solutions/lua-local-function-order.md)).
 7. **Update** [Event Listener Policy](../Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md) inventory row.
-8. **Solo regression:** Gameboard Apply/Clear + one dice path; `npm run build` if UI/XML touched.
+8. **Solo regression:** one Dashboard stage edit + clear and one dice path; `npm run build` if UI/XML touched.
 
 ### 1.5 Repo audits you can run solo (no second client)
 
@@ -144,13 +144,12 @@ rg "isHostClient|requireHostForWorldMutation|GlobalRequireHostForWorldMutation" 
 print("isStoryteller=" .. tostring(U.isStorytellerSteamPlayer("Black")))
 ```
 
-**Hotseat smoke (required before marking execution-model work Done):** Solo host with **two or more seats** occupied — ST scene apply, soundscape control, gameboard Apply, dice spawn, `HUD_syncAll` must all succeed.
+**Hotseat smoke (required before marking execution-model work Done):** Solo host with **two or more seats** occupied — ST scene apply, soundscape control, Dashboard stage edit, dice spawn, `HUD_syncAll` must all succeed.
 
 ### 1.6 Solo test suites to keep green
 
 Run before scheduling multiplayer; they do **not** replace TOR-144:
 
-- [Gameboard-E2E](../E2E%20Playbooks/Gameboard-E2E.md) — Apply/Clear smoke
 - [Dice-E2E](../E2E%20Playbooks/Dice-E2E.md) — at least one roll path
 - [Scenes-E2E](../E2E%20Playbooks/Scenes-E2E.md) — one scene apply if scenes work changed
 

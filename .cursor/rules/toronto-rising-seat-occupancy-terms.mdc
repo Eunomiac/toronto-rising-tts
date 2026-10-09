@@ -10,7 +10,7 @@ Two states are easy to conflate. Keep a **bright line** between them in code, co
 | Term | Meaning | Field / authority |
 | --- | --- | --- |
 | **Occupied seat** | A PC or NPC holds a numbered chair (`tableSlot`). | `sessionScene.seatSlots[seat].tableSlot` |
-| **Present** | Occupied and narratively in the scene — lit, fully visible. | `isPresent` (scene library + control-board token flip) |
+| **Present** | Occupied and narratively in the scene — lit, fully visible. | `isPresent` (scene library + seat presence toggles) |
 | **Absent / Not Present** | Occupied but narratively out of the scene — seat dark, chair/sheet/hand stay. Also: a seated NPC standing on the stage. | `isPresent == false` |
 | **Disconnected / Not Connected** | A PC whose client is not connected. Mid-session it only darkens the seat; at the next blindfold checkpoint it becomes `absentFromSession`. | `PC.isSeatConnected(color)` (`core/player_connection.ttslua`) |
 | **Unoccupied seat** | No chair: an NPC removed from the table, or a PC with `absentFromSession`. Pile stashed once; table transitions never move it. | NPC `slotEmpty`; PC `absentFromSession` |

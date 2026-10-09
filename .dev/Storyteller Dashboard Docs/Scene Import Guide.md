@@ -117,7 +117,7 @@ The importer translates style 2 into `scatterPlacements` and stores that on the 
 
 **Dashboard pack details:** Each area **must** have both `centerCharacters` and `orbitCharacters` (empty `{}` is allowed). Center map key is a PC character key. `characterKey` equals that key unless `isPlayingNPC` is true. Required on each center row: `slot`, `isPlayingNPC`, `isPresent`. Orbit map key equals the NPC key. Extra NPCs beyond the board hole count are allowed.
 
-A character key may occupy **at most one** group. Applying a Scatter library row hides the table, swaps the control-board art, and poses figurines from occupancy.
+A character key may occupy **at most one** group. Applying a Scatter library row hides the table and poses figurines from occupancy.
 
 **Live table switch** (Scenes panel **Scatter** button, not import): chairs map the same way; occupied polar packs map in order CENTER → Mid Center → Mid Left → Mid Right → Center Left → Center Right → Far Center-Left → Far Center-Right → Far Left → Far Right onto scatter groups 1–6 (packs beyond 6 are Cleared). Switching back restores the stashed Standard layout, except NPCs you Cleared while in Scatter. An authored Scatter scene with no stash uses default PC chairs (Lucien 1 … Black Caesar 5, or a shuffle on random-seating tables) and packs NPCs into those polar families; overflow claims the next whole family.
 
@@ -392,7 +392,7 @@ Rain catalog keys: `rainLight`, `rainHeavy`. Wind: `windLow`, `windMed`, `windMa
 
 #### `npcWorld` (object, optional)
 
-Runtime layout lives in `placements`. `Sync.full` → NPC reconcile places figurines and control-board tokens from this map.
+Runtime layout lives in `placements`. `Sync.full` → NPC reconcile places figurines (and spotlight tokens on the Stage Control board) from this map.
 
 ```json
 "npcWorld": {
@@ -411,7 +411,7 @@ Runtime layout lives in `placements`. `Sync.full` → NPC reconcile places figur
 
 | Field          | Required                   | Meaning                                                                                        |
 | -------------- | -------------------------- | ---------------------------------------------------------------------------------------------- |
-| `u`, `v`       | Yes for a useful placement | 0–1 on **STAGE_BOARD** (same frame as control-board Apply). Importer does **not** range-check. |
+| `u`, `v`       | Yes for a useful placement | 0–1 on **STAGE_BOARD** (same frame as Dashboard stage edits). Importer does **not** range-check. |
 | `yaw`          | No                         | Degrees, board-relative.                                                                       |
 | `npcLightMode` | No                         | `OFF`, `STANDARD`, or `SPOTLIGHT`. At play time anything else becomes `STANDARD`.              |
 | `groundLevel`  | No                         | Absolute world Y. Omit to derive from the snap ring at `u,v`.                                  |

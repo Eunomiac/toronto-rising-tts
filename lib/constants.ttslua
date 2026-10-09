@@ -1852,7 +1852,7 @@ C.Tables = {
   },
   -- "Table B" is intentionally NOT a C.Tables entry: it is a dynamic family key resolved to
   -- "Table B<variant>" (B0-B4) from packed occupied-seat count after a random-seating
-  -- cover transition (TOR-537), or from highest occupied numbered tableSlot on control-board Apply (TOR-334).
+  -- cover transition (TOR-537).
   -- "Table B5" remains manually selectable but is never auto-selected.
   -- The Table B family is randomized seating, with `isRandomSeating = true`. Meaning: Whenever there is a
   -- cover transition to one of the Table B tables, randomize occupied, non-Absent seats (PC and NPC together)

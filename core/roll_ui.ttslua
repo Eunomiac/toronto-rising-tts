@@ -649,7 +649,7 @@ end
 --- @param color string
 --- @param pid string|nil
 --- @param label string|nil
---- @param npcCharacterKey string|nil  Authoritative NPC key when known (token-on-bag rolls)
+--- @param npcCharacterKey string|nil  Authoritative NPC key when known (Dashboard NPC rolls)
 --- @return string CustomUIAssets image name (may be empty)
 local function resolveRollFigureAssetKey(color, pid, label, npcCharacterKey)
     if pid ~= nil then

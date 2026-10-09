@@ -17,7 +17,7 @@ Source of truth:
 
 Verification:
 - `rg -n "SetTableTo|resolveTableKey|referenceFigurine|tableSlot|SeatRoleOffsets|ObjectPositions" lib core`
-- Save & Play table A/B/C seat order; Scenes table buttons; connect/disconnect seat occupancy (PCs panel simulated connection in Assume Connected mode); control-board token occupancy (TOR-247)
+- Save & Play table A/B/C seat order; Scenes table buttons; connect/disconnect seat occupancy (PCs panel simulated connection in Assume Connected mode)
 
 Status: current layout reference; production placement is figurine-offset (TOR-507). Generator helpers in `rotational-seat-layout.ttslua` remain for debug/compare.
 
@@ -261,8 +261,7 @@ A **family key** is a string with **no** exact `C.Tables` entry but with numbere
 * **Exact key** (incl. explicit `"Table B4"`, `"Table A"`, `"Table C"`) → returned unchanged; no counting.
 * **Family key** (`"Table B"`) → `tableKey .. tableBVariantIndex` from highest occupied numbered `tableSlot`
   (override via `opts.occupiedSlotIndex` or legacy `opts.occupiedCount`). After a Table B cover transition
-  (TOR-537), occupants are packed into `1..N`, so that index matches occupied count. Control-board Apply
-  still grows by the highest occupied chair and does not reshuffle. Missing variant → **error**.
+  (TOR-537), occupants are packed into `1..N`, so that index matches occupied count. Missing variant → **error**.
 
 `resolveTableRef` and therefore `SetTableTo` / `SyncTable` resolve family → concrete automatically, so
 callers may pass `"Table B"`. **Intent** (`sessionScene.tableKey`) stores the clicked key (family or explicit);
@@ -271,9 +270,7 @@ callers may pass `"Table B"`. **Intent** (`sessionScene.tableKey`) stores the cl
 Helpers: `R.resolveTableKey`, `R.isDynamicTableFamilyKey`, `R.highestOccupiedNpcSlotIndex`,
 `R.countOccupiedNpcSlots`, `R.tableNpcSlotCapacity`.
 
-**Grow-only on control-board Apply:** `Gameboard.applyFromControlBoard` grows the table (via `SetTableTo`)
-**only** when the intent is a family key **and** highest occupied NPC slot index exceeds the active variant's capacity.
-Removing NPC seats never shrinks the table (switches are expensive). Because `C.NPCSeats` is NPC1–NPC4,
+No live path grows a Table B variant mid-scene (switches are expensive); the variant changes only on a cover transition or an explicit table pick. Because `C.NPCSeats` is NPC1–NPC4,
 auto-resolution caps at `Table B4`; `Table B5` is manually selectable but never auto-selected.
 
 ### FACING tables (TOR-267)
@@ -298,8 +295,6 @@ placement is shape-agnostic. The diagnostic generators split the same way (`gene
   center. Every seat inherits the reference template's authored facing (straight +Z for Table C's 180° side),
   mirrored for the opposite side; the index never tilts rotation. Do **not** convert this to a per-seat
   `U.lookAtRotation` (that aims seats at the center point instead of straight inward).
-* **Markers:** `R.facingSeatWorldXZ(tableCfg, side, index)` exposes the same X-segmentation for the
-  control-board minimap (row Z derived from `referenceHandPosition`); returns nil if the table isn't active.
 * **Camera:** per-seat presets use `computed.seatRigidByKey` directly (`cameraFrameFromRigid`), so circular and
   facing tables share one camera path.
 

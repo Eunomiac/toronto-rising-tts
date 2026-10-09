@@ -85,7 +85,7 @@ Outputs: `.dev/build-logs/save-loading-assets-latest.{csv,json,md}` (+ `*-extras
 | --- | ---: | --- |
 | `cardOrDeck` | 318 | ContainedObjects multiply rows |
 | `dice` | 286 | Includes preload pool |
-| `tile` | 157 | Control tokens, companions, etc. |
+| `tile` | 157 | Tokens, companions, etc. (snapshot before TOR-687 removed control tokens) |
 | `figurine` | 116 | NPC preload pool under table |
 | `infiniteBag` | 22 | |
 | other / customImage | ~31 | |

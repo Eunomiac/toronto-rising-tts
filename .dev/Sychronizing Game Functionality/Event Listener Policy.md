@@ -50,9 +50,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `onLoad` | `global_script` | Host | B+C | Startup readiness: TOR-384 Global HUD canary remount before gate Sync.full when `overlay_globalBlindfold_panel` missing. The gate `Sync.full` is the only startup full sync (TOR-671); `startupCoverHeld` keeps the session-start cover down until the gate's last step (remount / seat-assignment / connect paths cannot lift it early) | bootstrap | Low | Done |
 | `onSave` | `global_script` | Save | B | — | lights state | Med | 4 |
-| `onObjectPickUp` | `global_script` | Host | C | Steam + tag | Gameboard flags | High | 4 |
-| `onObjectDrop` | `global_script` | Host | C | Steam + tag | Gameboard/NPCS | High | 4 |
-| `onObjectRotate` | `global_script` | Host | B+C | Steam + NPC/PC control-token tag | THERE draft capture; NPC family flip when Group Move held | Med | 4 |
+| `onObjectDrop` | `global_script` | Host | C | Steam + tag | NPCS figurine drop | High | 4 |
 | `onObjectRandomize` | `global_script` | Host | B+C | d10 tag | roll FSM + lights | High | 4 |
 | `onObjectCollisionEnter` | `global_script` | Host | C | Fires only for objects that called `registerCollisions(false)` (idle-bag quick Rouse dice in flight); `RC.onAutoRouseDieCollision` drops unknown GUIDs via `_autoRouseImpactByGuid`, ignores die-on-die contact, unregisters on first impact (2s fallback lock) | 0.5s later locks the die; last lock → `RC.onDiceSettled` (TOR-526) | Low | — |
 | `onObjectHover` | `global_script` | Host (every player's pointer move) | C | `WPG.onObjectHover`: O(1) exit unless a Willpower reroll glow exists or this player was hovering one; only the rolling player's hover counts | Repaints one glowing die brighter blue / back (TOR-673) | Low | - |
@@ -62,7 +60,6 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `onPlayerDisconnect` | `global_script` | Host | B+C | — | TOR-293: cancel roll if any; `PlayerConnection.handleSeatDisconnected` darkens the seat only (still occupied). The next connection checkpoint (`PlayerConnection.applyConnectionCheckpoint` under blindfold cover) sets `absentFromSession` if they are still disconnected. | Med | 4 |
 | `onPlayerChangeColor` | `global_script` | Host | B | Seat HUD visibility reveal (`revealSeatHudVisibility`) + UpdateUIDisplays; deferred Global full UI resync for join clients unless `connectionControls.deferSetXml` (TOR-381 / TOR-428); Host hotseat swaps manual via `HUD_refreshUi` | state row | Med | 4 |
 | `addHotkey` (`Spotlight NPC (hold)`) | `global_script` | Clicker (per player) | C | ST steam in callee | transient spotlights | Low | — |
-| `addHotkey` (`Group move (hold)`) | `global_script` | Clicker (per player) | C | ST steam in callee | CONTROL_BOARD family relocate | Low | — |
 | `addHotkey` (`Storyteller toolbar (toggle)`) | `global_script` | Clicker (per player) | A | ST steam in callee | one-shot toggle `storytellerToolbarBody` (TOR-481) | Low | — |
 | `addHotkey` (`Debug panel (toggle)`) | `global_script` | Clicker (per player) | A | ST steam in callee | one-shot toggle `adminControlsBody` + TOR-406 sync on open (TOR-481) | Low | — |
 
@@ -70,21 +67,18 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 
 | Function | Tier | Phase | Notes |
 | --- | --- | --- | --- |
-| `GlobalGameboardApply/Clear/ClearClick/RecoverStrays/Save/Load/ToggleLayoutLock/ToggleControlBoardSnaps/TokenDroppedOnDiceBag/StageLerpOrchestrator` | C | 5 | Gameboard; Save is state-only (B); RecoverStrays = right-click Clear (TOR-485) |
-| `GlobalImportGenericNpcs` / `HUD_genericNpcImportConfirm` / `HUD_genericNpcImportCancel` / `HUD_genericNpcImportLabelChanged` | B+C | 5 | TOR-560 generic import: parse keys → ST label modal → spawn token/figurine/light; Dashboard executeLua; LabelChanged stashes typed names |
 | `GlobalImportSceneJson` | B | 5 | TOR-570 Dashboard execute-lua: Scene Constructor JSON → `SceneLibrary.importConstructorJsonText` (library row only, no Apply). No Steam gate (no clicker). Same write path as in-game Import Scene. |
-| *(load guard)* | — | — | Every Dashboard execute-lua entry in this block (`GlobalImportGenericNpcs`, `GlobalImportSceneJson`, `GlobalDashboard*`) refuses until `S.isReady()` — the Global chunk is callable before `onLoad` fills `gameState`. JSON entries return `ok=false, loading=true`; the imports raise. See [`dashboard/README.md`](../../dashboard/README.md) § Load guard. |
+| *(load guard)* | — | — | Every Dashboard execute-lua entry in this block (`GlobalImportSceneJson`, `GlobalDashboard*`) refuses until `S.isReady()` — the Global chunk is callable before `onLoad` fills `gameState`. JSON entries return `ok=false, loading=true`; the imports raise. See [`dashboard/README.md`](../../dashboard/README.md) § Load guard. |
 | `GlobalDashboardPcSheetSnapshot` | B | — | Dashboard execute-lua (`dashboard.pc_sheet`): JSON snapshot of five PC seats (stats, Desire, Ambition, identity overlay, session flags, conditions). No Steam gate (no clicker). |
 | `GlobalDashboardPcSheetApply` | B+C | — | Dashboard execute-lua (`dashboard.pc_sheet`): one typed mutation **or a JSON array of mutations** (trackers, dots, disabled, ST badges, Hunger, Desire, join spike controls, ST rolls; Page 2–3 discipline/power/ritual/advantage ops in `dashboard.pc_sheet_traits`; Experience Log append/undo in `dashboard.pc_sheet_xp`; Page 4 `relationshipUpsert` / `relationshipDelete` in `dashboard.pc_sheet_relationships` (refreshes every linked PC's sheets); **`mergePlayerData`** developer JSON Apply: deep-merge assign into `gameState.playerData.<pid>` with **no** defaults/normalize/validateState) then one snapshot. Ops are state-only; after the batch, `Dash.apply` calls `Sync.player` once per touched seat (which also pushes the seat to the dashboard). Damage uses V5 overflow (super→agg). Stain add is a no-op while impaired. No Steam gate. Reuses `P` / `Sync.player` / `RC.initiateRoll`. Seat occupancy is read-only here (`absentFromSession` + `connected` in the snapshot); connection is the sole authority. |
-| `GlobalDashboardScenesApply` | B+C | — | Dashboard execute-lua (`dashboard.scenes`): one Scenes tab op **or a JSON array of ops** (phase advance / Play subphase, spotlight `rotateBy` / `bringToFront`, live real-time clock on/off + speed via `StorytellerScenesPanel.setLiveRealTimeClock`, animated clock move via `NarrativeClockLerp.startToTarget`, present day via `PresentDayClock.setPresentDay`, soundscape setters + `commitEagerSteadyState` + `UpdateUIDisplays({ soundscape = true })`, narrative seat presence via `StorytellerScenesPanel.setLiveSeatPresence`, live location / skybox / top fog / lighting preset / table (Scatter included) / scene conditions via the `StorytellerScenesPanel.setLive*` setters, weather held until the next dawn via `ChronicleWeather.setOverride` + `applyScheduledWeather({ force = true })` (TOR-683), Memoriam enter via `Memoriam.applyEnter(payload)` and leave via `applyExit({ mode = "restore" })`, library scene play, End Scene, scene library `upsertScene` / `deleteScene` via `dashboard.scene_library` and `unlinkScene` / `forkScene` via `StorytellerScenesPanel.unlinkLiveMirror` / `forkLiveScene` (TOR-684), stage edits / Clear / Reset via `Apply.applyStageChanges` (the board Apply commit: placements write, seat darkening, `Sync.npcs` reason `gameboard_apply`), Scatter moves via `ScatterMode.movePcToGroup` / `moveNpcToGroup`, generic NPC add via `GenericNpcs.importNamed` (TOR-685)). Replies `{ ok, error? }`; the world push carries the result. Same entry points as the in-game HUD, so no extra sync or dual apply. Scene play and End Scene reach Steam-gated panel paths, so the op passes the connected Storyteller player (fails when the Storyteller is not in the game). Never touches `absentFromSession`. TOR-680. |
+| `GlobalDashboardScenesApply` | B+C | — | Dashboard execute-lua (`dashboard.scenes`): one Scenes tab op **or a JSON array of ops** (phase advance / Play subphase, spotlight `rotateBy` / `bringToFront`, live real-time clock on/off + speed via `StorytellerScenesPanel.setLiveRealTimeClock`, animated clock move via `NarrativeClockLerp.startToTarget`, present day via `PresentDayClock.setPresentDay`, soundscape setters + `commitEagerSteadyState` + `UpdateUIDisplays({ soundscape = true })`, narrative seat presence via `StorytellerScenesPanel.setLiveSeatPresence`, live location / skybox / top fog / lighting preset / table (Scatter included) / scene conditions via the `StorytellerScenesPanel.setLive*` setters, weather held until the next dawn via `ChronicleWeather.setOverride` + `applyScheduledWeather({ force = true })` (TOR-683), Memoriam enter via `Memoriam.applyEnter(payload)` and leave via `applyExit({ mode = "restore" })`, library scene play, End Scene, scene library `upsertScene` / `deleteScene` via `dashboard.scene_library` and `unlinkScene` / `forkScene` via `StorytellerScenesPanel.unlinkLiveMirror` / `forkLiveScene` (TOR-684), stage edits / Clear / Reset via `StageApply.applyStageChanges` (`core/npc_stage_apply`: placements write, seat darkening, `Sync.npcs` reason `stage_apply`; spotlight tokens follow via `StageTokens.reconcileFromState`), Scatter moves via `ScatterMode.movePcToGroup` / `moveNpcToGroup`, generic NPC add via `GenericNpcs.importNamed` (TOR-685)). Replies `{ ok, error? }`; the world push carries the result. Same entry points as the in-game HUD, so no extra sync or dual apply. Scene play and End Scene reach Steam-gated panel paths, so the op passes the connected Storyteller player (fails when the Storyteller is not in the game). Never touches `absentFromSession`. TOR-680. |
 | `GlobalDashboardSceneLibrarySnapshot` | B | — | Dashboard execute-lua (`dashboard.scene_library.snapshot`): JSON of `gameState.sceneLibrary` rows (all, or the keys in the optional JSON list) plus `order` and the table's `liveKey`. Seeds the dashboard's master scene library once, then reads back the linked row after the table's scene changes. Read-only. No Steam gate (no clicker). TOR-684. |
 | `GlobalDashboardWorldSnapshot` | B | — | Dashboard execute-lua (`dashboard.world_snapshot`): JSON of the six world push slices (phase, scene, clock anchor, soundscape, seats, rolls) for a tab that opens before the server has cached them. Read-only. No Steam gate (no clicker). TOR-679, TOR-686. |
 | `GlobalDashboardRollsApply` | B+C | — | Dashboard execute-lua (`dashboard.rolls`): one roll op **or a JSON array of ops** — PC rolls (initiate, difficulty (opens a setup roll), roll type, options, post-roll pool die, override, confirm, cancel, broadcast held result), the Black seat's NPC rolls (initiate in a free drawer, pool, difficulty, ROLL / Take Half / Willpower / pick die / reroll / recalc / confirm, cancel, drawer cancel / broadcast), Oblivion / Brutal choices, and `hunt` (resonance banner via `RUI.showHuntBroadcast` + `playerData[pid].huntResonance`, then `Sync.player`). Ops call `RC.*`, `STR.*` and the in-game roll panels' HUD handlers (synthetic `rollPanelST_` ids map to Black); each command marks the `rolls` slice. Replies `{ ok, error? }`. No Steam gate (no clicker). TOR-686. |
 | `GlobalDashboardRollOptions` | B | — | Dashboard execute-lua (`dashboard.rolls.optionsJson`): the TTS roll options modal's starting values for one PC seat (roll types, permanent toggles, per-roll rules with locks, roll conditions with negating pairs, reroll numbers). Read-only. No Steam gate (no clicker). TOR-686. |
 | `GlobalDashboardProjectsSnapshot` | B | — | Dashboard execute-lua (`dashboard.projects`): JSON of every project with Lua-derived auto phase, required stake, project die, start/end text, Begin eligibility + message, launch eligibility; per-source advantage lists with free dots; present day; owner/source order; `listForDisplaySource` id order per source. Read-only. No Steam gate (no clicker). |
 | `GlobalDashboardProjectsApply` | B+C | — | Dashboard execute-lua (`dashboard.projects`): one command — `create` (first Save only), `patch` (any field; scope runs `applyScopeDifficulty`; Result/Margin refused once begun), `setStakeRows` (≤8), `begin` (`isBeginEligible`), `complete` (in progress only), `delete`, `launchRoll` (`RC.initiateRoll` LAUNCH, same as the panel R button; pre-launch only). Mutations end with `PJP.refresh` + `Projects.refreshAfterMutation` (all PC sheets, coterie sheet, Court cards); `launchRoll` skips the refresh. Returns a fresh snapshot. No Steam gate. |
-| `GlobalGameboardInstallPaletteSnaps` | C | Done | palette snap install |
-| `GlobalGameboardSyncSnapsToggleLabel` | A | — | snaps + layout-lock toolbar labels |
+| `GlobalStageLerpOrchestrator` | C | 5 | `startLuaCoroutine` entry for animated stage moves (`core/npc_stage_lerp`); started by `Sync.npcs` with `animateStageMoves` (Dashboard stage edits) |
 | `GlobalHideObject` | C | — | Unified off-table park (`O.hideObject`); object scripts pass `guid` + optional park opts |
 | `GlobalRestoreObject` | C | — | Unified reveal (`O.restoreObject`); object scripts pass `guid` + optional restore opts |
 | `GlobalToggleSignalFireState` | C | 5 | signal lights; on/off via hide/restore — seat layout preserves per-seat Y (TOR-380), no gameState reconciler |
@@ -117,8 +111,6 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 
 | Script | Delivery | Guards | Phase |
 | --- | --- | --- | --- |
-| `npc_control_board.ttslua` | clicker → Global.call | Steam via Global | 6 |
-| `npc_control_board_palette.ttslua` | onLoad | Global install | Done |
 | `dice_bag.ttslua` | clicker + onLoad | Spawn via Global.call | W2 |
 | `ui_signal_candle.ttslua` | clicker → Global.call | Global callee | 5 |
 | `ui_tarot_button.ttslua` | clicker → `GlobalApplyTarotState` | Global callee | W2 |
@@ -202,15 +194,12 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | Handler | File | Frequency | Guard status | Notes |
 | --- | --- | --- | --- | --- |
 | `onObjectDrop` | `core/global_script.ttslua` | **Very high** | **Pass** | Steam + tag gates |
-| `onObjectPickUp` | `core/global_script.ttslua` | High | **Pass** | Steam + tag; `npc_control_token` tag |
 | `onObjectRandomize` | `core/global_script.ttslua` | High (rolls) | **Pass** | `hasTag("d10")` before `getTags` / roll FSM |
 | `onObjectCollisionEnter` | `core/global_script.ttslua` | Low (registered dice only) | **Pass** | Only idle-bag quick Rouse dice are registered (`stay=false`); GUID map lookup first, unregister after first non-die impact (TOR-526) |
 | `onObjectHover` | `core/global_script.ttslua` | **Very high** | **Pass** | `next(glowByGuid) == nil` and no prior hovered glow → return before any `getGUID` / repaint (TOR-673) |
 | `onObjectLeaveContainer` | `core/global_script.ttslua` | Medium | **Pass** | `d10` die path **or** `type==Card` + `Compulsion:` notes prefix before `require("core.compulsions")` |
 | `onObjectEnterZone` | `core/global_script.ttslua` | Medium | **Pass** | `type==Card` + `Compulsion:` prefix + hand `FogColor` in `C.PlayerColors` before finish selection (TOR-204) |
-| `addHotkey` → `Spotlight NPC (hold)` | `core/global_script.ttslua` | Low (ST hold) | **Pass** | `isStorytellerSteamPlayer` before `require`; world I/O in `Gameboard.onControlBoardSpotlightHotkey` (`npc_gameboard_spotlight`) |
-| `addHotkey` → `Group move (hold)` | `core/global_script.ttslua` | Low (ST hold) | **Pass** | `isStorytellerSteamPlayer` before `require`; hold flag + board→board family relocate / family flip in `Gameboard.onGroupMoveHotkey` / `tryBoardFamilyGroupRelocate` / `tryBoardFamilyGroupFlip` (TOR-412 / TOR-413 / TOR-414) |
-| `onObjectRotate` | `core/global_script.ttslua` | Medium | **Pass** | Steam + `npc_control_token`/`pc_control_token` O(1) tag gate; `Gameboard.onControlTokenRotated` exits unless THERE before debounced draft capture. NPC-only family flip additionally requires `isGroupMoveHotkeyHeld` (TOR-414). |
+| `addHotkey` → `Spotlight NPC (hold)` | `core/global_script.ttslua` | Low (ST hold) | **Pass** | `isStorytellerSteamPlayer` before `require`; world I/O in `Gameboard.onControlBoardSpotlightHotkey` (`npc_gameboard_spotlight`); hover must be a `stage_token` |
 
 ## Module handlers (called from Global)
 
@@ -219,16 +208,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `NPCS.onObjectDropped` | `core/npcs.ttslua` | **Pass** | Global `npc_figurine` tag only (seated figurines use seat `*Object` tag, not drop path) |
 | `NPCS.isPooledFigurineObject` | `core/npcs.ttslua` | **Pass** | `npc_figurine` **or** seat `*Object` tag + `Figurine_Custom` + (`npcInstance:` GM Notes **or** instance `figurineGuid` registry when seated) |
 | `NPCS.resolveNpcNameFromFigurine` | `core/npcs.ttslua` | **Pass** | GM Notes, then O(1) `figurineGuidToNpcName` cache (rebuilt on bulk instance replace) |
-| `Gameboard.onNpcControlTokenDropped` | `core/npc_gameboard_interactions.ttslua` (via `npc_gameboard` facade) | **Pass** | `isNpcControlToken` + palette/anchor flags before `waitForCondition`. Scatter Mode (TOR-572 / TOR-628): after O(1) token check, `isTokenOverMinimapParchment` (tight XZ, no Y — tokens still dropping); nearest of six gold origins then free hole; never `U.await` for polar snaps while Scatter is active. HERE writes live pack + `applyWorldLayout`; THERE writes `previewDraft.scatterPlacements` only. Off-parchment → `clearCharacterOccupancy` + palette park. PC tokens (`onPcControlTokenDropped`): O(1) `isPcControlToken` guard; off-chair (Standard) or off-parchment (Scatter) drop snaps back to the PC's own chair/hole; a disconnected PC's token returns beneath the board. |
-| `Gameboard.onControlTokenRotated` | `core/npc_gameboard_interactions.ttslua` (via facade) | **Pass** | Global pre-gates NPC/PC token; O(1) THERE check precedes generation/debounce capture scheduling |
-| `Gameboard.onNpcControlTokenRotated` | `core/npc_gameboard_interactions.ttslua` (via facade) | **Pass** | Hotkey-held polar family face match; `familyFlipDepth` suppresses recursive rotate |
-| `Gameboard.onControlTokenPickUp` | `core/npc_gameboard_interactions.ttslua` (via facade) | **Pass** | Scatter Mode (TOR-628): unlock + free active pack slot without palette park (token still in hand); HERE world apply so figurines leave immediately |
-| `Gameboard.tryNpcControlTokenDroppedOnStorytellerDiceBag` | `core/npc_gameboard_interactions.ttslua` (via facade) | **Pass** | Black/ST + `dieKindNearStorytellerDiceBag` before restore/roll. Scatter Mode: restore parks on palette (not board hole); `STR.initiateFromBagLabel` may replace the same group’s uncleared roll or steal the oldest tray instead of refusing when all three trays are busy. |
-| `Gameboard.tryPcControlTokenDroppedOnStorytellerDiceBag` | `core/npc_gameboard_interactions.ttslua` (via facade) | **Pass** | `isPcControlToken` + Black/ST + bag proximity. Scatter Mode (TOR-628): clears group slot and unlocks off-board (no PC palette snap); Standard still re-pins seat-row home. Returns `rollColor, rollType` via `STR.rollTypeForStorytellerBagDrop`. |
-| `GlobalGameboardTokenDroppedOnDiceBag` / `GlobalGameboardPcTokenDroppedOnDiceBag` | `core/global_script.ttslua` | **Pass** | tag + steam-ST before `require("core.npc_gameboard")`; PC wrapper owns `RC.initiateRoll` |
 | `GlobalRepositionStorytellerTrayDice` | `core/global_script.ttslua` | **Pass** | Tier C tray layout across all ST bags |
-| `Gameboard.onPcControlTokenDropped` | `core/npc_gameboard_interactions.ttslua` (via facade) | **Pass** | `isPcControlToken`. Scatter Mode (TOR-572 / TOR-602 / TOR-628): same host drop path; nearest group + stable PC world slot (gold = slot 1), park + lock when HERE; THERE draft-only. Off-parchment clears occupancy (no palette snap for PCs). |
-| `Gameboard.onNpcControlTokenPickUp` | `core/npc_gameboard_interactions.ttslua` (via facade) | **Pass** | `isNpcControlToken` |
 | `Compulsions.onGenericDrawn` / `onPresentedEnteredHand` / `onSelectedEnteredHand` | `core/compulsions.ttslua` | **Pass** | Called only after Global Card + `Compulsion:` prefix gates (TOR-204); selected path requires `<Color>Object` tag |
 
 ## Object-script handlers
@@ -238,8 +218,6 @@ Per-object scripts (`objects/*.ttslua`, `ui/ui_*.ttslua`) run in **isolated chun
 | Script | Events | Guard pattern |
 | --- | --- | --- |
 | `objects/dice_bag.ttslua` | `click_roll`, spawn, onLoad | tags; spawn via Global.call |
-| `objects/npc_control_board.ttslua` | `click_apply`, `click_clear`, `click_generic_import` | Steam via `GlobalIsStorytellerSteamPlayer`; mutators via Global.call; Clear right-click (`-2`) → `GlobalGameboardRecoverStrays` (TOR-485 stray park + TOR-486 palette re-snap + ST feedback); Import → `GlobalImportGenericNpcs` (TOR-560) |
-| `objects/npc_control_board_palette.ttslua` | onLoad | One-time install via Global.call |
 | `ui/ui_signal_candle.ttslua` | click | Object GUID / color from name |
 | `ui/ui_tarot_button.ttslua` | click | Pink/Black → `GlobalApplyTarotState` |
 | `ui/ui_csheet_core.ttslua` | click, onLoad | Global mutators; layout onLoad; inner-strip right-click → seat `roll` camera |
@@ -249,8 +227,8 @@ Per-object scripts (`objects/*.ttslua`, `ui/ui_*.ttslua`) run in **isolated chun
 1. **Unconditional Global hot-path work** — e.g. calling `NPCS.*` or `Sync.full` from `onObjectDrop` without tag/type guard.
 2. **`require()` inside hot handlers** without guard — cache module locals at chunk load when the handler lives in Global; object scripts may `require` at top of file only.
 3. **Full table scans** (`pairs(getInstances())`, all snap catalog rebuilds) on every drop — use tag/GUID fast path first; cache indexes when scans are unavoidable.
-4. **Synchronous reconcile on drop** — drops may schedule work; Apply/Clear owns bulk reconcile via `Sync.npcs`.
-5. **Unbounded `waitForCondition`** on common drops — only when eligibility flags were set on pick-up (see Gameboard token path).
+4. **Synchronous reconcile on drop** — drops may schedule work; Dashboard stage edits own bulk NPC reconcile via `Sync.npcs`.
+5. **Unbounded `waitForCondition`** on common drops — only when eligibility flags were set on pick-up.
 
 ## Required pattern (Global drop example)
 
@@ -265,12 +243,6 @@ function onObjectDrop(playerColor, object)
     if object.hasTag("npc_figurine") == true and NPCS and NPCS.onObjectDropped then
         NPCS.onObjectDropped(object)
     end
-    if object.hasTag("npc_control_token") == true then
-        local Gameboard = require("core.npc_gameboard")
-        if Gameboard.onNpcControlTokenDropped then
-            Gameboard.onNpcControlTokenDropped(object, playerColor)
-        end
-    end
 end
 ```
 
@@ -279,7 +251,7 @@ end
 1. Prefer **object script** scope so Global is not invoked for unrelated objects.
 2. Document the handler in this file (table above).
 3. Implement **guard first**, handler body second — PR review checks guard line count ≤ 3 before any `require` / loop / sync.
-4. If the handler mutates world state, follow [Reconciler Contract](Reconciler%20Contract.md): mutate state, then narrow sync — never hide reconcile in a drop handler unless explicitly spec'd (Gameboard pick-up flags are ephemeral runtime context, not `gameState`).
+4. If the handler mutates world state, follow [Reconciler Contract](Reconciler%20Contract.md): mutate state, then narrow sync — never hide reconcile in a drop handler unless explicitly spec'd.
 
 ## Blindfold raise / layout finish — default camera (TOR-368)
 

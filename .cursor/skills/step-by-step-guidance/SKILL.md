@@ -9,7 +9,7 @@ Use this skill whenever the author must **confirm something works in TTS** — a
 
 ## Default deliverable
 
-1. Copy [`.dev/Step-By-Step Playbooks/.Step-By-Step Template.md`](../../../.dev/Step-By-Step%20Playbooks/.Step-By-Step%20Template.md) to a configured playbook file, e.g. `.dev/Step-By-Step Playbooks/TOR-281-clear-seat-verify.md` (or a descriptive name when no Linear id yet).
+1. Copy [`.dev/Step-By-Step Playbooks/.Step-By-Step Template.md`](../../../.dev/Step-By-Step%20Playbooks/.Step-By-Step%20Template.md) to a configured playbook file, e.g. `.dev/Step-By-Step Playbooks/TOR-123-short-name-verify.md` (or a descriptive name when no Linear id yet).
 2. Fill in title, goal, prerequisites, Run order, and Code Blocks for **this** fix — valid Lua, repo helpers, asserts for everything Lua can check.
 3. Write in **plain English** for the author — complete sentences, explained nicknames, clarity over engineer shorthand. Project rule: [`.cursor/rules/toronto-rising-author-voice.mdc`](../../rules/toronto-rising-author-voice.mdc).
   **BAD:** "Verify **TOR-281 (Stage Clear seat activation + live scene-library seat persistence)**: Clear-from-stage homeland seat rules (disabled + visible stage light → activate; enabled seat unchanged) and `seatSlots.isPresent` write-back into the linked scene library row."
@@ -87,8 +87,6 @@ Before the test body runs, Code Block 0 should **prepare** then **verify**. Pref
 | --- | --- | --- |
 | Storyteller seat (Black) | `rollE2eSeatPrep("Black")` | Also hides startup overlay + camera spoof ([TESTING.md](../../../.dev/TESTING.md)) |
 | Active table | `DEBUG.syncTableSimplified("Table A")` | Layout + `currentTableKey`; use `skipTransitionBlindfold` table paths only when the test requires blindfold UX |
-| NPC control tokens | `DEBUG.spawnNpcControlBoardTokens()` | Idempotent when tokens already exist; pair with `gbE2eReset()` / harness placement for board UV |
-| Gameboard baseline | `gbE2eReset()`, `gbE2ePrereqCheck()` | Empty placements + fixture preload; use when the playbook targets gameboard/NPC stage |
 | Scene library slot | `ensureSceneLibraryStub(slotIndex, sceneKey?, opts?)` | Minimal `sessionScene` stub for the test — do not require a pre-authored workshop row |
 | Dice / roll context | `rollTest(color, …)` | Includes seat prep automatically |
 
@@ -117,7 +115,7 @@ Do **not** copy illustration dummies from the template into production runbooks.
 | Dice setup / assert | `rollTest`, `rollConfirm`, `rollCancelAll`, `rollE2eExpectBroadcast` | TESTING.md § Dice debug |
 | File evidence | `DEBUG.logStateToFile`, `DEBUG.logToFile`, `DEBUG.writeWorkspaceFile` | [`.dev/DEBUG_FILE_LOGGING.md`](../../../.dev/DEBUG_FILE_LOGGING.md) |
 | Domain DEBUG | `DEBUG.syncTableSimplified`, `DEBUG.compareLayoutPaths`, … | `debugHelp()` / TESTING.md |
-| Session setup | `rollE2eSeatPrep`, `DEBUG.spawnNpcControlBoardTokens`, `gbE2eReset`, `ensureSceneLibraryStub`, `Sync.npcs` | **Automate prerequisites** above |
+| Session setup | `rollE2eSeatPrep`, `ensureSceneLibraryStub`, `Sync.npcs` | **Automate prerequisites** above |
 | Console banners | `printHeader(text, level)` | TESTING.md § E2E console output (levels 1–2 for phases; not for HUMAN in Step-By-Step playbooks) |
 
 ## Long procedures (multi-step verification)
@@ -144,7 +142,6 @@ End a `U.chain` / start a new Code Block / emit `▶▶▶ HUMAN ▶▶▶` **on
 | Drop NPC token on board snap | `spawnObject` + scripted pick/place to “simulate” drop |
 | Click Normal bag N times | Loop of `clickObject` / coordinate hacks |
 | Roll dice on table | Force faces via debug **only when** harness already provides that path (`rollSetFaces`, `rollTest`); do not build a one-off roller |
-| Clear toolbar (5s confirm) | `GlobalGameboardClear` alone when the test is **about** the real Clear UX |
 
 **Not a human gate:** “Run Code Block X” handoffs between Lua-only sections, phase number changes, or checkpoint pastes when the author does nothing in TTS. **Merge** those into the same `U.chain` and prefer **one Code Block** until gate **(1)–(4)**.
 

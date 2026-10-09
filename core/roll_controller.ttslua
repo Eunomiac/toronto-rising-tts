@@ -1116,7 +1116,7 @@ function RC.initiateRoll(color, config)
         batonHolder = skipSetup and C.BatonHolder.PLAYER or C.BatonHolder.STORYTELLER,
         initiator   = config.initiator or "player",
         label       = config.label or nil,
-        -- Authoritative NPC key for ST rolls launched from a known character (token-on-bag),
+        -- Authoritative NPC key for ST rolls launched from a known character (Dashboard NPC roll panel),
         -- so broadcast figure resolution does not rely on ambiguous fullName lookup (TOR-252).
         npcCharacterKey = (type(config.npcCharacterKey) == "string" and config.npcCharacterKey ~= "")
             and config.npcCharacterKey or nil,

@@ -37,7 +37,7 @@ Do not conflate **Steps** (author paste/click order), **Code Blocks** (IDE paste
 
 | Use Step-by-step | Use current E2E regression playbooks ([README](../E2E%20Playbooks/README.md)) |
 | --- | --- |
-| New bug repro or targeted verify | Full regression suites (Dice, Scenes, Gameboard) |
+| New bug repro or targeted verify | Full regression suites (Dice, Scenes) |
 | Agent chat runbook or short-lived `Topic-Verify.md` | `RunTest("Dice")` harness today |
 | Feature sign-off before/after merge | **TOR-141** maintenance contract |
 
@@ -51,8 +51,6 @@ Do not conflate **Steps** (author paste/click order), **Code Blocks** (IDE paste
 
 | Playbook | Issue | Purpose |
 | --- | --- | --- |
-| [TOR-417-control-board-preview-verify.md](TOR-417-control-board-preview-verify.md) | **TOR-417** Control Board HERE/THERE preview editor | Draft isolation and commit lifecycle, Reset/Clear/Load, scene Apply, and one-shot Lock merge |
-| [TOR-281-clear-seat-verify.md](TOR-281-clear-seat-verify.md) | **TOR-281** Clear stage → return NPC to seat + library persistence | Sign-off when clearing stage returns seated NPCs correctly and seat toggles survive re-Apply |
 | [TOR-536-play-enter-settle-before-explode-verify.md](TOR-536-play-enter-settle-before-explode-verify.md) | **TOR-536** 0.5s settle behind cover before explode | Cover stays still, then first scale is smooth |
 | [TOR-535-play-enter-work-before-explode-verify.md](TOR-535-play-enter-work-before-explode-verify.md) | **TOR-535** Play-enter work behind cover; sting delay 0.25s | No hitch mid-first-cover; opening drum ~0.25s after scale starts |
 | [TOR-534-sting-delay-cover-sync-verify.md](TOR-534-sting-delay-cover-sync-verify.md) | **TOR-534** 0.5s delay before session-start sting | Opening drum hits with the first visible cover scale |
@@ -90,8 +88,6 @@ Human-facing **Prerequisites** in each playbook: **2–4 bullets** (Save & Play 
 | --- | --- |
 | Black / ST seat | `rollE2eSeatPrep("Black")` |
 | Table layout | `DEBUG.syncTableSimplified(tableKey)` |
-| NPC tokens | `DEBUG.spawnNpcControlBoardTokens()` |
-| Gameboard baseline | `gbE2eReset()`, `gbE2ePrereqCheck()` |
 | Scene library row | `ensureSceneLibraryStub(slotIndex, sceneKey?, opts?)` |
 
 See [step-by-step-guidance SKILL](../../.cursor/skills/step-by-step-guidance/SKILL.md) § Automate prerequisites.

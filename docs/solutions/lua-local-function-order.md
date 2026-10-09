@@ -91,7 +91,7 @@ For large subsystems, put helpers in `core/*.ttslua` or `lib/*.ttslua` and expos
 | File | Why |
 | --- | --- |
 | [`core/global_script.ttslua`](../../core/global_script.ttslua) | Largest chunk; many `Global.*` handlers |
-| [`core/npc_gameboard.ttslua`](../../core/npc_gameboard.ttslua) | Seat row / Apply / snap catalog locals |
+| [`core/npc_gameboard_snaps.ttslua`](../../core/npc_gameboard_snaps.ttslua) | Snap catalog locals |
 | [`core/npcs.ttslua`](../../core/npcs.ttslua) | Late `resolveNpcPlacementIntent = function` style |
 | [`core/lighting.ttslua`](../../core/lighting.ttslua), [`core/scenes.ttslua`](../../core/scenes.ttslua) | Long reconciler sections |
 
@@ -106,7 +106,7 @@ For large subsystems, put helpers in `core/*.ttslua` or `lib/*.ttslua` and expos
 ## Debugging “attempt to call a nil value”
 
 1. Read the stack: `(local)` at the failing name → almost always **local order**, not a missing `require`.
-2. Open the file; find the **caller** function (e.g. `GlobalGameboardApply` → `applySeatRowFromControlBoard`).
+2. Open the file; find the **caller** function (e.g. a `Global*` mutator or `HUD_*` handler).
 3. Find the **callee** name; if `local function callee` is **below** the caller, move up or forward-declare.
 4. Save & Play and retry.
 

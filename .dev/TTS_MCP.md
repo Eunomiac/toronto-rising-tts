@@ -154,10 +154,9 @@ DEBUG.resetSyncTraceSummary()     -- zero totals right before reproducing one ac
 While on, the functions in `targetList()` are wrapped with timing spans (removed when off, so no cost when off). Each outermost traced call prints **one** block, so line order is reliable:
 
 ```
-[SyncTrace] #12 Sync.npcs 34.6ms (self 0.6ms) >1 frame force=false reason=gameboard_apply
-[SyncTrace] #12   NPCS.reconcileAllFromState 25.0ms (self 20.7ms) >1 frame ran reason=gameboard_apply
-[SyncTrace] #12     Reconcile.reconcileControlBoardFromState 4.3ms (self 4.2ms) ran
-[SyncTrace] #12       Snaps.installPolarSnaps 0.1ms skipped guid=bea29a
+[SyncTrace] #12 Sync.npcs 34.6ms (self 0.6ms) >1 frame force=false reason=stage_apply
+[SyncTrace] #12   NPCS.reconcileAllFromState 25.0ms (self 20.7ms) >1 frame ran reason=stage_apply
+[SyncTrace] #12     StageTokens.reconcileFromState 4.3ms (self 4.2ms) ran
 [SyncTrace] #12   HO.syncAll 9.1ms (self 2.0ms) force=true
 [SyncTrace] #12     HO.reconcileForSeat x6 total 7.1ms max 1.3ms (ran 1, skipped 5)
 ```

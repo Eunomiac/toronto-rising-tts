@@ -24,7 +24,7 @@ Status: current performance audit; entries may be done, partial, or deferred as 
 
 | Rank | Topic | Status |
 | --- | --- | --- |
-| 0 | **Interaction points (gameboard Apply/Clear/drop)** | **Partial** — snap catalog cache keyed by `controlBoardSnapFingerprintFor`; orchestrator `force=false` on control-board path; unchanged mirror now checks `lastControlBoardMirrorFingerprint` before normal snap/UI/palette setup; control-board toolbar labels are cached; `DEBUG.profileGameboardApply/Clear/TokenDrop` |
+| 0 | **Stage edits (Dashboard)** | **Retired surface (TOR-687)** - board Apply/Clear/token drop are gone; Dashboard stage edits run `StageApply.applyStageChanges` → one `Sync.npcs` (`force=false`); snap catalog cache keyed by `controlBoardSnapFingerprintFor`; `StageTokens.reconcileFromState` touches only changed placement rows |
 | 1 | `Sync.player` duplicate overlay/HUD | **Done** — `HO.reconcileForSeat`; scoped `UpdateUIDisplays`; no duplicate `overlays` / all-player `playerHud` (hunger pulse removed TOR-373) |
 | 2 | Startup bootstrap stacks | **Done** — readiness-gated `scheduleBootstrapCoordinator()` (poll `0.35s`, max `10s`) replaces blind `BOOTSTRAP_RETRY_OFFSETS_SEC`; `L.seatSpotlightsResolvable()` + pending init-light probe; bootstrap metrics (`earlyExit`, `ticksRun`, `lightsDeferredRemaining`) |
 | 3 | Seat lighting redundant lerps | **Partial** — `lastReconciledModeByRef` + `L.invalidateReconcileCache()`; bootstrap ticks use `opts.bootstrap` → `transitionTime = 0`; seat-presentation orchestrator fingerprint skips full `reconcileAllPlayers` when PC light + overlay inputs unchanged |
@@ -60,7 +60,6 @@ Resolved:
 
 - `core/global_script.ttslua`: `UpdateUIDisplays` now calls `syncAdminLightSceneButtons()` at most once per invocation when `adminLighting` and `scenesPanel` are both requested.
 - `core/storyteller_scenes_panel.ttslua`: live scene apply, table switch, seat-presence, location apply, and clock apply no longer repeat `StorytellerScenesPanel.refresh()` immediately after `Sync.full`; seat-presence no longer follows `Sync.full` with a second broad `UpdateUIDisplays({ playerHud = true })`.
-- `core/npc_gameboard.ttslua` and `objects/npc_control_board_ui.ttslua`: unchanged control-board mirror paths skip normal snap install, object-callback/UI ensure, palette-snap install, and uncached toolbar label writes before returning.
 - `core/sync.ttslua`: top fog is owned by the explicit scene phase during `Sync.full`; seat presentation still reconciles top fog when called outside that full pass.
 - `core/conditions.ttslua` and `core/storyteller_scenes_panel.ttslua`: hosted-condition reconciliation reports changed seat colors so post-sync CSHEET refreshes use `PCST.refreshCharacterSheetsForColor` instead of scanning every player color.
 
@@ -74,7 +73,7 @@ Verification:
 
 - `npm run build` passed on 2026-07-16 after TOR-391 code changes.
 - `npm run tts:smoke` was attempted on 2026-07-16 but could not connect to the local TTS bridge (`ECONNREFUSED 127.0.0.1:39999`).
-- Manual TTS smoke still needs a live table check before treating UX behavior as fully verified: scene apply, table switch, location apply, clock apply, seat-presence toggle, gameboard Apply/Clear/Load/token drop, and storyteller panel switching.
+- Manual TTS smoke still needs a live table check before treating UX behavior as fully verified: scene apply, table switch, location apply, clock apply, seat-presence toggle, Dashboard stage edit / Clear, and storyteller panel switching.
 
 ## Scope and guardrails
 
@@ -108,7 +107,7 @@ Do not reintroduce TOR-391 duplicates: no broad `StorytellerScenesPanel.refresh(
 
 | Rank | Hotspot | Impact hypothesis | Frequency evidence | Classification |
 | --- | --- | --- | --- | --- |
-| 0 | **Gameboard Apply/Clear/token drop** | **High** | Every ST seat assign, Clear, control-token drop | Catalog cache + orchestrator fingerprint (stop `force=true` bypass); `DEBUG.profileGameboard*` |
+| 0 | **Dashboard stage edits** | **Medium** | Every Dashboard stage Send / Clear / Reset | Catalog cache + orchestrator fingerprint; per-row stage-token fingerprint |
 | 1 | `Sync.player(color)` double all-seat overlay/HUD fan-out | High | Common: hunger, conditions, rouse/remorse | Quick win + structural split |
 | 2 | Startup `Sync.full` plus deferred retry stacks | High | Every load / reload | Structural bootstrap coordinator |
 | 3 | Seat lighting all-player reconciliation and 2s lerp churn | High | Full sync, table/seat changes, load retries | Diff cache / force-aware reconcile |
@@ -117,25 +116,9 @@ Do not reintroduce TOR-391 duplicates: no broad `StorytellerScenesPanel.refresh(
 | 6 | `UpdateUIDisplays` broad deltas and full refresh fallbacks | Medium | Panel opens, reset, debug, sync | Narrow UI delta API |
 | 7 | Map/HUD player UI refresh work | Medium | Player HUD delta, map hover/pan | Keep targeted map path; add player-scoped HUD path |
 
-## 0. Gameboard interaction points (Apply / Clear / token drop)
+## 0. Stage edit cost (Dashboard)
 
-**Symptom:** Frame hitch on Storyteller Apply (especially seat-row changes), Clear, and palette/anchor token drops — not animation duration.
-
-**Evidence (2026-06-15 plan review)**
-
-- `resolveTokenSnapCatalogEntry` rebuilds full snap catalog per call (~9 `buildControlBoardSnapCatalog` sites + ~10 resolver sites).
-- `syncNpcsFromControlBoard` passed `force = true`, bypassing `npcReconcileFingerprint` skip in `NPCS.reconcileAllFromState`.
-- Separate load-bearing force: `commitNpcSeatLayout` → `RSL.SyncTable({ force = true })` (TOR-210) — do not conflate. Since TOR-668 it forces only on real seat work or a commit-key change; stage-only Apply runs just the light/overlay tail.
-- Partial fixes already shipped: empty-diff early return (Apply L1123, Clear L1208); drop scale-only path (`b16f26b`).
-
-**Tier 1 shipped / in progress**
-
-- Default-config snap catalog cache keyed by `controlBoardSnapFingerprintFor`.
-- `boardUvHalfExtentsCache` wipe only when mirror/install actually runs.
-- Orchestrator `force = false` on control-board Sync.npcs path.
-- `DEBUG.profileGameboardApply()` / `Clear()` / `TokenDrop()` — `phaseA_ms`, `catalog_builds`, `tag_scans`.
-
-**Measure before Tier 2:** If hitch remains after Tier 1, document spans before Phase A/B or registry work.
+The CONTROL_BOARD Apply / Clear / token-drop paths and their profilers were retired in TOR-687. Stage edits now arrive from the Storyteller Dashboard as one bundled `StageApply.applyStageChanges` call, followed by a single `Sync.npcs` with `force = false` (`npcReconcileFingerprint` can skip unchanged work). The snap catalog stays cached by `controlBoardSnapFingerprintFor`; `boardUvHalfExtentsCache` caches board half-extents. `StageTokens.reconcileFromState` keeps a per-row signature and only spawns, moves, flips or destroys tokens whose placement changed.
 
 ## 1. `Sync.player(color)` double all-seat overlay/HUD fan-out
 

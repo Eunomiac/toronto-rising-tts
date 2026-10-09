@@ -53,10 +53,7 @@ Use `local function foo` only when `foo` is defined **before** all callers. Othe
 | --- | --- |
 | `core/global_script.ttslua` | Many `Global.*` entry points; helpers often appended at bottom |
 | `core/npc_gameboard.ttslua` | Thin facade only; prefer editing the owning sibling |
-| `core/npc_gameboard_snaps.ttslua` | Large catalog/install block |
-| `core/npc_gameboard_reconcile.ttslua` | Scan/mirror/draft locals |
-| `core/npc_gameboard_interactions.ttslua` | Drop/spread/group/dice-bag locals |
-| `core/npc_gameboard_apply.ttslua` | Apply/Clear/Load locals |
+| `core/npc_gameboard_snaps.ttslua` | Large snap catalog block |
 | `core/npcs.ttslua` | `resolveNpcPlacementIntent` and other late-assigned locals |
 | `core/lighting.ttslua`, `core/scenes.ttslua` | Large reconciler/helper blocks |
 
@@ -66,7 +63,7 @@ Prefer moving substantial logic into `require()` modules with a small ordered AP
 
 | Console | Likely cause |
 | --- | --- |
-| `attempt to call a nil value` at `Global.call` / `GlobalGameboardApply` / HUD handler | Local helper defined **below** caller in same chunk |
+| `attempt to call a nil value` at `Global.call` / `Global*` mutator / HUD handler | Local helper defined **below** caller in same chunk |
 | Stack shows `(local)` at a function name | That name was not in scope at compile time of the caller |
 
 **Fix:** Move helper above caller, or forward-declare, then Save & Play.

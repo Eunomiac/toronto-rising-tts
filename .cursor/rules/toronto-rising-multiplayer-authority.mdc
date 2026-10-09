@@ -24,7 +24,7 @@ Verification playbook: [`.dev/E2E Playbooks/Multiplayer-Session.md`](../../.dev/
 5. **Object-script mutations → `Global.call`** to Global entries (bundle-safe); Global may steam-gate ST-only actions. **`GlobalIsStorytellerSteamPlayer` only** from object scripts.
 6. **O(1) tag/GUID guard** before heavy work in hot handlers (TOR-197).
 7. **No dual apply** — one physical channel per intent; fingerprint or invalidate when needed.
-8. **Object scripts:** no `require("core.*")` for mutations — pattern: `objects/npc_control_board.ttslua`, `objects/dice_bag.ttslua`.
+8. **Object scripts:** no `require("core.*")` for mutations — pattern: `objects/dice_bag.ttslua`.
 9. **New handlers:** add a row to [Event Listener Policy](../../.dev/Sychronizing%20Game%20Functionality/Event%20Listener%20Policy.md) (delivery + tier).
 10. **P10 live `gameState` broadcast gap** — join-client `S.getStateVal` / state-fed HUD may lag Host while the replicated **world** still matches. Document during multiclient tests; fix via sync bridge, **not** execution gates. Scoring: [Preparing §1.1a](../../.dev/Multiplayer%20Functionality/Preparing%20For%20Multiplayer.md#11a-p10--live-gamestate-broadcast-gap-known), [Multiclient Session Script](../../.dev/E2E%20Playbooks/Multiplayer-Session.md#p10-known--do-not-fail-the-pass-for-this-alone).
 
@@ -37,11 +37,11 @@ Before marking work done:
 - [ ] Mutation → narrow `Sync.*`; no dual apply without fingerprint ([Dual-apply survey](../../.dev/Sychronizing%20Game%20Functionality/Dual_apply_survey.md)).
 - [ ] Object scripts route mutations via `Global.call`; no `require("core.*")` (hide/reveal → `GlobalHideObject` / `GlobalRestoreObject`, not `require("core.objects")`).
 - [ ] Event Listener Policy inventory updated if handlers added/changed.
-- [ ] Solo smoke if touching gameboard or rolls (Apply/Clear, one roll path); hotseat smoke if execution-model related; re-smoke Multiclient Session Script when changing join/seat/HUD visibility paths.
+- [ ] Solo smoke if touching stage or rolls (one Dashboard stage edit, one roll path); hotseat smoke if execution-model related; re-smoke Multiclient Session Script when changing join/seat/HUD visibility paths.
 
 ## High-risk surfaces (grep when touching)
 
-Load/bootstrap, gameboard Apply/Clear, token drop/pick-up, scenes/soundscape HUD, dice/rolls, signal candle, character sheet mutators, player connect/seat (**TOR-345** auto-assign), phase Advance/connect blindfold (**TOR-143** / **TOR-319**) — see Preparing §1.3.
+Load/bootstrap, Dashboard stage edits, scenes/soundscape HUD, dice/rolls, signal candle, character sheet mutators, player connect/seat (**TOR-345** auto-assign), phase Advance/connect blindfold (**TOR-143** / **TOR-319**) — see Preparing §1.3.
 
 ## Linear
 

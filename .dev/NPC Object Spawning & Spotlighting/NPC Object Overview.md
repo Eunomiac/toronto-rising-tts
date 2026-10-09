@@ -10,14 +10,14 @@ Read this when:
 Source of truth:
 - `core/npcs.ttslua`
 - `core/generic_npcs.ttslua` (generic import/spawn; see [`Generic NPCs.md`](Generic%20NPCs.md))
-- `core/npc_gameboard.ttslua` (+ siblings `npc_gameboard_{board,tokens,snaps,reconcile,apply,interactions,spotlight}`)
+- `core/npc_gameboard.ttslua` (+ siblings `npc_gameboard_{board,snaps,spotlight}`), `core/npc_stage_apply.ttslua` (Dashboard stage edits), `core/stage_tokens.ttslua` (spotlight tokens)
 - `lib/npcs_data.ttslua`
 - `lib/npcs_light_spawn_defaults.ttslua`
 - `.dev/custom-ui-assets/README.md`
 
 Verification:
 - `npm run build`
-- `.dev/E2E Playbooks/Gameboard-E2E.md`
+- Scenes tab stage edits from the Storyteller Dashboard ([Scenes-E2E](../E2E%20Playbooks/Scenes-E2E.md))
 - NPC-specific step-by-step verification from `.dev/TESTING.md`
 
 Status: current NPC system reference; verify registry fields and placement paths against code.
@@ -99,9 +99,9 @@ Do **not** split rotation into manual `rotX` / `rotY` / `rotZ` in data. The scri
 3. Computes `lightPos` from the `positioning` field pair (new `deltaUp`/`deltaInward` or legacy `positionYShift`/`distance`).
 4. Computes `rotation` as a look-at toward the figurine, shifted by optional `lookAtYShift`.
 
-Whenever the figurine **moves or rotates**, this pipeline is re-run (UI moves, `onObjectDrop`, stage Apply, and defer align hooks) so the paired light stays aligned.
+Whenever the figurine **moves or rotates**, this pipeline is re-run (UI moves, `onObjectDrop`, Dashboard stage edits, and defer align hooks) so the paired light stays aligned.
 
-**Stage placement timing (palette parity):** Step Two **skips preload park** when a homeland seat is stage-bound (figurine stays at the chair until Step Five). Step Five runs **`ensureNpcInPreloadZone` only when the figurine is not already on `STAGE_BOARD`** (seat/preload → stage; same presentation path as palette→stage adopt). Stage→stage Apply keeps `areaKey == STAGE_BOARD` so TOR-173 lerp eligibility can pass. When `ImageScalar` already reads registry scale but `getBounds` still reflects seat scalar **53**, `buildResolvedLightModeTable` projects bounds height from the seat→registry ratio so spotlight Y is correct without waiting on mesh reload. `deferNpcSpotlightAlignedToFigurine` still polls and refines when reload is in flight. Stage wake uses inline `SetLightMode` (pose-aware fingerprint). **`RSL.SyncTable`** skips pooled-light reconcile for `__stage_board__` NPCs and during the NPC orchestrator.
+**Stage placement timing:** Step Two **skips preload park** when a homeland seat is stage-bound (figurine stays at the chair until Step Five). Step Five runs **`ensureNpcInPreloadZone` only when the figurine is not already on `STAGE_BOARD`** (seat/preload → stage; same presentation path as preload→stage adopt). Stage→stage Apply keeps `areaKey == STAGE_BOARD` so TOR-173 lerp eligibility can pass. When `ImageScalar` already reads registry scale but `getBounds` still reflects seat scalar **53**, `buildResolvedLightModeTable` projects bounds height from the seat→registry ratio so spotlight Y is correct without waiting on mesh reload. `deferNpcSpotlightAlignedToFigurine` still polls and refines when reload is in flight. Stage wake uses inline `SetLightMode` (pose-aware fingerprint). **`RSL.SyncTable`** skips pooled-light reconcile for `__stage_board__` NPCs and during the NPC orchestrator.
 
 ### Spawn source
 
@@ -158,8 +158,8 @@ World slot center:
 
 ## Storyteller UI (summary)
 
-* **CONTROL_BOARD** (`ui/objects/npc_control_board.xml`) is the Storyteller surface for NPC seat assignment, stage placements, Apply/Clear, and dice-bag rolls — see [Storyteller Gameboard Control.md](Storyteller%20Gameboard%20Control.md).
-* Legacy **`panel_npcs`** toolbar tab removed (TOR-181); area spawn/move/clear flows use scene `byArea` + reconciler or gameboard only.
+* **Storyteller Dashboard** (Scenes tab) is the Storyteller surface for NPC stage placements and stage Clear; it sends `GlobalDashboardScenesApply` → `StageApply.applyStageChanges`. The **Stage Control board** only holds spotlight tokens for the hold hotkey - see [Storyteller Gameboard Control.md](Storyteller%20Gameboard%20Control.md).
+* Legacy **`panel_npcs`** toolbar tab removed (TOR-181); area spawn/move/clear flows use scene `byArea` + reconciler or Dashboard stage edits only.
 * **Manual drags:** dropping a tagged NPC figurine refreshes its paired light from the same math as above.
 * **Admin scene transitions:** switching from admin `DARK` to `STANDARD`/`BRIGHT` re-applies each spawned NPC's current light mode after staged scene lighting completes.
 

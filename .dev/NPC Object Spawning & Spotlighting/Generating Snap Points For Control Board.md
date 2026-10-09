@@ -3,35 +3,35 @@
 ## Agent Routing
 
 Read this when:
-- changing CONTROL_BOARD polar snap geometry, ring families, token yaw, or stage placement ground levels
-- tuning anchor-family spread or validating minimap/stage coordinate conversion for snaps
+- changing stage snap-slot geometry (`D.CONTROL_BOARD_SNAP`), ring families, figurine yaw, or stage placement ground levels
+- tuning anchor-family spread or the Dashboard stage slot catalog
 
 Source of truth:
-- `lib/npc_gameboard_data.ttslua`
-- `core/npc_gameboard.ttslua`
+- `lib/npc_gameboard_data.ttslua` (`D.CONTROL_BOARD_SNAP`)
+- `core/npc_gameboard_snaps.ttslua` (`Snaps.buildControlBoardSnapCatalog` and lookups, re-exported by `core/npc_gameboard.ttslua`)
+- Dashboard slot catalog: `npm run dashboard:scene-catalogs` parses the same table
 
 Verification:
 - `npm run build`
-- `.dev/E2E Playbooks/Gameboard-E2E.md`
-- `DEBUG.previewControlBoardSnapCount()`
+- `npm run dashboard:scene-catalogs` (catalog diff should match the intended geometry change)
 
-Configurable elliptical polar snap grid on the CONTROL_BOARD minimap. Implementation: `lib/npc_gameboard_data.ttslua` (`D.CONTROL_BOARD_SNAP`), `Gameboard.buildControlBoardSnapPoints` / `Gameboard.installPolarSnaps` in `core/npc_gameboard.ttslua`.
+Configurable elliptical polar slot grid in stage u/v. **No physical snap points are installed** on any board: the catalog is geometry only. The Storyteller Dashboard snaps stage drags to these slots, and Lua uses the same catalog for ground level, figurine yaw, and lerp family ordering on stage edits.
 
 ## General Considerations
 
-Snap points are generated in polar coordinates on the control board. Several settings control ring shape, ray count, and per-ring snap families.
+Slots are generated in polar coordinates in board u/v. Several settings control ring shape, ray count, and per-ring slot families.
 
 ## Coordinate frame
 
-- Board **u/v** are normalized **0–1** on the tile: **u = local X**, **v = local Z**, origin at the bottom-left corner of the map (Step 1).
-- Placement uses `(u,v)` → `boardLocalFromUv` → `boardLocalToWorld` (same frame as tokens and minimap markers).
-- Generated `(u,v)` outside the board are **skipped** — only snaps with `0 ≤ u ≤ 1` and `0 ≤ v ≤ 1` are installed.
+- Board **u/v** are normalized **0–1**: **u = local X**, **v = local Z**, origin at the bottom-left corner of the map (Step 1).
+- Placement uses `(u,v)` → `boardLocalFromUv` → `boardLocalToWorld` on STAGE_BOARD.
+- Generated `(u,v)` outside the board are **skipped** — only slots with `0 ≤ u ≤ 1` and `0 ≤ v ≤ 1` are kept.
 
 ## Configuration Values
 
 | Setting | Description |
 | :--: | :-- |
-| `origin` | **Master/default** center of the polar system in board u/v (also the fixed facing target for token yaw) |
+| `origin` | **Master/default** center of the polar system in board u/v (also the fixed facing target for figurine yaw) |
 | `innerRingMaxU` & `innerRingMaxV` | **Optional** when every `snapGroups[r]` sets `maxU`/`maxV`. Otherwise **absolute** board u/v for the **innermost** ring |
 | `outerRingMaxU` & `outerRingMaxV` | **Optional** when every ring has `maxU`/`maxV`. Otherwise **absolute** board u/v for the **outermost** ring; rings without per-ring max interpolate inner → outer |
 | `snapGroups` | One entry per ring (**index 1 = innermost**): `{ num, angleDelta, rays, maxU?, maxV?, origin?, snapYawOffsetDeg?, groundLevel?, radialStagger? }` — family size, angular spacing, ray count, optional **per-ring** ellipse max, optional **per-ring** position origin, optional **per-ring** yaw offset, optional **absolute world Y** for figurines, optional **STAGE world XZ** radial push per family step (see below) |
@@ -39,20 +39,20 @@ Snap points are generated in polar coordinates on the control board. Several set
 
 ### `groundLevel` (per ring, optional)
 
-- **Absolute world Y** for figurines placed on Apply (same convention as `D.areas[*].groundLevel` in `lib/npcs_data.ttslua`, e.g. `-50`, `-15`).
-- **Does not** affect CONTROL_BOARD snap points — snaps always sit at `D.MINIMAP_SURFACE_LOCAL_Y` on the minimap tile.
-- **Does not** add STAGE_BOARD or CONTROL_BOARD object Y — boards only map u,v → world **X/Z**; `groundLevel` sets figurine **Y** directly when present.
-- On **Apply**, persisted in `sessionScene.npcWorld.placements[*].groundLevel` and passed to `Gameboard.worldFromUv(u, v, { groundLevel = … })`.
+- **Absolute world Y** for figurines placed on a stage edit (same convention as `D.areas[*].groundLevel` in `lib/npcs_data.ttslua`, e.g. `-50`, `-15`).
+- **Does not** add STAGE_BOARD object Y — the board only maps u,v → world **X/Z**; `groundLevel` sets figurine **Y** directly when present.
+
+- On a Dashboard stage edit, `StageApply.applyStageChanges` persists it in `sessionScene.npcWorld.placements[*].groundLevel`; reconcile passes it to `Gameboard.worldFromUv(u, v, { groundLevel = … })`.
 - When omitted on a ring, figurine Y is STAGE_BOARD surface world Y at u,v (or `DEFAULT_STAGE_WORLD.groundY` if STAGE_BOARD is missing).
-- Ring is inferred from `(u, v)` by closest matching ellipse (`Gameboard.resolveSnapRingIndexForUv` / `Gameboard.groundLevelForSnapUv`).
+- Ring is inferred from `(u, v)` by closest matching ellipse (`Gameboard.groundLevelForSnapUv`).
 
 ### `radialStagger` (per ring, optional)
 
-- **Unit:** **STAGE_BOARD / playfield world XZ inches** — not CONTROL_BOARD minimap world inches. Shared `(u,v)` is derived from STAGE for playfield mapping; staggering on the smaller minimap world space inflated u/v by roughly the stage÷control scale (~40× with default `MINIMAP_SCALE_DIVISOR`). Dashboard generation matches installed snap UVs when Transform **scale is the UV half-extent** (`u` 0–1 spans `2 × scaleX/Z`); using `scale/2` over-staggers Center/Mid neighbors. Anchor snaps (`familyK == 0`) never use stagger. Miniaturized tables on the control board still use anisotropic `minimapScaleRatios` (STAGE Z was scaled independently of the 2:1 tile); that does not change snap u/v.
+- **Unit:** **STAGE_BOARD / playfield world XZ inches**. Dashboard generation matches the Lua catalog when Transform **scale is the UV half-extent** (`u` 0–1 spans `2 × scaleX/Z`); using `scale/2` over-staggers Center/Mid neighbors. Anchor slots (`familyK == 0`) never use stagger.
 - After placing a family member on its ring ellipse, non-anchor snaps (`familyK ≠ 0`) move **outward** along that snap’s STAGE world radial from `origin` by `abs(familyK) * radialStagger`, then `(u,v)` is recomputed from STAGE.
 - **Anchor** (`familyK == 0`) stays on the ring ellipse unchanged.
 - Example: `num = 5`, anchor 50 world inches from origin on STAGE, `radialStagger = 1` → **52, 51, 50, 51, 52** world inches along each member’s radial.
-- On a ~400-unit-tall stage, `radialStagger = 1` is a subtle nudge; `5` is still modest. Tune on STAGE scale, not minimap tile size.
+- On a ~400-unit-tall stage, `radialStagger = 1` is a subtle nudge; `5` is still modest. Tune on STAGE scale.
 - **Angular spread** in each family is separate (`angleDelta`); the visible “V” is often mostly angle, with radial stagger as a fine adjustment.
 - Omitted or `0` → no radial offset.
 - After stagger, `(u,v)` outside `[0,1]` are **omitted** (not clamped to the board edge).
@@ -76,7 +76,7 @@ D.CONTROL_BOARD_SNAP = {
 }
 ```
 
-**Snap count:** `sum over rings r of snapGroups[r].rays * snapGroups[r].num`, **minus** any candidate whose `(u,v)` falls outside `[0,1]`. Default config → **136** before filter; run `DEBUG.previewControlBoardSnapCount()` for the installed count (typically fewer when outer-ring rays dip below `v = 0`).
+**Snap count:** `sum over rings r of snapGroups[r].rays * snapGroups[r].num`, **minus** any candidate whose `(u,v)` falls outside `[0,1]`. Default config → **136** before filter (fewer after filtering when outer-ring rays dip below `v = 0`).
 
 ### Ring max u/v (per ring or interpolated)
 
@@ -110,14 +110,14 @@ Anchor snaps and family members are generated together (no separate anchor pass)
 rays = snapGroups[ringIndex].rays
 anchorDeg = (rayIndex / rays) * 360   -- rayIndex = 0 .. rays-1
 half = math.floor(num / 2)
--- Even num: use k = -half .. half-1 so ±half do not both install (same angle on a full circle).
+-- Even num: use k = -half .. half-1 so ±half are not both kept (same angle on a full circle).
 kMin, kMax = (num % 2 == 0) and (-half, half - 1) or (-half, half)
 for k = kMin, kMax do
   -- Master-origin ring: angleDeg = anchorDeg + k * angleDelta
   -- Satellite ring (ring origin ≠ master): anchor (k=0) on bearing ring→master, then spread by k
   angleDeg = towardMasterDeg + anchorDeg + k * angleDelta   -- towardMasterDeg = 0 when origins match
   -- u,v on ring ellipse; optional radialStagger pushes non-anchor snaps outward in STAGE world XZ inches
-  -- board-local snap position (Y = MINIMAP_SURFACE_LOCAL_Y on tile); figurine Y on Apply = optional absolute world groundLevel on ring
+  -- figurine Y on a stage edit = optional absolute world groundLevel on ring
 end
 ```
 
@@ -125,10 +125,10 @@ Example: ring 3, `num=5`, `angleDelta=4`, `anchorDeg=90` → **82°, 86°, 90°,
 
 **Satellite rings** (per-ring `origin` ≠ master `origin`, e.g. Far Left / Far Right with `rays = 1`, `num = 6`): `towardMasterDeg` is the u/v bearing from the ring origin to the master origin; the anchor snap (`k = 0`) sits on that radial on the ellipse, facing inward — not a fixed board direction (e.g. always “rightmost”). For `num = 6` / `angleDelta = 60°`, familyK is `-3…+2` (six unique bearings); including both `±3` would stack two snaps at 180°.
 
-- Candidates with coincident world XZ (legacy even-num full-circle) are skipped at install and at anchor-spread fill (TOR-415).
+- Candidates with coincident world XZ (legacy even-num full-circle) are skipped in the catalog and at anchor-spread fill (TOR-415).
 - Candidates with `u` or `v` outside `[0, 1]` are omitted (not clamped).
-- Every snap uses `rotation_snap = true` (no `tags` — any object can snap), and board-local yaw **toward the master/default `origin`** plus ring-level or default `snapYawOffsetDeg`.
-- Per-ring `origin` sets the ellipse center for that ring; when it differs from the master origin, **family angles** rotate so the anchor faces the master (token yaw still faces the master origin).
+- Every slot carries board-local yaw **toward the master/default `origin`** plus ring-level or default `snapYawOffsetDeg`.
+- Per-ring `origin` sets the ellipse center for that ring; when it differs from the master origin, **family angles** rotate so the anchor faces the master (figurine yaw still faces the master origin).
 
 ## Visual illustrations
 
@@ -143,13 +143,6 @@ Step 3 dotted circles use the **same** ring geometry as Step 2.
 ## Export family positions (world X/Z)
 
 Each snap **family** spreads by `familyK` (`-2 … 0 … +2` for `num = 5`): **farLeft**, **nearLeft**, **center** (anchor), **nearRight**, **farRight**.
-
-**In-game** (uses live STAGE_BOARD when present):
-
-```lua
-lua DEBUG.exportControlBoardSnapFamilies()
-lua DEBUG.exportControlBoardSnapFamilies(nil, { useInterpolatedRings = true })
-```
 
 **Offline** (DEFAULT_STAGE_WORLD X/Z projection; update `DEFAULT_CONFIG` in script when defaults change):
 
@@ -173,104 +166,8 @@ return {
 }
 ```
 
-## IDE iteration (Save & Play first)
-
-Preview count only:
-
-```lua
-lua DEBUG.previewControlBoardSnapCount()
-```
-
-Regenerate snaps with a **full** config table (validation requires all top-level fields and `#snapGroups == rings`). Pass fields **directly** or wrapped in `{ config = { … } }`:
-
-```lua
-lua DEBUG.installNpcControlBoardSnaps({
-  origin = { u = 0.5, v = 0.2 },
-  snapYawOffsetDeg = 0,
-  rings = 4,
-  innerRingMaxU = 0.6,
-  innerRingMaxV = 0.3,
-  outerRingMaxU = 0.9,
-  outerRingMaxV = 0.9,
-  snapGroups = {
-    { num = 1, angleDelta = 0, rays = 4,  groundLevel = -15 },
-    { num = 3, angleDelta = 3, rays = 12, groundLevel = -15 },
-    { num = 5, angleDelta = 4, rays = 16, groundLevel = -40 },
-    { num = 1, angleDelta = 0, rays = 20, groundLevel = -40 },
-  },
-})
-```
-
-**Note:** `groundLevel` on a ring is **absolute world Y** for figurines on Apply — CONTROL_BOARD snap XZ/Y on the tile are unchanged (`MINIMAP_SURFACE_LOCAL_Y`). **`Sync.npcs` / `Sync.full`** calls `reconcileControlBoardFromState` → `installPolarSnaps` with **`lib/npc_gameboard_data` defaults**, which overwrites a debug install unless you edit `D.CONTROL_BOARD_SNAP` or re-run `DEBUG.installNpcControlBoardSnaps` after sync.
-
-Install **and remap existing tokens/placements** to the new layout (same ring + closest spread offset, removed rings → palette):
-
-```lua
-lua DEBUG.installAndRemapNpcControlBoardSnaps({
-  origin = { u = 0.5, v = 0.2 },
-  snapYawOffsetDeg = 0,
-  rings = 4,
-  snapGroups = {
-    { num = 1, angleDelta = 0, rays = 4,  maxU = 0.6, maxV = 0.3, groundLevel = -15 },
-    { num = 3, angleDelta = 3, rays = 12, maxU = 0.7, maxV = 0.4, groundLevel = -15 },
-    { num = 5, angleDelta = 4, rays = 16, maxU = 0.8, maxV = 0.6, groundLevel = -40 },
-    { num = 1, angleDelta = 0, rays = 20, maxU = 0.9, maxV = 0.9, groundLevel = -40 },
-  },
-  -- oldConfig = { ... }, -- optional: defaults to lib/npc_gameboard_data CONTROL_BOARD_SNAP
-})
-```
-
-Or call the gameboard API directly:
-
-```lua
-lua require("core.npc_gameboard").installPolarSnaps(nil, {
-  force = true,
-  config = {
-    origin = { u = 0.5, v = 0.2 },
-    snapYawOffsetDeg = 0,
-    rings = 4,
-    innerRingMaxU = 0.6,
-    innerRingMaxV = 0.3,
-    outerRingMaxU = 0.9,
-    outerRingMaxV = 0.9,
-    snapGroups = {
-      { num = 1, angleDelta = 0, rays = 4,  groundLevel = -15 },
-      { num = 3, angleDelta = 3, rays = 12, groundLevel = -15 },
-      { num = 5, angleDelta = 4, rays = 16, groundLevel = -40 },
-      { num = 1, angleDelta = 0, rays = 20, groundLevel = -40 },
-    },
-  },
-})
-```
-
-Inspect ring resolution for a token u/v:
-
-```lua
-lua local G = require("core.npc_gameboard"); print(G.resolveSnapRingIndexForUv(0.72, 0.55)); print(G.groundLevelForSnapUv(0.72, 0.55))
-```
-
-Pass a **full** config when overriding — partial tables fail validation.
-
-## CSV export (snap groups)
-
-After Save & Play, with **External Editor** enabled and the **TTS Tools** extension handling `sendExternalMessage` (same as `logStateToFile` — do not run the repo MCP bridge on port 39998 at the same time):
-
-```lua
-lua DEBUG.exportControlBoardSnapGroupsToFile()
-```
-
-Writes **`.dev/.debug/debug_logs/control_board_snap_groups.txt`** (CSV body; `.txt` is the debug module convention). Optional basename: `DEBUG.exportControlBoardSnapGroupsToFile("my_snaps")`.
-
-| Column | Meaning |
-| --- | --- |
-| `group` | 0-based polar **family** id (`ringIndex:rayIndex` cluster). Sorted: inner rings first; within a ring, anchors at master `origin.u` first, then by anchor `u`. |
-| `index` | 0-based slot within the family: **0** = anchor (`familyK == 0`); **1…** = coterie spread order (`Gameboard.orderFamilySnapsForAnchorSpread` — center-out, screen-left before screen-right). |
-| `u`, `v` | Board-normalized coordinates on CONTROL_BOARD. |
-
-Seat-row snaps are excluded. Optional config override: second arg is a full `CONTROL_BOARD_SNAP` table (same as `DEBUG.previewControlBoardSnapCount(config)`).
-
 ## Additional Guidelines
 
-* All snap points are rotational snaps oriented to face the `origin`.
-* Off-board snaps are acceptable.
+* Every slot carries a yaw facing the `origin`.
+* Off-board candidates are dropped, not clamped.
 * Rings are ellipses in board u/v (circles in warped u/v space become ellipses in local X/Z when the tile is non-square).

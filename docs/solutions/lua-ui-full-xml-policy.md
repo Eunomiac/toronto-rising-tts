@@ -42,7 +42,6 @@ Related: [`lua-wait-api-policy.md`](lua-wait-api-policy.md), [`lua-pcall-policy.
 | Site | Status |
 |------|--------|
 | Global remount (`core/global_script.ttslua`) | **Visibility rebind** (TOR-375) + **deferred** join-client full remount fallback (TOR-381). Automatic remount gated by `connectionControls.deferSetXml` (TOR-428). Manual **Refresh XML** / **Arm Join XML** / **Disarm Join XML** on Phases panel (TOR-439). **Cold-load canary** (TOR-384): startup readiness gate remounts full Global when `overlay_globalBlindfold_panel` is missing, before gate `Sync.full`. |
-| CONTROL_BOARD (`objects/npc_control_board_ui.ttslua`) | **Removed** — baked Include + Save & Play; runtime validates `gb_root` |
 | CSHEET pages 2–5 (`ui/ui_csheet_core.ttslua`) | **Permitted exception** — TOR-376 Future optional migrate |
 | CSHEET page 6 | **Not permitted** — baked Include + `setAttribute` (TOR-92) |
 

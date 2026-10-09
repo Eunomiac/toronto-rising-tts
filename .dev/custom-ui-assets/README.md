@@ -132,7 +132,7 @@ lua DEBUG.spawnCustomUiUploadBatchFromManifest(customUiUploadManifest, { columns
 
 Then Cloud Manager → **Upload All Loaded Files**, save the game, press Enter in the terminal to run merge, and finally `lua DEBUG.clearCustomUiUploadTokens()`.
 
-## NPC unified groups (figurine + control-board tokens)
+## NPC unified groups (figurine + spotlight tokens)
 
 **Preferred** workflow for NPC images. Place all four WEBPs per character in:
 
@@ -142,12 +142,12 @@ Then Cloud Manager → **Upload All Loaded Files**, save the game, press Enter i
 | --- | --- |
 | `<characterKey>.webp` | `<characterKey>` (figurine front) |
 | `<characterKey>Back.webp` | `<characterKey>Back` (figurine back) |
-| `tokenFront_<characterKey>.webp` | `tokenFront_<characterKey>` (board token front) |
-| `tokenBack_<characterKey>.webp` | `tokenBack_<characterKey>` (board token back) |
+| `tokenFront_<characterKey>.webp` | `tokenFront_<characterKey>` (spotlight token front) |
+| `tokenBack_<characterKey>.webp` | `tokenBack_<characterKey>` (spotlight token back) |
 
 The scanner **requires complete 4-file groups**; any orphan or missing file aborts with an error. Only groups whose `characterKey` exists in `D.characters` are injected and uploaded; unregistered disk folders are **skipped** and listed at the end of the run.
 
-**Inject workshop objects** (patches/creates `npc_figurine` + `npc_control_token` `CustomImage` URLs with local `file:///` paths; runs automatically before manifest when `--save` / `--saveName` is set):
+**Inject workshop objects** (patches/creates `npc_figurine` `CustomImage` URLs with local `file:///` paths; runs automatically before manifest when `--save` / `--saveName` is set):
 
 ```text
 npm run custom-ui-assets:inject-npc-world
@@ -180,7 +180,7 @@ Or with batch flags forwarded:
 npm run custom-ui-assets:pipeline -- --mode npc-groups --saveName 230 --batch
 ```
 
-**TTS — Cloud upload:** Save & Play → `lua DEBUG.spawnNpcGroupUploadBatch({ columns = 12, gap = 2, startY = 3 })` → Cloud Manager **Upload All Loaded Files** → save game. Figurine fronts/backs spawn as **Figurine_Custom** pairs (`<name>.webp` + `<name>Back.webp`); token sides still use flat upload temps. Figurines/tokens already in the save with `file:///` URLs are converted to Steam URLs on save as well.
+**TTS — Cloud upload:** Save & Play → `lua DEBUG.spawnNpcGroupUploadBatch({ columns = 12, gap = 2, startY = 3 })` → Cloud Manager **Upload All Loaded Files** → save game. Figurine fronts/backs spawn as **Figurine_Custom** pairs (`<name>.webp` + `<name>Back.webp`); token sides still use flat upload temps. Figurines already in the save with `file:///` URLs are converted to Steam URLs on save as well.
 
 **Merge / extract / apply world / report:**
 
@@ -193,11 +193,11 @@ npm run custom-ui-assets:report-npc-registry-gaps
 
 **Save path:** `merge-npc-groups`, `extract-npc-token-urls`, and `apply-npc-hosted-world` default to the live TTS save via `--saveName 230` (`D:/OneDrive/Documents/My Games/Tabletop Simulator/Saves/TS_Save_230.json`). Override with `--save <path>` or `--saveName <id>` on the underlying Node scripts if needed.
 
-The **full pipeline** runs merge → extract → **apply hosted world** automatically after you finish the manual Cloud upload step. `apply-npc-hosted-world` patches figurine `CustomImage` URLs and creates or updates `npc_control_token` tiles in the save JSON using hosted Steam URLs — no `DEBUG.spawnNpcControlBoardTokens` or `DEBUG.applyNpcControlTokenHostedImages` required for newly uploaded batches.
+The **full pipeline** runs merge → extract → **apply hosted world** automatically after you finish the manual Cloud upload step. `apply-npc-hosted-world` patches figurine `CustomImage` URLs in the save JSON using hosted Steam URLs. Spotlight tokens are not saved objects: `core/stage_tokens.ttslua` spawns them at runtime from `lib/npc_token_hosted_urls.ttslua` (written by `extract-npc-token-urls`).
 
 Dry-run: `npm run custom-ui-assets:apply-npc-hosted-world:dry-run`
 
-**Registry gap report:** disk groups skipped (not in `D.characters`), registry keys missing disk groups, and tokens missing from save. Written to `.dev/custom-ui-assets/npc-registry-gap-report.txt`.
+**Registry gap report:** disk groups skipped (not in `D.characters`) and registry keys missing disk groups. Written to `.dev/custom-ui-assets/npc-registry-gap-report.txt`.
 
 **Runtime:** Lua no longer spawns figurines or calls `setCustomObject`/`reload()` on placement — images are workshop-baked only.
 
@@ -209,7 +209,7 @@ VS Code task **Custom UI Assets: Build Manifest from Image Files** → mode **`n
 
 Use this token-only manifest path when working from a split token folder. Prefer **NPC unified groups** above (`assets/images/NPCs/`) for normal NPC uploads.
 
-For **TOR-169** control-board tokens only, paired WEBPs may still live in:
+For spotlight token art only, paired WEBPs may still live in:
 
 **`assets/images/NPC Tokens/`**
 
@@ -234,8 +234,6 @@ Batched upload (default **20 characters** = 40 upload tokens per manifest):
 npm run custom-ui-assets:manifest-npc-tokens:batch -- --batchStart myleneHamelin
 ```
 
-**TTS — control-board tokens:** Prefer `npm run custom-ui-assets:apply-npc-hosted-world` after upload merge (pipeline runs this automatically for **npc-groups**). Manual fallback: Save & Play → `lua DEBUG.spawnNpcControlBoardTokens()` — round flip tiles on **CONTROL_BOARD_PALETTE** (`npc_control_token`, `npcToken:<key>`).
-
 **TTS — Cloud upload (122 single-face temps):** Save & Play → `lua DEBUG.spawnNpcTokenUploadBatch({ columns = 12, gap = 2, startY = 3 })` → Cloud Manager **Upload All Loaded Files** → save game.
 
 **Merge** (required before extract — copies hosted URLs from spawned upload tokens into the save + `npc-generated-assets.json`):
@@ -252,16 +250,7 @@ If your save file is not `.dev/TS_Save_230.json`, pass `--save` on the underlyin
 npm run custom-ui-assets:extract-npc-token-urls
 ```
 
-After extract: `npm run custom-ui-assets:apply-npc-hosted-world` or Save & Play → `lua DEBUG.applyNpcControlTokenHostedImages()`.
-
-**Patch save file** (persists hosted URLs on existing `npc_control_token` objects in `ObjectStates` — use when tokens still have `file:///…/NPC Tokens/` after upload):
-
-```text
-npm run custom-ui-assets:patch-npc-token-urls-in-save:dry-run
-npm run custom-ui-assets:patch-npc-token-urls-in-save
-```
-
-Reads `.dev/custom-ui-assets/npc-token-hosted-urls.json` (or `npc-generated-assets.json` / save `CustomUIAssets` as fallback). Reload the save in TTS after patching.
+Tokens pick up the new art the next time `core/stage_tokens.ttslua` spawns them (Save & Play).
 
 Outputs:
 

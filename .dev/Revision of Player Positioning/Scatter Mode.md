@@ -2,14 +2,14 @@
 
 This document is the full definition of Scatter Mode. It replaces any earlier Scatter, orbit, or join-cluster notes (including the Scatter sketch in `Revision of Player Positioning Proposal.md`).
 
-The NPC stage and control board have two modes of operation:
+The NPC stage has two modes of operation:
 
 - **Standard Mode:** The existing behavior, using the table and the existing PC/NPC snap-group families.
 - **Scatter Mode:** A new mode for scenes in which the PCs are free to move around the game world and interact with different groups of NPCs. Instead of occupying a fixed PC group, each PC belongs to one of six spatially separated **scatter groups**.
 
 Scatter Mode is a **table type** in `C.Tables["Scatter"]` with `shape = C.TableShapes.SCATTER` (the “no table” playfield). Entering or leaving it is a change-of-table transition (same class of work as switching `Table A` / `Table B` / `Table C`). Scene data names it with `tableKey: "Scatter"` (and may also set `placementMode: "scatter"` as a dashboard/import mirror). `C.Scatter` is a thin alias of that Tables row.
 
-Nested-circle world layout and control-board hole parking stay in dedicated modules (`lib/scatter_layout.ttslua`, `core/scatter_mode.ttslua`) — they are the SCATTER shape backend, not circular/facing chair walking.
+Nested-circle world layout stays in dedicated modules (`lib/scatter_layout.ttslua`, `core/scatter_mode.ttslua`) — they are the SCATTER shape backend, not circular/facing chair walking.
 
 ---
 
@@ -34,49 +34,17 @@ NPC occupancy per scatter group is **unlimited**. The four NPC seats in Standard
 
 ---
 
-## Occupancy UI (Stage Control Board)
+## Occupancy authority
 
-In Scatter Mode the Stage Control Board uses the art in `.dev/Revision of Player Positioning/Stage Control Board in Scatter Mode.jpg`.
+Scatter occupancy lives in `sessionScene.scatterPlacements` (which PCs and NPCs belong to each of the six groups). It is edited only from:
 
-- There are **no snap points** on the board in this mode.
-- Tokens dropped onto a group are moved automatically into a free **board hole**: NPCs around that group’s outer ring, PCs in the inner cluster.
-- A token’s place on the board records **which of the six groups** it occupies. It does **not** author the figurine’s exact game-world pose.
+- the **Storyteller Dashboard** Scenes tab (`scatterPlace { characterKey, kind, group? }` → `ScatterMode.movePcToGroup` / `ScatterMode.moveNpcToGroup`; no `group` takes an NPC out of Scatter)
+- the **Scatter Control HUD** group selector for PCs ([Scatter Mode Control HUD.md](Scatter%20Mode%20Control%20HUD.md))
+- scene activation (authored `scatterPlacements`) and connection changes (`ScatterOccupancy.reconcilePcConnectionInPack`)
 
-Each group’s inner cluster is **five** PC holes: a **gold** hole in the center of a square of **four white** holes. The first PC to join that group goes to the gold center (world **slot 1**, the arc midpoint). Later PCs fill the white holes (slots 2–5). That matches the five stable world PC slots; the board holes are occupancy UI, not a map of table-plane coordinates.
+Every move writes state, then `ScatterMode.applyWorldLayout()` poses figurines, piles and cameras, mirrors the linked library row, and reconciles the Scatter HUD. The Stage Control board plays no part in Scatter (no art swap, no tokens, no holes).
 
-The outer ring has **twelve** NPC holes (`BOARD_NPC_HOLE_COUNT`). Game-world NPC occupancy is still unlimited: extra NPCs beyond the hole count remain in the group and still receive world positions. The board may stack those extras on the group (implementation detail at wiring time).
-
-### Board-hole calibration
-
-Token auto-place needs authored hole positions on the control board. Those are measured in-world, not guessed from the PNG.
-
-`DEBUG.calibrateScatterGroup(scatterGroupNum)` records one group at a time. `scatterGroupNum` is `1`–`6`, where `1` is the first scatter group (world angle `270°`, negative X / far left, after the control board’s 180° yaw) and the rest follow clockwise (`330°`, `30°`, `90°`, `150°`, `210°`). An out-of-range number is an error.
-
-**How to run it**
-
-1. Put the board in Scatter Mode.
-2. Clear other control tokens off the board (or leave none except the three below).
-3. Place **three** PC or NPC control tokens on the group you are calibrating:
-   - one on the **gold** center hole
-   - one on the **white** hole to the **upper left** of the gold hole
-   - one on the **NPC** hole at the **top** of that group’s dashed circle
-4. From the TTS console: `lua DEBUG.calibrateScatterGroup(1)` (use the group you just dressed).
-
-The function finds `pc_control_token` and `npc_control_token` objects that are actually above the stage control board (not tokens sitting on the palette). If it does not find **exactly three**, it broadcasts an error and stops.
-
-It does not use token type or color to decide which hole is which. The three tokens are classified by geometry: the shortest of the three edges is gold–white, and of those two points the one farther from the remaining token is gold (the remaining token is the top NPC hole). After that:
-
-| Role | Meaning |
-| --- | --- |
-| Gold | Center of the inner square (first PC hole / world slot 1) |
-| Upper-left white | One corner of the inner square; the other three whites are inferred by 90° steps around gold |
-| Top NPC | 12-o’clock hole on that group’s outer ring; the remaining NPC holes follow evenly around that circle |
-
-Those three board-local positions (control-board `positionToLocal`) plus every inferred white and NPC hole are written as pasteable Lua to `.dev/.debug/debug_logs/scatter_group_<N>_calibration.lua`, same dump path as `DEBUG.dumpSeatRoleOffsets`. The same inferred holes are also installed as **debug snap points** on CONTROL_BOARD so you can turn on Snap mode and confirm they sit on the printed holes. Scatter play still has no snap points; leaving Scatter (or calibrating nothing) clears them. Do not paste a dump into `D.SCATTER_BOARD` until the snaps look right.
-
-Auto-place uses the pasted dump as the measured anchors for that group: gold as the PC cluster origin, the upper-left white as one corner of the inner square, and the top NPC as the ring radius and 12-o’clock hole. Derived whites and NPC holes are stepped in **world XZ** (then converted back with `positionToLocal`) so they stay on the printed circles. CONTROL_BOARD is scaled **2:1** (X vs Z); rotating in board-local units would squash the ring into an ellipse.
-
-Calibrate each of the six groups the same way. Re-run a group if the art or board transform changes.
+Each group has **five** stable PC world slots (slot 1 = gold, the arc midpoint) and unlimited NPCs. `D.SCATTER_BOARD` in `lib/npc_gameboard_data.ttslua` holds the u/v geometry the Dashboard uses to draw the six groups (gold + four whites + a ring of `BOARD_NPC_HOLE_COUNT` NPC slots per group).
 
 ---
 
@@ -89,7 +57,7 @@ All numeric Scatter parameters are **global constants** on `C.Tables["Scatter"]`
 | `centerPoint` | `{0,0,0}` | Scatter playfield origin (same key as other `C.Tables` rows). Floor, plinth, rain emitter, and STAGE_BOARD X/Z move here on enter. |
 | `STAGE_BOARD_HOME_XZ` | `{0, 62.0977}` | Workshop home for STAGE_BOARD (it does not follow tables). Restored on leave; Y is left alone. |
 | `GROUP_COUNT` | `6` | Number of scatter groups. |
-| `BOARD_NPC_HOLE_COUNT` | `12` | NPC holes on each group’s dashed ring on the control board. |
+| `BOARD_NPC_HOLE_COUNT` | `12` | NPC orbit slots per group drawn by the Dashboard. |
 | `FIRST_GROUP_AZIMUTH_DEG` | `270` | World angle of group 1 (−X / far left after the board’s 180° yaw). Remaining groups step clockwise by `GROUP_SPACING_DEG`. |
 | `GROUP_SPACING_DEG` | `60` | Angle between adjacent scatter groups. |
 | `SCATTER_RADIUS_WORLD` | `300` | Distance from World Origin to each scatter-group origin. |
@@ -102,7 +70,6 @@ All numeric Scatter parameters are **global constants** on `C.Tables["Scatter"]`
 | `NPC_SPACING_MAX` | `22` | Widest allowed angular gap; fewer NPCs cluster near the arc midpoint instead of stretching across the whole fan. |
 | `ST_DICE_TRAY_YAW_OFFSET_DEG` | `0` | Extra yaw added to the group World Ray when posing the storyteller dice tray. On/off Y uses homeland `DICE_DRAWER_STORYTELLER_*` poses (−200 off). |
 | `objectsToHide` | chairs + Prince signet/curtain | GUIDs to disable and hide from every player layer while Scatter is active. |
-| `TOKEN_SCALE` | `{0.5, 1, 0.5}` | Control tokens on scatter group holes; palette parking restores polar `{0.2, 1, 0.2}`. |
 | `objectPositions` | lights / floor / plinth / STAGE_BOARD | Same shared table key as wood tables; applied on enter. |
 
 This row has **no** wood-table `guid`, `activePosition`, or chair maps.
@@ -300,7 +267,7 @@ The relevant positioning geometry is:
 
 Slots are numbered `1–5` with gold at the midpoint. The HUD row is left→right `5, 3, 1, 2, 4`. Arc offsets from the midpoint are `{0, +1, −1, +2, −2}` × `(PC_DEPLOYMENT_ARC / 4)` for slots 1–5.
 
-When a PC **joins** a group, they take the **unoccupied** slot closest to gold (slot 1), ties to the lower slot number. The first PC therefore always receives slot 1 (the gold center hole). When a PC **leaves**, that slot becomes free; the other PCs in the group **stay put**.
+When a PC **joins** a group, they take the **unoccupied** slot closest to gold (slot 1), ties to the lower slot number. The first PC therefore always receives slot 1 (gold). When a PC **leaves**, that slot becomes free; the other PCs in the group **stay put**.
 
 Empty groups, PC-only groups, and putting all five PCs in one group are all allowed.
 
@@ -344,12 +311,12 @@ The relevant positioning geometry is:
 
 **Join-order → arc position** (same center-out snake as PC slots / HUD portraits):
 
-- 1st NPC (control-board / orbit join order) → arc midpoint (step `0`)
+- 1st NPC (orbit join order) → arc midpoint (step `0`)
 - 2nd → one step **right** of center (`+1`)
 - 3rd → one step **left** of center (`−1`)
 - 4th → further right (`+2`), 5th further left (`−2`), and so on
 
-So for five NPCs the left→right visual order is join indices `5, 3, 1, 2, 4`. Occupancy order on the board does not change; only world poses snake. HUD name lists stay in join order.
+So for five NPCs the left→right visual order is join indices `5, 3, 1, 2, 4`. Occupancy order does not change; only world poses snake. HUD name lists stay in join order.
 
 NPC-only groups and empty groups are allowed.
 

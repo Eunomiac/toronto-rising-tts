@@ -738,7 +738,7 @@ local function normalizeLiveSessionSceneSeatSlots()
             end
         elseif row.slotEmpty == true then
             if hasLiveAssignment then
-                -- Gameboard Apply can seat NPCs without clearing library `slotEmpty` rows (TOR-311).
+                -- A live seat assignment can outlive a library `slotEmpty` row (TOR-311).
                 row.slotEmpty = nil
                 row.characterKey = occupiedChar
             else

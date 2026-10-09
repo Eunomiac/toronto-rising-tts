@@ -5,71 +5,39 @@
 ## Agent Routing
 
 Read this when:
-- changing CONTROL_BOARD/STAGE_BOARD token workflows, Apply/Clear behavior, token palette behavior, or NPC/PC control-token contracts
-- debugging minimap marker mirroring, stage placement lerps, homeland seat retention, or Storyteller token-to-dice-bag rolls
-- generic NPC paste/import on CONTROL_BOARD: [`Generic NPCs.md`](Generic%20NPCs.md)
+- changing how stage NPC placements are written, animated, or spotlit
+- touching the Stage Control board (CONTROL_BOARD) spotlight tokens or the stage playfield (STAGE_BOARD) u,v maths
+- generic NPC import: [`Generic NPCs.md`](Generic%20NPCs.md)
 
 Source of truth:
-- `core/npc_gameboard.ttslua` — thin `Gameboard` facade (re-exports siblings; TOR-423)
-- `core/npc_gameboard_board.ttslua` — UV / board accessors
-- `core/npc_gameboard_tokens.ttslua` — identity / flip / scale / hide
-- `core/npc_gameboard_snaps.ttslua` — polar + seat-row catalog / install / remap / lerp helpers
-- `core/npc_gameboard_reconcile.ttslua` — scan / mirror / XmlUI / preview draft
-- `core/npc_gameboard_apply.ttslua` — Apply / Clear / Load / Lock / HERE-THERE
-- `core/npc_gameboard_interactions.ttslua` — drops / spread / group / dice-bag / rotate
-- `core/npc_gameboard_spotlight.ttslua` — TOR-238 hold spotlight preview
-- `lib/npc_gameboard_data.ttslua`
-- `objects/npc_control_board.ttslua`
-- `objects/npc_control_board_ui.ttslua`
-- `ui/objects/npc_control_board.xml`
-- `core/npcs.ttslua`
-- `core/storyteller_rolls.ttslua`
+- `core/npc_stage_apply.ttslua` — Storyteller Dashboard stage edits → `sessionScene.npcWorld.placements` → `Sync.npcs`
+- `core/stage_tokens.ttslua` — spotlight tokens on CONTROL_BOARD (spawn / move / flip / destroy from placements)
+- `core/npc_gameboard_spotlight.ttslua` — Storyteller hold-to-spotlight hotkey (TOR-238)
+- `core/npc_gameboard.ttslua` — thin `Gameboard` facade (u,v maths + hotkey entry)
+- `core/npc_gameboard_board.ttslua` — board accessors, u,v ↔ world
+- `core/npc_gameboard_snaps.ttslua` — polar + seat-row **catalog geometry** (no physical snap points are installed)
+- `core/npc_stage_lerp.ttslua` — animated stage moves
+- `lib/npc_gameboard_data.ttslua` — snap rings, seat row, Scatter group geometry, lerp tunables, token scale
 
 Verification:
-- `npm run build` (includes `check:lua-local-limit-gate` for `core/npc_gameboard*.ttslua`)
-- `npm run npc-control-board-ui:generate`
-- `.dev/E2E Playbooks/Gameboard-E2E.md`
+- `npm run build`
+- `npm run dashboard:scene-catalogs` (dashboard reads `CONTROL_BOARD_SNAP`, `CONTROL_BOARD_SEAT_ROW`, `SCATTER_BOARD` from `lib/npc_gameboard_data.ttslua`)
+- Save & Play, then move an NPC on the Dashboard stage and hold the spotlight hotkey over its token
 
-Physical **STAGE_BOARD** (hidden world floor) + **CONTROL_BOARD** (GM table minimap) replace XML area placement for NPC staging. Code: `core/npc_gameboard*.ttslua` (facade + siblings), `lib/npc_gameboard_data.ttslua`, `objects/npc_control_board.ttslua`.
+Status: current (TOR-687 retired control-board Apply, the token palette, PC tokens, minimap markers, and HERE/THERE preview).
 
 ## Contract
 
 | Surface | Role |
 | --- | --- |
-| HERE authority | Live `sessionScene.npcWorld.placements` + `sessionScene.seatSlots`. `{ characterKey = { u, v, yaw, npcLightMode } }` uses 0–1 stage-board coordinates. HERE always mirrors live state; the one-shot Lock never suppresses reconcile. |
-| THERE authority | Persisted `gameState.controlBoard.previewDraft = { sceneKey, npcWorld = { placements }, seatSlots, scatterPlacements }`. The selected library row remains the committed baseline; draft edits never run live NPC/table/condition/light reconciliation. Scatter Mode parks tokens from `draft.scatterPlacements` only. |
-| **Apply / Reset** | HERE scans stage + NPC/PC seat tokens into live state then `Sync.npcs`. THERE labels this button **Reset** and reloads library participants into the draft and board. |
-| **Clear** | Left-click: HERE uses the TOR-281 homeland rules, empties live placements, parks stage tokens, and reconciles NPCs (double-confirm). **Also destroys live generic NPCs and clears `genericMembership`.** Right-click (TOR-485 / TOR-486): recover stray NPC tokens (not on CONTROL_BOARD face) to palette, re-snap tokens already on the palette, and always broadcast ST feedback — no placement wipe. THERE left-click applies the same participant/home logic to the draft and board only; live and library data remain unchanged. |
-| **Generic import** | ST-only paste field + Import on CONTROL_BOARD XmlUI (`gb_generic_import_keys`) → `GlobalImportGenericNpcs` → label modal → spawn token (board top-right, face-down) + figurine/light (preload, OFF). Runtime: [`Generic NPCs.md`](Generic%20NPCs.md). |
-| **Load** | Force-mirrors the persisted active model: live state in HERE, preview draft in THERE. |
-| Reconcile | HERE mirrors explicit live placements/seat rows and parks orphaned NPC tokens. Ordinary `Sync.full`/`Sync.npcs` returns before token/marker writes while THERE; only dedicated preview actions may mirror the draft. |
+| **Stage authority** | `sessionScene.npcWorld.placements` — `{ characterKey = { u, v, yaw, npcLightMode } }` in 0–1 stage-map coordinates. Written only by `StageApply.applyStageChanges` (Dashboard) and by scene activation. |
+| **Dashboard edit** | `dashboard/scenes.ttslua` → `StageApply.applyStageChanges(changes)` → `Sync.npcs({ animateStageMoves = true })`. Bundled edits animate together (one lerp batch). Homeland seats stay dark while their NPC stands on the stage. |
+| **Spotlight tokens** | `StageTokens.reconcileFromState` runs from the NPC reconcile. One `Custom_Tile` per stage NPC, tagged `stage_token`, GM notes `npcToken:<characterKey>`, scale `D.STAGE_TOKEN_SCALE`, placed at the NPC's u,v on CONTROL_BOARD, face down when the NPC stands dark. Fingerprinted per row: only changed rows are respawned / moved / flipped. Hidden from PC seats. Moving a token does nothing. |
+| **Spotlight hotkey** | Only purpose of the tokens — see § Hold-to-spotlight. |
 
 Legacy **`byArea` in import JSON** is converted to **`placements` on import** (`lib/npc_placements_convert.ttslua`). Reconcile uses **`placements` only**; `byArea` in live state is normalized on `S.validateState` or via `npm run npc-placements:migrate-byarea`.
 
-## Token contract — `npc_control_token` vs `pc_control_token` (TOR-236)
-
-Two distinct control-token tags share the CONTROL_BOARD minimap. Minimap snaps are **untagged** (any object can snap); only NPC/PC control tokens are expected near the board. The two token kinds drive **different** state and are handled by **disjoint** code paths. A `pc_control_token` must carry **only** `pc_control_token` (never also `npc_control_token`), so the NPC handlers — all gated on `isNpcControlToken` (tag `npc_control_token`) — skip it automatically.
-
-| Identity | `npc_control_token` | `pc_control_token` |
-| --- | --- | --- |
-| GM Notes | `npcToken:<characterKey>` (`npcToken:myleneHamelin`) | `pcToken:<Color>` (`pcToken:Red`) — color-bound to one PC seat |
-| Roster source | `npcs_data` NPCs (`D.getNpcCharacters()` — excludes `isPC`) | one per PC player color (`C.PlayerColors`) |
-| Home | palette group slot / polar placement / homeland numbered chair (`tableSlot`) | numbered chair from `seatSlots[color].tableSlot`; a disconnected (`absentFromSession`) PC's token is locked a few units beneath the board (`Tokens.stashDisconnectedPcControlToken`) |
-
-| Handler / path | `npc_control_token` | `pc_control_token` |
-| --- | --- | --- |
-| Polar/stage scan → `placements` (`scanControlBoardTokens`) | scanned (u,v,yaw,`npcLightMode` from flip) | **ignored** (scan iterates `npc_control_token` only) |
-| Seat-row scan | `scanSeatRowOccupancyByTableSlot` → numbered `tableSlot` occupancy for PC **and** NPC tokens | same scan; identity stays on the token (`pcToken:<Color>` / `npcToken:<key>`) |
-| Flip meaning | stage light mode (`STANDARD` face-up / `OFF` face-down) | PC seat **presence** (no stage light) |
-| Reconcile pin | placement rows + homeland chair matching `tableSlot` | token pinned to that color's `tableSlot` chair (or locked beneath the board if disconnected); off-chair drop snaps straight back (`onPcControlTokenDropped`); flip matches `seatSlots[color].isPresent` |
-| Scale | seat 0.7 / polar 0.2 (TOR-199) | seat-row scale (0.7) on a chair snap |
-| ST dice-bag drop → roll | `tryNpcControlTokenDroppedOnStorytellerDiceBag` (restore home + roll type from bag + `Werewolf` tag via `STR.rollTypeForStorytellerBagDrop`) | `tryPcControlTokenDroppedOnStorytellerDiceBag` — return token to occupancy home (chair, or stashed at Y = −200 if Absent); roll type from bag + `Werewolf` tag via `STR.rollTypeForStorytellerBagDrop` (caller `RC.initiateRoll`) |
-| Anchor-family spread / pick-up light | NPC-only (`onNpcControlTokenDropped` / `onNpcControlTokenPickUp`) | **no-op** |
-| Palette / preload generation | one token + preload figurine per NPC | none (PCs excluded by `D.getNpcCharacters()`; PC tokens authored in workshop) |
-
-**Scope of the current contract (Apply-time occupancy + mirror):** Each seat-row snap is a numbered table chair (`tableSlot`). Token identity is the occupant. HERE Apply reads every PC and NPC token on those snaps and writes `sessionScene.seatSlots` (`tableSlot` / `isPresent` from flip). Apply never writes `absentFromSession` — only client connection does ([seat occupancy model](../../docs/solutions/seat-occupancy-and-connection.md)). A connected PC's token dropped anywhere other than a chair snap snaps straight back to its chair; swapping two PC tokens between chairs and clicking Apply reseats them. Reconcile pins tokens to match state: connected PCs on their chair, disconnected (`absentFromSession`) PCs **locked a few units beneath the control board** (hidden, not on a chair). Cover transitions onto Table B shuffle occupancy (gaps for disconnected PCs) and then remirror those tokens (TOR-537). Two tokens on one snap fail loud and abort Apply. Slot number fields are not on the PCs or Scenes panels — move tokens, then Apply. A THERE preview draft and every scene Apply take each PC's `absentFromSession` from live state, never from the library scene (`FSL.carryLiveAbsenceOnto`). Play-as-NPC role swap is **TOR-95**.
-
-PC-only occupancy changes (move a PC token to another chair, then Apply) must still run seat layout. `npcReconcileFingerprint` includes `FSL.occupancyFingerprint()` so the NPC orchestrator does not skip Step Three when NPC stage/seat rows are unchanged (TOR-513).
+Seating NPCs at the table and setting PC seat presence are **not** stage-token actions; they go through scene activation and the Scenes panel / Dashboard. Scatter Mode is world layout + HUD only: [`Scatter Mode.md`](../Revision%20of%20Player%20Positioning/Scatter%20Mode.md).
 
 ## Coordinate mapping (STAGE ↔ CONTROL)
 
@@ -77,202 +45,43 @@ Both boards are **different objects** (position, rotation, scale). Map coordinat
 
 | Step | API | Meaning |
 | --- | --- | --- |
-| World playfield → map | `Gameboard.uvFromWorld(worldPos)` | Project through **STAGE_BOARD** (`positionToLocal` → normalized `u,v` in 0–1 using **local** half-extents from bound corners, not `getBounds().size`). Fallback: `C` table extents when stage board is missing. |
-| Map → world figurine | `Gameboard.worldFromUv(u, v)` | **STAGE_BOARD** `positionToWorld` at that `u,v`. |
-| Map → control minimap | `Gameboard.worldOnControlBoard(board, u, v)` | Same `u,v` on **CONTROL_BOARD** via `positionToWorld` (TTS transform handles rotation/scale). |
+| Map → world figurine | `Gameboard.worldFromUv(u, v, { groundLevel })` | **STAGE_BOARD** `positionToWorld` at that `u,v`; Y from ring `groundLevel` when set (absolute world Y). Fallback: `D.DEFAULT_STAGE_WORLD` when STAGE_BOARD is missing. |
+| Map → control board | `Board.worldOnControlBoard(board, u, v, opts)` | Same `u,v` on **CONTROL_BOARD** via `positionToWorld` (used by `stage_tokens`). |
 
-**UV frame:** Custom_Tile boards use `positionToLocal` / `positionToWorld` in **object-local** units (≈ ±0.5 on X/Z for a unit tile). Do **not** multiply or divide UV by `getBounds().size` (world units) — that placed snaps/markers in a huge arc off the minimap. Half-extents are derived by projecting world bound corners through `positionToLocal`.
+**UV frame:** Custom_Tile boards use `positionToLocal` / `positionToWorld` in **object-local** units (≈ ±0.5 on X/Z for a unit tile). Do **not** multiply or divide UV by `getBounds().size` (world units). Half-extents are derived by projecting world bound corners through `positionToLocal`.
 
-**Do not** call `positionToLocal` on CONTROL_BOARD with a playfield world position (e.g. `C.Tables[].centerPoint` at z≈50). That produced markers in a huge arc off the minimap and placed the table marker at the real table instead of on the control board.
+**Stage figurine yaw:** `Gameboard.stageFigurineWorldYawDeg` = STAGE_BOARD Y + board-relative placement yaw + **`D.STAGE_FIGURINE_YAW_OFFSET_DEG` (180)** for `Figurine_Custom` cutout orientation.
 
-Table markers: active table only on minimap (`centerPoint` → `uvFromWorld` → `worldOnControlBoard`). NPC tokens on the control board use the same `u,v` as stage figurines after Apply.
+## Snap catalog (geometry only)
 
-**Table markers (`gameboard_table`):** Exactly one minimap table mesh is on the control tile — the marker whose GM Notes key matches `seatLayout.currentTableKey`. All other table markers are **locked** and parked at world **Y = -200** (`MARKER_STASH_WORLD_Y`, slight X offset per table key). Component and seat markers use the same stash pattern when inactive.
+`D.CONTROL_BOARD_SNAP` defines elliptical rings in board u/v (`snapGroups`: `num`, `angleDelta`, `rays`, optional per-ring `origin`, `groundLevel`, `radialStagger`, `validSnaps`, `defaultLightMode`). `Snaps.buildControlBoardSnapCatalog` turns them into catalog entries (`ringIndex`, `rayIndex`, `familyId`, `familyK`, `u`, `v`, `yawDeg`, `groundLevel`). The catalog is used for:
 
-**NPC seat markers:** Always stashed at **Y = -200** (not shown on minimap; TOR-268).
+- placement yaw / ground level (`Snaps.placementBoardRelYawDeg`, `Snaps.groundLevelForSnapUv`)
+- lerp batching by anchor family (`resolvePlacementSnapCatalogEntry`, `orderFamilySnapsForAnchorSpread`, `stageLerpFamilyGroupSortKey`)
+- Scatter orbit-light polar lookups (`lib/scatter_occupancy.ttslua`)
+- the Dashboard stage snap overlay (`.dev/scripts/generate_dashboard_scene_catalogs.js` → `data/control-board-snaps.json`)
 
-**Table leaf / component markers (`gameboard_table_component`):** Shown on the minimap when the parent table is active and the leaf is active on the playfield (same `usedBy` / `alsoEnable` rules as `applyTableComponentsState` in `lib.rotational-seat-layout.ttslua`). Inactive leaves and components for other tables are **locked** and parked at world **Y = -200** (`MARKER_STASH_WORLD_Y`). Leaf markers use the parent table's CONTROL_BOARD transform (models are authored table-relative).
+`D.CONTROL_BOARD_SEAT_ROW` (nine numbered chairs in a row) feeds seat-kind catalog entries and the Dashboard seat strip. No snap points are installed on CONTROL_BOARD. See [Generating Snap Points For Control Board.md](./Generating%20Snap%20Points%20For%20Control%20Board.md) for ring tuning.
 
-**Marker scale:** For each minimap marker, read `getScale()` on the playfield object it mimics (`C.Tables` table/leaf GUID, or `G.GetThroneGUID` seat chair for PC/NPC seats), then set marker scale to **source ÷ 40** on all three axes (`DATA.MINIMAP_SCALE_DIVISOR`). Do not use nearest `*Object` tag scan for scale — that often hits a scale-1 helper instead of `SEAT_CHAIR_*`.
+## Stage placement lerp (TOR-173 / TOR-416)
 
-**Marker rotation:** `marker.setRotation(source.getRotation() + board.getRotation())` per euler axis (playfield mimic + CONTROL_BOARD). Table uses `C.Tables[tableKey].guid`; seats use `G.GetThroneGUID`. Workshop stash euler on markers is overwritten every `reconcileControlBoardFromState` — if rotation still matches the save default, the bundled script was not Save & Play’d.
+Dashboard stage applies pass `animateStageMoves` into `NPCS.reconcileAllFromState` Step Five. Eligible stage→stage moves (and same-snap light toggles involving `STANDARD` / `SPOTLIGHT`) commit instance + `gameState.lights` to the target, then animate via a **single** `GlobalStageLerpOrchestrator` coroutine (`core/npc_stage_lerp.ttslua`). Position + yaw use `sineInOut`. **Lit** moves lock the pooled spotlight to the live figurine each frame via `NPCS.resolveFigurineLightPose`. Light timing: `STANDARD`→`OFF` linear fade from the start; `OFF`→`STANDARD` holds off until **75%** then springs on. Batches group by anchor-family `familyId`; the leader anchor moves first, siblings stagger in `orderFamilySnapsForAnchorSpread` order; multiple families order center-out on destination anchor distance; `betweenFamilyStaggerSec` offsets families on one shared timeline. Not used on load, blindfold, preload/seat paths, or `Sync.full`. Tunables: `D.STAGE_PLACEMENT_LERP`.
 
-**Marker height:** `MINIMAP_SURFACE_LOCAL_Y` (default 0.18) + optional `MINIMAP_TABLE_EXTRA_LOCAL_Y` (0.06) for `gameboard_table` markers so thick table meshes sit on the control tile, not clipped inside it.
+## Hold-to-spotlight (TOR-238)
 
-**Player visibility:** All `gameboard_*` markers and `npc_control_token` tiles use `setInvisibleTo(C.PlayerColors)` — hidden from every seated PC (Brown–Purple); Storyteller (Black) and spectators (White/Grey) still see them. CONTROL_BOARD toolbar XmlUI uses `visibility="Black|Host"` on `gb_root` (`ui/objects/npc_control_board.xml`). Reconcile and spawn paths call `Gameboard.setHiddenFromPlayerColors`.
-
-**Marker lock:** `gameboard_table`, `gameboard_table_component`, `gameboard_pc_seat`, and `gameboard_npc_seat` objects are `setLock(true)` on reconcile so minimap pieces do not collide and drift. `npc_control_token` tiles stay unlocked for drag-to-snap + Apply.
-
-**One-shot Lock:** `gameState.controlBoard.lockNextSceneApply` carries live participants over the next successfully applied library scene. Source stage placements replace destination occupants at the same resolved Control Board snap; source occupied NPC seats overwrite the same seats; displaced destination NPCs retain status and move in stable seat order or are removed when full; fixed PC presence carries. The merged result is written to live `sessionScene` and the destination library row, reconciled once, then Lock auto-clears. Failed/blocked Apply leaves it armed. Lock is disabled while THERE but an already-armed flag is preserved.
-
-**Seat ↔ stage (TOR-178):** Homeland seat (`seatLayout.occupiedNPCSlots`) is retained only while the character's control token is on the **CONTROL_BOARD minimap** (seat-row or polar/stage snap). **Palette and off-board tokens are out of play** — Apply unassigns when the seat snap is empty and the token is not on a polar snap; **Clear** calls `releaseHomelandSeatsForOffBoardTokens` before parking tokens, then unassigned NPCs stay on the palette with chair/lights off. While on-board stage-bound (placement row in state), Apply keeps the homeland seat; Clear empties `placements` and Step Three re-seats the figurine at the table (token returns to the seat-row snap). Figurine `image_scalar` uses `figurine.scale` at stage and table alike. Stage-bound: homeland **chair** and **table leaves** (playfield + minimap) stay visible; both homeland **seat spotlights** (`npcLight1NPC*`, `npcLight2NPC*`) go OFF via `NPCS.reconcileHomelandSeatSpotlightsForStageBound` / `NPCS.isNpcSeatOccupantStageBound`.
-
-**NPC token → ST dice bag (TOR-174):** Host/Black drops an `npc_control_token` on a Storyteller dice bag → token immediately returns to its home via `Gameboard.restoreNpcControlTokenHome`. **Standard / polar:** active board-model home (live HERE or draft THERE: placement, homeland seat, then palette). **Scatter Mode:** frees the group slot and parks on **CONTROL_BOARD_PALETTE** (not back onto a Scatter hole or polar seat row); HERE also re-applies world layout. Roll initiation remains live. Roll type comes from `STR.rollTypeForStorytellerBagDrop`: **Normal** → Standard, **Hunger** → Discipline, **Werewolf bag** → Willpower, **Rage** → Frenzy, **Rouse** → Rouse, **Oblivion-Rouse** → Remorse at `End` else Oblivion-Rouse.
-
-**PC token → ST dice bag (TOR-236 / TOR-247 / TOR-513):** Host/Black drops a `pc_control_token` on a Storyteller dice bag → **Standard:** re-pinned to occupancy home (numbered chair from `tableSlot`, or locked beneath the board if disconnected) with the present/absent flip mirroring `seatSlots[color].isPresent`. **Scatter Mode:** re-parked on the PC's own hole in their scatter group (`ScatterMode.parkPcTokenHome`) — the board never removes a PC from their group. Picking up a PC token in Scatter no longer frees the group slot; dropping it on another group moves the PC there. Roll type comes from `STR.rollTypeForStorytellerBagDrop` (same mapping as NPC tokens and bag modal): **Normal** → Standard, **Hunger** → Discipline, **Werewolf bag** → Willpower, **Rage** → Frenzy, **Rouse** → Rouse, **Oblivion-Rouse** → Remorse at `End` else Oblivion-Rouse. Tokens tagged **`Werewolf`** always start a **Werewolf** roll regardless of bag. `GlobalGameboardPcTokenDroppedOnDiceBag` calls `RC.initiateRoll(color, { rollType, initiator = "storyteller" })` + `GlobalSpawnDefaultPoolDiceForActive` — same path as `HUD_rollInitiate`. `onObjectDrop` gates tag + Host/Black + bag proximity. Entry: `GlobalGameboardPcTokenDroppedOnDiceBag` → `Gameboard.tryPcControlTokenDroppedOnStorytellerDiceBag` (returns `consumed, rollColor, rollType`).
-
-### Scatter Mode HERE/THERE (TOR-628)
-
-Scatter uses the same Control Board **HERE / THERE** draft as polar preview (`gameState.controlBoard.previewDraft`), extended with `scatterPlacements`:
-
-| Mode | Occupancy authority | World figurines |
-| --- | --- | --- |
-| **HERE** (no draft / scene active) | Live `sessionScene.scatterPlacements` | Instant `applyWorldLayout` on add/move/remove; linked library mirror after edits |
-| **THERE** (pending library row) | `previewDraft.scatterPlacements` | Board tokens park from draft only — **no** `applyWorldLayout` / `Sync.npcs` |
-
-- **PC lock:** Center-hole PC tokens `setLock(true)` while HERE; unlocked in THERE and on pick-up.
-- **Remove:** Pick-up frees the slot immediately (HERE figurines leave). Off-parchment NPC drop / Clear path parks on the palette. THERE edits stay in the draft until commit / leave THERE.
-- **Apply / Reset:** HERE + Scatter Apply still scans parchment → live pack → world. THERE toolbar remains **Reset** (reload library baseline into the draft, including `scatterPlacements`).
-- **Capture:** While Scatter + THERE, draft capture snapshots parchment occupancy into `scatterPlacements` and does not overwrite it with an empty polar scan.
-- **Pending table toggle (THERE):** Scenes panel table buttons write the pending library row’s `tableKey` / `placementMode` and immediately remirror the Control Board (Scatter art when Scatter is selected). Polar `seatSlots` / `tableSlot` are **kept** when switching to Scatter so returning to Table A does not wipe occupancy. Missing `tableSlot` values are re-seeded from defaults when needed.
-
-## Workshop tags
-
-| Tag | GM notes example |
-| --- | --- |
-| `npc_control_token` | `npcToken:myleneHamelin` |
-| `pc_control_token` | `pcToken:Red` — color-bound occupant identity. Chair occupancy is whichever numbered snap the token sits on at Apply. Must **not** also carry `npc_control_token`. |
-| `gameboard_table` | `gameboardTable:Table A` |
-| `gameboard_table_component` | `gameboardComponent:Table A\|Table Leaf Near Left` |
-| `gameboard_pc_seat` | `gameboardPcSeat:Red` |
-| `gameboard_npc_seat` | `gameboardNpcSeat:NPC2` |
-
-GUIDs: `G.GUIDS.STAGE_BOARD`, `G.GUIDS.CONTROL_BOARD`, `G.GUIDS.CONTROL_BOARD_PALETTE` (`ee686e`) in `lib/guids.ttslua`.
-
-## Control-board snaps (CONTROL_BOARD)
-
-Snap points are installed by `Gameboard.installPolarSnaps` (alias `installControlBoardSnaps`) from **`reconcileControlBoardFromState`** (every `Sync.npcs` / load) — the CONTROL_BOARD object does **not** need a bundled script in the save for snaps to appear.
-
-## Control-board UI (Apply / Clear / HERE-THERE / Lock / Load)
-
-**Repo sources (attach on CONTROL_BOARD in TTS Editor):**
-
-| Source | Role |
-| --- | --- |
-| `objects/npc_control_board.ttslua` | Object script: `onLoad` → XmlUI toolbar + polar snaps; `click_*` → Global |
-| `objects/npc_control_board_ui.ttslua` | `installObjectUi` (embedded XML via `UI.setXml`, clears legacy 3D buttons) |
-| `lib/npc_control_board_ui_xml.ttslua` | **Generated** — embedded copy of `ui/objects/npc_control_board.xml` for runtime `UI.setXml` |
-| `ui/objects/npc_control_board.xml` | **Source of truth** for toolbar XmlUI (csheet-style scale/rotation) |
-
-**TTS Editor — Script** (one line):
-
-```lua
-require("objects.npc_control_board")
-```
-
-**TTS Editor — XML**:
-
-```xml
-<Include src="ui/objects/npc_control_board.xml" />
-```
-
-The extension may mirror these under `.tts/objects/CONTROL_BOARD.bea29a.*` (gitignored) when the object is named with GUID `bea29a`. **`npm run build`** / **`build:xml`** / **`build:full`** (via `fix_tts_object_stubs.js`) normalizes scrambled extension stubs:
-
-| Object | `.tts/objects` Lua stub | `.tts/objects` XML stub |
-| --- | --- | --- |
-| `CONTROL_BOARD.*` | `require("objects.npc_control_board")` | `<Include src="ui/objects/npc_control_board.xml" />` |
-| `CONTROL_BOARD_PALETTE.*` | `require("objects.npc_control_board_palette")` | `<Panel />` (no toolbar) |
-
-Manual repair: `npm run tts-objects:fix-stubs` or VS Code task **Fix TTS object stubs (.tts/objects XML + Lua)**.
-
-**Workshop:** tag the tile `npc_control_board` (optional). GUID `bea29a` in `lib/guids.ttslua`.
-
-**In-game toolbar (XmlUI only):** Same crisp pattern as character sheets (`ui/player/csheets/csheet_defaults.xml` `page_root`): large pixel sizes (`width`/`fontSize`), then **`scale="0.1 0.1 0.1"`** and **`rotation="0 0 180"`** on the root `Panel`. Do **not** use `createButton` on CONTROL_BOARD — the tile is scale **{20, 1, 10}**, so small button dimensions stretch and blur.
-
-The scope button displays the current mode: green **HERE** or blue **THERE**. Clicking HERE is a no-op unless the Scenes Panel has a pending row (`activeKey ~= lastAppliedKey`). Entering THERE loads that row into `previewDraft`; every settled NPC/PC token move or flip persists the draft. Clicking THERE captures + commits the draft, clears it, and force-restores HERE. Selecting another pending row commits the old draft then loads the new row; clearing preview or applying the row commits before returning HERE. **TOR-449:** closing Scenes (any path) deselects pending preview when HERE; while THERE, close is blocked with `AlertGM` until the ST returns HERE. Game load and End scene force HERE (load commits then clears any saved draft — THERE is mid-session only). End also clears `activeKey` (preview is for scenes about to enter). Scenes Panel seat toggles remain library-authoritative and copy all seat-presence flags into the draft without moving draft occupants.
-
-| Piece | Path |
-| --- | --- |
-| **Source of truth (edit layout here)** | [`ui/objects/npc_control_board.xml`](../../ui/objects/npc_control_board.xml) — `gb_root` position, `scale`, `rotation`, button sizes |
-| **Build embed** | `npm run npc-control-board-ui:generate` → [`lib/npc_control_board_ui_xml.ttslua`](../../lib/npc_control_board_ui_xml.ttslua) (do not edit by hand) |
-| **Runtime install** | [`objects/npc_control_board_ui.ttslua`](../../objects/npc_control_board_ui.ttslua) — `installObjectUi` applies embedded XML via `UI.setXml` (skips when unchanged) |
-| **Csheet reference** | [`ui/player/csheets/csheet_defaults.xml`](../../ui/player/csheets/csheet_defaults.xml) — same embed pattern via `npm run csheet-defaults:generate` |
-
-**Workflow:** edit `ui/objects/npc_control_board.xml` → `npm run npc-control-board-ui:generate` (or `npm run build:xml` / `build:full`) → **Save & Play** → reconcile installs toolbar from embedded XML. Console: **`XmlUI installed from ui/objects/npc_control_board.xml`** after first install each session.
-
-**Apply click error (`click_apply` is not a function):** The save often has **empty** `LuaScript` on `bea29a` while Global still installs 3D buttons that reference `click_apply` on the board object. After **Save & Play** with the bundled stub, handlers live in the object script. Until then, the first `Sync.npcs` / reconcile injects a minimal `click_*` script via `setLuaScript` (`Gameboard.ensureControlBoardObjectCallbacks`). **XmlUI toolbar** passes `(player, value, id)` to `click_*` — use `player.color`, not createButton’s `(_, player_color)` signature. Console: `lua GlobalGameboardApply()` / `lua GlobalGameboardClearClick({ player_color = "Black" })` (double-click Clear confirm).
-
-**Palette vs activated:** Tokens on **CONTROL_BOARD_PALETTE** are inactive storage; **Apply** ignores them until a token is on a CONTROL_BOARD polar snap. **Clear** runs `Palette.syncTokensToPalette` (group order from `lib/npcs_data` `characters[].groups`, minus `PALETTE_GROUP_BLACKLIST` e.g. `princesCourt`). **On-board detection:** Standard drop handlers and scans use `isTokenOnControlBoardSurface` (2.5× tile XZ, no Y — snap settle / seat scale). Scatter drop uses `isTokenOverMinimapParchment` (1.05× XZ, palette excluded, no Y so a token still falling still counts). Scatter calibrate / Apply use `Board.objectsAboveControlBoard` (`U.findAboveObject` box cast) plus `isTokenOnMinimapTokenSurface` (same tight XZ plus surface Y). Polar snap wait is skipped while Scatter is active (there are no polar snaps; waiting 1s timed out as `await:timeout`). Clear parking and stray recovery use `isTokenOnControlBoardFace` (same XZ band + surface Y) so tokens fallen below the board are parked.
-
-**Console fallback:** `lua GlobalGameboardApply()` / `lua GlobalGameboardClearClick({ player_color = "Black" })` (Storyteller only; first left Clear click arms 5s confirm only; second left-click within 5s runs Clear). Right-click Clear: `lua print(GlobalGameboardRecoverStrays({ player_color = "Black" }))` (or object XmlUI `-2`) — parks strays, re-snaps on-palette tokens, and broadcasts even when zero moves (TOR-486). Manual stray recovery: `lua print(require("core.npc_gameboard").recoverStrayNpcTokensToPalette())`.
-
-**Apply performance:** When scanned token placements match persisted `sessionScene.npcWorld.placements` **and** occupancy (PC/NPC chair assignment) is unchanged, Apply skips figurine reconcile (logs `placements unchanged`). Placement-only edits run `Sync.npcs` steps **1 + 5** only. **Seat-row** edits (assign / vacate / presence / PC `tableSlot`) run steps **1–5** (includes seat teardown, layout commit, presence). `npcReconcileFingerprint` includes `FSL.occupancyFingerprint()` so PC-only chair moves still reach layout (TOR-513). `reconcileControlBoardFromState` skips marker/token mirror when its fingerprint is unchanged (invalidated on seat vacate). CONTROL_BOARD XmlUI install no longer calls `clearButtons()` every reconcile when XML is already loaded.
-
-**Stage placement lerp (TOR-173 / TOR-416, Apply only):** `gameboard_apply` passes `animateStageMoves` into `NPCS.reconcileAllFromState` Step Five. Eligible stage→stage moves (and same-snap light toggles involving `STANDARD` / `SPOTLIGHT`) commit instance + `gameState.lights` to the target, then animate via a **single** `GlobalStageLerpOrchestrator` coroutine (`core/npc_stage_lerp.ttslua`). Position + yaw use `sineInOut`. **Lit** moves lock the pooled spotlight to the live figurine each frame via `NPCS.resolveFigurineLightPose` (lerp `deltaUp` / `deltaInward` when mode changes) — no baked light XYZ path. Light mode timing: `STANDARD`→`OFF` — linear fade over full duration at start; `OFF`→`STANDARD` — hold off until **75%** then short spring on. `SetLightMode` lookAt-coupled transitions interpolate in **spherical** coords around the aim (minimal cone swing). Batches group by anchor-family `familyId` (`Gameboard.resolvePlacementSnapCatalogEntry` — same rows as anchor spread); leader anchor snap moves first, siblings stagger in `orderFamilySnapsForAnchorSpread` order. Multiple families order center-out on destination anchor distance. `betweenFamilyStaggerSec` offsets the next family's first start on one shared timeline (motions overlap). Outer `num=6, rays=1` rings are one family per ring; inner `num=5` rings have one family per ray anchor. Not used on load, blindfold, preload/seat paths, Clear, or `Sync.full`. Tunables: `D.STAGE_PLACEMENT_LERP` in `lib/npc_gameboard_data.ttslua`.
-
-**Stage figurine yaw:** `Gameboard.stageFigurineWorldYawDeg` = STAGE_BOARD Y + board-relative token yaw + **`D.STAGE_FIGURINE_YAW_OFFSET_DEG` (180)** for `Figurine_Custom` cutout orientation vs control-board tiles.
-
-**Apply figurine placement (debug):** Figurines move via `Gameboard.worldFromUv`: **X/Z** from **STAGE_BOARD** u,v; **Y** from ring `groundLevel` when set (**absolute world Y**). World Y rotation uses `Gameboard.stageFigurineWorldYawDeg(placement.yaw)` = **STAGE_BOARD** Y + board-relative token yaw + **180°** figurine cutout offset (`D.STAGE_FIGURINE_YAW_OFFSET_DEG`).
-
-Config: `D.CONTROL_BOARD_SNAP` in `lib/npc_gameboard_data.ttslua` — elliptical rings with **absolute** `innerRingMaxU/V` and `outerRingMaxU/V`, and per-ring `snapGroups` (`num`, `angleDelta`, `rays`, optional per-ring `origin`, optional `groundLevel`, optional `radialStagger` in **STAGE** world XZ inches, optional `validSnaps = { minU, maxU, minV, maxV }` to drop candidates outside that u/v box, optional **`defaultLightMode`** `"OFF"` or `"STANDARD"`). Snaps whose `(u,v)` fall outside `[0,1]` are omitted. Per-ring `validSnaps` further trims dense rings (e.g. center/mid bands only). **Satellite rings** (per-ring `origin` ≠ master `origin`) rotate so the anchor snap (`familyK = 0`) lies on the u/v line from the ring origin toward the master origin (outskirts six-packs face inward, not a fixed board direction). `DEBUG.previewControlBoardSnapCount()` prints the filtered total. Each snap yaws toward the master `origin` and is tagged **`npc_control_token`** and **`pc_control_token`** (`D.CONTROL_BOARD_SNAP_TAGS`) so NPC or PC control tiles can snap anywhere on the minimap (including seat row and polar rings).
-
-**Seat-assignment row (TOR-180):** `D.CONTROL_BOARD_SEAT_ROW` adds nine snaps at **`v = 0.12`**, **`u` from 0.05 to 0.35** (center ≈ 0.2; L→R: NPC4, NPC2, Purple, Pink, Red, Orange, Brown, NPC1, NPC3). Catalog entries use `snapKind = "seat"`. **CONTROL_BOARD** is workshop-rotated **Y=180°**; seat-row snap rotation is **board-local**, so **`snapYawOffsetDeg = 180`** on those nine snaps (not polar toward-origin yaw) yields upright tokens in world space — manual drops rely on **`rotation_snap` only** (TOR-200). **PC columns** (`Purple`…`Brown`) also use **`pcSnapZDeg = 180`** on **Z** so `rotation_snap` is not upside-down; **NPC columns** stay Z=0. **Seat-row scale (TOR-199):** tokens on seat snaps use **`D.NPC_CONTROL_TOKEN_SCALE_SEAT_ROW`** `{0.7, 1, 0.7}`; polar/palette/off-board revert to **`D.NPC_CONTROL_TOKEN_SCALE_POLAR`** `{0.2, 1, 0.2}` on pick-up, off-board drop, polar placement, and palette park. Homeland token mirror/reconcile uses `mirrorSeatRowControlToken` (catalog `yawDeg` + narrative Z flip). **NPC columns** drive `occupiedNPCSlots` and narrative presence on Apply (token **face-up** = present, **face-down** = absent — not `npcLightMode`). **PC columns** pin a color-bound `pc_control_token` (`pcToken:<Color>`); its flip drives `seatSlots[color].isPresent` on Apply, and reconcile mirrors the flip back to match state (TOR-236; see § Token contract). Polar scan / `placements` ignore seat snaps. **Empty seat snap + token on a polar snap:** Apply **does not** clear `occupiedNPCSlots` (homeland retained for Clear / Step Three re-seat — see NPC Reconciler Procedure Step Two case 4). **True unassign:** empty seat snap and **no** polar placement for that character on the same Apply (token must be on the minimap face at a polar snap — off-board / in-air tokens do not count). **Vacate off-board:** drag token completely off CONTROL_BOARD (not palette), Apply → `unseatNpc`, drop stale `placements` for that character, park token on **CONTROL_BOARD_PALETTE**, `Sync.npcs` steps **1–5** (seat teardown + layout/components). Clear parks stage tokens but **preserves** tokens on seat snaps and runs `Gameboard.relocateHomelandSeatTokensAfterClear`. Reconcile mirrors assigned homeland tokens onto their seat snap with presence flip.
-
-**Palette-drop `defaultLightMode` (TOR-172 / TOR-419):** `onObjectPickUp` → `Gameboard.onNpcControlTokenPickUp` records tokens picked up on **CONTROL_BOARD_PALETTE**. On the next drop onto **CONTROL_BOARD**, after snap settle, `Gameboard.applySnapGroupDefaultLightOnPaletteDrop` reads the matched ring’s `defaultLightMode` and sets **token** Z flip only (`STANDARD` = face-up, `OFF` = face-down; re-applied after `rotation_snap` settle). **Does not** write stage figurine lights — those wait for **Apply** (Spotlight hold remains the only live stage preview). **Anchor spread:** siblings moved from the **palette** onto family snaps get the same ring flip immediately after programmatic placement (console: `[Gameboard] anchor spread palette light: …`). **Does not** run on ring-to-ring moves, state sync, or `reconcileControlBoardFromState`. **Apply** still derives `npcLightMode` from flip via `scanControlBoardTokens` / `tokenLightModeFromFlip`. Console: `[Gameboard] palette drop: ring N defaultLightMode …` or `palette drop defaultLightMode skipped: …`.
-
-**Group flip (TOR-414 / TOR-419):** While **Group move (hold)** is held, Flip on an `npc_control_token` captures polar-family membership + intended face from TTS `flip` degrees **before** FlipOver settles, then re-seats every captured family member onto their snap at that face (+0.05 board-local Y). Dense Mid Center rays can drift the lead token onto a neighboring family after Flip — capture-at-start avoids that. Stage lights are not updated.
-
-**Group-move onto occupied family (TOR-484):** While **Group move (hold)** is held, board→board family relocate (`tryBoardFamilyGroupRelocate`) first evacuates **all** occupants of the destination polar family (except the dropped token; seated-at-table NPCs stay). Evacuation targets the first **fully empty** family in this priority (live catalog anchors by ring / u — not hardcoded Mid/Center ray numbers): Far Left (ring 3) → Far Right (6) → Far Center-Left (4) → Far Center-Right (5) → Mid Left → Mid Right → Center Left → Center Right → Mid Center → palette. The ring-1 family closest to u=0.5 (“Center”) is never an eviction target. Board→board evictions place face-down (`faceUpOverride = false`) so Apply treats lights as OFF; palette last-resort parks face-up via `Palette.parkTokenAtAssignedSnap`. Then the usual source-family relocate fills the cleared dest.
-
-**Hold-to-sweep stage spotlight preview (TOR-238):** Transient “who’s speaking” cue — **not** game-phase Spotlight (TOR-98), **not** persisted `npcLightMode` / `spotlightPress`. On load, Global registers `addHotkey("Spotlight NPC (hold)", …, triggerOnKeyUp=true)`; bind the key under **Options → Game → Game Keys**. **Storyteller steam player only** (`isStorytellerSteamPlayer` in the hotkey callback). TTS executes the world preview in host mod Lua. While the key is held, poll `Player[color].getHoverObject()` every 80ms; when hover is an `npc_control_token` on the CONTROL_BOARD minimap face with either a row in `sessionScene.npcWorld.placements` (Standard, on-stage) **or** a Scatter group occupancy in `sessionScene.scatterPlacements` (Scatter Mode), apply:
+Transient "who's speaking" cue — **not** game-phase Spotlight (TOR-98), **not** persisted `npcLightMode`. On load, Global registers `addHotkey("Spotlight NPC (hold)", …, triggerOnKeyUp=true)`; bind it under **Options → Game → Game Keys**. **Storyteller steam player only** (`isStorytellerSteamPlayer` in the callback). While held, poll `Player[color].getHoverObject()` every 80 ms; when the hover is a `stage_token` (`StageTokens.characterKeyForToken`) whose NPC has a row in `sessionScene.npcWorld.placements`, apply:
 
 | Target | Behavior |
 | --- | --- |
-| Stage figurine pooled spotlight | `NPCS.buildResolvedLightModeTable(characterKey, "SPOTLIGHT")` via `L.applyTransientLightMode` (restores prior `gameState.lights[ref]` immediately — preview does not save) |
-| Storyteller board indicator (`G.GUIDS.STORYTELLER_SPOTLIGHT`, registry `storytellerSpotlight`) | Moves to token **X/Z** (Y unchanged); `STANDARD` with `enabled = true`; default **OFF** when not previewing |
+| Stage figurine pooled spotlight | `NPCS.buildResolvedLightModeTable(characterKey, "SPOTLIGHT")` via `L.applyTransientLightMode` (restores prior `gameState.lights[ref]` — preview does not save) |
+| Storyteller board indicator (`G.GUIDS.STORYTELLER_SPOTLIGHT`, registry `storytellerSpotlight`) | Moves to token **X/Z** (Y unchanged); `STANDARD` while previewing, **OFF** otherwise |
 
-Key-up or hover leaving tokens clears both previews (figurine returns to live `rec.npcLightMode` appearance). Reconcile / other lighting may stomp the preview mid-hold (intentional). Entry: `Gameboard.onControlBoardSpotlightHotkey`. **Multiclient:** solo host verified; join-client ST hotkey → host fan-out not implemented (P10 gap).
+Key-up or hovering off the tokens clears both previews. Entry: `Gameboard.onControlBoardSpotlightHotkey`. **Multiclient:** solo host verified; join-client ST hotkey is the P10 gap.
 
-**Anchor snap group spread:** When a grouped `npc_control_token` is dropped on CONTROL_BOARD, Global `onObjectDrop` → `Gameboard.onNpcControlTokenDropped` (waits up to 1s until the token’s **nearest** catalog snap within fuzziness is the **anchor** of a ray family — avoids firing on a sibling snap while the token is still settling). If **all** of: (1) token resolves to a non-blacklisted palette group via `Palette.resolveGroupForCharacterKey`, (2) drop lands on the **anchor** snap of a ray family (`familyK == 0`, center of `num`/`angleDelta` cluster — **rings with `num = 1` have no sibling snaps**), (3) every **other** snap in that family is empty — then remaining group members **not on CONTROL_BOARD** (palette tokens count as off-board) are snapped onto sibling family slots in **slotIndex** order (lowest first), with snaps assigned **center-out on the minimap** (nearest sibling ring first, then **screen-left before screen-right** at each distance — uses board-local XZ vs the anchor, not raw `familyK` sign, which can invert on the tile) until the family is full. With `fiveKeys` data, left-to-right on the board should be slot indices **4, 2, 1, 3, 5** (farLeft, nearLeft, anchor, nearRight, farRight). Snap match uses **nearest** world XZ distance in the snap catalog (not first snap in install order). Console: `[Gameboard] anchor spread: placed N…` or `anchor spread skipped: <reason>` (with `snap=` / `familyK=` on `not_anchor`). Manual test: `lua print(require("core.npc_gameboard").tryAnchorFamilyGroupSpread(getObjectFromGUID("…")))`.
+## Token art
 
-## Token palette (CONTROL_BOARD_PALETTE)
+`StageTokens` reads front/back art from `lib/npc_token_hosted_urls.ttslua` (generated by `npm run custom-ui-assets:extract-npc-token-urls`), falling back to the generic NPC entry's `token` art. Tokens are circle `Custom_Tile` (`type = 2`, thickness 0.1); face down = NPC stands dark. Source WEBPs and the upload pipeline: [`.dev/custom-ui-assets/README.md`](../custom-ui-assets/README.md). Missing art prints `[StageTokens] no token art for …` and that NPC gets no token.
 
-Workshop object **CONTROL_BOARD_PALETTE** (typical scale `{5, 1, 10}` — wide on X, tall on Z). Parking uses a **20×40** logical grid; **physical snaps** are installed only at token parking slots (one per rostered character on the palette), not all 800 cells. Object script:
+GUIDs: `G.GUIDS.STAGE_BOARD`, `G.GUIDS.CONTROL_BOARD` in `lib/guids.ttslua`.
 
-```lua
-require("objects.npc_control_board_palette")
-```
-
-`lib/npc_control_board_palette.ttslua` installs snaps on palette `onLoad`; **`syncTokensToPalette`** is explicit (Clear, debug spawn) — it parks only tokens **without** a row in `sessionScene.npcWorld.placements`. On-stage keys are mirrored onto CONTROL_BOARD by `reconcileControlBoardFromState`. **Parking positions** map columns across the tile width and **rows** use the live layout row count from `buildTokenSnapAssignments`, evenly spaced on v — not the full 40-row logical grid. **`parkingEdgePadding`** (default **0.06**, plus `uMargin`/`vMargin`) insets snap centers from the marble edges so token discs do not overhang corners; tune in `D.CONTROL_BOARD_PALETTE_SNAP` if chips still clip. **`parkingSnapLocalZOffset`** (default **0.1** board-local +Z, ≈ half polar token diameter) nudges parking snaps toward vMax so group labels can sit beneath tokens. Half-extents come from bounds (same projection as the control-board minimap). If vertical spacing is too wide, shorten palette **Z** scale; **Save & Play** then `lua require("core.npc_gameboard").syncTokensToPalette()`. Snap yaw uses `snapYawOffsetDeg` (default **180**). Minimap polar snaps use **toward-origin** yaw + `D.CONTROL_BOARD_SNAP.snapYawOffsetDeg` (default **0**). **`syncTokensToPalette`** and **`parkNpcTokenOnPalette`** set token rotation **face-up** (board-local Z=0, matching palette snap rotation) so parked tokens show **lights-on** art; rotation is re-applied after snap settle when `rotation_snap` overrides the first pass. Groups in `D.PALETTE_GROUP_BLACKLIST` (currently `princesCourt`) are skipped when picking a character’s palette group. One surviving group → that group; several survivors → lexicographically smallest non-blacklisted `groupId`. Layout: members adjacent in slot order, whole group moves to the next row when a row would wrap, **one empty snap** between groups (not a full blank row), first token at top-left. Token keys from GM notes use the same `npcToken:<key>` capture as the control board (stops at comma or newline).
-
-Manual refresh / IDE tuning (after Save & Play):
-
-```lua
-lua DEBUG.previewControlBoardSnapCount()
-lua DEBUG.installNpcControlBoardSnaps()
-lua DEBUG.installNpcControlBoardSnaps({ config = { ... full CONTROL_BOARD_SNAP table ... } })
-```
-
-See [Generating Snap Points For Control Board.md](./Generating%20Snap%20Points%20For%20Control%20Board.md).
-
-## Buttons
-
-- **Apply / Reset** — HERE scans board → live state → `Sync.npcs`; THERE resets the draft from its selected library row
-- **Clear** — Left-click: HERE clears live participants after confirmation; THERE clears only draft placements and restores draft homeland tokens. **Right-click (TOR-485 / TOR-486):** return NPC tokens that are not on the CONTROL_BOARD face to palette parking, re-snap tokens already on the palette, and always give ST feedback (no wipe, no double-confirm).
-- **Snaps** — toggle `controlBoardSnapsEnabled` (polar snap grid on/off)
-- **HERE / THERE** — green HERE mirrors live participants; blue THERE persists edits in `controlBoard.previewDraft` for the pending Scenes row
-- **Lock** — arm/disarm `controlBoard.lockNextSceneApply`; disabled in THERE and auto-cleared after one successful merged scene activation
-- **Load** — force-mirror the persisted active model (live HERE or draft THERE) onto board tokens
-
-Debug: `DEBUG.dumpNpcPlacements()` in TTS console.
-
-## Token images (Custom UI upload)
-
-Gameboard control tokens are **Custom_Tile** objects — **circle** shape (`Type = 2`), **thickness 0.1**, two-sided (`image` + `image_bottom` / save `ImageURL` + `ImageSecondaryURL`). `DEBUG.spawnNpcControlBoardTokens` sets these in spawn data **and** calls `setCustomObject` + `reload` after spawn (TTS often ignores `CustomTile` on `spawnObjectData` alone). `DEBUG.applyNpcControlTokenHostedImages` applies the same shape to existing tokens. They flip with the normal **Flip** key (`Object.flip()`); there is no `is_face_up` on tiles — OFF vs STANDARD is inferred from **Z rotation** (0 = face up / STANDARD, 180 = face down / OFF). Board-plane orientation is **Y rotation** only and is independent of flip.
-
-**Palette spawn:** Save & Play → `lua DEBUG.spawnNpcControlBoardTokens()` — spawns tokens then `Gameboard.syncTokensToPalette()` to group slots on **CONTROL_BOARD_PALETTE**.
-
-**Upload batch only** uses **Custom_Token** (single `image` per object — correct for Cloud upload, not for the minimap).
-
-Source WEBPs:
-
-**`assets/images/NPCs/`** — per character: `<characterKey>.webp`, `<characterKey>Back.webp`, `tokenFront_<characterKey>.webp`, `tokenBack_<characterKey>.webp` (see `.dev/custom-ui-assets/README.md` § NPC unified groups). Legacy split folder: `assets/images/NPC Tokens/` with `tokenFront_*` / `tokenBack_*` only.
-
-Pipeline (full detail: [`.dev/custom-ui-assets/README.md`](../custom-ui-assets/README.md)):
-
-**Preferred (NPC unified groups):** `npm run custom-ui-assets:pipeline-npc-groups` — inject → manifest → TTS upload → merge → extract → **`apply-npc-hosted-world`** (patches figurines + creates/updates control-board tokens in save JSON with hosted URLs). Reload save in TTS.
-
-**Legacy token-only folder:**
-
-1. `npm run custom-ui-assets:manifest-npc-tokens`
-2. Cloud upload temps → merge → extract → `npm run custom-ui-assets:apply-npc-hosted-world` (or `lua DEBUG.spawnNpcControlBoardTokens()` + `applyNpcControlTokenHostedImages()`)
+Debug: `DEBUG.dumpNpcPlacements()` in the TTS console.

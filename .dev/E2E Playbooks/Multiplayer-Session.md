@@ -24,7 +24,7 @@ Friend does **not** need the ST panel and should **not** manually pick a seat un
 | 1 | Host | `npm run build` if UI changed; **Save & Play** on the Storyteller machine. Confirm you land on **Black**. |
 | 2 | Host | Friend’s Steam ID is in `C.PlayerData` with the intended PC color. Unregistered → **White**. Tell friend the expected color. |
 | 3 | Host | Prefer **`currentPhase = Play`**. If the save is in **Intermission**, either Advance → Play before inviting, or plan A4 then B0 so the friend is not stuck under the connect blindfold. |
-| 4 | Host | Known scene (or no-scene default), simple/empty gameboard. **Do not** sit in the friend’s chronicle color — leave it free for auto-assign. |
+| 4 | Host | Known scene (or no-scene default), simple/empty stage. **Do not** sit in the friend’s chronicle color — leave it free for auto-assign. |
 | 5 | Friend | TTS + Steam; accept your invite (needs a TTS license). |
 | 6 | Friend | Join **after** Host is already in-game. |
 | 7 | Both | Friend reports visual/audio glitches, wrong seat, chat/console errors; you drive ST steps. |
@@ -70,9 +70,8 @@ Friend watches for **double** motion, stacked audio, or jitter. Friend should be
 | # | Host | Friend | Pass if |
 | --- | --- | --- | --- |
 | B0 | If still Intermission: Phases **Advance →** into **Play** | Watch lights/theme/blindfold | Single transition; one theme/audio change |
-| B1 | One NPC control token on gameboard; **Apply** | Watch stage | **Single** move; no fight/jitter |
-| B2 | **Clear** gameboard | Watch | Clear once; palette/board match Host |
-| B3 | Drop one control token on palette snap | Watch | Snaps once; no lag spike |
+| B1 | In the Storyteller Dashboard, put one NPC on the stage and **Send** | Watch stage | The figurine moves **once**, with no fighting or jitter |
+| B2 | In the Dashboard, **Clear** the stage and Send | Watch | The stage clears once and matches what the Host sees |
 | B4 | Scenes: **Apply** a different library scene (or location/mood) | Watch lights/audio/HUD | Scene matches Host; **one** audio fade |
 | B5 | Toggle **signal candle** (if present) | Watch fire | **One** light transition |
 | B6 | Change soundscape mood once | Listen | **One** fade; no doubling |
@@ -100,7 +99,7 @@ Read the [P10](#p10-known--do-not-fail-the-pass-for-this-alone) reminder before 
 | --- | --- | --- | --- |
 | D1 | Note phase; optional Play subphase switch or safe Advance | Compare **table** (lights/blindfold/theme) and phase label | Table matches once. Label lag + matching world → **document P10**, still Pass |
 | D2 | After B1, both run the probe below | Same | Counts **may differ** (P10). Pass if both see the **same figurines** |
-| D3 | — | Open a **PC-only** panel (e.g. roll control) | Opens; **no** ST-only controls (Advance, gameboard Apply, …) |
+| D3 | — | Open a **PC-only** panel (e.g. roll control) | Opens; **no** ST-only controls (Advance, stage controls, …) |
 
 **D2 probe** (both machines, `~` Global):
 
@@ -145,8 +144,7 @@ Each row is covered by a Phase step above. Use this as a sign-off checklist; do 
 | Steam auto-seat | A1–A2, E2 |
 | Connect blindfold (Intermission vs other) | A4 |
 | ST Advance → Play | B0 |
-| ST Apply / Clear gameboard | B1–B2 |
-| ST token drop | B3 |
+| ST Dashboard stage edit / clear | B1–B3 |
 | ST scene change | B4 |
 | Signal candle | B5 |
 | ST soundscape mood | B6 |

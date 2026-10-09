@@ -29,7 +29,7 @@ In the same work, **gold is PC slot 1** (not slot 3). The four white holes aroun
 
 ## What this is not
 
-- Not a Storyteller panel. Black stays on the Stage Control Board. This template expands only for `C.PlayerColors`.
+- Not a Storyteller panel. The Storyteller moves occupants from the Storyteller Dashboard. This template expands only for `C.PlayerColors`.
 - Not a way for one player to move another. Each copy is `visibility="Brown"` / `Orange` / … so a player only sees their own HUD. Host hotseat of that color can click it; that still moves **that** PC.
 - Not a second occupancy authority. `sessionScene.scatterPlacements` stays the source of truth. The HUD only displays it and, on click, calls the same move path the board drop already uses.
 
@@ -39,7 +39,7 @@ In the same work, **gold is PC slot 1** (not slot 3). The four white holes aroun
 | --- | --- |
 | Portrait `pc#` | Same number as world/board slot. Gold / first join = **slot 1** = HUD `…_pc1_…` (already the visual middle of the row: `pc5, pc3, pc1, pc2, pc4`). |
 | Occupants stay put | When someone leaves, remaining PCs keep their slots. Do **not** compact portraits into `pc1..n`. Empty slots stay `active=true` with `color=rgba(1,1,1,0)` (alpha hide — do not deactivate or the row collapses). Each portrait Image authors `image=scatterModeControlPC_lordLucien` **inline** in XML (class Defaults do not give a readable `image` for layout); Lua only changes `image` when a slot is occupied. |
-| Selector click | Full move now: occupancy + park that PC’s control token + `ScatterMode.applyWorldLayout()` (figurine, bags, sheets, camera) + close **that player’s** strip. Same outcome as dropping their token on that group. |
+| Selector click | Full move now: occupancy + `ScatterMode.applyWorldLayout()` (figurine, bags, sheets, camera) + close **that player’s** strip. Same outcome as a Dashboard `scatterPlace` move. |
 | Who clicks | Clicker color must match the element’s `_Brown` / `_Orange` / … suffix. XmlUI visibility already prevents Option C (seeing another seat’s HUD). |
 | Hover | Swap `image` to the `_hover` asset; on exit restore **active** or **inactive**, whichever that selector actually is. |
 | After a successful move | Close only that player’s `pcRowContainer` and `db_scatterModeControl_container`; set their toggle image to `scatterGroupToggle_inactive`. Other players’ open/closed state is unchanged. |
@@ -48,11 +48,11 @@ In the same work, **gold is PC slot 1** (not slot 3). The four white holes aroun
 
 Keep **mutation** and **HUD apply** separate.
 
-1. **`ScatterMode.movePcToGroup(pcKey, groupIndex)`** (new public API) writes `scatterPlacements`, parks that PC token, then `applyWorldLayout()`. No-op if they are already in that group. Reuse `nextFreePcWorldSlot` + `removeCharacterFromAllGroups` from the drop handler; do **not** call `applyFromControlBoard` (that rebuilds occupancy from every token).
-2. **`ScatterMode.reconcileControlHudFromState()`** (new) reads placements and sets XmlUI attributes. Idempotent. Called after enter/leave Scatter, after this move, and after the existing token-drop / Apply paths so the portraits stay honest when the Storyteller moves people on the board.
+1. **`ScatterMode.movePcToGroup(pcKey, groupIndex)`** (new public API) writes `scatterPlacements`, then `applyWorldLayout()`. No-op if they are already in that group. Reuse `nextFreePcWorldSlot` + `removeCharacterFromAllGroups` from the drop handler; do **not** call `applyFromControlBoard` (that rebuilds occupancy from every token).
+2. **`ScatterMode.reconcileControlHudFromState()`** (new) reads placements and sets XmlUI attributes. Idempotent. Called after enter/leave Scatter, after this move, and after Dashboard `scatterPlace` moves so the portraits stay honest when the Storyteller moves people on the board.
 3. **`HUD_scatterModeControl_*`** in `core/hud_player.ttslua` parse the color suffix from the element id, refuse mismatches, then toggle chrome or call `movePcToGroup`.
 
-World apply for a PC move already exists (`parkTokensFromState` slice + `applyWorldLayout`). The HUD must not pose figurines itself.
+World apply for a PC move already exists (`applyWorldLayout`). The HUD must not pose figurines itself.
 
 After an eager move, fingerprint or skip a second world apply if `Sync.full` would run `applyWorldLayout` again in the same flow. Prefer: move API applies world once; HUD reconciler is UI-only; `Sync.full` Scatter path either calls the HUD reconciler only, or the move API primes a fingerprint.
 
@@ -155,9 +155,9 @@ No object-script `require("core.*")`. No new Global.call from objects unless we 
 1. Confirm the Custom UI images listed above appear (toggle, selectors, five PC portraits, panel background). If any are missing, that is an asset name/save issue, not the Lua.
 2. Switch the table to Scatter. Each PC should see a toggle near the top of **their** screen and should **not** see another color’s copy. The strip starts closed.
 3. Open the toggle: portraits sit in the groups that match the board; gold-center portrait slot is `pc1`. NPC names under each group match who is there, one name per line.
-4. Click a different group. Your figurine, bags/sheet/camera, and PC token should move there immediately. The gold hole is used if that group had no PC yet. The strip closes. Other players still see you in the new group if they have the strip open.
+4. Click a different group. Your figurine, bags/sheet/camera should move there immediately. The gold hole is used if that group had no PC yet. The strip closes. Other players still see you in the new group if they have the strip open.
 5. Click the group you are already in: nothing moves, and the strip **stays open**.
-6. Storyteller drops a PC token to another group: HUD portraits follow without that player clicking.
+6. Storyteller moves that PC to another group from the Dashboard: HUD portraits follow without that player clicking.
 7. Leave Scatter: the toggle and strip disappear.
 
 ## Linear / PAVE

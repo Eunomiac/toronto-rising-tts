@@ -202,4 +202,3 @@ Re-check lighting, NPCs, pins, and soundscape after about 3 seconds.
 - [TESTING.md](../TESTING.md) - E2E output and generator contract
 - [Scene Constructor Overview](../Scene%20Constructor/Scene%20Constructor%20Overview.md) - state shape and apply semantics
 - [HUD_FUNCTIONS.md](../HUD_FUNCTIONS.md) - Scenes UI callback map
-- [Gameboard-E2E.md](Gameboard-E2E.md) - `gbE2eVerifyPcTokens` and gameboard Apply gate
