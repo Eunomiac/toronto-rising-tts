@@ -2,6 +2,7 @@ import { Fragment, useState, type ReactElement } from "react";
 import type { SceneClockMode } from "../scenesPanel/commands";
 import {
   AspectRow,
+  ConditionsPanel,
   ConfirmButton,
   LocationPanel,
   PRESENT_DAY,
@@ -27,11 +28,12 @@ const STRIP_H = 132;
 const ASPECT_H = 114;
 const WHEN_W = 470;
 const WEATHER_W = 380;
+const CONDITIONS_W = 265;
 
 type Rect = { readonly x: number; readonly y: number; readonly w: number; readonly h: number };
 
 /** Where each panel sits inside a preview of size `w` × `h` (the table's layout, under the tab row). */
-export const previewLayout = (w: number, h: number): Readonly<Record<"location" | "notes" | "when" | "weather" | "sound" | "aspects" | "board", Rect>> => {
+export const previewLayout = (w: number, h: number): Readonly<Record<"location" | "notes" | "when" | "weather" | "sound" | "aspects" | "conditions" | "board", Rect>> => {
   const top = HEAD_H + G;
   const rightX = G + LEFT_W + G;
   const rightW = w - rightX - G;
@@ -44,7 +46,8 @@ export const previewLayout = (w: number, h: number): Readonly<Record<"location" 
     when: { x: rightX, y: top, w: WHEN_W, h: STRIP_H },
     weather: { x: rightX + WHEN_W + G, y: top, w: WEATHER_W, h: STRIP_H },
     sound: { x: soundX, y: top, w: w - G - soundX, h: STRIP_H },
-    aspects: { x: rightX, y: aspectY, w: rightW, h: ASPECT_H },
+    aspects: { x: rightX, y: aspectY, w: rightW - CONDITIONS_W - G, h: ASPECT_H },
+    conditions: { x: w - G - CONDITIONS_W, y: aspectY, w: CONDITIONS_W, h: ASPECT_H },
     board: { x: rightX, y: boardY, w: rightW, h: h - boardY - G }
   };
 };
@@ -80,6 +83,9 @@ export const PreparedPanels = ({ scene, w, h }: { scene: PreparedScene; w: numbe
       </Box>
       <Box {...box.aspects} className="lab-aspects-box lab-borderless">
         <AspectRow location={location} />
+      </Box>
+      <Box {...box.conditions} className="lab-aspects-box lab-borderless">
+        <ConditionsPanel location={location} />
       </Box>
       <Box {...box.board} className="lab-borderless">
         <WideBoard w={box.board.w - 12} h={box.board.h - 10} />

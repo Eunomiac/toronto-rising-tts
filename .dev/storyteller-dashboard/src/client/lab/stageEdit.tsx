@@ -20,7 +20,7 @@ import { groupColor, groupLeader, useRosterLayout } from "./labRoster";
 
 /**
  * Editing layers of the wide stage board. Tokens drag with the pointer (they snap only when dropped over a slot,
- * and leave the stage when dropped off it); pack names drag the whole pack; roster NPCs and groups drop in with
+ * and leave the stage when dropped off it); the space around a pack's slots drags the whole pack; roster NPCs and groups drop in with
  * HTML drag and drop. Every edit goes out through `onEdit` / `onPlace`, which queue or send it.
  */
 
@@ -135,9 +135,20 @@ export const farRadii = (pack: StagePack, w: number, h: number): { rx: number; r
   ry: Math.max(...pack.slots.map((slot) => Math.abs(slot.v - pack.center.v))) * h
 });
 
-/** Where a pack's name sits: inside a Far ellipse, under the others. */
-const packLabelPoint = (pack: StagePack, h: number): StagePoint =>
-  pack.far ? { u: pack.center.u, v: pack.center.v + 6 / h } : { u: pack.center.u, v: Math.max(...pack.slots.map((slot) => slot.v)) + 30 / h };
+const PACK_GRAB_PAD = 18;
+
+/** A pack's grab area in pixels: its Far ellipse, or the box around its arc of snaps, padded. */
+const packGrabArea = (pack: StagePack, w: number, h: number): { left: number; top: number; width: number; height: number } => {
+  if (pack.far) {
+    const { rx, ry } = farRadii(pack, w, h);
+    return { left: pack.center.u * w - rx - PACK_GRAB_PAD, top: pack.center.v * h - ry - PACK_GRAB_PAD, width: 2 * (rx + PACK_GRAB_PAD), height: 2 * (ry + PACK_GRAB_PAD) };
+  }
+  const xs = pack.slots.map((slot) => slot.u * w);
+  const ys = pack.slots.map((slot) => slot.v * h);
+  const left = Math.min(...xs) - PACK_GRAB_PAD;
+  const top = Math.min(...ys) - PACK_GRAB_PAD;
+  return { left, top, width: Math.max(...xs) + PACK_GRAB_PAD - left, height: Math.max(...ys) + PACK_GRAB_PAD - top };
+};
 
 type StageLayerProps = {
   readonly w: number;
@@ -215,19 +226,17 @@ export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit
       onDrop={dropFromRoster}
     >
       {packs.map((pack) => {
-        const at = packLabelPoint(pack, h);
-        const dragging = packDrag.drag?.item === pack;
-        const shown = dragging && packDrag.drag ? packDrag.drag.point : at;
+        const area = packGrabArea(pack, w, h);
+        const dragging = packDrag.drag?.item === pack ? packDrag.drag.point : null;
+        const shown = dragging ? { ...area, left: dragging.u * w - area.width / 2, top: dragging.v * h - area.height / 2 } : area;
         return (
           <span
             key={pack.familyId}
-            className={`lab-pack-handle${dragging ? " dragging" : ""}`}
-            style={{ left: shown.u * w, top: shown.v * h }}
-            title="Drag to move this pack's NPCs onto another pack, or off the stage"
+            className={`lab-pack-handle${pack.far ? " far" : ""}${dragging ? " dragging" : ""}`}
+            style={shown}
+            title={`${pack.label}: drag to move this pack's NPCs onto another pack, or off the stage`}
             {...packDrag.handlers(pack)}
-          >
-            {pack.label}
-          </span>
+          />
         );
       })}
       {spots.map((spot) => {

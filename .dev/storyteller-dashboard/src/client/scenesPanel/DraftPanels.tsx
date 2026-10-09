@@ -1,6 +1,6 @@
 import { type ReactElement } from "react";
 import type { LibraryScene } from "../../shared/sceneLibrary";
-import { ambientLabel, AspectRow, LocationPanel, SoundMixer, WeatherPanel, WhenPanel } from "../lab/glance";
+import { ambientLabel, AspectRow, ConditionsPanel, LocationPanel, SoundMixer, WeatherPanel, WhenPanel } from "../lab/glance";
 import { SceneNotes } from "../lab/labNotes";
 import { previewLayout } from "../lab/labPreview";
 import { Box, WideBoard, type LiveBoard } from "../lab/sketch";
@@ -110,7 +110,10 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }:
         <SoundMixer indoors={indoors} sceneAmbience={site?.locationTrack ? ambientLabel(site.locationTrack) : "Silent"} live={draftSoundView(draft)} />
       </Box>
       <Box {...box.aspects} className="lab-aspects-box lab-borderless">
-        {location && <AspectRow location={location} conditions={sceneConditions(slice)} onConditions={(ids) => send({ op: "conditions", ids })} />}
+        {location && <AspectRow location={location} />}
+      </Box>
+      <Box {...box.conditions} className="lab-aspects-box lab-borderless">
+        {location && <ConditionsPanel location={location} conditions={sceneConditions(slice)} onChange={(ids) => send({ op: "conditions", ids })} />}
       </Box>
       <Box {...box.board} className="lab-borderless">
         <WideBoard w={box.board.w - 12} h={box.board.h - 10} live={board} />

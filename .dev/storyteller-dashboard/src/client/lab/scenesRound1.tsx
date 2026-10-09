@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactElement } from "react";
 import {
   AspectRow,
+  ConditionsPanel,
   FLASHBACK_TIME,
   HuntRoller,
   LocationPanel,
@@ -229,10 +230,13 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
       <Box x={stripX} y={mainY} w={stageW} h={aspectH} className="lab-aspects-box lab-borderless">
         <AspectRow location={location} />
       </Box>
+      <Box x={rightX} y={mainY} w={rightW} h={aspectH} className="lab-aspects-box lab-borderless">
+        <ConditionsPanel location={location} />
+      </Box>
       <Box x={stripX} y={stageY} w={stageW} h={stageH} className="lab-borderless">
         <WideBoard w={boardW} h={boardH} />
       </Box>
-      <Box x={rightX} y={mainY} w={rightW} h={rightH - queueH - G} className="roll-box">
+      <Box x={rightX} y={mainY + aspectH + G} w={rightW} h={rightH - queueH - G - aspectH - G} className="roll-box">
         <RollsCell rolls={LAB_ROLLS} send={() => undefined} options={LAB_ROLL_OPTIONS} />
       </Box>
       <Box x={rightX} y={mainY + rightH - queueH} w={rightW} h={queueH} className="lab-queue-box">

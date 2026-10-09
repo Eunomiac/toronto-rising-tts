@@ -3,6 +3,7 @@ import { createApplyQueue } from "../applyQueue";
 import {
   ambientLabel,
   AspectRow,
+  ConditionsPanel,
   HuntRoller,
   LocationPanel,
   PhaseStrip,
@@ -68,6 +69,8 @@ const STAGE_Y = MAIN_Y + ASPECT_H + G;
 const STAGE_H = 1042 - G - STAGE_Y;
 const RIGHT_H = 1042 - G - MAIN_Y;
 const QUEUE_H = 420;
+const ROLLS_Y = MAIN_Y + ASPECT_H + G;
+const ROLLS_H = RIGHT_H - QUEUE_H - G - ASPECT_H - G;
 const HUNT_H = 48;
 const ROSTER_Y = BODY_Y + HUNT_H + G;
 const WHEN_W = 470;
@@ -433,13 +436,18 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
           </Box>
           <Box x={STRIP_X} y={MAIN_Y} w={STAGE_W} h={ASPECT_H} className="lab-aspects-box lab-borderless">
             {location && scene && (
-              <AspectRow location={location} conditions={sceneConditions(scene)} onConditions={(ids) => send({ op: "conditions", ids })} />
+              <AspectRow location={location} />
+            )}
+          </Box>
+          <Box x={RIGHT_X} y={MAIN_Y} w={RIGHT_W} h={ASPECT_H} className="lab-aspects-box lab-borderless">
+            {location && scene && (
+              <ConditionsPanel location={location} conditions={sceneConditions(scene)} onChange={(ids) => send({ op: "conditions", ids })} />
             )}
           </Box>
           <Box x={STRIP_X} y={STAGE_Y} w={STAGE_W} h={STAGE_H} className="lab-borderless">
             {board ? <WideBoard w={STAGE_W - 12} h={STAGE_H - 10} live={board} /> : <Waiting text={waitText} />}
           </Box>
-          <Box x={RIGHT_X} y={MAIN_Y} w={RIGHT_W} h={RIGHT_H - QUEUE_H - G} className="roll-box">
+          <Box x={RIGHT_X} y={ROLLS_Y} w={RIGHT_W} h={ROLLS_H} className="roll-box">
             <CommandStatus pending={commands.pending} error={commands.error} onDismiss={commands.clearError} />
             <CommandStatus pending={rollCommands.pending} error={rollCommands.error} onDismiss={rollCommands.clearError} />
             {deckError && <div className="scenes-live-status error" role="alert">{deckError}</div>}

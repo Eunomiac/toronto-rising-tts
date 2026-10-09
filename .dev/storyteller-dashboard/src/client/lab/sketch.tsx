@@ -685,7 +685,7 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoa
   };
   const openRing = (event: MouseEvent<HTMLDivElement>): void => {
     event.preventDefault();
-    if ((event.target as HTMLElement).closest(".lab-token, .lab-pack-handle, .lab-board-seats, .lab-board-table, .lab-help")) {
+    if ((event.target as HTMLElement).closest(".lab-token, .lab-board-seats, .lab-board-table, .lab-help")) {
       return;
     }
     setRing(canvasPoint(event));
@@ -796,7 +796,7 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoa
       <span className="lab-help-tip">
         {env.scatter
           ? "Drag a PC or NPC into another group to move them there; drag an NPC out of every group to take them off. Drop roster NPCs or a whole group into a circle."
-          : "Drag tokens anywhere; they snap only when dropped over a slot, and leave the stage when dropped off it. Drag a pack's name to move the whole pack. Drop a roster NPC anywhere, or a whole group on a pack (the leader takes the anchor). Double-click to light / darken."}
+          : "Drag tokens anywhere; they snap only when dropped over a slot, and leave the stage when dropped off it. Drag the space around a pack's slots to move the whole pack. Drop a roster NPC anywhere, or a whole group on a pack (the leader takes the anchor). Double-click to light / darken."}
         {" "}Right-click empty stage for placement, Clear Stage{env.scatter ? "" : ", and Reset to Library"}.
       </span>
     </span>

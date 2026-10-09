@@ -281,60 +281,76 @@ export const LocationPanel = ({ location, overridden, onChange, onRelease, readO
 };
 
 /**
- * The scene's conditions: those the District and Site carry are fixed; the Storyteller adds or removes the rest.
- * Without `onChange` (the Lab) the list is local.
+ * The scene's conditions: those the District and Site carry are fixed; the Storyteller picks the rest in a grid
+ * opened from the header (Apply sends the whole set, Cancel drops the edit). Without `onChange` (the Lab) the
+ * list is local.
  */
-const ConditionChips = ({ location, scene, onChange }: {
+export const ConditionsPanel = ({ location, conditions = [], onChange }: {
   location: LabLocation;
-  scene: readonly string[];
+  conditions?: readonly string[];
   onChange?: (ids: readonly string[]) => void;
 }): ReactElement => {
   const { catalogs } = useSceneCatalogs();
-  const [labIds, setLabIds] = useState<readonly string[]>(scene);
-  const ids = onChange ? scene : labIds;
+  const [labIds, setLabIds] = useState<readonly string[]>(conditions);
+  const [draft, setDraft] = useState<readonly string[] | null>(null);
+  const ids = onChange ? conditions : labIds;
   const change = onChange ?? setLabIds;
   const nameOf = (id: string): string => catalogs?.conditions.find((condition) => condition.id === id)?.displayName ?? id;
   const hosted = [
     ...(catalogs?.districts.find((district) => district.key === location.districtKey)?.conditions ?? []),
     ...(catalogs?.sites.find((site) => site.key === location.siteKey)?.conditions ?? [])
   ];
-  const addable = (catalogs?.conditions ?? []).filter((condition) => !ids.includes(condition.id) && !hosted.includes(condition.id));
   return (
     <div className="lab-conditions">
-      <span className="lab-conditions-head">Conditions</span>
+      <button type="button" className="lab-conditions-head" title="Pick the scene's conditions" onClick={() => setDraft(ids)}>Conditions</button>
       {hosted.map((id) => (
         <span key={`hosted:${id}`} className="lab-condition hosted" title="Carried by the District or Site">{nameOf(id)}</span>
       ))}
-      {ids.map((id) => (
-        <span key={id} className="lab-condition">
-          {nameOf(id)}
-          <button type="button" title="Remove from the scene" onClick={() => change(ids.filter((other) => other !== id))}>×</button>
-        </span>
-      ))}
-      {addable.length > 0 && (
-        <select
-          className="lab-condition-add"
-          value=""
-          onChange={(event) => {
-            if (event.target.value) {
-              change([...ids, event.target.value]);
-            }
-          }}
-        >
-          <option value="">+ condition</option>
-          {addable.map((condition) => <option key={condition.id} value={condition.id}>{condition.displayName}</option>)}
-        </select>
+      {ids.map((id) => <span key={id} className="lab-condition">{nameOf(id)}</span>)}
+      {draft && (
+        <Overlay onClose={() => setDraft(null)}>
+          <div className="lab-modal lab-conditions-modal">
+            <span className="lab-modal-title">Scene conditions</span>
+            <div className="lab-conditions-grid">
+              {(catalogs?.conditions ?? []).map((condition) => {
+                const fixed = hosted.includes(condition.id);
+                const on = fixed || draft.includes(condition.id);
+                return (
+                  <button
+                    key={condition.id}
+                    type="button"
+                    className={`lab-condition-pick${on ? " on" : ""}${fixed ? " hosted" : ""}`}
+                    disabled={fixed}
+                    title={fixed ? "Carried by the District or Site" : undefined}
+                    onClick={() => setDraft(on ? draft.filter((id) => id !== condition.id) : [...draft, condition.id])}
+                  >
+                    {condition.displayName}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="lab-modal-actions">
+              <button type="button" className="lab-btn" onClick={() => setDraft(null)}>Cancel</button>
+              <button
+                type="button"
+                className="lab-btn primary"
+                onClick={() => {
+                  change(draft);
+                  setDraft(null);
+                }}
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+        </Overlay>
       )}
     </div>
   );
 };
 
-/** The three District aspects and the Site aspect, always readable, then the scene's conditions. */
-export const AspectRow = ({ location, conditions = [], onConditions }: {
-  location: LabLocation;
-  conditions?: readonly string[];
-  onConditions?: (ids: readonly string[]) => void;
-}): ReactElement => {
+/** The three District aspects and the Site aspect, always readable. */
+export const AspectRow = ({ location }: { location: LabLocation }): ReactElement => {
   const { data, error } = useChronicleLocations();
   if (error || !data) {
     return <p className="lab-note">{error ?? "Reading aspects from the chronicle sheet…"}</p>;
@@ -355,7 +371,6 @@ export const AspectRow = ({ location, conditions = [], onConditions }: {
           <span className="lab-aspect-text">{aspect.text}</span>
         </div>
       ))}
-      <ConditionChips location={location} scene={conditions} {...(onConditions ? { onChange: onConditions } : {})} />
     </div>
   );
 };
@@ -411,6 +426,23 @@ const groupLabelWidth = (text: string): number => {
   return Math.ceil(high) + 2;
 };
 
+/**
+ * Drags show a copy of the dragged element held off-screen. Chrome's own drag picture of an element inside a
+ * scrolled list can take in whatever lies under it (the categories below), so it is not used.
+ */
+const setDragImage = (event: DragEvent<HTMLElement>): void => {
+  const source = event.currentTarget;
+  const holder = document.createElement("div");
+  holder.className = "lab-canvas lab-drag-ghost";
+  const copy = source.cloneNode(true) as HTMLElement;
+  copy.style.width = `${source.offsetWidth}px`;
+  holder.append(copy);
+  document.body.append(holder);
+  const rect = source.getBoundingClientRect();
+  event.dataTransfer.setDragImage(copy, event.clientX - rect.left, event.clientY - rect.top);
+  window.setTimeout(() => holder.remove(), 0);
+};
+
 /** One roster NPC, draggable onto the stage. */
 const RosterToken = ({ characterKey, name, className }: { characterKey: string; name: string; className: string }): ReactElement => (
   <span
@@ -418,8 +450,10 @@ const RosterToken = ({ characterKey, name, className }: { characterKey: string; 
     title={`${name}: drag onto the stage`}
     draggable
     onDragStart={(event) => {
+      event.stopPropagation();
       event.dataTransfer.setData(NPC_DRAG_TYPE, characterKey);
       event.dataTransfer.effectAllowed = "move";
+      setDragImage(event);
     }}
   >
     <Headshot className={className} characterKey={characterKey} />
@@ -520,22 +554,6 @@ const GenericRoster = ({ query }: { query: string }): ReactElement => {
   );
 };
 
-/**
- * Drags show a copy of the group cell held off-screen. Chrome's own drag picture of an element inside a scrolled
- * list can take in whatever lies under it (the categories below), so it is not used.
- */
-const setGroupDragImage = (event: DragEvent<HTMLElement>): void => {
-  const source = event.currentTarget;
-  const holder = document.createElement("div");
-  holder.className = "lab-canvas lab-drag-ghost";
-  const copy = source.cloneNode(true) as HTMLElement;
-  copy.style.width = `${source.offsetWidth}px`;
-  holder.append(copy);
-  document.body.append(holder);
-  const rect = source.getBoundingClientRect();
-  event.dataTransfer.setDragImage(copy, event.clientX - rect.left, event.clientY - rect.top);
-  window.setTimeout(() => holder.remove(), 0);
-};
 const NEW_CATEGORY_COLOR = "#9c7bd6";
 const UNSORTED_GROUP_COLOR = "#7a7a86";
 
@@ -717,7 +735,7 @@ export const MasonryRoster = (): ReactElement => {
             draggable
             onDragStart={(event) => {
               event.dataTransfer.setData(GROUP_DRAG_TYPE, group.key);
-              setGroupDragImage(event);
+              setDragImage(event);
               setDragging(true);
             }}
             onDragEnd={() => setDragging(false)}

@@ -592,26 +592,29 @@ $lab-pin: #f5b13d;
   }
 }
 
+// A pack's grab area (its snaps, padded); tokens sit above it, so they still drag on their own.
 .lab-pack-handle {
   position: absolute;
-  z-index: 2;
-  transform: translate(-50%, -50%);
-  padding: 0 4px;
-  font-size: 17px;
-  font-weight: 700;
-  white-space: nowrap;
-  color: #8a826f;
+  z-index: 0;
+  border: 1px dashed transparent;
+  border-radius: 14px;
   cursor: grab;
   touch-action: none;
   user-select: none;
 
+  &.far {
+    border-radius: 50%;
+  }
+
   &:hover {
-    color: #c9bfa8;
+    border-color: rgb(201 191 168 / 35%);
+    background: rgb(201 191 168 / 4%);
   }
 
   &.dragging {
     z-index: 20;
-    color: #f2c44e;
+    border-color: #f2c44e;
+    background: rgb(242 196 78 / 8%);
     cursor: grabbing;
   }
 }
@@ -699,7 +702,7 @@ $lab-pin: #f5b13d;
     margin-right: 6px;
 
     &.health {
-      fill: #ece6da;
+      fill: #d0242c;
     }
 
     &.willpower {
@@ -707,7 +710,7 @@ $lab-pin: #f5b13d;
     }
 
     &.humanity {
-      fill: #b48ae8;
+      fill: #f3e9c6;
     }
 
     &.hunger {

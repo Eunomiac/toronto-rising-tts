@@ -489,7 +489,7 @@ $lab-live: #4caf6a;
 
 .lab-aspects {
   display: grid;
-  grid-template-columns: repeat(4, 1fr) minmax(150px, 0.7fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 4px;
   height: 100%;
 }
@@ -507,7 +507,8 @@ $lab-live: #4caf6a;
 
   &-head {
     width: 100%;
-    padding-bottom: 2px;
+    padding: 0 0 2px;
+    border: 0;
     border-bottom: 1px solid rgb(255 255 255 / 40%);
     font-family: Georgia, "Times New Roman", serif;
     font-size: 15px;
@@ -515,7 +516,56 @@ $lab-live: #4caf6a;
     font-variant: small-caps;
     text-align: center;
     color: #f3e6cf;
+    background: none;
+    cursor: pointer;
+
+    &:hover {
+      color: #f2c44e;
+    }
   }
+
+  &-modal {
+    width: 760px;
+  }
+
+  &-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 4px;
+    max-height: 600px;
+    overflow-y: auto;
+  }
+}
+
+.lab-condition-pick {
+  padding: 4px 8px;
+  border: 1px solid #44444f;
+  border-radius: 9px;
+  font-size: 12px;
+  text-align: left;
+  color: #c9c9d4;
+  background: #202027;
+  cursor: pointer;
+
+  &.on {
+    border-color: #8a6a3a;
+    color: #f1e2c4;
+    background: #3a2a16;
+  }
+
+  &.hosted {
+    border-color: #555;
+    color: #c8c2b4;
+    background: #1d1d1d;
+    cursor: default;
+  }
+}
+
+.lab-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 6px;
 }
 
 .lab-condition {
@@ -535,20 +585,6 @@ $lab-live: #4caf6a;
     background: #1d1d1d;
   }
 
-  button {
-    padding: 0;
-    border: 0;
-    font-size: 13px;
-    line-height: 1;
-    color: #d98a8a;
-    background: none;
-    cursor: pointer;
-  }
-
-  &-add {
-    max-width: 100%;
-    font-size: 12px;
-  }
 }
 
 .lab-aspect {
