@@ -231,7 +231,7 @@ export type StLiveRoll = {
 export type RollsSlice = {
   readonly pcs: readonly PcRoll[];
   readonly storyteller: { readonly canInitiate: boolean; readonly slots: readonly StRollSlot[]; readonly live?: StLiveRoll };
-  /** NPC keys whose control token is tagged Werewolf: every roll they start is a Werewolf roll. */
+  /** NPC keys flagged Werewolf in the NPC data: every roll they start is a Werewolf roll. */
   readonly werewolves: readonly string[];
   /** PC seats with an Oblivion-Rouse dice bag. */
   readonly oblivionSeats: readonly string[];

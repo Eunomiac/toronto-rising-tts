@@ -22,8 +22,8 @@
 
   Storyteller (NPC) rolls on the Black seat:
     npcInitiate   label, rollType, characterKey?
-                                        start an NPC roll in a free drawer; Werewolf-tagged NPCs
-                                        always roll Werewolf (as when their token drops on a bag)
+                                        start an NPC roll in a free drawer; Werewolf NPCs
+                                        (`werewolf = true` in lib/npcs_data) always roll Werewolf
     npcPool       kind, count           `hunger` (Rage for Werewolf) or `normal` (Werewolf dice) count
     npcDifficulty value                 difficulty 0–10
     npcRoll       secret?               ROLL (secret = dice hidden from players)
@@ -66,7 +66,7 @@ local OPTION_ROLL_TYPES = {
 
 local INTENSITIES = { none = true, fleeting = true, intense = true, acute = true }
 
---- Werewolf-tagged NPC keys, read from the control tokens once per load (tags are authored in the save).
+--- NPC keys flagged `werewolf = true` in lib/npcs_data, built once.
 --- @type table<string, boolean>|nil
 local werewolfCache = nil
 
@@ -121,14 +121,11 @@ function Rolls.werewolfKeys()
   if werewolfCache ~= nil then
     return werewolfCache
   end
-  local Tokens = require("core.npc_gameboard_tokens")
+  local NPC_DATA = require("lib.npcs_data")
   local keys = {}
-  for _, obj in ipairs(getObjectsWithTag("Werewolf") or {}) do
-    if Tokens.isNpcControlToken(obj) then
-      local key = Tokens.resolveTokenCharacterKey(obj)
-      if type(key) == "string" and key ~= "" then
-        keys[key] = true
-      end
+  for key, def in pairs(NPC_DATA.characters) do
+    if def.werewolf == true then
+      keys[key] = true
     end
   end
   werewolfCache = keys

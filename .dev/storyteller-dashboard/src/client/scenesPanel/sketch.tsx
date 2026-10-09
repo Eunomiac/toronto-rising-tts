@@ -534,7 +534,7 @@ export type LiveBoard = {
 
 /** What a character's right-click roll ring needs to pick its roll types. */
 export type RollRingData = {
-  /** NPC keys whose control token is tagged Werewolf. */
+  /** NPC keys flagged Werewolf in the NPC data. */
   readonly werewolves: readonly string[];
   /** PC seats with an Oblivion-Rouse dice bag. */
   readonly oblivionSeats: readonly string[];

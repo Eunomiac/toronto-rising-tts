@@ -597,7 +597,7 @@ TTS also exposes **`UI.setAttributes`** natively; use **`U.setAttributes`** when
 | :--------- | :------------- | :--------------- |
 | `Rolls.apply(jsonText)` | Runs one roll op or an array of ops (list at the top of the file) and marks the `rolls` slice; returns `{ ok, error? }` JSON | `GlobalDashboardRollsApply` |
 | `Rolls.optionsJson(color)` | The TTS roll options modal's starting values for one PC seat, as JSON | `GlobalDashboardRollOptions` |
-| `Rolls.werewolfKeys()` / `Rolls.oblivionSeats()` | Werewolf-tagged NPC keys (read from control tokens once per load) / PC seats with an Oblivion-Rouse bag | `rolls` slice builder |
+| `Rolls.werewolfKeys()` / `Rolls.oblivionSeats()` | Werewolf NPC keys (`werewolf = true` in `lib/npcs_data`) / PC seats with an Oblivion-Rouse bag | `rolls` slice builder |
 
 ---
 

@@ -62,7 +62,7 @@ There is **no subscribe handshake, session id, sequence number or per-frame batc
 | `clock` | world flush | clock **anchor** (§ 3b) | same; read through `clockNow` |
 | `soundscape` | world flush | music mode/mood/enabled, location bed, featured track, session intro, per-lane volumes | same |
 | `seats` | world flush | PC and NPC seat rows (table slot, `isPresent`, PC `absentFromSession`), stage NPCs with board position, spotlight order and front index | same |
-| `rolls` | world flush | each PC's live or held roll, the Storyteller drawers and live NPC roll, Werewolf-tagged NPCs, Oblivion-Rouse seats ([Listening to TTS](Listening%20to%20TTS.md) § 2) | Scenes tab Rolls cell redraws |
+| `rolls` | world flush | each PC's live or held roll, the Storyteller drawers and live NPC roll, Werewolf NPCs, Oblivion-Rouse seats ([Listening to TTS](Listening%20to%20TTS.md) § 2) | Scenes tab Rolls cell redraws |
 
 Envelope from Lua: `{ type = "dashboard", v = 1, topic = "...", color?, json? }`. The server parses `json` into `data`, stamps `at` (server receive time, epoch ms) and forwards `{ topic, color?, data?, at }` as one SSE `data:` line.
 

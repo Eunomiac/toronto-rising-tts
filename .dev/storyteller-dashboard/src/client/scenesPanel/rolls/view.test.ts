@@ -40,7 +40,7 @@ describe("ringChoices", () => {
     expect(ringChoices({ werewolf: false, oblivion: false, endPhase: false }).map((choice) => choice.rollType)).not.toContain("rouseOblivion");
   });
 
-  it("gives Werewolf-tagged NPCs only the Werewolf roll", () => {
+  it("gives Werewolf NPCs only the Werewolf roll", () => {
     expect(ringChoices({ werewolf: true, oblivion: true, endPhase: false })).toEqual([{ rollType: "werewolf", label: "Werewolf" }]);
   });
 });

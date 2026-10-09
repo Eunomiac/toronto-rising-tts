@@ -66,7 +66,7 @@ export type RingChoice = { readonly rollType: string; readonly label: string };
 /**
  * Roll types on a character's right-click ring: one per dice bag (Normal → Standard, Hunger → Discipline,
  * Werewolf bag → Willpower, Rage → Frenzy, Rouse, Oblivion-Rouse → Oblivion Rouse, or Remorse in the End phase).
- * A Werewolf-tagged NPC only rolls Werewolf; a PC without an Oblivion-Rouse bag has no Oblivion choice.
+ * A Werewolf NPC only rolls Werewolf; a PC without an Oblivion-Rouse bag has no Oblivion choice.
  */
 export const ringChoices = (opts: { readonly werewolf: boolean; readonly oblivion: boolean; readonly endPhase: boolean }): readonly RingChoice[] => {
   if (opts.werewolf) {
