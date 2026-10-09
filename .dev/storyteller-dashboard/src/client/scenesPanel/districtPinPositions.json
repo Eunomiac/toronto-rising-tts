@@ -1,0 +1,223 @@
+
+{
+  "mapWidth": 800,
+  "mapHeight": 1000,
+  "pins": [
+    {
+      "key": "Bennington",
+      "name": "Bennington Heights",
+      "left": 505,
+      "top": 8
+    },
+    {
+      "key": "Cabbagetown",
+      "name": "Cabbagetown",
+      "left": 554,
+      "top": 449
+    },
+    {
+      "key": "CentreIsland",
+      "name": "Centre Island",
+      "left": 296.3,
+      "top": 798
+    },
+    {
+      "key": "Chinatown",
+      "name": "Chinatown",
+      "left": 184,
+      "top": 614
+    },
+    {
+      "key": "Corktown",
+      "name": "Corktown",
+      "left": 517,
+      "top": 521
+    },
+    {
+      "key": "DeerPark",
+      "name": "Deer Park",
+      "left": 291.3,
+      "top": 23
+    },
+    {
+      "key": "DupontByTheCastle",
+      "name": "Dupont By The Castle",
+      "left": 163,
+      "top": 176
+    },
+    {
+      "key": "HarbordVillage",
+      "name": "Harbord Village",
+      "left": 231,
+      "top": 446
+    },
+    {
+      "key": "Humewood",
+      "name": "Humewood",
+      "left": 66.3,
+      "top": 77
+    },
+    {
+      "key": "LakeOntario",
+      "name": "Lake Ontario",
+      "left": 554,
+      "top": 766
+    },
+    {
+      "key": "LibertyVillage",
+      "name": "Liberty Village",
+      "left": 46,
+      "top": 684
+    },
+    {
+      "key": "LittleItaly",
+      "name": "Little Italy",
+      "left": 143.3,
+      "top": 450
+    },
+    {
+      "key": "LittlePortugal",
+      "name": "Little Portugal",
+      "left": 11,
+      "top": 476
+    },
+    {
+      "key": "PATH",
+      "name": "P.A.T.H.",
+      "left": 50,
+      "top": 876
+    },
+    {
+      "key": "RegentPark",
+      "name": "Regent Park",
+      "left": 718,
+      "top": 339
+    },
+    {
+      "key": "Riverdale",
+      "name": "Riverdale",
+      "left": 565,
+      "top": 348
+    },
+    {
+      "key": "Rosedale",
+      "name": "Rosedale",
+      "left": 481,
+      "top": 105
+    },
+    {
+      "key": "StJamesTown",
+      "name": "St. James Town",
+      "left": 462.3,
+      "top": 210
+    },
+    {
+      "key": "Summerhill",
+      "name": "Summerhill",
+      "left": 302,
+      "top": 150
+    },
+    {
+      "key": "Annex",
+      "name": "The Annex",
+      "left": 203,
+      "top": 308
+    },
+    {
+      "key": "BayStFinancial",
+      "name": "The Bay St. Financial District",
+      "left": 406.3,
+      "top": 554
+    },
+    {
+      "key": "Danforth",
+      "name": "The Danforth",
+      "left": 700,
+      "top": 145
+    },
+    {
+      "key": "Discovery",
+      "name": "The Discovery District",
+      "left": 277,
+      "top": 385
+    },
+    {
+      "key": "DistilleryDist",
+      "name": "The Distillery District",
+      "left": 679,
+      "top": 600
+    },
+    {
+      "key": "DonRavine",
+      "name": "The Don River Ravine",
+      "left": 560,
+      "top": 116
+    },
+    {
+      "key": "GayVillage",
+      "name": "The Gay Village",
+      "left": 442,
+      "top": 326
+    },
+    {
+      "key": "Sewers",
+      "name": "The Sewers",
+      "left": 41.3,
+      "top": 917
+    },
+    {
+      "key": "Streets",
+      "name": "The Streets",
+      "left": 170,
+      "top": 875
+    },
+    {
+      "key": "Subway",
+      "name": "The Subway",
+      "left": 169,
+      "top": 917
+    },
+    {
+      "key": "Waterfront",
+      "name": "The Waterfront",
+      "left": 373.3,
+      "top": 629
+    },
+    {
+      "key": "YongeDundasHospital",
+      "name": "The Yonge & Dundas Hospital District",
+      "left": 340,
+      "top": 440
+    },
+    {
+      "key": "YongeBloorMuseum",
+      "name": "The Young & Bloor Museum District",
+      "left": 317,
+      "top": 322
+    },
+    {
+      "key": "WestQueenWest",
+      "name": "West Queen West",
+      "left": 319.3,
+      "top": 508
+    },
+    {
+      "key": "Wychwood",
+      "name": "Wychwood",
+      "left": 52,
+      "top": 264
+    },
+    {
+      "key": "YongeStreet",
+      "name": "Yonge Street",
+      "left": 444,
+      "top": 489
+    },
+    {
+      "key": "Yorkville",
+      "name": "Yorkville",
+      "left": 296.3,
+      "top": 273
+    }
+  ]
+}

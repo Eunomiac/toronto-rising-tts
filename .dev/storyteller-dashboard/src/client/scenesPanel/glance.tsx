@@ -11,6 +11,7 @@ import {
   type WeatherCalendar
 } from "./chronicleSheets";
 import { SEAT_ACCENT } from "../pcSheet/layout";
+import { DISTRICT_MAP_HEIGHT, DISTRICT_MAP_SRC, DISTRICT_MAP_WIDTH, districtPin } from "./districtMap";
 import { Icon, type IconName } from "./icons";
 import { groupColor, groupLeader, setRosterLayout, useRosterLayout, useSceneCatalogs, type RosterCategory } from "./roster";
 import { SceneNotes } from "./sceneNotes";
@@ -160,49 +161,98 @@ const ResonanceTags = ({ list }: { list: readonly Resonance[] }): ReactElement =
   </span>
 );
 
-const LocationPicker = ({ data, location, onPick, onClose, heading = "Change location", confirm = "Use this location" }: {
+/**
+ * Two steps: click a District on the Toronto map, then pick a Site from a grid — that District's unique sites
+ * first, then the generic sites. Unique sites belonging to other Districts are left out. Picking a Site is the
+ * confirmation.
+ */
+const LocationPicker = ({ data, location, onPick, onClose, heading = "Change location" }: {
   data: ChronicleLocations;
   location: LabLocation;
   onPick: (next: LabLocation) => void;
   onClose: () => void;
   heading?: string;
-  confirm?: string;
 }): ReactElement => {
-  const { catalogs } = useSceneCatalogs();
-  const [districtKey, setDistrictKey] = useState(location.districtKey);
-  const [siteKey, setSiteKey] = useState(location.siteKey);
-  const pickSite = (key: string): void => {
-    setSiteKey(key);
-    const home = catalogs?.sites.find((entry) => entry.key === key)?.districtKey;
-    if (home) {
-      setDistrictKey(home);
-    }
+  const { catalogs, error } = useSceneCatalogs();
+  const [districtKey, setDistrictKey] = useState<string | null>(null);
+  const unpinned = data.districts.filter((district) => !districtPin(district.key));
+  if (districtKey === null) {
+    return (
+      <Overlay onClose={onClose}>
+        <div className="lab-district-map" style={{ width: DISTRICT_MAP_WIDTH, height: DISTRICT_MAP_HEIGHT }}>
+          <img src={DISTRICT_MAP_SRC} alt="Map of Toronto" width={DISTRICT_MAP_WIDTH} height={DISTRICT_MAP_HEIGHT} draggable={false} />
+          {data.districts.map((district) => {
+            const pin = districtPin(district.key);
+            return (
+              pin && (
+                <button
+                  key={district.key}
+                  type="button"
+                  className={`lab-district-pin${district.key === location.districtKey ? " active" : ""}`}
+                  style={{ left: pin.left, top: pin.top }}
+                  onClick={() => setDistrictKey(district.key)}
+                >
+                  {district.name}
+                </button>
+              )
+            );
+          })}
+          <div className="lab-district-map-caption">
+            <span className="lab-modal-title">{heading}</span>
+            <span className="lab-note">Click a District</span>
+            {unpinned.length > 0 && <span className="lab-note">Not on the map: {unpinned.map((district) => district.name).join(", ")}</span>}
+            <button type="button" className="lab-btn" onClick={onClose}>Cancel</button>
+          </div>
+        </div>
+      </Overlay>
+    );
+  }
+  const district = data.districts.find((entry) => entry.key === districtKey);
+  const homeOf = new Map((catalogs?.sites ?? []).map((site) => [site.key, site.districtKey]));
+  const unique = data.sites.filter((site) => site.unique && homeOf.get(site.key) === districtKey);
+  const generic = data.sites.filter((site) => !site.unique);
+  const labelOf = (site: SheetSite): string => (site.subtitle ? `${site.title}|${site.subtitle}` : site.title);
+  const variants = new Map<string, readonly SheetSite[]>();
+  for (const site of generic) {
+    variants.set(labelOf(site), [...(variants.get(labelOf(site)) ?? []), site]);
+  }
+  const siteButton = (site: SheetSite): ReactElement => {
+    const twins = variants.get(labelOf(site)) ?? [];
+    return (
+      <button
+        key={site.key}
+        type="button"
+        className={`lab-site-pick${site.unique ? " unique" : ""}${districtKey === location.districtKey && site.key === location.siteKey ? " selected" : ""}`}
+        title={site.key}
+        onClick={() => onPick({ districtKey, siteKey: site.key })}
+      >
+        {site.title}
+        {(site.subtitle || twins.length > 1) && (
+          <span className="lab-site-pick-sub">
+            {[site.subtitle, twins.length > 1 ? `variant ${twins.indexOf(site) + 1}` : ""].filter(Boolean).join(" · ")}
+          </span>
+        )}
+      </button>
+    );
   };
   return (
     <Overlay onClose={onClose}>
-      <div className="lab-modal lab-location-modal">
-        <span className="lab-modal-title">{heading}</span>
-        <div className="lab-location-cols">
-          <label>
-            District
-            <select size={16} className="lab-select tall" value={districtKey} onChange={(event) => setDistrictKey(event.target.value)}>
-              {data.districts.map((district) => <option key={district.key} value={district.key}>{district.name}</option>)}
-            </select>
-          </label>
-          <label>
-            Site <span className="lab-note">(a unique site also selects its District)</span>
-            <select size={16} className="lab-select tall" value={siteKey} onChange={(event) => pickSite(event.target.value)}>
-              <optgroup label="Unique sites">
-                {data.sites.filter((site) => site.unique).map((site) => <option key={site.key} value={site.key}>{siteLabel(site)}</option>)}
-              </optgroup>
-              <optgroup label="Generic sites">
-                {data.sites.filter((site) => !site.unique).map((site) => <option key={site.key} value={site.key}>{siteLabel(site)}</option>)}
-              </optgroup>
-            </select>
-          </label>
-        </div>
+      <div className="lab-modal lab-site-modal">
         <div className="lab-row">
-          <button type="button" className="lab-btn primary" onClick={() => onPick({ districtKey, siteKey })}>{confirm}</button>
+          <button type="button" className="lab-btn" onClick={() => setDistrictKey(null)}>◂ Map</button>
+          <span className="lab-modal-title">{district?.name ?? districtKey} — choose a Site</span>
+        </div>
+        {error && <p className="lab-note">{error}</p>}
+        {!catalogs && !error && <p className="lab-note">Loading which unique sites belong to this District…</p>}
+        {unique.length > 0 && (
+          <>
+            <span className="lab-site-heading">Unique to {district?.name ?? districtKey}</span>
+            <div className="lab-site-grid">{unique.map(siteButton)}</div>
+          </>
+        )}
+        <span className="lab-site-heading">Generic sites</span>
+        <div className="lab-site-grid">{generic.map(siteButton)}</div>
+        <div className="lab-row">
           <button type="button" className="lab-btn" onClick={onClose}>Cancel</button>
         </div>
       </div>
@@ -2862,7 +2912,6 @@ const SceneModal = ({ library, actions, scenes, onClose, onPlay, onEdit, onPrepa
         data={data}
         location={scenes.current ? library.find((entry) => entry.key === scenes.current?.key)?.location ?? SCENE_LOCATION : SCENE_LOCATION}
         heading="Where does the new scene take place?"
-        confirm="Prepare this scene"
         onPick={(location) => {
           const found = resolveLocation(data, location);
           if (typeof found !== "string") {

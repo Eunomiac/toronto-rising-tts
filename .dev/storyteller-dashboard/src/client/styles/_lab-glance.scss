@@ -463,27 +463,113 @@ $lab-live: #4caf6a;
   }
 }
 
-.lab-location-modal {
-  width: 760px;
+/* District map: invisible hotspots over the printed district labels, lit on hover; the current one outlined. */
+.lab-district-map {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid #5a4630;
+  background: #000;
 
-  label {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    font-size: 12px;
-    font-weight: 700;
+  img {
+    display: block;
+    pointer-events: none;
+    user-select: none;
   }
 }
 
-.lab-location-cols {
-  display: grid;
-  grid-template-columns: 1fr 1.4fr;
-  gap: 14px;
+.lab-district-pin {
+  position: absolute;
+  max-width: 122px;
+  padding: 3px 6px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.15;
+  color: transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+
+  &:hover,
+  &:focus-visible {
+    background: rgb(232 197 107 / 42%);
+  }
+
+  &.active {
+    border-color: #e8c56b;
+  }
 }
 
-.lab-select.tall {
-  width: 100%;
+.lab-district-map-caption {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  max-width: 320px;
+  text-align: right;
+}
+
+.lab-site-modal {
+  width: 1100px;
+  max-height: 960px;
+  overflow-y: auto;
+}
+
+.lab-site-heading {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #cb995c;
+}
+
+.lab-site-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+  gap: 6px;
+}
+
+.lab-site-pick {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 44px;
+  padding: 4px 8px;
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
   font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: left;
+  color: #e9e2d4;
+  background: #1b1b1b;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #cb995c;
+  }
+
+  &.unique {
+    background: #2a1f14;
+  }
+
+  &.selected {
+    border-color: #e8c56b;
+    box-shadow: inset 0 0 0 1px #e8c56b;
+  }
+}
+
+.lab-site-pick-sub {
+  font-size: 11px;
+  font-weight: 500;
+  font-style: italic;
+  color: #b9b1a3;
 }
 
 /* ---------- aspects row above the stage ---------- */
