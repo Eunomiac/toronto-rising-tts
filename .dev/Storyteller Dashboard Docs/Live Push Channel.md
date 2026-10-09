@@ -62,12 +62,13 @@ There is **no subscribe handshake, session id, sequence number or per-frame batc
 | `clock` | world flush | clock **anchor** (§ 3b) | same; read through `clockNow` |
 | `soundscape` | world flush | music mode/mood/enabled, location bed, featured track, session intro, per-lane volumes | same |
 | `seats` | world flush | PC and NPC seat rows (table slot, `isPresent`, PC `absentFromSession`), stage NPCs with board position, spotlight order and front index | same |
+| `rolls` | world flush | each PC's live or held roll, the Storyteller drawers and live NPC roll, Werewolf-tagged NPCs, Oblivion-Rouse seats ([Listening to TTS](Listening%20to%20TTS.md) § 2) | Scenes tab Rolls cell redraws |
 
 Envelope from Lua: `{ type = "dashboard", v = 1, topic = "...", color?, json? }`. The server parses `json` into `data`, stamps `at` (server receive time, epoch ms) and forwards `{ topic, color?, data?, at }` as one SSE `data:` line.
 
 ### 3a. World topics — coalesced flush
 
-The five world topics share one mechanism in `dashboard/push.ttslua`:
+The six world topics share one mechanism in `dashboard/push.ttslua`:
 
 - `DashPush.markWorldDirty({ slice = true, … })` only records the slice names (O(1)). The first mark schedules one `U.await` flush **0.25 s** later, so a burst of syncs (scene Apply, phase change) sends each slice at most once.
 - The flush builds each dirty slice (`W.build`), encodes it, and skips it when the string equals the last one sent. Each slice reports `DashPush.world` with `slice`, `outcome` (`sent` / `skipped`) and `bytes` to Trace Sync.
@@ -82,6 +83,9 @@ The five world topics share one mechanism in `dashboard/push.ttslua`:
 | `Phases.freezeClock` | clock |
 | `syncSoundscapeControls` (Sound panel repaint, including volume sliders) | soundscape |
 | `Scenes.applyActiveSceneSoundscapeFromSession` | soundscape + scene |
+| Global `onRollStateChanged` (every roll controller state change) | rolls |
+| Storyteller drawer save (`saveRoot` in `core/storyteller_rolls.ttslua`) | rolls |
+| Each dashboard roll command (`Rolls.apply`) | rolls |
 
 Not pushed: Scenes library row selection, pickers and other Storyteller-panel-only UI state, the scene library contents (fetch on demand), and NPC records beyond seat/stage placement.
 
@@ -121,7 +125,3 @@ TTS does not stream the ticking clock. The `clock` slice is an anchor: `scene`, 
 4. Edit a project in TTS (Projects panel). Page 5 on the dashboard refetches.
 5. Close the dashboard server and play a few minutes. TTS should show no hitch while nothing listens on port 39998 (not yet confirmed in a live session).
 6. Advance the Play subphase, apply a clock change, Apply on the control board, and drag a Sound volume slider. Trace Sync shows `DashPush.world` rows (one `sent` per changed slice per burst), and `http://127.0.0.1:8788/api/tts/cache` shows the matching `phase` / `clock` / `seats` / `soundscape` entries.
-
-## 7. Future topics (not built)
-
-A `roll` event feed. It would follow § 5: one Lua call site in the owning announcer or reconciler, a short entry in § 3.

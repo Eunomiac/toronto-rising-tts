@@ -252,11 +252,26 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 3. **Off the stage:** drag a token below the stage (onto the seat row) or outside the drawing. The NPC should leave the stage in TTS. If they hold a seat at the table, their seat should light back up.
 4. **Seated NPC onto the stage:** open the roster on the left, find an NPC who is sitting at the table, and drag their headshot onto the stage. Their seat should go dark and their figurine should appear on the stage. Now right-click their seat on the dashboard and make them present again: their stage figurine should leave the stage and the seat should light up.
 5. **Group spread:** drag a whole group from the roster onto a pack (for example Far Left). The group's leader should stand on the pack's middle slot and the rest spread out beside them; anyone already on that pack should step over, unlit, to the nearest free spots.
-6. **Pack move:** drag a pack's name (for example **Mid Left**) onto another pack. Everyone on the first pack should move across together.
+6. **Pack move:** grab the empty space around a pack's slot circles (a dashed outline shows when you hover it) and drop it on another pack. Everyone on the first pack should move across together.
 7. **Queued moves together:** click the light at the bottom right to switch to Queued mode. Move three or four tokens; they move on the drawing and appear in the queue list. Press **Send**: all the figurines should glide at the same time.
 8. **Clear and Reset:** right-click empty stage. **Clear Stage** (click it twice) should take everyone off the stage and remove any generic NPCs. **Reset to Library** should put the stage back the way the scene's library row has it.
 9. **Scatter:** right-click empty stage and choose **Placement** to switch to Scatter. Six group circles appear. Drag a PC or an NPC from one circle into another: in TTS they should move to that group. Drag an NPC out of every circle: they should leave the stage. Switch Placement back afterwards.
 10. **Generic NPCs:** hover the roster on the left and press **Generic**. Find a figurine in **Add from the catalog**, press **+ Add**, type a name and press **Add**. A generic NPC should spawn in TTS and appear under **In this scene**; drag it onto the stage like anyone else.
+
+#### TOR-686 — Run every Storyteller roll from the dashboard
+
+**Context:** The Rolls column on the right of the dashboard's Scenes tab (under the new Conditions box) now does what the in-game Storyteller roll dashboard and the Storyteller roll pop-up did. Dice still roll physically in TTS, and the players' own roll controls are unchanged. A roll's state shows as colour, not words: a red glow is waiting for your approval, steady gold is ready to roll, pulsing gold is rolling (blue instead of gold during a Willpower reroll), and plain red is rolled. Hover anything for its name.
+
+**How to verify:** Save & Play into a live scene with at least one player seated, and open the dashboard's **Scenes** tab.
+
+1. **Start a PC roll:** right-click a PC's seat on the dashboard. A ring of roll types appears (one per dice bag). Pick **Standard**. A row for that PC appears in the Rolls column with a red glow, and in TTS the roll waits for you.
+2. **Approve it:** click a difficulty number on the row. The glow turns steady gold and the player's roll opens in TTS. (There is no separate Open button any more.)
+3. **Options:** click the gear icon on the row. The pop-up should open with the same toggles as the TTS options window. Change one and press **Apply**; the TTS options window should show the change.
+4. **After the roll:** have the player roll. While the dice tumble the row pulses gold; once they settle it turns plain red and shows the dice as coffin faces with the result. Click the diamonds: a small ring with a red and a white die appears. Left-click the white die to add a normal die, right-click to remove one; the pool in TTS should follow. Try **Override…** and pick a different result.
+5. **Held result:** let the roll finish without broadcasting it. The row goes dim and dashed. The megaphone icon broadcasts it to the table; the cancel icon dismisses it.
+6. **NPC roll:** right-click an NPC on the stage and pick a roll type. The NPC panel appears under the drawer list. Click the diamonds (or the **+**) and build a pool with the dice ring, pick a difficulty, then press the dice icon to roll (right-click it for secret dice the players cannot see). Afterwards click a die to pick it, press the circular-arrows icon to reroll it, and press the tick to confirm (right-click the tick to hold the result instead of broadcasting it).
+7. **Willpower reroll:** have a player spend Willpower on a rolled PC roll (or press the Willpower icon on a rolled NPC roll). The row should turn blue and pulse while the reroll is under way, then go back to plain red.
+8. **Hunt:** in the hunt panel under the location card, pick the hunting PC from the drop-down, roll the hunt bar, and press **Confirm**. TTS should show the resonance on the roll result banner.
 
 ### Medium — Prince's Court sheet
 

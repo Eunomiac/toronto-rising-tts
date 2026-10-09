@@ -580,7 +580,7 @@ TTS also exposes **`UI.setAttributes`** natively; use **`U.setAttributes`** when
 | :--------- | :------------- | :--------------- |
 | `DashPush.seat(color)` | Sends the slim seat snapshot when it differs from the last one sent. Called by `Sync.player`; do not call from mutation sites | (internal to `Sync.player`) |
 | `DashPush.projects()` | Tells the dashboard the project list changed | `Projects.refreshAfterMutation` |
-| `DashPush.markWorldDirty(slices)` | Marks world slices (`phase`, `scene`, `clock`, `soundscape`, `seats`) for one coalesced push 0.25 s later; unchanged slices are skipped; errors on an unknown slice. Only needed where a mutation bypasses `UpdateUIDisplays` | `require("dashboard.push").markWorldDirty({ seats = true })` |
+| `DashPush.markWorldDirty(slices)` | Marks world slices (`phase`, `scene`, `clock`, `soundscape`, `seats`, `rolls`) for one coalesced push 0.25 s later; unchanged slices are skipped; errors on an unknown slice. Only needed where a mutation bypasses `UpdateUIDisplays` | `require("dashboard.push").markWorldDirty({ seats = true })` |
 | `DashPush.markAllWorldDirty()` | Marks every world slice (full `UpdateUIDisplays`) | (internal to `UpdateUIDisplays`) |
 
 ### Storyteller Dashboard world slices (`dashboard/world_snapshot.ttslua`, Global only)
@@ -590,6 +590,14 @@ TTS also exposes **`UI.setAttributes`** natively; use **`U.setAttributes`** when
 | `W.build(slice)` | Builds one world slice table from `gameState` (read-only) | `W.build("clock")` |
 | `W.snapshot()` | All slices keyed by topic | `GlobalDashboardWorldSnapshot` |
 | `GlobalDashboardWorldSnapshot()` | Execute-lua entry: JSON of every slice with `ok = true`, or the loading refusal JSON | Dashboard `refreshWorldSnapshot()` |
+
+### Storyteller Dashboard rolls (`dashboard/rolls.ttslua`, Global only)
+
+| Function | Description | Usage Example |
+| :--------- | :------------- | :--------------- |
+| `Rolls.apply(jsonText)` | Runs one roll op or an array of ops (list at the top of the file) and marks the `rolls` slice; returns `{ ok, error? }` JSON | `GlobalDashboardRollsApply` |
+| `Rolls.optionsJson(color)` | The TTS roll options modal's starting values for one PC seat, as JSON | `GlobalDashboardRollOptions` |
+| `Rolls.werewolfKeys()` / `Rolls.oblivionSeats()` | Werewolf-tagged NPC keys (read from control tokens once per load) / PC seats with an Oblivion-Rouse bag | `rolls` slice builder |
 
 ---
 
