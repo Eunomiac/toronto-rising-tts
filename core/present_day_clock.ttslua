@@ -108,6 +108,33 @@ function PresentDayClock.tryAdvance(newClock)
     end
 end
 
+--- A live scene less than this many minutes behind present day runs on present day instead.
+PresentDayClock.NEAR_PRESENT_MINUTES = 15
+
+--- Moves a scene clock's datetime onto present day when it is behind by fewer than
+--- `NEAR_PRESENT_MINUTES`, so small desyncs never hold present day back (flags are kept).
+--- @param clock table|nil mutated in place
+--- @return boolean snapped
+function PresentDayClock.snapToPresentIfNear(clock)
+    if not PresentDayClock.clockHasDatetime(clock) then
+        return false
+    end
+    local pd = PresentDayClock.getPresentDay()
+    if pd == nil or U.compareNarrativeClock(clock, pd) >= 0 then
+        return false
+    end
+    local window = NarrativeCalendar.addMinutes(PresentDayClock.datetimeOnly(clock), PresentDayClock.NEAR_PRESENT_MINUTES)
+    if window == nil or U.compareNarrativeClock(window, pd) <= 0 then
+        return false
+    end
+    clock.year = pd.year
+    clock.month = pd.month
+    clock.day = pd.day
+    clock.hour = pd.hour
+    clock.minute = pd.minute
+    return true
+end
+
 --- Storyteller override: unconditionally sets chronicle present-day datetime (Y/M/D/h/m only).
 --- Unlike `tryAdvance`, this may move chronicle time backward.
 --- @param clock table|nil must have full narrative datetime
@@ -353,6 +380,7 @@ function PresentDayClock.resolveAndApplyActivationClock(bundle, clockMode, opts)
         end
     else
         PresentDayClock.tryAdvance(ck)
+        PresentDayClock.snapToPresentIfNear(ck)
     end
     if clockMode == "x5" then
         ck = armCatchUpIfBehindPresent(ck)

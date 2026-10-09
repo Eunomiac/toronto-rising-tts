@@ -203,6 +203,14 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 
 **How to verify:** Save & Play. Play a scene with at least one PC whose Hunger is above zero, and turn on the real-time clock (any speed). Watch that player's hunger overlay for two or three minutes: it should stay perfectly still. Then change that PC's Hunger from the PCs panel or with a Rouse check: the overlay should switch to the new level straight away. Finally, if a PC has a project in progress, open sheet page 5 and move present day forward a whole day from the clock: the project's countdown die should still update.
 
+### High — scene clock
+
+#### TOR-682 — A scene less than fifteen minutes behind present day runs on present day
+
+**Context:** Your Lab pin: whenever a scene's time is within fifteen minutes behind the present-day clock, the scene should simply use present day. TTS now snaps the scene clock onto present day in that case — when you apply a scene, when the time animation finishes, when you set the time on the Scenes panel, and on each real-time clock tick. A scene more than fifteen minutes in the past (a flashback) keeps its own time.
+
+**How to verify:** Save & Play. Note the present-day time on the game-state overlay. Set a live scene's clock to ten minutes before present day (from the dashboard calendar or the backup Scenes panel). The scene clock should jump straight to present day instead of staying ten minutes behind. Then set it to an hour before present day: it should stay an hour behind. With the real-time clock on and the scene catching up with ×5, the scene should land exactly on present day and then follow it, never stopping a few minutes short.
+
 ### Medium — Prince's Court sheet
 
 #### TOR-663 — Refresh XML keeps The Court on the people who had it open

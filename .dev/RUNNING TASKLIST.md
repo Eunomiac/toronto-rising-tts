@@ -346,7 +346,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## Scenes Panel & Scene State
 
-- [x] **Memoriam splash stays on the cover:** A full refresh while the Memoriam cover is down no longer swaps the splash for a stock scene blindfold. Author confirmed 2026-10-04. _(TOR-647)_
+- [x] **Scene within fifteen minutes of present day runs on present day:** `PresentDayClock.snapToPresentIfNear` moves the scene datetime onto present day on activation, time-animation settle, Scenes panel clock apply and each real-time tick. Pending Save & Play. _(TOR-682)_- [x] **Memoriam splash stays on the cover:** A full refresh while the Memoriam cover is down no longer swaps the splash for a stock scene blindfold. Author confirmed 2026-10-04. _(TOR-647)_
 - [x] **Rapid scene Apply must not lift the cover early:** A second Apply while the first cover transition is still running cancels that chain, including its lift, and the new cover sequence is the only one that continues. Author confirmed 2026-10-02. _(TOR-643)_
 
 - [x] **Main/Downtime coupled to live scene:** Apply scene → Main; no scene (including first Intermission→Play) → Downtime. Main/Downtime buttons always resolve to that, or no-op. Memoriam Main exit restores the scene that was live, or Downtime if there was none. Overlay/clock still use copied `downtimeClock`. relatedTo **TOR-143**. Pending Save & Play. _(TOR-527)_

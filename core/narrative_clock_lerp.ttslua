@@ -411,6 +411,7 @@ local function settle(finalDt, startDt)
         GameStateOverlay.resetRealTimeCarry()
     end
 
+    PresentDayClock.snapToPresentIfNear(nextClock)
     S.setStateVal(nextClock, "sessionScene", "clock")
     MapPins.onClockChanged()
 

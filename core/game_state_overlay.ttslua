@@ -1140,6 +1140,11 @@ function GameStateOverlay.tickRealTimeClock()
             PresentDayClock.clearCatchUpAndRestore(nextClock)
         end
     end
+    if clockKey ~= "downtimeClock" and nextClock.catchUpToPresentDay ~= true
+        and PresentDayClock.snapToPresentIfNear(nextClock)
+    then
+        y, mo, d, h, m = nextClock.year, nextClock.month, nextClock.day, nextClock.hour, nextClock.minute
+    end
     -- The dashboard animates the clock from its last anchor; re-anchor on rollovers only.
     local rolledOver = h ~= oldHour or d ~= oldDay
     if clockKey == "downtimeClock" then

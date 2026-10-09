@@ -2716,6 +2716,7 @@ function StorytellerScenesPanel.applyClockFromInputs(player)
     if GameStateOverlay and type(GameStateOverlay.resetRealTimeCarry) == "function" then
         GameStateOverlay.resetRealTimeCarry()
     end
+    PresentDayClock.snapToPresentIfNear(clock)
     S.setStateVal(clock, "sessionScene", "clock")
     MapPins.onClockChanged()
     if clock.isPresentDay == true then
