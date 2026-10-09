@@ -2169,22 +2169,39 @@ $lab-live: #4caf6a;
     text-align: center;
   }
 
+  /* Segment colours match the TTS bar: gaps black, two greys for base periods, two lighter for nested ones. */
   &-marks {
     display: flex;
-    gap: 2px;
     height: 12px;
-    padding: 0 10px;
+    margin: 0 10px;
+    outline: 1px solid #333;
 
     span {
-      flex: 1 1 0;
-      background: #333;
+      flex: 0 1 0;
+      min-width: 0;
 
-      &.period {
-        background: #776;
+      &.gap {
+        background: #000;
+      }
+
+      &.base-0 {
+        background: #777;
+      }
+
+      &.base-1 {
+        background: #9e9e9e;
+      }
+
+      &.overlay-0 {
+        background: #c8c8c8;
+      }
+
+      &.overlay-1 {
+        background: #f2f2f2;
       }
 
       &.highlighted {
-        background: #ff0;
+        background: #fd0;
       }
     }
   }
