@@ -494,6 +494,9 @@ function S.GetDefaultGameState()
             preMemoriamNowClock = nil,
             enterStats = {},
         },
+        --- Storyteller weather override (`lib/chronicle_weather.ttslua`): `{ rain, wind, thunder, untilDatetime }`
+        --- holds those layers over the hourly schedule until the scene clock reaches the following dawn.
+        weatherOverride = nil,
     }
 end
 

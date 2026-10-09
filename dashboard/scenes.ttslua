@@ -7,7 +7,9 @@
 
   Ops (field `op`):
     phaseAdvance                          next top-level phase (Intermission → Play → Spotlight → End)
-    playSubPhase      subPhase            Play subphase
+    playSubPhase      subPhase            Main / Downtime (leaving Memoriam restores the interrupted scene)
+    memoriam          payload             enter Memoriam: { subjectKey, date, location, skyboxKey + panel
+                                          or justSmoke, assignments } (same payload as the TTS modal)
     sessionNum        num                 session number (Intermission blindfold images follow)
     sessionName       name                session title
     spotlightRotate   delta               turn the carousel (Spotlight phase only)
@@ -24,6 +26,14 @@
     ambience          key                 location ambience (`none` stops it)
     stopAll                               silence every soundscape layer
     seatPresence      seat, present       narrative presence of an occupied seat (never disconnection)
+    location          districtKey?, siteKey   change the live location behind a blindfold
+    skybox            key                 sky override (`none` = the site's own sky)
+    topFog            on                  top fog on / off
+    lighting          presetKey           `AdminDark` / `AdminStandard` / `AdminBright`
+    table             key                 table layout (`Table A`, `Table B`, `Scatter`, …)
+    conditions        ids                 scene conditions (`sessionScene.conditions`), hosted on present PCs
+    weatherOverride   rain, wind, thunder hold weather until the next dawn (wind 0–3)
+                      release             back to the schedule (or the scene's authored weather)
     playScene         key, clockMode?     select a library scene and apply it to the table
     endScene                              end the live scene
 
@@ -35,6 +45,7 @@
 
 local Dash = {}
 
+local C = require("lib.constants")
 local U = require("lib.util")
 local S = require("core.state")
 
@@ -89,6 +100,37 @@ local function datetimeArg(dt)
   return out
 end
 
+--- Hold rain / wind / thunder until the next dawn, or release back to the schedule (or the scene's own
+--- authored weather).
+--- @param cmd table `{ rain, wind, thunder }` or `{ release = true }`
+--- @return string|nil error
+local function weatherOverride(cmd)
+  local ChronicleWeather = require("lib.chronicle_weather")
+  if cmd.release == true then
+    ChronicleWeather.clearOverride()
+    if S.getStateVal("sessionScene", "chronicleWeatherManualHold") == true then
+      require("core.scenes").applyActiveSceneSoundscapeFromSession()
+      return nil
+    end
+  else
+    local dawn = require("core.narrative_clock_lerp").resolveDawnDuskTarget(S.getStateVal("sessionScene", "clock"), 0, true)
+    if dawn == nil then
+      return "The scene clock has no date, so there is no dawn to hold the weather until."
+    end
+    local err = ChronicleWeather.setOverride(cmd.rain, cmd.wind, cmd.thunder == true, dawn)
+    if err ~= nil then
+      return err
+    end
+  end
+  local ok, message = ChronicleWeather.applyScheduledWeather({ force = true })
+  UpdateUIDisplays({ soundscape = true, gameStateOverlay = true })
+  require("dashboard.push").markWorldDirty({ scene = true })
+  if not ok then
+    return tostring(message)
+  end
+  return nil
+end
+
 --- @param cmd table
 --- @return string|nil error
 local function applyCommand(cmd)
@@ -105,8 +147,26 @@ local function applyCommand(cmd)
     return nil
   end
   if op == "playSubPhase" then
+    -- Same routing as the in-game Main / Downtime buttons: leaving Memoriam restores the scene it interrupted.
+    if cmd.subPhase == C.PlaySubPhases.MEMORIAM then
+      return "Enter Memoriam with the Memoriam set-up (op `memoriam`)."
+    end
+    local Memoriam = require("core.memoriam")
+    if Memoriam.isActive() then
+      Memoriam.applyExit({ mode = "restore", player = storytellerPlayer() })
+      return nil
+    end
     if require("core.phases").setPlaySubPhase(cmd.subPhase) ~= true then
       return "Could not switch to subphase `" .. tostring(cmd.subPhase) .. "`."
+    end
+    return nil
+  end
+  if op == "memoriam" then
+    if type(cmd.payload) ~= "table" then
+      return "memoriam needs the set-up payload."
+    end
+    if require("core.memoriam").applyEnter(cmd.payload) ~= true then
+      return "TTS refused the Memoriam (see the in-game Storyteller alert)."
     end
     return nil
   end
@@ -193,8 +253,37 @@ local function applyCommand(cmd)
     return soundResult(SS.stopAll())
   end
 
+  local Panel = require("core.storyteller_scenes_panel")
   if op == "seatPresence" then
-    return require("core.storyteller_scenes_panel").setLiveSeatPresence(cmd.seat, cmd.present == true)
+    return Panel.setLiveSeatPresence(cmd.seat, cmd.present == true)
+  end
+  if op == "location" then
+    if type(cmd.siteKey) ~= "string" then
+      return "location needs a siteKey."
+    end
+    return Panel.setLiveLocation(cmd.districtKey, cmd.siteKey)
+  end
+  if op == "skybox" then
+    if cmd.key == "none" then
+      return Panel.setLiveSkybox(nil)
+    end
+    return Panel.setLiveSkybox(cmd.key)
+  end
+  if op == "topFog" then
+    Panel.setLiveTopFog(cmd.on == true)
+    return nil
+  end
+  if op == "lighting" then
+    return Panel.setLiveLighting(cmd.presetKey)
+  end
+  if op == "table" then
+    return Panel.setLiveTable(cmd.key)
+  end
+  if op == "conditions" then
+    return Panel.setLiveSceneConditions(cmd.ids)
+  end
+  if op == "weatherOverride" then
+    return weatherOverride(cmd)
   end
 
   if op == "sessionNum" or op == "sessionName" then
@@ -219,7 +308,6 @@ local function applyCommand(cmd)
     if player == nil then
       return "The Storyteller must be in the game for this command."
     end
-    local Panel = require("core.storyteller_scenes_panel")
     if op == "endScene" then
       Panel.endSceneNarrative(player)
       return nil

@@ -6,7 +6,8 @@
   them for a dashboard tab that opens mid-session. Builders only read state.
 
     phase       phase, Play subphase, session number/name, Memoriam active
-    scene       live library scene, location, table, lighting, skybox override, top fog, weather
+    scene       live library scene (and its own location), location, table, lighting, skybox override,
+                top fog, scene conditions, weather, Storyteller weather override
     clock       clock anchor: scene / present-day / Downtime clocks, which one runs, speed
     soundscape  music, location, featured, intro, weather layers, lane volumes
     seats       PC and NPC seat occupancy and presence, stage NPCs, spotlight carousel
@@ -78,10 +79,27 @@ local function buildScene()
   end
   local ss = S.getStateVal("sessionScene") or {}
   local snd = S.getStateVal("soundscape") or {}
+  local libraryScene = liveRow and liveRow.sessionScene or nil
+  local override = require("lib.chronicle_weather").activeOverride()
+  local conditions = {}
+  for i, id in ipairs(type(ss.conditions) == "table" and ss.conditions or {}) do
+    conditions[i] = id
+  end
   return {
     liveKey = liveKey,
     liveTitle = liveRow and liveRow.title or nil,
     liveLinked = liveRow ~= nil and liveRow.receivesLiveWrites == true,
+    library = type(libraryScene) == "table" and {
+      districtKey = libraryScene.districtKey,
+      siteKey = libraryScene.siteKey,
+    } or nil,
+    conditions = conditions,
+    weatherOverride = override and {
+      rain = override.rain,
+      wind = override.wind,
+      thunder = override.thunder == true,
+      untilDatetime = clockDatetime(override.untilDatetime),
+    } or nil,
     districtKey = ss.districtKey,
     siteKey = ss.siteKey,
     tableKey = ss.tableKey,

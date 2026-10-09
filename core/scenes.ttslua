@@ -1119,7 +1119,8 @@ function Scenes.applyActiveSceneSoundscapeFromSession()
         Soundscape.applyContext(merged)
         primeSoundscapeReconcile = true
     end
-    if S.getStateVal("sessionScene", "chronicleWeatherManualHold") ~= true then
+    -- A Storyteller weather override outranks a scene's authored weather until it lapses at dawn.
+    if S.getStateVal("sessionScene", "chronicleWeatherManualHold") ~= true or ChronicleWeather.activeOverride() ~= nil then
         if type(ChronicleWeather.applyScheduledWeather) == "function" then
             ChronicleWeather.applyScheduledWeather({ force = false })
             primeSoundscapeReconcile = false

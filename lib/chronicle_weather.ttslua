@@ -7,6 +7,7 @@
 local ChronicleWeather = {}
 
 local C = require("lib.constants")
+local U = require("lib.util")
 local S = require("core.state")
 local Soundscape = require("core.soundscape")
 local Schedule = require("lib.tr_weather_schedule")
@@ -211,8 +212,9 @@ local function hudWindTextFromWindAudio(windKey)
     return requireHudOverrideField(HUD_OVERRIDES.windAudio, windKey or "none", "Wind", "windAudio")
 end
 
---- When `sessionScene.chronicleWeatherManualHold` is set (Scene Constructor weather trio), align HUD
---- base/wind labels with forced rain/wind/thunder audio in `gameState.soundscape` per `C.WEATHER_AUDIO_OVERRIDES`.
+--- When `sessionScene.chronicleWeatherManualHold` is set (Scene Constructor weather trio) or a Storyteller
+--- weather override is active, align HUD base/wind labels with forced rain/wind/thunder audio in
+--- `gameState.soundscape` per `C.WEATHER_AUDIO_OVERRIDES`.
 --- Temperature and humidity remain from the chronicle schedule for the current clock hour.
 --- @param resolved table chronicle parse result (mutated copy returned)
 --- @return table
@@ -221,7 +223,7 @@ function ChronicleWeather.applyHudAudioOverrides(resolved)
         return resolved
     end
 
-    if S.getStateVal("sessionScene", "chronicleWeatherManualHold") ~= true then
+    if S.getStateVal("sessionScene", "chronicleWeatherManualHold") ~= true and ChronicleWeather.activeOverride() == nil then
         return resolved
     end
 
@@ -334,6 +336,60 @@ function ChronicleWeather.shouldAutoApply()
     return true
 end
 
+--- Storyteller weather override (`gameState.weatherOverride`), when the scene clock has not reached its
+--- `untilDatetime` (the dawn after it was set). The hourly schedule resumes once it lapses.
+--- @return table|nil `{ rain, wind, thunder, untilDatetime }`
+function ChronicleWeather.activeOverride()
+    local override = S.getStateVal("weatherOverride")
+    if type(override) ~= "table" then
+        return nil
+    end
+    if U.compareNarrativeClock(S.getStateVal("sessionScene", "clock"), override.untilDatetime) >= 0 then
+        return nil
+    end
+    return override
+end
+
+local WIND_LEVEL_SUFFIX = { "Low", "Med", "Max" }
+
+--- Holds rain / wind / thunder until `untilDatetime` (caller passes the next dawn). Wind uses the winter
+--- layer when the scheduled temperature for the current hour is cold, as the schedule itself does.
+--- @param rainKey string `none` / `rainLight` / `rainHeavy`
+--- @param windLevel number 0 (calm) to 3
+--- @param thunder boolean
+--- @param untilDatetime table `{ year, month, day, hour, minute }`
+--- @return string|nil error
+function ChronicleWeather.setOverride(rainKey, windLevel, thunder, untilDatetime)
+    if rainKey ~= "none" and rainKey ~= "rainLight" and rainKey ~= "rainHeavy" then
+        return "Unknown rain `" .. tostring(rainKey) .. "`."
+    end
+    local level = tonumber(windLevel)
+    if level == nil or level < 0 or level > 3 or level ~= math.floor(level) then
+        return "Wind must be 0 to 3."
+    end
+    if U.narrativeClockDatetimeOnly(untilDatetime) == nil then
+        return "The weather override needs an end time."
+    end
+    local windKey = "none"
+    if level > 0 then
+        local clock = S.getStateVal("sessionScene", "clock") or {}
+        local resolved = ChronicleWeather.resolveForClock(clock.month, clock.day, clock.hour)
+        local cold = resolved ~= nil and resolved.tempC <= W.WARM_TEMPERATURE_THRESHOLD
+        windKey = (cold and "windWinter" or "wind") .. WIND_LEVEL_SUFFIX[level]
+    end
+    S.setStateVal({
+        rain = rainKey,
+        wind = windKey,
+        thunder = thunder == true,
+        untilDatetime = U.narrativeClockDatetimeOnly(untilDatetime),
+    }, "weatherOverride")
+    return nil
+end
+
+function ChronicleWeather.clearOverride()
+    S.setStateVal(nil, "weatherOverride")
+end
+
 --- Applies the scheduled row for `sessionScene.clock` (minute ignored; hour 0–23).
 --- Uses layered weather only (`soundscape.weather` forced to `"none"`).
 --- `opts.force` bypasses follow/hold gates (Storyteller "Apply schedule now").
@@ -353,21 +409,28 @@ function ChronicleWeather.applyScheduledWeather(opts)
         return false, "Chronicle weather: missing sessionScene.clock.", "skipped"
     end
 
-    local resolved = ChronicleWeather.resolveForClock(clock.month, clock.day, clock.hour)
-    if resolved == nil then
-        return false,
-            string.format(
-                "No chronicle weather row for Mo %s / Day %s / %02d:00.",
-                tostring(clock.month),
-                tostring(clock.day),
-                tonumber(clock.hour) or 0
-            ),
-            "skipped"
+    local rainKey, windKey, thunderOn
+    local override = ChronicleWeather.activeOverride()
+    if override ~= nil then
+        rainKey, windKey, thunderOn = override.rain, override.wind, override.thunder == true
+    else
+        if S.getStateVal("weatherOverride") ~= nil then
+            ChronicleWeather.clearOverride()
+            require("dashboard.push").markWorldDirty({ scene = true })
+        end
+        local resolved = ChronicleWeather.resolveForClock(clock.month, clock.day, clock.hour)
+        if resolved == nil then
+            return false,
+                string.format(
+                    "No chronicle weather row for Mo %s / Day %s / %02d:00.",
+                    tostring(clock.month),
+                    tostring(clock.day),
+                    tonumber(clock.hour) or 0
+                ),
+                "skipped"
+        end
+        rainKey, windKey, thunderOn = resolved.rainKey, resolved.windKey, resolved.thunder == true
     end
-
-    local rainKey = resolved.rainKey
-    local windKey = resolved.windKey
-    local thunderOn = resolved.thunder == true
 
     S.setStateVal("none", "soundscape", "weather")
 

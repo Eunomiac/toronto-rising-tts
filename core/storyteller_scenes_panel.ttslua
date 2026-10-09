@@ -2297,15 +2297,9 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
 
     if TABLE_TOGGLE_IDS[id] ~= nil then
         local tableKey = TABLE_TOGGLE_IDS[id]
-        local Occupancy = require("lib.scatter_occupancy")
-        local isScatter = Occupancy.isScatterTableKey(tableKey)
-        -- Accept explicit `C.Tables` keys (incl. Scatter) and dynamic family keys (e.g. "Table B" → "Table B<N>").
-        if C.Tables[tableKey] == nil and not RSL.isDynamicTableFamilyKey(tableKey) then
-            U.AlertGM("Unknown table key: " .. tostring(tableKey))
-            return
-        end
         local activeKey = getActiveLibraryKey()
         if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
+            local isScatter = require("lib.scatter_occupancy").isScatterTableKey(tableKey)
             if not applyPendingLibraryTableChoice(activeKey, tableKey, isScatter) then
                 U.AlertGM("Could not save table `" .. tableKey .. "` on `" .. activeKey .. "`.")
                 return
@@ -2314,17 +2308,10 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
             U.AlertGM("Table `" .. tableKey .. "` saved on `" .. activeKey .. "` (applies when you Activate that scene).")
             return
         end
-        if RSL.alertAndBlockIfDiceOnTable("switch table layout") then
-            return
+        local err = StorytellerScenesPanel.setLiveTable(tableKey)
+        if err ~= nil then
+            U.AlertGM(err)
         end
-        closeScenesPanel()
-        HUDBF.runTransition(function()
-            -- Store the clicked key as intent (family or explicit); SetTableTo resolves family → concrete.
-            S.setStateVal(tableKey, "sessionScene", "tableKey")
-            RSL.SetTableTo(tableKey, { skipTransitionBlindfold = true, randomizeSeating = true })
-            reconcileHostedSyncAndPresentSheets("StorytellerScenesPanel.table")
-            return true
-        end)
         return
     end
 
@@ -2370,6 +2357,170 @@ function StorytellerScenesPanel.setLiveSeatPresence(seatKey, present)
         O.applyPcSeatHiddenObjectPresence(seatKey, present)
     end
     reconcileHostedSyncAndPresentSheets("StorytellerScenesPanel.seatPresence")
+    return nil
+end
+
+--- Live table layout behind a blindfold transition. Shared by the in-game table buttons and the Storyteller
+--- Dashboard. Accepts explicit `C.Tables` keys (incl. Scatter) and dynamic family keys ("Table B" → "Table B<N>").
+--- @param tableKey string
+--- @return string|nil error
+function StorytellerScenesPanel.setLiveTable(tableKey)
+    if type(tableKey) ~= "string" or (C.Tables[tableKey] == nil and not RSL.isDynamicTableFamilyKey(tableKey)) then
+        return "Unknown table key: " .. tostring(tableKey)
+    end
+    if RSL.hasLooseDiceOnTable() then
+        return "Cannot switch table layout while dice are on the table. Finish or cancel active rolls first."
+    end
+    closeScenesPanel()
+    HUDBF.runTransition(function()
+        -- Store the key as intent (family or explicit); SetTableTo resolves family → concrete.
+        S.setStateVal(tableKey, "sessionScene", "tableKey")
+        RSL.SetTableTo(tableKey, { skipTransitionBlindfold = true, randomizeSeating = true })
+        reconcileHostedSyncAndPresentSheets("StorytellerScenesPanel.table")
+        return true
+    end)
+    return nil
+end
+
+--- Validates a site for a location change; the site's own district wins over `districtKey`.
+--- @param districtKey string|nil
+--- @param siteKey string
+--- @return string|nil districtKey
+--- @return string|nil error
+local function resolveLocationDistrict(districtKey, siteKey)
+    local site = C.Sites[siteKey]
+    if type(site) ~= "table" then
+        return nil, "Unknown site key: " .. tostring(siteKey)
+    end
+    local derived = C.resolveDistrictKeyForDistrictTable(site.district)
+    if type(derived) == "string" and derived ~= "" then
+        districtKey = derived
+    end
+    if type(districtKey) ~= "string" or districtKey == "" then
+        return nil, "A district is required when a site is set. Pick a district from Browse districts, then Apply."
+    end
+    if C.Districts[districtKey] == nil then
+        return nil, "Unknown district key: " .. tostring(districtKey)
+    end
+    return districtKey, nil
+end
+
+--- Live location change: blindfold transition, site fog, map pins, hosted conditions, then the new site's
+--- soundscape in the fade-in. Shared by the in-game Apply Location and the Storyteller Dashboard.
+--- @param districtKey string|nil ignored when the site names its district
+--- @param siteKey string
+--- @return string|nil error
+function StorytellerScenesPanel.setLiveLocation(districtKey, siteKey)
+    local dKey, err = resolveLocationDistrict(districtKey, siteKey)
+    if err ~= nil then
+        return err
+    end
+    closeScenesPanel()
+
+    local previewSession = U.merge({}, S.getStateVal("sessionScene") or {})
+    previewSession.districtKey = dKey
+    previewSession.siteKey = siteKey
+    local incomingWeather = Scenes.computeIncomingWeatherPreview(previewSession)
+
+    HUDBF.runStagedTransition({
+        fadeOut = function()
+            SS.fadeOutTransitionAmbient({
+                seconds = HUDBF.TRANSITION_FADE_OUT_SEC,
+                incoming = incomingWeather,
+            })
+        end,
+        work = function()
+            S.setStateVal(dKey, "sessionScene", "districtKey")
+            S.setStateVal(siteKey, "sessionScene", "siteKey")
+            SceneLibrary.applySiteTopFogToSessionScene(siteKey)
+            MapPins.onLocationChanged()
+            local changedSeatColors = reconcileHostedConditions({ skipPresentation = true })
+            syncAfterHostedReconcileAndRefreshSheets("StorytellerScenesPanel.location", {
+                skipSoundscape = true,
+                changedSeatColors = changedSeatColors,
+            })
+            StorytellerScenesPanel.refresh()
+            return true
+        end,
+        fadeIn = function()
+            SS.beginTransitionFadeWindow(HUDBF.TRANSITION_FADE_IN_SEC)
+            Scenes.applyActiveSceneSoundscapeFromSession()
+            SS.endTransitionFadeWindow()
+        end,
+    }, {
+        districtKey = dKey,
+        siteKey = siteKey,
+    })
+    return nil
+end
+
+--- Live sky override (catalog key or `C.SKYBOX_GENERIC_KEY`), or `nil` for the site's own sky, behind a
+--- short blindfold. Shared by the in-game skybox-only Apply and the Storyteller Dashboard.
+--- @param key string|nil
+--- @return string|nil error
+function StorytellerScenesPanel.setLiveSkybox(key)
+    if key ~= nil and (type(key) ~= "string" or not C.isValidSkyboxKey(key)) then
+        return "Unknown skybox `" .. tostring(key) .. "`."
+    end
+    HUDBF.runTransition(function()
+        S.setStateVal(key, "sessionScene", "skyboxOverride")
+        Scenes.reconcileSkyboxFromState({ force = true })
+        require("dashboard.push").markWorldDirty({ scene = true })
+        return true
+    end, {
+        leadInDelaySec = 2,
+        settleDelaySec = 2,
+    })
+    StorytellerScenesPanel.refresh()
+    return nil
+end
+
+--- Storyteller lighting presets (`HUD_selectAdminLightingScene` buttons and the Storyteller Dashboard).
+local ADMIN_LIGHTING_SCENE = { AdminDark = "dark", AdminStandard = "standard", AdminBright = "bright" }
+
+--- Live lighting preset, then the full sync reconciles lights.
+--- @param presetKey string `AdminDark` / `AdminStandard` / `AdminBright`
+--- @return string|nil error
+function StorytellerScenesPanel.setLiveLighting(presetKey)
+    local sceneName = ADMIN_LIGHTING_SCENE[presetKey]
+    if sceneName == nil then
+        return "Unknown lighting preset `" .. tostring(presetKey) .. "`."
+    end
+    S.setStateVal(sceneName, "currentScene")
+    S.setStateVal(presetKey, "sessionScene", "lightingPresetKey")
+    S.setStateVal(nil, "sceneTransition")
+    Sync.full({ reason = "StorytellerScenesPanel.setLiveLighting" })
+    return nil
+end
+
+--- Live top fog on or off.
+--- @param on boolean
+function StorytellerScenesPanel.setLiveTopFog(on)
+    S.setStateVal(on == true, "sessionScene", "isTopFogActive")
+    Scenes.reconcileTopFogFromState()
+    require("dashboard.push").markWorldDirty({ scene = true })
+end
+
+--- Live scene conditions (`sessionScene.conditions`), then hosted conditions follow on every present PC.
+--- @param ids string[] condition ids that may be listed on a scene
+--- @return string|nil error
+function StorytellerScenesPanel.setLiveSceneConditions(ids)
+    if type(ids) ~= "table" then
+        return "Scene conditions need a list of ids."
+    end
+    local CD = require("lib.condition_defs")
+    local out = {}
+    for _, id in ipairs(ids) do
+        local def = type(id) == "string" and CD.Defs[id] or nil
+        if def == nil or not CD.canListInSceneOrLocation(def) then
+            return "`" .. tostring(id) .. "` cannot be a scene condition."
+        end
+        if not U.isIn(id, out) then
+            out[#out + 1] = id
+        end
+    end
+    S.setStateVal(out, "sessionScene", "conditions")
+    reconcileHostedSyncAndPresentSheets("StorytellerScenesPanel.sceneConditions")
     return nil
 end
 
@@ -2514,17 +2665,7 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
                 U.AlertGM("Skybox saved on `" .. activeKey .. "` (applies when you Activate that scene).")
                 return
             end
-            HUDBF.runTransition(function()
-                S.setStateVal(override, "sessionScene", "skyboxOverride")
-                if type(Scenes.reconcileSkyboxFromState) == "function" then
-                    Scenes.reconcileSkyboxFromState({ force = true })
-                end
-                return true
-            end, {
-                leadInDelaySec = 2,
-                settleDelaySec = 2,
-            })
-            StorytellerScenesPanel.refresh()
+            StorytellerScenesPanel.setLiveSkybox(override)
             U.AlertGM("Skybox applied.")
             return
         end
@@ -2532,26 +2673,12 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
         return
     end
 
-    local site = C.Sites[sKey]
-    if type(site) ~= "table" then
-        U.AlertGM("Unknown site key: " .. tostring(sKey))
+    local resolvedDistrict, locationErr = resolveLocationDistrict(dKey, sKey)
+    if locationErr ~= nil then
+        U.AlertGM(locationErr)
         return
     end
-
-    local derivedDistrict = C.resolveDistrictKeyForDistrictTable(site.district)
-    if type(derivedDistrict) == "string" and derivedDistrict ~= "" then
-        dKey = derivedDistrict
-    end
-
-    if dKey == "" then
-        U.AlertGM("A district is required when a site is set. Pick a district from Browse districts, then Apply.")
-        return
-    end
-
-    if C.Districts[dKey] == nil then
-        U.AlertGM("Unknown district key: " .. tostring(dKey))
-        return
-    end
+    dKey = resolvedDistrict
 
     if pending and type(activeKey) == "string" then
         writePendingLibrarySessionSceneField(dKey, "districtKey")
@@ -2562,58 +2689,12 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
         return
     end
 
-    if type(Scenes.applyActiveSceneSoundscapeFromSession) ~= "function" then
-        U.AlertGM("Soundscape module unavailable.")
+    local err = StorytellerScenesPanel.setLiveLocation(dKey, sKey)
+    if err ~= nil then
+        U.AlertGM(err)
         return
     end
-
-    closeScenesPanel()
-
-    local previewSession = U.merge({}, S.getStateVal("sessionScene") or {})
-    previewSession.districtKey = dKey
-    previewSession.siteKey = sKey
-    local incomingWeather = Scenes.computeIncomingWeatherPreview(previewSession)
-
-    HUDBF.runStagedTransition({
-        fadeOut = function()
-            if type(SS.fadeOutTransitionAmbient) == "function" then
-                SS.fadeOutTransitionAmbient({
-                    seconds = HUDBF.TRANSITION_FADE_OUT_SEC,
-                    incoming = incomingWeather,
-                })
-            end
-        end,
-        work = function()
-            S.setStateVal(dKey, "sessionScene", "districtKey")
-            S.setStateVal(sKey, "sessionScene", "siteKey")
-
-            if SceneLibrary and type(SceneLibrary.applySiteTopFogToSessionScene) == "function" then
-                SceneLibrary.applySiteTopFogToSessionScene(sKey)
-            end
-
-            MapPins.onLocationChanged()
-            local changedSeatColors = reconcileHostedConditions({ skipPresentation = true })
-            syncAfterHostedReconcileAndRefreshSheets("StorytellerScenesPanel.location", {
-                skipSoundscape = true,
-                changedSeatColors = changedSeatColors,
-            })
-            StorytellerScenesPanel.refresh()
-            U.AlertGM("Location applied.")
-            return true
-        end,
-        fadeIn = function()
-            if type(SS.beginTransitionFadeWindow) == "function" then
-                SS.beginTransitionFadeWindow(HUDBF.TRANSITION_FADE_IN_SEC)
-            end
-            Scenes.applyActiveSceneSoundscapeFromSession()
-            if type(SS.endTransitionFadeWindow) == "function" then
-                SS.endTransitionFadeWindow()
-            end
-        end,
-    }, {
-        districtKey = dKey,
-        siteKey = sKey,
-    })
+    U.AlertGM("Location applied.")
 end
 
 --- Daysleep Refresh: session-start Willpower heal for seated PCs (TOR-482).
