@@ -98,12 +98,13 @@ civilianChildBoy_01,dogAngry_02,crimePolice_03
 
 ## Dashboard behavior
 
-The catalogue is the **Generic** view of the roster in the **Scenes** tab (`GenericRoster` in `src/client/scenesPanel/glance.tsx`, loaded once from `GET /api/generic-npcs`).
+The catalogue is the **Generic** view of the roster in the **Scenes** tab (`MasonryRoster` in `src/client/scenesPanel/glance.tsx`, catalogue loaded once from `GET /api/generic-npcs`).
 
 - **In this scene** lists the generic NPCs already spawned (from the `seats` push's `generics`); drag them onto the stage like any other token.
-- **Add from the catalog** filters the catalogue by the roster search box: every whitespace-separated term must match (AND) against label + tags + key (case-insensitive). At most 60 matches show.
-- **+ Add** asks for the name the players will see, then sends the `genericAdd` scene op (`GenericNpcs.importNamed` in Lua), which spawns the figurine. It goes to TTS at once; only stage moves wait in the stage queue.
-- Token headshots come from the existing Generic folder (`/generic-npc-images/…`).
+- The rest of the catalogue shows as groups, one per catalogue name (every "Police" variant in one group), laid out like the Main view's coteries. Generic categories are separate from Main's (`view: "generic"` on the roster category; group keys are `generic:<name>`), and a generic group has a colour but no leader. Spawned variants drop out of their group.
+- The roster search box switches to a flat list: every whitespace-separated term must match (AND) against label + tags + key (case-insensitive). At most 60 matches show.
+- Clicking a catalogue token asks for the name the players will see, then sends the `genericAdd` scene op (`GenericNpcs.importNamed` in Lua), which spawns the figurine. It goes to TTS at once; only stage moves wait in the stage queue.
+- Token headshots load from `/figurine-images/<key>.webp`, which serves the Generic folder when the key is not a named NPC.
 
 The old standalone **Stage NPCs** tab (thumbnail grid, saved search tags, full-cutout hover preview, Copy keys) was retired when the Scenes tab took over generic NPCs.
 

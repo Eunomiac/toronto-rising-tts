@@ -279,44 +279,22 @@ const serveFile = async (response: ServerResponse, requestPath: string): Promise
   }
 };
 
-const serveGenericNpcImage = async (response: ServerResponse, pathname: string): Promise<void> => {
-  const filename = decodeURIComponent(pathname.slice("/generic-npc-images/".length));
-  const filePath = resolveGenericNpcImagePath(genericNpcImageDir, filename);
-  if (!filePath) {
-    sendJson(response, 400, { error: "Invalid generic NPC image filename." });
-    return;
-  }
-
-  try {
-    const fileStat = await stat(filePath);
-    if (!fileStat.isFile()) {
-      sendJson(response, 404, { error: "Image not found." });
+/** Serves the first of `imageDirs` that holds `filename`. */
+const serveSafeWebp = async (response: ServerResponse, imageDirs: readonly string[], filename: string, invalidMessage: string): Promise<void> => {
+  for (const imageDir of imageDirs) {
+    const filePath = resolveGenericNpcImagePath(imageDir, filename);
+    if (!filePath) {
+      sendJson(response, 400, { error: invalidMessage });
       return;
     }
-    response.writeHead(200, { "Content-Type": "image/webp" });
-    createReadStream(filePath).pipe(response);
-  } catch {
-    sendJson(response, 404, { error: "Image not found." });
-  }
-};
-
-const serveSafeWebp = async (response: ServerResponse, imageDir: string, filename: string, invalidMessage: string): Promise<void> => {
-  const filePath = resolveGenericNpcImagePath(imageDir, filename);
-  if (!filePath) {
-    sendJson(response, 400, { error: invalidMessage });
-    return;
-  }
-  try {
-    const fileStat = await stat(filePath);
-    if (!fileStat.isFile()) {
-      sendJson(response, 404, { error: `Missing image: ${filename}` });
+    const fileStat = await stat(filePath).catch(() => null);
+    if (fileStat?.isFile()) {
+      response.writeHead(200, { "Content-Type": "image/webp" });
+      createReadStream(filePath).pipe(response);
       return;
     }
-    response.writeHead(200, { "Content-Type": "image/webp" });
-    createReadStream(filePath).pipe(response);
-  } catch {
-    sendJson(response, 404, { error: `Missing image: ${filename}` });
   }
+  sendJson(response, 404, { error: `Missing image: ${filename}` });
 };
 
 const servePcSheetAsset = async (response: ServerResponse, pathname: string): Promise<void> => {
@@ -509,17 +487,12 @@ const tryHandleDedicatedRoutes = async (request: IncomingMessage, response: Serv
     return true;
   }
 
-  if (request.method === "GET" && pathname.startsWith("/generic-npc-images/")) {
-    await serveGenericNpcImage(response, pathname);
-    return true;
-  }
-
-  if (request.method === "GET" && pathname.startsWith("/catalogued-npc-images/")) {
+  if (request.method === "GET" && pathname.startsWith("/figurine-images/")) {
     await serveSafeWebp(
       response,
-      cataloguedNpcImageDir,
-      decodeURIComponent(pathname.slice("/catalogued-npc-images/".length)),
-      "Invalid catalogued NPC image filename."
+      [cataloguedNpcImageDir, genericNpcImageDir],
+      decodeURIComponent(pathname.slice("/figurine-images/".length)),
+      "Invalid NPC figurine image filename."
     );
     return true;
   }
@@ -527,7 +500,7 @@ const tryHandleDedicatedRoutes = async (request: IncomingMessage, response: Serv
   if (request.method === "GET" && pathname.startsWith("/scenes-assets/")) {
     await serveSafeWebp(
       response,
-      scenesAssetDir,
+      [scenesAssetDir],
       decodeURIComponent(pathname.slice("/scenes-assets/".length)),
       "Invalid scenes asset filename."
     );

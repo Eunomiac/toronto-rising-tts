@@ -11,11 +11,18 @@ export type SceneDocs = { readonly docs: readonly SceneDoc[]; readonly activeId:
 /** A live scene on deck: TTS library key (to play it) and the title shown. */
 export type DeckScene = { readonly key: string; readonly title: string };
 
-export type RosterCategory = { readonly id: string; readonly name: string; readonly color: string; readonly open: boolean };
+/** `view` is "generic" for categories of the Generic roster tab; absent for the Main tab. */
+export type RosterCategory = {
+  readonly id: string;
+  readonly name: string;
+  readonly color: string;
+  readonly open: boolean;
+  readonly view?: "generic";
+};
 
 /**
  * Roster categories, which category each group is filed in, colours picked for individual groups, and leaders
- * picked for individual groups ("" means the group has no leader).
+ * picked for individual groups ("" means the group has no leader). Generic groups are keyed `generic:<name>`.
  */
 export type RosterLayout = {
   readonly categories: readonly RosterCategory[];
@@ -86,7 +93,7 @@ export const parseRosterLayout = (value: unknown): RosterLayout => {
   const categories = Array.isArray(value.categories)
     ? value.categories.flatMap((row): RosterCategory[] =>
       isRecord(row) && typeof row.id === "string" && typeof row.name === "string" && typeof row.color === "string"
-        ? [{ id: row.id, name: row.name, color: row.color, open: row.open === true }]
+        ? [{ id: row.id, name: row.name, color: row.color, open: row.open === true, ...(row.view === "generic" ? { view: "generic" as const } : {}) }]
         : [])
     : [];
   return { categories, assigned: stringRecord(value.assigned), groupColors: stringRecord(value.groupColors), leaders: stringRecord(value.leaders) };

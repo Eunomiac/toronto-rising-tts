@@ -80,7 +80,7 @@ Right-click any tagged term (a discipline, power, skill, advantage, …) to open
 - Optional NPC portrait generation through the OpenAI Images API.
 - Compact NPC cards, full screen-pin-friendly modal export cards, local browser-session history, pinned/favorite NPCs, field reroll buttons, and field locks for mass rerolls.
 - PC sheet animations use GSAP (`npm` `gsap`), bundled by Vite.
-- Named NPC cutouts are served from the repo folder `assets/images/NPCs/Catalogued/` at `/catalogued-npc-images/`.
+- NPC cutouts are served at `/figurine-images/<characterKey>.webp`: the server looks in the repo folder `assets/images/NPCs/Catalogued/` (named NPCs), then `assets/images/NPCs/Generic/` (generic NPCs, whose catalog key is the file name).
 
 ## Repository placement
 

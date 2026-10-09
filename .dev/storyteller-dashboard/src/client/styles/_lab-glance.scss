@@ -901,6 +901,22 @@ $lab-live: #4caf6a;
       width: 38px;
       height: 38px;
     }
+
+    // Generic catalog tokens: click to add rather than drag.
+    &:is(button) {
+      padding: 0;
+      border: 0;
+      background: none;
+      cursor: pointer;
+
+      &:hover .lab-group-head {
+        filter: brightness(1.25);
+      }
+
+      &:disabled {
+        cursor: not-allowed;
+      }
+    }
   }
 
   &-name {

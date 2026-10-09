@@ -649,55 +649,22 @@ $lab-pin: #f5b13d;
   pointer-events: none;
 }
 
-.lab-generic {
+// Names a catalog generic before it is spawned into the scene.
+.lab-generic-naming {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 6px;
+  padding: 4px 2px;
 
-  &-head {
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #8a8a96;
-  }
-
-  &-list {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  &-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 2px 4px;
-    border-radius: 3px;
-
-    &:hover {
-      background: rgb(255 255 255 / 5%);
-    }
-
-    &.naming input {
-      flex: 1 1 auto;
-      min-width: 0;
-    }
-  }
-
-  &-label {
+  .lab-group-head {
     flex: 0 0 auto;
-    font-weight: 700;
+    width: 38px;
+    height: 38px;
   }
 
-  &-tags {
+  input {
     flex: 1 1 auto;
     min-width: 0;
-    overflow: hidden;
-    font-size: 12px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    color: #8a8a96;
   }
 }
 
