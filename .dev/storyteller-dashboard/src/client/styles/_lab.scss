@@ -541,12 +541,25 @@ $lab-pin: #f5b13d;
     color: #fff3c8;
   }
 
+  // An unlit NPC is a black silhouette with no ring and an italic name; hovering shows the face.
+  &:not(.lit, .pc) &-head {
+    border-color: transparent;
+    background-color: transparent;
+    box-shadow: none;
+    filter: brightness(0) drop-shadow(0 0 2px rgb(255 255 255 / 35%));
+  }
+
+  &:not(.lit, .pc) &-name {
+    font-style: italic;
+  }
+
   &:hover {
     z-index: 5;
 
     .lab-token-head {
       transform: scale(3.4);
       box-shadow: 0 6px 18px rgb(0 0 0 / 70%);
+      filter: none;
     }
 
     .lab-token-name {
