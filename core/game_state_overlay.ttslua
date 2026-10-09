@@ -1003,22 +1003,29 @@ function GameStateOverlay.pushNarrativeClockTextOnly(year, month, day, hour24, m
     pushOverlayText("gameStateOverlay_time", format12h(hour24, minute))
 end
 
---- Active clock for overlay ticker / real-time: Downtime uses the copied clock only (TOR-527).
---- @return table|nil
---- @return string
-local function activeTickerClockKey()
-    local Phases = require("core.phases")
-    if type(Phases.isPlayDowntime) == "function" and Phases.isPlayDowntime() == true then
-        return S.getStateVal("downtimeClock"), "downtimeClock"
-    end
-    return S.getStateVal("sessionScene", "clock"), "sessionSceneClock"
+--- Real time only runs during Play's Main and Memoriam subphases.
+--- @return boolean
+function GameStateOverlay.isRealTimeAllowed()
+    local sub = S.getStateVal("playSubPhase")
+    return S.getStateVal("currentPhase") == C.Phases.PLAY
+        and (sub == C.PlaySubPhases.MAIN or sub == C.PlaySubPhases.MEMORIAM)
 end
 
---- Advances the active overlay clock when real-time simulation is enabled.
+--- The scene clock when real time is on and allowed; nil otherwise.
+--- @return table|nil
+local function realTimeClock()
+    local ck = S.getStateVal("sessionScene", "clock")
+    if type(ck) ~= "table" or ck.useRealTime ~= true or not GameStateOverlay.isRealTimeAllowed() then
+        return nil
+    end
+    return ck
+end
+
+--- Advances the scene clock when real-time simulation is enabled.
 --- @return boolean True when state was mutated.
 function GameStateOverlay.tickRealTimeClock()
-    local ck, clockKey = activeTickerClockKey()
-    if type(ck) ~= "table" or ck.useRealTime ~= true then
+    local ck = realTimeClock()
+    if ck == nil then
         return false
     end
     local speed = tonumber(ck.realTimeSpeed)
@@ -1140,21 +1147,11 @@ function GameStateOverlay.tickRealTimeClock()
             PresentDayClock.clearCatchUpAndRestore(nextClock)
         end
     end
-    if clockKey ~= "downtimeClock" and nextClock.catchUpToPresentDay ~= true
-        and PresentDayClock.snapToPresentIfNear(nextClock)
-    then
+    if nextClock.catchUpToPresentDay ~= true and PresentDayClock.snapToPresentIfNear(nextClock) then
         y, mo, d, h, m = nextClock.year, nextClock.month, nextClock.day, nextClock.hour, nextClock.minute
     end
     -- The dashboard animates the clock from its last anchor; re-anchor on rollovers only.
     local rolledOver = h ~= oldHour or d ~= oldDay
-    if clockKey == "downtimeClock" then
-        S.setStateVal(nextClock, "downtimeClock")
-        GameStateOverlay.reconcileFromState()
-        if rolledOver then
-            require("dashboard.push").markWorldDirty({ clock = true })
-        end
-        return true
-    end
     S.setStateVal(nextClock, "sessionScene", "clock")
     PresentDayClock.tryAdvance(nextClock)
     local catchUpEnded = nextClock.catchUpToPresentDay ~= true and ck.catchUpToPresentDay == true
@@ -1186,12 +1183,7 @@ local function scheduleNextTick(epoch)
         U.cancel(tickerHandle)
         tickerHandle = nil
     end
-    local ckPre = S.getStateVal("sessionScene", "clock")
-    local Phases = require("core.phases")
-    if type(Phases.isPlayDowntime) == "function" and Phases.isPlayDowntime() == true then
-        ckPre = S.getStateVal("downtimeClock")
-    end
-    if type(ckPre) ~= "table" or ckPre.useRealTime ~= true then
+    if realTimeClock() == nil then
         return
     end
     tickerHandle = U.await(function()
@@ -1204,14 +1196,9 @@ local function scheduleNextTick(epoch)
     end, 1)
 end
 
---- Starts the 1-second wall loop when `sessionScene.clock.useRealTime` is true.
+--- Starts the 1-second wall loop when `sessionScene.clock.useRealTime` is true during Play Main / Memoriam.
 function GameStateOverlay.ensureTicker()
-    local ck = S.getStateVal("sessionScene", "clock")
-    local Phases = require("core.phases")
-    if type(Phases.isPlayDowntime) == "function" and Phases.isPlayDowntime() == true then
-        ck = S.getStateVal("downtimeClock")
-    end
-    if type(ck) == "table" and ck.useRealTime == true then
+    if realTimeClock() ~= nil then
         if tickerHandle ~= nil then
             return
         end

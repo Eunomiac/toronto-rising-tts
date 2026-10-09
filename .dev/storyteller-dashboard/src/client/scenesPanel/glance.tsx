@@ -1870,9 +1870,10 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, pres
   sceneOnly?: boolean;
   /**
    * TTS's real-time state and tonight's sun times; the caller advances `at`. Changes go to TTS when the Scenes tab
-   * provides a command sender; without one the panel is read-only (no calendar, no moon drag).
+   * provides a command sender; without one the panel is read-only (no calendar, no moon drag). `allowed` is false
+   * outside Play's Main and Memoriam, where TTS keeps real time off and the toggle is hidden.
    */
-  live?: { readonly running: boolean; readonly speed: number; readonly dusk?: Date; readonly dawn?: Date };
+  live?: { readonly running: boolean; readonly speed: number; readonly allowed: boolean; readonly dusk?: Date; readonly dawn?: Date };
   w: number;
   h: number;
 }): ReactElement => {
@@ -1955,7 +1956,7 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, pres
         </span>
         <span className="lab-when-date">{formatLongDate(at)}</span>
         <span className="lab-when-time">{formatTime(at)}</span>
-        {!sceneOnly && <button
+        {!sceneOnly && live?.allowed !== false && <button
           type="button"
           className={`lab-when-realtime${realTime ? " on" : ""}`}
           style={realTime ? { animationDuration: `${1 / rate}s` } : undefined}

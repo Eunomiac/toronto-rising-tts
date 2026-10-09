@@ -573,6 +573,7 @@ Standalone second-monitor web app (`.dev/storyteller-dashboard/`). Not the in-ta
 - [x] **Bagless Storyteller dice:** `core/st_dice.ttslua` spawns NPC roll dice from built-in `Custom_Dice` definitions straight onto the drawer tray on Roll; Storyteller dice bags, their 72 preload dice, the bag-click roll start and roll-name pop-up retired; parked ST dice culled on load. Pending Save & Play. _(TOR-688)_
 - [x] **Dashboard finished PC rolls keep their result:** the `rolls` slice fills a PC's last finished roll (`storytellerRolls.pcDash`) with result, difficulty and dice from the roll history and flags it `done` (was mislabelled "held"); the dashboard shows it resolved with Broadcast again / Dismiss. Pending Save & Play. _(TOR-689)_
 - [x] **Lane volumes saved per track:** `Soundscape.setStorytellerLaneVolume` saves the level against the clip on the lane (`soundscape.trackVolumes`, global, never per scene); music, location, featured and rain/wind plays read it before the catalog volume. Pending Save & Play. _(TOR-690)_
+- [x] **Real time only in Play Main / Memoriam:** `GameStateOverlay.isRealTimeAllowed`; the ticker runs only on `sessionScene.clock` while allowed (Downtime clock no longer runs in real time); `setLiveRealTimeClock` refuses to turn it on elsewhere; the dashboard hides the toggle. Pending Save & Play. _(TOR-691)_
 - [ ] **Stage NPCs saved tags + Lua Execute Code:** Persistent A–Z tag rail; Lua tab uses External Editor 39998/39999 (conflicts with TTS Tools extension — one at a time). Pending dashboard/TTS check. _(TOR-555)_
 
 ## Table Objects

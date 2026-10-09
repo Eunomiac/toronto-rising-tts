@@ -311,6 +311,12 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 
 **How to verify:** Save & Play. Start a scene whose music you know, then on the dashboard's Sound panel (or the in-game Sound panel) drag the **Music** slider to roughly a quarter and let go. Play a different scene with different music, then go back to the first scene: its music should come back at your quarter level, not at its old volume. Try the same with a location ambience (Location slider) if you like. Thunder is unchanged: its slider still scales every thunder hit.
 
+#### TOR-691 — Real-time clock only during Play's Main and Memoriam
+
+**Context:** The real-time clock could be switched on at any time, including Downtime, which had its own running clock. Real time now only runs during Play's Main and Memoriam subphases; everywhere else it stays off, and the dashboard hides its real-time button.
+
+**How to verify:** Save & Play and restart the dashboard. During a live scene (Play, Main), the clock button at the top right of the dashboard's date-and-time panel should be there and should turn real time on and off as before. End the scene so the game goes to Downtime: the button should disappear and the clock should stop moving. In the in-game Scenes panel, pressing the real-time toggle during Downtime should show a message that real time only runs during Main and Memoriam. Start a Memoriam: the button should come back.
+
 ### Medium — Prince's Court sheet
 
 #### TOR-663 — Refresh XML keeps The Court on the people who had it open

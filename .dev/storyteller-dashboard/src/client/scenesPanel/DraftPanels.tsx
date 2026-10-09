@@ -89,7 +89,7 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }:
           onSetPresent={() => undefined}
           forceOpen={false}
           sceneOnly
-          live={{ running: false, speed: 1 }}
+          live={{ running: false, speed: 1, allowed: false }}
           w={box.when.w - 2}
           h={box.when.h - 2}
         />

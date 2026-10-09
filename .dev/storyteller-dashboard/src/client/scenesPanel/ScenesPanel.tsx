@@ -361,6 +361,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
                 live={{
                   running: clock.running,
                   speed: clock.speed,
+                  allowed: phase?.phase === "Play" && (phase.subPhase === "Main" || phase.subPhase === "Memoriam"),
                   ...(clock.dusk ? { dusk: toDate(clock.dusk) } : {}),
                   ...(clock.dawn ? { dawn: toDate(clock.dawn) } : {})
                 }}

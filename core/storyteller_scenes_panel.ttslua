@@ -2981,8 +2981,8 @@ function StorytellerScenesPanel.confirmForkConstructorModal(player)
     U.AlertGM("Scene forked: active mirror is now `" .. newKey .. "`.")
 end
 
---- Live real-time clock (Downtime copy or `sessionScene.clock`; never a pending library row).
---- Shared by the in-game Scenes panel toggle and the Storyteller Dashboard.
+--- Live real-time clock on `sessionScene.clock` (never a pending library row). Real time only runs during
+--- Play's Main and Memoriam subphases. Shared by the in-game Scenes panel toggle and the Storyteller Dashboard.
 --- @param running boolean
 --- @param speed number|nil narrative minutes per real minute; nil keeps the current speed
 --- @return string|nil error
@@ -2990,13 +2990,10 @@ function StorytellerScenesPanel.setLiveRealTimeClock(running, speed)
     if clockLerpBusy() then
         return "The clock is still animating to its new time; try again when it settles."
     end
-    local downtime = isPlayDowntime()
-    local ck
-    if downtime then
-        ck = S.getStateVal("downtimeClock")
-    else
-        ck = S.getStateVal("sessionScene", "clock")
+    if running == true and not GameStateOverlay.isRealTimeAllowed() then
+        return "Real time only runs during Play's Main and Memoriam."
     end
+    local ck = S.getStateVal("sessionScene", "clock")
     if type(ck) ~= "table" then
         ck = {}
     end
@@ -3005,11 +3002,7 @@ function StorytellerScenesPanel.setLiveRealTimeClock(running, speed)
     if type(speed) == "number" and speed > 0 then
         ck.realTimeSpeed = speed
     end
-    if downtime then
-        S.setStateVal(ck, "downtimeClock")
-    else
-        S.setStateVal(ck, "sessionScene", "clock")
-    end
+    S.setStateVal(ck, "sessionScene", "clock")
     clockDraft.useRealTime = ck.useRealTime
     StorytellerScenesPanel.refresh()
     if ck.useRealTime then
@@ -3054,12 +3047,10 @@ function StorytellerScenesPanel.toggleRealTimeClock()
         return
     end
 
-    local downtime = isPlayDowntime()
-    local ck = downtime and S.getStateVal("downtimeClock") or S.getStateVal("sessionScene", "clock")
+    local ck = S.getStateVal("sessionScene", "clock")
     local nextRunning = not (type(ck) == "table" and ck.useRealTime == true)
-    StorytellerScenesPanel.setLiveRealTimeClock(nextRunning, nil)
-    local label = downtime and "Downtime real-time clock: " or "Real-time narrative clock: "
-    U.AlertGM(label .. (nextRunning and "ON." or "OFF."))
+    local err = StorytellerScenesPanel.setLiveRealTimeClock(nextRunning, nil)
+    U.AlertGM(err or ("Real-time narrative clock: " .. (nextRunning and "ON." or "OFF.")))
 end
 
 --- E2E / harness: whether Scenes panel would enable an NPC seat toggle.

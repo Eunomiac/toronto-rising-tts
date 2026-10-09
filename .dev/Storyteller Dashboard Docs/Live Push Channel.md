@@ -79,7 +79,7 @@ The six world topics share one mechanism in `dashboard/push.ttslua`:
 | End of `UpdateUIDisplays(delta)` | no delta (full refresh): all. `phase` or `gameStateOverlay`: phase + clock. `scenesPanel`: scene + seats + clock. `scene` or `adminLighting`: scene. `soundscape`: soundscape |
 | `Sync.npcs` | seats |
 | Spotlight shuffle and rotation (`core/spotlight.ttslua`) | seats |
-| Real-time ticker `GameStateOverlay.tickRealTimeClock` | clock (+ scene outside Downtime), **only** on an hour/day rollover or when present-day catch-up ends — never per minute |
+| Real-time ticker `GameStateOverlay.tickRealTimeClock` | clock + scene, **only** on an hour/day rollover or when present-day catch-up ends — never per minute |
 | `Phases.freezeClock` | clock |
 | `syncSoundscapeControls` (Sound panel repaint, including volume sliders) | soundscape |
 | `Scenes.applyActiveSceneSoundscapeFromSession` | soundscape + scene |
