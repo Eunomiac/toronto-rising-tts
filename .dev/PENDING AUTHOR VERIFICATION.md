@@ -243,7 +243,7 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 
 #### TOR-685 — Move, light, spread and clear stage NPCs from the dashboard
 
-**Context:** The stage drawing on the dashboard's Scenes tab is now where you arrange NPCs. Every edit uses the same TTS code as the control board's Apply button: a seated NPC you put on the stage has their seat go dark, and taking them off brings the seat back. In Queued mode, several stage edits sent together reach TTS as one change, so the figurines glide into place together. Scatter groups can be rearranged the same way, and generic NPCs are added from the roster's new **Generic** view (you type the name the players will see; there is no in-game naming pop-up). The in-game control board still works as before; turning it into a plain mirror of the dashboard comes later, with the clean-up of in-game scene editing.
+**Context:** The stage drawing on the dashboard's Scenes tab is now where you arrange NPCs. In TTS, a seated NPC you put on the stage has their seat go dark, and taking them off brings the seat back. In Queued mode, several stage edits sent together reach TTS as one change, so the figurines glide into place together. Scatter groups can be rearranged the same way, and generic NPCs are added from the roster's new **Generic** view (you type the name the players will see; there is no in-game naming pop-up). The in-game control board no longer edits the stage (see TOR-687 below).
 
 **How to verify:** Save & Play into a live scene and open the dashboard's **Scenes** tab.
 
@@ -272,6 +272,21 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 6. **NPC roll:** right-click an NPC on the stage and pick a roll type. The NPC panel appears under the drawer list. Click the diamonds (or the **+**) and build a pool with the dice ring, pick a difficulty, then press the dice icon to roll (right-click it for secret dice the players cannot see). Afterwards click a die to pick it, press the circular-arrows icon to reroll it, and press the tick to confirm (right-click the tick to hold the result instead of broadcasting it).
 7. **Willpower reroll:** have a player spend Willpower on a rolled PC roll (or press the Willpower icon on a rolled NPC roll). The row should turn blue and pulse while the reroll is under way, then go back to plain red.
 8. **Hunt:** in the hunt panel under the location card, click a resonance flavor and pick the hunting PC from the ring (the flavor gets an outline in that PC's seat colour), press the circling-arrows button to roll, then press the broadcast (loudspeaker) button. TTS should show the resonance on the roll result banner, and the hunt bar should go back to its starting state. (If no flavor was picked, the broadcast button asks for the PC with the same ring.)
+
+#### TOR-687 — The Stage Control board only holds spotlight tokens now
+
+**Context:** The dashboard is now the only place to arrange the stage. The in-game board lost its Apply / Load / Clear buttons, the THERE preview, Lock next scene, the token palette, PC tokens, the generic NPC import box, and token-on-dice-bag rolls. Instead, every NPC standing on the stage gets one large token on the Stage Control board, placed by script at the NPC's spot. Its only job is the "Spotlight NPC (hold)" hotkey. Scatter is moved from the dashboard only. Werewolf NPCs are marked in the NPC data instead of by a token tag. The in-game Storyteller roll pop-ups only work while the **In-game ST Rolls** button (debug row of the Storyteller HUD) is on; it starts off. The in-game Scenes panel still works as a fallback, without THERE.
+
+**Before you test:** in the save, delete the token palette board and everything on it, any PC tokens, the old NPC control tokens, and any minimap markers left on the Stage Control board. You can give the board plain art if you like. Then Save & Play.
+
+**How to verify:** load a live scene that has NPCs on the stage, with the dashboard's **Scenes** tab open.
+
+1. **Spotlight tokens:** each stage NPC should have exactly one large token on the Stage Control board, face down if their light is off. Move an NPC on the dashboard's stage: their token should move on the board too. Take them off the stage: the token should disappear. If the tokens look too big or too small, tell me and I will change their size.
+2. **Hold hotkey:** hover one of those tokens and hold the "Spotlight NPC (hold)" key. That NPC's figurine should be spotlit until you let go.
+3. **Werewolf rolls:** on the dashboard, right-click a Werewolf NPC on the stage. The roll ring should offer the Werewolf roll.
+4. **Scatter:** switch the table to Scatter, then move a PC and an NPC to other groups on the dashboard. Their figurines should move in TTS.
+5. **Roll fallback:** with **In-game ST Rolls** off, click a Storyteller dice bag. No pop-up should open, and a message should tell you to use the dashboard. Turn the button on and click the bag again: the roll name pop-up should open as before.
+6. **Scenes panel fallback:** in the in-game Scenes panel, apply a scene, then close the panel. Both should work normally, and there should be no THERE button.
 
 ### Medium — Prince's Court sheet
 
