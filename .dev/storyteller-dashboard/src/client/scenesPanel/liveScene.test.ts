@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { SceneCatalogs } from "../scenes/types";
+import type { SceneCatalogs } from "./catalogs";
 import type { SeatsSlice, SoundscapeSlice } from "../worldState";
 import { liveSeats, liveTokens, soundView, spotlightView, toDate, weatherAxes } from "./liveScene";
 

@@ -1,5 +1,5 @@
-import { polarAreaNameForFamily } from "../scenes/payload";
-import type { ControlBoardSnaps } from "../scenes/types";
+import { polarAreaNameForFamily } from "./catalogs";
+import type { ControlBoardSnaps } from "./catalogs";
 
 /**
  * The drawn stage and the in-game control board share one mapping, so the slots drawn on the dashboard sit

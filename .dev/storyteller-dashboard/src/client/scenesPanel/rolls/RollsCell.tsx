@@ -1,6 +1,6 @@
 import { useEffect, useState, type CSSProperties, type MouseEvent, type ReactElement } from "react";
-import { Icon, type IconName } from "../../lab/icons";
-import { canvasPoint, Overlay } from "../../lab/sketch";
+import { Icon, type IconName } from "../icons";
+import { canvasPoint, Overlay } from "../sketch";
 import { SEAT_ACCENT } from "../../pcSheet/layout";
 import type { PcRoll, PoolKind, RollsSlice, StLiveRoll, StRollSlot } from "../../worldState";
 import type { RollOptionsView } from "./bridge";

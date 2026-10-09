@@ -1,9 +1,9 @@
-# Stage NPCs — generic catalogue
+# Generic NPC catalogue
 
 ## Agent Routing
 
 Read this when:
-- changing the Storyteller Dashboard **Stage NPCs** tab
+- changing the **Generic** roster view in the Storyteller Dashboard **Scenes** tab
 - refreshing generic NPC rows from the Google Sheet
 - changing when the Generics Export sheet is refreshed into `generic-npcs.json`
 - Lua spawn/membership (CONTROL_BOARD, scene library): [`.dev/NPC Object Spawning & Spotlighting/Generic NPCs.md`](../NPC%20Object%20Spawning%20%26%20Spotlighting/Generic%20NPCs.md)
@@ -20,7 +20,7 @@ Verification:
 - Restart **STORYTELLER DASHBOARD** and confirm the console logs a catalog refresh
 - `npm run generic-npcs:import:test`
 - Optional manual: `npm run generic-npcs:import`
-- Stage NPCs tab shows the latest sheet rows
+- The Scenes tab roster's **Generic** view shows the latest sheet rows
 
 Status: current
 
@@ -28,7 +28,7 @@ Status: current
 
 ## What this is
 
-The **Stage NPCs** tab on the existing Storyteller Dashboard lets you search the generic cutout catalogue, pick several NPCs, **Copy** their `key` values as a comma-separated list (for pasting onto CONTROL_BOARD), or **Spawn in TTS** when the External Editor bridge is free. It is not a second app. Lua spawn/membership/destroy: [`.dev/NPC Object Spawning & Spotlighting/Generic NPCs.md`](../NPC%20Object%20Spawning%20%26%20Spotlighting/Generic%20NPCs.md).
+The Storyteller Dashboard's **Scenes** tab lets you search the generic cutout catalogue and spawn a generic NPC into the live scene under a name the players will see. Lua spawn/membership/destroy: [`.dev/NPC Object Spawning & Spotlighting/Generic NPCs.md`](../NPC%20Object%20Spawning%20%26%20Spotlighting/Generic%20NPCs.md).
 
 Generate NPC (OpenAI) stays on its own tab.
 
@@ -98,18 +98,13 @@ civilianChildBoy_01,dogAngry_02,crimePolice_03
 
 ## Dashboard behavior
 
-- Live search: every whitespace-separated term must match (AND) against label + tags + key + filename (case-insensitive).
-- Hovering a thumbnail (or a selected-queue chip) shows the **full uncropped cutout** in a 300px-wide column on the right.
-- Thumbnails: CSS crop (`object-fit: cover; object-position: center top`). No generated thumbnail files. Images are served from the existing Generic folder (`/generic-npc-images/…`).
-- Click a tile to add/remove it from the bottom queue. Click a queue chip to remove it. Selected tiles use a **red** highlight.
-- **Copy** writes keys in queue order and marks those keys **gold** (“already added”, localStorage). Does not clear the queue. Disabled when empty.
-- **Spawn in TTS** calls `GlobalImportGenericNpcs` via the External Editor bridge when ports allow; also marks keys gold on successful send. Greyed out when 39998 is held by the TTS Tools extension or 39999 is unreachable (`GET /api/tts-bridge-status`).
-- **Clear** empties the selection queue only.
-- **Clear Generics** clears gold “added” highlights only (local; does not talk to Lua).
-- **+** next to search saves every current space-delimited term into a persistent left-column tag list (browser local storage, A–Z). Click a saved tag to add that term to search; click again to remove it. Newly saved tags stay selected because they are already in the search box.
-- Escape clears the search box. Opening Stage NPCs focuses search. `/` focuses search when you are not already typing in a field. Enter does not copy.
-- Missing image files log a warning and show a placeholder; they do not crash the tab.
+The catalogue is the **Generic** view of the roster in the **Scenes** tab (`GenericRoster` in `src/client/scenesPanel/glance.tsx`, loaded once from `GET /api/generic-npcs`).
+
+- **In this scene** lists the generic NPCs already spawned (from the `seats` push's `generics`); drag them onto the stage like any other token.
+- **Add from the catalog** filters the catalogue by the roster search box: every whitespace-separated term must match (AND) against label + tags + key (case-insensitive). At most 60 matches show.
+- **+ Add** asks for the name the players will see, then sends the `genericAdd` scene op (`GenericNpcs.importNamed` in Lua), which spawns the figurine. It obeys the Send / Live queue like every other scene command.
+- Token headshots come from the existing Generic folder (`/generic-npc-images/…`).
+
+The old standalone **Stage NPCs** tab (thumbnail grid, saved search tags, full-cutout hover preview, Copy keys) was retired when the Scenes tab took over generic NPCs.
 
 **Sheet → Lua labels:** `npm run generic-npcs:import` also writes `lib/generic_npcs_catalog.ttslua` so `D.initGenericNPCs()` can attach `key` / `label` on each Cloud variant (TOR-560).
-
-The **Lua** tab and **Spawn in TTS** share the External Editor ports (TTS on **39999**, this dashboard listening on **39998**). That conflicts with the TTS Tools extension — disable the extension while using those controls. Both UIs poll bridge status and grey out TTS-dependent buttons when the bridge is unavailable.

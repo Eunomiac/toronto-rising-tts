@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { MemoriamPeriod } from "../scenes/types";
+import type { MemoriamPeriod } from "./catalogs";
 import { memoriamDate, memoriamPayload, periodForYear, periodsFor } from "./memoriam";
 
 const period = (key: string, startYear: number, endYear: number, characters: readonly string[] = ["lucien"]): MemoriamPeriod =>

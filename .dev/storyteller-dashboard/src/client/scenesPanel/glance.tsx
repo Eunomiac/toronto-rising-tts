@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type DragEvent, type InputHTMLAttributes, type MouseEvent, type PointerEvent, type ReactElement, type ReactNode } from "react";
 import { Headshot } from "../headshots/Headshot";
-import type { CatalogCharacter, SceneCatalogs } from "../scenes/types";
+import type { CatalogCharacter, SceneCatalogs } from "./catalogs";
 import {
   useChronicleLocations,
   useWeatherCalendar,
@@ -12,8 +12,8 @@ import {
 } from "./chronicleSheets";
 import { SEAT_ACCENT } from "../pcSheet/layout";
 import { Icon, type IconName } from "./icons";
-import { groupColor, groupLeader, setRosterLayout, useRosterLayout, useSceneCatalogs, type RosterCategory } from "./labRoster";
-import { SceneNotes } from "./labNotes";
+import { groupColor, groupLeader, setRosterLayout, useRosterLayout, useSceneCatalogs, type RosterCategory } from "./roster";
+import { SceneNotes } from "./sceneNotes";
 import {
   INTENSITIES,
   eligibleFlavors,
@@ -28,10 +28,10 @@ import {
 } from "./huntOdds";
 import { MemoriamModal } from "./memoriamModal";
 import { Btn, Overlay, canvasPoint } from "./sketch";
-import { useScenesCommand, type SceneClockMode, type ScenesSend, type SoundLane } from "../scenesPanel/commands";
-import type { SendMode } from "../scenesPanel/queue";
-import { LOCATION_MUSIC_LABEL, MOOD_LABEL, fromDate, rainKey, type SoundView, type SpotlightView } from "../scenesPanel/liveScene";
-import { GROUP_DRAG_TYPE, NPC_DRAG_TYPE } from "../scenesPanel/stage";
+import { useScenesCommand, type SceneClockMode, type ScenesSend, type SoundLane } from "./commands";
+import type { SendMode } from "./queue";
+import { LOCATION_MUSIC_LABEL, MOOD_LABEL, fromDate, rainKey, type SoundView, type SpotlightView } from "./liveScene";
+import { GROUP_DRAG_TYPE, NPC_DRAG_TYPE } from "./stage";
 import { useWorldState } from "../worldState";
 
 /**

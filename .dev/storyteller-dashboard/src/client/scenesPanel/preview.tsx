@@ -1,5 +1,5 @@
 import { Fragment, useState, type ReactElement } from "react";
-import type { SceneClockMode } from "../scenesPanel/commands";
+import type { SceneClockMode } from "./commands";
 import {
   AspectRow,
   ConditionsPanel,
@@ -15,7 +15,7 @@ import {
   type SceneRef,
   type SceneTiming
 } from "./glance";
-import { SceneNotes } from "./labNotes";
+import { SceneNotes } from "./sceneNotes";
 import { Box, WideBoard, canvasPoint } from "./sketch";
 
 /** A Lab scene being prepared away from the table. */

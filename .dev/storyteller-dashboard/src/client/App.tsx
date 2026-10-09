@@ -4,17 +4,13 @@ import { LabTab } from "./lab/LabTab";
 import { initLuaTab } from "./luaTab";
 import { PcSheetTab } from "./pcSheet/PcSheetTab";
 import { ScenesPanel } from "./scenesPanel/ScenesPanel";
-import { initScenesTab } from "./scenesTab";
-import { initStageNpcs } from "./stageNpcs";
 import { TermImageLayer } from "./termImages/TermImageLayer";
 
-const DEFAULT_TAB_ID = "tab-scene-control";
+const DEFAULT_TAB_ID = "tab-scenes";
 const LAB_TAB_ID = "tab-lab";
 
 const ALL_TABS = [
-  { id: DEFAULT_TAB_ID, panelId: "panel-scene-control", label: "Scenes" },
-  { id: "tab-stage-npcs", panelId: "panel-stage-npcs", label: "Stage NPCs" },
-  { id: "tab-scenes", panelId: "panel-scenes", label: "Scenes (old)" },
+  { id: DEFAULT_TAB_ID, panelId: "panel-scenes", label: "Scenes" },
   { id: "tab-pcs", panelId: "panel-pcs", label: "PCs" },
   { id: "tab-lua", panelId: "panel-lua", label: "Lua" },
   { id: "tab-generate-npc", panelId: "panel-generate-npc", label: "Generate NPC" },
@@ -37,17 +33,12 @@ export const App = (): ReactElement => {
       return;
     }
     started.current = true;
-    void initStageNpcs();
-    initScenesTab();
     initLuaTab();
     initGenerateNpc();
   }, []);
 
   useLayoutEffect(() => {
     window.dispatchEvent(new Event("resize"));
-    if (activeTab === "tab-stage-npcs") {
-      document.getElementById("generic-npc-search")?.focus();
-    }
   }, [activeTab]);
 
   const onTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>, tabId: TabId): void => {
@@ -90,7 +81,7 @@ export const App = (): ReactElement => {
       </nav>
 
       <section
-        id="panel-scene-control"
+        id="panel-scenes"
         className="tab-panel lab-panel"
         role="tabpanel"
         aria-labelledby={DEFAULT_TAB_ID}
@@ -98,200 +89,6 @@ export const App = (): ReactElement => {
       >
         <ScenesPanel active={activeTab === DEFAULT_TAB_ID} />
       </section>
-
-      <section
-        id="panel-stage-npcs"
-        className="tab-panel stage-npcs-panel"
-        role="tabpanel"
-        aria-labelledby="tab-stage-npcs"
-        hidden={activeTab !== "tab-stage-npcs"}
-      >
-        <aside className="saved-tags-rail" aria-label="Saved search tags">
-          <div className="saved-tags-list" id="saved-tags-list"></div>
-        </aside>
-        <div className="stage-npcs-main">
-          <div className="stage-npcs-toolbar">
-            <div className="stage-npcs-search-row">
-              <input id="generic-npc-search" type="search" placeholder="Search NPCs…" autoComplete="off" />
-              <button id="generic-npc-save-tags" type="button" title="Save current search terms as tags">+</button>
-            </div>
-            <div className="status idle" id="generic-npc-status">Ready.</div>
-          </div>
-          <div className="generic-npc-grid" id="generic-npc-grid" aria-label="Generic NPCs"></div>
-          <footer className="generic-npc-queue">
-            <div className="generic-npc-queue-list" id="generic-npc-queue-list"></div>
-            <div className="generic-npc-queue-actions">
-              <span id="generic-npc-queue-count">No NPCs selected</span>
-              <button id="generic-npc-clear-added" type="button">Clear Generics</button>
-              <button id="generic-npc-clear" type="button" disabled>Clear</button>
-              <button id="generic-npc-copy" type="button" disabled>Copy</button>
-              <button id="generic-npc-spawn" type="button" disabled>Spawn in TTS</button>
-            </div>
-            <div className="status idle" id="generic-npc-bridge-status">Checking TTS bridge…</div>
-          </footer>
-        </div>
-        <aside className="generic-npc-preview" aria-label="Full cutout preview">
-          <img id="generic-npc-preview-image" alt="" hidden />
-          <p className="generic-npc-preview-empty" id="generic-npc-preview-empty">Hover a cutout</p>
-          <p className="generic-npc-preview-label" id="generic-npc-preview-label" hidden></p>
-        </aside>
-      </section>
-
-      <section
-        id="panel-scenes"
-        className="tab-panel scenes-panel"
-        role="tabpanel"
-        aria-labelledby="tab-scenes"
-        hidden={activeTab !== "tab-scenes"}
-      >
-        <div className="scenes-workspace">
-          <aside className="scenes-group-rail" aria-label="Scene collections">
-            <div className="scenes-left-tabs" role="tablist" aria-label="Collection panels">
-              <button type="button" role="tab" data-scenes-left-tab="scenes" aria-selected="false">Scenes</button>
-              <button type="button" role="tab" data-scenes-left-tab="main" className="lock active" aria-selected="true">Main NPCs</button>
-              <button type="button" role="tab" data-scenes-left-tab="generic" aria-selected="false">Generic NPCs</button>
-              <button
-                type="button"
-                role="tab"
-                data-scenes-left-tab="memoriam"
-                aria-selected="false"
-                disabled
-                title="Memoriam NPCs become available when the scene is a Memoriam"
-              >
-                Memoriam NPCs
-              </button>
-            </div>
-            <div className="scenes-left-body">
-              <div id="scenes-left-panel-scenes" className="scenes-left-empty" hidden></div>
-              <div id="scenes-group-trays" className="scenes-group-trays"></div>
-              <div id="scenes-left-panel-generic" className="scenes-left-empty" hidden></div>
-              <div id="scenes-left-panel-memoriam" className="scenes-left-empty" hidden></div>
-            </div>
-          </aside>
-          <div className="scenes-board-wrap" id="scenes-board-wrap">
-            <div className="scenes-board-frame" id="scenes-board-frame">
-              <img id="scenes-board-img" className="scenes-board-img" alt="Control board" />
-              <div id="scenes-board-overlay" className="scenes-board-overlay"></div>
-            </div>
-            <div className="scenes-board-tools">
-              <button id="scenes-debug-toggle" type="button">Debug</button>
-              <button id="scenes-debug-fill" type="button" hidden>Fill Stage</button>
-              <button id="scenes-debug-fill-lock" type="button" hidden>Fill and Lock</button>
-              <button id="scenes-debug-name-offsets" type="button" hidden>Get Name Offsets</button>
-              <button id="scenes-debug-restore-pcs" type="button" hidden>Restore PCs</button>
-              <button id="scenes-clear-stage" className="scenes-clear-stage" type="button">Clear Stage</button>
-            </div>
-          </div>
-          <aside className="scenes-widget-rail" aria-label="Scene controls">
-            <input id="scenes-title" type="text" placeholder="Scene title" aria-label="Scene title" />
-            <div className="scenes-mode-toggle" role="group" aria-label="Placement">
-              <button id="scenes-mode-standard" className="lock active" type="button" title="Standard table and polar stage">Standard</button>
-              <button id="scenes-mode-scatter" type="button" title="Scatter areas">Scatter</button>
-            </div>
-            <div className="scenes-widget scenes-place-widget">
-              <button id="scenes-district" type="button" title="District">
-                <img className="scenes-widget-icon" src="/icons/scenes/district.svg" alt="" />
-                <span className="scenes-widget-value">District</span>
-              </button>
-              <button id="scenes-site" type="button" title="Site">
-                <img className="scenes-widget-icon" src="/icons/scenes/site.svg" alt="" />
-                <span className="scenes-widget-value">Site</span>
-              </button>
-              <button id="scenes-skybox" type="button" title="Skybox">
-                <img className="scenes-widget-icon" src="/icons/scenes/skybox.svg" alt="" />
-                <span className="scenes-widget-value">Skybox</span>
-              </button>
-              <label className="scenes-fog-toggle" title="Top fog">
-                <img className="scenes-widget-icon" src="/icons/scenes/fog.svg" alt="" />
-                <input id="scenes-fog" type="checkbox" defaultChecked />
-                Fog
-              </label>
-            </div>
-            <div className="scenes-widget scenes-clock-widget">
-              <div className="scenes-clock-face">
-                <div className="scenes-clock-readout">
-                  <output id="scenes-clock-date-out" htmlFor="scenes-clock-day">Sunday, September 13, 2026</output>
-                  <output id="scenes-clock-time-out" htmlFor="scenes-clock-minutes">9:00 PM</output>
-                </div>
-                <label className="scenes-present-day" title="Present day">
-                  <input id="scenes-present-day" type="checkbox" defaultChecked />
-                  Now
-                </label>
-              </div>
-              <label className="scenes-clock-slider" title="Time of day">
-                <input id="scenes-clock-minutes" type="range" min={0} max={1435} step={5} defaultValue={1260} />
-              </label>
-              <div className="scenes-clock-date">
-                <label className="scenes-clock-slider" title="Day">
-                  <output id="scenes-clock-day-out" htmlFor="scenes-clock-day">13</output>
-                  <input id="scenes-clock-day" type="range" min={1} max={31} defaultValue={13} />
-                </label>
-                <label className="scenes-clock-slider" title="Month">
-                  <output id="scenes-clock-month-out" htmlFor="scenes-clock-month">September</output>
-                  <input id="scenes-clock-month" type="range" min={1} max={12} defaultValue={9} />
-                </label>
-                <label className="scenes-clock-year" title="Year">
-                  <input id="scenes-clock-year" type="number" min={1} max={2100} defaultValue={2026} aria-label="Year" />
-                </label>
-              </div>
-            </div>
-            <div className="scenes-widget scenes-weather-widget">
-              <div className="scenes-weather-axes">
-                <button id="scenes-weather-rain" type="button" title="No rain">
-                  <span className="scenes-weather-stack" data-count="1">
-                    <img src="/icons/scenes/rain.svg" alt="" />
-                  </span>
-                </button>
-                <button id="scenes-weather-snow" type="button" title="No snow">
-                  <span className="scenes-weather-stack" data-count="1">
-                    <img src="/icons/scenes/snow.svg" alt="" />
-                  </span>
-                </button>
-                <button id="scenes-weather-wind" type="button" title="No wind">
-                  <span className="scenes-weather-stack" data-count="1">
-                    <img src="/icons/scenes/wind.svg" alt="" />
-                  </span>
-                </button>
-                <button id="scenes-weather-thunder" type="button" title="No thunder">
-                  <span className="scenes-weather-stack" data-count="1">
-                    <img src="/icons/scenes/thunder.svg" alt="" />
-                  </span>
-                </button>
-              </div>
-              <label className="scenes-sound-row" title="Lighting">
-                <img className="scenes-widget-icon" src="/icons/scenes/lighting.svg" alt="" />
-                <select id="scenes-lighting" aria-label="Lighting"></select>
-              </label>
-            </div>
-            <div className="scenes-widget scenes-sound-widget">
-              <label className="scenes-sound-row" title="Location track">
-                <img className="scenes-widget-icon" src="/icons/scenes/location.svg" alt="" />
-                <select id="scenes-location-track" aria-label="Location track"></select>
-              </label>
-              <label className="scenes-sound-row" title="Background mood">
-                <img className="scenes-widget-icon" src="/icons/scenes/music.svg" alt="" />
-                <select id="scenes-background-mood" aria-label="Background mood"></select>
-              </label>
-            </div>
-            <div className="scenes-widget scenes-conditions-widget">
-              <h3 className="scenes-widget-heading">Conditions</h3>
-              <div id="scenes-conditions-list"></div>
-            </div>
-            <div className="scenes-widget scenes-table-widget" id="scenes-table-row">
-              <div id="scenes-table-chips" className="scenes-table-chips"></div>
-            </div>
-            <footer className="scenes-footer">
-              <div className="status idle" id="scenes-bridge-status">Checking TTS bridge…</div>
-              <div className="scenes-footer-actions">
-                <button id="scenes-copy" type="button">Copy JSON</button>
-                <button id="scenes-import" type="button" disabled>Import in TTS</button>
-              </div>
-            </footer>
-          </aside>
-        </div>
-        <div id="scenes-toasts" className="scenes-toasts" aria-live="polite"></div>
-      </section>
-      <div id="scenes-drag-layer" className="scenes-drag-layer"></div>
 
       <section
         id="panel-pcs"

@@ -38,4 +38,4 @@ Dashboard styles live in `.dev/storyteller-dashboard/src/client/styles/` as **SC
 - A **new** component block (` .scenes-panel`, `.modal-backdrop`) — then nest **everything belonging to that block**
 - Selectors that are truly shared across unrelated blocks (`button` reset, `.status`, `.lock.active`) — nest their own variants (`&:hover`, `&.error`)
 
-Do not nest unrelated components inside each other just to create nesting. Depth of 3–4 is normal; if a nest is deeper, split a partial (`_scenes.scss`, `_stage-npcs.scss`), still nested inside each partial.
+Do not nest unrelated components inside each other just to create nesting. Depth of 3–4 is normal; if a nest is deeper, split a partial (`_lab-glance.scss`, `_rolls.scss`), still nested inside each partial.

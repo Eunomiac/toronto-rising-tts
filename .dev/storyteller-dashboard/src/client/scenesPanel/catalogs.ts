@@ -1,8 +1,4 @@
-export type PlacementMode = "standard" | "scatter";
-
-export type PlayerColor = "Brown" | "Orange" | "Red" | "Pink" | "Purple";
-
-export type NpcLightMode = "OFF" | "STANDARD";
+/** Shapes of `data/scene-catalogs.json` and `data/control-board-snaps.json` (generated from the TTS save and Lua catalogs). */
 
 export type CatalogCharacter = {
   readonly characterKey: string;
@@ -38,7 +34,7 @@ export type MemoriamPeriod = {
 
 export type SceneCatalogs = {
   readonly generatedBy: string;
-  readonly playerColors: readonly PlayerColor[];
+  readonly playerColors: readonly ("Brown" | "Orange" | "Red" | "Pink" | "Purple")[];
   readonly npcSeats: readonly string[];
   readonly pcs: readonly CatalogCharacter[];
   readonly namedNpcs: readonly CatalogCharacter[];
@@ -72,7 +68,7 @@ export type PolarSnap = {
   readonly isAnchor: boolean;
   readonly u: number;
   readonly v: number;
-  readonly defaultLightMode: NpcLightMode | string;
+  readonly defaultLightMode: string;
 };
 
 export type SeatSnap = {
@@ -128,70 +124,59 @@ export type ControlBoardSnaps = {
   };
 };
 
-export type SeatSlotRow = {
-  characterKey: string;
-  isPlayingNPC: boolean;
-  isPresent: boolean;
-  tableSlot?: number;
-  npcCharacterKey?: string;
-  absentFromSession?: boolean;
-  slotEmpty?: boolean;
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+export const parseControlBoardSnaps = (value: unknown): ControlBoardSnaps => {
+  if (!isRecord(value) || !Array.isArray(value.polar) || !Array.isArray(value.seats)) {
+    throw new Error("control-board-snaps.json is missing polar/seats arrays.");
+  }
+  return value as ControlBoardSnaps;
 };
 
-export type PolarToken = {
-  characterKey: string;
-  snapIndex: number;
-  npcLightMode: NpcLightMode;
+const familyMeanU = (snaps: ControlBoardSnaps, familyId: string): number => {
+  const members = snaps.polar.filter((snap) => snap.familyId === familyId);
+  return members.length === 0 ? 0.5 : members.reduce((sum, member) => sum + member.u, 0) / members.length;
 };
 
-export type ScatterCenterRow = {
-  slot: number;
-  isPlayingNPC: boolean;
-  isPresent: boolean;
-  characterKey?: string;
+const centerFamilyIdOnRing = (snaps: ControlBoardSnaps, ringIndex: number): string | null => {
+  const ids = [...new Set(snaps.polar.filter((snap) => snap.ringIndex === ringIndex).map((snap) => snap.familyId))];
+  let best: string | null = null;
+  let bestDist = Number.POSITIVE_INFINITY;
+  for (const id of ids) {
+    const dist = Math.abs(familyMeanU(snaps, id) - 0.5);
+    if (dist < bestDist) {
+      best = id;
+      bestDist = dist;
+    }
+  }
+  return best;
 };
 
-export type ScatterOrbitRow = {
-  slot: number;
-  npcLightMode: NpcLightMode;
-};
-
-export type ScatterAreaDraft = {
-  centerCharacters: Record<string, ScatterCenterRow>;
-  orbitCharacters: Record<string, ScatterOrbitRow>;
-};
-
-export type SceneDraft = {
-  sceneKey: string;
-  title: string;
-  placementMode: PlacementMode;
-  tableKey: string;
-  lightingPresetKey: string;
-  isTopFogActive: boolean;
-  districtKey: string;
-  siteKey: string;
-  skyboxOverride: string;
-  clockPresentDay: boolean;
-  clockYear: number;
-  clockMonth: number;
-  clockDay: number;
-  clockHour: number;
-  clockMinute: number;
-  conditions: string[];
-  locationTrack: string;
-  backgroundMood: string;
-  weatherKey: string;
-  weatherRain: "none" | "rainLight" | "rainHeavy";
-  weatherWind: "none" | "low" | "med" | "max";
-  weatherThunder: boolean;
-  weatherSnow: "none" | "light" | "medium" | "heavy";
-  standard: {
-    seatSlots: Record<string, SeatSlotRow>;
-    polar: PolarToken[];
-    paletteNpcKeys: string[];
-  };
-  scatter: {
-    areas: Record<string, ScatterAreaDraft>;
-    paletteNpcKeys: string[];
-  };
+/** The painted area name of a polar pack (`CENTER`, `Mid Left`, `Far Right`, …); matches the in-game snap CSV. */
+export const polarAreaNameForFamily = (snaps: ControlBoardSnaps, familyId: string): string => {
+  const ringIndex = snaps.polar.find((snap) => snap.familyId === familyId)?.ringIndex;
+  if (ringIndex === 3) {
+    return "Far Left";
+  }
+  if (ringIndex === 6) {
+    return "Far Right";
+  }
+  if (ringIndex === 4) {
+    return "Far Center-Left";
+  }
+  if (ringIndex === 5) {
+    return "Far Center-Right";
+  }
+  if (ringIndex === 1 || ringIndex === 2) {
+    const centerId = centerFamilyIdOnRing(snaps, ringIndex);
+    if (familyId === centerId) {
+      return ringIndex === 1 ? "CENTER" : "Mid Center";
+    }
+    if (familyMeanU(snaps, familyId) < (centerId ? familyMeanU(snaps, centerId) : 0.5)) {
+      return ringIndex === 1 ? "Center Left" : "Mid Left";
+    }
+    return ringIndex === 1 ? "Center Right" : "Mid Right";
+  }
+  return familyId;
 };

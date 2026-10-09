@@ -1,10 +1,10 @@
 import { type ReactElement } from "react";
 import type { LibraryScene } from "../../shared/sceneLibrary";
-import { ambientLabel, AspectRow, ConditionsPanel, LocationPanel, SoundMixer, WeatherPanel, WhenPanel } from "../lab/glance";
-import { SceneNotes } from "../lab/labNotes";
-import { previewLayout } from "../lab/labPreview";
-import { Box, WideBoard, type LiveBoard } from "../lab/sketch";
-import type { SceneCatalogs } from "../scenes/types";
+import { ambientLabel, AspectRow, ConditionsPanel, LocationPanel, SoundMixer, WeatherPanel, WhenPanel } from "./glance";
+import { SceneNotes } from "./sceneNotes";
+import { previewLayout } from "./preview";
+import { Box, WideBoard, type LiveBoard } from "./sketch";
+import type { SceneCatalogs } from "./catalogs";
 import { ScenesCommandContext, type ScenesCommand } from "./commands";
 import { RollsCommandContext } from "./rolls/commands";
 import { applyToDraft, draftAtPresentDay, draftClock, draftSceneSlice, draftSoundView, draftStage, savedPlacements, withPlacements } from "./library";

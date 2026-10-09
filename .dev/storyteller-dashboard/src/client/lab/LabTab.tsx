@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactElement } from "react";
 import { createPortal } from "react-dom";
 import { LabPins } from "./LabPins";
 import { SCENES_ROUND_1 } from "./scenesRound1";
-import type { SketchState } from "./sketch";
+import type { SketchState } from "../scenesPanel/sketch";
 
 /**
  * Dev-only Lab: throwaway design sketches at the real 1920×1080 fullscreen size, with click-to-comment pins.

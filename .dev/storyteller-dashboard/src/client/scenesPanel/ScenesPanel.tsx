@@ -15,11 +15,11 @@ import {
   type LabLocation,
   type LiveScenes,
   type QueueView
-} from "../lab/glance";
-import { ScenePreview } from "../lab/labPreview";
-import { useControlBoardSnaps, useSceneCatalogs } from "../lab/labRoster";
-import type { SceneCatalogs } from "../scenes/types";
-import { Box, Overlay, WideBoard, type LiveBoard } from "../lab/sketch";
+} from "./glance";
+import { ScenePreview } from "./preview";
+import { useControlBoardSnaps, useSceneCatalogs } from "./roster";
+import type { SceneCatalogs } from "./catalogs";
+import { Box, Overlay, WideBoard, type LiveBoard } from "./sketch";
 import type { SheetSnapshot } from "../pcSheet/types";
 import { sceneDeckSnapshot, setSceneDeckSection, useSceneDeck, useSceneDeckStatus } from "../sceneDeck";
 import { useSceneLibraryStatus } from "../sceneLibrary";

@@ -1,4 +1,4 @@
-import type { SceneCatalogs } from "../scenes/types";
+import type { SceneCatalogs } from "./catalogs";
 import type { LightingPreset, RainKey, SoundLane } from "./commands";
 import type { ClockDatetime, GenericNpc, SeatRow, SeatsSlice, SceneSlice, SoundscapeSlice, StageNpc } from "../worldState";
 

@@ -1,5 +1,5 @@
 import type { CSSProperties, MouseEvent, ReactElement } from "react";
-import { Overlay } from "../../lab/sketch";
+import { Overlay } from "../sketch";
 import type { PoolKind, RollDie, RollPool } from "../../worldState";
 import { dieFaceSrc, poolDiamonds, poolText, type PoolRingChoice } from "./view";
 

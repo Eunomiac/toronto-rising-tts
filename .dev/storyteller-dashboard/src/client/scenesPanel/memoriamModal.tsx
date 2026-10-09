@@ -1,7 +1,7 @@
 import { useState, type ReactElement } from "react";
-import type { MemoriamPayload } from "../scenesPanel/commands";
-import { MEMORIAM_PCS, memoriamDate, memoriamPayload, periodForYear, periodsFor, type MemoriamChoice } from "../scenesPanel/memoriam";
-import { useSceneCatalogs } from "./labRoster";
+import type { MemoriamPayload } from "./commands";
+import { MEMORIAM_PCS, memoriamDate, memoriamPayload, periodForYear, periodsFor, type MemoriamChoice } from "./memoriam";
+import { useSceneCatalogs } from "./roster";
 import { Overlay } from "./sketch";
 
 const PANEL_KEYS = ["panelA", "panelB", "panelC", "panelD"] as const;

@@ -1,4 +1,4 @@
-import type { MemoriamPeriod } from "../scenes/types";
+import type { MemoriamPeriod } from "./catalogs";
 import type { MemoriamPayload } from "./commands";
 
 /**

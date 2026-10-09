@@ -1,5 +1,5 @@
-import { ambientLabel, featuredLabel } from "../lab/glance";
-import type { SceneCatalogs } from "../scenes/types";
+import { ambientLabel, featuredLabel } from "./glance";
+import type { SceneCatalogs } from "./catalogs";
 import type { WorldState } from "../worldState";
 import { LIGHTING_LABEL, type ScenesCommand, type StageChange } from "./commands";
 import {

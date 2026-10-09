@@ -1,6 +1,4 @@
 import type { LibraryScene } from "../../shared/sceneLibrary";
-import { sceneKeyFromTitle } from "../scenes/payload";
-import { isWinterWind, resolveWindCatalogKey } from "../scenes/weatherAxes";
 import type { ClockDatetime, SceneSlice, StageNpc } from "../worldState";
 import type { ScenesCommand, SoundLane } from "./commands";
 import { LOCATION_MUSIC_LABEL, MOOD_LABEL, type SoundView } from "./liveScene";
@@ -90,6 +88,25 @@ export const newSceneTitle = (districtName: string, siteName: string, titles: re
   return `${base} (${n})`;
 };
 
+/** camelCase ASCII key from a title (`The Elysium` → `theElysium`); prefixed `scene` when it would start with a digit. */
+export const sceneKeyFromTitle = (title: string): string => {
+  const words = title
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .split(/[^a-zA-Z0-9]+/)
+    .filter((word) => word.length > 0);
+  if (words.length === 0) {
+    return "untitledScene";
+  }
+  const camel = words
+    .map((word, index) => {
+      const lower = word.toLowerCase();
+      return index === 0 ? lower : `${lower.slice(0, 1).toUpperCase()}${lower.slice(1)}`;
+    })
+    .join("");
+  return /^[a-zA-Z]/.test(camel) ? camel : `scene${camel.slice(0, 1).toUpperCase()}${camel.slice(1)}`;
+};
+
 /** A TTS-safe key from the title, suffixed `_2`, `_3` … when taken. */
 export const newSceneKey = (title: string, keys: readonly string[]): string => {
   const base = sceneKeyFromTitle(title);
@@ -136,7 +153,12 @@ const withNarrative = (scene: LibraryScene, patch: Row, drop: readonly string[] 
   return withSession(scene, { soundscapeNarrative: narrative });
 };
 
-const WIND_STRENGTH = ["none", "low", "med", "max"] as const;
+const WIND_LEVEL = ["", "Low", "Med", "Max"] as const;
+const WINTER_MONTHS: ReadonlySet<number> = new Set([11, 12, 1, 2]);
+
+/** Soundscape wind catalog key for a strength (0 none … 3 max); November–February use the winter variants. */
+const windCatalogKey = (strength: 0 | 1 | 2 | 3, month: number): string =>
+  strength === 0 ? "none" : `${WINTER_MONTHS.has(month) ? "windWinter" : "wind"}${WIND_LEVEL[strength]}`;
 
 export const draftClock = (scene: LibraryScene): ClockDatetime | null => {
   const clock = scene.sessionScene.clock;
@@ -183,7 +205,7 @@ export const applyToDraft = (scene: LibraryScene, command: ScenesCommand): Libra
         return withSession(withNarrative(scene, {}, ["rain", "wind", "thunderstorm"]), { chronicleWeatherFollowSchedule: true, chronicleWeatherManualHold: false });
       }
       const month = draftClock(scene)?.month ?? new Date().getMonth() + 1;
-      const wind = resolveWindCatalogKey(WIND_STRENGTH[command.wind], isWinterWind(month, "none"));
+      const wind = windCatalogKey(command.wind, month);
       return withSession(withNarrative(scene, { rain: command.rain, wind, thunderstorm: command.thunder }), {
         chronicleWeatherFollowSchedule: false,
         chronicleWeatherManualHold: true

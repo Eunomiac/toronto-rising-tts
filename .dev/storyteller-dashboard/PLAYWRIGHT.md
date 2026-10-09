@@ -193,6 +193,6 @@ Startup may steal OS focus **once** (MCP launching Chrome). After that, backgrou
 
 ## After the window is up
 
-HMR of `scenesTab.ts` does not re-bind. Reload `http://127.0.0.1:8788/`, then click `#tab-scenes`. Re-measure 1920×1080 after reload; restore with the CDP snippet if needed.
+The React tabs (Scenes, PCs, Lab) hot-reload. HMR of the plain-DOM tabs (`luaTab.ts`, `generateNpcTab.ts`) does not re-bind: reload `http://127.0.0.1:8788/`, then click `#tab-scenes`. Re-measure 1920×1080 after reload; restore with the CDP snippet if needed.
 
 Dashboard-only work skips Linear and Pending Author Verification. Track it on [agent/Running Tasklist.md](agent/Running%20Tasklist.md).

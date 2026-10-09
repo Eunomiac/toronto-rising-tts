@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import type { RosterLayout } from "../../shared/sceneDeck";
 import { setSceneDeckSection, useSceneDeck } from "../sceneDeck";
-import { parseControlBoardSnaps } from "../scenes/payload";
-import type { ControlBoardSnaps, SceneCatalogs } from "../scenes/types";
+import { parseControlBoardSnaps } from "./catalogs";
+import type { ControlBoardSnaps, SceneCatalogs } from "./catalogs";
 
 let catalogsRequest: Promise<SceneCatalogs> | null = null;
 

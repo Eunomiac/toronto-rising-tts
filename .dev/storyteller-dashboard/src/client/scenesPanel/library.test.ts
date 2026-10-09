@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { LibraryScene } from "../../shared/sceneLibrary";
-import { applyToDraft, draftSceneSlice, draftStage, mergeFromTts, newLibraryScene, newSceneKey, newSceneTitle, parseTtsLibrarySnapshot, scenesFromTts } from "./library";
+import { applyToDraft, draftSceneSlice, draftStage, mergeFromTts, newLibraryScene, newSceneKey, newSceneTitle, parseTtsLibrarySnapshot, sceneKeyFromTitle, scenesFromTts } from "./library";
 
 const scene = (key: string, extra: Partial<LibraryScene> = {}): LibraryScene => ({
   key,
@@ -53,6 +53,12 @@ describe("new scenes", () => {
     expect(newSceneTitle("The Annex", "Casa Loma", [])).toBe("The Annex — Casa Loma");
     expect(newSceneTitle("The Annex", "Casa Loma", ["The Annex — Casa Loma", "The Annex — Casa Loma (2)"])).toBe("The Annex — Casa Loma (3)");
     expect(newSceneKey("Casa Loma", ["casaLoma"])).toBe("casaLoma_2");
+  });
+
+  it("builds camelCase ASCII keys from titles", () => {
+    expect(sceneKeyFromTitle("   ")).toBe("untitledScene");
+    expect(sceneKeyFromTitle("The Élysium")).toBe("theElysium");
+    expect(sceneKeyFromTitle("13th Precinct")).toBe("scene13thPrecinct");
   });
 
   it("copies the template's set-up but starts at present day with no conditions or held weather", () => {

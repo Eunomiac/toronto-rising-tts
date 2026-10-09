@@ -1,7 +1,7 @@
 import { useRef, useState, type CSSProperties, type DragEvent, type MouseEvent, type PointerEvent, type ReactElement, type RefObject } from "react";
 import { Headshot } from "../headshots/Headshot";
-import type { SceneCatalogs } from "../scenes/types";
-import type { StageChange, StageChanges } from "../scenesPanel/commands";
+import type { SceneCatalogs } from "./catalogs";
+import type { StageChange, StageChanges } from "./commands";
 import {
   GROUP_DRAG_TYPE,
   NPC_DRAG_TYPE,
@@ -13,10 +13,10 @@ import {
   slotOf,
   spreadOnPack,
   type StageSpot
-} from "../scenesPanel/stage";
-import { stageToBoard, type StagePack, type StagePoint } from "../scenesPanel/stageFrame";
+} from "./stage";
+import { stageToBoard, type StagePack, type StagePoint } from "./stageFrame";
 import type { ScatterGroup } from "../worldState";
-import { groupColor, groupLeader, useRosterLayout } from "./labRoster";
+import { groupColor, groupLeader, useRosterLayout } from "./roster";
 
 /**
  * Editing layers of the wide stage board. Tokens drag with the pointer (they snap only when dropped over a slot,

@@ -19,8 +19,8 @@ import {
   type LibraryEntry,
   type LiveScenes,
   type SceneRef
-} from "./glance";
-import { PreparedPanels, ScenePreview, type PreparedScene } from "./labPreview";
+} from "../scenesPanel/glance";
+import { PreparedPanels, ScenePreview, type PreparedScene } from "../scenesPanel/preview";
 import type { RollOptionsView } from "../scenesPanel/rolls/bridge";
 import { RollsCell, type OptionsAccess } from "../scenesPanel/rolls/RollsCell";
 import type { PoolDieAction, RollsCommand } from "../scenesPanel/rolls/commands";
@@ -47,7 +47,7 @@ import {
   WIDE_BOARD_RATIO,
   WideBoard,
   type SketchState
-} from "./sketch";
+} from "../scenesPanel/sketch";
 
 /** Scenes redesign, round 1: three grey-box layouts for the one-screen Scenes tab. */
 
@@ -73,7 +73,7 @@ const StageInTheMiddle = ({ previewOpen, clockDiffers, weatherOverride }: Sketch
         </div>
       </Box>
       <Box x={8} y={72} w={392} h={778} title="NPC roster (Main / Generic / Memoriam)" tier="A"
-        lines={["Drag a token onto the board; drag a tray header to place the whole group.", "Generic NPCs = today's Stage NPCs tab, merged in."]}>
+        lines={["Drag a token onto the board; drag a tray header to place the whole group.", "Generic NPCs = the generic cutout catalogue."]}>
         <Roster />
       </Box>
       <Box x={8} y={858} w={392} h={176} title="Rolls" tone="reserved">

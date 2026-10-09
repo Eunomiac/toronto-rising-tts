@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { polarAreaNameForFamily, parseControlBoardSnaps } from "./payload";
+import { polarAreaNameForFamily, parseControlBoardSnaps } from "./catalogs";
 
 const snapsPath = join(dirname(fileURLToPath(import.meta.url)), "../../../data/control-board-snaps.json");
 const csvPath = join(dirname(fileURLToPath(import.meta.url)), "../../../agent/TTS Stage Control Board Snap Coordinates.csv");

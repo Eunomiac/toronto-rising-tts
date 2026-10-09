@@ -8,15 +8,15 @@ import { paintDamageTrack, paintHumanityTrack, type BoxSlot } from "../pcSheet/p
 import { actionsForRing } from "../pcSheet/ringActions";
 import { TraitRing } from "../pcSheet/TraitRing";
 import type { RingTarget, SeatColor, SeatSnapshot, SheetSnapshot } from "../pcSheet/types";
-import { LIGHTING_LABEL, useScenesCommand, type LightingPreset, type StageChanges } from "../scenesPanel/commands";
-import { GENERIC_SKY, stageName } from "../scenesPanel/liveScene";
-import { RollsCommandContext } from "../scenesPanel/rolls/commands";
-import { ringChoices } from "../scenesPanel/rolls/view";
-import { moveInScatter, withChanges, type ScatterMove, type StageSpot } from "../scenesPanel/stage";
-import { stagePacks, type StagePack } from "../scenesPanel/stageFrame";
+import { LIGHTING_LABEL, useScenesCommand, type LightingPreset, type StageChanges } from "./commands";
+import { GENERIC_SKY, stageName } from "./liveScene";
+import { RollsCommandContext } from "./rolls/commands";
+import { ringChoices } from "./rolls/view";
+import { moveInScatter, withChanges, type ScatterMove, type StageSpot } from "./stage";
+import { stagePacks, type StagePack } from "./stageFrame";
 import type { GenericNpc, ScatterGroup } from "../worldState";
 import { Icon, type IconName } from "./icons";
-import { useControlBoardSnaps, useSceneCatalogs } from "./labRoster";
+import { useControlBoardSnaps, useSceneCatalogs } from "./roster";
 import { farRadii, ScatterLayer, StageLayer } from "./stageEdit";
 
 /**

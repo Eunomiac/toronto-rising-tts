@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { LibraryScene } from "../../shared/sceneLibrary";
-import type { LabLocation, LibraryActions, LibraryEntry, LinkMenu } from "../lab/glance";
+import type { LabLocation, LibraryActions, LibraryEntry, LinkMenu } from "./glance";
 import { sceneDeckSnapshot, setSceneDeckSection, useSceneDeck } from "../sceneDeck";
 import {
   pullScenesFromTts,
