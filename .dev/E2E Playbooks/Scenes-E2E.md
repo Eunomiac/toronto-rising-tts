@@ -289,7 +289,6 @@ U.chain({
 U.chain({
   function()
     DEBUG.showScene()
-    if gbE2eVerifyPcTokens then gbE2eVerifyPcTokens() end
   end,
   function()
     printHeader("", 2)

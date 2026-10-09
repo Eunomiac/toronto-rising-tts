@@ -85,7 +85,7 @@ end
 
 --- Collapses the storyteller Scenes tab after Apply / End scene (TOR-449 deselect).
 local function closeScenesPanel()
-    StorytellerScenesPanel.tryCloseScenesPanelOrBlock()
+    StorytellerScenesPanel.closePanel()
 end
 
 --- Maps XML button ids (no spaces) to table keys. `Table B` is a dynamic family key (resolves to
@@ -1635,24 +1635,17 @@ end
 
 --- TOR-449: leave Scenes without closing UI — deselect the pending preview row.
 --- @return boolean false when blocked
-function StorytellerScenesPanel.prepareLeaveScenesPanelOrBlock()
+function StorytellerScenesPanel.leavePanel()
     local activeKey = getActiveLibraryKey()
     if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
         StorytellerScenesPanel.deselectPendingPreview({ silent = true })
     end
-    return true
 end
 
 --- TOR-449: deselect pending (or clear activeKey) and collapse all ST panels.
---- @return boolean false when blocked
-function StorytellerScenesPanel.tryCloseScenesPanelOrBlock()
-    if StorytellerScenesPanel.prepareLeaveScenesPanelOrBlock() ~= true then
-        return false
-    end
-    if type(StorytellerPanelUI.closeAllPanelsUnconditionally) == "function" then
-        StorytellerPanelUI.closeAllPanelsUnconditionally()
-    end
-    return true
+function StorytellerScenesPanel.closePanel()
+    StorytellerScenesPanel.leavePanel()
+    StorytellerPanelUI.closeAllPanelsUnconditionally()
 end
 
 --- TOR-449: restore green/live library selection, or clear activeKey entirely (End scene).

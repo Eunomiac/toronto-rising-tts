@@ -259,7 +259,7 @@ end
 
 --- Apply transition blindfold HUD conditions for all seated players.
 --- Collapses the Storyteller toolbar first: no Storyteller panel may stay open under the blindfold.
---- Unguarded close — callers that need the Scenes THERE/deselect guard (TOR-449) run
+--- Unguarded close — callers that need the Scenes pending-preview deselect (TOR-449) run
 --- `closeScenesPanel` before starting the transition.
 --- Destination District/Site cards (TOR-425 / TOR-431) arm on the parent before one UI.show when
 --- both `districtKey` and `siteKey` resolve; otherwise cards stay Clear.

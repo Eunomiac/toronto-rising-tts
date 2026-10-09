@@ -86,7 +86,7 @@ local function clearPhaseAdvanceConfirmIfOpen()
     end
 end
 
---- Collapses every storyteller toolbar panel without Scenes THERE/deselect guards.
+--- Collapses every storyteller toolbar panel without deselecting a pending Scenes preview.
 function StorytellerPanelUI.closeAllPanelsUnconditionally()
     clearPhaseAdvanceConfirmIfOpen()
     U.setAttribute(STORYTELLER_CONTENT_AREA_ID, "active", "false")
@@ -99,15 +99,9 @@ end
 
 --- Closes the storyteller content area and deactivates every toolbar panel (matches re-clicking an open tab).
 --- Also collapses `storytellerToolbarBody` (TOR-395); panel switches leave the body open.
---- TOR-449: when Scenes is (or was) involved, block while THERE and deselect pending preview.
---- @return boolean false when close blocked (THERE)
+--- TOR-449: deselects a pending Scenes library preview first.
 function StorytellerPanelUI.closeAllPanels()
-    local ScenesPanel = require("core.storyteller_scenes_panel")
-    if type(ScenesPanel.tryCloseScenesPanelOrBlock) == "function" then
-        return ScenesPanel.tryCloseScenesPanelOrBlock() == true
-    end
-    StorytellerPanelUI.closeAllPanelsUnconditionally()
-    return true
+    require("core.storyteller_scenes_panel").closePanel()
 end
 
 --- Selects a storyteller panel (mutually exclusive: only one open at a time).
@@ -117,7 +111,6 @@ end
 ---
 --- @param panelKey string One of: "scenes", "soundscape", "pcs", "phases", "stats", "projects"
 --- @param forceOpen boolean|nil If true, always apply the open-panel branch (no toggle-close).
---- @return boolean|nil false when leaving/closing Scenes was blocked (THERE)
 function StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen)
     if type(panelKey) ~= "string" then
         error("StorytellerPanelUI.selectStorytellerPanel: panelKey must be a string", 2)
@@ -133,20 +126,19 @@ function StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen)
     local contentActive = storytellerUiElementIsActive(STORYTELLER_CONTENT_AREA_ID)
     local ScenesPanel = require("core.storyteller_scenes_panel")
 
-    -- Same-tab re-click closes (TOR-449 guard when closing Scenes).
+    -- Same-tab re-click closes (TOR-449: closing Scenes deselects a pending preview).
     if forceOpen ~= true and contentActive and storytellerUiElementIsActive(selected.panel) then
-        if panelKey == "scenes" and type(ScenesPanel.tryCloseScenesPanelOrBlock) == "function" then
-            return ScenesPanel.tryCloseScenesPanelOrBlock() == true
+        if panelKey == "scenes" then
+            ScenesPanel.closePanel()
+        else
+            StorytellerPanelUI.closeAllPanelsUnconditionally()
         end
-        StorytellerPanelUI.closeAllPanelsUnconditionally()
-        return true
+        return
     end
 
     -- Leaving Scenes for another tab (TOR-449).
-    if scenesHostActive and panelKey ~= "scenes" and type(ScenesPanel.prepareLeaveScenesPanelOrBlock) == "function" then
-        if ScenesPanel.prepareLeaveScenesPanelOrBlock() ~= true then
-            return false
-        end
+    if scenesHostActive and panelKey ~= "scenes" then
+        ScenesPanel.leavePanel()
     end
 
     U.setAttribute(STORYTELLER_CONTENT_AREA_ID, "active", "true")
@@ -158,7 +150,6 @@ function StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen)
     if panelKey ~= "phases" then
         clearPhaseAdvanceConfirmIfOpen()
     end
-    return true
 end
 
 return StorytellerPanelUI

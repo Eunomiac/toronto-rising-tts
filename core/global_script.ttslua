@@ -3764,10 +3764,7 @@ function HUD_selectStorytellerPanel(player, button, id, forceOpen)
     local panelKey = string.gsub(id, "^toggle_", "")
     -- UI.getAttribute returns the old value until next frame: read before selecting.
     local wasOpen = StorytellerPanelUI.selectedPanelKey() == panelKey
-    -- TOR-449: false when Scenes leave/close is blocked (THERE); skip target-panel refreshes.
-    if StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen == true) == false then
-        return
-    end
+    StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen == true)
     -- Same-tab click closed the panel: nothing to repaint.
     if wasOpen and forceOpen ~= true then
         return
