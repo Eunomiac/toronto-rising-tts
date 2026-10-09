@@ -1,6 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { parseRollOptions } from "./bridge";
-import { draftFromView, huntHeadline, poolText, ringChoices, rollTypeLabel, toggleCondition, toggleStructural } from "./view";
+import {
+  dieFaceSrc,
+  draftFromView,
+  huntHeadline,
+  poolDiamonds,
+  poolRingChoices,
+  poolText,
+  ringChoices,
+  rollTypeLabel,
+  toggleCondition,
+  toggleStructural
+} from "./view";
 
 const NEGATING = { takeHalf: "noTakeHalf", wpReroll: "noWPReroll" };
 
@@ -31,6 +42,29 @@ describe("ringChoices", () => {
 
   it("gives Werewolf-tagged NPCs only the Werewolf roll", () => {
     expect(ringChoices({ werewolf: true, oblivion: true, endPhase: false })).toEqual([{ rollType: "werewolf", label: "Werewolf" }]);
+  });
+});
+
+describe("pool and dice display", () => {
+  it("puts Rouse dice apart and splits the main pool into runs of five across kinds", () => {
+    const { rouse, runs } = poolDiamonds({ normal: 5, hunger: 2, rouse: 1, oblivRouse: 1 });
+    expect(rouse).toEqual(["oblivRouse", "rouse"]);
+    expect(runs).toEqual([["hunger", "hunger", "normal", "normal", "normal"], ["normal", "normal"]]);
+    expect(poolDiamonds({})).toEqual({ rouse: [], runs: [] });
+  });
+
+  it("picks the coffin face by kind and value", () => {
+    expect(dieFaceSrc("hunger", 1)).toBe("/icons/dice/hunger_1.svg");
+    expect(dieFaceSrc("hunger", 4)).toBe("/icons/dice/hunger_2-5.svg");
+    expect(dieFaceSrc("rage", 10)).toBe("/icons/dice/hunger_10.svg");
+    expect(dieFaceSrc("normal", 1)).toBe("/icons/dice/standard_1-5.svg");
+    expect(dieFaceSrc("werewolf", 7)).toBe("/icons/dice/standard_6-9.svg");
+    expect(dieFaceSrc("normal", undefined)).toBe("/icons/dice/standard_1-5.svg");
+  });
+
+  it("offers Rage and Werewolf dice on a Werewolf roll, else Hunger and normal", () => {
+    expect(poolRingChoices("werewolf").map((choice) => choice.kind)).toEqual(["rage", "werewolf"]);
+    expect(poolRingChoices("standard").map((choice) => choice.kind)).toEqual(["hunger", "normal"]);
   });
 });
 

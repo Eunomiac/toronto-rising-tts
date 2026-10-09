@@ -23,7 +23,8 @@ import {
 import { PreparedPanels, ScenePreview, type PreparedScene } from "./labPreview";
 import type { RollOptionsView } from "../scenesPanel/rolls/bridge";
 import { RollsCell, type OptionsAccess } from "../scenesPanel/rolls/RollsCell";
-import type { RollsSlice } from "../worldState";
+import type { PoolDieAction, RollsCommand } from "../scenesPanel/rolls/commands";
+import type { PoolKind, RollPool, RollsSlice } from "../worldState";
 import {
   Overlay,
   Board,
@@ -146,6 +147,7 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
     setPresentDay((present) => (next.getTime() > present.getTime() ? next : present));
   };
   const [fog, setFog] = useState(false);
+  const [rolls, setRolls] = useState(LAB_ROLLS);
   const G = 4;
   const leftW = 380;
   const stripX = G + leftW + G;
@@ -237,7 +239,7 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
         <WideBoard w={boardW} h={boardH} />
       </Box>
       <Box x={rightX} y={mainY + aspectH + G} w={rightW} h={rightH - queueH - G - aspectH - G} className="roll-box">
-        <RollsCell rolls={LAB_ROLLS} send={() => undefined} options={LAB_ROLL_OPTIONS} />
+        <RollsCell rolls={rolls} send={(command) => setRolls((current) => labRollsApply(current, command))} options={LAB_ROLL_OPTIONS} />
       </Box>
       <Box x={rightX} y={mainY + rightH - queueH} w={rightW} h={queueH} className="lab-queue-box">
         <QueuePanel connected={!ttsDisconnected} />
@@ -277,13 +279,25 @@ const LAB_HUNTERS: readonly HuntPc[] = SEATS.flatMap((seat) =>
 
 const LAB_ROLLS: RollsSlice = {
   pcs: [
-    { color: "Pink", name: "Aishe Tache", rollType: "discipline", phase: "setup", pool: { normal: 4, hunger: 2 }, conditions: "", held: false, canModifyPool: false, dice: [] },
+    { color: "Pink", name: "Adrian Varga", rollType: "discipline", phase: "setup", pool: { normal: 4, hunger: 2 }, conditions: "", wpReroll: false, held: false, canModifyPool: false, dice: [] },
     {
-      color: "Brown", name: "Lord Lucien", rollType: "standard", phase: "postRoll", pool: { normal: 5, hunger: 1 }, difficulty: 3,
-      conditions: "No Take Half", result: { resultClass: "win", successes: 4, margin: 1, text: "WIN +1" }, held: false, canModifyPool: true,
-      dice: [{ value: 8, kind: "normal" }, { value: 10, kind: "hunger" }]
+      color: "Purple", name: "Black Caesar", rollType: "standard", phase: "preRoll", pool: { normal: 5, hunger: 2, rouse: 1 }, difficulty: 3,
+      conditions: "", wpReroll: false, held: false, canModifyPool: false, dice: []
     },
-    { color: "Red", name: "Rashid", rollType: "rouse", phase: "resolved", pool: { rouse: 1 }, conditions: "", result: { text: "ROUSED" }, held: true, canModifyPool: false, dice: [] }
+    {
+      color: "Brown", name: "Fomórach", rollType: "standard", phase: "rolling", pool: { normal: 4, hunger: 1 }, difficulty: 2,
+      conditions: "", wpReroll: true, held: false, canModifyPool: false,
+      dice: [{ value: 7, kind: "normal" }, { kind: "normal" }, { value: 3, kind: "normal" }, { kind: "normal" }, { value: 6, kind: "hunger" }]
+    },
+    {
+      color: "Red", name: "Lord Lucien", rollType: "standard", phase: "postRoll", pool: { normal: 5, hunger: 1 }, difficulty: 3,
+      conditions: "No Take Half", result: { resultClass: "win", successes: 4, margin: 1, text: "WIN +1" }, wpReroll: false, held: false, canModifyPool: true,
+      dice: [{ value: 8, kind: "normal" }, { value: 2, kind: "normal" }, { value: 6, kind: "normal" }, { value: 4, kind: "normal" }, { value: 9, kind: "normal" }, { value: 10, kind: "hunger" }]
+    },
+    {
+      color: "Orange", name: "Rashid", rollType: "rouse", phase: "resolved", pool: { rouse: 1 }, conditions: "", result: { text: "ROUSED" },
+      wpReroll: false, held: true, canModifyPool: false, dice: [{ value: 3, kind: "rouse" }]
+    }
   ],
   storyteller: {
     canInitiate: true,
@@ -292,7 +306,7 @@ const LAB_ROLLS: RollsSlice = {
       { index: 2, label: "Mara", rollType: "frenzy", phase: "resolved", live: false, canBroadcast: true, pendingBroadcast: true }
     ],
     live: {
-      rollType: "standard", label: "Drake", slot: 1, phase: "postRoll", hint: "Pick dice to reroll, or Confirm.",
+      rollType: "standard", label: "Drake", slot: 1, phase: "postRoll", hint: "Pick dice to reroll, or Confirm.", wpReroll: false,
       pool: { normal: 4, hunger: 2 }, difficulty: 4, result: { resultClass: "messyCritical", successes: 5, margin: 1, text: "MESSY CRITICAL +1" },
       dice: [{ value: 10, kind: "normal" }, { value: 3, kind: "normal", selected: true }, { value: 6, kind: "normal" }, { value: 7, kind: "normal" }, { value: 10, kind: "hunger" }, { value: 1, kind: "hunger" }],
       actions: { roll: false, rollEnabled: false, half: false, wp: true, recalc: true, reroll: true, rerollEnabled: true, confirm: true, oblivChoice: false, brutalChoice: false },
@@ -302,6 +316,31 @@ const LAB_ROLLS: RollsSlice = {
   },
   werewolves: ["drake"],
   oblivionSeats: ["Pink"]
+};
+
+const LAB_POOL_DIE: Readonly<Partial<Record<PoolDieAction, readonly [PoolKind, 1 | -1]>>> = {
+  addHungerDie: ["hunger", 1],
+  remHungerDie: ["hunger", -1],
+  addStandardDie: ["normal", 1],
+  remStandardDie: ["normal", -1]
+};
+
+const bumpPool = (pool: RollPool, kind: PoolKind, count: number): RollPool => ({ ...pool, [kind]: Math.max(0, count) });
+
+/** The Lab's stand-in for TTS: pool changes from the dice ring land on the sample rolls; everything else is ignored. */
+const labRollsApply = (rolls: RollsSlice, command: RollsCommand): RollsSlice => {
+  if (command.op === "poolDie") {
+    const change = LAB_POOL_DIE[command.action];
+    return change
+      ? { ...rolls, pcs: rolls.pcs.map((roll) => (roll.color === command.color ? { ...roll, pool: bumpPool(roll.pool, change[0], (roll.pool[change[0]] ?? 0) + change[1]) } : roll)) }
+      : rolls;
+  }
+  const live = rolls.storyteller.live;
+  if (command.op === "npcPool" && live) {
+    const kind: PoolKind = live.rollType === "werewolf" ? (command.kind === "hunger" ? "rage" : "werewolf") : command.kind;
+    return { ...rolls, storyteller: { ...rolls.storyteller, live: { ...live, pool: bumpPool(live.pool, kind, command.count) } } };
+  }
+  return rolls;
 };
 
 const LAB_OPTIONS_VIEW: RollOptionsView = {

@@ -11,7 +11,6 @@
     initiate      color, rollType       start a Storyteller-initiated roll (waits in setup)
     difficulty    color, value          set the difficulty; on a roll still in setup this also opens it
                                         to the player (the dashboard's approval)
-    open          color                 open a setup roll to the player without a difficulty
     rollType      color, rollType       change the roll type
     options       color, permanent, structural, conditions, rerolls, diceRerolled
                                         the roll options pop-up (`Rolls.options` reads its values)
@@ -453,8 +452,6 @@ local function applyCommand(cmd)
     if openAfter then
       RC.openRoll(color)
     end
-  elseif op == "open" then
-    RC.openRoll(color)
   elseif op == "rollType" then
     if not isRollType(cmd.rollType) then
       return "Unknown roll type: " .. tostring(cmd.rollType)

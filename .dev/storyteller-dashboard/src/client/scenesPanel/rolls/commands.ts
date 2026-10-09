@@ -22,7 +22,6 @@ export type RollOptionsApply = {
 export type RollsCommand =
   | { readonly op: "initiate"; readonly color: string; readonly rollType: string }
   | { readonly op: "difficulty"; readonly color: string; readonly value: number }
-  | { readonly op: "open"; readonly color: string }
   | { readonly op: "rollType"; readonly color: string; readonly rollType: string }
   | ({ readonly op: "options"; readonly color: string } & RollOptionsApply)
   | { readonly op: "poolDie"; readonly color: string; readonly action: PoolDieAction }

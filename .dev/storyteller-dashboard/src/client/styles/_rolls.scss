@@ -1,4 +1,11 @@
-// Scenes tab Rolls cell: PC roll rows, the Storyteller dice drawers, the live NPC roll and the options pop-up.
+// Scenes tab Rolls cell: PC roll rows, the Storyteller dice drawers, the live NPC roll, the dice ring and the
+// options pop-up. A roll's phase is its background and glow, never text.
+
+$phase-red: #ff3434;
+$phase-gold: #e8b83c;
+$phase-gold-bright: #ffd75a;
+$phase-blue: #4f9bff;
+$phase-blue-bright: #8cc0ff;
 
 .lab-box.roll-box {
   border-style: solid;
@@ -9,32 +16,106 @@
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   min-height: 0;
+  padding: 6px;
   overflow-y: auto;
+}
+
+@keyframes roll-pulse-gold {
+  0%,
+  100% {
+    box-shadow: 0 0 3px 0 rgba($phase-gold-bright, 0.45);
+  }
+
+  50% {
+    box-shadow: 0 0 12px 3px rgba($phase-gold-bright, 0.9);
+  }
+}
+
+@keyframes roll-pulse-blue {
+  0%,
+  100% {
+    box-shadow: 0 0 3px 0 rgba($phase-blue-bright, 0.45);
+  }
+
+  50% {
+    box-shadow: 0 0 12px 3px rgba($phase-blue-bright, 0.9);
+  }
+}
+
+// Shared by PC rows, the NPC panel and the drawer chips.
+@mixin roll-phases {
+  &.phase-setup {
+    border-color: $phase-red;
+    background: #2e1316;
+    box-shadow: 0 0 9px 2px rgba($phase-red, 0.75);
+  }
+
+  &.phase-preRoll {
+    border-color: $phase-gold;
+    background: #29220f;
+    box-shadow: 0 0 2px 0 rgba($phase-gold, 0.5);
+  }
+
+  &.phase-rolling {
+    border-color: $phase-gold-bright;
+    background: #3a2f10;
+    animation: roll-pulse-gold 1.4s ease-in-out infinite;
+  }
+
+  &.phase-preRoll.wp {
+    border-color: $phase-blue;
+    background: #10203a;
+    box-shadow: 0 0 2px 0 rgba($phase-blue, 0.5);
+  }
+
+  &.phase-rolling.wp {
+    border-color: $phase-blue-bright;
+    background: #142a4a;
+    animation-name: roll-pulse-blue;
+  }
+
+  &.phase-postRoll,
+  &.phase-resolved {
+    border-color: #8a2a2a;
+    background: #26141a;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &.phase-rolling {
+      animation: none;
+      box-shadow: 0 0 8px 2px rgba($phase-gold-bright, 0.7);
+    }
+  }
 }
 
 .roll-row,
 .roll-npc {
   display: flex;
+  flex: 0 0 auto;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   padding: 3px 4px;
   border: 1px solid #34343e;
   border-left: 3px solid var(--seat-color, #8a8a96);
   background: #1a1a20;
+
+  @include roll-phases;
 }
 
 .roll-row {
-  &.setup {
-    border-color: #a8873a;
-    border-left-color: var(--seat-color, #a8873a);
-  }
-
+  // Finished but not yet shown to the table: dim, dashed, waiting on Broadcast or dismiss.
   &.held {
-    opacity: 0.85;
     border-style: dashed;
     border-left-style: solid;
+    border-color: #6a4a4a;
+    background: #1c1618;
+    opacity: 0.85;
+  }
+
+  &[class*="phase-"] {
+    border-left-color: var(--seat-color, #8a8a96);
   }
 }
 
@@ -42,10 +123,17 @@
   border-left-color: #c9c9d4;
 }
 
-.roll-row-head {
+.roll-row-head,
+.roll-row-line {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.roll-row-line {
+  flex-wrap: wrap;
+  justify-content: space-between;
+  min-height: 18px;
 }
 
 .roll-row-name {
@@ -65,6 +153,14 @@
   text-overflow: ellipsis;
 }
 
+.roll-flag {
+  padding: 0 3px;
+  border: 1px solid #6a6a78;
+  color: #c9c9d4;
+  font-size: 9px;
+  font-weight: 700;
+}
+
 .roll-row-sub {
   color: #c9c9d4;
   font-size: 11px;
@@ -82,6 +178,7 @@
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.04em;
+  white-space: nowrap;
 
   &.criticalWin,
   &.win {
@@ -115,13 +212,38 @@
   }
 }
 
-.roll-btn {
-  padding: 1px 6px;
+.roll-choice {
+  display: inline-flex;
+  gap: 2px;
+  margin-left: 6px;
+  padding-left: 6px;
+  border-left: 1px solid #44444f;
+}
+
+.roll-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  padding: 2px;
   border: 1px solid #44444f;
   color: #e4e4ec;
-  font-size: 11px;
   background: #24242c;
   cursor: pointer;
+
+  .lab-icon {
+    width: 16px;
+    height: 16px;
+    fill: currentcolor;
+  }
+
+  &.glyph {
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1;
+  }
 
   &:hover:not(:disabled) {
     border-color: #8a8a96;
@@ -129,22 +251,30 @@
   }
 
   &:disabled {
-    opacity: 0.4;
+    opacity: 0.35;
     cursor: default;
   }
 
-  &.small {
-    padding: 0 4px;
-  }
-
-  &.icon {
-    padding: 0 4px;
-    font-size: 12px;
-  }
-
   &.primary {
-    border-color: #6a6aa8;
-    background: #2f2f52;
+    border-color: #a8873a;
+    color: #f2c44e;
+    background: #2e2614;
+  }
+
+  &.wp {
+    color: #8cc0ff;
+  }
+
+  &.hunger {
+    color: #ff4a4a;
+  }
+
+  &.humanity {
+    color: #f3e9c6;
+  }
+
+  &.danger {
+    color: #d57a7a;
   }
 
   &.danger:hover:not(:disabled) {
@@ -153,7 +283,6 @@
 }
 
 .roll-override {
-  flex: 1 1 auto;
   height: 20px;
   padding: 0 4px;
   border: 1px solid #44444f;
@@ -170,13 +299,6 @@
   &.disabled {
     opacity: 0.45;
   }
-}
-
-.roll-strip-label {
-  width: 40px;
-  flex: 0 0 auto;
-  color: #a8a8b4;
-  font-size: 10px;
 }
 
 .roll-strip-cell {
@@ -201,30 +323,95 @@
   }
 }
 
-.roll-dice {
-  display: flex;
+// Pool diamonds, coloured as on the players' in-game roll controls; runs of five read at a glance.
+.pool-diamonds {
+  display: inline-flex;
   flex-wrap: wrap;
-  gap: 2px;
+  align-items: center;
+  gap: 2px 6px;
+  min-width: 0;
+  padding: 0 2px;
+  border: 1px solid transparent;
+  font-size: 13px;
+  line-height: 1.1;
+  background: none;
+
+  &.editable {
+    border-color: #44444f;
+    cursor: pointer;
+
+    &:hover {
+      border-color: #c9c9d4;
+      background: #2a2a33;
+    }
+  }
 }
 
-.roll-die {
-  width: 18px;
-  height: 18px;
-  padding: 0;
-  border: 1px solid #44444f;
-  color: #e4e4ec;
-  font-size: 10px;
-  font-weight: 700;
-  background: #2a2a33;
+.pool-run {
+  display: inline-flex;
+  letter-spacing: 1px;
+
+  &.rouse {
+    margin-right: 6px;
+  }
+}
+
+.pool-dia {
+  color: #fff;
 
   &.hunger,
   &.rage {
-    border-color: #a33;
-    background: #4a1a1a;
+    color: #f00;
+  }
+
+  &.rouse,
+  &.bloodSurgeRouse {
+    color: #500;
+    -webkit-text-stroke: 1px #f00;
+  }
+
+  &.oblivRouse {
+    color: #1900ff;
+    -webkit-text-stroke: 1px #f00;
+  }
+}
+
+.pool-empty {
+  color: #8a8a96;
+  font-size: 12px;
+}
+
+// Rolled dice as coffin faces (`public/icons/dice/`).
+.rolled-dice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+
+.rolled-die {
+  width: 17px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  background: none;
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  &.oblivRouse img {
+    filter: hue-rotate(235deg) saturate(1.6);
+  }
+
+  &.unread img {
+    opacity: 0.4;
   }
 
   &.selected {
     outline: 2px solid #e0b04a;
+    outline-offset: 1px;
   }
 
   &:not(:disabled) {
@@ -232,10 +419,58 @@
   }
 }
 
+// The pool's dice ring: left-click a die to add one of that kind, right-click to remove one.
+.dice-ring {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.dice-ring-centre {
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 4px 8px;
+  border: 1px solid #44444f;
+  white-space: nowrap;
+  background: #16161c;
+  transform: translate(-50%, -50%);
+}
+
+.dice-ring-btn {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 40px;
+  padding: 4px 0 2px;
+  border: 1px solid #44444f;
+  border-radius: 6px;
+  background: #1e1e26;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+
+  img {
+    width: 18px;
+    height: 32px;
+  }
+
+  &:hover {
+    border-color: #c9c9d4;
+    background: #2a2a33;
+  }
+}
+
+.dice-ring-count {
+  color: #e4e4ec;
+  font-size: 12px;
+  font-weight: 800;
+}
+
 .roll-slots {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .roll-slot {
@@ -247,8 +482,20 @@
   font-size: 11px;
   background: #1a1a20;
 
+  @include roll-phases;
+
   &.live {
-    border-color: #c9c9d4;
+    outline: 1px solid #c9c9d4;
+  }
+
+  .roll-icon-btn {
+    width: 18px;
+    height: 18px;
+
+    .lab-icon {
+      width: 12px;
+      height: 12px;
+    }
   }
 }
 

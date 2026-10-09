@@ -43,7 +43,7 @@ describe("applyWorldEvent", () => {
         storyteller: {
           canInitiate: false,
           slots: [{ index: 1, label: "Drake", live: true, canBroadcast: false, pendingBroadcast: false }],
-          live: { rollType: "werewolf", hint: "Pick the pool.", pool: { werewolf: 3, rage: 1 }, dice: {}, actions: {}, secret: true }
+          live: { rollType: "werewolf", hint: "Pick the pool.", pool: { werewolf: 3, rage: 1 }, dice: {}, actions: {}, secret: true, wpReroll: true }
         },
         werewolves: ["drake"],
         oblivionSeats: {}
@@ -55,6 +55,8 @@ describe("applyWorldEvent", () => {
     expect(pc?.conditions).toBe("");
     expect(pc?.held).toBe(false);
     expect(pc?.canModifyPool).toBe(false);
+    expect(pc?.wpReroll).toBe(false);
+    expect(state.rolls?.storyteller.live?.wpReroll).toBe(true);
     expect(state.rolls?.storyteller.live?.pool).toEqual({ werewolf: 3, rage: 1 });
     expect(state.rolls?.storyteller.live?.secret).toBe(true);
     expect(state.rolls?.storyteller.live?.quiet).toBe(false);

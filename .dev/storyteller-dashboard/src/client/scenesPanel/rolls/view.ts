@@ -1,4 +1,4 @@
-import type { RollPool } from "../../worldState.js";
+import type { PoolKind, RollPool } from "../../worldState.js";
 import type { RollOptionsApply } from "./commands.js";
 import type { RollOptionsView } from "./bridge.js";
 
@@ -130,15 +130,45 @@ export const STRUCTURAL_OPTIONS: readonly { readonly key: string; readonly label
   { key: "crits", label: "Criticals" }
 ];
 
-/** Post-roll pool changes, as on the in-game roll dashboard's strip. */
-export const POOL_DIE_ACTIONS: readonly { readonly action: "addDie" | "remDie" | "addHungerDie" | "remHungerDie" | "addStandardDie" | "remStandardDie"; readonly label: string; readonly title: string }[] = [
-  { action: "remDie", label: "−", title: "Remove a die" },
-  { action: "addDie", label: "+", title: "Add a die (Hunger first while the pool has fewer Hunger dice than the PC's Hunger)" },
-  { action: "remHungerDie", label: "−H", title: "Remove a Hunger die" },
-  { action: "addHungerDie", label: "+H", title: "Add a Hunger die" },
-  { action: "remStandardDie", label: "−N", title: "Remove a normal die" },
-  { action: "addStandardDie", label: "+N", title: "Add a normal die" }
-];
+const ROUSE_KINDS: readonly PoolKind[] = ["oblivRouse", "rouse", "bloodSurgeRouse"];
+const MAIN_KINDS: readonly PoolKind[] = ["hunger", "rage", "normal", "werewolf"];
+const DIAMOND_RUN = 5;
+
+/**
+ * A pool as the in-game roll controls draw it: one diamond per die, Rouse dice on their own, then the main pool
+ * (Hunger, Rage, normal, Werewolf) split into runs of five counted across kinds.
+ */
+export const poolDiamonds = (pool: RollPool): { readonly rouse: readonly PoolKind[]; readonly runs: readonly (readonly PoolKind[])[] } => {
+  const expand = (kinds: readonly PoolKind[]): PoolKind[] => kinds.flatMap((kind) => Array.from({ length: pool[kind] ?? 0 }, () => kind));
+  const main = expand(MAIN_KINDS);
+  const runs: PoolKind[][] = [];
+  for (let start = 0; start < main.length; start += DIAMOND_RUN) {
+    runs.push(main.slice(start, start + DIAMOND_RUN));
+  }
+  return { rouse: expand(ROUSE_KINDS), runs };
+};
+
+/** Dice drawn with the red (Hunger) art; the rest use the standard art. */
+const RED_DICE = new Set(["hunger", "rage", "rouse", "bloodSurgeRouse", "oblivRouse"]);
+
+/** The face art for a rolled die (`public/icons/dice/`); a die TTS has not read yet shows a blank face. */
+export const dieFaceSrc = (kind: string, value: number | undefined): string => {
+  const red = RED_DICE.has(kind);
+  const band = value === undefined ? (red ? "2-5" : "1-5")
+    : value >= 10 ? "10"
+      : value >= 6 ? "6-9"
+        : red ? (value === 1 ? "1" : "2-5") : "1-5";
+  return `/icons/dice/${red ? "hunger" : "standard"}_${band}.svg`;
+};
+
+/** One spoke of the pool's dice ring: left-click adds a die of this kind, right-click removes one. */
+export type PoolRingChoice = { readonly kind: PoolKind; readonly label: string };
+
+/** Dice the Storyteller may add or remove: Rage and Werewolf dice on a Werewolf roll, else Hunger and normal. */
+export const poolRingChoices = (rollType: string | undefined): readonly PoolRingChoice[] =>
+  rollType === "werewolf"
+    ? [{ kind: "rage", label: "Rage" }, { kind: "werewolf", label: "Werewolf" }]
+    : [{ kind: "hunger", label: "Hunger" }, { kind: "normal", label: "Normal" }];
 
 /** Hunt result headline, as the TTS banner shows it. */
 export const huntHeadline = (flavor: string | null, intensity: string): string =>

@@ -178,6 +178,8 @@ export type PcRoll = {
   readonly result?: RollResult;
   /** `oblivHungerStain` / `brutalFailViolence` while the player must choose. */
   readonly pending?: string;
+  /** A Willpower reroll is under way (the roll is back in `rolling` for the picked dice). */
+  readonly wpReroll: boolean;
   readonly held: boolean;
   readonly canModifyPool: boolean;
   readonly dice: readonly RollDie[];
@@ -216,6 +218,7 @@ export type StLiveRoll = {
   readonly phase?: string;
   /** The in-game panel's instruction line for this phase. */
   readonly hint: string;
+  readonly wpReroll: boolean;
   readonly pool: RollPool;
   readonly difficulty?: number;
   readonly result?: RollResult;
@@ -277,6 +280,7 @@ const normalizeRolls = (data: Record<string, unknown>): RollsSlice => {
       pool: asPool(row.pool),
       dice: asList<RollDie>(row.dice),
       conditions: typeof row.conditions === "string" ? row.conditions : "",
+      wpReroll: row.wpReroll === true,
       held: row.held === true,
       canModifyPool: row.canModifyPool === true
     })),
@@ -286,9 +290,10 @@ const normalizeRolls = (data: Record<string, unknown>): RollsSlice => {
       ...(live
         ? {
           live: {
-            ...(live as Omit<StLiveRoll, "pool" | "dice" | "secret" | "quiet">),
+            ...(live as Omit<StLiveRoll, "pool" | "dice" | "secret" | "quiet" | "wpReroll">),
             pool: asPool(live.pool),
             dice: asList<RollDie>(live.dice),
+            wpReroll: live.wpReroll === true,
             secret: live.secret === true,
             quiet: live.quiet === true
           }
