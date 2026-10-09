@@ -124,7 +124,6 @@ $phase-blue-bright: #8cc0ff;
     border-style: dashed;
     border-color: #6a4a4a;
     background: #1c1618;
-    opacity: 0.85;
   }
 
   &.has-acts .roll-body {
@@ -582,18 +581,11 @@ $phase-blue-bright: #8cc0ff;
   border: 0;
   background: none;
 
+  // Never faded or tinted: some faces are already dark.
   img {
     display: block;
     width: 100%;
     height: 100%;
-  }
-
-  &.oblivRouse img {
-    filter: hue-rotate(235deg) saturate(1.6);
-  }
-
-  &.unread img {
-    opacity: 0.4;
   }
 
   &.selected {

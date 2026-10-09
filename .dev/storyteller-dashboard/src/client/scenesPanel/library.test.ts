@@ -49,9 +49,9 @@ describe("mergeFromTts", () => {
 });
 
 describe("new scenes", () => {
-  it("names them District — Site, numbered when taken, with a unique key", () => {
-    expect(newSceneTitle("The Annex", "Casa Loma", [])).toBe("The Annex — Casa Loma");
-    expect(newSceneTitle("The Annex", "Casa Loma", ["The Annex — Casa Loma", "The Annex — Casa Loma (2)"])).toBe("The Annex — Casa Loma (3)");
+  it("names them District - Site, numbered when taken, with a unique key", () => {
+    expect(newSceneTitle("The Annex", "Casa Loma", [])).toBe("The Annex - Casa Loma");
+    expect(newSceneTitle("The Annex", "Casa Loma", ["The Annex - Casa Loma", "The Annex - Casa Loma (2)"])).toBe("The Annex - Casa Loma (3)");
     expect(newSceneKey("Casa Loma", ["casaLoma"])).toBe("casaLoma_2");
   });
 

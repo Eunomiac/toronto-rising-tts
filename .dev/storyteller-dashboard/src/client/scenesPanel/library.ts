@@ -75,9 +75,9 @@ export const mergeFromTts = (local: readonly LibraryScene[], tts: readonly Libra
   return changed || added.length > 0 ? [...merged, ...added] : local;
 };
 
-/** "District — Site", numbered "(2)", "(3)" … when that title is taken. */
+/** "District - Site", numbered "(2)", "(3)" … when that title is taken. ASCII hyphen: TTS saves non-ASCII as "?". */
 export const newSceneTitle = (districtName: string, siteName: string, titles: readonly string[]): string => {
-  const base = districtName ? `${districtName} — ${siteName}` : siteName;
+  const base = districtName ? `${districtName} - ${siteName}` : siteName;
   if (!titles.includes(base)) {
     return base;
   }

@@ -1,4 +1,4 @@
-import { executeLua, luaLongString } from "../ttsBridge.js";
+import { executeLua, luaJsonArg } from "../ttsBridge.js";
 import { parseRelationshipRows } from "./relationships.js";
 import type { ApplyCommand, SeatColor, SeatSnapshot, SheetSnapshot, XpEntryRef } from "./types.js";
 
@@ -202,7 +202,7 @@ export const applySheetCommands = async (commands: readonly ApplyCommand[]): Pro
   // Return-only (no print): large sheet JSON through print floods the External Editor and can
   // look like the apply payload is being resent while the PCs tab keeps polling.
   const script = [
-    `local json = GlobalDashboardPcSheetApply(${luaLongString(JSON.stringify(payload))})`,
+    `local json = GlobalDashboardPcSheetApply(${luaJsonArg(payload)})`,
     "return json"
   ].join("\n");
   const result = await executeLua(script);

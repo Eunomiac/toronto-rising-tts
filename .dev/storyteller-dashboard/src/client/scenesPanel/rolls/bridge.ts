@@ -1,10 +1,10 @@
-import { executeLua, luaLongString } from "../../ttsBridge.js";
+import { executeLua, luaJsonArg, luaLongString } from "../../ttsBridge.js";
 import { parseApplyReply, type ScenesReply } from "../bridge.js";
 import type { RollsCommand } from "./commands.js";
 
 export const sendRollsCommands = async (commands: readonly RollsCommand[]): Promise<ScenesReply> => {
   const payload = commands.length === 1 ? commands[0] : commands;
-  const result = await executeLua(`return GlobalDashboardRollsApply(${luaLongString(JSON.stringify(payload))})`);
+  const result = await executeLua(`return GlobalDashboardRollsApply(${luaJsonArg(payload)})`);
   return parseApplyReply(result, "Rolls");
 };
 

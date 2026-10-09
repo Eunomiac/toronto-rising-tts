@@ -1,4 +1,4 @@
-import { executeLua, luaLongString } from "../ttsBridge.js";
+import { executeLua, luaJsonArg } from "../ttsBridge.js";
 import { extractSnapshotJson } from "./bridge.js";
 import { parseProjectsSnapshot, type ProjectCommand, type ProjectsSnapshot } from "./projects.js";
 
@@ -18,7 +18,7 @@ export const fetchProjectsSnapshot = (): Promise<ProjectsSnapshot> =>
 /** Resolves with the fresh snapshot; throws the host error so the editor can show it. */
 export const applyProjectCommand = async (command: ProjectCommand): Promise<ProjectsSnapshot> => {
   const snapshot = await run([
-    `local json = GlobalDashboardProjectsApply(${luaLongString(JSON.stringify(command))})`,
+    `local json = GlobalDashboardProjectsApply(${luaJsonArg(command)})`,
     "return json"
   ].join("\n"));
   if (!snapshot.ok) {

@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { EMPTY_SCENE_LIBRARY, normalizeSceneLibrary, type LibraryScene, type SceneLibrary, type SceneLibraryPatch } from "../shared/sceneLibrary";
 import { mergeFromTts, parseTtsLibrarySnapshot, scenesFromTts } from "./scenesPanel/library";
-import { executeLua, luaLongString } from "./ttsBridge";
+import { executeLua, luaJsonArg } from "./ttsBridge";
 
 /**
  * The server's scene library file (`/api/scene-library`), the dashboard's master copy of every scene. Copied in
@@ -47,7 +47,7 @@ const request = async (method: "GET" | "PUT", body?: SceneLibraryPatch): Promise
 
 /** TTS's rows (all, or only `keys`) via `GlobalDashboardSceneLibrarySnapshot`. */
 const readTtsScenes = async (keys?: readonly string[]): Promise<readonly LibraryScene[]> => {
-  const argument = keys ? luaLongString(JSON.stringify(keys)) : "";
+  const argument = keys ? luaJsonArg(keys) : "";
   const result = await executeLua(`return GlobalDashboardSceneLibrarySnapshot(${argument})`);
   if (result.timedOut) {
     throw new Error("TTS did not answer.");

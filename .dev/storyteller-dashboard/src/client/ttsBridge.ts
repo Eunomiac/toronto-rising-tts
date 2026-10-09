@@ -27,6 +27,19 @@ export const luaLongString = (value: string): string => {
   return `[${eq}[${value}]${eq}]`;
 };
 
+const ASCII_PUNCTUATION: Readonly<Record<string, string>> = {
+  "\u2012": "-", "\u2013": "-", "\u2014": "-", "\u2015": "-", "\u2212": "-",
+  "\u2018": "'", "\u2019": "'", "\u201A": "'", "\u201C": "\\\"", "\u201D": "\\\"", "\u201E": "\\\"",
+  "\u2026": "...", "\u00A0": " "
+};
+
+/**
+ * A JSON payload as a Lua long-string argument. TTS turns any non-ASCII character into "?" (both
+ * in transit and in its save JSON), so typographic punctuation is folded to ASCII first.
+ */
+export const luaJsonArg = (value: unknown): string =>
+  luaLongString(JSON.stringify(value).replace(/[\u2012-\u2015\u2212\u2018\u2019\u201A\u201C-\u201E\u2026\u00A0]/g, (c) => ASCII_PUNCTUATION[c] ?? c));
+
 export const fetchBridgeStatus = async (): Promise<BridgeStatus> => {
   const response = await fetch("/api/tts-bridge-status");
   const payload = await response.json() as BridgeStatus & { error?: string };

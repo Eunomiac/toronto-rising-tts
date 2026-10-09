@@ -39,7 +39,7 @@ export const RolledDice = ({ dice, pickable, onPick }: { dice: readonly RollDie[
         <button
           key={index}
           type="button"
-          className={`rolled-die ${die.kind}${die.selected ? " selected" : ""}${die.value === undefined ? " unread" : ""}`}
+          className={`rolled-die ${die.kind}${die.selected ? " selected" : ""}`}
           disabled={!pickable}
           title={`${die.kind} ${die.value ?? "?"}${pickable ? " (click to pick for the reroll)" : ""}`}
           onClick={() => onPick?.(index + 1)}

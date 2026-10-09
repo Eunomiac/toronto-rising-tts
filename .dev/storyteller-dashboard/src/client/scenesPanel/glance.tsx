@@ -1144,7 +1144,7 @@ export const HuntRoller = ({ location, pcs, onConfirm }: {
           }
         }}
       >
-        {margin}
+        +{margin}
       </span>
       <button
         type="button"

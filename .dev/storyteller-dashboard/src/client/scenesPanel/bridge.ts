@@ -1,5 +1,5 @@
 import type { ApplyReply } from "../applyQueue.js";
-import { executeLua, luaLongString } from "../ttsBridge.js";
+import { executeLua, luaJsonArg } from "../ttsBridge.js";
 import { coalesceCommands, type ScenesCommand } from "./commands.js";
 
 export type ScenesReply = ApplyReply & { readonly loading?: boolean };
@@ -36,6 +36,6 @@ export const parseScenesReply = (result: { returnValue?: unknown; error?: string
 export const sendScenesCommands = async (commands: readonly ScenesCommand[]): Promise<ScenesReply> => {
   const batch = coalesceCommands(commands);
   const payload = batch.length === 1 ? batch[0] : batch;
-  const result = await executeLua(`return GlobalDashboardScenesApply(${luaLongString(JSON.stringify(payload))})`);
+  const result = await executeLua(`return GlobalDashboardScenesApply(${luaJsonArg(payload)})`);
   return parseScenesReply(result);
 };

@@ -1710,18 +1710,16 @@ $lab-queued: #e8c547;
     place-items: center;
     width: 40px;
     height: 34px;
-    border: 1px solid #34343e;
     font-size: 17px;
     font-weight: 800;
-    background: #1e1e25;
+    color: #c9c9d2;
     cursor: ns-resize;
     user-select: none;
 
     &:hover,
     &:focus-visible {
-      border-color: #8a8a96;
       outline: none;
-      background: #26262f;
+      color: #fff;
     }
   }
 
@@ -1789,10 +1787,12 @@ $lab-queued: #e8c547;
     position: relative;
     min-width: 0;
     overflow: hidden;
+    // Bebas Neue's caps sit high in their line box; the padding drops them to the bar's middle.
+    padding-top: 2px;
     font-family: "Bebas Neue", "Arial Narrow", sans-serif;
     font-size: 15px;
     font-weight: 400;
-    line-height: 20px;
+    line-height: 18px;
     letter-spacing: 0.04em;
     text-align: center;
     white-space: nowrap;
@@ -1817,8 +1817,9 @@ $lab-queued: #e8c547;
     &.acute { background: #d8303e; }
 
     .lab-hunt-bar.intensity & {
+      padding-top: 1px;
       font-size: 13px;
-      line-height: 13px;
+      line-height: 14px;
     }
   }
 
@@ -1851,19 +1852,18 @@ $lab-queued: #e8c547;
     width: 32px;
     height: 34px;
     padding: 0;
-    border: 1px solid #34343e;
-    background: #1e1e25;
+    border: none;
+    background: none;
     cursor: pointer;
 
     svg {
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
       fill: #c9c9d2;
     }
 
-    &:hover:not(:disabled) {
-      border-color: #8a8a96;
-      background: #26262f;
+    &:hover:not(:disabled) svg {
+      filter: brightness(1.3) drop-shadow(0 0 3px rgb(255 255 255 / 35%));
     }
 
     &:disabled {
