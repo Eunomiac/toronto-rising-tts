@@ -1479,14 +1479,16 @@ const REAL_TIME_RATES: readonly RingOption<RealTimeRate>[] = [
  * Present-day time appears (green) only when it differs from
  * scene time; scene time can never pass it (the caller moves present day forward). A scene before the
  * present day is a flashback (yellow glow). Drag the moon to pick a time tonight, then press play over the
- * clock to run the time animation. Click anywhere else for the calendar pop-up.
+ * clock to run the time animation. Click anywhere else for the calendar pop-up. With no live scene (presentOnly) the
+ * panel shows present day, and the moon, calendar and Move button set present day instead of scene time.
  */
-export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, live, w, h }: {
+export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, presentOnly = false, live, w, h }: {
   at: Date;
   present: Date;
   onChange: (next: Date) => void;
   onSetPresent: (next: Date) => void;
   forceOpen: boolean;
+  presentOnly?: boolean;
   /**
    * TTS's real-time state and tonight's sun times; the caller advances `at`. Changes go to TTS when the Scenes tab
    * provides a command sender; without one the panel is read-only (no calendar, no moon drag).
@@ -1547,12 +1549,20 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, live
   const targetTime = target === null || tonight === null
     ? null
     : new Date(Math.round(shift(at, (target - tonight) * NIGHT_MINUTES).getTime() / FIVE_MINUTES) * FIVE_MINUTES);
+  /** Live: TTS animates scene moves itself; present-day moves are instant. */
+  const moveTo = (next: Date): void => {
+    if (command) {
+      command(presentOnly ? { op: "presentDay", datetime: fromDate(next) } : { op: "clockTo", datetime: fromDate(next) });
+    } else if (presentOnly) {
+      onSetPresent(next);
+    } else {
+      setPlaying({ from: at.getTime(), to: next.getTime() });
+    }
+  };
   const play = (event: MouseEvent<HTMLButtonElement>): void => {
     event.stopPropagation();
-    if (targetTime && command) {
-      command({ op: "clockTo", datetime: fromDate(targetTime) });
-    } else if (targetTime) {
-      setPlaying({ from: at.getTime(), to: targetTime.getTime() });
+    if (targetTime) {
+      moveTo(targetTime);
     }
     setTarget(null);
   };
@@ -1600,7 +1610,7 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, live
         )}
         {targetTime && (
           <span className="lab-when-play">
-            <button type="button" className="lab-when-play-go" onClick={play} title="Run the time animation in TTS">
+            <button type="button" className="lab-when-play-go" onClick={play} title={presentOnly ? "Set present day to this time" : "Run the time animation in TTS"}>
               ▶ {formatTime(targetTime)}
             </button>
             <button
@@ -1622,9 +1632,9 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, live
       {(open || forceOpen) && (
         <Overlay onClose={closeCalendar}>
           <div className="lab-modal lab-clock-modal">
-            <span className="lab-modal-title">Scene date · {formatLongDate(at)} · {formatTime(at)}</span>
+            <span className="lab-modal-title">{presentOnly ? "Present day" : "Scene date"} · {formatLongDate(at)} · {formatTime(at)}</span>
             {/* Live picks are a draft: each TTS clock move runs an animation, so one Move button sends the choice. */}
-            <SceneCalendar at={command ? draft ?? at : at} present={present} onPick={command ? setDraft : onChange} />
+            <SceneCalendar at={command ? draft ?? at : at} present={present} onPick={command ? setDraft : presentOnly ? onSetPresent : onChange} />
             <div className="lab-row">
               {command && (
                 <button
@@ -1633,28 +1643,34 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, live
                   disabled={draft === null}
                   onClick={() => {
                     if (draft) {
-                      command({ op: "clockTo", datetime: fromDate(draft) });
+                      moveTo(draft);
                     }
                     closeCalendar();
                   }}
                 >
-                  {draft ? `Move the scene to ${formatDate(draft)} · ${formatTime(draft)}` : "Pick a new scene time"}
+                  {draft
+                    ? `Move ${presentOnly ? "present day" : "the scene"} to ${formatDate(draft)} · ${formatTime(draft)}`
+                    : presentOnly ? "Pick a new present day" : "Pick a new scene time"}
                 </button>
               )}
-              <button
-                type="button"
-                className="lab-btn"
-                onClick={() => (command ? command({ op: "clockTo", datetime: fromDate(present) }) : onChange(present))}
-              >
-                Set scene time to present day
-              </button>
-              <button
-                type="button"
-                className="lab-btn"
-                onClick={() => (command ? command({ op: "presentDay", datetime: fromDate(at) }) : onSetPresent(at))}
-              >
-                Set present day to scene time
-              </button>
+              {!presentOnly && (
+                <>
+                  <button
+                    type="button"
+                    className="lab-btn"
+                    onClick={() => (command ? command({ op: "clockTo", datetime: fromDate(present) }) : onChange(present))}
+                  >
+                    Set scene time to present day
+                  </button>
+                  <button
+                    type="button"
+                    className="lab-btn"
+                    onClick={() => (command ? command({ op: "presentDay", datetime: fromDate(at) }) : onSetPresent(at))}
+                  >
+                    Set present day to scene time
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </Overlay>

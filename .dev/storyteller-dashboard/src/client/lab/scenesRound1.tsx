@@ -160,11 +160,12 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
 
       <Box x={stripX} y={G} w={whenW} h={stripH} className="lab-backdrop-box">
         <WhenPanel
-          at={sceneTime}
+          at={scenes.current === null ? presentDay : sceneTime}
           present={presentDay}
           onChange={changeSceneTime}
           onSetPresent={setPresentDay}
           forceOpen={popoverOpen}
+          presentOnly={scenes.current === null}
           w={whenW - 2}
           h={stripH - 2}
         />

@@ -150,9 +150,14 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const now = useNow(world.clock?.running === true);
   const { phase, scene, clock, soundscape, seats } = world;
 
-  const present = clock?.presentDay ? toDate(clock.presentDay) : null;
-  const sceneNow = clock ? clockNow(clock, now) : undefined;
-  const at = sceneNow ? toDate(sceneNow) : present;
+  // With no live scene (Intermission, Downtime, nothing on the table) the clock panel works on present day.
+  const sceneActive = scene?.liveKey !== undefined && clock?.activeClock === "scene";
+  const sceneNow = sceneActive && clock ? clockNow(clock, now) : undefined;
+  const sceneAt = sceneNow ? toDate(sceneNow) : null;
+  // TTS moves present day forward with a scene that passes it, but only re-pushes the clock on rollovers.
+  const pushedPresent = clock?.presentDay ? toDate(clock.presentDay) : null;
+  const present = pushedPresent && sceneAt && sceneAt > pushedPresent ? sceneAt : pushedPresent;
+  const at = sceneAt ?? present;
   const location: LabLocation | null = scene?.districtKey && scene.siteKey ? { districtKey: scene.districtKey, siteKey: scene.siteKey } : null;
   const title = scene?.liveTitle ?? null;
   const liveScenes = useLiveScenes(scene?.liveKey, title);
@@ -197,6 +202,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
                 onChange={() => undefined}
                 onSetPresent={() => undefined}
                 forceOpen={false}
+                presentOnly={!sceneActive}
                 live={{
                   running: clock.running,
                   speed: clock.speed,
