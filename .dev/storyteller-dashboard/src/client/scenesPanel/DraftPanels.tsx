@@ -11,7 +11,6 @@ import { applyToDraft, draftAtPresentDay, draftClock, draftSceneSlice, draftSoun
 import { isScatter, lightingPreset, liveTokens, sceneConditions, toDate, weatherAxes } from "./liveScene";
 import { boardToStage } from "./stageFrame";
 
-const NO_SHEET = { ok: true, seats: [] } as const;
 
 const locationOf = (scene: LibraryScene): { districtKey: string; siteKey: string } | null => {
   const { districtKey, siteKey } = scene.sessionScene;
@@ -55,7 +54,6 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }:
   };
   const board: LiveBoard = {
     seats: [],
-    sheet: NO_SHEET,
     tokens: liveTokens(draftStage(draft), catalogs).map((token) => ({ ...token, at: boardToStage(token.u, token.v) })),
     pending: {},
     pendingScatter: [],

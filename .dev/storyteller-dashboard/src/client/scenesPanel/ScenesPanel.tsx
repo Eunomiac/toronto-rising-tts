@@ -20,7 +20,7 @@ import { ScenePreview } from "./preview";
 import { useControlBoardSnaps, useSceneCatalogs } from "./roster";
 import type { SceneCatalogs } from "./catalogs";
 import { Box, Overlay, WideBoard, type LiveBoard } from "./sketch";
-import type { SheetSnapshot } from "../pcSheet/types";
+import { useLiveSheet } from "../pcSheet/useLiveSheet";
 import { sceneDeckSnapshot, setSceneDeckSection, useSceneDeck, useSceneDeckStatus } from "../sceneDeck";
 import { useSceneLibraryStatus } from "../sceneLibrary";
 import { DraftPanels } from "./DraftPanels";
@@ -76,9 +76,6 @@ const ROSTER_Y = BODY_Y + HUNT_H + G;
 const WHEN_W = 470;
 const WEATHER_W = 380;
 const SOUND_X = STRIP_X + WHEN_W + G + WEATHER_W + G;
-
-/** Until the PC seat data is merged in, no seat opens tracker controls. */
-const NO_SHEET: SheetSnapshot = { ok: true, seats: [] };
 
 const NO_SCENE = "No scene on the table";
 
@@ -267,6 +264,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const commands = useScenesQueue();
   const rollCommands = useRollsQueue();
   const { snaps } = useControlBoardSnaps();
+  const liveSheet = useLiveSheet();
   const packs = useMemo(() => (snaps ? stagePacks(snaps) : []), [snaps]);
   const { send, sendBatch, view: queueView, queued } = useSendMode(commands, world, catalogs, packs);
   const now = useNow(world.clock?.running === true);
@@ -306,7 +304,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
     }
     return {
       seats: liveSeats(seats, scene?.tableKey, catalogs),
-      sheet: NO_SHEET,
+      sheet: liveSheet,
       tokens: stageTokens,
       pending: pendingStage,
       pendingScatter,
@@ -324,7 +322,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
         endPhase: phase?.phase === "End"
       }
     };
-  }, [seats, scene, catalogs, stageTokens, pendingStage, pendingScatter, rolls?.werewolves, rolls?.oblivionSeats, phase?.phase]);
+  }, [seats, scene, catalogs, liveSheet, stageTokens, pendingStage, pendingScatter, rolls?.werewolves, rolls?.oblivionSeats, phase?.phase]);
   const hunters = useMemo(() => (seats ? huntPcs(seats, catalogs) : []), [seats, catalogs]);
   const libraryLocation = scene?.library?.districtKey && scene.library.siteKey
     ? { districtKey: scene.library.districtKey, siteKey: scene.library.siteKey }

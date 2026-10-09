@@ -7,7 +7,8 @@ import { SEAT_ACCENT, assetUrl } from "../pcSheet/layout";
 import { paintDamageTrack, paintHumanityTrack, type BoxSlot } from "../pcSheet/paint";
 import { actionsForRing } from "../pcSheet/ringActions";
 import { TraitRing } from "../pcSheet/TraitRing";
-import type { RingTarget, SeatColor, SeatSnapshot, SheetSnapshot } from "../pcSheet/types";
+import type { ApplyCommand, RingTarget, SeatColor, SeatSnapshot, SheetSnapshot } from "../pcSheet/types";
+import type { LiveSheetAccess } from "../pcSheet/useLiveSheet";
 import { LIGHTING_LABEL, useScenesCommand, type LightingPreset, type StageChanges } from "./commands";
 import { GENERIC_SKY, stageName } from "./liveScene";
 import { RollsCommandContext } from "./rolls/commands";
@@ -219,6 +220,8 @@ const labSheet = (): SheetSnapshot => ({
   })
 });
 
+const NO_SEATS: SheetSnapshot = { ok: true, seats: [] };
+
 /** Character sheet box art; Humanity shows all ten boxes, unfilled ones faint. */
 const BoxRow = ({ boxes, showEmpty = false }: { boxes: readonly BoxSlot[]; showEmpty?: boolean }): ReactElement => (
   <>
@@ -305,11 +308,19 @@ const SeatContent = ({ seat }: { seat: SeatSketch }): ReactElement => (
  */
 export const Seats = ({ seats = SEATS, liveSheet, onMenu }: {
   seats?: readonly SeatSketch[];
-  liveSheet?: SheetSnapshot;
+  /** Live sheets (fetched on the first seat click); without it the seats edit the Lab's sample trackers. */
+  liveSheet?: LiveSheetAccess;
   onMenu?: (event: MouseEvent<HTMLElement>, seat: SeatSketch) => void;
 }): ReactElement => {
-  const [labState, setSheet] = useState(labSheet);
-  const sheet = liveSheet ?? labState;
+  const [labState, setLabState] = useState(labSheet);
+  const sheet = liveSheet ? liveSheet.sheet ?? NO_SEATS : labState;
+  const apply = (command: ApplyCommand): void => {
+    if (liveSheet) {
+      liveSheet.apply(command);
+    } else {
+      setLabState(applyLocal(labState, command));
+    }
+  };
   const [openColor, setOpenColor] = useState<SeatColor | null>(null);
   const [ring, setRing] = useState<TrackRing | null>(null);
   useEffect(() => {
@@ -333,7 +344,7 @@ export const Seats = ({ seats = SEATS, liveSheet, onMenu }: {
         const className = `lab-seat ${seat.kind}${seat.state ? ` ${seat.state}` : ""}${seat.playedBy ? " role" : ""}`;
         const style = seat.color ? ({ "--seat-color": SEAT_ACCENT[seat.color] } as CSSProperties) : undefined;
         const open = seat.color !== undefined && seat.color === openColor;
-        const controllable = seat.color !== undefined && sheet.seats.some((entry) => entry.color === seat.color);
+        const controllable = seat.color !== undefined && (liveSheet ? seat.kind === "pc" : sheet.seats.some((entry) => entry.color === seat.color));
         const menu = onMenu && (seat.kind === "pc" || seat.kind === "npc") ? onMenu : undefined;
         const hints = [
           controllable && !open ? "Click for this PC's trackers" : undefined,
@@ -359,6 +370,7 @@ export const Seats = ({ seats = SEATS, liveSheet, onMenu }: {
               }
               setRing(null);
               setOpenColor(open ? null : seat.color ?? null);
+              liveSheet?.load();
             }}
           >
             {seat.characterKey ? (
@@ -374,8 +386,13 @@ export const Seats = ({ seats = SEATS, liveSheet, onMenu }: {
               <TrackerPopup
                 seat={openSeat}
                 onRing={(event, target) => setRing({ ...canvasPoint(event), target })}
-                onHunger={(delta) => setSheet(applyLocal(sheet, { op: "hunger", color: openSeat.color, delta }))}
+                onHunger={(delta) => apply({ op: "hunger", color: openSeat.color, delta })}
               />
+            )}
+            {open && !openSeat && liveSheet && (
+              <div className="lab-seat-pop" {...swallowClicks}>
+                <span className="lab-note">{liveSheet.error ?? "Reading the sheet…"}</span>
+              </div>
             )}
           </div>
         );
@@ -387,7 +404,7 @@ export const Seats = ({ seats = SEATS, liveSheet, onMenu }: {
             y={ring.y}
             actions={actionsForRing(openSeat, ring.target)}
             onPick={(action, button) => {
-              setSheet(applyLocal(sheet, button === "right" ? (action.right ?? action.left) : action.left));
+              apply(button === "right" ? (action.right ?? action.left) : action.left);
               if (action.closeOnPick === true) {
                 setRing(null);
               }
@@ -520,7 +537,8 @@ const tokenPoint = (token: StageToken, packs: readonly StagePack[], w: number, h
  */
 export type LiveBoard = {
   readonly seats: readonly SeatSketch[];
-  readonly sheet: SheetSnapshot;
+  /** Live PC sheets for the seat tracker pop-ups; none in scene drafts. */
+  readonly sheet?: LiveSheetAccess;
   readonly tokens: readonly StageToken[];
   readonly env: StageEnv;
   /** Stage changes waiting in the Send queue, drawn as if sent. */
@@ -756,7 +774,7 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoa
       <StageLayer w={w} h={h} board={board} packs={packs} spots={spots} catalogs={catalogs} nameOf={nameOf} onEdit={edit} onMenu={openTokenRing} />
     )}
     <div className="lab-board-seats floating bottom" style={{ top: h - h * WIDE_SEAT_BAND - 8, height: h * WIDE_SEAT_BAND }}>
-      {live ? <Seats seats={live.seats} liveSheet={live.sheet} onMenu={openSeatRing} /> : <Seats onMenu={openSeatRing} />}
+      {live ? <Seats seats={live.seats} {...(live.sheet ? { liveSheet: live.sheet } : {})} onMenu={openSeatRing} /> : <Seats onMenu={openSeatRing} />}
     </div>
     <span className="lab-board-table top">
       <select
