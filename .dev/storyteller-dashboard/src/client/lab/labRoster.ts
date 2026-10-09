@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import type { RosterLayout } from "../../shared/sceneDeck";
 import { setSceneDeckSection, useSceneDeck } from "../sceneDeck";
-import type { SceneCatalogs } from "../scenes/types";
+import { parseControlBoardSnaps } from "../scenes/payload";
+import type { ControlBoardSnaps, SceneCatalogs } from "../scenes/types";
 
 let catalogsRequest: Promise<SceneCatalogs> | null = null;
 
@@ -13,6 +14,27 @@ const loadSceneCatalogs = (): Promise<SceneCatalogs> => {
     return (await response.json()) as SceneCatalogs;
   });
   return catalogsRequest;
+};
+
+let snapsRequest: Promise<ControlBoardSnaps> | null = null;
+
+/** Control board snap catalog, fetched once and shared; the stage drawing places its slots from it. */
+export const useControlBoardSnaps = (): { snaps: ControlBoardSnaps | null; error: string | null } => {
+  const [snaps, setSnaps] = useState<ControlBoardSnaps | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    snapsRequest ??= fetch("/api/control-board-snaps").then(async (response) => {
+      if (!response.ok) {
+        throw new Error(`Control board snaps failed to load (${response.status}).`);
+      }
+      return parseControlBoardSnaps(await response.json());
+    });
+    snapsRequest.then(setSnaps).catch((reason: unknown) => {
+      snapsRequest = null;
+      setError(reason instanceof Error ? reason.message : String(reason));
+    });
+  }, []);
+  return { snaps, error };
 };
 
 /** Scene catalogs, fetched once and shared by every Lab panel that needs them. */

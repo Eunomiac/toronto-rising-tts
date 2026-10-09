@@ -437,6 +437,15 @@ $lab-pin: #f5b13d;
     stroke-width: 1.5;
   }
 
+  &-error {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #e57373;
+    font-size: 13px;
+  }
+
   &-table {
     position: absolute;
     left: 50%;

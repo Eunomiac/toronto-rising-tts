@@ -47,6 +47,17 @@ local function round2(v)
   return math.floor(n * 100 + 0.5) / 100
 end
 
+--- Board positions keep four places: two places is up to a slot's width off on the dashboard's stage.
+--- @param v any
+--- @return number|nil
+local function round4(v)
+  local n = tonumber(v)
+  if n == nil then
+    return nil
+  end
+  return math.floor(n * 10000 + 0.5) / 10000
+end
+
 local function buildPhase()
   return {
     phase = S.getStateVal("currentPhase"),
@@ -198,8 +209,8 @@ local function buildSeats()
     if type(p) == "table" then
       stage[#stage + 1] = {
         characterKey = characterKey,
-        u = round2(p.u),
-        v = round2(p.v),
+        u = round4(p.u),
+        v = round4(p.v),
         lightMode = p.npcLightMode,
       }
     end

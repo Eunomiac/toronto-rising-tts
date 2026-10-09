@@ -135,15 +135,6 @@ export const liveTokens = (stage: readonly StageNpc[], catalogs: SceneCatalogs |
     return [{ characterKey: npc.characterKey, name: full.split(" ")[0] ?? full, lit: npc.lightMode !== "OFF", u: npc.u, v: npc.v }];
   });
 
-/**
- * Control board (u, v) → the drawn stage (fractions of its width and height). The board has the seat row at
- * small v; the drawing puts it along the bottom, so v flips. Fitted to the board's pack anchors in
- * `data/control-board-snaps.json` (Far Left / Right at u 0.29 / 0.71, Far Center at v 0.75, CENTER at v 0.45).
- */
-export const boardToStage = (u: number, v: number): { readonly u: number; readonly v: number } => {
-  const clamp = (value: number): number => Math.min(0.98, Math.max(0.02, value));
-  return { u: clamp(0.12 + (u - 0.29) * 1.81), v: clamp(1.27 - 1.467 * v) };
-};
 
 export type SpotlightView = { readonly order: readonly { readonly color: SeatColor; readonly characterKey: string }[]; readonly front: number };
 

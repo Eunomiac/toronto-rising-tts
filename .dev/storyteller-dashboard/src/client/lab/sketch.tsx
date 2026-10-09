@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties, type MouseEvent, type ReactElement, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type MouseEvent, type ReactElement, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Headshot } from "../headshots/Headshot";
 import { applyLocal } from "../pcSheet/applyLocal";
@@ -9,8 +9,9 @@ import { actionsForRing } from "../pcSheet/ringActions";
 import { TraitRing } from "../pcSheet/TraitRing";
 import type { RingTarget, SeatColor, SeatSnapshot, SheetSnapshot } from "../pcSheet/types";
 import { useScenesCommand } from "../scenesPanel/commands";
+import { stagePacks, type StagePack } from "../scenesPanel/stageFrame";
 import { Icon, type IconName } from "./icons";
-import { groupColor, groupLeader, useRosterLayout, useSceneCatalogs } from "./labRoster";
+import { groupColor, groupLeader, useControlBoardSnaps, useRosterLayout, useSceneCatalogs } from "./labRoster";
 
 /**
  * Grey-box building blocks for Lab sketches. Every sketch is laid out in absolute pixels on the
@@ -462,40 +463,7 @@ export const Board = ({ w, h, withSeats }: { w: number; h: number; withSeats: bo
 /** Height of the wide board as a fraction of its width: the 2:1 stage plus a little margin for the seat row. */
 export const WIDE_BOARD_RATIO = 0.52;
 
-type WidePack = { readonly label: string; readonly u: number; readonly v: number; readonly far: boolean };
-
-/** Standard-placement packs at their in-game positions (u, v as fractions of the wide board). */
-const WIDE_PACKS: readonly WidePack[] = [
-  { label: "Far Center-Left", u: 0.36, v: 0.17, far: true },
-  { label: "Far Center-Right", u: 0.64, v: 0.17, far: true },
-  { label: "Far Left", u: 0.12, v: 0.44, far: true },
-  { label: "Far Right", u: 0.88, v: 0.44, far: true },
-  { label: "Mid Left", u: 0.3, v: 0.46, far: false },
-  { label: "Mid Center", u: 0.5, v: 0.39, far: false },
-  { label: "Mid Right", u: 0.7, v: 0.46, far: false },
-  { label: "Center Left", u: 0.29, v: 0.68, far: false },
-  { label: "CENTER", u: 0.5, v: 0.61, far: false },
-  { label: "Center Right", u: 0.71, v: 0.68, far: false }
-];
-
 const WIDE_SEAT_BAND = 0.18;
-const SLOT_SPACING = 56;
-
-/** Snap slots: six around each Far ellipse; five on a shallow arc (centre slot lowest) for mid and center packs. */
-const packSlots = (pack: WidePack, w: number, h: number): readonly { x: number; y: number }[] => {
-  const cx = pack.u * w;
-  const cy = pack.v * h;
-  if (pack.far) {
-    return Array.from({ length: 6 }, (_, index) => {
-      const angle = (index / 6) * Math.PI * 2 - Math.PI / 2;
-      return { x: cx + Math.cos(angle) * w * 0.075, y: cy + Math.sin(angle) * h * 0.09 };
-    });
-  }
-  return Array.from({ length: 5 }, (_, index) => {
-    const offset = index - 2;
-    return { x: cx + offset * SLOT_SPACING, y: cy - Math.abs(offset) * 9 };
-  });
-};
 
 export type StageToken = {
   readonly characterKey: string;
@@ -520,18 +488,27 @@ const STAGE_TOKENS: readonly StageToken[] = [
   { characterKey: "drIrenaVoss", name: "Dr. Voss", lit: false, at: { u: 0.86, v: 0.7 } }
 ];
 
-const tokenPoint = (token: StageToken, w: number, h: number): { x: number; y: number } => {
+/** Where a token sits on the drawing; Lab tokens may name a pack slot, which needs the snap catalog loaded. */
+const tokenPoint = (token: StageToken, packs: readonly StagePack[], w: number, h: number): { x: number; y: number } | null => {
   if ("u" in token.at) {
     return { x: token.at.u * w, y: token.at.v * h };
   }
   const { pack: label, slot } = token.at;
-  const pack = WIDE_PACKS.find((entry) => entry.label === label);
-  const point = pack ? packSlots(pack, w, h)[slot] : undefined;
+  if (packs.length === 0) {
+    return null;
+  }
+  const point = packs.find((entry) => entry.label === label)?.slots[slot];
   if (!point) {
     throw new Error(`Lab stage token ${token.characterKey}: no slot ${slot} in pack ${label}`);
   }
-  return point;
+  return { x: point.u * w, y: point.v * h };
 };
+
+/** Half-axes of the ellipse drawn through a Far pack's six slots. */
+const farRadii = (pack: StagePack, w: number, h: number): { rx: number; ry: number } => ({
+  rx: Math.max(...pack.slots.map((slot) => Math.abs(slot.u - pack.center.u))) * w,
+  ry: Math.max(...pack.slots.map((slot) => Math.abs(slot.v - pack.center.v))) * h
+});
 
 /**
  * A figurine headshot with the name under it; hovering enlarges the headshot. The ring is the token's group
@@ -564,6 +541,8 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoa
   const [placement, setPlacement] = useState<"Standard" | "Scatter">("Standard");
   const [clearArmed, setClearArmed] = useState(false);
   const { catalogs } = useSceneCatalogs();
+  const { snaps, error: snapsError } = useControlBoardSnaps();
+  const packs = useMemo(() => (snaps ? stagePacks(snaps) : []), [snaps]);
   const roster = useRosterLayout();
   const tokenGroup = (characterKey: string): string | undefined =>
     catalogs?.namedNpcs.find((npc) => npc.characterKey === characterKey)?.pickerGroups[0];
@@ -581,22 +560,27 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoa
   return (
   <div className="lab-board wide" style={{ width: w, height: h }} onContextMenu={openRing}>
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
-      {WIDE_PACKS.map((pack) => {
-        const cx = pack.u * w;
-        const cy = pack.v * h;
+      {packs.map((pack) => {
+        const cx = pack.center.u * w;
+        const cy = pack.center.v * h;
+        const lowest = Math.max(...pack.slots.map((slot) => slot.v)) * h;
         return (
-          <g key={pack.label}>
-            {pack.far && <ellipse cx={cx} cy={cy} rx={w * 0.075} ry={h * 0.09} className="lab-board-ring" />}
-            {packSlots(pack, w, h).map((slot, index) => (
-              <circle key={index} cx={slot.x} cy={slot.y} r={5} className="lab-board-snap" />
+          <g key={pack.familyId}>
+            {pack.far && <ellipse cx={cx} cy={cy} {...farRadii(pack, w, h)} className="lab-board-ring" />}
+            {pack.slots.map((slot) => (
+              <circle key={slot.snapIndex} cx={slot.u * w} cy={slot.v * h} r={5} className="lab-board-snap" />
             ))}
-            <text x={cx} y={pack.far ? cy + 6 : cy + 52} className="lab-board-label">{pack.label}</text>
+            <text x={cx} y={pack.far ? cy + 6 : lowest + 30} className="lab-board-label">{pack.label}</text>
           </g>
         );
       })}
     </svg>
+    {snapsError && <span className="lab-board-error">{snapsError}</span>}
     {(live?.tokens ?? STAGE_TOKENS).map((token) => {
-      const point = tokenPoint(token, w, h);
+      const point = tokenPoint(token, packs, w, h);
+      if (!point) {
+        return null;
+      }
       const group = tokenGroup(token.characterKey);
       return (
         <Token

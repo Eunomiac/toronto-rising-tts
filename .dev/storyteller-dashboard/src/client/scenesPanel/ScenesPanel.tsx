@@ -9,7 +9,8 @@ import { clockNow, refreshWorldSnapshot, useWorldState, WORLD_TOPICS, type World
 import { sendScenesCommands, type ScenesReply } from "./bridge";
 import { ScenesCommandContext, type ScenesCommand, type ScenesSend } from "./commands";
 import { withoutScene, withTableScene } from "./deck";
-import { boardToStage, liveSeats, liveTokens, soundView, spotlightView, toDate, weatherAxes } from "./liveScene";
+import { liveSeats, liveTokens, soundView, spotlightView, toDate, weatherAxes } from "./liveScene";
+import { boardToStage } from "./stageFrame";
 
 /**
  * The Scenes tab: Lab layout B (`lab/scenesRound1.tsx` GlanceStrip) drawn from what TTS broadcasts.

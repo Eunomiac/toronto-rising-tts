@@ -778,7 +778,7 @@ const segmentFlex = (chance: number, winner: boolean, settled: boolean, minWidth
  */
 export const HuntRoller = ({ location }: { location: LabLocation }): ReactElement => {
   const { data } = useChronicleLocations();
-  const [margin, setMargin] = useState(3);
+  const [margin, setMargin] = useState(0);
   const [outcome, setOutcome] = useState<HuntOutcome>("basic");
   const [target, setTarget] = useState<Flavor | null>(null);
   const [markers, setMarkers] = useState<{ flavor: number; intensity: number } | null>(null);
