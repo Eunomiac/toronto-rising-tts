@@ -1,3 +1,37 @@
 {
-  "notes": []
+  "notes": [
+    {
+      "id": 7,
+      "sketch": "scenes-r1-b",
+      "x": 1806,
+      "y": 585,
+      "text": "Dice should be sorted in standard order, as dice are sorted for display in the broadcast XML lua (i.e. paired criticals first, hunger dice before standard dice, etc)",
+      "status": "open",
+      "createdAt": "2026-10-09T07:56:52.948Z",
+      "updatedAt": "2026-10-09T09:54:30.073Z",
+      "reply": "The dashboard draws dice in exactly the order TTS sends them, and TTS sends the same sorted list it uses for the broadcast (built by Dice.buildDiceFaces), so I couldn't find where they differ. Could you describe one roll where the order looked wrong — which dice it rolled, the order you saw, and the order you expected? If the problem is reading order around the dice ring rather than the order itself, say so and I'll change where the ring starts."
+    },
+    {
+      "id": 11,
+      "sketch": "scenes-r1-b",
+      "x": 40,
+      "y": 324,
+      "text": "Generic token images aren't being generated; they all appear blank",
+      "status": "open",
+      "createdAt": "2026-10-09T08:50:01.194Z",
+      "updatedAt": "2026-10-09T09:54:30.073Z",
+      "reply": "Fixed: generic headshots now come from the same image route as named NPCs (/figurine-images/), which looks in both the named-NPC and generic folders. This needs the dashboard server restarted — until you restart it, ALL headshots will be blank, not just the generic ones. Once restarted, please check a few generic tokens and clear this pin if they show their faces."
+    },
+    {
+      "id": 14,
+      "sketch": "scenes-r1-b",
+      "x": 1316,
+      "y": 160,
+      "text": "Scene default names are being separated with a question mark character, e.g. \"West Queen West ? Ravenwing\"",
+      "status": "open",
+      "createdAt": "2026-10-09T09:03:01.907Z",
+      "updatedAt": "2026-10-09T09:54:30.073Z",
+      "reply": "Fixed for new scenes: titles are now built with a plain hyphen (\"West Queen West - Ravenwing\"), because TTS saves any non-ASCII character as \"?\". Scenes already saved with a \"?\" keep it; rename those with the pencil button in the scene library. Clear this pin once you've done that (or if you're happy to leave them)."
+    }
+  ]
 }

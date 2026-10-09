@@ -9966,7 +9966,7 @@ UI.setAttributes("overlay_site_card_display", {rectAlignment = "MiddleRight", of
   <Panel id="adminControlsBody" active="false">
 
 <!--
-UI.setAttributes("debug_buttonControls", {})
+UI.setAttributes("debug_buttonControls", {offsetXY = "-200, 300"})
 
 -->
     <!-- ================================================================ -->
@@ -9979,6 +9979,7 @@ UI.setAttributes("debug_buttonControls", {})
       <Button class="hud_storyteller_button" onClick="HUD_printState">Print State</Button>
       <Button class="hud_storyteller_button" onClick="HUD_syncAll">Sync All (force)</Button>
       <Button id="debug_syncTrace" class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleSyncTrace">Trace Sync</Button>
+      <Button id="debug_stRollUi" class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleStRollUi">In-game ST Rolls</Button>
       <Button class="hud_storyteller_button" onClick="HUD_clearLoadingOverlay">Clear Loading Overlay</Button>
       <Button class="hud_storyteller_button" onClick="HUD_refreshUi">Refresh UI</Button>
       <Button id="debug_ambient" class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleDebugAmbient">Toggle Lights</Button>
@@ -11128,7 +11129,6 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (400-slot 
     <Button id="button_STcamera_default" class="STcamera_button" onClick="HUD_STcamera">Main</Button>
     <Button id="button_STcamera_mid" class="STcamera_button" onClick="HUD_STcamera">Mid</Button>
     <Button id="button_STcamera_stage_control" class="STcamera_button" onClick="HUD_STcamera">Stage</Button>
-    <Button id="button_STcamera_palette" class="STcamera_button" onClick="HUD_STcamera">Palette</Button>
     <Button id="button_STcamera_rolls" class="STcamera_button" onClick="HUD_STcamera">Rolls</Button>
   </HorizontalLayout>
 
@@ -11947,6 +11947,10 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
     <HorizontalLayout spacing="6" childForceExpandWidth="true">
       <Text id="soundscapeLaneLbl_wind" preferredWidth="150" minWidth="150" fontSize="14" color="#DDDDDD">Wind</Text>
       <Slider id="soundscapeSlider_wind" minValue="0" maxValue="1" value="0" flexibleWidth="1" onValueChanged="HUD_soundscapeLaneSlider" />
+    </HorizontalLayout>
+    <HorizontalLayout spacing="6" childForceExpandWidth="true">
+      <Text id="soundscapeLaneLbl_thunder" preferredWidth="150" minWidth="150" fontSize="14" color="#DDDDDD">Thunder</Text>
+      <Slider id="soundscapeSlider_thunder" minValue="0" maxValue="1" value="1" flexibleWidth="1" onValueChanged="HUD_soundscapeLaneSlider" />
     </HorizontalLayout>
 
     <HorizontalLayout class="hud_storyteller_button_row" spacing="4">
@@ -13263,7 +13267,6 @@ UI.setAttributes("input_sessionNum", {minHeight = "30", fontStyle = "Bold"})
   <HorizontalLayout id="panel_runtest_start" class="runtest_button_row" rectAlignment="LowerLeft" offsetXY = "20 20" width="500" height="40">
     <Button id="button_runtest_Dice" class="runtest_button" onClick="HUD_runtest">Dice</Button>
     <Button id="button_runtest_Scenes" class="runtest_button" onClick="HUD_runtest">Scenes</Button>
-    <Button id="button_runtest_Gameboard" class="runtest_button" onClick="HUD_runtest">Gameboard</Button>
 
     <InputField id="input_runtest_step" class="runtest_input" onValueChanged="HUD_runtest_step" onEndEdit="HUD_runtest_step" text="1" />
   </HorizontalLayout>
@@ -13294,7 +13297,7 @@ UI.setAttributes("input_sessionNum", {minHeight = "30", fontStyle = "Bold"})
 <!-- Contains three surfaces:                                                       -->
 <!--   1. ST Roll Dashboard (rollDash_ST)          — Black|Host only               -->
 <!--   2. Player Roll Panels — PC: ui/player/panel_roll_controls.xml (generated)   -->
-<!--      ST live roll: rollPanel_Black in this file                               -->
+<!--      ST live roll: rollPanelST (ui/storyteller/panel_storyteller_roll_controls.xml) -->
 <!--   3. Result Broadcast (rollRes_panel)         — ui/shared/panel_roll_results.xml -->
 <!-- Agent guidance: .dev/Dice System/Dice System Outline.md §8, §10               -->
 
@@ -14847,67 +14850,11 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
 
 <!-- ============================================================================ -->
 <!-- 2. PLAYER ROLL PANELS (PC) — generated: ui/player/panel_roll_controls.xml -->
-<!--    Template: ui/.templates/panel_roll_controls.xml. ST live roll: rollPanel_Black below. -->
+<!--    Template: ui/.templates/panel_roll_controls.xml. -->
 <!-- ============================================================================ -->
 
 
-<!-- Black (Storyteller) — live NPC/Werewolf roll controls (Host sees all player panels too) -->
-<Panel id="rollPanel_Black"
-  visibility="Black|Host"
-  active="False"
-  class="rollPanel_player">
-  <VerticalLayout class="rollPanel_player_content">
-    <Text id="rollPanel_type_Black"   fontSize="14" fontStyle="Bold" color="#C9A84C" alignment="MiddleCenter" text="" />
-    <Text id="rollPanel_phase_Black"  fontSize="12" color="#CCCCCC" alignment="MiddleCenter" text="" />
-    <HorizontalLayout spacing="16" childAlignment="MiddleCenter">
-      <HorizontalLayout spacing="6" childAlignment="MiddleCenter" childForceExpandWidth="false">
-        <Text id="rollPanel_pool_rouse_Black" fontSize="14" color="#8B1A1A" text="" />
-        <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false">
-          <Text id="rollPanel_pool_normal_Black" fontSize="14" color="#FFFFFF" text="" />
-          <Text id="rollPanel_pool_hunger_Black" fontSize="14" color="#CC3333" text="" />
-          <Text id="rollPanel_pool_obliv_Black" fontSize="14" color="#5C2D7A" text="" />
-          <Text id="rollPanel_pool_werewolf_Black" fontSize="14" color="#9ACD32" text="" />
-          <Text id="rollPanel_pool_rage_Black" fontSize="14" color="#FF8C00" text="" />
-        </HorizontalLayout>
-      </HorizontalLayout>
-      <Text id="rollPanel_diff_Black" fontSize="12" color="#AAAAAA" text="Difficulty: —" />
-    </HorizontalLayout>
-    <HorizontalLayout spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false" childForceExpandHeight="false" minHeight="48" preferredHeight="48">
-      <Image id="rollPanel_die_1_Black"  active="False" preferredWidth="30" preserveAspect="True" />
-      <Image id="rollPanel_die_2_Black"  active="False" preferredWidth="30" preserveAspect="True" />
-      <Image id="rollPanel_die_3_Black"  active="False" preferredWidth="30" preserveAspect="True" />
-      <Image id="rollPanel_die_4_Black"  active="False" preferredWidth="30" preserveAspect="True" />
-      <Image id="rollPanel_die_5_Black"  active="False" preferredWidth="30" preserveAspect="True" />
-      <Image id="rollPanel_die_6_Black"  active="False" preferredWidth="30" preserveAspect="True" />
-      <Image id="rollPanel_die_7_Black"  active="False" preferredWidth="30" preserveAspect="True" />
-      <Image id="rollPanel_die_8_Black"  active="False" preferredWidth="30" preserveAspect="True" />
-      <Image id="rollPanel_die_9_Black"  active="False" preferredWidth="30" preserveAspect="True" />
-      <Image id="rollPanel_die_10_Black" active="False" preferredWidth="30" preserveAspect="True" />
-      <Image id="rollPanel_die_11_Black" active="False" preferredWidth="30" preserveAspect="True" />
-      <Image id="rollPanel_die_12_Black" active="False" preferredWidth="30" preserveAspect="True" />
-      <Image id="rollPanel_die_13_Black" active="False" preferredWidth="30" preserveAspect="True" />
-      <Image id="rollPanel_die_14_Black" active="False" preferredWidth="30" preserveAspect="True" />
-      <Image id="rollPanel_die_15_Black" active="False" preferredWidth="30" preserveAspect="True" />
-    </HorizontalLayout>
-    <Text id="rollPanel_result_Black"    fontSize="18" fontStyle="Bold" color="#FFD700" alignment="MiddleCenter" text="" />
-    <HorizontalLayout spacing="10" childAlignment="MiddleCenter">
-      <Text id="rollPanel_successes_Black" fontSize="12" color="#CCCCCC" text="" />
-      <Text id="rollPanel_margin_Black"    fontSize="12" color="#AAAAAA" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout spacing="8" childAlignment="MiddleCenter">
-      <Button id="rollPanel_btnRoll_Black"    active="False" fontSize="13" preferredWidth="90"  preferredHeight="30" color="rgba(0.1,0.4,0.1,1)" onClick="HUD_rollRollButton" text="ROLL" />
-      <Button id="rollPanel_btnHalf_Black"    active="False" fontSize="11" preferredWidth="100" preferredHeight="30" color="rgba(0.2,0.2,0.5,1)" onClick="HUD_rollTakeHalf"   text="TAKE HALF" />
-      <Button id="rollPanel_btnWP_Black"      active="False" fontSize="11" preferredWidth="140" preferredHeight="30" color="rgba(0.4,0.1,0.1,1)" onClick="HUD_rollSpendWP"      text="SPEND WILLPOWER" />
-      <Button id="rollPanel_btnRecalc_Black"  active="False" fontSize="11" preferredWidth="110" preferredHeight="30" color="rgba(0.25,0.25,0.35,1)" onClick="HUD_rollRecalculate" text="RECALCULATE" />
-      <Button id="rollPanel_btnConfirm_Black" active="False" fontSize="13" preferredWidth="90"  preferredHeight="30" color="rgba(0.1,0.4,0.1,1)" onClick="HUD_rollConfirm"    text="CONFIRM" />
-      <Button id="rollPanel_btnCancel_Black"  active="True"  fontSize="11" preferredWidth="70"  preferredHeight="30" color="rgba(0.5,0.1,0.1,1)" onClick="HUD_rollCancel"     text="CANCEL" />
-      <Button id="rollPanel_btnOblivHunger_Black" active="False" fontSize="10" preferredWidth="130" preferredHeight="28" color="rgba(0.3,0.2,0.5,1)" onClick="HUD_rollConfirmOblivChoice" text="CONFIRM — HUNGER" />
-      <Button id="rollPanel_btnOblivStain_Black"  active="False" fontSize="10" preferredWidth="120" preferredHeight="28" color="rgba(0.35,0.15,0.35,1)" onClick="HUD_rollConfirmOblivChoice" text="CONFIRM — STAIN" />
-      <Button id="rollPanel_btnBrutalFail_Black"  active="False" fontSize="10" preferredWidth="110" preferredHeight="28" color="rgba(0.4,0.15,0.1,1)" onClick="HUD_rollConfirmBrutalChoice" text="CONFIRM FAIL" />
-      <Button id="rollPanel_btnBrutalViolence_Black" active="False" fontSize="10" preferredWidth="130" preferredHeight="28" color="rgba(0.5,0.1,0.1,1)" onClick="HUD_rollConfirmBrutalChoice" text="CONFIRM VIOLENCE" />
-    </HorizontalLayout>
-  </VerticalLayout>
-</Panel>
+
 
 <!-- ============================================================================ -->
 <!-- 3. RESULT BROADCAST PANEL (panel_roll_results.xml)                  -->
@@ -16794,188 +16741,6 @@ UI.hide("sessionStartHeal_playerContainer_Orange")
 
 </VerticalLayout>
 <!-- /include ui/storyteller/memoriam_modal.xml -->
-
-
-<!-- include ui/storyteller/generic_npc_import_modal.xml -->
-<!-- Generic NPC import label override modal (TOR-560). Source: ui/storyteller/generic_npc_import_modal.xml -->
-<Defaults>
-  <VerticalLayout class="genericImport_modal"
-    rectAlignment="MiddleCenter"
-    width="960"
-    height="640"
-    padding="20 20 20 20"
-    color="#000000EE"
-    childAlignment="UpperCenter"
-    spacing="10"
-    childForceExpandWidth="true"
-    childForceExpandHeight="false"
-  />
-  <Text class="genericImport_title"
-    alignment="MiddleCenter"
-    color="#cb995c"
-    fontStyle="Bold"
-    fontSize="26"
-    preferredHeight="40"
-  />
-  <Text class="genericImport_hint"
-    alignment="MiddleCenter"
-    color="#AAAAAA"
-    fontSize="14"
-    preferredHeight="28"
-  />
-  <HorizontalLayout class="genericImport_row"
-    preferredHeight="40"
-    minHeight="40"
-    spacing="10"
-    childForceExpandWidth="true"
-    childForceExpandHeight="true"
-    childAlignment="MiddleLeft"
-  />
-  <Text class="genericImport_key"
-    alignment="MiddleLeft"
-    color="#FFFFFF"
-    fontSize="14"
-    preferredWidth="260"
-    minWidth="220"
-    flexibleWidth="0"
-  />
-  <InputField class="genericImport_label"
-    fontSize="16"
-    preferredHeight="36"
-    minHeight="36"
-    preferredWidth="560"
-    minWidth="420"
-    flexibleWidth="1"
-    colors="#222222|#333333|#111111|#555555"
-    textColor="#FFFFFF"
-    onValueChanged="HUD_genericNpcImportLabelChanged"
-    onEndEdit="HUD_genericNpcImportLabelChanged"
-  />
-  <HorizontalLayout class="genericImport_buttons"
-    preferredHeight="48"
-    minHeight="48"
-    spacing="16"
-    childForceExpandWidth="false"
-    childAlignment="MiddleCenter"
-  />
-  <Button class="genericImport_btn"
-    preferredWidth="160"
-    preferredHeight="44"
-    fontSize="18"
-    fontStyle="Bold"
-    textColor="#FFFFFF"
-  />
-</Defaults>
-
-<VerticalLayout id="generic_npc_import_modal" class="genericImport_modal" visibility="Black|Host" active="false">
-  <Text class="genericImport_title" text="Generic NPC Names" />
-  <Text class="genericImport_hint" text="Edit display names (optional), then Import. Cancel discards the batch." />
-  <VerticalLayout spacing="6" childForceExpandHeight="false" flexibleHeight="1">
-    <HorizontalLayout id="genericImport_row_01" class="genericImport_row" active="false">
-      <Text id="genericImport_key_01" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_01" class="genericImport_label" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout id="genericImport_row_02" class="genericImport_row" active="false">
-      <Text id="genericImport_key_02" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_02" class="genericImport_label" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout id="genericImport_row_03" class="genericImport_row" active="false">
-      <Text id="genericImport_key_03" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_03" class="genericImport_label" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout id="genericImport_row_04" class="genericImport_row" active="false">
-      <Text id="genericImport_key_04" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_04" class="genericImport_label" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout id="genericImport_row_05" class="genericImport_row" active="false">
-      <Text id="genericImport_key_05" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_05" class="genericImport_label" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout id="genericImport_row_06" class="genericImport_row" active="false">
-      <Text id="genericImport_key_06" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_06" class="genericImport_label" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout id="genericImport_row_07" class="genericImport_row" active="false">
-      <Text id="genericImport_key_07" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_07" class="genericImport_label" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout id="genericImport_row_08" class="genericImport_row" active="false">
-      <Text id="genericImport_key_08" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_08" class="genericImport_label" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout id="genericImport_row_09" class="genericImport_row" active="false">
-      <Text id="genericImport_key_09" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_09" class="genericImport_label" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout id="genericImport_row_10" class="genericImport_row" active="false">
-      <Text id="genericImport_key_10" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_10" class="genericImport_label" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout id="genericImport_row_11" class="genericImport_row" active="false">
-      <Text id="genericImport_key_11" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_11" class="genericImport_label" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout id="genericImport_row_12" class="genericImport_row" active="false">
-      <Text id="genericImport_key_12" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_12" class="genericImport_label" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout id="genericImport_row_13" class="genericImport_row" active="false">
-      <Text id="genericImport_key_13" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_13" class="genericImport_label" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout id="genericImport_row_14" class="genericImport_row" active="false">
-      <Text id="genericImport_key_14" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_14" class="genericImport_label" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout id="genericImport_row_15" class="genericImport_row" active="false">
-      <Text id="genericImport_key_15" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_15" class="genericImport_label" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout id="genericImport_row_16" class="genericImport_row" active="false">
-      <Text id="genericImport_key_16" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_16" class="genericImport_label" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout id="genericImport_row_17" class="genericImport_row" active="false">
-      <Text id="genericImport_key_17" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_17" class="genericImport_label" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout id="genericImport_row_18" class="genericImport_row" active="false">
-      <Text id="genericImport_key_18" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_18" class="genericImport_label" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout id="genericImport_row_19" class="genericImport_row" active="false">
-      <Text id="genericImport_key_19" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_19" class="genericImport_label" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout id="genericImport_row_20" class="genericImport_row" active="false">
-      <Text id="genericImport_key_20" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_20" class="genericImport_label" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout id="genericImport_row_21" class="genericImport_row" active="false">
-      <Text id="genericImport_key_21" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_21" class="genericImport_label" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout id="genericImport_row_22" class="genericImport_row" active="false">
-      <Text id="genericImport_key_22" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_22" class="genericImport_label" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout id="genericImport_row_23" class="genericImport_row" active="false">
-      <Text id="genericImport_key_23" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_23" class="genericImport_label" text="" />
-    </HorizontalLayout>
-    <HorizontalLayout id="genericImport_row_24" class="genericImport_row" active="false">
-      <Text id="genericImport_key_24" class="genericImport_key" text="" />
-      <InputField id="genericImport_label_24" class="genericImport_label" text="" />
-    </HorizontalLayout>
-  </VerticalLayout>
-  <HorizontalLayout class="genericImport_buttons">
-    <Button class="genericImport_btn" colors="#663333|#884444|#AA5555|#333333" text="Cancel" onClick="HUD_genericNpcImportCancel" />
-    <Button class="genericImport_btn" colors="#336644|#448855|#55AA66|#333333" text="Import" onClick="HUD_genericNpcImportConfirm" />
-  </HorizontalLayout>
-</VerticalLayout>
-
-<!-- /include ui/storyteller/generic_npc_import_modal.xml -->
-
 ]=]
 
 -- Expanded from ui/Global.join_minimal.xml
