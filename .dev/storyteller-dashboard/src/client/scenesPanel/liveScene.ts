@@ -109,7 +109,7 @@ export type LiveSeat = {
 /** Control board seat row, left to right: chairs numbered from the centre outward. */
 export const SEAT_ORDER = [9, 7, 5, 3, 1, 2, 4, 6, 8] as const;
 
-const PC_COLORS: readonly string[] = ["Brown", "Orange", "Red", "Pink", "Purple"];
+export const PC_COLORS: readonly string[] = ["Brown", "Orange", "Red", "Pink", "Purple"];
 
 /**
  * One cell per chair position. A chair beyond the table's capacity is `nochair`; an unoccupied chair is

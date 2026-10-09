@@ -1,7 +1,7 @@
 import type { LibraryScene } from "../../shared/sceneLibrary";
-import type { ClockDatetime, SceneSlice, StageNpc } from "../worldState";
+import type { ClockDatetime, SceneSlice, SeatRow, StageNpc } from "../worldState";
 import type { ScenesCommand, SoundLane } from "./commands";
-import { LOCATION_MUSIC_LABEL, MOOD_LABEL, type SoundView } from "./liveScene";
+import { LOCATION_MUSIC_LABEL, MOOD_LABEL, PC_COLORS, type SoundView } from "./liveScene";
 
 /**
  * The dashboard's scene library (master copy) against TTS's `sceneLibrary`. Rows keep TTS's shape; the preview
@@ -213,6 +213,16 @@ export const applyToDraft = (scene: LibraryScene, command: ScenesCommand): Libra
     }
     case "clockTo":
       return withSession(scene, { clock: { ...command.datetime, isPresentDay: false } });
+    case "seatPresence": {
+      // Same pair the TTS pending-row writer keeps: `seatSlots[seat].isPresent` wins, `seatPresent` mirrors it.
+      const slots = isRecord(scene.sessionScene.seatSlots) ? scene.sessionScene.seatSlots : {};
+      const row = slots[command.seat];
+      const mirror = isRecord(scene.sessionScene.seatPresent) ? scene.sessionScene.seatPresent : {};
+      return withSession(scene, {
+        seatSlots: { ...slots, [command.seat]: { ...(isRecord(row) ? row : {}), isPresent: command.present } },
+        seatPresent: { ...mirror, [command.seat]: command.present }
+      });
+    }
     case "musicMood":
       return withNarrative(scene, { backgroundMusic: command.mood });
     case "locationMusic":
@@ -270,6 +280,37 @@ export const draftStage = (scene: LibraryScene): readonly StageNpc[] =>
   });
 
 const str = (value: unknown): string | undefined => (typeof value === "string" ? value : undefined);
+
+/**
+ * The draft's seating as push seat rows, so the preview's seat strip reads it like the table's. Who sits where and
+ * who is present come from the draft; whether a PC is connected is the table's (`absentFromSession` from `live`).
+ */
+export const draftSeatRows = (scene: LibraryScene, live: readonly SeatRow[]): readonly SeatRow[] => {
+  const slots = isRecord(scene.sessionScene.seatSlots) ? scene.sessionScene.seatSlots : {};
+  const mirror = isRecord(scene.sessionScene.seatPresent) ? scene.sessionScene.seatPresent : {};
+  return Object.entries(slots).flatMap(([seat, value]): SeatRow[] => {
+    if (!isRecord(value)) {
+      return [];
+    }
+    const table = live.find((row) => row.seat === seat);
+    const tableSlot = typeof value.tableSlot === "number" ? value.tableSlot : table?.tableSlot;
+    const isPresent = typeof value.isPresent === "boolean" ? value.isPresent : mirror[seat] !== false;
+    const base = { seat, isPresent, ...(tableSlot !== undefined ? { tableSlot } : {}) };
+    if (PC_COLORS.includes(seat)) {
+      const charKey = str(value.characterKey) ?? table?.charKey;
+      const playing = value.isPlayingNPC === true ? str(value.npcCharacterKey) : undefined;
+      return [{
+        ...base,
+        kind: "pc",
+        ...(charKey ? { charKey } : {}),
+        ...(playing ? { playingNpcKey: playing } : {}),
+        ...(table?.absentFromSession === true ? { absentFromSession: true } : {})
+      }];
+    }
+    const characterKey = str(value.characterKey);
+    return [{ ...base, kind: "npc", ...(characterKey ? { characterKey } : {}), ...(value.slotEmpty === true || !characterKey ? { slotEmpty: true } : {}) }];
+  });
+};
 
 /** A draft row seen as TTS's scene slice, so the preview panels read it the way they read the table. */
 export const draftSceneSlice = (scene: LibraryScene, indoors: boolean): SceneSlice => {

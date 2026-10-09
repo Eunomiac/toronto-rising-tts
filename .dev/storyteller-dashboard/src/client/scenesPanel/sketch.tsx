@@ -304,13 +304,15 @@ const SeatContent = ({ seat }: { seat: SeatSketch }): ReactElement => (
  * PC seats are bordered in the player's colour, NPC seats in muted grey; absent (out of the scene) and
  * disconnected seats are told apart by border style and image treatment. Clicking a PC seat opens that PC's
  * tracker controls; clicking anywhere else closes them. Right-clicking an occupied seat hands it to `onMenu`
- * (the wide board's roll ring, which also takes the character out of the scene or brings them back).
+ * (the wide board's roll ring, which also takes the character out of the scene or brings them back). With
+ * `onPresence` (scene drafts) a click on an occupied, connected seat toggles presence instead.
  */
-export const Seats = ({ seats = SEATS, liveSheet, onMenu }: {
+export const Seats = ({ seats = SEATS, liveSheet, onMenu, onPresence }: {
   seats?: readonly SeatSketch[];
   /** Live sheets (fetched on the first seat click); without it the seats edit the Lab's sample trackers. */
   liveSheet?: LiveSheetAccess;
   onMenu?: (event: MouseEvent<HTMLElement>, seat: SeatSketch) => void;
+  onPresence?: (seatKey: string, present: boolean) => void;
 }): ReactElement => {
   const [labState, setLabState] = useState(labSheet);
   const sheet = liveSheet ? liveSheet.sheet ?? NO_SEATS : labState;
@@ -344,11 +346,13 @@ export const Seats = ({ seats = SEATS, liveSheet, onMenu }: {
         const className = `lab-seat ${seat.kind}${seat.state ? ` ${seat.state}` : ""}${seat.playedBy ? " role" : ""}`;
         const style = seat.color ? ({ "--seat-color": SEAT_ACCENT[seat.color] } as CSSProperties) : undefined;
         const open = seat.color !== undefined && seat.color === openColor;
-        const controllable = seat.color !== undefined && (liveSheet ? seat.kind === "pc" : sheet.seats.some((entry) => entry.color === seat.color));
+        const togglesPresence = onPresence !== undefined && seat.seatKey !== undefined && (seat.kind === "pc" || seat.kind === "npc") && seat.state !== "disconnected";
+        const controllable = !onPresence && seat.color !== undefined && (liveSheet ? seat.kind === "pc" : sheet.seats.some((entry) => entry.color === seat.color));
         const menu = onMenu && (seat.kind === "pc" || seat.kind === "npc") ? onMenu : undefined;
         const hints = [
           controllable && !open ? "Click for this PC's trackers" : undefined,
-          menu ? "Right-click to roll, or to take them out of the scene / bring them back" : undefined
+          togglesPresence ? (seat.state === "absent" ? "Out of this scene — click to bring them in" : "In this scene — click to take them out") : undefined,
+          menu && !togglesPresence ? "Right-click to roll, or to take them out of the scene / bring them back" : undefined
         ].filter(Boolean);
         return (
           <div
@@ -365,6 +369,10 @@ export const Seats = ({ seats = SEATS, liveSheet, onMenu }: {
               menu(event, seat);
             }}
             onClick={(event) => {
+              if (togglesPresence && seat.seatKey) {
+                onPresence(seat.seatKey, seat.state === "absent");
+                return;
+              }
               if (!controllable || (event.target as HTMLElement).closest(".lab-seat-pop")) {
                 return;
               }
@@ -539,6 +547,8 @@ export type LiveBoard = {
   readonly seats: readonly SeatSketch[];
   /** Live PC sheets for the seat tracker pop-ups; none in scene drafts. */
   readonly sheet?: LiveSheetAccess;
+  /** Scene drafts: a seat click marks the character present or out of the scene, instead of opening trackers. */
+  readonly presenceClicks?: boolean;
   readonly tokens: readonly StageToken[];
   readonly env: StageEnv;
   /** Stage changes waiting in the Send queue, drawn as if sent. */
@@ -774,7 +784,14 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoa
       <StageLayer w={w} h={h} board={board} packs={packs} spots={spots} catalogs={catalogs} nameOf={nameOf} onEdit={edit} onMenu={openTokenRing} />
     )}
     <div className="lab-board-seats floating bottom" style={{ top: h - h * WIDE_SEAT_BAND - 8, height: h * WIDE_SEAT_BAND }}>
-      {live ? <Seats seats={live.seats} {...(live.sheet ? { liveSheet: live.sheet } : {})} onMenu={openSeatRing} /> : <Seats onMenu={openSeatRing} />}
+      {live ? (
+        <Seats
+          seats={live.seats}
+          {...(live.sheet ? { liveSheet: live.sheet } : {})}
+          {...(live.presenceClicks && command ? { onPresence: (seatKey: string, present: boolean) => command({ op: "seatPresence", seat: seatKey, present }) } : {})}
+          onMenu={openSeatRing}
+        />
+      ) : <Seats onMenu={openSeatRing} />}
     </div>
     <span className="lab-board-table top">
       <select

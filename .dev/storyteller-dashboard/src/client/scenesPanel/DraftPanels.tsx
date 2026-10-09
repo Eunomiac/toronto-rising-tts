@@ -7,9 +7,10 @@ import { Box, WideBoard, type LiveBoard } from "./sketch";
 import type { SceneCatalogs } from "./catalogs";
 import { ScenesCommandContext, type ScenesCommand } from "./commands";
 import { RollsCommandContext } from "./rolls/commands";
-import { applyToDraft, draftAtPresentDay, draftClock, draftSceneSlice, draftSoundView, draftStage, savedPlacements, withPlacements } from "./library";
-import { isScatter, lightingPreset, liveTokens, sceneConditions, toDate, weatherAxes } from "./liveScene";
+import { applyToDraft, draftAtPresentDay, draftClock, draftSceneSlice, draftSeatRows, draftSoundView, draftStage, savedPlacements, withPlacements } from "./library";
+import { isScatter, lightingPreset, liveSeats, liveTokens, sceneConditions, toDate, weatherAxes } from "./liveScene";
 import { boardToStage } from "./stageFrame";
+import { useWorldState } from "../worldState";
 
 
 const locationOf = (scene: LibraryScene): { districtKey: string; siteKey: string } | null => {
@@ -22,7 +23,8 @@ const sameMinute = (a: Date, b: Date): boolean => Math.floor(a.getTime() / 60000
 /**
  * One preview: the table's panels reading a draft library row. Every panel command rewrites the draft
  * (`onChange`); nothing goes to TTS until Save, On deck or Play Scene. The stage edits the draft's NPC placements,
- * table, sky and lighting; seats and Scatter groups stay the table's business (Scatter drafts show no groups).
+ * table, sky and lighting; the seat strip shows the draft's seating, and a seat click marks that character present
+ * or out of the scene for when it plays. Scatter groups stay the table's business (Scatter drafts show no groups).
  */
 export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }: {
   draft: LibraryScene;
@@ -36,6 +38,7 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }:
   onChange: (update: (scene: LibraryScene) => LibraryScene) => void;
 }): ReactElement => {
   const box = previewLayout(w, h);
+  const tableSeats = useWorldState().seats?.seats ?? [];
   const location = locationOf(draft);
   const site = catalogs?.sites.find((entry) => entry.key === location?.siteKey);
   const indoors = site?.isIndoors === true;
@@ -53,7 +56,8 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }:
     onChange((scene) => (followPresent ? draftAtPresentDay(scene) : applyToDraft(scene, command)));
   };
   const board: LiveBoard = {
-    seats: [],
+    seats: liveSeats({ seats: draftSeatRows(draft, tableSeats), stage: [], generics: [], scatter: [], spotlightOrder: [] }, slice.tableKey, catalogs),
+    presenceClicks: true,
     tokens: liveTokens(draftStage(draft), catalogs).map((token) => ({ ...token, at: boardToStage(token.u, token.v) })),
     pending: {},
     pendingScatter: [],

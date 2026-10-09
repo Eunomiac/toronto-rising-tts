@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { LibraryScene } from "../../shared/sceneLibrary";
-import { applyToDraft, draftSceneSlice, draftStage, mergeFromTts, newLibraryScene, newSceneKey, newSceneTitle, parseTtsLibrarySnapshot, sceneKeyFromTitle, scenesFromTts } from "./library";
+import { applyToDraft, draftSceneSlice, draftSeatRows, draftStage, mergeFromTts, newLibraryScene, newSceneKey, newSceneTitle, parseTtsLibrarySnapshot, sceneKeyFromTitle, scenesFromTts } from "./library";
 
 const scene = (key: string, extra: Partial<LibraryScene> = {}): LibraryScene => ({
   key,
@@ -126,5 +126,35 @@ describe("applyToDraft", () => {
     draft = applyToDraft(draft, { op: "stage", clear: true });
     expect(draftStage(draft)).toEqual([]);
     expect(draft.sessionScene.npcWorld).toEqual({ placements: {}, other: 1 });
+  });
+});
+
+describe("draft seating", () => {
+  const seated = scene("a", {
+    sessionScene: {
+      seatSlots: {
+        Red: { characterKey: "lordLucien", isPlayingNPC: false, isPresent: true, tableSlot: 1 },
+        Pink: { characterKey: "aishe", isPlayingNPC: true, npcCharacterKey: "drake", tableSlot: 3 },
+        NPC1: { characterKey: "mara", isPresent: false, tableSlot: 6 },
+        NPC2: { slotEmpty: true }
+      },
+      seatPresent: { Pink: false }
+    }
+  });
+
+  it("reads seats from the draft, presence from seatSlots then seatPresent, connection from the table", () => {
+    const rows = draftSeatRows(seated, [{ seat: "Red", kind: "pc", isPresent: true, tableSlot: 1, absentFromSession: true }]);
+    expect(rows).toEqual([
+      { seat: "Red", kind: "pc", isPresent: true, tableSlot: 1, charKey: "lordLucien", absentFromSession: true },
+      { seat: "Pink", kind: "pc", isPresent: false, tableSlot: 3, charKey: "aishe", playingNpcKey: "drake" },
+      { seat: "NPC1", kind: "npc", isPresent: false, tableSlot: 6, characterKey: "mara" },
+      { seat: "NPC2", kind: "npc", isPresent: true, slotEmpty: true }
+    ]);
+  });
+
+  it("marks a seat present or out of the scene in seatSlots and its seatPresent mirror", () => {
+    const draft = applyToDraft(seated, { op: "seatPresence", seat: "NPC1", present: true });
+    expect(draft.sessionScene.seatSlots).toMatchObject({ NPC1: { characterKey: "mara", isPresent: true, tableSlot: 6 } });
+    expect(draft.sessionScene.seatPresent).toEqual({ Pink: false, NPC1: true });
   });
 });
