@@ -1,4 +1,5 @@
 import { createContext, useContext } from "react";
+import type { PlacementMode } from "../../shared/sceneLibrary";
 import type { ClockDatetime } from "../worldState";
 
 /** How a scene switch sets the clock (`PresentDayClock.resolveAndApplyActivationClock`). */
@@ -65,7 +66,17 @@ export type ScenesCommand =
   | { readonly op: "stopAll" }
   | { readonly op: "seatPresence"; readonly seat: string; readonly present: boolean }
   | { readonly op: "playScene"; readonly key: string; readonly clockMode?: SceneClockMode }
-  | { readonly op: "endScene" };
+  | { readonly op: "endScene" }
+  | {
+    readonly op: "upsertScene";
+    readonly key: string;
+    readonly title: string;
+    readonly placementMode: PlacementMode;
+    readonly sessionScene: Readonly<Record<string, unknown>>;
+  }
+  | { readonly op: "deleteScene"; readonly key: string }
+  | { readonly op: "unlinkScene" }
+  | { readonly op: "forkScene"; readonly newTitle: string; readonly oldTitle?: string };
 
 export type ScenesSend = (command: ScenesCommand) => void;
 

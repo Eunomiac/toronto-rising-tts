@@ -226,6 +226,21 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 7. **Weather until dawn:** click the weather panel's rain or wind icon and pick something different from the schedule (say heavy rain). TTS should switch to it, and a Release button should appear on the weather panel. Move the scene clock past the next dawn: the weather should return to the schedule by itself. Pick a weather again and press Release instead: the scheduled weather should come back straight away.
 8. **Memoriam:** on the phase bar, open the **Advance** ring and choose **Memoriam…**. Pick a character, slide to a year, pick a panel (or Just Smoke), tick who is present and press **Advance**. TTS should enter the Memoriam just as the in-game Memoriam modal does (sky panel, date and place). Then open the Advance ring again and choose **Main ▸**: TTS should leave the Memoriam and restore the scene it interrupted.
 
+#### TOR-684 — The dashboard keeps the scene library and sends scenes to TTS when you play them
+
+**Context:** The dashboard now holds the master copy of your scene library, in its own file beside the dashboard (not in the public repo, and backed up with the scene deck). The first time it starts it copies TTS's library in. Playing a scene from the dashboard first sends that scene to TTS, then plays it. While a linked scene is on the table, TTS keeps writing it into its library row and the dashboard reads it back. The dashboard can also delete, unlink and fork scenes in TTS.
+
+**How to verify:** Restart the dashboard server (`npm run dev`), Save & Play, and open the dashboard's **Scenes** tab during Play.
+
+1. **Copied in:** open the **Advance** ring and choose **Scene…**. Every scene from the in-game scene library should be listed, with its District and Site under the title. Typing in the search box should narrow the list.
+2. **Play:** press **Play** on a scene that is not on the table and pick a clock choice. TTS should switch to that scene, and the phase bar should show its title.
+3. **Prepare a new scene:** in the same picker press **+ Prepare a new scene…**, pick a location and press **Prepare this scene**. A blue Preview opens named after the District and Site. Change its weather, sky or conditions: nothing should change in TTS. Press **Play Scene**, pick a clock choice: TTS should play the new scene with those settings, and it should appear in the in-game scene library too.
+4. **Edit and Discard:** press **Edit** on a scene, change something, and press **Discard** twice. Open the picker again: the scene should be unchanged.
+5. **Right-click a deck scene:** with a second scene on deck (the button beside the table's title), right-click it. Its preview should open.
+6. **Write-back:** with a linked scene on the table, change its location or weather from the dashboard, wait a couple of seconds, then press **Edit** on that scene in the picker. The preview should show the new location or weather.
+7. **Unlink and Fork:** click the table's scene title on the phase bar. Choose **Unlink from the library**: an **unlinked** tag should appear next to the title, and the in-game library row should show as unlinked. Click the title again, choose **Fork…**, give the new and old names and press **Fork**: the phase bar should now show the new name, and the in-game library should list both scenes.
+8. **Delete:** in the picker, press **Delete** twice on a scene that is not on the table. It should disappear from the dashboard's list and from the in-game scene library.
+
 ### Medium — Prince's Court sheet
 
 #### TOR-663 — Refresh XML keeps The Court on the people who had it open

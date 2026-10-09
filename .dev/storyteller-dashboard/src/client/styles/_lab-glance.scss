@@ -78,22 +78,37 @@ $lab-live: #4caf6a;
 }
 
 .lab-advance {
-  width: 620px;
+  width: 760px;
   align-items: flex-start;
+
+  &-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #e08a7a;
+  }
+
+  &-search {
+    align-self: stretch;
+    padding: 4px 8px;
+  }
 
   &-list {
     align-self: stretch;
     display: flex;
     flex-direction: column;
     gap: 4px;
+    max-height: 640px;
     margin: 0;
     padding: 0;
+    overflow-y: auto;
     list-style: none;
 
     li {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 8px;
       padding: 4px 8px;
       border: 1px solid #2f2f38;
 
@@ -105,6 +120,44 @@ $lab-live: #4caf6a;
         border-color: #2c4a7a;
       }
     }
+
+    .lab-btn.icon {
+      min-width: 26px;
+      padding: 2px 4px;
+    }
+  }
+
+  &-name {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  &-where {
+    font-size: 12px;
+    color: #8a8a96;
+  }
+
+  &-editing {
+    margin-left: 8px;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #4a8dff;
+  }
+}
+
+.lab-link-menu {
+  width: 400px;
+  transform: none;
+  gap: 8px;
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 13px;
+    color: #a8a8b4;
   }
 }
 
@@ -1834,6 +1887,32 @@ $lab-queued: #e8c547;
     }
   }
 
+  button.lab-phase-scene {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    border: none;
+    font-weight: 400;
+    background: none;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline dotted #6a6a74;
+    }
+  }
+
+  // The table no longer writes into this scene's library copy.
+  &-unlinked {
+    padding: 1px 5px;
+    border: 1px solid #c9a94e;
+    font-family: inherit;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #c9a94e;
+  }
+
   // A live scene on deck: one click puts it on the table.
   &-deck {
     padding: 2px 8px;
@@ -2500,6 +2579,13 @@ $lab-queued: #e8c547;
       font-size: 16px;
       color: #5a6e94;
     }
+  }
+
+  &-note {
+    max-width: 420px;
+    font-size: 12px;
+    line-height: 1.2;
+    color: #e0c07a;
   }
 
   &-actions {

@@ -1,11 +1,29 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from "react";
 import { createApplyQueue } from "../applyQueue";
-import { ambientLabel, AspectRow, HuntRoller, LocationPanel, PhaseStrip, QueuePanel, RosterDock, SoundMixer, WeatherPanel, WhenPanel, type LabLocation, type QueueView } from "../lab/glance";
+import {
+  ambientLabel,
+  AspectRow,
+  HuntRoller,
+  LocationPanel,
+  PhaseStrip,
+  QueuePanel,
+  RosterDock,
+  SoundMixer,
+  WeatherPanel,
+  WhenPanel,
+  type LabLocation,
+  type LiveScenes,
+  type QueueView
+} from "../lab/glance";
+import { ScenePreview } from "../lab/labPreview";
 import { useSceneCatalogs } from "../lab/labRoster";
 import type { SceneCatalogs } from "../scenes/types";
-import { Box, WideBoard, type LiveBoard } from "../lab/sketch";
+import { Box, Overlay, WideBoard, type LiveBoard } from "../lab/sketch";
 import type { SheetSnapshot } from "../pcSheet/types";
-import { setSceneDeckSection, useSceneDeck, useSceneDeckStatus } from "../sceneDeck";
+import { sceneDeckSnapshot, setSceneDeckSection, useSceneDeck, useSceneDeckStatus } from "../sceneDeck";
+import { useSceneLibraryStatus } from "../sceneLibrary";
+import { DraftPanels } from "./DraftPanels";
+import { useLibraryActions } from "./useLibraryActions";
 import { clockNow, refreshWorldSnapshot, useWorldState, WORLD_TOPICS, type WorldState } from "../worldState";
 import { sendScenesCommands, type ScenesReply } from "./bridge";
 import { ScenesCommandContext, type ScenesCommand, type ScenesSend } from "./commands";
@@ -107,7 +125,7 @@ const useNow = (running: boolean): number => {
 };
 
 /** The on-deck list, kept in the dashboard's scene deck file; TTS's table scene joins it once that file has loaded. */
-const useLiveScenes = (liveKey: string | undefined, title: string | null) => {
+const useLiveScenes = (liveKey: string | undefined, title: string | null): LiveScenes & { remove: (key: string) => void } => {
   const { deck } = useSceneDeck();
   const { loaded } = useSceneDeckStatus();
   useEffect(() => {
@@ -119,11 +137,11 @@ const useLiveScenes = (liveKey: string | undefined, title: string | null) => {
       setSceneDeckSection("deck", next);
     }
   }, [loaded, deck, liveKey, title]);
-  const titles = deck.map((scene) => scene.title);
+  const current = liveKey && title ? { key: liveKey, title } : null;
   return {
-    live: title && !titles.includes(title) ? [...titles, title] : titles,
-    keyOf: (sceneTitle: string): string | undefined => deck.find((scene) => scene.title === sceneTitle)?.key,
-    remove: (key: string) => setSceneDeckSection("deck", withoutScene(deck, key))
+    live: current && !deck.some((scene) => scene.key === current.key) ? [...deck, current] : deck,
+    current,
+    remove: (key: string) => setSceneDeckSection("deck", withoutScene(sceneDeckSnapshot().deck, key))
   };
 };
 
@@ -156,7 +174,7 @@ const useSendMode = (
   transport: { send: ScenesSend; sendAll: (commands: readonly ScenesCommand[]) => void },
   world: WorldState,
   catalogs: SceneCatalogs | null
-): { send: ScenesSend; view: QueueView } => {
+): { send: ScenesSend; sendBatch: (commands: readonly ScenesCommand[]) => void; view: QueueView } => {
   const [mode, setModeState] = useState<SendMode>(loadSendMode);
   const [entries, setEntries] = useState<readonly QueueEntry[]>([]);
   const nextId = useRef(1);
@@ -178,6 +196,7 @@ const useSendMode = (
       latest.current.transport.send(command);
     }
   }, [takeQueue]);
+  const sendBatch = useCallback((commands: readonly ScenesCommand[]) => latest.current.transport.sendAll([...takeQueue(), ...commands]), [takeQueue]);
   const view: QueueView = {
     mode,
     lines: lines.map((line) => ({ id: line.id, text: `${line.subject}: ${line.from} → ${line.to}` })),
@@ -192,7 +211,7 @@ const useSendMode = (
     remove: (id) => setEntries((previous) => previous.filter((entry) => entry.id !== id)),
     clear: () => setEntries([])
   };
-  return { send, view };
+  return { send, sendBatch, view };
 };
 
 const CommandStatus = ({ pending, error, onDismiss }: { pending: number; error: string | null; onDismiss: () => void }): ReactElement | null => {
@@ -212,7 +231,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const { catalogs } = useSceneCatalogs();
   const snapshotError = useWorldSnapshotOnce(active, world);
   const commands = useScenesQueue();
-  const { send, view: queueView } = useSendMode(commands, world, catalogs);
+  const { send, sendBatch, view: queueView } = useSendMode(commands, world, catalogs);
   const now = useNow(world.clock?.running === true);
   const { phase, scene, clock, soundscape, seats } = world;
 
@@ -230,6 +249,9 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const title = scene?.liveTitle ?? null;
   const liveScenes = useLiveScenes(scene?.liveKey, title);
   const deckError = useSceneDeckStatus().error;
+  const library = useLibraryActions({ scene, sendBatch, removeFromDeck: liveScenes.remove });
+  const libraryError = useSceneLibraryStatus().error;
+  const presentNow = present ?? new Date();
   const board = useMemo((): LiveBoard | null => {
     if (!seats) {
       return null;
@@ -325,22 +347,21 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
           <Box x={STRIP_X} y={BODY_Y} w={1920 - G - STRIP_X} h={PHASE_H} className="lab-phase-box lab-borderless">
             {phase && seats ? (
               <PhaseStrip
-                library={[]}
-                scenes={{ live: liveScenes.live, current: title }}
-                onSwitch={(sceneTitle, clockMode) => {
-                  const key = liveScenes.keyOf(sceneTitle);
-                  if (key) {
-                    send({ op: "playScene", key, clockMode });
-                  }
-                }}
+                library={library.entries}
+                libraryActions={library.actions}
+                scenes={liveScenes}
+                {...(library.linkMenu ? { linkMenu: library.linkMenu } : {})}
+                onSwitch={library.play}
                 onEndScene={() => {
                   send({ op: "endScene" });
                   if (scene?.liveKey) {
                     liveScenes.remove(scene.liveKey);
                   }
                 }}
-                onPlay={() => undefined}
-                onPrepare={() => undefined}
+                onPlay={library.play}
+                onEdit={library.openPreview}
+                onPrepare={library.prepare}
+                onOpenDeck={library.openPreview}
                 live={{
                   phase: phase.phase ?? "Intermission",
                   subPhase: phase.subPhase,
@@ -365,10 +386,52 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
           <Box x={RIGHT_X} y={MAIN_Y} w={RIGHT_W} h={RIGHT_H - QUEUE_H - G} tone="reserved">
             <CommandStatus pending={commands.pending} error={commands.error} onDismiss={commands.clearError} />
             {deckError && <div className="scenes-live-status error" role="alert">{deckError}</div>}
+            {libraryError && <div className="scenes-live-status error" role="alert">{libraryError}</div>}
+            {library.notice && (
+              <div className="scenes-live-status error" role="alert">
+                <span>{library.notice}</span>
+                <button type="button" className="lab-btn" onClick={library.clearNotice}>OK</button>
+              </div>
+            )}
           </Box>
           <Box x={RIGHT_X} y={MAIN_Y + RIGHT_H - QUEUE_H} w={RIGHT_W} h={QUEUE_H} className="lab-queue-box">
             <QueuePanel connected={connected} live={queueView} />
           </Box>
+          {library.previewKey !== null && library.previews.length > 0 && (
+            <Overlay onClose={library.closePreview}>
+              <ScenePreview
+                x={G}
+                y={BODY_Y}
+                w={1920 - 2 * G}
+                h={1042 - G - BODY_Y}
+                prepared={library.previews}
+                initialKey={library.previewKey}
+                scenes={liveScenes}
+                note={(key) =>
+                  library.previews.find((row) => row.key === key)?.linked
+                    ? "The table writes into this scene while it plays; unlink it first or your saved edits will be overwritten."
+                    : undefined}
+                onSave={library.saveDraft}
+                onDeck={library.deckDraft}
+                onPlay={library.playDraft}
+                onDiscard={library.discardDraft}
+                panels={(key, w, h) => {
+                  const draft = library.previews.find((row) => row.key === key);
+                  return draft ? (
+                    <DraftPanels
+                      draft={draft}
+                      saved={library.savedRow(draft.key)}
+                      present={presentNow}
+                      catalogs={catalogs}
+                      w={w}
+                      h={h}
+                      onChange={(update) => library.updateDraft(draft.key, update)}
+                    />
+                  ) : <Waiting text="This scene is no longer being prepared." />;
+                }}
+              />
+            </Overlay>
+          )}
         </>
       )}
     </div>

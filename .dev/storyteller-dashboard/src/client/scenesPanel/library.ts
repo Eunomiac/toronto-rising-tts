@@ -149,6 +149,9 @@ export const draftClock = (scene: LibraryScene): ClockDatetime | null => {
     : null;
 };
 
+/** The draft follows present day (whatever it is when the scene is played) instead of a fixed time. */
+export const draftAtPresentDay = (scene: LibraryScene): LibraryScene => withSession(scene, { clock: { isPresentDay: true } });
+
 /** The draft row after one panel command; commands with no library meaning (volumes, spotlight …) change nothing. */
 export const applyToDraft = (scene: LibraryScene, command: ScenesCommand): LibraryScene => {
   switch (command.op) {
@@ -249,9 +252,3 @@ export const draftSoundView = (scene: LibraryScene): SoundView => {
     playing: Object.fromEntries(LANES.map((lane) => [lane, lane === "music" || (lane === "location" && ambient !== undefined)])) as Record<SoundLane, boolean>
   };
 };
-
-/** Commands that only rewrite a draft. */
-export const DRAFT_OPS: ReadonlySet<ScenesCommand["op"]> = new Set([
-  "location", "skybox", "topFog", "lighting", "table", "conditions", "weatherOverride", "clockTo",
-  "musicMood", "locationMusic", "musicSilent", "ambience"
-]);

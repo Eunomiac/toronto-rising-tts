@@ -41,6 +41,10 @@ export const commandKind = (command: ScenesCommand): CommandKind => {
     case "presentDay":
     case "playScene":
     case "endScene":
+    case "upsertScene":
+    case "deleteScene":
+    case "unlinkScene":
+    case "forkScene":
       return "flush";
   }
 };

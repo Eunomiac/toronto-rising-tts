@@ -13,9 +13,12 @@ import {
   WeatherPanel,
   WhenPanel,
   type LabLocation,
-  type LiveScenes
+  type LibraryActions,
+  type LibraryEntry,
+  type LiveScenes,
+  type SceneRef
 } from "./glance";
-import { ScenePreview, type PreparedScene } from "./labPreview";
+import { PreparedPanels, ScenePreview, type PreparedScene } from "./labPreview";
 import {
   Overlay,
   Board,
@@ -105,10 +108,28 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
   const [sceneTime, setSceneTime] = useState(PRESENT_DAY);
   const [presentDay, setPresentDay] = useState(PRESENT_DAY);
   const [location, setLocation] = useState<LabLocation>(SCENE_LOCATION);
-  const [scenes, setScenes] = useState<LiveScenes>({ live: [SCENE_NAME, "Mod Club — Little Italy"], current: SCENE_NAME });
-  const play = (title: string): void => {
-    setScenes((now) => ({ live: now.live.includes(title) ? now.live : [...now.live, title], current: title }));
+  const [scenes, setScenes] = useState<LiveScenes>({ live: [ref(SCENE_NAME), ref("Mod Club — Little Italy")], current: ref(SCENE_NAME) });
+  const [library, setLibrary] = useState<readonly LibraryEntry[]>(LIBRARY.map(ref));
+  const [linked, setLinked] = useState(true);
+  const [prepared, setPrepared] = useState(PREPARED);
+  const titleOf = (key: string): string => library.find((entry) => entry.key === key)?.title ?? prepared.find((scene) => scene.key === key)?.title ?? key;
+  const addToDeck = (key: string): void =>
+    setScenes((now) => ({ ...now, live: now.live.some((scene) => scene.key === key) ? now.live : [...now.live, { key, title: titleOf(key) }] }));
+  const play = (key: string): void => {
+    addToDeck(key);
+    setScenes((now) => ({ ...now, current: { key, title: titleOf(key) } }));
     setPreparing(false);
+  };
+  const libraryActions: LibraryActions = {
+    rename: (key, title) => setLibrary((rows) => rows.map((row) => (row.key === key ? { ...row, title } : row))),
+    remove: (key) => setLibrary((rows) => rows.filter((row) => row.key !== key)),
+    move: (key, by) => setLibrary((rows) => {
+      const index = rows.findIndex((row) => row.key === key);
+      const next = [...rows];
+      const [row] = next.splice(index, 1);
+      next.splice(index + by, 0, row!);
+      return next;
+    })
   };
   useEffect(() => {
     setPresentDay(PRESENT_DAY);
@@ -157,7 +178,7 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
         <HuntRoller location={location} />
       </Box>
       <Box x={G} y={rosterY} w={leftW} h={1042 - G - rosterY} className="lab-borderless lab-dock-box">
-        <RosterDock scene={scenes.current ?? SCENE_NAME} />
+        <RosterDock scene={scenes.current?.title ?? SCENE_NAME} />
       </Box>
 
       <Box x={stripX} y={G} w={whenW} h={stripH} className="lab-backdrop-box">
@@ -181,15 +202,23 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
 
       <Box x={stripX} y={bodyY} w={1920 - G - stripX} h={phaseH} className="lab-phase-box lab-borderless">
         <PhaseStrip
-          library={LIBRARY}
+          library={library}
+          libraryActions={libraryActions}
           scenes={scenes}
-          onSwitch={(title) => setScenes((now) => ({ ...now, current: title }))}
+          linkMenu={{ linked, onUnlink: () => setLinked(false), onFork: () => setLinked(true) }}
+          onSwitch={(key) => setScenes((now) => ({ ...now, current: now.live.find((scene) => scene.key === key) ?? now.current }))}
           onEndScene={() => setScenes((now) => {
-            const live = now.live.filter((title) => title !== now.current);
+            const live = now.live.filter((scene) => scene.key !== now.current?.key);
             return { live, current: live[0] ?? null };
           })}
           onPlay={play}
-          onPrepare={() => setPreparing(true)}
+          onEdit={() => setPreparing(true)}
+          onPrepare={(at, districtName, siteName) => {
+            const title = `${districtName} — ${siteName}`;
+            setPrepared((now) => [...now, { key: title, title, location: at, indoors: true }]);
+            setPreparing(true);
+          }}
+          onOpenDeck={() => setPreparing(true)}
         />
       </Box>
       <Box x={stripX} y={mainY} w={stageW} h={aspectH} className="lab-aspects-box lab-borderless">
@@ -209,11 +238,20 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
             y={bodyY}
             w={1920 - 2 * G}
             h={bodyH}
-            prepared={PREPARED}
+            prepared={prepared}
             scenes={scenes}
-            onDeck={(title) => setScenes((now) => ({ ...now, live: now.live.includes(title) ? now.live : [...now.live, title] }))}
+            onSave={() => setPreparing(false)}
+            onDeck={addToDeck}
             onPlay={play}
-            onClose={() => setPreparing(false)}
+            onDiscard={(key) => {
+              setPrepared((now) => now.filter((scene) => scene.key !== key));
+              setPreparing(false);
+            }}
+            onPrepare={() => setPreparing(false)}
+            panels={(key, w, h) => {
+              const scene = prepared.find((entry) => entry.key === key);
+              return scene ? <PreparedPanels scene={scene} w={w} h={h} /> : <></>;
+            }}
           />
         </Overlay>
       )}
@@ -223,9 +261,12 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
 
 const SCENE_NAME = "Elysium — Casa Loma: Great Hall";
 
+/** Lab scenes use their title as their key. */
+const ref = (title: string): SceneRef => ({ key: title, title });
+
 const PREPARED: readonly PreparedScene[] = [
-  { title: "Rack — Kensington Market", location: { districtKey: "HarbordVillage", siteKey: "Kensington" }, indoors: false },
-  { title: "Mod Club — Little Italy", location: { districtKey: "LittleItaly", siteKey: "ModClub" }, indoors: true }
+  { key: "Rack — Kensington Market", title: "Rack — Kensington Market", location: { districtKey: "HarbordVillage", siteKey: "Kensington" }, indoors: false },
+  { key: "Mod Club — Little Italy", title: "Mod Club — Little Italy", location: { districtKey: "LittleItaly", siteKey: "ModClub" }, indoors: true }
 ];
 
 const LIBRARY = [

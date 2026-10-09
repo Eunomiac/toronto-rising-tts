@@ -158,11 +158,13 @@ const ResonanceTags = ({ list }: { list: readonly Resonance[] }): ReactElement =
   </span>
 );
 
-const LocationPicker = ({ data, location, onPick, onClose }: {
+const LocationPicker = ({ data, location, onPick, onClose, heading = "Change location", confirm = "Use this location" }: {
   data: ChronicleLocations;
   location: LabLocation;
   onPick: (next: LabLocation) => void;
   onClose: () => void;
+  heading?: string;
+  confirm?: string;
 }): ReactElement => {
   const { catalogs } = useSceneCatalogs();
   const [districtKey, setDistrictKey] = useState(location.districtKey);
@@ -177,7 +179,7 @@ const LocationPicker = ({ data, location, onPick, onClose }: {
   return (
     <Overlay onClose={onClose}>
       <div className="lab-modal lab-location-modal">
-        <span className="lab-modal-title">Change location</span>
+        <span className="lab-modal-title">{heading}</span>
         <div className="lab-location-cols">
           <label>
             District
@@ -198,7 +200,7 @@ const LocationPicker = ({ data, location, onPick, onClose }: {
           </label>
         </div>
         <div className="lab-row">
-          <button type="button" className="lab-btn primary" onClick={() => onPick({ districtKey, siteKey })}>Use this location</button>
+          <button type="button" className="lab-btn primary" onClick={() => onPick({ districtKey, siteKey })}>{confirm}</button>
           <button type="button" className="lab-btn" onClick={onClose}>Cancel</button>
         </div>
       </div>
@@ -1303,16 +1305,18 @@ export const WeatherPanel = ({ at, forceOverride, forceCelsius, live, held = fal
   at: Date;
   forceOverride: boolean;
   forceCelsius: number | null;
-  /** The weather TTS is playing; the calendar then only supplies temperature and fog. Picks hold weather until dawn. */
+  /**
+   * The weather TTS is playing (or a preview's held weather); the calendar then only supplies temperature and fog.
+   * Picks go to the command sender when there is one (the table, or a preview's draft) and hold the weather.
+   */
   live?: WeatherAxes;
-  /** TTS is holding the Storyteller's weather over the schedule. */
+  /** The Storyteller's weather is held over the schedule. */
   held?: boolean;
   w: number;
   h: number;
 }): ReactElement => {
   const { data, error } = useWeatherCalendar();
-  const send = useScenesCommand();
-  const command = live && send ? send : null;
+  const command = useScenesCommand();
   const hazeId = useId().replace(/[^a-zA-Z0-9]/g, "");
   const [override, setOverride] = useState<WeatherAxes | null>(null);
   const [ring, setRing] = useState<{ axis: "precip" | "wind"; at: Point } | null>(null);
@@ -1341,7 +1345,7 @@ export const WeatherPanel = ({ at, forceOverride, forceCelsius, live, held = fal
     }
   };
   // TTS has rain layers only; snow waits for its own layer.
-  const precipOptions = live ? PRECIP_OPTIONS.filter((option) => option.value !== "lightSnow" && option.value !== "heavySnow") : PRECIP_OPTIONS;
+  const precipOptions = command ? PRECIP_OPTIONS.filter((option) => option.value !== "lightSnow" && option.value !== "heavySnow") : PRECIP_OPTIONS;
   const celsius = forceCelsius ?? scheduled.celsius;
   const extreme = extremeFor(celsius);
   return (
@@ -1633,13 +1637,15 @@ const REAL_TIME_RATES: readonly RingOption<RealTimeRate>[] = [
  * clock to run the time animation. Click anywhere else for the calendar pop-up. With no live scene (presentOnly) the
  * panel shows present day, and the moon, calendar and Move button set present day instead of scene time.
  */
-export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, presentOnly = false, live, w, h }: {
+export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, presentOnly = false, sceneOnly = false, live, w, h }: {
   at: Date;
   present: Date;
   onChange: (next: Date) => void;
   onSetPresent: (next: Date) => void;
   forceOpen: boolean;
   presentOnly?: boolean;
+  /** A preview's scene time: no real-time clock and no present-day changes. */
+  sceneOnly?: boolean;
   /**
    * TTS's real-time state and tonight's sun times; the caller advances `at`. Changes go to TTS when the Scenes tab
    * provides a command sender; without one the panel is read-only (no calendar, no moon drag).
@@ -1727,7 +1733,7 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, pres
         </span>
         <span className="lab-when-date">{formatLongDate(at)}</span>
         <span className="lab-when-time">{formatTime(at)}</span>
-        <button
+        {!sceneOnly && <button
           type="button"
           className={`lab-when-realtime${realTime ? " on" : ""}`}
           style={realTime ? { animationDuration: `${1 / rate}s` } : undefined}
@@ -1750,7 +1756,7 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, pres
           }}
         >
           {realTime ? <span className="lab-when-rate">{rate}×</span> : <Icon name="clock" />}
-        </button>
+        </button>}
         {rateRing && (
           <RingMenu
             at={rateRing}
@@ -1814,13 +1820,15 @@ export const WhenPanel = ({ at, present, onChange, onSetPresent, forceOpen, pres
                   >
                     Set scene time to present day
                   </button>
-                  <button
-                    type="button"
-                    className="lab-btn"
-                    onClick={() => (command ? command({ op: "presentDay", datetime: fromDate(at) }) : onSetPresent(at))}
-                  >
-                    Set present day to scene time
-                  </button>
+                  {!sceneOnly && (
+                    <button
+                      type="button"
+                      className="lab-btn"
+                      onClick={() => (command ? command({ op: "presentDay", datetime: fromDate(at) }) : onSetPresent(at))}
+                    >
+                      Set present day to scene time
+                    </button>
+                  )}
                 </>
               )}
             </div>
@@ -2367,8 +2375,32 @@ export type LivePhase = {
 
 const isPhase = (value: string): value is Phase => value in NEXT_PHASE;
 
+/** A scene by library key and the title shown. */
+export type SceneRef = { readonly key: string; readonly title: string };
+
 /** Scenes live in TTS: the one on the table, plus any on deck to switch to in one click. */
-export type LiveScenes = { readonly live: readonly string[]; readonly current: string | null };
+export type LiveScenes = { readonly live: readonly SceneRef[]; readonly current: SceneRef | null };
+
+/** A scene library row as the picker lists it; `editing` has a preview open, `saved: false` is a new scene's draft. */
+export type LibraryEntry = SceneRef & { readonly location?: LabLocation; readonly editing?: boolean; readonly saved?: boolean };
+
+/** Library housekeeping in the scene picker; `note` explains a library that could not load or copy from TTS. */
+export type LibraryActions = {
+  readonly rename: (key: string, title: string) => void;
+  readonly remove: (key: string) => void;
+  readonly move: (key: string, by: -1 | 1) => void;
+  readonly note?: { readonly text: string; readonly retry?: () => void };
+};
+
+/**
+ * The table's scene and the library: linked means TTS writes the live scene into its library row. Unlink stops
+ * that; Fork keeps a snapshot in the old row (optionally renamed) and carries on in a new row.
+ */
+export type LinkMenu = {
+  readonly linked: boolean;
+  readonly onUnlink: () => void;
+  readonly onFork: (newTitle: string, oldTitle: string) => void;
+};
 
 /** Edits stay in the field until Enter or leaving it, then send once; Escape restores TTS's value, as does a push. */
 const CommitInput = ({ value, onCommit, ...rest }: Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "defaultValue"> & {
@@ -2402,21 +2434,28 @@ const CommitInput = ({ value, onCommit, ...rest }: Omit<InputHTMLAttributes<HTML
  * carousel. In Play, End Scene (takes the current scene out of the live list) sits just left of Advance, and
  * Advance opens a ring: Scene (scene picker), Memoriam (Memoriam set-up), or Spotlight (click twice). In any
  * other phase, Advance names the next phase and needs a second click. Switching to a deck scene or playing one
- * from the picker first asks how to set the clock (`SceneTimingRing`).
+ * from the picker first asks how to set the clock (`SceneTimingRing`). Right-click a deck scene to open its
+ * preview; click the table's scene for Unlink and Fork.
  */
-export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPrepare, live }: {
-  library: readonly string[];
+export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch, onEndScene, onPlay, onEdit, onPrepare, onOpenDeck, live }: {
+  library: readonly LibraryEntry[];
+  libraryActions?: LibraryActions;
   scenes: LiveScenes;
-  onSwitch: (title: string, clockMode: SceneClockMode) => void;
+  linkMenu?: LinkMenu;
+  onSwitch: (key: string, clockMode: SceneClockMode) => void;
   onEndScene: () => void;
-  onPlay: (title: string, clockMode: SceneClockMode) => void;
-  onPrepare: () => void;
+  onPlay: (key: string, clockMode: SceneClockMode) => void;
+  onEdit: (key: string) => void;
+  /** A new scene at this location, titled "District — Site". */
+  onPrepare: (location: LabLocation, districtName: string, siteName: string) => void;
+  onOpenDeck?: (key: string) => void;
   /** TTS's phase, session, and spotlight; buttons send commands when the Scenes tab provides a sender. */
   live?: LivePhase;
 }): ReactElement => {
   const [labPhase, setPhase] = useState<Phase>("Play");
   const [labSub, setLabSub] = useState("Main");
   const [ring, setRing] = useState<Point | null>(null);
+  const [linkAt, setLinkAt] = useState<Point | null>(null);
   const [modal, setModal] = useState<"scene" | "memoriam" | null>(null);
   const [timing, setTiming] = useState<SceneTiming | null>(null);
   const [labSession, setSession] = useState({ number: 43, title: "" });
@@ -2441,10 +2480,29 @@ export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPr
       <span className="lab-phase-now">
         {phase === "Play" && (
           <span className="lab-phase-scenes">
-            <span className={`lab-phase-scene${scenes.current ? "" : " none"}`}>{scenes.current ?? "No scene on the table"}</span>
-            {scenes.live.filter((title) => title !== scenes.current).map((title) => (
-              <button key={title} type="button" className="lab-phase-deck" title={`Switch the table to ${title}`} onClick={(event) => setTiming({ at: canvasPoint(event), go: (mode) => onSwitch(title, mode) })}>
-                {title}
+            {scenes.current && linkMenu ? (
+              <button type="button" className="lab-phase-scene" title="Unlink or fork this scene" onClick={(event) => setLinkAt(canvasPoint(event))}>
+                {scenes.current.title}
+                {!linkMenu.linked && <span className="lab-phase-unlinked" title="The table no longer writes into this scene's library copy">unlinked</span>}
+              </button>
+            ) : (
+              <span className={`lab-phase-scene${scenes.current ? "" : " none"}`}>{scenes.current?.title ?? "No scene on the table"}</span>
+            )}
+            {scenes.live.filter((scene) => scene.key !== scenes.current?.key).map((scene) => (
+              <button
+                key={scene.key}
+                type="button"
+                className="lab-phase-deck"
+                title={`Switch the table to ${scene.title}${onOpenDeck ? " (right-click to edit it)" : ""}`}
+                onClick={(event) => setTiming({ at: canvasPoint(event), go: (mode) => onSwitch(scene.key, mode) })}
+                onContextMenu={(event) => {
+                  if (onOpenDeck) {
+                    event.preventDefault();
+                    onOpenDeck(scene.key);
+                  }
+                }}
+              >
+                {scene.title}
               </button>
             ))}
           </span>
@@ -2546,17 +2604,25 @@ export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPr
       {modal === "scene" && (
         <SceneModal
           library={library}
+          actions={libraryActions}
           scenes={scenes}
           onClose={() => setModal(null)}
-          onPlay={(title, at) => {
+          onPlay={(key, at) => {
             setModal(null);
-            setTiming({ at, go: (mode) => onPlay(title, mode) });
+            setTiming({ at, go: (mode) => onPlay(key, mode) });
           }}
-          onPrepare={() => {
+          onEdit={(key) => {
             setModal(null);
-            onPrepare();
+            onEdit(key);
+          }}
+          onPrepare={(location, districtName, siteName) => {
+            setModal(null);
+            onPrepare(location, districtName, siteName);
           }}
         />
+      )}
+      {linkAt && linkMenu && scenes.current && (
+        <LinkMenuPopover at={linkAt} menu={linkMenu} title={scenes.current.title} onClose={() => setLinkAt(null)} />
       )}
       {modal === "memoriam" && (
         <MemoriamModal
@@ -2570,29 +2636,189 @@ export const PhaseStrip = ({ library, scenes, onSwitch, onEndScene, onPlay, onPr
   );
 };
 
-const SceneModal = ({ library, scenes, onClose, onPlay, onPrepare }: {
-  library: readonly string[];
+const locationText = (data: ChronicleLocations | null, location: LabLocation | undefined): string => {
+  if (!location) {
+    return "";
+  }
+  const found = data ? resolveLocation(data, location) : null;
+  return found && typeof found !== "string" ? `${found.district.name} · ${siteLabel(found.site)}` : `${location.districtKey} · ${location.siteKey}`;
+};
+
+/**
+ * The scene library: search by title or place; Play (asks how to set the clock), Edit (opens a preview), and
+ * housekeeping (reorder, rename, delete with a second click). "Prepare a new scene" picks its location first.
+ */
+const SceneModal = ({ library, actions, scenes, onClose, onPlay, onEdit, onPrepare }: {
+  library: readonly LibraryEntry[];
+  actions?: LibraryActions;
   scenes: LiveScenes;
   onClose: () => void;
-  onPlay: (title: string, at: Point) => void;
-  onPrepare: () => void;
-}): ReactElement => (
-  <Overlay onClose={onClose}>
-    <div className="lab-modal lab-advance">
-      <span className="lab-modal-title">Play a scene</span>
-      <span className="lab-search">Search the scene library…</span>
-      <ul className="lab-advance-list">
-        {library.map((title) => (
-          <li key={title} className={title === scenes.current ? "live" : scenes.live.includes(title) ? "prep" : undefined}>
-            <span>{title}{title === scenes.current ? " (on the table)" : scenes.live.includes(title) ? " (on deck)" : ""}</span>
+  onPlay: (key: string, at: Point) => void;
+  onEdit: (key: string) => void;
+  onPrepare: (location: LabLocation, districtName: string, siteName: string) => void;
+}): ReactElement => {
+  const { data } = useChronicleLocations();
+  const [search, setSearch] = useState("");
+  const [renaming, setRenaming] = useState<string | null>(null);
+  const [picking, setPicking] = useState(false);
+  const words = search.toLowerCase().split(/\s+/).filter(Boolean);
+  const rows = library.map((entry) => ({ entry, where: locationText(data, entry.location) }))
+    .filter(({ entry, where }) => words.every((word) => `${entry.title} ${where}`.toLowerCase().includes(word)));
+  const onDeck = (key: string): boolean => scenes.live.some((scene) => scene.key === key);
+  if (picking && data) {
+    return (
+      <LocationPicker
+        data={data}
+        location={scenes.current ? library.find((entry) => entry.key === scenes.current?.key)?.location ?? SCENE_LOCATION : SCENE_LOCATION}
+        heading="Where does the new scene take place?"
+        confirm="Prepare this scene"
+        onPick={(location) => {
+          const found = resolveLocation(data, location);
+          if (typeof found !== "string") {
+            onPrepare(location, found.district.name, siteLabel(found.site));
+          }
+        }}
+        onClose={() => setPicking(false)}
+      />
+    );
+  }
+  return (
+    <Overlay onClose={onClose}>
+      <div className="lab-modal lab-advance">
+        <span className="lab-modal-title">Play a scene</span>
+        {actions?.note && (
+          <span className="lab-advance-note">
+            {actions.note.text}
+            {actions.note.retry && <button type="button" className="lab-btn" onClick={actions.note.retry}>Try again</button>}
+          </span>
+        )}
+        <input
+          className="lab-select lab-advance-search"
+          placeholder="Search the scene library…"
+          autoFocus
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
+        <ul className="lab-advance-list">
+          {rows.map(({ entry, where }) => {
+            const onTable = entry.key === scenes.current?.key;
+            const index = library.indexOf(entry);
+            return (
+              <li key={entry.key} className={onTable ? "live" : onDeck(entry.key) ? "prep" : undefined}>
+                <span className="lab-advance-name">
+                  {renaming === entry.key && actions ? (
+                    <input
+                      className="lab-select"
+                      autoFocus
+                      defaultValue={entry.title}
+                      onBlur={(event) => {
+                        const text = event.target.value.trim();
+                        setRenaming(null);
+                        if (text && text !== entry.title) {
+                          actions.rename(entry.key, text);
+                        }
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Escape") {
+                          event.currentTarget.value = entry.title;
+                        }
+                        if (event.key === "Enter" || event.key === "Escape") {
+                          event.currentTarget.blur();
+                        }
+                      }}
+                    />
+                  ) : (
+                    <span>
+                      {entry.title}
+                      {onTable ? " (on the table)" : onDeck(entry.key) ? " (on deck)" : ""}
+                      {entry.editing && <span className="lab-advance-editing">{entry.saved === false ? "new · being prepared" : "being edited"}</span>}
+                    </span>
+                  )}
+                  {where && <span className="lab-advance-where">{where}</span>}
+                </span>
+                <span className="lab-row">
+                  {actions && entry.saved !== false && (
+                    <>
+                      <button type="button" className="lab-btn icon" title="Move up" disabled={index <= 0} onClick={() => actions.move(entry.key, -1)}>▲</button>
+                      <button type="button" className="lab-btn icon" title="Move down" disabled={index >= library.length - 1} onClick={() => actions.move(entry.key, 1)}>▼</button>
+                      <button type="button" className="lab-btn icon" title="Rename" onClick={() => setRenaming(entry.key)}>✎</button>
+                      {onTable ? (
+                        <button type="button" className="lab-btn danger" disabled title="End the scene before deleting it">Delete</button>
+                      ) : (
+                        <ConfirmButton label="Delete" className="lab-btn danger" onConfirm={() => actions.remove(entry.key)} />
+                      )}
+                    </>
+                  )}
+                  <button type="button" className="lab-btn" onClick={() => onEdit(entry.key)}>Edit</button>
+                  <button type="button" className="lab-btn live" disabled={onTable} onClick={(event) => onPlay(entry.key, canvasPoint(event))}>Play</button>
+                </span>
+              </li>
+            );
+          })}
+          {rows.length === 0 && <li className="lab-note">{library.length === 0 ? "The library is empty." : "No scene matches."}</li>}
+        </ul>
+        <button type="button" className="lab-btn" disabled={!data} onClick={() => setPicking(true)}>+ Prepare a new scene…</button>
+      </div>
+    </Overlay>
+  );
+};
+
+/** Unlink / Fork for the table's scene; Fork names the scene the table carries on in, and the snapshot it leaves. */
+const LinkMenuPopover = ({ at, menu, title, onClose }: { at: Point; menu: LinkMenu; title: string; onClose: () => void }): ReactElement => {
+  const [forking, setForking] = useState(false);
+  const [newTitle, setNewTitle] = useState(`${title} (continued)`);
+  const [oldTitle, setOldTitle] = useState(title);
+  return (
+    <Overlay onClose={onClose}>
+      <div className="lab-modal lab-link-menu" style={{ left: Math.min(at.x, 1920 - 420), top: at.y + 12 }}>
+        {forking ? (
+          <>
+            <span className="lab-modal-title">Fork “{title}”</span>
+            <label>
+              The table carries on as
+              <input className="lab-select" autoFocus value={newTitle} onChange={(event) => setNewTitle(event.target.value)} />
+            </label>
+            <label>
+              The library keeps a snapshot of now as
+              <input className="lab-select" value={oldTitle} onChange={(event) => setOldTitle(event.target.value)} />
+            </label>
             <span className="lab-row">
-              <button type="button" className="lab-btn live" disabled={title === scenes.current} onClick={(event) => onPlay(title, canvasPoint(event))}>Play</button>
-              <button type="button" className="lab-btn" onClick={onPrepare}>Edit</button>
+              <button
+                type="button"
+                className="lab-btn primary"
+                disabled={!newTitle.trim()}
+                onClick={() => {
+                  menu.onFork(newTitle.trim(), oldTitle.trim());
+                  onClose();
+                }}
+              >
+                Fork
+              </button>
+              <button type="button" className="lab-btn" onClick={onClose}>Cancel</button>
             </span>
-          </li>
-        ))}
-      </ul>
-      <button type="button" className="lab-btn" onClick={onPrepare}>+ Prepare a new scene…</button>
-    </div>
-  </Overlay>
-);
+          </>
+        ) : (
+          <>
+            <span className="lab-note">
+              {menu.linked
+                ? "Linked: the table writes this scene into its library copy as it plays."
+                : "Unlinked: the library copy stays as it was; the table no longer writes into it."}
+            </span>
+            <button
+              type="button"
+              className="lab-btn"
+              disabled={!menu.linked}
+              onClick={() => {
+                menu.onUnlink();
+                onClose();
+              }}
+            >
+              Unlink from the library
+            </button>
+            <button type="button" className="lab-btn" onClick={() => setForking(true)}>Fork…</button>
+          </>
+        )}
+      </div>
+    </Overlay>
+  );
+};
