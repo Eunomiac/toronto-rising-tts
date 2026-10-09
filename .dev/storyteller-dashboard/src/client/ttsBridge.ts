@@ -20,7 +20,7 @@ export const isBridgeConnected = (status: BridgeStatus): boolean =>
 
 export const luaLongString = (value: string): string => {
   let n = 0;
-  while (value.includes(`]${"=".repeat(n)}]`)) {
+  while (value.includes(`]${"=".repeat(n)}]`) || value.endsWith(`]${"=".repeat(n)}`)) {
     n += 1;
   }
   const eq = "=".repeat(n);
