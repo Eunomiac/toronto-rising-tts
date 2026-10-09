@@ -208,6 +208,9 @@ local function defaultState()
         thunderEnabled = Catalog.DEFAULTS.thunderEnabled,
         --- Storyteller scale (0..1) on every thunder hit's catalog volume; the `thunder` lane.
         thunderVolume = 1,
+        --- Storyteller lane-slider levels (0..1, natural volume before weather ducking) keyed by catalog effect
+        --- name. Global, never per scene: the track plays at this level wherever it plays next.
+        trackVolumes = {},
         location = Catalog.DEFAULTS.location,
         isIndoors = Catalog.DEFAULTS.isIndoors,
         --- Indoor weather volume multiplier from `C.Sites[siteKey].weatherDucking` when set via `applyContext`.
@@ -239,6 +242,17 @@ local function ensureState()
 
     S.mergeDefaults(current, defaultState())
     return current
+end
+
+--- The Storyteller's saved level for a catalog entry's clip (`trackVolumes`), or nil to use the catalog's.
+--- @param entry table|nil catalog entry (`effect`, else `key`, names the clip)
+--- @return number|nil
+local function savedTrackVolume(entry)
+    if type(entry) ~= "table" then
+        return nil
+    end
+    local effect = type(entry.effect) == "string" and entry.effect or entry.key
+    return type(effect) == "string" and tonumber(ensureState().trackVolumes[effect]) or nil
 end
 
 --- Stores a serializable channel state patch.
@@ -1135,7 +1149,7 @@ local function playBackgroundPlaylist(kind, key, playlist, forcedTrack)
     musicGeneration = musicGeneration + 1
     local thisGeneration = musicGeneration
     local oldChannel = resolveActiveMusicChannel(state)
-    local targetVolume = tonumber(playlist.volume) or tonumber(track.volume) or 0.45
+    local targetVolume = savedTrackVolume(track) or tonumber(playlist.volume) or tonumber(track.volume) or 0.45
     local fadeSeconds = transitionFade(tonumber(Catalog.DEFAULTS.fadeSeconds.music) or 0)
 
     local okPlay, message, newChannel = playPairedEmitterEntry(track, {
@@ -1170,7 +1184,7 @@ end
 local function playLocationEntry(location)
     local state = ensureState()
     local oldChannel = resolveActiveLocationChannel(state)
-    local targetVolume = tonumber(location.volume) or 0.55
+    local targetVolume = savedTrackVolume(location) or tonumber(location.volume) or 0.55
     local fadeSeconds = transitionFade(tonumber(Catalog.DEFAULTS.fadeSeconds.location) or 0)
 
     local okPlay, message, newChannel = playPairedEmitterEntry(location, {
@@ -1192,7 +1206,7 @@ local function playLocationEntry(location)
 end
 
 local function playFeaturedEntry(feature, targetChannel, crossFadeSeconds, fromVolume)
-    local targetVolume = tonumber(feature.volume) or 0.65
+    local targetVolume = savedTrackVolume(feature) or tonumber(feature.volume) or 0.65
     return playCatalogEntry(
         targetChannel,
         feature,
@@ -1310,7 +1324,7 @@ function playFeaturedTrack(feature, playlist, trackIndex, options)
         channelA = "featuredA",
         channelB = "featuredB",
         oldChannel = oldChannel,
-        volume = tonumber(feature.volume) or 0.65,
+        volume = savedTrackVolume(feature) or tonumber(feature.volume) or 0.65,
         fadeSeconds = crossFadeSeconds,
         incomingFadeSeconds = incomingFadeSeconds,
         canSilenceOld = function(channelKey)
@@ -1660,7 +1674,7 @@ function Soundscape.previewIncomingWeather(context)
             return 0
         end
         local track = Catalog.getWeatherTrack(layer, key)
-        return type(track) == "table" and (tonumber(track.volume) or 0) or 0
+        return type(track) == "table" and (savedTrackVolume(track) or tonumber(track.volume) or 0) or 0
     end
     out.rain = type(rainKey) == "string" and rainKey or "none"
     out.wind = type(windKey) == "string" and windKey or "none"
@@ -2069,28 +2083,35 @@ function Soundscape.getPlayingLanesForUi()
 end
 
 --- Sets volume for a Storyteller panel lane id (`music`, `location`, `featured`, `rain`, `wind`, `thunder`).
---- Thunder is a scale on each hit's catalog volume, applied from the next hit.
+--- The level is saved against the clip now playing on that lane (`trackVolumes`), so the clip plays at it
+--- wherever it plays next. Thunder is a scale on each hit's catalog volume, applied from the next hit.
 -- @param laneId string
 -- @param volume01 number|string
 -- @return boolean
 -- @return string
 function Soundscape.setStorytellerLaneVolume(laneId, volume01)
     local v = clamp01(volume01)
-    if laneId == "music" then
-        return setChannelImmediateVolume("music", v)
-    elseif laneId == "location" then
-        return setChannelImmediateVolume("location", v)
-    elseif laneId == "featured" then
-        return setChannelImmediateVolume("featured", v)
-    elseif laneId == "rain" then
-        return setChannelImmediateVolume("weatherRain", v)
-    elseif laneId == "wind" then
-        return setChannelImmediateVolume("weatherWind", v)
-    elseif laneId == "thunder" then
+    if laneId == "thunder" then
         ensureState().thunderVolume = v
         return true, "Thunder volume: " .. tostring(v)
     end
-    return false, "Unknown sound lane: " .. tostring(laneId)
+    local state = ensureState()
+    local channelKey = ({
+        music = resolveActiveMusicChannel(state),
+        location = resolveActiveLocationChannel(state),
+        featured = resolveActiveFeaturedChannel(state),
+        rain = "weatherRain",
+        wind = "weatherWind",
+    })[laneId]
+    if channelKey == nil then
+        return false, "Unknown sound lane: " .. tostring(laneId)
+    end
+    local ok, message = setChannelImmediateVolume(channelKey, v)
+    local effect = state.channels[channelKey] and state.channels[channelKey].effect
+    if ok and type(effect) == "string" and effect ~= Catalog.SILENT_EFFECT then
+        state.trackVolumes[effect] = v
+    end
+    return ok, message
 end
 
 --- Applies any combination of future weather/site/calendar context fields.
@@ -2620,7 +2641,7 @@ function Soundscape.setRainLayer(rainKey)
         return false, "Unknown rain layer: " .. tostring(rainKey)
     end
     if weatherLoopChannelMatches("weatherRain", rain) and ensureState().rain == rainKey then
-        local natural = tonumber(rain.volume) or 0.5
+        local natural = savedTrackVolume(rain) or tonumber(rain.volume) or 0.5
         local okVolume, volumeMessage
         if transitionFadeSecondsOverride ~= nil then
             okVolume = fadeWeatherHoldToNatural("weatherRain", natural, transitionFadeSecondsOverride)
@@ -2636,7 +2657,7 @@ function Soundscape.setRainLayer(rainKey)
     local okRain, message = playSingleEmitterFadeOutIn(
         "weatherRain",
         rain,
-        tonumber(rain.volume) or 0.5,
+        savedTrackVolume(rain) or tonumber(rain.volume) or 0.5,
         transitionFade(Catalog.DEFAULTS.fadeSeconds.weather)
     )
     if okRain then
@@ -2666,7 +2687,7 @@ function Soundscape.setWindLayer(windKey)
         return false, "Unknown wind layer: " .. tostring(windKey)
     end
     if weatherLoopChannelMatches("weatherWind", wind) and ensureState().wind == windKey then
-        local natural = tonumber(wind.volume) or 0.5
+        local natural = savedTrackVolume(wind) or tonumber(wind.volume) or 0.5
         local okVolume, volumeMessage
         if transitionFadeSecondsOverride ~= nil then
             okVolume = fadeWeatherHoldToNatural("weatherWind", natural, transitionFadeSecondsOverride)
@@ -2682,7 +2703,7 @@ function Soundscape.setWindLayer(windKey)
     local okWind, message = playSingleEmitterFadeOutIn(
         "weatherWind",
         wind,
-        tonumber(wind.volume) or 0.5,
+        savedTrackVolume(wind) or tonumber(wind.volume) or 0.5,
         transitionFade(Catalog.DEFAULTS.fadeSeconds.weather)
     )
     if okWind then

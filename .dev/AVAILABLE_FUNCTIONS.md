@@ -379,7 +379,7 @@ Use these instead of hand-rolled `string.sub` checks: the PC prefix `playerLight
 | `Soundscape.applySessionSceneNarrativeOverrides(sessionScene)` | `mergeSessionSceneNarrativeIntoContext(sessionScene, {})` then `applyContext` | Scene import / partial narrative apply |
 | `Soundscape.reapplyWeatherNaturalVolumes()` | Reapply indoor/outdoor multipliers to rain/wind emitters from stored natural volumes | After manual indoor toggle without swapping tracks |
 | `Soundscape.getPlayingLanesForUi()` | Rows for Storyteller sliders (`music`, `location`, `featured`, `rain`, `wind`) with natural/applied volumes | `core/global_script.ttslua` sound panel refresh |
-| `Soundscape.setStorytellerLaneVolume(laneId, volume01)` | Adjust `music` / `location` / `featured` / `rain` / `wind` / `thunder` lane gain | Weather lanes interpret slider as **natural** volume; `thunder` scales each hit's catalog volume from the next hit |
+| `Soundscape.setStorytellerLaneVolume(laneId, volume01)` | Adjust `music` / `location` / `featured` / `rain` / `wind` / `thunder` lane gain | Saves the level against the clip now playing (`soundscape.trackVolumes`, global, never per scene); every later play of that clip uses it over the catalog volume. Weather lanes interpret slider as **natural** volume; `thunder` scales each hit's catalog volume from the next hit |
 | `Soundscape.setMusicMood(moodKey)` | Set trigger-based Storyteller music mood | `Soundscape.setMusicMood("intrigue")` |
 | `Soundscape.setLocationMusic(playlistKey)` | Set site-specific background music playlist | `Soundscape.setLocationMusic("CasaLoma")` |
 | `Soundscape.playFeaturedMusic(featureKey)` | Play featured music on the dedicated lane | `Soundscape.playFeaturedMusic("TR_Intro")` |

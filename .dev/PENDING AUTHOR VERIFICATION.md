@@ -305,6 +305,12 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 
 **How to verify:** Save & Play, then restart the dashboard (or reload its page). Have a player make an ordinary roll and confirm it. On the dashboard, that player's card should stay in the Rolls column with the result text (for example "WIN +2"), the difficulty and the dice faces, in the darker "done" colour. It should not turn into a dashed empty box. Hover its right edge: **Broadcast again** should show the result on the table a second time, and the close button should remove the card. A Rouse check should show only its diamonds and its outcome, with no dice pictures.
 
+#### TOR-690 — Sound volume changes stick to the track, in every scene
+
+**Context:** Moving a Music, Location, Featured, Rain or Wind volume slider only changed the volume until the next track change; the next time that track played, it was back at its catalog volume. Now the level you set is saved against the track itself, and that track plays at your level wherever and whenever it plays again. Nothing is saved per scene.
+
+**How to verify:** Save & Play. Start a scene whose music you know, then on the dashboard's Sound panel (or the in-game Sound panel) drag the **Music** slider to roughly a quarter and let go. Play a different scene with different music, then go back to the first scene: its music should come back at your quarter level, not at its old volume. Try the same with a location ambience (Location slider) if you like. Thunder is unchanged: its slider still scales every thunder hit.
+
 ### Medium — Prince's Court sheet
 
 #### TOR-663 — Refresh XML keeps The Court on the people who had it open
