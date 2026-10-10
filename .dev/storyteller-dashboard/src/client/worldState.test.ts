@@ -61,6 +61,8 @@ describe("applyWorldEvent", () => {
     expect(state.rolls?.storyteller.live?.secret).toBe(true);
     expect(state.rolls?.storyteller.live?.quiet).toBe(false);
     expect(state.rolls?.werewolves).toEqual(["drake"]);
+    expect(state.rolls?.storyteller.slots[0]?.pool).toEqual({});
+    expect(state.rolls?.storyteller.slots[0]?.dice).toEqual([]);
   });
 
   it("reads a clock encoded as an empty Lua table as no clock", () => {

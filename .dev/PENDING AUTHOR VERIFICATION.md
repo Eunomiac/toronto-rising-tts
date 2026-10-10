@@ -336,6 +336,18 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 
 **How to verify:** Save & Play, then play scene A from the dashboard. Move two or three NPCs on the dashboard stage and press **Send**, change the music, and change the sky or the lighting. Play scene B. Once B is on the table, play scene A again: the NPCs should stand where you left them, and the music and sky or lighting should be as you set them. Then move an NPC, press **End Scene**, and play A again: that move should still be there.
 
+#### TOR-694 — Finished Storyteller drawer rolls stay on the dashboard like player rolls
+
+**Context:** Once you confirmed an NPC roll, the dashboard only showed a small drawer chip with a name. Now a confirmed drawer stays in the Rolls column as a full card (pool, difficulty, result and dice), just like a player's finished roll. You can fold it to one line, broadcast it again, or dismiss it.
+
+**How to verify:** Save & Play, then open the dashboard's **Scenes** tab.
+
+1. Start an NPC roll (right-click a stage token or NPC seat and pick a roll type), roll it and press Confirm. The drawer should become a card with the NPC's name, a "Drawer N" tag, the pool, the difficulty, the result and the dice. It should stay after the result is broadcast.
+2. Click the NPC's name on the card: it folds to one line showing the result, with the broadcast icon still there. Click the name again to unfold it.
+3. Click the broadcast icon: the result banner should show again in TTS.
+4. Do another NPC roll, but right-click Confirm (hold the result). Its card should carry a "Held" tag, and its broadcast icon should read "Broadcast to the table". Click it and the banner should show in TTS.
+5. Hover a card and click its close (X) button: the card should go away and that drawer in TTS should clear.
+
 ### Medium — Prince's Court sheet
 
 #### TOR-663 — Refresh XML keeps The Court on the people who had it open

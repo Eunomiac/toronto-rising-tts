@@ -299,6 +299,13 @@ local function poolCounts(pool)
   return out
 end
 
+--- @param face table|nil one `diceFaces` row
+--- @return string die kind
+local function faceKind(face)
+  local row = type(face) == "table" and face or {}
+  return row.kind or (row.isHunger == true and "hunger" or "normal")
+end
+
 --- @param faces table|nil
 --- @param selected table|nil guid → true (Storyteller dice picked for a reroll)
 --- @return table one row per die, in the roll's face order (the reroll pick uses that index)
@@ -308,11 +315,33 @@ local function diceRows(faces, selected)
     local row = type(face) == "table" and face or {}
     out[i] = {
       value = tonumber(row.value),
-      kind = row.kind or (row.isHunger == true and "hunger" or "normal"),
+      kind = faceKind(row),
       selected = type(selected) == "table" and type(row.guid) == "string" and selected[row.guid] == true or nil,
     }
   end
   return out
+end
+
+--- A finished roll's pool, counted from its dice (history keeps the faces, not the pool).
+--- @param faces table|nil
+--- @return table counts by die kind
+local function poolFromFaces(faces)
+  local out = {}
+  for _, face in ipairs(type(faces) == "table" and faces or {}) do
+    local kind = faceKind(face)
+    out[kind] = (out[kind] or 0) + 1
+  end
+  return out
+end
+
+--- A finished roll's difficulty, recovered from its history entry (successes − margin).
+--- @param entry table roll history entry
+--- @return number|nil
+local function historyDifficulty(entry)
+  local result = type(entry.result) == "table" and entry.result or nil
+  local margin = result ~= nil and tonumber(result.margin) or nil
+  local successes = result ~= nil and tonumber(result.successes) or nil
+  return (margin ~= nil and successes ~= nil) and (successes - margin) or nil
 end
 
 --- @param roll table
@@ -336,16 +365,13 @@ end
 --- @return table roll-shaped record for pcRollRow
 local function finishedPcRoll(color, snapshot)
   local entry = require("core.storyteller_rolls").findHistoryEntry(color, snapshot.rollId) or {}
-  local result = type(entry.result) == "table" and entry.result or nil
-  local margin = result ~= nil and tonumber(result.margin) or nil
-  local successes = result ~= nil and tonumber(result.successes) or nil
   local finished = {}
   for key, value in pairs(snapshot) do
     finished[key] = value
   end
-  finished.result = result
+  finished.result = type(entry.result) == "table" and entry.result or nil
   finished.diceFaces = entry.diceFaces
-  finished.difficulty = (margin ~= nil and successes ~= nil) and (successes - margin) or nil
+  finished.difficulty = historyDifficulty(entry)
   return finished
 end
 
@@ -394,7 +420,7 @@ local function buildRolls()
   for i = 1, 3 do
     local slot = type(root.slots) == "table" and root.slots[i] or nil
     if type(slot) == "table" and slot.cleared ~= true then
-      slots[#slots + 1] = {
+      local row = {
         index = i,
         label = slot.label,
         rollType = slot.rollType,
@@ -403,6 +429,15 @@ local function buildRolls()
         canBroadcast = slot.confirmed == true and type(slot.rollId) == "string" and slot.rollId ~= "",
         pendingBroadcast = slot.pendingBroadcast == true,
       }
+      local entry = row.canBroadcast and require("core.storyteller_rolls").findHistoryEntry("Black", slot.rollId) or nil
+      if type(entry) == "table" then
+        local difficulty = historyDifficulty(entry)
+        row.result = resultRow({ rollType = entry.rollType, result = entry.result, difficulty = difficulty })
+        row.difficulty = difficulty
+        row.dice = diceRows(entry.diceFaces)
+        row.pool = poolFromFaces(entry.diceFaces)
+      end
+      slots[#slots + 1] = row
     end
   end
 

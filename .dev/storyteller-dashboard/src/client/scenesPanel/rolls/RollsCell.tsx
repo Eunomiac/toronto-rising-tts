@@ -294,6 +294,56 @@ const SlotChip = ({ slot, send }: { slot: StRollSlot; send: RollsSend }): ReactE
   </div>
 );
 
+/** A confirmed drawer's finished roll: stays until the drawer is cleared, like a PC's finished roll. */
+const SlotRollCard = ({ slot, send, collapsed, onToggle }: {
+  slot: StRollSlot;
+  send: RollsSend;
+  collapsed: boolean;
+  onToggle: () => void;
+}): ReactElement => {
+  const result = <ResultText result={slot.result} />;
+  const held = slot.pendingBroadcast;
+  const flags = (
+    <span className="roll-flags">
+      <span title={`Storyteller dice drawer ${slot.index}`}>Drawer {slot.index}</span>
+      {held && <span title="The result has not been shown to the table yet">Held</span>}
+    </span>
+  );
+  const actions: CardAction[] = slot.canBroadcast
+    ? [{
+      key: "broadcast",
+      icon: "broadcast",
+      label: held ? "Broadcast to the table" : "Broadcast again",
+      tone: "gold",
+      keep: true,
+      onClick: () => send({ op: "slotBroadcast", slot: slot.index })
+    }]
+    : [];
+  return (
+    <RollCard
+      className="npc phase-resolved"
+      title="Finished: shown here until the drawer is cleared. Broadcast it (again), or dismiss it."
+      rollType={slot.rollType}
+      name={slot.label ?? "NPC"}
+      flags={flags}
+      conditions=""
+      result={result}
+      collapsed={collapsed}
+      onToggle={onToggle}
+      actions={actions}
+      onClose={() => send({ op: "slotCancel", slot: slot.index })}
+      closeLabel="Dismiss this result and clear its drawer"
+    >
+      <PoolDiamonds pool={slot.pool} />
+      <div className="roll-line">
+        <Difficulty value={slot.difficulty} editable={false} title="Difficulty" onPick={() => undefined} />
+        {result}
+      </div>
+      {!isRouseCheck(slot.rollType) && <RolledDice dice={slot.dice} pickable={false} />}
+    </RollCard>
+  );
+};
+
 const npcActions = (live: StLiveRoll, send: RollsSend): CardAction[] => {
   const a = live.actions;
   const actions: CardAction[] = [];
@@ -511,6 +561,7 @@ const RollOptions = ({ popup, access, send, onClose }: { popup: OptionsPopup; ac
 const POPUP_W = 420;
 /** Fold key for the live NPC roll (PC rolls fold by seat colour). */
 const NPC_FOLD = "npc";
+const slotFold = (index: number): string => `drawer-${index}`;
 /** Keeps the dice ring's side spokes on the canvas. */
 const POOL_RING_MARGIN = 110;
 
@@ -582,6 +633,9 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
   const ringTarget = poolRing?.target;
   const ringPc = ringTarget?.kind === "pc" ? pcs.find((roll) => roll.color === ringTarget.color && roll.canModifyPool) : undefined;
   const live = storyteller.live;
+  const isFinished = (slot: StRollSlot): boolean => slot.result !== undefined && live?.slot !== slot.index;
+  const finishedSlots = storyteller.slots.filter(isFinished);
+  const chipSlots = storyteller.slots.filter((slot) => !isFinished(slot));
   const ringNpc = ringTarget?.kind === "npc" && live && (live.phase === "setup" || live.phase === "preRoll") ? live : undefined;
   const ringRoll = ringPc ?? ringNpc;
   const changePool = (kind: PoolKind, delta: 1 | -1): void => {
@@ -610,11 +664,20 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
           onPool={(event, color) => openPoolRing(event, { kind: "pc", color })}
         />
       ))}
-      {storyteller.slots.length > 0 && (
+      {chipSlots.length > 0 && (
         <div className="roll-slots">
-          {storyteller.slots.map((slot) => <SlotChip key={slot.index} slot={slot} send={send} />)}
+          {chipSlots.map((slot) => <SlotChip key={slot.index} slot={slot} send={send} />)}
         </div>
       )}
+      {finishedSlots.map((slot) => (
+        <SlotRollCard
+          key={slot.index}
+          slot={slot}
+          send={send}
+          collapsed={folded.has(slotFold(slot.index))}
+          onToggle={() => toggleFold(slotFold(slot.index))}
+        />
+      ))}
       {live && (
         <NpcRollPanel
           live={live}

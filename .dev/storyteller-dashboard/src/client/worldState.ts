@@ -199,6 +199,7 @@ export type StRollActions = {
   readonly brutalChoice: boolean;
 };
 
+/** A Storyteller dice drawer; a confirmed one carries its finished roll (from the roll history) until it is cleared. */
 export type StRollSlot = {
   readonly index: number;
   readonly label?: string;
@@ -206,7 +207,12 @@ export type StRollSlot = {
   readonly phase?: string;
   readonly live: boolean;
   readonly canBroadcast: boolean;
+  /** Confirmed with the result held back from the table. */
   readonly pendingBroadcast: boolean;
+  readonly result?: RollResult;
+  readonly difficulty?: number;
+  readonly pool: RollPool;
+  readonly dice: readonly RollDie[];
 };
 
 export type StLiveRoll = {
@@ -286,7 +292,11 @@ const normalizeRolls = (data: Record<string, unknown>): RollsSlice => {
     })),
     storyteller: {
       canInitiate: st.canInitiate === true,
-      slots: asList<StRollSlot>(st.slots),
+      slots: asList<Record<string, unknown>>(st.slots).map((row) => ({
+        ...(row as Omit<StRollSlot, "pool" | "dice">),
+        pool: asPool(row.pool),
+        dice: asList<RollDie>(row.dice)
+      })),
       ...(live
         ? {
           live: {

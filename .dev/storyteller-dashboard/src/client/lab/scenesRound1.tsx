@@ -300,8 +300,12 @@ const LAB_ROLLS: RollsSlice = {
   storyteller: {
     canInitiate: true,
     slots: [
-      { index: 1, label: "Drake", rollType: "standard", phase: "postRoll", live: true, canBroadcast: false, pendingBroadcast: false },
-      { index: 2, label: "Mara", rollType: "frenzy", phase: "resolved", live: false, canBroadcast: true, pendingBroadcast: true }
+      { index: 1, label: "Drake", rollType: "standard", phase: "postRoll", live: true, canBroadcast: false, pendingBroadcast: false, pool: {}, dice: [] },
+      {
+        index: 2, label: "Mara", rollType: "standard", phase: "resolved", live: false, canBroadcast: true, pendingBroadcast: true,
+        pool: { normal: 3, hunger: 1 }, difficulty: 3, result: { resultClass: "win", successes: 3, margin: 0, text: "WIN +0" },
+        dice: [{ value: 8, kind: "normal" }, { value: 6, kind: "normal" }, { value: 2, kind: "normal" }, { value: 9, kind: "hunger" }]
+      }
     ],
     live: {
       rollType: "standard", label: "Drake", slot: 1, phase: "postRoll", hint: "Pick dice to reroll, or Confirm.", wpReroll: false,
