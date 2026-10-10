@@ -237,7 +237,7 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
       <Box x={stripX} y={stageY} w={stageW} h={stageH} className="lab-borderless">
         <WideBoard w={boardW} h={boardH} />
       </Box>
-      <StageQueue x={stripX + G} bottom={1042 - stageY - stageH + G} connected={!ttsDisconnected} />
+      <StageQueue right={1920 - stripX - stageW + 3 * G} top={stageY + 36} connected={!ttsDisconnected} />
       <Box x={rightX} y={mainY + aspectH + G} w={rightW} h={rightH - aspectH - G} className="roll-box">
         <RollsCell rolls={rolls} send={(command) => setRolls((current) => labRollsApply(current, command))} options={LAB_ROLL_OPTIONS} />
       </Box>

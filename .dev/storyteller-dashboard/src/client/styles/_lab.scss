@@ -154,6 +154,30 @@ $lab-pin: #f5b13d;
 }
 
 /* Scenes tab: command queue state in the right column. */
+/* Status lines float over the bottom of the Rolls column so they never push the rolls down. */
+.scenes-live-statuses {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  pointer-events: none;
+
+  &:empty {
+    display: none;
+  }
+
+  .scenes-live-status {
+    padding: 4px 8px;
+    background: rgb(12 12 15 / 92%);
+    border-top: 1px solid #2a2a33;
+    pointer-events: auto;
+  }
+}
+
 .scenes-live-status {
   display: flex;
   flex-direction: column;

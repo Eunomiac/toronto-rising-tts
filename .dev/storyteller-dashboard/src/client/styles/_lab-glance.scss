@@ -2423,22 +2423,34 @@ $lab-live: #4caf6a;
     width: 11px;
     transition: width 0.16s ease;
 
-    // Carries the hover zone out to the screen's left edge.
-    &::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: -12px;
-      width: 12px;
-    }
-
     &.open {
       width: 100%;
       padding: 4px;
       border: 1px solid #3a3a44;
       background: #121216;
       box-shadow: 8px 0 24px rgb(0 0 0 / 60%);
+    }
+  }
+
+  // Tab on the open roster's right edge.
+  &-close {
+    position: absolute;
+    top: 50%;
+    right: -15px;
+    width: 14px;
+    height: 48px;
+    padding: 0;
+    border: 1px solid #3a3a44;
+    border-left: none;
+    font-size: 11px;
+    color: #9a9aa6;
+    background: #18181e;
+    cursor: pointer;
+    transform: translateY(-50%);
+
+    &:hover {
+      color: #e0e0e8;
+      background: #24242c;
     }
   }
 

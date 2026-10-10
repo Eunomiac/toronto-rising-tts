@@ -33,6 +33,7 @@ import { useScenesCommand, type SceneClockMode, type ScenesSend, type SoundLane 
 import { LOCATION_MUSIC_LABEL, MOOD_LABEL, fromDate, rainKey, type SoundView, type SpotlightView } from "./liveScene";
 import { GROUP_DRAG_TYPE, NPC_DRAG_TYPE } from "./stage";
 import { useWorldState } from "../worldState";
+import { usePersistentState } from "../persistentState";
 
 /**
  * Panels for the Glance strip sketch (scenes-r1-b), pin pass 3: location and weather read live from the
@@ -701,7 +702,7 @@ export const MasonryRoster = (): ReactElement => {
   const [editing, setEditing] = useState<{ key: string; at: Point } | null>(null);
   const [dragging, setDragging] = useState(false);
   const [query, setQuery] = useState("");
-  const [view, setView] = useState<"main" | "generic">("main");
+  const [view, setView] = usePersistentState<"main" | "generic">("tr-dashboard:roster-tab", "main", ["main", "generic"]);
   useEffect(() => {
     if (view === "generic" && !genericCatalog) {
       loadGenericCatalog().then(setGenericCatalog, (reason: unknown) => setGenericError(reason instanceof Error ? reason.message : String(reason)));
@@ -949,59 +950,25 @@ export const MasonryRoster = (): ReactElement => {
   );
 };
 
-const RAIL_OPEN_MS = 150;
-const RAIL_CLOSE_MS = 500;
-
 /**
  * The left column below the hunt roll: scene notes, with the NPC roster folded to a rail along their left
- * edge. Hovering or clicking the rail opens the roster over the notes. It folds back once the pointer has been
- * off it for a moment (not while you are typing in it or one of its pop-ups is open), or on a click elsewhere.
+ * edge. Clicking the rail opens the roster over the notes; it stays open (across reloads too) until its close
+ * arrow folds it back.
  */
 export const RosterDock = ({ scene }: { scene: string }): ReactElement => {
   const layout = useRosterLayout();
-  const [open, setOpen] = useState(false);
-  const timer = useRef(0);
-  const clickedInside = useRef(false);
-  const later = (next: boolean, ms: number): void => {
-    window.clearTimeout(timer.current);
-    timer.current = window.setTimeout(() => {
-      if (!next && document.activeElement?.matches(".lab-dock-roster :is(input, select), .lab-group-edit :is(input, select)")) {
-        return;
-      }
-      setOpen(next);
-    }, ms);
-  };
-  useEffect(() => () => window.clearTimeout(timer.current), []);
-  useEffect(() => {
-    if (!open) {
-      return undefined;
-    }
-    const onPointerDown = (): void => {
-      if (clickedInside.current) {
-        clickedInside.current = false;
-        return;
-      }
-      window.clearTimeout(timer.current);
-      setOpen(false);
-    };
-    document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, [open]);
+  const [open, setOpen] = usePersistentState<boolean>("tr-dashboard:roster-open", false);
   return (
     <div className="lab-dock">
       <div className="lab-dock-notes">
         <SceneNotes scene={scene} />
       </div>
-      <div
-        className={`lab-dock-roster${open ? " open" : ""}`}
-        onPointerDownCapture={() => {
-          clickedInside.current = true;
-        }}
-        onMouseEnter={() => later(true, open ? 0 : RAIL_OPEN_MS)}
-        onMouseLeave={() => later(false, RAIL_CLOSE_MS)}
-      >
+      <div className={`lab-dock-roster${open ? " open" : ""}`}>
         {open ? (
-          <MasonryRoster />
+          <>
+            <MasonryRoster />
+            <button type="button" className="lab-dock-close" title="Fold the roster away" onClick={() => setOpen(false)}>◂</button>
+          </>
         ) : (
           <button type="button" className="lab-dock-rail" title="NPC roster" onClick={() => setOpen(true)}>
             <span className="lab-dock-rail-label">NPC Roster</span>
@@ -2450,10 +2417,10 @@ const STAGE_QUEUE_SAMPLE: readonly { readonly id: number; readonly text: string 
 ];
 
 /**
- * Stage board edits waiting for Send, listed in order; it shows only while something waits. Without `live` (the
- * Lab) it shows a sample queue.
+ * Stage board edits waiting for Send, listed in order; it shows only while something waits, in the stage's top
+ * right corner (under the help button). Without `live` (the Lab) it shows a sample queue.
  */
-export const StageQueue = ({ x, bottom, connected, live: view }: { x: number; bottom: number; connected: boolean; live?: StageQueueView }): ReactElement | null => {
+export const StageQueue = ({ right, top, connected, live: view }: { right: number; top: number; connected: boolean; live?: StageQueueView }): ReactElement | null => {
   const [sample, setSample] = useState(STAGE_QUEUE_SAMPLE);
   const lines = view ? view.lines : sample;
   if (lines.length === 0) {
@@ -2461,7 +2428,7 @@ export const StageQueue = ({ x, bottom, connected, live: view }: { x: number; bo
   }
   const remove = (id: number): void => (view ? view.remove(id) : setSample(sample.filter((line) => line.id !== id)));
   return (
-    <div className="lab-queue stage-queue" style={{ left: x, bottom }}>
+    <div className="lab-queue stage-queue" style={{ right, top }}>
       <ol className="lab-queue-list">
         {lines.map((line) => (
           <li key={line.id}>

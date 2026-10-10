@@ -437,18 +437,20 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
           <Box x={STRIP_X} y={STAGE_Y} w={STAGE_W} h={STAGE_H} className="lab-borderless">
             {board ? <WideBoard w={STAGE_W - 12} h={STAGE_H - 10} live={board} /> : <Waiting text={waitText} />}
           </Box>
-          <StageQueue x={STRIP_X + G} bottom={1042 - STAGE_Y - STAGE_H + G} connected={connected} live={queueView} />
+          <StageQueue right={1920 - STRIP_X - STAGE_W + 3 * G} top={STAGE_Y + 36} connected={connected} live={queueView} />
           <Box x={RIGHT_X} y={ROLLS_Y} w={RIGHT_W} h={ROLLS_H} className="roll-box">
-            <CommandStatus pending={commands.pending} error={commands.error} onDismiss={commands.clearError} />
-            <CommandStatus pending={rollCommands.pending} error={rollCommands.error} onDismiss={rollCommands.clearError} />
-            {deckError && <div className="scenes-live-status error" role="alert">{deckError}</div>}
-            {libraryError && <div className="scenes-live-status error" role="alert">{libraryError}</div>}
-            {library.notice && (
-              <div className="scenes-live-status error" role="alert">
-                <span>{library.notice}</span>
-                <button type="button" className="lab-btn" onClick={library.clearNotice}>OK</button>
-              </div>
-            )}
+            <div className="scenes-live-statuses">
+              <CommandStatus pending={commands.pending} error={commands.error} onDismiss={commands.clearError} />
+              <CommandStatus pending={rollCommands.pending} error={rollCommands.error} onDismiss={rollCommands.clearError} />
+              {deckError && <div className="scenes-live-status error" role="alert">{deckError}</div>}
+              {libraryError && <div className="scenes-live-status error" role="alert">{libraryError}</div>}
+              {library.notice && (
+                <div className="scenes-live-status error" role="alert">
+                  <span>{library.notice}</span>
+                  <button type="button" className="lab-btn" onClick={library.clearNotice}>OK</button>
+                </div>
+              )}
+            </div>
             <RollsCell rolls={rolls} pending={rollCommands.pending} send={rollCommands.send} options={rollCommands.options} />
           </Box>
           {library.previewKey !== null && library.previews.length > 0 && (
