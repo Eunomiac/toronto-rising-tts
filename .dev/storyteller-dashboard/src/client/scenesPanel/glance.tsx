@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type DragEvent, type InputHTMLAttributes, type MouseEvent, type PointerEvent, type ReactElement, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type InputHTMLAttributes, type MouseEvent, type PointerEvent, type ReactElement, type ReactNode } from "react";
 import { Headshot } from "../headshots/Headshot";
 import type { CatalogCharacter, SceneCatalogs } from "./catalogs";
 import {
@@ -34,6 +34,7 @@ import { LOCATION_MUSIC_LABEL, MOOD_LABEL, fromDate, rainKey, type SoundView, ty
 import { GROUP_DRAG_TYPE, NPC_DRAG_TYPE } from "./stage";
 import { useWorldState } from "../worldState";
 import { usePersistentState } from "../persistentState";
+import { RosterDragGhost, startRosterDrag } from "./rosterDrag";
 
 /**
  * Panels for the Glance strip sketch (scenes-r1-b), pin pass 3: location and weather read live from the
@@ -479,23 +480,6 @@ const groupLabelWidth = (text: string): number => {
   return Math.ceil(high) + 2;
 };
 
-/**
- * Drags show a copy of the dragged element held off-screen. Chrome's own drag picture of an element inside a
- * scrolled list can take in whatever lies under it (the categories below), so it is not used.
- */
-const setDragImage = (event: DragEvent<HTMLElement>): void => {
-  const source = event.currentTarget;
-  const holder = document.createElement("div");
-  holder.className = "lab-canvas lab-drag-ghost";
-  const copy = source.cloneNode(true) as HTMLElement;
-  copy.style.width = `${source.offsetWidth}px`;
-  holder.append(copy);
-  document.body.append(holder);
-  const rect = source.getBoundingClientRect();
-  event.dataTransfer.setDragImage(copy, event.clientX - rect.left, event.clientY - rect.top);
-  window.setTimeout(() => holder.remove(), 0);
-};
-
 /** One roster NPC, draggable onto the stage. */
 const RosterToken = ({ characterKey, name, className }: { characterKey: string; name: string; className: string }): ReactElement => (
   <span
@@ -506,7 +490,7 @@ const RosterToken = ({ characterKey, name, className }: { characterKey: string; 
       event.stopPropagation();
       event.dataTransfer.setData(NPC_DRAG_TYPE, characterKey);
       event.dataTransfer.effectAllowed = "move";
-      setDragImage(event);
+      startRosterDrag(event, [{ characterKey, name }]);
     }}
   >
     <Headshot className={className} characterKey={characterKey} />
@@ -801,7 +785,7 @@ export const MasonryRoster = (): ReactElement => {
             draggable
             onDragStart={(event) => {
               event.dataTransfer.setData(GROUP_DRAG_TYPE, group.key);
-              setDragImage(event);
+              startRosterDrag(event, leaderFirst(group));
               setDragging(true);
             }}
             onDragEnd={() => setDragging(false)}
@@ -857,6 +841,7 @@ export const MasonryRoster = (): ReactElement => {
 
   return (
     <div className="lab-mroster">
+      <RosterDragGhost />
       <div className="lab-mroster-head">
         <button type="button" className={`lab-btn${view === "main" ? " primary" : ""}`} onClick={() => setView("main")}>Main</button>
         <button type="button" className={`lab-btn${view === "generic" ? " primary" : ""}`} onClick={() => setView("generic")}>Generic</button>
