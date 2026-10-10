@@ -13,7 +13,7 @@ import {
   useSceneLibraryStatus
 } from "../sceneLibrary";
 import type { SceneSlice } from "../worldState";
-import type { SceneClockMode, ScenesCommand } from "./commands";
+import type { SceneClock, ScenesCommand } from "./commands";
 import { newLibraryScene, newSceneKey, newSceneTitle } from "./library";
 
 /** How long the table's scene must be quiet before its library row is read back from TTS. */
@@ -111,14 +111,14 @@ export const useLibraryActions = ({ scene, sendBatch, removeFromDeck }: {
     return draft;
   };
 
-  const play = (key: string, clockMode: SceneClockMode): void => {
+  const play = (key: string, clock: SceneClock): void => {
     const row = findRow(key);
     if (row) {
-      sendBatch([upsertCommand(row), { op: "playScene", key, clockMode }]);
+      sendBatch([upsertCommand(row), { op: "playScene", key, ...clock }]);
     } else if (findDraft(key)) {
-      saveDraft(key, [{ op: "playScene", key, clockMode }]);
+      saveDraft(key, [{ op: "playScene", key, ...clock }]);
     } else {
-      sendBatch([{ op: "playScene", key, clockMode }]);
+      sendBatch([{ op: "playScene", key, ...clock }]);
     }
   };
 
@@ -230,7 +230,7 @@ export const useLibraryActions = ({ scene, sendBatch, removeFromDeck }: {
         addToDeck(saved);
       }
     },
-    playDraft: (key: string, clockMode: SceneClockMode) => void saveDraft(key, [{ op: "playScene", key, clockMode }]),
+    playDraft: (key: string, clock: SceneClock) => void saveDraft(key, [{ op: "playScene", key, ...clock }]),
     discardDraft: closeDraft
   };
 };

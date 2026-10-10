@@ -319,6 +319,8 @@ Library Apply is four buttons (`Scene Time` / `×5 to Now` / `SET Now` / `NOW`).
 
 Scene Time / ×5 / SET Now are **disabled** until the selected row has an authored datetime (clockless present-day import uses NOW first; live play + flush/mirror later enables the other three from exit time). Animated ease-in/out jumps remain **TOR-222**, not ×5.
 
+The Storyteller Dashboard does not use these modes directly: its scene timing menu sends `scene` or `present` with `opts.plusMinutes` (start that many minutes later; `present` moves present day on) and `opts.pace` (`x2`: real time at ×2; `x5`: ×5 until present day, then ×2 — `applyDashboardPace`). See `.dev/Storyteller Dashboard Docs/Listening to TTS.md` § Scene library.
+
 ## Switching scenes
 
 Scene **Apply** uses the **staged** transition `core.hud_blindfold.runStagedTransition` (built on `U.chain`) so XmlUI blindfold animations and heavy reconcile never compete (TOR-147 / TOR-434). Phases:

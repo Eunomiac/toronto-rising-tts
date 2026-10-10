@@ -45,7 +45,11 @@
                                           characterKey = the PC's charKey) into a scatter group 1–6
     genericAdd        keys, labels?       spawn generic NPCs (catalog keys) named by the Storyteller
     genericRename     key, name           rename a generic NPC already in the scene
-    playScene         key, clockMode?     select a library scene and apply it to the table
+    playScene         key, from, plusMinutes, pace
+                                          select a library scene and apply it to the table, starting
+                                          `plusMinutes` after its own time (`from` scene) or present day
+                                          (`from` present, which moves present day on); real time runs at
+                                          ×2, or (`pace` x5) at ×5 until it reaches present day
     endScene                              end the live scene
     upsertScene       key, title, placementMode, sessionScene
                                           write a dashboard library row (`dashboard/scene_library.ttslua`)
@@ -416,10 +420,20 @@ local function applyCommand(cmd)
     if type(cmd.key) ~= "string" or type(S.getStateVal("sceneLibrary", "scenes", cmd.key)) ~= "table" then
       return "No library scene `" .. tostring(cmd.key) .. "`."
     end
+    if cmd.from ~= "scene" and cmd.from ~= "present" then
+      return "playScene needs `from` scene or present."
+    end
+    local plus = tonumber(cmd.plusMinutes)
+    if plus == nil or plus < 0 or plus ~= math.floor(plus) then
+      return "playScene needs `plusMinutes` as a whole number of minutes, 0 or more."
+    end
+    if cmd.pace ~= "x2" and cmd.pace ~= "x5" then
+      return "playScene needs `pace` x2 or x5."
+    end
     S.setStateVal(cmd.key, "sceneLibrary", "activeKey")
     S.validateState()
     Panel.refresh()
-    Panel.applyActiveLibraryScene(player, type(cmd.clockMode) == "string" and cmd.clockMode or "scene")
+    Panel.applyActiveLibraryScene(player, cmd.from, { plusMinutes = plus, pace = cmd.pace })
     return nil
   end
 

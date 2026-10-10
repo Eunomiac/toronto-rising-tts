@@ -1,5 +1,5 @@
 import { Fragment, useState, type ReactElement } from "react";
-import type { SceneClockMode } from "./commands";
+import type { SceneClock } from "./commands";
 import {
   AspectRow,
   ConditionsPanel,
@@ -112,7 +112,7 @@ export const ScenePreview = ({ x, y, w, h, prepared, initialKey, scenes, note, o
   note?: (key: string) => string | undefined;
   onSave: (key: string) => void;
   onDeck: (key: string) => void;
-  onPlay: (key: string, clockMode: SceneClockMode) => void;
+  onPlay: (key: string, clock: SceneClock) => void;
   onDiscard: (key: string) => void;
   onPrepare?: () => void;
   panels: (key: string, w: number, h: number) => ReactElement;
@@ -156,7 +156,7 @@ export const ScenePreview = ({ x, y, w, h, prepared, initialKey, scenes, note, o
             onClick={(event) => {
               if (active) {
                 const key = active.key;
-                setTiming({ at: canvasPoint(event), go: (mode) => onPlay(key, mode) });
+                setTiming({ at: canvasPoint(event), key, go: (clock) => onPlay(key, clock) });
               }
             }}
           >

@@ -365,6 +365,17 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 3. Click **Put it out** (or the flame on the seat). The fire in TTS should go out and every dashboard alert should disappear.
 4. Light it again, then put it out from TTS by clicking the candle. The dashboard alerts should clear too.
 
+#### TOR-697 — The dashboard's scene timing menu: Scene Time + and Now + strips, ×2 or ×5 to Now
+
+**Context:** Switching scenes from the dashboard now opens a menu showing the scene's own time and present day ("Now"), each with a row of coloured buttons that start the scene that much later (hovering previews the time). Real time runs at ×2, or at ×5 until it reaches Now; ×5 to Now is picked for you when the scene starts earlier on the same night as Now. Set Now is gone from this menu.
+
+**How to verify:** Save & Play, then open the dashboard's **Scenes** tab.
+
+1. Click a scene on deck in the phase bar. The menu should show the scene's time and date on top, Now below, a row of coloured buttons under each, and a Real time row with ×2 and ×5 to Now. There is no Set Now.
+2. Hover the top row from left to right: the scene time should move on by 0, 15, 30 and 45 minutes, then 1 h, 1 h 30, 2, 3 and 4 hours. If the preview passes Now, the Now block reads "moves on" and shows the same time.
+3. With a scene whose time is earlier tonight than Now, ×5 to Now should be lit. Click the leftmost top button: the scene plays at its own time and the clock runs fast until it reaches Now, then at ×2.
+4. Switch scenes again and click the third button on the Now row (+30 min): the scene should start 30 minutes after Now, Now should move on by 30 minutes, and the clock should run at ×2.
+
 ### Medium — Prince's Court sheet
 
 #### TOR-663 — Refresh XML keeps The Court on the people who had it open

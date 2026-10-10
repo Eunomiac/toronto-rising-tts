@@ -31,8 +31,12 @@ import { MemoriamModal } from "./memoriamModal";
 import { Btn, Overlay, activeCanvas, canvasPoint } from "./sketch";
 import { createPortal } from "react-dom";
 import { figurineUrl } from "../headshots/headshots";
-import { PendingGenericsContext, SceneGenericsContext, useScenesCommand, type SceneClockMode, type ScenesSend, type SoundLane } from "./commands";
-import { LOCATION_MUSIC_LABEL, MOOD_LABEL, fromDate, rainKey, type SoundView, type SpotlightView } from "./liveScene";
+import { PendingGenericsContext, SceneGenericsContext, useScenesCommand, type SceneClock, type ScenesSend, type SoundLane } from "./commands";
+import { LOCATION_MUSIC_LABEL, MOOD_LABEL, fromDate, rainKey, toDate, type SoundView, type SpotlightView } from "./liveScene";
+import { START_OFFSETS, defaultPace, offsetLabel, sceneTimeOf } from "./sceneClock";
+import type { LibraryScene } from "../../shared/sceneLibrary";
+import { sceneDeckSnapshot } from "../sceneDeck";
+import { sceneLibrarySnapshot } from "../sceneLibrary";
 import { GROUP_DRAG_TYPE, NPC_DRAG_TYPE } from "./stage";
 import { useWorldState } from "../worldState";
 import { usePersistentState } from "../persistentState";
@@ -70,27 +74,23 @@ export const ReleaseOverride = ({ onRelease }: { onRelease: () => void }): React
 
 /** Keeps the widest spoke (radius 112 plus half its width) inside the canvas. */
 const RING_EDGE = 180;
-/** The wide ring (eight or more choices) spreads its spokes on a larger ellipse. */
-const WIDE_RING_EDGE = 220;
 
 /** `accent` rings the spoke in that colour (a PC's seat colour). */
 type RingOption<T> = { readonly value: T; readonly label: string; readonly accent?: string };
 type Point = { readonly x: number; readonly y: number };
 
 /** Choices spread evenly around the click point; the current choice is highlighted. Clicking off closes it. */
-const RingMenu = <T,>({ at, options, current, onPick, onClose, wide = false }: {
+const RingMenu = <T,>({ at, options, current, onPick, onClose }: {
   at: Point;
   options: readonly RingOption<T>[];
   current: T;
   onPick: (value: T) => void;
   onClose: () => void;
-  wide?: boolean;
 }): ReactElement => {
-  const edge = wide ? WIDE_RING_EDGE : RING_EDGE;
-  const [rx, ry] = wide ? [156, 92] : [112, 64];
+  const [rx, ry] = [112, 64];
   return (
     <Overlay onClose={onClose}>
-      <div className={`lab-ring${wide ? " wide" : ""}`} style={{ left: Math.min(Math.max(at.x, edge), 1920 - edge), top: Math.max(at.y, ry + 22) }}>
+      <div className="lab-ring" style={{ left: Math.min(Math.max(at.x, RING_EDGE), 1920 - RING_EDGE), top: Math.max(at.y, ry + 22) }}>
         {options.map((option, index) => {
           const angle = -Math.PI / 2 + (index * 2 * Math.PI) / options.length;
           return (
@@ -113,27 +113,128 @@ const RingMenu = <T,>({ at, options, current, onPick, onClose, wide = false }: {
   );
 };
 
-const SCENE_CLOCK_MODES: readonly RingOption<SceneClockMode>[] = [
-  { value: "scene", label: "Scene Time" },
-  { value: "x5", label: "×5 To Now" },
-  { value: "setPresent", label: "Set Now" },
-  { value: "present", label: "NOW" },
-  { value: "presentPlus15", label: "Now +15" },
-  { value: "presentPlus30", label: "Now +30" },
-  { value: "presentPlus60", label: "Now +60" },
-  { value: "presentPlus120", label: "Now +120" }
-];
+/** A scene switch waiting for its clock choice: where the menu opens, which scene, and what to run once picked. */
+export type SceneTiming = { readonly at: Point; readonly key: string; readonly go: (clock: SceneClock) => void };
 
-/** A scene switch waiting for its clock choice: where the ring opens and what to run once a mode is picked. */
-export type SceneTiming = { readonly at: Point; readonly go: (mode: SceneClockMode) => void };
+const TIMING_W = 420;
+const TIMING_H = 318;
+/** The Lab's scene starts this many minutes before its present day. */
+const LAB_SCENE_LEAD = 95;
+
+type TimingTarget = { readonly from: SceneClock["from"]; readonly plus: number };
+
+/** A preview being edited first, then the library row. */
+const sceneRowFor = (key: string): LibraryScene | undefined =>
+  sceneDeckSnapshot().previews.find((row) => row.key === key) ?? sceneLibrarySnapshot().scenes.find((row) => row.key === key);
+
+const TimingStrip = ({ from, disabled, target, onHover, onPick }: {
+  from: SceneClock["from"];
+  disabled: boolean;
+  target: TimingTarget;
+  onHover: (next: TimingTarget | null) => void;
+  onPick: (next: TimingTarget) => void;
+}): ReactElement => (
+  <div className="lab-timing-strip" onPointerLeave={() => onHover(null)}>
+    {START_OFFSETS.map((plus, index) => (
+      <button
+        key={plus}
+        type="button"
+        className={`lab-timing-cell${target.from === from && target.plus === plus ? " on" : ""}`}
+        style={{ "--heat": index / (START_OFFSETS.length - 1) } as CSSProperties}
+        disabled={disabled}
+        aria-label={`${from === "scene" ? "Scene time" : "Now"}${plus > 0 ? ` ${offsetLabel(plus)}` : ""}`}
+        onPointerEnter={() => onHover({ from, plus })}
+        onClick={() => onPick({ from, plus })}
+      />
+    ))}
+  </div>
+);
 
 /**
- * Every scene switch from the dashboard asks how to set the clock: keep the scene's own time, catch up at ×5,
- * make the scene's time the new present day, or jump to present day (optionally some minutes later).
+ * Every scene switch from the dashboard asks when the scene starts. The top shows the scene's own time and the
+ * bottom present day ("Now"); the coloured strip under each starts that many minutes later (hovering previews the
+ * time), and "Now" plus minutes moves present day on. Real time then runs at ×2, or at ×5 until it reaches present
+ * day: ×5 is chosen for a start earlier on present day's night, ×2 otherwise, and either can be clicked.
  */
-export const SceneTimingRing = ({ timing, onClose }: { timing: SceneTiming; onClose: () => void }): ReactElement => (
-  <RingMenu at={timing.at} options={SCENE_CLOCK_MODES} current="scene" onPick={timing.go} onClose={onClose} wide />
-);
+export const SceneTimingRing = ({ timing, onClose }: { timing: SceneTiming; onClose: () => void }): ReactElement => {
+  const { clock } = useWorldState();
+  const lab = clock === undefined;
+  const present = clock?.presentDay ? toDate(clock.presentDay) : lab ? PRESENT_DAY : undefined;
+  const [sceneAt] = useState(() => {
+    const own = sceneTimeOf(sceneRowFor(timing.key));
+    return own ? toDate(own) : lab ? shift(PRESENT_DAY, -LAB_SCENE_LEAD) : undefined;
+  });
+  const [hover, setHover] = useState<TimingTarget | null>(null);
+  const [chosenPace, setChosenPace] = useState<SceneClock["pace"] | null>(null);
+  const target: TimingTarget = hover ?? { from: sceneAt ? "scene" : "present", plus: 0 };
+  const base = target.from === "scene" ? sceneAt : present;
+  const start = base ? shift(base, target.plus) : undefined;
+  const canCatchUp = target.from === "scene" && start !== undefined && present !== undefined && start < present;
+  const pace = canCatchUp ? chosenPace ?? defaultPace(start, present) : "x2";
+  const pick = (next: TimingTarget): void => {
+    const nextBase = next.from === "scene" ? sceneAt : present;
+    const nextStart = nextBase ? shift(nextBase, next.plus) : undefined;
+    const catchUp = next.from === "scene" && nextStart !== undefined && present !== undefined && nextStart < present;
+    timing.go({ from: next.from, plusMinutes: next.plus, pace: catchUp ? chosenPace ?? defaultPace(nextStart, present) : "x2" });
+    onClose();
+  };
+  const sceneShown = target.from === "scene" ? start : sceneAt;
+  const nowShown = target.from === "present" ? start : start && present && start > present ? start : present;
+  const nowMoves = nowShown !== undefined && present !== undefined && nowShown.getTime() !== present.getTime();
+  return (
+    <Overlay onClose={onClose}>
+      <div
+        className="lab-timing"
+        style={{ left: Math.min(Math.max(timing.at.x - TIMING_W / 2, 8), 1920 - TIMING_W - 8), top: Math.min(Math.max(timing.at.y - TIMING_H / 2, 8), 1042 - TIMING_H - 8), width: TIMING_W }}
+      >
+        <div className={`lab-timing-block${target.from === "scene" ? " active" : ""}`}>
+          <span className="lab-timing-label">
+            Scene time
+            {target.from === "scene" && target.plus > 0 && <span className="lab-timing-plus">{offsetLabel(target.plus)}</span>}
+          </span>
+          {sceneShown ? (
+            <>
+              <span className="lab-timing-time">{formatTime(sceneShown)}</span>
+              <span className="lab-timing-date">{formatDate(sceneShown)}</span>
+            </>
+          ) : (
+            <span className="lab-timing-none">This scene has no time of its own: start it at Now.</span>
+          )}
+          <TimingStrip from="scene" disabled={!sceneAt} target={target} onHover={setHover} onPick={pick} />
+        </div>
+        <div className={`lab-timing-block${target.from === "present" ? " active" : ""}`}>
+          <span className="lab-timing-label">
+            Now
+            {target.from === "present" && target.plus > 0 && <span className="lab-timing-plus">{offsetLabel(target.plus)}</span>}
+            {nowMoves && <span className="lab-timing-moves">moves on</span>}
+          </span>
+          {nowShown ? (
+            <>
+              <span className="lab-timing-time">{formatTime(nowShown)}</span>
+              <span className="lab-timing-date">{formatDate(nowShown)}</span>
+            </>
+          ) : (
+            <span className="lab-timing-none">TTS has no present day yet.</span>
+          )}
+          <TimingStrip from="present" disabled={!present} target={target} onHover={setHover} onPick={pick} />
+        </div>
+        <div className="lab-timing-pace">
+          <span className="lab-timing-label">Real time</span>
+          <button type="button" className={`lab-timing-pace-btn${pace === "x2" ? " on" : ""}`} onClick={() => setChosenPace("x2")}>×2</button>
+          <button
+            type="button"
+            className={`lab-timing-pace-btn${pace === "x5" ? " on" : ""}`}
+            disabled={!canCatchUp}
+            title={canCatchUp ? "Run at ×5 until the scene reaches Now, then ×2" : "Only for a start earlier than Now"}
+            onClick={() => setChosenPace("x5")}
+          >
+            ×5 to Now
+          </button>
+        </div>
+      </div>
+    </Overlay>
+  );
+};
 
 /* ---------- Where: District and Site names over their card art; aspects in their own row ---------- */
 
@@ -2633,11 +2734,11 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
   libraryActions?: LibraryActions;
   scenes: LiveScenes;
   linkMenu?: LinkMenu;
-  onSwitch: (key: string, clockMode: SceneClockMode) => void;
+  onSwitch: (key: string, clock: SceneClock) => void;
   onEndScene: () => void;
   /** Takes a scene that is not on the table off the deck (the library keeps it). */
   onRemoveFromDeck: (key: string) => void;
-  onPlay: (key: string, clockMode: SceneClockMode) => void;
+  onPlay: (key: string, clock: SceneClock) => void;
   onEdit: (key: string) => void;
   /** A new scene at this location, titled "District — Site". */
   onPrepare: (location: LabLocation, districtName: string, siteName: string) => void;
@@ -2688,7 +2789,7 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
                 type="button"
                 className="lab-phase-deck"
                 title={`Switch the table to ${scene.title} (right-click to edit it or take it off the deck)`}
-                onClick={(event) => setTiming({ at: canvasPoint(event), go: (mode) => onSwitch(scene.key, mode) })}
+                onClick={(event) => setTiming({ at: canvasPoint(event), key: scene.key, go: (clock) => onSwitch(scene.key, clock) })}
                 onContextMenu={(event) => {
                   event.preventDefault();
                   setDeckMenu({ at: canvasPoint(event), scene });
@@ -2808,7 +2909,7 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
           onClose={() => setModal(null)}
           onPlay={(key, at) => {
             setModal(null);
-            setTiming({ at, go: (mode) => onPlay(key, mode) });
+            setTiming({ at, key, go: (clock) => onPlay(key, clock) });
           }}
           onEdit={(key) => {
             setModal(null);

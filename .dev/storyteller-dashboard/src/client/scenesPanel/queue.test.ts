@@ -25,7 +25,7 @@ describe("commandKind", () => {
     expect(commandKind({ op: "stage", clear: true })).toBe("flush");
     expect(commandKind({ op: "seatPresence", seat: "Red", present: false })).toBe("direct");
     expect(commandKind({ op: "lighting", presetKey: "AdminDark" })).toBe("direct");
-    expect(commandKind({ op: "playScene", key: "s1" })).toBe("direct");
+    expect(commandKind({ op: "playScene", key: "s1", from: "scene", plusMinutes: 0, pace: "x2" })).toBe("direct");
   });
 });
 

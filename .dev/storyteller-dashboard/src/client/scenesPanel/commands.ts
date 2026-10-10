@@ -2,16 +2,12 @@ import { createContext, useContext } from "react";
 import type { PlacementMode } from "../../shared/sceneLibrary";
 import type { ClockDatetime, GenericNpc } from "../worldState";
 
-/** How a scene switch sets the clock (`PresentDayClock.resolveAndApplyActivationClock`). */
-export type SceneClockMode =
-  | "scene"
-  | "x5"
-  | "setPresent"
-  | "present"
-  | "presentPlus15"
-  | "presentPlus30"
-  | "presentPlus60"
-  | "presentPlus120";
+/**
+ * How a scene switch sets the clock (`PresentDayClock.resolveAndApplyActivationClock`): start `plusMinutes` after
+ * the scene's own time or present day (which moves present day on); real time runs at ×2, or at ×5 until it
+ * reaches present day.
+ */
+export type SceneClock = { readonly from: "scene" | "present"; readonly plusMinutes: number; readonly pace: "x2" | "x5" };
 
 /** Storyteller lanes `Soundscape.setStorytellerLaneVolume` accepts. */
 export type SoundLane = "music" | "location" | "featured" | "rain" | "wind" | "thunder";
@@ -76,7 +72,7 @@ export type ScenesCommand =
   | { readonly op: "stopAll" }
   | { readonly op: "seatPresence"; readonly seat: string; readonly present: boolean }
   | { readonly op: "signalOff"; readonly color: string }
-  | { readonly op: "playScene"; readonly key: string; readonly clockMode?: SceneClockMode }
+  | ({ readonly op: "playScene"; readonly key: string } & SceneClock)
   | { readonly op: "endScene" }
   | {
     readonly op: "upsertScene";

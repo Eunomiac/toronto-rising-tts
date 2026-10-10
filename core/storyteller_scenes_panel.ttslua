@@ -1807,7 +1807,8 @@ end
 --- Panel close + blindfold are immediate; heavy work is deferred via `U.await`.
 --- @param player Player
 --- @param clockModeOrId string|nil clock mode (`scene`/`x5`/`setPresent`/`present`) or Apply button id
-function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
+--- @param clockOpts table|nil `{ plusMinutes?, pace? }` (Storyteller Dashboard; `PresentDayClock.resolveAndApplyActivationClock`)
+function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId, clockOpts)
     if not U.isStorytellerSteamPlayer(player) then
         U.AlertGM("Only the Storyteller can apply a library scene.")
         return
@@ -1970,6 +1971,8 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
 
         local clockOk, clockErr = PresentDayClock.resolveAndApplyActivationClock(bundle, clockMode, {
             presentOverride = memoriamPresentOverride,
+            plusMinutes = type(clockOpts) == "table" and clockOpts.plusMinutes or nil,
+            pace = type(clockOpts) == "table" and clockOpts.pace or nil,
         })
         if not clockOk then
             return false, "Apply failed: " .. tostring(clockErr)

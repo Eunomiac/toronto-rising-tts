@@ -235,6 +235,26 @@ local function armCatchUpIfBehindPresent(clock)
     return clock
 end
 
+--- Dashboard scene pace: real time runs at ×2; `x5` first catches up to present day at ×5 (only when the
+--- scene starts behind it), then carries on at ×2.
+local PACE_SPEED = 2
+local PACE_CATCH_UP_SPEED = 5
+
+--- @param clock table live sessionScene.clock after scene resolve (mutated)
+--- @param pace string `"x2"` | `"x5"`
+--- @return table
+local function applyDashboardPace(clock, pace)
+    clock.useRealTime = true
+    clock.realTimeSpeed = PACE_SPEED
+    if pace == "x5" then
+        armCatchUpIfBehindPresent(clock)
+        if clock.catchUpToPresentDay == true then
+            clock.realTimeSpeed = PACE_CATCH_UP_SPEED
+        end
+    end
+    return clock
+end
+
 --- Clears catch-up and restores recorded RT flags/speed on a clock table.
 --- @param clock table
 --- @return table
@@ -301,7 +321,10 @@ end
 --- Resolves live clock for library apply from an incoming `sessionScene` bundle.
 --- @param bundle table sessionScene-shaped table (mutated in place for clock)
 --- @param clockMode string|nil `"scene"` | `"x5"` | `"setPresent"` | `"present"` | `"presentPlus15"`… (default `"scene"`)
---- @param opts table|nil `{ presentOverride?: table }` — when applying NOW during Memoriam handoff, use this datetime instead of presentDayClock
+--- @param opts table|nil `{ presentOverride?: table, plusMinutes?: number, pace?: string }` — `presentOverride`: when
+--- applying NOW during Memoriam handoff, use this datetime instead of presentDayClock; `plusMinutes`: start that many
+--- minutes after the scene's time (`scene`) or present day (`present`, which moves present day on); `pace` (`"x2"` /
+--- `"x5"`, Storyteller Dashboard): start real time at that pace (`applyDashboardPace`)
 --- @return boolean ok
 --- @return string|nil err
 function PresentDayClock.resolveAndApplyActivationClock(bundle, clockMode, opts)
@@ -312,6 +335,10 @@ function PresentDayClock.resolveAndApplyActivationClock(bundle, clockMode, opts)
         clockMode = "scene"
     end
     opts = type(opts) == "table" and opts or {}
+    local pace = opts.pace
+    if pace ~= nil and pace ~= "x2" and pace ~= "x5" then
+        return false, "Unknown scene pace: " .. tostring(pace)
+    end
 
     local ck = bundle.clock
     if type(ck) ~= "table" then
@@ -320,7 +347,7 @@ function PresentDayClock.resolveAndApplyActivationClock(bundle, clockMode, opts)
     end
     PresentDayClock.stripCatchUpRuntimeFields(ck)
 
-    local travelMinutes = 0
+    local travelMinutes = math.max(0, math.floor(tonumber(opts.plusMinutes) or 0))
     local presentPlus = string.match(clockMode, "^presentPlus(%d+)$")
     if presentPlus ~= nil then
         travelMinutes = tonumber(presentPlus) or 0
@@ -355,6 +382,9 @@ function PresentDayClock.resolveAndApplyActivationClock(bundle, clockMode, opts)
             pd = advanced
         end
         local resolved = mergeClockWithDatetime(ck, pd)
+        if pace ~= nil then
+            applyDashboardPace(resolved, pace)
+        end
         bundle.clock = resolved
         S.setStateVal(resolved, "sessionScene", "clock")
         PresentDayClock.tryAdvance(resolved)
@@ -367,6 +397,14 @@ function PresentDayClock.resolveAndApplyActivationClock(bundle, clockMode, opts)
 
     if not PresentDayClock.clockHasDatetime(ck) then
         return false, "This Apply mode needs a scene clock time. Use NOW, or set day/year/time first."
+    end
+    if travelMinutes > 0 then
+        local later = NarrativeCalendar.addMinutes(PresentDayClock.datetimeOnly(ck), travelMinutes)
+        if later == nil then
+            return false, "Could not move the scene time on by " .. travelMinutes .. " minutes."
+        end
+        ck = mergeClockWithDatetime(ck, later)
+        bundle.clock = ck
     end
 
     local isPresentDay = ck.isPresentDay == true
@@ -382,7 +420,9 @@ function PresentDayClock.resolveAndApplyActivationClock(bundle, clockMode, opts)
         PresentDayClock.tryAdvance(ck)
         PresentDayClock.snapToPresentIfNear(ck)
     end
-    if clockMode == "x5" then
+    if pace ~= nil then
+        applyDashboardPace(ck, pace)
+    elseif clockMode == "x5" then
         ck = armCatchUpIfBehindPresent(ck)
         bundle.clock = ck
     end
