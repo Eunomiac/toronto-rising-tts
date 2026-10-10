@@ -1,5 +1,5 @@
 import type { StageChange, StageChanges, StageLight } from "./commands";
-import type { ScatterGroup } from "../worldState";
+import type { ScatterGroup, StageNpc } from "../worldState";
 import { boardToStage, stageToBoard, type StagePack, type StagePoint, type StageSlot } from "./stageFrame";
 
 /**
@@ -79,6 +79,11 @@ export const slotOf = (spot: StagePoint, packs: readonly StagePack[]): { pack: S
 
 /** Generic NPCs added from the roster gather in the stage's top-left corner. */
 export const ADD_CORNER: StagePoint = { u: 0.04, v: 0.06 };
+
+/** A pushed (or draft) stage list as spots in stage fractions; NPCs without a position are left out. */
+export const stageSpots = (stage: readonly StageNpc[]): readonly StageSpot[] =>
+  stage.flatMap((npc): StageSpot[] =>
+    typeof npc.u === "number" && typeof npc.v === "number" ? [{ characterKey: npc.characterKey, lit: npc.lightMode !== "OFF", ...boardToStage(npc.u, npc.v) }] : []);
 
 /** The empty slot nearest a point, so NPCs added without a drop point gather loosely around it. */
 export const freeSlotNear = (point: StagePoint, packs: readonly StagePack[], spots: readonly StageSpot[]): StageSlot | null => {

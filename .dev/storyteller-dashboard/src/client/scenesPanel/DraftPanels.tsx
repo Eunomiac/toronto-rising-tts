@@ -1,16 +1,30 @@
-import { type ReactElement } from "react";
+import { useMemo, type ReactElement } from "react";
 import type { LibraryScene } from "../../shared/sceneLibrary";
-import { ambientLabel, AspectRow, ConditionsPanel, LocationPanel, SoundMixer, WeatherPanel, WhenPanel } from "./glance";
-import { SceneNotes } from "./sceneNotes";
+import { ambientLabel, AspectRow, ConditionsPanel, LocationPanel, RosterDock, SoundMixer, WeatherPanel, WhenPanel } from "./glance";
 import { previewLayout } from "./preview";
 import { Box, WideBoard, type LiveBoard } from "./sketch";
 import type { SceneCatalogs } from "./catalogs";
-import { ScenesCommandContext, type ScenesCommand } from "./commands";
+import { PendingGenericsContext, SceneGenericsContext, ScenesCommandContext, type ScenesCommand } from "./commands";
 import { RollsCommandContext } from "./rolls/commands";
-import { applyToDraft, draftAtPresentDay, draftClock, draftSceneSlice, draftSeatRows, draftSoundView, draftStage, savedPlacements, withPlacements } from "./library";
+import {
+  applyToDraft,
+  draftAtPresentDay,
+  draftClock,
+  draftGenerics,
+  draftSceneSlice,
+  draftSeatRows,
+  draftSoundView,
+  draftStage,
+  savedPlacements,
+  withPlacements
+} from "./library";
 import { isScatter, lightingPreset, liveSeats, liveTokens, sceneConditions, toDate, weatherAxes } from "./liveScene";
-import { boardToStage } from "./stageFrame";
+import { useControlBoardSnaps } from "./roster";
+import { ADD_CORNER, freeSlotNear, stageSpots } from "./stage";
+import { boardToStage, stagePacks, stageToBoard, type StagePack } from "./stageFrame";
 import { useWorldState } from "../worldState";
+
+const NO_PENDING: Readonly<Record<string, string>> = {};
 
 
 const locationOf = (scene: LibraryScene): { districtKey: string; siteKey: string } | null => {
@@ -20,11 +34,22 @@ const locationOf = (scene: LibraryScene): { districtKey: string; siteKey: string
 
 const sameMinute = (a: Date, b: Date): boolean => Math.floor(a.getTime() / 60000) === Math.floor(b.getTime() / 60000);
 
+/** Generics new to the draft also stand, lit, on the free slot nearest the stage's top-left corner (as on the table). */
+const withAddedGenerics = (scene: LibraryScene, command: Extract<ScenesCommand, { op: "genericAdd" }>, packs: readonly StagePack[]): LibraryScene => {
+  const known = new Set(draftGenerics(scene).map((npc) => npc.characterKey));
+  return command.keys.filter((key) => !known.has(key)).reduce((next, key) => {
+    const slot = freeSlotNear(ADD_CORNER, packs, stageSpots(draftStage(next)));
+    return slot ? applyToDraft(next, { op: "stage", changes: { [key]: { ...stageToBoard(slot.u, slot.v), lightMode: "STANDARD" } } }) : next;
+  }, applyToDraft(scene, command));
+};
+
 /**
  * One preview: the table's panels reading a draft library row. Every panel command rewrites the draft
  * (`onChange`); nothing goes to TTS until Save, On deck or Play Scene. The stage edits the draft's NPC placements,
  * table, sky and lighting; the seat strip shows the draft's seating, and a seat click marks that character present
  * or out of the scene for when it plays. Scatter groups stay the table's business (Scatter drafts show no groups).
+ * The left column is the table's notes-and-roster dock: roster NPCs drop onto the draft's stage, and generics join
+ * the draft (`genericMembership`, spawned by TTS when the scene plays).
  */
 export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }: {
   draft: LibraryScene;
@@ -39,6 +64,8 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }:
 }): ReactElement => {
   const box = previewLayout(w, h);
   const tableSeats = useWorldState().seats?.seats ?? [];
+  const { snaps } = useControlBoardSnaps();
+  const packs = useMemo(() => (snaps ? stagePacks(snaps) : []), [snaps]);
   const location = locationOf(draft);
   const site = catalogs?.sites.find((entry) => entry.key === location?.siteKey);
   const indoors = site?.isIndoors === true;
@@ -46,9 +73,14 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }:
   const clock = draftClock(draft);
   const at = clock ? toDate(clock) : present;
   const savedLocation = saved ? locationOf(saved) : null;
+  const generics = draftGenerics(draft);
   const send = (command: ScenesCommand): void => {
     if (command.op === "stage" && "reset" in command) {
       onChange((scene) => withPlacements(scene, savedPlacements(saved ?? null)));
+      return;
+    }
+    if (command.op === "genericAdd") {
+      onChange((scene) => withAddedGenerics(scene, command, packs));
       return;
     }
     // "Set scene time to present day" makes the draft follow present day rather than pin this minute.
@@ -56,18 +88,20 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }:
     onChange((scene) => (followPresent ? draftAtPresentDay(scene) : applyToDraft(scene, command)));
   };
   const board: LiveBoard = {
-    seats: liveSeats({ seats: draftSeatRows(draft, tableSeats), stage: [], generics: [], scatter: [], spotlightOrder: [] }, slice.tableKey, catalogs),
+    seats: liveSeats({ seats: draftSeatRows(draft, tableSeats), stage: [], generics, scatter: [], spotlightOrder: [] }, slice.tableKey, catalogs),
     presenceClicks: true,
-    tokens: liveTokens(draftStage(draft), catalogs).map((token) => ({ ...token, at: boardToStage(token.u, token.v) })),
+    tokens: liveTokens(draftStage(draft), catalogs, generics).map((token) => ({ ...token, at: boardToStage(token.u, token.v) })),
     pending: {},
     pendingScatter: [],
-    generics: [],
+    generics,
     scatter: [],
     env: { tableKey: slice.tableKey ?? "", scatter: isScatter(slice), sky: slice.skyboxOverride ?? "", lighting: lightingPreset(slice) ?? "" },
     rollRing: { werewolves: [], oblivionSeats: [], endPhase: false }
   };
   return (
     <ScenesCommandContext.Provider value={send}>
+    <PendingGenericsContext.Provider value={NO_PENDING}>
+    <SceneGenericsContext.Provider value={generics}>
     <RollsCommandContext.Provider value={null}>
       <Box {...box.location} className="lab-backdrop-box">
         {location ? (
@@ -82,8 +116,8 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }:
           <p className="lab-note">This scene has no location.</p>
         )}
       </Box>
-      <Box {...box.notes} className="lab-borderless lab-gpreview-notes">
-        <SceneNotes scene={draft.title} />
+      <Box {...box.notes} className="lab-borderless lab-dock-box">
+        <RosterDock scene={draft.title} />
       </Box>
       <Box {...box.when} className="lab-backdrop-box">
         <WhenPanel
@@ -121,6 +155,8 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }:
         <WideBoard w={box.board.w - 12} h={box.board.h - 10} live={board} />
       </Box>
     </RollsCommandContext.Provider>
+    </SceneGenericsContext.Provider>
+    </PendingGenericsContext.Provider>
     </ScenesCommandContext.Provider>
   );
 };

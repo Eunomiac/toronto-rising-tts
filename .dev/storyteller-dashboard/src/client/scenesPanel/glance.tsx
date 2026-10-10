@@ -31,7 +31,7 @@ import { MemoriamModal } from "./memoriamModal";
 import { Btn, Overlay, activeCanvas, canvasPoint } from "./sketch";
 import { createPortal } from "react-dom";
 import { figurineUrl } from "../headshots/headshots";
-import { PendingGenericsContext, useScenesCommand, type SceneClockMode, type ScenesSend, type SoundLane } from "./commands";
+import { PendingGenericsContext, SceneGenericsContext, useScenesCommand, type SceneClockMode, type ScenesSend, type SoundLane } from "./commands";
 import { LOCATION_MUSIC_LABEL, MOOD_LABEL, fromDate, rainKey, type SoundView, type SpotlightView } from "./liveScene";
 import { GROUP_DRAG_TYPE, NPC_DRAG_TYPE } from "./stage";
 import { useWorldState } from "../worldState";
@@ -673,7 +673,8 @@ const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove }: {
  */
 export const MasonryRoster = (): ReactElement => {
   const { catalogs, error } = useSceneCatalogs();
-  const inScene = useWorldState().seats?.generics ?? [];
+  const tableGenerics = useWorldState().seats?.generics;
+  const inScene = useContext(SceneGenericsContext) ?? tableGenerics ?? [];
   const send = useScenesCommand();
   const queuedGenerics = useContext(PendingGenericsContext);
   const [genericCatalog, setGenericCatalog] = useState<readonly GenericEntry[] | null>(null);

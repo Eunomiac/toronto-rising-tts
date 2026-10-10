@@ -47,7 +47,7 @@ import {
 } from "./liveScene";
 import { addToQueue, commandKind, commandsToSend, pendingGenerics, pendingRenames, queueLines, withoutPendingGeneric, type QueueEntry } from "./queue";
 import { describeQueued } from "./queueLabels";
-import { ADD_CORNER, freeSlotNear, isRemoval, withChanges, type StageSpot } from "./stage";
+import { ADD_CORNER, freeSlotNear, isRemoval, stageSpots, withChanges } from "./stage";
 import { boardToStage, stagePacks, stageToBoard, type StagePack } from "./stageFrame";
 
 /**
@@ -224,8 +224,7 @@ const queueCommand = (
   }
   let next = addToQueue(entries, command, nextId());
   if (command.op === "genericAdd") {
-    const onStage = (world.seats?.stage ?? []).flatMap((npc): StageSpot[] =>
-      typeof npc.u === "number" && typeof npc.v === "number" ? [{ characterKey: npc.characterKey, lit: npc.lightMode !== "OFF", ...boardToStage(npc.u, npc.v) }] : []);
+    const onStage = stageSpots(world.seats?.stage ?? []);
     for (const key of command.keys.filter((key) => !(key in pending))) {
       const spots = withChanges(onStage, mergedStageChanges(next.map((entry) => entry.command)));
       const slot = freeSlotNear(ADD_CORNER, packs, spots);

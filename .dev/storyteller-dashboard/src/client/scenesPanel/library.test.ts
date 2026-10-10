@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { LibraryScene } from "../../shared/sceneLibrary";
-import { applyToDraft, draftSceneSlice, draftSeatRows, draftStage, mergeFromTts, newLibraryScene, newSceneKey, newSceneTitle, parseTtsLibrarySnapshot, sceneKeyFromTitle, scenesFromTts } from "./library";
+import { applyToDraft, draftGenerics, draftSceneSlice, draftSeatRows, draftStage, mergeFromTts, newLibraryScene, newSceneKey, newSceneTitle, parseTtsLibrarySnapshot, sceneKeyFromTitle, scenesFromTts } from "./library";
 
 const scene = (key: string, extra: Partial<LibraryScene> = {}): LibraryScene => ({
   key,
@@ -125,7 +125,21 @@ describe("applyToDraft", () => {
     expect(draftStage(draft).map((npc) => npc.characterKey)).toEqual(["fresh"]);
     draft = applyToDraft(draft, { op: "stage", clear: true });
     expect(draftStage(draft)).toEqual([]);
-    expect(draft.sessionScene.npcWorld).toEqual({ placements: {}, other: 1 });
+    expect(draft.sessionScene.npcWorld).toEqual({ placements: {}, genericMembership: {}, other: 1 });
+  });
+
+  it("adds, renames and drops the draft's generic NPCs", () => {
+    let draft = scene("a", { sessionScene: { npcWorld: { genericMembership: [] } } });
+    draft = applyToDraft(draft, { op: "genericAdd", keys: ["cop_01", "cop_02"], labels: { cop_01: "Police" } });
+    draft = applyToDraft(draft, { op: "stage", changes: { cop_01: { u: 0.1, v: 0.1 }, cop_02: { u: 0.2, v: 0.2 } } });
+    draft = applyToDraft(draft, { op: "genericRename", key: "cop_01", name: "Officer Dale" });
+    expect(draftGenerics(draft)).toEqual([
+      { characterKey: "cop_01", name: "Officer Dale" },
+      { characterKey: "cop_02", name: "cop_02" }
+    ]);
+    draft = applyToDraft(draft, { op: "stage", changes: { cop_02: { remove: true } } });
+    expect(draftGenerics(draft).map((npc) => npc.characterKey)).toEqual(["cop_01"]);
+    expect(applyToDraft(draft, { op: "genericRename", key: "cop_09", name: "Nobody" })).toBe(draft);
   });
 });
 

@@ -1,5 +1,5 @@
 import type { LibraryScene } from "../../shared/sceneLibrary";
-import type { ClockDatetime, SceneSlice, SeatRow, StageNpc } from "../worldState";
+import type { ClockDatetime, GenericNpc, SceneSlice, SeatRow, StageNpc } from "../worldState";
 import type { ScenesCommand, SoundLane } from "./commands";
 import { LOCATION_MUSIC_LABEL, MOOD_LABEL, PC_COLORS, type SoundView } from "./liveScene";
 
@@ -231,40 +231,71 @@ export const applyToDraft = (scene: LibraryScene, command: ScenesCommand): Libra
       return withNarrative(scene, {}, ["backgroundMusic"]);
     case "ambience":
       return command.key === "none" ? withNarrative(scene, {}, ["location"]) : withNarrative(scene, { location: command.key });
+    case "genericAdd": {
+      const membership: Record<string, unknown> = { ...draftMembership(scene) };
+      for (const key of command.keys) {
+        membership[key] = { key, displayName: command.labels[key] ?? key };
+      }
+      return withNpcWorld(scene, { genericMembership: membership });
+    }
+    case "genericRename": {
+      const membership = draftMembership(scene);
+      return command.key in membership
+        ? withNpcWorld(scene, { genericMembership: { ...membership, [command.key]: { key: command.key, displayName: command.name } } })
+        : scene;
+    }
     case "stage": {
       if ("reset" in command) {
         return scene;
       }
       const placements: Record<string, unknown> = "clear" in command ? {} : { ...draftPlacements(scene) };
+      // A draft's generic NPC only exists to stand on the stage, so leaving it (or Clear) drops it from the scene.
+      const membership: Record<string, unknown> = "clear" in command ? {} : { ...draftMembership(scene) };
       if ("changes" in command) {
         for (const [key, change] of Object.entries(command.changes)) {
           const before = placements[key];
           const prior = isRecord(before) ? before : {};
           if ("remove" in change) {
             delete placements[key];
+            delete membership[key];
           } else {
             placements[key] = { u: change.u, v: change.v, npcLightMode: change.lightMode ?? str(prior.npcLightMode) ?? "STANDARD" };
           }
         }
       }
-      return withPlacements(scene, placements);
+      return withNpcWorld(scene, { placements, genericMembership: membership });
     }
     default:
       return scene;
   }
 };
 
+const draftNpcWorld = (scene: LibraryScene): Row => (isRecord(scene.sessionScene.npcWorld) ? scene.sessionScene.npcWorld : {});
+
+const withNpcWorld = (scene: LibraryScene, patch: Row): LibraryScene => withSession(scene, { npcWorld: { ...draftNpcWorld(scene), ...patch } });
+
+/** The draft's generic NPCs (`sessionScene.npcWorld.genericMembership`), spawned by TTS when the scene plays. */
+const draftMembership = (scene: LibraryScene): Row => {
+  const membership = draftNpcWorld(scene).genericMembership;
+  return isRecord(membership) ? membership : {};
+};
+
+/** The draft's generic NPCs as the push's generic list, so the preview board and roster read them like the table's. */
+export const draftGenerics = (scene: LibraryScene): readonly GenericNpc[] =>
+  Object.entries(draftMembership(scene)).map(([characterKey, row]) => ({
+    characterKey,
+    name: (isRecord(row) ? str(row.displayName) : undefined) ?? characterKey
+  }));
+
 /** The draft's stage placements (`sessionScene.npcWorld.placements`). */
 const draftPlacements = (scene: LibraryScene): Readonly<Record<string, unknown>> => {
-  const npcWorld = scene.sessionScene.npcWorld;
-  return isRecord(npcWorld) && isRecord(npcWorld.placements) ? npcWorld.placements : {};
+  const placements = draftNpcWorld(scene).placements;
+  return isRecord(placements) ? placements : {};
 };
 
 /** Replace the draft's stage placements, keeping the rest of `npcWorld`. */
-export const withPlacements = (scene: LibraryScene, placements: Readonly<Record<string, unknown>>): LibraryScene => {
-  const npcWorld = isRecord(scene.sessionScene.npcWorld) ? scene.sessionScene.npcWorld : {};
-  return withSession(scene, { npcWorld: { ...npcWorld, placements } });
-};
+export const withPlacements = (scene: LibraryScene, placements: Readonly<Record<string, unknown>>): LibraryScene =>
+  withNpcWorld(scene, { placements });
 
 /** The saved row's placements, for a draft's Reset to Library. */
 export const savedPlacements = (scene: LibraryScene | null): Readonly<Record<string, unknown>> => (scene ? draftPlacements(scene) : {});

@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 import type { PlacementMode } from "../../shared/sceneLibrary";
-import type { ClockDatetime } from "../worldState";
+import type { ClockDatetime, GenericNpc } from "../worldState";
 
 /** How a scene switch sets the clock (`PresentDayClock.resolveAndApplyActivationClock`). */
 export type SceneClockMode =
@@ -103,6 +103,9 @@ export const useScenesCommand = (): ScenesSend | null => useContext(ScenesComman
 
 /** Generic NPCs waiting in the stage queue to be spawned, by catalog key → the name they will get. */
 export const PendingGenericsContext = createContext<Readonly<Record<string, string>>>({});
+
+/** The generic NPCs of the scene the roster adds to: a preview's draft; `null` is the table's (from the push). */
+export const SceneGenericsContext = createContext<readonly GenericNpc[] | null>(null);
 
 export const isStageChanges = (command: ScenesCommand): command is Extract<ScenesCommand, { op: "stage"; changes: StageChanges }> =>
   command.op === "stage" && "changes" in command;
