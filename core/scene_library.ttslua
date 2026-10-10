@@ -1088,11 +1088,14 @@ function SceneLibrary.resolveMirrorSceneKey()
 end
 
 --- Stops live→library mirroring after End scene / no-scene apply.
---- Clears `lastAppliedKey` and all `receivesLiveWrites` so Sync cannot write cleared live
+--- First writes the live scene into its linked row one last time (edits that only ran a narrow sync, such as
+--- Dashboard stage moves, have not been mirrored yet), so callers must detach before clearing live state.
+--- Then clears `lastAppliedKey` and all `receivesLiveWrites` so Sync cannot write cleared live
 --- location into a library row (TOR-145 / TOR-362). TOR-449: End scene then clears `activeKey`
 --- via `deselectPendingPreview({ clearActiveKey = true })` — preview is for scenes about to enter.
 function SceneLibrary.detachLiveTableFromLibraryMirror()
     local S = require("core.state")
+    SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked()
     local K = SceneLibrary.resolveMirrorSceneKey()
     if type(K) ~= "string" or K == "" then
         K = S.getStateVal("sceneLibrary", "lastAppliedKey")

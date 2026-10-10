@@ -1839,6 +1839,10 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
         end
     end
 
+    -- The scene leaving the table keeps every edit, including ones that only ran a narrow sync (Dashboard stage
+    -- moves); re-applying the table's own scene then reads that fresh row.
+    SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked()
+
     local ent = S.getStateVal("sceneLibrary", "scenes", K)
     if type(ent) ~= "table" or type(ent.sessionScene) ~= "table" then
         U.AlertGM("Apply: library row has no sessionScene bundle.")

@@ -328,6 +328,13 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 3. **Send:** drag one somewhere else, then press **Send**. The figurines should spawn in TTS and go to their spots; the renamed one should have its new name (hover the figurine in TTS).
 4. **Rename after spawning:** right-click a spawned generic's token, rename it and press **Send**. The figurine's name in TTS and its spotlight token on the Stage Control board should both change.
 5. **Remove before sending:** click a generic again, then press the × on its queue line. It should leave the stage drawing and come back in the roster.
+6. **In a preview:** open a scene's preview (right-click it on deck, or Edit in the scene picker). The roster sits in the preview's left column. Click a generic: it should appear on the preview's stage only. Press **Play Scene**: the generic should spawn in TTS when the scene plays.
+
+#### TOR-693 — Scene edits stay when you switch to another scene and back
+
+**Context:** When you changed a scene while it was on the table, then played a different scene and came back, some changes were gone, most clearly NPCs you had moved on the stage. TTS now copies the scene into its library entry one last time whenever it leaves the table (playing another scene, End Scene, or a phase change), so nothing you did is dropped. The weather override is not part of this: it covers the whole table until dawn, whatever scene is playing.
+
+**How to verify:** Save & Play, then play scene A from the dashboard. Move two or three NPCs on the dashboard stage and press **Send**, change the music, and change the sky or the lighting. Play scene B. Once B is on the table, play scene A again: the NPCs should stand where you left them, and the music and sky or lighting should be as you set them. Then move an NPC, press **End Scene**, and play A again: that move should still be there.
 
 ### Medium — Prince's Court sheet
 
