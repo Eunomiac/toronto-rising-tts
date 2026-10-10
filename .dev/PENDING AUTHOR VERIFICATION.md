@@ -348,6 +348,12 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 4. Do another NPC roll, but right-click Confirm (hold the result). Its card should carry a "Held" tag, and its broadcast icon should read "Broadcast to the table". Click it and the banner should show in TTS.
 5. Hover a card and click its close (X) button: the card should go away and that drawer in TTS should clear.
 
+#### TOR-695 — The dashboard tells you why a scene change did not happen
+
+**Context:** When TTS refused a scene change (most often because dice were still on the table), the only warning was a TTS broadcast, which tends to hide behind the overlay graphics. TTS now also sends the reason to the dashboard, which shows it as a red banner over the stage until you click OK. The same banner appears if a scene transition fails partway under the blindfold.
+
+**How to verify:** Save & Play, then open the dashboard's **Scenes** tab. Start any roll so dice are on the table, and leave it unconfirmed. Play a different scene from the dashboard. The scene should not change, and a red **Not done in TTS** banner should appear over the top of the stage saying the scene cannot be applied while dice are on the table. Click **OK** to close it. Then finish or cancel the roll and play the scene again: it should play normally with no banner.
+
 ### Medium — Prince's Court sheet
 
 #### TOR-663 — Refresh XML keeps The Court on the people who had it open

@@ -428,6 +428,17 @@ local function supersedeTransitionChain()
   return activeTransitionCancel
 end
 
+--- A transition's work failed under the blindfold: tell the Storyteller in TTS and on the dashboard
+--- (the broadcast is easy to miss behind the cover).
+--- @param errMsg string|nil
+local function reportTransitionFailure(errMsg)
+  if type(errMsg) ~= "string" or errMsg == "" then
+    return
+  end
+  U.AlertGM(errMsg)
+  require("dashboard.push").notice(errMsg)
+end
+
 --- Blindfold on → wait for slide/FadeIn → connection checkpoint → work → settle delay → blindfold off (TOR-434).
 --- Work is deferred via `U.chain` so XmlUI animations are not hitch-frozen.
 --- @param workFn fun(): boolean, string|nil returns success and optional error message
@@ -457,9 +468,7 @@ function HUDBF.runTransition(workFn, opts)
       applyConnectionCheckpointUnderCover()
       local ok, errMsg = workFn()
       if ok ~= true then
-        if type(errMsg) == "string" and errMsg ~= "" then
-          U.AlertGM(errMsg)
-        end
+        reportTransitionFailure(errMsg)
         HUDBF.scheduleEnd(0)
         return
       end
@@ -533,9 +542,7 @@ function HUDBF.runStagedTransition(phases, opts)
         local ok, errMsg = phases.work()
         if ok ~= true then
           workFailed = true
-          if type(errMsg) == "string" and errMsg ~= "" then
-            U.AlertGM(errMsg)
-          end
+          reportTransitionFailure(errMsg)
         end
       end
       setDefaultCameraForSeatedPlayers()

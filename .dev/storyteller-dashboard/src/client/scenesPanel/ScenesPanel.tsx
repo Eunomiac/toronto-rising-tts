@@ -45,6 +45,7 @@ import {
   toDate,
   weatherAxes
 } from "./liveScene";
+import { useTtsNotice } from "./notices";
 import { addToQueue, commandKind, commandsToSend, pendingGenerics, pendingRenames, queueLines, withoutPendingGeneric, type QueueEntry } from "./queue";
 import { describeQueued } from "./queueLabels";
 import { ADD_CORNER, freeSlotNear, isRemoval, stageSpots, withChanges } from "./stage";
@@ -302,6 +303,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const snapshotError = useWorldSnapshotOnce(active, world);
   const commands = useScenesQueue();
   const rollCommands = useRollsQueue();
+  const ttsNotice = useTtsNotice();
   const { snaps } = useControlBoardSnaps();
   const liveSheet = useLiveSheet();
   const packs = useMemo(() => (snaps ? stagePacks(snaps) : []), [snaps]);
@@ -494,6 +496,13 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
             {board ? <WideBoard w={STAGE_W - 12} h={STAGE_H - 10} live={board} /> : <Waiting text={waitText} />}
           </Box>
           <StageQueue right={1920 - STRIP_X - STAGE_W + 3 * G} top={STAGE_Y + 36} connected={connected} live={queueView} />
+          {ttsNotice.notice && (
+            <div className="scenes-tts-notice" role="alert" style={{ left: STRIP_X + STAGE_W / 2, top: STAGE_Y + 40 }}>
+              <span className="scenes-tts-notice-head">Not done in TTS</span>
+              <span>{ttsNotice.notice}</span>
+              <button type="button" className="lab-btn" onClick={ttsNotice.dismiss}>OK</button>
+            </div>
+          )}
           <Box x={RIGHT_X} y={ROLLS_Y} w={RIGHT_W} h={ROLLS_H} className="roll-box">
             <div className="scenes-live-statuses">
               <CommandStatus pending={commands.pending} error={commands.error} onDismiss={commands.clearError} />

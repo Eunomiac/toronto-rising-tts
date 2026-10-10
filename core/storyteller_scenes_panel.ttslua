@@ -1794,6 +1794,13 @@ function StorytellerScenesPanel.deleteActiveSceneArmed(player)
     U.AlertGM("Delete armed for `" .. K .. "`: click Delete again within 5 seconds to remove this row.")
 end
 
+--- A scene Apply that will not start: alert in TTS and on the Storyteller Dashboard.
+--- @param text string
+local function refuseSceneApply(text)
+    U.AlertGM(text)
+    require("dashboard.push").notice(text)
+end
+
 --- Applies `sceneLibrary.scenes[activeKey].sessionScene` to live state, switches table when `tableKey` is valid,
 --- reapplies soundscape site context, optional `soundscapeNarrative`, then `Sync.full`.
 --- Transition blindfold (`core.hud_blindfold`) covers the full apply pipeline and lifts after a 10s settle delay.
@@ -1801,11 +1808,12 @@ end
 --- @param player Player
 --- @param clockModeOrId string|nil clock mode (`scene`/`x5`/`setPresent`/`present`) or Apply button id
 function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
-    if clockLerpBusy() then
-        return
-    end
     if not U.isStorytellerSteamPlayer(player) then
         U.AlertGM("Only the Storyteller can apply a library scene.")
+        return
+    end
+    if clockLerpBusy() then
+        refuseSceneApply("The scene clock is still moving. Play the scene again once it stops.")
         return
     end
 
@@ -1821,20 +1829,20 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
         and clockMode ~= "setPresent"
         and not isPresentFamilyClockMode(clockMode)
     then
-        U.AlertGM("Unknown scene Apply clock mode: " .. tostring(clockMode))
+        refuseSceneApply("Unknown scene Apply clock mode: " .. tostring(clockMode))
         return
     end
 
     local K = S.getStateVal("sceneLibrary", "activeKey")
     if type(K) ~= "string" or K == "" then
-        U.AlertGM("Apply: select a library row first (click a scene slot).")
+        refuseSceneApply("Apply: select a library row first (click a scene slot).")
         return
     end
 
     if not isPresentFamilyClockMode(clockMode) then
         local hasDt = resolveAuthoredActivationDatetime(K)
         if not hasDt then
-            U.AlertGM("This Apply mode needs a scene clock time. Use NOW, or set day/year/time first.")
+            refuseSceneApply("This scene has no clock time to play at. Play it at Now, or set its day, year and time first.")
             return
         end
     end
@@ -1845,7 +1853,7 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
 
     local ent = S.getStateVal("sceneLibrary", "scenes", K)
     if type(ent) ~= "table" or type(ent.sessionScene) ~= "table" then
-        U.AlertGM("Apply: library row has no sessionScene bundle.")
+        refuseSceneApply("Apply: library row has no sessionScene bundle.")
         return
     end
 
@@ -1872,7 +1880,7 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId)
             end
             local okOcc, errOcc = FSL.checkOccupancy(slots, occupied, tableCfg, { forImport = true })
             if not okOcc then
-                U.AlertGM(errOcc or "This library scene is missing numbered table slots.")
+                refuseSceneApply(errOcc or "This library scene is missing numbered table slots.")
                 return
             end
         end

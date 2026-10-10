@@ -5,6 +5,8 @@
     { type = "dashboard", v = 1, topic = "pcSeat", color, json }  — slim seat snapshot (JSON string)
     { type = "dashboard", v = 1, topic = "projects" }             — project list changed; refetch
     { type = "dashboard", v = 1, topic = <world slice>, json }    — phase / scene / clock / soundscape / seats
+    { type = "dashboard", v = 1, topic = "notice", json }         — `{ text }`: a refusal the Storyteller must see
+                                                                    (TTS broadcasts hide behind the blindfold)
   Messages must stay flat: a nested table in sendExternalMessage never reaches the gateway, so
   payloads travel as a JSON string field.
   No handshake, session id or sequence number: the dashboard refetches its full snapshot on
@@ -74,6 +76,16 @@ end
 --- Tell the dashboard the project list changed (it refetches projects on demand).
 function DashPush.projects()
   send({ type = "dashboard", v = 1, topic = "projects" })
+end
+
+--- Show a refusal or failure on the dashboard (scene Play blocked by dice on the table, a transition that
+--- failed under the blindfold). Callers still alert in TTS.
+--- @param text string
+function DashPush.notice(text)
+  if type(text) ~= "string" or text == "" then
+    error("DashPush.notice: text must be a non-empty string", 2)
+  end
+  send({ type = "dashboard", v = 1, topic = "notice", json = JSON.encode({ text = text }) })
 end
 
 --- Marks within this window share one flush, so a burst of syncs sends each slice at most once.

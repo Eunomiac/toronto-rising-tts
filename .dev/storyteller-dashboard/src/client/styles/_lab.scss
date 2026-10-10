@@ -178,6 +178,42 @@ $lab-pin: #f5b13d;
   }
 }
 
+/* A refusal pushed by TTS (scene Play blocked, a failed transition): centred over the stage until dismissed. */
+.scenes-tts-notice {
+  position: absolute;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-width: 560px;
+  padding: 12px 18px;
+  font-size: 15px;
+  color: #f3d6d2;
+  text-align: center;
+  background: rgb(40 10 10 / 95%);
+  border: 2px solid #e2685c;
+  border-radius: 6px;
+  box-shadow: 0 0 24px rgb(226 104 92 / 55%);
+  transform: translateX(-50%);
+  animation: scenes-tts-notice-in 0.25s ease-out;
+
+  .scenes-tts-notice-head {
+    font-size: 12px;
+    font-weight: 700;
+    color: #e2685c;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+}
+
+@keyframes scenes-tts-notice-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -8px);
+  }
+}
+
 .scenes-live-status {
   display: flex;
   flex-direction: column;
