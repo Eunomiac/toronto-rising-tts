@@ -49,31 +49,38 @@ export const pendingGenerics = (commands: readonly ScenesCommand[]): Record<stri
 export const pendingRenames = (commands: readonly ScenesCommand[]): Record<string, string> =>
   Object.fromEntries(commands.flatMap((command) => (command.op === "genericRename" ? [[command.key, command.name]] : [])));
 
+/** Drop every queued stage change for one NPC (an NPC who takes a chair must not go back on the stage at Send). */
+export const withoutQueuedStage = (entries: readonly QueueEntry[], key: string): readonly QueueEntry[] =>
+  entries.flatMap((entry): QueueEntry[] => {
+    const { command } = entry;
+    if (!isStageChanges(command) || !(key in command.changes)) {
+      return [entry];
+    }
+    const changes = Object.fromEntries(Object.entries(command.changes).filter(([other]) => other !== key));
+    if (Object.keys(changes).length === 0) {
+      return [];
+    }
+    const next: ScenesCommand = { op: "stage", changes };
+    return [{ ...entry, target: queueTarget(next), command: next }];
+  });
+
 /**
  * Forget a generic NPC that has not been spawned yet: its `genericAdd` and every queued stage change for it go,
  * so taking it off the stage before Send never spawns it at all.
  */
 export const withoutPendingGeneric = (entries: readonly QueueEntry[], key: string): readonly QueueEntry[] =>
-  entries.flatMap((entry): QueueEntry[] => {
+  withoutQueuedStage(entries.flatMap((entry): QueueEntry[] => {
     const { command } = entry;
-    if (command.op === "genericAdd" && command.keys.includes(key)) {
-      const keys = command.keys.filter((other) => other !== key);
-      if (keys.length === 0) {
-        return [];
-      }
-      const next: ScenesCommand = { op: "genericAdd", keys, labels: Object.fromEntries(Object.entries(command.labels).filter(([other]) => other !== key)) };
-      return [{ ...entry, target: queueTarget(next), command: next }];
+    if (command.op !== "genericAdd" || !command.keys.includes(key)) {
+      return [entry];
     }
-    if (isStageChanges(command) && key in command.changes) {
-      const changes = Object.fromEntries(Object.entries(command.changes).filter(([other]) => other !== key));
-      if (Object.keys(changes).length === 0) {
-        return [];
-      }
-      const next: ScenesCommand = { op: "stage", changes };
-      return [{ ...entry, target: queueTarget(next), command: next }];
+    const keys = command.keys.filter((other) => other !== key);
+    if (keys.length === 0) {
+      return [];
     }
-    return [entry];
-  });
+    const next: ScenesCommand = { op: "genericAdd", keys, labels: Object.fromEntries(Object.entries(command.labels).filter(([other]) => other !== key)) };
+    return [{ ...entry, target: queueTarget(next), command: next }];
+  }), key);
 
 export type QueueEntry = { readonly id: number; readonly target: string; readonly command: ScenesCommand };
 

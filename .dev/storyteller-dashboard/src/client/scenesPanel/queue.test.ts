@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ScenesCommand } from "./commands";
-import { addToQueue, commandKind, commandsToSend, pendingGenerics, queueLines, withoutPendingGeneric, type Describe, type QueueEntry } from "./queue";
+import { addToQueue, commandKind, commandsToSend, pendingGenerics, queueLines, withoutPendingGeneric, withoutQueuedStage, type Describe, type QueueEntry } from "./queue";
 
 const move = (key: string, u: number): ScenesCommand => ({ op: "stage", changes: { [key]: { u, v: 0.5 } } });
 const scatter = (key: string, group?: number): ScenesCommand =>
@@ -24,6 +24,8 @@ describe("commandKind", () => {
     expect(commandKind(scatter("victor", 2))).toBe("queue");
     expect(commandKind({ op: "stage", clear: true })).toBe("flush");
     expect(commandKind({ op: "seatPresence", seat: "Red", present: false })).toBe("direct");
+    expect(commandKind({ op: "seatMove", seat: "NPC1", chair: 6 })).toBe("direct");
+    expect(commandKind({ op: "seatNpc", characterKey: "victor", chair: 7 })).toBe("direct");
     expect(commandKind({ op: "lighting", presetKey: "AdminDark" })).toBe("direct");
     expect(commandKind({ op: "playScene", key: "s1", from: "scene", plusMinutes: 0, pace: "x2" })).toBe("direct");
   });
@@ -46,6 +48,14 @@ describe("queue entries", () => {
     const lines = queueLines(entries, describeAgainstTable);
     expect(lines.map((line) => line.id)).toEqual([1, 3]);
     expect(commandsToSend(entries, lines)).toEqual([move("victor", 0.4), scatter("rex", 3)]);
+  });
+
+  it("an NPC taking a chair loses their queued stage changes, everyone else keeps theirs", () => {
+    let entries: readonly QueueEntry[] = addToQueue([], move("victor", 0.4), 1);
+    entries = addToQueue(entries, { op: "stage", changes: { victor: { u: 0.2, v: 0.2 }, mira: { u: 0.3, v: 0.3 } } }, 2);
+    expect(withoutQueuedStage(entries, "victor").map((entry) => entry.command)).toEqual([
+      { op: "stage", changes: { mira: { u: 0.3, v: 0.3 } } }
+    ]);
   });
 
   it("moving an NPC back to where it stands cancels its queued change", () => {

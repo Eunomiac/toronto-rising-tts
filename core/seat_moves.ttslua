@@ -1,0 +1,202 @@
+--[[
+    Live seat moves from the Storyteller Dashboard seat row.
+
+    Chairs are `sessionScene.seatSlots[seat].tableSlot` (1–9 from the centre outward); a seat key (PC colour or
+    NPC1–NPC4) holds at most one chair. `moveToChair` moves a seat holder to another chair, swapping with whoever
+    sits there. `seatNpc` seats a roster or stage NPC in an empty chair, lit: their own seat key when they already
+    have one, else a free NPC seat key; they leave the stage.
+
+    Characters never change seat keys here (the NPC reconciler clears a seat whose occupant changes). Both write
+    state, then one forced `Sync.npcs` pass seats figurines and re-lays the table.
+]]
+
+local C = require("lib.constants")
+local U = require("lib.util")
+local S = require("core.state")
+
+local SeatMoves = {}
+
+local MAX_CHAIR = 9
+
+--- Live table key; a family key (`Table B`) grows a chair per seated NPC, up to nine.
+--- @return string|nil
+local function sceneTableKey()
+    local key = S.getStateVal("sessionScene", "tableKey")
+    if type(key) == "string" and key ~= "" then
+        return key
+    end
+    return S.getStateVal("seatLayout", "currentTableKey")
+end
+
+--- @param chair any
+--- @return number|nil chair
+--- @return string|nil error
+local function validChair(chair)
+    chair = tonumber(chair)
+    if chair == nil or chair ~= math.floor(chair) then
+        return nil, "Pick a chair number."
+    end
+    local cfg = C.Tables and C.Tables[sceneTableKey() or ""]
+    local capacity = type(cfg) == "table" and tonumber(cfg.slotCapacity) or MAX_CHAIR
+    if chair < 1 or chair > capacity then
+        return nil, "This table has no chair " .. tostring(chair) .. "."
+    end
+    return chair, nil
+end
+
+--- @return string|nil error
+local function refuseSeatMove()
+    if require("core.scatter_mode").isActive() then
+        return "Scatter has no chairs; set a table down first."
+    end
+    if require("lib.rotational-seat-layout").alertAndBlockIfDiceOnTable("move seats") then
+        return "Dice are still on the table."
+    end
+    return nil
+end
+
+--- @param chair number
+--- @return string|nil seat key holding that chair
+local function holderOfChair(chair)
+    for _, occupant in ipairs(require("lib.figurine_seat_layout").collectOccupants()) do
+        if occupant.tableSlot == chair then
+            return occupant.occupantKey
+        end
+    end
+    return nil
+end
+
+--- @param seatKey string
+--- @return number|nil
+local function chairOf(seatKey)
+    for _, occupant in ipairs(require("lib.figurine_seat_layout").collectOccupants()) do
+        if occupant.occupantKey == seatKey then
+            return occupant.tableSlot
+        end
+    end
+    return nil
+end
+
+--- @return table seatSlots copy
+local function seatSlotsCopy()
+    local ss = S.getStateVal("sessionScene", "seatSlots")
+    return type(ss) == "table" and U.clone(ss, true) or {}
+end
+
+--- Re-pick the table variant for the new occupancy, then seat figurines and lay the table in one pass.
+--- @param reason string
+local function relayout(reason)
+    local tableKey = sceneTableKey()
+    if type(tableKey) == "string" and tableKey ~= "" then
+        local concrete = require("lib.rotational-seat-layout").resolveTableKey(tableKey)
+        if concrete ~= S.getStateVal("seatLayout", "currentTableKey") then
+            S.setStateVal(concrete, "seatLayout", "currentTableKey")
+        end
+    end
+    require("core.scene_library").mirrorActiveLibrarySessionSceneFromLiveIfLinked()
+    require("core.sync").npcs({ reason = reason, force = true })
+    require("dashboard.push").markWorldDirty({ scene = true })
+end
+
+--- Move a seat holder (PC or NPC) to `chair`; whoever holds it takes their old chair.
+--- @param seatKey string
+--- @param chair any
+--- @return string|nil error
+function SeatMoves.moveToChair(seatKey, chair)
+    local target, chairErr = validChair(chair)
+    if target == nil then
+        return chairErr
+    end
+    local from = chairOf(seatKey)
+    if from == nil then
+        return "`" .. tostring(seatKey) .. "` has no chair to move from."
+    end
+    if from == target then
+        return nil
+    end
+    local refused = refuseSeatMove()
+    if refused then
+        return refused
+    end
+    local other = holderOfChair(target)
+    local ss = seatSlotsCopy()
+    ss[seatKey].tableSlot = target
+    if other ~= nil then
+        ss[other].tableSlot = from
+    end
+    S.setStateVal(ss, "sessionScene", "seatSlots")
+    relayout("dashboard_seat_move")
+    return nil
+end
+
+--- Seat a named NPC in an empty chair (or their own), lit, and take them off the stage.
+--- @param characterKey string
+--- @param chair any
+--- @return string|nil error
+function SeatMoves.seatNpc(characterKey, chair)
+    local NPCS = require("core.npcs")
+    if type(characterKey) ~= "string" or NPCS.characters[characterKey] == nil then
+        return "Unknown NPC `" .. tostring(characterKey) .. "`."
+    end
+    if NPCS.isGenericCharacter(characterKey) then
+        return "Generic NPCs stand on the stage; they do not take chairs."
+    end
+    local target, chairErr = validChair(chair)
+    if target == nil then
+        return chairErr
+    end
+    local occupied = S.getStateVal("seatLayout", "occupiedNPCSlots")
+    occupied = type(occupied) == "table" and U.clone(occupied, true) or {}
+    local seatKey = nil
+    for _, key in ipairs(C.NPCSeats or {}) do
+        if occupied[key] == characterKey then
+            seatKey = key
+        end
+    end
+    local holder = holderOfChair(target)
+    if holder ~= nil and holder ~= seatKey then
+        return "Chair " .. tostring(target) .. " is taken."
+    end
+    if seatKey == nil then
+        for _, key in ipairs(C.NPCSeats or {}) do
+            local occupant = occupied[key]
+            if seatKey == nil and not (type(occupant) == "string" and occupant ~= "") then
+                seatKey = key
+            end
+        end
+        if seatKey == nil then
+            return "All four NPC seats are taken; take someone off the table first."
+        end
+    end
+    local refused = refuseSeatMove()
+    if refused then
+        return refused
+    end
+
+    local ss = seatSlotsCopy()
+    local row = type(ss[seatKey]) == "table" and ss[seatKey] or {}
+    row.characterKey = characterKey
+    row.slotEmpty = nil
+    row.tableSlot = target
+    row.isPresent = true
+    ss[seatKey] = row
+    local present = S.getStateVal("sessionScene", "seatPresent")
+    present = type(present) == "table" and U.clone(present, true) or {}
+    present[seatKey] = true
+    occupied[seatKey] = characterKey
+    S.setStateVal(ss, "sessionScene", "seatSlots")
+    S.setStateVal(present, "sessionScene", "seatPresent")
+    S.setStateVal(occupied, "seatLayout", "occupiedNPCSlots")
+
+    local placements = S.getStateVal("sessionScene", "npcWorld", "placements")
+    if type(placements) == "table" and placements[characterKey] ~= nil then
+        placements = U.clone(placements, true)
+        placements[characterKey] = nil
+        S.setStateVal(placements, "sessionScene", "npcWorld", "placements")
+        require("core.hud_player").resetStageLookCycle()
+    end
+    relayout("dashboard_seat_npc")
+    return nil
+end
+
+return SeatMoves

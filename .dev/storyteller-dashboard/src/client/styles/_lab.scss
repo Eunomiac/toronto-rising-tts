@@ -403,8 +403,18 @@ $signal-fire: #ff9a1f;
     cursor: pointer;
   }
 
+  &.draggable:not(.controllable) {
+    cursor: grab;
+  }
+
   &.open {
     z-index: 20;
+  }
+
+  // A seat drag (or a roster NPC) over a chair that will take it.
+  &.drop > .lab-seat {
+    border-color: #f0c674;
+    box-shadow: 0 0 0 2px rgb(240 198 116 / 55%), 0 0 14px rgb(240 198 116 / 45%);
   }
 }
 

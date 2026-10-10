@@ -94,8 +94,8 @@ local function placementsMapsEqual(nextMap, prevMap)
     return true
 end
 
---- A seated NPC standing on the stage leaves their seat dark (TOR-250). One leaving the stage gets the
---- seat lit again unless they stood dark there (TOR-281).
+--- A seated NPC standing on the stage leaves their seat dark (TOR-250); one leaving the stage gets the seat
+--- lit again.
 --- @param staged table<string, table> placements after the change
 --- @param leaving table<string, table> placements of the NPCs leaving the stage
 local function reconcileHomelandSeats(staged, leaving)
@@ -112,8 +112,7 @@ local function reconcileHomelandSeats(staged, leaving)
                 if lit then
                     NPCS.setNpcSeatNarrativePresence(seatKey, false)
                 end
-            elseif type(leaving[characterKey]) == "table" and not lit
-                and (leaving[characterKey].npcLightMode or "STANDARD") ~= "OFF" then
+            elseif type(leaving[characterKey]) == "table" and not lit then
                 NPCS.setNpcSeatNarrativePresence(seatKey, true)
             end
         end

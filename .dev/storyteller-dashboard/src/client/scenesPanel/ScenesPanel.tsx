@@ -47,7 +47,7 @@ import {
   weatherAxes
 } from "./liveScene";
 import { useTtsNotice } from "./notices";
-import { addToQueue, commandKind, commandsToSend, pendingGenerics, pendingRenames, queueLines, withoutPendingGeneric, type QueueEntry } from "./queue";
+import { addToQueue, commandKind, commandsToSend, pendingGenerics, pendingRenames, queueLines, withoutPendingGeneric, withoutQueuedStage, type QueueEntry } from "./queue";
 import { describeQueued } from "./queueLabels";
 import { ADD_CORNER, freeSlotNear, isRemoval, stageSpots, withChanges } from "./stage";
 import { boardToStage, stagePacks, stageToBoard, type StagePack } from "./stageFrame";
@@ -268,6 +268,9 @@ const useStageQueue = (
       setEntries((previous) => queueCommand(previous, command, () => nextId.current++, latest.current.world, latest.current.packs));
     } else if (kind === "flush") {
       latest.current.transport.sendAll([...takeQueue(), command]);
+    } else if (command.op === "seatNpc") {
+      setEntries((previous) => withoutQueuedStage(previous, command.characterKey));
+      latest.current.transport.send(command);
     } else {
       latest.current.transport.send(command);
     }

@@ -44,7 +44,21 @@ type PointerHandlers = {
 /** A press that moves more than this many pixels is a drag; less is a click (double-click lights). */
 const DRAG_PX = 4;
 
-const useBoardDrag = <T,>(board: RefObject<HTMLDivElement | null>, onDrop: (item: T, point: StagePoint) => void): {
+/**
+ * The seat-row chair under a screen point: its number, and who holds it (`""` empty, a seated NPC's key, or `"pc"`).
+ * Seat cells carry `data-chair` / `data-chair-holder`.
+ */
+const chairAt = (clientX: number, clientY: number): { chair: number; holder: string } | null => {
+  for (const element of document.elementsFromPoint(clientX, clientY)) {
+    const cell = element.closest<HTMLElement>("[data-chair]");
+    if (cell) {
+      return { chair: Number(cell.dataset.chair), holder: cell.dataset.chairHolder ?? "" };
+    }
+  }
+  return null;
+};
+
+const useBoardDrag = <T,>(board: RefObject<HTMLDivElement | null>, onDrop: (item: T, point: StagePoint, client: { x: number; y: number }) => void): {
   drag: { item: T; point: StagePoint } | null;
   handlers: (item: T) => PointerHandlers;
 } => {
@@ -72,7 +86,7 @@ const useBoardDrag = <T,>(board: RefObject<HTMLDivElement | null>, onDrop: (item
       press.current = null;
       setDrag(null);
       if (held?.moved) {
-        onDrop(held.item, pointIn(board, event.clientX, event.clientY));
+        onDrop(held.item, pointIn(board, event.clientX, event.clientY), { x: event.clientX, y: event.clientY });
       }
     },
     onPointerCancel: () => {
@@ -160,10 +174,12 @@ type StageLayerProps = {
   readonly nameOf: (characterKey: string) => string;
   readonly onEdit: (changes: StageChanges) => void;
   readonly onMenu: TokenMenu;
+  /** A token dropped on an empty chair (or the NPC's own) takes that chair; without it, the seat row is off the stage. */
+  readonly onSeat?: (characterKey: string, chair: number) => void;
 };
 
 /** Standard placement: tokens anywhere on the stage, packs as mild snap points and group drop targets. */
-export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit, onMenu }: StageLayerProps): ReactElement => {
+export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit, onMenu, onSeat }: StageLayerProps): ReactElement => {
   const roster = useRosterLayout();
   const [over, setOver] = useState(false);
   const place = (key: string, point: StagePoint): void => {
@@ -185,7 +201,14 @@ export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit
     }
     onEdit(changes);
   };
-  const tokens = useBoardDrag<string>(board, place);
+  const tokens = useBoardDrag<string>(board, (key, point, client) => {
+    const seat = onSeat ? chairAt(client.x, client.y) : null;
+    if (!seat) {
+      place(key, point);
+    } else if (seat.holder === "" || seat.holder === key) {
+      onSeat?.(key, seat.chair);
+    }
+  });
   const packDrag = useBoardDrag<StagePack>(board, (pack, point) => {
     const keys = spots.filter((spot) => slotOf(spot, packs)?.pack === pack).map((spot) => spot.characterKey);
     if (offStage(point)) {

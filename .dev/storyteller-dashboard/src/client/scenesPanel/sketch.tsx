@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent, type ReactElement, type ReactNode } from "react";
+import { useContext, useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent, type MouseEvent, type ReactElement, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Headshot } from "../headshots/Headshot";
 import { applyLocal } from "../pcSheet/applyLocal";
@@ -14,7 +14,8 @@ import { GENERIC_SKY, stageName } from "./liveScene";
 import { SignalFlame } from "./signal";
 import { RollsCommandContext } from "./rolls/commands";
 import { ringChoices } from "./rolls/view";
-import { moveInScatter, withChanges, type ScatterMove, type StageSpot } from "./stage";
+import { startRosterDrag } from "./rosterDrag";
+import { moveInScatter, NPC_DRAG_TYPE, SEAT_DRAG_TYPE, withChanges, type ScatterMove, type StageSpot } from "./stage";
 import { stagePacks, type StagePack } from "./stageFrame";
 import type { GenericNpc, ScatterGroup } from "../worldState";
 import { Icon, type IconName } from "./icons";
@@ -305,6 +306,12 @@ const SeatContent = ({ seat }: { seat: SeatSketch }): ReactElement => (
   </>
 );
 
+/** Seat drags on the table: a seat holder to another chair (swapping), a roster NPC into an empty chair. */
+export type SeatDrops = {
+  readonly move: (seatKey: string, chair: number) => void;
+  readonly seatNpc: (characterKey: string, chair: number) => void;
+};
+
 /**
  * One cell per chair, each a ninth of the row (the most chairs any table has); positions the table lacks are
  * left out rather than drawn, and the rest stay centred. The figurine headshot fills the cell above the name.
@@ -312,15 +319,19 @@ const SeatContent = ({ seat }: { seat: SeatSketch }): ReactElement => (
  * disconnected seats are told apart by border style and image treatment. Clicking a PC seat opens that PC's
  * tracker controls; clicking anywhere else closes them. Right-clicking an occupied seat hands it to `onMenu`
  * (the wide board's roll ring, which also takes the character out of the scene or brings them back). With
- * `onPresence` (scene drafts) a click on an occupied, connected seat toggles presence instead.
+ * `onPresence` (scene drafts) a click on an occupied, connected seat toggles presence instead. With `seating`
+ * (the live table) a seated character drags as a token: onto another chair to swap, and a seated NPC onto the
+ * stage; roster NPCs drop into empty chairs. Every cell carries `data-chair` for stage tokens dropped on it.
  */
-export const Seats = ({ seats = SEATS, liveSheet, onMenu, onPresence }: {
+export const Seats = ({ seats = SEATS, liveSheet, onMenu, onPresence, seating }: {
   seats?: readonly SeatSketch[];
   /** Live sheets (fetched as soon as the seats show, for each PC's Desire); without it the Lab's sample seats edit sample trackers and other seats (scene previews) show no sheet. */
   liveSheet?: LiveSheetAccess;
   onMenu?: (event: MouseEvent<HTMLElement>, seat: SeatSketch) => void;
   onPresence?: (seatKey: string, present: boolean) => void;
+  seating?: SeatDrops;
 }): ReactElement => {
+  const [dropChair, setDropChair] = useState<number | null>(null);
   const [labState, setLabState] = useState(labSheet);
   const send = useScenesCommand();
   const sheet = liveSheet ? liveSheet.sheet ?? NO_SEATS : seats === SEATS ? labState : NO_SEATS;
@@ -363,18 +374,65 @@ export const Seats = ({ seats = SEATS, liveSheet, onMenu, onPresence }: {
         const togglesPresence = onPresence !== undefined && seat.seatKey !== undefined && (seat.kind === "pc" || seat.kind === "npc") && seat.state !== "disconnected";
         const controllable = !onPresence && seat.color !== undefined && (liveSheet ? seat.kind === "pc" : sheet.seats.some((entry) => entry.color === seat.color));
         const menu = onMenu && (seat.kind === "pc" || seat.kind === "npc") ? onMenu : undefined;
+        const seatKey = seat.seatKey;
+        const draggable = seating !== undefined && seatKey !== undefined && (seat.kind === "pc" || seat.kind === "npc");
+        const accepts = (event: DragEvent<HTMLElement>): boolean =>
+          seating !== undefined
+          && (event.dataTransfer.types.includes(SEAT_DRAG_TYPE) || (seat.kind === "empty" && event.dataTransfer.types.includes(NPC_DRAG_TYPE)));
         const hints = [
           controllable && !open ? "Click for this PC's trackers" : undefined,
           togglesPresence ? (seat.state === "absent" ? "Out of this scene — click to bring them in" : "In this scene — click to take them out") : undefined,
-          menu && !togglesPresence ? "Right-click to roll, or to take them out of the scene / bring them back" : undefined
+          menu && !togglesPresence ? "Right-click to roll, or to take them out of the scene / bring them back" : undefined,
+          draggable ? `Drag to another chair to swap places${seat.kind === "npc" ? ", or onto the stage" : ""}` : undefined,
+          seating && seat.kind === "empty" ? "Drop an NPC from the roster or the stage here to seat them" : undefined
         ].filter(Boolean);
         const desire = seat.kind === "pc" ? sheet.seats.find((entry) => entry.color === seat.color)?.desire ?? "" : "";
         return (
           <div
             key={seat.slot}
-            className={`lab-seat-slot${controllable ? " controllable" : ""}${open ? " open" : ""}${seat.signal ? " signal" : ""}`}
+            className={`lab-seat-slot${controllable ? " controllable" : ""}${open ? " open" : ""}${seat.signal ? " signal" : ""}${draggable ? " draggable" : ""}${dropChair === seat.slot ? " drop" : ""}`}
             style={style}
             title={hints.length > 0 ? hints.join(". ") : undefined}
+            data-chair={seat.slot}
+            data-chair-holder={seat.kind === "npc" ? seat.characterKey ?? "" : seat.kind === "pc" ? "pc" : ""}
+            draggable={draggable}
+            onDragStart={(event) => {
+              if (!draggable || !seatKey) {
+                return;
+              }
+              event.dataTransfer.setData(SEAT_DRAG_TYPE, seatKey);
+              if (seat.kind === "npc" && seat.characterKey) {
+                event.dataTransfer.setData(NPC_DRAG_TYPE, seat.characterKey);
+              }
+              event.dataTransfer.effectAllowed = "move";
+              if (seat.characterKey) {
+                startRosterDrag(event, [{ characterKey: seat.characterKey, name: seat.name ?? seat.characterKey }]);
+              }
+            }}
+            onDragOver={(event) => {
+              if (accepts(event)) {
+                event.preventDefault();
+                setDropChair(seat.slot);
+              }
+            }}
+            onDragLeave={() => setDropChair((chair) => (chair === seat.slot ? null : chair))}
+            onDrop={(event) => {
+              setDropChair(null);
+              if (!seating) {
+                return;
+              }
+              const from = event.dataTransfer.getData(SEAT_DRAG_TYPE);
+              if (from) {
+                if (from !== seatKey) {
+                  seating.move(from, seat.slot);
+                }
+                return;
+              }
+              const npc = event.dataTransfer.getData(NPC_DRAG_TYPE);
+              if (npc && seat.kind === "empty") {
+                seating.seatNpc(npc, seat.slot);
+              }
+            }}
             onContextMenu={(event) => {
               if (!menu) {
                 return;
@@ -717,6 +775,25 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoa
     }),
     { ...livePending, ...local }
   );
+  // A seated NPC on the stage sits dark (and lights again when they leave it); show that for queued edits too.
+  const liveStaged = new Set(baseTokens.map((token) => token.characterKey));
+  const staged = new Set(spots.map((spot) => spot.characterKey));
+  const liveSeatsShown = live?.seats.map((seat): SeatSketch => {
+    if (seat.kind !== "npc" || !seat.characterKey || liveStaged.has(seat.characterKey) === staged.has(seat.characterKey)) {
+      return seat;
+    }
+    if (staged.has(seat.characterKey)) {
+      return { ...seat, state: "absent" };
+    }
+    const { state: _dark, ...lit } = seat;
+    return lit;
+  });
+  const seating: SeatDrops | null = command && live && !live.presenceClicks && !env.scatter
+    ? {
+      move: (seat, chair) => command({ op: "seatMove", seat, chair }),
+      seatNpc: (characterKey, chair) => command({ op: "seatNpc", characterKey, chair })
+    }
+    : null;
   const edit = (changes: StageChanges): void => {
     if (Object.keys(changes).length === 0) {
       return;
@@ -838,14 +915,26 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoa
     {env.scatter ? (
       <ScatterLayer w={w} h={h} board={board} groups={groups} catalogs={catalogs} nameOf={nameOf} onPlace={placeScatter} onMenu={openTokenRing} />
     ) : (
-      <StageLayer w={w} h={h} board={board} packs={packs} spots={spots} catalogs={catalogs} nameOf={nameOf} onEdit={edit} onMenu={openTokenRing} />
+      <StageLayer
+        w={w}
+        h={h}
+        board={board}
+        packs={packs}
+        spots={spots}
+        catalogs={catalogs}
+        nameOf={nameOf}
+        onEdit={edit}
+        onMenu={openTokenRing}
+        {...(seating ? { onSeat: seating.seatNpc } : {})}
+      />
     )}
     <div className="lab-board-seats floating bottom" style={{ top: h - h * WIDE_SEAT_BAND - 8, height: h * WIDE_SEAT_BAND }}>
       {live ? (
         <Seats
-          seats={live.seats}
+          seats={liveSeatsShown ?? live.seats}
           {...(live.sheet ? { liveSheet: live.sheet } : {})}
           {...(live.presenceClicks && command ? { onPresence: (seatKey: string, present: boolean) => command({ op: "seatPresence", seat: seatKey, present }) } : {})}
+          {...(seating ? { seating } : {})}
           onMenu={openSeatRing}
         />
       ) : <Seats onMenu={openSeatRing} />}
@@ -889,6 +978,7 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoa
         {env.scatter
           ? "Drag a PC or NPC into another group to move them there; drag an NPC out of every group to take them off. Drop roster NPCs or a whole group into a circle."
           : "Drag tokens anywhere; they snap only when dropped over a slot, and leave the stage when dropped off it. Drag the space around a pack's slots to move the whole pack. Drop a roster NPC anywhere, or a whole group on a pack (the leader takes the anchor). Double-click to light / darken."}
+        {seating && " Drag a seated character to another chair to swap places, or a seated NPC onto the stage (their seat goes dark until they leave it). Drop a stage token or a roster NPC on an empty chair to seat them."}
         {" "}Right-click empty stage for placement, Clear Stage{env.scatter ? "" : ", and Reset to Library"}.
       </span>
     </span>

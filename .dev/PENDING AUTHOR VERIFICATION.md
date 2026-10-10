@@ -387,6 +387,19 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 3. Cancel, seat an NPC at the table, and start a roll for them (right-click their seat). The drawer should rise visibly in front of that seat, the dice should sit on its red tray floor rather than the table, and Roll and Reroll should both tumble them.
 4. Cancel or confirm the roll. The drawer should sink out of sight again.
 
+#### TOR-703 — Drag characters between seats and the stage on the dashboard
+
+**Context:** The seat row on the dashboard's Scenes tab is now drag and drop. It works on the live table only, not in scene previews and not while Scatter is on. You can swap seated characters between chairs, seat NPCs from the roster or the stage, and drag a seated NPC onto the stage. Whenever an NPC leaves the stage, their seat now lights up again. Before, it stayed dark if they had been dark on the stage. Seat drags are refused while dice are on the table, just like switching tables.
+
+**How to verify:** Save & Play, load a scene with at least one NPC seated and one empty chair, and open the dashboard's Scenes tab.
+
+1. Drag a PC's seat onto another PC's seat. The two should swap chairs in TTS (figurine, sheet, hand and lights all move together) and on the dashboard.
+2. Drag a PC onto an empty chair. They should move there and leave their old chair empty.
+3. Drag an NPC from the roster on the left onto an empty chair. They should sit there, lit.
+4. Drag a seated NPC onto the stage. Their seat should go dark on the board at once. After **Send** they should stand on the stage in TTS with their seat dark.
+5. Drag that NPC's stage token back onto their own chair, or any empty chair. They should sit down there, lit, and leave the stage.
+6. Put a seated NPC on the stage, double-click their token to darken them, and Send. Then take them off the stage (drag them off, or use Clear Stage). Their seat should light up again even though they were dark on the stage.
+
 #### TOR-702 — End → Intermission keeps the TR Loop playing
 
 **Context:** Going from End to Intermission started the TR Loop, but a few seconds later the regular Main theme cut in and replaced it. Main's playlist still had a "play the next track" timer running, and nothing told it the TR Loop had taken over. Starting the TR Loop now formally pauses Main, so that timer does nothing.

@@ -27,6 +27,8 @@
     stopAll                               silence every soundscape layer
     seatPresence      seat, present       narrative presence of an occupied seat (never disconnection); lighting
                                           a seated NPC's seat takes their copy off the stage
+    seatMove          seat, chair         move a seat holder (PC or NPC) to chair 1–9, swapping with whoever sits there
+    seatNpc           characterKey, chair seat a named NPC (roster or stage) in an empty chair, lit; leaves the stage
     signalOff         color               put out a PC's signal fire (no-op when it is already out)
     location          districtKey?, siteKey   change the live location behind a blindfold
     skybox            key                 sky override (`none` = the site's own sky)
@@ -300,6 +302,15 @@ local function applyCommand(cmd)
       end
     end
     return Panel.setLiveSeatPresence(cmd.seat, cmd.present == true)
+  end
+  if op == "seatMove" then
+    if not (U.isIn(cmd.seat, C.PlayerColors) or U.isIn(cmd.seat, C.NPCSeats or {})) then
+      return "Unknown seat: " .. tostring(cmd.seat)
+    end
+    return require("core.seat_moves").moveToChair(cmd.seat, cmd.chair)
+  end
+  if op == "seatNpc" then
+    return require("core.seat_moves").seatNpc(cmd.characterKey, cmd.chair)
   end
   if op == "location" then
     if type(cmd.siteKey) ~= "string" then
