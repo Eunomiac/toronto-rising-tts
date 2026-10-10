@@ -162,6 +162,8 @@ export type SeatSketch = {
   readonly playedBy?: string;
   readonly color?: SeatColor;
   readonly trackers?: PcTrackers;
+  /** Lab sample Desire; live seats read it from the PC sheet. */
+  readonly desire?: string;
 };
 
 /**
@@ -173,6 +175,7 @@ export const SEATS: readonly SeatSketch[] = [
   { slot: 7, name: "Lexi Madi", characterKey: "lexiMadi", kind: "npc" },
   {
     slot: 5, name: "Adrian Varga", characterKey: "adrianVarga", kind: "pc", playedBy: "Aishe Tache", color: "Pink",
+    desire: "Find out who tipped off the Second Inquisition about the Hive, and make them regret it before the Prince does",
     trackers: { health: [7, 2, 0], willpower: [6, 1, 0], humanity: [7, 1], hunger: 2 }
   },
   {
@@ -184,7 +187,7 @@ export const SEATS: readonly SeatSketch[] = [
     trackers: { health: [9, 1, 1], willpower: [7, 0, 0], humanity: [6, 2], hunger: 1 }
   },
   {
-    slot: 2, name: "Lord Lucien", characterKey: "lordLucien", kind: "pc", color: "Red",
+    slot: 2, name: "Lord Lucien", characterKey: "lordLucien", kind: "pc", color: "Red", desire: "Win Scarlett's favour tonight",
     trackers: { health: [6, 0, 0], willpower: [8, 3, 0], humanity: [8, 0], hunger: 4 }
   },
   {
@@ -214,7 +217,8 @@ const labSheet = (): SheetSnapshot => ({
       willpowerMax: willpower[0],
       humanity: tracker(humanity[0], 0, 0, humanity[1]),
       humanityMax: humanity[0],
-      hunger
+      hunger,
+      desire: seat.desire ?? ""
     };
     return [sheet];
   })
@@ -309,7 +313,7 @@ const SeatContent = ({ seat }: { seat: SeatSketch }): ReactElement => (
  */
 export const Seats = ({ seats = SEATS, liveSheet, onMenu, onPresence }: {
   seats?: readonly SeatSketch[];
-  /** Live sheets (fetched on the first seat click); without it the seats edit the Lab's sample trackers. */
+  /** Live sheets (fetched as soon as the seats show, for each PC's Desire); without it the seats edit the Lab's sample trackers. */
   liveSheet?: LiveSheetAccess;
   onMenu?: (event: MouseEvent<HTMLElement>, seat: SeatSketch) => void;
   onPresence?: (seatKey: string, present: boolean) => void;
@@ -325,6 +329,12 @@ export const Seats = ({ seats = SEATS, liveSheet, onMenu, onPresence }: {
   };
   const [openColor, setOpenColor] = useState<SeatColor | null>(null);
   const [ring, setRing] = useState<TrackRing | null>(null);
+  const sheetMissing = liveSheet !== undefined && liveSheet.sheet === null && liveSheet.error === null;
+  useEffect(() => {
+    if (sheetMissing) {
+      liveSheet?.load();
+    }
+  }, [sheetMissing, liveSheet]);
   useEffect(() => {
     if (!openColor) {
       return undefined;
@@ -354,6 +364,7 @@ export const Seats = ({ seats = SEATS, liveSheet, onMenu, onPresence }: {
           togglesPresence ? (seat.state === "absent" ? "Out of this scene — click to bring them in" : "In this scene — click to take them out") : undefined,
           menu && !togglesPresence ? "Right-click to roll, or to take them out of the scene / bring them back" : undefined
         ].filter(Boolean);
+        const desire = seat.kind === "pc" ? sheet.seats.find((entry) => entry.color === seat.color)?.desire ?? "" : "";
         return (
           <div
             key={seat.slot}
@@ -381,6 +392,7 @@ export const Seats = ({ seats = SEATS, liveSheet, onMenu, onPresence }: {
               liveSheet?.load();
             }}
           >
+            {desire !== "" && <span className="lab-seat-desire">{desire}</span>}
             {seat.characterKey ? (
               <Headshot characterKey={seat.characterKey} className={className}>
                 <SeatContent seat={seat} />

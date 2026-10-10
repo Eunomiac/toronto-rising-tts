@@ -287,6 +287,33 @@ $lab-pin: #f5b13d;
   }
 }
 
+// The PC's Desire from their sheet, over the stage just above the portrait: two lines, then the rest on hover.
+.lab-seat-desire {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 3px);
+  left: 0;
+  z-index: 6;
+  display: -webkit-box;
+  overflow: hidden;
+  padding: 2px 5px;
+  border-left: 2px solid var(--seat-color, #6a6a74);
+  font-size: 10.5px;
+  font-style: italic;
+  line-height: 1.25;
+  color: #d8d8e0;
+  background: rgb(12 12 15 / 88%);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  cursor: default;
+
+  &:hover {
+    z-index: 21;
+    -webkit-line-clamp: unset;
+    box-shadow: 0 -4px 14px rgb(0 0 0 / 60%);
+  }
+}
+
 // A PC's tracker controls, open under the seat until the next click elsewhere.
 .lab-seat-pop {
   position: absolute;
