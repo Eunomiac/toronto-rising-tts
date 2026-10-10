@@ -52,10 +52,11 @@ export const scenesFromTts = (snapshot: TtsLibrarySnapshot): readonly LibrarySce
 
 /**
  * The dashboard copy after reading TTS rows. A row TTS writes from the live table (linked) replaces the dashboard's;
- * other shared rows keep the dashboard's content and take TTS's link flag; rows only TTS has (a fork, an in-game
- * import) are appended. Rows only the dashboard has stay. Returns the same array when nothing changes.
+ * other shared rows keep the dashboard's content and take TTS's link flag, unless `adopt` is set: the write-back
+ * read of a scene that just left the table (TTS wrote it one last time as it unlinked). Rows only TTS has (a fork,
+ * an in-game import) are appended. Rows only the dashboard has stay. Returns the same array when nothing changes.
  */
-export const mergeFromTts = (local: readonly LibraryScene[], tts: readonly LibraryScene[]): readonly LibraryScene[] => {
+export const mergeFromTts = (local: readonly LibraryScene[], tts: readonly LibraryScene[], adopt = false): readonly LibraryScene[] => {
   const byKey = new Map(tts.map((scene) => [scene.key, scene]));
   let changed = false;
   const merged = local.map((scene) => {
@@ -63,7 +64,7 @@ export const mergeFromTts = (local: readonly LibraryScene[], tts: readonly Libra
     if (!theirs) {
       return scene;
     }
-    const next = theirs.linked ? theirs : scene.linked ? { ...scene, linked: false } : scene;
+    const next = theirs.linked || adopt ? theirs : scene.linked ? { ...scene, linked: false } : scene;
     if (next !== scene && JSON.stringify(next) !== JSON.stringify(scene)) {
       changed = true;
       return next;

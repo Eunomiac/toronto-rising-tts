@@ -133,13 +133,16 @@ export const putLibraryScene = (scene: LibraryScene): void => {
 
 export const removeLibraryScene = (key: string): void => setLibraryScenes(library.scenes.filter((row) => row.key !== key));
 
-/** Refreshes rows from TTS (all, or only `keys`): linked rows take the table's copy, link flags follow TTS. */
-export const pullScenesFromTts = async (keys?: readonly string[]): Promise<void> => {
+/**
+ * Refreshes rows from TTS (all, or only `keys`): linked rows take the table's copy, link flags follow TTS. `adopt`
+ * takes TTS's copy of every row read (the table's write-back after a scene leaves it).
+ */
+export const pullScenesFromTts = async (keys?: readonly string[], adopt = false): Promise<void> => {
   if (!status.loaded) {
     return;
   }
   const tts = await readTtsScenes(keys);
-  const merged = mergeFromTts(library.scenes, tts);
+  const merged = mergeFromTts(library.scenes, tts, adopt);
   if (merged !== library.scenes) {
     write({ ...library, scenes: merged });
   }

@@ -46,6 +46,13 @@ describe("mergeFromTts", () => {
     const same = [scene("a")];
     expect(mergeFromTts(same, [scene("a")])).toBe(same);
   });
+
+  it("adopts TTS's copy of an unlinked row on the write-back after a scene leaves the table", () => {
+    const local = [scene("a", { linked: true, sessionScene: { siteKey: "CLGrounds", clock: { isPresentDay: true, hour: 20, minute: 0 } } })];
+    const left = scene("a", { sessionScene: { siteKey: "CLGrounds", clock: { isPresentDay: true, hour: 20, minute: 5 } } });
+    expect(mergeFromTts(local, [left])[0]?.sessionScene.clock).toMatchObject({ hour: 20, minute: 0 });
+    expect(mergeFromTts(local, [left], true)[0]).toEqual(left);
+  });
 });
 
 describe("new scenes", () => {

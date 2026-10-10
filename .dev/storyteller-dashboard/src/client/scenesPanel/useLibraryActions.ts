@@ -37,7 +37,8 @@ const message = (reason: unknown): string => (reason instanceof Error ? reason.m
 /**
  * While a linked scene is on the table, TTS writes it into its library row; the dashboard reads that row back
  * after the scene changes, and reads the previous row once more when the table switches or ends a scene (or the
- * link changes), so the master copy keeps what was played.
+ * link changes), so the master copy keeps what was played. TTS's last write lands as the row unlinks (stage edits
+ * and the running scene clock included), so these reads take TTS's copy whether or not the row is still linked.
  */
 const useWriteBack = (scene: SceneSlice | undefined, onError: (text: string) => void): void => {
   const pending = useRef(new Set<string>());
@@ -61,7 +62,7 @@ const useWriteBack = (scene: SceneSlice | undefined, onError: (text: string) => 
     const timer = window.setTimeout(() => {
       const keys = [...pending.current];
       pending.current.clear();
-      pullScenesFromTts(keys).catch((reason: unknown) => errorRef.current(`Could not read the scene library back from TTS: ${message(reason)}`));
+      pullScenesFromTts(keys, true).catch((reason: unknown) => errorRef.current(`Could not read the scene library back from TTS: ${message(reason)}`));
     }, WRITE_BACK_DELAY_MS);
     return () => window.clearTimeout(timer);
   }, [scene]);
