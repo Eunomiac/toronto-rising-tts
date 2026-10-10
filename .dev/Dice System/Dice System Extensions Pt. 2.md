@@ -216,7 +216,7 @@ There are three dice drawer objects, one for each of the three simultaneous Stor
 
 When the Storyteller presses Roll, the live roll's dice drawer and dice drawer light are activated. GUIDs for the dice drawers and lights are provided in `G.GUIDS`, the active and inactive positions for each dice drawer are given in `C.ObjectPositions`, and the "OFF" (inactive) and "STANDARD" (active) modes for each drawer light are given in `L.LIGHTMODES`.
 
-Storyteller dice spawn directly on the tray (`STDICE.spawnPool`), laid out by `lib/st_dice_tray_spawn.ttslua`: drawer **X/Z center** as origin (drawers are not Y-rotated), padded `getBounds()` half-extents as the outer ellipse radii, tray surface **Y = 2.04**. Dice fill **full 360°** rings (10 + 8 + 6 per Y layer, then +2 Y and repeat), ordered Normal, Hunger, Rouse, Oblivion-Rouse, Werewolf, Rage.
+Storyteller dice spawn directly on the tray (`STDICE.spawnPool`), laid out by `lib/st_dice_tray_spawn.ttslua`: drawer **X/Z center** as origin (drawers are not Y-rotated), padded `getBounds()` half-extents as the outer ellipse radii, tray surface **Y = the drawer's destination Y + 2.68** (`STS.TRAY_SURFACE_ABOVE_DRAWER`: 2.04 at the default −0.64 pose, ≈ 5.65 at an NPC-seat pose of 2.97). Opening a drawer un-parks it in place first (`O.restoreObject` with `keepWorldPose`) so it rises visible. Dice fill **full 360°** rings (10 + 8 + 6 per Y layer, then +2 Y and repeat), ordered Normal, Hunger, Rouse, Oblivion-Rouse, Werewolf, Rage.
 
 ### Rolling Storyteller Rolls
 

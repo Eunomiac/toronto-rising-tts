@@ -376,6 +376,17 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 3. With a scene whose time is earlier tonight than Now, ×5 to Now should be lit. Click the leftmost top button: the scene plays at its own time and the clock runs fast until it reaches Now, then at ×2.
 4. Switch scenes again and click the third button on the Now row (+30 min): the scene should start 30 minutes after Now, Now should move on by 30 minutes, and the clock should run at ×2.
 
+#### TOR-698 — Storyteller dice drawers show up, and NPC-seat dice roll inside the tray
+
+**Context:** Storyteller drawers were rising invisibly (the "park" hid them from everyone and opening never un-hid them). When the roll belonged to an NPC seated at the table, the dice also spawned underneath that drawer's tray, so they dropped to the table and could only wiggle when rolled or rerolled. Drawers now un-hide as they open, and the dice spawn on the tray floor at whatever height the drawer is rising to.
+
+**How to verify:** Save & Play, then use the dashboard's **Scenes** tab.
+
+1. Start a Storyteller roll for an NPC who is not seated (right-click a stage token), add a few dice, and press Roll. The drawer should rise into view and the dice should tumble inside it.
+2. Pick one or two dice and press Reroll. They should toss again properly, not just wiggle.
+3. Cancel, seat an NPC at the table, and start a roll for them (right-click their seat). The drawer should rise visibly in front of that seat, the dice should sit on its red tray floor rather than the table, and Roll and Reroll should both tumble them.
+4. Cancel or confirm the roll. The drawer should sink out of sight again.
+
 ### Medium — Prince's Court sheet
 
 #### TOR-663 — Refresh XML keeps The Court on the people who had it open

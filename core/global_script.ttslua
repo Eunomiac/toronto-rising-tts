@@ -6792,7 +6792,7 @@ local function blackRollWaitDrawerRaised(slot)
     end
 end
 
---- ST Roll click: open → fully raised + light → spawn locked on the tray rings (y=2.04) →
+--- ST Roll click: open → fully raised + light → spawn locked on the tray rings (drawer on Y + 2.68) →
 --- settle → unlock → 0.15s → randomize (TOR-448).
 -- @param physicsColor string|nil  HUD clicker seat for Object.randomize toss
 local function runBlackRollSequence(physicsColor)

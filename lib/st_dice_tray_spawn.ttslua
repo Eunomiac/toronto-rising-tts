@@ -9,8 +9,10 @@
 
 local STS = {}
 
---- Tray-surface Y for ST staged dice (TOR-448). Not the PC hover height of 8.
-STS.STAGING_BASE_Y = 2.04
+--- Tray-surface height above the drawer's world Y (TOR-448: drawer −0.64 → surface 2.04).
+--- Staging must use the drawer's destination Y: NPC-seat drawers stand ~3.6 higher than the
+--- default pose, and dice staged at the default surface spawn under that tray floor.
+STS.TRAY_SURFACE_ABOVE_DRAWER = 2.68
 
 --- Inset from drawer edges as a fraction of playable half-extent (author target 15–20%).
 STS.TRAY_EDGE_INSET_RATIO = 0.20
@@ -61,9 +63,10 @@ end
 
 --- Tray ellipse spec from a drawer prop (world axes; drawer is not Y-rotated).
 -- @param drawer Object|nil
+-- @param drawerOnY number  drawer world Y once fully raised (it may still be rising)
 -- @return table|nil  { centerX, centerZ, baseY, radiusX, radiusZ }
-function STS.traySpecFromDrawer(drawer)
-    if drawer == nil or drawer.getPosition == nil then
+function STS.traySpecFromDrawer(drawer, drawerOnY)
+    if drawer == nil or drawer.getPosition == nil or type(drawerOnY) ~= "number" then
         return nil
     end
     local pos = drawer.getPosition()
@@ -81,7 +84,7 @@ function STS.traySpecFromDrawer(drawer)
     return {
         centerX = pos.x,
         centerZ = pos.z,
-        baseY = STS.STAGING_BASE_Y,
+        baseY = drawerOnY + STS.TRAY_SURFACE_ABOVE_DRAWER,
         radiusX = radiusX,
         radiusZ = radiusZ,
     }

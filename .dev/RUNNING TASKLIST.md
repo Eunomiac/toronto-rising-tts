@@ -580,6 +580,7 @@ Standalone second-monitor web app (`.dev/storyteller-dashboard/`). Not the in-ta
 - [x] **Dashboard shows why a scene change was refused:** `DashPush.notice` from scene Play refusals (`refuseSceneApply`), dice-on-table blocks (`RSL.alertAndBlockIfDiceOnTable`) and failed blindfold transitions (`reportTransitionFailure`); the Scenes tab shows a red banner over the stage until OK. Pending Save & Play. _(TOR-695)_
 - [x] **Dashboard signal fire alert:** `seats` push carries each PC's `signal`; fire toggles mark seats dirty; the Scenes tab pulses an edge glow, a banner with **Put it out** (`signalOff`), a flaming seat and a repeating chime. Pending Save & Play. _(TOR-696)_
 - [x] **Dashboard scene timing menu:** Scene Time + / Now + offset strips with hover preview, ×2 or ×5-to-Now pace (×5 default for an earlier start on present day's night), no Set Now; `playScene { from, plusMinutes, pace }` → `resolveAndApplyActivationClock` `opts.plusMinutes` / `opts.pace`. Pending Save & Play. _(TOR-697)_
+- [x] **Storyteller drawers visible + NPC-seat tray staging:** every drawer open path un-parks in place (`O.restoreObject` `keepWorldPose`) before rising; staged dice use the drawer's destination Y + 2.68 (`STS.TRAY_SURFACE_ABOVE_DRAWER`) so NPC-seat trays (~2.97) no longer spawn dice under the floor. Pending Save & Play. _(TOR-698)_
 - [ ] **Stage NPCs saved tags + Lua Execute Code:** Persistent A–Z tag rail; Lua tab uses External Editor 39998/39999 (conflicts with TTS Tools extension — one at a time). Pending dashboard/TTS check. _(TOR-555)_
 
 ## Table Objects

@@ -279,6 +279,15 @@ local function applyWorkshopHomeOff(slot, opts)
     return false
 end
 
+--- Un-park a drawer where it stands before it rises: the park hid it from every seat.
+--- Visibility, lock and interactable come from the hide snapshot (locked, not grabbable).
+--- @param obj Object
+local function revealDrawerInPlace(obj)
+    if O.isHiddenObject(obj) then
+        O.restoreObject(obj, { keepWorldPose = true })
+    end
+end
+
 --- @param npcSeatKey string NPC1..NPC4
 -- @return Object|nil  Homeland seat off anchor (fixed X/Z for tray light + dice spawn)
 local function resolveNpcOffAnchorObject(npcSeatKey)
@@ -407,6 +416,10 @@ end
 local function openForSlotAtNpcSeat(slot, npcSeatKey)
     npcSeatBySlot[slot] = npcSeatKey
     local obj = findDrawerObject(slot)
+    if obj == nil then
+        return
+    end
+    revealDrawerInPlace(obj)
     cacheWorkshopScaleIfNeeded(slot, obj)
     local epoch = bumpPoseEpoch(slot)
     applyNpcSeatDrawerPose(slot, npcSeatKey, "off", 0, epoch)
@@ -453,9 +466,27 @@ function STD.isRaisedForRelease(slot)
     return y > STD.DRAWER_RELEASE_MIN_Y
 end
 
+--- Drawer world Y once its current open pose finishes rising (Scatter, NPC seat, or default).
+-- @param slot number 1..3
+-- @param npcSeatKey string|nil
+-- @return number|nil
+local function drawerOnYForSlot(slot, npcSeatKey)
+    if scatterPoseBySlot[slot] == true then
+        return require("lib.scatter_layout").storytellerTrayOnY()
+    end
+    if type(npcSeatKey) == "string" then
+        local entry = C.ObjectPositions[NPC_SEAT_DRAWER_KEYS[npcSeatKey]]
+        local height = type(entry) == "table" and type(entry.on) == "table" and entry.on.height or nil
+        return type(height) == "table" and tonumber(height.y) or nil
+    end
+    local entry = C.ObjectPositions[SLOT_DRAWER_KEYS[slot]]
+    local pos = type(entry) == "table" and type(entry.on) == "table" and entry.on.position or nil
+    return type(pos) == "table" and tonumber(pos.y) or nil
+end
+
 --- World-space tray origin for spawning dice into an ST roll tray.
 -- Center X/Z = drawer (default) or fixed homeland off anchor when repositioned (TOR-302).
--- Ellipse radii still derive from drawer bounds.
+-- Surface Y follows the drawer's destination height; ellipse radii derive from drawer bounds.
 -- @param slot number 1..3
 -- @return table|nil  { x, y, z, radiusX, radiusZ }
 function STD.arcCenterForSlot(slot)
@@ -463,11 +494,12 @@ function STD.arcCenterForSlot(slot)
     if obj == nil then
         return nil
     end
-    local traySpec = STS.traySpecFromDrawer(obj)
+    local npcSeatKey = npcSeatKeyForSlot(slot)
+    local traySpec = STS.traySpecFromDrawer(obj, drawerOnYForSlot(slot, npcSeatKey))
     if traySpec == nil then
+        print("[STD] No tray pose for ST drawer slot " .. tostring(slot) .. "; dice not staged")
         return nil
     end
-    local npcSeatKey = npcSeatKeyForSlot(slot)
     if type(npcSeatKey) == "string" then
         local anchor = resolveNpcOffAnchorObject(npcSeatKey)
         if anchor ~= nil then
@@ -528,15 +560,14 @@ local function openForSlotAtScatter(slot, groupIndex)
     local xz = resolveScatterTrayXzYaw(groupIndex)
     local onY, offY = scatterTrayHeights()
     local epoch = bumpPoseEpoch(slot)
+    revealDrawerInPlace(obj)
     obj.setLock(true)
-    obj.setInvisibleTo({})
     obj.setPosition({ x = xz.x, y = offY, z = xz.z })
     obj.setRotation({ x = 0, y = xz.yaw, z = 0 })
     syncTrayLightXzToDrawer(slot)
     OP.applyResolvedPose(obj, {
         position = { x = xz.x, y = onY, z = xz.z },
         rotation = { x = 0, y = xz.yaw, z = 0 },
-        isHidden = false,
         isLocked = true,
     }, OP.DEFAULT_TRANSITION_DURATION, 0, {
         useSmoothSetters = true,
@@ -576,6 +607,7 @@ function STD.openForSlot(slot, opts)
     local obj = findDrawerObject(slot)
     local epoch = bumpPoseEpoch(slot)
     if obj ~= nil and type(entry) == "table" and type(entry.on) == "table" then
+        revealDrawerInPlace(obj)
         local resolvedPose = OP.resolveStatePose(obj, entry, "on") or entry.on
         OP.applyResolvedPose(obj, resolvedPose, OP.DEFAULT_TRANSITION_DURATION, 0, {
             useSmoothSetters = true,
