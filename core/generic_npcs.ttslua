@@ -9,6 +9,7 @@
     Dashboard catalogue: .dev/Storyteller Dashboard Docs/Generic NPCs.md.
 ]]
 
+local G = require("lib.guids")
 local U = require("lib.util")
 local S = require("core.state")
 local DATA = require("lib.npcs_data")
@@ -321,6 +322,37 @@ function GenericNpcs.importNamed(keys, labels)
     if spawned < 1 then
         return "No generic NPC spawned: " .. table.concat(errors, "; ")
     end
+    return nil
+end
+
+--- Storyteller Dashboard: rename a generic NPC already in the scene (membership, figurine, spotlight token).
+--- @param characterKey string
+--- @param displayName string
+--- @return string|nil error
+function GenericNpcs.rename(characterKey, displayName)
+    local membership = getMembership()
+    local row = membership[characterKey]
+    if type(row) ~= "table" then
+        return "No generic NPC `" .. tostring(characterKey) .. "` in this scene."
+    end
+    local name = type(displayName) == "string" and string.match(displayName, "^%s*(.-)%s*$") or ""
+    if name == "" then
+        return "A generic NPC needs a name."
+    end
+    row.displayName = name
+    setMembership(membership)
+    local NPCS = npcsModule()
+    local def = NPCS.characters[characterKey]
+    if type(def) == "table" then
+        def.fullName = name
+    end
+    local rec = NPCS.getInstanceRecord(characterKey)
+    local fig = type(rec) == "table" and G.getObject(rec.figurineGuid or "") or nil
+    if U.isGameObject(fig) then
+        fig.setName(name)
+    end
+    require("core.stage_tokens").refreshName(characterKey)
+    require("dashboard.push").markWorldDirty({ seats = true })
     return nil
 end
 

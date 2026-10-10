@@ -11,7 +11,7 @@ Source of truth:
 - `core/generic_npcs.ttslua` — parse, spawn, destroy, membership
 - `lib/npcs_data.ttslua` — `D.initGenericNPCs()`, `D.resolveGenericNpcEntry`, `D.genericNpcs`
 - `lib/generic_npcs_catalog.ttslua` — generated sheet `key` → `label` (`npm run generic-npcs:import`)
-- `dashboard/scenes.ttslua` — `genericAdd` op → `GenericNpcs.importNamed(keys, labels)`
+- `dashboard/scenes.ttslua` — `genericAdd` op → `GenericNpcs.importNamed(keys, labels)`; `genericRename` op → `GenericNpcs.rename(key, name)`
 - `NPCS.registerGenericCharacter` / `unregisterGenericCharacter` in `core/npcs.ttslua`
 - `sessionScene.npcWorld.genericMembership` in `core/state.ttslua`
 - Spotlight tokens: `core/stage_tokens.ttslua` (same as named stage NPCs)
@@ -60,13 +60,15 @@ Cloud figurine/token URLs plus a sheet label are required. A Cloud variant with 
 
 ## Import
 
-The only entry is the Storyteller Dashboard: the Spawn picker sends `{ op = "genericAdd", keys = { ... }, labels = { [key] = name } }` through `GlobalDashboardScenesApply`, which calls `GenericNpcs.importNamed(keys, labels)`. The Dashboard bridge has **no clicker**, so it is treated as Storyteller-initiated (see `DashboardTtsBridge`).
+The only entry is the Storyteller Dashboard: a roster click queues (and Send delivers) `{ op = "genericAdd", keys = { ... }, labels = { [key] = name } }` through `GlobalDashboardScenesApply`, which calls `GenericNpcs.importNamed(keys, labels)`. The Dashboard bridge has **no clicker**, so it is treated as Storyteller-initiated (see `DashboardTtsBridge`).
 
 Behavior (`GenericNpcs.importNamed`):
 
 1. Resolve keys via `GenericNpcs.parseImportKeys` / `D.resolveGenericNpcEntry`.
 2. Any unknown key or key already in this scene’s `genericMembership` → return an error string (shown on the Dashboard); nothing spawns.
 3. For each key, use the typed name (blank → catalog `label`), spawn, and write membership.
+
+**Rename** (`GenericNpcs.rename(key, name)`, Dashboard op `genericRename`): the key must be in this scene's membership and the trimmed name non-blank, else an error string. Writes membership `displayName`, the roster row's `fullName`, the figurine's name, and the spotlight token's name (`StageTokens.refreshName`), then marks the seats push dirty.
 
 ---
 

@@ -91,7 +91,8 @@ export type ScenesCommand =
   | { readonly op: "stage"; readonly clear: true }
   | { readonly op: "stage"; readonly reset: true }
   | { readonly op: "scatterPlace"; readonly characterKey: string; readonly kind: "pc" | "npc"; readonly group?: number }
-  | { readonly op: "genericAdd"; readonly keys: readonly string[]; readonly labels: Readonly<Record<string, string>> };
+  | { readonly op: "genericAdd"; readonly keys: readonly string[]; readonly labels: Readonly<Record<string, string>> }
+  | { readonly op: "genericRename"; readonly key: string; readonly name: string };
 
 export type ScenesSend = (command: ScenesCommand) => void;
 
@@ -99,6 +100,9 @@ export type ScenesSend = (command: ScenesCommand) => void;
 export const ScenesCommandContext = createContext<ScenesSend | null>(null);
 
 export const useScenesCommand = (): ScenesSend | null => useContext(ScenesCommandContext);
+
+/** Generic NPCs waiting in the stage queue to be spawned, by catalog key → the name they will get. */
+export const PendingGenericsContext = createContext<Readonly<Record<string, string>>>({});
 
 export const isStageChanges = (command: ScenesCommand): command is Extract<ScenesCommand, { op: "stage"; changes: StageChanges }> =>
   command.op === "stage" && "changes" in command;

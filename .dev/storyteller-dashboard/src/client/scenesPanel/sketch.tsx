@@ -567,6 +567,9 @@ export type LiveBoard = {
   readonly pending: StageChanges;
   /** Scatter moves waiting in the Send queue. */
   readonly pendingScatter: readonly ScatterMove[];
+  /** Generic NPCs the Send queue will spawn (catalog key → name), and renames it will make. */
+  readonly spawning?: Readonly<Record<string, string>>;
+  readonly renames?: Readonly<Record<string, string>>;
   readonly generics: readonly GenericNpc[];
   readonly scatter: readonly ScatterGroup[];
   readonly rollRing: RollRingData;
@@ -591,7 +594,11 @@ type CharacterRing = {
   readonly roller: { readonly kind: "pc"; readonly color: string } | { readonly kind: "npc"; readonly characterKey: string };
   /** Narrative presence toggle for an occupied seat (never connection). */
   readonly presence?: { readonly seat: string; readonly present: boolean };
+  /** A generic NPC's key, for Rename; `pending` while it waits in the Send queue to be spawned. */
+  readonly generic?: { readonly key: string; readonly pending: boolean };
 };
+
+type GenericRename = { readonly x: number; readonly y: number; readonly key: string; readonly pending: boolean; readonly name: string };
 
 const RING_RX = 150;
 const RING_RY = 86;
@@ -628,6 +635,7 @@ const OPTIMISTIC_MS = 6000;
 export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoard }): ReactElement => {
   const [ring, setRing] = useState<{ x: number; y: number } | null>(null);
   const [charRing, setCharRing] = useState<CharacterRing | null>(null);
+  const [renaming, setRenaming] = useState<GenericRename | null>(null);
   const rollsSend = useContext(RollsCommandContext);
   const [labEnv, setLabEnv] = useState<StageEnv>(LAB_ENV);
   const [labScatter, setLabScatter] = useState<readonly ScatterGroup[]>(LAB_SCATTER);
@@ -674,8 +682,11 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoa
 
   const baseTokens = liveTokens ?? STAGE_TOKENS;
   const generics = live?.generics ?? [];
+  const spawning = live?.spawning ?? {};
   const nameOf = (characterKey: string): string =>
-    baseTokens.find((token) => token.characterKey === characterKey)?.name
+    live?.renames?.[characterKey]
+    ?? spawning[characterKey]
+    ?? baseTokens.find((token) => token.characterKey === characterKey)?.name
     ?? catalogs?.pcs.find((pc) => pc.characterKey === characterKey)?.fullName
     ?? stageName(characterKey, catalogs, generics);
   const spots = withChanges(
@@ -753,11 +764,24 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoa
     if (kind === "pc" && !color) {
       return;
     }
+    const pending = characterKey in spawning;
+    const generic = command && kind === "npc" && (pending || generics.some((npc) => npc.characterKey === characterKey));
     setCharRing({
       ...ringCentre(canvasPoint(event)),
       name: nameOf(characterKey),
-      roller: color ? { kind: "pc", color } : { kind: "npc", characterKey }
+      roller: color ? { kind: "pc", color } : { kind: "npc", characterKey },
+      ...(generic ? { generic: { key: characterKey, pending } } : {})
     });
+  };
+  const rename = (target: GenericRename): void => {
+    const name = target.name.trim();
+    if (!command || name === "") {
+      return;
+    }
+    command(target.pending
+      ? { op: "genericAdd", keys: [target.key], labels: { [target.key]: name } }
+      : { op: "genericRename", key: target.key, name });
+    setRenaming(null);
   };
   // A draft preview's board (live data, no roll transport) offers no rolls; the Lab shows them inert.
   const ringRolls = charRing && (!live || rollsSend)
@@ -906,6 +930,13 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoa
                 label: charRing.presence.present ? "Into the scene" : "Out of the scene",
                 run: () => charRing.presence && command({ op: "seatPresence", ...charRing.presence })
               }]
+              : []),
+            ...(charRing.generic
+              ? [{
+                key: "rename",
+                label: "Rename…",
+                run: () => charRing.generic && setRenaming({ x: charRing.x, y: charRing.y, ...charRing.generic, name: charRing.name })
+              }]
               : [])
           ].map((item, index, items) => {
             const angle = -Math.PI / 2 + (index / items.length) * Math.PI * 2;
@@ -925,6 +956,32 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live?: LiveBoa
             );
           })}
         </div>
+      </Overlay>
+    )}
+    {renaming && (
+      <Overlay onClose={() => setRenaming(null)}>
+        <form
+          className="lab-modal lab-generic-rename"
+          style={{ left: renaming.x - 140, top: renaming.y - 40 }}
+          onSubmit={(event) => {
+            event.preventDefault();
+            rename(renaming);
+          }}
+        >
+          <span className="lab-modal-title">Rename {nameOf(renaming.key)}</span>
+          <input
+            className="lab-select"
+            autoFocus
+            value={renaming.name}
+            title="The name the players will see"
+            onFocus={(event) => event.currentTarget.select()}
+            onChange={(event) => setRenaming({ ...renaming, name: event.target.value })}
+          />
+          <span className="lab-row">
+            <button type="submit" className="lab-btn primary" disabled={renaming.name.trim() === ""}>Rename</button>
+            <button type="button" className="lab-btn" onClick={() => setRenaming(null)}>Cancel</button>
+          </span>
+        </form>
       </Overlay>
     )}
   </div>

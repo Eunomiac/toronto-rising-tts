@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ScenesCommand } from "./commands";
-import { addToQueue, commandKind, commandsToSend, queueLines, type Describe, type QueueEntry } from "./queue";
+import { addToQueue, commandKind, commandsToSend, pendingGenerics, queueLines, withoutPendingGeneric, type Describe, type QueueEntry } from "./queue";
 
 const move = (key: string, u: number): ScenesCommand => ({ op: "stage", changes: { [key]: { u, v: 0.5 } } });
 const scatter = (key: string, group?: number): ScenesCommand =>
@@ -52,5 +52,28 @@ describe("queue entries", () => {
     let entries: readonly QueueEntry[] = addToQueue([], move("victor", 0.4), 1);
     entries = addToQueue(entries, move("victor", 0.1), 2);
     expect(queueLines(entries, describeAgainstTable)).toEqual([]);
+  });
+});
+
+describe("pending generic NPCs", () => {
+  const add = (key: string, name: string): ScenesCommand => ({ op: "genericAdd", keys: [key], labels: { [key]: name } });
+
+  it("queues spawns and renames, a re-name replacing the spawn in place", () => {
+    expect(commandKind(add("bouncer1", "Bouncer"))).toBe("queue");
+    expect(commandKind({ op: "genericRename", key: "bouncer1", name: "Doorman" })).toBe("queue");
+    let entries: readonly QueueEntry[] = addToQueue([], add("bouncer1", "Bouncer"), 1);
+    entries = addToQueue(entries, move("bouncer1", 0.2), 2);
+    entries = addToQueue(entries, add("bouncer1", "Doorman"), 3);
+    expect(entries.map((entry) => entry.id)).toEqual([3, 2]);
+    expect(pendingGenerics(entries.map((entry) => entry.command))).toEqual({ bouncer1: "Doorman" });
+  });
+
+  it("forgets an unspawned generic and its stage changes, leaving everyone else's", () => {
+    let entries: readonly QueueEntry[] = addToQueue([], add("bouncer1", "Bouncer"), 1);
+    entries = addToQueue(entries, { op: "stage", changes: { bouncer1: { u: 0.2, v: 0.2 }, victor: { u: 0.3, v: 0.3 } } }, 2);
+    entries = addToQueue(entries, move("bouncer1", 0.4), 3);
+    expect(withoutPendingGeneric(entries, "bouncer1").map((entry) => entry.command)).toEqual([
+      { op: "stage", changes: { victor: { u: 0.3, v: 0.3 } } }
+    ]);
   });
 });

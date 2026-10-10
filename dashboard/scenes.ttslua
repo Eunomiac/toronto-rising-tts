@@ -43,6 +43,7 @@
                                           Scatter: move an NPC (`kind` npc; no group = off) or PC (`kind` pc,
                                           characterKey = the PC's charKey) into a scatter group 1–6
     genericAdd        keys, labels?       spawn generic NPCs (catalog keys) named by the Storyteller
+    genericRename     key, name           rename a generic NPC already in the scene
     playScene         key, clockMode?     select a library scene and apply it to the table
     endScene                              end the live scene
     upsertScene       key, title, placementMode, sessionScene
@@ -345,6 +346,9 @@ local function applyCommand(cmd)
   end
   if op == "genericAdd" then
     return require("core.generic_npcs").importNamed(cmd.keys, cmd.labels)
+  end
+  if op == "genericRename" then
+    return require("core.generic_npcs").rename(cmd.key, cmd.name)
   end
 
   if op == "upsertScene" then

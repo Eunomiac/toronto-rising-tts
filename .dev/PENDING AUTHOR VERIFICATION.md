@@ -256,7 +256,7 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 7. **Queued moves together:** move three or four tokens; they move on the drawing and each appears in the queue pop-up. Press **Send**: all the figurines should glide at the same time. Queue a couple more and press **Clear** instead: the tokens should go back and the pop-up should disappear.
 8. **Clear and Reset:** right-click empty stage. **Clear Stage** (click it twice) should take everyone off the stage and remove any generic NPCs. **Reset to Library** should put the stage back the way the scene's library row has it.
 9. **Scatter:** right-click empty stage and choose **Placement** to switch to Scatter. Six group circles appear. Drag a PC or an NPC from one circle into another: in TTS they should move to that group. Drag an NPC out of every circle: they should leave the stage. Switch Placement back afterwards.
-10. **Generic NPCs:** hover the roster on the left and press **Generic**. Find a figurine in **Add from the catalog**, press **+ Add**, type a name and press **Add**. A generic NPC should spawn in TTS and appear under **In this scene**; drag it onto the stage like anyone else.
+10. **Generic NPCs:** open the roster on the left and press **Generic**, open a group and click a figurine. It goes into the queue on the stage; press **Send** and it should spawn in TTS and appear under **In this scene**; drag it around the stage like anyone else. (Adding and renaming generics changed again — see **TOR-692** below.)
 
 #### TOR-686 — Run every Storyteller roll from the dashboard
 
@@ -316,6 +316,18 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 **Context:** The real-time clock could be switched on at any time, including Downtime, which had its own running clock. Real time now only runs during Play's Main and Memoriam subphases; everywhere else it stays off, and the dashboard hides its real-time button.
 
 **How to verify:** Save & Play and restart the dashboard. During a live scene (Play, Main), the clock button at the top right of the dashboard's date-and-time panel should be there and should turn real time on and off as before. End the scene so the game goes to Downtime: the button should disappear and the clock should stop moving. In the in-game Scenes panel, pressing the real-time toggle during Downtime should show a message that real time only runs during Main and Memoriam. Start a Memoriam: the button should come back.
+
+#### TOR-692 — Add generic NPCs in a batch and rename them from their stage token
+
+**Context:** Clicking a generic NPC in the dashboard roster used to ask for a name and spawn it straight away. Now each click puts it in the stage queue on a free spot near the stage's top-left corner (so several clicks gather in that corner), named after its catalogue entry. Nothing spawns until you press **Send**, so you can drag them where you want first. To give one a name, right-click its token on the stage and choose **Rename…**. Hovering a generic in the roster also shows its full figurine beside the roster.
+
+**How to verify:** Save & Play into a live scene and open the dashboard's **Scenes** tab.
+
+1. **Batch add:** open the roster, press **Generic**, open a group (for example Bartender) and click two or three figurines. Each should vanish from the roster and appear on the dashboard stage near the top-left corner, with lines in the stage queue. Nothing should spawn in TTS yet.
+2. **Rename before sending:** right-click one of those tokens on the stage, choose **Rename…**, type a name and press **Rename**. The token and its queue line should show the new name.
+3. **Send:** drag one somewhere else, then press **Send**. The figurines should spawn in TTS and go to their spots; the renamed one should have its new name (hover the figurine in TTS).
+4. **Rename after spawning:** right-click a spawned generic's token, rename it and press **Send**. The figurine's name in TTS and its spotlight token on the Stage Control board should both change.
+5. **Remove before sending:** click a generic again, then press the × on its queue line. It should leave the stage drawing and come back in the roster.
 
 ### Medium — Prince's Court sheet
 

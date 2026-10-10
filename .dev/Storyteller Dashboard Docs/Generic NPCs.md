@@ -103,9 +103,11 @@ The catalogue is the **Generic** view of the roster in the **Scenes** tab (`Maso
 - **In this scene** lists the generic NPCs already spawned (from the `seats` push's `generics`); drag them onto the stage like any other token.
 - The rest of the catalogue shows as groups, one per catalogue name (every "Police" variant in one group), laid out like the Main view's coteries. Generic categories are separate from Main's (`view: "generic"` on the roster category; group keys are `generic:<name>`), and a generic group has a colour but no leader. Spawned variants drop out of their group.
 - The roster search box switches to a flat list: every whitespace-separated term must match (AND) against label + tags + key (case-insensitive). At most 60 matches show.
-- Clicking a catalogue token asks for the name the players will see, then sends the `genericAdd` scene op (`GenericNpcs.importNamed` in Lua), which spawns the figurine. It goes to TTS at once; only stage moves wait in the stage queue.
+- Clicking a catalogue token queues it onto the stage: a `genericAdd` scene op (`GenericNpcs.importNamed` in Lua, named after the catalogue label) plus a stage placement on the free slot nearest the stage's top-left corner (`freeSlotNear(ADD_CORNER, …)` in `stage.ts`), so several clicks gather loosely in that corner. Nothing spawns until Send; drag them anywhere first. Queued generics drop out of the catalogue and show on the board under their pending name (`PendingGenericsContext`).
+- Right-click a generic's stage token → **Rename…** sets the name the players will see. A queued generic's `genericAdd` label is rewritten; a spawned one queues `genericRename` (`GenericNpcs.rename`).
+- Hovering a catalogue token shows the full figurine cutout floating right of the roster (`FigurinePreview`).
 - Token headshots load from `/figurine-images/<key>.webp`, which serves the Generic folder when the key is not a named NPC.
 
-The old standalone **Stage NPCs** tab (thumbnail grid, saved search tags, full-cutout hover preview, Copy keys) was retired when the Scenes tab took over generic NPCs.
+The old standalone **Stage NPCs** tab (thumbnail grid, saved search tags, Copy keys) was retired when the Scenes tab took over generic NPCs.
 
 **Sheet → Lua labels:** `npm run generic-npcs:import` also writes `lib/generic_npcs_catalog.ttslua` so `D.initGenericNPCs()` can attach `key` / `label` on each Cloud variant (TOR-560).

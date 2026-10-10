@@ -27,7 +27,7 @@ import { DraftPanels } from "./DraftPanels";
 import { useLibraryActions } from "./useLibraryActions";
 import { clockNow, refreshWorldSnapshot, useWorldState, WORLD_TOPICS, type WorldState } from "../worldState";
 import { sendScenesCommands, type ScenesReply } from "./bridge";
-import { mergedStageChanges, ScenesCommandContext, type ScenesCommand, type ScenesSend } from "./commands";
+import { isStageChanges, mergedStageChanges, PendingGenericsContext, ScenesCommandContext, type ScenesCommand, type ScenesSend } from "./commands";
 import { withRetitledScene, withoutScene, withTableScene } from "./deck";
 import { RollsCell, type OptionsAccess } from "./rolls/RollsCell";
 import { loadRollOptions, sendRollsCommands } from "./rolls/bridge";
@@ -45,9 +45,10 @@ import {
   toDate,
   weatherAxes
 } from "./liveScene";
-import { addToQueue, commandKind, commandsToSend, queueLines, type QueueEntry } from "./queue";
+import { addToQueue, commandKind, commandsToSend, pendingGenerics, pendingRenames, queueLines, withoutPendingGeneric, type QueueEntry } from "./queue";
 import { describeQueued } from "./queueLabels";
-import { boardToStage, stagePacks, type StagePack } from "./stageFrame";
+import { ADD_CORNER, freeSlotNear, isRemoval, withChanges, type StageSpot } from "./stage";
+import { boardToStage, stagePacks, stageToBoard, type StagePack } from "./stageFrame";
 
 /**
  * The Scenes tab: Lab layout B (`lab/scenesRound1.tsx` GlanceStrip) drawn from what TTS broadcasts.
@@ -201,6 +202,42 @@ const useRollsQueue = (): { send: RollsSend; options: OptionsAccess; pending: nu
 };
 
 /**
+ * One queued command into the queue. A generic NPC new to the queue also gets a stage change putting it, lit, on
+ * the free slot nearest the stage's top-left corner (so a few added in a row gather there); taking a generic that is
+ * not spawned yet off the stage forgets it instead of queueing the removal.
+ */
+const queueCommand = (
+  entries: readonly QueueEntry[],
+  command: ScenesCommand,
+  nextId: () => number,
+  world: WorldState,
+  packs: readonly StagePack[]
+): readonly QueueEntry[] => {
+  const pending = pendingGenerics(entries.map((entry) => entry.command));
+  if (isStageChanges(command)) {
+    const unspawned = Object.entries(command.changes).filter(([key, change]) => key in pending && isRemoval(change)).map(([key]) => key);
+    if (unspawned.length > 0) {
+      const forgotten = unspawned.reduce(withoutPendingGeneric, entries);
+      const changes = Object.fromEntries(Object.entries(command.changes).filter(([key]) => !unspawned.includes(key)));
+      return Object.keys(changes).length > 0 ? addToQueue(forgotten, { op: "stage", changes }, nextId()) : forgotten;
+    }
+  }
+  let next = addToQueue(entries, command, nextId());
+  if (command.op === "genericAdd") {
+    const onStage = (world.seats?.stage ?? []).flatMap((npc): StageSpot[] =>
+      typeof npc.u === "number" && typeof npc.v === "number" ? [{ characterKey: npc.characterKey, lit: npc.lightMode !== "OFF", ...boardToStage(npc.u, npc.v) }] : []);
+    for (const key of command.keys.filter((key) => !(key in pending))) {
+      const spots = withChanges(onStage, mergedStageChanges(next.map((entry) => entry.command)));
+      const slot = freeSlotNear(ADD_CORNER, packs, spots);
+      if (slot) {
+        next = addToQueue(next, { op: "stage", changes: { [key]: { ...stageToBoard(slot.u, slot.v), lightMode: "STANDARD" } } }, nextId());
+      }
+    }
+  }
+  return next;
+};
+
+/**
  * Stage board edits (`commandKind` "queue") wait in the stage queue pop-up until Send; Clear and Reset send the
  * queue first, in the same batch. Everything else goes straight to TTS.
  */
@@ -212,10 +249,13 @@ const useStageQueue = (
 ): { send: ScenesSend; view: StageQueueView; queued: readonly ScenesCommand[] } => {
   const [entries, setEntries] = useState<readonly QueueEntry[]>([]);
   const nextId = useRef(1);
-  const lines = useMemo(() => queueLines(entries, describeQueued(world, catalogs, packs)), [entries, world, catalogs, packs]);
   const queued = useMemo(() => entries.map((entry) => entry.command), [entries]);
-  const latest = useRef({ entries, lines, transport });
-  latest.current = { entries, lines, transport };
+  const lines = useMemo(
+    () => queueLines(entries, describeQueued(world, catalogs, packs, pendingGenerics(queued))),
+    [entries, queued, world, catalogs, packs]
+  );
+  const latest = useRef({ entries, lines, transport, world, packs });
+  latest.current = { entries, lines, transport, world, packs };
   const takeQueue = useCallback((): readonly ScenesCommand[] => {
     const pending = commandsToSend(latest.current.entries, latest.current.lines);
     setEntries([]);
@@ -224,7 +264,7 @@ const useStageQueue = (
   const send = useCallback<ScenesSend>((command) => {
     const kind = commandKind(command);
     if (kind === "queue") {
-      setEntries((previous) => addToQueue(previous, command, nextId.current++));
+      setEntries((previous) => queueCommand(previous, command, () => nextId.current++, latest.current.world, latest.current.packs));
     } else if (kind === "flush") {
       latest.current.transport.sendAll([...takeQueue(), command]);
     } else {
@@ -234,7 +274,12 @@ const useStageQueue = (
   const view: StageQueueView = {
     lines: lines.map((line) => ({ id: line.id, text: `${line.subject}: ${line.from} → ${line.to}` })),
     send: () => transport.sendAll(takeQueue()),
-    remove: (id) => setEntries((previous) => previous.filter((entry) => entry.id !== id)),
+    remove: (id) => setEntries((previous) => {
+      const removed = previous.find((entry) => entry.id === id)?.command;
+      return removed?.op === "genericAdd"
+        ? removed.keys.reduce(withoutPendingGeneric, previous)
+        : previous.filter((entry) => entry.id !== id);
+    }),
     clear: () => setEntries([])
   };
   return { send, view, queued };
@@ -295,6 +340,8 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
       : [])),
     [queued]
   );
+  const spawning = useMemo(() => pendingGenerics(queued), [queued]);
+  const renames = useMemo(() => pendingRenames(queued), [queued]);
   const board = useMemo((): LiveBoard | null => {
     if (!seats) {
       return null;
@@ -305,6 +352,8 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
       tokens: stageTokens,
       pending: pendingStage,
       pendingScatter,
+      spawning,
+      renames,
       generics: seats.generics,
       scatter: seats.scatter,
       env: {
@@ -319,7 +368,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
         endPhase: phase?.phase === "End"
       }
     };
-  }, [seats, scene, catalogs, liveSheet, stageTokens, pendingStage, pendingScatter, rolls?.werewolves, rolls?.oblivionSeats, phase?.phase]);
+  }, [seats, scene, catalogs, liveSheet, stageTokens, pendingStage, pendingScatter, spawning, renames, rolls?.werewolves, rolls?.oblivionSeats, phase?.phase]);
   const hunters = useMemo(() => (seats ? huntPcs(seats, catalogs) : []), [seats, catalogs]);
   const libraryLocation = scene?.library?.districtKey && scene.library.siteKey
     ? { districtKey: scene.library.districtKey, siteKey: scene.library.siteKey }
@@ -329,6 +378,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
 
   return (
     <ScenesCommandContext.Provider value={send}>
+    <PendingGenericsContext.Provider value={spawning}>
     <RollsCommandContext.Provider value={rollCommands.send}>
     <div className="lab-canvas scenes-live">
       {active && (
@@ -499,6 +549,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
       )}
     </div>
     </RollsCommandContext.Provider>
+    </PendingGenericsContext.Provider>
     </ScenesCommandContext.Provider>
   );
 };

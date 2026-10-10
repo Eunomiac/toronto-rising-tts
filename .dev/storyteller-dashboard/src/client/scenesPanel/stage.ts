@@ -77,6 +77,27 @@ export const slotOf = (spot: StagePoint, packs: readonly StagePack[]): { pack: S
   return null;
 };
 
+/** Generic NPCs added from the roster gather in the stage's top-left corner. */
+export const ADD_CORNER: StagePoint = { u: 0.04, v: 0.06 };
+
+/** The empty slot nearest a point, so NPCs added without a drop point gather loosely around it. */
+export const freeSlotNear = (point: StagePoint, packs: readonly StagePack[], spots: readonly StageSpot[]): StageSlot | null => {
+  const taken = new Set(spots.flatMap((spot) => {
+    const found = slotOf(spot, packs);
+    return found ? [found.slot] : [];
+  }));
+  let best: { slot: StageSlot; d: number } | null = null;
+  for (const pack of packs) {
+    for (const slot of pack.slots) {
+      const d = Math.hypot(slot.u - point.u, slot.v - point.v);
+      if (!taken.has(slot) && (!best || d < best.d)) {
+        best = { slot, d };
+      }
+    }
+  }
+  return best?.slot ?? null;
+};
+
 /** Where a token stands, in words: its pack, or a free spot. */
 export const spotLabel = (spot: StagePoint, packs: readonly StagePack[]): string => slotOf(spot, packs)?.pack.label ?? "a free spot";
 

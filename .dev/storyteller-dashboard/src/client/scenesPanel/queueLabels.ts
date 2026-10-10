@@ -1,7 +1,7 @@
 import type { SceneCatalogs } from "./catalogs";
 import type { WorldState } from "../worldState";
 import type { ScenesCommand, StageChange } from "./commands";
-import { stageName } from "./liveScene";
+import { stageName as liveStageName } from "./liveScene";
 import type { Describe } from "./queue";
 import { isRemoval, spotLabel } from "./stage";
 import { boardToStage, type StagePack } from "./stageFrame";
@@ -9,13 +9,33 @@ import { boardToStage, type StagePack } from "./stageFrame";
 const OFF_STAGE = "off the stage";
 const UNKNOWN = "?";
 
-/** Reads each queued change's current value from the world TTS last pushed, so a removed entry re-reads cleanly. */
-export const describeQueued = (world: WorldState, catalogs: SceneCatalogs | null, packs: readonly StagePack[] = []): Describe => {
+/**
+ * Reads each queued change's current value from the world TTS last pushed, so a removed entry re-reads cleanly.
+ * `spawning` names the generic NPCs the queue will spawn (catalog key → name).
+ */
+export const describeQueued = (
+  world: WorldState,
+  catalogs: SceneCatalogs | null,
+  packs: readonly StagePack[] = [],
+  spawning: Readonly<Record<string, string>> = {}
+): Describe => {
   const people = [...(catalogs?.pcs ?? []), ...(catalogs?.namedNpcs ?? [])];
   const nameOf = (key: string | undefined): string =>
     key ? people.find((entry) => entry.characterKey === key)?.fullName ?? key : UNKNOWN;
+  const generics = world.seats?.generics ?? [];
+  const stageName = (key: string): string => spawning[key] ?? liveStageName(key, catalogs, generics);
   return (command: ScenesCommand) => {
     switch (command.op) {
+      case "genericAdd":
+        return {
+          subject: command.keys.map((key) => command.labels[key] ?? key).join(", "),
+          from: "not spawned",
+          to: "spawned (generic)"
+        };
+      case "genericRename": {
+        const now = generics.find((npc) => npc.characterKey === command.key)?.name ?? command.key;
+        return { subject: `Rename ${now}`, from: now, to: command.name.trim() };
+      }
       case "stage": {
         if (!("changes" in command)) {
           throw new Error("Stage queue: Clear and Reset are never queued.");
@@ -35,7 +55,7 @@ export const describeQueued = (world: WorldState, catalogs: SceneCatalogs | null
           const lit = change?.lightMode ?? now?.lightMode ?? "STANDARD";
           return `${spotLabel(boardToStage(u, v), packs)}${lit === "OFF" ? " (dark)" : ""}`;
         };
-        const names = keys.map((key) => stageName(key, catalogs, world.seats?.generics ?? []));
+        const names = keys.map(stageName);
         return {
           subject: names.length > 3 ? `${names.slice(0, 3).join(", ")} +${names.length - 3}` : names.join(", "),
           from: keys.map((key) => where(key)).join("; "),
@@ -47,7 +67,7 @@ export const describeQueued = (world: WorldState, catalogs: SceneCatalogs | null
           [...entry.pcs, ...entry.npcs].some((member) => member.characterKey === command.characterKey));
         const groupText = (n: number | undefined): string => (n === undefined ? OFF_STAGE : `group ${n}`);
         return {
-          subject: command.kind === "pc" ? nameOf(command.characterKey) : stageName(command.characterKey, catalogs, world.seats?.generics ?? []),
+          subject: command.kind === "pc" ? nameOf(command.characterKey) : stageName(command.characterKey),
           from: groupText(group?.group),
           to: groupText(command.group)
         };

@@ -700,25 +700,6 @@ $lab-pin: #f5b13d;
   pointer-events: none;
 }
 
-// Names a catalog generic before it is spawned into the scene.
-.lab-generic-naming {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 2px;
-
-  .lab-group-head {
-    flex: 0 0 auto;
-    width: 38px;
-    height: 38px;
-  }
-
-  input {
-    flex: 1 1 auto;
-    min-width: 0;
-  }
-}
-
 // The right padding holds the last box's scaled-up transparent margin.
 .lab-track {
   display: flex;

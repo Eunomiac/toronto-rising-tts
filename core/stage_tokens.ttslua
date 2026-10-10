@@ -182,6 +182,17 @@ function StageTokens.reconcileFromState(opts)
     end
 end
 
+--- Re-read an NPC's display name onto their spotlight token (generic NPC renamed).
+--- @param key string
+function StageTokens.refreshName(key)
+    ensureIndex()
+    local guid = tokenGuidByKey[key]
+    local obj = guid and G.getObject(guid) or nil
+    if U.isGameObject(obj) then
+        obj.setName(displayName(key))
+    end
+end
+
 --- @param obj Object|nil
 --- @return string|nil characterKey when `obj` is a spotlight token
 StageTokens.characterKeyForToken = characterKeyForToken

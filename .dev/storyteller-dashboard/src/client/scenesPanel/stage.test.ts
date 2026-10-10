@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ScatterGroup } from "../worldState";
-import { fillOrder, movePack, moveInScatter, offStage, slotNear, spreadOnPack, withChanges, type StageSpot } from "./stage";
+import { fillOrder, freeSlotNear, movePack, moveInScatter, offStage, slotNear, spreadOnPack, withChanges, type StageSpot } from "./stage";
 import { boardToStage, stageToBoard, type StagePack, type StageSlot } from "./stageFrame";
 
 /** A five-slot arc pack in stage fractions, anchor in the middle. */
@@ -26,6 +26,14 @@ const near = (actual: { u: number; v: number }, expected: { u: number; v: number
 };
 
 const spot = (characterKey: string, slot: StageSlot, lit = true): StageSpot => ({ characterKey, lit, u: slot.u, v: slot.v });
+
+describe("freeSlotNear", () => {
+  it("takes the nearest empty slot, skipping occupied ones", () => {
+    const corner = { u: 0, v: 0.5 };
+    expect(freeSlotNear(corner, packs, [])).toBe(left.slots[0]);
+    expect(freeSlotNear(corner, packs, [spot("a", left.slots[0] as StageSlot)])).toBe(left.slots[1]);
+  });
+});
 
 describe("fillOrder", () => {
   it("starts on the anchor and works outward, left before right", () => {

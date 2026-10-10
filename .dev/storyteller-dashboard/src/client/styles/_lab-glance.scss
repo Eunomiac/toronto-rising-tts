@@ -165,6 +165,12 @@ $lab-live: #4caf6a;
   width: 240px;
 }
 
+.lab-generic-rename {
+  width: 280px;
+  transform: none;
+  gap: 8px;
+}
+
 /* ---------- stage ring menu and help ---------- */
 
 @keyframes lab-ring-track-in {
@@ -1003,7 +1009,8 @@ $lab-live: #4caf6a;
         filter: brightness(1.25);
       }
 
-      &:disabled {
+      // Still hoverable (figurine preview) where adding is unavailable.
+      &.inert {
         cursor: not-allowed;
       }
     }
@@ -2399,6 +2406,14 @@ $lab-live: #4caf6a;
 
 .lab-box.lab-dock-box {
   overflow: visible;
+}
+
+.lab-figurine-preview {
+  position: absolute;
+  z-index: 55;
+  width: auto;
+  pointer-events: none;
+  filter: drop-shadow(0 8px 20px rgb(0 0 0 / 80%));
 }
 
 // NPCs in hand during a roster drag, drawn like stage tokens at the pointer.

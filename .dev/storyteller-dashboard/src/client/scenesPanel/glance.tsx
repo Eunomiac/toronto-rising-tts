@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type InputHTMLAttributes, type MouseEvent, type PointerEvent, type ReactElement, type ReactNode } from "react";
+import { useContext, useEffect, useId, useMemo, useRef, useState, type CSSProperties, type InputHTMLAttributes, type MouseEvent, type PointerEvent, type ReactElement, type ReactNode } from "react";
 import { Headshot } from "../headshots/Headshot";
 import type { CatalogCharacter, SceneCatalogs } from "./catalogs";
 import {
@@ -28,8 +28,10 @@ import {
   type Odds
 } from "./huntOdds";
 import { MemoriamModal } from "./memoriamModal";
-import { Btn, Overlay, canvasPoint } from "./sketch";
-import { useScenesCommand, type SceneClockMode, type ScenesSend, type SoundLane } from "./commands";
+import { Btn, Overlay, activeCanvas, canvasPoint } from "./sketch";
+import { createPortal } from "react-dom";
+import { figurineUrl } from "../headshots/headshots";
+import { PendingGenericsContext, useScenesCommand, type SceneClockMode, type ScenesSend, type SoundLane } from "./commands";
 import { LOCATION_MUSIC_LABEL, MOOD_LABEL, fromDate, rainKey, type SoundView, type SpotlightView } from "./liveScene";
 import { GROUP_DRAG_TYPE, NPC_DRAG_TYPE } from "./stage";
 import { useWorldState } from "../worldState";
@@ -531,51 +533,46 @@ const genericGroups = (catalog: readonly GenericEntry[], spawned: ReadonlySet<st
     .map(([label, members]) => ({ key: `generic:${label}`, label, labelWidth: groupLabelWidth(label), members }));
 };
 
-/** One catalog generic: click to name it and spawn it into the scene in TTS. */
-const GenericToken = ({ member, className, onPick }: { member: RosterMember; className: string; onPick?: () => void }): ReactElement => (
+const PREVIEW_HEIGHT = 520;
+
+/** A generic's whole figurine, floating just right of the roster level with the hovered token. */
+const FigurinePreview = ({ characterKey, token, panel }: { characterKey: string; token: HTMLElement; panel: HTMLElement }): ReactElement | null => {
+  const canvas = activeCanvas();
+  if (!canvas) {
+    return null;
+  }
+  const origin = canvas.getBoundingClientRect();
+  const tokenRect = token.getBoundingClientRect();
+  const left = panel.getBoundingClientRect().right - origin.left + 14;
+  const top = Math.min(Math.max(tokenRect.top - origin.top - PREVIEW_HEIGHT / 3, 8), canvas.offsetHeight - PREVIEW_HEIGHT - 8);
+  return createPortal(
+    <img className="lab-figurine-preview" src={figurineUrl(characterKey)} alt="" style={{ left, top, height: PREVIEW_HEIGHT }} />,
+    canvas
+  );
+};
+
+/**
+ * One catalog generic: a click queues it onto the stage (spawned on Send, named after its catalog entry until
+ * renamed from its stage token's right-click ring); hovering previews the whole figurine.
+ */
+const GenericToken = ({ member, className, onPick, onPreview }: {
+  member: RosterMember;
+  className: string;
+  onPick?: () => void;
+  onPreview: (characterKey: string | null, element?: HTMLElement) => void;
+}): ReactElement => (
   <button
     type="button"
-    className="lab-group-token"
-    title={onPick ? `Add a ${member.name} to this scene` : "Adding spawns figurines in TTS, so it only works in the Scenes tab."}
-    disabled={!onPick}
+    className={`lab-group-token${onPick ? "" : " inert"}`}
+    title={onPick ? `Put a ${member.name} on the stage (spawned when you Send)` : "Adding spawns figurines in TTS, so it only works in the Scenes tab."}
+    aria-disabled={!onPick}
     onClick={onPick}
+    onMouseEnter={(event) => onPreview(member.characterKey, event.currentTarget)}
+    onMouseLeave={() => onPreview(null)}
   >
     <Headshot className={className} characterKey={member.characterKey} />
   </button>
 );
-
-/**
- * Asks for the name the players will see before a generic is spawned into the scene; spawning goes through
- * the Scenes tab's command channel to TTS.
- */
-const GenericNaming = ({ member, onClose }: { member: RosterMember; onClose: () => void }): ReactElement => {
-  const send = useScenesCommand();
-  const [name, setName] = useState(member.name);
-  return (
-    <form
-      className="lab-generic-naming"
-      onSubmit={(event) => {
-        event.preventDefault();
-        if (send && name.trim() !== "") {
-          send({ op: "genericAdd", keys: [member.characterKey], labels: { [member.characterKey]: name.trim() } });
-          onClose();
-        }
-      }}
-    >
-      <Headshot className="lab-group-head" characterKey={member.characterKey} />
-      <input
-        className="lab-select"
-        autoFocus
-        value={name}
-        title="The name the players will see"
-        onChange={(event) => setName(event.target.value)}
-        onKeyDown={(event) => event.key === "Escape" && onClose()}
-      />
-      <button type="submit" className="lab-btn primary" disabled={!send || name.trim() === ""}>Add</button>
-      <button type="button" className="lab-btn" onClick={onClose}>Cancel</button>
-    </form>
-  );
-};
 
 const NEW_CATEGORY_COLOR = "#9c7bd6";
 const UNSORTED_GROUP_COLOR = "#7a7a86";
@@ -671,15 +668,16 @@ const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove }: {
  *
  * Main holds the catalogued NPCs (drag a token onto the stage). Generic holds the generics already spawned into
  * the scene (dragged like anyone else), then the generic catalog grouped by name with its own categories;
- * clicking a catalog token asks for the name the players will see and spawns it in TTS.
+ * clicking a catalog token queues it onto a free slot near the stage's top-left corner (several in a row gather
+ * there), to be spawned on Send; generics already in the scene or the queue drop out of the catalog.
  */
 export const MasonryRoster = (): ReactElement => {
   const { catalogs, error } = useSceneCatalogs();
   const inScene = useWorldState().seats?.generics ?? [];
   const send = useScenesCommand();
+  const queuedGenerics = useContext(PendingGenericsContext);
   const [genericCatalog, setGenericCatalog] = useState<readonly GenericEntry[] | null>(null);
   const [genericError, setGenericError] = useState<string | null>(null);
-  const [naming, setNaming] = useState<RosterMember | null>(null);
   const [open, setOpen] = useState<string | null>("beesHive");
   const layout = useRosterLayout();
   const [draft, setDraft] = useState<{ name: string; color: string } | null>(null);
@@ -687,6 +685,10 @@ export const MasonryRoster = (): ReactElement => {
   const [dragging, setDragging] = useState(false);
   const [query, setQuery] = useState("");
   const [view, setView] = usePersistentState<"main" | "generic">("tr-dashboard:roster-tab", "main", ["main", "generic"]);
+  const [preview, setPreview] = useState<{ characterKey: string; token: HTMLElement } | null>(null);
+  const rosterRef = useRef<HTMLDivElement>(null);
+  const previewFigurine = (characterKey: string | null, token?: HTMLElement): void =>
+    setPreview(characterKey && token ? { characterKey, token } : null);
   useEffect(() => {
     if (view === "generic" && !genericCatalog) {
       loadGenericCatalog().then(setGenericCatalog, (reason: unknown) => setGenericError(reason instanceof Error ? reason.message : String(reason)));
@@ -749,11 +751,13 @@ export const MasonryRoster = (): ReactElement => {
       return { key, label, labelWidth: groupLabelWidth(label), members };
     });
   }, [catalogs]);
-  const spawnedKey = inScene.map((npc) => npc.characterKey).join(",");
+  const spawnedKey = [...inScene.map((npc) => npc.characterKey), ...Object.keys(queuedGenerics)].join(",");
   const spawned = useMemo(() => new Set(spawnedKey.split(",")), [spawnedKey]);
   const genGroups = useMemo(() => (genericCatalog ? genericGroups(genericCatalog, spawned) : []), [genericCatalog, spawned]);
   const groups = view === "main" ? mainGroups : genGroups;
-  const pickGeneric = send ? (member: RosterMember) => () => setNaming(member) : () => undefined;
+  const pickGeneric = (member: RosterMember): (() => void) | undefined => send
+    ? () => send({ op: "genericAdd", keys: [member.characterKey], labels: { [member.characterKey]: member.name } })
+    : undefined;
 
   const leaderFirst = (group: NpcGroup): readonly RosterMember[] => {
     const leader = groupLeader(layout, group.key);
@@ -763,7 +767,7 @@ export const MasonryRoster = (): ReactElement => {
     `lab-group-head${groupLeader(layout, group.key) === npc.characterKey ? " boss" : ""}`;
   const openToken = (group: NpcGroup, npc: RosterMember): ReactElement => view === "main"
     ? <RosterToken key={npc.characterKey} characterKey={npc.characterKey} name={npc.name} className={tokenClass(group, npc)} />
-    : <GenericToken key={npc.characterKey} member={npc} className={tokenClass(group, npc)} onPick={pickGeneric(npc)} />;
+    : <GenericToken key={npc.characterKey} member={npc} className={tokenClass(group, npc)} onPick={pickGeneric(npc)} onPreview={previewFigurine} />;
   const masonry = (list: readonly NpcGroup[]): ReactElement => (
     <div className="lab-masonry">
       {list.map((group) => {
@@ -831,7 +835,7 @@ export const MasonryRoster = (): ReactElement => {
       .slice(0, GENERIC_MATCH_LIMIT)
       .map((npc) => {
         const member = { characterKey: npc.key, name: npc.label };
-        return <GenericToken key={npc.key} member={member} className="lab-group-head" onPick={pickGeneric(member)} />;
+        return <GenericToken key={npc.key} member={member} className="lab-group-head" onPick={pickGeneric(member)} onPreview={previewFigurine} />;
       });
   const found = view === "main" ? mainFound() : genericFound();
   const categories = layout.categories.filter((category) => (category.view === "generic") === (view === "generic"));
@@ -840,8 +844,9 @@ export const MasonryRoster = (): ReactElement => {
   const editingGroup = editing ? groups.find((group) => group.key === editing.key) : undefined;
 
   return (
-    <div className="lab-mroster">
+    <div className="lab-mroster" ref={rosterRef}>
       <RosterDragGhost />
+      {preview && rosterRef.current && <FigurinePreview characterKey={preview.characterKey} token={preview.token} panel={rosterRef.current} />}
       <div className="lab-mroster-head">
         <button type="button" className={`lab-btn${view === "main" ? " primary" : ""}`} onClick={() => setView("main")}>Main</button>
         <button type="button" className={`lab-btn${view === "generic" ? " primary" : ""}`} onClick={() => setView("generic")}>Generic</button>
@@ -876,7 +881,6 @@ export const MasonryRoster = (): ReactElement => {
           <button type="button" className="lab-btn" onClick={() => setDraft(null)}>Cancel</button>
         </form>
       )}
-      {view === "generic" && naming && <GenericNaming key={naming.characterKey} member={naming} onClose={() => setNaming(null)} />}
       {error && <p className="lab-note">{error}</p>}
       {view === "generic" && genericError && <p className="lab-note">{genericError}</p>}
       <div className="lab-mroster-body">
