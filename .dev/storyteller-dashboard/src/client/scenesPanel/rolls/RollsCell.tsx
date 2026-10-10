@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties, type MouseEvent, type 
 import { Icon, type IconName } from "../icons";
 import { canvasPoint, Overlay } from "../sketch";
 import { SEAT_ACCENT } from "../../pcSheet/layout";
+import { usePersistentState } from "../../persistentState";
 import type { PcRoll, PoolKind, RollPool, RollResult, RollsSlice, StLiveRoll, StRollSlot } from "../../worldState";
 import type { RollOptionsView } from "./bridge";
 import type { PoolDieAction, RollsSend } from "./commands";
@@ -608,15 +609,14 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
   const { shown: rolls, paint } = useLocalPools(pushed, pending);
   const [popup, setPopup] = useState<OptionsPopup | null>(null);
   const [poolRing, setPoolRing] = useState<PoolRing | null>(null);
-  const [folded, setFolded] = useState<ReadonlySet<string>>(() => new Set());
-  const toggleFold = (key: string): void =>
-    setFolded((current) => {
-      const next = new Set(current);
-      if (!next.delete(key)) {
-        next.add(key);
-      }
-      return next;
-    });
+  const [foldedKeys, setFoldedKeys] = usePersistentState<string>("tr-dashboard:roll-folds", "");
+  const folded = new Set(foldedKeys === "" ? [] : foldedKeys.split(","));
+  const toggleFold = (key: string): void => {
+    if (!folded.delete(key)) {
+      folded.add(key);
+    }
+    setFoldedKeys([...folded].join(","));
+  };
   const openPoolRing = (event: MouseEvent<HTMLElement>, target: PoolRing["target"]): void => {
     const point = canvasPoint(event);
     setPoolRing({ x: Math.min(Math.max(point.x, POOL_RING_MARGIN), 1920 - POOL_RING_MARGIN), y: point.y, target });

@@ -372,7 +372,7 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 **How to verify:** Save & Play, then open the dashboard's **Scenes** tab.
 
 1. Click a scene on deck in the phase bar. The menu should show the scene's time and date on top, Now below, a row of coloured buttons under each, and a Real time row with ×2 and ×5 to Now. There is no Set Now.
-2. Hover the top row from left to right: the scene time should move on by 0, 15, 30 and 45 minutes, then 1 h, 1 h 30, 2, 3 and 4 hours. If the preview passes Now, the Now block reads "moves on" and shows the same time.
+2. Hover the top row from left to right: the scene time should move on by 0, 15, 30 and 45 minutes, then 1 h, 1 h 30, 2, 3 and 4 hours. The Now block always shows present day; if the preview passes it, Now gets a small "moves to …" tag with that time.
 3. With a scene whose time is earlier tonight than Now, ×5 to Now should be lit. Click the leftmost top button: the scene plays at its own time and the clock runs fast until it reaches Now, then at ×2.
 4. Switch scenes again and click the third button on the Now row (+30 min): the scene should start 30 minutes after Now, Now should move on by 30 minutes, and the clock should run at ×2.
 

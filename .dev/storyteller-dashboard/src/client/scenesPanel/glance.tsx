@@ -179,8 +179,8 @@ export const SceneTimingRing = ({ timing, onClose }: { timing: SceneTiming; onCl
     onClose();
   };
   const sceneShown = target.from === "scene" ? start : sceneAt;
-  const nowShown = target.from === "present" ? start : start && present && start > present ? start : present;
-  const nowMoves = nowShown !== undefined && present !== undefined && nowShown.getTime() !== present.getTime();
+  const nowShown = target.from === "present" ? start : present;
+  const nowMovesTo = target.from === "scene" && start && present && start > present ? start : undefined;
   return (
     <Overlay onClose={onClose}>
       <div
@@ -206,7 +206,7 @@ export const SceneTimingRing = ({ timing, onClose }: { timing: SceneTiming; onCl
           <span className="lab-timing-label">
             Now
             {target.from === "present" && target.plus > 0 && <span className="lab-timing-plus">{offsetLabel(target.plus)}</span>}
-            {nowMoves && <span className="lab-timing-moves">moves on</span>}
+            {nowMovesTo && <span className="lab-timing-moves">moves to {formatTime(nowMovesTo)}</span>}
           </span>
           {nowShown ? (
             <>
@@ -1043,8 +1043,8 @@ export const MasonryRoster = (): ReactElement => {
 
 /**
  * The left column below the hunt roll: scene notes, with the NPC roster folded to a rail along their left
- * edge. Clicking the rail opens the roster over the notes; it stays open (across reloads too) until its close
- * arrow folds it back.
+ * edge. Clicking the rail, or pushing the pointer against the screen's left edge beside it, opens the roster
+ * over the notes; it stays open (across reloads too) until its close arrow folds it back.
  */
 export const RosterDock = ({ scene }: { scene: string }): ReactElement => {
   const layout = useRosterLayout();
@@ -1062,6 +1062,7 @@ export const RosterDock = ({ scene }: { scene: string }): ReactElement => {
           </>
         ) : (
           <button type="button" className="lab-dock-rail" title="NPC roster" onClick={() => setOpen(true)}>
+            <span className="lab-dock-edge" onMouseEnter={() => setOpen(true)} />
             <span className="lab-dock-rail-label">NPC Roster</span>
             {layout.categories.map((category) => (
               <span key={category.id} className="lab-dock-rail-cat" style={{ "--cat": category.color } as CSSProperties} title={category.name} />

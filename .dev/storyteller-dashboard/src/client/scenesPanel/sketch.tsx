@@ -316,14 +316,14 @@ const SeatContent = ({ seat }: { seat: SeatSketch }): ReactElement => (
  */
 export const Seats = ({ seats = SEATS, liveSheet, onMenu, onPresence }: {
   seats?: readonly SeatSketch[];
-  /** Live sheets (fetched as soon as the seats show, for each PC's Desire); without it the seats edit the Lab's sample trackers. */
+  /** Live sheets (fetched as soon as the seats show, for each PC's Desire); without it the Lab's sample seats edit sample trackers and other seats (scene previews) show no sheet. */
   liveSheet?: LiveSheetAccess;
   onMenu?: (event: MouseEvent<HTMLElement>, seat: SeatSketch) => void;
   onPresence?: (seatKey: string, present: boolean) => void;
 }): ReactElement => {
   const [labState, setLabState] = useState(labSheet);
   const send = useScenesCommand();
-  const sheet = liveSheet ? liveSheet.sheet ?? NO_SEATS : labState;
+  const sheet = liveSheet ? liveSheet.sheet ?? NO_SEATS : seats === SEATS ? labState : NO_SEATS;
   const apply = (command: ApplyCommand): void => {
     if (liveSheet) {
       liveSheet.apply(command);
