@@ -2636,15 +2636,17 @@ const CommitInput = ({ value, onCommit, ...rest }: Omit<InputHTMLAttributes<HTML
  * Advance opens a ring: Scene (scene picker), Memoriam (Memoriam set-up), or Spotlight (click twice). In any
  * other phase, Advance names the next phase and needs a second click. Switching to a deck scene or playing one
  * from the picker first asks how to set the clock (`SceneTimingRing`). Right-click a deck scene to open its
- * preview; click the table's scene for Unlink and Fork.
+ * preview or take it off the deck; click the table's scene for Unlink and Fork.
  */
-export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch, onEndScene, onPlay, onEdit, onPrepare, onOpenDeck, live }: {
+export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch, onEndScene, onRemoveFromDeck, onPlay, onEdit, onPrepare, onOpenDeck, live }: {
   library: readonly LibraryEntry[];
   libraryActions?: LibraryActions;
   scenes: LiveScenes;
   linkMenu?: LinkMenu;
   onSwitch: (key: string, clockMode: SceneClockMode) => void;
   onEndScene: () => void;
+  /** Takes a scene that is not on the table off the deck (the library keeps it). */
+  onRemoveFromDeck: (key: string) => void;
   onPlay: (key: string, clockMode: SceneClockMode) => void;
   onEdit: (key: string) => void;
   /** A new scene at this location, titled "District — Site". */
@@ -2657,6 +2659,7 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
   const [labSub, setLabSub] = useState("Main");
   const [ring, setRing] = useState<Point | null>(null);
   const [linkAt, setLinkAt] = useState<Point | null>(null);
+  const [deckMenu, setDeckMenu] = useState<{ at: Point; scene: SceneRef } | null>(null);
   const [modal, setModal] = useState<"scene" | "memoriam" | null>(null);
   const [timing, setTiming] = useState<SceneTiming | null>(null);
   const [labSession, setSession] = useState({ number: 43, title: "" });
@@ -2694,13 +2697,11 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
                 key={scene.key}
                 type="button"
                 className="lab-phase-deck"
-                title={`Switch the table to ${scene.title}${onOpenDeck ? " (right-click to edit it)" : ""}`}
+                title={`Switch the table to ${scene.title} (right-click to edit it or take it off the deck)`}
                 onClick={(event) => setTiming({ at: canvasPoint(event), go: (mode) => onSwitch(scene.key, mode) })}
                 onContextMenu={(event) => {
-                  if (onOpenDeck) {
-                    event.preventDefault();
-                    onOpenDeck(scene.key);
-                  }
+                  event.preventDefault();
+                  setDeckMenu({ at: canvasPoint(event), scene });
                 }}
               >
                 {scene.title}
@@ -2831,6 +2832,35 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
       )}
       {linkAt && linkMenu && scenes.current && (
         <LinkMenuPopover at={linkAt} menu={linkMenu} title={scenes.current.title} onClose={() => setLinkAt(null)} />
+      )}
+      {deckMenu && (
+        <Overlay onClose={() => setDeckMenu(null)}>
+          <div className="lab-modal lab-link-menu lab-deck-menu" style={{ left: Math.min(deckMenu.at.x, 1920 - 260), top: deckMenu.at.y + 12 }}>
+            <span className="lab-modal-title">{deckMenu.scene.title}</span>
+            {onOpenDeck && (
+              <button
+                type="button"
+                className="lab-btn"
+                onClick={() => {
+                  setDeckMenu(null);
+                  onOpenDeck(deckMenu.scene.key);
+                }}
+              >
+                Edit (open its preview)
+              </button>
+            )}
+            <button
+              type="button"
+              className="lab-btn danger"
+              onClick={() => {
+                setDeckMenu(null);
+                onRemoveFromDeck(deckMenu.scene.key);
+              }}
+            >
+              Remove from deck
+            </button>
+          </div>
+        </Overlay>
       )}
       {modal === "memoriam" && (
         <MemoriamModal

@@ -218,6 +218,7 @@ const GlanceStrip = ({ previewOpen, clockDiffers, weatherOverride, heatWave, col
             const live = now.live.filter((scene) => scene.key !== now.current?.key);
             return { live, current: live[0] ?? null };
           })}
+          onRemoveFromDeck={(key) => setScenes((now) => ({ ...now, live: now.live.filter((scene) => scene.key !== key) }))}
           onPlay={play}
           onEdit={() => setPreparing(true)}
           onPrepare={(at, districtName, siteName) => {

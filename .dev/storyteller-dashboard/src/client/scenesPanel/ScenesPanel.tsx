@@ -28,7 +28,7 @@ import { useLibraryActions } from "./useLibraryActions";
 import { clockNow, refreshWorldSnapshot, useWorldState, WORLD_TOPICS, type WorldState } from "../worldState";
 import { sendScenesCommands, type ScenesReply } from "./bridge";
 import { mergedStageChanges, ScenesCommandContext, type ScenesCommand, type ScenesSend } from "./commands";
-import { withoutScene, withTableScene } from "./deck";
+import { withRetitledScene, withoutScene, withTableScene } from "./deck";
 import { RollsCell, type OptionsAccess } from "./rolls/RollsCell";
 import { loadRollOptions, sendRollsCommands } from "./rolls/bridge";
 import { RollsCommandContext, type RollsCommand, type RollsSend } from "./rolls/commands";
@@ -127,15 +127,21 @@ const useNow = (running: boolean): number => {
   return now;
 };
 
-/** The on-deck list, kept in the dashboard's scene deck file; TTS's table scene joins it once that file has loaded. */
+/**
+ * The on-deck list, kept in the dashboard's scene deck file. TTS's table scene joins it once (when that file has
+ * loaded and TTS first reports the scene); after that only its title follows renames, so End Scene or Remove from
+ * deck is not undone by a push that still names the old scene.
+ */
 const useLiveScenes = (liveKey: string | undefined, title: string | null): LiveScenes & { remove: (key: string) => void } => {
   const { deck } = useSceneDeck();
   const { loaded } = useSceneDeckStatus();
+  const joined = useRef<string | null>(null);
   useEffect(() => {
     if (!loaded || !liveKey || !title) {
       return;
     }
-    const next = withTableScene(deck, liveKey, title);
+    const next = joined.current === liveKey ? withRetitledScene(deck, liveKey, title) : withTableScene(deck, liveKey, title);
+    joined.current = liveKey;
     if (next !== deck) {
       setSceneDeckSection("deck", next);
     }
@@ -407,6 +413,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
                     liveScenes.remove(scene.liveKey);
                   }
                 }}
+                onRemoveFromDeck={liveScenes.remove}
                 onPlay={library.play}
                 onEdit={library.openPreview}
                 onPrepare={library.prepare}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { withoutScene, withTableScene } from "./deck";
+import { withRetitledScene, withoutScene, withTableScene } from "./deck";
 
 describe("scene deck", () => {
   const deck = [{ key: "elysium", title: "Elysium" }];
@@ -15,5 +15,11 @@ describe("scene deck", () => {
 
   it("removes an ended scene", () => {
     expect(withoutScene(deck, "elysium")).toEqual([]);
+  });
+
+  it("retitles a scene on deck but never puts a removed one back", () => {
+    expect(withRetitledScene(deck, "elysium", "Elysium — Great Hall")).toEqual([{ key: "elysium", title: "Elysium — Great Hall" }]);
+    expect(withRetitledScene(deck, "elysium", "Elysium")).toBe(deck);
+    expect(withRetitledScene([], "elysium", "Elysium")).toEqual([]);
   });
 });
