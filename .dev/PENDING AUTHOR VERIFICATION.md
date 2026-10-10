@@ -387,6 +387,17 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 3. Cancel, seat an NPC at the table, and start a roll for them (right-click their seat). The drawer should rise visibly in front of that seat, the dice should sit on its red tray floor rather than the table, and Roll and Reroll should both tumble them.
 4. Cancel or confirm the roll. The drawer should sink out of sight again.
 
+#### TOR-701 — Switching scenes clears finished rolls instead of refusing
+
+**Context:** Switching scenes (or table layouts) with dice on the table used to be refused outright. Now, if every roll on the table is finished and has been shown to the players, TTS clears those dice and carries on. It still refuses while a roll is in progress, while a Storyteller drawer is holding a result back, or when loose dice belong to no roll. Broadcasting a held drawer result now also stops it counting as held (it used to stay marked "Held" after the broadcast).
+
+**How to verify:** Save & Play, then open the dashboard's **Scenes** tab with a scene on the table.
+
+1. Start a Storyteller roll, roll it and Confirm normally (left-click). While its drawer card is still showing, play another scene: the switch should go ahead and the drawer should sink away.
+2. Start a Storyteller roll and leave it unconfirmed. Play another scene: it should refuse with the red **Not done in TTS** notice.
+3. Roll and right-click Confirm (hold the result). Play another scene: it should still refuse. Broadcast the held result, then play the scene again: it should go ahead and clear the drawer.
+4. Have a player finish a roll, and while their result banner is still up, play another scene: it should go ahead and their dice should disappear.
+
 #### TOR-700 — Picking Storyteller reroll dice happens on the dashboard only
 
 **Context:** Clicking a die to pick it for a Storyteller reroll used to send a command to TTS on every click. The picks now just light up on the dashboard, and only pressing Reroll sends them. The same change gives roll cards a slightly thicker frame: a Storyteller result the table has not seen yet has a dashed, softly pulsing orange frame, and a roll that is finished and broadcast has no frame at all.

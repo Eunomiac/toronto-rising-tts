@@ -2608,18 +2608,22 @@ function M.hasLooseDiceOnTable()
 end
 
 --- Alerts the GM (in TTS and on the Storyteller Dashboard) and returns true when table/scene layout changes
---- must wait for rolls to finish.
+--- must wait for rolls to finish. Finished rolls already shown to the table are cleared instead of blocking.
 --- @param operationLabel string|nil e.g. `"switch table layout"` or `"apply a library scene"`
 --- @return boolean true when the caller should abort
 function M.alertAndBlockIfDiceOnTable(operationLabel)
   if not M.hasLooseDiceOnTable() then
     return false
   end
+  if GlobalClearFinishedRollsOffTable() then
+    return false
+  end
   local label = U.Type(operationLabel) == "string" and operationLabel ~= "" and operationLabel
       or "change table layout"
   local text = "Cannot "
     .. label
-    .. " while dice are on the table. Finish or cancel active rolls first (Confirm / Cancel on the roll dashboard)."
+    .. " while dice are on the table. Finish and broadcast, or cancel, the rolls still in progress or held first"
+    .. " (Confirm / Broadcast / Cancel on the roll dashboard)."
   U.AlertGM(text)
   require("dashboard.push").notice(text)
   return true

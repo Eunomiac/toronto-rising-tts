@@ -93,6 +93,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `GlobalIsStorytellerSteamPlayer` | — | 2 | bundle-safe actor-identity gate |
 | `GlobalPostRollModifyPool` / `GlobalPostRollAddDie` / `GlobalPostRollRemoveDie` | B+C | W4 | ST post-roll pool |
 | `GlobalStRerollDiceByGuids` | B+C | W4 | ST roll panel selective dice reroll (TOR-224) |
+| `GlobalClearFinishedRollsOffTable` | B+C | — | Called from `RSL.alertAndBlockIfDiceOnTable` (scene apply, table switch) only when dice are loose: clears finished, broadcast rolls (PC post-broadcast cleanup, confirmed non-held ST drawers); clears nothing while a roll is live or a drawer holds its result |
 | `GlobalApplySecretRollDiceInvisibility` | C | W4 | Secret ST roll — hide dice from PCs (`setInvisibleTo`) |
 | `GlobalRestoreSecretRollDiceVisibility` | C | W4 | Slot clear / cancel — restore dice visibility |
 | `GlobalGetRollPhase`, `GlobalResolveSheetPlayerID`, `GlobalGetMergedPlayerData`, `GlobalGetRelationshipsForChar`, `GlobalGetSeatLayoutCenterPoint`, `GlobalIsPlayerDiceBagEnabled`, `GlobalCollectSheetImageUpdates` | A | — | read-only (`GlobalGetRelationshipsForChar`: Page 4 object scripts, called from the page fingerprint on each sheet refresh) |

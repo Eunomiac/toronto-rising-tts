@@ -6252,6 +6252,52 @@ function GlobalConsumePendingRollCleanup(params)
     return true
 end
 
+--- Scene / table switches: clears finished rolls already shown to the table whose dice are still out (PC dice
+--- waiting out their result broadcast, confirmed Storyteller drawers). Clears nothing while any roll is live or a
+--- drawer holds an unbroadcast result.
+-- @return boolean  true when it cleared at least one roll and none is live or held
+function GlobalClearFinishedRollsOffTable()
+    local function hasLiveRoll(color)
+        local pid = S.getPlayerID(color)
+        return pid ~= nil and type(S.getStateVal("playerData", pid, "hud", "rollData", "active")) == "table"
+    end
+    if hasLiveRoll("Black") then
+        return false
+    end
+    for _, color in ipairs(C.PlayerColors) do
+        if hasLiveRoll(color) then
+            return false
+        end
+    end
+    local slots = S.getStateVal("storytellerRolls", "slots")
+    local finishedSlots = {}
+    for i = 1, 3 do
+        local slot = type(slots) == "table" and slots[i] or nil
+        if type(slot) == "table" and slot.cleared ~= true then
+            if slot.confirmed ~= true or slot.pendingBroadcast == true then
+                return false
+            end
+            finishedSlots[#finishedSlots + 1] = i
+        end
+    end
+    local broadcasting = {}
+    for color in pairs(pendingRollCleanup) do
+        broadcasting[#broadcasting + 1] = color
+    end
+    if #broadcasting == 0 and #finishedSlots == 0 then
+        return false
+    end
+    for _, color in ipairs(broadcasting) do
+        GlobalConsumePendingRollCleanup({ color = color })
+    end
+    local STR = require("core.storyteller_rolls")
+    for _, slotIndex in ipairs(finishedSlots) do
+        STR.cancelSlot(slotIndex)
+    end
+    require("dashboard.push").markWorldDirty({ rolls = true })
+    return true
+end
+
 -- ============================================================================
 -- PHYSICAL DICE INTEGRATION
 -- Dice are pre-tagged in TTS at authoring time:
