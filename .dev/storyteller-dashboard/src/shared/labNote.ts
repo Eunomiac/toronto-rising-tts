@@ -1,4 +1,4 @@
-/** Click-to-comment design feedback pinned on a Lab sketch (dev-only Lab tab). */
+/** Click-to-comment design feedback pinned on a dashboard tab (dev server only); `sketch` names the tab. */
 export type LabNoteStatus = "open" | "done";
 
 export type LabNote = {

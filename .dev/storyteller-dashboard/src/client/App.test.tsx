@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("./luaTab", () => ({ initLuaTab: vi.fn() }));
 vi.mock("./generateNpcTab", () => ({ initGenerateNpc: vi.fn() }));
-vi.mock("./lab/LabTab", () => ({ LabTab: () => null }));
+vi.mock("./lab/LabPins", () => ({ LabPins: () => null }));
 vi.mock("./scenesPanel/ScenesPanel", () => ({ ScenesPanel: () => null }));
 
 import { App } from "./App";

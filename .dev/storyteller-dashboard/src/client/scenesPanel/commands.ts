@@ -95,10 +95,16 @@ export type ScenesCommand =
 
 export type ScenesSend = (command: ScenesCommand) => void;
 
-/** The Scenes tab's command sender; `null` (the Lab) leaves the panels on their mock state. */
+/** The command sender: the table's queue on the Scenes tab, or a scene draft's editor in a preview. */
 export const ScenesCommandContext = createContext<ScenesSend | null>(null);
 
-export const useScenesCommand = (): ScenesSend | null => useContext(ScenesCommandContext);
+export const useScenesCommand = (): ScenesSend => {
+  const send = useContext(ScenesCommandContext);
+  if (!send) {
+    throw new Error("Scenes panels need a ScenesCommandContext provider (the Scenes tab or a scene draft).");
+  }
+  return send;
+};
 
 /** Generic NPCs waiting in the stage queue to be spawned, by catalog key → the name they will get. */
 export const PendingGenericsContext = createContext<Readonly<Record<string, string>>>({});

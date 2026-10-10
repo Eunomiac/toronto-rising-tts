@@ -46,5 +46,5 @@ export type RollsCommand =
 
 export type RollsSend = (command: RollsCommand) => void;
 
-/** The Scenes tab provides the live roll transport; the Lab sketch leaves it unset (nothing is sent). */
+/** The Scenes tab provides the live roll transport; a scene draft's preview leaves it unset (it offers no rolls). */
 export const RollsCommandContext = createContext<RollsSend | null>(null);

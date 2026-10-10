@@ -1,16 +1,12 @@
-// Dev-only Lab: grey-box sketches on a fixed 1920×1042 canvas plus click-to-comment pins.
+// The Scenes tab's fixed 1920×1042 canvas and its building blocks, plus the dev-only note pins on every tab.
 
 $lab-live: #4caf6a;
 $lab-preview: #4a8dff;
 $lab-pin: #f5b13d;
 
-.app-tabs-extra {
-  margin-left: auto;
-  display: flex;
-  align-items: stretch;
-}
-
+// Right after the tabs: the PCs tab keeps its port controls at the bar's far right.
 .lab-controls {
+  margin-left: 1.5rem;
   display: flex;
   align-items: stretch;
   font-size: 0.78rem;
@@ -19,10 +15,6 @@ $lab-pin: #f5b13d;
     border-left: 1px solid var(--line);
     font-size: 0.78rem;
     padding: 0 0.7rem;
-  }
-
-  &-sep {
-    width: 0.6rem;
   }
 
   &-toggle {
@@ -69,58 +61,8 @@ $lab-pin: #f5b13d;
   border: 1px dashed #3b3b46;
   background: #16161b;
 
-  &.preview {
-    z-index: 20;
-    border: 2px solid $lab-preview;
-    background: #0f1726;
-  }
-
-  &.popover {
-    z-index: 25;
-    border: 2px solid #c9c9d4;
-    background: #1d1d24;
-  }
-
-  &.reserved {
-    border-style: dotted;
-    background: repeating-linear-gradient(135deg, #131317 0 10px, #18181e 10px 20px);
-  }
-
   &.lab-borderless {
     border-color: transparent;
-  }
-
-  &-head {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    flex: 0 0 auto;
-  }
-
-  &-title {
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #9d9daa;
-  }
-
-  &-tier {
-    padding: 0 5px;
-    font-size: 10px;
-    font-weight: 800;
-    background: #2b2b33;
-
-    &.tier-A {
-      background: #5a1b22;
-      color: #ffd0d4;
-    }
-  }
-
-  &-size {
-    margin-left: auto;
-    font-size: 10px;
-    color: #55555f;
   }
 
   &-body {
@@ -129,14 +71,6 @@ $lab-pin: #f5b13d;
     display: flex;
     flex-direction: column;
     gap: 4px;
-  }
-
-  &-lines {
-    flex: 0 0 auto;
-    margin: 0;
-    padding-left: 16px;
-    font-size: 11px;
-    color: #8a8a96;
   }
 }
 
@@ -321,7 +255,6 @@ $signal-fire: #ff9a1f;
   vertical-align: middle;
 }
 
-.lab-chip,
 .lab-btn {
   display: inline-flex;
   align-items: center;
@@ -329,33 +262,8 @@ $signal-fire: #ff9a1f;
   padding: 2px 7px;
   border: 1px solid #34343e;
   font-size: 12px;
-  white-space: nowrap;
-  background: #1e1e25;
-}
-
-.lab-chip {
-  &.on {
-    border-color: $lab-live;
-    color: #c9f2d3;
-  }
-
-  &.warn {
-    border-color: $lab-pin;
-    color: #ffe2b0;
-  }
-
-  &.dim {
-    color: #74747f;
-  }
-
-  &.accent {
-    border-color: var(--red-bright);
-    color: #ffd0d4;
-  }
-}
-
-.lab-btn {
   font-weight: 700;
+  white-space: nowrap;
   background: #24242c;
 
   &.primary {
@@ -585,32 +493,8 @@ $signal-fire: #ff9a1f;
     stroke-dasharray: 6 6;
   }
 
-  &-pack {
-    fill: #2e2a23;
-    stroke: #5a5244;
-  }
-
   &-snap {
     fill: #3d382f;
-  }
-
-  &-npc {
-    fill: #8a8a8a;
-
-    &.lit {
-      fill: #f2c44e;
-    }
-  }
-
-  &-label {
-    fill: #8a826f;
-    font-size: 11px;
-    text-anchor: middle;
-  }
-
-  &.wide &-label {
-    font-size: 17px;
-    font-weight: 700;
   }
 
   &.wide &-snap {
@@ -888,178 +772,10 @@ $signal-fire: #ff9a1f;
   }
 }
 
-.lab-clock {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-
-  &-tag {
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #8a8a96;
-  }
-
-  &-present.small {
-    font-size: 12px;
-    color: #b8b8c4;
-  }
-
-  &-main {
-    display: flex;
-    align-items: baseline;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-
-  &-time {
-    font-size: 26px;
-    font-weight: 800;
-  }
-
-  &.big &-time {
-    font-size: 40px;
-  }
-
-  &-date {
-    color: #b8b8c4;
-  }
-
-  &-sun {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-}
-
-.lab-jumps {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-
-  &-label {
-    font-size: 11px;
-    color: #8a8a96;
-  }
-
-  &-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-}
-
-.lab-weather {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-
-  &-icons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-
-  &-source {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    margin: 0;
-    font-size: 12px;
-    color: #8a8a96;
-  }
-
-  &.override {
-    padding: 6px;
-    border: 2px solid var(--red-bright);
-    background: repeating-linear-gradient(135deg, #3a0f14 0 8px, #2a0b0f 8px 16px);
-
-    .lab-weather-source {
-      font-weight: 800;
-      color: #ffd0d4;
-    }
-  }
-}
-
-.lab-location {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 14px;
-
-  &.stacked {
-    flex-direction: column;
-  }
-
-  &-key {
-    display: inline-block;
-    min-width: 48px;
-    font-size: 10px;
-    font-weight: 800;
-    text-transform: uppercase;
-    color: #8a8a96;
-  }
-
-  &-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-}
-
-.lab-sound {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-
-  &-now {
-    margin: 0;
-    font-size: 12px;
-  }
-
-  &-lanes {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-
-  &-volumes {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 4px;
-    font-size: 11px;
-    color: #8a8a96;
-  }
-
-  &-volume {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-
-  &-bar {
-    height: 6px;
-    background: linear-gradient(90deg, #8a8a96 60%, #2b2b33 60%);
-  }
-}
-
 .lab-queue {
   display: flex;
   flex-direction: column;
   gap: 4px;
-
-  &-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  &-live {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-weight: 700;
-  }
 
   &-list {
     margin: 0;
@@ -1113,199 +829,24 @@ $signal-fire: #ff9a1f;
     justify-content: center;
     gap: 4px;
   }
-
-  &-hint {
-    margin: 0;
-    font-size: 11px;
-    color: #74747f;
-  }
 }
 
-.lab-toggle {
-  width: 30px;
-  height: 16px;
-  border: 1px solid #44444f;
-  background: #2b2b33;
+// While adding notes, every click outside the tab bar places a note instead of reaching the page.
+.tab-panel.pin-adding {
+  outline: 2px dashed $lab-pin;
+  outline-offset: -2px;
 }
 
-.lab-roster {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-
-  &-tabs {
-    display: flex;
-    gap: 4px;
-  }
-
-  &-trays {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-
-    &.grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-
-      .lab-tray {
-        padding: 4px;
-      }
-
-      .lab-tray-token {
-        width: 24px;
-        height: 24px;
-      }
-    }
-  }
+body:has(.tab-panel.pin-adding) :not(.app-tabs, .app-tabs *, .lab-pins *) {
+  cursor: crosshair !important;
 }
 
-.lab-tray {
-  padding: 6px;
-  border: 1px solid #2f2f38;
-
-  &-name {
-    display: block;
-    margin-bottom: 4px;
-    font-size: 11px;
-    font-weight: 700;
-    color: #b8b8c4;
-  }
-
-  &-tokens {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-
-  &-token {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    border: 2px solid #4a4a55;
-    background: #2a2a32;
-  }
-}
-
-.lab-scene-title {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-
-.lab-scene-live {
-  padding: 1px 6px;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  color: #c9f2d3;
-  background: #1d4a2a;
-}
-
-.lab-scene-name {
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.lab-preview-tabs {
-  display: flex;
-  gap: 4px;
-  margin-left: auto;
-}
-
-.lab-preview-tab {
-  padding: 3px 9px;
-  border: 1px solid #2c4a7a;
-  font-size: 12px;
-  color: #b9d1ff;
-  background: #121c2e;
-
-  &.active {
-    border-color: $lab-preview;
-    background: #1b2c4a;
-  }
-
-  &.add {
-    border-style: dashed;
-    color: #6f86ad;
-  }
-}
-
-.lab-preview {
-  &-body {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    height: 100%;
-  }
-
-  &-grid {
-    display: flex;
-    gap: 12px;
-    min-height: 0;
-  }
-
-  &-side {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: column;
-    gap: 14px;
-    min-width: 0;
-  }
-
-  &-actions {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    margin-top: auto;
-  }
-
-  &-hint {
-    font-size: 11px;
-    color: #8aa4d6;
-  }
-}
-
-.lab-library {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-
-  &-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 4px;
-    padding: 6px 8px;
-    border: 1px solid #2f2f38;
-
-    &.live {
-      border-color: $lab-live;
-    }
-
-    &.prep {
-      border-color: #2c4a7a;
-    }
-  }
-}
-
-.lab-reserved {
-  margin: 0;
-  font-size: 12px;
-  color: #74747f;
-}
-
+// Above the modals (80) and the headshot editor (120), so notes can sit on them too.
 .lab-pins {
   position: absolute;
   inset: 0;
-  z-index: 50;
+  z-index: 130;
   pointer-events: none;
-
-  &.adding {
-    pointer-events: auto;
-    cursor: crosshair;
-    background: rgb(245 177 61 / 4%);
-  }
 
   &[hidden] {
     display: none;

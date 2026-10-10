@@ -32,8 +32,7 @@ const segmentClass = (segment: TimelineSegment, current: boolean): string =>
 export const MemoriamModal = ({ presentYear, onClose, onAdvance }: {
   presentYear: number;
   onClose: () => void;
-  /** Absent in the Lab, where Advance only closes. */
-  onAdvance?: (payload: MemoriamPayload) => void;
+  onAdvance: (payload: MemoriamPayload) => void;
 }): ReactElement => {
   const { catalogs, error } = useSceneCatalogs();
   const [subject, setSubject] = useState<string | null>(null);
@@ -55,7 +54,7 @@ export const MemoriamModal = ({ presentYear, onClose, onAdvance }: {
   };
   const advance = (): void => {
     if (subject && choice) {
-      onAdvance?.(memoriamPayload(subject, year, choice, chosenPeriod, present));
+      onAdvance(memoriamPayload(subject, year, choice, chosenPeriod, present));
     }
     onClose();
   };

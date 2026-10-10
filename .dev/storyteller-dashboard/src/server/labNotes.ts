@@ -4,7 +4,7 @@ import { MAX_LAB_NOTE_LENGTH, type LabNote, type LabNoteCreate, type LabNoteFile
 
 /**
  * Lab design pins live in `agent/lab-notes.json` (tracked) so the author and agents share one feedback log.
- * Agents add `reply` fields by editing the file directly; the Lab tab only creates, edits, resolves, and deletes.
+ * Agents add `reply` fields by editing the file directly; the dashboard only creates, edits, resolves, and deletes.
  */
 
 export class LabNoteError extends Error {

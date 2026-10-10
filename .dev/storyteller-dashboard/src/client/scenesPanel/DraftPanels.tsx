@@ -123,9 +123,6 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }:
         <WhenPanel
           at={at}
           present={present}
-          onChange={() => undefined}
-          onSetPresent={() => undefined}
-          forceOpen={false}
           sceneOnly
           live={{ running: false, speed: 1, allowed: false }}
           w={box.when.w - 2}
@@ -135,8 +132,7 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }:
       <Box {...box.weather} className="lab-backdrop-box">
         <WeatherPanel
           at={at}
-          forceOverride={false}
-          forceCelsius={null}
+          celsius={null}
           {...(slice.weatherOverride ? { live: weatherAxes(slice.weather), held: true } : {})}
           w={box.weather.w - 2}
           h={box.weather.h - 2}

@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactElement } from "react";
-import { SEAT_ACCENT } from "../pcSheet/layout";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from "react";
 import { createApplyQueue } from "../applyQueue";
 import {
   ambientLabel,
@@ -53,7 +52,7 @@ import { ADD_CORNER, freeSlotNear, isRemoval, stageSpots, withChanges } from "./
 import { boardToStage, stagePacks, stageToBoard, type StagePack } from "./stageFrame";
 
 /**
- * The Scenes tab: Lab layout B (`lab/scenesRound1.tsx` GlanceStrip) drawn from what TTS broadcasts.
+ * The Scenes tab (the "Glance strip" layout), drawn from what TTS broadcasts.
  * Build phases and what is still read-only: `agent/Scenes Redesign/Build Plan.md`.
  */
 
@@ -417,9 +416,6 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
               <WhenPanel
                 at={at}
                 present={present}
-                onChange={() => undefined}
-                onSetPresent={() => undefined}
-                forceOpen={false}
                 presentOnly={!sceneActive}
                 live={{
                   running: clock.running,
@@ -439,8 +435,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
             {at && scene ? (
               <WeatherPanel
                 at={at}
-                forceOverride={false}
-                forceCelsius={clock?.temperatureC ?? null}
+                celsius={clock?.temperatureC ?? null}
                 live={weatherAxes(scene.weather)}
                 held={scene.weatherOverride !== undefined}
                 w={WEATHER_W - 2}

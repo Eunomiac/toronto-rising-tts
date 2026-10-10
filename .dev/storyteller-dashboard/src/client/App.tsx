@@ -1,31 +1,57 @@
 import { useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactElement } from "react";
 import { initGenerateNpc } from "./generateNpcTab";
-import { LabTab } from "./lab/LabTab";
+import { LabPins } from "./lab/LabPins";
 import { initLuaTab } from "./luaTab";
 import { PcSheetTab } from "./pcSheet/PcSheetTab";
 import { ScenesPanel } from "./scenesPanel/ScenesPanel";
 import { TermImageLayer } from "./termImages/TermImageLayer";
 
 const DEFAULT_TAB_ID = "tab-scenes";
-const LAB_TAB_ID = "tab-lab";
 
-const ALL_TABS = [
-  { id: DEFAULT_TAB_ID, panelId: "panel-scenes", label: "Scenes" },
-  { id: "tab-pcs", panelId: "panel-pcs", label: "PCs" },
-  { id: "tab-lua", panelId: "panel-lua", label: "Lua" },
-  { id: "tab-generate-npc", panelId: "panel-generate-npc", label: "Generate NPC" },
-  { id: LAB_TAB_ID, panelId: "panel-lab", label: "Lab" }
+/** `page` names the tab in `agent/lab-notes.json`, so dev notes pinned on it come back on the same tab. */
+const TABS = [
+  { id: DEFAULT_TAB_ID, panelId: "panel-scenes", label: "Scenes", page: "scenes" },
+  { id: "tab-pcs", panelId: "panel-pcs", label: "PCs", page: "pcs" },
+  { id: "tab-lua", panelId: "panel-lua", label: "Lua", page: "lua" },
+  { id: "tab-generate-npc", panelId: "panel-generate-npc", label: "Generate NPC", page: "generate-npc" }
 ] as const;
 
-type TabId = (typeof ALL_TABS)[number]["id"];
+type TabId = (typeof TABS)[number]["id"];
 
-const TABS = ALL_TABS.filter((tab) => tab.id !== LAB_TAB_ID || import.meta.env.DEV);
-
-const initialTab = (): TabId =>
-  import.meta.env.DEV && new URLSearchParams(window.location.search).has("lab") ? LAB_TAB_ID : DEFAULT_TAB_ID;
+/** Dev-only: pin design notes on whichever tab is showing. */
+const NoteControls = ({ tab }: { tab: (typeof TABS)[number] }): ReactElement => {
+  const [addMode, setAddMode] = useState(false);
+  const [visible, setVisible] = useState(true);
+  const [panel, setPanel] = useState<HTMLElement | null>(null);
+  useLayoutEffect(() => setPanel(document.getElementById(tab.panelId)), [tab.panelId]);
+  useLayoutEffect(() => {
+    if (!addMode) {
+      return undefined;
+    }
+    const onKey = (event: globalThis.KeyboardEvent): void => {
+      if (event.key === "Escape" && !(event.target instanceof HTMLTextAreaElement)) {
+        setAddMode(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [addMode]);
+  return (
+    <div className="lab-controls">
+      <button type="button" className={addMode ? "lock active" : undefined} title="Esc stops adding" onClick={() => setAddMode(!addMode)}>
+        {addMode ? "Adding notes: click anywhere" : "Add note"}
+      </button>
+      <label className="lab-controls-toggle">
+        <input type="checkbox" checked={visible} onChange={() => setVisible(!visible)} />
+        Show notes
+      </label>
+      {panel && <LabPins page={tab.page} panel={panel} addMode={addMode} visible={visible} />}
+    </div>
+  );
+};
 
 export const App = (): ReactElement => {
-  const [activeTab, setActiveTab] = useState<TabId>(initialTab);
+  const [activeTab, setActiveTab] = useState<TabId>(DEFAULT_TAB_ID);
   const started = useRef(false);
 
   useLayoutEffect(() => {
@@ -77,7 +103,7 @@ export const App = (): ReactElement => {
             </button>
           );
         })}
-        {import.meta.env.DEV && <div id="lab-controls" className="app-tabs-extra" />}
+        {import.meta.env.DEV && <NoteControls tab={TABS.find((tab) => tab.id === activeTab) ?? TABS[0]} />}
       </nav>
 
       <section
@@ -147,18 +173,6 @@ export const App = (): ReactElement => {
           </aside>
         </main>
       </section>
-
-      {import.meta.env.DEV && (
-        <section
-          id="panel-lab"
-          className="tab-panel lab-panel"
-          role="tabpanel"
-          aria-labelledby={LAB_TAB_ID}
-          hidden={activeTab !== LAB_TAB_ID}
-        >
-          <LabTab active={activeTab === LAB_TAB_ID} />
-        </section>
-      )}
 
       <div id="modal-root"></div>
       <TermImageLayer />

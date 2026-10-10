@@ -1,8 +1,12 @@
-import { useEffect, useRef, useState, type MouseEvent, type ReactElement } from "react";
+import { useEffect, useState, type ReactElement } from "react";
+import { createPortal } from "react-dom";
 import type { LabNote } from "../../shared/labNote";
 import { addLabNote, deleteLabNote, listLabNotes, patchLabNote } from "./labNotesApi";
 
 const CONFIRM_MS = 1500;
+
+/** While adding notes these never reach the page; the click itself places the note. */
+const SWALLOWED = ["pointerdown", "mousedown", "click", "dblclick", "contextmenu", "dragstart"] as const;
 
 type Draft = { readonly x: number; readonly y: number; readonly id?: number; readonly text: string };
 
@@ -27,12 +31,16 @@ const ConfirmButton = ({ label, onConfirm }: { label: string; onConfirm: () => v
   );
 };
 
-export const LabPins = ({ sketch, addMode, visible }: { sketch: string; addMode: boolean; visible: boolean }): ReactElement => {
+/**
+ * Dev-only design notes pinned on a dashboard tab (`page` is the tab, `panel` its element). Notes are drawn in the
+ * panel's content coordinates, so they scroll with it. While `addMode` is on, a click anywhere outside the tab bar
+ * (pop-ups and modals included) opens a new note there instead of reaching the page.
+ */
+export const LabPins = ({ page, panel, addMode, visible }: { page: string; panel: HTMLElement; addMode: boolean; visible: boolean }): ReactElement => {
   const [notes, setNotes] = useState<readonly LabNote[]>([]);
   const [openId, setOpenId] = useState<number | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const layer = useRef<HTMLDivElement>(null);
 
   const run = (task: Promise<readonly LabNote[]>): void => {
     task.then((next) => {
@@ -48,37 +56,52 @@ export const LabPins = ({ sketch, addMode, visible }: { sketch: string; addMode:
   useEffect(() => {
     setOpenId(null);
     setDraft(null);
-  }, [sketch]);
+  }, [page]);
 
-  const onLayerClick = (event: MouseEvent<HTMLDivElement>): void => {
-    if (!addMode || event.target !== layer.current) {
-      return;
+  useEffect(() => {
+    if (!addMode) {
+      return undefined;
     }
-    const rect = layer.current.getBoundingClientRect();
-    setOpenId(null);
-    setDraft({ x: event.clientX - rect.left, y: event.clientY - rect.top, text: "" });
-  };
+    panel.classList.add("pin-adding");
+    const swallow = (event: Event): void => {
+      const target = event.target;
+      if (!(target instanceof Element) || target.closest(".lab-pins, .app-tabs")) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.type === "click" && event instanceof MouseEvent) {
+        const rect = panel.getBoundingClientRect();
+        setOpenId(null);
+        setDraft({ x: event.clientX - rect.left + panel.scrollLeft, y: event.clientY - rect.top + panel.scrollTop, text: "" });
+      }
+    };
+    for (const type of SWALLOWED) {
+      window.addEventListener(type, swallow, true);
+    }
+    return () => {
+      panel.classList.remove("pin-adding");
+      for (const type of SWALLOWED) {
+        window.removeEventListener(type, swallow, true);
+      }
+    };
+  }, [addMode, panel]);
 
   const saveDraft = (): void => {
     if (!draft || draft.text.trim() === "") {
       return;
     }
     run(draft.id === undefined
-      ? addLabNote({ sketch, x: draft.x, y: draft.y, text: draft.text })
+      ? addLabNote({ sketch: page, x: draft.x, y: draft.y, text: draft.text })
       : patchLabNote(draft.id, { text: draft.text }));
     setDraft(null);
   };
 
-  const shown = notes.filter((note) => note.sketch === sketch);
+  const shown = notes.filter((note) => note.sketch === page);
   const openNote = shown.find((note) => note.id === openId);
 
-  return (
-    <div
-      ref={layer}
-      className={addMode ? "lab-pins adding" : "lab-pins"}
-      onClick={onLayerClick}
-      hidden={!visible && !addMode}
-    >
+  return createPortal(
+    <div className="lab-pins" hidden={!visible && !addMode}>
       {shown.map((note) => (
         <button
           key={note.id}
@@ -86,8 +109,7 @@ export const LabPins = ({ sketch, addMode, visible }: { sketch: string; addMode:
           className={`lab-pin ${note.status}${note.reply ? " replied" : ""}${note.id === openId ? " open" : ""}`}
           style={{ left: note.x, top: note.y }}
           title={note.text}
-          onClick={(event) => {
-            event.stopPropagation();
+          onClick={() => {
             setDraft(null);
             setOpenId(note.id === openId ? null : note.id);
           }}
@@ -97,7 +119,7 @@ export const LabPins = ({ sketch, addMode, visible }: { sketch: string; addMode:
       ))}
 
       {openNote && (
-        <div className="lab-pin-card" style={{ left: openNote.x + 18, top: openNote.y }} onClick={(event) => event.stopPropagation()}>
+        <div className="lab-pin-card" style={{ left: openNote.x + 18, top: openNote.y }}>
           <p className="lab-pin-card-label">Note {openNote.id}{openNote.status === "done" ? " (done)" : ""}</p>
           <p className="lab-pin-card-text">{openNote.text}</p>
           {openNote.reply && <p className="lab-pin-card-reply"><strong>Agent:</strong> {openNote.reply}</p>}
@@ -115,7 +137,7 @@ export const LabPins = ({ sketch, addMode, visible }: { sketch: string; addMode:
       )}
 
       {draft && (
-        <div className="lab-pin-card editing" style={{ left: draft.x + 18, top: draft.y }} onClick={(event) => event.stopPropagation()}>
+        <div className="lab-pin-card editing" style={{ left: draft.x + 18, top: draft.y }}>
           <span className="lab-pin draft" style={{ left: -18, top: 0 }} />
           <textarea
             autoFocus
@@ -128,6 +150,7 @@ export const LabPins = ({ sketch, addMode, visible }: { sketch: string; addMode:
                 saveDraft();
               }
               if (event.key === "Escape") {
+                event.stopPropagation();
                 setDraft(null);
               }
             }}
@@ -140,6 +163,7 @@ export const LabPins = ({ sketch, addMode, visible }: { sketch: string; addMode:
       )}
 
       {error && <p className="lab-pins-error">{error}</p>}
-    </div>
+    </div>,
+    panel
   );
 };
