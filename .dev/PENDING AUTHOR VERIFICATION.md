@@ -387,6 +387,18 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 3. Cancel, seat an NPC at the table, and start a roll for them (right-click their seat). The drawer should rise visibly in front of that seat, the dice should sit on its red tray floor rather than the table, and Roll and Reroll should both tumble them.
 4. Cancel or confirm the roll. The drawer should sink out of sight again.
 
+#### TOR-700 — Picking Storyteller reroll dice happens on the dashboard only
+
+**Context:** Clicking a die to pick it for a Storyteller reroll used to send a command to TTS on every click. The picks now just light up on the dashboard, and only pressing Reroll sends them. The same change gives roll cards a slightly thicker frame: a Storyteller result the table has not seen yet has a dashed, softly pulsing orange frame, and a roll that is finished and broadcast has no frame at all.
+
+**How to verify:** Save & Play, then open the dashboard's **Scenes** tab.
+
+1. Start a Storyteller roll (right-click a stage token), add a few dice and press Roll. Once the dice settle, the card's frame should be dashed and pulsing.
+2. Click two dice. They should highlight at once with no "Sending to TTS" line, and nothing should change on the in-game Storyteller roll panel. Click one again to unpick it.
+3. Press Reroll. Only the picked dice should toss in the tray; afterwards no dice are picked and the frame is still dashed and pulsing.
+4. Right-click Confirm to hold the result: the drawer card stays dashed and pulsing. Press its Broadcast button: the frame disappears.
+5. A PC roll that has finished and been broadcast should also have no frame, while a PC roll still in progress keeps its coloured frame.
+
 #### TOR-699 — New default figurine heights on the inner stage rings
 
 **Context:** Figurines placed on the stage's Center ring (Center, Center Left, Center Right) now stand at -60, and on the Mid Center ring (Mid Center, Mid Left, Mid Right) at -57. NPCs already standing in saved scenes keep their old height until they are moved.

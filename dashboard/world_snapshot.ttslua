@@ -308,16 +308,14 @@ local function faceKind(face)
 end
 
 --- @param faces table|nil
---- @param selected table|nil guid → true (Storyteller dice picked for a reroll)
---- @return table one row per die, in the roll's face order (the reroll pick uses that index)
-local function diceRows(faces, selected)
+--- @return table one row per die, in the roll's face order (the dashboard's reroll picks use that index)
+local function diceRows(faces)
   local out = {}
   for i, face in ipairs(type(faces) == "table" and faces or {}) do
     local row = type(face) == "table" and face or {}
     out[i] = {
       value = tonumber(row.value),
       kind = faceKind(row),
-      selected = type(selected) == "table" and type(row.guid) == "string" and selected[row.guid] == true or nil,
     }
   end
   return out
@@ -460,7 +458,7 @@ local function buildRolls()
       pool = poolCounts(active.pool),
       difficulty = tonumber(active.difficulty),
       result = resultRow(active),
-      dice = diceRows(active.diceFaces, type(active.stSelectiveReroll) == "table" and active.stSelectiveReroll.selectedGuids or nil),
+      dice = diceRows(active.diceFaces),
       actions = RUI.stRollPanelActions(active),
       secret = meta.secretDice == true,
       quiet = meta.suppressBroadcast == true,

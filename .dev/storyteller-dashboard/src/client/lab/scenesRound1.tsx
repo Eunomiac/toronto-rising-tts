@@ -310,8 +310,8 @@ const LAB_ROLLS: RollsSlice = {
     live: {
       rollType: "standard", label: "Drake", slot: 1, phase: "postRoll", hint: "Pick dice to reroll, or Confirm.", wpReroll: false,
       pool: { normal: 4, hunger: 2 }, difficulty: 4, result: { resultClass: "messyCritical", successes: 5, margin: 1, text: "MESSY CRITICAL +1" },
-      dice: [{ value: 10, kind: "normal" }, { value: 3, kind: "normal", selected: true }, { value: 6, kind: "normal" }, { value: 7, kind: "normal" }, { value: 10, kind: "hunger" }, { value: 1, kind: "hunger" }],
-      actions: { roll: false, rollEnabled: false, half: false, wp: true, recalc: true, reroll: true, rerollEnabled: true, confirm: true, oblivChoice: false, brutalChoice: false },
+      dice: [{ value: 10, kind: "normal" }, { value: 3, kind: "normal" }, { value: 6, kind: "normal" }, { value: 7, kind: "normal" }, { value: 10, kind: "hunger" }, { value: 1, kind: "hunger" }],
+      actions: { roll: false, rollEnabled: false, half: false, wp: true, recalc: true, reroll: true, confirm: true, oblivChoice: false, brutalChoice: false },
       secret: false,
       quiet: false
     }

@@ -6,6 +6,7 @@ $phase-gold: #e8b83c;
 $phase-gold-bright: #ffd75a;
 $phase-blue: #4f9bff;
 $phase-blue-bright: #8cc0ff;
+$phase-held: #ff8a5c;
 
 .lab-box.roll-box {
   border-style: solid;
@@ -57,6 +58,17 @@ $phase-blue-bright: #8cc0ff;
 
   50% {
     box-shadow: 0 0 12px 3px rgba($phase-blue-bright, 0.9);
+  }
+}
+
+@keyframes roll-pulse-held {
+  0%,
+  100% {
+    box-shadow: 0 0 2px 0 rgba($phase-held, 0.35);
+  }
+
+  50% {
+    box-shadow: 0 0 10px 2px rgba($phase-held, 0.85);
   }
 }
 
@@ -114,11 +126,28 @@ $phase-blue-bright: #8cc0ff;
   flex: 0 0 auto;
   align-items: stretch;
   min-height: 0;
-  border: 1px solid #34343e;
+  border: 2px solid #34343e;
   border-left: 0;
   background: #1a1a20;
 
   @include roll-phases;
+
+  // Finished and shown to the table: nothing left to do, so no frame.
+  &.broadcast {
+    border-color: transparent;
+  }
+
+  // A Storyteller result the table has not seen yet (before or after a Willpower reroll, or held back).
+  &.held {
+    border-style: dashed;
+    border-color: $phase-held;
+    animation: roll-pulse-held 1.6s ease-in-out infinite;
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+      box-shadow: 0 0 8px 2px rgba($phase-held, 0.6);
+    }
+  }
 
   &.has-acts .roll-body {
     padding-right: 22px;

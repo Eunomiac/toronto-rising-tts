@@ -2466,6 +2466,33 @@ function RC.toggleStSelectiveDie(color, slotIndex)
     return true
 end
 
+--- Replaces the ST selective-reroll selection with the given die slots (the dashboard picks dice locally).
+-- @param color string
+-- @param slotIndices number[]  1-based indices into active.diceFaces
+-- @return boolean  false when the roll cannot take a selection or an index has no die
+function RC.setStSelectiveDice(color, slotIndices)
+    if color ~= "Black" or type(slotIndices) ~= "table" then return false end
+    local active = getActive(color)
+    if active == nil or active.phase ~= C.RollPhase.POST_ROLL then return false end
+    if active.pendingResolution ~= nil then return false end
+    ensureStSelectiveRerollShape(active)
+    if active.stSelectiveReroll.inProgress == true then return false end
+
+    local faces = active.diceFaces
+    if type(faces) ~= "table" then return false end
+    local selected = {}
+    for _, slotIndex in ipairs(slotIndices) do
+        local face = faces[tonumber(slotIndex) or 0]
+        if type(face) ~= "table" or type(face.guid) ~= "string" or face.guid == "" then
+            return false
+        end
+        selected[face.guid] = true
+    end
+    active.stSelectiveReroll.selectedGuids = selected
+    setActive(color, active)
+    return true
+end
+
 --- Re-locks pool dice, preview-recalculates, and clears inProgress after the last rerolled die settles.
 local function finishStSelectiveRerollBatch(color)
     local active = getActive(color)

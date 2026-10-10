@@ -247,7 +247,7 @@ const PcRollRow = ({ roll, send, collapsed, onToggle, onOptions, onPool }: {
     : [];
   return (
     <RollCard
-      className={`pc ${phaseClass(roll.phase, roll.wpReroll)}`}
+      className={`pc ${phaseClass(roll.phase, roll.wpReroll)}${roll.done ? " broadcast" : ""}`}
       style={style}
       title={title}
       rollType={roll.rollType}
@@ -322,7 +322,7 @@ const SlotRollCard = ({ slot, send, collapsed, onToggle }: {
     : [];
   return (
     <RollCard
-      className="npc phase-resolved"
+      className={`npc phase-resolved ${held ? "held" : "broadcast"}`}
       title="Finished: shown here until the drawer is cleared. Broadcast it (again), or dismiss it."
       rollType={slot.rollType}
       name={slot.label ?? "NPC"}
@@ -345,7 +345,9 @@ const SlotRollCard = ({ slot, send, collapsed, onToggle }: {
   );
 };
 
-const npcActions = (live: StLiveRoll, send: RollsSend): CardAction[] => {
+const NO_PICKS: ReadonlySet<number> = new Set();
+
+const npcActions = (live: StLiveRoll, send: RollsSend, picked: ReadonlySet<number>): CardAction[] => {
   const a = live.actions;
   const actions: CardAction[] = [];
   if (a.roll) {
@@ -361,7 +363,13 @@ const npcActions = (live: StLiveRoll, send: RollsSend): CardAction[] => {
     actions.push({ key: "recalc", icon: "recalc", label: "Recalculate from the table", onClick: () => send({ op: "npcRecalc" }) });
   }
   if (a.reroll) {
-    actions.push({ key: "reroll", icon: "reroll", label: "Reroll the picked dice", disabled: !a.rerollEnabled, onClick: () => send({ op: "npcReroll" }) });
+    actions.push({
+      key: "reroll",
+      icon: "reroll",
+      label: "Reroll the picked dice",
+      disabled: picked.size === 0,
+      onClick: () => send({ op: "npcReroll", indices: [...picked].sort((x, y) => x - y) })
+    });
   }
   if (a.confirm) {
     actions.push({ key: "confirm", icon: "confirm", label: "Confirm (right-click: hold the result)", tone: "gold", keep: true, onClick: () => send({ op: "npcConfirm", quiet: false }), onQuiet: () => send({ op: "npcConfirm", quiet: true }) });
@@ -389,6 +397,17 @@ const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool }: {
   onPool: (event: MouseEvent<HTMLElement>) => void;
 }): ReactElement => {
   const editable = live.phase === "setup" || live.phase === "preRoll";
+  // Reroll picks stay on the dashboard until Reroll sends them; any new throw clears them.
+  const throwKey = `${live.rollId ?? ""}:${live.phase ?? ""}:${live.dice.map((die) => `${die.kind}${die.value ?? "?"}`).join(",")}`;
+  const [picks, setPicks] = useState<{ readonly throwKey: string; readonly dice: ReadonlySet<number> }>({ throwKey, dice: new Set() });
+  const picked = picks.throwKey === throwKey ? picks.dice : NO_PICKS;
+  const togglePick = (index: number): void => {
+    const next = new Set(picked);
+    if (!next.delete(index)) {
+      next.add(index);
+    }
+    setPicks({ throwKey, dice: next });
+  };
   const result = <ResultText result={live.result} />;
   const flags = (live.secret || live.quiet) && (
     <span className="roll-flags">
@@ -398,7 +417,7 @@ const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool }: {
   );
   return (
     <RollCard
-      className={`npc ${phaseClass(live.phase, live.wpReroll)}`}
+      className={`npc ${phaseClass(live.phase, live.wpReroll)}${live.result && live.phase !== "rolling" ? " held" : ""}`}
       title={live.hint ?? phaseTitle(live.phase, live.wpReroll)}
       rollType={live.rollType}
       name={live.label ?? "NPC"}
@@ -407,7 +426,7 @@ const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool }: {
       result={result}
       collapsed={collapsed}
       onToggle={onToggle}
-      actions={npcActions(live, send)}
+      actions={npcActions(live, send, picked)}
       onClose={() => send({ op: "npcCancel" })}
       closeLabel="Cancel this roll and clear its drawer"
     >
@@ -416,7 +435,7 @@ const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool }: {
         <Difficulty value={live.difficulty} editable={live.phase !== "resolved"} title="Difficulty" onPick={(value) => send({ op: "npcDifficulty", value })} />
         {result}
       </div>
-      {!isRouseCheck(live.rollType) && <RolledDice dice={live.dice} pickable={live.actions.reroll} onPick={(index) => send({ op: "npcDie", index })} />}
+      {!isRouseCheck(live.rollType) && <RolledDice dice={live.dice} pickable={live.actions.reroll} picked={picked} onPick={togglePick} />}
     </RollCard>
   );
 };

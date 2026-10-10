@@ -29,7 +29,7 @@ describe("locally painted pools", () => {
       canInitiate: true,
       slots: [],
       live: { hint: "", wpReroll: false, pool: { hunger: 1 }, dice: [], secret: false, quiet: false,
-        actions: { roll: true, rollEnabled: true, half: false, wp: false, recalc: false, reroll: false, rerollEnabled: false, confirm: false, oblivChoice: false, brutalChoice: false } }
+        actions: { roll: true, rollEnabled: true, half: false, wp: false, recalc: false, reroll: false, confirm: false, oblivChoice: false, brutalChoice: false } }
     },
     werewolves: [],
     oblivionSeats: []

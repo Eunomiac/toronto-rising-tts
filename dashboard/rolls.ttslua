@@ -29,8 +29,7 @@
     npcRoll       secret?               ROLL (secret = dice hidden from players)
     npcHalf       quiet?                Take Half (quiet = no broadcast)
     npcWp                               Spend Willpower
-    npcDie        index                 pick / unpick a die (1-based, roll face order) for a reroll
-    npcReroll                           reroll the picked dice
+    npcReroll     indices               reroll these dice (1-based, roll face order; picked on the dashboard)
     npcRecalc                           re-read the dice on the table
     npcConfirm    quiet?                confirm (quiet = hold the result instead of broadcasting)
     npcCancel                           cancel the live NPC roll (clears its drawer)
@@ -352,12 +351,14 @@ local function applyNpcCommand(cmd)
     HUD_rollTakeHalf(player, cmd.quiet == true and "-2" or "-1", "rollPanelST_btnHalf")
   elseif op == "npcWp" then
     HUD_rollSpendWP(player, "-1", "rollPanelST_btnWP")
-  elseif op == "npcDie" then
-    if RC.toggleStSelectiveDie(ST_COLOR, tonumber(cmd.index)) then
-      RUI.refreshPlayerRollPanel(ST_COLOR)
-    end
   elseif op == "npcReroll" then
-    GlobalStRerollDiceByGuids({ color = ST_COLOR })
+    if type(cmd.indices) ~= "table" or #cmd.indices == 0 then
+      return "Pick at least one die to reroll."
+    end
+    if RC.setStSelectiveDice(ST_COLOR, cmd.indices) ~= true or GlobalStRerollDiceByGuids({ color = ST_COLOR }) ~= true then
+      RUI.refreshPlayerRollPanel(ST_COLOR)
+      return "Could not reroll those dice."
+    end
     RUI.refreshPlayerRollPanel(ST_COLOR)
   elseif op == "npcRecalc" then
     RC.recalculate(ST_COLOR)

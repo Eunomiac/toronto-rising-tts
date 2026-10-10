@@ -31,15 +31,20 @@ export const PoolDiamonds = ({ pool, onClick }: { pool: RollPool; onClick?: (eve
   );
 };
 
-/** Rolled dice as face art; a pickable die toggles in or out of the Storyteller's reroll. */
-export const RolledDice = ({ dice, pickable, onPick }: { dice: readonly RollDie[]; pickable: boolean; onPick?: (index: number) => void }): ReactElement | null =>
+/** Rolled dice as face art; a pickable die toggles in or out of the Storyteller's reroll (`picked`, 1-based). */
+export const RolledDice = ({ dice, pickable, picked, onPick }: {
+  dice: readonly RollDie[];
+  pickable: boolean;
+  picked?: ReadonlySet<number>;
+  onPick?: (index: number) => void;
+}): ReactElement | null =>
   dice.length === 0 ? null : (
     <div className="rolled-dice">
       {dice.map((die, index) => (
         <button
           key={index}
           type="button"
-          className={`rolled-die ${die.kind}${die.selected ? " selected" : ""}`}
+          className={`rolled-die ${die.kind}${picked?.has(index + 1) === true ? " selected" : ""}`}
           disabled={!pickable}
           title={`${die.kind} ${die.value ?? "?"}${pickable ? " (click to pick for the reroll)" : ""}`}
           onClick={() => onPick?.(index + 1)}

@@ -152,8 +152,8 @@ export type PoolKind = (typeof POOL_KINDS)[number];
 /** Dice in a roll's pool by kind; kinds with no dice are absent. */
 export type RollPool = Partial<Record<PoolKind, number>>;
 
-/** One die of a rolled pool, in the roll's face order (`npcDie` picks by this 1-based index). */
-export type RollDie = { readonly value?: number; readonly kind: string; readonly selected?: boolean };
+/** One die of a rolled pool, in the roll's face order (`npcReroll` picks by this 1-based index). */
+export type RollDie = { readonly value?: number; readonly kind: string };
 
 export type RollResult = {
   readonly resultClass?: string;
@@ -195,7 +195,6 @@ export type StRollActions = {
   readonly wp: boolean;
   readonly recalc: boolean;
   readonly reroll: boolean;
-  readonly rerollEnabled: boolean;
   readonly confirm: boolean;
   readonly oblivChoice: boolean;
   readonly brutalChoice: boolean;
