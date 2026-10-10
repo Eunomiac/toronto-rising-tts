@@ -75,6 +75,7 @@ export type ScenesCommand =
   | { readonly op: "ambience"; readonly key: string }
   | { readonly op: "stopAll" }
   | { readonly op: "seatPresence"; readonly seat: string; readonly present: boolean }
+  | { readonly op: "signalOff"; readonly color: string }
   | { readonly op: "playScene"; readonly key: string; readonly clockMode?: SceneClockMode }
   | { readonly op: "endScene" }
   | {

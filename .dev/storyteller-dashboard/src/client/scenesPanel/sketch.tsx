@@ -11,6 +11,7 @@ import type { ApplyCommand, RingTarget, SeatColor, SeatSnapshot, SheetSnapshot }
 import type { LiveSheetAccess } from "../pcSheet/useLiveSheet";
 import { LIGHTING_LABEL, useScenesCommand, type LightingPreset, type StageChanges } from "./commands";
 import { GENERIC_SKY, stageName } from "./liveScene";
+import { SignalFlame } from "./signal";
 import { RollsCommandContext } from "./rolls/commands";
 import { ringChoices } from "./rolls/view";
 import { moveInScatter, withChanges, type ScatterMove, type StageSpot } from "./stage";
@@ -161,6 +162,8 @@ export type SeatSketch = {
   /** The player's PC name when they are playing an NPC role; `name` and the image are then the NPC's. */
   readonly playedBy?: string;
   readonly color?: SeatColor;
+  /** The player's signal fire is lit. */
+  readonly signal?: boolean;
   readonly trackers?: PcTrackers;
   /** Lab sample Desire; live seats read it from the PC sheet. */
   readonly desire?: string;
@@ -319,6 +322,7 @@ export const Seats = ({ seats = SEATS, liveSheet, onMenu, onPresence }: {
   onPresence?: (seatKey: string, present: boolean) => void;
 }): ReactElement => {
   const [labState, setLabState] = useState(labSheet);
+  const send = useScenesCommand();
   const sheet = liveSheet ? liveSheet.sheet ?? NO_SEATS : labState;
   const apply = (command: ApplyCommand): void => {
     if (liveSheet) {
@@ -368,7 +372,7 @@ export const Seats = ({ seats = SEATS, liveSheet, onMenu, onPresence }: {
         return (
           <div
             key={seat.slot}
-            className={`lab-seat-slot${controllable ? " controllable" : ""}${open ? " open" : ""}`}
+            className={`lab-seat-slot${controllable ? " controllable" : ""}${open ? " open" : ""}${seat.signal ? " signal" : ""}`}
             style={style}
             title={hints.length > 0 ? hints.join(". ") : undefined}
             onContextMenu={(event) => {
@@ -393,6 +397,23 @@ export const Seats = ({ seats = SEATS, liveSheet, onMenu, onPresence }: {
             }}
           >
             {desire !== "" && <span className="lab-seat-desire">{desire}</span>}
+            {seat.signal && seat.color && (
+              <button
+                type="button"
+                className="lab-seat-signal"
+                title="Signal fire lit: click to put it out"
+                aria-label="Put out the signal fire"
+                {...swallowClicks}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  if (seat.color) {
+                    send?.({ op: "signalOff", color: seat.color });
+                  }
+                }}
+              >
+                <SignalFlame />
+              </button>
+            )}
             {seat.characterKey ? (
               <Headshot characterKey={seat.characterKey} className={className}>
                 <SeatContent seat={seat} />

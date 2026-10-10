@@ -1565,7 +1565,14 @@ function GlobalRestoreObject(params)
     return O.restoreObject(obj, params)
 end
 
---- Toggles a player's signal fire from object scripts (signal candle click target).
+--- After a signal fire turns on or off: seat-change chrome (TOR-409) and the dashboard's seat row follow it.
+local function afterSignalFireChange()
+    syncDebugSeatColorButtons()
+    require("dashboard.push").markWorldDirty({ seats = true })
+end
+
+--- Toggles a player's signal fire from object scripts (signal candle click target) and the Storyteller
+--- Dashboard (`signalOff`).
 --- @param params table { color: string, duration: number|nil }
 --- @return string|nil "on" or "off", or nil on failure
 function GlobalToggleSignalFireState(params)
@@ -1581,10 +1588,7 @@ function GlobalToggleSignalFireState(params)
         duration = 0.2
     end
     local nextState = O.ToggleSignalFireState(color, duration)
-    -- Seat-change chrome tracks signal fire (TOR-409); sync after object-script toggle.
-    if type(syncDebugSeatColorButtons) == "function" then
-        syncDebugSeatColorButtons()
-    end
+    afterSignalFireChange()
     return nextState
 end
 
@@ -7642,7 +7646,7 @@ function HUD_debugSeatColor(player, button, id)
         if type(O.SetSignalFireState) == "function" then
             O.SetSignalFireState(targetColor, "off", 0.2)
         end
-        syncDebugSeatColorButtons()
+        afterSignalFireChange()
         return
     end
 

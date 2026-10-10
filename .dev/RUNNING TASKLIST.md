@@ -578,6 +578,7 @@ Standalone second-monitor web app (`.dev/storyteller-dashboard/`). Not the in-ta
 - [x] **Scene edits survive switching away:** the live scene is mirrored into its linked library row when it leaves the table (start of `applyActiveLibraryScene`, start of `detachLiveTableFromLibraryMirror`), catching edits that only ran a narrow sync such as Dashboard stage moves. Pending Save & Play. _(TOR-693)_
 - [x] **Finished Storyteller drawer rolls stay on the dashboard:** the `rolls` push carries each confirmed drawer's result, difficulty, pool and dice from the Black seat's roll history; the Rolls cell shows it as a foldable card with Broadcast / Dismiss, like a PC's finished roll. Pending Save & Play. _(TOR-694)_
 - [x] **Dashboard shows why a scene change was refused:** `DashPush.notice` from scene Play refusals (`refuseSceneApply`), dice-on-table blocks (`RSL.alertAndBlockIfDiceOnTable`) and failed blindfold transitions (`reportTransitionFailure`); the Scenes tab shows a red banner over the stage until OK. Pending Save & Play. _(TOR-695)_
+- [x] **Dashboard signal fire alert:** `seats` push carries each PC's `signal`; fire toggles mark seats dirty; the Scenes tab pulses an edge glow, a banner with **Put it out** (`signalOff`), a flaming seat and a repeating chime. Pending Save & Play. _(TOR-696)_
 - [ ] **Stage NPCs saved tags + Lua Execute Code:** Persistent A–Z tag rail; Lua tab uses External Editor 39998/39999 (conflicts with TTS Tools extension — one at a time). Pending dashboard/TTS check. _(TOR-555)_
 
 ## Table Objects

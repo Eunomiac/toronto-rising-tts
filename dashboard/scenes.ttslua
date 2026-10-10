@@ -27,6 +27,7 @@
     stopAll                               silence every soundscape layer
     seatPresence      seat, present       narrative presence of an occupied seat (never disconnection); lighting
                                           a seated NPC's seat takes their copy off the stage
+    signalOff         color               put out a PC's signal fire (no-op when it is already out)
     location          districtKey?, siteKey   change the live location behind a blindfold
     skybox            key                 sky override (`none` = the site's own sky)
     topFog            on                  top fog on / off
@@ -266,6 +267,19 @@ local function applyCommand(cmd)
   end
   if op == "stopAll" then
     return soundResult(SS.stopAll())
+  end
+
+  if op == "signalOff" then
+    if not U.isIn(cmd.color, C.PlayerColors) then
+      return "Unknown PC seat: " .. tostring(cmd.color)
+    end
+    if require("core.objects").GetSignalFireState(cmd.color) ~= "on" then
+      return nil
+    end
+    if GlobalToggleSignalFireState({ color = cmd.color, duration = 0.2 }) == nil then
+      return "Could not put out " .. cmd.color .. "'s signal fire."
+    end
+    return nil
   end
 
   local Panel = require("core.storyteller_scenes_panel")

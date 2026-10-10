@@ -104,6 +104,7 @@ export type LiveSeat = {
   readonly state?: "absent" | "disconnected";
   readonly playedBy?: string;
   readonly color?: SeatColor;
+  readonly signal?: boolean;
 };
 
 /** Control board seat row, left to right: chairs numbered from the centre outward. */
@@ -141,10 +142,21 @@ export const liveSeats = (seats: SeatsSlice, tableKey: string | undefined, catal
       name: playing ? nameOf(playing) : pcName,
       ...(playing && pcName ? { playedBy: pcName } : {}),
       ...(color ? { color } : {}),
-      ...(state ? { state } : {})
+      ...(state ? { state } : {}),
+      ...(row.signal === true ? { signal: true } : {})
     };
   });
 };
+
+/** PCs whose signal fire is lit, by seat colour and PC name (the player's own character, even in an NPC role). */
+export const signalPcs = (seats: SeatsSlice, catalogs: SceneCatalogs | null): readonly { readonly color: SeatColor; readonly name: string }[] =>
+  seats.seats.flatMap((row) => {
+    if (row.kind !== "pc" || row.signal !== true || !PC_COLORS.includes(row.seat)) {
+      return [];
+    }
+    const name = catalogs?.pcs.find((pc) => pc.characterKey === row.charKey)?.fullName ?? row.seat;
+    return [{ color: row.seat as SeatColor, name }];
+  });
 
 export type LiveToken = { readonly characterKey: string; readonly name: string; readonly lit: boolean; readonly u: number; readonly v: number };
 

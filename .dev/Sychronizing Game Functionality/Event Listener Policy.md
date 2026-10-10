@@ -81,7 +81,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | `GlobalStageLerpOrchestrator` | C | 5 | `startLuaCoroutine` entry for animated stage moves (`core/npc_stage_lerp`); started by `Sync.npcs` with `animateStageMoves` (Dashboard stage edits) |
 | `GlobalHideObject` | C | — | Unified off-table park (`O.hideObject`); object scripts pass `guid` + optional park opts |
 | `GlobalRestoreObject` | C | — | Unified reveal (`O.restoreObject`); object scripts pass `guid` + optional restore opts |
-| `GlobalToggleSignalFireState` | C | 5 | signal lights; on/off via hide/restore — seat layout preserves per-seat Y (TOR-380), no gameState reconciler |
+| `GlobalToggleSignalFireState` | C | 5 | signal lights; on/off via hide/restore — seat layout preserves per-seat Y (TOR-380), no gameState reconciler; also called by the dashboard `signalOff` op; marks the dashboard `seats` slice dirty (O(1)) |
 | `GlobalApplyTarotState` | C | — | Pink tarot drawer/deck/button poses (TOR-144 W2) |
 | `GlobalApplyCompanionToggleClick` | C | — | Red/Brown famulus companion left/right click (TOR-288) |
 | `GlobalDiceBagClick/RightClick` | B+C | 5 | rolls; idle Rouse / Oblivion-Rouse right-click = 1-die check + Open + auto-toss (TOR-490 / TOR-491); concurrent idle-bag auto-Rouse exception (TOR-493) |

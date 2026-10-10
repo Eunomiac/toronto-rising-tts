@@ -209,6 +209,7 @@ local function seatRow(seatKey, row, isPc)
     out.charKey = pid ~= nil and C.PlayerData[pid] ~= nil and C.PlayerData[pid].charKey or nil
     out.absentFromSession = row.absentFromSession == true
     out.playingNpcKey = row.isPlayingNPC == true and row.npcCharacterKey or nil
+    out.signal = require("core.objects").GetSignalFireState(seatKey) == "on"
   else
     out.characterKey = row.slotEmpty ~= true and row.characterKey or nil
     out.slotEmpty = row.slotEmpty == true or row.characterKey == nil

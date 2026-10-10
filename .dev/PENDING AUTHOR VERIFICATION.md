@@ -354,6 +354,17 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 
 **How to verify:** Save & Play, then open the dashboard's **Scenes** tab. Start any roll so dice are on the table, and leave it unconfirmed. Play a different scene from the dashboard. The scene should not change, and a red **Not done in TTS** banner should appear over the top of the stage saying the scene cannot be applied while dice are on the table. Click **OK** to close it. Then finish or cancel the roll and play the scene again: it should play normally with no banner.
 
+#### TOR-696 — The dashboard makes a lit signal fire impossible to miss, and can put it out
+
+**Context:** When a player lights their signal fire, the dashboard now pulses an amber glow round the whole screen, shows a banner over the stage naming the player, pulses their seat with a small flame button, and plays a short chime (again every minute while it stays lit). **Put it out** on the banner, or the flame on the seat, puts the fire out in TTS. Browsers only play sound after you have clicked somewhere on the dashboard page since opening it.
+
+**How to verify:** Save & Play, then open the dashboard's **Scenes** tab and click anywhere on the page once.
+
+1. In TTS, click a player's signal candle to light their fire. Within a second the dashboard should show the amber edge glow, the banner with that player's name and **Put it out**, the pulsing seat with a flame button, and play a three-note chime.
+2. Leave it lit for a minute: the chime should play again.
+3. Click **Put it out** (or the flame on the seat). The fire in TTS should go out and every dashboard alert should disappear.
+4. Light it again, then put it out from TTS by clicking the candle. The dashboard alerts should clear too.
+
 ### Medium — Prince's Court sheet
 
 #### TOR-663 — Refresh XML keeps The Court on the people who had it open

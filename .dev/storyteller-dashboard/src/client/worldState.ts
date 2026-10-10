@@ -115,6 +115,8 @@ export type SeatRow = {
   /** PC only: disconnected at a blindfold checkpoint (connection state, not narrative absence). */
   readonly absentFromSession?: boolean;
   readonly playingNpcKey?: string;
+  /** PC only: the player's signal fire is lit (they want the Storyteller's attention). */
+  readonly signal?: boolean;
   readonly characterKey?: string;
   readonly slotEmpty?: boolean;
 };
