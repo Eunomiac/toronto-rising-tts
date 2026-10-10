@@ -148,16 +148,6 @@ export const liveSeats = (seats: SeatsSlice, tableKey: string | undefined, catal
   });
 };
 
-/** PCs whose signal fire is lit, by seat colour and PC name (the player's own character, even in an NPC role). */
-export const signalPcs = (seats: SeatsSlice, catalogs: SceneCatalogs | null): readonly { readonly color: SeatColor; readonly name: string }[] =>
-  seats.seats.flatMap((row) => {
-    if (row.kind !== "pc" || row.signal !== true || !PC_COLORS.includes(row.seat)) {
-      return [];
-    }
-    const name = catalogs?.pcs.find((pc) => pc.characterKey === row.charKey)?.fullName ?? row.seat;
-    return [{ color: row.seat as SeatColor, name }];
-  });
-
 export type LiveToken = { readonly characterKey: string; readonly name: string; readonly lit: boolean; readonly u: number; readonly v: number };
 
 /** A stage token's short name: a named NPC's first name, a generic NPC's whole name, else the key. */

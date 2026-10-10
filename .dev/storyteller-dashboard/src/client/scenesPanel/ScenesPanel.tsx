@@ -41,14 +41,12 @@ import {
   liveTokens,
   locationOverridden,
   sceneConditions,
-  signalPcs,
   soundView,
   spotlightView,
   toDate,
   weatherAxes
 } from "./liveScene";
 import { useTtsNotice } from "./notices";
-import { SignalFlame, useSignalAlert } from "./signal";
 import { addToQueue, commandKind, commandsToSend, pendingGenerics, pendingRenames, queueLines, withoutPendingGeneric, type QueueEntry } from "./queue";
 import { describeQueued } from "./queueLabels";
 import { ADD_CORNER, freeSlotNear, isRemoval, stageSpots, withChanges } from "./stage";
@@ -374,8 +372,6 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
     };
   }, [seats, scene, catalogs, liveSheet, stageTokens, pendingStage, pendingScatter, spawning, renames, rolls?.werewolves, rolls?.oblivionSeats, phase?.phase]);
   const hunters = useMemo(() => (seats ? huntPcs(seats, catalogs) : []), [seats, catalogs]);
-  const signals = useMemo(() => (seats ? signalPcs(seats, catalogs) : []), [seats, catalogs]);
-  useSignalAlert(seats ? signals.map((pc) => pc.color) : undefined);
   const libraryLocation = scene?.library?.districtKey && scene.library.siteKey
     ? { districtKey: scene.library.districtKey, siteKey: scene.library.siteKey }
     : null;
@@ -502,16 +498,6 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
           </Box>
           <StageQueue right={1920 - STRIP_X - STAGE_W + 3 * G} top={STAGE_Y + 36} connected={connected} live={queueView} />
           <div className="scenes-alerts" style={{ left: STRIP_X + STAGE_W / 2, top: STAGE_Y + 40 }}>
-            {signals.map((pc) => (
-              <div key={pc.color} className="scenes-signal-alert" role="alert" style={{ "--seat-color": SEAT_ACCENT[pc.color] } as CSSProperties}>
-                <SignalFlame />
-                <span className="scenes-signal-alert-text">
-                  <span className="scenes-signal-alert-head">Signal fire</span>
-                  <span>{pc.name} wants your attention</span>
-                </span>
-                <button type="button" className="lab-btn" onClick={() => send({ op: "signalOff", color: pc.color })}>Put it out</button>
-              </div>
-            ))}
             {ttsNotice.notice && (
               <div className="scenes-tts-notice" role="alert">
                 <span className="scenes-tts-notice-head">Not done in TTS</span>
@@ -520,7 +506,6 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
               </div>
             )}
           </div>
-          {signals.length > 0 && <div className="scenes-signal-edge" aria-hidden />}
           <Box x={RIGHT_X} y={ROLLS_Y} w={RIGHT_W} h={ROLLS_H} className="roll-box">
             <div className="scenes-live-statuses">
               <CommandStatus pending={commands.pending} error={commands.error} onDismiss={commands.clearError} />

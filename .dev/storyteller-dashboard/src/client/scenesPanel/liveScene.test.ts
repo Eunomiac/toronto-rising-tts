@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { SceneCatalogs } from "./catalogs";
 import type { SeatsSlice, SoundscapeSlice } from "../worldState";
-import { liveSeats, liveTokens, signalPcs, soundView, spotlightView, toDate, weatherAxes } from "./liveScene";
+import { liveSeats, liveTokens, soundView, spotlightView, toDate, weatherAxes } from "./liveScene";
 
 const catalogs = {
   pcs: [
@@ -46,15 +46,14 @@ describe("liveSeats", () => {
   });
 });
 
-describe("signalPcs", () => {
-  it("lists PCs whose signal fire is lit, by their own PC name, and marks their seat", () => {
+describe("liveSeats signal fire", () => {
+  it("marks the seat of a PC whose signal fire is lit, even in an NPC role", () => {
     const lit: SeatsSlice = {
       ...seats,
       seats: seats.seats.map((row) => (row.seat === "Orange" ? { ...row, signal: true } : row))
     };
-    expect(signalPcs(lit, catalogs)).toEqual([{ color: "Orange", name: "Rashid Abdulrahman" }]);
     expect(liveSeats(lit, "Table B", catalogs).find((seat) => seat.slot === 2)?.signal).toBe(true);
-    expect(signalPcs(seats, catalogs)).toEqual([]);
+    expect(liveSeats(seats, "Table B", catalogs).some((seat) => seat.signal === true)).toBe(false);
   });
 });
 
