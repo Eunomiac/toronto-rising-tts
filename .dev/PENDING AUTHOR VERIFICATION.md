@@ -387,6 +387,12 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 3. Cancel, seat an NPC at the table, and start a roll for them (right-click their seat). The drawer should rise visibly in front of that seat, the dice should sit on its red tray floor rather than the table, and Roll and Reroll should both tumble them.
 4. Cancel or confirm the roll. The drawer should sink out of sight again.
 
+#### TOR-699 — New default figurine heights on the inner stage rings
+
+**Context:** Figurines placed on the stage's Center ring (Center, Center Left, Center Right) now stand at -60, and on the Mid Center ring (Mid Center, Mid Left, Mid Right) at -57. NPCs already standing in saved scenes keep their old height until they are moved.
+
+**How to verify:** Save & Play, then open the dashboard's **Scenes** tab. Drag an NPC from the roster onto the Center spot and press Send: the figurine should stand lower than before. Do the same on Mid Center (a little higher than Center). Then move an NPC who was already standing on the stage onto one of those spots: it should take the new height too.
+
 ### Medium — Prince's Court sheet
 
 #### TOR-663 — Refresh XML keeps The Court on the people who had it open
