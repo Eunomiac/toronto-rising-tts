@@ -248,6 +248,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## Soundscape
 
+- [x] **End→Intermission keeps the TR Loop:** `Phases.beginIntermissionThemeHandoff` always pauses Main / location for the featured lane (zero-length when already faded), so the Main playlist's next-track timer can no longer start Main and stop TR_Loop. Pending Save & Play. _(TOR-702)_
 - [x] **Indoor sites fully silence weather:** Every indoor location mutes weather audio and hides the weather panel. Outdoor sites still use their weather-ducking multiplier. relatedTo **TOR-80**. Author confirmed 2026-10-02. _(TOR-635)_
 - [x] **Per-session intro from the sound catalog:** Intermission→Play plays `TR_SessionStart<sessionNum>` and scales the splash to that track's duration. A missing track picks a random catalog intro. A missing start-splash image uses `overlay_sessionEndSplash_1`. A missing session number or title stays in the animation fully transparent. Author confirmed 2026-10-02. _(TOR-632)_
 - [x] **Play→Spotlight fades location music and restores Main:** `skipMoodIfAlreadyMain` only skips when Main is actually audible (not suppressed / siteSilent / locationMusic mode). Ravenwing nightclub bed crossfades out; Main fades in on cover lift. relatedTo **TOR-98**, **TOR-593**, **TOR-494**. Author confirmed 2026-09-23. Linear quota blocked a new Bug id — comment on **TOR-98**.

@@ -387,6 +387,15 @@ If something fails, the dashboard shows TTS's message in the right-hand column w
 3. Cancel, seat an NPC at the table, and start a roll for them (right-click their seat). The drawer should rise visibly in front of that seat, the dice should sit on its red tray floor rather than the table, and Roll and Reroll should both tumble them.
 4. Cancel or confirm the roll. The drawer should sink out of sight again.
 
+#### TOR-702 — End → Intermission keeps the TR Loop playing
+
+**Context:** Going from End to Intermission started the TR Loop, but a few seconds later the regular Main theme cut in and replaced it. Main's playlist still had a "play the next track" timer running, and nothing told it the TR Loop had taken over. Starting the TR Loop now formally pauses Main, so that timer does nothing.
+
+**How to verify:** Save & Play, get to the **End** phase, then advance to **Intermission**.
+
+1. The TR Loop should fade in after the blackout and keep playing. Wait at least a minute, longer than a Main track would normally run, and confirm Main never starts.
+2. Advance from Intermission to Play: the session intro should play and Main should come back afterwards as usual.
+
 #### TOR-701 — Switching scenes clears finished rolls instead of refusing
 
 **Context:** Switching scenes (or table layouts) with dice on the table used to be refused outright. Now, if every roll on the table is finished and has been shown to the players, TTS clears those dice and carries on. It still refuses while a roll is in progress, while a Storyteller drawer is holding a result back, or when loose dice belong to no roll. Broadcasting a held drawer result now also stops it counting as held (it used to stay marked "Held" after the broadcast).

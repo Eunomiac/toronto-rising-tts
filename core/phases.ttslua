@@ -474,14 +474,12 @@ function Phases.beginIntermissionThemeHandoff(_ctx, opts)
     local fadeOutgoing = opts.fadeOutgoing ~= false
     local Soundscape = require("core.soundscape")
     local key = C.IntermissionThemeFeaturedKey or "TR_Loop"
-    local playOpts = {
+    -- Always pause Main / location for the featured lane (a zero-length pause when they already faded): it
+    -- retires the Main playlist's next-track timer, which would otherwise start Main and stop TR_Loop.
+    local ok, msg = Soundscape.playFeaturedMusic(key, {
         incomingFadeSeconds = fadeSec,
         outgoingFadeSeconds = fadeOutgoing and fadeSec or 0,
-    }
-    if fadeOutgoing ~= true then
-        playOpts.keepBackgroundPaused = true
-    end
-    local ok, msg = Soundscape.playFeaturedMusic(key, playOpts)
+    })
     if ok ~= true then
         U.AlertGM("Intermission theme: " .. tostring(msg or "playFeaturedMusic failed"))
     end
