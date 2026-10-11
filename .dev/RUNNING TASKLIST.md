@@ -255,6 +255,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 - [x] **Bake NPC light modes + family OFFSPOTLIGHT:** Author-tuned STANDARD/SPOTLIGHT baked into D.lights; same-snap-family neighbors dim to OFFSPOTLIGHT while one is SPOTLIGHT (Apply + hold preview). relatedTo **TOR-455**, **TOR-471**. Author confirmed 2026-08-06. _(TOR-473)_
 - [x] **Control Board HERE/THERE scene preview editor:** Persistent pending-scene participant draft; mode-aware Reset/Clear/Load; one-shot locked participant merge on scene Apply. relatedTo **TOR-244**, **TOR-237**. Author confirmed 2026-08-03. _(TOR-417)_
 - [x] **Deselect library preview on close/load/transition; THERE close guard:** Restore green/live editing; block Scenes close while THERE; End clears `activeKey`. relatedTo **TOR-417**, **TOR-244**. Author confirmed 2026-08-06. _(TOR-449)_
+- [x] **NPC data: one source of truth:** Generic NPC labels come from `lib/npc_art_urls` (`generic_npcs_catalog` deleted); figurine scale is the dashboard `cardScale` override, default `D.DEFAULT_FIGURINE_SCALE` (53); roster groups and group leaders live in dashboard `data/npc-roster.json`; `npcs_data` keeps names only (dead `stats` / `groups` / `stageLights` / `displayStats` removed); legacy `npcWorld.byArea` is dropped with a console list instead of converted; control-board token scale, yaw knobs, `D.SCATTER_BOARD` and the Memoriam `figurineScale` column removed. Pending Save & Play. _(TOR-723)_
 
 ## Soundscape
 

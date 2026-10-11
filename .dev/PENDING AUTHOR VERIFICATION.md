@@ -20,7 +20,7 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
-_Last populated: 2026-10-11 (TOR-709, TOR-710, TOR-719, TOR-722 and TOR-718 added) — condensed at your request. Checks that later work replaced were dropped (the in-game Gameboard Apply and THERE preview are gone, the scene-switch clock menu was redesigned, and the signal-fire alert lost its banner and chime). Traces that already passed were removed, leaving only what is still owed. Overlapping rows were merged. Everything still needs a first pass except TOR-439, which stays ⏰ until you can gather join testers._
+_Last populated: 2026-10-11 (TOR-709, TOR-710, TOR-719, TOR-722, TOR-718 and TOR-723 added) — condensed at your request. Checks that later work replaced were dropped (the in-game Gameboard Apply and THERE preview are gone, the scene-switch clock menu was redesigned, and the signal-fire alert lost its banner and chime). Traces that already passed were removed, leaving only what is still owed. Overlapping rows were merged. Everything still needs a first pass except TOR-439, which stays ⏰ until you can gather join testers._
 
 Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play.
 
@@ -375,6 +375,18 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 #### TOR-699 — New default figurine heights on the inner stage rings
 
 **How to verify:** Drag an NPC onto the Center spot and **Send**: the figurine should stand lower than before (-60). Do the same on Mid Center (a little higher, -57). Move an NPC who was already on the stage onto one of those spots: it takes the new height too.
+
+#### TOR-723 — NPC data has one home: generic NPC list, roster groups and figurine sizes
+
+**Context:** NPC data was kept in several hand-copied places. Now each piece has one owner. The generic NPC list in TTS comes from the same art table the dashboard uses. Each NPC's figurine size comes from the **Card scale** in the dashboard's NPC token settings, and NPCs without a setting use 53. Roster groups and each group's default leader now live in one dashboard file. Leftovers from the old Stage Control palette are gone (token sizes, yaw settings and the scatter drawing data), and so is the unused NPC Scale column in the Memoriam catalog. Old saves that still hold stage NPCs in the retired per-area format no longer convert them: the Host console prints which NPCs were dropped so you can place them again. Nothing should look different on the table.
+
+**How to verify:**
+
+1. Restart the dashboard server once, then reload the dashboard tab. Open the roster: the same categories, groups and group leaders as before should be there, with nobody missing.
+2. Save & Play. The game should load with no red errors in the Host console. If the console prints "dropped legacy npcWorld.byArea stage rows", place the NPCs it lists on the stage again and tell me which save it came from.
+3. Put three or four named NPCs you know well on the stage and **Send**. Their figurines should be the same size as before, and they should face the same way as before. Include one whose card scale you changed in the NPC token settings, if you have one.
+4. In the roster, press **Generic**, add one generic NPC and **Send**: it should spawn with its usual name and art.
+5. Start a Memoriam scene that has NPCs: they should spawn with their usual art and size.
 
 ### High — dice and rolls
 
