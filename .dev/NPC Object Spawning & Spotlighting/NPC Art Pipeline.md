@@ -11,11 +11,11 @@ Source of truth:
 - Figurine images: `assets/images/NPCs/{Catalogued,Generic,Memoriam}/<key>.webp`
 - Shared figurine back: `assets/images/NPCs/Shared/figurineBack.webp`
 - Ring templates: `assets/images/NPCs/Token Template/ring-{lit,dark}.svg`
-- Generator: `.dev/storyteller-dashboard/scripts/npc-art/` (`generate.ts`, `draw.ts`, `model.ts`)
-- Generated: `assets/images/NPCs/Tokens/<key>.{front,back}.webp`, `assets/images/NPCs/Tokens/tokens.json`, `lib/npc_art_urls.ttslua`
+- Generator: `.dev/storyteller-dashboard/scripts/npc-art/` (`generate.ts`, `draw.ts`, `model.ts`, `save-assets.ts`, `report.ts`)
+- Generated: `assets/images/NPCs/Tokens/<key>.{front,back}.webp`, `assets/images/NPCs/Tokens/tokens.json`, `lib/npc_art_urls.ttslua`, roll-banner rows in the TTS save's `CustomUIAssets`, `.dev/build-logs/npc-art-discrepancies.txt` (ignored)
 
 Verification:
-- `npm run npc-art:generate` (also runs inside `npm run build:full`)
+- `npm run npc-art:generate` (also runs inside `npm run build:full`; `npm run npc-art:report` reprints the discrepancy list and is the Full build's last step)
 - Dashboard: `npm run typecheck` and `npm test` (covers `scripts/npc-art/model.test.ts`)
 - TTS: Save & Play, place an NPC on the stage from the Dashboard, check figurine + token art
 
@@ -38,16 +38,18 @@ return {
 }
 ```
 
-- **Hosting:** GitHub raw links on `master`. Nothing is uploaded to Steam Cloud and nothing is stored in the save's Custom UI assets.
-- **Cache busting:** `?v=` is a content fingerprint. Figurines hash their bytes; tokens hash the figurine, name, ring colour, manual crop, and the drawing style (ring SVGs, font, `draw.ts`, `model.ts`). Unchanged art keeps its link, so TTS does not re-download it.
+- **Catalog gate:** a figurine gets art only when its key is in its folder's catalog (named: `D.characters` via `data/scene-catalogs.json`; generic: `lib/generic_npcs_catalog.ttslua`; Memoriam: `mem_` keys in `lib/skyboxes_catalog.ttslua`). Uncatalogued figurines get no token, link or banner row.
+- **Hosting:** GitHub raw links on `master`. Nothing is uploaded to Steam Cloud.
+- **Cache busting:** `?v=` is a fingerprint of the published image bytes (figurine file; both token sides). A token is redrawn only when its inputs change (figurine, name, ring colour, manual crop, ring SVGs, font, `draw.ts`, `model.ts`, recorded in `tokens.json`), and a redraw that produces identical images keeps its link, so TTS re-downloads only art that really changed.
+- **Pruning:** every run rebuilds `lib/npc_art_urls.ttslua` and `tokens.json` from the current figurines and deletes token files with no art entry, so removed images leave no links behind.
 - **Readers (Global only):** `core/npc_spawn.ttslua` (`NpcSpawn.figurineUrls`) and `core/stage_tokens.ttslua` (`tokenArt`). Both error loudly when a key has no art. `lib/npcs_data.ttslua` `D.initGenericNPCs()` registers only generic catalog keys that have art (and prints the rest).
 - **Saved stage tokens:** `StageTokens` replaces any saved token whose images differ from the current links, so regenerated art shows up on the next Save & Play.
-- **Roll banner exception:** `core/roll_ui.ttslua` still shows a named NPC's figurine front through the save's Custom UI asset named `<characterKey>` (Steam Cloud folder "Toronto Rising/NPCs"). Those rows stay in the save until the banner moves to `npc_art_urls`.
+- **Roll result banner:** `core/roll_ui.ttslua` shows a character's figurine through the save's global Custom UI asset named `<characterKey>`. The generator writes those rows (`save-assets.ts`, save from `tts-assets.config.json`, backed up first, written only on change): one row per PC, named NPC and Memoriam figure with art, pointing at its figurine link. It removes rows that point at repo NPC art or are named after a catalogued character but have no art. Generic NPCs get no banner row (about 330 extra images on every load), so a generic NPC's roll banner shows no figure. TTS keeps the Custom UI assets it loaded in memory, so load the save from the main menu after a build before saving in TTS.
 
 ## Token look
 
 - Circular head cut from the figurine using the Dashboard head crop (manual crop from `data/headshot-crops.json`, else the automatic crop).
-- Name in Bebas Neue at lower centre, up to two lines, then an ellipsis. Named and Memoriam NPCs use the first word of their full name (titles such as "Prince", "Lady", "The" are skipped); generic NPCs use their catalog label; uncatalogued figurines use their file name.
+- Name in Bebas Neue at lower centre, up to two lines, then an ellipsis. Named and Memoriam NPCs use the first word of their full name (titles such as "Prince", "Lady", "The" are skipped); generic NPCs use their catalog label.
 - **Front (lit):** ring in the NPC's roster colour (first colour-picker group in the Dashboard roster, else its category colour, else a neutral grey).
 - **Back (dark):** black ring, black silhouette, dimmed name.
 
@@ -63,6 +65,8 @@ Generic NPCs renamed in a scene keep their catalog label on the token image; the
 2. **Optional:** in the Dashboard, set a head crop and the roster colour group.
 3. **Generate:** `npm run npc-art:generate` (or `npm run build:full`). Pass `--force` to redraw every token after a style change the fingerprint cannot see.
 4. **Publish:** commit `assets/images/NPCs` and `lib/npc_art_urls.ttslua`, then push to `master`. The generator warns when art is uncommitted or not yet pushed.
-5. **TTS:** Save & Play. New figurines spawn with the new art; stage tokens with old art are replaced automatically.
+5. **TTS:** load the save from the main menu (the build changed its roll-banner rows), then Save & Play. New figurines spawn with the new art; stage tokens with old art are replaced automatically.
 
-The generator report lists tokens that used the automatic crop, figurines that are in no catalog, and catalogued NPCs that still have no figurine.
+To remove an NPC's art, delete its figurine and run the generator: its token, link and banner row all go.
+
+The end of the Full build prints the discrepancy list: figurines in no catalog (they got nothing) and catalogued NPCs that still have no figurine. The generator also says how many tokens used the automatic crop.

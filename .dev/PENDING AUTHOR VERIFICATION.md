@@ -63,7 +63,7 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 
 #### TOR-709 — Every NPC's figurine and spotlight token now comes from the repo
 
-**Context:** Every NPC (named, generic and Memoriam) now gets its figurine picture, one shared figurine back, and a newly drawn spotlight token from GitHub instead of Steam Cloud. Each token shows the NPC's head (using your dashboard crop when you set one), the NPC's name in Bebas Neue, and a ring in the NPC's roster colour. The face-down side is a black silhouette with a black ring. The hand-made tokens are gone. The per-NPC back and token images were removed from the save's Custom UI assets (a backup copy of the save is in your backup saves folder). The images named after each character stay, because the roll result banner still uses them.
+**Context:** Every NPC (named, generic and Memoriam) now gets its figurine picture, one shared figurine back, and a newly drawn spotlight token from GitHub instead of Steam Cloud. Each token shows the NPC's head (using your dashboard crop when you set one), the NPC's name in Bebas Neue, and a ring in the NPC's roster colour. The face-down side is a black silhouette with a black ring. The hand-made tokens are gone. The per-NPC back and token images were removed from the save's Custom UI assets (a backup copy of the save is in your backup saves folder). The images the roll result banner uses (one per PC, named NPC and Memoriam figure, named after the character) are now written by the same build step and point at the repo figurines; when a figurine is removed from the repo, its banner image is removed from the save too. Figurines that are in no catalog get no token or banner image, and the end of the Full build lists them along with catalogued NPCs that have no figurine yet.
 
 **How to verify:**
 
@@ -71,8 +71,9 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 2. Play a library scene with named NPCs on the stage. Their figurines should show their pictures, and the back of each figurine should show the shared back image. On the Stage Control board, each NPC should have a round token with its name and a coloured ring. Flip one face down: it should show a black silhouette with a black ring and the name.
 3. From the dashboard, add a generic NPC, put it on the stage and Send. Its figurine and token should appear, with the catalogue name on the token.
 4. Enter a Memoriam that features one of the figures that has art (for example Prince Doran). Its figurine should show its picture and the shared back.
-5. If you roll for an NPC, the result banner should still show that NPC's picture.
-6. Once the above passes, tidy Steam Cloud in Cloud Manager: delete the **Vampire the Masquerade 5E/NPC Cutouts** folder (nothing uses it any more). In **Toronto Rising/NPCs**, keep the images named after characters (the roll banner uses them); the `…Back`, `tokenFront_…` and `tokenBack_…` images there can be deleted.
+5. Roll for a named NPC from the dashboard, and roll at a player seat: each result banner should show that character's picture. (Generic NPCs show no picture on the banner.)
+6. Run `npm run build:full`: the very last thing it prints should be a boxed list of NPC art discrepancies (five figurines in no catalog and seven Memoriam figures with no image, at the moment).
+7. Once the above passes, tidy Steam Cloud in Cloud Manager: delete the **Vampire the Masquerade 5E/NPC Cutouts** and **Toronto Rising/NPCs** folders. Nothing uses them any more.
 
 ### High — startup, table and hunger (eye checks only; your traces already confirmed the speed-ups)
 
