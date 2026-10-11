@@ -4488,21 +4488,39 @@ end
 -- CLONE & COPY UTILITIES
 -- ============================================================================
 
---- Creates a shallow copy of a table
--- Note: Nested tables are not cloned; `U.merge({}, t)` only recurses when the destination
--- already has the same key (e.g. `snapGroups` array elements stay shared). Use a recursive
--- copy or JSON round-trip when mutating nested config.
+--- Copies a table.
+-- Shallow by default: nested tables stay shared with the original. `U.merge({}, t)` is also
+-- shallow below the top level (it only recurses when the destination already has the key),
+-- so use `U.clone(t, true)` whenever the copy is stored or mutated independently.
 -- @param t table The table to clone
--- @param isDeepCloning boolean Currently unused (placeholder for future deep copy)
--- @return table New table with copied values (shallow copy)
--- @usage local copy = U.clone(originalTable)
+-- @param isDeepCloning boolean|nil When true, nested tables are copied too (metatables kept)
+-- @return table New table
+-- @usage local copy = U.clone(originalTable, true)
 function U.clone(t, isDeepCloning)
 	if U.Type(t) ~= "table" then return t end
-  local t2 = {}
-  for k,v in pairs(t) do
-    t2[k] = v
-  end
-  return t2
+	if not isDeepCloning then
+		local t2 = {}
+		for k, v in pairs(t) do
+			t2[k] = v
+		end
+		return t2
+	end
+	local seen = {}
+	local function deepCopy(src)
+		if type(src) ~= "table" then return src end
+		if seen[src] ~= nil then return seen[src] end
+		local out = {}
+		seen[src] = out
+		for k, v in pairs(src) do
+			out[k] = deepCopy(v)
+		end
+		local mt = getmetatable(src)
+		if type(mt) == "table" then
+			setmetatable(out, mt)
+		end
+		return out
+	end
+	return deepCopy(t)
 end
 
 -- ============================================================================

@@ -1380,7 +1380,7 @@ local function buildSavePlayerData()
                     dynamicPlayerData.xp = xpOut
                 elseif isValueSafeForState(fieldVal, "playerData." .. tostring(playerID) .. "." .. tostring(fieldName)) then
                     if type(fieldVal) == "table" then
-                        dynamicPlayerData[fieldName] = U.clone(fieldVal, true)
+                        dynamicPlayerData[fieldName] = U.clone(fieldVal)
                     else
                         dynamicPlayerData[fieldName] = fieldVal
                     end
@@ -1449,7 +1449,7 @@ local function buildSaveState()
             saveState.lights = buildSaveLights()
         elseif isValueSafeForState(value, tostring(key)) then
             if type(value) == "table" then
-                saveState[key] = U.clone(value, true)
+                saveState[key] = U.clone(value)
             else
                 saveState[key] = value
             end

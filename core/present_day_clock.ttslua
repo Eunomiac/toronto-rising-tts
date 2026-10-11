@@ -53,9 +53,9 @@ function PresentDayClock.cloneSessionSceneForLibraryMirror(sessionScene)
     if type(sessionScene) ~= "table" then
         return nil
     end
-    local out = U.merge({}, sessionScene)
+    local out = U.clone(sessionScene, true)
     if type(out.clock) == "table" then
-        out.clock = PresentDayClock.stripCatchUpRuntimeFields(U.merge({}, out.clock))
+        out.clock = PresentDayClock.stripCatchUpRuntimeFields(out.clock)
     end
     return out
 end

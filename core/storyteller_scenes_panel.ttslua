@@ -1954,8 +1954,8 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId, c
             GenericNpcs.destroyAllLiveObjectsKeepMembership()
         end
 
-        -- Deep copy: `U.clone(..., true)` is shallow only (see `lib/util.ttslua`); `U.merge` recurses nested tables.
-        local bundle = U.merge({}, ent.sessionScene)
+        -- Deep copy so live seat rows never share tables with the library row.
+        local bundle = U.clone(ent.sessionScene, true)
         bundle.placementMode = ent.placementMode or "standard"
         SceneLibrary.syncNpcRoleOverrideFromSeatSlots(bundle)
         local lightingKey, lightingErr = validateLightingPresetKey(bundle.lightingPresetKey)
@@ -2307,7 +2307,7 @@ function StorytellerScenesPanel.setLiveLocation(districtKey, siteKey)
     end
     closeScenesPanel()
 
-    local previewSession = U.merge({}, S.getStateVal("sessionScene") or {})
+    local previewSession = U.clone(S.getStateVal("sessionScene") or {}, true)
     previewSession.districtKey = dKey
     previewSession.siteKey = siteKey
     local incomingWeather = Scenes.computeIncomingWeatherPreview(previewSession)

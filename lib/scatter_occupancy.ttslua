@@ -785,7 +785,7 @@ function ScatterOccupancy.restoreStash(destTableKey)
     local livePack = S.getStateVal("sessionScene", "scatterPlacements")
     local stillHere = scatterNpcKeys(livePack)
     if type(stash.seatSlots) == "table" then
-        local restored = U.merge({}, stash.seatSlots)
+        local restored = U.clone(stash.seatSlots, true)
         require("lib.figurine_seat_layout").carryLiveAbsenceOnto(restored, S.getStateVal("sessionScene", "seatSlots"))
         S.setStateVal(restored, "sessionScene", "seatSlots")
     end
