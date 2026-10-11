@@ -31,7 +31,7 @@ Three npm scripts / VS Code tasks (`.vscode/tasks.json`):
 | --- | --- | --- | --- |
 | **Main** (default) | `npm run build` | **BUILD PIPELINE (Main)** | Before most Save & Play — daily save backup, gates, object stub fix |
 | **XML** | `npm run build:xml` | **BUILD PIPELINE (XML)** | After UI XML / template / Global HUD edits (includes Main) |
-| **Full** | `npm run build:full` | **BUILD PIPELINE (Full)** | After JSON data, Google Sheet imports, constants cleanup, CustomUIAssets merge, Cloud asset sync, E2E playbook markdown — same coverage as the former single `npm run build` |
+| **Full** | `npm run build:full` | **BUILD PIPELINE (Full)** | After JSON data, Google Sheet imports, constants cleanup, CustomUIAssets merge, Cloud asset sync, NPC art (`npc-art:generate` — [NPC Art Pipeline](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%20Art%20Pipeline.md)), E2E playbook markdown — same coverage as the former single `npm run build` |
 
 Helpers: `build:gates`, `build:stubs`, `build:xml-tooling`, `build:all-tooling` (Full without the daily backup; `build:full` = backup + `build:all-tooling`).
 
@@ -211,7 +211,7 @@ See [TTS_MCP.md](TTS_MCP.md) for the bundled MCP server and agent guidance.
 
 **Solution**: Add a **module-level** `require("lib_that_must_ship")` once from an entry module (e.g. `core/debug.ttslua` already preloads `lib.workspace_ndjson_log`). Do the same for any other “lazy” dependency you need in TTS.
 
-**Generated manifests** (`lib/custom_ui_upload_manifest.ttslua`, `lib/npc_token_upload_manifest.ttslua`, `lib/npc_group_upload_manifest.ttslua`, `lib/npc_token_hosted_urls.ttslua`): keep **committed stubs** in git (empty `assets` / `{}`) when possible. `core/debug.ttslua` uses module-level `require("lib.…")` (same pattern as `lib.workspace_ndjson_log`) so luabundle embeds the stubs with no init console noise. `npm run custom-ui-assets:manifest-*` overwrites stub content; invoke `DEBUG.loadCustomUiUploadManifest()` or spawn/upload DEBUG helpers for guidance when manifests are empty.
+**Generated manifests** (`lib/custom_ui_upload_manifest.ttslua`): keep **committed stubs** in git (empty `assets` / `{}`) when possible. `core/debug.ttslua` uses module-level `require("lib.…")` (same pattern as `lib.workspace_ndjson_log`) so luabundle embeds the stubs with no init console noise. `npm run custom-ui-assets:manifest-*` overwrites stub content; invoke `DEBUG.loadCustomUiUploadManifest()` or spawn/upload DEBUG helpers for guidance when manifests are empty.
 
 **Object scripts** (e.g. character sheet `ui/ui_csheet.ttslua`): stubs are only `require("ui.ui_csheet")`. Anything you `require` **inside** a function may be **missing at runtime**. Keep **`require("lib.workspace_ndjson_log")`** (and similar) at **file top level**.
 

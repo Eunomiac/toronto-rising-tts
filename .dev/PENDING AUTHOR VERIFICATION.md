@@ -20,7 +20,7 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
-_Last populated: 2026-10-10 (TOR-707 / TOR-708 added) — condensed at your request. Checks that later work replaced were dropped (the in-game Gameboard Apply and THERE preview are gone, the scene-switch clock menu was redesigned, and the signal-fire alert lost its banner and chime). Traces that already passed were removed, leaving only what is still owed. Overlapping rows were merged. Everything still needs a first pass except TOR-439, which stays ⏰ until you can gather join testers._
+_Last populated: 2026-10-11 (TOR-709 added) — condensed at your request. Checks that later work replaced were dropped (the in-game Gameboard Apply and THERE preview are gone, the scene-switch clock menu was redesigned, and the signal-fire alert lost its banner and chime). Traces that already passed were removed, leaving only what is still owed. Overlapping rows were merged. Everything still needs a first pass except TOR-439, which stays ⏰ until you can gather join testers._
 
 Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play.
 
@@ -60,6 +60,19 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 4. Roll, then use a Willpower reroll: the highlighted dice should be grabbable, and after the reroll finishes no die should keep a blue glow.
 5. Left-click the Rouse bag and roll: same as before. Roll a pool with Hunger dice: the red dice should come out of the Hunger bag as before.
 6. After several rolls, nothing should pile up under the table, and no console errors should appear.
+
+#### TOR-709 — Every NPC's figurine and spotlight token now comes from the repo
+
+**Context:** Every NPC (named, generic and Memoriam) now gets its figurine picture, one shared figurine back, and a newly drawn spotlight token from GitHub instead of Steam Cloud. Each token shows the NPC's head (using your dashboard crop when you set one), the NPC's name in Bebas Neue, and a ring in the NPC's roster colour. The face-down side is a black silhouette with a black ring. The hand-made tokens are gone. The per-NPC back and token images were removed from the save's Custom UI assets (a backup copy of the save is in your backup saves folder). The images named after each character stay, because the roll result banner still uses them.
+
+**How to verify:**
+
+1. Load the save fresh from the main menu (**File → Load**) before saving anything, so TTS does not write the removed images back into the save from memory. Then Save & Play. There should be no console errors. If the console lists generic NPCs with no art, those are catalogue rows that have no figurine image yet.
+2. Play a library scene with named NPCs on the stage. Their figurines should show their pictures, and the back of each figurine should show the shared back image. On the Stage Control board, each NPC should have a round token with its name and a coloured ring. Flip one face down: it should show a black silhouette with a black ring and the name.
+3. From the dashboard, add a generic NPC, put it on the stage and Send. Its figurine and token should appear, with the catalogue name on the token.
+4. Enter a Memoriam that features one of the figures that has art (for example Prince Doran). Its figurine should show its picture and the shared back.
+5. If you roll for an NPC, the result banner should still show that NPC's picture.
+6. Once the above passes, tidy Steam Cloud in Cloud Manager: delete the **Vampire the Masquerade 5E/NPC Cutouts** folder (nothing uses it any more). In **Toronto Rising/NPCs**, keep the images named after characters (the roll banner uses them); the `…Back`, `tokenFront_…` and `tokenBack_…` images there can be deleted.
 
 ### High — startup, table and hunger (eye checks only; your traces already confirmed the speed-ups)
 

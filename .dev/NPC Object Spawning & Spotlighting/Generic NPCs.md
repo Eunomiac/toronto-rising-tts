@@ -9,7 +9,7 @@ Read this when:
 
 Source of truth:
 - `core/generic_npcs.ttslua` — parse, register, destroy, membership
-- `core/npc_spawn.ttslua` — figurine + light spawner shared with named NPCs (generic URLs via `D.resolveGenericNpcEntry`)
+- `core/npc_spawn.ttslua` — figurine + light spawner shared with named NPCs (art from `lib/npc_art_urls.ttslua`; see [NPC Art Pipeline](NPC%20Art%20Pipeline.md))
 - `lib/npcs_data.ttslua` — `D.initGenericNPCs()`, `D.resolveGenericNpcEntry`, `D.genericNpcs`
 - `lib/generic_npcs_catalog.ttslua` — generated sheet `key` → `label` (`npm run generic-npcs:import`)
 - `dashboard/scenes.ttslua` — `genericAdd` op → `GenericNpcs.importNamed(keys, labels)`; `genericRename` op → `GenericNpcs.rename(key, name)`
@@ -31,7 +31,7 @@ Status: current v1 (TOR-560; Dashboard-only import since TOR-687). Remaining / o
 
 Generic NPCs are category/class characters (police officer, dog). They have **no** workshop-baked figurine in the save. Each catalog key (`stem_NN`, e.g. `dogGuard_03`) is a **unique** identity: at most one live instance of that key per scene. Several stems may coexist; the same exact key may not be imported twice into the same scene.
 
-Named and generic NPCs share one spawn path (TOR-707): both spawn on demand through `core/npc_spawn.ttslua` and are destroyed when no longer targeted. The differences are the URL source (catalog entry vs `lib/npc_figurine_hosted_urls.ttslua`), the `generic_npc` tag, and the scene membership table below.
+Named and generic NPCs share one spawn path (TOR-707): both spawn on demand through `core/npc_spawn.ttslua` and are destroyed when no longer targeted. Both read their art from `lib/npc_art_urls.ttslua`; the differences are the `generic_npc` tag and the scene membership table below.
 
 After import, v1 supports **stage placement, lights, and spotlight tokens** like other staged NPCs (they register into `NPCS.characters` with `isGeneric = true` and use `npc_figurine` / `npc_light`). **Seating**, **Play-as-NPC**, and Memoriam `kind: "generic"` are not a supported contract.
 
@@ -39,8 +39,7 @@ After import, v1 supports **stage placement, lights, and spotlight tokens** like
 
 ## Catalog
 
-**Key:** `stem` + `_` + two-digit index → `D.genericNpcs[stem][index]`  
-Example: `academicsProfessor_02` → `D.genericNpcs.academicsProfessor[2]`. Resolver: `D.resolveGenericNpcEntry(fullKey)` (invalid shape → skip).
+**Key:** `stem` + `_` + two-digit index, e.g. `academicsProfessor_02` → `D.genericNpcs.academicsProfessor_02`. Resolver: `D.resolveGenericNpcEntry(fullKey)` (unknown key → `nil`).
 
 **Entry after `D.initGenericNPCs()`:**
 
@@ -48,14 +47,12 @@ Example: `academicsProfessor_02` → `D.genericNpcs.academicsProfessor[2]`. Reso
 {
   key = "academicsProfessor_02",
   label = "Professor", -- sheet GENERICNPCCSV via lib.generic_npcs_catalog
-  figurine = { front = <Cloud URL>, back = <shared Back_00 URL> },
-  token = { front = <Cloud URL>, back = <Cloud URL> }, -- spotlight token art (core.stage_tokens)
 }
 ```
 
-Sheet **tags** are Dashboard search only; Lua ignores them.
+Figurine and token art come from `lib/npc_art_urls.ttslua` under the same key ([NPC Art Pipeline](NPC%20Art%20Pipeline.md)). Sheet **tags** are Dashboard search only; Lua ignores them.
 
-Cloud figurine/token URLs plus a sheet label are required. A Cloud variant with no sheet label **errors** at init (`run npm run generic-npcs:import`). Missing `Cloud.GenericNpcFigurines` skips init with a Host warning (no-op).
+`D.initGenericNPCs()` registers every catalog key that has art. A catalog row with no label **errors** at init (`run npm run generic-npcs:import`); catalog keys with no art are printed once and left out.
 
 ---
 
@@ -79,7 +76,7 @@ Generics spawn through the same path as named NPCs (`NPCS.ensureLiveNpcInstance`
 
 | Piece | How |
 | --- | --- |
-| Figurine | `spawnObjectData` `Figurine_Custom` with the catalog Cloud images in the spawn data (no `reload`). Tags `npc_figurine` + `generic_npc`. GM Notes `npcInstance:<key>`. Locked. Spawned hidden under the table, then moved onto the stage once its image has loaded (`NPCS.prewarmNpcs` for mid-scene Dashboard placements). |
+| Figurine | `spawnObjectData` `Figurine_Custom` with the `lib/npc_art_urls.ttslua` images in the spawn data (no `reload`). Tags `npc_figurine` + `generic_npc`. GM Notes `npcInstance:<key>`. Locked. Spawned hidden under the table, then moved onto the stage once its image has loaded (`NPCS.prewarmNpcs` for mid-scene Dashboard placements). |
 | Light | `npc_light` spawned with the stage placement (`ensureNpcLight`). |
 | Spotlight token | Not spawned on import. Once the NPC has a stage placement, `StageTokens.reconcileFromState` spawns its token on the Stage Control board like any stage NPC. |
 

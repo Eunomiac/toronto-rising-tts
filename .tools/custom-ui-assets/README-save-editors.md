@@ -30,8 +30,6 @@ Example: `tts-assets.config.example.json`.
 
 Before any save write, a timestamped copy is written to `<Saves>/tts-assets-backups/` (override with `backupDir`, disable with `--no-backup` or `"backupBeforeWrite": false`).
 
-NPC figurine URL catalog after a new upload batch (not a Run Task): `npm run custom-ui-assets:extract-npc-figurine-urls` (writes `lib/npc_figurine_hosted_urls.ttslua`; read-only on the save).
-
 ## Rename overlay CustomUIAssets (TOR-565 one-time)
 
 Renames global overlay `Name`s for session-start / global blindfold reorganization (URLs unchanged):

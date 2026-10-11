@@ -4,17 +4,17 @@
 
 Read this when:
 - changing NPC spawning, pooling, placement, spotlighting, or gameboard control behavior
-- editing NPC registry shape or custom UI asset injection for NPC images
+- editing NPC registry shape; NPC images are covered by [`NPC Art Pipeline.md`](NPC%20Art%20Pipeline.md)
 - generic NPC import/spawn (TOR-560): also read [`Generic NPCs.md`](Generic%20NPCs.md)
 
 Source of truth:
 - `core/npcs.ttslua`
-- `core/npc_spawn.ttslua` (figurine + light spawn data), `lib/npc_figurine_hosted_urls.ttslua` (named NPC image URLs)
+- `core/npc_spawn.ttslua` (figurine + light spawn data), `lib/npc_art_urls.ttslua` (generated figurine + token links for every NPC; see [`NPC Art Pipeline.md`](NPC%20Art%20Pipeline.md))
 - `core/generic_npcs.ttslua` (generic import; see [`Generic NPCs.md`](Generic%20NPCs.md))
 - `core/npc_gameboard.ttslua` (+ siblings `npc_gameboard_{board,snaps,spotlight}`), `core/npc_stage_apply.ttslua` (Dashboard stage edits), `core/stage_tokens.ttslua` (spotlight tokens)
 - `lib/npcs_data.ttslua`
 - `lib/npcs_light_spawn_defaults.ttslua`
-- `.dev/custom-ui-assets/README.md`
+- [`NPC Art Pipeline.md`](NPC%20Art%20Pipeline.md) (figurine + token images)
 
 Verification:
 - `npm run build`
@@ -29,7 +29,7 @@ Data for all NPCs is contained in `NPCS.characters` (loaded from [`lib/npcs_data
 
 * `name`: Key in `NPCS.characters` and the spawned object name.
 * `fullName`: Display name for UI.
-* `figurine`: `scale` only (spawn `ImageScalar` + spotlight bounds math). Front/back URLs for named NPCs live in generated [`lib/npc_figurine_hosted_urls.ttslua`](../../lib/npc_figurine_hosted_urls.ttslua); generic entries carry `figurine.front` / `figurine.back`.
+* `figurine`: `scale` only (spawn `ImageScalar` + spotlight bounds math). Front/back URLs for every NPC (named, generic, Memoriam) live in generated [`lib/npc_art_urls.ttslua`](../../lib/npc_art_urls.ttslua) ([NPC Art Pipeline](NPC%20Art%20Pipeline.md)).
 * `stats`: Arbitrary nested data; rendered by `NPCS.displayStats(npcName)`.
 * `lighting`: Optional per-mode overrides (see merge rules below).
 * `groups`: Map of group id → slot index within that group (NPC group enumeration).
