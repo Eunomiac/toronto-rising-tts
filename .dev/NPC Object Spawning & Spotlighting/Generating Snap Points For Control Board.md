@@ -34,12 +34,11 @@ Slots are generated in polar coordinates in board u/v. Several settings control 
 | `origin` | **Master/default** center of the polar system in board u/v (also the fixed facing target for figurine yaw) |
 | `innerRingMaxU` & `innerRingMaxV` | **Optional** when every `snapGroups[r]` sets `maxU`/`maxV`. Otherwise **absolute** board u/v for the **innermost** ring |
 | `outerRingMaxU` & `outerRingMaxV` | **Optional** when every ring has `maxU`/`maxV`. Otherwise **absolute** board u/v for the **outermost** ring; rings without per-ring max interpolate inner → outer |
-| `snapGroups` | One entry per ring (**index 1 = innermost**): `{ num, angleDelta, rays, maxU?, maxV?, origin?, snapYawOffsetDeg?, groundLevel?, radialStagger? }` — family size, angular spacing, ray count, optional **per-ring** ellipse max, optional **per-ring** position origin, optional **per-ring** yaw offset, optional **absolute world Y** for figurines, optional **STAGE world XZ** radial push per family step (see below) |
-| `snapYawOffsetDeg` | Default yaw offset added to toward-master-origin yaw on each snap; rings may override via `snapGroups[ring].snapYawOffsetDeg` |
+| `snapGroups` | One entry per ring (**index 1 = innermost**): `{ num, angleDelta, rays, maxU?, maxV?, origin?, groundLevel?, radialStagger?, defaultLightMode?, validSnaps? }` — family size, angular spacing, ray count, optional **per-ring** ellipse max, optional **per-ring** position origin, optional **absolute world Y** for figurines, optional **STAGE world XZ** radial push per family step (see below) |
 
 ### `groundLevel` (per ring, optional)
 
-- **Absolute world Y** for figurines placed on a stage edit (same convention as `D.areas[*].groundLevel` in `lib/npcs_data.ttslua`, e.g. `-50`, `-15`).
+- **Absolute world Y** for figurines placed on a stage edit (e.g. `-50`, `-15`).
 - **Does not** add STAGE_BOARD object Y — the board only maps u,v → world **X/Z**; `groundLevel` sets figurine **Y** directly when present.
 
 - On a Dashboard stage edit, `StageApply.applyStageChanges` persists it in `sessionScene.npcWorld.placements[*].groundLevel`; reconcile passes it to `Gameboard.worldFromUv(u, v, { groundLevel = … })`.
@@ -62,7 +61,6 @@ Slots are generated in polar coordinates in board u/v. Several settings control 
 ```lua
 D.CONTROL_BOARD_SNAP = {
   origin = { u = 0.5, v = 0.2 },
-  snapYawOffsetDeg = 0,
   innerRingMaxU = 0.6,
   innerRingMaxV = 0.3,
   outerRingMaxU = 0.9,
@@ -127,7 +125,7 @@ Example: ring 3, `num=5`, `angleDelta=4`, `anchorDeg=90` → **82°, 86°, 90°,
 
 - Candidates with coincident world XZ (legacy even-num full-circle) are skipped in the catalog and at anchor-spread fill (TOR-415).
 - Candidates with `u` or `v` outside `[0, 1]` are omitted (not clamped).
-- Every slot carries board-local yaw **toward the master/default `origin`** plus ring-level or default `snapYawOffsetDeg`.
+- Every slot carries board-local yaw **toward the master/default `origin`**.
 - Per-ring `origin` sets the ellipse center for that ring; when it differs from the master origin, **family angles** rotate so the anchor faces the master (figurine yaw still faces the master origin).
 
 ## Visual illustrations
@@ -139,32 +137,6 @@ Step 3 dotted circles use the **same** ring geometry as Step 2.
 * **Step Three: Define the Rays** — [View Image](./Snap%20Point%20Illustrations/Step%203%20-%20Rays.png)
 * **Step Four: Generate Anchor Snaps** — [View Image](./Snap%20Point%20Illustrations/Step%204%20-%20Anchor%20Snaps.png)
 * **Step Five: Generate Snap Point Families** — [View Image](./Snap%20Point%20Illustrations/Step%205%20-%20Snap%20Point%20Families.png)
-
-## Export family positions (world X/Z)
-
-Each snap **family** spreads by `familyK` (`-2 … 0 … +2` for `num = 5`): **farLeft**, **nearLeft**, **center** (anchor), **nearRight**, **farRight**.
-
-**Offline** (DEFAULT_STAGE_WORLD X/Z projection; update `DEFAULT_CONFIG` in script when defaults change):
-
-```bash
-node .dev/scripts/export_control_board_snap_families.mjs --csv --out .dev/plans/control-board-snap-families.csv
-node .dev/scripts/export_control_board_snap_families.mjs --interpolated --csv --out .dev/plans/control-board-snap-families-interpolated.csv
-node .dev/scripts/export_control_board_snap_families.mjs --out .dev/plans/control-board-snap-families.lua
-```
-
-CSV columns: **area** (family role: `farLeft`, `nearLeft`, `center`, `nearRight`, `farRight`), **slot** (1-based index within area), **x**, **z** (STAGE world).
-
-Output shape (Lua):
-
-```lua
-return {
-  farLeft = {
-    [1] = { x = ..., z = ... },
-    ...
-  },
-  center = { ... },
-}
-```
 
 ## Additional Guidelines
 

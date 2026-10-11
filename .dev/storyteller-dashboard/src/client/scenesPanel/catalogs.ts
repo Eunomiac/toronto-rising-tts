@@ -63,22 +63,6 @@ export type PolarSnap = {
   readonly defaultLightMode: string;
 };
 
-export type SeatSnap = {
-  readonly snapIndex: number;
-  readonly snapKind: "seat";
-  readonly seatKey: string;
-  readonly kind: "pc" | "npc" | string;
-  readonly tableSlot: number;
-  readonly u: number;
-  readonly v: number;
-};
-
-export type ScatterSlot = {
-  readonly slot: number;
-  readonly u: number;
-  readonly v: number;
-};
-
 export type StageBoardFingerprint = {
   readonly guid: string;
   readonly saveFileName: string;
@@ -90,38 +74,20 @@ export type StageBoardFingerprint = {
   readonly rotY: number;
   readonly halfWidthX: number;
   readonly halfDepthZ: number;
-  readonly liveScaleZ?: number;
-  readonly impliedScaleZ?: number;
-  readonly controlScaleX?: number;
-  readonly controlScaleZ?: number;
-  readonly minimapRatioX?: number;
-  readonly minimapRatioZ?: number;
 };
 
 export type ControlBoardSnaps = {
   readonly generatedBy: string;
   readonly stageBoard?: StageBoardFingerprint;
   readonly polar: readonly PolarSnap[];
-  readonly seats: readonly SeatSnap[];
-  readonly scatter: {
-    readonly areaOrder: readonly string[];
-    readonly areas: Record<
-      string,
-      {
-        readonly origin: { readonly u: number; readonly v: number };
-        readonly center: readonly ScatterSlot[];
-        readonly orbit: readonly ScatterSlot[];
-      }
-    >;
-  };
 };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null;
 
 export const parseControlBoardSnaps = (value: unknown): ControlBoardSnaps => {
-  if (!isRecord(value) || !Array.isArray(value.polar) || !Array.isArray(value.seats)) {
-    throw new Error("control-board-snaps.json is missing polar/seats arrays.");
+  if (!isRecord(value) || !Array.isArray(value.polar)) {
+    throw new Error("control-board-snaps.json is missing the polar snap array.");
   }
   return value as ControlBoardSnaps;
 };

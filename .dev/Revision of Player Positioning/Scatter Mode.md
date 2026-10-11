@@ -44,7 +44,7 @@ Scatter occupancy lives in `sessionScene.scatterPlacements` (which PCs and NPCs 
 
 Every move writes state, then `ScatterMode.applyWorldLayout()` poses figurines, piles and cameras, mirrors the linked library row, and reconciles the Scatter HUD. The Stage Control board plays no part in Scatter (no art swap, no tokens, no holes).
 
-Each group has **five** stable PC world slots (slot 1 = gold, the arc midpoint) and unlimited NPCs. `D.SCATTER_BOARD` in `lib/npc_gameboard_data.ttslua` holds the u/v geometry the Dashboard uses to draw the six groups (gold + four whites + a ring of `BOARD_NPC_HOLE_COUNT` NPC slots per group).
+Each group has **five** stable PC world slots (slot 1 = gold, the arc midpoint) and unlimited NPCs. The Dashboard draws each group as a circle around its center (`scatterCenter` in `.dev/storyteller-dashboard/src/client/scenesPanel/stage.ts`).
 
 ---
 

@@ -21,7 +21,7 @@ Source of truth:
 
 Verification:
 - `npm run build`
-- `npm run dashboard:scene-catalogs` (dashboard reads `CONTROL_BOARD_SNAP`, `CONTROL_BOARD_SEAT_ROW`, `SCATTER_BOARD` from `lib/npc_gameboard_data.ttslua`)
+- `npm run dashboard:scene-catalogs` (dashboard reads `CONTROL_BOARD_SNAP` from `lib/npc_gameboard_data.ttslua` for the stage slot catalog)
 - Save & Play, then move an NPC on the Dashboard stage and hold the spotlight hotkey over its token
 
 Status: current (TOR-687 retired control-board Apply, the token palette, PC tokens, minimap markers, and HERE/THERE preview).

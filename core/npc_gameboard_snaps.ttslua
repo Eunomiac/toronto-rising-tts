@@ -16,7 +16,7 @@ local defaultSnapCatalogCache = {}
 --- Forward declarations (Lua local-function order).
 local controlBoardSnapFingerprintFor
 
---- World-space XZ extents from `getBounds` (minimap marker scale ratios only — not UV math).
+--- World-space XZ extents of the CONTROL_BOARD tile from `getBounds` (snap catalog cache key only — not UV math).
 --- @param board Object
 --- @return number sx, number sz
 local function boardMapExtents(board)
@@ -187,13 +187,6 @@ local function validateControlBoardSnapConfig(cfg)
                         .. "].origin must be { u = number, v = number } when set"
                 )
             end
-        end
-        if group.snapYawOffsetDeg ~= nil and tonumber(group.snapYawOffsetDeg) == nil then
-            error(
-                "CONTROL_BOARD_SNAP.snapGroups["
-                    .. tostring(ringIndex)
-                    .. "].snapYawOffsetDeg must be a number when set"
-            )
         end
         if group.defaultLightMode ~= nil and snapGroupDefaultLightMode(group) == nil then
             error(
@@ -395,7 +388,7 @@ local function uvOnEllipse(originU, originV, angleDeg, maxU, maxV)
     return u, v
 end
 
---- True when normalized board u/v lies on the minimap tile (inclusive 0–1).
+--- True when normalized board u/v lies on the CONTROL_BOARD tile (inclusive 0–1).
 --- @param u number
 --- @param v number
 --- @return boolean
@@ -430,7 +423,7 @@ local function snapUvPassesValidSnaps(group, u, v)
 end
 
 --- Push snap u/v outward from polar origin by `abs(familyK) * radialStagger` along STAGE world XZ.
---- Anchor (`familyK == 0`) is unchanged. Units are STAGE_BOARD / playfield world inches (not CONTROL_BOARD minimap inches).
+--- Anchor (`familyK == 0`) is unchanged. Units are STAGE_BOARD / playfield world inches (not CONTROL_BOARD tile inches).
 --- @param originU number
 --- @param originV number
 --- @param familyK number
@@ -482,7 +475,7 @@ local function applyRadialStaggerUv(originU, originV, familyK, radialStagger, u,
     return Board.uvFromBoardLocal(stage, newLp)
 end
 
---- Ellipse u/v + optional radial stagger for one family member; nil when off the minimap tile.
+--- Ellipse u/v + optional radial stagger for one family member; nil when off the CONTROL_BOARD tile.
 --- @param board Object|nil Used for snap local position on CONTROL_BOARD (stagger uses STAGE_BOARD)
 --- @param cfg table
 --- @param rings number
@@ -576,10 +569,6 @@ local function buildControlBoardSnapEntries(board, cfg, rings)
         local num = tonumber(group.num)
         local rays = tonumber(group.rays)
         local ringGroundLevel = resolveSnapGroupGroundLevel(group)
-        local ringYawOffsetDeg = tonumber(group.snapYawOffsetDeg)
-        if ringYawOffsetDeg == nil then
-            ringYawOffsetDeg = tonumber(cfg.snapYawOffsetDeg) or 0
-        end
         local kMin, kMax = familyKBoundsForSnapCount(num)
         for rayIndex = 0, rays - 1 do
             local familyId = tostring(ringIndex) .. ":" .. tostring(rayIndex)
@@ -587,7 +576,7 @@ local function buildControlBoardSnapEntries(board, cfg, rings)
                 local u, v, lp = controlBoardSnapCandidate(board, cfg, rings, ringIndex, rayIndex, k)
                 if u ~= nil and lp ~= nil then
                     --- ringGroundLevel (when set) is absolute world Y for figurines on Apply — catalog metadata only; snaps stay on tile surface.
-                    local yawDeg = ((snapYawTowardOriginDeg(board, u, v, cfg.origin.u, cfg.origin.v) + ringYawOffsetDeg) % 360 + 360) % 360
+                    local yawDeg = (snapYawTowardOriginDeg(board, u, v, cfg.origin.u, cfg.origin.v) % 360 + 360) % 360
                     entries[#entries + 1] = {
                         snapIndex = #entries + 1,
                         ringIndex = ringIndex,
@@ -677,13 +666,10 @@ controlBoardSnapFingerprintFor = function(board, config)
                 .. ":"
                 .. tostring(type(group.origin) == "table" and group.origin.v or "")
                 .. ":"
-                .. tostring(group.snapYawOffsetDeg or "")
-                .. ":"
                 .. tostring(group.defaultLightMode or "")
         end
     end
     parts[#parts + 1] = "snapTag:none"
-    parts[#parts + 1] = "yawOff:" .. tostring(tonumber(cfg.snapYawOffsetDeg) or 0)
     return table.concat(parts, ":")
 end
 
@@ -724,17 +710,11 @@ function Snaps.placementBoardRelYawDeg(u, v, config)
     if not Board.isGameObject(board) then
         return 0
     end
-    local cfg, rings = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(config))
+    local cfg = validateControlBoardSnapConfig(resolveControlBoardSnapConfig(config))
     local originU = tonumber(cfg.origin.u) or 0.5
     local originV = tonumber(cfg.origin.v) or 0.5
-    local ringIndex = resolveRingIndexForUv(cfg, u, v, rings)
-    local group = cfg.snapGroups[ringIndex]
-    local ringYawOffsetDeg = tonumber(group.snapYawOffsetDeg)
-    if ringYawOffsetDeg == nil then
-        ringYawOffsetDeg = tonumber(cfg.snapYawOffsetDeg) or 0
-    end
     local towardOrigin = snapYawTowardOriginDeg(board, u, v, originU, originV)
-    return ((towardOrigin + ringYawOffsetDeg) % 360 + 360) % 360
+    return (towardOrigin % 360 + 360) % 360
 end
 
 --- @param catalog table[]
@@ -900,7 +880,7 @@ local function familySnapRadialDistFromAnchor(entry, anchorEntry, board)
     return math.sqrt(dx * dx + dz * dz)
 end
 
---- Signed lateral offset on the minimap tile (board-local X when possible; lower = screen-left).
+--- Signed lateral offset on the CONTROL_BOARD tile (board-local X when possible; lower = screen-left).
 --- @param entry table
 --- @param anchorEntry table
 --- @param board Object|nil

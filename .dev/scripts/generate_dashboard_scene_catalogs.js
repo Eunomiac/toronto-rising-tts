@@ -39,10 +39,7 @@ const DO_NOT_EDIT =
 const REQUIRED_PC_KEYS = ["aishe", "rashid", "lordLucien", "fomorach", "blackCaesar"];
 const REQUIRED_PLAYER_COLORS = ["Brown", "Orange", "Red", "Pink", "Purple"];
 const REQUIRED_NPC_SEATS = ["NPC1", "NPC2", "NPC3", "NPC4"];
-const REQUIRED_SCATTER_AREAS = ["scatter1", "scatter2", "scatter3", "scatter4", "scatter5", "scatter6"];
 
-/** Dashboard `controlBoard_standard.webp` seats: slot 1 is at image center (u = 0.50). */
-const DASHBOARD_SEAT_ROW_UV = { uMin: 0.35, uMax: 0.65 };
 
 /**
  * @param {string} guidsSrc
@@ -221,15 +218,11 @@ function siteCardUrl(cardUrls, siteKey) {
 function loadDashboardStageWorld(saveText, save) {
   const guidsSrc = fs.readFileSync(guidsPath, "utf8");
   const stageGuid = readGuidConstant(guidsSrc, "STAGE_BOARD");
-  const controlGuid = readGuidConstant(guidsSrc, "CONTROL_BOARD");
   const stage = extractBoardTransform(saveText, stageGuid, "STAGE_BOARD", "G.GUIDS.STAGE_BOARD");
-  const control = extractBoardTransform(saveText, controlGuid, "NPC Control Board", "G.GUIDS.CONTROL_BOARD");
   const world = staggerWorldFromStageScale(stage);
   const where = save.source === "savesDir" ? "live TTS save" : "repo .dev snapshot";
-  const ratioX = Math.abs(stage.scaleX) / Math.abs(control.scaleX);
-  const ratioZ = Math.abs(stage.scaleZ) / Math.abs(control.scaleZ);
   console.log(
-    `STAGE_BOARD ${stageGuid} from ${save.saveFileName} (${where}): scale ${stage.scaleX} × ${stage.scaleZ}; CONTROL_BOARD ${control.scaleX} × ${control.scaleZ} (minimap marker ratios ~${ratioX.toFixed(1)} × ${ratioZ.toFixed(1)}); stagger half-extents ${world.halfWidthX} × ${world.halfDepthZ}.`,
+    `STAGE_BOARD ${stageGuid} from ${save.saveFileName} (${where}): scale ${stage.scaleX} × ${stage.scaleZ}; stagger half-extents ${world.halfWidthX} × ${world.halfDepthZ}.`,
   );
   return {
     centerX: world.centerX,
@@ -247,10 +240,6 @@ function loadDashboardStageWorld(saveText, save) {
       rotY: stage.rotY,
       halfWidthX: world.halfWidthX,
       halfDepthZ: world.halfDepthZ,
-      controlScaleX: Math.abs(control.scaleX),
-      controlScaleZ: Math.abs(control.scaleZ),
-      minimapRatioX: ratioX,
-      minimapRatioZ: ratioZ,
     },
   };
 }
@@ -636,77 +625,6 @@ function generatePolarSnaps(cfg, stage) {
   return entries;
 }
 
-function generateSeatRowSnaps(seatRow) {
-  const columns = seatRow.columns;
-  const n = columns.length;
-  return columns.map((col, i) => {
-    const t = n === 1 ? 0.5 : i / (n - 1);
-    const u = seatRow.uMin + t * (seatRow.uMax - seatRow.uMin);
-    return {
-      snapIndex: 0,
-      snapKind: "seat",
-      seatKey: col.seatKey,
-      kind: col.kind,
-      tableSlot: col.tableSlot,
-      u,
-      v: seatRow.v,
-    };
-  });
-}
-
-function generateScatterSlots(scatter) {
-  const areas = {};
-  const whiteR = scatter.whiteRadius ?? 0.028;
-  const orbitR = scatter.orbitRadius ?? 0.078;
-  const orbitCount = scatter.orbitSlotCount;
-  for (const areaKey of scatter.areaOrder) {
-    const area = scatter.areas[areaKey];
-    if (!area) {
-      throw new Error(`D.SCATTER_BOARD.areas is missing ${areaKey}.`);
-    }
-    const origin = area.origin;
-    let center;
-    if (area.gold && Array.isArray(area.whites) && area.whites.length >= 4) {
-      center = [
-        { slot: 1, u: area.whites[0].u, v: area.whites[0].v },
-        { slot: 2, u: area.whites[1].u, v: area.whites[1].v },
-        { slot: 3, u: area.gold.u, v: area.gold.v },
-        { slot: 4, u: area.whites[2].u, v: area.whites[2].v },
-        { slot: 5, u: area.whites[3].u, v: area.whites[3].v },
-      ];
-    } else {
-      center = [
-        { slot: 1, u: origin.u - whiteR, v: origin.v + whiteR },
-        { slot: 2, u: origin.u + whiteR, v: origin.v + whiteR },
-        { slot: 3, u: origin.u, v: origin.v },
-        { slot: 4, u: origin.u + whiteR, v: origin.v - whiteR },
-        { slot: 5, u: origin.u - whiteR, v: origin.v - whiteR },
-      ];
-    }
-    let orbit;
-    if (Array.isArray(area.npcHoles) && area.npcHoles.length > 0) {
-      orbit = area.npcHoles.map((hole, index) => ({
-        slot: index + 1,
-        u: hole.u,
-        v: hole.v,
-      }));
-    } else {
-      orbit = [];
-      for (let slot = 1; slot <= orbitCount; slot += 1) {
-        const deg = (slot - 1) * (360 / orbitCount);
-        const rad = (deg * Math.PI) / 180;
-        orbit.push({
-          slot,
-          u: origin.u + Math.sin(rad) * orbitR,
-          v: origin.v + Math.cos(rad) * orbitR,
-        });
-      }
-    }
-    areas[areaKey] = { origin, center, orbit };
-  }
-  return areas;
-}
-
 function parseControlBoardSnap(source) {
   const block = extractBlock(source, "D.CONTROL_BOARD_SNAP =");
   const origin = readUvOrigin(block);
@@ -757,127 +675,6 @@ function parseControlBoardSnap(source) {
     throw new Error("D.CONTROL_BOARD_SNAP.snapGroups is empty.");
   }
   return { origin, snapGroups };
-}
-
-function parseSeatRow(source) {
-  const block = extractBlock(source, "D.CONTROL_BOARD_SEAT_ROW =");
-  const v = readNumberField(block, "v");
-  const uMin = readNumberField(block, "uMin");
-  const uMax = readNumberField(block, "uMax");
-  if (v === null || uMin === null || uMax === null) {
-    throw new Error("D.CONTROL_BOARD_SEAT_ROW is missing v/uMin/uMax.");
-  }
-  const columnsBlockStart = block.indexOf("columns");
-  if (columnsBlockStart < 0) {
-    throw new Error("D.CONTROL_BOARD_SEAT_ROW is missing columns.");
-  }
-  const columnsBrace = block.indexOf("{", columnsBlockStart);
-  let depth = 0;
-  let end = columnsBrace;
-  for (let i = columnsBrace; i < block.length; i += 1) {
-    if (block[i] === "{") {
-      depth += 1;
-    } else if (block[i] === "}") {
-      depth -= 1;
-      if (depth === 0) {
-        end = i;
-        break;
-      }
-    }
-  }
-  const columns = parseAnonymousTableBodies(block.slice(columnsBrace, end + 1)).map((body, index) => {
-    const seatKey = readStringField(body, "seatKey");
-    const kind = readStringField(body, "kind");
-    const tableSlot = readNumberField(body, "tableSlot");
-    if (!seatKey || !kind || tableSlot === null) {
-      throw new Error(`CONTROL_BOARD_SEAT_ROW.columns[${index + 1}] is missing seatKey/kind/tableSlot.`);
-    }
-    return { seatKey, kind, tableSlot };
-  });
-  if (columns.length === 0) {
-    throw new Error("D.CONTROL_BOARD_SEAT_ROW.columns is empty.");
-  }
-  return { v, uMin, uMax, columns };
-}
-
-function readUvPair(body) {
-  const u = readNumberField(body, "u");
-  const v = readNumberField(body, "v");
-  if (u === null || v === null) {
-    return null;
-  }
-  return { u, v };
-}
-
-function parseHoleArray(areaBody, fieldName) {
-  const marker = `${fieldName} =`;
-  if (!areaBody.includes(marker)) {
-    return null;
-  }
-  let block;
-  try {
-    block = extractBlock(areaBody, marker);
-  } catch {
-    return null;
-  }
-  const holes = parseAnonymousTableBodies(block)
-    .map((item) => readUvPair(item))
-    .filter((item) => item !== null);
-  return holes.length > 0 ? holes : null;
-}
-
-function readNamedHole(areaBody, fieldName) {
-  const marker = `${fieldName} =`;
-  if (!areaBody.includes(marker)) {
-    return null;
-  }
-  try {
-    return readUvPair(extractBlock(areaBody, `${fieldName} =`));
-  } catch {
-    return null;
-  }
-}
-
-function parseScatterBoard(source) {
-  const block = extractBlock(source, "D.SCATTER_BOARD =");
-  const centerSlotCount = readNumberField(block, "centerSlotCount");
-  const orbitSlotCount = readNumberField(block, "orbitSlotCount");
-  const whiteRadius = readNumberField(block, "whiteRadius");
-  const orbitRadius = readNumberField(block, "orbitRadius");
-  if (centerSlotCount === null || orbitSlotCount === null) {
-    throw new Error("D.SCATTER_BOARD is missing centerSlotCount or orbitSlotCount.");
-  }
-  const areaOrder = [];
-  const orderMatch = block.match(/areaOrder\s*=\s*\{([^}]*)\}/);
-  if (!orderMatch) {
-    throw new Error("D.SCATTER_BOARD is missing areaOrder.");
-  }
-  for (const m of orderMatch[1].matchAll(/"([^"]+)"/g)) {
-    areaOrder.push(m[1]);
-  }
-  const areasBlock = extractBlock(block, "areas =");
-  const areas = {};
-  for (const entry of parseTopLevelEntries(areasBlock)) {
-    const origin = readUvOrigin(entry.body);
-    if (!origin) {
-      throw new Error(`D.SCATTER_BOARD.areas.${entry.key} is missing origin u/v.`);
-    }
-    const gold = readNamedHole(entry.body, "gold");
-    areas[entry.key] = {
-      origin,
-      gold,
-      whites: parseHoleArray(entry.body, "whites"),
-      npcHoles: parseHoleArray(entry.body, "npcHoles"),
-    };
-  }
-  return {
-    areaOrder,
-    centerSlotCount,
-    orbitSlotCount,
-    whiteRadius,
-    orbitRadius,
-    areas,
-  };
 }
 
 function parsePlayerColors(source) {
@@ -1106,14 +903,7 @@ function main() {
 
   const stage = loadDashboardStageWorld(saveText, save);
   const snapCfg = parseControlBoardSnap(boardSrc);
-  const seatRow = parseSeatRow(boardSrc);
-  const scatter = parseScatterBoard(boardSrc);
   const polarSnaps = generatePolarSnaps(snapCfg, stage);
-  const seatSnaps = generateSeatRowSnaps({ ...seatRow, ...DASHBOARD_SEAT_ROW_UV });
-  seatSnaps.forEach((snap, i) => {
-    snap.snapIndex = polarSnaps.length + i + 1;
-  });
-  const scatterAreas = generateScatterSlots(scatter);
 
   const missingPcs = REQUIRED_PC_KEYS.filter((key) => !pcs.some((pc) => pc.characterKey === key));
   if (missingPcs.length > 0) {
@@ -1162,12 +952,6 @@ function main() {
   if (polarSnaps.length === 0) {
     throw new Error("CONTROL_BOARD polar snap generation produced zero snaps.");
   }
-  for (const areaKey of REQUIRED_SCATTER_AREAS) {
-    const area = scatterAreas[areaKey];
-    if (!area || area.center.length !== 5 || area.orbit.length !== scatter.orbitSlotCount) {
-      throw new Error(`Scatter area ${areaKey} is missing generated center/orbit slots.`);
-    }
-  }
 
   const catalogs = {
     generatedBy: DO_NOT_EDIT,
@@ -1195,18 +979,13 @@ function main() {
     generatedBy: DO_NOT_EDIT,
     stageBoard: stage.stageBoard,
     polar: polarSnaps,
-    seats: seatSnaps,
-    scatter: {
-      areaOrder: scatter.areaOrder,
-      areas: scatterAreas,
-    },
   };
 
   fs.mkdirSync(path.dirname(catalogsOutPath), { recursive: true });
   fs.writeFileSync(catalogsOutPath, `${JSON.stringify(catalogs, null, 2)}\n`);
   fs.writeFileSync(snapsOutPath, `${JSON.stringify(snaps, null, 2)}\n`);
   console.log(
-    `Wrote ${path.relative(root, catalogsOutPath)} (${namedNpcs.length} named NPCs, ${pcs.length} PCs) and ${path.relative(root, snapsOutPath)} (${polarSnaps.length} polar + ${seatSnaps.length} seats; stagger half-extents ${stage.stageBoard.halfWidthX} × ${stage.stageBoard.halfDepthZ}).`,
+    `Wrote ${path.relative(root, catalogsOutPath)} (${namedNpcs.length} named NPCs, ${pcs.length} PCs) and ${path.relative(root, snapsOutPath)} (${polarSnaps.length} polar snaps; stagger half-extents ${stage.stageBoard.halfWidthX} × ${stage.stageBoard.halfDepthZ}).`,
   );
 }
 
