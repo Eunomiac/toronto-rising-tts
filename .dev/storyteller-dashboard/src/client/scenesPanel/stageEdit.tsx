@@ -233,7 +233,7 @@ export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit
     const group = event.dataTransfer.getData(GROUP_DRAG_TYPE);
     const pack = slotNear(point, packs, w, h)?.pack ?? nearestPack(point, packs, w, h);
     if (group && pack && !offStage(point)) {
-      onEdit(spreadOnPack(groupMembers(catalogs, groupLeader(roster, group), group), pack, packs, spots));
+      onEdit(spreadOnPack(groupMembers(catalogs, groupLeader(roster, catalogs?.groupBosses, group), group), pack, packs, spots));
     }
   };
   const tokenGroup = (characterKey: string): string | undefined =>
@@ -277,7 +277,7 @@ export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit
             x={at.u * w}
             y={at.v * h}
             color={overrides[spot.characterKey]?.color ?? (group ? groupColor(roster, group) : undefined)}
-            boss={group !== undefined && groupLeader(roster, group) === spot.characterKey}
+            boss={group !== undefined && groupLeader(roster, catalogs?.groupBosses, group) === spot.characterKey}
             dragging={dragging !== null}
             handlers={tokens.handlers(spot.characterKey)}
             onDoubleClick={() => {
@@ -350,7 +350,7 @@ export const ScatterLayer = ({ w, h, board, groups, catalogs, nameOf, onPlace, o
         }
         const npc = event.dataTransfer.getData(NPC_DRAG_TYPE);
         const pickerGroup = event.dataTransfer.getData(GROUP_DRAG_TYPE);
-        const keys = npc ? [npc] : pickerGroup ? groupMembers(catalogs, groupLeader(roster, pickerGroup), pickerGroup) : [];
+        const keys = npc ? [npc] : pickerGroup ? groupMembers(catalogs, groupLeader(roster, catalogs?.groupBosses, pickerGroup), pickerGroup) : [];
         for (const key of keys) {
           onPlace(key, "npc", group);
         }

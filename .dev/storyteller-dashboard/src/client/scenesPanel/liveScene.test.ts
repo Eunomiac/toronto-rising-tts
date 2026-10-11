@@ -5,10 +5,10 @@ import { liveSeats, liveTokens, soundView, spotlightView, tableUsesRandomSeating
 
 const catalogs = {
   pcs: [
-    { characterKey: "aishe", fullName: "Aishe Tache", isPC: true, groups: [], pickerGroups: [] },
-    { characterKey: "rashid", fullName: "Rashid Abdulrahman", isPC: true, groups: [], pickerGroups: [] }
+    { characterKey: "aishe", fullName: "Aishe Tache", isPC: true, pickerGroups: [] },
+    { characterKey: "rashid", fullName: "Rashid Abdulrahman", isPC: true, pickerGroups: [] }
   ],
-  namedNpcs: [{ characterKey: "victorVex", fullName: "Victor Vex", isPC: false, groups: [], pickerGroups: [] }],
+  namedNpcs: [{ characterKey: "victorVex", fullName: "Victor Vex", isPC: false, pickerGroups: [] }],
   tables: [{ key: "Table B", slotCapacity: 7, randomSeating: true }]
 } as unknown as SceneCatalogs;
 

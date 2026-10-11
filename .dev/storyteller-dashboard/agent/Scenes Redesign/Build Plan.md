@@ -37,7 +37,7 @@ Each phase ends usable and committed. Dashboard-only phases need no Linear / PAV
 
 ### Phase 2 — Dashboard-owned files
 
-- Server store `data/scene-deck.json` (git-ignored): live (on-deck) scene list, scene notes (tabbed documents per scene), roster categories / group colours / leaders.
+- Server store `data/scene-deck.json` (git-ignored): live (on-deck) scene list, scene notes (tabbed documents per scene). Roster categories / group colours / leaders are stored in tracked `data/npc-roster.json` `layout`.
 - Routes `GET/PUT /api/scene-deck`; atomic writes (tmp + rename), as `labNotes.ts`.
 - Backups: timestamped copy to `<backupDir>/Dashboard Data` at most every 10 minutes, keep the last 50 plus one per day (Job Inventory "Settled in the last round").
 

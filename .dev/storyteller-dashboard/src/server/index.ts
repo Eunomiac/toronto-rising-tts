@@ -12,7 +12,8 @@ import { refreshGenericNpcCatalogOnStartup } from "./refreshGenericNpcCatalog.js
 import { createHeadshotCropStore, HeadshotCropError, parseHeadshotCrop, requireHeadshotKey } from "./headshotCrops.js";
 import { createNpcOverrideStore, NpcOverrideError, parseNpcOverrideBody, requireNpcOverrideKey } from "./npcOverrides.js";
 import { createDataFileStore, resolveDashboardBackupDir, type DataFileStore } from "./dataFileStore.js";
-import { normalizeSceneDeck, parseSceneDeckPatch, type SceneDeck } from "../shared/sceneDeck.js";
+import { parseSceneDeckPatch } from "../shared/sceneDeck.js";
+import { createSceneDeckStore } from "./sceneDeckStore.js";
 import { normalizeSceneLibrary, parseSceneLibraryPatch, type SceneLibrary } from "../shared/sceneLibrary.js";
 import { createLabNoteStore, LabNoteError, parseLabNoteCreate, parseLabNotePatch } from "./labNotes.js";
 import { createTermImageStore, MAX_TERM_IMAGE_BYTES, TERM_IMAGE_CONTENT_TYPES, TermImageError } from "./termImages.js";
@@ -44,12 +45,7 @@ const dashboardBackupDir = resolveDashboardBackupDir(repoRoot).then((backupDir) 
   }
   return backupDir;
 });
-const sceneDeck = dashboardBackupDir.then((backupDir) => createDataFileStore<SceneDeck>({
-  filePath: path.join(dashboardRoot, "data", "scene-deck.json"),
-  backupDir,
-  backupPrefix: "scene-deck",
-  normalize: normalizeSceneDeck
-}));
+const sceneDeck = dashboardBackupDir.then((backupDir) => createSceneDeckStore({ dataDir: path.join(dashboardRoot, "data"), backupDir }));
 const sceneLibrary = dashboardBackupDir.then((backupDir) => createDataFileStore<SceneLibrary>({
   filePath: path.join(dashboardRoot, "data", "scene-library.json"),
   backupDir,

@@ -1,0 +1,420 @@
+{
+  "groupLabels": {
+    "aapilu": "Aapilu",
+    "civilian": "Civilian",
+    "criseDeLwa": "Crise de Lwa",
+    "ducheskiRevenant": "Ducheski Revenant",
+    "friendlyNeighborhoodSpiders": "Friendly Neighborhood Spiders",
+    "friendlyNeighborhoodSpidersGarou": "Friendly Neighborhood Spiders (Garou)",
+    "touchstone": "Touchstone"
+  },
+  "bosses": {
+    "beesHive": "bee",
+    "colorBlitz": "rubyRouge",
+    "fiveKeys": "myleneHamelin",
+    "freeChantry": "nasirKhan",
+    "harpies": "theAristocrat",
+    "ironGuard": "laz",
+    "jarvisJacks": "maxFloyd",
+    "midnightMass": "fatherDiaz",
+    "moonClub": "victorVex",
+    "redFlag": "rosie",
+    "redeemers": "ren",
+    "scarlettAndTheBoys": "oliverGagnon",
+    "theLine": "sageSam",
+    "wychwoodHecata": "bacchusGiovanni"
+  },
+  "members": {
+    "abbasFaruk": [
+      "touchstone"
+    ],
+    "bertrice": [
+      "autarkis"
+    ],
+    "chokesOnMoonlight": [
+      "friendlyNeighborhoodSpiders"
+    ],
+    "chokesOnMoonlightGarou": [
+      "friendlyNeighborhoodSpidersGarou"
+    ],
+    "christopherGiovanniJr": [
+      "wychwoodHecata"
+    ],
+    "daevaAnitaMorris": [
+      "aapilu"
+    ],
+    "daevaGabrielCollard": [
+      "aapilu"
+    ],
+    "daevaNasirKhan": [
+      "aapilu"
+    ],
+    "drake": [
+      "autarkis"
+    ],
+    "enzoCaruso": [
+      "touchstone"
+    ],
+    "fangsAtTheCradle": [
+      "friendlyNeighborhoodSpiders"
+    ],
+    "fangsAtTheCradleGarou": [
+      "friendlyNeighborhoodSpidersGarou"
+    ],
+    "jeanDucheskiI": [
+      "criseDeLwa"
+    ],
+    "jeanDucheskiIII": [
+      "ducheskiRevenant"
+    ],
+    "jezdimirDucheski": [
+      "ducheskiRevenant"
+    ],
+    "kadePhillips": [
+      "touchstone"
+    ],
+    "kieraVaughan": [
+      "touchstone"
+    ],
+    "kingstonBlack": [
+      "jarvisJacks"
+    ],
+    "mamboAbigail": [
+      "wychwoodHecata"
+    ],
+    "mara": [
+      "deepSix"
+    ],
+    "marieBouschard": [
+      "civilian"
+    ],
+    "maxFloyd": [
+      "jarvisJacks"
+    ],
+    "miriamRavenscroft": [
+      "touchstone"
+    ],
+    "moltsInShadow": [
+      "friendlyNeighborhoodSpiders"
+    ],
+    "moltsInShadowGarou": [
+      "friendlyNeighborhoodSpidersGarou"
+    ],
+    "mrEasy": [
+      "jarvisJacks"
+    ],
+    "palis": [
+      "beesHive"
+    ],
+    "percivalCavendish": [
+      "civilian"
+    ],
+    "ponticulus": [
+      "criseDeLwa"
+    ],
+    "rebeccaRossellini": [
+      "criseDeLwa"
+    ],
+    "rotInTheRiver": [
+      "friendlyNeighborhoodSpiders"
+    ],
+    "rotInTheRiverGarou": [
+      "friendlyNeighborhoodSpidersGarou"
+    ],
+    "severinKoslov": [
+      "wychwoodHecata"
+    ],
+    "stalksTheTangle": [
+      "friendlyNeighborhoodSpiders"
+    ],
+    "stalksTheTangleGarou": [
+      "friendlyNeighborhoodSpidersGarou"
+    ],
+    "theIslandDevil": [
+      "autarkis"
+    ],
+    "theUnshadowedThrone": [
+      "aapilu"
+    ],
+    "twist": [
+      "jarvisJacks"
+    ],
+    "uwuByteMe": [
+      "civilian"
+    ],
+    "bee": [
+      "beesHive"
+    ],
+    "carol": [
+      "beesHive"
+    ],
+    "ianRammond": [
+      "beesHive"
+    ],
+    "terry": [
+      "beesHive"
+    ],
+    "tommy": [
+      "beesHive"
+    ],
+    "iq": [
+      "beesHive"
+    ],
+    "rubyRouge": [
+      "colorBlitz"
+    ],
+    "evanescentBlue": [
+      "colorBlitz"
+    ],
+    "rosie": [
+      "redFlag"
+    ],
+    "damienAbanda": [
+      "redFlag"
+    ],
+    "profEthanKeen": [
+      "redFlag"
+    ],
+    "calvinWallace": [
+      "redFlag"
+    ],
+    "oliverGagnon": [
+      "scarlettAndTheBoys"
+    ],
+    "scarlett": [
+      "scarlettAndTheBoys"
+    ],
+    "razorWhit": [
+      "scarlettAndTheBoys"
+    ],
+    "merrickSingh": [
+      "scarlettAndTheBoys"
+    ],
+    "myleneHamelin": [
+      "fiveKeys"
+    ],
+    "zuriOluwusi": [
+      "fiveKeys"
+    ],
+    "adrianVarga": [
+      "fiveKeys"
+    ],
+    "stirlingSiskin": [
+      "fiveKeys"
+    ],
+    "jesseSharp": [
+      "fiveKeys"
+    ],
+    "nasirKhan": [
+      "freeChantry"
+    ],
+    "gabrielCollard": [
+      "freeChantry"
+    ],
+    "anitaMorris": [
+      "freeChantry"
+    ],
+    "ulyssesCelaj": [
+      "freeChantry"
+    ],
+    "theAristocrat": [
+      "harpies"
+    ],
+    "xavierWhitchurch": [
+      "harpies"
+    ],
+    "christianne": [
+      "harpies"
+    ],
+    "laz": [
+      "ironGuard"
+    ],
+    "osborneLowell": [
+      "ironGuard"
+    ],
+    "emilyTheDuskRose": [
+      "ironGuard"
+    ],
+    "sageSam": [
+      "theLine"
+    ],
+    "masonSchmidt": [
+      "theLine"
+    ],
+    "jackBeNimble": [
+      "theLine"
+    ],
+    "yusefShamsin": [
+      "theLine"
+    ],
+    "suyin": [
+      "theLine"
+    ],
+    "fatherDiaz": [
+      "midnightMass"
+    ],
+    "deaconReal": [
+      "midnightMass"
+    ],
+    "sisterCicione": [
+      "midnightMass"
+    ],
+    "victorVex": [
+      "moonClub"
+    ],
+    "georgieStJames": [
+      "moonClub"
+    ],
+    "vanceVogel": [
+      "moonClub"
+    ],
+    "scottTempo": [
+      "moonClub"
+    ],
+    "ren": [
+      "redeemers"
+    ],
+    "alexandra": [
+      "redeemers"
+    ],
+    "kai": [
+      "redeemers"
+    ],
+    "tyler": [
+      "redeemers"
+    ],
+    "evangelineDupont": [
+      "regencyUniversityChantry"
+    ],
+    "drIrenaVoss": [
+      "regencyUniversityChantry"
+    ],
+    "raduIancu": [
+      "regencyUniversityChantry"
+    ],
+    "damienKline": [
+      "regencyUniversityChantry"
+    ],
+    "lucasMerrow": [
+      "regencyUniversityChantry"
+    ],
+    "bacchusGiovanni": [
+      "wychwoodHecata"
+    ],
+    "lorenzaGiovanni": [
+      "wychwoodHecata"
+    ],
+    "niccoloGiovanni": [
+      "wychwoodHecata"
+    ],
+    "theBleakBokor": [
+      "wychwoodHecata"
+    ],
+    "eddie": [
+      "petitioners"
+    ],
+    "alexisHoltt": [
+      "petitioners"
+    ],
+    "lexiMadi": [
+      "petitioners"
+    ],
+    "averyInnis": [
+      "petitioners"
+    ],
+    "benedictKincaid": [
+      "petitioners"
+    ]
+  },
+  "layout": {
+    "categories": [
+      {
+        "id": "cat-1791491395278",
+        "name": "Anarchs",
+        "color": "#e91616",
+        "open": false
+      },
+      {
+        "id": "cat-1791492901898",
+        "name": "Camarilla (Main)",
+        "color": "#ffd500",
+        "open": false
+      },
+      {
+        "id": "cat-1791492941508",
+        "name": "Sabbat",
+        "color": "#6e00db",
+        "open": true
+      },
+      {
+        "id": "cat-1791493032845",
+        "name": "Independent",
+        "color": "#ffffff",
+        "open": true
+      },
+      {
+        "id": "cat-1791493058629",
+        "name": "Mortal",
+        "color": "#00eeff",
+        "open": false
+      },
+      {
+        "id": "cat-1791493082930",
+        "name": "Werewolf",
+        "color": "#99430b",
+        "open": false
+      },
+      {
+        "id": "cat-1791493113616",
+        "name": "Retainers",
+        "color": "#00db2c",
+        "open": false
+      },
+      {
+        "id": "cat-1791493137388",
+        "name": "Spirits",
+        "color": "#0a008f",
+        "open": false
+      }
+    ],
+    "assigned": {
+      "jarvisJacks": "cat-1791491395278",
+      "colorBlitz": "cat-1791491395278",
+      "beesHive": "cat-1791492901898",
+      "freeChantry": "cat-1791492901898",
+      "ironGuard": "cat-1791492901898",
+      "scarlettAndTheBoys": "cat-1791492901898",
+      "fiveKeys": "cat-1791492901898",
+      "harpies": "cat-1791492901898",
+      "theLine": "cat-1791491395278",
+      "midnightMass": "cat-1791492901898",
+      "regencyUniversityChantry": "cat-1791492901898",
+      "moonClub": "cat-1791492901898",
+      "redeemers": "cat-1791491395278",
+      "redFlag": "cat-1791491395278",
+      "deepSix": "cat-1791492941508",
+      "autarkis": "cat-1791493032845",
+      "petitioners": "cat-1791493032845",
+      "wychwoodHecata": "cat-1791493032845",
+      "touchstone": "cat-1791493058629",
+      "civilian": "cat-1791493058629",
+      "friendlyNeighborhoodSpiders": "cat-1791493082930",
+      "friendlyNeighborhoodSpidersGarou": "cat-1791493082930",
+      "criseDeLwa": "cat-1791493113616",
+      "ducheskiRevenant": "cat-1791493113616",
+      "aapilu": "cat-1791493137388"
+    },
+    "groupColors": {
+      "redeemers": "#2ee916",
+      "midnightMass": "#a600ff",
+      "moonClub": "#00ffbf",
+      "regencyUniversityChantry": "#ff4000",
+      "wychwoodHecata": "#000000",
+      "friendlyNeighborhoodSpiders": "#8f990b",
+      "criseDeLwa": "#b366ff",
+      "ducheskiRevenant": "#e1a8ff",
+      "aapilu": "#8f001d"
+    },
+    "leaders": {}
+  }
+}

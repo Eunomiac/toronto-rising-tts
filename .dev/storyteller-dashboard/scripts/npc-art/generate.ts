@@ -104,14 +104,17 @@ const readMemoriamNames = async (): Promise<Map<string, string>> => {
   return names;
 };
 
+/** Ring colours come from the roster layout in data/npc-roster.json, which the dashboard's roster tab writes. */
 const readRoster = async (): Promise<Roster> => {
-  const deck = await readOptionalJson(path.join(dataDir, "scene-deck.json"), "every token ring uses the default colour");
-  const roster = isRecord(deck) && isRecord(deck.roster) ? deck.roster : {};
+  const file = await readJson(path.join(dataDir, "npc-roster.json"));
+  const roster = isRecord(file) ? file.layout : undefined;
+  if (!isRecord(roster) || !Array.isArray(roster.categories) || !isRecord(roster.assigned) || !isRecord(roster.groupColors)) {
+    throw new Error("data/npc-roster.json has no roster layout (categories, assigned, groupColors).");
+  }
   const strings = (value: unknown): Record<string, string> =>
     isRecord(value) ? Object.fromEntries(Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === "string")) : {};
-  const categories = Array.isArray(roster.categories)
-    ? roster.categories.flatMap((row) => (isRecord(row) && typeof row.id === "string" && typeof row.color === "string" ? [{ id: row.id, color: row.color }] : []))
-    : [];
+  const categories = roster.categories.flatMap((row: unknown) =>
+    isRecord(row) && typeof row.id === "string" && typeof row.color === "string" ? [{ id: row.id, color: row.color }] : []);
   return { categories, assigned: strings(roster.assigned), groupColors: strings(roster.groupColors) };
 };
 

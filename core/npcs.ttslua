@@ -28,7 +28,6 @@ local O = require("core.objects")
 --- PC-inclusive lookups use `DATA.characters` directly.
 NPCS.characters = DATA.getNpcCharacters()
 NPCS.lights = DATA.lights or {}
-NPCS.stageLights = DATA.stageLights or {}
 
 local TAG_FIG = NpcSpawn.TAG_FIG
 local TAG_LIT = NpcSpawn.TAG_LIT
@@ -630,7 +629,8 @@ local function ensureNpcFigurinePhysicsLocked(fig)
     end
 end
 
---- Custom Figurine `ImageScalar` from `figurine.scale` in npcs_data (spawn data + spotlight bounds gating).
+--- Custom Figurine `ImageScalar` from `def.figurine.scale` (the override `cardScale`, else `D.DEFAULT_FIGURINE_SCALE`;
+--- spawn data + spotlight bounds gating).
 --- Not Transform scale (spawned pairs stay at Transform scale 1).
 --- @param npcName string
 --- @return number
@@ -1771,13 +1771,6 @@ function NPCS.getMergedModeDefinition(npcName, modeKey)
     local globalMode = NPCS.lights[modeKey] or {}
     local per = def and def.lighting and def.lighting[modeKey] or nil
     local merged = deepMerge(globalMode, per)
-    local rec = getInstances()[npcName]
-    if U.Type(rec) == "table" and rec.areaKey == STAGE_BOARD_AREA_KEY then
-        local stageOverride = NPCS.stageLights[modeKey]
-        if U.Type(stageOverride) == "table" then
-            merged = deepMerge(merged, stageOverride)
-        end
-    end
     -- Live DEBUG overrides win last (TOR-471): `gameState.debug.npcLightModes[modeKey]`.
     local debugOverride = S.getStateVal("debug", "npcLightModes", modeKey)
     if U.Type(debugOverride) == "table" then
@@ -3309,63 +3302,6 @@ function NPCS.restoreAfterStateLoad()
     NPCS.registerRestoredInstancesFromState()
 end
 
---- Recursive stats text for Storyteller (console or UI).
---- @param npcName string
---- @param maxDepth number|nil
---- @return string
-function NPCS.displayStats(npcName, maxDepth)
-    maxDepth = maxDepth or 10
-    local def = NPCS.characters[npcName]
-    if def == nil or def.stats == nil then
-        return "No stats for " .. tostring(npcName)
-    end
-    local lines = {}
-
-    --- @param v any
-    --- @param indent number
-    --- @param depth number
-    local function walk(v, indent, depth)
-        if depth > maxDepth then
-            table.insert(lines, string.rep("  ", indent) .. "...")
-            return
-        end
-        local t = U.Type(v)
-        if t == "table" then
-            local isArray = true
-            local maxn = 0
-            for k, _ in pairs(v) do
-                if U.Type(k) ~= "number" then
-                    isArray = false
-                    break
-                end
-                if k > maxn then
-                    maxn = k
-                end
-            end
-            if isArray and maxn > 0 then
-                for i = 1, maxn do
-                    if v[i] ~= nil then
-                        walk(v[i], indent, depth + 1)
-                    end
-                end
-            else
-                for k, val in pairs(v) do
-                    table.insert(lines, string.rep("  ", indent) .. tostring(k) .. ":")
-                    walk(val, indent + 1, depth + 1)
-                end
-            end
-        elseif t == "string" or t == "number" or t == "boolean" then
-            table.insert(lines, string.rep("  ", indent) .. tostring(v))
-        else
-            table.insert(lines, string.rep("  ", indent) .. "(" .. t .. ")")
-        end
-    end
-
-    table.insert(lines, (def.fullName or npcName) .. " — stats")
-    walk(def.stats, 0, 0)
-    return table.concat(lines, "\n")
-end
-
 --- Runtime-only roster entry for generic NPCs (TOR-560). Spawned on demand like named NPCs.
 --- @param characterKey string
 --- @param displayName string
@@ -3381,7 +3317,7 @@ function NPCS.registerGenericCharacter(characterKey, displayName)
         name = characterKey,
         fullName = displayName,
         -- Card Scale (ImageScalar); 53 matches the named NPC default in npcs_data.
-        figurine = { scale = (override and override.cardScale) or 53 },
+        figurine = { scale = (override and override.cardScale) or DATA.DEFAULT_FIGURINE_SCALE },
         isGeneric = true,
     }
 end

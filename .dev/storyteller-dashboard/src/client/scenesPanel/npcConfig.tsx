@@ -6,6 +6,7 @@ import { Overlay } from "./sketch";
 
 /** World Y of a seated figurine (`SEAT_FIGURE.defaultY` in lib/seat_role_offsets.ttslua). */
 const DEFAULT_SEATED_Y = -52.89;
+/** Card scale of an NPC with no override (D.DEFAULT_FIGURINE_SCALE in lib/npcs_data.ttslua). */
 const DEFAULT_CARD_SCALE = 53;
 const WIDTH = 300;
 
@@ -17,8 +18,6 @@ export type NpcConfigTarget = {
   readonly defaultName: string;
   /** Ring colour the token gets from its roster group. */
   readonly defaultColor: string;
-  /** npcs_data `figurine.scale`; 53 when unknown. */
-  readonly defaultCardScale: number | null;
 };
 
 const numberOrUndefined = (text: string): number | string | undefined => {
@@ -36,7 +35,6 @@ const numberOrUndefined = (text: string): number | string | undefined => {
  */
 export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; onClose: () => void }): ReactElement => {
   const saved = useNpcOverrides()[target.characterKey] ?? {};
-  const defaultCardScale = target.defaultCardScale ?? DEFAULT_CARD_SCALE;
   const [name, setName] = useState(saved.name ?? "");
   const [color, setColor] = useState<string | null>(saved.color ?? null);
   const [cardScale, setCardScale] = useState(saved.cardScale === undefined ? "" : String(saved.cardScale));
@@ -51,7 +49,7 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
     return parseNpcOverride({
       name: name.trim() === target.defaultName ? undefined : name,
       color: color === target.defaultColor ? undefined : color,
-      cardScale: scale === defaultCardScale ? undefined : scale,
+      cardScale: scale === DEFAULT_CARD_SCALE ? undefined : scale,
       seatedY: y === DEFAULT_SEATED_Y ? undefined : y
     });
   };
@@ -105,7 +103,7 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
             className="lab-select"
             type="number"
             step="any"
-            placeholder={String(defaultCardScale)}
+            placeholder={String(DEFAULT_CARD_SCALE)}
             value={cardScale}
             onChange={(event) => setCardScale(event.target.value)}
           />

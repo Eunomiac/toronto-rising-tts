@@ -61,1602 +61,447 @@ D.lights = {
   }
 }
 
---- Beam overrides for NPCs on STAGE_BOARD (`__stage_board__` placements). Deep-merged on top of `D.lights` + per-character `lighting` when resolving modes; position/aim fields stay from the base mode unless listed here.
-D.stageLights = {}
-
 --[[
-    Optional per area: spreadBlend (0..1, default 0). Scales how much farther `distance` widens slot spacing:
-    spreadBlend 0 = same lateral packing as centerForward; 1 = full similarity (spacing grows with distance).
-]]
-D.areas = {
---   centerForward = {
---     name = "Center Forward",
---     label = "▼",
---     autoLight = true,
---     rotation = 0,
---     distance = 30,
---     groundLevel = -40,
---     spreadBlend = 0,
---     positions = {
---       { x = 0,   z = 0 },
---       { x = 25,  z = 5 },
---       { x = -25, z = 5 },
---       { x = 50,  z = 10 },
---       { x = -50, z = 10 },
---       { x = 75,  z = 15 },
---       { x = -75, z = 15 },
---     },
---   },
---   nearLeft = {
---     name = "Near Left",
---     label = "◀",
---     autoLight = false,
---     rotation = -35,
---     distance = 175,
---     groundLevel = -15,
---     spreadBlend = 0,
---     positions = {
---       { x = 0,   z = 0 },
---       { x = 25,  z = 5 },
---       { x = -25, z = 5 },
---       { x = 50,  z = 10 },
---       { x = -50, z = 10 },
---       { x = 75,  z = 15 },
---       { x = -75, z = 15 },
---     },
---   },
---   nearRight = {
---     name = "Near Right",
---     label = "▶",
---     autoLight = false,
---     rotation = 35,
---     distance = 175,
---     groundLevel = -15,
---     spreadBlend = 0,
---     positions = {
---       { x = 0,   z = 0 },
---       { x = 25,  z = 5 },
---       { x = -25, z = 5 },
---       { x = 50,  z = 10 },
---       { x = -50, z = 10 },
---       { x = 75,  z = 15 },
---       { x = -75, z = 15 },
---     },
---   },
---   farRight = {
---     name = "Far Right",
---     label = "▶▶",
---     autoLight = false,
---     rotation = 35,
---     distance = 250,
---     groundLevel = 20,
---     spreadBlend = 0,
---     positions = {
---       { x = 0,   z = 0 },
---       { x = 25,  z = 5 },
---       { x = -25, z = 5 },
---       { x = 50,  z = 10 },
---       { x = -50, z = 10 },
---       { x = 75,  z = 15 },
---       { x = -75, z = 15 },
---     },
---   },
---   farLeft = {
---     name = "Far Left",
---     label = "◀◀",
---     autoLight = false,
---     rotation = -35,
---     distance = 250,
---     groundLevel = 20,
---     spreadBlend = 0,
---     positions = {
---       { x = 0,   z = 0 },
---       { x = 25,  z = 5 },
---       { x = -25, z = 5 },
---       { x = 50,  z = 10 },
---       { x = -50, z = 10 },
---       { x = 75,  z = 15 },
---       { x = -75, z = 15 },
---     },
---   },
-}
-
---[[
-    `figurine.scale` drives Custom Figurine `ImageScalar` at spawn time and spotlight bounds math at runtime.
     Every NPC's figurine and token URLs live in generated `lib/npc_art_urls.ttslua` (npm run npc-art:generate);
-    `core/npc_spawn.ttslua` spawns figurines from it on demand.
-    `werewolf = true`: every roll the Storyteller starts for this NPC is a Werewolf roll (Werewolf / Rage dice).
-    Group "demoBand" exists for testing group spawn from the Storyteller NPC panel. ]]
+    `core/npc_spawn.ttslua` spawns figurines from it on demand. Roster groups, bosses and card scales are the
+    Storyteller Dashboard's (`data/npc-roster.json`, `data/npc-overrides.json`); TTS reads only the generated overrides.
+    `werewolf = true`: every roll the Storyteller starts for this NPC is a Werewolf roll (Werewolf / Rage dice). ]]
 
 D.characters = {
   lordLucien = {
     name = "lordLucien",
     isPC = true,
     fullName = "Lord Lucien",
-    labelColor = "rgba(1, 0.85, 0, 1)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      princesCourt = 1
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   rashid = {
     name = "rashid",
     isPC = true,
     fullName = "Rashid Abdulrahman",
-    labelColor = "rgba(1, 0.85, 0, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      princesCourt = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   aishe = {
     name = "aishe",
     isPC = true,
     fullName = "Aishe Tache",
-    labelColor = "rgba(1, 0.85, 0, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      princesCourt = 3
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   fomorach = {
     name = "fomorach",
     isPC = true,
     fullName = "Fomórach",
-    labelColor = "rgba(1, 0.85, 0, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      princesCourt = 4
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   blackCaesar = {
     name = "blackCaesar",
     isPC = true,
     fullName = "Black Caesar",
-    labelColor = "rgba(1, 0.85, 0, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      princesCourt = 5
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   abbasFaruk = {
     name = "abbasFaruk",
     fullName = "Abbas Faruk",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      touchstone = 1
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   bertrice = {
     name = "bertrice",
     fullName = "Bertrice",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      autarkis = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   chokesOnMoonlight = {
     name = "chokesOnMoonlight",
     fullName = "Chokes-On-Moonlight",
     werewolf = true,
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 60,
-    },
-    groups = {
-      friendlyNeighborhoodSpiders = 1
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   chokesOnMoonlightGarou = {
     name = "chokesOnMoonlightGarou",
     fullName = "Chokes-On-Moonlight",
     werewolf = true,
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 65,
-    },
-    groups = {
-      friendlyNeighborhoodSpidersGarou = 1
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   christopherGiovanniJr = {
     name = "christopherGiovanniJr",
     fullName = "Christopher Giovanni Jr.",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      wychwoodHecata = 7
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   daevaAnitaMorris = {
     name = "daevaAnitaMorris",
     fullName = "Daeva (Anita Morris)",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      aapilu = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   daevaGabrielCollard = {
     name = "daevaGabrielCollard",
     fullName = "Daeva (Gabriel Collard)",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      aapilu = 3
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   daevaNasirKhan = {
     name = "daevaNasirKhan",
     fullName = "Daeva (Nasir Khan)",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      aapilu = 1
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   drake = {
     name = "drake",
     fullName = "Drake",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      autarkis = 3
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   enzoCaruso = {
     name = "enzoCaruso",
     fullName = "Vincenzo \"Enzo\" Caruso",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      touchstone = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   fangsAtTheCradle = {
     name = "fangsAtTheCradle",
     fullName = "Fangs-at-the-Cradle",
     werewolf = true,
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      friendlyNeighborhoodSpiders = 3
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   fangsAtTheCradleGarou = {
     name = "fangsAtTheCradleGarou",
     fullName = "Fangs-at-the-Cradle",
     werewolf = true,
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      friendlyNeighborhoodSpidersGarou = 3
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   jeanDucheskiI = {
     name = "jeanDucheskiI",
     fullName = "Jean Ducheski I",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      criseDeLwa = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   jeanDucheskiIII = {
     name = "jeanDucheskiIII",
     fullName = "Jean Ducheski III",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      ducheskiRevenant = 1
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   jezdimirDucheski = {
     name = "jezdimirDucheski",
     fullName = "Jezdimir Ducheski",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      ducheskiRevenant = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   kadePhillips = {
     name = "kadePhillips",
     fullName = "Kade Phillips",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      touchstone = 3
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   kieraVaughan = {
     name = "kieraVaughan",
     fullName = "Kiera Vaughan",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      touchstone = 4
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   kingstonBlack = {
     name = "kingstonBlack",
     fullName = "Kingston Black",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      jarvisJacks = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   mamboAbigail = {
     name = "mamboAbigail",
     fullName = "Mambo Abigail",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      wychwoodHecata = 5
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   mara = {
     name = "mara",
     fullName = "Mara",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      deepSix = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   marieBouschard = {
     name = "marieBouschard",
     fullName = "Marie Bouschard",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      civilian = 1
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   maxFloyd = {
     name = "maxFloyd",
     fullName = "Maxwell \"Max\" Floyd",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      jarvisJacks = 1
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   miriamRavenscroft = {
     name = "miriamRavenscroft",
     fullName = "Miriam Ravenscroft",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      touchstone = 5
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   moltsInShadow = {
     name = "moltsInShadow",
     fullName = "Molts-in-Shadow",
     werewolf = true,
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 50,
-    },
-    groups = {
-      friendlyNeighborhoodSpiders = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   moltsInShadowGarou = {
     name = "moltsInShadowGarou",
     fullName = "Molts-in-Shadow",
     werewolf = true,
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 50,
-    },
-    groups = {
-      friendlyNeighborhoodSpidersGarou = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   mrEasy = {
     name = "mrEasy",
     fullName = "Mr. Easy",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      jarvisJacks = 4
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   palis = {
     name = "palis",
     fullName = "Palis",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      beesHive = 7
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   percivalCavendish = {
     name = "percivalCavendish",
     fullName = "Percival Cavendish",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      civilian = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   ponticulus = {
     name = "ponticulus",
     fullName = "Ponticulus",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 70,
-    },
-    groups = {
-      criseDeLwa = 1
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   rebeccaRossellini = {
     name = "rebeccaRossellini",
     fullName = "Rebecca Rossellini",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      criseDeLwa = 3
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   rotInTheRiver = {
     name = "rotInTheRiver",
     fullName = "Rot-in-the-River",
     werewolf = true,
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 63,
-    },
-    groups = {
-      friendlyNeighborhoodSpiders = 4
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   rotInTheRiverGarou = {
     name = "rotInTheRiverGarou",
     fullName = "Rot-in-the-River",
     werewolf = true,
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 70,
-    },
-    groups = {
-      friendlyNeighborhoodSpidersGarou = 4
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   severinKoslov = {
     name = "severinKoslov",
     fullName = "Severin Koslov",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      wychwoodHecata = 6
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   stalksTheTangle = {
     name = "stalksTheTangle",
     fullName = "Stalks-the-Tangle",
     werewolf = true,
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 60,
-    },
-    groups = {
-      friendlyNeighborhoodSpiders = 5
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   stalksTheTangleGarou = {
     name = "stalksTheTangleGarou",
     fullName = "Stalks-the-Tangle",
     werewolf = true,
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 60,
-    },
-    groups = {
-      friendlyNeighborhoodSpidersGarou = 5
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   theIslandDevil = {
     name = "theIslandDevil",
     fullName = "The Island Devil",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      autarkis = 1
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   theUnshadowedThrone = {
     name = "theUnshadowedThrone",
     fullName = "The Unshadowed Throne",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      aapilu = 4
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   twist = {
     name = "twist",
     fullName = "Twist",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      jarvisJacks = 3
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   uwuByteMe = {
     name = "uwuByteMe",
     fullName = "uwu_byte_me",
-    labelColor = "rgba(255, 255, 255, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      civilian = 3
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   bee = {
     name = "bee",
     fullName = "Bee",
-    labelColor = "rgba(0.42, 0.25, 0, 1)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      beesHive = 1
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   carol = {
     name = "carol",
     fullName = "Carol",
-    labelColor = "rgba(0.42, 0.25, 0, 0.5)",
-    figurine = {
-      scale = 57,
-    },
-    groups = {
-      beesHive = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   ianRammond = {
     name = "ianRammond",
     fullName = "Ian Rammond",
-    labelColor = "rgba(0.42, 0.25, 0, 0.5)",
-    figurine = {
-      scale = 63,
-    },
-    groups = {
-      beesHive = 4
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   terry = {
     name = "terry",
     fullName = "Terry",
-    labelColor = "rgba(0.42, 0.25, 0, 0.5)",
-    figurine = {
-      scale = 56,
-    },
-    groups = {
-      beesHive = 3
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   tommy = {
     name = "tommy",
     fullName = "Tommy",
-    labelColor = "rgba(0.42, 0.25, 0, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      beesHive = 5
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   iq = {
     name = "iq",
     fullName = "I.Q.",
-    labelColor = "rgba(0.42, 0.25, 0, 0.5)",
-    figurine = {
-      scale = 45,
-    },
-    groups = {
-      beesHive = 6
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   rubyRouge = {
     name = "rubyRouge",
     fullName = "Ruby Rouge",
-    labelColor = "rgba(0.82, 0, 0.78, 1)",
-    figurine = {
-      scale = 60,
-    },
-    groups = {
-      colorBlitz = 1
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   evanescentBlue = {
     name = "evanescentBlue",
     fullName = "Evanescent Blue",
-    labelColor = "rgba(0.82, 0, 0.78, 0.5)",
-    figurine = {
-      scale = 50,
-    },
-    groups = {
-      colorBlitz = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   rosie = {
     name = "rosie",
     fullName = "Rosie",
-    labelColor = "rgba(0.67, 0, 0, 1)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      redFlag = 1
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   damienAbanda = {
     name = "damienAbanda",
     fullName = "Damien Abanda",
-    labelColor = "rgba(0.67, 0, 0, 0.5)",
-    figurine = {
-      scale = 58,
-    },
-    groups = {
-      redFlag = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   profEthanKeen = {
     name = "profEthanKeen",
     fullName = "Professor Ethan Keen",
-    labelColor = "rgba(0.67, 0, 0, 0.5)",
-    figurine = {
-      scale = 57,
-    },
-    groups = {
-      redFlag = 3
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   calvinWallace = {
     name = "calvinWallace",
     fullName = "Calvin Wallace",
-    labelColor = "rgba(0.67, 0, 0, 0.5)",
-    figurine = {
-      scale = 60,
-    },
-    groups = {
-      redFlag = 4
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   oliverGagnon = {
     name = "oliverGagnon",
     fullName = "Oliver Gagnon",
-    labelColor = "rgba(1, 0, 0, 1)",
-    figurine = {
-      scale = 60,
-    },
-    groups = {
-      scarlettAndTheBoys = 1
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   scarlett = {
     name = "scarlett",
     fullName = "Scarlett",
-    labelColor = "rgba(1, 0, 0, 0.5)",
-    figurine = {
-      scale = 60,
-    },
-    groups = {
-      scarlettAndTheBoys = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   razorWhit = {
     name = "razorWhit",
     fullName = "Razor Whit",
-    labelColor = "rgba(1, 0, 0, 0.5)",
-    figurine = {
-      scale = 60,
-    },
-    groups = {
-      scarlettAndTheBoys = 3
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   merrickSingh = {
     name = "merrickSingh",
     fullName = "Merrick Singh",
-    labelColor = "rgba(1, 0, 0, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      scarlettAndTheBoys = 4
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   myleneHamelin = {
     name = "myleneHamelin",
     fullName = "Mylene 'the Puck' Hamelin",
-    labelColor = "rgba(0.82, 0.7, 0, 1)",
-    figurine = {
-      scale = 47,
-    },
-    groups = {
-      fiveKeys = 1,
-      princesCourt = 6
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   zuriOluwusi = {
     name = "zuriOluwusi",
     fullName = "Zuri Oluwusi",
-    labelColor = "rgba(0.82, 0.7, 0, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      fiveKeys = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   adrianVarga = {
     name = "adrianVarga",
     fullName = "Adrian Varga",
-    labelColor = "rgba(0.82, 0.7, 0, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      fiveKeys = 3
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   stirlingSiskin = {
     name = "stirlingSiskin",
     fullName = "Stirling Siskin",
-    labelColor = "rgba(0.82, 0.7, 0, 0.5)",
-    figurine = {
-      scale = 57,
-    },
-    groups = {
-      fiveKeys = 4
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   jesseSharp = {
     name = "jesseSharp",
     fullName = "Jesse Sharp",
-    labelColor = "rgba(0.82, 0.7, 0, 0.5)",
-    figurine = {
-      scale = 50,
-    },
-    groups = {
-      fiveKeys = 5,
-      princesCourt = 9
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   nasirKhan = {
     name = "nasirKhan",
     fullName = "Nasir Khan",
-    labelColor = "rgba(0.33, 0, 0.77, 1)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      freeChantry = 1,
-      princesCourt = 8
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   gabrielCollard = {
     name = "gabrielCollard",
     fullName = "Gabriel Collard",
-    labelColor = "rgba(0.33, 0, 0.77, 0.5)",
-    figurine = {
-      scale = 60,
-    },
-    groups = {
-      freeChantry = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   anitaMorris = {
     name = "anitaMorris",
     fullName = "Anita Morris",
-    labelColor = "rgba(0.33, 0, 0.77, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      freeChantry = 3
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   ulyssesCelaj = {
     name = "ulyssesCelaj",
     fullName = "Ulysses Celaj",
-    labelColor = "rgba(0.33, 0, 0.77, 0.5)",
-    figurine = {
-      scale = 58,
-    },
-    groups = {
-      freeChantry = 4
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   theAristocrat = {
     name = "theAristocrat",
     fullName = "The Aristocrat",
-    labelColor = "rgba(1, 0.99, 0.47, 1)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      harpies = 1
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   xavierWhitchurch = {
     name = "xavierWhitchurch",
     fullName = "Xavier Whitchurch",
-    labelColor = "rgba(1, 0.99, 0.47, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      harpies = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   christianne = {
     name = "christianne",
     fullName = "Christianne",
-    labelColor = "rgba(1, 0.99, 0.47, 0.5)",
-    figurine = {
-      scale = 63,
-    },
-    groups = {
-      harpies = 3
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   laz = {
     name = "laz",
     fullName = "Laz",
-    labelColor = "rgba(0.67, 0.67, 0.67, 1)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      ironGuard = 1
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   osborneLowell = {
     name = "osborneLowell",
     fullName = "Osborne Lowell",
-    labelColor = "rgba(0.67, 0.67, 0.67, 0.5)",
-    figurine = {
-      scale = 60,
-    },
-    groups = {
-      ironGuard = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   emilyTheDuskRose = {
     name = "emilyTheDuskRose",
     fullName = "Emily, the Dusk Rose",
-    labelColor = "rgba(0.67, 0.67, 0.67, 0.5)",
-    figurine = {
-      scale = 48,
-    },
-    groups = {
-      ironGuard = 3
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   sageSam = {
     name = "sageSam",
     fullName = "Sage Sam",
-    labelColor = "rgba(0, 0.2, 0.75, 1)",
-    figurine = {
-      scale = 50,
-    },
-    groups = {
-      theLine = 1
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   masonSchmidt = {
     name = "masonSchmidt",
     fullName = "Mason Schmidt",
-    labelColor = "rgba(0, 0.2, 0.75, 0.5)",
-    figurine = {
-      scale = 60,
-    },
-    groups = {
-      theLine = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   jackBeNimble = {
     name = "jackBeNimble",
     fullName = "Jack-be-Nimble",
-    labelColor = "rgba(0, 0.2, 0.75, 0.5)",
-    figurine = {
-      scale = 50,
-    },
-    groups = {
-      theLine = 3
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   yusefShamsin = {
     name = "yusefShamsin",
     fullName = "Yusef Shamsin",
-    labelColor = "rgba(0, 0.2, 0.75, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      theLine = 4
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   suyin = {
     name = "suyin",
     fullName = "Suyin",
-    labelColor = "rgba(0, 0.2, 0.75, 0.5)",
-    figurine = {
-      scale = 45,
-    },
-    groups = {
-      theLine = 5
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   fatherDiaz = {
     name = "fatherDiaz",
     fullName = "Father Emiliano Diaz",
-    labelColor = "rgba(0.6, 0, 1, 1)",
-    figurine = {
-      scale = 57,
-    },
-    groups = {
-      midnightMass = 1
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   deaconReal = {
     name = "deaconReal",
     fullName = "Deacon Lucenzo Reál",
-    labelColor = "rgba(0.6, 0, 1, 0.5)",
-    figurine = {
-      scale = 58,
-    },
-    groups = {
-      midnightMass = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   sisterCicione = {
     name = "sisterCicione",
     fullName = "Sister Genoveva Cicione",
-    labelColor = "rgba(0.6, 0, 1, 0.5)",
-    figurine = {
-      scale = 50,
-    },
-    groups = {
-      midnightMass = 3
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   victorVex = {
     name = "victorVex",
     fullName = "Victor Vex",
-    labelColor = "rgba(0, 0.78, 0.81, 1)",
-    figurine = {
-      scale = 51,
-    },
-    groups = {
-      moonClub = 1
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   georgieStJames = {
     name = "georgieStJames",
     fullName = "Georgie St. James",
-    labelColor = "rgba(0, 0.78, 0.81, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      moonClub = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   vanceVogel = {
     name = "vanceVogel",
     fullName = "Vance Vogel",
-    labelColor = "rgba(0, 0.78, 0.81, 0.5)",
-    figurine = {
-      scale = 57,
-    },
-    groups = {
-      moonClub = 3
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   scottTempo = {
     name = "scottTempo",
     fullName = "Scott Tempo",
-    labelColor = "rgba(0, 0.78, 0.81, 0.5)",
-    figurine = {
-      scale = 58,
-    },
-    groups = {
-      moonClub = 4
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   ren = {
     name = "ren",
     fullName = "Ren",
-    labelColor = "rgba(0.57, 1, 0, 1)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      redeemers = 1
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   alexandra = {
     name = "alexandra",
     fullName = "Alexandra",
-    labelColor = "rgba(0.57, 1, 0, 0.5)",
-    figurine = {
-      scale = 55,
-    },
-    groups = {
-      redeemers = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   kai = {
     name = "kai",
     fullName = "Kai",
-    labelColor = "rgba(0.57, 1, 0, 0.5)",
-    figurine = {
-      scale = 50,
-    },
-    groups = {
-      redeemers = 3
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   tyler = {
     name = "tyler",
     fullName = "Tyler",
-    labelColor = "rgba(0.57, 1, 0, 0.5)",
-    figurine = {
-      scale = 60,
-    },
-    groups = {
-      redeemers = 4
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   evangelineDupont = {
     name = "evangelineDupont",
     fullName = "Evangeline Dupont",
-    labelColor = "rgba(0.85, 0, 0.47, 1)",
-    figurine = {
-      scale = 49,
-    },
-    groups = {
-      regencyUniversityChantry = 1,
-      princesCourt = 7
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   drIrenaVoss = {
     name = "drIrenaVoss",
     fullName = "Dr. Irena Voss",
-    labelColor = "rgba(0.85, 0, 0.47, 0.5)",
-    figurine = {
-      scale = 47,
-    },
-    groups = {
-      regencyUniversityChantry = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   raduIancu = {
     name = "raduIancu",
     fullName = "Radu Iancu",
-    labelColor = "rgba(0.85, 0, 0.47, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      regencyUniversityChantry = 3
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   damienKline = {
     name = "damienKline",
     fullName = "Damien Kline",
-    labelColor = "rgba(0.85, 0, 0.47, 0.5)",
-    figurine = {
-      scale = 55,
-    },
-    groups = {
-      regencyUniversityChantry = 4
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   lucasMerrow = {
     name = "lucasMerrow",
     fullName = "Lucas Merrow",
-    labelColor = "rgba(0.85, 0, 0.47, 0.5)",
-    figurine = {
-      scale = 58,
-    },
-    groups = {
-      regencyUniversityChantry = 5
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   bacchusGiovanni = {
     name = "bacchusGiovanni",
     fullName = "Bacchus Giovanni",
-    labelColor = "rgba(1, 1, 1, 1)",
-    figurine = {
-      scale = 60,
-    },
-    groups = {
-      wychwoodHecata = 1
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   lorenzaGiovanni = {
     name = "lorenzaGiovanni",
     fullName = "Lorenza Giovanni",
-    labelColor = "rgba(1, 1, 1, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      wychwoodHecata = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   niccoloGiovanni = {
     name = "niccoloGiovanni",
     fullName = "Niccolo Giovanni",
-    labelColor = "rgba(1, 1, 1, 0.5)",
-    figurine = {
-      scale = 55,
-    },
-    groups = {
-      wychwoodHecata = 3
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   theBleakBokor = {
     name = "theBleakBokor",
     fullName = "The Baron's Bleak Bokor",
-    labelColor = "rgba(1, 1, 1, 0.5)",
-    figurine = {
-      scale = 62,
-    },
-    groups = {
-      wychwoodHecata = 4
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   eddie = {
     name = "eddie",
     fullName = "Eddie",
-    labelColor = "rgba(0.67, 0.67, 0.67, 1)",
-    figurine = {
-      scale = 42,
-    },
-    groups = {
-      petitioners = 1
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   alexisHoltt = {
     name = "alexisHoltt",
     fullName = "Alexis Holtt",
-    labelColor = "rgba(0.67, 0.67, 0.67, 0.5)",
-    figurine = {
-      scale = 53,
-    },
-    groups = {
-      petitioners = 2
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   lexiMadi = {
     name = "lexiMadi",
     fullName = "Lexie Madi",
-    labelColor = "rgba(0.67, 0.67, 0.67, 0.5)",
-    figurine = {
-      scale = 48,
-    },
-    groups = {
-      petitioners = 3
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   averyInnis = {
     name = "averyInnis",
     fullName = "Avery Innis",
-    labelColor = "rgba(0.67, 0.67, 0.67, 0.5)",
-    figurine = {
-      scale = 50,
-    },
-    groups = {
-      petitioners = 4
-    },
-    stats = {
-      note = "Stats not set."
-    }
   },
   benedictKincaid = {
     name = "benedictKincaid",
     fullName = "Benedict Kincaid",
-    labelColor = "rgba(0.67, 0.67, 0.67, 0.5)",
-    figurine = {
-      scale = 50,
-    },
-    groups = {
-      petitioners = 5
-    },
-    stats = {
-      note = "Stats not set."
-    }
   }
 }
 
@@ -1665,17 +510,15 @@ D.characters = {
 --- and `NPCS.registerGenericCharacter`; `seatedY` is read by `lib/figurine_seat_layout`.
 D.overrides = require("lib.npc_overrides")
 
-for key, override in pairs(D.overrides) do
-  local def = D.characters[key]
-  if type(def) == "table" then
-    if type(override.name) == "string" then
-      def.fullName = override.name
-    end
-    if type(override.cardScale) == "number" then
-      def.figurine = def.figurine or {}
-      def.figurine.scale = override.cardScale
-    end
+--- Custom Figurine card scale (`ImageScalar`) of an NPC whose override sets no `cardScale`.
+D.DEFAULT_FIGURINE_SCALE = 53
+
+for key, def in pairs(D.characters) do
+  local override = D.overrides[key] or {}
+  if type(override.name) == "string" then
+    def.fullName = override.name
   end
+  def.figurine = { scale = override.cardScale or D.DEFAULT_FIGURINE_SCALE }
 end
 
 --- @type table<string, table>|nil generic catalog key → `{ key, label }` (built by `D.initGenericNPCs`)

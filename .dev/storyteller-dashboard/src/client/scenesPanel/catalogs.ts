@@ -4,11 +4,8 @@ export type CatalogCharacter = {
   readonly characterKey: string;
   readonly fullName: string;
   readonly isPC: boolean;
-  readonly groups: readonly string[];
-  readonly groupRanks?: Readonly<Record<string, number>>;
+  /** Roster groups from `data/npc-roster.json` `members`, primary first; empty for PCs and ungrouped NPCs. */
   readonly pickerGroups: readonly string[];
-  /** npcs_data `figurine.scale` (Custom Figurine card scale) before any dashboard override; absent in older exports. */
-  readonly figurineScale?: number | null;
 };
 
 export type CatalogSite = {
@@ -49,6 +46,8 @@ export type SceneCatalogs = {
   readonly memoriamPeriods: readonly MemoriamPeriod[];
   readonly conditions: readonly { readonly id: string; readonly displayName: string }[];
   readonly pickerGroupLabels: Readonly<Record<string, string>>;
+  /** Each group's default leader (`data/npc-roster.json` `bosses`, the chronicle sheet's "Boss?" column). */
+  readonly groupBosses: Readonly<Record<string, string>>;
 };
 
 export type PolarSnap = {

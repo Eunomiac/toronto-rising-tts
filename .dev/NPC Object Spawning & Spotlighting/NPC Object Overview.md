@@ -29,24 +29,20 @@ Data for all NPCs is contained in `NPCS.characters` (loaded from [`lib/npcs_data
 
 * `name`: Key in `NPCS.characters` and the spawned object name.
 * `fullName`: Display name for UI.
-* `figurine`: `scale` only (spawn `ImageScalar` + spotlight bounds math). Front/back URLs for every NPC (named, generic, Memoriam) live in generated [`lib/npc_art_urls.ttslua`](../../lib/npc_art_urls.ttslua) ([NPC Art Pipeline](NPC%20Art%20Pipeline.md)).
-* `stats`: Arbitrary nested data; rendered by `NPCS.displayStats(npcName)`.
+* `figurine`: `scale` only (spawn `ImageScalar` + spotlight bounds math), set at load from the NPC's `cardScale` in generated [`lib/npc_overrides.ttslua`](../../lib/npc_overrides.ttslua) (the Dashboard token window), else `D.DEFAULT_FIGURINE_SCALE` (53). Front/back URLs for every NPC (named, generic, Memoriam) live in generated [`lib/npc_art_urls.ttslua`](../../lib/npc_art_urls.ttslua) ([NPC Art Pipeline](NPC%20Art%20Pipeline.md)).
 * `lighting`: Optional per-mode overrides (see merge rules below).
-* `groups`: Map of group id → slot index within that group (NPC group enumeration).
+
+Roster groups and group bosses are not Lua data: they live in the Dashboard's tracked `data/npc-roster.json` (`members`, `bosses`, `groupLabels`) and reach the Dashboard through `scene-catalogs.json`. NPC rules text and stats live in the chronicle Google Sheets.
 
 ### `npcData.figurine`
 
 * `scale`: **Number** for the spawned `CustomImage.ImageScalar` and runtime spotlight bounds gating — **not** Transform `setScale`.
 
-### `npcData.stats`
-
-Flexible tree for Storyteller-readable output only.
-
 ### `npcData.lighting`
 
-Optional overrides per mode key (`OFF`, `STANDARD`, `SPOTLIGHT`, `OFFSPOTLIGHT` — uppercase keys in `lib/npcs_data.ttslua`). **Merge rule:** for each mode, start from `NPCS.lights[mode]` and **deep-merge** `npcData.lighting[mode]` on top when present. When the instance’s `areaKey` is **`__stage_board__`** (gameboard STAGE_BOARD placements, not legacy table-side areas), **deep-merge** `NPCS.stageLights[mode]` after that. Then **deep-merge** optional live DEBUG overrides from `gameState.debug.npcLightModes[mode]` last (TOR-471). Unlisted modes use globals only. **`OFFSPOTLIGHT`** is a runtime companion mode (TOR-473): same-snap-family neighbors dim while another figurine is `SPOTLIGHT`; it is **not** written by token flip / placement scan.
+Optional overrides per mode key (`OFF`, `STANDARD`, `SPOTLIGHT`, `OFFSPOTLIGHT` — uppercase keys in `lib/npcs_data.ttslua`). **Merge rule:** for each mode, start from `NPCS.lights[mode]` and **deep-merge** `npcData.lighting[mode]` on top when present. Then **deep-merge** optional live DEBUG overrides from `gameState.debug.npcLightModes[mode]` last (TOR-471). Unlisted modes use globals only. **`OFFSPOTLIGHT`** is a runtime companion mode (TOR-473): same-snap-family neighbors dim while another figurine is `SPOTLIGHT`; it is **not** written by token flip / placement scan.
 
-* **Figurine cutout scale (ImageScalar):** spawns set `ImageScalar` directly (seat-bound spawns **53**, otherwise registry `figurine.scale`); Transform scale is always `1`. **ImageScalar** at seats is **53**; off-seat (stage, Scatter) restores registry `figurine.scale`. Runtime applies ImageScalar only when it differs — `setCustomObject` + `reload()` on seat ↔ off-seat transitions (TOR-223); skipped when already at target (e.g. seated at 53 when data scale is 53).
+* **Figurine cutout scale (ImageScalar):** spawns set `ImageScalar` directly (seat-bound spawns **53**, otherwise `figurine.scale`); Transform scale is always `1`. **ImageScalar** at seats is **53**; off-seat (stage, Scatter) restores `figurine.scale`. Runtime applies ImageScalar only when it differs — `setCustomObject` + `reload()` on seat ↔ off-seat transitions (TOR-223); skipped when already at target (e.g. seated at 53 when data scale is 53).
 
 ---
 
@@ -141,74 +137,16 @@ There is no under-table pool. `gameState.npcs.instances[name]` exists only while
 ### `NPCS.characters`
 
 ```lua
-MyleneHamelin = {
-  name = "MyleneHamelin",
+myleneHamelin = {
+  name = "Mylene",
   fullName = "Mylene Hamelin",
-  figurine = {
-    scale = 15,
-  },
-  groups = {
-    fiveKeys = 1,
-    princesCourt = 4,
-  },
   lighting = {
-    off = {
-      color = Color(1, 0.55, 0),
-    },
-    standard = {
+    STANDARD = {
       color = Color(1, 0.55, 0),
       positioning = { deltaUp = 5, deltaInward = 3, lookAtYShift = 0.2 },
     },
-    spotlight = {
-      color = Color(1, 0.55, 0),
-      positioning = { positionYShift = 0.3, distance = -20, lookAtYShift = 0.2 },
-    },
   },
-  stats = {
-    title = "Ventrue Primogen",
-    clan = "Ventrue",
-    generation = "9th",
-    bloodPotency = 3,
-    humanity = 6,
-    health = 8,
-    willpower = 7,
-    dicePools = {
-      standard = { physical = 5, social = 4, mental = 4 },
-      exceptional = {
-        ["Animal Ken"] = 9,
-        Athletics = 8,
-        Awareness = 7,
-        Brawl = 8,
-        Firearms = 9,
-        Melee = 8,
-        Dominate = 10,
-        Presence = 11,
-      },
-    },
-    disciplines = {
-      Dominate = {
-        value = 3,
-        powers = { "Compel", "Mesmerize", "The Forgetful Mind" },
-      },
-      Presence = {
-        value = 1,
-        powers = { "Awe" },
-      },
-      ["Blood Sorcery"] = {
-        value = 1,
-        powers = { "Taste of Blood" },
-        rituals = {
-          [1] = { "Summon Arnu" },
-        },
-      },
-    },
-    special = {
-      "Mylene can wield her Dominate powers without eye-contact against anyone who is subject to her Awe.",
-    },
-    notes = {
-      "Mylene still holds a grudge against Lord Lucien for his betrayal during the fight for Praxis.",
-    },
-  },
+  -- added at load: figurine = { scale = <cardScale override or 53> }
 },
 ```
 

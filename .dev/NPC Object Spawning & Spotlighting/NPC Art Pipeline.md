@@ -52,7 +52,7 @@ return {
 
 - Circular head cut from the figurine using the Dashboard head crop (manual crop from `data/headshot-crops.json`, else the automatic crop).
 - Name in Bebas Neue at lower centre, up to two lines, then an ellipsis. Named and Memoriam NPCs use the first word of their full name (titles such as "Prince", "Lady", "The" are skipped); generic NPCs use their catalog label. An override `name` replaces the full name or label before that rule.
-- **Front (lit):** ring in the override `color`, else the NPC's roster colour (first colour-picker group in the Dashboard roster, else its category colour, else a neutral grey).
+- **Front (lit):** ring in the override `color`, else the NPC's roster colour (its first group's colour in the Dashboard roster layout, `data/npc-roster.json` `layout`, else that group's category colour, else a neutral grey).
 - **Back (dark):** black ring, black silhouette, dimmed name.
 
 Generic NPCs renamed in a scene keep their catalog label on the token image; the rename only changes object names.

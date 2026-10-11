@@ -1,8 +1,10 @@
 import { parseLibraryScene, type LibraryScene } from "./sceneLibrary.js";
 
 /**
- * Dashboard-owned Scenes tab data, kept by the server in `data/scene-deck.json` (git-ignored: chronicle content,
- * and the repo is public). TTS never sees it, so it survives every TTS reload.
+ * Dashboard-owned Scenes tab data behind `/api/scene-deck`. The server keeps it in `data/scene-deck.json`
+ * (git-ignored: chronicle content, and the repo is public) except the roster layout, which lives in the tracked
+ * `data/npc-roster.json` beside the roster's groups (`src/server/sceneDeckStore.ts`). TTS never sees either, so
+ * both survive every TTS reload.
  */
 
 export type SceneDoc = { readonly id: string; readonly title: string; readonly html: string };
@@ -42,6 +44,9 @@ export type SceneDeck = {
   /** Set once this browser's old Lab copies (local storage) have been copied in. */
   readonly seeded: boolean;
 };
+
+/** What `data/scene-deck.json` holds: the deck without the roster layout. */
+export type SceneDeckFile = Omit<SceneDeck, "roster">;
 
 export type SceneDeckPatch = Partial<SceneDeck>;
 
@@ -114,6 +119,12 @@ export const normalizeSceneDeck = (value: unknown): SceneDeck => {
     previews: parsePreviews(value.previews),
     seeded: value.seeded === true
   };
+};
+
+/** `data/scene-deck.json` as read from disk; a `roster` left there by an older server is not part of it. */
+export const normalizeSceneDeckFile = (value: unknown): SceneDeckFile => {
+  const { roster: _roster, ...file } = normalizeSceneDeck(value);
+  return file;
 };
 
 /** A PUT body replaces whole sections; unknown keys or wrong types are refused. */

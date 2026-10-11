@@ -1,3 +1,163 @@
 {
-  "overrides": {}
+  "overrides": {
+    "alexandra": {
+      "cardScale": 55
+    },
+    "averyInnis": {
+      "cardScale": 50
+    },
+    "bacchusGiovanni": {
+      "cardScale": 60
+    },
+    "benedictKincaid": {
+      "cardScale": 50
+    },
+    "calvinWallace": {
+      "cardScale": 60
+    },
+    "carol": {
+      "cardScale": 57
+    },
+    "chokesOnMoonlight": {
+      "cardScale": 60
+    },
+    "chokesOnMoonlightGarou": {
+      "cardScale": 65
+    },
+    "christianne": {
+      "cardScale": 63
+    },
+    "damienAbanda": {
+      "cardScale": 58
+    },
+    "damienKline": {
+      "cardScale": 55
+    },
+    "deaconReal": {
+      "cardScale": 58
+    },
+    "drIrenaVoss": {
+      "cardScale": 47
+    },
+    "eddie": {
+      "cardScale": 42
+    },
+    "emilyTheDuskRose": {
+      "cardScale": 48
+    },
+    "evanescentBlue": {
+      "cardScale": 50
+    },
+    "evangelineDupont": {
+      "cardScale": 49
+    },
+    "fatherDiaz": {
+      "cardScale": 57
+    },
+    "gabrielCollard": {
+      "cardScale": 60
+    },
+    "ianRammond": {
+      "cardScale": 63
+    },
+    "iq": {
+      "cardScale": 45
+    },
+    "jackBeNimble": {
+      "cardScale": 50
+    },
+    "jesseSharp": {
+      "cardScale": 50
+    },
+    "kai": {
+      "cardScale": 50
+    },
+    "lexiMadi": {
+      "cardScale": 48
+    },
+    "lucasMerrow": {
+      "cardScale": 58
+    },
+    "masonSchmidt": {
+      "cardScale": 60
+    },
+    "moltsInShadow": {
+      "cardScale": 50
+    },
+    "moltsInShadowGarou": {
+      "cardScale": 50
+    },
+    "myleneHamelin": {
+      "cardScale": 47
+    },
+    "niccoloGiovanni": {
+      "cardScale": 55
+    },
+    "oliverGagnon": {
+      "cardScale": 60
+    },
+    "osborneLowell": {
+      "cardScale": 60
+    },
+    "ponticulus": {
+      "cardScale": 70
+    },
+    "profEthanKeen": {
+      "cardScale": 57
+    },
+    "razorWhit": {
+      "cardScale": 60
+    },
+    "rotInTheRiver": {
+      "cardScale": 63
+    },
+    "rotInTheRiverGarou": {
+      "cardScale": 70
+    },
+    "rubyRouge": {
+      "cardScale": 60
+    },
+    "sageSam": {
+      "cardScale": 50
+    },
+    "scarlett": {
+      "cardScale": 60
+    },
+    "scottTempo": {
+      "cardScale": 58
+    },
+    "sisterCicione": {
+      "cardScale": 50
+    },
+    "stalksTheTangle": {
+      "cardScale": 60
+    },
+    "stalksTheTangleGarou": {
+      "cardScale": 60
+    },
+    "stirlingSiskin": {
+      "cardScale": 57
+    },
+    "suyin": {
+      "cardScale": 45
+    },
+    "terry": {
+      "cardScale": 56
+    },
+    "theBleakBokor": {
+      "cardScale": 62
+    },
+    "tyler": {
+      "cardScale": 60
+    },
+    "ulyssesCelaj": {
+      "cardScale": 58
+    },
+    "vanceVogel": {
+      "cardScale": 57
+    },
+    "victorVex": {
+      "cardScale": 51
+    }
+  }
 }

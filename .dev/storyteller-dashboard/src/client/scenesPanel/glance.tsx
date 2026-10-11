@@ -999,18 +999,17 @@ export const MasonryRoster = (): ReactElement => {
       characterKey,
       at,
       defaultName: named?.fullName ?? generic?.label ?? characterKey,
-      defaultColor: (groupKey && groupColor(layout, groupKey)) || DEFAULT_TOKEN_RING,
-      defaultCardScale: named?.figurineScale ?? null
+      defaultColor: (groupKey && groupColor(layout, groupKey)) || DEFAULT_TOKEN_RING
     });
   };
   const ownColor = (characterKey: string): string | undefined => overrides[characterKey]?.color;
 
   const leaderFirst = (group: NpcGroup): readonly RosterMember[] => {
-    const leader = groupLeader(layout, group.key);
+    const leader = groupLeader(layout, catalogs?.groupBosses, group.key);
     return [...group.members].sort((a, b) => Number(b.characterKey === leader) - Number(a.characterKey === leader));
   };
   const tokenClass = (group: NpcGroup, npc: RosterMember): string =>
-    `lab-group-head${groupLeader(layout, group.key) === npc.characterKey ? " boss" : ""}`;
+    `lab-group-head${groupLeader(layout, catalogs?.groupBosses, group.key) === npc.characterKey ? " boss" : ""}`;
   const openToken = (group: NpcGroup, npc: RosterMember): ReactElement => view === "main"
     ? (
       <RosterToken
@@ -1222,7 +1221,7 @@ export const MasonryRoster = (): ReactElement => {
           at={editing.at}
           color={groupColor(layout, editingGroup.key) ?? NEW_CATEGORY_COLOR}
           own={editingGroup.key in layout.groupColors}
-          leader={groupLeader(layout, editingGroup.key)}
+          leader={groupLeader(layout, catalogs?.groupBosses, editingGroup.key)}
           onColor={(next) => setGroupColor(editingGroup.key, next)}
           {...(view === "main" ? { onLeader: (characterKey: string) => setGroupLeader(editingGroup.key, characterKey) } : {})}
           onClose={() => setEditing(null)}

@@ -18,66 +18,31 @@
       "characterKey": "lordLucien",
       "fullName": "Lord Lucien",
       "isPC": true,
-      "groups": [
-        "princesCourt"
-      ],
-      "groupRanks": {
-        "princesCourt": 1
-      },
-      "pickerGroups": [],
-      "figurineScale": 53
+      "pickerGroups": []
     },
     {
       "characterKey": "rashid",
       "fullName": "Rashid Abdulrahman",
       "isPC": true,
-      "groups": [
-        "princesCourt"
-      ],
-      "groupRanks": {
-        "princesCourt": 2
-      },
-      "pickerGroups": [],
-      "figurineScale": 53
+      "pickerGroups": []
     },
     {
       "characterKey": "aishe",
       "fullName": "Aishe Tache",
       "isPC": true,
-      "groups": [
-        "princesCourt"
-      ],
-      "groupRanks": {
-        "princesCourt": 3
-      },
-      "pickerGroups": [],
-      "figurineScale": 53
+      "pickerGroups": []
     },
     {
       "characterKey": "fomorach",
       "fullName": "Fomórach",
       "isPC": true,
-      "groups": [
-        "princesCourt"
-      ],
-      "groupRanks": {
-        "princesCourt": 4
-      },
-      "pickerGroups": [],
-      "figurineScale": 53
+      "pickerGroups": []
     },
     {
       "characterKey": "blackCaesar",
       "fullName": "Black Caesar",
       "isPC": true,
-      "groups": [
-        "princesCourt"
-      ],
-      "groupRanks": {
-        "princesCourt": 5
-      },
-      "pickerGroups": [],
-      "figurineScale": 53
+      "pickerGroups": []
     }
   ],
   "namedNpcs": [
@@ -85,1509 +50,801 @@
       "characterKey": "abbasFaruk",
       "fullName": "Abbas Faruk",
       "isPC": false,
-      "groups": [
-        "touchstone"
-      ],
-      "groupRanks": {
-        "touchstone": 1
-      },
       "pickerGroups": [
         "touchstone"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "bertrice",
       "fullName": "Bertrice",
       "isPC": false,
-      "groups": [
-        "autarkis"
-      ],
-      "groupRanks": {
-        "autarkis": 2
-      },
       "pickerGroups": [
         "autarkis"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "chokesOnMoonlight",
       "fullName": "Chokes-On-Moonlight",
       "isPC": false,
-      "groups": [
-        "friendlyNeighborhoodSpiders"
-      ],
-      "groupRanks": {
-        "friendlyNeighborhoodSpiders": 1
-      },
       "pickerGroups": [
         "friendlyNeighborhoodSpiders"
-      ],
-      "figurineScale": 60
+      ]
     },
     {
       "characterKey": "chokesOnMoonlightGarou",
       "fullName": "Chokes-On-Moonlight",
       "isPC": false,
-      "groups": [
-        "friendlyNeighborhoodSpidersGarou"
-      ],
-      "groupRanks": {
-        "friendlyNeighborhoodSpidersGarou": 1
-      },
       "pickerGroups": [
         "friendlyNeighborhoodSpidersGarou"
-      ],
-      "figurineScale": 65
+      ]
     },
     {
       "characterKey": "christopherGiovanniJr",
       "fullName": "Christopher Giovanni Jr.",
       "isPC": false,
-      "groups": [
-        "wychwoodHecata"
-      ],
-      "groupRanks": {
-        "wychwoodHecata": 7
-      },
       "pickerGroups": [
         "wychwoodHecata"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "daevaAnitaMorris",
       "fullName": "Daeva (Anita Morris)",
       "isPC": false,
-      "groups": [
-        "aapilu"
-      ],
-      "groupRanks": {
-        "aapilu": 2
-      },
       "pickerGroups": [
         "aapilu"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "daevaGabrielCollard",
       "fullName": "Daeva (Gabriel Collard)",
       "isPC": false,
-      "groups": [
-        "aapilu"
-      ],
-      "groupRanks": {
-        "aapilu": 3
-      },
       "pickerGroups": [
         "aapilu"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "daevaNasirKhan",
       "fullName": "Daeva (Nasir Khan)",
       "isPC": false,
-      "groups": [
-        "aapilu"
-      ],
-      "groupRanks": {
-        "aapilu": 1
-      },
       "pickerGroups": [
         "aapilu"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "drake",
       "fullName": "Drake",
       "isPC": false,
-      "groups": [
-        "autarkis"
-      ],
-      "groupRanks": {
-        "autarkis": 3
-      },
       "pickerGroups": [
         "autarkis"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "enzoCaruso",
       "fullName": "Vincenzo \"Enzo\" Caruso",
       "isPC": false,
-      "groups": [
-        "touchstone"
-      ],
-      "groupRanks": {
-        "touchstone": 2
-      },
       "pickerGroups": [
         "touchstone"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "fangsAtTheCradle",
       "fullName": "Fangs-at-the-Cradle",
       "isPC": false,
-      "groups": [
-        "friendlyNeighborhoodSpiders"
-      ],
-      "groupRanks": {
-        "friendlyNeighborhoodSpiders": 3
-      },
       "pickerGroups": [
         "friendlyNeighborhoodSpiders"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "fangsAtTheCradleGarou",
       "fullName": "Fangs-at-the-Cradle",
       "isPC": false,
-      "groups": [
-        "friendlyNeighborhoodSpidersGarou"
-      ],
-      "groupRanks": {
-        "friendlyNeighborhoodSpidersGarou": 3
-      },
       "pickerGroups": [
         "friendlyNeighborhoodSpidersGarou"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "jeanDucheskiI",
       "fullName": "Jean Ducheski I",
       "isPC": false,
-      "groups": [
-        "criseDeLwa"
-      ],
-      "groupRanks": {
-        "criseDeLwa": 2
-      },
       "pickerGroups": [
         "criseDeLwa"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "jeanDucheskiIII",
       "fullName": "Jean Ducheski III",
       "isPC": false,
-      "groups": [
-        "ducheskiRevenant"
-      ],
-      "groupRanks": {
-        "ducheskiRevenant": 1
-      },
       "pickerGroups": [
         "ducheskiRevenant"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "jezdimirDucheski",
       "fullName": "Jezdimir Ducheski",
       "isPC": false,
-      "groups": [
-        "ducheskiRevenant"
-      ],
-      "groupRanks": {
-        "ducheskiRevenant": 2
-      },
       "pickerGroups": [
         "ducheskiRevenant"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "kadePhillips",
       "fullName": "Kade Phillips",
       "isPC": false,
-      "groups": [
-        "touchstone"
-      ],
-      "groupRanks": {
-        "touchstone": 3
-      },
       "pickerGroups": [
         "touchstone"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "kieraVaughan",
       "fullName": "Kiera Vaughan",
       "isPC": false,
-      "groups": [
-        "touchstone"
-      ],
-      "groupRanks": {
-        "touchstone": 4
-      },
       "pickerGroups": [
         "touchstone"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "kingstonBlack",
       "fullName": "Kingston Black",
       "isPC": false,
-      "groups": [
-        "jarvisJacks"
-      ],
-      "groupRanks": {
-        "jarvisJacks": 2
-      },
       "pickerGroups": [
         "jarvisJacks"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "mamboAbigail",
       "fullName": "Mambo Abigail",
       "isPC": false,
-      "groups": [
-        "wychwoodHecata"
-      ],
-      "groupRanks": {
-        "wychwoodHecata": 5
-      },
       "pickerGroups": [
         "wychwoodHecata"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "mara",
       "fullName": "Mara",
       "isPC": false,
-      "groups": [
-        "deepSix"
-      ],
-      "groupRanks": {
-        "deepSix": 2
-      },
       "pickerGroups": [
         "deepSix"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "marieBouschard",
       "fullName": "Marie Bouschard",
       "isPC": false,
-      "groups": [
-        "civilian"
-      ],
-      "groupRanks": {
-        "civilian": 1
-      },
       "pickerGroups": [
         "civilian"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "maxFloyd",
       "fullName": "Maxwell \"Max\" Floyd",
       "isPC": false,
-      "groups": [
-        "jarvisJacks"
-      ],
-      "groupRanks": {
-        "jarvisJacks": 1
-      },
       "pickerGroups": [
         "jarvisJacks"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "miriamRavenscroft",
       "fullName": "Miriam Ravenscroft",
       "isPC": false,
-      "groups": [
-        "touchstone"
-      ],
-      "groupRanks": {
-        "touchstone": 5
-      },
       "pickerGroups": [
         "touchstone"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "moltsInShadow",
       "fullName": "Molts-in-Shadow",
       "isPC": false,
-      "groups": [
-        "friendlyNeighborhoodSpiders"
-      ],
-      "groupRanks": {
-        "friendlyNeighborhoodSpiders": 2
-      },
       "pickerGroups": [
         "friendlyNeighborhoodSpiders"
-      ],
-      "figurineScale": 50
+      ]
     },
     {
       "characterKey": "moltsInShadowGarou",
       "fullName": "Molts-in-Shadow",
       "isPC": false,
-      "groups": [
-        "friendlyNeighborhoodSpidersGarou"
-      ],
-      "groupRanks": {
-        "friendlyNeighborhoodSpidersGarou": 2
-      },
       "pickerGroups": [
         "friendlyNeighborhoodSpidersGarou"
-      ],
-      "figurineScale": 50
+      ]
     },
     {
       "characterKey": "mrEasy",
       "fullName": "Mr. Easy",
       "isPC": false,
-      "groups": [
-        "jarvisJacks"
-      ],
-      "groupRanks": {
-        "jarvisJacks": 4
-      },
       "pickerGroups": [
         "jarvisJacks"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "palis",
       "fullName": "Palis",
       "isPC": false,
-      "groups": [
-        "beesHive"
-      ],
-      "groupRanks": {
-        "beesHive": 7
-      },
       "pickerGroups": [
         "beesHive"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "percivalCavendish",
       "fullName": "Percival Cavendish",
       "isPC": false,
-      "groups": [
-        "civilian"
-      ],
-      "groupRanks": {
-        "civilian": 2
-      },
       "pickerGroups": [
         "civilian"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "ponticulus",
       "fullName": "Ponticulus",
       "isPC": false,
-      "groups": [
-        "criseDeLwa"
-      ],
-      "groupRanks": {
-        "criseDeLwa": 1
-      },
       "pickerGroups": [
         "criseDeLwa"
-      ],
-      "figurineScale": 70
+      ]
     },
     {
       "characterKey": "rebeccaRossellini",
       "fullName": "Rebecca Rossellini",
       "isPC": false,
-      "groups": [
-        "criseDeLwa"
-      ],
-      "groupRanks": {
-        "criseDeLwa": 3
-      },
       "pickerGroups": [
         "criseDeLwa"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "rotInTheRiver",
       "fullName": "Rot-in-the-River",
       "isPC": false,
-      "groups": [
-        "friendlyNeighborhoodSpiders"
-      ],
-      "groupRanks": {
-        "friendlyNeighborhoodSpiders": 4
-      },
       "pickerGroups": [
         "friendlyNeighborhoodSpiders"
-      ],
-      "figurineScale": 63
+      ]
     },
     {
       "characterKey": "rotInTheRiverGarou",
       "fullName": "Rot-in-the-River",
       "isPC": false,
-      "groups": [
-        "friendlyNeighborhoodSpidersGarou"
-      ],
-      "groupRanks": {
-        "friendlyNeighborhoodSpidersGarou": 4
-      },
       "pickerGroups": [
         "friendlyNeighborhoodSpidersGarou"
-      ],
-      "figurineScale": 70
+      ]
     },
     {
       "characterKey": "severinKoslov",
       "fullName": "Severin Koslov",
       "isPC": false,
-      "groups": [
-        "wychwoodHecata"
-      ],
-      "groupRanks": {
-        "wychwoodHecata": 6
-      },
       "pickerGroups": [
         "wychwoodHecata"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "stalksTheTangle",
       "fullName": "Stalks-the-Tangle",
       "isPC": false,
-      "groups": [
-        "friendlyNeighborhoodSpiders"
-      ],
-      "groupRanks": {
-        "friendlyNeighborhoodSpiders": 5
-      },
       "pickerGroups": [
         "friendlyNeighborhoodSpiders"
-      ],
-      "figurineScale": 60
+      ]
     },
     {
       "characterKey": "stalksTheTangleGarou",
       "fullName": "Stalks-the-Tangle",
       "isPC": false,
-      "groups": [
-        "friendlyNeighborhoodSpidersGarou"
-      ],
-      "groupRanks": {
-        "friendlyNeighborhoodSpidersGarou": 5
-      },
       "pickerGroups": [
         "friendlyNeighborhoodSpidersGarou"
-      ],
-      "figurineScale": 60
+      ]
     },
     {
       "characterKey": "theIslandDevil",
       "fullName": "The Island Devil",
       "isPC": false,
-      "groups": [
-        "autarkis"
-      ],
-      "groupRanks": {
-        "autarkis": 1
-      },
       "pickerGroups": [
         "autarkis"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "theUnshadowedThrone",
       "fullName": "The Unshadowed Throne",
       "isPC": false,
-      "groups": [
-        "aapilu"
-      ],
-      "groupRanks": {
-        "aapilu": 4
-      },
       "pickerGroups": [
         "aapilu"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "twist",
       "fullName": "Twist",
       "isPC": false,
-      "groups": [
-        "jarvisJacks"
-      ],
-      "groupRanks": {
-        "jarvisJacks": 3
-      },
       "pickerGroups": [
         "jarvisJacks"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "uwuByteMe",
       "fullName": "uwu_byte_me",
       "isPC": false,
-      "groups": [
-        "civilian"
-      ],
-      "groupRanks": {
-        "civilian": 3
-      },
       "pickerGroups": [
         "civilian"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "bee",
       "fullName": "Bee",
       "isPC": false,
-      "groups": [
-        "beesHive"
-      ],
-      "groupRanks": {
-        "beesHive": 1
-      },
       "pickerGroups": [
         "beesHive"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "carol",
       "fullName": "Carol",
       "isPC": false,
-      "groups": [
-        "beesHive"
-      ],
-      "groupRanks": {
-        "beesHive": 2
-      },
       "pickerGroups": [
         "beesHive"
-      ],
-      "figurineScale": 57
+      ]
     },
     {
       "characterKey": "ianRammond",
       "fullName": "Ian Rammond",
       "isPC": false,
-      "groups": [
-        "beesHive"
-      ],
-      "groupRanks": {
-        "beesHive": 4
-      },
       "pickerGroups": [
         "beesHive"
-      ],
-      "figurineScale": 63
+      ]
     },
     {
       "characterKey": "terry",
       "fullName": "Terry",
       "isPC": false,
-      "groups": [
-        "beesHive"
-      ],
-      "groupRanks": {
-        "beesHive": 3
-      },
       "pickerGroups": [
         "beesHive"
-      ],
-      "figurineScale": 56
+      ]
     },
     {
       "characterKey": "tommy",
       "fullName": "Tommy",
       "isPC": false,
-      "groups": [
-        "beesHive"
-      ],
-      "groupRanks": {
-        "beesHive": 5
-      },
       "pickerGroups": [
         "beesHive"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "iq",
       "fullName": "I.Q.",
       "isPC": false,
-      "groups": [
-        "beesHive"
-      ],
-      "groupRanks": {
-        "beesHive": 6
-      },
       "pickerGroups": [
         "beesHive"
-      ],
-      "figurineScale": 45
+      ]
     },
     {
       "characterKey": "rubyRouge",
       "fullName": "Ruby Rouge",
       "isPC": false,
-      "groups": [
-        "colorBlitz"
-      ],
-      "groupRanks": {
-        "colorBlitz": 1
-      },
       "pickerGroups": [
         "colorBlitz"
-      ],
-      "figurineScale": 60
+      ]
     },
     {
       "characterKey": "evanescentBlue",
       "fullName": "Evanescent Blue",
       "isPC": false,
-      "groups": [
-        "colorBlitz"
-      ],
-      "groupRanks": {
-        "colorBlitz": 2
-      },
       "pickerGroups": [
         "colorBlitz"
-      ],
-      "figurineScale": 50
+      ]
     },
     {
       "characterKey": "rosie",
       "fullName": "Rosie",
       "isPC": false,
-      "groups": [
-        "redFlag"
-      ],
-      "groupRanks": {
-        "redFlag": 1
-      },
       "pickerGroups": [
         "redFlag"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "damienAbanda",
       "fullName": "Damien Abanda",
       "isPC": false,
-      "groups": [
-        "redFlag"
-      ],
-      "groupRanks": {
-        "redFlag": 2
-      },
       "pickerGroups": [
         "redFlag"
-      ],
-      "figurineScale": 58
+      ]
     },
     {
       "characterKey": "profEthanKeen",
       "fullName": "Professor Ethan Keen",
       "isPC": false,
-      "groups": [
-        "redFlag"
-      ],
-      "groupRanks": {
-        "redFlag": 3
-      },
       "pickerGroups": [
         "redFlag"
-      ],
-      "figurineScale": 57
+      ]
     },
     {
       "characterKey": "calvinWallace",
       "fullName": "Calvin Wallace",
       "isPC": false,
-      "groups": [
-        "redFlag"
-      ],
-      "groupRanks": {
-        "redFlag": 4
-      },
       "pickerGroups": [
         "redFlag"
-      ],
-      "figurineScale": 60
+      ]
     },
     {
       "characterKey": "oliverGagnon",
       "fullName": "Oliver Gagnon",
       "isPC": false,
-      "groups": [
-        "scarlettAndTheBoys"
-      ],
-      "groupRanks": {
-        "scarlettAndTheBoys": 1
-      },
       "pickerGroups": [
         "scarlettAndTheBoys"
-      ],
-      "figurineScale": 60
+      ]
     },
     {
       "characterKey": "scarlett",
       "fullName": "Scarlett",
       "isPC": false,
-      "groups": [
-        "scarlettAndTheBoys"
-      ],
-      "groupRanks": {
-        "scarlettAndTheBoys": 2
-      },
       "pickerGroups": [
         "scarlettAndTheBoys"
-      ],
-      "figurineScale": 60
+      ]
     },
     {
       "characterKey": "razorWhit",
       "fullName": "Razor Whit",
       "isPC": false,
-      "groups": [
-        "scarlettAndTheBoys"
-      ],
-      "groupRanks": {
-        "scarlettAndTheBoys": 3
-      },
       "pickerGroups": [
         "scarlettAndTheBoys"
-      ],
-      "figurineScale": 60
+      ]
     },
     {
       "characterKey": "merrickSingh",
       "fullName": "Merrick Singh",
       "isPC": false,
-      "groups": [
-        "scarlettAndTheBoys"
-      ],
-      "groupRanks": {
-        "scarlettAndTheBoys": 4
-      },
       "pickerGroups": [
         "scarlettAndTheBoys"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "myleneHamelin",
       "fullName": "Mylene 'the Puck' Hamelin",
       "isPC": false,
-      "groups": [
-        "fiveKeys",
-        "princesCourt"
-      ],
-      "groupRanks": {
-        "fiveKeys": 1,
-        "princesCourt": 6
-      },
       "pickerGroups": [
         "fiveKeys"
-      ],
-      "figurineScale": 47
+      ]
     },
     {
       "characterKey": "zuriOluwusi",
       "fullName": "Zuri Oluwusi",
       "isPC": false,
-      "groups": [
-        "fiveKeys"
-      ],
-      "groupRanks": {
-        "fiveKeys": 2
-      },
       "pickerGroups": [
         "fiveKeys"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "adrianVarga",
       "fullName": "Adrian Varga",
       "isPC": false,
-      "groups": [
-        "fiveKeys"
-      ],
-      "groupRanks": {
-        "fiveKeys": 3
-      },
       "pickerGroups": [
         "fiveKeys"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "stirlingSiskin",
       "fullName": "Stirling Siskin",
       "isPC": false,
-      "groups": [
-        "fiveKeys"
-      ],
-      "groupRanks": {
-        "fiveKeys": 4
-      },
       "pickerGroups": [
         "fiveKeys"
-      ],
-      "figurineScale": 57
+      ]
     },
     {
       "characterKey": "jesseSharp",
       "fullName": "Jesse Sharp",
       "isPC": false,
-      "groups": [
-        "fiveKeys",
-        "princesCourt"
-      ],
-      "groupRanks": {
-        "fiveKeys": 5,
-        "princesCourt": 9
-      },
       "pickerGroups": [
         "fiveKeys"
-      ],
-      "figurineScale": 50
+      ]
     },
     {
       "characterKey": "nasirKhan",
       "fullName": "Nasir Khan",
       "isPC": false,
-      "groups": [
-        "freeChantry",
-        "princesCourt"
-      ],
-      "groupRanks": {
-        "freeChantry": 1,
-        "princesCourt": 8
-      },
       "pickerGroups": [
         "freeChantry"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "gabrielCollard",
       "fullName": "Gabriel Collard",
       "isPC": false,
-      "groups": [
-        "freeChantry"
-      ],
-      "groupRanks": {
-        "freeChantry": 2
-      },
       "pickerGroups": [
         "freeChantry"
-      ],
-      "figurineScale": 60
+      ]
     },
     {
       "characterKey": "anitaMorris",
       "fullName": "Anita Morris",
       "isPC": false,
-      "groups": [
-        "freeChantry"
-      ],
-      "groupRanks": {
-        "freeChantry": 3
-      },
       "pickerGroups": [
         "freeChantry"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "ulyssesCelaj",
       "fullName": "Ulysses Celaj",
       "isPC": false,
-      "groups": [
-        "freeChantry"
-      ],
-      "groupRanks": {
-        "freeChantry": 4
-      },
       "pickerGroups": [
         "freeChantry"
-      ],
-      "figurineScale": 58
+      ]
     },
     {
       "characterKey": "theAristocrat",
       "fullName": "The Aristocrat",
       "isPC": false,
-      "groups": [
-        "harpies"
-      ],
-      "groupRanks": {
-        "harpies": 1
-      },
       "pickerGroups": [
         "harpies"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "xavierWhitchurch",
       "fullName": "Xavier Whitchurch",
       "isPC": false,
-      "groups": [
-        "harpies"
-      ],
-      "groupRanks": {
-        "harpies": 2
-      },
       "pickerGroups": [
         "harpies"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "christianne",
       "fullName": "Christianne",
       "isPC": false,
-      "groups": [
-        "harpies"
-      ],
-      "groupRanks": {
-        "harpies": 3
-      },
       "pickerGroups": [
         "harpies"
-      ],
-      "figurineScale": 63
+      ]
     },
     {
       "characterKey": "laz",
       "fullName": "Laz",
       "isPC": false,
-      "groups": [
-        "ironGuard"
-      ],
-      "groupRanks": {
-        "ironGuard": 1
-      },
       "pickerGroups": [
         "ironGuard"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "osborneLowell",
       "fullName": "Osborne Lowell",
       "isPC": false,
-      "groups": [
-        "ironGuard"
-      ],
-      "groupRanks": {
-        "ironGuard": 2
-      },
       "pickerGroups": [
         "ironGuard"
-      ],
-      "figurineScale": 60
+      ]
     },
     {
       "characterKey": "emilyTheDuskRose",
       "fullName": "Emily, the Dusk Rose",
       "isPC": false,
-      "groups": [
-        "ironGuard"
-      ],
-      "groupRanks": {
-        "ironGuard": 3
-      },
       "pickerGroups": [
         "ironGuard"
-      ],
-      "figurineScale": 48
+      ]
     },
     {
       "characterKey": "sageSam",
       "fullName": "Sage Sam",
       "isPC": false,
-      "groups": [
-        "theLine"
-      ],
-      "groupRanks": {
-        "theLine": 1
-      },
       "pickerGroups": [
         "theLine"
-      ],
-      "figurineScale": 50
+      ]
     },
     {
       "characterKey": "masonSchmidt",
       "fullName": "Mason Schmidt",
       "isPC": false,
-      "groups": [
-        "theLine"
-      ],
-      "groupRanks": {
-        "theLine": 2
-      },
       "pickerGroups": [
         "theLine"
-      ],
-      "figurineScale": 60
+      ]
     },
     {
       "characterKey": "jackBeNimble",
       "fullName": "Jack-be-Nimble",
       "isPC": false,
-      "groups": [
-        "theLine"
-      ],
-      "groupRanks": {
-        "theLine": 3
-      },
       "pickerGroups": [
         "theLine"
-      ],
-      "figurineScale": 50
+      ]
     },
     {
       "characterKey": "yusefShamsin",
       "fullName": "Yusef Shamsin",
       "isPC": false,
-      "groups": [
-        "theLine"
-      ],
-      "groupRanks": {
-        "theLine": 4
-      },
       "pickerGroups": [
         "theLine"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "suyin",
       "fullName": "Suyin",
       "isPC": false,
-      "groups": [
-        "theLine"
-      ],
-      "groupRanks": {
-        "theLine": 5
-      },
       "pickerGroups": [
         "theLine"
-      ],
-      "figurineScale": 45
+      ]
     },
     {
       "characterKey": "fatherDiaz",
       "fullName": "Father Emiliano Diaz",
       "isPC": false,
-      "groups": [
-        "midnightMass"
-      ],
-      "groupRanks": {
-        "midnightMass": 1
-      },
       "pickerGroups": [
         "midnightMass"
-      ],
-      "figurineScale": 57
+      ]
     },
     {
       "characterKey": "deaconReal",
       "fullName": "Deacon Lucenzo Reál",
       "isPC": false,
-      "groups": [
-        "midnightMass"
-      ],
-      "groupRanks": {
-        "midnightMass": 2
-      },
       "pickerGroups": [
         "midnightMass"
-      ],
-      "figurineScale": 58
+      ]
     },
     {
       "characterKey": "sisterCicione",
       "fullName": "Sister Genoveva Cicione",
       "isPC": false,
-      "groups": [
-        "midnightMass"
-      ],
-      "groupRanks": {
-        "midnightMass": 3
-      },
       "pickerGroups": [
         "midnightMass"
-      ],
-      "figurineScale": 50
+      ]
     },
     {
       "characterKey": "victorVex",
       "fullName": "Victor Vex",
       "isPC": false,
-      "groups": [
-        "moonClub"
-      ],
-      "groupRanks": {
-        "moonClub": 1
-      },
       "pickerGroups": [
         "moonClub"
-      ],
-      "figurineScale": 51
+      ]
     },
     {
       "characterKey": "georgieStJames",
       "fullName": "Georgie St. James",
       "isPC": false,
-      "groups": [
-        "moonClub"
-      ],
-      "groupRanks": {
-        "moonClub": 2
-      },
       "pickerGroups": [
         "moonClub"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "vanceVogel",
       "fullName": "Vance Vogel",
       "isPC": false,
-      "groups": [
-        "moonClub"
-      ],
-      "groupRanks": {
-        "moonClub": 3
-      },
       "pickerGroups": [
         "moonClub"
-      ],
-      "figurineScale": 57
+      ]
     },
     {
       "characterKey": "scottTempo",
       "fullName": "Scott Tempo",
       "isPC": false,
-      "groups": [
-        "moonClub"
-      ],
-      "groupRanks": {
-        "moonClub": 4
-      },
       "pickerGroups": [
         "moonClub"
-      ],
-      "figurineScale": 58
+      ]
     },
     {
       "characterKey": "ren",
       "fullName": "Ren",
       "isPC": false,
-      "groups": [
-        "redeemers"
-      ],
-      "groupRanks": {
-        "redeemers": 1
-      },
       "pickerGroups": [
         "redeemers"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "alexandra",
       "fullName": "Alexandra",
       "isPC": false,
-      "groups": [
-        "redeemers"
-      ],
-      "groupRanks": {
-        "redeemers": 2
-      },
       "pickerGroups": [
         "redeemers"
-      ],
-      "figurineScale": 55
+      ]
     },
     {
       "characterKey": "kai",
       "fullName": "Kai",
       "isPC": false,
-      "groups": [
-        "redeemers"
-      ],
-      "groupRanks": {
-        "redeemers": 3
-      },
       "pickerGroups": [
         "redeemers"
-      ],
-      "figurineScale": 50
+      ]
     },
     {
       "characterKey": "tyler",
       "fullName": "Tyler",
       "isPC": false,
-      "groups": [
-        "redeemers"
-      ],
-      "groupRanks": {
-        "redeemers": 4
-      },
       "pickerGroups": [
         "redeemers"
-      ],
-      "figurineScale": 60
+      ]
     },
     {
       "characterKey": "evangelineDupont",
       "fullName": "Evangeline Dupont",
       "isPC": false,
-      "groups": [
-        "regencyUniversityChantry",
-        "princesCourt"
-      ],
-      "groupRanks": {
-        "regencyUniversityChantry": 1,
-        "princesCourt": 7
-      },
       "pickerGroups": [
         "regencyUniversityChantry"
-      ],
-      "figurineScale": 49
+      ]
     },
     {
       "characterKey": "drIrenaVoss",
       "fullName": "Dr. Irena Voss",
       "isPC": false,
-      "groups": [
-        "regencyUniversityChantry"
-      ],
-      "groupRanks": {
-        "regencyUniversityChantry": 2
-      },
       "pickerGroups": [
         "regencyUniversityChantry"
-      ],
-      "figurineScale": 47
+      ]
     },
     {
       "characterKey": "raduIancu",
       "fullName": "Radu Iancu",
       "isPC": false,
-      "groups": [
-        "regencyUniversityChantry"
-      ],
-      "groupRanks": {
-        "regencyUniversityChantry": 3
-      },
       "pickerGroups": [
         "regencyUniversityChantry"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "damienKline",
       "fullName": "Damien Kline",
       "isPC": false,
-      "groups": [
-        "regencyUniversityChantry"
-      ],
-      "groupRanks": {
-        "regencyUniversityChantry": 4
-      },
       "pickerGroups": [
         "regencyUniversityChantry"
-      ],
-      "figurineScale": 55
+      ]
     },
     {
       "characterKey": "lucasMerrow",
       "fullName": "Lucas Merrow",
       "isPC": false,
-      "groups": [
-        "regencyUniversityChantry"
-      ],
-      "groupRanks": {
-        "regencyUniversityChantry": 5
-      },
       "pickerGroups": [
         "regencyUniversityChantry"
-      ],
-      "figurineScale": 58
+      ]
     },
     {
       "characterKey": "bacchusGiovanni",
       "fullName": "Bacchus Giovanni",
       "isPC": false,
-      "groups": [
-        "wychwoodHecata"
-      ],
-      "groupRanks": {
-        "wychwoodHecata": 1
-      },
       "pickerGroups": [
         "wychwoodHecata"
-      ],
-      "figurineScale": 60
+      ]
     },
     {
       "characterKey": "lorenzaGiovanni",
       "fullName": "Lorenza Giovanni",
       "isPC": false,
-      "groups": [
-        "wychwoodHecata"
-      ],
-      "groupRanks": {
-        "wychwoodHecata": 2
-      },
       "pickerGroups": [
         "wychwoodHecata"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "niccoloGiovanni",
       "fullName": "Niccolo Giovanni",
       "isPC": false,
-      "groups": [
-        "wychwoodHecata"
-      ],
-      "groupRanks": {
-        "wychwoodHecata": 3
-      },
       "pickerGroups": [
         "wychwoodHecata"
-      ],
-      "figurineScale": 55
+      ]
     },
     {
       "characterKey": "theBleakBokor",
       "fullName": "The Baron's Bleak Bokor",
       "isPC": false,
-      "groups": [
-        "wychwoodHecata"
-      ],
-      "groupRanks": {
-        "wychwoodHecata": 4
-      },
       "pickerGroups": [
         "wychwoodHecata"
-      ],
-      "figurineScale": 62
+      ]
     },
     {
       "characterKey": "eddie",
       "fullName": "Eddie",
       "isPC": false,
-      "groups": [
-        "petitioners"
-      ],
-      "groupRanks": {
-        "petitioners": 1
-      },
       "pickerGroups": [
         "petitioners"
-      ],
-      "figurineScale": 42
+      ]
     },
     {
       "characterKey": "alexisHoltt",
       "fullName": "Alexis Holtt",
       "isPC": false,
-      "groups": [
-        "petitioners"
-      ],
-      "groupRanks": {
-        "petitioners": 2
-      },
       "pickerGroups": [
         "petitioners"
-      ],
-      "figurineScale": 53
+      ]
     },
     {
       "characterKey": "lexiMadi",
       "fullName": "Lexie Madi",
       "isPC": false,
-      "groups": [
-        "petitioners"
-      ],
-      "groupRanks": {
-        "petitioners": 3
-      },
       "pickerGroups": [
         "petitioners"
-      ],
-      "figurineScale": 48
+      ]
     },
     {
       "characterKey": "averyInnis",
       "fullName": "Avery Innis",
       "isPC": false,
-      "groups": [
-        "petitioners"
-      ],
-      "groupRanks": {
-        "petitioners": 4
-      },
       "pickerGroups": [
         "petitioners"
-      ],
-      "figurineScale": 50
+      ]
     },
     {
       "characterKey": "benedictKincaid",
       "fullName": "Benedict Kincaid",
       "isPC": false,
-      "groups": [
-        "petitioners"
-      ],
-      "groupRanks": {
-        "petitioners": 5
-      },
       "pickerGroups": [
         "petitioners"
-      ],
-      "figurineScale": 50
+      ]
     }
   ],
   "districts": [
@@ -5926,9 +5183,7 @@
     "ducheskiRevenant": "Ducheski Revenant",
     "friendlyNeighborhoodSpiders": "Friendly Neighborhood Spiders",
     "friendlyNeighborhoodSpidersGarou": "Friendly Neighborhood Spiders (Garou)",
-    "memoriam": "Memoriam",
     "touchstone": "Touchstone",
-    "Ungrouped": "Ungrouped",
     "autarkis": "Autarkis",
     "beesHive": "Bee's Hive",
     "colorBlitz": "Color Blitz",
@@ -5954,5 +5209,21 @@
     "regencyUniversityChantry": "the Regency of the University Chantry",
     "scarlettAndTheBoys": "Scarlett & the Boys",
     "wychwoodHecata": "the Wychwood Hecata"
+  },
+  "groupBosses": {
+    "beesHive": "bee",
+    "colorBlitz": "rubyRouge",
+    "fiveKeys": "myleneHamelin",
+    "freeChantry": "nasirKhan",
+    "harpies": "theAristocrat",
+    "ironGuard": "laz",
+    "jarvisJacks": "maxFloyd",
+    "midnightMass": "fatherDiaz",
+    "moonClub": "victorVex",
+    "redFlag": "rosie",
+    "redeemers": "ren",
+    "scarlettAndTheBoys": "oliverGagnon",
+    "theLine": "sageSam",
+    "wychwoodHecata": "bacchusGiovanni"
   }
 }

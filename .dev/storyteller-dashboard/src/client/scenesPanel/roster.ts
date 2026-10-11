@@ -75,28 +75,14 @@ export const groupColor = (layout: RosterLayout, groupKey: string): string | und
   layout.groupColors[groupKey] ?? layout.categories.find((category) => category.id === layout.assigned[groupKey])?.color;
 
 /**
- * Default group leaders, keyed by picker group: the NPCs marked "Boss?" in the chronicle sheet's NPCs tab that
- * have a catalogued token. The real build should carry this flag in the scene catalog export instead.
+ * The group's leader: the one picked in the roster, else the catalog's `groupBosses` default (undefined while the
+ * catalog loads); undefined for none.
  */
-const GROUP_BOSSES: Readonly<Record<string, string>> = {
-  beesHive: "bee",
-  colorBlitz: "rubyRouge",
-  fiveKeys: "myleneHamelin",
-  freeChantry: "nasirKhan",
-  harpies: "theAristocrat",
-  ironGuard: "laz",
-  jarvisJacks: "maxFloyd",
-  midnightMass: "fatherDiaz",
-  moonClub: "victorVex",
-  redFlag: "rosie",
-  redeemers: "ren",
-  scarlettAndTheBoys: "oliverGagnon",
-  theLine: "sageSam",
-  wychwoodHecata: "bacchusGiovanni"
-};
-
-/** The group's leader: the one picked in the roster, else the chronicle sheet's boss; undefined for none. */
-export const groupLeader = (layout: RosterLayout, groupKey: string): string | undefined => {
+export const groupLeader = (
+  layout: RosterLayout,
+  bosses: Readonly<Record<string, string>> | undefined,
+  groupKey: string
+): string | undefined => {
   const picked = layout.leaders[groupKey];
-  return picked === undefined ? GROUP_BOSSES[groupKey] : picked || undefined;
+  return picked === undefined ? bosses?.[groupKey] : picked || undefined;
 };
