@@ -7,7 +7,7 @@
 
 local BAKE = {
   bakedForSessionNum = 1,
-  bakeRevision = 1791534561983,
+  bakeRevision = 1791692944601,
   saveFileName = "TS_Save_230.json",
   byCharKey = {
     ["aishe"] = {

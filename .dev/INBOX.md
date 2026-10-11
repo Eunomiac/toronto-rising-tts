@@ -30,6 +30,43 @@ Verification:
 ## Author Workspace
 > _Do NOT process these items during any INBOX processing, unless explicitly instructed to by the author: They are works-in-progress, and will be moved into the processing area above when completed._
 
+### Scene "Status" & the Clock
+
+Every scene in the scene library gains a `status` field, which defaults to "new" when it is created, is updated to "ongoing" when it is first transitioned to, and is finally updated to "ended" when the "End Scene" button is clicked.
+
+#### Creating a "New" Scene
+Scene creation (now done on the Dashboard) should not record its own scene time unless a scene time is explicitly set in the preview panel while the scene is being created. (This means that a "new" scene will rarely have a scene time when it is first applied, and thus will almost always adhere to the present day clock.)
+
+#### Transitioning to "New" Scenes
+By default, when a "new" scene is transitioned to, the clock is set to the present day time at 2x speed.  The transition modal should not display the scene time half unless a scene time has been explicitly set during scene creation, as described above. The option to apply "travel time" (advancing the clock by some number of minutes) should still be possible and shown in the modal as it is now.
+
+#### Transitioning Back to "Ongoing" Scenes
+All "ongoing" scenes _will_ have a scene time, applied by the standard mechanisms for clock control we already have in place for live scenes.  When returning to an "ongoing" scene, **NO** clock options should be presented to the ST on the Dashboard: The clock should always be rewound to the scene time, and the clock speed should always be "x5 till NOW (then 2x)"
+
+#### Transitioning Away from a Scenes
+When a scene is transitioned away from, the ST should be prompted on the Dashboard to declare whether the scene is being ended, or if the scene should remain "ongoing".  All resolved rolls on the dashboard should be cleared when leaving a scene (whether it is ongoing or ended).
+
+#### New Control Behavior
+
+* All "ongoing" scenes should be shown on the scene deck, and should be styled bright green
+* The "(on deck)" tag in the "Play a Scene" scene library modal should be replaced with a star icon to the left of their names. "On Deck" scenes should have that star filled in and glowing -- green for "ongoing" and gold for "new". The star for "new" scenes should be clickable, adding/removing the scene from the deck. (Ongoing scenes are always on deck, so the star shouldn't be clickable.) "Ended" scenes should be archived and hidden on the modal, with a button at the bottom providing access to the archive and the ability to edit an ended scene and (potentially) change its status. On deck scenes should automatically be sorted to the top of the list in the scene transition modal
+* "End Scene" should be renamed "Scene ▸", and when clicked it should present the ST with the "Play a Scene" scene library modal when clicked. In addition to the changes described above, an "End Scene" button should be added to the top right, which will end the scene and return the game to Downtime, and a "Memoriam" button should be added to initiate the transition to a Memoriam scene.
+* With all of the current "Advance ▸" ring menu options moved into other places as described above (and "Main" should never be an option, since "Main"/"Downtime" is controlled by whether or not a scene is live), it should behave like the other phase transition buttons, always showing "Spotlight" (i.e. the next phase, after Play)
+
+#### Decisions agreed in chat (2026-10-10) — these override the draft above where they differ
+
+* **No prompt when leaving a scene.** Switching away always keeps the scene "ongoing". A scene ends only deliberately: right-click a green scene on the deck to get an "End Scene" pop-up, or use the "End Scene" button in the Play a Scene modal (ends the live scene and goes to Downtime). There is no separate "cut to Downtime without ending" button.
+* **Returning to an "ongoing" scene** always rewinds the clock to its scene time, with no options shown. If the scene time is from **tonight**, run x5 until Now, then 2x. If it is from an **earlier night** (e.g. a flashback), just run at 2x from the scene time — never fast-forward toward daylight, never jump a day.
+* **"Ended" scenes cannot be played from the archive.** To reuse one, change its status in the archive first.
+* **Advancing to Spotlight** with a scene live leaves that scene "ongoing", no question asked.
+* **Memoriam exit.** While a Memoriam runs, "Scene ▸" reads "Return ▸" and goes straight back to the interrupted scene — unless the Memoriam was started from Downtime, or the interrupted scene has since been ended. In those cases it goes to Downtime with no live scene.
+* **Fourth status: "template"** (choosable at scene creation; an ended scene can also be turned into a template from the archive).
+  * Template names display in square brackets, e.g. "[Elysium]".
+  * Playing a template never puts the template itself on the table. The dashboard first copies it as a "new" scene named after the template plus the in-game night, e.g. "Elysium (Oct 12)", then plays the copy (present day time, travel-time buttons, exactly like any other new scene).
+  * Editing a template does not change copies already made from it.
+  * A template's deck star works like a "new" scene's (gold, clickable), so a template can stay on the deck permanently.
+  * Templates are hidden from the in-game Scenes panel; they can only be played from the Dashboard.
+
 ### PC-as-NPC Assignment
 
 

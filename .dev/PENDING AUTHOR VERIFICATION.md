@@ -80,11 +80,11 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 
 **How to verify:** Load an **Intermission** save from the main menu: the table should come up dark with the Intermission theme playing. Then load a **Play-phase** save from the main menu: the session-start cover should stay down for the whole load and lift only once, after the table is fully laid out (no flash of a half-built table). When it lifts, chairs, NPCs, seat lights and overlays should look right, hunger bags should be hidden, every dice drawer (players' and Storyteller's) should be closed, and nobody's seat should be stuck in the bright rolling light, even if the save was made mid-roll. No console errors.
 
-#### TOR-667 / TOR-669 — Table changes and no-change syncs leave the right things alone
+#### ✅ TOR-667 / TOR-669 — Table changes and no-change syncs leave the right things alone
 
 **How to verify:** Change tables once from the dashboard's table drop-down: chairs, NPC seat objects and each PC's selected Compulsion card should all land in the right places. Then send a couple of ordinary stage moves from the dashboard and watch the rest of the table: NPCs you did not move should not blink, and no preload NPCs or preload dice bags should appear on the table. Finally switch the table to Scatter and back: hidden preload NPCs should stay hidden throughout.
 
-#### TOR-672 / TOR-681 — Hunger overlay updates once, on one seat, and never flickers
+#### ✅ TOR-672 / TOR-681 — Hunger overlay updates once, on one seat, and never flickers
 
 **How to verify:** Play a scene with a PC whose Hunger is above zero and turn on the real-time clock (any speed). Watch that player's hunger overlay for two or three minutes: it should stay perfectly still. Then change that PC's Hunger up and then down (Storyteller PCs panel or the dashboard sheet): their overlay and hunger smoke should switch straight away each time, and no other seat should change. If a PC has a project in progress, open sheet page 5 and move present day forward a whole day: the project's countdown die should still update.
 
@@ -158,7 +158,7 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 7. **Weather until dawn:** click the weather panel's rain or wind icon and pick something off-schedule: TTS should switch, and **Release override** should appear. Move the clock past the next dawn: the schedule should come back by itself. Pick a weather again and release it instead: the schedule should come back at once.
 8. **Memoriam:** open the **Advance ▸** ring, choose **Memoriam…**, pick a character, year, panel (or Just Smoke) and who is present, and press **Advance**. TTS should enter the Memoriam as the in-game modal does. Then choose **Main ▸** from the ring: TTS should restore the interrupted scene.
 
-#### TOR-682 — A scene less than fifteen minutes behind present day runs on present day
+#### ✅ TOR-682 — A scene less than fifteen minutes behind present day runs on present day
 
 **How to verify:** Note the present-day time on the game-state overlay. Set a live scene's clock to ten minutes before present day: it should jump straight to present day. Set it to an hour before: it should stay an hour behind. With real time on and the scene catching up at ×5, it should land exactly on present day and then follow it, never stopping a few minutes short.
 
@@ -323,7 +323,7 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 3. Roll and right-click Confirm (hold). Play another scene: it still refuses. Broadcast the held result and try again: it goes ahead and clears the drawer.
 4. Have a player finish a roll and, while their result banner is up, play another scene: it goes ahead and their dice disappear.
 
-#### TOR-674 — Rouse checks open without waiting, and the result is as short as a quick Rouse
+#### ✅ TOR-674 — Rouse checks open without waiting, and the result is as short as a quick Rouse
 
 **How to verify:** At a player seat with no roll in progress, left-click the Rouse bag. The roll panel appears straight away with **Roll** usable (no "Awaiting Storyteller"). Roll it: the result stays fully visible for about a second, then fades, like a right-click quick Rouse. Do the same with the Oblivion Rouse bag. A normal roll (left-click the Normal bag) should still wait for the Storyteller, and its result should still last about six seconds.
 
@@ -335,13 +335,13 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 
 ### Medium — Prince's Court sheet
 
-#### TOR-663 — Refresh XML keeps The Court on the people who had it open
+#### ✅ TOR-663 — Refresh XML keeps The Court on the people who had it open
 
 **How to verify:** Open The Court on its second spread so your Haven Merits show. On the Storyteller Phases panel, press **Refresh XML**. The Court should stay open on the same spread with the same merits, dots and text, and only the people who had it open should see it. Then close The Court and press Refresh XML again: it stays closed for everyone, and opening it afterwards still shows the current merits.
 
 ### Medium — soundscape
 
-#### TOR-706 — The build puts every sound emitter on silence in the save, so loading doesn't burst a track
+#### ✅ TOR-706 — The build puts every sound emitter on silence in the save, so loading doesn't burst a track
 
 **Context:** When TTS saves, each sound emitter remembers the track it was playing, and on load it starts that track at full volume before the mod can mute it. The Main, XML and Full builds now switch every emitter back to the silent track in the save file. This only helps when you load the save from the main menu (File → Load). Save & Play replays the save TTS last loaded or saved itself, not the patched file on disk.
 
