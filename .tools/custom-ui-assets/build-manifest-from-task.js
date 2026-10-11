@@ -82,81 +82,50 @@ function promptLine(question, defaultValue) {
 async function main() {
   const argvArgs = parseArgs(process.argv.slice(2));
   const mode = (argvArgs.mode || "").trim().toLowerCase();
-  if (mode !== "folder" && mode !== "sites") {
-    console.error('Missing or invalid --mode. Expected "--mode folder" or "--mode sites" (from the Run Task picker).');
+  if (mode !== "folder") {
+    console.error('Missing or invalid --mode. Expected "--mode folder" (site card URLs come from npm run site-cards:import).');
     process.exit(1);
   }
 
   logSection("Custom UI — Build manifest");
-  if (mode === "sites") {
-    console.log("Mode: Site cards from C.Sites (lib/constants.ttslua)");
-    console.log("Uses each row's `image` + `localImage`. Folder path from the task prompt is ignored.");
-  } else {
-    console.log("Mode: Image folder (PNG convert + WEBP manifest scan)");
+  console.log("Mode: Image folder (PNG convert + WEBP manifest scan)");
+
+  let inputDir = (argvArgs.input || "").trim();
+  if (inputDir === "") {
+    if (process.stdin.isTTY) {
+      logSection("Step 1 — Image folder path");
+      console.log("Relative to the workspace root (WEBP scanned; PNGs converted when present).");
+      inputDir = await promptLine("Relative path to image folder", "assets\\images\\new_images");
+    } else {
+      inputDir = "assets\\images\\new_images";
+      console.log(`No --input and non-interactive stdin; using default folder: ${inputDir}`);
+    }
   }
 
-  if (mode === "sites") {
-    logSection("Step 1 — Validate local files and write manifest + Lua module");
-    console.log("Script: .tools/custom-ui-assets/build-upload-manifest-from-sites-constants.js");
-    console.log("Inputs:  lib/constants.ttslua  (C.Sites)");
-    console.log("Outputs:");
-    console.log("  .dev/custom-ui-assets/manifest.json");
-    console.log("  .dev/custom-ui-assets/manifest.lua");
-    console.log("  lib/custom_ui_upload_manifest.ttslua");
-    console.log("");
-    console.log("For batched manifests or --skipMissing, run npm scripts or that script directly (see README).");
+  logSection("Step 2 — Convert PNG to WEBP (safe to re-run)");
+  console.log("Script: .tools/custom-ui-assets/convert-png-to-webp.js");
+  const convertExit = runNode(".tools/custom-ui-assets/convert-png-to-webp.js", ["--input", inputDir]);
+  if (convertExit !== 0) {
+    console.warn("WARN: PNG→WEBP step exited non-zero; continuing if WEBP files exist for the manifest scan.");
+  }
 
-    const exit = runNode(".tools/custom-ui-assets/build-upload-manifest-from-sites-constants.js", [
-      "--constants",
-      "lib/constants.ttslua",
-      "--out",
-      ".dev/custom-ui-assets/manifest.json",
-      "--luaOut",
-      ".dev/custom-ui-assets/manifest.lua",
-      "--moduleOut",
-      "lib/custom_ui_upload_manifest.ttslua",
-    ]);
-    if (exit !== 0) {
-      process.exit(exit);
-    }
-  } else {
-    let inputDir = (argvArgs.input || "").trim();
-    if (inputDir === "") {
-      if (process.stdin.isTTY) {
-        logSection("Step 1 — Image folder path");
-        console.log("Relative to the workspace root (WEBP scanned; PNGs converted when present).");
-        inputDir = await promptLine("Relative path to image folder", "assets\\images\\new_images");
-      } else {
-        inputDir = "assets\\images\\new_images";
-        console.log(`No --input and non-interactive stdin; using default folder: ${inputDir}`);
-      }
-    }
-
-    logSection("Step 2 — Convert PNG to WEBP (safe to re-run)");
-    console.log("Script: .tools/custom-ui-assets/convert-png-to-webp.js");
-    const convertExit = runNode(".tools/custom-ui-assets/convert-png-to-webp.js", ["--input", inputDir]);
-    if (convertExit !== 0) {
-      console.warn("WARN: PNG→WEBP step exited non-zero; continuing if WEBP files exist for the manifest scan.");
-    }
-
-    logSection("Step 3 — Scan folder and write manifest + Lua module");
-    console.log("Script: .tools/custom-ui-assets/build-upload-manifest.js");
-    console.log(`Input folder: ${inputDir}`);
-    const buildExit = runNode(".tools/custom-ui-assets/build-upload-manifest.js", [
-      "--input",
-      inputDir,
-      "--extensions",
-      "webp",
-      "--out",
-      ".dev/custom-ui-assets/manifest.json",
-      "--luaOut",
-      ".dev/custom-ui-assets/manifest.lua",
-      "--moduleOut",
-      "lib/custom_ui_upload_manifest.ttslua",
-    ]);
-    if (buildExit !== 0) {
-      process.exit(buildExit);
-    }
+  logSection("Step 3 — Scan folder and write manifest + Lua module");
+  console.log("Script: .tools/custom-ui-assets/build-upload-manifest.js");
+  console.log(`Input folder: ${inputDir}`);
+  const buildExit = runNode(".tools/custom-ui-assets/build-upload-manifest.js", [
+    "--input",
+    inputDir,
+    "--extensions",
+    "webp",
+    "--out",
+    ".dev/custom-ui-assets/manifest.json",
+    "--luaOut",
+    ".dev/custom-ui-assets/manifest.lua",
+    "--moduleOut",
+    "lib/custom_ui_upload_manifest.ttslua",
+  ]);
+  if (buildExit !== 0) {
+    process.exit(buildExit);
   }
 
   logSection("Next — Tabletop Simulator");
