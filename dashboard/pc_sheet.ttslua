@@ -2,7 +2,7 @@
   Storyteller Dashboard PCs tab: live snapshot + apply over execute-lua.
   Module: dashboard.pc_sheet (not core — dashboard bridge lives under dashboard/).
   Apply accepts one command object or a JSON array of commands (one snapshot at the end).
-  No Steam clicker (same pattern as GlobalImportSceneJson).
+  No Steam clicker (execute-lua has no player).
   Agent guidance: .dev/PC Data & Tracking/PC Tracking & State Behavior.md
 ]]
 

@@ -1,5 +1,8 @@
 --[[
     Storyteller Scenes panel: table switching, narrative seat presence, location keys, narrative clock.
+    Live-table fallback for the Storyteller Dashboard: it plays saved library rows and edits the live scene, but
+    never writes library rows itself (the dashboard does, via `dashboard/scene_library.ttslua`). A previewed row
+    (blue) is read-only.
     Agent guidance: .dev/HUD_FUNCTIONS.md; `.cursor/rules/toronto-rising-synchronization.mdc`.
 ]]
 
@@ -66,7 +69,7 @@ end
 local GREEN = "#228B22|#32CD32|#006400|#228B22"
 --- Daysleep Refresh (TOR-482): stays gold when live; excluded from lerp green/grey list.
 local GOLD = "#B8860B|#DAA520|#8B6914|#B8860B"
---- Pending library-row edit mode (activeKey ≠ lastAppliedKey): "on" highlights use blue (TOR-244).
+--- Library-row preview (activeKey ≠ lastAppliedKey): "on" highlights use blue (TOR-244).
 local BLUE = "#1E5AA8|#2E7AD1|#154080|#1E5AA8"
 local GREY = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
 
@@ -103,6 +106,27 @@ local TABLE_TOGGLE_IDS = {
     scenes_tbl_Scatter = "Scatter",
 }
 
+--- Live location controls, locked while a library row is previewed (rows are edited on the Storyteller Dashboard).
+local LIVE_LOCATION_CONTROL_IDS = {
+    "scenes_openDistrictModal",
+    "scenes_openSiteModal",
+    "scenes_openSkyboxModal",
+    "scenes_apply_location_soundscape",
+}
+
+--- Clock controls, locked while a library row is previewed outside Downtime (in Downtime they edit `downtimeClock`).
+local LIVE_CLOCK_CONTROL_IDS = {
+    "scenes_clock_day",
+    "scenes_clock_year",
+    "scenes_clock_time12",
+    "scenes_clock_speed",
+    "scenes_clock_rtToggle",
+    "scenes_clock_apply",
+}
+for m = 1, 12 do
+    LIVE_CLOCK_CONTROL_IDS[#LIVE_CLOCK_CONTROL_IDS + 1] = "scenes_month_" .. tostring(m)
+end
+
 --- Pre-declared rows in `ui/storyteller/panel_scenes_library.xml` (no dynamic `setXml` lists).
 local SCENE_LIB_SLOT_COUNT = 40
 
@@ -137,9 +161,6 @@ local function isPresentFamilyClockMode(clockMode)
     end
     return type(clockMode) == "string" and string.match(clockMode, "^presentPlus%d+$") ~= nil
 end
-
---- Second click on Delete within this window removes the active `sceneLibrary` row.
-local sceneLibDeleteArmedUntil = 0
 
 --- @return string|nil
 local function effectiveTableKey()
@@ -333,9 +354,8 @@ local function formatTime12h(hour24, minute)
     return string.format("%d:%02d %s", h12, m, suffix)
 end
 
---- Pending activation clock: while a library row is pending (`activeKey` ≠ `lastAppliedKey`), clock edits
---- persist into that row's `sessionScene.clock` as you edit (and flush before selecting another row).
---- When the selected row is the live on-table scene, clock controls mutate live `sessionScene.clock`.
+--- Clock input draft for the live scene. While a library row is previewed (`activeKey` ≠ `lastAppliedKey`) the
+--- inputs only display that row's clock and edits are refused; Apply's time buttons choose the clock at play.
 local clockDraft = {
     day = nil,
     year = nil,
@@ -348,7 +368,7 @@ local clockDraft = {
     dirty = false,
 }
 
---- Year Go InputField stash (TOR-222); not part of pending library clock draft.
+--- Year Go InputField stash (TOR-222); not part of the clock draft.
 local lerpYearDraft = ""
 
 --- @return boolean
@@ -372,7 +392,25 @@ local function isPendingSceneActivation(activeKey)
     return SceneLibrary.isPendingSelection(activeKey)
 end
 
---- Green = live table / selected = applied; blue = edits target selected library row (TOR-244).
+--- The previewed (blue) row is read-only: library rows are written only by the Storyteller Dashboard.
+--- @return boolean true when a row is previewed and the edit was refused
+local function refuseEditWhilePreviewing()
+    local activeKey = getActiveLibraryKey()
+    if type(activeKey) ~= "string" or not isPendingSceneActivation(activeKey) then
+        return false
+    end
+    U.AlertGM("`" .. activeKey .. "` is not on the table yet. Edit saved scenes on the Storyteller Dashboard, or Apply this one and change it live.")
+    return true
+end
+
+--- `interactable` value for live-scene edit controls: locked while a library row is previewed.
+--- @param pending boolean
+--- @return string
+local function liveEditInteractable(pending)
+    return pending and "false" or "true"
+end
+
+--- Green = live table / selected = applied; blue = previewing a library row that is not on the table (TOR-244).
 --- @param pending boolean
 --- @return string
 local function panelOnColors(pending)
@@ -481,174 +519,6 @@ local function displayTableKeyFromBundle(bundle, pending)
         return "Scatter"
     end
     return effectiveTableKey()
-end
-
---- Writes a field on the selected pending library row's sessionScene (no live mutation, no mirror).
---- @param value any
---- @param ... string path under sessionScene
---- @return boolean ok
-local function writePendingLibrarySessionSceneField(value, ...)
-    local activeKey = getActiveLibraryKey()
-    if type(activeKey) ~= "string" or not isPendingSceneActivation(activeKey) then
-        return false
-    end
-    local path = { ... }
-    if #path == 0 then
-        return false
-    end
-    S.setStateVal(value, "sceneLibrary", "scenes", activeKey, "sessionScene", unpack(path))
-    S.validateState()
-    return true
-end
-
---- @param pack any
---- @return boolean
-local function scatterPackHasOccupancy(pack)
-    if type(pack) ~= "table" then
-        return false
-    end
-    local ScatterLayout = require("lib.scatter_layout")
-    for i = 1, ScatterLayout.groupCount() do
-        local area = pack[ScatterLayout.areaKeyForGroup(i)]
-        if type(area) == "table" then
-            if type(area.centerCharacters) == "table" and next(area.centerCharacters) ~= nil then
-                return true
-            end
-            if type(area.orbitCharacters) == "table" and next(area.orbitCharacters) ~= nil then
-                return true
-            end
-        end
-    end
-    return false
-end
-
---- Pending Scenes table toggle: write tableKey + placementMode, seed scatter/standard occupancy
---- (no live SetTableTo).
---- @param activeKey string
---- @param tableKey string
---- @param isScatter boolean
---- @return boolean ok
-local function applyPendingLibraryTableChoice(activeKey, tableKey, isScatter)
-    local entry = S.getStateVal("sceneLibrary", "scenes", activeKey)
-    if type(entry) ~= "table" then
-        return false
-    end
-    local ss = entry.sessionScene
-    if type(ss) ~= "table" then
-        ss = {}
-        entry.sessionScene = ss
-    end
-
-    if isScatter then
-        local Occupancy = require("lib.scatter_occupancy")
-        if scatterPackHasOccupancy(ss.scatterPlacements) ~= true then
-            local occupied = {}
-            local slots = type(ss.seatSlots) == "table" and ss.seatSlots or {}
-            for _, npc in ipairs(C.NPCSeats or {}) do
-                local row = slots[npc]
-                if type(row) == "table" and type(row.characterKey) == "string" and row.characterKey ~= "" then
-                    occupied[npc] = row.characterKey
-                end
-            end
-            local pack = Occupancy.translateSessionSceneToPlacements(ss, occupied)
-            if pack == nil then
-                local ScatterLayout = require("lib.scatter_layout")
-                pack = ScatterLayout.emptyPlacements()
-            end
-            ss.scatterPlacements = pack
-        end
-        ss.tableKey = "Scatter"
-        entry.placementMode = "scatter"
-    else
-        ss.tableKey = tableKey
-        entry.placementMode = "standard"
-        if type(ss.seatSlots) ~= "table" then
-            ss.seatSlots = {}
-        end
-        local FSL = require("lib.figurine_seat_layout")
-        local occupied = {}
-        for _, npc in ipairs(C.NPCSeats or {}) do
-            local row = ss.seatSlots[npc]
-            if type(row) == "table" and type(row.characterKey) == "string" and row.characterKey ~= "" then
-                occupied[npc] = row.characterKey
-            end
-        end
-        -- Recover tableSlot after older validateState wipes, or empty imported rows.
-        FSL.seedDefaultTableSlotsOnto(ss.seatSlots, occupied)
-    end
-
-    S.validateState()
-    return true
-end
-
---- Seat presence on pending library row only (`seatSlots` + `seatPresent`); no world reconcile / mirror.
---- @param seatKey string
---- @param present boolean
---- @return boolean ok
-local function setPendingLibrarySeatPresence(seatKey, present)
-    local activeKey = getActiveLibraryKey()
-    if type(activeKey) ~= "string" or not isPendingSceneActivation(activeKey) then
-        return false
-    end
-    if not (U.isIn(seatKey, C.PlayerColors or {}) or U.isIn(seatKey, C.NPCSeats or {})) then
-        return false
-    end
-    local ss = S.getStateVal("sceneLibrary", "scenes", activeKey, "sessionScene", "seatSlots")
-    if U.Type(ss) ~= "table" then
-        ss = {}
-    end
-    local row = ss[seatKey]
-    if U.Type(row) ~= "table" then
-        row = {}
-    else
-        row = U.clone(row, true)
-    end
-    row.isPresent = present == true
-    ss = U.clone(ss, true)
-    ss[seatKey] = row
-    S.setStateVal(ss, "sceneLibrary", "scenes", activeKey, "sessionScene", "seatSlots")
-
-    local sp = S.getStateVal("sceneLibrary", "scenes", activeKey, "sessionScene", "seatPresent")
-    if U.Type(sp) ~= "table" then
-        sp = {}
-    end
-    sp = U.clone(sp, true)
-    sp[seatKey] = present == true
-    S.setStateVal(sp, "sceneLibrary", "scenes", activeKey, "sessionScene", "seatPresent")
-    S.validateState()
-    return true
-end
-
---- Top-fog flag for a site onto the selected pending library row (no live write).
---- @param siteKey string
-local function applySiteTopFogToPendingLibraryRow(siteKey)
-    local activeKey = getActiveLibraryKey()
-    if type(activeKey) ~= "string" or not isPendingSceneActivation(activeKey) then
-        return
-    end
-    if type(siteKey) ~= "string" then
-        return
-    end
-    siteKey = string.gsub(string.gsub(siteKey, "^%s+", ""), "%s+$", "")
-    if siteKey == "" then
-        return
-    end
-    local site = C.Sites[siteKey]
-    if type(site) ~= "table" then
-        return
-    end
-    local fogActive = nil
-    if site.isTopFogActive == true or site.isTopFogActive == false then
-        fogActive = site.isTopFogActive
-    elseif site.isIndoors == true then
-        fogActive = false
-    elseif site.isIndoors == false then
-        fogActive = true
-    end
-    if fogActive == nil then
-        return
-    end
-    writePendingLibrarySessionSceneField(fogActive, "isTopFogActive")
 end
 
 --- @param sceneKey string
@@ -1270,60 +1140,15 @@ local function mergeActivationClockDraftIntoBundle(bundle, sceneKey)
     return SceneLibrary.validateSessionSceneClock(built)
 end
 
---- Persists `clockDraft` into a pending library row's `sessionScene.clock` (TOR-244).
---- @param sceneKey string|nil defaults to `sceneLibrary.activeKey`
---- @return boolean ok
---- @return string|nil err
-local function persistPendingLibraryClockFromDraft(sceneKey)
-    sceneKey = sceneKey or getActiveLibraryKey()
-    if type(sceneKey) ~= "string" or not isPendingSceneActivation(sceneKey) then
-        return false, "Not in pending library preview."
-    end
-    if clockDraft.sceneKey ~= sceneKey or clockDraft.dirty ~= true then
-        return true, nil
-    end
-    local base = getLibraryRowClock(sceneKey) or {}
-    local clock, err
-    if draftHasClearedDatetimeFields() then
-        clock, err = buildFlagsOnlyClockFromDraft(base)
-    else
-        clock, err = buildClockFromDraft(base)
-    end
-    if clock == nil then
-        return false, err
-    end
-    local okClock, errClock = SceneLibrary.validateSessionSceneClock(clock)
-    if not okClock then
-        return false, errClock
-    end
-    S.setStateVal(clock, "sceneLibrary", "scenes", sceneKey, "sessionScene", "clock")
-    S.validateState()
-    clockDraft.dirty = false
-    StorytellerScenesPanel.syncClockDraftFromClock(clock)
-    return true, nil
-end
-
---- @param sceneKey string
---- @return boolean ok
---- @return string|nil err
-local function flushPendingLibraryClockDraftIfDirty(sceneKey)
-    if type(sceneKey) ~= "string" or sceneKey == "" then
-        return true, nil
-    end
-    if not isPendingSceneActivation(sceneKey) then
-        return true, nil
-    end
-    if clockDraft.sceneKey ~= sceneKey or clockDraft.dirty ~= true then
-        return true, nil
-    end
-    return persistPendingLibraryClockFromDraft(sceneKey)
-end
-
 --- @param player Player
 --- @param value string|nil
 --- @param id string|nil
 function StorytellerScenesPanel.onClockInputChanged(player, value, id)
     if clockLerpBusy() then
+        return
+    end
+    local activeKey = getActiveLibraryKey()
+    if not isPlayDowntime() and activeKey ~= nil and isPendingSceneActivation(activeKey) then
         return
     end
     local v = type(value) == "string" and value or ""
@@ -1336,15 +1161,11 @@ function StorytellerScenesPanel.onClockInputChanged(player, value, id)
     elseif id == "scenes_clock_speed" then
         clockDraft.speed = v
     end
-    local activeKey = getActiveLibraryKey()
     if activeKey ~= nil then
         clockDraft.sceneKey = activeKey
         clockDraft.dirty = true
-        if isPendingSceneActivation(activeKey) then
-            persistPendingLibraryClockFromDraft(activeKey)
-        end
     end
-    -- Authored datetime may appear mid-edit (or after pending auto-save); keep Apply modes in sync.
+    -- Authored datetime may appear mid-edit; keep Apply modes in sync.
     refreshClockInputSourceColors(nil)
     refreshApplyClockButtons()
 end
@@ -1386,6 +1207,7 @@ function StorytellerScenesPanel.refresh()
 
     local displayBundle, pending = resolvePanelDisplayBundle()
     local onColors = panelOnColors(pending)
+    local editable = liveEditInteractable(pending)
     local curTable = displayTableKeyFromBundle(displayBundle, pending)
     for bid, tableKey in pairs(TABLE_TOGGLE_IDS) do
         local isActive = curTable == tableKey
@@ -1393,7 +1215,15 @@ function StorytellerScenesPanel.refresh()
             colors = isActive and onColors or GREY,
             fontStyle = "Bold",
             textColor = isActive and "#FFFFFF" or "#FFFFFF",
+            interactable = editable,
         })
+    end
+    for i = 1, #LIVE_LOCATION_CONTROL_IDS do
+        U.setAttribute(LIVE_LOCATION_CONTROL_IDS[i], "interactable", editable)
+    end
+    local clockEditable = liveEditInteractable(pending and not isPlayDowntime())
+    for i = 1, #LIVE_CLOCK_CONTROL_IDS do
+        U.setAttribute(LIVE_CLOCK_CONTROL_IDS[i], "interactable", clockEditable)
     end
 
     local function syncSeatButton(seatKey, bid)
@@ -1412,7 +1242,7 @@ function StorytellerScenesPanel.refresh()
             text = label,
             fontStyle = "Bold",
             textColor = "#FFFFFF",
-            interactable = canToggle and "true" or "false",
+            interactable = (canToggle and not pending) and "true" or "false",
         })
     end
 
@@ -1611,14 +1441,6 @@ function StorytellerScenesPanel.onLibrarySlotClick(player, button, id)
         end
         return
     end
-    local priorKey = getActiveLibraryKey()
-    if type(priorKey) == "string" and priorKey ~= key then
-        local flushOk, flushErr = flushPendingLibraryClockDraftIfDirty(priorKey)
-        if not flushOk then
-            U.AlertGM("Clock not saved on `" .. priorKey .. "`: " .. tostring(flushErr))
-            return
-        end
-    end
     S.setStateVal(key, "sceneLibrary", "activeKey")
     S.validateState()
     resetClockDraftForLibrarySelection(key)
@@ -1653,14 +1475,6 @@ function StorytellerScenesPanel.deselectPendingPreview(opts)
 
     if not clearActiveKey and not pending then
         return true
-    end
-
-    if type(activeKey) == "string" and activeKey ~= "" then
-        local flushOk, flushErr = flushPendingLibraryClockDraftIfDirty(activeKey)
-        if not flushOk and not silent then
-            U.AlertGM("Clock not saved on `" .. activeKey .. "`: " .. tostring(flushErr))
-            return false
-        end
     end
 
     if clearActiveKey then
@@ -1704,7 +1518,7 @@ function StorytellerScenesPanel.clearLibraryPreviewSelection(player)
     StorytellerScenesPanel.deselectPendingPreview({ silent = false })
 end
 
---- Sets `receivesLiveWrites = false` on the row currently mirroring (see Scene Constructor Overview).
+--- Sets `receivesLiveWrites = false` on the row currently mirroring (the live table stops writing into it).
 --- Shared by the in-game Unlink button and the Storyteller Dashboard.
 --- @return string|nil sceneKey the unlinked row
 --- @return string|nil error
@@ -1737,54 +1551,6 @@ function StorytellerScenesPanel.unlinkActiveMirror(player)
         return
     end
     U.AlertGM("Unlinked `" .. K .. "` (mirroring stopped; stored bundle unchanged).")
-end
-
---- Two-step delete on the **active** row: first click arms, second within 5s removes it from `scenes` + `order`.
---- @param player Player
-function StorytellerScenesPanel.deleteActiveSceneArmed(player)
-    if not U.isStorytellerSteamPlayer(player) then
-        U.AlertGM("Only the Storyteller can delete a library scene.")
-        return
-    end
-    local K = S.getStateVal("sceneLibrary", "activeKey")
-    if type(K) ~= "string" or K == "" or type(S.getStateVal("sceneLibrary", "scenes", K)) ~= "table" then
-        sceneLibDeleteArmedUntil = 0
-        U.AlertGM("Delete: choose an active library row first (click a scene slot).")
-        return
-    end
-    local now = 0
-    if os ~= nil and type(os.time) == "function" then
-        now = os.time()
-    end
-    if now < sceneLibDeleteArmedUntil then
-        sceneLibDeleteArmedUntil = 0
-        local lastApplied = S.getStateVal("sceneLibrary", "lastAppliedKey")
-        if type(lastApplied) == "string" and lastApplied == K then
-            StorytellerScenesPanel.endSceneNarrative(player)
-        end
-        local order = S.getStateVal("sceneLibrary", "order")
-        if type(order) ~= "table" then
-            order = {}
-        end
-        order = U.clone(order, true)
-        local newOrder = {}
-        for _, key in ipairs(order) do
-            if key ~= K then
-                newOrder[#newOrder + 1] = key
-            end
-        end
-        S.setStateVal(newOrder, "sceneLibrary", "order")
-        local scenes = U.clone(S.getStateVal("sceneLibrary", "scenes") or {}, true)
-        scenes[K] = nil
-        S.setStateVal(scenes, "sceneLibrary", "scenes")
-        S.setStateVal(nil, "sceneLibrary", "activeKey")
-        S.validateState()
-        StorytellerScenesPanel.refresh()
-        U.AlertGM("Deleted library scene `" .. K .. "` and cleared active key.")
-        return
-    end
-    sceneLibDeleteArmedUntil = now + 5
-    U.AlertGM("Delete armed for `" .. K .. "`: click Delete again within 5 seconds to remove this row.")
 end
 
 --- A scene Apply that will not start: alert in TTS and on the Storyteller Dashboard.
@@ -1856,38 +1622,10 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId, c
         return
     end
 
-    do
-        if ent.placementMode ~= "scatter" then
-            local FSL = require("lib.figurine_seat_layout")
-            local tableKey = ent.sessionScene.tableKey
-            local occupied = {}
-            local slots = ent.sessionScene.seatSlots
-            for _, npc in ipairs(C.NPCSeats or {}) do
-                local row = type(slots) == "table" and slots[npc] or nil
-                if type(row) == "table" and type(row.characterKey) == "string" and row.characterKey ~= "" then
-                    occupied[npc] = row.characterKey
-                end
-            end
-            local tableCfg = nil
-            if type(tableKey) == "string" then
-                if C.Tables and C.Tables[tableKey] then
-                    tableCfg = C.Tables[tableKey]
-                elseif RSL.isDynamicTableFamilyKey(tableKey) then
-                    -- Sized for the incoming scene's seats, not the departing scene's.
-                    local variant = FSL.tableBVariantIndex({
-                        seatSlots = type(slots) == "table" and slots or {},
-                        occupiedNPCSlots = occupied,
-                    })
-                    local concrete = RSL.resolveTableKey(tableKey, { occupiedSlotIndex = variant })
-                    tableCfg = C.Tables[concrete]
-                end
-            end
-            local okOcc, errOcc = FSL.checkOccupancy(slots, occupied, tableCfg, { forImport = true })
-            if not okOcc then
-                refuseSceneApply(errOcc or "This library scene is missing numbered table slots.")
-                return
-            end
-        end
+    local okOcc, errOcc = SceneLibrary.checkRowOccupancy(ent.placementMode, ent.sessionScene)
+    if not okOcc then
+        refuseSceneApply(errOcc or "This library scene is missing numbered table slots.")
+        return
     end
 
     if RSL.alertAndBlockIfDiceOnTable("apply a library scene") then
@@ -2193,19 +1931,10 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
     end
 
     if TABLE_TOGGLE_IDS[id] ~= nil then
-        local tableKey = TABLE_TOGGLE_IDS[id]
-        local activeKey = getActiveLibraryKey()
-        if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
-            local isScatter = require("lib.scatter_occupancy").isScatterTableKey(tableKey)
-            if not applyPendingLibraryTableChoice(activeKey, tableKey, isScatter) then
-                U.AlertGM("Could not save table `" .. tableKey .. "` on `" .. activeKey .. "`.")
-                return
-            end
-            StorytellerScenesPanel.refresh()
-            U.AlertGM("Table `" .. tableKey .. "` saved on `" .. activeKey .. "` (applies when you Activate that scene).")
+        if refuseEditWhilePreviewing() then
             return
         end
-        local err = StorytellerScenesPanel.setLiveTable(tableKey)
+        local err = StorytellerScenesPanel.setLiveTable(TABLE_TOGGLE_IDS[id])
         if err ~= nil then
             U.AlertGM(err)
         end
@@ -2214,17 +1943,10 @@ function StorytellerScenesPanel.onHudClick(player, button, id)
 
     local seatKey = string.match(id, "^scenes_seat_(.+)$")
     if seatKey ~= nil then
-        local displayBundle, pending = resolvePanelDisplayBundle()
-        if not canToggleNpcSeatForDisplay(displayBundle, seatKey, pending) then
+        if refuseEditWhilePreviewing() then
             return
         end
-        local activeKey = getActiveLibraryKey()
-        if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
-            displayBundle = getLibraryRowSessionScene(activeKey)
-            local nextPresent = not resolveSeatPresenceFromBundle(displayBundle, seatKey)
-            setPendingLibrarySeatPresence(seatKey, nextPresent)
-            StorytellerScenesPanel.refresh()
-            U.AlertGM("Seat `" .. seatKey .. "` presence saved on `" .. activeKey .. "` (applies on Activate).")
+        if not canToggleNpcSeatForDisplay(S.getStateVal("sessionScene"), seatKey, false) then
             return
         end
         StorytellerScenesPanel.setLiveSeatPresence(seatKey, not resolveSeatNarrativePresence(seatKey))
@@ -2372,7 +2094,7 @@ function StorytellerScenesPanel.setLiveSkybox(key)
     return nil
 end
 
---- Storyteller lighting presets (`HUD_selectAdminLightingScene` buttons and the Storyteller Dashboard).
+--- Storyteller lighting presets the Storyteller Dashboard can put on the live scene (`setLighting`).
 local ADMIN_LIGHTING_SCENE = { AdminDark = "dark", AdminStandard = "standard", AdminBright = "bright" }
 
 --- Live lighting preset, then the full sync reconciles lights.
@@ -2451,7 +2173,8 @@ function StorytellerScenesPanel.applySiteModalDistrictVisibility()
     U.setVisibleTo("scenes_site_group_generic", SITE_MODAL_BUCKET_VISIBILITY_ON)
 end
 
---- District / site pickers: pending → selected library row; live → sessionScene (TOR-244 / TOR-314).
+--- District / site pickers write the live `sessionScene` (TOR-314); Apply Location pushes the world.
+--- Refused while a library row is previewed.
 --- @param kind "district"|"site"
 --- @param key string
 --- @return boolean ok
@@ -2462,22 +2185,10 @@ function StorytellerScenesPanel.setLocationKeyFromPicker(kind, key)
     if kind ~= "district" and kind ~= "site" then
         return false
     end
-    local field = kind == "district" and "districtKey" or "siteKey"
-    local activeKey = getActiveLibraryKey()
-    if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
-        if kind == "site" then
-            local site = C.Sites[key]
-            if type(site) == "table" then
-                local derivedDistrict = C.resolveDistrictKeyForDistrictTable(site.district)
-                if type(derivedDistrict) == "string" and derivedDistrict ~= "" then
-                    writePendingLibrarySessionSceneField(derivedDistrict, "districtKey")
-                end
-            end
-        end
-        writePendingLibrarySessionSceneField(key, field)
-        StorytellerScenesPanel.refresh()
-        return true
+    if refuseEditWhilePreviewing() then
+        return false
     end
+    local field = kind == "district" and "districtKey" or "siteKey"
     if kind == "site" then
         local site = C.Sites[key]
         if type(site) == "table" then
@@ -2492,7 +2203,7 @@ function StorytellerScenesPanel.setLocationKeyFromPicker(kind, key)
     return true
 end
 
---- Skybox override picker: pending → selected library row; live → sessionScene. Apply location still required when live.
+--- Skybox override picker writes the live `sessionScene`; Apply Location pushes the world. Refused while previewing.
 --- @param key string catalog key or `C.SKYBOX_GENERIC_KEY`
 --- @return boolean ok
 function StorytellerScenesPanel.setSkyboxKeyFromPicker(key)
@@ -2503,25 +2214,19 @@ function StorytellerScenesPanel.setSkyboxKeyFromPicker(key)
     if not C.isValidSkyboxKey(key) then
         return false
     end
-    local activeKey = getActiveLibraryKey()
-    if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
-        writePendingLibrarySessionSceneField(key, "skyboxOverride")
-        StorytellerScenesPanel.refresh()
-        return true
+    if refuseEditWhilePreviewing() then
+        return false
     end
     S.setStateVal(key, "sessionScene", "skyboxOverride")
     StorytellerScenesPanel.refresh()
     return true
 end
 
---- Clears `skyboxOverride` (site default / generic fallthrough). Pending or live.
+--- Clears the live `skyboxOverride` (site default / generic fallthrough). Refused while previewing.
 --- @return boolean ok
 function StorytellerScenesPanel.clearSkyboxOverrideFromPicker()
-    local activeKey = getActiveLibraryKey()
-    if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
-        writePendingLibrarySessionSceneField(nil, "skyboxOverride")
-        StorytellerScenesPanel.refresh()
-        return true
+    if refuseEditWhilePreviewing() then
+        return false
     end
     S.setStateVal(nil, "sessionScene", "skyboxOverride")
     StorytellerScenesPanel.refresh()
@@ -2530,9 +2235,12 @@ end
 
 --- @param player Player
 function StorytellerScenesPanel.applyLocationFromInputs(player)
-    local displayBundle, pending, activeKey = resolvePanelDisplayBundle()
-    local dKey = type(displayBundle) == "table" and displayBundle.districtKey or nil
-    local sKey = type(displayBundle) == "table" and displayBundle.siteKey or nil
+    if refuseEditWhilePreviewing() then
+        return
+    end
+    local live = S.getStateVal("sessionScene")
+    local dKey = type(live) == "table" and live.districtKey or nil
+    local sKey = type(live) == "table" and live.siteKey or nil
     if type(dKey) ~= "string" then
         dKey = ""
     end
@@ -2546,22 +2254,11 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
 
     -- Skybox-only Apply: picker already wrote skyboxOverride; site is optional (TOR-402).
     if sKey == "" then
-        local override = nil
-        if type(displayBundle) == "table" and type(displayBundle.skyboxOverride) == "string" then
-            override = displayBundle.skyboxOverride
-        else
-            override = S.getStateVal("sessionScene", "skyboxOverride")
-        end
+        local override = type(live) == "table" and live.skyboxOverride or nil
         if type(override) == "string" then
             override = string.gsub(string.gsub(override, "^%s+", ""), "%s+$", "")
         end
         if type(override) == "string" and override ~= "" and C.isValidSkyboxKey(override) then
-            if pending and type(activeKey) == "string" then
-                writePendingLibrarySessionSceneField(override, "skyboxOverride")
-                StorytellerScenesPanel.refresh()
-                U.AlertGM("Skybox saved on `" .. activeKey .. "` (applies when you Activate that scene).")
-                return
-            end
             StorytellerScenesPanel.setLiveSkybox(override)
             U.AlertGM("Skybox applied.")
             return
@@ -2576,15 +2273,6 @@ function StorytellerScenesPanel.applyLocationFromInputs(player)
         return
     end
     dKey = resolvedDistrict
-
-    if pending and type(activeKey) == "string" then
-        writePendingLibrarySessionSceneField(dKey, "districtKey")
-        writePendingLibrarySessionSceneField(sKey, "siteKey")
-        applySiteTopFogToPendingLibraryRow(sKey)
-        StorytellerScenesPanel.refresh()
-        U.AlertGM("Location saved on `" .. activeKey .. "` (soundscape applies when you Activate that scene).")
-        return
-    end
 
     local err = StorytellerScenesPanel.setLiveLocation(dKey, sKey)
     if err ~= nil then
@@ -2639,28 +2327,13 @@ function StorytellerScenesPanel.applyClockFromInputs(player)
         U.AlertGM("Downtime clock updated.")
         return
     end
+    if refuseEditWhilePreviewing() then
+        return
+    end
     local activeKey = getActiveLibraryKey()
     local baseClock = type(activeKey) == "string" and getLibraryRowClock(activeKey) or S.getStateVal("sessionScene", "clock")
     if type(baseClock) ~= "table" then
         baseClock = {}
-    end
-
-    if type(activeKey) == "string" and isPendingSceneActivation(activeKey) and draftHasClearedDatetimeFields() then
-        local flagsOnly, flagsErr = buildFlagsOnlyClockFromDraft(baseClock)
-        if flagsOnly == nil then
-            U.AlertGM(flagsErr or "Could not save clock for scene activation.")
-            return
-        end
-        clockDraft.sceneKey = activeKey
-        clockDraft.dirty = true
-        local ok, err = persistPendingLibraryClockFromDraft()
-        if not ok then
-            U.AlertGM(err or "Could not save clock on library row.")
-            return
-        end
-        StorytellerScenesPanel.refresh()
-        U.AlertGM("Clock saved on `" .. activeKey .. "` (present-day time on activation).")
-        return
     end
 
     local clock, err = buildClockFromDraft(baseClock)
@@ -2672,19 +2345,6 @@ function StorytellerScenesPanel.applyClockFromInputs(player)
     local okClock, errClock = SceneLibrary.validateSessionSceneClock(clock)
     if not okClock then
         U.AlertGM(errClock or "Invalid scene clock.")
-        return
-    end
-
-    if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
-        clockDraft.sceneKey = activeKey
-        clockDraft.dirty = true
-        local ok, err = persistPendingLibraryClockFromDraft()
-        if not ok then
-            U.AlertGM(err or "Could not save clock on library row.")
-            return
-        end
-        StorytellerScenesPanel.refresh()
-        U.AlertGM("Clock saved on `" .. activeKey .. "` (applies when you Activate that scene).")
         return
     end
 
@@ -2766,7 +2426,7 @@ function StorytellerScenesPanel.setPresentDayClockFromInputs(player)
     U.AlertGM("Present day clock set to chronicle time from inputs.")
 end
 
---- Sets pending month (1–12). Pending activation: draft only; live scene: writes `sessionScene.clock`.
+--- Month button (1–12): writes the downtime clock, or the live `sessionScene.clock`. Refused while previewing.
 --- @param month number
 function StorytellerScenesPanel.setPendingMonth(month)
     if clockLerpBusy() then
@@ -2792,17 +2452,7 @@ function StorytellerScenesPanel.setPendingMonth(month)
         return
     end
 
-    local activeKey = getActiveLibraryKey()
-    if type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
-        clockDraft.sceneKey = activeKey
-        clockDraft.month = m
-        clockDraft.dirty = true
-        local ok, err = persistPendingLibraryClockFromDraft()
-        if not ok then
-            U.AlertGM(err or "Could not save month on library row.")
-            return
-        end
-        StorytellerScenesPanel.refresh()
+    if refuseEditWhilePreviewing() then
         return
     end
 
@@ -2816,114 +2466,8 @@ function StorytellerScenesPanel.setPendingMonth(month)
     StorytellerScenesPanel.refresh()
 end
 
---- Draft text for Scene Constructor modals (`InputField` content must be tracked from
---- `onValueChanged` / `onEndEdit` — see `.dev/SOLVING ISSUES & DEBUGGING.md`).
-local ctorDraft = {
-    importJson = "",
-    forkTitleNew = "",
-    forkTitleOld = "",
-    --- `sceneLibrary.activeKey` when Fork modal was opened (may be nil).
-    forkSourceActiveKey = nil,
-}
-
-local function ctorSetModalAttr(elemId, attr, val)
-    if UI == nil or UI.setAttribute == nil then
-        return
-    end
-    UI.setAttribute(elemId, attr, val)
-end
-
-local function ctorSetImportError(msg)
-    local text = type(msg) == "string" and msg or ""
-    ctorSetModalAttr("scenes_ctor_import_err", "text", text)
-    if text ~= "" then
-        ctorSetModalAttr("scenes_ctor_import_err", "color", "#FF6666")
-    else
-        ctorSetModalAttr("scenes_ctor_import_err", "color", "#AAAAAA")
-    end
-end
-
---- Opens the Import Scene JSON modal (Host pastes wrapper JSON).
-function StorytellerScenesPanel.openImportConstructorModal()
-    ctorDraft.importJson = ""
-    ctorSetImportError("")
-    ctorSetModalAttr("scenes_ctor_import_json", "text", "")
-    ctorSetModalAttr("scenes_ctor_import_modal", "active", "true")
-end
-
-function StorytellerScenesPanel.closeImportConstructorModal()
-    ctorSetModalAttr("scenes_ctor_import_modal", "active", "false")
-end
-
---- @param player Player
---- @param value string|nil
---- @param id string|nil
-function StorytellerScenesPanel.onConstructorImportJsonChanged(player, value, id)
-    if id == "scenes_ctor_import_json" then
-        ctorDraft.importJson = type(value) == "string" and value or ""
-    end
-end
-
---- @param player Player
-function StorytellerScenesPanel.confirmImportConstructorModal(player)
-    if not U.isStorytellerSteamPlayer(player) then
-        U.AlertGM("Only the Storyteller can import scenes.")
-        return
-    end
-    local ok, msg = SceneLibrary.importConstructorJsonText(ctorDraft.importJson or "")
-    if not ok then
-        ctorSetImportError(msg or "Import validation failed.")
-        return
-    end
-    StorytellerScenesPanel.closeImportConstructorModal()
-    StorytellerScenesPanel.refresh()
-    U.AlertGM(msg)
-end
-
---- Opens fork modal: prefill titles via `text` attribute and stash defaults.
-function StorytellerScenesPanel.openForkConstructorModal()
-    local lib = S.getStateVal("sceneLibrary")
-    local scenes = type(lib) == "table" and lib.scenes or nil
-    local K = type(lib) == "table" and lib.activeKey or nil
-    ctorDraft.forkSourceActiveKey = (type(K) == "string" and K ~= "") and K or nil
-    local oldTitleDefault = "—"
-    if ctorDraft.forkSourceActiveKey ~= nil and type(scenes) == "table" then
-        local ent = scenes[ctorDraft.forkSourceActiveKey]
-        if type(ent) == "table" and type(ent.title) == "string" and ent.title ~= "" then
-            oldTitleDefault = ent.title
-        end
-    end
-    local newTitleDefault = oldTitleDefault .. " (fork)"
-    if ctorDraft.forkSourceActiveKey == nil then
-        newTitleDefault = "Scene (fork)"
-        oldTitleDefault = "(no active scene)"
-    end
-    ctorDraft.forkTitleNew = newTitleDefault
-    ctorDraft.forkTitleOld = oldTitleDefault
-    ctorSetModalAttr("scenes_ctor_fork_title_new", "text", newTitleDefault)
-    ctorSetModalAttr("scenes_ctor_fork_title_old", "text", oldTitleDefault)
-    ctorSetModalAttr("scenes_ctor_fork_modal", "active", "true")
-end
-
-function StorytellerScenesPanel.closeForkConstructorModal()
-    ctorSetModalAttr("scenes_ctor_fork_modal", "active", "false")
-end
-
---- @param player Player
---- @param value string|nil
---- @param id string|nil
-function StorytellerScenesPanel.onConstructorForkTitleChanged(player, value, id)
-    local v = type(value) == "string" and value or ""
-    if id == "scenes_ctor_fork_title_new" then
-        ctorDraft.forkTitleNew = v
-    elseif id == "scenes_ctor_fork_title_old" then
-        ctorDraft.forkTitleOld = v
-    end
-end
-
 --- Fork the live scene: the source row `sourceKey` keeps a snapshot of the table now (unlinked, optionally retitled
---- `oldTitle`), and a new row titled `newTitle` takes over live writes. Shared by the in-game Fork modal and the
---- Storyteller Dashboard.
+--- `oldTitle`), and a new row titled `newTitle` takes over live writes. Storyteller Dashboard `forkScene` only.
 --- @param sourceKey string|nil
 --- @param newTitle string
 --- @param oldTitle string|nil
@@ -2950,7 +2494,7 @@ function StorytellerScenesPanel.forkLiveScene(sourceKey, newTitle, oldTitle)
     if type(K) == "string" and K ~= "" and scenes[K] ~= nil then
         S.setStateVal(F, "sceneLibrary", "scenes", K, "sessionScene")
         S.setStateVal(false, "sceneLibrary", "scenes", K, "receivesLiveWrites")
-        if oldTitle ~= "" and oldTitle ~= "(no active scene)" then
+        if oldTitle ~= "" then
             S.setStateVal(oldTitle, "sceneLibrary", "scenes", K, "title")
         end
     end
@@ -2987,21 +2531,6 @@ function StorytellerScenesPanel.forkLiveScene(sourceKey, newTitle, oldTitle)
     resetClockDraftForLibrarySelection(newKey)
     StorytellerScenesPanel.refresh()
     return newKey, nil
-end
-
---- @param player Player
-function StorytellerScenesPanel.confirmForkConstructorModal(player)
-    if not U.isStorytellerSteamPlayer(player) then
-        U.AlertGM("Only the Storyteller can fork scenes.")
-        return
-    end
-    local newKey, err = StorytellerScenesPanel.forkLiveScene(ctorDraft.forkSourceActiveKey, ctorDraft.forkTitleNew, ctorDraft.forkTitleOld)
-    if err ~= nil then
-        U.AlertGM("Fork: " .. err)
-        return
-    end
-    StorytellerScenesPanel.closeForkConstructorModal()
-    U.AlertGM("Scene forked: active mirror is now `" .. newKey .. "`.")
 end
 
 --- Live real-time clock on `sessionScene.clock` (never a pending library row). Real time only runs during
@@ -3044,29 +2573,12 @@ function StorytellerScenesPanel.setLiveRealTimeClock(running, speed)
     return nil
 end
 
---- Toggles `useRealTime` on the pending activation draft or the live clock.
+--- Toggles `useRealTime` on the live clock. Refused while previewing a library row.
 function StorytellerScenesPanel.toggleRealTimeClock()
     if clockLerpBusy() then
         return
     end
-    local activeKey = getActiveLibraryKey()
-    if not isPlayDowntime() and type(activeKey) == "string" and isPendingSceneActivation(activeKey) then
-        local base = getLibraryRowClock(activeKey) or {}
-        local current = clockDraft.useRealTime
-        if current == nil then
-            current = base.useRealTime == true
-        end
-        clockDraft.sceneKey = activeKey
-        clockDraft.useRealTime = not current
-        clockDraft.dirty = true
-        local ok, err = persistPendingLibraryClockFromDraft()
-        if not ok then
-            U.AlertGM(err or "Could not save real-time clock on library row.")
-            return
-        end
-        StorytellerScenesPanel.refresh()
-        U.AlertGM(clockDraft.useRealTime and "Real-time narrative clock: ON (saved on library row)."
-            or "Real-time narrative clock: OFF (saved on library row).")
+    if not isPlayDowntime() and refuseEditWhilePreviewing() then
         return
     end
 

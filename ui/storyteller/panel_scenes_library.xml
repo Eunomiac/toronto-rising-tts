@@ -1,4 +1,5 @@
-<!-- Scene library column: fixed slot buttons + constructor actions (see `core/storyteller_scenes_panel.ttslua`). -->
+<!-- Scene library column: fixed slot buttons + play / unlink / end (see `core/storyteller_scenes_panel.ttslua`).
+     Read-only library: rows are created, edited and deleted on the Storyteller Dashboard. -->
 <VerticalLayout id="panel_scenes_library" class="storyteller_panel_column">
   <Text id="db_panel_scenes_library_header" class="hud_storyteller_header">Scene Library</Text>
 
@@ -87,47 +88,6 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
     padding = "50 50 0 0" constraint="FixedRowCount" constraintCount="1" childAlignment="MiddleCenter" childForceExpandWidth="true" childForceExpandHeight="true">
 
     <Button id="scenes_lib_btn_unlink" class="hud_storyteller_button" text="UNLINK" onClick="HUD_scenesLibUnlink" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_ctor_btn_fork" class="hud_storyteller_button" text="FORK" minWidth="150" onClick="HUD_scenesCtorForkOpen" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     <Button id="scenes_lib_btn_end" class="hud_storyteller_button" text="END" onClick="HUD_scenesLibEnd" colors="#444444|#551111|#662222|rgba(0.3,0.1,0.1,0.5)" textColor="#FFFFFF" />
   </GridLayout>
-
-
-  <GridLayout id="scenes_lib_btns_grid_4" cellSize="125 30" spacing="8 6" constraint="FixedRowCount" constraintCount="1" childAlignment="MiddleCenter" childForceExpandWidth="true" childForceExpandHeight="true">
-
-    <Panel class="scenes_lib_btn_spacer" />
-
-    <Button id="scenes_ctor_btn_import" class="hud_storyteller_button" text="Import Scene" minWidth="120" onClick="HUD_scenesCtorImportOpen" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lib_btn_delete" class="hud_storyteller_button" text="Delete Scene" onClick="HUD_scenesLibDelete" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-
-    <Panel class="scenes_lib_btn_spacer" />
-
-  </GridLayout>
-
-
-
-  <Panel id="scenes_ctor_import_modal" active="false" offsetXY="0 0" width="580" minHeight="280" color="rgba(0.05,0.05,0.08,0.95)">
-    <VerticalLayout id="db_panel_scenes_library_constructor_import_modal_content" padding="10 10 10 10" spacing="6" childForceExpandWidth="true" childForceExpandHeight="true">
-      <Text id="db_panel_scenes_library_constructor_import_modal_header" class="hud_storyteller_label">Import Scene (JSON)</Text>
-      <InputField id="scenes_ctor_import_json" minHeight="140" preferredHeight="160" flexibleHeight="1" flexibleWidth="1" fontSize="11" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="MultiLineSubmit" characterValidation="None" text="" onValueChanged="HUD_scenesCtorImportJsonChanged" onEndEdit="HUD_scenesCtorImportJsonChanged" />
-      <Text id="scenes_ctor_import_err" fontSize="10" color="#AAAAAA" minHeight="40" text="" />
-      <HorizontalLayout id="db_panel_scenes_library_constructor_import_modal_buttons" spacing="8" childForceExpandWidth="false" childAlignment="MiddleLeft">
-        <Button id="scenes_ctor_import_confirm" class="hud_storyteller_button" text="Import" minWidth="96" onClick="HUD_scenesCtorImportConfirm" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_ctor_import_cancel" class="hud_storyteller_button" text="Cancel" minWidth="96" onClick="HUD_scenesCtorImportCancel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      </HorizontalLayout>
-    </VerticalLayout>
-  </Panel>
-
-  <Panel id="scenes_ctor_fork_modal" active="false" offsetXY="0 0" width="520" minHeight="200" color="rgba(0.05,0.05,0.08,0.95)">
-    <VerticalLayout id="db_panel_scenes_library_constructor_fork_modal_content" padding="10 10 10 10" spacing="6" childForceExpandWidth="true">
-      <Text id="db_panel_scenes_library_constructor_fork_modal_header" class="hud_storyteller_label">Fork Active Scene</Text>
-      <Text id="db_panel_scenes_library_constructor_fork_modal_new_title_header" fontSize="9" color="#CCCCCC">New scene title</Text>
-      <InputField id="scenes_ctor_fork_title_new" class="hud_storyteller_input" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" text="" onValueChanged="HUD_scenesCtorForkTitleChanged" onEndEdit="HUD_scenesCtorForkTitleChanged" />
-      <Text id="db_panel_scenes_library_constructor_fork_modal_original_title_header" fontSize="9" color="#CCCCCC">Original scene title (frozen row)</Text>
-      <InputField id="scenes_ctor_fork_title_old" class="hud_storyteller_input" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" text="" onValueChanged="HUD_scenesCtorForkTitleChanged" onEndEdit="HUD_scenesCtorForkTitleChanged" />
-      <HorizontalLayout id="db_panel_scenes_library_constructor_fork_modal_buttons" spacing="8" childForceExpandWidth="false" childAlignment="MiddleLeft">
-        <Button id="scenes_ctor_fork_confirm" class="hud_storyteller_button" text="Fork" minWidth="96" onClick="HUD_scenesCtorForkConfirm" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_ctor_fork_cancel" class="hud_storyteller_button" text="Cancel" minWidth="96" onClick="HUD_scenesCtorForkCancel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      </HorizontalLayout>
-    </VerticalLayout>
-  </Panel>
 </VerticalLayout>

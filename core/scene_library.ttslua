@@ -1,10 +1,10 @@
 --[[
-    Scene library: validate Storyteller-pasted Scene Constructor JSON and normalize
-    for `gameState.sceneLibrary` (see `.dev/Scene Constructor/Scene Constructor Overview.md`).
+    Scene library helpers for `gameState.sceneLibrary`. The Storyteller Dashboard keeps the master copy and
+    writes rows through `dashboard/scene_library.ttslua` (`upsertScene`); TTS plays them, mirrors the live
+    table into the linked row, and moves `status` on play / End Scene. Row contract:
+    `.dev/Storyteller Dashboard Docs/Scene Import Guide.md`.
     Rebuilds `sessionScene.npcRoleOverride` from PC `seatSlots` via `syncNpcRoleOverrideFromSeatSlots`.
     `syncOccupiedNpcSlotsFromSeatSlots` derives `seatLayout.occupiedNPCSlots` from NPC seat rows (scene Apply, TOR-389).
-    Derives `chronicleWeatherFollowSchedule` / `chronicleWeatherManualHold` from `soundscapeNarrative`
-    wind + rain + thunderstorm (all three non-nil, or none).
 
     Agent guidance: `core/state.ttslua` (`sceneLibrary`, `sessionScene`); `lib.constants` (`C.PlayerColors`, `C.NPCSeats`).
 ]]
@@ -13,69 +13,6 @@ local SceneLibrary = {}
 
 local C = require("lib.constants")
 local U = require("lib.util")
-local CD = require("lib.condition_defs")
-local NpcPlacementsConvert = require("lib.npc_placements_convert")
-
---- Highest `schemaVersion` this build accepts from import JSON.
-SceneLibrary.IMPORT_SCHEMA_VERSION = 2
-
---- Keys allowed on the import wrapper root (see `.dev/Scene Constructor/Scene Constructor Overview.md`).
-local IMPORT_ROOT_ALLOWED = {
-    schemaVersion = true,
-    sceneKey = true,
-    title = true,
-    sessionScene = true,
-    placementMode = true,
-}
-
---- `sessionScene` fields that must not appear as siblings of `sessionScene` at import root.
-local IMPORT_MISNESTED_SESSION_KEYS = {
-    npcWorld = "Move npcWorld inside sessionScene — it must not be a sibling of sessionScene at the import root.",
-    seatSlots = "Move seatSlots inside sessionScene.",
-    districtKey = "Move districtKey inside sessionScene.",
-    siteKey = "Move siteKey inside sessionScene.",
-    skyboxOverride = "Move skyboxOverride inside sessionScene.",
-    clock = "Move clock inside sessionScene.",
-    lightingPresetKey = "Move lightingPresetKey inside sessionScene.",
-    isTopFogActive = "Move isTopFogActive inside sessionScene.",
-    soundscapeNarrative = "Move soundscapeNarrative inside sessionScene.",
-    rollDefaults = "rollDefaults is removed — use sessionScene.conditions (array of registry ids with canApplyManually true). Move rollDefaults inside sessionScene if mis-nested.",
-    conditions = "Move conditions inside sessionScene.",
-    tableKey = "Move tableKey inside sessionScene.",
-    seatPresent = "Move seatPresent inside sessionScene.",
-    npcRoleOverride = "Remove npcRoleOverride from import root — it is rebuilt from seatSlots inside sessionScene.",
-    chronicleWeatherFollowSchedule = "Move chronicle weather flags inside sessionScene (or omit — importer derives them from soundscapeNarrative).",
-    chronicleWeatherManualHold = "Move chronicle weather flags inside sessionScene (or omit — importer derives them from soundscapeNarrative).",
-    scatterPlacements = "Move scatterPlacements inside sessionScene.",
-}
-
---- Rejects spreadsheet nesting mistakes (e.g. `npcWorld` at import root instead of under `sessionScene`).
---- @param raw table
---- @return boolean ok
---- @return string|nil err
-local function validateImportRootKeys(raw)
-    local unexpected = {}
-    local hint = nil
-    for k, _ in pairs(raw) do
-        if IMPORT_ROOT_ALLOWED[k] ~= true then
-            unexpected[#unexpected + 1] = tostring(k)
-            if hint == nil and type(IMPORT_MISNESTED_SESSION_KEYS[k]) == "string" then
-                hint = IMPORT_MISNESTED_SESSION_KEYS[k]
-            end
-        end
-    end
-    if #unexpected == 0 then
-        return true, nil
-    end
-    table.sort(unexpected)
-    local msg = "Import root has unexpected key(s): "
-        .. table.concat(unexpected, ", ")
-        .. ". Allowed root keys: schemaVersion, sceneKey, title, sessionScene, placementMode only."
-    if hint ~= nil then
-        msg = msg .. " " .. hint
-    end
-    return false, msg
-end
 
 --- @param v any
 --- @return boolean
@@ -83,61 +20,7 @@ local function isNonEmptyString(v)
     return type(v) == "string" and string.match(v, "%S") ~= nil
 end
 
---- Counts how many of `wind`, `rain`, `thunderstorm` are non-nil on `soundscapeNarrative`.
---- @param sn table|nil
---- @return integer
-local function countSoundscapeWeatherTrioSpecified(sn)
-    if type(sn) ~= "table" then
-        return 0
-    end
-    local c = 0
-    if sn.wind ~= nil then
-        c = c + 1
-    end
-    if sn.rain ~= nil then
-        c = c + 1
-    end
-    if sn.thunderstorm ~= nil then
-        c = c + 1
-    end
-    return c
-end
-
---- `wind` / `rain` / `thunderstorm` must all be non-nil together, or all omitted (nil). Mixed is invalid.
---- @param sessionScene table|nil
---- @return boolean ok
---- @return string|nil err
-local function validateSoundscapeWeatherTrioForImport(sessionScene)
-    if type(sessionScene) ~= "table" then
-        return true, nil
-    end
-    local c = countSoundscapeWeatherTrioSpecified(sessionScene.soundscapeNarrative)
-    if c ~= 0 and c ~= 3 then
-        return false, "sessionScene.soundscapeNarrative: set wind, rain, and thunderstorm together, or omit all three (mixed weather overrides are invalid)."
-    end
-    return true, nil
-end
-
---- Sets `chronicleWeatherManualHold` / `chronicleWeatherFollowSchedule` from narrative weather trio (import only).
---- All three non-nil → lock scene weather to narrative overrides (`manualHold` true, `followSchedule` false).
---- None non-nil → chronicle schedule + no manual hold (`manualHold` false, `followSchedule` true).
---- @param sessionScene table|nil
-local function applyChronicleWeatherFromSoundscapeForImport(sessionScene)
-    if type(sessionScene) ~= "table" then
-        return
-    end
-    local c = countSoundscapeWeatherTrioSpecified(sessionScene.soundscapeNarrative)
-    if c == 3 then
-        sessionScene.chronicleWeatherManualHold = true
-        sessionScene.chronicleWeatherFollowSchedule = false
-    elseif c == 0 then
-        sessionScene.chronicleWeatherManualHold = false
-        sessionScene.chronicleWeatherFollowSchedule = true
-    end
-end
-
 --- True when `sceneKey` is the selected library row but is not the scene currently linked to live state.
---- Shared by the Scenes Panel and Control Board so preview eligibility has one definition.
 --- @param sceneKey string|nil defaults to sceneLibrary.activeKey
 --- @return boolean
 function SceneLibrary.isPendingSelection(sceneKey)
@@ -207,216 +90,7 @@ function SceneLibrary.syncOccupiedNpcSlotsFromSeatSlots(sessionScene)
     S.setStateVal(occupied, "seatLayout", "occupiedNPCSlots")
 end
 
---- Optional `sessionScene.skyboxOverride`: omit / null / blank → nil; otherwise a `C.Skyboxes` key or `C.SKYBOX_GENERIC_KEY` (not a URL).
---- @param sessionScene table|nil
---- @return boolean ok
---- @return string|nil err
-local function validateAndNormalizeSkyboxOverrideForImport(sessionScene)
-    if type(sessionScene) ~= "table" then
-        return true, nil
-    end
-    local raw = sessionScene.skyboxOverride
-    if raw == nil then
-        return true, nil
-    end
-    if type(raw) ~= "string" then
-        return false, "sessionScene.skyboxOverride: must be a C.Skyboxes key or \"Generic\" when present (or omit / null)."
-    end
-    local trimmed = string.gsub(string.gsub(raw, "^%s+", ""), "%s+$", "")
-    if trimmed == "" then
-        sessionScene.skyboxOverride = nil
-        return true, nil
-    end
-    if not C.isValidSkyboxKey(trimmed) then
-        return false, "sessionScene.skyboxOverride: unknown key `" .. trimmed .. "` (must exist in C.Skyboxes, or be \"Generic\"; URLs are not accepted)."
-    end
-    sessionScene.skyboxOverride = trimmed
-    return true, nil
-end
-
---- Deep-clone import payload, pad missing NPC seat slots with `{ slotEmpty = true }`, and sync `npcRoleOverride`.
---- @param sessionScene table
---- @param schemaNum number
---- @return table
-local function normalizeSeatSlotsForImport(sessionScene, schemaNum)
-    local out = U.clone(sessionScene, true)
-    if type(out.seatSlots) ~= "table" then
-        out.seatSlots = {}
-    else
-        out.seatSlots = U.clone(out.seatSlots, true)
-    end
-    local slots = out.seatSlots
-    for _, npcSeat in ipairs(C.NPCSeats or {}) do
-        if slots[npcSeat] == nil then
-            slots[npcSeat] = { slotEmpty = true }
-        end
-    end
-    SceneLibrary.syncNpcRoleOverrideFromSeatSlots(out)
-    applyChronicleWeatherFromSoundscapeForImport(out)
-    if type(out.conditions) == "table" then
-        local condCopy = {}
-        for i, id in ipairs(out.conditions) do
-            condCopy[i] = id
-        end
-        out.conditions = condCopy
-    end
-    if schemaNum < 2 and type(out.npcWorld) == "table" then
-        local migrated = NpcPlacementsConvert.mergeByAreaIntoPlacements(out.npcWorld)
-        if migrated > 0 then
-            print(
-                "[SceneLibrary] import: converted "
-                    .. tostring(migrated)
-                    .. " npcWorld.byArea slot(s) → placements (byArea cleared)"
-            )
-        end
-    end
-    return out
-end
-
---- @param npcWorld table|nil
---- @return boolean ok
---- @return string|nil err
-local function rejectNpcWorldPreload(npcWorld)
-    if type(npcWorld) ~= "table" then
-        return true, nil
-    end
-    if npcWorld.preload ~= nil then
-        return false,
-            "sessionScene.npcWorld.preload: remove this key — NPCs spawn on demand; use npcWorld.placements (schemaVersion 2 rejects byArea)."
-    end
-    return true, nil
-end
-
---- Resolve narrative presence for import validation (matches runtime default: present unless explicitly false).
---- @param sessionScene table
---- @param seatKey string
---- @return boolean
-local function importSeatNarrativePresent(sessionScene, seatKey)
-    local ss = sessionScene.seatSlots
-    if type(ss) == "table" then
-        local row = ss[seatKey]
-        if type(row) == "table" and row.isPresent ~= nil then
-            return row.isPresent ~= false
-        end
-    end
-    local sp = sessionScene.seatPresent
-    if type(sp) == "table" and sp[seatKey] ~= nil then
-        return sp[seatKey] ~= false
-    end
-    return true
-end
-
---- TOR-250: reject active homeland seat + stage placement; reject duplicate NPC seat assignment.
---- @param sessionScene table
---- @return boolean ok
---- @return string|nil err
-local function validateNpcSeatStageConsistency(sessionScene)
-    if type(sessionScene) ~= "table" then
-        return true, nil
-    end
-    local slots = sessionScene.seatSlots
-    if type(slots) ~= "table" then
-        return true, nil
-    end
-    local placements = type(sessionScene.npcWorld) == "table" and sessionScene.npcWorld.placements or nil
-    if type(placements) ~= "table" then
-        placements = {}
-    end
-
-    local charToSeat = {}
-    for _, seatKey in ipairs(C.NPCSeats or {}) do
-        local row = slots[seatKey]
-        if type(row) ~= "table" or row.slotEmpty == true then
-            -- empty slot
-        elseif type(row.characterKey) == "string" and row.characterKey ~= "" then
-            local ck = row.characterKey
-            local prev = charToSeat[ck]
-            if prev ~= nil then
-                return false,
-                    string.format(
-                        "sessionScene.seatSlots: character %q is assigned to both %s and %s — each NPC may occupy at most one seat.",
-                        ck,
-                        prev,
-                        seatKey
-                    )
-            end
-            charToSeat[ck] = seatKey
-            if type(placements[ck]) == "table" and importSeatNarrativePresent(sessionScene, seatKey) then
-                return false,
-                    string.format(
-                        "sessionScene: %q is in an active seat (%s) and npcWorld.placements — set seatSlots.%s.isPresent to false when the figurine is on stage.",
-                        ck,
-                        seatKey,
-                        seatKey
-                    )
-            end
-        end
-    end
-    return true, nil
-end
-
 local NARRATIVE_CLOCK_DATETIME_KEYS = { "year", "month", "day", "hour", "minute" }
-
---- Rejects deprecated `sessionScene.rollDefaults` (use `conditions` array instead).
---- @param sessionScene table|nil
---- @return boolean ok
---- @return string|nil err
-local function rejectRollDefaultsForImport(sessionScene)
-    if type(sessionScene) ~= "table" then
-        return true, nil
-    end
-    if sessionScene.rollDefaults ~= nil then
-        return false,
-            "sessionScene.rollDefaults: removed — use sessionScene.conditions (array of registry ids with canApplyManually true). Per-rollType keys are not supported."
-    end
-    return true, nil
-end
-
---- Validates `sessionScene.conditions` for Scene Constructor import.
---- @param conditions any
---- @return boolean ok
---- @return string|nil err
-local function validateSessionSceneConditionsForImport(conditions)
-    if conditions == nil then
-        return true, nil
-    end
-    if type(conditions) ~= "table" then
-        return false, "sessionScene.conditions: must be an array of condition id strings if present."
-    end
-    local n = #conditions
-    for k, _ in pairs(conditions) do
-        if type(k) ~= "number" then
-            return false, "sessionScene.conditions: must be an array (numeric indices only), not an object."
-        end
-    end
-    for i = 1, n do
-        local conditionId = conditions[i]
-        if type(conditionId) ~= "string" or string.match(conditionId, "%S") == nil then
-            return false,
-                "sessionScene.conditions["
-                    .. tostring(i)
-                    .. "]: expected non-empty string condition id."
-        end
-        if not CD.isKnownId(conditionId) then
-            return false,
-                "sessionScene.conditions["
-                    .. tostring(i)
-                    .. "]: unknown condition id \""
-                    .. conditionId
-                    .. "\"."
-        end
-        local def = CD.getDef(conditionId)
-        if not CD.canListInSceneOrLocation(def) then
-            return false,
-                "sessionScene.conditions["
-                    .. tostring(i)
-                    .. "]: \""
-                    .. conditionId
-                    .. "\" has canApplyManually false — only manually applicable conditions may be listed on import."
-        end
-    end
-    return true, nil
-end
 
 --- Counts how many of year/month/day/hour/minute are numeric on `clock`.
 --- @param clock table|nil
@@ -434,7 +108,7 @@ local function countNarrativeClockDatetimeFields(clock)
     return c
 end
 
---- Validates `sessionScene.clock` for import, apply, and library rows.
+--- Validates `sessionScene.clock` for library rows and scene Apply.
 --- Datetime fields are never defaulted: all five must be authored together, or all omitted (present-day only).
 --- Historical scenes (`isPresentDay == false`) require a full datetime.
 --- @param clock table|nil
@@ -459,548 +133,62 @@ function SceneLibrary.validateSessionSceneClock(clock)
     return true, nil
 end
 
---- Schema v2+ required fields on `sessionScene`.
+--- Numbered chairs for a standard-placement row: every seated PC and seated NPC holds a distinct `tableSlot`
+--- inside the table's capacity (`FSL.checkOccupancy`). A dynamic `Table B` key is sized for this row's own NPC
+--- seats. Scatter rows have no chairs and always pass.
+--- @param placementMode string|nil
 --- @param sessionScene table
 --- @return boolean ok
 --- @return string|nil err
-local function validateSessionSceneV2(sessionScene)
-    local lp = sessionScene.lightingPresetKey
-    if not isNonEmptyString(lp) then
-        return false, "sessionScene.lightingPresetKey: required non-empty string (a key in C.LightModes)."
-    end
-    local k = string.gsub(string.gsub(lp, "^%s+", ""), "%s+$", "")
-    if not C.isValidLightModeKey(k) then
-        return false, "sessionScene.lightingPresetKey: unknown key '" .. tostring(k) .. "' (must exist in C.LightModes)."
-    end
-    sessionScene.lightingPresetKey = k
-
-    if sessionScene.isTopFogActive ~= true and sessionScene.isTopFogActive ~= false then
-        return false, "sessionScene.isTopFogActive: required boolean."
-    end
-
-    local okClock, errClock = SceneLibrary.validateSessionSceneClock(sessionScene.clock)
-    if not okClock then
-        return false, errClock
-    end
-
-    local sKey = sessionScene.siteKey
-    if type(sKey) == "string" then
-        sKey = string.gsub(string.gsub(sKey, "^%s+", ""), "%s+$", "")
-    else
-        sKey = ""
-    end
-    local dKey = sessionScene.districtKey
-    if type(dKey) == "string" then
-        dKey = string.gsub(string.gsub(dKey, "^%s+", ""), "%s+$", "")
-    else
-        dKey = ""
-    end
-    if sKey ~= "" and dKey == "" then
-        return false, "sessionScene.districtKey: required non-empty string when sessionScene.siteKey is set."
-    end
-
-    local okPreload, errPreload = rejectNpcWorldPreload(sessionScene.npcWorld)
-    if not okPreload then
-        return false, errPreload
-    end
-
-    if type(sessionScene.npcWorld) == "table" and sessionScene.npcWorld.byArea ~= nil then
-        return false,
-            "sessionScene.npcWorld.byArea: remove this key — schemaVersion 2 imports must use npcWorld.placements only (no byArea conversion)."
-    end
-
-    return true, nil
-end
-
-local SCATTER_AREA_ORDER = { "scatter1", "scatter2", "scatter3", "scatter4", "scatter5", "scatter6" }
-local SCATTER_AREA_ALLOWED = { scatter1 = true, scatter2 = true, scatter3 = true, scatter4 = true, scatter5 = true, scatter6 = true }
-local SCATTER_AREA_FIELDS = { centerCharacters = true, orbitCharacters = true }
-local SCATTER_CENTER_FIELDS = { slot = true, characterKey = true, isPlayingNPC = true, isPresent = true }
-local SCATTER_ORBIT_FIELDS = { slot = true, characterKey = true, npcLightMode = true }
-
---- @param raw table
---- @return boolean ok
---- @return string|nil err
---- @return string|nil mode "standard" or "scatter"
-local function parsePlacementMode(raw)
-    local pm = raw.placementMode
-    if pm == nil then
-        return true, nil, "standard"
-    end
-    if type(pm) ~= "string" then
-        return false, "placementMode: must be \"standard\" or \"scatter\" (omit the key for standard).", nil
-    end
-    if pm == "standard" or pm == "scatter" then
-        return true, nil, pm
-    end
-    return false, "placementMode: must be \"standard\" or \"scatter\" (got `" .. tostring(pm) .. "`).", nil
-end
-
---- `tableKey` / `table` of Scatter wins over omitted placementMode. Contradictory Table A + placementMode scatter is an error.
---- @param raw table
---- @param sessionScene table
---- @param placementMode string
---- @return boolean ok
---- @return string|nil err
---- @return string mode
-local function resolveImportPlacementMode(raw, sessionScene, placementMode)
-    local Occupancy = require("lib.scatter_occupancy")
-    if type(sessionScene.table) == "string" and (sessionScene.tableKey == nil or sessionScene.tableKey == "") then
-        sessionScene.tableKey = sessionScene.table
-    end
-    local tableIsScatter = Occupancy.isScatterTableKey(sessionScene.tableKey)
-    if placementMode == "scatter" and sessionScene.tableKey ~= nil and not tableIsScatter then
-        return false, "sessionScene.tableKey: Scatter scenes must use \"Scatter\" (or omit tableKey when scatterPlacements is provided).", placementMode
-    end
-    if tableIsScatter then
-        return true, nil, "scatter"
-    end
-    return true, nil, placementMode
-end
-
---- @param tbl table
---- @param allowed table
---- @param path string
---- @return boolean ok
---- @return string|nil err
-local function rejectUnexpectedKeys(tbl, allowed, path)
-    local extra = {}
-    for k, _ in pairs(tbl) do
-        if allowed[k] ~= true then
-            extra[#extra + 1] = tostring(k)
-        end
-    end
-    if #extra == 0 then
+function SceneLibrary.checkRowOccupancy(placementMode, sessionScene)
+    if placementMode == "scatter" then
         return true, nil
     end
-    table.sort(extra)
-    return false, path .. ": unexpected key(s): " .. table.concat(extra, ", ") .. "."
-end
-
---- @param sessionScene table
---- @return boolean ok
---- @return string|nil err
-local function validateScatterPlacementsPack(sessionScene)
-    local pack = type(sessionScene) == "table" and sessionScene.scatterPlacements or nil
-    if type(pack) ~= "table" then
-        return false, "sessionScene.scatterPlacements: required object with scatter1…scatter6 (do not default missing areas)."
-    end
-    local okRoot, errRoot = rejectUnexpectedKeys(pack, SCATTER_AREA_ALLOWED, "sessionScene.scatterPlacements")
-    if not okRoot then
-        return false, errRoot
-    end
-    local NPCS_DATA = require("lib.npcs_data")
-    local chars = type(NPCS_DATA.characters) == "table" and NPCS_DATA.characters or {}
-    local usedKeys = {}
-    local usedPlayedNpc = {}
-    for _, areaKey in ipairs(SCATTER_AREA_ORDER) do
-        local area = pack[areaKey]
-        if type(area) ~= "table" then
-            return false, "sessionScene.scatterPlacements." .. areaKey .. ": required object with centerCharacters and orbitCharacters."
-        end
-        local okArea, errArea = rejectUnexpectedKeys(area, SCATTER_AREA_FIELDS, "sessionScene.scatterPlacements." .. areaKey)
-        if not okArea then
-            return false, errArea
-        end
-        if type(area.centerCharacters) ~= "table" then
-            return false, "sessionScene.scatterPlacements." .. areaKey .. ".centerCharacters: required object (empty {} is allowed; omit/null is not)."
-        end
-        if type(area.orbitCharacters) ~= "table" then
-            return false, "sessionScene.scatterPlacements." .. areaKey .. ".orbitCharacters: required object (empty {} is allowed; omit/null is not)."
-        end
-        local centerSlots = {}
-        local centerCount = 0
-        for pcKey, row in pairs(area.centerCharacters) do
-            centerCount = centerCount + 1
-            if centerCount > 5 then
-                return false, "sessionScene.scatterPlacements." .. areaKey .. ".centerCharacters: at most 5 PC rows."
-            end
-            if type(pcKey) ~= "string" or pcKey == "" then
-                return false, "sessionScene.scatterPlacements." .. areaKey .. ".centerCharacters: keys must be PC character keys."
-            end
-            local pcDef = chars[pcKey]
-            if type(pcDef) ~= "table" or pcDef.isPC ~= true then
-                return false, "sessionScene.scatterPlacements." .. areaKey .. ".centerCharacters." .. pcKey .. ": map key must be a PC character key."
-            end
-            if type(row) ~= "table" then
-                return false, "sessionScene.scatterPlacements." .. areaKey .. ".centerCharacters." .. pcKey .. ": must be an object."
-            end
-            local okRow, errRow = rejectUnexpectedKeys(row, SCATTER_CENTER_FIELDS, "sessionScene.scatterPlacements." .. areaKey .. ".centerCharacters." .. pcKey)
-            if not okRow then
-                return false, errRow
-            end
-            local slot = tonumber(row.slot)
-            if slot == nil or math.floor(slot) ~= slot or slot < 1 or slot > 5 then
-                return false, "sessionScene.scatterPlacements." .. areaKey .. ".centerCharacters." .. pcKey .. ".slot: required integer 1..5."
-            end
-            if centerSlots[slot] ~= nil then
-                return false, "sessionScene.scatterPlacements." .. areaKey .. ".centerCharacters." .. pcKey .. ".slot: " .. tostring(slot) .. " is already used."
-            end
-            centerSlots[slot] = pcKey
-            if row.isPlayingNPC ~= true and row.isPlayingNPC ~= false then
-                return false, "sessionScene.scatterPlacements." .. areaKey .. ".centerCharacters." .. pcKey .. ".isPlayingNPC: required boolean."
-            end
-            if row.isPresent ~= true and row.isPresent ~= false then
-                return false, "sessionScene.scatterPlacements." .. areaKey .. ".centerCharacters." .. pcKey .. ".isPresent: required boolean."
-            end
-            if usedKeys[pcKey] ~= nil then
-                return false, "sessionScene.scatterPlacements." .. areaKey .. ".centerCharacters." .. pcKey .. ": character key already used in " .. usedKeys[pcKey] .. "."
-            end
-            usedKeys[pcKey] = areaKey .. " center"
-            if row.isPlayingNPC == true then
-                if not isNonEmptyString(row.characterKey) then
-                    return false, "sessionScene.scatterPlacements." .. areaKey .. ".centerCharacters." .. pcKey .. ".characterKey: required NPC key when isPlayingNPC is true."
-                end
-                if row.characterKey == pcKey then
-                    return false, "sessionScene.scatterPlacements." .. areaKey .. ".centerCharacters." .. pcKey .. ".characterKey: must be the NPC being played, not the PC key."
-                end
-                if usedPlayedNpc[row.characterKey] ~= nil or usedKeys[row.characterKey] ~= nil then
-                    return false, "sessionScene.scatterPlacements." .. areaKey .. ".centerCharacters." .. pcKey .. ".characterKey: `" .. row.characterKey .. "` is already used."
-                end
-                usedPlayedNpc[row.characterKey] = pcKey
-            else
-                if row.characterKey ~= nil and row.characterKey ~= pcKey then
-                    return false, "sessionScene.scatterPlacements." .. areaKey .. ".centerCharacters." .. pcKey .. ".characterKey: must equal the map key unless isPlayingNPC is true."
-                end
-            end
-        end
-        local orbitSlots = {}
-        local holeCount = 12
-        local scatterRow = C.Tables and C.Tables["Scatter"] or C.Scatter
-        if type(scatterRow) == "table" and tonumber(scatterRow.BOARD_NPC_HOLE_COUNT) ~= nil then
-            holeCount = math.floor(scatterRow.BOARD_NPC_HOLE_COUNT)
-        end
-        for npcKey, row in pairs(area.orbitCharacters) do
-            if type(npcKey) ~= "string" or npcKey == "" then
-                return false, "sessionScene.scatterPlacements." .. areaKey .. ".orbitCharacters: keys must be NPC character keys."
-            end
-            local npcDef = chars[npcKey]
-            if type(npcDef) == "table" and npcDef.isPC == true then
-                return false, "sessionScene.scatterPlacements." .. areaKey .. ".orbitCharacters." .. npcKey .. ": PCs cannot occupy orbit slots."
-            end
-            if type(row) ~= "table" then
-                return false, "sessionScene.scatterPlacements." .. areaKey .. ".orbitCharacters." .. npcKey .. ": must be an object."
-            end
-            local okRow, errRow = rejectUnexpectedKeys(row, SCATTER_ORBIT_FIELDS, "sessionScene.scatterPlacements." .. areaKey .. ".orbitCharacters." .. npcKey)
-            if not okRow then
-                return false, errRow
-            end
-            if row.characterKey ~= nil and row.characterKey ~= npcKey then
-                return false, "sessionScene.scatterPlacements." .. areaKey .. ".orbitCharacters." .. npcKey .. ".characterKey: must equal the map key."
-            end
-            local slot = tonumber(row.slot)
-            if slot == nil or math.floor(slot) ~= slot or slot < 1 then
-                return false, "sessionScene.scatterPlacements." .. areaKey .. ".orbitCharacters." .. npcKey .. ".slot: required positive integer."
-            end
-            if slot <= holeCount then
-                if orbitSlots[slot] ~= nil then
-                    return false, "sessionScene.scatterPlacements." .. areaKey .. ".orbitCharacters." .. npcKey .. ".slot: " .. tostring(slot) .. " is already used."
-                end
-                orbitSlots[slot] = npcKey
-            end
-            local light = row.npcLightMode
-            if light ~= "OFF" and light ~= "STANDARD" then
-                return false, "sessionScene.scatterPlacements." .. areaKey .. ".orbitCharacters." .. npcKey .. ".npcLightMode: must be \"OFF\" or \"STANDARD\"."
-            end
-            if usedKeys[npcKey] ~= nil or usedPlayedNpc[npcKey] ~= nil then
-                return false, "sessionScene.scatterPlacements." .. areaKey .. ".orbitCharacters." .. npcKey .. ": character key already used."
-            end
-            usedKeys[npcKey] = areaKey .. " orbit"
-        end
-    end
-    return true, nil
-end
-
---- Scatter import: dashboard `scatterPlacements` pack, or chair `tableKey=Scatter` + seatSlots/scatterGroup.
---- @param sessionScene table
---- @return boolean ok
---- @return string|nil err
-local function validateScatterSessionForImport(sessionScene)
-    local Occupancy = require("lib.scatter_occupancy")
-    local hasPack = type(sessionScene.scatterPlacements) == "table"
-    local hasSeats = type(sessionScene.seatSlots) == "table"
-    if hasPack and hasSeats then
-        return false, "sessionScene: choose one Scatter authoring style — scatterPlacements, or tableKey Scatter with seatSlots (not both)."
-    end
-    if hasPack then
-        if sessionScene.npcWorld ~= nil then
-            return false, "sessionScene.npcWorld: must be omitted when scatterPlacements is provided (including empty placements)."
-        end
-        if sessionScene.tableKey ~= nil and not Occupancy.isScatterTableKey(sessionScene.tableKey) then
-            return false, "sessionScene.tableKey: omit it, or set it to Scatter, when using scatterPlacements."
-        end
-        return validateScatterPlacementsPack(sessionScene)
-    end
-    if Occupancy.isScatterTableKey(sessionScene.tableKey) ~= true and hasSeats ~= true then
-        return false, "sessionScene.scatterPlacements: required, unless tableKey is Scatter and seatSlots maps chairs onto scatter groups."
-    end
-    local pack, err = Occupancy.translateFromSeatAuthoring(sessionScene)
-    if pack == nil then
-        return false, err or "Scatter seat translation failed."
-    end
-    sessionScene.scatterPlacements = pack
-    return validateScatterPlacementsPack(sessionScene)
-end
-
---- @param sessionScene table
---- @return table
-local function normalizeScatterSessionForImport(sessionScene)
-    local Occupancy = require("lib.scatter_occupancy")
-    local out = U.clone(sessionScene, true)
-    applyChronicleWeatherFromSoundscapeForImport(out)
-    if type(out.conditions) == "table" then
-        local condCopy = {}
-        for i, id in ipairs(out.conditions) do
-            condCopy[i] = id
-        end
-        out.conditions = condCopy
-    end
-    if type(out.scatterPlacements) ~= "table" then
-        local pack, err = Occupancy.translateFromSeatAuthoring(out)
-        if pack == nil then
-            error("normalizeScatterSessionForImport: " .. tostring(err))
-        end
-        out.scatterPlacements = pack
-    end
-    out.seatSlots = nil
-    out.tableKey = nil
-    out.table = nil
-    out.npcWorld = nil
-    out.npcRoleOverride = nil
-    out.seatPresent = nil
-    out.scatterAuthored = true
-    return out
-end
-
---- Validate standard occupancy: five PC `seatSlots` rows + FSL uniqueness.
---- @param sessionScene table
---- @return boolean ok
---- @return string|nil err
-local function validateStandardOccupancyForImport(sessionScene)
-    local slots = sessionScene.seatSlots
-    if type(slots) ~= "table" then
-        return false, "sessionScene.seatSlots: required object with one row per PC seat (" .. table.concat(C.PlayerColors or {}, ", ") .. ")."
-    end
-    for _, color in ipairs(C.PlayerColors or {}) do
-        local row = slots[color]
-        if row == nil then
-            return false, "sessionScene.seatSlots." .. color .. ": missing (all five PC seats are required)."
-        end
-        if type(row) ~= "table" then
-            return false, "sessionScene.seatSlots." .. color .. ": must be an object."
-        end
-        if row.isPlayingNPC == true then
-            if not isNonEmptyString(row.npcCharacterKey) then
-                return false, "sessionScene.seatSlots." .. color .. ".npcCharacterKey: required non-empty string when isPlayingNPC is true."
-            end
-        end
-    end
     local FSL = require("lib.figurine_seat_layout")
+    local RSL = require("lib.rotational-seat-layout")
+    local slots = sessionScene.seatSlots
     local occupied = {}
-    for _, npcSeat in ipairs(C.NPCSeats or {}) do
-        local npcRow = slots[npcSeat]
-        if type(npcRow) == "table" and isNonEmptyString(npcRow.characterKey) then
-            occupied[npcSeat] = npcRow.characterKey
+    for _, npc in ipairs(C.NPCSeats or {}) do
+        local row = type(slots) == "table" and slots[npc] or nil
+        if type(row) == "table" and type(row.characterKey) == "string" and row.characterKey ~= "" then
+            occupied[npc] = row.characterKey
         end
     end
-    local tableCfg = nil
     local tableKey = sessionScene.tableKey
-    if type(tableKey) == "string" and C.Tables and C.Tables[tableKey] then
-        tableCfg = C.Tables[tableKey]
-    elseif tableKey == "Table B" then
-        tableCfg = { slotCapacity = 9 }
+    local tableCfg = nil
+    if type(tableKey) == "string" then
+        if C.Tables and C.Tables[tableKey] then
+            tableCfg = C.Tables[tableKey]
+        elseif RSL.isDynamicTableFamilyKey(tableKey) then
+            local variant = FSL.tableBVariantIndex({
+                seatSlots = type(slots) == "table" and slots or {},
+                occupiedNPCSlots = occupied,
+            })
+            tableCfg = C.Tables[RSL.resolveTableKey(tableKey, { occupiedSlotIndex = variant })]
+        end
     end
     return FSL.checkOccupancy(slots, occupied, tableCfg, { forImport = true })
 end
 
---- Validate import wrapper + `sessionScene`.
---- On success, returns a normalized table safe to merge into `sceneLibrary.scenes[sceneKey]`
---- (`receivesLiveWrites` is left to the caller — typically `false`).
----
---- @param raw table|nil  Decoded JSON root object
---- @return boolean ok
---- @return string|nil err  Human-readable primary error (path + fix)
---- @return table|nil normalized  `{ sceneKey, title, sessionScene, placementMode }` only (no schemaVersion)
-function SceneLibrary.validateAndNormalizeImportPayload(raw)
-    if type(raw) ~= "table" then
-        return false, "Root value must be a JSON object.", nil
+--- A library row TTS can play: valid clock, a known lighting preset, and (standard placement) numbered chairs.
+--- Checked when the Storyteller Dashboard writes a row (`upsertScene`); scene Apply re-checks clock and chairs.
+--- @param placementMode string `standard` or `scatter`
+--- @param sessionScene table
+--- @return string|nil error
+function SceneLibrary.validateRow(placementMode, sessionScene)
+    local okClock, errClock = SceneLibrary.validateSessionSceneClock(sessionScene.clock)
+    if not okClock then
+        return errClock
     end
-
-    local okRoot, errRoot = validateImportRootKeys(raw)
-    if not okRoot then
-        return false, errRoot, nil
+    local lp = sessionScene.lightingPresetKey
+    if not isNonEmptyString(lp) or not C.isValidLightModeKey((string.gsub(string.gsub(lp, "^%s+", ""), "%s+$", ""))) then
+        return "sessionScene.lightingPresetKey: `" .. tostring(lp) .. "` is not a lighting preset (C.LightModes)."
     end
-
-    local sv = raw.schemaVersion
-    local schemaNum = 1
-    if sv ~= nil then
-        local n = tonumber(sv)
-        if n == nil or math.floor(n) ~= n then
-            return false, "schemaVersion: must be an integer if present.", nil
-        end
-        if n > SceneLibrary.IMPORT_SCHEMA_VERSION then
-            return false, string.format("schemaVersion: unsupported value %d (this build supports up to %d).", n, SceneLibrary.IMPORT_SCHEMA_VERSION), nil
-        end
-        if n < 1 then
-            return false, "schemaVersion: must be >= 1 if present.", nil
-        end
-        schemaNum = n
+    local okOcc, errOcc = SceneLibrary.checkRowOccupancy(placementMode, sessionScene)
+    if not okOcc then
+        return errOcc or "sessionScene.seatSlots: numbered chairs are missing or clash."
     end
-
-    local okMode, errMode, placementMode = parsePlacementMode(raw)
-    if not okMode then
-        return false, errMode, nil
-    end
-
-    local sceneKey = raw.sceneKey
-    if not isNonEmptyString(sceneKey) then
-        return false, "sceneKey: required non-empty string.", nil
-    end
-    if string.match(sceneKey, "^[a-zA-Z][a-zA-Z0-9_]*$") == nil then
-        return false, "sceneKey: use letters, digits, underscore only; must start with a letter (e.g. openingAudience).", nil
-    end
-
-    local title = raw.title
-    if type(title) ~= "string" then
-        return false, "title: required string.", nil
-    end
-    local titleTrim = string.gsub(title, "^%s+", "")
-    titleTrim = string.gsub(titleTrim, "%s+$", "")
-    if titleTrim == "" then
-        return false, "title: cannot be empty or whitespace-only.", nil
-    end
-
-    local sessionScene = raw.sessionScene
-    if type(sessionScene) ~= "table" then
-        return false, "sessionScene: required object.", nil
-    end
-
-    local okResolved, errResolved, resolvedMode = resolveImportPlacementMode(raw, sessionScene, placementMode)
-    if not okResolved then
-        return false, errResolved, nil
-    end
-    placementMode = resolvedMode
-
-    if placementMode == "scatter" then
-        local okScatter, errScatter = validateScatterSessionForImport(sessionScene)
-        if not okScatter then
-            return false, errScatter, nil
-        end
-    else
-        if sessionScene.scatterPlacements ~= nil then
-            return false, "sessionScene.scatterPlacements: must be omitted for placementMode \"standard\"."
-        end
-        local okOcc, errOcc = validateStandardOccupancyForImport(sessionScene)
-        if not okOcc then
-            return false, errOcc, nil
-        end
-    end
-
-    local okWeather, errWeather = validateSoundscapeWeatherTrioForImport(sessionScene)
-    if not okWeather then
-        return false, errWeather or "sessionScene.soundscapeNarrative: weather trio validation failed.", nil
-    end
-
-    local okSkybox, errSkybox = validateAndNormalizeSkyboxOverrideForImport(sessionScene)
-    if not okSkybox then
-        return false, errSkybox, nil
-    end
-
-    local okRejectRollDefaults, errRejectRollDefaults = rejectRollDefaultsForImport(sessionScene)
-    if not okRejectRollDefaults then
-        return false, errRejectRollDefaults, nil
-    end
-
-    local okConditions, errConditions = validateSessionSceneConditionsForImport(sessionScene.conditions)
-    if not okConditions then
-        return false, errConditions, nil
-    end
-
-    if schemaNum >= 2 then
-        local okV2, errV2 = validateSessionSceneV2(sessionScene)
-        if not okV2 then
-            return false, errV2, nil
-        end
-    else
-        local okPreload, errPreload = rejectNpcWorldPreload(sessionScene.npcWorld)
-        if not okPreload then
-            return false, errPreload, nil
-        end
-    end
-
-    local sessNorm
-    if placementMode == "scatter" then
-        sessNorm = normalizeScatterSessionForImport(sessionScene)
-    else
-        sessNorm = normalizeSeatSlotsForImport(sessionScene, schemaNum)
-        local okNpcSeatStage, errNpcSeatStage = validateNpcSeatStageConsistency(sessNorm)
-        if not okNpcSeatStage then
-            return false, errNpcSeatStage, nil
-        end
-    end
-    local normalized = {
-        sceneKey = sceneKey,
-        title = titleTrim,
-        sessionScene = sessNorm,
-        placementMode = placementMode,
-    }
-    return true, nil, normalized
-end
-
---- Write a validated import into `sceneLibrary` without applying the scene to the live table.
---- @param normalized table `{ sceneKey, title, sessionScene, placementMode }`
-function SceneLibrary.writeImportedLibraryRow(normalized)
-    local S = require("core.state")
-    local sceneKey = normalized.sceneKey
-    local entry = {
-        title = normalized.title,
-        receivesLiveWrites = false,
-        sessionScene = normalized.sessionScene,
-        placementMode = normalized.placementMode or "standard",
-        status = S.getStateVal("sceneLibrary", "scenes", sceneKey, "status"),
-    }
-    S.setStateVal(entry, "sceneLibrary", "scenes", sceneKey)
-    local order = S.getStateVal("sceneLibrary", "order")
-    if type(order) ~= "table" then
-        order = {}
-    end
-    order = U.clone(order, true)
-    local found = false
-    for _, k in ipairs(order) do
-        if k == sceneKey then
-            found = true
-            break
-        end
-    end
-    if not found then
-        order[#order + 1] = sceneKey
-    end
-    S.setStateVal(order, "sceneLibrary", "order")
-    S.validateState()
-end
-
---- Decode + validate Scene Constructor JSON and write a library row (no Apply).
---- @param rawText string
---- @return boolean ok
---- @return string message
-function SceneLibrary.importConstructorJsonText(rawText)
-    local cleaned = U.sanitizeJsonTextRemoveTrailingCommas(rawText or "")
-    if string.match(cleaned, "^%s*$") then
-        return false, "Paste JSON first."
-    end
-    local decoded = JSON.decode(cleaned)
-    if decoded == nil then
-        return false, "Invalid JSON: could not parse (check commas and quotes)."
-    end
-    if type(decoded) ~= "table" then
-        return false, "Invalid JSON: root must be an object."
-    end
-    local ok, err, normalized = SceneLibrary.validateAndNormalizeImportPayload(decoded)
-    if not ok then
-        return false, err or "Import validation failed."
-    end
-    SceneLibrary.writeImportedLibraryRow(normalized)
-    return true, "Scene imported: " .. normalized.sceneKey .. " (library only — not applied to the table)."
+    return nil
 end
 
 --- Allocate `baseKey_2`, `baseKey_3`, … not already present in `sceneLibrary.scenes`.
@@ -1023,19 +211,6 @@ function SceneLibrary.allocateForkSceneKey(baseKey, scenes)
     end
 end
 
---- Applies optional `sessionScene.soundscapeNarrative` via `Soundscape.applySessionSceneNarrativeOverrides` (same entrypoint
---- as Storyteller Apply — avoids a second `require("core.soundscape")` binding that can lack `applyContext` in some orders).
---- @param sessionScene table|nil
-function SceneLibrary.applySoundscapeNarrativePartial(sessionScene)
-    local Soundscape = require("core.soundscape")
-    if type(Soundscape.applySessionSceneNarrativeOverrides) == "function" then
-        Soundscape.applySessionSceneNarrativeOverrides(sessionScene)
-    end
-end
-
---- When `sceneLibrary.activeKey` names a row with `receivesLiveWrites`, deep-clone live `sessionScene` into that row.
---- Invoked from `Sync.full` after reconcilers so one mutation batch ends with an up-to-date library mirror.
---- Lazy-requires `core.state` to avoid cycles during `state` module initialization.
 --- Derives top fog from `C.Sites[siteKey]` and writes `sessionScene.isTopFogActive`.
 --- Explicit `site.isTopFogActive` wins; otherwise indoor sites default off, outdoor on.
 --- @param siteKey string|nil
@@ -1133,6 +308,9 @@ function SceneLibrary.setExclusiveLiveMirror(sceneKey)
     end
 end
 
+--- When the mirror row (`resolveMirrorSceneKey`) is linked, deep-clone live `sessionScene` into that row.
+--- Invoked from `Sync.full` after reconcilers so one mutation batch ends with an up-to-date library mirror.
+--- Lazy-requires `core.state` to avoid cycles during `state` module initialization.
 function SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked()
     local S = require("core.state")
     local PresentDayClock = require("core.present_day_clock")
