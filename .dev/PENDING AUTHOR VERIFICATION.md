@@ -313,6 +313,19 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 6. **Templates:** open a scene's preview (**Edit**), change its picker from **New scene** to **Template** and **Save**. It shows in [square brackets] everywhere, and disappears from the in-game Scenes panel. Press **Play** on it and pick a time: TTS should play a new scene called, for example, "Elysium (Oct 12)" (the night's date), and the template itself stays unchanged in the list.
 7. **Memoriam:** with a scene on the table, open the window and start a **Memoriam…**. The phase bar's button should read **Return ▸**; click it twice and TTS should go back to that scene. Start a Memoriam from Downtime instead (End Scene first): the button should read **Downtime ▸** and leave you in Downtime with no scene.
 
+#### TOR-718 — The in-game scene library only plays scenes; the dashboard is the only place to edit them
+
+**Context:** Saved scenes are now created, edited, forked and deleted only on the dashboard, so TTS can no longer drift from the dashboard's copy. The in-game Import Scene window, the New Scene (fork) window and the Delete button are gone. The in-game Scenes panel still plays saved scenes and still changes the scene on the table. The Scenes panel's layout changed, so run the full build before Save & Play.
+
+**How to verify:**
+
+1. **Buttons:** open the in-game **Scenes** panel. The library column should show the scene list, the Apply buttons (Scene Time, ×5 to Now, SET Now, NOW and the NOW + rows), **Unlink** and **End Scene**, and no Import, New Scene or Delete buttons.
+2. **Preview is read-only:** click a library scene that is not on the table, so it turns blue. Its table, seats, location and time show on the left. Try a table button, a seat, **Browse districts…** and the day or time boxes: nothing should change, and either the control is greyed out or a message says the scene is not on the table yet and to edit it on the Storyteller Dashboard or Apply it first.
+3. **Playing still works:** with that blue scene selected, press **Scene Time** (or **NOW**). The scene should play under the blindfold exactly as before.
+4. **The live scene is still editable:** with the scene on the table selected (green), change a seat's presence, the location (Browse, pick, then Apply location) and the clock. The table should change as before, and the dashboard should show the same changes.
+5. **Dashboard play:** play a scene from the dashboard's Play a Scene window. It should play normally. If the dashboard ever shows a message starting `upsertScene:`, TTS refused a scene it could not play (a broken time, lighting preset or chair numbers) and nothing changed on the table.
+6. **Test scenes stay out of the dashboard:** run the Scenes playbook (Scenes-E2E). Afterwards, the dashboard's Play a Scene window should not list any scene starting with "E2E".
+
 ### High — the dashboard's Scenes tab: stage, seats and NPCs
 
 #### TOR-685 / TOR-687 — Arranging the stage from the dashboard; the Stage Control board only holds spotlight tokens
@@ -459,9 +472,6 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 2. Go to **Auto Mechanic**, then **Bier Markt**, then **The St. Regis Toronto: Room 101**, then **The Nosferatu Warrens: Palis'**. Each should play a location sound (auto shop, dive bar, computer lab, and the Warrens ambience). The Host console should not print "Unknown location audio".
 3. Open the district picker: the museum district should read **The Yonge & Bloor Museum District**.
 
-## Cleared
-
-_Remove confirmed entries from Outstanding. In Linear, set **Fully Complete** by default; use **Complete (KEEP)** sparingly when the issue contains lasting information that should remain._
 #### TOR-722 — Sites, districts and the weather schedule now come straight from your sheets
 
 **Context:** The game's list of districts and sites, and the hour-by-hour weather schedule, used to be hand-kept copies in the code. They are now generated from your Districts & Sites workbook and the WEATHER tab of the Toronto Rising sheet (`npm run locations:import`, `npm run weather:import`). Almost everything is identical. The visible differences come from your sheet: **Dupont by the Castle** is now spelled with lower-case "by the"; **Deer Park** now carries the **bestialNull** condition and **Riverdale** the **noHungerDice** condition (both are in the sheet's Condition column but were never in the game before); and five Warrens rooms (Antechamber, Drake's, Labyrinth, Spawning Pool, Tunnel Junction) asked for a "nosWarrens" music playlist that does not exist, so they now fall back to the default mood music instead of silently keeping whatever was playing before.
@@ -475,3 +485,6 @@ _Remove confirmed entries from Outstanding. In Linear, set **Fully Complete** by
 5. Go to **The Nosferatu Warrens: Labyrinth**. The background music should switch to the default mood music. If you want a dedicated Warrens playlist instead, that needs adding to the soundscape catalog.
 6. Advance or set the in-game time across a few hours: the weather should change exactly as it did before (the schedule data itself did not change).
 
+## Cleared
+
+_Remove confirmed entries from Outstanding. In Linear, set **Fully Complete** by default; use **Complete (KEEP)** sparingly when the issue contains lasting information that should remain._
