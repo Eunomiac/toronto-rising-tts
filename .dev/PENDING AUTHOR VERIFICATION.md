@@ -297,6 +297,19 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 
 **How to verify:** Open The Court on its second spread so your Haven Merits show. On the Storyteller Phases panel, press **Refresh XML**. The Court should stay open on the same spread with the same merits, dots and text, and only the people who had it open should see it. Then close The Court and press Refresh XML again: it stays closed for everyone, and opening it afterwards still shows the current merits.
 
+### Medium — soundscape
+
+#### TOR-706 — The build puts every sound emitter on silence in the save, so loading doesn't burst a track
+
+**Context:** When TTS saves, each sound emitter remembers the track it was playing, and on load it starts that track at full volume before the mod can mute it. The Main, XML and Full builds now switch every emitter back to the silent track in the save file. This only helps when you load the save from the main menu (File → Load). Save & Play replays the save TTS last loaded or saved itself, not the patched file on disk.
+
+**How to verify:**
+
+1. In TTS, play a scene with featured music (or any music) so an emitter is mid-track, then save over save 230.
+2. In Cursor, run **BUILD PIPELINE (Main)**. The terminal should show a `[tts-save:silence-emitters] Set SOUNDSCAPE_…` line for each emitter that was playing, then a backup path and `Wrote … TS_Save_230.json`.
+3. Go back to the TTS main menu and load save 230. There should be no blast of music while the table loads. The soundscape should start the normal way, fading in once the mod takes over.
+4. Run the build a second time: it should say `All 10 emitters already on silent.`
+
 ## Cleared
 
 _Remove confirmed entries from Outstanding. In Linear, set **Fully Complete** by default; use **Complete (KEEP)** sparingly when the issue contains lasting information that should remain._

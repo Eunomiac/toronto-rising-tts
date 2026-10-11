@@ -94,6 +94,8 @@ public sealed class TtsSoundscapeAudioBoot : MonoBehaviour
 
 Attach this to the **root** of the AssetBundle prefab TTS spawns. Keep it minimal — no gameplay logic, only deterministic silence at boot.
 
+**Status:** Tried in the live bundle and did **not** work in TTS (the author suspects TTS does not run arbitrary MonoBehaviours on AssetBundle prefabs). Do not rely on it; the load-time lever that works is the save-file clip index ([§5 D](#d-honest-ceiling)).
+
 **Repo copy:** `TTSAssetBundle Unity Scripts/TorontoRisingSoundscapeEmitterBoot.cs` — `[DefaultExecutionOrder(-5000)]`, one-time safe defaults per **new** `AudioSource` under the prefab root, plus a **polling window** (`m_bootstrapScanSeconds`, default **30s** unscaled) in `LateUpdate` and `OnTransformChildrenChanged` so sources TTS creates **after** `Awake` still get clamped once. Polling then stops so Lua is not fought on every frame. Add **Add Component → Toronto Rising Soundscape Emitter Boot** on `TR_Soundscape_Bundle` alongside `TTS Asset Bundle Effects`.
 
 ---
@@ -137,6 +139,8 @@ The **AssetBundle** dropdown on the clip (often **None** while authoring) only c
 ### D. Honest ceiling
 
 If Tabletop Simulator **deserializes and resumes the last looping effect** from a save **before** Lua runs, **Unity import tweaks alone cannot force “always silent first”** — you need either the **`silent`** swap from Lua (already in the mod) or a change inside **`TTSAssetBundleEffects`** / Unity prefab startup if Berserk’s script exposes a “default loop index” or similar. The steps above **mitigate** (quieter clips, clean silence, no extra components) rather than guarantee order.
+
+TTS **does** restore the last looping clip from the save: each emitter's `CustomAssetbundle.LoopingEffectIndex`, written on every save. The save stores no emitter volume. The build therefore rewrites that index to `0` (`silent`) on every `SOUNDSCAPE_*` emitter in the live save (`npm run tts-save:silence-emitters`, part of `npm run build` / `build:xml` / `build:full`; **TOR-706**). Global `onSave` cannot do this: it only returns script state and fires on every rewind checkpoint (~10 s). Details and limits (Save & Play, in-game saves after the build): [`tts-assets-toolkit/README.md`](../tts-assets-toolkit/README.md#silence-soundscape-emitters-build-hook).
 
 ---
 
