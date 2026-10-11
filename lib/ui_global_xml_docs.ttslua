@@ -9730,6 +9730,21 @@ UI.setAttributes("overlay_site_card_display", {rectAlignment = "MiddleRight", of
     childForceExpandHeight="false"
     ignoreLayout="true" />
 
+  <!-- Debug column: rows of small side-by-side buttons (simulated connection, soundscape tools) -->
+  <HorizontalLayout class="debug_button_row"
+    spacing="2"
+    childForceExpandWidth="true"
+    childForceExpandHeight="true" />
+  <Button class="debug_sim_connect_button"
+    fontSize="11"
+    fontStyle="Bold"
+    textColor="#FFFFFF"
+    colors="#1E5A2A|#2A7038|#3A9048|rgba(0.1,0.3,0.12,0.5)" />
+  <Button class="debug_small_button"
+    fontSize="11"
+    textColor="#FFFFFF"
+    colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+
   <!-- Main button column: left-aligned, half-scale, vertically stacked (TOR-396: +100 Y) -->
   <VerticalLayout class="storyteller_buttonControls"
     padding="0 0 0 0"
@@ -9737,7 +9752,7 @@ UI.setAttributes("overlay_site_card_display", {rectAlignment = "MiddleRight", of
     rectAlignment="LowerRight"
     childAlignment="LowerRight"
     width="200"
-    height="400"
+    height="460"
     ignoreLayout = "true"
     offsetXY = "-1650 250"
     childForceExpandWidth="true"
@@ -9777,83 +9792,6 @@ UI.setAttributes("overlay_site_card_display", {rectAlignment = "MiddleRight", of
 </Defaults>
 
 <!-- /include ui/storyteller/hud_storyteller_defaults.xml -->
-
-  
-<!-- include ui/storyteller/panel_pcs_defaults.xml -->
-<!-- Classes for Storyteller PCs panel (`panel_pcs.xml`). Seat tint `color` stays per-Panel; ids and row label text stay on elements. -->
-<!-- Agent guidance: .dev/tts-api/UI API/Defaults.md -->
-<Defaults>
-  <Panel class="pcs_panel_root" padding="1 2 1 2" scale="1" pivot="0 1" width="680" color="rgba(0, 0, 0, 0.8)" />
-  <VerticalLayout class="pcs_root_vl" spacing="1" childAlignment="UpperLeft" childForceExpandWidth="false" />
-
-  <Panel class="pcs_seat_block" padding="1 2 1 2" />
-  <VerticalLayout class="pcs_seat_column" spacing="1" flexibleWidth="1" childForceExpandWidth="false" />
-
-  <Text class="pcs_row_title" fontSize="13" fontStyle="Bold" color="#F5F5F5" preferredHeight="16" minHeight="16" />
-  <Text class="pcs_char_title" fontSize="17" fontStyle="Bold" color="#FFFFFF" preferredHeight="20" minHeight="20" />
-  <Text class="pcs_desire_text" fontSize="12" color="#FCE5C1" preferredWidth="480" minWidth="200" preferredHeight="18" minHeight="16" flexibleWidth="1" alignment="MiddleLeft" />
-
-  <HorizontalLayout class="pcs_stat_row" spacing="2" height="18" preferredHeight="18" minHeight="18" childForceExpandWidth="false" />
-  <HorizontalLayout class="pcs_track_row" spacing="2" height="28" preferredHeight="28" minHeight="28" childForceExpandWidth="false" />
-
-  <Text class="pcs_prefix_wide" fontSize="11" fontStyle="Bold" color="#FFFFFF" preferredWidth="42" minWidth="42" flexibleWidth="0" alignment="MiddleLeft" />
-  <Text class="pcs_prefix_desire" fontSize="11" fontStyle="Bold" color="#FFFFFF" preferredWidth="56" minWidth="56" flexibleWidth="0" alignment="MiddleLeft" />
-  <Text class="pcs_prefix_hg" fontSize="11" fontStyle="Bold" color="#FFFFFF" preferredWidth="36" minWidth="36" flexibleWidth="0" alignment="MiddleLeft" />
-
-  <Text class="pcs_track_damage" fontSize="18" fontStyle="Bold" color="#EEEEEE" preferredWidth="280" minWidth="280" preferredHeight="28" minHeight="28" flexibleWidth="0" alignment="MiddleLeft" />
-  <Text class="pcs_track_hum" fontSize="18" fontStyle="Bold"  color="#E8DDFF" preferredWidth="280" minWidth="280" preferredHeight="28" minHeight="28" flexibleWidth="0" alignment="MiddleLeft" />
-
-  <Text class="pcs_buf_agg" fontSize="11" color="#FFCCCC" preferredWidth="34" minWidth="34" flexibleWidth="0" alignment="MiddleCenter" />
-  <Text class="pcs_buf_neutral" fontSize="11" color="#EEEEEE" preferredWidth="34" minWidth="34" flexibleWidth="0" alignment="MiddleCenter" />
-  <Text class="pcs_buf_hum" fontSize="11" color="#EDDFFF" preferredWidth="34" minWidth="34" flexibleWidth="0" alignment="MiddleCenter" />
-  <Text class="pcs_buf_xp" fontSize="11" color="#DDF0FF" preferredWidth="34" minWidth="34" flexibleWidth="0" alignment="MiddleCenter" />
-  <Text class="pcs_buf_hunger" fontSize="11" color="#FFDEB5" preferredWidth="34" minWidth="34" flexibleWidth="0" alignment="MiddleCenter" />
-
-  <Text class="pcs_xp_val" fontSize="13" color="#CCE8FF" preferredWidth="68" minWidth="64" flexibleWidth="0" alignment="MiddleLeft" />
-  <Text class="pcs_hunger_val" fontSize="12" color="#FFE0C2" preferredWidth="40" minWidth="36" flexibleWidth="0" alignment="MiddleLeft" />
-  <Text class="pcs_hunger_dots" fontSize="16" fontStyle="Bold" color="#FFE0C2" preferredWidth="90" minWidth="72" flexibleWidth="0" alignment="MiddleLeft" />
-  <Text class="pcs_torpor_lbl" fontSize="11" color="#F0F0F0" preferredWidth="72" minWidth="72" flexibleWidth="0" alignment="MiddleLeft" />
-
-  <!-- Shared button base; pair with a palette class. `text` and `id` stay on the element. -->
-  <Button class="pcs_btn" onClick="HUD_pcPanel" textColor="#FFFFFFFF" height="18" preferredHeight="18" minHeight="18" fontSize="12" flexibleWidth="0" />
-  <Button class="pcs_btn_arrow" preferredWidth="30" minWidth="30" />
-  <Button class="pcs_btn_apply_64" preferredWidth="64" minWidth="64" text="Apply" />
-  <Button class="pcs_btn_apply_58" preferredWidth="58" minWidth="58" text="Apply" />
-  <Button class="pcs_btn_clear_52" preferredWidth="52" minWidth="52" text="Clear" />
-  <Button class="pcs_btn_torpor" preferredWidth="76" minWidth="76" text="Torpor" />
-  <Button class="pcs_btn_cond" preferredWidth="86" minWidth="80" fontSize="10" height="18" preferredHeight="18" minHeight="18" />
-  <Button class="pcs_btn_auto_seat" preferredWidth="88" minWidth="80" fontSize="10" height="18" preferredHeight="18" minHeight="18" text="Auto-Seat" />
-  <Button class="pcs_btn_connect" preferredWidth="72" minWidth="64" fontSize="10" height="18" preferredHeight="18" minHeight="18" text="Connect" />
-  <Toggle class="pcs_join_toggle" preferredWidth="128" minWidth="110" fontSize="11" height="18" preferredHeight="18" minHeight="18" textColor="#FFFFFF" />
-  <!-- Assume Connected debug mode only (hidden in By Connection Status); PCST.refreshRow sets text/colors/active. -->
-  <Button class="pcs_btn_connection" onClick="HUD_pcsToggleSimulatedConnection" preferredWidth="96" minWidth="88" fontSize="10" height="18" preferredHeight="18" minHeight="18" textColor="#FFFFFF" text="Connected" active="false" colors="#1E5A2A|#2A7038|#3A9048|rgba(0.1,0.3,0.12,0.5)" />
-
-  <Button class="pcs_btn_palette_agg" colors="#662222|#883333|#991111|rgba(0.5,0.1,0.1,0.4)" />
-  <Button class="pcs_btn_palette_sup" colors="#444444|#555555|#666666|rgba(0.2,0.2,0.2,0.4)" />
-  <Button class="pcs_btn_palette_track_apply" colors="#225522|#336633|#44AA44|rgba(0.1,0.3,0.1,0.4)" />
-  <Button class="pcs_btn_palette_hum" colors="#553377|#664488|#7755AA|rgba(0.2,0.1,0.3,0.4)" />
-  <Button class="pcs_btn_palette_hum_dark" colors="#333333|#444444|#555555|rgba(0.2,0.2,0.2,0.4)" />
-  <Button class="pcs_btn_palette_hum_base" colors="#111111|#222222|#333333|rgba(0.1,0.1,0.1,0.4)" />
-  <Button class="pcs_btn_palette_xp" colors="#224466|#335577|#4466AA|rgba(0.1,0.2,0.3,0.4)" />
-  <Button class="pcs_btn_palette_hunger" colors="#663311|#884422|#AA5522|rgba(0.3,0.15,0.05,0.4)" />
-  <Button class="pcs_btn_palette_torpor" colors="#441122|#552233|#663344|rgba(0.2,0.05,0.1,0.4)" />
-  <Button class="pcs_btn_palette_frenzy" colors="#662200|#883300|#AA4400|rgba(0.35,0.1,0,0.45)" />
-  <Button class="pcs_btn_palette_blindfold" colors="#222233|#333344|#444466|rgba(0.12,0.12,0.2,0.45)" />
-  <Button class="pcs_btn_palette_join" colors="#1A3A4A|#285060|#3A7080|rgba(0.1,0.2,0.25,0.5)" />
-
-  <!-- Roll initiation buttons: compact, shared base size -->
-  <Button class="pcs_btn_roll" preferredWidth="52" minWidth="46" fontSize="10" height="18" preferredHeight="18" minHeight="18" onClick="HUD_rollInitiate" />
-  <Button class="pcs_btn_palette_roll_std"     colors="#1A3A1A|#285028|#3A7A3A|rgba(0.1,0.25,0.1,0.5)"  />
-  <Button class="pcs_btn_palette_roll_simple"  colors="#1A1A3A|#282850|#3A3A7A|rgba(0.1,0.1,0.25,0.5)"  />
-  <Button class="pcs_btn_palette_roll_rouse"   colors="#3A1A0A|#502810|#7A3A10|rgba(0.25,0.1,0.04,0.5)" />
-  <Button class="pcs_btn_palette_roll_wp"      colors="#1A2A3A|#284050|#3A6080|rgba(0.1,0.15,0.25,0.5)" />
-  <Button class="pcs_btn_palette_roll_disc"   colors="#2A1A3A|#3A2850|#553A70|rgba(0.15,0.1,0.25,0.5)" />
-  <Button class="pcs_btn_palette_roll_hum"    colors="#3A2A1A|#503828|#705040|rgba(0.25,0.18,0.1,0.5)" />
-  <Button class="pcs_btn_palette_roll_frenzy"  colors="#3A0A0A|#501010|#7A1010|rgba(0.25,0.04,0.04,0.5)" />
-  <Button class="pcs_btn_palette_roll_remorse" colors="#2A1A3A|#3A2050|#553070|rgba(0.15,0.1,0.25,0.5)" />
-</Defaults>
-
-<!-- /include ui/storyteller/panel_pcs_defaults.xml -->
 
   
 <!-- include ui/storyteller/panel_stats_defaults.xml -->
@@ -9984,10 +9922,22 @@ UI.setAttributes("debug_buttonControls", {offsetXY = "-200, 300"})
       <Button class="hud_storyteller_button" onClick="HUD_refreshUi">Refresh UI</Button>
       <Button id="debug_ambient" class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleDebugAmbient">Toggle Lights</Button>
       <Button id="debug_connectionMode" class="hud_storyteller_button toggled_active" onClick="HUD_toggleConnectionMode">Assume Connected</Button>
+      <!-- Assume Connected mode only: per-seat simulated connect / disconnect (green = connected). -->
+      <HorizontalLayout id="debug_simConnectRow" class="debug_button_row">
+        <Button id="debugSimConn_Brown" class="debug_sim_connect_button" onClick="HUD_debugToggleSimulatedConnection">Br</Button>
+        <Button id="debugSimConn_Orange" class="debug_sim_connect_button" onClick="HUD_debugToggleSimulatedConnection">Or</Button>
+        <Button id="debugSimConn_Red" class="debug_sim_connect_button" onClick="HUD_debugToggleSimulatedConnection">Re</Button>
+        <Button id="debugSimConn_Pink" class="debug_sim_connect_button" onClick="HUD_debugToggleSimulatedConnection">Pi</Button>
+        <Button id="debugSimConn_Purple" class="debug_sim_connect_button" onClick="HUD_debugToggleSimulatedConnection">Pu</Button>
+      </HorizontalLayout>
       <Button id="debug_interaction" class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleInteraction">Toggle Interaction</Button>
       <Button class="hud_storyteller_button" onClick="HUD_toggleAllAnchors">Toggle Anchors</Button>
       <Button class="hud_storyteller_button" onClick="HUD_toggleAllSpotlights">Toggle Spotlights</Button>
       <Button class="hud_storyteller_button" onClick="HUD_debugCameraActivate">Debug Camera</Button>
+      <HorizontalLayout class="debug_button_row">
+        <Button class="debug_small_button" onClick="HUD_soundscapePrepareSave">Silence for save</Button>
+        <Button class="debug_small_button" onClick="HUD_soundscapeInspect">Inspect sound</Button>
+      </HorizontalLayout>
     </VerticalLayout>
 
     
@@ -11008,95 +10958,6 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (400-slot 
 
 <!-- /include ui/storyteller/panel_debug_camera.xml -->
 
-    
-<!-- include ui/storyteller/panel_debug_scatter.xml -->
-<Defaults>
-  <HorizontalLayout flexibleHeight="0" />
-  <Text flexibleWidth="0" />
-  <Button flexibleWidth="0" flexibleHeight="0" />
-  <Slider minWidth="120" />
-</Defaults>
-
-<!-- Scatter geometry debug: live sliders for C.Scatter layout constants (ST only). -->
-<Panel id="panel_debug_scatter_root" active="false" color="rgba(0,0,0,0.82)" padding="10 10 10 10" width="1080" scale="0.8" rectAlignment="MiddleLeft" offsetXY="360 0" raycastTarget="true">
-  <VerticalLayout spacing="6" childForceExpandWidth="true" childForceExpandHeight="false">
-    <Text id="ds_debug_label" fontSize="14" color="#7FE7FF" preferredHeight="32">Debug Scatter Geometry</Text>
-
-    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text id="ds_scatter_radius_world_label" preferredWidth="420" fontSize="13" color="#EEEEEE">SCATTER_RADIUS_WORLD = 0</Text>
-    </HorizontalLayout>
-    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Slider id="ds_scatter_radius_world" minValue="0" maxValue="500" value="225" flexibleWidth="1" onValueChanged="HUD_debugScatterSlider" />
-    </HorizontalLayout>
-
-    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text id="ds_scatter_radius_npc_label" preferredWidth="420" fontSize="13" color="#EEEEEE">SCATTER_RADIUS_NPC = 0</Text>
-    </HorizontalLayout>
-    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Slider id="ds_scatter_radius_npc" minValue="0" maxValue="500" value="125" flexibleWidth="1" onValueChanged="HUD_debugScatterSlider" />
-    </HorizontalLayout>
-
-    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text id="ds_scatter_radius_pc_label" preferredWidth="420" fontSize="13" color="#EEEEEE">SCATTER_RADIUS_PC = 0</Text>
-    </HorizontalLayout>
-    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Slider id="ds_scatter_radius_pc" minValue="0" maxValue="500" value="100" flexibleWidth="1" onValueChanged="HUD_debugScatterSlider" />
-    </HorizontalLayout>
-
-    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text id="ds_npc_deployment_arc_label" preferredWidth="420" fontSize="13" color="#EEEEEE">NPC_DEPLOYMENT_ARC = 0</Text>
-    </HorizontalLayout>
-    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Slider id="ds_npc_deployment_arc" minValue="0" maxValue="360" value="70" flexibleWidth="1" onValueChanged="HUD_debugScatterSlider" />
-    </HorizontalLayout>
-
-    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text id="ds_pc_deployment_arc_label" preferredWidth="420" fontSize="13" color="#EEEEEE">PC_DEPLOYMENT_ARC = 0</Text>
-    </HorizontalLayout>
-    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Slider id="ds_pc_deployment_arc" minValue="0" maxValue="360" value="80" flexibleWidth="1" onValueChanged="HUD_debugScatterSlider" />
-    </HorizontalLayout>
-
-    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text id="ds_npc_spacing_min_label" preferredWidth="420" fontSize="13" color="#EEEEEE">NPC_SPACING_MIN = 0</Text>
-    </HorizontalLayout>
-    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Slider id="ds_npc_spacing_min" minValue="0" maxValue="100" value="10" flexibleWidth="1" onValueChanged="HUD_debugScatterSlider" />
-    </HorizontalLayout>
-
-    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Text id="ds_npc_spacing_max_label" preferredWidth="420" fontSize="13" color="#EEEEEE">NPC_SPACING_MAX = 0</Text>
-    </HorizontalLayout>
-    <HorizontalLayout preferredHeight="34" childForceExpandWidth="true" spacing="6" childAlignment="MiddleLeft">
-      <Slider id="ds_npc_spacing_max" minValue="0" maxValue="150" value="22" flexibleWidth="1" onValueChanged="HUD_debugScatterSlider" />
-    </HorizontalLayout>
-
-    <HorizontalLayout preferredHeight="34" spacing="8" childAlignment="MiddleCenter">
-      <Button class="smallButton" preferredWidth="120" fontSize="11" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugScatterApply">Apply</Button>
-      <Button class="smallButton" preferredWidth="120" fontSize="11" textColor="#000000" colors="#CCCCCC|#DDDDDD|#BBBBBB|rgba(0.3,0.3,0.3,0.5)" onClick="HUD_debugScatterDone">Done</Button>
-    </HorizontalLayout>
-  </VerticalLayout>
-</Panel>
-
-<!-- /include ui/storyteller/panel_debug_scatter.xml -->
-
-
-    <!-- ================================================================ -->
-    <!-- Sidebar (reference image toggles) and Camera bar                 -->
-    <!-- ================================================================ -->
-    
-<!-- include ui/storyteller/panel_camera.xml -->
-<!-- Camera Control Panel -->
-<!-- Agent guidance: .dev/HUD_FUNCTIONS.md; .dev/TTS_BUNDLING_SETUP.md. -->
-<!-- Bottom-right: faction icons + camera zoom buttons -->
-<!-- Camera zoom + faction control strip -->
-
-<Panel id="cameraControlPanel">
-
-</Panel>
-
-<!-- /include ui/storyteller/panel_camera.xml -->
-
   </Panel>
 
 </Panel>
@@ -11134,39 +10995,6 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (400-slot 
 
 </Panel>
 <!-- /include ui/storyteller/panel_storyteller_camera.xml -->
-
-
-<!-- include ui/storyteller/panel_spotlight_controls.xml -->
-<!-- Host-only Spotlight carousel strip (TOR-98). Hidden unless currentPhase is Spotlight. -->
-
-<Panel id="spotlightControls_root"
-  visibility="Black|Host"
-  active="false"
-  rectAlignment="LowerCenter"
-  offsetXY="0 28"
-  width="460"
-  height="40"
-  color="rgba(0,0,0,0)"
-  raycastTarget="false">
-  <HorizontalLayout spacing="6" childAlignment="MiddleCenter" childForceExpandWidth="false" childForceExpandHeight="true">
-    <Button id="spotlight_prev" text="‹" fontSize="22" fontStyle="Bold" minWidth="36" preferredWidth="36"
-      colors="#333333|#555555|#222222|#333333" textColor="#FFFFFF" onClick="HUD_spotlightClick" />
-    <Button id="spotlight_seat_1" text="" minWidth="36" preferredWidth="36"
-      colors="#555555|#666666|#444444|#333333" textColor="#FFFFFF" onClick="HUD_spotlightClick" />
-    <Button id="spotlight_seat_2" text="" minWidth="36" preferredWidth="36"
-      colors="#555555|#666666|#444444|#333333" textColor="#FFFFFF" onClick="HUD_spotlightClick" />
-    <Button id="spotlight_seat_3" text="" minWidth="36" preferredWidth="36"
-      colors="#555555|#666666|#444444|#333333" textColor="#FFFFFF" onClick="HUD_spotlightClick" />
-    <Button id="spotlight_seat_4" text="" minWidth="36" preferredWidth="36"
-      colors="#555555|#666666|#444444|#333333" textColor="#FFFFFF" onClick="HUD_spotlightClick" />
-    <Button id="spotlight_seat_5" text="" minWidth="36" preferredWidth="36"
-      colors="#555555|#666666|#444444|#333333" textColor="#FFFFFF" onClick="HUD_spotlightClick" />
-    <Button id="spotlight_next" text="›" fontSize="22" fontStyle="Bold" minWidth="36" preferredWidth="36"
-      colors="#333333|#555555|#222222|#333333" textColor="#FFFFFF" onClick="HUD_spotlightClick" />
-  </HorizontalLayout>
-</Panel>
-
-<!-- /include ui/storyteller/panel_spotlight_controls.xml -->
 
 
 <!-- include ui/storyteller/panel_storyteller_roll_controls.xml -->
@@ -11527,8 +11355,6 @@ UI.setAttributes("storytellerToolbarRoot", {width = "1100"})
     <!-- Top navigation buttons -->
     <HorizontalLayout class="storyteller_button_bar" >
       <Button id="toggle_scenes" text="Scenes" class="storyteller_panel_button"  />
-      <Button id="toggle_soundscape" text="Sound" class="storyteller_panel_button" />
-      <Button id="toggle_pcs" text="PCs" class="storyteller_panel_button" />
       <Button id="toggle_phases" text="Phases" class="storyteller_panel_button" />
       <Button id="toggle_stats" text="Stats" class="storyteller_panel_button" />
       <Button id="toggle_projects" text="Projects" class="storyteller_panel_button" />
@@ -11751,7 +11577,8 @@ UI.setAttributes("scenes_clock_speed", {minWidth = "45"})
 
         
 <!-- include ui/storyteller/panel_scenes_library.xml -->
-<!-- Scene library column: fixed slot buttons + constructor actions (see `core/storyteller_scenes_panel.ttslua`). -->
+<!-- Scene library column: fixed slot buttons + play / unlink / end (see `core/storyteller_scenes_panel.ttslua`).
+     Read-only library: rows are created, edited and deleted on the Storyteller Dashboard. -->
 <VerticalLayout id="panel_scenes_library" class="storyteller_panel_column">
   <Text id="db_panel_scenes_library_header" class="hud_storyteller_header">Scene Library</Text>
 
@@ -11840,49 +11667,8 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
     padding = "50 50 0 0" constraint="FixedRowCount" constraintCount="1" childAlignment="MiddleCenter" childForceExpandWidth="true" childForceExpandHeight="true">
 
     <Button id="scenes_lib_btn_unlink" class="hud_storyteller_button" text="UNLINK" onClick="HUD_scenesLibUnlink" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_ctor_btn_fork" class="hud_storyteller_button" text="FORK" minWidth="150" onClick="HUD_scenesCtorForkOpen" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     <Button id="scenes_lib_btn_end" class="hud_storyteller_button" text="END" onClick="HUD_scenesLibEnd" colors="#444444|#551111|#662222|rgba(0.3,0.1,0.1,0.5)" textColor="#FFFFFF" />
   </GridLayout>
-
-
-  <GridLayout id="scenes_lib_btns_grid_4" cellSize="125 30" spacing="8 6" constraint="FixedRowCount" constraintCount="1" childAlignment="MiddleCenter" childForceExpandWidth="true" childForceExpandHeight="true">
-
-    <Panel class="scenes_lib_btn_spacer" />
-
-    <Button id="scenes_ctor_btn_import" class="hud_storyteller_button" text="Import Scene" minWidth="120" onClick="HUD_scenesCtorImportOpen" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lib_btn_delete" class="hud_storyteller_button" text="Delete Scene" onClick="HUD_scenesLibDelete" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-
-    <Panel class="scenes_lib_btn_spacer" />
-
-  </GridLayout>
-
-
-
-  <Panel id="scenes_ctor_import_modal" active="false" offsetXY="0 0" width="580" minHeight="280" color="rgba(0.05,0.05,0.08,0.95)">
-    <VerticalLayout id="db_panel_scenes_library_constructor_import_modal_content" padding="10 10 10 10" spacing="6" childForceExpandWidth="true" childForceExpandHeight="true">
-      <Text id="db_panel_scenes_library_constructor_import_modal_header" class="hud_storyteller_label">Import Scene (JSON)</Text>
-      <InputField id="scenes_ctor_import_json" minHeight="140" preferredHeight="160" flexibleHeight="1" flexibleWidth="1" fontSize="11" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="MultiLineSubmit" characterValidation="None" text="" onValueChanged="HUD_scenesCtorImportJsonChanged" onEndEdit="HUD_scenesCtorImportJsonChanged" />
-      <Text id="scenes_ctor_import_err" fontSize="10" color="#AAAAAA" minHeight="40" text="" />
-      <HorizontalLayout id="db_panel_scenes_library_constructor_import_modal_buttons" spacing="8" childForceExpandWidth="false" childAlignment="MiddleLeft">
-        <Button id="scenes_ctor_import_confirm" class="hud_storyteller_button" text="Import" minWidth="96" onClick="HUD_scenesCtorImportConfirm" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_ctor_import_cancel" class="hud_storyteller_button" text="Cancel" minWidth="96" onClick="HUD_scenesCtorImportCancel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      </HorizontalLayout>
-    </VerticalLayout>
-  </Panel>
-
-  <Panel id="scenes_ctor_fork_modal" active="false" offsetXY="0 0" width="520" minHeight="200" color="rgba(0.05,0.05,0.08,0.95)">
-    <VerticalLayout id="db_panel_scenes_library_constructor_fork_modal_content" padding="10 10 10 10" spacing="6" childForceExpandWidth="true">
-      <Text id="db_panel_scenes_library_constructor_fork_modal_header" class="hud_storyteller_label">Fork Active Scene</Text>
-      <Text id="db_panel_scenes_library_constructor_fork_modal_new_title_header" fontSize="9" color="#CCCCCC">New scene title</Text>
-      <InputField id="scenes_ctor_fork_title_new" class="hud_storyteller_input" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" text="" onValueChanged="HUD_scenesCtorForkTitleChanged" onEndEdit="HUD_scenesCtorForkTitleChanged" />
-      <Text id="db_panel_scenes_library_constructor_fork_modal_original_title_header" fontSize="9" color="#CCCCCC">Original scene title (frozen row)</Text>
-      <InputField id="scenes_ctor_fork_title_old" class="hud_storyteller_input" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" text="" onValueChanged="HUD_scenesCtorForkTitleChanged" onEndEdit="HUD_scenesCtorForkTitleChanged" />
-      <HorizontalLayout id="db_panel_scenes_library_constructor_fork_modal_buttons" spacing="8" childForceExpandWidth="false" childAlignment="MiddleLeft">
-        <Button id="scenes_ctor_fork_confirm" class="hud_storyteller_button" text="Fork" minWidth="96" onClick="HUD_scenesCtorForkConfirm" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_ctor_fork_cancel" class="hud_storyteller_button" text="Cancel" minWidth="96" onClick="HUD_scenesCtorForkCancel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      </HorizontalLayout>
-    </VerticalLayout>
-  </Panel>
 </VerticalLayout>
 
 <!-- /include ui/storyteller/panel_scenes_library.xml -->
@@ -11891,532 +11677,16 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
       </HorizontalLayout>
 
       
-<!-- include ui/storyteller/panel_soundscape.xml -->
-<!-- Storyteller Soundscape Controls -->
-<!-- Agent guidance: .dev/Soundscape & Audio/SOUNDSCAPE_UNITY_SETUP.md; .dev/HUD_FUNCTIONS.md. -->
-
-<Panel id="panel_soundscape" active="false">
-  <VerticalLayout class="storyteller_panel_column" spacing="5" padding="6 6 6 6" childForceExpandWidth="true" minWidth="520" childForceExpandHeight="false">
-    <Text class="hud_storyteller_header">Sound</Text>
-    <Text id="soundscapeSummary" fontSize="14" color="#DDDDDD">Music: mood/main | Featured: none | Location: none | Weather: none | Rain: none | Wind: none | Thunder: false | Indoors: false</Text>
-
-    <Text class="hud_storyteller_label">Background music</Text>
-    <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
-      <Button id="soundscapeMood_main" text="Main" minWidth="56" preferredWidth="56" onClick="HUD_soundscapeSetMusicMood"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="soundscapeMood_intrigue" text="Intrigue" minWidth="56" preferredWidth="56" onClick="HUD_soundscapeSetMusicMood"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="soundscapeMood_combat" text="Combat" minWidth="56" preferredWidth="56" onClick="HUD_soundscapeSetMusicMood"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="soundscapeMood_location" text="Location" minWidth="62" preferredWidth="62" onClick="HUD_soundscapeSetBackgroundLocation"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    </HorizontalLayout>
-
-    <Text class="hud_storyteller_label">Featured music</Text>
-    <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
-      <Button id="soundscapeFeatured_TR_Full" text="TR Full" minWidth="72" onClick="HUD_soundscapePlayFeatured"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="soundscapeFeatured_TR_Intro" text="TR Intro" minWidth="72" onClick="HUD_soundscapePlayFeatured"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="soundscapeFeatured_TR_Loop" text="TR Loop" minWidth="72" onClick="HUD_soundscapePlayFeatured"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button id="soundscapeFeatured_STB_HouseOfTheRisingSun" text="STB" minWidth="56" onClick="HUD_soundscapePlayFeatured"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-      <Button text="Stop feat." minWidth="72" onClick="HUD_soundscapeStopFeatured" />
-    </HorizontalLayout>
-
-    <Text class="hud_storyteller_label">Lane volumes</Text>
-    <Text id="soundscapeDuckHint" fontSize="12" color="#CCCC66"></Text>
-
-    <HorizontalLayout spacing="6" childForceExpandWidth="true">
-      <Text id="soundscapeLaneLbl_music" preferredWidth="150" minWidth="150" fontSize="14" color="#DDDDDD">Music</Text>
-      <Slider id="soundscapeSlider_music" minValue="0" maxValue="1" value="0" flexibleWidth="1" onValueChanged="HUD_soundscapeLaneSlider" />
-    </HorizontalLayout>
-    <HorizontalLayout spacing="6" childForceExpandWidth="true">
-      <Text id="soundscapeLaneLbl_location" preferredWidth="150" minWidth="150" fontSize="14" color="#DDDDDD">Location</Text>
-      <Slider id="soundscapeSlider_location" minValue="0" maxValue="1" value="0" flexibleWidth="1" onValueChanged="HUD_soundscapeLaneSlider" />
-    </HorizontalLayout>
-    <HorizontalLayout spacing="6" childForceExpandWidth="true">
-      <Text id="soundscapeLaneLbl_featured" preferredWidth="150" minWidth="150" fontSize="14" color="#DDDDDD">Featured</Text>
-      <Slider id="soundscapeSlider_featured" minValue="0" maxValue="1" value="0" flexibleWidth="1" onValueChanged="HUD_soundscapeLaneSlider" />
-    </HorizontalLayout>
-    <HorizontalLayout spacing="6" childForceExpandWidth="true">
-      <Text id="soundscapeLaneLbl_rain" preferredWidth="150" minWidth="150" fontSize="14" color="#DDDDDD">Rain</Text>
-      <Slider id="soundscapeSlider_rain" minValue="0" maxValue="1" value="0" flexibleWidth="1" onValueChanged="HUD_soundscapeLaneSlider" />
-    </HorizontalLayout>
-    <HorizontalLayout spacing="6" childForceExpandWidth="true">
-      <Text id="soundscapeLaneLbl_wind" preferredWidth="150" minWidth="150" fontSize="14" color="#DDDDDD">Wind</Text>
-      <Slider id="soundscapeSlider_wind" minValue="0" maxValue="1" value="0" flexibleWidth="1" onValueChanged="HUD_soundscapeLaneSlider" />
-    </HorizontalLayout>
-    <HorizontalLayout spacing="6" childForceExpandWidth="true">
-      <Text id="soundscapeLaneLbl_thunder" preferredWidth="150" minWidth="150" fontSize="14" color="#DDDDDD">Thunder</Text>
-      <Slider id="soundscapeSlider_thunder" minValue="0" maxValue="1" value="1" flexibleWidth="1" onValueChanged="HUD_soundscapeLaneSlider" />
-    </HorizontalLayout>
-
-    <HorizontalLayout class="hud_storyteller_button_row" spacing="4">
-      <Button text="Inspect" minWidth="62" preferredWidth="62" onClick="HUD_soundscapeInspect" />
-      <Button text="Stop All" minWidth="62" preferredWidth="62" onClick="HUD_soundscapeStopAll" />
-      <Button text="Silence for save" minWidth="120" preferredWidth="120" onClick="HUD_soundscapePrepareSave" />
-    </HorizontalLayout>
-  </VerticalLayout>
-</Panel>
-
-<!-- /include ui/storyteller/panel_soundscape.xml -->
-
-      
-<!-- include ui/storyteller/panel_pcs.xml -->
-<!-- Storyteller PCs panel: health / will / humanity / XP / hunger + torpor (Host only) -->
-<!-- Classes: panel_pcs_defaults.xml — seat `color`, `id`, and button `text` stay inline per element. -->
-<!-- Agent guidance: .dev/HUD_FUNCTIONS.md; .dev/PC Data & Tracking/PC Tracking & State Behavior.md
-
-
--->
-<Panel id="panel_pcs" class="pcs_panel_root" active="false">
-  <VerticalLayout class="pcs_root_vl">
-    <!-- Brown -->
-    <Panel class="pcs_seat_block" color="#6B4423">
-      <VerticalLayout class="pcs_seat_column">
-        <Text class="pcs_char_title" id="pcs_charFullName_Brown">—</Text>
-        <HorizontalLayout class="pcs_stat_row">
-          <Text class="pcs_prefix_desire">Desire:</Text>
-          <Text class="pcs_desire_text" id="pcs_desire_Brown">—</Text>
-          <Button class="pcs_btn pcs_btn_clear_52 pcs_btn_palette_hum_dark" id="pcs_Brown_desireClear" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
-          <Text class="pcs_prefix_wide">Join:</Text>
-          <Toggle class="pcs_join_toggle" id="pcs_deferAutoSeat_Brown" isOn="false" onValueChanged="HUD_pcsDeferAutoSeat">Defer Auto-Seat</Toggle>
-          <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Brown_autoSeat" />
-          <Toggle class="pcs_join_toggle" id="pcs_deferConnect_Brown" isOn="false" onValueChanged="HUD_pcsDeferConnect">Defer Connect</Toggle>
-          <Button class="pcs_btn pcs_btn_connect pcs_btn_palette_join" id="pcs_Brown_connect" />
-          <Button class="pcs_btn_connection" id="pcs_Brown_connection" />
-        </HorizontalLayout>
-        <!-- Roll initiation row: each button starts a roll of that type in SETUP -->
-        <HorizontalLayout class="pcs_stat_row">
-          <Text class="pcs_prefix_wide">Roll:</Text>
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"        id="rollBtn_standard_Brown"    text="Std"   />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_simple"   id="rollBtn_simplecheck_Brown" text="Simple" />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_rouse"    id="rollBtn_rouse_Brown"      text="Rouse"  />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_wp"      id="rollBtn_willpowerroll_Brown" text="WP"   />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_disc"    id="rollBtn_discipline_Brown" text="Disc" />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_hum"     id="rollBtn_humanityroll_Brown" text="Hum"  />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_frenzy"   id="rollBtn_frenzy_Brown"     text="Frenzy" />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_remorse"  id="rollBtn_remorse_Brown"    text="Rem"    />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_launch_Brown"     text="Launch" />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_goal_Brown"       text="Goal"   />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_track_row">
-          <Text class="pcs_prefix_wide">HP:</Text>
-          <Text class="pcs_track_damage" id="pcs_hpTrack_Brown"></Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Brown_hpAggUp" text="▲" />
-          <Text class="pcs_buf_agg" id="pcs_bufHPA_Brown">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Brown_hpAggDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Brown_hpSupUp" text="▲" />
-          <Text class="pcs_buf_neutral" id="pcs_bufHPS_Brown">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Brown_hpSupDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Brown_hpApply" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_track_row">
-          <Text class="pcs_prefix_wide">WP:</Text>
-          <Text class="pcs_track_damage" id="pcs_wpTrack_Brown"> </Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Brown_wpAggUp" text="▲" />
-          <Text class="pcs_buf_agg" id="pcs_bufWPA_Brown">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Brown_wpAggDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Brown_wpSupUp" text="▲" />
-          <Text class="pcs_buf_neutral" id="pcs_bufWPS_Brown">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Brown_wpSupDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Brown_wpApply" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_track_row">
-          <Text class="pcs_prefix_wide">Hum:</Text>
-          <Text class="pcs_track_hum" id="pcs_humTrack_Brown"> </Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Brown_humUp" text="▲" />
-          <Text class="pcs_buf_hum" id="pcs_bufHum_Brown">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Brown_humDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_58 pcs_btn_palette_hum" id="pcs_Brown_humApply" />
-          <Button class="pcs_btn pcs_btn_clear_52 pcs_btn_palette_hum_dark" id="pcs_Brown_humClear" />
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum_base" id="pcs_Brown_humBaseUp" text="▲" />
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum_base" id="pcs_Brown_humBaseDown" text="▼" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
-          <Text class="pcs_prefix_wide">XP:</Text>
-          <Text class="pcs_xp_val" id="pcs_xpVal_Brown">0</Text>
-          <Button class="pcs_btn pcs_btn_palette_xp" id="pcs_Brown_xpOpen" text="XP" preferredWidth="64" preferredHeight="24" />
-          <Text class="pcs_prefix_hg">Hg:</Text>
-          <Text class="pcs_hunger_dots" id="pcs_hungerDots_Brown"></Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Brown_hungerUp" text="▲" />
-          <Text class="pcs_buf_hunger" id="pcs_bufHunger_Brown">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Brown_hungerDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_hunger" id="pcs_Brown_hungerApply" />
-          <Button class="pcs_btn pcs_btn_torpor pcs_btn_palette_torpor" id="pcs_Brown_torporClear" />
-          <Text class="pcs_torpor_lbl" id="pcs_torporLabel_Brown"> </Text>
-          <Button class="pcs_btn pcs_btn_cond pcs_btn_palette_frenzy" id="pcs_Brown_frenzyToggle" text="Frenzy○" />
-          <Button class="pcs_btn pcs_btn_cond pcs_btn_palette_blindfold" id="pcs_Brown_blindfoldToggle" text="Blind○" />
-        </HorizontalLayout>
-      </VerticalLayout>
-    </Panel>
-
-    <!-- Orange -->
-    <Panel class="pcs_seat_block" color="#E67300">
-      <VerticalLayout class="pcs_seat_column">
-        <Text class="pcs_char_title" id="pcs_charFullName_Orange">—</Text>
-        <HorizontalLayout class="pcs_stat_row">
-          <Text class="pcs_prefix_desire">Desire:</Text>
-          <Text class="pcs_desire_text" id="pcs_desire_Orange">—</Text>
-          <Button class="pcs_btn pcs_btn_clear_52 pcs_btn_palette_hum_dark" id="pcs_Orange_desireClear" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
-          <Text class="pcs_prefix_wide">Join:</Text>
-          <Toggle class="pcs_join_toggle" id="pcs_deferAutoSeat_Orange" isOn="false" onValueChanged="HUD_pcsDeferAutoSeat">Defer Auto-Seat</Toggle>
-          <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Orange_autoSeat" />
-          <Toggle class="pcs_join_toggle" id="pcs_deferConnect_Orange" isOn="false" onValueChanged="HUD_pcsDeferConnect">Defer Connect</Toggle>
-          <Button class="pcs_btn pcs_btn_connect pcs_btn_palette_join" id="pcs_Orange_connect" />
-          <Button class="pcs_btn_connection" id="pcs_Orange_connection" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
-          <Text class="pcs_prefix_wide">Roll:</Text>
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"        id="rollBtn_standard_Orange"    text="Std"   />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_simple"   id="rollBtn_simplecheck_Orange" text="Simple" />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_rouse"    id="rollBtn_rouse_Orange"      text="Rouse"  />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_wp"      id="rollBtn_willpowerroll_Orange" text="WP"   />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_disc"    id="rollBtn_discipline_Orange" text="Disc" />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_hum"     id="rollBtn_humanityroll_Orange" text="Hum"  />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_frenzy"   id="rollBtn_frenzy_Orange"     text="Frenzy" />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_remorse"  id="rollBtn_remorse_Orange"    text="Rem"    />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_launch_Orange"     text="Launch" />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_goal_Orange"       text="Goal"   />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_track_row">
-          <Text class="pcs_prefix_wide">HP:</Text>
-          <Text class="pcs_track_damage" id="pcs_hpTrack_Orange"> </Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Orange_hpAggUp" text="▲" />
-          <Text class="pcs_buf_agg" id="pcs_bufHPA_Orange">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Orange_hpAggDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Orange_hpSupUp" text="▲" />
-          <Text class="pcs_buf_neutral" id="pcs_bufHPS_Orange">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Orange_hpSupDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Orange_hpApply" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_track_row">
-          <Text class="pcs_prefix_wide">WP:</Text>
-          <Text class="pcs_track_damage" id="pcs_wpTrack_Orange"> </Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Orange_wpAggUp" text="▲" />
-          <Text class="pcs_buf_agg" id="pcs_bufWPA_Orange">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Orange_wpAggDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Orange_wpSupUp" text="▲" />
-          <Text class="pcs_buf_neutral" id="pcs_bufWPS_Orange">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Orange_wpSupDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Orange_wpApply" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_track_row">
-          <Text class="pcs_prefix_wide">Hum:</Text>
-          <Text class="pcs_track_hum" id="pcs_humTrack_Orange"> </Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Orange_humUp" text="▲" />
-          <Text class="pcs_buf_hum" id="pcs_bufHum_Orange">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Orange_humDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_58 pcs_btn_palette_hum" id="pcs_Orange_humApply" />
-          <Button class="pcs_btn pcs_btn_clear_52 pcs_btn_palette_hum_dark" id="pcs_Orange_humClear" />
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum_base" id="pcs_Orange_humBaseUp" text="▲" />
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum_base" id="pcs_Orange_humBaseDown" text="▼" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
-          <Text class="pcs_prefix_wide">XP:</Text>
-          <Text class="pcs_xp_val" id="pcs_xpVal_Orange">0</Text>
-          <Button class="pcs_btn pcs_btn_palette_xp" id="pcs_Orange_xpOpen" text="XP" preferredWidth="64" preferredHeight="24" />
-          <Text class="pcs_prefix_hg">Hg:</Text>
-          <Text class="pcs_hunger_dots" id="pcs_hungerDots_Orange"></Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Orange_hungerUp" text="▲" />
-          <Text class="pcs_buf_hunger" id="pcs_bufHunger_Orange">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Orange_hungerDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_hunger" id="pcs_Orange_hungerApply" />
-          <Button class="pcs_btn pcs_btn_torpor pcs_btn_palette_torpor" id="pcs_Orange_torporClear" />
-          <Text class="pcs_torpor_lbl" id="pcs_torporLabel_Orange"> </Text>
-          <Button class="pcs_btn pcs_btn_cond pcs_btn_palette_frenzy" id="pcs_Orange_frenzyToggle" text="Frenzy○" />
-          <Button class="pcs_btn pcs_btn_cond pcs_btn_palette_blindfold" id="pcs_Orange_blindfoldToggle" text="Blind○" />
-        </HorizontalLayout>
-      </VerticalLayout>
-    </Panel>
-
-    <!-- Red -->
-    <Panel class="pcs_seat_block" color="#B22222">
-      <VerticalLayout class="pcs_seat_column">
-        <Text class="pcs_char_title" id="pcs_charFullName_Red">—</Text>
-        <HorizontalLayout class="pcs_stat_row">
-          <Text class="pcs_prefix_desire">Desire:</Text>
-          <Text class="pcs_desire_text" id="pcs_desire_Red">—</Text>
-          <Button class="pcs_btn pcs_btn_clear_52 pcs_btn_palette_hum_dark" id="pcs_Red_desireClear" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
-          <Text class="pcs_prefix_wide">Join:</Text>
-          <Toggle class="pcs_join_toggle" id="pcs_deferAutoSeat_Red" isOn="false" onValueChanged="HUD_pcsDeferAutoSeat">Defer Auto-Seat</Toggle>
-          <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Red_autoSeat" />
-          <Toggle class="pcs_join_toggle" id="pcs_deferConnect_Red" isOn="false" onValueChanged="HUD_pcsDeferConnect">Defer Connect</Toggle>
-          <Button class="pcs_btn pcs_btn_connect pcs_btn_palette_join" id="pcs_Red_connect" />
-          <Button class="pcs_btn_connection" id="pcs_Red_connection" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
-          <Text class="pcs_prefix_wide">Roll:</Text>
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"        id="rollBtn_standard_Red"    text="Std"   />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_simple"   id="rollBtn_simplecheck_Red" text="Simple" />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_rouse"    id="rollBtn_rouse_Red"      text="Rouse"  />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_wp"      id="rollBtn_willpowerroll_Red" text="WP"   />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_disc"    id="rollBtn_discipline_Red" text="Disc" />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_hum"     id="rollBtn_humanityroll_Red" text="Hum"  />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_frenzy"   id="rollBtn_frenzy_Red"     text="Frenzy" />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_remorse"  id="rollBtn_remorse_Red"    text="Rem"    />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_launch_Red"     text="Launch" />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_goal_Red"       text="Goal"   />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_track_row">
-          <Text class="pcs_prefix_wide">HP:</Text>
-          <Text class="pcs_track_damage" id="pcs_hpTrack_Red"> </Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Red_hpAggUp" text="▲" />
-          <Text class="pcs_buf_agg" id="pcs_bufHPA_Red">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Red_hpAggDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Red_hpSupUp" text="▲" />
-          <Text class="pcs_buf_neutral" id="pcs_bufHPS_Red">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Red_hpSupDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Red_hpApply" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_track_row">
-          <Text class="pcs_prefix_wide">WP:</Text>
-          <Text class="pcs_track_damage" id="pcs_wpTrack_Red"> </Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Red_wpAggUp" text="▲" />
-          <Text class="pcs_buf_agg" id="pcs_bufWPA_Red">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Red_wpAggDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Red_wpSupUp" text="▲" />
-          <Text class="pcs_buf_neutral" id="pcs_bufWPS_Red">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Red_wpSupDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Red_wpApply" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_track_row">
-          <Text class="pcs_prefix_wide">Hum:</Text>
-          <Text class="pcs_track_hum" id="pcs_humTrack_Red"> </Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Red_humUp" text="▲" />
-          <Text class="pcs_buf_hum" id="pcs_bufHum_Red">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Red_humDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_58 pcs_btn_palette_hum" id="pcs_Red_humApply" />
-          <Button class="pcs_btn pcs_btn_clear_52 pcs_btn_palette_hum_dark" id="pcs_Red_humClear" />
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum_base" id="pcs_Red_humBaseUp" text="▲" />
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum_base" id="pcs_Red_humBaseDown" text="▼" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
-          <Text class="pcs_prefix_wide">XP:</Text>
-          <Text class="pcs_xp_val" id="pcs_xpVal_Red">0</Text>
-          <Button class="pcs_btn pcs_btn_palette_xp" id="pcs_Red_xpOpen" text="XP" preferredWidth="64" preferredHeight="24" />
-          <Text class="pcs_prefix_hg">Hg:</Text>
-          <Text class="pcs_hunger_dots" id="pcs_hungerDots_Red"></Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Red_hungerUp" text="▲" />
-          <Text class="pcs_buf_hunger" id="pcs_bufHunger_Red">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Red_hungerDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_hunger" id="pcs_Red_hungerApply" />
-          <Button class="pcs_btn pcs_btn_torpor pcs_btn_palette_torpor" id="pcs_Red_torporClear" />
-          <Text class="pcs_torpor_lbl" id="pcs_torporLabel_Red"> </Text>
-          <Button class="pcs_btn pcs_btn_cond pcs_btn_palette_frenzy" id="pcs_Red_frenzyToggle" text="Frenzy○" />
-          <Button class="pcs_btn pcs_btn_cond pcs_btn_palette_blindfold" id="pcs_Red_blindfoldToggle" text="Blind○" />
-        </HorizontalLayout>
-      </VerticalLayout>
-    </Panel>
-
-    <!-- Pink -->
-    <Panel class="pcs_seat_block" color="#C71585">
-      <VerticalLayout class="pcs_seat_column">
-        <Text class="pcs_char_title" id="pcs_charFullName_Pink">—</Text>
-        <HorizontalLayout class="pcs_stat_row">
-          <Text class="pcs_prefix_desire">Desire:</Text>
-          <Text class="pcs_desire_text" id="pcs_desire_Pink">—</Text>
-          <Button class="pcs_btn pcs_btn_clear_52 pcs_btn_palette_hum_dark" id="pcs_Pink_desireClear" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
-          <Text class="pcs_prefix_wide">Join:</Text>
-          <Toggle class="pcs_join_toggle" id="pcs_deferAutoSeat_Pink" isOn="false" onValueChanged="HUD_pcsDeferAutoSeat">Defer Auto-Seat</Toggle>
-          <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Pink_autoSeat" />
-          <Toggle class="pcs_join_toggle" id="pcs_deferConnect_Pink" isOn="false" onValueChanged="HUD_pcsDeferConnect">Defer Connect</Toggle>
-          <Button class="pcs_btn pcs_btn_connect pcs_btn_palette_join" id="pcs_Pink_connect" />
-          <Button class="pcs_btn_connection" id="pcs_Pink_connection" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
-          <Text class="pcs_prefix_wide">Roll:</Text>
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"        id="rollBtn_standard_Pink"    text="Std"   />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_simple"   id="rollBtn_simplecheck_Pink" text="Simple" />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_rouse"    id="rollBtn_rouse_Pink"      text="Rouse"  />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_wp"      id="rollBtn_willpowerroll_Pink" text="WP"   />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_disc"    id="rollBtn_discipline_Pink" text="Disc" />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_hum"     id="rollBtn_humanityroll_Pink" text="Hum"  />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_frenzy"   id="rollBtn_frenzy_Pink"     text="Frenzy" />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_remorse"  id="rollBtn_remorse_Pink"    text="Rem"    />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_launch_Pink"     text="Launch" />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_goal_Pink"       text="Goal"   />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_track_row">
-          <Text class="pcs_prefix_wide">HP:</Text>
-          <Text class="pcs_track_damage" id="pcs_hpTrack_Pink"> </Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Pink_hpAggUp" text="▲" />
-          <Text class="pcs_buf_agg" id="pcs_bufHPA_Pink">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Pink_hpAggDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Pink_hpSupUp" text="▲" />
-          <Text class="pcs_buf_neutral" id="pcs_bufHPS_Pink">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Pink_hpSupDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Pink_hpApply" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_track_row">
-          <Text class="pcs_prefix_wide">WP:</Text>
-          <Text class="pcs_track_damage" id="pcs_wpTrack_Pink"> </Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Pink_wpAggUp" text="▲" />
-          <Text class="pcs_buf_agg" id="pcs_bufWPA_Pink">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Pink_wpAggDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Pink_wpSupUp" text="▲" />
-          <Text class="pcs_buf_neutral" id="pcs_bufWPS_Pink">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Pink_wpSupDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Pink_wpApply" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_track_row">
-          <Text class="pcs_prefix_wide">Hum:</Text>
-          <Text class="pcs_track_hum" id="pcs_humTrack_Pink"> </Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Pink_humUp" text="▲" />
-          <Text class="pcs_buf_hum" id="pcs_bufHum_Pink">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Pink_humDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_58 pcs_btn_palette_hum" id="pcs_Pink_humApply" />
-          <Button class="pcs_btn pcs_btn_clear_52 pcs_btn_palette_hum_dark" id="pcs_Pink_humClear" />
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum_base" id="pcs_Pink_humBaseUp" text="▲" />
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum_base" id="pcs_Pink_humBaseDown" text="▼" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
-          <Text class="pcs_prefix_wide">XP:</Text>
-          <Text class="pcs_xp_val" id="pcs_xpVal_Pink">0</Text>
-          <Button class="pcs_btn pcs_btn_palette_xp" id="pcs_Pink_xpOpen" text="XP" preferredWidth="64" preferredHeight="24" />
-          <Text class="pcs_prefix_hg">Hg:</Text>
-          <Text class="pcs_hunger_dots" id="pcs_hungerDots_Pink"></Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Pink_hungerUp" text="▲" />
-          <Text class="pcs_buf_hunger" id="pcs_bufHunger_Pink">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Pink_hungerDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_hunger" id="pcs_Pink_hungerApply" />
-          <Button class="pcs_btn pcs_btn_torpor pcs_btn_palette_torpor" id="pcs_Pink_torporClear" />
-          <Text class="pcs_torpor_lbl" id="pcs_torporLabel_Pink"> </Text>
-          <Button class="pcs_btn pcs_btn_cond pcs_btn_palette_frenzy" id="pcs_Pink_frenzyToggle" text="Frenzy○" />
-          <Button class="pcs_btn pcs_btn_cond pcs_btn_palette_blindfold" id="pcs_Pink_blindfoldToggle" text="Blind○" />
-        </HorizontalLayout>
-      </VerticalLayout>
-    </Panel>
-
-    <!-- Purple -->
-    <Panel class="pcs_seat_block" color="#5E2A7E">
-      <VerticalLayout class="pcs_seat_column">
-        <Text class="pcs_char_title" id="pcs_charFullName_Purple">—</Text>
-        <HorizontalLayout class="pcs_stat_row">
-          <Text class="pcs_prefix_desire">Desire:</Text>
-          <Text class="pcs_desire_text" id="pcs_desire_Purple">—</Text>
-          <Button class="pcs_btn pcs_btn_clear_52 pcs_btn_palette_hum_dark" id="pcs_Purple_desireClear" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
-          <Text class="pcs_prefix_wide">Join:</Text>
-          <Toggle class="pcs_join_toggle" id="pcs_deferAutoSeat_Purple" isOn="false" onValueChanged="HUD_pcsDeferAutoSeat">Defer Auto-Seat</Toggle>
-          <Button class="pcs_btn pcs_btn_auto_seat pcs_btn_palette_join" id="pcs_Purple_autoSeat" />
-          <Toggle class="pcs_join_toggle" id="pcs_deferConnect_Purple" isOn="false" onValueChanged="HUD_pcsDeferConnect">Defer Connect</Toggle>
-          <Button class="pcs_btn pcs_btn_connect pcs_btn_palette_join" id="pcs_Purple_connect" />
-          <Button class="pcs_btn_connection" id="pcs_Purple_connection" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
-          <Text class="pcs_prefix_wide">Roll:</Text>
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"        id="rollBtn_standard_Purple"    text="Std"   />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_simple"   id="rollBtn_simplecheck_Purple" text="Simple" />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_rouse"    id="rollBtn_rouse_Purple"      text="Rouse"  />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_wp"      id="rollBtn_willpowerroll_Purple" text="WP"   />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_disc"    id="rollBtn_discipline_Purple" text="Disc" />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_hum"     id="rollBtn_humanityroll_Purple" text="Hum"  />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_frenzy"   id="rollBtn_frenzy_Purple"     text="Frenzy" />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_remorse"  id="rollBtn_remorse_Purple"    text="Rem"    />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_launch_Purple"     text="Launch" />
-          <Button class="pcs_btn pcs_btn_roll pcs_btn_palette_roll_std"       id="rollBtn_goal_Purple"       text="Goal"   />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_track_row">
-          <Text class="pcs_prefix_wide">HP:</Text>
-          <Text class="pcs_track_damage" id="pcs_hpTrack_Purple"> </Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Purple_hpAggUp" text="▲" />
-          <Text class="pcs_buf_agg" id="pcs_bufHPA_Purple">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Purple_hpAggDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Purple_hpSupUp" text="▲" />
-          <Text class="pcs_buf_neutral" id="pcs_bufHPS_Purple">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Purple_hpSupDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Purple_hpApply" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_track_row">
-          <Text class="pcs_prefix_wide">WP:</Text>
-          <Text class="pcs_track_damage" id="pcs_wpTrack_Purple"> </Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Purple_wpAggUp" text="▲" />
-          <Text class="pcs_buf_agg" id="pcs_bufWPA_Purple">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_agg" id="pcs_Purple_wpAggDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Purple_wpSupUp" text="▲" />
-          <Text class="pcs_buf_neutral" id="pcs_bufWPS_Purple">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_sup" id="pcs_Purple_wpSupDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_track_apply" id="pcs_Purple_wpApply" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_track_row">
-          <Text class="pcs_prefix_wide">Hum:</Text>
-          <Text class="pcs_track_hum" id="pcs_humTrack_Purple"> </Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Purple_humUp" text="▲" />
-          <Text class="pcs_buf_hum" id="pcs_bufHum_Purple">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum" id="pcs_Purple_humDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_58 pcs_btn_palette_hum" id="pcs_Purple_humApply" />
-          <Button class="pcs_btn pcs_btn_clear_52 pcs_btn_palette_hum_dark" id="pcs_Purple_humClear" />
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum_base" id="pcs_Purple_humBaseUp" text="▲" />
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hum_base" id="pcs_Purple_humBaseDown" text="▼" />
-        </HorizontalLayout>
-        <HorizontalLayout class="pcs_stat_row">
-          <Text class="pcs_prefix_wide">XP:</Text>
-          <Text class="pcs_xp_val" id="pcs_xpVal_Purple">0</Text>
-          <Button class="pcs_btn pcs_btn_palette_xp" id="pcs_Purple_xpOpen" text="XP" preferredWidth="64" preferredHeight="24" />
-          <Text class="pcs_prefix_hg">Hg:</Text>
-          <Text class="pcs_hunger_dots" id="pcs_hungerDots_Purple"></Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Purple_hungerUp" text="▲" />
-          <Text class="pcs_buf_hunger" id="pcs_bufHunger_Purple">+0</Text>
-          <Button class="pcs_btn pcs_btn_arrow pcs_btn_palette_hunger" id="pcs_Purple_hungerDown" text="▼" />
-          <Button class="pcs_btn pcs_btn_apply_64 pcs_btn_palette_hunger" id="pcs_Purple_hungerApply" />
-          <Button class="pcs_btn pcs_btn_torpor pcs_btn_palette_torpor" id="pcs_Purple_torporClear" />
-          <Text class="pcs_torpor_lbl" id="pcs_torporLabel_Purple"> </Text>
-          <Button class="pcs_btn pcs_btn_cond pcs_btn_palette_frenzy" id="pcs_Purple_frenzyToggle" text="Frenzy○" />
-          <Button class="pcs_btn pcs_btn_cond pcs_btn_palette_blindfold" id="pcs_Purple_blindfoldToggle" text="Blind○" />
-        </HorizontalLayout>
-      </VerticalLayout>
-    </Panel>
-  </VerticalLayout>
-</Panel>
-
-<!-- /include ui/storyteller/panel_pcs.xml -->
-
-      
 <!-- include ui/storyteller/panel_phases.xml -->
-<!--
-UI.setAttributes("input_sessionNum", {minHeight = "30", fontStyle = "Bold"})
--->
+<!-- Phase advance, Play subphase and session number/name live on the Storyteller Dashboard.
+     This panel keeps the session-start transition toggle and the join repair controls (TOR-439). -->
 
 <Panel id="panel_phases" active="false">
   <VerticalLayout class="storyteller_panel_column" spacing="6" padding="6 6 6 6" childForceExpandWidth="false">
-    <Text class="hud_storyteller_header">Session phase</Text>
-    <Text id="phase_currentLabel" fontSize="16" fontStyle="Bold" color="#FFFFFF" text="Intermission" />
-    <Text fontSize="12" color="#AAAAAA">Advance loops Intermission → Play → Spotlight → End. Play subphases switch freely.</Text>
+    <Text class="hud_storyteller_header">Phase tools</Text>
     <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
-      <Button id="phase_Advance" text="Advance →" minWidth="120" preferredWidth="120" onClick="HUD_phaseAdvance"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Text id="phase_AdvanceConfirmHint" fontSize="13" fontStyle="Bold" color="#FF0000" active="false"
-        alignment="MiddleLeft" text="Click Again to Confirm" />
       <Toggle id="phase_sessionStartQuick" isOn="false" onValueChanged="HUD_phaseSessionStartQuick"
         minWidth="170" preferredWidth="190" textColor="#FFFFFF">Quick Transition</Toggle>
-    </HorizontalLayout>
-    <Text fontSize="12" color="#AAAAAA">Play subphase</Text>
-    <HorizontalLayout id="phase_subphaseRow" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
-      <Button id="phase_sub_Main" text="Main" minWidth="72" preferredWidth="72" onClick="HUD_setPlaySubPhase"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="phase_sub_Downtime" text="Downtime" minWidth="72" preferredWidth="72" onClick="HUD_setPlaySubPhase"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="phase_sub_Memoriam" text="Memoriam" minWidth="72" preferredWidth="72" onClick="HUD_setPlaySubPhase"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    </HorizontalLayout>
-    <Text fontSize="14" fontStyle="Bold" color="#AAAAAA">Session</Text>
-    <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
-      <InputField id="input_sessionNum" characterValidation="Integer" text="1" minWidth="80" preferredWidth="80"
-        onValueChanged="HUD_sessionNumInput" onEndEdit="HUD_sessionNumInput" />
-      <InputField id="input_sessionName" text="" minWidth="180" preferredWidth="220"
-        onValueChanged="HUD_sessionNameInput" onEndEdit="HUD_sessionNameInput" />
     </HorizontalLayout>
     <Text fontSize="14" fontStyle="Bold" color="#AAAAAA">Join controls</Text>
     <Text fontSize="12" color="#AAAAAA">Defer setXML skips automatic Global UI rebuild. Arm colds HUD/assets/pools; restore in order with the buttons below.</Text>
@@ -15284,8 +14554,8 @@ UI.hide("sessionStartHeal_playerContainer_Orange")
 <!-- Storyteller Scenes: district/site pickers from `node .dev/scripts/generate_scenes_location_modals_xml.js` -->
 
 <!-- include ui/storyteller/panel_scenes_location_modals.xml -->
-<!-- AUTO-GENERATED — do not edit by hand. Sources: lib/constants.ttslua (districts/sites), lib/skyboxes_catalog.ttslua (skyboxes) -->
-<!-- Regenerate: node .dev/scripts/generate_scenes_location_modals_xml.js (or npm run skyboxes:import) -->
+<!-- AUTO-GENERATED — do not edit by hand. Sources: lib/locations_catalog.ttslua (districts/sites), lib/skyboxes_catalog.ttslua (skyboxes) -->
+<!-- Regenerate: node .dev/scripts/generate_scenes_location_modals_xml.js (or npm run locations:import / skyboxes:import) -->
 
 <!-- Host/Black only; centered pickers for Scenes panel district/site/skybox keys. -->
 <Panel id="scenes_modal_districts_root" visibility="Black|Host" active="False" width="1120" height="580" rectAlignment="MiddleCenter" offsetXY="0 0">
@@ -15312,7 +14582,7 @@ UI.hide("sessionStartHeal_playerContainer_Orange")
           <Button id="scenes_pick_district_Discovery" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Discovery District" onClick="HUD_scenesPickDistrict" />
           <Button id="scenes_pick_district_DistilleryDist" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Distillery District" onClick="HUD_scenesPickDistrict" />
           <Button id="scenes_pick_district_DonRavine" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Don River Ravine" onClick="HUD_scenesPickDistrict" />
-          <Button id="scenes_pick_district_DupontByTheCastle" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Dupont By The Castle" onClick="HUD_scenesPickDistrict" />
+          <Button id="scenes_pick_district_DupontByTheCastle" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Dupont by the Castle" onClick="HUD_scenesPickDistrict" />
           <Button id="scenes_pick_district_GayVillage" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Gay Village" onClick="HUD_scenesPickDistrict" />
           <Button id="scenes_pick_district_HarbordVillage" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Harbord Village" onClick="HUD_scenesPickDistrict" />
           <Button id="scenes_pick_district_Humewood" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Humewood" onClick="HUD_scenesPickDistrict" />
@@ -15338,10 +14608,10 @@ UI.hide("sessionStartHeal_playerContainer_Orange")
           <Button id="scenes_pick_district_Wychwood" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Wychwood" onClick="HUD_scenesPickDistrict" />
         </HorizontalLayout>
         <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
+          <Button id="scenes_pick_district_YongeBloorMuseum" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Yonge &amp; Bloor Museum District" onClick="HUD_scenesPickDistrict" />
           <Button id="scenes_pick_district_YongeDundasHospital" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Yonge &amp; Dundas Hospital District" onClick="HUD_scenesPickDistrict" />
           <Button id="scenes_pick_district_YongeStreet" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Yonge Street" onClick="HUD_scenesPickDistrict" />
           <Button id="scenes_pick_district_Yorkville" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Yorkville" onClick="HUD_scenesPickDistrict" />
-          <Button id="scenes_pick_district_YongeBloorMuseum" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Young &amp; Bloor Museum District" onClick="HUD_scenesPickDistrict" />
         </HorizontalLayout>
       </VerticalLayout>
     </VerticalScrollView>
@@ -15470,7 +14740,7 @@ UI.hide("sessionStartHeal_playerContainer_Orange")
     </VerticalLayout>
 
     <VerticalLayout id="scenes_site_group_dist_DupontByTheCastle" active="False" visibility="None" spacing="4" padding="0 0 10 0" childForceExpandWidth="true">
-      <Text fontSize="11" fontStyle="Bold" color="#C9A84C" alignment="UpperCenter" text="Dupont By The Castle — district sites" />
+      <Text fontSize="11" fontStyle="Bold" color="#C9A84C" alignment="UpperCenter" text="Dupont by the Castle — district sites" />
       <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
         <Button id="scenes_pick_site_CLGrounds" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Estate Grounds" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_CLGallery" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Gallery of Mirrors" onClick="HUD_scenesPickSite" />
@@ -15650,6 +14920,18 @@ UI.hide("sessionStartHeal_playerContainer_Orange")
       </HorizontalLayout>
     </VerticalLayout>
 
+    <VerticalLayout id="scenes_site_group_dist_YongeBloorMuseum" active="False" visibility="None" spacing="4" padding="0 0 10 0" childForceExpandWidth="true">
+      <Text fontSize="11" fontStyle="Bold" color="#C9A84C" alignment="UpperCenter" text="The Yonge &amp; Bloor Museum District — district sites" />
+      <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
+        <Button id="scenes_pick_site_CeramicsMuseum" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Gardiner Ceramics Museum" onClick="HUD_scenesPickSite" />
+        <Button id="scenes_pick_site_ROMLoadingZone" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: Bloor Street Loading Zone" onClick="HUD_scenesPickSite" />
+        <Button id="scenes_pick_site_ROMC5Lounge" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: C5 Lounge" onClick="HUD_scenesPickSite" />
+        <Button id="scenes_pick_site_ROMRotunda" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: Rotunda Mezzanine" onClick="HUD_scenesPickSite" />
+        <Button id="scenes_pick_site_ROMSpiritHouse" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: Spirit House" onClick="HUD_scenesPickSite" />
+        <Button id="scenes_pick_site_ROMHallOfExtinction" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: The Hall of Extinction" onClick="HUD_scenesPickSite" />
+      </HorizontalLayout>
+    </VerticalLayout>
+
     <VerticalLayout id="scenes_site_group_dist_YongeDundasHospital" active="False" visibility="None" spacing="4" padding="0 0 10 0" childForceExpandWidth="true">
       <Text fontSize="11" fontStyle="Bold" color="#C9A84C" alignment="UpperCenter" text="The Yonge &amp; Dundas Hospital District — district sites" />
       <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
@@ -15674,18 +14956,6 @@ UI.hide("sessionStartHeal_playerContainer_Orange")
       <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
         <Button id="scenes_pick_site_TeteATete" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Tête-à-Tête Hair Atelier" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_YorkvilleApt1" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Yorkville Apartment" onClick="HUD_scenesPickSite" />
-      </HorizontalLayout>
-    </VerticalLayout>
-
-    <VerticalLayout id="scenes_site_group_dist_YongeBloorMuseum" active="False" visibility="None" spacing="4" padding="0 0 10 0" childForceExpandWidth="true">
-      <Text fontSize="11" fontStyle="Bold" color="#C9A84C" alignment="UpperCenter" text="The Young &amp; Bloor Museum District — district sites" />
-      <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
-        <Button id="scenes_pick_site_CeramicsMuseum" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Gardiner Ceramics Museum" onClick="HUD_scenesPickSite" />
-        <Button id="scenes_pick_site_ROMLoadingZone" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: Bloor Street Loading Zone" onClick="HUD_scenesPickSite" />
-        <Button id="scenes_pick_site_ROMC5Lounge" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: C5 Lounge" onClick="HUD_scenesPickSite" />
-        <Button id="scenes_pick_site_ROMRotunda" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: Rotunda Mezzanine" onClick="HUD_scenesPickSite" />
-        <Button id="scenes_pick_site_ROMSpiritHouse" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: Spirit House" onClick="HUD_scenesPickSite" />
-        <Button id="scenes_pick_site_ROMHallOfExtinction" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: The Hall of Extinction" onClick="HUD_scenesPickSite" />
       </HorizontalLayout>
     </VerticalLayout>
 
@@ -16286,440 +15556,6 @@ UI.hide("sessionStartHeal_playerContainer_Orange")
   </Panel>
 
 <!-- /include ui/storyteller/project_editor_modal.xml -->
-
-
-<!-- include ui/storyteller/xp_log_modal.xml -->
-<!-- Storyteller XP log modal (PCs panel). TOR-92 -->
-<Panel id="xpLog_modal"
-  visibility="Black|Host"
-  active="False"
-  rectAlignment="MiddleCenter"
-  offsetXY="0 0"
-  preferredWidth="520"
-  width="520"
-  height="320"
-  preferredHeight="320"
-  color="rgba(0.05,0.05,0.08,0.96)">
-
-  <VerticalLayout id="xpLog_content" spacing="8" padding="16 16 16 16" childForceExpandHeight="false">
-
-    <HorizontalLayout spacing="8" preferredHeight="28" childForceExpandWidth="false">
-      <Text id="xpLog_title" fontSize="16" fontStyle="Bold" color="#FFD700" text="Experience" flexibleWidth="1" alignment="MiddleLeft" />
-      <Button id="xpLog_close" text="X" preferredWidth="28" preferredHeight="26" fontSize="14"
-        colors="#333333|#444444|#555555|rgba(0.2,0.2,0.2,0.5)" textColor="#FFFFFF"
-        tooltip="Close"
-        onClick="HUD_xpLogCancel" />
-    </HorizontalLayout>
-
-    <HorizontalLayout spacing="8" preferredHeight="32" childForceExpandWidth="false">
-      <Text fontSize="12" color="#CCCCCC" text="Amount" preferredWidth="80" alignment="MiddleLeft" />
-      <InputField id="xpLog_amount" contentType="IntegerNumber" text="" characterLimit="5" preferredWidth="100" preferredHeight="28"
-        onValueChanged="HUD_xpLogField" onEndEdit="HUD_xpLogField" />
-      <Text fontSize="11" color="#888888" text="(+gain / −spend)" alignment="MiddleLeft" />
-    </HorizontalLayout>
-
-    <HorizontalLayout spacing="8" preferredHeight="32" childForceExpandWidth="false">
-      <Text fontSize="12" color="#CCCCCC" text="Description" preferredWidth="80" alignment="MiddleLeft" />
-      <InputField id="xpLog_description" text="" preferredWidth="360" preferredHeight="28"
-        onValueChanged="HUD_xpLogField" onEndEdit="HUD_xpLogField" />
-    </HorizontalLayout>
-
-    <HorizontalLayout id="xpLog_undoRow" spacing="8" preferredHeight="28" childForceExpandWidth="false" active="false">
-      <Text id="xpLog_lastEntry" fontSize="11" color="#AAAAAA" text="" flexibleWidth="1" alignment="MiddleLeft" />
-      <Button id="xpLog_undo" text="Undo" preferredWidth="80" preferredHeight="26" fontSize="11"
-        colors="#662222|#883333|#991111|rgba(0.5,0.1,0.1,0.4)" textColor="#FFFFFF"
-        onClick="HUD_xpLogUndo" />
-    </HorizontalLayout>
-
-    <HorizontalLayout spacing="8" preferredHeight="36" childAlignment="MiddleCenter">
-      <Button id="xpLog_apply" text="Apply" preferredWidth="100" preferredHeight="32" fontSize="12"
-        colors="#225522|#336633|#44AA44|rgba(0.1,0.3,0.1,0.5)" textColor="#FFFFFF"
-        onClick="HUD_xpLogApply" />
-      <Button id="xpLog_applyAll" text="Apply to All" preferredWidth="120" preferredHeight="32" fontSize="12"
-        colors="#224466|#335577|#4466AA|rgba(0.1,0.2,0.3,0.4)" textColor="#FFFFFF"
-        onClick="HUD_xpLogApplyAll" />
-      <Button id="xpLog_cancel" text="Cancel" preferredWidth="100" preferredHeight="32" fontSize="12"
-        colors="#333333|#444444|#555555|rgba(0.2,0.2,0.2,0.5)" textColor="#FFFFFF"
-        onClick="HUD_xpLogCancel" />
-    </HorizontalLayout>
-
-  </VerticalLayout>
-</Panel>
-
-<!-- /include ui/storyteller/xp_log_modal.xml -->
-
-
-<!-- include ui/storyteller/memoriam_modal.xml -->
-<Defaults>
-
-  <VerticalLayout class="memoriam_modal_container"
-    rectAlignment = "MiddleCenter"
-    width = "1240"
-    height = "800"
-    padding = "20 20 20 20"
-    color = "#000000"
-    childAlignment = "UpperCenter"
-    spacing = "10"
-    childForceExpandWidth = "true"
-    childForceExpandHeight = "false"
-   />
-
-  <Text class="memoriam_modal_title"
-    alignment = "MiddleCenter"
-    color = "#cb995c"
-    fontStyle = "Bold"
-    fontSize = "24"
-  />
-
-  <HorizontalLayout class="memoriam_modal_pc_selection"
-    preferredHeight = "40"
-    minHeight = "40"
-    flexibleHeight = "0"
-    spacing = "8"
-    childForceExpandWidth = "true"
-    childForceExpandHeight = "true"
-    childAlignment = "MiddleCenter"
-  />
-
-  <Button class="memoriam_modal_pc_selection_button"
-    textAlignment = "MiddleCenter"
-    fontSize = "14"
-    fontStyle = "Bold"
-    onClick = "HUD_memoriamModalPcButton"
-  />
-
-  <VerticalLayout class="memoriam_modal_period_selection"
-    preferredHeight = "150"
-    flexibleHeight = "0"
-    spacing = "0"
-    padding = "0 0 0 0"
-    childAlignment = "UpperCenter"
-    childForceExpandWidth = "true"
-    childForceExpandHeight = "true"
-  />
-
-  <Text class="memoriam_modal_selected_date"
-    alignment = "LowerCenter"
-    color = "#FFFFFF"
-    fontSize = "30"
-    fontStyle = "BoldAndItalic"
-    preferredHeight = "40"
-  />
-  <Text class="memoriam_modal_selected_location"
-    alignment = "MiddleCenter"
-    color = "#FFFFFF"
-    fontSize = "24"
-    fontStyle = "BoldAndItalic"
-    preferredHeight = "30"
-  />
-
-  <HorizontalLayout class="memoriam_modal_period_indicator_bar"
-    childForceExpandHeight = "true"
-    childForceExpandWidth = "false"
-    spacing = "0"
-    padding = "10 10 0 0"
-    childAlignment = "MiddleLeft"
-    preferredHeight = "40"
-  />
-
-  <Panel class="memoriam_modal_period_indicator"
-    flexibleHeight = "1"
-    flexibleWidth = "0"
-  />
-
-  <Slider class="memoriam_modal_period_selection_slider"
-    minValue = "0"
-    maxValue = "5000"
-    wholeNumbers = "true"
-    direction = "LeftToRight"
-    value = "0"
-    onValueChanged = "HUD_memoriamModalSlider"
-    flexibleHeight = "1"
-    flexibleWidth = "1"
-    preferredHeight = "40"
-  />
-
-  <VerticalLayout class="memoriam_modal_scene_selection" spacing="10" childForceExpandHeight="false" childForceExpandWidth="true" />
-
-  <GridLayout class="memoriam_modal_scene_selection_grid"
-    padding = "0 0 0 0"
-    spacing = "0 0"
-    cellSize = "85 40"
-    startCorner = "UpperLeft"
-    startAxis = "Vertical"
-    childAlignment = "MiddleCenter"
-    constraint = "FixedRowCount"
-    constraintCount = "4"
-    childForceExpandWidth = "true"
-    childForceExpandHeight = "true"
-  />
-
-  <Button class="memoriam_modal_scene_selection_button"
-    textAlignment = "MiddleCenter"
-    fontSize = "10"
-    fontStyle = "Bold"
-    onClick = "HUD_memoriamModalSceneButton"
-  />
-
-  <Button class="selection_button_idle"
-    color = "#999999"
-    colors = "#999999|#999999|#999999|#999999" />
-
-  <Button class="selection_button_highlighted"
-    color = "#FFFF00"
-    colors = "#FFFF00|#FFFF00|#FFFF00|#FFFF00" />
-
-  <Button class="selection_button_selected"
-    color = "#00FF00"
-    colors = "#00FF00|#00FF00|#00FF00|#00FF00" />
-
-  <Button class="selection_button_dummy"
-    color = "#000000"
-    colors = "#000000|#000000|#000000|#000000" />
-
-  <HorizontalLayout class="memoriam_modal_just_smoke_row" preferredHeight="40" minHeight="40" flexibleHeight="0" childForceExpandWidth="false" childForceExpandHeight="false" childAlignment="MiddleCenter" />
-
-  <Button class="memoriam_modal_just_smoke_button" textAlignment="MiddleCenter" fontSize="10" fontStyle="Bold" preferredWidth="85" minWidth="85" preferredHeight="40" minHeight="40" flexibleWidth="0" onClick="HUD_memoriamModalJustSmoke" />
-
-  <VerticalLayout class="memoriam_modal_npc_assignment"
-    childForceExpandWidth = "false"
-    childAlignment = "MiddleCenter"
-  />
-  <HorizontalLayout class="memoriam_modal_npc_assignment"
-    spacing = "20"
-    padding = "10 10 10 10"
-  />
-  <Text class="memoriam_modal_npc_assignment_label"
-    fontSize = "24"
-    fontStyle = "Bold"
-    color = "#FFFFFF"
-    minWidth = "400"
-    alignment = "MiddleLeft"
-  />
-  <Text class="memoriam_modal_npc_assignment_value"
-    fontSize = "24"
-    fontStyle = "Bold"
-    color = "#cb995c"
-    minWidth = "400"
-    alignment = "MiddleLeft"
-  />
-  <Button class="memoriam_modal_npc_presence_button"
-    flexibleWidth = "0"
-    minWidth = "30"
-    preferredWidth = "30"
-    minHeight = "30"
-    preferredHeight = "30"
-    text = ""
-    onClick = "HUD_memoriamModalPcPresence"
-  />
-  <Button class="memoriam_modal_npc_assignment_button"
-    flexibleWidth = "0"
-    minWidth = "30"
-    preferredWidth = "30"
-    onClick = "HUD_memoriamModalNpcPlus"
-  />
-
-  <Button class="memoriam_npc"
-    onClick = "HUD_memoriamModalNpcPick"
-  />
-
-</Defaults>
-
-<!-- Memoriam Modal -->
-<VerticalLayout id="memoriam_modal" class="memoriam_modal_container" visibility="Black|Host" active="false">
-
-  <Text class="memoriam_modal_title" text="Memoriam" />
-
-  <!-- PC Selection -->
-  <HorizontalLayout class="memoriam_modal_pc_selection">
-    <Button id="memoriam_modal_pc_lucien_button" class="memoriam_modal_pc_selection_button selection_button_idle" text="Lord Lucien" />
-    <Button id="memoriam_modal_pc_rashid_button" class="memoriam_modal_pc_selection_button selection_button_idle" text="Rashid Abdulrahman" />
-    <Button id="memoriam_modal_pc_aishe_button" class="memoriam_modal_pc_selection_button selection_button_idle" text="Aishe Tache" />
-    <Button id="memoriam_modal_pc_fomorach_button" class="memoriam_modal_pc_selection_button selection_button_idle" text="Fomórach" />
-    <Button id="memoriam_modal_pc_blackCaesar_button" class="memoriam_modal_pc_selection_button selection_button_idle" text="Black Caesar" />
-  </HorizontalLayout>
-
-  <!-- Period Selection Slider -->
-  <VerticalLayout id="memoriam_modal_period_selection" class="memoriam_modal_period_selection">
-
-    <Text id="memoriam_modal_selected_date" class="memoriam_modal_selected_date" />
-
-    <Text id="memoriam_modal_selected_location" class="memoriam_modal_selected_location" />
-
-    <HorizontalLayout class="memoriam_modal_period_indicator_bar">
-      <Panel id="memoriam_period_1" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_2" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_3" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_4" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_5" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_6" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_7" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_8" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_9" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_10" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_11" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_12" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_13" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_14" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_15" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_16" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_17" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_18" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_19" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_20" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_21" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_22" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_23" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_24" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_25" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_26" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_27" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_28" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_29" class="memoriam_period_indicator" />
-      <Panel id="memoriam_period_30" class="memoriam_period_indicator" />
-    </HorizontalLayout>
-
-    <Slider id="memoriam_modal_period_selection_slider" class="memoriam_modal_period_selection_slider" />
-
-  </VerticalLayout>
-
-  <!-- Scene Selection Grid -->
-  <VerticalLayout id="memoriam_modal_scene_selection" class="memoriam_modal_scene_selection">
-
-    <GridLayout class="memoriam_modal_scene_selection_grid">
-      <Button id="memoriam_period_1_panelA_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_1_panelB_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_1_panelC_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_1_panelD_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_2_panelA_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_2_panelB_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_2_panelC_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_2_panelD_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_3_panelA_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_3_panelB_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_3_panelC_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_3_panelD_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_4_panelA_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_4_panelB_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_4_panelC_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_4_panelD_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_5_panelA_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_5_panelB_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_5_panelC_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_5_panelD_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_6_panelA_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_6_panelB_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_6_panelC_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_6_panelD_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_7_panelA_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_7_panelB_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_7_panelC_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_7_panelD_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_8_panelA_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_8_panelB_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_8_panelC_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_8_panelD_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_9_panelA_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_9_panelB_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_9_panelC_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_9_panelD_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_10_panelA_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_10_panelB_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_10_panelC_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_10_panelD_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_11_panelA_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_11_panelB_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_11_panelC_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_11_panelD_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_12_panelA_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_12_panelB_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_12_panelC_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_12_panelD_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_13_panelA_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_13_panelB_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_13_panelC_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_13_panelD_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_14_panelA_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_14_panelB_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_14_panelC_button" class="memoriam_modal_scene_selection_button" />
-      <Button id="memoriam_period_14_panelD_button" class="memoriam_modal_scene_selection_button" />
-    </GridLayout>
-
-    <HorizontalLayout class="memoriam_modal_just_smoke_row" >
-      <Button id="memoriam_modal_just_smoke_button" class="memoriam_modal_just_smoke_button selection_button_highlighted" text="Just Smoke" />
-    </HorizontalLayout>
-
-  </VerticalLayout>
-
-  <!-- PC-as-NPC Assignment -->
-  <VerticalLayout id="memoriam_modal_npc_assignment" class="memoriam_modal_npc_assignment">
-
-    <HorizontalLayout id="memoriam_modal_npc_assignment_lucien" class="memoriam_modal_npc_assignment">
-      <Button id="memoriam_modal_npc_presence_lucien_button" class="memoriam_modal_npc_presence_button selection_button_idle" />
-      <Text id="memoriam_modal_npc_assignment_lucien_pc_name" class="memoriam_modal_npc_assignment_label" text="Lord Lucien" />
-      <Text id="memoriam_modal_npc_assignment_lucien_npc_name" class="memoriam_modal_npc_assignment_value" text="—" />
-      <Button id="memoriam_modal_npc_assignment_lucien_button" class="memoriam_modal_npc_assignment_button" text="+" />
-    </HorizontalLayout>
-    <HorizontalLayout id="memoriam_modal_npc_assignment_rashid" class="memoriam_modal_npc_assignment">
-      <Button id="memoriam_modal_npc_presence_rashid_button" class="memoriam_modal_npc_presence_button selection_button_idle" />
-      <Text id="memoriam_modal_npc_assignment_rashid_pc_name" class="memoriam_modal_npc_assignment_label" text="Rashid Abdulrahman" />
-      <Text id="memoriam_modal_npc_assignment_rashid_npc_name" class="memoriam_modal_npc_assignment_value" text="—" />
-      <Button id="memoriam_modal_npc_assignment_rashid_button" class="memoriam_modal_npc_assignment_button" text="+" />
-    </HorizontalLayout>
-    <HorizontalLayout id="memoriam_modal_npc_assignment_aishe" class="memoriam_modal_npc_assignment">
-      <Button id="memoriam_modal_npc_presence_aishe_button" class="memoriam_modal_npc_presence_button selection_button_idle" />
-      <Text id="memoriam_modal_npc_assignment_aishe_pc_name" class="memoriam_modal_npc_assignment_label" text="Aishe Tache" />
-      <Text id="memoriam_modal_npc_assignment_aishe_npc_name" class="memoriam_modal_npc_assignment_value" text="—" />
-      <Button id="memoriam_modal_npc_assignment_aishe_button" class="memoriam_modal_npc_assignment_button" text="+" />
-    </HorizontalLayout>
-    <HorizontalLayout id="memoriam_modal_npc_assignment_fomorach" class="memoriam_modal_npc_assignment">
-      <Button id="memoriam_modal_npc_presence_fomorach_button" class="memoriam_modal_npc_presence_button selection_button_idle" />
-      <Text id="memoriam_modal_npc_assignment_fomorach_pc_name" class="memoriam_modal_npc_assignment_label" text="Fomórach" />
-      <Text id="memoriam_modal_npc_assignment_fomorach_npc_name" class="memoriam_modal_npc_assignment_value" text="—" />
-      <Button id="memoriam_modal_npc_assignment_fomorach_button" class="memoriam_modal_npc_assignment_button" text="+" />
-    </HorizontalLayout>
-    <HorizontalLayout id="memoriam_modal_npc_assignment_blackCaesar" class="memoriam_modal_npc_assignment">
-      <Button id="memoriam_modal_npc_presence_blackCaesar_button" class="memoriam_modal_npc_presence_button selection_button_idle" />
-      <Text id="memoriam_modal_npc_assignment_blackCaesar_pc_name" class="memoriam_modal_npc_assignment_label" text="Black Caesar" />
-      <Text id="memoriam_modal_npc_assignment_blackCaesar_npc_name" class="memoriam_modal_npc_assignment_value" text="—" />
-      <Button id="memoriam_modal_npc_assignment_blackCaesar_button" class="memoriam_modal_npc_assignment_button" text="+" />
-    </HorizontalLayout>
-
-  </VerticalLayout>
-
-  <!-- Confirmation & Cancel Button Row -->
-  <HorizontalLayout class="memoriam_modal_confirmation_cancel_button_row">
-    <Button id="memoriam_modal_confirmation_button" text="Advance" onClick="HUD_memoriamModalConfirm" />
-    <Button id="memoriam_modal_cancel_button" text="Cancel" onClick="HUD_memoriamModalCancel" />
-  </HorizontalLayout>
-
-</VerticalLayout>
-
-<!-- PC-as-NPC Assignment Modal -->
-<VerticalLayout id="memoriam_modal_npc_assignment_grid_container" class="memoriam_modal_npc_assignment_grid_container" visibility="Black|Host" active="false">
-
-  <Text id="memoriam_modal_npc_assignment_label" class="memoriam_modal_npc_assignment_label" />
-
-  <GridLayout id="memoriam_modal_npc_assignment_grid" class="memoriam_modal_npc_assignment_grid">
-    <Button id="memoriam_modal_npc_assignment_memoriamNPC_1" class="memoriam_modal_npc_assignment_button memoriam_npc" text="Memoriam NPC 1" onClick="HUD_memoriamModalNpcPick" />
-    <Button id="memoriam_modal_npc_assignment_memoriamNPC_2" class="memoriam_modal_npc_assignment_button memoriam_npc" text="Memoriam NPC 2" onClick="HUD_memoriamModalNpcPick" />
-    <Button id="memoriam_modal_npc_assignment_memoriamNPC_3" class="memoriam_modal_npc_assignment_button memoriam_npc" text="Memoriam NPC 3" onClick="HUD_memoriamModalNpcPick" />
-    <Button id="memoriam_modal_npc_assignment_memoriamNPC_4" class="memoriam_modal_npc_assignment_button memoriam_npc" text="Memoriam NPC 4" onClick="HUD_memoriamModalNpcPick" />
-    <Button id="memoriam_modal_npc_assignment_memoriamNPC_5" class="memoriam_modal_npc_assignment_button memoriam_npc" text="Memoriam NPC 5" onClick="HUD_memoriamModalNpcPick" />
-    <Button id="memoriam_modal_npc_assignment_memoriamNPC_6" class="memoriam_modal_npc_assignment_button memoriam_npc" text="Memoriam NPC 6" onClick="HUD_memoriamModalNpcPick" />
-    <Button id="memoriam_modal_npc_assignment_memoriamNPC_7" class="memoriam_modal_npc_assignment_button memoriam_npc" text="Memoriam NPC 7" onClick="HUD_memoriamModalNpcPick" />
-    <Button id="memoriam_modal_npc_assignment_memoriamNPC_8" class="memoriam_modal_npc_assignment_button memoriam_npc" text="Memoriam NPC 8" onClick="HUD_memoriamModalNpcPick" />
-    <Button id="memoriam_modal_npc_assignment_memoriamNPC_9" class="memoriam_modal_npc_assignment_button memoriam_npc" text="Memoriam NPC 9" onClick="HUD_memoriamModalNpcPick" />
-    <Button id="memoriam_modal_npc_assignment_memoriamNPC_10" class="memoriam_modal_npc_assignment_button memoriam_npc" text="Memoriam NPC 10" onClick="HUD_memoriamModalNpcPick" />
-  </GridLayout>
-
-  <InputField id="memoriam_modal_npc_assignment_input" class="memoriam_modal_npc_assignment_input" placeholder="Enter NPC key" onValueChanged="HUD_memoriamModalNpcInput" onEndEdit="HUD_memoriamModalNpcInput" />
-
-  <Button id="memoriam_modal_npc_assignment_confirm_button" class="memoriam_modal_npc_assignment_confirm_button" text="OK" onClick="HUD_memoriamModalNpcConfirm" />
-  <Button id="memoriam_modal_npc_assignment_cancel_button" class="memoriam_modal_npc_assignment_cancel_button" text="Cancel" onClick="HUD_memoriamModalNpcCancel" />
-
-</VerticalLayout>
-<!-- /include ui/storyteller/memoriam_modal.xml -->
 ]=]
 
 -- Expanded from ui/Global.join_minimal.xml
@@ -17410,6 +16246,21 @@ M.minimal = [=[
     childForceExpandHeight="false"
     ignoreLayout="true" />
 
+  <!-- Debug column: rows of small side-by-side buttons (simulated connection, soundscape tools) -->
+  <HorizontalLayout class="debug_button_row"
+    spacing="2"
+    childForceExpandWidth="true"
+    childForceExpandHeight="true" />
+  <Button class="debug_sim_connect_button"
+    fontSize="11"
+    fontStyle="Bold"
+    textColor="#FFFFFF"
+    colors="#1E5A2A|#2A7038|#3A9048|rgba(0.1,0.3,0.12,0.5)" />
+  <Button class="debug_small_button"
+    fontSize="11"
+    textColor="#FFFFFF"
+    colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
+
   <!-- Main button column: left-aligned, half-scale, vertically stacked (TOR-396: +100 Y) -->
   <VerticalLayout class="storyteller_buttonControls"
     padding="0 0 0 0"
@@ -17417,7 +16268,7 @@ M.minimal = [=[
     rectAlignment="LowerRight"
     childAlignment="LowerRight"
     width="200"
-    height="400"
+    height="460"
     ignoreLayout = "true"
     offsetXY = "-1650 250"
     childForceExpandWidth="true"
@@ -17638,38 +16489,15 @@ UI.setAttributes("overlay_sessionStartSplash", {active = "true"})
     color="rgba(0,0,0,0.85)">
     
 <!-- include ui/storyteller/panel_phases.xml -->
-<!--
-UI.setAttributes("input_sessionNum", {minHeight = "30", fontStyle = "Bold"})
--->
+<!-- Phase advance, Play subphase and session number/name live on the Storyteller Dashboard.
+     This panel keeps the session-start transition toggle and the join repair controls (TOR-439). -->
 
 <Panel id="panel_phases" active="false">
   <VerticalLayout class="storyteller_panel_column" spacing="6" padding="6 6 6 6" childForceExpandWidth="false">
-    <Text class="hud_storyteller_header">Session phase</Text>
-    <Text id="phase_currentLabel" fontSize="16" fontStyle="Bold" color="#FFFFFF" text="Intermission" />
-    <Text fontSize="12" color="#AAAAAA">Advance loops Intermission → Play → Spotlight → End. Play subphases switch freely.</Text>
+    <Text class="hud_storyteller_header">Phase tools</Text>
     <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
-      <Button id="phase_Advance" text="Advance →" minWidth="120" preferredWidth="120" onClick="HUD_phaseAdvance"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Text id="phase_AdvanceConfirmHint" fontSize="13" fontStyle="Bold" color="#FF0000" active="false"
-        alignment="MiddleLeft" text="Click Again to Confirm" />
       <Toggle id="phase_sessionStartQuick" isOn="false" onValueChanged="HUD_phaseSessionStartQuick"
         minWidth="170" preferredWidth="190" textColor="#FFFFFF">Quick Transition</Toggle>
-    </HorizontalLayout>
-    <Text fontSize="12" color="#AAAAAA">Play subphase</Text>
-    <HorizontalLayout id="phase_subphaseRow" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
-      <Button id="phase_sub_Main" text="Main" minWidth="72" preferredWidth="72" onClick="HUD_setPlaySubPhase"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="phase_sub_Downtime" text="Downtime" minWidth="72" preferredWidth="72" onClick="HUD_setPlaySubPhase"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="phase_sub_Memoriam" text="Memoriam" minWidth="72" preferredWidth="72" onClick="HUD_setPlaySubPhase"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    </HorizontalLayout>
-    <Text fontSize="14" fontStyle="Bold" color="#AAAAAA">Session</Text>
-    <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
-      <InputField id="input_sessionNum" characterValidation="Integer" text="1" minWidth="80" preferredWidth="80"
-        onValueChanged="HUD_sessionNumInput" onEndEdit="HUD_sessionNumInput" />
-      <InputField id="input_sessionName" text="" minWidth="180" preferredWidth="220"
-        onValueChanged="HUD_sessionNameInput" onEndEdit="HUD_sessionNameInput" />
     </HorizontalLayout>
     <Text fontSize="14" fontStyle="Bold" color="#AAAAAA">Join controls</Text>
     <Text fontSize="12" color="#AAAAAA">Defer setXML skips automatic Global UI rebuild. Arm colds HUD/assets/pools; restore in order with the buttons below.</Text>
