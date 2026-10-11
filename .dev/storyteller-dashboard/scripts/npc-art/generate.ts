@@ -3,8 +3,10 @@ import { existsSync } from "node:fs";
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { drawToken, loadFont, type DrawAssets } from "./draw.ts";
+import { syncSaveFigurineAssets } from "./save-assets.ts";
 import {
   buildSubject,
+  discrepancyReport,
   fingerprint,
   renderLuaModule,
   type HeadCrop,
@@ -18,8 +20,11 @@ import {
 
 /**
  * npm run npc-art:generate — publishes every NPC's art for TTS. One figurine file per NPC under
- * assets/images/NPCs/{Catalogued,Generic,Memoriam}; this draws each NPC's spotlight token (both sides) into
- * assets/images/NPCs/Tokens and writes lib/npc_art_urls.ttslua with GitHub links for figurines and tokens.
+ * assets/images/NPCs/{Catalogued,Generic,Memoriam}; each figurine whose key is in its folder's catalog gets a
+ * spotlight token (both sides) in assets/images/NPCs/Tokens and GitHub links in lib/npc_art_urls.ttslua. The TTS
+ * save's roll-banner rows (CustomUIAssets named after each PC, named NPC and Memoriam key) are synced to those links,
+ * and rows for removed art are dropped. Figurines in no catalog get nothing; they and catalogued NPCs without a
+ * figurine are listed in .dev/build-logs/npc-art-discrepancies.txt (printed at the end of the Full build).
  * Tokens whose inputs are unchanged are skipped. Pass --force to redraw every token.
  */
 
@@ -30,6 +35,7 @@ const npcImageDir = path.join(repoRoot, "assets", "images", "NPCs");
 const tokenDir = path.join(npcImageDir, "Tokens");
 const manifestPath = path.join(tokenDir, "tokens.json");
 const luaPath = path.join(repoRoot, "lib", "npc_art_urls.ttslua");
+const discrepancyPath = path.join(repoRoot, ".dev", "build-logs", "npc-art-discrepancies.txt");
 const dataDir = path.join(dashboardDir, "data");
 const FOLDERS: readonly NpcFolder[] = ["Catalogued", "Generic", "Memoriam"];
 const FIGURINE_BACK = "Shared/figurineBack.webp";
@@ -218,10 +224,11 @@ const main = async (): Promise<void> => {
         throw new Error(`NPC key "${key}" has a figurine in both ${other}/ and ${folder}/.`);
       }
       seen.set(key, folder);
-      const report = buildSubject(folder, key, sources, roster, crops);
-      subjects.push(report.subject);
-      if (report.uncatalogued) {
-        uncatalogued.push(`${folder}/${key} (shown as "${report.subject.name}")`);
+      const subject = buildSubject(folder, key, sources, roster, crops);
+      if (subject === null) {
+        uncatalogued.push(`${folder}/${key}`);
+      } else {
+        subjects.push(subject);
       }
     }
   }
@@ -249,17 +256,20 @@ const main = async (): Promise<void> => {
       }
     }
     nextTokens[subject.key] = tokenHash;
+    // Links are versioned by the finished images, so a redraw that produces identical bytes keeps every link.
+    const [front, back] = await Promise.all([readFile(frontFile), readFile(backFile)]);
+    const tokenVersion = fingerprint(front, back);
     links.set(subject.key, {
       figurineFront: `${subject.folder}/${subject.key}.webp?v=${figurineHash}`,
-      tokenFront: `Tokens/${subject.key}.front.webp?v=${tokenHash}`,
-      tokenBack: `Tokens/${subject.key}.back.webp?v=${tokenHash}`
+      tokenFront: `Tokens/${subject.key}.front.webp?v=${tokenVersion}`,
+      tokenBack: `Tokens/${subject.key}.back.webp?v=${tokenVersion}`
     });
   });
 
   let pruned = 0;
   for (const file of await readdir(tokenDir)) {
     const match = /^(.+)\.(front|back)\.webp$/.exec(file);
-    if (match && !seen.has(match[1]!)) {
+    if (match && !links.has(match[1]!)) {
       await rm(path.join(tokenDir, file));
       pruned += 1;
     }
@@ -275,17 +285,28 @@ const main = async (): Promise<void> => {
   if (autoCropped.length > 0) {
     console.log(`[npc-art] ${autoCropped.length} drawn token(s) used the automatic head crop (set a crop in the dashboard to override).`);
   }
-  if (uncatalogued.length > 0) {
-    console.warn(`[npc-art] ${uncatalogued.length} figurine(s) are in no catalog, so their names come from the file name:\n  ${uncatalogued.join("\n  ")}`);
-  }
-  const withoutFigurine = [
-    ...[...named.keys()].filter((key) => !seen.has(key)),
-    ...[...genericLabels.keys()].filter((key) => !seen.has(key)),
-    ...[...memoriamNames.keys()].filter((key) => !seen.has(key))
-  ];
-  if (withoutFigurine.length > 0) {
-    console.warn(`[npc-art] ${withoutFigurine.length} catalogued NPC(s) have no figurine image yet:\n  ${[...new Set(withoutFigurine)].sort().join(", ")}`);
-  }
+
+  const bannerFigurines = new Map(
+    subjects.filter((subject) => subject.folder !== "Generic").map((subject) => [subject.key, BASE_URL + links.get(subject.key)!.figurineFront])
+  );
+  const characterKeys = new Set([...named.keys(), ...genericLabels.keys(), ...memoriamNames.keys()]);
+  const { saveFile, plan } = await syncSaveFigurineAssets(repoRoot, bannerFigurines, characterKeys, BASE_URL);
+  console.log(
+    `[npc-art] ${path.basename(saveFile)} roll-banner figurines: ${plan.added.length} added, ${plan.updated.length} updated, ` +
+      `${plan.removed.length} removed${plan.removed.length > 0 ? ` (${plan.removed.join(", ")})` : ""}.`
+  );
+
+  const report = discrepancyReport(
+    uncatalogued,
+    FOLDERS.flatMap((folder) => {
+      const keys = folder === "Catalogued" ? named.keys() : folder === "Generic" ? genericLabels.keys() : memoriamNames.keys();
+      const missing = [...keys].filter((key) => !links.has(key)).sort();
+      return missing.length > 0 ? [`${folder}: ${missing.join(", ")}`] : [];
+    })
+  );
+  await mkdir(path.dirname(discrepancyPath), { recursive: true });
+  await writeFile(discrepancyPath, report);
+  console.warn(report.trimEnd());
   warnIfNotPublished();
 };
 

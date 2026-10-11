@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { buildSubject, DEFAULT_RING_COLOR, fingerprint, humanizeKey, renderLuaModule, wrapName, type NameSources, type Roster } from "./model.ts";
+import {
+  buildSubject,
+  DEFAULT_RING_COLOR,
+  fingerprint,
+  planFigurineAssets,
+  renderLuaModule,
+  wrapName,
+  type NameSources,
+  type Roster,
+  type UiAssetRow
+} from "./model.ts";
 
 const roster: Roster = {
   categories: [
@@ -22,36 +32,34 @@ const sources: NameSources = {
 
 describe("buildSubject", () => {
   it("names a named NPC by its first word and colours it from its first picker group's category", () => {
-    const { subject, uncatalogued } = buildSubject("Catalogued", "rosie", sources, roster, {});
-    expect(subject).toMatchObject({ name: "Rosie", color: "#e91616", manualCrop: null });
-    expect(uncatalogued).toBe(false);
+    expect(buildSubject("Catalogued", "rosie", sources, roster, {})).toMatchObject({ name: "Rosie", color: "#e91616", manualCrop: null });
   });
 
   it("skips a leading title and prefers a group's own colour", () => {
-    expect(buildSubject("Catalogued", "theAristocrat", sources, roster, {}).subject).toMatchObject({ name: "Aristocrat", color: "#abcdef" });
+    expect(buildSubject("Catalogued", "theAristocrat", sources, roster, {})).toMatchObject({ name: "Aristocrat", color: "#abcdef" });
   });
 
   it("uses the default ring colour when the NPC has no coloured group", () => {
-    expect(buildSubject("Catalogued", "loner", sources, roster, {}).subject.color).toBe(DEFAULT_RING_COLOR);
+    expect(buildSubject("Catalogued", "loner", sources, roster, {})?.color).toBe(DEFAULT_RING_COLOR);
   });
 
   it("shows a generic NPC's catalog label and colours it from its generic roster group", () => {
-    expect(buildSubject("Generic", "streetThug_01", sources, roster, {}).subject).toMatchObject({ name: "Street Thug", color: "#123456" });
+    expect(buildSubject("Generic", "streetThug_01", sources, roster, {})).toMatchObject({ name: "Street Thug", color: "#123456" });
   });
 
   it("names a Memoriam NPC by its first non-title word", () => {
-    expect(buildSubject("Memoriam", "mem_princeDoran", sources, roster, {}).subject.name).toBe("Doran");
+    expect(buildSubject("Memoriam", "mem_princeDoran", sources, roster, {})?.name).toBe("Doran");
   });
 
-  it("flags figurines missing from every catalog and names them from the file key", () => {
-    const report = buildSubject("Catalogued", "ladyAvelineDubois", sources, roster, {});
-    expect(report.uncatalogued).toBe(true);
-    expect(report.subject.name).toBe("Aveline");
+  it("gives no art to a figurine missing from its folder's catalog", () => {
+    expect(buildSubject("Catalogued", "ladyAvelineDubois", sources, roster, {})).toBeNull();
+    expect(buildSubject("Generic", "rosie", sources, roster, {})).toBeNull();
+    expect(buildSubject("Memoriam", "mem_nobody", sources, roster, {})).toBeNull();
   });
 
   it("carries a hand-set crop", () => {
     const crop = { cx: 0.5, cy: 0.1, size: 0.2 };
-    expect(buildSubject("Catalogued", "rosie", sources, roster, { rosie: crop }).subject.manualCrop).toEqual(crop);
+    expect(buildSubject("Catalogued", "rosie", sources, roster, { rosie: crop })?.manualCrop).toEqual(crop);
   });
 
   it("rejects a roster colour that is not hex", () => {
@@ -60,10 +68,42 @@ describe("buildSubject", () => {
   });
 });
 
-describe("humanizeKey", () => {
-  it("splits camel case and drops the Memoriam prefix and generic suffix", () => {
-    expect(humanizeKey("mem_jeanDucheskiIPreDeath")).toBe("Jean Ducheski I Pre Death");
-    expect(humanizeKey("streetThug_04")).toBe("Street Thug");
+describe("planFigurineAssets", () => {
+  const base = "https://example.test/NPCs/";
+  const row = (Name: string, URL: string): UiAssetRow => ({ Type: 0, Name, URL });
+
+  it("adds missing figurines, updates changed links and leaves other rows in place", () => {
+    const plan = planFigurineAssets(
+      [row("siteCard_Bar", "https://steam/bar"), row("rosie", "https://steam/rosie"), row("amy", `${base}Catalogued/amy.webp?v=1`)],
+      new Map([
+        ["rosie", `${base}Catalogued/rosie.webp?v=2`],
+        ["amy", `${base}Catalogued/amy.webp?v=1`],
+        ["zed", `${base}Memoriam/zed.webp?v=3`]
+      ]),
+      new Set(["rosie", "amy", "zed"]),
+      base
+    );
+    expect(plan.rows.map((r) => r.Name)).toEqual(["siteCard_Bar", "rosie", "amy", "zed"]);
+    expect(plan.rows[1]?.URL).toBe(`${base}Catalogued/rosie.webp?v=2`);
+    expect(plan.rows[3]).toEqual({ Type: 0, Name: "zed", URL: `${base}Memoriam/zed.webp?v=3` });
+    expect(plan).toMatchObject({ added: ["zed"], updated: ["rosie"], removed: [] });
+  });
+
+  it("drops repo-art rows and character rows that are no longer wanted, and duplicates", () => {
+    const plan = planFigurineAssets(
+      [
+        row("gone", `${base}Catalogued/gone.webp?v=1`),
+        row("kai", "https://steam/kai"),
+        row("rosie", `${base}Catalogued/rosie.webp?v=2`),
+        row("rosie", "https://steam/rosie"),
+        row("overlay_x", "https://steam/x")
+      ],
+      new Map([["rosie", `${base}Catalogued/rosie.webp?v=2`]]),
+      new Set(["rosie", "kai"]),
+      base
+    );
+    expect(plan.rows.map((r) => r.Name)).toEqual(["rosie", "overlay_x"]);
+    expect(plan).toMatchObject({ added: [], updated: [], removed: ["gone", "kai", "rosie"] });
   });
 });
 

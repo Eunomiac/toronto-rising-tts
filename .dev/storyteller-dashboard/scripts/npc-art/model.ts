@@ -53,15 +53,6 @@ const MEMORIAM_TITLES: ReadonlySet<string> = new Set([
   "pre-death"
 ]);
 
-/** `jeanDucheskiIPreDeath` → `Jean Ducheski I Pre Death`; used only for figurines missing from every catalog. */
-export const humanizeKey = (key: string): string =>
-  key
-    .replace(/^mem_/, "")
-    .replace(/_\d+$/, "")
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/([A-Z])([A-Z][a-z])/g, "$1 $2")
-    .replace(/^./, (first) => first.toUpperCase());
-
 const firstNonTitleWord = (fullName: string): string => {
   const words = fullName.trim().split(/\s+/);
   const named = words.find((word) => !MEMORIAM_TITLES.has(word.toLowerCase()));
@@ -85,13 +76,11 @@ const ringColor = (roster: Roster, groupKey: string | undefined): string => {
   return color.toLowerCase();
 };
 
-export type SubjectReport = { readonly subject: NpcArtSubject; readonly uncatalogued: boolean };
-
 /**
- * One NPC per figurine file. Named NPCs show the first non-title word of their full name and take their first
- * picker group's roster colour; generic NPCs show their catalog label and take the `generic:<label>` group
- * colour; Memoriam NPCs show their first non-title word and the default colour. Figurines missing from every catalog
- * still get art (name from the file key) and are flagged so the build can report them.
+ * One NPC per catalogued figurine file. Named NPCs show the first non-title word of their full name and take their
+ * first picker group's roster colour; generic NPCs show their catalog label and take the `generic:<label>` group
+ * colour; Memoriam NPCs show their first non-title word and the default colour. A figurine missing from its folder's
+ * catalog returns null: it gets no art, and the build reports it.
  */
 export const buildSubject = (
   folder: NpcFolder,
@@ -99,21 +88,85 @@ export const buildSubject = (
   sources: NameSources,
   roster: Roster,
   crops: Readonly<Record<string, HeadCrop>>
-): SubjectReport => {
+): NpcArtSubject | null => {
   const manualCrop = crops[key] ?? null;
   if (folder === "Catalogued") {
     const entry = sources.named.get(key);
-    const name = firstNonTitleWord(entry?.fullName ?? humanizeKey(key));
-    return { subject: { key, folder, name, color: ringColor(roster, entry?.pickerGroups[0]), manualCrop }, uncatalogued: entry === undefined };
+    return entry === undefined
+      ? null
+      : { key, folder, name: firstNonTitleWord(entry.fullName), color: ringColor(roster, entry.pickerGroups[0]), manualCrop };
   }
   if (folder === "Generic") {
     const label = sources.genericLabels.get(key);
-    const name = label ?? humanizeKey(key);
-    return { subject: { key, folder, name, color: ringColor(roster, `generic:${name}`), manualCrop }, uncatalogued: label === undefined };
+    return label === undefined ? null : { key, folder, name: label, color: ringColor(roster, `generic:${label}`), manualCrop };
   }
   const fullName = sources.memoriamNames.get(key);
-  const name = firstNonTitleWord(fullName ?? humanizeKey(key));
-  return { subject: { key, folder, name, color: DEFAULT_RING_COLOR, manualCrop }, uncatalogued: fullName === undefined };
+  return fullName === undefined ? null : { key, folder, name: firstNonTitleWord(fullName), color: DEFAULT_RING_COLOR, manualCrop };
+};
+
+/** The text the Full build prints at its end: figurines that got no art, and catalogued NPCs that have no figurine. */
+export const discrepancyReport = (uncatalogued: readonly string[], withoutFigurine: readonly string[]): string => {
+  if (uncatalogued.length === 0 && withoutFigurine.length === 0) {
+    return "[npc-art] No NPC art discrepancies.\n";
+  }
+  const lines = ["[npc-art] NPC art discrepancies:"];
+  if (uncatalogued.length > 0) {
+    lines.push(
+      `  ${uncatalogued.length} figurine(s) are in no catalog, so they got no token, link or roll-banner image (add the NPC to its catalog, or rename or remove the file):`,
+      ...uncatalogued.map((entry) => `    ${entry}`)
+    );
+  }
+  if (withoutFigurine.length > 0) {
+    lines.push("  Catalogued NPCs with no figurine image (they have no art in TTS until one is added):", ...withoutFigurine.map((entry) => `    ${entry}`));
+  }
+  return `${lines.join("\n")}\n`;
+};
+
+/** One global Custom UI asset row in a TTS save (`CustomUIAssets`). */
+export type UiAssetRow = { readonly Name: string; readonly URL: string; readonly [field: string]: unknown };
+
+export type UiAssetPlan = {
+  readonly rows: readonly UiAssetRow[];
+  readonly added: readonly string[];
+  readonly updated: readonly string[];
+  readonly removed: readonly string[];
+};
+
+/**
+ * The roll result banner shows a character's figurine through the Custom UI asset named after its key. Every wanted
+ * key gets exactly one row with its current link. A row is dropped when it is not wanted and either points at the
+ * repo's NPC art (its image was removed or its NPC left the catalog) or is named after a known character key (that
+ * character has no figurine). Every other row is left untouched and in place.
+ */
+export const planFigurineAssets = (
+  rows: readonly UiAssetRow[],
+  wanted: ReadonlyMap<string, string>,
+  characterKeys: ReadonlySet<string>,
+  artBaseUrl: string
+): UiAssetPlan => {
+  const next: UiAssetRow[] = [];
+  const kept = new Set<string>();
+  const updated: string[] = [];
+  const removed: string[] = [];
+  for (const row of rows) {
+    const url = wanted.get(row.Name);
+    if (url !== undefined && !kept.has(row.Name)) {
+      kept.add(row.Name);
+      if (row.URL !== url) {
+        updated.push(row.Name);
+      }
+      next.push(row.URL === url ? row : { ...row, URL: url });
+    } else if (url !== undefined || row.URL.startsWith(artBaseUrl) || characterKeys.has(row.Name)) {
+      removed.push(row.Name);
+    } else {
+      next.push(row);
+    }
+  }
+  const added = [...wanted.keys()].filter((name) => !kept.has(name)).sort();
+  for (const name of added) {
+    next.push({ Type: 0, Name: name, URL: wanted.get(name)! });
+  }
+  return { rows: next, added, updated, removed };
 };
 
 export type Measure = (text: string) => number;

@@ -8,1806 +8,1786 @@ local FIGURINE_BACK = BASE .. "Shared/figurineBack.webp?v=236a0ee3d884"
 return {
   TremereApprentice_01 = {
     figurine = { front = BASE .. "Generic/TremereApprentice_01.webp?v=91ffd9b672f2", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/TremereApprentice_01.front.webp?v=d8f9e0764c24", back = BASE .. "Tokens/TremereApprentice_01.back.webp?v=d8f9e0764c24" },
+    token = { front = BASE .. "Tokens/TremereApprentice_01.front.webp?v=d29b1f7e58f5", back = BASE .. "Tokens/TremereApprentice_01.back.webp?v=d29b1f7e58f5" },
   },
   TremereApprentice_02 = {
     figurine = { front = BASE .. "Generic/TremereApprentice_02.webp?v=a6cf246eacd9", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/TremereApprentice_02.front.webp?v=2c50c40dad43", back = BASE .. "Tokens/TremereApprentice_02.back.webp?v=2c50c40dad43" },
+    token = { front = BASE .. "Tokens/TremereApprentice_02.front.webp?v=946fbbc2ad02", back = BASE .. "Tokens/TremereApprentice_02.back.webp?v=946fbbc2ad02" },
   },
   TremereApprentice_03 = {
     figurine = { front = BASE .. "Generic/TremereApprentice_03.webp?v=b62ee182e802", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/TremereApprentice_03.front.webp?v=30686fa5965a", back = BASE .. "Tokens/TremereApprentice_03.back.webp?v=30686fa5965a" },
+    token = { front = BASE .. "Tokens/TremereApprentice_03.front.webp?v=3d336235c4df", back = BASE .. "Tokens/TremereApprentice_03.back.webp?v=3d336235c4df" },
   },
   TremereGhoul_01 = {
     figurine = { front = BASE .. "Generic/TremereGhoul_01.webp?v=d8d6b72cf409", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/TremereGhoul_01.front.webp?v=8d6e0108f9eb", back = BASE .. "Tokens/TremereGhoul_01.back.webp?v=8d6e0108f9eb" },
+    token = { front = BASE .. "Tokens/TremereGhoul_01.front.webp?v=c0d271fa6541", back = BASE .. "Tokens/TremereGhoul_01.back.webp?v=c0d271fa6541" },
   },
   TremereGhoul_02 = {
     figurine = { front = BASE .. "Generic/TremereGhoul_02.webp?v=3b26fb245f0a", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/TremereGhoul_02.front.webp?v=f2418ca457ce", back = BASE .. "Tokens/TremereGhoul_02.back.webp?v=f2418ca457ce" },
+    token = { front = BASE .. "Tokens/TremereGhoul_02.front.webp?v=493954a37367", back = BASE .. "Tokens/TremereGhoul_02.back.webp?v=493954a37367" },
   },
   TremereGhoul_03 = {
     figurine = { front = BASE .. "Generic/TremereGhoul_03.webp?v=839c86fae740", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/TremereGhoul_03.front.webp?v=8a26ca1ee370", back = BASE .. "Tokens/TremereGhoul_03.back.webp?v=8a26ca1ee370" },
+    token = { front = BASE .. "Tokens/TremereGhoul_03.front.webp?v=c812a07a389d", back = BASE .. "Tokens/TremereGhoul_03.back.webp?v=c812a07a389d" },
   },
   TremereGhoul_04 = {
     figurine = { front = BASE .. "Generic/TremereGhoul_04.webp?v=b4f41cb0caca", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/TremereGhoul_04.front.webp?v=98a2df6ec679", back = BASE .. "Tokens/TremereGhoul_04.back.webp?v=98a2df6ec679" },
+    token = { front = BASE .. "Tokens/TremereGhoul_04.front.webp?v=db80f875cd13", back = BASE .. "Tokens/TremereGhoul_04.back.webp?v=db80f875cd13" },
   },
   TremereGhoul_05 = {
     figurine = { front = BASE .. "Generic/TremereGhoul_05.webp?v=d25529152d6d", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/TremereGhoul_05.front.webp?v=b6776ff01f25", back = BASE .. "Tokens/TremereGhoul_05.back.webp?v=b6776ff01f25" },
+    token = { front = BASE .. "Tokens/TremereGhoul_05.front.webp?v=344d62d1a9c1", back = BASE .. "Tokens/TremereGhoul_05.back.webp?v=344d62d1a9c1" },
   },
   aapiluPossessed_01 = {
     figurine = { front = BASE .. "Generic/aapiluPossessed_01.webp?v=606ea4725e41", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/aapiluPossessed_01.front.webp?v=c40b0a870719", back = BASE .. "Tokens/aapiluPossessed_01.back.webp?v=c40b0a870719" },
+    token = { front = BASE .. "Tokens/aapiluPossessed_01.front.webp?v=9cf6ae898056", back = BASE .. "Tokens/aapiluPossessed_01.back.webp?v=9cf6ae898056" },
   },
   aapiluPossessed_02 = {
     figurine = { front = BASE .. "Generic/aapiluPossessed_02.webp?v=1b44227369b9", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/aapiluPossessed_02.front.webp?v=fd7f1854590f", back = BASE .. "Tokens/aapiluPossessed_02.back.webp?v=fd7f1854590f" },
+    token = { front = BASE .. "Tokens/aapiluPossessed_02.front.webp?v=9257f4931782", back = BASE .. "Tokens/aapiluPossessed_02.back.webp?v=9257f4931782" },
   },
   aapiluPossessed_03 = {
     figurine = { front = BASE .. "Generic/aapiluPossessed_03.webp?v=771e0ae73994", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/aapiluPossessed_03.front.webp?v=2715bbdc0c2c", back = BASE .. "Tokens/aapiluPossessed_03.back.webp?v=2715bbdc0c2c" },
+    token = { front = BASE .. "Tokens/aapiluPossessed_03.front.webp?v=8bf10663d0ec", back = BASE .. "Tokens/aapiluPossessed_03.back.webp?v=8bf10663d0ec" },
   },
   aapiluPossessed_04 = {
     figurine = { front = BASE .. "Generic/aapiluPossessed_04.webp?v=a8e854ed3150", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/aapiluPossessed_04.front.webp?v=8a94453dda70", back = BASE .. "Tokens/aapiluPossessed_04.back.webp?v=8a94453dda70" },
+    token = { front = BASE .. "Tokens/aapiluPossessed_04.front.webp?v=a34c8342db4c", back = BASE .. "Tokens/aapiluPossessed_04.back.webp?v=a34c8342db4c" },
   },
   aapiluPossessed_05 = {
     figurine = { front = BASE .. "Generic/aapiluPossessed_05.webp?v=35209a879a25", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/aapiluPossessed_05.front.webp?v=6c383cb260be", back = BASE .. "Tokens/aapiluPossessed_05.back.webp?v=6c383cb260be" },
+    token = { front = BASE .. "Tokens/aapiluPossessed_05.front.webp?v=a4fd235c4536", back = BASE .. "Tokens/aapiluPossessed_05.back.webp?v=a4fd235c4536" },
   },
   abbasFaruk = {
     figurine = { front = BASE .. "Catalogued/abbasFaruk.webp?v=46932f3e87db", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/abbasFaruk.front.webp?v=ba4e92c82c00", back = BASE .. "Tokens/abbasFaruk.back.webp?v=ba4e92c82c00" },
+    token = { front = BASE .. "Tokens/abbasFaruk.front.webp?v=ce0366369ad0", back = BASE .. "Tokens/abbasFaruk.back.webp?v=ce0366369ad0" },
   },
   academicsProfessor_01 = {
     figurine = { front = BASE .. "Generic/academicsProfessor_01.webp?v=a9b25f77f4e3", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/academicsProfessor_01.front.webp?v=977aee81c980", back = BASE .. "Tokens/academicsProfessor_01.back.webp?v=977aee81c980" },
+    token = { front = BASE .. "Tokens/academicsProfessor_01.front.webp?v=21504b7204d8", back = BASE .. "Tokens/academicsProfessor_01.back.webp?v=21504b7204d8" },
   },
   academicsProfessor_02 = {
     figurine = { front = BASE .. "Generic/academicsProfessor_02.webp?v=29a6f7b0da1c", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/academicsProfessor_02.front.webp?v=a6769940650b", back = BASE .. "Tokens/academicsProfessor_02.back.webp?v=a6769940650b" },
+    token = { front = BASE .. "Tokens/academicsProfessor_02.front.webp?v=e36601c32108", back = BASE .. "Tokens/academicsProfessor_02.back.webp?v=e36601c32108" },
   },
   academicsProfessor_03 = {
     figurine = { front = BASE .. "Generic/academicsProfessor_03.webp?v=6f1906a5f049", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/academicsProfessor_03.front.webp?v=b9874ec7a9a2", back = BASE .. "Tokens/academicsProfessor_03.back.webp?v=b9874ec7a9a2" },
+    token = { front = BASE .. "Tokens/academicsProfessor_03.front.webp?v=2dd973f1e455", back = BASE .. "Tokens/academicsProfessor_03.back.webp?v=2dd973f1e455" },
   },
   academicsProfessor_04 = {
     figurine = { front = BASE .. "Generic/academicsProfessor_04.webp?v=fac3e6446f9e", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/academicsProfessor_04.front.webp?v=ce3966da6e0b", back = BASE .. "Tokens/academicsProfessor_04.back.webp?v=ce3966da6e0b" },
+    token = { front = BASE .. "Tokens/academicsProfessor_04.front.webp?v=93296aff04e6", back = BASE .. "Tokens/academicsProfessor_04.back.webp?v=93296aff04e6" },
   },
   academicsScientist_01 = {
     figurine = { front = BASE .. "Generic/academicsScientist_01.webp?v=07647bd11b9f", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/academicsScientist_01.front.webp?v=3fb273cf6cf4", back = BASE .. "Tokens/academicsScientist_01.back.webp?v=3fb273cf6cf4" },
+    token = { front = BASE .. "Tokens/academicsScientist_01.front.webp?v=8e5a949e76c4", back = BASE .. "Tokens/academicsScientist_01.back.webp?v=8e5a949e76c4" },
   },
   academicsScientist_02 = {
     figurine = { front = BASE .. "Generic/academicsScientist_02.webp?v=7a58ab9ee119", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/academicsScientist_02.front.webp?v=f7c0baf475c7", back = BASE .. "Tokens/academicsScientist_02.back.webp?v=f7c0baf475c7" },
+    token = { front = BASE .. "Tokens/academicsScientist_02.front.webp?v=e3bf4c9db081", back = BASE .. "Tokens/academicsScientist_02.back.webp?v=e3bf4c9db081" },
   },
   academicsScientist_03 = {
     figurine = { front = BASE .. "Generic/academicsScientist_03.webp?v=6fc10391fbc7", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/academicsScientist_03.front.webp?v=e949e22c929f", back = BASE .. "Tokens/academicsScientist_03.back.webp?v=e949e22c929f" },
+    token = { front = BASE .. "Tokens/academicsScientist_03.front.webp?v=4e3565866538", back = BASE .. "Tokens/academicsScientist_03.back.webp?v=4e3565866538" },
   },
   academicsScientist_04 = {
     figurine = { front = BASE .. "Generic/academicsScientist_04.webp?v=37d677853daa", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/academicsScientist_04.front.webp?v=90c0112d3094", back = BASE .. "Tokens/academicsScientist_04.back.webp?v=90c0112d3094" },
+    token = { front = BASE .. "Tokens/academicsScientist_04.front.webp?v=3c0ccad4e071", back = BASE .. "Tokens/academicsScientist_04.back.webp?v=3c0ccad4e071" },
   },
   academicsScientist_05 = {
     figurine = { front = BASE .. "Generic/academicsScientist_05.webp?v=27944cabc2fd", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/academicsScientist_05.front.webp?v=855e8cf7426f", back = BASE .. "Tokens/academicsScientist_05.back.webp?v=855e8cf7426f" },
+    token = { front = BASE .. "Tokens/academicsScientist_05.front.webp?v=f820cb98133c", back = BASE .. "Tokens/academicsScientist_05.back.webp?v=f820cb98133c" },
   },
   academicsScientist_06 = {
     figurine = { front = BASE .. "Generic/academicsScientist_06.webp?v=8bb9877340f3", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/academicsScientist_06.front.webp?v=8857861c334c", back = BASE .. "Tokens/academicsScientist_06.back.webp?v=8857861c334c" },
+    token = { front = BASE .. "Tokens/academicsScientist_06.front.webp?v=9d29a6d4de12", back = BASE .. "Tokens/academicsScientist_06.back.webp?v=9d29a6d4de12" },
   },
   academicsScientist_07 = {
     figurine = { front = BASE .. "Generic/academicsScientist_07.webp?v=fcf1c3d86e0d", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/academicsScientist_07.front.webp?v=f6a15a1a49c4", back = BASE .. "Tokens/academicsScientist_07.back.webp?v=f6a15a1a49c4" },
+    token = { front = BASE .. "Tokens/academicsScientist_07.front.webp?v=63a584f53193", back = BASE .. "Tokens/academicsScientist_07.back.webp?v=63a584f53193" },
   },
   academicsScientist_08 = {
     figurine = { front = BASE .. "Generic/academicsScientist_08.webp?v=19c657871552", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/academicsScientist_08.front.webp?v=757abdfcdbf1", back = BASE .. "Tokens/academicsScientist_08.back.webp?v=757abdfcdbf1" },
+    token = { front = BASE .. "Tokens/academicsScientist_08.front.webp?v=6d35302a5562", back = BASE .. "Tokens/academicsScientist_08.back.webp?v=6d35302a5562" },
   },
   academicsScientist_09 = {
     figurine = { front = BASE .. "Generic/academicsScientist_09.webp?v=251102998b74", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/academicsScientist_09.front.webp?v=76da2e622fcd", back = BASE .. "Tokens/academicsScientist_09.back.webp?v=76da2e622fcd" },
+    token = { front = BASE .. "Tokens/academicsScientist_09.front.webp?v=0a746e3c7658", back = BASE .. "Tokens/academicsScientist_09.back.webp?v=0a746e3c7658" },
   },
   academicsStudent_01 = {
     figurine = { front = BASE .. "Generic/academicsStudent_01.webp?v=980c83b19f10", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/academicsStudent_01.front.webp?v=54b0f4947f2b", back = BASE .. "Tokens/academicsStudent_01.back.webp?v=54b0f4947f2b" },
+    token = { front = BASE .. "Tokens/academicsStudent_01.front.webp?v=f7f72a9965f4", back = BASE .. "Tokens/academicsStudent_01.back.webp?v=f7f72a9965f4" },
   },
   academicsStudent_02 = {
     figurine = { front = BASE .. "Generic/academicsStudent_02.webp?v=e5950ffeb838", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/academicsStudent_02.front.webp?v=453bc40f65de", back = BASE .. "Tokens/academicsStudent_02.back.webp?v=453bc40f65de" },
+    token = { front = BASE .. "Tokens/academicsStudent_02.front.webp?v=ad44001579c8", back = BASE .. "Tokens/academicsStudent_02.back.webp?v=ad44001579c8" },
   },
   academicsStudent_03 = {
     figurine = { front = BASE .. "Generic/academicsStudent_03.webp?v=84bae7a0341c", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/academicsStudent_03.front.webp?v=6c4bd43055ed", back = BASE .. "Tokens/academicsStudent_03.back.webp?v=6c4bd43055ed" },
+    token = { front = BASE .. "Tokens/academicsStudent_03.front.webp?v=0733a08dd602", back = BASE .. "Tokens/academicsStudent_03.back.webp?v=0733a08dd602" },
   },
   academicsStudent_04 = {
     figurine = { front = BASE .. "Generic/academicsStudent_04.webp?v=0e459c7e40d4", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/academicsStudent_04.front.webp?v=bafa1f125737", back = BASE .. "Tokens/academicsStudent_04.back.webp?v=bafa1f125737" },
+    token = { front = BASE .. "Tokens/academicsStudent_04.front.webp?v=eac1035a6569", back = BASE .. "Tokens/academicsStudent_04.back.webp?v=eac1035a6569" },
   },
   adrianVarga = {
     figurine = { front = BASE .. "Catalogued/adrianVarga.webp?v=14434b6c1d64", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/adrianVarga.front.webp?v=abbbdf9e2ab0", back = BASE .. "Tokens/adrianVarga.back.webp?v=abbbdf9e2ab0" },
-  },
-  agnesBellanger = {
-    figurine = { front = BASE .. "Catalogued/agnesBellanger.webp?v=ef7bd3aa048b", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/agnesBellanger.front.webp?v=2894b04bcad1", back = BASE .. "Tokens/agnesBellanger.back.webp?v=2894b04bcad1" },
+    token = { front = BASE .. "Tokens/adrianVarga.front.webp?v=be3d74bffd29", back = BASE .. "Tokens/adrianVarga.back.webp?v=be3d74bffd29" },
   },
   aishe = {
     figurine = { front = BASE .. "Catalogued/aishe.webp?v=c328435f1f2f", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/aishe.front.webp?v=f62d1e65351a", back = BASE .. "Tokens/aishe.back.webp?v=f62d1e65351a" },
+    token = { front = BASE .. "Tokens/aishe.front.webp?v=7cdd82947264", back = BASE .. "Tokens/aishe.back.webp?v=7cdd82947264" },
   },
   alexandra = {
     figurine = { front = BASE .. "Catalogued/alexandra.webp?v=43dc4a3c57a3", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/alexandra.front.webp?v=b72bdd35c381", back = BASE .. "Tokens/alexandra.back.webp?v=b72bdd35c381" },
+    token = { front = BASE .. "Tokens/alexandra.front.webp?v=92efcb7f9544", back = BASE .. "Tokens/alexandra.back.webp?v=92efcb7f9544" },
   },
   alexisHoltt = {
     figurine = { front = BASE .. "Catalogued/alexisHoltt.webp?v=b6c3e8c5aafa", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/alexisHoltt.front.webp?v=abb9523f7d67", back = BASE .. "Tokens/alexisHoltt.back.webp?v=abb9523f7d67" },
+    token = { front = BASE .. "Tokens/alexisHoltt.front.webp?v=2d409a623ec8", back = BASE .. "Tokens/alexisHoltt.back.webp?v=2d409a623ec8" },
   },
   anitaMorris = {
     figurine = { front = BASE .. "Catalogued/anitaMorris.webp?v=7c1f9768273e", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/anitaMorris.front.webp?v=cb1814f34e88", back = BASE .. "Tokens/anitaMorris.back.webp?v=cb1814f34e88" },
+    token = { front = BASE .. "Tokens/anitaMorris.front.webp?v=688374f11551", back = BASE .. "Tokens/anitaMorris.back.webp?v=688374f11551" },
   },
   averyInnis = {
     figurine = { front = BASE .. "Catalogued/averyInnis.webp?v=0d9570bc6e27", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/averyInnis.front.webp?v=15dc323964d4", back = BASE .. "Tokens/averyInnis.back.webp?v=15dc323964d4" },
+    token = { front = BASE .. "Tokens/averyInnis.front.webp?v=1d89d803a01c", back = BASE .. "Tokens/averyInnis.back.webp?v=1d89d803a01c" },
   },
   bacchusGiovanni = {
     figurine = { front = BASE .. "Catalogued/bacchusGiovanni.webp?v=f1d4f52de667", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/bacchusGiovanni.front.webp?v=31f29380c56d", back = BASE .. "Tokens/bacchusGiovanni.back.webp?v=31f29380c56d" },
+    token = { front = BASE .. "Tokens/bacchusGiovanni.front.webp?v=da6cd554d8fa", back = BASE .. "Tokens/bacchusGiovanni.back.webp?v=da6cd554d8fa" },
   },
   bee = {
     figurine = { front = BASE .. "Catalogued/bee.webp?v=b5c934591a63", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/bee.front.webp?v=6dc1eabd0955", back = BASE .. "Tokens/bee.back.webp?v=6dc1eabd0955" },
+    token = { front = BASE .. "Tokens/bee.front.webp?v=612485ec8a68", back = BASE .. "Tokens/bee.back.webp?v=612485ec8a68" },
   },
   benedictKincaid = {
     figurine = { front = BASE .. "Catalogued/benedictKincaid.webp?v=dbc15c48c9c4", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/benedictKincaid.front.webp?v=5fe8beb4b6a0", back = BASE .. "Tokens/benedictKincaid.back.webp?v=5fe8beb4b6a0" },
+    token = { front = BASE .. "Tokens/benedictKincaid.front.webp?v=7d4dafbf4dc7", back = BASE .. "Tokens/benedictKincaid.back.webp?v=7d4dafbf4dc7" },
   },
   bertrice = {
     figurine = { front = BASE .. "Catalogued/bertrice.webp?v=44e99d8b440a", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/bertrice.front.webp?v=b4f6a862cd07", back = BASE .. "Tokens/bertrice.back.webp?v=b4f6a862cd07" },
+    token = { front = BASE .. "Tokens/bertrice.front.webp?v=224b875c9e96", back = BASE .. "Tokens/bertrice.back.webp?v=224b875c9e96" },
   },
   blackCaesar = {
     figurine = { front = BASE .. "Catalogued/blackCaesar.webp?v=d02aa037d189", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/blackCaesar.front.webp?v=aedf66d3f1c0", back = BASE .. "Tokens/blackCaesar.back.webp?v=aedf66d3f1c0" },
+    token = { front = BASE .. "Tokens/blackCaesar.front.webp?v=9f0f13932553", back = BASE .. "Tokens/blackCaesar.back.webp?v=9f0f13932553" },
   },
   bloodDoll_01 = {
     figurine = { front = BASE .. "Generic/bloodDoll_01.webp?v=38ca2bc6def0", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/bloodDoll_01.front.webp?v=23e4053b8f50", back = BASE .. "Tokens/bloodDoll_01.back.webp?v=23e4053b8f50" },
+    token = { front = BASE .. "Tokens/bloodDoll_01.front.webp?v=22e71acac857", back = BASE .. "Tokens/bloodDoll_01.back.webp?v=22e71acac857" },
   },
   bloodDoll_02 = {
     figurine = { front = BASE .. "Generic/bloodDoll_02.webp?v=2309cc042aa0", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/bloodDoll_02.front.webp?v=45a44f42a7d7", back = BASE .. "Tokens/bloodDoll_02.back.webp?v=45a44f42a7d7" },
+    token = { front = BASE .. "Tokens/bloodDoll_02.front.webp?v=2e5f080f68ec", back = BASE .. "Tokens/bloodDoll_02.back.webp?v=2e5f080f68ec" },
   },
   bloodDoll_03 = {
     figurine = { front = BASE .. "Generic/bloodDoll_03.webp?v=b7c7e4def5c3", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/bloodDoll_03.front.webp?v=ddb8ddbf9b47", back = BASE .. "Tokens/bloodDoll_03.back.webp?v=ddb8ddbf9b47" },
+    token = { front = BASE .. "Tokens/bloodDoll_03.front.webp?v=03431b0592ff", back = BASE .. "Tokens/bloodDoll_03.back.webp?v=03431b0592ff" },
   },
   bloodDoll_04 = {
     figurine = { front = BASE .. "Generic/bloodDoll_04.webp?v=c8e9df0f0c2b", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/bloodDoll_04.front.webp?v=742af2303417", back = BASE .. "Tokens/bloodDoll_04.back.webp?v=742af2303417" },
+    token = { front = BASE .. "Tokens/bloodDoll_04.front.webp?v=e655df6e4542", back = BASE .. "Tokens/bloodDoll_04.back.webp?v=e655df6e4542" },
   },
   bloodDoll_05 = {
     figurine = { front = BASE .. "Generic/bloodDoll_05.webp?v=7524a1c617dc", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/bloodDoll_05.front.webp?v=3ea2644ca2ae", back = BASE .. "Tokens/bloodDoll_05.back.webp?v=3ea2644ca2ae" },
+    token = { front = BASE .. "Tokens/bloodDoll_05.front.webp?v=c72cd775714f", back = BASE .. "Tokens/bloodDoll_05.back.webp?v=c72cd775714f" },
   },
   bloodDoll_06 = {
     figurine = { front = BASE .. "Generic/bloodDoll_06.webp?v=2b2ac5948055", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/bloodDoll_06.front.webp?v=c6074e2a6e19", back = BASE .. "Tokens/bloodDoll_06.back.webp?v=c6074e2a6e19" },
+    token = { front = BASE .. "Tokens/bloodDoll_06.front.webp?v=3d582abb9d1e", back = BASE .. "Tokens/bloodDoll_06.back.webp?v=3d582abb9d1e" },
   },
   bloodDoll_07 = {
     figurine = { front = BASE .. "Generic/bloodDoll_07.webp?v=f95121b72dc2", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/bloodDoll_07.front.webp?v=6f5c42f7096d", back = BASE .. "Tokens/bloodDoll_07.back.webp?v=6f5c42f7096d" },
+    token = { front = BASE .. "Tokens/bloodDoll_07.front.webp?v=64f1bcb31b32", back = BASE .. "Tokens/bloodDoll_07.back.webp?v=64f1bcb31b32" },
   },
   bloodDoll_08 = {
     figurine = { front = BASE .. "Generic/bloodDoll_08.webp?v=2a301c06bbc3", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/bloodDoll_08.front.webp?v=ce469d5eccb9", back = BASE .. "Tokens/bloodDoll_08.back.webp?v=ce469d5eccb9" },
+    token = { front = BASE .. "Tokens/bloodDoll_08.front.webp?v=90376473e400", back = BASE .. "Tokens/bloodDoll_08.back.webp?v=90376473e400" },
   },
   bloodDoll_09 = {
     figurine = { front = BASE .. "Generic/bloodDoll_09.webp?v=fc1b9ba84e35", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/bloodDoll_09.front.webp?v=61f740653de5", back = BASE .. "Tokens/bloodDoll_09.back.webp?v=61f740653de5" },
+    token = { front = BASE .. "Tokens/bloodDoll_09.front.webp?v=28c6ac98927c", back = BASE .. "Tokens/bloodDoll_09.back.webp?v=28c6ac98927c" },
   },
   blueCollarCourier_01 = {
     figurine = { front = BASE .. "Generic/blueCollarCourier_01.webp?v=1e3276cfb55a", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/blueCollarCourier_01.front.webp?v=5bbc320e9094", back = BASE .. "Tokens/blueCollarCourier_01.back.webp?v=5bbc320e9094" },
+    token = { front = BASE .. "Tokens/blueCollarCourier_01.front.webp?v=6a1ec94ebba9", back = BASE .. "Tokens/blueCollarCourier_01.back.webp?v=6a1ec94ebba9" },
   },
   blueCollarCourier_02 = {
     figurine = { front = BASE .. "Generic/blueCollarCourier_02.webp?v=09ed5a69316a", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/blueCollarCourier_02.front.webp?v=5234fb13674d", back = BASE .. "Tokens/blueCollarCourier_02.back.webp?v=5234fb13674d" },
+    token = { front = BASE .. "Tokens/blueCollarCourier_02.front.webp?v=a43092d19b1c", back = BASE .. "Tokens/blueCollarCourier_02.back.webp?v=a43092d19b1c" },
   },
   blueCollarCourier_03 = {
     figurine = { front = BASE .. "Generic/blueCollarCourier_03.webp?v=17f1d40ab73a", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/blueCollarCourier_03.front.webp?v=f982711c6c7e", back = BASE .. "Tokens/blueCollarCourier_03.back.webp?v=f982711c6c7e" },
+    token = { front = BASE .. "Tokens/blueCollarCourier_03.front.webp?v=492a031c0c66", back = BASE .. "Tokens/blueCollarCourier_03.back.webp?v=492a031c0c66" },
   },
   blueCollarCourier_04 = {
     figurine = { front = BASE .. "Generic/blueCollarCourier_04.webp?v=4c63fd912e28", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/blueCollarCourier_04.front.webp?v=e5051f80ece1", back = BASE .. "Tokens/blueCollarCourier_04.back.webp?v=e5051f80ece1" },
+    token = { front = BASE .. "Tokens/blueCollarCourier_04.front.webp?v=a4587a55340e", back = BASE .. "Tokens/blueCollarCourier_04.back.webp?v=a4587a55340e" },
   },
   blueCollarDockworker_01 = {
     figurine = { front = BASE .. "Generic/blueCollarDockworker_01.webp?v=70d5a89ac306", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/blueCollarDockworker_01.front.webp?v=98447625fdbe", back = BASE .. "Tokens/blueCollarDockworker_01.back.webp?v=98447625fdbe" },
+    token = { front = BASE .. "Tokens/blueCollarDockworker_01.front.webp?v=c3a59f56300a", back = BASE .. "Tokens/blueCollarDockworker_01.back.webp?v=c3a59f56300a" },
   },
   blueCollarDockworker_02 = {
     figurine = { front = BASE .. "Generic/blueCollarDockworker_02.webp?v=634ff3fdaa4a", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/blueCollarDockworker_02.front.webp?v=e6f6c1b273cc", back = BASE .. "Tokens/blueCollarDockworker_02.back.webp?v=e6f6c1b273cc" },
+    token = { front = BASE .. "Tokens/blueCollarDockworker_02.front.webp?v=e52c5eb44440", back = BASE .. "Tokens/blueCollarDockworker_02.back.webp?v=e52c5eb44440" },
   },
   blueCollarDockworker_03 = {
     figurine = { front = BASE .. "Generic/blueCollarDockworker_03.webp?v=39c46978121b", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/blueCollarDockworker_03.front.webp?v=b98ec518c608", back = BASE .. "Tokens/blueCollarDockworker_03.back.webp?v=b98ec518c608" },
+    token = { front = BASE .. "Tokens/blueCollarDockworker_03.front.webp?v=67b24bd91984", back = BASE .. "Tokens/blueCollarDockworker_03.back.webp?v=67b24bd91984" },
   },
   blueCollarDockworker_04 = {
     figurine = { front = BASE .. "Generic/blueCollarDockworker_04.webp?v=f8251f26372f", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/blueCollarDockworker_04.front.webp?v=15dadfb9cf81", back = BASE .. "Tokens/blueCollarDockworker_04.back.webp?v=15dadfb9cf81" },
+    token = { front = BASE .. "Tokens/blueCollarDockworker_04.front.webp?v=15d29889cfd3", back = BASE .. "Tokens/blueCollarDockworker_04.back.webp?v=15d29889cfd3" },
   },
   blueCollarHandyman_01 = {
     figurine = { front = BASE .. "Generic/blueCollarHandyman_01.webp?v=3ca9cbf249ca", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/blueCollarHandyman_01.front.webp?v=91b2dc1d7e7e", back = BASE .. "Tokens/blueCollarHandyman_01.back.webp?v=91b2dc1d7e7e" },
+    token = { front = BASE .. "Tokens/blueCollarHandyman_01.front.webp?v=c82cea74bb0f", back = BASE .. "Tokens/blueCollarHandyman_01.back.webp?v=c82cea74bb0f" },
   },
   blueCollarHandyman_02 = {
     figurine = { front = BASE .. "Generic/blueCollarHandyman_02.webp?v=d6ce894f1917", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/blueCollarHandyman_02.front.webp?v=a32b199873bb", back = BASE .. "Tokens/blueCollarHandyman_02.back.webp?v=a32b199873bb" },
+    token = { front = BASE .. "Tokens/blueCollarHandyman_02.front.webp?v=6de61530f972", back = BASE .. "Tokens/blueCollarHandyman_02.back.webp?v=6de61530f972" },
   },
   blueCollarHandyman_03 = {
     figurine = { front = BASE .. "Generic/blueCollarHandyman_03.webp?v=ca3593d66ae8", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/blueCollarHandyman_03.front.webp?v=e3e24e9ba2b5", back = BASE .. "Tokens/blueCollarHandyman_03.back.webp?v=e3e24e9ba2b5" },
+    token = { front = BASE .. "Tokens/blueCollarHandyman_03.front.webp?v=d70b2c74baaf", back = BASE .. "Tokens/blueCollarHandyman_03.back.webp?v=d70b2c74baaf" },
   },
   blueCollarHandyman_04 = {
     figurine = { front = BASE .. "Generic/blueCollarHandyman_04.webp?v=859e5a2de856", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/blueCollarHandyman_04.front.webp?v=31a90c398ab7", back = BASE .. "Tokens/blueCollarHandyman_04.back.webp?v=31a90c398ab7" },
+    token = { front = BASE .. "Tokens/blueCollarHandyman_04.front.webp?v=3eff6f56eb2f", back = BASE .. "Tokens/blueCollarHandyman_04.back.webp?v=3eff6f56eb2f" },
   },
   blueCollarJanitor_01 = {
     figurine = { front = BASE .. "Generic/blueCollarJanitor_01.webp?v=c1198d3ed50b", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/blueCollarJanitor_01.front.webp?v=91d68d98595d", back = BASE .. "Tokens/blueCollarJanitor_01.back.webp?v=91d68d98595d" },
+    token = { front = BASE .. "Tokens/blueCollarJanitor_01.front.webp?v=52d0e16cce42", back = BASE .. "Tokens/blueCollarJanitor_01.back.webp?v=52d0e16cce42" },
   },
   blueCollarJanitor_02 = {
     figurine = { front = BASE .. "Generic/blueCollarJanitor_02.webp?v=dcaf9da00318", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/blueCollarJanitor_02.front.webp?v=72b2b08dacd6", back = BASE .. "Tokens/blueCollarJanitor_02.back.webp?v=72b2b08dacd6" },
+    token = { front = BASE .. "Tokens/blueCollarJanitor_02.front.webp?v=5be785057879", back = BASE .. "Tokens/blueCollarJanitor_02.back.webp?v=5be785057879" },
   },
   blueCollarJanitor_03 = {
     figurine = { front = BASE .. "Generic/blueCollarJanitor_03.webp?v=02af4175c944", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/blueCollarJanitor_03.front.webp?v=e6cf5a7ff094", back = BASE .. "Tokens/blueCollarJanitor_03.back.webp?v=e6cf5a7ff094" },
+    token = { front = BASE .. "Tokens/blueCollarJanitor_03.front.webp?v=e5b5912d5202", back = BASE .. "Tokens/blueCollarJanitor_03.back.webp?v=e5b5912d5202" },
   },
   blueCollarMaintenance_01 = {
     figurine = { front = BASE .. "Generic/blueCollarMaintenance_01.webp?v=d173e0a03c25", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/blueCollarMaintenance_01.front.webp?v=02f7bc2f15df", back = BASE .. "Tokens/blueCollarMaintenance_01.back.webp?v=02f7bc2f15df" },
+    token = { front = BASE .. "Tokens/blueCollarMaintenance_01.front.webp?v=8af44527ecfe", back = BASE .. "Tokens/blueCollarMaintenance_01.back.webp?v=8af44527ecfe" },
   },
   blueCollarMaintenance_02 = {
     figurine = { front = BASE .. "Generic/blueCollarMaintenance_02.webp?v=8b2eb1904c6b", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/blueCollarMaintenance_02.front.webp?v=be14e5dc01a0", back = BASE .. "Tokens/blueCollarMaintenance_02.back.webp?v=be14e5dc01a0" },
+    token = { front = BASE .. "Tokens/blueCollarMaintenance_02.front.webp?v=6488d5d79221", back = BASE .. "Tokens/blueCollarMaintenance_02.back.webp?v=6488d5d79221" },
   },
   blueCollarTransitWorker_01 = {
     figurine = { front = BASE .. "Generic/blueCollarTransitWorker_01.webp?v=87ad03879221", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/blueCollarTransitWorker_01.front.webp?v=bdbfd7e0e2b4", back = BASE .. "Tokens/blueCollarTransitWorker_01.back.webp?v=bdbfd7e0e2b4" },
+    token = { front = BASE .. "Tokens/blueCollarTransitWorker_01.front.webp?v=ca97a1a3e3cb", back = BASE .. "Tokens/blueCollarTransitWorker_01.back.webp?v=ca97a1a3e3cb" },
   },
   blueCollarTransitWorker_02 = {
     figurine = { front = BASE .. "Generic/blueCollarTransitWorker_02.webp?v=b19c688cf10f", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/blueCollarTransitWorker_02.front.webp?v=70cd3554e08f", back = BASE .. "Tokens/blueCollarTransitWorker_02.back.webp?v=70cd3554e08f" },
+    token = { front = BASE .. "Tokens/blueCollarTransitWorker_02.front.webp?v=92a99e34a18f", back = BASE .. "Tokens/blueCollarTransitWorker_02.back.webp?v=92a99e34a18f" },
   },
   blueCollarTransitWorker_03 = {
     figurine = { front = BASE .. "Generic/blueCollarTransitWorker_03.webp?v=3e5a7953a5ca", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/blueCollarTransitWorker_03.front.webp?v=77b3c153b265", back = BASE .. "Tokens/blueCollarTransitWorker_03.back.webp?v=77b3c153b265" },
+    token = { front = BASE .. "Tokens/blueCollarTransitWorker_03.front.webp?v=a7591d1e851c", back = BASE .. "Tokens/blueCollarTransitWorker_03.back.webp?v=a7591d1e851c" },
   },
   blueCollarTransitWorker_04 = {
     figurine = { front = BASE .. "Generic/blueCollarTransitWorker_04.webp?v=5bc6da527a82", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/blueCollarTransitWorker_04.front.webp?v=baae59fa4748", back = BASE .. "Tokens/blueCollarTransitWorker_04.back.webp?v=baae59fa4748" },
+    token = { front = BASE .. "Tokens/blueCollarTransitWorker_04.front.webp?v=1b2fd1efce0d", back = BASE .. "Tokens/blueCollarTransitWorker_04.back.webp?v=1b2fd1efce0d" },
   },
   blueCollarTransitWorker_05 = {
     figurine = { front = BASE .. "Generic/blueCollarTransitWorker_05.webp?v=9af8e56fdb22", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/blueCollarTransitWorker_05.front.webp?v=7855cf6c6895", back = BASE .. "Tokens/blueCollarTransitWorker_05.back.webp?v=7855cf6c6895" },
+    token = { front = BASE .. "Tokens/blueCollarTransitWorker_05.front.webp?v=3850817080bd", back = BASE .. "Tokens/blueCollarTransitWorker_05.back.webp?v=3850817080bd" },
   },
   calvinWallace = {
     figurine = { front = BASE .. "Catalogued/calvinWallace.webp?v=be928c686d62", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/calvinWallace.front.webp?v=378549dd165b", back = BASE .. "Tokens/calvinWallace.back.webp?v=378549dd165b" },
+    token = { front = BASE .. "Tokens/calvinWallace.front.webp?v=6ba09aaa69db", back = BASE .. "Tokens/calvinWallace.back.webp?v=6ba09aaa69db" },
   },
   carol = {
     figurine = { front = BASE .. "Catalogued/carol.webp?v=034b753024a2", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/carol.front.webp?v=9914b61b1adf", back = BASE .. "Tokens/carol.back.webp?v=9914b61b1adf" },
+    token = { front = BASE .. "Tokens/carol.front.webp?v=d7bf688f53c6", back = BASE .. "Tokens/carol.back.webp?v=d7bf688f53c6" },
   },
   chokesOnMoonlight = {
     figurine = { front = BASE .. "Catalogued/chokesOnMoonlight.webp?v=3e0ffeb7f156", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/chokesOnMoonlight.front.webp?v=a84ec79d0f73", back = BASE .. "Tokens/chokesOnMoonlight.back.webp?v=a84ec79d0f73" },
+    token = { front = BASE .. "Tokens/chokesOnMoonlight.front.webp?v=feb4ed2c7cb8", back = BASE .. "Tokens/chokesOnMoonlight.back.webp?v=feb4ed2c7cb8" },
   },
   chokesOnMoonlightGarou = {
     figurine = { front = BASE .. "Catalogued/chokesOnMoonlightGarou.webp?v=4cfb3b5fdc09", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/chokesOnMoonlightGarou.front.webp?v=3c6d4cb958e8", back = BASE .. "Tokens/chokesOnMoonlightGarou.back.webp?v=3c6d4cb958e8" },
+    token = { front = BASE .. "Tokens/chokesOnMoonlightGarou.front.webp?v=38e1f310f656", back = BASE .. "Tokens/chokesOnMoonlightGarou.back.webp?v=38e1f310f656" },
   },
   christianne = {
     figurine = { front = BASE .. "Catalogued/christianne.webp?v=0cf7bb0b6739", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/christianne.front.webp?v=82f48c3b4f33", back = BASE .. "Tokens/christianne.back.webp?v=82f48c3b4f33" },
+    token = { front = BASE .. "Tokens/christianne.front.webp?v=97be3af4b450", back = BASE .. "Tokens/christianne.back.webp?v=97be3af4b450" },
   },
   christopherGiovanniJr = {
     figurine = { front = BASE .. "Catalogued/christopherGiovanniJr.webp?v=49ab9208e491", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/christopherGiovanniJr.front.webp?v=a3533c2fd217", back = BASE .. "Tokens/christopherGiovanniJr.back.webp?v=a3533c2fd217" },
+    token = { front = BASE .. "Tokens/christopherGiovanniJr.front.webp?v=438636336f29", back = BASE .. "Tokens/christopherGiovanniJr.back.webp?v=438636336f29" },
   },
   churchCongregant_01 = {
     figurine = { front = BASE .. "Generic/churchCongregant_01.webp?v=902a970cf4fa", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/churchCongregant_01.front.webp?v=55f425a76f2f", back = BASE .. "Tokens/churchCongregant_01.back.webp?v=55f425a76f2f" },
+    token = { front = BASE .. "Tokens/churchCongregant_01.front.webp?v=654364e20dd6", back = BASE .. "Tokens/churchCongregant_01.back.webp?v=654364e20dd6" },
   },
   churchCongregant_02 = {
     figurine = { front = BASE .. "Generic/churchCongregant_02.webp?v=38895e1180c4", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/churchCongregant_02.front.webp?v=1a844fdb2a3d", back = BASE .. "Tokens/churchCongregant_02.back.webp?v=1a844fdb2a3d" },
+    token = { front = BASE .. "Tokens/churchCongregant_02.front.webp?v=29d2331b9a12", back = BASE .. "Tokens/churchCongregant_02.back.webp?v=29d2331b9a12" },
   },
   churchCongregant_03 = {
     figurine = { front = BASE .. "Generic/churchCongregant_03.webp?v=e72810de306b", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/churchCongregant_03.front.webp?v=16fed4ae53fc", back = BASE .. "Tokens/churchCongregant_03.back.webp?v=16fed4ae53fc" },
+    token = { front = BASE .. "Tokens/churchCongregant_03.front.webp?v=7149d94cb89b", back = BASE .. "Tokens/churchCongregant_03.back.webp?v=7149d94cb89b" },
   },
   churchCongregant_04 = {
     figurine = { front = BASE .. "Generic/churchCongregant_04.webp?v=f2c8e23b3088", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/churchCongregant_04.front.webp?v=277502219158", back = BASE .. "Tokens/churchCongregant_04.back.webp?v=277502219158" },
+    token = { front = BASE .. "Tokens/churchCongregant_04.front.webp?v=2756c4fd027a", back = BASE .. "Tokens/churchCongregant_04.back.webp?v=2756c4fd027a" },
   },
   churchCongregant_05 = {
     figurine = { front = BASE .. "Generic/churchCongregant_05.webp?v=a7a948dd6c82", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/churchCongregant_05.front.webp?v=029a5e50e831", back = BASE .. "Tokens/churchCongregant_05.back.webp?v=029a5e50e831" },
+    token = { front = BASE .. "Tokens/churchCongregant_05.front.webp?v=f36ef6578f53", back = BASE .. "Tokens/churchCongregant_05.back.webp?v=f36ef6578f53" },
   },
   churchNun_01 = {
     figurine = { front = BASE .. "Generic/churchNun_01.webp?v=7b8dddeb5381", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/churchNun_01.front.webp?v=60f9899f3e72", back = BASE .. "Tokens/churchNun_01.back.webp?v=60f9899f3e72" },
+    token = { front = BASE .. "Tokens/churchNun_01.front.webp?v=9e3e44dddc44", back = BASE .. "Tokens/churchNun_01.back.webp?v=9e3e44dddc44" },
   },
   churchNun_02 = {
     figurine = { front = BASE .. "Generic/churchNun_02.webp?v=e31182db46c0", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/churchNun_02.front.webp?v=8858115df31a", back = BASE .. "Tokens/churchNun_02.back.webp?v=8858115df31a" },
+    token = { front = BASE .. "Tokens/churchNun_02.front.webp?v=02952b319e69", back = BASE .. "Tokens/churchNun_02.back.webp?v=02952b319e69" },
   },
   churchPriest_01 = {
     figurine = { front = BASE .. "Generic/churchPriest_01.webp?v=c2601fc5dd05", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/churchPriest_01.front.webp?v=2c52ea8508fa", back = BASE .. "Tokens/churchPriest_01.back.webp?v=2c52ea8508fa" },
+    token = { front = BASE .. "Tokens/churchPriest_01.front.webp?v=61eba1621e20", back = BASE .. "Tokens/churchPriest_01.back.webp?v=61eba1621e20" },
   },
   churchPriest_02 = {
     figurine = { front = BASE .. "Generic/churchPriest_02.webp?v=54bcd5b8a7a3", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/churchPriest_02.front.webp?v=dde164ec6205", back = BASE .. "Tokens/churchPriest_02.back.webp?v=dde164ec6205" },
+    token = { front = BASE .. "Tokens/churchPriest_02.front.webp?v=3f470da2c765", back = BASE .. "Tokens/churchPriest_02.back.webp?v=3f470da2c765" },
   },
   churchPriest_03 = {
     figurine = { front = BASE .. "Generic/churchPriest_03.webp?v=756d9b369b18", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/churchPriest_03.front.webp?v=928cd7237d7b", back = BASE .. "Tokens/churchPriest_03.back.webp?v=928cd7237d7b" },
+    token = { front = BASE .. "Tokens/churchPriest_03.front.webp?v=ddc02dd60c5b", back = BASE .. "Tokens/churchPriest_03.back.webp?v=ddc02dd60c5b" },
   },
   civilianCaptive_01 = {
     figurine = { front = BASE .. "Generic/civilianCaptive_01.webp?v=cec96a8fed41", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianCaptive_01.front.webp?v=0e6b425a74e6", back = BASE .. "Tokens/civilianCaptive_01.back.webp?v=0e6b425a74e6" },
+    token = { front = BASE .. "Tokens/civilianCaptive_01.front.webp?v=de6d9559f12b", back = BASE .. "Tokens/civilianCaptive_01.back.webp?v=de6d9559f12b" },
   },
   civilianCaptive_02 = {
     figurine = { front = BASE .. "Generic/civilianCaptive_02.webp?v=ab041a7be926", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianCaptive_02.front.webp?v=626c3fd79f41", back = BASE .. "Tokens/civilianCaptive_02.back.webp?v=626c3fd79f41" },
+    token = { front = BASE .. "Tokens/civilianCaptive_02.front.webp?v=8df206334adf", back = BASE .. "Tokens/civilianCaptive_02.back.webp?v=8df206334adf" },
   },
   civilianCaptive_03 = {
     figurine = { front = BASE .. "Generic/civilianCaptive_03.webp?v=1e074ef57b48", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianCaptive_03.front.webp?v=7dc1d3b74b57", back = BASE .. "Tokens/civilianCaptive_03.back.webp?v=7dc1d3b74b57" },
+    token = { front = BASE .. "Tokens/civilianCaptive_03.front.webp?v=04f5fc0ad548", back = BASE .. "Tokens/civilianCaptive_03.back.webp?v=04f5fc0ad548" },
   },
   civilianCaptive_04 = {
     figurine = { front = BASE .. "Generic/civilianCaptive_04.webp?v=7e0ee47d3df2", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianCaptive_04.front.webp?v=e81415b3086f", back = BASE .. "Tokens/civilianCaptive_04.back.webp?v=e81415b3086f" },
+    token = { front = BASE .. "Tokens/civilianCaptive_04.front.webp?v=7374ed26322b", back = BASE .. "Tokens/civilianCaptive_04.back.webp?v=7374ed26322b" },
   },
   civilianCaptive_05 = {
     figurine = { front = BASE .. "Generic/civilianCaptive_05.webp?v=c34be7c21023", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianCaptive_05.front.webp?v=5c602f527b88", back = BASE .. "Tokens/civilianCaptive_05.back.webp?v=5c602f527b88" },
+    token = { front = BASE .. "Tokens/civilianCaptive_05.front.webp?v=76e31b552428", back = BASE .. "Tokens/civilianCaptive_05.back.webp?v=76e31b552428" },
   },
   civilianCaptive_06 = {
     figurine = { front = BASE .. "Generic/civilianCaptive_06.webp?v=ce58ab140a62", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianCaptive_06.front.webp?v=f1736ab4a43f", back = BASE .. "Tokens/civilianCaptive_06.back.webp?v=f1736ab4a43f" },
+    token = { front = BASE .. "Tokens/civilianCaptive_06.front.webp?v=da4a64997a2e", back = BASE .. "Tokens/civilianCaptive_06.back.webp?v=da4a64997a2e" },
   },
   civilianCaptive_07 = {
     figurine = { front = BASE .. "Generic/civilianCaptive_07.webp?v=440c79328feb", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianCaptive_07.front.webp?v=7019e2c3e0e9", back = BASE .. "Tokens/civilianCaptive_07.back.webp?v=7019e2c3e0e9" },
+    token = { front = BASE .. "Tokens/civilianCaptive_07.front.webp?v=b5244aec2d59", back = BASE .. "Tokens/civilianCaptive_07.back.webp?v=b5244aec2d59" },
   },
   civilianCaptive_08 = {
     figurine = { front = BASE .. "Generic/civilianCaptive_08.webp?v=1e09d70dd634", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianCaptive_08.front.webp?v=9013efa6ca2e", back = BASE .. "Tokens/civilianCaptive_08.back.webp?v=9013efa6ca2e" },
+    token = { front = BASE .. "Tokens/civilianCaptive_08.front.webp?v=300aa598948b", back = BASE .. "Tokens/civilianCaptive_08.back.webp?v=300aa598948b" },
   },
   civilianChildBoy_01 = {
     figurine = { front = BASE .. "Generic/civilianChildBoy_01.webp?v=d9aa4614224b", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianChildBoy_01.front.webp?v=89ff62649048", back = BASE .. "Tokens/civilianChildBoy_01.back.webp?v=89ff62649048" },
+    token = { front = BASE .. "Tokens/civilianChildBoy_01.front.webp?v=a7f1ec65c715", back = BASE .. "Tokens/civilianChildBoy_01.back.webp?v=a7f1ec65c715" },
   },
   civilianChildBoy_02 = {
     figurine = { front = BASE .. "Generic/civilianChildBoy_02.webp?v=109ee6d5161b", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianChildBoy_02.front.webp?v=b6e43f200fbe", back = BASE .. "Tokens/civilianChildBoy_02.back.webp?v=b6e43f200fbe" },
+    token = { front = BASE .. "Tokens/civilianChildBoy_02.front.webp?v=af0d4b8b6ead", back = BASE .. "Tokens/civilianChildBoy_02.back.webp?v=af0d4b8b6ead" },
   },
   civilianChildBoy_03 = {
     figurine = { front = BASE .. "Generic/civilianChildBoy_03.webp?v=7b99a6888770", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianChildBoy_03.front.webp?v=b661d8540f06", back = BASE .. "Tokens/civilianChildBoy_03.back.webp?v=b661d8540f06" },
+    token = { front = BASE .. "Tokens/civilianChildBoy_03.front.webp?v=65f85749bb35", back = BASE .. "Tokens/civilianChildBoy_03.back.webp?v=65f85749bb35" },
   },
   civilianChildBoy_04 = {
     figurine = { front = BASE .. "Generic/civilianChildBoy_04.webp?v=0f39c0161bda", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianChildBoy_04.front.webp?v=8096d9c36d54", back = BASE .. "Tokens/civilianChildBoy_04.back.webp?v=8096d9c36d54" },
+    token = { front = BASE .. "Tokens/civilianChildBoy_04.front.webp?v=f3f37327c8e9", back = BASE .. "Tokens/civilianChildBoy_04.back.webp?v=f3f37327c8e9" },
   },
   civilianChildBoy_05 = {
     figurine = { front = BASE .. "Generic/civilianChildBoy_05.webp?v=d5cb5199d553", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianChildBoy_05.front.webp?v=0e334f14cf5a", back = BASE .. "Tokens/civilianChildBoy_05.back.webp?v=0e334f14cf5a" },
+    token = { front = BASE .. "Tokens/civilianChildBoy_05.front.webp?v=5d6d94bf465e", back = BASE .. "Tokens/civilianChildBoy_05.back.webp?v=5d6d94bf465e" },
   },
   civilianChildBoy_06 = {
     figurine = { front = BASE .. "Generic/civilianChildBoy_06.webp?v=e26eb1557f88", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianChildBoy_06.front.webp?v=46cd00254da9", back = BASE .. "Tokens/civilianChildBoy_06.back.webp?v=46cd00254da9" },
+    token = { front = BASE .. "Tokens/civilianChildBoy_06.front.webp?v=9867ba7ee6d0", back = BASE .. "Tokens/civilianChildBoy_06.back.webp?v=9867ba7ee6d0" },
   },
   civilianChildGirl_01 = {
     figurine = { front = BASE .. "Generic/civilianChildGirl_01.webp?v=a107ea34cc85", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianChildGirl_01.front.webp?v=3bff7268c34d", back = BASE .. "Tokens/civilianChildGirl_01.back.webp?v=3bff7268c34d" },
+    token = { front = BASE .. "Tokens/civilianChildGirl_01.front.webp?v=4ae2effef57b", back = BASE .. "Tokens/civilianChildGirl_01.back.webp?v=4ae2effef57b" },
   },
   civilianChildGirl_02 = {
     figurine = { front = BASE .. "Generic/civilianChildGirl_02.webp?v=4a9be32ce0a0", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianChildGirl_02.front.webp?v=97a6058cbfbf", back = BASE .. "Tokens/civilianChildGirl_02.back.webp?v=97a6058cbfbf" },
+    token = { front = BASE .. "Tokens/civilianChildGirl_02.front.webp?v=ffa79103cd81", back = BASE .. "Tokens/civilianChildGirl_02.back.webp?v=ffa79103cd81" },
   },
   civilianChildGirl_03 = {
     figurine = { front = BASE .. "Generic/civilianChildGirl_03.webp?v=189023efcaa1", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianChildGirl_03.front.webp?v=05bdb0ca87c8", back = BASE .. "Tokens/civilianChildGirl_03.back.webp?v=05bdb0ca87c8" },
+    token = { front = BASE .. "Tokens/civilianChildGirl_03.front.webp?v=59396c7722b5", back = BASE .. "Tokens/civilianChildGirl_03.back.webp?v=59396c7722b5" },
   },
   civilianChildGirl_04 = {
     figurine = { front = BASE .. "Generic/civilianChildGirl_04.webp?v=7b424093fd67", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianChildGirl_04.front.webp?v=6d74d2e42a0a", back = BASE .. "Tokens/civilianChildGirl_04.back.webp?v=6d74d2e42a0a" },
+    token = { front = BASE .. "Tokens/civilianChildGirl_04.front.webp?v=06a2155d00fd", back = BASE .. "Tokens/civilianChildGirl_04.back.webp?v=06a2155d00fd" },
   },
   civilianCommuter_01 = {
     figurine = { front = BASE .. "Generic/civilianCommuter_01.webp?v=dda4b886c6ad", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianCommuter_01.front.webp?v=6e4be693801c", back = BASE .. "Tokens/civilianCommuter_01.back.webp?v=6e4be693801c" },
+    token = { front = BASE .. "Tokens/civilianCommuter_01.front.webp?v=3d1d09cc2aa9", back = BASE .. "Tokens/civilianCommuter_01.back.webp?v=3d1d09cc2aa9" },
   },
   civilianCommuter_02 = {
     figurine = { front = BASE .. "Generic/civilianCommuter_02.webp?v=3d97f7edf176", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianCommuter_02.front.webp?v=267777330fac", back = BASE .. "Tokens/civilianCommuter_02.back.webp?v=267777330fac" },
+    token = { front = BASE .. "Tokens/civilianCommuter_02.front.webp?v=8c138766e351", back = BASE .. "Tokens/civilianCommuter_02.back.webp?v=8c138766e351" },
   },
   civilianCommuter_03 = {
     figurine = { front = BASE .. "Generic/civilianCommuter_03.webp?v=f6d1d53abbd9", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianCommuter_03.front.webp?v=d163700f1208", back = BASE .. "Tokens/civilianCommuter_03.back.webp?v=d163700f1208" },
+    token = { front = BASE .. "Tokens/civilianCommuter_03.front.webp?v=68c01dc20f9b", back = BASE .. "Tokens/civilianCommuter_03.back.webp?v=68c01dc20f9b" },
   },
   civilianCommuter_04 = {
     figurine = { front = BASE .. "Generic/civilianCommuter_04.webp?v=dd7335f1a9e6", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianCommuter_04.front.webp?v=439babc9debe", back = BASE .. "Tokens/civilianCommuter_04.back.webp?v=439babc9debe" },
+    token = { front = BASE .. "Tokens/civilianCommuter_04.front.webp?v=bd5b3901750b", back = BASE .. "Tokens/civilianCommuter_04.back.webp?v=bd5b3901750b" },
   },
   civilianCommuter_05 = {
     figurine = { front = BASE .. "Generic/civilianCommuter_05.webp?v=0e28acd9da06", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianCommuter_05.front.webp?v=313631fe27cb", back = BASE .. "Tokens/civilianCommuter_05.back.webp?v=313631fe27cb" },
+    token = { front = BASE .. "Tokens/civilianCommuter_05.front.webp?v=9ef9167006f2", back = BASE .. "Tokens/civilianCommuter_05.back.webp?v=9ef9167006f2" },
   },
   civilianDogWalker_01 = {
     figurine = { front = BASE .. "Generic/civilianDogWalker_01.webp?v=abfc37f83c48", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianDogWalker_01.front.webp?v=50f752bb73a6", back = BASE .. "Tokens/civilianDogWalker_01.back.webp?v=50f752bb73a6" },
+    token = { front = BASE .. "Tokens/civilianDogWalker_01.front.webp?v=8274e3eb70a2", back = BASE .. "Tokens/civilianDogWalker_01.back.webp?v=8274e3eb70a2" },
   },
   civilianDogWalker_02 = {
     figurine = { front = BASE .. "Generic/civilianDogWalker_02.webp?v=a2f6f5c78d02", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianDogWalker_02.front.webp?v=f4eb7e5e3d6e", back = BASE .. "Tokens/civilianDogWalker_02.back.webp?v=f4eb7e5e3d6e" },
+    token = { front = BASE .. "Tokens/civilianDogWalker_02.front.webp?v=5fd90af51d98", back = BASE .. "Tokens/civilianDogWalker_02.back.webp?v=5fd90af51d98" },
   },
   civilianElderlyMan_01 = {
     figurine = { front = BASE .. "Generic/civilianElderlyMan_01.webp?v=465101ea7c34", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianElderlyMan_01.front.webp?v=7acf6fbae8a6", back = BASE .. "Tokens/civilianElderlyMan_01.back.webp?v=7acf6fbae8a6" },
+    token = { front = BASE .. "Tokens/civilianElderlyMan_01.front.webp?v=95c81d4f87a8", back = BASE .. "Tokens/civilianElderlyMan_01.back.webp?v=95c81d4f87a8" },
   },
   civilianElderlyMan_02 = {
     figurine = { front = BASE .. "Generic/civilianElderlyMan_02.webp?v=d1edcfeda46d", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianElderlyMan_02.front.webp?v=caf0d45e8341", back = BASE .. "Tokens/civilianElderlyMan_02.back.webp?v=caf0d45e8341" },
+    token = { front = BASE .. "Tokens/civilianElderlyMan_02.front.webp?v=9555db85eda6", back = BASE .. "Tokens/civilianElderlyMan_02.back.webp?v=9555db85eda6" },
   },
   civilianElderlyMan_03 = {
     figurine = { front = BASE .. "Generic/civilianElderlyMan_03.webp?v=a4056ee73505", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianElderlyMan_03.front.webp?v=92f2afcd985d", back = BASE .. "Tokens/civilianElderlyMan_03.back.webp?v=92f2afcd985d" },
+    token = { front = BASE .. "Tokens/civilianElderlyMan_03.front.webp?v=332ab09de915", back = BASE .. "Tokens/civilianElderlyMan_03.back.webp?v=332ab09de915" },
   },
   civilianElderlyWoman_01 = {
     figurine = { front = BASE .. "Generic/civilianElderlyWoman_01.webp?v=7ca880e8e6dc", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianElderlyWoman_01.front.webp?v=e731256bc8f1", back = BASE .. "Tokens/civilianElderlyWoman_01.back.webp?v=e731256bc8f1" },
+    token = { front = BASE .. "Tokens/civilianElderlyWoman_01.front.webp?v=e589c7ab49fc", back = BASE .. "Tokens/civilianElderlyWoman_01.back.webp?v=e589c7ab49fc" },
   },
   civilianElderlyWoman_02 = {
     figurine = { front = BASE .. "Generic/civilianElderlyWoman_02.webp?v=86f2bb70c538", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianElderlyWoman_02.front.webp?v=9cfe033e74c6", back = BASE .. "Tokens/civilianElderlyWoman_02.back.webp?v=9cfe033e74c6" },
+    token = { front = BASE .. "Tokens/civilianElderlyWoman_02.front.webp?v=83197c8cfb7d", back = BASE .. "Tokens/civilianElderlyWoman_02.back.webp?v=83197c8cfb7d" },
   },
   civilianFrightened_01 = {
     figurine = { front = BASE .. "Generic/civilianFrightened_01.webp?v=50f896403ab3", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianFrightened_01.front.webp?v=db0390919606", back = BASE .. "Tokens/civilianFrightened_01.back.webp?v=db0390919606" },
+    token = { front = BASE .. "Tokens/civilianFrightened_01.front.webp?v=d52a5db57f7a", back = BASE .. "Tokens/civilianFrightened_01.back.webp?v=d52a5db57f7a" },
   },
   civilianFrightened_02 = {
     figurine = { front = BASE .. "Generic/civilianFrightened_02.webp?v=0babdfa8e9d5", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianFrightened_02.front.webp?v=eaece79d3a5e", back = BASE .. "Tokens/civilianFrightened_02.back.webp?v=eaece79d3a5e" },
+    token = { front = BASE .. "Tokens/civilianFrightened_02.front.webp?v=8f7a3b2523ff", back = BASE .. "Tokens/civilianFrightened_02.back.webp?v=8f7a3b2523ff" },
   },
   civilianFrightened_03 = {
     figurine = { front = BASE .. "Generic/civilianFrightened_03.webp?v=25a6a0b7464d", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianFrightened_03.front.webp?v=5e65eb0001f0", back = BASE .. "Tokens/civilianFrightened_03.back.webp?v=5e65eb0001f0" },
+    token = { front = BASE .. "Tokens/civilianFrightened_03.front.webp?v=f96b2dae0843", back = BASE .. "Tokens/civilianFrightened_03.back.webp?v=f96b2dae0843" },
   },
   civilianFrightened_04 = {
     figurine = { front = BASE .. "Generic/civilianFrightened_04.webp?v=2adf04ea29af", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianFrightened_04.front.webp?v=bea5ecacb7fc", back = BASE .. "Tokens/civilianFrightened_04.back.webp?v=bea5ecacb7fc" },
+    token = { front = BASE .. "Tokens/civilianFrightened_04.front.webp?v=9e8261a2028c", back = BASE .. "Tokens/civilianFrightened_04.back.webp?v=9e8261a2028c" },
   },
   civilianFrightened_05 = {
     figurine = { front = BASE .. "Generic/civilianFrightened_05.webp?v=bfbb918e8c99", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianFrightened_05.front.webp?v=f8f58db96f5a", back = BASE .. "Tokens/civilianFrightened_05.back.webp?v=f8f58db96f5a" },
+    token = { front = BASE .. "Tokens/civilianFrightened_05.front.webp?v=6844a4ebb4e8", back = BASE .. "Tokens/civilianFrightened_05.back.webp?v=6844a4ebb4e8" },
   },
   civilianHomeless_01 = {
     figurine = { front = BASE .. "Generic/civilianHomeless_01.webp?v=3ad2dea69307", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianHomeless_01.front.webp?v=9f69086cf048", back = BASE .. "Tokens/civilianHomeless_01.back.webp?v=9f69086cf048" },
+    token = { front = BASE .. "Tokens/civilianHomeless_01.front.webp?v=dd819595893a", back = BASE .. "Tokens/civilianHomeless_01.back.webp?v=dd819595893a" },
   },
   civilianHomeless_02 = {
     figurine = { front = BASE .. "Generic/civilianHomeless_02.webp?v=19e0d98af653", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianHomeless_02.front.webp?v=7e46d1d148e7", back = BASE .. "Tokens/civilianHomeless_02.back.webp?v=7e46d1d148e7" },
+    token = { front = BASE .. "Tokens/civilianHomeless_02.front.webp?v=69c8d36064e8", back = BASE .. "Tokens/civilianHomeless_02.back.webp?v=69c8d36064e8" },
   },
   civilianHomeless_03 = {
     figurine = { front = BASE .. "Generic/civilianHomeless_03.webp?v=c270c82d4b3e", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianHomeless_03.front.webp?v=229569b3c3f5", back = BASE .. "Tokens/civilianHomeless_03.back.webp?v=229569b3c3f5" },
+    token = { front = BASE .. "Tokens/civilianHomeless_03.front.webp?v=b8d7199a4dab", back = BASE .. "Tokens/civilianHomeless_03.back.webp?v=b8d7199a4dab" },
   },
   civilianHomeless_04 = {
     figurine = { front = BASE .. "Generic/civilianHomeless_04.webp?v=7394c2f70da9", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianHomeless_04.front.webp?v=4c7ae0c1bd94", back = BASE .. "Tokens/civilianHomeless_04.back.webp?v=4c7ae0c1bd94" },
+    token = { front = BASE .. "Tokens/civilianHomeless_04.front.webp?v=733319929fa5", back = BASE .. "Tokens/civilianHomeless_04.back.webp?v=733319929fa5" },
   },
   civilianHomeless_05 = {
     figurine = { front = BASE .. "Generic/civilianHomeless_05.webp?v=bdb2c0bbc548", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianHomeless_05.front.webp?v=7de8168b148d", back = BASE .. "Tokens/civilianHomeless_05.back.webp?v=7de8168b148d" },
+    token = { front = BASE .. "Tokens/civilianHomeless_05.front.webp?v=140ad1ab9175", back = BASE .. "Tokens/civilianHomeless_05.back.webp?v=140ad1ab9175" },
   },
   civilianJogger_01 = {
     figurine = { front = BASE .. "Generic/civilianJogger_01.webp?v=a94e5c24ecb6", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianJogger_01.front.webp?v=abfae37c322a", back = BASE .. "Tokens/civilianJogger_01.back.webp?v=abfae37c322a" },
+    token = { front = BASE .. "Tokens/civilianJogger_01.front.webp?v=2ac6ac9dda09", back = BASE .. "Tokens/civilianJogger_01.back.webp?v=2ac6ac9dda09" },
   },
   civilianJogger_02 = {
     figurine = { front = BASE .. "Generic/civilianJogger_02.webp?v=2ceccd99ff2e", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianJogger_02.front.webp?v=0027954d3bac", back = BASE .. "Tokens/civilianJogger_02.back.webp?v=0027954d3bac" },
+    token = { front = BASE .. "Tokens/civilianJogger_02.front.webp?v=6a12ad891d00", back = BASE .. "Tokens/civilianJogger_02.back.webp?v=6a12ad891d00" },
   },
   civilianJogger_03 = {
     figurine = { front = BASE .. "Generic/civilianJogger_03.webp?v=6041cb0cb8ed", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianJogger_03.front.webp?v=a7685ad1bbd1", back = BASE .. "Tokens/civilianJogger_03.back.webp?v=a7685ad1bbd1" },
+    token = { front = BASE .. "Tokens/civilianJogger_03.front.webp?v=84603168e70a", back = BASE .. "Tokens/civilianJogger_03.back.webp?v=84603168e70a" },
   },
   civilianParkWalker_01 = {
     figurine = { front = BASE .. "Generic/civilianParkWalker_01.webp?v=cdcf78e47c64", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianParkWalker_01.front.webp?v=30fad697e093", back = BASE .. "Tokens/civilianParkWalker_01.back.webp?v=30fad697e093" },
+    token = { front = BASE .. "Tokens/civilianParkWalker_01.front.webp?v=893149964f21", back = BASE .. "Tokens/civilianParkWalker_01.back.webp?v=893149964f21" },
   },
   civilianParkWalker_02 = {
     figurine = { front = BASE .. "Generic/civilianParkWalker_02.webp?v=7be9b1f99bf8", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianParkWalker_02.front.webp?v=9c0da2c8187b", back = BASE .. "Tokens/civilianParkWalker_02.back.webp?v=9c0da2c8187b" },
+    token = { front = BASE .. "Tokens/civilianParkWalker_02.front.webp?v=18a22b422bfb", back = BASE .. "Tokens/civilianParkWalker_02.back.webp?v=18a22b422bfb" },
   },
   civilianParkWalker_03 = {
     figurine = { front = BASE .. "Generic/civilianParkWalker_03.webp?v=a400cb500c30", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianParkWalker_03.front.webp?v=f51d61dc9bd4", back = BASE .. "Tokens/civilianParkWalker_03.back.webp?v=f51d61dc9bd4" },
+    token = { front = BASE .. "Tokens/civilianParkWalker_03.front.webp?v=a8db978c0a54", back = BASE .. "Tokens/civilianParkWalker_03.back.webp?v=a8db978c0a54" },
   },
   civilianParkWalker_04 = {
     figurine = { front = BASE .. "Generic/civilianParkWalker_04.webp?v=e71157084c21", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianParkWalker_04.front.webp?v=f8a9d4da269a", back = BASE .. "Tokens/civilianParkWalker_04.back.webp?v=f8a9d4da269a" },
+    token = { front = BASE .. "Tokens/civilianParkWalker_04.front.webp?v=69edc5ed669a", back = BASE .. "Tokens/civilianParkWalker_04.back.webp?v=69edc5ed669a" },
   },
   civilianParkWalker_05 = {
     figurine = { front = BASE .. "Generic/civilianParkWalker_05.webp?v=316089361cfc", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianParkWalker_05.front.webp?v=3e32eb416dbe", back = BASE .. "Tokens/civilianParkWalker_05.back.webp?v=3e32eb416dbe" },
+    token = { front = BASE .. "Tokens/civilianParkWalker_05.front.webp?v=117a4faf526b", back = BASE .. "Tokens/civilianParkWalker_05.back.webp?v=117a4faf526b" },
   },
   civilianProtester_01 = {
     figurine = { front = BASE .. "Generic/civilianProtester_01.webp?v=2d60346153a4", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianProtester_01.front.webp?v=c5cfeed0c094", back = BASE .. "Tokens/civilianProtester_01.back.webp?v=c5cfeed0c094" },
+    token = { front = BASE .. "Tokens/civilianProtester_01.front.webp?v=9cdb286d01ff", back = BASE .. "Tokens/civilianProtester_01.back.webp?v=9cdb286d01ff" },
   },
   civilianProtester_02 = {
     figurine = { front = BASE .. "Generic/civilianProtester_02.webp?v=109b9be4a767", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianProtester_02.front.webp?v=718563171d3b", back = BASE .. "Tokens/civilianProtester_02.back.webp?v=718563171d3b" },
+    token = { front = BASE .. "Tokens/civilianProtester_02.front.webp?v=f2b147eb2afd", back = BASE .. "Tokens/civilianProtester_02.back.webp?v=f2b147eb2afd" },
   },
   civilianProtester_03 = {
     figurine = { front = BASE .. "Generic/civilianProtester_03.webp?v=0b0cf522ae5e", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianProtester_03.front.webp?v=7b0e8997b6b6", back = BASE .. "Tokens/civilianProtester_03.back.webp?v=7b0e8997b6b6" },
+    token = { front = BASE .. "Tokens/civilianProtester_03.front.webp?v=400d8fc2708b", back = BASE .. "Tokens/civilianProtester_03.back.webp?v=400d8fc2708b" },
   },
   civilianProtester_04 = {
     figurine = { front = BASE .. "Generic/civilianProtester_04.webp?v=be5b13c982b8", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianProtester_04.front.webp?v=a9db883fab5a", back = BASE .. "Tokens/civilianProtester_04.back.webp?v=a9db883fab5a" },
+    token = { front = BASE .. "Tokens/civilianProtester_04.front.webp?v=0d5d25fe6050", back = BASE .. "Tokens/civilianProtester_04.back.webp?v=0d5d25fe6050" },
   },
   civilianProtester_05 = {
     figurine = { front = BASE .. "Generic/civilianProtester_05.webp?v=281681040ece", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianProtester_05.front.webp?v=972e624f491e", back = BASE .. "Tokens/civilianProtester_05.back.webp?v=972e624f491e" },
+    token = { front = BASE .. "Tokens/civilianProtester_05.front.webp?v=926a7525abde", back = BASE .. "Tokens/civilianProtester_05.back.webp?v=926a7525abde" },
   },
   civilianProtester_06 = {
     figurine = { front = BASE .. "Generic/civilianProtester_06.webp?v=402860e80f79", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianProtester_06.front.webp?v=4a823300f2ae", back = BASE .. "Tokens/civilianProtester_06.back.webp?v=4a823300f2ae" },
+    token = { front = BASE .. "Tokens/civilianProtester_06.front.webp?v=aaaf6f1d6498", back = BASE .. "Tokens/civilianProtester_06.back.webp?v=aaaf6f1d6498" },
   },
   civilianProtester_07 = {
     figurine = { front = BASE .. "Generic/civilianProtester_07.webp?v=cf267fc80a77", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianProtester_07.front.webp?v=3432cbd35359", back = BASE .. "Tokens/civilianProtester_07.back.webp?v=3432cbd35359" },
+    token = { front = BASE .. "Tokens/civilianProtester_07.front.webp?v=8eb54c5e0790", back = BASE .. "Tokens/civilianProtester_07.back.webp?v=8eb54c5e0790" },
   },
   civilianProtester_08 = {
     figurine = { front = BASE .. "Generic/civilianProtester_08.webp?v=57f4c8445021", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianProtester_08.front.webp?v=4302c265ffac", back = BASE .. "Tokens/civilianProtester_08.back.webp?v=4302c265ffac" },
+    token = { front = BASE .. "Tokens/civilianProtester_08.front.webp?v=814d20131753", back = BASE .. "Tokens/civilianProtester_08.back.webp?v=814d20131753" },
   },
   civilianProtester_09 = {
     figurine = { front = BASE .. "Generic/civilianProtester_09.webp?v=889cfdb45eeb", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianProtester_09.front.webp?v=ec5d1b8bbfbf", back = BASE .. "Tokens/civilianProtester_09.back.webp?v=ec5d1b8bbfbf" },
+    token = { front = BASE .. "Tokens/civilianProtester_09.front.webp?v=0097738bb0c6", back = BASE .. "Tokens/civilianProtester_09.back.webp?v=0097738bb0c6" },
   },
   civilianRestrained_01 = {
     figurine = { front = BASE .. "Generic/civilianRestrained_01.webp?v=3f599dce0aaf", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianRestrained_01.front.webp?v=5c2370a51a40", back = BASE .. "Tokens/civilianRestrained_01.back.webp?v=5c2370a51a40" },
+    token = { front = BASE .. "Tokens/civilianRestrained_01.front.webp?v=dcf58531d03c", back = BASE .. "Tokens/civilianRestrained_01.back.webp?v=dcf58531d03c" },
   },
   civilianRestrained_02 = {
     figurine = { front = BASE .. "Generic/civilianRestrained_02.webp?v=d1e5d06a55ea", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianRestrained_02.front.webp?v=20f3be9f0131", back = BASE .. "Tokens/civilianRestrained_02.back.webp?v=20f3be9f0131" },
+    token = { front = BASE .. "Tokens/civilianRestrained_02.front.webp?v=460f83905576", back = BASE .. "Tokens/civilianRestrained_02.back.webp?v=460f83905576" },
   },
   civilianRestrained_03 = {
     figurine = { front = BASE .. "Generic/civilianRestrained_03.webp?v=eea16b35a877", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianRestrained_03.front.webp?v=b900074c87cc", back = BASE .. "Tokens/civilianRestrained_03.back.webp?v=b900074c87cc" },
+    token = { front = BASE .. "Tokens/civilianRestrained_03.front.webp?v=f84748f256ca", back = BASE .. "Tokens/civilianRestrained_03.back.webp?v=f84748f256ca" },
   },
   civilianShelterStaff_01 = {
     figurine = { front = BASE .. "Generic/civilianShelterStaff_01.webp?v=0cb57bf7004f", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianShelterStaff_01.front.webp?v=c760a7e29f89", back = BASE .. "Tokens/civilianShelterStaff_01.back.webp?v=c760a7e29f89" },
+    token = { front = BASE .. "Tokens/civilianShelterStaff_01.front.webp?v=e0dfe4ac31dd", back = BASE .. "Tokens/civilianShelterStaff_01.back.webp?v=e0dfe4ac31dd" },
   },
   civilianShelterStaff_02 = {
     figurine = { front = BASE .. "Generic/civilianShelterStaff_02.webp?v=cef5e6e39e11", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianShelterStaff_02.front.webp?v=e441d65142f3", back = BASE .. "Tokens/civilianShelterStaff_02.back.webp?v=e441d65142f3" },
+    token = { front = BASE .. "Tokens/civilianShelterStaff_02.front.webp?v=9f597e9c2d70", back = BASE .. "Tokens/civilianShelterStaff_02.back.webp?v=9f597e9c2d70" },
   },
   civilianShelterStaff_03 = {
     figurine = { front = BASE .. "Generic/civilianShelterStaff_03.webp?v=e4e831687e83", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianShelterStaff_03.front.webp?v=da324e6079e6", back = BASE .. "Tokens/civilianShelterStaff_03.back.webp?v=da324e6079e6" },
+    token = { front = BASE .. "Tokens/civilianShelterStaff_03.front.webp?v=7e03596aac44", back = BASE .. "Tokens/civilianShelterStaff_03.back.webp?v=7e03596aac44" },
   },
   civilianShelterStaff_04 = {
     figurine = { front = BASE .. "Generic/civilianShelterStaff_04.webp?v=4603d1f1e7c8", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianShelterStaff_04.front.webp?v=1ba094e34515", back = BASE .. "Tokens/civilianShelterStaff_04.back.webp?v=1ba094e34515" },
+    token = { front = BASE .. "Tokens/civilianShelterStaff_04.front.webp?v=90332b65cd16", back = BASE .. "Tokens/civilianShelterStaff_04.back.webp?v=90332b65cd16" },
   },
   civilianSocialWorker_01 = {
     figurine = { front = BASE .. "Generic/civilianSocialWorker_01.webp?v=61485dca9747", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianSocialWorker_01.front.webp?v=919aa2fc7ee1", back = BASE .. "Tokens/civilianSocialWorker_01.back.webp?v=919aa2fc7ee1" },
+    token = { front = BASE .. "Tokens/civilianSocialWorker_01.front.webp?v=3e04cabf288c", back = BASE .. "Tokens/civilianSocialWorker_01.back.webp?v=3e04cabf288c" },
   },
   civilianSocialWorker_02 = {
     figurine = { front = BASE .. "Generic/civilianSocialWorker_02.webp?v=3b64bfa95d51", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianSocialWorker_02.front.webp?v=daaee0dfd4b7", back = BASE .. "Tokens/civilianSocialWorker_02.back.webp?v=daaee0dfd4b7" },
+    token = { front = BASE .. "Tokens/civilianSocialWorker_02.front.webp?v=620ab61b3f22", back = BASE .. "Tokens/civilianSocialWorker_02.back.webp?v=620ab61b3f22" },
   },
   civilianTeenBoy_01 = {
     figurine = { front = BASE .. "Generic/civilianTeenBoy_01.webp?v=cebc66bebb1a", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianTeenBoy_01.front.webp?v=ae720dffdcbf", back = BASE .. "Tokens/civilianTeenBoy_01.back.webp?v=ae720dffdcbf" },
+    token = { front = BASE .. "Tokens/civilianTeenBoy_01.front.webp?v=80986dd72d8c", back = BASE .. "Tokens/civilianTeenBoy_01.back.webp?v=80986dd72d8c" },
   },
   civilianTeenBoy_02 = {
     figurine = { front = BASE .. "Generic/civilianTeenBoy_02.webp?v=cfa0d3ac0e7c", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianTeenBoy_02.front.webp?v=8b3f6d914f52", back = BASE .. "Tokens/civilianTeenBoy_02.back.webp?v=8b3f6d914f52" },
+    token = { front = BASE .. "Tokens/civilianTeenBoy_02.front.webp?v=632eb0f6ace1", back = BASE .. "Tokens/civilianTeenBoy_02.back.webp?v=632eb0f6ace1" },
   },
   civilianTeenBoy_03 = {
     figurine = { front = BASE .. "Generic/civilianTeenBoy_03.webp?v=9b3042645695", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianTeenBoy_03.front.webp?v=1b0ac8c202ae", back = BASE .. "Tokens/civilianTeenBoy_03.back.webp?v=1b0ac8c202ae" },
+    token = { front = BASE .. "Tokens/civilianTeenBoy_03.front.webp?v=10efb5f90f49", back = BASE .. "Tokens/civilianTeenBoy_03.back.webp?v=10efb5f90f49" },
   },
   civilianTeenBoy_04 = {
     figurine = { front = BASE .. "Generic/civilianTeenBoy_04.webp?v=779b173fd119", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianTeenBoy_04.front.webp?v=62645be191cd", back = BASE .. "Tokens/civilianTeenBoy_04.back.webp?v=62645be191cd" },
+    token = { front = BASE .. "Tokens/civilianTeenBoy_04.front.webp?v=773da4d9ddc0", back = BASE .. "Tokens/civilianTeenBoy_04.back.webp?v=773da4d9ddc0" },
   },
   civilianTeenBoy_05 = {
     figurine = { front = BASE .. "Generic/civilianTeenBoy_05.webp?v=70f595b1a5db", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianTeenBoy_05.front.webp?v=10dd1f7033e8", back = BASE .. "Tokens/civilianTeenBoy_05.back.webp?v=10dd1f7033e8" },
+    token = { front = BASE .. "Tokens/civilianTeenBoy_05.front.webp?v=7d8a85c1d5d7", back = BASE .. "Tokens/civilianTeenBoy_05.back.webp?v=7d8a85c1d5d7" },
   },
   civilianTeenBoy_06 = {
     figurine = { front = BASE .. "Generic/civilianTeenBoy_06.webp?v=c45200039589", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianTeenBoy_06.front.webp?v=ee9198446704", back = BASE .. "Tokens/civilianTeenBoy_06.back.webp?v=ee9198446704" },
+    token = { front = BASE .. "Tokens/civilianTeenBoy_06.front.webp?v=ed607752a4a4", back = BASE .. "Tokens/civilianTeenBoy_06.back.webp?v=ed607752a4a4" },
   },
   civilianTeenGirl_01 = {
     figurine = { front = BASE .. "Generic/civilianTeenGirl_01.webp?v=5af985b02820", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianTeenGirl_01.front.webp?v=467c89507b4b", back = BASE .. "Tokens/civilianTeenGirl_01.back.webp?v=467c89507b4b" },
+    token = { front = BASE .. "Tokens/civilianTeenGirl_01.front.webp?v=e5ad5e329979", back = BASE .. "Tokens/civilianTeenGirl_01.back.webp?v=e5ad5e329979" },
   },
   civilianTeenGirl_02 = {
     figurine = { front = BASE .. "Generic/civilianTeenGirl_02.webp?v=c944eaf21f8c", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianTeenGirl_02.front.webp?v=0a8e2e3f1b68", back = BASE .. "Tokens/civilianTeenGirl_02.back.webp?v=0a8e2e3f1b68" },
+    token = { front = BASE .. "Tokens/civilianTeenGirl_02.front.webp?v=ebe664f99562", back = BASE .. "Tokens/civilianTeenGirl_02.back.webp?v=ebe664f99562" },
   },
   civilianTeenGirl_03 = {
     figurine = { front = BASE .. "Generic/civilianTeenGirl_03.webp?v=ee4e1d803da8", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianTeenGirl_03.front.webp?v=703a8be44a5f", back = BASE .. "Tokens/civilianTeenGirl_03.back.webp?v=703a8be44a5f" },
+    token = { front = BASE .. "Tokens/civilianTeenGirl_03.front.webp?v=bb528c68dde3", back = BASE .. "Tokens/civilianTeenGirl_03.back.webp?v=bb528c68dde3" },
   },
   civilianTeenGirl_04 = {
     figurine = { front = BASE .. "Generic/civilianTeenGirl_04.webp?v=c28b3971d5b6", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianTeenGirl_04.front.webp?v=8696e9d8a360", back = BASE .. "Tokens/civilianTeenGirl_04.back.webp?v=8696e9d8a360" },
+    token = { front = BASE .. "Tokens/civilianTeenGirl_04.front.webp?v=0d44c753ff39", back = BASE .. "Tokens/civilianTeenGirl_04.back.webp?v=0d44c753ff39" },
   },
   civilianWounded_01 = {
     figurine = { front = BASE .. "Generic/civilianWounded_01.webp?v=2d5e2f3f86af", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianWounded_01.front.webp?v=ead04778af2a", back = BASE .. "Tokens/civilianWounded_01.back.webp?v=ead04778af2a" },
+    token = { front = BASE .. "Tokens/civilianWounded_01.front.webp?v=0ef5b07ce67f", back = BASE .. "Tokens/civilianWounded_01.back.webp?v=0ef5b07ce67f" },
   },
   civilianWounded_02 = {
     figurine = { front = BASE .. "Generic/civilianWounded_02.webp?v=61fdc0825017", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianWounded_02.front.webp?v=042419f5f694", back = BASE .. "Tokens/civilianWounded_02.back.webp?v=042419f5f694" },
+    token = { front = BASE .. "Tokens/civilianWounded_02.front.webp?v=c2d5213ea698", back = BASE .. "Tokens/civilianWounded_02.back.webp?v=c2d5213ea698" },
   },
   civilianWounded_03 = {
     figurine = { front = BASE .. "Generic/civilianWounded_03.webp?v=358b8e64eb66", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianWounded_03.front.webp?v=d1a0302ee5d3", back = BASE .. "Tokens/civilianWounded_03.back.webp?v=d1a0302ee5d3" },
+    token = { front = BASE .. "Tokens/civilianWounded_03.front.webp?v=c7c3b3befa32", back = BASE .. "Tokens/civilianWounded_03.back.webp?v=c7c3b3befa32" },
   },
   civilianWounded_04 = {
     figurine = { front = BASE .. "Generic/civilianWounded_04.webp?v=606e95f787b7", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianWounded_04.front.webp?v=c4752f36aef2", back = BASE .. "Tokens/civilianWounded_04.back.webp?v=c4752f36aef2" },
+    token = { front = BASE .. "Tokens/civilianWounded_04.front.webp?v=7e8900388961", back = BASE .. "Tokens/civilianWounded_04.back.webp?v=7e8900388961" },
   },
   civilianWounded_05 = {
     figurine = { front = BASE .. "Generic/civilianWounded_05.webp?v=4614966fb793", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianWounded_05.front.webp?v=533d792db4d3", back = BASE .. "Tokens/civilianWounded_05.back.webp?v=533d792db4d3" },
+    token = { front = BASE .. "Tokens/civilianWounded_05.front.webp?v=bfc9bee7efac", back = BASE .. "Tokens/civilianWounded_05.back.webp?v=bfc9bee7efac" },
   },
   civilianWounded_06 = {
     figurine = { front = BASE .. "Generic/civilianWounded_06.webp?v=de7ad14bd166", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianWounded_06.front.webp?v=07115fa8468d", back = BASE .. "Tokens/civilianWounded_06.back.webp?v=07115fa8468d" },
+    token = { front = BASE .. "Tokens/civilianWounded_06.front.webp?v=08706bd894ee", back = BASE .. "Tokens/civilianWounded_06.back.webp?v=08706bd894ee" },
   },
   civilianWounded_07 = {
     figurine = { front = BASE .. "Generic/civilianWounded_07.webp?v=0e17965e259f", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianWounded_07.front.webp?v=dde980feae83", back = BASE .. "Tokens/civilianWounded_07.back.webp?v=dde980feae83" },
+    token = { front = BASE .. "Tokens/civilianWounded_07.front.webp?v=88c845fb6596", back = BASE .. "Tokens/civilianWounded_07.back.webp?v=88c845fb6596" },
   },
   civilianWounded_08 = {
     figurine = { front = BASE .. "Generic/civilianWounded_08.webp?v=5ac85fea1fcf", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianWounded_08.front.webp?v=1a5cdce019d1", back = BASE .. "Tokens/civilianWounded_08.back.webp?v=1a5cdce019d1" },
+    token = { front = BASE .. "Tokens/civilianWounded_08.front.webp?v=782f70db5c49", back = BASE .. "Tokens/civilianWounded_08.back.webp?v=782f70db5c49" },
   },
   civilianWounded_09 = {
     figurine = { front = BASE .. "Generic/civilianWounded_09.webp?v=a310acff98f9", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianWounded_09.front.webp?v=9da1d8162a67", back = BASE .. "Tokens/civilianWounded_09.back.webp?v=9da1d8162a67" },
+    token = { front = BASE .. "Tokens/civilianWounded_09.front.webp?v=16a95860d667", back = BASE .. "Tokens/civilianWounded_09.back.webp?v=16a95860d667" },
   },
   civilianWounded_10 = {
     figurine = { front = BASE .. "Generic/civilianWounded_10.webp?v=65cb57473768", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianWounded_10.front.webp?v=123bb5886d8e", back = BASE .. "Tokens/civilianWounded_10.back.webp?v=123bb5886d8e" },
+    token = { front = BASE .. "Tokens/civilianWounded_10.front.webp?v=a35b76edab9f", back = BASE .. "Tokens/civilianWounded_10.back.webp?v=a35b76edab9f" },
   },
   crimeCoroner_01 = {
     figurine = { front = BASE .. "Generic/crimeCoroner_01.webp?v=86c90cb28229", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimeCoroner_01.front.webp?v=7b78e494354c", back = BASE .. "Tokens/crimeCoroner_01.back.webp?v=7b78e494354c" },
+    token = { front = BASE .. "Tokens/crimeCoroner_01.front.webp?v=7ff892ae6e09", back = BASE .. "Tokens/crimeCoroner_01.back.webp?v=7ff892ae6e09" },
   },
   crimeCoroner_02 = {
     figurine = { front = BASE .. "Generic/crimeCoroner_02.webp?v=beefc057da35", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimeCoroner_02.front.webp?v=4cb14c77c998", back = BASE .. "Tokens/crimeCoroner_02.back.webp?v=4cb14c77c998" },
+    token = { front = BASE .. "Tokens/crimeCoroner_02.front.webp?v=3fd150165c09", back = BASE .. "Tokens/crimeCoroner_02.back.webp?v=3fd150165c09" },
   },
   crimeCoroner_03 = {
     figurine = { front = BASE .. "Generic/crimeCoroner_03.webp?v=fe478ecc78ad", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimeCoroner_03.front.webp?v=28881f02ce47", back = BASE .. "Tokens/crimeCoroner_03.back.webp?v=28881f02ce47" },
+    token = { front = BASE .. "Tokens/crimeCoroner_03.front.webp?v=64cc126fbc36", back = BASE .. "Tokens/crimeCoroner_03.back.webp?v=64cc126fbc36" },
   },
   crimeCoroner_04 = {
     figurine = { front = BASE .. "Generic/crimeCoroner_04.webp?v=9332e784acee", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimeCoroner_04.front.webp?v=a1ce42aeb2a8", back = BASE .. "Tokens/crimeCoroner_04.back.webp?v=a1ce42aeb2a8" },
+    token = { front = BASE .. "Tokens/crimeCoroner_04.front.webp?v=67a0aefe9e66", back = BASE .. "Tokens/crimeCoroner_04.back.webp?v=67a0aefe9e66" },
   },
   crimeDetective_01 = {
     figurine = { front = BASE .. "Generic/crimeDetective_01.webp?v=60734782c548", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimeDetective_01.front.webp?v=9416565615f1", back = BASE .. "Tokens/crimeDetective_01.back.webp?v=9416565615f1" },
+    token = { front = BASE .. "Tokens/crimeDetective_01.front.webp?v=02bced74df07", back = BASE .. "Tokens/crimeDetective_01.back.webp?v=02bced74df07" },
   },
   crimeDetective_02 = {
     figurine = { front = BASE .. "Generic/crimeDetective_02.webp?v=80df32bd5d65", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimeDetective_02.front.webp?v=1979c69ec5b4", back = BASE .. "Tokens/crimeDetective_02.back.webp?v=1979c69ec5b4" },
+    token = { front = BASE .. "Tokens/crimeDetective_02.front.webp?v=434a8a196f94", back = BASE .. "Tokens/crimeDetective_02.back.webp?v=434a8a196f94" },
   },
   crimeDetective_03 = {
     figurine = { front = BASE .. "Generic/crimeDetective_03.webp?v=25731331a89f", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimeDetective_03.front.webp?v=729c6dfb3a34", back = BASE .. "Tokens/crimeDetective_03.back.webp?v=729c6dfb3a34" },
+    token = { front = BASE .. "Tokens/crimeDetective_03.front.webp?v=564b04129e52", back = BASE .. "Tokens/crimeDetective_03.back.webp?v=564b04129e52" },
   },
   crimeDetective_04 = {
     figurine = { front = BASE .. "Generic/crimeDetective_04.webp?v=618c701df5ce", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimeDetective_04.front.webp?v=988ae5174054", back = BASE .. "Tokens/crimeDetective_04.back.webp?v=988ae5174054" },
+    token = { front = BASE .. "Tokens/crimeDetective_04.front.webp?v=ce194045fb36", back = BASE .. "Tokens/crimeDetective_04.back.webp?v=ce194045fb36" },
   },
   crimeDetective_05 = {
     figurine = { front = BASE .. "Generic/crimeDetective_05.webp?v=167169f482bc", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimeDetective_05.front.webp?v=148b7ba29b93", back = BASE .. "Tokens/crimeDetective_05.back.webp?v=148b7ba29b93" },
+    token = { front = BASE .. "Tokens/crimeDetective_05.front.webp?v=82584c2c746f", back = BASE .. "Tokens/crimeDetective_05.back.webp?v=82584c2c746f" },
   },
   crimePolice_01 = {
     figurine = { front = BASE .. "Generic/crimePolice_01.webp?v=11e8718d5d99", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimePolice_01.front.webp?v=689c5f7163df", back = BASE .. "Tokens/crimePolice_01.back.webp?v=689c5f7163df" },
+    token = { front = BASE .. "Tokens/crimePolice_01.front.webp?v=2f955eda02ed", back = BASE .. "Tokens/crimePolice_01.back.webp?v=2f955eda02ed" },
   },
   crimePolice_02 = {
     figurine = { front = BASE .. "Generic/crimePolice_02.webp?v=65952e5e4888", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimePolice_02.front.webp?v=c1153997718b", back = BASE .. "Tokens/crimePolice_02.back.webp?v=c1153997718b" },
+    token = { front = BASE .. "Tokens/crimePolice_02.front.webp?v=b8a25d07f94a", back = BASE .. "Tokens/crimePolice_02.back.webp?v=b8a25d07f94a" },
   },
   crimePolice_03 = {
     figurine = { front = BASE .. "Generic/crimePolice_03.webp?v=2b867284b561", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimePolice_03.front.webp?v=0578cf76941d", back = BASE .. "Tokens/crimePolice_03.back.webp?v=0578cf76941d" },
+    token = { front = BASE .. "Tokens/crimePolice_03.front.webp?v=732b8b7fd916", back = BASE .. "Tokens/crimePolice_03.back.webp?v=732b8b7fd916" },
   },
   crimePolice_04 = {
     figurine = { front = BASE .. "Generic/crimePolice_04.webp?v=b031f99b7ac9", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimePolice_04.front.webp?v=d16d7d9e968e", back = BASE .. "Tokens/crimePolice_04.back.webp?v=d16d7d9e968e" },
+    token = { front = BASE .. "Tokens/crimePolice_04.front.webp?v=eb6e42fce9de", back = BASE .. "Tokens/crimePolice_04.back.webp?v=eb6e42fce9de" },
   },
   crimePolice_05 = {
     figurine = { front = BASE .. "Generic/crimePolice_05.webp?v=4b1bff3e80eb", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimePolice_05.front.webp?v=a7bf8182680d", back = BASE .. "Tokens/crimePolice_05.back.webp?v=a7bf8182680d" },
+    token = { front = BASE .. "Tokens/crimePolice_05.front.webp?v=da6be5b7d278", back = BASE .. "Tokens/crimePolice_05.back.webp?v=da6be5b7d278" },
   },
   crimePolice_06 = {
     figurine = { front = BASE .. "Generic/crimePolice_06.webp?v=ce595b590c05", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimePolice_06.front.webp?v=b058f1baff2b", back = BASE .. "Tokens/crimePolice_06.back.webp?v=b058f1baff2b" },
+    token = { front = BASE .. "Tokens/crimePolice_06.front.webp?v=a447fbe7f9e7", back = BASE .. "Tokens/crimePolice_06.back.webp?v=a447fbe7f9e7" },
   },
   crimePolice_07 = {
     figurine = { front = BASE .. "Generic/crimePolice_07.webp?v=6ca50a645499", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimePolice_07.front.webp?v=b7f1f8ea5af8", back = BASE .. "Tokens/crimePolice_07.back.webp?v=b7f1f8ea5af8" },
+    token = { front = BASE .. "Tokens/crimePolice_07.front.webp?v=992dbc4dbf6a", back = BASE .. "Tokens/crimePolice_07.back.webp?v=992dbc4dbf6a" },
   },
   crimePolice_08 = {
     figurine = { front = BASE .. "Generic/crimePolice_08.webp?v=a3019c8d0675", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimePolice_08.front.webp?v=e4c6003f2480", back = BASE .. "Tokens/crimePolice_08.back.webp?v=e4c6003f2480" },
+    token = { front = BASE .. "Tokens/crimePolice_08.front.webp?v=5fddbd41bfef", back = BASE .. "Tokens/crimePolice_08.back.webp?v=5fddbd41bfef" },
   },
   crimeThug_01 = {
     figurine = { front = BASE .. "Generic/crimeThug_01.webp?v=9ceb000f4e9f", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimeThug_01.front.webp?v=f354e4105863", back = BASE .. "Tokens/crimeThug_01.back.webp?v=f354e4105863" },
+    token = { front = BASE .. "Tokens/crimeThug_01.front.webp?v=9b340c2c7730", back = BASE .. "Tokens/crimeThug_01.back.webp?v=9b340c2c7730" },
   },
   crimeThug_02 = {
     figurine = { front = BASE .. "Generic/crimeThug_02.webp?v=73fddf997c02", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimeThug_02.front.webp?v=54b74fb3da34", back = BASE .. "Tokens/crimeThug_02.back.webp?v=54b74fb3da34" },
+    token = { front = BASE .. "Tokens/crimeThug_02.front.webp?v=57ca7e951349", back = BASE .. "Tokens/crimeThug_02.back.webp?v=57ca7e951349" },
   },
   crimeThug_03 = {
     figurine = { front = BASE .. "Generic/crimeThug_03.webp?v=48367ffda3bd", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimeThug_03.front.webp?v=e15fda038591", back = BASE .. "Tokens/crimeThug_03.back.webp?v=e15fda038591" },
+    token = { front = BASE .. "Tokens/crimeThug_03.front.webp?v=233fb310b32d", back = BASE .. "Tokens/crimeThug_03.back.webp?v=233fb310b32d" },
   },
   crimeThug_04 = {
     figurine = { front = BASE .. "Generic/crimeThug_04.webp?v=e6832b96abe3", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimeThug_04.front.webp?v=4048b0fc093a", back = BASE .. "Tokens/crimeThug_04.back.webp?v=4048b0fc093a" },
+    token = { front = BASE .. "Tokens/crimeThug_04.front.webp?v=f94f2d95f8af", back = BASE .. "Tokens/crimeThug_04.back.webp?v=f94f2d95f8af" },
   },
   crimeThug_05 = {
     figurine = { front = BASE .. "Generic/crimeThug_05.webp?v=b0353d72ffe2", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimeThug_05.front.webp?v=9d16331df0bf", back = BASE .. "Tokens/crimeThug_05.back.webp?v=9d16331df0bf" },
+    token = { front = BASE .. "Tokens/crimeThug_05.front.webp?v=5f24066ba1c0", back = BASE .. "Tokens/crimeThug_05.back.webp?v=5f24066ba1c0" },
   },
   crimeThug_06 = {
     figurine = { front = BASE .. "Generic/crimeThug_06.webp?v=352d558a6cf4", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimeThug_06.front.webp?v=3fcc6eb28b34", back = BASE .. "Tokens/crimeThug_06.back.webp?v=3fcc6eb28b34" },
+    token = { front = BASE .. "Tokens/crimeThug_06.front.webp?v=a5971264c678", back = BASE .. "Tokens/crimeThug_06.back.webp?v=a5971264c678" },
   },
   crimeThug_07 = {
     figurine = { front = BASE .. "Generic/crimeThug_07.webp?v=cabeda2b33c2", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimeThug_07.front.webp?v=f874b3833d29", back = BASE .. "Tokens/crimeThug_07.back.webp?v=f874b3833d29" },
+    token = { front = BASE .. "Tokens/crimeThug_07.front.webp?v=023272d075da", back = BASE .. "Tokens/crimeThug_07.back.webp?v=023272d075da" },
   },
   crimeThug_08 = {
     figurine = { front = BASE .. "Generic/crimeThug_08.webp?v=06ae663a2209", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/crimeThug_08.front.webp?v=72eb85eaa366", back = BASE .. "Tokens/crimeThug_08.back.webp?v=72eb85eaa366" },
+    token = { front = BASE .. "Tokens/crimeThug_08.front.webp?v=8a0de81aac07", back = BASE .. "Tokens/crimeThug_08.back.webp?v=8a0de81aac07" },
   },
   daevaAnitaMorris = {
     figurine = { front = BASE .. "Catalogued/daevaAnitaMorris.webp?v=eb26bb6739f5", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/daevaAnitaMorris.front.webp?v=43b913b871d0", back = BASE .. "Tokens/daevaAnitaMorris.back.webp?v=43b913b871d0" },
+    token = { front = BASE .. "Tokens/daevaAnitaMorris.front.webp?v=e6d293a83a7a", back = BASE .. "Tokens/daevaAnitaMorris.back.webp?v=e6d293a83a7a" },
   },
   daevaGabrielCollard = {
     figurine = { front = BASE .. "Catalogued/daevaGabrielCollard.webp?v=c2e17a3cfdde", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/daevaGabrielCollard.front.webp?v=d5219e3332d3", back = BASE .. "Tokens/daevaGabrielCollard.back.webp?v=d5219e3332d3" },
+    token = { front = BASE .. "Tokens/daevaGabrielCollard.front.webp?v=424d42f9526c", back = BASE .. "Tokens/daevaGabrielCollard.back.webp?v=424d42f9526c" },
   },
   daevaNasirKhan = {
     figurine = { front = BASE .. "Catalogued/daevaNasirKhan.webp?v=6bf56cd92cd8", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/daevaNasirKhan.front.webp?v=f8ba8f044a46", back = BASE .. "Tokens/daevaNasirKhan.back.webp?v=f8ba8f044a46" },
+    token = { front = BASE .. "Tokens/daevaNasirKhan.front.webp?v=8b5fbafa708e", back = BASE .. "Tokens/daevaNasirKhan.back.webp?v=8b5fbafa708e" },
   },
   damienAbanda = {
     figurine = { front = BASE .. "Catalogued/damienAbanda.webp?v=10280a83897b", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/damienAbanda.front.webp?v=3c1e15190c02", back = BASE .. "Tokens/damienAbanda.back.webp?v=3c1e15190c02" },
+    token = { front = BASE .. "Tokens/damienAbanda.front.webp?v=4e746c3d4ac4", back = BASE .. "Tokens/damienAbanda.back.webp?v=4e746c3d4ac4" },
   },
   damienKline = {
     figurine = { front = BASE .. "Catalogued/damienKline.webp?v=78b68ebf1cf9", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/damienKline.front.webp?v=5aa00827194d", back = BASE .. "Tokens/damienKline.back.webp?v=5aa00827194d" },
+    token = { front = BASE .. "Tokens/damienKline.front.webp?v=4b180d79f50c", back = BASE .. "Tokens/damienKline.back.webp?v=4b180d79f50c" },
   },
   deaconReal = {
     figurine = { front = BASE .. "Catalogued/deaconReal.webp?v=1d64a3e80a47", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/deaconReal.front.webp?v=d86e18ed0645", back = BASE .. "Tokens/deaconReal.back.webp?v=d86e18ed0645" },
+    token = { front = BASE .. "Tokens/deaconReal.front.webp?v=4d519afbe753", back = BASE .. "Tokens/deaconReal.back.webp?v=4d519afbe753" },
   },
   dogAngry_01 = {
     figurine = { front = BASE .. "Generic/dogAngry_01.webp?v=6c93c440b02e", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/dogAngry_01.front.webp?v=e11a77336c8e", back = BASE .. "Tokens/dogAngry_01.back.webp?v=e11a77336c8e" },
+    token = { front = BASE .. "Tokens/dogAngry_01.front.webp?v=6f9fd26ca964", back = BASE .. "Tokens/dogAngry_01.back.webp?v=6f9fd26ca964" },
   },
   dogAngry_02 = {
     figurine = { front = BASE .. "Generic/dogAngry_02.webp?v=24671e901798", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/dogAngry_02.front.webp?v=de1f9d0b2629", back = BASE .. "Tokens/dogAngry_02.back.webp?v=de1f9d0b2629" },
+    token = { front = BASE .. "Tokens/dogAngry_02.front.webp?v=3498fd9b2183", back = BASE .. "Tokens/dogAngry_02.back.webp?v=3498fd9b2183" },
   },
   dogAngry_03 = {
     figurine = { front = BASE .. "Generic/dogAngry_03.webp?v=61ef50014a88", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/dogAngry_03.front.webp?v=b9ca9c5da27c", back = BASE .. "Tokens/dogAngry_03.back.webp?v=b9ca9c5da27c" },
+    token = { front = BASE .. "Tokens/dogAngry_03.front.webp?v=cf18aef05c25", back = BASE .. "Tokens/dogAngry_03.back.webp?v=cf18aef05c25" },
   },
   dogAngry_04 = {
     figurine = { front = BASE .. "Generic/dogAngry_04.webp?v=1343fddcfad3", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/dogAngry_04.front.webp?v=36b185b5292a", back = BASE .. "Tokens/dogAngry_04.back.webp?v=36b185b5292a" },
+    token = { front = BASE .. "Tokens/dogAngry_04.front.webp?v=99720bf03407", back = BASE .. "Tokens/dogAngry_04.back.webp?v=99720bf03407" },
   },
   dogGuard_01 = {
     figurine = { front = BASE .. "Generic/dogGuard_01.webp?v=8b1b872a9c4a", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/dogGuard_01.front.webp?v=d17099d92702", back = BASE .. "Tokens/dogGuard_01.back.webp?v=d17099d92702" },
+    token = { front = BASE .. "Tokens/dogGuard_01.front.webp?v=3ea60dff5e8c", back = BASE .. "Tokens/dogGuard_01.back.webp?v=3ea60dff5e8c" },
   },
   dogGuard_02 = {
     figurine = { front = BASE .. "Generic/dogGuard_02.webp?v=ae65abf160a2", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/dogGuard_02.front.webp?v=0ef7c19e8be2", back = BASE .. "Tokens/dogGuard_02.back.webp?v=0ef7c19e8be2" },
+    token = { front = BASE .. "Tokens/dogGuard_02.front.webp?v=b2f7876d1fc8", back = BASE .. "Tokens/dogGuard_02.back.webp?v=b2f7876d1fc8" },
   },
   dogGuard_03 = {
     figurine = { front = BASE .. "Generic/dogGuard_03.webp?v=304586183e48", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/dogGuard_03.front.webp?v=b7bf373af97d", back = BASE .. "Tokens/dogGuard_03.back.webp?v=b7bf373af97d" },
+    token = { front = BASE .. "Tokens/dogGuard_03.front.webp?v=7d0f295ea140", back = BASE .. "Tokens/dogGuard_03.back.webp?v=7d0f295ea140" },
   },
   dogGuard_04 = {
     figurine = { front = BASE .. "Generic/dogGuard_04.webp?v=1da9029cc659", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/dogGuard_04.front.webp?v=8b8b3e0d9739", back = BASE .. "Tokens/dogGuard_04.back.webp?v=8b8b3e0d9739" },
+    token = { front = BASE .. "Tokens/dogGuard_04.front.webp?v=79277c76db68", back = BASE .. "Tokens/dogGuard_04.back.webp?v=79277c76db68" },
   },
   drIrenaVoss = {
     figurine = { front = BASE .. "Catalogued/drIrenaVoss.webp?v=c92733cf47b2", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/drIrenaVoss.front.webp?v=4995cac1034d", back = BASE .. "Tokens/drIrenaVoss.back.webp?v=4995cac1034d" },
+    token = { front = BASE .. "Tokens/drIrenaVoss.front.webp?v=8739f09c3258", back = BASE .. "Tokens/drIrenaVoss.back.webp?v=8739f09c3258" },
   },
   drake = {
     figurine = { front = BASE .. "Catalogued/drake.webp?v=0a611e59755b", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/drake.front.webp?v=89420425e13c", back = BASE .. "Tokens/drake.back.webp?v=89420425e13c" },
+    token = { front = BASE .. "Tokens/drake.front.webp?v=f2ade4f21867", back = BASE .. "Tokens/drake.back.webp?v=f2ade4f21867" },
   },
   eddie = {
     figurine = { front = BASE .. "Catalogued/eddie.webp?v=3ededfea89f1", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/eddie.front.webp?v=5219ff5cb973", back = BASE .. "Tokens/eddie.back.webp?v=5219ff5cb973" },
+    token = { front = BASE .. "Tokens/eddie.front.webp?v=c504c0e26cea", back = BASE .. "Tokens/eddie.back.webp?v=c504c0e26cea" },
   },
   emergencyFirefighter_01 = {
     figurine = { front = BASE .. "Generic/emergencyFirefighter_01.webp?v=d6bfddc6eb9e", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/emergencyFirefighter_01.front.webp?v=48edb918644b", back = BASE .. "Tokens/emergencyFirefighter_01.back.webp?v=48edb918644b" },
+    token = { front = BASE .. "Tokens/emergencyFirefighter_01.front.webp?v=bc7cb5468ca1", back = BASE .. "Tokens/emergencyFirefighter_01.back.webp?v=bc7cb5468ca1" },
   },
   emergencyFirefighter_02 = {
     figurine = { front = BASE .. "Generic/emergencyFirefighter_02.webp?v=26af9cdc503c", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/emergencyFirefighter_02.front.webp?v=8e068db34585", back = BASE .. "Tokens/emergencyFirefighter_02.back.webp?v=8e068db34585" },
+    token = { front = BASE .. "Tokens/emergencyFirefighter_02.front.webp?v=43c69687caee", back = BASE .. "Tokens/emergencyFirefighter_02.back.webp?v=43c69687caee" },
   },
   emergencyFirefighter_03 = {
     figurine = { front = BASE .. "Generic/emergencyFirefighter_03.webp?v=60a4ef438ed8", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/emergencyFirefighter_03.front.webp?v=c04c1ba0d051", back = BASE .. "Tokens/emergencyFirefighter_03.back.webp?v=c04c1ba0d051" },
+    token = { front = BASE .. "Tokens/emergencyFirefighter_03.front.webp?v=c911a2ac12ab", back = BASE .. "Tokens/emergencyFirefighter_03.back.webp?v=c911a2ac12ab" },
   },
   emergencyFirefighter_04 = {
     figurine = { front = BASE .. "Generic/emergencyFirefighter_04.webp?v=9fefc0c0aaca", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/emergencyFirefighter_04.front.webp?v=603bfdd73673", back = BASE .. "Tokens/emergencyFirefighter_04.back.webp?v=603bfdd73673" },
+    token = { front = BASE .. "Tokens/emergencyFirefighter_04.front.webp?v=1c012783076e", back = BASE .. "Tokens/emergencyFirefighter_04.back.webp?v=1c012783076e" },
   },
   emergencyParamedic_01 = {
     figurine = { front = BASE .. "Generic/emergencyParamedic_01.webp?v=f0d39aab26ca", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/emergencyParamedic_01.front.webp?v=6c36b5b66152", back = BASE .. "Tokens/emergencyParamedic_01.back.webp?v=6c36b5b66152" },
+    token = { front = BASE .. "Tokens/emergencyParamedic_01.front.webp?v=afc5215f637c", back = BASE .. "Tokens/emergencyParamedic_01.back.webp?v=afc5215f637c" },
   },
   emergencyParamedic_02 = {
     figurine = { front = BASE .. "Generic/emergencyParamedic_02.webp?v=bc08d36fccaa", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/emergencyParamedic_02.front.webp?v=0996253e2fdf", back = BASE .. "Tokens/emergencyParamedic_02.back.webp?v=0996253e2fdf" },
+    token = { front = BASE .. "Tokens/emergencyParamedic_02.front.webp?v=02af6beb78e6", back = BASE .. "Tokens/emergencyParamedic_02.back.webp?v=02af6beb78e6" },
   },
   emergencyParamedic_03 = {
     figurine = { front = BASE .. "Generic/emergencyParamedic_03.webp?v=bb8cfeaf768e", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/emergencyParamedic_03.front.webp?v=953eee836998", back = BASE .. "Tokens/emergencyParamedic_03.back.webp?v=953eee836998" },
+    token = { front = BASE .. "Tokens/emergencyParamedic_03.front.webp?v=95c3b166d073", back = BASE .. "Tokens/emergencyParamedic_03.back.webp?v=95c3b166d073" },
   },
   emergencyParamedic_04 = {
     figurine = { front = BASE .. "Generic/emergencyParamedic_04.webp?v=f962e900cbdb", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/emergencyParamedic_04.front.webp?v=d35a5932163d", back = BASE .. "Tokens/emergencyParamedic_04.back.webp?v=d35a5932163d" },
+    token = { front = BASE .. "Tokens/emergencyParamedic_04.front.webp?v=e47ae74f7b74", back = BASE .. "Tokens/emergencyParamedic_04.back.webp?v=e47ae74f7b74" },
   },
   emilyTheDuskRose = {
     figurine = { front = BASE .. "Catalogued/emilyTheDuskRose.webp?v=c9a5b343ef0f", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/emilyTheDuskRose.front.webp?v=47db77441b64", back = BASE .. "Tokens/emilyTheDuskRose.back.webp?v=47db77441b64" },
+    token = { front = BASE .. "Tokens/emilyTheDuskRose.front.webp?v=434b4f22937d", back = BASE .. "Tokens/emilyTheDuskRose.back.webp?v=434b4f22937d" },
   },
   enzoCaruso = {
     figurine = { front = BASE .. "Catalogued/enzoCaruso.webp?v=58e53e3f89ae", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/enzoCaruso.front.webp?v=03a586e6e066", back = BASE .. "Tokens/enzoCaruso.back.webp?v=03a586e6e066" },
+    token = { front = BASE .. "Tokens/enzoCaruso.front.webp?v=29d19344f0fe", back = BASE .. "Tokens/enzoCaruso.back.webp?v=29d19344f0fe" },
   },
   evanescentBlue = {
     figurine = { front = BASE .. "Catalogued/evanescentBlue.webp?v=a9017613f9f6", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/evanescentBlue.front.webp?v=bacb303f9b2b", back = BASE .. "Tokens/evanescentBlue.back.webp?v=bacb303f9b2b" },
+    token = { front = BASE .. "Tokens/evanescentBlue.front.webp?v=bb113d4af69c", back = BASE .. "Tokens/evanescentBlue.back.webp?v=bb113d4af69c" },
   },
   evangelineDupont = {
     figurine = { front = BASE .. "Catalogued/evangelineDupont.webp?v=27eff6a31ecb", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/evangelineDupont.front.webp?v=963df95ac3a3", back = BASE .. "Tokens/evangelineDupont.back.webp?v=963df95ac3a3" },
+    token = { front = BASE .. "Tokens/evangelineDupont.front.webp?v=2d0832110d22", back = BASE .. "Tokens/evangelineDupont.back.webp?v=2d0832110d22" },
   },
   fangsAtTheCradle = {
     figurine = { front = BASE .. "Catalogued/fangsAtTheCradle.webp?v=cbca358a372b", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/fangsAtTheCradle.front.webp?v=7ee441bf5b8b", back = BASE .. "Tokens/fangsAtTheCradle.back.webp?v=7ee441bf5b8b" },
+    token = { front = BASE .. "Tokens/fangsAtTheCradle.front.webp?v=cfab1d04cea0", back = BASE .. "Tokens/fangsAtTheCradle.back.webp?v=cfab1d04cea0" },
   },
   fangsAtTheCradleGarou = {
     figurine = { front = BASE .. "Catalogued/fangsAtTheCradleGarou.webp?v=b4173fb2f1b7", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/fangsAtTheCradleGarou.front.webp?v=f42c084f7cde", back = BASE .. "Tokens/fangsAtTheCradleGarou.back.webp?v=f42c084f7cde" },
+    token = { front = BASE .. "Tokens/fangsAtTheCradleGarou.front.webp?v=923215bb87ab", back = BASE .. "Tokens/fangsAtTheCradleGarou.back.webp?v=923215bb87ab" },
   },
   fatherDiaz = {
     figurine = { front = BASE .. "Catalogued/fatherDiaz.webp?v=b67bbbe18e07", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/fatherDiaz.front.webp?v=2c6c9fa3219d", back = BASE .. "Tokens/fatherDiaz.back.webp?v=2c6c9fa3219d" },
+    token = { front = BASE .. "Tokens/fatherDiaz.front.webp?v=c485cde232e1", back = BASE .. "Tokens/fatherDiaz.back.webp?v=c485cde232e1" },
   },
   fomorach = {
     figurine = { front = BASE .. "Catalogued/fomorach.webp?v=49d7225f9db5", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/fomorach.front.webp?v=4facba094113", back = BASE .. "Tokens/fomorach.back.webp?v=4facba094113" },
+    token = { front = BASE .. "Tokens/fomorach.front.webp?v=87d30c7bdc0a", back = BASE .. "Tokens/fomorach.back.webp?v=87d30c7bdc0a" },
   },
   gabrielCollard = {
     figurine = { front = BASE .. "Catalogued/gabrielCollard.webp?v=e2f1c7c0d49f", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/gabrielCollard.front.webp?v=5849371a5a68", back = BASE .. "Tokens/gabrielCollard.back.webp?v=5849371a5a68" },
+    token = { front = BASE .. "Tokens/gabrielCollard.front.webp?v=adf48eb2b6d2", back = BASE .. "Tokens/gabrielCollard.back.webp?v=adf48eb2b6d2" },
   },
   georgieStJames = {
     figurine = { front = BASE .. "Catalogued/georgieStJames.webp?v=2a26c0db59cb", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/georgieStJames.front.webp?v=72fcf19b8377", back = BASE .. "Tokens/georgieStJames.back.webp?v=72fcf19b8377" },
+    token = { front = BASE .. "Tokens/georgieStJames.front.webp?v=4fdd7a37b742", back = BASE .. "Tokens/georgieStJames.back.webp?v=4fdd7a37b742" },
   },
   ghostHue_01 = {
     figurine = { front = BASE .. "Generic/ghostHue_01.webp?v=9b70be566108", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghostHue_01.front.webp?v=3fe3a65f2a92", back = BASE .. "Tokens/ghostHue_01.back.webp?v=3fe3a65f2a92" },
+    token = { front = BASE .. "Tokens/ghostHue_01.front.webp?v=77e3adfb7401", back = BASE .. "Tokens/ghostHue_01.back.webp?v=77e3adfb7401" },
   },
   ghostHue_02 = {
     figurine = { front = BASE .. "Generic/ghostHue_02.webp?v=9329fb112f92", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghostHue_02.front.webp?v=af53ecde2a07", back = BASE .. "Tokens/ghostHue_02.back.webp?v=af53ecde2a07" },
+    token = { front = BASE .. "Tokens/ghostHue_02.front.webp?v=f0dba1365493", back = BASE .. "Tokens/ghostHue_02.back.webp?v=f0dba1365493" },
   },
   ghostHue_03 = {
     figurine = { front = BASE .. "Generic/ghostHue_03.webp?v=f4534f91690e", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghostHue_03.front.webp?v=f70e0821f34b", back = BASE .. "Tokens/ghostHue_03.back.webp?v=f70e0821f34b" },
+    token = { front = BASE .. "Tokens/ghostHue_03.front.webp?v=ef604641fa24", back = BASE .. "Tokens/ghostHue_03.back.webp?v=ef604641fa24" },
   },
   ghostHue_04 = {
     figurine = { front = BASE .. "Generic/ghostHue_04.webp?v=4ff4438b2dee", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghostHue_04.front.webp?v=ce07d3181f54", back = BASE .. "Tokens/ghostHue_04.back.webp?v=ce07d3181f54" },
+    token = { front = BASE .. "Tokens/ghostHue_04.front.webp?v=ce84088b4687", back = BASE .. "Tokens/ghostHue_04.back.webp?v=ce84088b4687" },
   },
   ghostHue_05 = {
     figurine = { front = BASE .. "Generic/ghostHue_05.webp?v=ee24ce2dc52a", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghostHue_05.front.webp?v=af659b8ab664", back = BASE .. "Tokens/ghostHue_05.back.webp?v=af659b8ab664" },
+    token = { front = BASE .. "Tokens/ghostHue_05.front.webp?v=05f5784f40c5", back = BASE .. "Tokens/ghostHue_05.back.webp?v=05f5784f40c5" },
   },
   ghostHue_06 = {
     figurine = { front = BASE .. "Generic/ghostHue_06.webp?v=731fc8098150", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghostHue_06.front.webp?v=fd8777d02c37", back = BASE .. "Tokens/ghostHue_06.back.webp?v=fd8777d02c37" },
+    token = { front = BASE .. "Tokens/ghostHue_06.front.webp?v=0cc09d9759e5", back = BASE .. "Tokens/ghostHue_06.back.webp?v=0cc09d9759e5" },
   },
   ghostHue_07 = {
     figurine = { front = BASE .. "Generic/ghostHue_07.webp?v=796bbbd23833", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghostHue_07.front.webp?v=a21c0459134e", back = BASE .. "Tokens/ghostHue_07.back.webp?v=a21c0459134e" },
+    token = { front = BASE .. "Tokens/ghostHue_07.front.webp?v=f0c13157041f", back = BASE .. "Tokens/ghostHue_07.back.webp?v=f0c13157041f" },
   },
   ghostHue_08 = {
     figurine = { front = BASE .. "Generic/ghostHue_08.webp?v=9345ecef7395", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghostHue_08.front.webp?v=9a70d77f8e42", back = BASE .. "Tokens/ghostHue_08.back.webp?v=9a70d77f8e42" },
+    token = { front = BASE .. "Tokens/ghostHue_08.front.webp?v=37be223b9981", back = BASE .. "Tokens/ghostHue_08.back.webp?v=37be223b9981" },
   },
   ghostHue_09 = {
     figurine = { front = BASE .. "Generic/ghostHue_09.webp?v=abf47fc5be32", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghostHue_09.front.webp?v=6fe86a768b36", back = BASE .. "Tokens/ghostHue_09.back.webp?v=6fe86a768b36" },
+    token = { front = BASE .. "Tokens/ghostHue_09.front.webp?v=ae5685be945e", back = BASE .. "Tokens/ghostHue_09.back.webp?v=ae5685be945e" },
   },
   ghostHue_10 = {
     figurine = { front = BASE .. "Generic/ghostHue_10.webp?v=d18139214dec", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghostHue_10.front.webp?v=3bd372972910", back = BASE .. "Tokens/ghostHue_10.back.webp?v=3bd372972910" },
+    token = { front = BASE .. "Tokens/ghostHue_10.front.webp?v=8ccd42d2141a", back = BASE .. "Tokens/ghostHue_10.back.webp?v=8ccd42d2141a" },
   },
   ghostWraith_01 = {
     figurine = { front = BASE .. "Generic/ghostWraith_01.webp?v=ca4f18e3a238", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghostWraith_01.front.webp?v=126dfd953a3f", back = BASE .. "Tokens/ghostWraith_01.back.webp?v=126dfd953a3f" },
+    token = { front = BASE .. "Tokens/ghostWraith_01.front.webp?v=f55465d70fb4", back = BASE .. "Tokens/ghostWraith_01.back.webp?v=f55465d70fb4" },
   },
   ghostWraith_02 = {
     figurine = { front = BASE .. "Generic/ghostWraith_02.webp?v=53407d41b996", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghostWraith_02.front.webp?v=e19cb071a9fe", back = BASE .. "Tokens/ghostWraith_02.back.webp?v=e19cb071a9fe" },
+    token = { front = BASE .. "Tokens/ghostWraith_02.front.webp?v=a3223402136c", back = BASE .. "Tokens/ghostWraith_02.back.webp?v=a3223402136c" },
   },
   ghostWraith_03 = {
     figurine = { front = BASE .. "Generic/ghostWraith_03.webp?v=a6d7b363fa12", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghostWraith_03.front.webp?v=d08a0ccac95f", back = BASE .. "Tokens/ghostWraith_03.back.webp?v=d08a0ccac95f" },
+    token = { front = BASE .. "Tokens/ghostWraith_03.front.webp?v=eb4ab7df5b3b", back = BASE .. "Tokens/ghostWraith_03.back.webp?v=eb4ab7df5b3b" },
   },
   ghostWraith_04 = {
     figurine = { front = BASE .. "Generic/ghostWraith_04.webp?v=07d9a16fe03e", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghostWraith_04.front.webp?v=ca4c44031181", back = BASE .. "Tokens/ghostWraith_04.back.webp?v=ca4c44031181" },
+    token = { front = BASE .. "Tokens/ghostWraith_04.front.webp?v=7fb773b1d5d7", back = BASE .. "Tokens/ghostWraith_04.back.webp?v=7fb773b1d5d7" },
   },
   ghostWraith_05 = {
     figurine = { front = BASE .. "Generic/ghostWraith_05.webp?v=eb740d4c0d0c", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghostWraith_05.front.webp?v=63160b305647", back = BASE .. "Tokens/ghostWraith_05.back.webp?v=63160b305647" },
+    token = { front = BASE .. "Tokens/ghostWraith_05.front.webp?v=ce6c14d1b77f", back = BASE .. "Tokens/ghostWraith_05.back.webp?v=ce6c14d1b77f" },
   },
   ghostWraith_06 = {
     figurine = { front = BASE .. "Generic/ghostWraith_06.webp?v=5fa4e23f12ee", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghostWraith_06.front.webp?v=1e932c8218d6", back = BASE .. "Tokens/ghostWraith_06.back.webp?v=1e932c8218d6" },
+    token = { front = BASE .. "Tokens/ghostWraith_06.front.webp?v=979b95ace150", back = BASE .. "Tokens/ghostWraith_06.back.webp?v=979b95ace150" },
   },
   ghostWraith_07 = {
     figurine = { front = BASE .. "Generic/ghostWraith_07.webp?v=eaf74a1d8acf", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghostWraith_07.front.webp?v=a2a9321f94f8", back = BASE .. "Tokens/ghostWraith_07.back.webp?v=a2a9321f94f8" },
+    token = { front = BASE .. "Tokens/ghostWraith_07.front.webp?v=dcc1656451b8", back = BASE .. "Tokens/ghostWraith_07.back.webp?v=dcc1656451b8" },
   },
   ghostWraith_08 = {
     figurine = { front = BASE .. "Generic/ghostWraith_08.webp?v=eac61b238387", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghostWraith_08.front.webp?v=18ac5ee16234", back = BASE .. "Tokens/ghostWraith_08.back.webp?v=18ac5ee16234" },
+    token = { front = BASE .. "Tokens/ghostWraith_08.front.webp?v=da1ff41448d7", back = BASE .. "Tokens/ghostWraith_08.back.webp?v=da1ff41448d7" },
   },
   ghoulGuard_01 = {
     figurine = { front = BASE .. "Generic/ghoulGuard_01.webp?v=8919aed17be6", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulGuard_01.front.webp?v=a0335ca61f35", back = BASE .. "Tokens/ghoulGuard_01.back.webp?v=a0335ca61f35" },
+    token = { front = BASE .. "Tokens/ghoulGuard_01.front.webp?v=4cd458fbfec7", back = BASE .. "Tokens/ghoulGuard_01.back.webp?v=4cd458fbfec7" },
   },
   ghoulGuard_02 = {
     figurine = { front = BASE .. "Generic/ghoulGuard_02.webp?v=a2e61dc6f173", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulGuard_02.front.webp?v=06e71827c1cf", back = BASE .. "Tokens/ghoulGuard_02.back.webp?v=06e71827c1cf" },
+    token = { front = BASE .. "Tokens/ghoulGuard_02.front.webp?v=f1977778adeb", back = BASE .. "Tokens/ghoulGuard_02.back.webp?v=f1977778adeb" },
   },
   ghoulGuard_03 = {
     figurine = { front = BASE .. "Generic/ghoulGuard_03.webp?v=435593c6da8b", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulGuard_03.front.webp?v=6ed8d053e956", back = BASE .. "Tokens/ghoulGuard_03.back.webp?v=6ed8d053e956" },
+    token = { front = BASE .. "Tokens/ghoulGuard_03.front.webp?v=ea284924f9d9", back = BASE .. "Tokens/ghoulGuard_03.back.webp?v=ea284924f9d9" },
   },
   ghoulGuard_04 = {
     figurine = { front = BASE .. "Generic/ghoulGuard_04.webp?v=da222301210b", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulGuard_04.front.webp?v=ad6d8ea37e44", back = BASE .. "Tokens/ghoulGuard_04.back.webp?v=ad6d8ea37e44" },
+    token = { front = BASE .. "Tokens/ghoulGuard_04.front.webp?v=49b52dbfe5c2", back = BASE .. "Tokens/ghoulGuard_04.back.webp?v=49b52dbfe5c2" },
   },
   ghoulGuard_05 = {
     figurine = { front = BASE .. "Generic/ghoulGuard_05.webp?v=d6c99b365e95", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulGuard_05.front.webp?v=8751d4ef59be", back = BASE .. "Tokens/ghoulGuard_05.back.webp?v=8751d4ef59be" },
+    token = { front = BASE .. "Tokens/ghoulGuard_05.front.webp?v=f16275972c33", back = BASE .. "Tokens/ghoulGuard_05.back.webp?v=f16275972c33" },
   },
   ghoulGuard_06 = {
     figurine = { front = BASE .. "Generic/ghoulGuard_06.webp?v=6acf773a32a2", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulGuard_06.front.webp?v=e75e39b002d3", back = BASE .. "Tokens/ghoulGuard_06.back.webp?v=e75e39b002d3" },
+    token = { front = BASE .. "Tokens/ghoulGuard_06.front.webp?v=a83f4feba564", back = BASE .. "Tokens/ghoulGuard_06.back.webp?v=a83f4feba564" },
   },
   ghoulGuard_07 = {
     figurine = { front = BASE .. "Generic/ghoulGuard_07.webp?v=891270f02235", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulGuard_07.front.webp?v=b5617865f7f1", back = BASE .. "Tokens/ghoulGuard_07.back.webp?v=b5617865f7f1" },
+    token = { front = BASE .. "Tokens/ghoulGuard_07.front.webp?v=22c093de260f", back = BASE .. "Tokens/ghoulGuard_07.back.webp?v=22c093de260f" },
   },
   ghoulGuard_08 = {
     figurine = { front = BASE .. "Generic/ghoulGuard_08.webp?v=c67f76de3f27", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulGuard_08.front.webp?v=01b8ebca2983", back = BASE .. "Tokens/ghoulGuard_08.back.webp?v=01b8ebca2983" },
+    token = { front = BASE .. "Tokens/ghoulGuard_08.front.webp?v=e67644f6b3be", back = BASE .. "Tokens/ghoulGuard_08.back.webp?v=e67644f6b3be" },
   },
   ghoulHecata_01 = {
     figurine = { front = BASE .. "Generic/ghoulHecata_01.webp?v=8028e572adcc", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulHecata_01.front.webp?v=0ce1b20d30ad", back = BASE .. "Tokens/ghoulHecata_01.back.webp?v=0ce1b20d30ad" },
+    token = { front = BASE .. "Tokens/ghoulHecata_01.front.webp?v=51df1539390a", back = BASE .. "Tokens/ghoulHecata_01.back.webp?v=51df1539390a" },
   },
   ghoulHecata_02 = {
     figurine = { front = BASE .. "Generic/ghoulHecata_02.webp?v=df38d00bb352", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulHecata_02.front.webp?v=b02aabdd5d04", back = BASE .. "Tokens/ghoulHecata_02.back.webp?v=b02aabdd5d04" },
+    token = { front = BASE .. "Tokens/ghoulHecata_02.front.webp?v=05fe2007d0f5", back = BASE .. "Tokens/ghoulHecata_02.back.webp?v=05fe2007d0f5" },
   },
   ghoulHecata_03 = {
     figurine = { front = BASE .. "Generic/ghoulHecata_03.webp?v=655d8fa42087", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulHecata_03.front.webp?v=0cc32c8872db", back = BASE .. "Tokens/ghoulHecata_03.back.webp?v=0cc32c8872db" },
+    token = { front = BASE .. "Tokens/ghoulHecata_03.front.webp?v=ff3103c44381", back = BASE .. "Tokens/ghoulHecata_03.back.webp?v=ff3103c44381" },
   },
   ghoulHecata_04 = {
     figurine = { front = BASE .. "Generic/ghoulHecata_04.webp?v=740ec32d0538", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulHecata_04.front.webp?v=d949a9539eec", back = BASE .. "Tokens/ghoulHecata_04.back.webp?v=d949a9539eec" },
+    token = { front = BASE .. "Tokens/ghoulHecata_04.front.webp?v=f1de522c4469", back = BASE .. "Tokens/ghoulHecata_04.back.webp?v=f1de522c4469" },
   },
   ghoulHecata_05 = {
     figurine = { front = BASE .. "Generic/ghoulHecata_05.webp?v=6895af072add", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulHecata_05.front.webp?v=e62bd52e0985", back = BASE .. "Tokens/ghoulHecata_05.back.webp?v=e62bd52e0985" },
+    token = { front = BASE .. "Tokens/ghoulHecata_05.front.webp?v=2958804044c8", back = BASE .. "Tokens/ghoulHecata_05.back.webp?v=2958804044c8" },
   },
   ghoulHecata_06 = {
     figurine = { front = BASE .. "Generic/ghoulHecata_06.webp?v=d36b9b58b6ff", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulHecata_06.front.webp?v=76a8adfd0138", back = BASE .. "Tokens/ghoulHecata_06.back.webp?v=76a8adfd0138" },
+    token = { front = BASE .. "Tokens/ghoulHecata_06.front.webp?v=b8cfc048998e", back = BASE .. "Tokens/ghoulHecata_06.back.webp?v=b8cfc048998e" },
   },
   ghoulHecata_07 = {
     figurine = { front = BASE .. "Generic/ghoulHecata_07.webp?v=83773b5b34fc", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulHecata_07.front.webp?v=b58811036840", back = BASE .. "Tokens/ghoulHecata_07.back.webp?v=b58811036840" },
+    token = { front = BASE .. "Tokens/ghoulHecata_07.front.webp?v=d01b702941b3", back = BASE .. "Tokens/ghoulHecata_07.back.webp?v=d01b702941b3" },
   },
   ghoulHecata_08 = {
     figurine = { front = BASE .. "Generic/ghoulHecata_08.webp?v=6ae3907aeca7", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulHecata_08.front.webp?v=752e2467abdc", back = BASE .. "Tokens/ghoulHecata_08.back.webp?v=752e2467abdc" },
+    token = { front = BASE .. "Tokens/ghoulHecata_08.front.webp?v=a933f92d4b72", back = BASE .. "Tokens/ghoulHecata_08.back.webp?v=a933f92d4b72" },
   },
   ghoulHecata_09 = {
     figurine = { front = BASE .. "Generic/ghoulHecata_09.webp?v=4b22a28faa52", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulHecata_09.front.webp?v=68bb030d005a", back = BASE .. "Tokens/ghoulHecata_09.back.webp?v=68bb030d005a" },
+    token = { front = BASE .. "Tokens/ghoulHecata_09.front.webp?v=d21b8e36d675", back = BASE .. "Tokens/ghoulHecata_09.back.webp?v=d21b8e36d675" },
   },
   ghoulMinistry_01 = {
     figurine = { front = BASE .. "Generic/ghoulMinistry_01.webp?v=22de9b25a01c", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulMinistry_01.front.webp?v=eb308c1147b7", back = BASE .. "Tokens/ghoulMinistry_01.back.webp?v=eb308c1147b7" },
+    token = { front = BASE .. "Tokens/ghoulMinistry_01.front.webp?v=2c6a38983af0", back = BASE .. "Tokens/ghoulMinistry_01.back.webp?v=2c6a38983af0" },
   },
   ghoulMinistry_02 = {
     figurine = { front = BASE .. "Generic/ghoulMinistry_02.webp?v=4f89fcf52098", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulMinistry_02.front.webp?v=733582f3593b", back = BASE .. "Tokens/ghoulMinistry_02.back.webp?v=733582f3593b" },
+    token = { front = BASE .. "Tokens/ghoulMinistry_02.front.webp?v=b6ac2da0bf53", back = BASE .. "Tokens/ghoulMinistry_02.back.webp?v=b6ac2da0bf53" },
   },
   ghoulMinistry_03 = {
     figurine = { front = BASE .. "Generic/ghoulMinistry_03.webp?v=8fe79db52e76", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulMinistry_03.front.webp?v=486502f7a301", back = BASE .. "Tokens/ghoulMinistry_03.back.webp?v=486502f7a301" },
+    token = { front = BASE .. "Tokens/ghoulMinistry_03.front.webp?v=a59b45832a67", back = BASE .. "Tokens/ghoulMinistry_03.back.webp?v=a59b45832a67" },
   },
   ghoulMinistry_04 = {
     figurine = { front = BASE .. "Generic/ghoulMinistry_04.webp?v=19b8a2ce688c", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulMinistry_04.front.webp?v=e1c6fa87bb82", back = BASE .. "Tokens/ghoulMinistry_04.back.webp?v=e1c6fa87bb82" },
+    token = { front = BASE .. "Tokens/ghoulMinistry_04.front.webp?v=3ea0280c3d35", back = BASE .. "Tokens/ghoulMinistry_04.back.webp?v=3ea0280c3d35" },
   },
   ghoulMinistry_05 = {
     figurine = { front = BASE .. "Generic/ghoulMinistry_05.webp?v=c6a31cfada53", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulMinistry_05.front.webp?v=09a5ec1ab00c", back = BASE .. "Tokens/ghoulMinistry_05.back.webp?v=09a5ec1ab00c" },
+    token = { front = BASE .. "Tokens/ghoulMinistry_05.front.webp?v=7addf85c7371", back = BASE .. "Tokens/ghoulMinistry_05.back.webp?v=7addf85c7371" },
   },
   ghoulMinistry_06 = {
     figurine = { front = BASE .. "Generic/ghoulMinistry_06.webp?v=05b1bbc8d53d", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulMinistry_06.front.webp?v=9893bf21a0ab", back = BASE .. "Tokens/ghoulMinistry_06.back.webp?v=9893bf21a0ab" },
+    token = { front = BASE .. "Tokens/ghoulMinistry_06.front.webp?v=8caa37376a12", back = BASE .. "Tokens/ghoulMinistry_06.back.webp?v=8caa37376a12" },
   },
   ghoulMinistry_07 = {
     figurine = { front = BASE .. "Generic/ghoulMinistry_07.webp?v=d850ccec3e7d", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulMinistry_07.front.webp?v=df5e72c519a1", back = BASE .. "Tokens/ghoulMinistry_07.back.webp?v=df5e72c519a1" },
+    token = { front = BASE .. "Tokens/ghoulMinistry_07.front.webp?v=0e36de3d4744", back = BASE .. "Tokens/ghoulMinistry_07.back.webp?v=0e36de3d4744" },
   },
   ghoulMinistry_08 = {
     figurine = { front = BASE .. "Generic/ghoulMinistry_08.webp?v=c0a79746cf80", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ghoulMinistry_08.front.webp?v=7bbb0a16e1eb", back = BASE .. "Tokens/ghoulMinistry_08.back.webp?v=7bbb0a16e1eb" },
+    token = { front = BASE .. "Tokens/ghoulMinistry_08.front.webp?v=5bd7165a5e1a", back = BASE .. "Tokens/ghoulMinistry_08.back.webp?v=5bd7165a5e1a" },
   },
   hospitalDoctor_01 = {
     figurine = { front = BASE .. "Generic/hospitalDoctor_01.webp?v=69caae4b708f", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/hospitalDoctor_01.front.webp?v=f7c3d2122e44", back = BASE .. "Tokens/hospitalDoctor_01.back.webp?v=f7c3d2122e44" },
+    token = { front = BASE .. "Tokens/hospitalDoctor_01.front.webp?v=b3c04f78c3a0", back = BASE .. "Tokens/hospitalDoctor_01.back.webp?v=b3c04f78c3a0" },
   },
   hospitalDoctor_02 = {
     figurine = { front = BASE .. "Generic/hospitalDoctor_02.webp?v=da22e1303014", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/hospitalDoctor_02.front.webp?v=d43e5a2f659c", back = BASE .. "Tokens/hospitalDoctor_02.back.webp?v=d43e5a2f659c" },
+    token = { front = BASE .. "Tokens/hospitalDoctor_02.front.webp?v=d5783601ae79", back = BASE .. "Tokens/hospitalDoctor_02.back.webp?v=d5783601ae79" },
   },
   hospitalDoctor_03 = {
     figurine = { front = BASE .. "Generic/hospitalDoctor_03.webp?v=f1186643aae0", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/hospitalDoctor_03.front.webp?v=93ff23e2a9cd", back = BASE .. "Tokens/hospitalDoctor_03.back.webp?v=93ff23e2a9cd" },
+    token = { front = BASE .. "Tokens/hospitalDoctor_03.front.webp?v=f49406611e5d", back = BASE .. "Tokens/hospitalDoctor_03.back.webp?v=f49406611e5d" },
   },
   hospitalNurse_01 = {
     figurine = { front = BASE .. "Generic/hospitalNurse_01.webp?v=c8954617684e", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/hospitalNurse_01.front.webp?v=911f17d59368", back = BASE .. "Tokens/hospitalNurse_01.back.webp?v=911f17d59368" },
+    token = { front = BASE .. "Tokens/hospitalNurse_01.front.webp?v=67a954464540", back = BASE .. "Tokens/hospitalNurse_01.back.webp?v=67a954464540" },
   },
   hospitalNurse_02 = {
     figurine = { front = BASE .. "Generic/hospitalNurse_02.webp?v=8f1170eaafab", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/hospitalNurse_02.front.webp?v=738e4ea6a90a", back = BASE .. "Tokens/hospitalNurse_02.back.webp?v=738e4ea6a90a" },
+    token = { front = BASE .. "Tokens/hospitalNurse_02.front.webp?v=1d75efa8b519", back = BASE .. "Tokens/hospitalNurse_02.back.webp?v=1d75efa8b519" },
   },
   hospitalNurse_03 = {
     figurine = { front = BASE .. "Generic/hospitalNurse_03.webp?v=de8bf30b7b66", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/hospitalNurse_03.front.webp?v=61537d7fac66", back = BASE .. "Tokens/hospitalNurse_03.back.webp?v=61537d7fac66" },
+    token = { front = BASE .. "Tokens/hospitalNurse_03.front.webp?v=5cd3fb10415c", back = BASE .. "Tokens/hospitalNurse_03.back.webp?v=5cd3fb10415c" },
   },
   hospitalNurse_04 = {
     figurine = { front = BASE .. "Generic/hospitalNurse_04.webp?v=6079a4343332", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/hospitalNurse_04.front.webp?v=27af747cc61c", back = BASE .. "Tokens/hospitalNurse_04.back.webp?v=27af747cc61c" },
+    token = { front = BASE .. "Tokens/hospitalNurse_04.front.webp?v=7a0178a535fa", back = BASE .. "Tokens/hospitalNurse_04.back.webp?v=7a0178a535fa" },
   },
   hospitalOrderly_01 = {
     figurine = { front = BASE .. "Generic/hospitalOrderly_01.webp?v=866ed73a320b", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/hospitalOrderly_01.front.webp?v=86bda158e397", back = BASE .. "Tokens/hospitalOrderly_01.back.webp?v=86bda158e397" },
+    token = { front = BASE .. "Tokens/hospitalOrderly_01.front.webp?v=9da07ed1e1dc", back = BASE .. "Tokens/hospitalOrderly_01.back.webp?v=9da07ed1e1dc" },
   },
   hospitalPatient_01 = {
     figurine = { front = BASE .. "Generic/hospitalPatient_01.webp?v=d79cc14556cb", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/hospitalPatient_01.front.webp?v=26ee52e11e5a", back = BASE .. "Tokens/hospitalPatient_01.back.webp?v=26ee52e11e5a" },
+    token = { front = BASE .. "Tokens/hospitalPatient_01.front.webp?v=e0d3bb8805a0", back = BASE .. "Tokens/hospitalPatient_01.back.webp?v=e0d3bb8805a0" },
   },
   hospitalPatient_02 = {
     figurine = { front = BASE .. "Generic/hospitalPatient_02.webp?v=e18a622834b5", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/hospitalPatient_02.front.webp?v=fe095e0e2d8e", back = BASE .. "Tokens/hospitalPatient_02.back.webp?v=fe095e0e2d8e" },
+    token = { front = BASE .. "Tokens/hospitalPatient_02.front.webp?v=340050b151c4", back = BASE .. "Tokens/hospitalPatient_02.back.webp?v=340050b151c4" },
   },
   hospitalPatient_03 = {
     figurine = { front = BASE .. "Generic/hospitalPatient_03.webp?v=4ced3094ee20", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/hospitalPatient_03.front.webp?v=73a907306238", back = BASE .. "Tokens/hospitalPatient_03.back.webp?v=73a907306238" },
+    token = { front = BASE .. "Tokens/hospitalPatient_03.front.webp?v=d9c8c15625fc", back = BASE .. "Tokens/hospitalPatient_03.back.webp?v=d9c8c15625fc" },
   },
   hospitalPatient_04 = {
     figurine = { front = BASE .. "Generic/hospitalPatient_04.webp?v=d3ab44bed5de", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/hospitalPatient_04.front.webp?v=1f05f61dafad", back = BASE .. "Tokens/hospitalPatient_04.back.webp?v=1f05f61dafad" },
+    token = { front = BASE .. "Tokens/hospitalPatient_04.front.webp?v=b8b759b1a358", back = BASE .. "Tokens/hospitalPatient_04.back.webp?v=b8b759b1a358" },
   },
   hospitalPatient_05 = {
     figurine = { front = BASE .. "Generic/hospitalPatient_05.webp?v=25a928080b5c", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/hospitalPatient_05.front.webp?v=4521d10de375", back = BASE .. "Tokens/hospitalPatient_05.back.webp?v=4521d10de375" },
+    token = { front = BASE .. "Tokens/hospitalPatient_05.front.webp?v=57efccee1511", back = BASE .. "Tokens/hospitalPatient_05.back.webp?v=57efccee1511" },
   },
   hospitalPatient_06 = {
     figurine = { front = BASE .. "Generic/hospitalPatient_06.webp?v=97f86e16c0f4", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/hospitalPatient_06.front.webp?v=1f14f8c961a8", back = BASE .. "Tokens/hospitalPatient_06.back.webp?v=1f14f8c961a8" },
+    token = { front = BASE .. "Tokens/hospitalPatient_06.front.webp?v=0e4defeb4bbe", back = BASE .. "Tokens/hospitalPatient_06.back.webp?v=0e4defeb4bbe" },
   },
   hospitalPatient_07 = {
     figurine = { front = BASE .. "Generic/hospitalPatient_07.webp?v=cda13e963073", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/hospitalPatient_07.front.webp?v=8020054f06cb", back = BASE .. "Tokens/hospitalPatient_07.back.webp?v=8020054f06cb" },
+    token = { front = BASE .. "Tokens/hospitalPatient_07.front.webp?v=3b1716577fe7", back = BASE .. "Tokens/hospitalPatient_07.back.webp?v=3b1716577fe7" },
   },
   hospitalPatient_08 = {
     figurine = { front = BASE .. "Generic/hospitalPatient_08.webp?v=381e9824e71d", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/hospitalPatient_08.front.webp?v=10b0d99bc791", back = BASE .. "Tokens/hospitalPatient_08.back.webp?v=10b0d99bc791" },
+    token = { front = BASE .. "Tokens/hospitalPatient_08.front.webp?v=4061442ac4fe", back = BASE .. "Tokens/hospitalPatient_08.back.webp?v=4061442ac4fe" },
   },
   ianRammond = {
     figurine = { front = BASE .. "Catalogued/ianRammond.webp?v=7f07c7b1082e", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ianRammond.front.webp?v=bddaa08e0dd0", back = BASE .. "Tokens/ianRammond.back.webp?v=bddaa08e0dd0" },
-  },
-  imam = {
-    figurine = { front = BASE .. "Catalogued/imam.webp?v=e3be2285904e", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/imam.front.webp?v=8872c85be5c8", back = BASE .. "Tokens/imam.back.webp?v=8872c85be5c8" },
+    token = { front = BASE .. "Tokens/ianRammond.front.webp?v=55d85268b2e5", back = BASE .. "Tokens/ianRammond.back.webp?v=55d85268b2e5" },
   },
   iq = {
     figurine = { front = BASE .. "Catalogued/iq.webp?v=e870fa84e7ab", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/iq.front.webp?v=36b5365ccf53", back = BASE .. "Tokens/iq.back.webp?v=36b5365ccf53" },
+    token = { front = BASE .. "Tokens/iq.front.webp?v=ff28e180ca45", back = BASE .. "Tokens/iq.back.webp?v=ff28e180ca45" },
   },
   jackBeNimble = {
     figurine = { front = BASE .. "Catalogued/jackBeNimble.webp?v=5570f8fb6791", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/jackBeNimble.front.webp?v=d99818d7aeea", back = BASE .. "Tokens/jackBeNimble.back.webp?v=d99818d7aeea" },
+    token = { front = BASE .. "Tokens/jackBeNimble.front.webp?v=c887d18a7961", back = BASE .. "Tokens/jackBeNimble.back.webp?v=c887d18a7961" },
   },
   jeanDucheskiI = {
     figurine = { front = BASE .. "Catalogued/jeanDucheskiI.webp?v=9ff3d042cd5b", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/jeanDucheskiI.front.webp?v=a488a2bc1f69", back = BASE .. "Tokens/jeanDucheskiI.back.webp?v=a488a2bc1f69" },
+    token = { front = BASE .. "Tokens/jeanDucheskiI.front.webp?v=4896c107f3a2", back = BASE .. "Tokens/jeanDucheskiI.back.webp?v=4896c107f3a2" },
   },
   jeanDucheskiIII = {
     figurine = { front = BASE .. "Catalogued/jeanDucheskiIII.webp?v=8737d503816b", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/jeanDucheskiIII.front.webp?v=c671e128dcf6", back = BASE .. "Tokens/jeanDucheskiIII.back.webp?v=c671e128dcf6" },
-  },
-  jervaisDeLaCroix = {
-    figurine = { front = BASE .. "Catalogued/jervaisDeLaCroix.webp?v=bce7a73e0a88", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/jervaisDeLaCroix.front.webp?v=6a805e8576ee", back = BASE .. "Tokens/jervaisDeLaCroix.back.webp?v=6a805e8576ee" },
+    token = { front = BASE .. "Tokens/jeanDucheskiIII.front.webp?v=da4689712aff", back = BASE .. "Tokens/jeanDucheskiIII.back.webp?v=da4689712aff" },
   },
   jesseSharp = {
     figurine = { front = BASE .. "Catalogued/jesseSharp.webp?v=2d7950f324e3", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/jesseSharp.front.webp?v=3d22e4dd7341", back = BASE .. "Tokens/jesseSharp.back.webp?v=3d22e4dd7341" },
+    token = { front = BASE .. "Tokens/jesseSharp.front.webp?v=3359127b5f2d", back = BASE .. "Tokens/jesseSharp.back.webp?v=3359127b5f2d" },
   },
   jezdimirDucheski = {
     figurine = { front = BASE .. "Catalogued/jezdimirDucheski.webp?v=277577cb1e48", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/jezdimirDucheski.front.webp?v=6bd03c813882", back = BASE .. "Tokens/jezdimirDucheski.back.webp?v=6bd03c813882" },
+    token = { front = BASE .. "Tokens/jezdimirDucheski.front.webp?v=d530070ae5e8", back = BASE .. "Tokens/jezdimirDucheski.back.webp?v=d530070ae5e8" },
   },
   kadePhillips = {
     figurine = { front = BASE .. "Catalogued/kadePhillips.webp?v=b197c380a80c", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/kadePhillips.front.webp?v=f366647e38f2", back = BASE .. "Tokens/kadePhillips.back.webp?v=f366647e38f2" },
+    token = { front = BASE .. "Tokens/kadePhillips.front.webp?v=2d9c42ebfe51", back = BASE .. "Tokens/kadePhillips.back.webp?v=2d9c42ebfe51" },
   },
   kai = {
     figurine = { front = BASE .. "Catalogued/kai.webp?v=f9ab076008a8", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/kai.front.webp?v=a2940963f682", back = BASE .. "Tokens/kai.back.webp?v=a2940963f682" },
-  },
-  keiraVaughan = {
-    figurine = { front = BASE .. "Catalogued/keiraVaughan.webp?v=a9db9fad99cb", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/keiraVaughan.front.webp?v=875a15241c66", back = BASE .. "Tokens/keiraVaughan.back.webp?v=875a15241c66" },
+    token = { front = BASE .. "Tokens/kai.front.webp?v=ad2f3786c9cf", back = BASE .. "Tokens/kai.back.webp?v=ad2f3786c9cf" },
   },
   kieraVaughan = {
     figurine = { front = BASE .. "Catalogued/kieraVaughan.webp?v=ec7fa554ca4a", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/kieraVaughan.front.webp?v=86bedc8111cb", back = BASE .. "Tokens/kieraVaughan.back.webp?v=86bedc8111cb" },
+    token = { front = BASE .. "Tokens/kieraVaughan.front.webp?v=6d94b464e5fe", back = BASE .. "Tokens/kieraVaughan.back.webp?v=6d94b464e5fe" },
   },
   kingstonBlack = {
     figurine = { front = BASE .. "Catalogued/kingstonBlack.webp?v=3eeee1ef8a7f", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/kingstonBlack.front.webp?v=cc64b6168aea", back = BASE .. "Tokens/kingstonBlack.back.webp?v=cc64b6168aea" },
-  },
-  ladyAvelineDubois = {
-    figurine = { front = BASE .. "Catalogued/ladyAvelineDubois.webp?v=1e56a065e36c", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ladyAvelineDubois.front.webp?v=5283e50d8aff", back = BASE .. "Tokens/ladyAvelineDubois.back.webp?v=5283e50d8aff" },
+    token = { front = BASE .. "Tokens/kingstonBlack.front.webp?v=1a8e92fd7c1f", back = BASE .. "Tokens/kingstonBlack.back.webp?v=1a8e92fd7c1f" },
   },
   laz = {
     figurine = { front = BASE .. "Catalogued/laz.webp?v=4aa07c9f544b", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/laz.front.webp?v=c73085e66e30", back = BASE .. "Tokens/laz.back.webp?v=c73085e66e30" },
+    token = { front = BASE .. "Tokens/laz.front.webp?v=b2f8de184ac7", back = BASE .. "Tokens/laz.back.webp?v=b2f8de184ac7" },
   },
   lexiMadi = {
     figurine = { front = BASE .. "Catalogued/lexiMadi.webp?v=b796143dcfca", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/lexiMadi.front.webp?v=5d069bf5f1fe", back = BASE .. "Tokens/lexiMadi.back.webp?v=5d069bf5f1fe" },
+    token = { front = BASE .. "Tokens/lexiMadi.front.webp?v=0cb52a29ac15", back = BASE .. "Tokens/lexiMadi.back.webp?v=0cb52a29ac15" },
   },
   lordLucien = {
     figurine = { front = BASE .. "Catalogued/lordLucien.webp?v=510aebcb163c", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/lordLucien.front.webp?v=2fec9bff0e0a", back = BASE .. "Tokens/lordLucien.back.webp?v=2fec9bff0e0a" },
+    token = { front = BASE .. "Tokens/lordLucien.front.webp?v=4dd657136775", back = BASE .. "Tokens/lordLucien.back.webp?v=4dd657136775" },
   },
   lorenzaGiovanni = {
     figurine = { front = BASE .. "Catalogued/lorenzaGiovanni.webp?v=591c9be2487c", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/lorenzaGiovanni.front.webp?v=1ddc6141bfeb", back = BASE .. "Tokens/lorenzaGiovanni.back.webp?v=1ddc6141bfeb" },
+    token = { front = BASE .. "Tokens/lorenzaGiovanni.front.webp?v=9477e4d84fa7", back = BASE .. "Tokens/lorenzaGiovanni.back.webp?v=9477e4d84fa7" },
   },
   lucasMerrow = {
     figurine = { front = BASE .. "Catalogued/lucasMerrow.webp?v=c5a62f5c03e8", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/lucasMerrow.front.webp?v=92830214ad2a", back = BASE .. "Tokens/lucasMerrow.back.webp?v=92830214ad2a" },
+    token = { front = BASE .. "Tokens/lucasMerrow.front.webp?v=52816bdb7c38", back = BASE .. "Tokens/lucasMerrow.back.webp?v=52816bdb7c38" },
   },
   luxuryEventStaff_01 = {
     figurine = { front = BASE .. "Generic/luxuryEventStaff_01.webp?v=2a590431de27", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/luxuryEventStaff_01.front.webp?v=43f5c7b3c9be", back = BASE .. "Tokens/luxuryEventStaff_01.back.webp?v=43f5c7b3c9be" },
+    token = { front = BASE .. "Tokens/luxuryEventStaff_01.front.webp?v=97bb5880d8d1", back = BASE .. "Tokens/luxuryEventStaff_01.back.webp?v=97bb5880d8d1" },
   },
   luxuryEventStaff_02 = {
     figurine = { front = BASE .. "Generic/luxuryEventStaff_02.webp?v=1c9bade06a8e", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/luxuryEventStaff_02.front.webp?v=965d6ff234e2", back = BASE .. "Tokens/luxuryEventStaff_02.back.webp?v=965d6ff234e2" },
+    token = { front = BASE .. "Tokens/luxuryEventStaff_02.front.webp?v=132a78c7ccc1", back = BASE .. "Tokens/luxuryEventStaff_02.back.webp?v=132a78c7ccc1" },
   },
   luxuryEventStaff_03 = {
     figurine = { front = BASE .. "Generic/luxuryEventStaff_03.webp?v=28b30fb4a515", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/luxuryEventStaff_03.front.webp?v=58dd96e621c6", back = BASE .. "Tokens/luxuryEventStaff_03.back.webp?v=58dd96e621c6" },
+    token = { front = BASE .. "Tokens/luxuryEventStaff_03.front.webp?v=3d5b44b0e79f", back = BASE .. "Tokens/luxuryEventStaff_03.back.webp?v=3d5b44b0e79f" },
   },
   luxuryEventStaff_04 = {
     figurine = { front = BASE .. "Generic/luxuryEventStaff_04.webp?v=40e6a06bc579", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/luxuryEventStaff_04.front.webp?v=9436e086d296", back = BASE .. "Tokens/luxuryEventStaff_04.back.webp?v=9436e086d296" },
+    token = { front = BASE .. "Tokens/luxuryEventStaff_04.front.webp?v=666fe5127a09", back = BASE .. "Tokens/luxuryEventStaff_04.back.webp?v=666fe5127a09" },
   },
   luxuryEventStaff_05 = {
     figurine = { front = BASE .. "Generic/luxuryEventStaff_05.webp?v=d6bf551288d8", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/luxuryEventStaff_05.front.webp?v=cb5abb117f97", back = BASE .. "Tokens/luxuryEventStaff_05.back.webp?v=cb5abb117f97" },
+    token = { front = BASE .. "Tokens/luxuryEventStaff_05.front.webp?v=8d815a46d73d", back = BASE .. "Tokens/luxuryEventStaff_05.back.webp?v=8d815a46d73d" },
   },
   luxuryEventStaff_06 = {
     figurine = { front = BASE .. "Generic/luxuryEventStaff_06.webp?v=ef39589c0899", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/luxuryEventStaff_06.front.webp?v=6467d0f82e3a", back = BASE .. "Tokens/luxuryEventStaff_06.back.webp?v=6467d0f82e3a" },
+    token = { front = BASE .. "Tokens/luxuryEventStaff_06.front.webp?v=10f80705dd12", back = BASE .. "Tokens/luxuryEventStaff_06.back.webp?v=10f80705dd12" },
   },
   luxuryEventStaff_07 = {
     figurine = { front = BASE .. "Generic/luxuryEventStaff_07.webp?v=5ef6f2e6097b", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/luxuryEventStaff_07.front.webp?v=469b31696812", back = BASE .. "Tokens/luxuryEventStaff_07.back.webp?v=469b31696812" },
+    token = { front = BASE .. "Tokens/luxuryEventStaff_07.front.webp?v=14f4c775189d", back = BASE .. "Tokens/luxuryEventStaff_07.back.webp?v=14f4c775189d" },
   },
   luxuryGuest_01 = {
     figurine = { front = BASE .. "Generic/luxuryGuest_01.webp?v=b6160de31085", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/luxuryGuest_01.front.webp?v=2fa05de269db", back = BASE .. "Tokens/luxuryGuest_01.back.webp?v=2fa05de269db" },
+    token = { front = BASE .. "Tokens/luxuryGuest_01.front.webp?v=9b095e6be8d0", back = BASE .. "Tokens/luxuryGuest_01.back.webp?v=9b095e6be8d0" },
   },
   luxuryGuest_02 = {
     figurine = { front = BASE .. "Generic/luxuryGuest_02.webp?v=e19e9be1d83f", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/luxuryGuest_02.front.webp?v=30cba6e84f33", back = BASE .. "Tokens/luxuryGuest_02.back.webp?v=30cba6e84f33" },
+    token = { front = BASE .. "Tokens/luxuryGuest_02.front.webp?v=c35f1341e23b", back = BASE .. "Tokens/luxuryGuest_02.back.webp?v=c35f1341e23b" },
   },
   luxuryGuest_03 = {
     figurine = { front = BASE .. "Generic/luxuryGuest_03.webp?v=882f696cac0f", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/luxuryGuest_03.front.webp?v=b729e82bf326", back = BASE .. "Tokens/luxuryGuest_03.back.webp?v=b729e82bf326" },
+    token = { front = BASE .. "Tokens/luxuryGuest_03.front.webp?v=9fd10bcbe2d3", back = BASE .. "Tokens/luxuryGuest_03.back.webp?v=9fd10bcbe2d3" },
   },
   luxuryGuest_04 = {
     figurine = { front = BASE .. "Generic/luxuryGuest_04.webp?v=5970275487ff", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/luxuryGuest_04.front.webp?v=a2195f45aa61", back = BASE .. "Tokens/luxuryGuest_04.back.webp?v=a2195f45aa61" },
+    token = { front = BASE .. "Tokens/luxuryGuest_04.front.webp?v=c75149b513f1", back = BASE .. "Tokens/luxuryGuest_04.back.webp?v=c75149b513f1" },
   },
   luxuryGuest_05 = {
     figurine = { front = BASE .. "Generic/luxuryGuest_05.webp?v=297408a04b51", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/luxuryGuest_05.front.webp?v=38c3d1331a26", back = BASE .. "Tokens/luxuryGuest_05.back.webp?v=38c3d1331a26" },
+    token = { front = BASE .. "Tokens/luxuryGuest_05.front.webp?v=97f59e268863", back = BASE .. "Tokens/luxuryGuest_05.back.webp?v=97f59e268863" },
   },
   luxuryGuest_06 = {
     figurine = { front = BASE .. "Generic/luxuryGuest_06.webp?v=8af8864b5f3d", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/luxuryGuest_06.front.webp?v=412125ea3f9c", back = BASE .. "Tokens/luxuryGuest_06.back.webp?v=412125ea3f9c" },
+    token = { front = BASE .. "Tokens/luxuryGuest_06.front.webp?v=4c30468ca810", back = BASE .. "Tokens/luxuryGuest_06.back.webp?v=4c30468ca810" },
   },
   luxuryGuest_07 = {
     figurine = { front = BASE .. "Generic/luxuryGuest_07.webp?v=55499831f0a9", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/luxuryGuest_07.front.webp?v=6177d38dcb1a", back = BASE .. "Tokens/luxuryGuest_07.back.webp?v=6177d38dcb1a" },
+    token = { front = BASE .. "Tokens/luxuryGuest_07.front.webp?v=0efb1f331740", back = BASE .. "Tokens/luxuryGuest_07.back.webp?v=0efb1f331740" },
   },
   luxuryGuest_08 = {
     figurine = { front = BASE .. "Generic/luxuryGuest_08.webp?v=a3b299b02f2c", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/luxuryGuest_08.front.webp?v=e1770c0a7e0c", back = BASE .. "Tokens/luxuryGuest_08.back.webp?v=e1770c0a7e0c" },
+    token = { front = BASE .. "Tokens/luxuryGuest_08.front.webp?v=dc24d678a895", back = BASE .. "Tokens/luxuryGuest_08.back.webp?v=dc24d678a895" },
   },
   luxuryStaff_01 = {
     figurine = { front = BASE .. "Generic/luxuryStaff_01.webp?v=ae5430901ccb", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/luxuryStaff_01.front.webp?v=37172bc393d1", back = BASE .. "Tokens/luxuryStaff_01.back.webp?v=37172bc393d1" },
+    token = { front = BASE .. "Tokens/luxuryStaff_01.front.webp?v=6fb24cec5047", back = BASE .. "Tokens/luxuryStaff_01.back.webp?v=6fb24cec5047" },
   },
   luxuryStaff_02 = {
     figurine = { front = BASE .. "Generic/luxuryStaff_02.webp?v=b8452a1e8e9d", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/luxuryStaff_02.front.webp?v=495a461c88bf", back = BASE .. "Tokens/luxuryStaff_02.back.webp?v=495a461c88bf" },
+    token = { front = BASE .. "Tokens/luxuryStaff_02.front.webp?v=23ad98596a76", back = BASE .. "Tokens/luxuryStaff_02.back.webp?v=23ad98596a76" },
   },
   luxuryStaff_03 = {
     figurine = { front = BASE .. "Generic/luxuryStaff_03.webp?v=a77409b246f5", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/luxuryStaff_03.front.webp?v=745914bc3c11", back = BASE .. "Tokens/luxuryStaff_03.back.webp?v=745914bc3c11" },
+    token = { front = BASE .. "Tokens/luxuryStaff_03.front.webp?v=3fa585b08d80", back = BASE .. "Tokens/luxuryStaff_03.back.webp?v=3fa585b08d80" },
   },
   luxuryStaff_04 = {
     figurine = { front = BASE .. "Generic/luxuryStaff_04.webp?v=1f81bf85e97c", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/luxuryStaff_04.front.webp?v=f8f9c117010d", back = BASE .. "Tokens/luxuryStaff_04.back.webp?v=f8f9c117010d" },
+    token = { front = BASE .. "Tokens/luxuryStaff_04.front.webp?v=3854104b68d4", back = BASE .. "Tokens/luxuryStaff_04.back.webp?v=3854104b68d4" },
   },
   luxuryStaff_05 = {
     figurine = { front = BASE .. "Generic/luxuryStaff_05.webp?v=be6b6872bcd0", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/luxuryStaff_05.front.webp?v=ddd3c5219d77", back = BASE .. "Tokens/luxuryStaff_05.back.webp?v=ddd3c5219d77" },
+    token = { front = BASE .. "Tokens/luxuryStaff_05.front.webp?v=8738b436ecfc", back = BASE .. "Tokens/luxuryStaff_05.back.webp?v=8738b436ecfc" },
   },
   luxuryStaff_06 = {
     figurine = { front = BASE .. "Generic/luxuryStaff_06.webp?v=d9c7d3a30e6a", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/luxuryStaff_06.front.webp?v=18ac9ed6f3dc", back = BASE .. "Tokens/luxuryStaff_06.back.webp?v=18ac9ed6f3dc" },
+    token = { front = BASE .. "Tokens/luxuryStaff_06.front.webp?v=1bd3601eefa2", back = BASE .. "Tokens/luxuryStaff_06.back.webp?v=1bd3601eefa2" },
   },
   luxuryStaff_07 = {
     figurine = { front = BASE .. "Generic/luxuryStaff_07.webp?v=fbd0bdd8a594", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/luxuryStaff_07.front.webp?v=b56bc09a003e", back = BASE .. "Tokens/luxuryStaff_07.back.webp?v=b56bc09a003e" },
+    token = { front = BASE .. "Tokens/luxuryStaff_07.front.webp?v=4bdf1e0d64b5", back = BASE .. "Tokens/luxuryStaff_07.back.webp?v=4bdf1e0d64b5" },
   },
   mamboAbigail = {
     figurine = { front = BASE .. "Catalogued/mamboAbigail.webp?v=97a955f12c4f", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mamboAbigail.front.webp?v=99dcc919a34c", back = BASE .. "Tokens/mamboAbigail.back.webp?v=99dcc919a34c" },
+    token = { front = BASE .. "Tokens/mamboAbigail.front.webp?v=e265aa6cc3d1", back = BASE .. "Tokens/mamboAbigail.back.webp?v=e265aa6cc3d1" },
   },
   mara = {
     figurine = { front = BASE .. "Catalogued/mara.webp?v=9c9610f84cc6", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mara.front.webp?v=66ecee0a0277", back = BASE .. "Tokens/mara.back.webp?v=66ecee0a0277" },
+    token = { front = BASE .. "Tokens/mara.front.webp?v=f480e2f209eb", back = BASE .. "Tokens/mara.back.webp?v=f480e2f209eb" },
   },
   marieBouschard = {
     figurine = { front = BASE .. "Catalogued/marieBouschard.webp?v=e4d53614cb00", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/marieBouschard.front.webp?v=0479b221bd79", back = BASE .. "Tokens/marieBouschard.back.webp?v=0479b221bd79" },
+    token = { front = BASE .. "Tokens/marieBouschard.front.webp?v=730f30958277", back = BASE .. "Tokens/marieBouschard.back.webp?v=730f30958277" },
   },
   masonSchmidt = {
     figurine = { front = BASE .. "Catalogued/masonSchmidt.webp?v=a63a265d0fcb", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/masonSchmidt.front.webp?v=7bc2a117e579", back = BASE .. "Tokens/masonSchmidt.back.webp?v=7bc2a117e579" },
+    token = { front = BASE .. "Tokens/masonSchmidt.front.webp?v=46127efe918f", back = BASE .. "Tokens/masonSchmidt.back.webp?v=46127efe918f" },
   },
   maxFloyd = {
     figurine = { front = BASE .. "Catalogued/maxFloyd.webp?v=81ceccf6c254", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/maxFloyd.front.webp?v=fd7f5e975a11", back = BASE .. "Tokens/maxFloyd.back.webp?v=fd7f5e975a11" },
+    token = { front = BASE .. "Tokens/maxFloyd.front.webp?v=9239906ff38e", back = BASE .. "Tokens/maxFloyd.back.webp?v=9239906ff38e" },
   },
   mediaCameraman_01 = {
     figurine = { front = BASE .. "Generic/mediaCameraman_01.webp?v=d364d5f5500c", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mediaCameraman_01.front.webp?v=e330fa651e26", back = BASE .. "Tokens/mediaCameraman_01.back.webp?v=e330fa651e26" },
+    token = { front = BASE .. "Tokens/mediaCameraman_01.front.webp?v=be0a1ac8c5e4", back = BASE .. "Tokens/mediaCameraman_01.back.webp?v=be0a1ac8c5e4" },
   },
   mediaCameraman_02 = {
     figurine = { front = BASE .. "Generic/mediaCameraman_02.webp?v=28076cd41b16", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mediaCameraman_02.front.webp?v=d8d0ab42b635", back = BASE .. "Tokens/mediaCameraman_02.back.webp?v=d8d0ab42b635" },
+    token = { front = BASE .. "Tokens/mediaCameraman_02.front.webp?v=8a27d6c57d7f", back = BASE .. "Tokens/mediaCameraman_02.back.webp?v=8a27d6c57d7f" },
   },
   mediaCameraman_03 = {
     figurine = { front = BASE .. "Generic/mediaCameraman_03.webp?v=e52d7e84e651", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mediaCameraman_03.front.webp?v=2617f266211d", back = BASE .. "Tokens/mediaCameraman_03.back.webp?v=2617f266211d" },
+    token = { front = BASE .. "Tokens/mediaCameraman_03.front.webp?v=00eb5ccd5cbe", back = BASE .. "Tokens/mediaCameraman_03.back.webp?v=00eb5ccd5cbe" },
   },
   mediaCameraman_04 = {
     figurine = { front = BASE .. "Generic/mediaCameraman_04.webp?v=b177880cf977", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mediaCameraman_04.front.webp?v=b9fafad6a0ce", back = BASE .. "Tokens/mediaCameraman_04.back.webp?v=b9fafad6a0ce" },
+    token = { front = BASE .. "Tokens/mediaCameraman_04.front.webp?v=52ca655969a2", back = BASE .. "Tokens/mediaCameraman_04.back.webp?v=52ca655969a2" },
   },
   mediaCameraman_05 = {
     figurine = { front = BASE .. "Generic/mediaCameraman_05.webp?v=f875004b2bdc", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mediaCameraman_05.front.webp?v=87a20212c86f", back = BASE .. "Tokens/mediaCameraman_05.back.webp?v=87a20212c86f" },
+    token = { front = BASE .. "Tokens/mediaCameraman_05.front.webp?v=c84d8cbc79a3", back = BASE .. "Tokens/mediaCameraman_05.back.webp?v=c84d8cbc79a3" },
   },
   mediaJournalist_01 = {
     figurine = { front = BASE .. "Generic/mediaJournalist_01.webp?v=6bd5ea061665", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mediaJournalist_01.front.webp?v=1cc71d1c521c", back = BASE .. "Tokens/mediaJournalist_01.back.webp?v=1cc71d1c521c" },
+    token = { front = BASE .. "Tokens/mediaJournalist_01.front.webp?v=1883e252493e", back = BASE .. "Tokens/mediaJournalist_01.back.webp?v=1883e252493e" },
   },
   mediaJournalist_02 = {
     figurine = { front = BASE .. "Generic/mediaJournalist_02.webp?v=7b27b769d488", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mediaJournalist_02.front.webp?v=56577d790979", back = BASE .. "Tokens/mediaJournalist_02.back.webp?v=56577d790979" },
+    token = { front = BASE .. "Tokens/mediaJournalist_02.front.webp?v=94ad144f09b2", back = BASE .. "Tokens/mediaJournalist_02.back.webp?v=94ad144f09b2" },
   },
   mem_andreiStrandza = {
     figurine = { front = BASE .. "Memoriam/mem_andreiStrandza.webp?v=67302cd1eddc", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mem_andreiStrandza.front.webp?v=c97dd03dab31", back = BASE .. "Tokens/mem_andreiStrandza.back.webp?v=c97dd03dab31" },
+    token = { front = BASE .. "Tokens/mem_andreiStrandza.front.webp?v=543bfaeb133c", back = BASE .. "Tokens/mem_andreiStrandza.back.webp?v=543bfaeb133c" },
   },
   mem_carna = {
     figurine = { front = BASE .. "Memoriam/mem_carna.webp?v=7a30482f0224", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mem_carna.front.webp?v=4cbe90b212e4", back = BASE .. "Tokens/mem_carna.back.webp?v=4cbe90b212e4" },
+    token = { front = BASE .. "Tokens/mem_carna.front.webp?v=28fe19b19448", back = BASE .. "Tokens/mem_carna.back.webp?v=28fe19b19448" },
   },
   mem_fomorachPreEmbrace = {
     figurine = { front = BASE .. "Memoriam/mem_fomorachPreEmbrace.webp?v=004d5585ce2f", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mem_fomorachPreEmbrace.front.webp?v=5d5b422afa7e", back = BASE .. "Tokens/mem_fomorachPreEmbrace.back.webp?v=5d5b422afa7e" },
+    token = { front = BASE .. "Tokens/mem_fomorachPreEmbrace.front.webp?v=974f4633cbb6", back = BASE .. "Tokens/mem_fomorachPreEmbrace.back.webp?v=974f4633cbb6" },
   },
   mem_ibrahimKethuda = {
     figurine = { front = BASE .. "Memoriam/mem_ibrahimKethuda.webp?v=580ebf6bbba7", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mem_ibrahimKethuda.front.webp?v=8c8029616926", back = BASE .. "Tokens/mem_ibrahimKethuda.back.webp?v=8c8029616926" },
+    token = { front = BASE .. "Tokens/mem_ibrahimKethuda.front.webp?v=c2a539dd8021", back = BASE .. "Tokens/mem_ibrahimKethuda.back.webp?v=c2a539dd8021" },
   },
   mem_jeanDucheskiIPreDeath = {
     figurine = { front = BASE .. "Memoriam/mem_jeanDucheskiIPreDeath.webp?v=93887ed64259", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mem_jeanDucheskiIPreDeath.front.webp?v=a97f1829321c", back = BASE .. "Tokens/mem_jeanDucheskiIPreDeath.back.webp?v=a97f1829321c" },
+    token = { front = BASE .. "Tokens/mem_jeanDucheskiIPreDeath.front.webp?v=095af358d88f", back = BASE .. "Tokens/mem_jeanDucheskiIPreDeath.back.webp?v=095af358d88f" },
   },
   mem_lalehBintSaif = {
     figurine = { front = BASE .. "Memoriam/mem_lalehBintSaif.webp?v=63e0c68f90fd", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mem_lalehBintSaif.front.webp?v=8406e69c0b85", back = BASE .. "Tokens/mem_lalehBintSaif.back.webp?v=8406e69c0b85" },
+    token = { front = BASE .. "Tokens/mem_lalehBintSaif.front.webp?v=a642a7485d01", back = BASE .. "Tokens/mem_lalehBintSaif.back.webp?v=a642a7485d01" },
   },
   mem_maraPreEmbrace = {
     figurine = { front = BASE .. "Memoriam/mem_maraPreEmbrace.webp?v=859308f8e0f2", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mem_maraPreEmbrace.front.webp?v=7db3adbd52a7", back = BASE .. "Tokens/mem_maraPreEmbrace.back.webp?v=7db3adbd52a7" },
+    token = { front = BASE .. "Tokens/mem_maraPreEmbrace.front.webp?v=8d120ca22a97", back = BASE .. "Tokens/mem_maraPreEmbrace.back.webp?v=8d120ca22a97" },
   },
   mem_marcelGuilbeau = {
     figurine = { front = BASE .. "Memoriam/mem_marcelGuilbeau.webp?v=a05515bf2432", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mem_marcelGuilbeau.front.webp?v=50dad0ca02dc", back = BASE .. "Tokens/mem_marcelGuilbeau.back.webp?v=50dad0ca02dc" },
+    token = { front = BASE .. "Tokens/mem_marcelGuilbeau.front.webp?v=165603ef6ecb", back = BASE .. "Tokens/mem_marcelGuilbeau.back.webp?v=165603ef6ecb" },
   },
   mem_maximillianSteele = {
     figurine = { front = BASE .. "Memoriam/mem_maximillianSteele.webp?v=45aa62f2493c", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mem_maximillianSteele.front.webp?v=17caedebc8d9", back = BASE .. "Tokens/mem_maximillianSteele.back.webp?v=17caedebc8d9" },
+    token = { front = BASE .. "Tokens/mem_maximillianSteele.front.webp?v=aa6200dfcde9", back = BASE .. "Tokens/mem_maximillianSteele.back.webp?v=aa6200dfcde9" },
   },
   mem_michaelTheArchangel = {
     figurine = { front = BASE .. "Memoriam/mem_michaelTheArchangel.webp?v=5e9f3914b223", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mem_michaelTheArchangel.front.webp?v=1078e02ce92c", back = BASE .. "Tokens/mem_michaelTheArchangel.back.webp?v=1078e02ce92c" },
+    token = { front = BASE .. "Tokens/mem_michaelTheArchangel.front.webp?v=725eea578f3b", back = BASE .. "Tokens/mem_michaelTheArchangel.back.webp?v=725eea578f3b" },
   },
   mem_mortius = {
     figurine = { front = BASE .. "Memoriam/mem_mortius.webp?v=9478a442f72e", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mem_mortius.front.webp?v=080ec036828c", back = BASE .. "Tokens/mem_mortius.back.webp?v=080ec036828c" },
+    token = { front = BASE .. "Tokens/mem_mortius.front.webp?v=eac1a222a4cd", back = BASE .. "Tokens/mem_mortius.back.webp?v=eac1a222a4cd" },
   },
   mem_palisPreEmbrace = {
     figurine = { front = BASE .. "Memoriam/mem_palisPreEmbrace.webp?v=412a4f771444", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mem_palisPreEmbrace.front.webp?v=f2afb993a3e4", back = BASE .. "Tokens/mem_palisPreEmbrace.back.webp?v=f2afb993a3e4" },
+    token = { front = BASE .. "Tokens/mem_palisPreEmbrace.front.webp?v=d699e99fe2f1", back = BASE .. "Tokens/mem_palisPreEmbrace.back.webp?v=d699e99fe2f1" },
   },
   mem_princeDoran = {
     figurine = { front = BASE .. "Memoriam/mem_princeDoran.webp?v=c46b2860a5ed", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mem_princeDoran.front.webp?v=4f5b96117aa3", back = BASE .. "Tokens/mem_princeDoran.back.webp?v=4f5b96117aa3" },
+    token = { front = BASE .. "Tokens/mem_princeDoran.front.webp?v=036115c472cd", back = BASE .. "Tokens/mem_princeDoran.back.webp?v=036115c472cd" },
   },
   mem_sofiaMavridi = {
     figurine = { front = BASE .. "Memoriam/mem_sofiaMavridi.webp?v=443033a37458", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mem_sofiaMavridi.front.webp?v=17969abdb589", back = BASE .. "Tokens/mem_sofiaMavridi.back.webp?v=17969abdb589" },
+    token = { front = BASE .. "Tokens/mem_sofiaMavridi.front.webp?v=7dfccb417073", back = BASE .. "Tokens/mem_sofiaMavridi.back.webp?v=7dfccb417073" },
   },
   mem_terenceMerik = {
     figurine = { front = BASE .. "Memoriam/mem_terenceMerik.webp?v=8a2c646235bb", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mem_terenceMerik.front.webp?v=8aeaf865f7f6", back = BASE .. "Tokens/mem_terenceMerik.back.webp?v=8aeaf865f7f6" },
+    token = { front = BASE .. "Tokens/mem_terenceMerik.front.webp?v=dce620b4c414", back = BASE .. "Tokens/mem_terenceMerik.back.webp?v=dce620b4c414" },
   },
   merrickSingh = {
     figurine = { front = BASE .. "Catalogued/merrickSingh.webp?v=315f891a2ad0", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/merrickSingh.front.webp?v=16be8b4d3777", back = BASE .. "Tokens/merrickSingh.back.webp?v=16be8b4d3777" },
+    token = { front = BASE .. "Tokens/merrickSingh.front.webp?v=6c8c72afe8cf", back = BASE .. "Tokens/merrickSingh.back.webp?v=6c8c72afe8cf" },
   },
   miriamRavenscroft = {
     figurine = { front = BASE .. "Catalogued/miriamRavenscroft.webp?v=3a5e46bed6ba", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/miriamRavenscroft.front.webp?v=30d1f7952d29", back = BASE .. "Tokens/miriamRavenscroft.back.webp?v=30d1f7952d29" },
+    token = { front = BASE .. "Tokens/miriamRavenscroft.front.webp?v=7cfe3f2eb2a1", back = BASE .. "Tokens/miriamRavenscroft.back.webp?v=7cfe3f2eb2a1" },
   },
   moltsInShadow = {
     figurine = { front = BASE .. "Catalogued/moltsInShadow.webp?v=f698019b68f0", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/moltsInShadow.front.webp?v=d081f420e095", back = BASE .. "Tokens/moltsInShadow.back.webp?v=d081f420e095" },
+    token = { front = BASE .. "Tokens/moltsInShadow.front.webp?v=fa296fa19737", back = BASE .. "Tokens/moltsInShadow.back.webp?v=fa296fa19737" },
   },
   moltsInShadowGarou = {
     figurine = { front = BASE .. "Catalogued/moltsInShadowGarou.webp?v=2907ce953ae8", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/moltsInShadowGarou.front.webp?v=bd6ae1211852", back = BASE .. "Tokens/moltsInShadowGarou.back.webp?v=bd6ae1211852" },
+    token = { front = BASE .. "Tokens/moltsInShadowGarou.front.webp?v=69e3e8b289e2", back = BASE .. "Tokens/moltsInShadowGarou.back.webp?v=69e3e8b289e2" },
   },
   mrEasy = {
     figurine = { front = BASE .. "Catalogued/mrEasy.webp?v=dfeed96ba6a4", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/mrEasy.front.webp?v=6bd5a4a91834", back = BASE .. "Tokens/mrEasy.back.webp?v=6bd5a4a91834" },
+    token = { front = BASE .. "Tokens/mrEasy.front.webp?v=1205a40d742f", back = BASE .. "Tokens/mrEasy.back.webp?v=1205a40d742f" },
   },
   myleneHamelin = {
     figurine = { front = BASE .. "Catalogued/myleneHamelin.webp?v=4b2604ff58f9", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/myleneHamelin.front.webp?v=f974922a0ad9", back = BASE .. "Tokens/myleneHamelin.back.webp?v=f974922a0ad9" },
+    token = { front = BASE .. "Tokens/myleneHamelin.front.webp?v=d6a807bc422c", back = BASE .. "Tokens/myleneHamelin.back.webp?v=d6a807bc422c" },
   },
   nasirKhan = {
     figurine = { front = BASE .. "Catalogued/nasirKhan.webp?v=f0d3aec2c286", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nasirKhan.front.webp?v=a29e81c3614a", back = BASE .. "Tokens/nasirKhan.back.webp?v=a29e81c3614a" },
+    token = { front = BASE .. "Tokens/nasirKhan.front.webp?v=d743952fe94f", back = BASE .. "Tokens/nasirKhan.back.webp?v=d743952fe94f" },
   },
   niccoloGiovanni = {
     figurine = { front = BASE .. "Catalogued/niccoloGiovanni.webp?v=b6ca6c646c70", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/niccoloGiovanni.front.webp?v=ffbac5753058", back = BASE .. "Tokens/niccoloGiovanni.back.webp?v=ffbac5753058" },
+    token = { front = BASE .. "Tokens/niccoloGiovanni.front.webp?v=60c59df60f8c", back = BASE .. "Tokens/niccoloGiovanni.back.webp?v=60c59df60f8c" },
   },
   nightlifeBartender_01 = {
     figurine = { front = BASE .. "Generic/nightlifeBartender_01.webp?v=b4b23e8dd900", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nightlifeBartender_01.front.webp?v=cd89e1e96fe7", back = BASE .. "Tokens/nightlifeBartender_01.back.webp?v=cd89e1e96fe7" },
+    token = { front = BASE .. "Tokens/nightlifeBartender_01.front.webp?v=60003da3dfbd", back = BASE .. "Tokens/nightlifeBartender_01.back.webp?v=60003da3dfbd" },
   },
   nightlifeBartender_02 = {
     figurine = { front = BASE .. "Generic/nightlifeBartender_02.webp?v=26392ef1765f", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nightlifeBartender_02.front.webp?v=9a0602a69f89", back = BASE .. "Tokens/nightlifeBartender_02.back.webp?v=9a0602a69f89" },
+    token = { front = BASE .. "Tokens/nightlifeBartender_02.front.webp?v=5c9fc047843a", back = BASE .. "Tokens/nightlifeBartender_02.back.webp?v=5c9fc047843a" },
   },
   nightlifeBartender_03 = {
     figurine = { front = BASE .. "Generic/nightlifeBartender_03.webp?v=27a888b6bad3", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nightlifeBartender_03.front.webp?v=671014ce1427", back = BASE .. "Tokens/nightlifeBartender_03.back.webp?v=671014ce1427" },
+    token = { front = BASE .. "Tokens/nightlifeBartender_03.front.webp?v=e99acec222ea", back = BASE .. "Tokens/nightlifeBartender_03.back.webp?v=e99acec222ea" },
   },
   nightlifeBouncer_01 = {
     figurine = { front = BASE .. "Generic/nightlifeBouncer_01.webp?v=1eb5ba9bcc9a", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nightlifeBouncer_01.front.webp?v=060633978908", back = BASE .. "Tokens/nightlifeBouncer_01.back.webp?v=060633978908" },
+    token = { front = BASE .. "Tokens/nightlifeBouncer_01.front.webp?v=da8eb9254697", back = BASE .. "Tokens/nightlifeBouncer_01.back.webp?v=da8eb9254697" },
   },
   nightlifeBouncer_02 = {
     figurine = { front = BASE .. "Generic/nightlifeBouncer_02.webp?v=fe6740eb5bc1", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nightlifeBouncer_02.front.webp?v=ef3b0d4d6296", back = BASE .. "Tokens/nightlifeBouncer_02.back.webp?v=ef3b0d4d6296" },
+    token = { front = BASE .. "Tokens/nightlifeBouncer_02.front.webp?v=22a0cf3ce2d3", back = BASE .. "Tokens/nightlifeBouncer_02.back.webp?v=22a0cf3ce2d3" },
   },
   nightlifeBouncer_03 = {
     figurine = { front = BASE .. "Generic/nightlifeBouncer_03.webp?v=aa30bb458caf", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nightlifeBouncer_03.front.webp?v=1a8ba3f91f70", back = BASE .. "Tokens/nightlifeBouncer_03.back.webp?v=1a8ba3f91f70" },
+    token = { front = BASE .. "Tokens/nightlifeBouncer_03.front.webp?v=a7b8ed72e58d", back = BASE .. "Tokens/nightlifeBouncer_03.back.webp?v=a7b8ed72e58d" },
   },
   nightlifeBouncer_04 = {
     figurine = { front = BASE .. "Generic/nightlifeBouncer_04.webp?v=c3785134b918", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nightlifeBouncer_04.front.webp?v=fb1a2ea9e2a4", back = BASE .. "Tokens/nightlifeBouncer_04.back.webp?v=fb1a2ea9e2a4" },
+    token = { front = BASE .. "Tokens/nightlifeBouncer_04.front.webp?v=daf2be58d7a4", back = BASE .. "Tokens/nightlifeBouncer_04.back.webp?v=daf2be58d7a4" },
   },
   nightlifePatron_01 = {
     figurine = { front = BASE .. "Generic/nightlifePatron_01.webp?v=151b332f736b", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nightlifePatron_01.front.webp?v=6f3dc7a43d88", back = BASE .. "Tokens/nightlifePatron_01.back.webp?v=6f3dc7a43d88" },
+    token = { front = BASE .. "Tokens/nightlifePatron_01.front.webp?v=1fc8551fb2ba", back = BASE .. "Tokens/nightlifePatron_01.back.webp?v=1fc8551fb2ba" },
   },
   nightlifePatron_02 = {
     figurine = { front = BASE .. "Generic/nightlifePatron_02.webp?v=66f3ddf8fd71", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nightlifePatron_02.front.webp?v=a9439e494802", back = BASE .. "Tokens/nightlifePatron_02.back.webp?v=a9439e494802" },
+    token = { front = BASE .. "Tokens/nightlifePatron_02.front.webp?v=ffb926b51b5b", back = BASE .. "Tokens/nightlifePatron_02.back.webp?v=ffb926b51b5b" },
   },
   nightlifePatron_03 = {
     figurine = { front = BASE .. "Generic/nightlifePatron_03.webp?v=139940bc7f22", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nightlifePatron_03.front.webp?v=9783eb747867", back = BASE .. "Tokens/nightlifePatron_03.back.webp?v=9783eb747867" },
+    token = { front = BASE .. "Tokens/nightlifePatron_03.front.webp?v=d6610f1d84f9", back = BASE .. "Tokens/nightlifePatron_03.back.webp?v=d6610f1d84f9" },
   },
   nightlifePatron_04 = {
     figurine = { front = BASE .. "Generic/nightlifePatron_04.webp?v=fa0f64b2ad67", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nightlifePatron_04.front.webp?v=c54d0cc1dd69", back = BASE .. "Tokens/nightlifePatron_04.back.webp?v=c54d0cc1dd69" },
+    token = { front = BASE .. "Tokens/nightlifePatron_04.front.webp?v=5aff90f27ac5", back = BASE .. "Tokens/nightlifePatron_04.back.webp?v=5aff90f27ac5" },
   },
   nightlifePatron_05 = {
     figurine = { front = BASE .. "Generic/nightlifePatron_05.webp?v=7cc25b781caa", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nightlifePatron_05.front.webp?v=c4e31a562f2d", back = BASE .. "Tokens/nightlifePatron_05.back.webp?v=c4e31a562f2d" },
+    token = { front = BASE .. "Tokens/nightlifePatron_05.front.webp?v=eb5fb3190389", back = BASE .. "Tokens/nightlifePatron_05.back.webp?v=eb5fb3190389" },
   },
   nightlifePatron_06 = {
     figurine = { front = BASE .. "Generic/nightlifePatron_06.webp?v=83f811edbd2f", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nightlifePatron_06.front.webp?v=75765c570d39", back = BASE .. "Tokens/nightlifePatron_06.back.webp?v=75765c570d39" },
+    token = { front = BASE .. "Tokens/nightlifePatron_06.front.webp?v=2f96cdf91265", back = BASE .. "Tokens/nightlifePatron_06.back.webp?v=2f96cdf91265" },
   },
   nightlifePatron_07 = {
     figurine = { front = BASE .. "Generic/nightlifePatron_07.webp?v=154bce0e6785", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nightlifePatron_07.front.webp?v=7a18088b6c06", back = BASE .. "Tokens/nightlifePatron_07.back.webp?v=7a18088b6c06" },
+    token = { front = BASE .. "Tokens/nightlifePatron_07.front.webp?v=f3c686a9315c", back = BASE .. "Tokens/nightlifePatron_07.back.webp?v=f3c686a9315c" },
   },
   nightlifePatron_08 = {
     figurine = { front = BASE .. "Generic/nightlifePatron_08.webp?v=4365cb221433", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nightlifePatron_08.front.webp?v=d9342c7b0825", back = BASE .. "Tokens/nightlifePatron_08.back.webp?v=d9342c7b0825" },
+    token = { front = BASE .. "Tokens/nightlifePatron_08.front.webp?v=16137efd4324", back = BASE .. "Tokens/nightlifePatron_08.back.webp?v=16137efd4324" },
   },
   nightlifeServer_01 = {
     figurine = { front = BASE .. "Generic/nightlifeServer_01.webp?v=d7885edcacb1", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nightlifeServer_01.front.webp?v=ba139c79ac43", back = BASE .. "Tokens/nightlifeServer_01.back.webp?v=ba139c79ac43" },
+    token = { front = BASE .. "Tokens/nightlifeServer_01.front.webp?v=7bfc7968fda7", back = BASE .. "Tokens/nightlifeServer_01.back.webp?v=7bfc7968fda7" },
   },
   nightlifeServer_02 = {
     figurine = { front = BASE .. "Generic/nightlifeServer_02.webp?v=b281b4ba5690", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nightlifeServer_02.front.webp?v=d91f163a06fd", back = BASE .. "Tokens/nightlifeServer_02.back.webp?v=d91f163a06fd" },
+    token = { front = BASE .. "Tokens/nightlifeServer_02.front.webp?v=702a9971d12f", back = BASE .. "Tokens/nightlifeServer_02.back.webp?v=702a9971d12f" },
   },
   nightlifeSexWorker_01 = {
     figurine = { front = BASE .. "Generic/nightlifeSexWorker_01.webp?v=38b63cc13be7", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nightlifeSexWorker_01.front.webp?v=8a4e5c52b1a8", back = BASE .. "Tokens/nightlifeSexWorker_01.back.webp?v=8a4e5c52b1a8" },
+    token = { front = BASE .. "Tokens/nightlifeSexWorker_01.front.webp?v=47cbd6d94525", back = BASE .. "Tokens/nightlifeSexWorker_01.back.webp?v=47cbd6d94525" },
   },
   nightlifeSexWorker_02 = {
     figurine = { front = BASE .. "Generic/nightlifeSexWorker_02.webp?v=2d0788ed5a5b", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nightlifeSexWorker_02.front.webp?v=ec26be3eae59", back = BASE .. "Tokens/nightlifeSexWorker_02.back.webp?v=ec26be3eae59" },
+    token = { front = BASE .. "Tokens/nightlifeSexWorker_02.front.webp?v=1303145efaa7", back = BASE .. "Tokens/nightlifeSexWorker_02.back.webp?v=1303145efaa7" },
   },
   nightlifeSexWorker_03 = {
     figurine = { front = BASE .. "Generic/nightlifeSexWorker_03.webp?v=8cb7538ab55d", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nightlifeSexWorker_03.front.webp?v=448f99ceff90", back = BASE .. "Tokens/nightlifeSexWorker_03.back.webp?v=448f99ceff90" },
+    token = { front = BASE .. "Tokens/nightlifeSexWorker_03.front.webp?v=1a240a7f0dfd", back = BASE .. "Tokens/nightlifeSexWorker_03.back.webp?v=1a240a7f0dfd" },
   },
   nightlifeSexWorker_04 = {
     figurine = { front = BASE .. "Generic/nightlifeSexWorker_04.webp?v=31fb41336bde", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nightlifeSexWorker_04.front.webp?v=7efddfe8ca2a", back = BASE .. "Tokens/nightlifeSexWorker_04.back.webp?v=7efddfe8ca2a" },
+    token = { front = BASE .. "Tokens/nightlifeSexWorker_04.front.webp?v=6c77fb0961d6", back = BASE .. "Tokens/nightlifeSexWorker_04.back.webp?v=6c77fb0961d6" },
   },
   nightlifeSexWorker_05 = {
     figurine = { front = BASE .. "Generic/nightlifeSexWorker_05.webp?v=064c6c45710d", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nightlifeSexWorker_05.front.webp?v=e29fadf0e859", back = BASE .. "Tokens/nightlifeSexWorker_05.back.webp?v=e29fadf0e859" },
+    token = { front = BASE .. "Tokens/nightlifeSexWorker_05.front.webp?v=b776673b3c3b", back = BASE .. "Tokens/nightlifeSexWorker_05.back.webp?v=b776673b3c3b" },
   },
   nightlifeSexWorker_06 = {
     figurine = { front = BASE .. "Generic/nightlifeSexWorker_06.webp?v=3bf9ee8987bc", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/nightlifeSexWorker_06.front.webp?v=a6ae871c1d38", back = BASE .. "Tokens/nightlifeSexWorker_06.back.webp?v=a6ae871c1d38" },
+    token = { front = BASE .. "Tokens/nightlifeSexWorker_06.front.webp?v=cff06a0e9200", back = BASE .. "Tokens/nightlifeSexWorker_06.back.webp?v=cff06a0e9200" },
   },
   oliverGagnon = {
     figurine = { front = BASE .. "Catalogued/oliverGagnon.webp?v=bf79246c060e", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/oliverGagnon.front.webp?v=c12abb7a787f", back = BASE .. "Tokens/oliverGagnon.back.webp?v=c12abb7a787f" },
+    token = { front = BASE .. "Tokens/oliverGagnon.front.webp?v=938e70c86294", back = BASE .. "Tokens/oliverGagnon.back.webp?v=938e70c86294" },
   },
   osborneLowell = {
     figurine = { front = BASE .. "Catalogued/osborneLowell.webp?v=71099142a239", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/osborneLowell.front.webp?v=36874c22d4c0", back = BASE .. "Tokens/osborneLowell.back.webp?v=36874c22d4c0" },
+    token = { front = BASE .. "Tokens/osborneLowell.front.webp?v=4e748a4d25ac", back = BASE .. "Tokens/osborneLowell.back.webp?v=4e748a4d25ac" },
   },
   palis = {
     figurine = { front = BASE .. "Catalogued/palis.webp?v=f645474db8d9", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/palis.front.webp?v=99a71de663b2", back = BASE .. "Tokens/palis.back.webp?v=99a71de663b2" },
+    token = { front = BASE .. "Tokens/palis.front.webp?v=7a13890ecb61", back = BASE .. "Tokens/palis.back.webp?v=7a13890ecb61" },
   },
   percivalCavendish = {
     figurine = { front = BASE .. "Catalogued/percivalCavendish.webp?v=4e3b5dee5def", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/percivalCavendish.front.webp?v=897741cee143", back = BASE .. "Tokens/percivalCavendish.back.webp?v=897741cee143" },
+    token = { front = BASE .. "Tokens/percivalCavendish.front.webp?v=e64a70de28de", back = BASE .. "Tokens/percivalCavendish.back.webp?v=e64a70de28de" },
   },
   ponticulus = {
     figurine = { front = BASE .. "Catalogued/ponticulus.webp?v=088965f74cc7", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ponticulus.front.webp?v=c301dc9909a1", back = BASE .. "Tokens/ponticulus.back.webp?v=c301dc9909a1" },
+    token = { front = BASE .. "Tokens/ponticulus.front.webp?v=56dd46baaf15", back = BASE .. "Tokens/ponticulus.back.webp?v=56dd46baaf15" },
   },
   profEthanKeen = {
     figurine = { front = BASE .. "Catalogued/profEthanKeen.webp?v=7d4946776565", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/profEthanKeen.front.webp?v=9d09e236b957", back = BASE .. "Tokens/profEthanKeen.back.webp?v=9d09e236b957" },
+    token = { front = BASE .. "Tokens/profEthanKeen.front.webp?v=f43bf5a653eb", back = BASE .. "Tokens/profEthanKeen.back.webp?v=f43bf5a653eb" },
   },
   raduIancu = {
     figurine = { front = BASE .. "Catalogued/raduIancu.webp?v=128ef66c2de9", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/raduIancu.front.webp?v=fc8fb9ac5d0c", back = BASE .. "Tokens/raduIancu.back.webp?v=fc8fb9ac5d0c" },
+    token = { front = BASE .. "Tokens/raduIancu.front.webp?v=a05fa3844974", back = BASE .. "Tokens/raduIancu.back.webp?v=a05fa3844974" },
   },
   rashid = {
     figurine = { front = BASE .. "Catalogued/rashid.webp?v=1a9fb8dc3907", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/rashid.front.webp?v=68f18c15a02d", back = BASE .. "Tokens/rashid.back.webp?v=68f18c15a02d" },
+    token = { front = BASE .. "Tokens/rashid.front.webp?v=e7a83d6126bb", back = BASE .. "Tokens/rashid.back.webp?v=e7a83d6126bb" },
   },
   razorWhit = {
     figurine = { front = BASE .. "Catalogued/razorWhit.webp?v=0dc813fab76e", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/razorWhit.front.webp?v=3676a5460c4a", back = BASE .. "Tokens/razorWhit.back.webp?v=3676a5460c4a" },
+    token = { front = BASE .. "Tokens/razorWhit.front.webp?v=4196a6c2fd2f", back = BASE .. "Tokens/razorWhit.back.webp?v=4196a6c2fd2f" },
   },
   rebeccaRossellini = {
     figurine = { front = BASE .. "Catalogued/rebeccaRossellini.webp?v=b27e4b3bd7a0", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/rebeccaRossellini.front.webp?v=9981cd827d65", back = BASE .. "Tokens/rebeccaRossellini.back.webp?v=9981cd827d65" },
+    token = { front = BASE .. "Tokens/rebeccaRossellini.front.webp?v=11295bef296e", back = BASE .. "Tokens/rebeccaRossellini.back.webp?v=11295bef296e" },
   },
   ren = {
     figurine = { front = BASE .. "Catalogued/ren.webp?v=5941dfa14549", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ren.front.webp?v=07e0ef46e622", back = BASE .. "Tokens/ren.back.webp?v=07e0ef46e622" },
+    token = { front = BASE .. "Tokens/ren.front.webp?v=715cdb566143", back = BASE .. "Tokens/ren.back.webp?v=715cdb566143" },
   },
   rosie = {
     figurine = { front = BASE .. "Catalogued/rosie.webp?v=21b53c3e050b", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/rosie.front.webp?v=cc9cf9f010ba", back = BASE .. "Tokens/rosie.back.webp?v=cc9cf9f010ba" },
+    token = { front = BASE .. "Tokens/rosie.front.webp?v=c6c87d6e3cad", back = BASE .. "Tokens/rosie.back.webp?v=c6c87d6e3cad" },
   },
   rotInTheRiver = {
     figurine = { front = BASE .. "Catalogued/rotInTheRiver.webp?v=45ceffc4e104", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/rotInTheRiver.front.webp?v=e4d0fe1f941e", back = BASE .. "Tokens/rotInTheRiver.back.webp?v=e4d0fe1f941e" },
+    token = { front = BASE .. "Tokens/rotInTheRiver.front.webp?v=7a42b9d146c3", back = BASE .. "Tokens/rotInTheRiver.back.webp?v=7a42b9d146c3" },
   },
   rotInTheRiverGarou = {
     figurine = { front = BASE .. "Catalogued/rotInTheRiverGarou.webp?v=9e40e03f346a", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/rotInTheRiverGarou.front.webp?v=1ee9272367ad", back = BASE .. "Tokens/rotInTheRiverGarou.back.webp?v=1ee9272367ad" },
+    token = { front = BASE .. "Tokens/rotInTheRiverGarou.front.webp?v=a519ebddcd79", back = BASE .. "Tokens/rotInTheRiverGarou.back.webp?v=a519ebddcd79" },
   },
   rubyRouge = {
     figurine = { front = BASE .. "Catalogued/rubyRouge.webp?v=ea39f2141a00", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/rubyRouge.front.webp?v=22b8a9124961", back = BASE .. "Tokens/rubyRouge.back.webp?v=22b8a9124961" },
+    token = { front = BASE .. "Tokens/rubyRouge.front.webp?v=ed305eaf90c0", back = BASE .. "Tokens/rubyRouge.back.webp?v=ed305eaf90c0" },
   },
   sageSam = {
     figurine = { front = BASE .. "Catalogued/sageSam.webp?v=917ed618e5bb", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/sageSam.front.webp?v=b95ccb0f3e5e", back = BASE .. "Tokens/sageSam.back.webp?v=b95ccb0f3e5e" },
+    token = { front = BASE .. "Tokens/sageSam.front.webp?v=a43ac276d20f", back = BASE .. "Tokens/sageSam.back.webp?v=a43ac276d20f" },
   },
   scarlett = {
     figurine = { front = BASE .. "Catalogued/scarlett.webp?v=1d306ef98bc6", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/scarlett.front.webp?v=93467dc6b45f", back = BASE .. "Tokens/scarlett.back.webp?v=93467dc6b45f" },
+    token = { front = BASE .. "Tokens/scarlett.front.webp?v=f3fe1296d2a6", back = BASE .. "Tokens/scarlett.back.webp?v=f3fe1296d2a6" },
   },
   scottTempo = {
     figurine = { front = BASE .. "Catalogued/scottTempo.webp?v=b456603f613f", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/scottTempo.front.webp?v=e61f1a48fa3c", back = BASE .. "Tokens/scottTempo.back.webp?v=e61f1a48fa3c" },
+    token = { front = BASE .. "Tokens/scottTempo.front.webp?v=ba99e99f4b94", back = BASE .. "Tokens/scottTempo.back.webp?v=ba99e99f4b94" },
   },
   severinKoslov = {
     figurine = { front = BASE .. "Catalogued/severinKoslov.webp?v=2ad054982860", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/severinKoslov.front.webp?v=88130ccf9f19", back = BASE .. "Tokens/severinKoslov.back.webp?v=88130ccf9f19" },
+    token = { front = BASE .. "Tokens/severinKoslov.front.webp?v=0c33723436ca", back = BASE .. "Tokens/severinKoslov.back.webp?v=0c33723436ca" },
   },
   sisterCicione = {
     figurine = { front = BASE .. "Catalogued/sisterCicione.webp?v=4a70c0f399fd", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/sisterCicione.front.webp?v=963dbee2b958", back = BASE .. "Tokens/sisterCicione.back.webp?v=963dbee2b958" },
+    token = { front = BASE .. "Tokens/sisterCicione.front.webp?v=77f3b48b0b14", back = BASE .. "Tokens/sisterCicione.back.webp?v=77f3b48b0b14" },
   },
   stalksTheTangle = {
     figurine = { front = BASE .. "Catalogued/stalksTheTangle.webp?v=e96d3935dbdb", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/stalksTheTangle.front.webp?v=b3a4d7a5d7d1", back = BASE .. "Tokens/stalksTheTangle.back.webp?v=b3a4d7a5d7d1" },
+    token = { front = BASE .. "Tokens/stalksTheTangle.front.webp?v=5884146ec5f9", back = BASE .. "Tokens/stalksTheTangle.back.webp?v=5884146ec5f9" },
   },
   stalksTheTangleGarou = {
     figurine = { front = BASE .. "Catalogued/stalksTheTangleGarou.webp?v=b1e358fccebe", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/stalksTheTangleGarou.front.webp?v=7dd0406733a5", back = BASE .. "Tokens/stalksTheTangleGarou.back.webp?v=7dd0406733a5" },
+    token = { front = BASE .. "Tokens/stalksTheTangleGarou.front.webp?v=ee87e2ca6d9b", back = BASE .. "Tokens/stalksTheTangleGarou.back.webp?v=ee87e2ca6d9b" },
   },
   stirlingSiskin = {
     figurine = { front = BASE .. "Catalogued/stirlingSiskin.webp?v=cf56405955a0", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/stirlingSiskin.front.webp?v=97b4b9accb04", back = BASE .. "Tokens/stirlingSiskin.back.webp?v=97b4b9accb04" },
+    token = { front = BASE .. "Tokens/stirlingSiskin.front.webp?v=551d9da0d08b", back = BASE .. "Tokens/stirlingSiskin.back.webp?v=551d9da0d08b" },
   },
   suyin = {
     figurine = { front = BASE .. "Catalogued/suyin.webp?v=96a350343e8f", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/suyin.front.webp?v=c488fec60ac2", back = BASE .. "Tokens/suyin.back.webp?v=c488fec60ac2" },
+    token = { front = BASE .. "Tokens/suyin.front.webp?v=6e3b6f63d6bf", back = BASE .. "Tokens/suyin.back.webp?v=6e3b6f63d6bf" },
   },
   terry = {
     figurine = { front = BASE .. "Catalogued/terry.webp?v=dd5fa77aad27", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/terry.front.webp?v=bcccc6ed1773", back = BASE .. "Tokens/terry.back.webp?v=bcccc6ed1773" },
+    token = { front = BASE .. "Tokens/terry.front.webp?v=34f40a610bbf", back = BASE .. "Tokens/terry.back.webp?v=34f40a610bbf" },
   },
   theAristocrat = {
     figurine = { front = BASE .. "Catalogued/theAristocrat.webp?v=436245eb641a", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/theAristocrat.front.webp?v=808efabda3e0", back = BASE .. "Tokens/theAristocrat.back.webp?v=808efabda3e0" },
+    token = { front = BASE .. "Tokens/theAristocrat.front.webp?v=bcd1514c072d", back = BASE .. "Tokens/theAristocrat.back.webp?v=bcd1514c072d" },
   },
   theBleakBokor = {
     figurine = { front = BASE .. "Catalogued/theBleakBokor.webp?v=5e3507f4ad04", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/theBleakBokor.front.webp?v=e88bca1041df", back = BASE .. "Tokens/theBleakBokor.back.webp?v=e88bca1041df" },
+    token = { front = BASE .. "Tokens/theBleakBokor.front.webp?v=1ca75ab3ebe1", back = BASE .. "Tokens/theBleakBokor.back.webp?v=1ca75ab3ebe1" },
   },
   theIslandDevil = {
     figurine = { front = BASE .. "Catalogued/theIslandDevil.webp?v=d263bf6a0e32", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/theIslandDevil.front.webp?v=a5c77fd186b8", back = BASE .. "Tokens/theIslandDevil.back.webp?v=a5c77fd186b8" },
+    token = { front = BASE .. "Tokens/theIslandDevil.front.webp?v=15b7a05fef19", back = BASE .. "Tokens/theIslandDevil.back.webp?v=15b7a05fef19" },
   },
   theUnshadowedThrone = {
     figurine = { front = BASE .. "Catalogued/theUnshadowedThrone.webp?v=47aabbcd2dc6", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/theUnshadowedThrone.front.webp?v=95cbbf39c689", back = BASE .. "Tokens/theUnshadowedThrone.back.webp?v=95cbbf39c689" },
+    token = { front = BASE .. "Tokens/theUnshadowedThrone.front.webp?v=8c4e1267047f", back = BASE .. "Tokens/theUnshadowedThrone.back.webp?v=8c4e1267047f" },
   },
   tommy = {
     figurine = { front = BASE .. "Catalogued/tommy.webp?v=eadedebf8c64", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/tommy.front.webp?v=cfe6bf90e71b", back = BASE .. "Tokens/tommy.back.webp?v=cfe6bf90e71b" },
+    token = { front = BASE .. "Tokens/tommy.front.webp?v=e1c92ac667d2", back = BASE .. "Tokens/tommy.back.webp?v=e1c92ac667d2" },
   },
   twist = {
     figurine = { front = BASE .. "Catalogued/twist.webp?v=0b3702ad22c8", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/twist.front.webp?v=2b213c55d535", back = BASE .. "Tokens/twist.back.webp?v=2b213c55d535" },
+    token = { front = BASE .. "Tokens/twist.front.webp?v=c398757c6dba", back = BASE .. "Tokens/twist.back.webp?v=c398757c6dba" },
   },
   tyler = {
     figurine = { front = BASE .. "Catalogued/tyler.webp?v=9747d45b7213", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/tyler.front.webp?v=cd22f0baeb1e", back = BASE .. "Tokens/tyler.back.webp?v=cd22f0baeb1e" },
+    token = { front = BASE .. "Tokens/tyler.front.webp?v=2ba8c4798668", back = BASE .. "Tokens/tyler.back.webp?v=2ba8c4798668" },
   },
   ulyssesCelaj = {
     figurine = { front = BASE .. "Catalogued/ulyssesCelaj.webp?v=074561c21552", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/ulyssesCelaj.front.webp?v=86aa1c42987c", back = BASE .. "Tokens/ulyssesCelaj.back.webp?v=86aa1c42987c" },
+    token = { front = BASE .. "Tokens/ulyssesCelaj.front.webp?v=c035919f1ca6", back = BASE .. "Tokens/ulyssesCelaj.back.webp?v=c035919f1ca6" },
   },
   uwuByteMe = {
     figurine = { front = BASE .. "Catalogued/uwuByteMe.webp?v=4ce400a14119", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/uwuByteMe.front.webp?v=ef755aa892fa", back = BASE .. "Tokens/uwuByteMe.back.webp?v=ef755aa892fa" },
+    token = { front = BASE .. "Tokens/uwuByteMe.front.webp?v=3f0889c66c4a", back = BASE .. "Tokens/uwuByteMe.back.webp?v=3f0889c66c4a" },
   },
   vanceVogel = {
     figurine = { front = BASE .. "Catalogued/vanceVogel.webp?v=23fe923fe19e", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/vanceVogel.front.webp?v=17a14085d6f5", back = BASE .. "Tokens/vanceVogel.back.webp?v=17a14085d6f5" },
+    token = { front = BASE .. "Tokens/vanceVogel.front.webp?v=57b1b41ad673", back = BASE .. "Tokens/vanceVogel.back.webp?v=57b1b41ad673" },
   },
   victorVex = {
     figurine = { front = BASE .. "Catalogued/victorVex.webp?v=38d2f36536b1", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/victorVex.front.webp?v=6b07f6572771", back = BASE .. "Tokens/victorVex.back.webp?v=6b07f6572771" },
+    token = { front = BASE .. "Tokens/victorVex.front.webp?v=0cdcf04e2a09", back = BASE .. "Tokens/victorVex.back.webp?v=0cdcf04e2a09" },
   },
   whiteCollarCivilServant_01 = {
     figurine = { front = BASE .. "Generic/whiteCollarCivilServant_01.webp?v=58dd1e827314", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/whiteCollarCivilServant_01.front.webp?v=74f426a7bbbc", back = BASE .. "Tokens/whiteCollarCivilServant_01.back.webp?v=74f426a7bbbc" },
+    token = { front = BASE .. "Tokens/whiteCollarCivilServant_01.front.webp?v=67b20768af68", back = BASE .. "Tokens/whiteCollarCivilServant_01.back.webp?v=67b20768af68" },
   },
   whiteCollarCivilServant_02 = {
     figurine = { front = BASE .. "Generic/whiteCollarCivilServant_02.webp?v=0e037c2c3b79", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/whiteCollarCivilServant_02.front.webp?v=799225364107", back = BASE .. "Tokens/whiteCollarCivilServant_02.back.webp?v=799225364107" },
+    token = { front = BASE .. "Tokens/whiteCollarCivilServant_02.front.webp?v=ae4dd2fc2db7", back = BASE .. "Tokens/whiteCollarCivilServant_02.back.webp?v=ae4dd2fc2db7" },
   },
   whiteCollarCivilServant_03 = {
     figurine = { front = BASE .. "Generic/whiteCollarCivilServant_03.webp?v=dd6dfc1eb97a", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/whiteCollarCivilServant_03.front.webp?v=97d6939799d0", back = BASE .. "Tokens/whiteCollarCivilServant_03.back.webp?v=97d6939799d0" },
+    token = { front = BASE .. "Tokens/whiteCollarCivilServant_03.front.webp?v=90399f08e66e", back = BASE .. "Tokens/whiteCollarCivilServant_03.back.webp?v=90399f08e66e" },
   },
   whiteCollarCivilServant_04 = {
     figurine = { front = BASE .. "Generic/whiteCollarCivilServant_04.webp?v=bc0325f30d67", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/whiteCollarCivilServant_04.front.webp?v=b29d913c0a2c", back = BASE .. "Tokens/whiteCollarCivilServant_04.back.webp?v=b29d913c0a2c" },
+    token = { front = BASE .. "Tokens/whiteCollarCivilServant_04.front.webp?v=9c03d1422a76", back = BASE .. "Tokens/whiteCollarCivilServant_04.back.webp?v=9c03d1422a76" },
   },
   whiteCollarCivilServant_05 = {
     figurine = { front = BASE .. "Generic/whiteCollarCivilServant_05.webp?v=d925f8e3520a", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/whiteCollarCivilServant_05.front.webp?v=56fb0ff03524", back = BASE .. "Tokens/whiteCollarCivilServant_05.back.webp?v=56fb0ff03524" },
+    token = { front = BASE .. "Tokens/whiteCollarCivilServant_05.front.webp?v=fef32f2eb661", back = BASE .. "Tokens/whiteCollarCivilServant_05.back.webp?v=fef32f2eb661" },
   },
   whiteCollarCivilServant_06 = {
     figurine = { front = BASE .. "Generic/whiteCollarCivilServant_06.webp?v=b1bd2a6a737f", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/whiteCollarCivilServant_06.front.webp?v=e03a554d61e5", back = BASE .. "Tokens/whiteCollarCivilServant_06.back.webp?v=e03a554d61e5" },
+    token = { front = BASE .. "Tokens/whiteCollarCivilServant_06.front.webp?v=f9db4037d6d2", back = BASE .. "Tokens/whiteCollarCivilServant_06.back.webp?v=f9db4037d6d2" },
   },
   whiteCollarCivilServant_07 = {
     figurine = { front = BASE .. "Generic/whiteCollarCivilServant_07.webp?v=d408a4a12fc3", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/whiteCollarCivilServant_07.front.webp?v=fbf165d16b64", back = BASE .. "Tokens/whiteCollarCivilServant_07.back.webp?v=fbf165d16b64" },
+    token = { front = BASE .. "Tokens/whiteCollarCivilServant_07.front.webp?v=972edd80cc1b", back = BASE .. "Tokens/whiteCollarCivilServant_07.back.webp?v=972edd80cc1b" },
   },
   whiteCollarCivilServant_08 = {
     figurine = { front = BASE .. "Generic/whiteCollarCivilServant_08.webp?v=da2e87c1e717", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/whiteCollarCivilServant_08.front.webp?v=290dd5c7c3e5", back = BASE .. "Tokens/whiteCollarCivilServant_08.back.webp?v=290dd5c7c3e5" },
+    token = { front = BASE .. "Tokens/whiteCollarCivilServant_08.front.webp?v=4e9dd18e1a0a", back = BASE .. "Tokens/whiteCollarCivilServant_08.back.webp?v=4e9dd18e1a0a" },
   },
   whiteCollarCorporate_01 = {
     figurine = { front = BASE .. "Generic/whiteCollarCorporate_01.webp?v=0e3c219e8940", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/whiteCollarCorporate_01.front.webp?v=18c460fcf069", back = BASE .. "Tokens/whiteCollarCorporate_01.back.webp?v=18c460fcf069" },
+    token = { front = BASE .. "Tokens/whiteCollarCorporate_01.front.webp?v=d1d34f68ea8e", back = BASE .. "Tokens/whiteCollarCorporate_01.back.webp?v=d1d34f68ea8e" },
   },
   whiteCollarCorporate_02 = {
     figurine = { front = BASE .. "Generic/whiteCollarCorporate_02.webp?v=9f9f078f5ee4", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/whiteCollarCorporate_02.front.webp?v=520f0501bab2", back = BASE .. "Tokens/whiteCollarCorporate_02.back.webp?v=520f0501bab2" },
+    token = { front = BASE .. "Tokens/whiteCollarCorporate_02.front.webp?v=a6ccbafa2d92", back = BASE .. "Tokens/whiteCollarCorporate_02.back.webp?v=a6ccbafa2d92" },
   },
   whiteCollarCorporate_03 = {
     figurine = { front = BASE .. "Generic/whiteCollarCorporate_03.webp?v=39f92a1d580e", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/whiteCollarCorporate_03.front.webp?v=a28b02501fae", back = BASE .. "Tokens/whiteCollarCorporate_03.back.webp?v=a28b02501fae" },
+    token = { front = BASE .. "Tokens/whiteCollarCorporate_03.front.webp?v=6ce77c682feb", back = BASE .. "Tokens/whiteCollarCorporate_03.back.webp?v=6ce77c682feb" },
   },
   whiteCollarCorporate_04 = {
     figurine = { front = BASE .. "Generic/whiteCollarCorporate_04.webp?v=7d5f93692a1b", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/whiteCollarCorporate_04.front.webp?v=58e42ce730d2", back = BASE .. "Tokens/whiteCollarCorporate_04.back.webp?v=58e42ce730d2" },
+    token = { front = BASE .. "Tokens/whiteCollarCorporate_04.front.webp?v=52e50143fb90", back = BASE .. "Tokens/whiteCollarCorporate_04.back.webp?v=52e50143fb90" },
   },
   whiteCollarCorporate_05 = {
     figurine = { front = BASE .. "Generic/whiteCollarCorporate_05.webp?v=669e4b9c516d", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/whiteCollarCorporate_05.front.webp?v=6c7989258047", back = BASE .. "Tokens/whiteCollarCorporate_05.back.webp?v=6c7989258047" },
+    token = { front = BASE .. "Tokens/whiteCollarCorporate_05.front.webp?v=07de79d606b9", back = BASE .. "Tokens/whiteCollarCorporate_05.back.webp?v=07de79d606b9" },
   },
   whiteCollarCorporate_06 = {
     figurine = { front = BASE .. "Generic/whiteCollarCorporate_06.webp?v=1fcab8b60836", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/whiteCollarCorporate_06.front.webp?v=3dd0845c053e", back = BASE .. "Tokens/whiteCollarCorporate_06.back.webp?v=3dd0845c053e" },
+    token = { front = BASE .. "Tokens/whiteCollarCorporate_06.front.webp?v=d262f28b02bd", back = BASE .. "Tokens/whiteCollarCorporate_06.back.webp?v=d262f28b02bd" },
   },
   whiteCollarCorporate_07 = {
     figurine = { front = BASE .. "Generic/whiteCollarCorporate_07.webp?v=cd716040fe96", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/whiteCollarCorporate_07.front.webp?v=8215cda704f7", back = BASE .. "Tokens/whiteCollarCorporate_07.back.webp?v=8215cda704f7" },
+    token = { front = BASE .. "Tokens/whiteCollarCorporate_07.front.webp?v=860054deee32", back = BASE .. "Tokens/whiteCollarCorporate_07.back.webp?v=860054deee32" },
   },
   whiteCollarCorporate_08 = {
     figurine = { front = BASE .. "Generic/whiteCollarCorporate_08.webp?v=95693c8633cc", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/whiteCollarCorporate_08.front.webp?v=3095e5d03f6d", back = BASE .. "Tokens/whiteCollarCorporate_08.back.webp?v=3095e5d03f6d" },
+    token = { front = BASE .. "Tokens/whiteCollarCorporate_08.front.webp?v=6ec847773742", back = BASE .. "Tokens/whiteCollarCorporate_08.back.webp?v=6ec847773742" },
   },
   whiteCollarCorporate_09 = {
     figurine = { front = BASE .. "Generic/whiteCollarCorporate_09.webp?v=7acee9a3fd90", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/whiteCollarCorporate_09.front.webp?v=a2ebda54b68c", back = BASE .. "Tokens/whiteCollarCorporate_09.back.webp?v=a2ebda54b68c" },
+    token = { front = BASE .. "Tokens/whiteCollarCorporate_09.front.webp?v=60d34025f16c", back = BASE .. "Tokens/whiteCollarCorporate_09.back.webp?v=60d34025f16c" },
   },
   xavierWhitchurch = {
     figurine = { front = BASE .. "Catalogued/xavierWhitchurch.webp?v=acbad416578c", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/xavierWhitchurch.front.webp?v=fcfea38cb96a", back = BASE .. "Tokens/xavierWhitchurch.back.webp?v=fcfea38cb96a" },
+    token = { front = BASE .. "Tokens/xavierWhitchurch.front.webp?v=bb6056725c5f", back = BASE .. "Tokens/xavierWhitchurch.back.webp?v=bb6056725c5f" },
   },
   yusefShamsin = {
     figurine = { front = BASE .. "Catalogued/yusefShamsin.webp?v=d34863164d7f", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/yusefShamsin.front.webp?v=1dda567eb29b", back = BASE .. "Tokens/yusefShamsin.back.webp?v=1dda567eb29b" },
+    token = { front = BASE .. "Tokens/yusefShamsin.front.webp?v=4f8ea18cb40e", back = BASE .. "Tokens/yusefShamsin.back.webp?v=4f8ea18cb40e" },
   },
   zuriOluwusi = {
     figurine = { front = BASE .. "Catalogued/zuriOluwusi.webp?v=01a748e808f9", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/zuriOluwusi.front.webp?v=6adf38afaeb4", back = BASE .. "Tokens/zuriOluwusi.back.webp?v=6adf38afaeb4" },
+    token = { front = BASE .. "Tokens/zuriOluwusi.front.webp?v=b963f0a382a1", back = BASE .. "Tokens/zuriOluwusi.back.webp?v=b963f0a382a1" },
   },
 }
