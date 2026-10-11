@@ -77,7 +77,7 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 
 #### TOR-710 — NPC name tooltips follow the light; token tooltips; PC figurines use Minimal Collider
 
-**Context:** Hovering a stage or Scatter NPC figurine now shows its full name only while that NPC is lit (standard light, spotlight, or held spotlight). When its light is off, hovering shows nothing. Since your 2026-10-11 pin, this works by switching the figurine's **interactable** setting with its light, with the tooltip left on all the time, because TTS only shows tooltips on interactable objects. A side effect: a lit stage figurine can now be clicked and possibly dragged by players. Seated NPCs keep their tooltip as before (and stay non-interactable). Stage tokens always show the NPC's full name on hover, including a name you changed on the dashboard. The five player seat figurines now have **Minimal Collider** turned on; that was changed directly in the save file (a backup copy is in your backup saves folder).
+**Context:** Hovering a stage or Scatter NPC figurine now shows its full name only while that NPC is lit (standard light, spotlight, or held spotlight). When its light is off, hovering shows nothing. Since your 2026-10-11 pin, this works by switching the figurine's **interactable** setting with its light, with the tooltip left on all the time, because TTS only shows tooltips on interactable objects. Figurines stay locked, so players can right-click a lit one but cannot select or drag it. Seated NPCs keep their tooltip as before (and stay non-interactable). Stage tokens always show the NPC's full name on hover, including a name you changed on the dashboard. The five player seat figurines now have **Minimal Collider** turned on; that was changed directly in the save file (a backup copy is in your backup saves folder).
 
 **How to verify:**
 
@@ -85,9 +85,8 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 2. Put two named NPCs on the stage, one lit and one with its light off. Hover each: the lit one shows its full name, the dark one shows nothing.
 3. Toggle the dark NPC's light on: hovering now shows its name. Turn it off again: the name goes away.
 4. Hold the spotlight hotkey on a dark NPC's token: while held, hovering the figurine shows its name; after release it goes back to showing nothing.
-5. From a player seat (or with a second player), try to grab the lit stage figurine. Tell me whether it moves. If it does and you don't want that, I'll add a guard that puts it back.
-6. Move a lit stage NPC into a chair: hovering it there still shows its name, but it can't be picked up.
-7. Hover a token on the Stage Control board: it shows the NPC's full name. Rename a generic NPC on the dashboard and Send: its token's hover name should change to the new name.
+5. Move a lit stage NPC into a chair: hovering it there still shows its name.
+6. Hover a token on the Stage Control board: it shows the NPC's full name. Rename a generic NPC on the dashboard and Send: its token's hover name should change to the new name.
 
 #### TOR-712 / TOR-713 / TOR-714 — Table B scene change, stage NPC stays dark, NPC reroll not pushed
 
