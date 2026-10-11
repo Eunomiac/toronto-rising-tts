@@ -1,5 +1,5 @@
 --[[
-    Storyteller HUD toolbar: mutually exclusive bottom-bar panels (Scenes, Sound, PCs, Phases).
+    Storyteller HUD toolbar: mutually exclusive bottom-bar panels (Scenes, Sound, Phases, Stats, Projects).
     Tied to XML ids in ui/storyteller/ — not for generic reuse; keep out of lib/util.
 ]]
 local U = require("lib.util")
@@ -11,7 +11,6 @@ local StorytellerPanelUI = {}
 local STORYTELLER_PANELS = {
     scenes = { panel = "panel_scenes_host", toggle = "toggle_scenes" },
     soundscape = { panel = "panel_soundscape", toggle = "toggle_soundscape" },
-    pcs = { panel = "panel_pcs", toggle = "toggle_pcs" },
     phases = { panel = "panel_phases", toggle = "toggle_phases" },
     stats = { panel = "panel_stats", toggle = "toggle_stats" },
     projects = { panel = "panel_projects", toggle = "toggle_projects" },
@@ -38,7 +37,7 @@ end
 
 --- True when the Storyteller can currently see this toolbar panel (toolbar body, content area and
 --- panel all active). Panel paints skip when false; opening the panel repaints it.
---- @param panelKey string One of the STORYTELLER_PANELS keys ("pcs", "scenes", "stats", …)
+--- @param panelKey string One of the STORYTELLER_PANELS keys ("scenes", "stats", …)
 --- @return boolean
 function StorytellerPanelUI.isPanelVisible(panelKey)
     local ids = STORYTELLER_PANELS[panelKey]
@@ -109,7 +108,7 @@ end
 --- Clicking the same top button again hides the content area (all toggles inactive).
 --- When `forceOpen` is true, the same-tab collapse is skipped (e.g. after `UI.setXml` when a panel was already open).
 ---
---- @param panelKey string One of: "scenes", "soundscape", "pcs", "phases", "stats", "projects"
+--- @param panelKey string One of: "scenes", "soundscape", "phases", "stats", "projects"
 --- @param forceOpen boolean|nil If true, always apply the open-panel branch (no toggle-close).
 function StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen)
     if type(panelKey) ~= "string" then

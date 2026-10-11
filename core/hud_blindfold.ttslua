@@ -353,11 +353,6 @@ function HUDBF.endTransition()
   HUDBF.clearBlindfoldsForUnoccupiedPcSeats()
   -- HO.syncAll → parent UI.hide; child defaults restore after ~3s (do not Clear mid-slide).
   HO.syncAll()
-
-  local PCST = require("core.pc_storyteller_panel")
-  if PCST ~= nil and type(PCST.refreshAllRows) == "function" then
-    PCST.refreshAllRows()
-  end
 end
 
 --- @param delaySec number

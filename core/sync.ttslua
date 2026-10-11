@@ -299,7 +299,6 @@ function Sync.player(color, opts)
     end
     callIfFunction(HO.reconcileForSeat, color)
 
-    local PCST = require("core.pc_storyteller_panel")
     local pid = C.GetPlayerIDOrNil(color)
     if pid ~= nil and pid ~= C.StorytellerID then
         -- Frenzy hides Rouse / Oblivion-Rouse bags; already-at-rest bags no-op.
@@ -307,10 +306,7 @@ function Sync.player(color, opts)
             color,
             S.getStateVal("playerData", pid, "hud", "rollData", "active")
         )
-        PCST.refreshCharacterSheetsForColor(color)
-    end
-    if U.isIn(color, C.PlayerColors) then
-        PCST.refreshRow(color)
+        require("core.character_sheets").refreshCharacterSheetsForColor(color)
     end
 
     -- Other seats were not reconciled here; let the next `Sync.full` re-check presentation.

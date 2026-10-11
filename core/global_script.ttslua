@@ -173,6 +173,7 @@ local StorytellerScenesPanel = require("core.storyteller_scenes_panel")
 local syncStorytellerPhaseButtons
 local syncDebugLastLoadClockLabel
 local syncDebugSeatColorButtons
+local syncDebugConnectionControls
 local StorytellerStatsPanel = require("core.storyteller_stats_panel")
 local StorytellerProjectsPanel = require("core.storyteller_projects_panel")
 local MemoriamModal = require("core.memoriam_modal")
@@ -181,7 +182,7 @@ local HUDP = require("core.hud_player")
 local Coterie = require("core.coterie")
 local HO = require("core.hud_overlays")
 NPCS = require("core.npcs")
-PCST = require("core.pc_storyteller_panel")
+local CharacterSheets = require("core.character_sheets")
 local DiceDrawer = require("lib.dice_drawer")
 local STD = require("lib.st_dice_drawer")
 local STDICE = require("core.st_dice")
@@ -348,7 +349,7 @@ function GlobalGetCurrentXp(playerID)
     return XpLog.getCurrentXp(playerID)
 end
 
---- Page 6 live/pagination paint for one seat (object scripts / PCST).
+--- Page 6 live/pagination paint for one seat (object scripts / CharacterSheets).
 --- @param params table|nil `{ color: string }` or bare color string
 --- @return boolean
 function GlobalPaintXpLogPage6(params)
@@ -389,11 +390,11 @@ end
 --- @return table `{ ok: boolean, text: string, class: string }`
 function GlobalSetPlayerDesire(params)
     if type(params) ~= "table" then
-        return { ok = false, text = "", class = PCST.desireInputClass("") }
+        return { ok = false, text = "", class = CharacterSheets.desireInputClass("") }
     end
     local seatColor = params.seatColor or params.color
     if type(seatColor) ~= "string" or seatColor == "" then
-        return { ok = false, text = "", class = PCST.desireInputClass("") }
+        return { ok = false, text = "", class = CharacterSheets.desireInputClass("") }
     end
     local lr = string.lower(seatColor)
     local canon = nil
@@ -404,7 +405,7 @@ function GlobalSetPlayerDesire(params)
         end
     end
     if canon == nil then
-        return { ok = false, text = "", class = PCST.desireInputClass("") }
+        return { ok = false, text = "", class = CharacterSheets.desireInputClass("") }
     end
 
     local clickerColor = params.player_color or params.clickerColor
@@ -417,16 +418,16 @@ function GlobalSetPlayerDesire(params)
         end
     end
 
-    local current = PCST.getDesireForColor(canon)
+    local current = CharacterSheets.getDesireForColor(canon)
     if not allowed then
         return {
             ok = false,
             text = current,
-            class = PCST.desireInputClass(current),
+            class = CharacterSheets.desireInputClass(current),
         }
     end
 
-    local desire = PCST.setDesireForColor(canon, params.text, { refreshSheets = false })
+    local desire = CharacterSheets.setDesireForColor(canon, params.text, { refreshSheets = false })
     if params.syncText == true then
         -- End of edit: tell the dashboard (per-keystroke updates skip the seat announcer).
         require("dashboard.push").seat(canon)
@@ -434,7 +435,7 @@ function GlobalSetPlayerDesire(params)
     return {
         ok = true,
         text = desire,
-        class = PCST.desireInputClass(desire),
+        class = CharacterSheets.desireInputClass(desire),
         syncText = params.syncText == true or desire == "",
     }
 end
@@ -3064,10 +3065,6 @@ local function refreshStorytellerPanelOnOpen(panelKey)
         Wait.frames(function()
             syncStorytellerPhaseButtons()
         end, 1)
-    elseif panelKey == "pcs" then
-        Wait.frames(function()
-            PCST.refreshAllRows()
-        end, 1)
     elseif panelKey == "soundscape" then
         Wait.frames(function()
             UpdateUIDisplays({ soundscape = true })
@@ -3290,7 +3287,7 @@ function onLoad(saved_data)
             if RSL ~= nil and type(RSL.ensureMinVisibleCsheetPagesForAllSeats) == "function" then
                 RSL.ensureMinVisibleCsheetPagesForAllSeats()
             end
-            PCST.refreshConnectionModeButton()
+            syncDebugConnectionControls()
             RUI.applyStRollUiEnabled()
             if type(DEBUG.refreshSyncTraceButton) == "function" then
                 DEBUG.refreshSyncTraceButton()
@@ -3620,40 +3617,6 @@ function HUD_statsEditorDelete(player, button, id)
     end
 end
 
-function HUD_xpLogField(player, value, id)
-    local XpModal = require("core.xp_log_modal")
-    XpModal.onField(id, value)
-end
-
-function HUD_xpLogApply(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_xpLogApply") then
-        return
-    end
-    local XpModal = require("core.xp_log_modal")
-    XpModal.apply()
-end
-
-function HUD_xpLogApplyAll(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_xpLogApplyAll") then
-        return
-    end
-    local XpModal = require("core.xp_log_modal")
-    XpModal.applyToAll()
-end
-
-function HUD_xpLogCancel(player, button, id)
-    local XpModal = require("core.xp_log_modal")
-    XpModal.close()
-end
-
-function HUD_xpLogUndo(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_xpLogUndo") then
-        return
-    end
-    local XpModal = require("core.xp_log_modal")
-    XpModal.undo()
-end
-
 --- Projects panel: select PC or Coterie target.
 function HUD_projectsTarget(player, button, id)
     if not requireStorytellerForMutation(player, "HUD_projectsTarget") then
@@ -3785,16 +3748,6 @@ function HUD_projectEditorLaunchR(player, button, id)
     end
 end
 
---- Storyteller PCs panel control buttons (id pattern pcs_<Color>_<action>).
-function HUD_pcPanel(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_pcPanel") then
-        return
-    end
-    if PCST and PCST.onHudClick then
-        PCST.onHudClick(player, button, id)
-    end
-end
-
 --- Toggle panel visibility (collapse/expand)
 -- Used by toggle buttons (toggleElem_*) in the UI
 -- @param player Player The player who clicked the button
@@ -3809,6 +3762,7 @@ function HUD_togglePanel(player, button, id)
     if elemID == "adminControlsBody" and not wasExpanded then
         syncDebugLastLoadClockLabel()
         syncDebugSeatColorButtons()
+        syncDebugConnectionControls()
     end
 end
 
@@ -3952,6 +3906,29 @@ syncDebugSeatColorButtons = function()
             }
         end
         U.setAttributes(debugSeatButtonId(seatColor), attrs)
+    end
+end
+
+local DEBUG_SIM_CONNECTED_COLORS = "#1E5A2A|#2A7038|#3A9048|rgba(0.1,0.3,0.12,0.5)"
+local DEBUG_SIM_DISCONNECTED_COLORS = "#6A1E1E|#822828|#A03434|rgba(0.35,0.1,0.1,0.5)"
+
+--- Connection Mode toggle styling + per-PC simulated connect buttons (shown only in Assume Connected mode).
+syncDebugConnectionControls = function()
+    local PlayerConnection = require("core.player_connection")
+    local assume = PlayerConnection.isAssumeConnectedMode()
+    UI.setClass(
+        "debug_connectionMode",
+        assume and "hud_storyteller_button toggled_active" or "hud_storyteller_button toggled_inactive"
+    )
+    UI.setAttribute("debug_simConnectRow", "active", assume and "true" or "false")
+    if not assume then
+        return
+    end
+    for _, color in ipairs(C.PlayerColors) do
+        U.setAttributes("debugSimConn_" .. color, {
+            colors = PlayerConnection.isSimulatedConnected(color) and DEBUG_SIM_CONNECTED_COLORS
+                or DEBUG_SIM_DISCONNECTED_COLORS,
+        })
     end
 end
 
@@ -4696,7 +4673,7 @@ function HUD_sessionNumInput(player, value, id)
     end
     UpdateUIDisplays({ phase = true, gameStateOverlay = true })
     syncStorytellerPhaseButtons()
-    PCST.refreshAllCharacterSheets()
+    CharacterSheets.refreshAllCharacterSheets()
 end
 
 --- Session name InputField (TOR-98). Shown on the End overlay datetime row.
@@ -4844,55 +4821,20 @@ function HUD_phaseRestoreJoinEmitters(player, button, id)
     }, { "warmEmitters", "done" })
 end
 
---- PCs panel: persist Defer Auto-Seat per seat color. TOR-428.
-function HUD_pcsDeferAutoSeat(player, value, id)
-    if not requireStorytellerForMutation(player, "HUD_pcsDeferAutoSeat") then
-        return
-    end
-    local color = type(id) == "string" and id:match("^pcs_deferAutoSeat_(%a+)$") or nil
-    if color == nil or not U.isIn(color, C.PlayerColors) then
-        return
-    end
-    local on = coerceUiToggleBool(value)
-    if on == nil then
-        return
-    end
-    S.setStateVal(on, "connectionControls", "deferAutoSeatByColor", color)
-    print(string.format("[JoinControls] Defer Auto-Seat %s = %s", color, tostring(on)))
-    Sync.player(color)
-end
-
---- PCs panel: persist Defer Connect per seat color. TOR-430.
-function HUD_pcsDeferConnect(player, value, id)
-    if not requireStorytellerForMutation(player, "HUD_pcsDeferConnect") then
-        return
-    end
-    local color = type(id) == "string" and id:match("^pcs_deferConnect_(%a+)$") or nil
-    if color == nil or not U.isIn(color, C.PlayerColors) then
-        return
-    end
-    local on = coerceUiToggleBool(value)
-    if on == nil then
-        return
-    end
-    S.setStateVal(on, "connectionControls", "deferConnectByColor", color)
-    print(string.format("[JoinControls] Defer Connect %s = %s", color, tostring(on)))
-    Sync.player(color)
-end
-
---- PCs panel (Assume Connected mode only): simulate this PC connecting / disconnecting (TOR-293).
+--- Debug column (Assume Connected mode only): simulate one PC connecting / disconnecting (TOR-293).
 --- Connect seats them at once; disconnect darkens until the next connection checkpoint.
-function HUD_pcsToggleSimulatedConnection(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_pcsToggleSimulatedConnection") then
+function HUD_debugToggleSimulatedConnection(player, button, id)
+    if not requireStorytellerForMutation(player, "HUD_debugToggleSimulatedConnection") then
         return
     end
-    local color = type(id) == "string" and id:match("^pcs_(%a+)_connection$") or nil
+    local color = type(id) == "string" and id:match("^debugSimConn_(%a+)$") or nil
     if color == nil or not U.isIn(color, C.PlayerColors) then
         return
     end
     local PlayerConnection = require("core.player_connection")
     PlayerConnection.simulateSeatConnection(color, not PlayerConnection.isSimulatedConnected(color))
     Sync.player(color)
+    syncDebugConnectionControls()
 end
 
 --- Reset game state
@@ -5125,8 +5067,7 @@ function HUD_toggleConnectionMode(player, button, id)
     local PlayerConnection = require("core.player_connection")
     local on = not PlayerConnection.isAssumeConnectedMode()
     PlayerConnection.switchAssumeConnectedMode(on)
-    PCST.refreshConnectionModeButton()
-    PCST.refreshAllRows()
+    syncDebugConnectionControls()
     broadcastToColor(
         string.format("Connection mode: %s", on and "Assume Connected" or "By Connection Status"),
         player.color,
@@ -5662,7 +5603,7 @@ end
 -- Called after state changes (phase, scene, etc.)
 -- Exposed globally for testing/debugging.
 -- Optional `delta` flags allow targeted refreshes:
---   phase, scene, adminLighting, soundscape, playerHud, overlays, pcstRows, pcstSheets, gameStateOverlay
+--   phase, scene, adminLighting, soundscape, playerHud, overlays, pcstSheets, gameStateOverlay
 -- Optional `delta.colors` — array of seat color strings; when set, `playerHud` loops only those seats.
 -- When omitted, all sections refresh (legacy behavior).
 -- @param delta table|nil
@@ -5712,6 +5653,7 @@ function UpdateUIDisplays(delta)
 
     if refreshAll or wants("debugSeatColors") then
         syncDebugSeatColorButtons()
+        syncDebugConnectionControls()
     end
     if wants("scenesPanel") then
         if StorytellerScenesPanel and StorytellerScenesPanel.refresh then
@@ -5752,13 +5694,9 @@ function UpdateUIDisplays(delta)
         HO.syncAll()
     end
 
-    if wants("pcstRows") and PCST and PCST.refreshAllRows then
-        PCST.refreshAllRows()
-    end
-
-    if wants("pcstSheets") and PCST and PCST.refreshAllCharacterSheets then
+    if wants("pcstSheets") then
         -- Undelta'd UpdateUIDisplays is the repair path: bypass sheet slice fingerprints.
-        PCST.refreshAllCharacterSheets(refreshAll and { force = true } or nil)
+        CharacterSheets.refreshAllCharacterSheets(refreshAll and { force = true } or nil)
     end
 
     if refreshAll or wants("gameStateOverlay") or wants("phase") or wants("scenesPanel") then

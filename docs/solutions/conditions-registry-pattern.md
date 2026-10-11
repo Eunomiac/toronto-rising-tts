@@ -64,7 +64,7 @@ Each id must have **`canApplyManually = true`**. Stat vs roll behavior is define
 - **Present** (`L.isPlayerPresentInActiveSeatLayout`) — add missing hosted keys when optional `derive(stats, …)` passes; remove keys no longer listed or failing derive.
 - **Absent** — remove session-hosted stat/roll conditions (not UI toggles like `hudFrenzy`).
 
-Pass `{ skipPresentation = true }` when the caller runs `Sync.full` immediately afterward (scene apply, location apply, table switch, load). The caller must also run `PCST.refreshAllCharacterSheets()` after `Sync.full` (`StorytellerScenesPanel.reconcileHostedSyncAndPresentSheets`).
+Pass `{ skipPresentation = true }` when the caller runs `Sync.full` immediately afterward (scene apply, location apply, table switch, load). The caller must also run `CharacterSheets.refreshAllCharacterSheets()` after `Sync.full` (`StorytellerScenesPanel.reconcileHostedSyncAndPresentSheets`).
 
 Triggers: location Apply, scene library apply, End scene, seat presence toggle, table switch, game load.
 

@@ -12,7 +12,7 @@ local C = require("lib.constants")
 local S = require("core.state")
 local P = require("lib.pc_stats")
 local PCS = require("lib.pcs_data")
-local PCST = require("core.pc_storyteller_panel")
+local CharacterSheets = require("core.character_sheets")
 local PSC = require("lib.pc_sheet_collect")
 local Conditions = require("core.conditions")
 local Sync = require("core.sync")
@@ -515,7 +515,7 @@ local function snapshotSeat(color, includePlayerData)
   local charKey = catalog and catalog.charKey or ""
   local identity = identityFromPcs(charKey, catalog)
   local overlay = type(pid) == "string" and S.getStateVal("playerData", pid, "sheetOverlay") or nil
-  local ambition = PCST.normalizeDesire(type(pid) == "string" and S.getStateVal("playerData", pid, "ambition") or "")
+  local ambition = CharacterSheets.normalizeDesire(type(pid) == "string" and S.getStateVal("playerData", pid, "ambition") or "")
   local seat = {
     color = color,
     playerId = pid,
@@ -531,7 +531,7 @@ local function snapshotSeat(color, includePlayerData)
     embracePlace = overlayString(overlay, "embracePlace", identity.embracePlace),
     embraceYear = overlayNumber(overlay, "embraceYear", identity.embraceYear),
     convictions = overlayStringList(overlay, "convictions", identity.convictions),
-    desire = PCST.normalizeDesire(type(pid) == "string" and S.getStateVal("playerData", pid, "desire") or ""),
+    desire = CharacterSheets.normalizeDesire(type(pid) == "string" and S.getStateVal("playerData", pid, "desire") or ""),
     ambition = ambition,
     absentFromSession = U.Type(seatRow) == "table" and seatRow.absentFromSession == true,
     connected = require("core.player_connection").isSeatConnected(color),
@@ -657,7 +657,7 @@ local function applyCommand(cmd)
     return nil
   end
   if op == "desire" then
-    PCST.setDesireForColor(color, cmd.text)
+    CharacterSheets.setDesireForColor(color, cmd.text)
     return nil
   end
   if op == "torporClear" then

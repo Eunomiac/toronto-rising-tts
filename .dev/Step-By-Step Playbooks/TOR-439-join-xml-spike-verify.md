@@ -67,7 +67,6 @@ Fixture seat below: **Purple**. Edit `FIXTURE.joinColor` in Code Block 0 if the 
 | Defer triad for join color | `connectionControls.deferSetXml` + `deferAutoSeatByColor` + `deferConnectByColor` |
 | Clear join-XML arm         | `joinXmlArmed = false`                                                            |
 | Open Phases chrome         | Toolbar body + `HUD_selectStorytellerPanel` → phases                              |
-| PCs row toggles            | `PCST.refreshAllRows()`                                                           |
 
 
 ## Run order
@@ -144,9 +143,6 @@ U.chain({
       UI.setAttribute("storytellerContentArea", "active", "true")
     end
     HUD_selectStorytellerPanel(Player["Black"], nil, "toggle_phases", true)
-    if PCST ~= nil and type(PCST.refreshAllRows) == "function" then
-      PCST.refreshAllRows()
-    end
     U.setAttributes("phase_deferSetXml", { isOn = true })
     if UI ~= nil and UI.setAttribute ~= nil then
       UI.setAttribute("phase_joinXmlStatus", "text", "Join XML: full")
@@ -247,9 +243,6 @@ U.chain({
       UI.setAttribute("storytellerContentArea", "active", "true")
     end
     HUD_selectStorytellerPanel(Player["Black"], nil, "toggle_phases", true)
-    if PCST ~= nil and type(PCST.refreshAllRows) == "function" then
-      PCST.refreshAllRows()
-    end
     U.setAttributes("phase_deferSetXml", { isOn = true })
     if UI ~= nil and UI.setAttribute ~= nil then
       UI.setAttribute("phase_joinXmlStatus", "text", "Join XML: full")

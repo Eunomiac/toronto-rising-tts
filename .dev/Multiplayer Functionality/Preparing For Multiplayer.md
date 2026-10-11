@@ -106,7 +106,7 @@ When touching these areas, verify P1–P10 and run solo smoke (one Dashboard sta
 | **Dice / rolls** | `HUD_roll*`, `GlobalDiceBagClick`, `GlobalSpawn*`, `GlobalReleaseBagDice`, `onObjectRandomize`, `objects/dice_bag.ttslua` `onLoad`, `core/roll_controller.ttslua` | PC roll clicks use `Global.call`; bag onLoad destroy via Global |
 | **Signal candle / tarot** | `ui/ui_signal_candle.ttslua` → `GlobalToggleSignalFireState`, `ui/ui_tarot_button.ttslua` → `GlobalApplyTarotState` | Global callee steam-gates ST-only actions |
 | **Character sheet** | `ui/ui_csheet_core.ttslua` → `Global.call` mutators; onLoad layout | Steam gate on ST-only mutators |
-| **ST PCs / debug lights** | `HUD_pcPanel`, `HUD_debugLightActivate/Enabled/ResetRow/Slider` | ST steam gate |
+| **ST debug connection / lights** | `HUD_debugToggleSimulatedConnection`, `HUD_debugLightActivate/Enabled/ResetRow/Slider` | ST steam gate |
 | **Player connect / seat** | `onPlayerConnect`, `onPlayerChangeColor`, `M.tryAutoAssignSeatFromChronicle`, `M.assignAllConnectedSeatsFromChronicle` (load via `M.setupPlayers`) | Steam ID → `C.PlayerData[steam].color` (ST → Black); unregistered → White; Intermission keeps blindfold up, other phases call `Phases.lowerBlindfoldForConnectingPlayer` (TOR-345 / TOR-319) |
 
 ### 1.4 Pre-flight checklist for every new handler

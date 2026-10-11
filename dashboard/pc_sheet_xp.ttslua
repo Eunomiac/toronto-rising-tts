@@ -1,14 +1,22 @@
 --[[
   Storyteller Dashboard PCs tab — Experience Log ops (Page 1 XP jewel, Page 6) and the
-  `lastXpEntry` snapshot field. Same writes as the TTS XP popup (core.xp_log_modal):
-  entries always land in the current `gameState.sessionNum` block.
+  `lastXpEntry` snapshot field. Entries go through core.xp_log and
+  always land in the current `gameState.sessionNum` block.
 ]]
 
 local M = {}
 
 local C = require("lib.constants")
 local XpLog = require("core.xp_log")
-local XpModal = require("core.xp_log_modal")
+local Sync = require("core.sync")
+
+--- Announce each seat after Experience Log writes.
+--- @param colors string[]
+local function announceSeats(colors)
+  for i = 1, #colors do
+    Sync.player(colors[i])
+  end
+end
 
 local function charName(color, pid)
   local catalog = C.PlayerData[pid]
@@ -52,11 +60,11 @@ M.ops.xpAppend = function(color, pid, cmd)
   if err ~= nil then
     return err
   end
-  XpModal.refreshAfterMutation({ color })
+  announceSeats({ color })
   return nil
 end
 
---- Every seat except disconnected PCs (`absentFromSession`), like the TTS Apply to All.
+--- Every seat except disconnected PCs (`absentFromSession`).
 M.ops.xpAppendAll = function(_color, _pid, cmd)
   local ok, err = XpLog.validateEntry(cmd.amount, cmd.description)
   if not ok then
@@ -75,7 +83,7 @@ M.ops.xpAppendAll = function(_color, _pid, cmd)
   if #touched == 0 then
     return "No connected PCs to give XP to"
   end
-  XpModal.refreshAfterMutation(touched)
+  announceSeats(touched)
   return nil
 end
 
@@ -88,7 +96,7 @@ M.ops.xpUndo = function(color, pid, cmd)
   if not ok then
     return err or "Nothing to undo"
   end
-  XpModal.refreshAfterMutation({ color })
+  announceSeats({ color })
   return nil
 end
 
@@ -109,7 +117,7 @@ M.ops.xpUndoAll = function(_color, _pid, cmd)
   if #touched == 0 then
     return "Nothing to undo"
   end
-  XpModal.refreshAfterMutation(touched)
+  announceSeats(touched)
   return nil
 end
 

@@ -1,0 +1,151 @@
+--[[
+    Character sheet (CSHEET) refresh + PC Desire helpers.
+    Sheet refresh is fingerprinted per seat and page (`core.csheet_slices`); `Sync.player` calls
+    `refreshCharacterSheetsForColor`. Desire writes come from CSHEET page 1 (`GlobalSetPlayerDesire`)
+    and the Storyteller Dashboard.
+]]
+---@diagnostic disable: undefined-global
+local CharacterSheets = {}
+local C = require("lib.constants")
+local S = require("core.state")
+local Sync = require("core.sync")
+local CI = require("lib.csheet_identity")
+local CSL = require("core.csheet_slices")
+local HUDP = require("core.hud_player")
+
+--- Last refreshed slice fingerprint per seat color and page (`CSL.compute`).
+--- @type table<string, table<number, string>>
+local lastSheetSliceFp = {}
+
+--- Forget sheet slice fingerprints so the next refresh calls every page (one color, or all).
+--- @param seatColor string|nil
+function CharacterSheets.invalidateCharacterSheetCache(seatColor)
+  if type(seatColor) == "string" then
+    lastSheetSliceFp[seatColor] = nil
+  else
+    lastSheetSliceFp = {}
+  end
+end
+
+--- Refresh the CSHEET pages for a seat color whose slice changed since the last refresh.
+--- Page 3 gets `forceRebuild` when its slice changed, because its own fingerprint cannot see
+--- project stake quantities.
+--- @param seatColor string e.g. "Brown"
+--- @param opts table|nil `{ force = true }` calls every page regardless of slice fingerprints
+function CharacterSheets.refreshCharacterSheetsForColor(seatColor, opts)
+  if type(seatColor) ~= "string" then
+    return
+  end
+  local tag = CI.seatColorObjectTag(seatColor)
+  if tag == nil then
+    return
+  end
+  local force = type(opts) == "table" and opts.force == true
+  local slices = CSL.compute(seatColor)
+  local prev = lastSheetSliceFp[seatColor]
+  local changed = {}
+  local anyChanged = false
+  for _, pageNum in ipairs(CSL.PAGES) do
+    local now = slices ~= nil and slices[pageNum] or nil
+    if force or slices == nil or prev == nil or prev[pageNum] ~= now then
+      changed[pageNum] = true
+      anyChanged = true
+    end
+  end
+  lastSheetSliceFp[seatColor] = slices
+  local changedList = {}
+  for _, pageNum in ipairs(CSL.PAGES) do
+    if changed[pageNum] then
+      changedList[#changedList + 1] = tostring(pageNum)
+    end
+  end
+  require("lib.sync_trace").report("CharacterSheets.refreshCharacterSheetsForColor", {
+    color = seatColor,
+    pages = anyChanged and table.concat(changedList, ",") or "none",
+    outcome = anyChanged and "ran" or "skipped",
+  })
+  if anyChanged then
+    local tagged = getObjectsWithTag(tag)
+    if type(tagged) == "table" then
+      for _, obj in ipairs(tagged) do
+        if obj ~= nil then
+          local pageNum, pageColor = CI.readPageRoleFromObject(obj)
+          if type(pageColor) == "string" and changed[pageNum]
+              and CI.seatColorMatchesPageRole(seatColor, pageColor) then
+            if pageNum == 3 and prev ~= nil then
+              obj.call("refreshFromGameState", { forceRebuild = true })
+            else
+              obj.call("refreshFromGameState")
+            end
+          end
+        end
+      end
+    end
+  end
+  HUDP.reconcilePrincesCourtTrackersForPanelSeat(seatColor)
+end
+
+--- Refresh every seat's CSHEET objects (after scene/location reconcile with skipPresentation).
+--- @param opts table|nil passed to `refreshCharacterSheetsForColor`
+function CharacterSheets.refreshAllCharacterSheets(opts)
+  for _, col in ipairs(C.PlayerColors or {}) do
+    CharacterSheets.refreshCharacterSheetsForColor(col, opts)
+  end
+end
+
+--- Normalize Desire text: whitespace-only → "" (TOR-97).
+--- @param raw any
+--- @return string
+function CharacterSheets.normalizeDesire(raw)
+  if type(raw) ~= "string" then
+    return ""
+  end
+  local trimmed = string.match(raw, "^%s*(.-)%s*$") or ""
+  if trimmed == "" then
+    return ""
+  end
+  return trimmed
+end
+
+--- Full class list for page1 Desire InputField (passed to UI.setClass as the names arg).
+--- Unset → "player_desire player_desire_unset"; set → "player_desire" (TOR-97).
+--- @param desire string|nil
+--- @return string
+function CharacterSheets.desireInputClass(desire)
+  if CharacterSheets.normalizeDesire(desire) == "" then
+    return "player_desire player_desire_unset"
+  end
+  return "player_desire"
+end
+
+--- Read stored Desire for a seat (nil/missing → "").
+--- @param color string
+--- @return string
+function CharacterSheets.getDesireForColor(color)
+  local pid = C.GetPlayerID(color)
+  if pid == nil or pid == C.StorytellerID then
+    return ""
+  end
+  return CharacterSheets.normalizeDesire(S.getStateVal("playerData", pid, "desire"))
+end
+
+--- Persist Desire and announce the seat (`Sync.player`).
+--- @param color string
+--- @param rawText any
+--- @param opts table|nil `{ refreshSheets = false }` — typing in the CSHEET Desire field: that page
+---   already shows the text, so there is no per-keystroke seat announce
+--- @return string normalized desire
+function CharacterSheets.setDesireForColor(color, rawText, opts)
+  local pid = C.GetPlayerID(color)
+  if pid == nil or pid == C.StorytellerID then
+    return ""
+  end
+  local desire = CharacterSheets.normalizeDesire(rawText)
+  S.setStateVal(desire, "playerData", pid, "desire")
+  if not (type(opts) == "table" and opts.refreshSheets == false) then
+    Sync.player(color)
+  end
+  return desire
+end
+
+return CharacterSheets

@@ -19,7 +19,6 @@ ui/
     panel_sidebar.xml             → Right sidebar (reference image toggles + popup images)
     panel_scenes.xml              → Reserved (empty stub)
     panel_soundscape.xml          → Storyteller soundscape controls (music mood, inspect, stop)
-    panel_pcs.xml                 → Storyteller PCs panel (health / will / humanity / XP / hunger)
     panel_phases.xml              → Reserved (empty stub)
 
   player/

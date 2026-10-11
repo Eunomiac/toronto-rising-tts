@@ -11,7 +11,7 @@ Source of truth:
 - `core/state.ttslua`
 - `lib/json/PCS.json`
 - `lib/pcs_data.ttslua`
-- `core/pc_storyteller_panel.ttslua`
+- `core/character_sheets.ttslua`
 - `ui/ui_csheet*.ttslua`
 - `.dev/PC Data & Tracking/Conditions System Guide.md`
 
@@ -60,8 +60,8 @@ The steam ID numbers (used as keys in the `playerData` table) are stored in the 
 
 - **Type:** string. Missing/nil normalizes to `""`.
 - **Unset:** whitespace-only input is stored as `""`. Sheet InputField class becomes `player_desire player_desire_unset`.
-- **Mutation:** page1 CSHEET `onValueChanged` / `onEndEdit` → `GlobalSetPlayerDesire` (seat owner or Storyteller steam); ST PCs panel **Clear** → `pcs_<Color>_desireClear` via `HUD_pcPanel`.
-- **UI sync:** ST row `pcs_desire_<Color>` + page1 `player_desire` text/class (no `Sync.full`).
+- **Mutation:** page1 CSHEET `onValueChanged` / `onEndEdit` → `GlobalSetPlayerDesire` (seat owner or Storyteller steam); Storyteller Dashboard PCs tab `desire` op → `CharacterSheets.setDesireForColor`.
+- **UI sync:** page1 `player_desire` text/class (no `Sync.full`).
 
 ### `playerData.ambition`
 
@@ -484,9 +484,9 @@ Hunger is stored under **`stats.hunger`**. The Storyteller panel includes Hunger
 
 ## Storyteller Controls
 
-The Storyteller **PCs** pop-out panel (`ui/storyteller/panel_pcs.xml`) hosts per-player controls.
+Per-player Storyteller controls live on the Storyteller Dashboard **PCs** tab (`dashboard/pc_sheet.ttslua` ops: damage, humanity, hunger, Desire, Torpor, Frenzy, blindfold, XP, Defer Auto-Seat / Defer Connect). The in-game PCs pop-out panel and XP popup were retired (TOR-721). Assume Connected per-seat simulated connect buttons sit in the Storyteller **Debug** column (`HUD_debugToggleSimulatedConnection`).
 
-There are five PCs, each of which should occupy a single vertically-spaced row in the PCs panel. This panel should display the player's name, and a vertical bar indicating their player color.  Each player cell should contain the following:
+The original in-game panel spec below is kept for the damage/healing rules it defines; the button layout it describes no longer exists in TTS.
 
 ### Health & Willpower Controls
 

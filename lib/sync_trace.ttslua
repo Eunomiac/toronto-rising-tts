@@ -63,7 +63,7 @@ local function targetList()
     local Projects = require("core.projects")
     local SceneLibrary = require("core.scene_library")
     local Phases = require("core.phases")
-    local PCST = require("core.pc_storyteller_panel")
+    local CharacterSheets = require("core.character_sheets")
     local CSL = require("core.csheet_slices")
     local Conditions = require("core.conditions")
     local DBV = require("lib.dice_bag_visibility")
@@ -111,10 +111,8 @@ local function targetList()
         { Projects, "reconcileCourtProjectsAll", "Projects.reconcileCourtProjectsAll" },
         { SceneLibrary, "mirrorActiveLibrarySessionSceneFromLiveIfLinked", "SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked" },
         { Phases, "reconcileParticleEmitterFromPhase", "Phases.reconcileParticleEmitterFromPhase" },
-        { PCST, "refreshCharacterSheetsForColor", "PCST.refreshCharacterSheetsForColor" },
-        { PCST, "refreshAllCharacterSheets", "PCST.refreshAllCharacterSheets" },
-        { PCST, "refreshRow", "PCST.refreshRow" },
-        { PCST, "refreshAllRows", "PCST.refreshAllRows" },
+        { CharacterSheets, "refreshCharacterSheetsForColor", "CharacterSheets.refreshCharacterSheetsForColor" },
+        { CharacterSheets, "refreshAllCharacterSheets", "CharacterSheets.refreshAllCharacterSheets" },
         { CSL, "compute", "CSL.compute" },
         { Conditions, "afterChange", "Conditions.afterChange" },
         { DBV, "reconcileForPlayer", "DBV.reconcileForPlayer" },

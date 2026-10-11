@@ -121,7 +121,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | Group | Examples | Tier | ST steam gate | TOR-144 |
 | --- | --- | --- | --- | --- |
 | UI-only | `HUD_togglePanel`, `HUD_selectStorytellerPanel`, modals, `HUD_show`/`hide`, roll opts open/cancel | A | — | — |
-| ST state+world | soundscape, scenes apply, `HUD_resetGame`, `HUD_syncAll`, `HUD_pcPanel` | B+C | Yes | D |
+| ST state+world | soundscape, scenes apply, `HUD_resetGame`, `HUD_syncAll` | B+C | Yes | D |
 | Roll | `HUD_roll*` | B (+ `Global.call` for C) | Partial | C |
 | Debug world | `HUD_debugLightActivate/ButtonClick/Slider`, `HUD_toggleAllAnchors/Spotlights` | C | Yes | — |
 | Debug read/UI | `HUD_debugLightGuidInput`, `HUD_debugLightDone/Snapshot`, camera capture, `HUD_toggleRunTestPanel`, `HUD_runtest`, `HUD_runtest_step`, `HUD_STcamera` | A | Yes (RunTest / ST camera) | — |
@@ -135,8 +135,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | Handler | Tier | ST steam | Notes |
 | --- | --- | --- | --- |
 | `HUD_selectStorytellerPanel` | A | — | panel visibility; repaints the panel on open only (closing click skips refresh). Toolbar hotkey repaints the selected panel when it shows the toolbar body (TOR-678) |
-| `HUD_pcPanel` | B+C | Yes | PCs tracker apply; Desire Clear (`pcs_<Color>_desireClear`, TOR-97) |
-| `HUD_pcsToggleSimulatedConnection` | B+C | Yes | Assume Connected debug mode only: per-seat simulated connect (seats PC immediately) / disconnect (darken only) via `PlayerConnection.simulateSeatConnection` |
+| `HUD_debugToggleSimulatedConnection` | B+C | Yes | Debug column, Assume Connected mode only: per-seat simulated connect (seats PC immediately) / disconnect (darken only) via `PlayerConnection.simulateSeatConnection` |
 | `HUD_toggleConnectionMode` | B+C | Yes | Debug panel: persisted `debug.assumeConnected`; seats newly connected PCs once, then one relayout (`PlayerConnection.switchAssumeConnectedMode`) |
 | `HUD_toggleSyncTrace` | A | Yes | Debug panel: persisted `debug.syncTraceEnabled`; grey off / yellow on; on installs timing wrappers on sync targets, off removes them and prints the summary; host `[SyncTrace]` prints only (TOR-634, TOR-657) |
 | `HUD_toggleStRollUi` | A+B | Yes | Debug panel: persisted `storytellerRolls.inGameUi`; grey off / green on. In-game ST roll panels are a dashboard fallback and do no UI work while off; on repaints them once (`RUI.applyStRollUiEnabled`) (TOR-687) |
@@ -146,8 +145,6 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_statsTarget` / `HUD_statsBack` | A | — | Stats panel navigation |
 | `HUD_statsAdd` / `HUD_statsEdit` / `HUD_statsEditRating` / `HUD_statsEditorConfirm` / `HUD_statsEditorDelete` | B+C | Yes | advantage mutations |
 | `HUD_statsEditorField` / `HUD_statsEditorCancel` | A | — | draft stash / close |
-| `HUD_xpLogField` / `HUD_xpLogCancel` | A | — | XP modal draft / close (TOR-92) |
-| `HUD_xpLogApply` / `HUD_xpLogApplyAll` / `HUD_xpLogUndo` | B | Yes | XP log mutate + sheet live paint (TOR-92) |
 | `onXpLogNavigateForward` / `onXpLogNavigateBack` | A | — | CSHEET page 6 pagination (object XmlUI) |
 | `onPageForward` / `onPageBack` (page 6 hide) | B | — | Turning page 6 off the table calls `GlobalResetXpLogPage` so the experience log reopens on the newest session (TOR-645). Show still paints via `GlobalPaintXpLogPage6`, using the moved page's GM Notes. |
 | `HUD_projectsTarget` / `HUD_projectsBack` | A | — | Projects panel navigation |
@@ -259,7 +256,7 @@ Snap default cameras **after** layout has written seat `cameraAngles` (including
 | Global overlay show | `global_script.showStartupLoadingOverlays` | after `UI.show(overlay_globalBlindfold_panel)`, then `U.await(1.5)` |
 | Staged scene transition (Apply / End) | `HUDBF.runStagedTransition` | After TOR-434 lead-in (~5.0s) + ambient fade-out (~1s); heavy Sync/table work first, then `M.snapDefaultCamerasAfterLayout` (TOR-368 / TOR-603 occupied-seat Storyteller copy). `beginTransition` arms UI only (no early camera await). |
 | Simple / lead-in transition settle | `HUDBF.scheduleEnd` | When settle delay > 0, snap default cameras at the start of the settle wait (after work). |
-| PCs panel Blind toggle on | `PCST` `blindfoldToggle` | after `Conditions.setManual(hudBlindfold)`, then `U.await(1.5)` |
+| Dashboard PCs blindfold toggle on | `dashboard/pc_sheet.ttslua` `toggleBlindfold` | after `Conditions.setManual(hudBlindfold)`, then `U.await(1.5)` |
 | Scatter world apply | `ScatterMode.applyWorldLayout` | After group-origin rigs + `RSL.applyCameraModesFromComputed` (same camera writer as wood tables). Immediate; no cover. |
 
 Lift paths may still reset cameras while the blindfold is down via `scheduleEnd` when a positive settle delay is used.

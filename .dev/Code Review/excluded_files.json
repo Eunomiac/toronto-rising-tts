@@ -11,7 +11,6 @@
     { "path": "core/main.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "core/npcs.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "core/objects.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
-    { "path": "core/pc_storyteller_panel.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "core/scenes.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "core/storyteller_panel_ui.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "core/state.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },

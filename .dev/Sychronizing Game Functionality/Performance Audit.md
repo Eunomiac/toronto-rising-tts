@@ -60,7 +60,7 @@ Resolved:
 
 - `core/storyteller_scenes_panel.ttslua`: live scene apply, table switch, seat-presence, location apply, and clock apply no longer repeat `StorytellerScenesPanel.refresh()` immediately after `Sync.full`; seat-presence no longer follows `Sync.full` with a second broad `UpdateUIDisplays({ playerHud = true })`.
 - `core/sync.ttslua`: top fog is owned by the explicit scene phase during `Sync.full`; seat presentation still reconciles top fog when called outside that full pass.
-- `core/conditions.ttslua` and `core/storyteller_scenes_panel.ttslua`: hosted-condition reconciliation reports changed seat colors so post-sync CSHEET refreshes use `PCST.refreshCharacterSheetsForColor` instead of scanning every player color.
+- `core/conditions.ttslua` and `core/storyteller_scenes_panel.ttslua`: hosted-condition reconciliation reports changed seat colors so post-sync CSHEET refreshes use `CharacterSheets.refreshCharacterSheetsForColor` instead of scanning every player color.
 
 Deferred:
 
@@ -134,7 +134,7 @@ The CONTROL_BOARD Apply / Clear / token-drop paths and their profilers were reti
 **Top call sites**
 
 1. `RC._applyRollConsequences` rouse hunger mutation -> `Sync.player(color)`: `core/roll_controller.ttslua:1183-1194`.
-2. `PCST.onHudClick` hunger apply -> `Sync.player(color)`: `core/pc_storyteller_panel.ttslua:261-269`.
+2. Dashboard hunger op -> `Sync.player(color)`: `dashboard/pc_sheet.ttslua` (the in-game PCs panel was retired in TOR-721).
 3. `P.applyActiveConditionPresentation` condition lighting/overlay update -> `Sync.player(col)`: `lib/pc_stats.ttslua:406-422`.
 4. `DEBUG.setHungerAndSync` -> `Sync.player(color)`: `core/debug.ttslua:41-43`.
 5. `Sync.player` itself is the central fan-out: `core/sync.ttslua:62-88`.
@@ -264,7 +264,7 @@ The CONTROL_BOARD Apply / Clear / token-drop paths and their profilers were reti
 
 ## 6. `UpdateUIDisplays` broad deltas and full refresh fallbacks
 
-**Symptom:** `UpdateUIDisplays(delta)` is already delta-aware, but several callers still use full refresh or deltas that fan out to every player. Full refresh includes phase, scene, admin lighting, scenes panel, soundscape, all player stats/HUDs, overlays, NPC admin button, PCST rows/sheets, and game-state overlay.
+**Symptom:** `UpdateUIDisplays(delta)` is already delta-aware, but several callers still use full refresh or deltas that fan out to every player. Full refresh includes phase, scene, admin lighting, scenes panel, soundscape, all player stats/HUDs, overlays, NPC admin button, character sheets, and game-state overlay.
 
 **Evidence**
 

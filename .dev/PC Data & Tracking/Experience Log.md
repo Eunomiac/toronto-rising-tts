@@ -8,7 +8,7 @@ Experience log items will be grouped by session. With the exception of the curre
 
 Our current system of treating player XP as a simple number that can increase or decrease is replaced with a more detailed record of gains and spends stored in each player's game state data.
 
-On the PCs panel, the up, down and apply buttons (as well as the "+#" readout between them) will be replaced with a single button labeled "XP". When clicked, a popup modal will be presented to the Storyteller. It will list the name of the character for whom the modal was opened at the top, and it will have two input fields: One for the number (with negative numbers representing spends), and one for the description. At the bottom of the modal, there will be three buttons: "Apply", which validates and logs the XP entry to that player's state data; "Cancel", which closes the modal without making any changes; and "Apply to All", which will validate the data as with Apply, but it will log the entry to ALL players EXCEPT those who are marked as absent from the session.
+*(Historical spec — the in-game PCs panel and XP popup were retired in TOR-721; the dashboard Experience popup below replaces them.)* On the PCs panel, the up, down and apply buttons (as well as the "+#" readout between them) will be replaced with a single button labeled "XP". When clicked, a popup modal will be presented to the Storyteller. It will list the name of the character for whom the modal was opened at the top, and it will have two input fields: One for the number (with negative numbers representing spends), and one for the description. At the bottom of the modal, there will be three buttons: "Apply", which validates and logs the XP entry to that player's state data; "Cancel", which closes the modal without making any changes; and "Apply to All", which will validate the data as with Apply, but it will log the entry to ALL players EXCEPT those who are marked as absent from the session.
 
 ## Player Data Record in `state`
 
@@ -32,11 +32,11 @@ If an entry already exists in the player's data for the current session number, 
 
 ### Modal Undo
 
-The XP modal shows the most recent entry for the current session with an **Undo** button. Each Undo removes the last row from the bin that was most recently appended (`gains` or `spends`). Gains and spends are independent columns — there is no interleaved timeline of when each was logged relative to the other.
+The dashboard Experience popup shows the most recent entry for the current session with an **Undo** button. Each Undo removes the last row from the bin that was most recently appended (`gains` or `spends`). Gains and spends are independent columns — there is no interleaved timeline of when each was logged relative to the other.
 
 ### Storyteller Dashboard
 
-The dashboard PCs tab shows the full log on its Page 6 (all sessions, newest first, the current session highlighted) and adds entries from an **Experience** popup opened by the XP jewel on Page 1 or Page 6. The popup sends `xpAppend`, `xpAppendAll` (every PC except disconnected ones, same as Apply to All), `xpUndo` and `xpUndoAll` through `dashboard/pc_sheet_xp.ttslua`, which calls `XpLog.appendEntry` / `undoLastEntry` and the same after-change refresh as the TTS popup (`xp_log_modal.refreshAfterMutation`). Undo carries the expected entry and is refused if the latest entry changed in TTS meanwhile. Banked XP on the jewel is the latest session's `newTotal` (`bankedXpFromLog`); there is no scalar XP write path.
+The dashboard PCs tab shows the full log on its Page 6 (all sessions, newest first, the current session highlighted) and adds entries from an **Experience** popup opened by the XP jewel on Page 1 or Page 6. The popup sends `xpAppend`, `xpAppendAll` (every PC except disconnected ones, same as Apply to All), `xpUndo` and `xpUndoAll` through `dashboard/pc_sheet_xp.ttslua`, which calls `XpLog.appendEntry` / `undoLastEntry` then announces each touched seat with `Sync.player(color)` (sheets, overlays and dashboard push). The old in-game XP popup was retired (TOR-721); the dashboard is the only XP entry surface. Undo carries the expected entry and is refused if the latest entry changed in TTS meanwhile. Banked XP on the jewel is the latest session's `newTotal` (`bankedXpFromLog`); there is no scalar XP write path.
 
 ### Ids and bake
 

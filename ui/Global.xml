@@ -67,7 +67,6 @@
 <Panel id="HUD_PANEL_BLACK" class="hud_root_panel" visibility="Black|Host">
   <!-- 3a. Storyteller HUD defaults -->
   <Include src="storyteller/hud_storyteller_defaults.xml" />
-  <Include src="storyteller/panel_pcs_defaults.xml" />
   <Include src="storyteller/panel_stats_defaults.xml" />
   <Include src="storyteller/panel_projects_defaults.xml" />
 
@@ -85,5 +84,4 @@
 <Include src="storyteller/panel_scenes_location_modals.xml" />
 <Include src="storyteller/advantage_editor_modal.xml" />
 <Include src="storyteller/project_editor_modal.xml" />
-<Include src="storyteller/xp_log_modal.xml" />
 <Include src="storyteller/memoriam_modal.xml" />

@@ -12,7 +12,7 @@ Source of truth:
 - `ui/ui_csheet*.ttslua`
 - `ui/.templates/csheet/`
 - `lib/blood_potency_decals.ttslua`
-- `core/pc_storyteller_panel.ttslua`
+- `core/character_sheets.ttslua`
 - `.tools/custom-ui-assets/`
 
 Verification:
@@ -60,9 +60,9 @@ Symlink or copy: `.dev/TS_Save_230.json` → `%USERPROFILE%/OneDrive/Documents/M
 
 ### Reconcile pipeline
 
-On load and whenever `PCST.refreshCharacterSheetsForColor` runs, `ui/ui_csheet.ttslua` → `applyBloodPotencyDecals` (pages 1–2 only) calls **`self.getDecals`**, builds the payload with **`lib/blood_potency_decals.ttslua`**, and calls **`self.setDecals`** in the **same object script VM** (TTS rejects decal tables built or returned via `Global.call`). Variant URLs must be registered on that object’s **`CustomUIAssets`** — merge from `DecalPallet` with `.tools/custom-ui-assets/merge-bp-decals-into-csheet-custom-ui-assets.js`. Missing BP slots or invalid BP variant URLs **error loudly** — no legacy name shims. Extra manual decals pass through unchanged.
+On load and whenever `CharacterSheets.refreshCharacterSheetsForColor` runs, `ui/ui_csheet.ttslua` → `applyBloodPotencyDecals` (pages 1–2 only) calls **`self.getDecals`**, builds the payload with **`lib/blood_potency_decals.ttslua`**, and calls **`self.setDecals`** in the **same object script VM** (TTS rejects decal tables built or returned via `Global.call`). Variant URLs must be registered on that object’s **`CustomUIAssets`** — merge from `DecalPallet` with `.tools/custom-ui-assets/merge-bp-decals-into-csheet-custom-ui-assets.js`. Missing BP slots or invalid BP variant URLs **error loudly** — no legacy name shims. Extra manual decals pass through unchanged.
 
-Effective Blood Potency for decals matches sheet dots: `stats.bloodPotency.base + stats.bloodPotency.temp + resolvedStatChanges.bloodPotency` (via `GlobalGetResolvedStatChangesForPlayer` — location conditions such as `bumpBloodPotency` apply through `statChanges`, not persisted `temp`). Decals live on **pages 1–2 only**; refreshing page 3 alone does not update them — use `PCST.refreshCharacterSheetsForColor` or reload pages 1/2. After location reconcile with `{ skipPresentation = true }`, callers must run `PCST.refreshAllCharacterSheets()` (via `StorytellerScenesPanel` helpers) so page 1 dots and BP decals catch resolved condition statChanges — `Sync.full` alone does not refresh sheets.
+Effective Blood Potency for decals matches sheet dots: `stats.bloodPotency.base + stats.bloodPotency.temp + resolvedStatChanges.bloodPotency` (via `GlobalGetResolvedStatChangesForPlayer` — location conditions such as `bumpBloodPotency` apply through `statChanges`, not persisted `temp`). Decals live on **pages 1–2 only**; refreshing page 3 alone does not update them — use `CharacterSheets.refreshCharacterSheetsForColor` or reload pages 1/2. After location reconcile with `{ skipPresentation = true }`, callers must run `CharacterSheets.refreshAllCharacterSheets()` (via `StorytellerScenesPanel` helpers) so page 1 dots and BP decals catch resolved condition statChanges — `Sync.full` alone does not refresh sheets.
 
 ### Dynamic page XML (pages 2–6)
 

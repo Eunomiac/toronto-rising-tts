@@ -1,7 +1,7 @@
 --[[
     Character-sheet slice fingerprints (Global VM only).
 
-    `PCST.refreshCharacterSheetsForColor` compares these per page before calling into any CSHEET
+    `CharacterSheets.refreshCharacterSheetsForColor` compares these per page before calling into any CSHEET
     object, so a refresh where nothing a page shows has changed costs no cross-VM round trips.
 
     Each slice covers everything that page (and its decals) reads:
