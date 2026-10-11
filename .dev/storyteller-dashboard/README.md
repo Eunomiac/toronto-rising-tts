@@ -21,7 +21,7 @@ Verification:
 
 This is a **Storyteller-only** second-monitor web app. It will not grow into a player HUD. Players keep using Tabletop Simulator for the table and their own UI. The dashboard is a localhost control surface on port **8788**.
 
-It lives in **this same git repo and GitHub remote** as the TTS mod. Do not split it into another workspace or GitHub project. Dashboard-only UI work is tracked on [agent/Running Tasklist.md](agent/Running%20Tasklist.md) — not Linear, and not Pending Author Verification. When a change also ships Lua (import JSON, snaps, `GlobalImportSceneJson`, image paths), land the Lua, dashboard, and [Scene Import Guide](../Storyteller%20Dashboard%20Docs/Scene%20Import%20Guide.md) together.
+It lives in **this same git repo and GitHub remote** as the TTS mod. Do not split it into another workspace or GitHub project. Dashboard-only UI work is tracked on [agent/Running Tasklist.md](agent/Running%20Tasklist.md) — not Linear, and not Pending Author Verification. When a change also ships Lua (scene library rows, bridge ops, snaps, image paths), land the Lua, dashboard, and [Scene Import Guide](../Storyteller%20Dashboard%20Docs/Scene%20Import%20Guide.md) together.
 
 The GitHub remote is public. Never commit `.env`, API keys, or private chronicle dumps.
 

@@ -2171,7 +2171,7 @@ function Soundscape.applyContext(context)
     return { ok = ok, message = table.concat(results, " | "), state = ensureState() }
 end
 
---- Counts how many of `wind`, `rain`, `thunderstorm` are non-nil on `soundscapeNarrative` (Scene Constructor trio rule).
+--- Counts how many of `wind`, `rain`, `thunderstorm` are non-nil on `soundscapeNarrative` (weather trio rule).
 --- @param sn table|nil
 --- @return integer
 local function countSoundscapeNarrativeWeatherTrio(sn)
@@ -2246,7 +2246,7 @@ end
 
 --- Applies optional `sessionScene.soundscapeNarrative` through this module's `applyContext` (avoids `require("core.soundscape")`
 --- from other modules returning a different table than Global's `SS` during edge load orders).
---- Weather applies only when `chronicleWeatherManualHold` is true and all three trio fields are set (import contract).
+--- Weather applies only when `chronicleWeatherManualHold` is true and all three trio fields are set (library row contract).
 --- @param sessionScene table|nil
 function Soundscape.applySessionSceneNarrativeOverrides(sessionScene)
     local ctx = Soundscape.mergeSessionSceneNarrativeIntoContext(sessionScene, {})

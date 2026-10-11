@@ -45,7 +45,7 @@ Canonical reference for creating or changing **any** condition in Toronto Rising
 | Storyteller panel toggle (frenzy) | `canApplyManually = true`, no `instanceSchema` → `setManual` / `clear` |
 | Instance payload (blindfold variant) | `canApplyManually = true`, `instanceSchema` → `setEvent` / `clear` |
 | District/site while PC is **present** | `canApplyManually = true` on `C.Districts` / `C.Sites` row + `reconcileHostedForSession` |
-| Scene bundle while PC is **present** | `canApplyManually = true` on `sessionScene.conditions` (Scene Constructor import) + `reconcileHostedForSession` |
+| Scene bundle while PC is **present** | `canApplyManually = true` on `sessionScene.conditions` (scene library row) + `reconcileHostedForSession` |
 
 ### Which effect channels?
 

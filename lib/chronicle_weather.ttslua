@@ -212,7 +212,7 @@ local function hudWindTextFromWindAudio(windKey)
     return requireHudOverrideField(HUD_OVERRIDES.windAudio, windKey or "none", "Wind", "windAudio")
 end
 
---- When `sessionScene.chronicleWeatherManualHold` is set (Scene Constructor weather trio) or a Storyteller
+--- When `sessionScene.chronicleWeatherManualHold` is set (scene's authored weather trio) or a Storyteller
 --- weather override is active, align HUD base/wind labels with forced rain/wind/thunder audio in
 --- `gameState.soundscape` per `C.WEATHER_AUDIO_OVERRIDES`.
 --- Temperature and humidity remain from the chronicle schedule for the current clock hour.
@@ -299,7 +299,7 @@ function ChronicleWeather.applyHudAudioOverrides(resolved)
     return out
 end
 
---- Chronicle schedule + optional Scene Constructor HUD overrides for the overlay weather panel.
+--- Chronicle schedule + optional scene weather-lock HUD overrides for the overlay weather panel.
 --- @param month number|nil
 --- @param day number|nil
 --- @param hour number|nil

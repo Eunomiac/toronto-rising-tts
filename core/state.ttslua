@@ -396,10 +396,10 @@ function S.GetDefaultGameState()
             lightingSeatSpotlightPreset = {},
             tableKey = nil,
             seatPresent = {},
-            --- Per-seat narrative/config (Scene Constructor + panel). When `isPresent` is set here, it wins over `seatPresent` after backfill (see `normalizeLiveSessionSceneSeatSlots`).
+            --- Per-seat narrative/config (library rows + panel). When `isPresent` is set here, it wins over `seatPresent` after backfill (see `normalizeLiveSessionSceneSeatSlots`).
             --- `tableSlot` is the numbered chair (1 = reference figurine). `absentFromSession` (PC only) means no chair — distinct from `isPresent`.
             seatSlots = {},
-            --- Sparse map: keys in `C.PlayerColors`, values NPC `characterKey` strings when a PC is playing as that NPC (`seatSlots[color].isPlayingNPC` + `npcCharacterKey`). Rebuilt from `seatSlots` in `SceneLibrary.syncNpcRoleOverrideFromSeatSlots` and on Scene Constructor import.
+            --- Sparse map: keys in `C.PlayerColors`, values NPC `characterKey` strings when a PC is playing as that NPC (`seatSlots[color].isPlayingNPC` + `npcCharacterKey`). Rebuilt from `seatSlots` in `SceneLibrary.syncNpcRoleOverrideFromSeatSlots` (validate + scene Apply).
             npcRoleOverride = {},
             districtKey = nil,
             siteKey = nil,
@@ -417,9 +417,9 @@ function S.GetDefaultGameState()
                 --- When true, scene participates in present-day clock rules (see `core/present_day_clock.ttslua`).
                 isPresentDay = false,
             },
-            --- When true (default), applying scene clock runs CSV chronicle weather → soundscape. Scene Constructor import may set this from `soundscapeNarrative` wind/rain/thunderstorm (see `.dev/Scene Constructor/Scene Constructor Overview.md`).
+            --- When true (default), applying scene clock runs CSV chronicle weather → soundscape. The Storyteller Dashboard sets this `false` when a row authors the `soundscapeNarrative` wind/rain/thunderstorm trio (`.dev/Storyteller Dashboard Docs/Scene Import Guide.md`).
             chronicleWeatherFollowSchedule = true,
-            --- When true, chronicle weather is not auto-applied on clock updates (manual soundscape override). Scene Constructor import may set this from the same narrative weather triple.
+            --- When true, chronicle weather is not auto-applied on clock updates (manual soundscape override). The dashboard sets this `true` with the same authored weather trio.
             chronicleWeatherManualHold = false,
             --- Registry condition ids active for present PCs while this scene is applied (`canApplyManually` true).
             conditions = {},

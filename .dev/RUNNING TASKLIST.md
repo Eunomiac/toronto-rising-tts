@@ -558,7 +558,7 @@ _Blocked: author must define data binding approach before substantial implementa
 - [x] **Timing API merge:** `U.stagger` / `U.chain` / `U.await` (+ `U.cancel`); `Time.time` clocks; unique chain waiters; hard-cut old names. Policy + handoff updated. Author confirmed 2026-08-03. _(TOR-438)_
 - [x] **Join-stress minimal Global XmlUI spike:** Code + staged restore shipped. Multiclient: **1 Assets / 3 Emitters / 4 Figurines OK**; **2 HUD** timed out ? drove **TOR-444**. Staged restore is now 1–3 (the Figurines step was removed with **TOR-707**). Pending re-verify whether reduced Global HUD lets step 2 survive (or makes Arm pipeline unnecessary). _(TOR-439)_
 - [x] **Global XmlUI remount weight:** Dramatic Image-node reduction via stacks/chrome tint/shared visibility. Author confirmed 2026-08-03. See [Global-UI-Image-Stacks](HUDs%20%26%20Overlays/Global-UI-Image-Stacks.md). _(TOR-444)_
-- [ ] **Play as NPC:** Control-board `pc_control_token` seat activate/deactivate (baseline shipped TOR-236); play-as-NPC swaps sheet by tag; `sessionScene.npcRoleOverride` / `seatSlots`; lighting exception per Scene Constructor spec ([Scene Constructor Overview](Scene%20Constructor/Scene%20Constructor%20Overview.md)). Unblocked after **TOR-247** (control-board occupancy). _(TOR-95)_
+- [ ] **Play as NPC:** Control-board `pc_control_token` seat activate/deactivate (baseline shipped TOR-236); play-as-NPC swaps sheet by tag; `sessionScene.npcRoleOverride` / `seatSlots`; lighting exception per the scene row contract ([Scene Import Guide](Storyteller%20Dashboard%20Docs/Scene%20Import%20Guide.md) § Seat slots). Unblocked after **TOR-247** (control-board occupancy). _(TOR-95)_
 
 ## Storyteller Dashboard
 
@@ -566,7 +566,7 @@ Standalone second-monitor web app (`.dev/storyteller-dashboard/`). Not the in-ta
 
 - [x] **Tab shell:** Top flush tabs — Stage NPCs (default), Scenes, PCs, Lua, Generate NPC. Existing generator lives under Generate NPC. _(TOR-552)_
 - [x] **PCs tab live sheet:** Dashboard two-page spread + player rail; Lua snapshot/apply Globals. Apply queue batches rapid clicks in one execute-lua. Author confirmed 2026-10-01. _(TOR-595)_
-- [x] **Scene Import Guide (baseline):** Full Scene Constructor JSON contract from live importer + occupancy (`tableSlot`, co-requirements, catalogs) in [Scene Import Guide.md](Storyteller%20Dashboard%20Docs/Scene%20Import%20Guide.md). Living doc — keep in sync when `validateAndNormalizeImportPayload` / `FSL.checkOccupancy` change. _(TOR-569)_
+- [x] **Scene Import Guide (baseline):** Scene library row contract (dashboard bridge ops, `SceneLibrary.validateRow`, chairs / occupancy, field catalog, live mirror / fork / present-day clock) in [Scene Import Guide.md](Storyteller%20Dashboard%20Docs/Scene%20Import%20Guide.md). Living doc — keep in sync when `validateRow` / `FSL.checkOccupancy` / the scene ops change. _(TOR-569)_
 - [x] **Scenes tab:** Compact 1920×1080 board (Standard + Scatter), named-NPC picker, Copy JSON + Import in TTS (library row only). Catalog extract `npm run dashboard:scene-catalogs`. Pending Save & Play / dashboard restart. _(TOR-570)_
 - [x] **Scenes tab polish:** Crop tokens to the circular frame, enlarge the board, clock sliders + weather, grouped site picker, coterie display names, labeled chrome. Pending dashboard restart. _(TOR-571)_
 - [x] **Stage NPCs generic catalogue:** Searchable cutout grid + copy keys. Sheet import clones skyboxes (`Generics Export` Visualization CSV → `data/generic-npcs.json`); refreshes when the Storyteller Dashboard server starts. _(TOR-554)_

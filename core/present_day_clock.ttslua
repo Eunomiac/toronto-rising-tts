@@ -4,7 +4,7 @@
     `gameState.presentDayClock` stores Y/M/D/h/m only. Scene clocks carry flags
     (`useRealTime`, `isPresentDay`, etc.) on `sessionScene.clock` and per library row.
 
-    Agent guidance: `.dev/Scene Constructor/Scene Constructor Overview.md` (Present day clock).
+    Agent guidance: `.dev/Storyteller Dashboard Docs/Scene Import Guide.md` (Present day clock).
 ]]
 
 local PresentDayClock = {}

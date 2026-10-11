@@ -190,7 +190,7 @@ Find **incorrect, fragile, or policy-violating** state reads and produce a **fix
    - `S\.getStateVal\(`
    - `S\.getPlayerVal\(`
    - `S\.setStateVal\(` / `S\.setPlayerVal\(` (setters without matching read path audit)
-   - Compare against schema comments in `core/state.ttslua` and [`.dev/Scene Constructor/SchemaV2.jsonc`](../Scene%20Constructor/SchemaV2.jsonc) where relevant
+   - Compare against schema comments in `core/state.ttslua` and the [Scene Import Guide](../Storyteller%20Dashboard%20Docs/Scene%20Import%20Guide.md) (scene library row contract) where relevant
 
 4. For each finding: file, line, current code, why wrong, recommended fix, estimated blast radius.
 

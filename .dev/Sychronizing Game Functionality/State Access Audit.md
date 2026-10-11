@@ -23,7 +23,7 @@ Status: audit document; verify each finding against current code before implemen
 
 **Scope:** `core/`, `lib/`, `ui/`, `.dev/`
 
-**Schema baseline:** `core/state.ttslua` `S.GetDefaultGameState()` (`currentPhase`, Steam-ID-keyed `playerData`, `lights`, `zones`, `scene`, `soundscape`, `seatLayout`, `npcs.instances`, `presentDayClock`, `sessionScene`, `sceneLibrary`, `stRollSettings`) and `.dev/Scene Constructor/SchemaV2.jsonc` (`sessionScene.lightingPresetKey`, `seatSlots`, `clock`, `conditions`, `soundscapeNarrative`, `npcWorld.byArea`).
+**Schema baseline:** `core/state.ttslua` `S.GetDefaultGameState()` (`currentPhase`, Steam-ID-keyed `playerData`, `lights`, `zones`, `scene`, `soundscape`, `seatLayout`, `npcs.instances`, `presentDayClock`, `sessionScene`, `sceneLibrary`, `stRollSettings`) and the [Scene Import Guide](../Storyteller%20Dashboard%20Docs/Scene%20Import%20Guide.md) (`sessionScene.lightingPresetKey`, `seatSlots`, `clock`, `conditions`, `soundscapeNarrative`, `npcWorld.placements`).
 
 **Count summary:** P0: 3, P1: 5, P2: 7.
 

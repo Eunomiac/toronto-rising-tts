@@ -19,7 +19,7 @@ This rule exists for Cursor sessions in this repository. It supersedes generic/g
 
 The dashboard stays in **this git repo** and the **same GitHub remote**. Do not split a second workspace or GitHub project.
 
-- **Shared contract** with TTS Lua (import schema, snaps, bridge, image paths): land Lua + dashboard (+ Scene Import Guide) **together**.
+- **Shared contract** with TTS Lua (scene library rows, snaps, bridge, image paths): land Lua + dashboard (+ Scene Import Guide) **together**.
 - **Dashboard-only** (UI toolchain, Scenes chrome, Vitest): same `master` is fine; do **not** require Linear, PAVE, or Save & Play.
 - Never commit `.dev/storyteller-dashboard/.env` or API keys. The GitHub remote is public.
 

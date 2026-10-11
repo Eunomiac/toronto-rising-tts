@@ -7,7 +7,7 @@
   Global cover panel: `overlay_globalBlindfold_panel` (TOR-565). Session-start explode stack is
   phase-owned (`overlay_sessionStart_panel`) — never by this module or a timed onLoad hide.
   (Intermission show / Play hide / connect policy) — never by this module or a timed onLoad hide.
-  Agent guidance: .dev/Scene Constructor/Scene Constructor Overview.md; .dev/HUD_FUNCTIONS.md.
+  Agent guidance: .dev/Storyteller Dashboard Docs/Scene Import Guide.md (Switching scenes); .dev/HUD_FUNCTIONS.md.
 ]]
 ---@diagnostic disable: undefined-global
 

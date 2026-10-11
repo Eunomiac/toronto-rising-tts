@@ -241,7 +241,7 @@ export const applyToDraft = (scene: LibraryScene, command: ScenesCommand): Libra
     case "clockTo":
       return withSession(scene, { clock: { ...command.datetime, isPresentDay: false } });
     case "seatPresence": {
-      // Same pair the TTS pending-row writer keeps: `seatSlots[seat].isPresent` wins, `seatPresent` mirrors it.
+      // Same pair TTS keeps: `seatSlots[seat].isPresent` wins, `seatPresent` mirrors it.
       const slots = draftSeatSlots(scene);
       const row = slots[command.seat];
       return withSession(scene, {

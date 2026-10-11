@@ -55,7 +55,7 @@ Optional `deriveSticky = true` (e.g. torpor): reconcile may add when derive is t
 Optional `conditions = { "conditionId", ... }` on:
 
 - `C.Districts[*]` and `C.Sites[*]`
-- `sessionScene` (Scene Constructor import)
+- `sessionScene` (scene library rows written by the Storyteller Dashboard)
 
 Each id must have **`canApplyManually = true`**. Stat vs roll behavior is defined by registry **effect channels** (`statChanges`, `roll`, …), not by hosting source.
 

@@ -25,7 +25,7 @@ SD-9 asks for creative widgets instead of a stack of labeled rows. Later tasklis
 - game-icons.net SVGs (CC BY 3.0) in `public/icons/scenes/` — no emoji icons.
 - Debug tools under the board: Debug toggle, **Fill Stage** (Rashid on every polar snap and chair), **Fill and Lock** (same fill, then drag names instead of tokens; double-click a name to cycle left/center/right with green/yellow/cyan), **Get Name Offsets** (copies polar + seat `{ ox, oy, align }` JSON), **Restore PCs** (default five PCs on chairs, NPC chairs emptied), Clear Stage.
 - Drawer tokens exist in one place. Seated NPCs who are also on the polar stage stay duplicated (Lexie case).
-- Weather axes are independent (rain / snow / wind / thunder). Intensity is a **centered flex row** of adjacent icons, not a stacked overlap. Snow stays on the dashboard draft only; Copy JSON does not emit a `snow` field yet.
+- Weather axes are independent (rain / snow / wind / thunder). Intensity is a **centered flex row** of adjacent icons, not a stacked overlap. Snow stays on the dashboard draft only; saved library rows do not carry a `snow` field yet.
 - Fog lives on the place widget (skybox seam smoke), not weather.
 - Slot 1 of the seated row is centered at `u = 0.50` on the dashboard image. Crop now trims unused left parchment as well as the right, so the polar packs can be larger.
 - Group theme colors: Camarilla gold, Anarch red, Sabbat deep purple, Independents grey, Hecata inverted grey, Werewolves brown, Aapilu deep blood red.

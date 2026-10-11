@@ -16,7 +16,7 @@ Keep the dashboard **in this repo** on the same GitHub remote (`toronto-rising-t
 
 | Kind of change | How to land it |
 | --- | --- |
-| Shared contract (import schema, snaps, `GlobalImportSceneJson`, image paths, occupancy) | Same commit (or a short stack that lands together) as the Lua / Scene Import Guide |
+| Shared contract (scene library rows, bridge ops, snaps, image paths, occupancy) | Same commit (or a short stack that lands together) as the Lua / Scene Import Guide |
 | Dashboard-only (Vite, React, SCSS, tab chrome, Vitest) | Same `master` / same remote; own commits are fine |
 
 The GitHub remote is **public**. Never commit `.env`, API keys, vector-store secrets, or private chronicle dumps.

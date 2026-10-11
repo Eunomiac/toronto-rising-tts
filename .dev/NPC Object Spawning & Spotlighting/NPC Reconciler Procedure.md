@@ -19,7 +19,7 @@ Verification:
 
 This document defines the **control flow** for reconciling NPC figurines in two locations: the **stage** in front of the table, and **NPC seats** around the table. NPCs with neither are not in the world — figurines and stage lights spawn on demand and are destroyed when no longer targeted. It describes intended outcomes (where each NPC should end up, and what state should record), not the low-level mechanism for hiding objects or applying light modes — those may continue to use existing helpers as long as the outcomes match.
 
-Related: [`Reconciler Contract.md`](../Sychronizing%20Game%20Functionality/Reconciler%20Contract.md), [`NPC Object Overview.md`](NPC%20Object%20Overview.md), [`Scene Constructor Overview.md`](../Scene%20Constructor/Scene%20Constructor%20Overview.md).
+Related: [`Reconciler Contract.md`](../Sychronizing%20Game%20Functionality/Reconciler%20Contract.md), [`NPC Object Overview.md`](NPC%20Object%20Overview.md), [`Scene Import Guide.md`](../Storyteller%20Dashboard%20Docs/Scene%20Import%20Guide.md).
 
 ---
 

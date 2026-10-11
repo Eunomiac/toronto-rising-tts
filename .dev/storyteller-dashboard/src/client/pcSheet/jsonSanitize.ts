@@ -1,6 +1,6 @@
 /**
  * Removes trailing commas before `}` or `]` so spreadsheet-style / author JSON
- * parses with JSON.parse. Mirrors lib/util.ttslua U.sanitizeJsonTextRemoveTrailingCommas.
+ * parses with JSON.parse.
  *
  * Limitation: string values that literally contain `,}` or `,]` as adjacent text
  * could be altered — normal seat patches do not use such strings.
