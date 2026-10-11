@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { isEmptyNpcOverride, NPC_OVERRIDE_KEY_PATTERN, parseNpcOverride, type NpcOverride } from "../../src/shared/npcOverride.ts";
 import { drawToken, loadFont, type DrawAssets } from "./draw.ts";
 import { syncSaveFigurineAssets } from "./save-assets.ts";
 import {
@@ -9,6 +10,7 @@ import {
   discrepancyReport,
   fingerprint,
   renderLuaModule,
+  renderOverridesLuaModule,
   type HeadCrop,
   type NamedCatalogEntry,
   type NameSources,
@@ -25,6 +27,8 @@ import {
  * save's roll-banner rows (CustomUIAssets named after each PC, named NPC and Memoriam key) are synced to those links,
  * and rows for removed art are dropped. Figurines in no catalog get nothing; they and catalogued NPCs without a
  * figurine are listed in .dev/build-logs/npc-art-discrepancies.txt (printed at the end of the Full build).
+ * data/npc-overrides.json (the roster's token configuration window) renames and recolours tokens, and its TTS fields
+ * are written to lib/npc_overrides.ttslua (bundled by Save & Play, not hosted).
  * Tokens whose inputs are unchanged are skipped. Pass --force to redraw every token.
  */
 
@@ -35,6 +39,7 @@ const npcImageDir = path.join(repoRoot, "assets", "images", "NPCs");
 const tokenDir = path.join(npcImageDir, "Tokens");
 const manifestPath = path.join(tokenDir, "tokens.json");
 const luaPath = path.join(repoRoot, "lib", "npc_art_urls.ttslua");
+const overridesLuaPath = path.join(repoRoot, "lib", "npc_overrides.ttslua");
 const discrepancyPath = path.join(repoRoot, ".dev", "build-logs", "npc-art-discrepancies.txt");
 const dataDir = path.join(dashboardDir, "data");
 const FOLDERS: readonly NpcFolder[] = ["Catalogued", "Generic", "Memoriam"];
@@ -125,6 +130,23 @@ const readCrops = async (): Promise<Record<string, HeadCrop>> => {
   return crops;
 };
 
+const readOverrides = async (): Promise<Record<string, NpcOverride>> => {
+  const file = await readOptionalJson(path.join(dataDir, "npc-overrides.json"), "no NPC has a name, colour, card scale or seated height override");
+  const overrides: Record<string, NpcOverride> = {};
+  if (isRecord(file) && isRecord(file.overrides)) {
+    for (const [key, value] of Object.entries(file.overrides)) {
+      const override = parseNpcOverride(value);
+      if (!NPC_OVERRIDE_KEY_PATTERN.test(key) || typeof override === "string") {
+        throw new Error(`data/npc-overrides.json: bad override for "${key}": ${typeof override === "string" ? override : "invalid key"}`);
+      }
+      if (!isEmptyNpcOverride(override)) {
+        overrides[key] = override;
+      }
+    }
+  }
+  return overrides;
+};
+
 const readManifest = async (): Promise<Manifest> => {
   if (!existsSync(manifestPath)) {
     return { generatedBy: GENERATED_BY, tokens: {} };
@@ -185,12 +207,13 @@ const warnIfNotPublished = (): void => {
 
 const main = async (): Promise<void> => {
   const force = process.argv.includes("--force");
-  const [named, genericLabels, memoriamNames, roster, crops, manifest] = await Promise.all([
+  const [named, genericLabels, memoriamNames, roster, crops, overrides, manifest] = await Promise.all([
     readNamedCatalog(),
     readGenericLabels(),
     readMemoriamNames(),
     readRoster(),
     readCrops(),
+    readOverrides(),
     readManifest()
   ]);
   const sources: NameSources = { named, genericLabels, memoriamNames };
@@ -224,7 +247,7 @@ const main = async (): Promise<void> => {
         throw new Error(`NPC key "${key}" has a figurine in both ${other}/ and ${folder}/.`);
       }
       seen.set(key, folder);
-      const subject = buildSubject(folder, key, sources, roster, crops);
+      const subject = buildSubject(folder, key, sources, roster, crops, overrides);
       if (subject === null) {
         uncatalogued.push(`${folder}/${key}`);
       } else {
@@ -278,6 +301,7 @@ const main = async (): Promise<void> => {
   const sortedTokens = Object.fromEntries(Object.entries(nextTokens).sort(([a], [b]) => a.localeCompare(b)));
   await writeFile(manifestPath, `${JSON.stringify({ generatedBy: GENERATED_BY, tokens: sortedTokens }, null, 2)}\n`);
   await writeFile(luaPath, renderLuaModule(BASE_URL, `${FIGURINE_BACK}?v=${fingerprint(backBytes)}`, links, GENERATED_BY));
+  await writeFile(overridesLuaPath, renderOverridesLuaModule(overrides, GENERATED_BY));
 
   console.log(
     `[npc-art] ${subjects.length} NPCs: ${drawn} token(s) drawn, ${subjects.length - drawn} unchanged, ${pruned} stale token file(s) removed.`

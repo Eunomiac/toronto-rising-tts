@@ -3376,11 +3376,12 @@ function NPCS.registerGenericCharacter(characterKey, displayName)
     if U.Type(displayName) ~= "string" or displayName == "" then
         displayName = characterKey
     end
+    local override = DATA.overrides[characterKey]
     NPCS.characters[characterKey] = {
         name = characterKey,
         fullName = displayName,
-        -- Card Scale (ImageScalar); matches named NPC default in npcs_data. Per-key overrides later.
-        figurine = { scale = 53 },
+        -- Card Scale (ImageScalar); 53 matches the named NPC default in npcs_data.
+        figurine = { scale = (override and override.cardScale) or 53 },
         isGeneric = true,
     }
 end

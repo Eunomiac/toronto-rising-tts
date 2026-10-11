@@ -23,6 +23,7 @@ local SRI = require("lib.seat-role-identity")
 local G = require("lib.guids")
 local O = require("core.objects")
 local FigurineFrame = require("lib.figurine_frame")
+local NpcOverrides = require("lib.npc_overrides")
 
 local FSL = {}
 
@@ -193,7 +194,16 @@ function FSL.collectOccupants(opts)
         if npcRowHasCharacter(row, occupiedNPC, npc) then
             local slot = U.Type(row) == "table" and tonumber(row.tableSlot) or nil
             if type(slot) == "number" then
-                out[#out + 1] = { occupantKey = npc, tableSlot = math.floor(slot), isPlayer = false }
+                local characterKey = U.Type(row) == "table" and row.characterKey or nil
+                if type(characterKey) ~= "string" or characterKey == "" then
+                    characterKey = U.Type(occupiedNPC) == "table" and occupiedNPC[npc] or nil
+                end
+                out[#out + 1] = {
+                    occupantKey = npc,
+                    tableSlot = math.floor(slot),
+                    isPlayer = false,
+                    characterKey = characterKey,
+                }
             end
         end
     end
@@ -858,10 +868,12 @@ function FSL.computeSlotFrames(tableCfg, facingBounds, opts)
         if packed ~= nil then
             seatRigidByKey[occ.occupantKey] = packed.rigid
             local figOff = FSL.lookupOffset(occ.occupantKey, "SEAT_FIGURE")
-            if figOff ~= nil and tonumber(figOff.defaultY) ~= nil then
+            local override = occ.characterKey ~= nil and NpcOverrides[occ.characterKey] or nil
+            local seatY = override and tonumber(override.seatedY) or (figOff and tonumber(figOff.defaultY))
+            if seatY ~= nil then
                 packed.frame.position = Vector({
                     x = packed.frame.position.x,
-                    y = figOff.defaultY,
+                    y = seatY,
                     z = packed.frame.position.z,
                 })
             end

@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { RosterLayout } from "../../shared/sceneDeck";
+import { useNpcOverrides } from "../npcOverrides";
 import { setSceneDeckSection, useSceneDeck } from "../sceneDeck";
 import { parseControlBoardSnaps } from "./catalogs";
-import type { ControlBoardSnaps, SceneCatalogs } from "./catalogs";
+import type { CatalogCharacter, ControlBoardSnaps, SceneCatalogs } from "./catalogs";
 
 let catalogsRequest: Promise<SceneCatalogs> | null = null;
 
@@ -37,16 +38,29 @@ export const useControlBoardSnaps = (): { snaps: ControlBoardSnaps | null; error
   return { snaps, error };
 };
 
-/** Scene catalogs, fetched once and shared by every Lab panel that needs them. */
-export const useSceneCatalogs = (): { catalogs: SceneCatalogs | null; error: string | null } => {
-  const [catalogs, setCatalogs] = useState<SceneCatalogs | null>(null);
+const renamed = (catalogs: SceneCatalogs, overrides: ReturnType<typeof useNpcOverrides>): SceneCatalogs => {
+  const rename = (character: CatalogCharacter): CatalogCharacter => {
+    const name = overrides[character.characterKey]?.name;
+    return name === undefined ? character : { ...character, fullName: name };
+  };
+  return { ...catalogs, pcs: catalogs.pcs.map(rename), namedNpcs: catalogs.namedNpcs.map(rename) };
+};
+
+/**
+ * Scene catalogs, fetched once and shared by every Lab panel that needs them, with the token configuration
+ * window's name overrides already applied to `fullName`. `raw` keeps the catalog names (the window's defaults).
+ */
+export const useSceneCatalogs = (): { catalogs: SceneCatalogs | null; raw: SceneCatalogs | null; error: string | null } => {
+  const [raw, setRaw] = useState<SceneCatalogs | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const overrides = useNpcOverrides();
   useEffect(() => {
     loadSceneCatalogs()
-      .then(setCatalogs)
+      .then(setRaw)
       .catch((reason: unknown) => setError(reason instanceof Error ? reason.message : String(reason)));
   }, []);
-  return { catalogs, error };
+  const catalogs = useMemo(() => (raw ? renamed(raw, overrides) : null), [raw, overrides]);
+  return { catalogs, raw, error };
 };
 
 export type { RosterCategory, RosterLayout } from "../../shared/sceneDeck";

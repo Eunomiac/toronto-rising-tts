@@ -24,7 +24,8 @@
       "groupRanks": {
         "princesCourt": 1
       },
-      "pickerGroups": []
+      "pickerGroups": [],
+      "figurineScale": 53
     },
     {
       "characterKey": "rashid",
@@ -36,7 +37,8 @@
       "groupRanks": {
         "princesCourt": 2
       },
-      "pickerGroups": []
+      "pickerGroups": [],
+      "figurineScale": 53
     },
     {
       "characterKey": "aishe",
@@ -48,7 +50,8 @@
       "groupRanks": {
         "princesCourt": 3
       },
-      "pickerGroups": []
+      "pickerGroups": [],
+      "figurineScale": 53
     },
     {
       "characterKey": "fomorach",
@@ -60,7 +63,8 @@
       "groupRanks": {
         "princesCourt": 4
       },
-      "pickerGroups": []
+      "pickerGroups": [],
+      "figurineScale": 53
     },
     {
       "characterKey": "blackCaesar",
@@ -72,7 +76,8 @@
       "groupRanks": {
         "princesCourt": 5
       },
-      "pickerGroups": []
+      "pickerGroups": [],
+      "figurineScale": 53
     }
   ],
   "namedNpcs": [
@@ -88,7 +93,8 @@
       },
       "pickerGroups": [
         "touchstone"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "bertrice",
@@ -102,7 +108,8 @@
       },
       "pickerGroups": [
         "autarkis"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "chokesOnMoonlight",
@@ -116,7 +123,8 @@
       },
       "pickerGroups": [
         "friendlyNeighborhoodSpiders"
-      ]
+      ],
+      "figurineScale": 60
     },
     {
       "characterKey": "chokesOnMoonlightGarou",
@@ -130,7 +138,8 @@
       },
       "pickerGroups": [
         "friendlyNeighborhoodSpidersGarou"
-      ]
+      ],
+      "figurineScale": 65
     },
     {
       "characterKey": "christopherGiovanniJr",
@@ -144,7 +153,8 @@
       },
       "pickerGroups": [
         "wychwoodHecata"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "daevaAnitaMorris",
@@ -158,7 +168,8 @@
       },
       "pickerGroups": [
         "aapilu"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "daevaGabrielCollard",
@@ -172,7 +183,8 @@
       },
       "pickerGroups": [
         "aapilu"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "daevaNasirKhan",
@@ -186,7 +198,8 @@
       },
       "pickerGroups": [
         "aapilu"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "drake",
@@ -200,7 +213,8 @@
       },
       "pickerGroups": [
         "autarkis"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "enzoCaruso",
@@ -214,7 +228,8 @@
       },
       "pickerGroups": [
         "touchstone"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "fangsAtTheCradle",
@@ -228,7 +243,8 @@
       },
       "pickerGroups": [
         "friendlyNeighborhoodSpiders"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "fangsAtTheCradleGarou",
@@ -242,7 +258,8 @@
       },
       "pickerGroups": [
         "friendlyNeighborhoodSpidersGarou"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "jeanDucheskiI",
@@ -256,7 +273,8 @@
       },
       "pickerGroups": [
         "criseDeLwa"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "jeanDucheskiIII",
@@ -270,7 +288,8 @@
       },
       "pickerGroups": [
         "ducheskiRevenant"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "jezdimirDucheski",
@@ -284,7 +303,8 @@
       },
       "pickerGroups": [
         "ducheskiRevenant"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "kadePhillips",
@@ -298,7 +318,8 @@
       },
       "pickerGroups": [
         "touchstone"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "kieraVaughan",
@@ -312,7 +333,8 @@
       },
       "pickerGroups": [
         "touchstone"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "kingstonBlack",
@@ -326,7 +348,8 @@
       },
       "pickerGroups": [
         "jarvisJacks"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "mamboAbigail",
@@ -340,7 +363,8 @@
       },
       "pickerGroups": [
         "wychwoodHecata"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "mara",
@@ -354,7 +378,8 @@
       },
       "pickerGroups": [
         "deepSix"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "marieBouschard",
@@ -368,7 +393,8 @@
       },
       "pickerGroups": [
         "civilian"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "maxFloyd",
@@ -382,7 +408,8 @@
       },
       "pickerGroups": [
         "jarvisJacks"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "miriamRavenscroft",
@@ -396,7 +423,8 @@
       },
       "pickerGroups": [
         "touchstone"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "moltsInShadow",
@@ -410,7 +438,8 @@
       },
       "pickerGroups": [
         "friendlyNeighborhoodSpiders"
-      ]
+      ],
+      "figurineScale": 50
     },
     {
       "characterKey": "moltsInShadowGarou",
@@ -424,7 +453,8 @@
       },
       "pickerGroups": [
         "friendlyNeighborhoodSpidersGarou"
-      ]
+      ],
+      "figurineScale": 50
     },
     {
       "characterKey": "mrEasy",
@@ -438,7 +468,8 @@
       },
       "pickerGroups": [
         "jarvisJacks"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "palis",
@@ -452,7 +483,8 @@
       },
       "pickerGroups": [
         "beesHive"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "percivalCavendish",
@@ -466,7 +498,8 @@
       },
       "pickerGroups": [
         "civilian"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "ponticulus",
@@ -480,7 +513,8 @@
       },
       "pickerGroups": [
         "criseDeLwa"
-      ]
+      ],
+      "figurineScale": 70
     },
     {
       "characterKey": "rebeccaRossellini",
@@ -494,7 +528,8 @@
       },
       "pickerGroups": [
         "criseDeLwa"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "rotInTheRiver",
@@ -508,7 +543,8 @@
       },
       "pickerGroups": [
         "friendlyNeighborhoodSpiders"
-      ]
+      ],
+      "figurineScale": 63
     },
     {
       "characterKey": "rotInTheRiverGarou",
@@ -522,7 +558,8 @@
       },
       "pickerGroups": [
         "friendlyNeighborhoodSpidersGarou"
-      ]
+      ],
+      "figurineScale": 70
     },
     {
       "characterKey": "severinKoslov",
@@ -536,7 +573,8 @@
       },
       "pickerGroups": [
         "wychwoodHecata"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "stalksTheTangle",
@@ -550,7 +588,8 @@
       },
       "pickerGroups": [
         "friendlyNeighborhoodSpiders"
-      ]
+      ],
+      "figurineScale": 60
     },
     {
       "characterKey": "stalksTheTangleGarou",
@@ -564,7 +603,8 @@
       },
       "pickerGroups": [
         "friendlyNeighborhoodSpidersGarou"
-      ]
+      ],
+      "figurineScale": 60
     },
     {
       "characterKey": "theIslandDevil",
@@ -578,7 +618,8 @@
       },
       "pickerGroups": [
         "autarkis"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "theUnshadowedThrone",
@@ -592,7 +633,8 @@
       },
       "pickerGroups": [
         "aapilu"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "twist",
@@ -606,7 +648,8 @@
       },
       "pickerGroups": [
         "jarvisJacks"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "uwuByteMe",
@@ -620,7 +663,8 @@
       },
       "pickerGroups": [
         "civilian"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "bee",
@@ -634,7 +678,8 @@
       },
       "pickerGroups": [
         "beesHive"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "carol",
@@ -648,7 +693,8 @@
       },
       "pickerGroups": [
         "beesHive"
-      ]
+      ],
+      "figurineScale": 57
     },
     {
       "characterKey": "ianRammond",
@@ -662,7 +708,8 @@
       },
       "pickerGroups": [
         "beesHive"
-      ]
+      ],
+      "figurineScale": 63
     },
     {
       "characterKey": "terry",
@@ -676,7 +723,8 @@
       },
       "pickerGroups": [
         "beesHive"
-      ]
+      ],
+      "figurineScale": 56
     },
     {
       "characterKey": "tommy",
@@ -690,7 +738,8 @@
       },
       "pickerGroups": [
         "beesHive"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "iq",
@@ -704,7 +753,8 @@
       },
       "pickerGroups": [
         "beesHive"
-      ]
+      ],
+      "figurineScale": 45
     },
     {
       "characterKey": "rubyRouge",
@@ -718,7 +768,8 @@
       },
       "pickerGroups": [
         "colorBlitz"
-      ]
+      ],
+      "figurineScale": 60
     },
     {
       "characterKey": "evanescentBlue",
@@ -732,7 +783,8 @@
       },
       "pickerGroups": [
         "colorBlitz"
-      ]
+      ],
+      "figurineScale": 50
     },
     {
       "characterKey": "rosie",
@@ -746,7 +798,8 @@
       },
       "pickerGroups": [
         "redFlag"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "damienAbanda",
@@ -760,7 +813,8 @@
       },
       "pickerGroups": [
         "redFlag"
-      ]
+      ],
+      "figurineScale": 58
     },
     {
       "characterKey": "profEthanKeen",
@@ -774,7 +828,8 @@
       },
       "pickerGroups": [
         "redFlag"
-      ]
+      ],
+      "figurineScale": 57
     },
     {
       "characterKey": "calvinWallace",
@@ -788,7 +843,8 @@
       },
       "pickerGroups": [
         "redFlag"
-      ]
+      ],
+      "figurineScale": 60
     },
     {
       "characterKey": "oliverGagnon",
@@ -802,7 +858,8 @@
       },
       "pickerGroups": [
         "scarlettAndTheBoys"
-      ]
+      ],
+      "figurineScale": 60
     },
     {
       "characterKey": "scarlett",
@@ -816,7 +873,8 @@
       },
       "pickerGroups": [
         "scarlettAndTheBoys"
-      ]
+      ],
+      "figurineScale": 60
     },
     {
       "characterKey": "razorWhit",
@@ -830,7 +888,8 @@
       },
       "pickerGroups": [
         "scarlettAndTheBoys"
-      ]
+      ],
+      "figurineScale": 60
     },
     {
       "characterKey": "merrickSingh",
@@ -844,7 +903,8 @@
       },
       "pickerGroups": [
         "scarlettAndTheBoys"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "myleneHamelin",
@@ -860,7 +920,8 @@
       },
       "pickerGroups": [
         "fiveKeys"
-      ]
+      ],
+      "figurineScale": 47
     },
     {
       "characterKey": "zuriOluwusi",
@@ -874,7 +935,8 @@
       },
       "pickerGroups": [
         "fiveKeys"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "adrianVarga",
@@ -888,7 +950,8 @@
       },
       "pickerGroups": [
         "fiveKeys"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "stirlingSiskin",
@@ -902,7 +965,8 @@
       },
       "pickerGroups": [
         "fiveKeys"
-      ]
+      ],
+      "figurineScale": 57
     },
     {
       "characterKey": "jesseSharp",
@@ -918,7 +982,8 @@
       },
       "pickerGroups": [
         "fiveKeys"
-      ]
+      ],
+      "figurineScale": 50
     },
     {
       "characterKey": "nasirKhan",
@@ -934,7 +999,8 @@
       },
       "pickerGroups": [
         "freeChantry"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "gabrielCollard",
@@ -948,7 +1014,8 @@
       },
       "pickerGroups": [
         "freeChantry"
-      ]
+      ],
+      "figurineScale": 60
     },
     {
       "characterKey": "anitaMorris",
@@ -962,7 +1029,8 @@
       },
       "pickerGroups": [
         "freeChantry"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "ulyssesCelaj",
@@ -976,7 +1044,8 @@
       },
       "pickerGroups": [
         "freeChantry"
-      ]
+      ],
+      "figurineScale": 58
     },
     {
       "characterKey": "theAristocrat",
@@ -990,7 +1059,8 @@
       },
       "pickerGroups": [
         "harpies"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "xavierWhitchurch",
@@ -1004,7 +1074,8 @@
       },
       "pickerGroups": [
         "harpies"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "christianne",
@@ -1018,7 +1089,8 @@
       },
       "pickerGroups": [
         "harpies"
-      ]
+      ],
+      "figurineScale": 63
     },
     {
       "characterKey": "laz",
@@ -1032,7 +1104,8 @@
       },
       "pickerGroups": [
         "ironGuard"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "osborneLowell",
@@ -1046,7 +1119,8 @@
       },
       "pickerGroups": [
         "ironGuard"
-      ]
+      ],
+      "figurineScale": 60
     },
     {
       "characterKey": "emilyTheDuskRose",
@@ -1060,7 +1134,8 @@
       },
       "pickerGroups": [
         "ironGuard"
-      ]
+      ],
+      "figurineScale": 48
     },
     {
       "characterKey": "sageSam",
@@ -1074,7 +1149,8 @@
       },
       "pickerGroups": [
         "theLine"
-      ]
+      ],
+      "figurineScale": 50
     },
     {
       "characterKey": "masonSchmidt",
@@ -1088,7 +1164,8 @@
       },
       "pickerGroups": [
         "theLine"
-      ]
+      ],
+      "figurineScale": 60
     },
     {
       "characterKey": "jackBeNimble",
@@ -1102,7 +1179,8 @@
       },
       "pickerGroups": [
         "theLine"
-      ]
+      ],
+      "figurineScale": 50
     },
     {
       "characterKey": "yusefShamsin",
@@ -1116,7 +1194,8 @@
       },
       "pickerGroups": [
         "theLine"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "suyin",
@@ -1130,7 +1209,8 @@
       },
       "pickerGroups": [
         "theLine"
-      ]
+      ],
+      "figurineScale": 45
     },
     {
       "characterKey": "fatherDiaz",
@@ -1144,7 +1224,8 @@
       },
       "pickerGroups": [
         "midnightMass"
-      ]
+      ],
+      "figurineScale": 57
     },
     {
       "characterKey": "deaconReal",
@@ -1158,7 +1239,8 @@
       },
       "pickerGroups": [
         "midnightMass"
-      ]
+      ],
+      "figurineScale": 58
     },
     {
       "characterKey": "sisterCicione",
@@ -1172,7 +1254,8 @@
       },
       "pickerGroups": [
         "midnightMass"
-      ]
+      ],
+      "figurineScale": 50
     },
     {
       "characterKey": "victorVex",
@@ -1186,7 +1269,8 @@
       },
       "pickerGroups": [
         "moonClub"
-      ]
+      ],
+      "figurineScale": 51
     },
     {
       "characterKey": "georgieStJames",
@@ -1200,7 +1284,8 @@
       },
       "pickerGroups": [
         "moonClub"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "vanceVogel",
@@ -1214,7 +1299,8 @@
       },
       "pickerGroups": [
         "moonClub"
-      ]
+      ],
+      "figurineScale": 57
     },
     {
       "characterKey": "scottTempo",
@@ -1228,7 +1314,8 @@
       },
       "pickerGroups": [
         "moonClub"
-      ]
+      ],
+      "figurineScale": 58
     },
     {
       "characterKey": "ren",
@@ -1242,7 +1329,8 @@
       },
       "pickerGroups": [
         "redeemers"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "alexandra",
@@ -1256,7 +1344,8 @@
       },
       "pickerGroups": [
         "redeemers"
-      ]
+      ],
+      "figurineScale": 55
     },
     {
       "characterKey": "kai",
@@ -1270,7 +1359,8 @@
       },
       "pickerGroups": [
         "redeemers"
-      ]
+      ],
+      "figurineScale": 50
     },
     {
       "characterKey": "tyler",
@@ -1284,7 +1374,8 @@
       },
       "pickerGroups": [
         "redeemers"
-      ]
+      ],
+      "figurineScale": 60
     },
     {
       "characterKey": "evangelineDupont",
@@ -1300,7 +1391,8 @@
       },
       "pickerGroups": [
         "regencyUniversityChantry"
-      ]
+      ],
+      "figurineScale": 49
     },
     {
       "characterKey": "drIrenaVoss",
@@ -1314,7 +1406,8 @@
       },
       "pickerGroups": [
         "regencyUniversityChantry"
-      ]
+      ],
+      "figurineScale": 47
     },
     {
       "characterKey": "raduIancu",
@@ -1328,7 +1421,8 @@
       },
       "pickerGroups": [
         "regencyUniversityChantry"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "damienKline",
@@ -1342,7 +1436,8 @@
       },
       "pickerGroups": [
         "regencyUniversityChantry"
-      ]
+      ],
+      "figurineScale": 55
     },
     {
       "characterKey": "lucasMerrow",
@@ -1356,7 +1451,8 @@
       },
       "pickerGroups": [
         "regencyUniversityChantry"
-      ]
+      ],
+      "figurineScale": 58
     },
     {
       "characterKey": "bacchusGiovanni",
@@ -1370,7 +1466,8 @@
       },
       "pickerGroups": [
         "wychwoodHecata"
-      ]
+      ],
+      "figurineScale": 60
     },
     {
       "characterKey": "lorenzaGiovanni",
@@ -1384,7 +1481,8 @@
       },
       "pickerGroups": [
         "wychwoodHecata"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "niccoloGiovanni",
@@ -1398,7 +1496,8 @@
       },
       "pickerGroups": [
         "wychwoodHecata"
-      ]
+      ],
+      "figurineScale": 55
     },
     {
       "characterKey": "theBleakBokor",
@@ -1412,7 +1511,8 @@
       },
       "pickerGroups": [
         "wychwoodHecata"
-      ]
+      ],
+      "figurineScale": 62
     },
     {
       "characterKey": "eddie",
@@ -1426,7 +1526,8 @@
       },
       "pickerGroups": [
         "petitioners"
-      ]
+      ],
+      "figurineScale": 42
     },
     {
       "characterKey": "alexisHoltt",
@@ -1440,7 +1541,8 @@
       },
       "pickerGroups": [
         "petitioners"
-      ]
+      ],
+      "figurineScale": 53
     },
     {
       "characterKey": "lexiMadi",
@@ -1454,7 +1556,8 @@
       },
       "pickerGroups": [
         "petitioners"
-      ]
+      ],
+      "figurineScale": 48
     },
     {
       "characterKey": "averyInnis",
@@ -1468,7 +1571,8 @@
       },
       "pickerGroups": [
         "petitioners"
-      ]
+      ],
+      "figurineScale": 50
     },
     {
       "characterKey": "benedictKincaid",
@@ -1482,7 +1586,8 @@
       },
       "pickerGroups": [
         "petitioners"
-      ]
+      ],
+      "figurineScale": 50
     }
   ],
   "districts": [

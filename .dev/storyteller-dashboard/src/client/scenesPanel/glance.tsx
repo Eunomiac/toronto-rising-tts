@@ -38,6 +38,13 @@ import { sceneDeckSnapshot } from "../sceneDeck";
 import { sceneLibrarySnapshot } from "../sceneLibrary";
 import { GROUP_DRAG_TYPE, NPC_DRAG_TYPE } from "./stage";
 import { useWorldState } from "../worldState";
+import { useNpcOverrides } from "../npcOverrides";
+import { NpcConfigModal, type NpcConfigTarget } from "./npcConfig";
+
+type NpcOverrides = ReturnType<typeof useNpcOverrides>;
+
+/** Token ring colour for an NPC with no coloured group (DEFAULT_RING_COLOR in scripts/npc-art/model.ts). */
+const DEFAULT_TOKEN_RING = "#77706a";
 import { usePersistentState } from "../persistentState";
 import { RosterDragGhost, startRosterDrag } from "./rosterDrag";
 
@@ -601,12 +608,30 @@ const groupLabelWidth = (text: string): number => {
   return Math.ceil(high) + 2;
 };
 
-/** One roster NPC, draggable onto the stage. */
-const RosterToken = ({ characterKey, name, className }: { characterKey: string; name: string; className: string }): ReactElement => (
+/** Token right-click: opens the NPC's configuration window. */
+type ConfigureToken = (characterKey: string, event: MouseEvent<HTMLElement>) => void;
+
+const tokenColorStyle = (color: string | undefined): CSSProperties | undefined =>
+  color ? ({ "--group": color } as CSSProperties) : undefined;
+
+/** One roster NPC, draggable onto the stage; right-click configures it. */
+const RosterToken = ({ characterKey, name, className, color, onConfigure }: {
+  characterKey: string;
+  name: string;
+  className: string;
+  color?: string | undefined;
+  onConfigure: ConfigureToken;
+}): ReactElement => (
   <span
     className="lab-group-token"
-    title={`${name}: drag onto the stage`}
+    title={`${name}: drag onto the stage; right-click for its settings`}
+    style={tokenColorStyle(color)}
     draggable
+    onContextMenu={(event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      onConfigure(characterKey, event);
+    }}
     onDragStart={(event) => {
       event.stopPropagation();
       event.dataTransfer.setData(NPC_DRAG_TYPE, characterKey);
@@ -639,12 +664,16 @@ const loadGenericCatalog = (): Promise<readonly GenericEntry[]> => {
 
 const GENERIC_MATCH_LIMIT = 60;
 
-/** Generic catalog figurines grouped by their catalog name, like coteries; spawned ones are left out. */
-const genericGroups = (catalog: readonly GenericEntry[], spawned: ReadonlySet<string>): readonly NpcGroup[] => {
+/**
+ * Generic catalog figurines grouped by their catalog name, like coteries; spawned ones are left out. A renamed
+ * figurine stays in its catalog group and is added under its new name.
+ */
+const genericGroups = (catalog: readonly GenericEntry[], spawned: ReadonlySet<string>, overrides: NpcOverrides): readonly NpcGroup[] => {
   const byLabel = new Map<string, RosterMember[]>();
   for (const npc of catalog) {
     if (!spawned.has(npc.key)) {
-      byLabel.set(npc.label, [...(byLabel.get(npc.label) ?? []), { characterKey: npc.key, name: npc.label }]);
+      const member = { characterKey: npc.key, name: overrides[npc.key]?.name ?? npc.label };
+      byLabel.set(npc.label, [...(byLabel.get(npc.label) ?? []), member]);
     }
   }
   return [...byLabel]
@@ -674,18 +703,27 @@ const FigurinePreview = ({ characterKey, token, panel }: { characterKey: string;
  * One catalog generic: a click queues it onto the stage (spawned on Send, named after its catalog entry until
  * renamed from its stage token's right-click ring); hovering previews the whole figurine.
  */
-const GenericToken = ({ member, className, onPick, onPreview }: {
+const GenericToken = ({ member, className, color, onPick, onPreview, onConfigure }: {
   member: RosterMember;
   className: string;
-  onPick?: () => void;
+  color?: string | undefined;
+  onPick?: (() => void) | undefined;
   onPreview: (characterKey: string | null, element?: HTMLElement) => void;
+  onConfigure: ConfigureToken;
 }): ReactElement => (
   <button
     type="button"
     className={`lab-group-token${onPick ? "" : " inert"}`}
-    title={onPick ? `Put a ${member.name} on the stage (spawned when you Send)` : "Adding spawns figurines in TTS, so it only works in the Scenes tab."}
+    title={onPick ? `Put a ${member.name} on the stage (spawned when you Send); right-click for its settings` : "Adding spawns figurines in TTS, so it only works in the Scenes tab."}
     aria-disabled={!onPick}
+    style={tokenColorStyle(color)}
     onClick={onPick}
+    onContextMenu={(event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      onPreview(null);
+      onConfigure(member.characterKey, event);
+    }}
     onMouseEnter={(event) => onPreview(member.characterKey, event.currentTarget)}
     onMouseLeave={() => onPreview(null)}
   >
@@ -830,7 +868,9 @@ const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove, onRename 
  * there), to be spawned on Send; generics already in the scene or the queue drop out of the catalog.
  */
 export const MasonryRoster = (): ReactElement => {
-  const { catalogs, error } = useSceneCatalogs();
+  const { catalogs, raw: rawCatalogs, error } = useSceneCatalogs();
+  const overrides = useNpcOverrides();
+  const [configuring, setConfiguring] = useState<NpcConfigTarget | null>(null);
   const tableGenerics = useWorldState().seats?.generics;
   const inScene = useContext(SceneGenericsContext) ?? tableGenerics ?? [];
   const send = useScenesCommand();
@@ -912,11 +952,29 @@ export const MasonryRoster = (): ReactElement => {
   }, [catalogs]);
   const spawnedKey = [...inScene.map((npc) => npc.characterKey), ...Object.keys(queuedGenerics)].join(",");
   const spawned = useMemo(() => new Set(spawnedKey.split(",")), [spawnedKey]);
-  const genGroups = useMemo(() => (genericCatalog ? genericGroups(genericCatalog, spawned) : []), [genericCatalog, spawned]);
+  const genGroups = useMemo(
+    () => (genericCatalog ? genericGroups(genericCatalog, spawned, overrides) : []),
+    [genericCatalog, spawned, overrides]
+  );
   const groups = view === "main" ? mainGroups : genGroups;
   const pickGeneric = (member: RosterMember): (() => void) | undefined => send
     ? () => send({ op: "genericAdd", keys: [member.characterKey], labels: { [member.characterKey]: member.name } })
     : undefined;
+  /** Same defaults as the token art generator: first picker group's colour for named NPCs, `generic:<label>` for generics. */
+  const configure: ConfigureToken = (characterKey, event) => {
+    const at = canvasPoint(event);
+    const named = rawCatalogs ? [...rawCatalogs.namedNpcs, ...rawCatalogs.pcs].find((npc) => npc.characterKey === characterKey) : undefined;
+    const generic = genericCatalog?.find((npc) => npc.key === characterKey);
+    const groupKey = named ? named.pickerGroups[0] : generic ? `generic:${generic.label}` : undefined;
+    setConfiguring({
+      characterKey,
+      at,
+      defaultName: named?.fullName ?? generic?.label ?? characterKey,
+      defaultColor: (groupKey && groupColor(layout, groupKey)) || DEFAULT_TOKEN_RING,
+      defaultCardScale: named?.figurineScale ?? null
+    });
+  };
+  const ownColor = (characterKey: string): string | undefined => overrides[characterKey]?.color;
 
   const leaderFirst = (group: NpcGroup): readonly RosterMember[] => {
     const leader = groupLeader(layout, group.key);
@@ -925,8 +983,27 @@ export const MasonryRoster = (): ReactElement => {
   const tokenClass = (group: NpcGroup, npc: RosterMember): string =>
     `lab-group-head${groupLeader(layout, group.key) === npc.characterKey ? " boss" : ""}`;
   const openToken = (group: NpcGroup, npc: RosterMember): ReactElement => view === "main"
-    ? <RosterToken key={npc.characterKey} characterKey={npc.characterKey} name={npc.name} className={tokenClass(group, npc)} />
-    : <GenericToken key={npc.characterKey} member={npc} className={tokenClass(group, npc)} onPick={pickGeneric(npc)} onPreview={previewFigurine} />;
+    ? (
+      <RosterToken
+        key={npc.characterKey}
+        characterKey={npc.characterKey}
+        name={npc.name}
+        className={tokenClass(group, npc)}
+        color={ownColor(npc.characterKey)}
+        onConfigure={configure}
+      />
+    )
+    : (
+      <GenericToken
+        key={npc.characterKey}
+        member={npc}
+        className={tokenClass(group, npc)}
+        color={ownColor(npc.characterKey)}
+        onPick={pickGeneric(npc)}
+        onPreview={previewFigurine}
+        onConfigure={configure}
+      />
+    );
   const masonry = (list: readonly NpcGroup[]): ReactElement => (
     <div className="lab-masonry">
       {list.map((group) => {
@@ -985,7 +1062,16 @@ export const MasonryRoster = (): ReactElement => {
     : catalogs.namedNpcs
       .filter((npc) => terms.every((term) => npc.fullName.toLowerCase().includes(term)))
       .sort((a, b) => a.fullName.localeCompare(b.fullName))
-      .map((npc) => <RosterToken key={npc.characterKey} characterKey={npc.characterKey} name={npc.fullName} className="lab-group-head" />);
+      .map((npc) => (
+        <RosterToken
+          key={npc.characterKey}
+          characterKey={npc.characterKey}
+          name={npc.fullName}
+          className="lab-group-head"
+          color={ownColor(npc.characterKey)}
+          onConfigure={configure}
+        />
+      ));
   const genericFound = (): readonly ReactElement[] | null => terms.length === 0 || !genericCatalog
     ? null
     : genericCatalog
@@ -993,8 +1079,18 @@ export const MasonryRoster = (): ReactElement => {
       .filter((npc) => terms.every((term) => `${npc.label} ${npc.tags} ${npc.key}`.toLowerCase().includes(term)))
       .slice(0, GENERIC_MATCH_LIMIT)
       .map((npc) => {
-        const member = { characterKey: npc.key, name: npc.label };
-        return <GenericToken key={npc.key} member={member} className="lab-group-head" onPick={pickGeneric(member)} onPreview={previewFigurine} />;
+        const member = { characterKey: npc.key, name: overrides[npc.key]?.name ?? npc.label };
+        return (
+          <GenericToken
+            key={npc.key}
+            member={member}
+            className="lab-group-head"
+            color={ownColor(npc.key)}
+            onPick={pickGeneric(member)}
+            onPreview={previewFigurine}
+            onConfigure={configure}
+          />
+        );
       });
   const found = view === "main" ? mainFound() : genericFound();
   const categories = layout.categories.filter((category) => (category.view === "generic") === (view === "generic"));
@@ -1050,7 +1146,16 @@ export const MasonryRoster = (): ReactElement => {
               <span className="lab-cat-count">{inScene.length}</span>
             </div>
             <div className="lab-search-results">
-              {inScene.map((npc) => <RosterToken key={npc.characterKey} characterKey={npc.characterKey} name={npc.name} className="lab-group-head" />)}
+              {inScene.map((npc) => (
+                <RosterToken
+                  key={npc.characterKey}
+                  characterKey={npc.characterKey}
+                  name={npc.name}
+                  className="lab-group-head"
+                  color={ownColor(npc.characterKey)}
+                  onConfigure={configure}
+                />
+              ))}
             </div>
           </section>
         )}
@@ -1095,6 +1200,7 @@ export const MasonryRoster = (): ReactElement => {
           onClose={() => setEditing(null)}
         />
       )}
+      {configuring && <NpcConfigModal target={configuring} onClose={() => setConfiguring(null)} />}
     </div>
   );
 };

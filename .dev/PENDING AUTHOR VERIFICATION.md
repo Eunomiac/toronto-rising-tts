@@ -121,6 +121,19 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 4. Turn an NPC's light off and on from the dashboard: its token flips face down and face up without moving.
 5. Hold the spotlight hotkey over a token: the NPC is spotlit as before.
 
+#### TOR-717 — NPC token settings window (name, colour, crop, card scale, seated height)
+
+**Context:** From your 2026-10-11 pin. Right-clicking a roster token in the dashboard opens a settings window for that NPC. The name and colour change the dashboard and the spotlight token art. The name, card scale and seated height reach TTS through a generated file. Seated figurines still use card scale 53, so card scale only changes the figurine on the stage.
+
+**How to verify:**
+
+1. Restart the Storyteller Dashboard task, because its server has a new save endpoint. In the Scenes tab, open the roster and right-click an NPC token. The settings window opens with the NPC's current name and default values shown in grey.
+2. Type a new name, pick a colour, set Scale to 65 and Seat Y to -52, then click off the window. The roster token shows the new name and ring colour straight away.
+3. Run `npm run npc-art:generate` (or the Full build), commit and push the art, then Save & Play.
+4. Place that NPC on the stage. Its figurine is bigger and carries the new name, and its spotlight token shows the new name and ring colour.
+5. Seat the NPC at the table. The figurine sits at the new height.
+6. Right-click the token again, clear every field and click off. Regenerate and Save & Play: everything is back to the defaults.
+
 ### High — startup, table and hunger (eye checks only; your traces already confirmed the speed-ups)
 
 #### TOR-670 / TOR-671 — Startup does one full sync and lifts the cover once

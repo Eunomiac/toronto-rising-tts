@@ -1660,6 +1660,24 @@ D.characters = {
   }
 }
 
+--- Storyteller Dashboard token configuration overrides (generated `lib/npc_overrides.ttslua`), keyed by NPC key:
+--- `{ name?, cardScale?, seatedY? }`. Named NPCs take `name` / `cardScale` here; generic NPCs in `D.initGenericNPCs`
+--- and `NPCS.registerGenericCharacter`; `seatedY` is read by `lib/figurine_seat_layout`.
+D.overrides = require("lib.npc_overrides")
+
+for key, override in pairs(D.overrides) do
+  local def = D.characters[key]
+  if type(def) == "table" then
+    if type(override.name) == "string" then
+      def.fullName = override.name
+    end
+    if type(override.cardScale) == "number" then
+      def.figurine = def.figurine or {}
+      def.figurine.scale = override.cardScale
+    end
+  end
+end
+
 --- @type table<string, table>|nil generic catalog key → `{ key, label }` (built by `D.initGenericNPCs`)
 D.genericNpcs = nil
 
@@ -1691,7 +1709,8 @@ function D.initGenericNPCs()
     if artByKey[key] == nil then
       withoutArt[#withoutArt + 1] = key
     else
-      genericNpcs[key] = { key = key, label = row.label }
+      local override = D.overrides[key]
+      genericNpcs[key] = { key = key, label = (override and override.name) or row.label }
     end
   end
   if #withoutArt > 0 then

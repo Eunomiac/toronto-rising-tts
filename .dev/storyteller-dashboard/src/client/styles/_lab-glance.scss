@@ -2652,6 +2652,17 @@ input.lab-cat-rename {
   }
 }
 
+// Token configuration window (right-click a roster token); width matches WIDTH in npcConfig.tsx.
+.lab-npc-config {
+  width: 300px;
+
+  &-hint {
+    margin: 2px 0 0;
+    font-size: 11px;
+    opacity: 0.7;
+  }
+}
+
 /* ---------- left dock: scene notes with the roster folded to a rail ---------- */
 
 .lab-box.lab-dock-box {

@@ -5,6 +5,7 @@ import {
   fingerprint,
   planFigurineAssets,
   renderLuaModule,
+  renderOverridesLuaModule,
   wrapName,
   type NameSources,
   type Roster,
@@ -65,6 +66,12 @@ describe("buildSubject", () => {
   it("rejects a roster colour that is not hex", () => {
     const bad: Roster = { ...roster, groupColors: { redFlag: "red" } };
     expect(() => buildSubject("Catalogued", "rosie", sources, bad, {})).toThrow(/not a #rrggbb/);
+  });
+
+  it("applies an override's name and colour", () => {
+    const overrides = { rosie: { name: "Lady Rosa Vance", color: "#00ff00" }, streetThug_01: { name: "Bruiser" } };
+    expect(buildSubject("Catalogued", "rosie", sources, roster, {}, overrides)).toMatchObject({ name: "Rosa", color: "#00ff00" });
+    expect(buildSubject("Generic", "streetThug_01", sources, roster, {}, overrides)).toMatchObject({ name: "Bruiser", color: "#123456" });
   });
 });
 
@@ -150,5 +157,18 @@ describe("renderLuaModule", () => {
     expect(lua.indexOf("  amy = {")).toBeLessThan(lua.indexOf("  zed = {"));
     expect(lua).toContain('figurine = { front = BASE .. "Generic/amy.webp?v=4", back = FIGURINE_BACK },');
     expect(lua).toContain('token = { front = BASE .. "Tokens/zed.front.webp?v=3", back = BASE .. "Tokens/zed.back.webp?v=3" },');
+  });
+});
+
+describe("renderOverridesLuaModule", () => {
+  it("writes the TTS fields sorted by key and skips colour-only overrides", () => {
+    const lua = renderOverridesLuaModule(
+      { zed: { cardScale: 60, seatedY: -50.5 }, amy: { name: 'Amy "Ace" Lee' }, colourOnly: { color: "#ffffff" } },
+      "test"
+    );
+    expect(lua.indexOf("  amy = {")).toBeLessThan(lua.indexOf("  zed = {"));
+    expect(lua).toContain('  amy = { name = "Amy \\"Ace\\" Lee" },');
+    expect(lua).toContain("  zed = { cardScale = 60, seatedY = -50.5 },");
+    expect(lua).not.toContain("colourOnly");
   });
 });

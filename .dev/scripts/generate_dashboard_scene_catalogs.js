@@ -1004,6 +1004,7 @@ function main() {
         groupRanks[m[1]] = Number(m[2]);
       }
     }
+    const figurineScaleMatch = entry.body.match(/figurine\s*=\s*\{[^}]*?\bscale\s*=\s*(\d+(?:\.\d+)?)/);
     return {
       characterKey: entry.key,
       fullName: readStringField(entry.body, "fullName") || readStringField(entry.body, "name") || entry.key,
@@ -1011,6 +1012,7 @@ function main() {
       groups,
       groupRanks,
       pickerGroups: groups.filter((g) => PALETTE_GROUP_BLACKLIST[g] !== true),
+      figurineScale: figurineScaleMatch ? Number(figurineScaleMatch[1]) : null,
     };
   });
 

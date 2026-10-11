@@ -10,6 +10,7 @@ import { generateNpcImage, generateNpcs, rerollNpcField } from "./npcService.js"
 import { loadGenericNpcCatalog, resolveGenericNpcImagePath } from "./genericNpcCatalog.js";
 import { refreshGenericNpcCatalogOnStartup } from "./refreshGenericNpcCatalog.js";
 import { createHeadshotCropStore, HeadshotCropError, parseHeadshotCrop, requireHeadshotKey } from "./headshotCrops.js";
+import { createNpcOverrideStore, NpcOverrideError, parseNpcOverrideBody, requireNpcOverrideKey } from "./npcOverrides.js";
 import { createDataFileStore, resolveDashboardBackupDir, type DataFileStore } from "./dataFileStore.js";
 import { normalizeSceneDeck, parseSceneDeckPatch, type SceneDeck } from "../shared/sceneDeck.js";
 import { normalizeSceneLibrary, parseSceneLibraryPatch, type SceneLibrary } from "../shared/sceneLibrary.js";
@@ -35,6 +36,7 @@ const pcSheetAssetDir = path.join(dashboardRoot, "assets");
 const termImages = createTermImageStore(path.join(dashboardRoot, "data", "term-images"));
 const labNotes = createLabNoteStore(path.join(dashboardRoot, "agent", "lab-notes.json"));
 const headshotCrops = createHeadshotCropStore(path.join(dashboardRoot, "data", "headshot-crops.json"));
+const npcOverrides = createNpcOverrideStore(path.join(dashboardRoot, "data", "npc-overrides.json"));
 const dashboardBackupDir = resolveDashboardBackupDir(repoRoot).then((backupDir) => {
   if (!backupDir) {
     console.warn("tts-assets.config.json has no backupDir; scene deck and scene library backups are off.");
@@ -196,6 +198,27 @@ const handleHeadshotCrops = async (request: IncomingMessage, response: ServerRes
     sendJson(response, 405, { error: "Method not allowed" });
   } catch (error: unknown) {
     if (error instanceof HeadshotCropError) {
+      sendJson(response, error.status, { error: error.message });
+      return;
+    }
+    throw error;
+  }
+};
+
+const handleNpcOverrides = async (request: IncomingMessage, response: ServerResponse, url: URL): Promise<void> => {
+  try {
+    if (request.method === "GET") {
+      sendJson(response, 200, await npcOverrides.list());
+      return;
+    }
+    const key = requireNpcOverrideKey(url.searchParams.get("key"));
+    if (request.method === "PUT") {
+      sendJson(response, 200, await npcOverrides.put(key, parseNpcOverrideBody(await readRequestJson(request))));
+      return;
+    }
+    sendJson(response, 405, { error: "Method not allowed" });
+  } catch (error: unknown) {
+    if (error instanceof NpcOverrideError) {
       sendJson(response, error.status, { error: error.message });
       return;
     }
@@ -460,6 +483,11 @@ const tryHandleDedicatedRoutes = async (request: IncomingMessage, response: Serv
 
   if (pathname === "/api/headshot-crops") {
     await handleHeadshotCrops(request, response, url);
+    return true;
+  }
+
+  if (pathname === "/api/npc-overrides") {
+    await handleNpcOverrides(request, response, url);
     return true;
   }
 

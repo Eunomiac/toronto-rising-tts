@@ -7,6 +7,8 @@ export type CatalogCharacter = {
   readonly groups: readonly string[];
   readonly groupRanks?: Readonly<Record<string, number>>;
   readonly pickerGroups: readonly string[];
+  /** npcs_data `figurine.scale` (Custom Figurine card scale) before any dashboard override; absent in older exports. */
+  readonly figurineScale?: number | null;
 };
 
 export type CatalogSite = {

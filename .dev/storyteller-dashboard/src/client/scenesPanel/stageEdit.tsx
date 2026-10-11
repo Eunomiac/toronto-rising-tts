@@ -1,5 +1,6 @@
 import { useRef, useState, type CSSProperties, type DragEvent, type MouseEvent, type PointerEvent, type ReactElement, type RefObject } from "react";
 import { Headshot } from "../headshots/Headshot";
+import { useNpcOverrides } from "../npcOverrides";
 import type { SceneCatalogs } from "./catalogs";
 import type { StageChange, StageChanges } from "./commands";
 import {
@@ -181,6 +182,7 @@ type StageLayerProps = {
 /** Standard placement: tokens anywhere on the stage, packs as mild snap points and group drop targets. */
 export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit, onMenu, onSeat }: StageLayerProps): ReactElement => {
   const roster = useRosterLayout();
+  const overrides = useNpcOverrides();
   const [over, setOver] = useState(false);
   const place = (key: string, point: StagePoint): void => {
     if (offStage(point)) {
@@ -274,7 +276,7 @@ export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit
             lit={spot.lit}
             x={at.u * w}
             y={at.v * h}
-            color={group ? groupColor(roster, group) : undefined}
+            color={overrides[spot.characterKey]?.color ?? (group ? groupColor(roster, group) : undefined)}
             boss={group !== undefined && groupLeader(roster, group) === spot.characterKey}
             dragging={dragging !== null}
             handlers={tokens.handlers(spot.characterKey)}

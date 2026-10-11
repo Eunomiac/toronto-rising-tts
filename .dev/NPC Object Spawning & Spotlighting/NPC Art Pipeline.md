@@ -12,7 +12,8 @@ Source of truth:
 - Shared figurine back: `assets/images/NPCs/Shared/figurineBack.webp`
 - Ring templates: `assets/images/NPCs/Token Template/ring-{lit,dark}.svg`
 - Generator: `.dev/storyteller-dashboard/scripts/npc-art/` (`generate.ts`, `draw.ts`, `model.ts`, `save-assets.ts`, `report.ts`)
-- Generated: `assets/images/NPCs/Tokens/<key>.{front,back}.webp`, `assets/images/NPCs/Tokens/tokens.json`, `lib/npc_art_urls.ttslua`, roll-banner rows in the TTS save's `CustomUIAssets`, `.dev/build-logs/npc-art-discrepancies.txt` (ignored)
+- Per-NPC overrides: `.dev/storyteller-dashboard/data/npc-overrides.json` (Dashboard roster token right-click window)
+- Generated: `assets/images/NPCs/Tokens/<key>.{front,back}.webp`, `assets/images/NPCs/Tokens/tokens.json`, `lib/npc_art_urls.ttslua`, `lib/npc_overrides.ttslua`, roll-banner rows in the TTS save's `CustomUIAssets`, `.dev/build-logs/npc-art-discrepancies.txt` (ignored)
 
 Verification:
 - `npm run npc-art:generate` (also runs inside `npm run build:full`; `npm run npc-art:report` reprints the discrepancy list and is the Full build's last step)
@@ -43,14 +44,15 @@ return {
 - **Cache busting:** `?v=` is a fingerprint of the published image bytes (figurine file; both token sides). A token is redrawn only when its inputs change (figurine, name, ring colour, manual crop, ring SVGs, font, `draw.ts`, `model.ts`, recorded in `tokens.json`), and a redraw that produces identical images keeps its link, so TTS re-downloads only art that really changed.
 - **Pruning:** every run rebuilds `lib/npc_art_urls.ttslua` and `tokens.json` from the current figurines and deletes token files with no art entry, so removed images leave no links behind.
 - **Readers (Global only):** `core/npc_spawn.ttslua` (`NpcSpawn.figurineUrls`) and `core/stage_tokens.ttslua` (`tokenArt`). Both error loudly when a key has no art. `lib/npcs_data.ttslua` `D.initGenericNPCs()` registers only generic catalog keys that have art (and prints the rest).
+- **Overrides (TOR-717):** right-clicking a Dashboard roster token opens a window that saves `{ name?, color?, cardScale?, seatedY? }` per NPC. `name` and `color` feed the token art (see Token look). The generator writes the TTS fields to `lib/npc_overrides.ttslua` (bundled by Save & Play, not hosted): `lib/npcs_data.ttslua` applies `name` to `fullName` and `cardScale` to `figurine.scale` for named NPCs at load, `D.initGenericNPCs` uses `name` as a generic's default label, `NPCS.registerGenericCharacter` uses `cardScale`, and `lib/figurine_seat_layout.ttslua` `computeSlotFrames` uses `seatedY` instead of the `SEAT_FIGURE` `defaultY` (-52.89) for an NPC at a table seat. Seated figurines still use card scale 53.
 - **Saved stage tokens:** `StageTokens` replaces any saved token whose images differ from the current links, so regenerated art shows up on the next Save & Play.
 - **Roll result banner:** `core/roll_ui.ttslua` shows a character's figurine through the save's global Custom UI asset named `<characterKey>`. The generator writes those rows (`save-assets.ts`, save from `tts-assets.config.json`, backed up first, written only on change): one row per PC, named NPC and Memoriam figure with art, pointing at its figurine link. It removes rows that point at repo NPC art or are named after a catalogued character but have no art. Generic NPCs get no banner row (about 330 extra images on every load), so a generic NPC's roll banner shows no figure. TTS keeps the Custom UI assets it loaded in memory, so load the save from the main menu after a build before saving in TTS.
 
 ## Token look
 
 - Circular head cut from the figurine using the Dashboard head crop (manual crop from `data/headshot-crops.json`, else the automatic crop).
-- Name in Bebas Neue at lower centre, up to two lines, then an ellipsis. Named and Memoriam NPCs use the first word of their full name (titles such as "Prince", "Lady", "The" are skipped); generic NPCs use their catalog label.
-- **Front (lit):** ring in the NPC's roster colour (first colour-picker group in the Dashboard roster, else its category colour, else a neutral grey).
+- Name in Bebas Neue at lower centre, up to two lines, then an ellipsis. Named and Memoriam NPCs use the first word of their full name (titles such as "Prince", "Lady", "The" are skipped); generic NPCs use their catalog label. An override `name` replaces the full name or label before that rule.
+- **Front (lit):** ring in the override `color`, else the NPC's roster colour (first colour-picker group in the Dashboard roster, else its category colour, else a neutral grey).
 - **Back (dark):** black ring, black silhouette, dimmed name.
 
 Generic NPCs renamed in a scene keep their catalog label on the token image; the rename only changes object names.
@@ -62,9 +64,9 @@ Generic NPCs renamed in a scene keep their catalog label on the token image; the
    - Generic NPC: `Generic/`, with `<key>` matching its `lib/generic_npcs_catalog.ttslua` key (for example `dogGuard_03`).
    - Memoriam figure: `Memoriam/`, named `mem_<key>.webp` to match the `mem_` key in `lib/skyboxes_catalog.ttslua`.
    Keys may only contain letters, digits, and underscores.
-2. **Optional:** in the Dashboard, set a head crop and the roster colour group.
+2. **Optional:** in the Dashboard, set the roster colour group, and right-click the roster token for its name, colour, head crop, card scale and seated height.
 3. **Generate:** `npm run npc-art:generate` (or `npm run build:full`). Pass `--force` to redraw every token after a style change the fingerprint cannot see.
-4. **Publish:** commit `assets/images/NPCs` and `lib/npc_art_urls.ttslua`, then push to `master`. The generator warns when art is uncommitted or not yet pushed.
+4. **Publish:** commit `assets/images/NPCs`, `lib/npc_art_urls.ttslua` and `lib/npc_overrides.ttslua`, then push to `master`. The generator warns when art is uncommitted or not yet pushed.
 5. **TTS:** load the save from the main menu (the build changed its roll-banner rows), then Save & Play. New figurines spawn with the new art; stage tokens with old art are replaced automatically.
 
 To remove an NPC's art, delete its figurine and run the generator: its token, link and banner row all go.
