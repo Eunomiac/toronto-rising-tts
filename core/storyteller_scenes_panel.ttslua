@@ -1529,7 +1529,8 @@ function StorytellerScenesPanel.refresh()
     refreshDaysleepRefreshButtonColor()
 end
 
---- Pushes `sceneLibrary.order` into fixed `scenes_lib_slot_*` buttons (scene name only).
+--- Pushes the playable library rows (`SceneLibrary.playableOrder`: no templates or ended scenes) into fixed
+--- `scenes_lib_slot_*` buttons (scene name only).
 --- Selected = green when live, blue when pending library preview (TOR-244); dimmer when not mirroring.
 function StorytellerScenesPanel.refreshSceneLibraryRows()
     if UI == nil or UI.setAttribute == nil then
@@ -1537,14 +1538,11 @@ function StorytellerScenesPanel.refreshSceneLibraryRows()
     end
 
     local lib = S.getStateVal("sceneLibrary")
-    local order = type(lib) == "table" and lib.order or nil
+    local order = SceneLibrary.playableOrder()
     local scenes = type(lib) == "table" and lib.scenes or nil
     local activeKey = type(lib) == "table" and lib.activeKey or nil
     local pendingSelection = isPendingSceneActivation(activeKey)
     local selectedOnColors = panelOnColors(pendingSelection)
-    if type(order) ~= "table" then
-        order = {}
-    end
     if type(scenes) ~= "table" then
         scenes = {}
     end
@@ -1597,12 +1595,7 @@ function StorytellerScenesPanel.onLibrarySlotClick(player, button, id)
         U.AlertGM("Scene library: could not parse slot id.")
         return
     end
-    local order = S.getStateVal("sceneLibrary", "order")
-    if type(order) ~= "table" then
-        U.AlertGM("Scene library: order is empty.")
-        return
-    end
-    local key = order[idx]
+    local key = SceneLibrary.playableOrder()[idx]
     if type(key) ~= "string" or key == "" then
         U.AlertGM("That library slot is empty.")
         return
@@ -1839,6 +1832,11 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId, c
         refuseSceneApply("Apply: select a library row first (click a scene slot).")
         return
     end
+    local status = SceneLibrary.statusOf(K)
+    if status == "template" or status == "ended" then
+        refuseSceneApply("`" .. K .. "` is " .. status .. ". Play it from the Storyteller Dashboard, which makes a fresh copy of a template; ended scenes reopen from its archive.")
+        return
+    end
 
     if not isPresentFamilyClockMode(clockMode) then
         local hasDt = resolveAuthoredActivationDatetime(K)
@@ -1995,6 +1993,7 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId, c
             GenericNpcs.ensureLiveFromMembership()
         end
         PresentDayClock.markApplied(K)
+        SceneLibrary.setStatus(K, "ongoing")
         clockDraft.sceneKey = K
         clockDraft.dirty = false
         StorytellerScenesPanel.syncClockDraftFromClock(S.getStateVal("sessionScene", "clock"))
@@ -2130,6 +2129,9 @@ function StorytellerScenesPanel.endSceneNarrative(player)
     end
     if type(flushKey) == "string" and flushKey ~= "" then
         PresentDayClock.flushLibraryRowClock(flushKey)
+        if SceneLibrary.statusOf(flushKey) ~= nil then
+            SceneLibrary.setStatus(flushKey, "ended")
+        end
     end
 
     -- Stop mirroring before clearing live location so `Sync.full` does not persist null keys into the library row.
@@ -2951,6 +2953,7 @@ function StorytellerScenesPanel.forkLiveScene(sourceKey, newTitle, oldTitle)
         title = newTitle,
         receivesLiveWrites = true,
         sessionScene = U.clone(F, true),
+        status = "ongoing",
     }
     S.setStateVal(newEntry, "sceneLibrary", "scenes", newKey)
     SceneLibrary.setExclusiveLiveMirror(newKey)

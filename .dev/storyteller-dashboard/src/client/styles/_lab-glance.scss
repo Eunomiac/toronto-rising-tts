@@ -81,6 +81,23 @@ $lab-live: #4caf6a;
   width: 760px;
   align-items: flex-start;
 
+  &-head,
+  &-foot {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  &-head {
+    margin-bottom: 2px;
+  }
+
+  &-foot {
+    margin-top: 2px;
+  }
+
   &-note {
     display: flex;
     align-items: center;
@@ -129,6 +146,7 @@ $lab-live: #4caf6a;
 
   &-name {
     display: flex;
+    flex: 1;
     flex-direction: column;
     min-width: 0;
   }
@@ -144,6 +162,43 @@ $lab-live: #4caf6a;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: #4a8dff;
+  }
+}
+
+// On deck: green for ongoing scenes (always there), gold for new scenes and templates (toggle).
+.lab-star {
+  flex: none;
+  width: 22px;
+  padding: 0;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  text-align: center;
+  background: none;
+
+  &.ongoing {
+    color: #5fd27f;
+    text-shadow: 0 0 6px rgb(95 210 127 / 70%);
+    cursor: default;
+  }
+
+  &.fresh {
+    color: #6a6a74;
+    cursor: pointer;
+
+    &.on {
+      color: #e0c36a;
+      text-shadow: 0 0 6px rgb(224 195 106 / 70%);
+    }
+
+    &:hover:not(:disabled) {
+      color: #e0c36a;
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
   }
 }
 
@@ -2224,18 +2279,16 @@ $lab-live: #4caf6a;
     color: #c9a94e;
   }
 
-  // A live scene on deck: one click puts it on the table.
+  // A scene on deck: ongoing (bright green, switches back at once) or new / template (gold, asks about the clock).
   &-deck {
     padding: 2px 8px;
-    border: 1px dashed #4a6a54;
+    border: 1px dashed;
     font-family: "Bebas Neue", "Arial Narrow", sans-serif;
     font-size: 16px;
     font-weight: 400;
     line-height: 1.1;
     letter-spacing: 0.04em;
     white-space: nowrap;
-    color: #8fbf9c;
-    background: rgb(76 175 106 / 8%);
 
     &::before {
       content: "▸ ";
@@ -2244,9 +2297,28 @@ $lab-live: #4caf6a;
 
     &:hover:not(:disabled) {
       border-style: solid;
-      border-color: #4caf6a;
       color: #fff;
-      background: rgb(76 175 106 / 22%);
+    }
+
+    &.ongoing {
+      border-color: #5fd27f;
+      color: #7ff0a0;
+      background: rgb(95 210 127 / 12%);
+
+      &:hover:not(:disabled) {
+        background: rgb(95 210 127 / 26%);
+      }
+    }
+
+    &.fresh {
+      border-color: #9c8240;
+      color: #e0c36a;
+      background: rgb(201 169 78 / 8%);
+
+      &:hover:not(:disabled) {
+        border-color: #c9a94e;
+        background: rgb(201 169 78 / 22%);
+      }
     }
   }
 

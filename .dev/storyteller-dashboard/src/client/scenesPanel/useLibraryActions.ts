@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { LibraryScene } from "../../shared/sceneLibrary";
+import type { LibraryScene, SceneStatus } from "../../shared/sceneLibrary";
 import type { LabLocation, LibraryActions, LibraryEntry, LinkMenu } from "./glance";
 import { sceneDeckSnapshot, setSceneDeckSection, useSceneDeck } from "../sceneDeck";
 import {
@@ -15,6 +15,7 @@ import {
 import type { SceneSlice } from "../worldState";
 import type { SceneClock, ScenesCommand } from "./commands";
 import { newLibraryScene, newSceneKey, newSceneTitle } from "./library";
+import { nightLabel, templateCopy } from "./sceneStatus";
 
 /** How long the table's scene must be quiet before its library row is read back from TTS. */
 const WRITE_BACK_DELAY_MS = 1500;
@@ -24,7 +25,8 @@ const upsertCommand = (row: LibraryScene): ScenesCommand => ({
   key: row.key,
   title: row.title,
   placementMode: row.placementMode,
-  sessionScene: row.sessionScene
+  sessionScene: row.sessionScene,
+  status: row.status
 });
 
 const locationOf = (row: LibraryScene): LabLocation | undefined => {
@@ -71,10 +73,12 @@ const useWriteBack = (scene: SceneSlice | undefined, onError: (text: string) => 
 /**
  * The scene library and preview panels for the live Scenes tab. The dashboard's library is the master copy:
  * Play and Save send the row to TTS (`upsertScene`) first. Previews are drafts kept in the scene deck file until
- * saved, played or discarded.
+ * saved, played or discarded. Playing a template plays a dated copy of it (`templateCopy`); the template stays.
  */
-export const useLibraryActions = ({ scene, sendBatch, removeFromDeck }: {
+export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }: {
   scene: SceneSlice | undefined;
+  /** Present day, which dates a template's copy. */
+  present: Date | null;
   /** Sends the queue, then these commands, in one batch. */
   sendBatch: (commands: readonly ScenesCommand[]) => void;
   removeFromDeck: (key: string) => void;
@@ -105,14 +109,36 @@ export const useLibraryActions = ({ scene, sendBatch, removeFromDeck }: {
   const saveDraft = (key: string, then: readonly ScenesCommand[] = []): LibraryScene | undefined => {
     const draft = findDraft(key);
     if (draft) {
-      putLibraryScene(draft);
-      sendBatch([upsertCommand(draft), ...then]);
+      // A saved scene's status moves on without its draft (TTS marks it ongoing or ended).
+      const saved = findRow(key);
+      const row = saved ? { ...draft, status: saved.status } : draft;
+      putLibraryScene(row);
+      sendBatch([upsertCommand(row), ...then]);
       closeDraft(key);
+      return row;
     }
-    return draft;
+    return undefined;
+  };
+
+  const playTemplate = (template: LibraryScene, clock: SceneClock): void => {
+    if (!present) {
+      setNotice(`TTS has no present day yet, so “${template.title}” cannot be dated.`);
+      return;
+    }
+    const night = nightLabel(clock.from === "present" ? new Date(present.getTime() + clock.plusMinutes * 60_000) : present);
+    const copy = templateCopy(template, night, [...sceneLibrarySnapshot().scenes, ...sceneDeckSnapshot().previews]);
+    putLibraryScene(copy);
+    sendBatch([upsertCommand(copy), { op: "playScene", key: copy.key, ...clock }]);
   };
 
   const play = (key: string, clock: SceneClock): void => {
+    if ((findRow(key) ?? findDraft(key))?.status === "template") {
+      const template = findDraft(key) ? saveDraft(key) : findRow(key);
+      if (template) {
+        playTemplate(template, clock);
+      }
+      return;
+    }
     const row = findRow(key);
     if (row) {
       sendBatch([upsertCommand(row), { op: "playScene", key, ...clock }]);
@@ -120,6 +146,23 @@ export const useLibraryActions = ({ scene, sendBatch, removeFromDeck }: {
       saveDraft(key, [{ op: "playScene", key, ...clock }]);
     } else {
       sendBatch([{ op: "playScene", key, ...clock }]);
+    }
+  };
+
+  /** Template choice, the archive, and ending a deck scene that is not on the table. */
+  const setStatus = (key: string, status: SceneStatus): void => {
+    const draft = findDraft(key);
+    if (draft) {
+      setPreviews(sceneDeckSnapshot().previews.map((row) => (row.key === key ? { ...row, status } : row)));
+    }
+    const row = findRow(key);
+    if (!row) {
+      return;
+    }
+    putLibraryScene({ ...row, status });
+    sendBatch([{ op: "setSceneStatus", key, status }]);
+    if (status === "ended") {
+      removeFromDeck(key);
     }
   };
 
@@ -163,6 +206,15 @@ export const useLibraryActions = ({ scene, sendBatch, removeFromDeck }: {
 
   const actions: LibraryActions = {
     rename,
+    setStatus,
+    setOnDeck: (key, on) => {
+      const row = findRow(key);
+      if (on && row) {
+        addToDeck(row);
+      } else if (!on) {
+        removeFromDeck(key);
+      }
+    },
     remove: (key) => {
       removeLibraryScene(key);
       removeFromDeck(key);
@@ -189,7 +241,7 @@ export const useLibraryActions = ({ scene, sendBatch, removeFromDeck }: {
     return [...library.scenes, ...previews.filter((row) => !known.has(row.key))].map((row) => {
       const location = locationOf(row);
       const editing = previews.some((draft) => draft.key === row.key);
-      return { key: row.key, title: row.title, editing, saved: known.has(row.key), ...(location ? { location } : {}) };
+      return { key: row.key, title: row.title, status: row.status, editing, saved: known.has(row.key), ...(location ? { location } : {}) };
     });
   }, [library.scenes, previews]);
 
@@ -210,8 +262,12 @@ export const useLibraryActions = ({ scene, sendBatch, removeFromDeck }: {
     : undefined;
 
   return {
+    rows: library.scenes,
     entries,
     actions,
+    setStatus,
+    /** A saved scene's status, else its draft's. */
+    statusOf: (key: string): SceneStatus | undefined => (library.scenes.find((row) => row.key === key) ?? previews.find((row) => row.key === key))?.status,
     linkMenu,
     previews,
     previewKey,
@@ -231,7 +287,13 @@ export const useLibraryActions = ({ scene, sendBatch, removeFromDeck }: {
         addToDeck(saved);
       }
     },
-    playDraft: (key: string, clock: SceneClock) => void saveDraft(key, [{ op: "playScene", key, ...clock }]),
+    playDraft: (key: string, clock: SceneClock) => {
+      if ((findRow(key) ?? findDraft(key))?.status === "template") {
+        play(key, clock);
+      } else {
+        saveDraft(key, [{ op: "playScene", key, ...clock }]);
+      }
+    },
     discardDraft: closeDraft
   };
 };

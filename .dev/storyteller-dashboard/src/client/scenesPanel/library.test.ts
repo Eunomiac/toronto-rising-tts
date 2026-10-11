@@ -7,6 +7,7 @@ const scene = (key: string, extra: Partial<LibraryScene> = {}): LibraryScene => 
   title: key,
   placementMode: "standard",
   linked: false,
+  status: "new",
   sessionScene: { siteKey: "CLGrounds", clock: { isPresentDay: true } },
   ...extra
 });
@@ -25,6 +26,15 @@ describe("TTS library snapshot", () => {
     ]);
     expect(scenesFromTts(parseTtsLibrarySnapshot({ ok: true, order: [], scenes: [] }))).toEqual([]);
     expect(() => parseTtsLibrarySnapshot({ ok: false, error: "loading" })).toThrow("loading");
+  });
+
+  it("reads each row's status, counting a row without one as new", () => {
+    const snapshot = parseTtsLibrarySnapshot({
+      ok: true,
+      order: ["a", "b", "c"],
+      scenes: { a: { title: "A", status: "ongoing" }, b: { title: "B", status: "bogus" }, c: { title: "C" } }
+    });
+    expect(scenesFromTts(snapshot).map((row) => row.status)).toEqual(["ongoing", "new", "new"]);
   });
 });
 
@@ -45,6 +55,12 @@ describe("mergeFromTts", () => {
     expect(mergeFromTts(local, [scene("a")])[0]?.linked).toBe(false);
     const same = [scene("a")];
     expect(mergeFromTts(same, [scene("a")])).toBe(same);
+  });
+
+  it("takes TTS's status (ongoing, ended) while keeping the dashboard's edits", () => {
+    const local = [scene("a", { title: "Edited" })];
+    const merged = mergeFromTts(local, [scene("a", { title: "Old", status: "ended" })]);
+    expect(merged[0]).toMatchObject({ title: "Edited", status: "ended" });
   });
 
   it("adopts TTS's copy of an unlinked row on the write-back after a scene leaves the table", () => {

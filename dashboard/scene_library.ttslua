@@ -3,10 +3,13 @@
 
   The dashboard keeps the master copy of the scene library (`data/scene-library.json` beside the dashboard);
   TTS's `gameState.sceneLibrary` holds the rows it has been asked to play. Rows travel in TTS's own shape
-  (`{ title, placementMode, receivesLiveWrites, sessionScene }`), the same table TTS JSON-encodes on every save.
+  (`{ title, placementMode, receivesLiveWrites, sessionScene, status }`), the same table TTS JSON-encodes on
+  every save. TTS owns `status` changes from play (`ongoing`) and End Scene (`ended`); `upsert` never
+  overwrites an existing row's status.
 
   - `snapshot(keys?)`  rows for seeding the dashboard and for refreshing the row linked to the table
   - `upsert(cmd)`      write a dashboard row before Play Scene (op `upsertScene`)
+  - `setStatus(cmd)`   change a row's lifecycle status (op `setSceneStatus`)
   - `remove(key)`      delete a row (op `deleteScene`)
 
   Design: .dev/Storyteller Dashboard Docs/Listening to TTS.md § Scene library
@@ -77,11 +80,21 @@ function Lib.upsert(cmd)
   if not okClock then
     return "upsertScene: " .. tostring(errClock)
   end
+  local status = "new"
+  if type(existing) == "table" then
+    status = SceneLibrary.statusOf(key)
+  elseif cmd.status ~= nil then
+    if not SceneLibrary.STATUSES[cmd.status] then
+      return "upsertScene: unknown status `" .. tostring(cmd.status) .. "`."
+    end
+    status = cmd.status
+  end
   S.setStateVal({
     title = title,
     placementMode = cmd.placementMode,
     receivesLiveWrites = type(existing) == "table" and existing.receivesLiveWrites == true,
     sessionScene = cmd.sessionScene,
+    status = status,
   }, "sceneLibrary", "scenes", key)
   local order = S.getStateVal("sceneLibrary", "order") or {}
   local listed = false
@@ -95,6 +108,23 @@ function Lib.upsert(cmd)
     local nextOrder = U.clone(order, true)
     nextOrder[#nextOrder + 1] = key
     S.setStateVal(nextOrder, "sceneLibrary", "order")
+  end
+  afterLibraryWrite()
+  return nil
+end
+
+--- Dashboard status edits (template choice, archive, ending a deck scene that is not on the table). Ending the
+--- scene on the table goes through End Scene, which also clears the table.
+--- @param cmd table `{ key, status }`
+--- @return string|nil error
+function Lib.setStatus(cmd)
+  if cmd.status == "ended" and SceneLibrary.hasLiveSceneOnTable()
+    and S.getStateVal("sceneLibrary", "lastAppliedKey") == cmd.key then
+    return "setSceneStatus: that scene is on the table; use End Scene."
+  end
+  local err = SceneLibrary.setStatus(cmd.key, cmd.status)
+  if err ~= nil then
+    return "setSceneStatus: " .. err
   end
   afterLibraryWrite()
   return nil

@@ -22,8 +22,9 @@ import type { SceneCatalogs } from "./catalogs";
 import { Box, Overlay, WideBoard, type LiveBoard } from "./sketch";
 import { useLiveSheet } from "../pcSheet/useLiveSheet";
 import { sceneDeckSnapshot, setSceneDeckSection, useSceneDeck, useSceneDeckStatus } from "../sceneDeck";
-import { useSceneLibraryStatus } from "../sceneLibrary";
+import { useSceneLibrary, useSceneLibraryStatus } from "../sceneLibrary";
 import { DraftPanels } from "./DraftPanels";
+import { deckScenes } from "./sceneStatus";
 import { useLibraryActions } from "./useLibraryActions";
 import { clockNow, refreshWorldSnapshot, useWorldState, WORLD_TOPICS, type WorldState } from "../worldState";
 import { sendScenesCommands, type ScenesReply } from "./bridge";
@@ -130,12 +131,14 @@ const useNow = (running: boolean): number => {
 };
 
 /**
- * The on-deck list, kept in the dashboard's scene deck file. TTS's table scene joins it once (when that file has
- * loaded and TTS first reports the scene); after that only its title follows renames, so End Scene or Remove from
- * deck is not undone by a push that still names the old scene.
+ * The live scenes (`deckScenes`): the table's, every ongoing library scene, and the new scenes and templates in
+ * the dashboard's scene deck file. TTS's table scene joins that file once (when it has loaded and TTS first
+ * reports the scene); after that only its title follows renames, so End Scene or Remove from deck is not undone
+ * by a push that still names the old scene.
  */
 const useLiveScenes = (liveKey: string | undefined, title: string | null): LiveScenes & { remove: (key: string) => void } => {
   const { deck } = useSceneDeck();
+  const { scenes: rows } = useSceneLibrary();
   const { loaded } = useSceneDeckStatus();
   const joined = useRef<string | null>(null);
   useEffect(() => {
@@ -148,9 +151,10 @@ const useLiveScenes = (liveKey: string | undefined, title: string | null): LiveS
       setSceneDeckSection("deck", next);
     }
   }, [loaded, deck, liveKey, title]);
-  const current = liveKey && title ? { key: liveKey, title } : null;
+  const current = useMemo(() => (liveKey && title ? { key: liveKey, title } : null), [liveKey, title]);
+  const live = useMemo(() => deckScenes(rows, deck, current), [rows, deck, current]);
   return {
-    live: current && !deck.some((scene) => scene.key === current.key) ? [...deck, current] : deck,
+    live,
     current,
     remove: (key: string) => setSceneDeckSection("deck", withoutScene(sceneDeckSnapshot().deck, key))
   };
@@ -330,7 +334,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const title = scene?.liveTitle ?? null;
   const liveScenes = useLiveScenes(scene?.liveKey, title);
   const deckError = useSceneDeckStatus().error;
-  const library = useLibraryActions({ scene, sendBatch: commands.sendAll, removeFromDeck: liveScenes.remove });
+  const library = useLibraryActions({ scene, present, sendBatch: commands.sendAll, removeFromDeck: liveScenes.remove });
   const libraryError = useSceneLibraryStatus().error;
   const presentNow = present ?? new Date();
   const stageTokens = useMemo(
@@ -463,6 +467,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
                     liveScenes.remove(scene.liveKey);
                   }
                 }}
+                onEndDeckScene={(key) => library.setStatus(key, "ended")}
                 onRemoveFromDeck={liveScenes.remove}
                 onPlay={library.play}
                 onEdit={library.openPreview}
@@ -474,7 +479,8 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
                   sessionNum: phase.sessionNum,
                   sessionName: phase.sessionName,
                   spotlight: spotlightView(seats),
-                  ...(present ? { presentYear: present.getFullYear() } : {})
+                  ...(present ? { presentYear: present.getFullYear() } : {}),
+                  ...(scene?.memoriamReturnTitle ? { memoriamReturn: scene.memoriamReturnTitle } : {})
                 }}
               />
             ) : (
@@ -533,6 +539,8 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
                   library.previews.find((row) => row.key === key)?.linked
                     ? "The table writes into this scene while it plays; unlink it first or your saved edits will be overwritten."
                     : undefined}
+                statusOf={library.statusOf}
+                onStatus={library.setStatus}
                 onSave={library.saveDraft}
                 onDeck={library.deckDraft}
                 onPlay={library.playDraft}

@@ -957,6 +957,7 @@ function SceneLibrary.writeImportedLibraryRow(normalized)
         receivesLiveWrites = false,
         sessionScene = normalized.sessionScene,
         placementMode = normalized.placementMode or "standard",
+        status = S.getStateVal("sceneLibrary", "scenes", sceneKey, "status"),
     }
     S.setStateVal(entry, "sceneLibrary", "scenes", sceneKey)
     local order = S.getStateVal("sceneLibrary", "order")
@@ -1161,6 +1162,53 @@ function SceneLibrary.hasLiveSceneOnTable()
         return false
     end
     return type(S.getStateVal("sceneLibrary", "scenes", key)) == "table"
+end
+
+--- Library scene lifecycle (`row.status`). A row without one counts as `new`.
+--- `new` → `ongoing` when it first goes live; `ongoing` → `ended` on End Scene. `template` rows never go live:
+--- the dashboard plays a dated copy instead.
+SceneLibrary.STATUSES = { new = true, ongoing = true, ended = true, template = true }
+
+--- @param sceneKey string
+--- @return string|nil status `nil` when the row does not exist
+function SceneLibrary.statusOf(sceneKey)
+    local S = require("core.state")
+    local row = type(sceneKey) == "string" and S.getStateVal("sceneLibrary", "scenes", sceneKey) or nil
+    if type(row) ~= "table" then
+        return nil
+    end
+    return SceneLibrary.STATUSES[row.status] and row.status or "new"
+end
+
+--- @param sceneKey string
+--- @param status string one of `SceneLibrary.STATUSES`
+--- @return string|nil error
+function SceneLibrary.setStatus(sceneKey, status)
+    local S = require("core.state")
+    if not SceneLibrary.STATUSES[status] then
+        return "Unknown scene status: " .. tostring(status)
+    end
+    if type(sceneKey) ~= "string" or type(S.getStateVal("sceneLibrary", "scenes", sceneKey)) ~= "table" then
+        return "No library scene `" .. tostring(sceneKey) .. "`."
+    end
+    if S.getStateVal("sceneLibrary", "scenes", sceneKey, "status") ~= status then
+        S.setStateVal(status, "sceneLibrary", "scenes", sceneKey, "status")
+    end
+    return nil
+end
+
+--- Rows the in-game Scenes panel lists: templates and ended scenes stay on the dashboard.
+--- @return table keys in library order
+function SceneLibrary.playableOrder()
+    local S = require("core.state")
+    local out = {}
+    for _, key in ipairs(S.getStateVal("sceneLibrary", "order") or {}) do
+        local status = SceneLibrary.statusOf(key)
+        if status ~= nil and status ~= "template" and status ~= "ended" then
+            out[#out + 1] = key
+        end
+    end
+    return out
 end
 
 return SceneLibrary

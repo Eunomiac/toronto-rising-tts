@@ -7,7 +7,8 @@
 
   Ops (field `op`):
     phaseAdvance                          next top-level phase (Intermission → Play → Spotlight → End)
-    playSubPhase      subPhase            Main / Downtime (leaving Memoriam restores the interrupted scene)
+    leaveMemoriam                         back to the scene the Memoriam interrupted, or Downtime when it started
+                                          in Downtime or that scene has been ended since
     memoriam          payload             enter Memoriam: { subjectKey, date, location, skyboxKey + panel
                                           or justSmoke, assignments } (same payload as the TTS modal)
     sessionNum        num                 session number (Intermission blindfold images follow)
@@ -51,10 +52,13 @@
                                           select a library scene and apply it to the table, starting
                                           `plusMinutes` after its own time (`from` scene) or present day
                                           (`from` present, which moves present day on); real time runs at
-                                          ×2, or (`pace` x5) at ×5 until it reaches present day
+                                          ×2, or (`pace` x5) at ×5 until it reaches present day; refuses
+                                          template and ended rows
     endScene                              end the live scene
-    upsertScene       key, title, placementMode, sessionScene
-                                          write a dashboard library row (`dashboard/scene_library.ttslua`)
+    upsertScene       key, title, placementMode, sessionScene, status?
+                                          write a dashboard library row (`dashboard/scene_library.ttslua`);
+                                          `status` only applies to a row TTS does not have yet
+    setSceneStatus    key, status         new / ongoing / ended / template; not `ended` for the table's scene
     deleteScene       key                 delete a library row (not the scene on the table)
     unlinkScene                           stop live writes into the table's library row
     forkScene         newTitle, oldTitle? the table continues as a new row; the old row keeps a snapshot
@@ -168,19 +172,12 @@ local function applyCommand(cmd)
     end
     return nil
   end
-  if op == "playSubPhase" then
-    -- Same routing as the in-game Main / Downtime buttons: leaving Memoriam restores the scene it interrupted.
-    if cmd.subPhase == C.PlaySubPhases.MEMORIAM then
-      return "Enter Memoriam with the Memoriam set-up (op `memoriam`)."
-    end
+  if op == "leaveMemoriam" then
     local Memoriam = require("core.memoriam")
-    if Memoriam.isActive() then
-      Memoriam.applyExit({ mode = "restore", player = storytellerPlayer() })
-      return nil
+    if not Memoriam.isActive() then
+      return "There is no Memoriam to leave."
     end
-    if require("core.phases").setPlaySubPhase(cmd.subPhase) ~= true then
-      return "Could not switch to subphase `" .. tostring(cmd.subPhase) .. "`."
-    end
+    Memoriam.applyExit({ mode = "restore", player = storytellerPlayer() })
     return nil
   end
   if op == "memoriam" then
@@ -383,6 +380,9 @@ local function applyCommand(cmd)
   if op == "upsertScene" then
     return require("dashboard.scene_library").upsert(cmd)
   end
+  if op == "setSceneStatus" then
+    return require("dashboard.scene_library").setStatus(cmd)
+  end
   if op == "deleteScene" then
     return require("dashboard.scene_library").remove(cmd.key)
   end
@@ -428,8 +428,12 @@ local function applyCommand(cmd)
       Panel.endSceneNarrative(player)
       return nil
     end
-    if type(cmd.key) ~= "string" or type(S.getStateVal("sceneLibrary", "scenes", cmd.key)) ~= "table" then
+    local status = require("core.scene_library").statusOf(cmd.key)
+    if status == nil then
       return "No library scene `" .. tostring(cmd.key) .. "`."
+    end
+    if status == "template" or status == "ended" then
+      return "`" .. cmd.key .. "` is " .. status .. "; play a new or ongoing scene."
     end
     if cmd.from ~= "scene" and cmd.from ~= "present" then
       return "playScene needs `from` scene or present."

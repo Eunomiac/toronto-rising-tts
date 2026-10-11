@@ -444,7 +444,8 @@ function S.GetDefaultGameState()
             activeKey = nil,
             --- Button order; values must be keys of `scenes`.
             order = {},
-            --- [sceneKey] = { title, receivesLiveWrites, placementMode, sessionScene = { ... } }
+            --- [sceneKey] = { title, receivesLiveWrites, placementMode, status?, sessionScene = { ... } }
+            --- `status`: new / ongoing / ended / template (`SceneLibrary.STATUSES`; missing = new)
             scenes = {},
         },
         -- Storyteller roll automation (chronicle-wide); merged with defaults in validateState

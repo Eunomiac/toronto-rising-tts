@@ -24,6 +24,8 @@ export type SceneSlice = {
   readonly liveKey?: string;
   readonly liveTitle?: string;
   readonly liveLinked: boolean;
+  /** During a Memoriam: the scene leaving it returns to (none: it goes to Downtime). */
+  readonly memoriamReturnTitle?: string;
   /** The live library row's own location; differs from the live one after an unlinked override. */
   readonly library?: { readonly districtKey?: string; readonly siteKey?: string };
   /** Scene condition ids; TTS encodes an empty list as `{}`, so read through `sceneConditions`. */

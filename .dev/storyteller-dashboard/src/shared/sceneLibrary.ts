@@ -6,12 +6,26 @@
 
 export type PlacementMode = "standard" | "scatter";
 
+/**
+ * Where a scene is in its life. `new` until it first goes live, then `ongoing` (always on the deck) until it is
+ * ended. A `template` never goes live itself: playing it plays a fresh dated copy. TTS sets `ongoing` and `ended`
+ * (play, End Scene); the dashboard sets the rest (`setSceneStatus`).
+ */
+export type SceneStatus = "new" | "ongoing" | "ended" | "template";
+
+export const SCENE_STATUSES: readonly SceneStatus[] = ["new", "ongoing", "ended", "template"];
+
+/** A row without a status (older saves) counts as new. */
+export const parseSceneStatus = (value: unknown): SceneStatus =>
+  SCENE_STATUSES.includes(value as SceneStatus) ? (value as SceneStatus) : "new";
+
 export type LibraryScene = {
   readonly key: string;
   readonly title: string;
   readonly placementMode: PlacementMode;
   /** TTS's `receivesLiveWrites`: while this scene is on the table, TTS writes the live scene into the row. */
   readonly linked: boolean;
+  readonly status: SceneStatus;
   /** TTS's `sessionScene`; the dashboard edits only the fields it knows and passes the rest through. */
   readonly sessionScene: Readonly<Record<string, unknown>>;
 };
@@ -41,6 +55,7 @@ export const parseLibraryScene = (value: unknown): LibraryScene | null => {
     title: value.title,
     placementMode: value.placementMode === "scatter" ? "scatter" : "standard",
     linked: value.linked === true,
+    status: parseSceneStatus(value.status),
     sessionScene: isRecord(value.sessionScene) ? value.sessionScene : {}
   };
 };

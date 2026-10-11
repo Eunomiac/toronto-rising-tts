@@ -20,13 +20,15 @@ export const sceneTimeOf = (row: LibraryScene | undefined): ClockDatetime | unde
 };
 
 /** The evening a time belongs to: hours before noon count as the night that began the evening before. */
-const nightOf = (at: Date): string => new Date(at.getTime() - 12 * 3_600_000).toDateString();
+export const nightOf = (at: Date): Date => new Date(at.getTime() - 12 * 3_600_000);
+
+export const isSameNight = (a: Date, b: Date): boolean => nightOf(a).toDateString() === nightOf(b).toDateString();
 
 /**
  * ×5 to Now when the scene starts earlier on the same night as present day (so it catches up), otherwise ×2.
  */
 export const defaultPace = (start: Date, present: Date | undefined): SceneClock["pace"] =>
-  present !== undefined && start.getTime() < present.getTime() && nightOf(start) === nightOf(present) ? "x5" : "x2";
+  present !== undefined && start.getTime() < present.getTime() && isSameNight(start, present) ? "x5" : "x2";
 
 /** "+45 min", "+2 h", "+1 h 30". */
 export const offsetLabel = (minutes: number): string => {

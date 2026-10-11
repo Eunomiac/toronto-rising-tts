@@ -3,7 +3,7 @@ import type { LibraryScene } from "../../shared/sceneLibrary";
 import { defaultPace, offsetLabel, sceneTimeOf } from "./sceneClock";
 
 const row = (clock: unknown): LibraryScene =>
-  ({ key: "s", title: "S", placementMode: "standard", linked: false, sessionScene: { clock } }) as LibraryScene;
+  ({ key: "s", title: "S", placementMode: "standard", linked: false, status: "new", sessionScene: { clock } });
 
 describe("sceneTimeOf", () => {
   it("reads a full datetime, even on a present-day row", () => {

@@ -89,10 +89,18 @@ local function buildScene()
   for i, id in ipairs(type(ss.conditions) == "table" and ss.conditions or {}) do
     conditions[i] = id
   end
+  -- Leaving a Memoriam returns to this scene (it interrupted it and the scene has not been ended since).
+  local memoriamReturnTitle = nil
+  local returnKey = S.getStateVal("memoriam", "active") == true and S.getStateVal("memoriam", "returnSceneKey") or nil
+  local returnStatus = require("core.scene_library").statusOf(returnKey)
+  if returnStatus == "new" or returnStatus == "ongoing" then
+    memoriamReturnTitle = S.getStateVal("sceneLibrary", "scenes", returnKey, "title") or returnKey
+  end
   return {
     liveKey = liveKey,
     liveTitle = liveRow and liveRow.title or nil,
     liveLinked = liveRow ~= nil and liveRow.receivesLiveWrites == true,
+    memoriamReturnTitle = memoriamReturnTitle,
     library = type(libraryScene) == "table" and {
       districtKey = libraryScene.districtKey,
       siteKey = libraryScene.siteKey,

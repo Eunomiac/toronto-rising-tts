@@ -441,8 +441,12 @@ applyWorldUnderCover = function(payload, opts)
     local preClock = nil
     local enterStats = {}
     if not reinit then
+        -- Only a Memoriam that interrupts a scene in Main returns to it; one started from Downtime returns to Downtime.
         local lastApplied = S.getStateVal("sceneLibrary", "lastAppliedKey")
-        if type(lastApplied) == "string" and lastApplied ~= "" then
+        if S.getStateVal("playSubPhase") == C.PlaySubPhases.MAIN
+            and SceneLibrary.hasLiveSceneOnTable()
+            and type(lastApplied) == "string" and lastApplied ~= ""
+        then
             returnSceneKey = lastApplied
         end
         preClock = cloneClock(S.getStateVal("sessionScene", "clock"))
@@ -652,9 +656,10 @@ function Memoriam.applyExit(opts)
         return { presentOverride = presentOverride, returnSceneKey = returnSceneKey }
     end
 
-    -- restore
+    -- restore: back to the interrupted scene unless it was ended meanwhile (then Downtime, no live scene)
     local player = opts.player or findStorytellerPlayer()
-    if type(returnSceneKey) == "string" and returnSceneKey ~= "" then
+    local returnStatus = require("core.scene_library").statusOf(returnSceneKey)
+    if returnStatus == "new" or returnStatus == "ongoing" then
         S.setPlaySubPhase(C.PlaySubPhases.MAIN)
         if type(Sync.ui) == "function" then
             Sync.ui({ phase = true, gameStateOverlay = true })

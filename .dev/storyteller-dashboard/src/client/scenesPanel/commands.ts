@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import type { PlacementMode } from "../../shared/sceneLibrary";
+import type { PlacementMode, SceneStatus } from "../../shared/sceneLibrary";
 import type { ClockDatetime, GenericNpc } from "../worldState";
 
 /**
@@ -45,7 +45,7 @@ export type StageChanges = Readonly<Record<string, StageChange>>;
 /** One Scenes tab command for `GlobalDashboardScenesApply` (`dashboard/scenes.ttslua` lists what each does). */
 export type ScenesCommand =
   | { readonly op: "phaseAdvance" }
-  | { readonly op: "playSubPhase"; readonly subPhase: "Main" | "Downtime" }
+  | { readonly op: "leaveMemoriam" }
   | { readonly op: "memoriam"; readonly payload: MemoriamPayload }
   | { readonly op: "location"; readonly districtKey: string; readonly siteKey: string }
   | { readonly op: "skybox"; readonly key: string }
@@ -82,7 +82,10 @@ export type ScenesCommand =
     readonly title: string;
     readonly placementMode: PlacementMode;
     readonly sessionScene: Readonly<Record<string, unknown>>;
+    /** Only used when TTS does not have the row yet; TTS keeps an existing row's status. */
+    readonly status: SceneStatus;
   }
+  | { readonly op: "setSceneStatus"; readonly key: string; readonly status: SceneStatus }
   | { readonly op: "deleteScene"; readonly key: string }
   | { readonly op: "unlinkScene" }
   | { readonly op: "forkScene"; readonly newTitle: string; readonly oldTitle?: string }

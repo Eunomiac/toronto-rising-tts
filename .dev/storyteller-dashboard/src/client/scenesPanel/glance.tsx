@@ -32,7 +32,8 @@ import { figurineUrl } from "../headshots/headshots";
 import { PendingGenericsContext, SceneGenericsContext, useScenesCommand, type SceneClock, type SoundLane } from "./commands";
 import { LOCATION_MUSIC_LABEL, MOOD_LABEL, fromDate, rainKey, toDate, type SoundView, type SpotlightView } from "./liveScene";
 import { START_OFFSETS, defaultPace, offsetLabel, sceneTimeOf } from "./sceneClock";
-import type { LibraryScene } from "../../shared/sceneLibrary";
+import type { LibraryScene, SceneStatus } from "../../shared/sceneLibrary";
+import { displayTitle, entryPlan, libraryRank, type DeckScene } from "./sceneStatus";
 import { sceneDeckSnapshot } from "../sceneDeck";
 import { sceneLibrarySnapshot } from "../sceneLibrary";
 import { GROUP_DRAG_TYPE, NPC_DRAG_TYPE } from "./stage";
@@ -111,8 +112,11 @@ const RingMenu = <T,>({ at, options, current, onPick, onClose }: {
   );
 };
 
-/** A scene switch waiting for its clock choice: where the menu opens, which scene, and what to run once picked. */
-export type SceneTiming = { readonly at: Point; readonly key: string; readonly go: (clock: SceneClock) => void };
+/**
+ * A scene switch waiting for its clock choice: where the menu opens, which scene, what to run once picked, and
+ * whether to offer the scene's own time (only when it was given one: `entryPlan`).
+ */
+export type SceneTiming = { readonly at: Point; readonly key: string; readonly showScene: boolean; readonly go: (clock: SceneClock) => void };
 
 const TIMING_W = 420;
 const TIMING_H = 318;
@@ -147,16 +151,41 @@ const TimingStrip = ({ from, disabled, target, onHover, onPick }: {
 );
 
 /**
- * Every scene switch from the dashboard asks when the scene starts. The top shows the scene's own time and the
- * bottom present day ("Now"); the coloured strip under each starts that many minutes later (hovering previews the
- * time), and "Now" plus minutes moves present day on. Real time then runs at ×2, or at ×5 until it reaches present
- * day: ×5 is chosen for a start earlier on present day's night, ×2 otherwise, and either can be clicked.
+ * Switching to a scene: an ongoing scene goes straight back to its own time; a new scene (or a template's copy)
+ * opens the timing menu (`useSceneEntry` returns it to render).
+ */
+export const useSceneEntry = (): { timing: SceneTiming | null; enter: (key: string, at: Point, go: (clock: SceneClock) => void) => void; close: () => void } => {
+  const { clock } = useWorldState();
+  const [timing, setTiming] = useState<SceneTiming | null>(null);
+  return {
+    timing,
+    enter: (key, at, go) => {
+      // A draft's status is stale once TTS has moved the saved scene on (ongoing, ended).
+      const row = sceneRowFor(key);
+      const saved = sceneLibrarySnapshot().scenes.find((scene) => scene.key === key);
+      const plan = entryPlan(row && saved ? { ...row, status: saved.status } : row, clock?.presentDay ? toDate(clock.presentDay) : undefined);
+      if (plan.kind === "switch") {
+        go(plan.clock);
+      } else {
+        setTiming({ at, key, showScene: plan.showScene, go });
+      }
+    },
+    close: () => setTiming(null)
+  };
+};
+
+/**
+ * A new scene asks when it starts. The bottom row is present day ("Now"); the top row, the scene's own time, only
+ * shows when the scene was given one. The coloured strip under each starts that many minutes later (hovering
+ * previews the time), and "Now" plus minutes moves present day on (travel time). Real time then runs at ×2, or at
+ * ×5 until it reaches present day: ×5 is chosen for a start earlier on present day's night, ×2 otherwise, and
+ * either can be clicked.
  */
 export const SceneTimingRing = ({ timing, onClose }: { timing: SceneTiming; onClose: () => void }): ReactElement => {
   const { clock } = useWorldState();
   const present = clock?.presentDay ? toDate(clock.presentDay) : undefined;
   const [sceneAt] = useState(() => {
-    const own = sceneTimeOf(sceneRowFor(timing.key));
+    const own = timing.showScene ? sceneTimeOf(sceneRowFor(timing.key)) : undefined;
     return own ? toDate(own) : undefined;
   });
   const [hover, setHover] = useState<TimingTarget | null>(null);
@@ -182,21 +211,21 @@ export const SceneTimingRing = ({ timing, onClose }: { timing: SceneTiming; onCl
         className="lab-timing"
         style={{ left: Math.min(Math.max(timing.at.x - TIMING_W / 2, 8), 1920 - TIMING_W - 8), top: Math.min(Math.max(timing.at.y - TIMING_H / 2, 8), 1042 - TIMING_H - 8), width: TIMING_W }}
       >
-        <div className={`lab-timing-block${target.from === "scene" ? " active" : ""}`}>
-          <span className="lab-timing-label">
-            Scene time
-            {target.from === "scene" && target.plus > 0 && <span className="lab-timing-plus">{offsetLabel(target.plus)}</span>}
-          </span>
-          {sceneShown ? (
-            <>
-              <span className="lab-timing-time">{formatTime(sceneShown)}</span>
-              <span className="lab-timing-date">{formatDate(sceneShown)}</span>
-            </>
-          ) : (
-            <span className="lab-timing-none">This scene has no time of its own: start it at Now.</span>
-          )}
-          <TimingStrip from="scene" disabled={!sceneAt} target={target} onHover={setHover} onPick={pick} />
-        </div>
+        {sceneAt && (
+          <div className={`lab-timing-block${target.from === "scene" ? " active" : ""}`}>
+            <span className="lab-timing-label">
+              Scene time
+              {target.from === "scene" && target.plus > 0 && <span className="lab-timing-plus">{offsetLabel(target.plus)}</span>}
+            </span>
+            {sceneShown && (
+              <>
+                <span className="lab-timing-time">{formatTime(sceneShown)}</span>
+                <span className="lab-timing-date">{formatDate(sceneShown)}</span>
+              </>
+            )}
+            <TimingStrip from="scene" disabled={false} target={target} onHover={setHover} onPick={pick} />
+          </div>
+        )}
         <div className={`lab-timing-block${target.from === "present" ? " active" : ""}`}>
           <span className="lab-timing-label">
             Now
@@ -2479,6 +2508,8 @@ export type LivePhase = {
   readonly spotlight: SpotlightView;
   /** The Memoriam slider's right end. */
   readonly presentYear?: number;
+  /** During a Memoriam: the scene leaving it returns to (none: Downtime). */
+  readonly memoriamReturn?: string;
 };
 
 const isPhase = (value: string): value is Phase => value in NEXT_PHASE;
@@ -2486,15 +2517,18 @@ const isPhase = (value: string): value is Phase => value in NEXT_PHASE;
 /** A scene by library key and the title shown. */
 export type SceneRef = { readonly key: string; readonly title: string };
 
-/** Scenes live in TTS: the one on the table, plus any on deck to switch to in one click. */
-export type LiveScenes = { readonly live: readonly SceneRef[]; readonly current: SceneRef | null };
+/** Scenes live in TTS: the one on the table, plus every ongoing scene and any put on deck, to switch to in one click. */
+export type LiveScenes = { readonly live: readonly DeckScene[]; readonly current: SceneRef | null };
 
 /** A scene library row as the picker lists it; `editing` has a preview open, `saved: false` is a new scene's draft. */
-export type LibraryEntry = SceneRef & { readonly location?: LabLocation; readonly editing?: boolean; readonly saved?: boolean };
+export type LibraryEntry = SceneRef & { readonly status: SceneStatus; readonly location?: LabLocation; readonly editing?: boolean; readonly saved?: boolean };
 
 /** Library housekeeping in the scene picker; `note` explains a library that could not load or copy from TTS. */
 export type LibraryActions = {
   readonly rename: (key: string, title: string) => void;
+  readonly setStatus: (key: string, status: SceneStatus) => void;
+  /** Puts a new scene or template on the deck, or takes it off (ongoing scenes are always on it). */
+  readonly setOnDeck: (key: string, on: boolean) => void;
   readonly remove: (key: string) => void;
   readonly move: (key: string, by: -1 | 1) => void;
   readonly note?: { readonly text: string; readonly retry?: () => void };
@@ -2538,22 +2572,24 @@ const CommitInput = ({ value, onCommit, ...rest }: Omit<InputHTMLAttributes<HTML
 
 /**
  * Phase name at the far left. The middle holds the live scenes (Play): the one on the table, then a button for
- * each scene on deck to switch to it. Intermission shows the next session's number and title; Spotlight the
- * carousel. In Play, End Scene (takes the current scene out of the live list; in a Memoriam, ends it and goes
- * back to the scene or Downtime it interrupted) sits just left of Advance, and
- * Advance opens a ring: Scene (scene picker), Memoriam (Memoriam set-up), or Spotlight (click twice). In any
- * other phase, Advance names the next phase and needs a second click. Switching to a deck scene or playing one
- * from the picker first asks how to set the clock (`SceneTimingRing`). Right-click a deck scene to open its
- * preview or take it off the deck; click the table's scene for Unlink and Fork.
+ * each other live scene: ongoing scenes (green, always there) and new scenes or templates put on deck (gold).
+ * Clicking an ongoing scene switches to it at once, back at its own time; a new one first asks how to set the
+ * clock (`useSceneEntry`). Right-click a deck scene to open its preview, end it (ongoing) or take it off the deck;
+ * click the table's scene for Unlink and Fork. Intermission shows the next session's number and title; Spotlight
+ * the carousel. In Play, Scene ▸ opens the scene library (which also holds End Scene and Memoriam); in a Memoriam
+ * it becomes Return ▸ (back to the scene it interrupted) or Downtime ▸. The right-hand button always names the
+ * next phase; leaving a Memoriam and advancing need a second click.
  */
-export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch, onEndScene, onRemoveFromDeck, onPlay, onEdit, onPrepare, onOpenDeck, live }: {
+export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch, onEndScene, onEndDeckScene, onRemoveFromDeck, onPlay, onEdit, onPrepare, onOpenDeck, live }: {
   library: readonly LibraryEntry[];
   libraryActions?: LibraryActions;
   scenes: LiveScenes;
   linkMenu?: LinkMenu;
   onSwitch: (key: string, clock: SceneClock) => void;
   onEndScene: () => void;
-  /** Takes a scene that is not on the table off the deck (the library keeps it). */
+  /** Ends an ongoing scene that is not on the table (it leaves the deck for the archive). */
+  onEndDeckScene: (key: string) => void;
+  /** Takes a new scene or template off the deck (the library keeps it). */
   onRemoveFromDeck: (key: string) => void;
   onPlay: (key: string, clock: SceneClock) => void;
   onEdit: (key: string) => void;
@@ -2563,21 +2599,15 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
   /** TTS's phase, session, and spotlight. */
   live: LivePhase;
 }): ReactElement => {
-  const [ring, setRing] = useState<Point | null>(null);
   const [linkAt, setLinkAt] = useState<Point | null>(null);
-  const [deckMenu, setDeckMenu] = useState<{ at: Point; scene: SceneRef } | null>(null);
+  const [deckMenu, setDeckMenu] = useState<{ at: Point; scene: DeckScene } | null>(null);
   const [modal, setModal] = useState<"scene" | "memoriam" | null>(null);
-  const [timing, setTiming] = useState<SceneTiming | null>(null);
+  const entry = useSceneEntry();
   const phase: Phase = isPhase(live.phase) ? live.phase : "Intermission";
   const session = { number: live.sessionNum ?? 1, title: live.sessionName };
   const subPhase = live.subPhase ?? "Main";
   const command = useScenesCommand();
-  const advance = (): void => command({ op: "phaseAdvance" });
   const next = NEXT_PHASE[phase];
-  const open = (which: "scene" | "memoriam") => (): void => {
-    setRing(null);
-    setModal(which);
-  };
   return (
     <div className="lab-phase">
       <span className="lab-phase-tag">
@@ -2599,9 +2629,11 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
               <button
                 key={scene.key}
                 type="button"
-                className="lab-phase-deck"
-                title={`Switch the table to ${scene.title} (right-click to edit it or take it off the deck)`}
-                onClick={(event) => setTiming({ at: canvasPoint(event), key: scene.key, go: (clock) => onSwitch(scene.key, clock) })}
+                className={`lab-phase-deck ${scene.status === "ongoing" ? "ongoing" : "fresh"}`}
+                title={scene.status === "ongoing"
+                  ? `Go back to ${scene.title} at its own time (right-click to edit or end it)`
+                  : `Start ${scene.title} (right-click to edit it or take it off the deck)`}
+                onClick={(event) => entry.enter(scene.key, canvasPoint(event), (clock) => onSwitch(scene.key, clock))}
                 onContextMenu={(event) => {
                   event.preventDefault();
                   setDeckMenu({ at: canvasPoint(event), scene });
@@ -2637,73 +2669,34 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
       <span className="lab-phase-advance">
         {phase === "Play" && (subPhase === "Memoriam" ? (
           <ConfirmButton
-            label="End Scene"
-            className="lab-btn danger"
-            title="End the Memoriam and go back to the scene (or Downtime) it interrupted"
-            onConfirm={() => command({ op: "playSubPhase", subPhase: "Main" })}
+            label={live.memoriamReturn ? "Return ▸" : "Downtime ▸"}
+            className="lab-btn"
+            title={live.memoriamReturn
+              ? `Leave the Memoriam and go back to ${live.memoriamReturn}`
+              : "Leave the Memoriam for Downtime, with no scene on the table"}
+            onConfirm={() => command({ op: "leaveMemoriam" })}
           />
-        ) : scenes.current ? (
-          <ConfirmButton label="End Scene" className="lab-btn danger" onConfirm={onEndScene} />
         ) : (
-          <button type="button" className="lab-btn danger" title="No scene on the table" disabled>
-            End Scene
+          <button type="button" className="lab-btn" title="Play a scene, end this one, or start a Memoriam" onClick={() => setModal("scene")}>
+            Scene ▸
           </button>
         ))}
-        {phase === "Play" ? (
-          <button type="button" className="lab-btn primary" onClick={(event) => setRing(canvasPoint(event))}>Advance ▸</button>
-        ) : (
-          <ConfirmButton key={phase} label={`${next} ▸`} className="lab-btn primary" onConfirm={advance} />
-        )}
+        <ConfirmButton key={phase} label={`${next} ▸`} className="lab-btn primary" onConfirm={() => command({ op: "phaseAdvance" })} />
       </span>
-      {ring && (
-        <Overlay onClose={() => setRing(null)}>
-          <div className="lab-ring" style={{ left: Math.min(Math.max(ring.x, RING_EDGE), 1920 - RING_EDGE), top: Math.max(ring.y, 86) }}>
-            <button type="button" className="lab-ring-item spoke" style={{ left: 0, top: -64, "--i": 0 } as CSSProperties} onClick={open("scene")}>Scene…</button>
-            <button
-              type="button"
-              className="lab-ring-item spoke"
-              style={{ left: -112, top: 40, "--i": 1 } as CSSProperties}
-              disabled={live.presentYear === undefined}
-              title={live.presentYear === undefined ? "TTS has no present day yet" : undefined}
-              onClick={open("memoriam")}
-            >
-              Memoriam…
-            </button>
-            {subPhase !== "Main" && (
-              <button
-                type="button"
-                className="lab-ring-item spoke"
-                title={subPhase === "Memoriam" ? "Leave the Memoriam and return to the scene it interrupted" : "Back to the scene"}
-                style={{ left: 0, top: 64, "--i": 3 } as CSSProperties}
-                onClick={() => {
-                  setRing(null);
-                  command({ op: "playSubPhase", subPhase: "Main" });
-                }}
-              >
-                Main ▸
-              </button>
-            )}
-            <ConfirmButton
-              label="Spotlight ▸"
-              className="lab-ring-item spoke"
-              style={{ left: 112, top: 40, "--i": 2 } as CSSProperties}
-              onConfirm={() => {
-                setRing(null);
-                advance();
-              }}
-            />
-          </div>
-        </Overlay>
-      )}
       {modal === "scene" && (
         <SceneModal
           library={library}
           actions={libraryActions}
           scenes={scenes}
           onClose={() => setModal(null)}
+          onEndScene={() => {
+            setModal(null);
+            onEndScene();
+          }}
+          {...(live.presentYear !== undefined ? { onMemoriam: () => setModal("memoriam") } : {})}
           onPlay={(key, at) => {
             setModal(null);
-            setTiming({ at, key, go: (clock) => onPlay(key, clock) });
+            entry.enter(key, at, (clock) => onPlay(key, clock));
           }}
           onEdit={(key) => {
             setModal(null);
@@ -2734,16 +2727,28 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
                 Edit (open its preview)
               </button>
             )}
-            <button
-              type="button"
-              className="lab-btn danger"
-              onClick={() => {
-                setDeckMenu(null);
-                onRemoveFromDeck(deckMenu.scene.key);
-              }}
-            >
-              Remove from deck
-            </button>
+            {deckMenu.scene.status === "ongoing" ? (
+              <ConfirmButton
+                label="End Scene"
+                className="lab-btn danger"
+                title="End this scene: it leaves the deck for the archive"
+                onConfirm={() => {
+                  setDeckMenu(null);
+                  onEndDeckScene(deckMenu.scene.key);
+                }}
+              />
+            ) : (
+              <button
+                type="button"
+                className="lab-btn danger"
+                onClick={() => {
+                  setDeckMenu(null);
+                  onRemoveFromDeck(deckMenu.scene.key);
+                }}
+              >
+                Remove from deck
+              </button>
+            )}
           </div>
         </Overlay>
       )}
@@ -2754,7 +2759,7 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
           onAdvance={(payload) => command({ op: "memoriam", payload })}
         />
       )}
-      {timing && <SceneTimingRing timing={timing} onClose={() => setTiming(null)} />}
+      {entry.timing && <SceneTimingRing timing={entry.timing} onClose={entry.close} />}
     </div>
   );
 };
@@ -2767,11 +2772,31 @@ const locationText = (data: ChronicleLocations | null, location: LabLocation | u
   return found && typeof found !== "string" ? `${found.district.name} · ${siteLabel(found.site)}` : `${location.districtKey} · ${location.siteKey}`;
 };
 
+/** Ongoing scenes (green) are always on deck; a new scene's or template's star (gold) puts it on or takes it off. */
+const DeckStar = ({ entry, onDeck, actions }: { entry: LibraryEntry; onDeck: boolean; actions: LibraryActions | undefined }): ReactElement =>
+  entry.status === "ongoing" ? (
+    <span className="lab-star ongoing on" title="Ongoing: always on the deck until it is ended">★</span>
+  ) : (
+    <button
+      type="button"
+      className={`lab-star fresh${onDeck ? " on" : ""}`}
+      disabled={!actions || entry.saved === false}
+      title={entry.saved === false ? "Save the scene to put it on the deck" : onDeck ? "Take it off the deck" : "Put it on the deck"}
+      onClick={() => actions?.setOnDeck(entry.key, !onDeck)}
+    >
+      {onDeck ? "★" : "☆"}
+    </button>
+  );
+
 /**
- * The scene library: search by title or place; Play (asks how to set the clock), Edit (opens a preview), and
- * housekeeping (reorder, rename, delete with a second click). "Prepare a new scene" picks its location first.
+ * The scene library: search by title or place. Each row's star shows whether it is on the deck (`DeckStar`), and
+ * deck scenes sort to the top (ongoing first). Play (an ongoing scene switches at once; a new one asks how to set
+ * the clock), Edit (opens a preview) and housekeeping (reorder, rename, delete with a second click). Templates
+ * show in brackets and play as a dated copy. Ended scenes wait in the archive, where their status can be changed.
+ * The header holds End Scene (the table's scene, then Downtime) and Memoriam; "Prepare a new scene" picks its
+ * location first.
  */
-const SceneModal = ({ library, actions, scenes, onClose, onPlay, onEdit, onPrepare }: {
+const SceneModal = ({ library, actions, scenes, onClose, onPlay, onEdit, onPrepare, onEndScene, onMemoriam }: {
   library: readonly LibraryEntry[];
   actions?: LibraryActions;
   scenes: LiveScenes;
@@ -2779,15 +2804,23 @@ const SceneModal = ({ library, actions, scenes, onClose, onPlay, onEdit, onPrepa
   onPlay: (key: string, at: Point) => void;
   onEdit: (key: string) => void;
   onPrepare: (location: LabLocation, districtName: string, siteName: string) => void;
+  onEndScene: () => void;
+  /** Absent while TTS has no present day. */
+  onMemoriam?: () => void;
 }): ReactElement => {
   const { data } = useChronicleLocations();
   const [search, setSearch] = useState("");
   const [renaming, setRenaming] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
+  const [archive, setArchive] = useState(false);
   const words = search.toLowerCase().split(/\s+/).filter(Boolean);
-  const rows = library.map((entry) => ({ entry, where: locationText(data, entry.location) }))
-    .filter(({ entry, where }) => words.every((word) => `${entry.title} ${where}`.toLowerCase().includes(word)));
   const onDeck = (key: string): boolean => scenes.live.some((scene) => scene.key === key);
+  const archived = library.filter((entry) => entry.status === "ended").length;
+  const rows = library
+    .filter((entry) => (entry.status === "ended") === archive)
+    .map((entry) => ({ entry, where: locationText(data, entry.location) }))
+    .filter(({ entry, where }) => words.every((word) => `${entry.title} ${where}`.toLowerCase().includes(word)))
+    .sort((a, b) => libraryRank(a.entry.status, onDeck(a.entry.key)) - libraryRank(b.entry.status, onDeck(b.entry.key)));
   if (picking && data) {
     return (
       <LocationPicker
@@ -2807,7 +2840,25 @@ const SceneModal = ({ library, actions, scenes, onClose, onPlay, onEdit, onPrepa
   return (
     <Overlay onClose={onClose}>
       <div className="lab-modal lab-advance">
-        <span className="lab-modal-title">Play a scene</span>
+        <span className="lab-advance-head">
+          <span className="lab-modal-title">{archive ? "Ended scenes" : "Play a scene"}</span>
+          <span className="lab-row">
+            <button
+              type="button"
+              className="lab-btn"
+              disabled={!onMemoriam}
+              title={onMemoriam ? "Set up a Memoriam" : "TTS has no present day yet"}
+              onClick={onMemoriam}
+            >
+              Memoriam…
+            </button>
+            {scenes.current ? (
+              <ConfirmButton label="End Scene" className="lab-btn danger" title={`End ${scenes.current.title} and go to Downtime`} onConfirm={onEndScene} />
+            ) : (
+              <button type="button" className="lab-btn danger" title="No scene on the table" disabled>End Scene</button>
+            )}
+          </span>
+        </span>
         {actions?.note && (
           <span className="lab-advance-note">
             {actions.note.text}
@@ -2827,6 +2878,7 @@ const SceneModal = ({ library, actions, scenes, onClose, onPlay, onEdit, onPrepa
             const index = library.indexOf(entry);
             return (
               <li key={entry.key} className={onTable ? "live" : onDeck(entry.key) ? "prep" : undefined}>
+                {!archive && <DeckStar entry={entry} onDeck={onDeck(entry.key)} actions={actions} />}
                 <span className="lab-advance-name">
                   {renaming === entry.key && actions ? (
                     <input
@@ -2851,8 +2903,8 @@ const SceneModal = ({ library, actions, scenes, onClose, onPlay, onEdit, onPrepa
                     />
                   ) : (
                     <span>
-                      {entry.title}
-                      {onTable ? " (on the table)" : onDeck(entry.key) ? " (on deck)" : ""}
+                      {displayTitle(entry)}
+                      {onTable && " (on the table)"}
                       {entry.editing && <span className="lab-advance-editing">{entry.saved === false ? "new · being prepared" : "being edited"}</span>}
                     </span>
                   )}
@@ -2872,14 +2924,45 @@ const SceneModal = ({ library, actions, scenes, onClose, onPlay, onEdit, onPrepa
                     </>
                   )}
                   <button type="button" className="lab-btn" onClick={() => onEdit(entry.key)}>Edit</button>
-                  <button type="button" className="lab-btn live" disabled={onTable} onClick={(event) => onPlay(entry.key, canvasPoint(event))}>Play</button>
+                  {archive ? (
+                    actions && (
+                      <select
+                        className="lab-select"
+                        value="ended"
+                        title="Change this scene's status to bring it back"
+                        onChange={(event) => actions.setStatus(entry.key, event.target.value as SceneStatus)}
+                      >
+                        <option value="ended" disabled>Ended</option>
+                        <option value="ongoing">Ongoing</option>
+                        <option value="new">New</option>
+                        <option value="template">Template</option>
+                      </select>
+                    )
+                  ) : (
+                    <button
+                      type="button"
+                      className="lab-btn live"
+                      disabled={onTable}
+                      title={entry.status === "ongoing" ? "Go back to this scene at its own time" : entry.status === "template" ? "Play a fresh copy of this template" : undefined}
+                      onClick={(event) => onPlay(entry.key, canvasPoint(event))}
+                    >
+                      Play
+                    </button>
+                  )}
                 </span>
               </li>
             );
           })}
-          {rows.length === 0 && <li className="lab-note">{library.length === 0 ? "The library is empty." : "No scene matches."}</li>}
+          {rows.length === 0 && (
+            <li className="lab-note">{archive ? "No scene has been ended." : library.length === 0 ? "The library is empty." : "No scene matches."}</li>
+          )}
         </ul>
-        <button type="button" className="lab-btn" disabled={!data} onClick={() => setPicking(true)}>+ Prepare a new scene…</button>
+        <span className="lab-row lab-advance-foot">
+          {!archive && <button type="button" className="lab-btn" disabled={!data} onClick={() => setPicking(true)}>+ Prepare a new scene…</button>}
+          <button type="button" className="lab-btn" onClick={() => setArchive(!archive)}>
+            {archive ? "Back to the library" : `Archive (${archived})`}
+          </button>
+        </span>
       </div>
     </Overlay>
   );

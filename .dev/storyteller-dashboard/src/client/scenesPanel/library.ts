@@ -1,4 +1,4 @@
-import type { LibraryScene } from "../../shared/sceneLibrary";
+import { parseSceneStatus, type LibraryScene } from "../../shared/sceneLibrary";
 import type { ClockDatetime, GenericNpc, SceneSlice, SeatRow, StageNpc } from "../worldState";
 import type { ScenesCommand, SoundLane } from "./commands";
 import { LOCATION_MUSIC_LABEL, MOOD_LABEL, PC_COLORS, type SoundView } from "./liveScene";
@@ -45,6 +45,7 @@ export const scenesFromTts = (snapshot: TtsLibrarySnapshot): readonly LibrarySce
       title: row.title,
       placementMode: row.placementMode === "scatter" ? "scatter" : "standard",
       linked: row.receivesLiveWrites === true,
+      status: parseSceneStatus(row.status),
       sessionScene: isRecord(row.sessionScene) ? row.sessionScene : {}
     }];
   });
@@ -52,9 +53,10 @@ export const scenesFromTts = (snapshot: TtsLibrarySnapshot): readonly LibrarySce
 
 /**
  * The dashboard copy after reading TTS rows. A row TTS writes from the live table (linked) replaces the dashboard's;
- * other shared rows keep the dashboard's content and take TTS's link flag, unless `adopt` is set: the write-back
- * read of a scene that just left the table (TTS wrote it one last time as it unlinked). Rows only TTS has (a fork,
- * an in-game import) are appended. Rows only the dashboard has stay. Returns the same array when nothing changes.
+ * other shared rows keep the dashboard's content and take TTS's link flag and status (TTS marks scenes ongoing and
+ * ended), unless `adopt` is set: the write-back read of a scene that just left the table (TTS wrote it one last
+ * time as it unlinked). Rows only TTS has (a fork, an in-game import) are appended. Rows only the dashboard has
+ * stay. Returns the same array when nothing changes.
  */
 export const mergeFromTts = (local: readonly LibraryScene[], tts: readonly LibraryScene[], adopt = false): readonly LibraryScene[] => {
   const byKey = new Map(tts.map((scene) => [scene.key, scene]));
@@ -64,7 +66,11 @@ export const mergeFromTts = (local: readonly LibraryScene[], tts: readonly Libra
     if (!theirs) {
       return scene;
     }
-    const next = theirs.linked || adopt ? theirs : scene.linked ? { ...scene, linked: false } : scene;
+    const next = theirs.linked || adopt
+      ? theirs
+      : scene.linked || scene.status !== theirs.status
+        ? { ...scene, linked: false, status: theirs.status }
+        : scene;
     if (next !== scene && JSON.stringify(next) !== JSON.stringify(scene)) {
       changed = true;
       return next;
@@ -122,16 +128,17 @@ export const newSceneKey = (title: string, keys: readonly string[]): string => {
 };
 
 /**
- * A new scene copies a template row (the table's scene, or the first library row) so it has a full seat and stage
+ * A new scene copies a starting row (the table's scene, or the first library row) so it has a full seat and stage
  * set-up, then takes the new location and starts clean: present day, no conditions, scheduled weather, site sky.
  */
-export const newLibraryScene = (template: LibraryScene | undefined, key: string, title: string, location: { districtKey: string; siteKey: string }): LibraryScene => {
-  const { skyboxOverride: _sky, soundscapeNarrative: _sound, ...rest } = template?.sessionScene ?? {};
+export const newLibraryScene = (start: LibraryScene | undefined, key: string, title: string, location: { districtKey: string; siteKey: string }): LibraryScene => {
+  const { skyboxOverride: _sky, soundscapeNarrative: _sound, ...rest } = start?.sessionScene ?? {};
   return {
     key,
     title,
-    placementMode: template?.placementMode ?? "standard",
+    placementMode: start?.placementMode ?? "standard",
     linked: false,
+    status: "new",
     sessionScene: {
       ...rest,
       districtKey: location.districtKey,

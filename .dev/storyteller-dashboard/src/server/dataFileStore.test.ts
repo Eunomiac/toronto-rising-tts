@@ -78,7 +78,7 @@ describe("patch parsers", () => {
   it("keeps library rows with valid keys, once each", () => {
     const library = normalizeSceneLibrary({
       scenes: [
-        { key: "elysium", title: "Elysium", placementMode: "scatter", linked: true, sessionScene: { siteKey: "CLGrounds" } },
+        { key: "elysium", title: "Elysium", placementMode: "scatter", linked: true, status: "template", sessionScene: { siteKey: "CLGrounds" } },
         { key: "elysium", title: "Again" },
         { key: "2bad", title: "Bad key" },
         { key: "noScene", title: "No scene" }
@@ -86,7 +86,7 @@ describe("patch parsers", () => {
       seeded: true
     });
     expect(library.scenes.map((scene) => scene.key)).toEqual(["elysium", "noScene"]);
-    expect(library.scenes[0]).toEqual({ key: "elysium", title: "Elysium", placementMode: "scatter", linked: true, sessionScene: { siteKey: "CLGrounds" } });
-    expect(library.scenes[1]?.sessionScene).toEqual({});
+    expect(library.scenes[0]).toEqual({ key: "elysium", title: "Elysium", placementMode: "scatter", linked: true, status: "template", sessionScene: { siteKey: "CLGrounds" } });
+    expect(library.scenes[1]).toMatchObject({ status: "new", sessionScene: {} });
   });
 });
