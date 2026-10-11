@@ -97,6 +97,18 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 2. Seat an NPC at the table, light their seat (double-click it on the dashboard), then drag the seat onto the stage. Within a second or two the figurine on the stage should stand lit under its spotlight.
 3. Roll for an NPC from the dashboard, pick two or three dice and click Reroll. When the dice land, the dashboard's dice and result should update by themselves, without clicking Recalculate.
 
+#### TOR-715 — Secret Storyteller rolls keep the pool hidden
+
+**Context:** From your 2026-10-11 pins. A secret roll's dice are now hidden from players from the moment they appear and are never revealed. Players glimpse a random handful as the first throw is made, and every rerolled die while it tumbles. The result banner shows only the dice the result gives away.
+
+**How to verify:** You need a second client or a hotseat player seat to watch, because the Storyteller always sees the dice.
+
+1. Save & Play. Start a Storyteller roll of about 10 dice and right-click **Roll**.
+2. From the player seat: no dice should be visible on the drawer tray before the throw. As they are thrown, a few (roughly 3 to 8) should flash into view and vanish before they land. The Storyteller sees all 10 throughout.
+3. Pick two dice and reroll them: from the player seat, both should be visible while they tumble, then vanish.
+4. Confirm with a left-click so the banner shows. The player should see only the successes (6 and up). On a messy critical they all show as Hunger dice; on a bestial failure, the successes show as normal dice plus the Hunger 1s; on a total failure, no dice.
+5. Clear the slot: the dice disappear for the Storyteller and never appear for the player.
+
 ### High — startup, table and hunger (eye checks only; your traces already confirmed the speed-ups)
 
 #### TOR-670 / TOR-671 — Startup does one full sync and lifts the cover once

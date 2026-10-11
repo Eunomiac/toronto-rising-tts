@@ -117,8 +117,9 @@ end
 --- @param pool table  normalized pool
 --- @param arcCenter table  `{ x, y, z, radiusX, radiusZ }` (`STD.arcCenterForSlot`)
 --- @param rollId string
+--- @param invisibleTo table|nil  seat colors every staged die is hidden from (secret rolls)
 --- @return number spawned
-function STDICE.spawnPool(pool, arcCenter, rollId)
+function STDICE.spawnPool(pool, arcCenter, rollId, invisibleTo)
     local plan = {}
     for _, kind in ipairs(STDICE.KINDS) do
         for _ = 1, (pool[kind] or 0) - STDICE.stagedCount(kind) do
@@ -151,6 +152,9 @@ function STDICE.spawnPool(pool, arcCenter, rollId)
                 scale = { SCALE, SCALE, SCALE },
             })
             entry.die.interactable = false
+        end
+        if invisibleTo ~= nil then
+            entry.die.setInvisibleTo(invisibleTo)
         end
     end
     staged = ordered

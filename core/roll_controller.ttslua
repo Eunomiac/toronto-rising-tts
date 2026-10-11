@@ -70,7 +70,6 @@ RC.onRollStateChanged = nil
 -- Set in global_script to trigger broadcast display and chat output.
 -- @type function(color: string, result: table|nil, label: string|nil)|nil
 RC.onRollResolved = nil
-RC.onBlackSecretDiceSettled = nil
 
 --- Optional seat camera preset (e.g. "roll", "diceTray", "default"). Set in global_script.
 -- @type function(color: string, modeName: string)|nil
@@ -488,7 +487,8 @@ end
 -- @param rouseOutcomeStrips table|nil  Compact rouse strip rows for broadcast
 -- @param npcCharacterKey string|nil
 -- @param rollId string|nil  Active roll id for manual broadcast lookup
-local function appendHistory(color, result, label, diceDisplay, rollType, diceFaces, rouseOutcomeStrips, npcCharacterKey, rollId)
+-- @param secret boolean|nil  Secret ST roll: the broadcast shows only the dice the result gives away
+local function appendHistory(color, result, label, diceDisplay, rollType, diceFaces, rouseOutcomeStrips, npcCharacterKey, rollId, secret)
     local pid = S.getPlayerID(color)
     if pid == nil then return end
     local history = S.getStateVal("playerData", pid, "hud", "rollData", "history") or {}
@@ -501,6 +501,7 @@ local function appendHistory(color, result, label, diceDisplay, rollType, diceFa
         rouseOutcomeStrips = rouseOutcomeStrips or {},
         npcCharacterKey = (type(npcCharacterKey) == "string" and npcCharacterKey ~= "") and npcCharacterKey or nil,
         rollId      = (type(rollId) == "string" and rollId ~= "") and rollId or nil,
+        secret      = secret == true or nil,
         timestamp   = os.time(),
     }
     while #history > 10 do table.remove(history, 1) end
@@ -2274,15 +2275,6 @@ function RC.recalculate(color, previewOnly)
     setActive(color, active)
     notifyStateChanged(color)
 
-    if wasRolling and active.phase == C.RollPhase.POST_ROLL
-        and color == "Black"
-        and type(active.meta) == "table"
-        and active.meta.secretDice == true
-        and RC.onBlackSecretDiceSettled
-        and U.Type(RC.onBlackSecretDiceSettled) == "function" then
-        RC.onBlackSecretDiceSettled(color, active.id)
-    end
-
     if active.phase == C.RollPhase.POST_ROLL then
         rollCamera(color, "roll")
     end
@@ -2719,7 +2711,8 @@ function RC.confirmRoll(color)
         finalDiceFaces,
         finalRouseStrips,
         active.npcCharacterKey,
-        finalRollId
+        finalRollId,
+        color == "Black" and type(active.meta) == "table" and active.meta.secretDice == true
     )
 
     if color ~= "Black" then
@@ -3633,10 +3626,6 @@ function RC.broadcastHeldResult(slotIndex)
 
     if RC.onRollCamera and U.Type(RC.onRollCamera) == "function" then
         RC.onRollCamera("Black", "default")
-    end
-
-    if Global ~= nil and type(Global.call) == "function" then
-        Global.call("GlobalRestoreSecretRollDiceVisibility", { rollId = rollId })
     end
 
     local RUI = require("core.roll_ui")

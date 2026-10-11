@@ -109,7 +109,7 @@ Snapshot position is **not** the primary restore authority when a catalog pose o
 | Case | Why | Use instead |
 | --- | --- | --- |
 | **Startup `C.HiddenObjects` catalog** | Visibility-only registry; objects stay at authored Y while **present** | `O.ApplyHiddenObjectsFromConstants` |
-| **Secret ST roll dice** | Temporary invisibility mid-roll; not off-table park | `GlobalApplySecretRollDiceInvisibility` / `GlobalRestoreSecretRollDiceVisibility` |
+| **Secret ST roll dice** | Hidden from spawn until destroyed, briefly shown while tossed; never parked | `STDICE.spawnPool(..., invisibleTo)` and `flashSecretRollDice` in `core/global_script.ttslua` |
 | **Spotlight seat figurines (visibility only)** | Stay at seat Y; active visibility from `C.HiddenObjects` only — not off-table park | `O.applyActiveVisibility` / `O.restoreObject` via `applySeatFigurineSpotlightVisibility` in `core/spotlight.ttslua` |
 | **Scatter floor / plinth** | Stay at playfield Y; PC+spectator invisibility only while Scatter is active | `ScatterMode` `applyScatterPlayfieldVisibility` (`setInvisibleTo` via `C.HideFromPcSeatsAndSpectators`) |
 | **BOTTOM_FOG emitter** | Authored at y ≈ −350 (below park threshold); Scatter plays AssetBundle Looping Effect 2/1 | `Scenes.applyFogEmitterLooping` via ScatterMode; `O.hideObject` refuses this GUID |

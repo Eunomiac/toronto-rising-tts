@@ -190,7 +190,20 @@ Synthetic main-pool result uses standard class labels (WIN / FAILURE / TOTAL FAI
 
 ## Manual Storyteller broadcast
 
-ST dashboard **B** button re-broadcasts from history via `RUI.showResultBroadcastFromEntry` — same rules as auto-broadcast on confirm. Secret rolls (TOR-226) suppress auto-broadcast; manual **B** still uses this panel.
+ST dashboard **B** button re-broadcasts from history via `RUI.showResultBroadcastFromEntry` — same rules as auto-broadcast on confirm. Right-click **Confirm** / **Take Half** (`suppressBroadcast`, TOR-226) holds the result for a manual **B**; that is separate from a secret roll.
+
+## Secret rolls
+
+Right-click **Roll** on the ST roll panel (`active.meta.secretDice`) makes a secret roll. Its history entry carries `secret = true`, and both the auto-broadcast and a manual **B** show only the dice the result gives away (`SRD.broadcastFaces` in `lib/secret_roll_dice.ttslua`, applied in `snapshotBroadcastPayload`):
+
+| Result class | Dice shown |
+| --- | --- |
+| `criticalWin`, `win`, `failure` | Successes and criticals (6+) as rolled |
+| `messyCritical` | Successes and criticals, all as Hunger (Werewolf: Rage) |
+| `bestialFailure`, `totalBestialFailure` | Successes as normal dice, plus every Hunger (Rage) 1 |
+| `totalFailure` | None |
+
+The headline, margin and rouse strips are unchanged. The physical dice stay hidden from PC seats and spectators (see Dice System Outline § Secret ST rolls).
 
 ## Related panel copy (not broadcast)
 
@@ -230,4 +243,4 @@ Console: `lua DEBUG.rollBroadcastMessageAudit()` — prints this matrix from liv
 
 - **TOR-294** — rouse-only main die row layout
 - **TOR-292** — ST manual re-broadcast persistence
-- **TOR-226** — secret rolls suppress auto-broadcast
+- **TOR-226** — ST held results (`suppressBroadcast`) and manual **B**

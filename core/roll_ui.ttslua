@@ -33,6 +33,7 @@ local NPC_DATA = require("lib.npcs_data")
 local GridStrip = require("lib.grid_strip")
 local RC = require("core.roll_controller")
 local G = require("lib.guids")
+local SRD = require("lib.secret_roll_dice")
 -- Note: core.dice is NOT required here; formatted dice strings are cached on
 -- the active record as active.diceDisplay by RC.recalculate().
 
@@ -1780,6 +1781,10 @@ local function snapshotBroadcastPayload(color, result, label, historyEntryOverri
         diceFaces   = U.Type(lastEntry.diceFaces) == "table"  and lastEntry.diceFaces or nil
         rouseStrips = U.Type(lastEntry.rouseOutcomeStrips) == "table" and lastEntry.rouseOutcomeStrips or nil
         npcCharacterKey = U.Type(lastEntry.npcCharacterKey) == "string" and lastEntry.npcCharacterKey or nil
+        if lastEntry.secret == true then
+            local resultClass = type(result) == "table" and result.resultClass or nil
+            diceFaces = SRD.broadcastFaces(diceFaces, resultClass)
+        end
     end
 
     local resultCopy = result

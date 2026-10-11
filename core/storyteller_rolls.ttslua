@@ -521,10 +521,6 @@ end
 
 --- Full cleanup for cancel: staged tray dice first, then tray sweep, optional drawer close via clearSlot.
 function STR.cleanupLiveRoll()
-    local active = getBlackActive()
-    if active ~= nil and type(active.id) == "string" then
-        Global.call("GlobalRestoreSecretRollDiceVisibility", { rollId = active.id })
-    end
     require("core.st_dice").destroyStaged()
     STR.destroyTableDiceForActive()
 end
@@ -549,7 +545,6 @@ function STR.cancelSlot(slotIndex)
         RC.cancelRoll(ST_COLOR)
         STR.cleanupLiveRoll()
     elseif type(slot.rollId) == "string" then
-        Global.call("GlobalRestoreSecretRollDiceVisibility", { rollId = slot.rollId })
         STR.destroyTableDiceForRollId(slot.rollId)
     end
     STR.clearSlotPendingBroadcast(slotIndex)

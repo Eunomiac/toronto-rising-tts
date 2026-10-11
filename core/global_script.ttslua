@@ -133,6 +133,7 @@ C = require("lib.constants")
 DK = require("lib.dice_kinds")
 G = require("lib.guids")
 Cloud = require("lib.cloud_catalog")
+local SRD = require("lib.secret_roll_dice")
 
 trScheduleEarlySoundscapeSilenceDeferred("chunk-load")
 
@@ -2456,67 +2457,35 @@ local function randomizeReleasedDieForRoll(color, die, physicsColor)
     return true
 end
 
---- Host-only: hide Black roll dice from PC seats (secret roll).
--- @param params table  { rollId: string }
+--- True when the live Storyteller roll is a secret roll (right-click Roll sets `active.meta.secretDice`).
+-- @param rollId string|nil  when set, the live roll must have this id
 -- @return boolean
-function GlobalApplySecretRollDiceInvisibility(params)
-    if type(params) ~= "table" or RC == nil then
-        return false
+local function isSecretBlackRoll(rollId)
+    local pid = S.getPlayerID("Black")
+    local active = pid ~= nil and S.getStateVal("playerData", pid, "hud", "rollData", "active") or nil
+    return type(active) == "table"
+        and type(active.meta) == "table"
+        and active.meta.secretDice == true
+        and (rollId == nil or active.id == rollId)
+end
+
+--- Secret roll: shows `dice` to every seat while they are tossed, then hides them from PC seats and
+-- spectators again before they land. Secret dice are never revealed otherwise; they are destroyed hidden.
+-- @param dice table  Object array
+local function flashSecretRollDice(dice)
+    local guids = {}
+    for _, die in ipairs(dice) do
+        die.setInvisibleTo({})
+        guids[#guids + 1] = die.getGUID()
     end
-    local rollId = params.rollId
-    if type(rollId) ~= "string" or rollId == "" then
-        return false
-    end
-    local _, objectsByKind = RC._getDicePoolsForRoll("Black", rollId)
-    for _, kind in ipairs(DK.ALL_KINDS) do
-        for _, die in ipairs(objectsByKind[kind] or {}) do
-            if die ~= nil and die.setInvisibleTo ~= nil then
+    U.await(function()
+        for _, guid in ipairs(guids) do
+            local die = G.getObject(guid)
+            if die ~= nil then
                 die.setInvisibleTo(C.HideFromPcSeatsAndSpectators)
             end
         end
-    end
-    return true
-end
-
---- Host-only: restore visibility on Black roll dice (slot clear / cancel).
--- @param params table  { rollId: string }
--- @return boolean
-function GlobalRestoreSecretRollDiceVisibility(params)
-    if type(params) ~= "table" or RC == nil then
-        return false
-    end
-    local rollId = params.rollId
-    if type(rollId) ~= "string" or rollId == "" then
-        return false
-    end
-    local _, objectsByKind = RC._getDicePoolsForRoll("Black", rollId)
-    for _, kind in ipairs(DK.ALL_KINDS) do
-        for _, die in ipairs(objectsByKind[kind] or {}) do
-            if die ~= nil and die.setInvisibleTo ~= nil then
-                die.setInvisibleTo({})
-            end
-        end
-    end
-    return true
-end
-
---- Schedules secret-roll dice invisibility when `active.meta.secretDice` is set.
--- @param rollId string
-local function scheduleSecretRollDiceInvisibility(rollId)
-    if type(rollId) ~= "string" or rollId == "" then
-        return
-    end
-    local pid = S.getPlayerID("Black")
-    if pid == nil then
-        return
-    end
-    local active = S.getStateVal("playerData", pid, "hud", "rollData", "active")
-    if type(active) ~= "table" or type(active.meta) ~= "table" or active.meta.secretDice ~= true then
-        return
-    end
-    U.await(function()
-        GlobalApplySecretRollDiceInvisibility({ rollId = rollId })
-    end, 0.5)
+    end, SRD.REVEAL_SECONDS)
 end
 
 --- ST roll panel: randomize highlighted dice by GUID (host-only world I/O).
@@ -2537,6 +2506,7 @@ function GlobalStRerollDiceByGuids(params)
     end
 
     local randomized = {}
+    local rerolledDice = {}
     for _, guid in ipairs(guids) do
         local die = G.getObject(guid)
         if die ~= nil and DK.gmNotesMatchRoll(die.getGMNotes(), rollId) then
@@ -2547,7 +2517,7 @@ function GlobalStRerollDiceByGuids(params)
                     owner = "Black"
                 end
                 if owner == color then
-                    randomizeReleasedDieForRoll(color, die)
+                    rerolledDice[#rerolledDice + 1] = die
                     randomized[#randomized + 1] = guid
                 end
             end
@@ -2558,11 +2528,13 @@ function GlobalStRerollDiceByGuids(params)
         RC.clearStSelectiveReroll(color)
         return false
     end
-    RC.watchStSelectiveRerollSettle(color, randomized, rollId)
-
-    if color == "Black" and type(rollId) == "string" then
-        scheduleSecretRollDiceInvisibility(rollId)
+    if color == "Black" and isSecretBlackRoll(rollId) then
+        flashSecretRollDice(rerolledDice)
     end
+    for _, die in ipairs(rerolledDice) do
+        randomizeReleasedDieForRoll(color, die)
+    end
+    RC.watchStSelectiveRerollSettle(color, randomized, rollId)
 
     return true
 end
@@ -6185,12 +6157,6 @@ RC.onRollResolved = function(color, result, label, holdSeconds)
     end, holdSeconds or C.ROLL_RESULT_BROADCAST_SECONDS)
 end
 
-RC.onBlackSecretDiceSettled = function(color, rollId)
-    if color == "Black" and type(rollId) == "string" then
-        scheduleSecretRollDiceInvisibility(rollId)
-    end
-end
-
 --- Handles dice-bag clicks during post-resolution broadcast cleanup delay.
 -- If a cleanup is pending, consume it and close the drawer immediately.
 -- @param params table  { color: string }
@@ -6705,7 +6671,8 @@ local function spawnBlackPoolOnTray()
         print("[Roll] Storyteller roll has no drawer tray (missing stDrawerSlot?)")
         return false
     end
-    return STDICE.spawnPool(DK.normalizePool(active.pool), arcCenter, active.id) > 0
+    local invisibleTo = isSecretBlackRoll(active.id) and C.HideFromPcSeatsAndSpectators or nil
+    return STDICE.spawnPool(DK.normalizePool(active.pool), arcCenter, active.id, invisibleTo) > 0
 end
 
 --- Spawns staged dice to match active.pool in PRE_ROLL (all roll types).
@@ -6768,13 +6735,17 @@ local function randomizeAllRollDiceForColor(color, rollId, physicsColor)
         rollAs = resolveDieRandomizePhysicsColor(color, nil)
     end
     local _, objectsByKind = RC._getDicePoolsForRoll(color, rollId)
+    local dice = {}
     for _, kind in ipairs(DK.ALL_KINDS) do
         for _, die in ipairs(objectsByKind[kind] or {}) do
-            randomizeReleasedDieForRoll(color, die, rollAs)
+            dice[#dice + 1] = die
         end
     end
-    if color == "Black" then
-        scheduleSecretRollDiceInvisibility(rollId)
+    if color == "Black" and isSecretBlackRoll(rollId) then
+        flashSecretRollDice(SRD.pickRevealed(dice))
+    end
+    for _, die in ipairs(dice) do
+        randomizeReleasedDieForRoll(color, die, rollAs)
     end
 end
 

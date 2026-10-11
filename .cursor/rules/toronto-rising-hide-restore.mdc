@@ -49,7 +49,7 @@ Caller opts → catalogs (`C.LockedObjects`) → snapshot fallback; active visib
 ## Documented exceptions (do not migrate blindly)
 
 - Startup `C.HiddenObjects` visibility-only apply (present seats at authored Y)
-- Secret roll dice invisibility helpers
+- Secret roll dice (hidden at spawn, flashed visible while tossed, destroyed hidden)
 - Seat-layout NPC chair visibility only (`enforceNPCSeatObjectVisibility`)
 - Spotlight phase seat figurines (`SEAT_FIGURE_*`) — stay at seats; active visibility via `O.applyActiveVisibility` / `O.restoreObject` from `C.HiddenObjects` (never `O.hideObject` park, never blanket PC hide lists)
 - Scatter `THE_FLOOR` / `TABLE_PLINTH` — visibility-only via `C.HideFromPcSeatsAndSpectators` while Scatter is active (stay at playfield Y)
