@@ -90,7 +90,7 @@ Fail loudly on non-200, empty body, or HTML/login error pages.
 - `startYear` / `endYear` parse as integers
 - Panel `isOutdoors` / `isDaytime` parse as booleans (`TRUE`/`FALSE`)
 - Panel `Weather` is a pipe-delimited list of strings; a blank cell becomes an empty array
-- `splashText`, NPC `name` (`NPC <#> Key`), and NPC `fullName` (`NPC <#> Label`) may be blank. Optional `NPC <#> Scale` becomes `figurineScale` (default 53 when the column or cell is missing). Memoriam panel and NPC image URLs are **not** sheet columns — they come from Steam Cloud (`Cloud.MemoriamPanels`, `Cloud.MemoriamNpc*`) at Constants load (TOR-564 / TOR-577).
+- `splashText`, NPC `name` (`NPC <#> Key`), and NPC `fullName` (`NPC <#> Label`) may be blank. `NPC <#> Scale` columns are ignored: stage card scale is a dashboard token override (`cardScale` in `data/npc-overrides.json`). Memoriam panel and NPC image URLs are **not** sheet columns — they come from Steam Cloud (`Cloud.MemoriamPanels`, `Cloud.MemoriamNpc*`) at Constants load (TOR-564 / TOR-577).
 - Memoriam transition covers are **not** sheet URLs: Custom Asset names `memoriamBlindfold_<skyboxKey>` (Steam Cloud → Global Custom UI Assets via `memoriamBlindfolds` job)
 - **Panel art authority is Steam Cloud (TOR-564):** `lib/constants.ttslua` writes `panelA`–`panelD`.`url` from `Cloud.MemoriamPanels["<key>_<a|b|c|d>"].URL` (`.tools/cloud-asset-sync.jsonc` job `memoriamPanels`; regenerate with `npm run cloud-asset-sync:catalog`). The generated catalog does not include panel or NPC URL fields (TOR-577). Use `C.resolveMemoriamPanelURL(skyboxKey, panelKey)` at apply time; `C.getMemoriamPanelsWithoutArt()` lists blanks.
 - Panels A and B require a non-empty Display; if panel C or D Display is blank, omit that panel entirely
@@ -133,7 +133,7 @@ SkyboxesCatalog.MemoriamSkyboxes = {
     },
     splashText = "",
     npcs = {
-      { name = "", fullName = "", figurineScale = 53 },
+      { name = "", fullName = "" },
       -- ... ten slots
     },
   },

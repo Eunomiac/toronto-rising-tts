@@ -93,7 +93,7 @@ The subject is always included as `{ kind = "self" }` unless the modal assigned 
 
 Do **not** look up `(data)[subjectKey][skyboxKey]`. Periods are a flat table:
 
-- `C.MemoriamSkyboxes[skyboxKey]` — `characters` array, `startYear` / `endYear`, `location`, `splashText`, `panelA`–`panelD`, `npcs` (ten slots: `name`, `fullName`, `figurineScale`)
+- `C.MemoriamSkyboxes[skyboxKey]` — `characters` array, `startYear` / `endYear`, `location`, `splashText`, `panelA`–`panelD`, `npcs` (ten slots: `name`, `fullName`; stage card scale is a dashboard token override, not a catalog field)
 - `C.getMemoriamSkyboxesForCharacter(characterKey)` — ordered keys for the popup timeline
 - Panel **image URL** is Cloud-only: `C.resolveMemoriamPanelURL(skyboxKey, panelKey)` (missing art errors loudly; TOR-564 / TOR-568)
 - Cover image is Custom Asset **`memoriamBlindfold_<skyboxKey>`**, not a catalog `blindfoldURL` field (that field was removed)

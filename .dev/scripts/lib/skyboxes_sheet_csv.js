@@ -168,7 +168,6 @@ const MEMORIAM_REQUIRED_HEADERS = [
 ];
 
 const MEMORIAM_NPC_SLOT_COUNT = 10;
-const MEMORIAM_DEFAULT_FIGURINE_SCALE = 53;
 
 for (let n = 1; n <= MEMORIAM_NPC_SLOT_COUNT; n += 1) {
   MEMORIAM_REQUIRED_HEADERS.push(`npc ${n} key`, `npc ${n} label`);
@@ -252,29 +251,10 @@ function parseMemoriamPanel(cells, cols, rowLabel, letter, opts) {
  * @param {string[]} cells
  * @param {Record<string, number>} cols
  * @param {string} rowLabel
- * @param {number} n
- * @returns {number}
- */
-function parseMemoriamNpcFigurineScale(cells, cols, rowLabel, n) {
-  const scaleIndex = cols[`npc ${n} scale`];
-  if (scaleIndex == null) {
-    return MEMORIAM_DEFAULT_FIGURINE_SCALE;
-  }
-  const raw = trimCell(cellAt(cells, scaleIndex));
-  if (raw === "") {
-    return MEMORIAM_DEFAULT_FIGURINE_SCALE;
-  }
-  return parseSheetInteger(raw, rowLabel, `NPC ${n} Scale`);
-}
-
-/**
- * @param {string[]} cells
- * @param {Record<string, number>} cols
- * @param {string} rowLabel
- * @returns {{ name: string, fullName: string, figurineScale: number }[]}
+ * @returns {{ name: string, fullName: string }[]}
  */
 function parseMemoriamNpcs(cells, cols, rowLabel) {
-  /** @type {{ name: string, fullName: string, figurineScale: number }[]} */
+  /** @type {{ name: string, fullName: string }[]} */
   const npcs = [];
   for (let n = 1; n <= MEMORIAM_NPC_SLOT_COUNT; n += 1) {
     const name = trimCell(cellAt(cells, cols[`npc ${n} key`]));
@@ -286,7 +266,6 @@ function parseMemoriamNpcs(cells, cols, rowLabel) {
     npcs.push({
       name,
       fullName: trimCell(cellAt(cells, cols[`npc ${n} label`])),
-      figurineScale: parseMemoriamNpcFigurineScale(cells, cols, rowLabel, n),
     });
   }
   return npcs;
@@ -305,7 +284,7 @@ function parseMemoriamNpcs(cells, cols, rowLabel) {
  *   panelC?: object,
  *   panelD?: object,
  *   splashText: string,
- *   npcs: { name: string, fullName: string, figurineScale: number }[],
+ *   npcs: { name: string, fullName: string }[],
  * }>}
  */
 function parseMemoriamSkyboxRows(csvText) {
@@ -533,7 +512,7 @@ function renderLuaQuotedList(values) {
 
 /**
  * @param {string[]} lines
- * @param {{ name: string, fullName: string, figurineScale: number }[]} npcs
+ * @param {{ name: string, fullName: string }[]} npcs
  * @param {string} indent
  */
 function renderMemoriamNpcsLua(lines, npcs, indent) {
@@ -541,8 +520,7 @@ function renderMemoriamNpcsLua(lines, npcs, indent) {
   for (const npc of npcs) {
     lines.push(`${indent}  {`);
     lines.push(`${indent}    name = "${escapeLuaString(npc.name)}",`);
-    lines.push(`${indent}    fullName = "${escapeLuaString(npc.fullName)}",`);
-    lines.push(`${indent}    figurineScale = ${npc.figurineScale}`);
+    lines.push(`${indent}    fullName = "${escapeLuaString(npc.fullName)}"`);
     lines.push(`${indent}  },`);
   }
   lines.push(`${indent}},`);
@@ -563,7 +541,7 @@ function renderMemoriamNpcsLua(lines, npcs, indent) {
  *     panelC?: object,
  *     panelD?: object,
  *     splashText: string,
- *     npcs: { name: string, fullName: string, figurineScale: number }[],
+ *     npcs: { name: string, fullName: string }[],
  *   }>,
  *   meta: { sheetId: string, catalogRange: string, genericsRange: string, memoriamRange?: string },
  * }} args
