@@ -1,7 +1,6 @@
 import { Fragment, useState, type ReactElement } from "react";
 import type { SceneStatus } from "../../shared/sceneLibrary";
-import type { SceneClock } from "./commands";
-import { ConfirmButton, SceneTimingRing, useSceneEntry, type LiveScenes, type SceneRef } from "./glance";
+import { ConfirmButton, useSceneEntry, type LiveScenes, type PlayScene, type SceneRef } from "./glance";
 import { canvasPoint } from "./sketch";
 
 const G = 4;
@@ -56,7 +55,7 @@ export const ScenePreview = ({ x, y, w, h, prepared, initialKey, scenes, note, s
   onStatus: (key: string, status: SceneStatus) => void;
   onSave: (key: string) => void;
   onDeck: (key: string) => void;
-  onPlay: (key: string, clock: SceneClock) => void;
+  onPlay: PlayScene;
   onDiscard: (key: string) => void;
   panels: (key: string, w: number, h: number) => ReactElement;
 }): ReactElement => {
@@ -110,7 +109,7 @@ export const ScenePreview = ({ x, y, w, h, prepared, initialKey, scenes, note, s
             onClick={(event) => {
               if (active) {
                 const key = active.key;
-                entry.enter(key, canvasPoint(event), (clock) => onPlay(key, clock));
+                entry.enter(key, canvasPoint(event), (clock, edit) => onPlay(key, clock, edit));
               }
             }}
           >
@@ -120,7 +119,7 @@ export const ScenePreview = ({ x, y, w, h, prepared, initialKey, scenes, note, s
         </span>
       </div>
       {active && <Fragment key={active.key}>{panels(active.key, w, h)}</Fragment>}
-      {entry.timing && <SceneTimingRing timing={entry.timing} onClose={entry.close} />}
+      {entry.modal}
     </div>
   );
 };

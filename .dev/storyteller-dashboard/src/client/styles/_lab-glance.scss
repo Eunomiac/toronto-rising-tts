@@ -2663,6 +2663,74 @@ input.lab-cat-rename {
   }
 }
 
+/* ---------- seating strip before a scene switch ---------- */
+
+.lab-transition {
+  width: 960px;
+
+  &-hint {
+    margin: 0;
+    font-size: 12px;
+    opacity: 0.75;
+  }
+
+  &-seats {
+    height: 128px;
+    margin-top: 4px;
+
+    .lab-seats {
+      height: 100%;
+    }
+  }
+
+  &-orphans {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    min-height: 92px;
+    padding: 8px;
+    border: 1px dashed #5a3a3a;
+    background: rgb(40 16 16 / 35%);
+
+    &.drop {
+      border-color: #e57373;
+      box-shadow: 0 0 0 2px rgb(229 115 115 / 45%);
+    }
+  }
+
+  &-empty {
+    font-size: 12px;
+    font-style: italic;
+    opacity: 0.6;
+  }
+
+  &-orphan {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    width: 76px;
+    cursor: grab;
+
+    &-head {
+      width: 56px;
+      height: 56px;
+      border: 3px solid #d64545;
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgb(214 69 69 / 55%);
+    }
+
+    &-name {
+      max-width: 100%;
+      overflow: hidden;
+      font-size: 11px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+}
+
 /* ---------- left dock: scene notes with the roster folded to a rail ---------- */
 
 .lab-box.lab-dock-box {

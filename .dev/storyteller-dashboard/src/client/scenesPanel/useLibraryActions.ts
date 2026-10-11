@@ -16,6 +16,7 @@ import type { SceneSlice } from "../worldState";
 import type { SceneClock, ScenesCommand } from "./commands";
 import { newLibraryScene, newSceneKey, newSceneTitle } from "./library";
 import { nightLabel, templateCopy } from "./sceneStatus";
+import type { SeatingEdit } from "./transitionSeating";
 
 /** How long the table's scene must be quiet before its library row is read back from TTS. */
 const WRITE_BACK_DELAY_MS = 1500;
@@ -106,12 +107,13 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
       setPreviewKey(null);
     }
   };
-  const saveDraft = (key: string, then: readonly ScenesCommand[] = []): LibraryScene | undefined => {
+  const saveDraft = (key: string, then: readonly ScenesCommand[] = [], edit?: SeatingEdit): LibraryScene | undefined => {
     const draft = findDraft(key);
     if (draft) {
       // A saved scene's status moves on without its draft (TTS marks it ongoing or ended).
       const saved = findRow(key);
-      const row = saved ? { ...draft, status: saved.status } : draft;
+      const kept = saved ? { ...draft, status: saved.status } : draft;
+      const row = edit ? edit(kept) : kept;
       putLibraryScene(row);
       sendBatch([upsertCommand(row), ...then]);
       closeDraft(key);
@@ -120,30 +122,37 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
     return undefined;
   };
 
-  const playTemplate = (template: LibraryScene, clock: SceneClock): void => {
+  /** The template stays as it was; the seating strip's `edit` goes into the dated copy. */
+  const playTemplate = (template: LibraryScene, clock: SceneClock, edit?: SeatingEdit): void => {
     if (!present) {
       setNotice(`TTS has no present day yet, so “${template.title}” cannot be dated.`);
       return;
     }
     const night = nightLabel(clock.from === "present" ? new Date(present.getTime() + clock.plusMinutes * 60_000) : present);
-    const copy = templateCopy(template, night, [...sceneLibrarySnapshot().scenes, ...sceneDeckSnapshot().previews]);
+    const dated = templateCopy(template, night, [...sceneLibrarySnapshot().scenes, ...sceneDeckSnapshot().previews]);
+    const copy = edit ? edit(dated) : dated;
     putLibraryScene(copy);
     sendBatch([upsertCommand(copy), { op: "playScene", key: copy.key, ...clock }]);
   };
 
-  const play = (key: string, clock: SceneClock): void => {
+  /** `edit` (the seating strip's) is written into the played row before it goes to TTS. */
+  const play = (key: string, clock: SceneClock, edit?: SeatingEdit): void => {
     if ((findRow(key) ?? findDraft(key))?.status === "template") {
       const template = findDraft(key) ? saveDraft(key) : findRow(key);
       if (template) {
-        playTemplate(template, clock);
+        playTemplate(template, clock, edit);
       }
       return;
     }
     const row = findRow(key);
     if (row) {
-      sendBatch([upsertCommand(row), { op: "playScene", key, ...clock }]);
+      const played = edit ? edit(row) : row;
+      if (played !== row) {
+        putLibraryScene(played);
+      }
+      sendBatch([upsertCommand(played), { op: "playScene", key, ...clock }]);
     } else if (findDraft(key)) {
-      saveDraft(key, [{ op: "playScene", key, ...clock }]);
+      saveDraft(key, [{ op: "playScene", key, ...clock }], edit);
     } else {
       sendBatch([{ op: "playScene", key, ...clock }]);
     }
@@ -287,11 +296,11 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
         addToDeck(saved);
       }
     },
-    playDraft: (key: string, clock: SceneClock) => {
+    playDraft: (key: string, clock: SceneClock, edit?: SeatingEdit) => {
       if ((findRow(key) ?? findDraft(key))?.status === "template") {
-        play(key, clock);
+        play(key, clock, edit);
       } else {
-        saveDraft(key, [{ op: "playScene", key, ...clock }]);
+        saveDraft(key, [{ op: "playScene", key, ...clock }], edit);
       }
     },
     discardDraft: closeDraft

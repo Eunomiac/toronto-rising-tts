@@ -210,6 +210,8 @@ const SeatContent = ({ seat }: { seat: SeatSketch }): ReactElement => (
 export type SeatDrops = {
   readonly move: (seatKey: string, chair: number) => void;
   readonly seatNpc: (characterKey: string, chair: number) => void;
+  /** With it, an NPC dropped on another NPC's chair takes it (the transition strip's orphans). */
+  readonly displace?: (characterKey: string, chair: number) => void;
 };
 
 /**
@@ -277,9 +279,10 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, seating }: {
         const menu = onMenu && (seat.kind === "pc" || seat.kind === "npc") ? onMenu : undefined;
         const seatKey = seat.seatKey;
         const draggable = seating !== undefined && seatKey !== undefined && (seat.kind === "pc" || seat.kind === "npc");
+        const takesNpc = seat.kind === "empty" || (seat.kind === "npc" && seating?.displace !== undefined);
         const accepts = (event: DragEvent<HTMLElement>): boolean =>
           seating !== undefined
-          && (event.dataTransfer.types.includes(SEAT_DRAG_TYPE) || (seat.kind === "empty" && event.dataTransfer.types.includes(NPC_DRAG_TYPE)));
+          && (event.dataTransfer.types.includes(SEAT_DRAG_TYPE) || (takesNpc && event.dataTransfer.types.includes(NPC_DRAG_TYPE)));
         const opensSheet = controllable && openPcSheet !== null;
         const hints = [
           controllable && !open ? "Click for this PC's trackers" : undefined,
@@ -334,6 +337,8 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, seating }: {
               const npc = event.dataTransfer.getData(NPC_DRAG_TYPE);
               if (npc && seat.kind === "empty") {
                 seating.seatNpc(npc, seat.slot);
+              } else if (npc && seat.kind === "npc" && seating.displace) {
+                seating.displace(npc, seat.slot);
               }
             }}
             onContextMenu={(event) => {

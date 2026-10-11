@@ -46,7 +46,9 @@ type NpcOverrides = ReturnType<typeof useNpcOverrides>;
 /** Token ring colour for an NPC with no coloured group (DEFAULT_RING_COLOR in scripts/npc-art/model.ts). */
 const DEFAULT_TOKEN_RING = "#77706a";
 import { usePersistentState } from "../persistentState";
-import { RosterDragGhost, startRosterDrag } from "./rosterDrag";
+import { startRosterDrag } from "./rosterDrag";
+import { carryOverSeating, type SeatingEdit } from "./transitionSeating";
+import { TransitionSeatingModal, type SeatingAsk } from "./transitionStrip";
 
 /**
  * The Scenes tab's panels (the table, and a scene draft's preview): location and weather read live from the
@@ -157,27 +159,45 @@ const TimingStrip = ({ from, disabled, target, onHover, onPick }: {
   </div>
 );
 
+/** Plays the scene once its seating and clock are chosen; `edit` is the seating strip's, when it changed anything. */
+export type SceneGo = (clock: SceneClock, edit?: SeatingEdit) => void;
+
+export type PlayScene = (key: string, clock: SceneClock, edit?: SeatingEdit) => void;
+
 /**
- * Switching to a scene: an ongoing scene goes straight back to its own time; a new scene (or a template's copy)
- * opens the timing menu (`useSceneEntry` returns it to render).
+ * Switching to a scene. Away from a scene on the table, the seating strip comes first (`TransitionSeatingModal`).
+ * Then an ongoing scene goes straight back to its own time; a new scene (or a template's copy) opens the timing
+ * menu. `modal` is whichever of the two is open, to render.
  */
-export const useSceneEntry = (): { timing: SceneTiming | null; enter: (key: string, at: Point, go: (clock: SceneClock) => void) => void; close: () => void } => {
-  const { clock } = useWorldState();
+export const useSceneEntry = (): { enter: (key: string, at: Point, go: SceneGo) => void; modal: ReactElement | null } => {
+  const { clock, scene, seats } = useWorldState();
+  const [seating, setSeating] = useState<SeatingAsk | null>(null);
   const [timing, setTiming] = useState<SceneTiming | null>(null);
+  const time = (key: string, at: Point, go: SceneGo, edit: SeatingEdit | undefined): void => {
+    // A draft's status is stale once TTS has moved the saved scene on (ongoing, ended).
+    const row = sceneRowFor(key);
+    const saved = sceneLibrarySnapshot().scenes.find((entry) => entry.key === key);
+    const plan = entryPlan(row && saved ? { ...row, status: saved.status } : row, clock?.presentDay ? toDate(clock.presentDay) : undefined);
+    if (plan.kind === "switch") {
+      go(plan.clock, edit);
+    } else {
+      setTiming({ at, key, showScene: plan.showScene, go: (picked) => go(picked, edit) });
+    }
+  };
   return {
-    timing,
     enter: (key, at, go) => {
-      // A draft's status is stale once TTS has moved the saved scene on (ongoing, ended).
-      const row = sceneRowFor(key);
-      const saved = sceneLibrarySnapshot().scenes.find((scene) => scene.key === key);
-      const plan = entryPlan(row && saved ? { ...row, status: saved.status } : row, clock?.presentDay ? toDate(clock.presentDay) : undefined);
-      if (plan.kind === "switch") {
-        go(plan.clock);
+      const destination = sceneRowFor(key);
+      if (destination && seats && scene?.liveKey && scene.liveKey !== key) {
+        setSeating({ destination, start: carryOverSeating(destination, seats.seats), then: (edit) => time(key, at, go, edit) });
       } else {
-        setTiming({ at, key, showScene: plan.showScene, go });
+        time(key, at, go, undefined);
       }
     },
-    close: () => setTiming(null)
+    modal: seating
+      ? <TransitionSeatingModal ask={seating} onClose={() => setSeating(null)} />
+      : timing
+        ? <SceneTimingRing timing={timing} onClose={() => setTiming(null)} />
+        : null
   };
 };
 
@@ -188,7 +208,7 @@ export const useSceneEntry = (): { timing: SceneTiming | null; enter: (key: stri
  * ×5 until it reaches present day: ×5 is chosen for a start earlier on present day's night, ×2 otherwise, and
  * either can be clicked.
  */
-export const SceneTimingRing = ({ timing, onClose }: { timing: SceneTiming; onClose: () => void }): ReactElement => {
+const SceneTimingRing = ({ timing, onClose }: { timing: SceneTiming; onClose: () => void }): ReactElement => {
   const { clock } = useWorldState();
   const present = clock?.presentDay ? toDate(clock.presentDay) : undefined;
   const [sceneAt] = useState(() => {
@@ -1100,7 +1120,6 @@ export const MasonryRoster = (): ReactElement => {
 
   return (
     <div className="lab-mroster" ref={rosterRef}>
-      <RosterDragGhost />
       {preview && rosterRef.current && <FigurinePreview characterKey={preview.characterKey} token={preview.token} panel={rosterRef.current} />}
       <div className="lab-mroster-head">
         <button type="button" className={`lab-btn${view === "main" ? " primary" : ""}`} onClick={() => setView("main")}>Main</button>
@@ -2727,13 +2746,13 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
   libraryActions?: LibraryActions;
   scenes: LiveScenes;
   linkMenu?: LinkMenu;
-  onSwitch: (key: string, clock: SceneClock) => void;
+  onSwitch: PlayScene;
   onEndScene: () => void;
   /** Ends an ongoing scene that is not on the table (it leaves the deck for the archive). */
   onEndDeckScene: (key: string) => void;
   /** Takes a new scene or template off the deck (the library keeps it). */
   onRemoveFromDeck: (key: string) => void;
-  onPlay: (key: string, clock: SceneClock) => void;
+  onPlay: PlayScene;
   onEdit: (key: string) => void;
   /** A new scene at this location, titled "District — Site". */
   onPrepare: (location: LabLocation, districtName: string, siteName: string) => void;
@@ -2775,7 +2794,7 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
                 title={scene.status === "ongoing"
                   ? `Go back to ${scene.title} at its own time (right-click to edit or end it)`
                   : `Start ${scene.title} (right-click to edit it or take it off the deck)`}
-                onClick={(event) => entry.enter(scene.key, canvasPoint(event), (clock) => onSwitch(scene.key, clock))}
+                onClick={(event) => entry.enter(scene.key, canvasPoint(event), (clock, edit) => onSwitch(scene.key, clock, edit))}
                 onContextMenu={(event) => {
                   event.preventDefault();
                   setDeckMenu({ at: canvasPoint(event), scene });
@@ -2837,7 +2856,7 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
           {...(live.presentYear !== undefined ? { onMemoriam: () => setModal("memoriam") } : {})}
           onPlay={(key, at) => {
             setModal(null);
-            entry.enter(key, at, (clock) => onPlay(key, clock));
+            entry.enter(key, at, (clock, edit) => onPlay(key, clock, edit));
           }}
           onEdit={(key) => {
             setModal(null);
@@ -2900,7 +2919,7 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
           onAdvance={(payload) => command({ op: "memoriam", payload })}
         />
       )}
-      {entry.timing && <SceneTimingRing timing={entry.timing} onClose={entry.close} />}
+      {entry.modal}
     </div>
   );
 };

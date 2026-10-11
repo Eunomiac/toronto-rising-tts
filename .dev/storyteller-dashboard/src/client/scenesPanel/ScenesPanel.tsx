@@ -18,6 +18,7 @@ import {
   type StageQueueView
 } from "./glance";
 import { ScenePreview } from "./preview";
+import { RosterDragGhost } from "./rosterDrag";
 import { useControlBoardSnaps, useSceneCatalogs } from "./roster";
 import type { SceneCatalogs } from "./catalogs";
 import { Box, Overlay, WideBoard, type LiveBoard } from "./sketch";
@@ -392,6 +393,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
     <div className="lab-canvas scenes-live">
       {active && (
         <>
+          <RosterDragGhost />
           <Box x={G} y={G} w={LEFT_W} h={STRIP_H} className="lab-backdrop-box">
             {location && scene ? (
               <LocationPanel

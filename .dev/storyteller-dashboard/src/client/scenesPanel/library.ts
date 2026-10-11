@@ -182,14 +182,14 @@ export const draftClock = (scene: LibraryScene): ClockDatetime | null => {
 /** The draft follows present day (whatever it is when the scene is played) instead of a fixed time. */
 export const draftAtPresentDay = (scene: LibraryScene): LibraryScene => withSession(scene, { clock: { isPresentDay: true } });
 
-const NPC_SEATS: readonly string[] = ["NPC1", "NPC2", "NPC3", "NPC4"];
+export const NPC_SEATS: readonly string[] = ["NPC1", "NPC2", "NPC3", "NPC4"];
 
-const draftSeatSlots = (scene: LibraryScene): Row => (isRecord(scene.sessionScene.seatSlots) ? scene.sessionScene.seatSlots : {});
+export const draftSeatSlots = (scene: LibraryScene): Row => (isRecord(scene.sessionScene.seatSlots) ? scene.sessionScene.seatSlots : {});
 
 const draftSeatPresent = (scene: LibraryScene): Row => (isRecord(scene.sessionScene.seatPresent) ? scene.sessionScene.seatPresent : {});
 
 /** The seated NPC on an NPC seat row (none when the seat is empty). */
-const npcOf = (row: unknown): string | undefined =>
+export const npcOf = (row: unknown): string | undefined =>
   isRecord(row) && row.slotEmpty !== true && typeof row.characterKey === "string" && row.characterKey !== "" ? row.characterKey : undefined;
 
 /** The chair a seat row holds: a PC in session, or an NPC seat with someone in it. */
@@ -200,7 +200,8 @@ const seatChair = (seat: string, row: unknown): number | undefined => {
   return PC_COLORS.includes(seat) || npcOf(row) !== undefined ? row.tableSlot : undefined;
 };
 
-const holderOfChair = (slots: Row, chair: number): string | undefined =>
+/** The seat key (PC colour or NPC seat) holding a chair. */
+export const holderOfChair = (slots: Row, chair: number): string | undefined =>
   Object.keys(slots).find((seat) => seatChair(seat, slots[seat]) === chair);
 
 /** The draft row after one panel command; commands with no library meaning (volumes, spotlight …) change nothing. */
