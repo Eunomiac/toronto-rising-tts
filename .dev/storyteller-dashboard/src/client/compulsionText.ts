@@ -1,11 +1,11 @@
 import { useSyncExternalStore } from "react";
-import { parseCompulsionText, type CompulsionTextFile } from "../shared/compulsionText";
+import { parseCompulsions, type Compulsions } from "../shared/compulsionText";
 
-/** `data/compulsion-text.json` for the seat badges' tooltips, loaded once on first use. */
+/** `data/compulsions.jsonc` for the seat badges' tooltips, loaded once on first use. */
 
-type State = { readonly file: CompulsionTextFile | null; readonly error: string | null };
+type State = { readonly compulsions: Compulsions | null; readonly error: string | null };
 
-let state: State = { file: null, error: null };
+let state: State = { compulsions: null, error: null };
 let load: Promise<void> | null = null;
 const listeners = new Set<() => void>();
 
@@ -17,16 +17,16 @@ const publish = (next: State): void => {
 };
 
 const ensureLoaded = (): void => {
-  load ??= fetch("/api/compulsion-text")
+  load ??= fetch("/api/compulsions")
     .then(async (response) => {
       const body = (await response.json()) as unknown;
       if (!response.ok) {
         const error = typeof body === "object" && body !== null && "error" in body ? String(body.error) : "";
         throw new Error(error || `Compulsion text failed to load (${response.status}).`);
       }
-      publish({ file: parseCompulsionText(body), error: null });
+      publish({ compulsions: parseCompulsions(body), error: null });
     })
-    .catch((error: unknown) => publish({ file: null, error: error instanceof Error ? error.message : String(error) }));
+    .catch((error: unknown) => publish({ compulsions: null, error: error instanceof Error ? error.message : String(error) }));
 };
 
 const subscribe = (listener: () => void): (() => void) => {
@@ -35,4 +35,4 @@ const subscribe = (listener: () => void): (() => void) => {
   return () => listeners.delete(listener);
 };
 
-export const useCompulsionText = (): State => useSyncExternalStore(subscribe, () => state);
+export const useCompulsions = (): State => useSyncExternalStore(subscribe, () => state);

@@ -8,7 +8,6 @@
     "scene-catalogs": "node ../scripts/generate_dashboard_scene_catalogs.js",
     "typecheck": "tsc -p tsconfig.server.json --noEmit && tsc -p tsconfig.app.json --noEmit && tsc -p tsconfig.node.json --noEmit && tsc -p tsconfig.scripts.json",
     "npc-art": "node scripts/npc-art/generate.ts",
-    "compulsion-text": "node scripts/compulsion-text.ts",
     "build": "npm run scene-catalogs && npm run typecheck && npm run test && npm run copy-static && tsc -p tsconfig.server.json && vite build",
     "test": "vitest run",
     "test:watch": "vitest",

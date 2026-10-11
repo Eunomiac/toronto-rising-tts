@@ -20,6 +20,7 @@ import { createTermImageStore, MAX_TERM_IMAGE_BYTES, TERM_IMAGE_CONTENT_TYPES, T
 import { dashboardTtsBridge } from "./ttsExecuteLua.js";
 import { ttsEventHub } from "./ttsEvents.js";
 import { parseGenerateImageRequest, parseGenerateNpcRequest, parseRerollFieldRequest } from "../shared/npc.js";
+import { stripJsonComments } from "../shared/compulsionText.js";
 
 loadEnvFile();
 const config = getConfig();
@@ -30,7 +31,7 @@ const genericNpcCatalogPath = path.join(dashboardRoot, "data", "generic-npcs.jso
 const genericNpcImageDir = path.join(repoRoot, "assets", "images", "NPCs", "Generic");
 const sceneCatalogsPath = path.join(dashboardRoot, "data", "scene-catalogs.json");
 const controlBoardSnapsPath = path.join(dashboardRoot, "data", "control-board-snaps.json");
-const compulsionTextPath = path.join(dashboardRoot, "data", "compulsion-text.json");
+const compulsionsPath = path.join(dashboardRoot, "data", "compulsions.jsonc");
 const cataloguedNpcImageDir = path.join(repoRoot, "assets", "images", "NPCs", "Catalogued");
 const memoriamNpcImageDir = path.join(repoRoot, "assets", "images", "NPCs", "Memoriam");
 const scenesAssetDir = path.join(dashboardRoot, "assets", "scenes");
@@ -384,12 +385,19 @@ const handleApi = async (request: IncomingMessage, response: ServerResponse, pat
     return;
   }
 
-  if (request.method === "GET" && pathname === "/api/compulsion-text") {
-    await serveJsonFile(
-      response,
-      compulsionTextPath,
-      "compulsion-text.json is missing. Run npm run compulsion-text in .dev/storyteller-dashboard."
-    );
+  if (request.method === "GET" && pathname === "/api/compulsions") {
+    let text: string;
+    try {
+      text = await readFile(compulsionsPath, "utf8");
+    } catch {
+      sendJson(response, 500, { error: "data/compulsions.jsonc is missing from .dev/storyteller-dashboard." });
+      return;
+    }
+    try {
+      sendJson(response, 200, JSON.parse(stripJsonComments(text)) as unknown);
+    } catch (error: unknown) {
+      sendJson(response, 500, { error: `data/compulsions.jsonc is not valid JSON: ${error instanceof Error ? error.message : String(error)}` });
+    }
     return;
   }
 

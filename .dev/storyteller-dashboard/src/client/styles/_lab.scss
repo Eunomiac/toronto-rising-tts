@@ -412,11 +412,10 @@ $signal-fire: #ff9a1f;
     color: #fff;
   }
 
-  &-placeholder {
+  &-card {
     font-size: 10px;
     font-weight: 400;
-    font-style: italic;
-    color: #ffcf7a;
+    color: #b8b0a2;
   }
 
   &-head {
@@ -426,6 +425,16 @@ $signal-fire: #ff9a1f;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: #ff8a8a;
+
+    b {
+      letter-spacing: 0.02em;
+      color: #fff;
+    }
+  }
+
+  &-flavor {
+    font-style: italic;
+    color: #cfc6b6;
   }
 }
 
