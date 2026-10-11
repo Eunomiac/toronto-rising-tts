@@ -1,6 +1,6 @@
 --[[
     Static NPC layout and character definitions for core/npcs.ttslua.
-    Replace image URLs with your uploaded workshop / cloud assets before play.
+    Image URLs are not here: every NPC's art links come from generated lib/npc_art_urls.ttslua.
 
     Agent guidance: .dev/NPC Object Spawning & Spotlighting/NPC Object Overview.md; .dev/Chronicle Data/NPCS_*.md;
     .dev/Game State Data.jsonc (instance examples).
@@ -163,8 +163,8 @@ D.areas = {
 
 --[[
     `figurine.scale` drives Custom Figurine `ImageScalar` at spawn time and spotlight bounds math at runtime.
-    Figurine front/back URLs live in `lib/npc_figurine_hosted_urls.ttslua` (named NPCs) and `figurine.front` / `figurine.back`
-    on generic entries; `core/npc_spawn.ttslua` spawns figurines from them on demand.
+    Every NPC's figurine and token URLs live in generated `lib/npc_art_urls.ttslua` (npm run npc-art:generate);
+    `core/npc_spawn.ttslua` spawns figurines from it on demand.
     `werewolf = true`: every roll the Storyteller starts for this NPC is a Werewolf roll (Werewolf / Rage dice).
     Group "demoBand" exists for testing group spawn from the Storyteller NPC panel. ]]
 
@@ -1660,141 +1660,48 @@ D.characters = {
   }
 }
 
+--- @type table<string, table>|nil generic catalog key → `{ key, label }` (built by `D.initGenericNPCs`)
 D.genericNpcs = nil
 
---- Resolve a paste/catalog key `stem_NN` → entry in `D.genericNpcs[stem][index]`.
---- @param fullKey string e.g. "academicsProfessor_02"
---- @return table|nil entry, string|nil stem, number|nil index
+--- Generic catalog entry `{ key, label }` for a key like `academicsProfessor_02`; nil when unknown or without art.
+--- @param fullKey string
+--- @return table|nil entry
 function D.resolveGenericNpcEntry(fullKey)
-  if type(fullKey) ~= "string" then
-    return nil, nil, nil
+  if type(fullKey) ~= "string" or D.genericNpcs == nil then
+    return nil
   end
-  local stem, indexStr = fullKey:match("^([%a_][%w]*)_(%d%d)$")
-  if stem == nil or indexStr == nil then
-    return nil, nil, nil
-  end
-  local index = tonumber(indexStr)
-  if index == nil or index < 1 then
-    return nil, stem, nil
-  end
-  local group = D.genericNpcs and D.genericNpcs[stem]
-  if type(group) ~= "table" then
-    return nil, stem, index
-  end
-  local entry = group[index]
-  if type(entry) ~= "table" then
-    return nil, stem, index
-  end
-  return entry, stem, index
+  return D.genericNpcs[fullKey]
 end
 
+--- Generic NPCs available to import: every sheet catalog row (`lib.generic_npcs_catalog`) whose figurine has art in
+--- generated `lib.npc_art_urls`. Rows without art are listed once in the console and left out.
 function D.initGenericNPCs()
-  local figurineFronts = Cloud.GenericNpcFigurines
-  if figurineFronts == nil or next(figurineFronts) == nil then
-    -- broadcast a warning, but don't error out, just return early as no-op
-    U.AlertGM("WARNING: Cloud.GenericNpcFigurines is nil or empty, skipping generic NPC initialization")
-    return
-  end
-  if Cloud.GenericNpcFigurines.Back_00 == nil then
-    error("Cloud.GenericNpcFigurines.Back_00 is nil")
-  end
-  local figurineBackURL = Cloud.GenericNpcFigurines.Back_00.URL
-  local tokenFronts = Cloud.GenericNpcTokenFronts
-  if tokenFronts == nil then
-    error("Cloud.GenericNpcTokenFronts is nil")
-  end
-  local tokenBacks = Cloud.GenericNpcTokenBacks
-  if tokenBacks == nil then
-    error("Cloud.GenericNpcTokenBacks is nil")
-  end
-
   local GenericNpcsCatalog = require("lib.generic_npcs_catalog")
   local labelsByKey = GenericNpcsCatalog and GenericNpcsCatalog.ByKey or nil
   if type(labelsByKey) ~= "table" then
     error("lib.generic_npcs_catalog.ByKey is missing — run npm run generic-npcs:import")
   end
-
+  local artByKey = require("lib.npc_art_urls")
   local genericNpcs = {}
-
-  --[[
-  Using data from `Cloud`, construct a table of generic NPCs, indexed by key to indexed arrays, skipping any entries with an index of 00 (e.g. the "Back" figurine entry):
-
-  E.g.
-
-  genericNpcs.academicsProfessor = {
-    {
-      key = "academicsProfessor_01",
-      label = "Academics Professor",
-      figurine = {
-        front = figurineFronts.academicsProfessor_01.URL,
-        back = figurineBackURL,
-      },
-      token = {
-        front = tokenFronts.academicsProfessor_01.URL,
-        back = tokenBacks.academicsProfessor_01.URL,
-      },
-    },
-    ...
-  }
-
-  ]]
-
-  local genericNpcGroups = {}
-
-  -- For each key in figurineFronts, filter out any without a two-digit suffix greater than 00. Then remove the suffix and condense the list to unique values.
-
-  for key, value in pairs(figurineFronts) do
-    if key:match("^[^_]+_01$") then
-      local stem = key:match("^([^_]+)_01$")
-      if stem ~= nil then
-        table.insert(genericNpcGroups, stem)
-      end
+  local withoutArt = {}
+  for key, row in pairs(labelsByKey) do
+    if type(row) ~= "table" or type(row.label) ~= "string" or row.label == "" then
+      error("Generic NPC '" .. tostring(key) .. "' has no sheet label — run npm run generic-npcs:import")
+    end
+    if artByKey[key] == nil then
+      withoutArt[#withoutArt + 1] = key
+    else
+      genericNpcs[key] = { key = key, label = row.label }
     end
   end
-
-  -- Now, for each group, iterate over the figurineFronts and tokenFronts, applying prefixes from 01 to 99 until no matching entry is found
-  for _, group in ipairs(genericNpcGroups) do
-    local figurineData = {}
-    local index = 1
-    while true do
-      local figurineKey = group .. "_" .. string.format("%02d", index)
-      local figurineFront = figurineFronts[figurineKey]
-      if figurineFront == nil then break end
-      local tokenFront = tokenFronts[figurineKey]
-      if tokenFront == nil then
-        -- throw an error: there must be a matching token if there is a figurine front
-        error("Figurine '" .. figurineKey .. "' has no matching token front image.")
-      end
-      local tokenBack = tokenBacks[figurineKey]
-      if tokenBack == nil then
-        -- throw an error: there must be a matching token back if there is a token front
-        error("Token '" .. figurineKey .. "' has no matching token back image.")
-      end
-      local sheetRow = labelsByKey[figurineKey]
-      if type(sheetRow) ~= "table" or type(sheetRow.label) ~= "string" or sheetRow.label == "" then
-        error(
-          "Generic NPC '"
-            .. figurineKey
-            .. "' has Cloud assets but no sheet label — run npm run generic-npcs:import"
-        )
-      end
-      table.insert(figurineData, {
-        key = figurineKey,
-        label = sheetRow.label,
-        figurine = {
-          front = figurineFront.URL,
-          back = figurineBackURL,
-        },
-        token = {
-          front = tokenFront.URL,
-          back = tokenBack.URL,
-        },
-      })
-      index = index + 1
-    end
-    genericNpcs[group] = figurineData
+  if #withoutArt > 0 then
+    table.sort(withoutArt)
+    print(
+      "[npcs_data] Generic NPC(s) with no art in lib/npc_art_urls.ttslua (add assets/images/NPCs/Generic/<key>.webp, "
+        .. "run npm run npc-art:generate, commit and push): "
+        .. table.concat(withoutArt, ", ")
+    )
   end
-
   D.genericNpcs = genericNpcs
 end
 

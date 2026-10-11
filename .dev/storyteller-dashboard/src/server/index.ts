@@ -29,6 +29,7 @@ const genericNpcImageDir = path.join(repoRoot, "assets", "images", "NPCs", "Gene
 const sceneCatalogsPath = path.join(dashboardRoot, "data", "scene-catalogs.json");
 const controlBoardSnapsPath = path.join(dashboardRoot, "data", "control-board-snaps.json");
 const cataloguedNpcImageDir = path.join(repoRoot, "assets", "images", "NPCs", "Catalogued");
+const memoriamNpcImageDir = path.join(repoRoot, "assets", "images", "NPCs", "Memoriam");
 const scenesAssetDir = path.join(dashboardRoot, "assets", "scenes");
 const pcSheetAssetDir = path.join(dashboardRoot, "assets");
 const termImages = createTermImageStore(path.join(dashboardRoot, "data", "term-images"));
@@ -490,7 +491,7 @@ const tryHandleDedicatedRoutes = async (request: IncomingMessage, response: Serv
   if (request.method === "GET" && pathname.startsWith("/figurine-images/")) {
     await serveSafeWebp(
       response,
-      [cataloguedNpcImageDir, genericNpcImageDir],
+      [cataloguedNpcImageDir, genericNpcImageDir, memoriamNpcImageDir],
       decodeURIComponent(pathname.slice("/figurine-images/".length)),
       "Invalid NPC figurine image filename."
     );

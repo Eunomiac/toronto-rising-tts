@@ -15,7 +15,7 @@ local S = require("core.state")
 local C = require("lib.constants")
 local L = require("core.lighting")
 local DATA = require("lib.npcs_data")
--- Build D.genericNpcs from Cloud.* catalogs (no-op if GenericNpcFigurines missing).
+-- Build D.genericNpcs from the sheet catalog rows that have art in lib/npc_art_urls.ttslua.
 DATA.initGenericNPCs()
 local NpcSpawn = require("core.npc_spawn")
 local SRI = require("lib.seat-role-identity")
@@ -301,7 +301,7 @@ local function validateNpcNameKey(npcName)
     return U.Type(npcName) == "string" and string.match(npcName, "^[%a_][%w_]*$") ~= nil
 end
 
---- Runtime generic roster entries (`isGeneric`) spawn from `D.resolveGenericNpcEntry` URLs.
+--- Runtime generic roster entries (`isGeneric`); their figurines spawn from `lib/npc_art_urls.ttslua` like named NPCs.
 --- @param npcName string|nil
 --- @return boolean
 local function characterIsGeneric(npcName)

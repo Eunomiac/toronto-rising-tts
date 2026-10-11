@@ -3055,7 +3055,8 @@ C.MemoriamSkyboxes = SkyboxesCatalog.MemoriamSkyboxes
 
 -- Memoriam panel art lives on Steam Cloud (`Vampire the Masquerade 5E/Memoriam`, files `<skyboxKey>_<a|b|c|d>.jpg`) and reaches
 -- Lua as `Cloud.MemoriamPanels` (AUTO-GENERATED `lib/cloud_catalog.ttslua`; regenerate: npm run cloud-asset-sync:catalog).
--- Cloud is the URL authority for `panelA`–`panelD`.`url` (filled at load from `Cloud.MemoriamPanels`). The sheet does not supply panel or NPC image URLs.
+-- Cloud is the URL authority for `panelA`–`panelD`.`url` (filled at load from `Cloud.MemoriamPanels`). The sheet does not supply panel URLs.
+-- Memoriam NPC figurine / token art comes from `lib/npc_art_urls.ttslua` (keyed `mem_<stem>`), like every other NPC.
 local CloudCatalog = require("lib.cloud_catalog")
 
 local MEMORIAM_PANEL_KEYS = { "panelA", "panelB", "panelC", "panelD" }
@@ -3092,61 +3093,6 @@ function C.cloudCatalogURL(cloudTable, key)
   return cloudCatalogURL(cloudTable, key)
 end
 
---- Sheet NPC Key is `mem_<stem>`. Figurine Cloud key matches that; token catalogs use `tokenFront_mem_<stem>` / `tokenBack_mem_<stem>`.
---- @param name string|nil
---- @param kind string `"figurine"` | `"tokenFront"` | `"tokenBack"`
---- @return string
-local function memoriamNpcAssetCloudKey(name, kind)
-  local trimmed = trimmedString(name)
-  if trimmed == "" then
-    return ""
-  end
-  local stem = trimmed
-  if string.sub(stem, 1, 4) == "mem_" then
-    stem = string.sub(stem, 5)
-  end
-  if stem == "" then
-    return ""
-  end
-  if kind == "figurine" then
-    return "mem_" .. stem
-  end
-  if kind == "tokenFront" then
-    return "tokenFront_mem_" .. stem
-  end
-  return "tokenBack_mem_" .. stem
-end
-
---- Shared Memoriam figurine reverse: `mem_BACK.webp` → `Cloud.MemoriamNpcFigurines.mem_BACK` (any BACK casing).
---- @param figurines table|nil
---- @return string
-local function memoriamNpcSharedFigurineBackURL(figurines)
-  if type(figurines) ~= "table" then
-    return ""
-  end
-  local direct = figurines.mem_BACK or figurines.mem_Back or figurines.mem_back
-  if type(direct) == "table" then
-    return trimmedString(direct.URL)
-  end
-  for key, _ in pairs(figurines) do
-    if type(key) == "string" and string.lower(key) == "mem_back" then
-      return cloudCatalogURL(figurines, key)
-    end
-  end
-  return ""
-end
-
---- Reserved Cloud stem `BACK` is the shared reverse, not a character.
---- @param name string|nil
---- @return boolean
-local function isMemoriamNpcSharedBackName(name)
-  local stem = trimmedString(name)
-  if string.sub(stem, 1, 4) == "mem_" then
-    stem = string.sub(stem, 5)
-  end
-  return string.lower(stem) == "back"
-end
-
 --- Writes `Cloud.MemoriamPanels["<skyboxKey>_<letter>"].URL` into `catalog[skyboxKey][panelX].url`.
 --- Cloud keys that name no catalog period, or a panel that period does not define, are reported — not applied.
 --- @param catalog table `C.MemoriamSkyboxes`
@@ -3171,52 +3117,6 @@ local function applyMemoriamCloudPanelUrls(catalog, cloudPanels)
   end
   table.sort(unmatched)
   return linked, unmatched
-end
-
---- Fills Memoriam NPC image URLs from Cloud catalogs. Missing tables, keys, or URLs become "".
---- Named slots (`npc.name`) also get `figurine.URL` / `token.frontURL` / `token.backURL`.
---- `mem_BACK.webp` is the shared figurine reverse (`figurine.back`), not a character front.
---- @param catalog table `C.MemoriamSkyboxes`
---- @param cloud table|nil `Cloud`
-local function applyMemoriamCloudNpcAssetUrls(catalog, cloud)
-  cloud = type(cloud) == "table" and cloud or {}
-  local figurines = type(cloud.MemoriamNpcFigurines) == "table" and cloud.MemoriamNpcFigurines or {}
-  local tokenFronts = type(cloud.MemoriamNpcTokenFronts) == "table" and cloud.MemoriamNpcTokenFronts or {}
-  local tokenBacks = type(cloud.MemoriamNpcTokenBacks) == "table" and cloud.MemoriamNpcTokenBacks or {}
-  local sharedFigurineBackUrl = memoriamNpcSharedFigurineBackURL(figurines)
-  if type(catalog) ~= "table" then
-    return
-  end
-  for _, entry in pairs(catalog) do
-    if type(entry) == "table" and type(entry.npcs) == "table" then
-      for i = 1, #entry.npcs do
-        local npc = entry.npcs[i]
-        if type(npc) == "table" then
-          local name = trimmedString(npc.name)
-          local figurineUrl = ""
-          if name ~= "" and not isMemoriamNpcSharedBackName(name) then
-            figurineUrl = cloudCatalogURL(figurines, memoriamNpcAssetCloudKey(name, "figurine"))
-          end
-          local frontUrl = cloudCatalogURL(tokenFronts, memoriamNpcAssetCloudKey(name, "tokenFront"))
-          local backUrl = cloudCatalogURL(tokenBacks, memoriamNpcAssetCloudKey(name, "tokenBack"))
-          npc.figurineURL = figurineUrl
-          npc.tokenURL = frontUrl
-          if type(npc.figurine) == "table" then
-            npc.figurine.URL = figurineUrl
-            npc.figurine.back = sharedFigurineBackUrl
-          elseif name ~= "" then
-            npc.figurine = { URL = figurineUrl, back = sharedFigurineBackUrl }
-          end
-          if type(npc.token) == "table" then
-            npc.token.frontURL = frontUrl
-            npc.token.backURL = backUrl
-          elseif name ~= "" then
-            npc.token = { frontURL = frontUrl, backURL = backUrl }
-          end
-        end
-      end
-    end
-  end
 end
 
 --- Catalog panels (`"<skyboxKey>.<panelKey>"`) whose `url` is still blank after the Cloud merge — sorted.
@@ -3280,7 +3180,6 @@ else
   print(summary)
 end
 
-applyMemoriamCloudNpcAssetUrls(C.MemoriamSkyboxes, CloudCatalog)
 
 --- @param entry table|nil
 --- @return number

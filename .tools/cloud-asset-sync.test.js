@@ -13,17 +13,17 @@ test("parseCli --lua-catalog selects catalog-only mode", () => {
 });
 
 test("parseCli --job still works alongside --lua-catalog", () => {
-  const cli = parseCli(["--lua-catalog", "--job", "memoriamNpcFigurines"]);
+  const cli = parseCli(["--lua-catalog", "--job", "memoriamPanels"]);
   assert.equal(cli.luaCatalogOnly, true);
-  assert.deepEqual(cli.jobFilter, ["memoriamNpcFigurines"]);
+  assert.deepEqual(cli.jobFilter, ["memoriamPanels"]);
 });
 
 test("renderCloudCatalogLua emits empty tables so consumers can default URLs to empty", () => {
   const lua = renderCloudCatalogLua({
-    MemoriamNpcFigurines: {},
-    MemoriamNpcTokenFronts: {},
+    MemoriamPanels: {},
+    Sites: {},
   });
-  assert.match(lua, /MemoriamNpcFigurines = \{/);
-  assert.match(lua, /MemoriamNpcTokenFronts = \{/);
+  assert.match(lua, /MemoriamPanels = \{/);
+  assert.match(lua, /Sites = \{/);
   assert.doesNotMatch(lua, /URL = "/);
 });

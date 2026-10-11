@@ -6,6 +6,7 @@
     (`core.npc_gameboard_spotlight`); moving one does nothing. Hidden from PC seats.
 
     `reconcileFromState` spawns / moves / flips / destroys only the rows that changed since the last pass.
+    Token art (both sides, name baked in) comes from generated `lib/npc_art_urls.ttslua`.
 ]]
 
 local StageTokens = {}
@@ -14,8 +15,7 @@ local C = require("lib.constants")
 local G = require("lib.guids")
 local U = require("lib.util")
 local DATA = require("lib.npc_gameboard_data")
-local NPC_DATA = require("lib.npcs_data")
-local HOSTED_TOKEN_ART = require("lib.npc_token_hosted_urls")
+local ART = require("lib.npc_art_urls")
 local Board = require("core.npc_gameboard_board")
 
 local TAG = DATA.TAG_STAGE_TOKEN
@@ -46,7 +46,24 @@ local function characterKeyForToken(obj)
     return key ~= "" and key or nil
 end
 
---- Cold path: once per load, adopt tokens already on the table (duplicates are destroyed).
+--- @param key string
+--- @return table|nil `{ front, back }`
+local function tokenArt(key)
+    local art = ART[key]
+    return type(art) == "table" and art.token or nil
+end
+
+--- @param obj Object
+--- @param key string
+--- @return boolean true when the saved token still shows the NPC's current art
+local function tokenArtCurrent(obj, key)
+    local art = tokenArt(key)
+    local custom = obj.getCustomObject()
+    return art ~= nil and type(custom) == "table" and custom.image == art.front and custom.image_bottom == art.back
+end
+
+--- Cold path: once per load, adopt tokens already on the table. Duplicates, and tokens whose art has
+--- changed since they were spawned, are destroyed so the next pass respawns them.
 local function ensureIndex()
     if tokenGuidByKey ~= nil then
         return
@@ -55,26 +72,12 @@ local function ensureIndex()
     appliedSigByKey = {}
     for _, obj in ipairs(getObjectsWithTag(TAG) or {}) do
         local key = characterKeyForToken(obj)
-        if key == nil or tokenGuidByKey[key] ~= nil then
+        if key == nil or tokenGuidByKey[key] ~= nil or not tokenArtCurrent(obj, key) then
             obj.destruct()
         else
             tokenGuidByKey[key] = obj.getGUID()
         end
     end
-end
-
---- @param key string
---- @return table|nil `{ front, back }`
-local function tokenArt(key)
-    local hosted = HOSTED_TOKEN_ART[key]
-    if type(hosted) == "table" then
-        return hosted
-    end
-    local entry = NPC_DATA.resolveGenericNpcEntry(key)
-    if type(entry) == "table" and type(entry.token) == "table" then
-        return entry.token
-    end
-    return nil
 end
 
 --- @param key string
@@ -108,7 +111,9 @@ end
 local function spawnToken(key, board, row)
     local art = tokenArt(key)
     if art == nil then
-        print("[StageTokens] no token art for `" .. key .. "` — no spotlight token on the Stage Control board.")
+        print(
+            "[StageTokens] no token art for `" .. key .. "` in lib/npc_art_urls.ttslua — no spotlight token on the Stage Control board."
+        )
         return nil
     end
     local pos, rot = tokenPose(board, row)

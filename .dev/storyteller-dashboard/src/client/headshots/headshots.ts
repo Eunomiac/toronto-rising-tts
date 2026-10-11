@@ -25,7 +25,7 @@ let manual: Record<string, HeadshotCrop> = {};
 let manualLoad: Promise<void> | null = null;
 const listeners = new Set<(characterKey: string) => void>();
 
-/** Named and generic NPC cutouts share one route; the server looks in both folders. */
+/** Named, generic and Memoriam NPC cutouts share one route; the server looks in all three folders. */
 export const figurineUrl = (characterKey: string): string => `/figurine-images/${characterKey}.webp`;
 
 const notify = (characterKey: string): void => {

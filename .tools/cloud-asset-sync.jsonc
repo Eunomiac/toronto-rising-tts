@@ -35,37 +35,6 @@
       // → Cloud.Sites.<stem> = { filename, key, URL }
     },
     {
-      "id": "genericNpcFigurines",
-      "cloudFolder": "NPC Cutouts/Generic/Figurines",
-      "recurIntoSubfolders": false,
-      "output": "LuaCatalog",
-      "tableName": "GenericNpcFigurines",
-      "filenameToNameSearchPattern": "^([^_]+_\\d{2})\\.[^.]+$",
-      "filenameToNameReplacePattern": "$1"
-      // Back_00.webp → Cloud.GenericNpcFigurines.Back_00 (shared reverse). NPCs are _01+ only.
-      // → Cloud.GenericNpcFigurines.<stem> = { filename, key, URL }
-    },
-    {
-      "id": "genericNpcTokenFronts",
-      "cloudFolder": "NPC Cutouts/Generic/Tokens",
-      "recurIntoSubfolders": false,
-      "output": "LuaCatalog",
-      "tableName": "GenericNpcTokenFronts",
-      "filenameToNameSearchPattern": "^tokenFront_([^_]+_\\d{2})\\.[^.]+$",
-      "filenameToNameReplacePattern": "$1"
-      // → Cloud.GenericNpcTokenFronts.<stem> = { filename, key, URL }
-    },
-    {
-      "id": "genericNpcTokenBacks",
-      "cloudFolder": "NPC Cutouts/Generic/Tokens",
-      "recurIntoSubfolders": false,
-      "output": "LuaCatalog",
-      "tableName": "GenericNpcTokenBacks",
-      "filenameToNameSearchPattern": "^tokenBack_([^_]+_\\d{2})\\.[^.]+$",
-      "filenameToNameReplacePattern": "$1"
-      // → Cloud.GenericNpcTokenBacks.<stem> = { filename, key, URL }
-    },
-    {
       "id": "memoriamPanels",
       "cloudFolder": "Memoriam",
       "recurIntoSubfolders": false,
@@ -86,39 +55,6 @@
       "filenameToNameSearchPattern": "^([^.]+)\\.[^.]+$",
       "filenameToNameReplacePattern": "memoriamBlindfold_$1" // E.g. "memoriamBlindfold_blackCaesar37.webp"
       // Purge family derived → ^memoriamBlindfold_(.*)$
-    },
-    {
-      "id": "memoriamNpcFigurines",
-      "cloudFolder": "NPC Cutouts/Memoriam/Figurines",
-      "recurIntoSubfolders": false,
-      "output": "LuaCatalog",
-      "tableName": "MemoriamNpcFigurines",
-      // Sheet NPC Key is mem_<stem> (no _01 variants). Cloud key keeps the mem_ prefix.
-      // mem_BACK.webp → Cloud.MemoriamNpcFigurines.mem_BACK (shared reverse, not an NPC; like Generic Back_00).
-      "filenameToNameSearchPattern": "^mem_(.+)\\.[^.]+$",
-      "filenameToNameReplacePattern": "mem_$1" // E.g. "mem_maximillianSteele.webp" → "mem_maximillianSteele"
-      // → Cloud.MemoriamNpcFigurines.mem_maximillianSteele = { filename, key, URL }
-      // Merge: C.MemoriamSkyboxes[period].npcs[*] where npc.name == that key
-    },
-    {
-      "id": "memoriamNpcTokenFronts",
-      "cloudFolder": "NPC Cutouts/Memoriam/Tokens",
-      "recurIntoSubfolders": false,
-      "output": "LuaCatalog",
-      "tableName": "MemoriamNpcTokenFronts",
-      "filenameToNameSearchPattern": "^tokenFront_mem_(.+)\\.[^.]+$",
-      "filenameToNameReplacePattern": "tokenFront_mem_$1" // E.g. "tokenFront_mem_maximillianSteele.webp" → "tokenFront_mem_maximillianSteele"
-      // → Cloud.MemoriamNpcTokenFronts.tokenFront_mem_maximillianSteele (stem from npc.name mem_<stem>)
-    },
-    {
-      "id": "memoriamNpcTokenBacks",
-      "cloudFolder": "NPC Cutouts/Memoriam/Tokens",
-      "recurIntoSubfolders": false,
-      "output": "LuaCatalog",
-      "tableName": "MemoriamNpcTokenBacks",
-      "filenameToNameSearchPattern": "^tokenBack_mem_(.+)\\.[^.]+$",
-      "filenameToNameReplacePattern": "tokenBack_mem_$1" // E.g. "tokenBack_mem_maximillianSteele.webp" → "tokenBack_mem_maximillianSteele"
-      // → Cloud.MemoriamNpcTokenBacks.tokenBack_mem_maximillianSteele (stem from npc.name mem_<stem>)
     },
     {
       "id": "csheetPage1Overlays",

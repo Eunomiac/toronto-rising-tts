@@ -402,7 +402,6 @@ function collectRepoRequiredAssetNames(repoRoot) {
 
   const manifestPaths = [
     path.join(repoRoot, ".dev", "custom-ui-assets", "manifest.json"),
-    path.join(repoRoot, ".dev", "custom-ui-assets", "npc-token-manifest.json"),
     path.join(repoRoot, ".dev", "custom-ui-assets", "grid-buttons.manifest.json"),
   ];
   for (const manifestPath of manifestPaths) {
@@ -425,17 +424,6 @@ function collectRepoRequiredAssetNames(repoRoot) {
       if (typeof name === "string") {
         names.add(name);
       }
-    }
-  }
-
-  const npcManifestLua = path.join(repoRoot, "lib", "npc_token_upload_manifest.ttslua");
-  if (fs.existsSync(npcManifestLua)) {
-    const text = fs.readFileSync(npcManifestLua, "utf8");
-    const nameRe = /\bname\s*=\s*["']([A-Za-z0-9._-]+)["']/g;
-    let m = nameRe.exec(text);
-    while (m !== null) {
-      names.add(m[1]);
-      m = nameRe.exec(text);
     }
   }
 
