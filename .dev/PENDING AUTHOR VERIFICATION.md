@@ -20,7 +20,7 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
-_Last populated: 2026-10-11 (TOR-709, TOR-710 and TOR-719 added) — condensed at your request. Checks that later work replaced were dropped (the in-game Gameboard Apply and THERE preview are gone, the scene-switch clock menu was redesigned, and the signal-fire alert lost its banner and chime). Traces that already passed were removed, leaving only what is still owed. Overlapping rows were merged. Everything still needs a first pass except TOR-439, which stays ⏰ until you can gather join testers._
+_Last populated: 2026-10-11 (TOR-709, TOR-710, TOR-719, TOR-722 and TOR-718 added) — condensed at your request. Checks that later work replaced were dropped (the in-game Gameboard Apply and THERE preview are gone, the scene-switch clock menu was redesigned, and the signal-fire alert lost its banner and chime). Traces that already passed were removed, leaving only what is still owed. Overlapping rows were merged. Everything still needs a first pass except TOR-439, which stays ⏰ until you can gather join testers._
 
 Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play.
 
@@ -462,3 +462,16 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 ## Cleared
 
 _Remove confirmed entries from Outstanding. In Linear, set **Fully Complete** by default; use **Complete (KEEP)** sparingly when the issue contains lasting information that should remain._
+#### TOR-722 — Sites, districts and the weather schedule now come straight from your sheets
+
+**Context:** The game's list of districts and sites, and the hour-by-hour weather schedule, used to be hand-kept copies in the code. They are now generated from your Districts & Sites workbook and the WEATHER tab of the Toronto Rising sheet (`npm run locations:import`, `npm run weather:import`). Almost everything is identical. The visible differences come from your sheet: **Dupont by the Castle** is now spelled with lower-case "by the"; **Deer Park** now carries the **bestialNull** condition and **Riverdale** the **noHungerDice** condition (both are in the sheet's Condition column but were never in the game before); and five Warrens rooms (Antechamber, Drake's, Labyrinth, Spawning Pool, Tunnel Junction) asked for a "nosWarrens" music playlist that does not exist, so they now fall back to the default mood music instead of silently keeping whatever was playing before.
+
+**How to verify:**
+
+1. Save & Play. The game should load with no red errors in the Host console.
+2. From the dashboard (or the in-game location picker), go to three or four sites you know well, for example **Anarch Dive Bar**, **Back Alley** and **Casa Loma: Great Hall**. Each should show its usual sky, location sound, fog and site card (on the location overlay and behind the blindfold), and its map pin should sit where it always has.
+3. Open the district picker: the Casa Loma district should read **Dupont by the Castle**.
+4. Go to **Deer Park** and then **Riverdale**. Their conditions (Deer Park: **Bestial Null**; Riverdale: **No Hunger Dice**) should now show as active location conditions. Tell me if either of those is a sheet entry you did not mean to turn on.
+5. Go to **The Nosferatu Warrens: Labyrinth**. The background music should switch to the default mood music. If you want a dedicated Warrens playlist instead, that needs adding to the soundscape catalog.
+6. Advance or set the in-game time across a few hours: the weather should change exactly as it did before (the schedule data itself did not change).
+
