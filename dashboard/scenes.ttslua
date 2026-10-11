@@ -404,8 +404,7 @@ local function applyCommand(cmd)
   end
 
   if op == "sessionNum" or op == "sessionName" then
-    local player = storytellerPlayer()
-    if player == nil then
+    if storytellerPlayer() == nil then
       return "The Storyteller must be in the game for this command."
     end
     if op == "sessionNum" then
@@ -413,9 +412,15 @@ local function applyCommand(cmd)
       if n < 1 then
         return "The session number must be 1 or more."
       end
-      HUD_sessionNumInput(player, tostring(n), "dashboard")
+      S.setSessionNum(n)
+      if S.getStateVal("currentPhase") == C.Phases.INTERMISSION then
+        require("core.phases").applySessionBlindfoldImages(n)
+      end
+      UpdateUIDisplays({ phase = true, gameStateOverlay = true })
+      require("core.character_sheets").refreshAllCharacterSheets()
     else
-      HUD_sessionNameInput(player, type(cmd.name) == "string" and cmd.name or "", "dashboard")
+      S.setSessionName(type(cmd.name) == "string" and cmd.name or "")
+      UpdateUIDisplays({ phase = true, gameStateOverlay = true })
     end
     return nil
   end

@@ -3761,9 +3761,6 @@ function HUD_togglePanel(player, button, id)
     end
 end
 
-local STORYTELLER_SOUND_GREY = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
-local STORYTELLER_SOUND_GREEN = "#228B22|#32CD32|#006400|#228B22"
-
 local DEBUG_SEAT_COLOR_ORDER = { "Black", "Red", "Orange", "Brown", "Pink", "Purple" }
 local DEBUG_SEAT_OUTLINE_ACTIVE = "#FF0000"
 local DEBUG_SEAT_OUTLINE_INACTIVE = "rgba(0,0,0,0)"
@@ -3779,14 +3776,6 @@ local DEBUG_SEAT_BUTTON_COLORS = {
     Brown = "#6B4423|#7A5030|#5A3820|#6B4423",
     Pink = "#C71585|#D02090|#B01075|#C71585",
     Purple = "#5E2A7E|#6E358E|#4E2070|#5E2A7E",
-}
-
-local PHASE_BUTTON_EXPECTATIONS = {
-    phase_Advance = true,
-}
-local PHASE_SUB_BUTTONS = {
-    phase_sub_Main = C.PlaySubPhases.MAIN,
-    phase_sub_Downtime = C.PlaySubPhases.DOWNTIME,
 }
 
 --- @param seatColor string
@@ -3881,48 +3870,8 @@ syncDebugConnectionControls = function()
     end
 end
 
---- Highlights phase panel (current label + Play subphase buttons). TOR-143.
+--- Paints the Phases panel: Quick Transition toggle and Join controls (Defer setXML, join status).
 syncStorytellerPhaseButtons = function()
-    local phase = S.getStateVal("currentPhase") or ""
-    local sub = S.getStateVal("playSubPhase") or ""
-    if UI ~= nil and UI.setValue ~= nil then
-        local label = tostring(phase)
-        if phase == C.Phases.PLAY and sub ~= "" then
-            label = label .. " / " .. tostring(sub)
-        end
-        UI.setValue("phase_currentLabel", label)
-    end
-    local inPlay = phase == C.Phases.PLAY
-    if UI ~= nil and UI.setAttribute ~= nil then
-        UI.setAttribute("phase_subphaseRow", "active", inPlay and "true" or "false")
-    end
-    for buttonId, expected in pairs(PHASE_SUB_BUTTONS) do
-        local match = inPlay and sub == expected
-        U.setAttributes(buttonId, {
-            colors = match and STORYTELLER_SOUND_GREEN or STORYTELLER_SOUND_GREY,
-            textColor = "#FFFFFF",
-            fontStyle = "Bold",
-        })
-    end
-    local sessionNum = tonumber(S.getStateVal("sessionNum")) or 1
-    local sessionNumText = tostring(sessionNum)
-    -- InputFields often ignore setValue while inactive (Advance closes panels first — TOR-364 / TOR-397).
-    if UI ~= nil and UI.setAttribute ~= nil then
-        UI.setAttribute("input_sessionNum", "text", sessionNumText)
-    end
-    if UI ~= nil and UI.setValue ~= nil then
-        UI.setValue("input_sessionNum", sessionNumText)
-    end
-    local sessionName = S.getStateVal("sessionName")
-    if type(sessionName) ~= "string" then
-        sessionName = ""
-    end
-    if UI ~= nil and UI.setAttribute ~= nil then
-        UI.setAttribute("input_sessionName", "text", sessionName)
-    end
-    if UI ~= nil and UI.setValue ~= nil then
-        UI.setValue("input_sessionName", sessionName)
-    end
     local deferSetXml = S.getStateVal("connectionControls", "deferSetXml") == true
     U.setAttributes("phase_deferSetXml", { isOn = deferSetXml })
     local PhasesMod = require("core.phases")
@@ -4237,117 +4186,6 @@ function HUD_scenesLibEnd(player, button, id)
         return
     end
     StorytellerScenesPanel.endSceneNarrative(player)
-end
-
---- Advance click-again-to-confirm (TOR-578): 5s window, same as control-board Clear.
-local PHASE_ADVANCE_CONFIRM_SEC = 5
-local PHASE_ADVANCE_CONFIRM_HINT_ID = "phase_AdvanceConfirmHint"
-local phaseAdvanceConfirmExpire = nil
-local phaseAdvanceConfirmGen = 0
-
-local function hidePhaseAdvanceConfirmHint()
-    phaseAdvanceConfirmExpire = nil
-    U.setAttribute(PHASE_ADVANCE_CONFIRM_HINT_ID, "active", "false")
-end
-
-function clearPhaseAdvanceConfirmArm()
-    phaseAdvanceConfirmGen = phaseAdvanceConfirmGen + 1
-    hidePhaseAdvanceConfirmHint()
-end
-
-local function armPhaseAdvanceConfirm()
-    local gen = phaseAdvanceConfirmGen + 1
-    phaseAdvanceConfirmGen = gen
-    phaseAdvanceConfirmExpire = os.time() + PHASE_ADVANCE_CONFIRM_SEC
-    U.setAttribute(PHASE_ADVANCE_CONFIRM_HINT_ID, "active", "true")
-    U.await(function()
-        if phaseAdvanceConfirmGen ~= gen then
-            return
-        end
-        hidePhaseAdvanceConfirmHint()
-    end, PHASE_ADVANCE_CONFIRM_SEC)
-end
-
---- Advance top-level phase in sequence (TOR-143). First click arms; second within 5s Advances (TOR-578).
-function HUD_phaseAdvance(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_phaseAdvance") then
-        return
-    end
-    if phaseAdvanceConfirmExpire ~= nil and os.time() <= phaseAdvanceConfirmExpire then
-        clearPhaseAdvanceConfirmArm()
-        local Phases = require("core.phases")
-        Phases.advanceNext()
-        return
-    end
-    armPhaseAdvanceConfirm()
-end
-
---- Legacy alias: free-jump removed; Advance only.
-function HUD_advancePhase(player, button, id)
-    HUD_phaseAdvance(player, button, id)
-end
-
---- Play subphase free switch (TOR-143).
-function HUD_setPlaySubPhase(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_setPlaySubPhase") then
-        return
-    end
-    local tail = string.gsub(id or "", "^phase_sub_", "")
-    local map = {
-        Main = C.PlaySubPhases.MAIN,
-        Downtime = C.PlaySubPhases.DOWNTIME,
-    }
-    local target = map[tail]
-    if target == nil then
-        U.AlertGM("HUD_setPlaySubPhase: Invalid subphase: " .. tostring(tail))
-        return
-    end
-    local Memoriam = require("core.memoriam")
-    if Memoriam.isActive() then
-        Memoriam.applyExit({ mode = "restore", player = player })
-        return
-    end
-    local Phases = require("core.phases")
-    local desired = Phases.playSubPhaseForLiveScene()
-    if S.getStateVal("playSubPhase") == desired then
-        return
-    end
-    Phases.setPlaySubPhase(desired)
-end
-
---- Session number InputField (TOR-263 / TOR-143 / TOR-561).
-function HUD_sessionNumInput(player, value, id)
-    if not requireStorytellerForMutation(player, "HUD_sessionNumInput") then
-        return
-    end
-    local n = math.floor(tonumber(value) or 0)
-    if n < 1 then
-        n = 1
-    end
-    S.setSessionNum(n)
-    if S.getStateVal("currentPhase") == C.Phases.INTERMISSION then
-        local PhasesMod = require("core.phases")
-        if type(PhasesMod.applySessionBlindfoldImages) == "function" then
-            PhasesMod.applySessionBlindfoldImages(n)
-        end
-    end
-    UpdateUIDisplays({ phase = true, gameStateOverlay = true })
-    syncStorytellerPhaseButtons()
-    CharacterSheets.refreshAllCharacterSheets()
-end
-
---- Session name InputField (TOR-98). Shown on the End overlay datetime row.
-function HUD_sessionNameInput(player, value, id)
-    if not requireStorytellerForMutation(player, "HUD_sessionNameInput") then
-        return
-    end
-    local name = value
-    if type(name) ~= "string" then
-        name = ""
-    end
-    S.setSessionName(name)
-    UpdateUIDisplays({ phase = true, gameStateOverlay = true })
-    syncStorytellerPhaseButtons()
 end
 
 --- Parse XmlUI Toggle onValueChanged payloads to boolean (TOR-428).

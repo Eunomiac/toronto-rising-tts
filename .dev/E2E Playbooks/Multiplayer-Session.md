@@ -69,7 +69,7 @@ Friend watches for **double** motion, stacked audio, or jitter. Friend should be
 
 | # | Host | Friend | Pass if |
 | --- | --- | --- | --- |
-| B0 | If still Intermission: Phases **Advance →** into **Play** | Watch lights/theme/blindfold | Single transition; one theme/audio change |
+| B0 | If still Intermission: Storyteller Dashboard **Play ▸** (click twice) into **Play** | Watch lights/theme/blindfold | Single transition; one theme/audio change |
 | B1 | In the Storyteller Dashboard, put one NPC on the stage and **Send** | Watch stage | The figurine moves **once**, with no fighting or jitter |
 | B2 | In the Dashboard, **Clear** the stage and Send | Watch | The stage clears once and matches what the Host sees |
 | B4 | Scenes: **Apply** a different library scene (or location/mood) | Watch lights/audio/HUD | Scene matches Host; **one** audio fade |

@@ -16,11 +16,11 @@ Source of truth:
 - `ui/storyteller/panel_phases.xml`
 
 Verification:
-- Save & Play → Host Phases panel → **Advance →** (first click shows red confirm; second click within 5s Advances and the panel closes) through Intermission → Play → Spotlight → End → Intermission
+- Save & Play → the Storyteller Dashboard next-phase button (for example **Play ▸**, click twice to confirm) through Intermission → Play → Spotlight → End → Intermission
 - Confirm Intermission enter from End: blackout fades in (`overlay_blackoutPanel`, 5s) and holds until opaque; then the ended-session splash snaps under it, TR_Loop fades in over 5s (matching blackout FadeOut) while other audio fades out, and the blackout fades out. Camera, table, and AdminDark wait until after that fade. Play: OutdoorDim lights and HUD arm behind the cover first, then a settle (`C.SessionStartPlayEnterSettleSec`); then the session-start splash with Music C after the authored song lead-in, or **Quick Transition** (`playAttribute(0)`, no Music C); the panel hides near the end of that session's song (or the unscalable tail), layers reset, then Main fades in and the Willpower heal overlay can appear. First Play with no live scene starts in **Downtime** (TOR-527); that first overlay is prologue copy (TOR-598).
 - Play → Spotlight: staged transition cover; Table A + Spotlight skybox; Main keeps playing; in-session stand-ins on the carousel; PC seats that were inactive in the prior scene reactivate (Absent stays parked); overlay shows the session name in the diamond slot, **S P O T L I G H T** in gold, and the front character name in white. Spotlight → End: same cover; Main keeps playing; table becomes B0 (PC seats only, NPCs stay off the table); Generic skybox is selected; overlay uses the same bookend copy as session-start prologue (**TORONTO RISING** / compact roman / spaced title) with **EPILOGUE**; bags/companions/compulsion decks stay under the table until Intermission cover
 - Workshop: Host console `lua DEBUG.populateSpotlightFigurines()` clones seat figures and spawns tagged lights, then prints GUIDs for `lib/guids.ttslua`. Play → Spotlight does **not** auto-spawn (duplicates if GUIDs are forgotten).
-- Re-test Intermission→Play without cycling Spotlight/End: Host console `lua DEBUG.resetToIntermission()` (session cover + TR_Loop, no table/skybox move). Then **Advance →**.
+- Re-test Intermission→Play without cycling Spotlight/End: Host console `lua DEBUG.resetToIntermission()` (session cover + TR_Loop, no table/skybox move). Then advance from the Storyteller Dashboard.
 - Solo Host verified only until **TOR-144** (multiplayer E2E) — multiclient connect blindfold + Advance replication: [Multiclient Session Script](../E2E%20Playbooks/Multiplayer-Session.md) (A4, B0, D1)
 
 Status: current (TOR-143 / TOR-361 / TOR-362 / TOR-497 / TOR-516 / TOR-531 / TOR-532 / TOR-533 / TOR-534 / TOR-98 / TOR-527 / TOR-578 / TOR-580 / TOR-581 / TOR-598 / TOR-599)
@@ -37,7 +37,7 @@ Status: current (TOR-143 / TOR-361 / TOR-362 / TOR-497 / TOR-516 / TOR-531 / TOR
 
 ### Top-Level Phase Sequence
 
-There are four top-level phases, advanced by the Storyteller **Advance** button in a loop:
+There are four top-level phases, advanced by the Storyteller Dashboard next-phase button in a loop:
 
 1. `INTERMISSION` — Between sessions: **global cover + Intermission theme handoff first**, then no-scene table/skybox/overlay under that cover, AdminDark; connect keeps global blindfold up (TOR-319 / TOR-497 / TOR-506).
 2. `PLAY` — Session start: OutdoorDim lights and HUD behind the cover first, then session-start splash, Intermission Loop fades across the scaled song lead-in, Music C overture (skipped if **Quick Transition** is on), panel hide near sting end, Main playlist, Superficial WP heal + optional broadcast. Contains most gameplay.
@@ -114,4 +114,4 @@ Ending events of the previous phase run before starting events of the new phase 
 * Connect during **Intermission**: leave the active global cover up (session-start or session-end).
 * Connect during any other phase: hide both global covers (`Phases.lowerBlindfoldForConnectingPlayer` → `hideGlobalBlindfold`). Shared overlay — not per-seat.
 * **Load:** set `overlay_globalBlindfold` → `overlay_blindfold_session_<sessionNum>` and `overlay_globalBlindfold_end` → `overlay_blindfold_end_session_<sessionNum>`. While phase is Intermission, the startup gate writes AdminDark state (`Phases.writeAllLightsDarkState`) just before its `Sync.full`, so that sync applies the darkness; after startup readiness, `Phases.reconcileIntermissionAmbientOnLoad()` starts the same featured theme (`C.IntermissionThemeFeaturedKey` = `TR_Loop`) as Intermission enter. Session-start panel is XML-default visible; end panel stays inactive. No timed overlay hide.
-* **Phases panel `sessionNum` edit during Intermission:** rewrite both cover Images immediately. Other phases: leave Images unchanged.
+* **Dashboard session number edit during Intermission:** rewrite both cover Images immediately. Other phases: leave Images unchanged.

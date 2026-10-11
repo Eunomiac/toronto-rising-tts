@@ -167,6 +167,8 @@ Storyteller **Stats** panel: edit PC backgrounds/merits/flaws and coterie advant
 | `HUD_statsTarget` | `stats_target_Brown` … `stats_target_Coterie` | `(player, button, id)` | Strips `stats_target_` prefix; `StorytellerStatsPanel.selectTarget`. Shows PC or Coterie advantage lists. |
 | `HUD_statsBack` | `stats_back` | `(player, button, id)` | Returns to target picker landing view. |
 | `HUD_statsAdd` | `stats_add_pc_*`, `stats_add_coterie_*` | `(player, button, id)` | Opens Advantage Editor for a new entry (PC append or coterie blank activation on OK). |
+Phase Advance, Play subphase and session number / title live on the Storyteller Dashboard (`phaseAdvance`, `leaveMemoriam`, `sessionNum`, `sessionName` ops in `dashboard/scenes.ttslua`). The in-game Phases panel keeps only Quick Transition and the join repair controls.
+
 | `HUD_statsEdit` | `stats_pc_*_row_*_edit`, `stats_coterie_*_row_*_edit` | `(player, button, id)` | Opens Advantage Editor populated from state. |
 | `HUD_statsEditRating` | `stats_rating_*_edit` | `(player, button, id)` | Opens dot-only editor for domain rating (`chasse`, `lien`, `portillon`, `haven`). |
 | `HUD_statsEditorField` | `statsEditor_*` InputFields | `(player, value, id)` | Stashes field into editor draft (no host guard — read-only stash). |
@@ -178,14 +180,9 @@ Storyteller **Stats** panel: edit PC backgrounds/merits/flaws and coterie advant
 
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
-| `HUD_phaseAdvance` | `phase_Advance` | `(player, button, id)` | ST-gated. First click shows red **Click Again to Confirm** for 5 seconds; second click in that window runs `Phases.advanceNext()` (TOR-578). Closing the Phases panel or waiting out the window clears the hint. Then Intermission → Play → Spotlight → End → Intermission (TOR-143 / TOR-364). |
-| `HUD_setPlaySubPhase` | `phase_sub_Main`, `phase_sub_Downtime` | `(player, button, id)` | ST-gated. Main / Downtime always resolve to Main if a library scene is live, otherwise Downtime (or no-op). While Memoriam is active they call `Memoriam.applyExit` restore (TOR-527 / TOR-101). |
 | `HUD_phaseSessionStartQuick` | `phase_sessionStartQuick` | `(player, value, id)` | ST-gated. When on, Intermission→Play skips the session-start track and runs the splash at `songDuration` 0 (Quick Transition). Host preference; resets on Save & Play. |
-| `HUD_advancePhase` | _(legacy alias)_ | `(player, button, id)` | Calls `HUD_phaseAdvance` (free-jump removed). |
 | `HUD_genericNpcImportConfirm` / `HUD_genericNpcImportCancel` | `generic_npc_import_modal` Confirm / Cancel | `(player, button, id)` | ST-gated. Confirm spawns pending generic NPCs with typed label overrides; Cancel drops the pending import (TOR-560). |
 | `HUD_genericNpcImportLabelChanged` | `genericImport_label_NN` | `(player, value, id)` | ST-gated. Stashes live InputField text (TTS `UI.getValue` does not return it). |
-| `HUD_sessionNumInput` | `input_sessionNum` | `(player, value, id)` | ST-gated. Persists `sessionNum` (≥1); refreshes phase UI + game-state overlay roman. |
-| `HUD_sessionNameInput` | `input_sessionName` | `(player, value, id)` | ST-gated. Persists `sessionName` (may be empty); refreshes phase UI + End overlay datetime. |
 | `HUD_phaseDeferSetXml` | `phase_deferSetXml` | `(player, value, id)` | ST-gated. Persists `connectionControls.deferSetXml`; when on, cancels pending deferred Global full UI remount and blocks future automatic ones (TOR-428). |
 | `HUD_phaseRefreshXml` / `HUD_phaseRestoreJoinHud` | `phase_refreshXml` / `phase_restoreJoinHud` | `(player, button, id)` | ST-gated. Staged restore **2/3**: remounts **full** Global XmlUI; clears `joinXmlArmed`. Does **not** restore CustomUIAssets or cold pools (TOR-439). After the remount, repaints Prince's Court traits, project cards, open-page audience (`setVisibleTo` only — no `UI.show`), and page-1 trackers (caches cleared first). |
 | `HUD_phaseArmJoinXml` | `phase_armJoinXml` | `(player, button, id)` | ST-gated. Arms minimal XmlUI + slim assets + cold soundscape emitters (TOR-439). |

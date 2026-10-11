@@ -510,8 +510,8 @@ Animated Scene Time jumps (TOR-222 / TOR-470). Mid-lerp: overlay date/time text 
 | `M.manualRunPlayerConnect(color)` | Manual Connect: force-run `onPlayerConnect` for that PC (bypasses Defer Connect) | ST PCs panel (TOR-430) |
 | `M.forPlayers(func)` | Iterate over all players | DRY pattern |
 | `M.advancePhase(newPhase)` | Lifecycle transition via `core.phases` (enter/exit registries) | `M.advancePhase(C.Phases.PLAY)` |
-| `M.advancePhaseNext()` | Advance one step in `C.PhaseSequence` | Storyteller Advance button |
-| `M.setPlaySubPhase(sub)` | Free switch Main/Downtime/Memoriam during Play | Phases panel sub buttons |
+| `M.advancePhaseNext()` | Advance one step in `C.PhaseSequence` | Storyteller Dashboard `phaseAdvance` op |
+| `M.setPlaySubPhase(sub)` | Free switch Main/Downtime/Memoriam during Play | Scene apply / end, Memoriam enter / leave |
 | `M.syncPhase()` | Log/align UI with `currentPhase` + `playSubPhase` | Load / after advance |
 | `M.setCamera(player, cameraMode, lookAtPos)` | LookAt the preset (or custom position), then `setCameraMode("ThirdPerson")`. Cancels a pending overlay FirstPerson settle. Overlay right-click stage look is `M.lookAtNPC`. | Cinematic control |
 | `M.lookAtNPC(player, npcPositionVector)` | Elevated default lookAt, yaw toward a staged figurine, then FirstPerson after 0.25s (overlay camera right-click) | Stage look (TOR-538 / TOR-562 / TOR-594) |

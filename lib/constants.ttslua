@@ -263,7 +263,7 @@ C.Phases = {
   END = "End",
 }
 
---- Ordered top-level advance loop (Storyteller Advance button).
+--- Ordered top-level advance loop (Storyteller Dashboard next-phase button).
 C.PhaseSequence = {
   C.Phases.INTERMISSION,
   C.Phases.PLAY,

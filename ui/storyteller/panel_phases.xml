@@ -1,33 +1,12 @@
-<!--
-UI.setAttributes("input_sessionNum", {minHeight = "30", fontStyle = "Bold"})
--->
+<!-- Phase advance, Play subphase and session number/name live on the Storyteller Dashboard.
+     This panel keeps the session-start transition toggle and the join repair controls (TOR-439). -->
 
 <Panel id="panel_phases" active="false">
   <VerticalLayout class="storyteller_panel_column" spacing="6" padding="6 6 6 6" childForceExpandWidth="false">
-    <Text class="hud_storyteller_header">Session phase</Text>
-    <Text id="phase_currentLabel" fontSize="16" fontStyle="Bold" color="#FFFFFF" text="Intermission" />
-    <Text fontSize="12" color="#AAAAAA">Advance loops Intermission → Play → Spotlight → End. Play subphases switch freely.</Text>
+    <Text class="hud_storyteller_header">Phase tools</Text>
     <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
-      <Button id="phase_Advance" text="Advance →" minWidth="120" preferredWidth="120" onClick="HUD_phaseAdvance"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Text id="phase_AdvanceConfirmHint" fontSize="13" fontStyle="Bold" color="#FF0000" active="false"
-        alignment="MiddleLeft" text="Click Again to Confirm" />
       <Toggle id="phase_sessionStartQuick" isOn="false" onValueChanged="HUD_phaseSessionStartQuick"
         minWidth="170" preferredWidth="190" textColor="#FFFFFF">Quick Transition</Toggle>
-    </HorizontalLayout>
-    <Text fontSize="12" color="#AAAAAA">Play subphase</Text>
-    <HorizontalLayout id="phase_subphaseRow" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
-      <Button id="phase_sub_Main" text="Main" minWidth="72" preferredWidth="72" onClick="HUD_setPlaySubPhase"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="phase_sub_Downtime" text="Downtime" minWidth="72" preferredWidth="72" onClick="HUD_setPlaySubPhase"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    </HorizontalLayout>
-    <Text fontSize="14" fontStyle="Bold" color="#AAAAAA">Session</Text>
-    <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
-      <InputField id="input_sessionNum" characterValidation="Integer" text="1" minWidth="80" preferredWidth="80"
-        onValueChanged="HUD_sessionNumInput" onEndEdit="HUD_sessionNumInput" />
-      <InputField id="input_sessionName" text="" minWidth="180" preferredWidth="220"
-        onValueChanged="HUD_sessionNameInput" onEndEdit="HUD_sessionNameInput" />
     </HorizontalLayout>
     <Text fontSize="14" fontStyle="Bold" color="#AAAAAA">Join controls</Text>
     <Text fontSize="12" color="#AAAAAA">Defer setXML skips automatic Global UI rebuild. Arm colds HUD/assets/pools; restore in order with the buttons below.</Text>

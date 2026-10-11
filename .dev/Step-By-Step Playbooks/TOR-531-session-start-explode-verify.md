@@ -34,7 +34,7 @@ Confirm that Advance from Intermission into Play uses the TEST BED explode (cove
 
 **Step 2.** Execute Lua Code — Code Block 0 (asserts lookup, snaps to Intermission, then asks you to Advance).
 
-**Step 3.** **Click Advance →** on the Phases panel (Intermission → Play) and watch the cover explode through to the session number and title.
+**Step 3.** **Click Play ▸ twice** on the Storyteller Dashboard (Intermission → Play) and watch the cover explode through to the session number and title.
 
 ---
 
@@ -78,7 +78,7 @@ U.chain({
     print("PASS — snapped to Intermission (session cover + TR_Loop)")
   end,
   function()
-    print("   ▶▶▶ HUMAN ▶▶▶ Click Advance on the Phases panel (Intermission → Play). The looping Intermission theme should fade, the session-start song should start immediately, and the stacked cover should explode: front cover first, then five character pairs (art drifts; name text fades in a moment later), then the session number and title grow together. The global cover should hide near the end of the song. Main music can start after that.")
+    print("   ▶▶▶ HUMAN ▶▶▶ Click Play ▸ twice on the Storyteller Dashboard (Intermission → Play). The looping Intermission theme should fade, the session-start song should start immediately, and the stacked cover should explode: front cover first, then five character pairs (art drifts; name text fades in a moment later), then the session number and title grow together. The global cover should hide near the end of the song. Main music can start after that.")
   end,
 })
 ```
