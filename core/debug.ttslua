@@ -1401,6 +1401,71 @@ function DEBUG.retireDicePreloadPool()
     return destroyed
 end
 
+--- Survey of everything below the table: one markdown row per object with world Y below `yMax`
+--- (GUID, name, type, tags, GM Notes, position, lock, hide snapshot / `C.HiddenObjects` catalog).
+--- Cold debug-only `getAllObjects` scan. Writes `.dev/.debug/<relativePath>`.
+--- @param yMax number|nil default -75
+--- @param relativePath string|nil default "debug_logs/below_table_objects.md"
+--- @return number count
+function DEBUG.exportObjectsBelowY(yMax, relativePath)
+    yMax = type(yMax) == "number" and yMax or -75
+    relativePath = type(relativePath) == "string" and relativePath ~= "" and relativePath
+        or "debug_logs/below_table_objects.md"
+    local function cell(value)
+        local text = tostring(value or "")
+        text = string.gsub(text, "\r?\n", " / ")
+        text = string.gsub(text, "|", "\\|")
+        if #text > 120 then
+            text = string.sub(text, 1, 117) .. "..."
+        end
+        return text
+    end
+    local snapshots = S.getStateVal("hiddenObjects") or {}
+    local catalog = C.HiddenObjects or {}
+    local rows = {}
+    for _, obj in ipairs(getAllObjects()) do
+        local pos = obj.getPosition()
+        if pos.y < yMax then
+            rows[#rows + 1] = {
+                name = obj.getName() or "",
+                guid = obj.getGUID(),
+                type = obj.type or "",
+                tags = table.concat(obj.getTags() or {}, ", "),
+                notes = obj.getGMNotes() or "",
+                pos = string.format("%.1f, %.1f, %.1f", pos.x, pos.y, pos.z),
+                locked = obj.getLock() and "yes" or "no",
+                snapshot = snapshots[obj.getGUID()] ~= nil and "yes" or "",
+                catalogued = catalog[obj.getGUID()] ~= nil and "yes" or "",
+            }
+        end
+    end
+    table.sort(rows, function(a, b)
+        if a.type ~= b.type then
+            return a.type < b.type
+        end
+        if a.name ~= b.name then
+            return a.name < b.name
+        end
+        return a.guid < b.guid
+    end)
+    local lines = {
+        "# Objects below the table (y < " .. tostring(yMax) .. ")",
+        "",
+        "Count: " .. #rows,
+        "",
+        "| Name | GUID | Type | Tags | GM Notes | Position | Locked | Hide snapshot | C.HiddenObjects |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    }
+    for _, r in ipairs(rows) do
+        lines[#lines + 1] = "| " .. table.concat({
+            cell(r.name), r.guid, cell(r.type), cell(r.tags), cell(r.notes), r.pos, r.locked, r.snapshot, r.catalogued,
+        }, " | ") .. " |"
+    end
+    DEBUG.writeWorkspaceFile(relativePath, table.concat(lines, "\n") .. "\n")
+    print("[DEBUG.exportObjectsBelowY] " .. #rows .. " object(s) below y=" .. tostring(yMax) .. ".")
+    return #rows
+end
+
 --- Dump `sessionScene.npcWorld.placements` and live instance stage poses.
 function DEBUG.dumpNpcPlacements()
     printTestHeader("Stage NPC placements")
@@ -5812,6 +5877,7 @@ function DEBUG.help()
     print("\nNPC OBJECTS:")
     print("  DEBUG.sweepOrphanNpcObjects() - Destroy npc_figurine / npc_light with no instance record")
     print("  DEBUG.retireDicePreloadPool() - One-shot: destroy parked d10Preload dice, then File > Save")
+    print("  DEBUG.exportObjectsBelowY(yMax?, path?) - Write every object below y (default -75) to .dev/.debug")
     print("\nSPOTLIGHT WORKSHOP:")
     print("  DEBUG.populateSpotlightFigurines() - Clone seat figures + spawn stage lights; print GUIDs")
     print("\nLIGHT FEASIBILITY (workshop investigation):")
