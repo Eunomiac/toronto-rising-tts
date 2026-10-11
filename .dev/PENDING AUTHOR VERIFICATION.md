@@ -55,7 +55,7 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 **How to verify:**
 
 1. Once, after Save & Play, type `lua DEBUG.retireDicePreloadPool()` in the Host console. It should say how many parked dice it destroyed. Then **File → Save**.
-2. At a player seat, roll a normal pool: the dice should appear at the bag and tray exactly as before, roll, and show the result. When the roll is cleared, the dice should disappear.
+2. At a player seat, roll a normal pool: the dice should appear at the bag and tray exactly as before, roll, and show the result. Watch the moment the dice come out of the bag: note whether you see a brief flash of a blank or wrong-looking die (the old parked dice existed to hide that flash). When the roll is cleared, the dice should disappear.
 3. Start a roll and cancel it before rolling: the staged dice should disappear.
 4. Roll, then use a Willpower reroll: the highlighted dice should be grabbable, and after the reroll finishes no die should keep a blue glow.
 5. Left-click the Rouse bag and roll: same as before. Roll a pool with Hunger dice: the red dice should come out of the Hunger bag as before.
