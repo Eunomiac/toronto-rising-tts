@@ -216,6 +216,30 @@ test("soundscape catalog defines generated playlists, channels, and context defa
   });
 });
 
+test("every site location track exists in the soundscape catalog", () => {
+  const catalog = readRepoFile("lib/soundscape_catalog.ttslua");
+  const tracksStart = catalog.indexOf("Catalog.TRACKS = {");
+  const tracksEnd = catalog.indexOf("\nCatalog.PLAYMODES", tracksStart);
+  assert.ok(tracksStart >= 0 && tracksEnd > tracksStart, "missing Catalog.TRACKS block");
+  const locationKeys = new Set();
+  for (const entry of catalog.slice(tracksStart, tracksEnd).matchAll(/\{([^{}]*)\}/g)) {
+    const key = /\bkey = "([^"]+)"/.exec(entry[1]);
+    if (key && /\btype = "location"/.test(entry[1])) {
+      locationKeys.add(key[1]);
+    }
+  }
+  assert.ok(locationKeys.size > 0, "no location tracks parsed from Catalog.TRACKS");
+
+  const constants = readRepoFile("lib/constants.ttslua");
+  const sitesStart = constants.indexOf("C.Sites = {");
+  const sitesEnd = constants.indexOf("-- #region Weather", sitesStart);
+  assert.ok(sitesStart >= 0 && sitesEnd > sitesStart, "missing C.Sites block");
+  const used = [...constants.slice(sitesStart, sitesEnd).matchAll(/location = \{[^}]*\btrack = "([^"]+)"/g)].map((m) => m[1]);
+  assert.ok(used.length > 0, "no site location tracks parsed from C.Sites");
+  const unknown = [...new Set(used.filter((track) => !locationKeys.has(track)))];
+  assert.deepEqual(unknown, [], `C.Sites names location tracks the catalog does not have: ${unknown.join(", ")}`);
+});
+
 test("soundscape Unity guide documents setup and live verification steps", () => {
   const source = readRepoFile(".dev/Soundscape & Audio/SOUNDSCAPE_UNITY_SETUP.md");
 

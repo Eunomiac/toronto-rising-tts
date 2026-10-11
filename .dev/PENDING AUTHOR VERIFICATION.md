@@ -20,7 +20,7 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
-_Last populated: 2026-10-11 (TOR-709 and TOR-710 added) — condensed at your request. Checks that later work replaced were dropped (the in-game Gameboard Apply and THERE preview are gone, the scene-switch clock menu was redesigned, and the signal-fire alert lost its banner and chime). Traces that already passed were removed, leaving only what is still owed. Overlapping rows were merged. Everything still needs a first pass except TOR-439, which stays ⏰ until you can gather join testers._
+_Last populated: 2026-10-11 (TOR-709, TOR-710 and TOR-719 added) — condensed at your request. Checks that later work replaced were dropped (the in-game Gameboard Apply and THERE preview are gone, the scene-switch clock menu was redesigned, and the signal-fire alert lost its banner and chime). Traces that already passed were removed, leaving only what is still owed. Overlapping rows were merged. Everything still needs a first pass except TOR-439, which stays ⏰ until you can gather join testers._
 
 Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play.
 
@@ -424,6 +424,18 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 2. In Cursor, run **BUILD PIPELINE (Main)**. The terminal should show a `[tts-save:silence-emitters] Set SOUNDSCAPE_…` line for each emitter that was playing, then a backup path and `Wrote … TS_Save_230.json`.
 3. Go back to the TTS main menu and load save 230. There should be no blast of music while the table loads. The soundscape should start the normal way, fading in once the mod takes over.
 4. Run the build a second time: it should say `All 10 emitters already on silent.`
+
+### Medium — locations
+
+#### TOR-719 — Site fog follows the sheet; four sites get their location sound back; Yonge & Bloor spelling
+
+**Context:** Every site carried the "Top Fog" value from your Districts & Sites workbook, but the game never read it, so every indoor site had fog off and every outdoor site had fog on. 37 sites are authored differently in the sheet and now follow it. Separately, eight sites asked for location sounds that do not exist under those names, so their location layer stayed silent.
+
+**How to verify:**
+
+1. Save & Play. From the dashboard (or the in-game location picker), go to **Sewer Tunnel**, an indoor site whose sheet value is fog on: the top fog should come on. Then go to **Taxi**, an outdoor site set to fog off: the top fog should stay off. A normal outdoor site such as **Back Alley** should still have fog, and a normal indoor one such as **Anarch Dive Bar** should not.
+2. Go to **Auto Mechanic**, then **Bier Markt**, then **The St. Regis Toronto: Room 101**, then **The Nosferatu Warrens: Palis'**. Each should play a location sound (auto shop, dive bar, computer lab, and the Warrens ambience). The Host console should not print "Unknown location audio".
+3. Open the district picker: the museum district should read **The Yonge & Bloor Museum District**.
 
 ## Cleared
 

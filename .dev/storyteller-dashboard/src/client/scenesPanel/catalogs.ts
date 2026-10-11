@@ -16,7 +16,7 @@ export type CatalogSite = {
   readonly name: string;
   readonly districtKey: string | null;
   readonly lightMode: string | null;
-  readonly topFog: boolean | null;
+  readonly isTopFogActive: boolean | null;
   readonly isIndoors: boolean | null;
   readonly skybox: string | null;
   readonly locationTrack: string | null;

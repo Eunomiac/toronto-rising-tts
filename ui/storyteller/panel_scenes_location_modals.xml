@@ -52,10 +52,10 @@
           <Button id="scenes_pick_district_Wychwood" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Wychwood" onClick="HUD_scenesPickDistrict" />
         </HorizontalLayout>
         <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
+          <Button id="scenes_pick_district_YongeBloorMuseum" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Yonge &amp; Bloor Museum District" onClick="HUD_scenesPickDistrict" />
           <Button id="scenes_pick_district_YongeDundasHospital" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Yonge &amp; Dundas Hospital District" onClick="HUD_scenesPickDistrict" />
           <Button id="scenes_pick_district_YongeStreet" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Yonge Street" onClick="HUD_scenesPickDistrict" />
           <Button id="scenes_pick_district_Yorkville" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Yorkville" onClick="HUD_scenesPickDistrict" />
-          <Button id="scenes_pick_district_YongeBloorMuseum" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Young &amp; Bloor Museum District" onClick="HUD_scenesPickDistrict" />
         </HorizontalLayout>
       </VerticalLayout>
     </VerticalScrollView>
@@ -364,6 +364,18 @@
       </HorizontalLayout>
     </VerticalLayout>
 
+    <VerticalLayout id="scenes_site_group_dist_YongeBloorMuseum" active="False" visibility="None" spacing="4" padding="0 0 10 0" childForceExpandWidth="true">
+      <Text fontSize="11" fontStyle="Bold" color="#C9A84C" alignment="UpperCenter" text="The Yonge &amp; Bloor Museum District — district sites" />
+      <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
+        <Button id="scenes_pick_site_CeramicsMuseum" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Gardiner Ceramics Museum" onClick="HUD_scenesPickSite" />
+        <Button id="scenes_pick_site_ROMLoadingZone" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: Bloor Street Loading Zone" onClick="HUD_scenesPickSite" />
+        <Button id="scenes_pick_site_ROMC5Lounge" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: C5 Lounge" onClick="HUD_scenesPickSite" />
+        <Button id="scenes_pick_site_ROMRotunda" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: Rotunda Mezzanine" onClick="HUD_scenesPickSite" />
+        <Button id="scenes_pick_site_ROMSpiritHouse" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: Spirit House" onClick="HUD_scenesPickSite" />
+        <Button id="scenes_pick_site_ROMHallOfExtinction" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: The Hall of Extinction" onClick="HUD_scenesPickSite" />
+      </HorizontalLayout>
+    </VerticalLayout>
+
     <VerticalLayout id="scenes_site_group_dist_YongeDundasHospital" active="False" visibility="None" spacing="4" padding="0 0 10 0" childForceExpandWidth="true">
       <Text fontSize="11" fontStyle="Bold" color="#C9A84C" alignment="UpperCenter" text="The Yonge &amp; Dundas Hospital District — district sites" />
       <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
@@ -388,18 +400,6 @@
       <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
         <Button id="scenes_pick_site_TeteATete" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Tête-à-Tête Hair Atelier" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_YorkvilleApt1" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Yorkville Apartment" onClick="HUD_scenesPickSite" />
-      </HorizontalLayout>
-    </VerticalLayout>
-
-    <VerticalLayout id="scenes_site_group_dist_YongeBloorMuseum" active="False" visibility="None" spacing="4" padding="0 0 10 0" childForceExpandWidth="true">
-      <Text fontSize="11" fontStyle="Bold" color="#C9A84C" alignment="UpperCenter" text="The Young &amp; Bloor Museum District — district sites" />
-      <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
-        <Button id="scenes_pick_site_CeramicsMuseum" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Gardiner Ceramics Museum" onClick="HUD_scenesPickSite" />
-        <Button id="scenes_pick_site_ROMLoadingZone" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: Bloor Street Loading Zone" onClick="HUD_scenesPickSite" />
-        <Button id="scenes_pick_site_ROMC5Lounge" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: C5 Lounge" onClick="HUD_scenesPickSite" />
-        <Button id="scenes_pick_site_ROMRotunda" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: Rotunda Mezzanine" onClick="HUD_scenesPickSite" />
-        <Button id="scenes_pick_site_ROMSpiritHouse" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: Spirit House" onClick="HUD_scenesPickSite" />
-        <Button id="scenes_pick_site_ROMHallOfExtinction" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Royal Ontario Museum: The Hall of Extinction" onClick="HUD_scenesPickSite" />
       </HorizontalLayout>
     </VerticalLayout>
 

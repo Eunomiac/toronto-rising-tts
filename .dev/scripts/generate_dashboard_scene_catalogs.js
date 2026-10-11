@@ -910,14 +910,12 @@ function main() {
   const sites = parseTopLevelEntries(extractBlock(constants, "C.Sites =")).map((entry) => {
     const districtMatch = entry.body.match(/district\s*=\s*C\.Districts\.([A-Za-z_][A-Za-z0-9_]*)/);
     const soundTrackMatch = entry.body.match(/track\s*=\s*"([^"]+)"/);
-    const topFog = readBooleanField(entry.body, "topFog");
-    const isTopFogActive = readBooleanField(entry.body, "isTopFogActive");
     return {
       key: entry.key,
       name: readStringField(entry.body, "name") || entry.key,
       districtKey: districtMatch ? districtMatch[1] : null,
       lightMode: readStringField(entry.body, "lightMode"),
-      topFog: isTopFogActive !== null ? isTopFogActive : topFog,
+      isTopFogActive: readBooleanField(entry.body, "isTopFogActive"),
       isIndoors: readBooleanField(entry.body, "isIndoors"),
       skybox: readStringField(entry.body, "skybox"),
       locationTrack: soundTrackMatch ? soundTrackMatch[1] : null,

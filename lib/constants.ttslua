@@ -3017,7 +3017,7 @@ C.Districts = {
     "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/Wychwood.webp"
   },
   YongeBloorMuseum = {
-    name = "The Young & Bloor Museum District",
+    name = "The Yonge & Bloor Museum District",
     image =
     "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/Districts/YongeBloorMuseum.webp"
   },
@@ -3428,7 +3428,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.4,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
   },
   AptCorridor = {
     key = "AptCorridor",
@@ -3441,7 +3441,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   AptLobby = {
     key = "AptLobby",
@@ -3454,7 +3454,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   AptStreetside = {
     key = "AptStreetside",
@@ -3467,7 +3467,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   ArtGallery = {
     key = "ArtGallery",
@@ -3480,7 +3480,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-50.78 -9.35"
   },
   AutoMechanic = {
@@ -3488,12 +3488,12 @@ C.Sites = {
     name = "Auto Mechanic",
     image = "siteCard_AutoMechanic",
     soundscape = {
-      location = {playlist = "location", track = "autoShop"}
+      location = {playlist = "location", track = "autoshop"}
     },
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   BackAlley1 = {
     key = "BackAlley1",
@@ -3506,7 +3506,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorDim",
-    topFog = true,
+    isTopFogActive = true,
   },
   BackAlley2 = {
     key = "BackAlley2",
@@ -3519,7 +3519,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorDim",
-    topFog = true,
+    isTopFogActive = true,
   },
   BackAlley3 = {
     key = "BackAlley3",
@@ -3532,7 +3532,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorDim",
-    topFog = true,
+    isTopFogActive = true,
   },
   BackseatSedan = {
     key = "BackseatSedan",
@@ -3545,7 +3545,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
   },
   BayTower = {
     key = "BayTower",
@@ -3559,7 +3559,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "153.91 -119.43"
   },
   BierMarkt = {
@@ -3568,12 +3568,12 @@ C.Sites = {
     image = "siteCard_BierMarkt",
     district = C.Districts.WestQueenWest,
     soundscape = {
-      location = {playlist = "location", track = "bar"}
+      location = {playlist = "location", track = "diveBar"}
     },
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-134.47 -133.17"
   },
   BillyBishopAirport = {
@@ -3588,7 +3588,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-105.82 -442.28"
   },
   BillyBishopFerry = {
@@ -3603,7 +3603,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.4,
     lightMode = "IndoorDim",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "-99.58 -362.38"
   },
   BrickWorks = {
@@ -3618,7 +3618,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.4,
     lightMode = "OutdoorDim",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "320.58 569.78"
   },
   CabbagetownPenthouse = {
@@ -3633,7 +3633,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "240.86 75.08"
   },
   CAMH = {
@@ -3648,7 +3648,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-168.8 109.93"
   },
   CarusoResidence = {
@@ -3662,7 +3662,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "208.8 580.27"
   },
   Cemetery = {
@@ -3676,7 +3676,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorDim",
-    topFog = true,
+    isTopFogActive = true,
   },
   CentrevillePark = {
     key = "CentrevillePark",
@@ -3689,7 +3689,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorDim",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "213.91 -598.68"
   },
   CeramicsMuseum = {
@@ -3703,7 +3703,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-65.25 262.08"
   },
   ChantryGrounds = {
@@ -3718,7 +3718,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorDim",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "-33.9 212.64"
   },
   ChantryLibrary = {
@@ -3733,7 +3733,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-33.9 212.64"
   },
   ChantryQuarters = {
@@ -3748,7 +3748,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-33.9 212.64"
   },
   ChantryThaumatorium = {
@@ -3763,7 +3763,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-33.9 212.64"
   },
   ChristiePitsPark = {
@@ -3778,7 +3778,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorDim",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "-405.69 204.57"
   },
   CityApt1 = {
@@ -3792,7 +3792,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   CityApt2 = {
     key = "CityApt2",
@@ -3805,7 +3805,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   CityApt3 = {
     key = "CityApt3",
@@ -3818,7 +3818,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   CityHall = {
     key = "CityHall",
@@ -3832,7 +3832,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "82.13 -3.26"
   },
   CityPark = {
@@ -3846,7 +3846,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorBright",
-    topFog = true,
+    isTopFogActive = true,
   },
   CLDrawingRoom = {
     key = "CLDrawingRoom",
@@ -3861,7 +3861,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-254.33 441.43"
   },
   CLGallery = {
@@ -3877,7 +3877,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-254.33 441.43"
   },
   CLGreatHall = {
@@ -3893,7 +3893,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-254.33 441.43"
   },
   CLGrounds = {
@@ -3909,7 +3909,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorBright",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "-254.33 441.43"
   },
   CLLibrary = {
@@ -3925,7 +3925,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-254.33 441.43"
   },
   CLOverlook = {
@@ -3941,7 +3941,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-254.33 441.43"
   },
   CLTerrace = {
@@ -3957,7 +3957,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorDim",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "-254.33 441.43"
   },
   CLVestibule = {
@@ -3973,7 +3973,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.4,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-254.33 441.43"
   },
   CNE = {
@@ -3987,7 +3987,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorBright",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "-307.53 -332.07"
   },
   CNTower = {
@@ -4001,7 +4001,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "54.04 -226.24"
   },
   CoachHouseEmbassy = {
@@ -4016,7 +4016,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "158.16 617.24"
   },
   CorktownCommon = {
@@ -4031,7 +4031,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorDim",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "503.56 1.13"
   },
   CrimeScene = {
@@ -4044,7 +4044,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorBright",
-    topFog = true,
+    isTopFogActive = true,
   },
   DanforthHall = {
     key = "DanforthHall",
@@ -4058,7 +4058,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "426.68 411.68"
   },
   DerelictWarehouse = {
@@ -4071,7 +4071,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.4,
     lightMode = "IndoorDark",
-    topFog = true,
+    isTopFogActive = true,
   },
   Distillery = {
     key = "Distillery",
@@ -4085,7 +4085,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.4,
     lightMode = "IndoorDark",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "448.95 -52.84"
   },
   Docks = {
@@ -4100,7 +4100,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorDim",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "497.46 -221.99"
   },
   DogPark = {
@@ -4114,7 +4114,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorBright",
-    topFog = true,
+    isTopFogActive = true,
   },
   Drake = {
     key = "Drake",
@@ -4127,7 +4127,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-454.91 -172.69"
   },
   EatonCentre = {
@@ -4142,7 +4142,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "117.02 19.41"
   },
   Elevator = {
@@ -4155,7 +4155,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   EvergreenPalisades = {
     key = "EvergreenPalisades",
@@ -4169,7 +4169,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.4,
     lightMode = "IndoorDark",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "512.07 302.32"
   },
   Fairmont = {
@@ -4183,7 +4183,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "113.19 -122.68"
   },
   FightClub = {
@@ -4196,7 +4196,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorDim",
-    topFog = true,
+    isTopFogActive = true,
   },
   FireSaleChantry = {
     key = "FireSaleChantry",
@@ -4210,7 +4210,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-333.77 -39.24"
   },
   FortYork = {
@@ -4224,7 +4224,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.4,
     lightMode = "IndoorBright",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "-216.46 -279.93"
   },
   GayBar = {
@@ -4237,7 +4237,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
   },
   GayClub = {
     key = "GayClub",
@@ -4251,7 +4251,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
   },
   GECatacombs = {
     key = "GECatacombs",
@@ -4266,7 +4266,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "UndergroundDim",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "-435.62 426.13"
   },
   GEDiningHall = {
@@ -4282,7 +4282,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.4,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-435.62 426.13"
   },
   GEEstateGrounds = {
@@ -4298,7 +4298,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorDim",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "-435.62 426.13"
   },
   GEMortuary = {
@@ -4314,7 +4314,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-435.62 426.13"
   },
   GeorgeBrown = {
@@ -4328,7 +4328,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-247.38 409.7"
   },
   GETowerRoom = {
@@ -4344,7 +4344,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.4,
     lightMode = "IndoorDim",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "-435.62 426.13"
   },
   GraffitiAlley = {
@@ -4359,7 +4359,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorBright",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "-143.83 -96.33"
   },
   HarbourfrontCentre = {
@@ -4373,7 +4373,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "102.41 -275.97"
   },
   HemovoreResearch = {
@@ -4388,7 +4388,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "23.97 99.59"
   },
   Highway = {
@@ -4401,7 +4401,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   HockeyHallOfFame = {
     key = "HockeyHallOfFame",
@@ -4414,7 +4414,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   JRRLibrary = {
     key = "JRRLibrary",
@@ -4428,7 +4428,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-124.83 200.6"
   },
   Junkyard = {
@@ -4436,12 +4436,12 @@ C.Sites = {
     name = "Junkyard",
     image = "siteCard_Junkyard",
     soundscape = {
-      location = {playlist = "location", track = "autoShop"}
+      location = {playlist = "location", track = "autoshop"}
     },
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorDim",
-    topFog = true,
+    isTopFogActive = true,
   },
   Kensington = {
     key = "Kensington",
@@ -4455,7 +4455,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-131.21 16.29"
   },
   Keyhouse = {
@@ -4470,7 +4470,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "306.25 686.09"
   },
   Laboratory = {
@@ -4484,7 +4484,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   LectureHall = {
     key = "LectureHall",
@@ -4496,7 +4496,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   Library = {
     key = "Library",
@@ -4509,7 +4509,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   Limousine = {
     key = "Limousine",
@@ -4522,7 +4522,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
   },
   LowerParklands = {
     key = "LowerParklands",
@@ -4536,7 +4536,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorDim",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "398.31 740.07"
   },
   LuxuryDriving = {
@@ -4549,7 +4549,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
   },
   MadinaMasjid = {
     key = "MadinaMasjid",
@@ -4563,7 +4563,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "533.35 523.6"
   },
   MasseyHall = {
@@ -4578,7 +4578,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "170.22 -100.02"
   },
   MiddleOfRoad = {
@@ -4591,7 +4591,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   ModClub = {
     key = "ModClub",
@@ -4605,7 +4605,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-384.69 45.33"
   },
   MountSinai = {
@@ -4620,7 +4620,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "0 36.83"
   },
   Nightclub1 = {
@@ -4635,7 +4635,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
   },
   Nightclub2 = {
     key = "Nightclub2",
@@ -4649,7 +4649,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
   },
   Nightclub3 = {
     key = "Nightclub3",
@@ -4663,7 +4663,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
   },
   OCAD = {
     key = "OCAD",
@@ -4676,7 +4676,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-24.4 -28.05"
   },
   Office = {
@@ -4690,7 +4690,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   OldOsgoodeHall = {
     key = "OldOsgoodeHall",
@@ -4704,7 +4704,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "22.41 -11.33"
   },
   OntarioPlaceMarina = {
@@ -4718,7 +4718,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorBright",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "-379.3 -473.73"
   },
   ParkDriveReservation = {
@@ -4733,7 +4733,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorDim",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "272.92 502.92"
   },
   ParkingLot = {
@@ -4746,7 +4746,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorBright",
-    topFog = true,
+    isTopFogActive = true,
   },
   PenthouseApt1 = {
     key = "PenthouseApt1",
@@ -4759,7 +4759,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   PenthouseApt2 = {
     key = "PenthouseApt2",
@@ -4772,7 +4772,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   PenthouseApt3 = {
     key = "PenthouseApt3",
@@ -4785,7 +4785,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   PhoenixTheatre = {
     key = "PhoenixTheatre",
@@ -4799,7 +4799,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "222.42 205.42"
   },
   PMHospital = {
@@ -4814,7 +4814,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-11.63 86.13"
   },
   ProfOffice = {
@@ -4828,7 +4828,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   Ravenwing = {
     key = "Ravenwing",
@@ -4843,7 +4843,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorDark",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "-81 -57.09"
   },
   ReconciliationHouse = {
@@ -4858,7 +4858,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-341.43 -213.78"
   },
   RedemptionHouse = {
@@ -4873,7 +4873,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "465.97 437.89"
   },
   RemembranceHouse = {
@@ -4888,7 +4888,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-257.74 97.33"
   },
   REMState = {
@@ -4904,7 +4904,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "OutdoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "492.07 -33.86"
   },
   RevelationHouse = {
@@ -4920,7 +4920,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "124.12 279.23"
   },
   RogersCentre = {
@@ -4934,7 +4934,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "8.37 -205.28"
   },
   ROMC5Lounge = {
@@ -4949,7 +4949,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-88.09 254.58"
   },
   ROMHallOfExtinction = {
@@ -4964,7 +4964,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "-88.09 254.58"
   },
   ROMLoadingZone = {
@@ -4979,7 +4979,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorDim",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "-88.09 254.58"
   },
   ROMRotunda = {
@@ -4994,7 +4994,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-88.09 254.58"
   },
   ROMSpiritHouse = {
@@ -5009,7 +5009,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "-88.09 254.58"
   },
   Rooftop = {
@@ -5023,7 +5023,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorBright",
-    topFog = true,
+    isTopFogActive = true,
   },
   RunDownApt1 = {
     key = "RunDownApt1",
@@ -5036,7 +5036,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
   },
   RunDownApt2 = {
     key = "RunDownApt2",
@@ -5049,7 +5049,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
   },
   RunDownApt3 = {
     key = "RunDownApt3",
@@ -5062,7 +5062,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
   },
   Ryerson = {
     key = "Ryerson",
@@ -5075,7 +5075,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "167.95 97.75"
   },
   ScotiabankTheatre = {
@@ -5090,7 +5090,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "145.82 -180.48"
   },
   SecludedDeadEnd = {
@@ -5104,7 +5104,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorDim",
-    topFog = true,
+    isTopFogActive = true,
   },
   SewerTunnel1 = {
     key = "SewerTunnel1",
@@ -5117,7 +5117,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "UndergroundDim",
-    topFog = true,
+    isTopFogActive = true,
   },
   SewerTunnel2 = {
     key = "SewerTunnel2",
@@ -5130,7 +5130,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "UndergroundDim",
-    topFog = true,
+    isTopFogActive = true,
   },
   SheratonCentre = {
     key = "SheratonCentre",
@@ -5144,7 +5144,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "71.49 -51"
   },
   SickKids = {
@@ -5159,7 +5159,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "34.61 48.45"
   },
   Sidewalk1 = {
@@ -5173,7 +5173,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorBright",
-    topFog = true,
+    isTopFogActive = true,
   },
   Sidewalk2 = {
     key = "Sidewalk2",
@@ -5186,7 +5186,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorBright",
-    topFog = true,
+    isTopFogActive = true,
   },
   Sidewalk3 = {
     key = "Sidewalk3",
@@ -5199,7 +5199,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorBright",
-    topFog = true,
+    isTopFogActive = true,
   },
   SnakesLattes = {
     key = "SnakesLattes",
@@ -5212,7 +5212,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-307.53 205.7"
   },
   SneakyDees = {
@@ -5226,7 +5226,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-232.06 54.12"
   },
   Stairwell = {
@@ -5239,7 +5239,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   StLawrenceMarket = {
     key = "StLawrenceMarket",
@@ -5253,7 +5253,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "262.99 -156.12"
   },
   StMichaelsCathedral = {
@@ -5268,7 +5268,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "168.94 44.06"
   },
   StMichaelsHospital = {
@@ -5283,7 +5283,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "202.28 8.5"
   },
   StreetCorner1 = {
@@ -5297,7 +5297,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorBright",
-    topFog = true,
+    isTopFogActive = true,
   },
   StreetCorner2 = {
     key = "StreetCorner2",
@@ -5310,7 +5310,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorBright",
-    topFog = true,
+    isTopFogActive = true,
   },
   StreetCorner3 = {
     key = "StreetCorner3",
@@ -5323,7 +5323,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorBright",
-    topFog = true,
+    isTopFogActive = true,
   },
   StRegisAishe = {
     key = "StRegisAishe",
@@ -5337,7 +5337,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "155.04 -84.57"
   },
   StRegisBlackCaesar = {
@@ -5353,7 +5353,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorDim",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "155.04 -84.57"
   },
   StRegisCouncilChamber = {
@@ -5368,7 +5368,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "155.04 -84.57"
   },
   StRegisFomorach = {
@@ -5383,7 +5383,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "155.04 -84.57"
   },
   StRegisFoyer = {
@@ -5398,7 +5398,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "155.04 -84.57"
   },
   StRegisGrandSalon = {
@@ -5413,7 +5413,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "155.04 -84.57"
   },
   StRegisLucien = {
@@ -5428,7 +5428,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "155.04 -84.57"
   },
   StRegisRashid = {
@@ -5443,7 +5443,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "155.04 -84.57"
   },
   StRegisRoom101 = {
@@ -5453,12 +5453,12 @@ C.Sites = {
     skybox = "StRegisRoom101",
     district = C.Districts.BayStFinancial,
     soundscape = {
-      location = {playlist = "location", track = "computer"}
+      location = {playlist = "location", track = "computerLab"}
     },
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "155.04 -84.57"
   },
   StripClub = {
@@ -5472,7 +5472,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
   },
   StudentVillage = {
     key = "StudentVillage",
@@ -5485,7 +5485,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-128.51 170.28"
   },
   SuburbanHouse1 = {
@@ -5499,7 +5499,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   SuburbanHouse2 = {
     key = "SuburbanHouse2",
@@ -5512,7 +5512,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   SuburbanHouse3 = {
     key = "SuburbanHouse3",
@@ -5525,7 +5525,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   SubwayStation = {
     key = "SubwayStation",
@@ -5538,7 +5538,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   SubwayTunnels = {
     key = "SubwayTunnels",
@@ -5551,7 +5551,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "UndergroundDim",
-    topFog = true,
+    isTopFogActive = true,
   },
   SUV = {
     key = "SUV",
@@ -5564,7 +5564,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
   },
   Taxi = {
     key = "Taxi",
@@ -5577,7 +5577,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
   },
   TeteATete = {
     key = "TeteATete",
@@ -5591,7 +5591,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-28.51 337.31"
   },
   ThreefoldExchange = {
@@ -5606,7 +5606,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorDim",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "-385.26 -208.82"
   },
   TIFFLightbox = {
@@ -5620,7 +5620,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-7.66 -119.57"
   },
   TorontoGeneral = {
@@ -5635,7 +5635,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "23.97 99.59"
   },
   TPSHQ = {
@@ -5650,7 +5650,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "60.14 145.07"
   },
   UndergroundMedOffice = {
@@ -5663,7 +5663,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
   },
   UndergroundParking = {
     key = "UndergroundParking",
@@ -5675,7 +5675,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
   },
   UnionConcourse = {
     key = "UnionConcourse",
@@ -5689,7 +5689,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "203.55 -211.79"
   },
   UnionGrandClock = {
@@ -5704,7 +5704,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "203.55 -211.79"
   },
   UnionLine1 = {
@@ -5719,7 +5719,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "203.55 -211.79"
   },
   UnionSecOffice = {
@@ -5729,12 +5729,12 @@ C.Sites = {
     skybox = "UnionSecOffice",
     district = C.Districts.Waterfront,
     soundscape = {
-      location = {playlist = "location", track = "computer"}
+      location = {playlist = "location", track = "computerLab"}
     },
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "203.55 -211.79"
   },
   UnionServiceCorridor = {
@@ -5749,7 +5749,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "IndoorDim",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "203.55 -211.79"
   },
   UnionUPExpress = {
@@ -5764,7 +5764,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "203.55 -211.79"
   },
   UpperCanadaCollege = {
@@ -5778,7 +5778,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-185.54 742.33"
   },
   VacantLot = {
@@ -5791,7 +5791,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorDim",
-    topFog = true,
+    isTopFogActive = true,
   },
   WalkingPath = {
     key = "WalkingPath",
@@ -5804,7 +5804,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorDim",
-    topFog = true,
+    isTopFogActive = true,
   },
   WarrensAntechamber = {
     key = "WarrensAntechamber",
@@ -5819,7 +5819,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "UndergroundDim",
-    topFog = true,
+    isTopFogActive = true,
   },
   WarrensDrakes = {
     key = "WarrensDrakes",
@@ -5834,7 +5834,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "UndergroundBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   WarrensFomorach = {
     key = "WarrensFomorach",
@@ -5843,12 +5843,12 @@ C.Sites = {
     skybox = "WarrensLabyrinth",
     district = C.Districts.Sewers,
     soundscape = {
-      location = {playlist = "location", track = "warrensSafe"}
+      location = {playlist = "location", track = "warrens"}
     },
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "UndergroundBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   WarrensIQs = {
     key = "WarrensIQs",
@@ -5857,12 +5857,12 @@ C.Sites = {
     skybox = "WarrensLabyrinth",
     district = C.Districts.Sewers,
     soundscape = {
-      location = {playlist = "location", track = "warrensSafe"}
+      location = {playlist = "location", track = "warrens"}
     },
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "UndergroundBright",
-    topFog = true,
+    isTopFogActive = true,
   },
   WarrensLabyrinth = {
     key = "WarrensLabyrinth",
@@ -5877,7 +5877,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "UndergroundDim",
-    topFog = true,
+    isTopFogActive = true,
   },
   WarrensPalis = {
     key = "WarrensPalis",
@@ -5886,12 +5886,12 @@ C.Sites = {
     skybox = "WarrensLabyrinth",
     district = C.Districts.Sewers,
     soundscape = {
-      location = {playlist = "location", track = "warrensSafe"}
+      location = {playlist = "location", track = "warrens"}
     },
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "UndergroundBright",
-    topFog = true,
+    isTopFogActive = true,
   },
   WarrensSpawningPool = {
     key = "WarrensSpawningPool",
@@ -5906,7 +5906,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "UndergroundDim",
-    topFog = true,
+    isTopFogActive = true,
   },
   WarrensTunnelJunction = {
     key = "WarrensTunnelJunction",
@@ -5921,7 +5921,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0,
     lightMode = "UndergroundDim",
-    topFog = true,
+    isTopFogActive = true,
   },
   WealthyEstate1 = {
     key = "WealthyEstate1",
@@ -5934,7 +5934,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   WealthyEstate2 = {
     key = "WealthyEstate2",
@@ -5947,7 +5947,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   WealthyEstate3 = {
     key = "WealthyEstate3",
@@ -5960,7 +5960,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   WeepingCairn = {
     key = "WeepingCairn",
@@ -5973,7 +5973,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorDark",
-    topFog = true,
+    isTopFogActive = true,
     offsetXY = "351.64 586.93"
   },
   WychwoodPub = {
@@ -5986,7 +5986,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     lightMode = "IndoorDim",
-    topFog = false,
+    isTopFogActive = false,
   },
   Yacht = {
     key = "Yacht",
@@ -5999,7 +5999,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.4,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
   YongeDundasSquare = {
     key = "YongeDundasSquare",
@@ -6013,7 +6013,7 @@ C.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     lightMode = "OutdoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "129.93 53.55"
   },
   YorkvilleApt1 = {
@@ -6028,7 +6028,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
     offsetXY = "-58.44 328.67"
   },
   YouthShelter = {
@@ -6041,7 +6041,7 @@ C.Sites = {
     isIndoors = true,
     weatherDucking = 0.1,
     lightMode = "IndoorBright",
-    topFog = false,
+    isTopFogActive = false,
   },
 }
 
