@@ -175,6 +175,27 @@ export const draftClock = (scene: LibraryScene): ClockDatetime | null => {
 /** The draft follows present day (whatever it is when the scene is played) instead of a fixed time. */
 export const draftAtPresentDay = (scene: LibraryScene): LibraryScene => withSession(scene, { clock: { isPresentDay: true } });
 
+const NPC_SEATS: readonly string[] = ["NPC1", "NPC2", "NPC3", "NPC4"];
+
+const draftSeatSlots = (scene: LibraryScene): Row => (isRecord(scene.sessionScene.seatSlots) ? scene.sessionScene.seatSlots : {});
+
+const draftSeatPresent = (scene: LibraryScene): Row => (isRecord(scene.sessionScene.seatPresent) ? scene.sessionScene.seatPresent : {});
+
+/** The seated NPC on an NPC seat row (none when the seat is empty). */
+const npcOf = (row: unknown): string | undefined =>
+  isRecord(row) && row.slotEmpty !== true && typeof row.characterKey === "string" && row.characterKey !== "" ? row.characterKey : undefined;
+
+/** The chair a seat row holds: a PC in session, or an NPC seat with someone in it. */
+const seatChair = (seat: string, row: unknown): number | undefined => {
+  if (!isRecord(row) || typeof row.tableSlot !== "number" || row.absentFromSession === true) {
+    return undefined;
+  }
+  return PC_COLORS.includes(seat) || npcOf(row) !== undefined ? row.tableSlot : undefined;
+};
+
+const holderOfChair = (slots: Row, chair: number): string | undefined =>
+  Object.keys(slots).find((seat) => seatChair(seat, slots[seat]) === chair);
+
 /** The draft row after one panel command; commands with no library meaning (volumes, spotlight …) change nothing. */
 export const applyToDraft = (scene: LibraryScene, command: ScenesCommand): LibraryScene => {
   switch (command.op) {
@@ -216,13 +237,56 @@ export const applyToDraft = (scene: LibraryScene, command: ScenesCommand): Libra
       return withSession(scene, { clock: { ...command.datetime, isPresentDay: false } });
     case "seatPresence": {
       // Same pair the TTS pending-row writer keeps: `seatSlots[seat].isPresent` wins, `seatPresent` mirrors it.
-      const slots = isRecord(scene.sessionScene.seatSlots) ? scene.sessionScene.seatSlots : {};
+      const slots = draftSeatSlots(scene);
       const row = slots[command.seat];
-      const mirror = isRecord(scene.sessionScene.seatPresent) ? scene.sessionScene.seatPresent : {};
       return withSession(scene, {
         seatSlots: { ...slots, [command.seat]: { ...(isRecord(row) ? row : {}), isPresent: command.present } },
-        seatPresent: { ...mirror, [command.seat]: command.present }
+        seatPresent: { ...draftSeatPresent(scene), [command.seat]: command.present }
       });
+    }
+    case "seatMove": {
+      const slots = draftSeatSlots(scene);
+      const row = slots[command.seat];
+      const from = seatChair(command.seat, row);
+      if (!isRecord(row) || from === undefined || from === command.chair) {
+        return scene;
+      }
+      const holder = holderOfChair(slots, command.chair);
+      const other = holder === undefined ? undefined : slots[holder];
+      return withSession(scene, {
+        seatSlots: {
+          ...slots,
+          [command.seat]: { ...row, tableSlot: command.chair },
+          ...(holder !== undefined && isRecord(other) ? { [holder]: { ...other, tableSlot: from } } : {})
+        }
+      });
+    }
+    case "seatNpc": {
+      // Generic NPCs stand on the stage; they never take chairs.
+      if (command.characterKey in draftMembership(scene)) {
+        return scene;
+      }
+      const slots = draftSeatSlots(scene);
+      const own = NPC_SEATS.find((seat) => seatChair(seat, slots[seat]) !== undefined && npcOf(slots[seat]) === command.characterKey);
+      const holder = holderOfChair(slots, command.chair);
+      if (holder !== undefined && holder !== own) {
+        return scene;
+      }
+      const seat = own ?? NPC_SEATS.find((key) => npcOf(slots[key]) === undefined);
+      if (seat === undefined) {
+        return scene;
+      }
+      const prior = slots[seat];
+      const { slotEmpty: _empty, ...kept } = isRecord(prior) ? prior : {};
+      const placements: Record<string, unknown> = { ...draftPlacements(scene) };
+      delete placements[command.characterKey];
+      return withNpcWorld(
+        withSession(scene, {
+          seatSlots: { ...slots, [seat]: { ...kept, characterKey: command.characterKey, tableSlot: command.chair, isPresent: true } },
+          seatPresent: { ...draftSeatPresent(scene), [seat]: true }
+        }),
+        { placements }
+      );
     }
     case "musicMood":
       return withNarrative(scene, { backgroundMusic: command.mood });

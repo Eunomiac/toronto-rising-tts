@@ -3720,39 +3720,48 @@
   "tables": [
     {
       "key": "Table A",
-      "slotCapacity": 9
+      "slotCapacity": 9,
+      "randomSeating": false
     },
     {
       "key": "Table B0",
-      "slotCapacity": 5
+      "slotCapacity": 5,
+      "randomSeating": true
     },
     {
       "key": "Table B1",
-      "slotCapacity": 6
+      "slotCapacity": 6,
+      "randomSeating": true
     },
     {
       "key": "Table B2",
-      "slotCapacity": 7
+      "slotCapacity": 7,
+      "randomSeating": true
     },
     {
       "key": "Table B3",
-      "slotCapacity": 8
+      "slotCapacity": 8,
+      "randomSeating": true
     },
     {
       "key": "Table B4",
-      "slotCapacity": 9
+      "slotCapacity": 9,
+      "randomSeating": true
     },
     {
       "key": "Table B5",
-      "slotCapacity": 10
+      "slotCapacity": 10,
+      "randomSeating": true
     },
     {
       "key": "Table C",
-      "slotCapacity": 10
+      "slotCapacity": 10,
+      "randomSeating": false
     },
     {
       "key": "Scatter",
-      "slotCapacity": 6
+      "slotCapacity": 6,
+      "randomSeating": false
     }
   ],
   "lightModes": [

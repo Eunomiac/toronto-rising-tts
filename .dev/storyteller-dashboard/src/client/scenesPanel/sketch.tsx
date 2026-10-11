@@ -8,7 +8,7 @@ import { TraitRing } from "../pcSheet/TraitRing";
 import type { ApplyCommand, RingTarget, SeatColor, SeatSnapshot, SheetSnapshot } from "../pcSheet/types";
 import type { LiveSheetAccess } from "../pcSheet/useLiveSheet";
 import { LIGHTING_LABEL, useScenesCommand, type LightingPreset, type StageChanges } from "./commands";
-import { GENERIC_SKY, stageName } from "./liveScene";
+import { GENERIC_SKY, stageName, tableUsesRandomSeating } from "./liveScene";
 import { SignalFlame } from "./signal";
 import { RollsCommandContext } from "./rolls/commands";
 import { ringChoices } from "./rolls/view";
@@ -211,8 +211,9 @@ export type SeatDrops = {
  * tracker controls; clicking anywhere else closes them. Right-clicking an occupied seat hands it to `onMenu`
  * (the wide board's roll ring, which also takes the character out of the scene or brings them back). With
  * `onPresence` (scene drafts) a click on an occupied, connected seat toggles presence instead. With `seating`
- * (the live table) a seated character drags as a token: onto another chair to swap, and a seated NPC onto the
- * stage; roster NPCs drop into empty chairs. Every cell carries `data-chair` for stage tokens dropped on it.
+ * (the live table, or a draft on a table that does not shuffle its chairs) a seated character drags as a token:
+ * onto another chair to swap, and a seated NPC onto the stage; roster NPCs drop into empty chairs. Every cell
+ * carries `data-chair` for stage tokens dropped on it.
  */
 export const Seats = ({ seats, liveSheet, onMenu, onPresence, seating }: {
   seats: readonly SeatSketch[];
@@ -549,7 +550,9 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
     const { state: _dark, ...lit } = seat;
     return lit;
   });
-  const seating: SeatDrops | null = !live.presenceClicks && !env.scatter
+  // A scene preview edits its own seating, except on a table that shuffles every chair when the scene plays.
+  const previewShuffled = live.presenceClicks === true && tableUsesRandomSeating(env.tableKey, catalogs);
+  const seating: SeatDrops | null = !env.scatter && !previewShuffled
     ? {
       move: (seat, chair) => command({ op: "seatMove", seat, chair }),
       seatNpc: (characterKey, chair) => command({ op: "seatNpc", characterKey, chair })
@@ -733,6 +736,7 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
           ? "Drag a PC or NPC into another group to move them there; drag an NPC out of every group to take them off. Drop roster NPCs or a whole group into a circle."
           : "Drag tokens anywhere; they snap only when dropped over a slot, and leave the stage when dropped off it. Drag the space around a pack's slots to move the whole pack. Drop a roster NPC anywhere, or a whole group on a pack (the leader takes the anchor). Double-click to light / darken."}
         {seating && " Drag a seated character to another chair to swap places, or a seated NPC onto the stage (their seat goes dark until they leave it). Drop a stage token or a roster NPC on an empty chair to seat them."}
+        {previewShuffled && !env.scatter && " This table shuffles every chair when the scene plays, so seats cannot be rearranged here."}
         {" "}Right-click empty stage for placement, Clear Stage{env.scatter ? "" : ", and Reset to Library"}.
       </span>
     </span>

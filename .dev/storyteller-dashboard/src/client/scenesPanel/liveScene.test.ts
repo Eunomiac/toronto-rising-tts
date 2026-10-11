@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { SceneCatalogs } from "./catalogs";
 import type { SeatsSlice, SoundscapeSlice } from "../worldState";
-import { liveSeats, liveTokens, soundView, spotlightView, toDate, weatherAxes } from "./liveScene";
+import { liveSeats, liveTokens, soundView, spotlightView, tableUsesRandomSeating, toDate, weatherAxes } from "./liveScene";
 
 const catalogs = {
   pcs: [
@@ -9,7 +9,7 @@ const catalogs = {
     { characterKey: "rashid", fullName: "Rashid Abdulrahman", isPC: true, groups: [], pickerGroups: [] }
   ],
   namedNpcs: [{ characterKey: "victorVex", fullName: "Victor Vex", isPC: false, groups: [], pickerGroups: [] }],
-  tables: [{ key: "Table B", slotCapacity: 7 }]
+  tables: [{ key: "Table B", slotCapacity: 7, randomSeating: true }]
 } as unknown as SceneCatalogs;
 
 const seats: SeatsSlice = {
@@ -30,6 +30,18 @@ const seats: SeatsSlice = {
   spotlightOrder: ["Pink", "Orange", "Red"],
   spotlightFrontIndex: 2
 };
+
+describe("tableUsesRandomSeating", () => {
+  const tables = { tables: [{ key: "Table A", slotCapacity: 9, randomSeating: false }, { key: "Table B0", slotCapacity: 5, randomSeating: true }] } as unknown as SceneCatalogs;
+
+  it("follows the catalog flag, reads the Table B family from Table B0, and treats no table as shuffled", () => {
+    expect(tableUsesRandomSeating("Table A", tables)).toBe(false);
+    expect(tableUsesRandomSeating("Table B", tables)).toBe(true);
+    expect(tableUsesRandomSeating("Table B0", tables)).toBe(true);
+    expect(tableUsesRandomSeating("", tables)).toBe(true);
+    expect(tableUsesRandomSeating("Table A", null)).toBe(true);
+  });
+});
 
 describe("liveSeats", () => {
   it("places occupants by chair number, keeps absence and role play, and marks missing chairs", () => {

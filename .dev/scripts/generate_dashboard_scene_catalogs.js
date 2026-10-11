@@ -886,7 +886,7 @@ function main() {
     if (slotCapacity === null) {
       throw new Error(`C.Tables[${JSON.stringify(entry.key)}] is missing slotCapacity.`);
     }
-    return { key: entry.key, slotCapacity };
+    return { key: entry.key, slotCapacity, randomSeating: readBooleanField(entry.body, "isRandomSeating") === true };
   });
 
   const lightModes = parseTopLevelEntries(extractBlock(constants, "C.LightModes =")).map((entry) => entry.key);

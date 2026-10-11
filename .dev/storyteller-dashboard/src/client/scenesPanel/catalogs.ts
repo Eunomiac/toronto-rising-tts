@@ -40,7 +40,8 @@ export type SceneCatalogs = {
   readonly namedNpcs: readonly CatalogCharacter[];
   readonly districts: readonly { readonly key: string; readonly name: string; readonly conditions: readonly string[] }[];
   readonly sites: readonly CatalogSite[];
-  readonly tables: readonly { readonly key: string; readonly slotCapacity: number }[];
+  /** `randomSeating`: the Table B family, which shuffles every chair when it is set down. */
+  readonly tables: readonly { readonly key: string; readonly slotCapacity: number; readonly randomSeating: boolean }[];
   readonly lightModes: readonly string[];
   readonly skyboxes: readonly { readonly key: string; readonly display: string }[];
   /** Memoriam periods (`SkyboxesCatalog.MemoriamSkyboxes`), earliest first. */

@@ -178,4 +178,27 @@ describe("draft seating", () => {
     expect(draft.sessionScene.seatSlots).toMatchObject({ NPC1: { characterKey: "mara", isPresent: true, tableSlot: 6 } });
     expect(draft.sessionScene.seatPresent).toEqual({ Pink: false, NPC1: true });
   });
+
+  it("moves a seat holder to another chair, swapping with whoever sits there", () => {
+    const swapped = applyToDraft(seated, { op: "seatMove", seat: "Red", chair: 6 });
+    expect(swapped.sessionScene.seatSlots).toMatchObject({ Red: { tableSlot: 6 }, NPC1: { characterKey: "mara", tableSlot: 1 } });
+    const moved = applyToDraft(seated, { op: "seatMove", seat: "NPC1", chair: 8 });
+    expect(moved.sessionScene.seatSlots).toMatchObject({ NPC1: { tableSlot: 8 }, Red: { tableSlot: 1 } });
+    expect(applyToDraft(seated, { op: "seatMove", seat: "NPC2", chair: 4 })).toBe(seated);
+  });
+
+  it("seats an NPC in an empty chair on a free NPC seat, present, and takes them off the stage", () => {
+    const staged = applyToDraft(seated, { op: "stage", changes: { victor: { u: 0.4, v: 0.4 } } });
+    const draft = applyToDraft(staged, { op: "seatNpc", characterKey: "victor", chair: 7 });
+    expect(draft.sessionScene.seatSlots).toMatchObject({ NPC2: { characterKey: "victor", tableSlot: 7, isPresent: true } });
+    expect((draft.sessionScene.seatSlots as Record<string, Record<string, unknown>>).NPC2).not.toHaveProperty("slotEmpty");
+    expect(draft.sessionScene.seatPresent).toMatchObject({ NPC2: true });
+    expect(draftStage(draft)).toEqual([]);
+    expect(applyToDraft(seated, { op: "seatNpc", characterKey: "victor", chair: 1 })).toBe(seated);
+  });
+
+  it("moves an already seated NPC to the empty chair instead of taking a second seat", () => {
+    const draft = applyToDraft(seated, { op: "seatNpc", characterKey: "mara", chair: 7 });
+    expect(draft.sessionScene.seatSlots).toMatchObject({ NPC1: { characterKey: "mara", tableSlot: 7, isPresent: true }, NPC2: { slotEmpty: true } });
+  });
 });

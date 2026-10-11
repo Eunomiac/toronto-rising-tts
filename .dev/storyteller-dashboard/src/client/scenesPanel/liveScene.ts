@@ -113,6 +113,18 @@ export const SEAT_ORDER = [9, 7, 5, 3, 1, 2, 4, 6, 8] as const;
 export const PC_COLORS: readonly string[] = ["Brown", "Orange", "Red", "Pink", "Purple"];
 
 /**
+ * Whether a scene on this table has its chairs shuffled when it plays (TTS `FSL.tableUsesRandomSeating`): the
+ * Table B family, and a scene with no table key, which keeps whatever table is down. Unknown catalogs count as yes.
+ */
+export const tableUsesRandomSeating = (tableKey: string, catalogs: SceneCatalogs | null): boolean => {
+  if (tableKey === "" || !catalogs) {
+    return true;
+  }
+  const key = tableKey === "Table B" ? "Table B0" : tableKey;
+  return catalogs.tables.find((table) => table.key === key)?.randomSeating === true;
+};
+
+/**
  * One cell per chair position. A chair beyond the table's capacity is `nochair`; an unoccupied chair is
  * `empty`. Narrative absence (`isPresent == false`) and a disconnected PC (`absentFromSession`) stay distinct.
  */
