@@ -1251,12 +1251,6 @@ function DEBUG.showScene()
     print("sessionScene.siteKey: " .. tostring(S.getStateVal("sessionScene", "siteKey")))
     print("sessionScene.districtKey: " .. tostring(S.getStateVal("sessionScene", "districtKey")))
     local npcWorld = S.getStateVal("sessionScene", "npcWorld")
-    if type(npcWorld) == "table" and type(npcWorld.byArea) == "table" then
-        local Convert = require("lib.npc_placements_convert")
-        if Convert.byAreaHasEntries(npcWorld.byArea) then
-            print("sessionScene.npcWorld.byArea: legacy entries present — run S.validateState or npm run npc-placements:migrate-byarea")
-        end
-    end
     if type(npcWorld) == "table" and type(npcWorld.placements) == "table" then
         local n = 0
         for _ in pairs(npcWorld.placements) do
@@ -5075,7 +5069,7 @@ end
 
 --- Logs Step Zero placement intent plus occupied slots for NPC reconcile verification.
 --- After scene edits, run `Sync.full({ force = true })`, then compare world to intent:
---- 1) byArea + seatSlots same char → target area; 2) seat only → target seat + physicalSeatAllowed;
+--- 1) placements + seatSlots same char → target area; 2) seat only → target seat + physicalSeatAllowed;
 --- 3) seat on table without slot → target none (despawned), assignment retained; 4) assigned + present false → seated layout, hidden props;
 --- 5) NPC with no target → despawned; 6) save load bootstrap → one successful reconcile.
 --- @param filename string Optional filename (default: "npc_placement_intent")

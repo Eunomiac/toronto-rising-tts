@@ -425,10 +425,9 @@ function S.GetDefaultGameState()
             conditions = {},
             --- Optional narrative soundscape columns consumed on scene apply (maps into `gameState.soundscape` / chronicle flags; no parallel weather stream).
             soundscapeNarrative = {},
-            --- NPC stage layout: `placements` (u,v,yaw on STAGE_BOARD). Import may paste `byArea`; normalized to placements.
+            --- NPC stage layout: `placements` (u,v,yaw on STAGE_BOARD).
             npcWorld = {
                 placements = {},
-                byArea = {},
                 genericMembership = {},
             },
             --- Scatter Mode occupancy (six groups). Present when `placementMode` is `scatter`.
@@ -861,10 +860,7 @@ function S.validateState()
         gameState.sessionScene = {}
     end
     mergeSessionSceneDefaults(gameState.sessionScene, S.GetDefaultGameState().sessionScene)
-    local liveMigrated = NpcPlacementsConvert.normalizeSessionScene(gameState.sessionScene)
-    if liveMigrated then
-        print("[state] sessionScene.npcWorld: migrated legacy byArea → placements")
-    end
+    NpcPlacementsConvert.rejectLegacyByArea(gameState.sessionScene, "sessionScene")
     gameState.controlBoard = nil
     do
         local defaults = S.GetDefaultGameState().connectionControls
@@ -1015,7 +1011,7 @@ function S.validateState()
         end
         lib.order = cleanedOrder
     end
-    for _, entry in pairs(gameState.sceneLibrary.scenes) do
+    for sceneKey, entry in pairs(gameState.sceneLibrary.scenes) do
         if type(entry) == "table" then
             if entry.placementMode ~= "scatter" then
                 if entry.placementMode ~= nil and entry.placementMode ~= "standard" then
@@ -1038,7 +1034,7 @@ function S.validateState()
                     entry.sessionScene.tableKey = "Scatter"
                 end
             else
-                NpcPlacementsConvert.normalizeSessionScene(entry.sessionScene)
+                NpcPlacementsConvert.rejectLegacyByArea(entry.sessionScene, "sceneLibrary." .. tostring(sceneKey))
                 if type(entry.sessionScene.npcWorld) == "table" then
                     entry.sessionScene.npcWorld.layoutLock = nil
                 end

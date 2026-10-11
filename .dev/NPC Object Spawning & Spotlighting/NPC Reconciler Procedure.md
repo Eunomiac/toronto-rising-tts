@@ -29,7 +29,7 @@ Authoring and runtime fields below are **inputs** to reconcile. Fields on `npcs.
 
 | Source | Field(s) | Role |
 | --- | --- | --- |
-| Scene / library | `sessionScene.npcWorld.placements` | Who should appear at which **STAGE_BOARD** u,v (import may paste `byArea`; converted to placements) |
+| Scene / library | `sessionScene.npcWorld.placements` | Who should appear at which **STAGE_BOARD** u,v (legacy `byArea` is dropped with a console line, not converted) |
 | Scene / library | `sessionScene.seatSlots[NPCn]` | Seat assignment intent (`characterKey`, `slotEmpty`, `isPresent`) |
 | Validated merge | `seatLayout.occupiedNPCSlots` | Runtime map of `NPC1`–`NPC4` → character key or `false`; updated from `seatSlots` in `normalizeLiveSessionSceneSeatSlots` |
 | Table config | `seatLayout.currentTableKey`, `C.Tables[*].playerToPositionMap` | Which NPC slots exist at the active table |

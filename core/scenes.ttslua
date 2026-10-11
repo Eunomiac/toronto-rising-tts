@@ -473,7 +473,6 @@ local function clearLiveNpcWorldPlacements()
         npcWorld = {}
     end
     npcWorld.placements = {}
-    npcWorld.byArea = {}
     S.setStateVal(npcWorld, "sessionScene", "npcWorld")
 end
 
