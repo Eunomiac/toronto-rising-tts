@@ -2,11 +2,11 @@ import type { MemoriamPeriod } from "./catalogs";
 import type { MemoriamPayload } from "./commands";
 
 /**
- * Memoriam set-up maths, matching the TTS modal (`core/memoriam_modal.ttslua`): the subject's periods from the
+ * Memoriam set-up maths (the only Memoriam set-up surface; the in-game TTS popup was retired): the subject's periods from the
  * Memoriam catalog, the timeline bar and slider over their life, and the Advance payload `Memoriam.applyEnter` reads.
  */
 
-/** Memoriam PC keys and names, in the TTS modal's order. */
+/** Memoriam PC keys and names, in display order. */
 export const MEMORIAM_PCS = [
   { key: "lucien", name: "Lord Lucien" },
   { key: "rashid", name: "Rashid Abdulrahman" },
@@ -91,7 +91,7 @@ const scaleWidths = (runs: readonly { kind: "gap" | "period"; years: number }[])
 };
 
 /**
- * The subject's life as the TTS bar draws it (`buildTimeline` in `core/memoriam_modal.ttslua`): earliest year on the
+ * The subject's life as the timeline bar draws it: earliest year on the
  * left to the present on the right, each run of years owned by the shortest period covering it (a nested period
  * splits the one around it), gaps between periods, widths proportional to years. Empty when no period falls on or
  * before the present.

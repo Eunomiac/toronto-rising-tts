@@ -21,8 +21,6 @@ UI.setAttributes("input_sessionNum", {minHeight = "30", fontStyle = "Bold"})
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
       <Button id="phase_sub_Downtime" text="Downtime" minWidth="72" preferredWidth="72" onClick="HUD_setPlaySubPhase"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="phase_sub_Memoriam" text="Memoriam" minWidth="72" preferredWidth="72" onClick="HUD_setPlaySubPhase"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     </HorizontalLayout>
     <Text fontSize="14" fontStyle="Bold" color="#AAAAAA">Session</Text>
     <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">

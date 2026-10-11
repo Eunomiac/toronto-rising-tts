@@ -10,7 +10,7 @@
     leaveMemoriam                         back to the scene the Memoriam interrupted, or Downtime when it started
                                           in Downtime or that scene has been ended since
     memoriam          payload             enter Memoriam: { subjectKey, date, location, skyboxKey + panel
-                                          or justSmoke, assignments } (same payload as the TTS modal)
+                                          or justSmoke, assignments } (Memoriam.applyEnter payload)
     sessionNum        num                 session number (Intermission blindfold images follow)
     sessionName       name                session title
     spotlightRotate   delta               turn the carousel (Spotlight phase only)

@@ -8,20 +8,20 @@ Read this when:
 
 Source of truth:
 - `core/memoriam.ttslua` — enter/exit world apply (TOR-101)
-- `core/memoriam_modal.ttslua` + `ui/storyteller/memoriam_modal.xml` — Host popup (does not change subphase until Advance)
+- Storyteller Dashboard Memoriam popup (`.dev/storyteller-dashboard/src/client/scenesPanel/memoriamModal.tsx` + `memoriam.ts`) → `memoriam` op in `dashboard/scenes.ttslua` → `Memoriam.applyEnter` (the in-game TTS popup was retired in TOR-721)
 - `lib/constants.ttslua` — `C.MemoriamSkyboxes`, `C.getMemoriamSkyboxesForCharacter`, `C.resolveMemoriamPanelURL`
 - `lib/skyboxes_catalog.ttslua` — generated from `SKYBOXMEMORIAMCSV` (`npm run skyboxes:import`)
-- `core/phases.ttslua` / `HUD_setPlaySubPhase` — Memoriam click opens the popup; Main/Downtime while active call `Memoriam.applyExit`
+- `core/phases.ttslua`; dashboard `leaveMemoriam` op calls `Memoriam.applyExit` restore
 - `core/game_state_overlay.ttslua` — overlay while `Memoriam.isActive()`
 - `core/scenes.ttslua` — `reconcileSkyboxFromState` uses panel Cloud URL (or `C.Skyboxes.JustSmoke` for Just Smoke) while Memoriam is active
 - `core/storyteller_scenes_panel.ttslua` — Scene Apply handoff / End Scene
 - `core/state.ttslua` — `gameState.memoriam`
 
 Verification:
-- Save & Play → Phases **Memoriam** → configure → Advance on a period panel
+- Save & Play → Storyteller Dashboard **Memoriam** → configure → Advance on a period panel
 - Advance with the slider in a gap (automatic Just Smoke), and with the Just Smoke button inside a period
 - Re-open Memoriam from an already-running Memoriam and Advance again
-- Exit via Main / Downtime, via Scenes Apply, and via End Scene
+- Exit via the dashboard's leave-Memoriam control, via Scenes Apply, and via End Scene
 - Phase chrome: [Phases Overview](Phases%20Overview.md)
 
 Status: current (TOR-101 / TOR-539–TOR-551 / TOR-564 / TOR-568 / TOR-642). Remaining work is listed at the bottom — do not treat those items as shipped.
@@ -30,7 +30,7 @@ Status: current (TOR-101 / TOR-539–TOR-551 / TOR-564 / TOR-568 / TOR-642). Rem
 
 ## What this is
 
-Memoriam is a **Play subphase**, not a scene-library row. Clicking **Memoriam** on the Phases panel opens the configuration popup. The live subphase stays Main or Downtime until **Advance**.
+Memoriam is a **Play subphase**, not a scene-library row. The Storyteller Dashboard's **Memoriam** control opens the configuration popup (the only Memoriam set-up surface). The live subphase stays Main or Downtime until **Advance**.
 
 **Just Smoke** (TOR-642) is a Memoriam with no period panel. The modal selects it automatically while the slider sits in a gap between periods (and drops it again when the slider moves back into a period), and the **Just Smoke** button picks it explicitly inside a period (that choice sticks while the slider moves). The PC assignment rows still show; the NPC picker is empty, so only library NPCs by key can be assigned.
 

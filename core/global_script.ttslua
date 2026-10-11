@@ -176,7 +176,6 @@ local syncDebugSeatColorButtons
 local syncDebugConnectionControls
 local StorytellerStatsPanel = require("core.storyteller_stats_panel")
 local StorytellerProjectsPanel = require("core.storyteller_projects_panel")
-local MemoriamModal = require("core.memoriam_modal")
 local GameStateOverlay = require("core.game_state_overlay")
 local HUDP = require("core.hud_player")
 local Coterie = require("core.coterie")
@@ -3799,7 +3798,6 @@ local PHASE_BUTTON_EXPECTATIONS = {
 local PHASE_SUB_BUTTONS = {
     phase_sub_Main = C.PlaySubPhases.MAIN,
     phase_sub_Downtime = C.PlaySubPhases.DOWNTIME,
-    phase_sub_Memoriam = C.PlaySubPhases.MEMORIAM,
 }
 
 local SOUNDSCAPE_FEATURED_BUTTONS = {
@@ -4543,19 +4541,11 @@ function HUD_setPlaySubPhase(player, button, id)
     local map = {
         Main = C.PlaySubPhases.MAIN,
         Downtime = C.PlaySubPhases.DOWNTIME,
-        Memoriam = C.PlaySubPhases.MEMORIAM,
     }
     local target = map[tail]
     if target == nil then
         U.AlertGM("HUD_setPlaySubPhase: Invalid subphase: " .. tostring(tail))
         return
-    end
-    if target == C.PlaySubPhases.MEMORIAM then
-        MemoriamModal.open()
-        return
-    end
-    if MemoriamModal.isOpen() then
-        MemoriamModal.close()
     end
     local Memoriam = require("core.memoriam")
     if Memoriam.isActive() then
@@ -4568,91 +4558,6 @@ function HUD_setPlaySubPhase(player, button, id)
         return
     end
     Phases.setPlaySubPhase(desired)
-end
-
---- Memoriam configuration popup (TOR-539). ST-gated; draft is modal-local until Advance.
-function HUD_memoriamModalPcButton(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_memoriamModalPcButton") then
-        return
-    end
-    MemoriamModal.onPcButton(id)
-end
-
-function HUD_memoriamModalSlider(player, value, id)
-    if not requireStorytellerForMutation(player, "HUD_memoriamModalSlider") then
-        return
-    end
-    MemoriamModal.onSlider(value)
-end
-
-function HUD_memoriamModalSceneButton(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_memoriamModalSceneButton") then
-        return
-    end
-    MemoriamModal.onSceneButton(id)
-end
-
-function HUD_memoriamModalJustSmoke(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_memoriamModalJustSmoke") then
-        return
-    end
-    MemoriamModal.onJustSmoke()
-end
-
-function HUD_memoriamModalNpcPlus(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_memoriamModalNpcPlus") then
-        return
-    end
-    MemoriamModal.onNpcPlus(id)
-end
-
-function HUD_memoriamModalPcPresence(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_memoriamModalPcPresence") then
-        return
-    end
-    MemoriamModal.onPcPresence(id)
-end
-
-function HUD_memoriamModalNpcPick(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_memoriamModalNpcPick") then
-        return
-    end
-    MemoriamModal.onNpcPick(id)
-end
-
-function HUD_memoriamModalNpcInput(player, value, id)
-    if not requireStorytellerForMutation(player, "HUD_memoriamModalNpcInput") then
-        return
-    end
-    MemoriamModal.onNpcInput(value)
-end
-
-function HUD_memoriamModalNpcConfirm(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_memoriamModalNpcConfirm") then
-        return
-    end
-    MemoriamModal.onNpcConfirm()
-end
-
-function HUD_memoriamModalNpcCancel(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_memoriamModalNpcCancel") then
-        return
-    end
-    MemoriamModal.onNpcCancel()
-end
-
-function HUD_memoriamModalConfirm(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_memoriamModalConfirm") then
-        return
-    end
-    MemoriamModal.onConfirm()
-end
-
-function HUD_memoriamModalCancel(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_memoriamModalCancel") then
-        return
-    end
-    MemoriamModal.onCancel()
 end
 
 --- Session number InputField (TOR-263 / TOR-143 / TOR-561).

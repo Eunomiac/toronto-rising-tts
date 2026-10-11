@@ -9,7 +9,7 @@ Read this when:
 
 Source of truth:
 - `core/phases.ttslua` (lifecycle registries + `advanceTo` / `setPlaySubPhase`)
-- `core/memoriam.ttslua` / `core/memoriam_modal.ttslua` (Memoriam enter/exit + popup; see [`Memoriam.md`](Memoriam.md))
+- `core/memoriam.ttslua` (Memoriam enter/exit; set-up popup lives on the Storyteller Dashboard; see [`Memoriam.md`](Memoriam.md))
 - `core/session_explode.ttslua` (Intermission→Play stacked cover explode)
 - `core/spotlight.ttslua` (Spotlight carousel, hide-list, Host strip)
 - `lib/constants.ttslua` (`C.Phases`, `C.PhaseSequence`, `C.PlaySubPhases`)
@@ -53,7 +53,7 @@ Only `PLAY` has subphases. They switch freely (no top-level enter/exit), except 
 
 1. `MAIN` when a library scene is live on the table; `DOWNTIME` when there is none (including the first Intermission → Play). Scene **Apply** switches to Main; **End scene** switches to Downtime. The Main and Downtime buttons resolve to that pairing (or no-op). Downtime copies present-day into `downtimeClock` and shows date + **DOWNTIME** on the overlay (TOR-527). The **first** Intermission → Play Downtime uses prologue overlay copy instead (`TORONTO RISING` / compact roman / spaced session title / **PROLOGUE**); later Downtime after End scene uses the standard date + **DOWNTIME** (TOR-598).
 2. `DOWNTIME`
-3. `MEMORIAM` — clicking Memoriam on the Phases panel opens `ui/storyteller/memoriam_modal.xml` (**TOR-539** / **TOR-540**). The Play subphase does **not** change until Advance; Cancel leaves the current subphase in place. Runtime enter/exit, payload, catalog, clock/overlay, and remaining plans: [**Memoriam.md**](Memoriam.md) (`Memoriam.applyEnter` / `applyExit`, **TOR-101**). Nested catalog years use shortest-span priority (**TOR-547**). Just Smoke is selected automatically in gaps and by button inside a period, and enters Memoriam with the standard blindfold and the Just Smoke skybox (**TOR-642**). Assignment list: subject green + NPC-assignable; other PCs present-as-self (**TOR-551**). PC-as-NPC sheet swap still **TOR-95**; LUT/sepia still **TOR-321**.
+3. `MEMORIAM` — the Storyteller Dashboard's Memoriam popup sends the set-up payload (**TOR-539** / **TOR-540**; the in-game TTS popup was retired in **TOR-721**). The Play subphase does **not** change until Advance; Cancel leaves the current subphase in place. Runtime enter/exit, payload, catalog, clock/overlay, and remaining plans: [**Memoriam.md**](Memoriam.md) (`Memoriam.applyEnter` / `applyExit`, **TOR-101**). Nested catalog years use shortest-span priority (**TOR-547**). Just Smoke is selected automatically in gaps and by button inside a period, and enters Memoriam with the standard blindfold and the Just Smoke skybox (**TOR-642**). Assignment list: subject green + NPC-assignable; other PCs present-as-self (**TOR-551**). PC-as-NPC sheet swap still **TOR-95**; LUT/sepia still **TOR-321**.
 
 Scene library **Apply** promotes to Play via `Phases.ensurePlayPhaseForSceneApply()` (silent — does **not** re-run Play enter events).
 
