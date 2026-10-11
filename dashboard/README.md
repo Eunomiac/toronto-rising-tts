@@ -11,14 +11,12 @@ Execute-lua modules used by the Storyteller Dashboard (`.dev/storyteller-dashboa
 | `projects.ttslua` | `dashboard.projects` | `GlobalDashboardProjectsSnapshot` / `GlobalDashboardProjectsApply` — sheet Page 5 projects (own snapshot, not a seat extension: projects span owners and the coterie) |
 | `world_snapshot.ttslua` | `dashboard.world_snapshot` | `GlobalDashboardWorldSnapshot` — phase, scene, clock anchor (plus tonight's dusk/dawn and scheduled temperature), soundscape and seats slices; the same builders feed the world push topics |
 | `scenes.ttslua` | `dashboard.scenes` | `GlobalDashboardScenesApply` — Scenes tab commands (phase, spotlight, clock, soundscape, seat presence, play/end scene); replies `{ ok, error? }` and the push channel carries the result |
+| `scene_library.ttslua` | `dashboard.scene_library` | `GlobalDashboardSceneLibrarySnapshot` (read; `e2e_*` test rows left out) and the `upsertScene` / `setSceneStatus` / `deleteScene` ops of `GlobalDashboardScenesApply` — the dashboard's master scene library writes the rows TTS plays; `upsertScene` refuses rows TTS could not play (`SceneLibrary.validateRow`). Contract: `.dev/Storyteller Dashboard Docs/Scene Import Guide.md` |
 | `push.ttslua` | `dashboard.push` | none — live push (`DashPush.seat`, `DashPush.projects`, `DashPush.markWorldDirty`); see `.dev/Storyteller Dashboard Docs/Live Push Channel.md` |
 
 ## Load guard
 
-TTS runs the Global chunk (so every `Global*` entry is callable) many seconds before `onLoad` reads the save into `gameState`. Dashboard execute-lua that lands in that gap would read an empty state, and any write would be discarded when `S.InitializeGameState` replaces `gameState`. Every dashboard entry above, plus `GlobalImportSceneJson` and `GlobalImportGenericNpcs`, therefore checks `S.isReady()` first (`dashboardLoadingRefusal` / `requireDashboardReady` in `core/global_script.ttslua`):
-
-- JSON entries (`GlobalDashboard*Snapshot` / `*Apply`) return `{ ok = false, loading = true, error = "TTS is still loading the save…" }`. The PCs tab shows that message and retries every 3 seconds while the tab is open.
-- The two import entries raise that message as a Lua error (their callers only detect failure that way).
+TTS runs the Global chunk (so every `Global*` entry is callable) many seconds before `onLoad` reads the save into `gameState`. Dashboard execute-lua that lands in that gap would read an empty state, and any write would be discarded when `S.InitializeGameState` replaces `gameState`. Every dashboard entry above therefore checks `S.isReady()` first (`dashboardLoadingRefusal` in `core/global_script.ttslua`) and returns `{ ok = false, loading = true, error = "TTS is still loading the save…" }`. The PCs tab shows that message and retries every 3 seconds while the tab is open.
 
 New dashboard Global entries must start with the same guard.
 

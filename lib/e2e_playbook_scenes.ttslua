@@ -153,10 +153,14 @@ Playbook.steps = {
             ensureSceneLibraryStub(18, "e2e_scene_b", { overwrite = true, title = "E2E Scene B - switch", sessionScene = sceneB })
             ensureSceneLibraryStub(19, "e2e_scene_present_flags", { overwrite = true, title = "E2E Present-day flags", sessionScene = flagsOnly })
             ensureSceneLibraryStub(20, "e2e_scene_invalid_historical", { overwrite = true, title = "E2E Invalid historical", sessionScene = invalidHistorical })
+            -- A prior run ends rows (End scene); ended rows drop off the in-game list.
+            for _, key in ipairs({ "e2e_scene_a", "e2e_scene_b", "e2e_scene_present_flags", "e2e_scene_invalid_historical" }) do
+              S.setStateVal("new", "sceneLibrary", "scenes", key, "status")
+            end
             S.setStateVal(nil, "sceneLibrary", "activeKey")
             S.validateState()
             if rollE2eSeatPrep then rollE2eSeatPrep("Black") end
-            print("[Scenes E2E] Fixture slots: A=17, B=18, present-flags=19, invalid-historical=20")
+            print("[Scenes E2E] Fixture rows (titles start with E2E): Scene A, Scene B, Present-day flags, Invalid historical. They never reach the Storyteller Dashboard.")
             print("[Scenes E2E] siteA=" .. tostring(siteA) .. " siteB=" .. tostring(siteB))
           end,
           function()
@@ -176,17 +180,17 @@ Playbook.steps = {
           end,
           function()
             M.setCamera("ALL", "wide")
-            printHeader("[HUMAN] Open Storyteller Scenes and click library slot 17 (E2E Scene A)", 3)
+            printHeader("[HUMAN] Open Storyteller Scenes and click the library row E2E Scene A - present", 3)
           end
         },
     -- step 3
         {
           function()
-            local key = ((S.getStateVal("sceneLibrary", "order") or {})[17])
+            local key = _G.SCENES_E2E.sceneA
             if S.getStateVal("sceneLibrary", "activeKey") ~= key then
-              error("[Scenes E2E] FAIL - slot 17 should be activeKey")
+              error("[Scenes E2E] FAIL - E2E Scene A should be activeKey")
             end
-            print("[Scenes E2E] PASS - slot 17 selected: " .. tostring(key))
+            print("[Scenes E2E] PASS - E2E Scene A selected: " .. tostring(key))
           end,
           function()
             printHeader("", 2)
@@ -201,9 +205,9 @@ Playbook.steps = {
     -- step 4
         {
           function()
-            local key = ((S.getStateVal("sceneLibrary", "order") or {})[17])
+            local key = _G.SCENES_E2E.sceneA
             local row = S.getStateVal("sceneLibrary", "scenes", key, "sessionScene")
-            if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= key then error("[Scenes E2E] FAIL - lastAppliedKey did not become slot 17") end
+            if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= key then error("[Scenes E2E] FAIL - lastAppliedKey did not become E2E Scene A") end
             if S.getStateVal("sessionScene", "siteKey") ~= row.siteKey then error("[Scenes E2E] FAIL - live siteKey does not match row A") end
             if S.getStateVal("sessionScene", "tableKey") ~= row.tableKey then error("[Scenes E2E] FAIL - live tableKey does not match row A") end
             if S.getStateVal("currentPhase") ~= C.Phases.PLAY and S.getStateVal("currentPhase") ~= "Play" then error("[Scenes E2E] FAIL - applying scene should promote phase to Play") end
@@ -242,15 +246,15 @@ Playbook.steps = {
           end,
           function()
             M.setCamera("ALL", "wide")
-            printHeader("[HUMAN] Click library slot 18 (E2E Scene B), click Apply, then wait for the blindfold to lift", 3)
+            printHeader("[HUMAN] Click the library row E2E Scene B - switch, click Apply, then wait for the blindfold to lift", 3)
           end
         },
     -- step 6
         {
           function()
-            local key = ((S.getStateVal("sceneLibrary", "order") or {})[18])
+            local key = _G.SCENES_E2E.sceneB
             local row = S.getStateVal("sceneLibrary", "scenes", key, "sessionScene")
-            if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= key then error("[Scenes E2E] FAIL - lastAppliedKey did not become slot 18") end
+            if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= key then error("[Scenes E2E] FAIL - lastAppliedKey did not become E2E Scene B") end
             if S.getStateVal("sessionScene", "siteKey") ~= row.siteKey then error("[Scenes E2E] FAIL - live siteKey does not match row B") end
             if S.getStateVal("sessionScene", "tableKey") ~= row.tableKey then error("[Scenes E2E] FAIL - live tableKey does not match row B") end
             print("[Scenes E2E] PASS - row B applied and live scene changed")
@@ -278,7 +282,7 @@ Playbook.steps = {
     -- step 7
         {
           function()
-            local key = ((S.getStateVal("sceneLibrary", "order") or {})[18])
+            local key = _G.SCENES_E2E.sceneB
             local libSite = S.getStateVal("sceneLibrary", "scenes", key, "sessionScene", "siteKey")
             if S.getStateVal("sessionScene", "siteKey") ~= nil then error("[Scenes E2E] FAIL - live siteKey should clear after End scene") end
             if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= nil then error("[Scenes E2E] FAIL - lastAppliedKey should clear after End scene") end
@@ -303,7 +307,7 @@ Playbook.steps = {
             printHeader("D1 - Prepare reload state", 2)
           end,
           function()
-            printHeader("[HUMAN] Apply slot 17, toggle Brown absent, click Silence for save, then Save and reload the same save", 3)
+            printHeader("[HUMAN] Apply E2E Scene A - present, toggle Brown absent, click Silence for save, then Save and reload the same save", 3)
           end
         },
     -- step 8
@@ -354,7 +358,7 @@ Playbook.steps = {
             printHeader("F1 - Apply full present-day row", 2)
           end,
           function()
-            printHeader("[HUMAN] Click slot 17, click Apply, then wait for the blindfold to lift", 3)
+            printHeader("[HUMAN] Click E2E Scene A - present, click Apply, then wait for the blindfold to lift", 3)
           end
         },
     -- step 10
@@ -375,7 +379,7 @@ Playbook.steps = {
             printHeader("F2 - Apply flags-only present-day row", 2)
           end,
           function()
-            printHeader("[HUMAN] Click slot 19, click Apply, then wait for the blindfold to lift", 3)
+            printHeader("[HUMAN] Click E2E Present-day flags, click Apply, then wait for the blindfold to lift", 3)
           end
         },
     -- step 11
@@ -478,7 +482,10 @@ Playbook.steps = {
           end,
           function()
             _G.SCENES_E2E_PD_BEFORE_SWITCH = U.clone(S.getStateVal("presentDayClock") or {}, true)
-            printHeader("[HUMAN] Click slot 18, click Apply, then wait for the blindfold to lift", 3)
+            -- Suite C ended Scene B, which hides it from the in-game list; list it again.
+            S.setStateVal("new", "sceneLibrary", "scenes", _G.SCENES_E2E.sceneB, "status")
+            require("core.storyteller_scenes_panel").refresh()
+            printHeader("[HUMAN] Click E2E Scene B - switch, click Apply, then wait for the blindfold to lift", 3)
           end
         },
     -- step 15
@@ -500,41 +507,58 @@ Playbook.steps = {
             print("")
           end,
           function()
-            printHeader("Scenes E2E: SUITE I - Pending row preview edits", 1)
+            printHeader("Scenes E2E: SUITE I - Previewed row is read-only", 1)
           end,
           function()
-            printHeader("I1 - Pending row edits do not mutate live scene", 2)
+            printHeader("I1 - Preview controls are locked", 2)
           end,
           function()
-            _G.SCENES_E2E_LIVE_BEFORE_PENDING = U.clone(S.getStateVal("sessionScene") or {}, true)
-            printHeader("[HUMAN] Click slot 17 only; change its table, Brown seat, site, and clock draft without clicking Apply scene", 3)
+            local function pick(ss)
+              ss = type(ss) == "table" and ss or {}
+              local ck = type(ss.clock) == "table" and ss.clock or {}
+              local brown = type(ss.seatSlots) == "table" and type(ss.seatSlots.Brown) == "table" and ss.seatSlots.Brown or {}
+              return {
+                tableKey = ss.tableKey, siteKey = ss.siteKey, districtKey = ss.districtKey, skyboxOverride = ss.skyboxOverride,
+                brownPresent = brown.isPresent, year = ck.year, month = ck.month, day = ck.day, hour = ck.hour, minute = ck.minute,
+                useRealTime = ck.useRealTime,
+              }
+            end
+            _G.SCENES_E2E_PICK = pick
+            _G.SCENES_E2E_LIVE_BEFORE_PREVIEW = pick(S.getStateVal("sessionScene"))
+            _G.SCENES_E2E_ROW_BEFORE_PREVIEW = pick(S.getStateVal("sceneLibrary", "scenes", _G.SCENES_E2E.sceneA, "sessionScene"))
+            printHeader("[HUMAN] Click E2E Scene A - present only (it turns blue). Try a table button, the Brown seat, Districts/Sites/Skyboxes, a month, the clock fields, RT, and Apply clock. Each should be greyed out or show an alert telling you to edit on the Storyteller Dashboard. Do not click Apply scene.", 3)
           end
         },
     -- step 16
         {
           function()
-            local before = _G.SCENES_E2E_LIVE_BEFORE_PENDING or {}
-            local live = S.getStateVal("sessionScene") or {}
-            if before.siteKey ~= live.siteKey then error("[Scenes E2E] FAIL - pending location edit mutated live siteKey") end
-            if before.tableKey ~= live.tableKey then error("[Scenes E2E] FAIL - pending table edit mutated live tableKey") end
-            print("[Scenes E2E] PASS - pending row edits stayed library-only")
+            local pick = _G.SCENES_E2E_PICK
+            local function same(a, b, what)
+              for k, v in pairs(a) do
+                if b[k] ~= v then error("[Scenes E2E] FAIL - " .. what .. " " .. k .. " changed while previewing (" .. tostring(v) .. " -> " .. tostring(b[k]) .. ")") end
+              end
+            end
+            same(_G.SCENES_E2E_LIVE_BEFORE_PREVIEW, pick(S.getStateVal("sessionScene")), "live scene")
+            same(_G.SCENES_E2E_ROW_BEFORE_PREVIEW, pick(S.getStateVal("sceneLibrary", "scenes", _G.SCENES_E2E.sceneA, "sessionScene")), "library row A")
+            if S.getStateVal("sceneLibrary", "activeKey") ~= _G.SCENES_E2E.sceneA then error("[Scenes E2E] FAIL - E2E Scene A should still be the previewed row") end
+            print("[Scenes E2E] PASS - previewing changed neither the live scene nor the library row")
           end,
           function()
             printHeader("", 2)
           end,
           function()
-            printHeader("I2 - Apply pending row", 2)
+            printHeader("I2 - Apply the previewed row", 2)
           end,
           function()
-            printHeader("[HUMAN] Click Apply for the pending row and wait for the blindfold to lift", 3)
+            printHeader("[HUMAN] Click Apply for the previewed row and wait for the blindfold to lift. The table, seat, location and clock controls should unlock (green).", 3)
           end
         },
     -- step 17
         {
           function()
             local key = S.getStateVal("sceneLibrary", "activeKey")
-            if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= key then error("[Scenes E2E] FAIL - pending row did not become lastAppliedKey") end
-            print("[Scenes E2E] PASS - pending row applied")
+            if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= key then error("[Scenes E2E] FAIL - previewed row did not become lastAppliedKey") end
+            print("[Scenes E2E] PASS - previewed row applied")
           end,
           function()
             printHeader("", 2)
@@ -595,7 +619,7 @@ Playbook.steps = {
             printHeader("K1 - Scene cast pins", 2)
           end,
           function()
-            printHeader("[HUMAN] Open a player Map panel; apply slot 17 with Brown absent and Pink present, then apply slot 18", 3)
+            printHeader("[HUMAN] Open a player Map panel; apply E2E Scene A - present with Brown absent and Pink present, then apply E2E Scene B - switch", 3)
           end
         },
     -- step 20
@@ -622,7 +646,7 @@ Playbook.steps = {
           end,
           function()
             _G.SCENES_E2E_LAST_BEFORE_INVALID = S.getStateVal("sceneLibrary", "lastAppliedKey")
-            printHeader("[HUMAN] Click slot 20, click Apply, and confirm the GM alert rejects the historical row", 3)
+            printHeader("[HUMAN] Click E2E Invalid historical, click Apply, and confirm the GM alert rejects the historical row", 3)
           end
         },
     -- step 21

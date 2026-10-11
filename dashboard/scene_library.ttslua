@@ -8,10 +8,14 @@
   overwrites an existing row's status.
 
   - `snapshot(keys?)`  rows for seeding the dashboard and for refreshing the row linked to the table
-  - `upsert(cmd)`      write a dashboard row before Play Scene (op `upsertScene`)
+                       (E2E fixture rows `e2e_*` are left out)
+  - `upsert(cmd)`      write a dashboard row before Play Scene (op `upsertScene`); refuses rows TTS could not
+                       play (`SceneLibrary.validateRow`: clock, lighting preset, numbered chairs)
   - `setStatus(cmd)`   change a row's lifecycle status (op `setSceneStatus`)
   - `remove(key)`      delete a row (op `deleteScene`)
 
+  This is the only writer of library rows besides the live mirror and fork; the in-game Scenes panel is read-only.
+  Row contract: .dev/Storyteller Dashboard Docs/Scene Import Guide.md
   Design: .dev/Storyteller Dashboard Docs/Listening to TTS.md § Scene library
 ]]
 
@@ -30,23 +34,42 @@ local function afterLibraryWrite()
   require("dashboard.push").markWorldDirty({ scene = true })
 end
 
+--- E2E playbook fixture rows (`e2e_*`, written straight into state by `DEBUG.ensureSceneLibraryStub`) stay in TTS:
+--- the dashboard would otherwise merge them into its master library file.
+--- @param key any
+--- @return boolean
+local function isTestRowKey(key)
+  return type(key) == "string" and string.match(key, "^e2e_") ~= nil
+end
+
 --- @param keys table|nil array of scene keys; nil for every row
---- @return table `{ order, liveKey, scenes = { [key] = row } }`
+--- @return table `{ order, liveKey, scenes = { [key] = row } }` without E2E fixture rows
 function Lib.snapshot(keys)
   local scenes = S.getStateVal("sceneLibrary", "scenes") or {}
   local out = {}
   if type(keys) == "table" then
     for _, key in ipairs(keys) do
-      if type(scenes[key]) == "table" then
+      if type(scenes[key]) == "table" and not isTestRowKey(key) then
         out[key] = scenes[key]
       end
     end
   else
-    out = scenes
+    for key, row in pairs(scenes) do
+      if not isTestRowKey(key) then
+        out[key] = row
+      end
+    end
   end
+  local order = {}
+  for _, key in ipairs(S.getStateVal("sceneLibrary", "order") or {}) do
+    if not isTestRowKey(key) then
+      order[#order + 1] = key
+    end
+  end
+  local liveKey = SceneLibrary.hasLiveSceneOnTable() and S.getStateVal("sceneLibrary", "lastAppliedKey") or nil
   return {
-    order = S.getStateVal("sceneLibrary", "order") or {},
-    liveKey = SceneLibrary.hasLiveSceneOnTable() and S.getStateVal("sceneLibrary", "lastAppliedKey") or nil,
+    order = order,
+    liveKey = not isTestRowKey(liveKey) and liveKey or nil,
     scenes = out,
   }
 end
@@ -76,9 +99,9 @@ function Lib.upsert(cmd)
   if type(cmd.sessionScene) ~= "table" then
     return "upsertScene: sessionScene must be an object."
   end
-  local okClock, errClock = SceneLibrary.validateSessionSceneClock(cmd.sessionScene.clock)
-  if not okClock then
-    return "upsertScene: " .. tostring(errClock)
+  local rowErr = SceneLibrary.validateRow(cmd.placementMode, cmd.sessionScene)
+  if rowErr ~= nil then
+    return "upsertScene: " .. rowErr
   end
   local status = "new"
   if type(existing) == "table" then

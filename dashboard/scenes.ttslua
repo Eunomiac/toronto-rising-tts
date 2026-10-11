@@ -57,6 +57,7 @@
     endScene                              end the live scene
     upsertScene       key, title, placementMode, sessionScene, status?
                                           write a dashboard library row (`dashboard/scene_library.ttslua`);
+                                          refuses rows TTS could not play (clock, lighting preset, chairs);
                                           `status` only applies to a row TTS does not have yet
     setSceneStatus    key, status         new / ongoing / ended / template; not `ended` for the table's scene
     deleteScene       key                 delete a library row (not the scene on the table)

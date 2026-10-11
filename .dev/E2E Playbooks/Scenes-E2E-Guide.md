@@ -5,7 +5,7 @@
 Read this when:
 - running, regenerating, or modifying the Scenes E2E playbook or `RunTest("Scenes")`
 - validating scene library Apply/End, clock behavior, map pins, seat presence, or soundscape-on-scene workflows
-- changing Storyteller Scenes panel code, present-day clock logic, player HUD map/location UI, or scene constructor state shape
+- changing Storyteller Scenes panel code, present-day clock logic, player HUD map/location UI, or the scene library row shape
 
 Source of truth:
 - `.dev/E2E Playbooks/Scenes-E2E.md`
@@ -16,7 +16,7 @@ Source of truth:
 - `core/present_day_clock.ttslua`
 - `core/game_state_overlay.ttslua`
 - `core/hud_player.ttslua`
-- `.dev/Scene Constructor/Scene Constructor Overview.md`
+- `.dev/Storyteller Dashboard Docs/Scene Import Guide.md`
 - `.dev/HUD_FUNCTIONS.md`
 
 Verification:
@@ -61,16 +61,16 @@ Then **Save & Play** so TTS loads the regenerated `lib/e2e_playbook_scenes.ttslu
 
 ## Fixture setup
 
-Suite 0 creates deterministic Scene Library rows with `ensureSceneLibraryStub`:
+Suite 0 creates deterministic Scene Library rows with `ensureSceneLibraryStub` (a debug state write — the in-game panel cannot create rows) and resets their status to `new`:
 
-| Slot | Key | Purpose |
-| --- | --- | --- |
-| 17 | `e2e_scene_a` | Present-day scene A, table A, site A, two NPC placements |
-| 18 | `e2e_scene_b` | Present-day scene B, different table/site/placements |
-| 19 | `e2e_scene_present_flags` | Present-day row with clock flags only |
-| 20 | `e2e_scene_invalid_historical` | Invalid historical row with no datetime |
+| Library position | Key | Title | Purpose |
+| --- | --- | --- | --- |
+| 17 | `e2e_scene_a` | E2E Scene A - present | Present-day scene A, table A, site A, two NPC placements |
+| 18 | `e2e_scene_b` | E2E Scene B - switch | Present-day scene B, different table/site/placements |
+| 19 | `e2e_scene_present_flags` | E2E Present-day flags | Present-day row with clock flags only |
+| 20 | `e2e_scene_invalid_historical` | E2E Invalid historical | Invalid historical row with no datetime |
 
-This intentionally overwrites those E2E fixture rows. It does not require pre-authored workshop scene rows.
+This intentionally overwrites those E2E fixture rows. It does not require pre-authored workshop scene rows. The in-game list hides ended and template rows, so its button numbers can differ from these positions: [HUMAN] cues name rows by title, and checks use the keys. `e2e_*` rows are never sent to the Storyteller Dashboard (`dashboard/scene_library.ttslua` snapshot filter), so they cannot leak into its master library file.
 
 Suite D includes a save/reload gate. After reload, TTS loses the active `RunTest` cursor. Resume at the post-reload block by running:
 
@@ -92,9 +92,9 @@ Every step in a suite you run is mandatory for that suite.
 
 | Rule | Requirement |
 | --- | --- |
-| Fixture rows | Run Suite 0 before smoke/full passes; it owns slots 17-20 |
+| Fixture rows | Run Suite 0 before smoke/full passes; it owns library positions 17-20 |
 | Scene Apply wait | Wait for the full staged transition: blindfold down, heavy work, silent settle, lift/fade-in |
-| Pending rows | Slot selection alone is library preview/edit mode when `activeKey ~= lastAppliedKey`; edits must not mutate live `sessionScene` until Apply |
+| Previewed rows | Selecting a row that is not on the table (`activeKey ~= lastAppliedKey`) is a read-only preview; edit controls lock until Apply |
 | RT speed | Use speed `60` only where the step says so; turn RT off again in Suite G |
 | Reload | Resume by explicit step after Save & Play; the RunTest cursor is not persisted across reload |
 | Repair | Do not call `Sync.full({ force = true })` during normal passes except the repair step below |
@@ -103,7 +103,7 @@ Every step in a suite you run is mandatory for that suite.
 
 Scene Apply uses `core.hud_blindfold.runStagedTransition`: fade outgoing ambient, write live state from the selected library row, switch table, reconcile hosted conditions/NPCs/map pins, then fade in the new scene soundscape as the blindfold lifts.
 
-Pending library rows use blue panel highlights. While pending, table, seat, location, and clock edits write to `sceneLibrary.scenes[activeKey].sessionScene` only. Live `sessionScene`, physical table, soundscape, and map pins change only after library Apply.
+Previewed library rows use blue panel highlights and are read-only: the in-game panel never writes library rows (the Storyteller Dashboard does). While previewing, table, seat, location, skybox, and clock controls are greyed out and refuse with an alert (clock controls stay live in Downtime, where they edit `downtimeClock`). The Apply time buttons still choose the clock at play. Live `sessionScene`, physical table, soundscape, and map pins change only after library Apply.
 
 End scene detaches live mirroring before clearing live location keys, stops real-time clock, applies the default no-scene environment, and fades Main-only ambient back in. (`Scenes.applyDefaultNoSceneEnvironment` also detaches — same path as Play enter no-scene / TOR-362.)
 
@@ -137,7 +137,7 @@ DEBUG.inspectSoundscapeAudio()
 | F | Present-day clock bootstrap, flags-only activation, Set behavior |
 | G | Real-time clock progression and stop |
 | H | Scene switch does not rewind chronicle present day |
-| I | Pending row preview/edit behavior |
+| I | Previewed row is read-only, then applies |
 | J | Seat presence toggles |
 | K | Map pins for present/absent PCs |
 | L | Invalid historical clock row fails safely |
@@ -158,7 +158,7 @@ Re-check lighting, NPCs, pins, and soundscape after about 3 seconds.
 
 | Suite | Pass | Notes |
 | --- | --- | --- |
-| 0 Fixture setup | [ ] | slots 17-20 |
+| 0 Fixture setup | [ ] | E2E rows 17-20 |
 | A Apply | [ ] | row A live |
 | B Switch | [ ] | row B live |
 | C End | [ ] | no-scene baseline |
@@ -167,7 +167,7 @@ Re-check lighting, NPCs, pins, and soundscape after about 3 seconds.
 | F Present day | [ ] | F1-F3 |
 | G RT autoprogression | [ ] | G1-G2 |
 | H Switch vs present day | [ ] | no rewind |
-| I Pending preview | [ ] | library-only edits, then apply |
+| I Read-only preview | [ ] | controls locked, nothing changes, then apply |
 | J Seat presence | [ ] | Brown absent/present |
 | K Map pins | [ ] | present vs absent |
 | L Invalid clock | [ ] | no live switch |
@@ -191,14 +191,14 @@ Re-check lighting, NPCs, pins, and soundscape after about 3 seconds.
 | Month | `scenes_month_*` | Draft month |
 | Day / Year / Time | `scenes_clock_day/year/time12` | Draft datetime |
 | Set present day | `scenes_clock_setPresentDay` | Writes `presentDayClock` only |
-| RT toggle | `scenes_clock_rtToggle` | Draft/live real-time flag |
+| RT toggle | `scenes_clock_rtToggle` | Live real-time flag |
 | Speed | `scenes_clock_speed` | Narrative minutes per 60 wall seconds |
-| Apply clock | `scenes_clock_apply` | Live or pending row clock |
-| Apply location | location section | Live District/Site: full staged blindfold + destination cards + soundscape fade-in (TOR-488). Skybox-only: brief blindfold (TOR-478). Pending row: keys only. |
+| Apply clock | `scenes_clock_apply` | Live clock (locked while previewing) |
+| Apply location | location section | Live District/Site: full staged blindfold + destination cards + soundscape fade-in (TOR-488). Skybox-only: brief blindfold (TOR-478). Locked while previewing. |
 
 ## Related
 
 - [Scenes-E2E.md](Scenes-E2E.md) - lean `U.chain` blocks
 - [TESTING.md](../TESTING.md) - E2E output and generator contract
-- [Scene Constructor Overview](../Scene%20Constructor/Scene%20Constructor%20Overview.md) - state shape and apply semantics
+- [Scene Import Guide](../Storyteller%20Dashboard%20Docs/Scene%20Import%20Guide.md) - library row shape and the dashboard write contract
 - [HUD_FUNCTIONS.md](../HUD_FUNCTIONS.md) - Scenes UI callback map
