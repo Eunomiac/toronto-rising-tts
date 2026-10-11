@@ -137,7 +137,7 @@ Update **`.dev/Sychronizing Game Functionality/Dual_apply_survey.md`** with a fr
 5. Pay special attention to:
    - [`core/storyteller_scenes_panel.ttslua`](../../core/storyteller_scenes_panel.ttslua) scene/weather/end-scene flows
    - [`lib/chronicle_weather.ttslua`](../../lib/chronicle_weather.ttslua) + clock tick paths
-   - [`core/scenes.ttslua`](../../core/scenes.ttslua) — confirm `loadScene` / `fadeToScene` are state-only
+   - [`core/scenes.ttslua`](../../core/scenes.ttslua) — confirm `resetScene` is state-only and `reconcileFromState` owns the world writes
    - [`core/lighting.ttslua`](../../core/lighting.ttslua) — any eager apply outside reconcile
    - [`core/npcs.ttslua`](../../core/npcs.ttslua) — panel spawn vs `reconcileAllFromState`
    - [`core/global_script.ttslua`](../../core/global_script.ttslua) onLoad / bootstrap

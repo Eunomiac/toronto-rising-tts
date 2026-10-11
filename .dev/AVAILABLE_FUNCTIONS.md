@@ -609,11 +609,10 @@ TTS also exposes **`UI.setAttributes`** natively; use **`U.setAttributes`** when
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |
-| `Scenes.loadScene(name)` | Mutate selected scene in state (no live writes) | `Scenes.loadScene("elysium")` |
-| `Scenes.fadeToScene(name, duration)` | Mutate selected scene + transition metadata in state | `Scenes.fadeToScene("alley", 2.0)` |
-| `Scenes.reconcileFromState(opts?)` | Apply live scene effects from persisted state; skips when scene+transition fingerprint unchanged unless `opts.force` | `Scenes.invalidateReconcileCache()` clears incremental memory |
-| `Scenes.getCurrentScene()` | Get current scene name | Scene tracking |
-| `Scenes.getScenePreset(name)` | Get scene preset data | Scene info |
+| `Scenes.reconcileFromState(opts?)` | Apply ambient lighting from `sessionScene.lightingPresetKey` (`C.LightModes`); skips when the fingerprint is unchanged unless `opts.force` | `Scenes.invalidateReconcileCache()` clears incremental memory |
+| `Scenes.resolveLightingPresetFromState()` | Resolved preset table, key, and source (Intermission dark / no-location default / `lightingPresetKey` / default) | Debug logging |
+| `Scenes.getCurrentScene()` | Scene label (`default` / `dark` / `standard` / `bright`) | Debug prints |
+| `Scenes.resetScene()` | State only: label back to `default` (Reset Game) | `HUD_resetGame` |
 
 ---
 

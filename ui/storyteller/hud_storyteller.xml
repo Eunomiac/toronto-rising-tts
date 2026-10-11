@@ -59,12 +59,6 @@ UI.setAttributes("debug_buttonControls", {offsetXY = "-200, 300"})
 
     <Include src="panel_debug_light.xml" />
     <Include src="panel_debug_camera.xml" />
-    <Include src="panel_debug_scatter.xml" />
-
-    <!-- ================================================================ -->
-    <!-- Sidebar (reference image toggles) and Camera bar                 -->
-    <!-- ================================================================ -->
-    <Include src="panel_camera.xml" />
   </Panel>
 
 </Panel>

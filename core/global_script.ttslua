@@ -3840,45 +3840,6 @@ function HUD_togglePanel(player, button, id)
     end
 end
 
---- Change scene preset
--- Called when a scene button is clicked (e.g., "scene_elysium")
--- @param player Player The player who clicked the button
--- @param button string Button value
--- @param id string The UI element ID (e.g., "scene_elysium")
-function HUD_changeScene(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_changeScene") then
-        return
-    end
-    -- Extract scene name from ID (remove "scene_" prefix)
-    local sceneName = string.gsub(id, "^scene_", "")
-
-    -- Validate scene name
-    local scene = Scenes.getScene(sceneName)
-    if scene == nil then
-        U.AlertGM("HUD_changeScene: Invalid scene name: " .. tostring(sceneName))
-        return
-    end
-
-    -- State-first scene selection, then reconcile through the sync pipeline.
-    S.setStateVal(sceneName, "currentScene")
-    S.setStateVal(nil, "sceneTransition")
-    if Sync and type(Sync.full) == "function" then
-        Sync.full({ reason = "HUD_changeScene" })
-    else
-        UpdateUIDisplays()
-    end
-
-    print("HUD: Scene changed to " .. sceneName .. " by " .. player.color)
-end
-
-local ADMIN_LIGHT_SCENE_BUTTONS = {
-    dark = "adminScene_dark",
-    standard = "adminScene_standard",
-    bright = "adminScene_bright",
-}
-
-local ADMIN_LIGHT_SCENE_BUTTON_COLORS_INACTIVE = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
-local ADMIN_LIGHT_SCENE_BUTTON_COLORS_ACTIVE = "#228B22|#32CD32|#006400|#228B22"
 local STORYTELLER_SOUND_GREY = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
 local STORYTELLER_SOUND_GREEN = "#228B22|#32CD32|#006400|#228B22"
 local STORYTELLER_SOUND_DISABLED = "#333333|#444444|#555555|rgba(0.2,0.2,0.2,0.5)"
@@ -3951,19 +3912,6 @@ local function resolveSiteKeyForSoundPanel(soundscapeState)
         return soundscapeState.lastAppliedSiteKey
     end
     return ""
-end
-
---- Sync radio-button visuals for storyteller admin lighting scene controls.
-local function syncAdminLightSceneButtons()
-    local currentScene = Scenes and Scenes.getCurrentScene and Scenes.getCurrentScene() or nil
-    for sceneKey, buttonId in pairs(ADMIN_LIGHT_SCENE_BUTTONS) do
-        local isActive = currentScene == sceneKey
-        U.setAttributes(buttonId, {
-            colors = isActive and ADMIN_LIGHT_SCENE_BUTTON_COLORS_ACTIVE or ADMIN_LIGHT_SCENE_BUTTON_COLORS_INACTIVE,
-            textColor = "#FFFFFF",
-            fontStyle = "Bold",
-        })
-    end
 end
 
 --- @param seatColor string
@@ -4156,25 +4104,6 @@ local function syncSoundscapeLaneUi()
     if UI.setValue ~= nil then
         UI.setValue("soundscapeDuckHint", duckHint)
     end
-end
-
---- Storyteller admin: select one of the lighting scenes (dark/standard/bright).
-function HUD_selectAdminLightingScene(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_selectAdminLightingScene") then
-        return
-    end
-    local sceneName = string.gsub(id or "", "^adminScene_", "")
-    if sceneName ~= "dark" and sceneName ~= "standard" and sceneName ~= "bright" then
-        U.AlertGM("HUD_selectAdminLightingScene: Invalid scene id: " .. tostring(id))
-        return
-    end
-
-    local presetMap = {
-        dark = "AdminDark",
-        standard = "AdminStandard",
-        bright = "AdminBright",
-    }
-    StorytellerScenesPanel.setLiveLighting(presetMap[sceneName])
 end
 
 --- Sync Storyteller soundscape controls with current soundscape state.
@@ -5051,8 +4980,7 @@ function HUD_resetGame(player, button, id)
     end
     S.resetGameState()
 
-    -- Reset modules
-    Scenes.resetScene(0)  -- Instant reset
+    Scenes.resetScene()
 
     -- Update UI
     UpdateUIDisplays()
@@ -5646,63 +5574,6 @@ function HUD_debugCameraDone(player, button, id)
     end
 end
 
---- Open scatter geometry debug panel (ST only).
--- @param player Player
--- @param button string|nil
--- @param id string|nil
-function HUD_debugScatterActivate(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_debugScatterActivate") then
-        return
-    end
-    if ScatterDebugPanel == nil or type(ScatterDebugPanel.activate) ~= "function" then
-        broadcastToColor("Debug Scatter: module not loaded.", player.color, { 1, 0.35, 0 })
-        return
-    end
-    ScatterDebugPanel.activate(player)
-end
-
---- Scatter geometry slider (cache only until Apply).
--- @param player Player
--- @param value number|string
--- @param id string
-function HUD_debugScatterSlider(player, value, id)
-    if not requireStorytellerForMutation(player, "HUD_debugScatterSlider") then
-        return
-    end
-    if ScatterDebugPanel == nil or type(ScatterDebugPanel.onSlider) ~= "function" then
-        return
-    end
-    ScatterDebugPanel.onSlider(player, value, id)
-end
-
---- Apply cached scatter geometry and reposition occupants.
--- @param player Player
--- @param button string|nil
--- @param id string|nil
-function HUD_debugScatterApply(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_debugScatterApply") then
-        return
-    end
-    if ScatterDebugPanel == nil or type(ScatterDebugPanel.apply) ~= "function" then
-        broadcastToColor("Debug Scatter: module not loaded.", player.color, { 1, 0.35, 0 })
-        return
-    end
-    local ok, message = ScatterDebugPanel.apply(player)
-    if not ok then
-        broadcastToColor("Debug Scatter: " .. tostring(message), player.color, { 1, 0.35, 0 })
-    end
-end
-
---- Close scatter geometry debug panel.
--- @param player Player
--- @param button string|nil
--- @param id string|nil
-function HUD_debugScatterDone(player, button, id)
-    if ScatterDebugPanel and ScatterDebugPanel.done then
-        ScatterDebugPanel.done()
-    end
-end
-
 --- Cache camera mode input text for debug camera panel.
 -- @param player Player
 -- @param value string|nil
@@ -5858,23 +5729,6 @@ end
     These functions update UI elements to reflect current game state.
 ]]
 
-local UI_DISPLAY_CACHE = {
-    phase = nil,
-    scene = nil,
-    values = {},
-}
-
---- @param elementId string
---- @param value string
-local function setValueCached(elementId, value)
-    local nextVal = tostring(value)
-    if UI_DISPLAY_CACHE.values[elementId] == nextVal then
-        return
-    end
-    UI.setValue(elementId, nextVal)
-    UI_DISPLAY_CACHE.values[elementId] = nextVal
-end
-
 --- Updates all UI displays with current game state.
 -- Called after state changes (phase, scene, etc.)
 -- Exposed globally for testing/debugging.
@@ -5920,11 +5774,6 @@ function UpdateUIDisplays(delta)
     end
 
     if wants("phase") then
-        local currentPhase = S.getStateVal("currentPhase")
-        if currentPhase ~= nil and UI_DISPLAY_CACHE.phase ~= currentPhase then
-            setValueCached("currentPhaseDisplay", currentPhase)
-            UI_DISPLAY_CACHE.phase = currentPhase
-        end
         syncStorytellerPhaseButtons()
     end
 
@@ -5932,18 +5781,6 @@ function UpdateUIDisplays(delta)
         syncDebugLastLoadClockLabel()
     end
 
-    if wants("scene") then
-        local currentScene = Scenes.getCurrentScene()
-        if currentScene ~= nil and UI_DISPLAY_CACHE.scene ~= currentScene then
-            setValueCached("currentSceneDisplay", currentScene)
-            UI_DISPLAY_CACHE.scene = currentScene
-        end
-    end
-
-    local shouldSyncAdminLightSceneButtons = wants("adminLighting") or wants("scenesPanel")
-    if shouldSyncAdminLightSceneButtons then
-        syncAdminLightSceneButtons()
-    end
     if refreshAll or wants("debugSeatColors") then
         syncDebugSeatColorButtons()
     end
@@ -6022,7 +5859,6 @@ R = require("lib.rotational-seat-layout")
 LightDebug = require("core.light_debug")
 LightDebugFocus = require("core.light_debug_focus")
 CameraDebugFocus = require("core.camera_debug_focus")
-ScatterDebugPanel = require("core.scatter_debug_panel")
 
 -- ============================================================================
 -- DICE SYSTEM MODULES

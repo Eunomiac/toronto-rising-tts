@@ -17,8 +17,6 @@ ui/
     hud_storyteller_defaults.xml  → Classes for admin panel, sidebar, and camera controls
     hud_storyteller.xml           → Storyteller HUD layout (game phases, debug controls)
     panel_sidebar.xml             → Right sidebar (reference image toggles + popup images)
-    panel_camera.xml              → Camera control bar + faction icons
-    panel_lighting.xml            → Reserved (empty stub)
     panel_scenes.xml              → Reserved (empty stub)
     panel_soundscape.xml          → Storyteller soundscape controls (music mood, inspect, stop)
     panel_pcs.xml                 → Storyteller PCs panel (health / will / humanity / XP / hunger)
@@ -89,12 +87,11 @@ UI positioning uses a **conceptual 3 columns × 4 rows grid** (no physical `Grid
 - XML bundling uses `/` separators (not dots like `require`)
 - Paths in `<Include>` are resolved from the workspace directory
 - Visibility: `Black` for Storyteller, `Red`/`Brown`/etc. for players
-- Button onClick handlers must be global functions (e.g. `HUD_changeScene`)
+- Button onClick handlers must be global functions (e.g. `HUD_scenesPanel`)
 - UI element IDs must match handler expectations in `core/global_script.ttslua`
 - Soundscape UI should call `HUD_soundscape*` handlers and route runtime work through `core.soundscape`
 - Admin panel ID: `adminControls` (left button column + debug panels)
 - Sidebar panel ID: `hudSidebarHost` (reference image toggles)
-- Camera panel ID: `cameraControlPanel` (camera zoom buttons + faction icons)
 - Debug panel IDs: `debugControls`, `debugStatePanel`, `debugTraitsPanel`
 
 ---
@@ -183,7 +180,7 @@ Lua maps filled slots to spotlight GUIDs when the panel opens. Keep `POOL_SIZE` 
 
 ### Grid strip controls (`lib/grid_strip.ttslua`)
 
-Reusable hover/select strips for pool counts, difficulty, etc. **Live consumers:** [`ui/storyteller/panel_storyteller_roll_controls.xml`](storyteller/panel_storyteller_roll_controls.xml) (`gridStrip_rollPanelST_*`); ST Roll Dashboard PC rows (`gridStrip_rollDash<Color>_difficulty` in generated `roll_dash_generated.xml`). **Design mockup** (always visible, non-interactive strips): [`ui/storyteller/db_panel_storyteller_roll_controls.xml`](storyteller/db_panel_storyteller_roll_controls.xml).
+Reusable hover/select strips for pool counts, difficulty, etc. **Live consumers:** [`ui/storyteller/panel_storyteller_roll_controls.xml`](storyteller/panel_storyteller_roll_controls.xml) (`gridStrip_rollPanelST_*`); ST Roll Dashboard PC rows (`gridStrip_rollDash<Color>_difficulty` in generated `roll_dash_generated.xml`).
 
 **Handlers** (wire in XML `Defaults` or per-element): `HUD_gridStripCellMouseEnter`, `HUD_gridStripCellMouseDown`, `HUD_gridStripCellMouseUp`, `HUD_gridStripMouseExit` (on strip `GridLayout` parent).
 

@@ -68,13 +68,12 @@ Per the TTS **InputField** note ([Input Elements](https://api.tabletopsimulator.
 
 ## Scenes tab (`panel_scenes_host.xml` → `panel_scenes.xml` + `panel_scenes_library.xml`)
 
-**Authority:** `gameState.currentScene` remains the lighting preset key for `Scenes.reconcileFromState`. Narrative/table/location/seat-presence fields live under **`gameState.sessionScene`** (see `core/state.ttslua`). Applying a lighting preset also writes `sessionScene.lightingPresetKey` as a mirror.
+**Authority:** `sessionScene.lightingPresetKey` (a `C.LightModes` key) is the lighting intent for `Scenes.reconcileFromState`; `gameState.currentScene` is only a label (`default` / `dark` / `standard` / `bright`). Narrative/table/location/seat-presence fields live under **`gameState.sessionScene`** (see `core/state.ttslua`).
 
 The **Scenes** toolbar tab opens `panel_scenes_host` (**1200px** total: two **596px** columns + **8px** gap; host and `HorizontalLayout` use fixed `width`/`minWidth` so TTS does not collapse the row to a hairline). Main Scenes + **Scene library** with fixed slot buttons for `sceneLibrary.order`.
 
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
-| `HUD_selectAdminLightingScene` | `adminScene_dark`, `adminScene_standard`, `adminScene_bright` | `(player, button, id)` | Sets `currentScene` (HUD highlight), `sessionScene.lightingPresetKey` to `AdminDark` / `AdminStandard` / `AdminBright` (`C.LightModes`), clears `sceneTransition`, `Sync.full()`. |
 | `HUD_scenesPanel` | `scenes_tbl_*`, `scenes_seat_*` | `(player, button, id)` | `core/storyteller_scenes_panel.ttslua`: **Pending** library row (`activeKey` ≠ `lastAppliedKey`): table/seat writes go to `sceneLibrary.scenes[activeKey].sessionScene` only (no `SetTableTo` / world reconcile); panel “on” colors are **blue**. **Live** (selected = applied or no selection): table buttons call `core.hud_blindfold.runTransition` wrapping `RSL.SetTableTo(..., { skipTransitionBlindfold = true })` and `Sync.full`; seat buttons flip live narrative presence, then reconcile hosted objects. |
 | `HUD_scenesClockFieldChanged` | `scenes_clock_day`, `scenes_clock_year`, `scenes_clock_time12`, `scenes_clock_speed` | `(player, value, id)` | `StorytellerScenesPanel.onClockInputChanged` — stashes typed text in `clockDraft` (TTS `UI.getValue` on `InputField` is unreliable). **Pending** library row: auto-saves to that row's `sessionScene.clock` when inputs validate; also flushes before selecting another library row. **Live** row: use **Apply clock** to commit to `sessionScene.clock`. `HUD_scenesPanelInput` is an alias. |
 | `HUD_scenesOpenDistrictModal` | `Browse districts...` / `scenes_openDistrictModal` | `(player, button, id)` | Shows `scenes_modal_districts_root` (`ui/storyteller/panel_scenes_location_modals.xml`, generated from `C.Districts`). Hides site/skybox modals. |
@@ -150,12 +149,6 @@ Per-seat copy under `HUD_PANEL_PLAYER` (`visibility` = that color). Root is Lua-
 
 `ScatterMode.reconcileControlHudFromState` paints roots, portraits, selectors, and NPC name lists from `scatterPlacements` (fingerprint-skipped). PC slot Images stay `active=true`; occupied slots use full alpha + `scatterModeControlPC_<pcKey>`, empty slots use alpha 0 so row spacing does not collapse. The player’s current group keeps the selector hover image on and sets the NPC list class to `scatterModeControl_npcList scatterModeControl_activeList`. Called from world layout, leave Scatter, token drop/clear, `UpdateUIDisplays` (`playerHud`), and Global XML remount.
 
-## Legacy scene preset buttons (player HUD / other XML)
-
-| Handler | XML Element(s) | Params | Behavior |
-| ------- | ---------------- | ------ | -------- |
-| `HUD_changeScene` | `scene_*` ids where present | `(player, button, id)` | Strips `scene_` prefix from `id`, mutates `currentScene` state, then calls `Sync.full()` (state-first reconcile pipeline). |
-
 ## Soundscape Controls (`panel_soundscape.xml`)
 
 | Handler | XML Element(s) | Params | Behavior |
@@ -222,7 +215,7 @@ Storyteller **Stats** panel: edit PC backgrounds/merits/flaws and coterie advant
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
 | `onDesireChanged` / `onDesireEndEdit` | page1 `player_desire` | `(player, value, id)` | Object script → `GlobalSetPlayerDesire`. Seat owner or ST steam only. Whitespace → `""` + unset class. Prefill on sheet refresh from state. |
-| `HUD_resetGame` | `utility_reset` | `(player, button, id)` | Calls `S.resetGameState()`, `Scenes.resetScene(0)` (instant), updates UI, broadcasts "Game has been reset." to all players. |
+| `HUD_resetGame` | `utility_reset` | `(player, button, id)` | Calls `S.resetGameState()`, `Scenes.resetScene()` (scene label back to `default`), updates UI, broadcasts "Game has been reset." to all players. |
 | `HUD_saveState` | `utility_save` | `(player, button, id)` | Reads state via `S.getGameState()`, JSON-encodes it for verification. Broadcasts confirmation to the clicking player. Note: TTS also auto-saves via `onSave()`. |
 
 ## Debug Controls (panel_phases.xml)

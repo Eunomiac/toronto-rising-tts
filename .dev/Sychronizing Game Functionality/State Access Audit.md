@@ -38,7 +38,7 @@ Status: audit document; verify each finding against current code before implemen
 | ID | Finding | Current code | Why wrong | Correct path / API | Blast radius |
 | --- | --- | --- | --- | --- | --- |
 | P0-1 | ~~Seat absence lighting gated behind undeclared `enforceActiveSeatLighting`.~~ **Fixed:** `computeSeatSpotlightPriorityOverride` uses `not L.isPlayerPresentInActiveSeatLayout(seatKey)` directly (no flag). | `core/lighting.ttslua` | — | — | Player/NPC seat lights; scene presence toggles. |
-| P0-2 | Legacy scene selection can leave stale `sessionScene.lightingPresetKey` authoritative over `currentScene`. | `core/scenes.ttslua:376-377` and `core/scenes.ttslua:402-406` write `currentScene` / `sceneTransition`; `core/scenes.ttslua:300-316` resolves `sessionScene.lightingPresetKey` first and only falls back to `currentScene`. `core/global_script.ttslua:791-793` has the same legacy write-only scene path. | After an admin preset writes `sessionScene.lightingPresetKey`, a later `Scenes.loadScene(...)` / `HUD_changeScene(...)` only changes `currentScene`; reconcile keeps applying the stale lighting preset. | Make `sessionScene.lightingPresetKey` the canonical lighting intent. Legacy scene APIs must either set/clear that key deliberately or be deprecated behind a migration wrapper. `currentScene` should be a legacy label/fallback, not the primary lighting state. | Scene lighting, admin dark/standard/bright, legacy scene buttons/debug calls, UI scene display. |
+| P0-2 | **Resolved (2026-10):** legacy mood presets (`Scenes.SCENES`, `loadScene` / `fadeToScene`, `HUD_changeScene`, admin lighting buttons) were removed. `sessionScene.lightingPresetKey` is the only lighting intent; `currentScene` is a label (`default` / `dark` / `standard` / `bright`) and no longer feeds `Scenes.resolveLightingPresetFromState`. | `core/scenes.ttslua` `resolveLightingPresetFromState` | — | — | Scene lighting. |
 | P0-3 | ~~Zone toggle/debug readers use `zones.allZonesLocked`, but the zone module writes `zones.allLocked`.~~ **Resolved (2026-06):** `core/zones.ttslua`, `HUD_toggleZones`, and `gameState.zones` removed — scripting zones unused in Toronto Rising. | — | — | — | — |
 
 ## P1 - works today by accident / nil coalescing / load-merge fragility
@@ -72,11 +72,8 @@ Status: audit document; verify each finding against current code before implemen
    - Update `ui/storyteller/panel_scenes.xml` and `.dev/SOLVING ISSUES & DEBUGGING.md` to stop referencing `enforceActiveSeatLighting`.
    - Verify with a scene/table where a seat is absent: `Sync.full({ force = true })` should persist that seat's light as `OFF`.
 
-2. **Resolve scene authority confusion.**
-   - Decide whether legacy `Scenes.SCENES` stays as a fallback or is migrated.
-   - If it stays, `Scenes.loadScene` / `Scenes.fadeToScene` must deliberately clear or set `sessionScene.lightingPresetKey` so stale admin presets cannot win accidentally.
-   - Keep `Scenes.reconcileFromState()` read-only; move any state repair into mutation/normalization.
-   - Update admin scene button highlighting to use the same canonical lighting key it writes.
+2. **Scene authority (resolved 2026-10).** Legacy `Scenes.SCENES` was removed; `sessionScene.lightingPresetKey` is canonical.
+   - Still open: keep `Scenes.reconcileFromState()` read-only; it still repairs a missing `currentScene` label to `default`.
 
 ### P1 - consistency / schema / load-merge safety
 

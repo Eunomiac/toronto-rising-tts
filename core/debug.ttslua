@@ -5246,16 +5246,14 @@ end
 function DEBUG.logSceneToFile(filename)
     filename = filename or "scene_info"
     local currentScene = Scenes.getCurrentScene()
-    local scene = Scenes.getScene(currentScene)
+    local preset, presetKey, presetSource = Scenes.resolveLightingPresetFromState()
     local timestamp = getTimestamp()
 
     local content = string.format("Scene Information - %s\n", timestamp)
     content = content .. string.format("Current Scene: %s\n", currentScene or "nil")
-    if scene then
-        content = content .. string.format("Scene Data:\n")
-        content = content .. JSON.encode_pretty(scene)
-    else
-        content = content .. "Scene data not found\n"
+    content = content .. string.format("Lighting preset: %s (%s)\n", tostring(presetKey), tostring(presetSource))
+    if preset then
+        content = content .. JSON.encode_pretty(preset)
     end
     content = content .. "\n"
 

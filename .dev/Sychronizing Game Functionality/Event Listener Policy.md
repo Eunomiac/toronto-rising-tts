@@ -121,7 +121,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | Group | Examples | Tier | ST steam gate | TOR-144 |
 | --- | --- | --- | --- | --- |
 | UI-only | `HUD_togglePanel`, `HUD_selectStorytellerPanel`, modals, `HUD_show`/`hide`, roll opts open/cancel | A | — | — |
-| ST state+world | `HUD_changeScene`, soundscape, scenes apply, `HUD_resetGame`, `HUD_syncAll`, `HUD_pcPanel` | B+C | Yes | D |
+| ST state+world | soundscape, scenes apply, `HUD_resetGame`, `HUD_syncAll`, `HUD_pcPanel` | B+C | Yes | D |
 | Roll | `HUD_roll*` | B (+ `Global.call` for C) | Partial | C |
 | Debug world | `HUD_debugLightActivate/ButtonClick/Slider`, `HUD_toggleAllAnchors/Spotlights` | C | Yes | — |
 | Debug read/UI | `HUD_debugLightGuidInput`, `HUD_debugLightDone/Snapshot`, camera capture, `HUD_toggleRunTestPanel`, `HUD_runtest`, `HUD_runtest_step`, `HUD_STcamera` | A | Yes (RunTest / ST camera) | — |
@@ -141,8 +141,6 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_toggleSyncTrace` | A | Yes | Debug panel: persisted `debug.syncTraceEnabled`; grey off / yellow on; on installs timing wrappers on sync targets, off removes them and prints the summary; host `[SyncTrace]` prints only (TOR-634, TOR-657) |
 | `HUD_toggleStRollUi` | A+B | Yes | Debug panel: persisted `storytellerRolls.inGameUi`; grey off / green on. In-game ST roll panels are a dashboard fallback and do no UI work while off; on repaints them once (`RUI.applyStRollUiEnabled`) (TOR-687) |
 | `HUD_togglePanel` | A | — | XmlUI collapse |
-| `HUD_changeScene` | B+C | Yes | |
-| `HUD_selectAdminLightingScene` | B+C | Yes | |
 | `HUD_soundscape*` (mutators) | B+C | Yes | inspect read-only |
 | `HUD_scenesPanel` / apply / lib / ctor / clock / location+skybox modals / clock lerp | B+C | Yes | modal opens Tier A; TOR-142/TOR-401: Apply button ids → clock modes via `HUD_scenesLibApply` (incl. `presentPlus15`–`120`); TOR-222: `HUD_scenesClockLerpDelta` / `Sun` / `YearGo` animate live clock (display-only mid-lerp; settle = tryAdvance on forward + weather + Sync); TOR-482: `HUD_scenesDaysleepRefresh` ST-gated WP heal (no live scene required; overlay auto-hides); TOR-488: live Apply Location is staged blindfold (fadeIn owns soundscape); skybox pick/clear Tier B until Apply location; TOR-573: `scenes_tbl_Scatter` is a table-change (host, stash/restore Standard occupancy, no new listener). Scatter CONTROL_BOARD `reload()` waits for mesh-ready before snaps/XmlUI so the cover `U.chain` does not C# NRE. |
 | `HUD_statsTarget` / `HUD_statsBack` | A | — | Stats panel navigation |

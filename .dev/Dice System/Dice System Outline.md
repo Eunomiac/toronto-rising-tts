@@ -915,7 +915,7 @@ Key element IDs: fullscreen `rollRes_panel`; split header (`rollRes_rollType`, `
 
 ### 10.4 Storyteller roll panel grid strips (`rollPanelST`)
 
-**Live panel:** [`ui/storyteller/panel_storyteller_roll_controls.xml`](../../ui/storyteller/panel_storyteller_roll_controls.xml) (`rollPanelST`, visibility `Black|Host`, hidden until a Black-seat roll is active). **Design mockup:** [`ui/storyteller/db_panel_storyteller_roll_controls.xml`](../../ui/storyteller/db_panel_storyteller_roll_controls.xml) (`db_rollPanelST`, always visible; grid strips are non-interactive). Both included from [`ui/storyteller/hud_storyteller.xml`](../../ui/storyteller/hud_storyteller.xml).
+**Live panel:** [`ui/storyteller/panel_storyteller_roll_controls.xml`](../../ui/storyteller/panel_storyteller_roll_controls.xml) (`rollPanelST`, visibility `Black|Host`, hidden until a Black-seat roll is active), included from [`ui/storyteller/hud_storyteller.xml`](../../ui/storyteller/hud_storyteller.xml).
 
 **Generic library:** [`lib/grid_strip.ttslua`](../../lib/grid_strip.ttslua) — parse ids, hover/selected alpha, `(context, kind)` registry. HUD delegates: `HUD_gridStripCellMouseEnter`, `HUD_gridStripCellMouseDown`, `HUD_gridStripCellMouseUp`, `HUD_gridStripMouseExit` in `global_script.ttslua`.
 

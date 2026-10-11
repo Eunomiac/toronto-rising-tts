@@ -58,7 +58,6 @@ Opt-in host console trace (separate from agent metrics): `DEBUG.setSyncTrace(tru
 
 Resolved:
 
-- `core/global_script.ttslua`: `UpdateUIDisplays` now calls `syncAdminLightSceneButtons()` at most once per invocation when `adminLighting` and `scenesPanel` are both requested.
 - `core/storyteller_scenes_panel.ttslua`: live scene apply, table switch, seat-presence, location apply, and clock apply no longer repeat `StorytellerScenesPanel.refresh()` immediately after `Sync.full`; seat-presence no longer follows `Sync.full` with a second broad `UpdateUIDisplays({ playerHud = true })`.
 - `core/sync.ttslua`: top fog is owned by the explicit scene phase during `Sync.full`; seat presentation still reconciles top fog when called outside that full pass.
 - `core/conditions.ttslua` and `core/storyteller_scenes_panel.ttslua`: hosted-condition reconciliation reports changed seat colors so post-sync CSHEET refreshes use `PCST.refreshCharacterSheetsForColor` instead of scanning every player color.
@@ -271,7 +270,7 @@ The CONTROL_BOARD Apply / Clear / token-drop paths and their profilers were reti
 
 - `UpdateUIDisplays` treats non-table `delta` as `refreshAll`, then `wants()` every section. See `core/global_script.ttslua:1899-1910`.
 - `playerStats` / `playerHud` loops `M.forPlayers`, computes stat values, and calls `HUDP.updatePlayerUI` per player. See `core/global_script.ttslua:1942-1974`.
-- Full refresh fallback exists in `HUD_changeScene` when `Sync.full` is unavailable, and reset still calls `UpdateUIDisplays()` directly. See `core/global_script.ttslua:780-800` and `core/global_script.ttslua:1293-1304`.
+- `HUD_resetGame` still calls `UpdateUIDisplays()` directly after `S.resetGameState()`.
 - `Sync.full({ force = true })` runs full UI refresh; incremental `Sync.full()` uses `SYNC_INCREMENTAL_UI_DELTA` and omits overlays because `HO.syncAll()` already ran. See `core/sync.ttslua:27-39` and `core/sync.ttslua:172-177`.
 
 **Top call sites**
