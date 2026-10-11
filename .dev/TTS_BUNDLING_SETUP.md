@@ -143,8 +143,8 @@ A timestamped backup is written beside the save (`TS_Save_<n>.pre-inject-global.
 Writes expanded `ui/Global.join_minimal.xml` into save `XmlUI`, and by default also applies the same Loading cuts as Host **Arm Join XML**:
 
 - Slim global `CustomUIAssets` to join-minimal image keep-list
-- Remove preload-area NPC figurines/lights + soundscape emitters from `ObjectStates`
-- Patch `LuaScriptState.connectionControls` (`joinXmlArmed`, `deferSetXml`, asset + cold-pool backups for staged restore 1–4)
+- Remove soundscape emitters from `ObjectStates`
+- Patch `LuaScriptState.connectionControls` (`joinXmlArmed`, `deferSetXml`, asset + cold-pool backups for staged restore 1–3)
 
 Does **not** replace `LuaScript`. Use `--xmlOnly` for XmlUI + armed flags only. Pre-inject file copies go to `{backupDir}/join-minimal-inject/` from `tts-assets.config.json` (not the TTS Saves folder).
 

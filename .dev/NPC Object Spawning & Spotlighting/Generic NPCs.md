@@ -8,7 +8,8 @@ Read this when:
 - implementing remaining v1 gaps or later seating / Play-as-NPC / Memoriam `kind: "generic"`
 
 Source of truth:
-- `core/generic_npcs.ttslua` — parse, spawn, destroy, membership
+- `core/generic_npcs.ttslua` — parse, register, destroy, membership
+- `core/npc_spawn.ttslua` — figurine + light spawner shared with named NPCs (generic URLs via `D.resolveGenericNpcEntry`)
 - `lib/npcs_data.ttslua` — `D.initGenericNPCs()`, `D.resolveGenericNpcEntry`, `D.genericNpcs`
 - `lib/generic_npcs_catalog.ttslua` — generated sheet `key` → `label` (`npm run generic-npcs:import`)
 - `dashboard/scenes.ttslua` — `genericAdd` op → `GenericNpcs.importNamed(keys, labels)`; `genericRename` op → `GenericNpcs.rename(key, name)`
@@ -30,7 +31,7 @@ Status: current v1 (TOR-560; Dashboard-only import since TOR-687). Remaining / o
 
 Generic NPCs are category/class characters (police officer, dog). They have **no** workshop-baked figurine in the save. Each catalog key (`stem_NN`, e.g. `dogGuard_03`) is a **unique** identity: at most one live instance of that key per scene. Several stems may coexist; the same exact key may not be imported twice into the same scene.
 
-This is an intentional **runtime spawn exception** to the named-NPC preload-pool rule. Do not redesign named preload for generics.
+Named and generic NPCs share one spawn path (TOR-707): both spawn on demand through `core/npc_spawn.ttslua` and are destroyed when no longer targeted. The differences are the URL source (catalog entry vs `lib/npc_figurine_hosted_urls.ttslua`), the `generic_npc` tag, and the scene membership table below.
 
 After import, v1 supports **stage placement, lights, and spotlight tokens** like other staged NPCs (they register into `NPCS.characters` with `isGeneric = true` and use `npc_figurine` / `npc_light`). **Seating**, **Play-as-NPC**, and Memoriam `kind: "generic"` are not a supported contract.
 
@@ -66,7 +67,7 @@ Behavior (`GenericNpcs.importNamed`):
 
 1. Resolve keys via `GenericNpcs.parseImportKeys` / `D.resolveGenericNpcEntry`.
 2. Any unknown key or key already in this scene’s `genericMembership` → return an error string (shown on the Dashboard); nothing spawns.
-3. For each key, use the typed name (blank → catalog `label`), spawn, and write membership.
+3. For each key, use the typed name (blank → catalog `label`), register the roster row (`NPCS.registerGenericCharacter`), and write membership. Nothing spawns on import — the figurine and light spawn when the NPC is placed on the stage (see below).
 
 **Rename** (`GenericNpcs.rename(key, name)`, Dashboard op `genericRename`): the key must be in this scene's membership and the trimmed name non-blank, else an error string. Writes membership `displayName`, the roster row's `fullName`, the figurine's name, and the spotlight token's name (`StageTokens.refreshName`), then marks the seats push dirty.
 
@@ -74,17 +75,17 @@ Behavior (`GenericNpcs.importNamed`):
 
 ## Spawn / identity
 
-v1 does **not** clone hidden save templates. Current spawn path:
+Generics spawn through the same path as named NPCs (`NPCS.ensureLiveNpcInstance` → `core/npc_spawn.ttslua`):
 
 | Piece | How |
 | --- | --- |
-| Figurine | `spawnObject("Figurine_Custom")` + Cloud images + `reload`. Tags `npc_figurine` + `generic_npc`. GM Notes `npcInstance:<key>`. Locked. |
-| Light | `NPCS.ensureNpcInPreloadZone(..., { forceNpcLightMode = "OFF" })` adopts the figurine into the **next free** preload bay (generics do not use named-NPC sorted stable indices) and repairs/spawns the paired `npc_light`. |
+| Figurine | `spawnObjectData` `Figurine_Custom` with the catalog Cloud images in the spawn data (no `reload`). Tags `npc_figurine` + `generic_npc`. GM Notes `npcInstance:<key>`. Locked. Spawned hidden under the table, then moved onto the stage once its image has loaded (`NPCS.prewarmNpcs` for mid-scene Dashboard placements). |
+| Light | `npc_light` spawned with the stage placement (`ensureNpcLight`). |
 | Spotlight token | Not spawned on import. Once the NPC has a stage placement, `StageTokens.reconcileFromState` spawns its token on the Stage Control board like any stage NPC. |
 
-`NPCS.registerGenericCharacter` adds a runtime roster row (`isGeneric = true`, `figurine.scale = 53`, `fullName` = display label). Preload pool audit **skips** these keys.
+`NPCS.registerGenericCharacter` adds a runtime roster row (`isGeneric = true`, `figurine.scale = 53`, `fullName` = display label).
 
-Default on import (and on respawn until a stage edit says otherwise): figurine in preload, light **OFF**.
+An imported generic with no stage placement is a roster/membership entry only — nothing is in the world until a stage edit places it.
 
 ---
 
@@ -94,14 +95,12 @@ Live table: `sessionScene.npcWorld.genericMembership[key] = { key, displayName }
 
 | Event | Behavior |
 | --- | --- |
-| Import | Spawn objects; write membership for spawned keys |
-| Save & Play / `NPCS.restoreAfterStateLoad` | `GenericNpcs.ensureLiveFromMembership()` recreates missing instances |
-| Scene Apply (switch) | Destroy **live** generic objects but **keep** the outgoing membership table, write the incoming scene bundle, then `ensureLiveFromMembership` for the new row |
+| Import | Register roster rows; write membership (no spawn) |
+| Save & Play / `NPCS.restoreAfterStateLoad` | `GenericNpcs.registerFromMembership()` re-registers roster rows; the reconciler respawns any placed generic whose figurine is missing |
+| Scene Apply (switch) | Destroy **live** generic objects but **keep** the outgoing membership table, write the incoming scene bundle, then `registerFromMembership` for the new row; the reconciler spawns placed generics |
 | Leave scene / no-scene / End Scene | `destroyAllLiveAndClearMembership` — destroy figurine + light + clear **live** membership (library rows keep their nested `sessionScene` copy for later respawn) |
 | Dashboard stage **Clear** (`StageApply.applyStageChanges` with `clear = true`) | Same as leave: destroy all live generics and clear membership |
 | Mid-scene remove **one** generic | **Not wired.** `GenericNpcs.destroyLiveKey` exists; no call site yet |
-
-Named NPCs stay on the workshop preload path.
 
 ---
 
@@ -119,4 +118,3 @@ Keep these on the record. Do not imply they shipped with TOR-560.
 - Play-as-NPC assignment for generics
 - Memoriam `kind: "generic"` wiring
 - Per-NPC lighting / scale overrides (children, animals)
-- Replacing named-NPC preload with spawn-on-demand

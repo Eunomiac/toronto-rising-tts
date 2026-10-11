@@ -7,9 +7,9 @@
  * Matches Host "Arm Join XML" cold state for File → Load experiments:
  * - XmlUI → expanded ui/Global.join_minimal.xml
  * - CustomUIAssets → keep-list only (names referenced by join-minimal XmlUI)
- * - ObjectStates → remove preload NPC figurines/lights + soundscape emitters
+ * - ObjectStates → remove soundscape emitters (NPC figurines spawn on demand since TOR-707)
  * - LuaScriptState.connectionControls: joinXmlArmed, deferSetXml, asset/object backups
- *   so staged restore (1–4) still works after load
+ *   so staged restore (1–3) still works after load
  *
  * Does not replace LuaScript or clear unrelated game state.
  *
@@ -157,70 +157,6 @@ function ensureConnectionControls(state) {
 }
 
 /**
- * Preload-pool figurine/light GUIDs from npcs.instances in LuaScriptState.
- * @param {Record<string, unknown>} state
- * @returns {{
- *   removeGuids: Set<string>,
- *   figByGuid: Map<string, string>,
- *   lightByGuid: Map<string, string>,
- * }}
- */
-function collectPreloadNpcGuidsFromState(state) {
-  /** @type {Set<string>} */
-  const removeGuids = new Set();
-  /** @type {Map<string, string>} */
-  const figByGuid = new Map();
-  /** @type {Map<string, string>} */
-  const lightByGuid = new Map();
-
-  const npcs = state.npcs;
-  if (npcs === null || typeof npcs !== "object" || Array.isArray(npcs)) {
-    return { removeGuids, figByGuid, lightByGuid };
-  }
-  const instances = /** @type {Record<string, unknown>} */ (npcs).instances;
-  if (instances === null || typeof instances !== "object" || Array.isArray(instances)) {
-    return { removeGuids, figByGuid, lightByGuid };
-  }
-
-  for (const [npcName, recRaw] of Object.entries(
-    /** @type {Record<string, unknown>} */ (instances)
-  )) {
-    if (typeof npcName !== "string" || recRaw === null || typeof recRaw !== "object" || Array.isArray(recRaw)) {
-      continue;
-    }
-    const rec = /** @type {Record<string, unknown>} */ (recRaw);
-    if (rec.areaKey !== "preload") {
-      continue;
-    }
-    const figGuid = typeof rec.figurineGuid === "string" ? rec.figurineGuid.trim() : "";
-    if (figGuid !== "") {
-      const key = figGuid.toLowerCase();
-      removeGuids.add(key);
-      figByGuid.set(key, npcName);
-    }
-    const lightGuid = typeof rec.lightGuid === "string" ? rec.lightGuid.trim() : "";
-    if (lightGuid !== "") {
-      const key = lightGuid.toLowerCase();
-      removeGuids.add(key);
-      lightByGuid.set(key, npcName);
-    }
-  }
-  return { removeGuids, figByGuid, lightByGuid };
-}
-
-/**
- * @param {unknown} tags
- * @param {string} tag
- * @returns {boolean}
- */
-function objectHasTag(tags, tag) {
-  if (!Array.isArray(tags)) {
-    return false;
-  }
-  return tags.some((t) => typeof t === "string" && t === tag);
-}
-
-/**
  * Remove matching GUIDs from ObjectStates (+ ContainedObjects). Collect removed nodes.
  * @param {unknown} nodes
  * @param {Set<string>} removeGuids lowercase
@@ -254,11 +190,7 @@ function filterObjectStates(nodes, removeGuids, removedOut) {
 
 /**
  * @param {Record<string, unknown>} obj
- * @param {{
- *   soundscapeByGuid: Map<string, string>,
- *   figByGuid: Map<string, string>,
- *   lightByGuid: Map<string, string>,
- * }} maps
+ * @param {{ soundscapeByGuid: Map<string, string> }} maps
  * @returns {Record<string, unknown>}
  */
 function toColdBackupEntry(obj, maps) {
@@ -274,16 +206,6 @@ function toColdBackupEntry(obj, maps) {
     entry.kind = "soundscape_emitter";
     entry.guidKey = guidKey;
     entry.channelKey = channelKeyFromGuidKey(guidKey);
-    return entry;
-  }
-  if (maps.figByGuid.has(guidLower) || objectHasTag(obj.Tags, "npc_figurine")) {
-    entry.kind = "npc_figurine";
-    entry.npcName = maps.figByGuid.get(guidLower) || null;
-    return entry;
-  }
-  if (maps.lightByGuid.has(guidLower) || objectHasTag(obj.Tags, "npc_light")) {
-    entry.kind = "npc_light";
-    entry.npcName = maps.lightByGuid.get(guidLower) || null;
     return entry;
   }
   entry.kind = "unknown";
@@ -418,7 +340,7 @@ function main() {
     stateCreated = true;
     console.warn(
       "WARNING: LuaScriptState was empty — creating minimal connectionControls. " +
-        "Prefer Arm/File→Save once in TTS first so npcs.instances exist for preload GUID targeting."
+        "Prefer Arm/File→Save once in TTS first."
     );
   }
 
@@ -433,8 +355,6 @@ function main() {
   let missingKeep = [];
 
   let objectsRemoved = 0;
-  let figN = 0;
-  let lightN = 0;
   let emitN = 0;
   let unknownN = 0;
 
@@ -458,12 +378,8 @@ function main() {
     assetsAfter = slim.kept.length;
     assetsRemoved = slim.removedCount;
 
-    const preload = collectPreloadNpcGuidsFromState(state);
     /** @type {Set<string>} */
-    const removeGuids = new Set(preload.removeGuids);
-    for (const guid of soundscapeByGuid.keys()) {
-      removeGuids.add(guid);
-    }
+    const removeGuids = new Set(soundscapeByGuid.keys());
 
     /** @type {Record<string, unknown>[]} */
     const removedObjects = [];
@@ -473,15 +389,9 @@ function main() {
     /** @type {Record<string, unknown>[]} */
     const coldEntries = [];
     for (const obj of removedObjects) {
-      const entry = toColdBackupEntry(obj, {
-        soundscapeByGuid,
-        figByGuid: preload.figByGuid,
-        lightByGuid: preload.lightByGuid,
-      });
+      const entry = toColdBackupEntry(obj, { soundscapeByGuid });
       coldEntries.push(entry);
-      if (entry.kind === "npc_figurine") figN += 1;
-      else if (entry.kind === "npc_light") lightN += 1;
-      else if (entry.kind === "soundscape_emitter") emitN += 1;
+      if (entry.kind === "soundscape_emitter") emitN += 1;
       else unknownN += 1;
     }
 
@@ -492,7 +402,7 @@ function main() {
       cc.joinColdPoolsBackup = null;
       cc.joinColdPoolsActive = false;
       console.warn(
-        "WARNING: No ObjectStates removed. Check npcs.instances areaKey=preload and soundscape GUIDs."
+        "WARNING: No ObjectStates removed. Check soundscape GUIDs."
       );
     }
   }
@@ -509,7 +419,7 @@ function main() {
       `Assets:   CustomUIAssets ${assetsBefore} → ${assetsAfter} (removed ${assetsRemoved}; keep ${keepAssetNames.size})`
     );
     console.log(
-      `Objects:  removed ${objectsRemoved} (figurines=${figN} lights=${lightN} emitters=${emitN} other=${unknownN})`
+      `Objects:  removed ${objectsRemoved} (emitters=${emitN} other=${unknownN})`
     );
   }
   console.log(
@@ -553,7 +463,7 @@ function main() {
   console.log("Save updated.");
   console.log("NEXT: Close TTS or switch slot, then File → Load this save.");
   console.log("Loading should reflect slim CustomUIAssets + fewer ObjectStates.");
-  console.log("Staged restore 1–4 after load uses backups in LuaScriptState.");
+  console.log("Staged restore 1–3 after load uses backups in LuaScriptState.");
   console.log("Do NOT Save & Play / tts-save:inject-global before this load.");
 }
 

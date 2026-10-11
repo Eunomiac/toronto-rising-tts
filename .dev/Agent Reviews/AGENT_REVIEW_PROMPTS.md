@@ -235,7 +235,7 @@ Identify **expensive or repeatedly-triggered** sync/world/UI paths and recommend
    - [`core/sync.ttslua`](../../core/sync.ttslua) — `Sync.full`, bootstrap deferred schedules (`U.scheduleAtOffsets` 0.35–8s), incremental UI delta vs force
    - [`core/lighting.ttslua`](../../core/lighting.ttslua) — `L.reconcileForPlayer`, `L.reconcileAllPlayers`, `DEFAULT_RECONCILE_LERP_SECONDS`, per-seat loops
    - [`core/hud_overlays.ttslua`](../../core/hud_overlays.ttslua) — `HO.syncAll` (all seats when one player changes?)
-   - [`core/npcs.ttslua`](../../core/npcs.ttslua) — preload pool, `reconcileAllFromState`, spawn batches
+   - [`core/npcs.ttslua`](../../core/npcs.ttslua) — `reconcileAllFromState`, on-demand spawn/despawn (`core/npc_spawn.ttslua`), `prewarmNpcs`
    - [`core/soundscape.ttslua`](../../core/soundscape.ttslua) — deferred reconcile, crossfade generations
    - [`core/global_script.ttslua`](../../core/global_script.ttslua) — `UpdateUIDisplays`, who calls `Sync.full` and how often
    - [`core/hud_player.ttslua`](../../core/hud_player.ttslua) — per-player UI refresh cost
@@ -244,7 +244,7 @@ Identify **expensive or repeatedly-triggered** sync/world/UI paths and recommend
    - `Sync.full\(`, `Sync.player\(`, `UpdateUIDisplays\(`, `HO.syncAll\(`, `L.reconcileAllPlayers\(`
    - Loops over `C.PlayerColors` containing sync calls
    - `U.scheduleAtOffsets` / `U.await` chains tied to sync
-   - NPC preload / spawn pool sizing
+   - NPC spawn cost for a large incoming cast
 
 3. For each hotspot document:
    - **Symptom:** e.g. double overlay pass, 6-seat lighting lerp on single hunger tick

@@ -54,7 +54,7 @@ Quick chat commands: `/dbcheck` (compact) and `/dbfullcheck` (full).
 ### Table seat layout (figurine offsets)
 
 - **Live path:** `RSL.SyncTable` → `resolveSeatObjectsFromTable` → `FSL.applyOccupantRigs` (`lib/figurine_seat_layout.ttslua`). Every seat object is placed from `C.SeatRoleOffsets` (`lib/seat_role_offsets.ttslua`) relative to that seat's figurine — local XZ, rotation, and authored `defaultY`. A wrong chair height or facing is fixed in that role's offset (or `extraByOccupant` for one seat), not with per-GUID patches. The old copy-from-Red layout and its `postCorrections` tables are gone (TOR-301).
-- Seated NPC figurines: tag `NPCnObject` + GM Notes `SEAT_FIGURE_NPCn` + `NPCS.isPooledFigurineObject`; layout moves them as `SEAT_FIGURE`; unseat clears seat tags, restores `npcInstance:` GM Notes, returns to preload.
+- Seated NPC figurines: tag `NPCnObject` + GM Notes `SEAT_FIGURE_NPCn` + `NPCS.isPooledFigurineObject`; layout moves them as `SEAT_FIGURE`; unseat clears seat tags and restores `npcInstance:` GM Notes; the NPC is despawned unless it is moving to the stage.
 
 ### Storyteller Scenes vs lighting preset
 

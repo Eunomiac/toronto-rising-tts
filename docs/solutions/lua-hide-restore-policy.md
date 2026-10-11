@@ -102,7 +102,7 @@ Snapshot position is **not** the primary restore authority when a catalog pose o
 - `O.hideObject` **always** re-applies lock, non-interactable, parked visibility, and `HiddenObject` tag — even when the object is already at `y = -200` or already tagged.
 - Repeat calls merge into the existing `gameState.hiddenObjects` row: **position** and **invisibleTo** are captured once; **locked** / **interactable** refresh from live pre-hide state each call.
 - When live Y is already parked, **omit** a position move when X/Z matches the target; visibility and lock still apply.
-- Safe for preload reconcilers, dice pool repark, and Spotlight re-park — second call refreshes invisibility instead of skipping.
+- Safe for reconcilers and Spotlight re-park — second call refreshes invisibility instead of skipping.
 
 ## Documented exceptions (do **not** use hide/restore)
 
@@ -115,13 +115,13 @@ Snapshot position is **not** the primary restore authority when a catalog pose o
 | **BOTTOM_FOG emitter** | Authored at y ≈ −350 (below park threshold); Scatter plays AssetBundle Looping Effect 2/1 | `Scenes.applyFogEmitterLooping` via ScatterMode; `O.hideObject` refuses this GUID |
 | **Player hand zones (Absent stash)** | `O.hideObject` tags the zone; a tagged zone only holds objects sharing that tag, so the cards fall out of the hand and are left behind on restore | `U.movePlayerHand` only (`stashHandZoneAndCards` to park, the `HAND_ZONE` layout move in `lib/figurine_seat_layout.ttslua` to restore): the zone parks at Y −200 alone; the in-hand cards are tagged `StashedHandCard` and put into the player's storage container (`G.GetPlayerStorageContainerGUID`); moving the zone back to the table deals only the tagged cards back into the hand. Cards are never locked: a locked card leaves the hand |
 
-**Preload pool (in scope):** NPC figurines + paired lights at `preload` and dice under bags use `O.hideObject` / `O.restoreObject` via `applyNpcPairPhysicalPresentation` and `core/dice_preload_pool.ttslua` (`parkDie` / `claim`). `DPP.claim` must pass the staging `position` (bag hover / arc / ST tray) into `O.restoreObject` so recycled dice unhide at that pose — never replay the hide snapshot of the last tray slot. `DPP.repositionAllAfterLayout` re-parks a bag's dice only when that bag's X/Z moved since the last layout. The NPC preload re-hide sweep (`NPCS.reconcilePreloadPoolHideFromState`) runs only after a preload park/adopt or an ImageScalar `reload()` (dirty flag), or when forced by load bootstrap and Scatter layout; `ensureNpcInPreloadZone` skips re-presentation for a pair already hidden at preload scale with the right ImageScalar (TOR-669).
+**No preload pools (TOR-707 / TOR-708):** NPC figurines and stage lights are spawned on demand (`core/npc_spawn.ttslua`) and destroyed when no longer targeted; roll dice are taken from the bag at roll time and destroyed on release. A fresh NPC spawn appears under the table (`NpcSpawn.parkPosition`) only until its image loads — it is never parked with `O.hideObject`, and has no `gameState.hiddenObjects` row. `DEBUG.retireDicePreloadPool()` is the one-shot cleanup for a save that still holds the old `d10Preload` dice.
 
 **Character sheet pages:** World Y selects on/off; **`GlobalHideObject` / `GlobalRestoreObject` only** for lock, invisibility, tag, and interactable (`ui/ui_csheet_core.ttslua` → `applyCsheetHideOrRestore`). XmlUI nav/root `active` is separate (`applyCsheetXmlUiActive`). Pose apply (`lib/csheet_pose.ttslua`) moves geometry only.
 
 **Tarot (object script):** `lib/tarot_toggle.ttslua` → `lib/object_positions_object.ttslua` — `pose.isHidden` routes through **`GlobalHideObject` / `GlobalRestoreObject`**. Reveal (`isHidden == false`) must pass the **ObjectPositions-resolved** position/rotation (Pink deck: `TAROT_DECK_ANCHOR_PINK` + height), not the hide snapshot alone.
 
-**NPC pooled spotlights (`npc_light`):** `applyPooledSpotlightHideOrRestore` in `core/npcs.ttslua` — seated/preload park and stage reveal use **`O.hideObject` / `O.restoreObject`** (full invisibility incl. Storyteller). Gameboard spotlight preview: `core/npc_gameboard_spotlight.ttslua`.
+**NPC stage lights (`npc_light`):** exist only while the NPC is on the stage; seating or leaving the stage destroys the light (`dropNpcLightForSeat` / `NPCS.despawnNpc`), so there is no light park. Gameboard spotlight preview: `core/npc_gameboard_spotlight.ttslua`.
 
 **Rain particle emitter:** Off Play, `Phases.reconcileParticleEmitterFromPhase` parks `G.GUIDS.PARTICLE_EMITTER` with `O.hideObject`. On Play it restores at table-origin X/Z plus snapshot Y. While Scatter is active, Scatter's `objectsToHide` list stays in charge (do not un-park from Play restore).
 

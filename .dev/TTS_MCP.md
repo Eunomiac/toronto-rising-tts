@@ -135,8 +135,6 @@ Sync.setMetricsEnabled(true)
 
 Then trigger `Sync.full({ reason = "..." })` or `Sync.player("Red")`. Each pass emits one **`TR_AGENT_V1`** line with **`kind`** = **`sync_metrics`** and **`data`** fields such as **`pass`** (`full` | `player` | `bootstrap_retry`), **`reason`**, **`force`**, **`elapsedSec`**, **`soundscapeFadeSteps`**, and **`color`** (player pass).
 
-NPC preload batches emit **`kind`** = **`npc_preload`** with **`characterCount`**, **`missingCount`**, and **`spawnPairsIssued`**.
-
 **Verification:** Save and Play, run a hunger change or load, then parse MCP **`prints`** for `TR_AGENT_V1` lines (filter `kind === "sync_metrics"`). Compare before/after optimization work.
 
 ### Sync call trace (`[SyncTrace]`)
@@ -169,7 +167,7 @@ While on, the functions in `targetList()` are wrapped with timing spans (removed
 - A block marked `UNFINISHED` means a traced call errored (it is flushed on the next frame).
 - Turning the trace off prints a `SUMMARY` table: calls, ran, skipped, total, self, max per function, slowest total first.
 
-Coverage: the `Sync.*` entry points, scene / soundscape / lighting / overlay / HUD reconcilers, NPC reconcile plus its inner work (preload hide sweep, preload prep, stage moves, family spotlight pass), the control board mirror and snaps, the seat layout plus its inner work (seat rigs, compulsion cards, preload dice re-park, CSHEET Y-state pass), `SRI.findObjectByRoleIdentity` (each call scans every object), the seat light and overlay fingerprints, character sheet and Storyteller panel refreshes, and `UpdateUIDisplays` (TOR-666).
+Coverage: the `Sync.*` entry points, scene / soundscape / lighting / overlay / HUD reconcilers, NPC reconcile plus its inner work (load orphan sweep, stage moves, family spotlight pass), the control board mirror and snaps, the seat layout plus its inner work (seat rigs, compulsion cards, CSHEET Y-state pass), `SRI.findObjectByRoleIdentity` (each call scans every object), the seat light and overlay fingerprints, character sheet and Storyteller panel refreshes, and `UpdateUIDisplays` (TOR-666).
 
 To trace a new function, add it to `targetList()` (module table + field). Calls made through a local copy of the function are not wrapped; wrap the copy's table too (see the Gameboard facade rows).
 

@@ -1,7 +1,7 @@
 --[[
     Storyteller dice (core/st_dice.ttslua)
 
-    NPC roll dice have no bags and no under-table preload. On Roll each die is spawned from its
+    NPC roll dice have no bags. On Roll each die is spawned from its
     definition below straight onto the live drawer tray, locked and tagged for the roll; this
     module tracks those staged dice until the roll releases (unlocks) them. After release the dice
     are ordinary table dice, found by tag and roll id (`STR.destroyTableDiceForRollId`).

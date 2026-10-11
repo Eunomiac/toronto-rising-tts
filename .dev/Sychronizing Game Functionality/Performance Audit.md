@@ -29,7 +29,7 @@ Status: current performance audit; entries may be done, partial, or deferred as 
 | 2 | Startup bootstrap stacks | **Done** — readiness-gated `scheduleBootstrapCoordinator()` (poll `0.35s`, max `10s`) replaces blind `BOOTSTRAP_RETRY_OFFSETS_SEC`; `L.seatSpotlightsResolvable()` + pending init-light probe; bootstrap metrics (`earlyExit`, `ticksRun`, `lightsDeferredRemaining`) |
 | 3 | Seat lighting redundant lerps | **Partial** — `lastReconciledModeByRef` + `L.invalidateReconcileCache()`; bootstrap ticks use `opts.bootstrap` → `transitionTime = 0`; seat-presentation orchestrator fingerprint skips full `reconcileAllPlayers` when PC light + overlay inputs unchanged |
 | 4 | Soundscape deferred duplicates | **Done** — `pendingSoundscapeReconcileFingerprint` + `soundscapeReconcileGeneration`; fade-step metrics |
-| 5 | NPC preload / scene world | **Done** — no runtime figurine spawn or `setCustomObject`/`reload()` on placement; `NPCS.auditPreloadPoolFigurines`; workshop-baked figurine images via inject script; `npc_preload` audit metrics |
+| 5 | NPC spawn / scene world | **Changed (TOR-707)** — no preload pool; the reconciler spawns only the NPCs a scene targets (`core/npc_spawn.ttslua`, image URLs in spawn data, no `reload()`), destroys untargeted ones; load runs one orphan tag sweep |
 | 6 | `UpdateUIDisplays` broad deltas | **Done** — `delta.colors` seat filter; admin-light scene buttons coalesced when `adminLighting` and `scenesPanel` refresh together |
 | 7 | Map/HUD scoped refresh | **Deferred** — cross-seat HUD split (`reconcileSeatHud` / `reconcileCrossSeatRows`) not started |
 | — | Overlay desired-input fingerprint | **Done** — `HO.reconcileForSeat` per-seat `lastDesiredVisibilityFpBySeat`; `HO.invalidateOverlayInputCache()` on force |
@@ -77,7 +77,7 @@ Verification:
 
 ## Scope and guardrails
 
-This audit ranks expensive or repeatedly-triggered paths by static **impact x frequency hypotheses**. It is based on source reading and bounded ripgrep of `Sync.full(`, `Sync.player(`, `UpdateUIDisplays(`, `HO.syncAll(`, `L.reconcileAllPlayers(`, `U.scheduleAtOffsets`, `U.await`, and NPC preload/spawn paths. Runtime counters should validate these rankings before behavior-tuning work lands.
+This audit ranks expensive or repeatedly-triggered paths by static **impact x frequency hypotheses**. It is based on source reading and bounded ripgrep of `Sync.full(`, `Sync.player(`, `UpdateUIDisplays(`, `HO.syncAll(`, `L.reconcileAllPlayers(`, `U.scheduleAtOffsets`, `U.await`, and NPC spawn paths. Runtime counters should validate these rankings before behavior-tuning work lands.
 
 All recommendations preserve the synchronization contract: `gameState` remains the source of truth, handlers mutate state first, and reconcilers apply live TTS world/UI/audio state. Do **not** optimize by writing lights, UI, spawned objects, or AssetBundle audio directly from handlers.
 
@@ -112,7 +112,7 @@ Do not reintroduce TOR-391 duplicates: no broad `StorytellerScenesPanel.refresh(
 | 2 | Startup `Sync.full` plus deferred retry stacks | High | Every load / reload | Structural bootstrap coordinator |
 | 3 | Seat lighting all-player reconciliation and 2s lerp churn | High | Full sync, table/seat changes, load retries | Diff cache / force-aware reconcile |
 | 4 | Soundscape deferred reconcile duplicate scheduling | High | Scene/location/clock/full sync; force repair | Pending fingerprint / generation guard |
-| 5 | NPC preload pool and scene NPC world reconcile | Medium-high | Load, scene library apply, scene NPC placement | Measurement + batch split |
+| 5 | NPC on-demand spawn and scene NPC world reconcile | Medium | Scene library apply, mid-scene stage adds | Measurement; batch only if a large cast stalls |
 | 6 | `UpdateUIDisplays` broad deltas and full refresh fallbacks | Medium | Panel opens, reset, debug, sync | Narrow UI delta API |
 | 7 | Map/HUD player UI refresh work | Medium | Player HUD delta, map hover/pan | Keep targeted map path; add player-scoped HUD path |
 
@@ -158,7 +158,7 @@ The CONTROL_BOARD Apply / Clear / token-drop paths and their profilers were reti
 **Evidence (historical)**
 
 - First on-load full sync: `Sync.full({ reason = "onLoad_initial" })`. Final startup-gate sync: `Sync.full({ reason = "onLoad_startup_gate" })`.
-- Bootstrap branch calls `NPCS.registerRestoredInstancesFromState`, `L.InitLights`, fingerprint-aware `reconcileSeatPresentationFromState`, then `scheduleBootstrapCoordinator()` (readiness poll, early exit when spotlights resolve). See `core/sync.ttslua`.
+- Bootstrap branch calls `NPCS.restoreAfterStateLoad` (generic roster, restored instances, orphan sweep), `L.InitLights`, fingerprint-aware `reconcileSeatPresentationFromState`, then `scheduleBootstrapCoordinator()` (readiness poll, early exit when spotlights resolve). See `core/sync.ttslua`.
 - `requestSeatLayoutSync` and deferred `R.SyncTable` no-op when `RSL.isLayoutSyncCurrent()` — gate still waits for deferred attempt, not full layout work.
 - `global_script` separately schedules `R.SyncTable()` at `0.5`; `R.SyncTable` ends by calling `L.reconcileAllPlayers()` and `HO.syncAll()`. See `core/global_script.ttslua:526-536` and `lib/rotational-seat-layout.ttslua:2876-2888`.
 - **Mitigated (2026-06):** `R.SyncTable` / `resolveSeatObjectsFromTable` short-circuit when stable layout fingerprint (table key + filtered `playerToPositionMap` seats) is unchanged; `opts.force` and `R.invalidateLayoutSyncCache()` bypass (same-table `SetTableTo`, `Sync.full({ force = true })`, `NPCS.commitNpcSeatLayout`). Startup passes 2–3 should collapse to one full layout + skip logs.
@@ -238,31 +238,30 @@ The CONTROL_BOARD Apply / Clear / token-drop paths and their profilers were reti
 - **Quick win:** Count `fadeEmitterVolume` scheduled steps per sync reason to identify accidental force/duplicate paths before changing fade durations.
 - **Do not:** Bypass `Soundscape.reconcileFromState` by applying emitters from `Sync.full`; keep `markReconciledToCurrentState` / `invalidateReconcileCache` as the explicit dual-apply controls.
 
-## 5. NPC preload pool and scene NPC world reconcile
+## 5. NPC on-demand spawn and scene NPC world reconcile
 
-**Symptom (resolved):** Load used to spawn missing figurine/light pairs for every NPC character and re-apply `setCustomObject` + `reload()` on every placement sync.
+**History:** Load once spawned figurine/light pairs for every catalog NPC; a workshop-baked under-table pool (~90 pairs) replaced that, and TOR-707 retired the pool so the save no longer carries it.
 
 **Evidence (current)**
 
-- `NPCS.restoreAfterStateLoad()` → `NPCS.auditPreloadPoolFigurines` (errors if workshop `npc_figurine` missing; adopt-only `ensureNpcInPreloadZone`; spotlight repair only).
-- `applyNpcPairPhysicalPresentation` adjusts Transform scale/tooltip; ImageScalar via `applyFigurineImageScalarIfNeeded` only when seat vs off-seat target differs (no reload if already at target).
-- Figurine images injected into save via `npm run custom-ui-assets:inject-npc-world` before Cloud upload.
-- `NPCS.reconcileAllFromState` fingerprints placement intent; step 5 adopts missing instance rows without figurine spawn.
+- `NPCS.restoreAfterStateLoad()` (bootstrap `Sync.full`): `GenericNpcs.registerFromMembership`, `NPCS.registerRestoredInstancesFromState`, `NPCS.sweepOrphanNpcObjects` (one `getObjectsWithTag` per NPC tag, load only).
+- `NPCS.reconcileAllFromState` spawns only targeted NPCs (`ensureLiveNpcInstance` → `core/npc_spawn.ttslua` `spawnObjectData` with images, ImageScalar and lock in the spawn data — no `setCustomObject` / `reload()`), and despawns untargeted ones in Step Five (b).
+- Seated NPCs carry no light; a stage light is spawned with the stage placement (`ensureNpcLight`).
+- Mid-scene Dashboard adds pre-spawn hidden and wait for `NpcSpawn.figurineLoaded` (`NPCS.prewarmNpcs`, bounded wait) before committing state.
 
 **Top call sites**
 
 1. Bootstrap `Sync.full` -> `NPCS.restoreAfterStateLoad`: `core/sync.ttslua`.
-2. Scene library apply -> `Sync.full` -> `NPCS.reconcileAllFromState`.
-3. NPC panel/group actions call `spawnOrMoveIndividual`, `moveNpcToArea`, or `spawnGroup`.
+2. Scene library apply -> `Sync.full` -> `NPCS.reconcileAllFromState` (spawns the incoming cast behind the blindfold).
+3. Dashboard stage edits -> `StageApply.applyStageChanges` -> `NPCS.prewarmNpcs` -> `Sync.npcs`.
 
-**Why it was costly:** Runtime `spawnObjectData` for every catalog NPC plus per-placement `reload()` on all figurines. Workshop-baked pool removes both.
+**Cost now:** One `spawnObjectData` per figurine plus one per stage light, only for NPCs entering the world. A large incoming cast spawns in one reconcile pass.
 
 **Recommendations**
 
-- **Quick win:** Add debug counters for character count, missing preload count, spawn pairs issued, spawn callbacks completed, and light-ready delay completions. Emit through `U.emitForAgent` / TTS MCP for measured runs.
-- **Structural:** Batch missing preload spawns across short scheduled slices instead of spawning every missing NPC pair in one frame. Keep the same reconciler-owned preload intent.
-- **Structural:** Split `restoreAfterStateLoad` into "register existing restored pool" and "spawn missing preload pool" so `Sync.full` bootstrap can report exactly which part is expensive and can resume batching if interrupted.
-- **Do not:** Spawn scene NPCs directly from scene handlers outside `NPCS.reconcileAllFromState`; improve batching inside the NPC reconciler.
+- **Quick win:** Count spawns issued per reconcile and time to `figurineLoaded`; emit through `U.emitForAgent` / TTS MCP for measured runs.
+- **Structural (only if measured):** Chunk spawns for a large incoming cast across short `U.stagger` slices inside the NPC reconciler.
+- **Do not:** Spawn scene NPCs directly from scene handlers outside `NPCS.reconcileAllFromState` / `NPCS.prewarmNpcs`.
 
 ## 6. `UpdateUIDisplays` broad deltas and full refresh fallbacks
 
@@ -338,7 +337,7 @@ The CONTROL_BOARD Apply / Clear / token-drop paths and their profilers were reti
 
 - **AssetBundle audio fades:** `fadeEmitterVolume` schedules up to `duration * 10` `Wait.time` steps per emitter; paired channel crossfades also schedule old-channel silence after fade. Duplicate soundscape reconcile windows are audible and create timer pressure.
 - **Light lerps:** Seat reconciliation currently uses 2-second transitions; each `L.SetLightMode` can schedule per-property lerps and finalizers. Re-running unchanged seat applies is not a free no-op.
-- **`spawnObjectData`:** NPC preload spawns are heavy and asynchronous; each NPC can create a figurine and a paired light plus a deferred light-ready apply.
+- **`spawnObjectData`:** NPC spawns are heavy and asynchronous; each NPC entering the stage creates a figurine and a paired light (seated NPCs: figurine only).
 - **Global UI attribute churn:** `UI.show` / `UI.hide`, `U.setAttribute`, and `U.setAttributes` replicate through TTS UI. Player HUD maps and overlays already use some caches; the remaining gains are mostly narrower scope and duplicate-pass removal.
 
 ## Measurement harness ideas
@@ -354,4 +353,4 @@ The CONTROL_BOARD Apply / Clear / token-drop paths and their profilers were reti
 3. **Quick win:** Add pending fingerprint/generation guard to `Soundscape.reconcileFromState` deferred apply.
 4. **Structural:** Add `HO.reconcileForSeat`, then wire `Sync.player` to it.
 5. **Structural:** Add lighting applied-fingerprint cache with explicit invalidation/force semantics.
-6. **Structural:** Batch NPC preload spawns and split load restoration from missing-pool creation.
+6. **Structural:** Chunk NPC spawns for large incoming casts if measurement shows a stall.

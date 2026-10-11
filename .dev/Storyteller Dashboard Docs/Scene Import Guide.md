@@ -432,7 +432,7 @@ Dashboard must emit `placements` **only**.
 
 | Key                        | Import                                                                                                                                  |
 | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `preload`                  | **Rejected** (engine-managed under-table pool)                                                                                          |
+| `preload`                  | **Rejected** (retired key; NPCs spawn on demand)                                                                                          |
 | `genericMembership`        | Not validated; cloned if present. Live generic-NPC import writes this. Do not invent it unless the Scenes tab also implements generic spawn. |
 | `controlBoardSnapsEnabled` | Not validated; live default is `true`.                                                                                                  |
 

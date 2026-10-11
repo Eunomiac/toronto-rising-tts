@@ -9,7 +9,8 @@ Read this when:
 
 Source of truth:
 - `core/npcs.ttslua`
-- `core/generic_npcs.ttslua` (generic import/spawn; see [`Generic NPCs.md`](Generic%20NPCs.md))
+- `core/npc_spawn.ttslua` (figurine + light spawn data), `lib/npc_figurine_hosted_urls.ttslua` (named NPC image URLs)
+- `core/generic_npcs.ttslua` (generic import; see [`Generic NPCs.md`](Generic%20NPCs.md))
 - `core/npc_gameboard.ttslua` (+ siblings `npc_gameboard_{board,snaps,spotlight}`), `core/npc_stage_apply.ttslua` (Dashboard stage edits), `core/stage_tokens.ttslua` (spotlight tokens)
 - `lib/npcs_data.ttslua`
 - `lib/npcs_light_spawn_defaults.ttslua`
@@ -28,14 +29,14 @@ Data for all NPCs is contained in `NPCS.characters` (loaded from [`lib/npcs_data
 
 * `name`: Key in `NPCS.characters` and the spawned object name.
 * `fullName`: Display name for UI.
-* `figurine`: `scale` only (spotlight bounds math + save inject `ImageScalar`). Front/back URLs live on workshop `npc_figurine` objects, not in this registry.
+* `figurine`: `scale` only (spawn `ImageScalar` + spotlight bounds math). Front/back URLs for named NPCs live in generated [`lib/npc_figurine_hosted_urls.ttslua`](../../lib/npc_figurine_hosted_urls.ttslua); generic entries carry `figurine.front` / `figurine.back`.
 * `stats`: Arbitrary nested data; rendered by `NPCS.displayStats(npcName)`.
 * `lighting`: Optional per-mode overrides (see merge rules below).
-* `groups`: Map of group id → slot index within that group (used when spawning a whole group into an area).
+* `groups`: Map of group id → slot index within that group (NPC group enumeration).
 
 ### `npcData.figurine`
 
-* `scale`: **Number** for save inject `CustomImage.ImageScalar` and runtime spotlight bounds gating — **not** Transform `setScale`. Images are set once on workshop figurines via `npm run custom-ui-assets:inject-npc-world`.
+* `scale`: **Number** for the spawned `CustomImage.ImageScalar` and runtime spotlight bounds gating — **not** Transform `setScale`.
 
 ### `npcData.stats`
 
@@ -45,7 +46,7 @@ Flexible tree for Storyteller-readable output only.
 
 Optional overrides per mode key (`OFF`, `STANDARD`, `SPOTLIGHT`, `OFFSPOTLIGHT` — uppercase keys in `lib/npcs_data.ttslua`). **Merge rule:** for each mode, start from `NPCS.lights[mode]` and **deep-merge** `npcData.lighting[mode]` on top when present. When the instance’s `areaKey` is **`__stage_board__`** (gameboard STAGE_BOARD placements, not legacy table-side areas), **deep-merge** `NPCS.stageLights[mode]` after that. Then **deep-merge** optional live DEBUG overrides from `gameState.debug.npcLightModes[mode]` last (TOR-471). Unlisted modes use globals only. **`OFFSPOTLIGHT`** is a runtime companion mode (TOR-473): same-snap-family neighbors dim while another figurine is `SPOTLIGHT`; it is **not** written by token flip / placement scan.
 
-* **Figurine cutout scale (ImageScalar):** `figurine.scale` is baked into save `ImageScalar` at inject time. **Transform** scale is preload `0.12` vs active `1` via `setScale`. **ImageScalar** at seats is **53**; off-seat (stage, preload, areas) restores registry `figurine.scale`. Runtime applies ImageScalar only when it differs — `setCustomObject` + `reload()` on seat ↔ off-seat transitions (TOR-223); skipped when already at target (e.g. seated at 53 when data scale is 53).
+* **Figurine cutout scale (ImageScalar):** spawns set `ImageScalar` directly (seat-bound spawns **53**, otherwise registry `figurine.scale`); Transform scale is always `1`. **ImageScalar** at seats is **53**; off-seat (stage, Scatter) restores registry `figurine.scale`. Runtime applies ImageScalar only when it differs — `setCustomObject` + `reload()` on seat ↔ off-seat transitions (TOR-223); skipped when already at target (e.g. seated at 53 when data scale is 53).
 
 ---
 
@@ -101,65 +102,33 @@ Do **not** split rotation into manual `rotX` / `rotY` / `rotZ` in data. The scri
 
 Whenever the figurine **moves or rotates**, this pipeline is re-run (UI moves, `onObjectDrop`, Dashboard stage edits, and defer align hooks) so the paired light stays aligned.
 
-**Stage placement timing:** Step Two **skips preload park** when a homeland seat is stage-bound (figurine stays at the chair until Step Five). Step Five runs **`ensureNpcInPreloadZone` only when the figurine is not already on `STAGE_BOARD`** (seat/preload → stage; same presentation path as preload→stage adopt). Stage→stage Apply keeps `areaKey == STAGE_BOARD` so TOR-173 lerp eligibility can pass. When `ImageScalar` already reads registry scale but `getBounds` still reflects seat scalar **53**, `buildResolvedLightModeTable` projects bounds height from the seat→registry ratio so spotlight Y is correct without waiting on mesh reload. `deferNpcSpotlightAlignedToFigurine` still polls and refines when reload is in flight. Stage wake uses inline `SetLightMode` (pose-aware fingerprint). **`RSL.SyncTable`** skips pooled-light reconcile for `__stage_board__` NPCs and during the NPC orchestrator.
+**Stage placement timing:** a homeland seat that is stage-bound keeps its figurine at the chair until Step Five moves it (seat → stage clears seat identity and spawns the stage light). Stage→stage Apply keeps `areaKey == STAGE_BOARD` so TOR-173 lerp eligibility can pass. When `ImageScalar` already reads registry scale but `getBounds` still reflects seat scalar **53**, `buildResolvedLightModeTable` projects bounds height from the seat→registry ratio so spotlight Y is correct without waiting on mesh reload. `deferNpcSpotlightAlignedToFigurine` still polls and refines when reload is in flight. Stage wake uses inline `SetLightMode` (pose-aware fingerprint). **`RSL.SyncTable`** skips pooled-light reconcile for `__stage_board__` NPCs and during the NPC orchestrator.
 
 ### Spawn source
 
-* **Figurine:** Workshop `npc_figurine` objects in the TTS save (`npcInstance:<characterKey>` GM notes). Runtime **does not** spawn **named** figurines; `NPCS.auditPreloadPoolFigurines` errors if any registry key is missing. **Generic NPCs** are the exception — import/`ensureLiveFromMembership` spawn figurine + token + light ([Generic NPCs.md](Generic%20NPCs.md)). Figurines are **always** TTS-locked via `ensureNpcFigurinePhysicsLocked`. **`rec.locked`** is the Storyteller panel “pin in place” (blocks script moves only). **Tooltips** off in the preload pool; on when active in a stage area or at a seat.
-* **Light:** `spawnObjectData` for missing `npc_light` only (spotlight repair). Existing pooled lights are adopted by nickname `NPC Light <characterKey>`.
+* **Figurine:** spawned on demand by [`core/npc_spawn.ttslua`](../../core/npc_spawn.ttslua) (`NpcSpawn.spawnFigurine`): a full `Figurine_Custom` built from the URL catalog, tagged `npc_figurine` (+ `generic_npc` for generics), GM notes `npcInstance:<characterKey>`, parked hidden under the table with `O.hideObject` until the reconciler moves it (TOR-707). Named and generic NPCs share this path ([Generic NPCs.md](Generic%20NPCs.md)). Figurines are **always** TTS-locked via `ensureNpcFigurinePhysicsLocked`. **`rec.locked`** is the Storyteller panel “pin in place” (blocks script moves only).
+* **Light:** `NpcSpawn.spawnLight` clones [`lib/npcs_light_spawn_defaults.ttslua`](../../lib/npcs_light_spawn_defaults.ttslua) (nickname `NPC Light <characterKey>`, tag `npc_light`). Only stage / Scatter NPCs carry a light; a seated NPC's light is destroyed (`dropNpcLightForSeat`) and a fresh one spawns when they return to the stage.
 
 ---
 
-## Preload staging area (`preload`)
+## Spawn and despawn lifecycle (TOR-707)
 
-The `preload` entry in [`lib/npcs_data.ttslua`](../../lib/npcs_data.ttslua) `D.areas` is an **off-table** grid at **world Y = -200** (`groundLevel`). It is omitted from the Storyteller NPC panel (`excludeFromNpcPanel = true`). **`autoLight = false`** so parked pool lights default **OFF** (under-table pool).
+There is no under-table pool. `gameState.npcs.instances[name]` exists only while the NPC is in the world.
 
-**Global pool:** `NPCS.auditPreloadPoolFigurines` (called from `NPCS.restoreAfterStateLoad`) verifies every **named** `NPCS.characters` key has an in-world `npc_figurine` (runtime `isGeneric` entries are skipped). `ensureNpcInPreloadZone` **adopts** orphaned workshop figurines into preload slots and **repairs** missing spotlights only — it does not spawn named figurines. **Generic NPCs (TOR-560)** spawn figurines at import time and park in the **next free** preload bay; they do not take a sorted “stable” index among named keys. Activating on stage (`moveNpcToArea`) or at table seats (`assignNpcToSeat`) **moves** the pooled figurine + light; missing named figurines **error** (`npcPoolPolicyError` / audit `error()` on load).
+* **Scene transitions** (behind the blindfold): the reconciler resolves each NPC's target (stage, seat, Scatter, or `none`). Stage / seat / Scatter moves call `ensureLiveNpcInstance`, which spawns a hidden pair when the record or its figurine is missing; the move then restores it at its pose. NPCs whose target is `none` are destroyed (Step One for stage / Scatter rows, Step Five (b) for everything else). A fresh spawn snaps into place (not lerp-eligible).
+* **Mid-scene adds** (Dashboard stage edit, seat NPC, Scatter placement): `NPCS.prewarmNpcs` spawns the missing figurine hidden at `areaKey = "__spawnPark__"`, holds it from the Step Five (b) despawn, waits until the image has loaded (`spawning` / `loading_custom` false, 15 s cap), then runs the deferred edit. `StageApply` keeps one pending edit; a newer edit absorbs it (newer wins per NPC).
+* **Load:** `NPCS.restoreAfterStateLoad` re-registers generic roster rows, registers restored instances (figurine required, light optional), then `NPCS.sweepOrphanNpcObjects` drops legacy `areaKey = "preload"` records with their pairs and destroys any `npc_figurine` / `npc_light` no record references. A record whose figurine is gone is respawned at the next reconcile. Manual: `lua DEBUG.sweepOrphanNpcObjects()`.
 
-**Load audit:** `NPCS.restoreAfterStateLoad` runs `NPCS.auditDuplicatePooledSpotlights` after register and again after preload audit; duplicates log `[NPCS] ERROR load-after-preload: duplicate pooled npc_light` and raise a Storyteller alert. Manual audit: `lua DEBUG.auditDuplicatePooledSpotlights({ alert = true })`. **Dedupe (opt-in):** `lua DEBUG.auditDuplicatePooledSpotlights({ destroyDuplicates = true, phase = "manual-dedupe" })`.
+**Table seats:** The figurine receives the seat `*Object` tag (e.g. `NPC1Object`), GM Notes **`SEAT_FIGURE_<seatKey>`** (same identity model as PC figurines), and is placed at its numbered table slot by the figurine seat layout (`lib/figurine_seat_layout.ttslua`); seat furniture follows from `C.SeatRoleOffsets`. Display **Name** stays the NPC **full name** (tooltip). Unseating restores `npcInstance:` GM Notes. Workshop **`SEAT_LIGHT_1/2_NPC*`** lights (virtual hand-zone rig) are reconciled via `L.reconcileForPlayer`.
 
-**Table seats:** The pooled figurine receives the seat `*Object` tag (e.g. `NPC1Object`), GM Notes **`SEAT_FIGURE_<seatKey>`** (same identity model as PC figurines), and is placed at its numbered table slot by the figurine seat layout (`lib/figurine_seat_layout.ttslua`); seat furniture follows from `C.SeatRoleOffsets`. Display **Name** stays the NPC **full name** (tooltip). Unseating restores `npcInstance:` GM Notes. The paired **area spotlight** is moved to the character’s **preload slot** (OFF, hidden, small scale) while seated; workshop **`SEAT_LIGHT_1/2_NPC*`** lights (virtual hand-zone rig) are reconciled via `L.reconcileForPlayer`.
-
-`gameState.sessionScene.npcWorld` carries **`byArea` only** for Scene Constructor intent. **`Sync.full`** → **`NPCS.reconcileAllFromState`** resolves placement intent (Step Zero), clears stale area/seat placements, seats allowed NPCs synchronously via rotational layout, applies narrative presence visibility, then populates stage areas — without wholesale stash-all before every `byArea` apply.
-
----
-
-## NPC Data Structure: `NPCS.areas`
-
-Each area key maps to:
-
-```lua
-{
-  rotation = 0,       -- degrees: azimuth of area center around table origin (XZ)
-  distance = 100,     -- distance from (0,0,0) in XZ to area center
-  groundLevel = -40,  -- world Y for figurine position (Figurine_Custom anchor is at the bottom)
-  autoLight = false,  -- optional: when true, new spawns default to STANDARD light; when false, OFF
-  excludeFromNpcPanel = false, -- optional: when true, area is hidden from Storyteller NPC panel row logic
-  positions = {       -- 1-based slot offsets in area-local XZ (before rotation)
-    { x = 0, z = 0 },
-    { x = 10, z = 5 },
-  },
-}
-```
-
-World slot center:
-
-* `areaCenter = (sin(rot)*distance, 0, cos(rot)*distance)` using the same convention as your scripting (match `core/npcs.ttslua`).
-* Rotate each `{x,z}` by `area.rotation`, add to `areaCenter`.
-* Figurine `posY` = `groundLevel` (bottom-anchored custom figurine; no bounds half-height offset).
-* Figurine `rotY` = yaw toward table center **plus** `AREA_NPC_FIGURINE_YAW_OFFSET_DEG` (180°) in `core/npcs.ttslua` so `Figurine_Custom` front/back images match the intended facing; this applies only to **area** placement (`applyFigurinePlacement`). Table seats use rotational layout **`SEAT_FIGURE`** frames (no area yaw offset).
-
-### Area eligibility (spawn menus)
-
-* **Spawn group:** area must be **completely empty** (no spawned NPCs in any slot).
-* **Spawn individual:** area is valid if **at least one slot is free** (partial occupancy allowed). If the NPC already exists, they are **moved** to the next free slot in the chosen area.
+`gameState.sessionScene.npcWorld.placements` carries stage intent (gameboard u, v, yaw, light mode). **`Sync.full`** → **`NPCS.reconcileAllFromState`** resolves placement intent (Step Zero), clears stale stage/seat placements, seats allowed NPCs synchronously via rotational layout, applies narrative presence visibility, places stage NPCs, then despawns untargeted NPCs.
 
 ---
 
 ## Storyteller UI (summary)
 
 * **Storyteller Dashboard** (Scenes tab) is the Storyteller surface for NPC stage placements and stage Clear; it sends `GlobalDashboardScenesApply` → `StageApply.applyStageChanges`. The **Stage Control board** only holds spotlight tokens for the hold hotkey - see [Storyteller Gameboard Control.md](Storyteller%20Gameboard%20Control.md).
-* Legacy **`panel_npcs`** toolbar tab removed (TOR-181); area spawn/move/clear flows use scene `byArea` + reconciler or Dashboard stage edits only.
+* Legacy **`panel_npcs`** toolbar tab removed (TOR-181); NPC spawn/move/clear flows go through scene placements + the reconciler or Dashboard stage edits only.
 * **Manual drags:** dropping a tagged NPC figurine refreshes its paired light from the same math as above.
 * **Admin scene transitions:** switching from admin `DARK` to `STANDARD`/`BRIGHT` re-applies each spawned NPC's current light mode after staged scene lighting completes.
 
@@ -174,10 +143,6 @@ MyleneHamelin = {
   name = "MyleneHamelin",
   fullName = "Mylene Hamelin",
   figurine = {
-    images = {
-      front = "https://example.com/mylene_front.png",
-      back = "https://example.com/mylene_back.png",
-    },
     scale = 15,
   },
   groups = {
@@ -274,41 +239,6 @@ NPCS.lights = {
     angle = 35,
     -- Legacy placement: 0.3 of height below top, 20 units inward (negative distance), aim mid-figure.
     positioning = { positionYShift = 0.3, distance = -20, lookAtYShift = 0.2 },
-  },
-}
-```
-
-### `NPCS.areas`
-
-```lua
-NPCS.areas = {
-  centerForward = {
-    rotation = 0,
-    distance = 100,
-    groundLevel = -40,
-    positions = {
-      { x = 0, z = 0 },
-      { x = 10, z = 5 },
-      { x = -10, z = 5 },
-      { x = 20, z = 10 },
-      { x = -20, z = 10 },
-      { x = 30, z = 15 },
-      { x = -30, z = 15 },
-    },
-  },
-  nearLeft = {
-    rotation = 80,
-    distance = 80,
-    groundLevel = -40,
-    positions = {
-      { x = 0, z = 0 },
-      { x = 10, z = 5 },
-      { x = -10, z = 5 },
-      { x = 20, z = 10 },
-      { x = -20, z = 10 },
-      { x = 30, z = 15 },
-      { x = -30, z = 15 },
-    },
   },
 }
 ```

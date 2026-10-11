@@ -26,7 +26,7 @@ Read this when:
 Source of truth:
 
 - `ui/Global.join_minimal.xml`
-- `core/global_script.ttslua` (`HUD_phaseArmJoinXml`, `HUD_phaseRestoreJoinAssets` / `Hud` / `Emitters` / `Figurines`)
+- `core/global_script.ttslua` (`HUD_phaseArmJoinXml`, `HUD_phaseRestoreJoinAssets` / `Hud` / `Emitters`)
 - `core/join_cold_pools.ttslua`
 - [Join-Load Inventory](../Multiplayer%20Functionality/Join-Load%20Inventory.md) Experiment #0
 - Linear [TOR-439](https://linear.app/eunomiac-dev/issue/TOR-439/players-join-stress-minimal-global-xmlui-spike-armrefresh)
@@ -36,7 +36,7 @@ Verification:
 - this playbook (Save & Play + Host-alone start + one join client)
 - Host-only remount smoke (no joiner): [TOR-439-join-xml-spike-verify-solo.md](TOR-439-join-xml-spike-verify-solo.md)
 
-Prove whether joining into an **armed** Host (minimal Global XmlUI + slim CustomUIAssets + cold preload pools), then restoring in stages, changes post-Loading connection timeouts versus the normal full HUD with Defer triad on.
+Prove whether joining into an **armed** Host (minimal Global XmlUI + slim CustomUIAssets + cold soundscape emitters), then restoring in stages, changes post-Loading connection timeouts versus the normal full HUD with Defer triad on.
 
 Fixture seat below: **Purple**. Edit `FIXTURE.joinColor` in Code Block 0 if the joining player’s chronicle seat is a different PC color.
 
@@ -46,8 +46,8 @@ Fixture seat below: **Purple**. Edit `FIXTURE.joinColor` in Code Block 0 if the 
 | When                                      | Action                                                                                     | Purpose                                                                                                                                                                                                                                                          |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Before this experiment**                | **Save & Play** once (current TOR-439 Lua), then **File → Load** as multiplayer Host alone | Puts scripts into TTS. Start the control/treatment run from that load.                                                                                                                                                                                           |
-| **During control → treatment**            | Stay in the same Host session. **No** File Save / File Load / Save & Play mid-run          | Arm live → joiner connects → Auto-Seat/Connect → staged restore **1–4**.                                                                                                                                                                                         |
-| **Do not**                                | File Save / Load **after Disarm** or after staged restore                                  | Disarm and buttons **1–4** are in-session restore paths, not save cues.                                                                                                                                                                                          |
+| **During control → treatment**            | Stay in the same Host session. **No** File Save / File Load / Save & Play mid-run          | Arm live → joiner connects → Auto-Seat/Connect → staged restore **1–3**.                                                                                                                                                                                         |
+| **Do not**                                | File Save / Load **after Disarm** or after staged restore                                  | Disarm and buttons **1–3** are in-session restore paths, not save cues.                                                                                                                                                                                          |
 | **Separate Host-alone Loading test only** | After Arm, **while still armed**: **File → Save** (not Save & Play) → **File → Load**      | Measures Loading N/M with slim CustomUIAssets. Not part of this multiclient control/treatment sequence. Details: [Join-Load Inventory § Armed-save load](../Multiplayer%20Functionality/Join-Load%20Inventory.md#armed-save-load-customuiassets-q1--host-alone). |
 | **Host session died**                     | Reload multiplayer Host alone; Save & Play only if scripts drifted                         | Recovery; re-run from Code Block 0 / Step 2.                                                                                                                                                                                                                     |
 
@@ -82,13 +82,13 @@ Fixture seat below: **Purple**. Edit `FIXTURE.joinColor` in Code Block 0 if the 
 
 **Step 5.** Execute Lua Code — Code Block A (prints control checklist; asserts still unarmed).
 
-**Step 6.** **If the joiner is Grey: on PCs panel for the fixture color, click Auto-Seat, then Connect.** Wait ~10s. Do **not** press restore **1–4** and do **not** click Disarm. Record: timeout after Auto-Seat/Connect Y/N.
+**Step 6.** **If the joiner is Grey: on PCs panel for the fixture color, click Auto-Seat, then Connect.** Wait ~10s. Do **not** press restore **1–3** and do **not** click Disarm. Record: timeout after Auto-Seat/Connect Y/N.
 
 **Step 7.** **Kick or disconnect the join client.** Host alone again. If the Host session died, reload multiplayer Host alone (Save & Play only if scripts drifted), then re-run from Step 2 before treatment.
 
 > **Step 8.** Execute Lua Code — Code Block B (treatment prep: keep defer triad; ensure unarmed).
 
-**Step 9.** **On Phases: click Arm Join XML once.** Wait for console `[JoinXmlAssets] setCustomAssets slim`, `[JoinColdPools]` cold, and `[SeatUI] Full UI resync sent (Arm Join XML)`. Host HUD should shrink to slim join chrome (Phases still usable; restore buttons **1–4** live there).
+**Step 9.** **On Phases: click Arm Join XML once.** Wait for console `[JoinXmlAssets] setCustomAssets slim`, `[JoinColdPools]` cold, and `[SeatUI] Full UI resync sent (Arm Join XML)`. Host HUD should shrink to slim join chrome (Phases still usable; restore buttons **1–3** live there).
 
 **Step 10.** Execute Lua Code — Code Block C (assert armed + Defer setXML on).
 
@@ -104,9 +104,7 @@ Fixture seat below: **Purple**. Edit `FIXTURE.joinColor` in Code Block 0 if the 
 
 **Step 16.** **Press restore `3 Emitters` once.** Wait for emitters restored. Record: survive step 3 Y/N.
 
-**Step 17.** **Press restore `4 Figurines` once.** Wait for figurines/lights restored / pools warm. Record: survive step 4 Y/N.
-
-**Step 18.** Execute Lua Code — Code Block E (assert pools warm; dump results reminder).
+**Step 17.** Execute Lua Code — Code Block E (assert pools warm; dump results reminder).
 
 ---
 
@@ -220,7 +218,7 @@ U.chain({
     print("  CONTROL survived to Grey Y/N = ?")
   end,
   function()
-    print("▶▶▶ HUMAN ▶▶▶ If joiner is Grey: Auto-Seat then Connect for " .. tostring(FIXTURE.joinColor) .. ". Do NOT press restore 1-4 or Disarm. Record timeout after seat/connect. Then disconnect joiner so Host is alone again.")
+    print("▶▶▶ HUMAN ▶▶▶ If joiner is Grey: Auto-Seat then Connect for " .. tostring(FIXTURE.joinColor) .. ". Do NOT press restore 1-3 or Disarm. Record timeout after seat/connect. Then disconnect joiner so Host is alone again.")
   end,
 }, { maxWait = 30 })
 ```
@@ -349,7 +347,7 @@ U.chain({
     print("  TREATMENT survive restore 2 HUD Y/N = ?")
   end,
   function()
-    print("▶▶▶ HUMAN ▶▶▶ Press restore 3 Emitters (wait), then 4 Figurines (wait). Record survive each. Then paste Code Block E.")
+    print("▶▶▶ HUMAN ▶▶▶ Press restore 3 Emitters (wait). Record survive. Then paste Code Block E.")
   end,
 }, { maxWait = 60 })
 ```
@@ -371,7 +369,7 @@ U.chain({
   function()
     local JoinColdPools = require("core.join_cold_pools")
     if JoinColdPools.isActive() == true then
-      error("[FAIL] cold pools still active — finish 3 Emitters + 4 Figurines")
+      error("[FAIL] cold pools still active — finish 3 Emitters")
     end
     if S.getStateVal("connectionControls", "joinXmlArmed") == true then
       error("[FAIL] joinXmlArmed still true")
@@ -392,7 +390,7 @@ U.chain({
     print("  CONTROL Loading / post-table / Grey / after Auto-Seat")
   end,
   function()
-    print("  TREATMENT join / after Auto-Seat / restore 1-4 / Host HUD restored")
+    print("  TREATMENT join / after Auto-Seat / restore 1-3 / Host HUD restored")
   end,
   function()
     print("▶▶▶ HUMAN ▶▶▶ Verification complete. No File Save/Load needed. (Armed-save Loading test is a separate Host-alone procedure.)")

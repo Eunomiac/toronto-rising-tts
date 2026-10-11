@@ -270,7 +270,7 @@ Area keys: `centerForward`, `nearLeft`, `nearRight`, `farLeft`, `farRight` (must
 
 **Offline migration** for saves / library rows that still have `byArea`: `npm run npc-placements:migrate-byarea` (see `.dev/scripts/migrate_npc_byarea_to_placements.mjs`).
 
-Runtime NPC instances remain under **`gameState.npcs.instances`**. **Do not author `npcWorld.preload`** — v2 import rejects it; the engine maintains the under-table preload pool automatically.
+Runtime NPC instances remain under **`gameState.npcs.instances`**. **Do not author `npcWorld.preload`** — v2 import rejects it; NPCs not on the stage or a seat are simply not in the world (they spawn on demand).
 
 ### Present day clock (`clock.isPresentDay`)
 

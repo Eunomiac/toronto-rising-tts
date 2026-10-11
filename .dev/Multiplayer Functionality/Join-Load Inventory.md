@@ -84,9 +84,9 @@ Outputs: `.dev/build-logs/save-loading-assets-latest.{csv,json,md}` (+ `*-extras
 | Category | ~Count | Notes |
 | --- | ---: | --- |
 | `cardOrDeck` | 318 | ContainedObjects multiply rows |
-| `dice` | 286 | Includes preload pool |
+| `dice` | 286 | Included the dice preload pool (retired in TOR-708) |
 | `tile` | 157 | Tokens, companions, etc. (snapshot before TOR-687 removed control tokens) |
-| `figurine` | 116 | NPC preload pool under table |
+| `figurine` | 116 | NPC preload pool under table (retired in TOR-707) |
 | `infiniteBag` | 22 | |
 | other / customImage | ~31 | |
 
@@ -128,7 +128,7 @@ Host Lua here is **cheap** compared to ~2000 loading-bar rows. The dangerous Hos
 | 1 | **Operational playbook** (existing Defer toggles) | Immediate; no architecture change | Needs author/player discipline | Use for struggling seats every join |
 | 2 | **Prune unused CustomUIAssets** | Cuts Loading bar without runtime batching | Need reference audit so used art stays | `tts-save:extract-assets` / custom-ui prune dry-run |
 | 3 | **Slim Intermission CustomUIAssets + `UI.setCustomAssets`** | Large join win if engine loads full registry on connect | API **replaces** entire registry (no merge); Host must restore on Refresh/Disarm | TOR-439 Arm: `getCustomAssets` backup → slim keep-list → `setCustomAssets`; Refresh restores |
-| 4 | **Cold table: park preload pools** (NPC figurines, dice, emitters) | Shrinks ObjectStates ~100–400+ | GUID-preserving destroy/restore; late joiners still need warm before use | TOR-439 Arm: `JoinColdPools.beginCold` / `beginWarm` (preload NPCs + soundscape emitters). Dice pool still open. |
+| 4 | **Cold table: park pools** (soundscape emitters) | Shrinks ObjectStates | GUID-preserving destroy/restore; late joiners still need warm before use | TOR-439 Arm: `JoinColdPools.beginCold` / `beginWarm` (soundscape emitters). The NPC and dice pools no longer exist (TOR-707 / TOR-708). |
 | 5 | **Lobby save vs full chronicle save** | Clearest engine win | Ops heavy (two saves, promotion workflow) | Only if prune + batches insufficient |
 
 ### Experiment #0 — minimal Global XmlUI (TOR-439)
@@ -164,11 +164,10 @@ Still open:
 
 ### Cold ObjectStates pools (TOR-439)
 
-Arm also destroys **preload-area** NPC figurines + paired lights and all **soundscape emitters**, snapshots `getData()`, and restores via `spawnObjectData` with **`GUID` kept**. Wait until `getObjectFromGUID` is nil before spawn; assert GUID after warm. Module: `core/join_cold_pools.ttslua`.
+Arm also destroys all **soundscape emitters**, snapshots `getData()`, and restores via `spawnObjectData` with **`GUID` kept**. Wait until `getObjectFromGUID` is nil before spawn; assert GUID after warm. Module: `core/join_cold_pools.ttslua`.
 
-- Seated / stage NPCs are **not** destroyed.
-- Dice preload pool is **not** included yet (larger ObjectStates slice — follow-on).
-- Soundscape `reconcileFromState` and NPC preload audit **no-op** while `joinColdPoolsActive`.
+- NPCs and dice have no cold pool: NPC figurines spawn on demand (TOR-707) and dice are taken from bags at roll time (TOR-708).
+- Soundscape `reconcileFromState` **no-ops** while `joinColdPoolsActive`.
 - Backup persists in `connectionControls.joinColdPoolsBackup` (can be large — File Save after Arm may grow `LuaScriptState`).
 
 ### `UI.setCustomAssets` research notes
@@ -212,5 +211,4 @@ If hang is on Loading, Host Lua defer alone cannot fix it — pursue ranks 2–4
 - Experiment #0 author multiclient verify (TOR-439) — control vs treatment above.
 - Linear research follow-ons from this inventory (CustomUIAssets / ObjectStates).
 - Experiment #1: TOR-439 Arm `setCustomAssets` slim + File Save Loading N/M (prefer runtime API over save-JSON prune).
-- Experiment #1b: TOR-439 Arm cold pools (NPC preload figurines/lights + soundscape emitters) via GUID-preserving `spawnObjectData`; dice pool still open.
-- Experiment #2: Host-warmed NPC/dice preload (ObjectStates cold start).
+- Experiment #1b: TOR-439 Arm cold pools (soundscape emitters) via GUID-preserving `spawnObjectData`.

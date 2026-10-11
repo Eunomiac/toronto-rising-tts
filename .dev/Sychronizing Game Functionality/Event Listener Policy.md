@@ -104,7 +104,7 @@ Columns: **Delivery** = host-executed event vs clicker-only. **Tier** = A UI / B
 | --- | --- |
 | `Sync.full` | Full reconcile (state → world) |
 | `Sync.npcs` | Domain reconcilers; marks the dashboard `seats` slice |
-| `Sync.soundscape` / `Sync.lightRef` / `Sync.npcCutouts` | Domain reconcilers |
+| `Sync.soundscape` / `Sync.lightRef` | Domain reconcilers |
 | `Sync.player` | Per-seat announcer: lights, HUD, overlays, dice bags, CSHEET slices, PCs row (visible only), `DashPush.seat` (TOR-677 / TOR-676) |
 | `Sync.ui` | UI-only refresh; `UpdateUIDisplays` ends by marking the matching dashboard world slices (`DashPush.markWorldDirty`, one coalesced flush, TOR-679) |
 

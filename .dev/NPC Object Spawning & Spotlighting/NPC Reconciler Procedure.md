@@ -3,7 +3,7 @@
 ## Agent Routing
 
 Read this when:
-- changing `NPCS.reconcileAllFromState`, NPC stage/table/preload movement, or seat assignment reconciliation
+- changing `NPCS.reconcileAllFromState`, NPC stage/table movement, spawn/despawn, or seat assignment reconciliation
 - debugging conflicts between `sessionScene.npcWorld.placements`, `sessionScene.seatSlots`, and `seatLayout.occupiedNPCSlots`
 
 Source of truth:
@@ -17,7 +17,7 @@ Verification:
 - Scenes tab stage edits from the Storyteller Dashboard ([Scenes-E2E](../E2E%20Playbooks/Scenes-E2E.md))
 - relevant NPC step-by-step playbooks in `.dev/Step-By-Step Playbooks/`
 
-This document defines the **control flow** for reconciling NPC figurines in two locations: **NPC areas** in front of the table, and **NPC seats** around the table. It describes intended outcomes (where each NPC should end up, and what state should record), not the low-level mechanism for hiding objects or applying light modes — those may continue to use existing helpers as long as the outcomes match.
+This document defines the **control flow** for reconciling NPC figurines in two locations: the **stage** in front of the table, and **NPC seats** around the table. NPCs with neither are not in the world — figurines and stage lights spawn on demand and are destroyed when no longer targeted. It describes intended outcomes (where each NPC should end up, and what state should record), not the low-level mechanism for hiding objects or applying light modes — those may continue to use existing helpers as long as the outcomes match.
 
 Related: [`Reconciler Contract.md`](../Sychronizing%20Game%20Functionality/Reconciler%20Contract.md), [`NPC Object Overview.md`](NPC%20Object%20Overview.md), [`Scene Constructor Overview.md`](../Scene%20Constructor/Scene%20Constructor%20Overview.md).
 
@@ -66,11 +66,11 @@ For each character key that appears anywhere in the above (or that currently has
 | --- | --- | --- |
 | 1 | Character appears in `placements` | **Stage** — u, v, yaw on STAGE_BOARD |
 | 2 | Else, seat slot names character and table includes that seat key | **Seat** — `NPCn` |
-| 3 | Else | **Preload** — off-table pool |
+| 3 | Else | **None** — not in the world (figurine + light destroyed) |
 
 Characters with target **Stage** are **stage-bound**: Steps Three must not seat them. Characters with target **Seat** are **seat-bound**: Step Five does not apply a stage placement for them.
 
-While `currentPhase` is Spotlight or End, Step Zero skips stage and Scatter targets. Those figurines resolve to **Preload** even if a placement row is still in state. Step Five does not run Scatter world layout in those phases.
+While `currentPhase` is Spotlight or End, Step Zero skips stage and Scatter targets. Those NPCs resolve to **None** even if a placement row is still in state. Step Five does not run Scatter world layout in those phases.
 
 ### Per-seat resolved flags
 
@@ -96,14 +96,14 @@ Steps run in this order:
 | Step | Purpose |
 | --- | --- |
 | **Zero** | Resolve intent (above) |
-| **One** | Remove NPCs that should not remain in stage areas |
+| **One** | Remove NPCs that should not remain on the stage or in Scatter |
 | **Two** | Remove NPCs that should not remain physically at the table |
 | **Three** | Seat NPCs that are seat-bound |
 | **Layout commit A** | One table layout pass (`RSL.SyncTable` → figurine-offset occupant rigs) |
 | **Four** | Apply narrative presence (visibility / seat lights) on **assigned** seats |
-| **Five** | Stage placements, legacy areas, then preload pool (-200) |
+| **Five** | (a) Stage placements; (b) despawn NPCs whose target is None |
 
-**Layout commits:** Rotational seating is table-wide. Do not treat Step Three as N independent moves. After Step Three finishes all tag/instance updates for seat-bound NPCs, run **one** layout sync for the active table (seat objects placed from `C.SeatRoleOffsets` relative to each occupant figurine). Step Five moves figurines out of seats/preload into areas; if any seat-bound NPC was incorrectly left at the table, do not run a second full layout unless Step Three runs again.
+**Layout commits:** Rotational seating is table-wide. Do not treat Step Three as N independent moves. After Step Three finishes all tag/instance updates for seat-bound NPCs, run **one** layout sync for the active table (seat objects placed from `C.SeatRoleOffsets` relative to each occupant figurine). Step Five moves figurines out of seats onto the stage; if any seat-bound NPC was incorrectly left at the table, do not run a second full layout unless Step Three runs again.
 
 **When layout commit A forces the layout (TOR-668):** `commitNpcSeatLayout` calls `RSL.SyncTable({ force = true })` only when one of these holds — the orchestrator was called with `force`; Step Two cleared a seat or Step Three assigned one this pass (`npcSeatWorkThisPass`); the commit key changed (table key + occupied NPC seats + per-seat `physicalSeatAllowed` + `FSL.occupancyFingerprint()`); or `RSL.isLayoutSyncCurrent()` is false. Otherwise (for example a stage-only Apply) it skips the layout and runs only the layout's tail: `L.reconcileAllPlayers({ skipNpcSeats = true, skipStageBoundNpcSeats = true })` and `HO.syncAll()`. Trace Sync reports the decision as `NPCS.commitNpcSeatLayout` (`outcome = layout | skipped`).
 
@@ -111,22 +111,22 @@ Steps run in this order:
 
 ---
 
-## Step One: Remove absent NPCs from NPC areas
+## Step One: Remove absent NPCs from the stage
 
-Compare resolved intent to NPCs currently in **stage areas** (not preload). Return to preload (normal procedures) any NPC who:
+Compare resolved intent to NPCs currently on the **stage** or in **Scatter** groups. Any NPC who:
 
-1. Has no area row in resolved intent (target is **Seat** or **Preload**), or
-2. Was in an area slot that resolved intent assigns to a **different** character.
+1. Has no stage row in resolved intent (target is **Seat** or **None**), or
+2. Was in a slot that resolved intent assigns to a **different** character
 
-**Stage reposition (TOR-173):** When resolved target remains **Stage** but u/v/yaw changed, Step One does **not** park the figurine or pooled spotlight to preload — Step Five moves them in place (lerp on Apply, or instant snap). Same deferral pattern as seat-bound stage drops (case 4).
+is despawned when the target is **None** (figurine + light destroyed, record dropped), or left live for Step Three when the target is **Seat**.
 
-Do not remove NPCs from preload here; preload is the hub between steps.
+**Stage reposition (TOR-173):** When resolved target remains **Stage** but u/v/yaw changed, Step One leaves the figurine and light in place — Step Five moves them in place (lerp on Apply, or instant snap). Same deferral pattern as seat-bound stage drops (case 4).
 
 ---
 
 ## Step Two: Remove absent NPCs from table seats
 
-Compare resolved intent to NPCs **physically at the table** (tagged `NPC<#>Object`, chair/lights active). Return figurine to preload and hide seat props (normal procedures) when:
+Compare resolved intent to NPCs **physically at the table** (tagged `NPC<#>Object`, chair/lights active). Remove the figurine from the seat and hide seat props (normal procedures) when:
 
 ### Cases 1–2 — Unassign (physical **and** state)
 
@@ -139,7 +139,7 @@ Also clear seat assignment in state (`occupiedNPCSlots[NPCn] = false` and matchi
 
 The active table's `playerToPositionMap` does **not** include this seat key (e.g. Table B1 only has `NPC1`), but resolved intent still assigns a character to `NPC2`.
 
-- **Physical:** Remove from table (same hide/preload/untag process as below).
+- **Physical:** Remove from table (same hide/untag process as below); the figurine is despawned in Step Five (b) because its target is None.
 - **State:** **Keep** assignment in `occupiedNPCSlots` / `seatSlots` so a later switch to a larger table can run Step Three without re-authoring.
 
 Do **not** use the case 1–2 state clear for case 3.
@@ -149,8 +149,8 @@ Do **not** use the case 1–2 state clear for case 3.
 The assigned character has a row in `sessionScene.npcWorld.placements` (stage-bound) but is still listed in `occupiedNPCSlots` for a table seat.
 
 - **Physical:** Remove figurine from the seat (untag `NPC<#>Object`, hide seat spotlight pairing) — same as case 3 physical off.
-- **State:** **Keep** `occupiedNPCSlots` / `seatSlots` so **Clear** or empty `placements` returns the NPC to that seat (Step Three), not preload as the end state.
-- **Step One:** When stage intent drops and resolved target is **Seat**, do not park the **figurine** to preload before Step Three (Step Three seats from stage or preload). Step Three still **parks the pooled area spotlight** to preload (OFF, hidden) via `parkPooledSpotlightForSeatedNpc`.
+- **State:** **Keep** `occupiedNPCSlots` / `seatSlots` so **Clear** or empty `placements` returns the NPC to that seat (Step Three).
+- **Step One:** When stage intent drops and resolved target is **Seat**, the figurine stays live for Step Three to seat. Seating destroys the stage light (`dropNpcLightForSeat`); seated NPCs carry no light.
 
 ### Narrative absence — do not unseat
 
@@ -163,7 +163,7 @@ For any Step Two removal (cases 1–3):
 1. Hide all objects tagged `NPC<#>Object` for that slot:
    - `G.GUIDS.SEAT_CHAIR_NPC<#>` — normal hide procedures
    - `G.GUIDS.SEAT_LIGHT_1_NPC<#>` and `G.GUIDS.SEAT_LIGHT_2_NPC<#>` — normal hide procedures
-   - Figurine — return to preload (normal procedures)
+   - Figurine — untagged here; destroyed in Step Five (b) when its target is None
 2. Remove `NPC<#>Object` from the figurine; restore `npc_figurine`
 3. Deactivate table `components` (`C.Tables`) whose `usedBy` matches that slot (when slot is not physically used)
 
@@ -182,7 +182,7 @@ Skip only if **all** of the following hold:
 - Resolved assignment for this seat is the same character as last successful reconcile (or same as current `occupiedNPCSlots`)
 - Figurine has `NPC<#>Object` tag (not merely `npc_figurine`)
 - Instance record `seatedSeatKey` matches this seat
-- Figurine is not in a stage area or preload pool (i.e. it is seat-placed)
+- Figurine is not on the stage, in Scatter, or freshly spawned (`__spawnPark__`) — i.e. it is seat-placed
 - Layout commit A has already run for the current table key since the last seat assignment change
 
 If any check fails, treat the seat as **needs placement** even when assignment did not change.
@@ -190,11 +190,11 @@ If any check fails, treat the seat as **needs placement** even when assignment d
 ### Placement process (per seat that needs placement)
 
 1. Confirm `tableHasSlot` for this seat. If false, stop (case 3 should have run in Step Two; do not seat).
-2. Ensure figurine is in **preload** (retreat from area if needed — normal procedures).
+2. `ensureLiveNpcInstance(name, { forSeat = true })` — reuse the live figurine (from the stage or a previous seat) or spawn a hidden one with seat ImageScalar and no light.
 3. Remove `npc_figurine`; add `NPC<#>Object`.
 4. Include figurine, `G.GUIDS.SEAT_CHAIR_NPC<#>`, `G.GUIDS.SEAT_LIGHT_1_NPC<#>`, and `G.GUIDS.SEAT_LIGHT_2_NPC<#>` in the next **Layout commit A** — each seat object is placed from its `C.SeatRoleOffsets` row relative to the occupant figurine at that numbered table slot.
 5. Show chair and figurine to all players (normal visibility procedures).
-6. Hide paired **area** spotlight while seated (normal procedures); workshop seat lights follow lighting mode after Step Four.
+6. Destroy any stage light the NPC carried (`dropNpcLightForSeat`); workshop seat lights follow lighting mode after Step Four.
 
 After all seats for this pass are prepared, run **Layout commit A** once.
 
@@ -202,7 +202,7 @@ After all seats for this pass are prepared, run **Layout commit A** once.
 
 ## Step Four: Activate/deactivate occupied seats by narrative presence
 
-Runs after **Layout commit A**. Applies only to seats where `assigned` is true (PC and NPC). Does **not** change assignment or preload/area placement.
+Runs after **Layout commit A**. Applies only to seats where `assigned` is true (PC and NPC). Does **not** change assignment or stage placement.
 
 Seat slots can be **assigned but inactive** when `present` is false.
 
@@ -215,13 +215,13 @@ Seat slots can be **assigned but inactive** when `present` is false.
 
 **NPC slot:**
 
-1. Pooled figurine visible to all when present
+1. Seated figurine visible to all when present
 2. Chair invisible to all player colors when not present; visible when present
 3. Seat lights 1 and 2 off when not present
 
 ### Activate (assigned, present)
 
-Reverse the above: PC catalog entries restored via `O.restoreObject` (or active `C.HiddenObjects` visibility when already on-table); pooled NPC figurine and chair visible to all; seat lights 1 and 2 per lighting mode.
+Reverse the above: PC catalog entries restored via `O.restoreObject` (or active `C.HiddenObjects` visibility when already on-table); seated NPC figurine and chair visible to all; seat lights 1 and 2 per lighting mode.
 
 *Implementation note:* PC and NPC paths may use different existing helpers as long as the outcomes above are met. **Off-table Y bury** (absent PC catalog entries, absent piles, inactive NPC seat objects, gameboard stashes) must use `O.hideObject` / `O.restoreObject` — see [`docs/solutions/lua-hide-restore-policy.md`](../../docs/solutions/lua-hide-restore-policy.md). PC absent/present catalog sync: `O.reconcilePcSeatHiddenObjectsFromState` / `O.applyPcSeatHiddenObjectPresence`. Also: `L.reconcileForPlayer`, NPC tag visibility in `core/npcs.ttslua`. `NPCS.reconcileAllFromState` Step Four applies PC hide/restore and NPC figurine/chair invisibility and seat lights after layout commit A.
 
@@ -235,16 +235,16 @@ Step Five runs two passes (implementation order):
 
 | Pass | Target | Action |
 | --- | --- | --- |
-| **(a) Stage** | `sessionScene.npcWorld.placements` (gameboard u/v) | **Instant:** `moveNpcToStagePlacement` for preload→stage, seat→stage, load, blindfold, Clear, non-Apply sync. **Lerp (TOR-173):** when `Sync.npcs` passes `reason = stage_apply` + `animateStageMoves` and `NPCStageLerp.evaluateCandidate` passes — commit state first, then one `GlobalStageLerpOrchestrator` batch (area-grouped, center-out). Preload prep (`ensureNpcInPreloadZone`) runs only when the figurine is **not** already on `STAGE_BOARD` — otherwise stage→stage would clear `areaKey` and force snaps (`not_already_on_stage`). |
-| **(b) Preload** | Step Zero target **Preload** | `ensureNpcInPreloadZone` — world Y = `areas.preload.groundLevel` (**-200**) |
+| **(a) Stage** | `sessionScene.npcWorld.placements` (gameboard u/v) | **Instant:** `moveNpcToStagePlacement` (spawns via `ensureLiveNpcInstance` when needed, then `ensureNpcLight`) for new spawns, seat→stage, load, blindfold, Clear, non-Apply sync. **Lerp (TOR-173):** when `Sync.npcs` passes `reason = stage_apply` + `animateStageMoves` and `NPCStageLerp.evaluateCandidate` passes — commit state first, then one `GlobalStageLerpOrchestrator` batch (area-grouped, center-out). A fresh spawn is not lerp-eligible (`not_already_on_stage`) and snaps into place. |
+| **(b) Despawn** | Step Zero target **None** | `reconcileStepFiveDespawnUntargeted` — destroy figurine + light, drop the record. Skips NPCs held by `NPCS.prewarmNpcs` (mid-scene spawn waiting for its image). |
 
 **Stage lerp eligibility (Dashboard stage edits only):** figurine already on `STAGE_BOARD`; no blindfold/transition; start or end light involves `STANDARD` (or `SPOTLIGHT` when held); position/yaw and/or mode change. Same-snap mode-only changes animate light (G/H timing) with frozen position. Escape hatch: blindfold or re-Apply mid-flight → snap all to committed state. Large batches stay on the lerp path; `staggerCandidateScale` / `staggerScaleMax` stretch **between-family** delays only. **Grouping:** anchor-family `familyId` (same as anchor spread / `tryAnchorFamilyGroupSpread`); leader (`familyK == 0`) moves first, siblings follow in `orderFamilySnapsForAnchorSpread` center-out order with even `withinFamilyStaggerSec`. Multiple families order center-out on destination anchor distance (tie-break: anchor travel). Tunables: `lib/npc_gameboard_data.ttslua` → `D.STAGE_PLACEMENT_LERP`.
 
-Characters with active **placements** rows are **not** preload targets; park them only after Clear / empty `placements`. Spotlight tokens on the Stage Control board mirror `placements` in `StageTokens.reconcileFromState`.
+Characters with active **placements** rows are never despawned; they leave the world only after Clear / empty `placements`. Spotlight tokens on the Stage Control board mirror `placements` in `StageTokens.reconcileFromState`.
 
 ### Stage-bound characters who were seated or tagged for a seat
 
-When Step Zero marks a character **stage-bound** but they still have seat tags or a prior seat assignment, Step One retreats them to preload before pass (a) places them at u,v. Pass (a) runs its preload prep (`ensureNpcInPreloadZone`) only for figurines that are neither on `STAGE_BOARD` nor already parked in preload.
+When Step Zero marks a character **stage-bound** but they still have seat tags or a prior seat assignment, pass (a) clears the seat identity and moves the same figurine to u,v (spawning a stage light).
 
 Stage placement runs **after** Step Three and Layout commit A so seat-bound and stage-bound targets are not applied in the same pass for the same character.
 
@@ -252,7 +252,7 @@ Stage placement runs **after** Step Three and Layout commit A so seat-bound and 
 
 ## Orchestration (implementation target)
 
-A single entry point (e.g. `NPCS.reconcileAllFromState`) should run Steps Zero → Five in order, delegating to existing helpers (`moveNpcToArea`, `assignNpcToSeat`, `clearNpcSeat`, `RSL.SyncTable`, `L.reconcileAllPlayers`, …).
+A single entry point (e.g. `NPCS.reconcileAllFromState`) should run Steps Zero → Five in order, delegating to existing helpers (`moveNpcToStagePlacement`, `assignNpcToSeat`, `clearNpcSeat`, `RSL.SyncTable`, `L.reconcileAllPlayers`, …).
 
 ### Implementation status
 
@@ -266,6 +266,6 @@ A single entry point (e.g. `NPCS.reconcileAllFromState`) should run Steps Zero �
 | --- | --- | --- |
 | `placements` has A; `seatSlots.NPC1` = A | Stage | A on STAGE_BOARD at u,v; not at table |
 | `seatSlots.NPC1` = A; no `placements` for A | Seat | A at NPC1 if table has slot |
-| `seatSlots.NPC2` = B; table B1 (NPC1 only) | Seat intent retained, `physicalSeatAllowed` false | B in preload; `occupiedNPCSlots.NPC2` still B |
+| `seatSlots.NPC2` = B; table B1 (NPC1 only) | Seat intent retained, `physicalSeatAllowed` false | B not in the world (despawned); `occupiedNPCSlots.NPC2` still B |
 | `seatSlots.NPC1` = A, `isPresent` false | Seat + inactive | A seated pose from Step Three; Step Four hides |
-| `seatSlots.NPC1` empty | Preload | No figurine at NPC1; state false |
+| `seatSlots.NPC1` empty | None | No figurine at NPC1; state false |
