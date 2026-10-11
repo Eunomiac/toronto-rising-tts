@@ -29,7 +29,7 @@ Status: current performance audit; entries may be done, partial, or deferred as 
 | 2 | Startup bootstrap stacks | **Done** — readiness-gated `scheduleBootstrapCoordinator()` (poll `0.35s`, max `10s`) replaces blind `BOOTSTRAP_RETRY_OFFSETS_SEC`; `L.seatSpotlightsResolvable()` + pending init-light probe; bootstrap metrics (`earlyExit`, `ticksRun`, `lightsDeferredRemaining`) |
 | 3 | Seat lighting redundant lerps | **Partial** — `lastReconciledModeByRef` + `L.invalidateReconcileCache()`; bootstrap ticks use `opts.bootstrap` → `transitionTime = 0`; seat-presentation orchestrator fingerprint skips full `reconcileAllPlayers` when PC light + overlay inputs unchanged |
 | 4 | Soundscape deferred duplicates | **Done** — `pendingSoundscapeReconcileFingerprint` + `soundscapeReconcileGeneration`; fade-step metrics |
-| 5 | NPC spawn / scene world | **Changed (TOR-707)** — no preload pool; the reconciler spawns only the NPCs a scene targets (`core/npc_spawn.ttslua`, image URLs in spawn data, no `reload()`), destroys untargeted ones; load runs one orphan tag sweep |
+| 5 | NPC spawn / scene world | **Changed (TOR-707)** — no preload pool; the reconciler spawns only the NPCs a scene targets (`core/npc_spawn.ttslua`, image URLs in spawn data, no `reload()`), destroys untargeted ones |
 | 6 | `UpdateUIDisplays` broad deltas | **Done** — `delta.colors` seat filter; admin-light scene buttons coalesced when `adminLighting` and `scenesPanel` refresh together |
 | 7 | Map/HUD scoped refresh | **Deferred** — cross-seat HUD split (`reconcileSeatHud` / `reconcileCrossSeatRows`) not started |
 | — | Overlay desired-input fingerprint | **Done** — `HO.reconcileForSeat` per-seat `lastDesiredVisibilityFpBySeat`; `HO.invalidateOverlayInputCache()` on force |
@@ -158,7 +158,7 @@ The CONTROL_BOARD Apply / Clear / token-drop paths and their profilers were reti
 **Evidence (historical)**
 
 - First on-load full sync: `Sync.full({ reason = "onLoad_initial" })`. Final startup-gate sync: `Sync.full({ reason = "onLoad_startup_gate" })`.
-- Bootstrap branch calls `NPCS.restoreAfterStateLoad` (generic roster, restored instances, orphan sweep), `L.InitLights`, fingerprint-aware `reconcileSeatPresentationFromState`, then `scheduleBootstrapCoordinator()` (readiness poll, early exit when spotlights resolve). See `core/sync.ttslua`.
+- Bootstrap branch calls `NPCS.restoreAfterStateLoad` (generic roster, restored instances), `L.InitLights`, fingerprint-aware `reconcileSeatPresentationFromState`, then `scheduleBootstrapCoordinator()` (readiness poll, early exit when spotlights resolve). See `core/sync.ttslua`.
 - `requestSeatLayoutSync` and deferred `R.SyncTable` no-op when `RSL.isLayoutSyncCurrent()` — gate still waits for deferred attempt, not full layout work.
 - `global_script` separately schedules `R.SyncTable()` at `0.5`; `R.SyncTable` ends by calling `L.reconcileAllPlayers()` and `HO.syncAll()`. See `core/global_script.ttslua:526-536` and `lib/rotational-seat-layout.ttslua:2876-2888`.
 - **Mitigated (2026-06):** `R.SyncTable` / `resolveSeatObjectsFromTable` short-circuit when stable layout fingerprint (table key + filtered `playerToPositionMap` seats) is unchanged; `opts.force` and `R.invalidateLayoutSyncCache()` bypass (same-table `SetTableTo`, `Sync.full({ force = true })`, `NPCS.commitNpcSeatLayout`). Startup passes 2–3 should collapse to one full layout + skip logs.
@@ -244,7 +244,7 @@ The CONTROL_BOARD Apply / Clear / token-drop paths and their profilers were reti
 
 **Evidence (current)**
 
-- `NPCS.restoreAfterStateLoad()` (bootstrap `Sync.full`): `GenericNpcs.registerFromMembership`, `NPCS.registerRestoredInstancesFromState`, `NPCS.sweepOrphanNpcObjects` (one `getObjectsWithTag` per NPC tag, load only).
+- `NPCS.restoreAfterStateLoad()` (bootstrap `Sync.full`): `GenericNpcs.registerFromMembership`, `NPCS.registerRestoredInstancesFromState`.
 - `NPCS.reconcileAllFromState` spawns only targeted NPCs (`ensureLiveNpcInstance` → `core/npc_spawn.ttslua` `spawnObjectData` with images, ImageScalar and lock in the spawn data — no `setCustomObject` / `reload()`), and despawns untargeted ones in Step Five (b).
 - Seated NPCs carry no light; a stage light is spawned with the stage placement (`ensureNpcLight`).
 - Mid-scene Dashboard adds pre-spawn hidden and wait for `NpcSpawn.figurineLoaded` (`NPCS.prewarmNpcs`, bounded wait) before committing state.

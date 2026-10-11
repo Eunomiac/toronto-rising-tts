@@ -93,7 +93,6 @@ local function targetList()
         { HO, "reconcileForSeat", "HO.reconcileForSeat" },
         { HUDP, "updatePlayerUI", "HUDP.updatePlayerUI" },
         { NPCS, "reconcileAllFromState", "NPCS.reconcileAllFromState" },
-        { NPCS, "sweepOrphanNpcObjects", "NPCS.sweepOrphanNpcObjects" },
         { NPCS, "moveNpcToStagePlacement", "NPCS.moveNpcToStagePlacement" },
         { NPCS, "reconcileFamilyOffSpotlight", "NPCS.reconcileFamilyOffSpotlight" },
         { O, "reconcilePcSeatHiddenObjectsFromState", "O.reconcilePcSeatHiddenObjectsFromState" },

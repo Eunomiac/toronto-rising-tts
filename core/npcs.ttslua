@@ -3271,65 +3271,11 @@ function NPCS.registerRestoredInstancesFromState()
     requestSeatLayoutSync()
 end
 
---- Destroy `npc_figurine` / `npc_light` objects that no instance record references (retired preload
---- pool, interrupted spawns), after dropping legacy `areaKey == "preload"` rows with their pairs.
---- Load-only: one tag scan per tag.
---- @return table `{ droppedRecords, destroyedFigurines, destroyedLights }`
-function NPCS.sweepOrphanNpcObjects()
-    local droppedRecords = 0
-    for name, rec in pairs(U.clone(getInstances())) do
-        if U.Type(rec) == "table" and rec.areaKey == "preload" then
-            despawnNpcInstance(name)
-            droppedRecords = droppedRecords + 1
-        end
-    end
-    local keep = {}
-    for _, rec in pairs(getInstances()) do
-        if U.Type(rec) == "table" then
-            if U.Type(rec.figurineGuid) == "string" then
-                keep[rec.figurineGuid] = true
-            end
-            if U.Type(rec.lightGuid) == "string" then
-                keep[rec.lightGuid] = true
-            end
-        end
-    end
-    local function sweepTag(tag)
-        local destroyed = 0
-        local objs = getObjectsWithTag(tag) or {}
-        for i = 1, #objs do
-            local obj = objs[i]
-            local guid = obj.getGUID()
-            if keep[guid] ~= true then
-                O.forgetHiddenObject(guid)
-                obj.destruct()
-                destroyed = destroyed + 1
-            end
-        end
-        return destroyed
-    end
-    local result = {
-        droppedRecords = droppedRecords,
-        destroyedFigurines = sweepTag(TAG_FIG),
-        destroyedLights = sweepTag(TAG_LIT),
-    }
-    if result.droppedRecords + result.destroyedFigurines + result.destroyedLights > 0 then
-        print(string.format(
-            "[NPCS] Orphan sweep: dropped %d preload record(s), destroyed %d figurine(s) + %d light(s).",
-            result.droppedRecords,
-            result.destroyedFigurines,
-            result.destroyedLights
-        ))
-    end
-    return result
-end
-
---- Save/load bootstrap entry point: generic roster from membership, instance registration, orphan sweep.
+--- Save/load bootstrap entry point: generic roster from membership, then instance registration.
 function NPCS.restoreAfterStateLoad()
     local GenericNpcs = require("core.generic_npcs")
     GenericNpcs.registerFromMembership()
     NPCS.registerRestoredInstancesFromState()
-    NPCS.sweepOrphanNpcObjects()
 end
 
 --- Recursive stats text for Storyteller (console or UI).

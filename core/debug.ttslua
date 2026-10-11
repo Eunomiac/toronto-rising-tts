@@ -1380,25 +1380,73 @@ function DEBUG.ensureSceneLibraryStub(slotIndex, sceneKey, opts)
     return sceneKey
 end
 
---- Destroy `npc_figurine` / `npc_light` objects with no instance record (same sweep as load).
-function DEBUG.sweepOrphanNpcObjects()
-    return require("core.npcs").sweepOrphanNpcObjects()
-end
-
---- One-shot save cleanup (TOR-708): destroy the retired dice preload pool (dice tagged `d10Preload`
---- parked under the table) and drop their hide snapshots. Run once, then File → Save; delete after.
---- @return number destroyed
-function DEBUG.retireDicePreloadPool()
+--- One-shot save cleanup (TOR-707 / TOR-708): drop legacy `areaKey == "preload"` NPC records with their
+--- pairs, destroy `npc_figurine` / `npc_light` objects no record references, the retired `d10Preload`
+--- dice, and the old in-game board's `CB_` gameboard pieces. Run once, then File → Save; delete after.
+--- @return table `{ droppedRecords, figurines, lights, dice, boardPieces }`
+function DEBUG.retirePreloadPools()
     local O = require("core.objects")
-    local destroyed = 0
-    for _, die in ipairs(getObjectsWithTag("d10Preload") or {}) do
-        local guid = die.getGUID()
-        die.destruct()
+    local NPCS = require("core.npcs")
+    local NpcSpawn = require("core.npc_spawn")
+    local result = { droppedRecords = 0, figurines = 0, lights = 0, dice = 0, boardPieces = 0 }
+
+    local function destroy(obj)
+        local guid = obj.getGUID()
+        obj.destruct()
         O.forgetHiddenObject(guid)
-        destroyed = destroyed + 1
     end
-    print("[DEBUG.retireDicePreloadPool] Destroyed " .. destroyed .. " parked die/dice. Now File → Save.")
-    return destroyed
+
+    for name, rec in pairs(U.clone(S.getStateVal("npcs", "instances") or {})) do
+        if U.Type(rec) == "table" and rec.areaKey == "preload" then
+            NPCS.despawnNpc(name, { skipSeatSync = true })
+            result.droppedRecords = result.droppedRecords + 1
+        end
+    end
+
+    local keep = {}
+    for _, rec in pairs(S.getStateVal("npcs", "instances") or {}) do
+        if U.Type(rec) == "table" then
+            keep[rec.figurineGuid or ""] = true
+            keep[rec.lightGuid or ""] = true
+        end
+    end
+    for _, obj in ipairs(getObjectsWithTag(NpcSpawn.TAG_FIG) or {}) do
+        if keep[obj.getGUID()] ~= true then
+            destroy(obj)
+            result.figurines = result.figurines + 1
+        end
+    end
+    for _, obj in ipairs(getObjectsWithTag(NpcSpawn.TAG_LIT) or {}) do
+        if keep[obj.getGUID()] ~= true then
+            destroy(obj)
+            result.lights = result.lights + 1
+        end
+    end
+
+    for _, die in ipairs(getObjectsWithTag("d10Preload") or {}) do
+        destroy(die)
+        result.dice = result.dice + 1
+    end
+
+    for _, tag in ipairs({ "gameboard_pc_seat", "gameboard_npc_seat", "gameboard_table_component" }) do
+        for _, obj in ipairs(getObjectsWithTag(tag) or {}) do
+            if string.sub(obj.getName() or "", 1, 3) == "CB_" then
+                destroy(obj)
+                result.boardPieces = result.boardPieces + 1
+            end
+        end
+    end
+
+    print(string.format(
+        "[DEBUG.retirePreloadPools] Dropped %d preload NPC record(s); destroyed %d figurine(s), %d light(s), "
+            .. "%d preload die/dice, %d CB_ board piece(s). Now File → Save.",
+        result.droppedRecords,
+        result.figurines,
+        result.lights,
+        result.dice,
+        result.boardPieces
+    ))
+    return result
 end
 
 --- Survey of everything below the table: one markdown row per object with world Y below `yMax`
@@ -5875,8 +5923,7 @@ function DEBUG.help()
     print("  DEBUG.clearCustomUiUploadTokens()")
     print("                          - Delete temporary upload tokens created by debug uploader")
     print("\nNPC OBJECTS:")
-    print("  DEBUG.sweepOrphanNpcObjects() - Destroy npc_figurine / npc_light with no instance record")
-    print("  DEBUG.retireDicePreloadPool() - One-shot: destroy parked d10Preload dice, then File > Save")
+    print("  DEBUG.retirePreloadPools() - One-shot: destroy preload NPCs/lights, d10Preload dice, CB_ board; then File > Save")
     print("  DEBUG.exportObjectsBelowY(yMax?, path?) - Write every object below y (default -75) to .dev/.debug")
     print("\nSPOTLIGHT WORKSHOP:")
     print("  DEBUG.populateSpotlightFigurines() - Clone seat figures + spawn stage lights; print GUIDs")

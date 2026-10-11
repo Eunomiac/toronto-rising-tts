@@ -40,7 +40,7 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 
 **How to verify:**
 
-1. Save & Play. On the first load, the console should print one **Orphan sweep** line saying it dropped the old preload records and destroyed the old figurines and lights. Do **File → Save** once, then load again: that line should not appear a second time, and the load should feel no slower than before.
+1. Save & Play. Type `lua DEBUG.retirePreloadPools()` once in the Host console. It prints one line counting the old preload NPC records, figurines and lights, the parked dice, and the old board's `CB_` pieces it removed (expect 13 board pieces; the record count may be 0 because the first load already cleared those NPCs). Then **File → Save** and load again: running the command a second time should report 0 for everything, and the load should feel no slower than before.
 2. Play a library scene that has several NPCs on the stage and at least one NPC in a seat. Behind the blindfold, the stage NPCs should appear in place showing their pictures (not blank white cards) with their spotlights; the seated NPC should appear in the chair with its seat lights and no extra spotlight hovering over it.
 3. Play a different scene with a different cast. NPCs who are not in the new scene should disappear, and the new scene's NPCs should appear in place.
 4. Mid-scene, from the dashboard, add an NPC who is not in the scene onto the stage and Send. Expect a short pause (a second or two) and then the NPC appears already in place, picture loaded, with its spotlight. Moving an NPC who is already on the stage should still glide immediately, as before.
@@ -54,7 +54,7 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 
 **How to verify:**
 
-1. Once, after Save & Play, type `lua DEBUG.retireDicePreloadPool()` in the Host console. It should say how many parked dice it destroyed. Then **File → Save**.
+1. The parked dice are cleared by the same one-time `lua DEBUG.retirePreloadPools()` command in step 1 of the NPC check above; nothing extra to run here.
 2. At a player seat, roll a normal pool: the dice should appear at the bag and tray exactly as before, roll, and show the result. Watch the moment the dice come out of the bag: note whether you see a brief flash of a blank or wrong-looking die (the old parked dice existed to hide that flash). When the roll is cleared, the dice should disappear.
 3. Start a roll and cancel it before rolling: the staged dice should disappear.
 4. Roll, then use a Willpower reroll: the highlighted dice should be grabbable, and after the reroll finishes no die should keep a blue glow.
