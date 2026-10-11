@@ -75,7 +75,9 @@ npm run site-cards:import -- --range <NamedRange>
 
 Fetches CSV (`Name`,`URL`), writes `lib/json/Site Cards.json`, and replaces every `siteCard_*` entry in the TTS save’s `CustomUIAssets` (default save `TS_Save_230.json` under known Saves dirs). Options: `--sheet-id`, `--save`, `--saveName`, `--skip-save`, `--dry-run`. Sheet must be link-viewable. Script: `.dev/scripts/import_site_cards_from_sheet.js`.
 
-## Site cards from `C.Sites` (recommended for Toronto Rising sites)
+## Site cards from `C.Sites` (retired — delete candidate)
+
+`C.Sites` is now generated from the Districts & Sites sheet into `lib/locations_catalog.ttslua` (`npm run locations:import`) and has no `image` / `localImage` fields; site card art is always `siteCard_<key>`. `build-upload-manifest-from-sites-constants.js` and the `custom-ui-assets:manifest-sites*` scripts no longer find a `C.Sites = {` table in `lib/constants.ttslua`. Use **Site cards from Google Sheet** above. The text below describes the old workflow.
 
 Each row in `lib/constants.ttslua` → `C.Sites` should define:
 

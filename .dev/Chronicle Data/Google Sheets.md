@@ -8,13 +8,13 @@ Read this when:
 - touching the sheet import scripts under `.dev/scripts/import_*_from_sheet.js`
 
 Source of truth:
-- The five Google Sheets below are the author's master record for chronicle content. Repo catalogs (`data/scene-catalogs.json`, `lib/*_catalog.ttslua`, `C.Districts` / `C.Sites` in `lib/constants.ttslua`, card art) are derived from them and can lag behind.
+- The five Google Sheets below are the author's master record for chronicle content. Repo catalogs (`data/scene-catalogs.json`, `lib/*_catalog.ttslua` including `lib/locations_catalog.ttslua` behind `C.Districts` / `C.Sites`, `lib/tr_weather_schedule.ttslua`, card art) are derived from them and can lag behind until the matching import runs.
 
 Verification:
 - Fetch the tab (either route below) and compare with the repo copy before relying on either.
 
 Status:
-- current (2026-10-08)
+- current (2026-10-11)
 
 ## The five sheets
 
@@ -36,7 +36,18 @@ All five are owned by the author and shared as **anyone with the link can view**
 | `Sites_Unique.csv` | `Key`, `Title`, `Subtitle`, `Elysium`, `Resonance Plus`, `Resonance Minus`, `Resonance Frame`, `Aspect Title`, `Aspect Content`, `Backgrounds`, `Minimaps` |
 | `Sites_Generic.csv` | `Key`, `Title`, `Subtitle`, `Resonance Plus`, `Resonance Minus`, `Resonance Frame`, `Aspect Title`, `Aspect Content`, `Backgrounds` |
 
-Keys match the repo's district / site keys (`DupontByTheCastle`, `CLGreatHall`, …) and the card art file names under `assets/images/Districts/` and `assets/images/Sites/`.
+Keys match the repo's district / site keys (`DupontByTheCastle`, `CLGreatHall`, …) and the card art file names under `assets/images/Districts/` and `assets/images/Sites/`. Sites without an aspect are left out of these exports (16 today: `CarusoResidence`, `CrimeScene`, `HockeyHallOfFame`, eight `Warrens*`, five `StRegis*`), so the dashboard's location picker cannot offer them until they get aspects. `Sites_Unique.csv` repeats its header row partway down; readers skip rows whose `Key` is `Key`.
+
+### Districts and sites for TTS (`npm run locations:import`)
+
+`.dev/scripts/import_locations_from_sheet.js` reads the **Districts & Sites** workbook directly (not the API exports, so every site is included) and writes `lib/locations_catalog.ttslua`; `lib/constants.ttslua` points `C.Districts` / `C.Sites` at it. The npm script then regenerates the Scenes location modals, the dashboard scene catalogs and the Global XmlUI. Both tabs put section titles in row 1 and headers in row 2; the importer finds columns by header inside a section.
+
+| Tab | Columns read |
+| --- | --- |
+| `DISTRICTS` | `key` and `NAME` in "Export Range for Toronto Rising API .csv Files" (name gets a capital first letter); `Condition` (header in row 1) |
+| `SITES` | `Key` in "Data Processing for CSV Export"; `Condition` in "Conditions"; in "Parsing for TTS Output": `name`, `Skybox`, `district`, `soundscape music`, `soundscape location`, `is indoors`, `Weather Ducking`, `Top Fog`, `map location` (each cell is a Lua fragment such as `isIndoors = true,`) |
+
+Validation fails the import for unknown skybox, district, background-music or location-track keys. Warnings (import continues): accented keys are folded to ASCII (`WarrensFomórach` → `WarrensFomorach`); condition ids that are not implemented manual conditions are skipped; a few stale track keys from the sheet's `(data)` tab and the missing `nosWarrens` playlist are mapped in `TRACK_ALIASES` / `MUSIC_GAPS` (`.dev/scripts/lib/locations_sheet_csv.js`) until the sheet or soundscape catalog is fixed.
 
 ## How to read them
 
@@ -59,7 +70,7 @@ https://docs.google.com/spreadsheets/d/<SHEET_ID>/gviz/tq?tqx=out:csv&headers=0&
 - Visible tab names: `https://docs.google.com/spreadsheets/d/<SHEET_ID>/htmlview` (look for `items.push({name: "…"`); hidden tabs are not listed there.
 - Decode as UTF-8 (Node `fetch` does). PowerShell `Invoke-WebRequest` mangles accents such as "Fomórach".
 
-Existing importers: `.dev/scripts/import_skyboxes_from_sheet.js`, `import_site_cards_from_sheet.js` (API sheet), `import_generic_npcs_from_sheet.js` (Toronto Rising sheet), `import_weather_from_sheet.js` (Toronto Rising `WEATHER` → `lib/tr_weather_schedule.ttslua`, `npm run weather:import`). Shared fetch helper: `.dev/scripts/lib/google_sheet_fetch.js` (sheet ids + whole-tab CSV). See [`Storyteller Dashboard Docs/Generic NPCs.md`](../Storyteller%20Dashboard%20Docs/Generic%20NPCs.md).
+Existing importers: `.dev/scripts/import_skyboxes_from_sheet.js`, `import_site_cards_from_sheet.js` (API sheet), `import_generic_npcs_from_sheet.js` (Toronto Rising sheet), `import_weather_from_sheet.js` (Toronto Rising `WEATHER` → `lib/tr_weather_schedule.ttslua`, `npm run weather:import`), `import_locations_from_sheet.js` (Districts & Sites → `lib/locations_catalog.ttslua`, `npm run locations:import`). Shared fetch helper: `.dev/scripts/lib/google_sheet_fetch.js` (sheet ids + whole-tab CSV). See [`Storyteller Dashboard Docs/Generic NPCs.md`](../Storyteller%20Dashboard%20Docs/Generic%20NPCs.md).
 
 ### Weather calendar (`WEATHER`, Toronto Rising sheet)
 
@@ -67,4 +78,4 @@ One row per day. The header row has `DayCodes` above the column of quoted hourly
 
 ## Privacy
 
-The sheets are link-viewable, but this GitHub repo is public. Existing import pipelines (skyboxes, site cards, generic NPCs, scene catalogs) may keep committing what they already commit. Do **not** commit new bulk chronicle content — character bios and stats, rumors, session notes, XP ledgers, player relations — without asking the author first. Prefer reading the sheet at runtime or into a git-ignored local file.
+The sheets are link-viewable, but this GitHub repo is public. Existing import pipelines (skyboxes, site cards, generic NPCs, locations, weather, scene catalogs) may keep committing what they already commit. Do **not** commit new bulk chronicle content — character bios and stats, rumors, session notes, XP ledgers, player relations — without asking the author first. Prefer reading the sheet at runtime or into a git-ignored local file.

@@ -11,7 +11,7 @@
  *
  * Examples (repo root):
  *   npm run tts-cloud:export -- Sites
- *   npm run tts-cloud:export -- Sites --out "lib/json/Site Cards.csv"
+ *   npm run tts-cloud:export -- Sites --out "Site Cards"
  *   npm run tts-cloud:export -- Sites --name-filter "\\.webp$"
  *   node .tools/tts-cloud/export-folder-csv.js Districts
  */

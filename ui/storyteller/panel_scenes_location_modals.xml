@@ -1,5 +1,5 @@
-<!-- AUTO-GENERATED — do not edit by hand. Sources: lib/constants.ttslua (districts/sites), lib/skyboxes_catalog.ttslua (skyboxes) -->
-<!-- Regenerate: node .dev/scripts/generate_scenes_location_modals_xml.js (or npm run skyboxes:import) -->
+<!-- AUTO-GENERATED — do not edit by hand. Sources: lib/locations_catalog.ttslua (districts/sites), lib/skyboxes_catalog.ttslua (skyboxes) -->
+<!-- Regenerate: node .dev/scripts/generate_scenes_location_modals_xml.js (or npm run locations:import / skyboxes:import) -->
 
 <!-- Host/Black only; centered pickers for Scenes panel district/site/skybox keys. -->
 <Panel id="scenes_modal_districts_root" visibility="Black|Host" active="False" width="1120" height="580" rectAlignment="MiddleCenter" offsetXY="0 0">
@@ -26,7 +26,7 @@
           <Button id="scenes_pick_district_Discovery" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Discovery District" onClick="HUD_scenesPickDistrict" />
           <Button id="scenes_pick_district_DistilleryDist" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Distillery District" onClick="HUD_scenesPickDistrict" />
           <Button id="scenes_pick_district_DonRavine" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Don River Ravine" onClick="HUD_scenesPickDistrict" />
-          <Button id="scenes_pick_district_DupontByTheCastle" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Dupont By The Castle" onClick="HUD_scenesPickDistrict" />
+          <Button id="scenes_pick_district_DupontByTheCastle" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Dupont by the Castle" onClick="HUD_scenesPickDistrict" />
           <Button id="scenes_pick_district_GayVillage" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="The Gay Village" onClick="HUD_scenesPickDistrict" />
           <Button id="scenes_pick_district_HarbordVillage" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Harbord Village" onClick="HUD_scenesPickDistrict" />
           <Button id="scenes_pick_district_Humewood" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Humewood" onClick="HUD_scenesPickDistrict" />
@@ -184,7 +184,7 @@
     </VerticalLayout>
 
     <VerticalLayout id="scenes_site_group_dist_DupontByTheCastle" active="False" visibility="None" spacing="4" padding="0 0 10 0" childForceExpandWidth="true">
-      <Text fontSize="11" fontStyle="Bold" color="#C9A84C" alignment="UpperCenter" text="Dupont By The Castle — district sites" />
+      <Text fontSize="11" fontStyle="Bold" color="#C9A84C" alignment="UpperCenter" text="Dupont by the Castle — district sites" />
       <HorizontalLayout spacing="4" childForceExpandWidth="true" childAlignment="UpperCenter">
         <Button id="scenes_pick_site_CLGrounds" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Estate Grounds" onClick="HUD_scenesPickSite" />
         <Button id="scenes_pick_site_CLGallery" class="hud_storyteller_button" fontSize="10" preferredHeight="34" minHeight="30" flexibleWidth="1" minWidth="0" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Casa Loma: Gallery of Mirrors" onClick="HUD_scenesPickSite" />

@@ -94,35 +94,15 @@ local function resolveDistrictCardImage(districtKey)
   return "districtCard_" .. dk
 end
 
---- Site Custom UI asset name (`C.Sites[*].image` or `siteCard_<key>`), or nil when unknown.
+--- Site Custom UI asset name (`siteCard_<key>`), or nil when unknown.
 --- @param siteKey string|nil
 --- @return string|nil
 local function resolveSiteCardImage(siteKey)
   local sk = trimKey(siteKey)
-  if sk == "" or type(C.Sites) ~= "table" then
+  if sk == "" or type(C.Sites) ~= "table" or type(C.Sites[sk]) ~= "table" then
     return nil
   end
-  local site = C.Sites[sk]
-  if type(site) ~= "table" then
-    return nil
-  end
-  local img = site.image
-  if type(img) == "string" then
-    img = trimKey(img)
-    if img ~= "" then
-      return img
-    end
-  end
-  local k = site.key
-  if type(k) ~= "string" or trimKey(k) == "" then
-    k = sk
-  end
-  local suffix = trimKey(k)
-  -- Never emit `siteCard_` with an empty suffix (invalid Custom UI asset name).
-  if suffix == "" then
-    return nil
-  end
-  return "siteCard_" .. suffix
+  return "siteCard_" .. sk
 end
 
 --- @param opts table|nil `{ districtKey?, siteKey? }`

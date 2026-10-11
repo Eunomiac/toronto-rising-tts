@@ -215,8 +215,7 @@ local function trimHudKey(s)
     return string.gsub(string.gsub(s, "^%s+", ""), "%s+$", "")
 end
 
---- Resolves the Custom UI `image` ref for `sessionScene.siteKey`.
---- Prefers `C.Sites[siteKey].image` (must match uploaded Custom UI asset name); falls back to `siteCard_` .. key.
+--- Resolves the Custom UI `image` ref (`siteCard_<key>`) for `sessionScene.siteKey`.
 --- Unknown or invalid `siteKey` returns nil (caller hides the site card without error).
 --- @param siteKey string|nil
 --- @return string|nil
@@ -225,26 +224,10 @@ local function resolveSiteCardImageRefForSiteKey(siteKey)
         return nil
     end
     local sk = trimHudKey(siteKey)
-    if sk == "" then
+    if sk == "" or type(C.Sites[sk]) ~= "table" then
         return nil
     end
-    local site = C.Sites[sk]
-    if type(site) ~= "table" then
-        return nil
-    end
-    local img = site.image
-    if type(img) == "string" then
-        img = trimHudKey(img)
-        if img ~= "" then
-            return img
-        end
-    end
-    local k = site.key
-    if type(k) ~= "string" or trimHudKey(k) == "" then
-        k = sk
-    end
-    k = trimHudKey(k)
-    return "siteCard_" .. k
+    return "siteCard_" .. sk
 end
 
 --- Sets or clears the Custom UI `image` on a site card Image; skips redundant `UI.setAttribute` writes when setting a ref.

@@ -137,9 +137,11 @@ const loadLocations = async (): Promise<ChronicleLocations> => {
     resonances: resonances(row["Resonance Plus"], row["Resonance Minus"]),
     aspect: { title: row["Aspect Title"] ?? "", text: row["Aspect Content"] ?? "" }
   });
+  /** The export tabs repeat their header row partway down; skip it along with blank rows. */
+  const isSiteRow = (row: Readonly<Record<string, string>>): boolean => Boolean(row.Key) && row.Key !== "Key";
   const sites = [
-    ...asRecords(uniqueRows).filter((row) => row.Key).map(site(true)),
-    ...asRecords(genericRows).filter((row) => row.Key).map(site(false))
+    ...asRecords(uniqueRows).filter(isSiteRow).map(site(true)),
+    ...asRecords(genericRows).filter(isSiteRow).map(site(false))
   ];
   return { districts, sites };
 };

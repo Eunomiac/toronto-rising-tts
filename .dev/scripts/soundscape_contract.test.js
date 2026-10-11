@@ -228,12 +228,9 @@ test("every site location track exists in the soundscape catalog", () => {
   }
   assert.ok(locationKeys.size > 0, "no location tracks parsed from Catalog.TRACKS");
 
-  const constants = readRepoFile("lib/constants.ttslua");
-  const sitesStart = constants.indexOf("C.Sites = {");
-  const sitesEnd = constants.indexOf("-- #region Weather", sitesStart);
-  assert.ok(sitesStart >= 0 && sitesEnd > sitesStart, "missing C.Sites block");
-  const used = [...constants.slice(sitesStart, sitesEnd).matchAll(/location = \{[^}]*\btrack = "([^"]+)"/g)].map((m) => m[1]);
-  assert.ok(used.length > 0, "no site location tracks parsed from C.Sites");
+  const locations = readRepoFile("lib/locations_catalog.ttslua");
+  const used = [...locations.matchAll(/location = \{[^}]*\btrack = "([^"]+)"/g)].map((m) => m[1]);
+  assert.ok(used.length > 0, "no site location tracks parsed from lib/locations_catalog.ttslua");
   const unknown = [...new Set(used.filter((track) => !locationKeys.has(track)))];
   assert.deepEqual(unknown, [], `C.Sites names location tracks the catalog does not have: ${unknown.join(", ")}`);
 });

@@ -23,6 +23,7 @@ const { resolveSavePath } = require("../../.tools/tts-save/resolve-save-path");
 const root = path.resolve(__dirname, "..", "..");
 const constantsPath = path.join(root, "lib", "constants.ttslua");
 const skyboxesPath = path.join(root, "lib", "skyboxes_catalog.ttslua");
+const locationsPath = path.join(root, "lib", "locations_catalog.ttslua");
 const soundscapePath = path.join(root, "lib", "soundscape_catalog.ttslua");
 const conditionDefsPath = path.join(root, "lib", "condition_defs.ttslua");
 const npcsDataPath = path.join(root, "lib", "npcs_data.ttslua");
@@ -955,7 +956,8 @@ function main() {
   const saveText = fs.readFileSync(save.savePath, "utf8");
   const cardUrls = readCardAssetUrls(saveText);
 
-  const districts = parseTopLevelEntries(extractBlock(constants, "C.Districts =")).map((entry) => ({
+  const locationsSrc = fs.readFileSync(locationsPath, "utf8");
+  const districts = parseTopLevelEntries(extractBlock(locationsSrc, "local Districts =")).map((entry) => ({
     key: entry.key,
     name: readStringField(entry.body, "name") || entry.key,
     conditions: readStringListField(entry.body, "conditions"),
@@ -963,14 +965,13 @@ function main() {
   }));
   districts.sort((a, b) => a.name.localeCompare(b.name));
 
-  const sites = parseTopLevelEntries(extractBlock(constants, "C.Sites =")).map((entry) => {
-    const districtMatch = entry.body.match(/district\s*=\s*C\.Districts\.([A-Za-z_][A-Za-z0-9_]*)/);
+  const sites = parseTopLevelEntries(extractBlock(locationsSrc, "LocationsCatalog.Sites =")).map((entry) => {
+    const districtMatch = entry.body.match(/district\s*=\s*Districts\.([A-Za-z_][A-Za-z0-9_]*)/);
     const soundTrackMatch = entry.body.match(/track\s*=\s*"([^"]+)"/);
     return {
       key: entry.key,
       name: readStringField(entry.body, "name") || entry.key,
       districtKey: districtMatch ? districtMatch[1] : null,
-      lightMode: readStringField(entry.body, "lightMode"),
       isTopFogActive: readBooleanField(entry.body, "isTopFogActive"),
       isIndoors: readBooleanField(entry.body, "isIndoors"),
       skybox: readStringField(entry.body, "skybox"),
