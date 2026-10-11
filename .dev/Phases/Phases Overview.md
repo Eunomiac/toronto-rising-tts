@@ -11,10 +11,9 @@ Source of truth:
 - `core/phases.ttslua` (lifecycle registries + `advanceTo` / `setPlaySubPhase`)
 - `core/memoriam.ttslua` (Memoriam enter/exit; set-up popup lives on the Storyteller Dashboard; see [`Memoriam.md`](Memoriam.md))
 - `core/session_explode.ttslua` (Intermission→Play stacked cover explode)
-- `core/spotlight.ttslua` (Spotlight carousel, hide-list, Host strip)
+- `core/spotlight.ttslua` (Spotlight carousel, hide-list; turned from the Storyteller Dashboard)
 - `lib/constants.ttslua` (`C.Phases`, `C.PhaseSequence`, `C.PlaySubPhases`)
 - `ui/storyteller/panel_phases.xml`
-- `ui/storyteller/panel_spotlight_controls.xml`
 
 Verification:
 - Save & Play → Host Phases panel → **Advance →** (first click shows red confirm; second click within 5s Advances and the panel closes) through Intermission → Play → Spotlight → End → Intermission
@@ -42,7 +41,7 @@ There are four top-level phases, advanced by the Storyteller **Advance** button 
 
 1. `INTERMISSION` — Between sessions: **global cover + Intermission theme handoff first**, then no-scene table/skybox/overlay under that cover, AdminDark; connect keeps global blindfold up (TOR-319 / TOR-497 / TOR-506).
 2. `PLAY` — Session start: OutdoorDim lights and HUD behind the cover first, then session-start splash, Intermission Loop fades across the scaled song lead-in, Music C overture (skipped if **Quick Transition** is on), panel hide near sting end, Main playlist, Superficial WP heal + optional broadcast. Contains most gameplay.
-3. `SPOTLIGHT` — End-of-session player vignettes: narrative clear (not End-scene Table B0), Table A + Spotlight skybox, Main-only music, in-session PC stand-ins on a 36° carousel, Host strip, ritual overlay.
+3. `SPOTLIGHT` — End-of-session player vignettes: narrative clear (not End-scene Table B0), Table A + Spotlight skybox, Main-only music, in-session PC stand-ins on a 36° carousel (turned from the Storyteller Dashboard), ritual overlay.
 4. `END` — Remorse / session-end bookkeeping. **Advance Spotlight → End** keeps Table A and Main, parks the carousel, and shows the prologue-style bookend overlay with **EPILOGUE** (TOR-599). Leaving End increments `sessionNum`. Intermission enter then shows the **session-end splash** on the global blindfold (`overlay_sessionEndSplash_<N>`) and applies the real no-scene table prep (TOR-565).
 
 Advancing from `END` returns to `INTERMISSION`.
@@ -87,11 +86,11 @@ Ending events of the previous phase run before starting events of the new phase 
 * Table A if not already A; skybox `Spotlight`; fade location/weather out on the way in; restore **Main** when BGM was suppressed or a site location bed was playing (e.g. Ravenwing); **do not** restart Main if it is already the audible mood playlist; **do not** silence all emitters.
 * Hide-list while `currentPhase == Spotlight` (reconciler after seat layout in `Sync.full`): seat figurines stay at seat Y with **`C.HiddenObjects` active visibility** (owner-color hide only — via `O.applyActiveVisibility` / `O.restoreObject`); dice bags, companion toggles/figurines (including Purple’s three companion tiles), and compulsion decks parked via `O.hideObject` at `C.HIDDEN_OBJECT_WORLD_Y`. Bags/companions/decks stay parked through End; they restore on Intermission enter after the global cover is down (bags via `lib/dice_bag_visibility`, companions via toggle state, etc.).
 * Shuffle in-session PCs (`absentFromSession ~= true`) once; snap dedicated workshop stand-ins onto a 36° carousel (origin `(0, 125)`, radius `100`, figurine `y = -55`, front at 180°), facing **outward** from the ring (not toward the origin). Create those stand-ins with `lua DEBUG.populateSpotlightFigurines()` (paste GUIDs into `lib/guids.ttslua`, save the table, Save & Play). Missing stand-in GUIDs fail loudly and lift the cover; Advance never auto-spawns.
-* Overlay: location diamond slot shows `sessionName` (normal weight); datetime `S P O T L I G H T` in gold italic-bold; time = front character's `charName` in white at 29pt. Host strip (`Black|Host`, bottom center) for prev / color chips / next. Play/End restore the red diamond, red date/time, and 42pt clock.
+* Overlay: location diamond slot shows `sessionName` (normal weight); datetime `S P O T L I G H T` in gold italic-bold; time = front character's `charName` in white at 29pt. The Storyteller Dashboard turns the carousel (rotate / bring to front). Play/End restore the red diamond, red date/time, and 42pt clock.
 
 ### Ending Events: `SPOTLIGHT`
 
-* Staged HUDBF cover. Park stand-ins/lights under the table, hide the Host strip. Seat figurines return to normal visibility. Dice bags, companions, and compulsion decks stay parked (not restored on End).
+* Staged HUDBF cover. Park stand-ins/lights under the table. Seat figurines return to normal visibility. Dice bags, companions, and compulsion decks stay parked (not restored on End).
 * Keep Main audio (do **not** fade Main or restart it). Apply no-scene table prep under the cover: Table B0 (dynamic Table B, zero NPC seats — NPCs are not restored after Spotlight), OutdoorDim, Generic skybox selected (`skyboxOverride` Generic; one random generic URL). `Scenes.applyDefaultNoSceneEnvironment({ skipSoundscape = true, skipTransitionBlindfold = true, activateGenericSkybox = true })`.
 
 ### Starting Events: `END`

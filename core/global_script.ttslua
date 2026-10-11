@@ -4350,15 +4350,6 @@ function HUD_sessionNameInput(player, value, id)
     syncStorytellerPhaseButtons()
 end
 
---- Host Spotlight carousel strip (TOR-98).
-function HUD_spotlightClick(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_spotlightClick") then
-        return
-    end
-    local Spotlight = require("core.spotlight")
-    Spotlight.onHudClick(player, id)
-end
-
 --- Parse XmlUI Toggle onValueChanged payloads to boolean (TOR-428).
 --- @param val unknown
 --- @return boolean|nil

@@ -54,20 +54,8 @@ local COMPANION_TOGGLE_GUID_KEYS = {
     "COMPANION_TOGGLE_TOKEN_C_PURPLE",
 }
 
-local CONTROLS_ROOT_ID = "spotlightControls_root"
-local SEAT_BUTTON_PREFIX = "spotlight_seat_"
-
-local SEAT_BUTTON_COLORS = {
-    Red = "#B22222|#C42828|#901818|#B22222",
-    Orange = "#E67300|#F08010|#CC6600|#E67300",
-    Brown = "#6B4423|#7A5030|#5A3820|#6B4423",
-    Pink = "#C71585|#D02090|#B01075|#C71585",
-    Purple = "#5E2A7E|#6E358E|#4E2070|#5E2A7E",
-}
-
 local rotating = false
 local lastPlayfieldFingerprint = nil
-local lastControlsFingerprint = nil
 local lastCarouselFingerprint = nil
 
 local function syncModule()
@@ -621,46 +609,6 @@ local function applyPlayfieldToysFromPhase()
     lastPlayfieldFingerprint = fp
 end
 
-local function setControlsActive(active)
-    if UI == nil or UI.setAttribute == nil then
-        return
-    end
-    UI.setAttribute(CONTROLS_ROOT_ID, "active", active and "true" or "false")
-end
-
-local function refreshHostControls()
-    local rec = ensureSpotlightState()
-    local order = rec.order
-    local n = #order
-    local front = rec.frontIndex
-    local show = isSpotlightPhase()
-    local fp = table.concat({
-        tostring(show),
-        table.concat(order, ","),
-        tostring(front),
-    }, "|")
-    if fp == lastControlsFingerprint then
-        return
-    end
-    lastControlsFingerprint = fp
-    setControlsActive(show)
-    if UI == nil or UI.setAttribute == nil then
-        return
-    end
-    for slot = 1, 5 do
-        local id = SEAT_BUTTON_PREFIX .. tostring(slot)
-        local color = order[slot]
-        if show and type(color) == "string" then
-            local colors = SEAT_BUTTON_COLORS[color] or "#555555|#666666|#444444|#333333"
-            UI.setAttribute(id, "active", "true")
-            UI.setAttribute(id, "colors", colors)
-            UI.setAttribute(id, "text", "")
-        else
-            UI.setAttribute(id, "active", "false")
-        end
-    end
-end
-
 local function shuffleAndCommitOrder()
     local order = inSessionColors()
     U.shuffle(order)
@@ -759,7 +707,6 @@ local function rotateByDelta(delta)
     U.await(function()
         rotating = false
         applyCarouselSnapFromState()
-        refreshHostControls()
         local overlay = require("core.game_state_overlay")
         if type(overlay.reconcileFromState) == "function" then
             overlay.reconcileFromState()
@@ -974,7 +921,6 @@ end
 
 function Spotlight.invalidateReconcileCache()
     lastPlayfieldFingerprint = nil
-    lastControlsFingerprint = nil
     lastCarouselFingerprint = nil
 end
 
@@ -1007,7 +953,7 @@ local function standInsAlreadyParked()
     return true
 end
 
---- Snap or park stand-ins, apply hide-list, refresh Host strip. Idempotent.
+--- Snap or park stand-ins, apply hide-list. Idempotent.
 function Spotlight.reconcileFromState()
     local didWork = false
     if isSpotlightPhase() then
@@ -1034,7 +980,6 @@ function Spotlight.reconcileFromState()
         end
     end
     applyPlayfieldToysFromPhase()
-    refreshHostControls()
     require("lib.sync_trace").report("Spotlight.reconcileFromState", {
         phase = tostring(S.getStateVal("currentPhase") or ""),
         reparked = tostring(didWork and not isSpotlightPhase()),
@@ -1099,7 +1044,6 @@ function Spotlight.applyEnterWorld()
         print("[Spotlight] Stand-ins on the ring: " .. table.concat(ringGuids, ", "))
     end
     applyPlayfieldToysFromPhase()
-    refreshHostControls()
 
     local GameStateOverlay = require("core.game_state_overlay")
     if type(GameStateOverlay.reconcileFromState) == "function" then
@@ -1108,8 +1052,8 @@ function Spotlight.applyEnterWorld()
     return ok == true, err
 end
 
---- Spotlight → End work under the existing cover. Flips phase first so the Host strip hides
---- and seat-figure invisibility can restore; bags/companions/decks stay parked until Intermission.
+--- Spotlight → End work under the existing cover. Flips phase first so seat-figure
+--- invisibility can restore; bags/companions/decks stay parked until Intermission.
 --- Table B0 + Generic skybox (NPC seats stay empty); Main is not restarted.
 --- @return boolean, string|nil
 function Spotlight.applyExitWorld()
@@ -1119,7 +1063,6 @@ function Spotlight.applyExitWorld()
     for i = 1, #(C.PlayerColors or {}) do
         placeStandIn(C.PlayerColors[i], nil, "OFF")
     end
-    refreshHostControls()
     local Scenes = require("core.scenes")
     if type(Scenes.applyDefaultNoSceneEnvironment) == "function" then
         Scenes.applyDefaultNoSceneEnvironment({
@@ -1159,34 +1102,6 @@ function Spotlight.bringToFront(color)
         end
     end
     return "`" .. tostring(color) .. "` is not in the spotlight carousel."
-end
-
---- @param player any
---- @param id string
-function Spotlight.onHudClick(player, id)
-    if not U.isStorytellerSteamPlayer(player) then
-        return
-    end
-    if not isSpotlightPhase() then
-        return
-    end
-    if type(id) ~= "string" then
-        return
-    end
-    if id == "spotlight_prev" then
-        rotateByDelta(-1)
-        return
-    end
-    if id == "spotlight_next" then
-        rotateByDelta(1)
-        return
-    end
-    local slot = tonumber(string.match(id, "^spotlight_seat_(%d+)$"))
-    if slot == nil then
-        return
-    end
-    local rec = ensureSpotlightState()
-    rotateByDelta(slot - rec.frontIndex)
 end
 
 return Spotlight
