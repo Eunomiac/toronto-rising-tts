@@ -178,9 +178,13 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 
 **By eye:** use each button on one player's row in the Storyteller PCs panel (Health and Willpower damage, Humanity stain and base, Hunger, Frenzy, Blind, Desire clear, Torpor clear): the row and that player's sheet should both update. From that player's seat, make rolls that cause a Rouse stain, a Remorse check, a failed Frenzy and a Willpower reroll: the sheet should follow every one. Move a project stake on a Background or Merit: page 3 should show it. Change the session number on the Phases panel: page 6 (Experience Log) should follow.
 
+**Note (TOR-721):** the in-game PCs panel and the Phases panel's session number field are gone. Make the PCs-panel changes from the dashboard's **PCs** tab instead, and change the session number from the dashboard.
+
 #### TOR-678 — Backup Storyteller panels only refresh while they're open
 
 **Context:** Trace 1 (everything closed) passed. Trace 2 showed the open/close logic backwards; that is fixed.
+
+**Note (TOR-721):** the in-game **PCs** panel this trace relies on has been removed (the dashboard's PCs tab replaces it), so Trace 2 can no longer be run as written. The **By eye** check still applies to Scenes, Stats and Projects. You may want to mark this row 🚫.
 
 **Trace 2 — toolbar hotkey and closing a tab** (save as `TOR-678 Trace 2.txt`)
 
@@ -201,6 +205,24 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 **Context:** Your trace confirmed the TTS side. The dashboard missed the pushes because TTS silently drops nested tables in external messages; they now travel as a JSON string. No trace needed.
 
 **How to verify:** Open the dashboard's **PCs** tab. In TTS, change a player in ways the dashboard didn't cause: damage from the in-game PCs panel, a Rouse stain from a roll, and a new Desire typed on the sheet (it updates when you click out of the field). The dashboard should follow each within about a second without a page refresh. Edit a project in TTS: dashboard page 5 should refresh. Reload the save: the dashboard should refresh once on its own. Last, stop the dashboard server and play for a few minutes: TTS should not stutter.
+
+**Note (TOR-721):** the in-game PCs panel is gone. For the "damage the dashboard didn't cause" step, use a roll (a Rouse stain) or a Desire typed on the sheet instead.
+
+#### TOR-720 / TOR-721 — In-game Storyteller panels the dashboard replaced are gone
+
+**Context:** The Storyteller Dashboard is now the only place for these controls. The in-game PCs panel, XP log popup, Memoriam set-up popup, Sound tab and Spotlight colour strip were removed. The Phases tab was cut down to Quick Transition and the join controls. Old unused scene buttons, admin lighting buttons and the Debug Scatter panel were removed too. A few debug-only tools moved into the Debug column rather than disappearing.
+
+**How to verify:** Save & Play with the dashboard running.
+
+1. Open the Storyteller toolbar. The tabs should be **Scenes, Phases, Stats, Projects** only (no PCs, no Sound). The console should show no errors on load.
+2. Open **Phases**. It should show only the **Quick Transition** toggle and the join controls (Defer setXML, Arm Join XML, 1 Assets / 2 HUD / 3 Emitters, Refresh XML). There should be no Advance button, no Main / Downtime buttons and no session number or title boxes.
+3. In Intermission, change the session number on the dashboard. The Intermission cover art and character-sheet page 6 should follow. Change the session title too.
+4. Turn on **Quick Transition**, then advance to Play from the dashboard (click the next-phase button twice). The transition should run without the session song. Advance on to Spotlight: there should be **no** row of colour chips at the bottom of the screen, and the dashboard's rotate / bring-to-front controls should turn the carousel. Advance to End and back to Intermission as usual.
+5. Open the Debug column. Under the Debug Camera button there should be a new row with **Silence for save** and **Inspect sound**. Inspect sound should print emitter details in the console. Silence for save should silence the emitters.
+6. Still in the Debug column, switch connection mode to **Assume Connected**. A row of five seat buttons should appear. Clicking one should turn it red or green and disconnect or connect that seat as a simulation.
+7. On the dashboard, change music mood, a lane volume, and play then stop a featured track. TTS should follow each change and the dashboard's sound display should update. Also apply a scene and a clock change from the dashboard and check the sound display refreshes.
+8. On the dashboard's PCs tab, change a player's damage and add an XP log entry. The character sheet should follow. Open the dashboard's Memoriam popup once to confirm it still enters Memoriam.
+9. Apply a scene from the dashboard. The table lighting should match that scene's lighting preset. End the scene and the lighting should return to the default. The Debug column should have no Debug Scatter button.
 
 ### High — the dashboard's Scenes tab: scene controls
 
