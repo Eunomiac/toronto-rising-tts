@@ -136,18 +136,18 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 
 **How to verify:**
 
-1. **Library:** open **Advance ▸** and choose **Scene…**. Every in-game library scene should be listed with its District and Site, and the search box should narrow the list.
+1. **Library:** during Play, press **Scene ▸** on the phase bar to open the Play a Scene window. Every in-game library scene should be listed with its District and Site, and the search box should narrow the list.
 2. **Prepare a new scene:** press **+ Prepare a new scene…** and pick a location. A blue Preview opens named after the District and Site. Change its weather, sky or conditions: nothing should change in TTS. Press **Play Scene** and pick a time (TOR-697 below): TTS should play it with those settings, and it should appear in the in-game library too.
 3. **Edit and Discard:** press **Edit** on a scene, change something, and press **Discard** twice. The scene should be unchanged when you open it again.
-4. **Deck:** **On deck** in a preview adds the scene to the phase bar without switching to it. Right-click a deck scene: its preview should open.
+4. **Deck:** **On deck** in a preview adds the scene to the phase bar without switching to it. Right-click a deck scene and choose **Edit**: its preview should open.
 5. **Unlink and Fork:** click the table's scene title on the phase bar and choose **Unlink from the library**: an **unlinked** tag should appear, and the in-game row should show unlinked. Choose **Fork…**, name both scenes and press **Fork**: the phase bar should show the new name, and the in-game library should list both.
 6. **Delete:** press **Delete** twice on a scene that is not on the table. It should leave both the dashboard list and the in-game library.
 
 #### TOR-697 — The scene timing menu: Scene Time + and Now + rows, ×2 or ×5 to Now
 
-**How to verify:** Click a scene on deck in the phase bar (or **Play** in the scene list).
+**How to verify:** Click a gold (new) scene on deck in the phase bar, or **Play** on a new scene in the Play a Scene window. Ongoing scenes (green) no longer open this menu; see TOR-705 below.
 
-1. The menu shows the scene's time and date on top, Now below, a row of coloured buttons under each, and a Real time row with ×2 and ×5 to Now.
+1. The menu shows the scene's time and date on top (only when the scene was given a time of its own), Now below, a row of coloured buttons under each, and a Real time row with ×2 and ×5 to Now.
 2. Hover the top row from left to right: the scene time should move on by 0, 15, 30 and 45 minutes, then 1 h, 1 h 30, 2, 3 and 4 hours. The Now block always shows present day, with a small "moves to …" tag if the preview passes it.
 3. With a scene earlier tonight than Now, ×5 to Now should be lit. Click the leftmost top button: the scene plays at its own time and the clock runs fast until it reaches Now, then at ×2.
 4. Switch again and click the third button on the Now row (+30 min): the scene should start 30 minutes after Now, Now should move on by 30 minutes, and the clock should run at ×2.
@@ -161,6 +161,20 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 **Context:** "Grand Audience" refused to play with `NPC1.tableSlot: 3 is already used by Brown`. Copying a scene between the library and the table only copied the outer list of seats, so later changes on the table (a player reconnecting, a Table B chair shuffle) quietly rewrote the stored scene until the next reload. Copies are now independent. Grand Audience was repaired on 2026-10-10 in both TTS and the dashboard: Mylène moved from chair 3 to chair 6 (Table A).
 
 **How to verify:** Play Grand Audience: it should load with Mylène on chair 6 and no error. Then play a library scene on Table B, and End it or play a different scene. Change the table's seating (the Debug panel's simulated disconnect and connect for one PC, or switch tables so Table B reshuffles). Preview the first scene in the dashboard: its seats should be exactly as they were when it left the table. Play it again: no "already used by" message.
+
+#### TOR-705 — Scenes are new, ongoing, ended or templates, and the scene controls are simpler
+
+**Context:** Every library scene now has a status. Playing a scene makes it **ongoing**, and it stays ongoing when you switch away; only **End Scene** makes it **ended**. Templates are reusable set-ups (Elysium, the council chamber) that always play as a fresh dated copy. The Advance ring is gone. Restart the dashboard and Save & Play first.
+
+**How to verify:**
+
+1. **Phase bar:** during Play the right-hand button reads **Spotlight ▸** (click twice to advance), and a **Scene ▸** button beside it opens the Play a Scene window. Its header has **Memoriam…** and **End Scene**.
+2. **Ongoing scenes:** play scene A at any time, then play scene B. A should stay on the phase bar in bright green. Click A: it should switch straight back with no clock menu, at A's own time, with the clock running fast (×5) until it catches up to Now. In the Play a Scene window, A should be at the top with a green star.
+3. **New scenes and the deck:** in the Play a Scene window, click the empty star beside a new scene: it turns gold and the scene appears in gold on the phase bar. Clicking it there opens the clock menu as before. Click the star again to take it off.
+4. **End Scene:** right-click green A on the phase bar and choose **End Scene** (twice): A leaves the phase bar and the main list. Press **Archive (1)** at the bottom of the window: A is there with a status picker and no Play button. Change it to **Ongoing**: A comes back to the phase bar. In TTS, the in-game Scenes panel should not list ended scenes.
+5. **End Scene from the window:** with B on the table, open the window and press **End Scene** (twice): TTS goes to Downtime and B moves to the archive.
+6. **Templates:** open a scene's preview (**Edit**), change its picker from **New scene** to **Template** and **Save**. It shows in [square brackets] everywhere, and disappears from the in-game Scenes panel. Press **Play** on it and pick a time: TTS should play a new scene called, for example, "Elysium (Oct 12)" (the night's date), and the template itself stays unchanged in the list.
+7. **Memoriam:** with a scene on the table, open the window and start a **Memoriam…**. The phase bar's button should read **Return ▸**; click it twice and TTS should go back to that scene. Start a Memoriam from Downtime instead (End Scene first): the button should read **Downtime ▸** and leave you in Downtime with no scene.
 
 ### High — the dashboard's Scenes tab: stage, seats and NPCs
 
