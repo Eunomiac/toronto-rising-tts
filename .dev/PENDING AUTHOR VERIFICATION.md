@@ -109,6 +109,18 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 4. Confirm with a left-click so the banner shows. The player should see only the successes (6 and up). On a messy critical they all show as Hunger dice; on a bestial failure, the successes show as normal dice plus the Hunger 1s; on a total failure, no dice.
 5. Clear the slot: the dice disappear for the Storyteller and never appear for the player.
 
+#### TOR-716 — Stage Control tokens in rows by stage area
+
+**Context:** From your 2026-10-11 pin. The Stage Control board's spotlight tokens now spawn in rows grouped by stage area instead of at each NPC's stage spot. They are bigger (1.5 scale) and upright from your seat. After spawning, a token never moves; light changes only flip it.
+
+**How to verify:**
+
+1. Save & Play. Load a scene with NPCs in two or three different stage areas.
+2. On the Stage Control board, the tokens should be large and upright from the Storyteller's seat. They should sit in rows across the board, grouped by area, with a slightly wider gap between areas.
+3. Move an NPC to another stage area on the dashboard and Send: its token should stay where it is.
+4. Turn an NPC's light off and on from the dashboard: its token flips face down and face up without moving.
+5. Hold the spotlight hotkey over a token: the NPC is spotlit as before.
+
 ### High — startup, table and hunger (eye checks only; your traces already confirmed the speed-ups)
 
 #### TOR-670 / TOR-671 — Startup does one full sync and lifts the cover once

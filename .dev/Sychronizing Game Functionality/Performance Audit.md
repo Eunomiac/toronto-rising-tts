@@ -118,7 +118,7 @@ Do not reintroduce TOR-391 duplicates: no broad `StorytellerScenesPanel.refresh(
 
 ## 0. Stage edit cost (Dashboard)
 
-The CONTROL_BOARD Apply / Clear / token-drop paths and their profilers were retired in TOR-687. Stage edits now arrive from the Storyteller Dashboard as one bundled `StageApply.applyStageChanges` call, followed by a single `Sync.npcs` with `force = false` (`npcReconcileFingerprint` can skip unchanged work). The snap catalog stays cached by `controlBoardSnapFingerprintFor`; `boardUvHalfExtentsCache` caches board half-extents. `StageTokens.reconcileFromState` keeps a per-row signature and only spawns, moves, flips or destroys tokens whose placement changed.
+The CONTROL_BOARD Apply / Clear / token-drop paths and their profilers were retired in TOR-687. Stage edits now arrive from the Storyteller Dashboard as one bundled `StageApply.applyStageChanges` call, followed by a single `Sync.npcs` with `force = false` (`npcReconcileFingerprint` can skip unchanged work). The snap catalog stays cached by `controlBoardSnapFingerprintFor`; `boardUvHalfExtentsCache` caches board half-extents. `StageTokens.reconcileFromState` keeps a per-row light signature and only spawns, flips or destroys tokens whose placement changed; the row layout (area lookup per NPC on the cached snap catalog) runs only on a pass that spawns.
 
 ## 1. `Sync.player(color)` double all-seat overlay/HUD fan-out
 

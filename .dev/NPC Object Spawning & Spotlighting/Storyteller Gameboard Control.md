@@ -11,7 +11,7 @@ Read this when:
 
 Source of truth:
 - `core/npc_stage_apply.ttslua` — Storyteller Dashboard stage edits → `sessionScene.npcWorld.placements` → `Sync.npcs`
-- `core/stage_tokens.ttslua` — spotlight tokens on CONTROL_BOARD (spawn / move / flip / destroy from placements)
+- `core/stage_tokens.ttslua` — spotlight tokens on CONTROL_BOARD (spawn in rows / flip / destroy from placements)
 - `core/npc_gameboard_spotlight.ttslua` — Storyteller hold-to-spotlight hotkey (TOR-238)
 - `core/npc_gameboard.ttslua` — thin `Gameboard` facade (u,v maths + hotkey entry)
 - `core/npc_gameboard_board.ttslua` — board accessors, u,v ↔ world
@@ -32,7 +32,7 @@ Status: current (TOR-687 retired control-board Apply, the token palette, PC toke
 | --- | --- |
 | **Stage authority** | `sessionScene.npcWorld.placements` — `{ characterKey = { u, v, yaw, npcLightMode } }` in 0–1 stage-map coordinates. Written only by `StageApply.applyStageChanges` (Dashboard) and by scene activation. |
 | **Dashboard edit** | `dashboard/scenes.ttslua` → `StageApply.applyStageChanges(changes)` → `Sync.npcs({ animateStageMoves = true })`. Bundled edits animate together (one lerp batch). Homeland seats stay dark while their NPC stands on the stage. |
-| **Spotlight tokens** | `StageTokens.reconcileFromState` runs from the NPC reconcile. One `Custom_Tile` per stage NPC, tagged `stage_token`, GM notes `npcToken:<characterKey>`, scale `D.STAGE_TOKEN_SCALE`, placed at the NPC's u,v on CONTROL_BOARD, face down when the NPC stands dark. Fingerprinted per row: only changed rows are respawned / moved / flipped. Hidden from PC seats. Moving a token does nothing. |
+| **Spotlight tokens** | `StageTokens.reconcileFromState` runs from the NPC reconcile. One `Custom_Tile` per stage NPC, tagged `stage_token`, GM notes `npcToken:<characterKey>`, scale `D.STAGE_TOKEN_SCALE` (1.5), yaw 0, face down when the NPC stands dark. Spawned in horizontal rows across the board, read left to right from the Storyteller's seat (world −X → +X, far +Z edge first): 3 world units apart, grouped by stage area in `C.Scatter.POLAR_FAMILY_ORDER` (`ScatterOccupancy.polarAreaNameAt`; in Scatter that is scatter-group order) with 1 extra unit between areas. Position is set **only at spawn** — a later stage move leaves the token in place, a light change only flips it, and a newcomer whose sorted slot is held by an older token takes the next free spare slot past the end. Saved tokens at another scale are respawned on load. Hidden from PC seats. Moving a token does nothing. |
 | **Spotlight hotkey** | Only purpose of the tokens — see § Hold-to-spotlight. |
 
 Legacy **`byArea` in import JSON** is converted to **`placements` on import** (`lib/npc_placements_convert.ttslua`). Reconcile uses **`placements` only**; `byArea` in live state is normalized on `S.validateState` or via `npm run npc-placements:migrate-byarea`.
@@ -46,7 +46,7 @@ Both boards are **different objects** (position, rotation, scale). Map coordinat
 | Step | API | Meaning |
 | --- | --- | --- |
 | Map → world figurine | `Gameboard.worldFromUv(u, v, { groundLevel })` | **STAGE_BOARD** `positionToWorld` at that `u,v`; Y from ring `groundLevel` when set (absolute world Y). Fallback: `D.DEFAULT_STAGE_WORLD` when STAGE_BOARD is missing. |
-| Map → control board | `Board.worldOnControlBoard(board, u, v, opts)` | Same `u,v` on **CONTROL_BOARD** via `positionToWorld` (used by `stage_tokens`). |
+| Map → control board | `Board.worldOnControlBoard(board, u, v, opts)` | Same `u,v` on **CONTROL_BOARD** via `positionToWorld` (`stage_tokens` reads only the board's surface height from it). |
 
 **UV frame:** Custom_Tile boards use `positionToLocal` / `positionToWorld` in **object-local** units (≈ ±0.5 on X/Z for a unit tile). Do **not** multiply or divide UV by `getBounds().size` (world units). Half-extents are derived by projecting world bound corners through `positionToLocal`.
 

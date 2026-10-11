@@ -19,7 +19,7 @@ D.MINIMAP_SURFACE_LOCAL_Y = 0.24
 
 --- Spotlight tokens spawned on the Stage Control board for stage NPCs (core.stage_tokens).
 D.TAG_STAGE_TOKEN = "stage_token"
-D.STAGE_TOKEN_SCALE = { x = 0.45, y = 1, z = 0.45 }
+D.STAGE_TOKEN_SCALE = { x = 1.5, y = 1, z = 1.5 }
 
 --- Fallback world XZ footprint when STAGE_BOARD is not in the save yet.
 D.DEFAULT_STAGE_WORLD = {

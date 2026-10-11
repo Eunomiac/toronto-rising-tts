@@ -430,6 +430,22 @@ local function polarCatalog()
     return Snaps.buildControlBoardSnapCatalog(board, nil) or {}
 end
 
+--- Named polar stage area (CENTER / Mid Center / … / Far Right) under a stage u,v, or nil off the polar
+--- packs. In Scatter, packs map to scatter groups in `POLAR_FAMILY_ORDER`, so the name also orders groups.
+--- @param u number
+--- @param v number
+--- @return string|nil
+function ScatterOccupancy.polarAreaNameAt(u, v)
+    local entry = require("core.npc_gameboard_snaps").resolvePlacementSnapCatalogEntry(u, v)
+    if type(entry) ~= "table" or type(entry.familyId) ~= "string" or entry.snapKind == "seat" then
+        return nil
+    end
+    return polarAreaNameForFamily(polarCatalog(), entry.familyId)
+end
+
+--- 1-based rank of a polar area name in `POLAR_FAMILY_ORDER`, or nil.
+ScatterOccupancy.polarAreaRank = polarFamilyRank
+
 local function familyIdForAreaName(catalog, areaName)
     local seen = {}
     for i = 1, #catalog do
