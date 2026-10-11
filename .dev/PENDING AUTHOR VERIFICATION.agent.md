@@ -63,6 +63,7 @@ When adding:
 - **Do not** reorder, rewrite, or delete other Outstanding bodies
 - Update the `_Last populated_` line
 - If this `TOR-*` already has a **⌚** row, **remove ⌚** in this session and refresh **How to verify** — it is now ready to test. Do not wait for inbox.
+- A row may list several ids tested together (`#### TOR-701 / TOR-695 — …`). On **✅**, close every listed id. On **❌**, the author names the failing step; keep the row and narrow it to the ids that step covers.
 
 ### Still `/tr-inbox` only
 
