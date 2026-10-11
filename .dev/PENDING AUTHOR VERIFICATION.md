@@ -20,7 +20,7 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
-_Last populated: 2026-10-10 — condensed at your request. Checks that later work replaced were dropped (the in-game Gameboard Apply and THERE preview are gone, the scene-switch clock menu was redesigned, and the signal-fire alert lost its banner and chime). Traces that already passed were removed, leaving only what is still owed. Overlapping rows were merged. Everything still needs a first pass except TOR-439, which stays ⏰ until you can gather join testers._
+_Last populated: 2026-10-10 (TOR-707 / TOR-708 added) — condensed at your request. Checks that later work replaced were dropped (the in-game Gameboard Apply and THERE preview are gone, the scene-switch clock menu was redesigned, and the signal-fire alert lost its banner and chime). Traces that already passed were removed, leaving only what is still owed. Overlapping rows were merged. Everything still needs a first pass except TOR-439, which stays ⏰ until you can gather join testers._
 
 Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play.
 
@@ -31,6 +31,35 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 **Status:** Linear **In Progress** (verification gate; code already shipped). Needs other people at the table — not a solo Save & Play.
 
 **How to verify:** Run the multiclient playbook in [TOR-439-join-xml-spike-verify.md](Step-By-Step Playbooks/TOR-439-join-xml-spike-verify.md). On the Host, arm the minimal join XML, have the struggling client connect, then restore in stages. Watch **step 2 (HUD / Refresh UI)** especially: after the TOR-444 remount-weight cut, does that client stay connected through the full Global HUD remount? Optionally also try a normal (unarmed) join to see whether the Arm pipeline is still needed at all.
+
+### High — NPCs and dice no longer wait under the table
+
+#### TOR-707 — NPC figurines and spotlights spawn when a scene needs them
+
+**Context:** The ~90 NPC figurines and spotlights that used to sit in a hidden grid under the table are gone. An NPC now exists only while it is on the stage, in a seat, or in Scatter: it is created when a scene brings it in and destroyed when it leaves. Seated NPCs no longer carry a stage spotlight. The **4 Figurines** join-restore button on the Phases panel was removed (restore is now 1 Assets, 2 HUD, 3 Emitters).
+
+**How to verify:**
+
+1. Save & Play. On the first load, the console should print one **Orphan sweep** line saying it dropped the old preload records and destroyed the old figurines and lights. Do **File → Save** once, then load again: that line should not appear a second time, and the load should feel no slower than before.
+2. Play a library scene that has several NPCs on the stage and at least one NPC in a seat. Behind the blindfold, the stage NPCs should appear in place showing their pictures (not blank white cards) with their spotlights; the seated NPC should appear in the chair with its seat lights and no extra spotlight hovering over it.
+3. Play a different scene with a different cast. NPCs who are not in the new scene should disappear, and the new scene's NPCs should appear in place.
+4. Mid-scene, from the dashboard, add an NPC who is not in the scene onto the stage and Send. Expect a short pause (a second or two) and then the NPC appears already in place, picture loaded, with its spotlight. Moving an NPC who is already on the stage should still glide immediately, as before.
+5. Seat an NPC from the dashboard, and in Scatter move an NPC into a group: both should work with the same short pause the first time that NPC enters the world.
+6. Add a generic NPC from the dashboard roster, put it on the stage and Send: it should appear after a short pause with the name you typed. Save & Play: it should still be on the stage with that name.
+7. Advance into the Spotlight phase: stage NPCs should disappear. Go back to play the scene: they should come back.
+
+#### TOR-708 — Dice are taken from the bags when you roll
+
+**Context:** The parked dice under each bag are gone. When a roll stages, each die is taken out of the bag; when the roll is cleaned up, the dice are destroyed.
+
+**How to verify:**
+
+1. Once, after Save & Play, type `lua DEBUG.retireDicePreloadPool()` in the Host console. It should say how many parked dice it destroyed. Then **File → Save**.
+2. At a player seat, roll a normal pool: the dice should appear at the bag and tray exactly as before, roll, and show the result. When the roll is cleared, the dice should disappear.
+3. Start a roll and cancel it before rolling: the staged dice should disappear.
+4. Roll, then use a Willpower reroll: the highlighted dice should be grabbable, and after the reroll finishes no die should keep a blue glow.
+5. Left-click the Rouse bag and roll: same as before. Roll a pool with Hunger dice: the red dice should come out of the Hunger bag as before.
+6. After several rolls, nothing should pile up under the table, and no console errors should appear.
 
 ### High — startup, table and hunger (eye checks only; your traces already confirmed the speed-ups)
 
