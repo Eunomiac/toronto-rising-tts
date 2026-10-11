@@ -646,13 +646,16 @@ $lab-live: #4caf6a;
   }
 }
 
+// Never wraps or shrinks: a long modifier widens the column to the left, into the name's room.
 .lab-res {
   display: flex;
+  flex: 0 0 auto;
   flex-direction: column;
   align-items: flex-end;
   gap: 2px;
 
   &-tag {
+    white-space: nowrap;
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.04em;
@@ -1033,6 +1036,15 @@ $lab-live: #4caf6a;
   flex: 1 1 auto;
 }
 
+input.lab-cat-rename {
+  min-width: 0;
+  padding: 0 4px;
+  border: 1px solid #5a5a66;
+  font: inherit;
+  color: inherit;
+  background: #15151a;
+}
+
 .lab-cat-count {
   font-size: 11px;
   font-weight: 600;
@@ -1261,6 +1273,14 @@ $lab-live: #4caf6a;
 
   > span {
     position: relative;
+  }
+
+  // The readouts sit over the sky; clicks and moon drags pass through them.
+  &-present,
+  &-date,
+  &-time,
+  &-edge {
+    pointer-events: none;
   }
 
   &-present {
@@ -1967,6 +1987,28 @@ $lab-live: #4caf6a;
   }
 }
 
+// Spotlight phase: the carousel takes the stage's place, scaled up (its ring steps in unscaled pixels).
+.scenes-spotlight-stage,
+.scenes-stage-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.scenes-spotlight-stage .lab-carousel {
+  transform: scale(4);
+}
+
+.scenes-stage-empty {
+  font-family: "Bebas Neue", "Arial Narrow", sans-serif;
+  font-size: 40px;
+  letter-spacing: 0.05em;
+  color: #5c5c66;
+  background: #0d0d11;
+}
+
 /* ---------- hunt roll ---------- */
 
 // The winners' glow spills past the strip, so this panel must not clip it.
@@ -2247,10 +2289,6 @@ $lab-live: #4caf6a;
     letter-spacing: 0.03em;
     white-space: nowrap;
     color: #fff;
-
-    &.none {
-      color: #6a6a74;
-    }
   }
 
   button.lab-phase-scene {
@@ -2670,52 +2708,29 @@ $lab-live: #4caf6a;
 
     &.open {
       width: 100%;
-      padding: 4px;
       border: 1px solid #3a3a44;
       background: #121216;
       box-shadow: 8px 0 24px rgb(0 0 0 / 60%);
     }
-  }
 
-  // Tab on the open roster's right edge.
-  &-close {
-    position: absolute;
-    top: 50%;
-    right: -15px;
-    width: 14px;
-    height: 48px;
-    padding: 0;
-    border: 1px solid #3a3a44;
-    border-left: none;
-    font-size: 11px;
-    color: #9a9aa6;
-    background: #18181e;
-    cursor: pointer;
-    transform: translateY(-50%);
-
-    &:hover {
-      color: #e0e0e8;
-      background: #24242c;
+    // The roster itself, beside the rail that toggles it.
+    &-body {
+      position: absolute;
+      inset: 0 0 0 11px;
+      padding: 4px;
     }
   }
 
-  // Reaches past the dock's gap to the screen's left edge, so a pointer pushed against the edge opens the roster.
-  &-edge {
+  &-rail {
     position: absolute;
     top: 0;
     bottom: 0;
-    left: -16px;
-    width: 19px;
-  }
-
-  &-rail {
-    position: relative;
+    left: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 3px;
-    width: 100%;
-    height: 100%;
+    width: 11px;
     padding: 6px 0;
     border: none;
     border-right: 1px solid #34343e;

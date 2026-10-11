@@ -16,6 +16,8 @@ import type { ApplyCommand, RingTarget, SeatColor, SeatSnapshot, SheetSnapshot }
 
 type Props = {
   readonly active: boolean;
+  readonly selected: SeatColor;
+  readonly onSelect: (color: SeatColor) => void;
 };
 
 const emptyLiveSnapshot = (): SheetSnapshot => ({ ok: false, seats: [] });
@@ -34,10 +36,9 @@ const friendlyBridgeMessage = (message: string): string => {
   return message;
 };
 
-export const PcSheetTab = ({ active }: Props): ReactElement => {
+export const PcSheetTab = ({ active, selected, onSelect }: Props): ReactElement => {
   const spreadRef = useRef<HTMLDivElement>(null);
   const [snapshot, setSnapshot] = useState<SheetSnapshot>(emptyLiveSnapshot);
-  const [selected, setSelected] = useState<SeatColor>("Pink");
   const [status, setStatus] = useState("Checking TTS…");
   const [live, setLive] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -319,7 +320,7 @@ export const PcSheetTab = ({ active }: Props): ReactElement => {
         <PlayerRail
           seats={snapshot.seats}
           selected={seat?.color ?? selected}
-          onSelect={setSelected}
+          onSelect={onSelect}
           onCommand={(command) => void apply(command)}
         />
       ) : <aside className="pc-rail" aria-hidden={!live} />}

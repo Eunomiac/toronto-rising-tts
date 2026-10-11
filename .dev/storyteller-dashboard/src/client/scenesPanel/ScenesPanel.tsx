@@ -9,6 +9,7 @@ import {
   PhaseStrip,
   RosterDock,
   SoundMixer,
+  SpotlightCarousel,
   StageQueue,
   WeatherPanel,
   WhenPanel,
@@ -498,7 +499,15 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
             )}
           </Box>
           <Box x={STRIP_X} y={STAGE_Y} w={STAGE_W} h={STAGE_H} className="lab-borderless">
-            {board ? <WideBoard w={STAGE_W - 12} h={STAGE_H - 10} live={board} /> : <Waiting text={waitText} />}
+            {!board || !seats ? (
+              <Waiting text={waitText} />
+            ) : phase?.phase === "Spotlight" ? (
+              <div className="scenes-spotlight-stage"><SpotlightCarousel live={spotlightView(seats)} /></div>
+            ) : scene?.liveKey === undefined && !inMemoriam ? (
+              <div className="scenes-stage-empty">(No Active Scene)</div>
+            ) : (
+              <WideBoard w={STAGE_W - 12} h={STAGE_H - 10} live={board} />
+            )}
           </Box>
           <StageQueue right={1920 - STRIP_X - STAGE_W + 3 * G} top={STAGE_Y + 36} connected={connected} live={queueView} />
           <div className="scenes-alerts" style={{ left: STRIP_X + STAGE_W / 2, top: STAGE_Y + 40 }}>

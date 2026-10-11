@@ -1,7 +1,8 @@
 "use strict";
 
 /**
- * Extracts Storyteller Dashboard Scenes-tab catalogs from Lua sources of truth.
+ * Extracts Storyteller Dashboard Scenes-tab catalogs from Lua sources of truth, plus the STAGE_BOARD transform
+ * and Site/District card image URLs from the chronicle save.
  *
  * Writes:
  *   .dev/storyteller-dashboard/data/scene-catalogs.json
@@ -175,13 +176,51 @@ function staggerWorldFromStageScale(stage) {
   };
 }
 
-function loadDashboardStageWorld() {
+/**
+ * Site and District card images by UI asset name (`siteCard_<key>`, `districtCard_<key>`): the save's
+ * CustomUIAssets carry the uploaded URLs the table itself shows.
+ *
+ * @param {string} saveText
+ * @returns {Map<string, string>}
+ */
+function readCardAssetUrls(saveText) {
+  const save = JSON.parse(saveText);
+  if (!Array.isArray(save.CustomUIAssets)) {
+    throw new Error("Save has no CustomUIAssets list.");
+  }
+  const urls = new Map();
+  for (const asset of save.CustomUIAssets) {
+    if (/^(siteCard|districtCard)_/.test(asset.Name) && typeof asset.URL === "string" && asset.URL !== "") {
+      urls.set(asset.Name, asset.URL);
+    }
+  }
+  return urls;
+}
+
+const REPO_IMAGE_BASE = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/";
+
+/**
+ * @param {Map<string, string>} cardUrls
+ * @param {string} siteKey
+ * @returns {string | null}
+ */
+function siteCardUrl(cardUrls, siteKey) {
+  const fromSave = cardUrls.get(`siteCard_${siteKey}`);
+  if (fromSave) {
+    return fromSave;
+  }
+  const repoPath = path.join(root, "assets", "images", "Sites", `${siteKey}.webp`);
+  return fs.existsSync(repoPath) ? `${REPO_IMAGE_BASE}Sites/${siteKey}.webp` : null;
+}
+
+/**
+ * @param {string} saveText
+ * @param {{ saveFileName: string, source: string }} save
+ */
+function loadDashboardStageWorld(saveText, save) {
   const guidsSrc = fs.readFileSync(guidsPath, "utf8");
   const stageGuid = readGuidConstant(guidsSrc, "STAGE_BOARD");
   const controlGuid = readGuidConstant(guidsSrc, "CONTROL_BOARD");
-  const cfg = readRepoAssetsConfig();
-  const save = resolveChronicleSaveFile(cfg.defaultSaveName, cfg.savesDir);
-  const saveText = fs.readFileSync(save.savePath, "utf8");
   const stage = extractBoardTransform(saveText, stageGuid, "STAGE_BOARD", "G.GUIDS.STAGE_BOARD");
   const control = extractBoardTransform(saveText, controlGuid, "NPC Control Board", "G.GUIDS.CONTROL_BOARD");
   const world = staggerWorldFromStageScale(stage);
@@ -855,10 +894,16 @@ function main() {
   const playerColors = parsePlayerColors(constants);
   const npcSeats = parseNpcSeats(constants);
 
+  const cfg = readRepoAssetsConfig();
+  const save = resolveChronicleSaveFile(cfg.defaultSaveName, cfg.savesDir);
+  const saveText = fs.readFileSync(save.savePath, "utf8");
+  const cardUrls = readCardAssetUrls(saveText);
+
   const districts = parseTopLevelEntries(extractBlock(constants, "C.Districts =")).map((entry) => ({
     key: entry.key,
     name: readStringField(entry.body, "name") || entry.key,
     conditions: readStringListField(entry.body, "conditions"),
+    cardUrl: cardUrls.get(`districtCard_${entry.key}`) ?? null,
   }));
   districts.sort((a, b) => a.name.localeCompare(b.name));
 
@@ -877,6 +922,7 @@ function main() {
       skybox: readStringField(entry.body, "skybox"),
       locationTrack: soundTrackMatch ? soundTrackMatch[1] : null,
       conditions: readStringListField(entry.body, "conditions"),
+      cardUrl: siteCardUrl(cardUrls, entry.key),
     };
   });
   sites.sort((a, b) => a.name.localeCompare(b.name));
@@ -999,7 +1045,7 @@ function main() {
     );
   }
 
-  const stage = loadDashboardStageWorld();
+  const stage = loadDashboardStageWorld(saveText, save);
   const snapCfg = parseControlBoardSnap(boardSrc);
   const seatRow = parseSeatRow(boardSrc);
   const scatter = parseScatterBoard(boardSrc);

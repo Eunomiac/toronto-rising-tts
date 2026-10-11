@@ -19,6 +19,8 @@ export type CatalogSite = {
   readonly skybox: string | null;
   readonly locationTrack: string | null;
   readonly conditions: readonly string[];
+  /** The Site card image: the save's `siteCard_<key>` UI asset, else the repo copy; null when neither exists. */
+  readonly cardUrl: string | null;
 };
 
 export type MemoriamPeriod = {
@@ -38,7 +40,8 @@ export type SceneCatalogs = {
   readonly npcSeats: readonly string[];
   readonly pcs: readonly CatalogCharacter[];
   readonly namedNpcs: readonly CatalogCharacter[];
-  readonly districts: readonly { readonly key: string; readonly name: string; readonly conditions: readonly string[] }[];
+  /** `cardUrl`: the save's `districtCard_<key>` UI asset, null when missing. */
+  readonly districts: readonly { readonly key: string; readonly name: string; readonly conditions: readonly string[]; readonly cardUrl: string | null }[];
   readonly sites: readonly CatalogSite[];
   /** `randomSeating`: the Table B family, which shuffles every chair when it is set down. */
   readonly tables: readonly { readonly key: string; readonly slotCapacity: number; readonly randomSeating: boolean }[];

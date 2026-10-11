@@ -7,6 +7,7 @@ import type { PcRoll, PoolKind, RollPool, RollResult, RollsSlice, StLiveRoll, St
 import type { RollOptionsView } from "./bridge";
 import type { PoolDieAction, RollsSend } from "./commands";
 import { DiceRing, PoolDiamonds, RolledDice } from "./dice";
+import { broadcastStates, foldChanges, NPC_FOLD, slotFold } from "./rollFolds";
 import {
   bumpPool,
   conditionList,
@@ -306,7 +307,7 @@ const SlotRollCard = ({ slot, send, collapsed, onToggle }: {
   const held = slot.pendingBroadcast;
   const flags = (
     <span className="roll-flags">
-      <span title={`Storyteller dice drawer ${slot.index}`}>Drawer {slot.index}</span>
+      <span title={`Storyteller dice drawer ${slot.index}`}>{slot.index}</span>
       {held && <span title="The result has not been shown to the table yet">Held</span>}
     </span>
   );
@@ -579,9 +580,6 @@ const RollOptions = ({ popup, access, send, onClose }: { popup: OptionsPopup; ac
 
 
 const POPUP_W = 420;
-/** Fold key for the live NPC roll (PC rolls fold by seat colour). */
-const NPC_FOLD = "npc";
-const slotFold = (index: number): string => `drawer-${index}`;
 /** Keeps the dice ring's side spokes on the canvas. */
 const POOL_RING_MARGIN = 110;
 
@@ -636,6 +634,26 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
     }
     setFoldedKeys([...folded].join(","));
   };
+  // A broadcast folds its card; a new roll in that seat or drawer opens it again. The first push only records.
+  const lastBroadcast = useRef<ReadonlyMap<string, boolean> | null>(null);
+  useEffect(() => {
+    if (!pushed) {
+      return;
+    }
+    const next = broadcastStates(pushed);
+    const before = lastBroadcast.current;
+    lastBroadcast.current = next;
+    if (!before) {
+      return;
+    }
+    const { fold, unfold } = foldChanges(before, next);
+    if (fold.length === 0 && unfold.length === 0) {
+      return;
+    }
+    fold.forEach((key) => folded.add(key));
+    unfold.forEach((key) => folded.delete(key));
+    setFoldedKeys([...folded].join(","));
+  }, [pushed]);
   const openPoolRing = (event: MouseEvent<HTMLElement>, target: PoolRing["target"]): void => {
     const point = canvasPoint(event);
     setPoolRing({ x: Math.min(Math.max(point.x, POOL_RING_MARGIN), 1920 - POOL_RING_MARGIN), y: point.y, target });

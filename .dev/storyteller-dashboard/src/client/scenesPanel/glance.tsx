@@ -264,9 +264,6 @@ export const SceneTimingRing = ({ timing, onClose }: { timing: SceneTiming; onCl
 
 export type LabLocation = { readonly districtKey: string; readonly siteKey: string };
 
-const cardUrl = (path: string): string =>
-  `https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/${path}`;
-
 const resolveLocation = (data: ChronicleLocations, location: LabLocation): { district: SheetDistrict; site: SheetSite } | string => {
   const district = data.districts.find((entry) => entry.key === location.districtKey);
   const site = data.sites.find((entry) => entry.key === location.siteKey);
@@ -402,6 +399,7 @@ export const LocationPanel = ({ location, overridden, onChange, onRelease, readO
   fog?: { readonly on: boolean; readonly onToggle: () => void };
 }): ReactElement => {
   const { data, error } = useChronicleLocations();
+  const { catalogs } = useSceneCatalogs();
   const [picking, setPicking] = useState(false);
   if (error || !data) {
     return <p className="lab-note lab-where-wait">{error ?? "Reading locations from the chronicle sheet…"}</p>;
@@ -411,11 +409,12 @@ export const LocationPanel = ({ location, overridden, onChange, onRelease, readO
     return <p className="lab-note lab-where-wait">{found}</p>;
   }
   const { district, site } = found;
+  const card = catalogs?.sites.find((entry) => entry.key === site.key)?.cardUrl;
   return (
     <div
       className={`lab-where${overridden ? " lab-overridden" : ""}`}
       title={readOnly ? undefined : "Click to change the District or Site"}
-      style={{ backgroundImage: `url("${cardUrl(`Sites/${site.key}.webp`)}")` }}
+      style={card ? { backgroundImage: `url("${card}")` } : undefined}
       onClick={() => setPicking(!readOnly)}
     >
       <div className="lab-where-band">
@@ -739,15 +738,20 @@ const GroupEditor = ({ group, at, color, own, leader, onColor, onLeader, onClose
   </Overlay>
 );
 
-/** Category header: twirl to show or hide its groups; drop a group on it to file the group there. */
-const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove }: {
+/**
+ * Category header: twirl to show or hide its groups; drop a group on it to file the group there; right-click the
+ * name to rename it (Enter or leaving the field keeps the new name, Escape cancels).
+ */
+const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove, onRename }: {
   category: RosterCategory | null;
   count: number;
   onToggle?: () => void;
   onDrop: (groupKey: string) => void;
   onRemove?: () => void;
+  onRename?: (name: string) => void;
 }): ReactElement => {
   const [over, setOver] = useState(false);
+  const [renaming, setRenaming] = useState(false);
   return (
     <div
       className={`lab-cat-head${over ? " drop" : ""}${category ? "" : " unsorted"}`}
@@ -771,7 +775,41 @@ const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove }: {
           {category?.open ? "▾" : "▸"}
         </button>
       )}
-      <span className="lab-cat-name">{category ? category.name : "Unsorted"}</span>
+      {renaming && category && onRename ? (
+        <input
+          autoFocus
+          className="lab-cat-name lab-cat-rename"
+          defaultValue={category.name}
+          onFocus={(event) => event.currentTarget.select()}
+          onBlur={(event) => {
+            const name = event.currentTarget.value.trim();
+            if (name !== "" && name !== category.name) {
+              onRename(name);
+            }
+            setRenaming(false);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.currentTarget.blur();
+            }
+            if (event.key === "Escape") {
+              event.currentTarget.value = category.name;
+              event.currentTarget.blur();
+            }
+          }}
+        />
+      ) : (
+        <span
+          className="lab-cat-name"
+          title={onRename ? "Right-click to rename" : undefined}
+          onContextMenu={onRename ? (event) => {
+            event.preventDefault();
+            setRenaming(true);
+          } : undefined}
+        >
+          {category ? category.name : "Unsorted"}
+        </span>
+      )}
       <span className="lab-cat-count">{count}</span>
       {onRemove && <button type="button" className="lab-cat-remove" title="Remove category (its groups go back to Unsorted)" onClick={onRemove}>×</button>}
     </div>
@@ -1032,6 +1070,7 @@ export const MasonryRoster = (): ReactElement => {
                 onToggle={() => updateCategory(category.id, { open: !category.open })}
                 onDrop={fileGroup(category.id)}
                 onRemove={() => removeCategory(category.id)}
+                onRename={(name) => updateCategory(category.id, { name })}
               />
               {category.open && members.length > 0 && masonry(members)}
             </section>
@@ -1062,8 +1101,8 @@ export const MasonryRoster = (): ReactElement => {
 
 /**
  * The left column below the hunt roll: scene notes, with the NPC roster folded to a rail along their left
- * edge. Clicking the rail, or pushing the pointer against the screen's left edge beside it, opens the roster
- * over the notes; it stays open (across reloads too) until its close arrow folds it back.
+ * edge. Clicking the rail opens the roster over the notes, and clicking it again folds it away; it stays as it
+ * was across reloads.
  */
 export const RosterDock = ({ scene }: { scene: string }): ReactElement => {
   const layout = useRosterLayout();
@@ -1074,19 +1113,16 @@ export const RosterDock = ({ scene }: { scene: string }): ReactElement => {
         <SceneNotes scene={scene} />
       </div>
       <div className={`lab-dock-roster${open ? " open" : ""}`}>
-        {open ? (
-          <>
+        <button type="button" className="lab-dock-rail" title={open ? "Fold the NPC roster away" : "Open the NPC roster"} onClick={() => setOpen(!open)}>
+          <span className="lab-dock-rail-label">NPC Roster</span>
+          {layout.categories.map((category) => (
+            <span key={category.id} className="lab-dock-rail-cat" style={{ "--cat": category.color } as CSSProperties} title={category.name} />
+          ))}
+        </button>
+        {open && (
+          <div className="lab-dock-roster-body">
             <MasonryRoster />
-            <button type="button" className="lab-dock-close" title="Fold the roster away" onClick={() => setOpen(false)}>◂</button>
-          </>
-        ) : (
-          <button type="button" className="lab-dock-rail" title="NPC roster" onClick={() => setOpen(true)}>
-            <span className="lab-dock-edge" onMouseEnter={() => setOpen(true)} />
-            <span className="lab-dock-rail-label">NPC Roster</span>
-            {layout.categories.map((category) => (
-              <span key={category.id} className="lab-dock-rail-cat" style={{ "--cat": category.color } as CSSProperties} title={category.name} />
-            ))}
-          </button>
+          </div>
         )}
       </div>
     </div>
@@ -2463,7 +2499,7 @@ const CAROUSEL_GAP = 4;
 const CAROUSEL_PITCH = CAROUSEL_SEAT + CAROUSEL_GAP;
 
 /** Mirrors the TTS Spotlight controls: PCs keep their places; ‹ and › (or a click) move the glowing ring. */
-const SpotlightCarousel = ({ live: { order, front } }: { live: SpotlightView }): ReactElement => {
+export const SpotlightCarousel = ({ live: { order, front } }: { live: SpotlightView }): ReactElement => {
   const command = useScenesCommand();
   const setFront = (index: number): void => {
     const pc = order[index];
@@ -2575,8 +2611,8 @@ const CommitInput = ({ value, onCommit, ...rest }: Omit<InputHTMLAttributes<HTML
  * each other live scene: ongoing scenes (green, always there) and new scenes or templates put on deck (gold).
  * Clicking an ongoing scene switches to it at once, back at its own time; a new one first asks how to set the
  * clock (`useSceneEntry`). Right-click a deck scene to open its preview, end it (ongoing) or take it off the deck;
- * click the table's scene for Unlink and Fork. Intermission shows the next session's number and title; Spotlight
- * the carousel. In Play, Scene ▸ opens the scene library (which also holds End Scene and Memoriam); in a Memoriam
+ * click the table's scene for Unlink and Fork. Intermission shows the next session's number and title (the Spotlight
+ * carousel takes over the stage instead). In Play, Scene ▸ opens the scene library (which also holds End Scene and Memoriam); in a Memoriam
  * it becomes Return ▸ (back to the scene it interrupted) or Downtime ▸. The right-hand button always names the
  * next phase; leaving a Memoriam and advancing need a second click.
  */
@@ -2622,9 +2658,9 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
                 {scenes.current.title}
                 {!linkMenu.linked && <span className="lab-phase-unlinked" title="The table no longer writes into this scene's library copy">unlinked</span>}
               </button>
-            ) : (
-              <span className={`lab-phase-scene${scenes.current ? "" : " none"}`}>{scenes.current?.title ?? "No scene on the table"}</span>
-            )}
+            ) : scenes.current ? (
+              <span className="lab-phase-scene">{scenes.current.title}</span>
+            ) : null}
             {scenes.live.filter((scene) => scene.key !== scenes.current?.key).map((scene) => (
               <button
                 key={scene.key}
@@ -2664,7 +2700,6 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
             />
           </span>
         )}
-        {phase === "Spotlight" && <SpotlightCarousel live={live.spotlight} />}
       </span>
       <span className="lab-phase-advance">
         {phase === "Play" && (subPhase === "Memoriam" ? (

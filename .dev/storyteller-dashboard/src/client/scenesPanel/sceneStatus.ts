@@ -55,7 +55,8 @@ export type DeckScene = { readonly key: string; readonly title: string; readonly
 
 /**
  * The phase bar's live scenes: the table's scene, every ongoing scene (they are always on deck), then the deck
- * file's new scenes and templates. Ended scenes never show.
+ * file's new scenes and templates, in the same order as the Play a Scene list (library order; deck entries with
+ * no library row last). Ended scenes never show.
  */
 export const deckScenes = (
   rows: readonly LibraryScene[],
@@ -73,7 +74,11 @@ export const deckScenes = (
     add({ ...current, status: "ongoing" });
   }
   rows.filter((row) => row.status === "ongoing").forEach((row) => add({ key: row.key, title: displayTitle(row), status: "ongoing" }));
-  deck.forEach((entry) => {
+  const libraryIndex = (key: string): number => {
+    const index = rows.findIndex((row) => row.key === key);
+    return index < 0 ? rows.length : index;
+  };
+  [...deck].sort((a, b) => libraryIndex(a.key) - libraryIndex(b.key)).forEach((entry) => {
     const row = byKey.get(entry.key);
     const status = row?.status ?? "new";
     if (status === "new" || status === "template") {

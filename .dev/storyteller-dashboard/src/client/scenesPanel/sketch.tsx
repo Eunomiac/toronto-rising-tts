@@ -2,6 +2,7 @@ import { useContext, useEffect, useMemo, useRef, useState, type CSSProperties, t
 import { createPortal } from "react-dom";
 import { Headshot } from "../headshots/Headshot";
 import { SEAT_ACCENT, assetUrl } from "../pcSheet/layout";
+import { useOpenPcSheet } from "../pcSheet/openPcSheet";
 import { paintDamageTrack, paintHumanityTrack, type BoxSlot } from "../pcSheet/paint";
 import { actionsForRing } from "../pcSheet/ringActions";
 import { TraitRing } from "../pcSheet/TraitRing";
@@ -150,13 +151,21 @@ const swallowClicks = {
  * A PC's trackers as controls, as on the PCs tab: click Health, Willpower, or Humanity for that tracker's ring
  * (left-click a button to add, right-click to remove); left-click Hunger to raise it, right-click to lower it.
  */
-const TrackerPopup = ({ seat, onRing, onHunger }: {
+const TrackerPopup = ({ seat, onRing, onHunger, onOpenSheet }: {
   seat: SeatSnapshot;
   onRing: (event: MouseEvent<HTMLElement>, target: RingTarget) => void;
   onHunger: (delta: number) => void;
+  onOpenSheet?: () => void;
 }): ReactElement => (
   <div className="lab-seat-pop" role="dialog" aria-label={`${seat.charName} trackers`} {...swallowClicks}>
-    <span className="lab-seat-pop-name">{seat.charName}</span>
+    <span className="lab-seat-pop-head">
+      <span className="lab-seat-pop-name">{seat.charName}</span>
+      {onOpenSheet && (
+        <button type="button" className="lab-btn lab-seat-pop-sheet" title="Show this character's sheet on the PCs tab" onClick={onOpenSheet}>
+          Open sheet
+        </button>
+      )}
+    </span>
     <button type="button" className="lab-track" onClick={(event) => onRing(event, { kind: "damage", which: "health" })}>
       <Icon name="health" className="lab-track-icon health" title="Health" />
       <BoxRow boxes={paintDamageTrack(seat.health, seat.healthMax)} />
@@ -208,7 +217,8 @@ export type SeatDrops = {
  * left out rather than drawn, and the rest stay centred. The figurine headshot fills the cell above the name.
  * PC seats are bordered in the player's colour, NPC seats in muted grey; absent (out of the scene) and
  * disconnected seats are told apart by border style and image treatment. Clicking a PC seat opens that PC's
- * tracker controls; clicking anywhere else closes them. Right-clicking an occupied seat hands it to `onMenu`
+ * tracker controls; clicking anywhere else closes them. Double-clicking it (or Open sheet in the controls) shows
+ * the PC's sheet on the PCs tab. Right-clicking an occupied seat hands it to `onMenu`
  * (the wide board's roll ring, which also takes the character out of the scene or brings them back). With
  * `onPresence` (scene drafts) a click on an occupied, connected seat toggles presence instead. With `seating`
  * (the live table, or a draft on a table that does not shuffle its chairs) a seated character drags as a token:
@@ -225,6 +235,7 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, seating }: {
 }): ReactElement => {
   const [dropChair, setDropChair] = useState<number | null>(null);
   const send = useScenesCommand();
+  const openPcSheet = useOpenPcSheet();
   const sheet = liveSheet?.sheet ?? NO_SEATS;
   const apply = (command: ApplyCommand): void => {
     if (!liveSheet) {
@@ -269,8 +280,10 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, seating }: {
         const accepts = (event: DragEvent<HTMLElement>): boolean =>
           seating !== undefined
           && (event.dataTransfer.types.includes(SEAT_DRAG_TYPE) || (seat.kind === "empty" && event.dataTransfer.types.includes(NPC_DRAG_TYPE)));
+        const opensSheet = controllable && openPcSheet !== null;
         const hints = [
           controllable && !open ? "Click for this PC's trackers" : undefined,
+          opensSheet ? "Double-click for their character sheet" : undefined,
           togglesPresence ? (seat.state === "absent" ? "Out of this scene — click to bring them in" : "In this scene — click to take them out") : undefined,
           menu && !togglesPresence ? "Right-click to roll, or to take them out of the scene / bring them back" : undefined,
           draggable ? `Drag to another chair to swap places${seat.kind === "npc" ? ", or onto the stage" : ""}` : undefined,
@@ -343,6 +356,12 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, seating }: {
               setOpenColor(open ? null : seat.color ?? null);
               liveSheet?.load();
             }}
+            onDoubleClick={() => {
+              if (opensSheet && seat.color) {
+                setOpenColor(null);
+                openPcSheet(seat.color);
+              }
+            }}
           >
             {desire !== "" && <span className="lab-seat-desire">{desire}</span>}
             {seat.signal && seat.color && (
@@ -376,6 +395,10 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, seating }: {
                 seat={openSeat}
                 onRing={(event, target) => setRing({ ...canvasPoint(event), target })}
                 onHunger={(delta) => apply({ op: "hunger", color: openSeat.color, delta })}
+                onOpenSheet={openPcSheet ? () => {
+                  setOpenColor(null);
+                  openPcSheet(openSeat.color);
+                } : undefined}
               />
             )}
             {open && !openSeat && liveSheet && (

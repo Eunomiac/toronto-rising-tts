@@ -353,11 +353,13 @@ $signal-fire: #ff9a1f;
   }
 }
 
-// A PC's tracker controls, open under the seat until the next click elsewhere.
+// A PC's tracker controls, open under the seat until the next click elsewhere. Above the seat's Desire (even
+// hovered), which it covers when the seats sit along the bottom and it opens upward.
 .lab-seat-pop {
   position: absolute;
   top: calc(100% + 6px);
   left: 50%;
+  z-index: 22;
   display: none;
   flex-direction: column;
   gap: 4px;
@@ -369,9 +371,21 @@ $signal-fire: #ff9a1f;
   white-space: nowrap;
   cursor: default;
 
+  &-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
   &-name {
     font-weight: 800;
     color: #fff;
+  }
+
+  &-sheet {
+    padding: 1px 6px;
+    font-size: 11px;
   }
 
   .lab-seat-slot.open > & {

@@ -4,6 +4,10 @@ import type { LabNote } from "../../shared/labNote";
 import { addLabNote, deleteLabNote, listLabNotes, patchLabNote } from "./labNotesApi";
 
 const CONFIRM_MS = 1500;
+/** `.lab-pin-card` width (border-box) plus the gap kept from the panel's right edge. */
+const CARD_W = 300;
+const CARD_MARGIN = 8;
+const CARD_OFFSET = 18;
 
 /** While adding notes these never reach the page; the click itself places the note. */
 const SWALLOWED = ["pointerdown", "mousedown", "click", "dblclick", "contextmenu", "dragstart"] as const;
@@ -97,6 +101,31 @@ export const LabPins = ({ page, panel, addMode, visible }: { page: string; panel
     setDraft(null);
   };
 
+  // A click outside the notes saves the note being written (if it has text) and folds every card back to its pin.
+  useEffect(() => {
+    if (!draft && openId === null) {
+      return undefined;
+    }
+    const away = (event: PointerEvent): void => {
+      const target = event.target;
+      if (target instanceof Element && target.closest(".lab-pin-card, .lab-pin")) {
+        return;
+      }
+      if (draft && draft.text.trim() !== "") {
+        saveDraft();
+      } else {
+        setDraft(null);
+      }
+      setOpenId(null);
+    };
+    window.addEventListener("pointerdown", away, true);
+    return () => window.removeEventListener("pointerdown", away, true);
+  });
+
+  /** Cards open to the right of their pin, or to the left when that would run past the panel's right edge. */
+  const cardLeft = (x: number): number =>
+    x + CARD_OFFSET + CARD_W <= panel.scrollLeft + panel.clientWidth - CARD_MARGIN ? x + CARD_OFFSET : x - CARD_OFFSET - CARD_W;
+
   const shown = notes.filter((note) => note.sketch === page);
   const openNote = shown.find((note) => note.id === openId);
 
@@ -119,7 +148,7 @@ export const LabPins = ({ page, panel, addMode, visible }: { page: string; panel
       ))}
 
       {openNote && (
-        <div className="lab-pin-card" style={{ left: openNote.x + 18, top: openNote.y }}>
+        <div className="lab-pin-card" style={{ left: cardLeft(openNote.x), top: openNote.y }}>
           <p className="lab-pin-card-label">Note {openNote.id}{openNote.status === "done" ? " (done)" : ""}</p>
           <p className="lab-pin-card-text">{openNote.text}</p>
           {openNote.reply && <p className="lab-pin-card-reply"><strong>Agent:</strong> {openNote.reply}</p>}
@@ -137,8 +166,8 @@ export const LabPins = ({ page, panel, addMode, visible }: { page: string; panel
       )}
 
       {draft && (
-        <div className="lab-pin-card editing" style={{ left: draft.x + 18, top: draft.y }}>
-          <span className="lab-pin draft" style={{ left: -18, top: 0 }} />
+        <div className="lab-pin-card editing" style={{ left: cardLeft(draft.x), top: draft.y }}>
+          <span className="lab-pin draft" style={{ left: draft.x - cardLeft(draft.x), top: 0 }} />
           <textarea
             autoFocus
             value={draft.text}

@@ -1,8 +1,10 @@
-import { useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactElement } from "react";
+import { useCallback, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactElement } from "react";
 import { initGenerateNpc } from "./generateNpcTab";
 import { LabPins } from "./lab/LabPins";
 import { initLuaTab } from "./luaTab";
+import { OpenPcSheetContext } from "./pcSheet/openPcSheet";
 import { PcSheetTab } from "./pcSheet/PcSheetTab";
+import type { SeatColor } from "./pcSheet/types";
 import { ScenesPanel } from "./scenesPanel/ScenesPanel";
 import { TermImageLayer } from "./termImages/TermImageLayer";
 
@@ -52,6 +54,11 @@ const NoteControls = ({ tab }: { tab: (typeof TABS)[number] }): ReactElement => 
 
 export const App = (): ReactElement => {
   const [activeTab, setActiveTab] = useState<TabId>(DEFAULT_TAB_ID);
+  const [pcSelected, setPcSelected] = useState<SeatColor>("Pink");
+  const openPcSheet = useCallback((color: SeatColor): void => {
+    setPcSelected(color);
+    setActiveTab("tab-pcs");
+  }, []);
   const started = useRef(false);
 
   useLayoutEffect(() => {
@@ -113,7 +120,9 @@ export const App = (): ReactElement => {
         aria-labelledby={DEFAULT_TAB_ID}
         hidden={activeTab !== DEFAULT_TAB_ID}
       >
-        <ScenesPanel active={activeTab === DEFAULT_TAB_ID} />
+        <OpenPcSheetContext.Provider value={openPcSheet}>
+          <ScenesPanel active={activeTab === DEFAULT_TAB_ID} />
+        </OpenPcSheetContext.Provider>
       </section>
 
       <section
@@ -123,7 +132,7 @@ export const App = (): ReactElement => {
         aria-labelledby="tab-pcs"
         hidden={activeTab !== "tab-pcs"}
       >
-        <PcSheetTab active={activeTab === "tab-pcs"} />
+        <PcSheetTab active={activeTab === "tab-pcs"} selected={pcSelected} onSelect={setPcSelected} />
       </section>
 
       <section
