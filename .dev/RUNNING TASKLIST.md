@@ -66,6 +66,7 @@ _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred
 
 ## Dice Roller
 
+- [ ] **Retire the player dice preload pool:** Dice come from the bag at roll time and are destroyed on release; `core/dice_preload_pool.ttslua` and the `d10Preload` tag are gone. Re-test the brief placeholder flash. relatedTo **TOR-707**. _(TOR-708)_
 - [x] **Willpower reroll leaves dice locked and ungrabbable:** Recycled dice stay non-interactable after the physics lock is cleared, so Spend Willpower could not be used to pick dice up. Eligible dice are now interactable for the reroll (and when a roll is released for a manual throw). Hunger and Rouse stay locked. Pending Save & Play. Linear quota blocked a new issue; noted on **TOR-31** (dice epic) and related to **TOR-165** (willpower reroll wave) / **TOR-287** (dice preload pool).
 - [x] **Willpower reroll restores dice that physics bumped:** When Spend Willpower unlocks the dice, remember each face. On Confirm or at the reroll cap, put back any die the player did not reroll whose face changed. relatedTo **TOR-165**. Author confirmed 2026-10-08. _(TOR-638)_
 - [x] **Rouse checks cannot gain standard or hunger dice:** A roll that started as a Rouse or Oblivion Rouse check stays that way; the Normal bag is hidden for the whole Rouse check (author follow-up). Adding rouse dice onto a normal roll is still allowed. Author confirmed 2026-10-08. _(TOR-639)_
@@ -165,6 +166,7 @@ _Deferral note:_ **TOR-439** (join-stress re-verify after TOR-444) is **deferred
 
 See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%20Object%20Overview.md).
 
+- [ ] **NPC figurines spawn on demand; retire the preload pool:** Figurine front/back URLs live in generated `lib/npc_figurine_hosted_urls.ttslua` (extracted from the save). Scene transitions spawn needed figurines + lights behind the blindfold and destroy the rest; mid-scene stage adds spawn hidden, wait for the image, then move. Generic NPCs share the spawner. _(TOR-707)_
 - [x] **Spotlight carousel must use preload stand-ins:** Ring should use `SPOTLIGHT_FIGURE_*`, not home `SEAT_FIGURE_*`. Home figurines stay at seats with catalog visibility (owner cannot see their own). relatedTo **TOR-98**. Author confirmed 2026-09-21. _(TOR-579)_
 - [x] **Play → Spotlight clears stage NPC figurines:** Narrative clear drops stage and Scatter NPC rows, Table A does not restore the pre-Scatter stage layout, and Spotlight/End reconcile parks those figurines in the preload pool. relatedTo **TOR-98**. Linear quota blocked a new issue. Pending Save & Play.
 - [x] **Spotlight carousel Y −55, center X 0 / Z 125:** Stand-in figurines on the Spotlight ring. relatedTo **TOR-98**. Pending Save & Play. _(TOR-523)_
