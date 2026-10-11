@@ -87,6 +87,16 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 4. Hold the spotlight hotkey on a dark NPC's token: while held, hovering the figurine shows its name; after release it goes back to showing nothing.
 5. Hover a token on the Stage Control board: it shows the NPC's full name. Rename a generic NPC on the dashboard and Send: its token's hover name should change to the new name.
 
+#### TOR-712 / TOR-713 / TOR-714 — Table B scene change, stage NPC stays dark, NPC reroll not pushed
+
+**Context:** Three fixes from your 2026-10-11 dashboard pins. Switching to a Table B scene was sized from the scene leaving the table instead of the one arriving, so an NPC in chair 6 was refused (TOR-712). Dragging a lit seated NPC onto the stage left its figurine dark in TTS, because the spotlight step kept waiting on the figurine object from before its size change (TOR-713). An NPC reroll could get stuck waiting on one die and never update the dashboard (TOR-714).
+
+**How to verify:**
+
+1. Save & Play. With a scene on the table that seats only the five PCs, use the dashboard's Play a Scene window to switch to a library scene on Table B with an NPC in chair 6. It should play on the six-chair table, with no refusal banner.
+2. Seat an NPC at the table, light their seat (double-click it on the dashboard), then drag the seat onto the stage. Within a second or two the figurine on the stage should stand lit under its spotlight.
+3. Roll for an NPC from the dashboard, pick two or three dice and click Reroll. When the dice land, the dashboard's dice and result should update by themselves, without clicking Recalculate.
+
 ### High — startup, table and hunger (eye checks only; your traces already confirmed the speed-ups)
 
 #### TOR-670 / TOR-671 — Startup does one full sync and lifts the cover once

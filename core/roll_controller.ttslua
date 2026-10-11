@@ -93,11 +93,8 @@ local _debounceHandles = {}
 -- Value is an opaque nonce; newer randomizes supersede older Wait.condition completions.
 local _wpDieLockWaitTokens = {}
 
--- ST selective reroll: per-die settle wait tokens keyed by "color:guid:stReroll".
-local _stRerollDieLockWaitTokens = {}
-
--- Remaining dice in the current ST selective reroll batch (module-local; not persisted).
-local _stRerollBatchPending = {}
+-- ST selective reroll: settle-watch nonce per color; a newer wave or a cancel supersedes the watch.
+local _stRerollSettleToken = {}
 
 -- Re-entrancy guard when auto-broadcast chains into confirmRoll from recalculate.
 local _autoConfirmDepth = 0
@@ -194,15 +191,9 @@ local function cancelWpDieLockWaitsForColor(color)
     end
 end
 
---- Invalidates in-flight ST selective-reroll per-die settle waits for this color.
-local function cancelStRerollDieLockWaitsForColor(color)
-    local prefix = color .. ":"
-    for k in pairs(_stRerollDieLockWaitTokens) do
-        if type(k) == "string" and string.sub(k, 1, #prefix) == prefix then
-            _stRerollDieLockWaitTokens[k] = nil
-        end
-    end
-    _stRerollBatchPending[color] = nil
+--- Invalidates the in-flight ST selective-reroll settle watch for this color.
+local function cancelStRerollSettleWatch(color)
+    _stRerollSettleToken[color] = nil
 end
 
 --- Roll-option keys guarded by rollPolicy.locked (policy schema field names).
@@ -2425,7 +2416,7 @@ end
 -- @param color string
 function RC.clearStSelectiveReroll(color)
     if U.Type(color) ~= "string" then return end
-    cancelStRerollDieLockWaitsForColor(color)
+    cancelStRerollSettleWatch(color)
     local active = getActive(color)
     if active == nil then return end
     ensureStSelectiveRerollShape(active)
@@ -2493,35 +2484,55 @@ function RC.setStSelectiveDice(color, slotIndices)
     return true
 end
 
---- Re-locks pool dice, preview-recalculates, and clears inProgress after the last rerolled die settles.
-local function finishStSelectiveRerollBatch(color)
+--- Re-locks pool dice, preview-recalculates, and clears inProgress after the rerolled dice settle.
+local function finishStSelectiveRerollBatch(color, rollId)
     local active = getActive(color)
-    if active == nil then
-        _stRerollBatchPending[color] = nil
+    if active == nil or active.id ~= rollId or active.phase ~= C.RollPhase.POST_ROLL then
         return
     end
     ensureStSelectiveRerollShape(active)
     active.stSelectiveReroll.inProgress = false
     setActive(color, active)
-    _stRerollBatchPending[color] = nil
     lockAllRollDiceObjects(color, active.id)
     RC.recalculate(color, true)
     notifyStateChanged(color)
 end
 
---- Decrements the in-flight ST selective reroll batch counter; finishes when zero.
-local function onStSelectiveRerollDieSettled(color)
-    local pending = _stRerollBatchPending[color]
-    if pending == nil then return end
-    pending = pending - 1
-    if pending <= 0 then
-        finishStSelectiveRerollBatch(color)
-    else
-        _stRerollBatchPending[color] = pending
-    end
+-- Rerolled dice are airborne within a frame of `randomize`; this keeps a still-resting first frame from counting.
+local ST_REROLL_MIN_SETTLE_SECONDS = 1
+
+--- Host-only: once every rerolled die has come to rest (or the max wait passes), finish the wave. One watch
+--- per wave instead of per-die randomize events, so a die whose event or rest is missed cannot stall it.
+-- @param color string
+-- @param guids string[] the dice just randomized
+-- @param rollId string the roll they belong to
+function RC.watchStSelectiveRerollSettle(color, guids, rollId)
+    local nonce = string.format("%d_%d", math.floor(os.time()), math.random(999999))
+    _stRerollSettleToken[color] = nonce
+    local startedAt = os.clock()
+    U.await(
+        function()
+            if _stRerollSettleToken[color] ~= nonce then return end
+            _stRerollSettleToken[color] = nil
+            finishStSelectiveRerollBatch(color, rollId)
+        end,
+        function()
+            if _stRerollSettleToken[color] ~= nonce then return true end
+            local elapsed = os.clock() - startedAt
+            if elapsed >= C.WP_REROLL_DIE_REST_MAX_WAIT_SECONDS then return true end
+            if elapsed < ST_REROLL_MIN_SETTLE_SECONDS then return false end
+            for _, guid in ipairs(guids) do
+                local die = G.getObject(guid)
+                if die ~= nil and (die.loading_custom == true or die.resting ~= true) then
+                    return false
+                end
+            end
+            return true
+        end
+    )
 end
 
---- Host-only entry: validates selection, clears highlights, arms batch counter.
+--- Host-only entry: validates selection, clears highlights, marks the wave in progress.
 -- @param color string
 -- @return table|nil guids
 -- @return string|nil rollId
@@ -2548,85 +2559,7 @@ function RC.beginStSelectiveRerollWave(color)
     active.stSelectiveReroll.inProgress = true
     local rollId = active.id
     setActive(color, active)
-    _stRerollBatchPending[color] = #guids
     return guids, rollId
-end
-
---- Called from global_script.onObjectRandomize during an ST selective reroll wave.
--- @param color string
--- @param obj Object
-function RC.onStSelectiveRerollDieRandomized(color, obj)
-    if U.Type(color) ~= "string" or obj == nil then return end
-    local active = getActive(color)
-    if active == nil then return end
-    if active.phase ~= C.RollPhase.POST_ROLL then return end
-    if type(active.stSelectiveReroll) ~= "table" or active.stSelectiveReroll.inProgress ~= true then
-        return
-    end
-    if not DK.gmNotesMatchRoll(obj.getGMNotes(), active.id) then return end
-    if _stRerollBatchPending[color] == nil then return end
-
-    local guid = obj.getGUID()
-    local timerKey = color .. ":" .. guid .. ":stReroll"
-    local nonce = string.format("%d_%d", math.floor(os.time()), math.random(999999))
-    _stRerollDieLockWaitTokens[timerKey] = nonce
-
-    local rollIdCaptured = active.id
-    local guidCaptured = guid
-
-    U.await(
-        function()
-            local o = G.getObject(guidCaptured)
-            if _stRerollDieLockWaitTokens[timerKey] ~= nonce then return end
-
-            if o == nil then
-                _stRerollDieLockWaitTokens[timerKey] = nil
-                onStSelectiveRerollDieSettled(color)
-                return
-            end
-
-            local a2 = getActive(color)
-            if a2 == nil or a2.id ~= rollIdCaptured then
-                _stRerollDieLockWaitTokens[timerKey] = nil
-                onStSelectiveRerollDieSettled(color)
-                return
-            end
-            if type(a2.stSelectiveReroll) ~= "table" or a2.stSelectiveReroll.inProgress ~= true then
-                _stRerollDieLockWaitTokens[timerKey] = nil
-                onStSelectiveRerollDieSettled(color)
-                return
-            end
-            if a2.phase ~= C.RollPhase.POST_ROLL then
-                _stRerollDieLockWaitTokens[timerKey] = nil
-                onStSelectiveRerollDieSettled(color)
-                return
-            end
-
-            if o.loading_custom == true or o.resting ~= true then
-                _stRerollDieLockWaitTokens[timerKey] = nil
-                onStSelectiveRerollDieSettled(color)
-                return
-            end
-
-            _stRerollDieLockWaitTokens[timerKey] = nil
-            o.setLock(true)
-            onStSelectiveRerollDieSettled(color)
-        end,
-        function()
-            if _stRerollDieLockWaitTokens[timerKey] ~= nonce then
-                return true
-            end
-            local o = G.getObject(guidCaptured)
-            if o == nil then
-                return true
-            end
-            if o.loading_custom == true then
-                return false
-            end
-            return o.resting == true
-        end,
-        { maxWait = C.WP_REROLL_DIE_REST_MAX_WAIT_SECONDS }
-    )
 end
 
 --- Player spends 1 Superficial Willpower damage to reroll dice.
@@ -2872,7 +2805,7 @@ function RC.cancelRoll(color)
 
     cancelDebounce(color)
     cancelWpDieLockWaitsForColor(color)
-    cancelStRerollDieLockWaitsForColor(color)
+    cancelStRerollSettleWatch(color)
 
     local active = getActive(color)
     local rollId = type(active) == "table" and type(active.id) == "string" and active.id or nil

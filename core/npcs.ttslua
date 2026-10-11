@@ -1296,10 +1296,14 @@ local function deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, transitionT
     end
     deferredLightAlignGeneration[npcName] = (deferredLightAlignGeneration[npcName] or 0) + 1
     local gen = deferredLightAlignGeneration[npcName]
-    local deferFig = fig
+    -- An ImageScalar `reload()` replaces the figurine object (same GUID), so every step looks it up again.
+    local figGuid = fig.getGUID()
     local deferLit = lit
     local deferTrans = transitionTime
     local deferName = npcName
+    local function liveFig()
+        return G.getObject(figGuid)
+    end
     U.chain({
         function()
             return 0
@@ -1309,12 +1313,12 @@ local function deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, transitionT
                 if deferredLightAlignGeneration[deferName] ~= gen then
                     return true
                 end
-                return npcStageSpotlightAlignReady(deferFig, deferLit, deferName)
+                return npcStageSpotlightAlignReady(liveFig(), deferLit, deferName)
             end
         end,
         function()
             if deferredLightAlignGeneration[deferName] == gen then
-                applyNpcSpotlightAlignedToFigurine(deferName, deferFig, deferTrans)
+                applyNpcSpotlightAlignedToFigurine(deferName, liveFig(), deferTrans)
             end
             return 0
         end,
@@ -1326,12 +1330,12 @@ local function deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, transitionT
                 if deferredLightAlignGeneration[deferName] ~= gen then
                     return true
                 end
-                return npcFigurineBoundsHeightReady(deferFig, deferName)
+                return npcFigurineBoundsHeightReady(liveFig(), deferName)
             end
         end,
         function()
             if deferredLightAlignGeneration[deferName] == gen then
-                applyNpcSpotlightAlignedToFigurine(deferName, deferFig, deferTrans)
+                applyNpcSpotlightAlignedToFigurine(deferName, liveFig(), deferTrans)
             end
             return 0
         end,
@@ -1342,7 +1346,7 @@ local function deferNpcSpotlightAlignedToFigurine(npcName, fig, lit, transitionT
                 return
             end
             if detail == "sequence_timeout" then
-                applyNpcSpotlightAlignedToFigurine(deferName, deferFig, deferTrans)
+                applyNpcSpotlightAlignedToFigurine(deferName, liveFig(), deferTrans)
             end
         end,
     })

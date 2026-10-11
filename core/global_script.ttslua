@@ -2536,7 +2536,7 @@ function GlobalStRerollDiceByGuids(params)
         return false
     end
 
-    local randomized = 0
+    local randomized = {}
     for _, guid in ipairs(guids) do
         local die = G.getObject(guid)
         if die ~= nil and DK.gmNotesMatchRoll(die.getGMNotes(), rollId) then
@@ -2548,16 +2548,17 @@ function GlobalStRerollDiceByGuids(params)
                 end
                 if owner == color then
                     randomizeReleasedDieForRoll(color, die)
-                    randomized = randomized + 1
+                    randomized[#randomized + 1] = guid
                 end
             end
         end
     end
 
-    if randomized == 0 then
+    if #randomized == 0 then
         RC.clearStSelectiveReroll(color)
         return false
     end
+    RC.watchStSelectiveRerollSettle(color, randomized, rollId)
 
     if color == "Black" and type(rollId) == "string" then
         scheduleSecretRollDiceInvisibility(rollId)
@@ -6338,11 +6339,6 @@ function onObjectRandomize(obj, playerColor)
     -- Willpower reroll wave: per-die tray locks (before table-wide debounce).
     if RC.onWpRerollDieRandomized ~= nil then
         RC.onWpRerollDieRandomized(color, obj)
-    end
-
-    -- ST selective reroll wave (POST_ROLL rollPanelST).
-    if RC.onStSelectiveRerollDieRandomized ~= nil then
-        RC.onStSelectiveRerollDieRandomized(color, obj)
     end
 
     -- Delegate debounce reset to roll controller

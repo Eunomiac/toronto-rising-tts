@@ -1860,21 +1860,26 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId, c
         if ent.placementMode ~= "scatter" then
             local FSL = require("lib.figurine_seat_layout")
             local tableKey = ent.sessionScene.tableKey
-            local tableCfg = nil
-            if type(tableKey) == "string" then
-                if C.Tables and C.Tables[tableKey] then
-                    tableCfg = C.Tables[tableKey]
-                elseif RSL.isDynamicTableFamilyKey and RSL.isDynamicTableFamilyKey(tableKey) then
-                    local concrete = RSL.resolveTableKey(tableKey)
-                    tableCfg = C.Tables and C.Tables[concrete] or nil
-                end
-            end
             local occupied = {}
             local slots = ent.sessionScene.seatSlots
             for _, npc in ipairs(C.NPCSeats or {}) do
                 local row = type(slots) == "table" and slots[npc] or nil
                 if type(row) == "table" and type(row.characterKey) == "string" and row.characterKey ~= "" then
                     occupied[npc] = row.characterKey
+                end
+            end
+            local tableCfg = nil
+            if type(tableKey) == "string" then
+                if C.Tables and C.Tables[tableKey] then
+                    tableCfg = C.Tables[tableKey]
+                elseif RSL.isDynamicTableFamilyKey(tableKey) then
+                    -- Sized for the incoming scene's seats, not the departing scene's.
+                    local variant = FSL.tableBVariantIndex({
+                        seatSlots = type(slots) == "table" and slots or {},
+                        occupiedNPCSlots = occupied,
+                    })
+                    local concrete = RSL.resolveTableKey(tableKey, { occupiedSlotIndex = variant })
+                    tableCfg = C.Tables[concrete]
                 end
             end
             local okOcc, errOcc = FSL.checkOccupancy(slots, occupied, tableCfg, { forImport = true })

@@ -168,11 +168,12 @@ function FSL.getReferenceFigurineFrame(tableCfg)
     }
 end
 
---- @param opts table|nil `{ occupiedNPCSlots = table? }`
+--- @param opts table|nil `{ occupiedNPCSlots = table?, seatSlots = table? }` (`seatSlots`: a library row's
+--- seats instead of the live table's)
 --- @return table[] { occupantKey, tableSlot, isPlayer }
 function FSL.collectOccupants(opts)
     opts = U.Type(opts) == "table" and opts or {}
-    local ss = liveSeatSlots()
+    local ss = U.Type(opts.seatSlots) == "table" and opts.seatSlots or liveSeatSlots()
     local occupiedNPC = opts.occupiedNPCSlots
     if U.Type(occupiedNPC) ~= "table" then
         occupiedNPC = S.getStateVal("seatLayout", "occupiedNPCSlots")
