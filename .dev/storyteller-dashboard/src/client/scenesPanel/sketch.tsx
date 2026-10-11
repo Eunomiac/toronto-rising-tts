@@ -9,6 +9,7 @@ import { TraitRing } from "../pcSheet/TraitRing";
 import type { ApplyCommand, RingTarget, SeatColor, SeatSnapshot, SheetSnapshot } from "../pcSheet/types";
 import type { LiveSheetAccess } from "../pcSheet/useLiveSheet";
 import { LIGHTING_LABEL, useScenesCommand, type LightingPreset, type StageChanges } from "./commands";
+import { CompulsionBadge } from "./compulsionBadge";
 import { GENERIC_SKY, stageName, tableUsesRandomSeating } from "./liveScene";
 import { SignalFlame } from "./signal";
 import { RollsCommandContext } from "./rolls/commands";
@@ -292,7 +293,8 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, seating }: {
           draggable ? `Drag to another chair to swap places${seat.kind === "npc" ? ", or onto the stage" : ""}` : undefined,
           seating && seat.kind === "empty" ? "Drop an NPC from the roster or the stage here to seat them" : undefined
         ].filter(Boolean);
-        const desire = seat.kind === "pc" ? sheet.seats.find((entry) => entry.color === seat.color)?.desire ?? "" : "";
+        const pcSheet = seat.kind === "pc" ? sheet.seats.find((entry) => entry.color === seat.color) : undefined;
+        const desire = pcSheet?.desire ?? "";
         return (
           <div
             key={seat.slot}
@@ -369,6 +371,7 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, seating }: {
             }}
           >
             {desire !== "" && <span className="lab-seat-desire">{desire}</span>}
+            {pcSheet?.compulsion && <CompulsionBadge active={pcSheet.compulsion} clan={pcSheet.clan} />}
             {seat.signal && seat.color && (
               <button
                 type="button"

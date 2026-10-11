@@ -1,3 +1,5 @@
+import type { ActiveCompulsion } from "../../shared/compulsionText";
+
 export const SEAT_COLORS = ["Brown", "Orange", "Red", "Pink", "Purple"] as const;
 
 export type SeatColor = (typeof SEAT_COLORS)[number];
@@ -46,6 +48,8 @@ export type SeatSnapshot = {
   readonly deferConnect: boolean;
   /** Last hunt result the Storyteller confirmed on the Scenes tab (`flavor` absent for no resonance). */
   readonly huntResonance?: { readonly flavor?: string; readonly intensity: string; readonly margin: number; readonly at?: unknown };
+  /** The selected Compulsion card in front of the seat (absent when none); `Clan` names the clan's Compulsion. */
+  readonly compulsion?: ActiveCompulsion;
   readonly attributes: Record<string, Rating>;
   readonly skills: Record<string, Rating>;
   readonly specialties: readonly Specialty[];

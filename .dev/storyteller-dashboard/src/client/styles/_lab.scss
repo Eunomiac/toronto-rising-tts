@@ -353,6 +353,82 @@ $signal-fire: #ff9a1f;
   }
 }
 
+// The PC's selected Compulsion on the portrait's top-right corner; hovering opens the card text above the seat.
+.lab-compulsion {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 7;
+  max-width: calc(100% - 8px);
+  overflow: hidden;
+  padding: 1px 6px;
+  border: 1px solid #ff8a8a;
+  border-radius: 8px;
+  font-size: 10.5px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #fff;
+  background: rgb(150 20 24 / 92%);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 70%);
+  cursor: help;
+
+  &:hover {
+    overflow: visible;
+  }
+
+  &-tip {
+    position: absolute;
+    right: -4px;
+    bottom: calc(100% + 8px);
+    z-index: 23;
+    display: none;
+    flex-direction: column;
+    gap: 2px;
+    width: 340px;
+    padding: 8px 10px;
+    border: 2px solid #b3262b;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.3;
+    white-space: normal;
+    color: #e8e2d6;
+    background: rgb(16 12 12 / 97%);
+    box-shadow: 0 6px 18px rgb(0 0 0 / 75%);
+    cursor: default;
+
+    .lab-compulsion:hover > & {
+      display: flex;
+    }
+  }
+
+  &-title {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 800;
+    color: #fff;
+  }
+
+  &-placeholder {
+    font-size: 10px;
+    font-weight: 400;
+    font-style: italic;
+    color: #ffcf7a;
+  }
+
+  &-head {
+    margin-top: 4px;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #ff8a8a;
+  }
+}
+
 // A PC's tracker controls, open under the seat until the next click elsewhere. Above the seat's Desire (even
 // hovered), which it covers when the seats sit along the bottom and it opens upward.
 .lab-seat-pop {

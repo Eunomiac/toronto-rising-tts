@@ -15,5 +15,5 @@
     "exactOptionalPropertyTypes": true,
     "types": ["node"]
   },
-  "include": ["scripts/npc-art/**/*.ts"]
+  "include": ["scripts/npc-art/**/*.ts", "scripts/compulsion-text.ts"]
 }

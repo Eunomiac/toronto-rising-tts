@@ -561,6 +561,7 @@ local function snapshotSeat(color, includePlayerData)
     hudFrenzy = type(pid) == "string" and S.getStateVal("playerData", pid, "conditions", "hudFrenzy") ~= nil,
     hudBlindfold = type(pid) == "string" and S.getStateVal("playerData", pid, "conditions", "hudBlindfold") ~= nil,
     huntResonance = type(pid) == "string" and S.getStateVal("playerData", pid, "huntResonance") or nil,
+    compulsion = require("core.compulsions").activeForColor(color),
   }
   if type(pid) == "string" and pid ~= C.StorytellerID then
     for i = 1, #EXTENSIONS do

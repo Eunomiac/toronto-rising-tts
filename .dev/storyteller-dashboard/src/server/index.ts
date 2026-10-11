@@ -29,6 +29,7 @@ const genericNpcCatalogPath = path.join(dashboardRoot, "data", "generic-npcs.jso
 const genericNpcImageDir = path.join(repoRoot, "assets", "images", "NPCs", "Generic");
 const sceneCatalogsPath = path.join(dashboardRoot, "data", "scene-catalogs.json");
 const controlBoardSnapsPath = path.join(dashboardRoot, "data", "control-board-snaps.json");
+const compulsionTextPath = path.join(dashboardRoot, "data", "compulsion-text.json");
 const cataloguedNpcImageDir = path.join(repoRoot, "assets", "images", "NPCs", "Catalogued");
 const memoriamNpcImageDir = path.join(repoRoot, "assets", "images", "NPCs", "Memoriam");
 const scenesAssetDir = path.join(dashboardRoot, "assets", "scenes");
@@ -383,6 +384,15 @@ const handleApi = async (request: IncomingMessage, response: ServerResponse, pat
       response,
       controlBoardSnapsPath,
       "control-board-snaps.json is missing. Run npm run dashboard:scene-catalogs from the repo root."
+    );
+    return;
+  }
+
+  if (request.method === "GET" && pathname === "/api/compulsion-text") {
+    await serveJsonFile(
+      response,
+      compulsionTextPath,
+      "compulsion-text.json is missing. Run npm run compulsion-text in .dev/storyteller-dashboard."
     );
     return;
   }

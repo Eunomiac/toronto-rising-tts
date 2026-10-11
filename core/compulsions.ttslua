@@ -288,6 +288,29 @@ local function findSelectedCompulsionForColor(color)
     return nil
 end
 
+--- Selected Compulsion per seat for the dashboard seat snapshot: `{ type, n }`, or `false` when none.
+--- Filled lazily from the seat-tagged card, then kept by select / remove.
+--- @type table<string, { type: string, n: number }|false>
+local activeByColor = {}
+
+--- @param card Object|nil
+--- @return { type: string, n: number }|false
+local function activeFromCard(card)
+    local parsed = card ~= nil and card.getGMNotes ~= nil and Compulsions.parseNotes(card.getGMNotes()) or nil
+    if parsed == nil or parsed.suffix == "generic" then
+        return false
+    end
+    return { type = parsed.type, n = tonumber(parsed.suffix) }
+end
+
+--- Record the seat's Compulsion and push the seat to the Storyteller Dashboard.
+--- @param color string
+--- @param card Object|nil
+local function announceActive(color, card)
+    activeByColor[color] = activeFromCard(card)
+    require("dashboard.push").seat(color)
+end
+
 --- @param color string
 local function syncDeckInteractableForColor(color)
     if findSelectedCompulsionForColor(color) ~= nil or presentByColor[color] ~= nil then
@@ -600,6 +623,7 @@ local function finishSelection(color, chosenCard)
             end
             local moveDur = applyPoseFromKey(chosenCard, selectedKey, color, token, true)
             tagSeatObject(chosenCard, color)
+            announceActive(color, chosenCard)
             print(string.format("[Compulsions] Selected Compulsion for %s", color))
             return math.max(moveDur, 0.5)
         end,
@@ -626,6 +650,7 @@ local function finishRemoval(color, card)
             rescaleUnit(card)
             untagSeatObject(card, color)
             returnCardToMaster(card)
+            announceActive(color, nil)
             setPlayerDeckInteractable(color, true)
             print(string.format("[Compulsions] Removed Compulsion for %s — deck interactable", color))
             return 0.25
@@ -643,6 +668,19 @@ end
 --- @return boolean
 function Compulsions.hasActiveSelectionForColor(color)
     return findSelectedCompulsionForColor(color) ~= nil
+end
+
+--- The seat's selected Compulsion as GM Notes name it (`type` is `Clan` for the clan card) and its
+--- variant 1-4; nil when none. Cached per seat (`activeByColor`); the first call per seat reads the card.
+--- @param color string
+--- @return { type: string, n: number }|nil
+function Compulsions.activeForColor(color)
+    local active = activeByColor[color]
+    if active == nil then
+        active = activeFromCard(findSelectedCompulsionForColor(color))
+        activeByColor[color] = active
+    end
+    return active or nil
 end
 
 --- TOR-452: selected Compulsion → live-roll pose while PC dice tray is open.

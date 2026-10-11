@@ -95,6 +95,9 @@ build/
 .dev/storyteller-dashboard/data/term-images/
 .dev/storyteller-dashboard/data/scene-deck.json
 .dev/storyteller-dashboard/data/scene-library.json
+# Compulsion card rules text (rulebook text; remote is public) and the author's layer mapping
+.dev/storyteller-dashboard/data/compulsion-text.json
+.dev/storyteller-dashboard/data/compulsion-mapping.txt
 .dev/storyteller-dashboard/data/*.tmp
 
 assets/images/Clipboard Image.jpg

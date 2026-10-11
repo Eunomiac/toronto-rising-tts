@@ -134,6 +134,19 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 5. Seat the NPC at the table. The figurine sits at the new height.
 6. Right-click the token again, clear every field and click off. Regenerate and Save & Play: everything is back to the defaults.
 
+#### TOR-711 — Compulsion badge on the dashboard seats, and the card-text prep tools
+
+**Context:** From your 2026-10-11 pin. A PC with a selected Compulsion card now shows a red tag on their dashboard seat naming the Compulsion. Hovering the tag shows the card's Influence, Burden and Catharsis. The card text is placeholder text for now. The real text comes from your Photoshop file through two prep tools and a short mapping file you write.
+
+**How to verify:**
+
+1. Restart the Storyteller Dashboard task, because its server has a new endpoint. Save & Play.
+2. Have a PC draw a Compulsion and pick one of the four cards. Within a second their seat on the dashboard's Scenes tab shows a red tag with the Compulsion's name. A clan card shows the clan's Compulsion (for example Judgment for the Banu Haqim PC), not "Clan".
+3. Hover the tag. A box opens above the seat with the name and card number, the words "placeholder text", and Influence, Burden and Catharsis sections.
+4. Draw the selected card back into the player's hand. The tag disappears.
+5. Card text: in Execute Lua run `DEBUG.buildCompulsionReferenceDeck()`. A sorted face-up deck of 36 cards appears beside the master deck, and `.dev/.debug/compulsion-reference-index.txt` lists them by number. Open the Compulsions PSB in Photoshop and run `.tools/photoshop/dump-text-layers.jsx` (File, Scripts, Browse). It writes a `.text-layers.txt` and a `.text-layers.json` next to the PSB.
+6. Write `.dev/storyteller-dashboard/data/compulsion-mapping.txt` with one line per card: the reference deck number (or a name like `Paranoia:2`), then the `#` numbers of its Influence, Burden and Catharsis layers from the `.txt` dump, for example `17  42 43 44`. Then, in `.dev/storyteller-dashboard`, run `npm run compulsion-text -- "<path to the .text-layers.json>" data/compulsion-mapping.txt`. It reports any card still missing text. Reload the dashboard: the tooltips show the real text and no longer say "placeholder text".
+
 ### High — startup, table and hunger (eye checks only; your traces already confirmed the speed-ups)
 
 #### TOR-670 / TOR-671 — Startup does one full sync and lifts the cover once
