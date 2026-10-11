@@ -338,11 +338,6 @@ function Sync.soundscape(opts)
     callIfFunction(Soundscape.reconcileFromState, opts)
 end
 
---- Load bootstrap: register restored NPC instances and destroy orphan NPC objects.
-function Sync.npcCutouts()
-    callIfFunction(NPCS.restoreAfterStateLoad)
-end
-
 --- Narrow NPC + spotlight-token pass (Dashboard stage edits, placement-only changes).
 --- @param opts table|nil `{ force?, reason?, deferUiRefresh?, onlySteps?, animateStageMoves? }`
 function Sync.npcs(opts)
@@ -403,7 +398,7 @@ function Sync.full(opts)
     local presentationOpts = U.clone(reconcileOpts, true)
     presentationOpts.skipTopFog = true
     if not didBootstrapFullSync then
-        callIfFunction(NPCS.registerRestoredInstancesFromState)
+        callIfFunction(NPCS.restoreAfterStateLoad)
         -- `L.InitLights` ends with `L.reconcileAllPlayers()`, so only overlays remain for seat presentation.
         callIfFunction(L.InitLights)
         callIfFunction(HO.syncAll, presentationOpts)
