@@ -51,16 +51,9 @@ function onLoad(saved_data)
     if saved_data ~= nil and saved_data ~= "" then
         local loaded = JSON.decode(saved_data)
         if type(loaded) == "table" then
-            local bagGuid = self.getGUID()
             for _, guid in ipairs(loaded) do
-                local returned = Global.call("GlobalReturnDiceToPreloadPool", {
-                    dieGuid = guid,
-                    bagGuid = bagGuid,
-                })
-                if returned ~= true then
-                    local die = G.getObject(guid)
-                    if die ~= nil then destroyObject(die) end
-                end
+                local die = G.getObject(guid)
+                if die ~= nil then destroyObject(die) end
             end
         end
     end
@@ -228,17 +221,9 @@ local function worldArcPoint(bagColor, i, total, radius)
     return { x = world.x, y = STAGING_WORLD_Y + layerY + trayYOffset, z = world.z }
 end
 
---- Return staged die to preload pool (Global) or destroy when pool unavailable.
--- @param die Object|nil
-local function releaseDieToPreloadOrDestroy(die)
-    if die == nil then
-        return
-    end
-    local returned = Global.call("GlobalReturnDiceToPreloadPool", {
-        dieGuid = die.getGUID(),
-        bagGuid = self.getGUID(),
-    })
-    if returned ~= true then
+--- @param die Object|nil
+local function destroyStagedDie(die)
+    if die ~= nil then
         destroyObject(die)
     end
 end
@@ -267,30 +252,20 @@ local function smoothStageDieToArc(die, arcPos)
     DK.smoothMoveDieToPosition(die, arcPos)
 end
 
---- Claim pre-warmed die from pool, or fall back to bag takeObject (TOR-287).
+--- Take a die out of the bag at `position`, locked and not grabbable until `releaseDice`.
 -- @param position table
 -- @param rotation table|nil
 -- @return Object|nil
 local function acquireDie(position, rotation)
-    local rot = type(rotation) == "table" and rotation or randomRotation()
-    local die = Global.call("GlobalClaimDiceFromPreloadPool", {
-        bagGuid = self.getGUID(),
+    local die = self.takeObject({
         position = position,
-        rotation = rot,
-        scale = SCALE,
+        rotation = type(rotation) == "table" and rotation or randomRotation(),
+        smooth = false,
     })
-    if die == nil then
-        die = self.takeObject({
-            position = position,
-            rotation = rot,
-        })
-        if die ~= nil then
-            die.setScale({ SCALE, SCALE, SCALE })
-            Global.call("GlobalRegisterDiceForPreloadPool", {
-                dieGuid = die.getGUID(),
-                bagGuid = self.getGUID(),
-            })
-        end
+    if die ~= nil then
+        die.setScale({ SCALE, SCALE, SCALE })
+        die.setLock(true)
+        die.interactable = false
     end
     return die
 end
@@ -348,7 +323,7 @@ function spawnDie(bagColor, dieType, opts)
     end
 
     -- Per-ring arc slots (Rouse bag may hold manual rouse + Blood Surge rouse at different radii).
-    -- Pool claim restores instantly at hover; this bag owns the single smooth into the arc (TOR-318 / TOR-591).
+    -- The die appears at the hover point; this bag owns the single smooth into the arc (TOR-318 / TOR-591).
     local ringCount = 0
     for _, staged in ipairs(spawnedDice) do
         if staged ~= nil and radiusForStagedDie(staged, bagKind, false) == spawnRadius then
@@ -550,9 +525,7 @@ function removeLastSpawnedDie(params)
         removedKind = DK.KIND_BLOOD_SURGE_ROUSE
     end
     table.remove(spawnedDice, dieIndex)
-    if die ~= nil then
-        releaseDieToPreloadOrDestroy(die)
-    end
+    destroyStagedDie(die)
 
     local newCount = #spawnedDice
     local bagColor = getBagColor()
@@ -598,7 +571,7 @@ function releaseDice()
     end
 
     for _, die in ipairs(dice) do
-        -- Preload claim leaves dice non-interactable. Unlock the physics lock and
+        -- Staged dice are non-interactable. Unlock the physics lock and
         -- let the player pick them up (left-click Roll is a manual throw).
         die.interactable = true
         die.setLock(false)
@@ -607,13 +580,13 @@ end
 
 function destroyDice()
     for _, die in ipairs(spawnedDice) do
-        releaseDieToPreloadOrDestroy(die)
+        destroyStagedDie(die)
     end
     spawnedDice = {}
 end
 
 --- Removes staged dice whose script_state matches (Blood Surge undo).
--- Also prunes nil / parked preload ghosts so `#spawnedDice` stays truthful.
+-- Also prunes nil entries so `#spawnedDice` stays truthful.
 -- @param params table  { scriptState: string }
 -- @return number removed
 function destroyStagedByScriptState(params)
@@ -628,17 +601,13 @@ function destroyStagedByScriptState(params)
         local release = false
         if die == nil then
             drop = true
-        elseif die.script_state == DK.SCRIPT_STATE_PRELOAD_POOL then
-            drop = true
-        elseif type(die.hasTag) == "function" and die.hasTag(DK.TAG_D10_PRELOAD) then
-            drop = true
         elseif die.script_state == target then
             drop = true
             release = true
         end
         if drop then
             if release then
-                releaseDieToPreloadOrDestroy(die)
+                destroyStagedDie(die)
                 removed = removed + 1
             end
             table.remove(spawnedDice, i)
@@ -670,9 +639,7 @@ function destroyLastStagedDice(params)
     local function takeAt(i)
         local die = spawnedDice[i]
         table.remove(spawnedDice, i)
-        if die ~= nil then
-            releaseDieToPreloadOrDestroy(die)
-        end
+        destroyStagedDie(die)
         removed = removed + 1
     end
 

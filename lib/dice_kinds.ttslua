@@ -79,8 +79,6 @@ local KIND_TO_TAG = {
 DK.GM_NOTE_BLOOD_SURGE_SUFFIX = "|bloodSurge"
 
 --- script_state on Normal/Hunger dice spawned by Blood Surge (undo targeting).
-DK.SCRIPT_STATE_PRELOAD_POOL = "preloadPool"
-
 DK.SCRIPT_STATE_BLOOD_SURGE_POOL = "bloodSurgePool"
 
 --- script_state on Rouse dice spawned for Blood Surge (separate rouse check).
@@ -90,11 +88,10 @@ DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE = "bloodSurgeRouse"
 DK.PENDING_OBLIV_HUNGER_STAIN   = "oblivHungerStain"
 DK.PENDING_BRUTAL_FAIL_VIOLENCE = "brutalFailViolence"
 
---- Loose-die scan tag (table layout guard) vs parked preload pool (TOR-287).
-DK.TAG_D10         = "d10"
-DK.TAG_D10_PRELOAD = "d10Preload"
+--- Loose-die scan tag (table layout guard).
+DK.TAG_D10 = "d10"
 
---- Pool claim restores instantly at the staging pose; bag arc staging uses TTS `setPositionSmooth` (TOR-318 / TOR-591).
+--- Bag arc staging uses TTS `setPositionSmooth` from the hover point (TOR-318 / TOR-591).
 DK.SPAWN_SMOOTH_COLLIDE = false
 DK.SPAWN_SMOOTH_FAST = true
 
@@ -315,7 +312,7 @@ function DK.kindToTag(kind)
     return KIND_TO_TAG[kind]
 end
 
---- True if object tags include any registered die kind or active/preload d10 tag.
+--- True if object tags include any registered die kind or the `d10` tag.
 -- @param tags table
 -- @return boolean
 function DK.isDieObjectTags(tags)
@@ -323,53 +320,11 @@ function DK.isDieObjectTags(tags)
         return false
     end
     for _, tag in ipairs(tags) do
-        if tag == DK.TAG_D10 or tag == DK.TAG_D10_PRELOAD or TAG_TO_KIND[tag] ~= nil then
+        if tag == DK.TAG_D10 or TAG_TO_KIND[tag] ~= nil then
             return true
         end
     end
     return false
-end
-
---- Swap one d10-family tag for another via setTags (removeTag/addTag is unreliable on spawned dice).
--- @param die Object|nil
--- @param fromTag string
--- @param toTag string
-local function swapDieD10FamilyTag(die, fromTag, toTag)
-    if die == nil or die.getTags == nil or die.setTags == nil then
-        return
-    end
-    local tags = die.getTags()
-    if type(tags) ~= "table" then
-        tags = {}
-    end
-    local out = {}
-    local hasTo = false
-    for _, t in ipairs(tags) do
-        if t == fromTag then
-            -- omit
-        elseif t == toTag then
-            hasTo = true
-            out[#out + 1] = t
-        else
-            out[#out + 1] = t
-        end
-    end
-    if not hasTo then
-        out[#out + 1] = toTag
-    end
-    die.setTags(out)
-end
-
---- Parked preload dice: `d10` → `d10Preload` so layout guards ignore them.
--- @param die Object|nil
-function DK.setDieTagsForPreloadPool(die)
-    swapDieD10FamilyTag(die, DK.TAG_D10, DK.TAG_D10_PRELOAD)
-end
-
---- Staged/table dice: restore `d10` from preload pool tag.
--- @param die Object|nil
-function DK.setDieTagsForActivePlay(die)
-    swapDieD10FamilyTag(die, DK.TAG_D10_PRELOAD, DK.TAG_D10)
 end
 
 --- Owner from tags: seat color or "storyteller".

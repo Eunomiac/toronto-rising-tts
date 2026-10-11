@@ -2494,10 +2494,6 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
     force = tostring(force),
     outcome = "ran",
   })
-  local DPP = require("core.dice_preload_pool")
-  if type(DPP.repositionAllAfterLayout) == "function" then
-    DPP.repositionAllAfterLayout()
-  end
   return computed
 end
 
@@ -2576,11 +2572,11 @@ function M.SyncTable(tableKey, opts)
   return computed
 end
 
---- Y at or above this counts as on-table for layout guards (preload pool parks at y = -200).
+--- Y at or above this counts as on-table for layout guards (hidden objects park at y = -200).
 local LOOSE_DIE_Y_MIN = -50
 
 --- True when any module die is loose on the table (`getObjectsWithTag` excludes container contents).
---- Preload-pool dice parked under the table (y < LOOSE_DIE_Y_MIN) are ignored (TOR-287).
+--- Dice parked under the table (y < LOOSE_DIE_Y_MIN) are ignored.
 --- @return boolean
 function M.hasLooseDiceOnTable()
   local tagged = getObjectsWithTag("d10")

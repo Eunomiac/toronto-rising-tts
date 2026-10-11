@@ -74,7 +74,6 @@ local function targetList()
     local FSL = require("lib.figurine_seat_layout")
     local SRI = require("lib.seat-role-identity")
     local Compulsions = require("core.compulsions")
-    local DPP = require("core.dice_preload_pool")
     return {
         { Sync, "full", "Sync.full" },
         { Sync, "player", "Sync.player" },
@@ -100,7 +99,6 @@ local function targetList()
         { O, "reconcilePcSeatHiddenObjectsFromState", "O.reconcilePcSeatHiddenObjectsFromState" },
         { FSL, "applyOccupantRigs", "FSL.applyOccupantRigs" },
         { Compulsions, "reconcileSelectedCardsToAnchors", "Compulsions.reconcileSelectedCardsToAnchors" },
-        { DPP, "repositionAllAfterLayout", "DPP.repositionAllAfterLayout" },
         { RSL, "reconcileYStateSeatObjectVisibilityFromWorld", "RSL.reconcileYStateSeatObjectVisibilityFromWorld" },
         { SRI, "findObjectByRoleIdentity", "SRI.findObjectByRoleIdentity" },
         { L, "computePcSeatPresentationInputFingerprint", "L.computePcSeatPresentationInputFingerprint" },

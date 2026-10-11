@@ -1385,6 +1385,22 @@ function DEBUG.sweepOrphanNpcObjects()
     return require("core.npcs").sweepOrphanNpcObjects()
 end
 
+--- One-shot save cleanup (TOR-708): destroy the retired dice preload pool (dice tagged `d10Preload`
+--- parked under the table) and drop their hide snapshots. Run once, then File → Save; delete after.
+--- @return number destroyed
+function DEBUG.retireDicePreloadPool()
+    local O = require("core.objects")
+    local destroyed = 0
+    for _, die in ipairs(getObjectsWithTag("d10Preload") or {}) do
+        local guid = die.getGUID()
+        die.destruct()
+        O.forgetHiddenObject(guid)
+        destroyed = destroyed + 1
+    end
+    print("[DEBUG.retireDicePreloadPool] Destroyed " .. destroyed .. " parked die/dice. Now File → Save.")
+    return destroyed
+end
+
 --- Dump `sessionScene.npcWorld.placements` and live instance stage poses.
 function DEBUG.dumpNpcPlacements()
     printTestHeader("Stage NPC placements")
@@ -5795,6 +5811,7 @@ function DEBUG.help()
     print("                          - Delete temporary upload tokens created by debug uploader")
     print("\nNPC OBJECTS:")
     print("  DEBUG.sweepOrphanNpcObjects() - Destroy npc_figurine / npc_light with no instance record")
+    print("  DEBUG.retireDicePreloadPool() - One-shot: destroy parked d10Preload dice, then File > Save")
     print("\nSPOTLIGHT WORKSHOP:")
     print("  DEBUG.populateSpotlightFigurines() - Clone seat figures + spawn stage lights; print GUIDs")
     print("\nLIGHT FEASIBILITY (workshop investigation):")

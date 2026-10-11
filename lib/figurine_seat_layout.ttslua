@@ -720,12 +720,9 @@ end
 
 local function shouldSkipSatellite(obj, roleKey)
     if obj ~= nil and obj.hasTag ~= nil then
-        if obj.hasTag("d10Preload") or obj.hasTag("d10") then
+        if obj.hasTag("d10") then
             return true
         end
-    end
-    if type(roleKey) == "string" and string.find(roleKey, "PRELOAD", 1, true) then
-        return true
     end
     return false
 end

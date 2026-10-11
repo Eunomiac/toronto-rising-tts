@@ -188,19 +188,21 @@ local DBV = require("lib.dice_bag_visibility")
 local WPG = require("core.wp_reroll_glow")
 local UiGlobalXmlDocs = require("lib.ui_global_xml_docs")
 
---- Park a roll die into the preload pool, or destroy overflow / unknown dice (TOR-308).
--- Must stay above every Global / local destroy path that formerly used bare destroyObject on dice.
+--- Destroy a roll die, first dropping any Willpower-reroll glow so `WPG.onObjectHover` keeps its O(1) exit.
+-- Must stay above every Global / local destroy path for roll dice.
 -- @param die Object|nil
--- @return boolean true when parked
-local function releaseDieToPreloadOrDestroy(die)
-    local DPP = require("core.dice_preload_pool")
-    return DPP.releaseOrDestroy(die)
+local function destroyRollDie(die)
+    if die == nil then
+        return
+    end
+    WPG.clear(die)
+    destroyObject(die)
 end
 
 --- Y at or above this counts as on-table for startup cleanup (matches RSL.hasLooseDiceOnTable / TOR-243).
 local LOOSE_DICE_ON_TABLE_Y_MIN = -50
 
---- Stow trays and clear loose on-table d10 before startup SyncTable (TOR-307). Skips d10Preload (y < threshold).
+--- Stow trays and clear loose on-table d10 before startup SyncTable (TOR-307).
 local function cleanupLooseDiceBeforeTableSync()
     local pcTraysLowered = DiceDrawer.reconcileAllToOff({ instant = true })
     local stTraysRestored = STD.reconcileAllToWorkshopHome({ instant = true })
@@ -217,7 +219,7 @@ local function cleanupLooseDiceBeforeTableSync()
         if die ~= nil and die.getPosition ~= nil then
             local p = die.getPosition()
             if type(p) == "table" and type(p.y) == "number" and p.y >= LOOSE_DICE_ON_TABLE_Y_MIN then
-                releaseDieToPreloadOrDestroy(die)
+                destroyRollDie(die)
                 swept = swept + 1
             end
         end
@@ -2435,7 +2437,7 @@ local function randomizeReleasedDieForRoll(color, die, physicsColor)
     if die == nil or die.randomize == nil then
         return false
     end
-    -- Turn interaction on before the toss. Preload dice stay ungrabbable if only the lock is cleared.
+    -- Turn interaction on before the toss. Staged dice stay ungrabbable if only the lock is cleared.
     die.interactable = true
     if die.getLock ~= nil and die.getLock() == true then
         die.setLock(false)
@@ -2625,7 +2627,7 @@ function GlobalPostRollRemoveDie(params)
     if obj == nil then
         return false
     end
-    releaseDieToPreloadOrDestroy(obj)
+    destroyRollDie(obj)
     if RC.adjustPostRollPoolKind(color, dieKind, -1) ~= true then
         return false
     end
@@ -2937,7 +2939,7 @@ function GlobalDestroyBloodSurgeDice(params)
                     end
                 end
                 if destroyIt then
-                    releaseDieToPreloadOrDestroy(obj)
+                    destroyRollDie(obj)
                 end
             end
         end
@@ -2957,7 +2959,7 @@ function GlobalDestroyOneTableBloodSurgeRouse(params)
     for _, obj in ipairs(candidates) do
         local rid, isSurge = DK.decodeGmNotes(obj.getGMNotes())
         if rid == rollId and (isSurge == true or obj.script_state == DK.SCRIPT_STATE_BLOOD_SURGE_ROUSE) then
-            releaseDieToPreloadOrDestroy(obj)
+            destroyRollDie(obj)
             return true
         end
     end
@@ -3335,15 +3337,6 @@ function onLoad(saved_data)
             if TarotToggle ~= nil and type(TarotToggle.syncDeckInteractableFromInfer) == "function" then
                 TarotToggle.syncDeckInteractableFromInfer(G.GUIDS.TAROT_BUTTON_PINK, false)
             end
-            setStartupAction("dice-preload-pool-warm")
-            local DPP = require("core.dice_preload_pool")
-            local warmed = DPP.warmAll()
-            print(
-                U.loadElapsedPrefix()
-                    .. "Dice preload pool warmed "
-                    .. tostring(warmed)
-                    .. " bag(s)."
-            )
             setStartupAction("startup-ready-reconcile-parked-hide")
             local RSL = require("lib.rotational-seat-layout")
             if RSL ~= nil and type(RSL.reconcileYStateSeatObjectVisibilityFromWorld) == "function" then
@@ -6067,7 +6060,7 @@ RC  = require("core.roll_controller")
 RUI = require("core.roll_ui")
 local PRTL = require("lib.pc_roll_tray_lower")
 
---- Return on-table dice tagged with a roll id to the preload pool (player seats). Used by cancel and post-broadcast cleanup.
+--- Destroy on-table dice tagged with a roll id (player seats). Used by cancel and post-broadcast cleanup.
 -- @param color string
 -- @param rollId string
 local function destroyPlayerTableDiceForRoll(color, rollId)
@@ -6081,7 +6074,7 @@ local function destroyPlayerTableDiceForRoll(color, rollId)
             local candidates = getObjectsWithAllTags({ dieTag, "d10", ownerTag })
             for _, obj in ipairs(candidates) do
                 if DK.gmNotesMatchRoll(obj.getGMNotes(), rollId) then
-                    releaseDieToPreloadOrDestroy(obj)
+                    destroyRollDie(obj)
                 end
             end
         end
@@ -6508,7 +6501,7 @@ local function destroyStagedHoverDiceForKind(color, dieKind)
     local destroyed = 0
     for _, obj in ipairs(getObjectsWithAllTags({ dieTag, "d10", ownerTag })) do
         if isStagedHoverDie(obj) then
-            releaseDieToPreloadOrDestroy(obj)
+            destroyRollDie(obj)
             destroyed = destroyed + 1
         end
     end
@@ -6547,6 +6540,13 @@ local function destroyBagStagedDiceAtGuid(color, bagKind, guid)
         return
     end
     if bagLuaScriptHasFunction(bag, "destroyDice") then
+        -- Rolled dice stay in bag tracking; drop their Willpower glow before the bag destroys them.
+        for _, dieGuid in ipairs(bag.call("getStagedDiceGuids") or {}) do
+            local die = G.getObject(dieGuid)
+            if die ~= nil then
+                WPG.clear(die)
+            end
+        end
         bag.call("destroyDice")
         return
     end
@@ -7137,7 +7137,7 @@ function GlobalDestroyNonRouseDiceForRoll(params)
             local candidates = getObjectsWithAllTags({ dieTag, "d10", ownerTag })
             for _, obj in ipairs(candidates) do
                 if DK.gmNotesMatchRoll(obj.getGMNotes(), rollId) then
-                    releaseDieToPreloadOrDestroy(obj)
+                    destroyRollDie(obj)
                 end
             end
         end
@@ -7205,45 +7205,6 @@ function GlobalGetPcRollTrayYOffset(params)
         return 0
     end
     return PRTL.getTrayYOffset(params.color)
-end
-
---- Warm under-table dice preload pool for all bags (TOR-287).
--- @return number bagsWarmed
-function GlobalWarmDicePreloadPool()
-    local DPP = require("core.dice_preload_pool")
-    return DPP.warmAll()
-end
-
---- Claim a pre-warmed die for staging; nil when pool empty (dice bag falls back to takeObject).
--- @param params table  { bagGuid: string, position: table, rotation: table, scale?: number }
--- @return Object|nil
-function GlobalClaimDiceFromPreloadPool(params)
-    if type(params) ~= "table" or type(params.bagGuid) ~= "string" then
-        return nil
-    end
-    local DPP = require("core.dice_preload_pool")
-    return DPP.claim(params.bagGuid, params.position, params.rotation, params.scale)
-end
-
---- Park a die back in the preload pool instead of destroying it (TOR-287).
--- @param params table  { dieGuid: string, bagGuid?: string }
--- @return boolean
-function GlobalReturnDiceToPreloadPool(params)
-    if type(params) ~= "table" or type(params.dieGuid) ~= "string" then
-        return false
-    end
-    local DPP = require("core.dice_preload_pool")
-    return DPP.release(params.dieGuid, params.bagGuid)
-end
-
---- Track a fresh takeObject die for later pool release (TOR-287).
--- @param params table  { dieGuid: string, bagGuid: string }
-function GlobalRegisterDiceForPreloadPool(params)
-    if type(params) ~= "table" then
-        return
-    end
-    local DPP = require("core.dice_preload_pool")
-    DPP.register(params.dieGuid, params.bagGuid)
 end
 
 --- Global.call entry: destroy table dice tagged with a roll id (player seats).
