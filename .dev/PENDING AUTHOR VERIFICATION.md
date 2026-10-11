@@ -187,6 +187,14 @@ _Last populated: 2026-10-08 — /tr-inbox cleared eight author-confirmed rows: T
 
 If something fails, the dashboard shows TTS's message in the right-hand column with an **OK** button.
 
+### High — scene library
+
+#### TOR-704 — Library scenes no longer pick up seat changes from the table after they stop playing
+
+**Context:** "Grand Audience" refused to play with `NPC1.tableSlot: 3 is already used by Brown`. Backup saves show the stored scene was fine on the evening of 2026-10-01 and broken by the next afternoon, while it was not on the table. The cause: copying a scene between the library and the table only copied the outer list of seats, so the library row and the live table kept sharing each seat's record. Later changes on the table (a player reconnecting and taking a chair, a Table B chair shuffle) quietly rewrote the stored scene too, until the next reload. Copies are now real, independent copies. This does not repair Grand Audience itself; that row still holds the clash until it is fixed separately.
+
+**How to verify:** Save & Play. Play a library scene on Table B (not Grand Audience), then End it or play a different scene. Change the seating on the table: use the Debug panel's simulated disconnect and connect for one PC, or switch tables so Table B reshuffles. Now preview the first scene in the Storyteller Dashboard's Scenes tab: its seats should be exactly as they were when it left the table. Play it again: it should load with no "already used by" message.
+
 ### High — dice and rolls
 
 #### TOR-674 — Rouse checks open without waiting, and the result is as short as a quick Rouse
