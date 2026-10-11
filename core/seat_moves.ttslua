@@ -4,7 +4,8 @@
     Chairs are `sessionScene.seatSlots[seat].tableSlot` (1–9 from the centre outward); a seat key (PC colour or
     NPC1–NPC4) holds at most one chair. `moveToChair` moves a seat holder to another chair, swapping with whoever
     sits there. `seatNpc` seats a roster or stage NPC in an empty chair, lit: their own seat key when they already
-    have one, else a free NPC seat key; they leave the stage.
+    have one, else a free NPC seat key; they leave the stage. An NPC with no figurine yet waits for
+    `NPCS.prewarmNpcs` (hidden spawn under the table, image loaded) before the move applies.
 
     Characters never change seat keys here (the NPC reconciler clears a seat whose occupant changes). Both write
     state, then one forced `Sync.npcs` pass seats figurines and re-lays the table.
@@ -129,11 +130,12 @@ function SeatMoves.moveToChair(seatKey, chair)
     return nil
 end
 
---- Seat a named NPC in an empty chair (or their own), lit, and take them off the stage.
+--- Validate (and unless `dryRun`, write + relayout) seating a named NPC in `chair`.
 --- @param characterKey string
 --- @param chair any
+--- @param dryRun boolean
 --- @return string|nil error
-function SeatMoves.seatNpc(characterKey, chair)
+local function seatNpcNow(characterKey, chair, dryRun)
     local NPCS = require("core.npcs")
     if type(characterKey) ~= "string" or NPCS.characters[characterKey] == nil then
         return "Unknown NPC `" .. tostring(characterKey) .. "`."
@@ -172,6 +174,9 @@ function SeatMoves.seatNpc(characterKey, chair)
     if refused then
         return refused
     end
+    if dryRun then
+        return nil
+    end
 
     local ss = seatSlotsCopy()
     local row = type(ss[seatKey]) == "table" and ss[seatKey] or {}
@@ -196,6 +201,29 @@ function SeatMoves.seatNpc(characterKey, chair)
         require("core.hud_player").resetStageLookCycle()
     end
     relayout("dashboard_seat_npc")
+    return nil
+end
+
+--- Seat a named NPC in an empty chair (or their own), lit, and take them off the stage. An NPC with no
+--- figurine yet is spawned hidden under the table first; the seat move applies once its image has loaded.
+--- @param characterKey string
+--- @param chair any
+--- @return string|nil error
+function SeatMoves.seatNpc(characterKey, chair)
+    local err = seatNpcNow(characterKey, chair, true)
+    if err ~= nil then
+        return err
+    end
+    local NPCS = require("core.npcs")
+    if not NPCS.needsPrewarm(characterKey) then
+        return seatNpcNow(characterKey, chair, false)
+    end
+    NPCS.prewarmNpcs({ characterKey }, function()
+        local lateErr = seatNpcNow(characterKey, chair, false)
+        if lateErr ~= nil then
+            error("[SeatMoves] Deferred seat move failed: " .. lateErr)
+        end
+    end, { forSeat = true })
     return nil
 end
 

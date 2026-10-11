@@ -2,8 +2,9 @@
     Stage NPC placements from the Storyteller Dashboard (TOR-687).
 
     `applyStageChanges` writes `sessionScene.npcWorld.placements` (u,v on the stage map), keeps homeland
-    seats dark while their NPC stands on the stage, then `Sync.npcs` animates the figurines. Spotlight
-    tokens on the Stage Control board follow placements through `core.stage_tokens`.
+    seats dark while their NPC stands on the stage, then `Sync.npcs` animates the figurines. An NPC with no
+    figurine yet is spawned hidden under the table first (`NPCS.prewarmNpcs`); the edit applies once its image
+    has loaded. Spotlight tokens on the Stage Control board follow placements through `core.stage_tokens`.
 ]]
 
 local StageApply = {}
@@ -121,16 +122,14 @@ end
 
 local STAGE_LIGHT_MODES = { OFF = true, STANDARD = true, SPOTLIGHT = true }
 
---- Storyteller Dashboard stage edit: per-NPC changes → `sessionScene.npcWorld.placements` → Sync.npcs.
---- Several edits in one call move their figurines together.
---- @param changes table|nil characterKey → `{ u?, v?, lightMode? }`, or `{ remove = true }` to take them off
---- @param opts table|nil `{ clear?: boolean, base?: table }` — `clear` empties the stage first; `base` replaces it
+--- @param changes table|nil
+--- @param opts table
+--- @return table|nil nextMap
+--- @return table existing placements
 --- @return string|nil error
-function StageApply.applyStageChanges(changes, opts)
-    opts = type(opts) == "table" and opts or {}
-    local S = stateModule()
+local function buildNextPlacements(changes, opts)
     local NPCS = require("core.npcs")
-    local existing = S.getStateVal("sessionScene", "npcWorld", "placements")
+    local existing = stateModule().getStateVal("sessionScene", "npcWorld", "placements")
     existing = type(existing) == "table" and existing or {}
     local start = existing
     if opts.clear == true then
@@ -146,10 +145,10 @@ function StageApply.applyStageChanges(changes, opts)
     end
     for ck, change in pairs(type(changes) == "table" and changes or {}) do
         if type(ck) ~= "string" or NPCS.characters[ck] == nil then
-            return "Unknown NPC `" .. tostring(ck) .. "`."
+            return nil, existing, "Unknown NPC `" .. tostring(ck) .. "`."
         end
         if type(change) ~= "table" then
-            return "Stage change for `" .. ck .. "` must be a table."
+            return nil, existing, "Stage change for `" .. ck .. "` must be a table."
         end
         if change.remove == true then
             nextMap[ck] = nil
@@ -158,11 +157,11 @@ function StageApply.applyStageChanges(changes, opts)
             local u = tonumber(change.u) or (prev and tonumber(prev.u))
             local v = tonumber(change.v) or (prev and tonumber(prev.v))
             if u == nil or v == nil then
-                return "Stage change for `" .. ck .. "` needs a position."
+                return nil, existing, "Stage change for `" .. ck .. "` needs a position."
             end
             local mode = change.lightMode or (prev and prev.npcLightMode) or "STANDARD"
             if not STAGE_LIGHT_MODES[mode] then
-                return "Unknown light mode `" .. tostring(mode) .. "`."
+                return nil, existing, "Unknown light mode `" .. tostring(mode) .. "`."
             end
             local row = { u = u, v = v, yaw = Snaps.placementBoardRelYawDeg(u, v), npcLightMode = mode }
             local groundLevel = Snaps.groundLevelForSnapUv(u, v)
@@ -171,6 +170,19 @@ function StageApply.applyStageChanges(changes, opts)
             end
             nextMap[ck] = row
         end
+    end
+    return nextMap, existing, nil
+end
+
+--- Write `placements` for the edit and animate the figurines (`Sync.npcs`).
+--- @param changes table|nil
+--- @param opts table
+--- @return string|nil error
+local function commitStageChanges(changes, opts)
+    local S = stateModule()
+    local nextMap, existing, err = buildNextPlacements(changes, opts)
+    if err ~= nil then
+        return err
     end
     if placementsMapsEqual(nextMap, existing) then
         if opts.clear == true then
@@ -198,6 +210,93 @@ function StageApply.applyStageChanges(changes, opts)
     })
     -- The overlay camera's right-click walk over stage NPCs restarts from the first (TOR-538 / TOR-562).
     require("core.hud_player").resetStageLookCycle()
+    return nil
+end
+
+--- Edit waiting on figurine images: `{ changes, opts }`. A newer edit absorbs it (newer wins per NPC).
+--- @type table|nil
+local pendingEdit = nil
+local pendingEditEpoch = 0
+
+--- Storyteller Dashboard stage edit: per-NPC changes → `sessionScene.npcWorld.placements` → Sync.npcs.
+--- Several edits in one call move their figurines together. When a staged NPC has no figurine yet, the
+--- edit waits while `NPCS.prewarmNpcs` spawns it hidden under the table and its image loads, then applies.
+--- @param changes table|nil characterKey → `{ u?, v?, lightMode? }`, or `{ remove = true }` to take them off
+--- @param opts table|nil `{ clear?: boolean, base?: table }` — `clear` empties the stage first; `base` replaces it
+--- @return string|nil error
+function StageApply.applyStageChanges(changes, opts)
+    opts = type(opts) == "table" and opts or {}
+    changes = type(changes) == "table" and changes or {}
+    if pendingEdit ~= nil and opts.clear ~= true and type(opts.base) ~= "table" then
+        local merged = {}
+        for ck, change in pairs(pendingEdit.changes) do
+            merged[ck] = change
+        end
+        for ck, change in pairs(changes) do
+            local older = merged[ck]
+            if type(older) == "table" and older.remove ~= true and type(change) == "table" and change.remove ~= true then
+                local overlay = {}
+                for k, v in pairs(older) do
+                    overlay[k] = v
+                end
+                for k, v in pairs(change) do
+                    overlay[k] = v
+                end
+                change = overlay
+            end
+            merged[ck] = change
+        end
+        changes = merged
+        opts = pendingEdit.opts
+    end
+    local nextMap, _, err = buildNextPlacements(changes, opts)
+    if err ~= nil then
+        return err
+    end
+    local NPCS = require("core.npcs")
+    local newcomers = {}
+    for ck in pairs(nextMap) do
+        if NPCS.needsPrewarm(ck) then
+            table.insert(newcomers, ck)
+        end
+    end
+    if #newcomers == 0 and pendingEdit == nil then
+        return commitStageChanges(changes, opts)
+    end
+    if opts.clear == true then
+        -- Generic imports made while this edit waits must survive its commit.
+        require("core.generic_npcs").destroyAllLiveAndClearMembership()
+        opts = { base = {} }
+        local kept = {}
+        for ck, change in pairs(changes) do
+            if NPCS.characters[ck] ~= nil then
+                kept[ck] = change
+            end
+        end
+        changes = kept
+        local stillKnown = {}
+        for _, ck in ipairs(newcomers) do
+            if NPCS.characters[ck] ~= nil then
+                table.insert(stillKnown, ck)
+            end
+        end
+        newcomers = stillKnown
+    end
+    pendingEdit = { changes = changes, opts = opts }
+    pendingEditEpoch = pendingEditEpoch + 1
+    local epoch = pendingEditEpoch
+    NPCS.prewarmNpcs(newcomers, function()
+        if epoch ~= pendingEditEpoch then
+            return
+        end
+        local edit = pendingEdit
+        pendingEdit = nil
+        local commitErr = commitStageChanges(edit.changes, edit.opts)
+        require("dashboard.push").markWorldDirty({ scene = true })
+        if commitErr ~= nil then
+            error("[StageApply] Deferred stage edit failed: " .. commitErr)
+        end
+    end)
     return nil
 end
 

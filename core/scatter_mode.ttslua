@@ -974,14 +974,28 @@ function ScatterMode.moveNpcToGroup(npcKey, groupIndex)
     if ScatterMode.groupIndexForNpcCharacter(npcKey) == gi then
         return nil
     end
-    removeCharacterFromAllGroups(npcKey)
-    areaForGroup(gi).orbitCharacters[npcKey] = {
-        slot = nextFreeNpcHoleSlot(gi),
-        npcLightMode = "STANDARD",
-    }
-    ScatterMode.applyWorldLayout()
-    mirrorLiveScatterToLibrary()
-    ScatterMode.reconcileControlHudFromState()
+    local function place()
+        removeCharacterFromAllGroups(npcKey)
+        areaForGroup(gi).orbitCharacters[npcKey] = {
+            slot = nextFreeNpcHoleSlot(gi),
+            npcLightMode = "STANDARD",
+        }
+        ScatterMode.applyWorldLayout()
+        mirrorLiveScatterToLibrary()
+        ScatterMode.reconcileControlHudFromState()
+    end
+    -- An NPC with no figurine yet spawns hidden under the table and joins the group once its image loads.
+    local NPCS = require("core.npcs")
+    if NPCS.needsPrewarm(npcKey) then
+        NPCS.prewarmNpcs({ npcKey }, function()
+            if ScatterMode.isActive() then
+                place()
+                require("dashboard.push").markWorldDirty({ seats = true, scene = true })
+            end
+        end)
+        return nil
+    end
+    place()
     return nil
 end
 

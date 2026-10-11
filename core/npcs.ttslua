@@ -3012,6 +3012,74 @@ function NPCS.despawnNpc(npcName, opts)
     end
 end
 
+--- True when `npcName` has no live figurine yet, or its figurine is still a parked spawn whose image may
+--- be loading (a Dashboard edit should wait on `NPCS.prewarmNpcs` before moving it).
+--- @param npcName string
+--- @return boolean
+function NPCS.needsPrewarm(npcName)
+    local rec = getInstances()[npcName]
+    if U.Type(rec) ~= "table" or G.getObject(rec.figurineGuid or "") == nil then
+        return true
+    end
+    return rec.areaKey == SPAWN_PARK_AREA_KEY
+end
+
+--- Spawn hidden figurines (and lights unless `forSeat`) for `keys` that lack a live instance, then call
+--- `onReady` once every figurine image has loaded or after `NPC_PREWARM_MAX_WAIT_SEC`. Held spawns survive
+--- Step Five (b) until then. `onReady` is expected to write state and reconcile; afterwards any released key
+--- that ended up with no target is despawned.
+--- @param keys string[]
+--- @param onReady function
+--- @param opts table|nil `{ forSeat? }`
+function NPCS.prewarmNpcs(keys, onReady, opts)
+    U.Assert("NPCS.prewarmNpcs", onReady, "function")
+    local spawnOpts = { forSeat = U.Type(opts) == "table" and opts.forSeat == true }
+    local figGuids = {}
+    for _, key in ipairs(keys) do
+        local rec = ensureLiveNpcInstance(key, spawnOpts)
+        prewarmHoldCount[key] = (prewarmHoldCount[key] or 0) + 1
+        table.insert(figGuids, rec.figurineGuid)
+    end
+    local deadline = os.time() + NPC_PREWARM_MAX_WAIT_SEC
+    local timedOut = false
+    U.chain({
+        function()
+            return function()
+                if os.time() >= deadline then
+                    timedOut = true
+                    return true
+                end
+                for _, guid in ipairs(figGuids) do
+                    local fig = G.getObject(guid)
+                    if fig ~= nil and not NpcSpawn.figurineLoaded(fig) then
+                        return false
+                    end
+                end
+                return true
+            end
+        end,
+        function()
+            for _, key in ipairs(keys) do
+                local n = (prewarmHoldCount[key] or 1) - 1
+                prewarmHoldCount[key] = n > 0 and n or nil
+            end
+            if timedOut then
+                print("[NPCS] Prewarm: figurine images still loading after " .. NPC_PREWARM_MAX_WAIT_SEC
+                    .. "s (" .. table.concat(keys, ", ") .. "); applying anyway.")
+            end
+            onReady()
+            local intent = resolveNpcPlacementIntent()
+            for _, key in ipairs(keys) do
+                local ci = intent.byCharacter[key]
+                if prewarmHoldCount[key] == nil and getInstances()[key] ~= nil
+                    and (U.Type(ci) ~= "table" or ci.target == "none") then
+                    despawnNpcInstance(key)
+                end
+            end
+        end,
+    }, { maxWait = NPC_PREWARM_MAX_WAIT_SEC + 5 })
+end
+
 function NPCS.destroyAllWorldAndState()
     for _, name in ipairs(U.getKeys(getInstances())) do
         despawnNpcInstance(name)
