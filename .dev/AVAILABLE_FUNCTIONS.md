@@ -422,7 +422,7 @@ Play enter paints HUD behind the cover first (`Phases.armPlayHudBehindCover`, TO
 ### Chronicle weather (`lib/chronicle_weather.ttslua`)
 
 **Require:** `local ChronicleWeather = require("lib.chronicle_weather")`
-**Data:** `node .dev/scripts/generate_tr_weather_lua.js` embeds `lib/json/Weather.json` into `lib/tr_weather_schedule.ttslua` (`TRWeatherSchedule.DATA` with five-character hourly codes).
+**Data:** `npm run weather:import` reads the Toronto Rising sheet's `WEATHER` tab into `lib/tr_weather_schedule.ttslua` (`TRWeatherSchedule.DATA` with five-character hourly codes).
 
 | Function | Description | Usage Example |
 | :--------- | :------------- | :--------------- |

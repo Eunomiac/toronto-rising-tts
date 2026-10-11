@@ -1,7 +1,7 @@
 --[[
     Chronicle hourly weather: lookup `lib/tr_weather_schedule.ttslua`, parse five-character codes
     via `C.WEATHER`, apply rain/wind/thunder through `core.soundscape`, and expose HUD fields for
-    `GameStateOverlay`. Agent guidance: `lib/json/Weather.json`; node `.dev/scripts/generate_tr_weather_lua.js`.
+    `GameStateOverlay`. Schedule source: the Toronto Rising sheet's WEATHER tab (`npm run weather:import`).
 ]]
 
 local ChronicleWeather = {}

@@ -73,15 +73,6 @@ C.PlayerColors = {
   "Brown", "Orange", "Red", "Pink", "Purple"
 }
 
--- Colors for `labelColor` field of memoriam-category NPCs.
-C.PlayerMemoriamColors = {
-  lordLucien = "rgba(218, 26, 24, 1)",
-  rashid = "rgba(244, 100, 29, 1)",
-  fomorach = "rgba(113, 59, 23, 1)",
-  blackCaesar = "rgba(160, 32, 240, 1)",
-  aishe = "rgba(245, 0, 173, 1)"
-}
-
 -- Number of random blindfold art variants (overlay_globalBlindfold_1 .. overlay_globalBlindfold_N).
 -- Single authority for the blindfold range used by hud_blindfold, hud_overlays, and condition_effects.
 C.BlindfoldVariantCount = 32
@@ -6049,8 +6040,8 @@ C.Sites = {
 
 -- #region Weather
 --[[
-`./json/Weather.json` contains an entry for every month of the year. Each entry contains an `"avgTemp"` key, and a `"weather"` key.
-The `"weather"` key contains one entry for each day of the month. Each of those entries is a 24-element array of five-character codes, representing the weather conditions for that hour.
+`lib/tr_weather_schedule.ttslua` (generated from the Toronto Rising sheet's WEATHER tab by `npm run weather:import`) holds an entry for every month of the year, each with an `avgTemp` and a `weather` table.
+The `weather` table contains one entry for each day of the month. Each of those entries is a 24-element array of five-character codes, representing the weather conditions for that hour.
 To derive the weather for a given hour from its five-character code, the hour's code should be parsed as follows:
 
 - Character 1 & Character 2: Base weather string. Lookup in `C.WEATHER.Base`. Each entry contains a descriptive text string to be added to the associated element in the HUD, the audio key for the rain emitter, and a boolean indicating whether there is thunder.

@@ -1,7 +1,7 @@
 --[[
     Toronto Rising — chronicle hourly weather schedule (month / day / hour codes).
-    AUTO-GENERATED from lib/json/Weather.json — DO NOT EDIT BY HAND.
-    Regenerate: node .dev/scripts/generate_tr_weather_lua.js
+    AUTO-GENERATED from the WEATHER tab of the Toronto Rising Google Sheet — DO NOT EDIT BY HAND.
+    Regenerate: npm run weather:import
     Code format: see C.WEATHER in lib/constants.ttslua.
 ]]
 

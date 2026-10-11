@@ -59,7 +59,11 @@ https://docs.google.com/spreadsheets/d/<SHEET_ID>/gviz/tq?tqx=out:csv&headers=0&
 - Visible tab names: `https://docs.google.com/spreadsheets/d/<SHEET_ID>/htmlview` (look for `items.push({name: "…"`); hidden tabs are not listed there.
 - Decode as UTF-8 (Node `fetch` does). PowerShell `Invoke-WebRequest` mangles accents such as "Fomórach".
 
-Existing importers: `.dev/scripts/import_skyboxes_from_sheet.js`, `import_site_cards_from_sheet.js` (API sheet), `import_generic_npcs_from_sheet.js` (Toronto Rising sheet). See [`Storyteller Dashboard Docs/Generic NPCs.md`](../Storyteller%20Dashboard%20Docs/Generic%20NPCs.md).
+Existing importers: `.dev/scripts/import_skyboxes_from_sheet.js`, `import_site_cards_from_sheet.js` (API sheet), `import_generic_npcs_from_sheet.js` (Toronto Rising sheet), `import_weather_from_sheet.js` (Toronto Rising `WEATHER` → `lib/tr_weather_schedule.ttslua`, `npm run weather:import`). Shared fetch helper: `.dev/scripts/lib/google_sheet_fetch.js` (sheet ids + whole-tab CSV). See [`Storyteller Dashboard Docs/Generic NPCs.md`](../Storyteller%20Dashboard%20Docs/Generic%20NPCs.md).
+
+### Weather calendar (`WEATHER`, Toronto Rising sheet)
+
+One row per day. The header row has `DayCodes` above the column of quoted hourly codes (column W); the three columns to its left are month, the month's average temperature in °C, and day. Each day holds 24 five-character codes decoded by `C.WEATHER` in `lib/constants.ttslua`. `npm run weather:import` validates every code and writes `lib/tr_weather_schedule.ttslua`; the dashboard reads the same columns live (`chronicleSheets.ts`). There is no repo-side JSON or CSV copy.
 
 ## Privacy
 
