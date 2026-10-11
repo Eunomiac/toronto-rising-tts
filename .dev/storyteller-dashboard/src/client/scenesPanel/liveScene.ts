@@ -1,5 +1,6 @@
+import { isSeatColor, LIGHTING_PRESETS, playlistLabel, type LightingPreset, type SeatColor } from "../catalogVocab";
 import type { SceneCatalogs } from "./catalogs";
-import type { LightingPreset, RainKey, SoundLane } from "./commands";
+import type { RainKey, SoundLane } from "./commands";
 import type { ClockDatetime, GenericNpc, SeatRow, SeatsSlice, SceneSlice, SoundscapeSlice, StageNpc } from "../worldState";
 
 /**
@@ -16,7 +17,7 @@ export type Precip = "none" | "lightRain" | "heavyRain" | "lightSnow" | "heavySn
 export type Level = 0 | 1 | 2 | 3;
 export type WeatherAxes = { readonly precip: Precip; readonly wind: Level; readonly thunder: boolean };
 
-const windLevel = (wind: string): Level => (/Max$/.test(wind) ? 3 : /Med$/.test(wind) ? 2 : /Low$/.test(wind) ? 1 : 0);
+export const windLevel = (wind: string): Level => (/Max$/.test(wind) ? 3 : /Med$/.test(wind) ? 2 : /Low$/.test(wind) ? 1 : 0);
 
 export const precipOf = (rain: string): Precip => (rain === "rainHeavy" ? "heavyRain" : rain === "rainLight" ? "lightRain" : "none");
 
@@ -40,9 +41,7 @@ export const locationOverridden = (scene: SceneSlice): boolean =>
 export const isScatter = (scene: SceneSlice): boolean => scene.placementMode === "scatter" || scene.tableKey === "Scatter";
 
 export const lightingPreset = (scene: SceneSlice): LightingPreset | undefined =>
-  scene.lightingPresetKey === "AdminDark" || scene.lightingPresetKey === "AdminStandard" || scene.lightingPresetKey === "AdminBright"
-    ? scene.lightingPresetKey
-    : undefined;
+  LIGHTING_PRESETS.find((preset) => preset === scene.lightingPresetKey);
 
 /** `C.SKYBOX_GENERIC_KEY`. */
 export const GENERIC_SKY = "Generic";
@@ -58,23 +57,14 @@ export type SoundView = {
   readonly playing: Readonly<Record<SoundLane, boolean>>;
 };
 
-export const MOOD_LABEL: Readonly<Record<string, string>> = { main: "Main", combat: "Combat", intrigue: "Intrigue" };
-
-/** Site background playlists in `lib/soundscape_catalog.ttslua` (`PLAYLISTS.backgroundMusic`, not a mood). */
-export const LOCATION_MUSIC_LABEL: Readonly<Record<string, string>> = {
-  casaLoma: "Casa Loma",
-  gioEstate: "Giovanni Estate",
-  gioCatacombs: "Giovanni Catacombs"
-};
-
 const musicLabel = (sound: SoundscapeSlice): string => {
   if (!sound.musicEnabled) {
     return "Silent";
   }
   if (sound.musicMode === "locationMusic" && sound.locationMusic) {
-    return LOCATION_MUSIC_LABEL[sound.locationMusic] ?? sound.locationMusic;
+    return playlistLabel(sound.locationMusic);
   }
-  return MOOD_LABEL[sound.musicMood ?? ""] ?? sound.musicMood ?? "Main";
+  return playlistLabel(sound.musicMood ?? "main");
 };
 
 export const soundView = (sound: SoundscapeSlice): SoundView => {
@@ -92,8 +82,6 @@ export const soundView = (sound: SoundscapeSlice): SoundView => {
   };
 };
 
-export type SeatColor = "Brown" | "Orange" | "Red" | "Pink" | "Purple";
-
 export type LiveSeat = {
   readonly slot: number;
   /** TTS seat key (player colour or NPC seat) for presence commands; absent on an unoccupied chair. */
@@ -109,8 +97,6 @@ export type LiveSeat = {
 
 /** Control board seat row, left to right: chairs numbered from the centre outward. */
 export const SEAT_ORDER = [9, 7, 5, 3, 1, 2, 4, 6, 8] as const;
-
-export const PC_COLORS: readonly string[] = ["Brown", "Orange", "Red", "Pink", "Purple"];
 
 /**
  * Whether a scene on this table has its chairs shuffled when it plays (TTS `FSL.tableUsesRandomSeating`): the
@@ -143,7 +129,7 @@ export const liveSeats = (seats: SeatsSlice, tableKey: string | undefined, catal
     if (row.kind === "npc") {
       return { slot, seatKey: row.seat, kind: "npc", characterKey: row.characterKey, name: nameOf(row.characterKey), ...(state ? { state } : {}) };
     }
-    const color = PC_COLORS.includes(row.seat) ? (row.seat as SeatColor) : undefined;
+    const color = isSeatColor(row.seat) ? row.seat : undefined;
     const pcName = nameOf(row.charKey);
     const playing = row.playingNpcKey;
     return {
@@ -188,7 +174,7 @@ export type SpotlightView = { readonly order: readonly { readonly color: SeatCol
 export const spotlightView = (seats: SeatsSlice): SpotlightView => ({
   order: seats.spotlightOrder.flatMap((color) => {
     const row = seats.seats.find((entry) => entry.seat === color);
-    return row?.charKey && PC_COLORS.includes(color) ? [{ color: color as SeatColor, characterKey: row.charKey }] : [];
+    return row?.charKey && isSeatColor(color) ? [{ color, characterKey: row.charKey }] : [];
   }),
   front: Math.max(0, (seats.spotlightFrontIndex ?? 1) - 1)
 });
@@ -196,7 +182,7 @@ export const spotlightView = (seats: SeatsSlice): SpotlightView => ({
 /** PCs who can hunt: every connected PC seat with a character (seated, standing or out of the scene alike). */
 export const huntPcs = (seats: SeatsSlice, catalogs: SceneCatalogs | null): readonly { readonly color: string; readonly name: string }[] =>
   seats.seats.flatMap((row) => {
-    if (row.kind !== "pc" || !row.charKey || row.absentFromSession === true || !PC_COLORS.includes(row.seat)) {
+    if (row.kind !== "pc" || !row.charKey || row.absentFromSession === true || !isSeatColor(row.seat)) {
       return [];
     }
     return [{ color: row.seat, name: catalogs?.pcs.find((pc) => pc.characterKey === row.charKey)?.fullName ?? row.seat }];

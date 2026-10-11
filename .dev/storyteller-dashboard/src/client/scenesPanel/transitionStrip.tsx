@@ -3,7 +3,8 @@ import type { LibraryScene } from "../../shared/sceneLibrary";
 import { Headshot } from "../headshots/Headshot";
 import { useWorldState } from "../worldState";
 import { applyToDraft, draftSeatRows, draftSeatSlots, holderOfChair } from "./library";
-import { liveSeats, PC_COLORS, tableUsesRandomSeating } from "./liveScene";
+import { isSeatColor } from "../catalogVocab";
+import { liveSeats, tableUsesRandomSeating } from "./liveScene";
 import { useSceneCatalogs } from "./roster";
 import { startRosterDrag } from "./rosterDrag";
 import { Overlay, Seats, type SeatDrops } from "./sketch";
@@ -18,7 +19,6 @@ export type SeatingAsk = {
   readonly then: (edit: SeatingEdit | undefined) => void;
 };
 
-const isPcSeat = (seat: string | undefined): boolean => seat !== undefined && PC_COLORS.includes(seat);
 
 /**
  * Shown before every switch away from a scene on the table: the next scene's seats, starting from the table's
@@ -39,7 +39,7 @@ export const TransitionSeatingModal = ({ ask, onClose }: { ask: SeatingAsk; onCl
   const seating: SeatDrops = {
     move: (seat, chair) =>
       setState((current) =>
-        isPcSeat(seat) || isPcSeat(holderOfChair(draftSeatSlots(current.row), chair))
+        isSeatColor(seat) || isSeatColor(holderOfChair(draftSeatSlots(current.row), chair))
           ? current
           : { ...current, row: applyToDraft(current.row, { op: "seatMove", seat, chair }) }),
     seatNpc: (characterKey, chair) => setState((current) => seatOrphan(current, characterKey, chair)),

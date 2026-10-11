@@ -1,7 +1,5 @@
-import { SEAT_COLORS, type SeatColor, type SeatSnapshot, type SheetSnapshot } from "./types.js";
-
-const isSeatColor = (value: unknown): value is SeatColor =>
-  typeof value === "string" && (SEAT_COLORS as readonly string[]).includes(value);
+import { isSeatColor } from "../catalogVocab.js";
+import type { SeatSnapshot, SheetSnapshot } from "./types.js";
 
 /**
  * Merge one `pcSeat` push (Lua `DashPush.seat` → slim seat snapshot without `playerData`) into the

@@ -38,8 +38,6 @@ export type MemoriamPeriod = {
 
 export type SceneCatalogs = {
   readonly generatedBy: string;
-  readonly playerColors: readonly ("Brown" | "Orange" | "Red" | "Pink" | "Purple")[];
-  readonly npcSeats: readonly string[];
   readonly pcs: readonly CatalogCharacter[];
   readonly namedNpcs: readonly CatalogCharacter[];
   /** `cardUrl`: the save's `districtCard_<key>` UI asset, null when missing. */
@@ -47,19 +45,9 @@ export type SceneCatalogs = {
   readonly sites: readonly CatalogSite[];
   /** `randomSeating`: the Table B family, which shuffles every chair when it is set down. */
   readonly tables: readonly { readonly key: string; readonly slotCapacity: number; readonly randomSeating: boolean }[];
-  readonly lightModes: readonly string[];
   readonly skyboxes: readonly { readonly key: string; readonly display: string }[];
   /** Memoriam periods (`SkyboxesCatalog.MemoriamSkyboxes`), earliest first. */
   readonly memoriamPeriods: readonly MemoriamPeriod[];
-  readonly locationTracks: readonly { readonly key: string; readonly id: string }[];
-  readonly backgroundMoods: readonly string[];
-  readonly weatherConditions: readonly {
-    readonly key: string;
-    readonly label: string;
-    readonly rain: string | null;
-    readonly wind: string | null;
-    readonly thunderEnabled: boolean;
-  }[];
   readonly conditions: readonly { readonly id: string; readonly displayName: string }[];
   readonly pickerGroupLabels: Readonly<Record<string, string>>;
 };

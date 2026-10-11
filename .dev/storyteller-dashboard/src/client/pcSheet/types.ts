@@ -1,8 +1,7 @@
 import type { ActiveCompulsion } from "../../shared/compulsionText";
+import type { SeatColor } from "../catalogVocab";
 
-export const SEAT_COLORS = ["Brown", "Orange", "Red", "Pink", "Purple"] as const;
-
-export type SeatColor = (typeof SEAT_COLORS)[number];
+export type { SeatColor };
 
 export type Rating = {
   readonly base: number;

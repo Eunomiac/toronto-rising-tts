@@ -30,7 +30,16 @@ import { Btn, Overlay, activeCanvas, canvasPoint } from "./sketch";
 import { createPortal } from "react-dom";
 import { figurineUrl } from "../headshots/headshots";
 import { PendingGenericsContext, SceneGenericsContext, useScenesCommand, type SceneClock, type SoundLane } from "./commands";
-import { LOCATION_MUSIC_LABEL, MOOD_LABEL, fromDate, rainKey, toDate, type SoundView, type SpotlightView } from "./liveScene";
+import { fromDate, precipOf, rainKey, toDate, windLevel, type SoundView, type SpotlightView } from "./liveScene";
+import {
+  AMBIENT_TRACKS,
+  FEATURED_TRACKS,
+  LOCATION_MUSIC,
+  MUSIC_MOODS,
+  playlistLabel,
+  WEATHER_CODES,
+  type MusicMood
+} from "../catalogVocab";
 import { START_OFFSETS, defaultPace, offsetLabel, sceneTimeOf } from "./sceneClock";
 import type { LibraryScene, SceneStatus } from "../../shared/sceneLibrary";
 import { displayTitle, entryPlan, libraryRank, type DeckScene } from "./sceneStatus";
@@ -1603,24 +1612,13 @@ const withWind = (axes: WeatherAxes, choice: WindChoice): WeatherAxes =>
     ? { precip: axes.precip === "none" ? "heavyRain" : axes.precip, wind: 3, thunder: true }
     : { ...axes, wind: choice, thunder: false };
 
-/** Hourly calendar code → the two axes (decoding as `C.WEATHER`: base weather, temperature delta, wind). */
-const PRECIP_BY_BASE: Readonly<Record<string, Precip>> = { x: "none", c: "none", w: "lightRain", p: "heavyRain", t: "heavyRain", s: "lightSnow", b: "heavySnow" };
-const WIND_BY_CODE: Readonly<Record<string, Level>> = { x: 0, s: 1, b: 1, w: 2, g: 2, h: 3, v: 3 };
+/** Snow and blizzard bases have no TTS layer yet (their rain layer is silent); only the dashboard paints the snow. */
+const SNOW_BY_BASE: Readonly<Record<string, Precip>> = { s: "lightSnow", b: "heavySnow" };
 
-const temperatureDelta = (ch: string): number => {
-  if (ch === "0") {
-    return 0;
-  }
-  if (ch >= "A" && ch <= "Z") {
-    return ch.charCodeAt(0) - 64;
-  }
-  if (ch >= "a" && ch <= "z") {
-    return -(ch.charCodeAt(0) - 96);
-  }
-  return Number.NaN;
-};
+/** `cold`: at or below `C.WEATHER.WARM_TEMPERATURE_THRESHOLD`, where wind takes the winter layer. */
+type Scheduled = WeatherAxes & { readonly celsius: number; readonly fog: boolean; readonly cold: boolean };
 
-type Scheduled = WeatherAxes & { readonly celsius: number; readonly fog: boolean };
+/** Hourly calendar code → the two axes, decoded from `C.WEATHER` the way `ChronicleWeather.parseCode` does. */
 
 const scheduledWeather = (calendar: WeatherCalendar, at: Date): Scheduled | string => {
   const month = at.getMonth() + 1;
@@ -1629,13 +1627,22 @@ const scheduledWeather = (calendar: WeatherCalendar, at: Date): Scheduled | stri
   if (!code || average === undefined) {
     return `The WEATHER tab has no entry for ${month}/${at.getDate()} at ${at.getHours()}:00.`;
   }
-  const precip = PRECIP_BY_BASE[code.charAt(0)];
-  const wind = WIND_BY_CODE[code.charAt(4)];
-  const delta = temperatureDelta(code.charAt(2));
-  if (precip === undefined || wind === undefined || Number.isNaN(delta)) {
+  const base = WEATHER_CODES.base[code.slice(0, 2)];
+  const delta = WEATHER_CODES.temperatureDelta[code.charAt(2)];
+  const wind = WEATHER_CODES.wind[code.charAt(4)];
+  if (!base || delta === undefined || !wind) {
     return `Unknown weather code "${code}".`;
   }
-  return { precip, wind, celsius: average + delta, thunder: code.charAt(0) === "t", fog: code.charAt(1) === "f" };
+  const celsius = Math.floor(average + delta);
+  const cold = celsius <= WEATHER_CODES.warmThreshold;
+  return {
+    precip: SNOW_BY_BASE[code.charAt(0)] ?? precipOf(base.rain),
+    wind: windLevel(cold ? wind.cold : wind.warm),
+    celsius,
+    thunder: base.thunder,
+    fog: code.charAt(1) === "f",
+    cold
+  };
 };
 
 type FallLayer = { readonly count: number; readonly size: number; readonly opacity: number; readonly seconds: number };
@@ -1838,7 +1845,7 @@ export const WeatherPanel = ({ at, celsius: liveCelsius, live, held = false, w, 
   const axes: WeatherAxes = live ?? { precip: scheduled.precip, wind: scheduled.wind, thunder: scheduled.thunder };
   const overridden = live !== undefined && held;
   const pick = (next: WeatherAxes): void =>
-    command({ op: "weatherOverride", rain: rainKey(next.precip), wind: next.wind, thunder: next.thunder });
+    command({ op: "weatherOverride", rain: rainKey(next.precip), wind: next.wind, thunder: next.thunder, cold: scheduled.cold });
   const release = (): void => command({ op: "weatherOverride", release: true });
   const openRing = (axis: "precip" | "wind") => (event: MouseEvent<HTMLButtonElement>): void =>
     setRing({ axis, at: canvasPoint(event) });
@@ -2328,44 +2335,25 @@ const MixerGroup = ({ playing = false, values, children }: { playing?: boolean; 
   );
 };
 
-const MOOD_PLAYLISTS = Object.values(MOOD_LABEL);
-const LOCATION_PLAYLISTS = Object.values(LOCATION_MUSIC_LABEL);
-
-/** Featured tracks in `lib/soundscape_catalog.ttslua` (type `featureMusic`). */
-const FEATURED_TRACKS = ["TR Theme (full)", "TR Theme (intro)", "TR Loop", "House of the Rising Sun"] as const;
-
-/** Location ambience loops in `lib/soundscape_catalog.ttslua` (type `location`), alphabetical. */
-const AMBIENT_TRACKS = [
-  "Silent", "Airport", "Apothecary", "Autoshop", "Church", "City Chatter", "City Park", "City Revelers", "City Suburb",
-  "City Traffic", "City Walking", "Computer Lab", "Crickets", "Dive Bar", "Dungeon", "Eerie Forest", "Fast Clock",
-  "Fireplace", "Hospital", "Indoor Market", "Industry", "Laboratory", "Library", "Low Wind Ambient", "Medical Clinic",
-  "Nightclub", "Office", "Quiet City", "Ritual Room", "Rooftop", "Sewers", "Soft Hum", "Soft Indoor", "Subway",
-  "Tinkle", "Urban Dark", "Warrens", "Waterside", "Whisper Ghosts"
-] as const;
+const MOOD_PLAYLISTS = MUSIC_MOODS.map(playlistLabel);
+const LOCATION_PLAYLISTS = LOCATION_MUSIC.map(playlistLabel);
 
 const AMBIENT_GRID_WIDTH = 660;
 
-/** Catalog keys of `FEATURED_TRACKS`, in the same order. */
-const FEATURED_KEYS = ["TR_Full", "TR_Intro", "TR_Loop", "STB_HouseOfTheRisingSun"] as const;
+const featuredLabel = (key: string | undefined): string =>
+  FEATURED_TRACKS.find((track) => track.key === key)?.label ?? key ?? FEATURED_TRACKS[0]?.label ?? "";
 
-const featuredLabel = (key: string | undefined): string => {
-  const index = FEATURED_KEYS.findIndex((entry) => entry === key);
-  return FEATURED_TRACKS[index] ?? key ?? FEATURED_TRACKS[0];
-};
-
-/** Location catalog keys are the labels in camelCase (`softIndoor` → "Soft Indoor"). */
+/** An ambience loop's name; the catalog's `silent` loop and `none` both read "Silent". */
 export const ambientLabel = (key: string): string =>
-  AMBIENT_TRACKS.find((label) => label.replace(/ /g, "").toLowerCase() === key.toLowerCase()) ?? key;
+  AMBIENT_TRACKS.find((track) => track.key === (key === "silent" ? "none" : key))?.label ?? key;
 
-const ambientKey = (label: string): string =>
-  label === "Silent" ? "none" : label.charAt(0).toLowerCase() + label.slice(1).replace(/ /g, "");
+const ambientKey = (label: string): string => AMBIENT_TRACKS.find((track) => track.label === label)?.key ?? label;
 
-const featuredKey = (label: string): string => FEATURED_KEYS[FEATURED_TRACKS.findIndex((entry) => entry === label)] ?? label;
+const featuredKey = (label: string): string => FEATURED_TRACKS.find((track) => track.label === label)?.key ?? label;
 
-const MOODS: Readonly<Record<string, "main" | "combat" | "intrigue">> = { Main: "main", Combat: "combat", Intrigue: "intrigue" };
+const moodOf = (label: string): MusicMood | undefined => MUSIC_MOODS.find((mood) => playlistLabel(mood) === label);
 
-const locationMusicKey = (label: string): string | undefined =>
-  Object.keys(LOCATION_MUSIC_LABEL).find((key) => LOCATION_MUSIC_LABEL[key] === label);
+const locationMusicKey = (label: string): string | undefined => LOCATION_MUSIC.find((key) => playlistLabel(key) === label);
 
 /**
  * Every ambience loop as a button grid, opened under the Ambient button: the playing loop is lit and the site's
@@ -2382,18 +2370,18 @@ const AmbientGrid = ({ at, current, siteTrack, onPick, onClose }: {
     <div className="lab-modal lab-ambient-grid" style={{ left: Math.min(at.x, 1920 - AMBIENT_GRID_WIDTH - 8), top: at.y }}>
       <span className="lab-modal-title">Ambient track</span>
       <div className="lab-ambient-grid-tracks">
-        {AMBIENT_TRACKS.map((track) => (
+        {AMBIENT_TRACKS.map(({ key, label }) => (
           <button
-            key={track}
+            key={key}
             type="button"
-            className={`lab-btn${track === current ? " primary" : ""}${track === siteTrack ? " site" : ""}`}
-            title={track === siteTrack ? "The site's own ambience" : undefined}
+            className={`lab-btn${label === current ? " primary" : ""}${label === siteTrack ? " site" : ""}`}
+            title={label === siteTrack ? "The site's own ambience" : undefined}
             onClick={() => {
-              onPick(track);
+              onPick(label);
               onClose();
             }}
           >
-            {track}
+            {label}
           </button>
         ))}
       </div>
@@ -2429,7 +2417,7 @@ export const SoundMixer = ({ indoors, sceneAmbience, live }: {
   const ambience = useLiveLevel(live.levels.location, laneSetter("location"));
   const [featuredPick, setFeaturedPick] = useState<string | null>(null);
   const playlist = commanded(live.playlist, (next) => {
-    const mood = MOODS[next];
+    const mood = moodOf(next);
     const site = locationMusicKey(next);
     command(mood ? { op: "musicMood", mood } : site ? { op: "locationMusic", key: site } : { op: "musicSilent" });
   });
@@ -2462,7 +2450,7 @@ export const SoundMixer = ({ indoors, sceneAmbience, live }: {
         </MixerGroup>
         <MixerGroup playing={featured} values={[featuredLevel]}>
           <select className="lab-select" value={featuredTrack} title="Featured track" onChange={(event) => pickFeatured(event.target.value)}>
-            {FEATURED_TRACKS.map((name) => <option key={name}>{name}</option>)}
+            {FEATURED_TRACKS.map(({ key, label }) => <option key={key}>{label}</option>)}
           </select>
           <button
             type="button"

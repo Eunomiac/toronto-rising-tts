@@ -110,7 +110,7 @@ describe("applyToDraft", () => {
     draft = applyToDraft(draft, { op: "skybox", key: "Generic" });
     draft = applyToDraft(draft, { op: "conditions", ids: ["fog"] });
     draft = applyToDraft(draft, { op: "clockTo", datetime: { year: 2026, month: 1, day: 2, hour: 22, minute: 0 } });
-    draft = applyToDraft(draft, { op: "weatherOverride", rain: "rainHeavy", wind: 2, thunder: true });
+    draft = applyToDraft(draft, { op: "weatherOverride", rain: "rainHeavy", wind: 2, thunder: true, cold: true });
     draft = applyToDraft(draft, { op: "table", key: "Scatter" });
     expect(draft.placementMode).toBe("scatter");
     expect(draft.sessionScene).toMatchObject({
@@ -130,6 +130,14 @@ describe("applyToDraft", () => {
     expect(released.sessionScene.soundscapeNarrative).toEqual({});
     expect("skyboxOverride" in released.sessionScene).toBe(false);
     expect(draftSceneSlice(released, false).weatherOverride).toBeUndefined();
+  });
+
+  it("picks the wind layer by temperature, not by month", () => {
+    const january = applyToDraft(scene("a"), { op: "clockTo", datetime: { year: 2026, month: 1, day: 2, hour: 14, minute: 0 } });
+    const warm = applyToDraft(january, { op: "weatherOverride", rain: "none", wind: 1, thunder: false, cold: false });
+    expect(warm.sessionScene.soundscapeNarrative).toMatchObject({ wind: "windLow" });
+    const calm = applyToDraft(january, { op: "weatherOverride", rain: "none", wind: 0, thunder: false, cold: true });
+    expect(calm.sessionScene.soundscapeNarrative).toMatchObject({ wind: "none" });
   });
 
   it("ignores commands that have no library meaning", () => {

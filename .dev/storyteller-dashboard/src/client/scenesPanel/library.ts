@@ -1,7 +1,8 @@
 import { parseSceneStatus, type LibraryScene } from "../../shared/sceneLibrary";
 import type { ClockDatetime, GenericNpc, SceneSlice, SeatRow, StageNpc } from "../worldState";
 import type { ScenesCommand, SoundLane } from "./commands";
-import { LOCATION_MUSIC_LABEL, MOOD_LABEL, PC_COLORS, type SoundView } from "./liveScene";
+import { isSeatColor, NPC_SEATS, playlistLabel } from "../catalogVocab";
+import type { SoundView } from "./liveScene";
 
 /**
  * The dashboard's scene library (master copy) against TTS's `sceneLibrary`. Rows keep TTS's shape; the preview
@@ -162,11 +163,10 @@ const withNarrative = (scene: LibraryScene, patch: Row, drop: readonly string[] 
 };
 
 const WIND_LEVEL = ["", "Low", "Med", "Max"] as const;
-const WINTER_MONTHS: ReadonlySet<number> = new Set([11, 12, 1, 2]);
 
-/** Soundscape wind catalog key for a strength (0 none … 3 max); November–February use the winter variants. */
-const windCatalogKey = (strength: 0 | 1 | 2 | 3, month: number): string =>
-  strength === 0 ? "none" : `${WINTER_MONTHS.has(month) ? "windWinter" : "wind"}${WIND_LEVEL[strength]}`;
+/** Soundscape wind layer for a strength (0 none … 3 max); a cold hour takes the winter layer (`ChronicleWeather.setOverride`). */
+const windCatalogKey = (strength: 0 | 1 | 2 | 3, cold: boolean): string =>
+  strength === 0 ? "none" : `${cold ? "windWinter" : "wind"}${WIND_LEVEL[strength]}`;
 
 export const draftClock = (scene: LibraryScene): ClockDatetime | null => {
   const clock = scene.sessionScene.clock;
@@ -182,8 +182,6 @@ export const draftClock = (scene: LibraryScene): ClockDatetime | null => {
 /** The draft follows present day (whatever it is when the scene is played) instead of a fixed time. */
 export const draftAtPresentDay = (scene: LibraryScene): LibraryScene => withSession(scene, { clock: { isPresentDay: true } });
 
-export const NPC_SEATS: readonly string[] = ["NPC1", "NPC2", "NPC3", "NPC4"];
-
 export const draftSeatSlots = (scene: LibraryScene): Row => (isRecord(scene.sessionScene.seatSlots) ? scene.sessionScene.seatSlots : {});
 
 const draftSeatPresent = (scene: LibraryScene): Row => (isRecord(scene.sessionScene.seatPresent) ? scene.sessionScene.seatPresent : {});
@@ -197,7 +195,7 @@ const seatChair = (seat: string, row: unknown): number | undefined => {
   if (!isRecord(row) || typeof row.tableSlot !== "number" || row.absentFromSession === true) {
     return undefined;
   }
-  return PC_COLORS.includes(seat) || npcOf(row) !== undefined ? row.tableSlot : undefined;
+  return isSeatColor(seat) || npcOf(row) !== undefined ? row.tableSlot : undefined;
 };
 
 /** The seat key (PC colour or NPC seat) holding a chair. */
@@ -234,8 +232,7 @@ export const applyToDraft = (scene: LibraryScene, command: ScenesCommand): Libra
       if ("release" in command) {
         return withSession(withNarrative(scene, {}, ["rain", "wind", "thunderstorm"]), { chronicleWeatherFollowSchedule: true, chronicleWeatherManualHold: false });
       }
-      const month = draftClock(scene)?.month ?? new Date().getMonth() + 1;
-      const wind = windCatalogKey(command.wind, month);
+      const wind = windCatalogKey(command.wind, command.cold);
       return withSession(withNarrative(scene, { rain: command.rain, wind, thunderstorm: command.thunder }), {
         chronicleWeatherFollowSchedule: false,
         chronicleWeatherManualHold: true
@@ -400,7 +397,7 @@ export const draftSeatRows = (scene: LibraryScene, live: readonly SeatRow[]): re
     const tableSlot = typeof value.tableSlot === "number" ? value.tableSlot : table?.tableSlot;
     const isPresent = typeof value.isPresent === "boolean" ? value.isPresent : mirror[seat] !== false;
     const base = { seat, isPresent, ...(tableSlot !== undefined ? { tableSlot } : {}) };
-    if (PC_COLORS.includes(seat)) {
+    if (isSeatColor(seat)) {
       const charKey = str(value.characterKey) ?? table?.charKey;
       const playing = value.isPlayingNPC === true ? str(value.npcCharacterKey) : undefined;
       return [{
@@ -453,7 +450,7 @@ export const draftSoundView = (scene: LibraryScene): SoundView => {
   const music = str(narrative.backgroundMusic);
   const ambient = str(narrative.location);
   return {
-    playlist: music ? MOOD_LABEL[music] ?? LOCATION_MUSIC_LABEL[music] ?? music : "Main",
+    playlist: playlistLabel(music ?? "main"),
     musicPlaying: true,
     featuredKey: undefined,
     featuredPlaying: false,

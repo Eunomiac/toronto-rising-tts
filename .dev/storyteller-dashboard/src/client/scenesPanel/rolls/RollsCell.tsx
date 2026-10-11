@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties, type MouseEvent, type 
 import { Icon, type IconName } from "../icons";
 import { canvasPoint, Overlay } from "../sketch";
 import { SEAT_ACCENT } from "../../pcSheet/layout";
+import { STRUCTURAL_OPTIONS } from "../../catalogVocab";
 import { usePersistentState } from "../../persistentState";
 import type { PcRoll, PoolKind, RollPool, RollResult, RollsSlice, StLiveRoll, StRollSlot } from "../../worldState";
 import type { RollOptionsView } from "./bridge";
@@ -20,7 +21,6 @@ import {
   rollPhaseLabel,
   rollTypeEdge,
   rollTypeLabel,
-  STRUCTURAL_OPTIONS,
   toggleCondition,
   toggleStructural,
   withLocalPools,

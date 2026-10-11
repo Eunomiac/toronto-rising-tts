@@ -151,13 +151,6 @@ export const PERMANENT_OPTIONS: readonly { readonly key: string; readonly label:
   { key: "autoHunger", label: "Auto-Hunger" }
 ];
 
-export const STRUCTURAL_OPTIONS: readonly { readonly key: string; readonly label: string }[] = [
-  { key: "takeHalf", label: "Take Half" },
-  { key: "wpReroll", label: "WP Reroll" },
-  { key: "hungerDice", label: "Hunger Dice" },
-  { key: "crits", label: "Criticals" }
-];
-
 const ROUSE_KINDS: readonly PoolKind[] = ["oblivRouse", "rouse", "bloodSurgeRouse"];
 const MAIN_KINDS: readonly PoolKind[] = ["hunger", "rage", "normal", "werewolf"];
 const DIAMOND_RUN = 5;

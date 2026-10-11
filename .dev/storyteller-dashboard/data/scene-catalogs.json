@@ -5825,162 +5825,51 @@
     }
   ],
   "locationTracks": [
-    {
-      "key": "silent",
-      "id": "silentLocation"
-    },
-    {
-      "key": "airport",
-      "id": "airport"
-    },
-    {
-      "key": "apothecary",
-      "id": "apothecary"
-    },
-    {
-      "key": "autoshop",
-      "id": "autoshop"
-    },
-    {
-      "key": "church",
-      "id": "church"
-    },
-    {
-      "key": "cityChatter",
-      "id": "cityChatter"
-    },
-    {
-      "key": "cityPark",
-      "id": "cityPark"
-    },
-    {
-      "key": "cityRevelers",
-      "id": "cityRevelers"
-    },
-    {
-      "key": "citySuburb",
-      "id": "citySuburb"
-    },
-    {
-      "key": "cityTraffic",
-      "id": "cityTraffic"
-    },
-    {
-      "key": "cityWalking",
-      "id": "cityWalking"
-    },
-    {
-      "key": "computerLab",
-      "id": "computerLab"
-    },
-    {
-      "key": "crickets",
-      "id": "crickets"
-    },
-    {
-      "key": "diveBar",
-      "id": "diveBar"
-    },
-    {
-      "key": "dungeon",
-      "id": "dungeon"
-    },
-    {
-      "key": "eerieForest",
-      "id": "eerieForest"
-    },
-    {
-      "key": "fastClock",
-      "id": "fastClock"
-    },
-    {
-      "key": "fireplace",
-      "id": "fireplace"
-    },
-    {
-      "key": "hospital",
-      "id": "hospital"
-    },
-    {
-      "key": "indoorMarket",
-      "id": "indoorMarket"
-    },
-    {
-      "key": "industry",
-      "id": "industry"
-    },
-    {
-      "key": "laboratory",
-      "id": "laboratory"
-    },
-    {
-      "key": "library",
-      "id": "library"
-    },
-    {
-      "key": "lowWindAmbient",
-      "id": "lowWindAmbient"
-    },
-    {
-      "key": "medicalClinic",
-      "id": "medicalClinic"
-    },
-    {
-      "key": "nightclub",
-      "id": "nightclub"
-    },
-    {
-      "key": "office",
-      "id": "office"
-    },
-    {
-      "key": "quietCity",
-      "id": "quietCity"
-    },
-    {
-      "key": "ritualRoom",
-      "id": "ritualRoom"
-    },
-    {
-      "key": "rooftop",
-      "id": "rooftop"
-    },
-    {
-      "key": "sewers",
-      "id": "sewers"
-    },
-    {
-      "key": "softHum",
-      "id": "softHum"
-    },
-    {
-      "key": "softIndoor",
-      "id": "softIndoor"
-    },
-    {
-      "key": "subway",
-      "id": "subway"
-    },
-    {
-      "key": "tinkle",
-      "id": "tinkle"
-    },
-    {
-      "key": "urbanDark",
-      "id": "urbanDark"
-    },
-    {
-      "key": "warrens",
-      "id": "warrens"
-    },
-    {
-      "key": "waterside",
-      "id": "waterside"
-    },
-    {
-      "key": "whisperGhosts",
-      "id": "whisperGhosts"
-    }
+    "silent",
+    "airport",
+    "apothecary",
+    "autoshop",
+    "church",
+    "cityChatter",
+    "cityPark",
+    "cityRevelers",
+    "citySuburb",
+    "cityTraffic",
+    "cityWalking",
+    "computerLab",
+    "crickets",
+    "diveBar",
+    "dungeon",
+    "eerieForest",
+    "fastClock",
+    "fireplace",
+    "hospital",
+    "indoorMarket",
+    "industry",
+    "laboratory",
+    "library",
+    "lowWindAmbient",
+    "medicalClinic",
+    "nightclub",
+    "office",
+    "quietCity",
+    "ritualRoom",
+    "rooftop",
+    "sewers",
+    "softHum",
+    "softIndoor",
+    "subway",
+    "tinkle",
+    "urbanDark",
+    "warrens",
+    "waterside",
+    "whisperGhosts"
+  ],
+  "featuredTracks": [
+    "TR_Full",
+    "TR_Intro",
+    "TR_Loop",
+    "STB_HouseOfTheRisingSun"
   ],
   "backgroundMoods": [
     "main",
@@ -5990,43 +5879,152 @@
     "gioCatacombs",
     "gioEstate"
   ],
-  "weatherConditions": [
-    {
-      "key": "none",
-      "label": "None",
-      "rain": "none",
-      "wind": "none",
-      "thunderEnabled": false
+  "weatherCodes": {
+    "warmThreshold": 0,
+    "base": {
+      "xx": {
+        "rain": "silent",
+        "thunder": false
+      },
+      "xf": {
+        "rain": "silent",
+        "thunder": false
+      },
+      "bx": {
+        "rain": "silent",
+        "thunder": false
+      },
+      "bf": {
+        "rain": "silent",
+        "thunder": false
+      },
+      "cx": {
+        "rain": "silent",
+        "thunder": false
+      },
+      "cf": {
+        "rain": "silent",
+        "thunder": false
+      },
+      "px": {
+        "rain": "rainHeavy",
+        "thunder": false
+      },
+      "pf": {
+        "rain": "rainHeavy",
+        "thunder": false
+      },
+      "sx": {
+        "rain": "silent",
+        "thunder": false
+      },
+      "sf": {
+        "rain": "silent",
+        "thunder": false
+      },
+      "tx": {
+        "rain": "rainHeavy",
+        "thunder": true
+      },
+      "tf": {
+        "rain": "rainHeavy",
+        "thunder": true
+      },
+      "wx": {
+        "rain": "rainLight",
+        "thunder": false
+      },
+      "wf": {
+        "rain": "rainLight",
+        "thunder": false
+      }
     },
-    {
-      "key": "rainLight",
-      "label": "Light Rain",
-      "rain": "rainLight",
-      "wind": "none",
-      "thunderEnabled": false
+    "temperatureDelta": {
+      "0": 0,
+      "A": 1,
+      "B": 2,
+      "C": 3,
+      "D": 4,
+      "E": 5,
+      "F": 6,
+      "G": 7,
+      "H": 8,
+      "I": 9,
+      "J": 10,
+      "K": 11,
+      "L": 12,
+      "M": 13,
+      "N": 14,
+      "O": 15,
+      "P": 16,
+      "Q": 17,
+      "R": 18,
+      "S": 19,
+      "T": 20,
+      "U": 21,
+      "V": 22,
+      "W": 23,
+      "X": 24,
+      "Y": 25,
+      "Z": 26,
+      "a": -1,
+      "b": -2,
+      "c": -3,
+      "d": -4,
+      "e": -5,
+      "f": -6,
+      "g": -7,
+      "h": -8,
+      "i": -9,
+      "j": -10,
+      "k": -11,
+      "l": -12,
+      "m": -13,
+      "n": -14,
+      "o": -15,
+      "p": -16,
+      "q": -17,
+      "r": -18,
+      "s": -19,
+      "t": -20,
+      "u": -21,
+      "v": -22,
+      "w": -23,
+      "x": -24,
+      "y": -25,
+      "z": -26
     },
-    {
-      "key": "rainHeavy",
-      "label": "Heavy Rain",
-      "rain": "rainHeavy",
-      "wind": "none",
-      "thunderEnabled": false
-    },
-    {
-      "key": "wind",
-      "label": "Wind",
-      "rain": "none",
-      "wind": "windMed",
-      "thunderEnabled": false
-    },
-    {
-      "key": "thunderstorm",
-      "label": "Thunderstorm",
-      "rain": "rainHeavy",
-      "wind": "windWinterMax",
-      "thunderEnabled": true
+    "wind": {
+      "x": {
+        "warm": "silent",
+        "cold": "silent"
+      },
+      "s": {
+        "warm": "silent",
+        "cold": "windWinterLow"
+      },
+      "b": {
+        "warm": "windLow",
+        "cold": "windWinterLow"
+      },
+      "w": {
+        "warm": "windMed",
+        "cold": "windWinterMed"
+      },
+      "g": {
+        "warm": "windMed",
+        "cold": "windWinterMed"
+      },
+      "h": {
+        "warm": "windMax",
+        "cold": "windWinterMax"
+      },
+      "v": {
+        "warm": "windMax",
+        "cold": "windWinterMax"
+      }
     }
-  ],
+  },
   "conditions": [
     {
       "id": "torpor",
@@ -6083,6 +6081,24 @@
     {
       "id": "bestialNull",
       "displayName": "Bestial Null"
+    }
+  ],
+  "structuralRollOptions": [
+    {
+      "key": "takeHalf",
+      "label": "Take Half"
+    },
+    {
+      "key": "wpReroll",
+      "label": "WP Reroll"
+    },
+    {
+      "key": "hungerDice",
+      "label": "Hunger Dice"
+    },
+    {
+      "key": "crits",
+      "label": "Criticals"
     }
   ],
   "pickerGroupLabels": {

@@ -8,7 +8,8 @@ import { actionsForRing } from "../pcSheet/ringActions";
 import { TraitRing } from "../pcSheet/TraitRing";
 import type { ApplyCommand, RingTarget, SeatColor, SeatSnapshot, SheetSnapshot } from "../pcSheet/types";
 import type { LiveSheetAccess } from "../pcSheet/useLiveSheet";
-import { LIGHTING_LABEL, useScenesCommand, type LightingPreset, type StageChanges } from "./commands";
+import { LIGHTING_PRESETS, lightingLabel, type LightingPreset } from "../catalogVocab";
+import { useScenesCommand, type StageChanges } from "./commands";
 import { CompulsionBadge } from "./compulsionBadge";
 import { GENERIC_SKY, stageName, tableUsesRandomSeating } from "./liveScene";
 import { SignalFlame } from "./signal";
@@ -750,14 +751,14 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
         title="Room lighting"
         value={env.lighting}
         onChange={(event) => {
-          const key = event.target.value;
-          if (key === "AdminDark" || key === "AdminStandard" || key === "AdminBright") {
-            setLighting(key);
+          const preset = LIGHTING_PRESETS.find((key) => key === event.target.value);
+          if (preset) {
+            setLighting(preset);
           }
         }}
       >
         {env.lighting === "" && <option value="">Scene lighting</option>}
-        {(Object.keys(LIGHTING_LABEL) as LightingPreset[]).map((key) => <option key={key} value={key}>{LIGHTING_LABEL[key]}</option>)}
+        {LIGHTING_PRESETS.map((key) => <option key={key} value={key}>{lightingLabel(key)}</option>)}
       </select>
     </span>
     <span className="lab-help" tabIndex={0}>

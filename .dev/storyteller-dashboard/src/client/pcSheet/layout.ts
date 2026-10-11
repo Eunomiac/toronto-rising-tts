@@ -65,6 +65,7 @@ export const ROLL_TYPES = [
   { id: "goal", label: "Goal" }
 ] as const;
 
+/** Each PC seat's accent colour; the dashboard owns these (TTS has no copy). */
 export const SEAT_ACCENT: Record<string, string> = {
   Brown: "#713b17",
   Orange: "#f4641d",

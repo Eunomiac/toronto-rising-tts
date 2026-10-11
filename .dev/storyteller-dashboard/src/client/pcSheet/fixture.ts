@@ -1,3 +1,4 @@
+import { SEAT_COLORS } from "../catalogVocab.js";
 import type { SeatColor, SeatSnapshot, SheetSnapshot, Tracker } from "./types.js";
 
 const emptyRating = { base: 0, temp: 0, disabled: 0 };
@@ -96,7 +97,7 @@ export const emptySeat = (color: SeatColor): SeatSnapshot => ({
 
 export const fixtureSnapshot = (): SheetSnapshot => ({
   ok: true,
-  seats: ["Brown", "Orange", "Red", "Pink", "Purple"].map((color) => emptySeat(color as SeatColor))
+  seats: SEAT_COLORS.map(emptySeat)
 });
 
 export const emptySnapshot = (): SheetSnapshot => ({

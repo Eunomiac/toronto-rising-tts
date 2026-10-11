@@ -1,5 +1,6 @@
 import { createContext, useContext } from "react";
 import type { PlacementMode, SceneStatus } from "../../shared/sceneLibrary";
+import type { LightingPreset, MusicMood } from "../catalogVocab";
 import type { ClockDatetime, GenericNpc } from "../worldState";
 
 /**
@@ -11,11 +12,6 @@ export type SceneClock = { readonly from: "scene" | "present"; readonly plusMinu
 
 /** Storyteller lanes `Soundscape.setStorytellerLaneVolume` accepts. */
 export type SoundLane = "music" | "location" | "featured" | "rain" | "wind" | "thunder";
-
-/** Storyteller lighting presets (`HUD_selectAdminLightingScene`). */
-export type LightingPreset = "AdminDark" | "AdminStandard" | "AdminBright";
-
-export const LIGHTING_LABEL: Readonly<Record<LightingPreset, string>> = { AdminDark: "Dark", AdminStandard: "Standard", AdminBright: "Bright" };
 
 /** Rain layers TTS has (no snow yet). */
 export type RainKey = "none" | "rainLight" | "rainHeavy";
@@ -53,7 +49,11 @@ export type ScenesCommand =
   | { readonly op: "lighting"; readonly presetKey: LightingPreset }
   | { readonly op: "table"; readonly key: string }
   | { readonly op: "conditions"; readonly ids: readonly string[] }
-  | { readonly op: "weatherOverride"; readonly rain: RainKey; readonly wind: 0 | 1 | 2 | 3; readonly thunder: boolean }
+  /**
+   * `cold`: the scene's scheduled temperature is at or below `C.WEATHER.WARM_TEMPERATURE_THRESHOLD`, so wind takes
+   * the winter layer. TTS works that out from its own clock; a scene draft stores the layer this picks.
+   */
+  | { readonly op: "weatherOverride"; readonly rain: RainKey; readonly wind: 0 | 1 | 2 | 3; readonly thunder: boolean; readonly cold: boolean }
   | { readonly op: "weatherOverride"; readonly release: true }
   | { readonly op: "sessionNum"; readonly num: number }
   | { readonly op: "sessionName"; readonly name: string }
@@ -62,7 +62,7 @@ export type ScenesCommand =
   | { readonly op: "realTime"; readonly running: boolean; readonly speed?: number }
   | { readonly op: "clockTo"; readonly datetime: ClockDatetime }
   | { readonly op: "presentDay"; readonly datetime: ClockDatetime }
-  | { readonly op: "musicMood"; readonly mood: "main" | "combat" | "intrigue" }
+  | { readonly op: "musicMood"; readonly mood: MusicMood }
   | { readonly op: "musicSilent" }
   | { readonly op: "locationMusic"; readonly key: string }
   | { readonly op: "laneVolume"; readonly lane: SoundLane; readonly volume: number }

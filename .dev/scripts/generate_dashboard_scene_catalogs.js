@@ -883,6 +883,62 @@ function parseNpcSeats(source) {
   return seats;
 }
 
+/**
+ * `C.WEATHER` as the dashboard decodes an hourly calendar code (same rules as `ChronicleWeather.parseCode`):
+ * characters 1–2 pick `base` (rain layer, thunder), character 3 the temperature delta, character 5 the wind,
+ * whose layer is `warm` above `warmThreshold` °C and `cold` at or below it.
+ */
+function parseWeatherCodes(source) {
+  const weather = extractBlock(source, "C.WEATHER =");
+  const warmThreshold = readNumberField(weather, "WARM_TEMPERATURE_THRESHOLD");
+  if (warmThreshold === null) {
+    throw new Error("C.WEATHER is missing WARM_TEMPERATURE_THRESHOLD.");
+  }
+  const base = {};
+  for (const entry of parseTopLevelEntries(extractBlock(weather, "Base ="))) {
+    const rain = readStringField(entry.body, "rainAudio");
+    if (!rain) {
+      throw new Error(`C.WEATHER.Base.${entry.key} is missing rainAudio.`);
+    }
+    base[entry.key] = { rain, thunder: readBooleanField(entry.body, "isThunder") === true };
+  }
+  const temperatureDelta = {};
+  for (const m of extractBlock(weather, "TemperatureDelta =").matchAll(/(?:\["([^"]+)"\]|\b([A-Za-z]))\s*=\s*(-?\d+)/g)) {
+    temperatureDelta[m[1] ?? m[2]] = Number(m[3]);
+  }
+  const wind = {};
+  for (const entry of parseTopLevelEntries(extractBlock(weather, "Wind ="))) {
+    const warm = readStringField(entry.body, "windAudioIfWarm");
+    const cold = readStringField(entry.body, "windAudioIfCold");
+    if (!warm || !cold) {
+      throw new Error(`C.WEATHER.Wind.${entry.key} is missing windAudioIfWarm / windAudioIfCold.`);
+    }
+    wind[entry.key] = { warm, cold };
+  }
+  if (Object.keys(base).length === 0 || Object.keys(temperatureDelta).length === 0 || Object.keys(wind).length === 0) {
+    throw new Error("C.WEATHER extract is missing Base, TemperatureDelta or Wind rows.");
+  }
+  return { warmThreshold, base, temperatureDelta, wind };
+}
+
+/** `CD.STRUCTURAL_NEGATING` in source order; each label is its negating condition's name without the leading "No ". */
+function parseStructuralRollOptions(conditionSrc) {
+  const block = extractBlock(conditionSrc, "CD.STRUCTURAL_NEGATING =");
+  const defs = parseTopLevelEntries(extractBlock(conditionSrc, "CD.Defs ="));
+  const options = [...block.matchAll(/([A-Za-z_][A-Za-z0-9_]*)\s*=\s*"([^"]+)"/g)].map((m) => {
+    const def = defs.find((entry) => (readStringField(entry.body, "id") || entry.key) === m[2]);
+    const displayName = def ? readStringField(def.body, "displayName") : null;
+    if (!displayName || !displayName.startsWith("No ")) {
+      throw new Error(`CD.STRUCTURAL_NEGATING.${m[1]}: condition ${m[2]} needs a displayName starting with "No ".`);
+    }
+    return { key: m[1], label: displayName.slice(3) };
+  });
+  if (options.length === 0) {
+    throw new Error("CD.STRUCTURAL_NEGATING is empty.");
+  }
+  return options;
+}
+
 function main() {
   const constants = fs.readFileSync(constantsPath, "utf8");
   const skyboxesSrc = fs.readFileSync(skyboxesPath, "utf8");
@@ -964,26 +1020,19 @@ function main() {
     })
     .sort((a, b) => a.startYear - b.startYear || a.endYear - b.endYear);
 
-  const locationTracks = parseTopLevelEntries(extractBlock(soundscapeSrc, "Catalog.TRACKS ="))
-    .filter((entry) => readStringField(entry.body, "type") === "location")
-    .map((entry) => ({
-      key: readStringField(entry.body, "key") || entry.key,
-      id: entry.key,
-    }));
+  const trackKeysOfType = (type) =>
+    parseTopLevelEntries(extractBlock(soundscapeSrc, "Catalog.TRACKS ="))
+      .filter((entry) => readStringField(entry.body, "type") === type)
+      .map((entry) => readStringField(entry.body, "key") || entry.key);
+  const locationTracks = trackKeysOfType("location");
+  const featuredTracks = trackKeysOfType("featureMusic");
+
+  const weatherCodes = parseWeatherCodes(constants);
+  const structuralRollOptions = parseStructuralRollOptions(conditionSrc);
 
   const playlistsBlock = extractBlock(soundscapeSrc, "Catalog.PLAYLISTS =");
   const bgBlock = extractBlock(playlistsBlock, "backgroundMusic =");
   const backgroundMoods = parseTopLevelEntries(bgBlock).map((entry) => entry.key);
-
-  const weatherConditions = parseTopLevelEntries(extractBlock(soundscapeSrc, "Catalog.WEATHER_CONDITIONS =")).map(
-    (entry) => ({
-      key: entry.key,
-      label: readStringField(entry.body, "label") || entry.key,
-      rain: readStringField(entry.body, "rain"),
-      wind: readStringField(entry.body, "wind"),
-      thunderEnabled: readBooleanField(entry.body, "thunderEnabled") === true,
-    }),
-  );
 
   const conditions = parseTopLevelEntries(extractBlock(conditionSrc, "CD.Defs ="))
     .filter((entry) => readBooleanField(entry.body, "canApplyManually") === true)
@@ -1088,6 +1137,9 @@ function main() {
   if (locationTracks.length === 0) {
     throw new Error("Catalog.TRACKS location extract is empty.");
   }
+  if (featuredTracks.length === 0) {
+    throw new Error("Catalog.TRACKS featureMusic extract is empty.");
+  }
   if (memoriamPeriods.length === 0) {
     throw new Error("SkyboxesCatalog.MemoriamSkyboxes extract is empty.");
   }
@@ -1120,9 +1172,11 @@ function main() {
     skyboxes,
     memoriamPeriods,
     locationTracks,
+    featuredTracks,
     backgroundMoods,
-    weatherConditions,
+    weatherCodes,
     conditions,
+    structuralRollOptions,
     pickerGroupLabels,
   };
 

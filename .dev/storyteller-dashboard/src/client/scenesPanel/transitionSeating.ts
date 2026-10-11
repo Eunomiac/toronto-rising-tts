@@ -1,7 +1,7 @@
 import type { LibraryScene } from "../../shared/sceneLibrary";
 import type { SeatRow } from "../worldState";
-import { applyToDraft, draftSeatSlots, holderOfChair, NPC_SEATS, npcOf } from "./library";
-import { PC_COLORS } from "./liveScene";
+import { isSeatColor, NPC_SEATS } from "../catalogVocab";
+import { applyToDraft, draftSeatSlots, holderOfChair, npcOf } from "./library";
 
 /**
  * The seating strip shown before a scene switch: the next scene's seats, starting from the table's. The
@@ -72,7 +72,7 @@ export const orphanNpc = (state: TransitionSeating, characterKey: string): Trans
 /** An orphan dropped on a chair; an NPC already there swaps out to the orphans. PC chairs refuse the drop. */
 export const seatOrphan = (state: TransitionSeating, characterKey: string, chair: number): TransitionSeating => {
   const holder = holderOfChair(draftSeatSlots(state.row), chair);
-  if (holder !== undefined && PC_COLORS.includes(holder)) {
+  if (isSeatColor(holder)) {
     return state;
   }
   const held = holder === undefined ? undefined : npcOf(draftSeatSlots(state.row)[holder]);
