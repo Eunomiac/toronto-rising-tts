@@ -20,7 +20,7 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
-_Last populated: 2026-10-11 (TOR-709 added) — condensed at your request. Checks that later work replaced were dropped (the in-game Gameboard Apply and THERE preview are gone, the scene-switch clock menu was redesigned, and the signal-fire alert lost its banner and chime). Traces that already passed were removed, leaving only what is still owed. Overlapping rows were merged. Everything still needs a first pass except TOR-439, which stays ⏰ until you can gather join testers._
+_Last populated: 2026-10-11 (TOR-709 and TOR-710 added) — condensed at your request. Checks that later work replaced were dropped (the in-game Gameboard Apply and THERE preview are gone, the scene-switch clock menu was redesigned, and the signal-fire alert lost its banner and chime). Traces that already passed were removed, leaving only what is still owed. Overlapping rows were merged. Everything still needs a first pass except TOR-439, which stays ⏰ until you can gather join testers._
 
 Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play.
 
@@ -74,6 +74,18 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 5. Roll for a named NPC from the dashboard, and roll at a player seat: each result banner should show that character's picture. (Generic NPCs show no picture on the banner.)
 6. Run `npm run build:full`: the very last thing it prints should be a boxed list of NPC art discrepancies (five figurines in no catalog and seven Memoriam figures with no image, at the moment).
 7. Once the above passes, tidy Steam Cloud in Cloud Manager: delete the **Vampire the Masquerade 5E/NPC Cutouts** and **Toronto Rising/NPCs** folders. Nothing uses them any more.
+
+#### TOR-710 — NPC name tooltips follow the light; token tooltips; PC figurines use Minimal Collider
+
+**Context:** Hovering a stage or Scatter NPC figurine now shows its full name only while that NPC is lit (standard light, spotlight, or held spotlight). When its light is off, hovering shows nothing. Seated NPCs keep their tooltip as before. Stage tokens always show the NPC's full name on hover, including a name you changed on the dashboard. The five player seat figurines now have **Minimal Collider** turned on; that was changed directly in the save file (a backup copy is in your backup saves folder).
+
+**How to verify:**
+
+1. Load the save fresh from the main menu (**File → Load**) before saving anything, then Save & Play. Right-click a player seat figurine: under its custom settings, **Minimal Collider** should be ticked. Check one NPC figurine: it should be unticked.
+2. Put two named NPCs on the stage, one lit and one with its light off. Hover each: the lit one shows its full name, the dark one shows nothing.
+3. Toggle the dark NPC's light on: hovering now shows its name. Turn it off again: the name goes away.
+4. Hold the spotlight hotkey on a dark NPC's token: while held, hovering the figurine shows its name; after release it goes back to showing nothing.
+5. Hover a token on the Stage Control board: it shows the NPC's full name. Rename a generic NPC on the dashboard and Send: its token's hover name should change to the new name.
 
 ### High — startup, table and hunger (eye checks only; your traces already confirmed the speed-ups)
 

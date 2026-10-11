@@ -76,6 +76,7 @@ local function ensureIndex()
             obj.destruct()
         else
             tokenGuidByKey[key] = obj.getGUID()
+            obj.tooltip = true
         end
     end
 end
@@ -134,6 +135,7 @@ local function spawnToken(key, board, row)
         stretch = true,
     })
     obj.setName(displayName(key))
+    obj.tooltip = true
     obj.setGMNotes(GM_PREFIX .. key)
     obj.addTag(TAG)
     obj.setInvisibleTo(C.PlayerColors)
