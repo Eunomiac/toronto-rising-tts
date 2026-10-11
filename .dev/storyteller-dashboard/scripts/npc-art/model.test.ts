@@ -149,7 +149,7 @@ describe("renderLuaModule", () => {
       "Shared/figurineBack.webp?v=1",
       new Map([
         ["zed", { figurineFront: "Catalogued/zed.webp?v=2", tokenFront: "Tokens/zed.front.webp?v=3", tokenBack: "Tokens/zed.back.webp?v=3" }],
-        ["amy", { figurineFront: "Generic/amy.webp?v=4", tokenFront: "Tokens/amy.front.webp?v=5", tokenBack: "Tokens/amy.back.webp?v=5" }]
+        ["amy", { figurineFront: "Generic/amy.webp?v=4", tokenFront: "Tokens/amy.front.webp?v=5", tokenBack: "Tokens/amy.back.webp?v=5", genericLabel: "Street \"Amy\"" }]
       ]),
       "test"
     );
@@ -157,6 +157,8 @@ describe("renderLuaModule", () => {
     expect(lua.indexOf("  amy = {")).toBeLessThan(lua.indexOf("  zed = {"));
     expect(lua).toContain('figurine = { front = BASE .. "Generic/amy.webp?v=4", back = FIGURINE_BACK },');
     expect(lua).toContain('token = { front = BASE .. "Tokens/zed.front.webp?v=3", back = BASE .. "Tokens/zed.back.webp?v=3" },');
+    expect(lua).toContain('    genericLabel = "Street \\"Amy\\"",');
+    expect(lua.match(/genericLabel = /g)).toHaveLength(1);
   });
 });
 

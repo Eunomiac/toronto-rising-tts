@@ -15,7 +15,7 @@ local S = require("core.state")
 local C = require("lib.constants")
 local L = require("core.lighting")
 local DATA = require("lib.npcs_data")
--- Build D.genericNpcs from the sheet catalog rows that have art in lib/npc_art_urls.ttslua.
+-- Build D.genericNpcs from the generic rows (`genericLabel`) of lib/npc_art_urls.ttslua.
 DATA.initGenericNPCs()
 local NpcSpawn = require("core.npc_spawn")
 local SRI = require("lib.seat-role-identity")

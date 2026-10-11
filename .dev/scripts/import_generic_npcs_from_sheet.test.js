@@ -6,7 +6,6 @@ const test = require("node:test");
 const {
   parseGenericNpcRows,
   renderGenericNpcCatalogJson,
-  renderGenericNpcsCatalogLua,
 } = require("./lib/generic_npcs_sheet_csv.js");
 
 const SAMPLE = [
@@ -51,15 +50,4 @@ test("renderGenericNpcCatalogJson is stable JSON", () => {
   assert.equal(parsed.npcs.length, 3);
   assert.equal(parsed.rangeName, "GENERICNPCCSV");
   assert.equal(parsed.tabName, "Generics Export");
-});
-
-test("renderGenericNpcsCatalogLua emits ByKey labels", () => {
-  const lua = renderGenericNpcsCatalogLua({
-    npcs: parseGenericNpcRows(SAMPLE),
-    meta: { sheetId: "sheet", rangeName: "GENERICNPCCSV", tabName: "Generics Export" },
-  });
-  assert.match(lua, /GenericNpcsCatalog\.ByKey = \{/);
-  assert.match(lua, /civilianChildBoy_01 = \{/);
-  assert.match(lua, /label = "Child — Boy"/);
-  assert.match(lua, /return GenericNpcsCatalog/);
 });

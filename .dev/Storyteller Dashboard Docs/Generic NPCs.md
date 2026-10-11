@@ -111,4 +111,4 @@ The catalogue is the **Generic** view of the roster in the **Scenes** tab (`Maso
 
 The old standalone **Stage NPCs** tab (thumbnail grid, saved search tags, Copy keys) was retired when the Scenes tab took over generic NPCs.
 
-**Sheet → Lua labels:** `npm run generic-npcs:import` also writes `lib/generic_npcs_catalog.ttslua` so `D.initGenericNPCs()` can register each catalog key that has art in `lib/npc_art_urls.ttslua` (TOR-560; art: [NPC Art Pipeline](../NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%20Art%20Pipeline.md)). The same labels are baked into each generic NPC's spotlight token by `npm run npc-art:generate`.
+**Sheet → Lua labels:** `npm run npc-art:generate` reads `generic-npcs.json`, bakes each label into that generic NPC's spotlight token, and writes it as `genericLabel` on the NPC's row in `lib/npc_art_urls.ttslua`. `D.initGenericNPCs()` registers exactly those rows, so TTS learns a new or relabelled generic only after `npm run npc-art:generate` (art: [NPC Art Pipeline](../NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%20Art%20Pipeline.md)).

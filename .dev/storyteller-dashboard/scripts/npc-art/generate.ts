@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { loadGenericNpcCatalog } from "../../src/server/genericNpcCatalog.ts";
 import { isEmptyNpcOverride, NPC_OVERRIDE_KEY_PATTERN, parseNpcOverride, type NpcOverride } from "../../src/shared/npcOverride.ts";
 import { drawToken, loadFont, type DrawAssets } from "./draw.ts";
 import { syncSaveFigurineAssets } from "./save-assets.ts";
@@ -23,7 +24,8 @@ import {
 /**
  * npm run npc-art:generate — publishes every NPC's art for TTS. One figurine file per NPC under
  * assets/images/NPCs/{Catalogued,Generic,Memoriam}; each figurine whose key is in its folder's catalog gets a
- * spotlight token (both sides) in assets/images/NPCs/Tokens and GitHub links in lib/npc_art_urls.ttslua. The TTS
+ * spotlight token (both sides) in assets/images/NPCs/Tokens and GitHub links in lib/npc_art_urls.ttslua (generic rows
+ * also carry their default label from data/generic-npcs.json, which is how TTS learns the generic catalog). The TTS
  * save's roll-banner rows (CustomUIAssets named after each PC, named NPC and Memoriam key) are synced to those links,
  * and rows for removed art are dropped. Figurines in no catalog get nothing; they and catalogued NPCs without a
  * figurine are listed in .dev/build-logs/npc-art-discrepancies.txt (printed at the end of the Full build).
@@ -86,15 +88,11 @@ const readNamedCatalog = async (): Promise<Map<string, NamedCatalogEntry>> => {
 };
 
 const readGenericLabels = async (): Promise<Map<string, string>> => {
-  const source = await readFile(path.join(repoRoot, "lib", "generic_npcs_catalog.ttslua"), "utf8");
-  const labels = new Map<string, string>();
-  for (const match of source.matchAll(/key = "([^"]+)",\s*label = "((?:[^"\\]|\\.)*)"/g)) {
-    labels.set(match[1]!, luaUnescape(match[2]!));
+  const { npcs } = await loadGenericNpcCatalog(path.join(dataDir, "generic-npcs.json"));
+  if (npcs.length === 0) {
+    throw new Error("data/generic-npcs.json lists no generic NPCs. Run npm run generic-npcs:import.");
   }
-  if (labels.size === 0) {
-    throw new Error("lib/generic_npcs_catalog.ttslua has no key/label rows. Run npm run generic-npcs:import.");
-  }
-  return labels;
+  return new Map(npcs.map((npc) => [npc.key, npc.label]));
 };
 
 const readMemoriamNames = async (): Promise<Map<string, string>> => {
@@ -285,7 +283,8 @@ const main = async (): Promise<void> => {
     links.set(subject.key, {
       figurineFront: `${subject.folder}/${subject.key}.webp?v=${figurineHash}`,
       tokenFront: `Tokens/${subject.key}.front.webp?v=${tokenVersion}`,
-      tokenBack: `Tokens/${subject.key}.back.webp?v=${tokenVersion}`
+      tokenBack: `Tokens/${subject.key}.back.webp?v=${tokenVersion}`,
+      ...(subject.folder === "Generic" ? { genericLabel: genericLabels.get(subject.key)! } : {})
     });
   });
 

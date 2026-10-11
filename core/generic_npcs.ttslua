@@ -5,7 +5,7 @@
     NPCs, the reconciler spawns each figurine + light on demand (`core/npc_spawn.ttslua`) when it is
     placed on the stage (TOR-707). Spotlight tokens on the Stage Control board come from
     `core.stage_tokens` once the NPC stands on the stage.
-    Catalog: D.genericNpcs (sheet labels via lib.generic_npcs_catalog; art via lib.npc_art_urls).
+    Catalog: D.genericNpcs (the genericLabel rows of generated lib.npc_art_urls).
     Agent guidance: .dev/NPC Object Spawning & Spotlighting/Generic NPCs.md;
     Dashboard catalogue: .dev/Storyteller Dashboard Docs/Generic NPCs.md.
 ]]

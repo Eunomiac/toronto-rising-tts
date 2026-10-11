@@ -1691,35 +1691,18 @@ function D.resolveGenericNpcEntry(fullKey)
   return D.genericNpcs[fullKey]
 end
 
---- Generic NPCs available to import: every sheet catalog row (`lib.generic_npcs_catalog`) whose figurine has art in
---- generated `lib.npc_art_urls`. Rows without art are listed once in the console and left out.
+--- Generic NPCs available to import: every generated `lib.npc_art_urls` row with a `genericLabel` (a Generics Export
+--- sheet row whose figurine has art; `npm run npc-art:generate` reports sheet rows without one).
 function D.initGenericNPCs()
-  local GenericNpcsCatalog = require("lib.generic_npcs_catalog")
-  local labelsByKey = GenericNpcsCatalog and GenericNpcsCatalog.ByKey or nil
-  if type(labelsByKey) ~= "table" then
-    error("lib.generic_npcs_catalog.ByKey is missing — run npm run generic-npcs:import")
-  end
-  local artByKey = require("lib.npc_art_urls")
   local genericNpcs = {}
-  local withoutArt = {}
-  for key, row in pairs(labelsByKey) do
-    if type(row) ~= "table" or type(row.label) ~= "string" or row.label == "" then
-      error("Generic NPC '" .. tostring(key) .. "' has no sheet label — run npm run generic-npcs:import")
-    end
-    if artByKey[key] == nil then
-      withoutArt[#withoutArt + 1] = key
-    else
+  for key, art in pairs(require("lib.npc_art_urls")) do
+    if art.genericLabel ~= nil then
       local override = D.overrides[key]
-      genericNpcs[key] = { key = key, label = (override and override.name) or row.label }
+      genericNpcs[key] = { key = key, label = (override and override.name) or art.genericLabel }
     end
   end
-  if #withoutArt > 0 then
-    table.sort(withoutArt)
-    print(
-      "[npcs_data] Generic NPC(s) with no art in lib/npc_art_urls.ttslua (add assets/images/NPCs/Generic/<key>.webp, "
-        .. "run npm run npc-art:generate, commit and push): "
-        .. table.concat(withoutArt, ", ")
-    )
+  if next(genericNpcs) == nil then
+    error("lib.npc_art_urls has no generic NPC rows (genericLabel) — run npm run npc-art:generate")
   end
   D.genericNpcs = genericNpcs
 end

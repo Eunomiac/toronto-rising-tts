@@ -39,7 +39,7 @@ return {
 }
 ```
 
-- **Catalog gate:** a figurine gets art only when its key is in its folder's catalog (named: `D.characters` via `data/scene-catalogs.json`; generic: `lib/generic_npcs_catalog.ttslua`; Memoriam: `mem_` keys in `lib/skyboxes_catalog.ttslua`). Uncatalogued figurines get no token, link or banner row.
+- **Catalog gate:** a figurine gets art only when its key is in its folder's catalog (named: `D.characters` via `data/scene-catalogs.json`; generic: `.dev/storyteller-dashboard/data/generic-npcs.json`, whose labels also land on the generic rows as `genericLabel`; Memoriam: `mem_` keys in `lib/skyboxes_catalog.ttslua`). Uncatalogued figurines get no token, link or banner row.
 - **Hosting:** GitHub raw links on `master`. Nothing is uploaded to Steam Cloud.
 - **Cache busting:** `?v=` is a fingerprint of the published image bytes (figurine file; both token sides). A token is redrawn only when its inputs change (figurine, name, ring colour, manual crop, ring SVGs, font, `draw.ts`, `model.ts`, recorded in `tokens.json`), and a redraw that produces identical images keeps its link, so TTS re-downloads only art that really changed.
 - **Pruning:** every run rebuilds `lib/npc_art_urls.ttslua` and `tokens.json` from the current figurines and deletes token files with no art entry, so removed images leave no links behind.
@@ -61,7 +61,7 @@ Generic NPCs renamed in a scene keep their catalog label on the token image; the
 
 1. **Add the figurine:** save it as `<key>.webp` in the right folder.
    - Named NPC: `Catalogued/`, with `<key>` matching its `D.characters` key.
-   - Generic NPC: `Generic/`, with `<key>` matching its `lib/generic_npcs_catalog.ttslua` key (for example `dogGuard_03`).
+   - Generic NPC: `Generic/`, with `<key>` matching its `generic-npcs.json` key (for example `dogGuard_03`).
    - Memoriam figure: `Memoriam/`, named `mem_<key>.webp` to match the `mem_` key in `lib/skyboxes_catalog.ttslua`.
    Keys may only contain letters, digits, and underscores.
 2. **Optional:** in the Dashboard, set the roster colour group, and right-click the roster token for its name, colour, head crop, card scale and seated height.
