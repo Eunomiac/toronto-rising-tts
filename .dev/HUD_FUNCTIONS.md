@@ -158,8 +158,6 @@ Storyteller **Stats** panel: edit PC backgrounds/merits/flaws and coterie advant
 | `HUD_statsTarget` | `stats_target_Brown` … `stats_target_Coterie` | `(player, button, id)` | Strips `stats_target_` prefix; `StorytellerStatsPanel.selectTarget`. Shows PC or Coterie advantage lists. |
 | `HUD_statsBack` | `stats_back` | `(player, button, id)` | Returns to target picker landing view. |
 | `HUD_statsAdd` | `stats_add_pc_*`, `stats_add_coterie_*` | `(player, button, id)` | Opens Advantage Editor for a new entry (PC append or coterie blank activation on OK). |
-Phase Advance, Play subphase and session number / title live on the Storyteller Dashboard (`phaseAdvance`, `leaveMemoriam`, `sessionNum`, `sessionName` ops in `dashboard/scenes.ttslua`). The in-game Phases panel keeps only Quick Transition and the join repair controls.
-
 | `HUD_statsEdit` | `stats_pc_*_row_*_edit`, `stats_coterie_*_row_*_edit` | `(player, button, id)` | Opens Advantage Editor populated from state. |
 | `HUD_statsEditRating` | `stats_rating_*_edit` | `(player, button, id)` | Opens dot-only editor for domain rating (`chasse`, `lien`, `portillon`, `haven`). |
 | `HUD_statsEditorField` | `statsEditor_*` InputFields | `(player, value, id)` | Stashes field into editor draft (no host guard — read-only stash). |
@@ -168,6 +166,8 @@ Phase Advance, Play subphase and session number / title live on the Storyteller 
 | `HUD_statsEditorDelete` | `statsEditor_delete` | `(player, button, id)` | Double-click confirm (5s); removes PC array row or deactivates coterie blank. |
 
 ## Phase Controls (`panel_phases.xml`)
+
+Phase Advance, Play subphase and session number / title live on the Storyteller Dashboard (`phaseAdvance`, `leaveMemoriam`, `sessionNum`, `sessionName` ops in `dashboard/scenes.ttslua`). The in-game Phases panel keeps only Quick Transition and the join repair controls.
 
 | Handler | XML Element(s) | Params | Behavior |
 | ------- | ---------------- | ------ | -------- |
