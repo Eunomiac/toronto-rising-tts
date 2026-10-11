@@ -2,7 +2,7 @@
     Convert legacy `sessionScene.npcWorld.byArea` slot maps into gameboard `placements` (u, v, yaw).
     Used on Scene Constructor import, `S.validateState`, and offline save migration.
 
-    Geometry matches `NPCS.computeSlotWorldPosition` / area figurine yaw in `core/npcs.ttslua`.
+    Legacy area slot geometry is self-contained here (`DATA.areas`); runtime NPC placement uses gameboard placements only.
     Agent: `.dev/NPC Object Spawning & Spotlighting/Storyteller Gameboard Control.md`
 ]]
 
@@ -32,7 +32,7 @@ local function rotateXZ(x, z, rad)
     return x * cr - z * sr, x * sr + z * cr
 end
 
---- World XZ for a legacy area slot (same math as `NPCS.computeSlotWorldPosition`).
+--- World XZ for a legacy area slot.
 --- @param areaKey string
 --- @param slotIndex number
 --- @return number|nil x, number|nil z, number|nil groundLevel
@@ -81,7 +81,7 @@ local function areaSlotWorldXZ(areaKey, slotIndex)
     return rxO * sCenter + rxD * sSpread, rzO * sCenter + rzD * sSpread, groundLevel
 end
 
---- Area-group world yaw (matches `NPCS.applyFigurinePlacement`).
+--- Legacy area-group world yaw.
 --- @param areaKey string
 --- @return number|nil
 local function areaSlotWorldYawDeg(areaKey)

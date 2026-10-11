@@ -444,6 +444,7 @@ local function familyIdForAreaName(catalog, areaName)
     return nil
 end
 
+--- Drop the stage placement row (state only); the next NPC reconcile despawns the figurine.
 --- @param characterKey string
 local function clearNpcFromStage(characterKey)
     if type(characterKey) ~= "string" or characterKey == "" then
@@ -453,10 +454,6 @@ local function clearNpcFromStage(characterKey)
     local placements = S.getStateVal("sessionScene", "npcWorld", "placements")
     if U.Type(placements) == "table" then
         placements[characterKey] = nil
-    end
-    local NPCS = require("core.npcs")
-    if type(NPCS.ensureNpcInPreloadZone) == "function" then
-        NPCS.ensureNpcInPreloadZone(characterKey, { deferUiRefresh = true, skipSeatSync = true, forceNpcLightMode = "OFF" })
     end
 end
 

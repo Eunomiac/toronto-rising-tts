@@ -1990,7 +1990,7 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId, c
         S.validateState()
         do
             local GenericNpcs = require("core.generic_npcs")
-            GenericNpcs.ensureLiveFromMembership()
+            GenericNpcs.registerFromMembership()
         end
         PresentDayClock.markApplied(K)
         SceneLibrary.setStatus(K, "ongoing")

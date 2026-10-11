@@ -1196,7 +1196,7 @@ end
 
 --- Single Global full-document remount call site (Refresh / Arm / deferred join fallback).
 --- Minimal mode: slim CustomUIAssets + cold pools. Full mode: remount XmlUI only — staged restore
---- buttons restore assets / emitters / figurines separately (TOR-439).
+--- buttons restore assets / emitters separately (TOR-439).
 -- @param reason string|nil log label
 -- @param opts table|nil `{ mode = "full"|"minimal" }` (default full)
 -- @return boolean true when remount chain was started
@@ -1332,7 +1332,7 @@ local function waitEnsureGlobalHudDocumentMounted()
     end
 end
 
---- Run a short join-restore U.chain (assets / emitters / figurines). Shares remount-in-flight guard.
+--- Run a short join-restore U.chain (assets / emitters). Shares remount-in-flight guard.
 -- @param label string
 -- @param steps function[]
 -- @param stepNames string[]
@@ -3363,16 +3363,6 @@ function onLoad(saved_data)
                     Phases.reconcileParticleEmitterFromPhase()
                 end
             end
-            local NPCS = require("core.npcs")
-            if NPCS ~= nil and type(NPCS.reconcilePreloadPoolHideFromState) == "function" then
-                local preloadHidden = NPCS.reconcilePreloadPoolHideFromState({ force = true })
-                print(
-                    U.loadElapsedPrefix()
-                        .. "Preload NPC hide reconciled for "
-                        .. tostring(preloadHidden)
-                        .. " instance(s)."
-                )
-            end
             setStartupAction("startup-ready-apply-session-blindfold-images")
             applySessionBlindfoldImagesFromState()
             setStartupAction("startup-ready-apply-global-blindfold-from-phase")
@@ -4991,7 +4981,7 @@ function HUD_phaseArmJoinXml(player, button, id)
     performFullUiResync("Arm Join XML", { mode = "minimal" })
 end
 
---- Staged restore 1/4: CustomUIAssets from Arm backup. TOR-439.
+--- Staged restore 1/3: CustomUIAssets from Arm backup. TOR-439.
 function HUD_phaseRestoreJoinAssets(player, button, id)
     if not requireStorytellerForMutation(player, "HUD_phaseRestoreJoinAssets") then
         return
@@ -5008,12 +4998,12 @@ function HUD_phaseRestoreJoinAssets(player, button, id)
     }, { "restoreAssets", "done" })
 end
 
---- Staged restore 2/4: full Global XmlUI (alias of Refresh XML). TOR-439.
+--- Staged restore 2/3: full Global XmlUI (alias of Refresh XML). TOR-439.
 function HUD_phaseRestoreJoinHud(player, button, id)
     HUD_phaseRefreshXml(player, button, id)
 end
 
---- Staged restore 3/4: soundscape emitters. TOR-439.
+--- Staged restore 3/3: soundscape emitters. TOR-439.
 function HUD_phaseRestoreJoinEmitters(player, button, id)
     if not requireStorytellerForMutation(player, "HUD_phaseRestoreJoinEmitters") then
         return
@@ -5028,23 +5018,6 @@ function HUD_phaseRestoreJoinEmitters(player, button, id)
             print("[JoinControls] Soundscape emitters restored.")
         end,
     }, { "warmEmitters", "done" })
-end
-
---- Staged restore 4/4: preload NPC figurines + lights. TOR-439.
-function HUD_phaseRestoreJoinFigurines(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_phaseRestoreJoinFigurines") then
-        return
-    end
-    local JoinColdPools = require("core.join_cold_pools")
-    print("[JoinControls] Restore Figurines — spawnObjectData with GUID keep.")
-    performJoinRestoreStep("Restore Figurines", {
-        function()
-            return JoinColdPools.beginWarmFigurines()
-        end,
-        function()
-            print("[JoinControls] Preload figurines/lights restored.")
-        end,
-    }, { "warmFigurines", "done" })
 end
 
 --- PCs panel: persist Defer Auto-Seat per seat color. TOR-428.

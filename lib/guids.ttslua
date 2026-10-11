@@ -345,7 +345,7 @@ G.GUIDS = {
     SEAT_FIGURE_PURPLE = "923872",
     SEAT_FIGURE_RED = "1e70cf",
 
-    -- Spotlight-phase stand-ins. Workshop objects in the preload zone
+    -- Spotlight-phase stand-ins. Workshop objects parked under the table,
     -- tagged spotlight_figurine / spotlight_light.
     SPOTLIGHT_FIGURE_BROWN = "6ab32d",
     SPOTLIGHT_LIGHT_BROWN = "8fa314",

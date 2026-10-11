@@ -11,7 +11,6 @@ local U = require("lib.util")
 local G = require("lib.guids")
 local L = require("core.lighting")
 local LightDebug = require("core.light_debug")
-local NPCS = require("core.npcs")
 
 --- Must match POOL_SIZE in .dev/scripts/generate_debug_light_panel_xml.js (3-digit slot ids).
 local SELECTION_POOL_SIZE = 400
@@ -624,7 +623,6 @@ local function collectTunerSpotlights()
             if type(guid) == "string"
                 and guid ~= ""
                 and guid ~= focalGuid
-                and NPCS.isPreloadSpotlightGuid(guid) ~= true
                 and LightDebug.getLightComponent(obj) ~= nil
             then
                 table.insert(list, obj)

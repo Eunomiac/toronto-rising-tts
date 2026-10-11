@@ -10062,7 +10062,7 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (400-slot 
 
 
   **SPOTLIGHT SELECTION BUTTONS**
-  - must be populated with one button per spotlight in the game world, excluding spotlights in the NPC preload area
+  - must be populated with one button per spotlight in the game world, excluding spotlights parked under the table
   - buttons should display the name of the spotlight
   - the script should dynamically update their status via UI.setClass() accordingly:
     - LIGHT IS DISABLED/OFF — "panel_debug_light_selection_button"
@@ -12427,15 +12427,13 @@ UI.setAttributes("input_sessionNum", {minHeight = "30", fontStyle = "Bold"})
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     </HorizontalLayout>
     <Text id="phase_joinXmlStatus" fontSize="11" color="#FFDD00" text="Join: hud:full | assets:full | pools:warm" />
-    <Text fontSize="12" color="#AAAAAA">Staged restore (after Arm): 1 Assets → 2 HUD → 3 Emitters → 4 Figurines</Text>
+    <Text fontSize="12" color="#AAAAAA">Staged restore (after Arm): 1 Assets → 2 HUD → 3 Emitters</Text>
     <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
       <Button id="phase_restoreJoinAssets" text="1 Assets" minWidth="90" preferredWidth="90" onClick="HUD_phaseRestoreJoinAssets"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
       <Button id="phase_restoreJoinHud" text="2 HUD" minWidth="80" preferredWidth="80" onClick="HUD_phaseRestoreJoinHud"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
       <Button id="phase_restoreJoinEmitters" text="3 Emitters" minWidth="100" preferredWidth="100" onClick="HUD_phaseRestoreJoinEmitters"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="phase_restoreJoinFigurines" text="4 Figurines" minWidth="110" preferredWidth="110" onClick="HUD_phaseRestoreJoinFigurines"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     </HorizontalLayout>
     <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
@@ -15163,25 +15161,6 @@ UI.hide("sessionStartHeal_playerContainer_Orange")
 <!-- /include ui/shared/session_start_heal_broadcast.xml -->
 
 
-<!-- Storyteller roll name modal (bag click without live roll) -->
-<Panel id="rollStName_modal" active="False" visibility="Black|Host"
-  rectAlignment="MiddleCenter" width="400" padding="16 16 16 16" color="#1a1a1a">
-  <VerticalLayout spacing="10" childAlignment="MiddleCenter">
-    <Text fontSize="14" fontStyle="Bold" color="#C9A84C" text="Storyteller Roll Name" />
-    <InputField id="rollStName_input" class="hud_storyteller_input" fontSize="14"
-      preferredWidth="360" minWidth="360" preferredHeight="34" minHeight="34"
-      flexibleWidth="1" lineType="SingleLine" text=""
-      onValueChanged="HUD_rollStNameInputChanged" onEndEdit="HUD_rollStNameInputChanged"
-      placeholder="Character / NPC name" />
-    <HorizontalLayout spacing="12" childAlignment="MiddleCenter">
-      <Button id="rollStName_btnApply" fontSize="12" preferredWidth="100" preferredHeight="28"
-        onClick="HUD_rollStNameApply" text="START ROLL" />
-      <Button id="rollStName_btnCancel" fontSize="12" preferredWidth="80" preferredHeight="28"
-        onClick="HUD_rollStNameCancel" text="CANCEL" />
-    </HorizontalLayout>
-  </VerticalLayout>
-</Panel>
-
 <!-- ============================================================================ -->
 <!-- ASSET PRELOAD PANEL                                                           -->
 <!-- References all 7 die face image asset names so TTS loads them into memory    -->
@@ -17701,15 +17680,13 @@ UI.setAttributes("input_sessionNum", {minHeight = "30", fontStyle = "Bold"})
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     </HorizontalLayout>
     <Text id="phase_joinXmlStatus" fontSize="11" color="#FFDD00" text="Join: hud:full | assets:full | pools:warm" />
-    <Text fontSize="12" color="#AAAAAA">Staged restore (after Arm): 1 Assets → 2 HUD → 3 Emitters → 4 Figurines</Text>
+    <Text fontSize="12" color="#AAAAAA">Staged restore (after Arm): 1 Assets → 2 HUD → 3 Emitters</Text>
     <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
       <Button id="phase_restoreJoinAssets" text="1 Assets" minWidth="90" preferredWidth="90" onClick="HUD_phaseRestoreJoinAssets"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
       <Button id="phase_restoreJoinHud" text="2 HUD" minWidth="80" preferredWidth="80" onClick="HUD_phaseRestoreJoinHud"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
       <Button id="phase_restoreJoinEmitters" text="3 Emitters" minWidth="100" preferredWidth="100" onClick="HUD_phaseRestoreJoinEmitters"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="phase_restoreJoinFigurines" text="4 Figurines" minWidth="110" preferredWidth="110" onClick="HUD_phaseRestoreJoinFigurines"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     </HorizontalLayout>
     <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">

@@ -1,9 +1,10 @@
 --[[
-    Generic NPC import / spawn / destroy (TOR-560).
+    Generic NPC import / despawn (TOR-560).
 
-    Runtime spawn exception to the named-NPC workshop preload pool. The Storyteller Dashboard names and
-    imports them (`importNamed`); each gets a figurine + light. Spotlight tokens on the Stage Control
-    board come from `core.stage_tokens` once the NPC stands on the stage.
+    The Storyteller Dashboard names and imports them (`importNamed`) into scene membership. Like named
+    NPCs, the reconciler spawns each figurine + light on demand (`core/npc_spawn.ttslua`) when it is
+    placed on the stage (TOR-707). Spotlight tokens on the Stage Control board come from
+    `core.stage_tokens` once the NPC stands on the stage.
     Catalog: D.genericNpcs (Cloud URLs + sheet labels via lib.generic_npcs_catalog).
     Agent guidance: .dev/NPC Object Spawning & Spotlighting/Generic NPCs.md;
     Dashboard catalogue: .dev/Storyteller Dashboard Docs/Generic NPCs.md.
@@ -15,13 +16,6 @@ local S = require("core.state")
 local DATA = require("lib.npcs_data")
 
 local GenericNpcs = {}
-
-local TAG_FIG = "npc_figurine"
-local TAG_GENERIC = "generic_npc"
-local GM_FIG_PREFIX = "npcInstance:"
-
-local FIGURINE_IMAGE_SCALAR = 53
-local FIGURINE_PRELOAD_TRANSFORM_SCALE = 0.12
 
 local function npcsModule()
     return require("core.npcs")
@@ -92,61 +86,7 @@ function GenericNpcs.parseImportKeys(keysString)
     return valid, invalid, duplicates
 end
 
---- @param characterKey string
---- @param frontUrl string
---- @param backUrl string
---- @param displayName string
---- @param worldPos table
---- @return Object|nil
-local function spawnFigurine(characterKey, frontUrl, backUrl, displayName, worldPos)
-    ---@diagnostic disable-next-line: undefined-global
-    local obj = spawnObject({
-        type = "Figurine_Custom",
-        position = worldPos,
-        rotation = { 0, 180, 0 },
-        scale = {
-            FIGURINE_PRELOAD_TRANSFORM_SCALE,
-            FIGURINE_PRELOAD_TRANSFORM_SCALE,
-            FIGURINE_PRELOAD_TRANSFORM_SCALE,
-        },
-        sound = false,
-    })
-    if obj == nil then
-        return nil
-    end
-    if obj.setCustomObject ~= nil then
-        obj.setCustomObject({
-            image = frontUrl,
-            image_secondary = backUrl,
-            image_scalar = FIGURINE_IMAGE_SCALAR,
-        })
-        if obj.reload ~= nil then
-            local reloaded = obj.reload()
-            if reloaded ~= nil then
-                obj = reloaded
-            end
-        end
-    end
-    -- Identity must land on the post-reload object (reload returns a new ref).
-    if obj.setGMNotes ~= nil then
-        obj.setGMNotes(GM_FIG_PREFIX .. characterKey)
-    end
-    if obj.setName ~= nil then
-        obj.setName(displayName)
-    end
-    if obj.setTags ~= nil then
-        obj.setTags({ TAG_FIG, TAG_GENERIC })
-    end
-    if obj.setLock ~= nil then
-        obj.setLock(true)
-    end
-    if obj.tooltip ~= nil then
-        obj.tooltip = true
-    end
-    return obj
-end
-
---- Destroy figurine and light for one catalog key; unregister from NPCS.characters.
+--- Despawn figurine and light for one catalog key; unregister from NPCS.characters.
 --- @param characterKey string
 --- @param opts table|nil { keepMembership?: boolean }
 function GenericNpcs.destroyLiveKey(characterKey, opts)
@@ -155,21 +95,8 @@ function GenericNpcs.destroyLiveKey(characterKey, opts)
         return
     end
     local NPCS = npcsModule()
-    if type(NPCS.removeNpc) == "function" then
-        NPCS.removeNpc(characterKey, { hardDestroy = true, skipSeatSync = true, skipUiRefresh = true })
-    end
-    -- removeNpc may no-op if instance missing; still try the figurine by identity
-    ---@diagnostic disable-next-line: undefined-global
-    local figs = getObjectsWithTag(TAG_FIG) or {}
-    local wantFig = GM_FIG_PREFIX .. characterKey
-    for _, obj in ipairs(figs) do
-        if obj ~= nil and obj.getGMNotes ~= nil and obj.getGMNotes() == wantFig and obj.destruct ~= nil then
-            obj.destruct()
-        end
-    end
-    if type(NPCS.unregisterGenericCharacter) == "function" then
-        NPCS.unregisterGenericCharacter(characterKey)
-    end
+    NPCS.despawnNpc(characterKey, { skipSeatSync = true })
+    NPCS.unregisterGenericCharacter(characterKey)
 
     if opts.keepMembership ~= true then
         local membership = getMembership()
@@ -184,94 +111,35 @@ function GenericNpcs.destroyLiveKey(characterKey, opts)
     end
 end
 
---- Destroy all live generic objects for current membership (does not clear membership table).
-function GenericNpcs.destroyAllLiveObjectsKeepMembership()
-    local membership = getMembership()
+--- @return string[] sorted membership keys
+local function membershipKeys()
     local keys = {}
-    for key, _ in pairs(membership) do
+    for key, _ in pairs(getMembership()) do
         if type(key) == "string" then
             keys[#keys + 1] = key
         end
     end
-    for i = 1, #keys do
-        GenericNpcs.destroyLiveKey(keys[i], { keepMembership = true })
-    end
-    GenericNpcs.destroyOrphanGenericTaggedObjects()
+    table.sort(keys)
+    return keys
 end
 
---- Destroy all live generics and clear membership (clear the stage / unload from scene).
---- Also sweeps orphan `generic_npc`-tagged objects left by a failed import (no membership row).
-function GenericNpcs.destroyAllLiveAndClearMembership()
-    local membership = getMembership()
-    local keys = {}
-    for key, _ in pairs(membership) do
-        if type(key) == "string" then
-            keys[#keys + 1] = key
-        end
+--- Despawn all live generics for current membership (does not clear membership table).
+function GenericNpcs.destroyAllLiveObjectsKeepMembership()
+    for _, key in ipairs(membershipKeys()) do
+        GenericNpcs.destroyLiveKey(key, { keepMembership = true })
     end
-    for i = 1, #keys do
-        GenericNpcs.destroyLiveKey(keys[i], { keepMembership = false })
+end
+
+--- Despawn all live generics and clear membership (clear the stage / unload from scene).
+function GenericNpcs.destroyAllLiveAndClearMembership()
+    for _, key in ipairs(membershipKeys()) do
+        GenericNpcs.destroyLiveKey(key, { keepMembership = false })
     end
     setMembership({})
-    GenericNpcs.destroyOrphanGenericTaggedObjects()
 end
 
---- Remove any leftover objects tagged `generic_npc` (failed import / stale refs).
-function GenericNpcs.destroyOrphanGenericTaggedObjects()
-    ---@diagnostic disable-next-line: undefined-global
-    local objs = getObjectsWithTag(TAG_GENERIC) or {}
-    for i = 1, #objs do
-        local obj = objs[i]
-        if obj ~= nil and obj.destruct ~= nil then
-            obj.destruct()
-        end
-    end
-end
-
---- @param characterKey string
---- @param displayName string
---- @param entry table
---- @return boolean ok
---- @return string|nil err
-local function spawnOne(characterKey, displayName, entry)
-    local NPCS = npcsModule()
-    NPCS.registerGenericCharacter(characterKey, displayName)
-
-    -- Provisional park under table; ensureNpcInPreloadZone assigns next free preload bay
-    -- (generics do not use named-NPC sorted stable indices).
-    local figPos = { x = 0, y = -200, z = 0 }
-    if type(NPCS.computeSlotWorldPosition) == "function" then
-        figPos = NPCS.computeSlotWorldPosition("preload", 1) or figPos
-    end
-    local fig = spawnFigurine(
-        characterKey,
-        entry.figurine.front,
-        entry.figurine.back,
-        displayName,
-        figPos
-    )
-    if fig == nil then
-        NPCS.unregisterGenericCharacter(characterKey)
-        return false, "figurine spawn failed for " .. characterKey
-    end
-
-    local ok, err = NPCS.ensureNpcInPreloadZone(characterKey, {
-        deferUiRefresh = true,
-        skipSeatSync = true,
-        forceNpcLightMode = "OFF",
-        figurine = fig,
-    })
-    if not ok then
-        if fig.destruct ~= nil then
-            fig.destruct()
-        end
-        NPCS.unregisterGenericCharacter(characterKey)
-        return false, err or ("preload adopt failed for " .. characterKey)
-    end
-    return true, nil
-end
-
---- Storyteller Dashboard: spawn generic NPCs with the names the Storyteller typed.
+--- Storyteller Dashboard: add generic NPCs to the scene with the names the Storyteller typed.
+--- Membership + roster registration only; the reconciler spawns each one when it is placed on the stage.
 --- @param keys string[] catalog keys
 --- @param labels table|nil key → display name
 --- @return string|nil error
@@ -288,8 +156,7 @@ function GenericNpcs.importNamed(keys, labels)
     end
     labels = type(labels) == "table" and labels or {}
     local membership = getMembership()
-    local spawned = 0
-    local errors = {}
+    local NPCS = npcsModule()
     for i = 1, #valid do
         local key = valid[i].key
         local displayName = labels[key]
@@ -297,31 +164,12 @@ function GenericNpcs.importNamed(keys, labels)
             displayName = valid[i].label or key
         end
         displayName = string.match(displayName, "^%s*(.-)%s*$") or displayName
-        local ok, err = spawnOne(key, displayName, valid[i].entry)
-        if ok then
-            membership[key] = { key = key, displayName = displayName }
-            spawned = spawned + 1
-        else
-            errors[#errors + 1] = tostring(err)
-        end
+        NPCS.registerGenericCharacter(key, displayName)
+        membership[key] = { key = key, displayName = displayName }
     end
     setMembership(membership)
     require("dashboard.push").markWorldDirty({ seats = true })
-    if #errors > 0 then
-        U.AlertGM(
-            "Generic NPC import: spawned "
-                .. tostring(spawned)
-                .. "/"
-                .. tostring(#valid)
-                .. ". Errors: "
-                .. table.concat(errors, "; ")
-        )
-    else
-        print("[GenericNpcs] Imported " .. tostring(spawned) .. " generic NPC(s).")
-    end
-    if spawned < 1 then
-        return "No generic NPC spawned: " .. table.concat(errors, "; ")
-    end
+    print("[GenericNpcs] Imported " .. tostring(#valid) .. " generic NPC(s).")
     return nil
 end
 
@@ -356,34 +204,20 @@ function GenericNpcs.rename(characterKey, displayName)
     return nil
 end
 
---- Ensure membership keys have live objects (scene apply / restore).
---- @return number spawnedOrAdopted
-function GenericNpcs.ensureLiveFromMembership()
+--- Register every membership key in `NPCS.characters` (scene apply / save restore). Spawns nothing.
+function GenericNpcs.registerFromMembership()
     local membership = getMembership()
     local NPCS = npcsModule()
-    local keys = {}
-    for key, _ in pairs(membership) do
-        if type(key) == "string" then
-            keys[#keys + 1] = key
-        end
-    end
-    table.sort(keys)
-    local count = 0
-    for i = 1, #keys do
-        local key = keys[i]
-        local row = membership[key]
+    for _, key in ipairs(membershipKeys()) do
         local entry = DATA.resolveGenericNpcEntry(key)
-        if type(entry) == "table" and NPCS.getInstanceRecord(key) == nil then
+        if type(entry) == "table" then
+            local row = membership[key]
             local displayName = (type(row) == "table" and row.displayName) or entry.label or key
-            local ok, err = spawnOne(key, displayName, entry)
-            if ok then
-                count = count + 1
-            else
-                print("[GenericNpcs] ensureLiveFromMembership " .. key .. ": " .. tostring(err))
-            end
+            NPCS.registerGenericCharacter(key, displayName)
+        else
+            print("[GenericNpcs] registerFromMembership: unknown catalog key " .. key)
         end
     end
-    return count
 end
 
 return GenericNpcs

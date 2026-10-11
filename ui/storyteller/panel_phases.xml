@@ -40,15 +40,13 @@ UI.setAttributes("input_sessionNum", {minHeight = "30", fontStyle = "Bold"})
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     </HorizontalLayout>
     <Text id="phase_joinXmlStatus" fontSize="11" color="#FFDD00" text="Join: hud:full | assets:full | pools:warm" />
-    <Text fontSize="12" color="#AAAAAA">Staged restore (after Arm): 1 Assets → 2 HUD → 3 Emitters → 4 Figurines</Text>
+    <Text fontSize="12" color="#AAAAAA">Staged restore (after Arm): 1 Assets → 2 HUD → 3 Emitters</Text>
     <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
       <Button id="phase_restoreJoinAssets" text="1 Assets" minWidth="90" preferredWidth="90" onClick="HUD_phaseRestoreJoinAssets"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
       <Button id="phase_restoreJoinHud" text="2 HUD" minWidth="80" preferredWidth="80" onClick="HUD_phaseRestoreJoinHud"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
       <Button id="phase_restoreJoinEmitters" text="3 Emitters" minWidth="100" preferredWidth="100" onClick="HUD_phaseRestoreJoinEmitters"
-        colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      <Button id="phase_restoreJoinFigurines" text="4 Figurines" minWidth="110" preferredWidth="110" onClick="HUD_phaseRestoreJoinFigurines"
         colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
     </HorizontalLayout>
     <HorizontalLayout class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">

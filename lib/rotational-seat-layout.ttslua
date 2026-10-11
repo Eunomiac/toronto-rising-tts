@@ -1876,7 +1876,7 @@ local lastLayoutSyncFingerprint = nil
 local postScatterLayoutGeneration = 0
 
 --- True when an NPC instance is assigned to a seat slot but its figurine is not at the table rig yet
---- (preload / stage / stash). Seated-at-table instances (`areaKey == "seat"`) stay in the layout filter.
+--- (stage / Scatter / fresh spawn park). Seated-at-table instances (`areaKey == "seat"`) stay in the layout filter.
 --- @param rec table|nil
 --- @return boolean
 local function npcOccupantExcludedFromTableLayout(rec)
@@ -1887,15 +1887,7 @@ local function npcOccupantExcludedFromTableLayout(rec)
   if U.Type(ak) ~= "string" or ak == "" then
     return false
   end
-  if ak == "seat" then
-    return false
-  end
-  if U.Type(NPCS) == "table" then
-    if ak == NPCS.PRELOAD_AREA_KEY or ak == NPCS.STASH_AREA_KEY or ak == NPCS.STAGE_BOARD_AREA_KEY then
-      return true
-    end
-  end
-  return true
+  return ak ~= "seat"
 end
 
 --- @return table<string, string|boolean>

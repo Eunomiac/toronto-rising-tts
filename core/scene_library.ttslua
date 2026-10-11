@@ -282,7 +282,7 @@ local function rejectNpcWorldPreload(npcWorld)
     end
     if npcWorld.preload ~= nil then
         return false,
-            "sessionScene.npcWorld.preload: remove this key — NPC preload is engine-managed; use npcWorld.placements (schemaVersion 2 rejects byArea)."
+            "sessionScene.npcWorld.preload: remove this key — NPCs spawn on demand; use npcWorld.placements (schemaVersion 2 rejects byArea)."
     end
     return true, nil
 end

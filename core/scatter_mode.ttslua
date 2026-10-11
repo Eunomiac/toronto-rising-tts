@@ -590,7 +590,7 @@ function ScatterMode.reconcileControlHudFromState()
     applyControlHudVisible()
 end
 
---- Place stage NPC figurine + light at a computed scatter pose.
+--- Place stage NPC figurine + light at a computed scatter pose (spawns the pair when it is not live).
 --- @param npcName string
 --- @param pose table `{ position, rotation }`
 --- @param lightMode string|nil
@@ -796,10 +796,6 @@ function ScatterMode.applyWorldLayout()
         if occupiedColors[color] ~= true and not FSL.isUnoccupiedPcPileStashed(color) then
             FSL.setOccupantPileVisible(color, false)
         end
-    end
-    local NPCS = require("core.npcs")
-    if type(NPCS.reconcilePreloadPoolHideFromState) == "function" then
-        NPCS.reconcilePreloadPoolHideFromState({ force = true })
     end
     -- PC rig layout restores HiddenObject satellites to catalog visibility; re-park chairs/Prince props.
     applyScatterObjectsToHide()

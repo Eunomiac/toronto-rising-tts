@@ -338,13 +338,13 @@ function Sync.soundscape(opts)
     callIfFunction(Soundscape.reconcileFromState, opts)
 end
 
---- NPC state/world reconciliation from current state.
+--- Load bootstrap: register restored NPC instances and destroy orphan NPC objects.
 function Sync.npcCutouts()
     callIfFunction(NPCS.restoreAfterStateLoad)
 end
 
 --- Narrow NPC + spotlight-token pass (Dashboard stage edits, placement-only changes).
---- @param opts table|nil `{ force?, reason?, deferUiRefresh?, onlySteps?, skipPreloadPopulate?, animateStageMoves? }`
+--- @param opts table|nil `{ force?, reason?, deferUiRefresh?, onlySteps?, animateStageMoves? }`
 function Sync.npcs(opts)
     opts = type(opts) == "table" and opts or {}
     local t0 = os.clock()
@@ -353,7 +353,6 @@ function Sync.npcs(opts)
         deferUiRefresh = opts.deferUiRefresh == true,
         force = opts.force == true,
         onlySteps = opts.onlySteps,
-        skipPreloadPopulate = opts.skipPreloadPopulate == true,
         reason = reason,
         animateStageMoves = opts.animateStageMoves == true,
     })

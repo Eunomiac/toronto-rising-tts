@@ -883,7 +883,7 @@ local function spawnStandInLight(color)
     return guid
 end
 
---- Clone seat figurines and spawn matching stage lights into the preload grid.
+--- Clone seat figurines and spawn matching stage lights parked under the table.
 --- Cold/setup only — never called from Play → Spotlight. Running twice duplicates
 --- objects unless the previous copies are deleted first.
 --- @return nil

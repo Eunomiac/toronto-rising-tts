@@ -1380,16 +1380,9 @@ function DEBUG.ensureSceneLibraryStub(slotIndex, sceneKey, opts)
     return sceneKey
 end
 
---- Scan `npc_light` for duplicate pooled spotlights per roster key (same as load audit).
---- @param opts table|nil forwarded to `NPCS.auditDuplicatePooledSpotlights` (e.g. `{ alert = true, destroyDuplicates = true }`)
---- @return table audit result
-function DEBUG.auditDuplicatePooledSpotlights(opts)
-    local NPCS = require("core.npcs")
-    opts = type(opts) == "table" and opts or {}
-    if opts.phase == nil then
-        opts.phase = "debug-audit"
-    end
-    return NPCS.auditDuplicatePooledSpotlights(opts)
+--- Destroy `npc_figurine` / `npc_light` objects with no instance record (same sweep as load).
+function DEBUG.sweepOrphanNpcObjects()
+    return require("core.npcs").sweepOrphanNpcObjects()
 end
 
 --- Dump `sessionScene.npcWorld.placements` and live instance stage poses.
@@ -1479,7 +1472,7 @@ function DEBUG.toggleAllSpotlightArrows()
 end
 
 --- Workshop-only: clone the five seat figurines, spawn matching stage lights, tag them
---- `spotlight_figurine` / `spotlight_light`, park them in the preload grid, and print
+--- `spotlight_figurine` / `spotlight_light`, park them under the table, and print
 --- paste-ready GUIDs for `lib/guids.ttslua`. Does **not** run on Play → Spotlight.
 --- Running twice duplicates objects unless you delete the previous copies first.
 --- @usage lua DEBUG.populateSpotlightFigurines()
@@ -4817,8 +4810,8 @@ end
 --- Logs Step Zero placement intent plus occupied slots for NPC reconcile verification.
 --- After scene edits, run `Sync.full({ force = true })`, then compare world to intent:
 --- 1) byArea + seatSlots same char → target area; 2) seat only → target seat + physicalSeatAllowed;
---- 3) seat on table without slot → target preload, assignment retained; 4) assigned + present false → seated layout, hidden props;
---- 5) seat-only scene change → no full pool stash; 6) save load bootstrap → one successful reconcile.
+--- 3) seat on table without slot → target none (despawned), assignment retained; 4) assigned + present false → seated layout, hidden props;
+--- 5) NPC with no target → despawned; 6) save load bootstrap → one successful reconcile.
 --- @param filename string Optional filename (default: "npc_placement_intent")
 function DEBUG.logNpcPlacementIntentToFile(filename)
     filename = filename or "npc_placement_intent"
@@ -5800,6 +5793,8 @@ function DEBUG.help()
     print("                          - Spawn Figurine_Custom pairs + token temps from lib.npc_group_upload_manifest")
     print("  DEBUG.clearCustomUiUploadTokens()")
     print("                          - Delete temporary upload tokens created by debug uploader")
+    print("\nNPC OBJECTS:")
+    print("  DEBUG.sweepOrphanNpcObjects() - Destroy npc_figurine / npc_light with no instance record")
     print("\nSPOTLIGHT WORKSHOP:")
     print("  DEBUG.populateSpotlightFigurines() - Clone seat figures + spawn stage lights; print GUIDs")
     print("\nLIGHT FEASIBILITY (workshop investigation):")

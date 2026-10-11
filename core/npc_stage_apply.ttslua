@@ -193,9 +193,7 @@ function StageApply.applyStageChanges(changes, opts)
     require("core.sync").npcs({
         reason = "stage_apply",
         force = false,
-        onlySteps = { 1, 2, 3, 4, 5 },
         deferUiRefresh = true,
-        skipPreloadPopulate = true,
         animateStageMoves = true,
     })
     -- The overlay camera's right-click walk over stage NPCs restarts from the first (TOR-538 / TOR-562).

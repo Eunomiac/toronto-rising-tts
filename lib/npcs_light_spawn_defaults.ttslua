@@ -4,7 +4,7 @@
     Source snapshot: `.dev/NPC Object Spawning & Spotlighting/NPC Light Object Data.jsonc`
     When you change the workshop asset or object flags in-game, update that JSONC and mirror edits here.
 
-    Per spawn, `core/npcs.ttslua` deep-clones this table, clears `GUID`, sets `Nickname` / `Tags`, and passes
+    Per spawn, `core/npc_spawn.ttslua` deep-clones this table, clears `GUID`, sets `Nickname` / `Tags`, and passes
     `spawnObjectData({ data = copy, position = ... })` so world position overrides `Transform`.
 
     `LuaScript` / `LuaScriptState` are empty: paired lights are driven by `core/lighting` + `L.registerNpcSpotlightModes` + `gameState.lights`.

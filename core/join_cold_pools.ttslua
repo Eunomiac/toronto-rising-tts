@@ -2,8 +2,8 @@
     Join-stress cold pools (TOR-439): destroy / restore ObjectStates slices with GUID preserve.
 
     Targets:
-      - NPC preload-pool figurines (+ paired preload lights)
       - Soundscape emitter AssetBundles (fixed G.GUIDS.SOUNDSCAPE_*)
+    (NPC figurines are spawned on demand since TOR-707, so there is no NPC pool to cool.)
 
     Contract:
       1. Snapshot via Object.getData() before destroy
@@ -22,9 +22,7 @@ local Catalog = require("lib.soundscape_catalog")
 
 local JoinColdPools = {}
 
-local PRELOAD_AREA_KEY = "preload"
-
---- @type table|nil `{ entries = { { kind, guid, npcName?, channelKey?, data } } }`
+--- @type table|nil `{ entries = { { kind, guid, channelKey?, data } } }`
 local runtimeBackup = nil
 
 --- @type table<string, boolean>|nil GUIDs waiting to leave the scene after destroy
@@ -142,29 +140,13 @@ function JoinColdPools.hasColdEmitters()
     return backupHasKind("soundscape_emitter")
 end
 
---- @return boolean
-function JoinColdPools.hasColdFigurines()
-    return backupHasKind("npc_figurine") or backupHasKind("npc_light")
-end
-
 --- Compact status fragment for Phases join line (TOR-439 staged restore).
 --- @return string
 function JoinColdPools.statusSuffix()
     if not JoinColdPools.isActive() then
         return "pools:warm"
     end
-    local parts = {}
-    if JoinColdPools.hasColdEmitters() then
-        parts[#parts + 1] = "emit:cold"
-    else
-        parts[#parts + 1] = "emit:warm"
-    end
-    if JoinColdPools.hasColdFigurines() then
-        parts[#parts + 1] = "figs:cold"
-    else
-        parts[#parts + 1] = "figs:warm"
-    end
-    return table.concat(parts, " ")
+    return JoinColdPools.hasColdEmitters() and "emit:cold" or "emit:warm"
 end
 
 --- Snapshot + destroy one live object; GUID must match expected.
@@ -191,62 +173,12 @@ local function snapshotAndDestroy(obj, expectedGuid, meta)
     local entry = {
         kind = meta.kind,
         guid = expectedGuid,
-        npcName = meta.npcName,
         channelKey = meta.channelKey,
         guidKey = meta.guidKey,
         data = cloneObjectDataKeepGuid(data, expectedGuid),
     }
     getDestroyObject()(obj)
     return entry
-end
-
---- Collect preload-pool NPC figurines + paired lights (skip seated / stage).
---- @return table[] entries destroyed
-local function coldNpcPreloadPool()
-    local NPCS = rawget(_G, "NPCS")
-    if NPCS == nil then
-        NPCS = require("core.npcs")
-    end
-    local instances = S.getStateVal("npcs", "instances")
-    if type(instances) ~= "table" then
-        return {}
-    end
-    local getObj = getGetObjectFromGUID()
-    local entries = {}
-    local names = {}
-    for npcName, _ in pairs(instances) do
-        if type(npcName) == "string" then
-            names[#names + 1] = npcName
-        end
-    end
-    table.sort(names)
-
-    for _, npcName in ipairs(names) do
-        local rec = instances[npcName]
-        if type(rec) == "table" and rec.areaKey == PRELOAD_AREA_KEY then
-            local figGuid = rec.figurineGuid
-            if type(figGuid) == "string" and figGuid ~= "" then
-                local fig = getObj(figGuid)
-                if fig ~= nil then
-                    entries[#entries + 1] = snapshotAndDestroy(fig, figGuid, {
-                        kind = "npc_figurine",
-                        npcName = npcName,
-                    })
-                end
-            end
-            local lightGuid = rec.lightGuid
-            if type(lightGuid) == "string" and lightGuid ~= "" then
-                local lit = getObj(lightGuid)
-                if lit ~= nil then
-                    entries[#entries + 1] = snapshotAndDestroy(lit, lightGuid, {
-                        kind = "npc_light",
-                        npcName = npcName,
-                    })
-                end
-            end
-        end
-    end
-    return entries
 end
 
 --- Collect fixed soundscape emitters.
@@ -292,7 +224,7 @@ local function coldSoundscapeEmitters()
     return entries
 end
 
---- Begin cold: snapshot + destroy preload NPC figurines/lights + soundscape emitters.
+--- Begin cold: snapshot + destroy soundscape emitters.
 --- @return function waitUntilGone predicate for U.chain / U.await
 function JoinColdPools.beginCold()
     if JoinColdPools.isActive() and resolveBackup() ~= nil then
@@ -303,18 +235,9 @@ function JoinColdPools.beginCold()
         end
     end
 
-    local entries = {}
-    local npcEntries = coldNpcPreloadPool()
-    for i = 1, #npcEntries do
-        entries[#entries + 1] = npcEntries[i]
-    end
-    local emitterEntries = coldSoundscapeEmitters()
-    for i = 1, #emitterEntries do
-        entries[#entries + 1] = emitterEntries[i]
-    end
-
+    local entries = coldSoundscapeEmitters()
     if #entries == 0 then
-        error("[JoinColdPools] Cold found nothing to destroy (no preload NPCs / emitters?)")
+        error("[JoinColdPools] Cold found nothing to destroy (no soundscape emitters?)")
     end
 
     local gone = {}
@@ -324,22 +247,8 @@ function JoinColdPools.beginCold()
     pendingGoneGuids = gone
     persistBackup({ entries = entries, version = 1 })
 
-    local figN, lightN, emitN = 0, 0, 0
-    for i = 1, #entries do
-        local k = entries[i].kind
-        if k == "npc_figurine" then
-            figN = figN + 1
-        elseif k == "npc_light" then
-            lightN = lightN + 1
-        elseif k == "soundscape_emitter" then
-            emitN = emitN + 1
-        end
-    end
     print(string.format(
-        "[JoinColdPools] Cold destroy queued: figurines=%d lights=%d emitters=%d (total %d). Waiting for GUIDs to clear.",
-        figN,
-        lightN,
-        emitN,
+        "[JoinColdPools] Cold destroy queued: emitters=%d. Waiting for GUIDs to clear.",
         #entries
     ))
 
@@ -512,14 +421,6 @@ function JoinColdPools.beginWarmEmitters()
             SS.bootstrapSilenceStrayEmitterLoops()
         end
     end)
-end
-
---- Preload figurines + paired lights.
---- @return function
-function JoinColdPools.beginWarmFigurines()
-    return beginWarmFiltered(function(entry)
-        return entry ~= nil and (entry.kind == "npc_figurine" or entry.kind == "npc_light")
-    end, "figurines", nil)
 end
 
 --- Warm everything still in the cold backup (convenience; prefer staged buttons).
