@@ -39,7 +39,7 @@ local SEAT_PLACEMENT_KEY = "seat"
 --- Forward declarations for reconcile pipeline (defined later in this module).
 local resolveNpcPlacementIntent
 local occupiedNpcSeatsFingerprint
-local applyNpcFigureTooltip
+local applyNpcFigureInteractable
 
 --- Sentinel `areaKey` for a freshly spawned pair still hidden under the table, waiting for its
 --- stage / seat / Scatter move (same reconcile pass, or a Dashboard prewarm while its image loads).
@@ -845,21 +845,15 @@ local function npcFigurineBoundsHeightReady(fig, npcName)
     return true
 end
 
---- Active presentation for a placed pair (stage / Scatter / seat): tooltip (on at seats, else lit-only),
---- TTS lock, placement ImageScalar, and unhide when the pair was spawned hidden under the table.
+--- Active presentation for a placed pair (stage / Scatter / seat): TTS lock, placement ImageScalar, unhide when
+--- the pair was spawned hidden under the table, then tooltip + interactable (seated: tooltip on, not interactable;
+--- elsewhere `applyNpcFigureInteractable`, after the unhide that resets interactable).
 --- @param fig Object|nil
 --- @param lit Object|nil
 --- @param areaKey string
 --- @param npcName string|nil
 --- @return boolean true when ImageScalar `reload()` was triggered
 local function applyNpcPairPhysicalPresentation(fig, lit, areaKey, npcName)
-    if areaKey == SEAT_PLACEMENT_KEY then
-        if U.isGameObject(fig) and fig.tooltip ~= nil then
-            fig.tooltip = true
-        end
-    elseif U.Type(npcName) == "string" then
-        applyNpcFigureTooltip(npcName, fig)
-    end
     ensureNpcFigurinePhysicsLocked(fig)
     local reloaded = applyNpcFigurineImageScalarForPlacement(fig, npcName, areaKey) == true
     if U.isGameObject(fig) and O.isHiddenObject(fig) then
@@ -867,6 +861,14 @@ local function applyNpcPairPhysicalPresentation(fig, lit, areaKey, npcName)
     end
     if U.isGameObject(lit) and O.isHiddenObject(lit) then
         O.restoreObject(lit, { locked = true, interactable = false })
+    end
+    if areaKey == SEAT_PLACEMENT_KEY then
+        if U.isGameObject(fig) and fig.tooltip ~= nil then
+            fig.tooltip = true
+            fig.interactable = false
+        end
+    elseif U.Type(npcName) == "string" then
+        applyNpcFigureInteractable(npcName, fig)
     end
     return reloaded
 end
@@ -1095,11 +1097,11 @@ local function effectiveAppliedLightModeKey(npcName, desiredMode)
     return "STANDARD"
 end
 
---- Off-seat figurine tooltip follows its light: hidden while the NPC stands dark (effective mode OFF), shown
---- while lit. Seated figurines are left to the seat presence reconcile.
+--- Off-seat figurine: tooltip always on, interactable follows its light (TTS shows tooltips only on interactable
+--- objects, so a dark NPC's tooltip stays hidden). Seated figurines are left to the seat presence reconcile.
 --- @param npcName string
 --- @param fig Object|nil the NPC's figurine when the caller already holds it
-applyNpcFigureTooltip = function(npcName, fig)
+applyNpcFigureInteractable = function(npcName, fig)
     local rec = getInstances()[npcName]
     if U.Type(rec) ~= "table" or (U.Type(rec.seatedSeatKey) == "string" and isValidNpcSeatKey(rec.seatedSeatKey)) then
         return
@@ -1108,9 +1110,12 @@ applyNpcFigureTooltip = function(npcName, fig)
     if not U.isGameObject(fig) or fig.tooltip == nil then
         return
     end
+    if fig.tooltip ~= true then
+        fig.tooltip = true
+    end
     local lit = effectiveAppliedLightModeKey(npcName, rec.npcLightMode or "STANDARD") ~= "OFF"
-    if fig.tooltip ~= lit then
-        fig.tooltip = lit
+    if fig.interactable ~= lit then
+        fig.interactable = lit
     end
 end
 
@@ -1195,7 +1200,7 @@ local function applyNpcSpotlightAlignedToFigurine(npcName, fig, transitionTime)
     lightAlignFigOverride[npcName] = fig
     local modeKey = effectiveAppliedLightModeKey(npcName, rec.npcLightMode or "STANDARD")
     S.setStateVal(modeKey, "lights", reg)
-    applyNpcFigureTooltip(npcName, fig)
+    applyNpcFigureInteractable(npcName, fig)
     local modeTable = NPCS.buildResolvedLightModeTable(npcName, modeKey)
     lightAlignFigOverride[npcName] = nil
     -- Inline mode table (not named-mode reconcile): fingerprint includes pose so a stale
@@ -1278,7 +1283,7 @@ local function applyStageNpcSpotlightNow(npcName, fig, lit, transitionTime)
     local rec = getInstances()[npcName]
     if U.Type(rec) == "table" then
         syncStageNpcLightState(npcName, rec.npcLightMode or "STANDARD")
-        applyNpcFigureTooltip(npcName, fig)
+        applyNpcFigureInteractable(npcName, fig)
     end
     if npcStageSpotlightAlignReady(fig, lit, npcName) then
         applyNpcSpotlightAlignedToFigurine(npcName, fig, transitionTime or 0)
@@ -2135,7 +2140,7 @@ function NPCS.applyCurrentLightMode(npcName, transitionTime, opts)
     -- State-first mutation; lighting module reconcile owns live-world writes.
     S.setStateVal(modeKey, "lights", reg)
     L.reconcileLightRef(reg, transitionTime, { force = opts.force == true })
-    applyNpcFigureTooltip(npcName)
+    applyNpcFigureInteractable(npcName)
     if opts.skipFamilyReconcile ~= true then
         NPCS.reconcileFamilyOffSpotlight(transitionTime, {
             force = opts.force == true,
