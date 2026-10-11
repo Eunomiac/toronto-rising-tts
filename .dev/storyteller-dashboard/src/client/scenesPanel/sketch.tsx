@@ -519,6 +519,16 @@ export type StageEnv = {
 /** An edit stays drawn until TTS pushes the stage back, or this long if it never does (TTS refused it). */
 const OPTIMISTIC_MS = 6000;
 
+/** The stage with no scene on the table: the seats stay along the bottom (trackers and sheets, no seating edits). */
+export const IdleBoard = ({ w, h, seats, liveSheet }: { w: number; h: number; seats: readonly SeatSketch[]; liveSheet?: LiveSheetAccess }): ReactElement => (
+  <div className="lab-board wide idle" style={{ width: w, height: h }}>
+    <span className="lab-board-idle">(No Active Scene)</span>
+    <div className="lab-board-seats floating bottom" style={{ top: h - h * WIDE_SEAT_BAND - 8, height: h * WIDE_SEAT_BAND }}>
+      <Seats seats={seats} {...(liveSheet ? { liveSheet } : {})} />
+    </div>
+  </div>
+);
+
 export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoard }): ReactElement => {
   const [ring, setRing] = useState<{ x: number; y: number } | null>(null);
   const [charRing, setCharRing] = useState<CharacterRing | null>(null);

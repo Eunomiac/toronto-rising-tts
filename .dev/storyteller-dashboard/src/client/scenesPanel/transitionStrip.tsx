@@ -15,14 +15,16 @@ import { orphanNpc, seatingChanged, seatOrphan, withSeatingOf, type SeatingEdit,
 export type SeatingAsk = {
   readonly destination: LibraryScene;
   readonly start: TransitionSeating;
+  /** The strip starts from the table's seating (a scene was on it); otherwise from the destination's own. */
+  readonly carried: boolean;
   /** Runs once the strip is confirmed; `undefined` when it left the destination's seating as it was. */
   readonly then: (edit: SeatingEdit | undefined) => void;
 };
 
 
 /**
- * Shown before every switch away from a scene on the table: the next scene's seats, starting from the table's
- * (`carryOverSeating`). Clicking a seat takes that character out of the next scene or brings them in. Seated
+ * Shown before every scene start: the next scene's seats, starting from the table's when a scene is on it
+ * (`carryOverSeating`), else from the scene's own (starting from Downtime). Clicking a seat takes that character out of the next scene or brings them in. Seated
  * NPCs drag between chairs, or off the strip to be left behind; NPCs left without a chair wait red-ringed
  * underneath and drag onto a chair (the NPC there swaps out). PCs only toggle. Continue writes the seating into
  * the scene's library row as it plays (`SeatingEdit`); Cancel or clicking off drops the switch.
@@ -57,8 +59,11 @@ export const TransitionSeatingModal = ({ ask, onClose }: { ask: SeatingAsk; onCl
       <div className="lab-modal lab-transition">
         <span className="lab-modal-title">Seating for {ask.destination.title}</span>
         <p className="lab-transition-hint">
-          The table's seating, carried into the next scene (its own seating wins any clash). Click a seat to take
-          that character out of the scene or bring them in. Drag an NPC off the strip to leave them behind.
+          {ask.carried
+            ? "The table's seating, carried into the next scene (its own seating wins any clash)."
+            : "The scene's own seating."}
+          {" "}Click a seat to take that character out of the scene or bring them in. Drag an NPC off the strip to
+          leave them behind.
         </p>
         <div className="lab-transition-seats">
           <Seats seats={seats} onPresence={(seat, present) => setState((current) => ({ ...current, row: applyToDraft(current.row, { op: "seatPresence", seat, present }) }))} seating={seating} />

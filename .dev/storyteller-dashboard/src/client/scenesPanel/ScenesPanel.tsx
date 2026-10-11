@@ -21,7 +21,7 @@ import { ScenePreview } from "./preview";
 import { RosterDragGhost } from "./rosterDrag";
 import { useControlBoardSnaps, useSceneCatalogs } from "./roster";
 import type { SceneCatalogs } from "./catalogs";
-import { Box, Overlay, WideBoard, type LiveBoard } from "./sketch";
+import { Box, IdleBoard, Overlay, WideBoard, type LiveBoard } from "./sketch";
 import { useLiveSheet } from "../pcSheet/useLiveSheet";
 import { sceneDeckSnapshot, setSceneDeckSection, useSceneDeck, useSceneDeckStatus } from "../sceneDeck";
 import { useSceneLibrary, useSceneLibraryStatus } from "../sceneLibrary";
@@ -506,7 +506,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
             ) : phase?.phase === "Spotlight" ? (
               <div className="scenes-spotlight-stage"><SpotlightCarousel live={spotlightView(seats)} /></div>
             ) : scene?.liveKey === undefined && !inMemoriam ? (
-              <div className="scenes-stage-empty">(No Active Scene)</div>
+              <IdleBoard w={STAGE_W - 12} h={STAGE_H - 10} seats={board.seats} {...(board.sheet ? { liveSheet: board.sheet } : {})} />
             ) : (
               <WideBoard w={STAGE_W - 12} h={STAGE_H - 10} live={board} />
             )}

@@ -174,7 +174,7 @@ export type SceneGo = (clock: SceneClock, edit?: SeatingEdit) => void;
 export type PlayScene = (key: string, clock: SceneClock, edit?: SeatingEdit) => void;
 
 /**
- * Switching to a scene. Away from a scene on the table, the seating strip comes first (`TransitionSeatingModal`).
+ * Switching to a scene. Unless it is already on the table, the seating strip comes first (`TransitionSeatingModal`).
  * Then an ongoing scene goes straight back to its own time; a new scene (or a template's copy) opens the timing
  * menu. `modal` is whichever of the two is open, to render.
  */
@@ -196,8 +196,10 @@ export const useSceneEntry = (): { enter: (key: string, at: Point, go: SceneGo) 
   return {
     enter: (key, at, go) => {
       const destination = sceneRowFor(key);
-      if (destination && seats && scene?.liveKey && scene.liveKey !== key) {
-        setSeating({ destination, start: carryOverSeating(destination, seats.seats), then: (edit) => time(key, at, go, edit) });
+      if (destination && seats && scene?.liveKey !== key) {
+        const carried = scene?.liveKey !== undefined;
+        const start = carried ? carryOverSeating(destination, seats.seats) : { row: destination, orphans: [] };
+        setSeating({ destination, start, carried, then: (edit) => time(key, at, go, edit) });
       } else {
         time(key, at, go, undefined);
       }

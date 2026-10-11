@@ -1988,8 +1988,7 @@ input.lab-cat-rename {
 }
 
 // Spotlight phase: the carousel takes the stage's place, scaled up (its ring steps in unscaled pixels).
-.scenes-spotlight-stage,
-.scenes-stage-empty {
+.scenes-spotlight-stage {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2001,12 +2000,21 @@ input.lab-cat-rename {
   transform: scale(4);
 }
 
-.scenes-stage-empty {
+// No scene on the table: the label fills the stage above the seats.
+.lab-board.idle {
+  background: #0d0d11;
+}
+
+.lab-board-idle {
+  position: absolute;
+  inset: 0 0 18%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: "Bebas Neue", "Arial Narrow", sans-serif;
   font-size: 40px;
   letter-spacing: 0.05em;
   color: #5c5c66;
-  background: #0d0d11;
 }
 
 /* ---------- hunt roll ---------- */
@@ -2817,6 +2825,16 @@ input.lab-cat-rename {
     color: #9a9aa6;
     background: #18181e;
     cursor: pointer;
+
+    // The click area runs on out to the screen's left edge, past the box's gap, border and padding.
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: -12px;
+      width: 12px;
+    }
 
     &:hover:not(:disabled) {
       color: #e0e0e8;
