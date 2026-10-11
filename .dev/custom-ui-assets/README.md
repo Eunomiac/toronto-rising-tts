@@ -145,16 +145,9 @@ Then Cloud Manager → **Upload All Loaded Files**, save the game, press Enter i
 | `tokenFront_<characterKey>.webp` | `tokenFront_<characterKey>` (spotlight token front) |
 | `tokenBack_<characterKey>.webp` | `tokenBack_<characterKey>` (spotlight token back) |
 
-The scanner **requires complete 4-file groups**; any orphan or missing file aborts with an error. Only groups whose `characterKey` exists in `D.characters` are injected and uploaded; unregistered disk folders are **skipped** and listed at the end of the run.
+The scanner **requires complete 4-file groups**; any orphan or missing file aborts with an error. Only groups whose `characterKey` exists in `D.characters` are uploaded; unregistered disk folders are **skipped** and listed at the end of the run.
 
-**Inject workshop objects** (patches/creates `npc_figurine` `CustomImage` URLs with local `file:///` paths; runs automatically before manifest when `--save` / `--saveName` is set):
-
-```text
-npm run custom-ui-assets:inject-npc-world
-npm run custom-ui-assets:inject-npc-world:dry-run
-```
-
-**Build manifest** (runs inject first unless `--skipInject`; skips groups already hosted in save `CustomUIAssets`; writes `.dev/custom-ui-assets/npc-group-manifest.json` and `lib/npc_group_upload_manifest.ttslua`):
+**Build manifest** (skips groups already hosted in save `CustomUIAssets`; writes `.dev/custom-ui-assets/npc-group-manifest.json` and `lib/npc_group_upload_manifest.ttslua`):
 
 ```text
 npm run custom-ui-assets:manifest-npc-groups
@@ -166,9 +159,9 @@ Batched upload (default **15 characters** = 60 upload temps per manifest):
 npm run custom-ui-assets:manifest-npc-groups:batch -- --batchStart adrianVarga
 ```
 
-Flags: `--dir <path>`, `--save` / `--saveName`, `--skipSaveCheck`, `--skipInject`, `--batch`, `--batchMax`, `--batchStart`.
+Flags: `--dir <path>`, `--save` / `--saveName`, `--skipSaveCheck`, `--batch`, `--batchMax`, `--batchStart`.
 
-**Full pipeline** (inject → manifest → pause for TTS upload → merge → extract token pairs → registry gap report):
+**Full pipeline** (manifest → pause for TTS upload → merge → extract token pairs → extract figurine catalog → registry gap report):
 
 ```text
 npm run custom-ui-assets:pipeline-npc-groups
@@ -180,28 +173,24 @@ Or with batch flags forwarded:
 npm run custom-ui-assets:pipeline -- --mode npc-groups --saveName 230 --batch
 ```
 
-**TTS — Cloud upload:** Save & Play → `lua DEBUG.spawnNpcGroupUploadBatch({ columns = 12, gap = 2, startY = 3 })` → Cloud Manager **Upload All Loaded Files** → save game. Figurine fronts/backs spawn as **Figurine_Custom** pairs (`<name>.webp` + `<name>Back.webp`); token sides still use flat upload temps. Figurines already in the save with `file:///` URLs are converted to Steam URLs on save as well.
+**TTS — Cloud upload:** Save & Play → `lua DEBUG.spawnNpcGroupUploadBatch({ columns = 12, gap = 2, startY = 3 })` → Cloud Manager **Upload All Loaded Files** → save game. Figurine fronts/backs spawn as **Figurine_Custom** pairs (`<name>.webp` + `<name>Back.webp`); token sides still use flat upload temps.
 
-**Merge / extract / apply world / report:**
+**Merge / extract / report:**
 
 ```text
 npm run custom-ui-assets:merge-npc-groups
 npm run custom-ui-assets:extract-npc-token-urls
-npm run custom-ui-assets:apply-npc-hosted-world
+npm run custom-ui-assets:extract-npc-figurine-urls
 npm run custom-ui-assets:report-npc-registry-gaps
 ```
 
-**Save path:** `merge-npc-groups`, `extract-npc-token-urls`, and `apply-npc-hosted-world` default to the live TTS save via `--saveName 230` (`D:/OneDrive/Documents/My Games/Tabletop Simulator/Saves/TS_Save_230.json`). Override with `--save <path>` or `--saveName <id>` on the underlying Node scripts if needed.
+**Save path:** `merge-npc-groups`, `extract-npc-token-urls`, and `extract-npc-figurine-urls` default to the live TTS save via `--saveName 230` (`D:/OneDrive/Documents/My Games/Tabletop Simulator/Saves/TS_Save_230.json`). Override with `--save <path>` or `--saveName <id>` on the underlying Node scripts if needed.
 
-The **full pipeline** runs merge → extract → **apply hosted world** automatically after you finish the manual Cloud upload step. `apply-npc-hosted-world` patches figurine `CustomImage` URLs in the save JSON using hosted Steam URLs. Spotlight tokens are not saved objects: `core/stage_tokens.ttslua` spawns them at runtime from `lib/npc_token_hosted_urls.ttslua` (written by `extract-npc-token-urls`).
+**Figurine URL catalog (TOR-707):** named NPC figurines are **not** saved objects. `core/npc_spawn.ttslua` spawns each figurine (and its light) on demand from `lib/npc_figurine_hosted_urls.ttslua`, written by `extract-npc-figurine-urls` (report: `.dev/custom-ui-assets/npc-figurine-hosted-urls.json`). Resolution order per `D.characters` key: an `npc_figurine` object still in the save (`npcInstance:<key>` GM notes or the saved `npcs.instances[key].figurineGuid`), then the previous catalog, then `CustomUIAssets` `<key>` / `<key>Back`. Pass `--refresh key1,key2` to replace stored rows with re-uploaded art; the full pipeline passes the manifest's uploaded keys automatically. The script never writes the save and exits non-zero when a key has no URLs.
 
-Dry-run: `npm run custom-ui-assets:apply-npc-hosted-world:dry-run`
+Spotlight tokens are not saved objects either: `core/stage_tokens.ttslua` spawns them at runtime from `lib/npc_token_hosted_urls.ttslua` (written by `extract-npc-token-urls`).
 
 **Registry gap report:** disk groups skipped (not in `D.characters`) and registry keys missing disk groups. Written to `.dev/custom-ui-assets/npc-registry-gap-report.txt`.
-
-**Runtime:** Lua no longer spawns figurines or calls `setCustomObject`/`reload()` on placement — images are workshop-baked only.
-
-**Fallback:** `merge-npc-figurines` copies figurine URLs into `CustomUIAssets` for one-off harvesting; the preload pool does not require it.
 
 VS Code task **Custom UI Assets: Build Manifest from Image Files** → mode **`npc-groups`**.
 
@@ -258,29 +247,6 @@ Outputs:
 - `lib/npc_token_hosted_urls.ttslua` — `require("lib.npc_token_hosted_urls")[characterKey].front` / `.back`
 
 VS Code task **Custom UI Assets: Build Manifest from Image Files** → mode **`npc-tokens`**.
-
-## NPC figurine cutouts (`npc_figurine` → character key) — fallback
-
-Use this figurine-object merge from save when harvesting existing uploaded figurine fronts. Prefer **NPC unified groups** for normal uploads (figurine front/back via `npm run custom-ui-assets:manifest-npc-groups`).
-
-For pooled NPC figurines already in the save (`npc_figurine` tag, `Figurine_Custom`, Nickname = `D.characters.fullName`), copy each figurine’s **front** `CustomImage.ImageURL` into the save root **`CustomUIAssets`** with **`Name`** = the character key from `lib/npcs_data.ttslua` (e.g. `rashid`, `lordLucien`).
-
-Use after figurines have been uploaded in TTS (Steam-hosted URLs) or while they still point at repo `raw.githubusercontent.com` URLs.
-
-```text
-npm run custom-ui-assets:merge-npc-figurines:dry-run
-npm run custom-ui-assets:merge-npc-figurines
-```
-
-Live save (TTS Saves folder):
-
-```text
-npm run custom-ui-assets:merge-npc-figurines:live
-```
-
-Override paths: `--save <path>`, `--saveName <id>`, `--npcsData lib/npcs_data.ttslua`, `--assetsOut .dev/custom-ui-assets/npc-figurine-generated-assets.json`.
-
-Writes `.dev/custom-ui-assets/npc-figurine-generated-assets.json` (merged entries only). Reload the save in TTS after merging.
 
 ## Folder mode fallback
 

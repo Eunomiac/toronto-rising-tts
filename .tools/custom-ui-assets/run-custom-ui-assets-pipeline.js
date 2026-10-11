@@ -81,9 +81,7 @@ async function main() {
   const buildNpcTokensScript = path.resolve(".tools/custom-ui-assets/build-upload-manifest-from-npc-tokens.js");
   const buildNpcGroupsScript = path.resolve(".tools/custom-ui-assets/build-upload-manifest-from-npc-groups.js");
   const extractNpcTokensScript = path.resolve(".tools/custom-ui-assets/extract-npc-token-hosted-urls.js");
-  const applyNpcHostedWorldScript = path.resolve(
-    ".tools/custom-ui-assets/apply-npc-hosted-world-from-upload.js",
-  );
+  const extractNpcFigurinesScript = path.resolve(".tools/custom-ui-assets/extract-npc-figurine-urls.js");
   const reportNpcGapsScript = path.resolve(".tools/custom-ui-assets/report-npc-upload-registry-gaps.js");
   const convertScript = path.resolve(".tools/custom-ui-assets/convert-png-to-webp.js");
   const mergeByNameScript = path.resolve(".tools/custom-ui-assets/merge-custom-ui-assets-from-save-name.js");
@@ -225,12 +223,17 @@ async function main() {
       : ".dev/custom-ui-assets/generated-assets.json";
 
   let pendingCharacterCount = -1;
+  /** @type {string[]} */
+  let pendingCharacterKeys = [];
   if (mode === "npc-groups") {
     const manifestAbs = path.resolve(manifestPath);
     if (fs.existsSync(manifestAbs)) {
       const manifestData = JSON.parse(fs.readFileSync(manifestAbs, "utf8"));
       pendingCharacterCount =
         typeof manifestData.characterCount === "number" ? manifestData.characterCount : -1;
+      if (Array.isArray(manifestData.pendingCharacterKeys)) {
+        pendingCharacterKeys = manifestData.pendingCharacterKeys;
+      }
     }
   }
 
@@ -285,16 +288,16 @@ async function main() {
 
   if (mode === "npc-groups" && !skipManualTts) {
     console.log("");
-    console.log("=== Apply hosted URLs to figurines + control-board tokens in save ===");
-    const applyWorldArgs = [
+    console.log("=== Extract figurine URL catalog (lib/npc_figurine_hosted_urls.ttslua) ===");
+    const figurineExit = runNodeScript(extractNpcFigurinesScript, [
       "--saveName",
       saveName,
-      "--assetsOut",
+      "--generatedAssets",
       assetsOutPath,
-    ];
-    const applyExit = runNodeScript(applyNpcHostedWorldScript, applyWorldArgs);
-    if (applyExit !== 0) {
-      process.exit(applyExit);
+      ...(pendingCharacterKeys.length > 0 ? ["--refresh", pendingCharacterKeys.join(",")] : []),
+    ]);
+    if (figurineExit !== 0) {
+      process.exit(figurineExit);
     }
   }
 
@@ -323,7 +326,7 @@ async function main() {
     console.log("Hosted token pairs: lib/npc_token_hosted_urls.ttslua");
   }
   if (mode === "npc-groups" && !skipManualTts) {
-    console.log("Figurines + control-board tokens patched in save — reload in TTS (Save & Play).");
+    console.log("Figurine URL catalog: lib/npc_figurine_hosted_urls.ttslua — Save & Play to use new art.");
   }
 }
 

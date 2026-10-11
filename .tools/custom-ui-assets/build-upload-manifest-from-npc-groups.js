@@ -95,7 +95,6 @@ async function main() {
   const moduleOut = path.resolve(args.moduleOut || "lib/npc_group_upload_manifest.ttslua");
   const warnUnknownKeys = args.warnUnknownKeys === "1" || args.warnUnknownKeys === "true";
   const skipSaveCheck = args.skipSaveCheck === "1" || args.skipSaveCheck === "true";
-  const skipInject = args.skipInject === "1" || args.skipInject === "true";
 
   const dirPath = path.isAbsolute(inputDir) ? path.normalize(inputDir) : path.resolve(inputDir);
   console.log(`NPC group image directory: ${dirPath}`);
@@ -136,37 +135,8 @@ async function main() {
 
   if (skippedUnregisteredKeys.length > 0) {
     console.log(
-      `Skipping ${skippedUnregisteredKeys.length} complete disk group(s) not in D.characters (inject + manifest use registered keys only).`,
+      `Skipping ${skippedUnregisteredKeys.length} complete disk group(s) not in D.characters (manifest uses registered keys only).`,
     );
-  }
-
-  if (!skipInject && (args.save || args.saveName)) {
-    const injectScript = path.resolve(".tools/custom-ui-assets/inject-npc-world-from-groups.js");
-    /** @type {string[]} */
-    const injectArgs = [
-      injectScript,
-      "--dir",
-      dirPath,
-      "--npcsData",
-      npcsDataPath,
-      "--registeredOnly",
-    ];
-    if (args.save && args.save.trim() !== "") {
-      injectArgs.push("--save", path.resolve(args.save.trim()));
-    } else {
-      injectArgs.push("--saveName", (args.saveName || "230").trim());
-    }
-    if (args["dry-run"] === "1" || args.dryRun === "1") {
-      injectArgs.push("--dry-run");
-    }
-    console.log(
-      `Running NPC world inject for ${registeredGroups.length} registered group(s) into save...`,
-    );
-    const { spawnSync } = require("child_process");
-    const injectResult = spawnSync(process.execPath, injectArgs, { stdio: "inherit" });
-    if (injectResult.status !== 0) {
-      process.exit(injectResult.status || 1);
-    }
   }
 
   /** @type {import("./lib/npc-asset-helpers").NpcAssetGroup[]} */
@@ -328,6 +298,7 @@ async function main() {
   console.log("4) Merge + extract + registry gap report:");
   console.log("   npm run custom-ui-assets:merge-npc-groups");
   console.log("   npm run custom-ui-assets:extract-npc-token-urls");
+  console.log("   npm run custom-ui-assets:extract-npc-figurine-urls");
   console.log("   npm run custom-ui-assets:report-npc-registry-gaps");
 }
 
