@@ -3064,10 +3064,6 @@ local function refreshStorytellerPanelOnOpen(panelKey)
         Wait.frames(function()
             syncStorytellerPhaseButtons()
         end, 1)
-    elseif panelKey == "soundscape" then
-        Wait.frames(function()
-            UpdateUIDisplays({ soundscape = true })
-        end, 1)
     elseif panelKey == "scenes" then
         Wait.frames(function()
             UpdateUIDisplays({ scenesPanel = true, adminLighting = true })
@@ -3521,7 +3517,7 @@ end
 ]]
 
 --- Select storyteller panel (mutually exclusive: one panel open at a time)
--- Used by toggle buttons (`toggle_scenes`, `toggle_soundscape`, etc.) in bottom-right bar
+-- Used by toggle buttons (`toggle_scenes`, `toggle_phases`, etc.) in bottom-right bar
 -- @param player Player The player who clicked the button
 -- @param button string Button value
 -- @param id string The UI element ID (e.g., "toggle_scenes")
@@ -3767,7 +3763,6 @@ end
 
 local STORYTELLER_SOUND_GREY = "#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)"
 local STORYTELLER_SOUND_GREEN = "#228B22|#32CD32|#006400|#228B22"
-local STORYTELLER_SOUND_DISABLED = "#333333|#444444|#555555|rgba(0.2,0.2,0.2,0.5)"
 
 local DEBUG_SEAT_COLOR_ORDER = { "Black", "Red", "Orange", "Brown", "Pink", "Purple" }
 local DEBUG_SEAT_OUTLINE_ACTIVE = "#FF0000"
@@ -3786,12 +3781,6 @@ local DEBUG_SEAT_BUTTON_COLORS = {
     Purple = "#5E2A7E|#6E358E|#4E2070|#5E2A7E",
 }
 
-local SOUNDSCAPE_MOOD_BUTTONS = {
-    main = "soundscapeMood_main",
-    intrigue = "soundscapeMood_intrigue",
-    combat = "soundscapeMood_combat",
-}
-
 local PHASE_BUTTON_EXPECTATIONS = {
     phase_Advance = true,
 }
@@ -3799,44 +3788,6 @@ local PHASE_SUB_BUTTONS = {
     phase_sub_Main = C.PlaySubPhases.MAIN,
     phase_sub_Downtime = C.PlaySubPhases.DOWNTIME,
 }
-
-local SOUNDSCAPE_FEATURED_BUTTONS = {
-    TR_Full = "soundscapeFeatured_TR_Full",
-    TR_Intro = "soundscapeFeatured_TR_Intro",
-    TR_Loop = "soundscapeFeatured_TR_Loop",
-    STB_HouseOfTheRisingSun = "soundscapeFeatured_STB_HouseOfTheRisingSun",
-}
-
---- @param siteKey string
---- @return boolean
-local function siteHasBackgroundMusicPlaylist(siteKey)
-    if type(siteKey) ~= "string" or siteKey == "" then
-        return false
-    end
-    local site = C.Sites[siteKey]
-    if type(site) ~= "table" then
-        return false
-    end
-    local sc = site.soundscape
-    if type(sc) ~= "table" then
-        return false
-    end
-    local bg = sc.backgroundMusic
-    return type(bg) == "table" and type(bg.playlist) == "string" and bg.playlist ~= ""
-end
-
---- @param soundscapeState table
---- @return string
-local function resolveSiteKeyForSoundPanel(soundscapeState)
-    local sk = S.getStateVal("sessionScene", "siteKey")
-    if type(sk) == "string" and sk ~= "" then
-        return sk
-    end
-    if type(soundscapeState) == "table" and type(soundscapeState.lastAppliedSiteKey) == "string" then
-        return soundscapeState.lastAppliedSiteKey
-    end
-    return ""
-end
 
 --- @param seatColor string
 --- @return string
@@ -4020,123 +3971,7 @@ syncDebugLastLoadClockLabel = function()
     end
 end
 
---- Storyteller Sound panel: bind lane labels + sliders from `Soundscape.getPlayingLanesForUi`.
-local function syncSoundscapeLaneUi()
-    if SS == nil or SS.getPlayingLanesForUi == nil or UI == nil or UI.setAttribute == nil then
-        return
-    end
-    local rows = SS.getPlayingLanesForUi()
-    local duckHint = ""
-    for _, row in ipairs(rows) do
-        local weatherLane = row.id == "rain" or row.id == "wind" or row.id == "thunder"
-        if row.isDucked == true and weatherLane and duckHint == "" then
-            duckHint = "Weather ducked (indoors)"
-        end
-        local suffix = ""
-        if row.active ~= true then
-            suffix = " (inactive)"
-        end
-        local pct = math.floor(((tonumber(row.naturalVolume) or 0) * 100) + 0.5)
-        local line = string.format("%s%s — %d%%", row.label, suffix, pct)
-        if UI.setValue ~= nil then
-            UI.setValue("soundscapeLaneLbl_" .. row.id, line)
-        end
-        if row.isDucked == true and weatherLane then
-            UI.setAttribute("soundscapeLaneLbl_" .. row.id, "color", "#CCCC66")
-        else
-            UI.setAttribute("soundscapeLaneLbl_" .. row.id, "color", "#DDDDDD")
-        end
-        UI.setAttribute("soundscapeSlider_" .. row.id, "value", tostring(tonumber(row.naturalVolume) or 0))
-    end
-    if UI.setValue ~= nil then
-        UI.setValue("soundscapeDuckHint", duckHint)
-    end
-end
-
---- Sync Storyteller soundscape controls with current soundscape state.
-local function syncSoundscapeControls()
-    if SS == nil or SS.getState == nil then
-        return
-    end
-    require("dashboard.push").markWorldDirty({ soundscape = true })
-    local state = SS.getState()
-    local summary = SS.getSummaryText()
-    if UI ~= nil and UI.setValue ~= nil then
-        UI.setValue("soundscapeSummary", summary)
-    end
-
-    local moodPlaying = state.backgroundMusicEnabled == true and state.backgroundMusicMode == "mood"
-    for moodKey, buttonId in pairs(SOUNDSCAPE_MOOD_BUTTONS) do
-        local isActive = moodPlaying and state.musicMood == moodKey
-        U.setAttributes(buttonId, {
-            colors = isActive and STORYTELLER_SOUND_GREEN or STORYTELLER_SOUND_GREY,
-            textColor = "#FFFFFF",
-            fontStyle = "Bold",
-        })
-    end
-
-    local siteKey = resolveSiteKeyForSoundPanel(state)
-    local locAllowed = siteHasBackgroundMusicPlaylist(siteKey)
-    local locPlaying = state.backgroundMusicEnabled == true and state.backgroundMusicMode == "locationMusic"
-    U.setAttributes("soundscapeMood_location", {
-        colors = not locAllowed and STORYTELLER_SOUND_DISABLED
-            or (locPlaying and STORYTELLER_SOUND_GREEN or STORYTELLER_SOUND_GREY),
-        textColor = "#FFFFFF",
-        fontStyle = "Bold",
-    })
-
-    local feat = state.featuredMusic
-    for trackKey, buttonId in pairs(SOUNDSCAPE_FEATURED_BUTTONS) do
-        local on = state.featuredActive == true and feat == trackKey
-        U.setAttributes(buttonId, {
-            colors = on and STORYTELLER_SOUND_GREEN or STORYTELLER_SOUND_GREY,
-            textColor = "#FFFFFF",
-            fontStyle = "Bold",
-        })
-    end
-
-    syncSoundscapeLaneUi()
-end
-
---- Storyteller soundscape panel: switch background music mood.
--- @param player Player
--- @param button string
--- @param id string Button id in the form `soundscapeMood_<moodKey>`
-function HUD_soundscapeSetMusicMood(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_soundscapeSetMusicMood") then
-        return
-    end
-    local moodKey = string.gsub(id or "", "^soundscapeMood_", "")
-    local ok, message = SS.setMusicMood(moodKey)
-    if SS.commitEagerSteadyState ~= nil then
-        SS.commitEagerSteadyState(ok)
-    end
-    if ok then
-        U.AlertGM("Soundscape music mood: " .. tostring(moodKey))
-    else
-        U.AlertGM("Soundscape warning: " .. tostring(message))
-    end
-    syncSoundscapeControls()
-end
-
---- Storyteller soundscape panel: stop all layers through the silent loop.
-function HUD_soundscapeStopAll(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_soundscapeStopAll") then
-        return
-    end
-    local ok, message = SS.stopAll()
-    if SS.commitEagerSteadyState ~= nil then
-        SS.commitEagerSteadyState(ok)
-    end
-    if ok then
-        U.AlertGM("Soundscape stopped.")
-    else
-        U.AlertGM("Soundscape warning: " .. tostring(message))
-    end
-    syncSoundscapeControls()
-end
-
---- End-of-session: physically silence emitters before save (does not mutate gameState.soundscape).
+--- Debug column: physically silence emitters before save (does not mutate gameState.soundscape).
 function HUD_soundscapePrepareSave(player, button, id)
     if not requireStorytellerForMutation(player, "HUD_soundscapePrepareSave") then
         return
@@ -4151,93 +3986,13 @@ function HUD_soundscapePrepareSave(player, button, id)
     else
         U.AlertGM("Soundscape prepare: " .. tostring(msg or "unknown issue"))
     end
-    syncSoundscapeControls()
 end
 
---- Storyteller soundscape panel: inspect hidden emitters and print a JSON summary.
+--- Debug column: inspect hidden soundscape emitters and print a JSON summary.
 function HUD_soundscapeInspect(player, button, id)
     local rows = SS.inspectEmitters()
     print(JSON.encode_pretty(rows))
     U.AlertGM("Soundscape emitter inspection printed to console.")
-    syncSoundscapeControls()
-end
-
---- Storyteller Sound: switch background music to the active site's catalog playlist (`C.Sites[*].soundscape.backgroundMusic`).
-function HUD_soundscapeSetBackgroundLocation(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_soundscapeSetBackgroundLocation") then
-        return
-    end
-    local state = SS.getState()
-    local siteKey = resolveSiteKeyForSoundPanel(state)
-    if not siteHasBackgroundMusicPlaylist(siteKey) then
-        U.AlertGM("Location music is unavailable for this site. Pick a site with soundscape.backgroundMusic in Scenes.")
-        syncSoundscapeControls()
-        return
-    end
-    local site = C.Sites[siteKey]
-    local sc = site.soundscape
-    local bg = type(sc) == "table" and sc.backgroundMusic or nil
-    local playlist = type(bg) == "table" and bg.playlist or nil
-    if type(playlist) ~= "string" or playlist == "" then
-        U.AlertGM("Site has no background music playlist.")
-        syncSoundscapeControls()
-        return
-    end
-    local ok, message = SS.setLocationMusic(playlist)
-    if SS.commitEagerSteadyState ~= nil then
-        SS.commitEagerSteadyState(ok)
-    end
-    if ok then
-        U.AlertGM("Location background music: " .. tostring(playlist))
-    else
-        U.AlertGM("Soundscape: " .. tostring(message))
-    end
-    syncSoundscapeControls()
-end
-
---- Storyteller Sound: featured catalog track (`soundscapeFeatured_<key>` ids).
-function HUD_soundscapePlayFeatured(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_soundscapePlayFeatured") then
-        return
-    end
-    local trackKey = string.gsub(id or "", "^soundscapeFeatured_", "")
-    local ok, message = SS.playFeaturedMusic(trackKey)
-    if ok then
-        U.AlertGM("Featured: " .. tostring(trackKey))
-    else
-        U.AlertGM("Soundscape: " .. tostring(message))
-    end
-    syncSoundscapeControls()
-end
-
-function HUD_soundscapeStopFeatured(player, button, id)
-    if not requireStorytellerForMutation(player, "HUD_soundscapeStopFeatured") then
-        return
-    end
-    local ok, message = SS.stopFeaturedMusic()
-    if ok then
-        U.AlertGM("Featured stopped; background context preserved.")
-    else
-        U.AlertGM("Soundscape: " .. tostring(message))
-    end
-    syncSoundscapeControls()
-end
-
---- Storyteller Sound: volume sliders (`soundscapeSlider_<lane>` lane = music|location|featured|rain|wind|thunder).
-function HUD_soundscapeLaneSlider(player, value, id)
-    if not requireStorytellerForMutation(player, "HUD_soundscapeLaneSlider") then
-        return
-    end
-    local lane = string.gsub(id or "", "^soundscapeSlider_", "")
-    local volume01 = tonumber(value)
-    if volume01 == nil then
-        return
-    end
-    local ok, message = SS.setStorytellerLaneVolume(lane, volume01)
-    if not ok then
-        U.AlertGM(tostring(message))
-    end
-    syncSoundscapeControls()
 end
 
 --- Storyteller Scenes panel clicks (`scenes_tbl_*`, `scenes_seat_*`).
@@ -4262,7 +4017,7 @@ function HUD_scenesApplyLocation(player, button, id)
         return
     end
     StorytellerScenesPanel.applyLocationFromInputs(player)
-    syncSoundscapeControls()
+    require("dashboard.push").markWorldDirty({ soundscape = true })
 end
 
 function HUD_scenesApplyClock(player, button, id)
@@ -4270,7 +4025,7 @@ function HUD_scenesApplyClock(player, button, id)
         return
     end
     StorytellerScenesPanel.applyClockFromInputs(player)
-    syncSoundscapeControls()
+    require("dashboard.push").markWorldDirty({ soundscape = true })
 end
 
 --- Overwrites `gameState.presentDayClock` from stashed clock field values (month + day/year/time inputs).
@@ -5575,10 +5330,6 @@ function UpdateUIDisplays(delta)
             StorytellerProjectsPanel.refresh()
         end
     end
-    if wants("soundscape") then
-        syncSoundscapeControls()
-    end
-
     if wants("playerHud") then
         M.forPlayers(function(player, color)
             if wantsSeatColor(color) then

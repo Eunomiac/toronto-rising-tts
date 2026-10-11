@@ -1,5 +1,5 @@
 --[[
-    Storyteller HUD toolbar: mutually exclusive bottom-bar panels (Scenes, Sound, Phases, Stats, Projects).
+    Storyteller HUD toolbar: mutually exclusive bottom-bar panels (Scenes, Phases, Stats, Projects).
     Tied to XML ids in ui/storyteller/ — not for generic reuse; keep out of lib/util.
 ]]
 local U = require("lib.util")
@@ -10,7 +10,6 @@ local StorytellerPanelUI = {}
 --- `scenes` uses `panel_scenes_host` so the Scenes tab can show `panel_scenes` + `panel_scenes_library` side-by-side.
 local STORYTELLER_PANELS = {
     scenes = { panel = "panel_scenes_host", toggle = "toggle_scenes" },
-    soundscape = { panel = "panel_soundscape", toggle = "toggle_soundscape" },
     phases = { panel = "panel_phases", toggle = "toggle_phases" },
     stats = { panel = "panel_stats", toggle = "toggle_stats" },
     projects = { panel = "panel_projects", toggle = "toggle_projects" },
@@ -108,7 +107,7 @@ end
 --- Clicking the same top button again hides the content area (all toggles inactive).
 --- When `forceOpen` is true, the same-tab collapse is skipped (e.g. after `UI.setXml` when a panel was already open).
 ---
---- @param panelKey string One of: "scenes", "soundscape", "phases", "stats", "projects"
+--- @param panelKey string One of: "scenes", "phases", "stats", "projects"
 --- @param forceOpen boolean|nil If true, always apply the open-panel branch (no toggle-close).
 function StorytellerPanelUI.selectStorytellerPanel(panelKey, forceOpen)
     if type(panelKey) ~= "string" then

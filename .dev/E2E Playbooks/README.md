@@ -88,7 +88,7 @@ Full rules, layout (100-char banner with spaces around text), **console `print` 
 ## Related docs
 
 - [TESTING.md](../TESTING.md) — console helper index (`rollTest`, `showState`, …)
-- [HUD_FUNCTIONS.md](../HUD_FUNCTIONS.md) — Scenes / Sound panel handlers
+- [HUD_FUNCTIONS.md](../HUD_FUNCTIONS.md) — Scenes panel handlers and the in-game sound debug buttons
 - [Reconciler Contract](../Sychronizing%20Game%20Functionality/Reconciler%20Contract.md)
 - [TTS_MCP.md](../TTS_MCP.md) — agent execute / `TR_AGENT_V1` lines
 

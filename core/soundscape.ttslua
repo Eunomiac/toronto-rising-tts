@@ -224,7 +224,7 @@ local function defaultState()
         siteSilent = false,
         --- When true, background music stays off (site `backgroundMusic.playlist = "none"` or `setLocationMusic("none")`); location/weather lanes are unaffected.
         backgroundMusicSuppressed = false,
-        --- Last site key passed through `applyContext` / UI (for Storyteller Sound panel Location enable fallback).
+        --- Last site key passed through `applyContext` / UI (scene/site fallback for location music).
         lastAppliedSiteKey = nil,
         lastAppliedDistrictKey = nil,
     }
@@ -1992,25 +1992,7 @@ function Soundscape.getDebugPlayingTracks()
     return rows
 end
 
---- Returns a compact state summary for UI/debug output.
--- @return string
-function Soundscape.getSummaryText()
-    local state = ensureState()
-    local parts = {
-        "Music: " .. tostring(state.backgroundMusicMode) .. "/" .. tostring(state.musicMood),
-        "Featured: " .. tostring(state.featuredActive and state.featuredMusic or "none"),
-        "Location: " .. tostring(state.location),
-        "Weather: " .. tostring(state.weather),
-        "Rain: " .. tostring(state.rain),
-        "Wind: " .. tostring(state.wind),
-        "Thunder: " .. tostring(state.thunderEnabled),
-        "Indoors: " .. tostring(state.isIndoors),
-        "SiteSilent: " .. tostring(state.siteSilent == true),
-    }
-    return table.concat(parts, " | ")
-end
-
---- Rows for Storyteller Sound panel volume sliders (natural vs applied for weather).
+--- Rows for the dashboard sound lanes (natural vs applied for weather).
 -- @return table[]
 function Soundscape.getPlayingLanesForUi()
     local state = ensureState()

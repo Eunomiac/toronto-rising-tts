@@ -208,7 +208,7 @@ lua rollE2eClearConditions("Brown")
 
 See [Dice-E2E-Guide.md](E2E%20Playbooks/Dice-E2E-Guide.md) § Solo Host for the full harness table.
 
-## Quick setters (prefer Scenes / Sound panels for narrative)
+## Quick setters (prefer the Storyteller Dashboard for narrative)
 
 ```lua
 lua setHunger("Red", 3)

@@ -18,7 +18,6 @@ ui/
     hud_storyteller.xml           → Storyteller HUD layout (game phases, debug controls)
     panel_sidebar.xml             → Right sidebar (reference image toggles + popup images)
     panel_scenes.xml              → Reserved (empty stub)
-    panel_soundscape.xml          → Storyteller soundscape controls (music mood, inspect, stop)
     panel_phases.xml              → Reserved (empty stub)
 
   player/
@@ -88,7 +87,7 @@ UI positioning uses a **conceptual 3 columns × 4 rows grid** (no physical `Grid
 - Visibility: `Black` for Storyteller, `Red`/`Brown`/etc. for players
 - Button onClick handlers must be global functions (e.g. `HUD_scenesPanel`)
 - UI element IDs must match handler expectations in `core/global_script.ttslua`
-- Soundscape UI should call `HUD_soundscape*` handlers and route runtime work through `core.soundscape`
+- Soundscape controls live on the Storyteller Dashboard (`dashboard/scenes.ttslua` sound ops); the in-game debug column keeps only `HUD_soundscapePrepareSave` / `HUD_soundscapeInspect`. Route runtime work through `core.soundscape`
 - Admin panel ID: `adminControls` (left button column + debug panels)
 - Sidebar panel ID: `hudSidebarHost` (reference image toggles)
 - Debug panel IDs: `debugControls`, `debugStatePanel`, `debugTraitsPanel`

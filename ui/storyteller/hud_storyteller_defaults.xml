@@ -139,8 +139,8 @@
     childForceExpandHeight="false"
     ignoreLayout="true" />
 
-  <!-- Debug column: simulated connection per PC seat (Assume Connected mode only) -->
-  <HorizontalLayout class="debug_sim_connect_row"
+  <!-- Debug column: rows of small side-by-side buttons (simulated connection, soundscape tools) -->
+  <HorizontalLayout class="debug_button_row"
     spacing="2"
     childForceExpandWidth="true"
     childForceExpandHeight="true" />
@@ -149,6 +149,10 @@
     fontStyle="Bold"
     textColor="#FFFFFF"
     colors="#1E5A2A|#2A7038|#3A9048|rgba(0.1,0.3,0.12,0.5)" />
+  <Button class="debug_small_button"
+    fontSize="11"
+    textColor="#FFFFFF"
+    colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
 
   <!-- Main button column: left-aligned, half-scale, vertically stacked (TOR-396: +100 Y) -->
   <VerticalLayout class="storyteller_buttonControls"
@@ -157,7 +161,7 @@
     rectAlignment="LowerRight"
     childAlignment="LowerRight"
     width="200"
-    height="440"
+    height="460"
     ignoreLayout = "true"
     offsetXY = "-1650 250"
     childForceExpandWidth="true"

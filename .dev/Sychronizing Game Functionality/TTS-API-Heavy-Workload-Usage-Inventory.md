@@ -156,7 +156,7 @@ The `onValueChanged` surface is the main high-frequency callback surface current
 
 | Handler | Source | Current behavior | Phase-3 disposition |
 | --- | --- | --- | --- |
-| `HUD_soundscapeLaneSlider` | `core/global_script.ttslua:3404` | ST-gated slider calls `SS.setStorytellerLaneVolume` immediately | `debounce` / `inspect` |
+| Dashboard `laneVolume` op | `dashboard/scenes.ttslua` | Dashboard volume slider calls `SS.setStorytellerLaneVolume` per command | `debounce` / `inspect` |
 | `HUD_sessionNumInput` | `core/global_script.ttslua:3638` | ST-gated input mutates session number and runs UI refresh immediately | `debounce` |
 | `HUD_debugLightEnabled` | `core/global_script.ttslua:4002` | ST-gated debug toggle mutates focused light | `remove/debug-only` |
 | `HUD_debugLightSlider` | `core/global_script.ttslua:4028` | ST-gated debug slider mutates focused light on every slider change | `remove/debug-only` / `debounce` |

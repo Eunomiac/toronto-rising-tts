@@ -120,33 +120,31 @@ test("soundscape runtime module exposes the planned API", () => {
   });
 });
 
-test("Storyteller Sound HUD steady-state handlers prime eager reconcile fingerprint", () => {
-  const source = readRepoFile("core/global_script.ttslua");
+test("Storyteller Dashboard sound ops prime eager reconcile fingerprint", () => {
+  const source = readRepoFile("dashboard/scenes.ttslua");
 
-  const handlers = [
-    "function HUD_soundscapeSetMusicMood",
-    "function HUD_soundscapeSetBackgroundLocation",
-    "function HUD_soundscapeStopAll",
-  ];
+  const helperStart = source.indexOf("local function soundResult");
+  assert.ok(helperStart >= 0, "missing soundResult helper");
+  const helperEnd = source.indexOf("\nend", helperStart);
+  assert.ok(
+    source.slice(helperStart, helperEnd).includes("commitEagerSteadyState"),
+    "soundResult should call SS.commitEagerSteadyState after steady-state mutation",
+  );
 
-  for (const handler of handlers) {
-    const start = source.indexOf(handler);
-    assert.ok(start >= 0, `missing ${handler}`);
-    const end = source.indexOf("\nfunction ", start + 1);
-    const body = end >= 0 ? source.slice(start, end) : source.slice(start);
-    assert.ok(
-      body.includes("commitEagerSteadyState"),
-      `${handler} should call SS.commitEagerSteadyState after steady-state mutation`,
-    );
+  const opBody = (op) => {
+    const start = source.indexOf(`if op == "${op}" then`);
+    assert.ok(start >= 0, `missing ${op} op`);
+    const end = source.indexOf("\n  end", start);
+    return source.slice(start, end);
+  };
+
+  for (const op of ["musicMood", "locationMusic", "stopAll"]) {
+    assert.ok(opBody(op).includes("soundResult("), `${op} should route through soundResult`);
   }
 
-  const featuredStart = source.indexOf("function HUD_soundscapePlayFeatured");
-  assert.ok(featuredStart >= 0);
-  const featuredEnd = source.indexOf("\nfunction ", featuredStart + 1);
-  const featuredBody =
-    featuredEnd >= 0 ? source.slice(featuredStart, featuredEnd) : source.slice(featuredStart);
+  const featured = opBody("featuredPlay");
   assert.equal(
-    featuredBody.includes("commitEagerSteadyState"),
+    featured.includes("soundResult(") || featured.includes("commitEagerSteadyState"),
     false,
     "featured one-shots should not prime steady-state reconcile fingerprint",
   );
