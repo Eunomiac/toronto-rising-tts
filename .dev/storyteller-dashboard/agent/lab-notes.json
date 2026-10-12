@@ -3,222 +3,172 @@
     {
       "id": 1,
       "sketch": "scenes",
-      "x": 807,
-      "y": 157,
-      "text": "Remove \"no scene on the table\"; instead, blank out the entire stage with a \"(No Active Scene)\" notification in the center whenever a scene is not active.",
+      "x": 1774,
+      "y": 316,
+      "text": "Storyteller dice trays were spawning in Scatter Mode tilted; they should always have x- and z-rotations of zero, only the y-rotation of the dice trays should change",
       "status": "open",
-      "createdAt": "2026-10-11T03:13:36.756Z",
-      "updatedAt": "2026-10-11T03:13:36.756Z"
+      "createdAt": "2026-10-11T09:25:15.856Z",
+      "updatedAt": "2026-10-11T09:25:15.856Z"
     },
     {
       "id": 2,
       "sketch": "scenes",
-      "x": 1143,
-      "y": 156,
-      "text": "Scenes on deck should display in the same order that they appear in the scenes popup modal",
+      "x": 1014,
+      "y": 920,
+      "text": "I've decided that players should keep their table slots throughout a single session -- i.e. the randomization of slots should only ever occur at the start of the session (Intermission to Play), and persist until the next transition from Intermission to Play.",
       "status": "open",
-      "createdAt": "2026-10-11T03:34:55.651Z",
-      "updatedAt": "2026-10-11T03:34:55.651Z"
+      "createdAt": "2026-10-11T09:26:27.157Z",
+      "updatedAt": "2026-10-11T09:26:27.157Z"
     },
     {
       "id": 3,
       "sketch": "scenes",
-      "x": 1542,
-      "y": 160,
-      "text": "When transitioning to a scene set to \"Table B\" with an NPC occupying slot 6, the error \"slot 6 is too big for this table\" appears.  But Table B is meant to dynamically choose from Table B0 to Table B5 depending on the number of occupied slots.",
+      "x": 1814,
+      "y": 336,
+      "text": "In Scatter Mode, Storyteller dice trays weren't being hidden when the roll was cleared from the dashboard.",
       "status": "open",
-      "createdAt": "2026-10-11T03:36:59.099Z",
-      "updatedAt": "2026-10-11T03:37:11.702Z"
+      "createdAt": "2026-10-11T09:27:41.317Z",
+      "updatedAt": "2026-10-11T09:27:41.317Z"
     },
     {
       "id": 4,
       "sketch": "scenes",
-      "x": 1543,
-      "y": 281,
-      "text": "When a pinned note is edited on the dashboard, it should collapse back to its pin when clicked off of.",
+      "x": 992,
+      "y": 448,
+      "text": "When a player changes their group in scatter mode, it isn't updated on the Dashboard.",
       "status": "open",
-      "createdAt": "2026-10-11T03:37:55.626Z",
-      "updatedAt": "2026-10-11T03:37:55.626Z"
+      "createdAt": "2026-10-11T09:28:25.720Z",
+      "updatedAt": "2026-10-11T09:28:25.720Z"
     },
     {
       "id": 5,
       "sketch": "scenes",
-      "x": 111,
-      "y": 282,
-      "text": "Right-clicking on a category name should allow editing the name of the group.",
+      "x": 568,
+      "y": 595,
+      "text": "When the game transitions to a Scatter Mode scene and there are seated NPCs at the table, those NPCs should not count as occupying the \"PC side\" of a scatter group: The five PCs should always be spread out, one to a group, at the start of a Scatter Mode scene. All NPCs that occupy seated positions in scatter mode should automatically move to the NPC side of the stage, into NPC slots around the scatter groups.",
       "status": "open",
-      "createdAt": "2026-10-11T03:40:22.075Z",
-      "updatedAt": "2026-10-11T03:41:25.669Z"
+      "createdAt": "2026-10-11T09:30:03.664Z",
+      "updatedAt": "2026-10-11T09:30:03.664Z"
     },
     {
       "id": 6,
       "sketch": "scenes",
-      "x": 236,
-      "y": 356,
-      "text": "Right-clicking a token (not a token group) should bring up a configuration modal where I can rename the token, change its color, adjust the positioning of the figurine within the token circle, change the 'card scale' of the NPC (i.e. the scale value that defaults to 53), and set its seated y-value to a custom value that differs from the default.",
+      "x": 1082,
+      "y": 523,
+      "text": "The scatter mode groups, and the positions PC's and NPCs occupy in those groups, should appear and be configurable in the preview panel (including when a Table scene is switched to scatter mode in the preview panel)",
       "status": "open",
-      "createdAt": "2026-10-11T03:41:18.005Z",
-      "updatedAt": "2026-10-11T05:00:13.035Z"
+      "createdAt": "2026-10-11T09:31:35.483Z",
+      "updatedAt": "2026-10-11T09:31:35.483Z"
     },
     {
       "id": 7,
       "sketch": "scenes",
-      "x": 905,
-      "y": 596,
-      "text": "NPC tokens added to the stage control board should be arranged in horizontal rows, scaled to 1.5, 1, 1.5, and separated by 3 units in the x-direction, with an extra 1-unit gap separating tokens in different groups --- i.e. they shouldn't spawn in their slot positions, as the stage control board is only being used for spotlight purposes moving forward.  Also, their y-rotation should be 0, not 180.  Changing their light mode from on to off (or vice versa) should still flip their token over, but not change its x/z position.",
+      "x": 1123,
+      "y": 159,
+      "text": "Right-clicking a scene in the scene deck should open up the edit panel immediately. \n\nTo _end_ a scene, I want the interaction to be click and hold. While the left button is held down, the scene rectangle should fill with red from left to right and, when it is filled, it should be ended.",
       "status": "open",
-      "createdAt": "2026-10-11T03:51:23.358Z",
-      "updatedAt": "2026-10-11T03:52:00.980Z"
+      "createdAt": "2026-10-11T09:33:11.835Z",
+      "updatedAt": "2026-10-11T09:33:11.835Z"
     },
     {
       "id": 8,
       "sketch": "scenes",
-      "x": 194,
-      "y": 52,
-      "text": "Some of the links for District and Site card images on the Dashboard appear to be broken. Check the build script to see how District/Site cards are extracted from the save,  and grab the URLs from there (as the custom assets in the save JSON have correct URLs)",
+      "x": 963,
+      "y": 158,
+      "text": "Let's split the scene deck and phase/scene title and control buttons into two rows.  The top row should include the phases, the scene name (if any) and the Scene and advance phase buttons; the second row beneath it should be the scene deck, and include all of the on-deck scenes, centered.",
       "status": "open",
-      "createdAt": "2026-10-11T03:53:02.140Z",
-      "updatedAt": "2026-10-11T03:53:02.140Z"
+      "createdAt": "2026-10-11T09:34:01.793Z",
+      "updatedAt": "2026-10-11T09:34:01.793Z"
     },
     {
       "id": 9,
       "sketch": "scenes",
-      "x": 1188,
-      "y": 146,
-      "text": "During the spotlight phase, the stage board should be replaced with a scaled-up view of the spotlight carousel controls, centered, instead of having them appear in this top banner",
+      "x": 1305,
+      "y": 882,
+      "text": "Compulsion cards aren't being read from TTS on a reload of the Dashboard",
       "status": "open",
-      "createdAt": "2026-10-11T04:04:49.349Z",
-      "updatedAt": "2026-10-11T04:04:49.349Z"
+      "createdAt": "2026-10-11T09:36:52.393Z",
+      "updatedAt": "2026-10-11T09:36:52.393Z"
     },
     {
       "id": 10,
       "sketch": "scenes",
-      "x": 401,
-      "y": 612,
-      "text": "Let's consolidate the popout/hide behavior of the roster to use the same click button to show it as to hide it (i.e. no more show-on-hover)",
+      "x": 1738,
+      "y": 336,
+      "text": "Remove the close button; double-clicking a collapsed panel should clear the roll",
       "status": "open",
-      "createdAt": "2026-10-11T04:19:32.444Z",
-      "updatedAt": "2026-10-11T04:19:32.444Z"
+      "createdAt": "2026-10-11T09:39:22.224Z",
+      "updatedAt": "2026-10-11T09:39:22.224Z"
     },
     {
       "id": 11,
       "sketch": "scenes",
-      "x": 1776,
+      "x": 1854,
       "y": 155,
-      "text": "Add a small strip to the scene transition modal depicting all seated characters in the scene being departed from, that I can use to toggle on/off those characters who will be present in the scene being moved to. If there is a collision between the current seated characters and those declared in the scene library as seated in the coming scene, the destination layout gets priority, but any 'orphaned' seated characters should be displayed as tokens ringed in red off of the strip, and I should be able to drag those orphans to seats (swapping with any seated characters already there, moving them to the orphaned zone).  NPCs (not PCs) should also be draggable off of the strip, so they can be orphaned and 'left behind' so they don't occupy a seat in the new scene.",
+      "text": "With many scenes on deck at once, the advance button got pushed off the right side of the screen.  The change to showing the scene panel as a double-row should fix this, but if so many scenes are on deck that even that would cause overflow, flex-shrink the scene bars so they can all be shown, with each one growing to its full width when it is hovered over",
       "status": "open",
-      "createdAt": "2026-10-11T04:23:32.237Z",
-      "updatedAt": "2026-10-11T04:24:30.096Z"
+      "createdAt": "2026-10-11T09:40:35.092Z",
+      "updatedAt": "2026-10-11T09:40:35.092Z"
     },
     {
       "id": 12,
-      "sketch": "scenes",
-      "x": 1840,
-      "y": 371,
-      "text": "On a willpower reroll of a secret ST roll, the dice should be made visible again as they are rerolled, then hidden again before they land.",
+      "sketch": "pcs",
+      "x": 867,
+      "y": 110,
+      "text": "For the add-project modal, the fields required for the next step of setting up the project should be highlighted with a glow.  As soon as enough information is provided for the launch roll, the Roll button should light up.",
       "status": "open",
-      "createdAt": "2026-10-11T04:35:56.085Z",
-      "updatedAt": "2026-10-11T04:35:56.085Z"
+      "createdAt": "2026-10-11T09:43:44.882Z",
+      "updatedAt": "2026-10-11T09:43:44.882Z"
     },
     {
       "id": 13,
-      "sketch": "scenes",
-      "x": 1876,
-      "y": 383,
-      "text": "After an NPC reroll, the Dashboard dice are not updated to the new result (I have to click the 'recalculate' button to update them)",
+      "sketch": "pcs",
+      "x": 947,
+      "y": 116,
+      "text": "After clicking the Roll button, the roll showed up in the Storyteller Dashboard Scene roll panel with the difficulty set, but it was not automatically opened for the player -- I had to deselect and reselect the difficulty for it to work.",
       "status": "open",
-      "createdAt": "2026-10-11T04:36:18.396Z",
-      "updatedAt": "2026-10-11T04:36:18.396Z"
+      "createdAt": "2026-10-11T09:44:20.433Z",
+      "updatedAt": "2026-10-11T09:44:20.433Z"
     },
     {
       "id": 14,
       "sketch": "scenes",
-      "x": 1848,
-      "y": 255,
-      "text": "When I add notes on the righthand side of the screen, they overflow to the right -- the note input box should align itself so it doesn't overflow",
+      "x": 1236,
+      "y": 894,
+      "text": "Player compulsion cards are not moving with the rest of their objects in Scatter mode",
       "status": "open",
-      "createdAt": "2026-10-11T04:36:49.124Z",
-      "updatedAt": "2026-10-11T04:36:49.124Z"
+      "createdAt": "2026-10-11T09:48:17.465Z",
+      "updatedAt": "2026-10-11T09:48:17.465Z"
     },
     {
       "id": 15,
       "sketch": "scenes",
-      "x": 1817,
-      "y": 321,
-      "text": "Remove the word \"Drawer\" from the ST dice drawer display; a number in a box is enough and will prevent wrapping to two lines when collapsed.",
+      "x": 945,
+      "y": 518,
+      "text": "The particle emitter isn't working in Scatter Mode (switching to a table mode fixes it though)",
       "status": "open",
-      "createdAt": "2026-10-11T04:37:44.980Z",
-      "updatedAt": "2026-10-11T04:37:44.980Z"
+      "createdAt": "2026-10-11T09:49:55.722Z",
+      "updatedAt": "2026-10-11T09:49:55.722Z"
     },
     {
       "id": 16,
       "sketch": "scenes",
-      "x": 1722,
-      "y": 331,
-      "text": "When a roll is broadcast, it should automatically collapse on the Dashboard display.",
+      "x": 463,
+      "y": 367,
+      "text": "Several of the generated tokens seem to be missing most of their names:  \"Laz\"  reads \"L\", \"Benedict Kincaid\" reads \"B\", \"Severin Koslov\" has only a corrupted \"S\", there may be others",
       "status": "open",
-      "createdAt": "2026-10-11T04:38:01.557Z",
-      "updatedAt": "2026-10-11T04:38:01.557Z"
+      "createdAt": "2026-10-11T09:52:16.534Z",
+      "updatedAt": "2026-10-11T09:52:16.534Z"
     },
     {
-      "id": 18,
+      "id": 17,
       "sketch": "scenes",
-      "x": 1685,
-      "y": 319,
-      "text": "When a secret roll is broadcast, the dice displayed should only include dice that rolled a success or a critical. If the result was a messy critical, ALL of the displayed dice should appear as hunger dice. If the result was a bestial failure, successful/critically successful dice should display as normal dice, and then any hunger dice that rolled a 1 should also be displayed. If the result is a total failure, no dice should be displayed.  Finally, the physical dice rolled during a secret roll should never be made visible to the players.",
+      "x": 607,
+      "y": 378,
+      "text": "Tokens are being spawned at the bottom right corner of the stage board, moving to the left and then up.  They should spawn at the top left corner, moving right and then down",
       "status": "open",
-      "createdAt": "2026-10-11T04:44:11.041Z",
-      "updatedAt": "2026-10-11T04:46:15.528Z"
-    },
-    {
-      "id": 19,
-      "sketch": "scenes",
-      "x": 328,
-      "y": 28,
-      "text": "Resonance modifiers should not wrap, but be allowed to overflow to the left.",
-      "status": "open",
-      "createdAt": "2026-10-11T04:50:47.236Z",
-      "updatedAt": "2026-10-11T04:50:47.236Z"
-    },
-    {
-      "id": 20,
-      "sketch": "scenes",
-      "x": 1031,
-      "y": 632,
-      "text": "When dragging an NPC token from a lit/active seated position to the stage, the Dashboard shows them lit (as it should) but, in game, their figurine remains unlit",
-      "status": "open",
-      "createdAt": "2026-10-11T04:51:38.893Z",
-      "updatedAt": "2026-10-11T04:51:38.893Z"
-    },
-    {
-      "id": 21,
-      "sketch": "scenes",
-      "x": 758,
-      "y": 952,
-      "text": "I'd like to be able to easily access each PC's character sheet (on the PCs tab) from the seated characters panel. Ideally, a double-click should bring me to the PCs tab with that character's sheet loaded; if combining a double-click with the existing single-click functionality would be problematic, a button on the left-click popup will work just as well",
-      "status": "open",
-      "createdAt": "2026-10-11T04:58:13.764Z",
-      "updatedAt": "2026-10-11T04:58:13.764Z"
-    },
-    {
-      "id": 22,
-      "sketch": "scenes",
-      "x": 622,
-      "y": 26,
-      "text": "I'm unable to drag the moon to set the time when the clock is running on scene time; not sure if it's been disabled, or if the present day time display is blocking clicks, but it should be possible to advance the clock forward regardless of whether the clock is running on present day or scene time",
-      "status": "open",
-      "createdAt": "2026-10-11T05:04:27.467Z",
-      "updatedAt": "2026-10-11T05:04:27.467Z"
-    },
-    {
-      "id": 23,
-      "sketch": "scenes",
-      "x": 745,
-      "y": 891,
-      "text": "I would like there to be a badge displayed over PCs that have active Compulsions, and ideally, a tooltip popup containing the Influence, Burden and Catharsis text for the compulsion drawn. Please check Google Drive for the Toronto Rising spreadsheets that contain this information; the GM notes on each drawn Compulsion card can be referenced to identify the compulsion drawn.",
-      "status": "open",
-      "createdAt": "2026-10-11T05:06:14.375Z",
-      "updatedAt": "2026-10-11T05:06:14.375Z"
+      "createdAt": "2026-10-11T09:53:09.250Z",
+      "updatedAt": "2026-10-11T09:53:09.250Z"
     }
   ]
 }

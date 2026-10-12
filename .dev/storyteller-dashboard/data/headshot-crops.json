@@ -35,6 +35,61 @@
       "cy": 0.1253,
       "size": 0.1155
     },
+    "civilianProtester_01": {
+      "cx": 0.5818,
+      "cy": 0.1115,
+      "size": 0.2421
+    },
+    "civilianWounded_01": {
+      "cx": 0.2017,
+      "cy": 0.0976,
+      "size": 0.2259
+    },
+    "civilianWounded_02": {
+      "cx": 0.4978,
+      "cy": 0.1406,
+      "size": 0.2966
+    },
+    "civilianWounded_03": {
+      "cx": 0.5239,
+      "cy": 0.1165,
+      "size": 0.2597
+    },
+    "civilianWounded_04": {
+      "cx": 0.4125,
+      "cy": 0.1205,
+      "size": 0.215
+    },
+    "civilianWounded_05": {
+      "cx": 0.4618,
+      "cy": 0.1146,
+      "size": 0.1727
+    },
+    "civilianWounded_06": {
+      "cx": 0.4217,
+      "cy": 0.2276,
+      "size": 0.5246
+    },
+    "civilianWounded_07": {
+      "cx": 0.4556,
+      "cy": 0.1893,
+      "size": 0.3886
+    },
+    "civilianWounded_08": {
+      "cx": 0.4342,
+      "cy": 0.2148,
+      "size": 0.4547
+    },
+    "civilianWounded_09": {
+      "cx": 0.5506,
+      "cy": 0.2069,
+      "size": 0.4673
+    },
+    "civilianWounded_10": {
+      "cx": 0.4964,
+      "cy": 0.1496,
+      "size": 0.3091
+    },
     "daevaNasirKhan": {
       "cx": 0.5285,
       "cy": 0.0905,
@@ -54,6 +109,46 @@
       "cx": 0.4746,
       "cy": 0.0959,
       "size": 0.1337
+    },
+    "dogAngry_01": {
+      "cx": 0.4197,
+      "cy": 0.2742,
+      "size": 0.878
+    },
+    "dogAngry_02": {
+      "cx": 0.4773,
+      "cy": 0.2917,
+      "size": 0.4751
+    },
+    "dogAngry_03": {
+      "cx": 0.3302,
+      "cy": 0.1936,
+      "size": 0.5283
+    },
+    "dogAngry_04": {
+      "cx": 0.4771,
+      "cy": 0.2427,
+      "size": 0.5169
+    },
+    "dogGuard_01": {
+      "cx": 0.6247,
+      "cy": 0.2454,
+      "size": 0.5169
+    },
+    "dogGuard_02": {
+      "cx": 0.4407,
+      "cy": 0.1327,
+      "size": 0.3369
+    },
+    "dogGuard_03": {
+      "cx": 0.6644,
+      "cy": 0.2158,
+      "size": 0.4547
+    },
+    "dogGuard_04": {
+      "cx": 0.4898,
+      "cy": 0.2271,
+      "size": 0.5169
     },
     "emilyTheDuskRose": {
       "cx": 0.5108,
@@ -94,6 +189,11 @@
       "cx": 0.4937,
       "cy": 0.1237,
       "size": 0.1348
+    },
+    "hospitalPatient_03": {
+      "cx": 0.5931,
+      "cy": 0.1503,
+      "size": 0.3218
     },
     "ianRammond": {
       "cx": 0.2622,

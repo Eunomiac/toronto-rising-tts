@@ -676,7 +676,7 @@ return {
   },
   civilianProtester_01 = {
     figurine = { front = BASE .. "Generic/civilianProtester_01.webp?v=2d60346153a4", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianProtester_01.front.webp?v=9cdb286d01ff", back = BASE .. "Tokens/civilianProtester_01.back.webp?v=9cdb286d01ff" },
+    token = { front = BASE .. "Tokens/civilianProtester_01.front.webp?v=19b96f7f2589", back = BASE .. "Tokens/civilianProtester_01.back.webp?v=19b96f7f2589" },
     genericLabel = "Protester",
   },
   civilianProtester_02 = {
@@ -816,52 +816,52 @@ return {
   },
   civilianWounded_01 = {
     figurine = { front = BASE .. "Generic/civilianWounded_01.webp?v=2d5e2f3f86af", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianWounded_01.front.webp?v=0ef5b07ce67f", back = BASE .. "Tokens/civilianWounded_01.back.webp?v=0ef5b07ce67f" },
+    token = { front = BASE .. "Tokens/civilianWounded_01.front.webp?v=d00eba96c460", back = BASE .. "Tokens/civilianWounded_01.back.webp?v=d00eba96c460" },
     genericLabel = "Wounded Civilian",
   },
   civilianWounded_02 = {
     figurine = { front = BASE .. "Generic/civilianWounded_02.webp?v=61fdc0825017", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianWounded_02.front.webp?v=c2d5213ea698", back = BASE .. "Tokens/civilianWounded_02.back.webp?v=c2d5213ea698" },
+    token = { front = BASE .. "Tokens/civilianWounded_02.front.webp?v=cb5fad803585", back = BASE .. "Tokens/civilianWounded_02.back.webp?v=cb5fad803585" },
     genericLabel = "Wounded Civilian",
   },
   civilianWounded_03 = {
     figurine = { front = BASE .. "Generic/civilianWounded_03.webp?v=358b8e64eb66", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianWounded_03.front.webp?v=c7c3b3befa32", back = BASE .. "Tokens/civilianWounded_03.back.webp?v=c7c3b3befa32" },
+    token = { front = BASE .. "Tokens/civilianWounded_03.front.webp?v=3a91253f4dc2", back = BASE .. "Tokens/civilianWounded_03.back.webp?v=3a91253f4dc2" },
     genericLabel = "Wounded Civilian",
   },
   civilianWounded_04 = {
     figurine = { front = BASE .. "Generic/civilianWounded_04.webp?v=606e95f787b7", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianWounded_04.front.webp?v=7e8900388961", back = BASE .. "Tokens/civilianWounded_04.back.webp?v=7e8900388961" },
+    token = { front = BASE .. "Tokens/civilianWounded_04.front.webp?v=5048ef313791", back = BASE .. "Tokens/civilianWounded_04.back.webp?v=5048ef313791" },
     genericLabel = "Wounded Civilian",
   },
   civilianWounded_05 = {
     figurine = { front = BASE .. "Generic/civilianWounded_05.webp?v=4614966fb793", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianWounded_05.front.webp?v=bfc9bee7efac", back = BASE .. "Tokens/civilianWounded_05.back.webp?v=bfc9bee7efac" },
+    token = { front = BASE .. "Tokens/civilianWounded_05.front.webp?v=7385606b1589", back = BASE .. "Tokens/civilianWounded_05.back.webp?v=7385606b1589" },
     genericLabel = "Wounded Civilian",
   },
   civilianWounded_06 = {
     figurine = { front = BASE .. "Generic/civilianWounded_06.webp?v=de7ad14bd166", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianWounded_06.front.webp?v=08706bd894ee", back = BASE .. "Tokens/civilianWounded_06.back.webp?v=08706bd894ee" },
+    token = { front = BASE .. "Tokens/civilianWounded_06.front.webp?v=14e44729e4f8", back = BASE .. "Tokens/civilianWounded_06.back.webp?v=14e44729e4f8" },
     genericLabel = "Wounded Civilian (Seated)",
   },
   civilianWounded_07 = {
     figurine = { front = BASE .. "Generic/civilianWounded_07.webp?v=0e17965e259f", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianWounded_07.front.webp?v=88c845fb6596", back = BASE .. "Tokens/civilianWounded_07.back.webp?v=88c845fb6596" },
+    token = { front = BASE .. "Tokens/civilianWounded_07.front.webp?v=0002583fd9fd", back = BASE .. "Tokens/civilianWounded_07.back.webp?v=0002583fd9fd" },
     genericLabel = "Wounded Civilian (Seated)",
   },
   civilianWounded_08 = {
     figurine = { front = BASE .. "Generic/civilianWounded_08.webp?v=5ac85fea1fcf", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianWounded_08.front.webp?v=782f70db5c49", back = BASE .. "Tokens/civilianWounded_08.back.webp?v=782f70db5c49" },
+    token = { front = BASE .. "Tokens/civilianWounded_08.front.webp?v=c35828a05b5b", back = BASE .. "Tokens/civilianWounded_08.back.webp?v=c35828a05b5b" },
     genericLabel = "Wounded Civilian (Seated)",
   },
   civilianWounded_09 = {
     figurine = { front = BASE .. "Generic/civilianWounded_09.webp?v=a310acff98f9", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianWounded_09.front.webp?v=16a95860d667", back = BASE .. "Tokens/civilianWounded_09.back.webp?v=16a95860d667" },
+    token = { front = BASE .. "Tokens/civilianWounded_09.front.webp?v=bde36f53cb88", back = BASE .. "Tokens/civilianWounded_09.back.webp?v=bde36f53cb88" },
     genericLabel = "Wounded Civilian (Seated)",
   },
   civilianWounded_10 = {
     figurine = { front = BASE .. "Generic/civilianWounded_10.webp?v=65cb57473768", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/civilianWounded_10.front.webp?v=a35b76edab9f", back = BASE .. "Tokens/civilianWounded_10.back.webp?v=a35b76edab9f" },
+    token = { front = BASE .. "Tokens/civilianWounded_10.front.webp?v=4b7a479cadfd", back = BASE .. "Tokens/civilianWounded_10.back.webp?v=4b7a479cadfd" },
     genericLabel = "Wounded Civilian (Seated)",
   },
   crimeCoroner_01 = {
@@ -1015,42 +1015,42 @@ return {
   },
   dogAngry_01 = {
     figurine = { front = BASE .. "Generic/dogAngry_01.webp?v=6c93c440b02e", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/dogAngry_01.front.webp?v=6f9fd26ca964", back = BASE .. "Tokens/dogAngry_01.back.webp?v=6f9fd26ca964" },
+    token = { front = BASE .. "Tokens/dogAngry_01.front.webp?v=d9fcc0e226a5", back = BASE .. "Tokens/dogAngry_01.back.webp?v=d9fcc0e226a5" },
     genericLabel = "Guard Dog (Angry)",
   },
   dogAngry_02 = {
     figurine = { front = BASE .. "Generic/dogAngry_02.webp?v=24671e901798", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/dogAngry_02.front.webp?v=3498fd9b2183", back = BASE .. "Tokens/dogAngry_02.back.webp?v=3498fd9b2183" },
+    token = { front = BASE .. "Tokens/dogAngry_02.front.webp?v=0a9233918fc5", back = BASE .. "Tokens/dogAngry_02.back.webp?v=0a9233918fc5" },
     genericLabel = "Guard Dog (Angry)",
   },
   dogAngry_03 = {
     figurine = { front = BASE .. "Generic/dogAngry_03.webp?v=61ef50014a88", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/dogAngry_03.front.webp?v=cf18aef05c25", back = BASE .. "Tokens/dogAngry_03.back.webp?v=cf18aef05c25" },
+    token = { front = BASE .. "Tokens/dogAngry_03.front.webp?v=0a9044d9216f", back = BASE .. "Tokens/dogAngry_03.back.webp?v=0a9044d9216f" },
     genericLabel = "Guard Dog (Angry)",
   },
   dogAngry_04 = {
     figurine = { front = BASE .. "Generic/dogAngry_04.webp?v=1343fddcfad3", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/dogAngry_04.front.webp?v=99720bf03407", back = BASE .. "Tokens/dogAngry_04.back.webp?v=99720bf03407" },
+    token = { front = BASE .. "Tokens/dogAngry_04.front.webp?v=d72825295a68", back = BASE .. "Tokens/dogAngry_04.back.webp?v=d72825295a68" },
     genericLabel = "Guard Dog (Angry)",
   },
   dogGuard_01 = {
     figurine = { front = BASE .. "Generic/dogGuard_01.webp?v=8b1b872a9c4a", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/dogGuard_01.front.webp?v=3ea60dff5e8c", back = BASE .. "Tokens/dogGuard_01.back.webp?v=3ea60dff5e8c" },
+    token = { front = BASE .. "Tokens/dogGuard_01.front.webp?v=931481844b0a", back = BASE .. "Tokens/dogGuard_01.back.webp?v=931481844b0a" },
     genericLabel = "Guard Dog",
   },
   dogGuard_02 = {
     figurine = { front = BASE .. "Generic/dogGuard_02.webp?v=ae65abf160a2", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/dogGuard_02.front.webp?v=b2f7876d1fc8", back = BASE .. "Tokens/dogGuard_02.back.webp?v=b2f7876d1fc8" },
+    token = { front = BASE .. "Tokens/dogGuard_02.front.webp?v=9d775a3cad90", back = BASE .. "Tokens/dogGuard_02.back.webp?v=9d775a3cad90" },
     genericLabel = "Guard Dog",
   },
   dogGuard_03 = {
     figurine = { front = BASE .. "Generic/dogGuard_03.webp?v=304586183e48", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/dogGuard_03.front.webp?v=7d0f295ea140", back = BASE .. "Tokens/dogGuard_03.back.webp?v=7d0f295ea140" },
+    token = { front = BASE .. "Tokens/dogGuard_03.front.webp?v=d35348a93353", back = BASE .. "Tokens/dogGuard_03.back.webp?v=d35348a93353" },
     genericLabel = "Guard Dog",
   },
   dogGuard_04 = {
     figurine = { front = BASE .. "Generic/dogGuard_04.webp?v=1da9029cc659", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/dogGuard_04.front.webp?v=79277c76db68", back = BASE .. "Tokens/dogGuard_04.back.webp?v=79277c76db68" },
+    token = { front = BASE .. "Tokens/dogGuard_04.front.webp?v=7b426b19887d", back = BASE .. "Tokens/dogGuard_04.back.webp?v=7b426b19887d" },
     genericLabel = "Guard Dog",
   },
   drIrenaVoss = {
@@ -1412,7 +1412,7 @@ return {
   },
   hospitalPatient_03 = {
     figurine = { front = BASE .. "Generic/hospitalPatient_03.webp?v=4ced3094ee20", back = FIGURINE_BACK },
-    token = { front = BASE .. "Tokens/hospitalPatient_03.front.webp?v=d9c8c15625fc", back = BASE .. "Tokens/hospitalPatient_03.back.webp?v=d9c8c15625fc" },
+    token = { front = BASE .. "Tokens/hospitalPatient_03.front.webp?v=d8d9a438451b", back = BASE .. "Tokens/hospitalPatient_03.back.webp?v=d8d9a438451b" },
     genericLabel = "Patient",
   },
   hospitalPatient_04 = {
