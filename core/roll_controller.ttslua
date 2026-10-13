@@ -488,7 +488,8 @@ end
 -- @param npcCharacterKey string|nil
 -- @param rollId string|nil  Active roll id for manual broadcast lookup
 -- @param secret boolean|nil  Secret ST roll: the broadcast shows only the dice the result gives away
-local function appendHistory(color, result, label, diceDisplay, rollType, diceFaces, rouseOutcomeStrips, npcCharacterKey, rollId, secret)
+-- @param npcBroadcast table|nil  `{ heading, line }` from a Dashboard stat-block roll (`RC.npcBroadcastText`)
+local function appendHistory(color, result, label, diceDisplay, rollType, diceFaces, rouseOutcomeStrips, npcCharacterKey, rollId, secret, npcBroadcast)
     local pid = S.getPlayerID(color)
     if pid == nil then return end
     local history = S.getStateVal("playerData", pid, "hud", "rollData", "history") or {}
@@ -502,6 +503,8 @@ local function appendHistory(color, result, label, diceDisplay, rollType, diceFa
         npcCharacterKey = (type(npcCharacterKey) == "string" and npcCharacterKey ~= "") and npcCharacterKey or nil,
         rollId      = (type(rollId) == "string" and rollId ~= "") and rollId or nil,
         secret      = secret == true or nil,
+        npcHeading  = type(npcBroadcast) == "table" and npcBroadcast.heading or nil,
+        npcLine     = type(npcBroadcast) == "table" and npcBroadcast.line or nil,
         timestamp   = os.time(),
     }
     while #history > 10 do table.remove(history, 1) end
@@ -835,6 +838,140 @@ local function buildDedicatedRouseResult(rollType, rouseVals)
     }, oblivRes
 end
 
+--- Storyteller Dashboard stat-block rolls (`active.npcPlan.rouse`): judges each rouse check on its
+--- own dice. Rouse dice of a kind are read in table order and dealt to the checks in plan order;
+--- every die is independent, so the fixed split keeps the true odds. Sets `active.npcRouseFailed`,
+--- rewrites the strip narratives per check, drops the PC Oblivion Hunger-or-Stain prompt (NPCs
+--- keep no Stains), and re-scores a rouse-only roll as pass (no failed check) or fail.
+--- @param active table  Black active roll
+local function applyNpcRousePlan(active)
+    local plan = active.npcPlan
+    if type(plan) ~= "table" or type(plan.rouse) ~= "table" or #plan.rouse == 0 then
+        return
+    end
+    local values = { plain = {}, obliv = {} }
+    for _, strip in ipairs(active.rouseOutcomeStrips or {}) do
+        local list = strip.kind == DK.KIND_OBLIV_ROUSE and values.obliv or values.plain
+        for _, value in ipairs(strip.values or {}) do
+            list[#list + 1] = value
+        end
+    end
+    local cursor = { plain = 0, obliv = 0 }
+    local failedByKind = { plain = 0, obliv = 0 }
+    local failed = 0
+    for _, check in ipairs(plan.rouse) do
+        local which = check.oblivion == true and "obliv" or "plain"
+        local read, passed = 0, false
+        for _ = 1, math.max(1, math.floor(tonumber(check.dice) or 1)) do
+            cursor[which] = cursor[which] + 1
+            local value = values[which][cursor[which]]
+            if value ~= nil then
+                read = read + 1
+                if value >= 6 then
+                    passed = true
+                end
+            end
+        end
+        if read > 0 and not passed then
+            failed = failed + 1
+            failedByKind[which] = failedByKind[which] + 1
+        end
+    end
+    active.npcRouseFailed = failed
+    for _, strip in ipairs(active.rouseOutcomeStrips or {}) do
+        local which = strip.kind == DK.KIND_OBLIV_ROUSE and "obliv" or "plain"
+        strip.pendingChoice = false
+        strip.narrative = failedByKind[which] > 0 and "Hunger Roused" or ""
+    end
+    if active.pendingResolution == C.PendingResolution.OBLIV_HUNGER_STAIN then
+        active.pendingResolution = nil
+    end
+    if RO.isRouseFamilyRoll(active.rollType) and type(active.result) == "table" then
+        local passed = failed == 0
+        active.result.successes = passed and 1 or 0
+        active.result.resultClass = passed and C.ResultClass.WIN or C.ResultClass.FAILURE
+        active.result.margin = passed and 1 or -1
+        active.result.rouseNarrative = passed and "Success" or "Hunger Roused"
+    end
+end
+
+--- Broadcast heading and line for a Dashboard stat-block roll: an attack's bonus is added to the
+--- line on a success ("Mylene attacks with Brawl (Feral Claws) — Feral Claws +2").
+--- @param active table  Black active roll with `npcPlan`
+--- @return table|nil `{ heading, line }`
+function RC.npcBroadcastText(active)
+    local plan = active.npcPlan
+    if type(plan) ~= "table" then
+        return nil
+    end
+    local line = type(plan.line) == "string" and plan.line ~= "" and plan.line or nil
+    local bonus = math.floor(tonumber(plan.marginBonus) or 0)
+    local rc = type(active.result) == "table" and active.result.resultClass or nil
+    local succeeded = rc == C.ResultClass.WIN or rc == C.ResultClass.CRITICAL_WIN or rc == C.ResultClass.MESSY_CRITICAL
+    if line ~= nil and bonus > 0 and succeeded then
+        local label = type(plan.marginLabel) == "string" and plan.marginLabel ~= "" and plan.marginLabel or "Bonus"
+        line = string.format("%s — %s +%d", line, label, bonus)
+    end
+    return {
+        heading = type(plan.heading) == "string" and plan.heading ~= "" and plan.heading or nil,
+        line = line,
+    }
+end
+
+--- Storyteller Dashboard `npcStatRoll` / `npcMend`: sets the Black pool from a stat-block plan and
+--- records the plan (rouse checks, Hunger on fail, broadcast text) on the active roll.
+--- @param plan table `{ normal, hunger, rage, rouse = { { dice, oblivion } }, hungerOnFail, heading, line, marginBonus, marginLabel, autoConfirm? }`
+--- @return string|nil error
+function RC.applyNpcStatPlan(plan)
+    local color = "Black"
+    local active = getActive(color)
+    if active == nil then
+        return "No NPC roll is in progress."
+    end
+    if active.phase ~= C.RollPhase.SETUP and active.phase ~= C.RollPhase.PRE_ROLL then
+        return "The NPC pool is fixed once the dice are rolled."
+    end
+    local rouse, rouseDice, oblivDice = {}, 0, 0
+    for _, check in ipairs(type(plan.rouse) == "table" and plan.rouse or {}) do
+        local dice = math.floor(tonumber(check.dice) or 1) == 2 and 2 or 1
+        local oblivion = check.oblivion == true
+        rouse[#rouse + 1] = { dice = dice, oblivion = oblivion }
+        if oblivion then
+            oblivDice = oblivDice + dice
+        else
+            rouseDice = rouseDice + dice
+        end
+    end
+    local count = function(value)
+        return math.max(0, math.min(30, math.floor(tonumber(value) or 0)))
+    end
+    ensureActiveShape(active)
+    local pool = DK.emptyPool()
+    if active.rollType == C.RollType.WEREWOLF then
+        pool.werewolf = count(plan.normal)
+        pool.rage = count(plan.rage)
+    else
+        pool.normal = count(plan.normal)
+        pool.hunger = count(plan.hunger)
+    end
+    pool.rouse = rouseDice
+    pool.oblivRouse = oblivDice
+    active.pool = pool
+    active.npcPlan = {
+        rouse = rouse,
+        hungerOnFail = plan.hungerOnFail == true,
+        heading = type(plan.heading) == "string" and plan.heading or nil,
+        line = type(plan.line) == "string" and plan.line or nil,
+        marginBonus = count(plan.marginBonus),
+        marginLabel = type(plan.marginLabel) == "string" and plan.marginLabel or nil,
+    }
+    active.npcRouseFailed = nil
+    active.meta.npcAutoConfirm = plan.autoConfirm == true or nil
+    setActive(color, active)
+    notifyStateChanged(color)
+    return nil
+end
+
 -- Classification: add functions (active, opts) -> nil; mutate opts for Dice.classifyRoll.
 local CLASSIFICATION_OPT_BUILDERS = {
     function(active, opts)
@@ -1049,6 +1186,9 @@ local function tryClassifyResultInternal(color)
         else
             active.diceFaces = nil
         end
+    end
+    if color == "Black" then
+        applyNpcRousePlan(active)
     end
 
     setActive(color, active)
@@ -2244,6 +2384,9 @@ function RC.recalculate(color, previewOnly)
             active.diceFaces = nil
         end
     end
+    if color == "Black" then
+        applyNpcRousePlan(active)
+    end
 
     -- Transition ROLLING → POST_ROLL on first settle; stay in POST_ROLL for recalculates.
     -- previewOnly keeps the wave open (display refresh only): camera + auto-broadcast below
@@ -2277,6 +2420,19 @@ function RC.recalculate(color, previewOnly)
 
     if active.phase == C.RollPhase.POST_ROLL then
         rollCamera(color, "roll")
+    end
+
+    -- Dashboard rouse-only powers and Mend resolve on their own once the dice land.
+    if wasRolling and active.phase == C.RollPhase.POST_ROLL
+        and color == "Black"
+        and _autoConfirmDepth == 0
+        and type(active.meta) == "table" and active.meta.npcAutoConfirm == true
+        and active.pendingResolution == nil
+    then
+        _autoConfirmDepth = _autoConfirmDepth + 1
+        local ok = RC.confirmRoll(color)
+        _autoConfirmDepth = _autoConfirmDepth - 1
+        return ok
     end
 
     if wasRolling and active.phase == C.RollPhase.POST_ROLL
@@ -2584,9 +2740,16 @@ function RC.spendWillpower(color)
     end
 
     -- Apply 1 Superficial Willpower damage when Auto-WP is enabled (full tracker pipeline + HUD refresh).
+    -- Storyteller rolls charge the rolling NPC's tracker, never the Storyteller seat.
     if RO.getPermanent(RO.PERM_AUTO_WP) then
-        P.applyDamageOrHeal(color, "willpower", 1, 0)
-        Sync.player(color)
+        if color == "Black" then
+            if type(active.npcCharacterKey) == "string" then
+                require("core.npc_trackers").damage(active.npcCharacterKey, "willpower", "superficial", 1)
+            end
+        else
+            P.applyDamageOrHeal(color, "willpower", 1, 0)
+            Sync.player(color)
+        end
     end
 
     active.willpower.rerollsRemaining = active.willpower.rerollsRemaining - 1
@@ -2684,6 +2847,10 @@ function RC.confirmRoll(color)
         RC._applyRollConsequences(color, active)
         RC._applyRouseOutcomeStrips(color, active)
     end
+    local npcBroadcast = nil
+    if color == "Black" and type(active.npcPlan) == "table" then
+        npcBroadcast = RC.npcBroadcastText(active)
+    end
 
     -- Advance to RESOLVED
     active.phase       = C.RollPhase.RESOLVED
@@ -2712,7 +2879,8 @@ function RC.confirmRoll(color)
         finalRouseStrips,
         active.npcCharacterKey,
         finalRollId,
-        color == "Black" and type(active.meta) == "table" and active.meta.secretDice == true
+        color == "Black" and type(active.meta) == "table" and active.meta.secretDice == true,
+        npcBroadcast
     )
 
     if color ~= "Black" then
@@ -3051,6 +3219,16 @@ function RC._applyRouseOutcomeStrips(color, active)
     if not RO.getPermanent(RO.PERM_AUTO_APPLY_ROUSE_OUTCOMES) then
         return
     end
+    -- Storyteller rolls never touch the Storyteller seat's own Hunger: a stat-block roll's failed
+    -- checks raise the rolling NPC's tracker instead (`applyNpcRousePlan`).
+    if color == "Black" then
+        local failed = math.floor(tonumber(active.npcRouseFailed) or 0)
+        if type(active.npcPlan) == "table" and active.npcPlan.hungerOnFail == true and failed > 0
+            and type(active.npcCharacterKey) == "string" then
+            require("core.npc_trackers").addHunger(active.npcCharacterKey, failed)
+        end
+        return
+    end
     if type(active.rouseOutcomeStrips) ~= "table" then
         return
     end
@@ -3100,7 +3278,7 @@ function RC.confirmOblivionChoice(color, choice)
         return false
     end
 
-    if not RO.getPermanent(RO.PERM_AUTO_APPLY_ROUSE_OUTCOMES) then
+    if not RO.getPermanent(RO.PERM_AUTO_APPLY_ROUSE_OUTCOMES) or color == "Black" then
         if type(active.result) == "table" then
             active.result.rouseNarrative = choiceNarrative
         end

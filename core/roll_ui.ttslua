@@ -1771,6 +1771,8 @@ local function snapshotBroadcastPayload(color, result, label, historyEntryOverri
     local diceFaces   = nil
     local rouseStrips = nil
     local npcCharacterKey = nil
+    local heading = nil
+    local intro = nil
     local lastEntry = historyEntryOverride
     if lastEntry == nil and pid ~= nil then
         local history   = S.getStateVal("playerData", pid, "hud", "rollData", "history") or {}
@@ -1781,6 +1783,8 @@ local function snapshotBroadcastPayload(color, result, label, historyEntryOverri
         diceFaces   = U.Type(lastEntry.diceFaces) == "table"  and lastEntry.diceFaces or nil
         rouseStrips = U.Type(lastEntry.rouseOutcomeStrips) == "table" and lastEntry.rouseOutcomeStrips or nil
         npcCharacterKey = U.Type(lastEntry.npcCharacterKey) == "string" and lastEntry.npcCharacterKey or nil
+        heading = U.Type(lastEntry.npcHeading) == "string" and lastEntry.npcHeading or nil
+        intro = U.Type(lastEntry.npcLine) == "string" and lastEntry.npcLine or nil
         if lastEntry.secret == true then
             local resultClass = type(result) == "table" and result.resultClass or nil
             diceFaces = SRD.broadcastFaces(diceFaces, resultClass)
@@ -1810,6 +1814,8 @@ local function snapshotBroadcastPayload(color, result, label, historyEntryOverri
         diceFaces = diceFacesCopy,
         rouseStrips = rouseStripsCopy,
         npcCharacterKey = npcCharacterKey,
+        heading = heading,
+        intro = intro,
     }
 end
 
@@ -1958,6 +1964,22 @@ function RUI.showHuntBroadcast(color, headline, intensity)
     payload.intro = payload.rollerName .. " feeds …"
     payload.headline = headline
     payload.headlineClass = HUNT_HEADLINE_CLASS[intensity]
+    enqueueBroadcast(payload)
+end
+
+--- Announces an NPC's passive power on the roll result banner (no dice; queued like roll results).
+-- @param label string  NPC name on the banner
+-- @param npcCharacterKey string|nil  figure art
+-- @param heading string  e.g. "Protean"
+-- @param line string  e.g. "Mylene activates Earth Meld (Protean)"
+function RUI.showNpcAnnouncement(label, npcCharacterKey, heading, line)
+    U.Val("RUI.showNpcAnnouncement()", { label = label, line = line },
+        U.Type(label) == "string" and U.Type(line) == "string", "label and line must be strings")
+    local payload = snapshotBroadcastPayload("Black", nil, label, { npcCharacterKey = npcCharacterKey })
+    payload.heading = heading
+    payload.intro = line
+    payload.headline = "ACTIVATED"
+    payload.headlineClass = HUNT_HEADLINE_CLASS.fleeting
     enqueueBroadcast(payload)
 end
 

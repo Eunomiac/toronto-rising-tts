@@ -33,6 +33,16 @@
     npcRecalc                           re-read the dice on the table
     npcConfirm    quiet?                confirm (quiet = hold the result instead of broadcasting)
     npcCancel                           cancel the live NPC roll (clears its drawer)
+    npcStatRoll   kind, rollType, normal, hunger, rage, rouse[{ dice, oblivion }], hungerOnFail,
+                  heading, line, marginBonus, marginLabel
+                                        set the live roll from a stat-block plan (dashboard `planNpcRoll`):
+                                        each rouse check is judged on its own dice, failed checks raise
+                                        the NPC's Hunger, the broadcast uses heading / line (+ the bonus on
+                                        a success); kind `rouseOnly` rolls at once and confirms itself
+    npcAnnounce   label, characterKey?, heading, line
+                                        banner for a passive power (no dice)
+    npcMend       key, label, heal      one-die rouse in a free drawer that confirms itself; heals `heal`
+                                        superficial Health whatever the result, a failure raises Hunger
     slotCancel    slot                  clear drawer slot 1–3
     slotBroadcast slot                  broadcast a drawer slot's held result
     choice        color, choice         Oblivion (`hunger` / `stain`) or Brutal (`fail` / `violence`)
@@ -300,6 +310,41 @@ local function applyNpcCommand(cmd)
     return nil
   end
 
+  if op == "npcAnnounce" then
+    if type(cmd.label) ~= "string" or cmd.label == "" or type(cmd.line) ~= "string" or cmd.line == "" then
+      return "An announcement needs a name and a line."
+    end
+    local characterKey = type(cmd.characterKey) == "string" and cmd.characterKey ~= "" and cmd.characterKey or nil
+    RUI.showNpcAnnouncement(cmd.label, characterKey, type(cmd.heading) == "string" and cmd.heading or "", cmd.line)
+    return nil
+  end
+
+  if op == "npcMend" then
+    if type(cmd.key) ~= "string" or cmd.key == "" or type(cmd.label) ~= "string" or cmd.label == "" then
+      return "Mend needs the NPC's key and name."
+    end
+    local heal = math.floor(tonumber(cmd.heal) or 0)
+    if heal < 1 or heal > 10 then
+      return "Mend heals 1 to 10 Health."
+    end
+    if STR.initiateNpcRoll(cmd.label, C.RollType.ROUSE, cmd.key) ~= true then
+      return "No free Storyteller dice drawer, or an NPC roll is still in progress."
+    end
+    local err = RC.applyNpcStatPlan({
+      rouse = { { dice = 1, oblivion = false } },
+      hungerOnFail = true,
+      heading = "Mend",
+      line = string.format("%s mends %d Health", cmd.label, heal),
+      autoConfirm = true,
+    })
+    if err ~= nil then
+      return err
+    end
+    require("core.npc_trackers").heal(cmd.key, heal)
+    HUD_rollRollButton(player, "-1", "rollPanelST_btnRoll")
+    return nil
+  end
+
   if op == "slotCancel" or op == "slotBroadcast" then
     local slot = tonumber(cmd.slot)
     if slot == nil or slot < 1 or slot > 3 then
@@ -337,6 +382,36 @@ local function applyNpcCommand(cmd)
       return "Unknown pool kind: " .. tostring(cmd.kind)
     end
     RC.adjustPoolKindCount(ST_COLOR, kind, delta)
+  elseif op == "npcStatRoll" then
+    if not isRollType(cmd.rollType) then
+      return "Unknown roll type: " .. tostring(cmd.rollType)
+    end
+    if cmd.rollType ~= active.rollType then
+      if active.rollType == C.RollType.WEREWOLF or cmd.rollType == C.RollType.WEREWOLF then
+        return "A Werewolf roll cannot switch roll type."
+      end
+      if RC.changeRollType(ST_COLOR, cmd.rollType) ~= true then
+        return "Could not change the NPC roll's type."
+      end
+    end
+    local err = RC.applyNpcStatPlan({
+      normal = cmd.normal,
+      hunger = cmd.hunger,
+      rage = cmd.rage,
+      rouse = cmd.rouse,
+      hungerOnFail = cmd.hungerOnFail == true,
+      heading = cmd.heading,
+      line = cmd.line,
+      marginBonus = cmd.marginBonus,
+      marginLabel = cmd.marginLabel,
+      autoConfirm = cmd.kind == "rouseOnly",
+    })
+    if err ~= nil then
+      return err
+    end
+    if cmd.kind == "rouseOnly" then
+      HUD_rollRollButton(player, "-1", "rollPanelST_btnRoll")
+    end
   elseif op == "npcDifficulty" then
     local value = tonumber(cmd.value)
     if value == nil or value < 0 then

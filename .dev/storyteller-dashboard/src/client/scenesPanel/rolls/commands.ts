@@ -1,4 +1,5 @@
 import { createContext } from "react";
+import type { RouseCheck } from "../../../shared/npcRollPlan";
 
 /**
  * Roll commands for `GlobalDashboardRollsApply` (`dashboard/rolls.ttslua`). They never wait in the Send queue:
@@ -39,6 +40,22 @@ export type RollsCommand =
   | { readonly op: "npcRecalc" }
   | { readonly op: "npcConfirm"; readonly quiet?: boolean }
   | { readonly op: "npcCancel" }
+  | {
+      readonly op: "npcStatRoll";
+      readonly kind: "roll" | "rouseOnly";
+      readonly rollType: string;
+      readonly normal: number;
+      readonly hunger: number;
+      readonly rage: number;
+      readonly rouse: readonly RouseCheck[];
+      readonly hungerOnFail: boolean;
+      readonly heading: string;
+      readonly line: string;
+      readonly marginBonus: number;
+      readonly marginLabel: string;
+    }
+  | { readonly op: "npcAnnounce"; readonly label: string; readonly characterKey?: string; readonly heading: string; readonly line: string }
+  | { readonly op: "npcMend"; readonly key: string; readonly label: string; readonly heal: number }
   | { readonly op: "slotCancel"; readonly slot: number }
   | { readonly op: "slotBroadcast"; readonly slot: number }
   | { readonly op: "choice"; readonly color: string; readonly choice: RollChoice }
