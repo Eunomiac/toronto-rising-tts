@@ -48,6 +48,7 @@ import { sceneLibrarySnapshot } from "../sceneLibrary";
 import { GROUP_DRAG_TYPE, NPC_DRAG_TYPE } from "./stage";
 import { useWorldState } from "../worldState";
 import { useNpcOverrides } from "../npcOverrides";
+import { genericStatsKey } from "../../shared/npcStats";
 import { NpcConfigModal, type NpcConfigTarget } from "./npcConfig";
 
 type NpcOverrides = ReturnType<typeof useNpcOverrides>;
@@ -1003,7 +1004,9 @@ export const MasonryRoster = (): ReactElement => {
       at,
       defaultName: named?.fullName ?? generic?.label ?? characterKey,
       defaultColor: (groupKey && groupColor(layout, groupKey)) || DEFAULT_TOKEN_RING,
-      generic: generic !== undefined,
+      stats: generic
+        ? { key: genericStatsKey(generic.label), label: generic.label, tiered: true }
+        : { key: characterKey, label: named?.fullName ?? characterKey, tiered: false },
       ...(spawnedNpc && send
         ? { inScene: { name: spawnedNpc.name, rename: (name: string) => send({ op: "genericRename", key: characterKey, name }) } }
         : {})

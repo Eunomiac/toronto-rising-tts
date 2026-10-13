@@ -11,6 +11,7 @@ import {
   RANGES,
   supernaturalPoolName,
   usesRouse,
+  type KeptNpc,
   type NpcKind,
   type NpcStatBlock,
   type NpcStats,
@@ -96,12 +97,12 @@ const blankPower = (category: DraftCategory): DraftPower => ({
 });
 
 /**
- * The Stats window: one stat block for a named NPC, or one per tier (Weak / Average / Gifted / Deadly) for a
- * generic. Clicking off (or Escape) saves to `data/npc-stats.json`; incomplete pools, nameless attacks and powers,
- * and empty power categories are dropped then.
+ * The Stats window: one stat block for a named or kept NPC, or one per tier (Weak / Average / Gifted / Deadly)
+ * for a generic type (`generic`). Clicking off (or Escape) saves to `data/npc-stats.json` under `statsKey`;
+ * incomplete pools, nameless attacks and powers, and empty power categories are dropped then.
  */
-export const NpcStatsModal = ({ characterKey, label, generic, onClose }: {
-  characterKey: string;
+export const NpcStatsModal = ({ statsKey, label, generic, onClose }: {
+  statsKey: string;
   label: string;
   generic: boolean;
   onClose: () => void;
@@ -115,12 +116,12 @@ export const NpcStatsModal = ({ characterKey, label, generic, onClose }: {
       </div>
     </Overlay>
   ) : (
-    <StatsEditor characterKey={characterKey} label={label} generic={generic} saved={file[characterKey] ?? {}} onClose={onClose} />
+    <StatsEditor statsKey={statsKey} label={label} generic={generic} saved={file[statsKey] ?? {}} onClose={onClose} />
   );
 };
 
-const StatsEditor = ({ characterKey, label, generic, saved, onClose }: {
-  characterKey: string;
+const StatsEditor = ({ statsKey, label, generic, saved, onClose }: {
+  statsKey: string;
   label: string;
   generic: boolean;
   saved: NpcStats;
@@ -139,19 +140,22 @@ const StatsEditor = ({ characterKey, label, generic, saved, onClose }: {
     if (busy) {
       return;
     }
-    const next: Partial<Record<NpcStatSlot, NpcStatBlock>> = {};
+    const next: Partial<Record<NpcStatSlot, NpcStatBlock>> & { kept?: KeptNpc } = {};
     for (const [key, block] of drafts) {
       const normalized = normalizeStatBlock(block);
       if (normalized) {
         next[key] = normalized;
       }
     }
+    if (saved.kept) {
+      next.kept = saved.kept;
+    }
     if (JSON.stringify(next) === JSON.stringify(saved)) {
       onClose();
       return;
     }
     setBusy(true);
-    saveNpcStats(characterKey, next).then(onClose, (reason: unknown) => {
+    saveNpcStats(statsKey, next).then(onClose, (reason: unknown) => {
       setBusy(false);
       setError(reason instanceof Error ? reason.message : String(reason));
     });

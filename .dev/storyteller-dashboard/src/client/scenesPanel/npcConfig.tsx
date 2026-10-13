@@ -19,8 +19,8 @@ export type NpcConfigTarget = {
   readonly defaultName: string;
   /** Ring colour the token gets from its roster group. */
   readonly defaultColor: string;
-  /** Generic NPCs keep a stat block per tier; named NPCs keep one. */
-  readonly generic: boolean;
+  /** What the Stats button edits: a named NPC's block, a generic type's four tiers, or a kept character's block. */
+  readonly stats: { readonly key: string; readonly label: string; readonly tiered: boolean };
   /** A generic already in the scene: Name renames it there (like the stage's Rename…) instead of saving an override. */
   readonly inScene?: { readonly name: string; readonly rename: (name: string) => void };
 };
@@ -142,7 +142,12 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
         </p>
       </div>
       {statsOpen && (
-        <NpcStatsModal characterKey={target.characterKey} label={label} generic={target.generic} onClose={() => setStatsOpen(false)} />
+        <NpcStatsModal
+          statsKey={target.stats.key}
+          label={target.stats.tiered ? target.stats.label : label}
+          generic={target.stats.tiered}
+          onClose={() => setStatsOpen(false)}
+        />
       )}
     </Overlay>
   );

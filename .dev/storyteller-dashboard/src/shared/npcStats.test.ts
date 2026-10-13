@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { configuredSlots, normalizeNpcStatsFile, normalizeStatBlock, parseNpcStatsPatch, poolOptions } from "./npcStats.js";
+import {
+  configuredSlots,
+  configuredTiers,
+  normalizeNpcStatsFile,
+  normalizeStatBlock,
+  parseNpcStatsPatch,
+  poolOptions,
+  statBlockFor
+} from "./npcStats.js";
 
 const vampire = {
   kind: "vampire",
@@ -88,5 +96,20 @@ describe("the stats file", () => {
   it("rejects bad character keys in a PUT", () => {
     expect(() => parseNpcStatsPatch({ "../x": {} })).toThrow(/Unknown/);
     expect(parseNpcStatsPatch({ thug: {} })).toEqual({ thug: {} });
+    expect(parseNpcStatsPatch({ "generic:Police Officer": {}, "kept:ab12": {} })).toEqual({ "generic:Police Officer": {}, "kept:ab12": {} });
+  });
+
+  it("keeps a kept character's details and resolves the block a live NPC rolls from", () => {
+    const file = normalizeNpcStatsFile({
+      mylene: { named: vampire },
+      "generic:Police Officer": { average: { physical: 3 }, deadly: { physical: 6 } },
+      "kept:ab12": { named: { physical: 4 }, kept: { name: "Officer Bradley", figurineKey: "police_03", label: "Police Officer" } }
+    });
+    expect(file["kept:ab12"]?.kept).toEqual({ name: "Officer Bradley", figurineKey: "police_03", label: "Police Officer" });
+    expect(configuredTiers(file["generic:Police Officer"])).toEqual(["average", "deadly"]);
+    expect(statBlockFor(file, { characterKey: "police_01", genericLabel: "Police Officer", tier: "deadly" })?.physical).toBe(6);
+    expect(statBlockFor(file, { characterKey: "police_01", genericLabel: "Police Officer" })).toBeUndefined();
+    expect(statBlockFor(file, { characterKey: "police_03", genericLabel: "Police Officer", tier: "average", keptId: "ab12" })?.physical).toBe(4);
+    expect(statBlockFor(file, { characterKey: "mylene" })?.kind).toBe("vampire");
   });
 });

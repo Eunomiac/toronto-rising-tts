@@ -1,7 +1,10 @@
 /**
- * NPC stat blocks set from the token configuration window's Stats button (`data/npc-stats.json`, git-ignored).
- * Named NPCs keep one block under `named`; generics keep up to four, one per tier. Blocks feed the Storyteller
- * roll pool grid and the NPC trackers.
+ * NPC stat blocks set from the token configuration window's Stats button (`data/npc-stats.json`, git-ignored),
+ * keyed three ways:
+ * - a named NPC's characterKey: one block under `named`;
+ * - `generic:<catalog label>`: up to four tier blocks, shared by every numbered figurine of that generic type;
+ * - `kept:<id>`: a generic instance kept as a character, with its own block under `named` and `kept` details.
+ * Blocks feed the Storyteller roll pool grid and the NPC trackers.
  */
 
 export const NPC_KINDS = ["mortal", "animal", "ghoul", "vampire", "werewolf", "spirit", "other"] as const;
@@ -37,7 +40,11 @@ export const RANGES = {
 export const NOTES_MAX = 4000;
 const NAME_MAX = 80;
 const ID_PATTERN = /^[a-z0-9]{1,12}$/;
-export const NPC_STATS_KEY_PATTERN = /^[A-Za-z0-9_]{1,80}$/;
+// eslint-disable-next-line no-control-regex
+export const NPC_STATS_KEY_PATTERN = /^(?:[A-Za-z0-9_]{1,80}|generic:[^\u0000-\u001f]{1,80}|kept:[a-z0-9]{1,12})$/;
+
+export const genericStatsKey = (label: string): string => `generic:${label}`;
+export const keptStatsKey = (id: string): string => `kept:${id}`;
 
 export type NpcPool = { readonly id: string; readonly name: string; readonly dice: number };
 /** `pool` is a pool ref: a standard pool name or `ex:<id>`. */
@@ -69,7 +76,10 @@ export type NpcStatBlock = {
   readonly notes?: string;
 };
 
-export type NpcStats = Readonly<Partial<Record<NpcStatSlot, NpcStatBlock>>>;
+/** Who a `kept:<id>` entry is: the name given in the scene, the figurine it uses and its generic type. */
+export type KeptNpc = { readonly name: string; readonly figurineKey: string; readonly label: string };
+
+export type NpcStats = Readonly<Partial<Record<NpcStatSlot, NpcStatBlock>> & { kept?: KeptNpc }>;
 export type NpcStatsFile = Readonly<Record<string, NpcStats>>;
 
 export const EMPTY_STAT_BLOCK: NpcStatBlock = { exceptional: [], attacks: [], powers: [] };
@@ -219,9 +229,19 @@ export const normalizeStatBlock = (value: unknown): NpcStatBlock | null => {
   return empty ? null : block;
 };
 
-/** One NPC's blocks, normalized; slots with nothing set are dropped. */
+const normalizeKept = (value: unknown): KeptNpc | undefined => {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+  const name = text(value.name);
+  const figurineKey = typeof value.figurineKey === "string" && /^[A-Za-z0-9_]{1,80}$/.test(value.figurineKey) ? value.figurineKey : "";
+  const label = text(value.label);
+  return name !== "" && figurineKey !== "" && label !== "" ? { name, figurineKey, label } : undefined;
+};
+
+/** One NPC's blocks, normalized; slots with nothing set are dropped. A kept entry keeps its details even with no block. */
 export const normalizeNpcStats = (value: unknown): NpcStats => {
-  const out: Partial<Record<NpcStatSlot, NpcStatBlock>> = {};
+  const out: Partial<Record<NpcStatSlot, NpcStatBlock>> & { kept?: KeptNpc } = {};
   if (!isRecord(value)) {
     return out;
   }
@@ -231,7 +251,25 @@ export const normalizeNpcStats = (value: unknown): NpcStats => {
       out[slot] = block;
     }
   }
+  const kept = normalizeKept(value.kept);
+  if (kept) {
+    out.kept = kept;
+  }
   return out;
+};
+
+/** Which stats a live NPC rolls from: a kept character's own block, its generic type's tier, or a named NPC's block. */
+export const statBlockFor = (
+  file: NpcStatsFile,
+  npc: { readonly characterKey: string; readonly genericLabel?: string | undefined; readonly tier?: NpcTier | undefined; readonly keptId?: string | undefined }
+): NpcStatBlock | undefined => {
+  if (npc.keptId) {
+    return file[keptStatsKey(npc.keptId)]?.named;
+  }
+  if (npc.genericLabel !== undefined) {
+    return npc.tier ? file[genericStatsKey(npc.genericLabel)]?.[npc.tier] : undefined;
+  }
+  return file[npc.characterKey]?.named;
 };
 
 /** The whole file, keyed by character key; NPCs with no blocks are dropped. */
@@ -267,3 +305,9 @@ export const parseNpcStatsPatch = (value: unknown): Partial<NpcStatsFile> => {
 /** Slots with a block, in tab order. */
 export const configuredSlots = (stats: NpcStats | undefined): readonly NpcStatSlot[] =>
   stats ? (["named", ...NPC_TIERS] as const).filter((slot) => stats[slot] !== undefined) : [];
+
+/** Tiers a generic type has blocks for, Weak to Deadly. */
+export const configuredTiers = (stats: NpcStats | undefined): readonly NpcTier[] =>
+  stats ? NPC_TIERS.filter((tier) => stats[tier] !== undefined) : [];
+
+export const isNpcTier = (value: unknown): value is NpcTier => NPC_TIERS.some((tier) => tier === value);
