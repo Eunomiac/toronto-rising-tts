@@ -465,6 +465,14 @@ function S.GetDefaultGameState()
             --- In-game ST roll panels (fallback for the dashboard); off = no ST roll UI work. See RUI.isStRollUiEnabled.
             inGameUi = false,
         },
+        --- Tonight's tracker values for named and kept NPCs (`core/npc_trackers.ttslua`): `night` = the clock's
+        --- dusk date (`YYYY-MM-DD`); a new night empties `byKey`. Generic instances keep theirs in the scene
+        --- (`sessionScene.npcWorld.genericMembership[key].trackers`).
+        --- `byKey[characterKey] = { healthSup, healthAgg, wpSup, wpAgg, hunger, rage }`
+        npcTrackers = {
+            night = "",
+            byKey = {},
+        },
         --- Runtime debug bag (persists across Save & Play). Used by console DEBUG helpers.
         --- `npcLightModes`: optional per-mode patches (`OFF` / `STANDARD` / `SPOTLIGHT` / `OFFSPOTLIGHT`)
         --- deep-merged last in `NPCS.getMergedModeDefinition` (TOR-471 / TOR-473).
@@ -1092,6 +1100,16 @@ function S.validateState()
     end
     if type(gameState.storytellerRolls.pcDash) ~= "table" then
         gameState.storytellerRolls.pcDash = {}
+    end
+
+    if type(gameState.npcTrackers) ~= "table" then
+        gameState.npcTrackers = { night = "", byKey = {} }
+    end
+    if type(gameState.npcTrackers.night) ~= "string" then
+        gameState.npcTrackers.night = ""
+    end
+    if type(gameState.npcTrackers.byKey) ~= "table" then
+        gameState.npcTrackers.byKey = {}
     end
 
     --- Normalize player dynamic shape: hunger under stats, stats/conditions from PCS when needed, strip ST-only fields.

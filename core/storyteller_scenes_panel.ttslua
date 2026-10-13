@@ -1735,6 +1735,7 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId, c
             local GenericNpcs = require("core.generic_npcs")
             GenericNpcs.registerFromMembership()
         end
+        require("core.npc_trackers").ensureSceneCast()
         PresentDayClock.markApplied(K)
         SceneLibrary.setStatus(K, "ongoing")
         clockDraft.sceneKey = K

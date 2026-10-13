@@ -70,6 +70,8 @@ Behavior (`GenericNpcs.importNamed`):
 
 **Tier** (`GenericNpcs.setTier(key, tier)`, Dashboard op `genericTier`, from the in-scene generic's token settings window): writes membership `tier` (no `tier` clears it) and marks the seats push dirty. The push carries it as `generics[].tier`.
 
+**Trackers** (`core/npc_trackers.ttslua`): a generic instance's Health / Willpower damage and Hunger / Rage live on its membership row (`genericMembership[key].trackers`), so they come and go with the scene. Named NPCs (and kept generics) use `gameState.npcTrackers` instead, which empties when the night changes. A record is created when the NPC first appears (`genericAdd` → `NpcTrackers.ensureKeys`, scene apply → `ensureSceneCast`).
+
 ---
 
 ## Spawn / identity

@@ -282,11 +282,13 @@ local function buildSeats()
     end
   end
   local spotlight = S.getStateVal("spotlight") or {}
+  local NpcTrackers = require("core.npc_trackers")
   return {
     seats = seats,
     stage = stage,
     generics = generics,
     scatter = scatter,
+    trackers = NpcTrackers.snapshotForKeys(NpcTrackers.sceneCastKeys()),
     spotlightOrder = spotlight.order or {},
     spotlightFrontIndex = tonumber(spotlight.frontIndex),
   }

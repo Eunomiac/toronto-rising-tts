@@ -139,10 +139,22 @@ export type ScatterMember = { readonly characterKey: string; readonly slot?: num
 
 export type ScatterGroup = { readonly group: number; readonly pcs: readonly ScatterMember[]; readonly npcs: readonly ScatterMember[] };
 
+/** An NPC's damage and Hunger/Rage tonight (generic instances: this scene), from `core/npc_trackers.ttslua`. */
+export type NpcTrackerRecord = {
+  readonly healthSup: number;
+  readonly healthAgg: number;
+  readonly wpSup: number;
+  readonly wpAgg: number;
+  readonly hunger: number;
+  readonly rage: number;
+};
+
 export type SeatsSlice = {
   readonly seats: readonly SeatRow[];
   readonly stage: readonly StageNpc[];
   readonly generics: readonly GenericNpc[];
+  /** Trackers of the scene's NPCs by characterKey (live pushes only; drafts have none). */
+  readonly trackers?: Readonly<Record<string, NpcTrackerRecord>>;
   /** Scatter groups 1–6 (`sessionScene.scatterPlacements`); present outside Scatter too. */
   readonly scatter: readonly ScatterGroup[];
   readonly spotlightOrder: readonly string[];
@@ -338,10 +350,14 @@ const normalizeSlice = (topic: WorldTopic, data: Record<string, unknown>, at: nu
       return { ...(data as Omit<SoundscapeSlice, "lanes">), lanes: asList<SoundLane>(data.lanes) };
     case "seats":
       return {
-        ...(data as Omit<SeatsSlice, "seats" | "stage" | "generics" | "scatter" | "spotlightOrder">),
+        ...(data as Omit<SeatsSlice, "seats" | "stage" | "generics" | "trackers" | "scatter" | "spotlightOrder">),
         seats: asList<SeatRow>(data.seats),
         stage: asList<StageNpc>(data.stage),
         generics: asList<GenericNpc>(data.generics),
+        trackers:
+          data.trackers !== null && typeof data.trackers === "object" && !Array.isArray(data.trackers)
+            ? (data.trackers as Record<string, NpcTrackerRecord>)
+            : {},
         scatter: asList<Record<string, unknown>>(data.scatter).map((group) => ({
           group: Number(group.group),
           pcs: asList<ScatterMember>(group.pcs),

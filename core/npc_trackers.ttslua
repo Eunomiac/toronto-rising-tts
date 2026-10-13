@@ -1,0 +1,365 @@
+--[[
+    NPC trackers (Health, Willpower, Hunger, Rage) for the Storyteller Dashboard's NPC Stats.
+
+    The dashboard owns each NPC's stat block (`npc-stats.json`); TTS owns the values that change in play.
+    A record is `{ healthSup, healthAgg, wpSup, wpAgg, hunger, rage, healthMax?, wpMax? }`; the maximums
+    arrive with dashboard commands (they come from the stat block) and cap damage V5-style
+    (superficial overflow turns into aggravated).
+
+    Where a record lives:
+    - a generic instance (a generic figurine in this scene, not kept): `genericMembership[key].trackers`,
+      so it comes back with its scene and a new scene starts fresh;
+    - a named NPC: `gameState.npcTrackers.byKey[characterKey]`;
+    - a kept generic (`genericMembership[key].keptId`): `gameState.npcTrackers.byKey["kept:" .. keptId]`.
+    `gameState.npcTrackers.night` is the active clock's dusk date; a new night empties `byKey`.
+
+    A record is created the first time an NPC appears tonight (`ensure`): no damage, Hunger and Rage 1–2.
+    Every mutator marks the dashboard `seats` push dirty.
+
+    Push contract: .dev/Storyteller Dashboard Docs/Listening to TTS.md (`seats.trackers`).
+]]
+
+local S = require("core.state")
+
+local NpcTrackers = {}
+
+local LEVEL_MAX = 5
+local TRACK_MAX_LIMIT = 20
+
+local TRACKS = {
+    health = { sup = "healthSup", agg = "healthAgg", max = "healthMax" },
+    willpower = { sup = "wpSup", agg = "wpAgg", max = "wpMax" },
+}
+
+local LEVELS = { hunger = true, rage = true }
+
+local DAMAGE_MODES = {
+    addSuper = { 1, 0 },
+    addAgg = { 0, 1 },
+    removeSuper = { -1, 0 },
+    removeAgg = { 0, -1 },
+    clearSuper = { -99, 0 },
+    clearAgg = { 0, -99 },
+}
+
+local function markDirty()
+    require("dashboard.push").markWorldDirty({ seats = true })
+end
+
+--- @return table
+local function getMembership()
+    local membership = S.getStateVal("sessionScene", "npcWorld", "genericMembership")
+    return type(membership) == "table" and membership or {}
+end
+
+--- The clock the table is running: Downtime's in Play Downtime, else the scene's.
+--- @return table
+local function activeClock()
+    local clock
+    if require("core.phases").isPlayDowntime() == true then
+        clock = S.getStateVal("downtimeClock")
+    else
+        clock = S.getStateVal("sessionScene", "clock")
+    end
+    if type(clock) ~= "table" then
+        error("[NpcTrackers] No active clock to date tonight's trackers.")
+    end
+    return clock
+end
+
+--- Tonight's dusk date (`YYYY-MM-DD`): before sunrise it is yesterday's.
+--- @return string
+function NpcTrackers.nightKey()
+    local dusk = require("core.narrative_clock_lerp").resolveDawnDuskTarget(activeClock(), 0, false)
+    if type(dusk) ~= "table" then
+        error("[NpcTrackers] Could not resolve tonight's dusk from the active clock.")
+    end
+    return string.format("%04d-%02d-%02d", tonumber(dusk.year) or 0, tonumber(dusk.month) or 0, tonumber(dusk.day) or 0)
+end
+
+--- @return table
+local function newRecord()
+    return {
+        healthSup = 0,
+        healthAgg = 0,
+        wpSup = 0,
+        wpAgg = 0,
+        hunger = math.random(1, 2),
+        rage = math.random(1, 2),
+    }
+end
+
+--- The scene row of a generic instance whose record lives in the scene (not kept), else nil.
+--- @param key string
+--- @return table|nil
+local function sceneRow(key)
+    local row = getMembership()[key]
+    if type(row) == "table" and row.keptId == nil then
+        return row
+    end
+    return nil
+end
+
+--- Key in `npcTrackers.byKey`: a kept generic's `kept:<id>`, otherwise the characterKey.
+--- @param key string
+--- @return string
+local function nightId(key)
+    local row = getMembership()[key]
+    if type(row) == "table" and type(row.keptId) == "string" then
+        return "kept:" .. row.keptId
+    end
+    return key
+end
+
+--- Read-only: the NPC's record, or nil when it has none tonight (or this scene, for a generic instance).
+--- @param key string
+--- @param night string|nil tonight's key when the caller already has it
+--- @return table|nil
+function NpcTrackers.get(key, night)
+    local row = sceneRow(key)
+    if row ~= nil then
+        return type(row.trackers) == "table" and row.trackers or nil
+    end
+    local trackers = S.getStateVal("npcTrackers")
+    if type(trackers) ~= "table" or trackers.night ~= (night or NpcTrackers.nightKey()) then
+        return nil
+    end
+    local byKey = trackers.byKey
+    return type(byKey) == "table" and byKey[nightId(key)] or nil
+end
+
+--- @param key string
+--- @param record table
+local function store(key, record)
+    local membership = getMembership()
+    local row = membership[key]
+    if type(row) == "table" and row.keptId == nil then
+        row.trackers = record
+        S.setStateVal(membership, "sessionScene", "npcWorld", "genericMembership")
+        return
+    end
+    local night = NpcTrackers.nightKey()
+    local trackers = S.getStateVal("npcTrackers")
+    if type(trackers) ~= "table" or trackers.night ~= night or type(trackers.byKey) ~= "table" then
+        trackers = { night = night, byKey = {} }
+    end
+    trackers.byKey[nightId(key)] = record
+    S.setStateVal(trackers, "npcTrackers")
+end
+
+--- @param key string
+--- @return table record, boolean created
+local function ensureRecord(key)
+    if type(key) ~= "string" or key == "" then
+        error("[NpcTrackers] ensure needs a characterKey.")
+    end
+    local record = NpcTrackers.get(key)
+    if record ~= nil then
+        return record, false
+    end
+    record = newRecord()
+    store(key, record)
+    return record, true
+end
+
+--- Give an NPC a record when it appears (first time tonight, or in this scene for a generic instance).
+--- @param key string
+--- @return table record
+function NpcTrackers.ensure(key)
+    local record, created = ensureRecord(key)
+    if created then
+        markDirty()
+    end
+    return record
+end
+
+--- `ensure` for several NPCs, one push mark.
+--- @param keys string[]
+function NpcTrackers.ensureKeys(keys)
+    local created = false
+    for _, key in ipairs(type(keys) == "table" and keys or {}) do
+        local _, isNew = ensureRecord(key)
+        created = created or isNew
+    end
+    if created then
+        markDirty()
+    end
+end
+
+--- Every NPC the live scene holds: stage placements, NPC seats, generic membership, Scatter orbits.
+--- @return string[]
+function NpcTrackers.sceneCastKeys()
+    local seen, keys = {}, {}
+    local function add(key)
+        if type(key) == "string" and key ~= "" and not seen[key] then
+            seen[key] = true
+            keys[#keys + 1] = key
+        end
+    end
+    for key, placement in pairs(S.getStateVal("sessionScene", "npcWorld", "placements") or {}) do
+        if type(placement) == "table" then
+            add(key)
+        end
+    end
+    local C = require("lib.constants")
+    local slots = S.getStateVal("sessionScene", "seatSlots") or {}
+    for _, seatKey in ipairs(C.NPCSeats) do
+        local slot = slots[seatKey]
+        if type(slot) == "table" and slot.slotEmpty ~= true then
+            add(slot.characterKey)
+        end
+    end
+    for key, row in pairs(getMembership()) do
+        if type(row) == "table" then
+            add(key)
+        end
+    end
+    local pack = S.getStateVal("sessionScene", "scatterPlacements")
+    if type(pack) == "table" then
+        for _, area in pairs(pack) do
+            if type(area) == "table" and type(area.orbitCharacters) == "table" then
+                for key, _ in pairs(area.orbitCharacters) do
+                    add(key)
+                end
+            end
+        end
+    end
+    table.sort(keys)
+    return keys
+end
+
+--- Scene apply: records for everyone the new scene brings in.
+function NpcTrackers.ensureSceneCast()
+    NpcTrackers.ensureKeys(NpcTrackers.sceneCastKeys())
+end
+
+--- Superficial / aggravated deltas on one track; with a known maximum, overflow turns superficial into
+--- aggravated (as on PC sheets).
+--- @param record table
+--- @param which string
+--- @param ds number
+--- @param da number
+local function applyTrack(record, which, ds, da)
+    local track = TRACKS[which]
+    local s = math.max(0, (tonumber(record[track.sup]) or 0) + ds)
+    local a = math.max(0, (tonumber(record[track.agg]) or 0) + da)
+    local max = tonumber(record[track.max])
+    if max ~= nil then
+        a = math.min(a, max)
+        local overflow = s + a - max
+        if overflow > 0 then
+            local shift = math.min(s, overflow)
+            s = s - shift
+            a = math.min(max, a + shift)
+            s = math.min(s, max - a)
+        end
+    end
+    record[track.sup] = s
+    record[track.agg] = a
+end
+
+--- @param record table
+--- @param maxes table|nil { health?, willpower? } from the stat block
+local function setMaxes(record, maxes)
+    if type(maxes) ~= "table" then
+        return
+    end
+    for which, track in pairs(TRACKS) do
+        local n = tonumber(maxes[which])
+        if n ~= nil then
+            record[track.max] = math.max(1, math.min(TRACK_MAX_LIMIT, math.floor(n)))
+        end
+    end
+end
+
+--- Storyteller Dashboard `npcTracker`: one ring click on an NPC's trackers.
+--- @param key string
+--- @param which string `health` / `willpower` (damage modes) or `hunger` / `rage` (`up` / `down`)
+--- @param mode string
+--- @param maxes table|nil { health?, willpower? } maximums from the stat block
+--- @return string|nil error
+function NpcTrackers.applyChange(key, which, mode, maxes)
+    if type(key) ~= "string" or key == "" then
+        return "npcTracker needs a characterKey."
+    end
+    local record = ensureRecord(key)
+    setMaxes(record, maxes)
+    if TRACKS[which] ~= nil then
+        local deltas = DAMAGE_MODES[mode]
+        if deltas == nil then
+            return "Unknown tracker change `" .. tostring(mode) .. "`."
+        end
+        applyTrack(record, which, deltas[1], deltas[2])
+    elseif LEVELS[which] then
+        local delta = (mode == "up" and 1) or (mode == "down" and -1) or nil
+        if delta == nil then
+            return "Hunger and Rage go `up` or `down`."
+        end
+        record[which] = math.max(0, math.min(LEVEL_MAX, (tonumber(record[which]) or 0) + delta))
+    else
+        return "Unknown tracker `" .. tostring(which) .. "`."
+    end
+    store(key, record)
+    markDirty()
+    return nil
+end
+
+--- Damage from play (a Willpower reroll costs 1 superficial Willpower).
+--- @param key string
+--- @param which string `health` / `willpower`
+--- @param kind string `superficial` / `aggravated`
+--- @param n number
+function NpcTrackers.damage(key, which, kind, n)
+    if TRACKS[which] == nil or (kind ~= "superficial" and kind ~= "aggravated") then
+        error("[NpcTrackers] damage: bad track " .. tostring(which) .. " / " .. tostring(kind))
+    end
+    local record = ensureRecord(key)
+    local amount = math.max(0, math.floor(tonumber(n) or 0))
+    applyTrack(record, which, kind == "superficial" and amount or 0, kind == "aggravated" and amount or 0)
+    store(key, record)
+    markDirty()
+end
+
+--- Mend: heal `n` superficial Health.
+--- @param key string
+--- @param n number
+function NpcTrackers.heal(key, n)
+    local record = ensureRecord(key)
+    applyTrack(record, "health", -math.max(0, math.floor(tonumber(n) or 0)), 0)
+    store(key, record)
+    markDirty()
+end
+
+--- A failed rouse check raises Hunger (to 5 at most).
+--- @param key string
+--- @param n number
+function NpcTrackers.addHunger(key, n)
+    local record = ensureRecord(key)
+    record.hunger = math.max(0, math.min(LEVEL_MAX, (tonumber(record.hunger) or 0) + math.floor(tonumber(n) or 0)))
+    store(key, record)
+    markDirty()
+end
+
+--- Seats push: each listed NPC's record (tonight / this scene), keyed by characterKey.
+--- @param keys string[]
+--- @return table
+function NpcTrackers.snapshotForKeys(keys)
+    local night = NpcTrackers.nightKey()
+    local out = {}
+    for _, key in ipairs(keys) do
+        local record = NpcTrackers.get(key, night)
+        if record ~= nil then
+            out[key] = {
+                healthSup = tonumber(record.healthSup) or 0,
+                healthAgg = tonumber(record.healthAgg) or 0,
+                wpSup = tonumber(record.wpSup) or 0,
+                wpAgg = tonumber(record.wpAgg) or 0,
+                hunger = tonumber(record.hunger) or 0,
+                rage = tonumber(record.rage) or 0,
+            }
+        end
+    end
+    return out
+end
+
+return NpcTrackers

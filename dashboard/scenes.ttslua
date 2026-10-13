@@ -51,6 +51,11 @@
                                           with an optional stat tier (`weak` / `average` / `gifted` / `deadly`)
     genericRename     key, name           rename a generic NPC already in the scene
     genericTier       key, tier?          change (or clear) the stat tier of a generic NPC in the scene
+    npcTracker        key, which, mode, max?
+                                          one NPC tracker click (`core/npc_trackers.ttslua`): `which` health /
+                                          willpower with a damage mode (`addSuper`, `removeAgg`, `clearSuper`, …)
+                                          or hunger / rage with `up` / `down`; `max` { health?, willpower? }
+                                          from the stat block caps damage
     playScene         key, from, plusMinutes, pace
                                           select a library scene and apply it to the table, starting
                                           `plusMinutes` after its own time (`from` scene) or present day
@@ -311,7 +316,14 @@ local function applyCommand(cmd)
     return require("core.seat_moves").moveToChair(cmd.seat, cmd.chair)
   end
   if op == "seatNpc" then
-    return require("core.seat_moves").seatNpc(cmd.characterKey, cmd.chair)
+    local err = require("core.seat_moves").seatNpc(cmd.characterKey, cmd.chair)
+    if err == nil then
+      require("core.npc_trackers").ensure(cmd.characterKey)
+    end
+    return err
+  end
+  if op == "npcTracker" then
+    return require("core.npc_trackers").applyChange(cmd.key, cmd.which, cmd.mode, cmd.max)
   end
   if op == "location" then
     if type(cmd.siteKey) ~= "string" then
@@ -357,6 +369,15 @@ local function applyCommand(cmd)
     end
     local err = require("core.npc_stage_apply").applyStageChanges(cmd.changes, opts)
     require("dashboard.push").markWorldDirty({ scene = true })
+    if err == nil and type(cmd.changes) == "table" then
+      local arrived = {}
+      for key, change in pairs(cmd.changes) do
+        if type(change) == "table" and change.remove ~= true then
+          arrived[#arrived + 1] = key
+        end
+      end
+      require("core.npc_trackers").ensureKeys(arrived)
+    end
     return err
   end
   if op == "scatterPlace" then
@@ -371,10 +392,18 @@ local function applyCommand(cmd)
       ScatterMode.movePcToGroup(cmd.characterKey, cmd.group)
       return nil
     end
-    return ScatterMode.moveNpcToGroup(cmd.characterKey, type(cmd.group) == "number" and cmd.group or nil)
+    local err = ScatterMode.moveNpcToGroup(cmd.characterKey, type(cmd.group) == "number" and cmd.group or nil)
+    if err == nil and type(cmd.group) == "number" then
+      require("core.npc_trackers").ensure(cmd.characterKey)
+    end
+    return err
   end
   if op == "genericAdd" then
-    return require("core.generic_npcs").importNamed(cmd.keys, cmd.labels, cmd.tiers)
+    local err = require("core.generic_npcs").importNamed(cmd.keys, cmd.labels, cmd.tiers)
+    if err == nil then
+      require("core.npc_trackers").ensureKeys(cmd.keys)
+    end
+    return err
   end
   if op == "genericRename" then
     return require("core.generic_npcs").rename(cmd.key, cmd.name)

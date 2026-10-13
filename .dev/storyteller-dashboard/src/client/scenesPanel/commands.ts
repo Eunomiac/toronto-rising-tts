@@ -103,7 +103,18 @@ export type ScenesCommand =
   }
   | { readonly op: "genericRename"; readonly key: string; readonly name: string }
   /** No `tier` clears it. */
-  | { readonly op: "genericTier"; readonly key: string; readonly tier?: NpcTier };
+  | { readonly op: "genericTier"; readonly key: string; readonly tier?: NpcTier }
+  /** One click on an NPC's trackers; `max` (from the stat block) caps Health / Willpower damage. */
+  | {
+    readonly op: "npcTracker";
+    readonly key: string;
+    readonly which: NpcTrackerWhich;
+    readonly mode: NpcTrackerMode;
+    readonly max?: { readonly health?: number; readonly willpower?: number };
+  };
+
+export type NpcTrackerWhich = "health" | "willpower" | "hunger" | "rage";
+export type NpcTrackerMode = "addSuper" | "addAgg" | "removeSuper" | "removeAgg" | "clearSuper" | "clearAgg" | "up" | "down";
 
 export type ScenesSend = (command: ScenesCommand) => void;
 
