@@ -11,12 +11,15 @@ import {
   draftAtPresentDay,
   draftClock,
   draftGenerics,
+  draftScatterGroups,
   draftSceneSlice,
   draftSeatRows,
   draftSoundView,
   draftStage,
+  draftTable,
   savedPlacements,
-  withPlacements
+  withPlacements,
+  withScatterPack
 } from "./library";
 import { isScatter, lightingPreset, liveSeats, liveTokens, sceneConditions, toDate, weatherAxes } from "./liveScene";
 import { useControlBoardSnaps } from "./roster";
@@ -47,9 +50,9 @@ const withAddedGenerics = (scene: LibraryScene, command: Extract<ScenesCommand, 
  * One preview: the table's panels reading a draft library row. Every panel command rewrites the draft
  * (`onChange`); nothing goes to TTS until Save, On deck or Play Scene. The stage edits the draft's NPC placements,
  * table, sky and lighting; the seat strip shows the draft's seating, and a seat click marks that character present
- * or out of the scene for when it plays. Scatter groups stay the table's business (Scatter drafts show no groups).
- * The left column is the table's notes-and-roster dock: roster NPCs drop onto the draft's stage, and generics join
- * the draft (`genericMembership`, spawned by TTS when the scene plays).
+ * or out of the scene for when it plays. A Scatter draft shows and edits its stored groups (`scatterPlacements`),
+ * laid out fresh when the draft's table goes to Scatter. The left column is the table's notes-and-roster dock: roster
+ * NPCs drop onto the draft's stage, and generics join the draft (`genericMembership`, spawned by TTS when the scene plays).
  */
 export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }: {
   draft: LibraryScene;
@@ -66,6 +69,7 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }:
   const tableSeats = useWorldState().seats?.seats ?? [];
   const { snaps } = useControlBoardSnaps();
   const packs = useMemo(() => (snaps ? stagePacks(snaps) : []), [snaps]);
+  const scatterGroups = useMemo(() => draftScatterGroups(withScatterPack(draft, tableSeats, packs)), [draft, tableSeats, packs]);
   const location = locationOf(draft);
   const site = catalogs?.sites.find((entry) => entry.key === location?.siteKey);
   const indoors = site?.isIndoors === true;
@@ -83,6 +87,14 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }:
       onChange((scene) => withAddedGenerics(scene, command, packs));
       return;
     }
+    if (command.op === "table") {
+      onChange((scene) => draftTable(scene, command.key, tableSeats, packs));
+      return;
+    }
+    if (command.op === "scatterPlace") {
+      onChange((scene) => applyToDraft(withScatterPack(scene, tableSeats, packs), command));
+      return;
+    }
     // "Set scene time to present day" makes the draft follow present day rather than pin this minute.
     const followPresent = command.op === "clockTo" && sameMinute(toDate(command.datetime), present);
     onChange((scene) => (followPresent ? draftAtPresentDay(scene) : applyToDraft(scene, command)));
@@ -94,7 +106,7 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }:
     pending: {},
     pendingScatter: [],
     generics,
-    scatter: [],
+    scatter: scatterGroups,
     env: { tableKey: slice.tableKey ?? "", scatter: isScatter(slice), sky: slice.skyboxOverride ?? "", lighting: lightingPreset(slice) ?? "" },
     rollRing: { werewolves: [], oblivionSeats: [], endPhase: false }
   };

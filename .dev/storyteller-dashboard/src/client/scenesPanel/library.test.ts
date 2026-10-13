@@ -1,6 +1,23 @@
 import { describe, expect, it } from "vitest";
 import type { LibraryScene } from "../../shared/sceneLibrary";
-import { applyToDraft, draftGenerics, draftSceneSlice, draftSeatRows, draftStage, mergeFromTts, newLibraryScene, newSceneKey, newSceneTitle, parseTtsLibrarySnapshot, sceneKeyFromTitle, scenesFromTts } from "./library";
+import {
+  applyToDraft,
+  draftGenerics,
+  draftScatterGroups,
+  draftSceneSlice,
+  draftSeatRows,
+  draftStage,
+  draftTable,
+  mergeFromTts,
+  newLibraryScene,
+  newSceneKey,
+  newSceneTitle,
+  parseTtsLibrarySnapshot,
+  sceneKeyFromTitle,
+  scenesFromTts,
+  withScatterPack
+} from "./library";
+import { stageToBoard, type StagePack } from "./stageFrame";
 
 const scene = (key: string, extra: Partial<LibraryScene> = {}): LibraryScene => ({
   key,
@@ -224,5 +241,103 @@ describe("draft seating", () => {
   it("moves an already seated NPC to the empty chair instead of taking a second seat", () => {
     const draft = applyToDraft(seated, { op: "seatNpc", characterKey: "mara", chair: 7 });
     expect(draft.sessionScene.seatSlots).toMatchObject({ NPC1: { characterKey: "mara", tableSlot: 7, isPresent: true }, NPC2: { slotEmpty: true } });
+  });
+});
+
+describe("draft Scatter layout", () => {
+  const stagePack = (label: string, u: number): StagePack => ({
+    familyId: label,
+    label,
+    far: false,
+    slots: [0, 1, 2].map((index) => ({ snapIndex: index, isAnchor: index === 1, u: u + (index - 1) * 0.02, v: 0.3 })),
+    center: { u, v: 0.3 }
+  });
+  const packs = [stagePack("Mid Center", 0.5), stagePack("CENTER", 0.2), stagePack("Far Left", 0.8)];
+  const on = (pack: StagePack, index = 1): Record<string, unknown> => {
+    const slot = pack.slots[index]!;
+    return { ...stageToBoard(slot.u, slot.v), npcLightMode: "STANDARD" };
+  };
+  const [midCenter, center, farLeft] = packs as [StagePack, StagePack, StagePack];
+  const live = [{ seat: "Purple", kind: "pc" as const, isPresent: true, tableSlot: 3, charKey: "rook" }];
+  const table = scene("t", {
+    sessionScene: {
+      tableKey: "Table A",
+      seatSlots: {
+        Red: { characterKey: "lucien", tableSlot: 1, isPresent: true },
+        Pink: { characterKey: "aishe", tableSlot: 7, isPresent: false, isPlayingNPC: true, npcCharacterKey: "drake" },
+        Purple: { tableSlot: 3 },
+        NPC1: { characterKey: "mara", tableSlot: 6 },
+        NPC2: { slotEmpty: true }
+      },
+      npcWorld: { placements: { victor: on(midCenter), drake: on(midCenter, 0), hob: on(center), ivy: on(center, 0) } },
+      scatterPlacements: { scatter1: { centerCharacters: { stale: { slot: 1 } }, orbitCharacters: [] } }
+    }
+  });
+  const scattered = draftTable(table, "Scatter", live, packs);
+  const area = (draft: LibraryScene, group: number): Record<string, Record<string, unknown>> =>
+    (draft.sessionScene.scatterPlacements as Record<string, Record<string, Record<string, unknown>>>)[`scatter${group}`]!;
+
+  it("lays out fresh groups when the table goes to Scatter: PCs one to a group, NPCs by chair, then by stage pack", () => {
+    expect(scattered.placementMode).toBe("scatter");
+    expect(draftScatterGroups(scattered)).toEqual([
+      { group: 1, pcs: [{ characterKey: "lucien", slot: 1 }], npcs: [{ characterKey: "hob", slot: 1 }, { characterKey: "ivy", slot: 2 }] },
+      { group: 2, pcs: [{ characterKey: "aishe", slot: 1 }], npcs: [{ characterKey: "victor", slot: 1 }] },
+      { group: 3, pcs: [{ characterKey: "rook", slot: 1 }], npcs: [] },
+      { group: 4, pcs: [], npcs: [] },
+      { group: 5, pcs: [], npcs: [] },
+      { group: 6, pcs: [], npcs: [{ characterKey: "mara", slot: 1 }] }
+    ]);
+    expect(area(scattered, 2).centerCharacters).toEqual({ aishe: { slot: 1, isPlayingNPC: true, isPresent: false, characterKey: "drake" } });
+    expect(area(scattered, 1).orbitCharacters).toEqual({ hob: { slot: 1, npcLightMode: "STANDARD" }, ivy: { slot: 2, npcLightMode: "STANDARD" } });
+  });
+
+  it("seeds a Scatter draft that has no stored layout, and leaves the rest alone", () => {
+    const bare = scene("b", { placementMode: "scatter", sessionScene: { seatSlots: { Red: { characterKey: "lucien", tableSlot: 4 } } } });
+    expect(draftScatterGroups(withScatterPack(bare, [], packs))[3]?.pcs).toEqual([{ characterKey: "lucien", slot: 1 }]);
+    const disconnected = withScatterPack(bare, [{ seat: "Red", kind: "pc", isPresent: true, absentFromSession: true }], packs);
+    expect(draftScatterGroups(disconnected).flatMap((group) => group.pcs)).toEqual([]);
+    expect(withScatterPack(scattered, [], packs)).toBe(scattered);
+    expect(withScatterPack(table, [], packs)).toBe(table);
+    const stored = scene("s", { placementMode: "scatter", sessionScene: { scatterPlacements: { scatter1: { centerCharacters: [], orbitCharacters: { b: { slot: 2 }, a: { slot: 1 } } } } } });
+    expect(draftScatterGroups(stored)[0]).toEqual({ group: 1, pcs: [], npcs: [{ characterKey: "a", slot: 1 }, { characterKey: "b", slot: 2 }] });
+  });
+
+  it("moves characters between groups into the lowest free slot, as the live table does", () => {
+    const moved = applyToDraft(applyToDraft(scattered, { op: "scatterPlace", characterKey: "lucien", kind: "pc", group: 3 }), { op: "scatterPlace", characterKey: "hob", kind: "npc", group: 4 });
+    expect(area(moved, 3).centerCharacters).toEqual({
+      rook: { slot: 1, isPlayingNPC: false, isPresent: true },
+      lucien: { slot: 2, isPlayingNPC: false, isPresent: true }
+    });
+    expect(area(moved, 1)).toEqual({ centerCharacters: {}, orbitCharacters: { ivy: { slot: 2, npcLightMode: "STANDARD" } } });
+    expect(area(moved, 4).orbitCharacters).toEqual({ hob: { slot: 1, npcLightMode: "STANDARD" } });
+    expect(applyToDraft(scattered, { op: "scatterPlace", characterKey: "rook", kind: "pc", group: 3 })).toBe(scattered);
+    expect(applyToDraft(scattered, { op: "scatterPlace", characterKey: "rook", kind: "pc" })).toBe(scattered);
+    expect(applyToDraft(scattered, { op: "scatterPlace", characterKey: "rook", kind: "pc", group: 7 })).toBe(scattered);
+    expect(applyToDraft(table, { op: "scatterPlace", characterKey: "hob", kind: "npc", group: 2 })).toBe(table);
+  });
+
+  it("refuses a sixth PC in a group", () => {
+    const full = Object.fromEntries(["a", "b", "c", "d", "e"].map((key, index) => [key, { slot: index + 1 }]));
+    const crowded = scene("c", { placementMode: "scatter", sessionScene: { scatterPlacements: { scatter1: { centerCharacters: full, orbitCharacters: {} }, scatter2: { centerCharacters: { f: { slot: 1 } }, orbitCharacters: {} } } } });
+    expect(applyToDraft(crowded, { op: "scatterPlace", characterKey: "f", kind: "pc", group: 1 })).toBe(crowded);
+  });
+
+  it("takes an NPC moved out of every group out of the scene: off the stage and out of their chair", () => {
+    const cleared = applyToDraft(applyToDraft(scattered, { op: "scatterPlace", characterKey: "mara", kind: "npc" }), { op: "scatterPlace", characterKey: "victor", kind: "npc" });
+    expect(draftScatterGroups(cleared).flatMap((group) => group.npcs.map((npc) => npc.characterKey))).toEqual(["hob", "ivy"]);
+    expect(cleared.sessionScene.seatSlots).toMatchObject({ NPC1: { slotEmpty: true } });
+    expect(draftStage(cleared).map((npc) => npc.characterKey)).toEqual(["drake", "hob", "ivy"]);
+  });
+
+  it("puts NPCs who only stood in groups onto free stage packs when the table leaves Scatter", () => {
+    const added = applyToDraft(applyToDraft(scattered, { op: "scatterPlace", characterKey: "zed", kind: "npc", group: 2 }), { op: "scatterPlace", characterKey: "yul", kind: "npc", group: 4 });
+    const standard = draftTable(added, "Table B", live, packs);
+    expect(standard.placementMode).toBe("standard");
+    expect("scatterPlacements" in standard.sessionScene).toBe(false);
+    expect(standard.sessionScene.tableKey).toBe("Table A");
+    const placements = (standard.sessionScene.npcWorld as Record<string, Record<string, unknown>>).placements!;
+    expect(placements).toEqual({ victor: on(midCenter), drake: on(midCenter, 0), hob: on(center), ivy: on(center, 0), zed: on(farLeft) });
+    const onScatterTable = scene("x", { placementMode: "scatter", sessionScene: { tableKey: "Scatter" } });
+    expect(draftTable(onScatterTable, "Table B", [], packs).sessionScene.tableKey).toBe("Table B");
   });
 });

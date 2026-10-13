@@ -1,8 +1,10 @@
 import { parseSceneStatus, type LibraryScene } from "../../shared/sceneLibrary";
-import type { ClockDatetime, GenericNpc, SceneSlice, SeatRow, StageNpc } from "../worldState";
+import type { ClockDatetime, GenericNpc, ScatterGroup, ScatterMember, SceneSlice, SeatRow, StageNpc } from "../worldState";
 import type { ScenesCommand, SoundLane } from "./commands";
 import { isSeatColor, NPC_SEATS, playlistLabel } from "../catalogVocab";
 import type { SoundView } from "./liveScene";
+import { fillOrder } from "./stage";
+import { boardToStage, stageToBoard, type StagePack, type StageSlot } from "./stageFrame";
 
 /**
  * The dashboard's scene library (master copy) against TTS's `sceneLibrary`. Rows keep TTS's shape; the preview
@@ -223,7 +225,10 @@ export const applyToDraft = (scene: LibraryScene, command: ScenesCommand): Libra
         return { ...withSession(scene, { placementMode: "scatter" }), placementMode: "scatter" };
       }
       return {
-        ...withSession(scene, { placementMode: "standard", ...(command.key === "Table B" ? {} : { tableKey: command.key }) }),
+        ...withSession(scene, {
+          placementMode: "standard",
+          ...(command.key === "Table B" && scene.sessionScene.tableKey !== "Scatter" ? {} : { tableKey: command.key })
+        }),
         placementMode: "standard"
       };
     case "conditions":
@@ -335,6 +340,8 @@ export const applyToDraft = (scene: LibraryScene, command: ScenesCommand): Libra
       }
       return withNpcWorld(scene, { placements, genericMembership: membership });
     }
+    case "scatterPlace":
+      return placeInDraftScatter(scene, command);
     default:
       return scene;
   }
@@ -458,4 +465,255 @@ export const draftSoundView = (scene: LibraryScene): SoundView => {
     levels: Object.fromEntries(LANES.map((lane) => [lane, 100])) as Record<SoundLane, number>,
     playing: Object.fromEntries(LANES.map((lane) => [lane, lane === "music" || (lane === "location" && ambient !== undefined)])) as Record<SoundLane, boolean>
   };
+};
+
+/* ---------- Scatter layout (`sessionScene.scatterPlacements`, which TTS plays as stored) ---------- */
+
+/** `ScatterLayout.groupCount()`. */
+const GROUPS = [1, 2, 3, 4, 5, 6] as const;
+/** A group's PC places (`ScatterLayout.nextFreePcWorldSlot`). */
+const GROUP_PCS = 5;
+
+/** Occupied stage packs take Scatter groups in this order (`ScatterOccupancy.POLAR_FAMILY_ORDER`). */
+const POLAR_FAMILY_ORDER = [
+  "CENTER", "Mid Center", "Mid Left", "Mid Right", "Center Left", "Center Right", "Far Center-Left", "Far Center-Right", "Far Left", "Far Right"
+];
+
+/** One group: PCs (by charKey) in `centerCharacters`, NPCs in `orbitCharacters`, each row holding its `slot`. */
+type ScatterArea = { readonly centerCharacters: Record<string, unknown>; readonly orbitCharacters: Record<string, unknown> };
+
+const draftIsScatter = (scene: LibraryScene): boolean => scene.placementMode === "scatter" || scene.sessionScene.tableKey === "Scatter";
+
+const draftPack = (scene: LibraryScene): Row | undefined =>
+  isRecord(scene.sessionScene.scatterPlacements) ? scene.sessionScene.scatterPlacements : undefined;
+
+/** A copy of one group; an empty Lua table arrives as `[]`. */
+const areaOf = (pack: Row, group: number): ScatterArea => {
+  const area = pack[`scatter${group}`];
+  return {
+    centerCharacters: isRecord(area) && isRecord(area.centerCharacters) ? { ...area.centerCharacters } : {},
+    orbitCharacters: isRecord(area) && isRecord(area.orbitCharacters) ? { ...area.orbitCharacters } : {}
+  };
+};
+
+const packOf = (areas: readonly ScatterArea[]): Row => Object.fromEntries(areas.map((area, index) => [`scatter${index + 1}`, area]));
+
+const slotNumber = (row: unknown): number | undefined => (isRecord(row) && typeof row.slot === "number" ? row.slot : undefined);
+
+/** The lowest slot nobody in `rows` holds, up to `max`. */
+const freeSlot = (rows: Row, max = Number.MAX_SAFE_INTEGER): number | undefined => {
+  const taken = new Set(Object.values(rows).map(slotNumber));
+  for (let slot = 1; slot <= max; slot += 1) {
+    if (!taken.has(slot)) {
+      return slot;
+    }
+  }
+  return undefined;
+};
+
+const membersBySlot = (rows: Row): ScatterMember[] =>
+  Object.entries(rows)
+    .map(([characterKey, row]): ScatterMember => {
+      const slot = slotNumber(row);
+      return slot === undefined ? { characterKey } : { characterKey, slot };
+    })
+    .sort((a, b) => (a.slot ?? 99) - (b.slot ?? 99) || a.characterKey.localeCompare(b.characterKey));
+
+/** The draft's Scatter groups as the push's group list, the way `world_snapshot` reads the table's. */
+export const draftScatterGroups = (scene: LibraryScene): readonly ScatterGroup[] => {
+  const pack = draftPack(scene) ?? {};
+  return GROUPS.map((group) => {
+    const area = areaOf(pack, group);
+    return { group, pcs: membersBySlot(area.centerCharacters), npcs: membersBySlot(area.orbitCharacters) };
+  });
+};
+
+/** A numbered chair's group, cycling past six (chair 7 → group 1), as `ScatterOccupancy.tableSlotToGroup`. */
+const chairGroup = (chair: number): number => ((chair - 1) % GROUPS.length) + 1;
+
+const polarRank = (pack: StagePack): number => {
+  const rank = POLAR_FAMILY_ORDER.indexOf(pack.label);
+  return rank < 0 ? POLAR_FAMILY_ORDER.length : rank;
+};
+
+/** The pack slot nearest a stage placement (control board u, v), and that slot's place in the pack's fill order. */
+const nearestPackSlot = (u: number, v: number, packs: readonly StagePack[]): { pack: StagePack; order: number } | undefined => {
+  const at = boardToStage(u, v);
+  let best: { pack: StagePack; order: number; d: number } | undefined;
+  for (const pack of packs) {
+    for (const [order, slot] of fillOrder(pack).entries()) {
+      const d = Math.hypot(slot.u - at.u, slot.v - at.v);
+      if (!best || d < best.d) {
+        best = { pack, order, d };
+      }
+    }
+  }
+  return best ? { pack: best.pack, order: best.order } : undefined;
+};
+
+/**
+ * The Scatter layout a scene starts with when its table goes to Scatter (`ScatterOccupancy` does the same in TTS):
+ * connected PCs spread one to a group (their chair's group when no PC has it yet, otherwise the lowest group with no
+ * PC), seated NPCs around their chair's group, then stage NPCs: their authored `scatterGroup`, or their stage pack's
+ * group (occupied packs take groups in `POLAR_FAMILY_ORDER`, cycling past six). TTS puts a PC who connects later into
+ * an empty group when the scene plays. `seats` are the draft's seat rows (`draftSeatRows`).
+ */
+export const defaultScatterPack = (scene: LibraryScene, seats: readonly SeatRow[], packs: readonly StagePack[]): Row => {
+  const areas: ScatterArea[] = GROUPS.map(() => ({ centerCharacters: {}, orbitCharacters: {} }));
+  const placed = new Set<string>();
+  const byChair = (a: SeatRow, b: SeatRow): number => (a.tableSlot ?? 99) - (b.tableSlot ?? 99);
+  const noPc = (area: ScatterArea | undefined): boolean => area !== undefined && Object.keys(area.centerCharacters).length === 0;
+  for (const pc of seats.filter((row) => row.kind === "pc" && row.absentFromSession !== true).sort(byChair)) {
+    const own = pc.tableSlot !== undefined && pc.tableSlot >= 1 ? areas[chairGroup(pc.tableSlot) - 1] : undefined;
+    const area = noPc(own) ? own : areas.find(noPc);
+    if (!pc.charKey || !area) {
+      continue;
+    }
+    const playing = pc.playingNpcKey;
+    area.centerCharacters[pc.charKey] = { slot: 1, isPlayingNPC: playing !== undefined, isPresent: pc.isPresent, ...(playing ? { characterKey: playing } : {}) };
+    placed.add(pc.charKey);
+    if (playing) {
+      placed.add(playing);
+    }
+  }
+  const join = (group: number, npcKey: string): void => {
+    const orbit = areas[group - 1]?.orbitCharacters;
+    if (orbit && !placed.has(npcKey)) {
+      placed.add(npcKey);
+      orbit[npcKey] = { slot: Object.keys(orbit).length + 1, npcLightMode: "STANDARD" };
+    }
+  };
+  for (const npc of seats.filter((row) => row.kind === "npc").sort(byChair)) {
+    if (npc.characterKey && npc.slotEmpty !== true && npc.tableSlot !== undefined && npc.tableSlot >= 1) {
+      join(chairGroup(npc.tableSlot), npc.characterKey);
+    }
+  }
+  const staged: { key: string; pack: StagePack | undefined; order: number }[] = [];
+  for (const [key, row] of Object.entries(draftPlacements(scene)).sort(([a], [b]) => a.localeCompare(b))) {
+    if (isRecord(row) && typeof row.scatterGroup === "number") {
+      join(row.scatterGroup, key);
+    } else if (isRecord(row) && typeof row.u === "number" && typeof row.v === "number") {
+      const near = nearestPackSlot(row.u, row.v, packs);
+      staged.push({ key, pack: near?.pack, order: near?.order ?? 0 });
+    }
+  }
+  const claimed = [...new Set(staged.flatMap((entry) => (entry.pack ? [entry.pack] : [])))].sort((a, b) => polarRank(a) - polarRank(b));
+  const fewestNpcs = (): number =>
+    GROUPS.reduce((best, group) => (Object.keys(areas[group - 1]?.orbitCharacters ?? {}).length < Object.keys(areas[best - 1]?.orbitCharacters ?? {}).length ? group : best), 1);
+  for (const entry of staged.sort((a, b) => a.order - b.order)) {
+    join(entry.pack ? (claimed.indexOf(entry.pack) % GROUPS.length) + 1 : fewestNpcs(), entry.key);
+  }
+  return packOf(areas);
+};
+
+/**
+ * A Scatter draft with no stored layout gets the starting one (`defaultScatterPack`), so its groups show and can be
+ * edited. `live` is the table's seat push (PC charKeys the draft's seats leave out).
+ */
+export const withScatterPack = (scene: LibraryScene, live: readonly SeatRow[], packs: readonly StagePack[]): LibraryScene =>
+  draftIsScatter(scene) && !draftPack(scene)
+    ? withSession(scene, { scatterPlacements: defaultScatterPack(scene, draftSeatRows(scene, live), packs) })
+    : scene;
+
+/**
+ * Off Scatter: NPCs who only stood in groups (not on the stage, not in a chair) go onto the stage packs nobody holds,
+ * a pack per group in `POLAR_FAMILY_ORDER`, spilling onto the next (`ScatterOccupancy.restoreStash`); NPCs past the
+ * last pack leave the stage. The layout is dropped.
+ */
+const leaveScatter = (scene: LibraryScene, packs: readonly StagePack[]): LibraryScene => {
+  const pack = draftPack(scene) ?? {};
+  const { scatterPlacements: _layout, ...rest } = scene.sessionScene;
+  const left: LibraryScene = { ...scene, sessionScene: rest };
+  const placements: Record<string, unknown> = { ...draftPlacements(left) };
+  const slots = draftSeatSlots(left);
+  const seated = new Set(NPC_SEATS.flatMap((seat) => {
+    const npc = seatChair(seat, slots[seat]) === undefined ? undefined : npcOf(slots[seat]);
+    return npc ? [npc] : [];
+  }));
+  const held = new Set(Object.values(placements).flatMap((row) =>
+    isRecord(row) && typeof row.u === "number" && typeof row.v === "number" ? [nearestPackSlot(row.u, row.v, packs)?.pack] : []));
+  const free = packs.filter((entry) => !held.has(entry)).sort((a, b) => polarRank(a) - polarRank(b));
+  for (const group of GROUPS) {
+    let open: StageSlot[] = [];
+    for (const { characterKey } of membersBySlot(areaOf(pack, group).orbitCharacters)) {
+      if (characterKey in placements || seated.has(characterKey)) {
+        continue;
+      }
+      if (open.length === 0) {
+        const next = free.shift();
+        if (!next) {
+          break;
+        }
+        open = [...fillOrder(next)];
+      }
+      const slot = open.shift();
+      if (slot) {
+        placements[characterKey] = { ...stageToBoard(slot.u, slot.v), npcLightMode: "STANDARD" };
+      }
+    }
+  }
+  return withPlacements(left, placements);
+};
+
+/** The draft after a table pick: going to Scatter lays out fresh groups (a stored layout is a stale earlier one), leaving it puts the groups away. */
+export const draftTable = (scene: LibraryScene, key: string, live: readonly SeatRow[], packs: readonly StagePack[]): LibraryScene => {
+  const next = applyToDraft(scene, { op: "table", key });
+  if (draftIsScatter(next) === draftIsScatter(scene)) {
+    return next;
+  }
+  if (!draftIsScatter(next)) {
+    return leaveScatter(next, packs);
+  }
+  const { scatterPlacements: _stale, ...rest } = next.sessionScene;
+  return withScatterPack({ ...next, sessionScene: rest }, live, packs);
+};
+
+/** An NPC out of every group leaves the scene: off the stage, out of their chair, and (a generic) out of the draft. */
+const withoutNpc = (scene: LibraryScene, npcKey: string): LibraryScene => {
+  const placements: Record<string, unknown> = { ...draftPlacements(scene) };
+  const membership: Record<string, unknown> = { ...draftMembership(scene) };
+  delete placements[npcKey];
+  delete membership[npcKey];
+  const slots = draftSeatSlots(scene);
+  const seat = NPC_SEATS.find((key) => npcOf(slots[key]) === npcKey);
+  const unseated = seat === undefined ? scene : withSession(scene, { seatSlots: { ...slots, [seat]: { slotEmpty: true } } });
+  return withNpcWorld(unseated, { placements, genericMembership: membership });
+};
+
+/**
+ * A Scatter move in the draft's layout, as `ScatterMode.movePcToGroup` / `moveNpcToGroup` make it live: the character
+ * takes the lowest free slot in the new group (a PC keeps its row, and a full group of five PCs refuses), and an NPC
+ * moved out of every group leaves the scene. Drafts without a stored layout are seeded first (`withScatterPack`).
+ */
+const placeInDraftScatter = (scene: LibraryScene, command: Extract<ScenesCommand, { op: "scatterPlace" }>): LibraryScene => {
+  const pack = draftPack(scene);
+  const { characterKey, kind, group } = command;
+  if (!pack || !draftIsScatter(scene) || (group === undefined ? kind === "pc" : !GROUPS.some((entry) => entry === group))) {
+    return scene;
+  }
+  const areas = GROUPS.map((entry) => areaOf(pack, entry));
+  const side = (area: ScatterArea): Record<string, unknown> => (kind === "pc" ? area.centerCharacters : area.orbitCharacters);
+  const from = areas.findIndex((area) => characterKey in side(area));
+  if (group !== undefined && from === group - 1) {
+    return scene;
+  }
+  const prior = areas[from]?.centerCharacters[characterKey];
+  for (const area of areas) {
+    delete area.centerCharacters[characterKey];
+    delete area.orbitCharacters[characterKey];
+  }
+  const target = group === undefined ? undefined : areas[group - 1];
+  if (!target) {
+    return withoutNpc(withSession(scene, { scatterPlacements: packOf(areas) }), characterKey);
+  }
+  if (kind === "pc") {
+    const slot = freeSlot(target.centerCharacters, GROUP_PCS);
+    if (slot === undefined) {
+      return scene;
+    }
+    target.centerCharacters[characterKey] = { ...(isRecord(prior) ? prior : { isPlayingNPC: false, isPresent: true }), slot };
+  } else {
+    target.orbitCharacters[characterKey] = { slot: freeSlot(target.orbitCharacters), npcLightMode: "STANDARD" };
+  }
+  return withSession(scene, { scatterPlacements: packOf(areas) });
 };
