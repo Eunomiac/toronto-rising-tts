@@ -13,7 +13,8 @@
     seatLayout.absentPileY
     so restore can lift table-height roles without flattening feature-hide Y
     (CSHEET pages, SIGNAL_FIRE, HUNGER_SMOKE) — TOR-512 / TOR-513.
-    Cover transitions onto `isRandomSeating` tables (Table B) shuffle packed occupancy (TOR-537).
+    `isRandomSeating` tables (Table B) seat each PC in the chair drawn once per session on
+    Intermission → Play (`seatLayout.sessionChairs`), with seated NPCs packed after them.
 ]]
 
 local U = require("lib.util")
@@ -347,7 +348,7 @@ function FSL.seedDefaultTableSlotsOnto(seatSlots, occupiedNPCSlots)
     end
 end
 
---- True when this table (or the Table B family) shuffles occupants on a cover transition.
+--- True when this table (or the Table B family) seats PCs in their session chairs (`FSL.applySessionChairs`).
 --- @param tableKey string|nil
 --- @return boolean
 function FSL.tableUsesRandomSeating(tableKey)
@@ -365,43 +366,102 @@ function FSL.tableUsesRandomSeating(tableKey)
     return false
 end
 
---- Shuffle all 5 PCs plus seated NPCs into chairs 1..(5 + NPCs). An unoccupied PC
---- (`absentFromSession`) draws a chair like everyone else but takes no `tableSlot`, so their
---- chair stays an empty gap at a random position. Call after `seedDefaultTableSlots`.
---- @return number chairCount
-function FSL.randomizePackedOccupancy()
+--- True when `chairs` gives every PC colour its own chair in 1..#C.PlayerColors.
+--- @param chairs any
+--- @return boolean
+function FSL.isValidSessionChairs(chairs)
+    if U.Type(chairs) ~= "table" then
+        return false
+    end
+    local pcCount = #(C.PlayerColors or {})
+    local used = {}
+    for _, color in ipairs(C.PlayerColors or {}) do
+        local chair = chairs[color]
+        if type(chair) ~= "number" or chair ~= math.floor(chair) or chair < 1 or chair > pcCount or used[chair] then
+            return false
+        end
+        used[chair] = true
+    end
+    return true
+end
+
+--- Seed for saves with no session draw yet: each PC's default chair.
+--- @return table<string, number>
+function FSL.defaultSessionChairs()
+    local chairs = {}
+    for _, color in ipairs(C.PlayerColors or {}) do
+        chairs[color] = FSL.DEFAULT_TABLE_SLOTS[color]
+    end
+    return chairs
+end
+
+--- @return table<string, number> PC colour → chair (1..5) drawn for this session
+function FSL.sessionChairs()
+    local chairs = S.getStateVal("seatLayout", "sessionChairs")
+    if not FSL.isValidSessionChairs(chairs) then
+        error("seatLayout.sessionChairs must give each PC its own chair 1.." .. tostring(#(C.PlayerColors or {}))
+            .. " (S.validateState seeds it)")
+    end
+    return chairs
+end
+
+--- Intermission → Play: shuffle the PCs into chairs 1..5 for the whole session. The only writer of
+--- `seatLayout.sessionChairs` (besides the `S.validateState` seed for old saves).
+function FSL.drawSessionChairs()
+    local colors = {}
+    for i, color in ipairs(C.PlayerColors or {}) do
+        colors[i] = color
+    end
+    for i = #colors, 2, -1 do
+        local j = math.random(i)
+        colors[i], colors[j] = colors[j], colors[i]
+    end
+    local chairs = {}
+    for i, color in ipairs(colors) do
+        chairs[color] = i
+    end
+    S.setStateVal(chairs, "seatLayout", "sessionChairs")
+end
+
+--- Random-seating tables: every PC takes their session chair (a disconnected PC's chair stays an
+--- empty gap) and seated NPCs fill the chairs after the PCs, keeping their current chair order.
+--- Deterministic, so every table change in a session puts each PC back in the same chair.
+function FSL.applySessionChairs()
     FSL.seedDefaultTableSlots()
     local ss = liveSeatSlots()
-    local draw = {}
-    for _, color in ipairs(C.PlayerColors or {}) do
-        draw[#draw + 1] = color
-    end
-    local occ = FSL.collectOccupants()
-    for i = 1, #occ do
-        if occ[i].isPlayer ~= true then
-            draw[#draw + 1] = occ[i].occupantKey
+    local chairs = FSL.sessionChairs()
+    local npcs = {}
+    for _, occupant in ipairs(FSL.collectOccupants()) do
+        if occupant.isPlayer ~= true then
+            npcs[#npcs + 1] = occupant
         end
     end
-    for i = #draw, 2, -1 do
-        local j = math.random(i)
-        draw[i], draw[j] = draw[j], draw[i]
-    end
-    local seated = {}
-    for i = 1, #draw do
-        local row = ensureSeatRow(ss, draw[i])
+    table.sort(npcs, function(a, b)
+        if a.tableSlot ~= b.tableSlot then
+            return a.tableSlot < b.tableSlot
+        end
+        return a.occupantKey < b.occupantKey
+    end)
+    for _, color in ipairs(C.PlayerColors or {}) do
+        local row = ensureSeatRow(ss, color)
         if row.absentFromSession == true then
             row.tableSlot = nil
         else
-            row.tableSlot = i
-            seated[draw[i]] = true
+            row.tableSlot = chairs[color]
         end
     end
-    for occupant, row in pairs(ss) do
-        if U.Type(row) == "table" and seated[occupant] ~= true then
+    local pcCount = #(C.PlayerColors or {})
+    local seated = {}
+    for i, occupant in ipairs(npcs) do
+        ensureSeatRow(ss, occupant.occupantKey).tableSlot = pcCount + i
+        seated[occupant.occupantKey] = true
+    end
+    for _, npc in ipairs(C.NPCSeats or {}) do
+        local row = ss[npc]
+        if U.Type(row) == "table" and seated[npc] ~= true then
             row.tableSlot = nil
         end
     end
-    return #draw
 end
 
 --- @param seatSlots table|nil
@@ -1053,8 +1113,9 @@ function FSL.setOccupantPileVisible(occupantKey, visible)
     end
 end
 
---- Re-apply ObjectPositions-owned feature poses after anchors moved. Unoccupied PC seats keep
---- their parked drawers and tarot set (their anchors are parked, but the poses use table height).
+--- Re-apply ObjectPositions-owned feature poses after anchors moved (wood tables and Scatter).
+--- Unoccupied PC seats keep their parked drawers and tarot set (their anchors are parked, but the
+--- poses use table height). Selected Compulsion cards are loose (no seat role), so they snap here too.
 local function reconcileObjectPositionsOwnedAfterLayout()
     local parkedColors = {}
     for _, color in ipairs(C.PlayerColors or {}) do
@@ -1066,6 +1127,7 @@ local function reconcileObjectPositionsOwnedAfterLayout()
         require("lib.tarot_toggle").reconcileAfterSeatLayout(G.GUIDS.TAROT_BUTTON_PINK)
     end
     require("lib.dice_drawer").reconcileAfterSeatLayout({ instant = true, skipColors = parkedColors })
+    require("core.compulsions").reconcileSelectedCardsToAnchors()
 end
 
 --- @param bundle table from computeSlotFrames
@@ -1235,8 +1297,8 @@ function FSL.markPlayerDisconnected(color)
 end
 
 --- Connect: clear `absentFromSession` and give the PC a chair on the current table at once.
---- Fixed tables use the PC's default chair when free; random-seating tables (and a taken
---- default) use the lowest free chair. Scatter has no chairs — group membership is the seat,
+--- Fixed tables use the PC's default chair and random-seating tables the PC's session chair, when
+--- free; otherwise the lowest free chair. Scatter has no chairs — group membership is the seat,
 --- and `S.validateState` seeds the standard chair kept for leaving Scatter.
 --- @param color string
 --- @return boolean ok
@@ -1256,20 +1318,21 @@ function FSL.seatConnectedPlayer(color)
     end
     local tableCfg, tableKey = currentTableCfg()
     local slot = nil
-    if not FSL.tableUsesRandomSeating(tableKey) then
-        local preferred = FSL.DEFAULT_TABLE_SLOTS[color]
-        if type(preferred) == "number" and preferred <= FSL.getSlotCapacity(tableCfg) then
-            local taken = false
-            local occ = FSL.collectOccupants()
-            for i = 1, #occ do
-                if occ[i].tableSlot == preferred then
-                    taken = true
-                    break
-                end
+    local preferred = FSL.DEFAULT_TABLE_SLOTS[color]
+    if FSL.tableUsesRandomSeating(tableKey) then
+        preferred = FSL.sessionChairs()[color]
+    end
+    if type(preferred) == "number" and preferred <= FSL.getSlotCapacity(tableCfg) then
+        local taken = false
+        local occ = FSL.collectOccupants()
+        for i = 1, #occ do
+            if occ[i].tableSlot == preferred then
+                taken = true
+                break
             end
-            if not taken then
-                slot = preferred
-            end
+        end
+        if not taken then
+            slot = preferred
         end
     end
     slot = slot or FSL.lowestFreeTableSlot(tableCfg)

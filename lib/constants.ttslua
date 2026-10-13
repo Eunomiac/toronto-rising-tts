@@ -1433,7 +1433,7 @@ C.CameraAuthoringReferenceHandPosition = Vector({ 0.00, 3.22, -76.61 })
 C.CameraAuthoringReferenceFigurinePosition = Vector({ 0.5035, -55.8166, -72.7348 })
 
 --- Default occupant → numbered tableSlot (Red at slot 1, Orange right, Pink left). Live saves seed missing slots from this map.
---- Does not apply to tables with `isRandomSeating = true`.
+--- Tables with `isRandomSeating = true` seat PCs from `seatLayout.sessionChairs` instead (seeded from this map).
 C.DefaultTableSlots = {
   Red = 1,
   Orange = 2,
@@ -1836,12 +1836,12 @@ C.Tables = {
     }
   },
   -- "Table B" is intentionally NOT a C.Tables entry: it is a dynamic family key resolved to
-  -- "Table B<variant>" (B0-B4) from packed occupied-seat count after a random-seating
-  -- cover transition (TOR-537).
+  -- "Table B<variant>" (B0-B4) from the seated NPC count: chairs 1..5 for the PCs plus one per seated NPC.
   -- "Table B5" remains manually selectable but is never auto-selected.
-  -- The Table B family is randomized seating, with `isRandomSeating = true`. Meaning: Whenever there is a
-  -- cover transition to one of the Table B tables, randomize occupied, non-Absent seats (PC and NPC together)
-  -- into packed chairs 1..N. Because that leaves no holes, the table variant follows occupied count.
+  -- The Table B family is random seating, with `isRandomSeating = true`. Meaning: the PCs are shuffled into
+  -- chairs 1..5 once per session, on Intermission → Play (`seatLayout.sessionChairs`), and every cover
+  -- transition to a Table B table puts each PC back in that chair (a disconnected PC's chair stays empty).
+  -- Seated NPCs are packed into chairs 6.. after them, in their current chair order.
   ["Table B0"] = {
     guid = G.GUIDS.TABLES.TABLE_B0,
     shape = C.TableShapes.CIRCULAR,
@@ -2221,7 +2221,8 @@ C.Tables = {
     shape = C.TableShapes.SCATTER,
     TABLE_KEY = "Scatter",
     centerPoint = Vector({ 0, 0, 0 }),
-    --- Highest valid numbered chair / `tableSlot` when Scatter is authored via seatSlots (1:1 → groups 1–6).
+    --- Highest valid numbered chair / `tableSlot` when Scatter is authored via seatSlots (chair → group,
+    --- but PCs spread one per group; seated NPCs join their chair's group orbit).
     slotCapacity = 6,
     --- STAGE_BOARD does not follow table origin. Restore this XZ when leaving Scatter (Y unchanged).
     --- Live save TS_Save_230: `{ x = 0, z = 62.0977 }`.
@@ -2299,8 +2300,7 @@ C.Tables = {
       G.GUIDS.SEAT_CHAIR_NPC4,
       G.GUIDS.PRINCE_SIGNET_BORDER_RED,
       G.GUIDS.PRINCE_SIGNET_RED,
-      G.GUIDS.PRINCE_CURTAIN_RED,
-      G.GUIDS.PARTICLE_EMITTER
+      G.GUIDS.PRINCE_CURTAIN_RED
     }
   }
 }

@@ -39,7 +39,7 @@ export type SceneCatalogs = {
   /** `cardUrl`: the save's `districtCard_<key>` UI asset, null when missing. */
   readonly districts: readonly { readonly key: string; readonly name: string; readonly conditions: readonly string[]; readonly cardUrl: string | null }[];
   readonly sites: readonly CatalogSite[];
-  /** `randomSeating`: the Table B family, which shuffles every chair when it is set down. */
+  /** `randomSeating`: the Table B family, which seats each PC in the chair drawn for the session and NPCs after them. */
   readonly tables: readonly { readonly key: string; readonly slotCapacity: number; readonly randomSeating: boolean }[];
   readonly skyboxes: readonly { readonly key: string; readonly display: string }[];
   /** Memoriam periods (`SkyboxesCatalog.MemoriamSkyboxes`), earliest first. */

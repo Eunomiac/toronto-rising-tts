@@ -340,6 +340,9 @@ function S.GetDefaultGameState()
             absentPileY = {},
             --- Standard occupancy snapshot while Scatter is a mid-scene table change (TOR-573).
             scatterRestore = nil,
+            --- PC colour → chair (1..5) on the Table B family, drawn once per session on Intermission → Play
+            --- (`FSL.drawSessionChairs`); `S.validateState` seeds the default chairs when missing.
+            sessionChairs = nil,
         },
         --- Single live PC roll (TOR-262): seat color in ROLLING until post-broadcast cleanup.
         rollConcurrency = {
@@ -965,6 +968,12 @@ function S.validateState()
     end
     if type(gameState.seatLayout.virtualFigurineAnchors) ~= "table" then
         gameState.seatLayout.virtualFigurineAnchors = {}
+    end
+    do
+        local FSL = require("lib.figurine_seat_layout")
+        if not FSL.isValidSessionChairs(gameState.seatLayout.sessionChairs) then
+            gameState.seatLayout.sessionChairs = FSL.defaultSessionChairs()
+        end
     end
 
     normalizeLiveSessionSceneSeatSlots()

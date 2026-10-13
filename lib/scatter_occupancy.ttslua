@@ -192,6 +192,39 @@ local function packFromBuckets(pcsByGroup, seatedByGroup, unseatedByGroup)
     return pack, nil
 end
 
+--- Chairs → scatter groups, one PC per group (same rule as the Dashboard's `defaultScatterPack`).
+--- In chair order, each PC takes their chair's group when no PC holds it yet, else the lowest group
+--- with no PC, so NPC chairs never put two PCs in one group. Seated NPCs join their chair's group
+--- orbit (the NPC side), never a PC slot.
+--- @param pcSeats table[] `{ tableSlot, rec }` (sorted in place)
+--- @param npcSeats table[] `{ tableSlot, rec }`
+--- @param pcsByGroup table mutated
+--- @param seatedByGroup table mutated
+local function bucketSeatedByChairOrder(pcSeats, npcSeats, pcsByGroup, seatedByGroup)
+    table.sort(pcSeats, function(a, b)
+        if a.tableSlot ~= b.tableSlot then
+            return a.tableSlot < b.tableSlot
+        end
+        return a.rec.pcKey < b.rec.pcKey
+    end)
+    for i = 1, #pcSeats do
+        local g = ScatterOccupancy.tableSlotToGroup(pcSeats[i].tableSlot)
+        if #pcsByGroup[g] > 0 then
+            for candidate = 1, groupCount() do
+                if #pcsByGroup[candidate] == 0 then
+                    g = candidate
+                    break
+                end
+            end
+        end
+        pcsByGroup[g][#pcsByGroup[g] + 1] = pcSeats[i].rec
+    end
+    for n = 1, #npcSeats do
+        local g = ScatterOccupancy.tableSlotToGroup(npcSeats[n].tableSlot)
+        seatedByGroup[g][#seatedByGroup[g] + 1] = npcSeats[n].rec
+    end
+end
+
 --- Translate seatSlots + scatterGroup placements into scatterPlacements.
 --- @param sessionScene table
 --- @return table|nil pack
@@ -207,6 +240,8 @@ function ScatterOccupancy.translateFromSeatAuthoring(sessionScene)
     local pcsByGroup = {}
     local seatedByGroup = {}
     local unseatedByGroup = {}
+    local pcSeats = {}
+    local npcSeats = {}
     for g = 1, groupCount() do
         pcsByGroup[g] = {}
         seatedByGroup[g] = {}
@@ -228,7 +263,6 @@ function ScatterOccupancy.translateFromSeatAuthoring(sessionScene)
             if slot == nil or math.floor(slot) ~= slot or slot < 1 then
                 return nil, "sessionScene.seatSlots." .. color .. ".tableSlot: required positive integer when the PC is in session."
             end
-            local g = ScatterOccupancy.tableSlotToGroup(slot)
             local pcKey = pcKeyForColor(color)
             if pcKey == nil then
                 return nil, "sessionScene.seatSlots." .. color .. ": no PC character key for that seat."
@@ -244,7 +278,7 @@ function ScatterOccupancy.translateFromSeatAuthoring(sessionScene)
                 end
                 rec.characterKey = row.npcCharacterKey
             end
-            pcsByGroup[g][#pcsByGroup[g] + 1] = rec
+            pcSeats[#pcSeats + 1] = { tableSlot = slot, rec = rec }
         end
     end
 
@@ -255,13 +289,13 @@ function ScatterOccupancy.translateFromSeatAuthoring(sessionScene)
             if slot == nil or math.floor(slot) ~= slot or slot < 1 then
                 return nil, "sessionScene.seatSlots." .. npcSeat .. ".tableSlot: required positive integer for a seated NPC."
             end
-            local g = ScatterOccupancy.tableSlotToGroup(slot)
-            seatedByGroup[g][#seatedByGroup[g] + 1] = {
-                npcKey = row.characterKey,
-                npcLightMode = "STANDARD",
+            npcSeats[#npcSeats + 1] = {
+                tableSlot = slot,
+                rec = { npcKey = row.characterKey, npcLightMode = "STANDARD" },
             }
         end
     end
+    bucketSeatedByChairOrder(pcSeats, npcSeats, pcsByGroup, seatedByGroup)
 
     local placements = type(sessionScene.npcWorld) == "table" and sessionScene.npcWorld.placements or nil
     if placements ~= nil and type(placements) ~= "table" then
@@ -488,6 +522,8 @@ function ScatterOccupancy.translateSessionSceneToPlacements(sessionScene, occupi
     local pcsByGroup = {}
     local seatedByGroup = {}
     local unseatedByGroup = {}
+    local pcSeats = {}
+    local npcSeats = {}
     for g = 1, groupCount() do
         pcsByGroup[g] = {}
         seatedByGroup[g] = {}
@@ -500,14 +536,16 @@ function ScatterOccupancy.translateSessionSceneToPlacements(sessionScene, occupi
         if row ~= nil and row.absentFromSession ~= true then
             local slot = tonumber(row.tableSlot)
             if slot ~= nil and slot >= 1 then
-                local g = ScatterOccupancy.tableSlotToGroup(slot)
                 local pcKey = pcKeyForColor(color)
                 if pcKey ~= nil then
-                    pcsByGroup[g][#pcsByGroup[g] + 1] = {
-                        pcKey = pcKey,
-                        isPlayingNPC = row.isPlayingNPC == true,
-                        isPresent = row.isPresent ~= false,
-                        characterKey = row.npcCharacterKey,
+                    pcSeats[#pcSeats + 1] = {
+                        tableSlot = slot,
+                        rec = {
+                            pcKey = pcKey,
+                            isPlayingNPC = row.isPlayingNPC == true,
+                            isPresent = row.isPresent ~= false,
+                            characterKey = row.npcCharacterKey,
+                        },
                     }
                 end
             end
@@ -529,11 +567,11 @@ function ScatterOccupancy.translateSessionSceneToPlacements(sessionScene, occupi
             if slot == nil then
                 slot = 6
             end
-            local g = ScatterOccupancy.tableSlotToGroup(slot)
-            seatedByGroup[g][#seatedByGroup[g] + 1] = { npcKey = ck, npcLightMode = "STANDARD" }
+            npcSeats[#npcSeats + 1] = { tableSlot = slot, rec = { npcKey = ck, npcLightMode = "STANDARD" } }
             seatedKeys[ck] = true
         end
     end
+    bucketSeatedByChairOrder(pcSeats, npcSeats, pcsByGroup, seatedByGroup)
 
     local catalog = polarCatalog()
     local byFamily = {}
@@ -745,7 +783,7 @@ function ScatterOccupancy.scatterNpcsToPolarPlacements(pack, skipFamilyNames)
     return placements, overflow
 end
 
---- Seed default PC chairs (Lucien 1 … Black Caesar 5) and polar-pack NPCs. No NPC seats.
+--- Seed default PC chairs (Lucien 1 … Black Caesar 5; session chairs on Table B) and polar-pack NPCs. No NPC seats.
 --- @param destTableKey string
 function ScatterOccupancy.applyAuthoredScatterToStandard(destTableKey)
     local S = require("core.state")
@@ -768,7 +806,7 @@ function ScatterOccupancy.applyAuthoredScatterToStandard(destTableKey)
     S.setStateVal({}, "seatLayout", "occupiedNPCSlots")
     S.setStateVal({}, "sessionScene", "npcRoleOverride")
     if FSL.tableUsesRandomSeating(destTableKey) then
-        FSL.randomizePackedOccupancy()
+        FSL.applySessionChairs()
     else
         FSL.seedDefaultTableSlots()
     end

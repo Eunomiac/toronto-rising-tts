@@ -261,7 +261,8 @@ A **family key** is a string with **no** exact `C.Tables` entry but with numbere
 * **Exact key** (incl. explicit `"Table B4"`, `"Table A"`, `"Table C"`) → returned unchanged; no counting.
 * **Family key** (`"Table B"`) → `tableKey .. tableBVariantIndex` from highest occupied numbered `tableSlot`
   (override via `opts.occupiedSlotIndex` or legacy `opts.occupiedCount`). After a Table B cover transition
-  (TOR-537), occupants are packed into `1..N`, so that index matches occupied count. Missing variant → **error**.
+  the PCs sit in their session chairs `1..5` and seated NPCs are packed into `6..`, so that index matches the
+  seated NPC count (`FSL.applySessionChairs`). Missing variant → **error**.
 
 `resolveTableRef` and therefore `SetTableTo` / `SyncTable` resolve family → concrete automatically, so
 callers may pass `"Table B"`. **Intent** (`sessionScene.tableKey`) stores the clicked key (family or explicit);

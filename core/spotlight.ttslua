@@ -1070,7 +1070,7 @@ function Spotlight.applyExitWorld()
             skipTransitionBlindfold = true,
             skipSoundscape = true,
             activateGenericSkybox = true,
-            randomizeSeating = true,
+            sessionChairs = true,
         })
     end
     return true, nil

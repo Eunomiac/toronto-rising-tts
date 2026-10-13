@@ -236,7 +236,7 @@ Capacity is the table's `slotCapacity`. `Table B` resolves to the B variant for 
 | `Table B0` … `Table B5` | 5, 6, 7, 8, 9, 10 |
 | `Table C` | 10 |
 
-Default chairs (`C.DefaultTableSlots`): Red 1, Orange 2, Pink 3, Brown 4, Purple 5, NPC1 6, NPC2 7, NPC3 8, NPC4 9. Live saves may seed missing chairs; a library row must carry its own. Table B (`isRandomSeating`) shuffles packed occupants into chairs 1..N on cover transitions.
+Default chairs (`C.DefaultTableSlots`): Red 1, Orange 2, Pink 3, Brown 4, Purple 5, NPC1 6, NPC2 7, NPC3 8, NPC4 9. Live saves may seed missing chairs; a library row must carry its own. Table B (`isRandomSeating`) ignores a row's chairs: each PC takes the chair drawn for the session on Intermission → Play (`seatLayout.sessionChairs`, 1..5), and seated NPCs fill chairs 6.. in the row's chair order.
 
 ---
 
@@ -244,7 +244,9 @@ Default chairs (`C.DefaultTableSlots`): Red 1, Orange 2, Pink 3, Brown 4, Purple
 
 Six labeled areas, no table and no chair check. `sessionScene.scatterPlacements` holds `scatter1`…`scatter6`; Apply poses figurines from it, not from `seatSlots` chairs or `npcWorld`. Each area has `centerCharacters` and `orbitCharacters` (`{}` allowed). Center keys are PC character keys (`slot`, `isPlayingNPC`, `isPresent` on each row); orbit keys are NPC keys. A character occupies at most one area. Applying a Scatter row hides the table and poses figurines from the areas.
 
-**Live table switch** (not a library write): chairs map to scatter groups by `((slot - 1) % 6) + 1`; occupied polar packs map CENTER → Mid Center → Mid Left → Mid Right → Center Left → Center Right → Far Center-Left → Far Center-Right → Far Left → Far Right onto groups 1–6 (packs beyond 6 are cleared). Switching back restores the stashed Standard layout, except NPCs cleared while in Scatter. A Scatter scene with no stash uses default PC chairs and packs NPCs into polar families.
+**Dashboard scene previews** write this field: switching a draft's table to Scatter stores a fresh `scatterPlacements` (the `defaultScatterPack` rule below, with stage NPCs taking the group of their pack), dragging tokens between groups edits it, and an NPC dragged out of every group leaves the draft (stage placement, NPC chair and generic membership). Switching the draft back to a table drops `scatterPlacements`. NPCs who were only in groups go onto stage packs nobody holds, the same way TTS does when the table leaves Scatter. `seatSlots` and the original stage placements stay in the row the whole time.
+
+**Live table switch** (not a library write), and a Scatter row authored with chairs instead of `scatterPlacements`: chairs map to groups by `((slot - 1) % 6) + 1`, but PCs spread one per group: in chair order each in-session PC takes their chair's group when no PC holds it yet, else the lowest group with no PC (same rule as the Dashboard's `defaultScatterPack`). Seated NPCs join their chair's group orbit, never a PC slot. Occupied polar packs map CENTER → Mid Center → Mid Left → Mid Right → Center Left → Center Right → Far Center-Left → Far Center-Right → Far Left → Far Right onto groups 1–6 (packs beyond 6 are cleared). Switching back restores the stashed Standard layout, except NPCs cleared while in Scatter. A Scatter scene with no stash uses default PC chairs and packs NPCs into polar families.
 
 ---
 

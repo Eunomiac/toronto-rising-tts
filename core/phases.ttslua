@@ -535,7 +535,7 @@ local function particleEmitterRestorePosition(obj)
     return { x = originX, y = y, z = originZ }
 end
 
---- Hide the rain emitter off Play; restore on Play. Scatter keeps ownership while Scatter is on (TOR-581).
+--- Hide the rain emitter off Play; restore on Play, on wood tables and in Scatter alike (TOR-581).
 function Phases.reconcileParticleEmitterFromPhase()
     local G = require("lib.guids")
     local O = require("core.objects")
@@ -546,10 +546,6 @@ function Phases.reconcileParticleEmitterFromPhase()
     local obj = G.getObject(guid)
     if obj == nil then
         return false
-    end
-    local Occupancy = require("lib.scatter_occupancy")
-    if Occupancy.isScatterLayoutActive() == true then
-        return true
     end
     if S.getStateVal("currentPhase") == C.Phases.PLAY then
         if O.isHiddenObject(obj) then
@@ -667,7 +663,7 @@ function Phases.applyNoSceneDefault(_ctx, opts)
         reason = opts.reason or "phase_play_enter",
         skipTransitionBlindfold = true,
         skipSoundscape = opts.skipSoundscape == true,
-        randomizeSeating = true,
+        sessionChairs = true,
     })
     return true
 end
@@ -749,6 +745,26 @@ end
 --- @return boolean
 function Phases.applyConnectionCheckpointUnderCover(_ctx)
     require("core.player_connection").applyConnectionCheckpoint()
+    return true
+end
+
+--- Intermission → Play under the global cover: re-seat a Table B family table from the session
+--- chairs just drawn (`FSL.drawSessionChairs` in the phase flip). Other tables keep their chairs.
+--- @param ctx table|nil
+--- @return boolean
+function Phases.applySessionChairsUnderCover(ctx)
+    if type(ctx) ~= "table" or ctx.from ~= C.Phases.INTERMISSION then
+        return true
+    end
+    local tableKey = S.getStateVal("sessionScene", "tableKey")
+    if type(tableKey) ~= "string" or tableKey == "" then
+        tableKey = S.getStateVal("seatLayout", "currentTableKey")
+    end
+    if not require("lib.figurine_seat_layout").tableUsesRandomSeating(tableKey) then
+        return true
+    end
+    require("lib.rotational-seat-layout").SetTableTo(tableKey, { skipTransitionBlindfold = true, sessionChairs = true })
+    require("dashboard.push").markWorldDirty({ scene = true })
     return true
 end
 
@@ -974,6 +990,9 @@ Phases.onEnter[C.Phases.PLAY] = function(ctx)
             return Phases.applyConnectionCheckpointUnderCover(ctx)
         end,
         function()
+            return Phases.applySessionChairsUnderCover(ctx)
+        end,
+        function()
             return Phases.armPlayHudBehindCover(ctx)
         end,
         function()
@@ -1100,6 +1119,9 @@ end
 --- through Main and the Downtime that follows End Scene.
 function Phases.ensurePlayPhaseForSceneApply()
     local desired = Phases.playSubPhaseForLiveScene()
+    if S.getStateVal("currentPhase") == C.Phases.INTERMISSION then
+        require("lib.figurine_seat_layout").drawSessionChairs()
+    end
     if S.getStateVal("currentPhase") ~= C.Phases.PLAY then
         S.setCurrentPhase(C.Phases.PLAY)
     end
@@ -1153,6 +1175,9 @@ function Phases.advanceTo(newPhase, opts)
     end
     appendSteps(steps, buildSteps(Phases.onExit, oldPhase, ctx))
     steps[#steps + 1] = function()
+        if oldPhase == C.Phases.INTERMISSION and newPhase == C.Phases.PLAY then
+            require("lib.figurine_seat_layout").drawSessionChairs()
+        end
         S.setCurrentPhase(newPhase)
         if newPhase == C.Phases.PLAY then
             local sub = Phases.playSubPhaseForLiveScene()

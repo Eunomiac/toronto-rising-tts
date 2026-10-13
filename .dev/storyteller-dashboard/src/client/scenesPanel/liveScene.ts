@@ -99,8 +99,9 @@ export type LiveSeat = {
 export const SEAT_ORDER = [9, 7, 5, 3, 1, 2, 4, 6, 8] as const;
 
 /**
- * Whether a scene on this table has its chairs shuffled when it plays (TTS `FSL.tableUsesRandomSeating`): the
- * Table B family, and a scene with no table key, which keeps whatever table is down. Unknown catalogs count as yes.
+ * Whether a scene on this table is seated by TTS rather than by its own chair numbers (`FSL.tableUsesRandomSeating`):
+ * on the Table B family each PC takes the chair drawn for the session at Intermission → Play and seated NPCs fill the
+ * chairs after them. A scene with no table key keeps whatever table is down. Unknown catalogs count as yes.
  */
 export const tableUsesRandomSeating = (tableKey: string, catalogs: SceneCatalogs | null): boolean => {
   if (tableKey === "" || !catalogs) {

@@ -40,7 +40,7 @@ Fixture used below: **Purple** / `blackCaesar` (Roarshack). Change only if you s
 
 **Step 6.** Execute Lua Code — Code Block B (assert SELECTED card + light).
 
-**Step 7.** Switch table layout (scene Apply or table change) — confirm SELECTED card snaps to `COMPULSION_CARD_SELECTED_<Color>` anchor pose after layout (`reconcileSelectedCardsToAnchors` at end of `resolveSeatObjectsFromTable`).
+**Step 7.** Switch table layout (scene Apply, table change, or a Scatter group move) — confirm SELECTED card snaps to `COMPULSION_CARD_SELECTED_<Color>` anchor pose after layout (`reconcileSelectedCardsToAnchors` at end of `FSL.applyOccupantRigs`).
 
 **Step 8.** **Right-click Draw the selected Compulsion into the Purple hand again (removal).** Card returns to master; `PurpleObject` tag removed; compulsion light OFF over ~0.5s; seat deck `interactable = true`.
 

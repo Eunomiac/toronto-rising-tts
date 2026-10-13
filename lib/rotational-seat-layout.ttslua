@@ -2434,12 +2434,6 @@ function M.resolveSeatObjectsFromTable(tableRef, sourceObjects, options)
     computed.seatToPositionMap[bundle.occupants[i].occupantKey] = bundle.occupants[i].tableSlot
   end
   applyTableConfigObjectPositions(tableCfg)
-  do
-    local Compulsions = require("core.compulsions")
-    if type(Compulsions.reconcileSelectedCardsToAnchors) == "function" then
-      Compulsions.reconcileSelectedCardsToAnchors()
-    end
-  end
   enforceNPCSeatObjectVisibility(src, occupiedNPCSlots, tableCfg, previousTableCfg)
   M.reconcileYStateSeatObjectVisibilityFromWorld()
   local orchestratorActive = type(NPCS.isReconcileOrchestratorInProgress) == "function"
@@ -2635,11 +2629,11 @@ end
 --- @param tableKey string
 --- @param opts table
 --- @return boolean
-local function shouldRandomizeSeating(tableKey, opts)
+local function shouldApplySessionChairs(tableKey, opts)
   if FSL.tableUsesRandomSeating(tableKey) ~= true then
     return false
   end
-  if opts.randomizeSeating == true then
+  if opts.sessionChairs == true then
     return true
   end
   if opts.skipTransitionBlindfold ~= true then
@@ -2650,9 +2644,8 @@ end
 
 --- @param tableKey string
 --- @return string key to resolve after packing
-local function applyRandomSeatingOccupancy(tableKey)
-  FSL.seedDefaultTableSlots()
-  FSL.randomizePackedOccupancy()
+local function applySessionChairOccupancy(tableKey)
+  FSL.applySessionChairs()
   local resolveKey = randomSeatingResolveKey(tableKey)
   if resolveKey == "Table B" then
     S.setStateVal("Table B", "sessionScene", "tableKey")
@@ -2664,9 +2657,9 @@ end
 --- If `tableKey` is already active, a full sync is run in case the scene drifted.
 --- Otherwise resolves seat geometry synchronously; transition blindfold is owned by `core.hud_blindfold`
 --- (scene apply and manual table toggles call `HUDBF.runTransition` with `skipTransitionBlindfold`).
---- `opts.randomizeSeating` shuffles packed Table B occupancy (TOR-537).
+--- `opts.sessionChairs` seats Table B occupants from the session chair draw (`FSL.applySessionChairs`).
 --- @param tableKey string
---- @param opts table|nil { skipTransitionBlindfold = boolean, randomizeSeating = boolean }
+--- @param opts table|nil { skipTransitionBlindfold = boolean, sessionChairs = boolean }
 --- @return table|nil computed when immediate sync/switch path is used
 function M.SetTableTo(tableKey, opts)
   opts = opts or {}
@@ -2703,8 +2696,8 @@ function M.SetTableTo(tableKey, opts)
     Occupancy.prepareLeaveToStandard(destKey, { skipRestore = opts.skipScatterRestore == true })
     ScatterMode.leave()
   end
-  if leavingScatter ~= true and shouldRandomizeSeating(destKey, opts) then
-    destKey = applyRandomSeatingOccupancy(destKey)
+  if leavingScatter ~= true and shouldApplySessionChairs(destKey, opts) then
+    destKey = applySessionChairOccupancy(destKey)
   end
   local resolvedKey, _ = resolveTableRef(destKey)
   currentTableKey = S.getStateVal("seatLayout", "currentTableKey")

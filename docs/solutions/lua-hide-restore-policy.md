@@ -123,7 +123,9 @@ Snapshot position is **not** the primary restore authority when a catalog pose o
 
 **NPC stage lights (`npc_light`):** exist only while the NPC is on the stage; seating or leaving the stage destroys the light (`dropNpcLightForSeat` / `NPCS.despawnNpc`), so there is no light park. Gameboard spotlight preview: `core/npc_gameboard_spotlight.ttslua`.
 
-**Rain particle emitter:** Off Play, `Phases.reconcileParticleEmitterFromPhase` parks `G.GUIDS.PARTICLE_EMITTER` with `O.hideObject`. On Play it restores at table-origin X/Z plus snapshot Y. While Scatter is active, Scatter's `objectsToHide` list stays in charge (do not un-park from Play restore).
+**Rain particle emitter:** Off Play, `Phases.reconcileParticleEmitterFromPhase` parks `G.GUIDS.PARTICLE_EMITTER` with `O.hideObject`. On Play it restores at table-origin X/Z plus snapshot Y — Scatter included (Scatter's origin is its `centerPoint`). The emitter is **not** in Scatter's `objectsToHide`: that list parked it for the whole Scatter scene, so rain never showed until a table switch. `ScatterMode.enter` runs the phase reconcile so an emitter parked by the old list comes back.
+
+**Storyteller dice trays in Scatter:** `C.Tables["Scatter"]` has no tray homes, so `STD.closeForSlot` parks each tray under where it stands (`O.hideObject` with a flat park rotation); the next open or a table switch re-poses X/Z.
 
 **PC seat absent (`C.HiddenObjects` catalog):** `O.applyPcSeatHiddenObjectPresence` / `O.reconcilePcSeatHiddenObjectsFromState` — when a PC seat is narratively absent or disconnected, every matching catalog GUID and `<Color>Object` tag entry uses **`O.hideObject`** (not on-table `setInvisibleTo`). When present again, **`O.restoreObject`** when tagged `HiddenObject`, else active catalog visibility via `O.activeVisibilityForGuid`. That restore passes no position, so it replays the hide snapshot: a reconciler that owns a catalog object's pose (Pink tarot button via `lib/tarot_toggle.ttslua` after seat layout) must, while the object is parked, re-park it under the new seat with `snapshotPosition` + `refreshSnapshotPosition` instead of moving it onto the table.
 

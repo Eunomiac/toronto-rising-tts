@@ -191,7 +191,7 @@ Scatter Mode is **not** in this phase (see [`Scatter Mode.md`](./Scatter%20Mode.
 
 `seatToPositionMap` is removed. Occupancy is not stored on the table.
 
-**Table B family:** intent key `"Table B"` resolves from occupied in-session chairs (absent players and empty NPC identities do not count). On a **cover/blindfold transition** to Table B, occupants are shuffled and packed into chairs `1..N` (TOR-537), so the variant follows **occupied count** (highest packed slot equals N). Control-board Apply still grows by the highest occupied chair and does not reshuffle.
+**Table B family:** intent key `"Table B"` resolves from occupied in-session chairs (absent players and empty NPC identities do not count). The PCs are shuffled into chairs `1..5` once per session, on Intermission → Play (`seatLayout.sessionChairs`). On a **cover/blindfold transition** to Table B, each PC goes back to that chair and seated NPCs are packed into chairs `6..`, so the variant follows the **seated NPC count**. Live seat moves grow the table by the highest occupied chair and do not re-seat anyone.
 
 | Occupied count (after pack) / highest occupied slot | Seat count used | Concrete key |
 | --- | --- | --- |

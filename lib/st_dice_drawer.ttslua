@@ -12,6 +12,7 @@
 
 local STD = {}
 local C = require("lib.constants")
+local U = require("lib.util")
 local G = require("lib.guids")
 local OP = require("lib.object_positions")
 local L = require("core.lighting")
@@ -168,7 +169,8 @@ local function currentTableCfg()
 end
 
 --- Workshop home from current table's hardcoded objectPositions (TOR-344).
---- Table absolutes are the only restore authority — no live/snapshot homes.
+--- Table absolutes are the only restore authority — no live/snapshot homes. Scatter has no tray
+--- homes: the tray parks under where it stands (flat), and the next open or table switch re-poses X/Z.
 --- @param slot number
 -- @return table|nil home row with x,y,z + optional rot
 local function resolveWorkshopHomeForSlot(slot)
@@ -177,6 +179,15 @@ local function resolveWorkshopHomeForSlot(slot)
         return nil
     end
     local tableCfg = currentTableCfg()
+    if type(tableCfg) == "table" and tableCfg.shape == C.TableShapes.SCATTER then
+        local obj = findDrawerObject(slot)
+        if obj == nil then
+            return nil
+        end
+        local pos = obj.getPosition()
+        local rot = obj.getRotation()
+        return { x = pos.x, y = WORKSHOP_HOME_OFF_Y, z = pos.z, rotX = 0, rotY = rot.y, rotZ = 0 }
+    end
     local partial = tableLayoutPartialPosition(tableCfg, guid)
     local partialRot = tableLayoutPartialRotation(tableCfg, guid)
     if type(partial) ~= "table" or type(partial.x) ~= "number" or type(partial.z) ~= "number" then
@@ -565,14 +576,20 @@ local function openForSlotAtScatter(slot, groupIndex)
     obj.setPosition({ x = xz.x, y = offY, z = xz.z })
     obj.setRotation({ x = 0, y = xz.yaw, z = 0 })
     syncTrayLightXzToDrawer(slot)
+    -- Rise on position only (a smooth rotation can leave the tray tilted); re-assert flat once risen.
+    local shouldAbort = makePoseAbort(slot, epoch)
     OP.applyResolvedPose(obj, {
         position = { x = xz.x, y = onY, z = xz.z },
-        rotation = { x = 0, y = xz.yaw, z = 0 },
         isLocked = true,
     }, OP.DEFAULT_TRANSITION_DURATION, 0, {
         useSmoothSetters = true,
-        shouldAbort = makePoseAbort(slot, epoch),
+        shouldAbort = shouldAbort,
     })
+    U.await(function()
+        if not shouldAbort() then
+            obj.setRotation({ x = 0, y = xz.yaw, z = 0 })
+        end
+    end, OP.DEFAULT_TRANSITION_DURATION + 0.1)
     syncTrayLightXzToDrawer(slot)
 end
 

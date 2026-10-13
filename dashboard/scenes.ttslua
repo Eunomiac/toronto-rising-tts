@@ -361,7 +361,6 @@ local function applyCommand(cmd)
     if not ScatterMode.isActive() then
       return "Scatter is not on."
     end
-    require("dashboard.push").markWorldDirty({ seats = true, scene = true })
     if cmd.kind == "pc" then
       if type(cmd.group) ~= "number" then
         return "A PC always stands in a scatter group; pick one."

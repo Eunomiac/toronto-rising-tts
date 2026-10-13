@@ -107,7 +107,7 @@ export const TransitionSeatingModal = ({ ask, onClose }: { ask: SeatingAsk; onCl
           )}
         </div>
         {tableUsesRandomSeating(tableKey, catalogs) && (
-          <p className="lab-transition-hint">{tableKey || "This table"} shuffles its chairs when the scene starts: who is seated carries over, not which chair.</p>
+          <p className="lab-transition-hint">{tableKey || "This table"} seats each PC in their chair for this session and NPCs in the chairs after them: who is seated carries over, not which chair.</p>
         )}
         <div className="lab-modal-actions">
           <button type="button" className="lab-btn" onClick={onClose}>Cancel</button>

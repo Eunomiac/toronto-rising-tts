@@ -109,6 +109,12 @@ local function mirrorLiveScatterToLibrary()
     end
 end
 
+--- Group moves come from the Dashboard and the in-game strip; both must refresh the Dashboard's
+--- Scatter groups (seats slice) and the mirrored library row (scene slice).
+local function markDashboardScatterDirty()
+    require("dashboard.push").markWorldDirty({ seats = true, scene = true })
+end
+
 --- @param groupIndex number
 --- @return table area
 local function areaForGroup(groupIndex)
@@ -824,6 +830,7 @@ function ScatterMode.enter(opts)
     end
     hideAllPhysicalTables()
     applyScatterPlayfieldOrigin()
+    require("core.phases").reconcileParticleEmitterFromPhase()
     ScatterMode.applyWorldLayout()
     applyScatterWorldChrome(true)
     local Sync = require("core.sync")
@@ -948,6 +955,7 @@ function ScatterMode.movePcToGroup(pcKey, groupIndex)
     ScatterMode.applyWorldLayout()
     mirrorLiveScatterToLibrary()
     ScatterMode.reconcileControlHudFromState()
+    markDashboardScatterDirty()
     return true
 end
 
@@ -965,6 +973,7 @@ function ScatterMode.moveNpcToGroup(npcKey, groupIndex)
         ScatterMode.applyWorldLayout()
         mirrorLiveScatterToLibrary()
         ScatterMode.reconcileControlHudFromState()
+        markDashboardScatterDirty()
         return nil
     end
     local gi = math.floor(tonumber(groupIndex) or 0)
@@ -983,6 +992,7 @@ function ScatterMode.moveNpcToGroup(npcKey, groupIndex)
         ScatterMode.applyWorldLayout()
         mirrorLiveScatterToLibrary()
         ScatterMode.reconcileControlHudFromState()
+        markDashboardScatterDirty()
     end
     -- An NPC with no figurine yet spawns hidden under the table and joins the group once its image loads.
     local NPCS = require("core.npcs")
@@ -990,7 +1000,6 @@ function ScatterMode.moveNpcToGroup(npcKey, groupIndex)
         NPCS.prewarmNpcs({ npcKey }, function()
             if ScatterMode.isActive() then
                 place()
-                require("dashboard.push").markWorldDirty({ seats = true, scene = true })
             end
         end)
         return nil

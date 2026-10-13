@@ -28,7 +28,7 @@ In **Scatter Mode**:
 
 Unlike Standard Mode, external control of PC/NPC positioning is therefore limited primarily to adding an occupant to a scatter group, removing an occupant from a scatter group, or transferring an occupant between scatter groups.
 
-Hand zones, character sheets, bags, candles, seat lights, cameras, PC figurines, and any other seat objects **not** listed as hidden stay in play and move with their PC on the **XZ** plane only. Their **Y** stays at the same authored height as on a wood table (`C.SeatRoleOffsets` / `C.ReferenceCameraAngles` / Table A figurine Y). `FLOOR_Y` is only the standing height for **NPC figurines** on the stage / scatter playfield.
+Hand zones, character sheets, bags, candles, seat lights, cameras, PC figurines, Compulsion decks and the selected Compulsion card (snapped to its moved anchor after the rig pass, same as wood tables), and any other seat objects **not** listed as hidden stay in play and move with their PC on the **XZ** plane only. Their **Y** stays at the same authored height as on a wood table (`C.SeatRoleOffsets` / `C.ReferenceCameraAngles` / Table A figurine Y). `FLOOR_Y` is only the standing height for **NPC figurines** on the stage / scatter playfield.
 
 NPC occupancy per scatter group is **unlimited**. The four NPC seats in Standard Mode are a table-seating cap only; they do not apply here.
 
@@ -42,7 +42,9 @@ Scatter occupancy lives in `sessionScene.scatterPlacements` (which PCs and NPCs 
 - the **Scatter Control HUD** group selector for PCs ([Scatter Mode Control HUD.md](Scatter%20Mode%20Control%20HUD.md))
 - scene activation (authored `scatterPlacements`) and connection changes (`ScatterOccupancy.reconcilePcConnectionInPack`)
 
-Every move writes state, then `ScatterMode.applyWorldLayout()` poses figurines, piles and cameras, mirrors the linked library row, and reconciles the Scatter HUD. The Stage Control board plays no part in Scatter (no art swap, no tokens, no holes).
+Every move writes state, then `ScatterMode.applyWorldLayout()` poses figurines, piles and cameras, mirrors the linked library row, reconciles the Scatter HUD, and marks the Dashboard's `seats` + `scene` world slices dirty (inside `movePcToGroup` / `moveNpcToGroup`, so a player's own strip click reaches the Dashboard too).
+
+Entering Scatter from a table (or applying a Scatter row authored with chairs) spreads the in-session PCs one per group: in chair order, each PC takes their chair's group when no PC holds it yet, else the lowest group with no PC. Seated NPCs join their chair's group orbit (NPC side), never a PC slot. Same rule as the Dashboard's `defaultScatterPack` (`ScatterOccupancy` `bucketSeatedByChairOrder`). The Stage Control board plays no part in Scatter (no art swap, no tokens, no holes).
 
 Each group has **five** stable PC world slots (slot 1 = gold, the arc midpoint) and unlimited NPCs. The Dashboard draws each group as a circle around its center (`scatterCenter` in `.dev/storyteller-dashboard/src/client/scenesPanel/stage.ts`).
 
@@ -333,7 +335,9 @@ While Scatter is active, each Storyteller dice tray sits on that scatter groupâ€
 - the **NPC deployment-arc midpoint** (`PC_SCATTER_GROUP_ORIGIN`)
 - the **PC deployment-arc midpoint** (far intersection of the PC circle with that same ray)
 
-Yaw around Y is the same as that World Ray (`groupAzimuthDeg`, plus `ST_DICE_TRAY_YAW_OFFSET_DEG` if you ever need a mesh correction).
+Yaw around Y is the same as that World Ray (`groupAzimuthDeg`, plus `ST_DICE_TRAY_YAW_OFFSET_DEG` if you ever need a mesh correction). X and Z rotation are always zero: the tray snaps to its yaw before it rises, rises on position only, and re-asserts the flat rotation once it is up.
+
+Clearing a Storyteller roll (Dashboard or in-game) parks that tray straight down under where it stands, since Scatter has no tray homes; the next open or a table switch moves it.
 
 When the Storyteller starts a Storyteller roll, that rollâ€™s tray moves to the scatter group that currently contains the NPC who started it (orbit occupancy, or a PC portraying that NPC). If that NPC is not on the stage, the tray appears at World Origin with yaw `0`.
 
