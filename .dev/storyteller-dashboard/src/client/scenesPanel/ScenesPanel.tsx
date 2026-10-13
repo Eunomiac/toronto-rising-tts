@@ -134,6 +134,12 @@ const useWorldSnapshotOnce = (active: boolean, world: WorldState): string | null
       (reason: unknown) => setError(reason instanceof Error ? reason.message : String(reason))
     );
   }, [active, missing]);
+  // A failed snapshot is moot once the live pushes have filled every slice it was fetching.
+  useEffect(() => {
+    if (!missing) {
+      setError(null);
+    }
+  }, [missing]);
   useEffect(() => {
     if (!active) {
       attempted.current = false;
