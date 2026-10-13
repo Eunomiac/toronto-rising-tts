@@ -4,7 +4,8 @@ import { ambientLabel, AspectRow, ConditionsPanel, LocationPanel, RosterDock, So
 import { previewLayout } from "./preview";
 import { Box, WideBoard, type LiveBoard } from "./sketch";
 import type { SceneCatalogs } from "./catalogs";
-import { PendingGenericsContext, SceneGenericsContext, ScenesCommandContext, type ScenesCommand } from "./commands";
+import { GenericTiersContext, PendingGenericsContext, SceneGenericsContext, ScenesCommandContext, type ScenesCommand } from "./commands";
+import { genericTiers } from "./queue";
 import { RollsCommandContext } from "./rolls/commands";
 import {
   applyToDraft,
@@ -114,6 +115,7 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }:
     <ScenesCommandContext.Provider value={send}>
     <PendingGenericsContext.Provider value={NO_PENDING}>
     <SceneGenericsContext.Provider value={generics}>
+    <GenericTiersContext.Provider value={genericTiers(generics, [])}>
     <RollsCommandContext.Provider value={null}>
       <Box {...box.location} className="lab-backdrop-box">
         {location ? (
@@ -163,6 +165,7 @@ export const DraftPanels = ({ draft, saved, present, catalogs, w, h, onChange }:
         <WideBoard w={box.board.w - 12} h={box.board.h - 10} live={board} />
       </Box>
     </RollsCommandContext.Provider>
+    </GenericTiersContext.Provider>
     </SceneGenericsContext.Provider>
     </PendingGenericsContext.Provider>
     </ScenesCommandContext.Provider>

@@ -46,8 +46,11 @@
     scatterPlace      characterKey, kind, group?
                                           Scatter: move an NPC (`kind` npc; no group = off) or PC (`kind` pc,
                                           characterKey = the PC's charKey) into a scatter group 1–6
-    genericAdd        keys, labels?       spawn generic NPCs (catalog keys) named by the Storyteller
+    genericAdd        keys, labels?, tiers?
+                                          spawn generic NPCs (catalog keys) named by the Storyteller, each
+                                          with an optional stat tier (`weak` / `average` / `gifted` / `deadly`)
     genericRename     key, name           rename a generic NPC already in the scene
+    genericTier       key, tier?          change (or clear) the stat tier of a generic NPC in the scene
     playScene         key, from, plusMinutes, pace
                                           select a library scene and apply it to the table, starting
                                           `plusMinutes` after its own time (`from` scene) or present day
@@ -371,10 +374,13 @@ local function applyCommand(cmd)
     return ScatterMode.moveNpcToGroup(cmd.characterKey, type(cmd.group) == "number" and cmd.group or nil)
   end
   if op == "genericAdd" then
-    return require("core.generic_npcs").importNamed(cmd.keys, cmd.labels)
+    return require("core.generic_npcs").importNamed(cmd.keys, cmd.labels, cmd.tiers)
   end
   if op == "genericRename" then
     return require("core.generic_npcs").rename(cmd.key, cmd.name)
+  end
+  if op == "genericTier" then
+    return require("core.generic_npcs").setTier(cmd.key, cmd.tier)
   end
 
   if op == "upsertScene" then

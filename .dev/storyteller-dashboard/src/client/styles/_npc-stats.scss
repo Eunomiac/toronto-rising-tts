@@ -289,3 +289,65 @@ $kind-colors: (
   font-family: system-ui, sans-serif;
   font-size: 13px;
 }
+
+// A generic NPC's stat tier (scenesPanel/tierBadge.tsx) at the top-left of its token.
+.npc-tier-badge {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 80%));
+
+  // Stage tokens are zero-width columns centred on the headshot (32px, its centre on the token's anchor).
+  &.stage {
+    top: -22px;
+    left: -24px;
+    width: 16px;
+    height: 16px;
+  }
+
+  &.bin {
+    top: 0;
+    left: 0;
+    width: 15px;
+    height: 15px;
+  }
+
+  // Right of the seat number (`.lab-seat-badge`).
+  &.seat {
+    top: 3px;
+    left: 25px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.lab-token:hover:not(.dragging) .npc-tier-badge {
+  visibility: hidden;
+}
+
+.lab-group-token {
+  position: relative;
+}
+
+.lab-modal.npc-tier-picker {
+  gap: 8px;
+}
+
+.npc-tier-picker-row {
+  display: flex;
+  gap: 6px;
+}
+
+.npc-tier-pick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 72px;
+  padding: 6px 8px;
+
+  img {
+    width: 34px;
+    height: 34px;
+  }
+}

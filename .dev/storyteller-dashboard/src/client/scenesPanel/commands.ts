@@ -1,4 +1,5 @@
 import { createContext, useContext } from "react";
+import type { NpcTier } from "../../shared/npcStats";
 import type { PlacementMode, SceneStatus } from "../../shared/sceneLibrary";
 import type { LightingPreset, MusicMood } from "../catalogVocab";
 import type { ClockDatetime, GenericNpc } from "../worldState";
@@ -93,8 +94,16 @@ export type ScenesCommand =
   | { readonly op: "stage"; readonly clear: true }
   | { readonly op: "stage"; readonly reset: true }
   | { readonly op: "scatterPlace"; readonly characterKey: string; readonly kind: "pc" | "npc"; readonly group?: number }
-  | { readonly op: "genericAdd"; readonly keys: readonly string[]; readonly labels: Readonly<Record<string, string>> }
-  | { readonly op: "genericRename"; readonly key: string; readonly name: string };
+  | {
+    readonly op: "genericAdd";
+    readonly keys: readonly string[];
+    readonly labels: Readonly<Record<string, string>>;
+    /** Stat tier per key; a key left out has none (its type has no tier blocks). */
+    readonly tiers?: Readonly<Record<string, NpcTier>>;
+  }
+  | { readonly op: "genericRename"; readonly key: string; readonly name: string }
+  /** No `tier` clears it. */
+  | { readonly op: "genericTier"; readonly key: string; readonly tier?: NpcTier };
 
 export type ScenesSend = (command: ScenesCommand) => void;
 
@@ -114,6 +123,9 @@ export const PendingGenericsContext = createContext<Readonly<Record<string, stri
 
 /** The generic NPCs of the scene the roster adds to: a preview's draft; `null` is the table's (from the push). */
 export const SceneGenericsContext = createContext<readonly GenericNpc[] | null>(null);
+
+/** Stat tier of each generic NPC in the scene or waiting in the stage queue, by key (queued tiers win). */
+export const GenericTiersContext = createContext<Readonly<Record<string, NpcTier>>>({});
 
 export const isStageChanges = (command: ScenesCommand): command is Extract<ScenesCommand, { op: "stage"; changes: StageChanges }> =>
   command.op === "stage" && "changes" in command;

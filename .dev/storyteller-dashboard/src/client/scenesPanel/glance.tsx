@@ -29,7 +29,7 @@ import { MemoriamModal } from "./memoriamModal";
 import { Btn, Overlay, activeCanvas, canvasPoint } from "./sketch";
 import { createPortal } from "react-dom";
 import { figurineUrl } from "../headshots/headshots";
-import { PendingGenericsContext, SceneGenericsContext, useScenesCommand, type SceneClock, type SoundLane } from "./commands";
+import { GenericTiersContext, PendingGenericsContext, SceneGenericsContext, useScenesCommand, type SceneClock, type SoundLane } from "./commands";
 import { fromDate, precipOf, rainKey, toDate, windLevel, type SoundView, type SpotlightView } from "./liveScene";
 import {
   AMBIENT_TRACKS,
@@ -48,8 +48,11 @@ import { sceneLibrarySnapshot } from "../sceneLibrary";
 import { GROUP_DRAG_TYPE, NPC_DRAG_TYPE } from "./stage";
 import { useWorldState } from "../worldState";
 import { useNpcOverrides } from "../npcOverrides";
-import { genericStatsKey } from "../../shared/npcStats";
+import { configuredTiers, genericStatsKey, type NpcTier } from "../../shared/npcStats";
+import { useNpcStats } from "../npcStats";
 import { NpcConfigModal, type NpcConfigTarget } from "./npcConfig";
+import { TierBadge } from "./tierBadge";
+import { TierPicker } from "./tierPicker";
 
 type NpcOverrides = ReturnType<typeof useNpcOverrides>;
 
@@ -647,11 +650,12 @@ const tokenColorStyle = (color: string | undefined): CSSProperties | undefined =
   color ? ({ "--group": color } as CSSProperties) : undefined;
 
 /** One roster NPC, draggable onto the stage; right-click configures it. */
-const RosterToken = ({ characterKey, name, className, color, onConfigure }: {
+const RosterToken = ({ characterKey, name, className, color, tier, onConfigure }: {
   characterKey: string;
   name: string;
   className: string;
   color?: string | undefined;
+  tier?: NpcTier | undefined;
   onConfigure: ConfigureToken;
 }): ReactElement => (
   <span
@@ -672,6 +676,7 @@ const RosterToken = ({ characterKey, name, className, color, onConfigure }: {
     }}
   >
     <Headshot className={className} characterKey={characterKey} />
+    {tier && <TierBadge tier={tier} where="bin" />}
     <span className="lab-group-name">{name}</span>
   </span>
 );
@@ -733,13 +738,14 @@ const FigurinePreview = ({ characterKey, token, panel }: { characterKey: string;
 
 /**
  * One catalog generic: a click queues it onto the stage (spawned on Send, named after its catalog entry until
- * renamed from its stage token's right-click ring); hovering previews the whole figurine.
+ * renamed from its stage token's right-click ring), asking for a stat tier first when its type has several;
+ * hovering previews the whole figurine.
  */
 const GenericToken = ({ member, className, color, onPick, onPreview, onConfigure }: {
   member: RosterMember;
   className: string;
   color?: string | undefined;
-  onPick?: (() => void) | undefined;
+  onPick?: ((event: MouseEvent<HTMLElement>) => void) | undefined;
   onPreview: (characterKey: string | null, element?: HTMLElement) => void;
   onConfigure: ConfigureToken;
 }): ReactElement => (
@@ -907,6 +913,9 @@ export const MasonryRoster = (): ReactElement => {
   const inScene = useContext(SceneGenericsContext) ?? tableGenerics ?? [];
   const send = useScenesCommand();
   const queuedGenerics = useContext(PendingGenericsContext);
+  const sceneTiers = useContext(GenericTiersContext);
+  const npcStats = useNpcStats();
+  const [tierPick, setTierPick] = useState<{ member: RosterMember; label: string; at: Point; tiers: readonly NpcTier[] } | null>(null);
   const [genericCatalog, setGenericCatalog] = useState<readonly GenericEntry[] | null>(null);
   const [genericError, setGenericError] = useState<string | null>(null);
   const [open, setOpen] = useState<string | null>("beesHive");
@@ -989,9 +998,22 @@ export const MasonryRoster = (): ReactElement => {
     [genericCatalog, spawned, overrides]
   );
   const groups = view === "main" ? mainGroups : genGroups;
-  const pickGeneric = (member: RosterMember): (() => void) | undefined => send
-    ? () => send({ op: "genericAdd", keys: [member.characterKey], labels: { [member.characterKey]: member.name } })
-    : undefined;
+  const addGeneric = (member: RosterMember, tier: NpcTier | undefined): void => send({
+    op: "genericAdd",
+    keys: [member.characterKey],
+    labels: { [member.characterKey]: member.name },
+    ...(tier ? { tiers: { [member.characterKey]: tier } } : {})
+  });
+  /** No tier blocks on the type: no tier; one: that one; several: the tier picker. */
+  const pickGeneric = (member: RosterMember) => (event: MouseEvent<HTMLElement>): void => {
+    const label = genericCatalog?.find((npc) => npc.key === member.characterKey)?.label;
+    const options = label ? configuredTiers(npcStats?.[genericStatsKey(label)]) : [];
+    if (label && options.length > 1) {
+      setTierPick({ member, label, at: canvasPoint(event), tiers: options });
+      return;
+    }
+    addGeneric(member, options[0]);
+  };
   /** Same defaults as the token art generator: first picker group's colour for named NPCs, `generic:<label>` for generics. */
   const configure: ConfigureToken = (characterKey, event) => {
     const at = canvasPoint(event);
@@ -1007,8 +1029,16 @@ export const MasonryRoster = (): ReactElement => {
       stats: generic
         ? { key: genericStatsKey(generic.label), label: generic.label, tiered: true }
         : { key: characterKey, label: named?.fullName ?? characterKey, tiered: false },
-      ...(spawnedNpc && send
-        ? { inScene: { name: spawnedNpc.name, rename: (name: string) => send({ op: "genericRename", key: characterKey, name }) } }
+      ...(spawnedNpc && generic && send
+        ? {
+          inScene: {
+            name: spawnedNpc.name,
+            rename: (name: string) => send({ op: "genericRename", key: characterKey, name }),
+            tier: sceneTiers[characterKey],
+            tiers: configuredTiers(npcStats?.[genericStatsKey(generic.label)]),
+            setTier: (tier: NpcTier | undefined) => send({ op: "genericTier", key: characterKey, ...(tier ? { tier } : {}) })
+          }
+        }
         : {})
     });
   };
@@ -1190,6 +1220,7 @@ export const MasonryRoster = (): ReactElement => {
                   name={npc.name}
                   className="lab-group-head"
                   color={ownColor(npc.characterKey)}
+                  tier={sceneTiers[npc.characterKey]}
                   onConfigure={configure}
                 />
               ))}
@@ -1238,6 +1269,18 @@ export const MasonryRoster = (): ReactElement => {
         />
       )}
       {configuring && <NpcConfigModal target={configuring} onClose={() => setConfiguring(null)} />}
+      {tierPick && (
+        <TierPicker
+          at={tierPick.at}
+          title={tierPick.member.name}
+          tiers={tierPick.tiers}
+          onPick={(tier) => {
+            addGeneric(tierPick.member, tier);
+            setTierPick(null);
+          }}
+          onClose={() => setTierPick(null)}
+        />
+      )}
     </div>
   );
 };

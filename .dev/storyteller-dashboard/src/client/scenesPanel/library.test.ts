@@ -189,6 +189,16 @@ describe("applyToDraft", () => {
     expect(draftGenerics(draft).map((npc) => npc.characterKey)).toEqual(["cop_01"]);
     expect(applyToDraft(draft, { op: "genericRename", key: "cop_09", name: "Nobody" })).toBe(draft);
   });
+
+  it("keeps a generic's stat tier through renames and tier changes", () => {
+    let draft = applyToDraft(scene("a"), { op: "genericAdd", keys: ["cop_01"], labels: { cop_01: "Bradley" }, tiers: { cop_01: "deadly" } });
+    draft = applyToDraft(draft, { op: "genericRename", key: "cop_01", name: "Officer Bradley" });
+    expect(draftGenerics(draft)).toEqual([{ characterKey: "cop_01", name: "Officer Bradley", tier: "deadly" }]);
+    draft = applyToDraft(draft, { op: "genericTier", key: "cop_01", tier: "weak" });
+    expect(draftGenerics(draft)[0]?.tier).toBe("weak");
+    draft = applyToDraft(draft, { op: "genericTier", key: "cop_01" });
+    expect(draftGenerics(draft)).toEqual([{ characterKey: "cop_01", name: "Officer Bradley" }]);
+  });
 });
 
 describe("draft seating", () => {

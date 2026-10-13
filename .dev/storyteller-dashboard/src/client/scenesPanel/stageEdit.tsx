@@ -1,8 +1,9 @@
-import { useRef, useState, type CSSProperties, type DragEvent, type MouseEvent, type PointerEvent, type ReactElement, type RefObject } from "react";
+import { useContext, useRef, useState, type CSSProperties, type DragEvent, type MouseEvent, type PointerEvent, type ReactElement, type RefObject } from "react";
 import { Headshot } from "../headshots/Headshot";
 import { useNpcOverrides } from "../npcOverrides";
 import type { SceneCatalogs } from "./catalogs";
-import type { StageChange, StageChanges } from "./commands";
+import { GenericTiersContext, type StageChange, type StageChanges } from "./commands";
+import { TierBadge } from "./tierBadge";
 import {
   GROUP_DRAG_TYPE,
   NPC_DRAG_TYPE,
@@ -128,21 +129,26 @@ export type TokenMenu = (event: MouseEvent<HTMLElement>, characterKey: string, k
 
 /**
  * A figurine headshot with the name under it; hovering enlarges the headshot. The ring is the token's group
- * colour (thicker and brighter for the group's boss); a gold halo means lit.
+ * colour (thicker and brighter for the group's boss); a gold halo means lit. A generic NPC's stat tier badge sits
+ * at its top-left.
  */
-export const StageTokenView = ({ characterKey, name, lit, x, y, color, boss, dragging, pc, handlers, onDoubleClick, onContextMenu }: TokenProps): ReactElement => (
-  <div
-    className={`lab-token${lit ? " lit" : ""}${boss ? " boss" : ""}${dragging ? " dragging" : ""}${pc ? " pc" : ""}${handlers ? " editable" : ""}`}
-    style={{ left: x, top: y, ...(color ? { "--group": color } : {}) } as CSSProperties}
-    title={handlers ? `${name}: drag to move, double-click to ${lit ? "darken" : "light"}, right-click to roll` : name}
-    {...handlers}
-    {...(onDoubleClick ? { onDoubleClick } : {})}
-    {...(onContextMenu ? { onContextMenu } : {})}
-  >
-    <Headshot className="lab-token-head" characterKey={characterKey} />
-    <span className="lab-token-name">{name}</span>
-  </div>
-);
+export const StageTokenView = ({ characterKey, name, lit, x, y, color, boss, dragging, pc, handlers, onDoubleClick, onContextMenu }: TokenProps): ReactElement => {
+  const tier = useContext(GenericTiersContext)[characterKey];
+  return (
+    <div
+      className={`lab-token${lit ? " lit" : ""}${boss ? " boss" : ""}${dragging ? " dragging" : ""}${pc ? " pc" : ""}${handlers ? " editable" : ""}`}
+      style={{ left: x, top: y, ...(color ? { "--group": color } : {}) } as CSSProperties}
+      title={handlers ? `${name}: drag to move, double-click to ${lit ? "darken" : "light"}, right-click to roll` : name}
+      {...handlers}
+      {...(onDoubleClick ? { onDoubleClick } : {})}
+      {...(onContextMenu ? { onContextMenu } : {})}
+    >
+      <Headshot className="lab-token-head" characterKey={characterKey} />
+      {tier && <TierBadge tier={tier} where="stage" />}
+      <span className="lab-token-name">{name}</span>
+    </div>
+  );
+};
 
 /** Half-axes of the ellipse drawn through a Far pack's six slots. */
 export const farRadii = (pack: StagePack, w: number, h: number): { rx: number; ry: number } => ({

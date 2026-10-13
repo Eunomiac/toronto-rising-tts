@@ -12,7 +12,7 @@ Source of truth:
 - `core/npc_spawn.ttslua` — figurine + light spawner shared with named NPCs (art from `lib/npc_art_urls.ttslua`; see [NPC Art Pipeline](NPC%20Art%20Pipeline.md))
 - `lib/npcs_data.ttslua` — `D.initGenericNPCs()`, `D.resolveGenericNpcEntry`, `D.genericNpcs`
 - `lib/npc_art_urls.ttslua` — generated; each generic row carries its sheet `genericLabel` (`npm run npc-art:generate`, from `.dev/storyteller-dashboard/data/generic-npcs.json`)
-- `dashboard/scenes.ttslua` — `genericAdd` op → `GenericNpcs.importNamed(keys, labels)`; `genericRename` op → `GenericNpcs.rename(key, name)`
+- `dashboard/scenes.ttslua` — `genericAdd` op → `GenericNpcs.importNamed(keys, labels, tiers)`; `genericRename` op → `GenericNpcs.rename(key, name)`; `genericTier` op → `GenericNpcs.setTier(key, tier)`
 - `NPCS.registerGenericCharacter` / `unregisterGenericCharacter` in `core/npcs.ttslua`
 - `sessionScene.npcWorld.genericMembership` in `core/state.ttslua`
 - Spotlight tokens: `core/stage_tokens.ttslua` (same as named stage NPCs)
@@ -58,7 +58,7 @@ Figurine and token art come from `lib/npc_art_urls.ttslua` under the same key ([
 
 ## Import
 
-The only entry is the Storyteller Dashboard: a roster click queues (and Send delivers) `{ op = "genericAdd", keys = { ... }, labels = { [key] = name } }` through `GlobalDashboardScenesApply`, which calls `GenericNpcs.importNamed(keys, labels)`. The Dashboard bridge has **no clicker**, so it is treated as Storyteller-initiated (see `DashboardTtsBridge`).
+The only entry is the Storyteller Dashboard: a roster click queues (and Send delivers) `{ op = "genericAdd", keys = { ... }, labels = { [key] = name }, tiers = { [key] = tier }? }` through `GlobalDashboardScenesApply`, which calls `GenericNpcs.importNamed(keys, labels, tiers)`. `tier` (`weak` / `average` / `gifted` / `deadly`) names which of the type's dashboard stat blocks (`npc-stats.json` `generic:<label>`) the figurine rolls from; the dashboard picks it (tier picker when the type has several blocks). An unknown tier fails the whole import. The Dashboard bridge has **no clicker**, so it is treated as Storyteller-initiated (see `DashboardTtsBridge`).
 
 Behavior (`GenericNpcs.importNamed`):
 
@@ -67,6 +67,8 @@ Behavior (`GenericNpcs.importNamed`):
 3. For each key, use the typed name (blank → catalog `label`), register the roster row (`NPCS.registerGenericCharacter`), and write membership. Nothing spawns on import — the figurine and light spawn when the NPC is placed on the stage (see below).
 
 **Rename** (`GenericNpcs.rename(key, name)`, Dashboard op `genericRename`): the key must be in this scene's membership and the trimmed name non-blank, else an error string. Writes membership `displayName`, the roster row's `fullName`, the figurine's name, and the spotlight token's name (`StageTokens.refreshName`), then marks the seats push dirty.
+
+**Tier** (`GenericNpcs.setTier(key, tier)`, Dashboard op `genericTier`, from the in-scene generic's token settings window): writes membership `tier` (no `tier` clears it) and marks the seats push dirty. The push carries it as `generics[].tier`.
 
 ---
 
@@ -88,7 +90,7 @@ An imported generic with no stage placement is a roster/membership entry only �
 
 ## Persistence (`genericMembership`)
 
-Live table: `sessionScene.npcWorld.genericMembership[key] = { key, displayName }` (label override). Placement lives in the usual `npcWorld.placements` after a Dashboard stage edit, same as named staged NPCs.
+Live table: `sessionScene.npcWorld.genericMembership[key] = { key, displayName, tier? }` (label override, stat tier). Placement lives in the usual `npcWorld.placements` after a Dashboard stage edit, same as named staged NPCs.
 
 | Event | Behavior |
 | --- | --- |

@@ -1,3 +1,4 @@
+import { isNpcTier } from "../../shared/npcStats";
 import { parseSceneStatus, type LibraryScene } from "../../shared/sceneLibrary";
 import type { ClockDatetime, GenericNpc, ScatterGroup, ScatterMember, SceneSlice, SeatRow, StageNpc } from "../worldState";
 import type { ScenesCommand, SoundLane } from "./commands";
@@ -309,15 +310,23 @@ export const applyToDraft = (scene: LibraryScene, command: ScenesCommand): Libra
     case "genericAdd": {
       const membership: Record<string, unknown> = { ...draftMembership(scene) };
       for (const key of command.keys) {
-        membership[key] = { key, displayName: command.labels[key] ?? key };
+        const tier = command.tiers?.[key];
+        membership[key] = { key, displayName: command.labels[key] ?? key, ...(tier ? { tier } : {}) };
       }
       return withNpcWorld(scene, { genericMembership: membership });
     }
-    case "genericRename": {
+    case "genericRename":
+    case "genericTier": {
       const membership = draftMembership(scene);
-      return command.key in membership
-        ? withNpcWorld(scene, { genericMembership: { ...membership, [command.key]: { key: command.key, displayName: command.name } } })
-        : scene;
+      const row = membership[command.key];
+      if (!isRecord(row)) {
+        return scene;
+      }
+      const { tier: _tier, ...rest } = row;
+      const next = command.op === "genericRename"
+        ? { ...row, displayName: command.name }
+        : { ...rest, ...(command.tier ? { tier: command.tier } : {}) };
+      return withNpcWorld(scene, { genericMembership: { ...membership, [command.key]: next } });
     }
     case "stage": {
       if ("reset" in command) {
@@ -359,10 +368,14 @@ const draftMembership = (scene: LibraryScene): Row => {
 
 /** The draft's generic NPCs as the push's generic list, so the preview board and roster read them like the table's. */
 export const draftGenerics = (scene: LibraryScene): readonly GenericNpc[] =>
-  Object.entries(draftMembership(scene)).map(([characterKey, row]) => ({
-    characterKey,
-    name: (isRecord(row) ? str(row.displayName) : undefined) ?? characterKey
-  }));
+  Object.entries(draftMembership(scene)).map(([characterKey, row]) => {
+    const tier = isRecord(row) ? row.tier : undefined;
+    return {
+      characterKey,
+      name: (isRecord(row) ? str(row.displayName) : undefined) ?? characterKey,
+      ...(isNpcTier(tier) ? { tier } : {})
+    };
+  });
 
 /** The draft's stage placements (`sessionScene.npcWorld.placements`). */
 const draftPlacements = (scene: LibraryScene): Readonly<Record<string, unknown>> => {

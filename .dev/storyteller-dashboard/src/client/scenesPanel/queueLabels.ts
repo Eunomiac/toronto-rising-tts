@@ -1,3 +1,5 @@
+import type { NpcTier } from "../../shared/npcStats";
+import { TIER_LABELS } from "../npcTierBadges";
 import type { SceneCatalogs } from "./catalogs";
 import type { WorldState } from "../worldState";
 import type { ScenesCommand, StageChange } from "./commands";
@@ -26,15 +28,22 @@ export const describeQueued = (
   const stageName = (key: string): string => spawning[key] ?? liveStageName(key, catalogs, generics);
   return (command: ScenesCommand) => {
     switch (command.op) {
-      case "genericAdd":
+      case "genericAdd": {
+        const tiers = [...new Set(command.keys.flatMap((key) => (command.tiers?.[key] ? [TIER_LABELS[command.tiers[key]]] : [])))];
         return {
           subject: command.keys.map((key) => command.labels[key] ?? key).join(", "),
           from: "not spawned",
-          to: "spawned (generic)"
+          to: `spawned (generic${tiers.length > 0 ? `, ${tiers.join(" / ")}` : ""})`
         };
+      }
       case "genericRename": {
         const now = generics.find((npc) => npc.characterKey === command.key)?.name ?? command.key;
         return { subject: `Rename ${now}`, from: now, to: command.name.trim() };
+      }
+      case "genericTier": {
+        const npc = generics.find((entry) => entry.characterKey === command.key);
+        const tierText = (tier: NpcTier | undefined): string => (tier ? TIER_LABELS[tier] : "no tier");
+        return { subject: `Tier of ${stageName(command.key)}`, from: tierText(npc?.tier), to: tierText(command.tier) };
       }
       case "stage": {
         if (!("changes" in command)) {

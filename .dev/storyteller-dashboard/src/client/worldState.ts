@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import type { NpcTier } from "../shared/npcStats.js";
 import { executeLua } from "./ttsBridge.js";
 import { extractSnapshotJson } from "./pcSheet/bridge.js";
 import { subscribeTtsEvents, type TtsPushEvent } from "./ttsEvents.js";
@@ -131,7 +132,7 @@ export type StageNpc = {
 };
 
 /** A generic NPC spawned into the scene; `characterKey` is its generic catalog key. */
-export type GenericNpc = { readonly characterKey: string; readonly name: string };
+export type GenericNpc = { readonly characterKey: string; readonly name: string; readonly tier?: NpcTier };
 
 /** A PC (`characterKey` = their charKey) or NPC in a Scatter group, by hole `slot`. */
 export type ScatterMember = { readonly characterKey: string; readonly slot?: number };

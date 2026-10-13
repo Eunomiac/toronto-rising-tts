@@ -138,12 +138,16 @@ function GenericNpcs.destroyAllLiveAndClearMembership()
     setMembership({})
 end
 
+--- Stat tier names the Storyteller Dashboard keeps a stat block for on each generic type.
+local TIERS = { weak = true, average = true, gifted = true, deadly = true }
+
 --- Storyteller Dashboard: add generic NPCs to the scene with the names the Storyteller typed.
 --- Membership + roster registration only; the reconciler spawns each one when it is placed on the stage.
 --- @param keys string[] catalog keys
 --- @param labels table|nil key → display name
+--- @param tiers table|nil key → stat tier (`weak` / `average` / `gifted` / `deadly`); omitted = no tier
 --- @return string|nil error
-function GenericNpcs.importNamed(keys, labels)
+function GenericNpcs.importNamed(keys, labels, tiers)
     if type(keys) ~= "table" or #keys < 1 then
         return "Pick at least one generic NPC."
     end
@@ -155,6 +159,12 @@ function GenericNpcs.importNamed(keys, labels)
         return "Already in this scene: " .. table.concat(duplicates, ", ")
     end
     labels = type(labels) == "table" and labels or {}
+    tiers = type(tiers) == "table" and tiers or {}
+    for key, tier in pairs(tiers) do
+        if not TIERS[tier] then
+            return "Unknown stat tier `" .. tostring(tier) .. "` for " .. tostring(key) .. "."
+        end
+    end
     local membership = getMembership()
     local NPCS = npcsModule()
     for i = 1, #valid do
@@ -165,7 +175,7 @@ function GenericNpcs.importNamed(keys, labels)
         end
         displayName = string.match(displayName, "^%s*(.-)%s*$") or displayName
         NPCS.registerGenericCharacter(key, displayName)
-        membership[key] = { key = key, displayName = displayName }
+        membership[key] = { key = key, displayName = displayName, tier = tiers[key] }
     end
     setMembership(membership)
     require("dashboard.push").markWorldDirty({ seats = true })
@@ -200,6 +210,25 @@ function GenericNpcs.rename(characterKey, displayName)
         fig.setName(name)
     end
     require("core.stage_tokens").refreshName(characterKey)
+    require("dashboard.push").markWorldDirty({ seats = true })
+    return nil
+end
+
+--- Storyteller Dashboard: change the stat tier of a generic NPC already in the scene (`nil` clears it).
+--- @param characterKey string
+--- @param tier string|nil
+--- @return string|nil error
+function GenericNpcs.setTier(characterKey, tier)
+    local membership = getMembership()
+    local row = membership[characterKey]
+    if type(row) ~= "table" then
+        return "No generic NPC `" .. tostring(characterKey) .. "` in this scene."
+    end
+    if tier ~= nil and not TIERS[tier] then
+        return "Unknown stat tier `" .. tostring(tier) .. "`."
+    end
+    row.tier = tier
+    setMembership(membership)
     require("dashboard.push").markWorldDirty({ seats = true })
     return nil
 end

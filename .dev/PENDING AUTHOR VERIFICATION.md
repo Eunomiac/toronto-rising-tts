@@ -66,6 +66,23 @@ These four rows have no Linear issue yet: the Linear connection was down when th
 
 **How to verify:** Save & Play with the dashboard running. On the PCs tab, open a player's Projects and add a project. The fields still needed glow gold; fill them in until **Roll** lights up, then click it. The roll should appear in the dashboard Rolls column with its difficulty set **and** open on that player's screen, without re-picking the difficulty.
 
+### High — NPC Stats (pin 19)
+
+These rows have no Linear issue yet: the Linear connection is down. An agent will file them and add the ids here.
+
+#### Generic NPCs get a stat tier
+
+**Context:** Each generic type (every "Police" figurine, say) now has up to four stat blocks: Weak, Average, Gifted and Deadly. A generic added to a scene remembers which one it uses, and shows it as a small badge.
+
+**How to verify:** restart the dashboard (`npm run dev`), then Save & Play.
+
+1. In the Scenes tab roster, open **Generic**, right-click any Police token and click **Stats**. Fill in at least the Health box on the **Average** and **Deadly** tabs (any numbers), then click off to save.
+2. Click a Police token in the roster. A small "which tier?" window should open with Average and Deadly. Pick Deadly. The token goes into the Send queue (its line should say "Deadly") and onto the stage with a Deadly badge at its top-left. Send.
+3. In TTS nothing looks different, but on the dashboard the stage token and its "In this scene" token should both show the Deadly badge. Seat it in an empty chair: the seat should show the badge right of the chair number.
+4. Right-click the in-scene token, change **Tier** to Average, click off, and Send. The badges should switch to Average.
+5. Save & Play again: the badge should still be there (the tier is saved with the scene).
+6. Give a different generic type only one tier block, then click one of its tokens: it should go straight onto the stage with that tier, no picker.
+
 ### High — NPCs and dice no longer wait under the table
 
 #### TOR-707 — NPC figurines and spotlights spawn when a scene needs them

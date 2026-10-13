@@ -1,6 +1,18 @@
 import { describe, expect, it } from "vitest";
 import type { ScenesCommand } from "./commands";
-import { addToQueue, commandKind, commandsToSend, pendingGenerics, queueLines, withoutPendingGeneric, withoutQueuedStage, type Describe, type QueueEntry } from "./queue";
+import {
+  addToQueue,
+  commandKind,
+  commandsToSend,
+  genericAddFor,
+  genericTiers,
+  pendingGenerics,
+  queueLines,
+  withoutPendingGeneric,
+  withoutQueuedStage,
+  type Describe,
+  type QueueEntry
+} from "./queue";
 
 const move = (key: string, u: number): ScenesCommand => ({ op: "stage", changes: { [key]: { u, v: 0.5 } } });
 const scatter = (key: string, group?: number): ScenesCommand =>
@@ -85,5 +97,20 @@ describe("pending generic NPCs", () => {
     expect(withoutPendingGeneric(entries, "bouncer1").map((entry) => entry.command)).toEqual([
       { op: "stage", changes: { victor: { u: 0.3, v: 0.3 } } }
     ]);
+  });
+
+  it("works out each generic's tier from the scene and the queue", () => {
+    const commands: ScenesCommand[] = [
+      { op: "genericAdd", keys: ["cop_01", "cop_02"], labels: {}, tiers: { cop_01: "deadly", cop_02: "weak" } },
+      { op: "genericTier", key: "bouncer1" },
+      { op: "genericTier", key: "cop_02", tier: "gifted" }
+    ];
+    expect(genericTiers([{ characterKey: "bouncer1", name: "Doorman", tier: "average" }], commands)).toEqual({ cop_01: "deadly", cop_02: "gifted" });
+    const add = commands[0];
+    if (add?.op !== "genericAdd") {
+      throw new Error("expected a genericAdd");
+    }
+    expect(genericAddFor(add, (key) => key === "cop_02")).toEqual({ op: "genericAdd", keys: ["cop_02"], labels: {}, tiers: { cop_02: "weak" } });
+    expect(genericAddFor(add, () => false)).toBeNull();
   });
 });

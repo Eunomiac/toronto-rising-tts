@@ -9,8 +9,10 @@ import { TraitRing } from "../pcSheet/TraitRing";
 import type { ApplyCommand, RingTarget, SeatColor, SeatSnapshot, SheetSnapshot } from "../pcSheet/types";
 import type { LiveSheetAccess } from "../pcSheet/useLiveSheet";
 import { LIGHTING_PRESETS, lightingLabel, type LightingPreset } from "../catalogVocab";
-import { useScenesCommand, type StageChanges } from "./commands";
+import type { NpcTier } from "../../shared/npcStats";
+import { GenericTiersContext, useScenesCommand, type StageChanges } from "./commands";
 import { CompulsionBadge } from "./compulsionBadge";
+import { TierBadge } from "./tierBadge";
 import { GENERIC_SKY, stageName, tableUsesRandomSeating } from "./liveScene";
 import { SignalFlame } from "./signal";
 import { RollsCommandContext } from "./rolls/commands";
@@ -198,9 +200,10 @@ const TrackerPopup = ({ seat, onRing, onHunger, onOpenSheet }: {
   </div>
 );
 
-const SeatContent = ({ seat }: { seat: SeatSketch }): ReactElement => (
+const SeatContent = ({ seat, tier }: { seat: SeatSketch; tier: NpcTier | undefined }): ReactElement => (
   <>
     <span className="lab-seat-badge">{seat.slot}</span>
+    {tier && <TierBadge tier={tier} where="seat" />}
     <span className="lab-seat-text">
       {seat.playedBy && <span className="lab-seat-flag role">{seat.playedBy} as</span>}
       {seat.name && <span className="lab-seat-name">{seat.name}</span>}
@@ -239,6 +242,7 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, seating }: {
 }): ReactElement => {
   const [dropChair, setDropChair] = useState<number | null>(null);
   const send = useScenesCommand();
+  const tiers = useContext(GenericTiersContext);
   const openPcSheet = useOpenPcSheet();
   const sheet = liveSheet?.sheet ?? NO_SEATS;
   const apply = (command: ApplyCommand): void => {
@@ -392,11 +396,11 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, seating }: {
             )}
             {seat.characterKey ? (
               <Headshot characterKey={seat.characterKey} className={className}>
-                <SeatContent seat={seat} />
+                <SeatContent seat={seat} tier={seat.kind === "npc" ? tiers[seat.characterKey] : undefined} />
               </Headshot>
             ) : (
               <div className={className}>
-                <SeatContent seat={seat} />
+                <SeatContent seat={seat} tier={undefined} />
               </div>
             )}
             {open && openSeat && (
@@ -534,6 +538,7 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
   const [charRing, setCharRing] = useState<CharacterRing | null>(null);
   const [renaming, setRenaming] = useState<GenericRename | null>(null);
   const rollsSend = useContext(RollsCommandContext);
+  const tiers = useContext(GenericTiersContext);
   const [clearArmed, setClearArmed] = useState(false);
   const [local, setLocal] = useState<StageChanges>({});
   const [localScatter, setLocalScatter] = useState<readonly ScatterMove[]>([]);
@@ -677,8 +682,9 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
     if (name === "") {
       return;
     }
+    const tier = tiers[target.key];
     command(target.pending
-      ? { op: "genericAdd", keys: [target.key], labels: { [target.key]: name } }
+      ? { op: "genericAdd", keys: [target.key], labels: { [target.key]: name }, ...(tier ? { tiers: { [target.key]: tier } } : {}) }
       : { op: "genericRename", key: target.key, name });
     setRenaming(null);
   };

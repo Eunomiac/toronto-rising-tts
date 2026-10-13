@@ -30,7 +30,15 @@ import { deckScenes } from "./sceneStatus";
 import { useLibraryActions } from "./useLibraryActions";
 import { clockNow, refreshWorldSnapshot, useWorldState, WORLD_TOPICS, type WorldState } from "../worldState";
 import { sendScenesCommands, type ScenesReply } from "./bridge";
-import { isStageChanges, mergedStageChanges, PendingGenericsContext, ScenesCommandContext, type ScenesCommand, type ScenesSend } from "./commands";
+import {
+  GenericTiersContext,
+  isStageChanges,
+  mergedStageChanges,
+  PendingGenericsContext,
+  ScenesCommandContext,
+  type ScenesCommand,
+  type ScenesSend
+} from "./commands";
 import { withRetitledScene, withoutScene, withTableScene } from "./deck";
 import { RollsCell, type OptionsAccess } from "./rolls/RollsCell";
 import { loadRollOptions, sendRollsCommands } from "./rolls/bridge";
@@ -49,7 +57,18 @@ import {
   weatherAxes
 } from "./liveScene";
 import { useTtsNotice } from "./notices";
-import { addToQueue, commandKind, commandsToSend, pendingGenerics, pendingRenames, queueLines, withoutPendingGeneric, withoutQueuedStage, type QueueEntry } from "./queue";
+import {
+  addToQueue,
+  commandKind,
+  commandsToSend,
+  genericTiers,
+  pendingGenerics,
+  pendingRenames,
+  queueLines,
+  withoutPendingGeneric,
+  withoutQueuedStage,
+  type QueueEntry
+} from "./queue";
 import { describeQueued } from "./queueLabels";
 import { ADD_CORNER, freeSlotNear, isRemoval, stageSpots, withChanges } from "./stage";
 import { boardToStage, stagePacks, stageToBoard, type StagePack } from "./stageFrame";
@@ -352,6 +371,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   );
   const spawning = useMemo(() => pendingGenerics(queued), [queued]);
   const renames = useMemo(() => pendingRenames(queued), [queued]);
+  const tiers = useMemo(() => genericTiers(seats?.generics ?? [], queued), [seats?.generics, queued]);
   const board = useMemo((): LiveBoard | null => {
     if (!seats) {
       return null;
@@ -389,6 +409,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   return (
     <ScenesCommandContext.Provider value={send}>
     <PendingGenericsContext.Provider value={spawning}>
+    <GenericTiersContext.Provider value={tiers}>
     <RollsCommandContext.Provider value={rollCommands.send}>
     <div className="lab-canvas scenes-live">
       {active && (
@@ -576,6 +597,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
       )}
     </div>
     </RollsCommandContext.Provider>
+    </GenericTiersContext.Provider>
     </PendingGenericsContext.Provider>
     </ScenesCommandContext.Provider>
   );

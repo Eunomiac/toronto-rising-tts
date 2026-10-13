@@ -1,3 +1,5 @@
+import type { NpcTier } from "../../shared/npcStats";
+import type { GenericNpc } from "../worldState";
 import { isStageChanges, type ScenesCommand } from "./commands";
 
 /**
@@ -7,7 +9,7 @@ import { isStageChanges, type ScenesCommand } from "./commands";
  */
 export type CommandKind = "queue" | "flush" | "direct";
 
-const QUEUED_OPS: ReadonlySet<ScenesCommand["op"]> = new Set(["scatterPlace", "genericAdd", "genericRename"]);
+const QUEUED_OPS: ReadonlySet<ScenesCommand["op"]> = new Set(["scatterPlace", "genericAdd", "genericRename", "genericTier"]);
 
 export const commandKind = (command: ScenesCommand): CommandKind => {
   if (command.op === "stage") {
@@ -27,6 +29,8 @@ export const queueTarget = (command: ScenesCommand): string => {
       return `generic:${[...command.keys].sort().join(",")}`;
     case "genericRename":
       return `genericName:${command.key}`;
+    case "genericTier":
+      return `genericTier:${command.key}`;
     default:
       return command.op;
   }
@@ -48,6 +52,49 @@ export const pendingGenerics = (commands: readonly ScenesCommand[]): Record<stri
 /** Generic NPCs a queued `genericRename` will rename, by key → new name. */
 export const pendingRenames = (commands: readonly ScenesCommand[]): Record<string, string> =>
   Object.fromEntries(commands.flatMap((command) => (command.op === "genericRename" ? [[command.key, command.name]] : [])));
+
+/**
+ * Each generic NPC's stat tier once the queue is sent: the scene's own, then queued spawns and tier changes in order
+ * (a cleared tier drops out).
+ */
+export const genericTiers = (generics: readonly GenericNpc[], commands: readonly ScenesCommand[]): Record<string, NpcTier> => {
+  const out: Record<string, NpcTier> = {};
+  for (const npc of generics) {
+    if (npc.tier) {
+      out[npc.characterKey] = npc.tier;
+    }
+  }
+  for (const command of commands) {
+    if (command.op === "genericAdd") {
+      for (const key of command.keys) {
+        const tier = command.tiers?.[key];
+        if (tier) {
+          out[key] = tier;
+        } else {
+          delete out[key];
+        }
+      }
+    } else if (command.op === "genericTier") {
+      if (command.tier) {
+        out[command.key] = command.tier;
+      } else {
+        delete out[command.key];
+      }
+    }
+  }
+  return out;
+};
+
+/** A `genericAdd` for some of its keys only (`null` when none are left). */
+export const genericAddFor = (command: Extract<ScenesCommand, { op: "genericAdd" }>, keep: (key: string) => boolean): ScenesCommand | null => {
+  const keys = command.keys.filter(keep);
+  if (keys.length === 0) {
+    return null;
+  }
+  const labels = Object.fromEntries(Object.entries(command.labels).filter(([key]) => keep(key)));
+  const tiers = Object.entries(command.tiers ?? {}).filter(([key]) => keep(key));
+  return { op: "genericAdd", keys, labels, ...(tiers.length > 0 ? { tiers: Object.fromEntries(tiers) } : {}) };
+};
 
 /** Drop every queued stage change for one NPC (an NPC who takes a chair must not go back on the stage at Send). */
 export const withoutQueuedStage = (entries: readonly QueueEntry[], key: string): readonly QueueEntry[] =>
@@ -74,12 +121,8 @@ export const withoutPendingGeneric = (entries: readonly QueueEntry[], key: strin
     if (command.op !== "genericAdd" || !command.keys.includes(key)) {
       return [entry];
     }
-    const keys = command.keys.filter((other) => other !== key);
-    if (keys.length === 0) {
-      return [];
-    }
-    const next: ScenesCommand = { op: "genericAdd", keys, labels: Object.fromEntries(Object.entries(command.labels).filter(([other]) => other !== key)) };
-    return [{ ...entry, target: queueTarget(next), command: next }];
+    const next = genericAddFor(command, (other) => other !== key);
+    return next ? [{ ...entry, target: queueTarget(next), command: next }] : [];
   }), key);
 
 export type QueueEntry = { readonly id: number; readonly target: string; readonly command: ScenesCommand };

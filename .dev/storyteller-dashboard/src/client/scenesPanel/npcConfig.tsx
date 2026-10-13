@@ -1,5 +1,7 @@
 import { useState, type ReactElement } from "react";
 import { CARD_SCALE_RANGE, parseNpcOverride, SEATED_Y_RANGE, type NpcOverride } from "../../shared/npcOverride";
+import { isNpcTier, NPC_TIERS, type NpcTier } from "../../shared/npcStats";
+import { TIER_LABELS } from "../npcTierBadges";
 import { openHeadshotEditor } from "../headshots/headshotEditor";
 import { saveNpcOverride, useNpcOverrides } from "../npcOverrides";
 import { NpcStatsModal } from "./npcStatsModal";
@@ -21,8 +23,18 @@ export type NpcConfigTarget = {
   readonly defaultColor: string;
   /** What the Stats button edits: a named NPC's block, a generic type's four tiers, or a kept character's block. */
   readonly stats: { readonly key: string; readonly label: string; readonly tiered: boolean };
-  /** A generic already in the scene: Name renames it there (like the stage's Rename…) instead of saving an override. */
-  readonly inScene?: { readonly name: string; readonly rename: (name: string) => void };
+  /**
+   * A generic already in the scene: Name renames it there (like the stage's Rename…) instead of saving an override,
+   * and Tier picks which of its type's stat blocks it rolls from.
+   */
+  readonly inScene?: {
+    readonly name: string;
+    readonly rename: (name: string) => void;
+    readonly tier: NpcTier | undefined;
+    /** The type's configured tiers. */
+    readonly tiers: readonly NpcTier[];
+    readonly setTier: (tier: NpcTier | undefined) => void;
+  };
 };
 
 const numberOrUndefined = (text: string): number | string | undefined => {
@@ -48,6 +60,7 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
+  const [tier, setTier] = useState(inScene?.tier);
   const label = name.trim() || target.defaultName;
 
   const draft = (): NpcOverride | string => {
@@ -98,6 +111,25 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
           <span>Name</span>
           <input className="lab-select" placeholder={target.defaultName} value={name} onChange={(event) => setName(event.target.value)} />
         </label>
+        {inScene && (inScene.tiers.length > 0 || inScene.tier) && (
+          <label className="lab-group-edit-row" title="Which of this type's stat blocks they roll from (queued for Send)">
+            <span>Tier</span>
+            <select
+              className="lab-select"
+              value={tier ?? ""}
+              onChange={(event) => {
+                const next = isNpcTier(event.target.value) ? event.target.value : undefined;
+                setTier(next);
+                inScene.setTier(next);
+              }}
+            >
+              <option value="">No tier</option>
+              {NPC_TIERS.filter((option) => inScene.tiers.includes(option) || option === inScene.tier).map((option) => (
+                <option key={option} value={option}>{TIER_LABELS[option]}</option>
+              ))}
+            </select>
+          </label>
+        )}
         <label className="lab-group-edit-row">
           <span>Colour</span>
           <input type="color" className="lab-cat-color" value={color ?? target.defaultColor} onChange={(event) => setColor(event.target.value)} />
