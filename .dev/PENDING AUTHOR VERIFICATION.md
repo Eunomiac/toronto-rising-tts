@@ -32,6 +32,40 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 
 **How to verify:** Run the multiclient playbook in [TOR-439-join-xml-spike-verify.md](Step-By-Step Playbooks/TOR-439-join-xml-spike-verify.md). On the Host, arm the minimal join XML, have the struggling client connect, then restore in stages. Watch **step 2 (HUD / Refresh UI)** especially: after the TOR-444 remount-weight cut, does that client stay connected through the full Global HUD remount? Optionally also try a normal (unarmed) join to see whether the Arm pipeline is still needed at all.
 
+### High — dashboard pins from 2026-10-13
+
+These four rows have no Linear issue yet: the Linear connection was down when they shipped. An agent will file them and add the ids here.
+
+#### Scatter Mode fixes — trays, groups, Compulsion cards, rain
+
+**How to verify:** Save & Play, start the Play phase, and switch to Scatter.
+
+1. **Seating on entry:** before switching, seat two or three NPCs between PCs on a wood table. After the switch, all five PCs should be in five different groups, and the seated NPCs should stand on the NPC arcs around the groups, not in PC spots.
+2. **Trays:** start Storyteller NPC rolls for NPCs in two different groups. Each tray should rise level, turned only to face its group. Clear one roll from the dashboard: that tray should drop out of sight and its light should go off. Start another roll for that group: the tray should come back level.
+3. **Dashboard follows the player:** open a player's in-game group strip and click a different group. Within about a second, the dashboard's Scenes tab should show that PC in the new group.
+4. **Compulsion card:** give a player a chosen Compulsion, then move them to another group. The card should travel with their sheet and bags.
+5. **Rain:** pick a rainy outdoor scene. Rain should keep falling in Scatter without a table switch. (The rain emitter sits at Scatter's centre, so tell us if it doesn't reach the groups, or if you actually wanted rain hidden in Scatter.)
+
+#### Table chairs are drawn once per session
+
+**How to verify:** Save & Play.
+
+1. From Intermission, advance to Play. Under the cover, the PCs should land in a newly shuffled order on Table B.
+2. Play two or three library scenes on Table B, then End Scene. Every PC should keep the same chair each time, with any NPCs seated after the PCs (chairs 6 and up).
+3. Advance through Spotlight and End back to Intermission: the chairs should still match. Advance to Play again: only now should the PCs get a new order.
+4. Disconnect a PC and reconnect them on Table B: they should return to their own chair.
+
+#### NPC token names and stage token order
+
+**How to verify:** first run `npm run npc-art:generate` from the repo root (it redraws every token and updates the roll-banner entries in your save), then commit and push `assets/images/NPCs` and `lib/npc_art_urls.ttslua`, then Save & Play.
+
+1. Put Benedict Kincaid, Severin Koslov and a Guard Ghoul on the stage. Their Stage Control tokens should show full names on both sides.
+2. Clear the stage and add several NPCs. From the Storyteller seat, the first token should appear in the top-left corner of the board, then fill to the right, then down.
+
+#### Project launch rolls open for the player
+
+**How to verify:** Save & Play with the dashboard running. On the PCs tab, open a player's Projects and add a project. The fields still needed glow gold; fill them in until **Roll** lights up, then click it. The roll should appear in the dashboard Rolls column with its difficulty set **and** open on that player's screen, without re-picking the difficulty.
+
 ### High — NPCs and dice no longer wait under the table
 
 #### TOR-707 — NPC figurines and spotlights spawn when a scene needs them
@@ -275,7 +309,7 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 1. **Library:** during Play, press **Scene ▸** on the phase bar to open the Play a Scene window. Every in-game library scene should be listed with its District and Site, and the search box should narrow the list.
 2. **Prepare a new scene:** press **+ Prepare a new scene…** and pick a location. A blue Preview opens named after the District and Site. Change its weather, sky or conditions: nothing should change in TTS. Press **Play Scene** and pick a time (TOR-697 below): TTS should play it with those settings, and it should appear in the in-game library too.
 3. **Edit and Discard:** press **Edit** on a scene, change something, and press **Discard** twice. The scene should be unchanged when you open it again.
-4. **Deck:** **On deck** in a preview adds the scene to the phase bar without switching to it. Right-click a deck scene and choose **Edit**: its preview should open.
+4. **Deck:** **On deck** in a preview adds the scene to the phase bar without switching to it. Right-click a deck scene: its preview should open straight away.
 5. **Unlink and Fork:** click the table's scene title on the phase bar and choose **Unlink from the library**: an **unlinked** tag should appear, and the in-game row should show unlinked. Choose **Fork…**, name both scenes and press **Fork**: the phase bar should show the new name, and the in-game library should list both.
 6. **Delete:** press **Delete** twice on a scene that is not on the table. It should leave both the dashboard list and the in-game library.
 
