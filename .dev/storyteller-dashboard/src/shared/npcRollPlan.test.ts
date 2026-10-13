@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { planNpcRoll, type NpcRollInput } from "./npcRollPlan.js";
 import type { NpcStatBlock } from "./npcStats.js";
 
-const rules = { bloodSurge: ["standard", "discipline"], withoutHunger: ["simpleCheck", "rouse", "rouseOblivion", "werewolf"] };
+const rules = { withoutHunger: ["simpleCheck", "rouse", "rouseOblivion", "werewolf"] };
 const bp2 = { bloodSurge: 2, discBonus: 1, discReroll: 1 };
 
 const mylene: NpcStatBlock = {
@@ -32,7 +32,6 @@ const input = (overrides: Partial<NpcRollInput>): NpcRollInput => ({
   levels: { hunger: 2 },
   rollType: "standard",
   entry: { kind: "pool", ref: "physical" },
-  surge: false,
   bloodPotency: bp2,
   rules,
   ...overrides
@@ -67,13 +66,6 @@ describe("planNpcRoll", () => {
     const plan = planNpcRoll(input({ bloodPotency: { ...bp2, discReroll: 2 }, entry: { kind: "power", category: 0, power: 1 } }));
     expect(plan.rouse).toEqual([{ dice: 2, oblivion: false }]);
     expect(plan).toMatchObject({ poolDice: 7, marginBonus: 2, heading: "Protean", line: "Mylene uses Feral Weapons (Protean)" });
-  });
-
-  it("adds Blood Surge dice and a surge rouse check when the roll type allows it", () => {
-    const plan = planNpcRoll(input({ surge: true }));
-    expect(plan).toMatchObject({ surgeAllowed: true, surgeBonus: 2, normal: 6, hunger: 2, hungerOnFail: true });
-    expect(plan.rouse).toEqual([{ dice: 1, oblivion: false }]);
-    expect(planNpcRoll(input({ surge: true, rollType: "simpleCheck" }))).toMatchObject({ surgeAllowed: false, surgeBonus: 0, rouse: [] });
   });
 
   it("makes a pool-less power with rouse checks rouse-only, and one without passive", () => {

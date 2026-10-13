@@ -25,9 +25,12 @@
                                         start an NPC roll in a free drawer; Werewolf NPCs
                                         (`werewolf = true` in lib/npcs_data) always roll Werewolf
     npcPool       kind, delta           add (1) or remove (-1) one `hunger` (Rage for Werewolf) or `normal` (Werewolf) die
-    npcDifficulty value                 difficulty 0–10
-    npcRoll       secret?               ROLL (secret = dice hidden from players)
-    npcHalf       quiet?                Take Half (quiet = no broadcast)
+    npcDifficulty value                 difficulty 0–10 (0 = declared "no difficulty": count successes)
+    npcRoll       secret?               ROLL (secret = dice hidden from players); refused until a difficulty is set
+    npcHalf       quiet?                Take Half (quiet = no broadcast); refused until a difficulty is set
+    npcSurge      on, dice              Blood Surge on / off: `dice` surge dice (Hunger first, up to the NPC's
+                                        Hunger) plus one rouse die go into the pool, or come back out; a
+                                        failed surge rouse raises the NPC's Hunger
     npcWp                               Spend Willpower
     npcReroll     indices               reroll these dice (1-based, roll face order; picked on the dashboard)
     npcRecalc                           re-read the dice on the table
@@ -38,7 +41,8 @@
                                         set the live roll from a stat-block plan (dashboard `planNpcRoll`):
                                         each rouse check is judged on its own dice, failed checks raise
                                         the NPC's Hunger, the broadcast uses heading / line (+ the bonus on
-                                        a success); kind `rouseOnly` rolls at once and confirms itself
+                                        a success); kind `rouseOnly` rolls at once and confirms itself.
+                                        The difficulty and a Blood Surge already on carry over
     npcAnnounce   label, characterKey?, heading, line
                                         banner for a passive power (no dice)
     npcMend       key, label, heal      one-die rouse in a free drawer that confirms itself; heals `heal`
@@ -386,12 +390,19 @@ local function applyNpcCommand(cmd)
     if not isRollType(cmd.rollType) then
       return "Unknown roll type: " .. tostring(cmd.rollType)
     end
+    -- The Storyteller's difficulty and Blood Surge outlast a change of pool or power.
+    local difficulty = active.difficulty
+    local meta = type(active.meta) == "table" and active.meta or {}
+    local surgeDice = meta.bloodSurgeActive == true and tonumber(meta.npcSurgeDice) or nil
     if cmd.rollType ~= active.rollType then
       if active.rollType == C.RollType.WEREWOLF or cmd.rollType == C.RollType.WEREWOLF then
         return "A Werewolf roll cannot switch roll type."
       end
       if RC.changeRollType(ST_COLOR, cmd.rollType) ~= true then
         return "Could not change the NPC roll's type."
+      end
+      if difficulty ~= nil and activeRoll(ST_COLOR).difficulty == nil then
+        RC.setDifficulty(ST_COLOR, difficulty)
       end
     end
     local err = RC.applyNpcStatPlan({
@@ -405,6 +416,7 @@ local function applyNpcCommand(cmd)
       marginBonus = cmd.marginBonus,
       marginLabel = cmd.marginLabel,
       autoConfirm = cmd.kind == "rouseOnly",
+      surgeDice = surgeDice,
     })
     if err ~= nil then
       return err
@@ -412,6 +424,8 @@ local function applyNpcCommand(cmd)
     if cmd.kind == "rouseOnly" then
       HUD_rollRollButton(player, "-1", "rollPanelST_btnRoll")
     end
+  elseif op == "npcSurge" then
+    return RC.setNpcBloodSurge(cmd.on == true, cmd.dice)
   elseif op == "npcDifficulty" then
     local value = tonumber(cmd.value)
     if value == nil or value < 0 then
@@ -420,10 +434,15 @@ local function applyNpcCommand(cmd)
     if RC.setDifficulty(ST_COLOR, math.floor(value)) ~= true then
       return "Could not set the NPC roll's difficulty."
     end
-  elseif op == "npcRoll" then
-    HUD_rollRollButton(player, cmd.secret == true and "-2" or "-1", "rollPanelST_btnRoll")
-  elseif op == "npcHalf" then
-    HUD_rollTakeHalf(player, cmd.quiet == true and "-2" or "-1", "rollPanelST_btnHalf")
+  elseif op == "npcRoll" or op == "npcHalf" then
+    if active.difficulty == nil then
+      return "Pick a difficulty first (– for none)."
+    end
+    if op == "npcRoll" then
+      HUD_rollRollButton(player, cmd.secret == true and "-2" or "-1", "rollPanelST_btnRoll")
+    else
+      HUD_rollTakeHalf(player, cmd.quiet == true and "-2" or "-1", "rollPanelST_btnHalf")
+    end
   elseif op == "npcWp" then
     HUD_rollSpendWP(player, "-1", "rollPanelST_btnWP")
   elseif op == "npcReroll" then

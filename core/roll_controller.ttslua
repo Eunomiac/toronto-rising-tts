@@ -838,15 +838,23 @@ local function buildDedicatedRouseResult(rollType, rouseVals)
     }, oblivRes
 end
 
---- Storyteller Dashboard stat-block rolls (`active.npcPlan.rouse`): judges each rouse check on its
---- own dice. Rouse dice of a kind are read in table order and dealt to the checks in plan order;
---- every die is independent, so the fixed split keeps the true odds. Sets `active.npcRouseFailed`,
---- rewrites the strip narratives per check, drops the PC Oblivion Hunger-or-Stain prompt (NPCs
---- keep no Stains), and re-scores a rouse-only roll as pass (no failed check) or fail.
+--- Storyteller rolls with rouse checks: the stat-block plan's (`active.npcPlan.rouse`), then a Blood Surge's
+--- (`meta.bloodSurgeActive`, one plain die). Judges each check on its own dice. Rouse dice of a kind are read
+--- in table order and dealt to the checks in that order; every die is independent, so the fixed split keeps
+--- the true odds. Sets `active.npcRouseFailed` (failed checks that raise the NPC's Hunger: the plan's when it
+--- says so, a surge's always), rewrites the strip narratives per check, drops the PC Oblivion Hunger-or-Stain
+--- prompt (NPCs keep no Stains), and re-scores a rouse-only roll as pass (no failed check) or fail.
 --- @param active table  Black active roll
 local function applyNpcRousePlan(active)
-    local plan = active.npcPlan
-    if type(plan) ~= "table" or type(plan.rouse) ~= "table" or #plan.rouse == 0 then
+    local plan = type(active.npcPlan) == "table" and active.npcPlan or {}
+    local checks = {}
+    for _, check in ipairs(type(plan.rouse) == "table" and plan.rouse or {}) do
+        checks[#checks + 1] = { dice = check.dice, oblivion = check.oblivion, hunger = plan.hungerOnFail == true }
+    end
+    if type(active.meta) == "table" and active.meta.bloodSurgeActive == true then
+        checks[#checks + 1] = { dice = 1, oblivion = false, hunger = true }
+    end
+    if #checks == 0 then
         return
     end
     local values = { plain = {}, obliv = {} }
@@ -858,8 +866,8 @@ local function applyNpcRousePlan(active)
     end
     local cursor = { plain = 0, obliv = 0 }
     local failedByKind = { plain = 0, obliv = 0 }
-    local failed = 0
-    for _, check in ipairs(plan.rouse) do
+    local failed, hungerFailed = 0, 0
+    for _, check in ipairs(checks) do
         local which = check.oblivion == true and "obliv" or "plain"
         local read, passed = 0, false
         for _ = 1, math.max(1, math.floor(tonumber(check.dice) or 1)) do
@@ -875,9 +883,12 @@ local function applyNpcRousePlan(active)
         if read > 0 and not passed then
             failed = failed + 1
             failedByKind[which] = failedByKind[which] + 1
+            if check.hunger then
+                hungerFailed = hungerFailed + 1
+            end
         end
     end
-    active.npcRouseFailed = failed
+    active.npcRouseFailed = hungerFailed
     for _, strip in ipairs(active.rouseOutcomeStrips or {}) do
         local which = strip.kind == DK.KIND_OBLIV_ROUSE and "obliv" or "plain"
         strip.pendingChoice = false
@@ -918,9 +929,83 @@ function RC.npcBroadcastText(active)
     }
 end
 
+--- Storyteller Blood Surge (`RC.setNpcBloodSurge`). The NPC pool is counts until Roll, so surging is pool
+--- arithmetic: the surge dice are Hunger dice first, up to the NPC's Hunger (as the stat-block planner deals
+--- a pool), and the surge's rouse check is one plain rouse die, judged after the plan's own checks
+--- (`applyNpcRousePlan`). The amounts are recorded so turning it off takes exactly those dice back out.
+--- @param active table Black active roll, shape ensured
+--- @param dice number surge dice (the NPC's Blood Potency)
+local function addNpcSurgeDice(active, dice)
+    local pool = DK.normalizePool(active.pool)
+    local hungerRoom = 0
+    if C.RollTypesWithoutHunger[active.rollType] ~= true and type(active.npcCharacterKey) == "string" then
+        local record = require("core.npc_trackers").get(active.npcCharacterKey)
+        local level = type(record) == "table" and math.floor(tonumber(record.hunger) or 0) or 0
+        hungerRoom = math.max(0, level - pool.hunger)
+    end
+    local hunger = math.min(dice, hungerRoom)
+    pool.hunger = pool.hunger + hunger
+    pool.normal = pool.normal + dice - hunger
+    pool.rouse = pool.rouse + 1
+    active.pool = pool
+    active.meta.bloodSurgeActive = true
+    active.meta.npcSurgeDice = dice
+    active.meta.bloodSurgeAddedToPool = { normal = dice - hunger, hunger = hunger }
+end
+
+--- Takes a Storyteller Blood Surge's dice back out of the pool (`addNpcSurgeDice`).
+--- @param active table Black active roll, shape ensured
+local function removeNpcSurgeDice(active)
+    local pool = DK.normalizePool(active.pool)
+    local added = active.meta.bloodSurgeAddedToPool or {}
+    pool.normal = math.max(0, pool.normal - (tonumber(added.normal) or 0))
+    pool.hunger = math.max(0, pool.hunger - (tonumber(added.hunger) or 0))
+    pool.rouse = math.max(0, pool.rouse - 1)
+    active.pool = pool
+    active.meta.bloodSurgeActive = false
+    active.meta.npcSurgeDice = nil
+    active.meta.bloodSurgeAddedToPool = { normal = 0, hunger = 0 }
+end
+
+--- Storyteller Dashboard `npcSurge`: Blood Surge on or off for the live NPC roll, as a player's surge bag
+--- toggles it: the surge dice and their rouse die go into the pool, or come back out.
+--- @param on boolean
+--- @param dice number surge dice (the NPC's Blood Potency)
+--- @return string|nil error
+function RC.setNpcBloodSurge(on, dice)
+    local color = "Black"
+    local active = getActive(color)
+    if active == nil then
+        return "No NPC roll is in progress."
+    end
+    if active.phase ~= C.RollPhase.SETUP and active.phase ~= C.RollPhase.PRE_ROLL then
+        return "Blood Surge is fixed once the dice are rolled."
+    end
+    if C.RollTypesBloodSurge[active.rollType] ~= true then
+        return "Blood Surge is not allowed on this roll type."
+    end
+    ensureActiveShape(active)
+    if active.meta.bloodSurgeActive == (on == true) then
+        return nil
+    end
+    if on == true then
+        local n = math.floor(tonumber(dice) or 0)
+        if n < 1 then
+            return "Blood Surge needs at least one die."
+        end
+        addNpcSurgeDice(active, n)
+    else
+        removeNpcSurgeDice(active)
+    end
+    setActive(color, active)
+    notifyStateChanged(color)
+    return nil
+end
+
 --- Storyteller Dashboard `npcStatRoll` / `npcMend`: sets the Black pool from a stat-block plan and
---- records the plan (rouse checks, Hunger on fail, broadcast text) on the active roll.
---- @param plan table `{ normal, hunger, rage, rouse = { { dice, oblivion } }, hungerOnFail, heading, line, marginBonus, marginLabel, autoConfirm? }`
+--- records the plan (rouse checks, Hunger on fail, broadcast text) on the active roll. A Blood Surge
+--- (`surgeDice`, carried over by the caller) is added back on top when the roll type allows it.
+--- @param plan table `{ normal, hunger, rage, rouse = { { dice, oblivion } }, hungerOnFail, heading, line, marginBonus, marginLabel, autoConfirm?, surgeDice? }`
 --- @return string|nil error
 function RC.applyNpcStatPlan(plan)
     local color = "Black"
@@ -957,6 +1042,13 @@ function RC.applyNpcStatPlan(plan)
     pool.rouse = rouseDice
     pool.oblivRouse = oblivDice
     active.pool = pool
+    active.meta.bloodSurgeActive = false
+    active.meta.npcSurgeDice = nil
+    active.meta.bloodSurgeAddedToPool = { normal = 0, hunger = 0 }
+    local surgeDice = math.floor(tonumber(plan.surgeDice) or 0)
+    if surgeDice > 0 and C.RollTypesBloodSurge[active.rollType] == true then
+        addNpcSurgeDice(active, surgeDice)
+    end
     active.npcPlan = {
         rouse = rouse,
         hungerOnFail = plan.hungerOnFail == true,
@@ -3229,12 +3321,11 @@ function RC._applyRouseOutcomeStrips(color, active)
     if not RO.getPermanent(RO.PERM_AUTO_APPLY_ROUSE_OUTCOMES) then
         return
     end
-    -- Storyteller rolls never touch the Storyteller seat's own Hunger: a stat-block roll's failed
+    -- Storyteller rolls never touch the Storyteller seat's own Hunger: failed stat-block and Blood Surge
     -- checks raise the rolling NPC's tracker instead (`applyNpcRousePlan`).
     if color == "Black" then
         local failed = math.floor(tonumber(active.npcRouseFailed) or 0)
-        if type(active.npcPlan) == "table" and active.npcPlan.hungerOnFail == true and failed > 0
-            and type(active.npcCharacterKey) == "string" then
+        if failed > 0 and type(active.npcCharacterKey) == "string" then
             require("core.npc_trackers").addHunger(active.npcCharacterKey, failed)
         end
         return
@@ -3586,6 +3677,12 @@ function RC.deactivateBloodSurge(color)
     ensureActiveShape(active)
     if active.meta.bloodSurgeActive ~= true then
         return false
+    end
+    if color == "Black" then
+        removeNpcSurgeDice(active)
+        setActive(color, active)
+        notifyStateChanged(color)
+        return true
     end
 
     local added = active.meta.bloodSurgeAddedToPool or { normal = 0, hunger = 0 }

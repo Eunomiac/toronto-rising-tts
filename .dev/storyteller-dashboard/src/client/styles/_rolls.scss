@@ -407,6 +407,31 @@ $phase-held: #ff8a5c;
   &.danger {
     color: #d57a7a;
   }
+
+  // Blood Surge: a hollow droplet when off, filled glowing red when on.
+  &.surge {
+    color: #e07a7a;
+
+    .lab-icon {
+      overflow: visible;
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 40px;
+    }
+  }
+
+  &.surge.on {
+    color: #ff3030;
+
+    .lab-icon {
+      fill: currentcolor;
+      filter: drop-shadow(0 0 3px rgb(255 40 40 / 90%)) drop-shadow(0 0 6px rgb(255 0 0 / 60%));
+    }
+
+    &:disabled {
+      opacity: 0.8;
+    }
+  }
 }
 
 .roll-act-label {

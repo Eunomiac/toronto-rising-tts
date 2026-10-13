@@ -1,4 +1,4 @@
-import { useState, type MouseEvent, type ReactElement } from "react";
+import type { MouseEvent, ReactElement } from "react";
 import { bloodPotencyRow, ROLL_TYPE_RULES } from "../../catalogVocab";
 import { planNpcRoll, type NpcRollEntry, type NpcRollPlan } from "../../../shared/npcRollPlan";
 import { poolOptions, type NpcStatBlock } from "../../../shared/npcStats";
@@ -10,7 +10,8 @@ import { PoolDiamonds } from "./dice";
 /**
  * The live NPC roll's Configure pop-up: the manual dice, every pool, attack and power from the NPC's stat block
  * (each button shows the dice it would roll), the Blood Surge toggle and the NPC's Notes. Picking an entry sends
- * `npcStatRoll`, or for a passive power `npcAnnounce` and then cancels the roll.
+ * `npcStatRoll`, or for a passive power `npcAnnounce` and then cancels the roll. Blood Surge is a live toggle on
+ * TTS's side (`npcSurge`): its dice stay in the pool across a pick, so the pop-up stays open when it is clicked.
  */
 
 export type ConfigureAt = { readonly x: number; readonly y: number };
@@ -41,7 +42,7 @@ const summary = (plan: NpcRollPlan): string => {
 const describe = (plan: NpcRollPlan): string => {
   const lines = [plan.line];
   if (plan.kind === "roll") {
-    lines.push(`Dice: ${plan.poolDice}${plan.discBonus > 0 ? ` + ${plan.discBonus} discipline` : ""}${plan.surgeBonus > 0 ? ` + ${plan.surgeBonus} Blood Surge` : ""}`);
+    lines.push(`Dice: ${plan.poolDice}${plan.discBonus > 0 ? ` + ${plan.discBonus} discipline` : ""}`);
   }
   plan.rouse.forEach((check, index) => {
     lines.push(`Rouse check ${index + 1}: ${check.dice === 2 ? "2 dice (reroll)" : "1 die"}${check.oblivion ? ", Oblivion" : ""}`);
@@ -74,14 +75,13 @@ export const NpcConfigure = ({ at, live, block, levels, send, onPool, onClose }:
   onPool: (event: MouseEvent<HTMLElement>) => void;
   onClose: () => void;
 }): ReactElement => {
-  const [surge, setSurge] = useState(false);
   const name = live.label ?? "NPC";
   const rollType = live.rollType ?? "standard";
   const bloodPotency = bloodPotencyRow(block.bloodPotency);
   const vampire = block.kind === "vampire";
   const surgeAllowed = vampire && ROLL_TYPE_RULES.bloodSurge.includes(rollType);
   const planFor = (entry: NpcRollEntry): Planned =>
-    tryPlan(() => planNpcRoll({ name, block, levels, rollType, entry, surge, bloodPotency, rules: ROLL_TYPE_RULES }));
+    tryPlan(() => planNpcRoll({ name, block, levels, rollType, entry, bloodPotency, rules: ROLL_TYPE_RULES }));
   const pick = (plan: NpcRollPlan): void => {
     if (plan.kind === "passive") {
       send({ op: "npcAnnounce", label: name, ...(live.npcCharacterKey ? { characterKey: live.npcCharacterKey } : {}), heading: plan.heading, line: plan.line });
@@ -113,13 +113,15 @@ export const NpcConfigure = ({ at, live, block, levels, send, onPool, onClose }:
         <div className="npc-config-manual">
           <span className="roll-options-head">Dice</span>
           <PoolDiamonds pool={live.pool} onClick={onPool} />
-          {vampire && (
+          {(vampire || live.bloodSurge) && (
             <button
               type="button"
-              className={`roll-toggle${surge && surgeAllowed ? " on" : ""}`}
-              disabled={!surgeAllowed}
-              title={surgeAllowed ? `Adds ${bloodPotency.bloodSurge} dice and a rouse check` : "Blood Surge is not allowed on this roll type"}
-              onClick={() => setSurge(!surge)}
+              className={`roll-toggle${live.bloodSurge ? " on" : ""}`}
+              disabled={!live.bloodSurge && !surgeAllowed}
+              title={live.bloodSurge
+                ? "Blood Surge is on: click to take its dice back out of the pool"
+                : surgeAllowed ? `Adds ${bloodPotency.bloodSurge} dice and a rouse check to the pool` : "Blood Surge is not allowed on this roll type"}
+              onClick={() => send({ op: "npcSurge", on: !live.bloodSurge, dice: bloodPotency.bloodSurge })}
             >
               Blood Surge +{bloodPotency.bloodSurge}
             </button>

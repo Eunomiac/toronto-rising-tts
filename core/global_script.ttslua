@@ -6440,11 +6440,25 @@ local function applyBlackRollMetaFlag(color, value, flagName)
     S.setStateVal(active, "playerData", pid, "hud", "rollData", "active")
 end
 
+--- A Storyteller roll is rolled or halved only once its difficulty is declared (0 is "no difficulty"),
+--- so a forgotten difficulty cannot slip through as a success-count roll.
+-- @return boolean true when the live Black roll has no difficulty yet (the caller stops)
+local function blackRollNeedsDifficulty()
+    local pid = S.getPlayerID("Black")
+    local active = pid and S.getStateVal("playerData", pid, "hud", "rollData", "active")
+    if type(active) ~= "table" or active.difficulty ~= nil then
+        return false
+    end
+    print("[Roll] Pick a difficulty for the NPC roll first (– for none).")
+    return true
+end
+
 --- Player clicks "ROLL" button — advances PRE_ROLL → ROLLING and releases locked dice.
 -- id format: "rollControl_btnRoll_<Color>" (PC) or "rollPanel_btnRoll_Black" (ST)
 function HUD_rollRollButton(player, value, id)
     local color = colorFromRollElementId(id)
     if color == nil then return end
+    if color == "Black" and blackRollNeedsDifficulty() then return end
 
     GlobalRollSeatCamera({ color = color, mode = "diceTray" })
 
@@ -6495,6 +6509,7 @@ end
 function HUD_rollTakeHalf(player, value, id)
     local color = colorFromRollElementId(id)
     if color == nil then return end
+    if color == "Black" and blackRollNeedsDifficulty() then return end
     applyBlackRollMetaFlag(color, value, "suppressBroadcast")
     RC.takeHalf(color)
 end

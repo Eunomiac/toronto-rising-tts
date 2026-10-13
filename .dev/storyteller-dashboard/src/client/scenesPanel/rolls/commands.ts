@@ -35,6 +35,7 @@ export type RollsCommand =
   | { readonly op: "npcDifficulty"; readonly value: number }
   | { readonly op: "npcRoll"; readonly secret?: boolean }
   | { readonly op: "npcHalf"; readonly quiet?: boolean }
+  | { readonly op: "npcSurge"; readonly on: boolean; readonly dice: number }
   | { readonly op: "npcWp" }
   | { readonly op: "npcReroll"; readonly indices: readonly number[] }
   | { readonly op: "npcRecalc" }

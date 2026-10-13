@@ -28,8 +28,8 @@ describe("locally painted pools", () => {
     storyteller: {
       canInitiate: true,
       slots: [],
-      live: { hint: "", wpReroll: false, pool: { hunger: 1 }, dice: [], secret: false, quiet: false,
-        actions: { roll: true, rollEnabled: true, half: false, wp: false, recalc: false, reroll: false, confirm: false, oblivChoice: false, brutalChoice: false } }
+      live: { hint: "", wpReroll: false, pool: { hunger: 1 }, dice: [], secret: false, quiet: false, bloodSurge: false,
+        actions: { roll: true, rollEnabled: true, half: false, halfEnabled: true, wp: false, recalc: false, reroll: false, confirm: false, oblivChoice: false, brutalChoice: false } }
     },
     werewolves: [],
     oblivionSeats: []

@@ -17,8 +17,8 @@ export type RouseCheck = { readonly dice: 1 | 2; readonly oblivion: boolean };
 /** The Blood Potency columns the planner reads (`BPC.BloodPotency`). */
 export type PlanBloodPotency = { readonly bloodSurge: number; readonly discBonus: number; readonly discReroll: number };
 
-/** Roll types that allow Blood Surge, and that never take Hunger dice (`C.RollTypesBloodSurge` / `C.RollTypesWithoutHunger`). */
-export type PlanRollTypeRules = { readonly bloodSurge: readonly string[]; readonly withoutHunger: readonly string[] };
+/** Roll types that never take Hunger dice (`C.RollTypesWithoutHunger`). */
+export type PlanRollTypeRules = { readonly withoutHunger: readonly string[] };
 
 export type NpcRollInput = {
   /** The name on the broadcast ("Mylene"). */
@@ -28,7 +28,6 @@ export type NpcRollInput = {
   readonly levels: { readonly hunger?: number; readonly rage?: number };
   readonly rollType: string;
   readonly entry: NpcRollEntry;
-  readonly surge: boolean;
   readonly bloodPotency: PlanBloodPotency;
   readonly rules: PlanRollTypeRules;
 };
@@ -45,10 +44,7 @@ export type NpcRollPlan = {
   /** The entry's own dice, before the bonuses below. */
   readonly poolDice: number;
   readonly discBonus: number;
-  readonly surgeBonus: number;
-  /** Whether the Blood Surge toggle applies to this entry. */
-  readonly surgeAllowed: boolean;
-  /** Power checks first, then the Blood Surge check. */
+  /** The power's rouse checks. Blood Surge is not planned here: TTS adds its dice and check (`npcSurge`). */
   readonly rouse: readonly RouseCheck[];
   /** Failed checks raise the NPC's Hunger (vampires; a ghoul's checks are only shown). */
   readonly hungerOnFail: boolean;
@@ -158,8 +154,6 @@ export const planNpcRoll = (input: NpcRollInput): NpcRollPlan => {
       rage: 0,
       poolDice: 0,
       discBonus: 0,
-      surgeBonus: 0,
-      surgeAllowed: false,
       rouse,
       hungerOnFail,
       heading,
@@ -170,13 +164,7 @@ export const planNpcRoll = (input: NpcRollInput): NpcRollPlan => {
   }
 
   const discBonus = vampire && isPower ? bloodPotency.discBonus : 0;
-  const surgeAllowed = vampire && input.rules.bloodSurge.includes(input.rollType);
-  const surging = surgeAllowed && input.surge;
-  const surgeBonus = surging ? bloodPotency.bloodSurge : 0;
-  if (surging) {
-    rouse = [...rouse, { dice: 1, oblivion: false }];
-  }
-  const total = poolDice + discBonus + surgeBonus;
+  const total = poolDice + discBonus;
   const hunger = vampire && !input.rules.withoutHunger.includes(input.rollType) ? Math.min(total, clampLevel(input.levels.hunger)) : 0;
   const rage = werewolf ? Math.min(total, clampLevel(input.levels.rage)) : 0;
   return {
@@ -187,8 +175,6 @@ export const planNpcRoll = (input: NpcRollInput): NpcRollPlan => {
     rage,
     poolDice,
     discBonus,
-    surgeBonus,
-    surgeAllowed,
     rouse,
     hungerOnFail: vampire && rouse.length > 0,
     heading: heading || poolLabel,

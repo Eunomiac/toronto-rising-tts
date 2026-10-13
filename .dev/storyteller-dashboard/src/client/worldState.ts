@@ -206,8 +206,10 @@ export type PcRoll = {
 /** What the live Storyteller roll allows (the in-game panel's button rules). */
 export type StRollActions = {
   readonly roll: boolean;
+  /** Roll and Take Half wait for a declared difficulty (0 is "none"). */
   readonly rollEnabled: boolean;
   readonly half: boolean;
+  readonly halfEnabled: boolean;
   readonly wp: boolean;
   readonly recalc: boolean;
   readonly reroll: boolean;
@@ -249,6 +251,8 @@ export type StLiveRoll = {
   readonly actions: StRollActions;
   readonly secret: boolean;
   readonly quiet: boolean;
+  /** Blood Surge is on: its dice and rouse die are in the pool. */
+  readonly bloodSurge: boolean;
 };
 
 export type RollsSlice = {
@@ -317,12 +321,13 @@ const normalizeRolls = (data: Record<string, unknown>): RollsSlice => {
       ...(live
         ? {
           live: {
-            ...(live as Omit<StLiveRoll, "pool" | "dice" | "secret" | "quiet" | "wpReroll">),
+            ...(live as Omit<StLiveRoll, "pool" | "dice" | "secret" | "quiet" | "wpReroll" | "bloodSurge">),
             pool: asPool(live.pool),
             dice: asList<RollDie>(live.dice),
             wpReroll: live.wpReroll === true,
             secret: live.secret === true,
-            quiet: live.quiet === true
+            quiet: live.quiet === true,
+            bloodSurge: live.bloodSurge === true
           }
         }
         : {})

@@ -99,7 +99,7 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 
 #### NPCs roll from their stat blocks
 
-**Context:** An NPC with a stat block can now roll straight from it: pick a pool, attack or power and the dashboard builds the dice (Hunger or Rage dice included, discipline bonus, Blood Surge, every rouse check). A failed rouse check raises the NPC's own Hunger, not the Storyteller's. The broadcast shows one line such as "Marcus attacks with Brawl (Claws)". Spending Willpower on a reroll costs the NPC 1 superficial Willpower, and vampires get a **Mend** button on their Health.
+**Context:** An NPC with a stat block can now roll straight from it: pick a pool, attack or power and the dashboard builds the dice (Hunger or Rage dice included, discipline bonus, every rouse check). Blood Surge is a live on/off droplet on the roll card, and a Storyteller roll will not roll until a difficulty (or **–** for none) is picked. A failed rouse check raises the NPC's own Hunger, not the Storyteller's. The broadcast shows one line such as "Marcus attacks with Brawl (Claws)". Spending Willpower on a reroll costs the NPC 1 superficial Willpower, and vampires get a **Mend** button on their Health.
 
 **How to verify:** restart the dashboard (`npm run dev`), then Save & Play.
 
@@ -108,10 +108,11 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 3. Click the attack. The dice should appear in TTS with as many red Hunger dice as the NPC's Hunger. Roll. If it wins, the broadcast should read "<name> attacks with Brawl (<attack name>)", ending with the attack name and "+2".
 4. Start another roll and pick the Potence power. The roll should include one rouse die. If that rouse die fails (1–5), the NPC's Hunger in their trackers window should go up by one, and the Storyteller seat's Hunger should **not** change.
 5. Pick the passive Oblivion power: it should roll only the rouse check (an Oblivion rouse die), finish by itself, and broadcast "<name> activates …".
-6. Turn on **Blood Surge** in the window before picking the pool: the Blood Potency's surge dice and one extra rouse die should be added.
+6. Blood Surge is now an on/off switch, like a player's surge bag. Start a Standard or Discipline roll for the vampire NPC and pick a pool. On the roll card's icon column there is a hollow blood droplet: click it. It should turn solid red and glow, and the pool should gain the Blood Potency's surge dice (red Hunger dice first, up to the NPC's Hunger) plus one rouse die, without picking the pool again. Click it again: those dice should come back out and the droplet goes hollow. The **Blood Surge** button in the "roll from stats" window does the same thing and stays in step with the droplet; with Blood Surge on, picking a different pool or power keeps it on. Roll with it on: if the surge's rouse die fails, the NPC's Hunger goes up by one.
 7. After a roll, pick some dice on the NPC roll card and click **Reroll the picked dice**: the NPC's Willpower should take 1 superficial damage in the trackers window, once per reroll. (Every picked-dice reroll on an NPC roll now counts as their Willpower reroll; rerolls of a player's dice charge nobody.)
 8. Open the vampire's trackers window, click Health and pick **Mend**: a rouse check rolls by itself and the NPC heals the Blood Potency's mend amount of superficial damage.
-9. Roll a power with rouse checks **without setting a difficulty**, and confirm it. Every failed rouse check should still raise the NPC's Hunger (this used to be skipped when a roll had no difficulty: Mara's Arms of Ahriman rolls on 2026-10-13 failed three checks and her Hunger stayed at 1).
+9. Roll a power with rouse checks with the difficulty set to **–** (no difficulty), and confirm it. Every failed rouse check should still raise the NPC's Hunger (this used to be skipped when a roll had no difficulty: Mara's Arms of Ahriman rolls on 2026-10-13 failed three checks and her Hunger stayed at 1).
+10. Start a new NPC roll and pick a pool, but do not pick a difficulty. The Roll and Take Half icons should be greyed out, and hovering Roll should say "Pick a difficulty first (– for none)". The difficulty strip's first cell now reads **–** instead of 0. Click **–**: the strip folds to "vs. –", Roll lights up, and the roll comes out as a plain count of successes. Picking a power that changes the roll type (for example a Discipline power on a Standard roll) should keep the difficulty you already chose.
 
 #### Keep a generic NPC as a character
 

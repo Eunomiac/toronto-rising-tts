@@ -4,7 +4,7 @@ import { NpcLiveContext } from "../npcTrackers";
 import { canvasPoint, Overlay } from "../sketch";
 import { NPC_DRAG_TYPE, NPC_ROLL_DROP_ATTR, NPC_ROLL_DROP_EVENT } from "../stage";
 import { SEAT_ACCENT } from "../../pcSheet/layout";
-import { STRUCTURAL_OPTIONS } from "../../catalogVocab";
+import { bloodPotencyRow, ROLL_TYPE_RULES, STRUCTURAL_OPTIONS } from "../../catalogVocab";
 import { usePersistentState } from "../../persistentState";
 import type { PcRoll, PoolKind, RollPool, RollResult, RollsSlice, StLiveRoll, StRollSlot } from "../../worldState";
 import type { RollOptionsView } from "./bridge";
@@ -60,24 +60,30 @@ const phaseClass = (phase: string | undefined, wpReroll: boolean): string =>
 const phaseTitle = (phase: string | undefined, wpReroll: boolean): string =>
   wpReroll ? `${rollPhaseLabel(phase)} (Willpower reroll)` : rollPhaseLabel(phase);
 
+const NO_DIFFICULTY_TITLE = "No difficulty: count successes only";
+
 /**
  * Difficulty: the 0–10 strip until one is picked, then a "vs. N" box; clicking the box slides the strip open
- * again over the result line, and picking folds it.
+ * again over the result line, and picking folds it. With `noneCell` the 0 cell reads "–": a roll with no
+ * difficulty has to be declared, so a forgotten one cannot roll as a success count.
  */
-const Difficulty = ({ value, editable, title, onPick, highlight }: {
+const Difficulty = ({ value, editable, title, onPick, highlight, noneCell = false }: {
   value: number | undefined;
   editable: boolean;
   title: string;
   onPick: (n: number) => void;
   /** An NPC dropped on the card: its difficulties for actions it is suited to / everything else. */
   highlight?: DifficultyHighlight | undefined;
+  noneCell?: boolean;
 }): ReactElement | null => {
   const [open, setOpen] = useState(false);
+  const none = (n: number): boolean => noneCell && n === 0;
   if (editable && (value === undefined || open)) {
     const mark = (n: number): string =>
       n === highlight?.strong ? " strong" : n === highlight?.weak ? " weak" : "";
     const markTitle = (n: number): string | undefined =>
-      n === highlight?.strong ? "Against the dropped NPC where it is well suited" : n === highlight?.weak ? "Against the dropped NPC otherwise" : undefined;
+      none(n) ? NO_DIFFICULTY_TITLE
+        : n === highlight?.strong ? "Against the dropped NPC where it is well suited" : n === highlight?.weak ? "Against the dropped NPC otherwise" : undefined;
     return (
       <div className={`roll-strip${value === undefined ? "" : " over"}`} title={title}>
         {range(0, DIFFICULTY_MAX).map((n) => (
@@ -91,7 +97,7 @@ const Difficulty = ({ value, editable, title, onPick, highlight }: {
               onPick(n);
             }}
           >
-            {n}
+            {none(n) ? "–" : n}
           </button>
         ))}
       </div>
@@ -103,8 +109,14 @@ const Difficulty = ({ value, editable, title, onPick, highlight }: {
   return (
     <span className="roll-vs">
       vs.
-      <button type="button" className="roll-vs-box" disabled={!editable} title={editable ? "Change the difficulty" : "Difficulty"} onClick={() => setOpen(true)}>
-        {value}
+      <button
+        type="button"
+        className="roll-vs-box"
+        disabled={!editable}
+        title={none(value) ? NO_DIFFICULTY_TITLE : editable ? "Change the difficulty" : "Difficulty"}
+        onClick={() => setOpen(true)}
+      >
+        {none(value) ? "–" : value}
       </button>
     </span>
   );
@@ -427,7 +439,7 @@ const SlotRollCard = ({ slot, send, collapsed, onToggle }: {
     >
       <PoolDiamonds pool={slot.pool} />
       <div className="roll-line">
-        <Difficulty value={slot.difficulty} editable={false} title="Difficulty" onPick={() => undefined} />
+        <Difficulty value={slot.difficulty} editable={false} title="Difficulty" noneCell onPick={() => undefined} />
         {result}
       </div>
       {!isRouseCheck(slot.rollType) && <RolledDice dice={slot.dice} pickable={false} />}
@@ -437,17 +449,69 @@ const SlotRollCard = ({ slot, send, collapsed, onToggle }: {
 
 const NO_PICKS: ReadonlySet<number> = new Set();
 
-const npcActions = (live: StLiveRoll, send: RollsSend, picked: ReadonlySet<number>, onConfigure: ((event: MouseEvent<HTMLElement>) => void) | undefined): CardAction[] => {
+/**
+ * The Blood Surge toggle and indicator: a hollow droplet when off, a glowing red one when on. Like a player's
+ * surge bag, turning it on puts the surge dice and their rouse die in the pool, and turning it off takes them out.
+ */
+const surgeAction = (live: StLiveRoll, send: RollsSend, surgeDice: number | undefined): CardAction | null => {
+  if (surgeDice === undefined && !live.bloodSurge) {
+    return null;
+  }
+  const open = live.phase === "setup" || live.phase === "preRoll";
+  const allowed = open && ROLL_TYPE_RULES.bloodSurge.includes(live.rollType ?? "");
+  const label = live.bloodSurge
+    ? open ? "Blood Surge is on (click to take its dice back out)" : "Blood Surge was on for this roll"
+    : allowed ? `Blood Surge: +${surgeDice ?? 0} dice and a rouse check`
+      : open ? "Blood Surge is not allowed on this roll type" : "No Blood Surge on this roll";
+  return {
+    key: "surge",
+    icon: "hunger",
+    label,
+    tone: live.bloodSurge ? "surge on" : "surge",
+    disabled: live.bloodSurge ? !open : !allowed,
+    keep: true,
+    onClick: () => send({ op: "npcSurge", on: !live.bloodSurge, dice: surgeDice ?? 0 })
+  };
+};
+
+const npcActions = (
+  live: StLiveRoll,
+  send: RollsSend,
+  picked: ReadonlySet<number>,
+  onConfigure: ((event: MouseEvent<HTMLElement>) => void) | undefined,
+  surgeDice: number | undefined
+): CardAction[] => {
   const a = live.actions;
   const actions: CardAction[] = [];
   if (onConfigure) {
     actions.push({ key: "configure", icon: "options", label: "Roll from the NPC's stats", keep: true, onClick: onConfigure });
   }
+  const surge = surgeAction(live, send, surgeDice);
+  if (surge) {
+    actions.push(surge);
+  }
+  const needsDifficulty = live.difficulty === undefined;
   if (a.roll) {
-    actions.push({ key: "roll", icon: "roll", label: "Roll (right-click: secret dice)", tone: "gold", disabled: !a.rollEnabled, keep: true, onClick: () => send({ op: "npcRoll", secret: false }), onQuiet: () => send({ op: "npcRoll", secret: true }) });
+    actions.push({
+      key: "roll",
+      icon: "roll",
+      label: needsDifficulty ? "Pick a difficulty first (– for none)" : "Roll (right-click: secret dice)",
+      tone: "gold",
+      disabled: !a.rollEnabled,
+      keep: true,
+      onClick: () => send({ op: "npcRoll", secret: false }),
+      onQuiet: () => send({ op: "npcRoll", secret: true })
+    });
   }
   if (a.half) {
-    actions.push({ key: "half", glyph: "½", label: "Take Half (right-click: no broadcast)", onClick: () => send({ op: "npcHalf", quiet: false }), onQuiet: () => send({ op: "npcHalf", quiet: true }) });
+    actions.push({
+      key: "half",
+      glyph: "½",
+      label: needsDifficulty ? "Pick a difficulty first (– for none)" : "Take Half (right-click: no broadcast)",
+      disabled: !a.halfEnabled,
+      onClick: () => send({ op: "npcHalf", quiet: false }),
+      onQuiet: () => send({ op: "npcHalf", quiet: true })
+    });
   }
   if (a.wp) {
     actions.push({ key: "wp", icon: "willpower", label: "Spend Willpower to reroll", tone: "wp", onClick: () => send({ op: "npcWp" }) });
@@ -482,7 +546,7 @@ const npcActions = (live: StLiveRoll, send: RollsSend, picked: ReadonlySet<numbe
   return actions;
 };
 
-const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool, onConfigure }: {
+const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool, onConfigure, surgeDice }: {
   live: StLiveRoll;
   send: RollsSend;
   collapsed: boolean;
@@ -490,6 +554,8 @@ const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool, onConfigure }: 
   onPool: (event: MouseEvent<HTMLElement>) => void;
   /** Set while the pool is still open and the NPC has a stat block. */
   onConfigure?: (event: MouseEvent<HTMLElement>) => void;
+  /** A vampire NPC's Blood Surge dice (its Blood Potency); undefined for anyone who cannot surge. */
+  surgeDice?: number | undefined;
 }): ReactElement => {
   const editable = live.phase === "setup" || live.phase === "preRoll";
   // Reroll picks stay on the dashboard until Reroll sends them; any new throw clears them.
@@ -521,13 +587,19 @@ const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool, onConfigure }: 
       result={result}
       collapsed={collapsed}
       onToggle={onToggle}
-      actions={npcActions(live, send, picked, onConfigure)}
+      actions={npcActions(live, send, picked, onConfigure, surgeDice)}
       onClear={() => send({ op: "npcCancel" })}
       clearLabel="Cancel this roll and clear its drawer"
     >
       <PoolDiamonds pool={live.pool} onClick={editable ? onPool : undefined} />
       <div className="roll-line">
-        <Difficulty value={live.difficulty} editable={live.phase !== "resolved"} title="Difficulty" onPick={(value) => send({ op: "npcDifficulty", value })} />
+        <Difficulty
+          value={live.difficulty}
+          editable={live.phase !== "resolved"}
+          title={live.difficulty === undefined ? "Pick a difficulty before rolling (– for none)" : "Difficulty"}
+          noneCell
+          onPick={(value) => send({ op: "npcDifficulty", value })}
+        />
         {result}
       </div>
       {!isRouseCheck(live.rollType) && <RolledDice dice={live.dice} pickable={live.actions.reroll} picked={picked} onPick={togglePick} />}
@@ -791,6 +863,7 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
   const npcKey = live?.npcCharacterKey;
   const npcBlock = npcKey && npcLive ? npcLive.blockFor(npcKey) : undefined;
   const npcRecord = npcKey ? npcLive?.trackers[npcKey] : undefined;
+  const surgeDice = npcBlock?.kind === "vampire" ? bloodPotencyRow(npcBlock.bloodPotency).bloodSurge : undefined;
   const openConfigure = (event: MouseEvent<HTMLElement>): void => {
     const point = canvasPoint(event);
     setConfigureAt({ x: Math.max(8, Math.min(point.x - POPUP_W, 1920 - POPUP_W - 8)), y: Math.max(8, point.y - 20) });
@@ -847,6 +920,7 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
           onToggle={() => toggleFold(NPC_FOLD)}
           onPool={(event) => openPoolRing(event, { kind: "npc" })}
           {...(liveOpen && npcBlock ? { onConfigure: openConfigure } : {})}
+          surgeDice={surgeDice}
         />
       )}
       {configureAt && live && liveOpen && npcBlock && (

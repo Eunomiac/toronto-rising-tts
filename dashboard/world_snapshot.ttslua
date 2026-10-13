@@ -472,6 +472,7 @@ local function buildRolls()
       actions = RUI.stRollPanelActions(active),
       secret = meta.secretDice == true,
       quiet = meta.suppressBroadcast == true,
+      bloodSurge = meta.bloodSurgeActive == true,
     }
   end
 
