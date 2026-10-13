@@ -2,6 +2,7 @@ import { useState, type ReactElement } from "react";
 import { CARD_SCALE_RANGE, parseNpcOverride, SEATED_Y_RANGE, type NpcOverride } from "../../shared/npcOverride";
 import { openHeadshotEditor } from "../headshots/headshotEditor";
 import { saveNpcOverride, useNpcOverrides } from "../npcOverrides";
+import { NpcStatsModal } from "./npcStatsModal";
 import { Overlay } from "./sketch";
 
 /** World Y of a seated figurine (`SEAT_FIGURE.defaultY` in lib/seat_role_offsets.ttslua). */
@@ -18,6 +19,10 @@ export type NpcConfigTarget = {
   readonly defaultName: string;
   /** Ring colour the token gets from its roster group. */
   readonly defaultColor: string;
+  /** Generic NPCs keep a stat block per tier; named NPCs keep one. */
+  readonly generic: boolean;
+  /** A generic already in the scene: Name renames it there (like the stage's Rename…) instead of saving an override. */
+  readonly inScene?: { readonly name: string; readonly rename: (name: string) => void };
 };
 
 const numberOrUndefined = (text: string): number | string | undefined => {
@@ -35,19 +40,22 @@ const numberOrUndefined = (text: string): number | string | undefined => {
  */
 export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; onClose: () => void }): ReactElement => {
   const saved = useNpcOverrides()[target.characterKey] ?? {};
-  const [name, setName] = useState(saved.name ?? "");
+  const { inScene } = target;
+  const [name, setName] = useState(inScene ? inScene.name : saved.name ?? "");
   const [color, setColor] = useState<string | null>(saved.color ?? null);
   const [cardScale, setCardScale] = useState(saved.cardScale === undefined ? "" : String(saved.cardScale));
   const [seatedY, setSeatedY] = useState(saved.seatedY === undefined ? "" : String(saved.seatedY));
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [statsOpen, setStatsOpen] = useState(false);
   const label = name.trim() || target.defaultName;
 
   const draft = (): NpcOverride | string => {
     const scale = numberOrUndefined(cardScale);
     const y = numberOrUndefined(seatedY);
+    const overrideName = inScene ? saved.name : name;
     return parseNpcOverride({
-      name: name.trim() === target.defaultName ? undefined : name,
+      name: overrideName === undefined || overrideName.trim() === target.defaultName ? undefined : overrideName,
       color: color === target.defaultColor ? undefined : color,
       cardScale: scale === DEFAULT_CARD_SCALE ? undefined : scale,
       seatedY: y === DEFAULT_SEATED_Y ? undefined : y
@@ -55,13 +63,16 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
   };
 
   const close = (): void => {
-    if (busy) {
+    if (busy || statsOpen) {
       return;
     }
     const next = draft();
     if (typeof next === "string") {
       setError(next);
       return;
+    }
+    if (inScene && name.trim() !== "" && name.trim() !== inScene.name) {
+      inScene.rename(name.trim());
     }
     if (JSON.stringify(next) === JSON.stringify(saved)) {
       onClose();
@@ -77,7 +88,12 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
   return (
     <Overlay onClose={close}>
       <div className="lab-modal lab-group-edit lab-npc-config" style={{ left: Math.min(target.at.x, 1920 - WIDTH - 8), top: target.at.y }}>
-        <span className="lab-modal-title">{label}</span>
+        <div className="lab-npc-config-head">
+          <span className="lab-modal-title">{label}</span>
+          <button type="button" className="lab-btn" title="Stat blocks for rolls and trackers" onClick={() => setStatsOpen(true)}>
+            Stats
+          </button>
+        </div>
         <label className="lab-group-edit-row">
           <span>Name</span>
           <input className="lab-select" placeholder={target.defaultName} value={name} onChange={(event) => setName(event.target.value)} />
@@ -120,8 +136,14 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
           />
         </label>
         {error && <p className="lab-note">{error}</p>}
-        <p className="lab-npc-config-hint">Blank keeps the default. Click off to save. TTS shows changes after npm run npc-art and Save &amp; Play.</p>
+        <p className="lab-npc-config-hint">
+          {inScene ? "Name renames them in this scene (queued for Send). " : ""}
+          Blank keeps the default. Click off to save. TTS shows {inScene ? "the other " : ""}changes after npm run npc-art and Save &amp; Play.
+        </p>
       </div>
+      {statsOpen && (
+        <NpcStatsModal characterKey={target.characterKey} label={label} generic={target.generic} onClose={() => setStatsOpen(false)} />
+      )}
     </Overlay>
   );
 };

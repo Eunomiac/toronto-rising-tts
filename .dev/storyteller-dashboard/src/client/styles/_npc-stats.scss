@@ -1,0 +1,291 @@
+// NPC Stats window (scenesPanel/npcStatsModal.tsx), opened from the token configuration window's Stats button.
+
+$kind-colors: (
+  mortal: #2ec4d6,
+  animal: #3ccf5a,
+  ghoul: #8a5cff,
+  vampire: #e5393a,
+  werewolf: #f08c1a,
+  spirit: #f2f2f2,
+  other: #8a8a94
+);
+
+.lab-npc-config-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lab-modal.npc-stats {
+  width: 460px;
+  max-height: 92vh;
+  overflow-y: auto;
+  gap: 6px;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 17px;
+  letter-spacing: 0.02em;
+
+  small {
+    font-size: 14px;
+    opacity: 0.85;
+  }
+}
+
+.npc-stats-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  .lab-modal-title {
+    font-family: inherit;
+    font-size: 22px;
+  }
+}
+
+.npc-stats-tabs {
+  display: flex;
+  gap: 3px;
+}
+
+.npc-stats-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px 1px 3px;
+  border: 1px solid #4a4a56;
+  background: #24242c;
+  color: #9a9aa6;
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+
+  img {
+    width: 16px;
+    height: 16px;
+    opacity: 0.45;
+  }
+
+  &.filled {
+    color: #e8e8ee;
+
+    img {
+      opacity: 1;
+    }
+  }
+
+  &.on {
+    border-color: #f0c060;
+    background: #3a3220;
+  }
+}
+
+.npc-stats-kinds {
+  display: flex;
+  gap: 4px;
+}
+
+.npc-kind {
+  flex: 1;
+  padding: 1px 0;
+  border: 2px solid currentColor;
+  background: transparent;
+  font: inherit;
+  font-size: 17px;
+  text-transform: uppercase;
+  cursor: pointer;
+  opacity: 0.55;
+
+  &.on {
+    opacity: 1;
+    box-shadow: 0 0 6px currentColor;
+  }
+}
+
+@each $kind, $color in $kind-colors {
+  .npc-kind-#{$kind} {
+    color: $color;
+
+    &.on {
+      background: rgba($color, 0.22);
+    }
+  }
+
+  .npc-kind-text-#{$kind} {
+    color: $color;
+  }
+}
+
+.npc-stats-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #3a3a44;
+}
+
+.npc-stats-label {
+  &.push {
+    margin-left: auto;
+  }
+}
+
+.npc-stats-slash {
+  font-size: 20px;
+}
+
+.npc-stat-num {
+  width: 30px;
+  padding: 0 2px;
+  border: 1px solid #5a5a66;
+  background: #121216;
+  color: #fff;
+  font: inherit;
+  font-size: 20px;
+  text-align: center;
+  appearance: textfield;
+
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    appearance: none;
+    margin: 0;
+  }
+}
+
+.npc-stat-select {
+  min-width: 0;
+  max-width: 120px;
+  border: 1px solid #5a5a66;
+  background: #121216;
+  color: #ddd;
+  font: inherit;
+  font-size: 15px;
+}
+
+.npc-stat-name {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #3a3a44;
+  background: #121216;
+  color: #eee;
+  font: inherit;
+  font-size: 16px;
+  text-align: right;
+}
+
+.npc-stats-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #3a3a44;
+
+  > header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 18px;
+  }
+}
+
+.npc-stats-add {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid #6a6a76;
+  background: #24242c;
+  color: #eee;
+  font: inherit;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.npc-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 10px;
+  align-items: start;
+}
+
+.npc-stats-entry {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.npc-attack-bonus {
+  display: inline-flex;
+  align-items: center;
+  color: #f0e040;
+  font-size: 20px;
+
+  .npc-stat-num {
+    color: #f0e040;
+  }
+}
+
+.npc-power-category {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.npc-power-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.npc-power {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+
+  .npc-power-level {
+    width: 12px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #aaa;
+    font: inherit;
+    font-size: 10px;
+    align-self: flex-start;
+    appearance: none;
+    cursor: pointer;
+  }
+
+  .npc-power-name {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    border-bottom: 1px solid #4a4a56;
+    background: transparent;
+    color: #eee;
+    font: inherit;
+    font-size: 13px;
+  }
+
+  .npc-power-rouse {
+    width: 18px;
+    border-color: #a02020;
+    background: #4a1010;
+    font-size: 13px;
+  }
+
+  .npc-power-pool {
+    max-width: 70px;
+    font-size: 12px;
+  }
+}
+
+.npc-stats-notes {
+  min-height: 90px;
+  resize: vertical;
+  border: 1px solid #5a5a66;
+  background: #000;
+  color: #ddd;
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+}

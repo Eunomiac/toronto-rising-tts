@@ -13,6 +13,7 @@ import { createHeadshotCropStore, HeadshotCropError, parseHeadshotCrop, requireH
 import { createNpcOverrideStore, NpcOverrideError, parseNpcOverrideBody, requireNpcOverrideKey } from "./npcOverrides.js";
 import { createDataFileStore, resolveDashboardBackupDir, type DataFileStore } from "./dataFileStore.js";
 import { parseSceneDeckPatch } from "../shared/sceneDeck.js";
+import { normalizeNpcStatsFile, parseNpcStatsPatch, type NpcStatsFile } from "../shared/npcStats.js";
 import { createSceneDeckStore } from "./sceneDeckStore.js";
 import { normalizeSceneLibrary, parseSceneLibraryPatch, type SceneLibrary } from "../shared/sceneLibrary.js";
 import { createLabNoteStore, LabNoteError, parseLabNoteCreate, parseLabNotePatch } from "./labNotes.js";
@@ -42,7 +43,7 @@ const headshotCrops = createHeadshotCropStore(path.join(dashboardRoot, "data", "
 const npcOverrides = createNpcOverrideStore(path.join(dashboardRoot, "data", "npc-overrides.json"));
 const dashboardBackupDir = resolveDashboardBackupDir(repoRoot).then((backupDir) => {
   if (!backupDir) {
-    console.warn("tts-assets.config.json has no backupDir; scene deck and scene library backups are off.");
+    console.warn("tts-assets.config.json has no backupDir; scene deck, scene library and NPC stats backups are off.");
   }
   return backupDir;
 });
@@ -52,6 +53,12 @@ const sceneLibrary = dashboardBackupDir.then((backupDir) => createDataFileStore<
   backupDir,
   backupPrefix: "scene-library",
   normalize: normalizeSceneLibrary
+}));
+const npcStats = dashboardBackupDir.then((backupDir) => createDataFileStore<NpcStatsFile>({
+  filePath: path.join(dashboardRoot, "data", "npc-stats.json"),
+  backupDir,
+  backupPrefix: "npc-stats",
+  normalize: normalizeNpcStatsFile
 }));
 const publicDir = path.join(distDir, "public");
 const isDev = process.argv.includes("--dev");
@@ -507,6 +514,11 @@ const tryHandleDedicatedRoutes = async (request: IncomingMessage, response: Serv
 
   if (pathname === "/api/scene-deck") {
     await handleDataFile(request, response, await sceneDeck, parseSceneDeckPatch);
+    return true;
+  }
+
+  if (pathname === "/api/npc-stats") {
+    await handleDataFile(request, response, await npcStats, parseNpcStatsPatch);
     return true;
   }
 

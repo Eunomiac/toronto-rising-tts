@@ -30,7 +30,7 @@ import {
 /**
  * The Scenes tab's Rolls cell: every Storyteller roll control. Each PC roll and the live NPC roll is a compact
  * card: the roll type runs down its left edge (click it for the roll options), the name collapses the card to
- * one line, the close button shows on hover, difficulty folds to "vs. N" once picked, the result text is itself
+ * one line (double-click a collapsed card to clear it), difficulty folds to "vs. N" once picked, the result text is itself
  * the override menu, and the actions stack down the right edge as icons that name themselves on hover. The
  * three Storyteller dice drawers sit between the PC rolls and the NPC roll. A card's background and glow tell
  * its phase. Dice still roll physically in TTS.
@@ -150,7 +150,10 @@ const ActionButton = ({ action }: { action: CardAction }): ReactElement => (
   </button>
 );
 
-const RollCard = ({ className, style, title, rollType, onType, name, flags, conditions, result, collapsed, onToggle, actions, onClose, closeLabel, children }: {
+/** A click on a collapsed card's name waits this long before unfolding, so a double-click clears it without a flicker. */
+const UNFOLD_DELAY_MS = 250;
+
+const RollCard = ({ className, style, title, rollType, onType, name, flags, conditions, result, collapsed, onToggle, actions, onClear, clearLabel, children }: {
   className: string;
   style?: CSSProperties;
   title: string;
@@ -163,14 +166,43 @@ const RollCard = ({ className, style, title, rollType, onType, name, flags, cond
   collapsed: boolean;
   onToggle: () => void;
   actions: readonly CardAction[];
-  onClose: () => void;
-  closeLabel: string;
+  /** Double-clicking the collapsed card does this. */
+  onClear: () => void;
+  clearLabel: string;
   children: ReactNode;
 }): ReactElement => {
   const shown = collapsed ? actions.filter((action) => action.keep === true) : actions;
   const conditionParts = conditionList(conditions);
+  const unfoldTimer = useRef<number | undefined>(undefined);
+  // Whether the card was collapsed when a double-click began, before its first click could unfold or fold it.
+  const collapsedAtFirstClick = useRef(collapsed);
+  useEffect(() => () => window.clearTimeout(unfoldTimer.current), []);
+  const clickName = (event: MouseEvent<HTMLButtonElement>): void => {
+    if (event.detail >= 2) {
+      window.clearTimeout(unfoldTimer.current);
+    } else if (collapsed) {
+      unfoldTimer.current = window.setTimeout(onToggle, UNFOLD_DELAY_MS);
+    } else {
+      onToggle();
+    }
+  };
   return (
-    <div className={`roll-card ${className}${collapsed ? " collapsed" : ""}${shown.length > 0 ? " has-acts" : ""}`} style={style} title={title}>
+    <div
+      className={`roll-card ${className}${collapsed ? " collapsed" : ""}${shown.length > 0 ? " has-acts" : ""}`}
+      style={style}
+      title={title}
+      onMouseDown={(event) => {
+        if (event.detail === 1) {
+          collapsedAtFirstClick.current = collapsed;
+        }
+      }}
+      onDoubleClick={(event) => {
+        // The roll options edge, the actions and the result override keep their own clicks.
+        if (collapsedAtFirstClick.current && !(event.target as Element).closest(".roll-edge, .roll-acts, .roll-result-pick")) {
+          onClear();
+        }
+      }}
+    >
       <button
         type="button"
         className="roll-edge"
@@ -182,7 +214,7 @@ const RollCard = ({ className, style, title, rollType, onType, name, flags, cond
       </button>
       <div className="roll-body">
         <div className="roll-head">
-          <button type="button" className="roll-name" title={collapsed ? "Show the whole roll" : "Fold to one line"} onClick={onToggle}>
+          <button type="button" className="roll-name" title={collapsed ? `Show the whole roll (double-click: ${clearLabel.toLowerCase()})` : "Fold to one line"} onClick={clickName}>
             {name}
           </button>
           {flags}
@@ -201,9 +233,6 @@ const RollCard = ({ className, style, title, rollType, onType, name, flags, cond
           {shown.map((action) => <ActionButton key={action.key} action={action} />)}
         </div>
       )}
-      <button type="button" className="roll-close" title={closeLabel} aria-label={closeLabel} onClick={onClose}>
-        <Icon name="cancel" />
-      </button>
     </div>
   );
 };
@@ -234,7 +263,7 @@ const PcRollRow = ({ roll, send, collapsed, onToggle, onOptions, onPool }: {
   const resolved = roll.phase === "resolved";
   const waiting = pendingText(roll.pending);
   const title = roll.done
-    ? "Finished: shown here until this player rolls again. Broadcast it again, or dismiss it."
+    ? "Finished: shown here until this player rolls again. Broadcast it again, or fold it and double-click to dismiss it."
     : phaseTitle(roll.phase, roll.wpReroll);
   const overridable = !roll.done && roll.canModifyPool;
   const result = (
@@ -259,8 +288,8 @@ const PcRollRow = ({ roll, send, collapsed, onToggle, onOptions, onPool }: {
       collapsed={collapsed}
       onToggle={onToggle}
       actions={actions}
-      onClose={() => send({ op: "cancel", color })}
-      closeLabel={roll.done ? "Dismiss this result" : "Cancel this roll"}
+      onClear={() => send({ op: "cancel", color })}
+      clearLabel={roll.done ? "Dismiss this result" : "Cancel this roll"}
     >
       <PoolDiamonds pool={roll.pool} onClick={overridable ? (event) => onPool(event, color) : undefined} />
       <div className="roll-line">
@@ -324,7 +353,7 @@ const SlotRollCard = ({ slot, send, collapsed, onToggle }: {
   return (
     <RollCard
       className={`npc phase-resolved ${held ? "held" : "broadcast"}`}
-      title="Finished: shown here until the drawer is cleared. Broadcast it (again), or dismiss it."
+      title="Finished: shown here until the drawer is cleared. Broadcast it (again), or fold it and double-click to dismiss it."
       rollType={slot.rollType}
       name={slot.label ?? "NPC"}
       flags={flags}
@@ -333,8 +362,8 @@ const SlotRollCard = ({ slot, send, collapsed, onToggle }: {
       collapsed={collapsed}
       onToggle={onToggle}
       actions={actions}
-      onClose={() => send({ op: "slotCancel", slot: slot.index })}
-      closeLabel="Dismiss this result and clear its drawer"
+      onClear={() => send({ op: "slotCancel", slot: slot.index })}
+      clearLabel="Dismiss this result and clear its drawer"
     >
       <PoolDiamonds pool={slot.pool} />
       <div className="roll-line">
@@ -428,8 +457,8 @@ const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool }: {
       collapsed={collapsed}
       onToggle={onToggle}
       actions={npcActions(live, send, picked)}
-      onClose={() => send({ op: "npcCancel" })}
-      closeLabel="Cancel this roll and clear its drawer"
+      onClear={() => send({ op: "npcCancel" })}
+      clearLabel="Cancel this roll and clear its drawer"
     >
       <PoolDiamonds pool={live.pool} onClick={editable ? onPool : undefined} />
       <div className="roll-line">

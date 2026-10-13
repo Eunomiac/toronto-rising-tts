@@ -997,11 +997,16 @@ export const MasonryRoster = (): ReactElement => {
     const named = rawCatalogs ? [...rawCatalogs.namedNpcs, ...rawCatalogs.pcs].find((npc) => npc.characterKey === characterKey) : undefined;
     const generic = genericCatalog?.find((npc) => npc.key === characterKey);
     const groupKey = named ? named.pickerGroups[0] : generic ? `generic:${generic.label}` : undefined;
+    const spawnedNpc = generic ? inScene.find((npc) => npc.characterKey === characterKey) : undefined;
     setConfiguring({
       characterKey,
       at,
       defaultName: named?.fullName ?? generic?.label ?? characterKey,
-      defaultColor: (groupKey && groupColor(layout, groupKey)) || DEFAULT_TOKEN_RING
+      defaultColor: (groupKey && groupColor(layout, groupKey)) || DEFAULT_TOKEN_RING,
+      generic: generic !== undefined,
+      ...(spawnedNpc && send
+        ? { inScene: { name: spawnedNpc.name, rename: (name: string) => send({ op: "genericRename", key: characterKey, name }) } }
+        : {})
     });
   };
   const ownColor = (characterKey: string): string | undefined => overrides[characterKey]?.color;
@@ -2720,17 +2725,117 @@ const CommitInput = ({ value, onCommit, ...rest }: Omit<InputHTMLAttributes<HTML
   />
 );
 
+/** Holding the left button this long turns a click into a hold, so a quick click never shows the fill. */
+const HOLD_DELAY_MS = 180;
+/** How long the red fill takes to cross a deck scene once the hold has started. */
+const HOLD_FILL_MS = 1200;
+
 /**
- * Phase name at the far left. The middle holds the live scenes (Play): the one on the table, then a button for
- * each other live scene: ongoing scenes (green, always there) and new scenes or templates put on deck (gold).
- * Clicking an ongoing scene switches to it at once, back at its own time; a new one first asks how to set the
- * clock (`useSceneEntry`). Right-click a deck scene to open its preview, end it (ongoing) or take it off the deck;
- * click the table's scene for Unlink and Fork. Intermission shows the next session's number and title (the Spotlight
- * carousel takes over the stage instead). In Play, Scene ▸ opens the scene library (which also holds End Scene and Memoriam); in a Memoriam
+ * Press and hold with the left button: after `HOLD_DELAY_MS` the element is `holding` (its CSS fill runs for
+ * `HOLD_FILL_MS`) and `onHold` fires when it is full. Releasing or leaving first cancels. `wasHold` tells the click
+ * that follows a hold to do nothing.
+ */
+const useHoldToConfirm = (onHold: () => void): {
+  holding: boolean;
+  wasHold: () => boolean;
+  handlers: {
+    onPointerDown: (event: PointerEvent<HTMLElement>) => void;
+    onPointerUp: () => void;
+    onPointerLeave: () => void;
+    onPointerCancel: () => void;
+  };
+} => {
+  const [holding, setHolding] = useState(false);
+  const timers = useRef<number[]>([]);
+  const held = useRef(false);
+  useEffect(() => {
+    const pending = timers;
+    return () => pending.current.forEach((id) => window.clearTimeout(id));
+  }, []);
+  const cancel = (): void => {
+    timers.current.forEach((id) => window.clearTimeout(id));
+    timers.current = [];
+    setHolding(false);
+  };
+  return {
+    holding,
+    wasHold: () => {
+      const was = held.current;
+      held.current = false;
+      return was;
+    },
+    handlers: {
+      onPointerDown: (event) => {
+        if (event.button !== 0) {
+          return;
+        }
+        cancel();
+        held.current = false;
+        timers.current = [
+          window.setTimeout(() => {
+            held.current = true;
+            setHolding(true);
+          }, HOLD_DELAY_MS),
+          window.setTimeout(() => {
+            cancel();
+            onHold();
+          }, HOLD_DELAY_MS + HOLD_FILL_MS)
+        ];
+      },
+      onPointerUp: cancel,
+      onPointerLeave: cancel,
+      onPointerCancel: cancel
+    }
+  };
+};
+
+/**
+ * A live scene on the deck: ongoing (green) or a new scene or template (gold). Click plays it, right-click opens
+ * its preview, and holding the left button fills it red, then ends it (ongoing) or takes it off the deck.
+ */
+const DeckChip = ({ scene, onPlay, onEdit, onHold }: {
+  scene: DeckScene;
+  onPlay: (at: Point) => void;
+  onEdit: () => void;
+  onHold: () => void;
+}): ReactElement => {
+  const hold = useHoldToConfirm(onHold);
+  const ongoing = scene.status === "ongoing";
+  return (
+    <button
+      type="button"
+      className={`lab-phase-deck ${ongoing ? "ongoing" : "fresh"}${hold.holding ? " holding" : ""}`}
+      style={{ "--hold-ms": `${HOLD_FILL_MS}ms` } as CSSProperties}
+      title={ongoing
+        ? `Go back to ${scene.title} at its own time. Hold to end it; right-click to edit it.`
+        : `Start ${scene.title}. Hold to take it off the deck; right-click to edit it.`}
+      {...hold.handlers}
+      onClick={(event) => {
+        if (!hold.wasHold()) {
+          onPlay(canvasPoint(event));
+        }
+      }}
+      onContextMenu={(event) => {
+        event.preventDefault();
+        onEdit();
+      }}
+    >
+      <span className="lab-phase-deck-text">{scene.title}</span>
+    </button>
+  );
+};
+
+/**
+ * Two rows. The top row has the phase name at the far left, the table's scene (Play; click it for Unlink and
+ * Fork) or the next session's number and title (Intermission) in the middle, and the phase buttons at the right
+ * (in Spotlight the carousel takes over the stage). The row beneath holds the deck, centered: a `DeckChip` for each
+ * other live scene. Clicking an ongoing scene switches to it at once, back at its own time; a new one first asks how
+ * to set the clock (`useSceneEntry`). Chips shrink (ellipsized) when the deck is too wide and grow back while
+ * hovered. In Play, Scene ▸ opens the scene library (which also holds End Scene and Memoriam); in a Memoriam
  * it becomes Return ▸ (back to the scene it interrupted) or Downtime ▸. The right-hand button always names the
  * next phase; leaving a Memoriam and advancing need a second click.
  */
-export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch, onEndScene, onEndDeckScene, onRemoveFromDeck, onPlay, onEdit, onPrepare, onOpenDeck, live }: {
+export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch, onEndScene, onEndDeckScene, onRemoveFromDeck, onPlay, onEdit, onPrepare, live }: {
   library: readonly LibraryEntry[];
   libraryActions?: LibraryActions;
   scenes: LiveScenes;
@@ -2745,12 +2850,10 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
   onEdit: (key: string) => void;
   /** A new scene at this location, titled "District — Site". */
   onPrepare: (location: LabLocation, districtName: string, siteName: string) => void;
-  onOpenDeck?: (key: string) => void;
   /** TTS's phase, session, and spotlight. */
   live: LivePhase;
 }): ReactElement => {
   const [linkAt, setLinkAt] = useState<Point | null>(null);
-  const [deckMenu, setDeckMenu] = useState<{ at: Point; scene: DeckScene } | null>(null);
   const [modal, setModal] = useState<"scene" | "memoriam" | null>(null);
   const entry = useSceneEntry();
   const phase: Phase = isPhase(live.phase) ? live.phase : "Intermission";
@@ -2760,78 +2863,70 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
   const next = NEXT_PHASE[phase];
   return (
     <div className="lab-phase">
-      <span className="lab-phase-tag">
-        {phase}
-        {phase === "Play" && <span className="lab-phase-sub">{subPhase}</span>}
-      </span>
-      <span className="lab-phase-now">
-        {phase === "Play" && (
-          <span className="lab-phase-scenes">
-            {scenes.current && linkMenu ? (
-              <button type="button" className="lab-phase-scene" title="Unlink or fork this scene" onClick={(event) => setLinkAt(canvasPoint(event))}>
-                {scenes.current.title}
-                {!linkMenu.linked && <span className="lab-phase-unlinked" title="The table no longer writes into this scene's library copy">unlinked</span>}
-              </button>
-            ) : scenes.current ? (
-              <span className="lab-phase-scene">{scenes.current.title}</span>
-            ) : null}
-            {scenes.live.filter((scene) => scene.key !== scenes.current?.key).map((scene) => (
-              <button
-                key={scene.key}
-                type="button"
-                className={`lab-phase-deck ${scene.status === "ongoing" ? "ongoing" : "fresh"}`}
-                title={scene.status === "ongoing"
-                  ? `Go back to ${scene.title} at its own time (right-click to edit or end it)`
-                  : `Start ${scene.title} (right-click to edit it or take it off the deck)`}
-                onClick={(event) => entry.enter(scene.key, canvasPoint(event), (clock, edit) => onSwitch(scene.key, clock, edit))}
-                onContextMenu={(event) => {
-                  event.preventDefault();
-                  setDeckMenu({ at: canvasPoint(event), scene });
-                }}
-              >
-                {scene.title}
-              </button>
-            ))}
-          </span>
-        )}
-        {phase === "Intermission" && (
-          <span className="lab-phase-session">
-            <label>
-              Session
+      <div className="lab-phase-top">
+        <span className="lab-phase-tag">
+          {phase}
+          {phase === "Play" && <span className="lab-phase-sub">{subPhase}</span>}
+        </span>
+        <span className="lab-phase-now">
+          {phase === "Play" && (scenes.current && linkMenu ? (
+            <button type="button" className="lab-phase-scene" title="Unlink or fork this scene" onClick={(event) => setLinkAt(canvasPoint(event))}>
+              {scenes.current.title}
+              {!linkMenu.linked && <span className="lab-phase-unlinked" title="The table no longer writes into this scene's library copy">unlinked</span>}
+            </button>
+          ) : scenes.current ? (
+            <span className="lab-phase-scene">{scenes.current.title}</span>
+          ) : null)}
+          {phase === "Intermission" && (
+            <span className="lab-phase-session">
+              <label>
+                Session
+                <CommitInput
+                  type="number"
+                  className="lab-select lab-phase-session-number"
+                  min={1}
+                  value={String(session.number)}
+                  onCommit={(text) => command({ op: "sessionNum", num: Number(text) })}
+                />
+              </label>
               <CommitInput
-                type="number"
-                className="lab-select lab-phase-session-number"
-                min={1}
-                value={String(session.number)}
-                onCommit={(text) => command({ op: "sessionNum", num: Number(text) })}
+                className="lab-select lab-phase-session-title"
+                placeholder="Session title"
+                value={session.title}
+                onCommit={(text) => command({ op: "sessionName", name: text.trim() })}
               />
-            </label>
-            <CommitInput
-              className="lab-select lab-phase-session-title"
-              placeholder="Session title"
-              value={session.title}
-              onCommit={(text) => command({ op: "sessionName", name: text.trim() })}
+            </span>
+          )}
+        </span>
+        <span className="lab-phase-advance">
+          {phase === "Play" && (subPhase === "Memoriam" ? (
+            <ConfirmButton
+              label={live.memoriamReturn ? "Return ▸" : "Downtime ▸"}
+              className="lab-btn"
+              title={live.memoriamReturn
+                ? `Leave the Memoriam and go back to ${live.memoriamReturn}`
+                : "Leave the Memoriam for Downtime, with no scene on the table"}
+              onConfirm={() => command({ op: "leaveMemoriam" })}
             />
-          </span>
-        )}
-      </span>
-      <span className="lab-phase-advance">
-        {phase === "Play" && (subPhase === "Memoriam" ? (
-          <ConfirmButton
-            label={live.memoriamReturn ? "Return ▸" : "Downtime ▸"}
-            className="lab-btn"
-            title={live.memoriamReturn
-              ? `Leave the Memoriam and go back to ${live.memoriamReturn}`
-              : "Leave the Memoriam for Downtime, with no scene on the table"}
-            onConfirm={() => command({ op: "leaveMemoriam" })}
+          ) : (
+            <button type="button" className="lab-btn" title="Play a scene, end this one, or start a Memoriam" onClick={() => setModal("scene")}>
+              Scene ▸
+            </button>
+          ))}
+          <ConfirmButton key={phase} label={`${next} ▸`} className="lab-btn primary" onConfirm={() => command({ op: "phaseAdvance" })} />
+        </span>
+      </div>
+      <div className="lab-phase-decks">
+        {phase === "Play" && scenes.live.filter((scene) => scene.key !== scenes.current?.key).map((scene) => (
+          <DeckChip
+            key={scene.key}
+            scene={scene}
+            onPlay={(at) => entry.enter(scene.key, at, (clock, edit) => onSwitch(scene.key, clock, edit))}
+            onEdit={() => onEdit(scene.key)}
+            onHold={() => (scene.status === "ongoing" ? onEndDeckScene(scene.key) : onRemoveFromDeck(scene.key))}
           />
-        ) : (
-          <button type="button" className="lab-btn" title="Play a scene, end this one, or start a Memoriam" onClick={() => setModal("scene")}>
-            Scene ▸
-          </button>
         ))}
-        <ConfirmButton key={phase} label={`${next} ▸`} className="lab-btn primary" onConfirm={() => command({ op: "phaseAdvance" })} />
-      </span>
+      </div>
       {modal === "scene" && (
         <SceneModal
           library={library}
@@ -2859,47 +2954,6 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
       )}
       {linkAt && linkMenu && scenes.current && (
         <LinkMenuPopover at={linkAt} menu={linkMenu} title={scenes.current.title} onClose={() => setLinkAt(null)} />
-      )}
-      {deckMenu && (
-        <Overlay onClose={() => setDeckMenu(null)}>
-          <div className="lab-modal lab-link-menu lab-deck-menu" style={{ left: Math.min(deckMenu.at.x, 1920 - 260), top: deckMenu.at.y + 12 }}>
-            <span className="lab-modal-title">{deckMenu.scene.title}</span>
-            {onOpenDeck && (
-              <button
-                type="button"
-                className="lab-btn"
-                onClick={() => {
-                  setDeckMenu(null);
-                  onOpenDeck(deckMenu.scene.key);
-                }}
-              >
-                Edit (open its preview)
-              </button>
-            )}
-            {deckMenu.scene.status === "ongoing" ? (
-              <ConfirmButton
-                label="End Scene"
-                className="lab-btn danger"
-                title="End this scene: it leaves the deck for the archive"
-                onConfirm={() => {
-                  setDeckMenu(null);
-                  onEndDeckScene(deckMenu.scene.key);
-                }}
-              />
-            ) : (
-              <button
-                type="button"
-                className="lab-btn danger"
-                onClick={() => {
-                  setDeckMenu(null);
-                  onRemoveFromDeck(deckMenu.scene.key);
-                }}
-              >
-                Remove from deck
-              </button>
-            )}
-          </div>
-        </Overlay>
       )}
       {modal === "memoriam" && live.presentYear !== undefined && (
         <MemoriamModal

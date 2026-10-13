@@ -119,7 +119,7 @@ $phase-held: #ff8a5c;
 }
 
 // A roll card: type down the left edge, name / pool / difficulty + result / dice in the body, actions down the
-// right edge, close button just outside the top-right corner on hover.
+// right edge. Double-clicking a collapsed card clears it.
 .roll-card {
   position: relative;
   display: flex;
@@ -153,9 +153,8 @@ $phase-held: #ff8a5c;
     padding-right: 22px;
   }
 
-  &:hover .roll-close {
-    opacity: 1;
-    pointer-events: auto;
+  &.collapsed {
+    user-select: none;
   }
 }
 
@@ -424,38 +423,6 @@ $phase-held: #ff8a5c;
   font-weight: 800;
   line-height: 1;
   text-align: center;
-}
-
-// Close: a small red square just outside the top-right corner, shown while the card is hovered.
-.roll-close {
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  z-index: 3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 13px;
-  height: 13px;
-  padding: 0;
-  border: 1px solid #ff5a5a;
-  color: #ff5a5a;
-  background: #2a1214;
-  opacity: 0;
-  cursor: pointer;
-  pointer-events: none;
-  transition: opacity 0.12s ease;
-
-  .lab-icon {
-    width: 9px;
-    height: 9px;
-    fill: currentcolor;
-  }
-
-  &:hover {
-    color: #fff;
-    background: #8a2020;
-  }
 }
 
 .roll-buttons.end {

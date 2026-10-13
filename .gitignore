@@ -95,6 +95,9 @@ build/
 .dev/storyteller-dashboard/data/term-images/
 .dev/storyteller-dashboard/data/scene-deck.json
 .dev/storyteller-dashboard/data/scene-library.json
+# NPC stat blocks and per-night trackers (chronicle data; remote is public)
+.dev/storyteller-dashboard/data/npc-stats.json
+.dev/storyteller-dashboard/data/npc-trackers.json
 # Compulsion card text (the author's card writing; remote is public) and the Photoshop text-layer dumps
 .dev/storyteller-dashboard/data/compulsions.jsonc
 .tools/photoshop/*.text-layers.*

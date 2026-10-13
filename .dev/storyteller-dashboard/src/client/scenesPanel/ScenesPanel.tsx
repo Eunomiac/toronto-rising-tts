@@ -67,7 +67,7 @@ const BODY_Y = G + STRIP_H + G;
 const RIGHT_W = 265;
 const RIGHT_X = 1920 - G - RIGHT_W;
 const STAGE_W = RIGHT_X - G - STRIP_X;
-const PHASE_H = 34;
+const PHASE_H = 60;
 const MAIN_Y = BODY_Y + PHASE_H + G;
 const ASPECT_H = 114;
 const STAGE_Y = MAIN_Y + ASPECT_H + G;
@@ -475,7 +475,6 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
                 onPlay={library.play}
                 onEdit={library.openPreview}
                 onPrepare={library.prepare}
-                onOpenDeck={library.openPreview}
                 live={{
                   phase: phase.phase ?? "Intermission",
                   subPhase: phase.subPhase,
