@@ -21,6 +21,7 @@
     "npc-art:generate": "node .dev/storyteller-dashboard/scripts/npc-art/generate.ts",
     "npc-art:report": "node .dev/storyteller-dashboard/scripts/npc-art/report.ts",
     "npc-stats:import": "node .dev/storyteller-dashboard/scripts/npc-stats/import.ts",
+    "npc-stats:check-sheet": "node .dev/storyteller-dashboard/scripts/npc-stats/check-sheet.ts",
     "site-cards:import": "node .dev/scripts/import_site_cards_from_sheet.js",
     "site-cards:import:test": "node .dev/scripts/import_site_cards_from_sheet.test.js",
     "tts-cloud:smoke": "node .tools/tts-cloud/smoke-test-steam-cloud.js",
