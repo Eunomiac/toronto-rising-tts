@@ -390,12 +390,17 @@ OPS.launchRoll = function(cmd)
     return "The project owner is not seated"
   end
   local label = Projects.launchRollDisplay(project)
-  RC.initiateRoll(color, {
+  local started = RC.initiateRoll(color, {
     rollType = C.RollType.LAUNCH,
     initiator = "storyteller",
     difficulty = math.floor(tonumber(project.launchRollDifficulty) or 0),
     label = label == "" and "Launch Roll" or ("Roll " .. label),
   })
+  if started ~= true then
+    return "Could not start the launch roll for " .. color .. " (another roll may be in progress)."
+  end
+  -- The difficulty is already set, so open it for the player as picking a difficulty on the dashboard would.
+  RC.openRoll(color)
   return nil
 end
 
