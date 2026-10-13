@@ -12,6 +12,20 @@ export const NPC_DRAG_TYPE = "application/x-tr-npc";
 export const GROUP_DRAG_TYPE = "application/x-tr-npc-group";
 /** A seated character dragged from their chair (the TTS seat key); seated NPCs also carry `NPC_DRAG_TYPE`. */
 export const SEAT_DRAG_TYPE = "application/x-tr-seat";
+/** A PC roll card that takes NPCs: stage tokens are pointer drags, so the stage hands the drop over by DOM event. */
+export const NPC_ROLL_DROP_ATTR = "data-npc-roll-drop";
+export const NPC_ROLL_DROP_EVENT = "tr-npc-roll-drop";
+
+/** The PC roll card under a client point, if any. */
+export const rollCardAt = (clientX: number, clientY: number): HTMLElement | null => {
+  for (const element of document.elementsFromPoint(clientX, clientY)) {
+    const card = element.closest<HTMLElement>(`[${NPC_ROLL_DROP_ATTR}]`);
+    if (card) {
+      return card;
+    }
+  }
+  return null;
+};
 
 /** A token dropped within this many pixels of a slot lands on it. */
 export const SNAP_PX = 18;

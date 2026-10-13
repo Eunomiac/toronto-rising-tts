@@ -8,9 +8,11 @@ import { NpcLevelBadge } from "./npcTrackers";
 import {
   GROUP_DRAG_TYPE,
   NPC_DRAG_TYPE,
+  NPC_ROLL_DROP_EVENT,
   movePack,
   nearestPack,
   offStage,
+  rollCardAt,
   scatterCenter,
   slotNear,
   slotOf,
@@ -233,6 +235,11 @@ export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit
     onEdit(changes);
   };
   const tokens = useBoardDrag<string>(board, (key, point, client) => {
+    const rollCard = rollCardAt(client.x, client.y);
+    if (rollCard) {
+      rollCard.dispatchEvent(new CustomEvent(NPC_ROLL_DROP_EVENT, { detail: key }));
+      return;
+    }
     const seat = onSeat ? chairAt(client.x, client.y) : null;
     if (!seat) {
       place(key, point);

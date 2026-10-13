@@ -466,9 +466,27 @@ $phase-held: #ff8a5c;
     background: #4a4a6a;
   }
 
+  // A dropped NPC's difficulties: where it is well suited (strong) and otherwise (weak).
+  &.strong {
+    border-color: #c0392b;
+    color: #fff;
+    background: #5a1f1a;
+  }
+
+  &.weak {
+    border-color: #3f8f5a;
+    color: #fff;
+    background: #1d3d29;
+  }
+
   &:hover {
     border-color: #8a8a96;
   }
+}
+
+.roll-card.npc-drop {
+  outline: 1px dashed #c9c9d4;
+  outline-offset: -1px;
 }
 
 .roll-vs {

@@ -1,7 +1,8 @@
-import { useContext, useEffect, useRef, useState, type CSSProperties, type MouseEvent, type ReactElement, type ReactNode } from "react";
+import { useContext, useEffect, useRef, useState, type CSSProperties, type DragEvent, type MouseEvent, type ReactElement, type ReactNode } from "react";
 import { Icon, type IconName } from "../icons";
 import { NpcLiveContext } from "../npcTrackers";
 import { canvasPoint, Overlay } from "../sketch";
+import { NPC_DRAG_TYPE, NPC_ROLL_DROP_ATTR, NPC_ROLL_DROP_EVENT } from "../stage";
 import { SEAT_ACCENT } from "../../pcSheet/layout";
 import { STRUCTURAL_OPTIONS } from "../../catalogVocab";
 import { usePersistentState } from "../../persistentState";
@@ -49,6 +50,9 @@ const DIFFICULTY_MAX = 10;
 
 const range = (from: number, to: number): number[] => Array.from({ length: to - from + 1 }, (_, index) => from + index);
 
+/** The difficulties of an NPC dropped on a PC roll card, held for that roll until a difficulty is picked. */
+type DifficultyHighlight = { readonly rollId: string | undefined; readonly strong?: number | undefined; readonly weak?: number | undefined };
+
 /** Phase as background and glow: setup glows red, ready is steady gold, rolling pulses gold (blue on a Willpower reroll). */
 const phaseClass = (phase: string | undefined, wpReroll: boolean): string =>
   `phase-${phase ?? "none"}${wpReroll ? " wp" : ""}`;
@@ -60,21 +64,28 @@ const phaseTitle = (phase: string | undefined, wpReroll: boolean): string =>
  * Difficulty: the 0–10 strip until one is picked, then a "vs. N" box; clicking the box slides the strip open
  * again over the result line, and picking folds it.
  */
-const Difficulty = ({ value, editable, title, onPick }: {
+const Difficulty = ({ value, editable, title, onPick, highlight }: {
   value: number | undefined;
   editable: boolean;
   title: string;
   onPick: (n: number) => void;
+  /** An NPC dropped on the card: its difficulties for actions it is suited to / everything else. */
+  highlight?: DifficultyHighlight | undefined;
 }): ReactElement | null => {
   const [open, setOpen] = useState(false);
   if (editable && (value === undefined || open)) {
+    const mark = (n: number): string =>
+      n === highlight?.strong ? " strong" : n === highlight?.weak ? " weak" : "";
+    const markTitle = (n: number): string | undefined =>
+      n === highlight?.strong ? "Against the dropped NPC where it is well suited" : n === highlight?.weak ? "Against the dropped NPC otherwise" : undefined;
     return (
       <div className={`roll-strip${value === undefined ? "" : " over"}`} title={title}>
         {range(0, DIFFICULTY_MAX).map((n) => (
           <button
             key={n}
             type="button"
-            className={`roll-strip-cell${n === value ? " on" : ""}`}
+            title={markTitle(n)}
+            className={`roll-strip-cell${n === value ? " on" : ""}${mark(n)}`}
             onClick={() => {
               setOpen(false);
               onPick(n);
@@ -155,7 +166,7 @@ const ActionButton = ({ action }: { action: CardAction }): ReactElement => (
 /** A click on a collapsed card's name waits this long before unfolding, so a double-click clears it without a flicker. */
 const UNFOLD_DELAY_MS = 250;
 
-const RollCard = ({ className, style, title, rollType, onType, name, flags, conditions, result, collapsed, onToggle, actions, onClear, clearLabel, children }: {
+const RollCard = ({ className, style, title, rollType, onType, name, flags, conditions, result, collapsed, onToggle, actions, onClear, clearLabel, onNpcDrop, children }: {
   className: string;
   style?: CSSProperties;
   title: string;
@@ -171,11 +182,28 @@ const RollCard = ({ className, style, title, rollType, onType, name, flags, cond
   /** Double-clicking the collapsed card does this. */
   onClear: () => void;
   clearLabel: string;
+  /** An NPC dropped on the card: roster / seat drags, or a stage token released over it (`NPC_ROLL_DROP_EVENT`). */
+  onNpcDrop?: ((characterKey: string) => void) | undefined;
   children: ReactNode;
 }): ReactElement => {
   const shown = collapsed ? actions.filter((action) => action.keep === true) : actions;
   const conditionParts = conditionList(conditions);
   const unfoldTimer = useRef<number | undefined>(undefined);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [dropOver, setDropOver] = useState(false);
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!card || !onNpcDrop) {
+      return undefined;
+    }
+    const listener = (event: Event): void => {
+      if (event instanceof CustomEvent && typeof event.detail === "string") {
+        onNpcDrop(event.detail);
+      }
+    };
+    card.addEventListener(NPC_ROLL_DROP_EVENT, listener);
+    return () => card.removeEventListener(NPC_ROLL_DROP_EVENT, listener);
+  }, [onNpcDrop]);
   // Whether the card was collapsed when a double-click began, before its first click could unfold or fold it.
   const collapsedAtFirstClick = useRef(collapsed);
   useEffect(() => () => window.clearTimeout(unfoldTimer.current), []);
@@ -190,9 +218,28 @@ const RollCard = ({ className, style, title, rollType, onType, name, flags, cond
   };
   return (
     <div
-      className={`roll-card ${className}${collapsed ? " collapsed" : ""}${shown.length > 0 ? " has-acts" : ""}`}
+      ref={cardRef}
+      className={`roll-card ${className}${collapsed ? " collapsed" : ""}${shown.length > 0 ? " has-acts" : ""}${dropOver ? " npc-drop" : ""}`}
       style={style}
       title={title}
+      {...(onNpcDrop ? {
+        [NPC_ROLL_DROP_ATTR]: "",
+        onDragOver: (event: DragEvent<HTMLDivElement>) => {
+          if (event.dataTransfer.types.includes(NPC_DRAG_TYPE)) {
+            event.preventDefault();
+            setDropOver(true);
+          }
+        },
+        onDragLeave: () => setDropOver(false),
+        onDrop: (event: DragEvent<HTMLDivElement>) => {
+          setDropOver(false);
+          const characterKey = event.dataTransfer.getData(NPC_DRAG_TYPE);
+          if (characterKey) {
+            event.preventDefault();
+            onNpcDrop(characterKey);
+          }
+        }
+      } : {})}
       onMouseDown={(event) => {
         if (event.detail === 1) {
           collapsedAtFirstClick.current = collapsed;
@@ -251,13 +298,16 @@ const PC_POOL_ACTIONS: Readonly<Partial<Record<PoolKind, readonly [PoolDieAction
   normal: ["addStandardDie", "remStandardDie"]
 };
 
-const PcRollRow = ({ roll, send, collapsed, onToggle, onOptions, onPool }: {
+const PcRollRow = ({ roll, send, collapsed, onToggle, onOptions, onPool, highlight, onNpcDrop, onDifficulty }: {
   roll: PcRoll;
   send: RollsSend;
   collapsed: boolean;
   onToggle: () => void;
   onOptions: (event: MouseEvent<HTMLElement>, roll: PcRoll) => void;
   onPool: (event: MouseEvent<HTMLElement>, color: string) => void;
+  highlight: DifficultyHighlight | undefined;
+  onNpcDrop: (characterKey: string) => void;
+  onDifficulty: () => void;
 }): ReactElement => {
   const color = roll.color;
   const style = { "--seat-color": SEAT_ACCENT[color] ?? "#888" } as CSSProperties;
@@ -292,6 +342,7 @@ const PcRollRow = ({ roll, send, collapsed, onToggle, onOptions, onPool }: {
       actions={actions}
       onClear={() => send({ op: "cancel", color })}
       clearLabel={roll.done ? "Dismiss this result" : "Cancel this roll"}
+      {...(roll.done ? {} : { onNpcDrop })}
     >
       <PoolDiamonds pool={roll.pool} onClick={overridable ? (event) => onPool(event, color) : undefined} />
       <div className="roll-line">
@@ -299,11 +350,18 @@ const PcRollRow = ({ roll, send, collapsed, onToggle, onOptions, onPool }: {
           value={roll.difficulty}
           editable={!roll.done && !roll.canModifyPool && !resolved}
           title={setup ? "Pick a difficulty to approve the roll and open it to the player" : "Difficulty"}
-          onPick={(value) => send({ op: "difficulty", color, value })}
+          highlight={highlight}
+          onPick={(value) => {
+            onDifficulty();
+            send({ op: "difficulty", color, value });
+          }}
         />
         {result}
       </div>
       {!isRouseCheck(roll.rollType) && <RolledDice dice={roll.dice} pickable={false} />}
+      {highlight && highlight.strong === undefined && highlight.weak === undefined && (
+        <div className="roll-sub">No difficulties in that NPC's Stats.</div>
+      )}
       {waiting && <div className="roll-sub warn">{waiting}</div>}
     </RollCard>
   );
@@ -663,7 +721,24 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
   const [popup, setPopup] = useState<OptionsPopup | null>(null);
   const [poolRing, setPoolRing] = useState<PoolRing | null>(null);
   const [configureAt, setConfigureAt] = useState<ConfigureAt | null>(null);
+  const [highlights, setHighlights] = useState<Readonly<Record<string, DifficultyHighlight>>>({});
   const npcLive = useContext(NpcLiveContext);
+  const dropNpc = (roll: PcRoll, characterKey: string): void => {
+    const block = npcLive?.blockFor(characterKey);
+    setHighlights((current) => ({
+      ...current,
+      [roll.color]: { rollId: roll.rollId, strong: block?.difficultyStrong, weak: block?.difficultyWeak }
+    }));
+  };
+  const clearHighlight = (color: string): void =>
+    setHighlights((current) => {
+      const { [color]: _cleared, ...rest } = current;
+      return rest;
+    });
+  const highlightFor = (roll: PcRoll): DifficultyHighlight | undefined => {
+    const highlight = highlights[roll.color];
+    return highlight && highlight.rollId === roll.rollId && !roll.done ? highlight : undefined;
+  };
   const [foldedKeys, setFoldedKeys] = usePersistentState<string>("tr-dashboard:roll-folds", "");
   const folded = new Set(foldedKeys === "" ? [] : foldedKeys.split(","));
   const toggleFold = (key: string): void => {
@@ -745,6 +820,9 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
           onToggle={() => toggleFold(roll.color)}
           onOptions={openOptions}
           onPool={(event, color) => openPoolRing(event, { kind: "pc", color })}
+          highlight={highlightFor(roll)}
+          onNpcDrop={(characterKey) => dropNpc(roll, characterKey)}
+          onDifficulty={() => clearHighlight(roll.color)}
         />
       ))}
       {chipSlots.length > 0 && (
