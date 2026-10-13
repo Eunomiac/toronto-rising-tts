@@ -48,7 +48,7 @@ export const COLUMNS = {
   elder: "Elder Power(s)",
   methuselah: "Methuselah Power(s)"
 } as const;
-type Column = keyof typeof COLUMNS;
+export type Column = keyof typeof COLUMNS;
 
 /** The cells that make a row a stat block; a row with none of them (a PC, an unstatted NPC) is skipped. */
 const STAT_COLUMNS: readonly Column[] = [
@@ -67,12 +67,12 @@ const KINDS: Readonly<Record<string, NpcKind>> = {
   aapilu: "spirit"
 };
 
-const GENERATIONS = [
+export const GENERATIONS = [
   "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth", "eleventh",
   "twelfth", "thirteenth", "fourteenth", "fifteenth", "sixteenth", "seventeenth"
 ];
 
-const STANDARD_REFS: Readonly<Record<string, string>> = { phy: "physical", soc: "social", men: "mental", pow: "supernatural" };
+export const STANDARD_REFS: Readonly<Record<string, string>> = { phy: "physical", soc: "social", men: "mental", pow: "supernatural" };
 
 export type SheetImport = {
   readonly blocks: ReadonlyMap<string, NpcStatBlock>;
@@ -101,7 +101,7 @@ export const findColumns = (header: readonly string[]): Record<Column, number> =
   return out;
 };
 
-const blank = (cell: string | undefined): boolean => cell === undefined || cell.trim() === "" || cell.trim() === "~";
+export const blank = (cell: string | undefined): boolean => cell === undefined || cell.trim() === "" || cell.trim() === "~";
 
 /** Splits on commas outside parentheses, brackets and double quotes. */
 export const splitTop = (text: string): string[] => {
@@ -150,7 +150,7 @@ const optionalInt = <K extends string>(key: K, value: number | undefined): Parti
   (value === undefined ? {} : { [key]: value }) as Partial<Record<K, number>>;
 
 /** Parses one row; throws with every problem in the row. */
-const parseRow = (cell: (column: Column) => string, key: string): NpcStatBlock => {
+export const parseCharacterRow = (cell: (column: Column) => string, key: string): NpcStatBlock => {
   const problems: string[] = [];
   const int = (column: Column, range: readonly [number, number]): number | undefined => {
     const raw = cell(column);
@@ -390,7 +390,7 @@ export const parseCharacters = (rows: CsvRows): SheetImport => {
       continue;
     }
     try {
-      blocks.set(key, parseRow(cell, key));
+      blocks.set(key, parseCharacterRow(cell, key));
     } catch (error: unknown) {
       errors.push(error instanceof Error ? error.message : String(error));
     }

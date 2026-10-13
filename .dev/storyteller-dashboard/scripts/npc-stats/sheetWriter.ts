@@ -6,6 +6,9 @@ import { loadEnvFile } from "../../src/server/loadEnv.ts";
  */
 
 export type PingReply = { readonly ok: boolean; readonly tab: string; readonly keys: number; readonly missingHeaders: readonly string[] };
+export type SheetWriteRow = { readonly key: string; readonly cells: Readonly<Record<string, string | number>> };
+export type SheetChange = { readonly key: string; readonly column: string; readonly before: unknown; readonly after: unknown };
+export type WriteReply = { readonly ok: true; readonly dryRun: boolean; readonly changes: readonly SheetChange[] };
 
 const settings = (): { url: string; secret: string } => {
   loadEnvFile();
@@ -49,3 +52,7 @@ const post = async <T>(body: Record<string, unknown>): Promise<T> => {
 };
 
 export const pingSheet = (): Promise<PingReply> => post<PingReply>({ action: "ping" });
+
+/** Writes the cells (only those that differ; `dryRun` reports without writing). */
+export const writeSheet = (rows: readonly SheetWriteRow[], dryRun: boolean): Promise<WriteReply> =>
+  post<WriteReply>({ action: "write", rows, dryRun });

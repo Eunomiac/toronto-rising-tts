@@ -14,6 +14,7 @@ import { createNpcOverrideStore, NpcOverrideError, parseNpcOverrideBody, require
 import { createDataFileStore, resolveDashboardBackupDir, type DataFileStore } from "./dataFileStore.js";
 import { parseSceneDeckPatch } from "../shared/sceneDeck.js";
 import { normalizeNpcStatsFile, parseNpcStatsPatch, type NpcStatsFile } from "../shared/npcStats.js";
+import { editedNamedKeys, markPending, PENDING_FILE_NAME } from "./npcStatsPending.js";
 import { createSceneDeckStore } from "./sceneDeckStore.js";
 import { normalizeSceneLibrary, parseSceneLibraryPatch, type SceneLibrary } from "../shared/sceneLibrary.js";
 import { createLabNoteStore, LabNoteError, parseLabNoteCreate, parseLabNotePatch } from "./labNotes.js";
@@ -60,6 +61,7 @@ const npcStats = dashboardBackupDir.then((backupDir) => createDataFileStore<NpcS
   backupPrefix: "npc-stats",
   normalize: normalizeNpcStatsFile
 }));
+const npcStatsPendingPath = path.join(dashboardRoot, "data", PENDING_FILE_NAME);
 const publicDir = path.join(distDir, "public");
 const isDev = process.argv.includes("--dev");
 
@@ -236,7 +238,8 @@ const handleDataFile = async <T extends object>(
   request: IncomingMessage,
   response: ServerResponse,
   store: DataFileStore<T>,
-  parsePatch: (value: unknown) => Partial<T>
+  parsePatch: (value: unknown) => Partial<T>,
+  afterPatch?: (before: T, after: T, patch: Partial<T>) => Promise<void>
 ): Promise<void> => {
   if (request.method === "GET") {
     sendJson(response, 200, await store.get());
@@ -250,7 +253,12 @@ const handleDataFile = async <T extends object>(
       sendJson(response, 400, { error: error instanceof Error ? error.message : "Bad request body." });
       return;
     }
-    sendJson(response, 200, await store.patch(patch));
+    const before = afterPatch ? await store.get() : undefined;
+    const after = await store.patch(patch);
+    if (afterPatch && before) {
+      await afterPatch(before, after, patch);
+    }
+    sendJson(response, 200, after);
     return;
   }
   sendJson(response, 405, { error: "Method not allowed" });
@@ -518,7 +526,12 @@ const tryHandleDedicatedRoutes = async (request: IncomingMessage, response: Serv
   }
 
   if (pathname === "/api/npc-stats") {
-    await handleDataFile(request, response, await npcStats, parseNpcStatsPatch);
+    await handleDataFile(request, response, await npcStats, parseNpcStatsPatch, async (before, after, patch) => {
+      const edited = editedNamedKeys(before, after, Object.keys(patch));
+      if (edited.length > 0) {
+        await markPending(npcStatsPendingPath, edited, new Date());
+      }
+    });
     return true;
   }
 
