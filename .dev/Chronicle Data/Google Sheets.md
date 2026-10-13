@@ -66,15 +66,27 @@ https://docs.google.com/spreadsheets/d/<SHEET_ID>/gviz/tq?tqx=out:csv&headers=0&
 ```
 
 - Returns one tab as CSV with no sign-in. Pass `headers=0`, or Google merges the first rows into one header row.
-- Hidden tabs work if you know the name. Named ranges also work via `/export?format=csv&range=<RANGE>` on the API sheet (used by the skybox and site-card imports).
-- Visible tab names: `https://docs.google.com/spreadsheets/d/<SHEET_ID>/htmlview` (look for `items.push({name: "…"`); hidden tabs are not listed there.
+- Hidden tabs work if you know the name. Named ranges also work via `/export?format=csv&range=<RANGE>` on the API sheet (used by the skybox and site-card imports). On the Toronto Rising sheet the named-range export returns HTTP 400 (`CHARACTERS`); read the tab instead.
+- **gviz drops text in number columns.** In a column Google types as numeric, text cells come back empty, including the header label (CHARACTERS `Blood Potency`, `Health`, … read as blank headers). When you need every cell exactly as typed, use `/export?format=csv&gid=<gid>`.
+- Visible tab names: `https://docs.google.com/spreadsheets/d/<SHEET_ID>/htmlview` (look for `items.push({name: "…"`, which also carries each tab's `gid`); hidden tabs are not listed there.
 - Decode as UTF-8 (Node `fetch` does). PowerShell `Invoke-WebRequest` mangles accents such as "Fomórach".
 
-Existing importers: `.dev/scripts/import_skyboxes_from_sheet.js`, `import_site_cards_from_sheet.js` (API sheet), `import_generic_npcs_from_sheet.js` (Toronto Rising sheet), `import_weather_from_sheet.js` (Toronto Rising `WEATHER` → `lib/tr_weather_schedule.ttslua`, `npm run weather:import`), `import_locations_from_sheet.js` (Districts & Sites → `lib/locations_catalog.ttslua`, `npm run locations:import`). Shared fetch helper: `.dev/scripts/lib/google_sheet_fetch.js` (sheet ids + whole-tab CSV). See [`Storyteller Dashboard Docs/Generic NPCs.md`](../Storyteller%20Dashboard%20Docs/Generic%20NPCs.md).
+Existing importers: `.dev/scripts/import_skyboxes_from_sheet.js`, `import_site_cards_from_sheet.js` (API sheet), `import_generic_npcs_from_sheet.js` (Toronto Rising sheet), `import_weather_from_sheet.js` (Toronto Rising `WEATHER` → `lib/tr_weather_schedule.ttslua`, `npm run weather:import`), `import_locations_from_sheet.js` (Districts & Sites → `lib/locations_catalog.ttslua`, `npm run locations:import`), `.dev/storyteller-dashboard/scripts/npc-stats/import.ts` (Toronto Rising `CHARACTERS` → named NPC stat blocks in the git-ignored dashboard `data/npc-stats.json`, `npm run npc-stats:import`; see [NPC stats from the sheet](#npc-stats-characters-toronto-rising-sheet)). Shared fetch helper: `.dev/scripts/lib/google_sheet_fetch.js` (sheet ids + whole-tab CSV). See [`Storyteller Dashboard Docs/Generic NPCs.md`](../Storyteller%20Dashboard%20Docs/Generic%20NPCs.md).
 
 ### Weather calendar (`WEATHER`, Toronto Rising sheet)
 
 One row per day. The header row has `DayCodes` above the column of quoted hourly codes (column W); the three columns to its left are month, the month's average temperature in °C, and day. Each day holds 24 five-character codes decoded by `C.WEATHER` in `lib/constants.ttslua`. `npm run weather:import` validates every code and writes `lib/tr_weather_schedule.ttslua`; the dashboard reads the same columns live (`chronicleSheets.ts`). There is no repo-side JSON or CSV copy.
+
+### NPC stats (`CHARACTERS`, Toronto Rising sheet)
+
+The sheet is the source of truth for **named** NPC stat blocks; generic types' tiers and kept characters stay dashboard-only. `npm run npc-stats:import` (part of `build:all-tooling`) resolves the tab's gid from `htmlview`, reads `/export?format=csv&gid=…`, and replaces the `named` block of every row that has stats in `.dev/storyteller-dashboard/data/npc-stats.json` (git-ignored, backed up to `<backupDir>/Dashboard Data/npc-stats-import-*.json` first). Other entries are kept. Rows with no stat cells (PCs, unstatted NPCs) are skipped. Any cell it cannot read stops the import with a per-row list and writes nothing. Reload the dashboard page afterwards.
+
+Columns are found by their row-1 header (first occurrence; `*` ignored): `API key`, `Type`, `Clan`, `Generation`, `Rank`, `Blood Potency`, `Humanity`, `Difficulty`, `Health`, `Willpower`, `Phy`, `Soc`, `Mental`, `Pow`, `Exceptional Pools`, `Attacks`, `Powers`, `Ancilla Power(s)`, `Elder Power(s)`, `Methuselah Power(s)`. Blank and `~` cells are empty. Parser and cell formats: `.dev/storyteller-dashboard/scripts/npc-stats/sheet.ts` (tests in `sheet.test.ts`).
+
+- **Type → kind:** Kindred → vampire; Revenant, and Mortal with Clan `Ghoul` → ghoul; Mortal, Animal, Werewolf; Wraith and Aapilu → spirit. Clan, Rank and Generation (`Seventh` → 7) are read for vampires only; Blood Potency and Humanity likewise. `Sect Status` / `Clan Status` are not imported.
+- **Pool refs** in attacks and powers: `Phy` / `Soc` / `Men` / `Pow`, an Exceptional pool by name (or by skill without its `[specialty]`, when only one matches), a V5 skill with no Exceptional pool (its attribute's standard pool: `Brawl` → Physical), or, for powers, an attack name.
+- **Powers:** `<category> <dots> (<level>-<rouse>-<name>[-<pool>], …)`. The last hyphen piece is a pool only when it resolves, so `Self-Assurance` stays one name. Ancilla powers join their discipline's list flagged `ancilla` (so a write-back can return them to their column); their `-"description"` and the Elder / Methuselah power text go into the block's Notes.
+- Ids for pools and attacks are hashes of their names, so re-imports keep them stable.
 
 ## Privacy
 

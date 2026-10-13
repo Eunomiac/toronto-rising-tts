@@ -457,8 +457,8 @@ C.CHRONICLE_DATA = {
 }
 -- VTM5E clans list
 C.Clans = {
-  "Banu Haqim", "Brujah", "Caitif", "Cappadocian", "Gangrel", "Giovanni", "Lasombra", "Malkavian", "Ministry",
-  "Nosferatu", "Ravnos", "Salubri", "Thin-Blood", "Toreador", "Tremere", "Tzimisce", "Ventrue"
+  "Banu Haqim", "Brujah", "Caitiff", "Cappadocian", "Gangrel", "Giovanni", "Lasombra", "Malkavian", "Ministry",
+  "Nosferatu", "Ravnos", "Salubri", "Thin-Blooded", "Toreador", "Tremere", "Tzimisce", "Ventrue"
 }
 
 -- Blood Potency derived stats + CSHEET decal URLs (canonical: lib/blood_potency_constants.ttslua)

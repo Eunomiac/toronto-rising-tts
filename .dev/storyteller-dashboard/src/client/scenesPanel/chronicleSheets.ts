@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { parseCsv, type CsvRows } from "../../shared/csv";
 
 /**
  * Lab-only reads of the author's chronicle Google Sheets (see `.dev/Chronicle Data/Google Sheets.md`). The
@@ -11,44 +12,7 @@ const SHEETS = {
   api: "1mzgMSivCYvTfYAQNL61oApAvTHUbEi7YoiwZFr7PPo4"
 } as const;
 
-type Rows = readonly (readonly string[])[];
-
-const parseCsv = (text: string): Rows => {
-  const rows: string[][] = [];
-  let row: string[] = [];
-  let cell = "";
-  let quoted = false;
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-    if (quoted) {
-      if (ch === '"' && text[i + 1] === '"') {
-        cell += '"';
-        i++;
-      } else if (ch === '"') {
-        quoted = false;
-      } else {
-        cell += ch;
-      }
-    } else if (ch === '"') {
-      quoted = true;
-    } else if (ch === ",") {
-      row.push(cell);
-      cell = "";
-    } else if (ch === "\n") {
-      row.push(cell);
-      rows.push(row);
-      row = [];
-      cell = "";
-    } else if (ch !== "\r") {
-      cell += ch;
-    }
-  }
-  if (cell !== "" || row.length > 0) {
-    row.push(cell);
-    rows.push(row);
-  }
-  return rows;
-};
+type Rows = CsvRows;
 
 const tabCache = new Map<string, Promise<Rows>>();
 

@@ -24,7 +24,7 @@ import { Overlay } from "./sketch";
 type Num = number | undefined;
 type DraftPool = { id: string; name: string; dice?: Num };
 type DraftAttack = { id: string; name: string; pool: string; bonus?: Num };
-type DraftPower = { level: number; name: string; rouse?: Num; pool: string };
+type DraftPower = { level: number; name: string; rouse?: Num; pool: string; ancilla?: boolean };
 type DraftCategory = { id: string; name: string; dots?: Num; powers: DraftPower[] };
 type DraftBlock = {
   kind?: NpcKind | undefined;

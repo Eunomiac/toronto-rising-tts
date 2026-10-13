@@ -16,8 +16,8 @@ export type NpcStatSlot = "named" | NpcTier;
 
 /** C.Clans in lib/constants.ttslua. */
 export const NPC_CLANS = [
-  "Banu Haqim", "Brujah", "Caitif", "Cappadocian", "Gangrel", "Giovanni", "Lasombra", "Malkavian", "Ministry",
-  "Nosferatu", "Ravnos", "Salubri", "Thin-Blood", "Toreador", "Tremere", "Tzimisce", "Ventrue"
+  "Banu Haqim", "Brujah", "Caitiff", "Cappadocian", "Gangrel", "Giovanni", "Lasombra", "Malkavian", "Ministry",
+  "Nosferatu", "Ravnos", "Salubri", "Thin-Blooded", "Toreador", "Tremere", "Tzimisce", "Ventrue"
 ] as const;
 export const NPC_RANKS = ["Fledgling", "Neonate", "Ancilla", "Elder", "Methuselah", "Blood God"] as const;
 
@@ -49,8 +49,11 @@ export const keptStatsKey = (id: string): string => `kept:${id}`;
 export type NpcPool = { readonly id: string; readonly name: string; readonly dice: number };
 /** `pool` is a pool ref: a standard pool name or `ex:<id>`. */
 export type NpcAttack = { readonly id: string; readonly name: string; readonly pool: string; readonly bonus: number };
-/** `pool` is a pool ref (standard, `ex:<id>` or `atk:<id>`); "" is a passive power with no roll. */
-export type NpcPower = { readonly level: number; readonly name: string; readonly rouse: number; readonly pool: string };
+/**
+ * `pool` is a pool ref (standard, `ex:<id>` or `atk:<id>`); "" is a passive power with no roll. `ancilla` marks a
+ * power from the sheet's Ancilla Power(s) column, so a write-back returns it there.
+ */
+export type NpcPower = { readonly level: number; readonly name: string; readonly rouse: number; readonly pool: string; readonly ancilla?: true };
 export type NpcPowerCategory = { readonly name: string; readonly dots?: number; readonly powers: readonly NpcPower[] };
 
 export type NpcStatBlock = {
@@ -195,7 +198,8 @@ export const normalizeStatBlock = (value: unknown): NpcStatBlock | null => {
         level: intIn(entry.level, RANGES.level) ?? 1,
         name: text(entry.name),
         rouse: usesRouse(kind) ? intIn(entry.rouse, RANGES.rouse) ?? 0 : 0,
-        pool: typeof entry.pool === "string" && powerPools.has(entry.pool) ? entry.pool : ""
+        pool: typeof entry.pool === "string" && powerPools.has(entry.pool) ? entry.pool : "",
+        ...(entry.ancilla === true ? { ancilla: true as const } : {})
       });
     }
     const name = text(raw.name);
