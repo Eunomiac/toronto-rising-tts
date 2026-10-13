@@ -4,6 +4,8 @@ import {
   draftFieldDiff,
   draftFromProject,
   emptyProjectDraft,
+  launchMissing,
+  launchResultMissing,
   parseDateInput,
   parseProjectsSnapshot,
   projectsForSource,
@@ -84,6 +86,32 @@ describe("stakes", () => {
     const row = { source: "rashid", name: "Resources", focus: "" };
     expect(stakeCapacity(snapshot, undefined, row)).toBe(1);
     expect(stakeCapacity(snapshot, p1, row)).toBe(3);
+  });
+});
+
+describe("launch readiness", () => {
+  const ready = {
+    ...emptyProjectDraft("blackCaesar", { year: 2026, month: 10, day: 12 }),
+    goal: "Take the Distillery",
+    scope: "3",
+    increment: "weeks",
+    launchRollSkill: "Politics",
+    launchRollAdvantage: "Influence"
+  };
+
+  it("lists the setup fields the launch roll still needs, with Difficulty covered by Scope", () => {
+    expect(launchMissing(emptyProjectDraft("", null))).toEqual([
+      "owner", "goal", "scope", "increment", "startDate", "launchRollSkill", "launchRollAdvantage", "launchRollDifficulty"
+    ]);
+    expect(launchMissing(ready)).toEqual([]);
+    expect(launchMissing({ ...ready, scope: "", launchRollDifficulty: "5" })).toEqual(["scope"]);
+  });
+
+  it("asks for the Result, then the Margin of a plain Win", () => {
+    expect(launchResultMissing(ready)).toBe("launchRollResult");
+    expect(launchResultMissing({ ...ready, launchRollResult: "win" })).toBe("launchRollMargin");
+    expect(launchResultMissing({ ...ready, launchRollResult: "win", launchRollMargin: "2" })).toBeNull();
+    expect(launchResultMissing({ ...ready, launchRollResult: "criticalWin" })).toBeNull();
   });
 });
 

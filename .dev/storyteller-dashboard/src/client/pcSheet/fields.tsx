@@ -9,11 +9,13 @@ type FieldProps = {
   readonly label: string;
   readonly hint?: string;
   readonly wide?: boolean;
+  /** Needed for the next setup step. */
+  readonly glow?: boolean;
   readonly children: ReactNode;
 };
 
-export const Field = ({ label, hint, wide = false, children }: FieldProps): ReactElement => (
-  <label className={`sheet-field${wide ? " wide" : ""}`}>
+export const Field = ({ label, hint, wide = false, glow = false, children }: FieldProps): ReactElement => (
+  <label className={`sheet-field${wide ? " wide" : ""}${glow ? " glow" : ""}`}>
     <span className="sheet-field-label">{label}</span>
     {children}
     {hint ? <span className="sheet-field-hint">{hint}</span> : null}

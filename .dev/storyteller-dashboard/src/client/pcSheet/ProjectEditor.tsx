@@ -4,6 +4,8 @@ import {
   COTERIE,
   draftFieldDiff,
   draftFromProject,
+  launchMissing,
+  launchResultMissing,
   MAX_SCOPE,
   PHASE,
   PHASE_LABELS,
@@ -12,6 +14,7 @@ import {
   STAKE_ROW_POOL,
   stakeCapacity,
   stakeRowsEqual,
+  type DraftField,
   type Project,
   type ProjectDraft,
   type ProjectsSnapshot,
@@ -141,12 +144,30 @@ export const ProjectEditor = ({ snapshot, project, initial, onSnapshot, onClose 
     onClose();
   };
 
-  const runOp = (op: "begin" | "complete" | "launchRoll") => async (): Promise<void> => {
-    await commit();
-    const id = idRef.current;
-    if (!id) {
-      throw new Error("Save the project first");
+  /** A new project is created first (the draft becomes TTS's copy, Difficulty filled from Scope); a saved one commits. */
+  const ensureSaved = async (): Promise<string> => {
+    if (idRef.current) {
+      await commit();
+      return idRef.current;
     }
+    const created = await applyProjectCommand({
+      op: "create",
+      fields: draftFieldDiff(draftRef.current, null),
+      stakeRows: cleanRows(draftRef.current.stakeRows)
+    });
+    const fresh = created.projects.find((p) => p.id === created.createdId);
+    if (!fresh) {
+      throw new Error("TTS did not return the new project.");
+    }
+    onSnapshot(created);
+    idRef.current = fresh.id;
+    baseRef.current = draftFromProject(fresh);
+    setDraft(baseRef.current);
+    return fresh.id;
+  };
+
+  const runOp = (op: "begin" | "complete" | "launchRoll") => async (): Promise<void> => {
+    const id = await ensureSaved();
     absorb(await applyProjectCommand({ op, id }), id);
   };
 
@@ -223,6 +244,12 @@ export const ProjectEditor = ({ snapshot, project, initial, onSnapshot, onClose 
   };
 
   const derived = live?.derived;
+  // The next setup step glows: the launch roll's missing fields, then the roll's result, then the stakes for Begin.
+  const missing = new Set(started ? [] : launchMissing(draft));
+  const resultMissing = !started && missing.size === 0 ? launchResultMissing(draft) : null;
+  const canLaunch = resultMissing !== null;
+  const needsStakes = !started && missing.size === 0 && resultMissing === null && derived !== undefined && !derived.beginEligible;
+  const glow = (field: DraftField): boolean => missing.has(field) || resultMissing === field;
   const title = idRef.current ? "Edit Project" : "New Project";
   const subtitle = live ? `${PHASE_LABELS[live.derived.autoPhase] ?? live.derived.autoPhase}${snapshot.presentDayText ? ` · Present day ${snapshot.presentDayText}` : ""}` : "Nothing is sent to TTS until you press Save.";
 
@@ -236,43 +263,51 @@ export const ProjectEditor = ({ snapshot, project, initial, onSnapshot, onClose 
       {...(idRef.current ? { onDelete: remove } : {})}
       actions={(run) => (
         <>
-          <button type="button" title="Launch roll for the owner (same as the TTS R button)" disabled={!derived?.launchEligible} onClick={() => run(runOp("launchRoll"))}>
-            R
+          <button
+            type="button"
+            className={canLaunch ? "lit" : undefined}
+            title={canLaunch ? "Launch roll for the owner (a new project is saved first)" : "Fill the glowing fields to set up the launch roll"}
+            disabled={!canLaunch}
+            onClick={() => run(runOp("launchRoll"))}
+          >
+            Roll
           </button>
-          <button type="button" disabled={!derived?.beginEligible} onClick={() => run(runOp("begin"))}>Lock &amp; Begin</button>
+          <button type="button" className={derived?.beginEligible && !started ? "lit" : undefined} disabled={!derived?.beginEligible} onClick={() => run(runOp("begin"))}>
+            Lock &amp; Begin
+          </button>
           <button type="button" disabled={phase !== PHASE.inProgress} onClick={() => run(runOp("complete"))}>Complete</button>
         </>
       )}
     >
       <div className="sheet-form-grid pc-proj-form" onBlur={commitOnBlur}>
-        <Field label="Owner">
+        <Field label="Owner" glow={glow("owner")}>
           <SelectInput value={draft.owner} options={ownerOptions} onChange={(owner) => patch({ owner })} />
         </Field>
-        <Field label="Increment">
+        <Field label="Increment" glow={glow("increment")}>
           <SelectInput value={draft.increment} options={incrementOptions} onChange={(increment) => patch({ increment })} />
         </Field>
-        <Field label="Goal" wide>
+        <Field label="Goal" wide glow={glow("goal")}>
           <TextInput value={draft.goal} onChange={(goal) => patch({ goal })} placeholder="Wrest control of the Distillery District…" />
         </Field>
-        <Field label="Scope" hint={`0–${MAX_SCOPE}; fills Difficulty (Scope + 2) unless you changed it`}>
+        <Field label="Scope" hint={`0–${MAX_SCOPE}; fills Difficulty (Scope + 2) unless you changed it`} glow={glow("scope")}>
           <NumberText value={draft.scope} min={0} max={MAX_SCOPE} onChange={(scope) => patch({ scope })} />
         </Field>
-        <Field label="Start date">
+        <Field label="Start date" glow={glow("startDate")}>
           <TextInput type="date" value={draft.startDate} onChange={(startDate) => patch({ startDate })} />
         </Field>
-        <Field label="Launch skill">
+        <Field label="Launch skill" glow={glow("launchRollSkill")}>
           <TextInput value={draft.launchRollSkill} onChange={(launchRollSkill) => patch({ launchRollSkill })} />
         </Field>
-        <Field label="Launch advantage">
+        <Field label="Launch advantage" glow={glow("launchRollAdvantage")}>
           <TextInput value={draft.launchRollAdvantage} onChange={(launchRollAdvantage) => patch({ launchRollAdvantage })} />
         </Field>
-        <Field label="Difficulty">
+        <Field label="Difficulty" glow={glow("launchRollDifficulty")}>
           <NumberText value={draft.launchRollDifficulty} min={0} onChange={(launchRollDifficulty) => patch({ launchRollDifficulty })} />
         </Field>
         <Field label="Contributors">
           <NumberText value={draft.numContributors} min={1} onChange={(numContributors) => patch({ numContributors })} />
         </Field>
-        <Field label="Result" {...(started ? { hint: "Locked once the project has begun" } : {})}>
+        <Field label="Result" glow={glow("launchRollResult")} {...(started ? { hint: "Locked once the project has begun" } : {})}>
           <SelectInput
             value={draft.launchRollResult}
             options={RESULT_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
@@ -280,7 +315,7 @@ export const ProjectEditor = ({ snapshot, project, initial, onSnapshot, onClose 
             onChange={(launchRollResult) => patch({ launchRollResult })}
           />
         </Field>
-        <Field label="Margin">
+        <Field label="Margin" glow={glow("launchRollMargin")}>
           <NumberText
             value={draft.launchRollMargin}
             disabled={started || draft.launchRollResult !== "win"}
@@ -291,7 +326,7 @@ export const ProjectEditor = ({ snapshot, project, initial, onSnapshot, onClose 
           <NumberText value={draft.projectDieMod} onChange={(projectDieMod) => patch({ projectDieMod })} />
         </Field>
 
-        <div className="sheet-field wide pc-proj-stakes-edit">
+        <div className={`sheet-field wide pc-proj-stakes-edit${needsStakes ? " glow" : ""}`}>
           <span className="sheet-field-label">
             Stakes
             {derived?.requiredStake !== null && derived?.requiredStake !== undefined

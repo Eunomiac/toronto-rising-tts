@@ -393,6 +393,30 @@ const rowKey = (row: ProjectStakeRow): string => `${row.source}\u0001${row.name}
 export const stakeRowsEqual = (a: readonly ProjectStakeRow[], b: readonly ProjectStakeRow[]): boolean =>
   a.length === b.length && a.every((row, i) => rowKey(row) === rowKey(b[i] as ProjectStakeRow));
 
+/**
+ * Draft fields the launch roll still needs (Lua `setupFieldsComplete`). A blank Difficulty is fine while Scope is
+ * set: Lua fills it from Scope.
+ */
+export const launchMissing = (draft: ProjectDraft): readonly DraftField[] => {
+  const blank = (text: string): boolean => text.trim() === "";
+  const isNumber = (text: string): boolean => !blank(text) && Number.isFinite(Number(text));
+  const checks: readonly [DraftField, boolean][] = [
+    ["owner", !blank(draft.owner)],
+    ["goal", !blank(draft.goal)],
+    ["scope", isNumber(draft.scope)],
+    ["increment", !blank(draft.increment)],
+    ["startDate", parseDateInput(draft.startDate) !== null],
+    ["launchRollSkill", !blank(draft.launchRollSkill)],
+    ["launchRollAdvantage", !blank(draft.launchRollAdvantage)],
+    ["launchRollDifficulty", isNumber(draft.launchRollDifficulty) || isNumber(draft.scope)]
+  ];
+  return checks.flatMap(([field, ok]) => (ok ? [] : [field]));
+};
+
+/** The launch result field still to fill once the roll is set up: Result, then Margin for a plain Win. */
+export const launchResultMissing = (draft: ProjectDraft): DraftField | null =>
+  draft.launchRollResult === "" ? "launchRollResult" : draft.launchRollResult === "win" && draft.launchRollMargin.trim() === "" ? "launchRollMargin" : null;
+
 /** Keep edits the author made since `oldBase`; take TTS values for everything else. */
 export const rebaseDraft = (draft: ProjectDraft, oldBase: ProjectDraft, newBase: ProjectDraft): ProjectDraft => {
   const out: Record<string, unknown> = {};

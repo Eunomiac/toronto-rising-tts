@@ -87,6 +87,18 @@ const parseSeat = (value: unknown): SeatSnapshot | null => {
   const lastXpEntry: XpEntryRef | undefined = last && (last.kind === "gain" || last.kind === "spend")
     ? { kind: last.kind, amount: asNumber(last.amount), description: asString(last.description) }
     : undefined;
+  const compulsion = isRecord(value.compulsion) && typeof value.compulsion.type === "string" && typeof value.compulsion.n === "number"
+    ? { type: value.compulsion.type, n: value.compulsion.n }
+    : undefined;
+  const hunt = isRecord(value.huntResonance) ? value.huntResonance : null;
+  const huntResonance: SeatSnapshot["huntResonance"] = hunt && typeof hunt.intensity === "string"
+    ? {
+      intensity: hunt.intensity,
+      margin: asNumber(hunt.margin),
+      ...(typeof hunt.flavor === "string" ? { flavor: hunt.flavor } : {}),
+      ...(hunt.at !== undefined ? { at: hunt.at } : {})
+    }
+    : undefined;
   return {
     color,
     playerId: asString(value.playerId) || undefined,
@@ -112,6 +124,8 @@ const parseSeat = (value: unknown): SeatSnapshot | null => {
     connected: asBool(value.connected),
     deferAutoSeat: asBool(value.deferAutoSeat),
     deferConnect: asBool(value.deferConnect),
+    ...(huntResonance ? { huntResonance } : {}),
+    ...(compulsion ? { compulsion } : {}),
     attributes,
     skills,
     specialties,
