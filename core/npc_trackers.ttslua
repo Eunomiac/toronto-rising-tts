@@ -233,6 +233,28 @@ function NpcTrackers.ensureSceneCast()
     NpcTrackers.ensureKeys(NpcTrackers.sceneCastKeys())
 end
 
+--- Keep / un-keep a generic instance (`GenericNpcs.setKept`): the record follows it between the scene row and
+--- tonight's map. `move` rewrites the membership row; the record is read before it and stored after.
+--- @param key string
+--- @param move function
+function NpcTrackers.relocate(key, move)
+    local record = NpcTrackers.get(key)
+    local oldId = nightId(key)
+    move()
+    if record == nil then
+        return
+    end
+    if oldId ~= key then
+        local trackers = S.getStateVal("npcTrackers")
+        if type(trackers) == "table" and type(trackers.byKey) == "table" then
+            trackers.byKey[oldId] = nil
+            S.setStateVal(trackers, "npcTrackers")
+        end
+    end
+    store(key, record)
+    markDirty()
+end
+
 --- Superficial / aggravated deltas on one track; with a known maximum, overflow turns superficial into
 --- aggravated (as on PC sheets).
 --- @param record table

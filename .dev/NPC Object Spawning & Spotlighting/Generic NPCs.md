@@ -12,7 +12,7 @@ Source of truth:
 - `core/npc_spawn.ttslua` — figurine + light spawner shared with named NPCs (art from `lib/npc_art_urls.ttslua`; see [NPC Art Pipeline](NPC%20Art%20Pipeline.md))
 - `lib/npcs_data.ttslua` — `D.initGenericNPCs()`, `D.resolveGenericNpcEntry`, `D.genericNpcs`
 - `lib/npc_art_urls.ttslua` — generated; each generic row carries its sheet `genericLabel` (`npm run npc-art:generate`, from `.dev/storyteller-dashboard/data/generic-npcs.json`)
-- `dashboard/scenes.ttslua` — `genericAdd` op → `GenericNpcs.importNamed(keys, labels, tiers)`; `genericRename` op → `GenericNpcs.rename(key, name)`; `genericTier` op → `GenericNpcs.setTier(key, tier)`
+- `dashboard/scenes.ttslua` — `genericAdd` op → `GenericNpcs.importNamed(keys, labels, tiers, kept)`; `genericRename` op → `GenericNpcs.rename(key, name)`; `genericTier` op → `GenericNpcs.setTier(key, tier)`; `genericKeep` op → `GenericNpcs.setKept(key, keptId)`
 - `NPCS.registerGenericCharacter` / `unregisterGenericCharacter` in `core/npcs.ttslua`
 - `sessionScene.npcWorld.genericMembership` in `core/state.ttslua`
 - Spotlight tokens: `core/stage_tokens.ttslua` (same as named stage NPCs)
@@ -69,6 +69,8 @@ Behavior (`GenericNpcs.importNamed`):
 **Rename** (`GenericNpcs.rename(key, name)`, Dashboard op `genericRename`): the key must be in this scene's membership and the trimmed name non-blank, else an error string. Writes membership `displayName`, the roster row's `fullName`, the figurine's name, and the spotlight token's name (`StageTokens.refreshName`), then marks the seats push dirty.
 
 **Tier** (`GenericNpcs.setTier(key, tier)`, Dashboard op `genericTier`, from the in-scene generic's token settings window): writes membership `tier` (no `tier` clears it) and marks the seats push dirty. The push carries it as `generics[].tier`.
+
+**Kept characters** (`GenericNpcs.setKept(key, keptId)`, Dashboard op `genericKeep`, from the in-scene generic's settings window → **Keep as a character**): writes membership `keptId` (no `keptId` turns it back into a plain generic) and clears its `tier`; `NpcTrackers.relocate` moves its tracker record between the membership row and tonight's map (`kept:<id>`). The dashboard owns the character itself (`kept:<id>` in `npc-stats.json`: name, figurine, type, own stat block); TTS keeps no list of kept characters. Bringing one back is a plain `genericAdd` with `kept { [figurineKey] = id }`. The push carries `generics[].keptId`.
 
 **Trackers** (`core/npc_trackers.ttslua`): a generic instance's Health / Willpower damage and Hunger / Rage live on its membership row (`genericMembership[key].trackers`), so they come and go with the scene. Named NPCs (and kept generics) use `gameState.npcTrackers` instead, which empties when the night changes. A record is created when the NPC first appears (`genericAdd` → `NpcTrackers.ensureKeys`, scene apply → `ensureSceneCast`).
 

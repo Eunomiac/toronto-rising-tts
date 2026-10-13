@@ -311,7 +311,8 @@ export const applyToDraft = (scene: LibraryScene, command: ScenesCommand): Libra
       const membership: Record<string, unknown> = { ...draftMembership(scene) };
       for (const key of command.keys) {
         const tier = command.tiers?.[key];
-        membership[key] = { key, displayName: command.labels[key] ?? key, ...(tier ? { tier } : {}) };
+        const keptId = command.kept?.[key];
+        membership[key] = { key, displayName: command.labels[key] ?? key, ...(keptId ? { keptId } : tier ? { tier } : {}) };
       }
       return withNpcWorld(scene, { genericMembership: membership });
     }
@@ -370,10 +371,12 @@ const draftMembership = (scene: LibraryScene): Row => {
 export const draftGenerics = (scene: LibraryScene): readonly GenericNpc[] =>
   Object.entries(draftMembership(scene)).map(([characterKey, row]) => {
     const tier = isRecord(row) ? row.tier : undefined;
+    const keptId = isRecord(row) ? str(row.keptId) : undefined;
     return {
       characterKey,
       name: (isRecord(row) ? str(row.displayName) : undefined) ?? characterKey,
-      ...(isNpcTier(tier) ? { tier } : {})
+      ...(isNpcTier(tier) ? { tier } : {}),
+      ...(keptId ? { keptId } : {})
     };
   });
 

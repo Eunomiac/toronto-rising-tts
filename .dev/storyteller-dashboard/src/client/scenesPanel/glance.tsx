@@ -48,9 +48,10 @@ import { sceneLibrarySnapshot } from "../sceneLibrary";
 import { GROUP_DRAG_TYPE, NPC_DRAG_TYPE } from "./stage";
 import { useWorldState } from "../worldState";
 import { useNpcOverrides } from "../npcOverrides";
-import { configuredTiers, genericStatsKey, type NpcTier } from "../../shared/npcStats";
-import { useNpcStats } from "../npcStats";
+import { configuredTiers, genericStatsKey, keptStatsKey, newStatId, type NpcTier } from "../../shared/npcStats";
+import { saveNpcStats, useNpcStats } from "../npcStats";
 import { NpcConfigModal, type NpcConfigTarget } from "./npcConfig";
+import { NpcStatsModal } from "./npcStatsModal";
 import { TierBadge } from "./tierBadge";
 import { TierPicker } from "./tierPicker";
 import { loadGenericCatalog, type GenericEntry } from "./genericCatalog";
@@ -754,6 +755,35 @@ const GenericToken = ({ member, className, color, onPick, onPreview, onConfigure
   </button>
 );
 
+/** A kept character (`kept:<id>` in the NPC stats file), shown on its figurine. */
+type KeptMember = { readonly id: string; readonly name: string; readonly figurineKey: string; readonly label: string };
+
+/** Click adds the kept character to the scene; right-click edits its stats. Its figurine can only stand in once per scene. */
+const KeptToken = ({ member, inUse, onAdd, onStats }: {
+  member: KeptMember;
+  inUse: boolean;
+  onAdd: () => void;
+  onStats: () => void;
+}): ReactElement => (
+  <button
+    type="button"
+    className={`lab-group-token${inUse ? " inert" : ""}`}
+    title={inUse
+      ? `${member.name} (${member.label}): their figurine is already in this scene; right-click for their stats`
+      : `Put ${member.name} (${member.label}) on the stage (spawned when you Send); right-click for their stats`}
+    aria-disabled={inUse}
+    onClick={inUse ? undefined : onAdd}
+    onContextMenu={(event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      onStats();
+    }}
+  >
+    <Headshot className="lab-group-head" characterKey={member.figurineKey} />
+    <span className="lab-group-name">{member.name}</span>
+  </button>
+);
+
 const NEW_CATEGORY_COLOR = "#9c7bd6";
 const UNSORTED_GROUP_COLOR = "#7a7a86";
 
@@ -894,8 +924,10 @@ export const MasonryRoster = (): ReactElement => {
   const { catalogs, raw: rawCatalogs, error } = useSceneCatalogs();
   const overrides = useNpcOverrides();
   const [configuring, setConfiguring] = useState<NpcConfigTarget | null>(null);
+  const [keptStats, setKeptStats] = useState<KeptMember | null>(null);
   const tableGenerics = useWorldState().seats?.generics;
-  const inScene = useContext(SceneGenericsContext) ?? tableGenerics ?? [];
+  const draftGenerics = useContext(SceneGenericsContext);
+  const inScene = draftGenerics ?? tableGenerics ?? [];
   const send = useScenesCommand();
   const queuedGenerics = useContext(PendingGenericsContext);
   const sceneTiers = useContext(GenericTiersContext);
@@ -983,6 +1015,17 @@ export const MasonryRoster = (): ReactElement => {
     [genericCatalog, spawned, overrides]
   );
   const groups = view === "main" ? mainGroups : genGroups;
+  const keptInScene = new Set(inScene.flatMap((npc) => (npc.keptId ? [npc.keptId] : [])));
+  const keptMembers: readonly KeptMember[] = Object.entries(npcStats ?? {})
+    .flatMap(([key, stats]) => (key.startsWith("kept:") && stats.kept ? [{ id: key.slice("kept:".length), ...stats.kept }] : []))
+    .filter((member) => !keptInScene.has(member.id))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const addKept = (member: KeptMember): void => send({
+    op: "genericAdd",
+    keys: [member.figurineKey],
+    labels: { [member.figurineKey]: member.name },
+    kept: { [member.figurineKey]: member.id }
+  });
   const addGeneric = (member: RosterMember, tier: NpcTier | undefined): void => send({
     op: "genericAdd",
     keys: [member.characterKey],
@@ -1006,6 +1049,21 @@ export const MasonryRoster = (): ReactElement => {
     const generic = genericCatalog?.find((npc) => npc.key === characterKey);
     const groupKey = named ? named.pickerGroups[0] : generic ? `generic:${generic.label}` : undefined;
     const spawnedNpc = generic ? inScene.find((npc) => npc.characterKey === characterKey) : undefined;
+    const keeping = spawnedNpc && generic && !draftGenerics ? {
+      keptId: spawnedNpc.keptId,
+      keep: async (name: string): Promise<string> => {
+        const id = newStatId();
+        const tier = sceneTiers[characterKey];
+        const block = tier ? npcStats?.[genericStatsKey(generic.label)]?.[tier] : undefined;
+        await saveNpcStats(keptStatsKey(id), { ...(block ? { named: block } : {}), kept: { name, figurineKey: characterKey, label: generic.label } });
+        send({ op: "genericKeep", key: characterKey, keptId: id });
+        return id;
+      },
+      unkeep: async (keptId: string): Promise<void> => {
+        send({ op: "genericKeep", key: characterKey });
+        await saveNpcStats(keptStatsKey(keptId), {});
+      }
+    } : undefined;
     setConfiguring({
       characterKey,
       at,
@@ -1018,10 +1076,18 @@ export const MasonryRoster = (): ReactElement => {
         ? {
           inScene: {
             name: spawnedNpc.name,
-            rename: (name: string) => send({ op: "genericRename", key: characterKey, name }),
+            rename: (name: string, keptId: string | undefined) => {
+              send({ op: "genericRename", key: characterKey, name });
+              const kept = keptId ? npcStats?.[keptStatsKey(keptId)] : undefined;
+              if (keptId && kept?.kept) {
+                saveNpcStats(keptStatsKey(keptId), { ...kept, kept: { ...kept.kept, name } })
+                  .catch((reason: unknown) => console.error("Renaming the kept character's stats failed.", reason));
+              }
+            },
             tier: sceneTiers[characterKey],
             tiers: configuredTiers(npcStats?.[genericStatsKey(generic.label)]),
-            setTier: (tier: NpcTier | undefined) => send({ op: "genericTier", key: characterKey, ...(tier ? { tier } : {}) })
+            setTier: (tier: NpcTier | undefined) => send({ op: "genericTier", key: characterKey, ...(tier ? { tier } : {}) }),
+            ...(keeping ? { keeping } : {})
           }
         }
         : {})
@@ -1212,6 +1278,25 @@ export const MasonryRoster = (): ReactElement => {
             </div>
           </section>
         )}
+        {view === "generic" && !found && keptMembers.length > 0 && (
+          <section className="lab-cat">
+            <div className="lab-cat-head unsorted">
+              <span className="lab-cat-name">Kept</span>
+              <span className="lab-cat-count">{keptMembers.length}</span>
+            </div>
+            <div className="lab-search-results">
+              {keptMembers.map((member) => (
+                <KeptToken
+                  key={member.id}
+                  member={member}
+                  inUse={spawned.has(member.figurineKey)}
+                  onAdd={() => addKept(member)}
+                  onStats={() => setKeptStats(member)}
+                />
+              ))}
+            </div>
+          </section>
+        )}
         {found && (
           <div className="lab-search-results">
             {found.length === 0 && <span className="lab-note">No NPC matches "{query.trim()}".</span>}
@@ -1254,6 +1339,9 @@ export const MasonryRoster = (): ReactElement => {
         />
       )}
       {configuring && <NpcConfigModal target={configuring} onClose={() => setConfiguring(null)} />}
+      {keptStats && (
+        <NpcStatsModal statsKey={keptStatsKey(keptStats.id)} label={keptStats.name} generic={false} onClose={() => setKeptStats(null)} />
+      )}
       {tierPick && (
         <TierPicker
           at={tierPick.at}

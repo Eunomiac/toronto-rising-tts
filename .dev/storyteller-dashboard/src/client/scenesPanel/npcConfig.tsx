@@ -1,6 +1,6 @@
 import { useState, type ReactElement } from "react";
 import { CARD_SCALE_RANGE, parseNpcOverride, SEATED_Y_RANGE, type NpcOverride } from "../../shared/npcOverride";
-import { isNpcTier, NPC_TIERS, type NpcTier } from "../../shared/npcStats";
+import { isNpcTier, keptStatsKey, NPC_TIERS, type NpcTier } from "../../shared/npcStats";
 import { TIER_LABELS } from "../npcTierBadges";
 import { openHeadshotEditor } from "../headshots/headshotEditor";
 import { saveNpcOverride, useNpcOverrides } from "../npcOverrides";
@@ -29,11 +29,21 @@ export type NpcConfigTarget = {
    */
   readonly inScene?: {
     readonly name: string;
-    readonly rename: (name: string) => void;
+    /** `keptId`: the kept character's record also takes the new name. */
+    readonly rename: (name: string, keptId: string | undefined) => void;
     readonly tier: NpcTier | undefined;
     /** The type's configured tiers. */
     readonly tiers: readonly NpcTier[];
     readonly setTier: (tier: NpcTier | undefined) => void;
+    /**
+     * Keep as a character (live table only): `keep` creates the `kept:<id>` stats record from this tier's block and
+     * sends `genericKeep`, resolving to the id; `unkeep` turns it back into a plain generic and deletes the record.
+     */
+    readonly keeping?: {
+      readonly keptId: string | undefined;
+      readonly keep: (name: string) => Promise<string>;
+      readonly unkeep: (keptId: string) => Promise<void>;
+    };
   };
 };
 
@@ -61,7 +71,32 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
   const [busy, setBusy] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
   const [tier, setTier] = useState(inScene?.tier);
+  const [keptId, setKeptId] = useState(inScene?.keeping?.keptId);
+  const [unkeepArmed, setUnkeepArmed] = useState(false);
   const label = name.trim() || target.defaultName;
+  const stats = keptId ? { key: keptStatsKey(keptId), label, tiered: false } : target.stats;
+  const toggleKeep = (): void => {
+    const keeping = inScene?.keeping;
+    if (!keeping || busy) {
+      return;
+    }
+    if (keptId && !unkeepArmed) {
+      setUnkeepArmed(true);
+      return;
+    }
+    setBusy(true);
+    setUnkeepArmed(false);
+    const done = keptId
+      ? keeping.unkeep(keptId).then(() => setKeptId(undefined))
+      : keeping.keep(label).then((id) => {
+        setKeptId(id);
+        setTier(undefined);
+      });
+    done.then(() => setBusy(false), (reason: unknown) => {
+      setBusy(false);
+      setError(reason instanceof Error ? reason.message : String(reason));
+    });
+  };
 
   const draft = (): NpcOverride | string => {
     const scale = numberOrUndefined(cardScale);
@@ -85,7 +120,7 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
       return;
     }
     if (inScene && name.trim() !== "" && name.trim() !== inScene.name) {
-      inScene.rename(name.trim());
+      inScene.rename(name.trim(), keptId);
     }
     if (JSON.stringify(next) === JSON.stringify(saved)) {
       onClose();
@@ -111,7 +146,18 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
           <span>Name</span>
           <input className="lab-select" placeholder={target.defaultName} value={name} onChange={(event) => setName(event.target.value)} />
         </label>
-        {inScene && (inScene.tiers.length > 0 || inScene.tier) && (
+        {inScene?.keeping && (
+          <div
+            className="lab-group-edit-row"
+            title="A kept character has a stat block of its own (copied from this tier) and can be added to any scene from the roster's Kept list"
+          >
+            <span>Keep</span>
+            <button type="button" className={`lab-btn${keptId ? " primary" : ""}${unkeepArmed ? " danger" : ""}`} disabled={busy} onClick={toggleKeep}>
+              {unkeepArmed ? "Click again: delete their stats" : keptId ? "Kept as a character" : "Keep as a character"}
+            </button>
+          </div>
+        )}
+        {inScene && !keptId && (inScene.tiers.length > 0 || inScene.tier) && (
           <label className="lab-group-edit-row" title="Which of this type's stat blocks they roll from (queued for Send)">
             <span>Tier</span>
             <select
@@ -175,9 +221,9 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
       </div>
       {statsOpen && (
         <NpcStatsModal
-          statsKey={target.stats.key}
-          label={target.stats.tiered ? target.stats.label : label}
-          generic={target.stats.tiered}
+          statsKey={stats.key}
+          label={stats.tiered ? stats.label : label}
+          generic={stats.tiered}
           onClose={() => setStatsOpen(false)}
         />
       )}

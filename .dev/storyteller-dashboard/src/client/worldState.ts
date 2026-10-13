@@ -132,7 +132,8 @@ export type StageNpc = {
 };
 
 /** A generic NPC spawned into the scene; `characterKey` is its generic catalog key. */
-export type GenericNpc = { readonly characterKey: string; readonly name: string; readonly tier?: NpcTier };
+/** `keptId`: kept as a character (`kept:<id>` in the NPC stats file), rolling from its own block. */
+export type GenericNpc = { readonly characterKey: string; readonly name: string; readonly tier?: NpcTier; readonly keptId?: string };
 
 /** A PC (`characterKey` = their charKey) or NPC in a Scatter group, by hole `slot`. */
 export type ScatterMember = { readonly characterKey: string; readonly slot?: number };

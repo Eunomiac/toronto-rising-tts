@@ -141,13 +141,21 @@ end
 --- Stat tier names the Storyteller Dashboard keeps a stat block for on each generic type.
 local TIERS = { weak = true, average = true, gifted = true, deadly = true }
 
+--- A kept character's id (the dashboard's `kept:<id>` stats record; TTS keeps no list of them).
+--- @param id any
+--- @return boolean
+local function isKeptId(id)
+    return type(id) == "string" and #id <= 12 and string.match(id, "^[a-z0-9]+$") ~= nil
+end
+
 --- Storyteller Dashboard: add generic NPCs to the scene with the names the Storyteller typed.
 --- Membership + roster registration only; the reconciler spawns each one when it is placed on the stage.
 --- @param keys string[] catalog keys
 --- @param labels table|nil key → display name
 --- @param tiers table|nil key → stat tier (`weak` / `average` / `gifted` / `deadly`); omitted = no tier
+--- @param kept table|nil key → kept character id; a kept character rolls from its own block, so it has no tier
 --- @return string|nil error
-function GenericNpcs.importNamed(keys, labels, tiers)
+function GenericNpcs.importNamed(keys, labels, tiers, kept)
     if type(keys) ~= "table" or #keys < 1 then
         return "Pick at least one generic NPC."
     end
@@ -165,6 +173,12 @@ function GenericNpcs.importNamed(keys, labels, tiers)
             return "Unknown stat tier `" .. tostring(tier) .. "` for " .. tostring(key) .. "."
         end
     end
+    kept = type(kept) == "table" and kept or {}
+    for key, id in pairs(kept) do
+        if not isKeptId(id) then
+            return "Bad kept character id `" .. tostring(id) .. "` for " .. tostring(key) .. "."
+        end
+    end
     local membership = getMembership()
     local NPCS = npcsModule()
     for i = 1, #valid do
@@ -175,7 +189,8 @@ function GenericNpcs.importNamed(keys, labels, tiers)
         end
         displayName = string.match(displayName, "^%s*(.-)%s*$") or displayName
         NPCS.registerGenericCharacter(key, displayName)
-        membership[key] = { key = key, displayName = displayName, tier = tiers[key] }
+        local keptId = kept[key]
+        membership[key] = { key = key, displayName = displayName, tier = keptId == nil and tiers[key] or nil, keptId = keptId }
     end
     setMembership(membership)
     require("dashboard.push").markWorldDirty({ seats = true })
@@ -229,6 +244,35 @@ function GenericNpcs.setTier(characterKey, tier)
     end
     row.tier = tier
     setMembership(membership)
+    require("dashboard.push").markWorldDirty({ seats = true })
+    return nil
+end
+
+--- Storyteller Dashboard: keep a generic NPC in the scene as a character (`keptId`), or turn that off (`nil`).
+--- Its trackers move with it: a kept character's live in tonight's map, a plain generic's in the scene.
+--- @param characterKey string
+--- @param keptId string|nil
+--- @return string|nil error
+function GenericNpcs.setKept(characterKey, keptId)
+    local membership = getMembership()
+    local row = membership[characterKey]
+    if type(row) ~= "table" then
+        return "No generic NPC `" .. tostring(characterKey) .. "` in this scene."
+    end
+    if keptId ~= nil and not isKeptId(keptId) then
+        return "Bad kept character id `" .. tostring(keptId) .. "`."
+    end
+    if row.keptId == keptId then
+        return nil
+    end
+    require("core.npc_trackers").relocate(characterKey, function()
+        row.keptId = keptId
+        row.trackers = nil
+        if keptId ~= nil then
+            row.tier = nil
+        end
+        setMembership(membership)
+    end)
     require("dashboard.push").markWorldDirty({ seats = true })
     return nil
 end

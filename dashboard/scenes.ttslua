@@ -46,11 +46,14 @@
     scatterPlace      characterKey, kind, group?
                                           Scatter: move an NPC (`kind` npc; no group = off) or PC (`kind` pc,
                                           characterKey = the PC's charKey) into a scatter group 1–6
-    genericAdd        keys, labels?, tiers?
+    genericAdd        keys, labels?, tiers?, kept?
                                           spawn generic NPCs (catalog keys) named by the Storyteller, each
                                           with an optional stat tier (`weak` / `average` / `gifted` / `deadly`)
+                                          or kept character id (`kept`: key → id, no tier)
     genericRename     key, name           rename a generic NPC already in the scene
     genericTier       key, tier?          change (or clear) the stat tier of a generic NPC in the scene
+    genericKeep       key, keptId?        keep a generic NPC in the scene as a character (no `keptId` turns
+                                          it back into a plain generic); its trackers move with it
     npcTracker        key, which, mode, max?
                                           one NPC tracker click (`core/npc_trackers.ttslua`): `which` health /
                                           willpower with a damage mode (`addSuper`, `removeAgg`, `clearSuper`, …)
@@ -399,7 +402,7 @@ local function applyCommand(cmd)
     return err
   end
   if op == "genericAdd" then
-    local err = require("core.generic_npcs").importNamed(cmd.keys, cmd.labels, cmd.tiers)
+    local err = require("core.generic_npcs").importNamed(cmd.keys, cmd.labels, cmd.tiers, cmd.kept)
     if err == nil then
       require("core.npc_trackers").ensureKeys(cmd.keys)
     end
@@ -410,6 +413,9 @@ local function applyCommand(cmd)
   end
   if op == "genericTier" then
     return require("core.generic_npcs").setTier(cmd.key, cmd.tier)
+  end
+  if op == "genericKeep" then
+    return require("core.generic_npcs").setKept(cmd.key, cmd.keptId)
   end
 
   if op == "upsertScene" then

@@ -93,7 +93,14 @@ export const genericAddFor = (command: Extract<ScenesCommand, { op: "genericAdd"
   }
   const labels = Object.fromEntries(Object.entries(command.labels).filter(([key]) => keep(key)));
   const tiers = Object.entries(command.tiers ?? {}).filter(([key]) => keep(key));
-  return { op: "genericAdd", keys, labels, ...(tiers.length > 0 ? { tiers: Object.fromEntries(tiers) } : {}) };
+  const kept = Object.entries(command.kept ?? {}).filter(([key]) => keep(key));
+  return {
+    op: "genericAdd",
+    keys,
+    labels,
+    ...(tiers.length > 0 ? { tiers: Object.fromEntries(tiers) } : {}),
+    ...(kept.length > 0 ? { kept: Object.fromEntries(kept) } : {})
+  };
 };
 
 /** Drop every queued stage change for one NPC (an NPC who takes a chair must not go back on the stage at Send). */

@@ -214,7 +214,7 @@ The dashboard's weather override and release (`applyToDraft` `weatherOverride`) 
 
 `npcWorld.placements` is authoritative: `characterKey → { u, v, yaw?, npcLightMode?, groundLevel? }`, `u` / `v` 0–1 on STAGE_BOARD (same frame as Dashboard stage edits). `Sync.full` → `NPCS.reconcileAllFromState` places figurines; `StageTokens.reconcileFromState` puts spotlight tokens on the Stage Control board. `npcLightMode` is `OFF` / `STANDARD` / `SPOTLIGHT` (anything else → `STANDARD`). `groundLevel` omitted = snap ring height.
 
-NPCs not on the stage or a seat are not in the world (they spawn on demand). `genericMembership` (live generic NPCs: `{ key, displayName, tier?, trackers? }`, `tier` one of `weak` / `average` / `gifted` / `deadly`; `trackers` is the instance's damage and Hunger/Rage for this scene, written by `core/npc_trackers.ttslua`) and `controlBoardSnapsEnabled` pass through. Legacy `byArea` is not part of the contract; `S.validateState` handles it on old saves (`lib/npc_placements_convert.ttslua`).
+NPCs not on the stage or a seat are not in the world (they spawn on demand). `genericMembership` (live generic NPCs: `{ key, displayName, tier?, trackers?, keptId? }`, `tier` one of `weak` / `average` / `gifted` / `deadly`; `trackers` is the instance's damage and Hunger/Rage for this scene, written by `core/npc_trackers.ttslua`; `keptId` marks a generic kept as a character — it rolls from the dashboard's `kept:<id>` stats block, has no `tier`, and its trackers live in tonight's `npcTrackers` map instead of `trackers`) and `controlBoardSnapsEnabled` pass through. Legacy `byArea` is not part of the contract; `S.validateState` handles it on old saves (`lib/npc_placements_convert.ttslua`).
 
 ---
 

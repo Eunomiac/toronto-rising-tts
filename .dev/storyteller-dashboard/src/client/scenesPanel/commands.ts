@@ -100,10 +100,14 @@ export type ScenesCommand =
     readonly labels: Readonly<Record<string, string>>;
     /** Stat tier per key; a key left out has none (its type has no tier blocks). */
     readonly tiers?: Readonly<Record<string, NpcTier>>;
+    /** Kept character id per key (a kept character brought back); it has no tier. */
+    readonly kept?: Readonly<Record<string, string>>;
   }
   | { readonly op: "genericRename"; readonly key: string; readonly name: string }
   /** No `tier` clears it. */
   | { readonly op: "genericTier"; readonly key: string; readonly tier?: NpcTier }
+  /** Keep a generic in the scene as a character; no `keptId` makes it a plain generic again. Sent at once. */
+  | { readonly op: "genericKeep"; readonly key: string; readonly keptId?: string }
   /** One click on an NPC's trackers; `max` (from the stat block) caps Health / Willpower damage. */
   | {
     readonly op: "npcTracker";

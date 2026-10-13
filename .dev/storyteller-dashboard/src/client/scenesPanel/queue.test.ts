@@ -113,4 +113,13 @@ describe("pending generic NPCs", () => {
     expect(genericAddFor(add, (key) => key === "cop_02")).toEqual({ op: "genericAdd", keys: ["cop_02"], labels: {}, tiers: { cop_02: "weak" } });
     expect(genericAddFor(add, () => false)).toBeNull();
   });
+
+  it("keeps a kept character's id when its genericAdd is split", () => {
+    const add: ScenesCommand = { op: "genericAdd", keys: ["cop_01", "cop_02"], labels: { cop_01: "Bradley" }, kept: { cop_01: "k3x9" } };
+    if (add.op !== "genericAdd") {
+      throw new Error("expected a genericAdd");
+    }
+    expect(genericAddFor(add, (key) => key === "cop_01")).toEqual({ op: "genericAdd", keys: ["cop_01"], labels: { cop_01: "Bradley" }, kept: { cop_01: "k3x9" } });
+    expect(genericAddFor(add, (key) => key === "cop_02")).toEqual({ op: "genericAdd", keys: ["cop_02"], labels: {} });
+  });
 });

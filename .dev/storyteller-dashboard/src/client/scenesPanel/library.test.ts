@@ -199,6 +199,17 @@ describe("applyToDraft", () => {
     draft = applyToDraft(draft, { op: "genericTier", key: "cop_01" });
     expect(draftGenerics(draft)).toEqual([{ characterKey: "cop_01", name: "Officer Bradley" }]);
   });
+
+  it("brings a kept character in with its id and no tier", () => {
+    const draft = applyToDraft(scene("a"), {
+      op: "genericAdd",
+      keys: ["cop_01"],
+      labels: { cop_01: "Officer Bradley" },
+      tiers: { cop_01: "deadly" },
+      kept: { cop_01: "k3x9" }
+    });
+    expect(draftGenerics(draft)).toEqual([{ characterKey: "cop_01", name: "Officer Bradley", keptId: "k3x9" }]);
+  });
 });
 
 describe("draft seating", () => {

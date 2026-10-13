@@ -252,7 +252,7 @@ local function buildSeats()
   local generics = {}
   for key, row in pairs(S.getStateVal("sessionScene", "npcWorld", "genericMembership") or {}) do
     if type(row) == "table" then
-      generics[#generics + 1] = { characterKey = key, name = row.displayName or key, tier = row.tier }
+      generics[#generics + 1] = { characterKey = key, name = row.displayName or key, tier = row.tier, keptId = row.keptId }
     end
   end
   table.sort(generics, function(a, b)

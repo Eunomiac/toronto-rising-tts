@@ -96,6 +96,32 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 5. Do the same with a werewolf NPC (kind Werewolf in Stats): the window should show a Rage row instead of Hunger, with an orange droplet at 3 or more.
 6. Add a generic NPC, damage it, then play a different scene and come back to the first one: the generic's damage should still be there. Advance the clock past the next dusk: the named NPC's trackers should start fresh (no damage, Hunger 1 or 2) the next time it appears.
 
+#### NPCs roll from their stat blocks
+
+**Context:** An NPC with a stat block can now roll straight from it: pick a pool, attack or power and the dashboard builds the dice (Hunger or Rage dice included, discipline bonus, Blood Surge, every rouse check). A failed rouse check raises the NPC's own Hunger, not the Storyteller's. The broadcast shows one line such as "Marcus attacks with Brawl (Claws)". Spending Willpower on a reroll costs the NPC 1 superficial Willpower, and vampires get a **Mend** button on their Health.
+
+**How to verify:** restart the dashboard (`npm run dev`), then Save & Play.
+
+1. Give a named vampire NPC a stat block: kind Vampire, Blood Potency 2 (their Hunger comes from the trackers window). Add a pool (for example Brawl 6), an attack using it with a +2 bonus, and a Potence power at level 1 with 1 rouse check and the Brawl pool. Also add an Oblivion power with 1 rouse check and no pool (passive).
+2. Put the NPC on the stage, right-click its stage token and start a roll. On the NPC roll card, click the new **Roll from the NPC's stats** icon. A window should list the pool, the attack and the powers, each showing the dice it would roll; hovering one explains the breakdown. Notes from the stat block show at the bottom.
+3. Click the attack. The dice should appear in TTS with as many red Hunger dice as the NPC's Hunger. Roll. If it wins, the broadcast should read "<name> attacks with Brawl (<attack name>)", ending with the attack name and "+2".
+4. Start another roll and pick the Potence power. The roll should include one rouse die. If that rouse die fails (1–5), the NPC's Hunger in their trackers window should go up by one, and the Storyteller seat's Hunger should **not** change.
+5. Pick the passive Oblivion power: it should roll only the rouse check (an Oblivion rouse die), finish by itself, and broadcast "<name> activates …".
+6. Turn on **Blood Surge** in the window before picking the pool: the Blood Potency's surge dice and one extra rouse die should be added.
+7. After a roll, spend Willpower on a reroll: the NPC's Willpower should take 1 superficial damage in the trackers window.
+8. Open the vampire's trackers window, click Health and pick **Mend**: a rouse check rolls by itself and the NPC heals the Blood Potency's mend amount of superficial damage.
+
+#### Keep a generic NPC as a character
+
+**Context:** A generic NPC who turns out to matter (say "Officer Bradley", a Police figurine) can now be kept as a character. They get their own stat block (copied from their tier), keep their name, and can be brought back into later scenes from the roster. Their trackers carry from scene to scene for the rest of the night. TTS keeps no list of kept characters; the dashboard does.
+
+**How to verify:** restart the dashboard (`npm run dev`), then Save & Play.
+
+1. Add a Police generic to the scene with a tier (as in "Generic NPCs get a stat tier"), name it, Send, and give it some Health damage in its trackers window.
+2. Right-click its "In this scene" token in the roster. Click **Keep as a character**: the button should turn to "Kept as a character", the Tier select disappears, and **Stats** now opens a single stat block (not four tabs) with the tier's values already filled in. The damage should still be there.
+3. Play a different scene. In the roster's **Generic** view, a **Kept** list should show the character by name. Click them: they go into the Send queue on their figurine, then Send. They should appear on the stage with the same name, and their trackers window should still show the damage from step 1.
+4. Right-click them in "In this scene", click **Kept as a character** once (it turns red, "Click again: delete their stats") and once more. They become a plain generic again and disappear from the Kept list.
+
 ### High — NPCs and dice no longer wait under the table
 
 #### TOR-707 — NPC figurines and spotlights spawn when a scene needs them

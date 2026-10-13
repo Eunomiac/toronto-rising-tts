@@ -43,14 +43,15 @@ export const useNpcLive = (
   const catalog = useGenericCatalog();
   return useMemo(() => {
     const labels = new Map((catalog ?? []).map((entry) => [entry.key, entry.label]));
-    const inScene = new Set(generics.map((npc) => npc.characterKey));
+    const inScene = new Map(generics.map((npc) => [npc.characterKey, npc]));
     const wolves = new Set(werewolves);
     const blockFor = (characterKey: string): NpcStatBlock | undefined => {
       if (!stats) {
         return undefined;
       }
-      const label = inScene.has(characterKey) ? labels.get(characterKey) : undefined;
-      return statBlockFor(stats, { characterKey, genericLabel: label, tier: tiers[characterKey] });
+      const generic = inScene.get(characterKey);
+      const label = generic ? labels.get(characterKey) : undefined;
+      return statBlockFor(stats, { characterKey, genericLabel: label, tier: tiers[characterKey], keptId: generic?.keptId });
     };
     return {
       trackers: trackers ?? {},
