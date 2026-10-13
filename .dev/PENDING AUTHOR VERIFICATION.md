@@ -109,7 +109,7 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 4. Start another roll and pick the Potence power. The roll should include one rouse die. If that rouse die fails (1–5), the NPC's Hunger in their trackers window should go up by one, and the Storyteller seat's Hunger should **not** change.
 5. Pick the passive Oblivion power: it should roll only the rouse check (an Oblivion rouse die), finish by itself, and broadcast "<name> activates …".
 6. Turn on **Blood Surge** in the window before picking the pool: the Blood Potency's surge dice and one extra rouse die should be added.
-7. After a roll, spend Willpower on a reroll: the NPC's Willpower should take 1 superficial damage in the trackers window.
+7. After a roll, pick some dice on the NPC roll card and click **Reroll the picked dice**: the NPC's Willpower should take 1 superficial damage in the trackers window, once per reroll. (Every picked-dice reroll on an NPC roll now counts as their Willpower reroll; rerolls of a player's dice charge nobody.)
 8. Open the vampire's trackers window, click Health and pick **Mend**: a rouse check rolls by itself and the NPC heals the Blood Potency's mend amount of superficial damage.
 9. Roll a power with rouse checks **without setting a difficulty**, and confirm it. Every failed rouse check should still raise the NPC's Hunger (this used to be skipped when a roll had no difficulty: Mara's Arms of Ahriman rolls on 2026-10-13 failed three checks and her Hunger stayed at 1).
 

@@ -2680,7 +2680,17 @@ function RC.watchStSelectiveRerollSettle(color, guids, rollId)
     )
 end
 
+--- A Storyteller reroll is the rolling NPC's Willpower reroll: 1 superficial Willpower on its tracker
+--- (Auto-WP on, NPC known). The Storyteller seat itself is never charged.
+--- @param active table Black active roll
+local function chargeNpcWillpowerReroll(active)
+    if RO.getPermanent(RO.PERM_AUTO_WP) and type(active.npcCharacterKey) == "string" then
+        require("core.npc_trackers").damage(active.npcCharacterKey, "willpower", "superficial", 1)
+    end
+end
+
 --- Host-only entry: validates selection, clears highlights, marks the wave in progress.
+--- A Storyteller (Black) wave charges the rolling NPC's Willpower (`chargeNpcWillpowerReroll`).
 -- @param color string
 -- @return table|nil guids
 -- @return string|nil rollId
@@ -2707,6 +2717,9 @@ function RC.beginStSelectiveRerollWave(color)
     active.stSelectiveReroll.inProgress = true
     local rollId = active.id
     setActive(color, active)
+    if color == "Black" then
+        chargeNpcWillpowerReroll(active)
+    end
     return guids, rollId
 end
 
@@ -2739,17 +2752,13 @@ function RC.spendWillpower(color)
         return false
     end
 
-    -- Apply 1 Superficial Willpower damage when Auto-WP is enabled (full tracker pipeline + HUD refresh).
-    -- Storyteller rolls charge the rolling NPC's tracker, never the Storyteller seat.
-    if RO.getPermanent(RO.PERM_AUTO_WP) then
-        if color == "Black" then
-            if type(active.npcCharacterKey) == "string" then
-                require("core.npc_trackers").damage(active.npcCharacterKey, "willpower", "superficial", 1)
-            end
-        else
-            P.applyDamageOrHeal(color, "willpower", 1, 0)
-            Sync.player(color)
-        end
+    -- Apply 1 Superficial Willpower damage when Auto-WP is enabled (full tracker pipeline + HUD refresh);
+    -- a Storyteller roll charges the rolling NPC instead.
+    if color == "Black" then
+        chargeNpcWillpowerReroll(active)
+    elseif RO.getPermanent(RO.PERM_AUTO_WP) then
+        P.applyDamageOrHeal(color, "willpower", 1, 0)
+        Sync.player(color)
     end
 
     active.willpower.rerollsRemaining = active.willpower.rerollsRemaining - 1
