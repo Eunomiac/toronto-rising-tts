@@ -95,6 +95,7 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 4. Left-click the Hunger row until it reaches 3. A small red droplet with a "3" should appear at the top-right of the stage token. Seat the NPC: the droplet should show at the top-right of the seat too, and clicking the seat should open the same trackers window.
 5. Do the same with a werewolf NPC (kind Werewolf in Stats): the window should show a Rage row instead of Hunger, with an orange droplet at 3 or more.
 6. Add a generic NPC, damage it, then play a different scene and come back to the first one: the generic's damage should still be there. Advance the clock past the next dusk: the named NPC's trackers should start fresh (no damage, Hunger 1 or 2) the next time it appears.
+7. Play a scene whose clock is set to present day and repeat step 2. The trackers window should work, and the TTS console should show no "[NpcTrackers] Could not resolve tonight's dusk" error.
 
 #### NPCs roll from their stat blocks
 

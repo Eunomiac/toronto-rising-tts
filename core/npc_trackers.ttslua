@@ -11,7 +11,9 @@
       so it comes back with its scene and a new scene starts fresh;
     - a named NPC: `gameState.npcTrackers.byKey[characterKey]`;
     - a kept generic (`genericMembership[key].keptId`): `gameState.npcTrackers.byKey["kept:" .. keptId]`.
-    `gameState.npcTrackers.night` is the active clock's dusk date; a new night empties `byKey`.
+    `gameState.npcTrackers.night` is the active clock's dusk date; a new night empties `byKey`. A present-day
+    clock is dated from `presentDayClock`; while the active clock has no date at all, the night stays as
+    recorded (records made undated join the next dated night).
 
     A record is created the first time an NPC appears tonight (`ensure`): no damage, Hunger and Rage 1–2.
     Every mutator marks the dashboard `seats` push dirty.
@@ -52,9 +54,10 @@ local function getMembership()
     return type(membership) == "table" and membership or {}
 end
 
---- The clock the table is running: Downtime's in Play Downtime, else the scene's.
---- @return table
-local function activeClock()
+--- The date and time of the clock the table is running (Downtime's in Play Downtime, else the scene's). A
+--- present-day clock stores only its flags, so its date comes from `presentDayClock`. Nil when undated.
+--- @return table|nil
+local function activeDatetime()
     local clock
     if require("core.phases").isPlayDowntime() == true then
         clock = S.getStateVal("downtimeClock")
@@ -62,19 +65,36 @@ local function activeClock()
         clock = S.getStateVal("sessionScene", "clock")
     end
     if type(clock) ~= "table" then
-        error("[NpcTrackers] No active clock to date tonight's trackers.")
+        return nil
     end
-    return clock
+    local PresentDayClock = require("core.present_day_clock")
+    if PresentDayClock.clockHasDatetime(clock) then
+        return clock
+    end
+    return PresentDayClock.mergePresentDayDatetimeWithFlags(clock)
 end
 
---- Tonight's dusk date (`YYYY-MM-DD`): before sunrise it is yesterday's.
---- @return string
+--- Tonight's dusk date (`YYYY-MM-DD`): before sunrise it is yesterday's. Nil while the active clock has no
+--- date (an undated present-day clock): the night then stays as recorded, and nothing is wiped.
+--- @return string|nil
 function NpcTrackers.nightKey()
-    local dusk = require("core.narrative_clock_lerp").resolveDawnDuskTarget(activeClock(), 0, false)
+    local now = activeDatetime()
+    if now == nil then
+        return nil
+    end
+    local dusk = require("core.narrative_clock_lerp").resolveDawnDuskTarget(now, 0, false)
     if type(dusk) ~= "table" then
         error("[NpcTrackers] Could not resolve tonight's dusk from the active clock.")
     end
     return string.format("%04d-%02d-%02d", tonumber(dusk.year) or 0, tonumber(dusk.month) or 0, tonumber(dusk.day) or 0)
+end
+
+--- Whether the night map's records belong to `night`: an undated clock (nil) or undated records match any night.
+--- @param trackers table
+--- @param night string|nil
+--- @return boolean
+local function isTonight(trackers, night)
+    return night == nil or trackers.night == nil or trackers.night == night
 end
 
 --- @return table
@@ -121,7 +141,7 @@ function NpcTrackers.get(key, night)
         return type(row.trackers) == "table" and row.trackers or nil
     end
     local trackers = S.getStateVal("npcTrackers")
-    if type(trackers) ~= "table" or trackers.night ~= (night or NpcTrackers.nightKey()) then
+    if type(trackers) ~= "table" or not isTonight(trackers, night or NpcTrackers.nightKey()) then
         return nil
     end
     local byKey = trackers.byKey
@@ -140,9 +160,10 @@ local function store(key, record)
     end
     local night = NpcTrackers.nightKey()
     local trackers = S.getStateVal("npcTrackers")
-    if type(trackers) ~= "table" or trackers.night ~= night or type(trackers.byKey) ~= "table" then
+    if type(trackers) ~= "table" or type(trackers.byKey) ~= "table" or not isTonight(trackers, night) then
         trackers = { night = night, byKey = {} }
     end
+    trackers.night = trackers.night or night
     trackers.byKey[nightId(key)] = record
     S.setStateVal(trackers, "npcTrackers")
 end
