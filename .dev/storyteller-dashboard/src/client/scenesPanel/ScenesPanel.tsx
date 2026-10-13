@@ -40,6 +40,8 @@ import {
   type ScenesSend
 } from "./commands";
 import { withRetitledScene, withoutScene, withTableScene } from "./deck";
+import { NpcLiveContext, useNpcLive } from "./npcTrackers";
+import type { GenericNpc } from "../worldState";
 import { RollsCell, type OptionsAccess } from "./rolls/RollsCell";
 import { loadRollOptions, sendRollsCommands } from "./rolls/bridge";
 import { RollsCommandContext, type RollsCommand, type RollsSend } from "./rolls/commands";
@@ -101,6 +103,8 @@ const WEATHER_W = 380;
 const SOUND_X = STRIP_X + WHEN_W + G + WEATHER_W + G;
 
 const NO_SCENE = "No scene on the table";
+const NO_GENERICS: readonly GenericNpc[] = [];
+const NO_WEREWOLVES: readonly string[] = [];
 
 const missingSlices = (world: WorldState): boolean => WORLD_TOPICS.some((topic) => world[topic] === undefined);
 
@@ -372,6 +376,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const spawning = useMemo(() => pendingGenerics(queued), [queued]);
   const renames = useMemo(() => pendingRenames(queued), [queued]);
   const tiers = useMemo(() => genericTiers(seats?.generics ?? [], queued), [seats?.generics, queued]);
+  const npcLive = useNpcLive(seats?.trackers, seats?.generics ?? NO_GENERICS, tiers, rolls?.werewolves ?? NO_WEREWOLVES);
   const board = useMemo((): LiveBoard | null => {
     if (!seats) {
       return null;
@@ -410,6 +415,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
     <ScenesCommandContext.Provider value={send}>
     <PendingGenericsContext.Provider value={spawning}>
     <GenericTiersContext.Provider value={tiers}>
+    <NpcLiveContext.Provider value={seats ? npcLive : null}>
     <RollsCommandContext.Provider value={rollCommands.send}>
     <div className="lab-canvas scenes-live">
       {active && (
@@ -597,6 +603,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
       )}
     </div>
     </RollsCommandContext.Provider>
+    </NpcLiveContext.Provider>
     </GenericTiersContext.Provider>
     </PendingGenericsContext.Provider>
     </ScenesCommandContext.Provider>

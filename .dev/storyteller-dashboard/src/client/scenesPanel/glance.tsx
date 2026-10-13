@@ -53,6 +53,8 @@ import { useNpcStats } from "../npcStats";
 import { NpcConfigModal, type NpcConfigTarget } from "./npcConfig";
 import { TierBadge } from "./tierBadge";
 import { TierPicker } from "./tierPicker";
+import { loadGenericCatalog, type GenericEntry } from "./genericCatalog";
+import { NpcLevelBadge } from "./npcTrackers";
 
 type NpcOverrides = ReturnType<typeof useNpcOverrides>;
 
@@ -677,27 +679,10 @@ const RosterToken = ({ characterKey, name, className, color, tier, onConfigure }
   >
     <Headshot className={className} characterKey={characterKey} />
     {tier && <TierBadge tier={tier} where="bin" />}
+    <NpcLevelBadge characterKey={characterKey} where="bin" />
     <span className="lab-group-name">{name}</span>
   </span>
 );
-
-type GenericEntry = { readonly key: string; readonly label: string; readonly tags: string };
-
-let genericCatalog: Promise<readonly GenericEntry[]> | null = null;
-
-const loadGenericCatalog = (): Promise<readonly GenericEntry[]> => {
-  genericCatalog ??= fetch("/api/generic-npcs").then(async (response) => {
-    const body = await response.json() as { npcs?: readonly GenericEntry[]; error?: string };
-    if (!response.ok || !body.npcs) {
-      throw new Error(body.error ?? `The generic NPC catalog failed to load (${response.status}).`);
-    }
-    return body.npcs;
-  });
-  genericCatalog.catch(() => {
-    genericCatalog = null;
-  });
-  return genericCatalog;
-};
 
 const GENERIC_MATCH_LIMIT = 60;
 

@@ -1,0 +1,235 @@
+import { createContext, useContext, useMemo, useState, type CSSProperties, type MouseEvent, type ReactElement } from "react";
+import { assetUrl } from "../pcSheet/layout";
+import { paintDamageTrack, type BoxSlot } from "../pcSheet/paint";
+import { TraitRing } from "../pcSheet/TraitRing";
+import type { RingAction } from "../pcSheet/types";
+import { useNpcStats } from "../npcStats";
+import { statBlockFor, type NpcKind, type NpcStatBlock, type NpcTier } from "../../shared/npcStats";
+import type { GenericNpc, NpcTrackerRecord } from "../worldState";
+import type { NpcTrackerMode, NpcTrackerWhich, ScenesCommand } from "./commands";
+import { useGenericCatalog } from "./genericCatalog";
+import { Icon } from "./icons";
+
+/**
+ * Live NPC trackers on the Scenes tab: TTS owns the values (`core/npc_trackers.ttslua`, pushed in the seats slice);
+ * the NPC's stat block (dashboard `npc-stats.json`) gives the Health / Willpower maximums and whether it has Hunger
+ * (vampires) or Rage (werewolves).
+ */
+
+/** Hunger and Rage this high show a droplet badge on the NPC's tokens and seat. */
+export const LEVEL_BADGE_FROM = 3;
+const LEVEL_MAX = 5;
+
+export type NpcLive = {
+  readonly trackers: Readonly<Record<string, NpcTrackerRecord>>;
+  /** The stat block a live NPC uses: its own, its generic type's tier, or a kept character's. */
+  readonly blockFor: (characterKey: string) => NpcStatBlock | undefined;
+  /** The block's kind; NPCs with no block but flagged Werewolf in the NPC data count as werewolves. */
+  readonly kindOf: (characterKey: string) => NpcKind | undefined;
+};
+
+/** The table's live NPCs; null in scene drafts (no trackers, no tracker pop-up). */
+export const NpcLiveContext = createContext<NpcLive | null>(null);
+
+export const useNpcLive = (
+  trackers: Readonly<Record<string, NpcTrackerRecord>> | undefined,
+  generics: readonly GenericNpc[],
+  tiers: Readonly<Record<string, NpcTier>>,
+  werewolves: readonly string[]
+): NpcLive => {
+  const stats = useNpcStats();
+  const catalog = useGenericCatalog();
+  return useMemo(() => {
+    const labels = new Map((catalog ?? []).map((entry) => [entry.key, entry.label]));
+    const inScene = new Set(generics.map((npc) => npc.characterKey));
+    const wolves = new Set(werewolves);
+    const blockFor = (characterKey: string): NpcStatBlock | undefined => {
+      if (!stats) {
+        return undefined;
+      }
+      const label = inScene.has(characterKey) ? labels.get(characterKey) : undefined;
+      return statBlockFor(stats, { characterKey, genericLabel: label, tier: tiers[characterKey] });
+    };
+    return {
+      trackers: trackers ?? {},
+      blockFor,
+      kindOf: (characterKey) => blockFor(characterKey)?.kind ?? (wolves.has(characterKey) ? "werewolf" : undefined)
+    };
+  }, [stats, catalog, trackers, generics, tiers, werewolves]);
+};
+
+/** Character sheet box art; Humanity shows all ten boxes, unfilled ones faint. */
+export const BoxRow = ({ boxes, showEmpty = false }: { boxes: readonly BoxSlot[]; showEmpty?: boolean }): ReactElement => (
+  <>
+    {boxes.map((box, index) => box.active && box.image ? (
+      <span key={index} className="lab-track-box" style={{ backgroundImage: `url("${assetUrl(`boxes/${box.image}.webp`)}")` }} />
+    ) : showEmpty ? (
+      <span key={index} className="lab-track-box off" style={{ backgroundImage: `url("${assetUrl("boxes/box_white.webp")}")` }} />
+    ) : null)}
+  </>
+);
+
+export const HUNGER_DOT = { "--lab-dot": `url("${assetUrl("dots/dot_red.webp")}")` } as CSSProperties;
+
+type Level = { readonly which: "hunger" | "rage"; readonly value: number };
+
+/** The NPC's Hunger (vampires) or Rage (werewolves), when it has a record. */
+const levelOf = (live: NpcLive, characterKey: string): Level | null => {
+  const record = live.trackers[characterKey];
+  const kind = live.kindOf(characterKey);
+  if (!record) {
+    return null;
+  }
+  if (kind === "vampire") {
+    return { which: "hunger", value: record.hunger };
+  }
+  if (kind === "werewolf") {
+    return { which: "rage", value: record.rage };
+  }
+  return null;
+};
+
+/** A blood droplet with the NPC's Hunger or Rage, once it reaches 3. */
+export const NpcLevelBadge = ({ characterKey, where }: { characterKey: string; where: "stage" | "bin" | "seat" }): ReactElement | null => {
+  const live = useContext(NpcLiveContext);
+  const level = live ? levelOf(live, characterKey) : null;
+  if (!level || level.value < LEVEL_BADGE_FROM) {
+    return null;
+  }
+  const label = level.which === "hunger" ? "Hunger" : "Rage";
+  return (
+    <span className={`npc-level-badge ${where} ${level.which}`} title={`${label} ${level.value}`}>
+      <Icon name="hunger" />
+      <span className="npc-level-badge-value">{level.value}</span>
+    </span>
+  );
+};
+
+type DamageWhich = "health" | "willpower";
+
+const trackerCommand = (key: string, which: NpcTrackerWhich, mode: NpcTrackerMode, block: NpcStatBlock | undefined): ScenesCommand => {
+  const max = {
+    ...(block?.health !== undefined ? { health: block.health } : {}),
+    ...(block?.willpower !== undefined ? { willpower: block.willpower } : {})
+  };
+  return { op: "npcTracker", key, which, mode, ...(Object.keys(max).length > 0 ? { max } : {}) };
+};
+
+/** Same buttons as a PC's damage ring: left-click adds, right-click removes; Clear clears superficial / aggravated. */
+const damageActions = (key: string, which: DamageWhich, block: NpcStatBlock | undefined): readonly RingAction<ScenesCommand>[] => {
+  const mode = (value: NpcTrackerMode): ScenesCommand => trackerCommand(key, which, value, block);
+  return [
+    { id: "sup", label: "Superficial", image: "buttons/tracker_sup.webp", left: mode("addSuper"), right: mode("removeSuper") },
+    { id: "agg", label: "Aggravated", image: "buttons/tracker_agg.webp", left: mode("addAgg"), right: mode("removeAgg") },
+    { id: "clear", label: "Clear", image: "buttons/tracker_clear.webp", left: mode("clearSuper"), right: mode("clearAgg") }
+  ];
+};
+
+const DAMAGE_LABEL: Record<DamageWhich, string> = { health: "Health", willpower: "Willpower" };
+
+const DamageRow = ({ which, sup, agg, max, onRing }: {
+  which: DamageWhich;
+  sup: number;
+  agg: number;
+  max: number | undefined;
+  onRing: (event: MouseEvent<HTMLElement>) => void;
+}): ReactElement => (
+  <button
+    type="button"
+    className="lab-track"
+    title={max === undefined ? `${DAMAGE_LABEL[which]}: no maximum set in Stats, so damage is not capped` : `${DAMAGE_LABEL[which]} ${max}`}
+    onClick={onRing}
+  >
+    <Icon name={which} className={`lab-track-icon ${which}`} title={DAMAGE_LABEL[which]} />
+    <BoxRow boxes={paintDamageTrack({ base: max ?? 0, temp: 0, disabled: 0, superficial: sup, aggravated: agg, stains: 0 }, max ?? sup + agg)} />
+    {max === undefined && sup + agg === 0 && <span className="npc-tracker-none">no damage</span>}
+  </button>
+);
+
+const LevelRow = ({ which, value, onStep }: { which: "hunger" | "rage"; value: number; onStep: (mode: "up" | "down") => void }): ReactElement => (
+  <button
+    type="button"
+    className={`lab-track npc-tracker-level ${which}`}
+    title={`Left-click to raise ${which === "hunger" ? "Hunger" : "Rage"}, right-click to lower it`}
+    onClick={() => onStep("up")}
+    onContextMenu={(event) => {
+      event.preventDefault();
+      onStep("down");
+    }}
+  >
+    <Icon name="hunger" className={`lab-track-icon ${which}`} title={which === "hunger" ? "Hunger" : "Rage"} />
+    {Array.from({ length: LEVEL_MAX }, (_, index) => (
+      <span key={index} className={`lab-hunger-dot${index < value ? " on" : ""}`} style={HUNGER_DOT} />
+    ))}
+  </button>
+);
+
+/**
+ * An NPC's trackers as controls, like a PC's seat pop-up: click Health or Willpower for that tracker's ring
+ * (left-click a button to add, right-click to remove); left-click Hunger / Rage to raise it, right-click to lower it.
+ * Every click goes straight to TTS (`npcTracker`); the pop-up shows the pushed values. Render it inside an `Overlay`.
+ */
+export const NpcTrackerPopup = ({ characterKey, name, at, send }: {
+  characterKey: string;
+  name: string;
+  /** Canvas point it opens from; it opens upward in the lower half of the canvas. */
+  at: { readonly x: number; readonly y: number; readonly up: boolean };
+  send: (command: ScenesCommand) => void;
+}): ReactElement => {
+  const live = useContext(NpcLiveContext);
+  const [ring, setRing] = useState<{ x: number; y: number; which: DamageWhich } | null>(null);
+  if (!live) {
+    throw new Error("NPC trackers need the live table (NpcLiveContext).");
+  }
+  const record = live.trackers[characterKey];
+  const block = live.blockFor(characterKey);
+  const kind = live.kindOf(characterKey);
+  const openRing = (which: DamageWhich) => (event: MouseEvent<HTMLElement>): void => {
+    const canvas = event.currentTarget.closest(".lab-canvas");
+    if (!canvas) {
+      throw new Error("NPC tracker ring opened outside the Scenes canvas.");
+    }
+    const rect = canvas.getBoundingClientRect();
+    setRing({ x: event.clientX - rect.left, y: event.clientY - rect.top, which });
+  };
+  return (
+    <>
+      <div
+        className={`lab-seat-pop npc-tracker-pop${at.up ? " up" : ""}`}
+        style={{ left: at.x, top: at.y }}
+        role="dialog"
+        aria-label={`${name} trackers`}
+      >
+        <span className="lab-seat-pop-head">
+          <span className="lab-seat-pop-name">{name}</span>
+          {!block && <span className="npc-tracker-none" title="Right-click the NPC in the roster → Stats to set its maximums">no stats</span>}
+        </span>
+        {record ? (
+          <>
+            <DamageRow which="health" sup={record.healthSup} agg={record.healthAgg} max={block?.health} onRing={openRing("health")} />
+            <DamageRow which="willpower" sup={record.wpSup} agg={record.wpAgg} max={block?.willpower} onRing={openRing("willpower")} />
+            {kind === "vampire" && (
+              <LevelRow which="hunger" value={record.hunger} onStep={(mode) => send(trackerCommand(characterKey, "hunger", mode, block))} />
+            )}
+            {kind === "werewolf" && (
+              <LevelRow which="rage" value={record.rage} onStep={(mode) => send(trackerCommand(characterKey, "rage", mode, block))} />
+            )}
+          </>
+        ) : (
+          <span className="lab-note">TTS has no trackers for this NPC yet.</span>
+        )}
+      </div>
+      {ring && (
+        <div className="lab-trait-ring-host">
+          <TraitRing
+            x={ring.x}
+            y={ring.y}
+            actions={damageActions(characterKey, ring.which, block)}
+            onPick={(action, button) => send(button === "right" ? (action.right ?? action.left) : action.left)}
+            onClose={() => setRing(null)}
+          />
+        </div>
+      )}
+    </>
+  );
+};

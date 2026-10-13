@@ -1,9 +1,10 @@
-import { useContext, useRef, useState, type CSSProperties, type DragEvent, type MouseEvent, type PointerEvent, type ReactElement, type RefObject } from "react";
+import { useContext, useEffect, useRef, useState, type CSSProperties, type DragEvent, type MouseEvent, type PointerEvent, type ReactElement, type RefObject } from "react";
 import { Headshot } from "../headshots/Headshot";
 import { useNpcOverrides } from "../npcOverrides";
 import type { SceneCatalogs } from "./catalogs";
 import { GenericTiersContext, type StageChange, type StageChanges } from "./commands";
 import { TierBadge } from "./tierBadge";
+import { NpcLevelBadge } from "./npcTrackers";
 import {
   GROUP_DRAG_TYPE,
   NPC_DRAG_TYPE,
@@ -46,6 +47,9 @@ type PointerHandlers = {
 /** A press that moves more than this many pixels is a drag; less is a click (double-click lights). */
 const DRAG_PX = 4;
 
+/** A token click waits this long for a second click (double-click lights) before it opens the NPC's trackers. */
+const TAP_WAIT_MS = 260;
+
 /**
  * The seat-row chair under a screen point: its number, and who holds it (`""` empty, a seated NPC's key, or `"pc"`).
  * Seat cells carry `data-chair` / `data-chair-holder`.
@@ -60,7 +64,11 @@ const chairAt = (clientX: number, clientY: number): { chair: number; holder: str
   return null;
 };
 
-const useBoardDrag = <T,>(board: RefObject<HTMLDivElement | null>, onDrop: (item: T, point: StagePoint, client: { x: number; y: number }) => void): {
+const useBoardDrag = <T,>(
+  board: RefObject<HTMLDivElement | null>,
+  onDrop: (item: T, point: StagePoint, client: { x: number; y: number }) => void,
+  onTap?: (item: T, client: { x: number; y: number }) => void
+): {
   drag: { item: T; point: StagePoint } | null;
   handlers: (item: T) => PointerHandlers;
 } => {
@@ -89,6 +97,8 @@ const useBoardDrag = <T,>(board: RefObject<HTMLDivElement | null>, onDrop: (item
       setDrag(null);
       if (held?.moved) {
         onDrop(held.item, pointIn(board, event.clientX, event.clientY), { x: event.clientX, y: event.clientY });
+      } else if (held) {
+        onTap?.(held.item, { x: event.clientX, y: event.clientY });
       }
     },
     onPointerCancel: () => {
@@ -120,6 +130,8 @@ type TokenProps = {
   readonly dragging?: boolean;
   readonly pc?: boolean;
   readonly handlers?: PointerHandlers;
+  /** A click opens the NPC's trackers (the live table). */
+  readonly opens?: boolean;
   readonly onDoubleClick?: () => void;
   readonly onContextMenu?: (event: MouseEvent<HTMLElement>) => void;
 };
@@ -132,19 +144,20 @@ export type TokenMenu = (event: MouseEvent<HTMLElement>, characterKey: string, k
  * colour (thicker and brighter for the group's boss); a gold halo means lit. A generic NPC's stat tier badge sits
  * at its top-left.
  */
-export const StageTokenView = ({ characterKey, name, lit, x, y, color, boss, dragging, pc, handlers, onDoubleClick, onContextMenu }: TokenProps): ReactElement => {
+export const StageTokenView = ({ characterKey, name, lit, x, y, color, boss, dragging, pc, handlers, opens, onDoubleClick, onContextMenu }: TokenProps): ReactElement => {
   const tier = useContext(GenericTiersContext)[characterKey];
   return (
     <div
       className={`lab-token${lit ? " lit" : ""}${boss ? " boss" : ""}${dragging ? " dragging" : ""}${pc ? " pc" : ""}${handlers ? " editable" : ""}`}
       style={{ left: x, top: y, ...(color ? { "--group": color } : {}) } as CSSProperties}
-      title={handlers ? `${name}: drag to move, double-click to ${lit ? "darken" : "light"}, right-click to roll` : name}
+      title={handlers ? `${name}: drag to move, ${opens ? "click for trackers, " : ""}double-click to ${lit ? "darken" : "light"}, right-click to roll` : name}
       {...handlers}
       {...(onDoubleClick ? { onDoubleClick } : {})}
       {...(onContextMenu ? { onContextMenu } : {})}
     >
       <Headshot className="lab-token-head" characterKey={characterKey} />
       {tier && <TierBadge tier={tier} where="stage" />}
+      {!pc && <NpcLevelBadge characterKey={characterKey} where="stage" />}
       <span className="lab-token-name">{name}</span>
     </div>
   );
@@ -183,13 +196,23 @@ type StageLayerProps = {
   readonly onMenu: TokenMenu;
   /** A token dropped on an empty chair (or the NPC's own) takes that chair; without it, the seat row is off the stage. */
   readonly onSeat?: (characterKey: string, chair: number) => void;
+  /** A single click on a token (no drag, no second click): the live table opens the NPC's trackers. */
+  readonly onOpen?: (characterKey: string, client: { x: number; y: number }) => void;
 };
 
 /** Standard placement: tokens anywhere on the stage, packs as mild snap points and group drop targets. */
-export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit, onMenu, onSeat }: StageLayerProps): ReactElement => {
+export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit, onMenu, onSeat, onOpen }: StageLayerProps): ReactElement => {
   const roster = useRosterLayout();
   const overrides = useNpcOverrides();
   const [over, setOver] = useState(false);
+  const tapTimer = useRef<number | null>(null);
+  const cancelTap = (): void => {
+    if (tapTimer.current !== null) {
+      window.clearTimeout(tapTimer.current);
+      tapTimer.current = null;
+    }
+  };
+  useEffect(() => cancelTap, []);
   const place = (key: string, point: StagePoint): void => {
     if (offStage(point)) {
       if (spots.some((spot) => spot.characterKey === key)) {
@@ -216,7 +239,13 @@ export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit
     } else if (seat.holder === "" || seat.holder === key) {
       onSeat?.(key, seat.chair);
     }
-  });
+  }, onOpen ? (key, client) => {
+    cancelTap();
+    tapTimer.current = window.setTimeout(() => {
+      tapTimer.current = null;
+      onOpen(key, client);
+    }, TAP_WAIT_MS);
+  } : undefined);
   const packDrag = useBoardDrag<StagePack>(board, (pack, point) => {
     const keys = spots.filter((spot) => slotOf(spot, packs)?.pack === pack).map((spot) => spot.characterKey);
     if (offStage(point)) {
@@ -286,7 +315,9 @@ export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit
             boss={group !== undefined && groupLeader(roster, catalogs?.groupBosses, group) === spot.characterKey}
             dragging={dragging !== null}
             handlers={tokens.handlers(spot.characterKey)}
+            opens={onOpen !== undefined}
             onDoubleClick={() => {
+              cancelTap();
               const at = stageToBoard(spot.u, spot.v);
               onEdit({ [spot.characterKey]: { u: at.u, v: at.v, lightMode: spot.lit ? "OFF" : "STANDARD" } });
             }}

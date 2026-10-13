@@ -3,15 +3,15 @@ import { useLayoutEffect, useRef, type ReactElement } from "react";
 import { assetUrl } from "./layout.js";
 import type { RingAction } from "./types.js";
 
-type Props = {
+type Props<C> = {
   readonly x: number;
   readonly y: number;
-  readonly actions: readonly RingAction[];
-  readonly onPick: (action: RingAction, button: "left" | "right") => void;
+  readonly actions: readonly RingAction<C>[];
+  readonly onPick: (action: RingAction<C>, button: "left" | "right") => void;
   readonly onClose: () => void;
 };
 
-export const TraitRing = ({ x, y, actions, onPick, onClose }: Props): ReactElement => {
+export const TraitRing = <C,>({ x, y, actions, onPick, onClose }: Props<C>): ReactElement => {
   const rootRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {

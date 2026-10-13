@@ -174,13 +174,14 @@ export type RingTarget =
   | { kind: "damage"; which: "health" | "willpower" }
   | { kind: "humanity" };
 
-export type RingAction = {
+/** One button of a trait ring: `left` / `right` are the commands a left / right click sends (PC sheet commands by default). */
+export type RingAction<C = ApplyCommand> = {
   readonly id: string;
   readonly label: string;
   readonly image?: string;
   readonly badgeText?: string;
-  readonly left: ApplyCommand;
-  readonly right?: ApplyCommand;
+  readonly left: C;
+  readonly right?: C;
   readonly closeOnPick?: boolean;
 };
 

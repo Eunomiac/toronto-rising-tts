@@ -83,6 +83,19 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 5. Save & Play again: the badge should still be there (the tier is saved with the scene).
 6. Give a different generic type only one tier block, then click one of its tokens: it should go straight onto the stage with that tier, no picker.
 
+#### NPC trackers: Health, Willpower, Hunger and Rage on the dashboard
+
+**Context:** Every NPC on the table now has trackers that TTS keeps, like a PC's: Health and Willpower damage, plus Hunger (vampires) or Rage (werewolves), which start at 1 or 2. Named NPCs keep theirs for the rest of the night (a new night starts them fresh); a generic NPC keeps its own with the scene it is in.
+
+**How to verify:** restart the dashboard (`npm run dev`), then Save & Play.
+
+1. Give a named vampire NPC a stat block (right-click it in the roster, **Stats**: kind Vampire, Health 5, Willpower 4). Put that NPC on the stage and Send.
+2. Click the NPC's stage token once, without dragging. A small trackers window should open by the token, showing 5 Health boxes, 4 Willpower boxes and a row of five Hunger dots with 1 or 2 filled. Double-clicking the token should still light or darken it, without opening the window.
+3. Click the Health row. The damage ring opens: left-click **Superficial** twice and **Aggravated** once. The boxes should fill to match within a second or so. Right-click **Superficial** to take one away.
+4. Left-click the Hunger row until it reaches 3. A small red droplet with a "3" should appear at the top-right of the stage token. Seat the NPC: the droplet should show at the top-right of the seat too, and clicking the seat should open the same trackers window.
+5. Do the same with a werewolf NPC (kind Werewolf in Stats): the window should show a Rage row instead of Hunger, with an orange droplet at 3 or more.
+6. Add a generic NPC, damage it, then play a different scene and come back to the first one: the generic's damage should still be there. Advance the clock past the next dusk: the named NPC's trackers should start fresh (no damage, Hunger 1 or 2) the next time it appears.
+
 ### High — NPCs and dice no longer wait under the table
 
 #### TOR-707 — NPC figurines and spotlights spawn when a scene needs them

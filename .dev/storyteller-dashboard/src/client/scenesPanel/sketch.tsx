@@ -1,9 +1,9 @@
 import { useContext, useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent, type MouseEvent, type ReactElement, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Headshot } from "../headshots/Headshot";
-import { SEAT_ACCENT, assetUrl } from "../pcSheet/layout";
+import { SEAT_ACCENT } from "../pcSheet/layout";
 import { useOpenPcSheet } from "../pcSheet/openPcSheet";
-import { paintDamageTrack, paintHumanityTrack, type BoxSlot } from "../pcSheet/paint";
+import { paintDamageTrack, paintHumanityTrack } from "../pcSheet/paint";
 import { actionsForRing } from "../pcSheet/ringActions";
 import { TraitRing } from "../pcSheet/TraitRing";
 import type { ApplyCommand, RingTarget, SeatColor, SeatSnapshot, SheetSnapshot } from "../pcSheet/types";
@@ -13,6 +13,7 @@ import type { NpcTier } from "../../shared/npcStats";
 import { GenericTiersContext, useScenesCommand, type StageChanges } from "./commands";
 import { CompulsionBadge } from "./compulsionBadge";
 import { TierBadge } from "./tierBadge";
+import { BoxRow, HUNGER_DOT, NpcLevelBadge, NpcLiveContext, NpcTrackerPopup } from "./npcTrackers";
 import { GENERIC_SKY, stageName, tableUsesRandomSeating } from "./liveScene";
 import { SignalFlame } from "./signal";
 import { RollsCommandContext } from "./rolls/commands";
@@ -126,19 +127,6 @@ export type SeatSketch = {
 
 const NO_SEATS: SheetSnapshot = { ok: true, seats: [] };
 
-/** Character sheet box art; Humanity shows all ten boxes, unfilled ones faint. */
-const BoxRow = ({ boxes, showEmpty = false }: { boxes: readonly BoxSlot[]; showEmpty?: boolean }): ReactElement => (
-  <>
-    {boxes.map((box, index) => box.active && box.image ? (
-      <span key={index} className="lab-track-box" style={{ backgroundImage: `url("${assetUrl(`boxes/${box.image}.webp`)}")` }} />
-    ) : showEmpty ? (
-      <span key={index} className="lab-track-box off" style={{ backgroundImage: `url("${assetUrl("boxes/box_white.webp")}")` }} />
-    ) : null)}
-  </>
-);
-
-const HUNGER_DOT = { "--lab-dot": `url("${assetUrl("dots/dot_red.webp")}")` } as CSSProperties;
-
 type TrackRing = { readonly x: number; readonly y: number; readonly target: RingTarget };
 
 /** Tracker controls float over the stage; none of their clicks (left, right, or double) may reach it. */
@@ -204,6 +192,7 @@ const SeatContent = ({ seat, tier }: { seat: SeatSketch; tier: NpcTier | undefin
   <>
     <span className="lab-seat-badge">{seat.slot}</span>
     {tier && <TierBadge tier={tier} where="seat" />}
+    {seat.kind === "npc" && seat.characterKey && <NpcLevelBadge characterKey={seat.characterKey} where="seat" />}
     <span className="lab-seat-text">
       {seat.playedBy && <span className="lab-seat-flag role">{seat.playedBy} as</span>}
       {seat.name && <span className="lab-seat-name">{seat.name}</span>}
@@ -232,12 +221,14 @@ export type SeatDrops = {
  * onto another chair to swap, and a seated NPC onto the stage; roster NPCs drop into empty chairs. Every cell
  * carries `data-chair` for stage tokens dropped on it.
  */
-export const Seats = ({ seats, liveSheet, onMenu, onPresence, seating }: {
+export const Seats = ({ seats, liveSheet, onMenu, onPresence, onNpcTrackers, seating }: {
   seats: readonly SeatSketch[];
   /** Live sheets (fetched as soon as the seats show, for each PC's Desire); scene previews have none and show no sheet. */
   liveSheet?: LiveSheetAccess;
   onMenu?: (event: MouseEvent<HTMLElement>, seat: SeatSketch) => void;
   onPresence?: (seatKey: string, present: boolean) => void;
+  /** The live table: a click on a seated NPC opens its trackers. */
+  onNpcTrackers?: (event: MouseEvent<HTMLElement>, characterKey: string, name: string) => void;
   seating?: SeatDrops;
 }): ReactElement => {
   const [dropChair, setDropChair] = useState<number | null>(null);
@@ -282,6 +273,7 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, seating }: {
         const open = seat.color !== undefined && seat.color === openColor;
         const togglesPresence = onPresence !== undefined && seat.seatKey !== undefined && (seat.kind === "pc" || seat.kind === "npc") && seat.state !== "disconnected";
         const controllable = !onPresence && liveSheet !== undefined && seat.color !== undefined && seat.kind === "pc";
+        const npcTrackers = !onPresence && seat.kind === "npc" && seat.characterKey !== undefined ? onNpcTrackers : undefined;
         const menu = onMenu && (seat.kind === "pc" || seat.kind === "npc") ? onMenu : undefined;
         const seatKey = seat.seatKey;
         const draggable = seating !== undefined && seatKey !== undefined && (seat.kind === "pc" || seat.kind === "npc");
@@ -292,6 +284,7 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, seating }: {
         const opensSheet = controllable && openPcSheet !== null;
         const hints = [
           controllable && !open ? "Click for this PC's trackers" : undefined,
+          npcTrackers ? "Click for this NPC's trackers" : undefined,
           opensSheet ? "Double-click for their character sheet" : undefined,
           togglesPresence ? (seat.state === "absent" ? "Out of this scene — click to bring them in" : "In this scene — click to take them out") : undefined,
           menu && !togglesPresence ? "Right-click to roll, or to take them out of the scene / bring them back" : undefined,
@@ -303,7 +296,7 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, seating }: {
         return (
           <div
             key={seat.slot}
-            className={`lab-seat-slot${controllable ? " controllable" : ""}${open ? " open" : ""}${seat.signal ? " signal" : ""}${draggable ? " draggable" : ""}${dropChair === seat.slot ? " drop" : ""}`}
+            className={`lab-seat-slot${controllable || npcTrackers ? " controllable" : ""}${open ? " open" : ""}${seat.signal ? " signal" : ""}${draggable ? " draggable" : ""}${dropChair === seat.slot ? " drop" : ""}`}
             style={style}
             title={hints.length > 0 ? hints.join(". ") : undefined}
             data-chair={seat.slot}
@@ -359,6 +352,10 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, seating }: {
             onClick={(event) => {
               if (togglesPresence && seat.seatKey) {
                 onPresence(seat.seatKey, seat.state === "absent");
+                return;
+              }
+              if (npcTrackers && seat.characterKey) {
+                npcTrackers(event, seat.characterKey, seat.name ?? seat.characterKey);
                 return;
               }
               if (!controllable || (event.target as HTMLElement).closest(".lab-seat-pop")) {
@@ -503,6 +500,18 @@ type CharacterRing = {
 
 type GenericRename = { readonly x: number; readonly y: number; readonly key: string; readonly pending: boolean; readonly name: string };
 
+type NpcPop = { readonly characterKey: string; readonly name: string; readonly at: { readonly x: number; readonly y: number; readonly up: boolean } };
+
+/** Canvas point for a screen point, while the Scenes tab shows. */
+const canvasPointAt = (clientX: number, clientY: number): { x: number; y: number } => {
+  const canvas = activeCanvas();
+  if (!canvas) {
+    throw new Error("Scenes canvas is not showing.");
+  }
+  const rect = canvas.getBoundingClientRect();
+  return { x: clientX - rect.left, y: clientY - rect.top };
+};
+
 const RING_RX = 150;
 const RING_RY = 86;
 
@@ -537,6 +546,8 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
   const [ring, setRing] = useState<{ x: number; y: number } | null>(null);
   const [charRing, setCharRing] = useState<CharacterRing | null>(null);
   const [renaming, setRenaming] = useState<GenericRename | null>(null);
+  const [npcPop, setNpcPop] = useState<NpcPop | null>(null);
+  const npcLive = useContext(NpcLiveContext);
   const rollsSend = useContext(RollsCommandContext);
   const tiers = useContext(GenericTiersContext);
   const [clearArmed, setClearArmed] = useState(false);
@@ -677,6 +688,10 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
       ...(generic ? { generic: { key: characterKey, pending } } : {})
     });
   };
+  const openNpcTrackers = (clientX: number, clientY: number, characterKey: string, name?: string): void => {
+    const point = canvasPointAt(clientX, clientY);
+    setNpcPop({ characterKey, name: name ?? nameOf(characterKey), at: { ...point, up: point.y > CANVAS_H / 2 } });
+  };
   const rename = (target: GenericRename): void => {
     const name = target.name.trim();
     if (name === "") {
@@ -733,6 +748,7 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
         onEdit={edit}
         onMenu={openTokenRing}
         {...(seating ? { onSeat: seating.seatNpc } : {})}
+        {...(npcLive ? { onOpen: (characterKey: string, client: { x: number; y: number }) => openNpcTrackers(client.x, client.y, characterKey) } : {})}
       />
     )}
     <div className="lab-board-seats floating bottom" style={{ top: h - h * WIDE_SEAT_BAND - 8, height: h * WIDE_SEAT_BAND }}>
@@ -740,10 +756,16 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
         seats={seatsShown}
         {...(live.sheet ? { liveSheet: live.sheet } : {})}
         {...(live.presenceClicks ? { onPresence: (seatKey: string, present: boolean) => command({ op: "seatPresence", seat: seatKey, present }) } : {})}
+        {...(npcLive ? { onNpcTrackers: (event: MouseEvent<HTMLElement>, characterKey: string, name: string) => openNpcTrackers(event.clientX, event.clientY, characterKey, name) } : {})}
         {...(seating ? { seating } : {})}
         onMenu={openSeatRing}
       />
     </div>
+    {npcPop && (
+      <Overlay onClose={() => setNpcPop(null)}>
+        <NpcTrackerPopup characterKey={npcPop.characterKey} name={npcPop.name} at={npcPop.at} send={command} />
+      </Overlay>
+    )}
     <span className="lab-board-table top">
       <select
         title={env.scatter ? "Scatter is on; pick a table to set the stage back down" : "The table the seats gather around"}
