@@ -336,9 +336,9 @@
       },
       {
         "id": "cat-1791492901898",
-        "name": "Camarilla (Main)",
+        "name": "Camarilla",
         "color": "#ffd500",
-        "open": false
+        "open": true
       },
       {
         "id": "cat-1791492941508",
@@ -350,7 +350,7 @@
         "id": "cat-1791493032845",
         "name": "Independent",
         "color": "#ffffff",
-        "open": true
+        "open": false
       },
       {
         "id": "cat-1791493058629",

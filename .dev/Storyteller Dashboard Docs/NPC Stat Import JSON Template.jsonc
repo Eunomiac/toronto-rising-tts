@@ -1,0 +1,85 @@
+{
+  "drake": {
+    "kind": "Vampire",
+    "generation": 8,
+    "clan": "Nosferatu",
+    "rank": "Elder",
+    "sect": "Camarilla",
+    "sectStatus": 5,
+    "clanStatus": 5,
+    "bloodPotency": 5,
+    "humanity": 5,
+    "difficulty": [
+      6,
+      4
+    ],
+    "health": 8,
+    "willpower": 9,
+    "standardPools": {
+      "physical": 5,
+      "social": 5,
+      "mental": 8,
+      "power": 7
+    },
+    "exceptionalPools": {
+      "Stealth": 12,
+      "Awareness": 9,
+      "Animal Ken": 10,
+      "Brawl": 7
+    },
+    "powers": {
+      "Obfuscate": {
+        "value": 5,
+        "powers": [ // <level>-<# rouse checks>-<power name>[-<dice pool>] -- Note, "dice pool" must match one of the "exceptionalPools" exactly, or be one of "phy", "soc", "men", or "pow" (corresponding to each of the standard pools).
+          "1-0-Cloak of Shadows",
+          "2-1-Unseen Passage-Stealth",
+          "3-0-Ghost in the Machine",
+          "4-0-Vanish",
+          "5-1-Cloak the Gathering"
+        ]
+      },
+      "Animalism": { /*... */},
+      /* ... */
+    },
+    "ancillaPowers": [
+      { // For now, these should be treated as straight entries under the corresponding Discipline's powers array; the description can be ignored until we figure out how to implement it later.
+        "discipline": "Obfuscate",
+        "level": 2,
+        "power": "1-0-Whispers in the Dark-Stealth",
+        "description": "By succeeding at a Stealth contest, Drake can whisper and be heard while Obfuscated, without breaking Obfuscate."
+      }
+    ],
+    "elderPowers": [ // Elder powers can be ignored for now.
+      {
+        "name": "Shadow on the Mind",
+        "description": "Drake's Obfuscate is insidious and lingering. Short of taking dramatic, attention-grabbing action, Drake's Obfuscate cannot be pierced unless a Critical Win is scored on the observation roll."
+      }
+    ],
+    "methuselahPowers": [], // Methuselah powers can be ignored for now.
+    "backgrounds": [ // Backgrounds can be ignored for now -- though we will need to implement and track these, as NPCs will be able to stake their own backgrounds to launch Projects.
+      {
+        "name": "Mask",
+        "value": 2
+      },
+      {
+        "name": "Zeroed"
+      },
+      {
+        "name": "Resources",
+        "focus": "Nosferatu Trove",
+        "value": 5
+      },
+      {
+        "name": "Influence",
+        "focus": "Vermin",
+        "value": 5
+      },
+      {
+        "name": "Influence",
+        "focus": "City Planning",
+        "value": 4
+      },
+      /* ... */
+    ]
+  }
+}

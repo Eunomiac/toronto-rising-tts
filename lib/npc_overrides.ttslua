@@ -5,6 +5,7 @@
 -- Read by lib/npcs_data, core/npcs and lib/figurine_seat_layout.
 
 return {
+  aapiluPossessed_03 = { name = "Ben" },
   alexandra = { cardScale = 55 },
   averyInnis = { cardScale = 50 },
   bacchusGiovanni = { cardScale = 60 },
