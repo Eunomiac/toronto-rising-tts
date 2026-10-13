@@ -111,6 +111,7 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 6. Turn on **Blood Surge** in the window before picking the pool: the Blood Potency's surge dice and one extra rouse die should be added.
 7. After a roll, spend Willpower on a reroll: the NPC's Willpower should take 1 superficial damage in the trackers window.
 8. Open the vampire's trackers window, click Health and pick **Mend**: a rouse check rolls by itself and the NPC heals the Blood Potency's mend amount of superficial damage.
+9. Roll a power with rouse checks **without setting a difficulty**, and confirm it. Every failed rouse check should still raise the NPC's Hunger (this used to be skipped when a roll had no difficulty: Mara's Arms of Ahriman rolls on 2026-10-13 failed three checks and her Hunger stayed at 1).
 
 #### Keep a generic NPC as a character
 

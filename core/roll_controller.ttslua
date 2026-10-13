@@ -2845,8 +2845,9 @@ function RC.confirmRoll(color)
     -- Apply consequences for Rouse / Remorse
     if active.result ~= nil then
         RC._applyRollConsequences(color, active)
-        RC._applyRouseOutcomeStrips(color, active)
     end
+    -- Rouse checks resolve on their own dice, so they apply even when the pool had no difficulty (no result).
+    RC._applyRouseOutcomeStrips(color, active)
     local npcBroadcast = nil
     if color == "Black" and type(active.npcPlan) == "table" then
         npcBroadcast = RC.npcBroadcastText(active)
