@@ -1,10 +1,12 @@
 import {
   backgroundMoods,
+  bloodPotency,
   featuredTracks,
   lightModes,
   locationTracks,
   npcSeats,
   playerColors,
+  rollTypeRules,
   structuralRollOptions,
   weatherCodes
 } from "../../data/scene-catalogs.json";
@@ -107,3 +109,28 @@ export type WeatherCodes = {
 };
 
 export const WEATHER_CODES: WeatherCodes = weatherCodes;
+
+/** One `BPC.BloodPotency` row (`lib/blood_potency_constants.ttslua`). */
+export type BloodPotencyRow = {
+  readonly level: number;
+  readonly bloodSurge: number;
+  readonly mending: number;
+  readonly discBonus: number;
+  readonly discReroll: number;
+  readonly baneSeverity: number;
+};
+
+/** Blood Potency 0–10, indexed by level. */
+export const BLOOD_POTENCY: readonly BloodPotencyRow[] = bloodPotency;
+
+/** The Blood Potency row for a rating (clamped to 0–10). */
+export const bloodPotencyRow = (rating: number | undefined): BloodPotencyRow => {
+  const row = BLOOD_POTENCY[Math.max(0, Math.min(BLOOD_POTENCY.length - 1, Math.floor(rating ?? 0)))];
+  if (!row) {
+    throw drift("bloodPotency", "no rows");
+  }
+  return row;
+};
+
+/** Roll types that allow Blood Surge (`C.RollTypesBloodSurge`) and that take no Hunger dice (`C.RollTypesWithoutHunger`). */
+export const ROLL_TYPE_RULES: { readonly bloodSurge: readonly string[]; readonly withoutHunger: readonly string[] } = rollTypeRules;

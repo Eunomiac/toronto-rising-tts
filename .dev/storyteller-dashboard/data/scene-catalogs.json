@@ -5176,6 +5176,112 @@
       "label": "Criticals"
     }
   ],
+  "bloodPotency": [
+    {
+      "level": 0,
+      "bloodSurge": 1,
+      "mending": 1,
+      "discBonus": 0,
+      "discReroll": 0,
+      "baneSeverity": 0
+    },
+    {
+      "level": 1,
+      "bloodSurge": 2,
+      "mending": 1,
+      "discBonus": 0,
+      "discReroll": 1,
+      "baneSeverity": 2
+    },
+    {
+      "level": 2,
+      "bloodSurge": 2,
+      "mending": 2,
+      "discBonus": 1,
+      "discReroll": 1,
+      "baneSeverity": 2
+    },
+    {
+      "level": 3,
+      "bloodSurge": 3,
+      "mending": 2,
+      "discBonus": 1,
+      "discReroll": 2,
+      "baneSeverity": 3
+    },
+    {
+      "level": 4,
+      "bloodSurge": 3,
+      "mending": 3,
+      "discBonus": 2,
+      "discReroll": 2,
+      "baneSeverity": 3
+    },
+    {
+      "level": 5,
+      "bloodSurge": 4,
+      "mending": 3,
+      "discBonus": 2,
+      "discReroll": 3,
+      "baneSeverity": 4
+    },
+    {
+      "level": 6,
+      "bloodSurge": 4,
+      "mending": 3,
+      "discBonus": 3,
+      "discReroll": 3,
+      "baneSeverity": 4
+    },
+    {
+      "level": 7,
+      "bloodSurge": 5,
+      "mending": 3,
+      "discBonus": 3,
+      "discReroll": 4,
+      "baneSeverity": 5
+    },
+    {
+      "level": 8,
+      "bloodSurge": 5,
+      "mending": 4,
+      "discBonus": 4,
+      "discReroll": 4,
+      "baneSeverity": 5
+    },
+    {
+      "level": 9,
+      "bloodSurge": 6,
+      "mending": 4,
+      "discBonus": 4,
+      "discReroll": 5,
+      "baneSeverity": 6
+    },
+    {
+      "level": 10,
+      "bloodSurge": 6,
+      "mending": 5,
+      "discBonus": 5,
+      "discReroll": 5,
+      "baneSeverity": 6
+    }
+  ],
+  "rollTypeRules": {
+    "bloodSurge": [
+      "standard",
+      "discipline"
+    ],
+    "withoutHunger": [
+      "simpleCheck",
+      "rouse",
+      "rouseOblivion",
+      "remorse",
+      "willpowerRoll",
+      "humanityRoll",
+      "frenzy",
+      "werewolf"
+    ]
+  },
   "pickerGroupLabels": {
     "aapilu": "Aapilu",
     "civilian": "Civilian",

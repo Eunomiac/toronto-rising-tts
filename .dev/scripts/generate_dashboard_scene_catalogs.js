@@ -29,6 +29,7 @@ const conditionDefsPath = path.join(root, "lib", "condition_defs.ttslua");
 const npcsDataPath = path.join(root, "lib", "npcs_data.ttslua");
 const gameboardDataPath = path.join(root, "lib", "npc_gameboard_data.ttslua");
 const guidsPath = path.join(root, "lib", "guids.ttslua");
+const bloodPotencyPath = path.join(root, "lib", "blood_potency_constants.ttslua");
 const catalogsOutPath = path.join(root, ".dev", "storyteller-dashboard", "data", "scene-catalogs.json");
 const snapsOutPath = path.join(root, ".dev", "storyteller-dashboard", "data", "control-board-snaps.json");
 const npcRosterPath = path.join(root, ".dev", "storyteller-dashboard", "data", "npc-roster.json");
@@ -733,6 +734,47 @@ function parseWeatherCodes(source) {
   return { warmThreshold, base, temperatureDelta, wind };
 }
 
+const BLOOD_POTENCY_FIELDS = ["bloodSurge", "mending", "discBonus", "discReroll", "baneSeverity"];
+
+/** `BPC.BloodPotency` rows 0–10 (NPC stat rolls read surge, mending, discipline bonus and reroll from it). */
+function parseBloodPotency(source) {
+  const block = extractBlock(source, "BPC.BloodPotency =");
+  const rows = [...block.matchAll(/\[(\d+)\]\s*=\s*(\{[^}]*\})/g)].map((m) => {
+    const row = { level: Number(m[1]) };
+    for (const field of BLOOD_POTENCY_FIELDS) {
+      const value = readNumberField(m[2], field);
+      if (value === null) {
+        throw new Error(`BPC.BloodPotency[${m[1]}] is missing ${field}.`);
+      }
+      row[field] = value;
+    }
+    return row;
+  });
+  rows.sort((a, b) => a.level - b.level);
+  if (rows.length !== 11 || rows.some((row, index) => row.level !== index)) {
+    throw new Error("BPC.BloodPotency must have rows 0 to 10.");
+  }
+  return rows;
+}
+
+/** Roll type values (`C.RollType`) of a `[C.RollType.X] = true` set in lib/constants.ttslua. */
+function parseRollTypeSet(constants, marker) {
+  const names = {};
+  for (const m of extractBlock(constants, "C.RollType =").matchAll(/([A-Z_]+)\s*=\s*"([^"]+)"/g)) {
+    names[m[1]] = m[2];
+  }
+  const set = [...extractBlock(constants, marker).matchAll(/\[C\.RollType\.([A-Z_]+)\]\s*=\s*true/g)].map((m) => {
+    if (!names[m[1]]) {
+      throw new Error(`${marker} names an unknown roll type ${m[1]}.`);
+    }
+    return names[m[1]];
+  });
+  if (set.length === 0) {
+    throw new Error(`${marker} is empty.`);
+  }
+  return set;
+}
+
 /** `CD.STRUCTURAL_NEGATING` in source order; each label is its negating condition's name without the leading "No ". */
 function parseStructuralRollOptions(conditionSrc) {
   const block = extractBlock(conditionSrc, "CD.STRUCTURAL_NEGATING =");
@@ -841,6 +883,11 @@ function main() {
 
   const weatherCodes = parseWeatherCodes(constants);
   const structuralRollOptions = parseStructuralRollOptions(conditionSrc);
+  const bloodPotency = parseBloodPotency(fs.readFileSync(bloodPotencyPath, "utf8"));
+  const rollTypeRules = {
+    bloodSurge: parseRollTypeSet(constants, "C.RollTypesBloodSurge ="),
+    withoutHunger: parseRollTypeSet(constants, "C.RollTypesWithoutHunger ="),
+  };
 
   const playlistsBlock = extractBlock(soundscapeSrc, "Catalog.PLAYLISTS =");
   const bgBlock = extractBlock(playlistsBlock, "backgroundMusic =");
@@ -971,6 +1018,8 @@ function main() {
     weatherCodes,
     conditions,
     structuralRollOptions,
+    bloodPotency,
+    rollTypeRules,
     pickerGroupLabels,
     groupBosses: npcRoster.bosses,
   };
