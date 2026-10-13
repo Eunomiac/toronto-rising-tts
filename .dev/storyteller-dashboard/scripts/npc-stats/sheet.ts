@@ -4,12 +4,11 @@
  *
  * Cell formats:
  * - Exceptional Pools: `Stealth 12, Academics [Theology] 7`
- * - Attacks: `<name>-<pool>+<bonus>` (`Feral Claws-Brawl+2`)
- * - Powers / Ancilla Power(s): `<category> <dots> (<level>-<rouse>-<name>[-<pool>][-"<description>"], …), …`
+ * - Attacks: `<name>|<pool>+<bonus>` (`Feral Claws|Brawl+2`)
+ * - Powers / Ancilla Power(s): `<category> <dots> (<level>|<rouse>|<name>[|<pool>][|"<description>"], …), …`
  * - Elder / Methuselah Power(s): `<name> (<description>), …`
- * A pool ref is `Phy` / `Soc` / `Men` / `Pow`, an Exceptional pool (exactly, or without its `[specialty]`), a V5
- * skill with no Exceptional pool (its attribute's standard pool: `Brawl` → Physical) or, for powers, an attack. A power's last hyphen piece is its pool only when it resolves; otherwise it is part of the name
- * (`2-1-Self-Assurance`). Blank and `~` cells are empty.
+ * A pool is `Phy` / `Soc` / `Men` / `Pow`, the exact name of one of the row's Exceptional pools or, for powers, of
+ * one of its attacks (case-insensitive). Blank and `~` cells are empty.
  */
 import type { CsvRows } from "../../src/shared/csv.ts";
 import {
@@ -40,7 +39,7 @@ export const COLUMNS = {
   willpower: "Willpower",
   physical: "Phy",
   social: "Soc",
-  mental: "Mental",
+  mental: "Men",
   supernatural: "Pow",
   exceptional: "Exceptional Pools",
   attacks: "Attacks",
@@ -74,15 +73,6 @@ const GENERATIONS = [
 ];
 
 const STANDARD_REFS: Readonly<Record<string, string>> = { phy: "physical", soc: "social", men: "mental", pow: "supernatural" };
-
-/** A V5 skill the NPC has no Exceptional pool for rolls its attribute's standard pool. */
-const SKILL_POOLS: Readonly<Record<string, string>> = Object.fromEntries([
-  ...["athletics", "brawl", "craft", "drive", "firearms", "larceny", "melee", "stealth", "survival"].map((s) => [s, "physical"]),
-  ...["animal ken", "etiquette", "insight", "intimidation", "leadership", "performance", "persuasion", "streetwise", "subterfuge"]
-    .map((s) => [s, "social"]),
-  ...["academics", "awareness", "finance", "investigation", "medicine", "occult", "politics", "science", "technology"]
-    .map((s) => [s, "mental"])
-]);
 
 export type SheetImport = {
   readonly blocks: ReadonlyMap<string, NpcStatBlock>;
@@ -155,8 +145,6 @@ export const stableId = (name: string, used: Set<string>): string => {
     }
   }
 };
-
-const withoutSpecialty = (name: string): string => name.replace(/\s*\[[^\]]*\]\s*$/, "").trim();
 
 const optionalInt = <K extends string>(key: K, value: number | undefined): Partial<Record<K, number>> =>
   (value === undefined ? {} : { [key]: value }) as Partial<Record<K, number>>;
@@ -252,24 +240,25 @@ const parseRow = (cell: (column: Column) => string, key: string): NpcStatBlock =
     if (standard) {
       return standard === "supernatural" && !hasSupernatural ? undefined : standard;
     }
-    const exact = exceptional.find((pool) => pool.name.toLowerCase() === lower);
-    if (exact) {
-      return `ex:${exact.id}`;
-    }
-    const bySkill = exceptional.filter((pool) => withoutSpecialty(pool.name).toLowerCase() === lower);
-    if (bySkill.length > 0) {
-      return bySkill.length === 1 ? `ex:${bySkill[0]!.id}` : undefined;
-    }
-    return SKILL_POOLS[lower];
+    const exceptionalPool = exceptional.find((pool) => pool.name.toLowerCase() === lower);
+    return exceptionalPool ? `ex:${exceptionalPool.id}` : undefined;
   };
 
   const attacks: NpcAttack[] = [];
   for (const entry of blank(cell("attacks")) ? [] : splitTop(cell("attacks"))) {
-    const match = /^(.+)-([^-]+?)\s*([+-]\d+)$/.exec(entry);
-    const pool = match ? poolRef(match[2]!) : undefined;
-    const bonus = match ? Number(match[3]) : NaN;
-    if (!match || !pool || bonus < RANGES.bonus[0] || bonus > RANGES.bonus[1]) {
-      problems.push(`Attack "${entry}" is not "<name>-<pool>+<bonus>" with a known pool`);
+    const match = /^([^|]+)\|([^|]+?)\s*([+-]\d+)$/.exec(entry);
+    if (!match) {
+      problems.push(`Attack "${entry}" is not "<name>|<pool>+<bonus>"`);
+      continue;
+    }
+    const pool = poolRef(match[2]!);
+    const bonus = Number(match[3]);
+    if (!pool) {
+      problems.push(`Attack "${entry}": "${match[2]!.trim()}" is not Phy, Soc, Men${hasSupernatural ? ", Pow" : ""} or an Exceptional pool`);
+      continue;
+    }
+    if (bonus < RANGES.bonus[0] || bonus > RANGES.bonus[1]) {
+      problems.push(`Attack "${entry}": bonus ${bonus} is outside ${RANGES.bonus[0]} to ${RANGES.bonus[1]}`);
       continue;
     }
     const name = match[1]!.trim();
@@ -303,23 +292,27 @@ const parseRow = (cell: (column: Column) => string, key: string): NpcStatBlock =
       }
       const entries = category.powers as NpcPower[];
       for (const raw of splitTop(match[3]!)) {
-        const described = /^([\s\S]*?)-"([\s\S]*)"$/.exec(raw);
-        const pieces = (described ? described[1]! : raw).split("-").map((piece) => piece.trim());
-        const level = Number(pieces[0]);
-        const rouse = Number(pieces[1]);
-        const rest = pieces.slice(2);
-        if (!/^\d$/.test(pieces[0] ?? "") || !/^\d$/.test(pieces[1] ?? "") || rest.length === 0
+        const described = /^([\s\S]*?)\|"([\s\S]*)"$/.exec(raw);
+        const [levelText = "", rouseText = "", name = "", poolText, ...extra] = (described ? described[1]! : raw)
+          .split("|")
+          .map((piece) => piece.trim());
+        const level = Number(levelText);
+        const rouse = Number(rouseText);
+        if (!/^\d$/.test(levelText) || !/^\d$/.test(rouseText) || name === "" || extra.length > 0
           || level < RANGES.level[0] || level > RANGES.level[1] || rouse > RANGES.rouse[1]) {
-          problems.push(`${COLUMNS[column]} power "${raw}" is not "<level>-<rouse>-<name>[-<pool>]"`);
+          problems.push(`${COLUMNS[column]} power "${raw}" is not "<level>|<rouse>|<name>[|<pool>]"`);
           continue;
         }
-        const pool = rest.length > 1 ? powerRef(rest.at(-1)!) : undefined;
-        const name = (pool ? rest.slice(0, -1) : rest).join("-");
+        const pool = poolText === undefined ? "" : powerRef(poolText);
+        if (pool === undefined) {
+          problems.push(`${COLUMNS[column]} power "${raw}": "${poolText}" is not a standard pool, Exceptional pool or attack`);
+          continue;
+        }
         entries.push({
           level,
           name,
           rouse: usesRouse(kind) ? rouse : 0,
-          pool: pool ?? "",
+          pool,
           ...(column === "ancilla" ? { ancilla: true as const } : {})
         });
         if (described) {

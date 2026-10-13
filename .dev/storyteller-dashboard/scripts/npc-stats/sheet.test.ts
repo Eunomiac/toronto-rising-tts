@@ -42,9 +42,9 @@ describe("parseCharacters", () => {
       mental: "3",
       supernatural: "6",
       exceptional: "Stealth 9, Melee [Knives] 8",
-      attacks: "Fists-Phy+0, Shiv-Melee+2, Shove-Athletics+1",
-      powers: "Obfuscate 3 (1-0-Silence of Death, 2-1-Unseen Passage-Stealth, 3-1-Self-Assurance, 3-1-Ghost Step-Script-pow)",
-      ancilla: 'Obfuscate 4 (4-1-Vanish-Stealth-"Disappears, even when watched.")',
+      attacks: "Fists|Phy+0, Shiv|melee [knives]+2",
+      powers: "Obfuscate 3 (1|0|Silence of Death, 2|1|Unseen Passage|Stealth, 3|1|Self-Assurance, 3|1|Ghost Step-Script|pow, 3|0|Shiv Dance|Shiv)",
+      ancilla: 'Obfuscate 4 (4|1|Vanish|Stealth|"Disappears, even when watched.")',
       elder: "Old Trick (Does a thing, slowly.)"
     });
     expect(errors).toEqual([]);
@@ -57,9 +57,9 @@ describe("parseCharacters", () => {
     });
     expect(block.attacks).toEqual([
       expect.objectContaining({ name: "Fists", pool: "physical", bonus: 0 }),
-      expect.objectContaining({ name: "Shiv", pool: `ex:${knives.id}`, bonus: 2 }),
-      expect.objectContaining({ name: "Shove", pool: "physical", bonus: 1 })
+      expect.objectContaining({ name: "Shiv", pool: `ex:${knives.id}`, bonus: 2 })
     ]);
+    const shiv = block.attacks!.find((attack) => attack.name === "Shiv")!;
     expect(block.powers).toEqual([{
       name: "Obfuscate",
       dots: 3,
@@ -68,6 +68,7 @@ describe("parseCharacters", () => {
         { level: 2, name: "Unseen Passage", rouse: 1, pool: `ex:${stealth.id}` },
         { level: 3, name: "Self-Assurance", rouse: 1, pool: "" },
         { level: 3, name: "Ghost Step-Script", rouse: 1, pool: "supernatural" },
+        { level: 3, name: "Shiv Dance", rouse: 0, pool: `atk:${shiv.id}` },
         { level: 4, name: "Vanish", rouse: 1, pool: `ex:${stealth.id}`, ancilla: true }
       ]
     }]);
@@ -82,7 +83,7 @@ describe("parseCharacters", () => {
       { key: "testGhoul", type: "Mortal", clan: "Ghoul", physical: "4", supernatural: "2" },
       { key: "testWolf", type: "Werewolf", rank: "Fostern", physical: "8", supernatural: "5" },
       { key: "testShade", type: "Wraith", mental: "5" },
-      { key: "testMortal", type: "Mortal", clan: "~", social: "3", powers: "Faith 1 (1-2-Prayer-Soc)" }
+      { key: "testMortal", type: "Mortal", clan: "~", social: "3", powers: "Faith 1 (1|2|Prayer|Soc)" }
     );
     expect(errors).toEqual([]);
     expect(blocks.get("testGhoul")).toMatchObject({ kind: "ghoul", supernatural: 2 });
@@ -101,19 +102,21 @@ describe("parseCharacters", () => {
 
   it("reports bad cells instead of guessing", () => {
     const { blocks, errors } = parse(
-      { key: "testBad", type: "Kindred", clan: "Nobody", difficulty: "6", physical: "x", attacks: "Bite-Teeth+1" },
+      { key: "testBad", type: "Kindred", clan: "Nobody", difficulty: "6", physical: "x", attacks: "Bite-Phy+1" },
       { key: "testMortalPow", type: "Mortal", supernatural: "3" },
-      { key: "testAmbiguous", type: "Animal", exceptional: "Melee [A] 3, Melee [B] 4", attacks: "Hit-Melee+0" },
+      { key: "testSkill", type: "Animal", exceptional: "Melee [Teeth] 3", attacks: "Hit|Melee+0" },
+      { key: "testPower", type: "Kindred", physical: "2", powers: "Potence 1 (1|0|Lethal Body|Brawl)" },
       { key: "testType", type: "Ghost", physical: "1" }
     );
     expect(blocks.size).toBe(0);
-    expect(errors).toHaveLength(4);
-    for (const problem of [/Clan "Nobody"/, /Difficulty "6"/, /Phy "x"/, /Attack "Bite-Teeth\+1"/]) {
+    expect(errors).toHaveLength(5);
+    for (const problem of [/Clan "Nobody"/, /Difficulty "6"/, /Phy "x"/, /Attack "Bite-Phy\+1" is not/]) {
       expect(errors[0]).toMatch(problem);
     }
     expect(errors[1]).toMatch(/testMortalPow: Pow 3/);
-    expect(errors[2]).toMatch(/testAmbiguous: Attack "Hit-Melee\+0"/);
-    expect(errors[3]).toMatch(/testType: unknown Type "Ghost"/);
+    expect(errors[2]).toMatch(/testSkill: Attack "Hit\|Melee\+0": "Melee" is not/);
+    expect(errors[3]).toMatch(/testPower: Powers power "1\|0\|Lethal Body\|Brawl": "Brawl" is not/);
+    expect(errors[4]).toMatch(/testType: unknown Type "Ghost"/);
   });
 
   it("requires every header", () => {
