@@ -699,6 +699,40 @@ $phase-held: #ff8a5c;
   transform: none;
 }
 
+.lab-modal.npc-config {
+  max-height: 900px;
+  overflow-y: auto;
+}
+
+.npc-config-manual {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.npc-config-entry {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+
+  &.broken {
+    border-color: #8a3a3a;
+  }
+}
+
+.npc-config-dice {
+  color: #e0b860;
+  font-size: 11px;
+}
+
+.npc-config-notes {
+  max-height: 160px;
+  overflow-y: auto;
+  color: #c9c9d4;
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+
 .roll-options-head {
   margin-top: 4px;
   color: #a8a8b4;

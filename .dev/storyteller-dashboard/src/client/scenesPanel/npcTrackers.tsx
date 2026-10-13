@@ -6,9 +6,11 @@ import type { RingAction } from "../pcSheet/types";
 import { useNpcStats } from "../npcStats";
 import { statBlockFor, type NpcKind, type NpcStatBlock, type NpcTier } from "../../shared/npcStats";
 import type { GenericNpc, NpcTrackerRecord } from "../worldState";
+import { bloodPotencyRow } from "../catalogVocab";
 import type { NpcTrackerMode, NpcTrackerWhich, ScenesCommand } from "./commands";
 import { useGenericCatalog } from "./genericCatalog";
 import { Icon } from "./icons";
+import { RollsCommandContext, type RollsCommand } from "./rolls/commands";
 
 /**
  * Live NPC trackers on the Scenes tab: TTS owns the values (`core/npc_trackers.ttslua`, pushed in the seats slice);
@@ -115,14 +117,25 @@ const trackerCommand = (key: string, which: NpcTrackerWhich, mode: NpcTrackerMod
   return { op: "npcTracker", key, which, mode, ...(Object.keys(max).length > 0 ? { max } : {}) };
 };
 
-/** Same buttons as a PC's damage ring: left-click adds, right-click removes; Clear clears superficial / aggravated. */
-const damageActions = (key: string, which: DamageWhich, block: NpcStatBlock | undefined): readonly RingAction<ScenesCommand>[] => {
-  const mode = (value: NpcTrackerMode): ScenesCommand => trackerCommand(key, which, value, block);
-  return [
+/** Ring buttons send tracker changes to the Scenes queue, except Mend, which is a Storyteller roll. */
+type NpcRingCommand = { readonly scenes: ScenesCommand } | { readonly roll: RollsCommand };
+
+/**
+ * Same buttons as a PC's damage ring: left-click adds, right-click removes; Clear clears superficial / aggravated.
+ * A vampire's Health ring adds Mend (`mend` = its Blood Potency mending, absent when it cannot Mend).
+ */
+const damageActions = (key: string, name: string, which: DamageWhich, block: NpcStatBlock | undefined, mend: number | undefined): readonly RingAction<NpcRingCommand>[] => {
+  const mode = (value: NpcTrackerMode): NpcRingCommand => ({ scenes: trackerCommand(key, which, value, block) });
+  const actions: RingAction<NpcRingCommand>[] = [
     { id: "sup", label: "Superficial", image: "buttons/tracker_sup.webp", left: mode("addSuper"), right: mode("removeSuper") },
     { id: "agg", label: "Aggravated", image: "buttons/tracker_agg.webp", left: mode("addAgg"), right: mode("removeAgg") },
     { id: "clear", label: "Clear", image: "buttons/tracker_clear.webp", left: mode("clearSuper"), right: mode("clearAgg") }
   ];
+  if (which === "health" && mend !== undefined) {
+    const command: NpcRingCommand = { roll: { op: "npcMend", key, label: name, heal: mend } };
+    actions.push({ id: "mend", label: `Mend +${mend} (rouse)`, image: "buttons/tracker_mend.webp", left: command, right: command, closeOnPick: true });
+  }
+  return actions;
 };
 
 const DAMAGE_LABEL: Record<DamageWhich, string> = { health: "Health", willpower: "Willpower" };
@@ -177,6 +190,7 @@ export const NpcTrackerPopup = ({ characterKey, name, at, send }: {
   send: (command: ScenesCommand) => void;
 }): ReactElement => {
   const live = useContext(NpcLiveContext);
+  const rollsSend = useContext(RollsCommandContext);
   const [ring, setRing] = useState<{ x: number; y: number; which: DamageWhich } | null>(null);
   if (!live) {
     throw new Error("NPC trackers need the live table (NpcLiveContext).");
@@ -184,6 +198,16 @@ export const NpcTrackerPopup = ({ characterKey, name, at, send }: {
   const record = live.trackers[characterKey];
   const block = live.blockFor(characterKey);
   const kind = live.kindOf(characterKey);
+  const mend = kind === "vampire" && rollsSend ? bloodPotencyRow(block?.bloodPotency).mending : undefined;
+  const pickRing = (command: NpcRingCommand): void => {
+    if ("scenes" in command) {
+      send(command.scenes);
+    } else if (rollsSend) {
+      rollsSend(command.roll);
+    } else {
+      throw new Error("Mend needs the live roll transport.");
+    }
+  };
   const openRing = (which: DamageWhich) => (event: MouseEvent<HTMLElement>): void => {
     const canvas = event.currentTarget.closest(".lab-canvas");
     if (!canvas) {
@@ -224,8 +248,8 @@ export const NpcTrackerPopup = ({ characterKey, name, at, send }: {
           <TraitRing
             x={ring.x}
             y={ring.y}
-            actions={damageActions(characterKey, ring.which, block)}
-            onPick={(action, button) => send(button === "right" ? (action.right ?? action.left) : action.left)}
+            actions={damageActions(characterKey, name, ring.which, block, mend)}
+            onPick={(action, button) => pickRing(button === "right" ? (action.right ?? action.left) : action.left)}
             onClose={() => setRing(null)}
           />
         </div>

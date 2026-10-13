@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState, type CSSProperties, type MouseEvent, type ReactElement, type ReactNode } from "react";
+import { useContext, useEffect, useRef, useState, type CSSProperties, type MouseEvent, type ReactElement, type ReactNode } from "react";
 import { Icon, type IconName } from "../icons";
+import { NpcLiveContext } from "../npcTrackers";
 import { canvasPoint, Overlay } from "../sketch";
 import { SEAT_ACCENT } from "../../pcSheet/layout";
 import { STRUCTURAL_OPTIONS } from "../../catalogVocab";
@@ -8,6 +9,7 @@ import type { PcRoll, PoolKind, RollPool, RollResult, RollsSlice, StLiveRoll, St
 import type { RollOptionsView } from "./bridge";
 import type { PoolDieAction, RollsSend } from "./commands";
 import { DiceRing, PoolDiamonds, RolledDice } from "./dice";
+import { NpcConfigure, type ConfigureAt } from "./npcConfigure";
 import { broadcastStates, foldChanges, NPC_FOLD, slotFold } from "./rollFolds";
 import {
   bumpPool,
@@ -127,7 +129,7 @@ type CardAction = {
   readonly disabled?: boolean;
   /** Still shown on a collapsed one-line card. */
   readonly keep?: boolean;
-  readonly onClick: () => void;
+  readonly onClick: (event: MouseEvent<HTMLElement>) => void;
   /** Right-click runs the quiet variant (secret dice / no broadcast). */
   readonly onQuiet?: () => void;
 };
@@ -377,9 +379,12 @@ const SlotRollCard = ({ slot, send, collapsed, onToggle }: {
 
 const NO_PICKS: ReadonlySet<number> = new Set();
 
-const npcActions = (live: StLiveRoll, send: RollsSend, picked: ReadonlySet<number>): CardAction[] => {
+const npcActions = (live: StLiveRoll, send: RollsSend, picked: ReadonlySet<number>, onConfigure: ((event: MouseEvent<HTMLElement>) => void) | undefined): CardAction[] => {
   const a = live.actions;
   const actions: CardAction[] = [];
+  if (onConfigure) {
+    actions.push({ key: "configure", icon: "options", label: "Roll from the NPC's stats", keep: true, onClick: onConfigure });
+  }
   if (a.roll) {
     actions.push({ key: "roll", icon: "roll", label: "Roll (right-click: secret dice)", tone: "gold", disabled: !a.rollEnabled, keep: true, onClick: () => send({ op: "npcRoll", secret: false }), onQuiet: () => send({ op: "npcRoll", secret: true }) });
   }
@@ -419,12 +424,14 @@ const npcActions = (live: StLiveRoll, send: RollsSend, picked: ReadonlySet<numbe
   return actions;
 };
 
-const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool }: {
+const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool, onConfigure }: {
   live: StLiveRoll;
   send: RollsSend;
   collapsed: boolean;
   onToggle: () => void;
   onPool: (event: MouseEvent<HTMLElement>) => void;
+  /** Set while the pool is still open and the NPC has a stat block. */
+  onConfigure?: (event: MouseEvent<HTMLElement>) => void;
 }): ReactElement => {
   const editable = live.phase === "setup" || live.phase === "preRoll";
   // Reroll picks stay on the dashboard until Reroll sends them; any new throw clears them.
@@ -456,7 +463,7 @@ const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool }: {
       result={result}
       collapsed={collapsed}
       onToggle={onToggle}
-      actions={npcActions(live, send, picked)}
+      actions={npcActions(live, send, picked, onConfigure)}
       onClear={() => send({ op: "npcCancel" })}
       clearLabel="Cancel this roll and clear its drawer"
     >
@@ -655,6 +662,8 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
   const { shown: rolls, paint } = useLocalPools(pushed, pending);
   const [popup, setPopup] = useState<OptionsPopup | null>(null);
   const [poolRing, setPoolRing] = useState<PoolRing | null>(null);
+  const [configureAt, setConfigureAt] = useState<ConfigureAt | null>(null);
+  const npcLive = useContext(NpcLiveContext);
   const [foldedKeys, setFoldedKeys] = usePersistentState<string>("tr-dashboard:roll-folds", "");
   const folded = new Set(foldedKeys === "" ? [] : foldedKeys.split(","));
   const toggleFold = (key: string): void => {
@@ -702,7 +711,15 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
   const isFinished = (slot: StRollSlot): boolean => slot.result !== undefined && live?.slot !== slot.index;
   const finishedSlots = storyteller.slots.filter(isFinished);
   const chipSlots = storyteller.slots.filter((slot) => !isFinished(slot));
-  const ringNpc = ringTarget?.kind === "npc" && live && (live.phase === "setup" || live.phase === "preRoll") ? live : undefined;
+  const liveOpen = live !== undefined && (live.phase === "setup" || live.phase === "preRoll");
+  const ringNpc = ringTarget?.kind === "npc" && liveOpen ? live : undefined;
+  const npcKey = live?.npcCharacterKey;
+  const npcBlock = npcKey && npcLive ? npcLive.blockFor(npcKey) : undefined;
+  const npcRecord = npcKey ? npcLive?.trackers[npcKey] : undefined;
+  const openConfigure = (event: MouseEvent<HTMLElement>): void => {
+    const point = canvasPoint(event);
+    setConfigureAt({ x: Math.max(8, Math.min(point.x - POPUP_W, 1920 - POPUP_W - 8)), y: Math.max(8, point.y - 20) });
+  };
   const ringRoll = ringPc ?? ringNpc;
   const changePool = (kind: PoolKind, delta: 1 | -1): void => {
     if (ringPc) {
@@ -751,6 +768,21 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
           collapsed={folded.has(NPC_FOLD)}
           onToggle={() => toggleFold(NPC_FOLD)}
           onPool={(event) => openPoolRing(event, { kind: "npc" })}
+          {...(liveOpen && npcBlock ? { onConfigure: openConfigure } : {})}
+        />
+      )}
+      {configureAt && live && liveOpen && npcBlock && (
+        <NpcConfigure
+          at={configureAt}
+          live={live}
+          block={npcBlock}
+          levels={{ hunger: npcRecord?.hunger ?? 0, rage: npcRecord?.rage ?? 0 }}
+          send={send}
+          onPool={(event) => {
+            setConfigureAt(null);
+            openPoolRing(event, { kind: "npc" });
+          }}
+          onClose={() => setConfigureAt(null)}
         />
       )}
       {popup && <RollOptions popup={popup} access={options} send={send} onClose={() => setPopup(null)} />}
