@@ -123,7 +123,7 @@ Snapshot position is **not** the primary restore authority when a catalog pose o
 
 **NPC stage lights (`npc_light`):** exist only while the NPC is on the stage; seating or leaving the stage destroys the light (`dropNpcLightForSeat` / `NPCS.despawnNpc`), so there is no light park. Gameboard spotlight preview: `core/npc_gameboard_spotlight.ttslua`.
 
-**Rain particle emitter:** Off Play, `Phases.reconcileParticleEmitterFromPhase` parks `G.GUIDS.PARTICLE_EMITTER` with `O.hideObject`. On Play it restores at table-origin X/Z plus snapshot Y — Scatter included (Scatter's origin is its `centerPoint`). The emitter is **not** in Scatter's `objectsToHide`: that list parked it for the whole Scatter scene, so rain never showed until a table switch. `ScatterMode.enter` runs the phase reconcile so an emitter parked by the old list comes back.
+**Rain particle emitter:** Off Play, `Phases.reconcileParticleEmitterFromPhase` parks `G.GUIDS.PARTICLE_EMITTER` with `O.hideObject`. On Play it restores at table-origin X/Z plus snapshot Y. Scatter hides it on purpose (author decision 2026-10-13): it is in Scatter's `objectsToHide`, and Play restore does not un-park it while Scatter is active.
 
 **Storyteller dice trays in Scatter:** `C.Tables["Scatter"]` has no tray homes, so `STD.closeForSlot` parks each tray under where it stands (`O.hideObject` with a flat park rotation); the next open or a table switch re-poses X/Z.
 

@@ -119,6 +119,18 @@ function SeatMoves.moveToChair(seatKey, chair)
     if refused then
         return refused
     end
+    local FSL = require("lib.figurine_seat_layout")
+    if FSL.tableUsesRandomSeating(sceneTableKey()) then
+        local pcCount = #(C.PlayerColors or {})
+        local isPc = U.isIn(seatKey, C.PlayerColors)
+        if isPc ~= (target <= pcCount) then
+            return isPc and ("On Table B the PCs sit in chairs 1–" .. tostring(pcCount) .. ".")
+                or ("On Table B NPCs sit after the PCs, from chair " .. tostring(pcCount + 1) .. ".")
+        end
+        if isPc then
+            FSL.moveSessionChair(seatKey, target)
+        end
+    end
     local other = holderOfChair(target)
     local ss = seatSlotsCopy()
     ss[seatKey].tableSlot = target

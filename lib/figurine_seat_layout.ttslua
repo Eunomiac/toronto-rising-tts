@@ -405,8 +405,8 @@ function FSL.sessionChairs()
     return chairs
 end
 
---- Intermission → Play: shuffle the PCs into chairs 1..5 for the whole session. The only writer of
---- `seatLayout.sessionChairs` (besides the `S.validateState` seed for old saves).
+--- Intermission → Play: shuffle the PCs into chairs 1..5 for the whole session. With `FSL.moveSessionChair`,
+--- the only writers of `seatLayout.sessionChairs` (besides the `S.validateState` seed for old saves).
 function FSL.drawSessionChairs()
     local colors = {}
     for i, color in ipairs(C.PlayerColors or {}) do
@@ -419,6 +419,25 @@ function FSL.drawSessionChairs()
     local chairs = {}
     for i, color in ipairs(colors) do
         chairs[color] = i
+    end
+    S.setStateVal(chairs, "seatLayout", "sessionChairs")
+end
+
+--- Storyteller seat move on a random-seating table: the PC keeps `chair` for the rest of the session, and the
+--- PC whose session chair it was (connected or not) takes theirs.
+--- @param color string PC colour
+--- @param chair number 1..5
+function FSL.moveSessionChair(color, chair)
+    local chairs = U.clone(FSL.sessionChairs(), true)
+    local from = chairs[color]
+    for other, held in pairs(chairs) do
+        if held == chair then
+            chairs[other] = from
+        end
+    end
+    chairs[color] = chair
+    if not FSL.isValidSessionChairs(chairs) then
+        error("FSL.moveSessionChair: chair " .. tostring(chair) .. " is not a PC chair")
     end
     S.setStateVal(chairs, "seatLayout", "sessionChairs")
 end

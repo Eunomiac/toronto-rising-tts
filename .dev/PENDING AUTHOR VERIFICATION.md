@@ -36,7 +36,7 @@ Almost everything below assumes the dashboard is running. Restart it once (`npm 
 
 These four rows have no Linear issue yet: the Linear connection was down when they shipped. An agent will file them and add the ids here.
 
-#### Scatter Mode fixes — trays, groups, Compulsion cards, rain
+#### Scatter Mode fixes — trays, groups, Compulsion cards
 
 **How to verify:** Save & Play, start the Play phase, and switch to Scatter.
 
@@ -44,7 +44,6 @@ These four rows have no Linear issue yet: the Linear connection was down when th
 2. **Trays:** start Storyteller NPC rolls for NPCs in two different groups. Each tray should rise level, turned only to face its group. Clear one roll from the dashboard: that tray should drop out of sight and its light should go off. Start another roll for that group: the tray should come back level.
 3. **Dashboard follows the player:** open a player's in-game group strip and click a different group. Within about a second, the dashboard's Scenes tab should show that PC in the new group.
 4. **Compulsion card:** give a player a chosen Compulsion, then move them to another group. The card should travel with their sheet and bags.
-5. **Rain:** pick a rainy outdoor scene. Rain should keep falling in Scatter without a table switch. (The rain emitter sits at Scatter's centre, so tell us if it doesn't reach the groups, or if you actually wanted rain hidden in Scatter.)
 
 #### Table chairs are drawn once per session
 
@@ -54,6 +53,7 @@ These four rows have no Linear issue yet: the Linear connection was down when th
 2. Play two or three library scenes on Table B, then End Scene. Every PC should keep the same chair each time, with any NPCs seated after the PCs (chairs 6 and up).
 3. Advance through Spotlight and End back to Intermission: the chairs should still match. Advance to Play again: only now should the PCs get a new order.
 4. Disconnect a PC and reconnect them on Table B: they should return to their own chair.
+5. On Table B, drag a PC onto another PC's chair in the dashboard seat row: they should swap. Play another scene or End Scene: both should keep their new chairs. Dragging a PC past chair 5 (or an NPC into chairs 1–5) should be refused with a short message.
 
 #### NPC token names and stage token order
 

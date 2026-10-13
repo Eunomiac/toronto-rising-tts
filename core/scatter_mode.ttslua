@@ -830,7 +830,6 @@ function ScatterMode.enter(opts)
     end
     hideAllPhysicalTables()
     applyScatterPlayfieldOrigin()
-    require("core.phases").reconcileParticleEmitterFromPhase()
     ScatterMode.applyWorldLayout()
     applyScatterWorldChrome(true)
     local Sync = require("core.sync")

@@ -535,13 +535,17 @@ local function particleEmitterRestorePosition(obj)
     return { x = originX, y = y, z = originZ }
 end
 
---- Hide the rain emitter off Play; restore on Play, on wood tables and in Scatter alike (TOR-581).
+--- Hide the rain emitter off Play; restore on Play. Scatter keeps it hidden (its `objectsToHide`) while Scatter is on (TOR-581).
 function Phases.reconcileParticleEmitterFromPhase()
     local G = require("lib.guids")
     local O = require("core.objects")
     local guid = G.GUIDS and G.GUIDS.PARTICLE_EMITTER or nil
     if type(guid) ~= "string" or guid == "" then
         return false
+    end
+    local Occupancy = require("lib.scatter_occupancy")
+    if Occupancy.isScatterLayoutActive() == true then
+        return true
     end
     local obj = G.getObject(guid)
     if obj == nil then
