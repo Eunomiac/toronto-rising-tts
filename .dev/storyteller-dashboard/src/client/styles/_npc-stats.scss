@@ -10,6 +10,10 @@ $kind-colors: (
   other: #8a8a94
 );
 
+// Every control on a stat row shares one height so rows line up; power rows are a step smaller.
+$row-height: 24px;
+$power-height: 20px;
+
 .lab-npc-config-head {
   display: flex;
   align-items: center;
@@ -18,7 +22,8 @@ $kind-colors: (
 }
 
 .lab-modal.npc-stats {
-  width: 460px;
+  width: 680px;
+  max-width: 96vw;
   max-height: 92vh;
   overflow-y: auto;
   gap: 6px;
@@ -136,8 +141,11 @@ $kind-colors: (
 }
 
 .npc-stat-num {
+  box-sizing: border-box;
   width: 30px;
+  height: $row-height;
   padding: 0 2px;
+  line-height: 1;
   border: 1px solid #5a5a66;
   background: #121216;
   color: #fff;
@@ -154,18 +162,32 @@ $kind-colors: (
 }
 
 .npc-stat-select {
+  box-sizing: border-box;
+  height: $row-height;
   min-width: 0;
-  max-width: 120px;
+  padding: 0 2px;
   border: 1px solid #5a5a66;
   background: #121216;
   color: #ddd;
   font: inherit;
   font-size: 15px;
+  line-height: 1;
+}
+
+.npc-stat-select.clan {
+  width: 130px;
+}
+
+.npc-stat-select.rank {
+  width: 105px;
 }
 
 .npc-stat-name {
   flex: 1;
+  box-sizing: border-box;
+  height: $row-height;
   min-width: 0;
+  padding: 0 4px;
   border: 1px solid #3a3a44;
   background: #121216;
   color: #eee;
@@ -212,11 +234,17 @@ $kind-colors: (
   display: flex;
   align-items: center;
   gap: 4px;
+
+  > .npc-stat-select {
+    flex: 0 0 150px;
+  }
 }
 
 .npc-attack-bonus {
   display: inline-flex;
   align-items: center;
+  height: $row-height;
+  line-height: 1;
   color: #f0e040;
   font-size: 20px;
 
@@ -240,7 +268,8 @@ $kind-colors: (
 .npc-power {
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
+  height: $power-height + 2px;
   font-size: 12px;
 
   .npc-power-level {
@@ -250,14 +279,15 @@ $kind-colors: (
     background: transparent;
     color: #aaa;
     font: inherit;
-    font-size: 10px;
-    align-self: flex-start;
+    font-size: 11px;
     appearance: none;
     cursor: pointer;
   }
 
   .npc-power-name {
     flex: 1;
+    box-sizing: border-box;
+    height: $power-height;
     min-width: 0;
     border: none;
     border-bottom: 1px solid #4a4a56;
@@ -268,15 +298,17 @@ $kind-colors: (
   }
 
   .npc-power-rouse {
-    width: 18px;
+    width: 20px;
+    height: $power-height;
     border-color: #a02020;
     background: #4a1010;
-    font-size: 13px;
+    font-size: 14px;
   }
 
   .npc-power-pool {
-    max-width: 70px;
-    font-size: 12px;
+    flex: 0 0 120px;
+    height: $power-height;
+    font-size: 13px;
   }
 }
 

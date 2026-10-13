@@ -206,11 +206,11 @@ const StatsEditor = ({ statsKey, label, generic, saved, onClose }: {
           <div className="npc-stats-row">
             <NumberBox value={draft.generation} range={RANGES.generation} onChange={(generation) => update({ generation })} />
             <small>th Gen.</small>
-            <select className="npc-stat-select" value={draft.clan ?? ""} onChange={(event) => update({ clan: event.target.value || undefined })}>
+            <select className="npc-stat-select clan" value={draft.clan ?? ""} onChange={(event) => update({ clan: event.target.value || undefined })}>
               <option value="">Clan</option>
               {NPC_CLANS.map((clan) => <option key={clan} value={clan}>{clan}</option>)}
             </select>
-            <select className="npc-stat-select" value={draft.rank ?? ""} onChange={(event) => update({ rank: event.target.value || undefined })}>
+            <select className="npc-stat-select rank" value={draft.rank ?? ""} onChange={(event) => update({ rank: event.target.value || undefined })}>
               <option value="">Rank</option>
               {NPC_RANKS.map((rank) => <option key={rank} value={rank}>{rank}</option>)}
             </select>
