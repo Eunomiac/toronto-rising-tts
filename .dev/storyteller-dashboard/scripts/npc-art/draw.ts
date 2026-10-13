@@ -74,13 +74,41 @@ const layoutName = (name: string, assets: DrawAssets): NameLayout => {
 
 const escapeAttr = (value: string): string => value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 
+const coord = (value: number): string => {
+  if (!Number.isFinite(value)) {
+    throw new Error(`Name outline has a non-finite coordinate (${value}).`);
+  }
+  return value.toFixed(2);
+};
+
+/**
+ * SVG path data at two decimals. Not opentype.js `toPathData`: its 2.0 rounding turns a coordinate with a tiny
+ * floating-point remainder into `NaN` (`1e-14 + "e+2"`), and the renderer drops the rest of the name from there.
+ */
+export const pathData = (path: opentype.Path): string =>
+  path.commands
+    .map((command) => {
+      switch (command.type) {
+        case "M":
+        case "L":
+          return `${command.type}${coord(command.x)} ${coord(command.y)}`;
+        case "Q":
+          return `Q${coord(command.x1)} ${coord(command.y1)} ${coord(command.x)} ${coord(command.y)}`;
+        case "C":
+          return `C${coord(command.x1)} ${coord(command.y1)} ${coord(command.x2)} ${coord(command.y2)} ${coord(command.x)} ${coord(command.y)}`;
+        case "Z":
+          return "Z";
+      }
+    })
+    .join("");
+
 /** Name band and lettering as one SVG layer, clipped to the head circle. */
 const nameLayer = (name: string, assets: DrawAssets, textColor: string): string => {
   const { font } = assets;
   const { lines, baselines, size, capRise } = layoutName(name, assets);
   const paths = lines.map((line, index) => {
     const width = font.getAdvanceWidth(line, size);
-    return font.getPath(line, R - width / 2, baselines[index]!, size).toPathData(2);
+    return pathData(font.getPath(line, R - width / 2, baselines[index]!, size));
   });
   const bandTop = (baselines[0] ?? R + SINGLE_BASELINE * R) - capRise - 26;
   const d = escapeAttr(paths.join(" "));

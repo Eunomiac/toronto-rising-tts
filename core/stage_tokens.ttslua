@@ -5,8 +5,9 @@
     exist only for the Storyteller's spotlight hold hotkey (`core.npc_gameboard_spotlight`); moving one does
     nothing. Hidden from PC seats.
 
-    Tokens spawn in horizontal rows across CONTROL_BOARD, read left to right from the Storyteller's seat
-    (world -X to +X, far +Z edge first), grouped by stage area in `POLAR_FAMILY_ORDER` (in Scatter, by
+    Tokens spawn in horizontal rows across CONTROL_BOARD, read from the Storyteller's seat: top-left corner
+    first, left to right, then down (world +X to -X along the -Z edge, rows stepping toward +Z, where the
+    Storyteller sits), grouped by stage area in `POLAR_FAMILY_ORDER` (in Scatter, by
     scatter group). Position is set only at spawn: a later move on the stage leaves the token where it is,
     and a light change only flips it.
 
@@ -146,19 +147,19 @@ local function layoutSlots(board, placements)
         return a.key < b.key
     end)
     local bounds = board.getBounds()
-    local minX = bounds.center.x - bounds.size.x / 2 + EDGE_MARGIN
-    local maxX = bounds.center.x + bounds.size.x / 2 - EDGE_MARGIN
+    local leftX = bounds.center.x + bounds.size.x / 2 - EDGE_MARGIN
+    local rightX = bounds.center.x - bounds.size.x / 2 + EDGE_MARGIN
     local y = Board.worldOnControlBoard(board, 0.5, 0.5, { extraLocalY = TOKEN_LIFT_LOCAL_Y }).y
-    local x = minX
-    local z = bounds.center.z + bounds.size.z / 2 - EDGE_MARGIN
+    local x = leftX
+    local z = bounds.center.z - bounds.size.z / 2 + EDGE_MARGIN
     local function nextSlot(gap)
-        x = x + gap
-        if x > maxX then
-            x = minX
-            z = z - ROW_SPACING
+        x = x - gap
+        if x < rightX then
+            x = leftX
+            z = z + ROW_SPACING
         end
         local slot = Vector(x, y, z)
-        x = x + TOKEN_SPACING
+        x = x - TOKEN_SPACING
         return slot
     end
     local slotByKey = {}
