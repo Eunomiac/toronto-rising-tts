@@ -72,7 +72,8 @@ Outputs: `.dev/build-logs/save-loading-assets-latest.{csv,json,md}` (+ `*-extras
 | Prefix / family | ~Count | Defer candidate? |
 | --- | ---: | --- |
 | `siteCard_*` | 168 | Yes — batch after Intermission roster |
-| `tokenFront_*` / `tokenBack_*` | 0 (was 108 + 108) | Done — NPC tokens moved to GitHub links (TOR-709, NPC art pipeline) |
+| `tokenFront_*` / `tokenBack_*` | 0 (was 108 + 108) | Done — NPC tokens load from Steam Cloud links in `lib/npc_art_urls.ttslua` (NPC art pipeline) |
+| bare NPC-key / `mem_*` roll banners | 0 (was 123) | Done — removed 2026-10-15; banners use `rollFigure_*` (TOR-730) |
 | `toggleDistrict_*` / `toggle*` / `toggleOverlay_*` | 108 + 82 + 54 | Maybe — map/ST chrome |
 | `mapOverlay_*` / `overlay_*` | 50 + 44 | Partial — keep minimal blindfold overlays |
 | `districtCard_*` | 36 | Yes — with site cards |

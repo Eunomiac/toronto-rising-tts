@@ -31,7 +31,7 @@ Three npm scripts / VS Code tasks (`.vscode/tasks.json`):
 | --- | --- | --- | --- |
 | **Main** (default) | `npm run build` | **BUILD PIPELINE (Main)** | Before most Save & Play — daily save backup, gates, object stub fix |
 | **XML** | `npm run build:xml` | **BUILD PIPELINE (XML)** | After UI XML / template / Global HUD edits (includes Main) |
-| **Full** | `npm run build:full` | **BUILD PIPELINE (Full)** | After JSON data, Google Sheet imports, constants cleanup, CustomUIAssets merge, Cloud asset sync, NPC art (`npc-art:generate` — [NPC Art Pipeline](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%20Art%20Pipeline.md)), E2E playbook markdown — same coverage as the former single `npm run build` |
+| **Full** | `npm run build:full` | **BUILD PIPELINE (Full)** | After JSON data, Google Sheet imports, constants cleanup, CustomUIAssets merge, Cloud asset sync, NPC art (`npc-art:draw` before the sync, `npc-art:urls` after — [NPC Art Pipeline](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%20Art%20Pipeline.md)), E2E playbook markdown — same coverage as the former single `npm run build` |
 
 Helpers: `build:gates`, `build:stubs`, `build:xml-tooling`, `build:all-tooling` (Full without the daily backup; `build:full` = backup + `build:all-tooling`).
 
@@ -107,7 +107,7 @@ Official reference: [Module resolution](https://github.com/rolandostar/tabletops
 
 ### Inject bundled Global into save JSON (no External Editor send)
 
-When extension **Save & Play** hangs on “Sending Scripts” (often due to ~150 MB of duplicated object bundles), you can patch **Global only** directly into the on-disk save file — same pattern as [custom UI merge](../.tools/custom-ui-assets/merge-custom-ui-assets.js).
+When extension **Save & Play** hangs on “Sending Scripts” (often due to ~150 MB of duplicated object bundles), you can patch **Global only** directly into the on-disk save file — same parse → mutate → backup → write pattern as [`cloud-asset-sync.js`](../.tools/cloud-asset-sync.js).
 
 **Prerequisites**
 
@@ -210,8 +210,6 @@ See [TTS_MCP.md](TTS_MCP.md) for the bundled MCP server and agent guidance.
 **Cause**: Some bundlers only pull in modules reachable from **top-level** `require("...")` on the dependency graph. A module loaded **only** via `pcall(require, ...)` inside a function may never be embedded, so it is missing at runtime.
 
 **Solution**: Add a **module-level** `require("lib_that_must_ship")` once from an entry module (e.g. `core/debug.ttslua` already preloads `lib.workspace_ndjson_log`). Do the same for any other “lazy” dependency you need in TTS.
-
-**Generated manifests** (`lib/custom_ui_upload_manifest.ttslua`): keep **committed stubs** in git (empty `assets` / `{}`) when possible. `core/debug.ttslua` uses module-level `require("lib.…")` (same pattern as `lib.workspace_ndjson_log`) so luabundle embeds the stubs with no init console noise. `npm run custom-ui-assets:manifest-*` overwrites stub content; invoke `DEBUG.loadCustomUiUploadManifest()` or spawn/upload DEBUG helpers for guidance when manifests are empty.
 
 **Object scripts** (e.g. character sheet `ui/ui_csheet.ttslua`): stubs are only `require("ui.ui_csheet")`. Anything you `require` **inside** a function may be **missing at runtime**. Keep **`require("lib.workspace_ndjson_log")`** (and similar) at **file top level**.
 

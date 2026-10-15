@@ -16,7 +16,6 @@
     { "path": "core/state.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "core/global_script.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "lib/constants.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
-    { "path": "lib/custom_ui_upload_manifest.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "lib/dice-roller.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "lib/guids.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },
     { "path": "lib/npcs_data.ttslua", "reason": "Bootstrap: not yet partitioned by Architect pass." },

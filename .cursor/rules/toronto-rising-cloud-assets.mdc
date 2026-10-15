@@ -1,0 +1,16 @@
+---
+description: Steam Cloud asset ownership — local assets/ is the source, every URL comes from a cloud-asset-sync job
+globs: .tools/cloud-asset-sync*,.tools/tts-cloud/**,.tools/asset-gates/**,lib/cloud_*.ttslua,ui/**/*.xml,assets/**
+alwaysApply: false
+---
+
+# Toronto Rising — Cloud assets
+
+- **Source:** local `assets/` (gitignored) mirrors Steam Cloud `Vampire the Masquerade 5E/`. `npm run cloud-asset-sync` pushes changes, then writes every save row, object image, `lib/cloud_*.ttslua` module and the manifest `lib/json/cloud-assets.json`.
+- **Never hand-type** `steamusercontent` / GitHub raw art links in code, XML, or data. Add the file under `assets/` and a job in `.tools/cloud-asset-sync.jsonc`. External links need an `EXTERNAL` entry with a reason in `.tools/asset-gates/check-asset-ownership.js`.
+- **Name = row name.** Files carry the XmlUI / row name with a literal prefix; job patterns must have a literal outside capture groups.
+- **TTS closed** for any Cloud write; do not edit the save while a sync runs.
+- **Gates:** `npm run check:asset-ownership` and `npm run check:asset-references` (end of `build:full`).
+- **Object scripts** read URLs from thin per-job modules (`lib.cloud_<job>`), never `lib.constants` or `core.*`.
+
+Policy: [`docs/solutions/cloud-asset-ownership.md`](../../docs/solutions/cloud-asset-ownership.md). Engine reference: [`.tools/Cloud-Asset-Sync-Plan.md`](../../.tools/Cloud-Asset-Sync-Plan.md).

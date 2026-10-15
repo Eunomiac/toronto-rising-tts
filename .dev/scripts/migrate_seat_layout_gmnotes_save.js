@@ -4,7 +4,7 @@
 /**
  * Offline migration: copy seat-layout ROLE_COLOR identity from Name/Nickname into GMNotes
  * on a TTS save JSON (before Save & Play). Same save-direct-edit pattern as
- * `.tools/custom-ui-assets/merge-custom-ui-assets.js` (parse JSON → mutate → write).
+ * `.tools/cloud-asset-sync.js` (parse JSON → mutate → write).
  *
  * Usage:
  *   node .dev/scripts/migrate_seat_layout_gmnotes_save.js --dry-run

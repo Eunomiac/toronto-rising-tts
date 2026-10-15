@@ -15,7 +15,7 @@ Verification:
 - spot-check the file and line references below against current code
 
 Status:
-- snapshot survey taken 2026-10-15; needs re-verification before acting on any single row
+- **resolved** (TOR-724 cloud asset harmonization): every finding below is replaced by the Cloud asset contract in [`docs/solutions/cloud-asset-ownership.md`](../../docs/solutions/cloud-asset-ownership.md). Local `assets/` is the source, `.tools/cloud-asset-sync.jsonc` jobs write every link, and the GitHub-raw, hand-typed and save-copied paths described here are removed. Kept as a historical snapshot (2026-10-15); delete when no longer useful.
 
 Related Linear issues: TOR-709 (one GitHub-hosted art pipeline for every NPC), TOR-465 (reconcile the live UI asset and component-tag registries).
 
