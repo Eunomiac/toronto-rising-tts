@@ -637,19 +637,19 @@ Standalone second-monitor web app (`.dev/storyteller-dashboard/`). Not the in-ta
 - [x] **Unmask Memoriam pcalls:** Enter/skybox reconcile call `C.resolveMemoriamPanelURL` and `S.getPlayerID` directly so missing panel art and lookup failures show in the log (pcall gate back to 24). relatedTo **TOR-101**, **TOR-564**. _(TOR-568)_
 - [x] **Memoriam Just Smoke (gap and button):** Just Smoke is selected automatically while the slider sits in a gap and by its own button inside a period (the button had collapsed to zero width after a class repaint). Advance enters Memoriam with the standard global blindfold, the `JustSmoke` skybox, no weather and silent audio; assignment rows still show. relatedTo **TOR-101**. Pending Save & Play. _(TOR-642)_
 - [x] **Pink tarot button follows Pink after a Memoriam:** the button is in `C.HiddenObjects`, so seat presence parks it and saves its spot; the tarot step after layout now keeps a parked button parked under the new seat and updates that saved spot, so the restore on End Scene no longer drops it at the pre-Memoriam seat. relatedTo **TOR-101**, **TOR-642**. Author confirmed 2026-10-04. _(TOR-648)_
-   
+
 ## Asset URLs (Steam Cloud)
 
-_Parent: the local, gitignored `assets/` folder is the one source of truth, pushed to Steam Cloud by the build; jobs need a distinguishing filename pattern. Survey: [Asset URL Survey](custom-ui-assets/Asset%20URL%20Survey.md). _(TOR-724)__
+_Parent: the local, gitignored `assets/` folder is the one source of truth, pushed to Steam Cloud by the build; jobs need a distinguishing filename pattern. Guide: [Cloud Assets — Step by Step](!!%20User%20Guides/Cloud%20Assets%20%E2%80%94%20Step%20by%20Step.md). Policy: [`docs/solutions/cloud-asset-ownership.md`](../docs/solutions/cloud-asset-ownership.md). _(TOR-724)_ — Pending Save & Play_
 
-- [ ] **Sync engine upgrades:** per-job Lua modules, `ObjectImage` output, `lib/json/cloud-assets.json` manifest, dashboard mirror, mandatory purge (claims ledger), one Cloud root. _(TOR-725)_
-- [ ] **Cloud writer + safeguards:** backup, index snapshots/restore, upload/share/move/delete with verification; spike in `_UploaderTest`. _(TOR-726)_
-- [ ] **Cloud cleanup scripts:** `cloud:audit`, `cloud:consolidate` (`Save Only/<kind>`), `cloud:dedupe`, `cloud:strays`. _(TOR-727)_
-- [ ] **NPC art on Cloud:** figurines, generated tokens, banner CustomUIAssets and PC seat figurines from Cloud jobs; dashboard roster from Cloud. _(TOR-728)_
-- [ ] **Hand-typed URL lists to Cloud jobs:** dice art, companion toggle, spotlight bundle, Blood Potency decals, relationship portraits. _(TOR-729)_
-- [ ] **Locations from Cloud:** site cards, district cards, skyboxes, scene catalogs from the manifest. _(TOR-732)_
-- [ ] **HUD image names owned by Cloud jobs:** static and dynamic `image=` names; dashboard art from the mirror. _(TOR-730)_
-- [ ] **Asset gates, superseded tooling removal, docs.** _(TOR-731)_
+- [x] **Sync engine upgrades:** per-job Lua modules, `ObjectImage` output, `lib/json/cloud-assets.json` manifest, mandatory purge, distinguishing filename patterns. _(TOR-725)_
+- [x] **Cloud writer + safeguards:** backup, index snapshots/restore, upload/move/delete with verification; `cloud:pull` / `cloud:push`. _(TOR-726)_
+- [x] **Cloud cleanup scripts:** `cloud:audit`, `cloud:consolidate`, `cloud:dedupe`, `cloud:strays`. _(TOR-727)_
+- [x] **NPC art on Cloud:** figurines, generated tokens, `rollFigure_*` banners and PC seat figurines from Cloud jobs. _(TOR-728)_ — Pending Save & Play_
+- [x] **Hand-typed URL lists to Cloud jobs:** dice art, companion toggle, Blood Potency decals (spotlight duplicate removed). _(TOR-729)_ — Pending Save & Play_
+- [x] **Locations from Cloud:** site cards, district cards, skyboxes, scene catalogs from the manifest. _(TOR-732)_ — Pending Save & Play_
+- [x] **HUD image names owned by Cloud jobs:** Global HUD folders + jobs; dead bare-name banners removed; dashboard sheet art from `assets/`. _(TOR-730)_ — Pending Save & Play_
+- [x] **Asset gates, superseded tooling removal, docs, user guide.** _(TOR-731)_
 
 ## Agent Reviews
 

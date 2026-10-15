@@ -20,9 +20,45 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
-_Last populated: 2026-10-11 (TOR-709, TOR-710, TOR-719, TOR-722, TOR-718 and TOR-723 added) — condensed at your request. Checks that later work replaced were dropped (the in-game Gameboard Apply and THERE preview are gone, the scene-switch clock menu was redesigned, and the signal-fire alert lost its banner and chime). Traces that already passed were removed, leaving only what is still owed. Overlapping rows were merged. Everything still needs a first pass except TOR-439, which stays ⏰ until you can gather join testers._
+_Last populated: 2026-10-15 (Cloud asset harmonization TOR-724 family added). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
 
-Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play.
+### High — Cloud assets (local `assets/` → Steam Cloud)
+
+These four rows share one build. Close TTS, run `npm run build:full` with Steam running, reload the save, then Save & Play. Mark each row only after its own steps pass.
+
+#### TOR-728 — NPC art from Steam Cloud (figurines, tokens, roll banners)
+
+**How to verify:** After the build and Save & Play above:
+
+1. Put Benedict Kincaid (or another catalogued NPC) on the stage. The figurine and its spotlight token should look normal.
+2. Start a roll for that NPC. The roll banner should show their figure (the Custom UI name is now `rollFigure_<key>`, not the bare character key).
+3. Seat a PC. Their seat figurine should match the character.
+4. On the Storyteller Dashboard roster, open an NPC: the headshot and token should still appear (they are served from `assets/NPC Art/` on disk).
+
+#### TOR-729 — Dice faces, companion toggle and Blood Potency marks
+
+**How to verify:** After the same build and Save & Play:
+
+1. Draw a normal die and a Hunger die from a player's bag. Both faces should look as before.
+2. Flip a companion toggle on the table. Its faces should still change.
+3. On a character sheet, change Blood Potency (or look at the Page 1 / Page 2 Blood Potency marks). The surge / mending / discipline marks should still show the right art.
+
+#### TOR-732 — Site cards, district cards and skyboxes
+
+**How to verify:** After the same build and Save & Play:
+
+1. On the location overlay, open a known site card (for example a downtown site). The card art should appear.
+2. Open one of the seven cards that were new to TTS: Hockey Hall of Fame, Underground Med Clinic, or any of the five Warrens sites. Those should now show Cloud art instead of a blank or GitHub fallback.
+3. Switch the skybox from the Scenes tools to a few named skies and to Generic. The sky should change; named skies should match the sheet keys.
+
+#### TOR-730 — HUD art, character sheet faces and Global panels
+
+**How to verify:** After the same build and Save & Play:
+
+1. Open the map, the right sidebar and a couple of reference panels (Coteries, Prince's Court, Frenzy). Icons and panels should look as before.
+2. Advance a session far enough to show a blindfold overlay. Blindfolds 1–32 (including 8, which was missing from the mirror) should all work.
+3. Open each PC's character sheet pages. The front and back faces should match that character; Page 5 project dice and the Prince's Court large yellow dots should still look right.
+4. Known gap: Color Blitz has toggle buttons but no reference panel image yet. Clicking that coterie popup will show a blank until you drop `refPanel_Coteries_colorBlitz.webp` into `assets/HUD/CorePanel_Center/Coterie References/` and rebuild.
 
 ### High — session / join
 
@@ -57,7 +93,7 @@ These four rows have no Linear issue yet: the Linear connection was down when th
 
 #### NPC token names and stage token order
 
-**How to verify:** first run `npm run npc-art:generate` from the repo root (it redraws every token and updates the roll-banner entries in your save), then commit and push `assets/images/NPCs` and `lib/npc_art_urls.ttslua`, then Save & Play.
+**How to verify:** with Steam running and TTS closed, run `npm run build:full` from the repo root (it redraws every token, uploads the art to Steam Cloud and updates the links), then Save & Play.
 
 1. Put Benedict Kincaid, Severin Koslov and a Guard Ghoul on the stage. Their Stage Control tokens should show full names on both sides.
 2. Clear the stage and add several NPCs. From the Storyteller seat, the first token should appear in the top-left corner of the board, then fill to the right, then down.
@@ -223,7 +259,7 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 
 1. Restart the Storyteller Dashboard task, because its server has a new save endpoint. In the Scenes tab, open the roster and right-click an NPC token. The settings window opens with the NPC's current name and default values shown in grey.
 2. Type a new name, pick a colour, set Scale to 65 and Seat Y to -52, then click off the window. The roster token shows the new name and ring colour straight away.
-3. Run `npm run npc-art:generate` (or the Full build), commit and push the art, then Save & Play.
+3. Close TTS and run `npm run build:full` with Steam running, then Save & Play.
 4. Place that NPC on the stage. Its figurine is bigger and carries the new name, and its spotlight token shows the new name and ring colour.
 5. Seat the NPC at the table. The figurine sits at the new height.
 6. Right-click the token again, clear every field and click off. Regenerate and Save & Play: everything is back to the defaults.
