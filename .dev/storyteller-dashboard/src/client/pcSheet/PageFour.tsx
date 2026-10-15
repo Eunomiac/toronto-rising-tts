@@ -1,5 +1,5 @@
 import { useState, type ReactElement } from "react";
-import { assetUrl } from "./layout.js";
+import { sheetArtUrl } from "./layout.js";
 import { Masonry } from "./Masonry.js";
 import type { PageContext } from "./pages.js";
 import { revealOverflowProps } from "./revealOverflow.js";
@@ -18,7 +18,7 @@ const BondBoxes = ({ strength }: { readonly strength: number }): ReactElement =>
         <span
           key={i}
           className={`pc-box${i < strength ? " on" : ""}`}
-          style={i < strength ? { backgroundImage: `url("${assetUrl("boxes/box_red.webp")}")` } : undefined}
+          style={i < strength ? { backgroundImage: `url("${sheetArtUrl("box_red")}")` } : undefined}
         />
       ))}
     </span>
@@ -92,7 +92,7 @@ const Divider = ({
   readonly onAdd: (linkType: string) => void;
 }): ReactElement => (
   <div className="pc-divider">
-    {image ? <img src={assetUrl(`sheet/${image}.webp`)} alt={label} /> : <h3 className="pc-section-title">{label}</h3>}
+    {image ? <img src={sheetArtUrl(image)} alt={label} /> : <h3 className="pc-section-title">{label}</h3>}
     {adds.map((add) => (
       <button key={add.linkType} type="button" className="pc-add-text" onClick={() => onAdd(add.linkType)}>
         + {add.label}

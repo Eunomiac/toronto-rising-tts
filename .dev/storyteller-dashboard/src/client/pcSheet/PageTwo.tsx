@@ -1,7 +1,7 @@
 import { useState, type ReactElement } from "react";
 import { DisciplineAddModal, DisciplineEditModal, PowerModal, RITUAL_KIND_LABEL } from "./DisciplineModals.js";
 import { DotLine } from "./DotLine.js";
-import { assetUrl } from "./layout.js";
+import { sheetArtUrl } from "./layout.js";
 import { paintDotLine } from "./paint.js";
 import type { PageContext } from "./pages.js";
 import {
@@ -50,7 +50,7 @@ const DisciplineCell = ({
           {...termProps("discipline", DISCIPLINE_LABELS[row.key])}
           onClick={() => onPopup({ kind: "editDiscipline", key: row.key })}
         >
-          <img src={assetUrl(`sheet/discName_${row.key}.webp`)} alt={DISCIPLINE_LABELS[row.key]} />
+          <img src={sheetArtUrl(`discName_${row.key}`)} alt={DISCIPLINE_LABELS[row.key]} />
         </button>
         <button
           type="button"
@@ -196,7 +196,7 @@ export const PageTwo = ({ ctx }: { readonly ctx: PageContext }): ReactElement =>
         {layout || divider ? (
           <section className="pc-rc" aria-label="Rituals and Ceremonies">
             <div className="pc-divider">
-              {divider ? <img src={assetUrl(`sheet/${divider}.webp`)} alt="" /> : null}
+              {divider ? <img src={sheetArtUrl(divider)} alt="" /> : null}
               {ritualKinds.map((kind) => (
                 <button
                   key={kind}

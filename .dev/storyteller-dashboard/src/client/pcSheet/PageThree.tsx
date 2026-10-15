@@ -1,7 +1,7 @@
 import { useState, type ReactElement, type ReactNode } from "react";
 import { AdvantageModal } from "./AdvantageModal.js";
 import { DotLine } from "./DotLine.js";
-import { assetUrl } from "./layout.js";
+import { sheetArtUrl } from "./layout.js";
 import { Masonry } from "./Masonry.js";
 import type { PageContext } from "./pages.js";
 import { revealOverflowProps } from "./revealOverflow.js";
@@ -90,7 +90,7 @@ const AdvantageSection = ({
     <section className={`pc-adv-section ${category}`} aria-label={`${label}s`}>
       <div className="pc-divider">
         {divider
-          ? <img src={assetUrl(`sheet/${divider}.webp`)} alt={`${label}s`} />
+          ? <img src={sheetArtUrl(divider)} alt={`${label}s`} />
           : <h3 className="pc-section-title">{label}s</h3>}
         <button type="button" className="pc-add-text" onClick={() => onPopup({ type: category })}>
           + {label}

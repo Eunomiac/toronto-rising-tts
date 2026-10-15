@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent, type ReactElement } from "react";
 import { bankedXpFromLog } from "./bankedXp.js";
 import { chronologyFor, identityFromSeat, subtitleFor } from "./identity.js";
-import { ATTRIBUTE_COLUMNS, ATTRIBUTE_LABELS, SKILL_COLUMNS, SKILL_LABELS, assetUrl } from "./layout.js";
+import { ATTRIBUTE_COLUMNS, ATTRIBUTE_LABELS, SKILL_COLUMNS, SKILL_LABELS, assetUrl, sheetArtUrl } from "./layout.js";
 import { DotLine } from "./DotLine.js";
 import { paintDamageTrack, paintDotLine, paintHumanityTrack } from "./paint.js";
 import { formatBadge } from "./ringActions.js";
@@ -81,7 +81,7 @@ const BoxTrack = ({ boxes }: { readonly boxes: ReturnType<typeof paintDamageTrac
       <span
         key={index}
         className={`pc-box${box.active ? " on" : ""}`}
-        style={box.active && box.image ? { backgroundImage: `url("${assetUrl(`boxes/${box.image}.webp`)}")` } : undefined}
+        style={box.active && box.image ? { backgroundImage: `url("${sheetArtUrl(box.image)}")` } : undefined}
       />
     ))}
   </span>

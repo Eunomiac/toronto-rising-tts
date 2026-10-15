@@ -1,16 +1,27 @@
-import { useState, type ReactElement } from "react";
+import { useEffect, useState, type ReactElement } from "react";
 import { Field, linesFromText, LinesInput, NumberInput, SelectInput, textFromLines, TextInput } from "./fields.js";
+import { sheetArtUrl } from "./layout.js";
 import { isBondLink, LINK_TYPE_SUGGESTIONS, MAX_BOND_STRENGTH } from "./relationships.js";
 import { SheetModal } from "./SheetModal.js";
 import type { ApplyCommand, RelationshipDraft, RelationshipRow, SeatColor, SeatSnapshot } from "./types.js";
 
-/** Portraits already registered on the Page 4 objects (the only images TTS can show there). */
-const PORTRAITS: Record<string, string> = Object.fromEntries(
-  Object.entries(import.meta.glob<string>("/assets/portraits/*Portrait.webp", { query: "?url", import: "default", eager: true }))
-    .map(([path, url]) => [path.replace(/^.*\/(.+)\.webp$/, "$1"), url])
-);
+export const portraitUrl = (key: string): string => sheetArtUrl(key);
 
-export const portraitUrl = (key: string): string | undefined => PORTRAITS[key];
+/** Portrait keys in assets/CSheets/Page4/Portraits (the build registers all of them on every Page 4). */
+const usePortraitKeys = (): readonly string[] => {
+  const [keys, setKeys] = useState<readonly string[]>([]);
+  useEffect(() => {
+    void fetch("/api/sheet-portraits")
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`Portrait list failed (${response.status}).`);
+        }
+        setKeys(await response.json() as string[]);
+      })
+      .catch((error: unknown) => console.error(error));
+  }, []);
+  return keys;
+};
 
 const NOT_LINKED = "";
 const CUSTOM = "__custom";
@@ -72,6 +83,7 @@ export const RelationshipModal = ({ seat, seats, row, draft, send, onClose }: Pr
   const [body, setBody] = useState(textFromLines(draft.body));
   const [bondStrength, setBondStrength] = useState(draft.bondStrength ?? 1);
   const [portrait, setPortrait] = useState(draft.portrait);
+  const portraitKeys = usePortraitKeys();
 
   const ordered = [seat, ...seats.filter((other) => other.color !== seat.color)].filter((other) => other.charKey !== "");
   const bonded = Object.values(pcLinks).some(isBondLink);
@@ -153,12 +165,12 @@ export const RelationshipModal = ({ seat, seats, row, draft, send, onClose }: Pr
       <Field label="Body" hint="One paragraph per line." wide>
         <LinesInput value={body} onChange={setBody} rows={5} />
       </Field>
-      <Field label="Portrait" hint="Only portraits already loaded on the Page 4 sheets can show in TTS." wide>
+      <Field label="Portrait" hint="To add one, drop <key>Portrait.webp in assets/CSheets/Page4/Portraits and run the Full build." wide>
         <div className="pc-rel-portraits">
           <button type="button" className={`pc-rel-portrait none${portrait === "" ? " selected" : ""}`} onClick={() => setPortrait("")}>
             None
           </button>
-          {Object.entries(PORTRAITS).map(([key, url]) => (
+          {portraitKeys.map((key) => (
             <button
               key={key}
               type="button"
@@ -166,7 +178,7 @@ export const RelationshipModal = ({ seat, seats, row, draft, send, onClose }: Pr
               title={key}
               onClick={() => setPortrait(key)}
             >
-              <img src={url} alt={key} loading="lazy" />
+              <img src={portraitUrl(key)} alt={key} loading="lazy" />
             </button>
           ))}
         </div>

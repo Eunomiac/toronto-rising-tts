@@ -76,3 +76,6 @@ export const SEAT_ACCENT: Record<string, string> = {
 
 export const assetUrl = (relative: string): string =>
   `/pc-sheet-assets/${relative.split("/").map(encodeURIComponent).join("/")}`;
+
+/** A TTS sheet image by its Custom UI row name (e.g. `dot_red`), served from assets/CSheets. */
+export const sheetArtUrl = (name: string): string => `/sheet-art/${encodeURIComponent(name)}`;

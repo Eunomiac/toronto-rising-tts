@@ -1,5 +1,5 @@
 import { createReadStream, existsSync } from "node:fs";
-import { readFile, stat } from "node:fs/promises";
+import { readdir, readFile, stat } from "node:fs/promises";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -30,14 +30,22 @@ const distDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 const dashboardRoot = path.resolve(distDir, "..");
 const repoRoot = path.resolve(dashboardRoot, "..", "..");
 const genericNpcCatalogPath = path.join(dashboardRoot, "data", "generic-npcs.json");
-const genericNpcImageDir = path.join(repoRoot, "assets", "images", "NPCs", "Generic");
+const figurineDir = path.join(repoRoot, "assets", "NPC Art", "Figurines");
+const genericNpcImageDir = path.join(figurineDir, "Generic");
 const sceneCatalogsPath = path.join(dashboardRoot, "data", "scene-catalogs.json");
 const controlBoardSnapsPath = path.join(dashboardRoot, "data", "control-board-snaps.json");
 const compulsionsPath = path.join(dashboardRoot, "data", "compulsions.jsonc");
-const cataloguedNpcImageDir = path.join(repoRoot, "assets", "images", "NPCs", "Catalogued");
-const memoriamNpcImageDir = path.join(repoRoot, "assets", "images", "NPCs", "Memoriam");
+const cataloguedNpcImageDir = path.join(figurineDir, "Catalogued");
+const memoriamNpcImageDir = path.join(figurineDir, "Memoriam");
 const scenesAssetDir = path.join(dashboardRoot, "assets", "scenes");
 const pcSheetAssetDir = path.join(dashboardRoot, "assets");
+/** TTS sheet art (assets/CSheets, the Cloud mirror); a name on several pages resolves to the first folder here. */
+const sheetArtRoot = path.join(repoRoot, "assets", "CSheets");
+const sheetPortraitDir = path.join(sheetArtRoot, "Page4", "Portraits");
+const sheetArtDirs = [
+  ...["Page1", "Page2", "Page3", "Page4", "Page5", "Page6", "Shared"].map((folder) => path.join(sheetArtRoot, folder)),
+  sheetPortraitDir
+];
 const termImages = createTermImageStore(path.join(dashboardRoot, "data", "term-images"));
 const labNotes = createLabNoteStore(path.join(dashboardRoot, "agent", "lab-notes.json"));
 const headshotCrops = createHeadshotCropStore(path.join(dashboardRoot, "data", "headshot-crops.json"));
@@ -382,6 +390,12 @@ const handleApi = async (request: IncomingMessage, response: ServerResponse, pat
     return;
   }
 
+  if (request.method === "GET" && pathname === "/api/sheet-portraits") {
+    const files = await readdir(sheetPortraitDir);
+    sendJson(response, 200, files.filter((file) => /^[A-Za-z0-9]+Portrait\.webp$/.test(file)).map((file) => file.slice(0, -".webp".length)).sort());
+    return;
+  }
+
   if (request.method === "GET" && pathname === "/api/scene-catalogs") {
     await serveJsonFile(
       response,
@@ -559,7 +573,7 @@ const tryHandleDedicatedRoutes = async (request: IncomingMessage, response: Serv
     await serveSafeWebp(
       response,
       [cataloguedNpcImageDir, genericNpcImageDir, memoriamNpcImageDir],
-      decodeURIComponent(pathname.slice("/figurine-images/".length)),
+      `npc_${decodeURIComponent(pathname.slice("/figurine-images/".length))}`,
       "Invalid NPC figurine image filename."
     );
     return true;
@@ -571,6 +585,16 @@ const tryHandleDedicatedRoutes = async (request: IncomingMessage, response: Serv
       [scenesAssetDir],
       decodeURIComponent(pathname.slice("/scenes-assets/".length)),
       "Invalid scenes asset filename."
+    );
+    return true;
+  }
+
+  if (request.method === "GET" && pathname.startsWith("/sheet-art/")) {
+    await serveSafeWebp(
+      response,
+      sheetArtDirs,
+      `${decodeURIComponent(pathname.slice("/sheet-art/".length))}.webp`,
+      "Invalid sheet art name."
     );
     return true;
   }

@@ -5663,29 +5663,29 @@ UI.setAttributes("playerHud_navigate_page2_next_Red", {offsetXY = "40 0"})
 UI.setAttributes("dot_on_chasse_1_Red", {offsetXY = "35 -96"})
 
 -->
-      <Image id="dot_on_chasse_1" image="dot_large_yellow" class="dot dot_large" offsetXY="35 -96" />
-      <Image id="dot_on_chasse_2" image="dot_large_yellow" class="dot dot_large" offsetXY="68 -96" />
-      <Image id="dot_on_chasse_3" image="dot_large_yellow" class="dot dot_large" offsetXY="101 -96" />
-      <Image id="dot_on_chasse_4" image="dot_large_yellow" class="dot dot_large" offsetXY="134 -96" />
-      <Image id="dot_on_chasse_5" image="dot_large_yellow" class="dot dot_large" offsetXY="167 -96" />
+      <Image id="dot_on_chasse_1" image="dot_yellow" class="dot dot_large" offsetXY="35 -96" />
+      <Image id="dot_on_chasse_2" image="dot_yellow" class="dot dot_large" offsetXY="68 -96" />
+      <Image id="dot_on_chasse_3" image="dot_yellow" class="dot dot_large" offsetXY="101 -96" />
+      <Image id="dot_on_chasse_4" image="dot_yellow" class="dot dot_large" offsetXY="134 -96" />
+      <Image id="dot_on_chasse_5" image="dot_yellow" class="dot dot_large" offsetXY="167 -96" />
 
-      <Image id="dot_on_lien_1" image="dot_large_yellow" class="dot dot_large" offsetXY="280 -96" />
-      <Image id="dot_on_lien_2" image="dot_large_yellow" class="dot dot_large" offsetXY="313 -96" />
-      <Image id="dot_on_lien_3" image="dot_large_yellow" class="dot dot_large" offsetXY="346 -96" />
-      <Image id="dot_on_lien_4" image="dot_large_yellow" class="dot dot_large" offsetXY="379 -96" />
-      <Image id="dot_on_lien_5" image="dot_large_yellow" class="dot dot_large" offsetXY="412 -96" />
+      <Image id="dot_on_lien_1" image="dot_yellow" class="dot dot_large" offsetXY="280 -96" />
+      <Image id="dot_on_lien_2" image="dot_yellow" class="dot dot_large" offsetXY="313 -96" />
+      <Image id="dot_on_lien_3" image="dot_yellow" class="dot dot_large" offsetXY="346 -96" />
+      <Image id="dot_on_lien_4" image="dot_yellow" class="dot dot_large" offsetXY="379 -96" />
+      <Image id="dot_on_lien_5" image="dot_yellow" class="dot dot_large" offsetXY="412 -96" />
 
-      <Image id="dot_on_portillon_1" image="dot_large_yellow" class="dot dot_large" offsetXY="518 -96" />
-      <Image id="dot_on_portillon_2" image="dot_large_yellow" class="dot dot_large" offsetXY="551 -96" />
-      <Image id="dot_on_portillon_3" image="dot_large_yellow" class="dot dot_large" offsetXY="584 -96" />
-      <Image id="dot_on_portillon_4" image="dot_large_yellow" class="dot dot_large" offsetXY="617 -96" />
-      <Image id="dot_on_portillon_5" image="dot_large_yellow" class="dot dot_large" offsetXY="650 -96" />
+      <Image id="dot_on_portillon_1" image="dot_yellow" class="dot dot_large" offsetXY="518 -96" />
+      <Image id="dot_on_portillon_2" image="dot_yellow" class="dot dot_large" offsetXY="551 -96" />
+      <Image id="dot_on_portillon_3" image="dot_yellow" class="dot dot_large" offsetXY="584 -96" />
+      <Image id="dot_on_portillon_4" image="dot_yellow" class="dot dot_large" offsetXY="617 -96" />
+      <Image id="dot_on_portillon_5" image="dot_yellow" class="dot dot_large" offsetXY="650 -96" />
 
-      <Image id="dot_on_haven_1" image="dot_large_yellow" class="dot dot_large" offsetXY="1030 -126" />
-      <Image id="dot_on_haven_2" image="dot_large_yellow" class="dot dot_large" offsetXY="1063 -126" />
-      <Image id="dot_on_haven_3" image="dot_large_yellow" class="dot dot_large" offsetXY="1096 -126" />
-      <Image id="dot_on_haven_4" image="dot_large_yellow" class="dot dot_large" offsetXY="1129 -126" />
-      <Image id="dot_on_haven_5" image="dot_large_yellow" class="dot dot_large" offsetXY="1162 -126" />
+      <Image id="dot_on_haven_1" image="dot_yellow" class="dot dot_large" offsetXY="1030 -126" />
+      <Image id="dot_on_haven_2" image="dot_yellow" class="dot dot_large" offsetXY="1063 -126" />
+      <Image id="dot_on_haven_3" image="dot_yellow" class="dot dot_large" offsetXY="1096 -126" />
+      <Image id="dot_on_haven_4" image="dot_yellow" class="dot dot_large" offsetXY="1129 -126" />
+      <Image id="dot_on_haven_5" image="dot_yellow" class="dot dot_large" offsetXY="1162 -126" />
 <!--
 UI.setAttributes("page_2_left_Brown", {padding = "8 8 150 50"})
 UI.setAttributes("page_2_right_Red", {width = "710", color = "rgba(1, 0, 0, 0.15)", rectAlignment = "MiddleRight", offsetXY = "-20 0", padding = "0 0 200 0"})

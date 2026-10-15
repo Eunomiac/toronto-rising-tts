@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactElement } from "react";
-import { assetUrl } from "./layout.js";
+import { sheetArtUrl } from "./layout.js";
 import type { DotSlot } from "./paint.js";
 
 type Props = {
@@ -14,7 +14,7 @@ export const DotLine = ({ slots, large = false }: Props): ReactElement => (
         key={index}
         className={`pc-dot${slot.active ? " on" : ""}`}
         style={slot.active && slot.image
-          ? { "--pc-dot": `url("${assetUrl(`dots/${slot.image}.webp`)}")` } as CSSProperties
+          ? { "--pc-dot": `url("${sheetArtUrl(slot.image)}")` } as CSSProperties
           : undefined}
       />
     ))}

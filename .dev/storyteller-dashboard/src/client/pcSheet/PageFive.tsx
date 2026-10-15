@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ReactElement } from "react";
 import { DotLine } from "./DotLine.js";
-import { assetUrl } from "./layout.js";
+import { sheetArtUrl } from "./layout.js";
 import type { DotFill, DotSlot } from "./paint.js";
 import type { PageContext } from "./pages.js";
 import { ProjectEditor } from "./ProjectEditor.js";
@@ -75,11 +75,11 @@ const ProjectCard = ({
         <span className="pc-proj-goal">{project.goal || "(no goal yet)"}</span>
       </div>
       {die !== null ? (
-        <img className="pc-proj-die" src={assetUrl(`sheet/project_die_${Math.max(0, Math.min(10, die))}.webp`)} alt={`Project die ${die}`} />
+        <img className="pc-proj-die" src={sheetArtUrl(`project_die_${Math.max(0, Math.min(10, die))}`)} alt={`Project die ${die}`} />
       ) : null}
       {win || crit ? (
         <span className="pc-proj-result">
-          <img src={assetUrl(`sheet/${crit ? "project_crit" : "project_win"}.webp`)} alt={crit ? "Critical Win" : "Win"} />
+          <img src={sheetArtUrl(crit ? "project_crit" : "project_win")} alt={crit ? "Critical Win" : "Win"} />
           {win ? <b>+{project.launchRollMargin ?? 0}</b> : null}
         </span>
       ) : null}
