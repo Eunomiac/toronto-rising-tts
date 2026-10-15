@@ -64,6 +64,8 @@ function handTypedLinks() {
 function shadowingRepoImages(ownedNames) {
   return gitFiles(["ls-files", "--cached", "--others", "--exclude-standard"])
     .filter((rel) => /\.(webp|png|jpe?g)$/i.test(rel))
+    .filter((rel) => fs.existsSync(path.join(REPO_ROOT, rel)))
+    .filter((rel) => !rel.replace(/\\/g, "/").startsWith("assets/"))
     .filter((rel) => ownedNames.has(path.posix.basename(rel).replace(/\.[^.]+$/, "")));
 }
 

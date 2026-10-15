@@ -77,6 +77,8 @@ Run these in this order, with TTS closed. Each shows a report first; nothing is 
 4. **`npm run cloud:dedupe`**: finds duplicate files (same content, or same name in one folder). `-- --delete` removes the unused extras.
 5. **`npm run cloud:strays`**: lists files nothing owns: files in `assets/` that match no job, and Cloud files not in `assets/`. After step 3, everything left in the old **Toronto Rising** folder shows here as safe to delete. `-- --delete` removes the unused ones.
 
+For `-- --delete` / `-- --delete --yes` (and the same on `cloud:dedupe`), Steam must be on, TTS closed, and a backup less than a week old. Without `--yes` you type `DELETE` to confirm; with `--yes` the script deletes after printing the list (for an author-requested cleanup run).
+
 If something goes wrong, `cloud:restore-index` with the snapshot printed by the command puts the index back.
 
 ## Where things live

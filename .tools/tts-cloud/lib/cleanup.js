@@ -91,7 +91,8 @@ function describe(r) {
 }
 
 /**
- * Deletes need: TTS closed, a backup under 7 days old, and typing DELETE in an interactive terminal.
+ * Deletes need: TTS closed, a backup under 7 days old, and either typing DELETE
+ * in an interactive terminal or passing `--yes` (for an author-requested cleanup run).
  * @param {ReturnType<import("./cloud_config.js").loadCloudConfig>} cfg
  * @param {string[]} lines what will be deleted
  * @returns {Promise<boolean>}
@@ -105,8 +106,14 @@ async function confirmDeletes(cfg, lines) {
   if (!(age < BACKUP_MAX_AGE_MS)) {
     throw new Error(`The last Cloud backup is ${Math.floor(age / 86400000)} days old. Run npm run cloud:backup first.`);
   }
-  if (!process.stdin.isTTY || !process.stdout.isTTY) throw new Error("Deleting needs an interactive terminal (to type DELETE).");
   for (const l of lines) console.log(`  delete ${l}`);
+  if (process.argv.includes("--yes")) {
+    console.log(`--yes: deleting ${lines.length} file(s) without typing DELETE.`);
+    return true;
+  }
+  if (!process.stdin.isTTY || !process.stdout.isTTY) {
+    throw new Error("Deleting needs an interactive terminal (to type DELETE), or pass --yes.");
+  }
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   const answer = await new Promise((resolve) => rl.question(`Type DELETE to remove these ${lines.length} file(s) from Steam Cloud: `, resolve));
   rl.close();
