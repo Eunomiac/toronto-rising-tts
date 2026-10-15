@@ -11,6 +11,7 @@
  */
 
 const fs = require("fs");
+const path = require("path");
 
 const {
   cloudFolderFor,
@@ -108,6 +109,11 @@ async function applyPush(cfg, session, plan, opts) {
     }
   }
   if (plan.uploads.length > 0) {
+    const needed = plan.uploads.reduce((sum, f) => sum + f.size, 0);
+    const { availableBytes } = session.quota();
+    if (needed > availableBytes) {
+      throw new Error(`Upload needs ${Math.ceil(needed / 1048576)} MB but Steam Cloud has ${Math.floor(availableBytes / 1048576)} MB free.`);
+    }
     const items = plan.uploads.map((f) => ({
       bytes: fs.readFileSync(f.absPath),
       folder: cloudFolderFor(cfg.cloudRoot, f.folder),
@@ -137,6 +143,8 @@ function applyDeletes(cfg, session, plan, opts) {
   const inUse = buildInUseIndex(cfg, { protectAllSaves: opts.protectAllSaves });
   const deleted = [];
   const kept = [];
+  /** @type {Map<string, number>} */
+  const olderSaveUse = new Map();
   for (const c of plan.deleteCandidates) {
     const use = inUse.lookup(ugcMatchKey(c.row.url));
     const label = `${c.row.folder}/${c.row.name}`;
@@ -147,11 +155,13 @@ function applyDeletes(cfg, session, plan, opts) {
       opts.warn(`KEPT ${label} (${c.reason}): still referenced by ${use.protectedBy.join(", ")}`);
       kept.push(c);
     } else {
-      if (use.olderTorontoRisingSaves.length > 0) {
-        opts.warn(`${label} is still used by older Toronto Rising save(s): ${use.olderTorontoRisingSaves.join(", ")}`);
-      }
+      for (const s of use.olderTorontoRisingSaves) olderSaveUse.set(s, (olderSaveUse.get(s) || 0) + 1);
       deleted.push(c);
     }
+  }
+  if (olderSaveUse.size > 0) {
+    const list = [...olderSaveUse].map(([s, n]) => `${s} (${n})`).join(", ");
+    opts.warn(`Deleting files still used by older Toronto Rising saves (they will show missing art there): ${list}`);
   }
   if (deleted.length > 0) {
     deleteFiles(session, cfg, deleted.map((c) => c.row.key), { label: `${opts.label}-delete` });
@@ -166,7 +176,50 @@ function applyDeletes(cfg, session, plan, opts) {
   return { deleted, kept };
 }
 
+/**
+ * Read-only copy of Cloud "<cloudRoot>/Save Only/**" in assets/Save Only/.
+ * @param {ReturnType<import("./cloud_config.js").loadCloudConfig>} cfg
+ * @param {ReturnType<import("./steam_session.js").openSteamSession>} session
+ * @param {ReturnType<typeof rowsFromIndex>} rows
+ * @param {{ dryRun?: boolean }} [opts]
+ */
+function refreshSaveOnly(cfg, session, rows, opts = {}) {
+  const prefix = `${SAVE_ONLY_FOLDER}/`.toLowerCase();
+  const local = new Map(
+    scanAssets(cfg.assetsDir)
+      .filter((f) => f.relPath.toLowerCase().startsWith(prefix))
+      .map((f) => [f.relPath.toLowerCase(), f]),
+  );
+  const wanted = new Set();
+  let written = 0;
+  let removed = 0;
+  for (const row of rows) {
+    const folder = localFolderFor(cfg.cloudRoot, row.folder);
+    if (folder === null || folder.split("/")[0] !== SAVE_ONLY_FOLDER) continue;
+    const rel = `${folder}/${row.name}`;
+    const relKey = rel.toLowerCase();
+    if (wanted.has(relKey)) continue;
+    wanted.add(relKey);
+    const have = local.get(relKey);
+    if (have && have.key === row.key) continue;
+    if (!session.fileExists(row.key)) continue;
+    written += 1;
+    if (!opts.dryRun) {
+      const abs = path.join(cfg.assetsDir, ...rel.split("/"));
+      fs.mkdirSync(path.dirname(abs), { recursive: true });
+      fs.writeFileSync(abs, session.readFile(row.key));
+    }
+  }
+  for (const [relKey, f] of local) {
+    if (wanted.has(relKey)) continue;
+    removed += 1;
+    if (!opts.dryRun) fs.unlinkSync(f.absPath);
+  }
+  return { written, removed };
+}
+
 module.exports = {
+  refreshSaveOnly,
   planPush,
   applyPush,
   applyDeletes,

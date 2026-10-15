@@ -1,103 +1,429 @@
 {
-  // Cloud → CustomUIAssets / Lua catalog sync jobs.
-  // Plan: .tools/Cloud-Asset-Sync-Plan.md
-  // Save path: tts-assets.config.json (savesDir + defaultSaveName), or set saveFileLocation below.
+  // assets/ (mirror of Steam Cloud "Vampire the Masquerade 5E/") → save rows, object images, Lua modules.
+  // Docs: .tools/Cloud-Asset-Sync-Plan.md. Every job's manifest rows land in lib/json/cloud-assets.json.
+  //
+  // folder: path under assets/ (= under the Cloud root).
+  // filenameToNameSearchPattern must contain a literal outside its capture groups that is more than the
+  //   extension (^siteCard_(.*)\.webp$, not ^(.*)\.webp$); otherwise the job is skipped with a warning.
+  // Save-row jobs purge rows in their name family (derived from the replace pattern), rows they wrote last
+  //   run, and purgePatterns; ownsAllRows purges every row on the target no job wrote. Nothing is purged on a
+  //   target while another job there is held (files not in Cloud yet) and has never run.
+  // output: GlobalCustomUIAssets | ObjectCustomUIAssets (targets) | ObjectImage (field + objects)
+  //         | LuaModule (module: lib/cloud_<name>.ttslua) | Manifest (manifest rows only)
+  // targets / objects values: a target group name, a GUID, or a list mixing both.
 
-  // "saveFileLocation": "C:/Users/.../Saves/TS_Save_230.json",
+  "targetGroups": {
+    // CSHEET_PAGE_N_BROWN / ORANGE / RED / PINK / PURPLE
+    "csheetPage1": ["21d213", "553538", "f10182", "c4abec", "0bdb4a"],
+    "csheetPage2": ["c80132", "e2c921", "8a59a9", "c0f4b5", "7ac353"],
+    "csheetPage3": ["f8e50c", "a03257", "d405a8", "5166e7", "631323"],
+    "csheetPage4": ["a88138", "9b845d", "5badcc", "802d14", "edf063"],
+    "csheetPage5": ["f7ab1b", "8a6362", "421bfb", "00fc87", "199d9f"],
+    "csheetPage6": ["f36758", "f4d6b6", "515b16", "555372", "1c72c5"],
+    "csheetPage7": ["35df08", "8e7623", "edb0b1", "f38d69", "f85e4f"],
+    "csheetPage8": ["07ead9", "511c50", "f93aea", "645189", "ceb48e"],
+    // SEAT_FIGURE_BROWN / ORANGE / RED / PINK / PURPLE (PC seat figurines)
+    "pcSeatFigurines": ["1c5b18", "e1a378", "1e70cf", "390349", "923872"]
+  },
 
   "jobs": [
     {
       "id": "scatterOverlay",
-      "cloudFolder": "HUD/Scatter Overlay",
-      "recurIntoSubfolders": false,
+      "folder": "HUD/Scatter Overlay",
       "output": "GlobalCustomUIAssets",
-      "filenameToNameSearchPattern": "^(.*)\\.[^.]+$",
-      "filenameToNameReplacePattern": "$1"
-      // Purge family derived → ^siteCard_(.*)$
+      "filenameToNameSearchPattern": "^scatter(.*)\\.webp$",
+      "filenameToNameReplacePattern": "scatter$1"
     },
     {
       "id": "siteCards",
-      "cloudFolder": "Sites",
-      "recurIntoSubfolders": false,
+      "folder": "Sites",
       "output": "GlobalCustomUIAssets",
-      "filenameToNameSearchPattern": "^(.*)\\.[^.]+$",
+      "filenameToNameSearchPattern": "^siteCard_(.*)\\.webp$",
       "filenameToNameReplacePattern": "siteCard_$1"
-      // Purge family derived → ^siteCard_(.*)$
     },
     {
-      "id": "cloudSitesCatalog",
-      "cloudFolder": "Sites",
-      "recurIntoSubfolders": false,
-      "output": "LuaCatalog",
-      "tableName": "Sites",
-      "filenameToNameSearchPattern": "^(.*)\\.[^.]+$",
+      "id": "districtCards",
+      "folder": "HUD/CorePanel_Map/District Cards",
+      "output": "GlobalCustomUIAssets",
+      "filenameToNameSearchPattern": "^districtCard_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "districtCard_$1"
+    },
+    // Global HUD art: each file is named after its CustomUIAssets row.
+    { "id": "hudHunger", "folder": "HUD/Hunger", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^overlay_hunger_(.*)\\.webp$", "filenameToNameReplacePattern": "overlay_hunger_$1" },
+    { "id": "hudBorders", "folder": "HUD/Borders", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^border-(.*)\\.webp$", "filenameToNameReplacePattern": "border-$1" },
+    { "id": "hudBlindfolds", "folder": "HUD/Blindfold Overlays", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^overlay_globalBlindfold_(.*)\\.webp$", "filenameToNameReplacePattern": "overlay_globalBlindfold_$1" },
+    { "id": "hudSessionSplash", "folder": "HUD/Session Splash Overlays", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^overlay_((?:session|characterIntro).*)\\.webp$", "filenameToNameReplacePattern": "overlay_$1" },
+    { "id": "hudOverlays", "folder": "HUD/Overlays", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^overlay_(.*)\\.webp$", "filenameToNameReplacePattern": "overlay_$1" },
+    { "id": "hudCoterieToggles", "folder": "HUD/CorePanel_Center/Coterie Grid", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^toggle_(.*)\\.webp$", "filenameToNameReplacePattern": "toggle_$1" },
+    { "id": "hudCoterieReferences", "folder": "HUD/CorePanel_Center/Coterie References", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^refPanel_Coteries_(.*)\\.webp$", "filenameToNameReplacePattern": "refPanel_Coteries_$1" },
+    { "id": "hudMapControls", "folder": "HUD/CorePanel_Map", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^map(Base|_.*)\\.webp$", "filenameToNameReplacePattern": "map$1" },
+    { "id": "hudMapRecenter", "folder": "HUD/CorePanel_Map", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^toggle_mapRecenter_(.*)\\.webp$", "filenameToNameReplacePattern": "toggle_mapRecenter_$1" },
+    { "id": "hudMapOverlayToggles", "folder": "HUD/CorePanel_Map/Left Sidebar", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^toggleOverlay_(.*)\\.webp$", "filenameToNameReplacePattern": "toggleOverlay_$1" },
+    { "id": "hudMapOverlayDividers", "folder": "HUD/CorePanel_Map/Left Sidebar", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^overlayDivider_(.*)\\.webp$", "filenameToNameReplacePattern": "overlayDivider_$1" },
+    { "id": "hudMapOverlays", "folder": "HUD/CorePanel_Map/Overlays", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^mapOverlay_(.*)\\.webp$", "filenameToNameReplacePattern": "mapOverlay_$1" },
+    { "id": "hudDistrictToggles", "folder": "HUD/CorePanel_Map/Right Sidebar", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^toggleDistrict_(.*)\\.webp$", "filenameToNameReplacePattern": "toggleDistrict_$1" },
+    { "id": "hudDistrictDividers", "folder": "HUD/CorePanel_Map/Right Sidebar", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^districtDivider_(.*)\\.webp$", "filenameToNameReplacePattern": "districtDivider_$1" },
+    { "id": "hudMapPins", "folder": "HUD/CorePanel_Map/Pins", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^pin_(.*)\\.webp$", "filenameToNameReplacePattern": "pin_$1" },
+    { "id": "hudPanelToggles", "folder": "HUD/Right Sidebar", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^toggle_(.*)\\.webp$", "filenameToNameReplacePattern": "toggle_$1" },
+    { "id": "hudReferencePanels", "folder": "HUD/Reference_Panels", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^refPanel_(.*)\\.webp$", "filenameToNameReplacePattern": "refPanel_$1" },
+    { "id": "hudCourtDividers", "folder": "HUD/Princes Court", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^divider_(.*)\\.webp$", "filenameToNameReplacePattern": "divider_$1" },
+    { "id": "hudCourtNavigation", "folder": "HUD/Princes Court", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^navigate_(.*)\\.webp$", "filenameToNameReplacePattern": "navigate_$1" },
+    // Prince's Court marks share the sheet files; the Global dot_* rows are the sheets' large dots.
+    { "id": "hudBoxes", "folder": "CSheets/Shared", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^box_(.*)\\.webp$", "filenameToNameReplacePattern": "box_$1" },
+    { "id": "hudDots", "folder": "CSheets/Shared", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^dot_large_(.*)\\.webp$", "filenameToNameReplacePattern": "dot_$1" },
+    { "id": "hudSheetDots", "folder": "CSheets/Page3", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^dot_(grey_red_x|project)\\.webp$", "filenameToNameReplacePattern": "dot_$1" },
+    { "id": "hudProjectDice", "folder": "CSheets/Page5", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^project_(.*)\\.webp$", "filenameToNameReplacePattern": "project_$1" },
+    { "id": "hudDieFaces", "folder": "HUD/Dice Faces", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^dieFace_(.*)\\.png$", "filenameToNameReplacePattern": "dieFace_$1" },
+    { "id": "hudPlayerOverlayBackgrounds", "folder": "HUD/Player Overlay", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^bg_playerOverlay_(.*)\\.webp$", "filenameToNameReplacePattern": "bg_playerOverlay_$1" },
+    { "id": "hudCameraButtons", "folder": "HUD/Player Overlay", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^buttonCamera_(.*)\\.webp$", "filenameToNameReplacePattern": "buttonCamera_$1" },
+    { "id": "hudNameLabels", "folder": "HUD/Player Overlay", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^nameLabel_(.*)\\.webp$", "filenameToNameReplacePattern": "nameLabel_$1" },
+    { "id": "hudPopoutControls", "folder": "HUD/Player Overlay", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^popoutControl_(.*)\\.webp$", "filenameToNameReplacePattern": "popoutControl_$1" },
+    { "id": "hudRollResults", "folder": "HUD/Roll Results", "output": "GlobalCustomUIAssets", "filenameToNameSearchPattern": "^results(.*)\\.webp$", "filenameToNameReplacePattern": "results$1" },
+    {
+      // Keyed skyboxes: skybox_<key>.jpg → npm run skyboxes:import joins key to the sheet's SKYBOXCSV row.
+      "id": "skyboxes",
+      "folder": "Skyboxes",
+      "output": "Manifest",
+      "filenameToNameSearchPattern": "^skybox_(.*)\\.(?:jpg|png|webp)$",
       "filenameToNameReplacePattern": "$1"
-      // → Cloud.Sites.<stem> = { filename, key, URL }
+    },
+    {
+      // Random pool when a scene has no skybox (C.GenericSkyboxes, numeric order).
+      "id": "genericSkyboxes",
+      "folder": "Skyboxes",
+      "output": "Manifest",
+      "filenameToNameSearchPattern": "^GenericSkybox_(\\d+)\\.(?:jpg|png|webp)$",
+      "filenameToNameReplacePattern": "$1"
     },
     {
       "id": "memoriamPanels",
-      "cloudFolder": "Memoriam",
-      "recurIntoSubfolders": false,
-      "output": "LuaCatalog",
-      "tableName": "MemoriamPanels",
-      // <skyboxKey>_<panel>.<ext> where skyboxKey = <pcKey><periodId> (a C.MemoriamSkyboxes key,
-      // e.g. blackCaesar37) and panel = a|b|c|d → panelA..panelD.
-      "filenameToNameSearchPattern": "^([A-Za-z][A-Za-z0-9]*[0-9]+_[a-dA-D])\\.[^.]+$",
+      "folder": "Memoriam",
+      "output": "LuaModule",
+      "module": "lib/cloud_memoriam_panels.ttslua",
+      // memoriamPanel_<skyboxKey>_<a|b|c|d>.jpg → key "<skyboxKey>_<letter>" (skyboxKey = a C.MemoriamSkyboxes key,
+      // e.g. blackCaesar37). lib/constants.ttslua fills C.MemoriamSkyboxes[key].panelA–D.url at load.
+      "filenameToNameSearchPattern": "^memoriamPanel_([A-Za-z][A-Za-z0-9]*[0-9]+_[a-dA-D])\\.[^.]+$",
       "filenameToNameReplacePattern": "$1"
-      // → Cloud.MemoriamPanels.blackCaesar37_a = { filename, key, URL }
-      // Consumed by lib/constants.ttslua (applyMemoriamCloudPanelUrls) → C.MemoriamSkyboxes[key].panelX.url
     },
     {
       "id": "memoriamBlindfolds",
-      "cloudFolder": "Memoriam/Blindfolds",
-      "recurIntoSubfolders": false,
+      "folder": "Memoriam/Blindfolds",
       "output": "GlobalCustomUIAssets",
-      "filenameToNameSearchPattern": "^([^.]+)\\.[^.]+$",
-      "filenameToNameReplacePattern": "memoriamBlindfold_$1" // E.g. "memoriamBlindfold_blackCaesar37.webp"
-      // Purge family derived → ^memoriamBlindfold_(.*)$
+      "filenameToNameSearchPattern": "^memoriamBlindfold_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "memoriamBlindfold_$1"
+    },
+    // Character sheets: every Custom UI row on Pages 1–6 comes from assets/CSheets (ownsAllRows: rows no job
+    // writes are purged). CSheets/PageN holds art only that page uses; CSheets/Shared holds art several pages
+    // share (one Cloud file can live in one folder only). Two jobs must never write the same name on one page.
+    // The dashboard serves the same files (/sheet-art/<name>).
+    {
+      "id": "csheetPage1Boxes",
+      "folder": "CSheets/Page1",
+      "output": "ObjectCustomUIAssets",
+      "targets": "csheetPage1",
+      "ownsAllRows": true,
+      "filenameToNameSearchPattern": "^box_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "box_$1"
     },
     {
-      "id": "csheetPage1Overlays",
-      "cloudFolder": "CSheets/Page1",
-      "recurIntoSubfolders": false,
+      "id": "csheetPage1Dots",
+      "folder": "CSheets/Page1",
       "output": "ObjectCustomUIAssets",
-      // CSHEET_PAGE_1_BROWN / ORANGE / RED / PINK / PURPLE
-      "targetGUIDs": ["21d213", "553538", "f10182", "c4abec", "0bdb4a"],
-      "filenameToNameSearchPattern": "^(.*)\\.[^.]+$",
-      "filenameToNameReplacePattern": "$1",
-      // Only remove known obsolete glyphs — do not use ^dot_|^box_ (would purge
-      // yellow/white/grey if they are not yet present in Cloud Page1).
-      "purgePatterns": [
-        "^dot_blank$",
-        "^dot_large_",
-        "^box_blank$",
-        "^box_black$",
-        "^box_grey$",
-        "^box_yellow$"
-      ]
+      "targets": "csheetPage1",
+      "ownsAllRows": true,
+      "filenameToNameSearchPattern": "^dot_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "dot_$1"
     },
     {
-      "id": "csheetPage2Assets",
-      "cloudFolder": "CSheets/Page2",
-      "recurIntoSubfolders": false,
+      "id": "csheetPage2DisciplineNames",
+      "folder": "CSheets/Page2",
       "output": "ObjectCustomUIAssets",
-      // CSHEET_PAGE_2_BROWN / ORANGE / RED / PINK / PURPLE
-      "targetGUIDs": ["c80132", "e2c921", "8a59a9", "c0f4b5", "7ac353"],
-      "filenameToNameSearchPattern": "^(.*)\\.[^.]+$",
-      "filenameToNameReplacePattern": "$1",
-      // No purge — folder still evolving; protect baneSeverity* / discBonus* / discReroll*.
-      "purgePatterns": []
+      "targets": "csheetPage2",
+      "ownsAllRows": true,
+      "filenameToNameSearchPattern": "^discName_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "discName_$1"
     },
     {
-      "id": "csheetPage6Assets",
-      "cloudFolder": "CSheets/Page6",
-      "recurIntoSubfolders": false,
+      "id": "csheetPage2Dividers",
+      "folder": "CSheets/Page2",
       "output": "ObjectCustomUIAssets",
-      // CSHEET_PAGE_6_BROWN / ORANGE / RED / PINK / PURPLE
-      "targetGUIDs": ["f36758", "f4d6b6", "515b16", "555372", "1c72c5"],
-      "filenameToNameSearchPattern": "^(navigate.*)\\.[^.]+$",
-      "filenameToNameReplacePattern": "$1",
-      "purgePatterns": []
+      "targets": "csheetPage2",
+      "ownsAllRows": true,
+      "filenameToNameSearchPattern": "^divider_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "divider_$1"
+    },
+    {
+      "id": "csheetPage2Dotlines",
+      "folder": "CSheets/Page2",
+      "output": "ObjectCustomUIAssets",
+      "targets": "csheetPage2",
+      "ownsAllRows": true,
+      "filenameToNameSearchPattern": "^page2_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "page2_$1"
+    },
+    {
+      "id": "csheetPage2Dots",
+      "folder": "CSheets/Page2",
+      "output": "ObjectCustomUIAssets",
+      "targets": "csheetPage2",
+      "ownsAllRows": true,
+      "filenameToNameSearchPattern": "^dot_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "dot_$1"
+    },
+    {
+      "id": "csheetPage3Dividers",
+      "folder": "CSheets/Page3",
+      "output": "ObjectCustomUIAssets",
+      "targets": "csheetPage3",
+      "ownsAllRows": true,
+      "filenameToNameSearchPattern": "^divider_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "divider_$1"
+    },
+    {
+      "id": "csheetPage3Dots",
+      "folder": "CSheets/Page3",
+      "output": "ObjectCustomUIAssets",
+      "targets": "csheetPage3",
+      "ownsAllRows": true,
+      "filenameToNameSearchPattern": "^dot_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "dot_$1"
+    },
+    {
+      "id": "csheetPage4Dividers",
+      "folder": "CSheets/Page4",
+      "output": "ObjectCustomUIAssets",
+      "targets": "csheetPage4",
+      "ownsAllRows": true,
+      "filenameToNameSearchPattern": "^divider_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "divider_$1"
+    },
+    {
+      // Relationship portraits: a relationship's `portrait` field is the row name; every Page 4 gets all of them.
+      "id": "csheetPage4Portraits",
+      "folder": "CSheets/Page4/Portraits",
+      "output": "ObjectCustomUIAssets",
+      "targets": "csheetPage4",
+      "ownsAllRows": true,
+      "filenameToNameSearchPattern": "^(.*)Portrait\\.webp$",
+      "filenameToNameReplacePattern": "$1Portrait"
+    },
+    {
+      "id": "csheetPage5Dividers",
+      "folder": "CSheets/Page5",
+      "output": "ObjectCustomUIAssets",
+      "targets": "csheetPage5",
+      "ownsAllRows": true,
+      "filenameToNameSearchPattern": "^divider_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "divider_$1"
+    },
+    {
+      "id": "csheetPage5Projects",
+      "folder": "CSheets/Page5",
+      "output": "ObjectCustomUIAssets",
+      "targets": "csheetPage5",
+      "ownsAllRows": true,
+      "filenameToNameSearchPattern": "^project_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "project_$1"
+    },
+    {
+      "id": "csheetPage6Dividers",
+      "folder": "CSheets/Page6",
+      "output": "ObjectCustomUIAssets",
+      "targets": "csheetPage6",
+      "ownsAllRows": true,
+      "filenameToNameSearchPattern": "^divider_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "divider_$1"
+    },
+    {
+      "id": "csheetPage6Navigation",
+      "folder": "CSheets/Page6",
+      "output": "ObjectCustomUIAssets",
+      "targets": "csheetPage6",
+      "ownsAllRows": true,
+      "filenameToNameSearchPattern": "^navigate_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "navigate_$1"
+    },
+    {
+      "id": "csheetSharedBoxes",
+      "folder": "CSheets/Shared",
+      "output": "ObjectCustomUIAssets",
+      "targets": ["csheetPage4", "csheetPage5"],
+      "ownsAllRows": true,
+      "filenameToNameSearchPattern": "^box_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "box_$1"
+    },
+    {
+      // Page 2 has its own grey / white / yellow dots.
+      "id": "csheetSharedDots",
+      "folder": "CSheets/Shared",
+      "output": "ObjectCustomUIAssets",
+      "targets": ["csheetPage1", "csheetPage3", "csheetPage4", "csheetPage5"],
+      "ownsAllRows": true,
+      "filenameToNameSearchPattern": "^dot_(grey|white|yellow)\\.webp$",
+      "filenameToNameReplacePattern": "dot_$1"
+    },
+    {
+      // Page 1 has its own red dot.
+      "id": "csheetSharedDotsBlankRed",
+      "folder": "CSheets/Shared",
+      "output": "ObjectCustomUIAssets",
+      "targets": ["csheetPage2", "csheetPage3", "csheetPage4", "csheetPage5"],
+      "ownsAllRows": true,
+      "filenameToNameSearchPattern": "^dot_(blank|red)\\.webp$",
+      "filenameToNameReplacePattern": "dot_$1"
+    },
+    {
+      "id": "csheetSharedLargeDots",
+      "folder": "CSheets/Shared",
+      "output": "ObjectCustomUIAssets",
+      "targets": ["csheetPage3", "csheetPage4", "csheetPage5"],
+      "ownsAllRows": true,
+      "filenameToNameSearchPattern": "^dot_large_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "dot_large_$1"
+    },
+    {
+      // Sheet page faces: "CSHEET PAGE <n> - <CHARACTER>.webp" → that PC's page object.
+      "id": "csheetFaces",
+      "folder": "CSheets/Faces",
+      "output": "ObjectImage",
+      "field": "CustomImage.ImageURL",
+      "objects": {
+        "1_FOMORACH": "21d213", "1_RASHID": "553538", "1_LUCIEN": "f10182", "1_AISHE": "c4abec", "1_BLACKCAESAR": "0bdb4a",
+        "2_FOMORACH": "c80132", "2_RASHID": "e2c921", "2_LUCIEN": "8a59a9", "2_AISHE": "c0f4b5", "2_BLACKCAESAR": "7ac353",
+        "3_FOMORACH": "f8e50c", "3_RASHID": "a03257", "3_LUCIEN": "d405a8", "3_AISHE": "5166e7", "3_BLACKCAESAR": "631323",
+        "4_FOMORACH": "a88138", "4_RASHID": "9b845d", "4_LUCIEN": "5badcc", "4_AISHE": "802d14", "4_BLACKCAESAR": "edf063",
+        "5_FOMORACH": "f7ab1b", "5_RASHID": "8a6362", "5_LUCIEN": "421bfb", "5_AISHE": "00fc87", "5_BLACKCAESAR": "199d9f",
+        "6_FOMORACH": "f36758", "6_RASHID": "f4d6b6", "6_LUCIEN": "515b16", "6_AISHE": "555372", "6_BLACKCAESAR": "1c72c5",
+        "7_FOMORACH": "35df08", "7_RASHID": "8e7623", "7_LUCIEN": "edb0b1", "7_AISHE": "f38d69", "7_BLACKCAESAR": "f85e4f",
+        "8_FOMORACH": "07ead9", "8_RASHID": "511c50", "8_LUCIEN": "f93aea", "8_AISHE": "645189", "8_BLACKCAESAR": "ceb48e"
+      },
+      "filenameToNameSearchPattern": "^CSHEET PAGE (\\d) - ([A-Z]+)\\.webp$",
+      "filenameToNameReplacePattern": "$1_$2"
+    },
+    {
+      "id": "csheetBacks",
+      "folder": "CSheets/Faces",
+      "output": "ObjectImage",
+      "field": "CustomImage.ImageSecondaryURL",
+      "objects": {
+        "back": ["csheetPage1", "csheetPage2", "csheetPage3", "csheetPage4", "csheetPage5", "csheetPage6", "csheetPage7", "csheetPage8"]
+      },
+      "filenameToNameSearchPattern": "^CSHEET PAGE BACK\\.webp$",
+      "filenameToNameReplacePattern": "back"
+    },
+    {
+      // Blood Potency decal art for Pages 1–2 (lib/blood_potency_constants.ttslua → AttachedDecal urls).
+      "id": "bloodPotencyDecals",
+      "folder": "CSheets/Blood Potency",
+      "output": "LuaModule",
+      "module": "lib/cloud_blood_potency.ttslua",
+      "filenameToNameSearchPattern": "^bloodPotency_(.*)\\.png$",
+      "filenameToNameReplacePattern": "$1"
+    },
+    {
+      // The same decal variants registered on the sheet objects (setDecals swaps among them).
+      "id": "bloodPotencyPage1",
+      "folder": "CSheets/Blood Potency",
+      "output": "ObjectCustomUIAssets",
+      "targets": "csheetPage1",
+      "ownsAllRows": true,
+      "filenameToNameSearchPattern": "^bloodPotency_((?:bloodSurge|mending)\\d)\\.png$",
+      "filenameToNameReplacePattern": "$1"
+    },
+    {
+      "id": "bloodPotencyPage2",
+      "folder": "CSheets/Blood Potency",
+      "output": "ObjectCustomUIAssets",
+      "targets": "csheetPage2",
+      "ownsAllRows": true,
+      "filenameToNameSearchPattern": "^bloodPotency_((?:baneSeverity|discBonus|discReroll)\\d)\\.png$",
+      "filenameToNameReplacePattern": "$1"
+    },
+
+    // NPC art. npm run npc-art:draw draws the tokens before this sync; npm run npc-art:urls reads these jobs'
+    // manifest rows afterwards and writes lib/npc_art_urls.ttslua. Roll-banner figures (core/roll_ui.ttslua) are
+    // the rollFigure_<characterKey> rows; generic NPCs have no banner figure.
+    {
+      "id": "npcFiguresCatalogued",
+      "folder": "NPC Art/Figurines/Catalogued",
+      "output": "GlobalCustomUIAssets",
+      "filenameToNameSearchPattern": "^npc_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "rollFigure_$1"
+    },
+    {
+      "id": "npcFiguresMemoriam",
+      "folder": "NPC Art/Figurines/Memoriam",
+      "output": "GlobalCustomUIAssets",
+      "filenameToNameSearchPattern": "^npc_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "rollFigure_$1"
+    },
+    {
+      "id": "npcFiguresGeneric",
+      "folder": "NPC Art/Figurines/Generic",
+      "output": "Manifest",
+      "filenameToNameSearchPattern": "^npc_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "$1"
+    },
+    {
+      "id": "npcTokens",
+      "folder": "NPC Art/Tokens",
+      "output": "Manifest",
+      "filenameToNameSearchPattern": "^npcToken_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "$1"
+    },
+    {
+      // Shared back of every NPC figurine (lib/npc_art_urls.ttslua) and of the PC seat figurines.
+      "id": "figurineBack",
+      "folder": "NPC Art/Shared",
+      "output": "ObjectImage",
+      "field": "CustomImage.ImageSecondaryURL",
+      "objects": { "back": "pcSeatFigurines" },
+      "filenameToNameSearchPattern": "^npcFigurineBack\\.webp$",
+      "filenameToNameReplacePattern": "back"
+    },
+    {
+      "id": "pcSeatFigurines",
+      "folder": "PCs/Seat Figurines",
+      "output": "ObjectImage",
+      "field": "CustomImage.ImageURL",
+      "objects": { "fomorach": "1c5b18", "rashid": "e1a378", "lucien": "1e70cf", "aishe": "390349", "blackCaesar": "923872" },
+      "filenameToNameSearchPattern": "^pcSeatFigurine_(.*)\\.png$",
+      "filenameToNameReplacePattern": "$1"
+    },
+
+    // Dice face sheets. Storyteller dice (core/st_dice.ttslua) spawn from lib/cloud_dice.ttslua; Rouse and
+    // Oblivion-Rouse there use the older *St art. The player bags' dice get their image from diceInBags.
+    {
+      "id": "dice",
+      "folder": "Dice",
+      "output": "LuaModule",
+      "module": "lib/cloud_dice.ttslua",
+      "filenameToNameSearchPattern": "^die_(.*)\\.(png|webp)$",
+      "filenameToNameReplacePattern": "$1"
+    },
+    {
+      "id": "diceInBags",
+      "folder": "Dice",
+      "output": "ObjectImage",
+      "field": "CustomImage.ImageURL",
+      // GUIDs of the dice inside the infinite bags (Standard Dice, Blood Surge, Rouse Dice, Oblivion-Rouse Dice).
+      "objects": {
+        "normal": ["b8aeb7", "7c6de7", "ef1cf2", "342b26", "185122"],
+        "hunger": ["188ae1", "98c145", "e61e1c", "febeb0"],
+        "rouse": ["707048", "078f26", "5cbb89", "6b3e5e", "98d072"],
+        "oblivRouse": ["31a964"]
+      },
+      "filenameToNameSearchPattern": "^die_(.*)\\.(png|webp)$",
+      "filenameToNameReplacePattern": "$1"
+    },
+    {
+      // Famulus companion toggle tiles (lib/companion_toggle.ttslua): companionToggle_<color>_<enabled|disabled>.
+      "id": "companionToggle",
+      "folder": "Objects/Companion Toggle",
+      "output": "LuaModule",
+      "module": "lib/cloud_companion_toggle.ttslua",
+      "filenameToNameSearchPattern": "^companionToggle_(.*)\\.webp$",
+      "filenameToNameReplacePattern": "$1"
     }
   ]
 }

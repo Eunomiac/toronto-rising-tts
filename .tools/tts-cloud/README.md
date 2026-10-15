@@ -1,60 +1,48 @@
 # TTS Steam Cloud tooling
 
-Isolated Node helpers that read Tabletop Simulator Cloud Manager indexes via Steamworks
-(`CloudInfo.bson` → Name/URL CSV by folder).
+Node helpers that read and write Tabletop Simulator's Steam Cloud (app 286160) and its Cloud Manager
+index (`CloudInfo.bson`). The local `assets/` folder mirrors the Cloud root
+(`cloudRoot` in `tts-assets.config.json`, "Vampire the Masquerade 5E") and is the source of truth.
+
+## Agent Routing
+
+Read this when:
+- touching `.tools/tts-cloud/**`, `.tools/cloud-asset-sync.js`, or the `cloud:*` npm scripts
+
+Source of truth:
+- `lib/cloud_config.js` (paths from `tts-assets.config.json`), `lib/steam_session.js` (koffi → `steam_api64.dll`),
+  `lib/cloud_index.js` (index read / verified edit / snapshots), `lib/cloud_ops.js` (upload, move, delete),
+  `lib/assets_tree.js` (local scan + ledger), `lib/push.js` (push plan, deletes, Save Only), `lib/in_use.js` (save / repo links)
+
+Verification:
+- `npm run cloud:push -- --dry-run` (no writes), `npm run cloud-asset-sync:test`
+
+Status:
+- current
 
 ## Setup
 
-Steam must be running and logged into the account that owns the Cloud uploads.
+Steam must be running and logged into the account that owns the uploads.
 
 ```powershell
 cd .tools/tts-cloud
 npm install
 ```
 
-## Config
+## Commands (repo root)
 
-Edit **`config.js`**:
+| Command | What it does |
+| --- | --- |
+| `npm run cloud:pull` | Mirror Cloud into `assets/` (one-time setup or recovery). Never overwrites local edits; `--restore-deleted` brings back files you deleted locally. |
+| `npm run cloud:push` | Upload new or changed files, move relocated ones (link kept), delete Cloud copies of files you removed. `--dry-run` previews. |
+| `npm run cloud:backup` | Copy every Cloud file plus the index into `backupDir/Cloud Backup/`. |
+| `npm run cloud:restore-index -- <file>` | Put back an index snapshot from `backupDir/Cloud Index/`. |
+| `npm run cloud:restore-files -- --backup <stamp> --folder <Cloud folder>` | Re-upload files from a backup (new links). |
+| `npm run cloud-asset-sync` | The build step: push, then rebuild save rows, object images, Lua modules, and `lib/json/cloud-assets.json`. |
 
-```js
-CLOUD_ROOT: "Vampire the Masquerade 5E"
-```
+## Safety rules
 
-CLI subfolders are joined under that root (`Sites` → `Vampire the Masquerade 5E/Sites`).
-
-## Export a subfolder to CSV
-
-Columns: `Name` (full filename including extension), `URL`.
-
-```powershell
-# from repo root
-npm run tts-cloud:export -- Sites
-npm run tts-cloud:export -- Sites --out "Site Cards"
-# → .tools/tts-cloud/out/Site Cards.csv
-npm run tts-cloud:export -- Sites --name-filter "\.webp$"
-npm run tts-cloud:export -- --list-folders
-```
-
-`--name-filter` / `--whitelist` / `-f` is an optional regexp whitelist on the cloud file **Name** (filename). Omit or leave blank to include every file in the folder.
-
-Default output: `.tools/tts-cloud/out/<Subfolder>.csv`
-
-Run Task: **[Assets 1] Fetch URLs from Cloud**.
-
-## Smoke check
-
-Same as exporting `Sites` (connectivity + folder listing):
-
-```powershell
-npm run tts-cloud:smoke
-```
-
-## Next: merge into save CustomUIAssets
-
-After export, Run Task **[Assets 2]** / **[Assets 3]** (or CLI):
-
-- Purge: `npm run custom-ui-assets:purge -- --pattern "^siteCard_"`
-- Add CSV: `npm run custom-ui-assets:add-csv -- --csv .tools/tts-cloud/out/Sites.csv --name-match '^(.*)\.webp$' --name-replace 'siteCard_$1'`
-- Object mode: add `--guids <guid,guid,…>` (never touches global)
-
-See [`.tools/custom-ui-assets/README-save-editors.md`](../custom-ui-assets/README-save-editors.md).
+- Writes are refused while Tabletop Simulator is open (TTS keeps its own copy of the index). The build skips the push and warns instead.
+- Every index write snapshots first, re-reads, and checks that no untouched entry changed; on a mismatch it restores the snapshot and stops.
+- `assets/.cloud-ledger.json` records what was synced. Only ledger files are deleted from Cloud, and only when the current save, repo code, and saves of other mods no longer use them.
+- `assets/Save Only/` is a read-only copy of art authored in the save; `assets/images/` is the old repo art folder (no longer tracked or read; safe to delete). Push ignores both.

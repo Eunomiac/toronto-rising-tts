@@ -50,6 +50,7 @@ let openSession = null;
  *   writeFile: (name: string, bytes: Buffer) => void,
  *   shareFile: (name: string) => Promise<string>,
  *   deleteFile: (name: string) => void,
+ *   quota: () => { totalBytes: number, availableBytes: number },
  *   close: () => void,
  * }}
  */
@@ -82,6 +83,9 @@ function openSteamSession() {
   );
   const FileShare = lib.func("uint64 SteamAPI_ISteamRemoteStorage_FileShare(void *self, const char *pchFile)");
   const FileDelete = lib.func("bool SteamAPI_ISteamRemoteStorage_FileDelete(void *self, const char *pchFile)");
+  const GetQuota = lib.func(
+    "bool SteamAPI_ISteamRemoteStorage_GetQuota(void *self, _Out_ uint64 *pnTotalBytes, _Out_ uint64 *puAvailableBytes)",
+  );
   const IsAPICallCompleted = lib.func(
     "bool SteamAPI_ISteamUtils_IsAPICallCompleted(void *self, uint64 hSteamAPICall, _Out_ bool *pbFailed)",
   );
@@ -166,6 +170,13 @@ function openSteamSession() {
 
     deleteFile(name) {
       if (!FileDelete(remote, name)) throw new Error(`FileDelete(${name}) failed.`);
+    },
+
+    quota() {
+      const total = [0];
+      const available = [0];
+      if (!GetQuota(remote, total, available)) throw new Error("GetQuota failed.");
+      return { totalBytes: Number(total[0]), availableBytes: Number(available[0]) };
     },
 
     close() {

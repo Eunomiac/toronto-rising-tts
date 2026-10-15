@@ -2,41 +2,49 @@
 "use strict";
 
 /**
- * Config-driven Cloud → CustomUIAssets / Lua catalog sync.
+ * Local assets/ → Steam Cloud → save rows, object images, Lua modules, manifest.
  *
- * Plan: .tools/Cloud-Asset-Sync-Plan.md
- * Config: .tools/cloud-asset-sync.jsonc
+ * Config: .tools/cloud-asset-sync.jsonc. Docs: .tools/Cloud-Asset-Sync-Plan.md
+ *
+ * Flow: push assets/ to Cloud (skipped while TTS is open) → refresh assets/Save Only →
+ * build each job's rows from its assets/ folder + the ledger's links → write outputs →
+ * delete Cloud copies of files removed locally (kept while still used).
  *
  * Usage (repo root):
  *   npm run cloud-asset-sync
  *   npm run cloud-asset-sync -- --dry-run
- *   npm run cloud-asset-sync -- --yes-purge
- *   npm run cloud-asset-sync -- --job siteCards
- *   npm run cloud-asset-sync:catalog   (--lua-catalog; every LuaCatalog job; leaves the save alone)
+ *   npm run cloud-asset-sync -- --job siteCards[,memoriamPanels]
+ *   npm run cloud-asset-sync -- --no-push        (outputs from the ledger only)
  */
 
 const fs = require("fs");
 const path = require("path");
-const readline = require("readline");
 
 const REPO_ROOT = path.resolve(__dirname, "..");
 const DEFAULT_CONFIG = path.join(__dirname, "cloud-asset-sync.jsonc");
-const CLOUD_CATALOG_LUA = path.join(REPO_ROOT, "lib", "cloud_catalog.ttslua");
+const MANIFEST_PATH = path.join(REPO_ROOT, "lib", "json", "cloud-assets.json");
 
-const {
-  findExistingConfig,
-} = require("./custom-ui-assets/lib/tts-assets-config.js");
-const {
-  resolveSaveWithConfig,
-  resolveAssetTargets,
-  writeAtomic,
-  parseUserRegExp,
-  backupSaveBeforeWrite,
-} = require("./custom-ui-assets/lib/custom-ui-assets-save.js");
+const { loadCloudConfig } = require("./tts-cloud/lib/cloud_config.js");
+const { loadLedger, scanAssets } = require("./tts-cloud/lib/assets_tree.js");
+const { planPush, applyPush, applyDeletes, refreshSaveOnly } = require("./tts-cloud/lib/push.js");
+const { resolveAssetTargets, writeAtomic, parseUserRegExp } = require("./custom-ui-assets/lib/custom-ui-assets-save.js");
+const { findExistingConfig, backupSaveBeforeWrite } = require("./custom-ui-assets/lib/tts-assets-config.js");
 
 const OUTPUT_GLOBAL = "GlobalCustomUIAssets";
 const OUTPUT_OBJECT = "ObjectCustomUIAssets";
-const OUTPUT_LUA = "LuaCatalog";
+const OUTPUT_IMAGE = "ObjectImage";
+const OUTPUT_LUA = "LuaModule";
+const OUTPUT_MANIFEST = "Manifest";
+const OUTPUTS = [OUTPUT_GLOBAL, OUTPUT_OBJECT, OUTPUT_IMAGE, OUTPUT_LUA, OUTPUT_MANIFEST];
+const SAVE_OUTPUTS = new Set([OUTPUT_GLOBAL, OUTPUT_OBJECT, OUTPUT_IMAGE]);
+
+function log(msg) {
+  console.error(`[cloud-asset-sync] ${msg}`);
+}
+
+function warn(msg) {
+  console.error(`[cloud-asset-sync] WARN ${msg}`);
+}
 
 /**
  * Strip // and /* *\/ comments outside strings (JSONC subset).
@@ -54,13 +62,9 @@ function stripJsonc(text) {
     const next = s[i + 1];
     if (inString) {
       out += ch;
-      if (escape) {
-        escape = false;
-      } else if (ch === "\\") {
-        escape = true;
-      } else if (ch === '"') {
-        inString = false;
-      }
+      if (escape) escape = false;
+      else if (ch === "\\") escape = true;
+      else if (ch === '"') inString = false;
       i += 1;
       continue;
     }
@@ -88,36 +92,78 @@ function stripJsonc(text) {
 }
 
 /**
- * @param {string} filePath
- * @returns {unknown}
+ * Literal text a filename must contain outside capture groups, ignoring the extension.
+ * "" means the pattern is not specific (it would match strays).
+ *   ^siteCard_(.*)\.webp$ → "siteCard_"   ^(.*)_panel\.jpg$ → "_panel"   ^(.*)\.webp$ → ""
+ * @param {string} source
+ * @returns {string}
  */
-function loadJsonc(filePath) {
-  const raw = fs.readFileSync(filePath, "utf8");
-  return JSON.parse(stripJsonc(raw));
-}
-
-/**
- * @param {string} patternSource
- * @returns {RegExp}
- */
-function parseAnchoredSearchPattern(patternSource) {
-  const raw = String(patternSource ?? "").trim();
-  if (!raw.startsWith("^") || !raw.endsWith("$")) {
-    throw new Error(
-      `filenameToNameSearchPattern must start with ^ and end with $ (got: ${raw})`,
-    );
+function distinguishingLiteral(source) {
+  const s = String(source).trim().replace(/^\^/, "").replace(/\$$/, "");
+  const WILD = "\u0000";
+  let out = "";
+  let depth = 0;
+  for (let i = 0; i < s.length; i += 1) {
+    const ch = s[i];
+    if (ch === "\\") {
+      const next = s[i + 1] || "";
+      if (depth === 0) out += /[dDwWsSbB]/.test(next) ? WILD : `\\${next}`;
+      i += 1;
+      continue;
+    }
+    if (ch === "[") {
+      let j = i + 1;
+      if (s[j] === "^") j += 1;
+      if (s[j] === "]") j += 1;
+      while (j < s.length && s[j] !== "]") {
+        if (s[j] === "\\") j += 1;
+        j += 1;
+      }
+      i = j;
+      if (depth === 0) out += WILD;
+      continue;
+    }
+    if (ch === "(") {
+      depth += 1;
+      if (depth === 1) out += WILD;
+      continue;
+    }
+    if (ch === ")") {
+      depth -= 1;
+      continue;
+    }
+    if (depth > 0) continue;
+    if (ch === "?" || ch === "*") {
+      out = out.endsWith(WILD) ? out : `${out.replace(/\\?.$/s, "")}${WILD}`;
+      continue;
+    }
+    if (ch === "{") {
+      const close = s.indexOf("}", i);
+      const min = Number(s.slice(i + 1, close).split(",")[0]);
+      if (min === 0) out = `${out.replace(/\\?.$/s, "")}${WILD}`;
+      i = close;
+      continue;
+    }
+    if (ch === "+") continue;
+    if (ch === "." || ch === "|") {
+      out += WILD;
+      continue;
+    }
+    out += ch;
   }
-  return parseUserRegExp(raw);
+  out = out.replace(/(?:\\\.[A-Za-z0-9]*|\u0000)+$/, "");
+  const literal = out.replace(/\\(.)/g, "$1").split(WILD).join("");
+  return /[A-Za-z0-9]/.test(literal) ? literal : "";
 }
 
 /**
+ * Save-row name family from the replace pattern: siteCard_$1 → ^siteCard_(.*)$.
  * @param {string} replacePattern
- * @returns {string[] | null} purge family patterns, or null if cannot narrow
+ * @returns {string[] | null} null when the replace pattern has no literal to narrow on
  */
 function derivePurgePatterns(replacePattern) {
   const raw = String(replacePattern ?? "");
   if (raw === "") return null;
-
   let narrowed = false;
   let pattern = "^";
   const tokenRe = /(\$\d+)|([^$]+)/g;
@@ -126,145 +172,165 @@ function derivePurgePatterns(replacePattern) {
     if (m[1]) {
       pattern += "(.*)";
     } else {
-      const lit = m[2];
-      if (/[A-Za-z0-9_]/.test(lit)) narrowed = true;
-      pattern += lit.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      if (/[A-Za-z0-9]/.test(m[2])) narrowed = true;
+      pattern += m[2].replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     }
   }
   pattern += "$";
-  if (!narrowed) return null;
-  return [pattern];
+  return narrowed ? [pattern] : null;
 }
 
 /**
- * @param {unknown} job
- * @param {Set<string>} seenIds
- * @param {Set<string>} seenTableNames
+ * @param {unknown} raw
+ * @param {Record<string, string[]>} targetGroups
+ * @param {string} id
+ * @returns {string[]}
  */
-function validateJob(job, seenIds, seenTableNames) {
-  if (!job || typeof job !== "object" || Array.isArray(job)) {
-    throw new Error("Each job must be an object.");
-  }
-  const j = /** @type {Record<string, unknown>} */ (job);
+function resolveTargets(raw, targetGroups, id) {
+  const isGroup = (g) => typeof g === "string" && Object.prototype.hasOwnProperty.call(targetGroups, g);
+  const list = typeof raw === "string" ? targetGroups[raw] : raw;
+  if (typeof raw === "string" && !list) throw new Error(`Job "${id}": unknown target group "${raw}".`);
+  if (!Array.isArray(list) || list.length === 0) throw new Error(`Job "${id}": targets must be a non-empty list of GUIDs / target groups, or a target group.`);
+  return list.flatMap((g) => (isGroup(g) ? targetGroups[g] : [g])).map((g) => {
+    if (typeof g !== "string" || g.trim() === "") throw new Error(`Job "${id}": targets must be GUID strings or target group names.`);
+    return g.trim();
+  });
+}
+
+/**
+ * @typedef {{
+ *   id: string, folder: string, recurIntoSubfolders: boolean, output: string,
+ *   searchPattern: string, replacePattern: string, literal: string,
+ *   targets: string[], ownsAllRows: boolean, purgePatterns: string[],
+ *   module: string | null, field: string | null, objects: Record<string, string[]>,
+ * }} Job
+ */
+
+/**
+ * @param {unknown} job
+ * @param {Record<string, string[]>} targetGroups
+ * @param {Set<string>} seenIds
+ * @returns {Job}
+ */
+function validateJob(job, targetGroups, seenIds) {
+  if (!job || typeof job !== "object" || Array.isArray(job)) throw new Error("Each job must be an object.");
+  const j = /** @type {Record<string, any>} */ (job);
   const id = typeof j.id === "string" ? j.id.trim() : "";
   if (id === "") throw new Error('Each job requires a non-empty string "id".');
   if (seenIds.has(id)) throw new Error(`Duplicate job id: ${id}`);
   seenIds.add(id);
 
   const output = typeof j.output === "string" ? j.output.trim() : "";
-  if (
-    output !== OUTPUT_GLOBAL &&
-    output !== OUTPUT_OBJECT &&
-    output !== OUTPUT_LUA
-  ) {
-    throw new Error(
-      `Job "${id}": output must be ${OUTPUT_GLOBAL}, ${OUTPUT_OBJECT}, or ${OUTPUT_LUA}`,
-    );
-  }
+  if (!OUTPUTS.includes(output)) throw new Error(`Job "${id}": output must be one of ${OUTPUTS.join(", ")}.`);
+  const folder = typeof j.folder === "string" ? j.folder.trim().replace(/\\/g, "/").replace(/^\/+|\/+$/g, "") : "";
+  if (folder === "") throw new Error(`Job "${id}": folder (under assets/) is required.`);
 
-  if (typeof j.cloudFolder !== "string" || j.cloudFolder.trim() === "") {
-    throw new Error(`Job "${id}": cloudFolder is required.`);
+  const searchPattern = typeof j.filenameToNameSearchPattern === "string" ? j.filenameToNameSearchPattern.trim() : "";
+  if (!searchPattern.startsWith("^") || !searchPattern.endsWith("$")) {
+    throw new Error(`Job "${id}": filenameToNameSearchPattern must start with ^ and end with $.`);
   }
-  if (
-    typeof j.filenameToNameSearchPattern !== "string" ||
-    j.filenameToNameSearchPattern.trim() === ""
-  ) {
-    throw new Error(`Job "${id}": filenameToNameSearchPattern is required.`);
-  }
-  if (typeof j.filenameToNameReplacePattern !== "string") {
+  parseUserRegExp(searchPattern);
+  if (typeof j.filenameToNameReplacePattern !== "string" || j.filenameToNameReplacePattern === "") {
     throw new Error(`Job "${id}": filenameToNameReplacePattern is required.`);
   }
-  parseAnchoredSearchPattern(j.filenameToNameSearchPattern);
 
-  if (j.purgePatterns !== undefined) {
-    if (output === OUTPUT_LUA) {
-      throw new Error(`Job "${id}": purgePatterns is not allowed on LuaCatalog.`);
-    }
-    if (!Array.isArray(j.purgePatterns)) {
-      throw new Error(`Job "${id}": purgePatterns must be an array of strings.`);
-    }
-    for (const p of j.purgePatterns) {
-      if (typeof p !== "string") {
-        throw new Error(`Job "${id}": purgePatterns entries must be strings.`);
-      }
-    }
+  const purgePatterns = j.purgePatterns === undefined ? [] : j.purgePatterns;
+  if (!Array.isArray(purgePatterns) || purgePatterns.some((p) => typeof p !== "string" || p === "")) {
+    throw new Error(`Job "${id}": purgePatterns must be a non-empty list of patterns (or omitted).`);
+  }
+  if (j.purgePatterns !== undefined && purgePatterns.length === 0) {
+    throw new Error(`Job "${id}": purgePatterns: [] is not allowed; every save-writing job purges what it no longer owns.`);
   }
 
-  if (output === OUTPUT_OBJECT) {
-    if (!Array.isArray(j.targetGUIDs) || j.targetGUIDs.length < 1) {
-      throw new Error(`Job "${id}": ObjectCustomUIAssets requires targetGUIDs (non-empty).`);
-    }
-    for (const g of j.targetGUIDs) {
-      if (typeof g !== "string" || g.trim() === "") {
-        throw new Error(`Job "${id}": targetGUIDs must be non-empty strings.`);
-      }
-    }
-    if (j.tableName !== undefined) {
-      throw new Error(`Job "${id}": tableName is only valid on LuaCatalog.`);
-    }
-  } else if (output === OUTPUT_LUA) {
-    const tableName = typeof j.tableName === "string" ? j.tableName.trim() : "";
-    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(tableName)) {
-      throw new Error(
-        `Job "${id}": tableName must be a valid Lua identifier (got: ${JSON.stringify(j.tableName)})`,
-      );
-    }
-    if (seenTableNames.has(tableName)) {
-      throw new Error(`Duplicate LuaCatalog tableName: ${tableName}`);
-    }
-    seenTableNames.add(tableName);
-    if (j.targetGUIDs !== undefined) {
-      throw new Error(`Job "${id}": targetGUIDs is only valid on ObjectCustomUIAssets.`);
-    }
-  } else {
-    if (j.targetGUIDs !== undefined) {
-      throw new Error(`Job "${id}": targetGUIDs is only valid on ObjectCustomUIAssets.`);
-    }
-    if (j.tableName !== undefined) {
-      throw new Error(`Job "${id}": tableName is only valid on LuaCatalog.`);
-    }
-  }
-
-  return {
+  const out = {
     id,
-    cloudFolder: String(j.cloudFolder).trim(),
+    folder,
     recurIntoSubfolders: j.recurIntoSubfolders === true,
     output,
-    filenameToNameSearchPattern: String(j.filenameToNameSearchPattern).trim(),
-    filenameToNameReplacePattern: String(j.filenameToNameReplacePattern),
-    targetGUIDs: Array.isArray(j.targetGUIDs)
-      ? j.targetGUIDs.map((g) => String(g).trim())
-      : [],
-    tableName: typeof j.tableName === "string" ? j.tableName.trim() : null,
-    purgePatterns:
-      j.purgePatterns === undefined
-        ? null
-        : /** @type {string[]} */ (j.purgePatterns).map((p) => String(p)),
+    searchPattern,
+    replacePattern: j.filenameToNameReplacePattern,
+    literal: distinguishingLiteral(searchPattern),
+    targets: [],
+    ownsAllRows: j.ownsAllRows === true,
+    purgePatterns,
+    module: null,
+    field: null,
+    objects: {},
   };
-}
 
-/**
- * @param {string} fileName
- * @param {RegExp} matchRe
- * @param {string} replacement
- * @returns {string}
- */
-function transformName(fileName, matchRe, replacement) {
-  const re = new RegExp(matchRe.source, matchRe.flags.replace(/g/g, ""));
-  if (!re.test(fileName)) {
-    throw new Error(`Internal: Name failed search pattern after filter: ${fileName}`);
+  if (output === OUTPUT_OBJECT) {
+    out.targets = resolveTargets(j.targets, targetGroups, id);
+  } else if (j.targets !== undefined || j.ownsAllRows !== undefined) {
+    throw new Error(`Job "${id}": targets / ownsAllRows are only valid on ${OUTPUT_OBJECT}.`);
   }
-  re.lastIndex = 0;
-  const out = fileName.replace(re, replacement).trim();
-  if (out === "") {
-    throw new Error(`Name transform produced empty string for: ${fileName}`);
+  if (output === OUTPUT_GLOBAL || output === OUTPUT_OBJECT) {
+    if (!out.ownsAllRows && purgePatterns.length === 0 && derivePurgePatterns(out.replacePattern) === null) {
+      throw new Error(
+        `Job "${id}": no purge family — give filenameToNameReplacePattern a literal (e.g. siteCard_$1), purgePatterns, or ownsAllRows.`,
+      );
+    }
+  } else if (j.purgePatterns !== undefined) {
+    throw new Error(`Job "${id}": purgePatterns are only valid on save-row jobs.`);
+  }
+
+  if (output === OUTPUT_LUA) {
+    const mod = typeof j.module === "string" ? j.module.trim() : "";
+    if (!/^lib\/cloud_[a-z0-9_]+\.ttslua$/.test(mod)) {
+      throw new Error(`Job "${id}": module must be lib/cloud_<name>.ttslua (got ${JSON.stringify(j.module)}).`);
+    }
+    out.module = mod;
+  } else if (j.module !== undefined) {
+    throw new Error(`Job "${id}": module is only valid on ${OUTPUT_LUA}.`);
+  }
+
+  if (output === OUTPUT_IMAGE) {
+    const field = typeof j.field === "string" ? j.field.trim() : "";
+    if (!/^[A-Za-z]+(\.[A-Za-z]+)*$/.test(field)) throw new Error(`Job "${id}": field must be a dotted save path such as CustomImage.ImageURL.`);
+    out.field = field;
+    if (!j.objects || typeof j.objects !== "object" || Array.isArray(j.objects) || Object.keys(j.objects).length === 0) {
+      throw new Error(`Job "${id}": objects must map asset names to a GUID, GUID list, or target group.`);
+    }
+    for (const [name, guids] of Object.entries(j.objects)) {
+      const isGroup = typeof guids === "string" && Object.prototype.hasOwnProperty.call(targetGroups, guids);
+      out.objects[name] = resolveTargets(isGroup || Array.isArray(guids) ? guids : [guids], targetGroups, id);
+    }
+  } else if (j.field !== undefined || j.objects !== undefined) {
+    throw new Error(`Job "${id}": field / objects are only valid on ${OUTPUT_IMAGE}.`);
   }
   return out;
 }
 
 /**
+ * @param {Record<string, any>} configRoot
+ * @returns {Job[]}
+ */
+function validateConfig(configRoot) {
+  if (!Array.isArray(configRoot.jobs) || configRoot.jobs.length === 0) throw new Error('Config needs a non-empty "jobs" array.');
+  const targetGroups = configRoot.targetGroups || {};
+  const seenIds = new Set();
+  const jobs = configRoot.jobs.map((j) => validateJob(j, targetGroups, seenIds));
+  const modules = new Set();
+  for (const j of jobs) {
+    if (!j.module) continue;
+    if (modules.has(j.module)) throw new Error(`Two jobs write ${j.module}.`);
+    modules.add(j.module);
+  }
+  return jobs;
+}
+
+/**
+ * @param {string} fileName
+ * @param {RegExp} re
+ * @param {string} replacement
+ */
+function transformName(fileName, re, replacement) {
+  const out = fileName.replace(re, replacement).trim();
+  if (out === "") throw new Error(`Name transform produced an empty string for ${fileName}.`);
+  return out;
+}
+
+/**
  * @param {string} value
- * @returns {string}
  */
 function luaString(value) {
   return `"${String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\r/g, "\\r").replace(/\n/g, "\\n")}"`;
@@ -272,68 +338,35 @@ function luaString(value) {
 
 /**
  * @param {string} key
- * @returns {string}
  */
 function luaKey(key) {
-  if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(key)) return key;
-  return `[${luaString(key)}]`;
+  return /^[A-Za-z_][A-Za-z0-9_]*$/.test(key) ? key : `[${luaString(key)}]`;
 }
 
 /**
- * @param {Record<string, { filename: string, key: string, URL: string }>} table
- * @param {string} indent
- * @returns {string}
+ * @param {Job} job
+ * @param {{ name: string, filename: string, url: string }[]} rows
  */
-function formatLuaTableEntries(table, indent) {
-  const keys = Object.keys(table).sort((a, b) => a.localeCompare(b));
-  const lines = [];
-  for (const k of keys) {
-    const row = table[k];
-    lines.push(`${indent}${luaKey(k)} = {`);
-    lines.push(`${indent}  filename = ${luaString(row.filename)},`);
-    lines.push(`${indent}  key = ${luaString(row.key)},`);
-    lines.push(`${indent}  URL = ${luaString(row.URL)},`);
-    lines.push(`${indent}},`);
-  }
-  return lines.join("\n");
-}
-
-/**
- * @param {Record<string, Record<string, { filename: string, key: string, URL: string }>>} cloud
- * @returns {string}
- */
-function renderCloudCatalogLua(cloud) {
-  const tableNames = Object.keys(cloud).sort((a, b) => a.localeCompare(b));
-  const parts = [
-    "-- AUTO-GENERATED by cloud asset sync (.tools/cloud-asset-sync.js) — do not edit by hand",
-    "-- Plan: .tools/Cloud-Asset-Sync-Plan.md",
-    "Cloud = {",
+function renderLuaModule(job, rows) {
+  const lines = [
+    `-- AUTO-GENERATED by npm run cloud-asset-sync (job ${job.id}, assets/${job.folder}) — do not edit by hand`,
+    "return {",
   ];
-  for (const name of tableNames) {
-    parts.push(`  ${luaKey(name)} = {`);
-    const body = formatLuaTableEntries(cloud[name], "    ");
-    if (body !== "") parts.push(body);
-    parts.push("  },");
+  for (const row of [...rows].sort((a, b) => a.name.localeCompare(b.name))) {
+    lines.push(`  ${luaKey(row.name)} = { filename = ${luaString(row.filename)}, URL = ${luaString(row.url)} },`);
   }
-  parts.push("}");
-  parts.push("");
-  parts.push("return Cloud");
-  parts.push("");
-  return parts.join("\n");
+  lines.push("}", "");
+  return lines.join("\n");
 }
 
 /**
  * @param {string[]} argv
  */
 function parseCli(argv) {
-  /** @type {string | null} */
-  let configPath = null;
-  /** @type {string[]} */
+  let configPath = DEFAULT_CONFIG;
   const jobFilter = [];
   let dryRun = false;
-  let yesPurge = false;
-  let luaCatalogOnly = false;
-
+  let noPush = false;
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
     if (a === "--config" && argv[i + 1] != null) {
@@ -341,533 +374,334 @@ function parseCli(argv) {
       i += 1;
     } else if (a === "--job" && argv[i + 1] != null) {
       for (const id of String(argv[i + 1]).split(",")) {
-        const trimmed = id.trim();
-        if (trimmed !== "" && !jobFilter.includes(trimmed)) jobFilter.push(trimmed);
+        if (id.trim() !== "" && !jobFilter.includes(id.trim())) jobFilter.push(id.trim());
       }
       i += 1;
-    } else if (a === "--lua-catalog") {
-      luaCatalogOnly = true;
     } else if (a === "--dry-run") {
       dryRun = true;
-    } else if (a === "--yes-purge" || a === "-y") {
-      yesPurge = true;
+    } else if (a === "--no-push") {
+      noPush = true;
     } else if (a === "--help" || a === "-h") {
       console.log(`Usage: node .tools/cloud-asset-sync.js [options]
 
-Options:
-  --config <path>   JSONC jobs file (default: .tools/cloud-asset-sync.jsonc)
-  --job <id[,id…]>  Run only these job ids (repeatable). LuaCatalog runs rebuild
-                    lib/cloud_catalog.ttslua from the selected jobs only, so
-                    include every LuaCatalog job you want to keep.
-  --lua-catalog     Run every LuaCatalog job (and only those). Safe default for
-                    npm run cloud-asset-sync:catalog so new catalog jobs are included.
-  --dry-run         Plan only; do not write save or cloud_catalog.ttslua
-  --yes-purge, -y   Accept stale CustomUIAssets purges without prompting
-  --help, -h
-`);
+  --job <id[,id…]>  Rebuild only these jobs; other jobs keep their last manifest rows
+  --dry-run         Plan only: no Cloud, save, module, or manifest writes
+  --no-push         Skip the Cloud push and deletes; build outputs from the ledger
+  --config <path>   Jobs file (default: .tools/cloud-asset-sync.jsonc)`);
       process.exit(0);
     } else {
       throw new Error(`Unexpected argument: ${a}`);
     }
   }
-
-  return {
-    configPath: configPath || DEFAULT_CONFIG,
-    jobFilter: jobFilter.length > 0 ? jobFilter : null,
-    dryRun,
-    yesPurge,
-    luaCatalogOnly,
-  };
+  return { configPath, jobFilter: jobFilter.length > 0 ? jobFilter : null, dryRun, noPush };
 }
 
 /**
- * @returns {Promise<boolean>}
+ * @returns {{ jobs: Record<string, { output: string, folder: string, rows: any[] }> }}
  */
-function promptYesNo(question) {
-  if (!process.stdin.isTTY || !process.stdout.isTTY) {
-    return Promise.resolve(false);
+function readManifest() {
+  if (!fs.existsSync(MANIFEST_PATH)) return { jobs: {} };
+  return JSON.parse(fs.readFileSync(MANIFEST_PATH, "utf8"));
+}
+
+/**
+ * Every object with this GUID (top level, contained, states).
+ * @param {Record<string, any>} saveRoot
+ * @returns {Map<string, Record<string, any>[]>}
+ */
+function objectsByGuid(saveRoot) {
+  const map = new Map();
+  const visit = (o) => {
+    if (!o || typeof o !== "object") return;
+    if (typeof o.GUID === "string") {
+      const k = o.GUID.toLowerCase();
+      if (!map.has(k)) map.set(k, []);
+      map.get(k).push(o);
+    }
+    for (const c of o.ContainedObjects || []) visit(c);
+    for (const s of Object.values(o.States || {})) visit(s);
+  };
+  for (const o of saveRoot.ObjectStates || []) visit(o);
+  return map;
+}
+
+/**
+ * @param {Record<string, any>} obj
+ * @param {string} field dotted
+ * @param {string} value
+ */
+function setDotted(obj, field, value) {
+  const parts = field.split(".");
+  let node = obj;
+  for (const p of parts.slice(0, -1)) {
+    if (!node[p] || typeof node[p] !== "object") throw new Error(`Object ${obj.GUID} has no ${p} (field ${field}).`);
+    node = node[p];
   }
-  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  return new Promise((resolve) => {
-    rl.question(question, (answer) => {
-      rl.close();
-      const a = String(answer || "")
-        .trim()
-        .toLowerCase();
-      resolve(a === "y" || a === "yes");
-    });
-  });
+  const leaf = parts[parts.length - 1];
+  if (node[leaf] === value) return false;
+  node[leaf] = value;
+  return true;
+}
+
+/**
+ * @param {Job} job
+ * @param {import("./tts-cloud/lib/assets_tree.js").LocalFile[]} local
+ */
+function filesInScope(job, local) {
+  return local.filter((f) => f.folder === job.folder || (job.recurIntoSubfolders && f.folder.startsWith(`${job.folder}/`)));
+}
+
+/**
+ * Files in a job folder that no job (skipped or not) matches.
+ * @param {Job[]} jobs
+ * @param {import("./tts-cloud/lib/assets_tree.js").LocalFile[]} local
+ * @returns {string[]} relPaths, sorted
+ */
+function findLocalStrays(jobs, local) {
+  const claimed = new Set();
+  const inScope = new Set();
+  for (const job of jobs) {
+    const re = parseUserRegExp(job.searchPattern);
+    for (const f of filesInScope(job, local)) {
+      inScope.add(f.relPath);
+      if (re.test(f.name)) claimed.add(f.relPath);
+    }
+  }
+  return [...inScope].filter((rel) => !claimed.has(rel)).sort();
 }
 
 async function main() {
-  let cli;
-  try {
-    cli = parseCli(process.argv.slice(2));
-  } catch (err) {
-    console.error(`[cloud-asset-sync] FAIL: ${err.message}`);
-    process.exit(1);
-  }
-
-  if (!fs.existsSync(cli.configPath)) {
-    console.error(`[cloud-asset-sync] FAIL: config not found: ${cli.configPath}`);
-    process.exit(1);
-  }
-
-  /** @type {Record<string, unknown>} */
-  let configRoot;
-  try {
-    configRoot = /** @type {Record<string, unknown>} */ (loadJsonc(cli.configPath));
-  } catch (err) {
-    console.error(`[cloud-asset-sync] FAIL: invalid JSONC: ${err.message}`);
-    process.exit(1);
-  }
-
-  if (!Array.isArray(configRoot.jobs) || configRoot.jobs.length < 1) {
-    console.error('[cloud-asset-sync] FAIL: config needs a non-empty "jobs" array.');
-    process.exit(1);
-  }
-
-  const seenIds = new Set();
-  const seenTableNames = new Set();
-  /** @type {ReturnType<typeof validateJob>[]} */
-  let jobs;
-  try {
-    jobs = configRoot.jobs.map((j) => validateJob(j, seenIds, seenTableNames));
-  } catch (err) {
-    console.error(`[cloud-asset-sync] FAIL: ${err.message}`);
-    process.exit(1);
-  }
-
-  if (cli.luaCatalogOnly) {
-    jobs = jobs.filter((j) => j.output === OUTPUT_LUA);
-    if (jobs.length < 1) {
-      console.error("[cloud-asset-sync] FAIL: --lua-catalog but the config has no LuaCatalog jobs.");
-      process.exit(1);
-    }
-  }
-
+  const cli = parseCli(process.argv.slice(2));
+  const configRoot = JSON.parse(stripJsonc(fs.readFileSync(cli.configPath, "utf8")));
+  const allJobs = validateConfig(configRoot);
   if (cli.jobFilter) {
-    const known = new Set(jobs.map((j) => j.id));
-    const unknown = cli.jobFilter.filter((id) => !known.has(id));
-    if (unknown.length > 0) {
-      console.error(`[cloud-asset-sync] FAIL: no job with id "${unknown.join('", "')}".`);
-      process.exit(1);
-    }
-    const wanted = new Set(cli.jobFilter);
-    jobs = jobs.filter((j) => wanted.has(j.id));
+    const unknown = cli.jobFilter.filter((id) => !allJobs.some((j) => j.id === id));
+    if (unknown.length > 0) throw new Error(`No job with id "${unknown.join('", "')}".`);
   }
+  const cfg = loadCloudConfig();
+  const prevManifest = readManifest();
+  log(`Config: ${path.relative(REPO_ROOT, cli.configPath)} (${allJobs.length} jobs); assets: ${cfg.assetsDir}${cli.dryRun ? "; DRY RUN" : ""}`);
 
-  const needsSave = jobs.some(
-    (j) => j.output === OUTPUT_GLOBAL || j.output === OUTPUT_OBJECT,
-  );
-  const luaJobs = jobs.filter((j) => j.output === OUTPUT_LUA);
-
-  console.error(`[cloud-asset-sync] Config: ${cli.configPath} (${jobs.length} job(s))`);
-  if (cli.dryRun) console.error("[cloud-asset-sync] Mode: dry-run (no writes)");
-
-  // --- Steam Cloud ---
-  const steamPath = path.join(__dirname, "tts-cloud", "lib", "steam_cloud.js");
-  let openCloudInfo;
-  let joinCloudFolder;
-  let filterByFolderScope;
-  try {
-    ({ openCloudInfo, joinCloudFolder, filterByFolderScope } = require(steamPath));
-  } catch (err) {
-    console.error(
-      `[cloud-asset-sync] FAIL: cannot load Steam Cloud helper (run npm install in .tools/tts-cloud): ${err.message}`,
-    );
-    process.exit(1);
-  }
-
-  console.error("[cloud-asset-sync] Connecting to Steam CloudInfo …");
-  let session;
-  try {
-    session = openCloudInfo();
-  } catch (err) {
-    console.error(`[cloud-asset-sync] FAIL: ${err.message}`);
-    process.exit(1);
-  }
-  console.error(
-    `[cloud-asset-sync] OK: ${session.personaName}; CloudInfo entries=${session.rows.length}`,
-  );
-
-  // --- Save (if needed) ---
-  /** @type {Record<string, unknown> | null} */
-  let saveRoot = null;
-  /** @type {string | null} */
-  let saveFile = null;
-  /** @type {import("./custom-ui-assets/lib/tts-assets-config.js").TtsAssetsConfig | null} */
-  let ttsConfig = null;
-  let saveDirty = false;
-
-  if (needsSave) {
-    const explicitSave =
-      typeof configRoot.saveFileLocation === "string" &&
-      configRoot.saveFileLocation.trim() !== ""
-        ? path.resolve(configRoot.saveFileLocation.trim())
-        : null;
-
-    const existing = findExistingConfig();
-    if (!existing && !explicitSave) {
-      console.error(
-        "[cloud-asset-sync] FAIL: no tts-assets.config.json and no saveFileLocation in JSONC. Run npm run tts-assets:configure.",
+  /** @type {Job[]} */
+  const active = [];
+  /** @type {Set<string>} */
+  const carried = new Set();
+  for (const job of allJobs) {
+    if (cli.jobFilter && !cli.jobFilter.includes(job.id)) {
+      carried.add(job.id);
+    } else if (job.literal === "") {
+      warn(
+        `SKIP job "${job.id}": filenameToNameSearchPattern ${job.searchPattern} has no distinguishing literal outside its capture groups (it would match stray files). Give its files a prefix or suffix (e.g. ^token_(.*)\\.webp$). Its outputs are left as they are.`,
       );
-      process.exit(1);
-    }
-
-    try {
-      const resolved = await resolveSaveWithConfig({
-        savePath: explicitSave,
-        interactive: false,
-      });
-      saveFile = resolved.saveFile;
-      ttsConfig = resolved.config;
-      if (resolved.configPath) {
-        console.error(`[cloud-asset-sync] Toolkit config: ${resolved.configPath}`);
-      }
-      console.error(`[cloud-asset-sync] Save: ${saveFile}`);
-      saveRoot = JSON.parse(fs.readFileSync(saveFile, "utf8"));
-    } catch (err) {
-      console.error(`[cloud-asset-sync] FAIL: ${err.message}`);
-      process.exit(1);
-    }
-  }
-
-  /** @type {Record<string, Record<string, { filename: string, key: string, URL: string }>>} */
-  const cloudAccum = {};
-
-  /** @type {{ jobId: string, label: string, names: string[] }[]} */
-  const allPurgeCandidates = [];
-
-  for (const job of jobs) {
-    console.error(`\n[cloud-asset-sync] Job "${job.id}" (${job.output}) …`);
-    const cloudFolder = joinCloudFolder(job.cloudFolder);
-    const folderRows = filterByFolderScope(
-      session.rows,
-      cloudFolder,
-      job.recurIntoSubfolders,
-    );
-    console.error(
-      `[cloud-asset-sync]   Cloud "${cloudFolder}" recur=${job.recurIntoSubfolders}: ${folderRows.length} file(s) in scope`,
-    );
-
-    const searchRe = parseAnchoredSearchPattern(job.filenameToNameSearchPattern);
-    /** @type {{ filename: string, URL: string, converted: string }[]} */
-    const planned = [];
-    /** @type {Set<string>} */
-    const seenConverted = new Set();
-    /** @type {Set<string>} */
-    const seenFilenames = new Set();
-    let skipped = 0;
-
-    for (const row of folderRows) {
-      const filename = typeof row.Name === "string" ? row.Name : "";
-      if (filename === "") {
-        skipped += 1;
-        continue;
-      }
-      searchRe.lastIndex = 0;
-      if (!searchRe.test(filename)) {
-        skipped += 1;
-        continue;
-      }
-      if (seenFilenames.has(filename)) {
-        console.error(
-          `[cloud-asset-sync] FAIL: duplicate Cloud file Name "${filename}" in job "${job.id}".`,
-        );
-        process.exit(1);
-      }
-      seenFilenames.add(filename);
-      const converted = transformName(
-        filename,
-        searchRe,
-        job.filenameToNameReplacePattern,
-      );
-      if (seenConverted.has(converted)) {
-        console.error(
-          `[cloud-asset-sync] FAIL: duplicate converted name "${converted}" in job "${job.id}" (from ${filename}).`,
-        );
-        process.exit(1);
-      }
-      seenConverted.add(converted);
-      const url = typeof row.URL === "string" ? row.URL : "";
-      if (url === "" || url === "undefined") {
-        console.error(
-          `[cloud-asset-sync] FAIL: missing URL for Cloud file "${filename}" in job "${job.id}".`,
-        );
-        process.exit(1);
-      }
-      planned.push({ filename, URL: url, converted });
-    }
-
-    console.error(
-      `[cloud-asset-sync]   Filter ${searchRe}: kept ${planned.length}, skipped ${skipped}`,
-    );
-    if (planned.length === 0) {
-      // Folder missing, empty, or art not uploaded yet — do not abort the Full build.
-      console.error(
-        `[cloud-asset-sync]   SKIP: no matching Cloud files (folder missing or art not uploaded yet).`,
-      );
-      if (job.output === OUTPUT_LUA) {
-        cloudAccum[/** @type {string} */ (job.tableName)] = {};
-        console.error(
-          `[cloud-asset-sync]   LuaCatalog Cloud.${job.tableName}: 0 entries (URLs stay empty until art is uploaded)`,
-        );
-      }
-      continue;
-    }
-
-    if (job.output === OUTPUT_LUA) {
-      /** @type {Record<string, { filename: string, key: string, URL: string }>} */
-      const table = {};
-      for (const row of planned) {
-        table[row.converted] = {
-          filename: row.filename,
-          key: row.converted,
-          URL: row.URL,
-        };
-      }
-      cloudAccum[/** @type {string} */ (job.tableName)] = table;
-      console.error(
-        `[cloud-asset-sync]   LuaCatalog Cloud.${job.tableName}: ${planned.length} entr(y/ies)`,
-      );
-      continue;
-    }
-
-    // Save modes
-    if (!saveRoot) {
-      console.error("[cloud-asset-sync] FAIL: internal — save root missing.");
-      process.exit(1);
-    }
-
-    const guids = job.output === OUTPUT_OBJECT ? job.targetGUIDs : [];
-    let targets;
-    try {
-      targets = resolveAssetTargets(saveRoot, guids);
-    } catch (err) {
-      console.error(`[cloud-asset-sync] FAIL: ${err.message}`);
-      process.exit(1);
-    }
-
-    /** @type {RegExp[] | null} */
-    let purgeRes = null;
-    if (job.purgePatterns !== null) {
-      if (job.purgePatterns.length === 0) {
-        console.error(
-          `[cloud-asset-sync]   Purge: explicitly disabled (purgePatterns: [])`,
-        );
-      } else {
-        purgeRes = job.purgePatterns.map((p) => parseUserRegExp(p));
-        console.error(
-          `[cloud-asset-sync]   Purge: override patterns ${job.purgePatterns.join(", ")}`,
-        );
-      }
+      carried.add(job.id);
     } else {
-      const derived = derivePurgePatterns(job.filenameToNameReplacePattern);
-      if (derived == null) {
-        console.error(
-          `[cloud-asset-sync]   Purge: skipped (replace pattern cannot safely narrow: ${JSON.stringify(job.filenameToNameReplacePattern)})`,
-        );
-      } else {
-        purgeRes = derived.map((p) => parseUserRegExp(p));
-        console.error(`[cloud-asset-sync]   Purge: derived ${derived.join(", ")}`);
+      active.push(job);
+    }
+  }
+
+  let session = null;
+  if (!cli.noPush) {
+    try {
+      session = require("./tts-cloud/lib/steam_session.js").openSteamSession();
+    } catch (err) {
+      warn(`Steam is not available (${err.message}); push skipped, links come from the ledger.`);
+    }
+  }
+
+  try {
+    let plan = null;
+    if (session) {
+      plan = planPush(cfg, session);
+      log(
+        `Push: ${plan.inSync.length} in sync, ${plan.uploads.length} to upload, ${plan.moves.length} to move, ${plan.deleteCandidates.length} to delete; ${plan.cloudOnly.length} Cloud-only file(s) under the root (npm run cloud:strays).`,
+      );
+      for (const d of plan.localDuplicates) warn(`DUPLICATE LOCAL ${d.file}: same file as ${d.sameAs}`);
+      if (!cli.dryRun) {
+        await applyPush(cfg, session, plan, { label: "build", log });
+        const so = refreshSaveOnly(cfg, session, plan.rows);
+        if (so.written + so.removed > 0) log(`Save Only: ${so.written} updated, ${so.removed} removed.`);
       }
     }
 
-    const plannedSet = new Set(planned.map((p) => p.converted));
+    const ledger = loadLedger(cfg.assetsDir);
+    const local = scanAssets(cfg.assetsDir);
 
-    for (const target of targets) {
-      let addCount = 0;
-      let overwriteCount = 0;
-      /** @type {Map<string, number>} */
-      const byName = new Map();
-      for (let i = 0; i < target.assets.length; i += 1) {
-        const n =
-          typeof target.assets[i].Name === "string"
-            ? /** @type {string} */ (target.assets[i].Name)
-            : "";
-        if (n !== "" && !byName.has(n)) byName.set(n, i);
+    for (const rel of findLocalStrays(allJobs, local)) warn(`STRAY assets/${rel}: in a job folder but matches no job pattern`);
+
+    /** @type {Map<string, { name: string, filename: string, path: string, sha1: string, url: string, size: number }[]>} */
+    const rowsByJob = new Map();
+    for (const job of [...active]) {
+      const re = parseUserRegExp(job.searchPattern);
+      const rows = [];
+      const pending = [];
+      const seen = new Map();
+      for (const f of filesInScope(job, local)) {
+        if (!re.test(f.name)) continue;
+        const name = transformName(f.name, re, job.replacePattern);
+        if (seen.has(name)) throw new Error(`Job "${job.id}": assets/${f.relPath} and assets/${seen.get(name)} both become "${name}".`);
+        seen.set(name, f.relPath);
+        const entry = ledger.files[f.relPath];
+        if (!entry) pending.push(f.name);
+        else rows.push({ name, filename: f.name, path: f.relPath, sha1: f.sha1, url: entry.url, size: f.size });
+      }
+      if (pending.length > 0) {
+        warn(
+          `HOLD job "${job.id}": ${pending.length} file(s) are not in Cloud yet (${pending.slice(0, 3).join(", ")}${pending.length > 3 ? ", …" : ""}). Its outputs are left as they are until npm run cloud:push (TTS closed).`,
+        );
+        active.splice(active.indexOf(job), 1);
+        carried.add(job.id);
+        continue;
+      }
+      rows.sort((a, b) => a.path.localeCompare(b.path));
+      rowsByJob.set(job.id, rows);
+      log(`Job "${job.id}" (${job.output}, assets/${job.folder}): ${rows.length} file(s)`);
+    }
+
+    // --- Save outputs ---
+    const saveJobs = active.filter((j) => SAVE_OUTPUTS.has(j.output));
+    let saveRoot = null;
+    let saveBefore = "";
+    if (saveJobs.length > 0) {
+      saveRoot = JSON.parse(fs.readFileSync(cfg.saveFile, "utf8"));
+      saveBefore = JSON.stringify(saveRoot);
+      log(`Save: ${cfg.saveFile}`);
+
+      const rowJobs = allJobs.filter((j) => j.output === OUTPUT_GLOBAL || j.output === OUTPUT_OBJECT);
+      /** @type {Map<string, Set<string>>} target key → names some job owns there this run */
+      const owned = new Map();
+      const own = (key, name) => {
+        if (!owned.has(key)) owned.set(key, new Set());
+        owned.get(key).add(name);
+      };
+      const targetKeys = (job) => (job.output === OUTPUT_GLOBAL ? ["global"] : job.targets.map((g) => g.toLowerCase()));
+      /** Targets of a held job that has never run: its rows are unknown, so nothing there is purged. */
+      const unsettled = new Map();
+      for (const job of rowJobs) {
+        const rows = carried.has(job.id) ? (prevManifest.jobs[job.id] || { rows: [] }).rows : rowsByJob.get(job.id);
+        for (const key of targetKeys(job)) for (const r of rows) own(key, r.name);
+        if (carried.has(job.id) && !prevManifest.jobs[job.id]) for (const key of targetKeys(job)) unsettled.set(key, job.id);
       }
 
-      for (const row of planned) {
-        const idx = byName.get(row.converted);
-        if (idx == null) {
-          target.assets.push({ Type: 0, Name: row.converted, URL: row.URL });
-          byName.set(row.converted, target.assets.length - 1);
-          addCount += 1;
-        } else {
-          target.assets[idx] = { Type: 0, Name: row.converted, URL: row.URL };
-          overwriteCount += 1;
-        }
-      }
-
-      /** @type {string[]} */
-      const purgeNames = [];
-      if (purgeRes) {
-        for (const asset of target.assets) {
-          const n = typeof asset.Name === "string" ? asset.Name : "";
-          if (n === "" || plannedSet.has(n)) continue;
-          let hit = false;
-          for (const re of purgeRes) {
-            re.lastIndex = 0;
-            if (re.test(n)) {
-              hit = true;
-              break;
+      for (const job of saveJobs.filter((j) => j.output !== OUTPUT_IMAGE)) {
+        const rows = rowsByJob.get(job.id);
+        const targets = resolveAssetTargets(saveRoot, job.output === OUTPUT_GLOBAL ? [] : job.targets);
+        const family = [...(derivePurgePatterns(job.replacePattern) || []), ...job.purgePatterns].map((p) => parseUserRegExp(p));
+        const prevNames = new Set(((prevManifest.jobs[job.id] || {}).rows || []).map((r) => r.name));
+        for (const target of targets) {
+          const key = target.mode === "global" ? "global" : String(target.guid).toLowerCase();
+          const ownedHere = owned.get(key) || new Set();
+          const byName = new Map(target.assets.map((a, i) => [a.Name, i]));
+          let added = 0;
+          let changed = 0;
+          for (const r of rows) {
+            const idx = byName.get(r.name);
+            if (idx == null) {
+              target.assets.push({ Type: 0, Name: r.name, URL: r.url });
+              added += 1;
+            } else if (target.assets[idx].URL !== r.url) {
+              target.assets[idx] = { Type: 0, Name: r.name, URL: r.url };
+              changed += 1;
             }
           }
-          if (hit) purgeNames.push(n);
+          const purged = [];
+          const heldBy = unsettled.get(key);
+          if (heldBy) warn(`NO PURGE ${job.id} → ${target.label}: job "${heldBy}" on the same target has not run yet.`);
+          const kept = target.assets.filter((a) => {
+            const n = typeof a.Name === "string" ? a.Name : "";
+            if (n === "" || heldBy || ownedHere.has(n)) return true;
+            const mine = job.ownsAllRows || prevNames.has(n) || family.some((re) => re.test(n));
+            if (mine) purged.push(n);
+            return !mine;
+          });
+          target.assets.length = 0;
+          target.assets.push(...kept);
+          if (added + changed + purged.length > 0) {
+            log(`  ${job.id} → ${target.label}: +${added} new, ~${changed} relinked, -${purged.length} purged${purged.length ? ` (${purged.join(", ")})` : ""}`);
+          }
         }
       }
 
-      console.error(
-        `[cloud-asset-sync]   Target ${target.label}: +${addCount} new, ~${overwriteCount} overwrite, ?${purgeNames.length} purge candidate(s)`,
-      );
-
-      if (purgeNames.length > 0) {
-        allPurgeCandidates.push({
-          jobId: job.id,
-          label: target.label,
-          names: purgeNames.sort((a, b) => a.localeCompare(b)),
-        });
-      }
-
-      // Stash purge names on target for apply after confirm
-      /** @type {any} */ (target)._purgeNames = purgeNames;
-      /** @type {any} */ (target)._jobId = job.id;
-    }
-
-    saveDirty = true;
-    // Keep targets on saveRoot via mutation; store purge lists for later apply
-    if (!/** @type {any} */ (saveRoot)._pendingPurges) {
-      /** @type {any} */ (saveRoot)._pendingPurges = [];
-    }
-    for (const target of targets) {
-      /** @type {any} */ (saveRoot)._pendingPurges.push({
-        jobId: job.id,
-        label: target.label,
-        guid: target.guid,
-        mode: target.mode,
-        object: target.object,
-        names: /** @type {string[]} */ (/** @type {any} */ (target)._purgeNames || []),
-      });
-    }
-  }
-
-  // --- Purge confirm (save) ---
-  let applyPurges = false;
-  if (allPurgeCandidates.length > 0) {
-    console.error("\n[cloud-asset-sync] Stale CustomUIAssets purge candidates:");
-    for (const block of allPurgeCandidates) {
-      console.error(`  [${block.jobId}] ${block.label}:`);
-      for (const n of block.names) {
-        console.error(`    - ${n}`);
+      const byGuid = objectsByGuid(saveRoot);
+      for (const job of saveJobs.filter((j) => j.output === OUTPUT_IMAGE)) {
+        const rows = new Map(rowsByJob.get(job.id).map((r) => [r.name, r]));
+        for (const [name, guids] of Object.entries(job.objects)) {
+          const row = rows.get(name);
+          if (!row) throw new Error(`Job "${job.id}": no file in assets/${job.folder} becomes "${name}" (needed by ${guids.join(", ")}).`);
+          for (const guid of guids) {
+            const objs = byGuid.get(guid.toLowerCase());
+            if (!objs) throw new Error(`Job "${job.id}": object ${guid} is not in the save.`);
+            for (const o of objs) if (setDotted(o, job.field, row.url)) log(`  ${job.id} → ${guid} ${job.field} = ${name}`);
+          }
+        }
       }
     }
+
+    // --- Lua modules + manifest ---
+    const manifest = { cloudRoot: cfg.cloudRoot, jobs: {} };
+    for (const job of allJobs) {
+      if (carried.has(job.id)) {
+        if (prevManifest.jobs[job.id]) manifest.jobs[job.id] = prevManifest.jobs[job.id];
+        continue;
+      }
+      manifest.jobs[job.id] = {
+        output: job.output,
+        folder: job.folder,
+        rows: rowsByJob.get(job.id).map((r) => ({ path: r.path, name: r.name, sha1: r.sha1, url: r.url, size: r.size })),
+      };
+    }
+
     if (cli.dryRun) {
-      console.error("[cloud-asset-sync] Dry-run: purge not applied.");
-    } else if (cli.yesPurge) {
-      applyPurges = true;
-      console.error("[cloud-asset-sync] --yes-purge: will remove candidates on write.");
-    } else if (process.stdin.isTTY && process.stdout.isTTY) {
-      const ok = await promptYesNo(
-        "Remove these stale CustomUIAssets entries? [y/N] ",
-      );
-      if (ok) {
-        applyPurges = true;
-      } else {
-        console.error(
-          "[cloud-asset-sync] Purge declined — will still write add/overwrite changes; stale names left in place.",
-        );
-      }
-    } else {
-      console.error(
-        "[cloud-asset-sync] FAIL: purge candidates present but no TTY (non-interactive). Re-run with --yes-purge or from an interactive terminal.",
-      );
-      process.exit(1);
+      log("PASS (dry run; nothing written)");
+      return;
     }
-  }
 
-  if (applyPurges && saveRoot && /** @type {any} */ (saveRoot)._pendingPurges) {
-    for (const block of /** @type {any} */ (saveRoot)._pendingPurges) {
-      if (!block.names || block.names.length === 0) continue;
-      const nameSet = new Set(block.names);
-      /** @type {Record<string, unknown>[]} */
-      let assets;
-      if (block.mode === "global") {
-        assets = /** @type {Record<string, unknown>[]} */ (saveRoot.CustomUIAssets);
-        saveRoot.CustomUIAssets = assets.filter(
-          (a) => typeof a.Name !== "string" || !nameSet.has(a.Name),
-        );
-      } else if (block.object) {
-        assets = /** @type {Record<string, unknown>[]} */ (block.object.CustomUIAssets);
-        block.object.CustomUIAssets = assets.filter(
-          (a) => typeof a.Name !== "string" || !nameSet.has(a.Name),
-        );
+    for (const job of active.filter((j) => j.output === OUTPUT_LUA)) {
+      const abs = path.join(REPO_ROOT, job.module);
+      const text = renderLuaModule(job, rowsByJob.get(job.id));
+      if (!fs.existsSync(abs) || fs.readFileSync(abs, "utf8") !== text) {
+        writeAtomic(abs, text);
+        log(`Wrote ${job.module}`);
       }
     }
-  }
-
-  // Clean ephemeral keys
-  if (saveRoot) {
-    delete /** @type {any} */ (saveRoot)._pendingPurges;
-  }
-
-  // --- Writes ---
-  if (cli.dryRun) {
-    if (luaJobs.length > 0) {
-      console.error(
-        `[cloud-asset-sync] Dry-run: would write lib/cloud_catalog.ttslua (${Object.keys(cloudAccum).length} table(s))`,
-      );
+    const manifestText = `${JSON.stringify(manifest, null, 2)}\n`;
+    if (!fs.existsSync(MANIFEST_PATH) || fs.readFileSync(MANIFEST_PATH, "utf8") !== manifestText) {
+      writeAtomic(MANIFEST_PATH, manifestText);
+      log(`Wrote ${path.relative(REPO_ROOT, MANIFEST_PATH)}`);
     }
-    if (saveDirty && saveFile) {
-      console.error(`[cloud-asset-sync] Dry-run: would write save ${saveFile}`);
-    }
-    console.error("[cloud-asset-sync] PASS (dry-run)");
-    process.exit(0);
-  }
 
-  if (luaJobs.length > 0) {
-    const lua = renderCloudCatalogLua(cloudAccum);
-    writeAtomic(CLOUD_CATALOG_LUA, lua);
-    console.error(
-      `[cloud-asset-sync] Wrote ${CLOUD_CATALOG_LUA} (${Object.keys(cloudAccum).length} table(s))`,
-    );
-  } else {
-    console.error(
-      "[cloud-asset-sync] No LuaCatalog jobs in this run — left lib/cloud_catalog.ttslua untouched.",
-    );
-  }
-
-  if (saveDirty && saveFile && saveRoot) {
-    if (ttsConfig) {
-      const backupPath = backupSaveBeforeWrite(saveFile, ttsConfig);
-      if (backupPath) {
-        console.error(`[cloud-asset-sync] Backup: ${backupPath}`);
+    if (saveRoot) {
+      if (JSON.stringify(saveRoot) !== saveBefore) {
+        const existing = findExistingConfig();
+        backupSaveBeforeWrite(cfg.saveFile, existing ? existing.config : null);
+        writeAtomic(cfg.saveFile, `${JSON.stringify(saveRoot, null, 2)}\n`);
+        log(`Wrote save ${cfg.saveFile} — reload it in Tabletop Simulator.`);
       }
     }
-    writeAtomic(saveFile, `${JSON.stringify(saveRoot, null, 2)}\n`);
-    console.error(`[cloud-asset-sync] Wrote save: ${saveFile}`);
-    console.error(
-      "[cloud-asset-sync] Reload the save in Tabletop Simulator to pick up CustomUIAssets changes.",
-    );
-  }
 
-  console.error("[cloud-asset-sync] PASS");
-  process.exit(0);
+    if (session && plan) {
+      applyDeletes(cfg, session, plan, { label: "build", log, warn });
+    }
+    log("PASS");
+  } finally {
+    if (session) session.close();
+  }
 }
 
 if (require.main === module) {
   main().catch((err) => {
-    console.error(`[cloud-asset-sync] FAIL: ${err && err.stack ? err.stack : err}`);
+    console.error(`[cloud-asset-sync] FAIL: ${err && err.message ? err.message : err}`);
     process.exit(1);
   });
 }
 
 module.exports = {
   stripJsonc,
+  distinguishingLiteral,
   derivePurgePatterns,
-  parseAnchoredSearchPattern,
+  validateConfig,
+  findLocalStrays,
+  readManifest,
+  MANIFEST_PATH,
+  renderLuaModule,
   parseCli,
-  validateJob,
-  renderCloudCatalogLua,
 };

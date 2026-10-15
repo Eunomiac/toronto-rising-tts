@@ -20,6 +20,8 @@ const {
 const { assertTtsClosed } = require("./cloud_config.js");
 
 const UPLOAD_BATCH = 50;
+/** FileShare round trips dominate upload time; Steam serves several at once. */
+const SHARE_CONCURRENCY = 4;
 
 /**
  * @param {Buffer} bytes
@@ -60,29 +62,53 @@ async function uploadFiles(session, cfg, items, opts) {
     });
   };
 
-  let done = 0;
-  for (const item of items) {
+  /** @type {{ index: number, item: { bytes: Buffer, name: string }, folder: string, sha1: string, key: string }[]} */
+  const queue = [];
+  const queued = new Map();
+  items.forEach((item, index) => {
     const folder = normalizeCloudPath(item.folder);
     const sha1 = sha1Hex(item.bytes);
     const key = `${sha1}_${item.name}`;
     const hit = existing.get(key);
     if (hit) {
       if (hit.folder !== folder) moves.push({ key, folder });
-      results.push({ key, url: hit.url, folder, name: item.name, uploaded: false });
-      continue;
+      results[index] = { key, url: hit.url, folder, name: item.name, uploaded: false };
+    } else if (queued.has(key)) {
+      queued.get(key).push(index);
+    } else {
+      queued.set(key, []);
+      queue.push({ index, item, folder, sha1, key });
     }
-    session.writeFile(key, item.bytes);
-    const handle = await session.shareFile(key);
-    const url = ugcUrl(handle, sha1);
-    const entry = makeIndexEntry({ url, folder, name: item.name, size: item.bytes.length });
-    pendingAdds.push({ key, entry });
-    existing.set(key, { key, sha1, name: item.name, url, folder, size: item.bytes.length, date: entry.Date });
-    results.push({ key, url, folder, name: item.name, uploaded: true });
-    done += 1;
-    log(`uploaded ${done}: ${folder}/${item.name}`);
-    if (pendingAdds.length >= UPLOAD_BATCH) flush();
-  }
+  });
+
+  let done = 0;
+  let next = 0;
+  let failed = false;
+  const worker = async () => {
+    while (!failed && next < queue.length) {
+      const { index, item, folder, sha1, key } = queue[next];
+      next += 1;
+      try {
+        session.writeFile(key, item.bytes);
+        const handle = await session.shareFile(key);
+        const url = ugcUrl(handle, sha1);
+        const entry = makeIndexEntry({ url, folder, name: item.name, size: item.bytes.length });
+        pendingAdds.push({ key, entry });
+        results[index] = { key, url, folder, name: item.name, uploaded: true };
+        for (const dup of queued.get(key)) results[dup] = { key, url, folder, name: item.name, uploaded: false };
+        done += 1;
+        log(`uploaded ${done}/${queue.length}: ${folder}/${item.name}`);
+        if (pendingAdds.length >= UPLOAD_BATCH) flush();
+      } catch (err) {
+        failed = true;
+        throw err;
+      }
+    }
+  };
+  const settled = await Promise.allSettled(Array.from({ length: Math.min(SHARE_CONCURRENCY, queue.length) }, worker));
   flush();
+  const rejected = settled.find((s) => s.status === "rejected");
+  if (rejected) throw rejected.reason;
   if (moves.length > 0) moveFiles(session, cfg, moves, { label: `${opts.label}-move` });
   return results;
 }
