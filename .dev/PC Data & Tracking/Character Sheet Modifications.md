@@ -49,18 +49,11 @@ Slot lists: `C.BloodPotencyDecalSlots.page1` / `.page2`.
 
 ### Image variants (URL catalog)
 
-At reconcile time, only the decal **`url`** changes. The image variant key is `"<statKey><value>"` (e.g. `"bloodSurge3"`), looked up in `C.BloodPotencyDecalUrls`. URLs are extracted from the mod save’s **`DecalPallet`** array (`{ Name, ImageURL }` per entry — not `CustomUIAssets`):
-
-```text
-node .tools/custom-ui-assets/extract-bp-decal-urls-from-save.js --saveName 230 --luaOut .dev/custom-ui-assets/bp-decal-urls.lua
-node .tools/custom-ui-assets/merge-bp-decals-into-csheet-custom-ui-assets.js --save .dev/TS_Save_230.json
-```
-
-Symlink or copy: `.dev/TS_Save_230.json` → `%USERPROFILE%/OneDrive/Documents/My Games/Tabletop Simulator/Saves/TS_Save_230.json` (refresh after each TTS save).
+At reconcile time, only the decal **`url`** changes. The image variant key is `"<statKey><value>"` (e.g. `"bloodSurge3"`), looked up in `BPC.BloodPotencyDecalUrls` (`lib/blood_potency_constants.ttslua`). The art is `assets/CSheets/Blood Potency/bloodPotency_<variant>.png`; `npm run cloud-asset-sync` writes `lib/cloud_blood_potency.ttslua` (job `bloodPotencyDecals`) and registers the same files on the Page 1 / Page 2 objects' `CustomUIAssets` (jobs `bloodPotencyPage1`, `bloodPotencyPage2`). To change an image, replace the file and run `npm run build:full` with TTS closed.
 
 ### Reconcile pipeline
 
-On load and whenever `CharacterSheets.refreshCharacterSheetsForColor` runs, `ui/ui_csheet.ttslua` → `applyBloodPotencyDecals` (pages 1–2 only) calls **`self.getDecals`**, builds the payload with **`lib/blood_potency_decals.ttslua`**, and calls **`self.setDecals`** in the **same object script VM** (TTS rejects decal tables built or returned via `Global.call`). Variant URLs must be registered on that object’s **`CustomUIAssets`** — merge from `DecalPallet` with `.tools/custom-ui-assets/merge-bp-decals-into-csheet-custom-ui-assets.js`. Missing BP slots or invalid BP variant URLs **error loudly** — no legacy name shims. Extra manual decals pass through unchanged.
+On load and whenever `CharacterSheets.refreshCharacterSheetsForColor` runs, `ui/ui_csheet.ttslua` → `applyBloodPotencyDecals` (pages 1–2 only) calls **`self.getDecals`**, builds the payload with **`lib/blood_potency_decals.ttslua`**, and calls **`self.setDecals`** in the **same object script VM** (TTS rejects decal tables built or returned via `Global.call`). Variant URLs are registered on that object’s **`CustomUIAssets`** by the `bloodPotencyPage1` / `bloodPotencyPage2` sync jobs. Missing BP slots or invalid BP variant URLs **error loudly** — no legacy name shims. Extra manual decals pass through unchanged.
 
 Effective Blood Potency for decals matches sheet dots: `stats.bloodPotency.base + stats.bloodPotency.temp + resolvedStatChanges.bloodPotency` (via `GlobalGetResolvedStatChangesForPlayer` — location conditions such as `bumpBloodPotency` apply through `statChanges`, not persisted `temp`). Decals live on **pages 1–2 only**; refreshing page 3 alone does not update them — use `CharacterSheets.refreshCharacterSheetsForColor` or reload pages 1/2. After location reconcile with `{ skipPresentation = true }`, callers must run `CharacterSheets.refreshAllCharacterSheets()` (via `StorytellerScenesPanel` helpers) so page 1 dots and BP decals catch resolved condition statChanges — `Sync.full` alone does not refresh sheets.
 
@@ -108,7 +101,7 @@ Cloud sync: job `csheetPage2Assets` (`CSheets/Page2` → five page‑2 GUIDs, no
 npm run cloud-asset-sync -- --job csheetPage1Overlays,csheetPage2Assets
 ```
 
-Runtime `UI.setXml` strings cannot resolve editor `<Include>`; pages 3–4 prepend `lib/csheet_defaults_xml` via Lua and must not embed `<Include src="csheet_defaults.xml" />` in `ui/.templates/csheet/pageN.xml`. Page 4 relationship portraits and dividers must exist on each `CSHEET_PAGE_4_*` object (`npm run custom-ui-assets:merge-object-assets` from `lib/json/PC_Relationship_Images.json`).
+Runtime `UI.setXml` strings cannot resolve editor `<Include>`; pages 3–4 prepend `lib/csheet_defaults_xml` via Lua and must not embed `<Include src="csheet_defaults.xml" />` in `ui/.templates/csheet/pageN.xml`. Every sheet image row on Pages 1–6 comes from `assets/CSheets/` (`PageN/` for one page's art, `Shared/` for art several pages use, `Page4/Portraits/<key>Portrait.webp` for relationship portraits) via the `csheet*` jobs in `.tools/cloud-asset-sync.jsonc`; rows no job writes are purged. Add a portrait by dropping the file there and running `npm run build:full` with TTS closed.
 
 ### Page 4 relationships
 

@@ -464,7 +464,6 @@ C.Clans = {
 -- Blood Potency derived stats + CSHEET decal URLs (canonical: lib/blood_potency_constants.ttslua)
 local BPC = require("lib.blood_potency_constants")
 C.BloodPotency = BPC.BloodPotency
-C.BloodPotencyDecalUrls = BPC.BloodPotencyDecalUrls
 C.BloodPotencyDecalSlots = BPC.BloodPotencyDecalSlots
 -- #endregion
 
@@ -2865,11 +2864,11 @@ C.Skyboxes = SkyboxesCatalog.Skyboxes
 C.GenericSkyboxes = SkyboxesCatalog.GenericSkyboxes
 C.MemoriamSkyboxes = SkyboxesCatalog.MemoriamSkyboxes
 
--- Memoriam panel art lives on Steam Cloud (`Vampire the Masquerade 5E/Memoriam`, files `<skyboxKey>_<a|b|c|d>.jpg`) and reaches
--- Lua as `Cloud.MemoriamPanels` (AUTO-GENERATED `lib/cloud_catalog.ttslua`; regenerate: npm run cloud-asset-sync:catalog).
--- Cloud is the URL authority for `panelA`–`panelD`.`url` (filled at load from `Cloud.MemoriamPanels`). The sheet does not supply panel URLs.
+-- Memoriam panel art lives in assets/Memoriam (`memoriamPanel_<skyboxKey>_<a|b|c|d>.jpg`, synced to Steam Cloud) and reaches
+-- Lua as AUTO-GENERATED `lib/cloud_memoriam_panels.ttslua` (job `memoriamPanels`; regenerate: npm run cloud-asset-sync).
+-- That module is the URL authority for `panelA`–`panelD`.`url` (filled at load). The sheet does not supply panel URLs.
 -- Memoriam NPC figurine / token art comes from `lib/npc_art_urls.ttslua` (keyed `mem_<stem>`), like every other NPC.
-local CloudCatalog = require("lib.cloud_catalog")
+local CloudMemoriamPanels = require("lib.cloud_memoriam_panels")
 
 local MEMORIAM_PANEL_KEYS = { "panelA", "panelB", "panelC", "panelD" }
 local MEMORIAM_PANEL_KEY_BY_LETTER = { a = "panelA", b = "panelB", c = "panelC", d = "panelD" }
@@ -2883,8 +2882,8 @@ local function trimmedString(value)
   return (string.gsub(string.gsub(value, "^%s+", ""), "%s+$", ""))
 end
 
---- Hosted URL from a Cloud LuaCatalog row, or "" when the table, key, or URL is missing (art not uploaded yet).
---- @param cloudTable table|nil `Cloud.<tableName>`
+--- Hosted URL from a generated Cloud module row, or "" when the key or URL is missing.
+--- @param cloudTable table|nil
 --- @param key string|nil
 --- @return string
 local function cloudCatalogURL(cloudTable, key)
@@ -2898,17 +2897,10 @@ local function cloudCatalogURL(cloudTable, key)
   return trimmedString(row.URL)
 end
 
---- @param cloudTable table|nil
---- @param key string|nil
---- @return string
-function C.cloudCatalogURL(cloudTable, key)
-  return cloudCatalogURL(cloudTable, key)
-end
-
---- Writes `Cloud.MemoriamPanels["<skyboxKey>_<letter>"].URL` into `catalog[skyboxKey][panelX].url`.
---- Cloud keys that name no catalog period, or a panel that period does not define, are reported — not applied.
+--- Writes `cloudPanels["<skyboxKey>_<letter>"].URL` into `catalog[skyboxKey][panelX].url`.
+--- Keys that name no catalog period, or a panel that period does not define, are reported — not applied.
 --- @param catalog table `C.MemoriamSkyboxes`
---- @param cloudPanels table `Cloud.MemoriamPanels`
+--- @param cloudPanels table `lib/cloud_memoriam_panels.ttslua`
 --- @return integer linked
 --- @return string[] unmatched  sorted cloud keys with no catalog target
 local function applyMemoriamCloudPanelUrls(catalog, cloudPanels)
@@ -2968,16 +2960,14 @@ function C.resolveMemoriamPanelURL(skyboxKey, panelKey)
   if url == "" then
     error(
       "Memoriam skybox `" .. skyboxKey .. "`." .. panelKey
-        .. " has no art — upload `" .. skyboxKey .. "_" .. string.lower(string.sub(panelKey, -1)) .. ".jpg` to Cloud/Memoriam and run npm run cloud-asset-sync:catalog"
+        .. " has no art — add `memoriamPanel_" .. skyboxKey .. "_" .. string.lower(string.sub(panelKey, -1)) .. ".jpg` to assets/Memoriam and run npm run cloud-asset-sync"
     )
   end
   return url
 end
 
-if type(CloudCatalog.MemoriamPanels) ~= "table" then
-  print("[constants] Cloud.MemoriamPanels is missing — run npm run cloud-asset-sync:catalog. Memoriam panels have no art.")
-else
-  local linked, unmatched = applyMemoriamCloudPanelUrls(C.MemoriamSkyboxes, CloudCatalog.MemoriamPanels)
+do
+  local linked, unmatched = applyMemoriamCloudPanelUrls(C.MemoriamSkyboxes, CloudMemoriamPanels)
   local missing = C.getMemoriamPanelsWithoutArt()
   local summary = string.format(
     "[constants] Memoriam panel art: %d linked from Cloud, %d catalog panel(s) still without art (C.getMemoriamPanelsWithoutArt)",

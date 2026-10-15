@@ -132,7 +132,6 @@ trEarlySilenceSoundscapeEmitters("chunk-sync-immediate")
 C = require("lib.constants")
 DK = require("lib.dice_kinds")
 G = require("lib.guids")
-Cloud = require("lib.cloud_catalog")
 local SRD = require("lib.secret_roll_dice")
 
 trScheduleEarlySoundscapeSilenceDeferred("chunk-load")

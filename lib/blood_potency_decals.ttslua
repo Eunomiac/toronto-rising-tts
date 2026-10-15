@@ -29,12 +29,6 @@ local function assertProductionDecalUrl(url, context)
   if type(url) ~= "string" or url == "" then
     error(string.format("blood_potency_decals: missing URL (%s)", tostring(context)))
   end
-  if url:find("REPLACE_ME", 1, true) ~= nil then
-    error(string.format(
-      "blood_potency_decals: placeholder URL for %s — replace BloodPotencyDecalUrls entry with a real Steam CDN URL",
-      tostring(context)
-    ))
-  end
   if url:sub(1, 8) ~= "https://" then
     error(string.format("blood_potency_decals: URL must start with https:// (%s)", tostring(context)))
   end

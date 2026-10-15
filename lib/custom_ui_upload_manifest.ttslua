@@ -1,8 +1,0 @@
--- Committed stub (safe for Save & Play before manifest generation).
--- Overwritten by: npm run custom-ui-assets:pipeline (folder mode, .tools/custom-ui-assets/build-upload-manifest.js)
--- Required by DEBUG.loadCustomUiUploadManifest()
-local M = {
-  assets = {}
-}
-
-return M

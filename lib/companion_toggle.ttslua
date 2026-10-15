@@ -161,18 +161,9 @@ local function persistActiveState(ownerColor, state)
     S.setStateVal(state, "runtime", "companionFigurineState", ownerColor)
 end
 
--- Workshop ImageURL = enabled art; ImageSecondaryURL = disabled. Keep rotX≈0 and swap
--- front/back via setCustomObject so the click button stays on a stable local +Y.
-local TOGGLE_FACE_URLS = {
-    [G.GUIDS.COMPANION_TOGGLE_TOKEN_A_RED] = {
-        enabled = "https://steamusercontent-a.akamaihd.net/ugc/16553949447146780000/1EC69A5B406A4107D4B943AAB340F5616BEF6E50/",
-        disabled = "https://steamusercontent-a.akamaihd.net/ugc/13530133642401152847/8C4699DAC8D844A0283B404735EF843736E4D81B/",
-    },
-    [G.GUIDS.COMPANION_TOGGLE_TOKEN_A_BROWN] = {
-        enabled = "https://steamusercontent-a.akamaihd.net/ugc/13954356680086275459/8E17B8CD9048F716F67B2075E679DE047E52A2F7/",
-        disabled = "https://steamusercontent-a.akamaihd.net/ugc/18146827032376912078/4AF7D07500F0346FCEE0FD5CB94AA286153E9F28/",
-    },
-}
+-- Top face = enabled or disabled art (assets/Objects/Companion Toggle, job `companionToggle`). Keep rotX≈0 and
+-- swap front/back via setCustomObject so the click button stays on a stable local +Y.
+local CloudToggleFaces = require("lib.cloud_companion_toggle")
 
 local TILE_TYPE_CIRCLE = 2
 local TILE_THICKNESS = 0.1
@@ -208,31 +199,17 @@ local function ensureFaceUpRotation(toggleObj)
 end
 
 --- @param toggleObj Object
---- @return string|nil enabledUrl, string|nil disabledUrl
+--- @return string enabledUrl, string disabledUrl
 local function resolveFaceUrls(toggleObj)
-    local guid = toggleObj.getGUID()
-    local known = type(guid) == "string" and TOGGLE_FACE_URLS[guid] or nil
-    if type(known) == "table"
-        and type(known.enabled) == "string" and known.enabled ~= ""
-        and type(known.disabled) == "string" and known.disabled ~= "" then
-        return known.enabled, known.disabled
+    local owner = OWNER_BY_TOGGLE_GUID[toggleObj.getGUID()]
+    local key = string.lower(tostring(owner))
+    local enabled = CloudToggleFaces[key .. "_enabled"]
+    local disabled = CloudToggleFaces[key .. "_disabled"]
+    if not enabled or not disabled then
+        error("[CompanionToggle] assets/Objects/Companion Toggle/companionToggle_" .. key
+            .. "_enabled / _disabled missing from lib/cloud_companion_toggle.ttslua (run npm run build:full with TTS closed).")
     end
-    if type(toggleObj.getCustomObject) ~= "function" then
-        return nil, nil
-    end
-    local co = toggleObj.getCustomObject()
-    if type(co) ~= "table" then
-        return nil, nil
-    end
-    local enabledUrl = co.image
-    local disabledUrl = co.image_bottom or co.image_secondary
-    if type(enabledUrl) ~= "string" or enabledUrl == "" then
-        return nil, nil
-    end
-    if type(disabledUrl) ~= "string" or disabledUrl == "" then
-        disabledUrl = enabledUrl
-    end
-    return enabledUrl, disabledUrl
+    return enabled.URL, disabled.URL
 end
 
 --- Show enabled/disabled art on the top face by swapping Custom Tile URLs (no rotX flip).
@@ -247,10 +224,6 @@ local function setToggleTokenFace(toggleObj, enabled)
         return
     end
     local enabledUrl, disabledUrl = resolveFaceUrls(toggleObj)
-    if enabledUrl == nil or disabledUrl == nil then
-        print("[CompanionToggle] Missing tile face URLs for " .. tostring(toggleObj.getGUID()))
-        return
-    end
     local wantTop = enabled and enabledUrl or disabledUrl
     local wantBottom = enabled and disabledUrl or enabledUrl
     local co = toggleObj.getCustomObject()

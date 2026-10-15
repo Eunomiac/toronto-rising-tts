@@ -11,6 +11,7 @@
 
 local DK = require("lib.dice_kinds")
 local STS = require("lib.st_dice_tray_spawn")
+local CloudDice = require("lib.cloud_dice")
 
 local STDICE = {}
 
@@ -26,32 +27,23 @@ STDICE.KINDS = {
 
 local SCALE = 1.75
 
---- Face art per kind (TTS Custom_Dice d10 sheets; same art the retired Storyteller bags held).
+--- Face art per kind: TTS Custom_Dice d10 sheets in assets/Dice (`lib/cloud_dice.ttslua`, job `dice`).
+--- Rouse and Oblivion-Rouse use the `*St` sheets, the art the retired Storyteller bags held.
+local function dieImage(key)
+    local row = CloudDice[key]
+    if not row then
+        error("st_dice: assets/Dice/die_" .. key .. " is missing from lib/cloud_dice.ttslua (run npm run build:full with TTS closed).")
+    end
+    return row.URL
+end
+
 local DIE_ART = {
-    [DK.KIND_NORMAL] = {
-        nickname = "Normal Die",
-        image = "https://steamusercontent-a.akamaihd.net/ugc/14995346915324003056/9F355C854A6C5C9318D21B6522DB5C52349B0CAA/",
-    },
-    [DK.KIND_HUNGER] = {
-        nickname = "Hunger Die",
-        image = "https://steamusercontent-a.akamaihd.net/ugc/13660575892430173909/242FDF0006D8801E435CE5460C8472307A5C9D4A/",
-    },
-    [DK.KIND_ROUSE] = {
-        nickname = "Rouse Die",
-        image = "https://steamusercontent-a.akamaihd.net/ugc/12959840262182905547/8FAF9DEB7CFF0107C10B8F7DAA91A4D9083B8F46/",
-    },
-    [DK.KIND_OBLIV_ROUSE] = {
-        nickname = "Oblivion-Rouse Die",
-        image = "https://steamusercontent-a.akamaihd.net/ugc/15248465584943954888/1044D4BFD8D96A2231C145D546B3CBED72B8364A/",
-    },
-    [DK.KIND_WEREWOLF] = {
-        nickname = "Werewolf Die",
-        image = "https://steamusercontent-a.akamaihd.net/ugc/11831377631149613521/BD31A5610E46D645D057D5196928239164DE6F1F/",
-    },
-    [DK.KIND_RAGE] = {
-        nickname = "Rage Die",
-        image = "https://steamusercontent-a.akamaihd.net/ugc/17939182065163013962/2133453BBF13F9A1A998A6366F2E6AAD38C8267A/",
-    },
+    [DK.KIND_NORMAL] = { nickname = "Normal Die", image = dieImage("normal") },
+    [DK.KIND_HUNGER] = { nickname = "Hunger Die", image = dieImage("hunger") },
+    [DK.KIND_ROUSE] = { nickname = "Rouse Die", image = dieImage("rouseSt") },
+    [DK.KIND_OBLIV_ROUSE] = { nickname = "Oblivion-Rouse Die", image = dieImage("oblivRouseSt") },
+    [DK.KIND_WEREWOLF] = { nickname = "Werewolf Die", image = dieImage("werewolf") },
+    [DK.KIND_RAGE] = { nickname = "Rage Die", image = dieImage("rage") },
 }
 
 --- Face rotations for the d10 sheet layout (values 1–10).
