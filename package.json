@@ -25,6 +25,8 @@
     "npc-stats:push": "node .dev/storyteller-dashboard/scripts/npc-stats/push.ts",
     "site-cards:import": "node .dev/scripts/import_site_cards_from_sheet.js",
     "site-cards:import:test": "node .dev/scripts/import_site_cards_from_sheet.test.js",
+    "cloud:pull": "node .tools/tts-cloud/cloud-pull.js",
+    "cloud:push": "node .tools/tts-cloud/cloud-push.js",
     "cloud:backup": "node .tools/tts-cloud/cloud-backup.js",
     "cloud:restore-index": "node .tools/tts-cloud/cloud-restore.js --index",
     "cloud:restore-files": "node .tools/tts-cloud/cloud-restore.js",

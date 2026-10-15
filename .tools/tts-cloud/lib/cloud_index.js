@@ -62,6 +62,20 @@ function formatIndexDate(d) {
 }
 
 /**
+ * Index dates are "M/D/YYYY H:mm:ss" with an optional AM/PM (older entries).
+ * @param {unknown} value
+ * @returns {number} epoch ms, 0 when unparseable
+ */
+function indexDateMs(value) {
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4}) (\d{1,2}):(\d{2}):(\d{2})(?: (AM|PM))?$/.exec(str(value).trim());
+  if (!m) return 0;
+  let hour = Number(m[4]);
+  if (m[7] === "PM" && hour < 12) hour += 12;
+  if (m[7] === "AM" && hour === 12) hour = 0;
+  return new Date(Number(m[3]), Number(m[1]) - 1, Number(m[2]), hour, Number(m[5]), Number(m[6])).getTime();
+}
+
+/**
  * @param {string} handle
  * @param {string} sha1
  */
@@ -225,6 +239,7 @@ module.exports = {
   normalizeCloudPath,
   toIndexFolder,
   formatIndexDate,
+  indexDateMs,
   ugcUrl,
   ugcMatchKey,
   parseIndex,

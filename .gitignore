@@ -105,7 +105,13 @@ build/
 .tools/photoshop/*.text-layers.*
 .dev/storyteller-dashboard/data/*.tmp
 
+# Local mirror of Steam Cloud "Vampire the Masquerade 5E/" (npm run cloud:pull / cloud:push).
+# assets/images/ is legacy repo art still being migrated into the mirror.
+/assets/*
+!/assets/images/
 assets/images/Clipboard Image.jpg
+# Tool caches (asset hashes, save link index)
+/.cache/
 # Local Sheets Obsidian dashboard runtime artifacts
 .dev/sheets-obsidian-dashboard/.env
 .dev/sheets-obsidian-dashboard/.local/
