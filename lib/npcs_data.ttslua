@@ -62,7 +62,7 @@ D.lights = {
 }
 
 --[[
-    Every NPC's figurine and token URLs live in generated `lib/npc_art_urls.ttslua` (npm run npc-art:generate);
+    Every NPC's figurine and token URLs live in generated `lib/npc_art_urls.ttslua` (npm run npc-art:urls);
     `core/npc_spawn.ttslua` spawns figurines from it on demand. Roster groups, bosses and card scales are the
     Storyteller Dashboard's (`data/npc-roster.json`, `data/npc-overrides.json`); TTS reads only the generated overrides.
     `werewolf = true`: every roll the Storyteller starts for this NPC is a Werewolf roll (Werewolf / Rage dice). ]]
@@ -535,7 +535,7 @@ function D.resolveGenericNpcEntry(fullKey)
 end
 
 --- Generic NPCs available to import: every generated `lib.npc_art_urls` row with a `genericLabel` (a Generics Export
---- sheet row whose figurine has art; `npm run npc-art:generate` reports sheet rows without one).
+--- sheet row whose figurine has art; `npm run npc-art:draw` reports sheet rows without one).
 function D.initGenericNPCs()
   local genericNpcs = {}
   for key, art in pairs(require("lib.npc_art_urls")) do
@@ -545,7 +545,7 @@ function D.initGenericNPCs()
     end
   end
   if next(genericNpcs) == nil then
-    error("lib.npc_art_urls has no generic NPC rows (genericLabel) — run npm run npc-art:generate")
+    error("lib.npc_art_urls has no generic NPC rows (genericLabel) — run npm run build:full")
   end
   D.genericNpcs = genericNpcs
 end

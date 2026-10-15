@@ -11,7 +11,7 @@ Read this when:
 Source of truth:
 - Sheet named range `GENERICNPCCSV` (columns `filename,label,key,tags`)
 - Generated catalog `.dev/storyteller-dashboard/data/generic-npcs.json`
-- Cutouts already in the repo: `assets/images/NPCs/Generic/*.webp` (do not copy or duplicate)
+- Cutouts: `assets/NPC Art/Figurines/Generic/npc_<key>.webp` (local Steam Cloud mirror; do not copy or duplicate)
 - Import: `.dev/scripts/import_generic_npcs_from_sheet.js` (same public CSV export as skyboxes)
 - Parse: `.dev/scripts/lib/generic_npcs_sheet_csv.js` (reuses `parseCsv` from `.dev/scripts/lib/skyboxes_sheet_csv.js`)
 - Dashboard UI: `.dev/storyteller-dashboard/` (port 8788) — **refreshes the catalog on server startup**
@@ -83,7 +83,7 @@ Header must be `filename,label,key,tags` (order can vary; names are matched afte
 
 | Column | Meaning |
 | --- | --- |
-| `filename` | Basename only of a file in `assets/images/NPCs/Generic` (example: `civilianChildBoy_01.webp`). Must be `.webp`. No folders. |
+| `filename` | Basename of the cutout without the `npc_` prefix (example: `civilianChildBoy_01.webp` for `assets/NPC Art/Figurines/Generic/npc_civilianChildBoy_01.webp`). Must be `.webp`. No folders. |
 | `label` | Text under the thumbnail. |
 | `key` | Clipboard value (Lua-style identifier, e.g. `civilianChildBoy_01`). Unique. |
 | `tags` | Space-separated search words. |
@@ -116,4 +116,4 @@ The catalogue is the **Generic** view of the roster in the **Scenes** tab (`Maso
 
 The old standalone **Stage NPCs** tab (thumbnail grid, saved search tags, Copy keys) was retired when the Scenes tab took over generic NPCs.
 
-**Sheet → Lua labels:** `npm run npc-art:generate` reads `generic-npcs.json`, bakes each label into that generic NPC's spotlight token, and writes it as `genericLabel` on the NPC's row in `lib/npc_art_urls.ttslua`. `D.initGenericNPCs()` registers exactly those rows, so TTS learns a new or relabelled generic only after `npm run npc-art:generate` (art: [NPC Art Pipeline](../NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%20Art%20Pipeline.md)).
+**Sheet → Lua labels:** `npm run build:full` reads `generic-npcs.json`, bakes each label into that generic NPC's spotlight token, and writes it as `genericLabel` on the NPC's row in `lib/npc_art_urls.ttslua`. `D.initGenericNPCs()` registers exactly those rows, so TTS learns a new or relabelled generic only after `npm run build:full` (art: [NPC Art Pipeline](../NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%20Art%20Pipeline.md)).

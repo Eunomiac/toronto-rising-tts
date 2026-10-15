@@ -1,5 +1,5 @@
 import { createContext, useContext, useMemo, useState, type CSSProperties, type MouseEvent, type ReactElement } from "react";
-import { assetUrl } from "../pcSheet/layout";
+import { sheetArtUrl } from "../pcSheet/layout";
 import { paintDamageTrack, type BoxSlot } from "../pcSheet/paint";
 import { TraitRing } from "../pcSheet/TraitRing";
 import type { RingAction } from "../pcSheet/types";
@@ -65,14 +65,14 @@ export const useNpcLive = (
 export const BoxRow = ({ boxes, showEmpty = false }: { boxes: readonly BoxSlot[]; showEmpty?: boolean }): ReactElement => (
   <>
     {boxes.map((box, index) => box.active && box.image ? (
-      <span key={index} className="lab-track-box" style={{ backgroundImage: `url("${assetUrl(`boxes/${box.image}.webp`)}")` }} />
+      <span key={index} className="lab-track-box" style={{ backgroundImage: `url("${sheetArtUrl(box.image)}")` }} />
     ) : showEmpty ? (
-      <span key={index} className="lab-track-box off" style={{ backgroundImage: `url("${assetUrl("boxes/box_white.webp")}")` }} />
+      <span key={index} className="lab-track-box off" style={{ backgroundImage: `url("${sheetArtUrl("box_white")}")` }} />
     ) : null)}
   </>
 );
 
-export const HUNGER_DOT = { "--lab-dot": `url("${assetUrl("dots/dot_red.webp")}")` } as CSSProperties;
+export const HUNGER_DOT = { "--lab-dot": `url("${sheetArtUrl("dot_red")}")` } as CSSProperties;
 
 type Level = { readonly which: "hunger" | "rage"; readonly value: number };
 

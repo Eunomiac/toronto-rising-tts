@@ -1,11 +1,10 @@
-import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync } from "node:fs";
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { loadGenericNpcCatalog } from "../../src/server/genericNpcCatalog.ts";
 import { isEmptyNpcOverride, NPC_OVERRIDE_KEY_PATTERN, parseNpcOverride, type NpcOverride } from "../../src/shared/npcOverride.ts";
 import { drawToken, loadFont, type DrawAssets } from "./draw.ts";
-import { syncSaveFigurineAssets } from "./save-assets.ts";
 import {
   buildSubject,
   discrepancyReport,
@@ -22,36 +21,46 @@ import {
 } from "./model.ts";
 
 /**
- * npm run npc-art:generate — publishes every NPC's art for TTS. One figurine file per NPC under
- * assets/images/NPCs/{Catalogued,Generic,Memoriam}; each figurine whose key is in its folder's catalog gets a
- * spotlight token (both sides) in assets/images/NPCs/Tokens and GitHub links in lib/npc_art_urls.ttslua (generic rows
- * also carry their default label from data/generic-npcs.json, which is how TTS learns the generic catalog). The TTS
- * save's roll-banner rows (CustomUIAssets named after each PC, named NPC and Memoriam key) are synced to those links,
- * and rows for removed art are dropped. Figurines in no catalog get nothing; they and catalogued NPCs without a
- * figurine are listed in .dev/build-logs/npc-art-discrepancies.txt (printed at the end of the Full build).
- * data/npc-overrides.json (the roster's token configuration window) renames and recolours tokens, and its TTS fields
- * are written to lib/npc_overrides.ttslua (bundled by Save & Play, not hosted).
- * Tokens whose inputs are unchanged are skipped. Pass --force to redraw every token.
+ * NPC art for TTS, in two steps around npm run cloud-asset-sync (npm run build:full runs all three in order):
+ *
+ * npm run npc-art:draw — one figurine per NPC at assets/NPC Art/Figurines/{Catalogued,Generic,Memoriam}/npc_<key>.webp.
+ * Each figurine whose key is in its folder's catalog gets a spotlight token (both sides) at
+ * assets/NPC Art/Tokens/npcToken_<key>.{front,back}.webp; tokens whose inputs are unchanged are skipped (--force redraws
+ * all). Also writes lib/npc_overrides.ttslua (the TTS half of data/npc-overrides.json) and the discrepancy list
+ * .dev/build-logs/npc-art-discrepancies.txt (figurines in no catalog, catalogued NPCs without a figurine).
+ *
+ * npm run npc-art:urls — reads the Steam Cloud links cloud-asset-sync recorded in lib/json/cloud-assets.json and writes
+ * lib/npc_art_urls.ttslua (generic rows also carry their default label from data/generic-npcs.json, which is how TTS
+ * learns the generic catalog). The roll-banner rows (rollFigure_<key>) are cloud-asset-sync jobs, not written here.
  */
 
 const scriptDir = import.meta.dirname;
 const dashboardDir = path.resolve(scriptDir, "..", "..");
 const repoRoot = path.resolve(dashboardDir, "..", "..");
-const npcImageDir = path.join(repoRoot, "assets", "images", "NPCs");
-const tokenDir = path.join(npcImageDir, "Tokens");
-const manifestPath = path.join(tokenDir, "tokens.json");
+const ART_REL = "NPC Art";
+const artDir = path.join(repoRoot, "assets", ART_REL);
+const tokenDir = path.join(artDir, "Tokens");
+const templateDir = path.join(scriptDir, "token-template");
+const tokenCachePath = path.join(repoRoot, ".cache", "npc-tokens.json");
+const cloudManifestPath = path.join(repoRoot, "lib", "json", "cloud-assets.json");
 const luaPath = path.join(repoRoot, "lib", "npc_art_urls.ttslua");
 const overridesLuaPath = path.join(repoRoot, "lib", "npc_overrides.ttslua");
 const discrepancyPath = path.join(repoRoot, ".dev", "build-logs", "npc-art-discrepancies.txt");
 const dataDir = path.join(dashboardDir, "data");
 const FOLDERS: readonly NpcFolder[] = ["Catalogued", "Generic", "Memoriam"];
-const FIGURINE_BACK = "Shared/figurineBack.webp";
-const BASE_URL = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/master/assets/images/NPCs/";
-const GENERATED_BY = ".dev/storyteller-dashboard/scripts/npc-art/generate.ts (npm run npc-art:generate)";
+const FIGURINE_BACK_REL = `${ART_REL}/Shared/npcFigurineBack.webp`;
+const GENERATED_BY = ".dev/storyteller-dashboard/scripts/npc-art/generate.ts (npm run npc-art:draw / npc-art:urls)";
 const KEY_PATTERN = /^[A-Za-z0-9_]+$/;
+const FIGURINE_FILE = /^npc_(.+)\.webp$/;
+const TOKEN_FILE = /^npcToken_(.+)\.(front|back)\.webp$/;
 const CONCURRENCY = 4;
 
-type Manifest = { readonly generatedBy: string; readonly tokens: Record<string, string> };
+const figurineRel = (folder: NpcFolder, key: string): string => `${ART_REL}/Figurines/${folder}/npc_${key}.webp`;
+const tokenRel = (key: string, side: "front" | "back"): string => `${ART_REL}/Tokens/npcToken_${key}.${side}.webp`;
+const abs = (rel: string): string => path.join(repoRoot, "assets", rel);
+
+type TokenCache = Record<string, string>;
+type CloudRow = { readonly url: string; readonly sha1: string };
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
@@ -148,27 +157,29 @@ const readOverrides = async (): Promise<Record<string, NpcOverride>> => {
   return overrides;
 };
 
-const readManifest = async (): Promise<Manifest> => {
-  if (!existsSync(manifestPath)) {
-    return { generatedBy: GENERATED_BY, tokens: {} };
+const readTokenCache = async (): Promise<TokenCache> => {
+  if (!existsSync(tokenCachePath)) {
+    return {};
   }
-  const file = await readJson(manifestPath);
-  const tokens: Record<string, string> = {};
-  if (isRecord(file) && isRecord(file.tokens)) {
-    for (const [key, hash] of Object.entries(file.tokens)) {
-      if (typeof hash === "string") {
-        tokens[key] = hash;
-      }
-    }
-  }
-  return { generatedBy: GENERATED_BY, tokens };
+  const file = await readJson(tokenCachePath);
+  return isRecord(file) ? Object.fromEntries(Object.entries(file).filter((entry): entry is [string, string] => typeof entry[1] === "string")) : {};
 };
 
-const listFigurines = async (folder: NpcFolder): Promise<string[]> =>
-  (await readdir(path.join(npcImageDir, folder)))
-    .filter((file) => file.toLowerCase().endsWith(".webp"))
-    .map((file) => file.slice(0, -".webp".length))
-    .sort();
+const listFigurines = async (folder: NpcFolder): Promise<string[]> => {
+  const dir = path.join(artDir, "Figurines", folder);
+  if (!existsSync(dir)) {
+    throw new Error(`${path.relative(repoRoot, dir)} is missing. NPC figurines live in assets/NPC Art/Figurines/<folder>/npc_<key>.webp.`);
+  }
+  const keys: string[] = [];
+  for (const file of await readdir(dir)) {
+    const match = FIGURINE_FILE.exec(file);
+    if (!match) {
+      throw new Error(`assets/${ART_REL}/Figurines/${folder}/${file}: figurine files must be named npc_<key>.webp.`);
+    }
+    keys.push(match[1]!);
+  }
+  return keys.sort();
+};
 
 const runPool = async <T>(items: readonly T[], worker: (item: T) => Promise<void>): Promise<void> => {
   let next = 0;
@@ -182,66 +193,31 @@ const runPool = async <T>(items: readonly T[], worker: (item: T) => Promise<void
   await Promise.all(lanes);
 };
 
-const git = (args: readonly string[]): string => execFileSync("git", args, { cwd: repoRoot, encoding: "utf8" });
-
-const ART_PATHS = ["assets/images/NPCs", "lib/npc_art_urls.ttslua"] as const;
-
-/** TTS loads this art from GitHub master, so anything uncommitted or unpushed is invisible in game. */
-const warnIfNotPublished = (): void => {
-  const dirty = git(["status", "--porcelain", "--", ...ART_PATHS]).trim();
-  if (dirty !== "") {
-    console.warn(
-      "[npc-art] NPC art changed and is not committed yet. TTS loads NPC art from GitHub, so commit and push " +
-        "before the next session (git add assets/images/NPCs lib/npc_art_urls.ttslua)."
-    );
-    return;
-  }
-  try {
-    const unpushed = git(["diff", "--name-only", "origin/master", "HEAD", "--", ...ART_PATHS]).trim();
-    if (unpushed !== "") {
-      console.warn("[npc-art] NPC art is committed but not pushed to origin/master. Push before the next session so TTS can load it.");
-    }
-  } catch (error) {
-    console.warn(`[npc-art] Could not compare against origin/master: ${error instanceof Error ? error.message : String(error)}`);
-  }
+type Subjects = {
+  readonly subjects: NpcArtSubject[];
+  readonly uncatalogued: string[];
+  readonly genericLabels: Map<string, string>;
+  readonly withoutFigurine: string[];
+  readonly overrides: Record<string, NpcOverride>;
 };
 
-const main = async (): Promise<void> => {
-  const force = process.argv.includes("--force");
-  const [named, genericLabels, memoriamNames, roster, crops, overrides, manifest] = await Promise.all([
+const loadSubjects = async (): Promise<Subjects> => {
+  const [named, genericLabels, memoriamNames, roster, crops, overrides] = await Promise.all([
     readNamedCatalog(),
     readGenericLabels(),
     readMemoriamNames(),
     readRoster(),
     readCrops(),
-    readOverrides(),
-    readManifest()
+    readOverrides()
   ]);
   const sources: NameSources = { named, genericLabels, memoriamNames };
-
-  const backPath = path.join(npcImageDir, FIGURINE_BACK);
-  if (!existsSync(backPath)) {
-    throw new Error(`Shared figurine back ${path.relative(repoRoot, backPath)} is missing.`);
-  }
-  const templateDir = path.join(npcImageDir, "Token Template");
-  const [ringLit, ringDark, fontBytes, backBytes, drawSource, modelSource] = await Promise.all([
-    readFile(path.join(templateDir, "ring-lit.svg"), "utf8"),
-    readFile(path.join(templateDir, "ring-dark.svg"), "utf8"),
-    readFile(path.join(dashboardDir, "assets", "fonts", "BebasNeue", "BebasNeue Regular.ttf")),
-    readFile(backPath),
-    readFile(path.join(scriptDir, "draw.ts")),
-    readFile(path.join(scriptDir, "model.ts"))
-  ]);
-  const assets: DrawAssets = { ...loadFont(fontBytes), ringLit, ringDark };
-  const styleHash = fingerprint(ringLit, ringDark, fontBytes, drawSource, modelSource);
-
   const subjects: NpcArtSubject[] = [];
   const uncatalogued: string[] = [];
   const seen = new Map<string, NpcFolder>();
   for (const folder of FOLDERS) {
     for (const key of await listFigurines(folder)) {
       if (!KEY_PATTERN.test(key)) {
-        throw new Error(`NPCs/${folder}/${key}.webp: file names must be the NPC key (letters, digits, underscores).`);
+        throw new Error(`${figurineRel(folder, key)}: the key after npc_ must be letters, digits and underscores.`);
       }
       const other = seen.get(key);
       if (other) {
@@ -256,19 +232,36 @@ const main = async (): Promise<void> => {
       }
     }
   }
+  const withoutFigurine = FOLDERS.flatMap((folder) => {
+    const keys = folder === "Catalogued" ? named.keys() : folder === "Generic" ? genericLabels.keys() : memoriamNames.keys();
+    const missing = [...keys].filter((key) => !seen.has(key)).sort();
+    return missing.length > 0 ? [`${folder}: ${missing.join(", ")}`] : [];
+  });
+  return { subjects, uncatalogued, genericLabels, withoutFigurine, overrides };
+};
+
+const draw = async (force: boolean): Promise<void> => {
+  const [{ subjects, uncatalogued, withoutFigurine, overrides }, cache] = await Promise.all([loadSubjects(), readTokenCache()]);
+  const [ringLit, ringDark, fontBytes, drawSource, modelSource] = await Promise.all([
+    readFile(path.join(templateDir, "ring-lit.svg"), "utf8"),
+    readFile(path.join(templateDir, "ring-dark.svg"), "utf8"),
+    readFile(path.join(dashboardDir, "assets", "fonts", "BebasNeue", "BebasNeue Regular.ttf")),
+    readFile(path.join(scriptDir, "draw.ts")),
+    readFile(path.join(scriptDir, "model.ts"))
+  ]);
+  const assets: DrawAssets = { ...loadFont(fontBytes), ringLit, ringDark };
+  const styleHash = fingerprint(ringLit, ringDark, fontBytes, drawSource, modelSource);
 
   await mkdir(tokenDir, { recursive: true });
-  const links = new Map<string, NpcArtLinks>();
-  const nextTokens: Record<string, string> = {};
+  const nextCache: TokenCache = {};
   let drawn = 0;
   const autoCropped: string[] = [];
   await runPool(subjects, async (subject) => {
-    const figurine = await readFile(path.join(npcImageDir, subject.folder, `${subject.key}.webp`));
-    const figurineHash = fingerprint(figurine);
-    const tokenHash = fingerprint(styleHash, figurineHash, subject.name, subject.color, JSON.stringify(subject.manualCrop));
-    const frontFile = path.join(tokenDir, `${subject.key}.front.webp`);
-    const backFile = path.join(tokenDir, `${subject.key}.back.webp`);
-    const current = !force && manifest.tokens[subject.key] === tokenHash && existsSync(frontFile) && existsSync(backFile);
+    const figurine = await readFile(abs(figurineRel(subject.folder, subject.key)));
+    const tokenHash = fingerprint(styleHash, fingerprint(figurine), subject.name, subject.color, JSON.stringify(subject.manualCrop));
+    const frontFile = abs(tokenRel(subject.key, "front"));
+    const backFile = abs(tokenRel(subject.key, "back"));
+    const current = !force && cache[subject.key] === tokenHash && existsSync(frontFile) && existsSync(backFile);
     if (!current) {
       const token = await drawToken(figurine, subject.name, subject.color, subject.manualCrop, assets).catch((error: unknown) => {
         throw new Error(`Drawing the token for ${subject.folder}/${subject.key} failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -279,30 +272,22 @@ const main = async (): Promise<void> => {
         autoCropped.push(subject.key);
       }
     }
-    nextTokens[subject.key] = tokenHash;
-    // Links are versioned by the finished images, so a redraw that produces identical bytes keeps every link.
-    const [front, back] = await Promise.all([readFile(frontFile), readFile(backFile)]);
-    const tokenVersion = fingerprint(front, back);
-    links.set(subject.key, {
-      figurineFront: `${subject.folder}/${subject.key}.webp?v=${figurineHash}`,
-      tokenFront: `Tokens/${subject.key}.front.webp?v=${tokenVersion}`,
-      tokenBack: `Tokens/${subject.key}.back.webp?v=${tokenVersion}`,
-      ...(subject.folder === "Generic" ? { genericLabel: genericLabels.get(subject.key)! } : {})
-    });
+    nextCache[subject.key] = tokenHash;
   });
 
+  const keys = new Set(subjects.map((subject) => subject.key));
   let pruned = 0;
   for (const file of await readdir(tokenDir)) {
-    const match = /^(.+)\.(front|back)\.webp$/.exec(file);
-    if (match && !links.has(match[1]!)) {
+    const match = TOKEN_FILE.exec(file);
+    if (match && !keys.has(match[1]!)) {
       await rm(path.join(tokenDir, file));
       pruned += 1;
     }
   }
 
-  const sortedTokens = Object.fromEntries(Object.entries(nextTokens).sort(([a], [b]) => a.localeCompare(b)));
-  await writeFile(manifestPath, `${JSON.stringify({ generatedBy: GENERATED_BY, tokens: sortedTokens }, null, 2)}\n`);
-  await writeFile(luaPath, renderLuaModule(BASE_URL, `${FIGURINE_BACK}?v=${fingerprint(backBytes)}`, links, GENERATED_BY));
+  await mkdir(path.dirname(tokenCachePath), { recursive: true });
+  const sortedCache = Object.fromEntries(Object.entries(nextCache).sort(([a], [b]) => a.localeCompare(b)));
+  await writeFile(tokenCachePath, `${JSON.stringify(sortedCache, null, 2)}\n`);
   await writeFile(overridesLuaPath, renderOverridesLuaModule(overrides, GENERATED_BY));
 
   console.log(
@@ -312,28 +297,90 @@ const main = async (): Promise<void> => {
     console.log(`[npc-art] ${autoCropped.length} drawn token(s) used the automatic head crop (set a crop in the dashboard to override).`);
   }
 
-  const bannerFigurines = new Map(
-    subjects.filter((subject) => subject.folder !== "Generic").map((subject) => [subject.key, BASE_URL + links.get(subject.key)!.figurineFront])
-  );
-  const characterKeys = new Set([...named.keys(), ...genericLabels.keys(), ...memoriamNames.keys()]);
-  const { saveFile, plan } = await syncSaveFigurineAssets(repoRoot, bannerFigurines, characterKeys, BASE_URL);
-  console.log(
-    `[npc-art] ${path.basename(saveFile)} roll-banner figurines: ${plan.added.length} added, ${plan.updated.length} updated, ` +
-      `${plan.removed.length} removed${plan.removed.length > 0 ? ` (${plan.removed.join(", ")})` : ""}.`
-  );
-
-  const report = discrepancyReport(
-    uncatalogued,
-    FOLDERS.flatMap((folder) => {
-      const keys = folder === "Catalogued" ? named.keys() : folder === "Generic" ? genericLabels.keys() : memoriamNames.keys();
-      const missing = [...keys].filter((key) => !links.has(key)).sort();
-      return missing.length > 0 ? [`${folder}: ${missing.join(", ")}`] : [];
-    })
-  );
+  const report = discrepancyReport(uncatalogued, withoutFigurine);
   await mkdir(path.dirname(discrepancyPath), { recursive: true });
   await writeFile(discrepancyPath, report);
   console.warn(report.trimEnd());
-  warnIfNotPublished();
 };
 
-await main();
+/** Steam Cloud link of every file cloud-asset-sync owns, keyed by its path under assets/. */
+const readCloudRows = async (): Promise<Map<string, CloudRow>> => {
+  if (!existsSync(cloudManifestPath)) {
+    throw new Error(`${path.relative(repoRoot, cloudManifestPath)} is missing. Run npm run cloud-asset-sync first.`);
+  }
+  const manifest = await readJson(cloudManifestPath);
+  const rows = new Map<string, CloudRow>();
+  const jobs = isRecord(manifest) && isRecord(manifest.jobs) ? manifest.jobs : {};
+  for (const job of Object.values(jobs)) {
+    for (const row of isRecord(job) && Array.isArray(job.rows) ? job.rows : []) {
+      if (isRecord(row) && typeof row.path === "string" && typeof row.url === "string" && typeof row.sha1 === "string") {
+        rows.set(row.path, { url: row.url, sha1: row.sha1 });
+      }
+    }
+  }
+  return rows;
+};
+
+const sha1Of = async (file: string): Promise<string> => createHash("sha1").update(await readFile(file)).digest("hex").toUpperCase();
+
+const urls = async (): Promise<void> => {
+  const [{ subjects, genericLabels }, cloud] = await Promise.all([loadSubjects(), readCloudRows()]);
+  const notInCloud: string[] = [];
+  const outdated: string[] = [];
+  const link = async (rel: string): Promise<string | null> => {
+    const row = cloud.get(rel);
+    if (!row) {
+      notInCloud.push(rel);
+      return null;
+    }
+    if (existsSync(abs(rel)) && (await sha1Of(abs(rel))) !== row.sha1) {
+      outdated.push(rel);
+    }
+    return row.url;
+  };
+
+  const back = await link(FIGURINE_BACK_REL);
+  if (back === null) {
+    throw new Error(`assets/${FIGURINE_BACK_REL} has no Steam Cloud link in lib/json/cloud-assets.json. Run npm run cloud-asset-sync (TTS closed).`);
+  }
+  const links = new Map<string, NpcArtLinks>();
+  const missingNpcs: string[] = [];
+  await runPool(subjects, async (subject) => {
+    const [figurineFront, tokenFront, tokenBack] = await Promise.all([
+      link(figurineRel(subject.folder, subject.key)),
+      link(tokenRel(subject.key, "front")),
+      link(tokenRel(subject.key, "back"))
+    ]);
+    if (figurineFront === null || tokenFront === null || tokenBack === null) {
+      missingNpcs.push(subject.key);
+      return;
+    }
+    links.set(subject.key, {
+      figurineFront,
+      tokenFront,
+      tokenBack,
+      ...(subject.folder === "Generic" ? { genericLabel: genericLabels.get(subject.key)! } : {})
+    });
+  });
+
+  await writeFile(luaPath, renderLuaModule(back, links, GENERATED_BY));
+  console.log(`[npc-art] Wrote lib/npc_art_urls.ttslua: ${links.size} NPCs.`);
+  if (missingNpcs.length > 0) {
+    console.warn(
+      `[npc-art] WARN ${missingNpcs.length} NPC(s) left out because their art is not in Steam Cloud yet (${missingNpcs.sort().slice(0, 8).join(", ")}${missingNpcs.length > 8 ? ", …" : ""}). ` +
+        "Close TTS, run npm run cloud:push, then npm run cloud-asset-sync and npm run npc-art:urls."
+    );
+  }
+  if (outdated.length > 0) {
+    console.warn(
+      `[npc-art] WARN ${outdated.length} file(s) changed locally since their last upload, so TTS still shows the old art (${outdated.slice(0, 5).join(", ")}${outdated.length > 5 ? ", …" : ""}). ` +
+        "Close TTS and run npm run cloud-asset-sync, then npm run npc-art:urls."
+    );
+  }
+};
+
+if (process.argv.includes("--urls")) {
+  await urls();
+} else {
+  await draw(process.argv.includes("--force"));
+}

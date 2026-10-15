@@ -11,7 +11,7 @@ Source of truth:
 - `core/generic_npcs.ttslua` — parse, register, destroy, membership
 - `core/npc_spawn.ttslua` — figurine + light spawner shared with named NPCs (art from `lib/npc_art_urls.ttslua`; see [NPC Art Pipeline](NPC%20Art%20Pipeline.md))
 - `lib/npcs_data.ttslua` — `D.initGenericNPCs()`, `D.resolveGenericNpcEntry`, `D.genericNpcs`
-- `lib/npc_art_urls.ttslua` — generated; each generic row carries its sheet `genericLabel` (`npm run npc-art:generate`, from `.dev/storyteller-dashboard/data/generic-npcs.json`)
+- `lib/npc_art_urls.ttslua` — generated; each generic row carries its sheet `genericLabel` (`npm run npc-art:urls`, from `.dev/storyteller-dashboard/data/generic-npcs.json`)
 - `dashboard/scenes.ttslua` — `genericAdd` op → `GenericNpcs.importNamed(keys, labels, tiers, kept)`; `genericRename` op → `GenericNpcs.rename(key, name)`; `genericTier` op → `GenericNpcs.setTier(key, tier)`; `genericKeep` op → `GenericNpcs.setKept(key, keptId)`
 - `NPCS.registerGenericCharacter` / `unregisterGenericCharacter` in `core/npcs.ttslua`
 - `sessionScene.npcWorld.genericMembership` in `core/state.ttslua`
@@ -52,7 +52,7 @@ After import, v1 supports **stage placement, lights, and spotlight tokens** like
 
 Figurine and token art come from `lib/npc_art_urls.ttslua` under the same key ([NPC Art Pipeline](NPC%20Art%20Pipeline.md)). Sheet **tags** are Dashboard search only; Lua ignores them.
 
-`D.initGenericNPCs()` registers every `lib/npc_art_urls.ttslua` row that has a `genericLabel`, so only sheet rows with art exist in TTS (`npm run npc-art:generate` lists sheet rows without a figurine). No generic rows at all **errors** at init.
+`D.initGenericNPCs()` registers every `lib/npc_art_urls.ttslua` row that has a `genericLabel`, so only sheet rows with art exist in TTS (`npm run npc-art:draw` lists sheet rows without a figurine). No generic rows at all **errors** at init.
 
 ---
 

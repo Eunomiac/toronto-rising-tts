@@ -41,7 +41,7 @@ function NpcSpawn.figurineUrls(characterKey)
         error(
             "[NpcSpawn] No art for "
                 .. tostring(characterKey)
-                .. " in lib/npc_art_urls.ttslua (add its figurine under assets/images/NPCs/, run npm run npc-art:generate, commit and push).",
+                .. " in lib/npc_art_urls.ttslua (add assets/NPC Art/Figurines/<folder>/npc_<key>.webp, then run npm run build:full with TTS closed).",
             2
         )
     end

@@ -647,7 +647,7 @@ end
 --- @param pid string|nil
 --- @param label string|nil
 --- @param npcCharacterKey string|nil  Authoritative NPC key when known (Dashboard NPC rolls)
---- @return string CustomUIAssets image name (may be empty)
+--- @return string character key whose `rollFigure_<key>` CustomUIAssets row is the banner figure (may be empty)
 local function resolveRollFigureAssetKey(color, pid, label, npcCharacterKey)
     if pid ~= nil then
         local pdata = S.getStateVal("playerData", pid)
@@ -698,7 +698,7 @@ end
 local function applyBroadcastFigure(color, pid, label, npcCharacterKey)
     local figureKey = resolveRollFigureAssetKey(color, pid, label, npcCharacterKey)
     if type(figureKey) == "string" and figureKey ~= "" then
-        U.setAttribute(BROADCAST_FIGURE_ID, "image", figureKey)
+        U.setAttribute(BROADCAST_FIGURE_ID, "image", "rollFigure_" .. figureKey)
         uiSetActive(BROADCAST_FIGURE_ID, true)
     else
         U.setAttribute(BROADCAST_FIGURE_ID, "image", "")

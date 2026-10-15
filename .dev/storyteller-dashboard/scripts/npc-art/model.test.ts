@@ -3,13 +3,11 @@ import {
   buildSubject,
   DEFAULT_RING_COLOR,
   fingerprint,
-  planFigurineAssets,
   renderLuaModule,
   renderOverridesLuaModule,
   wrapName,
   type NameSources,
-  type Roster,
-  type UiAssetRow
+  type Roster
 } from "./model.ts";
 
 const roster: Roster = {
@@ -75,45 +73,6 @@ describe("buildSubject", () => {
   });
 });
 
-describe("planFigurineAssets", () => {
-  const base = "https://example.test/NPCs/";
-  const row = (Name: string, URL: string): UiAssetRow => ({ Type: 0, Name, URL });
-
-  it("adds missing figurines, updates changed links and leaves other rows in place", () => {
-    const plan = planFigurineAssets(
-      [row("siteCard_Bar", "https://steam/bar"), row("rosie", "https://steam/rosie"), row("amy", `${base}Catalogued/amy.webp?v=1`)],
-      new Map([
-        ["rosie", `${base}Catalogued/rosie.webp?v=2`],
-        ["amy", `${base}Catalogued/amy.webp?v=1`],
-        ["zed", `${base}Memoriam/zed.webp?v=3`]
-      ]),
-      new Set(["rosie", "amy", "zed"]),
-      base
-    );
-    expect(plan.rows.map((r) => r.Name)).toEqual(["siteCard_Bar", "rosie", "amy", "zed"]);
-    expect(plan.rows[1]?.URL).toBe(`${base}Catalogued/rosie.webp?v=2`);
-    expect(plan.rows[3]).toEqual({ Type: 0, Name: "zed", URL: `${base}Memoriam/zed.webp?v=3` });
-    expect(plan).toMatchObject({ added: ["zed"], updated: ["rosie"], removed: [] });
-  });
-
-  it("drops repo-art rows and character rows that are no longer wanted, and duplicates", () => {
-    const plan = planFigurineAssets(
-      [
-        row("gone", `${base}Catalogued/gone.webp?v=1`),
-        row("kai", "https://steam/kai"),
-        row("rosie", `${base}Catalogued/rosie.webp?v=2`),
-        row("rosie", "https://steam/rosie"),
-        row("overlay_x", "https://steam/x")
-      ],
-      new Map([["rosie", `${base}Catalogued/rosie.webp?v=2`]]),
-      new Set(["rosie", "kai"]),
-      base
-    );
-    expect(plan.rows.map((r) => r.Name)).toEqual(["rosie", "overlay_x"]);
-    expect(plan).toMatchObject({ added: [], updated: [], removed: ["gone", "kai", "rosie"] });
-  });
-});
-
 describe("wrapName", () => {
   const measure = (text: string): number => text.length * 10;
 
@@ -145,18 +104,17 @@ describe("fingerprint", () => {
 describe("renderLuaModule", () => {
   it("writes sorted entries with a shared figurine back", () => {
     const lua = renderLuaModule(
-      "https://example.test/NPCs/",
-      "Shared/figurineBack.webp?v=1",
+      "https://cloud.test/back/",
       new Map([
-        ["zed", { figurineFront: "Catalogued/zed.webp?v=2", tokenFront: "Tokens/zed.front.webp?v=3", tokenBack: "Tokens/zed.back.webp?v=3" }],
-        ["amy", { figurineFront: "Generic/amy.webp?v=4", tokenFront: "Tokens/amy.front.webp?v=5", tokenBack: "Tokens/amy.back.webp?v=5", genericLabel: "Street \"Amy\"" }]
+        ["zed", { figurineFront: "https://cloud.test/zed/", tokenFront: "https://cloud.test/zedF/", tokenBack: "https://cloud.test/zedB/" }],
+        ["amy", { figurineFront: "https://cloud.test/amy/", tokenFront: "https://cloud.test/amyF/", tokenBack: "https://cloud.test/amyB/", genericLabel: "Street \"Amy\"" }]
       ]),
       "test"
     );
-    expect(lua).toContain('local FIGURINE_BACK = BASE .. "Shared/figurineBack.webp?v=1"');
+    expect(lua).toContain('local FIGURINE_BACK = "https://cloud.test/back/"');
     expect(lua.indexOf("  amy = {")).toBeLessThan(lua.indexOf("  zed = {"));
-    expect(lua).toContain('figurine = { front = BASE .. "Generic/amy.webp?v=4", back = FIGURINE_BACK },');
-    expect(lua).toContain('token = { front = BASE .. "Tokens/zed.front.webp?v=3", back = BASE .. "Tokens/zed.back.webp?v=3" },');
+    expect(lua).toContain('figurine = { front = "https://cloud.test/amy/", back = FIGURINE_BACK },');
+    expect(lua).toContain('token = { front = "https://cloud.test/zedF/", back = "https://cloud.test/zedB/" },');
     expect(lua).toContain('    genericLabel = "Street \\"Amy\\"",');
     expect(lua.match(/genericLabel = /g)).toHaveLength(1);
   });
