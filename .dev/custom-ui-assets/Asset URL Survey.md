@@ -223,7 +223,10 @@ These are the places where the current methods disagree or have gone stale. They
 10. **Two Cloud root settings.** `tts-assets.config.json` `cloudRoot` is ignored; `.tools/tts-cloud/config.js` `CLOUD_ROOT` is used.
 11. **Docs drift.** `.dev/custom-ui-assets/README.md` names VS Code tasks ("Custom UI Assets: Build Manifest from Image Files", merge, prune) that are not in `.vscode/tasks.json`. `.tools/Cloud-Asset-Sync-Plan.md` lists 5 of the 8 sync jobs (missing `scatterOverlay`, `memoriamBlindfolds`, `csheetPage6Assets`).
 12. **Orphaned data.** `.dev/Skyboxes/Skybox URL Map.csv` (old Memoriam skybox URLs) is not referenced anywhere. `.dev/Performance Audits/Figurines *.txt` are old audit dumps of figurine URLs.
-13. **Dead dashboard assets.** `assets/scenes/controlBoard_*.webp`, `tokenFrame*.webp`, and the copied toast icons in `public/client/icons` have no references.
+13. **PC art has two sources.** PC roll-banner rows in the save point at GitHub (`npc-art:generate`), while the seated PC figurines (`SEAT_FIGURE_*`) carry their own Steam URLs authored in the save. Named NPCs do not have this problem: their banner row uses the exact figurine URL.
+14. **Dice art copied into code.** `DIE_ART` in `core/st_dice.ttslua` repeats the Standard and Hunger face-sheet URLs of the player dice objects in the save. The Rouse and Oblivion-Rouse entries match no scripted die object, so they are either different art or an outdated copy.
+15. **Blood Potency images stored twice.** The decal URLs are pasted into `lib/blood_potency_constants.ttslua`, and `merge-bp-decals-into-csheets` also copies them into Page 1/2 object Custom UI assets, which no code appears to read.
+16. **Dead dashboard assets.** `assets/scenes/controlBoard_*.webp`, `tokenFrame*.webp`, and the copied toast icons in `public/client/icons` have no references.
 
 ---
 
