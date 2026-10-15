@@ -6,7 +6,8 @@ const test = require("node:test");
 const {
   parseCsv,
   parseSkyboxCatalogRows,
-  parseGenericSkyboxRows,
+  attachSkyboxUrls,
+  genericSkyboxUrls,
   parseMemoriamSkyboxRows,
   escapeLuaString,
   renderSkyboxesCatalogLua,
@@ -87,6 +88,22 @@ test("parseSkyboxCatalogRows rejects bad header", () => {
   );
 });
 
+test("parseSkyboxCatalogRows ignores a leftover URL column", () => {
+  const rows = parseSkyboxCatalogRows("Key,Display,isShown,URL\nA,One,TRUE,https://stale/\nB,Two,TRUE,\n");
+  assert.deepEqual(rows, [
+    { key: "A", display: "One", isShown: true },
+    { key: "B", display: "Two", isShown: true },
+  ]);
+});
+
+test("attachSkyboxUrls joins Cloud rows by key and fails on a missing file", () => {
+  const sheet = [{ key: "A", display: "One", isShown: true }];
+  assert.deepEqual(attachSkyboxUrls(sheet, [{ name: "A", url: "https://a/" }, { name: "Z", url: "https://z/" }]), [
+    { key: "A", display: "One", isShown: true, url: "https://a/" },
+  ]);
+  assert.throws(() => attachSkyboxUrls(sheet, [{ name: "Z", url: "https://z/" }]), /no file .*skybox_<key>[\s\S]*A/);
+});
+
 test("parseSkyboxCatalogRows rejects invalid isShown", () => {
   const csv = "Key,Display,isShown,URL\nA,One,maybe,https://a/\n";
   assert.throws(() => parseSkyboxCatalogRows(csv), /isShown must be TRUE or FALSE/i);
@@ -102,10 +119,14 @@ test("parseSkyboxCatalogRows rejects invalid Lua identifier keys", () => {
   assert.throws(() => parseSkyboxCatalogRows(csv), /Lua identifier/i);
 });
 
-test("parseGenericSkyboxRows requires at least one URL", () => {
-  assert.throws(() => parseGenericSkyboxRows("URL\n\n"), /at least one URL/i);
-  const urls = parseGenericSkyboxRows("URL\nhttps://a/\nhttps://b/\n");
-  assert.deepEqual(urls, ["https://a/", "https://b/"]);
+test("genericSkyboxUrls orders by number and requires one file", () => {
+  assert.throws(() => genericSkyboxUrls([]), /No generic skyboxes/);
+  const urls = genericSkyboxUrls([
+    { name: "10", url: "https://j/" },
+    { name: "2", url: "https://b/" },
+    { name: "1", url: "https://a/" },
+  ]);
+  assert.deepEqual(urls, ["https://a/", "https://b/", "https://j/"]);
 });
 
 test("escapeLuaString escapes backslash and quotes", () => {
@@ -123,7 +144,6 @@ test("renderSkyboxesCatalogLua emits module shape", () => {
     meta: {
       sheetId: "sheet123",
       catalogRange: "SKYBOXCSV",
-      genericsRange: "SKYBOXGENERICCSV",
     },
   });
   assert.match(lua, /SkyboxesCatalog\.Skyboxes = \{/);
@@ -131,7 +151,8 @@ test("renderSkyboxesCatalogLua emits module shape", () => {
   assert.match(lua, /display = "Hall \\"A\\""/);
   assert.match(lua, /isShown = true,/);
   assert.match(lua, /HiddenHall = \{[\s\S]*isShown = false,/);
-  assert.match(lua, /Key,Display,isShown,URL/);
+  assert.match(lua, /Key,Display,isShown\)/);
+  assert.match(lua, /cloud-assets\.json/);
   assert.match(lua, /SkyboxesCatalog\.GenericSkyboxes = \{/);
   assert.match(lua, /SkyboxesCatalog\.MemoriamSkyboxes = \{/);
   assert.match(lua, /return SkyboxesCatalog/);
@@ -313,7 +334,6 @@ test("renderSkyboxesCatalogLua emits flat MemoriamSkyboxes keyed by skybox key",
     meta: {
       sheetId: "sheet123",
       catalogRange: "SKYBOXCSV",
-      genericsRange: "SKYBOXGENERICCSV",
       memoriamRange: "SKYBOXMEMORIAMCSV",
     },
   });

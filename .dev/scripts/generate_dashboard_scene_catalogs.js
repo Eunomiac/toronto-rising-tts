@@ -1,8 +1,8 @@
 "use strict";
 
 /**
- * Extracts Storyteller Dashboard Scenes-tab catalogs from Lua sources of truth, plus the STAGE_BOARD transform
- * and Site/District card image URLs from the chronicle save.
+ * Extracts Storyteller Dashboard Scenes-tab catalogs from Lua sources of truth, the STAGE_BOARD transform
+ * from the chronicle save, and Site/District card image URLs from lib/json/cloud-assets.json.
  *
  * Writes:
  *   .dev/storyteller-dashboard/data/scene-catalogs.json
@@ -176,40 +176,23 @@ function staggerWorldFromStageScale(stage) {
 }
 
 /**
- * Site and District card images by UI asset name (`siteCard_<key>`, `districtCard_<key>`): the save's
- * CustomUIAssets carry the uploaded URLs the table itself shows.
+ * Site and District card images by UI asset name (`siteCard_<key>`, `districtCard_<key>`), from the
+ * Cloud manifest (jobs siteCards, districtCards) — the same rows the save gets.
  *
- * @param {string} saveText
  * @returns {Map<string, string>}
  */
-function readCardAssetUrls(saveText) {
-  const save = JSON.parse(saveText);
-  if (!Array.isArray(save.CustomUIAssets)) {
-    throw new Error("Save has no CustomUIAssets list.");
-  }
+function readCardAssetUrls() {
+  const manifestPath = path.join(root, "lib", "json", "cloud-assets.json");
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
   const urls = new Map();
-  for (const asset of save.CustomUIAssets) {
-    if (/^(siteCard|districtCard)_/.test(asset.Name) && typeof asset.URL === "string" && asset.URL !== "") {
-      urls.set(asset.Name, asset.URL);
+  for (const jobId of ["siteCards", "districtCards"]) {
+    const job = manifest.jobs && manifest.jobs[jobId];
+    if (!job) {
+      throw new Error(`lib/json/cloud-assets.json has no "${jobId}" job yet — run npm run cloud-asset-sync first.`);
     }
+    for (const row of job.rows) urls.set(row.name, row.url);
   }
   return urls;
-}
-
-const REPO_IMAGE_BASE = "https://raw.githubusercontent.com/Eunomiac/toronto-rising-tts/refs/heads/master/assets/images/";
-
-/**
- * @param {Map<string, string>} cardUrls
- * @param {string} siteKey
- * @returns {string | null}
- */
-function siteCardUrl(cardUrls, siteKey) {
-  const fromSave = cardUrls.get(`siteCard_${siteKey}`);
-  if (fromSave) {
-    return fromSave;
-  }
-  const repoPath = path.join(root, "assets", "images", "Sites", `${siteKey}.webp`);
-  return fs.existsSync(repoPath) ? `${REPO_IMAGE_BASE}Sites/${siteKey}.webp` : null;
 }
 
 /**
@@ -807,7 +790,7 @@ function main() {
   const cfg = readRepoAssetsConfig();
   const save = resolveChronicleSaveFile(cfg.defaultSaveName, cfg.savesDir);
   const saveText = fs.readFileSync(save.savePath, "utf8");
-  const cardUrls = readCardAssetUrls(saveText);
+  const cardUrls = readCardAssetUrls();
 
   const locationsSrc = fs.readFileSync(locationsPath, "utf8");
   const districts = parseTopLevelEntries(extractBlock(locationsSrc, "local Districts =")).map((entry) => ({
@@ -830,7 +813,7 @@ function main() {
       skybox: readStringField(entry.body, "skybox"),
       locationTrack: soundTrackMatch ? soundTrackMatch[1] : null,
       conditions: readStringListField(entry.body, "conditions"),
-      cardUrl: siteCardUrl(cardUrls, entry.key),
+      cardUrl: cardUrls.get(`siteCard_${entry.key}`) ?? null,
     };
   });
   sites.sort((a, b) => a.name.localeCompare(b.name));

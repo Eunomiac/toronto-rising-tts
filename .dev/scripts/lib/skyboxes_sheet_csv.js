@@ -374,8 +374,9 @@ function parseMemoriamSkyboxRows(csvText) {
 }
 
 /**
+ * Columns after isShown (e.g. a leftover URL column) are ignored: links come from Steam Cloud.
  * @param {string} csvText
- * @returns {{ key: string, display: string, isShown: boolean, url: string }[]}
+ * @returns {{ key: string, display: string, isShown: boolean }[]}
  */
 function parseSkyboxCatalogRows(csvText) {
   const rows = parseCsv(csvText);
@@ -383,18 +384,10 @@ function parseSkyboxCatalogRows(csvText) {
     throw new Error("SKYBOXCSV: empty CSV");
   }
   const header = rows[0].map((c) => trimCell(c).toLowerCase());
-  if (
-    header.length < 4 ||
-    header[0] !== "key" ||
-    header[1] !== "display" ||
-    header[2] !== "isshown" ||
-    header[3] !== "url"
-  ) {
-    throw new Error(
-      `SKYBOXCSV: expected header Key,Display,isShown,URL; got ${JSON.stringify(rows[0])}`,
-    );
+  if (header.length < 3 || header[0] !== "key" || header[1] !== "display" || header[2] !== "isshown") {
+    throw new Error(`SKYBOXCSV: expected header Key,Display,isShown; got ${JSON.stringify(rows[0])}`);
   }
-  /** @type {{ key: string, display: string, isShown: boolean, url: string }[]} */
+  /** @type {{ key: string, display: string, isShown: boolean }[]} */
   const out = [];
   const seen = new Set();
   for (let r = 1; r < rows.length; r += 1) {
@@ -405,11 +398,8 @@ function parseSkyboxCatalogRows(csvText) {
     const key = trimCell(cells[0]);
     const display = trimCell(cells[1]);
     const isShownRaw = cells[2];
-    const url = trimCell(cells[3]);
-    if (!key || !display || !url) {
-      throw new Error(
-        `SKYBOXCSV: row ${r + 1} missing Key, Display, or URL: ${JSON.stringify(cells)}`,
-      );
+    if (!key || !display) {
+      throw new Error(`SKYBOXCSV: row ${r + 1} missing Key or Display: ${JSON.stringify(cells)}`);
     }
     const isShown = parseSheetBoolean(isShownRaw, `SKYBOXCSV: row ${r + 1}`);
     if (!LUA_IDENT_RE.test(key)) {
@@ -421,7 +411,7 @@ function parseSkyboxCatalogRows(csvText) {
       throw new Error(`SKYBOXCSV: duplicate key "${key}" at row ${r + 1}`);
     }
     seen.add(key);
-    out.push({ key, display, isShown, url });
+    out.push({ key, display, isShown });
   }
   if (out.length < 1) {
     throw new Error("SKYBOXCSV: no data rows");
@@ -430,33 +420,32 @@ function parseSkyboxCatalogRows(csvText) {
 }
 
 /**
- * @param {string} csvText
- * @returns {string[]}
+ * Join sheet rows to Cloud links (manifest rows of the `skyboxes` job, name = key).
+ * @param {{ key: string, display: string, isShown: boolean }[]} skyboxes
+ * @param {{ name: string, url: string }[]} cloudRows
+ * @returns {{ key: string, display: string, isShown: boolean, url: string }[]}
  */
-function parseGenericSkyboxRows(csvText) {
-  const rows = parseCsv(csvText);
-  if (rows.length < 1) {
-    throw new Error("SKYBOXGENERICCSV: empty CSV");
-  }
-  const header0 = trimCell(rows[0][0]).toLowerCase();
-  if (header0 !== "url") {
+function attachSkyboxUrls(skyboxes, cloudRows) {
+  const urlByKey = new Map(cloudRows.map((r) => [r.name, r.url]));
+  const missing = skyboxes.filter((s) => !urlByKey.has(s.key)).map((s) => s.key);
+  if (missing.length > 0) {
     throw new Error(
-      `SKYBOXGENERICCSV: expected header URL; got ${JSON.stringify(rows[0])}`,
+      `SKYBOXCSV keys with no file assets/Skyboxes/skybox_<key>.jpg in Cloud: ${missing.join(", ")} (add the file, then npm run cloud-asset-sync)`,
     );
   }
-  /** @type {string[]} */
-  const out = [];
-  for (let r = 1; r < rows.length; r += 1) {
-    const url = trimCell((rows[r] && rows[r][0]) || "");
-    if (url === "") {
-      continue;
-    }
-    out.push(url);
+  return skyboxes.map((s) => ({ ...s, url: /** @type {string} */ (urlByKey.get(s.key)) }));
+}
+
+/**
+ * Generic pool from manifest rows of the `genericSkyboxes` job (name = number), in numeric order.
+ * @param {{ name: string, url: string }[]} cloudRows
+ * @returns {string[]}
+ */
+function genericSkyboxUrls(cloudRows) {
+  if (cloudRows.length < 1) {
+    throw new Error("No generic skyboxes: add assets/Skyboxes/GenericSkybox_<n>.jpg, then npm run cloud-asset-sync");
   }
-  if (out.length < 1) {
-    throw new Error("SKYBOXGENERICCSV: need at least one URL");
-  }
-  return out;
+  return [...cloudRows].sort((a, b) => Number(a.name) - Number(b.name)).map((r) => r.url);
 }
 
 /**
@@ -543,7 +532,7 @@ function renderMemoriamNpcsLua(lines, npcs, indent) {
  *     splashText: string,
  *     npcs: { name: string, fullName: string }[],
  *   }>,
- *   meta: { sheetId: string, catalogRange: string, genericsRange: string, memoriamRange?: string },
+ *   meta: { sheetId: string, catalogRange: string, memoriamRange?: string },
  * }} args
  * @returns {string}
  */
@@ -553,10 +542,13 @@ function renderSkyboxesCatalogLua(args) {
   const lines = [];
   lines.push("--[[");
   lines.push("    Toronto Rising — skybox catalog (keyed assets + generic URL pool).");
-  lines.push("    AUTO-GENERATED from Google Sheet — DO NOT EDIT BY HAND.");
+  lines.push("    AUTO-GENERATED from Google Sheet + Steam Cloud — DO NOT EDIT BY HAND.");
   lines.push(`    Sheet id: ${meta.sheetId}`);
   lines.push(
-    `    Ranges: ${meta.catalogRange} (Key,Display,isShown,URL), ${meta.genericsRange} (URL), ${memoriamRange} (Key,Characters,Start Year,End Year,Location,Panel A–D,Splash Text,NPC 1–10)`,
+    `    Ranges: ${meta.catalogRange} (Key,Display,isShown), ${memoriamRange} (Key,Characters,Start Year,End Year,Location,Panel A–D,Splash Text,NPC 1–10)`,
+  );
+  lines.push(
+    "    URLs: lib/json/cloud-assets.json jobs skyboxes (assets/Skyboxes/skybox_<key>.jpg) and genericSkyboxes (GenericSkybox_<n>.jpg)",
   );
   lines.push("    Regenerate: npm run skyboxes:import");
   lines.push("    Script: .dev/scripts/import_skyboxes_from_sheet.js");
@@ -613,7 +605,8 @@ function renderSkyboxesCatalogLua(args) {
 module.exports = {
   parseCsv,
   parseSkyboxCatalogRows,
-  parseGenericSkyboxRows,
+  attachSkyboxUrls,
+  genericSkyboxUrls,
   parseMemoriamSkyboxRows,
   escapeLuaString,
   renderSkyboxesCatalogLua,

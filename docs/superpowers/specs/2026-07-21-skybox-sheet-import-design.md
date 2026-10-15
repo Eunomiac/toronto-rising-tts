@@ -2,7 +2,9 @@
 
 **Date:** 2026-07-21 (Memoriam range added 2026-08-26, TOR-510)
 **Status:** implemented (TOR-422, TOR-509, TOR-510, TOR-529, TOR-530)
-**Approach:** B — generated standalone catalog; Constants re-exports; Sheet is sole source of truth
+**Approach:** B — generated standalone catalog; Constants re-exports
+
+**Update 2026-10-15 (TOR-732):** skybox **links** no longer come from the sheet. `SKYBOXCSV` supplies `Key,Display,isShown` (a leftover URL column is ignored); `SKYBOXGENERICCSV` is no longer read. Links come from `assets/Skyboxes/skybox_<key>.jpg` and `GenericSkybox_<n>.jpg` through `npm run cloud-asset-sync` (jobs `skyboxes`, `genericSkyboxes` in `lib/json/cloud-assets.json`); `skyboxes:import` runs after the sync and fails when a sheet key has no file. Sections below that describe URL columns are historical.
 
 ## Agent Routing
 
@@ -11,7 +13,8 @@ Read this when:
 
 Source of truth (authoring):
 - Google Sheet (link-viewable): spreadsheet id `1mzgMSivCYvTfYAQNL61oApAvTHUbEi7YoiwZFr7PPo4`
-- Named ranges: `SKYBOXCSV` (`Key,Display,isShown,URL`), `SKYBOXGENERICCSV` (`URL`), `SKYBOXMEMORIAMCSV` (Key, Characters, years, Location, Panel A–D)
+- Named ranges: `SKYBOXCSV` (`Key,Display,isShown`), `SKYBOXMEMORIAMCSV` (Key, Characters, years, Location, Panel A–D)
+- Links: `assets/Skyboxes/` → `.tools/cloud-asset-sync.jsonc` jobs `skyboxes`, `genericSkyboxes`
 
 Runtime source of truth (repo artifact):
 - `lib/skyboxes_catalog.ttslua` (generated) → re-exported as `C.Skyboxes` / `C.GenericSkyboxes` / `C.MemoriamSkyboxes`
