@@ -640,7 +640,7 @@ Standalone second-monitor web app (`.dev/storyteller-dashboard/`). Not the in-ta
    
 ## Asset URLs (Steam Cloud)
 
-_Parent: Steam Cloud is the one source of truth for code-used asset URLs. Survey: [Asset URL Survey](custom-ui-assets/Asset%20URL%20Survey.md). _(TOR-724)__
+_Parent: the local, gitignored `assets/` folder is the one source of truth, pushed to Steam Cloud by the build; jobs need a distinguishing filename pattern. Survey: [Asset URL Survey](custom-ui-assets/Asset%20URL%20Survey.md). _(TOR-724)__
 
 - [ ] **Sync engine upgrades:** per-job Lua modules, `ObjectImage` output, `lib/json/cloud-assets.json` manifest, dashboard mirror, mandatory purge (claims ledger), one Cloud root. _(TOR-725)_
 - [ ] **Cloud writer + safeguards:** backup, index snapshots/restore, upload/share/move/delete with verification; spike in `_UploaderTest`. _(TOR-726)_
