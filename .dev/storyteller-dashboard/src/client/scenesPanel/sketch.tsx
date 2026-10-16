@@ -17,7 +17,7 @@ import { BoxRow, HUNGER_DOT, NpcLevelBadge, NpcLiveContext, NpcTrackerPopup } fr
 import { GENERIC_SKY, stageName, tableUsesRandomSeating } from "./liveScene";
 import { SignalFlame } from "./signal";
 import { RollsCommandContext } from "./rolls/commands";
-import { ringChoices } from "./rolls/view";
+import { beginDrag, endDrag } from "./dnd/session";
 import { startRosterDrag } from "./rosterDrag";
 import { moveInScatter, NPC_DRAG_TYPE, SEAT_DRAG_TYPE, withChanges, type ScatterMove, type StageSpot } from "./stage";
 import { stagePacks } from "./stageFrame";
@@ -301,6 +301,8 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, onNpcTrackers, sea
             title={hints.length > 0 ? hints.join(". ") : undefined}
             data-chair={seat.slot}
             data-chair-holder={seat.kind === "npc" ? seat.characterKey ?? "" : seat.kind === "pc" ? "pc" : ""}
+            data-chair-kind={seat.kind === "pc" ? "pc" : seat.kind === "npc" ? "npc" : "empty"}
+            data-seat-key={seatKey ?? ""}
             draggable={draggable}
             onDragStart={(event) => {
               if (!draggable || !seatKey) {
@@ -311,10 +313,24 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, onNpcTrackers, sea
                 event.dataTransfer.setData(NPC_DRAG_TYPE, seat.characterKey);
               }
               event.dataTransfer.effectAllowed = "move";
-              if (seat.characterKey) {
-                startRosterDrag(event, [{ characterKey: seat.characterKey, name: seat.name ?? seat.characterKey }]);
+              if (seat.kind === "pc" && seat.color) {
+                beginDrag(
+                  { dragKind: "pcSeated", color: seat.color, seatKey, chair: seat.slot },
+                  { x: event.clientX, y: event.clientY }
+                );
+              } else if (seat.kind === "npc" && seat.characterKey) {
+                beginDrag(
+                  { dragKind: "npcSeated", characterKey: seat.characterKey, seatKey, chair: seat.slot },
+                  { x: event.clientX, y: event.clientY }
+                );
+                startRosterDrag(
+                  event,
+                  [{ characterKey: seat.characterKey, name: seat.name ?? seat.characterKey }],
+                  { openSession: false }
+                );
               }
             }}
+            onDragEnd={() => endDrag()}
             onDragOver={(event) => {
               if (accepts(event)) {
                 event.preventDefault();
@@ -665,12 +681,26 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
     if (!roller) {
       return;
     }
-    setCharRing({
-      ...ringCentre(canvasPoint(event)),
-      name: seat.playedBy ?? seat.name ?? seat.characterKey ?? "",
-      roller,
-      ...(seat.seatKey && seat.state !== "disconnected" ? { presence: { seat: seat.seatKey, present: seat.state === "absent" } } : {})
-    });
+    // DnD slide-outs replace the roll ring: open panels for this character; keep a slim ring only for presence.
+    if (roller.kind === "pc" && seat.seatKey) {
+      beginDrag(
+        { dragKind: "pcSeated", color: roller.color, seatKey: seat.seatKey, chair: seat.slot },
+        { x: event.clientX, y: event.clientY }
+      );
+    } else if (roller.kind === "npc" && seat.seatKey && seat.characterKey) {
+      beginDrag(
+        { dragKind: "npcSeated", characterKey: seat.characterKey, seatKey: seat.seatKey, chair: seat.slot },
+        { x: event.clientX, y: event.clientY }
+      );
+    }
+    if (seat.seatKey && seat.state !== "disconnected") {
+      setCharRing({
+        ...ringCentre(canvasPoint(event)),
+        name: seat.playedBy ?? seat.name ?? seat.characterKey ?? "",
+        roller,
+        presence: { seat: seat.seatKey, present: seat.state === "absent" }
+      });
+    }
   };
   const openTokenRing = (event: MouseEvent<HTMLElement>, characterKey: string, kind: "pc" | "npc"): void => {
     event.preventDefault();
@@ -681,12 +711,25 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
     }
     const pending = characterKey in spawning;
     const generic = kind === "npc" && (pending || generics.some((npc) => npc.characterKey === characterKey));
-    setCharRing({
-      ...ringCentre(canvasPoint(event)),
-      name: nameOf(characterKey),
-      roller: color ? { kind: "pc", color } : { kind: "npc", characterKey },
-      ...(generic ? { generic: { key: characterKey, pending } } : {})
-    });
+    if (color) {
+      const seat = seats.find((row) => row.color === color);
+      if (seat?.seatKey) {
+        beginDrag(
+          { dragKind: "pcSeated", color, seatKey: seat.seatKey, chair: seat.slot },
+          { x: event.clientX, y: event.clientY }
+        );
+      }
+    } else {
+      beginDrag({ dragKind: "npcStaged", characterKey }, { x: event.clientX, y: event.clientY });
+    }
+    if (generic) {
+      setCharRing({
+        ...ringCentre(canvasPoint(event)),
+        name: nameOf(characterKey),
+        roller: color ? { kind: "pc", color } : { kind: "npc", characterKey },
+        generic: { key: characterKey, pending }
+      });
+    }
   };
   const openNpcTrackers = (clientX: number, clientY: number, characterKey: string, name?: string): void => {
     const point = canvasPointAt(clientX, clientY);
@@ -702,22 +745,6 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
       ? { op: "genericAdd", keys: [target.key], labels: { [target.key]: name }, ...(tier ? { tiers: { [target.key]: tier } } : {}) }
       : { op: "genericRename", key: target.key, name });
     setRenaming(null);
-  };
-  // A draft preview's board has no roll transport, so it offers no rolls.
-  const ringRolls = charRing && rollsSend
-    ? ringChoices({
-      werewolf: charRing.roller.kind === "npc" && rollRing.werewolves.includes(charRing.roller.characterKey),
-      oblivion: charRing.roller.kind === "pc" && rollRing.oblivionSeats.includes(charRing.roller.color),
-      endPhase: rollRing.endPhase
-    })
-    : [];
-  const startRoll = (target: CharacterRing, rollType: string): void => {
-    if (!rollsSend) {
-      return;
-    }
-    rollsSend(target.roller.kind === "pc"
-      ? { op: "initiate", color: target.roller.color, rollType }
-      : { op: "npcInitiate", label: target.name, rollType, characterKey: target.roller.characterKey });
   };
   return (
   <div ref={board} className="lab-board wide" style={{ width: w, height: h }} onContextMenu={openRing}>
@@ -862,7 +889,6 @@ export const WideBoard = ({ w, h, live }: { w: number; h: number; live: LiveBoar
         <div className="lab-ring wide" style={{ left: charRing.x, top: charRing.y }}>
           <span className="lab-ring-name">{charRing.name}</span>
           {[
-            ...ringRolls.map((choice) => ({ key: choice.rollType, label: choice.label, run: () => startRoll(charRing, choice.rollType) })),
             ...(charRing.presence
               ? [{
                 key: "presence",

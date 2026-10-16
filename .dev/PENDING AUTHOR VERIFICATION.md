@@ -20,7 +20,18 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
-_Last populated: 2026-10-15 (Cloud asset harmonization TOR-724 family added). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
+_Last populated: 2026-10-15 (Scenes DnD TOR-733 + Cloud asset harmonization). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
+
+### High — Scenes drag-and-drop
+
+#### TOR-733 — Scenes DnD rolls bridge (secret-safe, reveal, duplicate)
+
+**How to verify:** Restart the Storyteller Dashboard (`npm run dev`), then Save & Play so `dashboard.rolls` reloads.
+
+1. On the Scenes tab, right-click a seated PC or a staged NPC. Edge slide-out panels should animate in on the left / bottom / right. Drop (or click) **Standard Roll** on Panel A and confirm a roll starts in TTS.
+2. Run an NPC roll as secret. On Panel A, try **SECRET-SAFE: Broadcast** — players should not see dice faces. Then **Reveal & Broadcast** (or Reveal Quietly) and confirm the outcome becomes visible as intended.
+3. Finish a PC roll, then drag that roll card onto the stage board. It should broadcast to the table.
+4. Optional: drag a staged NPC onto an empty chair — they should seat (lit), not leave a duplicate on the stage.
 
 ### High — Cloud assets (local `assets/` → Steam Cloud)
 

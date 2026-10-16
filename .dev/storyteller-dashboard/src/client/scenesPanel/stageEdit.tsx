@@ -1,8 +1,9 @@
-import { useContext, useEffect, useRef, useState, type CSSProperties, type DragEvent, type MouseEvent, type PointerEvent, type ReactElement, type RefObject } from "react";
+import { useContext, useEffect, useRef, useState, type CSSProperties, type DragEvent, type MouseEvent, type ReactElement, type RefObject } from "react";
 import { Headshot } from "../headshots/Headshot";
 import { useNpcOverrides } from "../npcOverrides";
 import type { SceneCatalogs } from "./catalogs";
 import { GenericTiersContext, type StageChange, type StageChanges } from "./commands";
+import { beginDrag, endDrag, hitTestDrop, moveDrag, pointIn, useBoardDrag, type PointerHandlers } from "./dnd";
 import { TierBadge } from "./tierBadge";
 import { NpcLevelBadge } from "./npcTrackers";
 import {
@@ -29,26 +30,6 @@ import { groupColor, groupLeader, useRosterLayout } from "./roster";
  * HTML drag and drop. Every edit goes out through `onEdit` / `onPlace`, which queue or send it.
  */
 
-/** Pointer position as a fraction of the board. */
-const pointIn = (board: RefObject<HTMLDivElement | null>, clientX: number, clientY: number): StagePoint => {
-  const element = board.current;
-  if (!element) {
-    throw new Error("Stage board is not mounted.");
-  }
-  const rect = element.getBoundingClientRect();
-  return { u: (clientX - rect.left) / rect.width, v: (clientY - rect.top) / rect.height };
-};
-
-type PointerHandlers = {
-  readonly onPointerDown: (event: PointerEvent<HTMLElement>) => void;
-  readonly onPointerMove: (event: PointerEvent<HTMLElement>) => void;
-  readonly onPointerUp: (event: PointerEvent<HTMLElement>) => void;
-  readonly onPointerCancel: () => void;
-};
-
-/** A press that moves more than this many pixels is a drag; less is a click (double-click lights). */
-const DRAG_PX = 4;
-
 /** A token click waits this long for a second click (double-click lights) before it opens the NPC's trackers. */
 const TAP_WAIT_MS = 260;
 
@@ -64,51 +45,6 @@ const chairAt = (clientX: number, clientY: number): { chair: number; holder: str
     }
   }
   return null;
-};
-
-const useBoardDrag = <T,>(
-  board: RefObject<HTMLDivElement | null>,
-  onDrop: (item: T, point: StagePoint, client: { x: number; y: number }) => void,
-  onTap?: (item: T, client: { x: number; y: number }) => void
-): {
-  drag: { item: T; point: StagePoint } | null;
-  handlers: (item: T) => PointerHandlers;
-} => {
-  const [drag, setDrag] = useState<{ item: T; point: StagePoint } | null>(null);
-  const press = useRef<{ item: T; x: number; y: number; moved: boolean } | null>(null);
-  const handlers = (item: T): PointerHandlers => ({
-    onPointerDown: (event) => {
-      if (event.button !== 0) {
-        return;
-      }
-      event.stopPropagation();
-      event.currentTarget.setPointerCapture(event.pointerId);
-      press.current = { item, x: event.clientX, y: event.clientY, moved: false };
-    },
-    onPointerMove: (event) => {
-      const held = press.current;
-      if (!held || (!held.moved && Math.hypot(event.clientX - held.x, event.clientY - held.y) < DRAG_PX)) {
-        return;
-      }
-      held.moved = true;
-      setDrag({ item: held.item, point: pointIn(board, event.clientX, event.clientY) });
-    },
-    onPointerUp: (event) => {
-      const held = press.current;
-      press.current = null;
-      setDrag(null);
-      if (held?.moved) {
-        onDrop(held.item, pointIn(board, event.clientX, event.clientY), { x: event.clientX, y: event.clientY });
-      } else if (held) {
-        onTap?.(held.item, { x: event.clientX, y: event.clientY });
-      }
-    },
-    onPointerCancel: () => {
-      press.current = null;
-      setDrag(null);
-    }
-  });
-  return { drag, handlers };
 };
 
 /** Picker-group members, the group's leader first. */
@@ -152,7 +88,8 @@ export const StageTokenView = ({ characterKey, name, lit, x, y, color, boss, dra
     <div
       className={`lab-token${lit ? " lit" : ""}${boss ? " boss" : ""}${dragging ? " dragging" : ""}${pc ? " pc" : ""}${handlers ? " editable" : ""}`}
       style={{ left: x, top: y, ...(color ? { "--group": color } : {}) } as CSSProperties}
-      title={handlers ? `${name}: drag to move, ${opens ? "click for trackers, " : ""}double-click to ${lit ? "darken" : "light"}, right-click to roll` : name}
+      title={handlers ? `${name}: drag to move, ${opens ? "click for trackers, " : ""}double-click to ${lit ? "darken" : "light"}, right-click for options` : name}
+      data-tr-dnd-staged={pc ? undefined : characterKey}
       {...handlers}
       {...(onDoubleClick ? { onDoubleClick } : {})}
       {...(onContextMenu ? { onContextMenu } : {})}
@@ -234,25 +171,39 @@ export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit
     }
     onEdit(changes);
   };
-  const tokens = useBoardDrag<string>(board, (key, point, client) => {
-    const rollCard = rollCardAt(client.x, client.y);
-    if (rollCard) {
-      rollCard.dispatchEvent(new CustomEvent(NPC_ROLL_DROP_EVENT, { detail: key }));
-      return;
-    }
-    const seat = onSeat ? chairAt(client.x, client.y) : null;
-    if (!seat) {
+  const tokens = useBoardDrag<string>(
+    board,
+    (key, point, client) => {
+      const rollCard = rollCardAt(client.x, client.y);
+      if (rollCard) {
+        rollCard.dispatchEvent(new CustomEvent(NPC_ROLL_DROP_EVENT, { detail: key }));
+        endDrag();
+        return;
+      }
+      const seat = onSeat ? chairAt(client.x, client.y) : null;
+      // SD-38: stage token onto a seat moves onto that chair (lit); empty or same holder, or displace via onSeat.
+      if (seat && onSeat) {
+        onSeat(key, seat.chair);
+        endDrag();
+        return;
+      }
       place(key, point);
-    } else if (seat.holder === "" || seat.holder === key) {
-      onSeat?.(key, seat.chair);
+      endDrag();
+    },
+    onOpen
+      ? (key, client) => {
+          cancelTap();
+          tapTimer.current = window.setTimeout(() => {
+            tapTimer.current = null;
+            onOpen(key, client);
+          }, TAP_WAIT_MS);
+        }
+      : undefined,
+    (key, _point, client) => {
+      beginDrag({ dragKind: "npcStaged", characterKey: key }, client);
+      moveDrag(client, hitTestDrop(client));
     }
-  }, onOpen ? (key, client) => {
-    cancelTap();
-    tapTimer.current = window.setTimeout(() => {
-      tapTimer.current = null;
-      onOpen(key, client);
-    }, TAP_WAIT_MS);
-  } : undefined);
+  );
   const packDrag = useBoardDrag<StagePack>(board, (pack, point) => {
     const keys = spots.filter((spot) => slotOf(spot, packs)?.pack === pack).map((spot) => spot.characterKey);
     if (offStage(point)) {
@@ -283,6 +234,7 @@ export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit
   return (
     <div
       className={`lab-stage-layer${over ? " drop" : ""}`}
+      data-tr-dnd-stage=""
       onDragOver={(event) => {
         if (acceptsRoster(event)) {
           event.preventDefault();
@@ -302,6 +254,7 @@ export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit
             className={`lab-pack-handle${pack.far ? " far" : ""}${dragging ? " dragging" : ""}`}
             style={shown}
             title={`${pack.label}: drag to move this pack's NPCs onto another pack, or off the stage`}
+            data-tr-dnd-pack={pack.familyId}
             {...packDrag.handlers(pack)}
           />
         );

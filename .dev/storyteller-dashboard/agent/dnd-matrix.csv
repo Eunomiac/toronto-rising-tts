@@ -1,0 +1,202 @@
+"LEGEND — Drop ▼ / Drag ▶. ⛔=no-op (drop allowed, does nothing). ❌=not possible. ●=drop bin. HOVER: Shows Drop Sites + ● lines = ring bins while hovering; release elsewhere cancels. Conditions on separate lines with ':'. DRAG/DROP name the two sides. SECRET-SAFE: = broadcast/share without revealing dice faces or full outcome to players. PACK: = join/form a stage pack. Slide-Out A/B/C = importance tiers for bins (A most important), not final panel layout. Deactivate (PC) = narratively out of the scene; seat stays. Never clear a PC seat from the Dashboard; disconnected is client-only. Companion Non-DnD Events sheet lists double-click / right-click / icon actions not captured here.",,,,,,,,,,,,
+Drop ▼ / Drag ▶,NPC - Staged Token,NPC - Roster Token,NPC - Seated,PC - Seated,PC Roll - Preroll,PC Roll - Postroll,NPC Roll - Preroll,"NPC Roll - Postroll, Revealed","NPC Roll - Postroll, Secret",Scene - Active,"Scene - On Deck, ""New""","Scene - On Deck, ""Ongoing"""
+Out / Off / Nowhere,"If Seated: Restore to Seat
+Otherwise: Clear from Stage",⛔,Clear from Seat,Deactivate,Clear / Cancel,Clear / Cancel,Clear / Cancel,Clear / Cancel,Clear / Cancel,⛔,Remove from Deck,Remove from Deck
+Slide-Out Panel A,"● Standard Roll
+● Discipline Roll
+● Frenzy Roll
+● Willpower Roll
+● Contested Roll… (choose second participant by next drop or HOVER)","● Standard Roll
+● Discipline Roll
+● Frenzy Roll
+● Willpower Roll
+● Contested Roll… (choose second participant by next drop or HOVER)","● Standard Roll
+● Discipline Roll
+● Frenzy Roll
+● Willpower Roll
+● Contested Roll… (choose second participant by next drop or HOVER)","● Standard Roll
+● Discipline Roll
+● Frenzy Roll
+● Willpower Roll
+● Contested Roll… (choose second participant by next drop or HOVER)","● Execute Roll
+● Cancel","● Broadcast
+● Broadcast Again
+● Confirm / Resolve
+● Dismiss","● Execute Roll
+● Execute Secret
+● Cancel","● Broadcast
+● Broadcast Again
+● Confirm / Resolve
+● Dismiss","● SECRET-SAFE: Broadcast
+● Reveal Quietly
+● Reveal & Broadcast
+● Confirm / Hold
+● Dismiss","● Fork/Duplicate
+● End Scene
+● Memoriam…","● Fork/Duplicate
+● Edit/Preview Scene","● Fork/Duplicate
+● Edit/Preview Scene
+● End Scene"
+Slide-Out Panel B,"● Rouse Check (1 die)
+● Rouse Check (2 dice)
+● Obliv-Rouse Check (1 die)
+● Obliv-Rouse Check (2 die)","● Rouse Check (1 die)
+● Rouse Check (2 dice)
+● Obliv-Rouse Check (1 die)
+● Obliv-Rouse Check (2 die)","● Rouse Check (1 die)
+● Rouse Check (2 dice)
+● Obliv-Rouse Check (1 die)
+● Obliv-Rouse Check (2 die)","● Remorse Roll
+● Rouse Check
+● Obliv-Rouse Check","● Blood Surge
+● Adjust Pool (Dice Ring)
+HOVER: Convert Type
+● Standard
+● Discipline
+● Frenzy
+● Willpower
+● Rouse / Obliv-Rouse / Remorse (context)","● Willpower Reroll
+● Reroll Selected
+● Recalculate
+If Hunger/Stain pending: ● Choose Hunger
+If Hunger/Stain pending: ● Choose Stain","● Blood Surge
+● Adjust Pool (Dice Ring)
+HOVER: Convert Type
+● Standard
+● Discipline
+● Frenzy
+● Willpower
+● Rouse / Obliv-Rouse / Remorse (context)","● Willpower Reroll
+● Reroll Selected
+● Recalculate
+If Hunger/Stain pending: ● Choose Hunger
+If Hunger/Stain pending: ● Choose Stain","● Willpower Reroll
+● Reroll Selected
+● Recalculate
+If Hunger/Stain pending: ● Choose Hunger
+If Hunger/Stain pending: ● Choose Stain","● Unlink / Relink Library
+● Play timing (if re-entry)","● Play Now
+● Play at Scene Time
+● Set Status (New / Ongoing / Ended / Template)","● Play / Switch Now
+● Set Status (New / Ongoing / Ended / Template)"
+Slide-Out Panel C,"● Edit DRAG NPC
+● Open Tracker
+If Generic: ● Rename (Generic)","● Edit DRAG NPC
+● Open Tracker
+If Generic: ● Rename (Generic)","● Edit DRAG NPC
+● Open Tracker
+If Generic: ● Rename (Generic)","● Initiate Project
+● Change Stats
+● Open Sheet","● Pin to Drawer
+● Open Roller's Tracker/Sheet","● Copy Result Summary
+● Pin to Drawer","● Pin to Drawer
+● Open Roller's Tracker/Sheet","● Copy Result Summary
+● Pin to Drawer","● Copy Result Summary
+● Pin to Drawer","● Rename
+● Archive
+● Delete
+● Duplicate as Template","● Rename
+● Archive
+● Delete
+● Duplicate as Template","● Rename
+● Archive
+● Delete
+● Duplicate as Template"
+Stage,Move to DROP Position,Add to Stage at DROP Position,"Deactivate DRAG Seat (narratively out / dark while staged)
+Add to Stage at DROP Position",⛔,⛔,Broadcast DRAG Roll,⛔,Broadcast DRAG Roll,SECRET-SAFE: Broadcast DRAG Roll (do not reveal dice / full outcome to players),⛔,Transition to DRAG Scene (play into the world),Transition to DRAG Scene (play into the world)
+Empty Seat Slot,"Clear from Stage
+Occupy DROP Seat Slot",Occupy DROP Seat Slot,Move to DROP Seat Slot,Move to DROP Seat Slot,⛔,Broadcast DRAG Roll,⛔,Broadcast DRAG Roll,SECRET-SAFE: Broadcast DRAG Roll (do not reveal dice / full outcome to players),⛔,⛔,⛔
+Pack (Stage Group),PACK: Join DROP pack (or form pack with pack handle at DROP),PACK: Add DRAG to Stage and join DROP pack,"Deactivate DRAG Seat
+PACK: Add to Stage and join DROP pack",⛔,⛔,⛔,⛔,⛔,⛔,⛔,⛔,⛔
+Roll Drawer Slot,"HOVER: Shows Drop Sites
+● Standard / Discipline / Frenzy / Willpower / Rouse…: Start that roll for DRAG in DROP drawer slot","HOVER: Shows Drop Sites
+● Standard / Discipline / Frenzy / Willpower / Rouse…: Start that roll for DRAG in DROP drawer slot","HOVER: Shows Drop Sites
+● Standard / Discipline / Frenzy / Willpower / Rouse…: Start that roll for DRAG in DROP drawer slot","HOVER: Shows Drop Sites
+● Standard / Discipline / Frenzy / Willpower / Rouse / Remorse…: Start that roll for DRAG in DROP drawer slot",Pin DRAG Preroll to DROP drawer slot,Pin DRAG Postroll result to DROP drawer slot,Pin DRAG Preroll to DROP drawer slot,Pin DRAG Postroll result to DROP drawer slot,Pin DRAG Postroll (still Secret) to DROP drawer slot,⛔,⛔,⛔
+NPC - Staged Token,"If Same Token: ❌
+Otherwise: PACK: Join/Form pack with DROP at DROP position",Add to Stage near DROP (optionally PACK: join DROP if DROP is in a pack),"If Same NPC: Restore DROP to Seat / clear stage copy of seated original
+Otherwise: Deactivate DRAG Seat, Add to Stage near DROP (PACK: join if DROP in pack)",⛔,"HOVER: Shows Drop Sites
+● <Lower General Difficulty>: Sets Roll Difficulty to displayed Difficulty.
+● <Higher General Difficulty>: Sets Roll Difficulty to displayed Difficulty.","If Same Character: ⛔
+If Other Character: Duplicates DRAG Roll, opens new Roll to DROP character.","HOVER: Shows Drop Sites
+● <Lower General Difficulty>: Sets Roll Difficulty to displayed Difficulty.
+● <Higher General Difficulty>: Sets Roll Difficulty to displayed Difficulty.","If Same Character: ⛔
+If Other Character: Duplicates DRAG Roll, opens new Roll to DROP character.","If Same Character: ⛔
+If Other Character: Duplicates DRAG Roll as Secret, opens new Roll to DROP character.","If DROP already present in Active Scene: ⛔
+Otherwise: Mark DROP NPC present / Bring into Active Scene",Add DROP NPC to DRAG Scene seat plan / present list (preview seating),Add DROP NPC to DRAG Scene seat plan / present list (preview seating)
+NPC - Roster Token,Clear from Stage (return DRAG to roster dock),"If Same Token: ❌
+Otherwise: ⛔",Clear from Seat (unseat DRAG NPC; returns toward roster),⛔,"HOVER: Shows Drop Sites
+● <Lower General Difficulty>: Sets Roll Difficulty to displayed Difficulty.
+● <Higher General Difficulty>: Sets Roll Difficulty to displayed Difficulty.","If Same Character: ⛔
+If Other Character: Duplicates DRAG Roll, opens new Roll to DROP character.","HOVER: Shows Drop Sites
+● <Lower General Difficulty>: Sets Roll Difficulty to displayed Difficulty.
+● <Higher General Difficulty>: Sets Roll Difficulty to displayed Difficulty.","If Same Character: ⛔
+If Other Character: Duplicates DRAG Roll, opens new Roll to DROP character.","If Same Character: ⛔
+If Other Character: Duplicates DRAG Roll as Secret, opens new Roll to DROP character.",Mark DROP NPC present / Bring into Active Scene (from roster),Add DROP NPC to DRAG Scene seat plan / present list,Add DROP NPC to DRAG Scene seat plan / present list
+NPC - Seated,"If Same NPC: Clear from Stage, ensure DROP occupied
+Otherwise: HOVER: Shows Drop Sites
+● Swap seats with DROP
+● Displace DROP to Stage, Occupy DROP Seat with DRAG","HOVER: Shows Drop Sites
+● Swap: seat DRAG, move DROP NPC to roster/stage
+● Displace DROP to Stage, Occupy DROP Seat with DRAG","If Same Seat: ❌
+Otherwise: Swap DRAG and DROP seats.","If Same Seat: ❌
+Otherwise: Swap DRAG and DROP seats.","HOVER: Shows Drop Sites
+● <Lower General Difficulty>: Sets Roll Difficulty to displayed Difficulty.
+● <Higher General Difficulty>: Sets Roll Difficulty to displayed Difficulty.","If Same Character: ⛔
+If Other Character: Duplicates DRAG Roll, opens new Roll to DROP character.","HOVER: Shows Drop Sites
+● <Lower General Difficulty>: Sets Roll Difficulty to displayed Difficulty.
+● <Higher General Difficulty>: Sets Roll Difficulty to displayed Difficulty.","If Same Character: ⛔
+If Other Character: Duplicates DRAG Roll, opens new Roll to DROP character.","If Same Character: ⛔
+If Other Character: Duplicates DRAG Roll as Secret, opens new Roll to DROP character.","If DROP narratively absent: Activate / Into the scene
+If DROP already present: ⛔",Assign DROP NPC seat in DRAG Scene transition seating,Assign DROP NPC seat in DRAG Scene transition seating
+PC - Seated,"HOVER: Shows Drop Sites
+● Contested Roll vs DROP PC (DRAG as opposition)
+● ⛔ elsewhere on seat chrome","HOVER: Shows Drop Sites
+● Contested Roll vs DROP PC
+● ⛔ elsewhere","If Same Seat: ❌
+Otherwise: Swap DRAG and DROP seats.","If Same Seat: ❌
+Otherwise: Swap DRAG and DROP seats.","If Same PC: ⛔
+If Other PC: Duplicates DRAG Roll, opens new Roll to DROP PC.","If Same PC: ⛔
+If Other PC: Duplicates DRAG Roll, opens new Roll to DROP PC.","If Same Character context N/A
+Duplicates DRAG NPC Roll, opens new Roll to DROP PC.","Duplicates DRAG Roll, opens new Roll to DROP PC.",SECRET-SAFE duplicate: opens new Roll to DROP PC (still Secret until revealed).,"If DROP deactivated (out of scene): Activate / Into the scene
+If DROP already present: ⛔",Assign DROP PC presence in DRAG Scene transition seating,Assign DROP PC presence in DRAG Scene transition seating
+PC Roll - Preroll,"If Same Character already owns DROP Roll: ⛔
+Otherwise: Retarget DROP Roll to DRAG character (rebuild pool from their stats where applicable).","If Same Character already owns DROP Roll: ⛔
+Otherwise: Retarget DROP Roll to DRAG character (rebuild pool from their stats where applicable).","If Same Character already owns DROP Roll: ⛔
+Otherwise: Retarget DROP Roll to DRAG character (rebuild pool from their stats where applicable).","If Same Character already owns DROP Roll: ⛔
+Otherwise: Retarget DROP Roll to DRAG character (rebuild pool from their stats where applicable).","If Same Roll: ❌
+If Same Roll Type: Applies DRAG Roll Conditions & Difficulty to DROP Roll.
+If Other Roll Type: ⛔",Sets Difficulty of DROP Roll to margin of DRAG Roll.,"If Same Roll Type: Applies DRAG Roll Conditions & Difficulty to DROP Roll.
+If Other Roll Type: ⛔",Sets Difficulty of DROP Roll to margin of DRAG Roll.,"Sets Difficulty of DROP Roll to margin of DRAG Roll.
+(ST sees full margin; SECRET-SAFE toward players until DROP is revealed.)",⛔,⛔,⛔
+PC Roll - Postroll,⛔,⛔,⛔,⛔,⛔,"If Same Roll: ❌
+Otherwise: Compare / Show Opposed Margin (ST view).",⛔,"If Same Roll: ❌
+Otherwise: Compare / Show Opposed Margin (ST view).","If Same Roll: ❌
+Otherwise: Compare / Show Opposed Margin (ST view; SECRET-SAFE toward players for DRAG).",⛔,⛔,⛔
+NPC Roll - Preroll,"If Same Character already owns DROP Roll: ⛔
+Otherwise: Retarget DROP Roll to DRAG character (rebuild pool from their stats where applicable).","If Same Character already owns DROP Roll: ⛔
+Otherwise: Retarget DROP Roll to DRAG character (rebuild pool from their stats where applicable).","If Same Character already owns DROP Roll: ⛔
+Otherwise: Retarget DROP Roll to DRAG character (rebuild pool from their stats where applicable).","If Same Character already owns DROP Roll: ⛔
+Otherwise: Retarget DROP Roll to DRAG character (rebuild pool from their stats where applicable).","If Same Roll Type: Applies DRAG Roll Conditions & Difficulty to DROP Roll.
+If Other Roll Type: ⛔",Sets Difficulty of DROP Roll to margin of DRAG Roll.,"If Same Roll: ❌
+If Same Roll Type: Applies DRAG Roll Conditions & Difficulty to DROP Roll.
+If Other Roll Type: ⛔",Sets Difficulty of DROP Roll to margin of DRAG Roll.,"Sets Difficulty of DROP Roll to margin of DRAG Roll.
+(ST sees full margin; SECRET-SAFE toward players until DROP is revealed.)",⛔,⛔,⛔
+"NPC Roll - Postroll, Revealed",⛔,⛔,⛔,⛔,⛔,"If Same Roll: ❌
+Otherwise: Compare / Show Opposed Margin (ST view).",⛔,"If Same Roll: ❌
+Otherwise: Compare / Show Opposed Margin (ST view).","If Same Roll: ❌
+Reveal DROP Secret using DRAG as reference? → prefer Panel A Reveal bins; here: ⛔",⛔,⛔,⛔
+"NPC Roll - Postroll, Secret",⛔,⛔,⛔,⛔,⛔,"If Same Roll: ❌
+Otherwise: Compare / Show Opposed Margin (ST only; keep DROP Secret toward players).",⛔,"If Same Roll: ❌
+Otherwise: ⛔ (do not auto-reveal DROP by dropping a Revealed roll onto it)","If Same Roll: ❌
+Otherwise: Compare (ST only; both remain Secret toward players).",⛔,⛔,⛔
+Scene - Active,"If DRAG narratively absent / dark: Activate / Into the scene
+If already present: ⛔",Mark DRAG NPC present / Bring into Active Scene,"If DRAG narratively absent: Activate / Into the scene
+If already present: ⛔","If DRAG deactivated: Activate / Into the scene
+If already present: ⛔",⛔,Broadcast DRAG Roll,⛔,Broadcast DRAG Roll,SECRET-SAFE: Broadcast DRAG Roll (do not reveal dice / full outcome to players),❌,Transition to DRAG Scene,Transition to DRAG Scene
+"Scene - On Deck, ""New""",Add DRAG NPC to DROP Scene seat plan / present list,Add DRAG NPC to DROP Scene seat plan / present list,Assign DRAG seat in DROP Scene transition seating,Assign DRAG PC presence in DROP Scene transition seating,⛔,⛔,⛔,⛔,⛔,⛔,"If Same Scene: ❌
+Otherwise: Reorder deck — place DRAG relative to DROP","If Same Scene: ❌
+Otherwise: Reorder deck — place DRAG relative to DROP"
+"Scene - On Deck, ""Ongoing""",Add DRAG NPC to DROP Scene seat plan / present list,Add DRAG NPC to DROP Scene seat plan / present list,Assign DRAG seat in DROP Scene transition seating,Assign DRAG PC presence in DROP Scene transition seating,⛔,⛔,⛔,⛔,⛔,⛔,"If Same Scene: ❌
+Otherwise: Reorder deck — place DRAG relative to DROP","If Same Scene: ❌
+Otherwise: Reorder deck — place DRAG relative to DROP"

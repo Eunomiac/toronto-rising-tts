@@ -18,6 +18,7 @@ import {
   type StageQueueView
 } from "./glance";
 import { ScenePreview } from "./preview";
+import { DndChrome } from "./dnd/DndChrome";
 import { RosterDragGhost } from "./rosterDrag";
 import { useControlBoardSnaps, useSceneCatalogs } from "./roster";
 import type { SceneCatalogs } from "./catalogs";
@@ -427,6 +428,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
       {active && (
         <>
           <RosterDragGhost />
+          <DndChrome scenes={send} rolls={rollCommands.send} />
           <Box x={G} y={G} w={LEFT_W} h={STRIP_H} className="lab-backdrop-box">
             {location && scene ? (
               <LocationPanel

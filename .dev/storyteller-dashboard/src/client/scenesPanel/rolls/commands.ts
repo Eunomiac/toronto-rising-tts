@@ -29,7 +29,7 @@ export type RollsCommand =
   | { readonly op: "override"; readonly color: string; readonly resultClass: string }
   | { readonly op: "confirm"; readonly color: string }
   | { readonly op: "cancel"; readonly color: string }
-  | { readonly op: "broadcast"; readonly color: string }
+  | { readonly op: "broadcast"; readonly color: string; readonly secretSafe?: boolean }
   | { readonly op: "npcInitiate"; readonly label: string; readonly rollType: string; readonly characterKey?: string }
   | { readonly op: "npcPool"; readonly kind: "hunger" | "normal"; readonly delta: 1 | -1 }
   | { readonly op: "npcDifficulty"; readonly value: number }
@@ -39,8 +39,35 @@ export type RollsCommand =
   | { readonly op: "npcWp" }
   | { readonly op: "npcReroll"; readonly indices: readonly number[] }
   | { readonly op: "npcRecalc" }
-  | { readonly op: "npcConfirm"; readonly quiet?: boolean }
+  | { readonly op: "npcConfirm"; readonly quiet?: boolean; readonly secretSafe?: boolean }
   | { readonly op: "npcCancel" }
+  | { readonly op: "npcReveal"; readonly broadcast?: boolean }
+  | {
+      readonly op: "duplicateRoll";
+      readonly rollType: string;
+      readonly fromColor?: string;
+      readonly toColor?: string;
+      readonly toCharacterKey?: string;
+      readonly secret?: boolean;
+    }
+  | {
+      readonly op: "retargetRoll";
+      readonly fromColor?: string;
+      readonly toColor?: string;
+      readonly characterKey?: string;
+    }
+  | {
+      readonly op: "applyRollSetup";
+      readonly fromColor?: string;
+      readonly toColor?: string;
+    }
+  | {
+      readonly op: "difficultyFromMargin";
+      readonly fromColor?: string;
+      readonly toColor?: string;
+      readonly secretSafe?: boolean;
+    }
+  | { readonly op: "pinToDrawer"; readonly slot: number; readonly color?: string; readonly secret?: boolean }
   | {
       readonly op: "npcStatRoll";
       readonly kind: "roll" | "rouseOnly";

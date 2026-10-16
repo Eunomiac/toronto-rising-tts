@@ -1,0 +1,26 @@
+Non-DnD / Non-matrix actions — gestures that should remain accounted for alongside the Drag & Drop matrix. Map ring/icon actions here if they are not represented as drop bins or direct drops.
+Surface,Gesture,Action,Notes / accounts for
+Stage token,Double-click,Toggle light / darken (lightMode STANDARD ↔ OFF),Not a drag; keeps staged presence while changing spotlight feel
+Stage token,Single-click (live),Open NPC tracker overlay,Also available via Panel C ● Open Tracker
+Stage / Seat,Right-click,Legacy roll ring + Into/Out of the scene + Rename (generic),Largely replaced by Slide-Out A/B bins + Deactivate / Activate drops; keep listed until rings removed
+Empty stage,Right-click,Placement ⇄ Scatter · Clear Stage · Reset to Library,Board-level ops; Clear Stage is bulk vs single-token Out drop
+NPC - Pack (whole pack),Pointer drag pack handle,Move entire pack on Stage; Out = disperse/clear policy TBD,No full Pack drag column in v1 matrix; pack is drop-only target
+Occupied seat (PC),Click,Open PC tracker (Health / WP / Humanity / Hunger),Panel C ● Open Sheet is related but fuller
+Occupied seat (PC),Double-click,Open character sheet (PCs tab),Matrix: Panel C ● Open Sheet
+Occupied seat (NPC),Click (live),Open NPC tracker,Matrix: Panel C ● Open Tracker
+Seat (draft / preview),Click,Toggle present / out of the scene,Matrix: drop character onto Active Scene / Out for live Deactivate-Activate
+Signal flame,Click,Put out signal fire,No drag analogue
+Deck chip,Click,Play / switch to that scene,Matrix: On-deck → Active Scene or Stage = Transition
+Deck chip,Right-click,Edit / preview scene,Matrix: Panel A ● Edit/Preview
+Deck chip,Hold,End ongoing OR Remove from deck,Matrix: Out = Remove from Deck; Panel A ● End Scene
+Table scene title,Click popover,Unlink / Fork…,Matrix: Panel A ● Fork/Duplicate; Panel B ● Unlink / Relink
+Play a Scene modal,Buttons,End Scene · Memoriam… · Play · Edit · reorder · rename · delete · archive status · deck stars,Several mirrored in Panel A/B/C and on-deck reorder drops
+Hunt flavor,Click,PC picker ring → hunt / resonance roll flow,No matrix column yet; candidate future drag: Hunt Token
+NPC / PC roll panel,Icons,Configure stats · Blood Surge · Roll (R-click secret) · Take Half · WP reroll · Recalc · Reroll picks · Confirm (R-click hold) · Oblivion/Brutal choices,Mirrored in Slide-Out A/B for preroll/postroll; keep icons until bins ship
+Secret NPC postroll,Explicit Reveal control,Reveal Quietly / Reveal & Broadcast,Must exist even if Panel A bins cover it — never reveal via ordinary Broadcast
+Drawer slot,Broadcast / Clear icons,Broadcast pinned · Clear drawer,Matrix: drop postroll onto Stage/Empty Seat/Active Scene also Broadcast; drop onto Drawer = Pin
+Calendar / When,Moon drag / date popup,Set scene date / moon,Intentionally outside character/roll/scene DnD matrix
+Phase / Blindfold,Advance / checkpoint,Phase changes; connection checkpoints may set absentFromSession,absentFromSession is client-connection only — never a Dashboard drag
+Sound mixer,Ambient grid popover,Pick ambient beds,Outside this matrix
+Roster group cluster,Click / colour +,Expand cluster · Group editor,Group drag exists in UI; not a matrix column in v1
+Roster category header,Drop group / right-click,File group into category · Rename category,Roster organization; separate from stage Pack drops

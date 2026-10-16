@@ -2,6 +2,8 @@ import { useContext, useEffect, useRef, useState, type CSSProperties, type DragE
 import { Icon, type IconName } from "../icons";
 import { NpcLiveContext } from "../npcTrackers";
 import { canvasPoint, Overlay } from "../sketch";
+import { beginDrag, endDrag } from "../dnd/session";
+import { ROLL_DRAG_TYPE } from "../dnd/mime";
 import { NPC_DRAG_TYPE, NPC_ROLL_DROP_ATTR, NPC_ROLL_DROP_EVENT } from "../stage";
 import { SEAT_ACCENT } from "../../pcSheet/layout";
 import { bloodPotencyRow, ROLL_TYPE_RULES, STRUCTURAL_OPTIONS } from "../../catalogVocab";
@@ -178,7 +180,7 @@ const ActionButton = ({ action }: { action: CardAction }): ReactElement => (
 /** A click on a collapsed card's name waits this long before unfolding, so a double-click clears it without a flicker. */
 const UNFOLD_DELAY_MS = 250;
 
-const RollCard = ({ className, style, title, rollType, onType, name, flags, conditions, result, collapsed, onToggle, actions, onClear, clearLabel, onNpcDrop, children }: {
+const RollCard = ({ className, style, title, rollType, onType, name, flags, conditions, result, collapsed, onToggle, actions, onClear, clearLabel, onNpcDrop, dndKind, dndColor, onDndStart, children }: {
   className: string;
   style?: CSSProperties;
   title: string;
@@ -196,6 +198,10 @@ const RollCard = ({ className, style, title, rollType, onType, name, flags, cond
   clearLabel: string;
   /** An NPC dropped on the card: roster / seat drags, or a stage token released over it (`NPC_ROLL_DROP_EVENT`). */
   onNpcDrop?: ((characterKey: string) => void) | undefined;
+  /** DnD matrix drop-kind for this card (hit-testing + drag source). */
+  dndKind?: "pcRollPreroll" | "pcRollPostroll" | "npcRollPreroll" | "npcRollPostrollRevealed" | "npcRollPostrollSecret";
+  dndColor?: string;
+  onDndStart?: (event: DragEvent<HTMLDivElement>) => void;
   children: ReactNode;
 }): ReactElement => {
   const shown = collapsed ? actions.filter((action) => action.keep === true) : actions;
@@ -234,6 +240,10 @@ const RollCard = ({ className, style, title, rollType, onType, name, flags, cond
       className={`roll-card ${className}${collapsed ? " collapsed" : ""}${shown.length > 0 ? " has-acts" : ""}${dropOver ? " npc-drop" : ""}`}
       style={style}
       title={title}
+      draggable={onDndStart !== undefined}
+      data-tr-dnd-roll={dndKind}
+      data-tr-dnd-roll-color={dndColor}
+      onDragStart={onDndStart}
       {...(onNpcDrop ? {
         [NPC_ROLL_DROP_ATTR]: "",
         onDragOver: (event: DragEvent<HTMLDivElement>) => {
@@ -355,6 +365,26 @@ const PcRollRow = ({ roll, send, collapsed, onToggle, onOptions, onPool, highlig
       onClear={() => send({ op: "cancel", color })}
       clearLabel={roll.done ? "Dismiss this result" : "Cancel this roll"}
       {...(roll.done ? {} : { onNpcDrop })}
+      dndKind={roll.done || roll.phase === "postRoll" || roll.phase === "resolved" ? "pcRollPostroll" : "pcRollPreroll"}
+      dndColor={color}
+      onDndStart={(event) => {
+        event.dataTransfer.setData(ROLL_DRAG_TYPE, color);
+        event.dataTransfer.effectAllowed = "copyMove";
+        const post = roll.done || roll.phase === "postRoll" || roll.phase === "resolved";
+        beginDrag(
+          {
+            dragKind: post ? "pcRollPostroll" : "pcRollPreroll",
+            color,
+            rollType: roll.rollType
+          },
+          { x: event.clientX, y: event.clientY }
+        );
+        const end = (): void => {
+          endDrag();
+          window.removeEventListener("dragend", end);
+        };
+        window.addEventListener("dragend", end);
+      }}
     >
       <PoolDiamonds pool={roll.pool} onClick={overridable ? (event) => onPool(event, color) : undefined} />
       <div className="roll-line">

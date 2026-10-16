@@ -62,6 +62,8 @@ type NpcOverrides = ReturnType<typeof useNpcOverrides>;
 /** Token ring colour for an NPC with no coloured group (DEFAULT_RING_COLOR in scripts/npc-art/model.ts). */
 const DEFAULT_TOKEN_RING = "#77706a";
 import { usePersistentState } from "../persistentState";
+import { beginDrag, endDrag } from "./dnd/session";
+import { SCENE_DRAG_TYPE } from "./dnd/mime";
 import { startRosterDrag } from "./rosterDrag";
 import { carryOverSeating, type SeatingEdit } from "./transitionSeating";
 import { TransitionSeatingModal, type SeatingAsk } from "./transitionStrip";
@@ -663,9 +665,10 @@ const RosterToken = ({ characterKey, name, className, color, tier, onConfigure }
 }): ReactElement => (
   <span
     className="lab-group-token"
-    title={`${name}: drag onto the stage; right-click for its settings`}
+    title={`${name}: drag onto the stage or a slide-out bin; right-click for its settings`}
     style={tokenColorStyle(color)}
     draggable
+    data-tr-dnd-roster={characterKey}
     onContextMenu={(event) => {
       event.preventDefault();
       event.stopPropagation();
@@ -2926,8 +2929,23 @@ const DeckChip = ({ scene, onPlay, onEdit, onHold }: {
       className={`lab-phase-deck ${ongoing ? "ongoing" : "fresh"}${hold.holding ? " holding" : ""}`}
       style={{ "--hold-ms": `${HOLD_FILL_MS}ms` } as CSSProperties}
       title={ongoing
-        ? `Go back to ${scene.title} at its own time. Hold to end it; right-click to edit it.`
-        : `Start ${scene.title}. Hold to take it off the deck; right-click to edit it.`}
+        ? `Go back to ${scene.title} at its own time. Hold to end it; right-click to edit it. Drag onto the stage or Active scene to play.`
+        : `Start ${scene.title}. Hold to take it off the deck; right-click to edit it. Drag onto the stage or Active scene to play.`}
+      data-tr-dnd-deck={scene.key}
+      data-tr-dnd-deck-status={ongoing ? "ongoing" : "new"}
+      draggable
+      onDragStart={(event) => {
+        event.dataTransfer.setData(SCENE_DRAG_TYPE, scene.key);
+        event.dataTransfer.effectAllowed = "copyMove";
+        beginDrag(
+          {
+            dragKind: ongoing ? "sceneOnDeckOngoing" : "sceneOnDeckNew",
+            sceneKey: scene.key
+          },
+          { x: event.clientX, y: event.clientY }
+        );
+      }}
+      onDragEnd={() => endDrag()}
       {...hold.handlers}
       onClick={(event) => {
         if (!hold.wasHold()) {

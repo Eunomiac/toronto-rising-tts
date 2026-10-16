@@ -1,5 +1,6 @@
 import { useEffect, useState, useSyncExternalStore, type DragEvent, type ReactElement } from "react";
 import { createPortal } from "react-dom";
+import { beginDrag, endDrag } from "./dnd/session";
 import { activeCanvas } from "./sketch";
 import { StageTokenView } from "./stageEdit";
 
@@ -18,11 +19,26 @@ const notify = (): void => listeners.forEach((listener) => listener());
 const BLANK = new Image();
 BLANK.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
-/** Call from `onDragStart` after setting the drag data; the leader (if any) comes first. */
-export const startRosterDrag = (event: DragEvent<HTMLElement>, members: readonly Held[]): void => {
+/** Call from `onDragStart` after setting the drag data; the leader (if any) comes first.
+ * Pass `openSession: false` when the caller already began a DnD session (e.g. seated NPC). */
+export const startRosterDrag = (
+  event: DragEvent<HTMLElement>,
+  members: readonly Held[],
+  options?: { readonly openSession?: boolean }
+): void => {
   event.dataTransfer.setDragImage(BLANK, 0, 0);
   held = members;
   notify();
+  if (options?.openSession === false) {
+    return;
+  }
+  const leader = members[0];
+  if (leader) {
+    beginDrag(
+      { dragKind: "npcRoster", characterKey: leader.characterKey },
+      { x: event.clientX, y: event.clientY }
+    );
+  }
 };
 
 const endRosterDrag = (): void => {
@@ -30,6 +46,7 @@ const endRosterDrag = (): void => {
     held = null;
     notify();
   }
+  endDrag();
 };
 
 const subscribe = (listener: () => void): (() => void) => {

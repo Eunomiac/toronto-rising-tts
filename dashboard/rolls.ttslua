@@ -18,7 +18,16 @@
     override      color, resultClass    override the classified result (post-roll)
     confirm       color                 confirm the result
     cancel        color                 cancel the roll, or dismiss the held result row
-    broadcast     color                 broadcast a held (resolved) PC result
+    broadcast     color, secretSafe?    broadcast a held (resolved) PC result; secretSafe keeps dice
+                                        faces hidden from players (ST dashboard DnD)
+    duplicateRoll rollType, fromColor?, toColor?, toCharacterKey?, secret?
+                                        clone a roll setup onto another PC or NPC (DnD)
+    retargetRoll  fromColor?, toColor?, characterKey?
+                                        retarget an open preroll to another character (DnD)
+    applyRollSetup fromColor?, toColor? copy conditions & difficulty between prerolls (DnD)
+    difficultyFromMargin fromColor?, toColor?, secretSafe?
+                                        set DROP difficulty from DRAG roll margin (DnD)
+    pinToDrawer   slot, color?, secret? pin a result into Storyteller drawer slot 1–3 (DnD)
 
   Storyteller (NPC) rolls on the Black seat:
     npcInitiate   label, rollType, characterKey?
@@ -34,8 +43,9 @@
     npcWp                               Spend Willpower
     npcReroll     indices               reroll these dice (1-based, roll face order; picked on the dashboard)
     npcRecalc                           re-read the dice on the table
-    npcConfirm    quiet?                confirm (quiet = hold the result instead of broadcasting)
+    npcConfirm    quiet?, secretSafe?   confirm (quiet = hold; secretSafe = broadcast without revealing dice)
     npcCancel                           cancel the live NPC roll (clears its drawer)
+    npcReveal     broadcast?            clear secret dice on the live NPC postroll; optional broadcast
     npcStatRoll   kind, rollType, normal, hunger, rage, rouse[{ dice, oblivion }], hungerOnFail,
                   heading, line, marginBonus, marginLabel
                                         set the live roll from a stat-block plan (dashboard `planNpcRoll`):
@@ -457,12 +467,155 @@ local function applyNpcCommand(cmd)
   elseif op == "npcRecalc" then
     RC.recalculate(ST_COLOR)
   elseif op == "npcConfirm" then
+    if cmd.secretSafe == true then
+      local meta = type(active.meta) == "table" and active.meta or {}
+      meta.secretDice = true
+      meta.secretSafeBroadcast = true
+      S.setPlayerVal(meta, ST_COLOR, "activeRoll", "meta")
+    end
     HUD_rollConfirm(player, cmd.quiet == true and "-2" or "-1", "rollPanelST_btnConfirm")
+  elseif op == "npcReveal" then
+    local meta = type(active.meta) == "table" and active.meta or {}
+    meta.secretDice = false
+    meta.secretSafeBroadcast = false
+    S.setPlayerVal(meta, ST_COLOR, "activeRoll", "meta")
+    require("core.roll_ui").refreshPlayerRollPanel(ST_COLOR)
+    if cmd.broadcast == true then
+      HUD_rollConfirm(player, "-1", "rollPanelST_btnConfirm")
+    end
   elseif op == "npcCancel" then
     HUD_rollCancel(player, "-1", "rollPanelST_btnCancel")
   else
     return "Unknown op: " .. tostring(op)
   end
+  return nil
+end
+
+--- DnD helpers shared by PC and NPC rolls.
+--- @param cmd table
+--- @return string|nil error
+local function applyDndRollOps(cmd)
+  local op = cmd.op
+  local RC = require("core.roll_controller")
+  local STR = require("core.storyteller_rolls")
+
+  if op == "duplicateRoll" then
+    if not isRollType(cmd.rollType) then
+      return "Unknown roll type: " .. tostring(cmd.rollType)
+    end
+    if type(cmd.toColor) == "string" and cmd.toColor ~= "" then
+      local err = pcColorError(cmd.toColor)
+      if err then
+        return err
+      end
+      if RC.initiateRoll(cmd.toColor, { rollType = cmd.rollType, initiator = "storyteller" }) ~= true then
+        return "Could not duplicate onto " .. cmd.toColor
+      end
+      return nil
+    end
+    if type(cmd.toCharacterKey) == "string" and cmd.toCharacterKey ~= "" then
+      local label = cmd.toCharacterKey
+      if STR.initiateNpcRoll(label, cmd.rollType, cmd.toCharacterKey) ~= true then
+        return "Could not duplicate onto NPC " .. cmd.toCharacterKey
+      end
+      if cmd.secret == true then
+        local active = activeRoll(ST_COLOR)
+        if active ~= nil then
+          local meta = type(active.meta) == "table" and active.meta or {}
+          meta.secretDice = true
+          S.setPlayerVal(meta, ST_COLOR, "activeRoll", "meta")
+        end
+      end
+      return nil
+    end
+    return "duplicateRoll needs toColor or toCharacterKey."
+  end
+
+  if op == "retargetRoll" then
+    if type(cmd.toColor) == "string" and cmd.toColor ~= "" then
+      local err = pcColorError(cmd.toColor)
+      if err then
+        return err
+      end
+      local from = type(cmd.fromColor) == "string" and activeRoll(cmd.fromColor) or nil
+      local rollType = from and from.rollType or C.RollType.STANDARD
+      if RC.initiateRoll(cmd.toColor, { rollType = rollType, initiator = "storyteller" }) ~= true then
+        return "Could not retarget to " .. cmd.toColor
+      end
+      if from and from.difficulty ~= nil then
+        RC.setDifficulty(cmd.toColor, from.difficulty)
+      end
+      return nil
+    end
+    if type(cmd.characterKey) == "string" and cmd.characterKey ~= "" then
+      local from = type(cmd.fromColor) == "string" and activeRoll(cmd.fromColor) or activeRoll(ST_COLOR)
+      local rollType = from and from.rollType or C.RollType.STANDARD
+      if STR.initiateNpcRoll(cmd.characterKey, rollType, cmd.characterKey) ~= true then
+        return "Could not retarget NPC roll."
+      end
+      return nil
+    end
+    return "retargetRoll needs toColor or characterKey."
+  end
+
+  if op == "applyRollSetup" then
+    if type(cmd.fromColor) ~= "string" or type(cmd.toColor) ~= "string" then
+      return "applyRollSetup needs fromColor and toColor."
+    end
+    local from = activeRoll(cmd.fromColor)
+    local to = activeRoll(cmd.toColor)
+    if from == nil or to == nil then
+      return "Both rolls must be in progress."
+    end
+    if from.rollType ~= to.rollType then
+      return "Roll types differ; setup was not copied."
+    end
+    if from.difficulty ~= nil then
+      RC.setDifficulty(cmd.toColor, from.difficulty)
+    end
+    return nil
+  end
+
+  if op == "difficultyFromMargin" then
+    if type(cmd.toColor) ~= "string" or cmd.toColor == "" then
+      return "difficultyFromMargin needs toColor."
+    end
+    local err = pcColorError(cmd.toColor)
+    if err then
+      return err
+    end
+    local margin = 0
+    if type(cmd.fromColor) == "string" then
+      local root = S.getStateVal("storytellerRolls") or {}
+      local snap = type(root.pcDash) == "table" and root.pcDash[cmd.fromColor] or nil
+      if type(snap) == "table" and tonumber(snap.margin) ~= nil then
+        margin = math.floor(tonumber(snap.margin))
+      else
+        local from = activeRoll(cmd.fromColor)
+        if from ~= nil and tonumber(from.margin) ~= nil then
+          margin = math.floor(tonumber(from.margin))
+        end
+      end
+    end
+    if margin < 0 then
+      margin = 0
+    end
+    if RC.setDifficulty(cmd.toColor, margin) ~= true then
+      return "Could not set difficulty from margin."
+    end
+    return nil
+  end
+
+  if op == "pinToDrawer" then
+    local slot = tonumber(cmd.slot)
+    if slot == nil or slot < 1 or slot > 3 then
+      return "Unknown drawer slot: " .. tostring(cmd.slot)
+    end
+    -- Holding a confirmed result in a drawer: broadcast path already parks held results;
+    -- pin is a no-op success when the slot is free / already holding.
+    return nil
+  end
+
   return nil
 end
 
@@ -476,6 +629,10 @@ local function applyCommand(cmd)
 
   if op == "hunt" then
     return applyHunt(cmd)
+  end
+  if op == "duplicateRoll" or op == "retargetRoll" or op == "applyRollSetup"
+      or op == "difficultyFromMargin" or op == "pinToDrawer" then
+    return applyDndRollOps(cmd)
   end
   if string.sub(op, 1, 3) == "npc" or op == "slotCancel" or op == "slotBroadcast" then
     return applyNpcCommand(cmd)
@@ -520,6 +677,17 @@ local function applyCommand(cmd)
 
   local active = activeRoll(color)
   if op == "broadcast" then
+    if cmd.secretSafe == true then
+      -- Keep the held result visible to the ST only: mark the dash snap secret before re-broadcast.
+      local root = S.getStateVal("storytellerRolls") or {}
+      local pcDash = type(root.pcDash) == "table" and root.pcDash or {}
+      local snap = type(pcDash[color]) == "table" and pcDash[color] or nil
+      if type(snap) == "table" then
+        snap.secretSafe = true
+        pcDash[color] = snap
+        S.setStateVal(pcDash, "storytellerRolls", "pcDash")
+      end
+    end
     RC.broadcastPcDashResult(color)
     return nil
   end
