@@ -3035,7 +3035,7 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
                 </span>
               )}
             </button>
-          ) : null)}
+          ) : null}
           {phase === "Intermission" && (
             <span className="lab-phase-session">
               <label>
