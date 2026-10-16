@@ -8,6 +8,7 @@ type PanelProps = {
   readonly edge: PanelEdge;
   readonly dragKind: DragKind;
   readonly open: boolean;
+  readonly hotBinId?: string;
   readonly onBinDrop: (bin: DropBin) => void;
 };
 
@@ -17,7 +18,7 @@ const edgeClass = (edge: PanelEdge): string =>
 const edgeTitle = (edge: PanelEdge): string => (edge === "A" ? "Primary" : edge === "B" ? "Secondary" : "Admin");
 
 /** One edge shelf: GSAP slides it in when `open` and the drag kind has bins for this edge. */
-export const SlideOutPanel = ({ edge, dragKind, open, onBinDrop }: PanelProps): ReactElement | null => {
+export const SlideOutPanel = ({ edge, dragKind, open, hotBinId, onBinDrop }: PanelProps): ReactElement | null => {
   const rootRef = useRef<HTMLDivElement>(null);
   const bins = panelBinsFor(dragKind, edge);
   const shouldShow = open && bins.length > 0;
@@ -30,25 +31,44 @@ export const SlideOutPanel = ({ edge, dragKind, open, onBinDrop }: PanelProps): 
     const ctx = gsap.context(() => {
       const from =
         edge === "A"
-          ? { x: -28, opacity: 0 }
+          ? { x: -36, opacity: 0 }
           : edge === "C"
-            ? { x: 28, opacity: 0 }
-            : { y: 24, opacity: 0 };
+            ? { x: 36, opacity: 0 }
+            : { y: 32, opacity: 0 };
       if (shouldShow) {
         gsap.fromTo(
           root,
           from,
-          { x: 0, y: 0, opacity: 1, duration: 0.26, ease: "power2.out", overwrite: "auto" }
+          { x: 0, y: 0, opacity: 1, duration: 0.32, ease: "power3.out", overwrite: "auto" }
         );
+        const binEls = root.querySelectorAll(".tr-dnd-bin");
         gsap.fromTo(
-          root.querySelectorAll(".tr-dnd-bin"),
-          { scale: 0.85, opacity: 0 },
-          { scale: 1, opacity: 1, duration: 0.28, stagger: 0.04, ease: "back.out(1.6)", delay: 0.04, overwrite: "auto" }
+          binEls,
+          { scale: 0.55, opacity: 0 },
+          {
+            scale: 1,
+            opacity: 1,
+            duration: 0.38,
+            stagger: 0.055,
+            ease: "back.out(1.8)",
+            delay: 0.06,
+            overwrite: "auto",
+            onComplete: () => {
+              gsap.to(binEls, {
+                boxShadow: "0 0 0 0 rgba(232, 196, 120, 0.35)",
+                duration: 1.4,
+                repeat: -1,
+                yoyo: true,
+                ease: "sine.inOut",
+                stagger: { each: 0.12, from: "start" }
+              });
+            }
+          }
         );
       } else {
         gsap.to(root, {
           ...from,
-          duration: 0.18,
+          duration: 0.2,
           ease: "power2.in",
           overwrite: "auto"
         });
@@ -56,6 +76,25 @@ export const SlideOutPanel = ({ edge, dragKind, open, onBinDrop }: PanelProps): 
     }, root);
     return () => ctx.revert();
   }, [shouldShow, edge, dragKind]);
+
+  useLayoutEffect(() => {
+    const root = rootRef.current;
+    if (!root || !shouldShow) {
+      return;
+    }
+    const ctx = gsap.context(() => {
+      root.querySelectorAll<HTMLElement>(".tr-dnd-bin").forEach((el) => {
+        const hot = hotBinId !== undefined && el.getAttribute(PANEL_BIN_ATTR) === hotBinId;
+        gsap.to(el, {
+          scale: hot ? 1.08 : 1,
+          duration: 0.16,
+          ease: "power2.out",
+          overwrite: "auto"
+        });
+      });
+    }, root);
+    return () => ctx.revert();
+  }, [hotBinId, shouldShow]);
 
   if (bins.length === 0) {
     return null;
@@ -74,10 +113,11 @@ export const SlideOutPanel = ({ edge, dragKind, open, onBinDrop }: PanelProps): 
           <button
             key={bin.id}
             type="button"
-            className={`tr-dnd-bin${bin.secretSafe ? " tr-dnd-bin--secret" : ""}`}
+            className={`tr-dnd-bin${bin.secretSafe ? " tr-dnd-bin--secret" : ""}${hotBinId === bin.id ? " is-hot" : ""}`}
             {...{ [PANEL_BIN_ATTR]: bin.id }}
             onDragOver={(event) => {
               event.preventDefault();
+              event.stopPropagation();
               event.dataTransfer.dropEffect = "copy";
             }}
             onDrop={(event) => {

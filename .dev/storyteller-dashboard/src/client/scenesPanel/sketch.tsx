@@ -276,7 +276,8 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, onNpcTrackers, sea
         const npcTrackers = !onPresence && seat.kind === "npc" && seat.characterKey !== undefined ? onNpcTrackers : undefined;
         const menu = onMenu && (seat.kind === "pc" || seat.kind === "npc") ? onMenu : undefined;
         const seatKey = seat.seatKey;
-        const draggable = seating !== undefined && seatKey !== undefined && (seat.kind === "pc" || seat.kind === "npc");
+        // DnD session (slide-out bins, out, etc.) works in downtime too; chair swaps still need `seating`.
+        const draggable = seatKey !== undefined && (seat.kind === "pc" || seat.kind === "npc");
         const takesNpc = seat.kind === "empty" || (seat.kind === "npc" && seating?.displace !== undefined);
         const accepts = (event: DragEvent<HTMLElement>): boolean =>
           seating !== undefined
@@ -548,7 +549,7 @@ export type StageEnv = {
 /** An edit stays drawn until TTS pushes the stage back, or this long if it never does (TTS refused it). */
 const OPTIMISTIC_MS = 6000;
 
-/** The stage with no scene on the table: the seats stay along the bottom (trackers and sheets, no seating edits). */
+/** The stage with no scene on the table: seats stay along the bottom (trackers, sheets, and DnD to slide-out bins; no chair swaps). */
 export const IdleBoard = ({ w, h, seats, liveSheet }: { w: number; h: number; seats: readonly SeatSketch[]; liveSheet?: LiveSheetAccess }): ReactElement => (
   <div className="lab-board wide idle" style={{ width: w, height: h }}>
     <span className="lab-board-idle">(No Active Scene)</span>

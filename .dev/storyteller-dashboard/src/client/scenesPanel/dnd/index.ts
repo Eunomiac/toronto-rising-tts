@@ -1,4 +1,5 @@
 export { applyDndAction, type DndApplyContext, type DndUiHooks } from "./apply";
+export { sessionTargetsAt, tryCommitAtPoint, tryCommitDrop } from "./commit";
 export { DndChrome } from "./DndChrome";
 export { DragHelpPanel } from "./DragHelpPanel";
 export { dragHelpTitle, helpBulletsFor } from "./helpLegend";

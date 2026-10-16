@@ -8,11 +8,12 @@ type Props = {
   readonly y: number;
   readonly dropKind: DropKind;
   readonly bins: readonly DropBin[];
+  readonly hotBinId?: string;
   readonly onPick: (bin: DropBin) => void;
 };
 
 /** Circular HOVER drop sites around a target (TraitRing-style motion, drop targets not click menus). */
-export const HoverDropBins = ({ x, y, dropKind, bins, onPick }: Props): ReactElement | null => {
+export const HoverDropBins = ({ x, y, dropKind, bins, hotBinId, onPick }: Props): ReactElement | null => {
   const rootRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
@@ -24,8 +25,8 @@ export const HoverDropBins = ({ x, y, dropKind, bins, onPick }: Props): ReactEle
       gsap.fromTo(root, { opacity: 0 }, { opacity: 1, duration: 0.16, ease: "power2.out" });
       gsap.fromTo(
         root.querySelectorAll(".tr-dnd-hover-bin"),
-        { scale: 0.5, opacity: 0 },
-        { scale: 1, opacity: 1, duration: 0.26, stagger: 0.035, ease: "back.out(1.7)", delay: 0.02 }
+        { scale: 0.45, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 0.3, stagger: 0.04, ease: "back.out(1.8)", delay: 0.02 }
       );
     }, root);
     return () => ctx.revert();
@@ -35,7 +36,7 @@ export const HoverDropBins = ({ x, y, dropKind, bins, onPick }: Props): ReactEle
     return null;
   }
 
-  const radius = 72;
+  const radius = 88;
   return (
     <div ref={rootRef} className="tr-dnd-hover" style={{ left: x, top: y }}>
       {bins.map((bin, index) => {
@@ -46,7 +47,7 @@ export const HoverDropBins = ({ x, y, dropKind, bins, onPick }: Props): ReactEle
           <button
             key={bin.id}
             type="button"
-            className="tr-dnd-hover-bin"
+            className={`tr-dnd-hover-bin${hotBinId === bin.id ? " is-hot" : ""}`}
             style={{ left, top }}
             {...{ [HOVER_BIN_ATTR]: bin.id, "data-tr-dnd-hover-drop": dropKind }}
             onDragOver={(event) => {

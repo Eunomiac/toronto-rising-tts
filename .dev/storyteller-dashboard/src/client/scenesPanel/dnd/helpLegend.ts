@@ -181,14 +181,23 @@ const cellBullets = (drop: DropKind, cell: MatrixCell): readonly string[] => {
 /** Human title for the drag source shown in the help panel. */
 export const dragHelpTitle = (drag: DragKind): string => DRAG_LABEL[drag];
 
+/** Drops whose outcomes are already printed on slide-out / hover bins — omit from the guide. */
+const LABELED_ON_SCREEN: ReadonlySet<DropKind> = new Set(["panelA", "panelB", "panelC", "rollDrawer"]);
+
 /**
- * Bullet list of meaningful drop outcomes for this drag kind (skips ⛔ / ❌).
- * Panel bins are expanded as separate bullets under that panel’s drop label.
+ * Bullet list of non-obvious drop outcomes for this drag kind.
+ * Skips ⛔ / ❌ and anything already labeled on slide-out or hover bins.
  */
 export const helpBulletsFor = (drag: DragKind): readonly HelpBullet[] => {
   const bullets: HelpBullet[] = [];
   for (const drop of DROP_KINDS) {
+    if (LABELED_ON_SCREEN.has(drop)) {
+      continue;
+    }
     const cell = matrixCell(drag, drop);
+    if (cell.kind === "panel" || cell.kind === "hover") {
+      continue;
+    }
     const lines = cellBullets(drop, cell);
     for (const text of lines) {
       bullets.push({ drop, dropLabel: DROP_LABEL[drop], text });

@@ -9,11 +9,11 @@ describe("helpLegend", () => {
     }
   });
 
-  it("lists meaningful drops for seated PC (includes deactivate + panels)", () => {
+  it("lists non-obvious drops for seated PC (skips panel bins already labeled on screen)", () => {
     const bullets = helpBulletsFor("pcSeated");
-    expect(bullets.length).toBeGreaterThan(3);
+    expect(bullets.length).toBeGreaterThan(0);
     expect(bullets.some((b) => b.drop === "out")).toBe(true);
-    expect(bullets.some((b) => b.drop === "panelA")).toBe(true);
+    expect(bullets.every((b) => b.drop !== "panelA" && b.drop !== "panelB" && b.drop !== "panelC")).toBe(true);
     expect(bullets.every((b) => b.text.length > 0 && b.dropLabel.length > 0)).toBe(true);
   });
 

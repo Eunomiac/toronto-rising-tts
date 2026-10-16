@@ -2,12 +2,12 @@ import { gsap } from "gsap";
 import { useEffect, useLayoutEffect, useMemo, useRef, useSyncExternalStore, type ReactElement } from "react";
 import { createPortal } from "react-dom";
 import { activeCanvas } from "../sketch";
-import { applyDndAction, type DndUiHooks } from "./apply";
+import type { DndUiHooks } from "./apply";
+import { sessionTargetsAt, tryCommitAtPoint, tryCommitDrop } from "./commit";
 import { DragHelpPanel } from "./DragHelpPanel";
 import { HoverDropBins } from "./hoverBins";
 import { matrixCell } from "./matrix";
-import { resolveBinAction } from "./resolve";
-import { endDrag, getDndSession, subscribeDndSession } from "./session";
+import { endDrag, getDndSession, moveDrag, subscribeDndSession } from "./session";
 import { SlideOutPanel } from "./slideOut";
 import type { DropBin, DropTarget, PanelEdge } from "./types";
 import type { ScenesSend } from "../commands";
@@ -24,13 +24,15 @@ const EDGES: readonly PanelEdge[] = ["A", "B", "C"];
 /**
  * Canvas overlay: veil + edge slide-outs + hover bins. Mount once on the Scenes canvas.
  * Subscribes to the DnD session store; GSAP owns enter/exit motion.
+ * Bridges HTML5 dragover/drop into the same hit-test + commit path as pointer stage drags.
  */
 export const DndChrome = ({ scenes, rolls, ui }: Props): ReactElement | null => {
   const session = useSyncExternalStore(subscribeDndSession, getDndSession);
   const veilRef = useRef<HTMLDivElement>(null);
   const canvas = activeCanvas();
-
   const ctx = useMemo(() => ({ scenes, rolls, ui }), [scenes, rolls, ui]);
+  const ctxRef = useRef(ctx);
+  ctxRef.current = ctx;
 
   useLayoutEffect(() => {
     const veil = veilRef.current;
@@ -42,8 +44,7 @@ export const DndChrome = ({ scenes, rolls, ui }: Props): ReactElement | null => 
         opacity: session.veil ? 0.28 : 0,
         duration: session.veil ? 0.22 : 0.16,
         ease: "power2.out",
-        overwrite: "auto",
-        pointerEvents: session.veil ? "auto" : "none"
+        overwrite: "auto"
       });
     }, veil);
     return () => ctxG.revert();
@@ -58,8 +59,36 @@ export const DndChrome = ({ scenes, rolls, ui }: Props): ReactElement | null => 
         endDrag();
       }
     };
+    const onDragOver = (event: DragEvent): void => {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "copy";
+      const payload = getDndSession().payload;
+      if (!payload) {
+        return;
+      }
+      const point = { x: event.clientX, y: event.clientY };
+      const { highlight, hover } = sessionTargetsAt(point, payload.dragKind);
+      moveDrag(point, highlight, hover);
+    };
+    const onDrop = (event: DragEvent): void => {
+      const payload = getDndSession().payload;
+      if (!payload) {
+        return;
+      }
+      event.preventDefault();
+      const point = { x: event.clientX, y: event.clientY };
+      if (tryCommitAtPoint(payload, point, ctxRef.current)) {
+        endDrag();
+      }
+    };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    document.addEventListener("dragover", onDragOver);
+    document.addEventListener("drop", onDrop);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.removeEventListener("dragover", onDragOver);
+      document.removeEventListener("drop", onDrop);
+    };
   }, [session.active]);
 
   const commitBin = (bin: DropBin, dropKind: DropTarget["dropKind"]): void => {
@@ -68,14 +97,10 @@ export const DndChrome = ({ scenes, rolls, ui }: Props): ReactElement | null => 
       return;
     }
     const target: DropTarget = { dropKind, binId: bin.id };
-    const resolved = resolveBinAction(payload.dragKind, target);
-    if (!resolved || resolved.action === "noop" || resolved.action === "impossible") {
+    if (tryCommitDrop(payload, target, ctx)) {
       endDrag();
       return;
     }
-    applyDndAction(resolved.action as Parameters<typeof applyDndAction>[0], payload, target, ctx, {
-      secretSafe: resolved.secretSafe
-    });
     endDrag();
   };
 
@@ -88,6 +113,7 @@ export const DndChrome = ({ scenes, rolls, ui }: Props): ReactElement | null => 
       ? matrixCell(session.payload.dragKind, session.hover.dropKind)
       : null;
   const hoverBins = hoverCell?.kind === "hover" ? hoverCell.bins : [];
+  const hotBinId = session.highlight && "binId" in session.highlight ? session.highlight.binId : undefined;
 
   return createPortal(
     <div className={`tr-dnd-chrome${session.active ? " is-active" : ""}`}>
@@ -102,6 +128,7 @@ export const DndChrome = ({ scenes, rolls, ui }: Props): ReactElement | null => 
             edge={edge}
             dragKind={session.payload!.dragKind}
             open={session.openEdges.includes(edge)}
+            hotBinId={hotBinId}
             onBinDrop={(bin) => commitBin(bin, edge === "A" ? "panelA" : edge === "B" ? "panelB" : "panelC")}
           />
         ))}
@@ -111,6 +138,7 @@ export const DndChrome = ({ scenes, rolls, ui }: Props): ReactElement | null => 
           y={session.pointer.y}
           dropKind={session.hover.dropKind}
           bins={hoverBins}
+          hotBinId={hotBinId}
           onPick={(bin) => commitBin(bin, session.hover!.dropKind)}
         />
       )}

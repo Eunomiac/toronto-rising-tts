@@ -2,8 +2,10 @@ import { useContext, useEffect, useRef, useState, type CSSProperties, type DragE
 import { Headshot } from "../headshots/Headshot";
 import { useNpcOverrides } from "../npcOverrides";
 import type { SceneCatalogs } from "./catalogs";
-import { GenericTiersContext, type StageChange, type StageChanges } from "./commands";
-import { beginDrag, endDrag, hitTestDrop, moveDrag, pointIn, useBoardDrag, type PointerHandlers } from "./dnd";
+import { GenericTiersContext, useScenesCommand, type StageChange, type StageChanges } from "./commands";
+import { beginDrag, endDrag, hitTestDrop, moveDrag, pointIn, sessionTargetsAt, tryCommitDrop, useBoardDrag, type PointerHandlers } from "./dnd";
+import { PANEL_EDGE_ATTR } from "./dnd/mime";
+import { RollsCommandContext } from "./rolls/commands";
 import { TierBadge } from "./tierBadge";
 import { NpcLevelBadge } from "./npcTrackers";
 import {
@@ -143,6 +145,8 @@ type StageLayerProps = {
 export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit, onMenu, onSeat, onOpen }: StageLayerProps): ReactElement => {
   const roster = useRosterLayout();
   const overrides = useNpcOverrides();
+  const scenes = useScenesCommand();
+  const rolls = useContext(RollsCommandContext);
   const [over, setOver] = useState(false);
   const tapTimer = useRef<number | null>(null);
   const cancelTap = (): void => {
@@ -174,6 +178,14 @@ export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit
   const tokens = useBoardDrag<string>(
     board,
     (key, point, client) => {
+      const payload = { dragKind: "npcStaged" as const, characterKey: key };
+      const applyCtx = rolls ? { scenes, rolls } : null;
+      const target = hitTestDrop(client);
+      // Slide-out / hover bins first — never fall through to off-stage remove.
+      if (applyCtx && target.binId && tryCommitDrop(payload, target, applyCtx)) {
+        endDrag();
+        return;
+      }
       const rollCard = rollCardAt(client.x, client.y);
       if (rollCard) {
         rollCard.dispatchEvent(new CustomEvent(NPC_ROLL_DROP_EVENT, { detail: key }));
@@ -184,6 +196,23 @@ export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit
       // SD-38: stage token onto a seat moves onto that chair (lit); empty or same holder, or displace via onSeat.
       if (seat && onSeat) {
         onSeat(key, seat.chair);
+        endDrag();
+        return;
+      }
+      if (offStage(point)) {
+        const overPanel = document
+          .elementsFromPoint(client.x, client.y)
+          .some((el) => el instanceof Element && el.closest(`[${PANEL_EDGE_ATTR}]`));
+        // Over a panel but missed a bin → cancel (token stays). True empty "out" → clear via matrix.
+        if (overPanel) {
+          endDrag();
+          return;
+        }
+        if (applyCtx) {
+          tryCommitDrop(payload, { dropKind: "out" }, applyCtx);
+        } else if (spots.some((spot) => spot.characterKey === key)) {
+          onEdit({ [key]: { remove: true } });
+        }
         endDrag();
         return;
       }
@@ -200,8 +229,10 @@ export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit
         }
       : undefined,
     (key, _point, client) => {
-      beginDrag({ dragKind: "npcStaged", characterKey: key }, client);
-      moveDrag(client, hitTestDrop(client));
+      const payload = { dragKind: "npcStaged" as const, characterKey: key };
+      beginDrag(payload, client);
+      const { highlight, hover } = sessionTargetsAt(client, payload.dragKind);
+      moveDrag(client, highlight, hover);
     }
   );
   const packDrag = useBoardDrag<StagePack>(board, (pack, point) => {

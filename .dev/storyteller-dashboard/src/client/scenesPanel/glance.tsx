@@ -3006,13 +3006,35 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
           {phase === "Play" && <span className="lab-phase-sub">{subPhase}</span>}
         </span>
         <span className="lab-phase-now">
-          {phase === "Play" && (scenes.current && linkMenu ? (
-            <button type="button" className="lab-phase-scene" title="Unlink or fork this scene" onClick={(event) => setLinkAt(canvasPoint(event))}>
+          {phase === "Play" && scenes.current ? (
+            <button
+              type="button"
+              className="lab-phase-scene"
+              title={linkMenu ? "Drag for scene actions; click to unlink or fork" : "Drag for scene actions"}
+              data-tr-dnd-scene-active={scenes.current.key}
+              draggable
+              onDragStart={(event) => {
+                event.dataTransfer.setData(SCENE_DRAG_TYPE, scenes.current!.key);
+                event.dataTransfer.effectAllowed = "copyMove";
+                beginDrag(
+                  { dragKind: "sceneActive", sceneKey: scenes.current!.key },
+                  { x: event.clientX, y: event.clientY }
+                );
+              }}
+              onDragEnd={() => endDrag()}
+              onClick={(event) => {
+                if (linkMenu) {
+                  setLinkAt(canvasPoint(event));
+                }
+              }}
+            >
               {scenes.current.title}
-              {!linkMenu.linked && <span className="lab-phase-unlinked" title="The table no longer writes into this scene's library copy">unlinked</span>}
+              {linkMenu && !linkMenu.linked && (
+                <span className="lab-phase-unlinked" title="The table no longer writes into this scene's library copy">
+                  unlinked
+                </span>
+              )}
             </button>
-          ) : scenes.current ? (
-            <span className="lab-phase-scene">{scenes.current.title}</span>
           ) : null)}
           {phase === "Intermission" && (
             <span className="lab-phase-session">
