@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useSyncExternalStore, type
 import { createPortal } from "react-dom";
 import { activeCanvas } from "../sketch";
 import { applyDndAction, type DndUiHooks } from "./apply";
+import { DragHelpPanel } from "./DragHelpPanel";
 import { HoverDropBins } from "./hoverBins";
 import { matrixCell } from "./matrix";
 import { resolveBinAction } from "./resolve";
@@ -91,6 +92,9 @@ export const DndChrome = ({ scenes, rolls, ui }: Props): ReactElement | null => 
   return createPortal(
     <div className={`tr-dnd-chrome${session.active ? " is-active" : ""}`}>
       <div ref={veilRef} className="tr-dnd-veil" aria-hidden />
+      {session.payload && (
+        <DragHelpPanel dragKind={session.payload.dragKind} open={session.active} />
+      )}
       {session.payload &&
         EDGES.map((edge) => (
           <SlideOutPanel

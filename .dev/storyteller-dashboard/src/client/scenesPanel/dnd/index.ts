@@ -1,5 +1,7 @@
 export { applyDndAction, type DndApplyContext, type DndUiHooks } from "./apply";
 export { DndChrome } from "./DndChrome";
+export { DragHelpPanel } from "./DragHelpPanel";
+export { dragHelpTitle, helpBulletsFor } from "./helpLegend";
 export { allMatrixPairs, edgesWithBins, isDropAllowed, matrixCell, panelBinsFor } from "./matrix";
 export {
   GROUP_DRAG_TYPE,
