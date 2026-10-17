@@ -502,6 +502,83 @@ function Scenes.discardLiveNpcLayout()
     discardLiveNpcLayout()
 end
 
+--- True only while a library scene is on the table, or during Memoriam (which has its own stage).
+--- Downtime / Intermission / no-scene Play have no stage — NPCs must not live in placements.
+--- @return boolean
+function Scenes.stageIsActive()
+    if SceneLibrary.hasLiveSceneOnTable() == true then
+        return true
+    end
+    local Memoriam = require("core.memoriam")
+    return type(Memoriam.isActive) == "function" and Memoriam.isActive() == true
+end
+
+--- @return boolean
+local function liveNpcLayoutHasContent()
+    local placements = S.getStateVal("sessionScene", "npcWorld", "placements")
+    if type(placements) == "table" then
+        for _ in pairs(placements) do
+            return true
+        end
+    end
+    local membership = S.getStateVal("sessionScene", "npcWorld", "genericMembership")
+    if type(membership) == "table" then
+        for _ in pairs(membership) do
+            return true
+        end
+    end
+    local pack = S.getStateVal("sessionScene", "scatterPlacements")
+    if type(pack) ~= "table" then
+        return false
+    end
+    local ScatterLayout = require("lib.scatter_layout")
+    local groupCount = type(ScatterLayout.groupCount) == "function" and ScatterLayout.groupCount() or 6
+    for i = 1, groupCount do
+        local areaKey = type(ScatterLayout.areaKeyForGroup) == "function" and ScatterLayout.areaKeyForGroup(i) or nil
+        local area = type(areaKey) == "string" and pack[areaKey] or nil
+        if type(area) == "table" and type(area.orbitCharacters) == "table" then
+            for _ in pairs(area.orbitCharacters) do
+                return true
+            end
+        end
+    end
+    return false
+end
+
+--- When there is no stage (Downtime / Intermission / no live scene), drop any leftover stage,
+--- Scatter-orbit, or generic NPC state. Cold loads skip Intermission enter, so a save made with
+--- stuck placements would otherwise keep them forever.
+--- @param opts table|nil `{ sync?: boolean }` — when true, `Sync.npcs` parks figurines after the clear
+--- @return boolean true when something was cleared
+function Scenes.enforceEmptyStageWhenIdle(opts)
+    opts = type(opts) == "table" and opts or {}
+    if Scenes.stageIsActive() then
+        return false
+    end
+    if not liveNpcLayoutHasContent() then
+        return false
+    end
+    discardLiveNpcLayout()
+    do
+        local GenericNpcs = require("core.generic_npcs")
+        if type(GenericNpcs.destroyAllLiveAndClearMembership) == "function" then
+            GenericNpcs.destroyAllLiveAndClearMembership()
+        end
+    end
+    if opts.sync == true then
+        local Sync = require("core.sync")
+        if type(Sync.npcs) == "function" then
+            Sync.npcs({
+                reason = "no_stage_idle",
+                force = true,
+                deferUiRefresh = true,
+            })
+        end
+        require("dashboard.push").markWorldDirty({ seats = true, scene = true })
+    end
+    return true
+end
+
 --- Persisted + eager apply: Main BGM only, no location/weather (TOR-151 / TOR-152 no-scene branch).
 --- @param opts table|nil `{ skipMoodIfAlreadyMain?: boolean }` — skip restarting Main only when Main is already the audible BGM bed
 local function mainMoodAlreadyAudible()
@@ -680,7 +757,9 @@ local function mutateDefaultNoSceneSessionState(opts)
     S.setStateVal({}, "sessionScene", "soundscapeNarrative")
     S.setStateVal(false, "sessionScene", "isTopFogActive")
     S.setStateVal("OutdoorDim", "sessionScene", "lightingPresetKey")
-    clearLiveNpcWorldPlacements()
+    -- Full layout discard (stage + Scatter orbits + restore stash). Clearing placements alone left
+    -- Scatter NPCs in state during Downtime / Intermission, which then survived File→Load.
+    discardLiveNpcLayout()
     do
         local GenericNpcs = require("core.generic_npcs")
         GenericNpcs.destroyAllLiveAndClearMembership()
@@ -759,7 +838,8 @@ function Scenes.applyActiveSceneSoundscapeFromSession()
     require("dashboard.push").markWorldDirty({ soundscape = true, scene = true })
 end
 
---- Applies the defined no-scene environment: Table B0 (dynamic Table B, zero NPC seats), five PCs, empty NPC world, OutdoorDim, Main only.
+--- Applies the defined no-scene environment: Table B (zero NPC seats), five PCs, empty NPC world
+--- (stage placements + Scatter orbits), OutdoorDim, Main only.
 --- Does not mutate library rows, PC map pins, or present-day clock.
 --- @param opts table|nil `{ reason?: string, skipTransitionBlindfold?: boolean, skipSoundscape?: boolean, activateGenericSkybox?: boolean, sessionChairs?: boolean }`
 ---   `skipSoundscape` defers the Main ambient apply to the caller (staged transition fade-in, TOR-147).

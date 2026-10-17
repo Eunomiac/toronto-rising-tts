@@ -43,6 +43,8 @@
                                           stage NPCs: characterKey → { u, v, lightMode? } or { remove = true }
                                           (control-board u, v); `clear` empties the stage, `reset` starts from
                                           the table's library row. One op = one animated figurine move.
+                                          Refuses placements while no scene is on the table (Downtime has no stage);
+                                          clear / remove still empties leftover state.
     scatterPlace      characterKey, kind, group?
                                           Scatter: move an NPC (`kind` npc; no group = off) or PC (`kind` pc,
                                           characterKey = the PC's charKey) into a scatter group 1–6
@@ -358,8 +360,12 @@ local function applyCommand(cmd)
   end
 
   if op == "stage" then
+    local Scenes = require("core.scenes")
     local opts = { clear = cmd.clear == true }
     if cmd.reset == true then
+      if type(Scenes.stageIsActive) == "function" and Scenes.stageIsActive() ~= true then
+        return "There is no stage while no scene is on the table."
+      end
       local SceneLibrary = require("core.scene_library")
       local key = SceneLibrary.resolveMirrorSceneKey() or S.getStateVal("sceneLibrary", "lastAppliedKey")
       local row = type(key) == "string" and S.getStateVal("sceneLibrary", "scenes", key) or nil
@@ -402,6 +408,10 @@ local function applyCommand(cmd)
     return err
   end
   if op == "genericAdd" then
+    local Scenes = require("core.scenes")
+    if type(Scenes.stageIsActive) == "function" and Scenes.stageIsActive() ~= true then
+      return "There is no stage while no scene is on the table."
+    end
     local err = require("core.generic_npcs").importNamed(cmd.keys, cmd.labels, cmd.tiers, cmd.kept)
     if err == nil then
       require("core.npc_trackers").ensureKeys(cmd.keys)

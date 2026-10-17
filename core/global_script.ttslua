@@ -3234,6 +3234,9 @@ function onLoad(saved_data)
             if S.getStateVal("currentPhase") == C.Phases.INTERMISSION then
                 require("core.phases").writeAllLightsDarkState()
             end
+            -- Cold load skips Intermission enter; drop any stage / Scatter NPCs left from a Downtime save.
+            setStartupAction("startup-ready-empty-idle-stage")
+            require("core.scenes").enforceEmptyStageWhenIdle()
             setStartupAction("startup-ready-final-sync-full")
             Sync.full({ reason = "onLoad_startup_gate" })
             return 0

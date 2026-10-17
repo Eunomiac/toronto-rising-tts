@@ -227,6 +227,28 @@ local pendingEditEpoch = 0
 function StageApply.applyStageChanges(changes, opts)
     opts = type(opts) == "table" and opts or {}
     changes = type(changes) == "table" and changes or {}
+    do
+        local Scenes = require("core.scenes")
+        if type(Scenes.stageIsActive) == "function" and Scenes.stageIsActive() ~= true then
+            local placing = opts.clear ~= true and type(opts.base) == "table"
+            if not placing then
+                for _, change in pairs(changes) do
+                    if type(change) == "table" and change.remove ~= true then
+                        placing = true
+                        break
+                    end
+                end
+            end
+            if placing then
+                return "There is no stage while no scene is on the table."
+            end
+            -- Removals / clear while idle: drop the whole leftover layout (stage + Scatter).
+            if type(Scenes.enforceEmptyStageWhenIdle) == "function" then
+                Scenes.enforceEmptyStageWhenIdle({ sync = true })
+            end
+            return nil
+        end
+    end
     if pendingEdit ~= nil and opts.clear ~= true and type(opts.base) ~= "table" then
         local merged = {}
         for ck, change in pairs(pendingEdit.changes) do

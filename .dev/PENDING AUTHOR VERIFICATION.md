@@ -20,7 +20,18 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
-_Last populated: 2026-10-15 (Scenes DnD TOR-733 + Cloud asset harmonization). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
+_Last populated: 2026-10-16 (TOR-735 no stage during Downtime). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
+
+### High — Downtime has no stage
+
+#### TOR-735 — No stage during Downtime (stuck Mara / Mylène)
+
+**How to verify:** Save & Play so the new Lua loads. You do not need to restart the dashboard for this check.
+
+1. With no scene on the table (End Scene, or Intermission), open the Scenes tab. The stage area should stay **(No Active Scene)** with seats only — no Mara, Mylène, or other NPC tokens on the board.
+2. Try putting an NPC on the stage from the roster while still in Downtime (or with no scene). TTS should refuse with a clear message that there is no stage, and nothing should appear in the world.
+3. Start a normal scene, place one NPC on the stage, then End Scene. That NPC should leave the stage. File → Save, quit to the main menu, reload the save: they should still be gone (not stuck from the old Scatter leftovers).
+4. Optional: start a Memoriam from Downtime — Memoriam may still use the stage; leaving it for Downtime should clear stage NPCs again.
 
 ### High — Scenes drag-and-drop
 
