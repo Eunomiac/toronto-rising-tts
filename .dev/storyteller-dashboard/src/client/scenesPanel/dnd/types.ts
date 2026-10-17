@@ -183,6 +183,7 @@ export type DragPayload =
       readonly color: string;
       readonly rollType?: string;
       readonly summary?: string;
+      readonly margin?: number;
     }
   | {
       readonly dragKind: "npcRollPreroll" | "npcRollPostrollRevealed" | "npcRollPostrollSecret";
@@ -190,6 +191,7 @@ export type DragPayload =
       readonly label?: string;
       readonly rollType?: string;
       readonly summary?: string;
+      readonly margin?: number;
     }
   | { readonly dragKind: "sceneActive"; readonly sceneKey: string }
   | { readonly dragKind: "sceneOnDeckNew" | "sceneOnDeckOngoing"; readonly sceneKey: string };

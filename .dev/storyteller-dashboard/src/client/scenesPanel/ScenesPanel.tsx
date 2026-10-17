@@ -442,6 +442,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   };
   const characterName = (key: string): string => [...(catalogs?.namedNpcs ?? []), ...(catalogs?.pcs ?? [])].find((npc) => npc.characterKey === key)?.fullName ?? seats?.generics.find((npc) => npc.characterKey === key)?.name ?? key;
   const dndUi: DndUiHooks = {
+    characterName,
     notify: setDndNotice,
     openRollControl: requestRollControl,
     difficultyFor: (key, higher) => {

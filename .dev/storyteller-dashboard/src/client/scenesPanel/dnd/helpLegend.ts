@@ -21,7 +21,7 @@ const DRAG_LABEL: Readonly<Record<DragKind, string>> = {
 const DROP_LABEL: Readonly<Record<DropKind, string>> = {
   out: "Empty space / Off the board",
   panelA: "Slide-out Panel A (left)",
-  panelB: "Slide-out Panel B (bottom)",
+  panelB: "Slide-out Panel B (aspects row)",
   panelC: "Slide-out Panel C (right)",
   stage: "Stage",
   emptySeat: "Empty seat",
