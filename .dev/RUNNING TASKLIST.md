@@ -322,6 +322,7 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 - [x] **playerLight1 anchor + lookAt modes:** `OP.resolveAnchoredWorldPoint` + `SetLightMode` materialize of `{ anchor, height }` / `lookAt` → world position + `lookAtTarget` / `U.lookAtRotation` (STANDARD seat anchors ↔ ROLLING dice-drawer anchors). Pending Save & Play. _(no new TOR — Linear quota)_
 - [x] **Spotlight tuner panel:** Selection grid (build-time 400-slot pool, 10 columns) plus Cartesian / spherical debug sliders; lighting reconcile skips the selected GUID while the panel is open. Opened from the **Debug Light** button on the Storyteller debug toolbar. Author confirmed 2026-10-06 (works well enough for debugging). _(TOR-495)_
+- [x] **Restore Debug Light button:** the Host debug column had lost **Debug Light** (removed with the Intermission reset HUD pass); the tuner panel and handlers were still there. Button restored above Debug Camera. Pending Save & Play. _(TOR-736)_
 - [x] Reconciler lighting updates lerped (default 2s). _( `core/lighting.ttslua` `L.DEFAULT_RECONCILE_LERP_SECONDS`.)_ _(TOR-59)_
 - [x] Test-bed helpers to apply seat-light settings from Red to all active seats. _( `TestBed_applyPlayerSeatLightsFromRed`.)_ _(TOR-61)_
 - [x] **Storyteller camera strip + Black presets:** Host `panel_storyteller_camera` ? `HUD_STcamera`; `M.setCamera` / spoof / seat sync use `C.StorytellerCameraAngles` for Black (fixes E2E `rollE2eSeatPrep("Black")`). _(TOR-348)_

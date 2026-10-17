@@ -62,6 +62,7 @@ UI.setAttributes("debug_buttonControls", {offsetXY = "-200, 300"})
       <Button id="debug_interaction" class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleInteraction">Toggle Interaction</Button>
       <Button class="hud_storyteller_button" onClick="HUD_toggleAllAnchors">Toggle Anchors</Button>
       <Button class="hud_storyteller_button" onClick="HUD_toggleAllSpotlights">Toggle Spotlights</Button>
+      <Button class="hud_storyteller_button" onClick="HUD_debugLightActivate">Debug Light</Button>
       <Button class="hud_storyteller_button" onClick="HUD_debugCameraActivate">Debug Camera</Button>
       <HorizontalLayout class="debug_button_row">
         <Button class="debug_small_button" onClick="HUD_soundscapePrepareSave">Silence for save</Button>

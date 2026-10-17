@@ -20,7 +20,17 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
-_Last populated: 2026-10-16 (TOR-735 no stage during Downtime). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
+_Last populated: 2026-10-16 (TOR-736 Debug Light button + TOR-735 no stage during Downtime). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
+
+### High — Debug Light button
+
+#### TOR-736 — Restore Debug Light on the Storyteller debug panel
+
+**How to verify:** Save & Play so the Storyteller HUD XML reloads (a full build is not required for this one).
+
+1. Open the Host **== DEBUG ==** column on the Storyteller toolbar.
+2. You should see **Debug Light** again, just above **Debug Camera**.
+3. Click it: a grid of in-world spotlights should appear. Click one to open the Cartesian / spherical sliders (the same tuner as before).
 
 ### High — Downtime has no stage
 
