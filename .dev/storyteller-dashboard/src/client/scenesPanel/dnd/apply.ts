@@ -11,6 +11,7 @@ export type DndApplyContext = {
 };
 
 export type DndUiHooks = {
+  readonly characterName?: (characterKey: string) => string;
   readonly difficultyFor?: (characterKey: string, higher: boolean) => number | undefined;
   readonly openRollControl?: (action: RollControlRequest["action"], payload: DragPayload) => boolean;
   readonly openNpcEdit?: (characterKey: string) => void;
@@ -80,7 +81,7 @@ const initiateFor = (
   if (key || payload.dragKind.startsWith("npc")) {
     ctx.rolls({
       op: "npcInitiate",
-      label: key ?? "NPC",
+      label: key ? ctx.ui?.characterName?.(key) ?? key : "NPC",
       characterKey: key,
       rollType
     });
@@ -571,6 +572,14 @@ export const applyDndAction = (
 
     case "setDifficultyFromMargin":
     case "setDifficultyFromMarginSecret": {
+      if (target.dropKind === "npcRollPreroll") {
+        const margin = "margin" in payload ? payload.margin : undefined;
+        if (typeof margin !== "number" || !Number.isFinite(margin)) {
+          return { ok: false, reason: "The completed roll has no margin yet." };
+        }
+        ctx.rolls({ op: "npcDifficulty", value: Math.max(0, Math.floor(margin)) });
+        return { ok: true, did: action };
+      }
       ctx.rolls({
         op: "difficultyFromMargin",
         fromColor: colorOf(payload),

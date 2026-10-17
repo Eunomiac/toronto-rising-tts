@@ -8,13 +8,12 @@ import { ROLL_DRAG_TYPE } from "../dnd/mime";
 import { NPC_DRAG_TYPE, NPC_ROLL_DROP_ATTR, NPC_ROLL_DROP_EVENT } from "../stage";
 import { SEAT_ACCENT } from "../../pcSheet/layout";
 import { bloodPotencyRow, ROLL_TYPE_RULES, STRUCTURAL_OPTIONS } from "../../catalogVocab";
-import { usePersistentState } from "../../persistentState";
 import type { PcRoll, PoolKind, RollPool, RollResult, RollsSlice, StLiveRoll, StRollSlot } from "../../worldState";
 import type { RollOptionsView } from "./bridge";
 import type { PoolDieAction, RollsSend } from "./commands";
 import { DiceRing, PoolDiamonds, RolledDice } from "./dice";
 import { NpcConfigure, type ConfigureAt } from "./npcConfigure";
-import { broadcastStates, foldChanges, NPC_FOLD, slotFold } from "./rollFolds";
+import { rollCardKeys, NPC_FOLD, slotFold } from "./rollFolds";
 import {
   bumpPool,
   conditionList,
@@ -373,7 +372,7 @@ const PcRollRow = ({ roll, send, collapsed, onToggle, onOptions, onPool, highlig
         event.dataTransfer.effectAllowed = "copyMove";
         const post = roll.done || roll.phase === "postRoll" || roll.phase === "resolved";
         startNativeDrag(event, {
-          dragKind: post ? "pcRollPostroll" : "pcRollPreroll", color, rollType: roll.rollType, summary: `${roll.name}: ${roll.result?.text ?? "Roll pending"}`
+          dragKind: post ? "pcRollPostroll" : "pcRollPreroll", color, rollType: roll.rollType, margin: roll.result?.margin, summary: `${roll.name}: ${roll.result?.text ?? "Roll pending"}`
         }, { label: `${roll.name} · ${rollTypeLabel(roll.rollType)}` });
       }}
     >
@@ -626,7 +625,7 @@ const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool, onConfigure, su
         event.dataTransfer.setData(ROLL_DRAG_TYPE, "NPC");
         startNativeDrag(event, {
           dragKind: editable ? "npcRollPreroll" : live.secret ? "npcRollPostrollSecret" : "npcRollPostrollRevealed",
-          characterKey: live.npcCharacterKey, label: live.label, rollType: live.rollType, summary: `${live.label ?? "NPC"}: ${live.result?.text ?? "Roll pending"}`
+          characterKey: live.npcCharacterKey, label: live.label, rollType: live.rollType, margin: live.result?.margin, summary: `${live.label ?? "NPC"}: ${live.result?.text ?? "Roll pending"}`
         }, { label: `${live.label ?? "NPC"} · ${rollTypeLabel(live.rollType)}${live.secret ? " · Secret" : ""}` });
       }}
     >
@@ -850,34 +849,20 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
     const highlight = highlights[roll.color];
     return highlight && highlight.rollId === roll.rollId && !roll.done ? highlight : undefined;
   };
-  const [foldedKeys, setFoldedKeys] = usePersistentState<string>("tr-dashboard:roll-folds", "");
-  const folded = new Set(foldedKeys === "" ? [] : foldedKeys.split(","));
+  // A fold belongs to one roll, never to its seat or the next roll created there.
+  const [foldedKeys, setFoldedKeys] = useState<ReadonlyMap<string, string>>(new Map());
+  const identities = pushed ? rollCardKeys(pushed) : new Map<string, string>();
+  const folded = new Set([...foldedKeys].filter(([key, id]) => identities.get(key) === id).map(([key]) => key));
   const toggleFold = (key: string): void => {
-    if (!folded.delete(key)) {
-      folded.add(key);
-    }
-    setFoldedKeys([...folded].join(","));
+    const id = identities.get(key);
+    if (id === undefined) return;
+    setFoldedKeys((current) => {
+      const next = new Map(current);
+      if (next.get(key) === id) next.delete(key);
+      else next.set(key, id);
+      return next;
+    });
   };
-  // A broadcast folds its card; a new roll in that seat or drawer opens it again. The first push only records.
-  const lastBroadcast = useRef<ReadonlyMap<string, boolean> | null>(null);
-  useEffect(() => {
-    if (!pushed) {
-      return;
-    }
-    const next = broadcastStates(pushed);
-    const before = lastBroadcast.current;
-    lastBroadcast.current = next;
-    if (!before) {
-      return;
-    }
-    const { fold, unfold } = foldChanges(before, next);
-    if (fold.length === 0 && unfold.length === 0) {
-      return;
-    }
-    fold.forEach((key) => folded.add(key));
-    unfold.forEach((key) => folded.delete(key));
-    setFoldedKeys([...folded].join(","));
-  }, [pushed]);
   const openPoolRing = (event: MouseEvent<HTMLElement>, target: PoolRing["target"]): void => {
     const point = canvasPoint(event);
     setPoolRing({ x: Math.min(Math.max(point.x, POOL_RING_MARGIN), 1920 - POOL_RING_MARGIN), y: point.y, target });

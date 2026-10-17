@@ -32,6 +32,8 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 
 ## Task List
 
+✔️ SD roll corrections: completed PC rolls set NPC difficulty from their margin; NPC initiation sends the catalog full name to TTS; cards start open and manual folds belong only to the current roll.
+
 ✔️ SD-DnD secondary panel placement. Moved the Secondary drop bins over the central aspects row, with a downward entrance from above. The seat strip stays exposed and accepts drops throughout a drag. Browser regression checks assert panel/aspects alignment and hit-test the PC seat while the bins are open.
 
 ✔️ SD-DnD repair. Native drags let the browser capture the source before opening the shelves, and bins accept the source's allowed operation. One session now owns cleanup and the floating preview for seated characters, rolls, roster groups and stage tokens; previews remain visible outside the stage and above the bins. A collapsed roster group carries every member, opens no individual-character bins, and only drops on the stage/family. Roll targets take priority over broad containers, hover choices keep their character and anchor while approached, and failed/invalid drops no longer fall through into stage removal. PC portraits and labels start the same seat drag, including absent PCs and Downtime. Bins have action colours, icons, animated rings/glows, a release cue and an accepted-drop echo, with reduced-motion support. Existing sheet, NPC editor/tracker, pool and difficulty controls are wired to their bins.

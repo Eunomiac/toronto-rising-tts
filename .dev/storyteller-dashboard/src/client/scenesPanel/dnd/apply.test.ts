@@ -20,13 +20,13 @@ describe("applyDndAction", () => {
   it("initiates a standard roll for a staged NPC", () => {
     const scenes = vi.fn();
     const rolls = vi.fn();
-    const payload: DragPayload = { dragKind: "npcStaged", characterKey: "npc_foo" };
-    const result = applyDndAction("initiateStandard", payload, { dropKind: "panelA", binId: "std" }, { scenes, rolls });
+    const payload: DragPayload = { dragKind: "npcStaged", characterKey: "fatherDiaz" };
+    const result = applyDndAction("initiateStandard", payload, { dropKind: "panelA", binId: "std" }, { scenes, rolls, ui: { characterName: () => "Father Diaz" } });
     expect(result.ok).toBe(true);
     expect(rolls).toHaveBeenCalledWith({
       op: "npcInitiate",
-      label: "npc_foo",
-      characterKey: "npc_foo",
+      label: "Father Diaz",
+      characterKey: "fatherDiaz",
       rollType: "standard"
     });
   });
@@ -94,6 +94,17 @@ describe("applyDndAction", () => {
     const rolls = vi.fn();
     applyDndAction("chooseHunger", { dragKind: "npcRollPostrollSecret", characterKey: "victorVex" }, { dropKind: "panelB" }, { scenes: vi.fn(), rolls });
     expect(rolls).toHaveBeenCalledWith({ op: "choice", color: "Black", choice: "hunger" });
+  });
+
+  it.each([3, 0, -2])("sets NPC difficulty from PC margin %s", (margin) => {
+    const rolls = vi.fn();
+    expect(applyDndAction("setDifficultyFromMargin", { dragKind: "pcRollPostroll", color: "Pink", margin }, { dropKind: "npcRollPreroll" }, { scenes: vi.fn(), rolls }).ok).toBe(true);
+    expect(rolls).toHaveBeenCalledExactlyOnceWith({ op: "npcDifficulty", value: Math.max(0, margin) });
+  });
+  it("rejects an absent margin", () => {
+    const rolls = vi.fn();
+    expect(applyDndAction("setDifficultyFromMargin", { dragKind: "pcRollPostroll", color: "Pink" }, { dropKind: "npcRollPreroll" }, { scenes: vi.fn(), rolls }).ok).toBe(false);
+    expect(rolls).not.toHaveBeenCalled();
   });
 
 });

@@ -302,7 +302,7 @@ try {
   await start(stageToken);
   await finish(page.locator('[data-tr-dnd-bin="std"]').first());
   assert(
-    commands.some((c) => c.includes('"op":"npcInitiate"') && c.includes(npc)),
+    commands.some((c) => c.includes('"op":"npcInitiate"') && c.includes(npc) && c.includes(catalogs.namedNpcs.find((n) => n.characterKey === npc).fullName)),
   );
   console.log("PASS stage → bin");
   await start(
@@ -429,6 +429,22 @@ try {
   await finish(page.locator('[data-tr-dnd-bin="std"]').first());
   assert.equal(rollsBefore(), scatterBefore + 1);
   console.log("PASS Scatter token → roll bin");
+
+  // Persisted seat folds must not collapse newly loaded rolls.
+  await page.evaluate(() => localStorage.setItem("tr-dashboard:roll-folds", JSON.stringify("Pink,npc")));
+  world.rolls.pcs[0].phase = "resolved";
+  world.rolls.pcs[0].done = true;
+  world.rolls.pcs[0].result = { text: "WIN +3", margin: 3 };
+  await page.reload({ waitUntil: "domcontentloaded" });
+  const completed = page.locator('[data-tr-dnd-roll="pcRollPostroll"]');
+  await completed.waitFor();
+  assert.equal(await completed.evaluate((node) => node.classList.contains("collapsed")), false);
+  assert.equal(await page.locator('[data-tr-dnd-roll="npcRollPreroll"]').evaluate((node) => node.classList.contains("collapsed")), false);
+  const beforeMargin = commands.length;
+  await start(completed.locator(".roll-name"));
+  await finish(page.locator('[data-tr-dnd-roll="npcRollPreroll"]'));
+  assert(commands.slice(beforeMargin).some((c) => c.includes('"op":"npcDifficulty"') && c.includes('"value":3')));
+  console.log("PASS new rolls open despite saved folds; completed PC margin → NPC difficulty");
 
   await page.screenshot({ path: path.join(output, "dnd-final.png") });
   assert.deepEqual(errors, []);
