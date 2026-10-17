@@ -93,6 +93,13 @@ function main() {
   writeFileSync(LOG_FILE, logLine, { flag: "a" });
 
   if (failed) {
+    if (quiet) {
+      for (const row of rows) {
+        if (!row.ok) {
+          console.error(`[lua-local-limit-gate] FAIL ${row.rel}: ${row.count} / ${MAX_CHUNK_LOCALS}`);
+        }
+      }
+    }
     console.error(
       `[lua-local-limit-gate] one or more files exceed ${MAX_CHUNK_LOCALS} chunk-level locals (Lua 5.1 hard limit is 200).`
     );

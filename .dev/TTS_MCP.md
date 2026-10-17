@@ -189,7 +189,7 @@ Multi-step table logic in this project often uses [`U.chain`](../lib/util.ttslua
 | `npm run tts-bridge:test` | Vitest suite for the bridge (mock TTS, no game). |
 | `npm run build` | **Main** pipeline (default Ctrl+Shift+B): daily save backup, gates, object stub fix. |
 | `npm run build:xml` | Main + UI XML / template generators + Global XmlUI embed. |
-| `npm run build:full` | Full tooling (backup + `build:all-tooling`): sheets, JSON embeds, XML, stubs, CustomUIAssets merge. |
+| `npm run build:full` | Full tooling (backup + `build:all-tooling`): sheets, JSON embeds, XML, stubs, CustomUIAssets merge. Warnings and other notes worth reading are copied to `.dev/build-logs/full-build-review.txt` and that file is opened when it is not empty. |
 | `npm run build:all-tooling` | Full generator chain without the daily backup. |
 | `npm run tts-bridge:listen` | Bridge only: listen on **39998** and persist Lua **`sendExternalMessage`** `type: "write"` to **`.dev/.debug/`** (no MCP). |
 | `npm run tts-bridge:free-port` | Stop leftover **node** listeners on **39998** (dashboard / bridge). Leaves Cursor and Tabletop Simulator alone. `--dry-run` lists only. |

@@ -33,7 +33,9 @@ Three npm scripts / VS Code tasks (`.vscode/tasks.json`):
 | **XML** | `npm run build:xml` | **BUILD PIPELINE (XML)** | After UI XML / template / Global HUD edits (includes Main) |
 | **Full** | `npm run build:full` | **BUILD PIPELINE (Full)** | After JSON data, Google Sheet imports, constants cleanup, CustomUIAssets merge, Cloud asset sync, NPC art (`npc-art:draw` before the sync, `npc-art:urls` after — [NPC Art Pipeline](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%20Art%20Pipeline.md)), E2E playbook markdown — same coverage as the former single `npm run build` |
 
-Helpers: `build:gates`, `build:stubs`, `build:xml-tooling`, `build:all-tooling` (Full without the daily backup; `build:full` = backup + `build:all-tooling`).
+Helpers: `build:gates`, `build:stubs`, `build:xml-tooling`, `build:all-tooling` (Full without the daily backup). `build:full` runs the daily backup, silence-emitters, then `build:all-tooling`, and writes a review log.
+
+**Full build review log:** only `npm run build:full` collects warnings, hard errors, and a few other notes worth reading into `.dev/build-logs/full-build-review.txt` (gitignored) and opens that file when it has any entries. Routine lines stay in the terminal: successful file writes, a daily backup still inside 24 hours, emitters already parked on silent, and "No NPC art discrepancies." A clean Full build prints `Full build review: nothing to flag.` and does not open a file. What counts is `.tools/build-review/classify.cjs`. `console.warn` and `console.error` are collected unless that file lists them as routine progress. A `console.log` is collected only when it matches a note pattern there, or when the line starts with `[build-review]`.
 
 **XML pipeline** runs: CSHEET defaults + NPC control board embeds, `ui-xml-templates:embed`, debug light + Prince’s Court placeholders + color template expansion, roll dashboard/options, then `ui-global-xml:embed`. It does **not** fetch sheets or regenerate location modals from constants (use Full / `skyboxes:import` for that).
 
