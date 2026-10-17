@@ -1,3 +1,4 @@
+import type { RollControlRequest } from "./rollControls";
 import type { ScenesCommand, ScenesSend } from "../commands";
 import type { RollsCommand, RollsSend } from "../rolls/commands";
 import type { ActionId, DragPayload, DropTarget } from "./types";
@@ -10,6 +11,8 @@ export type DndApplyContext = {
 };
 
 export type DndUiHooks = {
+  readonly difficultyFor?: (characterKey: string, higher: boolean) => number | undefined;
+  readonly openRollControl?: (action: RollControlRequest["action"], payload: DragPayload) => boolean;
   readonly openNpcEdit?: (characterKey: string) => void;
   readonly openNpcTracker?: (characterKey: string) => void;
   readonly openPcSheet?: (color: string) => void;
@@ -343,11 +346,13 @@ export const applyDndAction = (
     }
 
     case "recalculate": {
+      if (payload.dragKind.startsWith("pcRoll")) return { ok: false, reason: "Recalculate this PC's result with the existing player controls." };
       ctx.rolls({ op: "npcRecalc" });
       return { ok: true, did: action };
     }
 
     case "bloodSurge": {
+      if (payload.dragKind.startsWith("pcRoll")) return { ok: false, reason: "Blood Surge for a PC is controlled from that player's HUD." };
       ctx.rolls({ op: "npcSurge", on: true, dice: 1 });
       return { ok: true, did: action };
     }
@@ -373,16 +378,17 @@ export const applyDndAction = (
       return initiateFor(payload, "remorse", ctx);
 
     case "initiateContested": {
-      ctx.ui?.notify?.("Drop the second participant on a seat or token to finish the contested roll.");
-      return { ok: true, did: action };
+      return { ok: false, reason: "Contested participant selection is not connected to this bin yet. Use the existing roll controls." };
     }
 
+    case "renameGeneric":
     case "editNpc": {
       const key = characterKeyOf(payload);
       if (!key) {
         return { ok: false, reason: "Missing NPC." };
       }
-      ctx.ui?.openNpcEdit?.(key);
+      if (!ctx.ui?.openNpcEdit) return { ok: false, reason: "This control is unavailable here." };
+      ctx.ui.openNpcEdit(key);
       return { ok: true, did: action };
     }
 
@@ -391,21 +397,25 @@ export const applyDndAction = (
       if (!key) {
         return { ok: false, reason: "Missing NPC." };
       }
-      ctx.ui?.openNpcTracker?.(key);
+      if (!ctx.ui?.openNpcTracker) return { ok: false, reason: "This control is unavailable here." };
+      ctx.ui.openNpcTracker(key);
       return { ok: true, did: action };
     }
 
+    case "changeStats":
     case "openSheet": {
       const color = colorOf(payload);
       if (!color) {
         return { ok: false, reason: "Missing PC." };
       }
-      ctx.ui?.openPcSheet?.(color);
+      if (!ctx.ui?.openPcSheet) return { ok: false, reason: "This control is unavailable here." };
+      ctx.ui.openPcSheet(color);
       return { ok: true, did: action };
     }
 
     case "forkScene": {
-      ctx.ui?.forkScene?.();
+      if (!ctx.ui?.forkScene) return { ok: false, reason: "This control is unavailable here." };
+      ctx.ui.forkScene();
       return { ok: true, did: action };
     }
 
@@ -415,7 +425,8 @@ export const applyDndAction = (
     }
 
     case "memoriam": {
-      ctx.ui?.openMemoriam?.();
+      if (!ctx.ui?.openMemoriam) return { ok: false, reason: "This control is unavailable here." };
+      ctx.ui.openMemoriam();
       return { ok: true, did: action };
     }
 
@@ -499,7 +510,8 @@ export const applyDndAction = (
     case "duplicateAsTemplate": {
       const key = sceneKeyOf(payload, target);
       if (key) {
-        ctx.ui?.duplicateAsTemplate?.(key);
+        if (!ctx.ui?.duplicateAsTemplate) return { ok: false, reason: "This control is unavailable here." };
+        ctx.ui.duplicateAsTemplate(key);
       }
       return { ok: true, did: action };
     }
@@ -578,7 +590,12 @@ export const applyDndAction = (
     }
 
     case "hoverDifficulty": {
-      // Concrete difficulty value comes from the bin label / card strip; board layer sets value.
+      const key = "characterKey" in target ? target.characterKey : "holderKey" in target ? target.holderKey : undefined;
+      const value = key ? ctx.ui?.difficultyFor?.(key, target.binId === "diffHigh") : undefined;
+      if (value === undefined) return { ok: false, reason: "This NPC has no difficulty in its Stats." };
+      const color = colorOf(payload);
+      if (color) ctx.rolls({ op: "difficulty", color, value });
+      else ctx.rolls({ op: "npcDifficulty", value });
       return { ok: true, did: action };
     }
 
@@ -592,11 +609,12 @@ export const applyDndAction = (
     }
 
     case "drawerStartRoll": {
-      return initiateFor(payload, "standard", ctx);
+      const types: Readonly<Record<string, string>> = { std: "standard", disc: "discipline", frenzy: "frenzy", wp: "willpowerRoll", rouse: "rouse" };
+      return initiateFor(payload, types[target.binId ?? "std"] ?? "standard", ctx);
     }
 
     case "chooseHunger": {
-      const color = colorOf(payload);
+      const color = colorOf(payload) ?? (payload.dragKind.startsWith("npcRoll") ? "Black" : undefined);
       if (color) {
         ctx.rolls({ op: "choice", color, choice: "hunger" });
       }
@@ -604,7 +622,7 @@ export const applyDndAction = (
     }
 
     case "chooseStain": {
-      const color = colorOf(payload);
+      const color = colorOf(payload) ?? (payload.dragKind.startsWith("npcRoll") ? "Black" : undefined);
       if (color) {
         ctx.rolls({ op: "choice", color, choice: "stain" });
       }
@@ -612,7 +630,25 @@ export const applyDndAction = (
     }
 
     case "copyResultSummary": {
-      ctx.ui?.copyText?.("Roll result");
+      if (!("summary" in payload) || !payload.summary || !ctx.ui?.copyText) return { ok: false, reason: "There is no roll summary to copy." };
+      ctx.ui.copyText(payload.summary);
+      return { ok: true, did: action };
+    }
+
+    case "openRollerSheet": {
+      const color = colorOf(payload);
+      if (color && ctx.ui?.openPcSheet) ctx.ui.openPcSheet(color);
+      else {
+        const key = characterKeyOf(payload);
+        if (!key || !ctx.ui?.openNpcTracker) return { ok: false, reason: "This roll has no character tracker." };
+        ctx.ui.openNpcTracker(key);
+      }
+      return { ok: true, did: action };
+    }
+    case "adjustPool":
+    case "convertType":
+    case "rerollSelected": {
+      if (!ctx.ui?.openRollControl?.(action, payload)) return { ok: false, reason: action === "rerollSelected" ? "Pick dice on the NPC roll before dropping it here." : "This roll does not allow that change at its current phase." };
       return { ok: true, did: action };
     }
 
@@ -622,21 +658,13 @@ export const applyDndAction = (
     case "contestedVsPc":
     case "addToSceneSeatPlan":
     case "assignTransitionSeat":
-    case "renameGeneric":
     case "initiateProject":
-    case "changeStats":
-    case "openRollerSheet":
-    case "adjustPool":
-    case "convertType":
-    case "rerollSelected":
     case "playTiming": {
-      ctx.ui?.notify?.(`DnD action ready: ${action}`);
-      return { ok: true, did: action };
+      return { ok: false, reason: "This drop action is not connected yet. Use the existing character or roll controls for now." };
     }
 
     default:
-      ctx.ui?.notify?.(`DnD action: ${action}`);
-      return { ok: true, did: action };
+      return { ok: false, reason: "This drop action is not connected yet." };
   }
 };
 

@@ -18,7 +18,7 @@ import { GENERIC_SKY, stageName, tableUsesRandomSeating } from "./liveScene";
 import { SignalFlame } from "./signal";
 import { RollsCommandContext } from "./rolls/commands";
 import { beginDrag, endDrag } from "./dnd/session";
-import { startRosterDrag } from "./rosterDrag";
+import { startNativeDrag } from "./dnd/native";
 import { moveInScatter, NPC_DRAG_TYPE, SEAT_DRAG_TYPE, withChanges, type ScatterMove, type StageSpot } from "./stage";
 import { stagePacks } from "./stageFrame";
 import type { GenericNpc, ScatterGroup } from "../worldState";
@@ -275,7 +275,7 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, onNpcTrackers, sea
         const controllable = !onPresence && liveSheet !== undefined && seat.color !== undefined && seat.kind === "pc";
         const npcTrackers = !onPresence && seat.kind === "npc" && seat.characterKey !== undefined ? onNpcTrackers : undefined;
         const menu = onMenu && (seat.kind === "pc" || seat.kind === "npc") ? onMenu : undefined;
-        const seatKey = seat.seatKey;
+        const seatKey = seat.seatKey ?? (seat.kind === "pc" ? seat.color : undefined);
         // DnD session (slide-out bins, out, etc.) works in downtime too; chair swaps still need `seating`.
         const draggable = seatKey !== undefined && (seat.kind === "pc" || seat.kind === "npc");
         const takesNpc = seat.kind === "empty" || (seat.kind === "npc" && seating?.displace !== undefined);
@@ -315,19 +315,14 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, onNpcTrackers, sea
               }
               event.dataTransfer.effectAllowed = "move";
               if (seat.kind === "pc" && seat.color) {
-                beginDrag(
+                startNativeDrag(event,
                   { dragKind: "pcSeated", color: seat.color, seatKey, chair: seat.slot },
-                  { x: event.clientX, y: event.clientY }
+                  { members: [{ characterKey: seat.characterKey ?? seat.color, name: seat.name ?? seat.color }] }
                 );
               } else if (seat.kind === "npc" && seat.characterKey) {
-                beginDrag(
+                startNativeDrag(event,
                   { dragKind: "npcSeated", characterKey: seat.characterKey, seatKey, chair: seat.slot },
-                  { x: event.clientX, y: event.clientY }
-                );
-                startRosterDrag(
-                  event,
-                  [{ characterKey: seat.characterKey, name: seat.name ?? seat.characterKey }],
-                  { openSession: false }
+                  { members: [{ characterKey: seat.characterKey, name: seat.name ?? seat.characterKey }] }
                 );
               }
             }}
@@ -344,6 +339,10 @@ export const Seats = ({ seats, liveSheet, onMenu, onPresence, onNpcTrackers, sea
               if (!seating) {
                 return;
               }
+              if (!accepts(event)) return;
+              event.preventDefault();
+              event.stopPropagation();
+              endDrag();
               const from = event.dataTransfer.getData(SEAT_DRAG_TYPE);
               if (from) {
                 if (from !== seatKey) {

@@ -62,7 +62,8 @@ type NpcOverrides = ReturnType<typeof useNpcOverrides>;
 /** Token ring colour for an NPC with no coloured group (DEFAULT_RING_COLOR in scripts/npc-art/model.ts). */
 const DEFAULT_TOKEN_RING = "#77706a";
 import { usePersistentState } from "../persistentState";
-import { beginDrag, endDrag } from "./dnd/session";
+import { endDrag } from "./dnd/session";
+import { startNativeDrag } from "./dnd/native";
 import { SCENE_DRAG_TYPE } from "./dnd/mime";
 import { startRosterDrag } from "./rosterDrag";
 import { carryOverSeating, type SeatingEdit } from "./transitionSeating";
@@ -1147,7 +1148,7 @@ export const MasonryRoster = (): ReactElement => {
             draggable
             onDragStart={(event) => {
               event.dataTransfer.setData(GROUP_DRAG_TYPE, group.key);
-              startRosterDrag(event, leaderFirst(group));
+              startRosterDrag(event, leaderFirst(group), { groupKey: group.key });
               setDragging(true);
             }}
             onDragEnd={() => setDragging(false)}
@@ -2937,12 +2938,9 @@ const DeckChip = ({ scene, onPlay, onEdit, onHold }: {
       onDragStart={(event) => {
         event.dataTransfer.setData(SCENE_DRAG_TYPE, scene.key);
         event.dataTransfer.effectAllowed = "copyMove";
-        beginDrag(
-          {
-            dragKind: ongoing ? "sceneOnDeckOngoing" : "sceneOnDeckNew",
-            sceneKey: scene.key
-          },
-          { x: event.clientX, y: event.clientY }
+        startNativeDrag(event,
+          { dragKind: ongoing ? "sceneOnDeckOngoing" : "sceneOnDeckNew", sceneKey: scene.key },
+          { label: scene.title }
         );
       }}
       onDragEnd={() => endDrag()}
@@ -3016,9 +3014,9 @@ export const PhaseStrip = ({ library, libraryActions, scenes, linkMenu, onSwitch
               onDragStart={(event) => {
                 event.dataTransfer.setData(SCENE_DRAG_TYPE, scenes.current!.key);
                 event.dataTransfer.effectAllowed = "copyMove";
-                beginDrag(
+                startNativeDrag(event,
                   { dragKind: "sceneActive", sceneKey: scenes.current!.key },
-                  { x: event.clientX, y: event.clientY }
+                  { label: scenes.current!.title }
                 );
               }}
               onDragEnd={() => endDrag()}

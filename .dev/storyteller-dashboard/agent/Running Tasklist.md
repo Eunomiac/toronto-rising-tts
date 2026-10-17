@@ -32,6 +32,11 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 
 ## Task List
 
+✔️ SD-DnD repair. Native drags let the browser capture the source before opening the shelves, and bins accept the source's allowed operation. One session now owns cleanup and the floating preview for seated characters, rolls, roster groups and stage tokens; previews remain visible outside the stage and above the bins. A collapsed roster group carries every member, opens no individual-character bins, and only drops on the stage/family. Roll targets take priority over broad containers, hover choices keep their character and anchor while approached, and failed/invalid drops no longer fall through into stage removal. PC portraits and labels start the same seat drag, including absent PCs and Downtime. Bins have action colours, icons, animated rings/glows, a release cue and an accepted-drop echo, with reduced-motion support. Existing sheet, NPC editor/tracker, pool and difficulty controls are wired to their bins.
+
+🤖 Validation: dashboard typecheck/build and Vitest pass; `npm run test:dnd` repeats the browser interaction checks with TTS replies intercepted. The uploaded spreadsheet's operation cells match `agent/dnd-matrix.csv`; the new roster-group restriction follows your chat correction. Live game effects remain unverified. Advanced matrix operations that were placeholders (including contested-participant selection, transition-seat assignment, project launch and some scene operations) are still unfinished; unavailable operations now show a message instead of falsely reporting success. No Lua changes in this repair.
+
+
 ✔️ SD-PCs. Live-play **PCs** tab: two-page spread matching sheet page 1, player rail replacing the in-game Storyteller PCs toolbar, GSAP ring menus, local stand-in edits when TTS snapshot is silent. Visual pass at 1920×1080: equal pages, Hunger ring, player switch. Live apply still waiting on TTS returning snapshot JSON.
 
 ✔️ SD-PCs Round 1. Colons off, Desire placeholder, specialties hover row, ten Health/Willpower boxes, Mano Negra, Ancilla subtitle, image rings with left/right click, Hunger/XP click without a popup. Stand-in apply covers overflow damage, impaired stains, Mend/Refresh, badges. Live TTS still needs Save & Play.

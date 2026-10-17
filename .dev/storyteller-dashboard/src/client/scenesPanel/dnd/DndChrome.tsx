@@ -3,9 +3,11 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useSyncExternalStore, type
 import { createPortal } from "react-dom";
 import { activeCanvas } from "../sketch";
 import type { DndUiHooks } from "./apply";
-import { sessionTargetsAt, tryCommitAtPoint, tryCommitDrop } from "./commit";
+import { sessionTargetsAt, STAGE_GEOMETRY, tryCommitDrop } from "./commit";
+import { hitTestDrop } from "./resolve";
 import { DragHelpPanel } from "./DragHelpPanel";
 import { HoverDropBins } from "./hoverBins";
+import { acceptNativeDrag } from "./native";
 import { matrixCell } from "./matrix";
 import { endDrag, getDndSession, moveDrag, subscribeDndSession } from "./session";
 import { SlideOutPanel } from "./slideOut";
@@ -61,13 +63,17 @@ export const DndChrome = ({ scenes, rolls, ui }: Props): ReactElement | null => 
     };
     const onDragOver = (event: DragEvent): void => {
       event.preventDefault();
-      event.dataTransfer.dropEffect = "copy";
+      acceptNativeDrag(event.dataTransfer);
       const payload = getDndSession().payload;
       if (!payload) {
         return;
       }
       const point = { x: event.clientX, y: event.clientY };
       const { highlight, hover } = sessionTargetsAt(point, payload.dragKind);
+      const cell = matrixCell(payload.dragKind, hitTestDrop(point).dropKind);
+      if (event.dataTransfer && (cell.kind === "noop" || cell.kind === "impossible" || (cell.kind === "panel" && !highlight))) {
+        event.dataTransfer.dropEffect = "none";
+      }
       moveDrag(point, highlight, hover);
     };
     const onDrop = (event: DragEvent): void => {
@@ -77,17 +83,29 @@ export const DndChrome = ({ scenes, rolls, ui }: Props): ReactElement | null => 
       }
       event.preventDefault();
       const point = { x: event.clientX, y: event.clientY };
-      if (tryCommitAtPoint(payload, point, ctxRef.current)) {
-        endDrag();
-      }
+      const target = hitTestDrop(point);
+      const cell = matrixCell(payload.dragKind, target.dropKind);
+      // Stage geometry is handled by the stage layer; all other matrix outcomes
+      // (including invalid/cancelled drops) terminate here before legacy handlers.
+      if (cell.kind === "action" && STAGE_GEOMETRY.has(cell.action)) return;
+      event.stopPropagation();
+      const resolvedTarget = target.binId && getDndSession().hover && cell.kind === "hover"
+        ? { ...getDndSession().hover!, binId: target.binId } : target;
+      tryCommitDrop(payload, resolvedTarget, ctxRef.current);
+      endDrag();
     };
     window.addEventListener("keydown", onKey);
-    document.addEventListener("dragover", onDragOver);
-    document.addEventListener("drop", onDrop);
+    document.addEventListener("dragover", onDragOver, true);
+    document.addEventListener("drop", onDrop, true);
+    document.addEventListener("dragend", endDrag);
+    window.addEventListener("blur", endDrag);
     return () => {
       window.removeEventListener("keydown", onKey);
-      document.removeEventListener("dragover", onDragOver);
-      document.removeEventListener("drop", onDrop);
+      document.removeEventListener("dragover", onDragOver, true);
+      document.removeEventListener("drop", onDrop, true);
+      document.removeEventListener("dragend", endDrag);
+      window.removeEventListener("blur", endDrag);
+      endDrag();
     };
   }, [session.active]);
 
@@ -96,7 +114,7 @@ export const DndChrome = ({ scenes, rolls, ui }: Props): ReactElement | null => 
     if (!payload) {
       return;
     }
-    const target: DropTarget = { dropKind, binId: bin.id };
+    const target: DropTarget = { ...(session.hover?.dropKind === dropKind ? session.hover : { dropKind }), binId: bin.id };
     if (tryCommitDrop(payload, target, ctx)) {
       endDrag();
       return;
@@ -132,10 +150,10 @@ export const DndChrome = ({ scenes, rolls, ui }: Props): ReactElement | null => 
             onBinDrop={(bin) => commitBin(bin, edge === "A" ? "panelA" : edge === "B" ? "panelB" : "panelC")}
           />
         ))}
-      {session.pointer && hoverBins.length > 0 && session.hover && (
+      {session.hoverPointer && hoverBins.length > 0 && session.hover && (
         <HoverDropBins
-          x={session.pointer.x}
-          y={session.pointer.y}
+          x={session.hoverPointer.x - canvas.getBoundingClientRect().left}
+          y={session.hoverPointer.y - canvas.getBoundingClientRect().top}
           dropKind={session.hover.dropKind}
           bins={hoverBins}
           hotBinId={hotBinId}
