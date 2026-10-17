@@ -457,6 +457,25 @@ $phase-held: #ff8a5c;
   margin-top: 6px;
 }
 
+.roll-chronicle {
+  margin-top: 8px;
+  font-size: 12px;
+
+  ul {
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 2px 0;
+  }
+}
+
 // Difficulty: the strip until picked, then "vs. N"; reopened, the strip lies over the result line.
 .roll-strip {
   display: flex;

@@ -11,9 +11,9 @@ Read this when:
 
 Source of truth:
 
-- `dashboard/scene_library.ttslua` — `upsert` / `setStatus` / `remove` / `snapshot` (ops `upsertScene`, `setSceneStatus`, `deleteScene`)
-- `dashboard/scenes.ttslua` — op dispatch (`playScene`, `endScene`, `unlinkScene`, `forkScene`)
-- `core/scene_library.ttslua` — `validateRow`, `validateSessionSceneClock`, `checkRowOccupancy`, mirror, status, `playableOrder`
+- `dashboard/scene_library.ttslua` — `snapshot` / `upsert` (check only) / `ackImport` / `ackWriteBack`
+- `dashboard/scenes.ttslua` — op dispatch (`playScene` carries the scene body, `endScene`, `unlinkScene`, `forkScene`)
+- `core/scene_library.ttslua` — `validateRow`, `validateSessionSceneClock`, `checkRowOccupancy`, live-scene note, departing snapshot
 - `lib/figurine_seat_layout.ttslua` — `FSL.checkOccupancy`
 - `core/storyteller_scenes_panel.ttslua` — in-game Scenes panel (play only), `applyActiveLibraryScene`, `forkLiveScene`, `unlinkLiveMirror`, `endSceneNarrative`
 - `core/scenes.ttslua`, `core/present_day_clock.ttslua`, `core/hud_blindfold.ttslua` — Apply, clock, staged transition
@@ -24,7 +24,7 @@ Source of truth:
 Verification:
 
 - `.dev/E2E Playbooks/Scenes-E2E.md` (in-game panel, read-only preview, Apply, fork, unlink, End)
-- Dashboard: play a scene from the Scenes tab; a bad row comes back as an `upsertScene: …` error
+- Dashboard: play a scene from the Scenes tab; a bad row comes back as a `playScene: …` error. The save's `sceneLibrary` has the live key and title, not a copy of every scene.
 
 Status: current (TOR-569 living doc; TOR-718 made the dashboard the only editor). Re-verify whenever `validateRow`, `FSL.checkOccupancy`, the ops, or scene Apply change.
 
@@ -32,11 +32,15 @@ Status: current (TOR-569 living doc; TOR-718 made the dashboard the only editor)
 
 ## What this is
 
-The Storyteller Dashboard keeps the master scene library in `data/scene-library.json` beside the dashboard. It is the **only editor** of saved scenes. TTS holds the rows it has been asked to play in `gameState.sceneLibrary` and keeps the one on the table up to date while it plays.
+The Storyteller Dashboard keeps the master scene library in `data/scene-library.json` beside the dashboard. It is the **only** copy of saved scenes. TTS does not store that library.
 
-The in-game Scenes panel is a live-table fallback. It can **play** a saved scene and change the **live** scene. It cannot create, edit, fork or delete library rows.
+TTS keeps the scene on the table in `gameState.sessionScene`, plus a thin note in `gameState.sceneLibrary`: which key is live (`lastAppliedKey`), its title (`liveTitle`), whether live edits should be saved back (`linked`), the location it was played at, and the stage layout from the moment it was played. When a linked scene leaves the table, TTS freezes that one scene in `pendingWriteBack` until the dashboard has saved it.
 
-There is no paste-in JSON importer any more. Rows reach TTS only through the dashboard bridge ops below.
+Play sends the scene body in `playScene`. TTS applies that body. It does not look up a stored row first.
+
+An old save may still contain `sceneLibrary.scenes`. The first time the dashboard connects, it copies any of those scenes the file does not already have, then tells TTS to drop the map (`ackSceneLibraryImport`). Until that happens, loading the save keeps the old map.
+
+The in-game Scene Library column is gone. Switching scenes is a dashboard action.
 
 ---
 
@@ -44,10 +48,10 @@ There is no paste-in JSON importer any more. Rows reach TTS only through the das
 
 | Writer | What it writes |
 | --- | --- |
-| Dashboard `upsertScene` | A whole row (or only the title, when it is the row linked to the table) |
-| Dashboard `setSceneStatus` / `deleteScene` | Status / removal |
-| Dashboard `forkScene` → `forkLiveScene` | Pins the old row, adds a new linked row |
-| Live mirror (`SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked`) | The linked row's `sessionScene`, copied from live play |
+| Dashboard file (`data/scene-library.json`) | Every saved scene |
+| `playScene` | Applies the body the dashboard sent; sets the thin live note |
+| `upsertScene` | Checks the row. A linked live scene only takes a new title. Nothing is stored in the save |
+| Live write-back | While `linked`, the dashboard reads `sessionScene` and saves that scene. `pendingWriteBack` is the scene that just left |
 | Scene Apply / End Scene | `status` → `ongoing` / `ended` |
 | E2E fixture (`DEBUG.ensureSceneLibraryStub`) | `e2e_*` rows, written straight into state; the dashboard snapshot leaves them out |
 
@@ -252,19 +256,18 @@ Six labeled areas, no table and no chair check. `sessionScene.scatterPlacements`
 
 ## Library and live table
 
-**One live authority.** `gameState.sessionScene` is the live bundle every reconciler reads. Library rows are stored copies; the linked row is a passive shadow of live play.
+**One live authority.** `gameState.sessionScene` is the live bundle every reconciler reads. Saved scenes live in the dashboard file.
 
-- **Mirror:** while a row has `receivesLiveWrites == true`, `mirrorActiveLibrarySessionSceneFromLiveIfLinked` copies live `sessionScene` into it after each `Sync.full`, after each seat presence write, and once more when the scene leaves the table (start of `applyActiveLibraryScene`, and `detachLiveTableFromLibraryMirror` on End / phase transitions). The target is `SceneLibrary.resolveMirrorSceneKey()`: the linked `activeKey`, else the linked `lastAppliedKey`, so previewing another row never stops the table's row from updating. Other rows are never touched by live play.
-- **Status:** Apply sets `ongoing`; End sets `ended`. `SceneLibrary.playableOrder()` hides `ended` and `template` rows from the in-game list (slot N = `playableOrder()[N]`).
-- **Unlink** (`unlinkScene`, or the in-game **Unlink** button): `receivesLiveWrites = false` on the table's row; it keeps whatever the last mirror wrote.
-- **Fork** (`forkScene { newTitle, oldTitle? }` → `forkLiveScene`): clones live `sessionScene` into the source row and unlinks it (so it holds the fork-time moment), then adds a new linked row (`<key>_N`, `newTitle`) that becomes `activeKey` / `lastAppliedKey`. No blindfold or world reconcile. Returning to the old row later plays that saved moment.
-- **End Scene:** notify players, flush the live clock onto the mirroring row, detach the mirror (unlink, clear `lastAppliedKey`), clear `activeKey` (TOR-449), apply the no-scene default behind the staged blindfold, close the Scenes panel.
+- **Write-back:** while `sceneLibrary.linked` is true, the dashboard reads the live scene and saves it onto that key. `mirrorActiveLibrarySessionSceneFromLiveIfLinked` does not copy the scene into the save.
+- **Leaving the table:** `captureDepartingScene` freezes that one scene into `pendingWriteBack`. The dashboard saves it and sends `ackSceneWriteBack`.
+- **Status:** the dashboard file owns `new` / `ongoing` / `ended` / `template`. Play refuses `template` and `ended`. End Scene marks the departing snapshot `ended`.
+- **Unlink** (`unlinkScene`): freezes the current scene for write-back, then sets `linked` false. Later live edits stay on the table.
+- **Fork** (`forkScene { newTitle, newKey, oldTitle? }`): the dashboard saves both rows. TTS freezes the current scene (optional `oldTitle`) and points the table at `newKey`.
+- **End Scene:** notify players, freeze the scene as `ended`, clear the live note, apply the no-scene default behind the staged blindfold.
 
-### In-game Scenes panel (play only)
+### In-game Scene Library
 
-Selecting a row that is not on the table (**preview**, `activeKey ~= lastAppliedKey`) shows that row's table, seats, location and scene time on the left, with blue highlights instead of green. Preview is **read-only**: table, seat, location and clock controls are not interactable, and a click alerts the Storyteller to edit on the dashboard or Apply first. In Downtime the clock controls still edit the Downtime clock. Closing the panel or switching tabs deselects a preview (TOR-449).
-
-With the table's own row selected (or nothing selected), every control edits the **live** scene, including the location picker. The library column offers the playable rows, the Apply buttons, **Unlink** and **End Scene**.
+The library column is gone. Play, fork, unlink and End Scene are dashboard actions. A cold load restores the table from `sessionScene` and `lastAppliedKey` alone.
 
 ---
 
@@ -276,7 +279,7 @@ In-fiction chronicle time, not wall-clock.
 | --- | --- |
 | `gameState.presentDayClock` | Chronicle "now" (`year`…`minute`). |
 | `gameState.sessionScene.clock` | Live scene clock. |
-| `sceneLibrary.scenes[key].sessionScene.clock` | Each row's saved clock (the linked row mirrors live). |
+| Dashboard scene row `sessionScene.clock` | That saved scene's clock. The linked scene is refreshed from the live clock. |
 
 1. **Bootstrap:** the first Apply of a present-day scene with a full datetime while present day is unset initializes it.
 2. **Monotonic:** any scene clock set or ticked later than present day advances present day (`PresentDayClock.tryAdvance`, never rewinds).

@@ -1363,54 +1363,9 @@ end
 --- `scenes_lib_slot_*` buttons (scene name only).
 --- Selected = green when live, blue when pending library preview (TOR-244); dimmer when not mirroring.
 function StorytellerScenesPanel.refreshSceneLibraryRows()
-    if UI == nil or UI.setAttribute == nil then
-        return
-    end
-
-    local lib = S.getStateVal("sceneLibrary")
-    local order = SceneLibrary.playableOrder()
-    local scenes = type(lib) == "table" and lib.scenes or nil
-    local activeKey = type(lib) == "table" and lib.activeKey or nil
-    local pendingSelection = isPendingSceneActivation(activeKey)
-    local selectedOnColors = panelOnColors(pendingSelection)
-    if type(scenes) ~= "table" then
-        scenes = {}
-    end
-
-    for i = 1, SCENE_LIB_SLOT_COUNT do
-        local bid = string.format("scenes_lib_slot_%02d", i)
-        local key = order[i]
-        if type(key) == "string" and key ~= "" and type(scenes[key]) == "table" then
-            local ent = scenes[key]
-            local title = type(ent.title) == "string" and ent.title ~= "" and ent.title or key
-            local line = title
-            if string.len(line) > 36 then
-                line = string.sub(line, 1, 33) .. "..."
-            end
-            local isSelected = activeKey == key
-            local isLinked = ent.receivesLiveWrites == true
-            local colors = GREY
-            if isSelected then
-                colors = selectedOnColors
-            elseif not isLinked then
-                colors = "#333333|#444444|#555555|rgba(0.25,0.25,0.25,0.5)"
-            end
-            U.setAttributes(bid, {
-                text = line,
-                colors = colors,
-                fontStyle = isSelected and "Bold" or "Normal",
-                textColor = "#FFFFFF",
-            })
-        else
-            U.setAttributes(bid, {
-                text = "—",
-                colors = GREY,
-                fontStyle = "Normal",
-                textColor = "#888888",
-            })
-        end
-    end
+    -- The in-game Scene Library column is gone. Saved scenes live on the Storyteller Dashboard.
 end
+
 
 --- @param player Player
 --- @param button string|nil
@@ -1525,17 +1480,20 @@ end
 function StorytellerScenesPanel.unlinkLiveMirror()
     local K = SceneLibrary.resolveMirrorSceneKey()
     if K == nil then
-        K = S.getStateVal("sceneLibrary", "activeKey")
+        K = S.getStateVal("sceneLibrary", "lastAppliedKey")
     end
-    if type(K) ~= "string" or K == "" then
-        return nil, "no library scene is linked — click a row in Scene library first."
+    if type(K) ~= "string" or K == "" or S.getStateVal("sceneLibrary", "linked") ~= true then
+        return nil, "no scene on the table is linked to the dashboard library."
     end
-    if type(S.getStateVal("sceneLibrary", "scenes", K)) ~= "table" then
-        return nil, "linked row is missing from state."
+    SceneLibrary.captureDepartingScene("ongoing")
+    S.setStateVal(false, "sceneLibrary", "linked")
+    local scenes = S.getStateVal("sceneLibrary", "scenes")
+    if type(scenes) == "table" and type(scenes[K]) == "table" then
+        S.setStateVal(false, "sceneLibrary", "scenes", K, "receivesLiveWrites")
     end
-    S.setStateVal(false, "sceneLibrary", "scenes", K, "receivesLiveWrites")
     S.validateState()
     StorytellerScenesPanel.refresh()
+    require("dashboard.push").markWorldDirty({ scene = true })
     return K, nil
 end
 
@@ -1593,32 +1551,58 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId, c
         return
     end
 
-    local K = S.getStateVal("sceneLibrary", "activeKey")
+    local payload = type(clockOpts) == "table" and clockOpts.sessionScene or nil
+    local K = type(clockOpts) == "table" and type(clockOpts.key) == "string" and clockOpts.key ~= "" and clockOpts.key
+        or S.getStateVal("sceneLibrary", "activeKey")
     if type(K) ~= "string" or K == "" then
-        refuseSceneApply("Apply: select a library row first (click a scene slot).")
+        refuseSceneApply("Apply: the dashboard did not send a scene to play.")
         return
     end
-    local status = SceneLibrary.statusOf(K)
-    if status == "template" or status == "ended" then
-        refuseSceneApply("`" .. K .. "` is " .. status .. ". Play it from the Storyteller Dashboard, which makes a fresh copy of a template; ended scenes reopen from its archive.")
-        return
+    local cmdStatus = type(clockOpts) == "table" and clockOpts.status or nil
+    if type(payload) == "table" then
+        if cmdStatus == "template" or cmdStatus == "ended" then
+            refuseSceneApply("`" .. K .. "` is " .. cmdStatus .. ". Play a new or ongoing scene. A template is played as a dated copy.")
+            return
+        end
+    else
+        local status = SceneLibrary.statusOf(K)
+        if status == "template" or status == "ended" then
+            refuseSceneApply("`" .. K .. "` is " .. status .. ". Play it from the Storyteller Dashboard, which makes a fresh copy of a template; ended scenes reopen from its archive.")
+            return
+        end
     end
 
     if not isPresentFamilyClockMode(clockMode) then
-        local hasDt = resolveAuthoredActivationDatetime(K)
+        local hasDt = false
+        if type(payload) == "table" then
+            local ck = payload.clock
+            hasDt = type(ck) == "table" and (PresentDayClock.clockHasDatetime(ck) or ck.isPresentDay == true)
+        else
+            hasDt = select(1, resolveAuthoredActivationDatetime(K))
+        end
         if not hasDt then
             refuseSceneApply("This scene has no clock time to play at. Play it at Now, or set its day, year and time first.")
             return
         end
     end
 
-    -- The scene leaving the table keeps every edit, including ones that only ran a narrow sync (Dashboard stage
-    -- moves); re-applying the table's own scene then reads that fresh row.
-    SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked()
+    -- The scene leaving the table is frozen for the dashboard before this scene replaces it.
+    if S.getStateVal("sceneLibrary", "lastAppliedKey") ~= K then
+        SceneLibrary.captureDepartingScene()
+    end
 
-    local ent = S.getStateVal("sceneLibrary", "scenes", K)
+    local ent
+    if type(payload) == "table" then
+        ent = {
+            title = type(clockOpts.title) == "string" and clockOpts.title or K,
+            placementMode = clockOpts.placementMode,
+            sessionScene = payload,
+        }
+    else
+        ent = S.getStateVal("sceneLibrary", "scenes", K)
+    end
     if type(ent) ~= "table" or type(ent.sessionScene) ~= "table" then
-        refuseSceneApply("Apply: library row has no sessionScene bundle.")
+        refuseSceneApply("Apply: the scene has no sessionScene bundle.")
         return
     end
 
@@ -1728,8 +1712,12 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId, c
         )
         S.setStateVal(bundle, "sessionScene")
         SceneLibrary.syncOccupiedNpcSlotsFromSeatSlots(bundle)
-        SceneLibrary.setExclusiveLiveMirror(K)
+        SceneLibrary.setExclusiveLiveMirror(K, ent.title)
         S.setStateVal(K, "sceneLibrary", "activeKey")
+        S.setStateVal(bundle.districtKey, "sceneLibrary", "authoredDistrictKey")
+        S.setStateVal(bundle.siteKey, "sceneLibrary", "authoredSiteKey")
+        local authoredPlacements = type(bundle.npcWorld) == "table" and bundle.npcWorld.placements or nil
+        S.setStateVal(type(authoredPlacements) == "table" and U.clone(authoredPlacements, true) or {}, "sceneLibrary", "stageResetPlacements")
         S.validateState()
         do
             local GenericNpcs = require("core.generic_npcs")
@@ -1737,7 +1725,9 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId, c
         end
         require("core.npc_trackers").ensureSceneCast()
         PresentDayClock.markApplied(K)
-        SceneLibrary.setStatus(K, "ongoing")
+        if SceneLibrary.statusOf(K) ~= nil then
+            SceneLibrary.setStatus(K, "ongoing")
+        end
         clockDraft.sceneKey = K
         clockDraft.dirty = false
         StorytellerScenesPanel.syncClockDraftFromClock(S.getStateVal("sessionScene", "clock"))
@@ -1878,9 +1868,8 @@ function StorytellerScenesPanel.endSceneNarrative(player)
         end
     end
 
-    -- Stop mirroring before clearing live location so `Sync.full` does not persist null keys into the library row.
-    -- (applyDefaultNoSceneEnvironment also detaches — kept here so End scene is explicit before staged work.)
-    SceneLibrary.detachLiveTableFromLibraryMirror()
+    -- Freeze the scene for the dashboard, then drop the live note before the table is cleared.
+    SceneLibrary.detachLiveTableFromLibraryMirror("ended")
     -- TOR-449: End deselects — preview is for scenes about to enter, not the scene just ended.
     StorytellerScenesPanel.deselectPendingPreview({ silent = true, clearActiveKey = true })
     clockDraft.sceneKey = nil
@@ -2467,71 +2456,48 @@ function StorytellerScenesPanel.setPendingMonth(month)
     StorytellerScenesPanel.refresh()
 end
 
---- Fork the live scene: the source row `sourceKey` keeps a snapshot of the table now (unlinked, optionally retitled
---- `oldTitle`), and a new row titled `newTitle` takes over live writes. Storyteller Dashboard `forkScene` only.
+--- Fork the live scene. The dashboard stores both rows. TTS freezes the current scene for write-back
+--- (optionally retitled `oldTitle`) and points the table at `newKey` / `newTitle`.
 --- @param sourceKey string|nil
 --- @param newTitle string
 --- @param oldTitle string|nil
+--- @param newKey string|nil key the dashboard already saved; allocated here when omitted
 --- @return string|nil newKey
 --- @return string|nil error
-function StorytellerScenesPanel.forkLiveScene(sourceKey, newTitle, oldTitle)
+function StorytellerScenesPanel.forkLiveScene(sourceKey, newTitle, oldTitle, newKey)
     newTitle = string.gsub(string.gsub(type(newTitle) == "string" and newTitle or "", "^%s+", ""), "%s+$", "")
     oldTitle = string.gsub(string.gsub(type(oldTitle) == "string" and oldTitle or "", "^%s+", ""), "%s+$", "")
     if newTitle == "" then
         return nil, "new scene title cannot be empty."
     end
-    local F = S.getStateVal("sessionScene")
-    if type(F) ~= "table" then
+    if type(S.getStateVal("sessionScene")) ~= "table" then
         return nil, "sessionScene state is invalid."
     end
-    F = U.clone(F, true)
-    local K = sourceKey
-    local scenes = S.getStateVal("sceneLibrary", "scenes")
-    if type(scenes) ~= "table" then
-        scenes = {}
+    if not SceneLibrary.hasLiveSceneOnTable() then
+        return nil, "There is no scene on the table to fork."
     end
-    local baseForKey = (type(K) == "string" and K ~= "") and K or "scene"
-    local newKey = SceneLibrary.allocateForkSceneKey(baseForKey, scenes)
-    if type(K) == "string" and K ~= "" and scenes[K] ~= nil then
-        S.setStateVal(F, "sceneLibrary", "scenes", K, "sessionScene")
-        S.setStateVal(false, "sceneLibrary", "scenes", K, "receivesLiveWrites")
-        if oldTitle ~= "" then
-            S.setStateVal(oldTitle, "sceneLibrary", "scenes", K, "title")
+    SceneLibrary.captureDepartingScene("ongoing")
+    if oldTitle ~= "" then
+        local pending = S.getStateVal("sceneLibrary", "pendingWriteBack")
+        if type(pending) == "table" then
+            pending.title = oldTitle
+            S.setStateVal(pending, "sceneLibrary", "pendingWriteBack")
         end
     end
-    local newEntry = {
-        title = newTitle,
-        receivesLiveWrites = true,
-        sessionScene = U.clone(F, true),
-        status = "ongoing",
-    }
-    S.setStateVal(newEntry, "sceneLibrary", "scenes", newKey)
-    SceneLibrary.setExclusiveLiveMirror(newKey)
-    local order = S.getStateVal("sceneLibrary", "order")
-    if type(order) ~= "table" then
-        order = {}
+    local key = newKey
+    if type(key) ~= "string" or string.match(key, "^[a-zA-Z][a-zA-Z0-9_]*$") == nil then
+        local scenes = S.getStateVal("sceneLibrary", "scenes")
+        local baseForKey = (type(sourceKey) == "string" and sourceKey ~= "") and sourceKey or "scene"
+        key = SceneLibrary.allocateForkSceneKey(baseForKey, type(scenes) == "table" and scenes or {})
     end
-    order = U.clone(order, true)
-    local found = false
-    for _, key in ipairs(order) do
-        if key == newKey then
-            found = true
-            break
-        end
-    end
-    if not found then
-        order[#order + 1] = newKey
-    end
-    S.setStateVal(order, "sceneLibrary", "order")
-    S.setStateVal(newKey, "sceneLibrary", "activeKey")
-    if SceneLibrary.hasLiveSceneOnTable() then
-        -- The table now plays the fork.
-        S.setStateVal(newKey, "sceneLibrary", "lastAppliedKey")
-    end
+    SceneLibrary.setExclusiveLiveMirror(key, newTitle)
+    S.setStateVal(key, "sceneLibrary", "lastAppliedKey")
+    S.setStateVal(key, "sceneLibrary", "activeKey")
     S.validateState()
-    resetClockDraftForLibrarySelection(newKey)
+    resetClockDraftForLibrarySelection(key)
     StorytellerScenesPanel.refresh()
-    return newKey, nil
+    require("dashboard.push").markWorldDirty({ scene = true })
+    return key, nil
 end
 
 --- Live real-time clock on `sessionScene.clock` (never a pending library row). Real time only runs during

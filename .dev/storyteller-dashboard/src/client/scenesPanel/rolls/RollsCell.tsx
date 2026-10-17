@@ -12,6 +12,7 @@ import type { PcRoll, PoolKind, RollPool, RollResult, RollsSlice, StLiveRoll, St
 import type { RollOptionsView } from "./bridge";
 import type { PoolDieAction, RollsSend } from "./commands";
 import { DiceRing, PoolDiamonds, RolledDice } from "./dice";
+import { saveRollPermanent, useRollChronicle, useRollChronicleSync } from "../../rollChronicle";
 import { NpcConfigure, type ConfigureAt } from "./npcConfigure";
 import { rollCardKeys, NPC_FOLD, slotFold } from "./rollFolds";
 import {
@@ -769,6 +770,7 @@ const RollOptions = ({ popup, access, send, onClose }: { popup: OptionsPopup; ac
                     rerolls: draft.rerolls,
                     diceRerolled: draft.diceRerolled
                   });
+                  saveRollPermanent(draft.permanent);
                   onClose();
                 }}
               >
@@ -828,6 +830,8 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
   options: OptionsAccess;
 }): ReactElement => {
   const { shown: rolls, paint } = useLocalPools(pushed, pending);
+  useRollChronicleSync(pushed);
+  const chronicle = useRollChronicle();
   const [popup, setPopup] = useState<OptionsPopup | null>(null);
   const [poolRing, setPoolRing] = useState<PoolRing | null>(null);
   const [configureAt, setConfigureAt] = useState<ConfigureAt | null>(null);
@@ -976,6 +980,25 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
           }}
           onClose={() => setConfigureAt(null)}
         />
+      )}
+      {chronicle.entries.length > 0 && (
+        <details className="roll-chronicle">
+          <summary>Recent rolls</summary>
+          <ul>
+            {[...chronicle.entries].slice(-8).reverse().map((entry) => (
+              <li key={entry.rollId}>
+                <span>{entry.label} — {entry.text || entry.rollType}</span>
+                <button
+                  type="button"
+                  className="lab-btn"
+                  onClick={() => send({ op: "showLoggedRoll", color: entry.color, entry: entry.entry })}
+                >
+                  Show
+                </button>
+              </li>
+            ))}
+          </ul>
+        </details>
       )}
       {popup && <RollOptions popup={popup} access={options} send={send} onClose={() => setPopup(null)} />}
       {poolRing && ringRoll && (

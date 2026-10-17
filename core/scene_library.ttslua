@@ -1,8 +1,10 @@
 --[[
-    Scene library helpers for `gameState.sceneLibrary`. The Storyteller Dashboard keeps the master copy and
-    writes rows through `dashboard/scene_library.ttslua` (`upsertScene`); TTS plays them, mirrors the live
-    table into the linked row, and moves `status` on play / End Scene. Row contract:
-    `.dev/Storyteller Dashboard Docs/Scene Import Guide.md`.
+    Live-scene helpers for `gameState.sceneLibrary`. The Storyteller Dashboard keeps every saved scene
+    (`data/scene-library.json`). TTS keeps the scene on the table (`sessionScene`) plus a thin note:
+    `lastAppliedKey`, `liveTitle`, `linked`, and one departing snapshot (`pendingWriteBack`) until the
+    dashboard has saved it. Old saves may still hold `scenes` / `order` until the dashboard imports them
+    (`legacyImported`). Row contract: `.dev/Storyteller Dashboard Docs/Scene Import Guide.md`.
+
     Rebuilds `sessionScene.npcRoleOverride` from PC `seatSlots` via `syncNpcRoleOverrideFromSeatSlots`.
     `syncOccupiedNpcSlotsFromSeatSlots` derives `seatLayout.occupiedNPCSlots` from NPC seat rows (scene Apply, TOR-389).
 
@@ -241,105 +243,123 @@ function SceneLibrary.applySiteTopFogToSessionScene(siteKey)
     S.setStateVal(fogActive, "sessionScene", "isTopFogActive")
 end
 
---- Resolves which library row should receive live `sessionScene` mirrors.
---- Prefers `activeKey` when linked (fork / post-apply selection). Falls back to `lastAppliedKey`
---- so selecting another row for a pending Apply does not stop mirroring the scene currently on the table.
+--- True when this save still holds a pre-dashboard library map the dashboard has not imported.
+--- @return boolean
+function SceneLibrary.legacyLibraryPending()
+    local S = require("core.state")
+    return S.getStateVal("sceneLibrary", "legacyImported") ~= true
+end
+
+--- The scene key whose live edits should be saved back to the dashboard, or nil when unlinked.
 --- @return string|nil sceneKey
 function SceneLibrary.resolveMirrorSceneKey()
     local S = require("core.state")
-    local function isLinked(key)
-        return type(key) == "string" and key ~= ""
-            and type(S.getStateVal("sceneLibrary", "scenes", key)) == "table"
-            and S.getStateVal("sceneLibrary", "scenes", key, "receivesLiveWrites") == true
+    if S.getStateVal("sceneLibrary", "linked") ~= true then
+        return nil
     end
-    local active = S.getStateVal("sceneLibrary", "activeKey")
-    if isLinked(active) then
-        return active
+    local key = S.getStateVal("sceneLibrary", "lastAppliedKey")
+    if type(key) ~= "string" or key == "" then
+        key = S.getStateVal("sceneLibrary", "activeKey")
     end
-    local lastApplied = S.getStateVal("sceneLibrary", "lastAppliedKey")
-    if isLinked(lastApplied) then
-        return lastApplied
+    if type(key) ~= "string" or key == "" then
+        return nil
     end
-    return nil
+    return key
 end
 
---- Stops live→library mirroring after End scene / no-scene apply.
---- First writes the live scene into its linked row one last time (edits that only ran a narrow sync, such as
---- Dashboard stage moves, have not been mirrored yet), so callers must detach before clearing live state.
---- Then clears `lastAppliedKey` and all `receivesLiveWrites` so Sync cannot write cleared live
---- location into a library row (TOR-145 / TOR-362). TOR-449: End scene then clears `activeKey`
---- via `deselectPendingPreview({ clearActiveKey = true })` — preview is for scenes about to enter.
-function SceneLibrary.detachLiveTableFromLibraryMirror()
+--- Freezes the linked scene on the table into `pendingWriteBack` so the dashboard can save it
+--- after the table moves on. No-op when the table is not linked.
+--- @param status string|nil `ongoing` (default) or `ended`
+function SceneLibrary.captureDepartingScene(status)
     local S = require("core.state")
-    SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked()
-    local K = SceneLibrary.resolveMirrorSceneKey()
-    if type(K) ~= "string" or K == "" then
-        K = S.getStateVal("sceneLibrary", "lastAppliedKey")
-    end
-    if type(K) ~= "string" or K == "" then
-        K = S.getStateVal("sceneLibrary", "activeKey")
-    end
-    SceneLibrary.setExclusiveLiveMirror(nil)
-    S.setStateVal(nil, "sceneLibrary", "lastAppliedKey")
-    if type(K) == "string" and K ~= ""
-        and type(S.getStateVal("sceneLibrary", "scenes", K)) == "table"
-    then
-        S.setStateVal(K, "sceneLibrary", "activeKey")
-    else
-        S.setStateVal(nil, "sceneLibrary", "activeKey")
-    end
-end
-
---- Sets `receivesLiveWrites = true` on exactly one library row; clears the flag on all others.
---- @param sceneKey string|nil When nil/empty, clears mirroring on every row.
-function SceneLibrary.setExclusiveLiveMirror(sceneKey)
-    local S = require("core.state")
-    local target = type(sceneKey) == "string" and sceneKey or ""
-    target = string.gsub(string.gsub(target, "^%s+", ""), "%s+$", "")
-    local scenes = S.getStateVal("sceneLibrary", "scenes")
-    if type(scenes) ~= "table" then
+    if S.getStateVal("sceneLibrary", "linked") ~= true then
         return
     end
-    for sk, _ in pairs(scenes) do
-        if type(sk) == "string" then
-            local linked = target ~= "" and sk == target
-            S.setStateVal(linked, "sceneLibrary", "scenes", sk, "receivesLiveWrites")
-        end
-    end
-end
-
---- When the mirror row (`resolveMirrorSceneKey`) is linked, deep-clone live `sessionScene` into that row.
---- Invoked from `Sync.full` after reconcilers so one mutation batch ends with an up-to-date library mirror.
---- Lazy-requires `core.state` to avoid cycles during `state` module initialization.
-function SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked()
-    local S = require("core.state")
-    local PresentDayClock = require("core.present_day_clock")
-    local K = SceneLibrary.resolveMirrorSceneKey()
-    if K == nil then
+    local key = S.getStateVal("sceneLibrary", "lastAppliedKey")
+    if type(key) ~= "string" or key == "" then
         return
     end
     local live = S.getStateVal("sessionScene")
     if type(live) ~= "table" then
         return
     end
-    -- Strip TOR-142 ×5 catch-up runtime fields before library writeback.
+    local PresentDayClock = require("core.present_day_clock")
     local toStore = PresentDayClock.cloneSessionSceneForLibraryMirror(live)
     if type(toStore) ~= "table" then
         return
     end
-    S.setStateVal(toStore, "sceneLibrary", "scenes", K, "sessionScene")
+    local title = S.getStateVal("sceneLibrary", "liveTitle")
+    if type(title) ~= "string" or title == "" then
+        title = key
+    end
+    local storedStatus = status
+    if storedStatus ~= "ended" and storedStatus ~= "ongoing" and storedStatus ~= "new" and storedStatus ~= "template" then
+        storedStatus = "ongoing"
+    end
+    S.setStateVal({
+        key = key,
+        title = title,
+        placementMode = toStore.placementMode == "scatter" and "scatter" or "standard",
+        status = storedStatus,
+        receivesLiveWrites = false,
+        sessionScene = toStore,
+    }, "sceneLibrary", "pendingWriteBack")
+    require("dashboard.push").markWorldDirty({ scene = true })
 end
 
---- True when a library scene is currently on the table (`lastAppliedKey` + row exists).
+--- Stops saving live edits back to the dashboard after End scene / no-scene apply.
+--- Captures the linked scene first (callers must detach before clearing live state).
+--- @param status string|nil passed to `captureDepartingScene` (`ended` when the scene is ending)
+function SceneLibrary.detachLiveTableFromLibraryMirror(status)
+    local S = require("core.state")
+    SceneLibrary.captureDepartingScene(status)
+    S.setStateVal(false, "sceneLibrary", "linked")
+    S.setStateVal(nil, "sceneLibrary", "lastAppliedKey")
+    S.setStateVal(nil, "sceneLibrary", "liveTitle")
+    S.setStateVal(nil, "sceneLibrary", "activeKey")
+    S.setStateVal(nil, "sceneLibrary", "stageResetPlacements")
+    S.setStateVal(nil, "sceneLibrary", "authoredDistrictKey")
+    S.setStateVal(nil, "sceneLibrary", "authoredSiteKey")
+end
+
+--- Marks the scene on the table as the one the dashboard saves live edits into.
+--- @param sceneKey string|nil When nil/empty, live edits stay on the table only.
+--- @param title string|nil
+function SceneLibrary.setExclusiveLiveMirror(sceneKey, title)
+    local S = require("core.state")
+    local target = type(sceneKey) == "string" and sceneKey or ""
+    target = string.gsub(string.gsub(target, "^%s+", ""), "%s+$", "")
+    local linked = target ~= ""
+    S.setStateVal(linked, "sceneLibrary", "linked")
+    if linked then
+        S.setStateVal(target, "sceneLibrary", "activeKey")
+        if type(title) == "string" and title ~= "" then
+            S.setStateVal(title, "sceneLibrary", "liveTitle")
+        end
+    end
+    local scenes = S.getStateVal("sceneLibrary", "scenes")
+    if type(scenes) ~= "table" then
+        return
+    end
+    for sk, _ in pairs(scenes) do
+        if type(sk) == "string" then
+            S.setStateVal(linked and sk == target, "sceneLibrary", "scenes", sk, "receivesLiveWrites")
+        end
+    end
+end
+
+--- Live edits are saved by the dashboard from `sessionScene` (and `pendingWriteBack` when the scene leaves).
+--- Kept so Sync.full can still call it; it does not copy the scene into a library map.
+function SceneLibrary.mirrorActiveLibrarySessionSceneFromLiveIfLinked()
+end
+
+--- True when a scene is on the table (`lastAppliedKey` set). The saved library is not required.
 --- Used for Play-session restore vs default no-scene (TOR-151 / TOR-152) and map-pin visibility (TOR-245).
 --- @return boolean
 function SceneLibrary.hasLiveSceneOnTable()
     local S = require("core.state")
     local key = S.getStateVal("sceneLibrary", "lastAppliedKey")
-    if type(key) ~= "string" or key == "" then
-        return false
-    end
-    return type(S.getStateVal("sceneLibrary", "scenes", key)) == "table"
+    return type(key) == "string" and key ~= ""
 end
 
 --- Library scene lifecycle (`row.status`). A row without one counts as `new`.
@@ -351,7 +371,14 @@ SceneLibrary.STATUSES = { new = true, ongoing = true, ended = true, template = t
 --- @return string|nil status `nil` when the row does not exist
 function SceneLibrary.statusOf(sceneKey)
     local S = require("core.state")
-    local row = type(sceneKey) == "string" and S.getStateVal("sceneLibrary", "scenes", sceneKey) or nil
+    if type(sceneKey) ~= "string" or sceneKey == "" then
+        return nil
+    end
+    local pending = S.getStateVal("sceneLibrary", "pendingWriteBack")
+    if type(pending) == "table" and pending.key == sceneKey and SceneLibrary.STATUSES[pending.status] then
+        return pending.status
+    end
+    local row = S.getStateVal("sceneLibrary", "scenes", sceneKey)
     if type(row) ~= "table" then
         return nil
     end
@@ -366,10 +393,14 @@ function SceneLibrary.setStatus(sceneKey, status)
     if not SceneLibrary.STATUSES[status] then
         return "Unknown scene status: " .. tostring(status)
     end
-    if type(sceneKey) ~= "string" or type(S.getStateVal("sceneLibrary", "scenes", sceneKey)) ~= "table" then
+    if type(sceneKey) ~= "string" then
         return "No library scene `" .. tostring(sceneKey) .. "`."
     end
-    if S.getStateVal("sceneLibrary", "scenes", sceneKey, "status") ~= status then
+    local row = S.getStateVal("sceneLibrary", "scenes", sceneKey)
+    if type(row) ~= "table" then
+        return nil
+    end
+    if row.status ~= status then
         S.setStateVal(status, "sceneLibrary", "scenes", sceneKey, "status")
     end
     return nil

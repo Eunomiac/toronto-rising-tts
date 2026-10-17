@@ -39,7 +39,17 @@ describe("commandKind", () => {
     expect(commandKind({ op: "seatMove", seat: "NPC1", chair: 6 })).toBe("direct");
     expect(commandKind({ op: "seatNpc", characterKey: "victor", chair: 7 })).toBe("direct");
     expect(commandKind({ op: "lighting", presetKey: "AdminDark" })).toBe("direct");
-    expect(commandKind({ op: "playScene", key: "s1", from: "scene", plusMinutes: 0, pace: "x2" })).toBe("direct");
+    expect(commandKind({
+      op: "playScene",
+      key: "s1",
+      title: "S1",
+      placementMode: "standard",
+      status: "new",
+      sessionScene: {},
+      from: "scene",
+      plusMinutes: 0,
+      pace: "x2"
+    })).toBe("direct");
   });
 });
 

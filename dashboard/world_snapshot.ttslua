@@ -75,35 +75,33 @@ local function buildPhase()
 end
 
 local function buildScene()
-  local liveKey = S.getStateVal("sceneLibrary", "lastAppliedKey")
-  local liveRow = type(liveKey) == "string" and S.getStateVal("sceneLibrary", "scenes", liveKey) or nil
-  if type(liveRow) ~= "table" then
-    liveKey = nil
-    liveRow = nil
-  end
+  local SceneLibrary = require("core.scene_library")
+  local liveKey = SceneLibrary.hasLiveSceneOnTable() and S.getStateVal("sceneLibrary", "lastAppliedKey") or nil
   local ss = S.getStateVal("sessionScene") or {}
   local snd = S.getStateVal("soundscape") or {}
-  local libraryScene = liveRow and liveRow.sessionScene or nil
   local override = require("lib.chronicle_weather").activeOverride()
   local conditions = {}
   for i, id in ipairs(type(ss.conditions) == "table" and ss.conditions or {}) do
     conditions[i] = id
   end
-  -- Leaving a Memoriam returns to this scene (it interrupted it and the scene has not been ended since).
+  -- Leaving a Memoriam returns to this scene when the interrupted bundle was kept.
   local memoriamReturnTitle = nil
-  local returnKey = S.getStateVal("memoriam", "active") == true and S.getStateVal("memoriam", "returnSceneKey") or nil
-  local returnStatus = require("core.scene_library").statusOf(returnKey)
-  if returnStatus == "new" or returnStatus == "ongoing" then
-    memoriamReturnTitle = S.getStateVal("sceneLibrary", "scenes", returnKey, "title") or returnKey
+  if S.getStateVal("memoriam", "active") == true and type(S.getStateVal("memoriam", "returnSessionScene")) == "table" then
+    memoriamReturnTitle = S.getStateVal("memoriam", "returnTitle") or S.getStateVal("memoriam", "returnSceneKey")
   end
+  local pending = S.getStateVal("sceneLibrary", "pendingWriteBack")
+  local departedKey = type(pending) == "table" and type(pending.key) == "string" and pending.key or nil
+  local authoredDistrict = S.getStateVal("sceneLibrary", "authoredDistrictKey")
+  local authoredSite = S.getStateVal("sceneLibrary", "authoredSiteKey")
   return {
     liveKey = liveKey,
-    liveTitle = liveRow and liveRow.title or nil,
-    liveLinked = liveRow ~= nil and liveRow.receivesLiveWrites == true,
+    liveTitle = type(liveKey) == "string" and S.getStateVal("sceneLibrary", "liveTitle") or nil,
+    liveLinked = type(liveKey) == "string" and S.getStateVal("sceneLibrary", "linked") == true,
+    departedKey = departedKey,
     memoriamReturnTitle = memoriamReturnTitle,
-    library = type(libraryScene) == "table" and {
-      districtKey = libraryScene.districtKey,
-      siteKey = libraryScene.siteKey,
+    library = (type(authoredDistrict) == "string" or type(authoredSite) == "string") and {
+      districtKey = authoredDistrict,
+      siteKey = authoredSite,
     } or nil,
     conditions = conditions,
     weatherOverride = override and {
@@ -431,6 +429,7 @@ local function buildRolls()
     if type(slot) == "table" and slot.cleared ~= true then
       local row = {
         index = i,
+        rollId = slot.rollId,
         label = slot.label,
         rollType = slot.rollType,
         phase = slot.confirmed == true and C.RollPhase.RESOLVED or slot.phase,

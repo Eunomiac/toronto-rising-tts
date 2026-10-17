@@ -20,6 +20,9 @@ const isRecord = (value: unknown): value is Row => typeof value === "object" && 
 export type TtsLibrarySnapshot = {
   readonly order: readonly string[];
   readonly liveKey?: string;
+  readonly departedKey?: string;
+  /** True while TTS still holds an old save's scene library that this dashboard has not copied. */
+  readonly legacy: boolean;
   readonly scenes: Readonly<Record<string, unknown>>;
 };
 
@@ -31,6 +34,8 @@ export const parseTtsLibrarySnapshot = (value: unknown): TtsLibrarySnapshot => {
   return {
     order: Array.isArray(value.order) ? value.order.filter((key): key is string => typeof key === "string") : [],
     ...(typeof value.liveKey === "string" ? { liveKey: value.liveKey } : {}),
+    ...(typeof value.departedKey === "string" ? { departedKey: value.departedKey } : {}),
+    legacy: value.legacy === true,
     // An empty Lua table encodes as `[]`.
     scenes: isRecord(value.scenes) ? value.scenes : {}
   };
@@ -62,6 +67,13 @@ export const scenesFromTts = (snapshot: TtsLibrarySnapshot): readonly LibrarySce
  * time as it unlinked). Rows only TTS has (a fork, an in-game import) are appended. Rows only the dashboard has
  * stay. Returns the same array when nothing changes.
  */
+/** Rows TTS still has that the dashboard file does not. Existing dashboard rows stay as they are. */
+export const addMissingFromTts = (local: readonly LibraryScene[], tts: readonly LibraryScene[]): readonly LibraryScene[] => {
+  const known = new Set(local.map((scene) => scene.key));
+  const added = tts.filter((scene) => !known.has(scene.key));
+  return added.length > 0 ? [...local, ...added] : local;
+};
+
 export const mergeFromTts = (local: readonly LibraryScene[], tts: readonly LibraryScene[], adopt = false): readonly LibraryScene[] => {
   const byKey = new Map(tts.map((scene) => [scene.key, scene]));
   let changed = false;

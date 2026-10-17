@@ -438,17 +438,29 @@ function S.GetDefaultGameState()
             --- True when the live scene was applied from an authored Scatter library row (no Standard stash to restore).
             scatterAuthored = false,
         },
-        --- Saved scene bundles (same `sessionScene` shape per entry) + UI ordering. Only `gameState.sessionScene` drives live reconciliation.
+        --- Which saved scene is on the table. The dashboard keeps the library; this is not a copy of it.
         sceneLibrary = {
-            --- Last library scene applied to live state (used to flush per-row clocks on switch).
+            --- Scene key currently on the table. Nil when no scene is applied.
             lastAppliedKey = nil,
-            --- Which library row is selected in the Scenes UI (`Apply` / `Unlink` / `Delete` target).
+            --- Same key while that scene is live. Cleared when the scene ends.
             activeKey = nil,
-            --- Button order; values must be keys of `scenes`.
-            order = {},
-            --- [sceneKey] = { title, receivesLiveWrites, placementMode, status?, sessionScene = { ... } }
-            --- `status`: new / ongoing / ended / template (`SceneLibrary.STATUSES`; missing = new)
-            scenes = {},
+            --- Title of the scene on the table.
+            liveTitle = nil,
+            --- Location the scene was played at, so an unlinked live move can show as an override.
+            authoredDistrictKey = nil,
+            authoredSiteKey = nil,
+            --- True while live edits should be saved back to that scene in the dashboard.
+            linked = false,
+            --- One scene that just left the table, until the dashboard saves it.
+            pendingWriteBack = nil,
+            --- Stage layout from the moment the scene was played, for Reset.
+            stageResetPlacements = nil,
+            --- True once an old save's `scenes` map has been copied to the dashboard (or there was nothing to copy).
+            --- Missing on old saves; `validateState` fills it without using mergeDefaults, so a library is not dropped.
+            legacyImported = true,
+            --- Old saves only, until import: [sceneKey] = { title, receivesLiveWrites, placementMode, status?, sessionScene }
+            scenes = nil,
+            order = nil,
         },
         -- Storyteller roll automation (chronicle-wide); merged with defaults in validateState
         stRollSettings = {
@@ -461,8 +473,9 @@ function S.GetDefaultGameState()
         storytellerRolls = {
             slots = {},
             liveSlotIndex = nil,
+            --- Live held cards for the current session. Cleared in the save copy; the dashboard log keeps finished rolls.
             pcDash = {},
-            --- In-game ST roll panels (fallback for the dashboard); off = no ST roll UI work. See RUI.isStRollUiEnabled.
+            --- Unused. The in-game Storyteller roll panels are gone.
             inGameUi = false,
         },
         --- Tonight's tracker values for named and kept NPCs (`core/npc_trackers.ttslua`): `night` = the clock's
@@ -998,27 +1011,54 @@ function S.validateState()
     if not gameState.sceneLibrary or type(gameState.sceneLibrary) ~= "table" then
         gameState.sceneLibrary = {}
     end
-    S.mergeDefaults(gameState.sceneLibrary, S.GetDefaultGameState().sceneLibrary)
-    if type(gameState.sceneLibrary.scenes) ~= "table" then
+    do
+        local lib = gameState.sceneLibrary
+        local hadLegacyFlag = lib.legacyImported ~= nil
+        local hadLinked = type(lib.linked) == "boolean"
+        local preexistingRows = false
+        if type(lib.scenes) == "table" then
+            for _ in pairs(lib.scenes) do
+                preexistingRows = true
+                break
+            end
+        end
+        S.mergeDefaults(lib, S.GetDefaultGameState().sceneLibrary)
+        if not hadLegacyFlag then
+            lib.legacyImported = not preexistingRows
+        end
+        if lib.legacyImported == true then
+            lib.scenes = nil
+            lib.order = nil
+        end
+        if not hadLinked then
+            local key = lib.lastAppliedKey
+            local row = type(key) == "string" and type(lib.scenes) == "table" and lib.scenes[key] or nil
+            lib.linked = type(row) == "table" and row.receivesLiveWrites == true
+        end
+    end
+    if gameState.sceneLibrary.legacyImported ~= true and type(gameState.sceneLibrary.scenes) ~= "table" then
         gameState.sceneLibrary.scenes = {}
     end
-    if type(gameState.sceneLibrary.order) ~= "table" then
+    if gameState.sceneLibrary.legacyImported ~= true and type(gameState.sceneLibrary.order) ~= "table" then
         gameState.sceneLibrary.order = {}
     end
     if gameState.sceneLibrary.activeKey ~= nil and type(gameState.sceneLibrary.activeKey) ~= "string" then
         gameState.sceneLibrary.activeKey = nil
     end
-    if gameState.sceneLibrary.activeKey ~= nil and gameState.sceneLibrary.scenes[gameState.sceneLibrary.activeKey] == nil then
-        gameState.sceneLibrary.activeKey = nil
-    end
     if gameState.sceneLibrary.lastAppliedKey ~= nil and type(gameState.sceneLibrary.lastAppliedKey) ~= "string" then
         gameState.sceneLibrary.lastAppliedKey = nil
     end
-    if type(gameState.sceneLibrary.lastAppliedKey) == "string"
-        and gameState.sceneLibrary.scenes[gameState.sceneLibrary.lastAppliedKey] == nil then
-        gameState.sceneLibrary.lastAppliedKey = nil
+    if type(gameState.sceneLibrary.liveTitle) ~= "string" then
+        gameState.sceneLibrary.liveTitle = nil
     end
-    do
+    if gameState.sceneLibrary.liveTitle == nil and type(gameState.sceneLibrary.lastAppliedKey) == "string" then
+        local row = type(gameState.sceneLibrary.scenes) == "table"
+            and gameState.sceneLibrary.scenes[gameState.sceneLibrary.lastAppliedKey] or nil
+        if type(row) == "table" and type(row.title) == "string" and row.title ~= "" then
+            gameState.sceneLibrary.liveTitle = row.title
+        end
+    end
+    if gameState.sceneLibrary.legacyImported ~= true then
         local lib = gameState.sceneLibrary
         local cleanedOrder = {}
         for _, k in ipairs(lib.order) do
@@ -1028,7 +1068,7 @@ function S.validateState()
         end
         lib.order = cleanedOrder
     end
-    for sceneKey, entry in pairs(gameState.sceneLibrary.scenes) do
+    for sceneKey, entry in pairs(gameState.sceneLibrary.scenes or {}) do
         if type(entry) == "table" then
             if entry.placementMode ~= "scatter" then
                 if entry.placementMode ~= nil and entry.placementMode ~= "standard" then
@@ -1480,6 +1520,11 @@ local function buildSaveState()
         else
             print("[WARNING] buildSaveState: omitted unsafe key '" .. tostring(key) .. "'")
         end
+    end
+
+    -- Finished Storyteller cards are a live display. The dashboard log is the copy that survives a reload.
+    if type(saveState.storytellerRolls) == "table" then
+        saveState.storytellerRolls.pcDash = {}
     end
 
     return saveState

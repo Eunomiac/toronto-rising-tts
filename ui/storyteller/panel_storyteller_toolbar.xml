@@ -95,30 +95,12 @@ UI.setAttributes("storytellerToolbarRoot", {width = "1100"})
 
     <!-- Top navigation buttons -->
     <HorizontalLayout class="storyteller_button_bar" >
-      <Button id="toggle_scenes" text="Scenes" class="storyteller_panel_button"  />
       <Button id="toggle_phases" text="Phases" class="storyteller_panel_button" />
-      <Button id="toggle_stats" text="Stats" class="storyteller_panel_button" />
-      <Button id="toggle_projects" text="Projects" class="storyteller_panel_button" />
     </HorizontalLayout>
 
-    <!-- Main content panels -->
+    <!-- Main content panels. Scenes, Stats, and Projects are edited on the Storyteller Dashboard. -->
     <Panel id="storytellerContentArea" class="storyteller_control_content" active="false">
-
-      <!-- Scenes Panel -->
-      <HorizontalLayout id="panel_scenes_host" class="storyteller_three_panel_container">
-      <!--
-      UI.setAttributes("panel_scenes", {})
-      UI.setAttributes("panel_scenes_library", {})
-      UI.setAttributes("db_third_column", {active="false"})
-      -->
-        <Include src="panel_scenes.xml" />
-        <Include src="panel_scenes_library.xml" />
-        <!-- <Panel id="db_third_column" class="storyteller_panel_column" /> -->
-      </HorizontalLayout>
-
       <Include src="panel_phases.xml" />
-      <Include src="panel_stats.xml" />
-      <Include src="panel_projects.xml" />
     </Panel>
 
   </VerticalLayout>

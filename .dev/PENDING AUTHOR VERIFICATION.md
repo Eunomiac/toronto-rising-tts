@@ -20,7 +20,19 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
-_Last populated: 2026-10-17 (TOR-738 staged NPC steps to the Storyteller dice tray). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
+_Last populated: 2026-10-17 (TOR-739 dashboard owns saved scenes and Storyteller setup). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
+
+### Dashboard owns the libraries; the table keeps the live scene
+
+#### TOR-739 — Dashboard owns saved scenes and Storyteller setup; TTS keeps the live table
+
+**How to verify:** Restart the dashboard (`npm run dev` from `.dev/storyteller-dashboard`), then Save & Play. You do not need a full build.
+
+1. With the dashboard open, play two different saved scenes. Switching should work, and it should not matter whether the save still has an old copy of the library.
+2. On the scene that is linked to the dashboard, change the clock. Save the game, load that save, and confirm the table comes back as that scene and the dashboard still shows the new clock.
+3. Close the dashboard. A player should still be able to start a roll from their dice bag and confirm it.
+4. Open the dashboard again and run a Storyteller roll. The dice should land and the broadcast should show. Reload the save. That finished roll should be in Recent rolls on the dashboard. The old in-game Storyteller roll panels should be gone.
+5. Open the Storyteller HUD. Scenes, Stats, and Projects should be gone. Phases should still be there. Change the clock or a character stat from the dashboard and confirm the table updates.
 
 ### Staged NPC walks up for a Storyteller roll
 

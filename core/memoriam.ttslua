@@ -438,6 +438,9 @@ applyWorldUnderCover = function(payload, opts)
     end
 
     local returnSceneKey = nil
+    local returnTitle = nil
+    local returnPlacement = nil
+    local returnBundle = nil
     local preClock = nil
     local enterStats = {}
     if not reinit then
@@ -448,12 +451,21 @@ applyWorldUnderCover = function(payload, opts)
             and type(lastApplied) == "string" and lastApplied ~= ""
         then
             returnSceneKey = lastApplied
+            returnTitle = S.getStateVal("sceneLibrary", "liveTitle")
+            returnPlacement = S.getStateVal("sessionScene", "placementMode")
+            local live = S.getStateVal("sessionScene")
+            if type(live) == "table" and type(PresentDayClock.cloneSessionSceneForLibraryMirror) == "function" then
+                returnBundle = PresentDayClock.cloneSessionSceneForLibraryMirror(live)
+            end
         end
         preClock = cloneClock(S.getStateVal("sessionScene", "clock"))
         enterStats = snapshotSelfStats(payload.assignments)
     else
         local prev = S.getStateVal("memoriam") or {}
         returnSceneKey = prev.returnSceneKey
+        returnTitle = prev.returnTitle
+        returnPlacement = prev.returnPlacementMode
+        returnBundle = type(prev.returnSessionScene) == "table" and prev.returnSessionScene or nil
         preClock = cloneClock(prev.preMemoriamNowClock)
         enterStats = type(prev.enterStats) == "table" and prev.enterStats or {}
     end
@@ -496,6 +508,9 @@ applyWorldUnderCover = function(payload, opts)
         active = true,
         payload = U.merge({}, payload),
         returnSceneKey = returnSceneKey,
+        returnTitle = returnTitle,
+        returnPlacementMode = returnPlacement,
+        returnSessionScene = returnBundle,
         preMemoriamNowClock = preClock,
         enterStats = enterStats,
     })
@@ -658,8 +673,13 @@ function Memoriam.applyExit(opts)
 
     -- restore: back to the interrupted scene unless it was ended meanwhile (then Downtime, no live scene)
     local player = opts.player or findStorytellerPlayer()
-    local returnStatus = require("core.scene_library").statusOf(returnSceneKey)
-    if returnStatus == "new" or returnStatus == "ongoing" then
+    local returnBundle = S.getStateVal("memoriam", "returnSessionScene")
+    local canRestore = type(returnBundle) == "table" and type(returnSceneKey) == "string" and returnSceneKey ~= ""
+    if not canRestore then
+        local returnStatus = require("core.scene_library").statusOf(returnSceneKey)
+        canRestore = returnStatus == "new" or returnStatus == "ongoing"
+    end
+    if canRestore then
         S.setPlaySubPhase(C.PlaySubPhases.MAIN)
         if type(Sync.ui) == "function" then
             Sync.ui({ phase = true, gameStateOverlay = true })
@@ -667,7 +687,17 @@ function Memoriam.applyExit(opts)
         local StorytellerScenesPanel = require("core.storyteller_scenes_panel")
         S.setStateVal(returnSceneKey, "sceneLibrary", "activeKey")
         if type(StorytellerScenesPanel.applyActiveLibraryScene) == "function" and player ~= nil then
-            StorytellerScenesPanel.applyActiveLibraryScene(player, "scene")
+            local clockOpts = nil
+            if type(returnBundle) == "table" then
+                clockOpts = {
+                    key = returnSceneKey,
+                    title = S.getStateVal("memoriam", "returnTitle"),
+                    placementMode = S.getStateVal("memoriam", "returnPlacementMode"),
+                    sessionScene = returnBundle,
+                    status = "ongoing",
+                }
+            end
+            StorytellerScenesPanel.applyActiveLibraryScene(player, "scene", clockOpts)
         else
             U.AlertGM("Memoriam exit: could not re-apply library scene `" .. returnSceneKey .. "`.")
             Scenes.applyDefaultNoSceneEnvironment({ reason = "memoriam_exit_missing_player" })

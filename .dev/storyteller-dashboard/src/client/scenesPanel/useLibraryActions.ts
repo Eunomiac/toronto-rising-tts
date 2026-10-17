@@ -30,6 +30,28 @@ const upsertCommand = (row: LibraryScene): ScenesCommand => ({
   status: row.status
 });
 
+/** Play carries the scene body. TTS does not keep a library row to read it from. */
+const playCommand = (row: LibraryScene, clock: SceneClock): ScenesCommand => ({
+  op: "playScene",
+  key: row.key,
+  title: row.title,
+  placementMode: row.placementMode,
+  sessionScene: row.sessionScene,
+  status: row.status,
+  ...clock
+});
+
+const forkKeyFor = (base: string): string => {
+  const keys = new Set(sceneLibrarySnapshot().scenes.map((row) => row.key));
+  let n = 2;
+  let candidate = `${base}_${n}`;
+  while (keys.has(candidate)) {
+    n += 1;
+    candidate = `${base}_${n}`;
+  }
+  return candidate;
+};
+
 const locationOf = (row: LibraryScene): LabLocation | undefined => {
   const { districtKey, siteKey } = row.sessionScene;
   return typeof districtKey === "string" && typeof siteKey === "string" ? { districtKey, siteKey } : undefined;
@@ -55,6 +77,10 @@ const useWriteBack = (scene: SceneSlice | undefined, onError: (text: string) => 
     last.current = { key, linked };
     if (previous.key && (previous.key !== key || previous.linked !== linked)) {
       pending.current.add(previous.key);
+    }
+    const departed = scene?.departedKey;
+    if (departed) {
+      pending.current.add(departed);
     }
     if (key && (linked || previous.key !== key || previous.linked !== linked)) {
       pending.current.add(key);
@@ -115,7 +141,10 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
       const kept = saved ? { ...draft, status: saved.status } : draft;
       const row = edit ? edit(kept) : kept;
       putLibraryScene(row);
-      sendBatch([upsertCommand(row), ...then]);
+      const commands: ScenesCommand[] = scene?.liveKey === row.key && scene.liveLinked ? [upsertCommand(row)] : [];
+      if (commands.length > 0 || then.length > 0) {
+        sendBatch([...commands, ...then]);
+      }
       closeDraft(key);
       return row;
     }
@@ -132,7 +161,7 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
     const dated = templateCopy(template, night, [...sceneLibrarySnapshot().scenes, ...sceneDeckSnapshot().previews]);
     const copy = edit ? edit(dated) : dated;
     putLibraryScene(copy);
-    sendBatch([upsertCommand(copy), { op: "playScene", key: copy.key, ...clock }]);
+    sendBatch([playCommand(copy, clock)]);
   };
 
   /** `edit` (the seating strip's) is written into the played row before it goes to TTS. */
@@ -150,11 +179,14 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
       if (played !== row) {
         putLibraryScene(played);
       }
-      sendBatch([upsertCommand(played), { op: "playScene", key, ...clock }]);
+      sendBatch([playCommand(played, clock)]);
     } else if (findDraft(key)) {
-      saveDraft(key, [{ op: "playScene", key, ...clock }], edit);
+      const saved = saveDraft(key, [], edit);
+      if (saved) {
+        sendBatch([playCommand(saved, clock)]);
+      }
     } else {
-      sendBatch([{ op: "playScene", key, ...clock }]);
+      setNotice(`“${key}” is not in the dashboard's scene library.`);
     }
   };
 
@@ -168,8 +200,11 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
     if (!row) {
       return;
     }
+    if (status === "ended" && scene?.liveKey === key) {
+      setNotice("That scene is on the table; use End Scene.");
+      return;
+    }
     putLibraryScene({ ...row, status });
-    sendBatch([{ op: "setSceneStatus", key, status }]);
     if (status === "ended") {
       removeFromDeck(key);
     }
@@ -203,7 +238,9 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
     }
     const renamed = { ...row, title };
     putLibraryScene(renamed);
-    sendBatch([upsertCommand(renamed)]);
+    if (scene?.liveKey === key) {
+      sendBatch([upsertCommand(renamed)]);
+    }
     const { deck, notes } = sceneDeckSnapshot();
     setSceneDeckSection("deck", deck.map((entry) => (entry.key === key ? { key, title } : entry)));
     const docs = notes[row.title];
@@ -225,9 +262,12 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
       }
     },
     remove: (key) => {
+      if (scene?.liveKey === key) {
+        setNotice("That scene is on the table; end it before deleting it.");
+        return;
+      }
       removeLibraryScene(key);
       removeFromDeck(key);
-      sendBatch([{ op: "deleteScene", key }]);
     },
     move: (key, by) => {
       const rows = [...sceneLibrarySnapshot().scenes];
@@ -261,11 +301,15 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
       onUnlink: () => sendBatch([{ op: "unlinkScene" }]),
       onFork: (newTitle, oldTitle) => {
         const row = findRow(liveKey);
-        if (row && oldTitle && oldTitle !== row.title) {
-          putLibraryScene({ ...row, title: oldTitle });
+        if (!row) {
+          setNotice("The scene on the table is not in the dashboard library yet.");
+          return;
         }
+        putLibraryScene({ ...row, title: oldTitle && oldTitle !== row.title ? oldTitle : row.title, linked: false });
+        const newKey = forkKeyFor(liveKey);
+        putLibraryScene({ ...row, key: newKey, title: newTitle, status: "ongoing", linked: true });
         removeFromDeck(liveKey);
-        sendBatch([{ op: "forkScene", newTitle, ...(oldTitle ? { oldTitle } : {}) }]);
+        sendBatch([{ op: "forkScene", newTitle, newKey, ...(oldTitle ? { oldTitle } : {}) }]);
       }
     }
     : undefined;
@@ -300,7 +344,10 @@ export const useLibraryActions = ({ scene, present, sendBatch, removeFromDeck }:
       if ((findRow(key) ?? findDraft(key))?.status === "template") {
         play(key, clock, edit);
       } else {
-        saveDraft(key, [{ op: "playScene", key, ...clock }], edit);
+        const saved = saveDraft(key, [], edit);
+        if (saved) {
+          sendBatch([playCommand(saved, clock)]);
+        }
       }
     },
     discardDraft: closeDraft

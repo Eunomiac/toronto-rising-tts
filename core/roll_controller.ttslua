@@ -507,7 +507,8 @@ local function appendHistory(color, result, label, diceDisplay, rollType, diceFa
         npcLine     = type(npcBroadcast) == "table" and npcBroadcast.line or nil,
         timestamp   = os.time(),
     }
-    while #history > 10 do table.remove(history, 1) end
+    -- The dashboard keeps the chronicle. TTS keeps the roll just finished, for the broadcast and the held card.
+    while #history > 1 do table.remove(history, 1) end
     S.setStateVal(history, "playerData", pid, "hud", "rollData", "history")
 end
 

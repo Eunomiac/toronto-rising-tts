@@ -25,6 +25,8 @@ export type SceneSlice = {
   readonly liveKey?: string;
   readonly liveTitle?: string;
   readonly liveLinked: boolean;
+  /** Scene that just left the table; the dashboard still needs to save it. */
+  readonly departedKey?: string;
   /** During a Memoriam: the scene leaving it returns to (none: it goes to Downtime). */
   readonly memoriamReturnTitle?: string;
   /** The live library row's own location; differs from the live one after an unlinked override. */
@@ -221,6 +223,7 @@ export type StRollActions = {
 /** A Storyteller dice drawer; a confirmed one carries its finished roll (from the roll history) until it is cleared. */
 export type StRollSlot = {
   readonly index: number;
+  readonly rollId?: string;
   readonly label?: string;
   readonly rollType?: string;
   readonly phase?: string;

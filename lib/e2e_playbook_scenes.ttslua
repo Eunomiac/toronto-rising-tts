@@ -160,7 +160,7 @@ Playbook.steps = {
             S.setStateVal(nil, "sceneLibrary", "activeKey")
             S.validateState()
             if rollE2eSeatPrep then rollE2eSeatPrep("Black") end
-            print("[Scenes E2E] Fixture rows (titles start with E2E): Scene A, Scene B, Present-day flags, Invalid historical. They never reach the Storyteller Dashboard.")
+            print("[Scenes E2E] The in-game Scene Library column is gone. Saved scenes live on the Storyteller Dashboard, and Play sends the scene body. These fixture rows stay in the save for scripted Apply only; they never reach the dashboard.")
             print("[Scenes E2E] siteA=" .. tostring(siteA) .. " siteB=" .. tostring(siteB))
           end,
           function()

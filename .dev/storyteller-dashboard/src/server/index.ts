@@ -17,6 +17,7 @@ import { normalizeNpcStatsFile, parseNpcStatsPatch, type NpcStatsFile } from "..
 import { editedNamedKeys, markPending, PENDING_FILE_NAME } from "./npcStatsPending.js";
 import { createSceneDeckStore } from "./sceneDeckStore.js";
 import { normalizeSceneLibrary, parseSceneLibraryPatch, type SceneLibrary } from "../shared/sceneLibrary.js";
+import { normalizeRollChronicle, parseRollChroniclePatch, type RollChronicle } from "../shared/rollChronicle.js";
 import { createLabNoteStore, LabNoteError, parseLabNoteCreate, parseLabNotePatch } from "./labNotes.js";
 import { createTermImageStore, MAX_TERM_IMAGE_BYTES, TERM_IMAGE_CONTENT_TYPES, TermImageError } from "./termImages.js";
 import { dashboardTtsBridge } from "./ttsExecuteLua.js";
@@ -62,6 +63,12 @@ const sceneLibrary = dashboardBackupDir.then((backupDir) => createDataFileStore<
   backupDir,
   backupPrefix: "scene-library",
   normalize: normalizeSceneLibrary
+}));
+const rollChronicle = dashboardBackupDir.then((backupDir) => createDataFileStore<RollChronicle>({
+  filePath: path.join(dashboardRoot, "data", "roll-chronicle.json"),
+  backupDir,
+  backupPrefix: "roll-chronicle",
+  normalize: normalizeRollChronicle
 }));
 const npcStats = dashboardBackupDir.then((backupDir) => createDataFileStore<NpcStatsFile>({
   filePath: path.join(dashboardRoot, "data", "npc-stats.json"),
@@ -551,6 +558,11 @@ const tryHandleDedicatedRoutes = async (request: IncomingMessage, response: Serv
 
   if (pathname === "/api/scene-library") {
     await handleDataFile(request, response, await sceneLibrary, parseSceneLibraryPatch);
+    return true;
+  }
+
+  if (pathname === "/api/roll-chronicle") {
+    await handleDataFile(request, response, await rollChronicle, parseRollChroniclePatch);
     return true;
   }
 

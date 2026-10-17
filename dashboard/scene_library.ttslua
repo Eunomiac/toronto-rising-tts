@@ -1,27 +1,25 @@
 --[[
   Storyteller Dashboard scene library bridge (Global VM only).
 
-  The dashboard keeps the master copy of the scene library (`data/scene-library.json` beside the dashboard);
-  TTS's `gameState.sceneLibrary` holds the rows it has been asked to play. Rows travel in TTS's own shape
-  (`{ title, placementMode, receivesLiveWrites, sessionScene, status }`), the same table TTS JSON-encodes on
-  every save. TTS owns `status` changes from play (`ongoing`) and End Scene (`ended`); `upsert` never
-  overwrites an existing row's status.
+  The dashboard keeps the master copy of the scene library (`data/scene-library.json`). TTS does not store
+  that library. It plays a scene from the body in `playScene`, keeps the scene on the table, and hands
+  back the live scene (and one departing snapshot) through `snapshot`. Old saves may still hold a `scenes`
+  map until `ackImport`.
 
-  - `snapshot(keys?)`  rows for seeding the dashboard and for refreshing the row linked to the table
+  - `snapshot(keys?)`  the live scene, a departing snapshot, and (until import) leftover save rows
                        (E2E fixture rows `e2e_*` are left out)
-  - `upsert(cmd)`      write a dashboard row before Play Scene (op `upsertScene`); refuses rows TTS could not
-                       play (`SceneLibrary.validateRow`: clock, lighting preset, numbered chairs)
-  - `setStatus(cmd)`   change a row's lifecycle status (op `setSceneStatus`)
-  - `remove(key)`      delete a row (op `deleteScene`)
+  - `upsert(cmd)`      checks a row TTS could play; a linked live scene only takes a new title
+  - `setStatus(cmd)`   no-op except refusing End-via-status for the scene on the table
+  - `remove(key)`      refuses deleting the scene on the table; otherwise no-op
+  - `ackImport()`      drops a leftover save library after the dashboard has copied it
+  - `ackWriteBack(key)` drops the departing snapshot after the dashboard has saved it
 
-  This is the only writer of library rows besides the live mirror and fork; the in-game Scenes panel is read-only.
   Row contract: .dev/Storyteller Dashboard Docs/Scene Import Guide.md
   Design: .dev/Storyteller Dashboard Docs/Listening to TTS.md § Scene library
 ]]
 
 local Lib = {}
 
-local U = require("lib.util")
 local S = require("core.state")
 local SceneLibrary = require("core.scene_library")
 
@@ -42,40 +40,107 @@ local function isTestRowKey(key)
   return type(key) == "string" and string.match(key, "^e2e_") ~= nil
 end
 
---- @param keys table|nil array of scene keys; nil for every row
---- @return table `{ order, liveKey, scenes = { [key] = row } }` without E2E fixture rows
+--- @param key string
+--- @param row table
+--- @return table
+local function publicRow(key, row)
+  return {
+    title = type(row.title) == "string" and row.title or key,
+    placementMode = row.placementMode == "scatter" and "scatter" or "standard",
+    receivesLiveWrites = row.receivesLiveWrites == true,
+    status = SceneLibrary.STATUSES[row.status] and row.status or "ongoing",
+    sessionScene = row.sessionScene,
+  }
+end
+
+--- The scene on the table, in the same shape as a library row.
+--- @return string|nil
+--- @return table|nil
+local function liveRow()
+  if not SceneLibrary.hasLiveSceneOnTable() then
+    return nil, nil
+  end
+  local key = S.getStateVal("sceneLibrary", "lastAppliedKey")
+  if isTestRowKey(key) then
+    return nil, nil
+  end
+  local live = S.getStateVal("sessionScene")
+  if type(live) ~= "table" then
+    return nil, nil
+  end
+  local PresentDayClock = require("core.present_day_clock")
+  local sessionScene = PresentDayClock.cloneSessionSceneForLibraryMirror(live)
+  if type(sessionScene) ~= "table" then
+    return nil, nil
+  end
+  local title = S.getStateVal("sceneLibrary", "liveTitle")
+  return key, publicRow(key, {
+    title = type(title) == "string" and title ~= "" and title or key,
+    placementMode = sessionScene.placementMode,
+    receivesLiveWrites = S.getStateVal("sceneLibrary", "linked") == true,
+    status = "ongoing",
+    sessionScene = sessionScene,
+  })
+end
+
+--- @param keys table|nil array of scene keys; nil for the live scene, a departing snapshot, and leftover save rows
+--- @return table `{ order, liveKey, departedKey, legacy, scenes }`
 function Lib.snapshot(keys)
-  local scenes = S.getStateVal("sceneLibrary", "scenes") or {}
   local out = {}
+  local function put(key, row)
+    if type(key) == "string" and not isTestRowKey(key) and type(row) == "table" and out[key] == nil then
+      out[key] = row
+    end
+  end
+  local liveKey, live = liveRow()
+  local pending = S.getStateVal("sceneLibrary", "pendingWriteBack")
+  local departedKey = type(pending) == "table" and type(pending.key) == "string" and pending.key or nil
+  local want = nil
   if type(keys) == "table" then
+    want = {}
     for _, key in ipairs(keys) do
-      if type(scenes[key]) == "table" and not isTestRowKey(key) then
-        out[key] = scenes[key]
-      end
-    end
-  else
-    for key, row in pairs(scenes) do
-      if not isTestRowKey(key) then
-        out[key] = row
+      if type(key) == "string" then
+        want[key] = true
       end
     end
   end
+  local function wanted(key)
+    return want == nil or want[key] == true
+  end
+  if liveKey ~= nil and wanted(liveKey) then
+    put(liveKey, live)
+  end
+  if departedKey ~= nil and not isTestRowKey(departedKey) and wanted(departedKey) then
+    put(departedKey, publicRow(departedKey, pending))
+  end
+  local legacy = SceneLibrary.legacyLibraryPending()
   local order = {}
-  for _, key in ipairs(S.getStateVal("sceneLibrary", "order") or {}) do
-    if not isTestRowKey(key) then
-      order[#order + 1] = key
+  if legacy then
+    local scenes = S.getStateVal("sceneLibrary", "scenes") or {}
+    for _, key in ipairs(S.getStateVal("sceneLibrary", "order") or {}) do
+      if type(key) == "string" and not isTestRowKey(key) and type(scenes[key]) == "table" then
+        order[#order + 1] = key
+        if wanted(key) then
+          put(key, scenes[key])
+        end
+      end
+    end
+    for key, row in pairs(scenes) do
+      if wanted(key) then
+        put(key, row)
+      end
     end
   end
-  local liveKey = SceneLibrary.hasLiveSceneOnTable() and S.getStateVal("sceneLibrary", "lastAppliedKey") or nil
   return {
     order = order,
-    liveKey = not isTestRowKey(liveKey) and liveKey or nil,
+    liveKey = liveKey,
+    departedKey = not isTestRowKey(departedKey) and departedKey or nil,
+    legacy = legacy,
     scenes = out,
   }
 end
 
---- Writes a dashboard row by key. The row linked to the live table only takes its title: the table keeps
---- writing its `sessionScene`.
+--- Checks a dashboard row. Does not store it. A linked scene on the table only takes a new title.
 --- @param cmd table `{ key, title, placementMode, sessionScene }`
 --- @return string|nil error
 function Lib.upsert(cmd)
@@ -87,9 +152,8 @@ function Lib.upsert(cmd)
   if title == "" then
     return "upsertScene: the scene needs a title."
   end
-  local existing = S.getStateVal("sceneLibrary", "scenes", key)
-  if type(existing) == "table" and existing.receivesLiveWrites == true and SceneLibrary.resolveMirrorSceneKey() == key then
-    S.setStateVal(title, "sceneLibrary", "scenes", key, "title")
+  if SceneLibrary.resolveMirrorSceneKey() == key then
+    S.setStateVal(title, "sceneLibrary", "liveTitle")
     afterLibraryWrite()
     return nil
   end
@@ -103,36 +167,9 @@ function Lib.upsert(cmd)
   if rowErr ~= nil then
     return "upsertScene: " .. rowErr
   end
-  local status = "new"
-  if type(existing) == "table" then
-    status = SceneLibrary.statusOf(key)
-  elseif cmd.status ~= nil then
-    if not SceneLibrary.STATUSES[cmd.status] then
-      return "upsertScene: unknown status `" .. tostring(cmd.status) .. "`."
-    end
-    status = cmd.status
+  if cmd.status ~= nil and not SceneLibrary.STATUSES[cmd.status] then
+    return "upsertScene: unknown status `" .. tostring(cmd.status) .. "`."
   end
-  S.setStateVal({
-    title = title,
-    placementMode = cmd.placementMode,
-    receivesLiveWrites = type(existing) == "table" and existing.receivesLiveWrites == true,
-    sessionScene = cmd.sessionScene,
-    status = status,
-  }, "sceneLibrary", "scenes", key)
-  local order = S.getStateVal("sceneLibrary", "order") or {}
-  local listed = false
-  for _, k in ipairs(order) do
-    if k == key then
-      listed = true
-      break
-    end
-  end
-  if not listed then
-    local nextOrder = U.clone(order, true)
-    nextOrder[#nextOrder + 1] = key
-    S.setStateVal(nextOrder, "sceneLibrary", "order")
-  end
-  afterLibraryWrite()
   return nil
 end
 
@@ -145,35 +182,51 @@ function Lib.setStatus(cmd)
     and S.getStateVal("sceneLibrary", "lastAppliedKey") == cmd.key then
     return "setSceneStatus: that scene is on the table; use End Scene."
   end
-  local err = SceneLibrary.setStatus(cmd.key, cmd.status)
-  if err ~= nil then
-    return "setSceneStatus: " .. err
+  if SceneLibrary.legacyLibraryPending() then
+    local err = SceneLibrary.setStatus(cmd.key, cmd.status)
+    if err ~= nil then
+      return "setSceneStatus: " .. err
+    end
   end
-  afterLibraryWrite()
   return nil
 end
 
 --- @param key string
 --- @return string|nil error
 function Lib.remove(key)
-  if type(key) ~= "string" or type(S.getStateVal("sceneLibrary", "scenes", key)) ~= "table" then
-    return nil
-  end
   if SceneLibrary.hasLiveSceneOnTable() and S.getStateVal("sceneLibrary", "lastAppliedKey") == key then
     return "That scene is on the table; end it before deleting it."
   end
-  local order = {}
-  for _, k in ipairs(S.getStateVal("sceneLibrary", "order") or {}) do
-    if k ~= key then
-      order[#order + 1] = k
+  if SceneLibrary.legacyLibraryPending() and type(S.getStateVal("sceneLibrary", "scenes", key)) == "table" then
+    local order = {}
+    for _, k in ipairs(S.getStateVal("sceneLibrary", "order") or {}) do
+      if k ~= key then
+        order[#order + 1] = k
+      end
     end
+    S.setStateVal(order, "sceneLibrary", "order")
+    S.setStateVal(nil, "sceneLibrary", "scenes", key)
+    afterLibraryWrite()
   end
-  S.setStateVal(order, "sceneLibrary", "order")
-  S.setStateVal(nil, "sceneLibrary", "scenes", key)
-  if S.getStateVal("sceneLibrary", "activeKey") == key then
-    S.setStateVal(nil, "sceneLibrary", "activeKey")
+  return nil
+end
+
+--- The dashboard has copied any leftover save library. Further saves omit it.
+function Lib.ackImport()
+  S.setStateVal(true, "sceneLibrary", "legacyImported")
+  S.setStateVal(nil, "sceneLibrary", "scenes")
+  S.setStateVal(nil, "sceneLibrary", "order")
+  return nil
+end
+
+--- The dashboard has saved the scene that left the table.
+--- @param key string
+function Lib.ackWriteBack(key)
+  local pending = S.getStateVal("sceneLibrary", "pendingWriteBack")
+  if type(pending) == "table" and pending.key == key then
+    S.setStateVal(nil, "sceneLibrary", "pendingWriteBack")
+    require("dashboard.push").markWorldDirty({ scene = true })
   end
-  afterLibraryWrite()
   return nil
 end
 

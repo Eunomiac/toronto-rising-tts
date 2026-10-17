@@ -26,7 +26,9 @@ Verification:
 - TTS `DEBUG.showScene()`
 - TTS `DEBUG.inspectSoundscapeAudio()`
 
-Reference for the lean test playbook `Scenes-E2E.md`. Run tests from Suite 0 unless this guide names a specific resume step.
+Reference for the lean test playbook `Scenes-E2E.md`. Run tests from Suite 0 unless this guide names a specific resume point.
+
+The in-game Scene Library column is gone. Saved scenes live on the Storyteller Dashboard, and Play sends the scene body. Steps that say to click a library row in the Storyteller HUD are out of date; play that scene from the dashboard, then continue with the check. A loaded save restores the table from the live scene alone.
 
 **TOR-141** - Author: table **Host** (solo OK), seat **Black** recommended. Est. time: **~35 min smoke** (Suites 0, A-D), **~100 min full** (all suites).
 

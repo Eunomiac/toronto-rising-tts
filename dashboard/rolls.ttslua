@@ -14,6 +14,8 @@
     rollType      color, rollType       change the roll type
     options       color, permanent, structural, conditions, rerolls, diceRerolled
                                         the roll options pop-up (`Rolls.options` reads its values)
+    setPermanent  permanent             chronicle automation flags (TTS keeps the copy players confirm against)
+    showLoggedRoll color, entry         show a roll the dashboard saved, on the table broadcast
     poolDie       color, action         post-roll add / remove one die (`addDie`, `remHungerDie`, …)
     override      color, resultClass    override the classified result (post-roll)
     confirm       color                 confirm the result
@@ -629,6 +631,29 @@ local function applyCommand(cmd)
 
   if op == "hunt" then
     return applyHunt(cmd)
+  end
+  if op == "setPermanent" then
+    local permanent = type(cmd.permanent) == "table" and cmd.permanent or {}
+    local perm = {}
+    for _, key in ipairs(PERMANENT_KEYS) do
+      perm[key] = permanent[key] == true
+    end
+    require("lib.roll_options").setPermanentAll(perm)
+    return nil
+  end
+  if op == "showLoggedRoll" then
+    local color = cmd.color == ST_COLOR and ST_COLOR or cmd.color
+    if color ~= ST_COLOR then
+      local err = pcColorError(color)
+      if err then
+        return err
+      end
+    end
+    if type(cmd.entry) ~= "table" then
+      return "showLoggedRoll needs the saved roll."
+    end
+    require("core.roll_ui").showResultBroadcastFromEntry(color, cmd.entry)
+    return nil
   end
   if op == "duplicateRoll" or op == "retargetRoll" or op == "applyRollSetup"
       or op == "difficultyFromMargin" or op == "pinToDrawer" then

@@ -1603,7 +1603,8 @@ end
 --- fallback for the Storyteller Dashboard. While off they do no UI work at all.
 --- @return boolean
 function RUI.isStRollUiEnabled()
-    return S.getStateVal("storytellerRolls", "inGameUi") == true
+    -- Storyteller roll controls live on the dashboard. The in-game panels are not used.
+    return false
 end
 
 --- Refreshes a player's roll panel to match their current rollData.active.
@@ -1915,6 +1916,19 @@ pumpBroadcastQueue = function()
     end, payload.holdSeconds or C.ROLL_RESULT_BROADCAST_SECONDS)
 end
 
+--- Pin rollRes_panel open from a snapshot. Does not queue or auto-hide.
+-- Drops any queued broadcasts. DEBUG.showBroadcast uses this for layout eye-checks.
+-- @param payload table  Same shape as enqueueBroadcast snapshots
+function RUI.previewBroadcast(payload)
+    U.Val("RUI.previewBroadcast()", { payload = payload },
+        type(payload) == "table", "payload must be a table")
+    cancelBroadcastHideCleanup()
+    cancelBroadcastHoldAndGap()
+    clearBroadcastQueue()
+    broadcastBusy = false
+    applyBroadcastPayload(payload)
+end
+
 --- Queue a snapshot and start the pump if it is idle.
 -- @param payload table
 local function enqueueBroadcast(payload)
@@ -2220,13 +2234,6 @@ end
 --- Applies the in-game Storyteller roll fallback switch: button colour, then either a full repaint
 --- of the Storyteller roll panels (on) or hiding them (off).
 function RUI.applyStRollUiEnabled()
-    local on = RUI.isStRollUiEnabled()
-    UI.setClass("debug_stRollUi", on and "hud_storyteller_button toggled_active" or "hud_storyteller_button toggled_inactive")
-    if on then
-        RUI.refreshPlayerRollPanel("Black")
-        RUI.refreshSTDashboard()
-        return
-    end
     uiSetActive("rollDash_ST", false)
     uiSetActive("rollPanelST", false)
 end

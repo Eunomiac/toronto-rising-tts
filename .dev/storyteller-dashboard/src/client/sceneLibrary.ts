@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { EMPTY_SCENE_LIBRARY, normalizeSceneLibrary, type LibraryScene, type SceneLibrary, type SceneLibraryPatch } from "../shared/sceneLibrary";
-import { mergeFromTts, parseTtsLibrarySnapshot, scenesFromTts } from "./scenesPanel/library";
+import { addMissingFromTts, mergeFromTts, parseTtsLibrarySnapshot, scenesFromTts } from "./scenesPanel/library";
 import { executeLua, luaJsonArg } from "./ttsBridge";
 
 /**
@@ -79,13 +79,50 @@ const write = (next: SceneLibrary): void => {
   notify();
 };
 
-/** Copies TTS's library in once; until it succeeds the picker says so and offers a retry. */
+const acknowledge = async (commands: readonly { op: "ackSceneLibraryImport" }[] | readonly { op: "ackSceneWriteBack"; key: string }[]): Promise<void> => {
+  if (commands.length === 0) {
+    return;
+  }
+  await executeLua(`return GlobalDashboardScenesApply(${luaJsonArg(commands)})`);
+};
+
+/**
+ * Copies scenes that an old save still holds, when the dashboard file does not already have them,
+ * then tells TTS it can drop that copy. A scene already in the file is left alone.
+ */
+export const importLegacySceneLibrary = async (): Promise<void> => {
+  if (!status.loaded) {
+    return;
+  }
+  const result = await executeLua("return GlobalDashboardSceneLibrarySnapshot()");
+  if (result.timedOut || typeof result.returnValue !== "string") {
+    if (!library.seeded) {
+      throw new Error(result.timedOut ? "TTS did not answer." : "TTS has not loaded the scene library commands yet. Save & Play once.");
+    }
+    return;
+  }
+  const snapshot = parseTtsLibrarySnapshot(JSON.parse(result.returnValue));
+  if (!snapshot.legacy && library.seeded) {
+    return;
+  }
+  const tts = scenesFromTts(snapshot);
+  const hotKeys = new Set([snapshot.liveKey, snapshot.departedKey].filter((key): key is string => typeof key === "string"));
+  const kept = addMissingFromTts(library.scenes, tts.filter((row) => !hotKeys.has(row.key)));
+  const merged = mergeFromTts(kept, tts.filter((row) => hotKeys.has(row.key)), true);
+  library = { scenes: merged, seeded: true };
+  notify();
+  await request("PUT", { scenes: library.scenes, seeded: true });
+  if (snapshot.legacy) {
+    await acknowledge([{ op: "ackSceneLibraryImport" }]);
+  }
+};
+
+/** Copies leftover save rows once; until it succeeds the picker says so and offers a retry. */
 export const seedSceneLibraryFromTts = (): Promise<void> => {
   if (!seeding && status.loaded) {
     seeding = (async () => {
       try {
-        const tts = await readTtsScenes();
-        write({ scenes: mergeFromTts(library.scenes, tts), seeded: true });
+        await importLegacySceneLibrary();
         setStatus({ loaded: true, error: null });
       } catch (reason: unknown) {
         setStatus({ ...status, error: `Could not copy the scene library from TTS: ${message(reason)}` });
@@ -103,6 +140,8 @@ const load = async (): Promise<void> => {
     setStatus({ loaded: true, error: null });
     if (!library.seeded) {
       await seedSceneLibraryFromTts();
+    } else {
+      await importLegacySceneLibrary();
     }
   } catch (reason: unknown) {
     setStatus({ loaded: false, error: message(reason) });
@@ -144,7 +183,13 @@ export const pullScenesFromTts = async (keys?: readonly string[], adopt = false)
   const tts = await readTtsScenes(keys);
   const merged = mergeFromTts(library.scenes, tts, adopt);
   if (merged !== library.scenes) {
-    write({ ...library, scenes: merged });
+    library = { ...library, scenes: merged };
+    notify();
+    await request("PUT", { scenes: library.scenes, seeded: library.seeded });
+  }
+  const departed = keys?.filter((key) => tts.some((row) => row.key === key && !row.linked)) ?? [];
+  if (departed.length > 0) {
+    await acknowledge(departed.map((key) => ({ op: "ackSceneWriteBack" as const, key })));
   }
 };
 

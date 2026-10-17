@@ -741,7 +741,7 @@ function RUI.hideResultBroadcast() end
 function RUI.restoreLastResult(color) end
 ```
 
-**In-game Storyteller roll panels are a fallback (TOR-687).** The Storyteller Dashboard owns Storyteller roll control. The in-game ST surfaces (`rollDash_ST`, `rollPanelST`) only work while `gameState.storytellerRolls.inGameUi` is true, switched by the **In-game ST Rolls** button in the Storyteller debug panel (`HUD_toggleStRollUi`). While off, `RUI.refreshSTDashboard`, `RUI.refreshSTSlotRows` and the Black branch of `RUI.refreshPlayerRollPanel` return at once. `RUI.applyStRollUiEnabled()` paints the button and either repaints or hides the panels; it runs on the toggle and once at load. PC roll panels are unaffected.
+**Storyteller rolls are started from the dashboard.** The in-game Storyteller roll panels and the debug toggle are gone. `RUI.isStRollUiEnabled()` stays false, so the old Storyteller panel refresh does nothing. Player seat panels are unchanged. TTS keeps the roll that just finished. The dashboard keeps the longer roll log (`data/roll-chronicle.json`) and the automation flags, and writes those flags into the live copy TTS reads when a player confirms.
 
 ### 8.2 UI Element ID Conventions
 

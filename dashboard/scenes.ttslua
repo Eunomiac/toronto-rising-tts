@@ -61,21 +61,22 @@
                                           willpower with a damage mode (`addSuper`, `removeAgg`, `clearSuper`, …)
                                           or hunger / rage with `up` / `down`; `max` { health?, willpower? }
                                           from the stat block caps damage
-    playScene         key, from, plusMinutes, pace
-                                          select a library scene and apply it to the table, starting
-                                          `plusMinutes` after its own time (`from` scene) or present day
+    playScene         key, title, placementMode, sessionScene, status?, from, plusMinutes, pace
+                                          apply that scene body to the table (the dashboard keeps the library),
+                                          starting `plusMinutes` after its own time (`from` scene) or present day
                                           (`from` present, which moves present day on); real time runs at
                                           ×2, or (`pace` x5) at ×5 until it reaches present day; refuses
-                                          template and ended rows
+                                          template and ended scenes
     endScene                              end the live scene
     upsertScene       key, title, placementMode, sessionScene, status?
-                                          write a dashboard library row (`dashboard/scene_library.ttslua`);
-                                          refuses rows TTS could not play (clock, lighting preset, chairs);
-                                          `status` only applies to a row TTS does not have yet
+                                          check a row TTS could play; a linked live scene only takes a new title
     setSceneStatus    key, status         new / ongoing / ended / template; not `ended` for the table's scene
-    deleteScene       key                 delete a library row (not the scene on the table)
-    unlinkScene                           stop live writes into the table's library row
-    forkScene         newTitle, oldTitle? the table continues as a new row; the old row keeps a snapshot
+    deleteScene       key                 refuse when that scene is on the table
+    unlinkScene                           stop saving live edits back to the dashboard scene
+    forkScene         newTitle, newKey?, oldTitle?
+                                          the table continues under `newKey`; the dashboard stores both rows
+    ackSceneLibraryImport                 the dashboard copied any leftover save library
+    ackSceneWriteBack key                 the dashboard saved the scene that left the table
 
   Several in-game entry points are Steam-gated to the Storyteller; ops that reach them pass the
   connected Storyteller player and fail when the Storyteller is not in the game.
@@ -366,15 +367,14 @@ local function applyCommand(cmd)
       if type(Scenes.stageIsActive) == "function" and Scenes.stageIsActive() ~= true then
         return "There is no stage while no scene is on the table."
       end
-      local SceneLibrary = require("core.scene_library")
-      local key = SceneLibrary.resolveMirrorSceneKey() or S.getStateVal("sceneLibrary", "lastAppliedKey")
-      local row = type(key) == "string" and S.getStateVal("sceneLibrary", "scenes", key) or nil
-      local session = type(row) == "table" and row.sessionScene or nil
-      local npcWorld = type(session) == "table" and session.npcWorld or nil
-      if type(npcWorld) ~= "table" then
-        return "The scene on the table has no library row to reset the stage from."
+      local placements = cmd.placements
+      if type(placements) ~= "table" then
+        placements = S.getStateVal("sceneLibrary", "stageResetPlacements")
       end
-      opts.base = U.clone(type(npcWorld.placements) == "table" and npcWorld.placements or {}, true)
+      if type(placements) ~= "table" then
+        return "The scene on the table has no saved stage to reset to."
+      end
+      opts.base = U.clone(placements, true)
     end
     local err = require("core.npc_stage_apply").applyStageChanges(cmd.changes, opts)
     require("dashboard.push").markWorldDirty({ scene = true })
@@ -448,9 +448,15 @@ local function applyCommand(cmd)
       return "There is no scene on the table to fork."
     end
     local source = SceneLibrary.resolveMirrorSceneKey() or S.getStateVal("sceneLibrary", "lastAppliedKey")
-    local _, err = Panel.forkLiveScene(source, cmd.newTitle, cmd.oldTitle)
+    local _, err = Panel.forkLiveScene(source, cmd.newTitle, cmd.oldTitle, cmd.newKey)
     require("dashboard.push").markWorldDirty({ scene = true })
     return err
+  end
+  if op == "ackSceneLibraryImport" then
+    return require("dashboard.scene_library").ackImport()
+  end
+  if op == "ackSceneWriteBack" then
+    return require("dashboard.scene_library").ackWriteBack(cmd.key)
   end
 
   if op == "sessionNum" or op == "sessionName" then
@@ -484,12 +490,17 @@ local function applyCommand(cmd)
       Panel.endSceneNarrative(player)
       return nil
     end
-    local status = require("core.scene_library").statusOf(cmd.key)
-    if status == nil then
-      return "No library scene `" .. tostring(cmd.key) .. "`."
+    if type(cmd.key) ~= "string" or cmd.key == "" then
+      return "playScene needs a scene key."
     end
-    if status == "template" or status == "ended" then
-      return "`" .. cmd.key .. "` is " .. status .. "; play a new or ongoing scene."
+    if cmd.status == "template" or cmd.status == "ended" then
+      return "`" .. cmd.key .. "` is " .. cmd.status .. "; play a new or ongoing scene."
+    end
+    if type(cmd.sessionScene) ~= "table" then
+      return "playScene needs the scene body from the dashboard."
+    end
+    if cmd.placementMode ~= nil and cmd.placementMode ~= "standard" and cmd.placementMode ~= "scatter" then
+      return "playScene placementMode must be standard or scatter."
     end
     if cmd.from ~= "scene" and cmd.from ~= "present" then
       return "playScene needs `from` scene or present."
@@ -501,10 +512,25 @@ local function applyCommand(cmd)
     if cmd.pace ~= "x2" and cmd.pace ~= "x5" then
       return "playScene needs `pace` x2 or x5."
     end
+    local rowErr = require("core.scene_library").validateRow(cmd.placementMode or "standard", cmd.sessionScene)
+    if rowErr ~= nil then
+      return "playScene: " .. rowErr
+    end
     S.setStateVal(cmd.key, "sceneLibrary", "activeKey")
+    if type(cmd.title) == "string" and cmd.title ~= "" then
+      S.setStateVal(cmd.title, "sceneLibrary", "liveTitle")
+    end
     S.validateState()
     Panel.refresh()
-    Panel.applyActiveLibraryScene(player, cmd.from, { plusMinutes = plus, pace = cmd.pace })
+    Panel.applyActiveLibraryScene(player, cmd.from, {
+      plusMinutes = plus,
+      pace = cmd.pace,
+      key = cmd.key,
+      title = cmd.title,
+      placementMode = cmd.placementMode,
+      status = cmd.status,
+      sessionScene = cmd.sessionScene,
+    })
     return nil
   end
 

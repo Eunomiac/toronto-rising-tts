@@ -75,7 +75,14 @@ export type ScenesCommand =
   | { readonly op: "seatMove"; readonly seat: string; readonly chair: number }
   | { readonly op: "seatNpc"; readonly characterKey: string; readonly chair: number }
   | { readonly op: "signalOff"; readonly color: string }
-  | ({ readonly op: "playScene"; readonly key: string } & SceneClock)
+  | ({
+    readonly op: "playScene";
+    readonly key: string;
+    readonly title: string;
+    readonly placementMode: PlacementMode;
+    readonly sessionScene: Readonly<Record<string, unknown>>;
+    readonly status: SceneStatus;
+  } & SceneClock)
   | { readonly op: "endScene" }
   | {
     readonly op: "upsertScene";
@@ -89,10 +96,12 @@ export type ScenesCommand =
   | { readonly op: "setSceneStatus"; readonly key: string; readonly status: SceneStatus }
   | { readonly op: "deleteScene"; readonly key: string }
   | { readonly op: "unlinkScene" }
-  | { readonly op: "forkScene"; readonly newTitle: string; readonly oldTitle?: string }
+  | { readonly op: "forkScene"; readonly newTitle: string; readonly newKey: string; readonly oldTitle?: string }
+  | { readonly op: "ackSceneLibraryImport" }
+  | { readonly op: "ackSceneWriteBack"; readonly key: string }
   | { readonly op: "stage"; readonly changes: StageChanges }
   | { readonly op: "stage"; readonly clear: true }
-  | { readonly op: "stage"; readonly reset: true }
+  | { readonly op: "stage"; readonly reset: true; readonly placements?: Readonly<Record<string, unknown>> }
   | { readonly op: "scatterPlace"; readonly characterKey: string; readonly kind: "pc" | "npc"; readonly group?: number }
   | {
     readonly op: "genericAdd";

@@ -87,7 +87,9 @@ export type RollsCommand =
   | { readonly op: "slotCancel"; readonly slot: number }
   | { readonly op: "slotBroadcast"; readonly slot: number }
   | { readonly op: "choice"; readonly color: string; readonly choice: RollChoice }
-  | { readonly op: "hunt"; readonly color: string; readonly flavor: string | null; readonly intensity: HuntIntensity; readonly margin: number };
+  | { readonly op: "hunt"; readonly color: string; readonly flavor: string | null; readonly intensity: HuntIntensity; readonly margin: number }
+  | { readonly op: "setPermanent"; readonly permanent: Readonly<Record<string, boolean>> }
+  | { readonly op: "showLoggedRoll"; readonly color: string; readonly entry: Readonly<Record<string, unknown>> };
 
 export type RollsSend = (command: RollsCommand) => void;
 
