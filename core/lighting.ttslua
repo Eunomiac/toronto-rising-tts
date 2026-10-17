@@ -2030,6 +2030,11 @@ function L.reconcileLightRef(lightRef, transitionTime, opts)
     if U.Type(lightRef) ~= "string" or lightRef == "" then
         return true
     end
+    if string.sub(lightRef, 1, 9) == "npcLight_"
+        and require("core.npc_roll_present").shouldSkipLightReconcile(lightRef) == true
+    then
+        return true
+    end
     opts = type(opts) == "table" and opts or {}
     local force = opts.force == true
 

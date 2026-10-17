@@ -1,0 +1,538 @@
+--[[
+    Temporary stage presentation while a Storyteller dice drawer is on the table (TOR-738).
+
+    When the Storyteller rolls for an NPC standing on the stage (not seated, not Scatter),
+    the figurine and its spotlight walk to the tray as the drawer rises, then walk back
+    to the pose they had when the roll began once that drawer is parked.
+
+    Scene placement (`sessionScene.npcWorld.placements`) is not rewritten. While the
+    presentation is up, NPC reconcile must not snap the figurine back to that placement,
+    and lighting reconcile must not fight the in-flight spotlight.
+]]
+
+local RP = {}
+
+local U = require("lib.util")
+local DATA = require("lib.npc_gameboard_data")
+
+--- World Z is the Center group's anchor spot, minus `D.ROLL_PRESENT.centerZOffset`.
+
+--- npcName -> hold. A hold exists from the step-forward until the return lerp finishes.
+--- @type table<string, table>
+local holds = {}
+
+--- Drawer slot 1..3 -> npcName currently presented on that tray.
+--- @type table<number, string>
+local slotNpc = {}
+
+--- `npcLight_<guid>` while that spotlight's pose is owned by the lerp.
+--- @type table<string, boolean>
+local animatingRefs = {}
+
+local restoreForDrawer
+
+--- @param v Vector|table|nil
+--- @return table|nil `{ x, y, z }`
+local function copyVec3(v)
+    if v == nil then
+        return nil
+    end
+    local x = tonumber(v.x or v[1])
+    local y = tonumber(v.y or v[2])
+    local z = tonumber(v.z or v[3])
+    if x == nil or y == nil or z == nil then
+        return nil
+    end
+    return { x = x, y = y, z = z }
+end
+
+--- @param a number
+--- @param b number
+--- @param t number
+--- @return number
+local function lerpAngle(a, b, t)
+    local da = (((b - a) + 180) % 360) - 180
+    return a + da * t
+end
+
+--- @return number
+local function centerZOffset()
+    local cfg = DATA.ROLL_PRESENT
+    local offset = type(cfg) == "table" and tonumber(cfg.centerZOffset) or nil
+    if offset == nil then
+        return 15
+    end
+    return offset
+end
+
+--- @return number seconds, same tune as a stage placement move
+local function moveDuration()
+    local cfg = DATA.STAGE_PLACEMENT_LERP
+    local duration = type(cfg) == "table" and tonumber(cfg.positionDurationSec) or nil
+    if duration == nil or duration < 0 then
+        return 1.2
+    end
+    return duration
+end
+
+--- @param a table|nil
+--- @param b table|nil
+--- @return boolean
+local function samePlacement(a, b)
+    if type(a) ~= "table" or type(b) ~= "table" then
+        return false
+    end
+    local du = math.abs((tonumber(a.u) or 0) - (tonumber(b.u) or 0))
+    local dv = math.abs((tonumber(a.v) or 0) - (tonumber(b.v) or 0))
+    if du >= 0.002 or dv >= 0.002 then
+        return false
+    end
+    if (tonumber(a.groundLevel) or nil) ~= (tonumber(b.groundLevel) or nil) then
+        return false
+    end
+    return true
+end
+
+--- @param placement table|nil
+--- @return table|nil
+local function copyPlacement(placement)
+    if type(placement) ~= "table" then
+        return nil
+    end
+    return {
+        u = tonumber(placement.u),
+        v = tonumber(placement.v),
+        groundLevel = tonumber(placement.groundLevel),
+    }
+end
+
+--- World Z of the Center stage group's central spot (ring-1 anchor nearest u = 0.5).
+--- @return number|nil
+local function centerStageAnchorWorldZ()
+    local Board = require("core.npc_gameboard_board")
+    local Snaps = require("core.npc_gameboard_snaps")
+    local board = Board.getControlBoard()
+    if not Board.isGameObject(board) then
+        return nil
+    end
+    local catalog = Snaps.buildControlBoardSnapCatalog(board, nil)
+    if type(catalog) ~= "table" then
+        return nil
+    end
+    local best = nil
+    local bestDist = math.huge
+    for i = 1, #catalog do
+        local entry = catalog[i]
+        if type(entry) == "table" and entry.ringIndex == 1 and entry.isAnchor == true then
+            local dist = math.abs((tonumber(entry.u) or 0.5) - 0.5)
+            if dist < bestDist then
+                bestDist = dist
+                best = entry
+            end
+        end
+    end
+    if best == nil then
+        return nil
+    end
+    local wp = Board.worldFromUv(tonumber(best.u) or 0.5, tonumber(best.v) or 0.5)
+    if wp == nil or type(wp.z) ~= "number" then
+        return nil
+    end
+    return wp.z
+end
+
+--- @param npcName string
+--- @return table|nil instance record when this NPC is standing on the stage
+local function stageRecord(npcName)
+    if type(npcName) ~= "string" or npcName == "" then
+        return nil
+    end
+    local NPCS = require("core.npcs")
+    local rec = NPCS.getInstanceRecord(npcName)
+    if type(rec) ~= "table" or rec.areaKey ~= NPCS.STAGE_BOARD_AREA_KEY then
+        return nil
+    end
+    return rec
+end
+
+--- Light mode the figurine is showing right now (family dim included).
+--- @param npcName string
+--- @param rec table
+--- @return string
+local function visualModeKey(npcName, rec)
+    local NPCS = require("core.npcs")
+    if type(NPCS.isSpotlightHeld) == "function" and NPCS.isSpotlightHeld(npcName) == true then
+        return "SPOTLIGHT"
+    end
+    if type(NPCS.isFamilyOffSpotlight) == "function" and NPCS.isFamilyOffSpotlight(npcName) == true then
+        return "OFFSPOTLIGHT"
+    end
+    if type(rec.npcLightMode) == "string" and rec.npcLightMode ~= "" then
+        return rec.npcLightMode
+    end
+    return "STANDARD"
+end
+
+--- @param npcName string
+--- @param modeKey string
+--- @return table|nil
+local function positioningFor(npcName, modeKey)
+    local NPCS = require("core.npcs")
+    local mode = NPCS.getMergedModeDefinition(npcName, modeKey)
+    if type(mode) ~= "table" then
+        return nil
+    end
+    return NPCS.normalizeLightPositioningForLerp(mode.positioning)
+end
+
+--- Brightness / colour / cone only. Position stays with the pose lerp.
+--- @param npcName string
+--- @param modeKey string
+--- @param transitionTime number
+local function applyModeVisual(npcName, modeKey, transitionTime)
+    local NPCS = require("core.npcs")
+    local rec = NPCS.getInstanceRecord(npcName)
+    if type(rec) ~= "table" or type(rec.lightGuid) ~= "string" or rec.lightGuid == "" then
+        return
+    end
+    local L = require("core.lighting")
+    local reg = NPCS.lightRegistryName(rec.lightGuid)
+    if L.LIGHTMODES[reg] == nil and type(L.registerNpcSpotlightModes) == "function" then
+        L.registerNpcSpotlightModes(npcName, rec.lightGuid)
+    end
+    local resolved = NPCS.buildResolvedLightModeTable(npcName, modeKey)
+    if type(resolved) ~= "table" then
+        return
+    end
+    L.applyTransientLightMode(reg, {
+        enabled = resolved.enabled,
+        color = resolved.color,
+        range = resolved.range,
+        intensity = resolved.intensity,
+        angle = resolved.angle,
+    }, { transitionTime = transitionTime })
+end
+
+--- @param npcName string
+--- @param hold table
+--- @param targetPos table
+--- @param targetRot table
+--- @param startModeKey string
+--- @param endModeKey string
+--- @param onDone function|nil called with the epoch this lerp owns
+--- @return boolean started
+local function runPoseLerp(npcName, hold, targetPos, targetRot, startModeKey, endModeKey, onDone)
+    local NPCS = require("core.npcs")
+    local G = require("lib.guids")
+    local rec = NPCS.getInstanceRecord(npcName)
+    local fig = rec and G.getObject(rec.figurineGuid or "") or nil
+    if not U.isGameObject(fig) then
+        return false
+    end
+    local startPos = copyVec3(fig.getPosition())
+    local startRot = copyVec3(fig.getRotation()) or { x = 0, y = 0, z = 0 }
+    if startPos == nil then
+        return false
+    end
+    local lit = rec and G.getObject(rec.lightGuid or "") or nil
+    hold.epoch = (hold.epoch or 0) + 1
+    local epoch = hold.epoch
+    hold.animating = true
+    local ref = nil
+    if type(rec.lightGuid) == "string" and rec.lightGuid ~= "" then
+        ref = NPCS.lightRegistryName(rec.lightGuid)
+        animatingRefs[ref] = true
+    end
+    if fig.setLock ~= nil then
+        fig.setLock(true)
+    end
+    local startPositioning = positioningFor(npcName, startModeKey)
+    local endPositioning = positioningFor(npcName, endModeKey)
+    local duration = moveDuration()
+    applyModeVisual(npcName, endModeKey, duration)
+
+    U.Lerp(function(t)
+        if hold.epoch ~= epoch or not U.isGameObject(fig) then
+            return
+        end
+        local tt = tonumber(t) or 0
+        if tt < 0 then
+            tt = 0
+        elseif tt > 1 then
+            tt = 1
+        end
+        fig.setPosition(Vector(
+            startPos.x + (targetPos.x - startPos.x) * tt,
+            startPos.y + (targetPos.y - startPos.y) * tt,
+            startPos.z + (targetPos.z - startPos.z) * tt
+        ))
+        fig.setRotation(Vector(
+            lerpAngle(startRot.x, targetRot.x, tt),
+            lerpAngle(startRot.y, targetRot.y, tt),
+            lerpAngle(startRot.z, targetRot.z, tt)
+        ))
+        if U.isGameObject(lit) then
+            local positioning = NPCS.lerpLightPositioning(startPositioning, endPositioning, tt)
+            local pose = NPCS.resolveFigurineLightPose(fig, positioning, npcName)
+            if type(pose) == "table" and pose.position ~= nil then
+                lit.setPosition(pose.position)
+                if pose.rotation ~= nil then
+                    lit.setRotation(pose.rotation)
+                end
+            end
+        end
+        if tt >= 1 then
+            hold.animating = false
+            if ref ~= nil then
+                animatingRefs[ref] = nil
+            end
+            if hold.epoch == epoch and onDone ~= nil then
+                onDone(epoch)
+            end
+        end
+    end, 0, 1, duration, false, "sineInOut")
+    return true
+end
+
+--- @param npcName string
+--- @param hold table
+--- @param epoch number
+local function finishAtTray(npcName, hold, epoch)
+    if hold.epoch ~= epoch then
+        return
+    end
+    local NPCS = require("core.npcs")
+    NPCS.applyCurrentLightMode(npcName, 0, { force = true, skipFamilyReconcile = true })
+    NPCS.reconcileFamilyOffSpotlight(0.35, { force = true })
+end
+
+--- @param npcName string
+--- @param hold table
+--- @param epoch number
+local function finishAtHome(npcName, hold, epoch)
+    if hold.epoch ~= epoch or holds[npcName] ~= hold then
+        return
+    end
+    holds[npcName] = nil
+    local NPCS = require("core.npcs")
+    NPCS.applyCurrentLightMode(npcName, 0.25, { force = true, skipFamilyReconcile = true })
+    NPCS.reconcileFamilyOffSpotlight(0.35, { force = true })
+end
+
+--- True while this NPC is stepped up to a tray or walking back from one.
+--- Reconcile must not snap the figurine to its stage placement.
+--- @param npcName string
+--- @return boolean
+function RP.isHeld(npcName)
+    return type(npcName) == "string" and holds[npcName] ~= nil
+end
+
+--- @param npcName string
+--- @return boolean
+function RP.isAnimating(npcName)
+    local hold = type(npcName) == "string" and holds[npcName] or nil
+    return type(hold) == "table" and hold.animating == true
+end
+
+--- Spotlight stays SPOTLIGHT for the whole tray visit, including the walk back,
+--- until `finishAtHome` clears the hold and reapplies the saved mode.
+--- @param npcName string
+--- @return boolean
+function RP.forcesSpotlight(npcName)
+    return RP.isHeld(npcName)
+end
+
+--- @param lightRef string
+--- @return boolean
+function RP.shouldSkipLightReconcile(lightRef)
+    return type(lightRef) == "string" and animatingRefs[lightRef] == true
+end
+
+--- A stage edit landed while the NPC is at the tray. Remember the new placement
+--- as the pose to walk back to; leave the figurine where the roll put it.
+--- @param npcName string
+function RP.retargetHomeFromPlacement(npcName)
+    local hold = holds[npcName]
+    if type(hold) ~= "table" then
+        return
+    end
+    local NPCS = require("core.npcs")
+    local rec = NPCS.getInstanceRecord(npcName)
+    if type(rec) ~= "table" or type(rec.stagePlacement) ~= "table" then
+        return
+    end
+    local mode = (type(rec.npcLightMode) == "string" and rec.npcLightMode ~= "") and rec.npcLightMode or "STANDARD"
+    if samePlacement(hold.homePlacement, rec.stagePlacement) and hold.homeMode == mode then
+        return
+    end
+    local pl = rec.stagePlacement
+    local u = tonumber(pl.u)
+    local v = tonumber(pl.v)
+    if u == nil or v == nil then
+        return
+    end
+    local Board = require("core.npc_gameboard_board")
+    local Snaps = require("core.npc_gameboard_snaps")
+    local ground = tonumber(pl.groundLevel)
+    if ground == nil then
+        ground = Snaps.groundLevelForSnapUv(u, v)
+    end
+    local pos = Board.worldFromUv(u, v, { groundLevel = ground })
+    if pos == nil then
+        return
+    end
+    local relYaw = Snaps.placementBoardRelYawDeg(u, v)
+    local yaw = relYaw
+    if type(Board.stageFigurineWorldYawDeg) == "function" then
+        yaw = Board.stageFigurineWorldYawDeg(relYaw)
+    end
+    hold.homePlacement = copyPlacement(pl)
+    hold.homeMode = mode
+    hold.homePos = { x = pos.x, y = pos.y, z = pos.z }
+    hold.homeRot = { x = 0, y = yaw, z = 0 }
+end
+
+--- Step a staged NPC up to this drawer's X. No-op for anyone not on the stage.
+--- @param slot number 1..3
+--- @param npcName string|nil
+function RP.presentForDrawer(slot, npcName)
+    if type(slot) ~= "number" then
+        return
+    end
+    if require("core.scatter_mode").isActive() == true then
+        return
+    end
+    local rec = stageRecord(npcName)
+    if rec == nil then
+        return
+    end
+    local previous = slotNpc[slot]
+    if type(previous) == "string" and previous ~= npcName then
+        restoreForDrawer(slot)
+    end
+
+    local STD = require("lib.st_dice_drawer")
+    local trayX = STD.revealedTrayX(slot)
+    local centerZ = centerStageAnchorWorldZ()
+    if type(trayX) ~= "number" or type(centerZ) ~= "number" then
+        print("[NpcRollPresent] Cannot step "
+            .. tostring(npcName)
+            .. " to tray "
+            .. tostring(slot)
+            .. " (tray X or Center spot Z missing).")
+        return
+    end
+
+    local G = require("lib.guids")
+    local fig = G.getObject(rec.figurineGuid or "")
+    if not U.isGameObject(fig) then
+        print("[NpcRollPresent] Cannot step " .. tostring(npcName) .. " — figurine is not on the table.")
+        return
+    end
+    local live = copyVec3(fig.getPosition())
+    if live == nil then
+        return
+    end
+
+    local hold = holds[npcName]
+    local startMode = "STANDARD"
+    if hold == nil then
+        local liveRot = copyVec3(fig.getRotation()) or { x = 0, y = 0, z = 0 }
+        startMode = visualModeKey(npcName, rec)
+        hold = {
+            slot = slot,
+            homePos = live,
+            homeRot = liveRot,
+            homeMode = (type(rec.npcLightMode) == "string" and rec.npcLightMode ~= "") and rec.npcLightMode or "STANDARD",
+            homePlacement = copyPlacement(rec.stagePlacement),
+            epoch = 0,
+        }
+        holds[npcName] = hold
+    else
+        if hold.slot ~= nil and hold.slot ~= slot then
+            slotNpc[hold.slot] = nil
+        end
+        startMode = "SPOTLIGHT"
+        hold.slot = slot
+    end
+    slotNpc[slot] = npcName
+    hold.presenting = true
+
+    local targetPos = { x = trayX, y = live.y, z = centerZ - centerZOffset() }
+    local targetRot = { x = 0, y = 0, z = 0 }
+    local created = holds[npcName] == hold and (hold.epoch or 0) == 0 and hold.animating ~= true
+    print(string.format(
+        "[NpcRollPresent] %s stepping to Storyteller tray %d (x=%.2f, y=%.2f, z=%.2f)",
+        npcName,
+        slot,
+        targetPos.x,
+        targetPos.y,
+        targetPos.z
+    ))
+    local started = runPoseLerp(npcName, hold, targetPos, targetRot, startMode, "SPOTLIGHT", function(epoch)
+        finishAtTray(npcName, hold, epoch)
+    end)
+    if started ~= true and created then
+        holds[npcName] = nil
+        if slotNpc[slot] == npcName then
+            slotNpc[slot] = nil
+        end
+    end
+end
+
+--- Walk the NPC on this drawer back to the pose saved when they stepped up.
+--- @param slot number
+restoreForDrawer = function(slot)
+    if type(slot) ~= "number" then
+        return
+    end
+    local npcName = slotNpc[slot]
+    if type(npcName) ~= "string" then
+        return
+    end
+    slotNpc[slot] = nil
+    local hold = holds[npcName]
+    if type(hold) ~= "table" or hold.slot ~= slot then
+        return
+    end
+    if type(hold.homePos) ~= "table" or type(hold.homeRot) ~= "table" then
+        holds[npcName] = nil
+        return
+    end
+    print(string.format("[NpcRollPresent] %s returning from Storyteller tray %d", npcName, slot))
+    local started = runPoseLerp(
+        npcName,
+        hold,
+        hold.homePos,
+        hold.homeRot,
+        "SPOTLIGHT",
+        hold.homeMode or "STANDARD",
+        function(epoch)
+            finishAtHome(npcName, hold, epoch)
+        end
+    )
+    if started ~= true then
+        holds[npcName] = nil
+        local NPCS = require("core.npcs")
+        NPCS.applyCurrentLightMode(npcName, 0, { force = true, skipFamilyReconcile = true })
+        NPCS.reconcileFamilyOffSpotlight(0.35, { force = true })
+    end
+end
+
+--- @param slot number
+function RP.restoreForDrawer(slot)
+    restoreForDrawer(slot)
+end
+
+--- Park every stepped-up NPC (startup / workshop-home restore of all three drawers).
+function RP.restoreAll()
+    local slots = {}
+    for slot, _ in pairs(slotNpc) do
+        slots[#slots + 1] = slot
+    end
+    for i = 1, #slots do
+        restoreForDrawer(slots[i])
+    end
+end
+
+return RP

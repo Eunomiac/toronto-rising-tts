@@ -10,6 +10,9 @@
     Scatter Mode: one uncleared roll per scatter group (origin bucket if the NPC is off-stage).
     A new roll at a busy group replaces that group's roll. If all three trays are elsewhere,
     the oldest roll is cleared and that tray moves. Table Mode still refuses when no tray is free.
+
+    Outside Scatter, a roll for an NPC standing on the stage (not seated at the table) steps
+    that figurine and spotlight up to the drawer while the tray is visible (TOR-738).
 ]]
 
 local STR = {}
@@ -323,17 +326,24 @@ function STR.activateDrawerForSlot(slotIndex)
     local npcSeatKey = nil
     local scatterGroupIndex = nil
     local active = getBlackActive()
+    local characterKey = slot.npcCharacterKey
+    if type(active) == "table" and type(active.npcCharacterKey) == "string" and active.npcCharacterKey ~= "" then
+        characterKey = active.npcCharacterKey
+    end
     local ScatterMode = require("core.scatter_mode")
     if ScatterMode.isActive() == true and type(slot.scatterGroupIndex) == "number" then
         scatterGroupIndex = slot.scatterGroupIndex
-    elseif type(active) == "table" and type(active.npcCharacterKey) == "string" then
-        npcSeatKey = resolveActiveNpcSeatForCharacter(active.npcCharacterKey)
+    elseif type(characterKey) == "string" then
+        npcSeatKey = resolveActiveNpcSeatForCharacter(characterKey)
     end
     if scatterGroupIndex ~= nil then
         STD.openForSlot(slotIndex, { scatterGroupIndex = scatterGroupIndex })
         return
     end
     STD.openForSlot(slotIndex, { npcSeatKey = npcSeatKey })
+    if npcSeatKey == nil then
+        require("core.npc_roll_present").presentForDrawer(slotIndex, characterKey)
+    end
 end
 
 --- Initiates an NPC roll on the Storyteller seat (Black).
@@ -392,6 +402,7 @@ function STR.initiateNpcRoll(rawLabel, rollType, npcCharacterKey)
         drawerActive = false,
         phase = skipSetupForRollType(rt) and C.RollPhase.PRE_ROLL or C.RollPhase.SETUP,
         scatterGroupIndex = scatterActive and scatterGroupIndex or nil,
+        npcCharacterKey = (type(npcCharacterKey) == "string" and npcCharacterKey ~= "") and npcCharacterKey or nil,
         initiatedAt = nowTime(),
         initiatedSeq = nextSeq,
     }

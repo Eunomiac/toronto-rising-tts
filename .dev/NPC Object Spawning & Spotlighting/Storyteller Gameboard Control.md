@@ -17,6 +17,7 @@ Source of truth:
 - `core/npc_gameboard_board.ttslua` — board accessors, u,v ↔ world
 - `core/npc_gameboard_snaps.ttslua` — polar + seat-row **catalog geometry** (no physical snap points are installed)
 - `core/npc_stage_lerp.ttslua` — animated stage moves
+- `core/npc_roll_present.ttslua` — temporary step-to-tray while a Storyteller dice drawer is open (TOR-738)
 - `lib/npc_gameboard_data.ttslua` — snap rings, seat row, Scatter group geometry, lerp tunables, token scale
 
 Verification:
@@ -38,6 +39,8 @@ Status: current (TOR-687 retired control-board Apply, the token palette, PC toke
 Reconcile uses **`placements` only**. Legacy **`byArea`** in an old save or library row is not converted: `S.validateState` drops it (`lib/npc_placements_convert.ttslua`) and prints each NPC it held, so the Storyteller can place them on the stage again.
 
 Seating NPCs at the table and setting PC seat presence are **not** stage-token actions; they go through scene activation and the Scenes panel / Dashboard. Scatter Mode is world layout + HUD only: [`Scatter Mode.md`](../Revision%20of%20Player%20Positioning/Scatter%20Mode.md).
+
+**Storyteller roll step-forward (TOR-738).** Outside Scatter, when the Storyteller drawer rises for an NPC who is standing on the stage (not seated and present at the table), `core/npc_roll_present.ttslua` walks that figurine to `x` = the drawer's table X, `y` unchanged, `z` = Center-group anchor world Z minus `D.ROLL_PRESENT.centerZOffset` (15), rotation `{0,0,0}`, spotlight in SPOTLIGHT. The scene placement is not rewritten. NPC reconcile will not snap them back while the drawer is up. Parking the drawer (`STD.closeForSlot` / workshop-home restore) walks them back to the pose and light mode from when the roll began. A stage edit during the visit updates that return pose. Seated-present rolls and Scatter rolls do not use this.
 
 ## Coordinate mapping (STAGE ↔ CONTROL)
 

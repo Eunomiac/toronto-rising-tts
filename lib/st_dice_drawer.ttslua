@@ -6,6 +6,7 @@
     Tray light X/Z always mirrors the live drawer (never C.Tables light entries).
     Seated-NPC rolls reposition drawer via DICE_DRAWER_STORYTELLER_NPC* (TOR-302); light follows.
     Scatter Mode poses the tray on the World Ray between PC and NPC deployment arcs.
+    A staged (not seated) NPC outside Scatter steps up to the tray X while the drawer is open (TOR-738).
 ]]
 
 ---@diagnostic disable: undefined-global
@@ -203,6 +204,26 @@ local function resolveWorkshopHomeForSlot(slot)
         row.rotZ = partialRot.z
     end
     return row
+end
+
+--- Table X of a Storyteller drawer at its revealed (non-Scatter, non-seat) home.
+--- The on-pose only changes Y, so this is the X the tray has while it is up.
+--- @param slot number 1..3
+--- @return number|nil
+function STD.revealedTrayX(slot)
+    local home = resolveWorkshopHomeForSlot(slot)
+    if type(home) == "table" and type(home.x) == "number" then
+        return home.x
+    end
+    local obj = findDrawerObject(slot)
+    if obj == nil then
+        return nil
+    end
+    local pos = obj.getPosition()
+    if pos == nil or type(pos.x) ~= "number" then
+        return nil
+    end
+    return pos.x
 end
 
 --- @param slot number 1..3
@@ -715,6 +736,7 @@ function STD.closeForSlot(slot)
     if type(slot) ~= "number" then
         return
     end
+    require("core.npc_roll_present").restoreForDrawer(slot)
     npcSeatBySlot[slot] = nil
     scatterPoseBySlot[slot] = nil
     clearPersistedWorkshopHomes(slot)
@@ -730,6 +752,7 @@ end
 --- @return number slots successfully restored
 function STD.reconcileAllToWorkshopHome(opts)
     opts = type(opts) == "table" and opts or {}
+    require("core.npc_roll_present").restoreAll()
     clearAllDrawerActiveFlags()
     local restored = 0
     for slot = 1, 3 do

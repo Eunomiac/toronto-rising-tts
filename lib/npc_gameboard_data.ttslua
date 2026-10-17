@@ -105,4 +105,11 @@ D.STAGE_PLACEMENT_LERP = {
   ease = "sineInOut",
 }
 
+--- Storyteller roll for a staged NPC (TOR-738): figurine steps to the tray while the drawer is up.
+--- `centerZOffset` is subtracted from the Center group's central-spot world Z. Duration reuses
+--- `STAGE_PLACEMENT_LERP.positionDurationSec`.
+D.ROLL_PRESENT = {
+  centerZOffset = 15,
+}
+
 return D
