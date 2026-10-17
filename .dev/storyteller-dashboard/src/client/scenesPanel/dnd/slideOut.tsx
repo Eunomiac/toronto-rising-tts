@@ -36,7 +36,7 @@ export const SlideOutPanel = ({ edge, dragKind, open, hotBinId, onBinDrop }: Pan
           ? { x: -36, opacity: 0 }
           : edge === "C"
             ? { x: 36, opacity: 0 }
-            : { y: 32, opacity: 0 };
+            : { y: -24, opacity: 0 };
       if (shouldShow) {
         gsap.fromTo(
           root,

@@ -42,13 +42,17 @@
   }
 
   &--b {
-    left: 20%;
-    right: 26%;
-    bottom: 0.3rem;
-    height: auto;
-    min-height: 6.5rem;
-    max-height: 8.5rem;
-    border-radius: 0.75rem 0.75rem 0 0;
+    // Match the central aspects box on the fixed Scenes canvas.
+    left: 388px;
+    top: 204px;
+    width: 1259px;
+    height: 114px;
+    bottom: auto;
+    min-height: 0;
+    max-height: none;
+    padding: 5px 12px;
+    gap: 3px;
+    border-radius: 0.75rem;
     flex-direction: column;
 
     .tr-dnd-panel-bins {

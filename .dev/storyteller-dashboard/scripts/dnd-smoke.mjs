@@ -236,6 +236,19 @@ try {
   const rollsBefore = () =>
     commands.filter((c) => c.includes("RollsApply")).length;
   await start(page.locator('.lab-seat-slot[data-seat-key="Pink"]').first());
+  const secondary = page.locator('[data-tr-dnd-panel="B"]');
+  await secondary.scrollIntoViewIfNeeded();
+  const secondaryBox = await secondary.boundingBox();
+  const aspectsBox = await page.locator('.lab-aspects-box').first().boundingBox();
+  const seatBox = await page.locator('.lab-seat-slot[data-seat-key="Pink"]').first().boundingBox();
+  assert(secondaryBox && aspectsBox && seatBox);
+  assert(Math.abs(secondaryBox.x - aspectsBox.x) < 1, 'secondary panel must align with aspects');
+  assert(Math.abs(secondaryBox.y - aspectsBox.y) < 1, 'secondary panel must cover the aspects row');
+  assert(secondaryBox.y + secondaryBox.height <= aspectsBox.y + aspectsBox.height + 1, 'secondary panel must fit inside the aspects row');
+  assert(secondaryBox.y + secondaryBox.height < seatBox.y, 'secondary panel obscures seats');
+  const seatHit = await page.evaluate(({x,y}) => document.elementFromPoint(x,y)?.closest('[data-chair]')?.getAttribute('data-seat-key'), {x: seatBox.x + seatBox.width / 2, y: seatBox.y + seatBox.height / 2});
+  assert.equal(seatHit, 'Pink', 'seat must remain an actual pointer target during a drag');
+  console.log('PASS secondary panel covers aspects and leaves seats reachable');
   await page.screenshot({ path: path.join(output, "dnd-seat-drag.png") });
   await finish(page.locator('[data-tr-dnd-bin="std"]').first());
   assert(
@@ -259,6 +272,11 @@ try {
     ),
   );
   console.log("PASS absent PC → roll bin");
+  await start(page.locator('[data-tr-dnd-roll="pcRollPreroll"] .roll-name').first());
+  await finish(page.locator('.lab-seat-slot[data-seat-key="Orange"]').first());
+  assert(commands.some((c) => c.includes('"op":"duplicateRoll"') && c.includes('"toColor":"Orange"')));
+  console.log('PASS roll → seat while secondary panel is open');
+
   await start(
     page.locator('[data-tr-dnd-roll="npcRollPreroll"] .roll-name').first(),
   );
