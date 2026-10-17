@@ -5,6 +5,7 @@ import { DROP_KINDS } from "./types";
 const DRAG_LABEL: Readonly<Record<DragKind, string>> = {
   npcStaged: "Staged NPC",
   npcRoster: "Roster NPC",
+  npcRosterGroup: "Roster NPC group",
   npcSeated: "Seated NPC",
   pcSeated: "Seated PC",
   pcRollPreroll: "PC roll (before dice)",
@@ -49,6 +50,7 @@ const ACTION_GLOSS: Readonly<Partial<Record<ActionId, string>>> = {
   removeFromDeck: "Remove from the deck",
   moveOnStage: "Move to that stage position",
   addToStage: "Add to the stage at that position",
+  addRosterGroupToStage: "Spread the whole group across this stage family",
   seatToStage: "Deactivate the seat and add a stage copy",
   occupyEmptySeat: "Occupy that empty seat",
   stagedOccupyEmptySeat: "Leave the stage and occupy that seat",

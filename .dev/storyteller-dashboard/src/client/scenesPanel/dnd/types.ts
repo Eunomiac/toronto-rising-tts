@@ -3,6 +3,7 @@
 export type DragKind =
   | "npcStaged"
   | "npcRoster"
+  | "npcRosterGroup"
   | "npcSeated"
   | "pcSeated"
   | "pcRollPreroll"
@@ -74,6 +75,7 @@ export type ActionId =
   | "removeFromDeck"
   | "moveOnStage"
   | "addToStage"
+  | "addRosterGroupToStage"
   | "seatToStage"
   | "occupyEmptySeat"
   | "stagedOccupyEmptySeat"
@@ -171,6 +173,7 @@ export type ActionId =
   | "duplicateAsTemplate";
 
 export type DragPayload =
+  | { readonly dragKind: "npcRosterGroup"; readonly groupKey: string; readonly members: readonly { readonly characterKey: string; readonly name: string }[] }
   | { readonly dragKind: "npcStaged"; readonly characterKey: string; readonly seated?: boolean }
   | { readonly dragKind: "npcRoster"; readonly characterKey: string; readonly groupKey?: string }
   | { readonly dragKind: "npcSeated"; readonly characterKey: string; readonly seatKey: string; readonly chair: number }
@@ -179,17 +182,19 @@ export type DragPayload =
       readonly dragKind: "pcRollPreroll" | "pcRollPostroll";
       readonly color: string;
       readonly rollType?: string;
+      readonly summary?: string;
     }
   | {
       readonly dragKind: "npcRollPreroll" | "npcRollPostrollRevealed" | "npcRollPostrollSecret";
       readonly characterKey?: string;
       readonly label?: string;
       readonly rollType?: string;
+      readonly summary?: string;
     }
   | { readonly dragKind: "sceneActive"; readonly sceneKey: string }
   | { readonly dragKind: "sceneOnDeckNew" | "sceneOnDeckOngoing"; readonly sceneKey: string };
 
-export type DropTarget =
+export type DropTarget = { readonly binId?: string } & (
   | { readonly dropKind: DropKind; readonly binId?: string }
   | {
       readonly dropKind: "emptySeat" | "npcSeated" | "pcSeated";
@@ -203,13 +208,14 @@ export type DropTarget =
   | { readonly dropKind: "rollDrawer"; readonly slot: number }
   | { readonly dropKind: "sceneActive" | "sceneOnDeckNew" | "sceneOnDeckOngoing"; readonly sceneKey?: string }
   | { readonly dropKind: "stage"; readonly u?: number; readonly v?: number }
-  | { readonly dropKind: "out" | "panelA" | "panelB" | "panelC"; readonly binId?: string };
+  | { readonly dropKind: "out" | "panelA" | "panelB" | "panelC"; readonly binId?: string });
 
 export type ClientPoint = { readonly x: number; readonly y: number };
 
 export const DRAG_KINDS: readonly DragKind[] = [
   "npcStaged",
   "npcRoster",
+  "npcRosterGroup",
   "npcSeated",
   "pcSeated",
   "pcRollPreroll",

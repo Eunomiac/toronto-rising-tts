@@ -1,5 +1,7 @@
-import { useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
 import type { StagePoint } from "../stageFrame";
+
+import { endDrag } from "./session";
 
 const DRAG_PX = 4;
 
@@ -8,6 +10,7 @@ export type PointerHandlers = {
   readonly onPointerMove: (event: ReactPointerEvent<HTMLElement>) => void;
   readonly onPointerUp: (event: ReactPointerEvent<HTMLElement>) => void;
   readonly onPointerCancel: () => void;
+  readonly onLostPointerCapture: () => void;
 };
 
 export const pointIn = (board: RefObject<HTMLDivElement | null>, clientX: number, clientY: number): StagePoint => {
@@ -33,6 +36,14 @@ export const useBoardDrag = <T,>(
 } => {
   const [drag, setDrag] = useState<{ item: T; point: StagePoint } | null>(null);
   const press = useRef<{ item: T; x: number; y: number; moved: boolean } | null>(null);
+  const cancel = (): void => { press.current = null; setDrag(null); endDrag(); };
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent): void => { if (event.key === "Escape" && press.current) cancel(); };
+    const onBlur = (): void => { if (press.current) cancel(); };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("blur", onBlur);
+    return () => { window.removeEventListener("keydown", onKey); window.removeEventListener("blur", onBlur); if (press.current) endDrag(); };
+  }, []);
   const handlers = (item: T): PointerHandlers => ({
     onPointerDown: (event) => {
       if (event.button !== 0) {
@@ -62,10 +73,8 @@ export const useBoardDrag = <T,>(
         onTap?.(held.item, { x: event.clientX, y: event.clientY });
       }
     },
-    onPointerCancel: () => {
-      press.current = null;
-      setDrag(null);
-    }
+    onPointerCancel: cancel,
+    onLostPointerCapture: cancel
   });
   return { drag, handlers };
 };

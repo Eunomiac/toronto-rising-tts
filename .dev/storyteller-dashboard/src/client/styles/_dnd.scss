@@ -286,3 +286,63 @@
     color: rgba(242, 230, 208, 0.55);
   }
 }
+
+.tr-dnd-ghost {
+  position: fixed;
+  z-index: 10000;
+  pointer-events: none;
+  &, * { pointer-events: none !important; }
+  .lab-token { opacity: 0.94; filter: drop-shadow(0 6px 10px #000); }
+  &-count { position: absolute; top: 28px; left: 0; transform: translateX(-50%); white-space: nowrap; border-radius: 12px; padding: 3px 10px; background: #18151fee; color: #f3ddad; font-size: 12px; }
+  &-card { display: block; transform: translate(-50%, -50%) rotate(-3deg); min-width: 140px; padding: 16px 22px; border: 1px solid #edce8c; border-radius: 10px; color: #fff0cb; background: linear-gradient(135deg, #3e2c20, #17131f); box-shadow: 0 12px 32px #000a, 0 0 20px #edce8c44; white-space: nowrap; }
+}
+
+.lab-seat-slot.draggable {
+  user-select: none;
+  -webkit-user-drag: element;
+  > .headshot, .headshot > img, .lab-seat-name, .lab-seat-badge { pointer-events: none; }
+}
+
+.tr-dnd-panel {
+  &:not(.is-open) { visibility: hidden; pointer-events: none; }
+  &--a { border-left: 3px solid #efca81; }
+  &--b { border-bottom: 3px solid #c49aff; }
+  &--c { border-right: 3px solid #85c5ff; }
+}
+
+.tr-dnd-bin {
+  isolation: isolate;
+  border-color: color-mix(in srgb, var(--bin-color) 60%, transparent);
+  color: color-mix(in srgb, var(--bin-color) 28%, #fff);
+  background: radial-gradient(circle at 35% 25%, color-mix(in srgb, var(--bin-color) 22%, #17151d), #131119 75%);
+  box-shadow: 0 6px 18px #0008, inset 0 0 20px color-mix(in srgb, var(--bin-color) 10%, transparent);
+  > svg { width: 22px; height: 22px; fill: var(--bin-color); opacity: 0.9; flex-shrink: 0; }
+  &-aura { position: absolute; inset: -5px; z-index: -1; border-radius: inherit; background: radial-gradient(circle, transparent 45%, var(--bin-color) 68%, transparent 74%); filter: blur(5px); opacity: 0.18; pointer-events: none; }
+  &-orbit { position: absolute; inset: -4px; border: 1px dashed color-mix(in srgb, var(--bin-color) 40%, transparent); border-radius: inherit; pointer-events: none; }
+  &-hint { color: var(--bin-color); text-transform: uppercase; font-size: 8px; letter-spacing: 0.1em; opacity: 0.5; }
+  &:hover, &:focus-visible, &.is-hot {
+    border-color: var(--bin-color);
+    background: radial-gradient(circle at 40% 25%, color-mix(in srgb, var(--bin-color) 36%, #17151d), #17131e 80%);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--bin-color) 25%, transparent), 0 0 28px color-mix(in srgb, var(--bin-color) 45%, transparent), inset 0 0 20px color-mix(in srgb, var(--bin-color) 14%, transparent);
+    .tr-dnd-bin-hint { opacity: 1; }
+  }
+  &.tr-dnd-hover-bin { gap: 2px; > svg { width: 16px; height: 16px; } }
+}
+
+.tr-dnd-confirmation {
+  position: fixed;
+  z-index: 10001;
+  width: 90px;
+  height: 90px;
+  margin: -45px;
+  border: 2px solid var(--bin-color, #efca81);
+  border-radius: 50%;
+  box-shadow: 0 0 25px var(--bin-color, #efca81), inset 0 0 20px color-mix(in srgb, var(--bin-color, #efca81) 25%, transparent);
+  pointer-events: none;
+  span { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 8px; white-space: nowrap; padding: 4px 12px; border-radius: 12px; background: #17131f; color: #fff0cb; font-size: 11px; }
+}
+
+.lab-stage-layer .lab-token.dragging {
+  opacity: 0.35;
+  .lab-token-name { visibility: hidden; }
+}

@@ -1,7 +1,8 @@
+import { DropBinButton } from "./DropBinButton";
 import { gsap } from "gsap";
 import { useLayoutEffect, useRef, type ReactElement } from "react";
 import { panelBinsFor } from "./matrix";
-import { PANEL_BIN_ATTR, PANEL_EDGE_ATTR } from "./mime";
+import { PANEL_EDGE_ATTR } from "./mime";
 import type { DragKind, DropBin, PanelEdge } from "./types";
 
 type PanelProps = {
@@ -28,6 +29,7 @@ export const SlideOutPanel = ({ edge, dragKind, open, hotBinId, onBinDrop }: Pan
     if (!root) {
       return;
     }
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const ctx = gsap.context(() => {
       const from =
         edge === "A"
@@ -39,7 +41,7 @@ export const SlideOutPanel = ({ edge, dragKind, open, hotBinId, onBinDrop }: Pan
         gsap.fromTo(
           root,
           from,
-          { x: 0, y: 0, opacity: 1, duration: 0.32, ease: "power3.out", overwrite: "auto" }
+          { x: 0, y: 0, opacity: 1, duration: reduced ? 0 : 0.32, ease: "power3.out", overwrite: "auto" }
         );
         const binEls = root.querySelectorAll(".tr-dnd-bin");
         gsap.fromTo(
@@ -48,21 +50,11 @@ export const SlideOutPanel = ({ edge, dragKind, open, hotBinId, onBinDrop }: Pan
           {
             scale: 1,
             opacity: 1,
-            duration: 0.38,
-            stagger: 0.055,
+            duration: reduced ? 0 : 0.38,
+            stagger: reduced ? 0 : 0.055,
             ease: "back.out(1.8)",
             delay: 0.06,
-            overwrite: "auto",
-            onComplete: () => {
-              gsap.to(binEls, {
-                boxShadow: "0 0 0 0 rgba(232, 196, 120, 0.35)",
-                duration: 1.4,
-                repeat: -1,
-                yoyo: true,
-                ease: "sine.inOut",
-                stagger: { each: 0.12, from: "start" }
-              });
-            }
+            overwrite: "auto"
           }
         );
       } else {
@@ -77,24 +69,6 @@ export const SlideOutPanel = ({ edge, dragKind, open, hotBinId, onBinDrop }: Pan
     return () => ctx.revert();
   }, [shouldShow, edge, dragKind]);
 
-  useLayoutEffect(() => {
-    const root = rootRef.current;
-    if (!root || !shouldShow) {
-      return;
-    }
-    const ctx = gsap.context(() => {
-      root.querySelectorAll<HTMLElement>(".tr-dnd-bin").forEach((el) => {
-        const hot = hotBinId !== undefined && el.getAttribute(PANEL_BIN_ATTR) === hotBinId;
-        gsap.to(el, {
-          scale: hot ? 1.08 : 1,
-          duration: 0.16,
-          ease: "power2.out",
-          overwrite: "auto"
-        });
-      });
-    }, root);
-    return () => ctx.revert();
-  }, [hotBinId, shouldShow]);
 
   if (bins.length === 0) {
     return null;
@@ -110,26 +84,7 @@ export const SlideOutPanel = ({ edge, dragKind, open, hotBinId, onBinDrop }: Pan
       <div className="tr-dnd-panel-title">{edgeTitle(edge)}</div>
       <div className="tr-dnd-panel-bins">
         {bins.map((bin) => (
-          <button
-            key={bin.id}
-            type="button"
-            className={`tr-dnd-bin${bin.secretSafe ? " tr-dnd-bin--secret" : ""}${hotBinId === bin.id ? " is-hot" : ""}`}
-            {...{ [PANEL_BIN_ATTR]: bin.id }}
-            onDragOver={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              event.dataTransfer.dropEffect = "copy";
-            }}
-            onDrop={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              onBinDrop(bin);
-            }}
-            onClick={() => onBinDrop(bin)}
-          >
-            {bin.secretSafe && <span className="tr-dnd-bin-badge">Secret</span>}
-            <span className="tr-dnd-bin-label">{bin.label}</span>
-          </button>
+          <DropBinButton key={bin.id} bin={bin} hot={hotBinId === bin.id} onDrop={() => onBinDrop(bin)} />
         ))}
       </div>
     </div>

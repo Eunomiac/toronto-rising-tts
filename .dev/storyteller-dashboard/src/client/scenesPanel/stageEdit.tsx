@@ -3,7 +3,10 @@ import { Headshot } from "../headshots/Headshot";
 import { useNpcOverrides } from "../npcOverrides";
 import type { SceneCatalogs } from "./catalogs";
 import { GenericTiersContext, useScenesCommand, type StageChange, type StageChanges } from "./commands";
-import { beginDrag, endDrag, hitTestDrop, moveDrag, pointIn, sessionTargetsAt, tryCommitDrop, useBoardDrag, type PointerHandlers } from "./dnd";
+import { beginDrag, endDrag, getDndSession, hitTestDrop, moveDrag, pointIn, sessionTargetsAt, tryCommitDrop, useBoardDrag, type PointerHandlers } from "./dnd";
+import { matrixCell } from "./dnd/matrix";
+import { STAGE_GEOMETRY } from "./dnd/commit";
+import { DndUiContext } from "./dnd/uiContext";
 import { PANEL_EDGE_ATTR } from "./dnd/mime";
 import { RollsCommandContext } from "./rolls/commands";
 import { TierBadge } from "./tierBadge";
@@ -11,11 +14,9 @@ import { NpcLevelBadge } from "./npcTrackers";
 import {
   GROUP_DRAG_TYPE,
   NPC_DRAG_TYPE,
-  NPC_ROLL_DROP_EVENT,
   movePack,
   nearestPack,
   offStage,
-  rollCardAt,
   scatterCenter,
   slotNear,
   slotOf,
@@ -23,7 +24,8 @@ import {
   type StageSpot
 } from "./stage";
 import { stageToBoard, type StagePack, type StagePoint } from "./stageFrame";
-import type { ScatterGroup } from "../worldState";
+import { useWorldState, type ScatterGroup } from "../worldState";
+import type { DragPayload } from "./dnd/types";
 import { groupColor, groupLeader, useRosterLayout } from "./roster";
 
 /**
@@ -34,20 +36,6 @@ import { groupColor, groupLeader, useRosterLayout } from "./roster";
 
 /** A token click waits this long for a second click (double-click lights) before it opens the NPC's trackers. */
 const TAP_WAIT_MS = 260;
-
-/**
- * The seat-row chair under a screen point: its number, and who holds it (`""` empty, a seated NPC's key, or `"pc"`).
- * Seat cells carry `data-chair` / `data-chair-holder`.
- */
-const chairAt = (clientX: number, clientY: number): { chair: number; holder: string } | null => {
-  for (const element of document.elementsFromPoint(clientX, clientY)) {
-    const cell = element.closest<HTMLElement>("[data-chair]");
-    if (cell) {
-      return { chair: Number(cell.dataset.chair), holder: cell.dataset.chairHolder ?? "" };
-    }
-  }
-  return null;
-};
 
 /** Picker-group members, the group's leader first. */
 const groupMembers = (catalogs: SceneCatalogs | null, leader: string | undefined, groupKey: string): readonly string[] =>
@@ -147,6 +135,7 @@ export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit
   const overrides = useNpcOverrides();
   const scenes = useScenesCommand();
   const rolls = useContext(RollsCommandContext);
+  const ui = useContext(DndUiContext);
   const [over, setOver] = useState(false);
   const tapTimer = useRef<number | null>(null);
   const cancelTap = (): void => {
@@ -178,24 +167,23 @@ export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit
   const tokens = useBoardDrag<string>(
     board,
     (key, point, client) => {
-      const payload = { dragKind: "npcStaged" as const, characterKey: key };
-      const applyCtx = rolls ? { scenes, rolls } : null;
+      if (!getDndSession().active) return;
+      const payload = getDndSession().payload!;
+      const applyCtx = rolls ? { scenes, rolls, ui } : null;
       const target = hitTestDrop(client);
       // Slide-out / hover bins first — never fall through to off-stage remove.
-      if (applyCtx && target.binId && tryCommitDrop(payload, target, applyCtx)) {
+      if (applyCtx && tryCommitDrop(payload, target, applyCtx)) {
         endDrag();
         return;
       }
-      const rollCard = rollCardAt(client.x, client.y);
-      if (rollCard) {
-        rollCard.dispatchEvent(new CustomEvent(NPC_ROLL_DROP_EVENT, { detail: key }));
+      if (!applyCtx && onSeat && "chair" in target && (target.dropKind === "emptySeat" || target.dropKind === "npcSeated")) {
+        onSeat(key, target.chair);
         endDrag();
         return;
       }
-      const seat = onSeat ? chairAt(client.x, client.y) : null;
-      // SD-38: stage token onto a seat moves onto that chair (lit); empty or same holder, or displace via onSeat.
-      if (seat && onSeat) {
-        onSeat(key, seat.chair);
+      const cell = matrixCell(payload.dragKind, target.dropKind);
+      if (target.dropKind !== "out" && !(cell.kind === "action" && STAGE_GEOMETRY.has(cell.action))) {
+        // Invalid targets and failed actions cancel. They must never become an off-stage removal.
         endDrag();
         return;
       }
@@ -230,7 +218,7 @@ export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit
       : undefined,
     (key, _point, client) => {
       const payload = { dragKind: "npcStaged" as const, characterKey: key };
-      beginDrag(payload, client);
+      if (!getDndSession().active) beginDrag(payload, client, { members: [{ characterKey: key, name: nameOf(key) }] });
       const { highlight, hover } = sessionTargetsAt(client, payload.dragKind);
       moveDrag(client, highlight, hover);
     }
@@ -248,16 +236,22 @@ export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit
   });
   const dropFromRoster = (event: DragEvent<HTMLDivElement>): void => {
     setOver(false);
+    if (!acceptsRoster(event)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const payload = getDndSession().payload;
+    endDrag();
     const point = pointIn(board, event.clientX, event.clientY);
     const npc = event.dataTransfer.getData(NPC_DRAG_TYPE);
     if (npc) {
+      if (payload?.dragKind === "npcSeated") scenes({ op: "seatPresence", seat: payload.seatKey, present: false });
       place(npc, point);
       return;
     }
     const group = event.dataTransfer.getData(GROUP_DRAG_TYPE);
     const pack = slotNear(point, packs, w, h)?.pack ?? nearestPack(point, packs, w, h);
     if (group && pack && !offStage(point)) {
-      onEdit(spreadOnPack(groupMembers(catalogs, groupLeader(roster, catalogs?.groupBosses, group), group), pack, packs, spots));
+      onEdit(spreadOnPack(payload?.dragKind === "npcRosterGroup" ? payload.members.map((member) => member.characterKey) : groupMembers(catalogs, groupLeader(roster, catalogs?.groupBosses, group), group), pack, packs, spots));
     }
   };
   const tokenGroup = (characterKey: string): string | undefined =>
@@ -293,7 +287,7 @@ export const StageLayer = ({ w, h, board, packs, spots, catalogs, nameOf, onEdit
       {spots.map((spot) => {
         const dragging = tokens.drag?.item === spot.characterKey ? tokens.drag.point : null;
         const group = tokenGroup(spot.characterKey);
-        const at = dragging ?? spot;
+        const at = spot;
         return (
           <StageTokenView
             key={spot.characterKey}
@@ -348,6 +342,10 @@ const groupAt = (point: StagePoint, count: number, w: number, h: number, radius:
  */
 export const ScatterLayer = ({ w, h, board, groups, catalogs, nameOf, onPlace, onMenu }: ScatterLayerProps): ReactElement => {
   const roster = useRosterLayout();
+  const world = useWorldState();
+  const scenes = useScenesCommand();
+  const rolls = useContext(RollsCommandContext);
+  const ui = useContext(DndUiContext);
   const [over, setOver] = useState(false);
   const radius = Math.min(w, h) * 0.13;
   const count = Math.max(groups.length, 1);
@@ -358,10 +356,32 @@ export const ScatterLayer = ({ w, h, board, groups, catalogs, nameOf, onPlace, o
     }
     onPlace(member.key, member.kind, group);
   };
-  const drag = useBoardDrag<{ key: string; kind: "pc" | "npc" }>(board, drop);
+  const drag = useBoardDrag<{ key: string; kind: "pc" | "npc" }>(board,
+    (member, point, client) => {
+      const payload = getDndSession().payload;
+      const target = hitTestDrop(client);
+      if (payload && target.dropKind !== "stage" && target.dropKind !== "out") {
+        if (rolls) tryCommitDrop(payload, target, { scenes, rolls, ui });
+      } else drop(member, point);
+      endDrag();
+    }, undefined,
+    (member, _point, client) => {
+      if (!getDndSession().active) {
+        const seat = world.seats?.seats.find((row) => row.kind === "pc" && (row.charKey === member.key || row.playingNpcKey === member.key));
+        const payload: DragPayload = member.kind === "pc"
+          ? { dragKind: "pcSeated", color: seat?.seat ?? member.key, seatKey: seat?.seat ?? member.key, chair: seat?.tableSlot ?? 0 }
+          : { dragKind: "npcStaged", characterKey: member.key };
+        beginDrag(payload, client, { members: [{ characterKey: member.key, name: nameOf(member.key) }] });
+      }
+      const payload = getDndSession().payload!;
+      const { highlight, hover } = sessionTargetsAt(client, payload.dragKind);
+      moveDrag(client, highlight, hover);
+    }
+  );
   return (
     <div
       className={`lab-stage-layer${over ? " drop" : ""}`}
+      data-tr-dnd-stage=""
       onDragOver={(event) => {
         if (acceptsRoster(event)) {
           event.preventDefault();
@@ -371,6 +391,11 @@ export const ScatterLayer = ({ w, h, board, groups, catalogs, nameOf, onPlace, o
       onDragLeave={() => setOver(false)}
       onDrop={(event) => {
         setOver(false);
+        if (!acceptsRoster(event)) return;
+        event.preventDefault();
+        event.stopPropagation();
+        const payload = getDndSession().payload;
+        endDrag();
         const point = pointIn(board, event.clientX, event.clientY);
         const group = groupAt(point, count, w, h, radius);
         if (group === undefined) {
@@ -378,7 +403,7 @@ export const ScatterLayer = ({ w, h, board, groups, catalogs, nameOf, onPlace, o
         }
         const npc = event.dataTransfer.getData(NPC_DRAG_TYPE);
         const pickerGroup = event.dataTransfer.getData(GROUP_DRAG_TYPE);
-        const keys = npc ? [npc] : pickerGroup ? groupMembers(catalogs, groupLeader(roster, catalogs?.groupBosses, pickerGroup), pickerGroup) : [];
+        const keys = payload?.dragKind === "npcRosterGroup" ? payload.members.map((member) => member.characterKey) : npc ? [npc] : pickerGroup ? groupMembers(catalogs, groupLeader(roster, catalogs?.groupBosses, pickerGroup), pickerGroup) : [];
         for (const key of keys) {
           onPlace(key, "npc", group);
         }
@@ -401,8 +426,8 @@ export const ScatterLayer = ({ w, h, board, groups, catalogs, nameOf, onPlace, o
               const angle = (index / Math.max(members.length, 1)) * Math.PI * 2 - Math.PI / 2;
               const ring = members.length === 1 ? 0 : radius * 0.6;
               const dragging = drag.drag?.item.key === member.key ? drag.drag.point : null;
-              const x = dragging ? dragging.u * w : center.u * w + Math.cos(angle) * ring;
-              const y = dragging ? dragging.v * h : center.v * h + Math.sin(angle) * ring;
+              const x = center.u * w + Math.cos(angle) * ring;
+              const y = center.v * h + Math.sin(angle) * ring;
               return (
                 <StageTokenView
                   key={member.key}

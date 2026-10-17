@@ -2,7 +2,8 @@ import { useContext, useEffect, useRef, useState, type CSSProperties, type DragE
 import { Icon, type IconName } from "../icons";
 import { NpcLiveContext } from "../npcTrackers";
 import { canvasPoint, Overlay } from "../sketch";
-import { beginDrag, endDrag } from "../dnd/session";
+import { ROLL_CONTROL_EVENT, type RollControlRequest } from "../dnd/rollControls";
+import { startNativeDrag } from "../dnd/native";
 import { ROLL_DRAG_TYPE } from "../dnd/mime";
 import { NPC_DRAG_TYPE, NPC_ROLL_DROP_ATTR, NPC_ROLL_DROP_EVENT } from "../stage";
 import { SEAT_ACCENT } from "../../pcSheet/layout";
@@ -371,19 +372,9 @@ const PcRollRow = ({ roll, send, collapsed, onToggle, onOptions, onPool, highlig
         event.dataTransfer.setData(ROLL_DRAG_TYPE, color);
         event.dataTransfer.effectAllowed = "copyMove";
         const post = roll.done || roll.phase === "postRoll" || roll.phase === "resolved";
-        beginDrag(
-          {
-            dragKind: post ? "pcRollPostroll" : "pcRollPreroll",
-            color,
-            rollType: roll.rollType
-          },
-          { x: event.clientX, y: event.clientY }
-        );
-        const end = (): void => {
-          endDrag();
-          window.removeEventListener("dragend", end);
-        };
-        window.addEventListener("dragend", end);
+        startNativeDrag(event, {
+          dragKind: post ? "pcRollPostroll" : "pcRollPreroll", color, rollType: roll.rollType, summary: `${roll.name}: ${roll.result?.text ?? "Roll pending"}`
+        }, { label: `${roll.name} · ${rollTypeLabel(roll.rollType)}` });
       }}
     >
       <PoolDiamonds pool={roll.pool} onClick={overridable ? (event) => onPool(event, color) : undefined} />
@@ -599,6 +590,16 @@ const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool, onConfigure, su
     }
     setPicks({ throwKey, dice: next });
   };
+  useEffect(() => {
+    const onControl = (event: Event): void => {
+      const request = (event as CustomEvent<RollControlRequest>).detail;
+      if (request.action !== "rerollSelected" || !request.payload.dragKind.startsWith("npcRoll") || !live.actions.reroll || picked.size === 0) return;
+      event.preventDefault();
+      send({ op: "npcReroll", indices: [...picked].sort((a, b) => a - b) });
+    };
+    window.addEventListener(ROLL_CONTROL_EVENT, onControl);
+    return () => window.removeEventListener(ROLL_CONTROL_EVENT, onControl);
+  }, [live.actions.reroll, picked, send]);
   const result = <ResultText result={live.result} />;
   const flags = (live.secret || live.quiet) && (
     <span className="roll-flags">
@@ -620,6 +621,14 @@ const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool, onConfigure, su
       actions={npcActions(live, send, picked, onConfigure, surgeDice)}
       onClear={() => send({ op: "npcCancel" })}
       clearLabel="Cancel this roll and clear its drawer"
+      dndKind={editable ? "npcRollPreroll" : live.secret ? "npcRollPostrollSecret" : "npcRollPostrollRevealed"}
+      onDndStart={(event) => {
+        event.dataTransfer.setData(ROLL_DRAG_TYPE, "NPC");
+        startNativeDrag(event, {
+          dragKind: editable ? "npcRollPreroll" : live.secret ? "npcRollPostrollSecret" : "npcRollPostrollRevealed",
+          characterKey: live.npcCharacterKey, label: live.label, rollType: live.rollType, summary: `${live.label ?? "NPC"}: ${live.result?.text ?? "Roll pending"}`
+        }, { label: `${live.label ?? "NPC"} · ${rollTypeLabel(live.rollType)}${live.secret ? " · Secret" : ""}` });
+      }}
     >
       <PoolDiamonds pool={live.pool} onClick={editable ? onPool : undefined} />
       <div className="roll-line">
@@ -877,6 +886,22 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
     const point = canvasPoint(event);
     setPopup({ x: Math.min(point.x - POPUP_W, 1920 - POPUP_W - 8), y: Math.max(8, point.y - 20), roll });
   };
+  useEffect(() => {
+    const onControl = (event: Event): void => {
+      const { action, payload, at } = (event as CustomEvent<RollControlRequest>).detail;
+      if (action === "rerollSelected") return;
+      const pc = "color" in payload ? rolls?.pcs.find((row) => row.color === payload.color) : undefined;
+      if (action === "adjustPool" && (pc?.canModifyPool || (!pc && rolls?.storyteller.live && ["setup", "preRoll"].includes(rolls.storyteller.live.phase ?? "")))) {
+        setPoolRing({ x: Math.min(Math.max(at.x, POOL_RING_MARGIN), 1920 - POOL_RING_MARGIN), y: Math.max(100, Math.min(at.y, 900)), target: pc ? { kind: "pc", color: pc.color } : { kind: "npc" } });
+        event.preventDefault();
+      } else if (action === "convertType" && pc && !pc.done) {
+        setPopup({ x: Math.max(8, Math.min(at.x - POPUP_W, 1920 - POPUP_W - 8)), y: Math.max(8, Math.min(at.y - 20, 650)), roll: pc });
+        event.preventDefault();
+      }
+    };
+    window.addEventListener(ROLL_CONTROL_EVENT, onControl);
+    return () => window.removeEventListener(ROLL_CONTROL_EVENT, onControl);
+  }, [rolls]);
   if (!rolls) {
     return <p className="lab-note">Waiting for TTS…</p>;
   }

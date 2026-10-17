@@ -151,6 +151,11 @@ const CELLS: Readonly<Record<DragKind, Readonly<Partial<Record<DropKind, MatrixC
     sceneOnDeckNew: action("addToSceneSeatPlan"),
     sceneOnDeckOngoing: action("addToSceneSeatPlan")
   },
+  npcRosterGroup: {
+    stage: action("addRosterGroupToStage"),
+    pack: action("addRosterGroupToStage"),
+    npcStaged: action("addRosterGroupToStage")
+  },
   npcRoster: {
     out: noop(),
     panelA: CHAR_A,

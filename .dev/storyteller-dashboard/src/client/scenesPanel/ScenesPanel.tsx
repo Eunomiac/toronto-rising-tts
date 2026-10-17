@@ -18,6 +18,18 @@ import {
   type StageQueueView
 } from "./glance";
 import { ScenePreview } from "./preview";
+import { requestRollControl } from "./dnd/rollControls";
+import { DndUiContext } from "./dnd/uiContext";
+import type { DndUiHooks } from "./dnd/apply";
+import { useOpenPcSheet } from "../pcSheet/openPcSheet";
+import { isSeatColor } from "../catalogVocab";
+import { NpcConfigModal, type NpcConfigTarget } from "./npcConfig";
+import { loadGenericCatalog } from "./genericCatalog";
+import { configuredTiers, genericStatsKey, keptStatsKey } from "../../shared/npcStats";
+import { useNpcStats, saveNpcStats } from "../npcStats";
+import { NpcTrackerPopup } from "./npcTrackers";
+import { getDndSession } from "./dnd/session";
+import { activeCanvas } from "./sketch";
 import { DndChrome } from "./dnd/DndChrome";
 import { RosterDragGhost } from "./rosterDrag";
 import { useControlBoardSnaps, useSceneCatalogs } from "./roster";
@@ -338,6 +350,11 @@ const CommandStatus = ({ pending, error, onDismiss }: { pending: number; error: 
 
 export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const world = useWorldState();
+  const openPcSheet = useOpenPcSheet();
+  const npcStats = useNpcStats();
+  const [dndNotice, setDndNotice] = useState<string | null>(null);
+  const [dndEdit, setDndEdit] = useState<NpcConfigTarget | null>(null);
+  const [dndTracker, setDndTracker] = useState<{ key: string; name: string; x: number; y: number } | null>(null);
   const { catalogs } = useSceneCatalogs();
   const snapshotError = useWorldSnapshotOnce(active, world);
   const commands = useScenesQueue();
@@ -418,7 +435,52 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const waitText = snapshotError ?? "Waiting for TTS…";
   const connected = snapshotError === null && Object.keys(world).length > 0;
 
+  const dropPoint = (): { x: number; y: number } => {
+    const point = getDndSession().pointer;
+    const rect = activeCanvas()?.getBoundingClientRect();
+    return { x: Math.max(12, Math.min(1550, (point?.x ?? 960) - (rect?.left ?? 0))), y: Math.max(12, Math.min(700, (point?.y ?? 500) - (rect?.top ?? 0))) };
+  };
+  const characterName = (key: string): string => [...(catalogs?.namedNpcs ?? []), ...(catalogs?.pcs ?? [])].find((npc) => npc.characterKey === key)?.fullName ?? seats?.generics.find((npc) => npc.characterKey === key)?.name ?? key;
+  const dndUi: DndUiHooks = {
+    notify: setDndNotice,
+    openRollControl: requestRollControl,
+    difficultyFor: (key, higher) => {
+      const block = npcLive.blockFor(key);
+      const values = [block?.difficultyStrong, block?.difficultyWeak].filter((value): value is number => typeof value === "number");
+      return values.length ? (higher ? Math.max(...values) : Math.min(...values)) : undefined;
+    },
+    openPcSheet: (color) => { if (isSeatColor(color)) openPcSheet?.(color); },
+    openNpcEdit: (key) => {
+      const at = dropPoint();
+      loadGenericCatalog().then((generics) => {
+        const generic = generics.find((row) => row.key === key);
+        const spawned = generic ? seats?.generics.find((row) => row.characterKey === key) : undefined;
+        setDndEdit({
+          characterKey: key, at, defaultName: generic?.label ?? characterName(key), defaultColor: "#77706a",
+          stats: { key: generic ? genericStatsKey(generic.label) : key, label: generic?.label ?? characterName(key), tiered: generic !== undefined },
+          ...(spawned && generic ? { inScene: {
+            name: spawned.name, tier: tiers[key], tiers: configuredTiers(npcStats?.[genericStatsKey(generic.label)]),
+            rename: (name: string, keptId: string | undefined) => {
+              send({ op: "genericRename", key, name });
+              const kept = keptId ? npcStats?.[keptStatsKey(keptId)] : undefined;
+              if (keptId && kept?.kept) void saveNpcStats(keptStatsKey(keptId), { ...kept, kept: { ...kept.kept, name } }).catch((error: unknown) => setDndNotice(error instanceof Error ? error.message : String(error)));
+            },
+            setTier: (tier) => send({ op: "genericTier", key, ...(tier ? { tier } : {}) })
+          } } : {})
+        });
+      }).catch((reason: unknown) => setDndNotice(reason instanceof Error ? reason.message : String(reason)));
+    },
+    openNpcTracker: (key) => { if (seats) setDndTracker({ key, name: characterName(key), ...dropPoint() }); else setDndNotice("Connect to Tabletop Simulator to read this NPC's trackers."); },
+    removeFromDeck: liveScenes.remove,
+    editPreviewScene: library.openPreview,
+    archiveScene: (key) => library.setStatus(key, "ended"),
+    renameScene: library.openPreview,
+    setSceneStatus: library.openPreview,
+    copyText: (text) => { navigator.clipboard.writeText(text).catch(() => setDndNotice("The browser could not copy the result.")); }
+  };
+
   return (
+    <DndUiContext.Provider value={dndUi}>
     <ScenesCommandContext.Provider value={send}>
     <PendingGenericsContext.Provider value={spawning}>
     <GenericTiersContext.Provider value={tiers}>
@@ -428,7 +490,9 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
       {active && (
         <>
           <RosterDragGhost />
-          <DndChrome scenes={send} rolls={rollCommands.send} />
+          <DndChrome scenes={send} rolls={rollCommands.send} ui={dndUi} />
+          {dndEdit && <NpcConfigModal target={dndEdit} onClose={() => setDndEdit(null)} />}
+          {dndTracker && <Overlay onClose={() => setDndTracker(null)}><NpcTrackerPopup characterKey={dndTracker.key} name={dndTracker.name} at={{ x: dndTracker.x, y: dndTracker.y, up: dndTracker.y > 520 }} send={send} /></Overlay>}
           <Box x={G} y={G} w={LEFT_W} h={STRIP_H} className="lab-backdrop-box">
             {location && scene ? (
               <LocationPanel
@@ -547,6 +611,7 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
           </Box>
           <StageQueue right={1920 - STRIP_X - STAGE_W + 3 * G} top={STAGE_Y + 36} connected={connected} live={queueView} />
           <div className="scenes-alerts" style={{ left: STRIP_X + STAGE_W / 2, top: STAGE_Y + 40 }}>
+            {dndNotice && <div className="scenes-tts-notice" role="alert"><span>{dndNotice}</span><button type="button" className="lab-btn" onClick={() => setDndNotice(null)}>OK</button></div>}
             {ttsNotice.notice && (
               <div className="scenes-tts-notice" role="alert">
                 <span className="scenes-tts-notice-head">Not done in TTS</span>
@@ -615,5 +680,6 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
     </GenericTiersContext.Provider>
     </PendingGenericsContext.Provider>
     </ScenesCommandContext.Provider>
+    </DndUiContext.Provider>
   );
 };
