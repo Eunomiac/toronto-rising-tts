@@ -197,6 +197,7 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (400-slot 
   IMPORTANT: In addition to updating the sliders, the text elements displaying the actual values must also be updated, and they should be displayed with the same precision as the sliders. If negative values are possible, the text elements associated with that slider should always be signed (e.g. "+500", not "500"). If the minimum value is 0 or greater, no signs are necessary.
 
   == BUTTON CONTROLS ==
+  - [Enable] - Turns the selected spotlight on so the beam is visible while testing. Click again to turn it back off without undoing the other sliders. Discard still restores on/off along with everything else.
   - [Zero] — Recenters/reinitializes the center points of all sliders that depend on the light's current position and orientation: the sliders themselves will all be set to their zero point/center/midpoints, while the slider values will be adjusted to match the new position and orientation of the light.
   - [Refresh] - Refreshes the values of all sliders to match the current position and orientation of the light, ADDITIONALLY checking the position of the G.GUIDS.DEBUG_LIGHT_FOCAL_POINT object and updating the FOCAL POINT SLIDERS to match, in case that object has been moved manually.
   - [Discard] - Discards all changes made to the light's configuration by the debug control panel, restoring it to its initial state.
@@ -243,6 +244,16 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (400-slot 
   <Text class="slider_label_left" alignment = "MiddleLeft" />
   <Text class="slider_label_center" alignment = "MiddleCenter" />
   <Text class="slider_label_right" alignment = "MiddleRight" />
+
+  <Button class="debug_light_enable_button"
+    fontSize = "14"
+    fontStyle = "Bold"
+    textColor = "#FFFFFF"
+    colors = "#2E6B2E|#3D8A3D|#5CB85C|#1E4A1E" />
+
+  <Button class="debug_light_enable_button_on"
+    textColor = "#000000"
+    colors = "#BEAB00|#FFD000|#FFFF92|#FFFFAA" />
 </Defaults>
 
   <GridLayout id="panel_debug_light_control" class="panel_debug_light_control" active="false">
@@ -381,7 +392,9 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (400-slot 
         <Text id="debug_light_slider_label_right_distance" class="debug_light_slider_label slider_label_right">100.0</Text>
       </Panel>
     </VerticalLayout>
-    <Panel id="db_debug_light_panel_spacer" class="debug_light_panel_spacer" />
+    <HorizontalLayout id="db_enable_button_container" class="button_container">
+      <Button id="debug_light_control_button_enable" class="debug_light_enable_button" onClick="HUD_debugLightButtonClick(enable)" tooltip="Turn this spotlight on so you can see the beam while you test. Click again to turn it back off without undoing your other slider changes." tooltipPosition="Above">ENABLE</Button>
+    </HorizontalLayout>
     <HorizontalLayout id="db_rotation_header_container" class="header_container">
       <Text id="db_rotation_header" class="header_text top_header_text">Rotation</Text>
     </HorizontalLayout>

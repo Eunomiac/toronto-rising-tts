@@ -165,7 +165,7 @@ Full handler list: `grep '^function HUD_' core/global_script.ttslua`.
 | `HUD_scatterModeControl_toggleClick` / `_toggleHoverOn` / `_toggleHoverOff` | A | — | TOR-602 player Scatter strip toggle; clicker seat must match id color suffix; closed uses inactive/hover images, open hides Hit except on hover |
 | `HUD_scatterModeControl_selectorClick` | B+C | — | TOR-602 move that PC to the clicked scatter group (`ScatterMode.movePcToGroup`); no-op (strip stays open) if already there; successful move parks token, poses figurine/seat objects, closes that player’s strip |
 | `HUD_scatterModeControl_selectorHoverOn` / `_selectorHoverOff` | A | — | TOR-602 selector hover: other groups show/hide overlay; occupied group keeps hover image and pulses color to half alpha |
-| `HUD_debugLightActivate/ButtonClick/Slider` | C | Yes | Tuner select / sliders / Zero / Discard / close; `getObjectsWithTag("Spotlight")` on open and when returning to the grid |
+| `HUD_debugLightActivate/ButtonClick/Slider` | C | Yes | Tuner select / sliders / Enable (on for testing, click again for off) / Zero / Discard / close; `getObjectsWithTag("Spotlight")` on open and when returning to the grid |
 | `HUD_debugLightGuidInput/Enabled/ResetRow/Done/Snapshot` | A | — | Guid/Enabled/ResetRow are leftover no-ops; Done returns to selection; Snapshot writes workspace Lua |
 | `HUD_debugCamera*` / `HUD_debugCaptureCameraPreset` | A | — | local camera |
 | `HUD_rollInitiate/RollButton/Confirm/Cancel/…` | B (+C via Global) | Partial | |

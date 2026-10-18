@@ -20,6 +20,9 @@ local CLASS_OFF = "panel_debug_light_selection_button"
 local CLASS_LIT = "panel_debug_light_selection_button selection_button_lit"
 local CLASS_SELECTED = "panel_debug_light_selection_button selection_button_selected"
 local CLASS_LIT_SELECTED = "panel_debug_light_selection_button selection_button_lit selection_button_selected"
+local CLASS_ENABLE = "debug_light_enable_button"
+local CLASS_ENABLE_ON = "debug_light_enable_button debug_light_enable_button_on"
+local ENABLE_BUTTON_ID = "debug_light_control_button_enable"
 
 --- @type string|nil
 local activeGuid = nil
@@ -31,6 +34,9 @@ local startSnapshot = nil
 local centers = {}
 --- @type table<number, string>
 local slotToGuid = {}
+--- Last on/off painted on the Enable button. Nil forces the next paint.
+--- @type boolean|nil
+local enableButtonShown = nil
 
 local cache = {
     enabled = true,
@@ -569,6 +575,22 @@ local function applySphericalFromCache(obj)
     cache.x, cache.y, cache.z = px, py, pz
 end
 
+--- Paint ENABLE / ENABLED from `cache.enabled`. Skips the write when unchanged.
+local function pushEnableButton()
+    local on = cache.enabled == true
+    if enableButtonShown == on then
+        return
+    end
+    enableButtonShown = on
+    if on then
+        UI.setClass(ENABLE_BUTTON_ID, CLASS_ENABLE_ON)
+        U.setAttributes(ENABLE_BUTTON_ID, { text = "ENABLED" })
+    else
+        UI.setClass(ENABLE_BUTTON_ID, CLASS_ENABLE)
+        U.setAttributes(ENABLE_BUTTON_ID, { text = "ENABLE" })
+    end
+end
+
 --- @param spec table
 --- @param val number
 local function pushFieldTexts(field, spec, val)
@@ -610,6 +632,7 @@ local function pushAllUiFromCache()
         pushFieldTexts(field, spec, world)
     end
     syncingSliders = false
+    pushEnableButton()
 end
 
 --- @return table
@@ -737,6 +760,7 @@ local function closePanel()
     startSnapshot = nil
     slotToGuid = {}
     syncingSliders = false
+    enableButtonShown = nil
 end
 
 --- @param player Player|nil
@@ -877,6 +901,37 @@ local function writeSnapshot(player)
     tell(player, "Debug Light: wrote .dev/.debug/debug_logs/focused_light.lua", { 0, 1, 1 })
 end
 
+--- Turn the selected spotlight on so the beam is visible while testing.
+--- A second click turns it back off without reverting the other sliders.
+--- @param player Player|nil
+local function toggleTestEnabled(player)
+    if activeGuid == nil then
+        tell(player, "Debug Light: pick a spotlight first.")
+        return
+    end
+    local obj = G.getObject(activeGuid)
+    if obj == nil then
+        tell(player, "Debug Light: object gone.")
+        return
+    end
+    local turnOn = cache.enabled ~= true
+    cache.enabled = turnOn
+    applyEmissionFromCache(obj)
+    local actuallyOn = isLightEnabled(obj)
+    cache.enabled = actuallyOn
+    pushAllUiFromCache()
+    refreshSelectionClasses()
+    if turnOn and actuallyOn then
+        tell(player, "Debug Light: on for testing. Click ENABLED to turn it back off.", { 0.95, 0.8, 0.2 })
+    elseif turnOn and not actuallyOn then
+        tell(player, "Debug Light: could not turn that light on.")
+    elseif not actuallyOn then
+        tell(player, "Debug Light: turned back off.", { 0.75, 0.75, 0.75 })
+    else
+        tell(player, "Debug Light: could not turn that light off.")
+    end
+end
+
 --- @param field string
 --- @param raw number
 local function applySliderField(field, raw)
@@ -958,6 +1013,10 @@ function LightDebugFocus.onButtonClick(player, button, id)
     end
     if action == "snapshot" or elemId == "debug_light_control_button_snapshot" then
         writeSnapshot(player)
+        return
+    end
+    if action == "enable" or elemId == ENABLE_BUTTON_ID then
+        toggleTestEnabled(player)
         return
     end
     local slotStr = string.match(elemId, "^debug_light_selection_(%d+)$")

@@ -20,7 +20,7 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
-_Last populated: 2026-10-17 (TOR-739 dashboard owns saved scenes and Storyteller setup). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
+_Last populated: 2026-10-18 (TOR-742 Debug Light Enable button). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
 
 ### Dashboard owns the libraries; the table keeps the live scene
 
@@ -679,6 +679,19 @@ These rows have no Linear issue yet: the Linear connection is down. An agent wil
 4. Go to **Deer Park** and then **Riverdale**. Their conditions (Deer Park: **Bestial Null**; Riverdale: **No Hunger Dice**) should now show as active location conditions. Tell me if either of those is a sheet entry you did not mean to turn on.
 5. Go to **The Nosferatu Warrens: Labyrinth**. The background music should switch to the default mood music. If you want a dedicated Warrens playlist instead, that needs adding to the soundscape catalog.
 6. Advance or set the in-game time across a few hours: the weather should change exactly as it did before (the schedule data itself did not change).
+
+### Debug Light — turn a spotlight on while you test it
+
+#### TOR-742 — Enable button on the Debug Light tuner
+
+**How to verify:** Save & Play. You do not need a full build.
+
+1. Open the Host **== DEBUG ==** column and click **Debug Light**.
+2. Pick a spotlight whose button is gray (that light is off). The tuner opens.
+3. At the bottom of the left column, level with **Done**, click the green **ENABLE** button. The beam should come on, and the button should turn gold and read **ENABLED**.
+4. Move a slider, such as Intensity or Spot Angle. You should see that change in the beam. The other sliders should stay where you put them.
+5. Click **ENABLED**. The beam should turn off, and the slider changes from step 4 should stay.
+6. Click **Discard**. The light, including whether it is on or off, should go back to how it was when you selected it.
 
 ## Cleared
 
