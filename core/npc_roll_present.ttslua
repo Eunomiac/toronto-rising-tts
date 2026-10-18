@@ -16,6 +16,7 @@ local U = require("lib.util")
 local DATA = require("lib.npc_gameboard_data")
 
 --- World Z is the Center group's anchor spot, minus `D.ROLL_PRESENT.centerZOffset`.
+--- World Y is the height a figurine would stand at on that same Center spot.
 
 --- npcName -> hold. A hold exists from the step-forward until the return lerp finishes.
 --- @type table<string, table>
@@ -106,18 +107,21 @@ local function copyPlacement(placement)
     }
 end
 
---- World Z of the Center stage group's central spot (ring-1 anchor nearest u = 0.5).
---- @return number|nil
-local function centerStageAnchorWorldZ()
+--- Stand of the Center group's central spot (ring-1 anchor nearest u = 0.5).
+--- Y is that ring's ground level — the same height a figurine gets when placed there.
+--- There is no per-NPC stage height; chair `seatedY` is a different system and is not used.
+--- @return number|nil z
+--- @return number|nil y
+local function centerStageAnchorStand()
     local Board = require("core.npc_gameboard_board")
     local Snaps = require("core.npc_gameboard_snaps")
     local board = Board.getControlBoard()
     if not Board.isGameObject(board) then
-        return nil
+        return nil, nil
     end
     local catalog = Snaps.buildControlBoardSnapCatalog(board, nil)
     if type(catalog) ~= "table" then
-        return nil
+        return nil, nil
     end
     local best = nil
     local bestDist = math.huge
@@ -132,13 +136,18 @@ local function centerStageAnchorWorldZ()
         end
     end
     if best == nil then
-        return nil
+        return nil, nil
     end
-    local wp = Board.worldFromUv(tonumber(best.u) or 0.5, tonumber(best.v) or 0.5)
-    if wp == nil or type(wp.z) ~= "number" then
-        return nil
+    local ground = tonumber(best.groundLevel)
+    local wp = Board.worldFromUv(
+        tonumber(best.u) or 0.5,
+        tonumber(best.v) or 0.5,
+        ground ~= nil and { groundLevel = ground } or nil
+    )
+    if wp == nil or type(wp.z) ~= "number" or type(wp.y) ~= "number" then
+        return nil, nil
     end
-    return wp.z
+    return wp.z, wp.y
 end
 
 --- @param npcName string
@@ -413,13 +422,13 @@ function RP.presentForDrawer(slot, npcName)
 
     local STD = require("lib.st_dice_drawer")
     local trayX = STD.revealedTrayX(slot)
-    local centerZ = centerStageAnchorWorldZ()
-    if type(trayX) ~= "number" or type(centerZ) ~= "number" then
+    local centerZ, centerY = centerStageAnchorStand()
+    if type(trayX) ~= "number" or type(centerZ) ~= "number" or type(centerY) ~= "number" then
         print("[NpcRollPresent] Cannot step "
             .. tostring(npcName)
             .. " to tray "
             .. tostring(slot)
-            .. " (tray X or Center spot Z missing).")
+            .. " (tray X or Center spot missing).")
         return
     end
 
@@ -458,7 +467,7 @@ function RP.presentForDrawer(slot, npcName)
     slotNpc[slot] = npcName
     hold.presenting = true
 
-    local targetPos = { x = trayX, y = live.y, z = centerZ - centerZOffset() }
+    local targetPos = { x = trayX, y = centerY, z = centerZ - centerZOffset() }
     local targetRot = { x = 0, y = 0, z = 0 }
     local created = holds[npcName] == hold and (hold.epoch or 0) == 0 and hold.animating ~= true
     print(string.format(

@@ -41,8 +41,8 @@ _Last populated: 2026-10-17 (TOR-739 dashboard owns saved scenes and Storyteller
 **How to verify:** Save & Play. You do not need a full build. Be in a normal scene (not Scatter) with at least one NPC standing on the stage, not sitting in a chair.
 
 1. From the Storyteller Dashboard, start a roll for that staged NPC and click Roll so the Storyteller dice tray rises.
-2. As the tray comes up, the figurine should glide forward to line up with that tray, a bit in front of the Center spot, facing rotation 0, with the bright spotlight on them. They should stay there while the tray is on the table, including after the dice settle.
-3. Clear that roll so the tray and dice go away. The figurine should glide back to the spot, facing, and light they had before the roll.
+2. As the tray comes up, the figurine should glide forward to line up with that tray, a bit in front of the Center spot, and drop (or rise) to the height they would stand at in the Center group — the same height as an NPC already standing there. They should face rotation 0, with the bright spotlight on them, and stay there while the tray is on the table, including after the dice settle.
+3. Clear that roll so the tray and dice go away. The figurine should glide back to the spot, height, facing, and light they had before the roll.
 4. Roll for an NPC who is sitting at the table, and roll once in Scatter Mode. Those should look the same as they do today: the seated NPC stays in their chair, and Scatter does not pull anyone to the Center spot.
 
 ### High — Debug Light button
