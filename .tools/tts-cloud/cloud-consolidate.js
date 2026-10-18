@@ -9,11 +9,13 @@
  * Cloud-only files under the root); files you keep in assets/ are left to their jobs.
  * The legacy folder keeps its sub-path: Toronto Rising/NPCs/x.png → Save Only/Objects/Toronto Rising/NPCs/x.png.
  *
+ * `npm run build:full` runs this with `--apply` after `cloud-asset-sync`.
+ *
  * Usage: npm run cloud:consolidate            (preview)
- *        npm run cloud:consolidate -- --apply (TTS closed)
+ *        npm run cloud:consolidate -- --apply (TTS closed; skipped with a warning while TTS is open)
  */
 
-const { loadCloudConfig, SAVE_ONLY_FOLDER } = require("./lib/cloud_config.js");
+const { loadCloudConfig, SAVE_ONLY_FOLDER, isTtsRunning } = require("./lib/cloud_config.js");
 const { openSteamSession } = require("./lib/steam_session.js");
 const { normalizeCloudPath, readIndex, rowsFromIndex } = require("./lib/cloud_index.js");
 const { moveFiles } = require("./lib/cloud_ops.js");
@@ -51,7 +53,15 @@ function main() {
     }
     console.log(`\n${moves.length} file(s) to move into ${SAVE_ONLY_FOLDER}/<kind>.`);
     if (!apply || moves.length === 0) {
-      if (moves.length > 0) console.log("Preview only. Run npm run cloud:consolidate -- --apply with TTS closed to move them.");
+      if (moves.length > 0 && !apply) {
+        console.log("Preview only. Run npm run cloud:consolidate -- --apply with TTS closed (or npm run build:full) to move them.");
+      }
+      return;
+    }
+    if (isTtsRunning()) {
+      console.warn(
+        `[cloud:consolidate] SKIP: Tabletop Simulator is open (${moves.length} file(s) waiting). Close TTS and run npm run cloud:consolidate -- --apply, or npm run build:full.`,
+      );
       return;
     }
     moveFiles(session, cfg, moves.map((m) => ({ key: m.row.key, folder: m.folder })), { label: "consolidate" });

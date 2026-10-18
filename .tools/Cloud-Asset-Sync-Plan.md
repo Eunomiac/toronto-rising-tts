@@ -28,6 +28,7 @@ Status:
 3. **Save write** (global/object Custom UI rows, object image fields), after `backupSaveBeforeWrite`.
 4. **Lua modules** and the **manifest** `lib/json/cloud-assets.json` (`jobs[id].rows[{path, name, sha1, url, size}]`, every job).
 5. **Deletes**: Cloud copies of removed files go only when the current save (including its embedded Lua), repo code, and other mods' saves no longer use them. Otherwise **KEPT** with a warning naming what still uses it; the ledger keeps the entry so a later build retries. Older Toronto Rising saves are listed, not protected.
+6. **Consolidate** (`npm run cloud:consolidate -- --apply`, after sync in `build:full`): Cloud files the current save uses that no job owns (TTS pop-up uploads, top-level / legacy orphans) are index-moved into `Save Only/<Objects|Decals|Object UI|Global UI>/` and downloaded into `assets/Save Only/`. Links do not change. Skipped with a warning while TTS is open.
 
 ## Job fields
 

@@ -42,9 +42,11 @@ The build removes the asset's rows from the save and the generated Lua, then del
 
 | Command | When |
 | --- | --- |
-| `npm run build:full` | After any asset change. Draws NPC art, uploads, and rebuilds every output. |
+| `npm run build:full` | After any asset change. Draws NPC art, uploads, gathers save-only Cloud art into `Save Only/`, and rebuilds every output. |
 | `npm run build` | Code-only changes. Does not touch Cloud. |
 | `npm run cloud-asset-sync:dry-run` | Preview what the asset step would do, without writing anything. |
+
+After the upload step, Full build also runs **`cloud:consolidate --apply`**: any Cloud file the current save uses that no job owns (for example an image you uploaded in TTS onto a custom object) is moved into `Vampire the Masquerade 5E/Save Only/<kind>/` and downloaded into `assets/Save Only/`. Links do not change. If TTS is still open, that step is skipped with a warning — close TTS and run Full again (or `npm run cloud:consolidate -- --apply`).
 
 ### What the build warnings mean
 
@@ -73,7 +75,7 @@ Run these in this order, with TTS closed. Each shows a report first; nothing is 
 
 1. **`npm run cloud:backup`**: a fresh backup first.
 2. **`npm run cloud:audit`**: a read-only overview: files and space per folder, what is in use, what a job owns.
-3. **`npm run cloud:consolidate`**: lists art the save uses that no job owns and that sits outside `assets/` (Cloud top level, the old **Toronto Rising** folder). `-- --apply` gathers them into `Save Only/<kind>` (Objects, Decals, Object UI, Global UI). Links do not change.
+3. **`npm run cloud:consolidate`**: lists art the save uses that no job owns and that sits outside `assets/` (Cloud top level, the old **Toronto Rising** folder). `-- --apply` gathers them into `Save Only/<kind>` (Objects, Decals, Object UI, Global UI). Links do not change. **Full build already runs this with `--apply`**; use the standalone command only when you want a preview or a one-off pass without a full rebuild.
 4. **`npm run cloud:dedupe`**: finds duplicate files (same content, or same name in one folder). `-- --delete` removes the unused extras.
 5. **`npm run cloud:strays`**: lists files nothing owns: files in `assets/` that match no job, and Cloud files not in `assets/`. After step 3, everything left in the old **Toronto Rising** folder shows here as safe to delete. `-- --delete` removes the unused ones.
 

@@ -39,6 +39,7 @@ npm install
 | `npm run cloud:restore-index -- <file>` | Put back an index snapshot from `backupDir/Cloud Index/`. |
 | `npm run cloud:restore-files -- --backup <stamp> --folder <Cloud folder>` | Re-upload files from a backup (new links). |
 | `npm run cloud-asset-sync` | The build step: push, then rebuild save rows, object images, Lua modules, and `lib/json/cloud-assets.json`. |
+| `npm run cloud:consolidate -- --apply` | Move save-used Cloud orphans into `Save Only/<kind>/` and download them into `assets/Save Only/`. Full build runs this after sync. |
 
 ## Safety rules
 

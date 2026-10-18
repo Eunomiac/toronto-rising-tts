@@ -24,7 +24,8 @@ Status: current
 3. **One name, one owner.** A row name is produced by exactly one job. No repo copy, GitHub fallback, or second folder may shadow a job-owned name.
 4. **File names carry their row name.** Job patterns need a literal prefix or suffix (`^toggle_(.*)\.webp$`), so stray files are never adopted. Jobs without one are skipped with a warning.
 5. **Purging is automatic.** A job removes rows in its name family that no job owns any more. A row a job should keep must have its file in that job's folder.
-6. **TTS closed for Cloud writes.** The push is skipped (with a warning) while TTS is open; never edit the Cloud index or save by hand while a sync runs.
+6. **TTS closed for Cloud writes.** The push and consolidate steps are skipped (with a warning) while TTS is open; never edit the Cloud index or save by hand while a sync runs.
+7. **Save-authored Cloud art.** Images you upload in TTS onto custom objects (not under a job folder) are gathered on Full build into Cloud `Save Only/<kind>/` and mirrored to `assets/Save Only/` (`cloud:consolidate --apply`). Links do not change.
 
 ## Adding art
 
