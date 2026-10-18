@@ -22,9 +22,10 @@ import { requestRollControl } from "./dnd/rollControls";
 import { DndUiContext } from "./dnd/uiContext";
 import type { DndUiHooks } from "./dnd/apply";
 import { useOpenPcSheet } from "../pcSheet/openPcSheet";
-import { isSeatColor } from "../catalogVocab";
+import { bloodPotencyRow, isSeatColor, ROLL_TYPE_RULES } from "../catalogVocab";
 import { NpcConfigModal, type NpcConfigTarget } from "./npcConfig";
 import { loadGenericCatalog } from "./genericCatalog";
+import { planNpcTypeSeed } from "../../shared/npcRollPlan";
 import { configuredTiers, genericStatsKey, keptStatsKey } from "../../shared/npcStats";
 import { useNpcStats, saveNpcStats } from "../npcStats";
 import { NpcTrackerPopup } from "./npcTrackers";
@@ -445,6 +446,26 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
     characterName,
     notify: setDndNotice,
     openRollControl: requestRollControl,
+    npcTypeSeed: (key, rollType) => {
+      const block = npcLive.blockFor(key);
+      if (!block) {
+        return null;
+      }
+      const record = npcLive.trackers[key];
+      return planNpcTypeSeed({
+        name: characterName(key),
+        block,
+        levels: {
+          hunger: record?.hunger ?? 0,
+          rage: record?.rage ?? 0,
+          wpSup: record?.wpSup ?? 0,
+          wpAgg: record?.wpAgg ?? 0
+        },
+        rollType,
+        bloodPotency: bloodPotencyRow(block.bloodPotency),
+        rules: ROLL_TYPE_RULES
+      });
+    },
     difficultyFor: (key, higher) => {
       const block = npcLive.blockFor(key);
       const values = [block?.difficultyStrong, block?.difficultyWeak].filter((value): value is number => typeof value === "number");

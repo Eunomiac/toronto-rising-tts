@@ -20,7 +20,17 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
-_Last populated: 2026-10-18 (TOR-742 Debug Light Enable button). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
+_Last populated: 2026-10-18 (TOR-743 NPC Willpower / Frenzy / Discipline pools). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
+
+### High — NPC roll preliminary pools
+
+#### TOR-743 — NPC Dashboard rolls match PC Willpower / Frenzy / Discipline pools
+
+**How to verify:** Restart the dashboard (`npm run dev` from `.dev/storyteller-dashboard`). You do not need Save & Play for this one — it is dashboard planning that already talks to the live roll bridge. Use a vampire NPC with Stats filled in (Willpower, Humanity, Blood Potency) and some Willpower damage on their tracker if you can.
+
+1. Start a **Willpower** roll for that NPC (drag onto Willpower, or the roll ring). The pool should show dice equal to their empty Willpower boxes (max minus superficial and aggravated). Hunger dice should not appear.
+2. Start a **Frenzy** roll. The pool should be those same undamaged Willpower dice, plus one third of their Humanity rounded down (for example Willpower 4 with no damage and Humanity 5 → 4 + 1 = 5 dice).
+3. Start a **Discipline** roll, then open **Roll from the NPC's stats** and pick a pool such as Physical. That pool's dice should include their Blood Potency Discipline Bonus on top (and Hunger can take from the total as usual). A power pick should still get that bonus as well.
 
 ### Dashboard owns the libraries; the table keeps the live scene
 

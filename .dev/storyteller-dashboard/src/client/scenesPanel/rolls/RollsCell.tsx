@@ -972,7 +972,12 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
           at={configureAt}
           live={live}
           block={npcBlock}
-          levels={{ hunger: npcRecord?.hunger ?? 0, rage: npcRecord?.rage ?? 0 }}
+          levels={{
+            hunger: npcRecord?.hunger ?? 0,
+            rage: npcRecord?.rage ?? 0,
+            wpSup: npcRecord?.wpSup ?? 0,
+            wpAgg: npcRecord?.wpAgg ?? 0
+          }}
           send={send}
           onPool={(event) => {
             setConfigureAt(null);

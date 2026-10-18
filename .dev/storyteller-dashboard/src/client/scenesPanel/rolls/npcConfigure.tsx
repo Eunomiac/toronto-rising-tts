@@ -1,6 +1,13 @@
 import type { MouseEvent, ReactElement } from "react";
 import { bloodPotencyRow, ROLL_TYPE_RULES } from "../../catalogVocab";
-import { planNpcRoll, type NpcRollEntry, type NpcRollPlan } from "../../../shared/npcRollPlan";
+import {
+  isTrackerSeedRollType,
+  planNpcRoll,
+  planNpcTypeSeed,
+  type NpcRollEntry,
+  type NpcRollLevels,
+  type NpcRollPlan
+} from "../../../shared/npcRollPlan";
 import { poolOptions, type NpcStatBlock } from "../../../shared/npcStats";
 import type { StLiveRoll } from "../../worldState";
 import { Overlay } from "../sketch";
@@ -12,6 +19,10 @@ import { PoolDiamonds } from "./dice";
  * (each button shows the dice it would roll), the Blood Surge toggle and the NPC's Notes. Picking an entry sends
  * `npcStatRoll`, or for a passive power `npcAnnounce` and then cancels the roll. Blood Surge is a live toggle on
  * TTS's side (`npcSurge`): its dice stay in the pool across a pick, so the pop-up stays open when it is clicked.
+ *
+ * Willpower / Frenzy / Humanity rolls use the same preliminary pools as PCs (undamaged Willpower, plus
+ * floor(Humanity/3) for Frenzy) and show one Apply button instead of the trait grid. Discipline rolls add
+ * the NPC's Blood Potency Discipline Bonus to each pool or power pick.
  */
 
 export type ConfigureAt = { readonly x: number; readonly y: number };
@@ -70,7 +81,7 @@ export const NpcConfigure = ({ at, live, block, levels, send, onPool, onClose }:
   at: ConfigureAt;
   live: StLiveRoll;
   block: NpcStatBlock;
-  levels: { readonly hunger?: number; readonly rage?: number };
+  levels: NpcRollLevels;
   send: RollsSend;
   onPool: (event: MouseEvent<HTMLElement>) => void;
   onClose: () => void;
@@ -80,6 +91,16 @@ export const NpcConfigure = ({ at, live, block, levels, send, onPool, onClose }:
   const bloodPotency = bloodPotencyRow(block.bloodPotency);
   const vampire = block.kind === "vampire";
   const surgeAllowed = vampire && ROLL_TYPE_RULES.bloodSurge.includes(rollType);
+  const trackerSeed = isTrackerSeedRollType(rollType);
+  const seedPlanned = trackerSeed
+    ? tryPlan(() => {
+      const seed = planNpcTypeSeed({ name, block, levels, rollType, bloodPotency, rules: ROLL_TYPE_RULES });
+      if (seed === null) {
+        throw new Error(`No preliminary pool for ${rollType}.`);
+      }
+      return seed;
+    })
+    : null;
   const planFor = (entry: NpcRollEntry): Planned =>
     tryPlan(() => planNpcRoll({ name, block, levels, rollType, entry, bloodPotency, rules: ROLL_TYPE_RULES }));
   const pick = (plan: NpcRollPlan): void => {
@@ -127,7 +148,19 @@ export const NpcConfigure = ({ at, live, block, levels, send, onPool, onClose }:
             </button>
           )}
         </div>
-        {pools.length > 0 && (
+        {seedPlanned && (
+          <>
+            <span className="roll-options-head">Preliminary pool</span>
+            <div className="roll-options-grid">
+              <EntryButton
+                label={rollType === "willpowerRoll" ? "Willpower" : rollType === "frenzy" ? "Frenzy" : "Humanity"}
+                planned={seedPlanned}
+                onPick={pick}
+              />
+            </div>
+          </>
+        )}
+        {!trackerSeed && pools.length > 0 && (
           <>
             <span className="roll-options-head">Pools</span>
             <div className="roll-options-grid">
@@ -135,7 +168,7 @@ export const NpcConfigure = ({ at, live, block, levels, send, onPool, onClose }:
             </div>
           </>
         )}
-        {attacks.length > 0 && (
+        {!trackerSeed && attacks.length > 0 && (
           <>
             <span className="roll-options-head">Attacks</span>
             <div className="roll-options-grid">
@@ -143,7 +176,7 @@ export const NpcConfigure = ({ at, live, block, levels, send, onPool, onClose }:
             </div>
           </>
         )}
-        {block.powers.map((category, categoryIndex) => category.powers.length > 0 && (
+        {!trackerSeed && block.powers.map((category, categoryIndex) => category.powers.length > 0 && (
           <div key={`${category.name}-${categoryIndex}`} className="npc-config-powers">
             <span className="roll-options-head">{category.name}{category.dots ? ` ${"•".repeat(category.dots)}` : ""}</span>
             <div className="roll-options-grid">

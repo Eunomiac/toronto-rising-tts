@@ -1,3 +1,4 @@
+import type { NpcRollPlan } from "../../../shared/npcRollPlan";
 import type { RollControlRequest } from "./rollControls";
 import type { ScenesCommand, ScenesSend } from "../commands";
 import type { RollsCommand, RollsSend } from "../rolls/commands";
@@ -13,6 +14,11 @@ export type DndApplyContext = {
 export type DndUiHooks = {
   readonly characterName?: (characterKey: string) => string;
   readonly difficultyFor?: (characterKey: string, higher: boolean) => number | undefined;
+  /**
+   * Preliminary NPC pool for Willpower / Frenzy / Humanity / Discipline (same rules as PC auto-pool).
+   * Sent as `npcStatRoll` right after `npcInitiate` when present.
+   */
+  readonly npcTypeSeed?: (characterKey: string, rollType: string) => NpcRollPlan | null;
   readonly openRollControl?: (action: RollControlRequest["action"], payload: DragPayload) => boolean;
   readonly openNpcEdit?: (characterKey: string) => void;
   readonly openNpcTracker?: (characterKey: string) => void;
@@ -30,6 +36,26 @@ export type DndUiHooks = {
   readonly duplicateAsTemplate?: (sceneKey: string) => void;
   readonly copyText?: (text: string) => void;
   readonly notify?: (message: string) => void;
+};
+
+const sendNpcStatPlan = (rolls: RollsSend, plan: NpcRollPlan): void => {
+  if (plan.kind === "passive") {
+    return;
+  }
+  rolls({
+    op: "npcStatRoll",
+    kind: plan.kind,
+    rollType: plan.rollType,
+    normal: plan.normal,
+    hunger: plan.hunger,
+    rage: plan.rage,
+    rouse: plan.rouse,
+    hungerOnFail: plan.hungerOnFail,
+    heading: plan.heading,
+    line: plan.line,
+    marginBonus: plan.marginBonus,
+    marginLabel: plan.marginLabel
+  });
 };
 
 export type ApplyResult =
@@ -85,6 +111,12 @@ const initiateFor = (
       characterKey: key,
       rollType
     });
+    if (key) {
+      const seed = ctx.ui?.npcTypeSeed?.(key, rollType);
+      if (seed !== null && seed !== undefined) {
+        sendNpcStatPlan(ctx.rolls, seed);
+      }
+    }
     if (secret) {
       ctx.rolls({ op: "npcRoll", secret: true });
     }

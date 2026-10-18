@@ -2,6 +2,10 @@
  * Turns an NPC stat block entry (pool, attack or power) into the dice the Storyteller rolls for it.
  * Pure: the Configure pop-up on the live NPC roll card shows the plan and sends it as `npcStatRoll`
  * (`dashboard/rolls.ttslua`), which rolls the dice and judges each rouse check on its own dice.
+ *
+ * Preliminary pools for Willpower / Frenzy / Humanity / Discipline match the PC auto-pool rules in
+ * `RC.computeAutoPoolForRollType` (`core/roll_controller.ttslua`): undamaged Willpower boxes, plus
+ * floor(Humanity/3) for Frenzy, and Blood Potency Discipline Bonus on Discipline rolls (and on powers).
  */
 import { poolOptions, standardPoolLabel, STANDARD_POOLS, type NpcStatBlock, type StandardPool } from "./npcStats.js";
 
@@ -20,17 +24,27 @@ export type PlanBloodPotency = { readonly bloodSurge: number; readonly discBonus
 /** Roll types that never take Hunger dice (`C.RollTypesWithoutHunger`). */
 export type PlanRollTypeRules = { readonly withoutHunger: readonly string[] };
 
+/** Tonight's Hunger / Rage and Willpower damage (missing means 0). */
+export type NpcRollLevels = {
+  readonly hunger?: number;
+  readonly rage?: number;
+  readonly wpSup?: number;
+  readonly wpAgg?: number;
+};
+
 export type NpcRollInput = {
   /** The name on the broadcast ("Mylene"). */
   readonly name: string;
   readonly block: NpcStatBlock;
-  /** Tonight's Hunger / Rage (missing means 0). */
-  readonly levels: { readonly hunger?: number; readonly rage?: number };
+  readonly levels: NpcRollLevels;
   readonly rollType: string;
   readonly entry: NpcRollEntry;
   readonly bloodPotency: PlanBloodPotency;
   readonly rules: PlanRollTypeRules;
 };
+
+/** Same as `NpcRollInput` without a Configure grid entry (initiate seed for auto-pool types). */
+export type NpcRollSeedInput = Omit<NpcRollInput, "entry">;
 
 export type NpcRollPlan = {
   /** `passive` powers only announce; `rouseOnly` powers roll just their rouse checks. */
@@ -81,12 +95,129 @@ const attackById = (block: NpcStatBlock, id: string) => {
 
 const clampLevel = (value: number | undefined): number => Math.max(0, Math.min(5, Math.floor(value ?? 0)));
 
+/** Empty (undamaged) Willpower boxes: max from the stat block minus tonight's superficial and aggravated. */
+export const undamagedWillpower = (block: NpcStatBlock, levels: NpcRollLevels): number => {
+  const max = Math.max(0, Math.floor(block.willpower ?? 0));
+  const damaged = Math.max(0, Math.floor(levels.wpSup ?? 0)) + Math.max(0, Math.floor(levels.wpAgg ?? 0));
+  return Math.max(0, max - damaged);
+};
+
+/**
+ * Roll types whose preliminary dice come from trackers / Humanity alone (like a PC Willpower or Frenzy roll).
+ * Discipline is seeded separately: Blood Potency bonus alone at initiate, then pool + bonus from Configure.
+ */
+export const isTrackerSeedRollType = (rollType: string): boolean =>
+  rollType === "willpowerRoll" || rollType === "frenzy" || rollType === "humanityRoll";
+
+const splitPool = (
+  input: NpcRollSeedInput,
+  total: number
+): { readonly normal: number; readonly hunger: number; readonly rage: number } => {
+  const werewolf = input.block.kind === "werewolf";
+  const vampire = input.block.kind === "vampire";
+  const hunger = vampire && !input.rules.withoutHunger.includes(input.rollType)
+    ? Math.min(total, clampLevel(input.levels.hunger))
+    : 0;
+  const rage = werewolf ? Math.min(total, clampLevel(input.levels.rage)) : 0;
+  return { normal: total - hunger - rage, hunger, rage };
+};
+
+const rollPlan = (
+  input: NpcRollSeedInput,
+  opts: {
+    readonly poolDice: number;
+    readonly discBonus: number;
+    readonly heading: string;
+    readonly line: string;
+    readonly rouse?: readonly RouseCheck[];
+    readonly hungerOnFail?: boolean;
+    readonly marginBonus?: number;
+    readonly marginLabel?: string;
+  }
+): NpcRollPlan => {
+  const total = opts.poolDice + opts.discBonus;
+  const split = splitPool(input, total);
+  return {
+    kind: "roll",
+    rollType: input.rollType,
+    ...split,
+    poolDice: opts.poolDice,
+    discBonus: opts.discBonus,
+    rouse: opts.rouse ?? [],
+    hungerOnFail: opts.hungerOnFail === true,
+    heading: opts.heading,
+    line: opts.line,
+    marginBonus: opts.marginBonus ?? 0,
+    marginLabel: opts.marginLabel ?? ""
+  };
+};
+
+/**
+ * Preliminary pool for a roll type that does not need a Configure grid pick — Willpower, Frenzy,
+ * Humanity, or Discipline (Blood Potency bonus only). Null when the type has no auto seed.
+ */
+export const planNpcTypeSeed = (input: NpcRollSeedInput): NpcRollPlan | null => {
+  const { name, block, rollType, bloodPotency } = input;
+  const vampire = block.kind === "vampire";
+
+  if (rollType === "willpowerRoll") {
+    const poolDice = undamagedWillpower(block, input.levels);
+    return rollPlan(input, {
+      poolDice,
+      discBonus: 0,
+      heading: "Willpower",
+      line: `${name} rolls Willpower`
+    });
+  }
+
+  if (rollType === "frenzy") {
+    const humanity = Math.max(0, Math.floor(block.humanity ?? 0));
+    const poolDice = undamagedWillpower(block, input.levels) + Math.floor(humanity / 3);
+    return rollPlan(input, {
+      poolDice,
+      discBonus: 0,
+      heading: "Frenzy",
+      line: `${name} resists Frenzy`
+    });
+  }
+
+  if (rollType === "humanityRoll") {
+    const poolDice = Math.max(0, Math.floor(block.humanity ?? 0));
+    return rollPlan(input, {
+      poolDice,
+      discBonus: 0,
+      heading: "Humanity",
+      line: `${name} rolls Humanity`
+    });
+  }
+
+  if (rollType === "discipline") {
+    const discBonus = vampire ? Math.max(0, Math.floor(bloodPotency.discBonus)) : 0;
+    return rollPlan(input, {
+      poolDice: 0,
+      discBonus,
+      heading: "Discipline",
+      line: `${name} rolls Discipline`
+    });
+  }
+
+  return null;
+};
+
 /** Builds the roll for one Configure grid entry. */
 export const planNpcRoll = (input: NpcRollInput): NpcRollPlan => {
+  // Tracker-seeded types ignore the grid entry: their dice come from Willpower / Humanity alone.
+  if (isTrackerSeedRollType(input.rollType)) {
+    const seed = planNpcTypeSeed(input);
+    if (seed === null) {
+      throw new Error(`No preliminary pool for roll type "${input.rollType}".`);
+    }
+    return seed;
+  }
+
   const { block, entry, name, bloodPotency } = input;
   const vampire = block.kind === "vampire";
   const ghoul = block.kind === "ghoul";
-  const werewolf = block.kind === "werewolf";
 
   let poolRef = "";
   let poolLabel = "";
@@ -163,23 +294,16 @@ export const planNpcRoll = (input: NpcRollInput): NpcRollPlan => {
     };
   }
 
-  const discBonus = vampire && isPower ? bloodPotency.discBonus : 0;
-  const total = poolDice + discBonus;
-  const hunger = vampire && !input.rules.withoutHunger.includes(input.rollType) ? Math.min(total, clampLevel(input.levels.hunger)) : 0;
-  const rage = werewolf ? Math.min(total, clampLevel(input.levels.rage)) : 0;
-  return {
-    kind: "roll",
-    rollType: input.rollType,
-    normal: total - hunger - rage,
-    hunger,
-    rage,
+  // Discipline Bonus: powers always (discipline dice pools), and any entry when the card type is Discipline.
+  const discBonus = vampire && (isPower || input.rollType === "discipline") ? Math.max(0, Math.floor(bloodPotency.discBonus)) : 0;
+  return rollPlan(input, {
     poolDice,
     discBonus,
-    rouse,
-    hungerOnFail: vampire && rouse.length > 0,
     heading: heading || poolLabel,
     line,
+    rouse,
+    hungerOnFail: vampire && rouse.length > 0,
     marginBonus,
     marginLabel
-  };
+  });
 };

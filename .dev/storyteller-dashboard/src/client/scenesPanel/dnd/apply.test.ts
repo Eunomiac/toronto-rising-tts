@@ -29,6 +29,39 @@ describe("applyDndAction", () => {
       characterKey: "fatherDiaz",
       rollType: "standard"
     });
+    expect(rolls).toHaveBeenCalledTimes(1);
+  });
+
+  it("seeds Willpower dice after initiating an NPC Willpower roll", () => {
+    const rolls = vi.fn();
+    const npcTypeSeed = vi.fn(() => ({
+      kind: "roll" as const,
+      rollType: "willpowerRoll",
+      normal: 3,
+      hunger: 0,
+      rage: 0,
+      poolDice: 3,
+      discBonus: 0,
+      rouse: [],
+      hungerOnFail: false,
+      heading: "Willpower",
+      line: "Father Diaz rolls Willpower",
+      marginBonus: 0,
+      marginLabel: ""
+    }));
+    applyDndAction(
+      "initiateWillpower",
+      { dragKind: "npcStaged", characterKey: "fatherDiaz" },
+      { dropKind: "panelA", binId: "wp" },
+      { scenes: vi.fn(), rolls, ui: { characterName: () => "Father Diaz", npcTypeSeed } }
+    );
+    expect(npcTypeSeed).toHaveBeenCalledWith("fatherDiaz", "willpowerRoll");
+    expect(rolls).toHaveBeenCalledWith(expect.objectContaining({
+      op: "npcStatRoll",
+      rollType: "willpowerRoll",
+      normal: 3,
+      hunger: 0
+    }));
   });
 
   it("secret-safe broadcasts PC postrolls", () => {

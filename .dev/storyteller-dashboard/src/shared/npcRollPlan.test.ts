@@ -1,13 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { planNpcRoll, type NpcRollInput } from "./npcRollPlan.js";
+import { planNpcRoll, planNpcTypeSeed, undamagedWillpower, type NpcRollInput } from "./npcRollPlan.js";
 import type { NpcStatBlock } from "./npcStats.js";
 
-const rules = { withoutHunger: ["simpleCheck", "rouse", "rouseOblivion", "werewolf"] };
+const rules = { withoutHunger: ["simpleCheck", "rouse", "rouseOblivion", "werewolf", "willpowerRoll", "humanityRoll", "frenzy", "remorse"] };
 const bp2 = { bloodSurge: 2, discBonus: 1, discReroll: 1 };
 
 const mylene: NpcStatBlock = {
   kind: "vampire",
   bloodPotency: 2,
+  humanity: 5,
+  willpower: 4,
   physical: 6,
   social: 4,
   supernatural: 5,
@@ -62,6 +64,16 @@ describe("planNpcRoll", () => {
     expect(plan.rouse).toEqual([{ dice: 1, oblivion: true }, { dice: 1, oblivion: true }]);
   });
 
+  it("adds the discipline bonus to a standard pool when the roll type is Discipline", () => {
+    expect(planNpcRoll(input({ rollType: "discipline" }))).toMatchObject({
+      poolDice: 6,
+      discBonus: 1,
+      normal: 5,
+      hunger: 2,
+      heading: "Physical"
+    });
+  });
+
   it("gives two dice per check when the power level is within the reroll value", () => {
     const plan = planNpcRoll(input({ bloodPotency: { ...bp2, discReroll: 2 }, entry: { kind: "power", category: 0, power: 1 } }));
     expect(plan.rouse).toEqual([{ dice: 2, oblivion: false }]);
@@ -85,5 +97,73 @@ describe("planNpcRoll", () => {
     const ghoul: NpcStatBlock = { kind: "ghoul", physical: 3, exceptional: [], attacks: [], powers: [{ name: "Potence", powers: [{ level: 1, name: "Lethal Body", rouse: 1, pool: "physical" }] }] };
     const plan = planNpcRoll(input({ block: ghoul, entry: { kind: "power", category: 0, power: 0 } }));
     expect(plan).toMatchObject({ normal: 3, hunger: 0, discBonus: 0, hungerOnFail: false, rouse: [{ dice: 1, oblivion: false }] });
+  });
+
+  it("pre-populates Willpower from undamaged boxes and ignores the Configure entry", () => {
+    expect(planNpcRoll(input({
+      rollType: "willpowerRoll",
+      levels: { hunger: 2, wpSup: 1, wpAgg: 0 },
+      entry: { kind: "pool", ref: "physical" }
+    }))).toMatchObject({
+      poolDice: 3,
+      discBonus: 0,
+      normal: 3,
+      hunger: 0,
+      heading: "Willpower",
+      line: "Mylene rolls Willpower"
+    });
+  });
+
+  it("pre-populates Frenzy as undamaged Willpower plus one third of Humanity", () => {
+    // Willpower 4 − 1 sup = 3; Humanity 5 → floor(5/3)=1 → 4 dice, no Hunger.
+    expect(planNpcRoll(input({
+      rollType: "frenzy",
+      levels: { hunger: 2, wpSup: 1, wpAgg: 0 }
+    }))).toMatchObject({
+      poolDice: 4,
+      normal: 4,
+      hunger: 0,
+      heading: "Frenzy",
+      line: "Mylene resists Frenzy"
+    });
+  });
+});
+
+describe("planNpcTypeSeed", () => {
+  const seedInput = {
+    name: "Mylene",
+    block: mylene,
+    levels: { hunger: 2, wpSup: 0, wpAgg: 0 },
+    bloodPotency: bp2,
+    rules
+  };
+
+  it("seeds Discipline with only the Blood Potency bonus", () => {
+    expect(planNpcTypeSeed({ ...seedInput, rollType: "discipline" })).toMatchObject({
+      poolDice: 0,
+      discBonus: 1,
+      normal: 0,
+      hunger: 1,
+      heading: "Discipline"
+    });
+  });
+
+  it("seeds Willpower from undamaged boxes", () => {
+    expect(planNpcTypeSeed({ ...seedInput, rollType: "willpowerRoll" })).toMatchObject({
+      poolDice: 4,
+      normal: 4,
+      hunger: 0
+    });
+  });
+
+  it("returns null for standard rolls", () => {
+    expect(planNpcTypeSeed({ ...seedInput, rollType: "standard" })).toBeNull();
+  });
+});
+
+describe("undamagedWillpower", () => {
+  it("subtracts superficial and aggravated from the stat-block maximum", () => {
+    expect(undamagedWillpower(mylene, { wpSup: 1, wpAgg: 1 })).toBe(2);
+    expect(undamagedWillpower({ ...mylene, willpower: undefined }, {})).toBe(0);
   });
 });
