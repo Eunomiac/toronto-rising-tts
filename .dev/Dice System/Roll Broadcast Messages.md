@@ -33,6 +33,10 @@ Reference catalog for the **Roll Result Broadcast Panel** (`rollRes_panel`) and 
 
 **Timeout / queue (TOR-492):** Rapid confirms enqueue FIFO. Each snapshot stays visible for `C.ROLL_RESULT_BROADCAST_SECONDS` (6s), then `UI.hide` plus `C.ROLL_RESULT_BROADCAST_HIDE_CLEANUP_SECONDS` (1s, covers the 0.5s fade) before the next item. Duplicates are not skipped or merged. `RUI.hideResultBroadcast` clears the queue and hides immediately. This is the shared fullscreen panel queue — not `RC.queueRoll` (Frenzy follow-up rolls).
 
+**Same panel, other callers:** Hunt resonance (`RUI.showHuntBroadcast`) and an NPC passive announcement (`RUI.showNpcAnnouncement`) queue onto this banner with no dice. The session-start Willpower refresh is a separate template, `ui/shared/session_start_heal_broadcast.xml`.
+
+**Layout eye-check:** `DEBUG.showBroadcast(kind, opts)` pins one banner open until `DEBUG.hideBroadcast()`. Kinds are `roll`, `hunt`, `npc`, and `willpower`. Calling it with no arguments prints the option list. Shells that gameplay Lua does not address use `db_` ids so in-editor `UI.setAttributes` can target them. On this banner those are `db_rollRes_screen_content`, `db_rollRes_image_border_top`, `db_rollRes_body_container`, `db_rollRes_diceContainer`, and `db_rollRes_difficultyVS`.
+
 ## Fixed / auxiliary broadcast strings
 
 These appear on `rollRes_panel` in addition to the classified headline:

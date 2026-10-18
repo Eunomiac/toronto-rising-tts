@@ -78,4 +78,4 @@ UI.setAttributes("debug_buttonControls", {offsetXY = "-200, 300"})
 <Include src="panel_storyteller_camera.xml" />
 <Include src="panel_storyteller_toolbar.xml" />
 <Include src="panel_runtest.xml" />
-<Include src="animation_tester.xml" />
+<!-- <Include src="animation_tester.xml" /> -->

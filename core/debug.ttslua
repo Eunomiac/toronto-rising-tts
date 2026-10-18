@@ -5326,6 +5326,501 @@ function DEBUG.guidsByRole(roleQuery, options)
     return guids
 end
 
+-- ============================================================================
+-- Broadcast layout eye-check (roll banner + session-start Willpower refresh)
+-- ============================================================================
+
+local BROADCAST_HEAL_COLORS = { "Red", "Orange", "Pink", "Brown", "Purple" }
+
+local BROADCAST_HEAL_DEFAULTS = {
+    Red = { name = "Lord Lucien", amount = "3" },
+    Orange = { name = "Seneschal Rashid", amount = "2" },
+    Pink = { name = "Primogen Aishe Tache", amount = "4" },
+    Brown = { name = "Primogen Fomórach", amount = "1" },
+    Purple = { name = "Sheriff Black Caesar", amount = "3" },
+}
+
+local BROADCAST_RESULT_CLASS_ALIASES = {
+    win = "win",
+    success = "win",
+    failure = "failure",
+    fail = "failure",
+    criticalwin = "criticalWin",
+    critical = "criticalWin",
+    messycritical = "messyCritical",
+    messy = "messyCritical",
+    bestialfailure = "bestialFailure",
+    bestial = "bestialFailure",
+    totalfailure = "totalFailure",
+    totalbestialfailure = "totalBestialFailure",
+    brutalfailure = "brutalFailure",
+    brutaloutcome = "brutalOutcome",
+}
+
+local BROADCAST_HEADLINE_CLASS = {
+    fleeting = "roll_text rollRes_resultDisplay rollRes_result_win",
+    intense = "roll_text rollRes_resultDisplay rollRes_result_criticalWin",
+    acute = "roll_text rollRes_resultDisplay rollRes_result_messyCritical",
+}
+
+local function broadcastFigureImage(figure)
+    if type(figure) ~= "string" or figure == "" then
+        return nil
+    end
+    if figure:sub(1, 11) == "rollFigure_" then
+        return figure
+    end
+    return "rollFigure_" .. figure
+end
+
+local function broadcastBareFigureKey(figure)
+    if type(figure) ~= "string" or figure == "" then
+        return nil
+    end
+    if figure:sub(1, 11) == "rollFigure_" then
+        return figure:sub(12)
+    end
+    return figure
+end
+
+local function broadcastCanonicalResultClass(raw)
+    if type(raw) ~= "string" or raw == "" then
+        return nil
+    end
+    local key = string.lower(raw):gsub("%s+", "")
+    return BROADCAST_RESULT_CLASS_ALIASES[key]
+end
+
+local function broadcastInferResultClass(headline)
+    if type(headline) ~= "string" then
+        return nil
+    end
+    local u = string.upper(headline)
+    if u:find("TOTAL BESTIAL", 1, true) then return "totalBestialFailure" end
+    if u:find("BESTIAL", 1, true) then return "bestialFailure" end
+    if u:find("TOTAL FAILURE", 1, true) or u:find("TOTAL FAIL", 1, true) then return "totalFailure" end
+    if u:find("MESSY", 1, true) then return "messyCritical" end
+    if u:find("CRITICAL", 1, true) then return "criticalWin" end
+    if u:find("BRUTAL OUTCOME", 1, true) then return "brutalOutcome" end
+    if u:find("BRUTAL", 1, true) then return "brutalFailure" end
+    if u:find("FAIL", 1, true) or u:find("FRENZY", 1, true)
+        or u:find("DEGENERATION", 1, true) or u:find("HUNGER", 1, true) then
+        return "failure"
+    end
+    if u:find("WIN", 1, true) or u:find("SUCCESS", 1, true)
+        or u:find("LEASH", 1, true) or u:find("ACTIVATED", 1, true) then
+        return "win"
+    end
+    return nil
+end
+
+local function broadcastResultRecord(opts, rollTypeKey)
+    local resultClass = broadcastCanonicalResultClass(opts.resultClass)
+    if resultClass == nil and type(opts.result) == "string" then
+        resultClass = broadcastInferResultClass(opts.result)
+    end
+    resultClass = resultClass or "win"
+    local successes = tonumber(opts.successes) or 4
+    local difficulty = opts.difficulty
+    if difficulty == nil then
+        difficulty = 2
+    elseif difficulty == false then
+        difficulty = nil
+    else
+        difficulty = tonumber(difficulty)
+    end
+    local margin = nil
+    if difficulty ~= nil then
+        margin = opts.margin
+        if margin == nil then
+            margin = successes - difficulty
+        end
+    end
+    local brutalNarrative = nil
+    if resultClass == "brutalFailure" then
+        brutalNarrative = "Brutal Failure"
+        resultClass = "failure"
+    elseif resultClass == "brutalOutcome" then
+        brutalNarrative = "Brutal Outcome"
+        resultClass = "failure"
+    end
+    local rouseNarrative = nil
+    if rollTypeKey == C.RollType.ROUSE or rollTypeKey == C.RollType.ROUSE_OBLIVION then
+        if resultClass == "win" or resultClass == "criticalWin" or resultClass == "messyCritical" then
+            rouseNarrative = "Success"
+        else
+            rouseNarrative = "Hunger Roused"
+        end
+    end
+    return {
+        resultClass = resultClass,
+        successes = successes,
+        margin = margin,
+        brutalNarrative = brutalNarrative,
+        rouseNarrative = rouseNarrative,
+    }
+end
+
+local function broadcastDiceFaces(dice, rollTypeKey)
+    if dice == false or dice == 0 then
+        return {}, nil
+    end
+    if type(dice) == "number" then
+        local faces = {}
+        local count = math.floor(dice)
+        if count > 15 then
+            count = 15
+        end
+        for i = 1, count do
+            if i % 5 == 0 then
+                faces[i] = { kind = "hunger", value = 1 }
+            elseif i % 3 == 0 then
+                faces[i] = { kind = "hunger", value = 10 }
+            elseif i % 2 == 0 then
+                faces[i] = { kind = "normal", value = 8 }
+            else
+                faces[i] = { kind = "normal", value = 10 }
+            end
+        end
+        return faces, nil
+    end
+    if type(dice) ~= "table" then
+        if rollTypeKey == C.RollType.ROUSE or rollTypeKey == C.RollType.ROUSE_OBLIVION then
+            local kind = rollTypeKey == C.RollType.ROUSE_OBLIVION and "oblivRouse" or "rouse"
+            return {
+                { kind = kind, value = 3 },
+                { kind = kind, value = 8 },
+            }, nil
+        end
+        return {
+            { kind = "normal", value = 10 },
+            { kind = "normal", value = 8 },
+            { kind = "normal", value = 7 },
+            { kind = "hunger", value = 6 },
+            { kind = "hunger", value = 1 },
+        }, nil
+    end
+    if type(dice[1]) == "string" then
+        return nil, dice
+    end
+    return dice, nil
+end
+
+local function broadcastRouseStrips(rouse, rollTypeKey)
+    if rouse == false then
+        return nil
+    end
+    if (rollTypeKey == C.RollType.ROUSE or rollTypeKey == C.RollType.ROUSE_OBLIVION)
+        and type(rouse) ~= "table" then
+        return nil
+    end
+    if type(rouse) ~= "table" then
+        return {
+            { kind = "rouse", narrative = "Hunger Roused", values = { 3 } },
+        }
+    end
+    local strips = {}
+    for _, strip in ipairs(rouse) do
+        if type(strip) == "table" then
+            local narrative = strip.narrative
+            if type(narrative) ~= "string" then
+                local text = string.upper(tostring(strip.text or "ROUSED"))
+                if text:find("STAIN", 1, true) and text:find("ROUS", 1, true) then
+                    narrative = "Hunger Roused & Stained"
+                elseif text:find("STAIN", 1, true) then
+                    narrative = "Stained"
+                else
+                    narrative = "Hunger Roused"
+                end
+            end
+            strips[#strips + 1] = {
+                kind = strip.kind or "rouse",
+                narrative = narrative,
+                values = strip.values or { 3 },
+            }
+        end
+    end
+    return strips
+end
+
+local function broadcastApplyDieImages(images)
+    for i = 1, 15 do
+        local id = "rollRes_die_" .. tostring(i)
+        local image = images[i]
+        if type(image) == "string" and image ~= "" then
+            UI.setAttribute(id, "image", image)
+            UI.setAttribute(id, "active", "true")
+        else
+            UI.setAttribute(id, "image", "")
+            UI.setAttribute(id, "active", "false")
+        end
+    end
+end
+
+local function broadcastApplyFigure(figure)
+    local id = "rollRes_screen_content_figure"
+    if figure == false then
+        UI.setAttribute(id, "image", "")
+        UI.setAttribute(id, "active", "false")
+        return
+    end
+    local image = broadcastFigureImage(figure)
+    if image == nil then
+        return
+    end
+    UI.setAttribute(id, "image", image)
+    UI.setAttribute(id, "active", "true")
+end
+
+local function broadcastHideWillpower()
+    UI.hide("sessionStartHeal_panel")
+    UI.setAttribute("sessionStartHeal_panel", "active", "false")
+end
+
+local function broadcastHealRows(players)
+    if players == nil then
+        local rows = {}
+        for _, color in ipairs(BROADCAST_HEAL_COLORS) do
+            local sample = BROADCAST_HEAL_DEFAULTS[color]
+            rows[#rows + 1] = {
+                color = color,
+                name = sample.name,
+                amount = sample.amount,
+            }
+        end
+        return rows
+    end
+    if type(players) ~= "table" then
+        return {}
+    end
+    if players[1] ~= nil then
+        return players
+    end
+    local rows = {}
+    for _, color in ipairs(BROADCAST_HEAL_COLORS) do
+        local spec = players[color]
+        if spec ~= nil and spec ~= false then
+            local sample = BROADCAST_HEAL_DEFAULTS[color]
+            if type(spec) == "number" or type(spec) == "string" then
+                rows[#rows + 1] = {
+                    color = color,
+                    name = sample.name,
+                    amount = tostring(spec),
+                }
+            elseif type(spec) == "table" then
+                rows[#rows + 1] = {
+                    color = spec.color or color,
+                    name = spec.name or sample.name,
+                    amount = tostring(spec.amount or "1"),
+                    phrase = spec.phrase,
+                    phraseEnd = spec.phraseEnd,
+                }
+            end
+        end
+    end
+    return rows
+end
+
+local function broadcastPrintUsage()
+    print(table.concat({
+        "[DEBUG.showBroadcast] Pins a fullscreen banner open so you can eye-check layout.",
+        "It stays up until DEBUG.hideBroadcast(). A real roll will replace it.",
+        "",
+        "DEBUG.showBroadcast(\"roll\")",
+        "DEBUG.showBroadcast(\"roll\", { result = \"CRITICAL WIN +3\", successes = 5, difficulty = 2, dice = 8 })",
+        "DEBUG.showBroadcast(\"roll\", { rollType = \"rouse\", result = \"HUNGER ROUSED\", dice = 1, rouse = false })",
+        "DEBUG.showBroadcast(\"hunt\", { headline = \"ACUTE CHOLERIC\", intensity = \"acute\" })",
+        "DEBUG.showBroadcast(\"npc\", { name = \"Aishe\", heading = \"Protean\", line = \"Aishe activates Earth Meld (Protean)\" })",
+        "DEBUG.showBroadcast(\"willpower\")",
+        "DEBUG.showBroadcast(\"willpower\", { players = { Red = 3, Pink = 1 } })",
+        "DEBUG.hideBroadcast()",
+        "",
+        "Roll / hunt / npc share ui/shared/panel_roll_results.xml (rollRes_*).",
+        "Hunt resonance and NPC passive announcements use that same banner, with no dice.",
+        "Willpower refresh is ui/shared/session_start_heal_broadcast.xml (sessionStartHeal_*).",
+        "",
+        "roll opts: color, name, figure (\"lordLucien\" or false), rollType, heading, intro,",
+        "  result (headline words), resultClass (win, criticalWin, messyCritical, failure,",
+        "  bestialFailure, totalFailure, totalBestialFailure, brutalFailure, brutalOutcome),",
+        "  successes, difficulty (false hides it), margin, dice (count, {kind,value} list, or image names),",
+        "  rouse = false, or rouse = { { text = \"ROUSED\", values = {3} }, { text = \"STAINED\", kind = \"oblivRouse\", values = {10} } }",
+        "hunt opts: color, name, figure, heading, intro, headline, intensity (fleeting, intense, acute)",
+        "npc opts: name, figure, heading, line",
+        "willpower opts: title, description, players = { Red = 3 } or { { color = \"Red\", name = \"Lord Lucien\", amount = 3 } }",
+        "",
+        "Shells Lua does not normally address (safe to retune, prefixed db_):",
+        "  db_rollRes_screen_content, db_rollRes_image_border_top, db_rollRes_body_container,",
+        "  db_rollRes_diceContainer, db_rollRes_difficultyVS",
+        "  db_sessionStartHeal_spacer_top, db_sessionStartHeal_spacer_bottom,",
+        "  db_sessionStartHeal_image_border_top, db_sessionStartHeal_image_border_bottom,",
+        "  db_sessionStartHeal_screen_content, db_sessionStartHeal_screen_title_container,",
+        "  db_sessionStartHeal_title, db_sessionStartHeal_description,",
+        "  db_sessionStartHeal_playerName_<Color>, db_sessionStartHeal_phrase_<Color>, db_sessionStartHeal_phraseEnd_<Color>",
+        "In the editor: UI.setAttributes(\"rollRes_resultDisplay\", { fontSize = \"80\", offsetXY = \"0 -40\" })",
+    }, "\n"))
+end
+
+--- Pin a broadcast banner open and fill it. Stays until DEBUG.hideBroadcast().
+--- @param kind string  "roll" | "hunt" | "npc" | "willpower"
+--- @param opts table|nil  Contents. Omit kind to print the recipe.
+--- @usage DEBUG.showBroadcast("roll")
+--- @usage DEBUG.showBroadcast("willpower", { players = { Red = 3, Pink = 1 } })
+function DEBUG.showBroadcast(kind, opts)
+    if type(kind) ~= "string" or kind == "" or kind == "help" or kind == "ids" then
+        broadcastPrintUsage()
+        return
+    end
+    local key = string.lower(kind)
+    local aliases = {
+        roll = "roll",
+        result = "roll",
+        results = "roll",
+        hunt = "hunt",
+        hunting = "hunt",
+        resonance = "hunt",
+        npc = "npc",
+        announce = "npc",
+        announcement = "npc",
+        willpower = "willpower",
+        heal = "willpower",
+        wp = "willpower",
+        refresh = "willpower",
+    }
+    local which = aliases[key]
+    if which == nil then
+        print("[DEBUG.showBroadcast] Unknown banner \"" .. kind .. "\".")
+        broadcastPrintUsage()
+        return
+    end
+    opts = type(opts) == "table" and opts or {}
+    local RUI = require("core.roll_ui")
+
+    if which == "willpower" then
+        RUI.hideResultBroadcast()
+        UI.setValue("db_sessionStartHeal_title", opts.title or "Willpower Refresh")
+        UI.setValue(
+            "db_sessionStartHeal_description",
+            opts.description or "All characters automatically heal an amount of superficial Willpower damage equal to the highest of their Resolve or Composure attributes:"
+        )
+        local shown = {}
+        local rows = broadcastHealRows(opts.players)
+        for _, row in ipairs(rows) do
+            local color = row.color
+            if type(color) == "string" and BROADCAST_HEAL_DEFAULTS[color] ~= nil then
+                shown[color] = true
+                UI.setValue("db_sessionStartHeal_playerName_" .. color, tostring(row.name or ""))
+                UI.setValue("db_sessionStartHeal_phrase_" .. color, tostring(row.phrase or "heals"))
+                UI.setValue("sessionStartHeal_amount_" .. color, tostring(row.amount or ""))
+                UI.setValue(
+                    "db_sessionStartHeal_phraseEnd_" .. color,
+                    tostring(row.phraseEnd or "points of superficial Willpower damage.")
+                )
+                local containerId = "sessionStartHeal_playerContainer_" .. color
+                UI.setAttribute(containerId, "active", "true")
+                UI.show(containerId)
+            end
+        end
+        for _, color in ipairs(BROADCAST_HEAL_COLORS) do
+            if shown[color] ~= true then
+                local containerId = "sessionStartHeal_playerContainer_" .. color
+                UI.setAttribute(containerId, "active", "false")
+                UI.hide(containerId)
+            end
+        end
+        UI.setAttribute("sessionStartHeal_panel", "active", "true")
+        UI.show("sessionStartHeal_panel")
+        print("[DEBUG.showBroadcast] Willpower refresh is up. DEBUG.hideBroadcast() puts it away.")
+        return
+    end
+
+    broadcastHideWillpower()
+    local payload
+    if which == "hunt" then
+        local color = opts.color or "Pink"
+        local name = opts.name or RUI.characterName(color)
+        local intensity = opts.intensity or "intense"
+        payload = {
+            color = color,
+            pid = S.getPlayerID(color),
+            rollerName = name,
+            heading = opts.heading or "Hunt",
+            intro = opts.intro or (name .. " feeds …"),
+            headline = opts.headline or opts.result or "INTENSE SANGUINE",
+            headlineClass = BROADCAST_HEADLINE_CLASS[intensity] or "roll_text rollRes_resultDisplay",
+        }
+    elseif which == "npc" then
+        local name = opts.name or "Aishe"
+        local npcKey = "aishe"
+        if opts.figure == false then
+            npcKey = ""
+        else
+            npcKey = broadcastBareFigureKey(opts.figure)
+                or broadcastBareFigureKey(opts.characterKey)
+                or "aishe"
+        end
+        payload = {
+            color = "Black",
+            label = name,
+            rollerName = name,
+            npcCharacterKey = npcKey,
+            heading = opts.heading or "Protean",
+            intro = opts.line or opts.intro or (name .. " activates Earth Meld (Protean)"),
+            headline = opts.result or "ACTIVATED",
+            headlineClass = BROADCAST_HEADLINE_CLASS.fleeting,
+        }
+    else
+        local color = opts.color or "Red"
+        local name = opts.name or RUI.characterName(color)
+        local rollTypeKey = opts.rollType or C.RollType.DISCIPLINE
+        local diceFaces, dieImages = broadcastDiceFaces(opts.dice, rollTypeKey)
+        payload = {
+            color = color,
+            pid = S.getPlayerID(color),
+            label = name,
+            rollerName = name,
+            rollTypeKey = rollTypeKey,
+            heading = opts.heading,
+            intro = opts.intro or (name .. " rolls …"),
+            diceFaces = diceFaces,
+            rouseStrips = broadcastRouseStrips(opts.rouse, rollTypeKey),
+            result = broadcastResultRecord(opts, rollTypeKey),
+        }
+        payload._dieImages = dieImages
+    end
+
+    local dieImages = payload._dieImages
+    payload._dieImages = nil
+    RUI.previewBroadcast(payload)
+    local figure = opts.figure
+    if which == "roll" and figure == nil and opts.color == nil then
+        figure = "lordLucien"
+    elseif which == "hunt" and figure == nil and opts.color == nil then
+        figure = "aishe"
+    elseif which == "npc" then
+        figure = opts.figure == false and false or nil
+    end
+    if figure ~= nil then
+        broadcastApplyFigure(figure)
+    end
+    if which == "roll" and dieImages ~= nil then
+        broadcastApplyDieImages(dieImages)
+    end
+    if which == "roll" and type(opts.result) == "string" then
+        UI.setValue("rollRes_resultDisplay", opts.result)
+    elseif which ~= "roll" and (type(opts.headline) == "string" or type(opts.result) == "string") then
+        UI.setValue("rollRes_resultDisplay", opts.headline or opts.result)
+    end
+    print("[DEBUG.showBroadcast] " .. which .. " banner is up. DEBUG.hideBroadcast() puts it away.")
+end
+
+--- Hide whichever broadcast banner the eye-check left on screen.
+function DEBUG.hideBroadcast()
+    local RUI = require("core.roll_ui")
+    RUI.hideResultBroadcast()
+    broadcastHideWillpower()
+    print("[DEBUG.hideBroadcast] Roll banner and Willpower refresh are hidden.")
+end
+
 --[[
     Help/Documentation
 ]]
@@ -5380,6 +5875,8 @@ function DEBUG.help()
     print("  rollSetFaces(color, { normal={7,7}, hunger={10,1} }) - Set faces + recalculate (POST_ROLL)")
     print("  rollE2eApplyConditions(color, { 'bestialNull' }) / rollE2eClearConditions(color, ids?)")
     print("  rollE2eSetPoolAndSpawn / rollE2eSetPoolAutoHunger / rollE2eAddPoolKindSpawn / rollE2eExpectBroadcast")
+    print("  showBroadcast(kind, opts?) - Pin roll / hunt / npc / willpower banner for a layout eye-check")
+    print("  hideBroadcast()            - Hide the banner showBroadcast left up")
     print("  rollE2eWaitForDiceTray / rollE2eSpawnActivePool / rollE2ePrepareRollRelease")
     print("  rollState(color)         - Print active roll record for a player")
     print("  rollConfirm(color, expected) - Assert roll state; prints PASS/FAIL (E2E)")
@@ -5504,6 +6001,8 @@ rollE2eSpawnActivePool    = DEBUG.rollE2eSpawnActivePool
 rollE2ePrepareRollRelease = DEBUG.rollE2ePrepareRollRelease
 rollE2eConfirmBagEnabled   = DEBUG.rollE2eConfirmBagEnabled
 rollE2eExpectBroadcast    = DEBUG.rollE2eExpectBroadcast
+showBroadcast = DEBUG.showBroadcast
+hideBroadcast = DEBUG.hideBroadcast
 tableRotateTo = DEBUG.tableRotateTo
 
 -- Expose file logging functions

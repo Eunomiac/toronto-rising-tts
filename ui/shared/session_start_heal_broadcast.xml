@@ -29,40 +29,6 @@
 
 </Defaults>
 
-<!--
-
-UI.setAttributes("sessionStartHeal_panel", {animationDuration = "2"})
-UI.setAttributes("sessionStartHeal_screen_content_background", {})
-UI.setAttributes("db_sessionStartHeal_spacer_top", {})
-UI.setAttributes("db_sessionStartHeal_image_border_top", {})
-UI.setAttributes("db_sessionStartHeal_image_border_bottom", {})
-UI.setAttributes("db_sessionStartHeal_spacer_bottom", {})
-UI.setAttributes("db_sessionStartHeal_screen_title_container", {color="rgba(1, 0, 0, 0)"})
-
-UI.setAttributes("db_sessionStartHeal_screen_content", {})
-UI.setAttributes("db_sessionStartHeal_title", {})
-UI.setAttributes("db_sessionStartHeal_description", {})
-
-UI.setAttributes("sessionStartHeal_playerContainer_Red", {})
-UI.setAttributes("sessionStartHeal_playerContainer_Orange", {})
-UI.setAttributes("sessionStartHeal_playerContainer_Pink", {})
-UI.setAttributes("sessionStartHeal_playerContainer_Brown", {})
-UI.setAttributes("sessionStartHeal_playerContainer_Purple", {})
-
-UI.show("sessionStartHeal_panel")
-UI.show("sessionStartHeal_playerContainer_Red")
-UI.show("sessionStartHeal_playerContainer_Orange")
-UI.show("sessionStartHeal_playerContainer_Pink")
-UI.show("sessionStartHeal_playerContainer_Brown")
-UI.show("sessionStartHeal_playerContainer_Purple")
-
-UI.hide("sessionStartHeal_playerContainer_Pink")
-UI.hide("sessionStartHeal_playerContainer_Brown")
-UI.hide("sessionStartHeal_playerContainer_Purple")
-UI.hide("sessionStartHeal_playerContainer_Orange")
-
--->
-
 <VerticalLayout id="sessionStartHeal_panel" class="sessionStartHeal_panel" active="false">
   <Panel id="db_sessionStartHeal_spacer_top" class="sessionStartHeal_spacer" />
   <Image id="db_sessionStartHeal_image_border_top" class="sessionStartHeal_image sessionStartHeal_image_border sessionStartHeal_image_border_top" image="resultsBorder"  />

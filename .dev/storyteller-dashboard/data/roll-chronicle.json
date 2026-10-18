@@ -1,0 +1,1215 @@
+{
+  "permanent": {
+    "autoApplyRouseOutcomes": true,
+    "autoWp": true,
+    "autoRemorse": true,
+    "autoHunger": true
+  },
+  "entries": [
+    {
+      "rollId": "roll_1792220012_69947",
+      "color": "Purple",
+      "label": "Roll qweqw + qweqwe",
+      "rollType": "launch",
+      "text": "FAILURE −3",
+      "at": "2026-10-17T11:16:53.930Z",
+      "entry": {
+        "rollId": "roll_1792220012_69947",
+        "label": "Roll qweqw + qweqwe",
+        "rollType": "launch",
+        "result": {
+          "margin": -3,
+          "resultClass": "failure",
+          "successes": 2,
+          "text": "FAILURE −3"
+        },
+        "diceFaces": [
+          {
+            "kind": "hunger",
+            "value": 7
+          },
+          {
+            "kind": "normal",
+            "value": 6
+          },
+          {
+            "kind": "normal",
+            "value": 5
+          },
+          {
+            "kind": "normal",
+            "value": 5
+          },
+          {
+            "kind": "normal",
+            "value": 5
+          },
+          {
+            "kind": "normal",
+            "value": 4
+          },
+          {
+            "kind": "normal",
+            "value": 3
+          },
+          {
+            "kind": "normal",
+            "value": 2
+          },
+          {
+            "kind": "normal",
+            "value": 1
+          },
+          {
+            "kind": "normal",
+            "value": 1
+          }
+        ]
+      }
+    },
+    {
+      "rollId": "roll_1792236004_72945",
+      "color": "Pink",
+      "label": "Aishe Tache",
+      "rollType": "discipline",
+      "text": "CRITICAL WIN +3",
+      "at": "2026-10-17T11:20:29.018Z",
+      "entry": {
+        "rollId": "roll_1792236004_72945",
+        "label": "Aishe Tache",
+        "rollType": "discipline",
+        "result": {
+          "margin": 3,
+          "resultClass": "criticalWin",
+          "successes": 6,
+          "text": "CRITICAL WIN +3"
+        },
+        "diceFaces": [
+          {
+            "kind": "normal",
+            "value": 10
+          },
+          {
+            "kind": "normal",
+            "value": 10
+          },
+          {
+            "kind": "normal",
+            "value": 10
+          },
+          {
+            "kind": "normal",
+            "value": 9
+          },
+          {
+            "kind": "hunger",
+            "value": 3
+          },
+          {
+            "kind": "normal",
+            "value": 5
+          },
+          {
+            "kind": "normal",
+            "value": 4
+          },
+          {
+            "kind": "normal",
+            "value": 3
+          },
+          {
+            "kind": "normal",
+            "value": 1
+          }
+        ]
+      }
+    },
+    {
+      "rollId": "roll_1792236050_96208",
+      "color": "Black",
+      "label": "myleneHamelin",
+      "rollType": "discipline",
+      "text": "WIN +2",
+      "at": "2026-10-17T11:21:38.473Z",
+      "entry": {
+        "rollId": "roll_1792236050_96208",
+        "label": "myleneHamelin",
+        "rollType": "discipline",
+        "result": {
+          "margin": 2,
+          "resultClass": "win",
+          "successes": 5,
+          "text": "WIN +2"
+        },
+        "diceFaces": [
+          {
+            "kind": "normal",
+            "value": 10
+          },
+          {
+            "kind": "hunger",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 8
+          },
+          {
+            "kind": "hunger",
+            "value": 2
+          },
+          {
+            "kind": "normal",
+            "value": 3
+          },
+          {
+            "kind": "normal",
+            "value": 2
+          },
+          {
+            "kind": "rouse",
+            "value": 4
+          }
+        ]
+      }
+    },
+    {
+      "rollId": "roll_1792236167_9507",
+      "color": "Black",
+      "label": "Oliver Gagnon",
+      "rollType": "discipline",
+      "text": "WIN +1",
+      "at": "2026-10-17T11:23:55.276Z",
+      "entry": {
+        "rollId": "roll_1792236167_9507",
+        "label": "Oliver Gagnon",
+        "rollType": "discipline",
+        "result": {
+          "margin": 1,
+          "resultClass": "win",
+          "successes": 4,
+          "text": "WIN +1"
+        },
+        "diceFaces": [
+          {
+            "kind": "normal",
+            "value": 10
+          },
+          {
+            "kind": "normal",
+            "value": 8
+          },
+          {
+            "kind": "normal",
+            "value": 7
+          },
+          {
+            "kind": "normal",
+            "value": 7
+          },
+          {
+            "kind": "normal",
+            "value": 5
+          },
+          {
+            "kind": "normal",
+            "value": 4
+          },
+          {
+            "kind": "normal",
+            "value": 3
+          },
+          {
+            "kind": "rouse",
+            "value": 9
+          }
+        ]
+      }
+    },
+    {
+      "rollId": "roll_1792236273_55953",
+      "color": "Black",
+      "label": "Oliver Gagnon",
+      "rollType": "standard",
+      "text": "WIN +1",
+      "at": "2026-10-17T11:25:06.753Z",
+      "entry": {
+        "rollId": "roll_1792236273_55953",
+        "label": "Oliver Gagnon",
+        "rollType": "standard",
+        "result": {
+          "margin": 1,
+          "resultClass": "win",
+          "successes": 4,
+          "text": "WIN +1"
+        },
+        "diceFaces": [
+          {
+            "kind": "hunger",
+            "value": 10
+          },
+          {
+            "kind": "normal",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 7
+          },
+          {
+            "kind": "normal",
+            "value": 4
+          },
+          {
+            "kind": "normal",
+            "value": 3
+          },
+          {
+            "kind": "normal",
+            "value": 3
+          },
+          {
+            "kind": "normal",
+            "value": 2
+          },
+          {
+            "kind": "normal",
+            "value": 2
+          },
+          {
+            "kind": "normal",
+            "value": 1
+          }
+        ]
+      }
+    },
+    {
+      "rollId": "roll_1792236350_27229",
+      "color": "Purple",
+      "label": "Black Caesar",
+      "rollType": "discipline",
+      "text": "WIN +0",
+      "at": "2026-10-17T11:26:13.082Z",
+      "entry": {
+        "rollId": "roll_1792236350_27229",
+        "label": "Black Caesar",
+        "rollType": "discipline",
+        "result": {
+          "margin": 0,
+          "resultClass": "win",
+          "successes": 3,
+          "text": "WIN +0"
+        },
+        "diceFaces": [
+          {
+            "kind": "hunger",
+            "value": 7
+          },
+          {
+            "kind": "normal",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 6
+          },
+          {
+            "kind": "normal",
+            "value": 5
+          },
+          {
+            "kind": "normal",
+            "value": 5
+          },
+          {
+            "kind": "normal",
+            "value": 5
+          },
+          {
+            "kind": "normal",
+            "value": 4
+          },
+          {
+            "kind": "normal",
+            "value": 2
+          },
+          {
+            "kind": "normal",
+            "value": 1
+          },
+          {
+            "kind": "normal",
+            "value": 1
+          }
+        ]
+      }
+    },
+    {
+      "rollId": "roll_1792236377_63752",
+      "color": "Black",
+      "label": "Oliver Gagnon",
+      "rollType": "discipline",
+      "text": "WIN",
+      "at": "2026-10-17T11:26:55.558Z",
+      "entry": {
+        "rollId": "roll_1792236377_63752",
+        "label": "Oliver Gagnon",
+        "rollType": "discipline",
+        "result": {
+          "resultClass": "win",
+          "successes": 3,
+          "text": "WIN"
+        },
+        "diceFaces": [
+          {
+            "kind": "normal",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 6
+          },
+          {
+            "kind": "normal",
+            "value": 6
+          },
+          {
+            "kind": "hunger",
+            "value": 4
+          },
+          {
+            "kind": "normal",
+            "value": 4
+          },
+          {
+            "kind": "normal",
+            "value": 2
+          },
+          {
+            "kind": "normal",
+            "value": 2
+          },
+          {
+            "kind": "rouse",
+            "value": 8
+          }
+        ]
+      }
+    },
+    {
+      "rollId": "roll_1792236446_60780",
+      "color": "Black",
+      "label": "Mylene 'the Puck' Hamelin",
+      "rollType": "discipline",
+      "text": "CRITICAL WIN +4",
+      "at": "2026-10-17T11:27:46.361Z",
+      "entry": {
+        "rollId": "roll_1792236446_60780",
+        "label": "Mylene 'the Puck' Hamelin",
+        "rollType": "discipline",
+        "result": {
+          "margin": 4,
+          "resultClass": "criticalWin",
+          "successes": 7,
+          "text": "CRITICAL WIN +4"
+        },
+        "diceFaces": [
+          {
+            "kind": "normal",
+            "value": 10
+          },
+          {
+            "kind": "normal",
+            "value": 10
+          },
+          {
+            "kind": "hunger",
+            "value": 8
+          },
+          {
+            "kind": "hunger",
+            "value": 8
+          },
+          {
+            "kind": "hunger",
+            "value": 6
+          },
+          {
+            "kind": "normal",
+            "value": 4
+          },
+          {
+            "kind": "normal",
+            "value": 2
+          },
+          {
+            "kind": "normal",
+            "value": 1
+          },
+          {
+            "kind": "rouse",
+            "value": 6
+          }
+        ]
+      }
+    },
+    {
+      "rollId": "roll_1792236881_80206",
+      "color": "Black",
+      "label": "Sage Sam",
+      "rollType": "discipline",
+      "text": "CRITICAL WIN +5",
+      "at": "2026-10-17T11:35:09.871Z",
+      "entry": {
+        "rollId": "roll_1792236881_80206",
+        "label": "Sage Sam",
+        "rollType": "discipline",
+        "result": {
+          "margin": 5,
+          "resultClass": "criticalWin",
+          "successes": 8,
+          "text": "CRITICAL WIN +5"
+        },
+        "diceFaces": [
+          {
+            "kind": "normal",
+            "value": 10
+          },
+          {
+            "kind": "normal",
+            "value": 10
+          },
+          {
+            "kind": "hunger",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 8
+          },
+          {
+            "kind": "normal",
+            "value": 8
+          },
+          {
+            "kind": "hunger",
+            "value": 4
+          },
+          {
+            "kind": "normal",
+            "value": 1
+          },
+          {
+            "kind": "rouse",
+            "value": 4
+          }
+        ]
+      }
+    },
+    {
+      "rollId": "roll_1792312719_82333",
+      "color": "Black",
+      "label": "Kai",
+      "rollType": "discipline",
+      "text": "CRITICAL WIN +4",
+      "at": "2026-10-18T08:39:12.406Z",
+      "entry": {
+        "rollId": "roll_1792312719_82333",
+        "label": "Kai",
+        "rollType": "discipline",
+        "result": {
+          "margin": 4,
+          "resultClass": "criticalWin",
+          "successes": 7,
+          "text": "CRITICAL WIN +4"
+        },
+        "diceFaces": [
+          {
+            "kind": "normal",
+            "value": 10
+          },
+          {
+            "kind": "normal",
+            "value": 10
+          },
+          {
+            "kind": "normal",
+            "value": 10
+          },
+          {
+            "kind": "normal",
+            "value": 8
+          },
+          {
+            "kind": "normal",
+            "value": 6
+          },
+          {
+            "kind": "hunger",
+            "value": 5
+          },
+          {
+            "kind": "normal",
+            "value": 4
+          },
+          {
+            "kind": "normal",
+            "value": 4
+          },
+          {
+            "kind": "normal",
+            "value": 2
+          },
+          {
+            "kind": "normal",
+            "value": 1
+          },
+          {
+            "kind": "rouse",
+            "value": 5
+          },
+          {
+            "kind": "rouse",
+            "value": 7
+          }
+        ]
+      }
+    },
+    {
+      "rollId": "roll_1792312777_11857",
+      "color": "Black",
+      "label": "Kai",
+      "rollType": "discipline",
+      "text": "WIN +0",
+      "at": "2026-10-18T08:40:16.861Z",
+      "entry": {
+        "rollId": "roll_1792312777_11857",
+        "label": "Kai",
+        "rollType": "discipline",
+        "result": {
+          "margin": 0,
+          "resultClass": "win",
+          "successes": 3,
+          "text": "WIN +0"
+        },
+        "diceFaces": [
+          {
+            "kind": "hunger",
+            "value": 9
+          },
+          {
+            "kind": "hunger",
+            "value": 8
+          },
+          {
+            "kind": "normal",
+            "value": 8
+          },
+          {
+            "kind": "normal",
+            "value": 5
+          },
+          {
+            "kind": "normal",
+            "value": 5
+          },
+          {
+            "kind": "normal",
+            "value": 4
+          },
+          {
+            "kind": "normal",
+            "value": 1
+          },
+          {
+            "kind": "normal",
+            "value": 1
+          },
+          {
+            "kind": "rouse",
+            "value": 8
+          }
+        ]
+      }
+    },
+    {
+      "rollId": "roll_1792312939_60749",
+      "color": "Black",
+      "label": "Kai",
+      "rollType": "frenzy",
+      "text": "FIGHT FOR CONTROL!",
+      "at": "2026-10-18T08:43:22.142Z",
+      "entry": {
+        "rollId": "roll_1792312939_60749",
+        "label": "Kai",
+        "rollType": "frenzy",
+        "result": {
+          "margin": 3,
+          "resultClass": "win",
+          "successes": 6,
+          "text": "FIGHT FOR CONTROL!"
+        },
+        "diceFaces": [
+          {
+            "kind": "normal",
+            "value": 10
+          },
+          {
+            "kind": "normal",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 8
+          },
+          {
+            "kind": "normal",
+            "value": 7
+          },
+          {
+            "kind": "normal",
+            "value": 6
+          },
+          {
+            "kind": "normal",
+            "value": 2
+          },
+          {
+            "kind": "normal",
+            "value": 1
+          }
+        ]
+      }
+    },
+    {
+      "rollId": "roll_1792315979_96139",
+      "color": "Black",
+      "label": "Evangeline Dupont",
+      "rollType": "willpowerRoll",
+      "text": "WIN +3",
+      "at": "2026-10-18T09:33:35.207Z",
+      "entry": {
+        "rollId": "roll_1792315979_96139",
+        "label": "Evangeline Dupont",
+        "rollType": "willpowerRoll",
+        "result": {
+          "margin": 3,
+          "resultClass": "win",
+          "successes": 6,
+          "text": "WIN +3"
+        },
+        "diceFaces": [
+          {
+            "kind": "normal",
+            "value": 10
+          },
+          {
+            "kind": "normal",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 8
+          },
+          {
+            "kind": "normal",
+            "value": 8
+          },
+          {
+            "kind": "normal",
+            "value": 7
+          },
+          {
+            "kind": "normal",
+            "value": 7
+          },
+          {
+            "kind": "normal",
+            "value": 5
+          },
+          {
+            "kind": "normal",
+            "value": 3
+          },
+          {
+            "kind": "normal",
+            "value": 3
+          }
+        ]
+      }
+    },
+    {
+      "rollId": "roll_1792316042_54811",
+      "color": "Black",
+      "label": "Damien Kline",
+      "rollType": "willpowerRoll",
+      "text": "CRITICAL WIN +7",
+      "at": "2026-10-18T09:34:19.641Z",
+      "entry": {
+        "rollId": "roll_1792316042_54811",
+        "label": "Damien Kline",
+        "rollType": "willpowerRoll",
+        "result": {
+          "margin": 7,
+          "resultClass": "criticalWin",
+          "successes": 10,
+          "text": "CRITICAL WIN +7"
+        },
+        "diceFaces": [
+          {
+            "kind": "normal",
+            "value": 10
+          },
+          {
+            "kind": "normal",
+            "value": 10
+          },
+          {
+            "kind": "normal",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 8
+          },
+          {
+            "kind": "normal",
+            "value": 8
+          },
+          {
+            "kind": "normal",
+            "value": 6
+          },
+          {
+            "kind": "normal",
+            "value": 5
+          }
+        ]
+      }
+    },
+    {
+      "rollId": "roll_1792316098_42951",
+      "color": "Black",
+      "label": "Scott Tempo",
+      "rollType": "frenzy",
+      "text": "FIGHT FOR CONTROL!",
+      "at": "2026-10-18T09:35:14.857Z",
+      "entry": {
+        "rollId": "roll_1792316098_42951",
+        "label": "Scott Tempo",
+        "rollType": "frenzy",
+        "result": {
+          "margin": 1,
+          "resultClass": "win",
+          "successes": 5,
+          "text": "FIGHT FOR CONTROL!"
+        },
+        "diceFaces": [
+          {
+            "kind": "normal",
+            "value": 8
+          },
+          {
+            "kind": "normal",
+            "value": 8
+          },
+          {
+            "kind": "normal",
+            "value": 7
+          },
+          {
+            "kind": "normal",
+            "value": 6
+          },
+          {
+            "kind": "normal",
+            "value": 6
+          },
+          {
+            "kind": "normal",
+            "value": 4
+          },
+          {
+            "kind": "normal",
+            "value": 2
+          },
+          {
+            "kind": "normal",
+            "value": 2
+          },
+          {
+            "kind": "normal",
+            "value": 1
+          },
+          {
+            "kind": "normal",
+            "value": 1
+          }
+        ]
+      }
+    },
+    {
+      "rollId": "roll_1792316128_61849",
+      "color": "Black",
+      "label": "Jesse Sharp",
+      "rollType": "frenzy",
+      "text": "FIGHT FOR CONTROL!",
+      "at": "2026-10-18T09:35:46.949Z",
+      "entry": {
+        "rollId": "roll_1792316128_61849",
+        "label": "Jesse Sharp",
+        "rollType": "frenzy",
+        "result": {
+          "margin": 2,
+          "resultClass": "win",
+          "successes": 5,
+          "text": "FIGHT FOR CONTROL!"
+        },
+        "diceFaces": [
+          {
+            "kind": "normal",
+            "value": 10
+          },
+          {
+            "kind": "normal",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 8
+          },
+          {
+            "kind": "normal",
+            "value": 7
+          },
+          {
+            "kind": "normal",
+            "value": 4
+          },
+          {
+            "kind": "normal",
+            "value": 2
+          },
+          {
+            "kind": "normal",
+            "value": 1
+          }
+        ]
+      }
+    },
+    {
+      "rollId": "roll_1792316175_72956",
+      "color": "Black",
+      "label": "Avery Innis",
+      "rollType": "willpowerRoll",
+      "text": "WIN +0",
+      "at": "2026-10-18T09:36:36.564Z",
+      "entry": {
+        "rollId": "roll_1792316175_72956",
+        "label": "Avery Innis",
+        "rollType": "willpowerRoll",
+        "result": {
+          "margin": 0,
+          "resultClass": "win",
+          "successes": 3,
+          "text": "WIN +0"
+        },
+        "diceFaces": [
+          {
+            "kind": "normal",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 8
+          },
+          {
+            "kind": "normal",
+            "value": 3
+          },
+          {
+            "kind": "normal",
+            "value": 3
+          },
+          {
+            "kind": "normal",
+            "value": 2
+          }
+        ]
+      }
+    },
+    {
+      "rollId": "roll_1792316361_57454",
+      "color": "Black",
+      "label": "Jesse Sharp",
+      "rollType": "willpowerRoll",
+      "text": "WIN +1",
+      "at": "2026-10-18T09:39:39.128Z",
+      "entry": {
+        "rollId": "roll_1792316361_57454",
+        "label": "Jesse Sharp",
+        "rollType": "willpowerRoll",
+        "result": {
+          "margin": 1,
+          "resultClass": "win",
+          "successes": 4,
+          "text": "WIN +1"
+        },
+        "diceFaces": [
+          {
+            "kind": "normal",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 7
+          },
+          {
+            "kind": "normal",
+            "value": 7
+          },
+          {
+            "kind": "normal",
+            "value": 6
+          },
+          {
+            "kind": "normal",
+            "value": 4
+          },
+          {
+            "kind": "normal",
+            "value": 4
+          }
+        ]
+      }
+    },
+    {
+      "rollId": "roll_1792316386_68287",
+      "color": "Black",
+      "label": "Stirling Siskin",
+      "rollType": "willpowerRoll",
+      "text": "FAILURE −3",
+      "at": "2026-10-18T09:40:10.045Z",
+      "entry": {
+        "rollId": "roll_1792316386_68287",
+        "label": "Stirling Siskin",
+        "rollType": "willpowerRoll",
+        "result": {
+          "margin": -3,
+          "resultClass": "failure",
+          "successes": 1,
+          "text": "FAILURE −3"
+        },
+        "diceFaces": [
+          {
+            "kind": "normal",
+            "value": 8
+          },
+          {
+            "kind": "normal",
+            "value": 4
+          },
+          {
+            "kind": "normal",
+            "value": 3
+          },
+          {
+            "kind": "normal",
+            "value": 2
+          },
+          {
+            "kind": "normal",
+            "value": 2
+          },
+          {
+            "kind": "normal",
+            "value": 2
+          }
+        ]
+      }
+    },
+    {
+      "rollId": "roll_1792316434_41258",
+      "color": "Orange",
+      "label": "Rashid Abdulrahman",
+      "rollType": "discipline",
+      "text": "WIN +6",
+      "at": "2026-10-18T09:41:06.001Z",
+      "entry": {
+        "rollId": "roll_1792316434_41258",
+        "label": "Rashid Abdulrahman",
+        "rollType": "discipline",
+        "result": {
+          "margin": 6,
+          "resultClass": "win",
+          "successes": 9,
+          "text": "WIN +6"
+        },
+        "diceFaces": [
+          {
+            "kind": "normal",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 8
+          },
+          {
+            "kind": "normal",
+            "value": 8
+          },
+          {
+            "kind": "normal",
+            "value": 7
+          },
+          {
+            "kind": "normal",
+            "value": 7
+          },
+          {
+            "kind": "normal",
+            "value": 6
+          },
+          {
+            "kind": "normal",
+            "value": 6
+          },
+          {
+            "kind": "hunger",
+            "value": 2
+          },
+          {
+            "kind": "normal",
+            "value": 5
+          },
+          {
+            "kind": "normal",
+            "value": 4
+          },
+          {
+            "kind": "normal",
+            "value": 3
+          },
+          {
+            "kind": "bloodSurgeRouse",
+            "value": 9
+          }
+        ]
+      }
+    },
+    {
+      "rollId": "roll_1792316485_63253",
+      "color": "Black",
+      "label": "jesseSharp",
+      "rollType": "discipline",
+      "text": "FAILURE −4",
+      "at": "2026-10-18T09:41:51.129Z",
+      "entry": {
+        "rollId": "roll_1792316485_63253",
+        "label": "jesseSharp",
+        "rollType": "discipline",
+        "result": {
+          "margin": -4,
+          "resultClass": "failure",
+          "successes": 2,
+          "text": "FAILURE −4"
+        },
+        "diceFaces": [
+          {
+            "kind": "normal",
+            "value": 10
+          },
+          {
+            "kind": "hunger",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 5
+          }
+        ]
+      }
+    },
+    {
+      "rollId": "roll_1792316564_50456",
+      "color": "Black",
+      "label": "Jesse Sharp",
+      "rollType": "standard",
+      "text": "WIN +2",
+      "at": "2026-10-18T09:43:06.917Z",
+      "entry": {
+        "rollId": "roll_1792316564_50456",
+        "label": "Jesse Sharp",
+        "rollType": "standard",
+        "result": {
+          "margin": 2,
+          "resultClass": "win",
+          "successes": 4,
+          "text": "WIN +2"
+        },
+        "diceFaces": [
+          {
+            "kind": "normal",
+            "value": 10
+          },
+          {
+            "kind": "hunger",
+            "value": 7
+          },
+          {
+            "kind": "normal",
+            "value": 9
+          },
+          {
+            "kind": "normal",
+            "value": 6
+          }
+        ]
+      }
+    }
+  ]
+}

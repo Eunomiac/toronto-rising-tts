@@ -1,9 +1,9 @@
 {
   enabled = true,
-  position = Vector(0.000000, 15.600000, -71.339996),
-  rotation = Vector(0.000000, 270.000000, 0.000000),
-  range = 102.000000,
-  angle = 97.000000,
-  intensity = 2.190000,
-  color = Color(1.000000, 0.667152, 0.667152)
+  position = Vector(8.999985, 115.470253, 117.000000),
+  rotation = Vector(0.000000, 0.000000, 0.000000),
+  range = 22.000000,
+  angle = 28.000000,
+  intensity = 2.840000,
+  color = Color(0.760784, 0.605584, 0.372784)
 }

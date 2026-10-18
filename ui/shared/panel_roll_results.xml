@@ -1,4 +1,5 @@
 <!-- Roll Result Broadcast Panel (all players). Use UI.show/UI.hide on rollRes_panel for fade animations. -->
+<!-- Layout shells Lua does not address use db_ ids so in-editor UI.setAttributes can target them. -->
 
 <Defaults>
 
@@ -112,14 +113,14 @@
 
 <Panel id="rollRes_panel" class="rollRes_screen" active="false">
 
-  <Panel class="rollRes_screen_content">
+  <Panel id="db_rollRes_screen_content" class="rollRes_screen_content">
     <Image id="rollRes_screen_content_background" class="rollRes_image rollRes_image_background" image="resultsBG" />
     <Image id="rollRes_screen_content_figure" class="rollRes_image rollRes_image_figure" image="" />
 
-    <Image class="rollRes_image rollRes_image_border rollRes_image_border_top" image="resultsBorder" offsetXY = "0 350" />
+    <Image id="db_rollRes_image_border_top" class="rollRes_image rollRes_image_border rollRes_image_border_top" image="resultsBorder" offsetXY = "0 350" />
     <Image id="rollRes_screen_content_border_bottom" class="rollRes_image rollRes_image_border rollRes_image_border_bottom" image="resultsBorderBottom" offsetXY = "0 -200" />
 
-    <Panel class="rollRes_body_container">
+    <Panel id="db_rollRes_body_container" class="rollRes_body_container">
 
       <Panel id="rollRes_rousePanel_2" class="rollRes_rousePanel" offsetXY = "-250 350" scale="0.75" active="false">
         <Image id="rollRes_rouseDie_2_5" class="rollRes_rouseDie" image="" active="false" offsetXY = "0 20" />
@@ -142,7 +143,7 @@
       <Text id="rollRes_rollType" class="rollRes_rollType" text="" offsetXY = "0 280" />
       <Text id="rollRes_rollIntro" class="rollRes_rollIntro" text="" offsetXY = "0 230" />
 
-      <HorizontalLayout class="rollRes_diceContainer" offsetXY = "0 140">
+      <HorizontalLayout id="db_rollRes_diceContainer" class="rollRes_diceContainer" offsetXY = "0 140">
         <Image id="rollRes_die_1" class="rollRes_die" image="" active="false" />
         <Image id="rollRes_die_2" class="rollRes_die" image="" active="false" />
         <Image id="rollRes_die_3" class="rollRes_die" image="" active="false" />
@@ -164,11 +165,10 @@
         <Text id="rollRes_successes" class="roll_text rollRes_successes" text="" />
         <Text id="rollRes_successesPhrase" class="roll_text rollRes_successesPhrase" text="" />
         <HorizontalLayout id="rollRes_difficultyDisplay" class="rollRes_difficultyDisplayContainer" spacing="15" active="false">
-          <Text class="roll_text rollRes_difficultyVS" text="vs." />
+          <Text id="db_rollRes_difficultyVS" class="roll_text rollRes_difficultyVS" text="vs." />
           <Text id="rollRes_difficulty" class="roll_text rollRes_difficulty" text="" />
         </HorizontalLayout>
       </HorizontalLayout>
-
       <Text id="rollRes_resultDisplay" class="roll_text rollRes_resultDisplay" text="" offsetXY = "0 -50"/>
 
     </Panel>

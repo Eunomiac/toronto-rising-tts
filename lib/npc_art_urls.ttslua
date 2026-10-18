@@ -1668,6 +1668,10 @@ return {
     token = { front = "https://steamusercontent-a.akamaihd.net/ugc/11942102963736054270/8406BEB19F88FAAB2B8F4CB60053C5CAF665881E/", back = "https://steamusercontent-a.akamaihd.net/ugc/9841570630069083474/C0AAFD0A2E99258139E04BB47830D1844D50A285/" },
     genericLabel = "Journalist",
   },
+  mem_agnesBellanger = {
+    figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/16787520853046632791/AC24BFF7A5D2326D96EA750F6E86B90835A59FC4/", back = FIGURINE_BACK },
+    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/9333809945347304460/280FA60E22685B7E0EC8D559643B34414A17E1EA/", back = "https://steamusercontent-a.akamaihd.net/ugc/16438865477975649435/95E86A7C630DBF4442D9A03AFE24E612CBB7E882/" },
+  },
   mem_andreiStrandza = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/16492297580457009346/79474535D72B950ACC18D5ABEF4CDFFC27AD7311/", back = FIGURINE_BACK },
     token = { front = "https://steamusercontent-a.akamaihd.net/ugc/12232519023791517126/AF79B1302949989C836A1FAB6E21AB8B5DF2C7AE/", back = "https://steamusercontent-a.akamaihd.net/ugc/17451895789098909039/712832E9ADD8B618C8A3A9C026F34E4591695219/" },
@@ -1675,6 +1679,10 @@ return {
   mem_carna = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/13693624332511154121/D2154B354D95570937858FDA39B4E74AA58E5DAC/", back = FIGURINE_BACK },
     token = { front = "https://steamusercontent-a.akamaihd.net/ugc/12980632804902989246/4BAE03340D668A1E2996618BDC4F40801549D620/", back = "https://steamusercontent-a.akamaihd.net/ugc/17980546912291930996/98717AF1B7D31CC9A816880423E7AAC3C7074C13/" },
+  },
+  mem_damienAbanda = {
+    figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/9874221368006618749/7F96349452D3D9A3A3AEE6D71C0A35BDD3FE50F1/", back = FIGURINE_BACK },
+    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/15558778017922701573/033A22EE53C7A19447582B2637DA6D048BD4C025/", back = "https://steamusercontent-a.akamaihd.net/ugc/12576569281144174648/599DC2E0E678357EC7BE176AF20E10C999A114AC/" },
   },
   mem_fomorachPreEmbrace = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/15465525701201269986/567322C5134A893CEBE9C623052E395472BE4A35/", back = FIGURINE_BACK },
@@ -1687,6 +1695,14 @@ return {
   mem_jeanDucheskiIPreDeath = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/10315060809911581530/8D3C73C1E6DB1DC47147BF5B81EAEFF0BCE0140F/", back = FIGURINE_BACK },
     token = { front = "https://steamusercontent-a.akamaihd.net/ugc/12993343316259240318/2100F8955F72520B54D919EA260EB3D5A3350F25/", back = "https://steamusercontent-a.akamaihd.net/ugc/9269607862071391337/3B75AEC5441634D4D3B485BBD81798430130E43D/" },
+  },
+  mem_jervaisDeLaCroix = {
+    figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/11293160282296889291/FFB6729A231DECC88ED2F23A002923EED2B5A224/", back = FIGURINE_BACK },
+    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/9744116734717388735/54F1F372C310D68F11C439A1683D26B46A1C788F/", back = "https://steamusercontent-a.akamaihd.net/ugc/17933904496917732831/3FF44314F33D160A606ED6BC941FE8D6EA5BD957/" },
+  },
+  mem_ladyAvelineDubois = {
+    figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/11372333870635759777/454D5A74CA5370CC942E12BB302357C9A1734CFB/", back = FIGURINE_BACK },
+    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/14521863215199537126/C0BBF76272AA38C9A635EB14F09F4DDCDA7B12F1/", back = "https://steamusercontent-a.akamaihd.net/ugc/17537836165296259594/A29A6360F6DE97D6C3F624926C9F10DB7A726F71/" },
   },
   mem_lalehBintSaif = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/14870331113517714366/A463CDFD090395AA2BECB02ACB957C1F32D51CC8/", back = FIGURINE_BACK },
@@ -1712,6 +1728,10 @@ return {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/16680390347248985143/30A2C29DC021A6585CFD16EB0AD88F631F246903/", back = FIGURINE_BACK },
     token = { front = "https://steamusercontent-a.akamaihd.net/ugc/11292696649358353289/6D15BFC30099D93DB2F85E45DB64C7090E788C25/", back = "https://steamusercontent-a.akamaihd.net/ugc/12907794865053847377/6E2C05EB3CDD2C47DDD94DDA4F34B3BC729752AC/" },
   },
+  mem_oliverGagnon = {
+    figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/17468148778046362055/40D95A82E7B84597DFED92B15D14869E4CFD1EFC/", back = FIGURINE_BACK },
+    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/12780484144288687054/48C8FE7D07381F0FF1F90A1D75DE2676AB0F9EA7/", back = "https://steamusercontent-a.akamaihd.net/ugc/9297538063368796956/61BA2FC7CD65DA57F3184C9E67357A958070589B/" },
+  },
   mem_palisPreEmbrace = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/18156626370914849085/EB3010D1A1EB4EF8E1062A36340895F9EBBF4E3D/", back = FIGURINE_BACK },
     token = { front = "https://steamusercontent-a.akamaihd.net/ugc/18242034838923089480/023DA7A60AD7F567C0C46BADE23B48388E3F9C68/", back = "https://steamusercontent-a.akamaihd.net/ugc/13514349697256236651/72D6A27A0B83E6388E720E684DEF31EBC06ED737/" },
@@ -1727,6 +1747,10 @@ return {
   mem_terenceMerik = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/17178943449010104213/B9562604D295FBEF0BFDB3737E7F38AABC606E34/", back = FIGURINE_BACK },
     token = { front = "https://steamusercontent-a.akamaihd.net/ugc/10556409923987164205/6A8620C33F985292BF5038FD8A016066E4607FE0/", back = "https://steamusercontent-a.akamaihd.net/ugc/12203948500313045067/F05ACAE86DB71CDF32C66D33691F102BE42E96A3/" },
+  },
+  mem_theBleakBokor = {
+    figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/11814167796233080016/7EFF43010E85FAC6A9495D61D8A09309BE6BF324/", back = FIGURINE_BACK },
+    token = { front = "https://steamusercontent-a.akamaihd.net/ugc/11910293765975598457/673AF0C807B99EF251607C9231F936815D671E44/", back = "https://steamusercontent-a.akamaihd.net/ugc/15987801327587133089/A5F2A3F207977557F82DC123E2FD8B7EF85AF6E4/" },
   },
   merrickSingh = {
     figurine = { front = "https://steamusercontent-a.akamaihd.net/ugc/9328558381520431890/C869BD65408359BB68A0BA3AA1E4BD09FDD86697/", back = FIGURINE_BACK },
