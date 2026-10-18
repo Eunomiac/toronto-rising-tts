@@ -2,7 +2,7 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { classifyWarn, classifyError, classifyLog } = require("./classify.cjs");
+const { sanitize, classifyWarn, classifyError, classifyLog } = require("./classify.cjs");
 
 test("warnings are kept, and a clean NPC art report is not", () => {
   assert.equal(classifyWarn('[locations:import] WARN unknown skybox "x"'), "warn");
@@ -15,6 +15,10 @@ test("warnings are kept, and a clean NPC art report is not", () => {
   assert.equal(classifyError("npm warn exec The following package was not found and will be installed: node@1.0.0"), null);
   assert.equal(classifyWarn("[npc-art] NPC art discrepancies:\n  1 figurine(s) are in no catalog"), "warn");
   assert.equal(classifyWarn("   "), null);
+  assert.equal(classifyError("\u001b[1G"), null);
+  assert.equal(classifyError("\u001b[0K"), null);
+  assert.equal(classifyError("⠙"), null);
+  assert.equal(sanitize("\u001b[1G\n⠙\n\u001b[0K\n[locations:import] WARN kept"), "[locations:import] WARN kept");
 });
 
 test("routine save and cloud progress is dropped; real changes are kept", () => {

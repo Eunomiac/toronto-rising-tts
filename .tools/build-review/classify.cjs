@@ -30,6 +30,31 @@
 
 const CLOUD_PREFIX = "[cloud-asset-sync] ";
 const NO_ART_DISCREPANCIES = "[npc-art] No NPC art discrepancies.";
+const SPINNER_ONLY = /^[ \t]*[⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏]+[ \t]*$/;
+
+/**
+ * Drop terminal color codes, cursor moves, and spinner frames so the review
+ * file stays plain text. Progress spinners write those one chunk at a time.
+ * @param {string} text
+ * @returns {string}
+ */
+function sanitize(text) {
+  let cleaned = String(text);
+  cleaned = cleaned.replace(/\u001b\][^\u0007\u001b]*(?:\u0007|\u001b\\)/g, "");
+  cleaned = cleaned.replace(/\u001b\[[\d;?]*[A-Za-z]/g, "");
+  cleaned = cleaned.replace(/\u001b[@-_]/g, "");
+  cleaned = cleaned.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "");
+  cleaned = cleaned.replace(/\r\n/g, "\n").replace(/\r/g, "");
+  const kept = [];
+  for (const line of cleaned.split("\n")) {
+    const right = line.replace(/[ \t]+$/g, "");
+    if (SPINNER_ONLY.test(right)) continue;
+    if (right.trim() === "" && kept.length === 0) continue;
+    kept.push(right);
+  }
+  while (kept.length > 0 && kept[kept.length - 1].trim() === "") kept.pop();
+  return kept.join("\n").replace(/\n{3,}/g, "\n\n");
+}
 
 /**
  * @param {string} body text after "[cloud-asset-sync] "
@@ -92,7 +117,7 @@ function nonEmptyLines(text) {
  * @returns {"warn"|null}
  */
 function classifyWarn(text) {
-  const lines = nonEmptyLines(text);
+  const lines = nonEmptyLines(sanitize(text));
   if (lines.length === 0) return null;
   if (lines.length === 1 && lines[0] === NO_ART_DISCREPANCIES) return null;
   if (lines.every((line) => isRoutineProgress(line))) return null;
@@ -104,7 +129,7 @@ function classifyWarn(text) {
  * @returns {"error"|null}
  */
 function classifyError(text) {
-  const lines = nonEmptyLines(text);
+  const lines = nonEmptyLines(sanitize(text));
   if (lines.length === 0) return null;
   if (lines.every((line) => isRoutineProgress(line))) return null;
   return "error";
@@ -115,7 +140,7 @@ function classifyError(text) {
  * @returns {"note"|null}
  */
 function classifyLog(text) {
-  const lines = nonEmptyLines(text);
+  const lines = nonEmptyLines(sanitize(text));
   if (lines.length === 0) return null;
   const worth = lines.some((line) => {
     if (line.startsWith("[build-review]")) return true;
@@ -139,6 +164,7 @@ function classifyLog(text) {
 module.exports = {
   CLOUD_PREFIX,
   NO_ART_DISCREPANCIES,
+  sanitize,
   isRoutineProgress,
   isRoutineCloudBody,
   classifyWarn,

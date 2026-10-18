@@ -11,7 +11,7 @@
 const fs = require("fs");
 const path = require("path");
 const { spawn, spawnSync } = require("child_process");
-const { REPO_ROOT, reviewLogPath, appendEntry, countEntries } = require("./log-file.cjs");
+const { REPO_ROOT, reviewLogPath, beginReview, appendEntry, readEntries, publishReview } = require("./log-file.cjs");
 
 const CAPTURE = path.join(__dirname, "capture.cjs").replace(/\\/g, "/");
 const PIPELINE =
@@ -25,11 +25,6 @@ function childEnv() {
     env.NODE_OPTIONS = `${existing} ${requireFlag}`.trim();
   }
   return env;
-}
-
-function clearLog() {
-  const file = reviewLogPath();
-  if (fs.existsSync(file)) fs.rmSync(file);
 }
 
 /**
@@ -63,20 +58,19 @@ let finished = false;
 function finish(exitCode) {
   if (finished) return;
   finished = true;
-  const file = reviewLogPath();
-  if (exitCode !== 0 && !fs.existsSync(file)) {
+  if (exitCode !== 0 && readEntries().length === 0) {
     appendEntry(
       `The Full build stopped with exit code ${exitCode} before it printed a warning or error this log collects. The terminal output above has the rest.`,
     );
   }
 
-  if (!fs.existsSync(file)) {
+  const count = publishReview();
+  const file = reviewLogPath();
+  if (count === 0 || !fs.existsSync(file)) {
     console.log("Full build review: nothing to flag.");
     process.exit(exitCode);
   }
 
-  const text = fs.readFileSync(file, "utf8");
-  const count = countEntries(text);
   const rel = path.relative(REPO_ROOT, file);
   const opened = openForReview(file);
   const where = opened ? `Opened ${rel}` : `Could not open ${rel} — open that file yourself`;
@@ -85,7 +79,7 @@ function finish(exitCode) {
 }
 
 function main() {
-  clearLog();
+  beginReview();
   const child = spawn(PIPELINE, {
     cwd: REPO_ROOT,
     env: childEnv(),

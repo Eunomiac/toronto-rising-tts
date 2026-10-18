@@ -6,7 +6,7 @@
  */
 
 const util = require("util");
-const { classifyWarn, classifyError, classifyLog } = require("./classify.cjs");
+const { sanitize, classifyWarn, classifyError, classifyLog } = require("./classify.cjs");
 const { appendEntry } = require("./log-file.cjs");
 
 function formatArgs(args) {
@@ -33,7 +33,7 @@ function install() {
 
   function record(text) {
     if (recording) return;
-    const body = String(text).trim();
+    const body = sanitize(text);
     if (body === "") return;
     recording = true;
     try {
