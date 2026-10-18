@@ -20,7 +20,17 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
-_Last populated: 2026-10-18 (TOR-743 NPC Willpower / Frenzy / Discipline pools). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
+_Last populated: 2026-10-18 (TOR-744 later Downtime session title). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
+
+### Later Downtime session title
+
+#### TOR-744 — Session title on the location line during Downtime
+
+**How to verify:** Save & Play. You need a session title set (the one that already shows in gold during Prologue, such as THE DEVILS YOU KNOW).
+
+1. Start the session so the overlay says **PROLOGUE**. The session title should still be the gold line above the word PROLOGUE, and the date should not be there.
+2. Apply a scene, then end it so the overlay says **DOWNTIME** and shows the date (Monday, September 21st, 2026, or whatever the Downtime clock says). Between the session number and that date, the session title should appear in the same gold, bold and italic, with a space between each letter and a wider gap between words. It should be smaller than the Prologue title, about the size of a district name, so the whole title fits on one line. The date and the word DOWNTIME stay where they are.
+3. Apply a scene again. The gold title should leave, and the district and site should come back in white with the red diamond.
 
 ### High — NPC roll preliminary pools
 

@@ -1,7 +1,8 @@
 --[[
     Center-top overlay: district / site (split on first ":" when present) and in-game date + 12-hour clock
     during **Play**. Spotlight uses ritual copy (TOR-98). Session-start Downtime uses prologue copy
-    (TOR-598). End uses the same bookend layout with **EPILOGUE** (TOR-599).
+    (TOR-598). Later Downtime keeps the date and the word DOWNTIME, and puts the session title on the
+    location line (TOR-744). End uses the same bookend layout with **EPILOGUE** (TOR-599).
 
     Style chrome uses absolute `UI.setClass` lists from `ui/shared/game_state_overlay.xml` Defaults
     (PLAY/MAIN baseline; Downtime / prologue / Spotlight APPLY strings). Copy is the `text`
@@ -76,6 +77,9 @@ local CLASS_TIME_SPOTLIGHT = "large_red_text med_white_text rigid_tall_text"
 local CLASS_SEP_MAIN = "small_red_text"
 local CLASS_SEP_PROLOGUE = "small_red_text bright_red_text"
 local CLASS_SEP_SPOTLIGHT = "small_red_text normal_text"
+--- Later Downtime title: location-line size (18), prologue gold, bold italic (TOR-744).
+local CLASS_DISTRICT_MAIN = "small_white_text"
+local CLASS_DISTRICT_DOWNTIME = "small_white_text gold_text bold_italic_text"
 
 -- Three ASCII spaces between words. Written on the `text` attribute (TOR-600 / TOR-601).
 local OVERLAY_WORD_GAP = "   "
@@ -291,18 +295,21 @@ local function applyOverlayPhaseChrome(kind)
     lastOverlayChromeFingerprint = kind
     if kind == "prologue" then
         pushOverlayClass("gameStateOverlay_sessionNumber", CLASS_SESSION_PROLOGUE)
+        pushOverlayClass("gameStateOverlay_district", CLASS_DISTRICT_MAIN)
         pushOverlayClass("gameStateOverlay_datetime", CLASS_DATETIME_BOOKEND)
         pushOverlayClass("gameStateOverlay_time", CLASS_TIME_PROLOGUE)
         return
     end
     if kind == "spotlight" then
         pushOverlayClass("gameStateOverlay_sessionNumber", CLASS_SESSION_MAIN)
+        pushOverlayClass("gameStateOverlay_district", CLASS_DISTRICT_MAIN)
         pushOverlayClass("gameStateOverlay_datetime", CLASS_DATETIME_SPOTLIGHT)
         pushOverlayClass("gameStateOverlay_time", CLASS_TIME_SPOTLIGHT)
         return
     end
     if kind == "downtime" then
         pushOverlayClass("gameStateOverlay_sessionNumber", CLASS_SESSION_MAIN)
+        pushOverlayClass("gameStateOverlay_district", CLASS_DISTRICT_DOWNTIME)
         pushOverlayClass("gameStateOverlay_datetime", CLASS_DATETIME_DOWNTIME)
         -- Baseline class. Prologue and Spotlight add height classes; leaving those
         -- on this line pushes the session number off the top (TOR-644).
@@ -310,6 +317,7 @@ local function applyOverlayPhaseChrome(kind)
         return
     end
     pushOverlayClass("gameStateOverlay_sessionNumber", CLASS_SESSION_MAIN)
+    pushOverlayClass("gameStateOverlay_district", CLASS_DISTRICT_MAIN)
     pushOverlayClass("gameStateOverlay_datetime", CLASS_DATETIME_MAIN)
     pushOverlayClass("gameStateOverlay_time", CLASS_TIME_MAIN, true)
 end
@@ -689,16 +697,23 @@ local function pushSpotlightLocationRow()
     })
 end
 
---- Empty district/site row (Downtime). A blank space, not "", so the line still has height (TOR-644).
+--- Later Downtime location line: spaced session title, alone, so the row stays centered (TOR-744).
+--- A blank space, not "", keeps the line's height when the title is empty (TOR-644).
 --- Diamond separator stays off without a live scene.
-local function pushEmptyLocationRow()
+local function pushDowntimeLocationRow()
     reconcileSessionNumberFromState()
+    local sessionName = S.getStateVal("sessionName")
+    if type(sessionName) ~= "string" then
+        sessionName = ""
+    end
+    local title = formatSpacedUppercaseTitle(sessionName)
+    if title == "" then
+        title = " "
+    end
     pushOverlayActive("gameStateOverlay_district", true)
-    pushOverlayActive("gameStateOverlay_parentSite", true)
-    pushOverlayActive("gameStateOverlay_site", true)
-    pushOverlayText("gameStateOverlay_district", " ")
-    pushOverlayText("gameStateOverlay_parentSite", " ")
-    pushOverlayText("gameStateOverlay_site", " ")
+    pushOverlayText("gameStateOverlay_district", title)
+    pushOverlayText("gameStateOverlay_parentSite", "")
+    pushOverlayText("gameStateOverlay_site", "")
     pushDistrictSeparator({
         text = DISTRICT_SEPARATOR_DIAMOND,
         classNames = CLASS_SEP_MAIN,
@@ -706,6 +721,7 @@ local function pushEmptyLocationRow()
     })
     pushOverlayActive("gameStateOverlay_parentSite", false)
     pushOverlayActive("gameStateOverlay_parentSiteSeparator", false)
+    pushOverlayActive("gameStateOverlay_site", false)
 end
 
 --- TORONTO RISING banner, compact roman, spaced title, and PROLOGUE or EPILOGUE (TOR-598 / TOR-599).
@@ -739,6 +755,9 @@ end
 local function reconcileLocationRowFromState()
     reconcileSessionNumberFromState()
     local districtLabel, siteFull = resolveLocationLabelsFromState()
+    -- Downtime hides the site slot so the session title can sit alone on this line (TOR-744).
+    pushOverlayActive("gameStateOverlay_district", true)
+    pushOverlayActive("gameStateOverlay_site", true)
     pushOverlayText("gameStateOverlay_district", districtLabel)
     pushDistrictSeparator({
         text = DISTRICT_SEPARATOR_DIAMOND,
@@ -873,7 +892,7 @@ function GameStateOverlay.reconcileFromState()
             return
         end
         applyOverlayPhaseChrome("downtime")
-        pushEmptyLocationRow()
+        pushDowntimeLocationRow()
         local ck = S.getStateVal("downtimeClock")
         local hasDatetime = type(ck) == "table"
             and tonumber(ck.year) ~= nil

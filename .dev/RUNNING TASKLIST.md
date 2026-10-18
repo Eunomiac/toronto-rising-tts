@@ -423,6 +423,8 @@ See also [NPC Object Overview](NPC%20Object%20Spawning%20%26%20Spotlighting/NPC%
 
 ## UI Panels
 
+- [x] **Later Downtime shows the session title on the location line:** Prologue and Epilogue keep the spaced gold title on the date line. Every other Downtime keeps the date and the word DOWNTIME, and writes that same spaced title (uppercase, one space between letters, three spaces between words, gold, bold italic, location-line size) into the district/site gap. Style is `setClass` only. Pending Save & Play. _(TOR-744)_
+
 - [x] **Refresh XML keeps The Court on the right audience:** After a full Global remount, Court pages use `U.setVisibleTo` plus `active` only (no `UI.show` / `UI.hide`), so an open Court stays on its spread for the players who had it open and a closed Court stays closed — not visible to everyone. relatedTo **TOR-444**. Pending Save & Play. _(TOR-663)_
 - [x] **Prologue overlay only on the first Downtime:** Intermission→Play with no scene still shows PROLOGUE. Applying a scene sets Main immediately and clears that flag, so End Scene returns to the date and the word DOWNTIME. relatedTo **TOR-644**. Author confirmed 2026-10-02. _(TOR-646)_
 - [x] **Downtime overlay formatting after End Scene:** Leaving prologue or Spotlight sets the time line's class back to `large_red_text`, so the session number stays on screen. Author confirmed 2026-10-04; the leftover session-number position was resolved by the author 2026-10-06. _(TOR-644)_
