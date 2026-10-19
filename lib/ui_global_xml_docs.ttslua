@@ -9917,7 +9917,6 @@ UI.setAttributes("debug_buttonControls", {offsetXY = "-200, 300"})
       <Button class="hud_storyteller_button" onClick="HUD_printState">Print State</Button>
       <Button class="hud_storyteller_button" onClick="HUD_syncAll">Sync All (force)</Button>
       <Button id="debug_syncTrace" class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleSyncTrace">Trace Sync</Button>
-      <Button id="debug_stRollUi" class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleStRollUi">In-game ST Rolls</Button>
       <Button class="hud_storyteller_button" onClick="HUD_clearLoadingOverlay">Clear Loading Overlay</Button>
       <Button class="hud_storyteller_button" onClick="HUD_refreshUi">Refresh UI</Button>
       <Button id="debug_ambient" class="hud_storyteller_button toggled_inactive" onClick="HUD_toggleDebugAmbient">Toggle Lights</Button>
@@ -11011,265 +11010,6 @@ BUTTONS - concatenated renders of `./partials/debug_button_light.xml` (400-slot 
 <!-- /include ui/storyteller/panel_storyteller_camera.xml -->
 
 
-<!-- include ui/storyteller/panel_storyteller_roll_controls.xml -->
-<!-- Global UI dump from TEST BED.ttslua -->
-<!-- element id: rollPanel -->
-<!-- source: UI.getXml -->
-<!-- generated: 2026-06-17T15:42:05Z -->
-
-
-<Defaults>
-
-  <Panel class="rollPanelST" rectAlignment = "MiddleCenter" height = "300" width = "700" color = "rgba(0, 0, 0, 1)" />
-
-  <HorizontalLayout class="rollPanelST_header_container" rectAlignment="UpperCenter" height = "40" childAlignment = "UpperLeft" childForceExpandHeight = "false"/>
-
-  <Text class="rollPanelST_type_text" ignoreLayout = "true" rectAlignment = "UpperLeft" offsetXY = "0 30" fontSize="14" fontStyle="Bold" color="#C9A84C" alignment="MiddleLeft" />
-  <Text class="rollPanelST_roller_text" fontSize = "34" fontStyle="Bold" color = "#FFFFFF" alignment = "MiddleLeft" />
-  <Text class="rollPanelST_phase_text" fontSize="12" fontStyle="Bold" color="#CCCCCC" alignment="MiddleRight" horizontalOverflow = "overflow" />
-
-  <HorizontalLayout class="rollPanelST_dicePool_container" height = "40" rectAlignment = "UpperLeft" spacing = "16" childAlignment = "MiddleLeft" offsetXY = "0 -50" childForceExpandHeight = "true" childForceExpandWidth = "false" padding = "100 0 0 0" />
-
-  <HorizontalLayout class="rollPanelST_rousePool_container" spacing="4" childAlignment="MiddleCenter" childForceExpandWidth="false" />
-  <Text class="rollPanelST_rousePool_text" fontSize="24" color="#8B1A1A" />
-  <HorizontalLayout class="rollPanelST_normalPool_container" spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false" />
-  <Text class="rollPanelST_normalPool_text" fontSize="24" color="#FFFFFF"  />
-  <Text class="rollPanelST_hungerPool_text" fontSize="24" color="#CC3333"  />
-  <Text class="rollPanelST_oblivPool_text" fontSize="24" color="#5C2D7A"  />
-  <Text class="rollPanelST_werewolfPool_text" fontSize="24" color="#9ACD32" />
-  <Text class="rollPanelST_ragePool_text" fontSize="24" color="#FF8C00" />
-
-  <HorizontalLayout class="rollPanelST_dicePool" height="20" rectAlignment = "UpperCenter" childAlignment = "MiddleLeft" padding = "100 0 0 0" spacing="10" childForceExpandWidth="false" />
-  <Text class="grid_strip_cell_hunger_text" fontSize="9" fontStyle="Bold" color="#FFFFFF" />
-  <Text class="grid_strip_cell_normal_text" fontSize="9" fontStyle="Bold" color="#FFFFFF" />
-  <Text class="grid_strip_cell_difficulty_text" fontSize="9" fontStyle="Bold" color="#FFFFFF" />
-
-  <HorizontalLayout class="rollPanelST_diceRolls_container" spacing="2" childAlignment="MiddleCenter" childForceExpandWidth="false" childForceExpandHeight="false" minHeight="48" preferredHeight="48" />
-  <Panel class="rollPanelST_dieSlot" childForceExpandWidth="false" childForceExpandHeight="false" padding="1 1 1 1" color="rgba(0,0,0,0.01)" outline="rgba(0,0,0,0)" outlineSize="0 0" />
-  <Image class="rollPanelST_die" active="false" preferredWidth="30" preserveAspect="True" outline="rgba(0,0,0,0)" outlineSize="0 0" />
-
-  <HorizontalLayout class="rollPanelST_successes_container" spacing="10" height = "40" rectAlignment = "LowerCenter" childForceExpandHeight = "true" childAlignment="MiddleRight" childForceExpandWidth="false" padding="0 50 0 0" />
-
-  <Text class="rollPanelST_successes" fontSize="18" fontStyle="Bold" color="#CCCCCC" alignment="MiddleRight" />
-
-</Defaults>
-
-
-<Panel id="rollPanelST" visibility="Black|Host" class="rollPanelST" active="false">
-<!--
-UI.setAttributes("rollPanelST_header_container", {color = "rgba(1, 0, 0, 0.15)", padding = "0 0 0 0", height = "40", childAlignment = "UpperLeft"})
--->
-  <HorizontalLayout id="rollPanelST_header_container" class="rollPanelST_header_container" >
-  <!--
-  UI.setAttributes("rollPanelST_type", {ignoreLayout = "true", rectAlignment = "UpperLeft", offsetXY = "0 30", alignment = "MiddleLeft", text = "Standard Roll" })
-  -->
-    <Text id="rollPanelST_type" class="rollPanelST_type_text" text="" />
-    <!--
-    UI.setAttributes("rollPanelST_roller", {fontSize = "34", fontStyle = "Bold", color = "#FFFFFF", alignment = "MiddleLeft" })
-    -->
-    <Text id="rollPanelST_roller" class="rollPanelST_roller_text" text = "" />
-    <!--
-    UI.setAttributes("rollPanelST_phase", {fontSize = "12", fontStyle = "Bold", color = "#CCCCCC", alignment = "MiddleRight", horizontalOverflow = "overflow" })
-    -->
-    <Text id="rollPanelST_phase" class="rollPanelST_phase_text" text="" />
-  </HorizontalLayout>
-
-  <HorizontalLayout id="rollPanelST_dicePool_container" class="rollPanelST_dicePool_container">
-    <HorizontalLayout id="rollPanelST_rousePool_container">
-      <Text id="rollPanelST_pool_rouse" class="rollPanelST_rousePool_text" text="" />
-      <Text id="rollPanelST_pool_obliv" class="rollPanelST_oblivPool_text" text="" />
-    </HorizontalLayout>
-
-    <HorizontalLayout id="rollPanelST_normalPool_container" class="rollPanelST_normalPool_container" >
-      <Text id="rollPanelST_pool_normal" class="rollPanelST_normalPool_text" text="" />
-      <Text id="rollPanelST_pool_hunger" class="rollPanelST_hungerPool_text" text="" />
-      <Text id="rollPanelST_pool_werewolf" class="rollPanelST_werewolfPool_text" text="" />
-      <Text id="rollPanelST_pool_rage" class="rollPanelST_ragePool_text" text="" />
-    </HorizontalLayout>
-  </HorizontalLayout>
-
-  <HorizontalLayout id="rollPanelST_dicePool" class="rollPanelST_dicePool" offsetXY = "0 -90">
-
-    <!-- Grid Strip Control: Hunger Dice -->
-    <GridLayout id="gridStrip_rollPanelST_hunger" class="grid_strip grid_strip_hunger">
-      <Panel id="gridStrip_rollPanelST_hunger_1" class="grid_strip_cell grid_strip_cell_hunger" >
-
-      <!--
-      UI.setAttributes("db_gridStrip_rollPanelST_hunger_1_text", {fontSize = "9", fontStyle = "Bold", color="#FFFFFF"})
-      -->
-        <Text id="db_gridStrip_rollPanelST_hunger_1_text" class="grid_strip_cell_hunger_text" text="1" />
-      </Panel>
-      <Panel id="gridStrip_rollPanelST_hunger_2" class="grid_strip_cell grid_strip_cell_hunger" >
-        <Text id="db_gridStrip_rollPanelST_hunger_2_text" class="grid_strip_cell_hunger_text" text="2" />
-      </Panel>
-      <Panel id="gridStrip_rollPanelST_hunger_3" class="grid_strip_cell grid_strip_cell_hunger" >
-        <Text id="db_gridStrip_rollPanelST_hunger_3_text" class="grid_strip_cell_hunger_text" text="3" />
-      </Panel>
-      <Panel id="gridStrip_rollPanelST_hunger_4" class="grid_strip_cell grid_strip_cell_hunger" >
-        <Text id="db_gridStrip_rollPanelST_hunger_4_text" class="grid_strip_cell_hunger_text" text="4" />
-      </Panel>
-      <Panel id="gridStrip_rollPanelST_hunger_5" class="grid_strip_cell grid_strip_cell_hunger" >
-        <Text id="db_gridStrip_rollPanelST_hunger_5_text" class="grid_strip_cell_hunger_text" text="5" />
-      </Panel>
-    </GridLayout>
-
-    <!-- Grid Strip Control: Normal Dice -->
-    <GridLayout id="gridStrip_rollPanelST_normal" class="grid_strip grid_strip_normal">
-      <Panel id="gridStrip_rollPanelST_normal_1" class="grid_strip_cell grid_strip_cell_normal" >
-        <Text id="db_gridStrip_rollPanelST_normal_1_text" class="grid_strip_cell_normal_text" text="1" />
-      </Panel>
-      <Panel id="gridStrip_rollPanelST_normal_2" class="grid_strip_cell grid_strip_cell_normal" >
-        <Text id="db_gridStrip_rollPanelST_normal_2_text" class="grid_strip_cell_normal_text" text="2" />
-      </Panel>
-      <Panel id="gridStrip_rollPanelST_normal_3" class="grid_strip_cell grid_strip_cell_normal" >
-        <Text id="db_gridStrip_rollPanelST_normal_3_text" class="grid_strip_cell_normal_text" text="3" />
-      </Panel>
-      <Panel id="gridStrip_rollPanelST_normal_4" class="grid_strip_cell grid_strip_cell_normal" >
-        <Text id="db_gridStrip_rollPanelST_normal_4_text" class="grid_strip_cell_normal_text" text="4" />
-      </Panel>
-      <Panel id="gridStrip_rollPanelST_normal_5" class="grid_strip_cell grid_strip_cell_normal" >
-        <Text id="db_gridStrip_rollPanelST_normal_5_text" class="grid_strip_cell_normal_text" text="5" />
-      </Panel>
-      <Panel id="gridStrip_rollPanelST_normal_6" class="grid_strip_cell grid_strip_cell_normal" >
-        <Text id="db_gridStrip_rollPanelST_normal_6_text" class="grid_strip_cell_normal_text" text="6" />
-      </Panel>
-      <Panel id="gridStrip_rollPanelST_normal_7" class="grid_strip_cell grid_strip_cell_normal" >
-        <Text id="db_gridStrip_rollPanelST_normal_7_text" class="grid_strip_cell_normal_text" text="7" />
-      </Panel>
-      <Panel id="gridStrip_rollPanelST_normal_8" class="grid_strip_cell grid_strip_cell_normal" >
-        <Text id="db_gridStrip_rollPanelST_normal_8_text" class="grid_strip_cell_normal_text" text="8" />
-      </Panel>
-      <Panel id="gridStrip_rollPanelST_normal_9" class="grid_strip_cell grid_strip_cell_normal" >
-        <Text id="db_gridStrip_rollPanelST_normal_9_text" class="grid_strip_cell_normal_text" text="9" />
-      </Panel>
-      <Panel id="gridStrip_rollPanelST_normal_10" class="grid_strip_cell grid_strip_cell_normal" >
-        <Text id="db_gridStrip_rollPanelST_normal_10_text" class="grid_strip_cell_normal_text" text="10" />
-      </Panel>
-    </GridLayout>
-
-    <!-- Grid Strip Control: Difficulty -->
-    <GridLayout id="gridStrip_rollPanelST_difficulty" class="grid_strip grid_strip_difficulty">
-    <!--
-    UI.setAttributes("gridStrip_rollPanelST_difficulty_0", {offsetXY = "0 10", outline = "#FF0000", outlineSize = "1 1"})
-    -->
-      <Panel id="gridStrip_rollPanelST_difficulty_0" class="grid_strip_cell grid_strip_cell_difficulty" outline = "#FF0000" outlineSize = "1 1">
-        <Text id="db_gridStrip_rollPanelST_difficulty_0_text" class="grid_strip_cell_difficulty_text" text="0" />
-      </Panel>
-      <Panel id="gridStrip_rollPanelST_difficulty_1" class="grid_strip_cell grid_strip_cell_difficulty" >
-        <Text id="db_gridStrip_rollPanelST_difficulty_1_text" class="grid_strip_cell_difficulty_text" text="1" />
-      </Panel>
-      <Panel id="gridStrip_rollPanelST_difficulty_2" class="grid_strip_cell grid_strip_cell_difficulty" >
-        <Text id="db_gridStrip_rollPanelST_difficulty_2_text" class="grid_strip_cell_difficulty_text" text="2" />
-      </Panel>
-      <Panel id="gridStrip_rollPanelST_difficulty_3" class="grid_strip_cell grid_strip_cell_difficulty" >
-        <Text id="db_gridStrip_rollPanelST_difficulty_3_text" class="grid_strip_cell_difficulty_text" text="3" />
-      </Panel>
-      <Panel id="gridStrip_rollPanelST_difficulty_4" class="grid_strip_cell grid_strip_cell_difficulty" >
-        <Text id="db_gridStrip_rollPanelST_difficulty_4_text" class="grid_strip_cell_difficulty_text" text="4" />
-      </Panel>
-      <Panel id="gridStrip_rollPanelST_difficulty_5" class="grid_strip_cell grid_strip_cell_difficulty" >
-        <Text id="db_gridStrip_rollPanelST_difficulty_5_text" class="grid_strip_cell_difficulty_text" text="5" />
-      </Panel>
-      <Panel id="gridStrip_rollPanelST_difficulty_6" class="grid_strip_cell grid_strip_cell_difficulty" >
-        <Text id="db_gridStrip_rollPanelST_difficulty_6_text" class="grid_strip_cell_difficulty_text" text="6" />
-      </Panel>
-      <Panel id="gridStrip_rollPanelST_difficulty_7" class="grid_strip_cell grid_strip_cell_difficulty" >
-        <Text id="db_gridStrip_rollPanelST_difficulty_7_text" class="grid_strip_cell_difficulty_text" text="7" />
-      </Panel>
-      <Panel id="gridStrip_rollPanelST_difficulty_8" class="grid_strip_cell grid_strip_cell_difficulty" >
-        <Text id="db_gridStrip_rollPanelST_difficulty_8_text" class="grid_strip_cell_difficulty_text" text="8" />
-      </Panel>
-      <Panel id="gridStrip_rollPanelST_difficulty_9" class="grid_strip_cell grid_strip_cell_difficulty" >
-        <Text id="db_gridStrip_rollPanelST_difficulty_9_text" class="grid_strip_cell_difficulty_text" text="9" />
-      </Panel>
-      <Panel id="gridStrip_rollPanelST_difficulty_10" class="grid_strip_cell grid_strip_cell_difficulty" >
-        <Text id="db_gridStrip_rollPanelST_difficulty_10_text" class="grid_strip_cell_difficulty_text" text="10" />
-      </Panel>
-    </GridLayout>
-
-  </HorizontalLayout>
-
-  <HorizontalLayout id="rollPanelST_diceRolls_container" class="rollPanelST_diceRolls_container">
-    <Panel id="rollPanelST_dieSlot_1" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
-      <Image id="rollPanelST_die_1" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
-    </Panel>
-    <Panel id="rollPanelST_dieSlot_2" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
-      <Image id="rollPanelST_die_2" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
-    </Panel>
-    <Panel id="rollPanelST_dieSlot_3" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
-      <Image id="rollPanelST_die_3" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
-    </Panel>
-    <Panel id="rollPanelST_dieSlot_4" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
-      <Image id="rollPanelST_die_4" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
-    </Panel>
-    <Panel id="rollPanelST_dieSlot_5" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
-      <Image id="rollPanelST_die_5" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
-    </Panel>
-    <Panel id="rollPanelST_dieSlot_6" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
-      <Image id="rollPanelST_die_6" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
-    </Panel>
-    <Panel id="rollPanelST_dieSlot_7" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
-      <Image id="rollPanelST_die_7" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
-    </Panel>
-    <Panel id="rollPanelST_dieSlot_8" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
-      <Image id="rollPanelST_die_8" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
-    </Panel>
-    <Panel id="rollPanelST_dieSlot_9" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
-      <Image id="rollPanelST_die_9" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
-    </Panel>
-    <Panel id="rollPanelST_dieSlot_10" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
-      <Image id="rollPanelST_die_10" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
-    </Panel>
-    <Panel id="rollPanelST_dieSlot_11" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
-      <Image id="rollPanelST_die_11" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
-    </Panel>
-    <Panel id="rollPanelST_dieSlot_12" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
-      <Image id="rollPanelST_die_12" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
-    </Panel>
-    <Panel id="rollPanelST_dieSlot_13" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
-      <Image id="rollPanelST_die_13" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
-    </Panel>
-    <Panel id="rollPanelST_dieSlot_14" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
-      <Image id="rollPanelST_die_14" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
-    </Panel>
-    <Panel id="rollPanelST_dieSlot_15" class="rollPanelST_dieSlot" preferredWidth="32" preferredHeight="32">
-      <Image id="rollPanelST_die_15" class="rollPanelST_die" raycastTarget="true" onClick="HUD_rollStDieClick" image="" />
-    </Panel>
-  </HorizontalLayout>
-
-  <Text id="rollPanelST_result" class="roll_text rollRes_resultDisplay" text="" offsetXY="50 -75" scale="0.75" />
-
-  <HorizontalLayout id="rollPanelST_successes_container" class="rollPanelST_successes_container" offsetXY = "0 100">
-    <Text id="rollPanelST_successes" class="rollPanelST_successes" text="" />
-  </HorizontalLayout>
-
-  <Text id="rollPanelST_clickHint"
-    rectAlignment="LowerCenter"
-    offsetXY="0 28"
-    fontSize="12"
-    color="#888888"
-    alignment="MiddleCenter"
-    horizontalOverflow="Wrap"
-    text="Left-click: normal  ·  Right-click Roll: hide dice from players  ·  Right-click Confirm / Take Half: resolve without broadcast" />
-
-  <HorizontalLayout id="rollPanelST_buttons_container" spacing="8" childAlignment="MiddleCenter" rectAlignment="LowerCenter" height = "20">
-    <Button id="rollPanelST_btnRoll" fontSize="13" preferredWidth="90" preferredHeight="30" color="rgba(0.1,0.4,0.1,1)" onClick="HUD_rollRollButton" text="ROLL" interactable="false" />
-    <Button id="rollPanelST_btnHalf" active="false" fontSize="11" preferredWidth="100" preferredHeight="30" color="rgba(0.2,0.2,0.5,1)" onClick="HUD_rollTakeHalf" text="TAKE HALF" />
-    <Button id="rollPanelST_btnWP" active="false" fontSize="11" preferredWidth="140" preferredHeight="30" color="rgba(0.4,0.1,0.1,1)" onClick="HUD_rollSpendWP" text="SPEND WILLPOWER" />
-    <Button id="rollPanelST_btnRecalc" active="false" fontSize="11" preferredWidth="110" preferredHeight="30" color="rgba(0.25,0.25,0.35,1)" onClick="HUD_rollRecalculate" text="RECALCULATE" />
-    <Button id="rollPanelST_btnReroll" active="false" fontSize="11" preferredWidth="90" preferredHeight="30" color="rgba(0.35,0.25,0.1,1)" onClick="HUD_rollStRerollSelected" text="REROLL" interactable="false" />
-    <Button id="rollPanelST_btnConfirm" active="false" fontSize="13" preferredWidth="90" preferredHeight="30" color="rgba(0.1,0.4,0.1,1)" onClick="HUD_rollConfirm" text="CONFIRM" interactable="false" />
-    <Button id="rollPanelST_btnCancel" fontSize="11" preferredWidth="70" preferredHeight="30" color="rgba(0.5,0.1,0.1,1)" onClick="HUD_rollCancel" text="CANCEL" />
-    <Button id="rollPanelST_btnOblivHunger" active="false" fontSize="10" preferredWidth="130" preferredHeight="28" color="rgba(0.3,0.2,0.5,1)" onClick="HUD_rollConfirmOblivChoice" text="CONFIRM — HUNGER" />
-    <Button id="rollPanelST_btnOblivStain" active="false" fontSize="10" preferredWidth="120" preferredHeight="28" color="rgba(0.35,0.15,0.35,1)" onClick="HUD_rollConfirmOblivChoice" text="CONFIRM — STAIN" />
-    <Button id="rollPanelST_btnBrutalFail" active="false" fontSize="10" preferredWidth="110" preferredHeight="28" color="rgba(0.4,0.15,0.1,1)" onClick="HUD_rollConfirmBrutalChoice" text="CONFIRM FAIL" />
-    <Button id="rollPanelST_btnBrutalViolence" active="false" fontSize="10" preferredWidth="130" preferredHeight="28" color="rgba(0.5,0.1,0.1,1)" onClick="HUD_rollConfirmBrutalChoice" text="CONFIRM VIOLENCE" />
-  </HorizontalLayout>
-
-</Panel>
-<!-- /include ui/storyteller/panel_storyteller_roll_controls.xml -->
-
-
 <!-- include ui/storyteller/panel_storyteller_toolbar.xml -->
 <!-- Storyteller bottom-right tool bar + pop-out panels (Black) -->
 <!-- Agent guidance: .dev/HUD_FUNCTIONS.md -->
@@ -11368,328 +11108,11 @@ UI.setAttributes("storytellerToolbarRoot", {width = "1100"})
 
     <!-- Top navigation buttons -->
     <HorizontalLayout class="storyteller_button_bar" >
-      <Button id="toggle_scenes" text="Scenes" class="storyteller_panel_button"  />
       <Button id="toggle_phases" text="Phases" class="storyteller_panel_button" />
-      <Button id="toggle_stats" text="Stats" class="storyteller_panel_button" />
-      <Button id="toggle_projects" text="Projects" class="storyteller_panel_button" />
     </HorizontalLayout>
 
-    <!-- Main content panels -->
+    <!-- Main content panels. Scenes, Stats, and Projects are edited on the Storyteller Dashboard. -->
     <Panel id="storytellerContentArea" class="storyteller_control_content" active="false">
-
-      <!-- Scenes Panel -->
-      <HorizontalLayout id="panel_scenes_host" class="storyteller_three_panel_container">
-      <!--
-      UI.setAttributes("panel_scenes", {})
-      UI.setAttributes("panel_scenes_library", {})
-      UI.setAttributes("db_third_column", {active="false"})
-      -->
-        
-<!-- include ui/storyteller/panel_scenes.xml -->
-<!-- Storyteller Scenes: lighting presets, table, seat narrative presence, location keys, clock (see core/storyteller_scenes_panel.ttslua). -->
-<!-- `active` stays true while parent `panel_scenes_host` controls tab visibility. Width 596 pairs with library column inside 1200px host. -->
-
-
-<VerticalLayout id="panel_scenes" class="storyteller_panel_column">
-  <Text id="db_panel_scenes_header" class="hud_storyteller_header">Scenes</Text>
-
-  <Text id="db_panel_scenes_table_header" class="hud_storyteller_label">Table Selection</Text>
-  <HorizontalLayout id="db_panel_scenes_table_buttons" class="hud_storyteller_button_row" spacing="4" childForceExpandWidth="false">
-    <Button id="scenes_tbl_TableA" text="Table A" minWidth="72" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    <Button id="scenes_tbl_TableB" text="Table B" minWidth="72" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    <Button id="scenes_tbl_TableB0" text="B0" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    <Button id="scenes_tbl_TableB1" text="B1" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    <Button id="scenes_tbl_TableB2" text="B2" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    <Button id="scenes_tbl_TableB3" text="B3" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    <Button id="scenes_tbl_TableB4" text="B4" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    <Button id="scenes_tbl_TableB5" text="B5" minWidth="40" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    <Button id="scenes_tbl_TableC" text="Table C" minWidth="72" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    <Button id="scenes_tbl_Scatter" text="Scatter" minWidth="72" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-  </HorizontalLayout>
-  <!--
-  UI.setAttributes("db_panel_scenes_seat_presence_buttons", {color = "rgba(1, 0, 0, 0.15)", childAlignment = "MiddleCenter"})
-  -->
-  <Text id="db_panel_scenes_seat_presence_header" class="hud_storyteller_label">Seat Activation</Text>
-  <HorizontalLayout id="db_panel_scenes_seat_presence_buttons" class="hud_storyteller_button_row" spacing="3" childForceExpandWidth="false">
-    <Button id="scenes_seat_Brown" text="Brown" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    <Button id="scenes_seat_Orange" text="Orange" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    <Button id="scenes_seat_Red" text="Red" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    <Button id="scenes_seat_Pink" text="Pink" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    <Button id="scenes_seat_Purple" text="Purple" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-  </HorizontalLayout>
-  <HorizontalLayout id="db_panel_scenes_seat_presence_npc_buttons" class="hud_storyteller_button_row" spacing="3" childForceExpandWidth="false">
-    <Button id="scenes_seat_NPC1" text="NPC1" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    <Button id="scenes_seat_NPC2" text="NPC2" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    <Button id="scenes_seat_NPC3" text="NPC3" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-    <Button id="scenes_seat_NPC4" text="NPC4" minWidth="56" onClick="HUD_scenesPanel" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" />
-  </HorizontalLayout>
-
-  <Text id="db_panel_scenes_location_header" class="hud_storyteller_label">Scene Location</Text>
-  <HorizontalLayout id="db_panel_scenes_location_buttons" padding = "50 50 0 0" spacing="6" childForceExpandWidth="false" childAlignment="UpperLeft">
-
-    <VerticalLayout id="db_panel_scenes_location_district_container" class="hud_storyteller_inner_column" childAlignment = "MiddleCenter">
-      <!--
-      UI.setAttributes("scenes_districtNameDisplay", {horizontalOverflow = "wrap", preferredWidth = "100", minWidth = "100"})
-      -->
-      <Text id="db_panel_scenes_location_district_header" fontSize="16" color="#CCCCCC" preferredHeight="20" minHeight="20" minWidth="280" preferredWidth="280" flexibleWidth="0">District</Text>
-      <Text id="scenes_districtNameDisplay" fontSize="12" color="#FFFFFF" preferredHeight="30" minHeight="30" minWidth="100" preferredWidth="100" flexibleWidth="0" text="—" />
-    </VerticalLayout>
-    <VerticalLayout id="db_panel_scenes_location_site_container" class="hud_storyteller_inner_column" childAlignment = "MiddleCenter">
-      <!--
-      UI.setAttributes("db_panel_scenes_location_skybox_header", {text = "Skybox"})
-      -->
-      <Text id="db_panel_scenes_location_site_header" fontSize="16" color="#CCCCCC" preferredHeight="20" minHeight="20" minWidth="280" preferredWidth="280" flexibleWidth="0">Site</Text>
-      <Text id="scenes_siteNameDisplay" fontSize="12" color="#FFFFFF" preferredHeight="30" minHeight="30" minWidth="100" preferredWidth="100" flexibleWidth="0" text="—" />
-    </VerticalLayout>
-    <VerticalLayout id="db_panel_scenes_location_skybox_container" class="hud_storyteller_inner_column" childAlignment = "MiddleCenter">
-      <!--
-      UI.setAttributes("db_panel_scenes_location_site_header", {alignment = "MiddleCenter", fontStyle = "Bold", fontSize = "14", preferredWidth = "200", flexibleWidth = "1"})
-      -->
-      <Text id="db_panel_scenes_location_skybox_header" fontSize="16" color="#CCCCCC" preferredHeight="20" minHeight="20" minWidth="280" preferredWidth="280" flexibleWidth="0">Skybox</Text>
-      <Text id="scenes_skyboxNameDisplay" fontSize="12" color="#FFFFFF" preferredHeight="30" minHeight="30" minWidth="100" preferredWidth="100" flexibleWidth="0" text="—" />
-    </VerticalLayout>
-  </HorizontalLayout>
-  <!--
-  UI.setAttributes("scenes_openSiteModal", {fontSize = "18", fontStyle = "Bold", textColor = "#FFFFFF", text = "Skyboxes..."})
-  -->
-  <HorizontalLayout id="db_panel_scenes_location_buttons_2" spacing="6" childForceExpandWidth="false" childAlignment="MiddleCenter">
-    <Button id="scenes_openDistrictModal" class="hud_storyteller_button" fontSize="18" fontStyle="Bold" minWidth="140" preferredHeight="30" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Districts..." onClick="HUD_scenesOpenDistrictModal" />
-    <Button id="scenes_openSiteModal" class="hud_storyteller_button" fontSize="18" fontStyle="Bold" minWidth="140" preferredHeight="30" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Sites..." onClick="HUD_scenesOpenSiteModal" />
-    <Button id="scenes_openSkyboxModal" class="hud_storyteller_button" fontSize="18" fontStyle="Bold" minWidth="140" preferredHeight="30" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" text="Skyboxes..." onClick="HUD_scenesOpenSkyboxModal" />
-  </HorizontalLayout>
-  <HorizontalLayout id="db_panel_scenes_location_buttons_3" spacing="6" childForceExpandWidth="false" childAlignment="MiddleCenter">
-    <Button id="scenes_apply_location_soundscape" class="hud_storyteller_button" text="Apply Location" onClick="HUD_scenesApplyLocation" preferredWidth = "250" flexibleWidth = "0" />
-  </HorizontalLayout>
-<!--
-UI.setAttributes("db_panel_scenes_time_buttons", {spacing = "0", childAlignment = "MiddleCenter"})
--->
-  <Text id="db_panel_scenes_time_header" class="hud_storyteller_label">Scene Time</Text>
-  <HorizontalLayout id="db_panel_scenes_time_buttons" spacing="3" childForceExpandWidth="false" childAlignment="UpperLeft">
-    <Button id="scenes_month_1" class="hud_storyteller_button" text="Jan" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_month_2" class="hud_storyteller_button" text="Feb" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_month_3" class="hud_storyteller_button" text="Mar" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_month_4" class="hud_storyteller_button" text="Apr" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_month_5" class="hud_storyteller_button" text="May" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_month_6" class="hud_storyteller_button" text="Jun" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_month_7" class="hud_storyteller_button" text="Jul" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_month_8" class="hud_storyteller_button" text="Aug" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_month_9" class="hud_storyteller_button" text="Sep" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_month_10" class="hud_storyteller_button" text="Oct" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_month_11" class="hud_storyteller_button" text="Nov" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_month_12" class="hud_storyteller_button" text="Dec" minWidth="44" preferredHeight="26" onClick="HUD_scenesMonthPick" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-  </HorizontalLayout>
-  <HorizontalLayout id="db_panel_scenes_time_buttons_3" spacing="8" childForceExpandWidth="false" childAlignment="UpperLeft">
-    <VerticalLayout id="db_panel_scenes_time_buttons_3_day_container" spacing="2" flexibleWidth="0">
-      <Text id="db_panel_scenes_time_buttons_3_day_header" fontSize="9" color="#CCCCCC">Day</Text>
-      <InputField id="scenes_clock_day" class="hud_storyteller_input" minHeight="30" preferredHeight="30" flexibleHeight="0" minWidth="36" preferredWidth="36" flexibleWidth="0" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" characterValidation="Integer" text="" onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
-    </VerticalLayout>
-    <VerticalLayout id="db_panel_scenes_time_buttons_3_year_container" spacing="2" flexibleWidth="0">
-      <Text id="db_panel_scenes_time_buttons_3_year_header" fontSize="9" color="#CCCCCC">Year</Text>
-      <InputField id="scenes_clock_year" class="hud_storyteller_input" minHeight="30" preferredHeight="30" flexibleHeight="0" minWidth="64" preferredWidth="64" flexibleWidth="0" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" characterValidation="Integer" text="" onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
-    </VerticalLayout>
-    <VerticalLayout id="db_panel_scenes_time_buttons_3_time_container" spacing="2" flexibleWidth="1">
-      <Text id="db_panel_scenes_time_buttons_3_time_header" fontSize="9" color="#CCCCCC">Time (12h)</Text>
-<!--
-UI.setAttributes("scenes_clock_speed", {minWidth = "45"})
--->
-
-      <InputField id="scenes_clock_time12" class="hud_storyteller_input" minHeight="30" preferredHeight="30" flexibleHeight="0"  minWidth="160" preferredWidth="200" flexibleWidth="1" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" placeholder=" " text=" " onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
-    </VerticalLayout>
-    <VerticalLayout id="db_panel_scenes_time_buttons_3_present_day_container" spacing="2" flexibleWidth="0">
-      <Text id="db_panel_scenes_time_buttons_3_present_day_header" fontSize="9" color="#CCCCCC">Present Day</Text>
-      <Button id="scenes_clock_setPresentDay" class="hud_storyteller_button" text="Set" minWidth="52" preferredWidth="52" flexibleWidth="0" fontSize="11" onClick="HUD_scenesSetPresentDayClock" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    </VerticalLayout>
-  </HorizontalLayout>
-  <HorizontalLayout id="db_panel_scenes_time_buttons_4" spacing="8" childForceExpandWidth="false" childAlignment="MiddleLeft">
-    <Text id="db_panel_scenes_time_buttons_4_real_time_clock_header" fontSize="14" fontStyle="Bold" color="#CCCCCC">Real Time?</Text>
-    <Button id="scenes_clock_rtToggle" class="hud_storyteller_button" text="OFF" minWidth="56" preferredHeight="28" onClick="HUD_scenesToggleRealTimeClock" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Text id="db_panel_scenes_time_buttons_4_speed_header"  fontSize="14" fontStyle="Bold" color="#CCCCCC">Speed Mult</Text>
-    <InputField id="scenes_clock_speed" class="hud_storyteller_input" minHeight="30" preferredHeight="30" flexibleHeight="0" minWidth="45" preferredWidth="45" flexibleWidth="0" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" characterValidation="FloatingPoint" text="1" onValueChanged="HUD_scenesClockFieldChanged" onEndEdit="HUD_scenesClockFieldChanged" />
-  </HorizontalLayout>
-
-  <GridLayout id="scenes_lerp_delta_grid" constraint="FixedColumnCount" constraintCount="7" cellSize="72 26" spacing="4 4" startCorner="UpperLeft" startAxis="Horizontal" childAlignment="MiddleCenter" preferredHeight="200" flexibleHeight="0">
-    <Text id="scenes_lerp_label_min" fontSize="11" color="#CCCCCC" alignment="MiddleLeft">Minutes</Text>
-    <Button id="scenes_lerp_min_10" class="hud_storyteller_button" text="10" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_min_20" class="hud_storyteller_button" text="20" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_min_30" class="hud_storyteller_button" text="30" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_min_40" class="hud_storyteller_button" text="40" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_min_50" class="hud_storyteller_button" text="50" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_min_60" class="hud_storyteller_button" text="60" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Text id="scenes_lerp_label_hr" fontSize="11" color="#CCCCCC" alignment="MiddleLeft">Hours</Text>
-    <Button id="scenes_lerp_hr_1" class="hud_storyteller_button" text="1" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_hr_1p5" class="hud_storyteller_button" text="1.5" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_hr_2" class="hud_storyteller_button" text="2" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_hr_2p5" class="hud_storyteller_button" text="2.5" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_hr_3" class="hud_storyteller_button" text="3" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_hr_3p5" class="hud_storyteller_button" text="3.5" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Text id="scenes_lerp_label_hr2" fontSize="11" color="#CCCCCC" alignment="MiddleLeft"> </Text>
-    <Button id="scenes_lerp_hr_4" class="hud_storyteller_button" text="4" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_hr_4p5" class="hud_storyteller_button" text="4.5" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_hr_5" class="hud_storyteller_button" text="5" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_hr_5p5" class="hud_storyteller_button" text="5.5" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_hr_6" class="hud_storyteller_button" text="6" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_hr_8" class="hud_storyteller_button" text="8" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Text id="scenes_lerp_label_day" fontSize="11" color="#CCCCCC" alignment="MiddleLeft">Days</Text>
-    <Button id="scenes_lerp_day_1" class="hud_storyteller_button" text="1" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_day_2" class="hud_storyteller_button" text="2" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_day_3" class="hud_storyteller_button" text="3" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_day_4" class="hud_storyteller_button" text="4" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_day_5" class="hud_storyteller_button" text="5" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_day_6" class="hud_storyteller_button" text="6" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Text id="scenes_lerp_label_wk" fontSize="11" color="#CCCCCC" alignment="MiddleLeft">Weeks</Text>
-    <Button id="scenes_lerp_wk_1" class="hud_storyteller_button" text="1" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_wk_2" class="hud_storyteller_button" text="2" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_wk_3" class="hud_storyteller_button" text="3" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_wk_4" class="hud_storyteller_button" text="4" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_wk_5" class="hud_storyteller_button" text="5" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_wk_6" class="hud_storyteller_button" text="6" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Text id="scenes_lerp_label_mo" fontSize="11" color="#CCCCCC" alignment="MiddleLeft">Months</Text>
-    <Button id="scenes_lerp_mo_1" class="hud_storyteller_button" text="1" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_mo_2" class="hud_storyteller_button" text="2" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_mo_3" class="hud_storyteller_button" text="3" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_mo_4" class="hud_storyteller_button" text="4" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_mo_5" class="hud_storyteller_button" text="5" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_mo_6" class="hud_storyteller_button" text="6" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Text id="scenes_lerp_label_mo2" fontSize="11" color="#CCCCCC" alignment="MiddleLeft"> </Text>
-    <Button id="scenes_lerp_mo_7" class="hud_storyteller_button" text="7" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_mo_8" class="hud_storyteller_button" text="8" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_mo_9" class="hud_storyteller_button" text="9" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_mo_10" class="hud_storyteller_button" text="10" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_mo_11" class="hud_storyteller_button" text="11" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_mo_12" class="hud_storyteller_button" text="12" fontSize="11" onClick="HUD_scenesClockLerpDelta" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-  </GridLayout>
-
-  <GridLayout id="scenes_lerp_sun_grid" constraint="FixedColumnCount" constraintCount="6" cellSize="84 26" spacing="4 4" startCorner="UpperLeft" startAxis="Horizontal" childAlignment="MiddleCenter" preferredHeight="60" flexibleHeight="0">
-    <Text id="scenes_lerp_label_dusk" fontSize="11" color="#CCCCCC" alignment="MiddleCenter">Dusk</Text>
-    <Text id="scenes_lerp_dusk_time" fontSize="11" color="#EEEEEE" alignment="MiddleCenter">—</Text>
-    <Text id="scenes_lerp_sun_blank_a" fontSize="11" color="#CCCCCC" alignment="MiddleCenter"> </Text>
-    <Text id="scenes_lerp_sun_blank_b" fontSize="11" color="#CCCCCC" alignment="MiddleCenter"> </Text>
-    <Text id="scenes_lerp_dawn_time" fontSize="11" color="#EEEEEE" alignment="MiddleCenter">—</Text>
-    <Text id="scenes_lerp_label_dawn" fontSize="11" color="#CCCCCC" alignment="MiddleCenter">Dawn</Text>
-    <Button id="scenes_lerp_sun_0" class="hud_storyteller_button" text="0" fontSize="11" onClick="HUD_scenesClockLerpSun" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_sun_5" class="hud_storyteller_button" text="5" fontSize="11" onClick="HUD_scenesClockLerpSun" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_sun_15" class="hud_storyteller_button" text="15" fontSize="11" onClick="HUD_scenesClockLerpSun" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_sun_30" class="hud_storyteller_button" text="30" fontSize="11" onClick="HUD_scenesClockLerpSun" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_sun_60" class="hud_storyteller_button" text="60" fontSize="11" onClick="HUD_scenesClockLerpSun" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lerp_sun_120" class="hud_storyteller_button" text="120" fontSize="11" onClick="HUD_scenesClockLerpSun" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-  </GridLayout>
-
-  <HorizontalLayout id="scenes_lerp_year_row" spacing="8" childForceExpandWidth="false" childAlignment="MiddleLeft">
-    <Text id="scenes_lerp_label_year" fontSize="11" color="#CCCCCC">Years</Text>
-    <InputField id="scenes_lerp_year_input" class="hud_storyteller_input" minHeight="28" preferredHeight="28" minWidth="72" preferredWidth="72" flexibleWidth="0" textColor="#222222" colors="#EEEEEE|#FFFFFF|#DDDDDD|rgba(0.9,0.9,0.9,0.98)" lineType="SingleLine" characterValidation="Integer" text="" onValueChanged="HUD_scenesClockLerpYearChanged" onEndEdit="HUD_scenesClockLerpYearChanged" />
-    <Button id="scenes_lerp_year_go" class="hud_storyteller_button" text="Go" minWidth="52" preferredWidth="52" fontSize="11" onClick="HUD_scenesClockLerpYearGo" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_daysleep_refresh" class="hud_storyteller_button" text="Refresh" minWidth="72" preferredWidth="72" fontSize="11" onClick="HUD_scenesDaysleepRefresh" colors="#B8860B|#DAA520|#8B6914|#B8860B" textColor="#FFFFFF" />
-  </HorizontalLayout>
-
-  <HorizontalLayout id="db_panel_scenes_location_buttons_3" spacing="6" childForceExpandWidth="false" childAlignment="MiddleCenter">
-    <Button id="scenes_clock_apply" class="hud_storyteller_button" text="Apply clock" onClick="HUD_scenesApplyClock"  preferredWidth = "250" flexibleWidth = "0"  />
-  </HorizontalLayout>
-
-</VerticalLayout>
-
-<!-- /include ui/storyteller/panel_scenes.xml -->
-
-        
-<!-- include ui/storyteller/panel_scenes_library.xml -->
-<!-- Scene library column: fixed slot buttons + play / unlink / end (see `core/storyteller_scenes_panel.ttslua`).
-     Read-only library: rows are created, edited and deleted on the Storyteller Dashboard. -->
-<VerticalLayout id="panel_scenes_library" class="storyteller_panel_column">
-  <Text id="db_panel_scenes_library_header" class="hud_storyteller_header">Scene Library</Text>
-
-  <VerticalScrollView id="db_panel_scenes_library_scrollview" preferredHeight="380" minHeight="120" flexibleHeight="1" movementType="Clamped" vertical="true" horizontal="false" childForceExpandWidth="true">
-    <!-- TOR-139: three columns (14 / 13 / 13), column-major slots 01–40; unique column ids. -->
-    <HorizontalLayout id="db_panel_scenes_library_columns_container" spacing="2" childForceExpandWidth="true" childForceExpandHeight="true">
-      <VerticalLayout id="db_panel_scenes_library_col_1" spacing="4" childForceExpandWidth="true">
-        <Button id="scenes_lib_slot_01" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_02" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_03" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_04" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_05" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_06" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_07" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_08" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_09" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_10" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_11" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_12" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_13" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_14" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      </VerticalLayout>
-      <VerticalLayout id="db_panel_scenes_library_col_2" spacing="4" childForceExpandWidth="true">
-        <Button id="scenes_lib_slot_15" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_16" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_17" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_18" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_19" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_20" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_21" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_22" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_23" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_24" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_25" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_26" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_27" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      </VerticalLayout>
-      <VerticalLayout id="db_panel_scenes_library_col_3" spacing="4" childForceExpandWidth="true">
-        <Button id="scenes_lib_slot_28" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_29" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_30" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_31" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_32" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_33" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_34" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_35" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_36" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_37" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_38" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_39" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-        <Button id="scenes_lib_slot_40" class="hud_storyteller_button" text="—" fontSize="11" minHeight="28" onClick="HUD_scenesLibSlot" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-      </VerticalLayout>
-    </HorizontalLayout>
-  </VerticalScrollView>
-
-  <Text id="db_panel_scenes_library_controls_header" class="hud_storyteller_label">Scene Controls</Text>
-
-  <GridLayout id="scenes_lib_btns_grid_1" cellSize="125 30" spacing="8 6" constraint="FixedRowCount" constraintCount="1" childAlignment="MiddleCenter" childForceExpandWidth="true" childForceExpandHeight="true">
-
-    <Button id="scenes_lib_btn_apply_clock" class="hud_storyteller_button" text="Scene Time" onClick="HUD_scenesLibApply" colors="#4444FF|#5555FF|#6666FF|rgba(0.3,0.3,1,0.5)" textColor="#FFFFFF" />
-
-    <Button id="scenes_lib_btn_apply_x5" class="hud_storyteller_button" text="×5 to Now" onClick="HUD_scenesLibApply" colors="#4444FF|#5555FF|#6666FF|rgba(0.3,0.3,1,0.5)" textColor="#FFFFFF" />
-
-    <Button id="scenes_lib_btn_apply_set_present" class="hud_storyteller_button" text="SET Now" onClick="HUD_scenesLibApply" colors="#4444FF|#5555FF|#6666FF|rgba(0.3,0.3,1,0.5)" textColor="#FFFFFF" />
-
-    <Button id="scenes_lib_btn_apply_present" class="hud_storyteller_button" text="NOW" onClick="HUD_scenesLibApply" colors="#4444FF|#5555FF|#6666FF|rgba(0.3,0.3,1,0.5)" textColor="#FFFFFF" />
-
-  </GridLayout>
-
-  <GridLayout id="scenes_lib_btns_grid_2" cellSize="125 30" spacing="8 6" constraint="FixedRowCount" constraintCount="1" childAlignment="MiddleCenter" childForceExpandWidth="true" childForceExpandHeight="true">
-
-    <Button id="scenes_lib_btn_apply_present_15" class="hud_storyteller_button" text="NOW +15" onClick="HUD_scenesLibApply" colors="#4444FF|#5555FF|#6666FF|rgba(0.3,0.3,1,0.5)" textColor="#FFFFFF" />
-
-    <Button id="scenes_lib_btn_apply_present_30" class="hud_storyteller_button" text="NOW +30" onClick="HUD_scenesLibApply" colors="#4444FF|#5555FF|#6666FF|rgba(0.3,0.3,1,0.5)" textColor="#FFFFFF" />
-
-    <Button id="scenes_lib_btn_apply_present_60" class="hud_storyteller_button" text="NOW +60" onClick="HUD_scenesLibApply" colors="#4444FF|#5555FF|#6666FF|rgba(0.3,0.3,1,0.5)" textColor="#FFFFFF" />
-
-    <Button id="scenes_lib_btn_apply_present_120" class="hud_storyteller_button" text="NOW +120" onClick="HUD_scenesLibApply" colors="#4444FF|#5555FF|#6666FF|rgba(0.3,0.3,1,0.5)" textColor="#FFFFFF" />
-
-  </GridLayout>
-<!--
-
-UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
--->
-  <GridLayout id="scenes_lib_btns_grid_3" cellSize="125 30" spacing="8 6"
-    padding = "50 50 0 0" constraint="FixedRowCount" constraintCount="1" childAlignment="MiddleCenter" childForceExpandWidth="true" childForceExpandHeight="true">
-
-    <Button id="scenes_lib_btn_unlink" class="hud_storyteller_button" text="UNLINK" onClick="HUD_scenesLibUnlink" colors="#444444|#555555|#666666|rgba(0.3,0.3,0.3,0.5)" textColor="#FFFFFF" />
-    <Button id="scenes_lib_btn_end" class="hud_storyteller_button" text="END" onClick="HUD_scenesLibEnd" colors="#444444|#551111|#662222|rgba(0.3,0.1,0.1,0.5)" textColor="#FFFFFF" />
-  </GridLayout>
-</VerticalLayout>
-
-<!-- /include ui/storyteller/panel_scenes_library.xml -->
-
-        <!-- <Panel id="db_third_column" class="storyteller_panel_column" /> -->
-      </HorizontalLayout>
-
       
 <!-- include ui/storyteller/panel_phases.xml -->
 <!-- Phase advance, Play subphase and session number/name live on the Storyteller Dashboard.
@@ -11728,773 +11151,6 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
 </Panel>
 
 <!-- /include ui/storyteller/panel_phases.xml -->
-
-      
-<!-- include ui/storyteller/panel_stats.xml -->
-<!-- Storyteller Stats panel: PC + Coterie advantage editing -->
-<!-- Agent guidance: .dev/HUD_FUNCTIONS.md -->
-<Panel id="panel_stats" class="stats_panel_root" active="false">
-  <VerticalLayout class="stats_root_vl">
-    <Panel id="stats_landing" class="stats_landing" active="true">
-      <Text class="stats_landing_title" text="Select target" />
-      <HorizontalLayout class="stats_target_row" spacing="6">
-        <Button id="stats_target_Brown" class="stats_target_btn" text="Brown" onClick="HUD_statsTarget" />
-        <Button id="stats_target_Orange" class="stats_target_btn" text="Orange" onClick="HUD_statsTarget" />
-        <Button id="stats_target_Red" class="stats_target_btn" text="Red" onClick="HUD_statsTarget" />
-        <Button id="stats_target_Pink" class="stats_target_btn" text="Pink" onClick="HUD_statsTarget" />
-        <Button id="stats_target_Purple" class="stats_target_btn" text="Purple" onClick="HUD_statsTarget" />
-        <Button id="stats_target_Coterie" class="stats_target_btn" text="Coterie" onClick="HUD_statsTarget" />
-      </HorizontalLayout>
-    </Panel>
-    <Panel id="stats_detail" class="stats_detail" active="false">
-      <HorizontalLayout class="stats_detail_header">
-        <Button id="stats_back" class="stats_back_btn" text="Back" onClick="HUD_statsBack" />
-        <Text id="stats_detail_title" class="stats_detail_title" text="" />
-      </HorizontalLayout>
-      <VerticalLayout id="stats_pc_view" class="stats_detail_body" active="false">
-        <HorizontalLayout class="stats_section_header">
-          <Text class="stats_section_title" text="Backgrounds" />
-          <Button id="stats_add_pc_backgrounds" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_backgrounds_row_01" class="stats_row" active="false">
-          <Text id="stats_pc_backgrounds_row_01_label" class="stats_row_label" />
-          <Button id="stats_pc_backgrounds_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_backgrounds_row_02" class="stats_row" active="false">
-          <Text id="stats_pc_backgrounds_row_02_label" class="stats_row_label" />
-          <Button id="stats_pc_backgrounds_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_backgrounds_row_03" class="stats_row" active="false">
-          <Text id="stats_pc_backgrounds_row_03_label" class="stats_row_label" />
-          <Button id="stats_pc_backgrounds_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_backgrounds_row_04" class="stats_row" active="false">
-          <Text id="stats_pc_backgrounds_row_04_label" class="stats_row_label" />
-          <Button id="stats_pc_backgrounds_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_backgrounds_row_05" class="stats_row" active="false">
-          <Text id="stats_pc_backgrounds_row_05_label" class="stats_row_label" />
-          <Button id="stats_pc_backgrounds_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_backgrounds_row_06" class="stats_row" active="false">
-          <Text id="stats_pc_backgrounds_row_06_label" class="stats_row_label" />
-          <Button id="stats_pc_backgrounds_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_backgrounds_row_07" class="stats_row" active="false">
-          <Text id="stats_pc_backgrounds_row_07_label" class="stats_row_label" />
-          <Button id="stats_pc_backgrounds_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_backgrounds_row_08" class="stats_row" active="false">
-          <Text id="stats_pc_backgrounds_row_08_label" class="stats_row_label" />
-          <Button id="stats_pc_backgrounds_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_backgrounds_row_09" class="stats_row" active="false">
-          <Text id="stats_pc_backgrounds_row_09_label" class="stats_row_label" />
-          <Button id="stats_pc_backgrounds_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_backgrounds_row_10" class="stats_row" active="false">
-          <Text id="stats_pc_backgrounds_row_10_label" class="stats_row_label" />
-          <Button id="stats_pc_backgrounds_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_backgrounds_row_11" class="stats_row" active="false">
-          <Text id="stats_pc_backgrounds_row_11_label" class="stats_row_label" />
-          <Button id="stats_pc_backgrounds_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_backgrounds_row_12" class="stats_row" active="false">
-          <Text id="stats_pc_backgrounds_row_12_label" class="stats_row_label" />
-          <Button id="stats_pc_backgrounds_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-
-        <HorizontalLayout class="stats_section_header">
-          <Text class="stats_section_title" text="Merits" />
-          <Button id="stats_add_pc_merits" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_merits_row_01" class="stats_row" active="false">
-          <Text id="stats_pc_merits_row_01_label" class="stats_row_label" />
-          <Button id="stats_pc_merits_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_merits_row_02" class="stats_row" active="false">
-          <Text id="stats_pc_merits_row_02_label" class="stats_row_label" />
-          <Button id="stats_pc_merits_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_merits_row_03" class="stats_row" active="false">
-          <Text id="stats_pc_merits_row_03_label" class="stats_row_label" />
-          <Button id="stats_pc_merits_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_merits_row_04" class="stats_row" active="false">
-          <Text id="stats_pc_merits_row_04_label" class="stats_row_label" />
-          <Button id="stats_pc_merits_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_merits_row_05" class="stats_row" active="false">
-          <Text id="stats_pc_merits_row_05_label" class="stats_row_label" />
-          <Button id="stats_pc_merits_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_merits_row_06" class="stats_row" active="false">
-          <Text id="stats_pc_merits_row_06_label" class="stats_row_label" />
-          <Button id="stats_pc_merits_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_merits_row_07" class="stats_row" active="false">
-          <Text id="stats_pc_merits_row_07_label" class="stats_row_label" />
-          <Button id="stats_pc_merits_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_merits_row_08" class="stats_row" active="false">
-          <Text id="stats_pc_merits_row_08_label" class="stats_row_label" />
-          <Button id="stats_pc_merits_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_merits_row_09" class="stats_row" active="false">
-          <Text id="stats_pc_merits_row_09_label" class="stats_row_label" />
-          <Button id="stats_pc_merits_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_merits_row_10" class="stats_row" active="false">
-          <Text id="stats_pc_merits_row_10_label" class="stats_row_label" />
-          <Button id="stats_pc_merits_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_merits_row_11" class="stats_row" active="false">
-          <Text id="stats_pc_merits_row_11_label" class="stats_row_label" />
-          <Button id="stats_pc_merits_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_merits_row_12" class="stats_row" active="false">
-          <Text id="stats_pc_merits_row_12_label" class="stats_row_label" />
-          <Button id="stats_pc_merits_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-
-        <HorizontalLayout class="stats_section_header">
-          <Text class="stats_section_title" text="Flaws" />
-          <Button id="stats_add_pc_flaws" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_flaws_row_01" class="stats_row" active="false">
-          <Text id="stats_pc_flaws_row_01_label" class="stats_row_label" />
-          <Button id="stats_pc_flaws_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_flaws_row_02" class="stats_row" active="false">
-          <Text id="stats_pc_flaws_row_02_label" class="stats_row_label" />
-          <Button id="stats_pc_flaws_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_flaws_row_03" class="stats_row" active="false">
-          <Text id="stats_pc_flaws_row_03_label" class="stats_row_label" />
-          <Button id="stats_pc_flaws_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_flaws_row_04" class="stats_row" active="false">
-          <Text id="stats_pc_flaws_row_04_label" class="stats_row_label" />
-          <Button id="stats_pc_flaws_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_flaws_row_05" class="stats_row" active="false">
-          <Text id="stats_pc_flaws_row_05_label" class="stats_row_label" />
-          <Button id="stats_pc_flaws_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_flaws_row_06" class="stats_row" active="false">
-          <Text id="stats_pc_flaws_row_06_label" class="stats_row_label" />
-          <Button id="stats_pc_flaws_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_flaws_row_07" class="stats_row" active="false">
-          <Text id="stats_pc_flaws_row_07_label" class="stats_row_label" />
-          <Button id="stats_pc_flaws_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_flaws_row_08" class="stats_row" active="false">
-          <Text id="stats_pc_flaws_row_08_label" class="stats_row_label" />
-          <Button id="stats_pc_flaws_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_flaws_row_09" class="stats_row" active="false">
-          <Text id="stats_pc_flaws_row_09_label" class="stats_row_label" />
-          <Button id="stats_pc_flaws_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_flaws_row_10" class="stats_row" active="false">
-          <Text id="stats_pc_flaws_row_10_label" class="stats_row_label" />
-          <Button id="stats_pc_flaws_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_flaws_row_11" class="stats_row" active="false">
-          <Text id="stats_pc_flaws_row_11_label" class="stats_row_label" />
-          <Button id="stats_pc_flaws_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_pc_flaws_row_12" class="stats_row" active="false">
-          <Text id="stats_pc_flaws_row_12_label" class="stats_row_label" />
-          <Button id="stats_pc_flaws_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-
-      </VerticalLayout>
-      <VerticalLayout id="stats_coterie_view" class="stats_detail_body" active="false">
-        <Text class="stats_section_title" text="Domain ratings" />
-        <HorizontalLayout class="stats_rating_row">
-          <Text class="stats_section_title" text="Chasse" />
-          <Button id="stats_rating_chasse_edit" class="stats_edit_btn" onClick="HUD_statsEditRating" />
-        </HorizontalLayout>
-        <HorizontalLayout class="stats_rating_row">
-          <Text class="stats_section_title" text="Lien" />
-          <Button id="stats_rating_lien_edit" class="stats_edit_btn" onClick="HUD_statsEditRating" />
-        </HorizontalLayout>
-        <HorizontalLayout class="stats_rating_row">
-          <Text class="stats_section_title" text="Portillon" />
-          <Button id="stats_rating_portillon_edit" class="stats_edit_btn" onClick="HUD_statsEditRating" />
-        </HorizontalLayout>
-        <HorizontalLayout class="stats_rating_row">
-          <Text class="stats_section_title" text="Haven" />
-          <Button id="stats_rating_haven_edit" class="stats_edit_btn" onClick="HUD_statsEditRating" />
-        </HorizontalLayout>
-        <HorizontalLayout class="stats_section_header">
-          <Text class="stats_section_title" text="Coterie Backgrounds" />
-          <Button id="stats_add_coterie_coterieBackgrounds" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_01" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieBackgrounds_row_01_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieBackgrounds_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_02" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieBackgrounds_row_02_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieBackgrounds_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_03" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieBackgrounds_row_03_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieBackgrounds_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_04" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieBackgrounds_row_04_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieBackgrounds_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_05" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieBackgrounds_row_05_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieBackgrounds_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_06" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieBackgrounds_row_06_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieBackgrounds_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_07" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieBackgrounds_row_07_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieBackgrounds_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_08" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieBackgrounds_row_08_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieBackgrounds_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_09" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieBackgrounds_row_09_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieBackgrounds_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_10" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieBackgrounds_row_10_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieBackgrounds_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_11" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieBackgrounds_row_11_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieBackgrounds_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieBackgrounds_row_12" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieBackgrounds_row_12_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieBackgrounds_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-
-        <HorizontalLayout class="stats_section_header">
-          <Text class="stats_section_title" text="Coterie Merits" />
-          <Button id="stats_add_coterie_coterieMerits" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieMerits_row_01" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieMerits_row_01_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieMerits_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieMerits_row_02" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieMerits_row_02_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieMerits_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieMerits_row_03" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieMerits_row_03_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieMerits_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieMerits_row_04" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieMerits_row_04_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieMerits_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieMerits_row_05" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieMerits_row_05_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieMerits_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieMerits_row_06" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieMerits_row_06_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieMerits_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieMerits_row_07" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieMerits_row_07_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieMerits_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieMerits_row_08" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieMerits_row_08_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieMerits_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieMerits_row_09" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieMerits_row_09_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieMerits_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieMerits_row_10" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieMerits_row_10_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieMerits_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieMerits_row_11" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieMerits_row_11_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieMerits_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieMerits_row_12" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieMerits_row_12_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieMerits_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-
-        <HorizontalLayout class="stats_section_header">
-          <Text class="stats_section_title" text="Coterie Flaws" />
-          <Button id="stats_add_coterie_coterieFlaws" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieFlaws_row_01" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieFlaws_row_01_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieFlaws_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieFlaws_row_02" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieFlaws_row_02_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieFlaws_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieFlaws_row_03" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieFlaws_row_03_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieFlaws_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieFlaws_row_04" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieFlaws_row_04_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieFlaws_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieFlaws_row_05" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieFlaws_row_05_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieFlaws_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieFlaws_row_06" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieFlaws_row_06_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieFlaws_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieFlaws_row_07" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieFlaws_row_07_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieFlaws_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieFlaws_row_08" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieFlaws_row_08_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieFlaws_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieFlaws_row_09" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieFlaws_row_09_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieFlaws_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieFlaws_row_10" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieFlaws_row_10_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieFlaws_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieFlaws_row_11" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieFlaws_row_11_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieFlaws_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_coterieFlaws_row_12" class="stats_row" active="false">
-          <Text id="stats_coterie_coterieFlaws_row_12_label" class="stats_row_label" />
-          <Button id="stats_coterie_coterieFlaws_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-
-        <HorizontalLayout class="stats_section_header">
-          <Text class="stats_section_title" text="Domain Backgrounds" />
-          <Button id="stats_add_coterie_domainBackgrounds" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainBackgrounds_row_01" class="stats_row" active="false">
-          <Text id="stats_coterie_domainBackgrounds_row_01_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainBackgrounds_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainBackgrounds_row_02" class="stats_row" active="false">
-          <Text id="stats_coterie_domainBackgrounds_row_02_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainBackgrounds_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainBackgrounds_row_03" class="stats_row" active="false">
-          <Text id="stats_coterie_domainBackgrounds_row_03_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainBackgrounds_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainBackgrounds_row_04" class="stats_row" active="false">
-          <Text id="stats_coterie_domainBackgrounds_row_04_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainBackgrounds_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainBackgrounds_row_05" class="stats_row" active="false">
-          <Text id="stats_coterie_domainBackgrounds_row_05_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainBackgrounds_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainBackgrounds_row_06" class="stats_row" active="false">
-          <Text id="stats_coterie_domainBackgrounds_row_06_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainBackgrounds_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainBackgrounds_row_07" class="stats_row" active="false">
-          <Text id="stats_coterie_domainBackgrounds_row_07_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainBackgrounds_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainBackgrounds_row_08" class="stats_row" active="false">
-          <Text id="stats_coterie_domainBackgrounds_row_08_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainBackgrounds_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainBackgrounds_row_09" class="stats_row" active="false">
-          <Text id="stats_coterie_domainBackgrounds_row_09_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainBackgrounds_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainBackgrounds_row_10" class="stats_row" active="false">
-          <Text id="stats_coterie_domainBackgrounds_row_10_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainBackgrounds_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainBackgrounds_row_11" class="stats_row" active="false">
-          <Text id="stats_coterie_domainBackgrounds_row_11_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainBackgrounds_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainBackgrounds_row_12" class="stats_row" active="false">
-          <Text id="stats_coterie_domainBackgrounds_row_12_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainBackgrounds_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-
-        <HorizontalLayout class="stats_section_header">
-          <Text class="stats_section_title" text="Domain Merits" />
-          <Button id="stats_add_coterie_domainMerits" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainMerits_row_01" class="stats_row" active="false">
-          <Text id="stats_coterie_domainMerits_row_01_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainMerits_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainMerits_row_02" class="stats_row" active="false">
-          <Text id="stats_coterie_domainMerits_row_02_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainMerits_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainMerits_row_03" class="stats_row" active="false">
-          <Text id="stats_coterie_domainMerits_row_03_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainMerits_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainMerits_row_04" class="stats_row" active="false">
-          <Text id="stats_coterie_domainMerits_row_04_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainMerits_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainMerits_row_05" class="stats_row" active="false">
-          <Text id="stats_coterie_domainMerits_row_05_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainMerits_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainMerits_row_06" class="stats_row" active="false">
-          <Text id="stats_coterie_domainMerits_row_06_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainMerits_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainMerits_row_07" class="stats_row" active="false">
-          <Text id="stats_coterie_domainMerits_row_07_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainMerits_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainMerits_row_08" class="stats_row" active="false">
-          <Text id="stats_coterie_domainMerits_row_08_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainMerits_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainMerits_row_09" class="stats_row" active="false">
-          <Text id="stats_coterie_domainMerits_row_09_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainMerits_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainMerits_row_10" class="stats_row" active="false">
-          <Text id="stats_coterie_domainMerits_row_10_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainMerits_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainMerits_row_11" class="stats_row" active="false">
-          <Text id="stats_coterie_domainMerits_row_11_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainMerits_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainMerits_row_12" class="stats_row" active="false">
-          <Text id="stats_coterie_domainMerits_row_12_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainMerits_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-
-        <HorizontalLayout class="stats_section_header">
-          <Text class="stats_section_title" text="Domain Flaws" />
-          <Button id="stats_add_coterie_domainFlaws" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainFlaws_row_01" class="stats_row" active="false">
-          <Text id="stats_coterie_domainFlaws_row_01_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainFlaws_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainFlaws_row_02" class="stats_row" active="false">
-          <Text id="stats_coterie_domainFlaws_row_02_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainFlaws_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainFlaws_row_03" class="stats_row" active="false">
-          <Text id="stats_coterie_domainFlaws_row_03_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainFlaws_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainFlaws_row_04" class="stats_row" active="false">
-          <Text id="stats_coterie_domainFlaws_row_04_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainFlaws_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainFlaws_row_05" class="stats_row" active="false">
-          <Text id="stats_coterie_domainFlaws_row_05_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainFlaws_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainFlaws_row_06" class="stats_row" active="false">
-          <Text id="stats_coterie_domainFlaws_row_06_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainFlaws_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainFlaws_row_07" class="stats_row" active="false">
-          <Text id="stats_coterie_domainFlaws_row_07_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainFlaws_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainFlaws_row_08" class="stats_row" active="false">
-          <Text id="stats_coterie_domainFlaws_row_08_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainFlaws_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainFlaws_row_09" class="stats_row" active="false">
-          <Text id="stats_coterie_domainFlaws_row_09_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainFlaws_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainFlaws_row_10" class="stats_row" active="false">
-          <Text id="stats_coterie_domainFlaws_row_10_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainFlaws_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainFlaws_row_11" class="stats_row" active="false">
-          <Text id="stats_coterie_domainFlaws_row_11_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainFlaws_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_domainFlaws_row_12" class="stats_row" active="false">
-          <Text id="stats_coterie_domainFlaws_row_12_label" class="stats_row_label" />
-          <Button id="stats_coterie_domainFlaws_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-
-        <HorizontalLayout class="stats_section_header">
-          <Text class="stats_section_title" text="Haven Backgrounds" />
-          <Button id="stats_add_coterie_havenBackgrounds" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenBackgrounds_row_01" class="stats_row" active="false">
-          <Text id="stats_coterie_havenBackgrounds_row_01_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenBackgrounds_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenBackgrounds_row_02" class="stats_row" active="false">
-          <Text id="stats_coterie_havenBackgrounds_row_02_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenBackgrounds_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenBackgrounds_row_03" class="stats_row" active="false">
-          <Text id="stats_coterie_havenBackgrounds_row_03_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenBackgrounds_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenBackgrounds_row_04" class="stats_row" active="false">
-          <Text id="stats_coterie_havenBackgrounds_row_04_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenBackgrounds_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenBackgrounds_row_05" class="stats_row" active="false">
-          <Text id="stats_coterie_havenBackgrounds_row_05_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenBackgrounds_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenBackgrounds_row_06" class="stats_row" active="false">
-          <Text id="stats_coterie_havenBackgrounds_row_06_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenBackgrounds_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenBackgrounds_row_07" class="stats_row" active="false">
-          <Text id="stats_coterie_havenBackgrounds_row_07_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenBackgrounds_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenBackgrounds_row_08" class="stats_row" active="false">
-          <Text id="stats_coterie_havenBackgrounds_row_08_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenBackgrounds_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenBackgrounds_row_09" class="stats_row" active="false">
-          <Text id="stats_coterie_havenBackgrounds_row_09_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenBackgrounds_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenBackgrounds_row_10" class="stats_row" active="false">
-          <Text id="stats_coterie_havenBackgrounds_row_10_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenBackgrounds_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenBackgrounds_row_11" class="stats_row" active="false">
-          <Text id="stats_coterie_havenBackgrounds_row_11_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenBackgrounds_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenBackgrounds_row_12" class="stats_row" active="false">
-          <Text id="stats_coterie_havenBackgrounds_row_12_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenBackgrounds_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-
-        <HorizontalLayout class="stats_section_header">
-          <Text class="stats_section_title" text="Haven Merits" />
-          <Button id="stats_add_coterie_havenMerits" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenMerits_row_01" class="stats_row" active="false">
-          <Text id="stats_coterie_havenMerits_row_01_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenMerits_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenMerits_row_02" class="stats_row" active="false">
-          <Text id="stats_coterie_havenMerits_row_02_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenMerits_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenMerits_row_03" class="stats_row" active="false">
-          <Text id="stats_coterie_havenMerits_row_03_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenMerits_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenMerits_row_04" class="stats_row" active="false">
-          <Text id="stats_coterie_havenMerits_row_04_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenMerits_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenMerits_row_05" class="stats_row" active="false">
-          <Text id="stats_coterie_havenMerits_row_05_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenMerits_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenMerits_row_06" class="stats_row" active="false">
-          <Text id="stats_coterie_havenMerits_row_06_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenMerits_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenMerits_row_07" class="stats_row" active="false">
-          <Text id="stats_coterie_havenMerits_row_07_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenMerits_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenMerits_row_08" class="stats_row" active="false">
-          <Text id="stats_coterie_havenMerits_row_08_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenMerits_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenMerits_row_09" class="stats_row" active="false">
-          <Text id="stats_coterie_havenMerits_row_09_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenMerits_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenMerits_row_10" class="stats_row" active="false">
-          <Text id="stats_coterie_havenMerits_row_10_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenMerits_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenMerits_row_11" class="stats_row" active="false">
-          <Text id="stats_coterie_havenMerits_row_11_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenMerits_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenMerits_row_12" class="stats_row" active="false">
-          <Text id="stats_coterie_havenMerits_row_12_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenMerits_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-
-        <HorizontalLayout class="stats_section_header">
-          <Text class="stats_section_title" text="Haven Flaws" />
-          <Button id="stats_add_coterie_havenFlaws" class="stats_add_btn" text="+" onClick="HUD_statsAdd" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenFlaws_row_01" class="stats_row" active="false">
-          <Text id="stats_coterie_havenFlaws_row_01_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenFlaws_row_01_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenFlaws_row_02" class="stats_row" active="false">
-          <Text id="stats_coterie_havenFlaws_row_02_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenFlaws_row_02_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenFlaws_row_03" class="stats_row" active="false">
-          <Text id="stats_coterie_havenFlaws_row_03_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenFlaws_row_03_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenFlaws_row_04" class="stats_row" active="false">
-          <Text id="stats_coterie_havenFlaws_row_04_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenFlaws_row_04_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenFlaws_row_05" class="stats_row" active="false">
-          <Text id="stats_coterie_havenFlaws_row_05_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenFlaws_row_05_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenFlaws_row_06" class="stats_row" active="false">
-          <Text id="stats_coterie_havenFlaws_row_06_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenFlaws_row_06_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenFlaws_row_07" class="stats_row" active="false">
-          <Text id="stats_coterie_havenFlaws_row_07_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenFlaws_row_07_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenFlaws_row_08" class="stats_row" active="false">
-          <Text id="stats_coterie_havenFlaws_row_08_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenFlaws_row_08_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenFlaws_row_09" class="stats_row" active="false">
-          <Text id="stats_coterie_havenFlaws_row_09_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenFlaws_row_09_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenFlaws_row_10" class="stats_row" active="false">
-          <Text id="stats_coterie_havenFlaws_row_10_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenFlaws_row_10_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenFlaws_row_11" class="stats_row" active="false">
-          <Text id="stats_coterie_havenFlaws_row_11_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenFlaws_row_11_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="stats_coterie_havenFlaws_row_12" class="stats_row" active="false">
-          <Text id="stats_coterie_havenFlaws_row_12_label" class="stats_row_label" />
-          <Button id="stats_coterie_havenFlaws_row_12_edit" class="stats_edit_btn" onClick="HUD_statsEdit" />
-        </HorizontalLayout>
-
-      </VerticalLayout>
-    </Panel>
-  </VerticalLayout>
-</Panel>
-
-<!-- /include ui/storyteller/panel_stats.xml -->
-
-      
-<!-- include ui/storyteller/panel_projects.xml -->
-<!-- Storyteller Projects panel: PC + Coterie project tracking -->
-<!-- Agent guidance: .dev/HUD_FUNCTIONS.md -->
-<Panel id="panel_projects" class="projects_panel_root" active="false">
-  <VerticalLayout class="projects_root_vl">
-    <Panel id="projects_landing" class="projects_landing" active="true">
-      <Text class="projects_landing_title" text="Select target" />
-      <HorizontalLayout class="projects_target_row" spacing="6">
-        <Button id="projects_target_Brown" class="projects_target_btn" text="Brown" onClick="HUD_projectsTarget" />
-        <Button id="projects_target_Orange" class="projects_target_btn" text="Orange" onClick="HUD_projectsTarget" />
-        <Button id="projects_target_Red" class="projects_target_btn" text="Red" onClick="HUD_projectsTarget" />
-        <Button id="projects_target_Pink" class="projects_target_btn" text="Pink" onClick="HUD_projectsTarget" />
-        <Button id="projects_target_Purple" class="projects_target_btn" text="Purple" onClick="HUD_projectsTarget" />
-        <Button id="projects_target_Coterie" class="projects_target_btn" text="Coterie" onClick="HUD_projectsTarget" />
-      </HorizontalLayout>
-    </Panel>
-    <Panel id="projects_detail" class="projects_detail" active="false">
-      <HorizontalLayout class="projects_detail_header">
-        <Button id="projects_back" class="projects_back_btn" text="Back" onClick="HUD_projectsBack" />
-        <Text id="projects_detail_title" class="projects_detail_title" text="" />
-      </HorizontalLayout>
-      <VerticalLayout class="projects_detail_body">
-        <HorizontalLayout class="projects_section_header">
-          <Text class="projects_section_title" text="Projects" />
-          <Button id="projects_add" class="projects_add_btn" text="+" onClick="HUD_projectsAdd" />
-        </HorizontalLayout>
-        <HorizontalLayout id="projects_row_01" class="projects_row" active="false">
-          <Text id="projects_row_01_label" class="projects_row_label" />
-          <Button id="projects_row_01_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="projects_row_02" class="projects_row" active="false">
-          <Text id="projects_row_02_label" class="projects_row_label" />
-          <Button id="projects_row_02_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="projects_row_03" class="projects_row" active="false">
-          <Text id="projects_row_03_label" class="projects_row_label" />
-          <Button id="projects_row_03_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="projects_row_04" class="projects_row" active="false">
-          <Text id="projects_row_04_label" class="projects_row_label" />
-          <Button id="projects_row_04_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="projects_row_05" class="projects_row" active="false">
-          <Text id="projects_row_05_label" class="projects_row_label" />
-          <Button id="projects_row_05_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="projects_row_06" class="projects_row" active="false">
-          <Text id="projects_row_06_label" class="projects_row_label" />
-          <Button id="projects_row_06_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="projects_row_07" class="projects_row" active="false">
-          <Text id="projects_row_07_label" class="projects_row_label" />
-          <Button id="projects_row_07_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="projects_row_08" class="projects_row" active="false">
-          <Text id="projects_row_08_label" class="projects_row_label" />
-          <Button id="projects_row_08_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="projects_row_09" class="projects_row" active="false">
-          <Text id="projects_row_09_label" class="projects_row_label" />
-          <Button id="projects_row_09_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="projects_row_10" class="projects_row" active="false">
-          <Text id="projects_row_10_label" class="projects_row_label" />
-          <Button id="projects_row_10_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="projects_row_11" class="projects_row" active="false">
-          <Text id="projects_row_11_label" class="projects_row_label" />
-          <Button id="projects_row_11_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
-        </HorizontalLayout>
-        <HorizontalLayout id="projects_row_12" class="projects_row" active="false">
-          <Text id="projects_row_12_label" class="projects_row_label" />
-          <Button id="projects_row_12_edit" class="projects_edit_btn" onClick="HUD_projectsEdit" />
-        </HorizontalLayout>
-      </VerticalLayout>
-    </Panel>
-  </VerticalLayout>
-</Panel>
-
-<!-- /include ui/storyteller/panel_projects.xml -->
 
     </Panel>
 
@@ -12563,6 +11219,274 @@ UI.setAttributes("scenes_lib_btns_grid_2", {padding = "50 50 0 0"})
 </Panel>
 <!-- /include ui/storyteller/panel_runtest.xml -->
 
+<!-- 
+<!-- include ui/storyteller/animation_tester.xml -->
+<Defaults>
+
+  <Panel class="at_full_container" height = "100%" width = "100%" color = "#000000" />
+  <Panel class="at_full_panel" height = "100%" width = "100%" />
+  <Panel class="at_top_panel" active = "false" />
+  <Image class="at_full_image" height = "100%" preserveAspect = "true" pivot = "0.5 0.5" active = "false" />
+  <Image class="image_cyan" image="anim_full_cyan" />
+  <Image class="image_red" image="anim_full_red" />
+  <Image class="image_yellow" image="anim_full_yellow" />
+  <Image class="image_green" image="anim_full_green" />
+  <Image class="image_violet" image="anim_full_violet" />
+
+  <Panel class="at_full_indicator" height = "20" width = "20"
+    ignoreLayout = "true"
+    rectAlignment = "MiddleCenter" />
+  <Panel class="indicator_cyan" color = "#00FFFF" />
+  <Panel class="indicator_red" color = "#FF0000" />
+  <Panel class="indicator_yellow" color = "#FFFF00" />
+  <Panel class="indicator_green" color = "#00FF00" />
+  <Panel class="indicator_violet" color = "#FF00FF" />
+
+
+</Defaults>
+
+<!--
+
+*** Animation Attributes ***
+  showAnimation - "None", "Grow", "FadeIn", "SlideIn_Left", "SlideIn_Right", "SlideIn_Top", "SlideIn_Bottom"
+  hideAnimation = "None", "Shrink", "FadeOut", "SlideOut_Left", "SlideOut_Right", "SlideOut_Top", "SlideOut_Bottom"
+  showAnimationDelay = float
+  hideAnimationDelay = float
+  animationDuration = float
+
+UISet({"at_@_#_image"}, {pivot = "0.5 0.5"}, {["@"] = {1, 2, 3, 4, 5}, ["#"] = {"a", "b", "c", "d", "e"}})
+UISet({"at_@_#_image"}, {active = "false"}, {["@"] = {1, 2, 3, 4, 5}, ["#"] = {"a", "b", "c", "d", "e"}})
+
+UI.show("animation_tester")
+UI.hide("animation_tester")
+UI.setAttributes("animation_tester", { active = "false" })
+UI.show("at_1_a_panel")
+UISet({"at_@_#_panel"}, {active = "false"}, {["#"] = {"a", "b", "c", "d", "e"}, ["@"] = {1, 2, 3, 4, 5}})
+
+segmentDuration = 20
+segmentGap = -10
+halfPoint = segmentDuration / 2
+fadeDuration = segmentDuration / 8
+
+-- Following times are normalized to segmentDuration = 100
+
+FADE_DURATION = 10
+BASE_TIMESTAMPS = {
+  startPanelA = 0,
+  startPanelB = 20,
+  fadeInImage = 50,
+  fadeOutImage = 70,
+  endPanelB = 100,
+  endPanelA = 100
+}
+
+-- Helper function to convert normalized time to segmentDuration
+function normalizeTime(time)
+  return time * (segmentDuration / 100)
+end
+
+-- Convert to XML animation attributes given two command timings - 0 and halfPoint (for hiding)
+ANIM_ATTRIBUTES = {
+  ["a_panel"] = {
+    active = "false",
+    showAnimation = "SlideIn_Left",
+    startAnimationDelay = normalizeTime(BASE_TIMESTAMPS.startPanelA),
+    animationDuration = normalizeTime(BASE_TIMESTAMPS.endPanelA - BASE_TIMESTAMPS.startPanelA),
+  },
+  ["b_panel"] = {
+    active = "true",
+    showAnimation = "Grow",
+    startAnimationDelay = normalizeTime(BASE_TIMESTAMPS.startPanelB),
+    animationDuration = normalizeTime(BASE_TIMESTAMPS.endPanelB - BASE_TIMESTAMPS.startPanelB),
+  },
+  ["b_image"] = {
+    active = "true",
+    showAnimation = "FadeIn",
+    hideAnimation = "FadeOut",
+    startAnimationDelay = normalizeTime(BASE_TIMESTAMPS.fadeInImage),
+    animationDuration = normalizeTime(FADE_DURATION),
+    hideAnimationDelay = normalizeTime(BASE_TIMESTAMPS.fadeOutImage - 50),
+  }
+}
+
+-- Write attributes to elements
+UISet({"at_#_a_panel"}, ANIM_ATTRIBUTES["a_panel"], {["#"] = {1, 2, 3, 4, 5}})
+UISet({"at_#_b_panel"}, ANIM_ATTRIBUTES["b_panel"], {["#"] = {1, 2, 3, 4, 5}})
+UISet({"at_#_b_image"}, ANIM_ATTRIBUTES["b_image"], {["#"] = {1, 2, 3, 4, 5}})
+
+interval = segmentDuration + segmentGap
+
+U.chain({
+  function()
+    UI.show("at_1_a_panel")
+    U.await(function() UI.hide("at_1_b_image") end, halfPoint)
+    return interval
+  end,
+  function()
+    UI.show("at_2_a_panel")
+    U.await(function() UI.hide("at_2_b_image") end, halfPoint)
+    return interval
+  end,
+  function()
+    UI.show("at_3_a_panel")
+    U.await(function() UI.hide("at_3_b_image") end, halfPoint)
+    return interval
+  end,
+  function()
+    UI.show("at_4_a_panel")
+    U.await(function() UI.hide("at_4_b_image") end, halfPoint)
+    return interval
+  end,
+  function()
+    UI.show("at_5_a_panel")
+    U.await(function() UI.hide("at_5_b_image") end, halfPoint)
+    return interval
+  end
+})
+
+testAnimation = "SlideIn_Left"
+durations = {5, 10, 20, 30, 60}
+animationGap = 3
+colors = {"cyan", "red", "yellow", "green", "violet"}
+
+function animatePanelChain(i)
+  return function()
+    UI.hide("at_1_a_panel")
+    UISet("at_1_a_panel", { showAnimation = "None", animationDuration = 0 })
+    UISet("at_1_a_image", { offsetXY = "1920 0", image = "anim_full_" .. colors[i], showAnimation = testAnimation, animationDuration = durations[i], showAnimationDelay = 0, active = "true" })
+    UI.show("at_1_a_panel")
+    U.await(function() UI.hide("at_1_a_panel") end, durations[i])
+    return durations[i] + animationGap
+  end
+end
+
+funcChain = {}
+
+for i = 1, 5 do
+  funcChain[i] = animatePanelChain(i)
+end
+
+U.chain(funcChain)
+
+UI.hide("at_1_a_panel")
+UISet("at_1_a_panel", { showAnimation = "None", animationDuration = 0 })
+UISet("at_1_a_image", { showAnimation = "Grow", animationDuration = duration, showAnimationDelay = 0, active = "true" })
+UI.show("at_1_a_panel")
+-->
+
+<Panel id="animation_tester" class="at_full_container" active="false">
+
+  <Panel id="at_1_a_panel" class="at_full_panel at_top_panel">
+    <Image id="at_1_a_image" class="at_full_image image_cyan" />
+    <Panel id="at_1_a_indicator" class="at_full_indicator indicator_cyan" />
+    <Panel id="at_1_b_panel" class="at_full_panel">
+      <Image id="at_1_b_image" class="at_full_image image_red" />
+      <Panel id="at_1_b_indicator" class="at_full_indicator indicator_red" />
+      <Panel id="at_panel_1_c" class="at_full_panel">
+        <Image id="at_1_c_image" class="at_full_image image_yellow" />
+        <Panel id="at_1_c_indicator" class="at_full_indicator indicator_yellow" />
+        <Panel id="at_1_d_panel" class="at_full_panel">
+          <Image id="at_1_d_image" class="at_full_image image_green" />
+          <Panel id="at_1_d_indicator" class="at_full_indicator indicator_green" />
+          <Panel id="at_1_e_panel" class="at_full_panel">
+            <Image id="at_1_e_image" class="at_full_image image_violet" />
+            <Panel id="at_1_e_indicator" class="at_full_indicator indicator_violet" />
+          </Panel>
+        </Panel>
+      </Panel>
+    </Panel>
+  </Panel>
+
+  <Panel id="at_2_a_panel" class="at_full_panel at_top_panel">
+    <Image id="at_2_a_image" class="at_full_image image_cyan" />
+    <Panel id="at_2_a_indicator" class="at_full_indicator indicator_cyan" />
+    <Panel id="at_2_b_panel" class="at_full_panel">
+      <Image id="at_2_b_image" class="at_full_image image_red" />
+      <Panel id="at_2_b_indicator" class="at_full_indicator indicator_red" />
+      <Panel id="at_panel_2_c" class="at_full_panel">
+        <Image id="at_2_c_image" class="at_full_image image_yellow" />
+        <Panel id="at_2_c_indicator" class="at_full_indicator indicator_yellow" />
+        <Panel id="at_2_d_panel" class="at_full_panel">
+          <Image id="at_2_d_image" class="at_full_image image_green" />
+          <Panel id="at_2_d_indicator" class="at_full_indicator indicator_green" />
+          <Panel id="at_2_e_panel" class="at_full_panel">
+            <Image id="at_2_e_image" class="at_full_image image_violet" />
+            <Panel id="at_2_e_indicator" class="at_full_indicator indicator_violet" />
+          </Panel>
+        </Panel>
+      </Panel>
+    </Panel>
+  </Panel>
+
+  <Panel id="at_3_a_panel" class="at_full_panel at_top_panel">
+    <Image id="at_3_a_image" class="at_full_image image_cyan" />
+    <Panel id="at_3_a_indicator" class="at_full_indicator indicator_cyan" />
+    <Panel id="at_3_b_panel" class="at_full_panel">
+      <Image id="at_3_b_image" class="at_full_image image_red" />
+      <Panel id="at_3_b_indicator" class="at_full_indicator indicator_red" />
+      <Panel id="at_panel_3_c" class="at_full_panel">
+        <Image id="at_3_c_image" class="at_full_image image_yellow" />
+        <Panel id="at_3_c_indicator" class="at_full_indicator indicator_yellow" />
+        <Panel id="at_3_d_panel" class="at_full_panel">
+          <Image id="at_3_d_image" class="at_full_image image_green" />
+          <Panel id="at_3_d_indicator" class="at_full_indicator indicator_green" />
+          <Panel id="at_3_e_panel" class="at_full_panel">
+            <Image id="at_3_e_image" class="at_full_image image_violet" />
+            <Panel id="at_3_e_indicator" class="at_full_indicator indicator_violet" />
+          </Panel>
+        </Panel>
+      </Panel>
+    </Panel>
+  </Panel>
+
+  <Panel id="at_4_a_panel" class="at_full_panel at_top_panel">
+    <Image id="at_4_a_image" class="at_full_image image_cyan" />
+    <Panel id="at_4_a_indicator" class="at_full_indicator indicator_cyan" />
+    <Panel id="at_4_b_panel" class="at_full_panel">
+      <Image id="at_4_b_image" class="at_full_image image_red" />
+      <Panel id="at_4_b_indicator" class="at_full_indicator indicator_red" />
+      <Panel id="at_panel_4_c" class="at_full_panel">
+        <Image id="at_4_c_image" class="at_full_image image_yellow" />
+        <Panel id="at_4_c_indicator" class="at_full_indicator indicator_yellow" />
+        <Panel id="at_4_d_panel" class="at_full_panel">
+          <Image id="at_4_d_image" class="at_full_image image_green" />
+          <Panel id="at_4_d_indicator" class="at_full_indicator indicator_green" />
+          <Panel id="at_4_e_panel" class="at_full_panel">
+            <Image id="at_4_e_image" class="at_full_image image_violet" />
+            <Panel id="at_4_e_indicator" class="at_full_indicator indicator_violet" />
+          </Panel>
+        </Panel>
+      </Panel>
+    </Panel>
+  </Panel>
+
+  <Panel id="at_5_a_panel" class="at_full_panel at_top_panel">
+    <Image id="at_5_a_image" class="at_full_image image_cyan" />
+    <Panel id="at_5_a_indicator" class="at_full_indicator indicator_cyan" />
+    <Panel id="at_5_b_panel" class="at_full_panel">
+      <Image id="at_5_b_image" class="at_full_image image_red" />
+      <Panel id="at_5_b_indicator" class="at_full_indicator indicator_red" />
+      <Panel id="at_panel_5_c" class="at_full_panel">
+        <Image id="at_5_c_image" class="at_full_image image_yellow" />
+        <Panel id="at_5_c_indicator" class="at_full_indicator indicator_yellow" />
+        <Panel id="at_5_d_panel" class="at_full_panel">
+          <Image id="at_5_d_image" class="at_full_image image_green" />
+          <Panel id="at_5_d_indicator" class="at_full_indicator indicator_green" />
+          <Panel id="at_5_e_panel" class="at_full_panel">
+            <Image id="at_5_e_image" class="at_full_image image_violet" />
+            <Panel id="at_5_e_indicator" class="at_full_indicator indicator_violet" />
+          </Panel>
+        </Panel>
+      </Panel>
+    </Panel>
+  </Panel>
+
+
+
+
+</Panel>
+<!-- /include ui/storyteller/animation_tester.xml -->
+ -->
 
 <!-- /include ui/storyteller/hud_storyteller.xml -->
 
@@ -14146,6 +13070,7 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
 
 <!-- include ui/shared/panel_roll_results.xml -->
 <!-- Roll Result Broadcast Panel (all players). Use UI.show/UI.hide on rollRes_panel for fade animations. -->
+<!-- Layout shells Lua does not address use db_ ids so in-editor UI.setAttributes can target them. -->
 
 <Defaults>
 
@@ -14259,14 +13184,14 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
 
 <Panel id="rollRes_panel" class="rollRes_screen" active="false">
 
-  <Panel class="rollRes_screen_content">
+  <Panel id="db_rollRes_screen_content" class="rollRes_screen_content">
     <Image id="rollRes_screen_content_background" class="rollRes_image rollRes_image_background" image="resultsBG" />
     <Image id="rollRes_screen_content_figure" class="rollRes_image rollRes_image_figure" image="" />
 
-    <Image class="rollRes_image rollRes_image_border rollRes_image_border_top" image="resultsBorder" offsetXY = "0 350" />
+    <Image id="db_rollRes_image_border_top" class="rollRes_image rollRes_image_border rollRes_image_border_top" image="resultsBorder" offsetXY = "0 350" />
     <Image id="rollRes_screen_content_border_bottom" class="rollRes_image rollRes_image_border rollRes_image_border_bottom" image="resultsBorderBottom" offsetXY = "0 -200" />
 
-    <Panel class="rollRes_body_container">
+    <Panel id="db_rollRes_body_container" class="rollRes_body_container">
 
       <Panel id="rollRes_rousePanel_2" class="rollRes_rousePanel" offsetXY = "-250 350" scale="0.75" active="false">
         <Image id="rollRes_rouseDie_2_5" class="rollRes_rouseDie" image="" active="false" offsetXY = "0 20" />
@@ -14289,7 +13214,7 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
       <Text id="rollRes_rollType" class="rollRes_rollType" text="" offsetXY = "0 280" />
       <Text id="rollRes_rollIntro" class="rollRes_rollIntro" text="" offsetXY = "0 230" />
 
-      <HorizontalLayout class="rollRes_diceContainer" offsetXY = "0 140">
+      <HorizontalLayout id="db_rollRes_diceContainer" class="rollRes_diceContainer" offsetXY = "0 140">
         <Image id="rollRes_die_1" class="rollRes_die" image="" active="false" />
         <Image id="rollRes_die_2" class="rollRes_die" image="" active="false" />
         <Image id="rollRes_die_3" class="rollRes_die" image="" active="false" />
@@ -14311,11 +13236,10 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
         <Text id="rollRes_successes" class="roll_text rollRes_successes" text="" />
         <Text id="rollRes_successesPhrase" class="roll_text rollRes_successesPhrase" text="" />
         <HorizontalLayout id="rollRes_difficultyDisplay" class="rollRes_difficultyDisplayContainer" spacing="15" active="false">
-          <Text class="roll_text rollRes_difficultyVS" text="vs." />
+          <Text id="db_rollRes_difficultyVS" class="roll_text rollRes_difficultyVS" text="vs." />
           <Text id="rollRes_difficulty" class="roll_text rollRes_difficulty" text="" />
         </HorizontalLayout>
       </HorizontalLayout>
-
       <Text id="rollRes_resultDisplay" class="roll_text rollRes_resultDisplay" text="" offsetXY = "0 -50"/>
 
     </Panel>
@@ -14363,40 +13287,6 @@ UI.setAttributes("gridStrip_rollDashBrown_difficulty", {width = "130"})
   <Text class="sessionStartHeal_phraseEnd" fontSize = "24" fontStyle = "Bold" color = "#e6be65" />
 
 </Defaults>
-
-<!--
-
-UI.setAttributes("sessionStartHeal_panel", {animationDuration = "2"})
-UI.setAttributes("sessionStartHeal_screen_content_background", {})
-UI.setAttributes("db_sessionStartHeal_spacer_top", {})
-UI.setAttributes("db_sessionStartHeal_image_border_top", {})
-UI.setAttributes("db_sessionStartHeal_image_border_bottom", {})
-UI.setAttributes("db_sessionStartHeal_spacer_bottom", {})
-UI.setAttributes("db_sessionStartHeal_screen_title_container", {color="rgba(1, 0, 0, 0)"})
-
-UI.setAttributes("db_sessionStartHeal_screen_content", {})
-UI.setAttributes("db_sessionStartHeal_title", {})
-UI.setAttributes("db_sessionStartHeal_description", {})
-
-UI.setAttributes("sessionStartHeal_playerContainer_Red", {})
-UI.setAttributes("sessionStartHeal_playerContainer_Orange", {})
-UI.setAttributes("sessionStartHeal_playerContainer_Pink", {})
-UI.setAttributes("sessionStartHeal_playerContainer_Brown", {})
-UI.setAttributes("sessionStartHeal_playerContainer_Purple", {})
-
-UI.show("sessionStartHeal_panel")
-UI.show("sessionStartHeal_playerContainer_Red")
-UI.show("sessionStartHeal_playerContainer_Orange")
-UI.show("sessionStartHeal_playerContainer_Pink")
-UI.show("sessionStartHeal_playerContainer_Brown")
-UI.show("sessionStartHeal_playerContainer_Purple")
-
-UI.hide("sessionStartHeal_playerContainer_Pink")
-UI.hide("sessionStartHeal_playerContainer_Brown")
-UI.hide("sessionStartHeal_playerContainer_Purple")
-UI.hide("sessionStartHeal_playerContainer_Orange")
-
--->
 
 <VerticalLayout id="sessionStartHeal_panel" class="sessionStartHeal_panel" active="false">
   <Panel id="db_sessionStartHeal_spacer_top" class="sessionStartHeal_spacer" />
