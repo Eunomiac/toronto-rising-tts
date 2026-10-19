@@ -30,10 +30,13 @@ export type NpcArtSubject = {
   readonly manualCrop: HeadCrop | null;
 };
 
+/** One Memoriam NPC from data/memoriam-npcs.json, as far as token art needs it. */
+export type MemoriamArtEntry = { readonly label: string; readonly isGeneric: boolean };
+
 export type NameSources = {
   readonly named: ReadonlyMap<string, NamedCatalogEntry>;
   readonly genericLabels: ReadonlyMap<string, string>;
-  readonly memoriamNames: ReadonlyMap<string, string>;
+  readonly memoriamNames: ReadonlyMap<string, MemoriamArtEntry>;
 };
 
 export const DEFAULT_RING_COLOR = "#77706a";
@@ -80,9 +83,10 @@ const ringColor = (roster: Roster, groupKey: string | undefined): string => {
 /**
  * One NPC per catalogued figurine file. Named NPCs show the first non-title word of their full name and take their
  * first picker group's roster colour; generic NPCs show their catalog label and take the `generic:<label>` group
- * colour; Memoriam NPCs show their first non-title word and the default colour. An override's `name` replaces the
- * full name (or generic label) before that rule, and its `color` replaces the ring colour. A figurine missing from
- * its folder's catalog returns null: it gets no art, and the build reports it.
+ * colour; named Memoriam NPCs show their first non-title word and the default colour, and generic Memoriam NPCs
+ * show their full catalog label. An override's `name` replaces the full name (or generic label) before that rule,
+ * and its `color` replaces the ring colour. A figurine missing from its folder's catalog returns null: it gets no
+ * art, and the build reports it.
  */
 export const buildSubject = (
   folder: NpcFolder,
@@ -112,10 +116,18 @@ export const buildSubject = (
       ? null
       : { key, folder, name: override.name ?? label, color: override.color ?? ringColor(roster, `generic:${label}`), manualCrop };
   }
-  const fullName = sources.memoriamNames.get(key);
-  return fullName === undefined
-    ? null
-    : { key, folder, name: firstNonTitleWord(override.name ?? fullName), color: override.color ?? DEFAULT_RING_COLOR, manualCrop };
+  const memoriam = sources.memoriamNames.get(key);
+  if (memoriam === undefined) {
+    return null;
+  }
+  const label = override.name ?? memoriam.label;
+  return {
+    key,
+    folder,
+    name: memoriam.isGeneric ? label : firstNonTitleWord(label),
+    color: override.color ?? DEFAULT_RING_COLOR,
+    manualCrop
+  };
 };
 
 /** The text the Full build prints at its end: figurines that got no art, and catalogued NPCs that have no figurine. */

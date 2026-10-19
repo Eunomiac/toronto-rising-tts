@@ -10,7 +10,8 @@ Source of truth:
 - `core/memoriam.ttslua` — enter/exit world apply (TOR-101)
 - Storyteller Dashboard Memoriam popup (`.dev/storyteller-dashboard/src/client/scenesPanel/memoriamModal.tsx` + `memoriam.ts`) → `memoriam` op in `dashboard/scenes.ttslua` → `Memoriam.applyEnter` (the in-game TTS popup was retired in TOR-721)
 - `lib/constants.ttslua` — `C.MemoriamSkyboxes`, `C.getMemoriamSkyboxesForCharacter`, `C.resolveMemoriamPanelURL`
-- `lib/skyboxes_catalog.ttslua` — generated from `SKYBOXMEMORIAMCSV` (`npm run skyboxes:import`)
+- `lib/skyboxes_catalog.ttslua` — generated from `SKYBOXMEMORIAMCSV` (`npm run skyboxes:import`). Period rows only; NPC columns are not on that sheet.
+- `.dev/storyteller-dashboard/data/memoriam-npcs.json` — Memoriam NPCs from named range `MEMORIAMNPCCSV` (`npm run memoriam-npcs:import`). Each row's `periods` lists the skybox keys it appears in. `isGeneric` marks crowd figures (key ends in `_` plus two digits).
 - `core/phases.ttslua`; dashboard `leaveMemoriam` op calls `Memoriam.applyExit` restore
 - `core/game_state_overlay.ttslua` — overlay while `Memoriam.isActive()`
 - `core/scenes.ttslua` — `reconcileSkyboxFromState` uses panel Cloud URL (or `C.Skyboxes.JustSmoke` for Just Smoke) while Memoriam is active
@@ -81,7 +82,7 @@ Optional keys for the five PCs. Kinds the modal can emit today:
 | --- | --- | --- |
 | `"self"` | Present as themselves | Seat stays active |
 | `"library"` | Named NPC from the primary pool (`key` + `label`) | Stored; **not** applied as Play-as-NPC (TOR-95). Seat stays active as the PC. Host is alerted. |
-| `"memoriam"` | Period NPC from this skybox’s `npcs` list (`label`; `key` may be absent) | Same as library — stored, not applied |
+| `"memoriam"` | Period NPC whose `memoriam-npcs.json` row lists this skybox in `periods` (`label`; `key` may be absent) | Same as library — stored, not applied |
 
 The subject is always included as `{ kind = "self" }` unless the modal assigned them an NPC. PCs omitted from the table are **not present** (`seatSlots[color].isPresent = false`) — deactivated, not marked Absent. PCs listed as present are seated even if they were Absent from the session (intended “ignore Absent assignees” is **not** implemented — see remaining work).
 
@@ -93,14 +94,15 @@ The subject is always included as `{ kind = "self" }` unless the modal assigned 
 
 Do **not** look up `(data)[subjectKey][skyboxKey]`. Periods are a flat table:
 
-- `C.MemoriamSkyboxes[skyboxKey]` — `characters` array, `startYear` / `endYear`, `location`, `splashText`, `panelA`–`panelD`, `npcs` (ten slots: `name`, `fullName`; stage card scale is a dashboard token override, not a catalog field)
+- `C.MemoriamSkyboxes[skyboxKey]` — `characters` array, `startYear` / `endYear`, `location`, `splashText`, `panelA`–`panelD` (no NPC list; stage card scale is a dashboard token override, not a catalog field)
+- Memoriam NPCs — `.dev/storyteller-dashboard/data/memoriam-npcs.json`. A row belongs to a period when that skybox key is in its `periods` list. Named figures behave like catalogued NPCs; `isGeneric` rows (key suffix `_NN`) behave like generic NPCs. The dashboard does not show this catalog yet.
 - `C.getMemoriamSkyboxesForCharacter(characterKey)` — ordered keys for the popup timeline
 - Panel **image URL** is Cloud-only: `C.resolveMemoriamPanelURL(skyboxKey, panelKey)` (missing art errors loudly; TOR-564 / TOR-568)
 - Cover image is Custom Asset **`memoriamBlindfold_<skyboxKey>`**, not a catalog `blindfoldURL` field (that field was removed)
 
 Each panel has `display`, `isOutdoors`, `isDaytime`, `weather` (array of condition keys), `locationAudio`, and `url` (filled from Cloud at Constants load). Runtime clock **does not** read `isDaytime`; enter always picks a night hour (see Clock).
 
-Period `npcs` exist in the catalog (and Cloud can stamp figurine/token URLs). **World figurines and tokens for those NPCs are not spawned yet.**
+Memoriam NPC rows live in `memoriam-npcs.json` (figurine and token links still come from `lib/npc_art_urls.ttslua` once those files are in Steam Cloud). **World figurines and tokens for those NPCs are not spawned from the period yet.**
 
 ---
 
@@ -164,7 +166,7 @@ These were specified for Memoriam and are **not** current runtime behavior. Keep
 
 - **Play-as-NPC (TOR-95):** `"library"` / `"memoriam"` (and later `"generic"`) assignees should play that NPC; `"self"` seats stay the PC. Reverse assignments on exit. Do not convert NPC-body damage onto the PC.
 - **`kind = "generic"`** in assignments — modal + enter wiring (also blocked on Generic NPC seating / Play-as-NPC).
-- **Period NPC world objects:** placeholder figurines/tokens (GUIDs) for catalog `npcs` that are not already in the named pool.
+- **Period NPC world objects:** placeholder figurines/tokens (GUIDs) for Memoriam NPCs whose `periods` include the active skybox and that are not already in the named pool.
 - **Ignore Absent PCs** listed in `assignments` — they should stay Absent; enter currently seats anyone with a color + assignment row.
 - **Dusk-relative night window:** random time should be midnight–2:00 AM **or** from about one hour after dusk until midnight. Today the second window is fixed 21:00–midnight.
 - **Unknown `locationAudio` key → silent.** Empty string already maps to `silent`. A key that is not in the soundscape catalog currently fails as unknown rather than falling back.

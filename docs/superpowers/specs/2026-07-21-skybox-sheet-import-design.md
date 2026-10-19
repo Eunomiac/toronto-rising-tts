@@ -87,17 +87,17 @@ Fail loudly on non-200, empty body, or HTML/login error pages.
 
 **`SKYBOXMEMORIAMCSV`** (TOR-510, flattened in TOR-529)
 
-- Header must include `Key`, `Characters`, `Start Year`, `End Year`, `Location`, then for panels A–D: `Display`, `isOutdoors`, `isDaytime`, `Weather`, `Location Audio`, then `Splash Text`, then for NPC 1–10: `Key` and `Label` (case-insensitive). Optional `NPC <#> Scale`. Leftover Panel/NPC URL columns are ignored if still present.
+- Header must include `Key`, `Characters`, `Start Year`, `End Year`, `Location`, then for panels A–D: `Display`, `isOutdoors`, `isDaytime`, `Weather`, `Location Audio`, then `Splash Text` (case-insensitive). Leftover NPC or Panel URL columns are ignored. Memoriam NPCs are not on this sheet; they are named range `MEMORIAMNPCCSV` → `data/memoriam-npcs.json`.
 - Entries are stored **by skybox key** at the top of `SkyboxesCatalog.MemoriamSkyboxes` (no character nesting)
 - `characters` is a string array from the pipe-delimited `Characters` column (Lua identifiers). Example: `lucien14` with `lucien|fomorach` writes one entry `MemoriamSkyboxes.lucien14` whose `characters` is `{ "lucien", "fomorach" }`
 - `startYear` / `endYear` parse as integers
 - Panel `isOutdoors` / `isDaytime` parse as booleans (`TRUE`/`FALSE`)
 - Panel `Weather` is a pipe-delimited list of strings; a blank cell becomes an empty array
-- `splashText`, NPC `name` (`NPC <#> Key`), and NPC `fullName` (`NPC <#> Label`) may be blank. `NPC <#> Scale` columns are ignored: stage card scale is a dashboard token override (`cardScale` in `data/npc-overrides.json`). Memoriam panel and NPC image URLs are **not** sheet columns — they come from Steam Cloud (`Cloud.MemoriamPanels`, `Cloud.MemoriamNpc*`) at Constants load (TOR-564 / TOR-577).
+- `splashText` may be blank. Stage card scale is a dashboard token override (`cardScale` in `data/npc-overrides.json`), not a skybox column. Memoriam panel image URLs are **not** sheet columns — they come from Steam Cloud (`Cloud.MemoriamPanels`) at Constants load (TOR-564 / TOR-577). Figurine and token URLs come from `lib/npc_art_urls.ttslua`.
 - Memoriam transition covers are **not** sheet URLs: Custom Asset names `memoriamBlindfold_<skyboxKey>` (Steam Cloud → Global Custom UI Assets via `memoriamBlindfolds` job)
 - **Panel art authority is Steam Cloud (TOR-564):** `lib/constants.ttslua` writes `panelA`–`panelD`.`url` from `Cloud.MemoriamPanels["<key>_<a|b|c|d>"].URL` (`.tools/cloud-asset-sync.jsonc` job `memoriamPanels`; regenerate with `npm run cloud-asset-sync:catalog`). The generated catalog does not include panel or NPC URL fields (TOR-577). Use `C.resolveMemoriamPanelURL(skyboxKey, panelKey)` at apply time; `C.getMemoriamPanelsWithoutArt()` lists blanks.
 - Panels A and B require a non-empty Display; if panel C or D Display is blank, omit that panel entirely
-- Always emit ten `npcs` tables, in sheet order 1–10
+- Do not emit an `npcs` table. Period membership is the `periods` list on each Memoriam NPC row.
 - Rows with a blank Key are skipped (named ranges often include a draft/next row)
 - Rows with both Panel A and Panel B Display blank are skipped (key/years stub with no panels yet)
 - Reject duplicate skybox keys; preserve sheet row order
@@ -135,10 +135,6 @@ SkyboxesCatalog.MemoriamSkyboxes = {
     panelA = { -- ...
     },
     splashText = "",
-    npcs = {
-      { name = "", fullName = "" },
-      -- ... ten slots
-    },
   },
 }
 

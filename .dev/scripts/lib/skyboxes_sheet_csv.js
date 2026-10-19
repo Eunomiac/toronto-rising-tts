@@ -167,12 +167,6 @@ const MEMORIAM_REQUIRED_HEADERS = [
   "splash text",
 ];
 
-const MEMORIAM_NPC_SLOT_COUNT = 10;
-
-for (let n = 1; n <= MEMORIAM_NPC_SLOT_COUNT; n += 1) {
-  MEMORIAM_REQUIRED_HEADERS.push(`npc ${n} key`, `npc ${n} label`);
-}
-
 /**
  * @param {string[]} headerRow
  * @returns {Record<string, number>}
@@ -189,7 +183,7 @@ function memoriamHeaderIndex(headerRow) {
   const missing = MEMORIAM_REQUIRED_HEADERS.filter((name) => map[name] == null);
   if (missing.length > 0) {
     throw new Error(
-      `SKYBOXMEMORIAMCSV: expected header Key, Characters, Start Year, End Year, Location, Panel A–D, Splash Text, NPC 1–10 fields; missing ${JSON.stringify(missing)}; got ${JSON.stringify(headerRow)}`,
+      `SKYBOXMEMORIAMCSV: expected header Key, Characters, Start Year, End Year, Location, Panel A–D, Splash Text; missing ${JSON.stringify(missing)}; got ${JSON.stringify(headerRow)}`,
     );
   }
   return map;
@@ -248,30 +242,6 @@ function parseMemoriamPanel(cells, cols, rowLabel, letter, opts) {
 }
 
 /**
- * @param {string[]} cells
- * @param {Record<string, number>} cols
- * @param {string} rowLabel
- * @returns {{ name: string, fullName: string }[]}
- */
-function parseMemoriamNpcs(cells, cols, rowLabel) {
-  /** @type {{ name: string, fullName: string }[]} */
-  const npcs = [];
-  for (let n = 1; n <= MEMORIAM_NPC_SLOT_COUNT; n += 1) {
-    const name = trimCell(cellAt(cells, cols[`npc ${n} key`]));
-    if (name !== "" && !LUA_IDENT_RE.test(name)) {
-      throw new Error(
-        `${rowLabel} NPC ${n} Key "${name}" must be a Lua identifier (A-Za-z_[A-Za-z0-9_]*)`,
-      );
-    }
-    npcs.push({
-      name,
-      fullName: trimCell(cellAt(cells, cols[`npc ${n} label`])),
-    });
-  }
-  return npcs;
-}
-
-/**
  * @param {string} csvText
  * @returns {Record<string, {
  *   key: string,
@@ -284,7 +254,6 @@ function parseMemoriamNpcs(cells, cols, rowLabel) {
  *   panelC?: object,
  *   panelD?: object,
  *   splashText: string,
- *   npcs: { name: string, fullName: string }[],
  * }>}
  */
 function parseMemoriamSkyboxRows(csvText) {
@@ -356,7 +325,6 @@ function parseMemoriamSkyboxRows(csvText) {
       panelA,
       panelB,
       splashText: trimCell(cellAt(cells, cols["splash text"])),
-      npcs: parseMemoriamNpcs(cells, cols, rowLabel),
     };
     if (panelC) {
       entry.panelC = panelC;
@@ -500,22 +468,6 @@ function renderLuaQuotedList(values) {
 }
 
 /**
- * @param {string[]} lines
- * @param {{ name: string, fullName: string }[]} npcs
- * @param {string} indent
- */
-function renderMemoriamNpcsLua(lines, npcs, indent) {
-  lines.push(`${indent}npcs = {`);
-  for (const npc of npcs) {
-    lines.push(`${indent}  {`);
-    lines.push(`${indent}    name = "${escapeLuaString(npc.name)}",`);
-    lines.push(`${indent}    fullName = "${escapeLuaString(npc.fullName)}"`);
-    lines.push(`${indent}  },`);
-  }
-  lines.push(`${indent}},`);
-}
-
-/**
  * @param {{
  *   skyboxes: { key: string, display: string, isShown?: boolean, url: string }[],
  *   generics: string[],
@@ -530,7 +482,6 @@ function renderMemoriamNpcsLua(lines, npcs, indent) {
  *     panelC?: object,
  *     panelD?: object,
  *     splashText: string,
- *     npcs: { name: string, fullName: string }[],
  *   }>,
  *   meta: { sheetId: string, catalogRange: string, memoriamRange?: string },
  * }} args
@@ -545,7 +496,7 @@ function renderSkyboxesCatalogLua(args) {
   lines.push("    AUTO-GENERATED from Google Sheet + Steam Cloud — DO NOT EDIT BY HAND.");
   lines.push(`    Sheet id: ${meta.sheetId}`);
   lines.push(
-    `    Ranges: ${meta.catalogRange} (Key,Display,isShown), ${memoriamRange} (Key,Characters,Start Year,End Year,Location,Panel A–D,Splash Text,NPC 1–10)`,
+    `    Ranges: ${meta.catalogRange} (Key,Display,isShown), ${memoriamRange} (Key,Characters,Start Year,End Year,Location,Panel A–D,Splash Text)`,
   );
   lines.push(
     "    URLs: lib/json/cloud-assets.json jobs skyboxes (assets/Skyboxes/skybox_<key>.jpg) and genericSkyboxes (GenericSkybox_<n>.jpg)",
@@ -591,8 +542,7 @@ function renderSkyboxesCatalogLua(args) {
     if (entry.panelD) {
       renderMemoriamPanelLua(lines, "panelD", entry.panelD, "    ");
     }
-    lines.push(`    splashText = "${escapeLuaString(entry.splashText || "")}",`);
-    renderMemoriamNpcsLua(lines, entry.npcs || [], "    ");
+    lines.push(`    splashText = "${escapeLuaString(entry.splashText || "")}"`);
     lines.push("  },");
   }
   lines.push("}");

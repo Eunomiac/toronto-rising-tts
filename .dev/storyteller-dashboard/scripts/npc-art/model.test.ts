@@ -26,7 +26,10 @@ const sources: NameSources = {
     ["loner", { characterKey: "loner", fullName: "Lone Wolf", pickerGroups: [] }]
   ]),
   genericLabels: new Map([["streetThug_01", "Street Thug"]]),
-  memoriamNames: new Map([["mem_princeDoran", "Prince Doran"]])
+  memoriamNames: new Map([
+    ["mem_princeDoran", { label: "Prince Doran", isGeneric: false }],
+    ["mem_arabiaLearnedMedia_01", { label: "Learned Media", isGeneric: true }]
+  ])
 };
 
 describe("buildSubject", () => {
@@ -46,8 +49,9 @@ describe("buildSubject", () => {
     expect(buildSubject("Generic", "streetThug_01", sources, roster, {})).toMatchObject({ name: "Street Thug", color: "#123456" });
   });
 
-  it("names a Memoriam NPC by its first non-title word", () => {
+  it("names a Memoriam NPC by its first non-title word, and a generic Memoriam NPC by its full label", () => {
     expect(buildSubject("Memoriam", "mem_princeDoran", sources, roster, {})?.name).toBe("Doran");
+    expect(buildSubject("Memoriam", "mem_arabiaLearnedMedia_01", sources, roster, {})?.name).toBe("Learned Media");
   });
 
   it("gives no art to a figurine missing from its folder's catalog", () => {

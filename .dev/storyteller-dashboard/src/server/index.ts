@@ -9,6 +9,7 @@ import { loadEnvFile } from "./loadEnv.js";
 import { generateNpcImage, generateNpcs, rerollNpcField } from "./npcService.js";
 import { loadGenericNpcCatalog, resolveGenericNpcImagePath } from "./genericNpcCatalog.js";
 import { refreshGenericNpcCatalogOnStartup } from "./refreshGenericNpcCatalog.js";
+import { refreshMemoriamNpcCatalogOnStartup } from "./refreshMemoriamNpcCatalog.js";
 import { createHeadshotCropStore, HeadshotCropError, parseHeadshotCrop, requireHeadshotKey } from "./headshotCrops.js";
 import { createNpcOverrideStore, NpcOverrideError, parseNpcOverrideBody, requireNpcOverrideKey } from "./npcOverrides.js";
 import { createDataFileStore, resolveDashboardBackupDir, type DataFileStore } from "./dataFileStore.js";
@@ -31,6 +32,7 @@ const distDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 const dashboardRoot = path.resolve(distDir, "..");
 const repoRoot = path.resolve(dashboardRoot, "..", "..");
 const genericNpcCatalogPath = path.join(dashboardRoot, "data", "generic-npcs.json");
+const memoriamNpcCatalogPath = path.join(dashboardRoot, "data", "memoriam-npcs.json");
 const figurineDir = path.join(repoRoot, "assets", "NPC Art", "Figurines");
 const genericNpcImageDir = path.join(figurineDir, "Generic");
 const sceneCatalogsPath = path.join(dashboardRoot, "data", "scene-catalogs.json");
@@ -638,6 +640,7 @@ const attachRequestHandler = (httpServer: ReturnType<typeof createServer>, handl
 
 void (async () => {
   await refreshGenericNpcCatalogOnStartup(genericNpcCatalogPath);
+  await refreshMemoriamNpcCatalogOnStartup(memoriamNpcCatalogPath);
   const httpServer = createServer();
 
   if (isDev) {

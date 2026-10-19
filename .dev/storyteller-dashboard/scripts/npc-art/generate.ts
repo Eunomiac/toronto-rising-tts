@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { loadGenericNpcCatalog } from "../../src/server/genericNpcCatalog.ts";
+import { loadMemoriamNpcCatalog } from "../../src/server/memoriamNpcCatalog.ts";
 import { isEmptyNpcOverride, NPC_OVERRIDE_KEY_PATTERN, parseNpcOverride, type NpcOverride } from "../../src/shared/npcOverride.ts";
 import { drawToken, loadFont, type DrawAssets } from "./draw.ts";
 import {
@@ -12,6 +13,7 @@ import {
   renderLuaModule,
   renderOverridesLuaModule,
   type HeadCrop,
+  type MemoriamArtEntry,
   type NamedCatalogEntry,
   type NameSources,
   type NpcArtLinks,
@@ -75,8 +77,6 @@ const readOptionalJson = async (file: string, what: string): Promise<unknown> =>
   return readJson(file);
 };
 
-const luaUnescape = (value: string): string => JSON.parse(`"${value}"`) as string;
-
 const readNamedCatalog = async (): Promise<Map<string, NamedCatalogEntry>> => {
   const file = path.join(dataDir, "scene-catalogs.json");
   if (!existsSync(file)) {
@@ -104,13 +104,12 @@ const readGenericLabels = async (): Promise<Map<string, string>> => {
   return new Map(npcs.map((npc) => [npc.key, npc.label]));
 };
 
-const readMemoriamNames = async (): Promise<Map<string, string>> => {
-  const source = await readFile(path.join(repoRoot, "lib", "skyboxes_catalog.ttslua"), "utf8");
-  const names = new Map<string, string>();
-  for (const match of source.matchAll(/name = "(mem_[^"]+)",\s*fullName = "((?:[^"\\]|\\.)*)"/g)) {
-    names.set(match[1]!, luaUnescape(match[2]!));
+const readMemoriamNames = async (): Promise<Map<string, MemoriamArtEntry>> => {
+  const { npcs } = await loadMemoriamNpcCatalog(path.join(dataDir, "memoriam-npcs.json"));
+  if (npcs.length === 0) {
+    throw new Error("data/memoriam-npcs.json lists no Memoriam NPCs. Run npm run memoriam-npcs:import.");
   }
-  return names;
+  return new Map(npcs.map((npc) => [npc.key, { label: npc.label, isGeneric: npc.isGeneric }]));
 };
 
 /** Ring colours come from the roster layout in data/npc-roster.json, which the dashboard's roster tab writes. */

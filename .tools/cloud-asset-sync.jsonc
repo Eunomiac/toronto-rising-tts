@@ -342,7 +342,8 @@
 
     // NPC art. npm run npc-art:draw draws the tokens before this sync; npm run npc-art:urls reads these jobs'
     // manifest rows afterwards and writes lib/npc_art_urls.ttslua. Roll-banner figures (core/roll_ui.ttslua) are
-    // the rollFigure_<characterKey> rows; generic NPCs have no banner figure.
+    // the rollFigure_<characterKey> rows. Present-day generic NPCs, and Memoriam generics
+    // (filename ending _NN), have no banner figure. Named Memoriam figures do.
     {
       "id": "npcFiguresCatalogued",
       "folder": "NPC Art/Figurines/Catalogued",
@@ -354,8 +355,15 @@
       "id": "npcFiguresMemoriam",
       "folder": "NPC Art/Figurines/Memoriam",
       "output": "GlobalCustomUIAssets",
-      "filenameToNameSearchPattern": "^npc_(.*)\\.webp$",
+      "filenameToNameSearchPattern": "^npc_(.*(?<!_\\d{2}))\\.webp$",
       "filenameToNameReplacePattern": "rollFigure_$1"
+    },
+    {
+      "id": "npcFiguresMemoriamGeneric",
+      "folder": "NPC Art/Figurines/Memoriam",
+      "output": "Manifest",
+      "filenameToNameSearchPattern": "^npc_(.*_\\d{2})\\.webp$",
+      "filenameToNameReplacePattern": "$1"
     },
     {
       "id": "npcFiguresGeneric",

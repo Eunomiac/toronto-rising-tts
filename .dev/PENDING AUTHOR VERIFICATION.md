@@ -20,7 +20,13 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
-_Last populated: 2026-10-18 (TOR-744 later Downtime session title). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
+_Last populated: 2026-10-19 (TOR-745 Memoriam NPC sheet import). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
+
+### Memoriam NPC list moved off the skybox sheet
+
+#### TOR-745 — Memoriam periods still load after NPC columns leave the skybox sheet
+
+**How to verify:** Save & Play. Open Memoriam on the Storyteller Dashboard for a character who has periods, such as Lucien. The period bar, years, locations, and panel names should still be there. The popup still does not list that period's NPCs. The new figurine files are not in Steam yet; they upload on the next full build with TTS closed.
 
 ### Later Downtime session title
 
