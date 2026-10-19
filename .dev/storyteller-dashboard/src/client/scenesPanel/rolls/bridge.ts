@@ -17,6 +17,7 @@ export type RollOptionsView = {
   readonly structural: Readonly<Record<string, boolean>>;
   readonly locked: { readonly takeHalf: boolean; readonly hungerDice: boolean };
   readonly conditions: readonly { readonly id: string; readonly label: string; readonly on: boolean }[];
+  readonly activeConditions?: readonly { readonly id: string; readonly label: string; readonly type: string }[];
   /** Structural option → the roll condition that switches it off (`takeHalf` → `noTakeHalf`). */
   readonly negating: Readonly<Record<string, string>>;
   readonly rerolls: number;
@@ -48,6 +49,7 @@ export const parseRollOptions = (returnValue: unknown): RollOptionsView => {
     structural: asFlags(parsed.structural),
     locked: { takeHalf: locked.takeHalf === true, hungerDice: locked.hungerDice === true },
     conditions: asList(parsed.conditions),
+    activeConditions: asList(parsed.activeConditions),
     negating: isRecord(parsed.negating) ? (parsed.negating as Record<string, string>) : {},
     rerolls: Number(parsed.rerolls),
     diceRerolled: Number(parsed.diceRerolled)

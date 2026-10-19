@@ -728,6 +728,16 @@ const RollOptions = ({ popup, access, send, onClose }: { popup: OptionsPopup; ac
                 </button>
               ))}
             </div>
+            {(view.activeConditions?.length ?? 0) > 0 && (
+              <div>
+                <span className="roll-options-head">Active conditions</span>
+                <div className="roll-flags roll-active-conditions">
+                  {view.activeConditions?.map((condition) => (
+                    <span key={condition.id}>{condition.label}</span>
+                  ))}
+                </div>
+              </div>
+            )}
             {view.conditions.length > 0 && (
               <>
                 <span className="roll-options-head">Roll conditions</span>

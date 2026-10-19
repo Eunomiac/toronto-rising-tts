@@ -245,13 +245,16 @@ function RC.computeEffectiveRollState(color, active)
     local defaults = RO.defaultsForRollType(rt)
 
     local bonus = tonumber(policy.wpRerollCountBonus) or 0
-    if bonus ~= 0 and locked.numberOfRerolls ~= true then
+    active.meta = active.meta or {}
+    local previousBonus = tonumber(active.meta.wpRerollPolicyBonus) or 0
+    if (bonus ~= 0 or previousBonus ~= 0) and locked.numberOfRerolls ~= true then
         local base = active.rollOptions[RO.ROLL_NUMBER_OF_REROLLS]
         if type(base) ~= "number" then
             base = defaults[RO.ROLL_NUMBER_OF_REROLLS]
         end
-        active.rollOptions[RO.ROLL_NUMBER_OF_REROLLS] = math.max(0, math.floor(base + bonus))
+        active.rollOptions[RO.ROLL_NUMBER_OF_REROLLS] = math.max(0, math.floor(base - previousBonus + bonus))
     end
+    active.meta.wpRerollPolicyBonus = bonus
 
     local function structuralBaseline(key)
         local v = active.rollOptions[key]

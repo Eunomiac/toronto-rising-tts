@@ -352,4 +352,54 @@ test("controller applies the policy bonus without accumulating it",function()
   realRC.computeEffectiveRollState("Brown",a)
   eq(a.pool.normal,6)
 end)
+test("repeated controller policy refresh does not grant extra Willpower rerolls",function()
+  reset()
+  local realRC=assert(loadfile("core/roll_controller.ttslua"))()
+  data.playerData.Brown.conditions.bonusWPReroll=true
+  local a=active({},"standard")
+  realRC.computeEffectiveRollState("Brown",a)
+  eq(a.rollOptions.numberOfRerolls,2)
+  realRC.computeEffectiveRollState("Brown",a)
+  eq(a.rollOptions.numberOfRerolls,2)
+  data.playerData.Brown.conditions.bonusWPReroll=nil
+  realRC.computeEffectiveRollState("Brown",a)
+  eq(a.rollOptions.numberOfRerolls,1)
+end)
+test("dashboard writes contextual condition overlays rather than two hardcoded toggles",function()
+  reset()
+  C.PlayerColors={"Brown","Orange"}
+  C.RollTypeLabel={}
+  local U=package.loaded["lib.util"]
+  U.clone=function(value)
+    if type(value)~="table" then return value end
+    local out={} for k,v in pairs(value) do out[k]=U.clone(v) end return out
+  end
+  U.isIn=function(value,list) for _,v in ipairs(list) do if v==value then return true end end return false end
+  local a=active({"memoriamBonus2"},"launch")
+  data.playerData.Brown.conditions.memoriamBonus2=true
+  S.setStateVal(a,"playerData","Brown","hud","rollData","active")
+  local written
+  RC.setRollOptions=function() return true end
+  RC.setRollConditionOverlay=function(_,patch) written=patch return true end
+  RC.computeEffectiveRollState=function() end
+  package.loaded["core.roll_ui"]={refreshAll=function() end}
+  package.loaded["dashboard.push"]={markWorldDirty=function() end}
+  package.loaded["lib.guids"].GetDiceOblivRouseGUID=function() return nil end
+  local command={op="options",color="Brown",conditions={criminalLaunchBonus2=true},rerolls=1,diceRerolled=3}
+  JSON={decode=function() return command end,encode=function(value) return value end}
+  local Rolls=require("dashboard.rolls")
+  eq(Rolls.apply("request").ok,true)
+  eq(written.forceOn.criminalLaunchBonus2,true)
+  local view=Rolls.options("Brown")
+  local found=false
+  for _,row in ipairs(view.conditions) do if row.id=="criminalLaunchBonus2" then found=true end end
+  eq(found,true)
+  local activeFound=false
+  for _,row in ipairs(view.activeConditions) do if row.id=="memoriamBonus2" then activeFound=true end end
+  eq(activeFound,true)
+  a.rollType="standard"
+  local unavailable=Rolls.options("Brown")
+  for _,row in ipairs(unavailable.conditions) do assert(row.id~="criminalLaunchBonus2") end
+  eq(Rolls.apply("request").ok,false)
+end)
 print(passed .. " location condition tests passed")

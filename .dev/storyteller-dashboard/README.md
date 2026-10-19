@@ -154,6 +154,11 @@ No local `data/chronicle/` folder is required.
 
 ## Useful commands
 
+Roll Options reads available condition checkboxes and active condition labels from TTS.
+Contextual choices appear only when their location and roll type apply; saving uses the
+shared condition overlay API. The active-condition list includes stat effects as well as
+roll effects. TTS remains authoritative, including when a stale popup's context changes.
+
 ```powershell
 npm run scene-catalogs
 npm run typecheck
