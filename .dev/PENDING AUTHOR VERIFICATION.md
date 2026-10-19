@@ -40,6 +40,23 @@ should persist. Other roll types and locations should not offer that checkbox. A
 stat conditions such as **Resolve Halved** should also be listed, and reopening options
 must not increase the available Willpower rerolls.
 
+#### NPC conditions — direct author request
+
+Restart the dashboard, build and Save & Play. Follow the [NPC condition checks](PC%20Data%20%26%20Tracking/Location%20Aspect%20Conditions.md#npc-verification-in-tts).
+Start with two vampire NPCs at Casa Loma: both present NPCs should receive the Blood Potency
+increase, while an absent NPC should not. Then check Redemption House: the NPC equivalent
+reduces Willpower by one quarter, rounding the remaining capacity down (8 becomes 6; 7 becomes 5).
+Resolve itself is halved: a Resolve 5 + Survival 2 pool becomes 2 + 2 = 4 dice. Configure reads
+an individual Resolve pool when present; otherwise enter the attribute rating and check
+**The chosen pool uses Resolve** for a broad or differently named pool. Unrelated Mental pools
+and saved ratings stay unchanged. Leaving restores capacity and preserves damage.
+
+Check the special Willpower and Rouse rules on the NPC's own roll, plus a generic NPC that is
+later kept. Costs, Stains and queued checks must stay with the right NPC and never affect Black.
+Compulsions, Ambitions, Desires and unknown Drowning pools are Storyteller choices.
+Local behavior tests and build checks pass; these live-game checks are still outstanding.
+This session has no Linear connector, so no Linear issue could be created or updated.
+
 _Last populated: 2026-10-19 (TOR-745 Memoriam NPC sheet import). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
 
 ### Memoriam NPC list moved off the skybox sheet

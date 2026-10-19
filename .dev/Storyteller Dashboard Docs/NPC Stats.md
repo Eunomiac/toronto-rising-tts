@@ -135,3 +135,20 @@ When a vampire fails a rouse check, their Hunger should be increased. When a vam
 #### Initial Tracker Values
 
 Whenever an NPC is added to the stage or a seated position (either by transitioning to a phase/scene or directly from the npc roster), if this is their first appearance of the night, their Health and Willpower trackers should be reset to full and their Hunger value should be set to 1 or 2 (randomly determined). These values should persist throughout the night, regardless of the scene in which the NPC appears.
+
+## Live conditions
+
+Current implementation: `core/npc_conditions.ttslua` owns the NPC interpretation of the shared
+condition registry; `src/shared/npcConditions.ts` applies its resolved deltas to a read-only view
+of the dashboard stat block. `useNpcLive` sends changed primitive rule ratings to TTS through
+`npcConditionStats`, with a comparison guard to avoid refresh loops. No biography or power text
+is mirrored. The source JSON and sheet data remain unchanged by scene conditions.
+
+The tracker popup lists active effects and manual condition checkboxes, Stains, and pending
+Compulsion/Ambition/Desire decisions. Configure offers trait and exceptional-pool impairment
+checkboxes when aggregate NPC pools need the Storyteller's judgement. Roll Options is available
+for NPC rolls and uses the same registry overlay as PC rolls.
+
+See [Location Aspect Conditions](../PC%20Data%20%26%20Tracking/Location%20Aspect%20Conditions.md#npc-subjects)
+for Resolve-pool halving and the quarter-Willpower approximation, Drowning pool decisions, identity/lifetime rules and the
+live-game verification checklist.

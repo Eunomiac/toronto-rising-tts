@@ -15,6 +15,14 @@ const anchor = (overrides: Partial<ClockAnchor> = {}): ClockAnchor => ({
 });
 
 describe("applyWorldEvent", () => {
+  it("normalizes empty NPC condition channels from Lua tables", () => {
+    const state = applyWorldEvent({}, { topic: "seats", data: {
+      npcConditions: { Mylene: { conditions: {}, manual: {}, statChanges: [], rollFeatures: [] } }
+    }, at: 0 });
+    expect(state.seats?.npcConditions?.Mylene).toMatchObject({
+      conditions: [], manual: [], statChanges: {}, rollFeatures: {}
+    });
+  });
   it("replaces one slice per world topic and stamps the clock with the server time", () => {
     let state: WorldState = {};
     state = applyWorldEvent(state, { topic: "phase", data: { phase: "Play", sessionName: "", sessionStartDowntime: false, memoriamActive: false } });
@@ -28,7 +36,7 @@ describe("applyWorldEvent", () => {
 
   it("turns Lua empty tables into empty lists", () => {
     const state = applyWorldEvent({}, { topic: "seats", data: { seats: {}, stage: {}, spotlightOrder: {}, generics: {}, scatter: {}, trackers: [] } });
-    expect(state.seats).toEqual({ seats: [], stage: [], spotlightOrder: [], generics: [], scatter: [], trackers: {} });
+    expect(state.seats).toEqual({ seats: [], stage: [], spotlightOrder: [], generics: [], scatter: [], trackers: {}, npcConditions: {} });
     const sound = applyWorldEvent({}, { topic: "soundscape", data: { lanes: {} } });
     expect(sound.soundscape?.lanes).toEqual([]);
   });

@@ -12,12 +12,19 @@ local function features(active)
   return (type(active.rollPolicy) == "table" and active.rollPolicy.features) or {}
 end
 
-local function announce(color, text)
-  U.AlertGM(color .. ": " .. text)
+local function announce(color, text, active)
+  U.AlertGM((color == "Black" and active and active.npcCharacterKey or color) .. ": " .. text)
 end
 
-local function sceneState(color)
-  local pid = S.getPlayerID(color)
+local function actorContext(color, active)
+  return color == "Black" and active.npcCharacterKey
+    and require("core.npc_conditions").context(active.npcCharacterKey)
+    or require("lib.effective_stats").forSeat(color)
+end
+
+local function sceneState(color, active)
+  local pid = color == "Black" and active and active.npcCharacterKey
+    and ("npc:" .. active.npcCharacterKey) or S.getPlayerID(color)
   local context = tostring(S.getStateVal("sessionScene", "districtKey")) .. "/" .. tostring(S.getStateVal("sessionScene", "siteKey"))
   local root = S.getStateVal("locationConditionState")
   if type(root) ~= "table" or root.context ~= context then
@@ -32,12 +39,21 @@ local function sceneState(color)
   return state
 end
 
-local function queueFrenzy(color, difficulty, label)
+local function queueFrenzy(color, active, difficulty, label)
   local RC = require("core.roll_controller")
   local config = {
     rollType = C.RollType.FRENZY, difficulty = difficulty,
     label = label, initiator = "storyteller", autoOpen = true,
   }
+  if color == "Black" and active.npcCharacterKey then
+    local ctx = actorContext(color, active)
+    local wp = ctx.stats.willpower
+    config.npcCharacterKey = active.npcCharacterKey
+    config.pool = { normal = math.max(0, ctx.trackerMax("willpower") - (wp.superficial or 0)
+      - (wp.aggravated or 0)) + math.floor((ctx.stats.humanity.base or 0) / 3) }
+    require("core.npc_conditions").queueCheck(config)
+    return
+  end
   local pid = S.getPlayerID(color)
   if S.getStateVal("playerData", pid, "hud", "rollData", "active") ~= nil then
     RC.queueRoll(color, config)
@@ -65,7 +81,12 @@ local function queueFrenzy(color, difficulty, label)
   end
 end
 
-local function giveCompulsion(color, reason)
+local function giveCompulsion(color, reason, active)
+  if color == "Black" and active.npcCharacterKey then
+    require("core.npc_trackers").setConditionState(active.npcCharacterKey, "compulsion", true)
+    announce(color, reason .. " Choose an appropriate Compulsion for this NPC.", active)
+    return
+  end
   -- Draw the seat's generic card; its existing callback presents the matching choices.
   local drawn = require("core.compulsions").drawForCondition(color)
   announce(color, reason .. (drawn and " Choose a Compulsion from the presented cards."
@@ -93,7 +114,7 @@ function LC.poolBonus(color, active)
     bonus = bonus + 2
   end
   if f.messyRouseTallyBonus then
-    bonus = bonus + (tonumber(sceneState(color).tally) or 0)
+    bonus = bonus + (tonumber(sceneState(color, active).tally) or 0)
   end
   return bonus
 end
@@ -120,21 +141,39 @@ function LC.onBeforeDiceRead(color, active, values, objects)
   active.meta = active.meta or {}
   if f.rerollSuccessfulRouse then
     active.meta.locationRouseRetried = active.meta.locationRouseRetried or {}
-    for _, kind in ipairs({ DK.KIND_ROUSE, DK.KIND_BLOOD_SURGE_ROUSE, DK.KIND_OBLIV_ROUSE }) do
-      local dice = values[kind] or {}
-      local passed = require("lib.rouse_outcomes").rouseCheckPassed(dice)
-      if kind == DK.KIND_OBLIV_ROUSE then
-        local res = require("lib.rouse_outcomes").resolveOblivRouseDice(dice, f.noObvRouseDice)
-        passed = #dice > 0 and res.hungerDelta == 0 and res.stainDelta == 0 and not res.pendingChoice
-      end
-      if passed and not active.meta.locationRouseRetried[kind] then
-        active.meta.locationRouseRetried[kind] = true
-        active.phase = C.RollPhase.ROLLING
-        for _, obj in ipairs(objects[kind] or {}) do
-          obj.setLock(false)
-          obj.randomize()
+    if color == "Black" and active.npcCharacterKey then
+      local Checks = require("lib.npc_rouse_checks")
+      for i, check in ipairs(Checks.list(active, values)) do
+        local result = Checks.outcome(check, values, f.noObvRouseDice)
+        local passed = result.read > 0 and result.hungerDelta == 0
+          and result.stainDelta == 0 and not result.pendingChoice
+        if passed and not active.meta.locationRouseRetried[i] then
+          active.meta.locationRouseRetried[i] = true
+          active.phase = C.RollPhase.ROLLING
+          for index = check.first, check.first + check.dice - 1 do
+            local obj = (objects[check.kind] or {})[index]
+            if obj then obj.setLock(false) obj.randomize() end
+          end
+          return false
         end
-        return false
+      end
+    else
+      for _, kind in ipairs({ DK.KIND_ROUSE, DK.KIND_BLOOD_SURGE_ROUSE, DK.KIND_OBLIV_ROUSE }) do
+        local dice = values[kind] or {}
+        local passed = #dice > 0 and require("lib.rouse_outcomes").rouseCheckPassed(dice)
+        if kind == DK.KIND_OBLIV_ROUSE then
+          local res = require("lib.rouse_outcomes").resolveOblivRouseDice(dice, f.noObvRouseDice)
+          passed = #dice > 0 and res.hungerDelta == 0 and res.stainDelta == 0 and not res.pendingChoice
+        end
+        if passed and not active.meta.locationRouseRetried[kind] then
+          active.meta.locationRouseRetried[kind] = true
+          active.phase = C.RollPhase.ROLLING
+          for _, obj in ipairs(objects[kind] or {}) do
+            obj.setLock(false)
+            obj.randomize()
+          end
+          return false
+        end
       end
     end
   end
@@ -171,7 +210,7 @@ function LC.onWillpowerSpent(color, active)
   if f.scaryWPReroll and (rc == C.ResultClass.MESSY_CRITICAL
       or rc == C.ResultClass.BESTIAL_FAILURE or rc == C.ResultClass.TOTAL_BESTIAL_FAILURE
       or rc == C.ResultClass.TOTAL_FAILURE) then
-    queueFrenzy(color, 3, "Dance in the Dark — Fear Frenzy")
+    queueFrenzy(color, active, 3, "Dance in the Dark — Fear Frenzy")
   end
   if f.setHungerWPReroll then
     local RC = require("core.roll_controller")
@@ -200,39 +239,56 @@ end
 
 function LC.onFrenzyFailed(color, active)
   if features(active).noFrenzy then
-    announce(color, "Ice Ice Baby: gain a corrupt Ambition instead of losing control. It remains until resolved.")
+    if color == "Black" and active.npcCharacterKey then
+      require("core.npc_trackers").setConditionState(active.npcCharacterKey, "corruptAmbition", true)
+    end
+    announce(color, "Ice Ice Baby: gain a corrupt Ambition instead of losing control. It remains until resolved.", active)
     return false
   end
 end
 
 function LC.onRollConsequences(color, active)
-  if color == "Black" then return end
+  if color == "Black" and not active.npcCharacterKey then return end
   local f = features(active)
   local rc = type(active.result) == "table" and active.result.resultClass or nil
-  local state = sceneState(color)
+  local state = sceneState(color, active)
   if active.meta.locationConsequencesApplied then return end
   active.meta.locationConsequencesApplied = true
   if f.messyCompulsion and rc == C.ResultClass.MESSY_CRITICAL then
-    giveCompulsion(color, "Can't Stop the Feeling:")
+    giveCompulsion(color, "Can't Stop the Feeling:", active)
   end
   if f.bestialReset and isBestial(rc) then
-    local P = require("lib.pc_stats")
-    local stats = S.getStateVal("playerData", S.getPlayerID(color), "stats") or {}
-    P.applyDamageOrHeal(color, "willpower", -(tonumber((stats.willpower or {}).superficial) or 0), 0)
-    require("core.sync").player(color)
-    announce(color, "Bring Me to Life: Superficial Willpower damage is healed. Choose a replacement Desire.")
+    if color == "Black" then
+      local trackers = require("core.npc_trackers")
+      trackers.applyChange(active.npcCharacterKey, "willpower", "clearSuper")
+      trackers.setConditionState(active.npcCharacterKey, "desirePending", true)
+    else
+      local stats = actorContext(color, active).stats
+      require("lib.pc_stats").applyDamageOrHeal(color, "willpower", -(tonumber((stats.willpower or {}).superficial) or 0), 0)
+      require("core.sync").player(color)
+    end
+    announce(color, "Bring Me to Life: Superficial Willpower damage is healed. Choose a replacement Desire.", active)
   end
   if f.surviveFailure and rc == C.ResultClass.FAILURE and not state.drowningUsed then
     state.drowningUsed = true
-    local ctx = require("lib.effective_stats").forSeat(color)
+    local ctx = actorContext(color, active)
     local pool = ctx.dotRating("resolve") + ctx.dotRating("survival")
-    local hunger = math.min(pool, tonumber(S.getPlayerVal(color, "hunger")) or 0)
-    require("core.roll_controller").queueRoll(color, {
+    local hunger = math.min(pool, color == "Black" and (ctx.stats.hunger or 0)
+      or tonumber(S.getPlayerVal(color, "hunger")) or 0)
+    local config = {
       rollType = C.RollType.STANDARD, difficulty = 4,
       label = "Drowning — Resolve + Survival (failure makes the original result a Total Failure)",
       pool = { normal = pool - hunger, hunger = hunger }, autoOpen = true, initiator = "storyteller",
       conditionFollowup = { kind = "drowning", originalLabel = active.label, originalResult = active.result },
-    })
+    }
+    if color == "Black" then
+      config.npcCharacterKey = active.npcCharacterKey
+      config.pool = nil
+      announce(color, "Drowning: set this NPC's Resolve + Survival pool before rolling.", active)
+      require("core.npc_conditions").queueCheck(config)
+    else
+      require("core.roll_controller").queueRoll(color, config)
+    end
   end
   local followup = active.meta.conditionFollowup
   if type(followup) == "table" and followup.kind == "drowning" then
@@ -242,15 +298,15 @@ function LC.onRollConsequences(color, active)
       active.result.resultClass = C.ResultClass.TOTAL_FAILURE
       active.result.drowningSave = saveResult ~= active.result and saveResult or nil
       active.label = (followup.originalLabel or "Original roll") .. " — Drowning: Total Failure"
-      announce(color, "Drowning: the original Failure is now a Total Failure.")
+      announce(color, "Drowning: the original Failure is now a Total Failure.", active)
     else
-      announce(color, "Drowning: the original result remains a Failure.")
+      announce(color, "Drowning: the original result remains a Failure.", active)
     end
   end
   if f.messyRouseTallyBonus then
     local increment = rc == C.ResultClass.MESSY_CRITICAL and 1 or 0
     for _, strip in ipairs(active.rouseOutcomeStrips or {}) do
-      if #(strip.values or {}) > 0 then increment = increment + 1 end
+      if #(strip.values or {}) > 0 then increment = increment + (strip.checkCount or 1) end
     end
     state.tally = (tonumber(state.tally) or 0) + increment
   end
@@ -267,33 +323,39 @@ function LC.onRouseConsequences(color, active)
         features(active).noObvRouseDice)
       failed = outcome.hungerDelta > 0 or strip.narrative == "Hunger Roused"
     end
-    if failed then
+    if strip.failedChecks ~= nil then
+      failures = failures + strip.failedChecks
+    elseif failed then
       failures = failures + 1
     end
   end
   if failures > 0 then
-    require("lib.pc_stats").applyDamageOrHeal(color, "health", 0, failures)
-    require("core.sync").player(color)
+    if color == "Black" and active.npcCharacterKey then
+      require("core.npc_trackers").damage(active.npcCharacterKey, "health", "aggravated", failures)
+    else
+      require("lib.pc_stats").applyDamageOrHeal(color, "health", 0, failures)
+      require("core.sync").player(color)
+    end
   end
 end
 
 -- These hooks use a newly resolved policy because they occur outside a roll.
 function LC.onStainsGained(color, active)
   if features(active).scaryStain then
-    queueFrenzy(color, 4, "You're So Vain — Fury Frenzy")
+    queueFrenzy(color, active, 4, "You're So Vain — Fury Frenzy")
   end
 end
 
 function LC.onHostedEnter(color, active, added)
   if not features(active).woundToCompulsion then return end
-  local state = sceneState(color)
+  local state = sceneState(color, active)
   if state.entered and not added.woundToCompulsion then return end
   state.entered = true
-  local ctx = require("lib.effective_stats").forSeat(color)
+  local ctx = actorContext(color, active)
   local stats = ctx.stats or {}
   local wp = stats.willpower or {}
   if (tonumber(wp.superficial) or 0) + (tonumber(wp.aggravated) or 0) > ctx.trackerMax("willpower") / 2 then
-    giveCompulsion(color, "Mad World:")
+    giveCompulsion(color, "Mad World:", active)
   end
 end
 

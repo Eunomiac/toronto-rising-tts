@@ -351,7 +351,7 @@ end
 -- @param rollType string|nil  C.RollType value (default STANDARD)
 -- @param npcCharacterKey string|nil  Authoritative NPC key (avoids ambiguous fullName broadcast lookup — TOR-252)
 -- @return boolean
-function STR.initiateNpcRoll(rawLabel, rollType, npcCharacterKey)
+function STR.initiateNpcRoll(rawLabel, rollType, npcCharacterKey, conditionCheck)
     local ScatterMode = require("core.scatter_mode")
     local scatterActive = ScatterMode.isActive() == true
     local scatterGroupIndex = nil
@@ -385,6 +385,9 @@ function STR.initiateNpcRoll(rawLabel, rollType, npcCharacterKey)
         initiator = "storyteller",
         stDrawerSlot = slot,
         npcCharacterKey = npcCharacterKey,
+        pool = type(conditionCheck) == "table" and conditionCheck.pool or nil,
+        difficulty = type(conditionCheck) == "table" and conditionCheck.difficulty or nil,
+        conditionFollowup = type(conditionCheck) == "table" and conditionCheck.conditionFollowup or nil,
     })
     if not ok then
         return false

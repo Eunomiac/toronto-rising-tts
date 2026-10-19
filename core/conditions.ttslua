@@ -177,6 +177,9 @@ end
 function Conditions.buildEffectiveConditionsForRoll(playerID, active)
   local effective = {}
   if playerID == C.StorytellerID then
+    if type(active) == "table" and type(active.npcCharacterKey) == "string" then
+      effective = require("core.npc_conditions").conditionSet(active.npcCharacterKey)
+    end
     local overlay = type(active) == "table" and active.rollConditionOverlay or nil
     if type(overlay) == "table" then
       if type(overlay.forceOn) == "table" then
@@ -193,6 +196,9 @@ function Conditions.buildEffectiveConditionsForRoll(playerID, active)
           end
         end
       end
+    end
+    for id in pairs(effective) do
+      if not Conditions.canUseRollCondition(playerID, active, id) then effective[id] = nil end
     end
     return effective
   end
@@ -234,7 +240,9 @@ function Conditions.canUseRollCondition(playerID, active, conditionId)
     return false
   end
   if def.requiresCondition ~= nil then
-    local base = S.getStateVal("playerData", playerID, "conditions") or {}
+    local base = playerID == C.StorytellerID and active ~= nil and active.npcCharacterKey ~= nil
+      and require("core.npc_conditions").conditionSet(active.npcCharacterKey)
+      or S.getStateVal("playerData", playerID, "conditions") or {}
     return base[def.requiresCondition] ~= nil
   end
   return true
@@ -261,10 +269,11 @@ function Conditions.resolveRollPolicyForActive(playerID, active)
   if type(playerID) ~= "string" or playerID == "" then
     error("Conditions.resolveRollPolicyForActive: playerID required")
   end
-  if playerID == C.StorytellerID then
-    return RollPolicies.empty()
-  end
   local stats = S.getStateVal("playerData", playerID, "stats")
+  if playerID == C.StorytellerID then
+    stats = type(active) == "table" and type(active.npcCharacterKey) == "string"
+      and require("core.npc_conditions").statsFor(active.npcCharacterKey) or {}
+  end
   local effective = Conditions.buildEffectiveConditionsForRoll(playerID, active)
   return RollPolicies.mergeForPlayer(effective, stats)
 end
@@ -620,6 +629,7 @@ function Conditions.reconcileHostedForSession(opts)
       end
     end
   end
+  require("core.npc_conditions").reconcileForSession()
   return changedSeatColors
 end
 

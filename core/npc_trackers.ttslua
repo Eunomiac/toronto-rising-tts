@@ -34,6 +34,7 @@ local TRACKS = {
 }
 
 local LEVELS = { hunger = true, rage = true }
+LEVELS.stains = true
 
 local DAMAGE_MODES = {
     addSuper = { 1, 0 },
@@ -194,6 +195,17 @@ function NpcTrackers.ensure(key)
     return record
 end
 
+--- Small NPC-specific condition state follows named, generic and kept tracker identities.
+function NpcTrackers.setConditionState(key, field, value)
+    local allowed = { conditionStats=true, conditions=true, compulsion=true, corruptAmbition=true,
+        desirePending=true, stains=true, humanityDelta=true }
+    if not allowed[field] then error("Unknown NPC condition state: " .. tostring(field)) end
+    local r = ensureRecord(key)
+    r[field] = value
+    store(key, r)
+    markDirty()
+end
+
 --- `ensure` for several NPCs, one push mark.
 --- @param keys string[]
 function NpcTrackers.ensureKeys(keys)
@@ -229,6 +241,10 @@ function NpcTrackers.sceneCastKeys()
         if type(slot) == "table" and slot.slotEmpty ~= true then
             add(slot.characterKey)
         end
+    end
+    for _, seatKey in ipairs(C.PlayerColors or {}) do
+        local slot = slots[seatKey]
+        if type(slot) == "table" and slot.isPlayingNPC == true then add(slot.npcCharacterKey) end
     end
     for key, row in pairs(getMembership()) do
         if type(row) == "table" then
@@ -282,11 +298,11 @@ end
 --- @param which string
 --- @param ds number
 --- @param da number
-local function applyTrack(record, which, ds, da)
+local function applyTrack(record, which, ds, da, effectiveMax)
     local track = TRACKS[which]
     local s = math.max(0, (tonumber(record[track.sup]) or 0) + ds)
     local a = math.max(0, (tonumber(record[track.agg]) or 0) + da)
-    local max = tonumber(record[track.max])
+    local max = tonumber(effectiveMax) or tonumber(record[track.max])
     if max ~= nil then
         a = math.min(a, max)
         local overflow = s + a - max
@@ -326,24 +342,30 @@ function NpcTrackers.applyChange(key, which, mode, maxes)
         return "npcTracker needs a characterKey."
     end
     local record = ensureRecord(key)
+    local previousStains = tonumber(record.stains) or 0
     setMaxes(record, maxes)
     if TRACKS[which] ~= nil then
         local deltas = DAMAGE_MODES[mode]
         if deltas == nil then
             return "Unknown tracker change `" .. tostring(mode) .. "`."
         end
-        applyTrack(record, which, deltas[1], deltas[2])
+        local ctx = require("core.npc_conditions").context(key)
+        local max = ctx.trackerMax(which)
+        applyTrack(record, which, deltas[1], deltas[2], max > 0 and max or nil)
     elseif LEVELS[which] then
         local delta = (mode == "up" and 1) or (mode == "down" and -1) or nil
         if delta == nil then
             return "Hunger and Rage go `up` or `down`."
         end
-        record[which] = math.max(0, math.min(LEVEL_MAX, (tonumber(record[which]) or 0) + delta))
+        record[which] = math.max(0, math.min(which == "stains" and 10 or LEVEL_MAX, (tonumber(record[which]) or 0) + delta))
     else
         return "Unknown tracker `" .. tostring(which) .. "`."
     end
     store(key, record)
     markDirty()
+    if which == "stains" and (tonumber(record.stains) or 0) > previousStains then
+        require("core.npc_conditions").dispatch(key, "onStainsGained")
+    end
     return nil
 end
 
@@ -358,7 +380,9 @@ function NpcTrackers.damage(key, which, kind, n)
     end
     local record = ensureRecord(key)
     local amount = math.max(0, math.floor(tonumber(n) or 0))
-    applyTrack(record, which, kind == "superficial" and amount or 0, kind == "aggravated" and amount or 0)
+    local max = require("core.npc_conditions").context(key).trackerMax(which)
+    applyTrack(record, which, kind == "superficial" and amount or 0, kind == "aggravated" and amount or 0,
+        max > 0 and max or nil)
     store(key, record)
     markDirty()
 end
@@ -399,6 +423,10 @@ function NpcTrackers.snapshotForKeys(keys)
                 wpAgg = tonumber(record.wpAgg) or 0,
                 hunger = tonumber(record.hunger) or 0,
                 rage = tonumber(record.rage) or 0,
+                stains = tonumber(record.stains) or 0,
+                compulsion = record.compulsion == true or nil,
+                corruptAmbition = record.corruptAmbition == true or nil,
+                desirePending = record.desirePending == true or nil,
             }
         end
     end
