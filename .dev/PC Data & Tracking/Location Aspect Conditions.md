@@ -90,8 +90,8 @@ Rouse reroll planning. Uniform impairment changes broad pools; named traits chan
 exceptional pools. Configure offers checkboxes for ambiguous skill bonuses and attribute-group
 impairment on exceptional pools. Saved NPC stats remain unchanged.
 
-For NPCs, **Resolve Halved reduces total Willpower capacity to half, rounded down**, without a
-Resolve or Mental pool penalty. This is the provisional NPC interpretation stated in chat;
+For NPCs, **Resolve Halved reduces total Willpower capacity by one quarter**, rounding the remaining
+capacity down, without a Resolve or Mental pool penalty. This follows the author’s clarification;
 no optional Resolve/Survival stat fields are added. Existing damage is preserved when entering
 or leaving the location. Ordinary impairment from filling the reduced track still applies.
 Drowning asks the Storyteller to set a Resolve + Survival pool on the queued NPC check.
@@ -111,7 +111,7 @@ and Blindfold appear as NPC status labels; they do not put overlays on the Black
 1. Seat two vampire NPCs with Stats, put one on stage, and enter Casa Loma. Each present NPC's
    effective Blood Potency should rise by one, affecting its derived roll and Mend values.
    Make one absent and then change location: only the appropriate NPC's effects should leave.
-2. At Redemption House, Willpower 8 should show capacity 4; Willpower 7 should show capacity 3.
+2. At Redemption House, Willpower 8 should show capacity 6; Willpower 7 should show capacity 5.
    Mental and exceptional Resolve pools should stay unchanged by the halving rule. Leave the
    site and confirm capacity returns without changing existing damage.
 3. In Configure, check impairment on a broad Physical pool and an exceptional Brawl pool. Use

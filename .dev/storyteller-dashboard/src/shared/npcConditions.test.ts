@@ -24,8 +24,8 @@ describe("NPC condition consumers", () => {
     expect(applyNpcConditions(block, effects({ strength: 2 })).physical).toBe(6);
   });
   it("reduces Willpower without changing Mental or named Resolve pools", () => {
-    const view = applyNpcConditions(block, { ...effects(), wpMax: 4 });
-    expect(view.willpower).toBe(4);
+    const view = applyNpcConditions(block, { ...effects(), wpMax: 6 });
+    expect(view.willpower).toBe(6);
     expect(view.mental).toBe(7);
     expect(view.exceptional[1]?.dice).toBe(7);
   });

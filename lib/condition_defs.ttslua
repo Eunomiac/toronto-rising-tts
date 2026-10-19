@@ -228,10 +228,10 @@ CD.Defs = {
     priority = 60,
     -- Halve the attribute before pool penalties; tracker capacity must not oscillate with impairment.
     statChangesFromStats = function(stats, _changes)
-      -- NPCs use aggregate pools: apply the equivalent halving only to Willpower.
+      -- NPCs treat Resolve as half of Willpower: lose one quarter of total capacity.
       if stats.isNpc == true then
         local before = PSC.trackerMaxFromStats(stats, nil, "willpower")
-        return { willpower = math.floor(before / 2) - before }
+        return { willpower = math.floor(before * 3 / 4) - before }
       end
       local before = PSC.dotRatingFromStats(stats, nil, "resolve")
       local delta = math.floor(before / 2) - before

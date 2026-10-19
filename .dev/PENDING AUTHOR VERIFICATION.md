@@ -44,9 +44,9 @@ must not increase the available Willpower rerolls.
 
 Restart the dashboard, build and Save & Play. Follow the [NPC condition checks](PC%20Data%20%26%20Tracking/Location%20Aspect%20Conditions.md#npc-verification-in-tts).
 Start with two vampire NPCs at Casa Loma: both present NPCs should receive the Blood Potency
-increase, while an absent NPC should not. Then check Redemption House: the provisional NPC
-equivalent halves total Willpower capacity, rounded down, without changing Mental pools or
-saved ratings. Leaving restores capacity and preserves damage.
+increase, while an absent NPC should not. Then check Redemption House: the NPC equivalent
+reduces Willpower by one quarter, rounding the remaining capacity down (8 becomes 6; 7 becomes 5).
+Mental pools and saved ratings stay unchanged. Leaving restores capacity and preserves damage.
 
 Check the special Willpower and Rouse rules on the NPC's own roll, plus a generic NPC that is
 later kept. Costs, Stains and queued checks must stay with the right NPC and never affect Black.
