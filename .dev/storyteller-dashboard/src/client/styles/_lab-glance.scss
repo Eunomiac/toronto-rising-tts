@@ -952,6 +952,22 @@ $lab-live: #4caf6a;
     overflow-x: hidden;
     overflow-y: auto;
   }
+
+  &-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    &-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+
+      &.years {
+        flex-wrap: nowrap;
+      }
+    }
+  }
 }
 
 /* ---------- roster categories ---------- */
@@ -2704,6 +2720,14 @@ input.lab-cat-rename {
 // Token configuration window (right-click a roster token); width matches WIDTH in npcConfig.tsx.
 .lab-npc-config {
   width: 300px;
+
+  &.memoriam {
+    width: 360px;
+
+    .lab-group-edit-row > span {
+      flex-basis: 72px;
+    }
+  }
 
   &-hint {
     margin: 2px 0 0;

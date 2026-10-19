@@ -11,7 +11,9 @@ Source of truth:
 - Storyteller Dashboard Memoriam popup (`.dev/storyteller-dashboard/src/client/scenesPanel/memoriamModal.tsx` + `memoriam.ts`) → `memoriam` op in `dashboard/scenes.ttslua` → `Memoriam.applyEnter` (the in-game TTS popup was retired in TOR-721)
 - `lib/constants.ttslua` — `C.MemoriamSkyboxes`, `C.getMemoriamSkyboxesForCharacter`, `C.resolveMemoriamPanelURL`
 - `lib/skyboxes_catalog.ttslua` — generated from `SKYBOXMEMORIAMCSV` (`npm run skyboxes:import`). Period rows only; NPC columns are not on that sheet.
-- `.dev/storyteller-dashboard/data/memoriam-npcs.json` — Memoriam NPCs from named range `MEMORIAMNPCCSV` (`npm run memoriam-npcs:import`). Each row's `periods` lists the skybox keys it appears in. `isGeneric` marks crowd figures (key ends in `_` plus two digits).
+- `.dev/storyteller-dashboard/data/memoriam-npcs.json` — Memoriam NPCs from named range `MEMORIAMNPCCSV` (`npm run memoriam-npcs:import`, also on dashboard startup). Each row's `periods` lists the skybox keys it appears in. `isGeneric` marks crowd figures (key ends in `_` plus two digits). The same import writes `lib/memoriam_npc_catalog.ttslua`, which `lib/npcs_data.ttslua` registers: non-generics join `D.characters`, generics join `D.genericNpcs`.
+- `.dev/storyteller-dashboard/data/memoriam-npc-fields.json` — Storyteller edits to location, year, and periods. The sheet import never reads or writes this file. Only values that differ from the sheet are stored.
+- Storyteller Dashboard NPC Roster, Memoriam tab (`scenesPanel/glance.tsx`). While Memoriam is playing, the phase snapshot's `memoriamSkyboxKey` (`dashboard/world_snapshot.ttslua`) is the live period, and the tab's top section lists NPCs whose periods include that key.
 - `core/phases.ttslua`; dashboard `leaveMemoriam` op calls `Memoriam.applyExit` restore
 - `core/game_state_overlay.ttslua` — overlay while `Memoriam.isActive()`
 - `core/scenes.ttslua` — `reconcileSkyboxFromState` uses panel Cloud URL (or `C.Skyboxes.JustSmoke` for Just Smoke) while Memoriam is active
@@ -25,7 +27,7 @@ Verification:
 - Exit via the dashboard's leave-Memoriam control, via Scenes Apply, and via End Scene
 - Phase chrome: [Phases Overview](Phases%20Overview.md)
 
-Status: current (TOR-101 / TOR-539–TOR-551 / TOR-564 / TOR-568 / TOR-642). Remaining work is listed at the bottom — do not treat those items as shipped.
+Status: current (TOR-101 / TOR-539–TOR-551 / TOR-564 / TOR-568 / TOR-642 / TOR-745 / TOR-746). Remaining work is listed at the bottom — do not treat those items as shipped.
 
 ---
 
@@ -166,7 +168,7 @@ These were specified for Memoriam and are **not** current runtime behavior. Keep
 
 - **Play-as-NPC (TOR-95):** `"library"` / `"memoriam"` (and later `"generic"`) assignees should play that NPC; `"self"` seats stay the PC. Reverse assignments on exit. Do not convert NPC-body damage onto the PC.
 - **`kind = "generic"`** in assignments — modal + enter wiring (also blocked on Generic NPC seating / Play-as-NPC).
-- **Period NPC world objects:** placeholder figurines/tokens (GUIDs) for Memoriam NPCs whose `periods` include the active skybox and that are not already in the named pool.
+- **Period NPC world objects:** the dashboard roster now lists Memoriam NPCs (and you can drag a unique one, or queue a generic). Automatic placeholder figurines for everyone whose periods include the active skybox are still not spawned.
 - **Ignore Absent PCs** listed in `assignments` — they should stay Absent; enter currently seats anyone with a color + assignment row.
 - **Dusk-relative night window:** random time should be midnight–2:00 AM **or** from about one hour after dusk until midnight. Today the second window is fixed 21:00–midnight.
 - **Unknown `locationAudio` key → silent.** Empty string already maps to `silent`. A key that is not in the soundscape catalog currently fails as unknown rather than falling back.

@@ -1,8 +1,15 @@
 import { useState, type ReactElement } from "react";
 import { CARD_SCALE_RANGE, parseNpcOverride, SEATED_Y_RANGE, type NpcOverride } from "../../shared/npcOverride";
-import { isNpcTier, keptStatsKey, NPC_TIERS, type NpcTier } from "../../shared/npcStats";
+import { isNpcTier, keptStatsKey, NPC_TIERS, type NpcStats, type NpcTier } from "../../shared/npcStats";
+import {
+  parseMemoriamLocations,
+  parseMemoriamPeriods,
+  parseMemoriamYears,
+  type MemoriamYear
+} from "../../shared/memoriamNpc";
 import { TIER_LABELS } from "../npcTierBadges";
 import { openHeadshotEditor } from "../headshots/headshotEditor";
+import { saveMemoriamFields } from "../memoriamCatalog";
 import { saveNpcOverride, useNpcOverrides } from "../npcOverrides";
 import { NpcStatsModal } from "./npcStatsModal";
 import { Overlay } from "./sketch";
@@ -12,6 +19,7 @@ const DEFAULT_SEATED_Y = -52.89;
 /** Card scale of an NPC with no override (D.DEFAULT_FIGURINE_SCALE in lib/npcs_data.ttslua). */
 const DEFAULT_CARD_SCALE = 53;
 const WIDTH = 300;
+const MEMORIAM_WIDTH = 360;
 
 export type NpcConfigTarget = {
   readonly characterKey: string;
@@ -23,6 +31,15 @@ export type NpcConfigTarget = {
   readonly defaultColor: string;
   /** What the Stats button edits: a named NPC's block, a generic type's four tiers, or a kept character's block. */
   readonly stats: { readonly key: string; readonly label: string; readonly tiered: boolean };
+  /** A Memoriam variant with no block of its own: the Stats window starts from the linked NPC. */
+  readonly statSeed?: NpcStats;
+  /** Location, year, and periods. Saving writes only the lists that differ from the sheet. */
+  readonly memoriam?: {
+    readonly locations: readonly string[];
+    readonly years: readonly MemoriamYear[];
+    readonly periods: readonly string[];
+    readonly knownPeriods: readonly string[];
+  };
   /**
    * A generic already in the scene: Name renames it there (like the stage's Rename…) instead of saving an override,
    * and Tier picks which of its type's stat blocks it rolls from.
@@ -67,6 +84,9 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
   const [color, setColor] = useState<string | null>(saved.color ?? null);
   const [cardScale, setCardScale] = useState(saved.cardScale === undefined ? "" : String(saved.cardScale));
   const [seatedY, setSeatedY] = useState(saved.seatedY === undefined ? "" : String(saved.seatedY));
+  const [yearText, setYearText] = useState(target.memoriam?.years.join(", ") ?? "");
+  const [locationText, setLocationText] = useState(target.memoriam?.locations.join(", ") ?? "");
+  const [periodText, setPeriodText] = useState(target.memoriam?.periods.join(", ") ?? "");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
@@ -114,6 +134,19 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
     if (busy || statsOpen) {
       return;
     }
+    const memoriam = target.memoriam;
+    let memoriamDraft: { locations: readonly string[]; years: readonly MemoriamYear[]; periods: readonly string[] } | undefined;
+    if (memoriam) {
+      const locations = parseMemoriamLocations(locationText);
+      const years = parseMemoriamYears(yearText);
+      const periods = parseMemoriamPeriods(periodText, new Set(memoriam.knownPeriods));
+      const problem = typeof locations === "string" ? locations : typeof years === "string" ? years : typeof periods === "string" ? periods : null;
+      if (problem !== null || typeof locations === "string" || typeof years === "string" || typeof periods === "string") {
+        setError(problem ?? "Those location, year, or period values are not valid.");
+        return;
+      }
+      memoriamDraft = { locations, years, periods };
+    }
     const next = draft();
     if (typeof next === "string") {
       setError(next);
@@ -122,12 +155,25 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
     if (inScene && name.trim() !== "" && name.trim() !== inScene.name) {
       inScene.rename(name.trim(), keptId);
     }
-    if (JSON.stringify(next) === JSON.stringify(saved)) {
+    const overrideSame = JSON.stringify(next) === JSON.stringify(saved);
+    const fieldsSame = memoriam === undefined || (
+      yearText === memoriam.years.join(", ")
+      && locationText === memoriam.locations.join(", ")
+      && periodText === memoriam.periods.join(", ")
+    );
+    if (overrideSame && fieldsSame) {
       onClose();
       return;
     }
     setBusy(true);
-    saveNpcOverride(target.characterKey, next).then(onClose, (reason: unknown) => {
+    const tasks: Promise<void>[] = [];
+    if (!overrideSame) {
+      tasks.push(saveNpcOverride(target.characterKey, next));
+    }
+    if (!fieldsSame && memoriamDraft) {
+      tasks.push(saveMemoriamFields(target.characterKey, memoriamDraft));
+    }
+    Promise.all(tasks).then(onClose, (reason: unknown) => {
       setBusy(false);
       setError(reason instanceof Error ? reason.message : String(reason));
     });
@@ -135,7 +181,7 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
 
   return (
     <Overlay onClose={close}>
-      <div className="lab-modal lab-group-edit lab-npc-config" style={{ left: Math.min(target.at.x, 1920 - WIDTH - 8), top: target.at.y }}>
+      <div className={`lab-modal lab-group-edit lab-npc-config${target.memoriam ? " memoriam" : ""}`} style={{ left: Math.min(target.at.x, 1920 - (target.memoriam ? MEMORIAM_WIDTH : WIDTH) - 8), top: target.at.y }}>
         <div className="lab-npc-config-head">
           <span className="lab-modal-title">{label}</span>
           <button type="button" className="lab-btn" title="Stat blocks for rolls and trackers" onClick={() => setStatsOpen(true)}>
@@ -213,6 +259,22 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
             onChange={(event) => setSeatedY(event.target.value)}
           />
         </label>
+        {target.memoriam && (
+          <>
+            <label className="lab-group-edit-row" title="Modern, 1900s, 1800s, or 1700s. Separate several with commas.">
+              <span>Year</span>
+              <input className="lab-select" placeholder="1800s, 1900s" value={yearText} onChange={(event) => setYearText(event.target.value)} />
+            </label>
+            <label className="lab-group-edit-row" title="Separate several places with commas. New Orleans, Western is two places.">
+              <span>Location</span>
+              <input className="lab-select" placeholder="Toronto" value={locationText} onChange={(event) => setLocationText(event.target.value)} />
+            </label>
+            <label className="lab-group-edit-row" title="Memoriam period keys, separated with commas.">
+              <span>Periods</span>
+              <input className="lab-select" placeholder="aishe2, fomorach8" value={periodText} onChange={(event) => setPeriodText(event.target.value)} />
+            </label>
+          </>
+        )}
         {error && <p className="lab-note">{error}</p>}
         <p className="lab-npc-config-hint">
           {inScene ? "Name renames them in this scene (queued for Send). " : ""}
@@ -224,6 +286,7 @@ export const NpcConfigModal = ({ target, onClose }: { target: NpcConfigTarget; o
           statsKey={stats.key}
           label={stats.tiered ? stats.label : label}
           generic={stats.tiered}
+          {...(target.statSeed ? { fallback: target.statSeed } : {})}
           onClose={() => setStatsOpen(false)}
         />
       )}

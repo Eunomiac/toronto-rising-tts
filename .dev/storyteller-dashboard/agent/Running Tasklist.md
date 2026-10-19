@@ -32,6 +32,8 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 
 ## Task List
 
+✔️ Memoriam roster tab. The NPC Roster has a Memoriam button. While a Memoriam period is playing, that period's NPCs sit at the top (unique ones you can drag, crowd groups by their shared name). Year and location buttons narrow the list underneath. Right-click a token to set location, year, and periods; those edits stay put when the sheet imports again. A crowd NPC's four stat tiers stay on its stem (`generic:mem_alamutHouseStaff`), and a unique NPC with no stats of its own starts from the NPC named in variantOfUnique. Reload the dashboard, then Save & Play before dragging a Memoriam NPC onto the stage.
+
 ✔️ SD roll corrections: completed PC rolls set NPC difficulty from their margin; NPC initiation sends the catalog full name to TTS; cards start open and manual folds belong only to the current roll.
 
 ✔️ SD-DnD secondary panel placement. Moved the Secondary drop bins over the central aspects row, with a downward entrance from above. The seat strip stays exposed and accepts drops throughout a drag. Browser regression checks assert panel/aspects alignment and hit-test the PC seat while the bins are open.

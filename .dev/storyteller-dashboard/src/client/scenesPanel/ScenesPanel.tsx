@@ -26,7 +26,15 @@ import { bloodPotencyRow, isSeatColor, ROLL_TYPE_RULES } from "../catalogVocab";
 import { NpcConfigModal, type NpcConfigTarget } from "./npcConfig";
 import { loadGenericCatalog } from "./genericCatalog";
 import { planNpcTypeSeed } from "../../shared/npcRollPlan";
-import { configuredTiers, genericStatsKey, keptStatsKey } from "../../shared/npcStats";
+import { configuredTiers, genericStatsKey, keptStatsKey, newStatId } from "../../shared/npcStats";
+import {
+  inheritedNamedBlock,
+  MEMORIAM_GENERIC_COLOR,
+  MEMORIAM_YEAR_GROUPS,
+  memoriamStem
+} from "../../shared/memoriamNpc";
+import { useMemoriamCatalog } from "../memoriamCatalog";
+import { useNpcOverrides } from "../npcOverrides";
 import { useNpcStats, saveNpcStats } from "../npcStats";
 import { NpcTrackerPopup } from "./npcTrackers";
 import { getDndSession } from "./dnd/session";
@@ -353,6 +361,8 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const world = useWorldState();
   const openPcSheet = useOpenPcSheet();
   const npcStats = useNpcStats();
+  const memoriamCatalog = useMemoriamCatalog();
+  const npcOverrides = useNpcOverrides();
   const [dndNotice, setDndNotice] = useState<string | null>(null);
   const [dndEdit, setDndEdit] = useState<NpcConfigTarget | null>(null);
   const [dndTracker, setDndTracker] = useState<{ key: string; name: string; x: number; y: number } | null>(null);
@@ -441,7 +451,12 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
     const rect = activeCanvas()?.getBoundingClientRect();
     return { x: Math.max(12, Math.min(1550, (point?.x ?? 960) - (rect?.left ?? 0))), y: Math.max(12, Math.min(700, (point?.y ?? 500) - (rect?.top ?? 0))) };
   };
-  const characterName = (key: string): string => [...(catalogs?.namedNpcs ?? []), ...(catalogs?.pcs ?? [])].find((npc) => npc.characterKey === key)?.fullName ?? seats?.generics.find((npc) => npc.characterKey === key)?.name ?? key;
+  const characterName = (key: string): string =>
+    npcOverrides[key]?.name
+    ?? [...(catalogs?.namedNpcs ?? []), ...(catalogs?.pcs ?? [])].find((npc) => npc.characterKey === key)?.fullName
+    ?? seats?.generics.find((npc) => npc.characterKey === key)?.name
+    ?? memoriamCatalog.find((npc) => npc.key === key)?.label
+    ?? key;
   const dndUi: DndUiHooks = {
     characterName,
     notify: setDndNotice,
@@ -474,6 +489,58 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
     openPcSheet: (color) => { if (isSeatColor(color)) openPcSheet?.(color); },
     openNpcEdit: (key) => {
       const at = dropPoint();
+      const mem = memoriamCatalog.find((row) => row.key === key);
+      if (mem) {
+        const statsKey = mem.isGeneric ? genericStatsKey(memoriamStem(mem.key)) : mem.key;
+        const spawned = mem.isGeneric ? seats?.generics.find((row) => row.characterKey === key) : undefined;
+        const inherited = !mem.isGeneric
+          ? inheritedNamedBlock(
+            (statKey) => npcStats?.[statKey]?.named,
+            (statKey) => memoriamCatalog.find((row) => row.key === statKey)?.variantOfUnique ?? "",
+            mem.key
+          )
+          : undefined;
+        const yearColor = MEMORIAM_YEAR_GROUPS.find((group) => mem.years.includes(group.year))?.color ?? MEMORIAM_GENERIC_COLOR;
+        setDndEdit({
+          characterKey: key,
+          at,
+          defaultName: mem.label,
+          defaultColor: mem.isGeneric ? MEMORIAM_GENERIC_COLOR : yearColor,
+          stats: { key: statsKey, label: spawned?.name ?? mem.label, tiered: mem.isGeneric },
+          ...(inherited ? { statSeed: { named: inherited } } : {}),
+          memoriam: {
+            locations: mem.locations,
+            years: mem.years,
+            periods: mem.periods,
+            knownPeriods: catalogs?.memoriamPeriods.map((period) => period.key) ?? []
+          },
+          ...(spawned ? {
+            inScene: {
+              name: spawned.name,
+              tier: tiers[key],
+              tiers: configuredTiers(npcStats?.[statsKey]),
+              rename: (name: string) => send({ op: "genericRename", key, name }),
+              setTier: (tier) => send({ op: "genericTier", key, ...(tier ? { tier } : {}) }),
+              keeping: {
+                keptId: spawned.keptId,
+                keep: async (name: string): Promise<string> => {
+                  const id = newStatId();
+                  const tier = tiers[key];
+                  const block = tier ? npcStats?.[statsKey]?.[tier] : undefined;
+                  await saveNpcStats(keptStatsKey(id), { ...(block ? { named: block } : {}), kept: { name, figurineKey: key, label: mem.label } });
+                  send({ op: "genericKeep", key, keptId: id });
+                  return id;
+                },
+                unkeep: async (keptId: string): Promise<void> => {
+                  send({ op: "genericKeep", key });
+                  await saveNpcStats(keptStatsKey(keptId), {});
+                }
+              }
+            }
+          } : {})
+        });
+        return;
+      }
       loadGenericCatalog().then((generics) => {
         const generic = generics.find((row) => row.key === key);
         const spawned = generic ? seats?.generics.find((row) => row.characterKey === key) : undefined;

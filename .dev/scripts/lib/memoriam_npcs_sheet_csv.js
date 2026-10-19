@@ -9,6 +9,7 @@ const { parseCsv } = require("./skyboxes_sheet_csv.js");
 
 const KEY_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
 const GENERIC_SUFFIX_RE = /_\d{2}$/;
+const YEARS = new Set(["Modern", "1900s", "1800s", "1700s"]);
 
 /**
  * @param {string} value
@@ -43,10 +44,54 @@ function parseIsGeneric(raw, rowLabel) {
 }
 
 /**
+ * Comma-separated cell. A blank piece is an error. `allowEmpty` is the whole cell being blank.
+ * @param {string} raw
+ * @param {string} rowLabel
+ * @param {string} field
+ * @param {boolean} allowEmpty
+ * @returns {string[]}
+ */
+function splitCell(raw, rowLabel, field, allowEmpty) {
+  const text = trimCell(raw);
+  if (text === "") {
+    if (allowEmpty) {
+      return [];
+    }
+    throw new Error(`${rowLabel} ${field} must list at least one value.`);
+  }
+  const pieces = text.split(",");
+  if (pieces.some((piece) => trimCell(piece) === "")) {
+    throw new Error(`${rowLabel} ${field} has an empty entry. Separate values with commas.`);
+  }
+  return pieces.map((piece) => trimCell(piece));
+}
+
+/**
  * @param {string} raw
  * @param {string} rowLabel
  * @returns {string[]}
  */
+function parseYearCell(raw, rowLabel) {
+  const years = splitCell(raw, rowLabel, "year", false);
+  for (const year of years) {
+    if (!YEARS.has(year)) {
+      throw new Error(
+        `${rowLabel} year "${year}" must be Modern, 1900s, 1800s, or 1700s.`,
+      );
+    }
+  }
+  return years;
+}
+
+/**
+ * @param {string} raw
+ * @param {string} rowLabel
+ * @returns {string[]}
+ */
+function parseLocationCell(raw, rowLabel) {
+  return splitCell(raw, rowLabel, "location", true);
+}
+
 function parsePeriods(raw, rowLabel) {
   const periods = trimCell(raw)
     .split(",")
@@ -154,7 +199,12 @@ function parseMemoriamNpcRows(csvText) {
         `${rowLabel} variantOfUnique "${variantOfUnique}" must be an identifier (A-Za-z_[A-Za-z0-9_]*).`,
       );
     }
+    parseLocationCell(location, rowLabel);
+    parseYearCell(year, rowLabel);
     const isGeneric = parseIsGeneric(isGenericRaw, rowLabel);
+    if (isGeneric && variantOfUnique !== "") {
+      throw new Error(`${rowLabel} variantOfUnique is only for non-generic Memoriam NPCs.`);
+    }
     const suffixGeneric = GENERIC_SUFFIX_RE.test(key);
     if (isGeneric !== suffixGeneric) {
       throw new Error(
@@ -191,6 +241,102 @@ function parseMemoriamNpcRows(csvText) {
  * }} payload
  * @returns {string}
  */
+/**
+ * Every variantOfUnique must name a catalogued character or another Memoriam NPC, with no cycle.
+ * @param {ReturnType<typeof parseMemoriamNpcRows>} rows
+ * @param {Set<string>} cataloguedKeys keys from lib/npcs_data.ttslua D.characters
+ */
+function validateMemoriamVariants(rows, cataloguedKeys) {
+  /** @type {Map<string, string>} */
+  const variantOf = new Map(rows.map((row) => [row.key, row.variantOfUnique]));
+  for (const row of rows) {
+    if (row.variantOfUnique === "") {
+      continue;
+    }
+    /** @type {Set<string>} */
+    const seen = new Set([row.key]);
+    let current = row.variantOfUnique;
+    while (current !== "") {
+      if (seen.has(current)) {
+        throw new Error(
+          `MEMORIAMNPCCSV: variantOfUnique cycle at "${row.key}" through "${current}".`,
+        );
+      }
+      seen.add(current);
+      if (cataloguedKeys.has(current)) {
+        break;
+      }
+      if (!variantOf.has(current)) {
+        throw new Error(
+          `MEMORIAMNPCCSV: "${row.key}" variantOfUnique "${row.variantOfUnique}" reaches "${current}", which is not a catalogued NPC or a Memoriam NPC.`,
+        );
+      }
+      current = variantOf.get(current) || "";
+    }
+  }
+}
+
+/**
+ * Character keys in D.characters (`name = {` at two-space indent, before the overrides block).
+ * @param {string} luaText
+ * @returns {Set<string>}
+ */
+function collectCharacterKeys(luaText) {
+  const start = luaText.indexOf("D.characters = {");
+  const end = luaText.indexOf("D.overrides");
+  if (start < 0 || end < start) {
+    throw new Error("lib/npcs_data.ttslua has no D.characters block to check variantOfUnique against.");
+  }
+  /** @type {Set<string>} */
+  const keys = new Set();
+  const slice = luaText.slice(start, end);
+  for (const match of slice.matchAll(/^ {2}([A-Za-z_][A-Za-z0-9_]*) = \{$/gm)) {
+    keys.add(match[1]);
+  }
+  if (keys.size < 1) {
+    throw new Error("lib/npcs_data.ttslua D.characters listed no keys.");
+  }
+  return keys;
+}
+
+/**
+ * @param {string} value
+ * @returns {string}
+ */
+function luaString(value) {
+  return `"${String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\r?\n/g, "\\n")}"`;
+}
+
+/**
+ * @param {string} key
+ * @returns {string}
+ */
+function luaKey(key) {
+  return /^[A-Za-z_][A-Za-z0-9_]*$/.test(key) ? key : `[${luaString(key)}]`;
+}
+
+/**
+ * TTS catalog: label, isGeneric, variantOfUnique. Location, year, and periods stay on the dashboard.
+ * @param {ReturnType<typeof parseMemoriamNpcRows>} npcs
+ * @returns {string}
+ */
+function renderMemoriamNpcCatalogLua(npcs) {
+  const lines = [
+    "-- AUTO-GENERATED by npm run memoriam-npcs:import — DO NOT EDIT BY HAND.",
+    "-- Memoriam NPC keys for lib/npcs_data.ttslua. Location, year, and periods live in the dashboard catalog.",
+    "",
+    "return {",
+  ];
+  const sorted = [...npcs].sort((left, right) => (left.key < right.key ? -1 : left.key > right.key ? 1 : 0));
+  for (const npc of sorted) {
+    lines.push(
+      `  ${luaKey(npc.key)} = { label = ${luaString(npc.label)}, isGeneric = ${npc.isGeneric ? "true" : "false"}, variantOfUnique = ${luaString(npc.variantOfUnique)} },`,
+    );
+  }
+  lines.push("}", "");
+  return lines.join("\n");
+}
+
 function renderMemoriamNpcCatalogJson(payload) {
   return `${JSON.stringify(
     {
@@ -208,4 +354,7 @@ function renderMemoriamNpcCatalogJson(payload) {
 module.exports = {
   parseMemoriamNpcRows,
   renderMemoriamNpcCatalogJson,
+  validateMemoriamVariants,
+  collectCharacterKeys,
+  renderMemoriamNpcCatalogLua,
 };

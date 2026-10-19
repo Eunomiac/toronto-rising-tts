@@ -10,6 +10,14 @@ import { generateNpcImage, generateNpcs, rerollNpcField } from "./npcService.js"
 import { loadGenericNpcCatalog, resolveGenericNpcImagePath } from "./genericNpcCatalog.js";
 import { refreshGenericNpcCatalogOnStartup } from "./refreshGenericNpcCatalog.js";
 import { refreshMemoriamNpcCatalogOnStartup } from "./refreshMemoriamNpcCatalog.js";
+import { loadMemoriamNpcCatalog } from "./memoriamNpcCatalog.js";
+import { applyMemoriamFields, sheetMemoriamLists } from "../shared/memoriamNpc.js";
+import {
+  createMemoriamFieldStore,
+  MemoriamFieldError,
+  parseMemoriamFieldBody,
+  requireMemoriamFieldKey
+} from "./memoriamNpcFields.js";
 import { createHeadshotCropStore, HeadshotCropError, parseHeadshotCrop, requireHeadshotKey } from "./headshotCrops.js";
 import { createNpcOverrideStore, NpcOverrideError, parseNpcOverrideBody, requireNpcOverrideKey } from "./npcOverrides.js";
 import { createDataFileStore, resolveDashboardBackupDir, type DataFileStore } from "./dataFileStore.js";
@@ -53,6 +61,7 @@ const termImages = createTermImageStore(path.join(dashboardRoot, "data", "term-i
 const labNotes = createLabNoteStore(path.join(dashboardRoot, "agent", "lab-notes.json"));
 const headshotCrops = createHeadshotCropStore(path.join(dashboardRoot, "data", "headshot-crops.json"));
 const npcOverrides = createNpcOverrideStore(path.join(dashboardRoot, "data", "npc-overrides.json"));
+const memoriamFields = createMemoriamFieldStore(path.join(dashboardRoot, "data", "memoriam-npc-fields.json"));
 const dashboardBackupDir = resolveDashboardBackupDir(repoRoot).then((backupDir) => {
   if (!backupDir) {
     console.warn("tts-assets.config.json has no backupDir; scene deck, scene library and NPC stats backups are off.");
@@ -222,6 +231,66 @@ const handleHeadshotCrops = async (request: IncomingMessage, response: ServerRes
     sendJson(response, 405, { error: "Method not allowed" });
   } catch (error: unknown) {
     if (error instanceof HeadshotCropError) {
+      sendJson(response, error.status, { error: error.message });
+      return;
+    }
+    throw error;
+  }
+};
+
+const loadKnownMemoriamPeriods = async (): Promise<Set<string>> => {
+  let text: string;
+  try {
+    text = await readFile(sceneCatalogsPath, "utf8");
+  } catch {
+    throw new MemoriamFieldError("Scene catalogs are missing, so Memoriam periods cannot be checked.", 500);
+  }
+  const parsed: unknown = JSON.parse(text);
+  const periods = typeof parsed === "object" && parsed !== null ? (parsed as { memoriamPeriods?: unknown }).memoriamPeriods : undefined;
+  const keys = new Set<string>();
+  if (Array.isArray(periods)) {
+    for (const period of periods) {
+      if (typeof period === "object" && period !== null && typeof (period as { key?: unknown }).key === "string") {
+        keys.add((period as { key: string }).key);
+      }
+    }
+  }
+  if (keys.size < 1) {
+    throw new MemoriamFieldError("Scene catalogs list no Memoriam periods.", 500);
+  }
+  return keys;
+};
+
+const memoriamNpcViews = async () => {
+  const catalog = await loadMemoriamNpcCatalog(memoriamNpcCatalogPath);
+  const fields = await memoriamFields.list();
+  return catalog.npcs.map((npc) => applyMemoriamFields(npc, fields.fields[npc.key]));
+};
+
+const handleMemoriamNpcs = async (request: IncomingMessage, response: ServerResponse, url: URL): Promise<void> => {
+  try {
+    if (request.method === "GET") {
+      sendJson(response, 200, { npcs: await memoriamNpcViews() });
+      return;
+    }
+    const key = requireMemoriamFieldKey(url.searchParams.get("key"));
+    if (request.method === "PUT") {
+      const catalog = await loadMemoriamNpcCatalog(memoriamNpcCatalogPath);
+      const npc = catalog.npcs.find((row) => row.key === key);
+      if (!npc) {
+        throw new MemoriamFieldError(`No Memoriam NPC named ${key}.`, 404);
+      }
+      const parsed = parseMemoriamFieldBody(await readRequestJson(request), await loadKnownMemoriamPeriods());
+      if (typeof parsed === "string") {
+        throw new MemoriamFieldError(parsed, 400);
+      }
+      await memoriamFields.put(key, parsed, sheetMemoriamLists(npc));
+      sendJson(response, 200, { npcs: await memoriamNpcViews() });
+      return;
+    }
+    sendJson(response, 405, { error: "Method not allowed" });
+  } catch (error: unknown) {
+    if (error instanceof MemoriamFieldError) {
       sendJson(response, error.status, { error: error.message });
       return;
     }
@@ -540,6 +609,11 @@ const tryHandleDedicatedRoutes = async (request: IncomingMessage, response: Serv
 
   if (pathname === "/api/npc-overrides") {
     await handleNpcOverrides(request, response, url);
+    return true;
+  }
+
+  if (pathname === "/api/memoriam-npcs") {
+    await handleMemoriamNpcs(request, response, url);
     return true;
   }
 

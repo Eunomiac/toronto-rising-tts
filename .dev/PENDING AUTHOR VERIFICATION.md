@@ -20,7 +20,18 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
-_Last populated: 2026-10-19 (TOR-745 Memoriam NPC sheet import). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
+_Last populated: 2026-10-19 (TOR-746 Memoriam roster). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
+
+### Memoriam NPCs on the roster
+
+#### TOR-746 — Memoriam tab lists the sheet NPCs, and a dragged token can spawn
+
+**How to verify:** Restart the Storyteller Dashboard, then Save & Play.
+
+1. Open the Scenes tab and the NPC Roster. Click **Memoriam**. You should see year buttons (Modern, 1900s, 1800s, 1700s) and a row of location buttons. Unique NPCs sit in coloured groups titled Memoriam Present, Memoriam 1900s, Memoriam 1800s, and Memoriam 1700s. Crowd NPCs sit in grey groups. Click a year, then a location: the list shows only NPCs that match both. Click the same button again to clear it.
+2. Start a Memoriam on a real period (not Just Smoke) and Advance. The top of the Memoriam roster should say **This Memoriam** and list NPCs for that period. Just Smoke, and any phase that is not Memoriam, should hide that section.
+3. Drag one unique Memoriam NPC onto the stage. It should appear as a figurine. Click a crowd group (for example a Servant), pick a tier if it asks, and it should queue the same way other generic NPCs do.
+4. Right-click a Memoriam token and set Year to something like `1800s, 1900s`, then close the window. Restart the dashboard (or let it refresh the sheet). That year should still be what you typed.
 
 ### Memoriam NPC list moved off the skybox sheet
 

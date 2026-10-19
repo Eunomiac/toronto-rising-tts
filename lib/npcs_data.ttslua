@@ -544,6 +544,12 @@ function D.initGenericNPCs()
       genericNpcs[key] = { key = key, label = (override and override.name) or art.genericLabel }
     end
   end
+  for key, row in pairs(require("lib.memoriam_npc_catalog")) do
+    if type(row) == "table" and row.isGeneric == true and genericNpcs[key] == nil then
+      local override = D.overrides[key]
+      genericNpcs[key] = { key = key, label = (type(override) == "table" and override.name) or row.label or key }
+    end
+  end
   if next(genericNpcs) == nil then
     error("lib.npc_art_urls has no generic NPC rows (genericLabel) — run npm run build:full")
   end
@@ -612,6 +618,44 @@ function D.resolveCharacterKeyByDisplayName(displayName)
         return nil
     end
     return getDisplayNameIndex()[string.lower(needle)]
+end
+
+--- Non-generic Memoriam NPCs join the named roster so a stage drop can spawn them.
+--- `werewolf` follows variantOfUnique when the catalogued NPC is a werewolf.
+local function memoriamWerewolf(key, seen)
+    if seen[key] then
+        return false
+    end
+    seen[key] = true
+    local existing = D.characters[key]
+    if type(existing) == "table" and existing.werewolf == true then
+        return true
+    end
+    local row = require("lib.memoriam_npc_catalog")[key]
+    if type(row) ~= "table" then
+        return false
+    end
+    local target = row.variantOfUnique
+    if type(target) ~= "string" or target == "" then
+        return false
+    end
+    return memoriamWerewolf(target, seen)
+end
+
+local memoriamCatalog = require("lib.memoriam_npc_catalog")
+for key, row in pairs(memoriamCatalog) do
+    if type(key) == "string" and type(row) == "table" and row.isGeneric ~= true and D.characters[key] == nil then
+        local override = D.overrides[key] or {}
+        local def = {
+            name = key,
+            fullName = (type(override.name) == "string" and override.name) or row.label or key,
+            figurine = { scale = override.cardScale or D.DEFAULT_FIGURINE_SCALE },
+        }
+        if memoriamWerewolf(key, {}) then
+            def.werewolf = true
+        end
+        D.characters[key] = def
+    end
 end
 
 return D

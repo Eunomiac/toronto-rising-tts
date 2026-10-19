@@ -15,12 +15,17 @@
 const fs = require("fs");
 const path = require("path");
 const {
+  collectCharacterKeys,
   parseMemoriamNpcRows,
   renderMemoriamNpcCatalogJson,
+  renderMemoriamNpcCatalogLua,
+  validateMemoriamVariants,
 } = require("./lib/memoriam_npcs_sheet_csv.js");
 
 const root = path.resolve(__dirname, "..", "..");
 const defaultOutPath = path.join(root, ".dev", "storyteller-dashboard", "data", "memoriam-npcs.json");
+const defaultLuaPath = path.join(root, "lib", "memoriam_npc_catalog.ttslua");
+const npcsDataPath = path.join(root, "lib", "npcs_data.ttslua");
 
 const DEFAULT_SHEET_ID = "10Ehs7cMR7016QYYW5TzT0mfmrc8XoGmfDlwz_Zh15Gs";
 const DEFAULT_RANGE = "MEMORIAMNPCCSV";
@@ -142,6 +147,8 @@ function writeAtomic(filePath, contents) {
  *   rangeName?: string,
  *   tabName?: string,
  *   outPath?: string,
+ *   luaPath?: string,
+ *   npcsDataPath?: string,
  *   quiet?: boolean
  * }} [options]
  * @returns {Promise<{ npcCount: number, outPath: string, sheetId: string, tabName: string, rangeName: string }>}
@@ -151,6 +158,8 @@ async function importMemoriamNpcs(options = {}) {
   const rangeName = String(options.rangeName || process.env.MEMORIAM_NPC_RANGE || DEFAULT_RANGE).trim();
   const tabName = String(options.tabName || process.env.MEMORIAM_NPC_TAB || DEFAULT_TAB).trim();
   const outPath = options.outPath || defaultOutPath;
+  const luaPath = options.luaPath || defaultLuaPath;
+  const charactersPath = options.npcsDataPath || npcsDataPath;
   const meta = { sheetId, rangeName, tabName };
 
   if (!options.quiet) {
@@ -160,13 +169,17 @@ async function importMemoriamNpcs(options = {}) {
   const url = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(sheetId)}/export?format=csv&gid=${gid}`;
   const csv = await fetchCsv(url, tabName);
   const npcs = parseMemoriamNpcRows(csv);
+  const catalogued = collectCharacterKeys(fs.readFileSync(charactersPath, "utf8"));
+  validateMemoriamVariants(npcs, catalogued);
   const json = renderMemoriamNpcCatalogJson({ npcs, meta });
 
   writeAtomic(outPath, json);
+  writeAtomic(luaPath, renderMemoriamNpcCatalogLua(npcs));
   if (!options.quiet) {
     console.log(`[memoriam-npcs:import] Wrote ${path.relative(root, outPath)} (${npcs.length} NPCs)`);
+    console.log(`[memoriam-npcs:import] Wrote ${path.relative(root, luaPath)}`);
   }
-  return { npcCount: npcs.length, outPath, sheetId, tabName, rangeName };
+  return { npcCount: npcs.length, outPath, luaPath, sheetId, tabName, rangeName };
 }
 
 async function main() {

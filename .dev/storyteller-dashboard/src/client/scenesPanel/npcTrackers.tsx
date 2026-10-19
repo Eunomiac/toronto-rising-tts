@@ -5,8 +5,10 @@ import { TraitRing } from "../pcSheet/TraitRing";
 import type { RingAction } from "../pcSheet/types";
 import { useNpcStats } from "../npcStats";
 import { statBlockFor, type NpcKind, type NpcStatBlock, type NpcTier } from "../../shared/npcStats";
+import { inheritedNamedBlock, memoriamStem } from "../../shared/memoriamNpc";
 import type { GenericNpc, NpcTrackerRecord } from "../worldState";
 import { bloodPotencyRow } from "../catalogVocab";
+import { useMemoriamCatalog } from "../memoriamCatalog";
 import type { NpcTrackerMode, NpcTrackerWhich, ScenesCommand } from "./commands";
 import { useGenericCatalog } from "./genericCatalog";
 import { Icon } from "./icons";
@@ -41,8 +43,10 @@ export const useNpcLive = (
 ): NpcLive => {
   const stats = useNpcStats();
   const catalog = useGenericCatalog();
+  const memoriam = useMemoriamCatalog();
   return useMemo(() => {
     const labels = new Map((catalog ?? []).map((entry) => [entry.key, entry.label]));
+    const memoriamByKey = new Map(memoriam.map((npc) => [npc.key, npc]));
     const inScene = new Map(generics.map((npc) => [npc.characterKey, npc]));
     const wolves = new Set(werewolves);
     const blockFor = (characterKey: string): NpcStatBlock | undefined => {
@@ -50,15 +54,30 @@ export const useNpcLive = (
         return undefined;
       }
       const generic = inScene.get(characterKey);
-      const label = generic ? labels.get(characterKey) : undefined;
-      return statBlockFor(stats, { characterKey, genericLabel: label, tier: tiers[characterKey], keptId: generic?.keptId });
+      const mem = memoriamByKey.get(characterKey);
+      if (mem?.isGeneric) {
+        return statBlockFor(stats, {
+          characterKey,
+          genericLabel: memoriamStem(characterKey),
+          tier: tiers[characterKey],
+          keptId: generic?.keptId
+        });
+      }
+      if (generic) {
+        return statBlockFor(stats, { characterKey, genericLabel: labels.get(characterKey), tier: tiers[characterKey], keptId: generic.keptId });
+      }
+      return inheritedNamedBlock(
+        (key) => statBlockFor(stats, { characterKey: key }),
+        (key) => memoriamByKey.get(key)?.variantOfUnique ?? "",
+        characterKey
+      );
     };
     return {
       trackers: trackers ?? {},
       blockFor,
       kindOf: (characterKey) => blockFor(characterKey)?.kind ?? (wolves.has(characterKey) ? "werewolf" : undefined)
     };
-  }, [stats, catalog, trackers, generics, tiers, werewolves]);
+  }, [stats, catalog, memoriam, trackers, generics, tiers, werewolves]);
 };
 
 /** Character sheet box art; Humanity shows all ten boxes, unfilled ones faint. */

@@ -26,7 +26,7 @@ import {
   type Intensity
 } from "./huntOdds";
 import { MemoriamModal } from "./memoriamModal";
-import { Btn, Overlay, activeCanvas, canvasPoint } from "./sketch";
+import { Overlay, activeCanvas, canvasPoint } from "./sketch";
 import { createPortal } from "react-dom";
 import { figurineUrl } from "../headshots/headshots";
 import { GenericTiersContext, PendingGenericsContext, SceneGenericsContext, useScenesCommand, type SceneClock, type SoundLane } from "./commands";
@@ -49,6 +49,18 @@ import { GROUP_DRAG_TYPE, NPC_DRAG_TYPE } from "./stage";
 import { useWorldState } from "../worldState";
 import { useNpcOverrides } from "../npcOverrides";
 import { configuredTiers, genericStatsKey, keptStatsKey, newStatId, type NpcTier } from "../../shared/npcStats";
+import {
+  inheritedNamedBlock,
+  layoutMemoriamRoster,
+  MEMORIAM_GENERIC_COLOR,
+  MEMORIAM_YEAR_GROUPS,
+  MEMORIAM_YEARS,
+  memoriamGenericLabel,
+  memoriamStem,
+  type MemoriamGroup,
+  type MemoriamYear
+} from "../../shared/memoriamNpc";
+import { useMemoriamCatalog } from "../memoriamCatalog";
 import { saveNpcStats, useNpcStats } from "../npcStats";
 import { NpcConfigModal, type NpcConfigTarget } from "./npcConfig";
 import { NpcStatsModal } from "./npcStatsModal";
@@ -605,6 +617,10 @@ type NpcGroup = {
   readonly label: string;
   readonly labelWidth: number;
   readonly members: readonly RosterMember[];
+  /** Set for Memoriam groups, which do not take a colour from the roster layout. */
+  readonly color?: string;
+  /** Click-to-queue groups. Unique Memoriam groups stay draggable. */
+  readonly generic?: boolean;
 };
 
 const GROUP_LABEL_FONT = "700 11px";
@@ -927,6 +943,8 @@ const CategoryHeader = ({ category, count, onToggle, onDrop, onRemove, onRename 
 export const MasonryRoster = (): ReactElement => {
   const { catalogs, raw: rawCatalogs, error } = useSceneCatalogs();
   const overrides = useNpcOverrides();
+  const memoriamCatalog = useMemoriamCatalog();
+  const phase = useWorldState().phase;
   const [configuring, setConfiguring] = useState<NpcConfigTarget | null>(null);
   const [keptStats, setKeptStats] = useState<KeptMember | null>(null);
   const tableGenerics = useWorldState().seats?.generics;
@@ -945,7 +963,9 @@ export const MasonryRoster = (): ReactElement => {
   const [editing, setEditing] = useState<{ key: string; at: Point } | null>(null);
   const [dragging, setDragging] = useState(false);
   const [query, setQuery] = useState("");
-  const [view, setView] = usePersistentState<"main" | "generic">("tr-dashboard:roster-tab", "main", ["main", "generic"]);
+  const [view, setView] = usePersistentState<"main" | "generic" | "memoriam">("tr-dashboard:roster-tab", "main", ["main", "generic", "memoriam"]);
+  const [memYear, setMemYear] = useState<MemoriamYear | null>(null);
+  const [memLocation, setMemLocation] = useState<string | null>(null);
   const [preview, setPreview] = useState<{ characterKey: string; token: HTMLElement } | null>(null);
   const rosterRef = useRef<HTMLDivElement>(null);
   const previewFigurine = (characterKey: string | null, token?: HTMLElement): void =>
@@ -1018,6 +1038,24 @@ export const MasonryRoster = (): ReactElement => {
     () => (genericCatalog ? genericGroups(genericCatalog, spawned, overrides) : []),
     [genericCatalog, spawned, overrides]
   );
+  const periodKey = phase?.phase === "Play" && phase.subPhase === "Memoriam" ? phase.memoriamSkyboxKey : undefined;
+  const memoriamByKey = useMemo(() => new Map(memoriamCatalog.map((npc) => [npc.key, npc])), [memoriamCatalog]);
+  const memNames = useMemo(() => {
+    const names: Record<string, string | undefined> = {};
+    for (const npc of memoriamCatalog) {
+      const name = overrides[npc.key]?.name;
+      if (name !== undefined) {
+        names[npc.key] = name;
+      }
+    }
+    return names;
+  }, [memoriamCatalog, overrides]);
+  const memLayout = useMemo(
+    () => layoutMemoriamRoster(memoriamCatalog, { periodKey, year: memYear, location: memLocation, spawnedGenerics: spawned, names: memNames }),
+    [memoriamCatalog, periodKey, memYear, memLocation, spawned, memNames]
+  );
+  const measureGroups = (list: readonly MemoriamGroup[]): NpcGroup[] =>
+    list.map((group) => ({ ...group, labelWidth: groupLabelWidth(group.label) }));
   const groups = view === "main" ? mainGroups : genGroups;
   const keptInScene = new Set(inScene.flatMap((npc) => (npc.keptId ? [npc.keptId] : [])));
   const keptMembers: readonly KeptMember[] = Object.entries(npcStats ?? {})
@@ -1038,7 +1076,8 @@ export const MasonryRoster = (): ReactElement => {
   });
   /** No tier blocks on the type: no tier; one: that one; several: the tier picker. */
   const pickGeneric = (member: RosterMember) => (event: MouseEvent<HTMLElement>): void => {
-    const label = genericCatalog?.find((npc) => npc.key === member.characterKey)?.label;
+    const mem = memoriamByKey.get(member.characterKey);
+    const label = mem?.isGeneric ? memoriamStem(member.characterKey) : genericCatalog?.find((npc) => npc.key === member.characterKey)?.label;
     const options = label ? configuredTiers(npcStats?.[genericStatsKey(label)]) : [];
     if (label && options.length > 1) {
       setTierPick({ member, label, at: canvasPoint(event), tiers: options });
@@ -1049,6 +1088,71 @@ export const MasonryRoster = (): ReactElement => {
   /** Same defaults as the token art generator: first picker group's colour for named NPCs, `generic:<label>` for generics. */
   const configure: ConfigureToken = (characterKey, event) => {
     const at = canvasPoint(event);
+    const mem = memoriamByKey.get(characterKey);
+    if (mem) {
+      const stem = memoriamStem(mem.key);
+      const statsKey = mem.isGeneric ? genericStatsKey(stem) : mem.key;
+      const onPeriod = periodKey !== undefined && mem.periods.includes(periodKey);
+      const visible = overrides[mem.key]?.name ?? (mem.isGeneric ? memoriamGenericLabel(mem.label, mem.years, !onPeriod) : mem.label);
+      const yearColor = MEMORIAM_YEAR_GROUPS.find((group) => mem.years.includes(group.year))?.color ?? MEMORIAM_GENERIC_COLOR;
+      const spawnedNpc = mem.isGeneric ? inScene.find((npc) => npc.characterKey === characterKey) : undefined;
+      const inherited = !mem.isGeneric
+        ? inheritedNamedBlock(
+          (key) => npcStats?.[key]?.named,
+          (key) => memoriamByKey.get(key)?.variantOfUnique ?? "",
+          mem.key
+        )
+        : undefined;
+      const keeping = spawnedNpc && !draftGenerics ? {
+        keptId: spawnedNpc.keptId,
+        keep: async (name: string): Promise<string> => {
+          const id = newStatId();
+          const tier = sceneTiers[characterKey];
+          const block = tier ? npcStats?.[statsKey]?.[tier] : undefined;
+          await saveNpcStats(keptStatsKey(id), { ...(block ? { named: block } : {}), kept: { name, figurineKey: characterKey, label: mem.label } });
+          send({ op: "genericKeep", key: characterKey, keptId: id });
+          return id;
+        },
+        unkeep: async (keptId: string): Promise<void> => {
+          send({ op: "genericKeep", key: characterKey });
+          await saveNpcStats(keptStatsKey(keptId), {});
+        }
+      } : undefined;
+      setConfiguring({
+        characterKey,
+        at,
+        defaultName: mem.label,
+        defaultColor: mem.isGeneric ? MEMORIAM_GENERIC_COLOR : yearColor,
+        stats: { key: statsKey, label: visible, tiered: mem.isGeneric },
+        ...(inherited ? { statSeed: { named: inherited } } : {}),
+        memoriam: {
+          locations: mem.locations,
+          years: mem.years,
+          periods: mem.periods,
+          knownPeriods: catalogs?.memoriamPeriods.map((period) => period.key) ?? []
+        },
+        ...(spawnedNpc && send
+          ? {
+            inScene: {
+              name: spawnedNpc.name,
+              rename: (name: string, keptId: string | undefined) => {
+                send({ op: "genericRename", key: characterKey, name });
+                const kept = keptId ? npcStats?.[keptStatsKey(keptId)] : undefined;
+                if (keptId && kept?.kept) {
+                  saveNpcStats(keptStatsKey(keptId), { ...kept, kept: { ...kept.kept, name } })
+                    .catch((reason: unknown) => console.error("Renaming the kept character's stats failed.", reason));
+                }
+              },
+              tier: sceneTiers[characterKey],
+              tiers: configuredTiers(npcStats?.[statsKey]),
+              setTier: (tier: NpcTier | undefined) => send({ op: "genericTier", key: characterKey, ...(tier ? { tier } : {}) }),
+              ...(keeping ? { keeping } : {})
+            }
+          }
+          : {})
+      });
+      return;
+    }
     const named = rawCatalogs ? [...rawCatalogs.namedNpcs, ...rawCatalogs.pcs].find((npc) => npc.characterKey === characterKey) : undefined;
     const generic = genericCatalog?.find((npc) => npc.key === characterKey);
     const groupKey = named ? named.pickerGroups[0] : generic ? `generic:${generic.label}` : undefined;
@@ -1105,7 +1209,7 @@ export const MasonryRoster = (): ReactElement => {
   };
   const tokenClass = (group: NpcGroup, npc: RosterMember): string =>
     `lab-group-head${groupLeader(layout, catalogs?.groupBosses, group.key) === npc.characterKey ? " boss" : ""}`;
-  const openToken = (group: NpcGroup, npc: RosterMember): ReactElement => view === "main"
+  const openToken = (group: NpcGroup, npc: RosterMember): ReactElement => view === "main" || (view === "memoriam" && group.generic !== true)
     ? (
       <RosterToken
         key={npc.characterKey}
@@ -1130,9 +1234,10 @@ export const MasonryRoster = (): ReactElement => {
   const masonry = (list: readonly NpcGroup[]): ReactElement => (
     <div className="lab-masonry">
       {list.map((group) => {
-        const color = groupColor(layout, group.key);
+        const color = group.color ?? groupColor(layout, group.key);
         const style = { "--group": color ?? UNSORTED_GROUP_COLOR } as CSSProperties;
         const tinted = color ? " tinted" : "";
+        const stackDrag = group.generic !== true;
         return group.key === open ? (
           <div key={group.key} className={`lab-group open${tinted}`} style={style}>
             <button type="button" className="lab-group-label" onClick={() => setOpen(null)}>{group.label} ▴</button>
@@ -1145,17 +1250,17 @@ export const MasonryRoster = (): ReactElement => {
             tabIndex={0}
             className={`lab-group${tinted}`}
             style={style}
-            draggable
-            onDragStart={(event) => {
+            draggable={stackDrag}
+            onDragStart={stackDrag ? (event) => {
               event.dataTransfer.setData(GROUP_DRAG_TYPE, group.key);
               startRosterDrag(event, leaderFirst(group), { groupKey: group.key });
               setDragging(true);
-            }}
+            } : undefined}
             onDragEnd={() => setDragging(false)}
             onClick={() => setOpen(group.key)}
             title={view === "main" ? group.members.map((npc) => npc.name).join(", ") : `${group.label} (${group.members.length})`}
           >
-            <span className="lab-group-colors">
+            {group.color === undefined && <span className="lab-group-colors">
               <button
                 type="button"
                 className={`lab-group-color${group.key in layout.groupColors ? " own" : ""}`}
@@ -1167,7 +1272,7 @@ export const MasonryRoster = (): ReactElement => {
               >
                 {group.key in layout.groupColors ? "" : "+"}
               </button>
-            </span>
+            </span>}
             <span className="lab-group-cluster">
               {leaderFirst(group).map((npc) => (
                 <Headshot key={npc.characterKey} className={tokenClass(group, npc)} characterKey={npc.characterKey} />
@@ -1215,7 +1320,36 @@ export const MasonryRoster = (): ReactElement => {
           />
         );
       });
-  const found = view === "main" ? mainFound() : genericFound();
+  const memoriamFound = (): readonly ReactElement[] | null => terms.length === 0
+    ? null
+    : memoriamCatalog
+      .filter((npc) => !(npc.isGeneric && spawned.has(npc.key)))
+      .filter((npc) => terms.every((term) => `${npc.label} ${memoriamGenericLabel(npc.label, npc.years, true)} ${npc.tags} ${npc.key} ${npc.locations.join(" ")} ${npc.years.join(" ")}`.toLowerCase().includes(term)))
+      .slice(0, GENERIC_MATCH_LIMIT)
+      .map((npc) => {
+        const member = { characterKey: npc.key, name: overrides[npc.key]?.name ?? memoriamGenericLabel(npc.label, npc.years, true) };
+        return npc.isGeneric ? (
+          <GenericToken
+            key={npc.key}
+            member={member}
+            className="lab-group-head"
+            color={ownColor(npc.key)}
+            onPick={pickGeneric(member)}
+            onPreview={previewFigurine}
+            onConfigure={configure}
+          />
+        ) : (
+          <RosterToken
+            key={npc.key}
+            characterKey={npc.key}
+            name={overrides[npc.key]?.name ?? npc.label}
+            className="lab-group-head"
+            color={ownColor(npc.key)}
+            onConfigure={configure}
+          />
+        );
+      });
+  const found = view === "main" ? mainFound() : view === "generic" ? genericFound() : memoriamFound();
   const categories = layout.categories.filter((category) => (category.view === "generic") === (view === "generic"));
   const knownCategories = new Set(categories.map((category) => category.id));
   const unsorted = groups.filter((group) => !knownCategories.has(layout.assigned[group.key] ?? ""));
@@ -1227,16 +1361,16 @@ export const MasonryRoster = (): ReactElement => {
       <div className="lab-mroster-head">
         <button type="button" className={`lab-btn${view === "main" ? " primary" : ""}`} onClick={() => setView("main")}>Main</button>
         <button type="button" className={`lab-btn${view === "generic" ? " primary" : ""}`} onClick={() => setView("generic")}>Generic</button>
-        <Btn>Memoriam</Btn>
+        <button type="button" className={`lab-btn${view === "memoriam" ? " primary" : ""}`} onClick={() => setView("memoriam")}>Memoriam</button>
         <input
           type="search"
           className="lab-search"
-          placeholder={view === "generic" ? "Search generic NPCs…" : "Search every NPC…"}
+          placeholder={view === "generic" ? "Search generic NPCs…" : view === "memoriam" ? "Search Memoriam NPCs…" : "Search every NPC…"}
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           onKeyDown={(event) => event.key === "Escape" && setQuery("")}
         />
-        <button type="button" className="lab-btn lab-cat-add" title="New category" onClick={() => setDraft({ name: "", color: NEW_CATEGORY_COLOR })}>+</button>
+        {view !== "memoriam" && <button type="button" className="lab-btn lab-cat-add" title="New category" onClick={() => setDraft({ name: "", color: NEW_CATEGORY_COLOR })}>+</button>}
       </div>
       {draft && (
         <form
@@ -1301,13 +1435,78 @@ export const MasonryRoster = (): ReactElement => {
             </div>
           </section>
         )}
+        {view === "memoriam" && !found && (
+          <>
+            {periodKey && (
+              <section className="lab-cat">
+                <div className="lab-cat-head unsorted">
+                  <span className="lab-cat-name">This Memoriam</span>
+                  <span className="lab-cat-count">
+                    {memLayout.surfacedUniques.length + memLayout.surfacedGenerics.reduce((sum, group) => sum + group.members.length, 0)}
+                  </span>
+                </div>
+                {memLayout.surfacedUniques.length === 0 && memLayout.surfacedGenerics.length === 0 ? (
+                  <p className="lab-note">No NPCs are listed for this Memoriam.</p>
+                ) : (
+                  <>
+                    {memLayout.surfacedUniques.length > 0 && (
+                      <div className="lab-search-results">
+                        {memLayout.surfacedUniques.map((npc) => (
+                          <RosterToken
+                            key={npc.characterKey}
+                            characterKey={npc.characterKey}
+                            name={npc.name}
+                            className="lab-group-head"
+                            color={ownColor(npc.characterKey)}
+                            onConfigure={configure}
+                          />
+                        ))}
+                      </div>
+                    )}
+                    {memLayout.surfacedGenerics.length > 0 && masonry(measureGroups(memLayout.surfacedGenerics))}
+                  </>
+                )}
+              </section>
+            )}
+            <div className="lab-mroster-filters">
+              <div className="lab-mroster-filters-row years">
+                {MEMORIAM_YEARS.map((year) => (
+                  <button
+                    key={year}
+                    type="button"
+                    className={`lab-btn${memYear === year ? " primary" : ""}`}
+                    onClick={() => setMemYear((current) => (current === year ? null : year))}
+                  >
+                    {year}
+                  </button>
+                ))}
+              </div>
+              {memLayout.locations.length > 0 && (
+                <div className="lab-mroster-filters-row">
+                  {memLayout.locations.map((location) => (
+                    <button
+                      key={location}
+                      type="button"
+                      className={`lab-btn${memLocation === location ? " primary" : ""}`}
+                      onClick={() => setMemLocation((current) => (current === location ? null : location))}
+                    >
+                      {location}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {memLayout.remainingUniques.length > 0 && masonry(measureGroups(memLayout.remainingUniques))}
+            {memLayout.remainingGenerics.length > 0 && masonry(measureGroups(memLayout.remainingGenerics))}
+          </>
+        )}
         {found && (
           <div className="lab-search-results">
             {found.length === 0 && <span className="lab-note">No NPC matches "{query.trim()}".</span>}
             {found}
           </div>
         )}
-        {!found && categories.map((category) => {
+        {view !== "memoriam" && !found && categories.map((category) => {
           const members = groups.filter((group) => layout.assigned[group.key] === category.id);
           return (
             <section key={category.id} className="lab-cat" style={{ "--cat": category.color } as CSSProperties}>
@@ -1323,7 +1522,7 @@ export const MasonryRoster = (): ReactElement => {
             </section>
           );
         })}
-        {!found && (unsorted.length > 0 || dragging) && (
+        {view !== "memoriam" && !found && (unsorted.length > 0 || dragging) && (
           <section className="lab-cat unsorted">
             {categories.length > 0 && <CategoryHeader category={null} count={unsorted.length} onDrop={fileGroup(null)} />}
             {masonry(unsorted)}

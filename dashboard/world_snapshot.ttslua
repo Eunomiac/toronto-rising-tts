@@ -64,6 +64,13 @@ local function round4(v)
 end
 
 local function buildPhase()
+  local memoriamSkyboxKey = nil
+  if S.getStateVal("memoriam", "active") == true then
+    local payload = S.getStateVal("memoriam", "payload")
+    if type(payload) == "table" and type(payload.skyboxKey) == "string" and payload.skyboxKey ~= "" then
+      memoriamSkyboxKey = payload.skyboxKey
+    end
+  end
   return {
     phase = S.getStateVal("currentPhase"),
     subPhase = S.getStateVal("playSubPhase"),
@@ -71,6 +78,7 @@ local function buildPhase()
     sessionName = S.getStateVal("sessionName") or "",
     sessionStartDowntime = S.getStateVal("sessionStartDowntime") == true,
     memoriamActive = S.getStateVal("memoriam", "active") == true,
+    memoriamSkyboxKey = memoriamSkyboxKey,
   }
 end
 
