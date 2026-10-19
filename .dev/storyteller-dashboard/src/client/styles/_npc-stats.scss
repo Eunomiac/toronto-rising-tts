@@ -431,6 +431,23 @@ $power-height: 20px;
   color: #9a948a;
 }
 
+.npc-manual-conditions {
+  max-height: 220px;
+  overflow-y: auto;
+  margin-top: 8px;
+
+  label {
+    display: block;
+    padding: 3px 0;
+  }
+}
+
+.npc-condition-status {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .lab-group-token {
   position: relative;
 }

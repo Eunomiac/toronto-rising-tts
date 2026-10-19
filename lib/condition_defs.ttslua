@@ -226,9 +226,14 @@ CD.Defs = {
     displayName = "Resolve Halved",
     canApplyManually = true,
     priority = 60,
-    -- Applied after the existing impairment penalties, without changing permanent dots.
-    statChangesFromStats = function(stats, changes)
-      local before = PSC.dotRatingFromStats(stats, changes, "resolve")
+    -- Halve the attribute before pool penalties; tracker capacity must not oscillate with impairment.
+    statChangesFromStats = function(stats, _changes)
+      -- NPCs use aggregate pools: apply the equivalent halving only to Willpower.
+      if stats.isNpc == true then
+        local before = PSC.trackerMaxFromStats(stats, nil, "willpower")
+        return { willpower = math.floor(before / 2) - before }
+      end
+      local before = PSC.dotRatingFromStats(stats, nil, "resolve")
       local delta = math.floor(before / 2) - before
       return { resolve = delta, willpower = delta }
     end,

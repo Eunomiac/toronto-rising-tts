@@ -1,3 +1,4 @@
+import type { NpcConditionView } from "../shared/npcConditions";
 import { useSyncExternalStore } from "react";
 import type { NpcTier } from "../shared/npcStats.js";
 import { executeLua } from "./ttsBridge.js";
@@ -150,6 +151,10 @@ export type NpcTrackerRecord = {
   readonly wpAgg: number;
   readonly hunger: number;
   readonly rage: number;
+  readonly stains?: number;
+  readonly compulsion?: boolean;
+  readonly corruptAmbition?: boolean;
+  readonly desirePending?: boolean;
 };
 
 export type SeatsSlice = {
@@ -158,6 +163,7 @@ export type SeatsSlice = {
   readonly generics: readonly GenericNpc[];
   /** Trackers of the scene's NPCs by characterKey (live pushes only; drafts have none). */
   readonly trackers?: Readonly<Record<string, NpcTrackerRecord>>;
+  readonly npcConditions?: Readonly<Record<string, NpcConditionView>>;
   /** Scatter groups 1–6 (`sessionScene.scatterPlacements`); present outside Scatter too. */
   readonly scatter: readonly ScatterGroup[];
   readonly spotlightOrder: readonly string[];
@@ -238,6 +244,7 @@ export type StRollSlot = {
 };
 
 export type StLiveRoll = {
+  readonly conditions?: string;
   readonly rollId?: string;
   readonly rollType?: string;
   readonly label?: string;
@@ -287,6 +294,18 @@ const isWorldTopic = (topic: string): topic is WorldTopic => (WORLD_TOPICS as re
 /** A clock TTS does not hold arrives as an empty table, which Lua encodes as `[]`. */
 const asDatetime = (value: unknown): ClockDatetime | undefined =>
   isRecord(value) && typeof value.year === "number" ? (value as ClockDatetime) : undefined;
+
+const normalizeNpcConditions = (value: unknown): Readonly<Record<string, NpcConditionView>> =>
+  Object.fromEntries(Object.entries(isRecord(value) ? value : {}).flatMap(([key, raw]) => {
+    if (!isRecord(raw)) return [];
+    return [[key, {
+      ...raw,
+      conditions: asList<NpcConditionView["conditions"][number]>(raw.conditions),
+      manual: asList<NpcConditionView["manual"][number]>(raw.manual),
+      statChanges: isRecord(raw.statChanges) ? raw.statChanges : {},
+      rollFeatures: isRecord(raw.rollFeatures) ? raw.rollFeatures : {}
+    } as NpcConditionView]];
+  }));
 
 const asPool = (value: unknown): RollPool => {
   const pool: Partial<Record<PoolKind, number>> = {};
@@ -367,6 +386,7 @@ const normalizeSlice = (topic: WorldTopic, data: Record<string, unknown>, at: nu
           data.trackers !== null && typeof data.trackers === "object" && !Array.isArray(data.trackers)
             ? (data.trackers as Record<string, NpcTrackerRecord>)
             : {},
+        npcConditions: normalizeNpcConditions(data.npcConditions),
         scatter: asList<Record<string, unknown>>(data.scatter).map((group) => ({
           group: Number(group.group),
           pcs: asList<ScatterMember>(group.pcs),

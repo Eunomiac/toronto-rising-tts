@@ -174,7 +174,7 @@ end
 --- @param color string PC seat
 --- @return table `{ ok, … }`
 function Rolls.options(color)
-  local err = pcColorError(color)
+  local err = color ~= ST_COLOR and pcColorError(color) or nil
   if err then
     return { ok = false, error = err }
   end
@@ -215,12 +215,15 @@ function Rolls.options(color)
     local def = CD.getDef(id)
     activeConditions[#activeConditions + 1] = { id = id, label = def.displayName, type = def.type }
   end
-  local hasOblivion = type(require("lib.guids").GetDiceOblivRouseGUID(color)) == "string"
+  local hasOblivion = color == ST_COLOR or type(require("lib.guids").GetDiceOblivRouseGUID(color)) == "string"
   local rollTypes = {}
   for _, rollType in ipairs(OPTION_ROLL_TYPES) do
     if rollType ~= C.RollType.ROUSE_OBLIVION or hasOblivion then
       rollTypes[#rollTypes + 1] = { key = rollType, label = C.RollTypeLabel[rollType] or rollType }
     end
+  end
+  if color == ST_COLOR and active.rollType == C.RollType.WEREWOLF then
+    rollTypes = { { key = C.RollType.WEREWOLF, label = C.RollTypeLabel[C.RollType.WEREWOLF] } }
   end
   return {
     ok = true,
@@ -701,6 +704,18 @@ local function applyCommand(cmd)
       return "Unknown choice: " .. tostring(cmd.choice)
     end
     return nil
+  end
+
+  if cmd.color == ST_COLOR and op == "options" then return applyOptions(cmd) end
+  if cmd.color == ST_COLOR and op == "rollType" then
+    local active = activeRoll(ST_COLOR)
+    if active == nil then return "No NPC roll is in progress." end
+    if not isRollType(cmd.rollType) then return "Unknown roll type." end
+    if active.rollType == C.RollType.WEREWOLF and cmd.rollType ~= C.RollType.WEREWOLF then
+      return "A Werewolf roll cannot switch roll type."
+    end
+    if require("core.roll_controller").changeRollType(ST_COLOR, cmd.rollType) then return nil end
+    return "Could not change roll type."
   end
 
   local err = pcColorError(cmd.color)

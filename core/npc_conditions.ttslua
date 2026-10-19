@@ -1,0 +1,220 @@
+-- NPC subjects for the shared condition registry. Black is a roll surface, not a character.
+local NC = {}
+local S = require("core.state")
+local C = require("lib.constants")
+local CD = require("lib.condition_defs")
+local Effects = require("lib.condition_effects")
+local Derive = require("lib.condition_derive")
+local PSC = require("lib.pc_sheet_collect")
+
+local function record(key)
+  return require("core.npc_trackers").get(key) or {}
+end
+
+function NC.isPresent(key)
+  local scene = S.getStateVal("sessionScene") or {}
+  for _, row in pairs(scene.seatSlots or {}) do
+    if type(row) == "table" and (row.characterKey == key or row.npcCharacterKey == key)
+        and row.isPresent == false then return false end
+  end
+  if type((scene.npcWorld or {}).placements) == "table"
+      and scene.npcWorld.placements[key] ~= nil then return true end
+  local slots = scene.seatSlots or {}
+  for _, seat in ipairs(C.NPCSeats or {}) do
+    local row = slots[seat]
+    if type(row) == "table" and row.characterKey == key and row.slotEmpty ~= true
+        and row.isPresent ~= false then return true end
+  end
+  for _, seat in ipairs(C.PlayerColors or {}) do
+    local row = slots[seat]
+    if type(row) == "table" and row.isPlayingNPC == true and row.npcCharacterKey == key
+        and require("core.lighting").isPlayerPresentInActiveSeatLayout(seat) then return true end
+  end
+  local pack = scene.scatterPlacements or {}
+  for _, area in pairs(pack) do
+    if type(area) == "table" and (area.orbitCharacters or {})[key] then return true end
+  end
+  return false
+end
+
+function NC.baseFor(key)
+  return record(key).conditionStats or {}
+end
+
+-- The stat block stays in the dashboard; only primitive ratings needed for game rules are mirrored.
+function NC.syncStats(key, block)
+  if type(key) ~= "string" or key == "" or type(block) ~= "table" then
+    return "NPC condition stats need a character key and ratings."
+  end
+  local out = {}
+  for _, name in ipairs({ "health", "willpower", "bloodPotency", "humanity",
+      "physical", "social", "mental", "supernatural", "generation" }) do
+    local n = tonumber(block[name])
+    if n ~= nil then
+      if n < 0 or n > 30 or n ~= math.floor(n) then return "Invalid NPC rating: " .. name end
+      out[name] = n
+    end
+  end
+  out.kind = type(block.kind) == "string" and block.kind or nil
+  require("core.npc_trackers").setConditionState(key, "conditionStats", out)
+  local previous = S.getStateVal("npcConditionPresence", key) == true
+  if NC.reconcileEntry(key, not previous) then S.setStateVal(true, "npcConditionPresence", key) end
+  require("dashboard.push").markWorldDirty({ seats = true, rolls = true })
+  return nil
+end
+
+function NC.statsFor(key)
+  local b, r = NC.baseFor(key), record(key)
+  local stats = {
+    health = { base = b.health or r.healthMax or 0, superficial = r.healthSup or 0, aggravated = r.healthAgg or 0 },
+    willpower = { base = b.willpower or r.wpMax or 0, superficial = r.wpSup or 0, aggravated = r.wpAgg or 0 },
+    humanity = { base = math.max(0, (b.humanity or 0) + (r.humanityDelta or 0)), stains = r.stains or 0 },
+    attributes = {}, skills = {}, hunger = r.hunger or 0, isNpc = true,
+  }
+  if b.kind == "vampire" and b.bloodPotency ~= nil then stats.bloodPotency = { base = b.bloodPotency } end
+  return stats
+end
+
+function NC.conditionSet(key)
+  local stats = NC.statsFor(key)
+  local active = {}
+  for id, value in pairs(record(key).conditions or {}) do active[id] = value end
+  if NC.isPresent(key) then
+    for id in pairs(require("core.conditions").collectHostedIdsForSession()) do
+      local def = CD.getDef(id)
+      if type(def.derive) ~= "function" or def.derive(stats, active) then active[id] = true end
+    end
+  end
+  -- Re-evaluate automatic impairment after location effects have changed tracker capacity.
+  for _ = 1, 2 do
+    local changes = Effects.resolveForPlayer(active, stats, "Black").statChanges
+    local desired = Derive.evaluateDesiredDerived(stats, active, changes)
+    for id, def in pairs(CD.Defs) do
+      if CD.isAutoDerived(def) then active[id] = desired[id] and true or nil end
+    end
+  end
+  return active
+end
+
+function NC.resolve(key)
+  local stats = NC.statsFor(key)
+  local active = NC.conditionSet(key)
+  local resolved = Effects.resolveForPlayer(active, stats, "Black")
+  return {
+    stats = stats, conditions = active, statChanges = resolved.statChanges,
+    rollPolicy = require("lib.condition_roll_policies").mergeForPlayer(active, stats),
+  }
+end
+
+function NC.context(key)
+  local ctx = NC.resolve(key)
+  ctx.trackerMax = function(which) return PSC.trackerMaxFromStats(ctx.stats, ctx.statChanges, which) end
+  ctx.dotRating = function(which) return PSC.dotRatingFromStats(ctx.stats, ctx.statChanges, which) end
+  ctx.bloodPotencyRating = function()
+    return require("lib.blood_potency_derived").ratingFromStats(ctx.stats, ctx.statChanges)
+  end
+  return ctx
+end
+
+function NC.initialPool(key, rollType, explicit)
+  if type(explicit) == "table" then return explicit end
+  if rollType == C.RollType.ROUSE then return { rouse = 1 } end
+  if rollType == C.RollType.ROUSE_OBLIVION then return { oblivRouse = 1 } end
+  local ctx = NC.context(key)
+  local stats, total = ctx.stats, 0
+  local wp = stats.willpower
+  if rollType == C.RollType.WILLPOWER_ROLL or rollType == C.RollType.FRENZY then
+    total = math.max(0, ctx.trackerMax("willpower") - wp.superficial - wp.aggravated)
+    if rollType == C.RollType.FRENZY then total = total + math.floor(stats.humanity.base / 3) end
+  elseif rollType == C.RollType.HUMANITY_ROLL then total = stats.humanity.base
+  elseif rollType == C.RollType.REMORSE then
+    total = require("core.dice").remorsePool(stats.humanity.base, stats.humanity.stains)
+  elseif rollType == C.RollType.DISCIPLINE then
+    total = require("lib.blood_potency_derived").derivedFromStats(stats, ctx.statChanges).discBonus
+  end
+  local hunger = rollType == C.RollType.DISCIPLINE and NC.baseFor(key).kind == "vampire"
+    and math.min(total, stats.hunger) or 0
+  return { normal = total - hunger, hunger = hunger }
+end
+
+function NC.setManual(key, id, on)
+  if type(key) ~= "string" or key == "" then return "An NPC condition needs a character key." end
+  local def = CD.isKnownId(id) and CD.getDef(id) or nil
+  if def == nil or def.canApplyManually ~= true then
+    return "That NPC condition cannot be toggled."
+  end
+  local manual = {}
+  for condition, value in pairs(record(key).conditions or {}) do manual[condition] = value end
+  manual[id] = on == true and (def.instanceSchema and { variant = 1 } or true) or nil
+  require("core.npc_trackers").setConditionState(key, "conditions", manual)
+  require("dashboard.push").markWorldDirty({ seats = true, rolls = true })
+  return nil
+end
+
+function NC.dispatch(key, hook, ...)
+  local ctx = NC.resolve(key)
+  return require("core.roll_condition_handlers").run(hook, "Black", {
+    npcCharacterKey = key, rollPolicy = ctx.rollPolicy, meta = {},
+  }, ...)
+end
+
+function NC.reconcileEntry(key, forceEntry)
+  if not NC.isPresent(key) then return end
+  -- Unknown ratings must not consume the one-time wounded-arrival check.
+  if NC.baseFor(key).willpower == nil then return end
+  NC.dispatch(key, "onHostedEnter", forceEntry and { woundToCompulsion = true } or {})
+  return true
+end
+
+function NC.reconcileForSession()
+  local previous = S.getStateVal("npcConditionPresence") or {}
+  local nextPresence = {}
+  for _, key in ipairs(require("core.npc_trackers").sceneCastKeys()) do
+    if NC.isPresent(key) then
+      nextPresence[key] = NC.reconcileEntry(key, previous[key] ~= true) == true
+    end
+  end
+  S.setStateVal(nextPresence, "npcConditionPresence")
+end
+
+--- Start forced NPC checks in a real Storyteller drawer and retain the character identity.
+function NC.startCheck(config)
+  local STR = require("core.storyteller_rolls")
+  local start = function()
+    STR.initiateNpcRoll(config.label or config.npcCharacterKey, config.rollType, config.npcCharacterKey, config)
+  end
+  if STR.canInitiate() then start()
+  else require("lib.util").await(start, function() return STR.canInitiate() end) end
+end
+
+function NC.queueCheck(config)
+  local pid = S.getPlayerID("Black")
+  if S.getStateVal("playerData", pid, "hud", "rollData", "active") ~= nil then
+    require("core.roll_controller").queueRoll("Black", config)
+  else NC.startCheck(config) end
+end
+
+function NC.snapshot(key)
+  local ctx = NC.context(key)
+  local labels, manual = {}, {}
+  for _, id in ipairs(CD.sortedActiveIds(ctx.conditions)) do
+    local def = CD.getDef(id)
+    labels[#labels + 1] = { id = id, label = def.displayName, type = def.type }
+  end
+  for id, def in pairs(CD.Defs) do
+    if def.canApplyManually == true and not def.onlyRollType then
+      manual[#manual + 1] = { id = id, label = def.displayName,
+        on = (record(key).conditions or {})[id] ~= nil }
+    end
+  end
+  table.sort(manual, function(a,b) return a.label < b.label end)
+  local b = NC.baseFor(key)
+  return { conditions = labels, manual = manual, statChanges = ctx.statChanges,
+    healthMax = b.health ~= nil and ctx.trackerMax("health") or nil,
+    wpMax = b.willpower ~= nil and ctx.trackerMax("willpower") or nil,
+    bloodPotency = b.bloodPotency ~= nil and ctx.bloodPotencyRating() or nil,
+    humanity = ctx.stats.humanity.base, rollFeatures = ctx.rollPolicy.features,
+    hungerDiceAllowed = ctx.rollPolicy.hungerDiceAllowed, base = b }
+end
+
+return NC

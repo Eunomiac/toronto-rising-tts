@@ -24,6 +24,12 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 
 ## General Guidelines
 
+✔️ NPC conditions — pending Save & Play. All registry stat and roll effects now resolve by NPC
+identity. The tracker popup lists active/manual conditions, Stains and narrative choices;
+Configure uses effective ratings and offers checkboxes for ambiguous exceptional pools.
+Resolve-halving has a Willpower-only NPC equivalent; Drowning pools remain an ST choice.
+See the NPC condition verification row in `.dev/PENDING AUTHOR VERIFICATION.md`.
+
 ✔️ Location conditions: Roll Options shows active stat and roll conditions, filters contextual
 checkboxes, and saves every supported condition through the shared Lua overlay API.
 Repeated refreshes preserve the Willpower reroll allowance.

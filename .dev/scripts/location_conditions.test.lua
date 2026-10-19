@@ -45,6 +45,7 @@ local C = {
   RollPhase={POST_ROLL="postRoll", ROLLING="rolling"}, PlaySubPhases={MEMORIAM="Memoriam"},
   DICE_CRITICAL_SUCCESS_VALUE=10,
   Districts={}, Sites={},
+  NPCSeats={}, PlayerColors={"Brown","Orange"},
 }
 local RC = {}
 function RC.queueRoll(color, config) queued[#queued+1] = {color=color,config=config} end
@@ -158,11 +159,11 @@ test("Resolve and Willpower halve only the Resolve contribution and restore clea
   eq(stats.attributes.resolve.base,5)
   eq(PSC.trackerMaxFromStats(stats,Effects.resolveForPlayer({},stats,"Brown").statChanges,"willpower"),8)
 end)
-test("Resolve halving follows other stat penalties",function()
+test("Resolve halves the attribute before impairment penalties",function()
   reset()
   local changes=Effects.resolveForPlayer({resolveHalved=true,impairedWillpower=true},data.playerData.Brown.stats,"Brown").statChanges
-  eq(PSC.dotRatingFromStats(data.playerData.Brown.stats,changes,"resolve"),1)
-  eq(changes.willpower,-2)
+  eq(PSC.dotRatingFromStats(data.playerData.Brown.stats,changes,"resolve"),0)
+  eq(changes.willpower,-3)
 end)
 test("Launch bonus is scoped to Launch and never accumulates on refresh",function()
   reset()
@@ -401,5 +402,243 @@ test("dashboard writes contextual condition overlays rather than two hardcoded t
   local unavailable=Rolls.options("Brown")
   for _,row in ipairs(unavailable.conditions) do assert(row.id~="criminalLaunchBonus2") end
   eq(Rolls.apply("request").ok,false)
+end)
+test("West Queen West does not stall a roll with no Rouse dice",function()
+  reset()
+  local a=active({"rerollSuccessfulRouse"})
+  eq(LC.onBeforeDiceRead("Brown",a,{[DK.KIND_NORMAL]={7}},{}),nil)
+  eq(a.phase,nil)
+end)
+
+local function npcSetup(ids)
+  reset()
+  C.NPCSeats={"NPC1","NPC2"}
+  C.RollType.WILLPOWER_ROLL="willpowerRoll"
+  C.RollType.HUMANITY_ROLL="humanityRoll"
+  C.PendingResolution={OBLIV_HUNGER_STAIN="oblivHungerStain",BRUTAL_FAIL_VIOLENCE="brutalFailViolence"}
+  package.loaded["core.phases"]={isPlayDowntime=function() return false end}
+  package.loaded["dashboard.push"]={markWorldDirty=function() end}
+  data.playerData.st={color="Black",conditions={noCriticals=true},stats={}}
+  data.sessionScene.seatSlots={NPC1={characterKey="Mylene"},NPC2={characterKey="AnotherNpc"}}
+  data.sessionScene.siteKey="X"
+  C.Sites.X={conditions=ids or {}}
+  local NC=require("core.npc_conditions")
+  local T=require("core.npc_trackers")
+  local block={kind="vampire",bloodPotency=2,health=7,willpower=8,humanity=6}
+  NC.syncStats("Mylene",block)
+  NC.syncStats("AnotherNpc",block)
+  T.get("Mylene").hunger=2
+  T.get("AnotherNpc").hunger=4
+  return NC,T
+end
+local function npcActive(ids, rt, key)
+  local a=active(ids,rt)
+  a.npcCharacterKey=key or "Mylene"
+  a.rollPolicy=Conditions.resolveRollPolicyForActive("st",a)
+  return a
+end
+test("NPCs receive the shared Blood Potency buff without changing stored ratings",function()
+  local NC,T=npcSetup({"bumpBloodPotency"})
+  eq(NC.context("Mylene").bloodPotencyRating(),3)
+  eq(T.get("Mylene").conditionStats.bloodPotency,2)
+  eq(data.playerData.Brown.stats.bloodPotency,nil)
+end)
+test("NPC Blood Potency affects its derived row",function()
+  local NC=npcSetup({"bumpBloodPotency"})
+  local ctx=NC.context("Mylene")
+  local derived=require("lib.blood_potency_derived").derivedFromStats(ctx.stats,ctx.statChanges)
+  local base=require("lib.blood_potency_derived").derivedFromStats(ctx.stats,{})
+  assert(derived.discBonus>=base.discBonus)
+  eq(ctx.bloodPotencyRating(),3)
+end)
+test("non-vampire NPCs do not gain a Blood Potency tracker",function()
+  local NC=npcSetup({"bumpBloodPotency"})
+  NC.syncStats("Mylene",{kind="mortal",health=5,willpower=5})
+  eq(NC.conditionSet("Mylene").bumpBloodPotency,nil)
+end)
+test("NPC location conditions clear on absence, including a retained stage placement",function()
+  local NC=npcSetup({"bumpBloodPotency","noBloodSurge"})
+  eq(NC.resolve("Mylene").rollPolicy.features.noBloodSurge,true)
+  data.sessionScene.npcWorld={placements={Mylene={}}}
+  data.sessionScene.seatSlots.NPC1.isPresent=false
+  eq(NC.context("Mylene").bloodPotencyRating(),2)
+  eq(NC.resolve("Mylene").rollPolicy.features.noBloodSurge,nil)
+end)
+test("NPC roll policies never inherit Black's conditions or another NPC's",function()
+  local NC=npcSetup({"noTakeHalf"})
+  NC.setManual("AnotherNpc","noWPReroll",true)
+  local a=npcActive({},"standard")
+  eq(a.rollPolicy.takeHalfAllowed,false)
+  eq(a.rollPolicy.wpRerollAllowed,true)
+  eq(a.rollPolicy.countCriticalPairs,nil)
+  eq(npcActive({},"standard","AnotherNpc").rollPolicy.wpRerollAllowed,false)
+end)
+test("manual existing conditions are available per NPC, including instance-only HUD status",function()
+  local NC=npcSetup({})
+  for id,def in pairs(CD.Defs) do
+    if def.canApplyManually then eq(NC.setManual("Mylene",id,true),nil) end
+  end
+  eq(NC.conditionSet("Mylene").hudBlindfold.variant,1)
+  eq(NC.conditionSet("AnotherNpc").hudBlindfold,nil)
+end)
+test("NPC health impairment uses the same automatic registry rule",function()
+  local NC,T=npcSetup({})
+  T.damage("Mylene","health","aggravated",7)
+  eq(NC.conditionSet("Mylene").impairedHealth,true)
+  eq(NC.resolve("Mylene").statChanges.strength,-2)
+end)
+test("NPC Resolve-halving affects only Willpower and stays stable under impairment",function()
+  local NC,T=npcSetup({"resolveHalved"})
+  eq(NC.context("Mylene").trackerMax("willpower"),4)
+  eq(NC.resolve("Mylene").statChanges.resolve,nil)
+  T.damage("Mylene","willpower","aggravated",4)
+  for i=1,3 do
+    eq(NC.context("Mylene").trackerMax("willpower"),4)
+    eq(NC.conditionSet("Mylene").impairedWillpower,true)
+  end
+  data.sessionScene.seatSlots.NPC1.isPresent=false
+  eq(NC.context("Mylene").trackerMax("willpower"),8)
+  eq(T.get("Mylene").wpAgg,4)
+end)
+test("generic and kept NPC condition state follows the tracker identity",function()
+  local NC,T=npcSetup({})
+  data.sessionScene.npcWorld={genericMembership={genericOne={}}}
+  NC.syncStats("genericOne",{kind="vampire",bloodPotency=1})
+  NC.setManual("genericOne","noWPReroll",true)
+  T.relocate("genericOne",function() data.sessionScene.npcWorld.genericMembership.genericOne.keptId="abc" end)
+  eq(NC.conditionSet("genericOne").noWPReroll,true)
+  data.sessionScene.npcWorld.genericMembership.genericOne={}
+  eq(NC.conditionSet("genericOne").noWPReroll,nil)
+end)
+test("NPC scene counters and consequences belong to the rolling NPC",function()
+  local NC,T=npcSetup({"messyRouseTallyBonus","messyCompulsion"})
+  local a=npcActive({});a.result={resultClass="messyCritical"};a.rouseOutcomeStrips={}
+  LC.onRollConsequences("Black",a)
+  eq(T.get("Mylene").compulsion,true)
+  eq(T.get("AnotherNpc").compulsion,nil)
+  eq(LC.poolBonus("Black",npcActive({})),1)
+  eq(LC.poolBonus("Black",npcActive({},"standard","AnotherNpc")),0)
+end)
+test("NPC Bestial Reset heals only its own superficial Willpower",function()
+  local NC,T=npcSetup({"bestialReset"})
+  T.get("Mylene").wpSup=3;T.get("Mylene").wpAgg=1;T.get("AnotherNpc").wpSup=2
+  local a=npcActive({});a.result={resultClass="bestialFailure"}
+  LC.onRollConsequences("Black",a)
+  eq(T.get("Mylene").wpSup,0);eq(T.get("Mylene").wpAgg,1)
+  eq(T.get("AnotherNpc").wpSup,2);eq(T.get("Mylene").desirePending,true)
+end)
+test("NPC toxic Rouse damage targets the NPC",function()
+  local NC,T=npcSetup({"toxicRouse"})
+  local a=npcActive({});a.rouseOutcomeStrips={{values={2},failedChecks=1}}
+  LC.onRouseConsequences("Black",a)
+  eq(T.get("Mylene").healthAgg,1);eq(T.get("AnotherNpc").healthAgg,0)
+end)
+test("NPC Drowning requests an ST pool and retains character identity",function()
+  local NC=npcSetup({"surviveFailure"})
+  local a=npcActive({});a.result={resultClass="failure"}
+  S.setStateVal(a,"playerData","st","hud","rollData","active")
+  LC.onRollConsequences("Black",a)
+  eq(queued[1].config.npcCharacterKey,"Mylene")
+  eq(queued[1].config.pool,nil)
+  assert(messages[#messages]:find("set this NPC",1,true))
+end)
+test("NPC Stains queue a check for that NPC, not Black",function()
+  local NC,T=npcSetup({"scaryStain"})
+  S.setStateVal(npcActive({}),"playerData","st","hud","rollData","active")
+  T.applyChange("Mylene","stains","up")
+  eq(queued[1].config.npcCharacterKey,"Mylene")
+  eq(queued[1].config.difficulty,4)
+end)
+test("NPC surge obeys multiplier and prohibition through the actual controller",function()
+  local NC=npcSetup({"doubleBloodSurge"})
+  C.RollPhase.SETUP="setup";C.RollPhase.PRE_ROLL="preRoll"
+  C.RollTypesBloodSurge={standard=true}
+  local realRC=assert(loadfile("core/roll_controller.ttslua"))()
+  local a=npcActive({});a.phase="setup";a.pool={normal=4,hunger=2}
+  realRC.computeEffectiveRollState("Black",a)
+  S.setStateVal(a,"playerData","st","hud","rollData","active")
+  eq(realRC.setNpcBloodSurge(true,2),nil)
+  eq(a.pool.normal+a.pool.hunger,10);eq(a.pool.rouse,1)
+  eq(realRC.setNpcBloodSurge(false,2),nil)
+  eq(a.pool.normal+a.pool.hunger,6);eq(a.pool.rouse,0)
+  C.Sites.X.conditions={"noBloodSurge"}
+  realRC.computeEffectiveRollState("Black",a)
+  assert(realRC.setNpcBloodSurge(true,2)~=nil)
+  eq(a.pool.normal+a.pool.hunger,6)
+end)
+test("NPC tracker consequences use actual controller paths",function()
+  local NC,T=npcSetup({"toxicRouse","scaryStain"})
+  local realRC=assert(loadfile("core/roll_controller.ttslua"))()
+  local a=npcActive({});a.npcRouseFailed=1;a.npcStainDelta=1
+  a.rouseOutcomeStrips={{values={1},failedChecks=1}}
+  S.setStateVal(a,"playerData","st","hud","rollData","active")
+  realRC._applyRouseOutcomeStrips("Black",a)
+  eq(T.get("Mylene").hunger,3);eq(T.get("Mylene").stains,1)
+  eq(T.get("Mylene").healthAgg,1);eq(T.get("AnotherNpc").hunger,4)
+  eq(queued[1].config.npcCharacterKey,"Mylene")
+end)
+test("NPC frenzy replacement and Remorse consequences do not change Black",function()
+  local NC,T=npcSetup({"noFrenzy"})
+  local realRC=assert(loadfile("core/roll_controller.ttslua"))()
+  local a=npcActive({},"frenzy");a.result={resultClass="failure"}
+  realRC._applyRollConsequences("Black",a)
+  eq(T.get("Mylene").corruptAmbition,true)
+  eq(NC.conditionSet("Mylene").hudFrenzy,nil)
+  T.setConditionState("Mylene","stains",2)
+  a=npcActive({},"remorse");a.result={resultClass="failure"}
+  realRC._applyRollConsequences("Black",a)
+  eq(T.get("Mylene").stains,0);eq(NC.statsFor("Mylene").humanity.base,5)
+  eq(NC.statsFor("AnotherNpc").humanity.base,6)
+end)
+test("NPC selective Willpower cannot bypass prohibitions or special reroll modes",function()
+  for _,id in ipairs({"noWPReroll","fullWPReroll","setHungerWPReroll"}) do
+    local NC,T=npcSetup({id})
+    local realRC=assert(loadfile("core/roll_controller.ttslua"))()
+    local a=npcActive({});a.phase="postRoll";a.willpower={rerollsRemaining=1}
+    a.stSelectiveReroll={selectedGuids={fake=true}}
+    realRC.computeEffectiveRollState("Black",a)
+    S.setStateVal(a,"playerData","st","hud","rollData","active")
+    eq(realRC.beginStSelectiveRerollWave("Black"),nil)
+    eq(T.get("Mylene").wpSup,0)
+  end
+end)
+test("NPC entries wait for ratings and do not repeat after stats arrive",function()
+  local NC,T=npcSetup({"woundToCompulsion"})
+  T.get("Mylene").wpSup=5
+  data.npcConditionPresence=nil;data.locationConditionState=nil
+  NC.syncStats("Mylene",{kind="vampire",health=7,willpower=8})
+  eq(T.get("Mylene").compulsion,true)
+  T.setConditionState("Mylene","compulsion",nil)
+  NC.reconcileForSession()
+  eq(T.get("Mylene").compulsion,nil)
+end)
+test("NPC Rouse checks keep a surge separate and consume bonus dice in the check",function()
+  reset()
+  local Checks=require("lib.npc_rouse_checks")
+  local a={rollType="rouse",meta={bloodSurgeActive=true,locationPoolBonus=2},
+    npcPlan={rouse={{dice=1}},hungerOnFail=true}}
+  local values={[DK.KIND_ROUSE]={2,3,8,1}}
+  local list=Checks.list(a,values)
+  eq(#list,2);eq(list[1].dice,3);eq(list[2].first,4)
+  eq(Checks.outcome(list[1],values).hungerDelta,0)
+  eq(Checks.outcome(list[2],values).hungerDelta,1)
+end)
+test("NPC Oblivion checks preserve individual Stain choices and Cemetery immunity",function()
+  reset()
+  local Checks=require("lib.npc_rouse_checks")
+  local check={kind=DK.KIND_OBLIV_ROUSE,first=1,dice=2}
+  local values={[DK.KIND_OBLIV_ROUSE]={2,10}}
+  eq(Checks.outcome(check,values).pendingChoice,true)
+  eq(Checks.outcome(check,values,false,"stain").stainDelta,1)
+  eq(Checks.outcome(check,values,true).stainDelta,0)
+  eq(Checks.outcome(check,values,true).pendingChoice,false)
+end)
+test("NPC successful-check rerolls do not reroll a separate failed check",function()
+  local NC=npcSetup({"rerollSuccessfulRouse"})
+  local a=npcActive({},"rouse")
+  a.npcPlan={rouse={{dice=1},{dice=1}},hungerOnFail=true}
+  local one,two=object(8),object(2)
+  eq(LC.onBeforeDiceRead("Black",a,{[DK.KIND_ROUSE]={8,2}},{[DK.KIND_ROUSE]={one,two}}),false)
+  eq(one.rerolls,1);eq(two.rerolls,0)
 end)
 print(passed .. " location condition tests passed")

@@ -401,7 +401,8 @@ export const ScenesPanel = ({ active }: { active: boolean }): ReactElement => {
   const spawning = useMemo(() => pendingGenerics(queued), [queued]);
   const renames = useMemo(() => pendingRenames(queued), [queued]);
   const tiers = useMemo(() => genericTiers(seats?.generics ?? [], queued), [seats?.generics, queued]);
-  const npcLive = useNpcLive(seats?.trackers, seats?.generics ?? NO_GENERICS, tiers, rolls?.werewolves ?? NO_WEREWOLVES);
+  const npcLive = useNpcLive(seats?.trackers, seats?.generics ?? NO_GENERICS, tiers,
+    rolls?.werewolves ?? NO_WEREWOLVES, seats?.npcConditions, commands.send);
   const board = useMemo((): LiveBoard | null => {
     if (!seats) {
       return null;

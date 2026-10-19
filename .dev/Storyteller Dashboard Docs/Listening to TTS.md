@@ -113,3 +113,17 @@ Rules for any change on the TTS side: Global-only modules (never `require("dashb
 - **Is TTS sending at all?** Turn on Trace Sync in TTS: each send logs `DashPush.seat` or `DashPush.world` with `sent` / `skipped` and the byte count.
 - **Server changes need a restart** (`npm run dev` in `.dev/storyteller-dashboard/`); Lua changes need Save & Play.
 - If Trace Sync says `sent` but nothing arrives, suspect a nested table in the message (TTS drops those silently) or the server not connected to the gateway (`GET /api/tts-bridge-status`).
+
+### NPC condition additions
+
+The `seats` slice includes `npcConditions[characterKey]`: active `conditions[]`, manual checkbox
+rows, `statChanges`, effective `healthMax` / `wpMax` / Blood Potency / Humanity, roll features,
+Hunger-dice permission and primitive `base` ratings. Empty Lua condition arrays are normalized
+before rendering. NPC trackers add Stains and pending Compulsion/corrupt-Ambition/Desire flags.
+The live Black roll includes a condition label string.
+
+Scene commands: `npcConditionStats { key, stats }` mirrors primitive source ratings;
+`npcCondition { key, id, on }` sets an NPC-specific manual condition;
+`npcConditionResolved { key, field }` clears a narrative decision flag. These use existing
+named/generic/kept tracker storage. NPC roll options accept Black and apply the shared overlay.
+Oblivion choices now preserve each NPC check's Hunger/Stain decision, with Cemetery immunity.
