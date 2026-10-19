@@ -28,6 +28,8 @@ export type NpcLive = {
   readonly trackers: Readonly<Record<string, NpcTrackerRecord>>;
   /** The stat block a live NPC uses: its own, its generic type's tier, or a kept character's. */
   readonly blockFor: (characterKey: string) => NpcStatBlock | undefined;
+  /** Saved ratings before live conditions; used when the ST identifies an attribute contribution. */
+  readonly sourceBlockFor: (characterKey: string) => NpcStatBlock | undefined;
   /** The block's kind; NPCs with no block but flagged Werewolf in the NPC data count as werewolves. */
   readonly kindOf: (characterKey: string) => NpcKind | undefined;
 };
@@ -76,6 +78,7 @@ export const useNpcLive = (
   }, [pending, send]);
   return useMemo(() => ({
     ...raw,
+    sourceBlockFor: raw.blockFor,
     conditions,
     blockFor: (key: string) => {
       const block = raw.blockFor(key);

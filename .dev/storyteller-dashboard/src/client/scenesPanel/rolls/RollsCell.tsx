@@ -984,6 +984,7 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
       )}
       {configureAt && live && liveOpen && npcBlock && (
         <NpcConfigure
+          key={`${live.rollId ?? ""}:${live.npcCharacterKey ?? ""}`}
           at={configureAt}
           live={live}
           block={npcBlock}

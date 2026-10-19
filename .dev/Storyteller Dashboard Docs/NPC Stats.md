@@ -150,5 +150,5 @@ checkboxes when aggregate NPC pools need the Storyteller's judgement. Roll Optio
 for NPC rolls and uses the same registry overlay as PC rolls.
 
 See [Location Aspect Conditions](../PC%20Data%20%26%20Tracking/Location%20Aspect%20Conditions.md#npc-subjects)
-for Willpower-only Resolve-halving, Drowning pool decisions, identity/lifetime rules and the
+for Resolve-pool halving and the quarter-Willpower approximation, Drowning pool decisions, identity/lifetime rules and the
 live-game verification checklist.

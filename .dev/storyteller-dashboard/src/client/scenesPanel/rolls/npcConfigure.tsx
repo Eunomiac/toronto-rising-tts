@@ -1,5 +1,5 @@
 import { useContext, useState, type MouseEvent, type ReactElement } from "react";
-import { npcTraitChoices, withNpcTraitChoices } from "../../../shared/npcConditions";
+import { applyNpcConditions, npcResolveRating, npcTraitChoices, withNpcTraitChoices } from "../../../shared/npcConditions";
 import { NpcLiveContext } from "../npcTrackers";
 import { bloodPotencyRow, ROLL_TYPE_RULES } from "../../catalogVocab";
 import {
@@ -75,7 +75,7 @@ const EntryButton = ({ label, planned, onPick }: { label: string; planned: Plann
   ) : (
     <button type="button" className="roll-toggle npc-config-entry broken" disabled title={planned.error}>
       {label}
-      <span className="npc-config-dice">fix in Stats</span>
+      <span className="npc-config-dice">{planned.error.startsWith("Set Resolve") ? "set Resolve" : "fix in Stats"}</span>
     </button>
   );
 
@@ -92,7 +92,14 @@ export const NpcConfigure = ({ at, live, block: baseBlock, levels, send, onPool,
   const effects = live.npcCharacterKey ? npcLive?.conditions?.[live.npcCharacterKey] : undefined;
   const choices = npcTraitChoices(effects);
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
-  const block = withNpcTraitChoices(baseBlock, choices, selected);
+  const sourceBlock = live.npcCharacterKey ? npcLive?.sourceBlockFor(live.npcCharacterKey) : undefined;
+  const [resolveOverride, setResolveOverride] = useState<number | undefined>();
+  const [poolUsesResolve, setPoolUsesResolve] = useState(false);
+  const resolveRating = resolveOverride ?? (sourceBlock ? npcResolveRating(sourceBlock) : undefined);
+  const conditionedBlock = sourceBlock ? applyNpcConditions(sourceBlock, effects, {
+    ...(resolveRating === undefined ? {} : { rating: resolveRating }), selectedPoolUsesResolve: poolUsesResolve
+  }) : baseBlock;
+  const block = withNpcTraitChoices(conditionedBlock, choices, selected);
   const name = live.label ?? "NPC";
   const rollType = live.rollType ?? "standard";
   const bloodPotency = bloodPotencyRow(block.bloodPotency);
@@ -112,7 +119,16 @@ export const NpcConfigure = ({ at, live, block: baseBlock, levels, send, onPool,
     })
     : null;
   const planFor = (entry: NpcRollEntry): Planned =>
-    tryPlan(() => planNpcRoll({ name, block, levels, rollType, entry, bloodPotency, rules }));
+    tryPlan(() => {
+      const ref = entry.kind === "pool" ? entry.ref
+        : entry.kind === "attack" ? block.attacks.find((attack) => attack.id === entry.id)?.pool
+        : block.powers[entry.category]?.powers[entry.power]?.pool;
+      const label = poolOptions(block, false).find((option) => option.ref === ref)?.label;
+      if (effects?.rollFeatures.resolveHalved && resolveRating === undefined && /\bresolve\b/i.test(label ?? "")) {
+        throw new Error("Set Resolve before halving to adjust this pool's attribute contribution.");
+      }
+      return planNpcRoll({ name, block, levels, rollType, entry, bloodPotency, rules });
+    });
   const pick = (plan: NpcRollPlan): void => {
     if (plan.kind === "passive") {
       send({ op: "npcAnnounce", label: name, ...(live.npcCharacterKey ? { characterKey: live.npcCharacterKey } : {}), heading: plan.heading, line: plan.line });
@@ -141,6 +157,30 @@ export const NpcConfigure = ({ at, live, block: baseBlock, levels, send, onPool,
     <Overlay onClose={onClose}>
       <div className="lab-modal roll-options npc-config" style={{ left: at.x, top: at.y }}>
         <span className="lab-modal-title">{name}: roll from stats</span>
+        {effects?.rollFeatures.resolveHalved && (
+          <div className="npc-resolve-condition">
+            <label>
+              Resolve before halving
+              <input type="number" min={0} max={10} step={1} value={resolveRating ?? ""}
+                aria-label="Resolve before halving"
+                onChange={(event) => {
+                  const value = event.target.valueAsNumber;
+                  setResolveOverride(Number.isInteger(value) && value >= 0 && value <= 10 ? value : undefined);
+                }} />
+            </label>
+            <label>
+              <input type="checkbox" checked={poolUsesResolve} disabled={resolveRating === undefined}
+                onChange={(event) => setPoolUsesResolve(event.target.checked)} />
+              The chosen pool uses Resolve
+            </label>
+            <p className="lab-note">
+              {resolveRating === undefined
+                ? "Set the Resolve attribute rating before choosing a pool that uses it. A combined pool total is not the attribute rating."
+                : `Resolve ${resolveRating} becomes ${Math.floor(resolveRating / 2)}. Named Resolve pools include this penalty; check the box for other pools that use it.`}
+              {" "}Willpower separately loses one quarter of its capacity.
+            </p>
+          </div>
+        )}
         {choices.map((choice) => (
           <label key={choice.key}>
             <input type="checkbox" checked={selected.has(choice.key)} onChange={(event) => {

@@ -27,10 +27,24 @@ const RATING_KEYS = ["kind", "health", "willpower", "bloodPotency", "humanity",
 export const npcConditionRatings = (block: Partial<NpcStatBlock>): Partial<NpcStatBlock> =>
   Object.fromEntries(RATING_KEYS.flatMap((key) => block[key] === undefined ? [] : [[key, block[key]]]));
 
+/** A pool named only Resolve supplies the attribute; composite pool totals cannot supply it. */
+export const npcResolveRating = (block: NpcStatBlock): number | undefined => {
+  const rating = block.exceptional.find((pool) => pool.name.trim().toLowerCase() === "resolve")?.dice;
+  return rating !== undefined && Number.isInteger(rating) && rating >= 0 && rating <= 10 ? rating : undefined;
+};
+
+type ResolveChoice = { readonly rating?: number; readonly selectedPoolUsesResolve?: boolean };
+
 /** Apply the shared registry's resolved deltas to a stat block without altering its saved source. */
-export const applyNpcConditions = (block: NpcStatBlock, effects: NpcConditionView | undefined): NpcStatBlock => {
+export const applyNpcConditions = (
+  block: NpcStatBlock, effects: NpcConditionView | undefined, resolveChoice: ResolveChoice = {}
+): NpcStatBlock => {
   if (!effects) return block;
   const d = effects.statChanges ?? {};
+  const resolveRating = resolveChoice.rating ?? npcResolveRating(block);
+  const resolveDelta = effects.rollFeatures.resolveHalved && resolveRating !== undefined
+    ? -Math.ceil(resolveRating / 2) : 0;
+  const selectedResolveDelta = resolveChoice.selectedPoolUsesResolve ? resolveDelta : 0;
   const common = (keys: readonly string[]): number => {
     const values = keys.map((key) => d[key] ?? 0);
     return values.every((value) => value === values[0]) ? values[0] ?? 0 : 0;
@@ -39,17 +53,19 @@ export const applyNpcConditions = (block: NpcStatBlock, effects: NpcConditionVie
     block[key] === undefined ? {} : { [key]: Math.max(0, block[key] + delta) };
   return {
     ...block,
-    ...change("physical", common(["strength", "dexterity", "stamina"])),
-    ...change("social", common(["charisma", "manipulation", "composure"])),
-    // Resolve-specific effects are applied only to a named Resolve pool or an ST-selected Mental pool.
-    ...change("mental", common(["intelligence", "wits"])),
+    ...change("physical", common(["strength", "dexterity", "stamina"]) + selectedResolveDelta),
+    ...change("social", common(["charisma", "manipulation", "composure"]) + selectedResolveDelta),
+    // Resolve-specific effects apply only to named Resolve pools or pools identified by the ST.
+    ...change("mental", common(["intelligence", "wits"]) + selectedResolveDelta),
+    ...(block.supernatural === undefined ? {} : { supernatural: Math.max(0, block.supernatural + selectedResolveDelta) }),
     ...(effects.bloodPotency === undefined ? {} : { bloodPotency: effects.bloodPotency }),
     ...(effects.healthMax === undefined ? {} : { health: effects.healthMax }),
     ...(effects.wpMax === undefined ? {} : { willpower: effects.wpMax }),
     ...(effects.humanity === undefined || block.humanity === undefined ? {} : { humanity: effects.humanity }),
     exceptional: block.exceptional.map((pool) => {
       const words = new Set(pool.name.toLowerCase().match(/[a-z]+/g) ?? []);
-      const delta = Object.entries(d).reduce((sum, [key, value]) => sum + (words.has(key.toLowerCase()) ? value : 0), 0);
+      const statDelta = Object.entries(d).reduce((sum, [key, value]) => sum + (words.has(key.toLowerCase()) ? value : 0), 0);
+      const delta = statDelta + (words.has("resolve") ? resolveDelta : selectedResolveDelta);
       return delta === 0 ? pool : { ...pool, dice: Math.max(0, pool.dice + delta) };
     })
   };

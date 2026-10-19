@@ -228,7 +228,8 @@ CD.Defs = {
     priority = 60,
     -- Halve the attribute before pool penalties; tracker capacity must not oscillate with impairment.
     statChangesFromStats = function(stats, _changes)
-      -- NPCs treat Resolve as half of Willpower: lose one quarter of total capacity.
+      -- NPCs approximate Resolve as half of Willpower for tracker capacity.
+      -- Their Resolve pools use the feature below and an identified attribute contribution.
       if stats.isNpc == true then
         local before = PSC.trackerMaxFromStats(stats, nil, "willpower")
         return { willpower = math.floor(before * 3 / 4) - before }

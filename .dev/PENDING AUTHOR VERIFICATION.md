@@ -46,7 +46,10 @@ Restart the dashboard, build and Save & Play. Follow the [NPC condition checks](
 Start with two vampire NPCs at Casa Loma: both present NPCs should receive the Blood Potency
 increase, while an absent NPC should not. Then check Redemption House: the NPC equivalent
 reduces Willpower by one quarter, rounding the remaining capacity down (8 becomes 6; 7 becomes 5).
-Mental pools and saved ratings stay unchanged. Leaving restores capacity and preserves damage.
+Resolve itself is halved: a Resolve 5 + Survival 2 pool becomes 2 + 2 = 4 dice. Configure reads
+an individual Resolve pool when present; otherwise enter the attribute rating and check
+**The chosen pool uses Resolve** for a broad or differently named pool. Unrelated Mental pools
+and saved ratings stay unchanged. Leaving restores capacity and preserves damage.
 
 Check the special Willpower and Rouse rules on the NPC's own roll, plus a generic NPC that is
 later kept. Costs, Stains and queued checks must stay with the right NPC and never affect Black.

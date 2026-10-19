@@ -90,11 +90,19 @@ Rouse reroll planning. Uniform impairment changes broad pools; named traits chan
 exceptional pools. Configure offers checkboxes for ambiguous skill bonuses and attribute-group
 impairment on exceptional pools. Saved NPC stats remain unchanged.
 
-For NPCs, **Resolve Halved reduces total Willpower capacity by one quarter**, rounding the remaining
-capacity down, without a Resolve or Mental pool penalty. This follows the author’s clarification;
-no optional Resolve/Survival stat fields are added. Existing damage is preserved when entering
-or leaving the location. Ordinary impairment from filling the reduced track still applies.
-Drowning asks the Storyteller to set a Resolve + Survival pool on the queued NPC check.
+For NPCs, **Resolve Halved halves the Resolve attribute in affected pools**, rounded down.
+A saved exceptional pool named only **Resolve** supplies the original attribute rating; named
+Resolve + Skill pools then lose only the halved attribute's contribution, not half the whole
+pool. If the stat block has no individual Resolve pool, Configure lets the Storyteller enter
+**Resolve before halving** for this roll. Named Resolve pools use it automatically; check
+**The chosen pool uses Resolve** for a broad or differently named pool. This choice does not
+change saved stats. Halving happens before ordinary impairment penalties.
+
+**Willpower separately loses one quarter of total capacity**, rounding the remaining capacity
+down. Resolve is approximated as half of Willpower (Resolve + Composure) for this purpose.
+Existing damage is preserved on entry and departure. Ordinary impairment from filling the
+reduced track still applies. No optional Resolve/Survival stat fields are added. Drowning asks
+the Storyteller to set a Resolve + Survival pool on the queued NPC check.
 
 NPC Rouse checks retain separate power/check and Surge identities, including multiple checks of
 one die kind. Oblivion can now add NPC Stains or present an individual Hunger-or-Stain choice;
@@ -112,8 +120,10 @@ and Blindfold appear as NPC status labels; they do not put overlays on the Black
    effective Blood Potency should rise by one, affecting its derived roll and Mend values.
    Make one absent and then change location: only the appropriate NPC's effects should leave.
 2. At Redemption House, Willpower 8 should show capacity 6; Willpower 7 should show capacity 5.
-   Mental and exceptional Resolve pools should stay unchanged by the halving rule. Leave the
-   site and confirm capacity returns without changing existing damage.
+   With Resolve 5 and Survival 2, Resolve should become 2 and Resolve + Survival should roll 4.
+   Without a saved individual Resolve pool, enter 5 in Configure and check the box if using a
+   broad Mental pool that includes Resolve. Unrelated Mental pools should remain unchanged.
+   Leave the site and confirm ratings/capacity return without changing existing damage.
 3. In Configure, check impairment on a broad Physical pool and an exceptional Brawl pool. Use
    the exceptional-pool checkbox where needed. A named Dexterity pool must not be penalized twice.
 4. Run Dupont, Docks, Little Italy, Rosedale, Cemetery and Weeping Cairn checks using the NPC's
