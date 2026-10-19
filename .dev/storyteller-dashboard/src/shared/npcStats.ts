@@ -1,3 +1,5 @@
+import { normalizeNpcRollMetadata, type NpcRollMetadata } from "./npcCustomRolls.ts";
+
 /**
  * NPC stat blocks set from the token configuration window's Stats button (`data/npc-stats.json`, git-ignored),
  * keyed three ways:
@@ -46,14 +48,14 @@ export const NPC_STATS_KEY_PATTERN = /^(?:[A-Za-z0-9_]{1,80}|generic:[^\u0000-\u
 export const genericStatsKey = (label: string): string => `generic:${label}`;
 export const keptStatsKey = (id: string): string => `kept:${id}`;
 
-export type NpcPool = { readonly id: string; readonly name: string; readonly dice: number };
+export type NpcPool = NpcRollMetadata & { readonly id: string; readonly name: string; readonly dice: number };
 /** `pool` is a pool ref: a standard pool name or `ex:<id>`. */
-export type NpcAttack = { readonly id: string; readonly name: string; readonly pool: string; readonly bonus: number };
+export type NpcAttack = NpcRollMetadata & { readonly id: string; readonly name: string; readonly pool: string; readonly bonus: number };
 /**
  * `pool` is a pool ref (standard, `ex:<id>` or `atk:<id>`); "" is a passive power with no roll. `ancilla` marks a
  * power from the sheet's Ancilla Power(s) column, so a write-back returns it there.
  */
-export type NpcPower = { readonly level: number; readonly name: string; readonly rouse: number; readonly pool: string; readonly ancilla?: true };
+export type NpcPower = NpcRollMetadata & { readonly level: number; readonly name: string; readonly rouse: number; readonly pool: string; readonly ancilla?: true };
 export type NpcPowerCategory = { readonly name: string; readonly dots?: number; readonly powers: readonly NpcPower[] };
 
 export type NpcStatBlock = {
@@ -165,7 +167,7 @@ export const normalizeStatBlock = (value: unknown): NpcStatBlock | null => {
     const dice = isRecord(raw) ? intIn(raw.dice, RANGES.dice) : undefined;
     const id = isRecord(raw) && typeof raw.id === "string" && ID_PATTERN.test(raw.id) ? raw.id : newStatId();
     if (name !== "" && dice !== undefined) {
-      exceptional.push({ id, name, dice });
+      exceptional.push({ id, name, dice, ...normalizeNpcRollMetadata(raw) });
     }
   }
   const hasSupernatural = supernaturalPoolName(kind) !== null;
@@ -181,7 +183,7 @@ export const normalizeStatBlock = (value: unknown): NpcStatBlock | null => {
     }
     const pool = typeof raw.pool === "string" && rollPools.has(raw.pool) ? raw.pool : "";
     const id = typeof raw.id === "string" && ID_PATTERN.test(raw.id) ? raw.id : newStatId();
-    attacks.push({ id, name: text(raw.name), pool, bonus: intIn(raw.bonus, RANGES.bonus) ?? 0 });
+    attacks.push({ id, name: text(raw.name), pool, bonus: intIn(raw.bonus, RANGES.bonus) ?? 0, ...normalizeNpcRollMetadata(raw) });
   }
   const powerPools = new Set([...rollPools, ...attacks.map((attack) => `atk:${attack.id}`)]);
   const powers: NpcPowerCategory[] = [];
@@ -199,6 +201,7 @@ export const normalizeStatBlock = (value: unknown): NpcStatBlock | null => {
         name: text(entry.name),
         rouse: usesRouse(kind) ? intIn(entry.rouse, RANGES.rouse) ?? 0 : 0,
         pool: typeof entry.pool === "string" && powerPools.has(entry.pool) ? entry.pool : "",
+        ...normalizeNpcRollMetadata(entry),
         ...(entry.ancilla === true ? { ancilla: true as const } : {})
       });
     }
@@ -315,3 +318,25 @@ export const configuredTiers = (stats: NpcStats | undefined): readonly NpcTier[]
   stats ? NPC_TIERS.filter((tier) => stats[tier] !== undefined) : [];
 
 export const isNpcTier = (value: unknown): value is NpcTier => NPC_TIERS.some((tier) => tier === value);
+
+/** Sheet cells cannot hold these associations yet. Keep matching entries' local metadata on import. */
+export const preserveNpcRollMetadata = (imported: NpcStatBlock, before: NpcStatBlock | undefined): NpcStatBlock => {
+  if (!before) return imported;
+  const merge = <T extends { readonly name: string } & NpcRollMetadata>(rows: readonly T[], old: readonly T[]): T[] => {
+    const remaining = [...old];
+    return rows.map((row) => {
+      const at = remaining.findIndex((candidate) => candidate.name.trim().toLowerCase() === row.name.trim().toLowerCase());
+      const previous = at < 0 ? undefined : remaining.splice(at, 1)[0];
+      return { ...row, ...(previous?.traits ? { traits: previous.traits } : {}),
+        ...(previous?.difficulty ? { difficulty: previous.difficulty } : {}) };
+    });
+  };
+  return {
+    ...imported,
+    exceptional: merge(imported.exceptional, before.exceptional),
+    attacks: merge(imported.attacks, before.attacks),
+    powers: imported.powers.map((category) => ({ ...category,
+      powers: merge(category.powers, before.powers.find((old) => old.name.trim().toLowerCase() === category.name.trim().toLowerCase())?.powers ?? [])
+    }))
+  };
+};

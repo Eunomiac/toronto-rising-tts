@@ -1,3 +1,4 @@
+import { NPC_DIFFICULTY_MAX, npcDifficultyAllows, parseNpcDifficulty } from "../../../shared/npcCustomRolls";
 import { useContext, useEffect, useRef, useState, type CSSProperties, type DragEvent, type MouseEvent, type ReactElement, type ReactNode } from "react";
 import { Icon, type IconName } from "../icons";
 import { NpcLiveContext } from "../npcTrackers";
@@ -70,7 +71,7 @@ const NO_DIFFICULTY_TITLE = "No difficulty: count successes only";
  * again over the result line, and picking folds it. With `noneCell` the 0 cell reads "–": a roll with no
  * difficulty has to be declared, so a forgotten one cannot roll as a success count.
  */
-const Difficulty = ({ value, editable, title, onPick, highlight, noneCell = false }: {
+export const Difficulty = ({ value, editable, title, onPick, highlight, noneCell = false, rule: expression }: {
   value: number | undefined;
   editable: boolean;
   title: string;
@@ -78,9 +79,12 @@ const Difficulty = ({ value, editable, title, onPick, highlight, noneCell = fals
   /** An NPC dropped on the card: its difficulties for actions it is suited to / everything else. */
   highlight?: DifficultyHighlight | undefined;
   noneCell?: boolean;
+  rule?: string;
 }): ReactElement | null => {
   const [open, setOpen] = useState(false);
   const none = (n: number): boolean => noneCell && n === 0;
+  const rule = parseNpcDifficulty(expression ?? "");
+  const max = expression ? NPC_DIFFICULTY_MAX : Math.max(DIFFICULTY_MAX, value ?? 0);
   if (editable && (value === undefined || open)) {
     const mark = (n: number): string =>
       n === highlight?.strong ? " strong" : n === highlight?.weak ? " weak" : "";
@@ -89,7 +93,7 @@ const Difficulty = ({ value, editable, title, onPick, highlight, noneCell = fals
         : n === highlight?.strong ? "Against the dropped NPC where it is well suited" : n === highlight?.weak ? "Against the dropped NPC otherwise" : undefined;
     return (
       <div className={`roll-strip${value === undefined ? "" : " over"}`} title={title}>
-        {range(0, DIFFICULTY_MAX).map((n) => (
+        {range(0, max).filter((n) => npcDifficultyAllows(rule, n)).map((n) => (
           <button
             key={n}
             type="button"
@@ -637,6 +641,7 @@ const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool, onConfigure, su
       <div className="roll-line">
         <Difficulty
           value={live.difficulty}
+          rule={live.difficultyRule}
           editable={live.phase !== "resolved"}
           title={live.difficulty === undefined ? "Pick a difficulty before rolling (– for none)" : "Difficulty"}
           noneCell

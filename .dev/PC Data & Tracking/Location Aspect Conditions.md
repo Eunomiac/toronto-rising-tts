@@ -90,6 +90,14 @@ Rouse reroll planning. Uniform impairment changes broad pools; named traits chan
 exceptional pools. Configure offers checkboxes for ambiguous skill bonuses and attribute-group
 impairment on exceptional pools. Saved NPC stats remain unchanged.
 
+For NPC custom rolls with saved trait associations, multiplier effects use the targeted trait's
+share of the total pool: one defined trait has weight 1; two have weight 0.5. An 8-die Resolve +
+Composure pool therefore becomes 6 dice under Resolve Halved; an 8-die Resolve-only pool becomes 4.
+Matching skill/attribute modifiers are added after rounding the weighted pool down. See
+[NPC custom roll associations](../Storyteller%20Dashboard%20Docs/NPC%20Stats.md#custom-roll-trait-associations-and-difficulties).
+
+For **unassociated** NPC pools, the existing fallback remains:
+
 For NPCs, **Resolve Halved halves the Resolve attribute in affected pools**, rounded down.
 A saved exceptional pool named only **Resolve** supplies the original attribute rating; named
 Resolve + Skill pools then lose only the halved attribute's contribution, not half the whole

@@ -1,3 +1,4 @@
+import { normalizeTraitName, rollTraits, type NpcRollMetadata } from "./npcCustomRolls.js";
 import type { NpcStatBlock } from "./npcStats.js";
 
 export type NpcConditionView = {
@@ -27,9 +28,19 @@ const RATING_KEYS = ["kind", "health", "willpower", "bloodPotency", "humanity",
 export const npcConditionRatings = (block: Partial<NpcStatBlock>): Partial<NpcStatBlock> =>
   Object.fromEntries(RATING_KEYS.flatMap((key) => block[key] === undefined ? [] : [[key, block[key]]]));
 
+/** Explicit associations take precedence over display names and broad-pool guesses. */
+export const npcTraitAdjustedDice = (dice: number, metadata: NpcRollMetadata, effects: NpcConditionView): number => {
+  const traits = rollTraits(metadata);
+  const additive = Object.entries(effects.statChanges ?? {}).reduce((sum, [key, delta]) =>
+    sum + (traits.includes(normalizeTraitName(key)) ? delta : 0), 0);
+  const multiplier = effects.rollFeatures.resolveHalved && traits.includes("resolve") ? 1 - 0.5 / traits.length : 1;
+  return Math.max(0, Math.floor(dice * multiplier) + additive);
+};
+
 /** A pool named only Resolve supplies the attribute; composite pool totals cannot supply it. */
 export const npcResolveRating = (block: NpcStatBlock): number | undefined => {
-  const rating = block.exceptional.find((pool) => pool.name.trim().toLowerCase() === "resolve")?.dice;
+  const rating = block.exceptional.find((pool) => (rollTraits(pool).length === 1 && rollTraits(pool)[0] === "resolve")
+    || (rollTraits(pool).length === 0 && pool.name.trim().toLowerCase() === "resolve"))?.dice;
   return rating !== undefined && Number.isInteger(rating) && rating >= 0 && rating <= 10 ? rating : undefined;
 };
 
@@ -63,6 +74,7 @@ export const applyNpcConditions = (
     ...(effects.wpMax === undefined ? {} : { willpower: effects.wpMax }),
     ...(effects.humanity === undefined || block.humanity === undefined ? {} : { humanity: effects.humanity }),
     exceptional: block.exceptional.map((pool) => {
+      if (rollTraits(pool).length > 0) return { ...pool, dice: npcTraitAdjustedDice(pool.dice, pool, effects) };
       const words = new Set(pool.name.toLowerCase().match(/[a-z]+/g) ?? []);
       const statDelta = Object.entries(d).reduce((sum, [key, value]) => sum + (words.has(key.toLowerCase()) ? value : 0), 0);
       const delta = statDelta + (words.has("resolve") ? resolveDelta : selectedResolveDelta);
@@ -95,6 +107,7 @@ export const withNpcTraitChoices = (
   return {
     ...block,
     exceptional: block.exceptional.map((pool) => {
+      if (rollTraits(pool).length > 0) return pool;
       const words = new Set(pool.name.toLowerCase().match(/[a-z]+/g) ?? []);
       const extra = choices.reduce((sum, choice) => {
         if (!choice.exceptionalOnly || !selected.has(choice.key)) return sum;

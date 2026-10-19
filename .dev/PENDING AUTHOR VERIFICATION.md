@@ -57,6 +57,26 @@ Compulsions, Ambitions, Desires and unknown Drowning pools are Storyteller choic
 Local behavior tests and build checks pass; these live-game checks are still outstanding.
 This session has no Linear connector, so no Linear issue could be created or updated.
 
+#### NPC custom roll traits and difficulty rules — separate author request
+
+Restart the dashboard, build and Save & Play for the bridge changes.
+
+1. Edit the name of an Exceptional roll, Attack and Power in NPC Stats. The Pools bar should
+   slide above the row and Difficulties below it. Move into those controls: they should stay
+   open until focus leaves the row. Close/reopen Stats and confirm the values remain.
+2. Give an 8-die custom pool **Resolve + Composure**. At Redemption House it should plan 6 dice.
+   With Resolve alone it should plan 4. An associated Skill with a +2 condition should add two
+   dice. A linked Attack/Power should inherit these settings or use its own override, once.
+3. Set difficulty **3**: choosing that custom roll should set 3 automatically. Set **2-5**:
+   only those four values should appear. Set **4+**: lower values should disappear while **–**
+   remains. Choose a different unconfigured roll and confirm the filter clears.
+4. Repeat an Attack and Power pick and confirm the planned pool, damage bonus, Rouse checks
+   and chosen difficulty reach the correct live NPC roll. Making the NPC absent or leaving
+   the location should remove the condition's pool modifier.
+
+Automated editor, planner, import-preservation, browser-layout and Lua controller checks run
+locally; live TTS verification is outstanding. This session has no Linear connector.
+
 _Last populated: 2026-10-19 (TOR-745 Memoriam NPC sheet import). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
 
 ### Memoriam NPC list moved off the skybox sheet

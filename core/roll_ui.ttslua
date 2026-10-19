@@ -2322,6 +2322,12 @@ function RUI.refreshStRollGridStrips(active)
         end
         return selectedPoolCountForStrip(kind, active)
     end)
+    -- Eleven known cells, current Black roll only; no XML rebuild or world scan.
+    local rules = require("lib.npc_roll_difficulty")
+    local rule = rules.parse(active and active.meta and active.meta.npcDifficultyRule)
+    for value = 0, 10 do
+        uiSetActive("gridStrip_rollPanelST_difficulty_" .. value, rules.allows(rule, value))
+    end
     refreshStNormalStripLabels(active)
 end
 

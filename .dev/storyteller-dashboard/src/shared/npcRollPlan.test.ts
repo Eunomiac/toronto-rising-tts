@@ -1,3 +1,4 @@
+import { applyNpcConditions } from "./npcConditions.js";
 import { describe, expect, it } from "vitest";
 import { planNpcRoll, planNpcTypeSeed, undamagedWillpower, type NpcRollInput } from "./npcRollPlan.js";
 import type { NpcStatBlock } from "./npcStats.js";
@@ -165,5 +166,41 @@ describe("undamagedWillpower", () => {
   it("subtracts superficial and aggravated from the stat-block maximum", () => {
     expect(undamagedWillpower(mylene, { wpSup: 1, wpAgg: 1 })).toBe(2);
     expect(undamagedWillpower({ ...mylene, willpower: undefined }, {})).toBe(0);
+  });
+});
+
+describe("custom roll associations", () => {
+  const effects = {
+    conditions: [], manual: [], statChanges: { etiquette: 2, awareness: -2 }, rollFeatures: { resolveHalved: true }
+  };
+  const source: NpcStatBlock = {
+    ...mylene, exceptional: [{ id: "roll", name: "Focus", dice: 8, traits: ["Resolve", "Etiquette"], difficulty: "2-5" }],
+    attacks: [{ id: "attack", name: "Strike", pool: "ex:roll", bonus: 2 }],
+    powers: [{ name: "Dominate", powers: [{ name: "Command", level: 2, rouse: 1, pool: "atk:attack" }] }]
+  };
+  it("weights a two-trait multiplier and then adds the matching skill bonus", () => {
+    const plan = planNpcRoll(input({ block: source, conditionSource: source, conditions: effects, entry: { kind: "pool", ref: "ex:roll" } }));
+    expect(plan).toMatchObject({ poolDice: 8, difficultyRule: "2-5" }); // 8 * .75 + 2
+  });
+  it("inherits associations through an Attack and Power", () => {
+    expect(planNpcRoll(input({ block: source, conditionSource: source, conditions: effects, entry: { kind: "attack", id: "attack" } })))
+      .toMatchObject({ poolDice: 8, difficultyRule: "2-5", marginBonus: 2 });
+    expect(planNpcRoll(input({ block: source, conditionSource: source, conditions: effects, entry: { kind: "power", category: 0, power: 0 } })))
+      .toMatchObject({ poolDice: 8, discBonus: 1, difficultyRule: "2-5", marginBonus: 2 });
+  });
+  it("uses an Attack's override instead of stacking its referenced pool's conditions", () => {
+    const raw: NpcStatBlock = { ...source,
+      exceptional: [{ ...source.exceptional[0]!, dice: 12 }],
+      attacks: [{ ...source.attacks[0]!, traits: ["Wits", "Awareness"], difficulty: "4+" }] };
+    const block = applyNpcConditions(raw, effects);
+    expect(block.exceptional[0]?.dice).toBe(11); // 12 * .75 + 2
+    const plan = planNpcRoll(input({ block, conditionSource: raw, conditions: effects, entry: { kind: "attack", id: "attack" } }));
+    expect(plan).toMatchObject({ poolDice: 10, difficultyRule: "4+" }); // original 12 - 2, not 11 - 2
+
+  });
+  it("weights a Power's single trait at one and preserves attack damage and Discipline Bonus", () => {
+    const block: NpcStatBlock = { ...source, powers: [{ name: "Dominate", powers: [{ ...source.powers[0]!.powers[0]!, traits: ["", "Resolve"], difficulty: "3" }] }] };
+    const plan = planNpcRoll(input({ block, conditionSource: block, conditions: effects, entry: { kind: "power", category: 0, power: 0 } }));
+    expect(plan).toMatchObject({ poolDice: 4, discBonus: 1, normal: 3, hunger: 2, marginBonus: 2, difficultyRule: "3" });
   });
 });

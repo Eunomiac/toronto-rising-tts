@@ -244,6 +244,7 @@ export type StRollSlot = {
 };
 
 export type StLiveRoll = {
+  readonly difficultyRule?: string;
   readonly conditions?: string;
   readonly rollId?: string;
   readonly rollType?: string;

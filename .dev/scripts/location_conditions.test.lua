@@ -648,4 +648,36 @@ test("NPC successful-check rerolls do not reroll a separate failed check",functi
   eq(LC.onBeforeDiceRead("Black",a,{[DK.KIND_ROUSE]={8,2}},{[DK.KIND_ROUSE]={one,two}}),false)
   eq(one.rerolls,1);eq(two.rerolls,0)
 end)
+test("NPC difficulty rules parse ranges and preserve zero only for minimums",function()
+  local D=require("lib.npc_roll_difficulty")
+  eq(D.parse("3").kind,"fixed")
+  local range=D.parse('"2-5"')
+  eq(D.allows(range,0),false);eq(D.allows(range,2),true);eq(D.allows(range,6),false)
+  local min=D.parse("12+")
+  eq(D.allows(min,0),true);eq(D.allows(min,11),false);eq(D.allows(min,15),true)
+  for _,value in ipairs({"-1","2.5","16","5-2","3-16","3++","three","1e1","2/5"}) do
+    local rule,err=D.parse(value);eq(rule,nil);assert(err)
+  end
+end)
+test("actual NPC controller sets fixed difficulty and enforces then clears filters",function()
+  npcSetup({})
+  C.RollPhase.SETUP="setup";C.RollTypesBloodSurge={standard=true}
+  local controller=assert(loadfile("core/roll_controller.ttslua"))()
+  local a=npcActive({});a.phase="setup";a.difficulty=1
+  S.setStateVal(a,"playerData","st","hud","rollData","active")
+  local plan={normal=8,hunger=0,rouse={},difficultyRule="4"}
+  eq(controller.applyNpcStatPlan(plan),nil);eq(a.difficulty,4)
+  plan.difficultyRule="2-3"
+  eq(controller.applyNpcStatPlan(plan),nil);eq(a.difficulty,nil)
+  eq(controller.setDifficulty("Black",0),false);eq(controller.setDifficulty("Black",4),false)
+  eq(controller.setDifficulty("Black",3),true);eq(a.difficulty,3)
+  plan.difficultyRule="4+"
+  eq(controller.applyNpcStatPlan(plan),nil);eq(a.difficulty,nil)
+  eq(controller.setDifficulty("Black",0),true);eq(a.difficulty,0)
+  eq(controller.setDifficulty("Black",2),false)
+  plan.difficultyRule=nil
+  eq(controller.applyNpcStatPlan(plan),nil);eq(controller.setDifficulty("Black",2),true)
+  plan.difficultyRule="bad"
+  assert(controller.applyNpcStatPlan(plan));eq(a.difficulty,2)
+end)
 print(passed .. " location condition tests passed")

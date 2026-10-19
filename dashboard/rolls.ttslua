@@ -453,6 +453,7 @@ local function applyNpcCommand(cmd)
       line = cmd.line,
       marginBonus = cmd.marginBonus,
       marginLabel = cmd.marginLabel,
+      difficultyRule = cmd.difficultyRule,
       autoConfirm = cmd.kind == "rouseOnly",
       surgeDice = surgeDice,
     })

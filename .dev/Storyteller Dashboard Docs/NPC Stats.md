@@ -152,3 +152,44 @@ for NPC rolls and uses the same registry overlay as PC rolls.
 See [Location Aspect Conditions](../PC%20Data%20%26%20Tracking/Location%20Aspect%20Conditions.md#npc-subjects)
 for Resolve-pool halving and the quarter-Willpower approximation, Drowning pool decisions, identity/lifetime rules and the
 live-game verification checklist.
+
+## Custom roll trait associations and difficulties
+
+Exceptional rolls, Attacks and individual Powers accept optional `traits: [first, second]` and
+`difficulty` text. Focus the row's name to unfold the Pools bar above it and Difficulties bar
+below it. The bars stay open while editing their controls and close when focus leaves the row.
+The two trait fields accept free text: Attributes, Skills, Trackers, Powers, Advantages or Flaws.
+Names are matched without case, spaces or punctuation; explicit associations take precedence
+over a roll's display name. Empty metadata keeps existing stat blocks compatible.
+
+Conditions add matching trait modifiers to the pool. A multiplier on one associated trait is
+weighted by its share: 1 with one defined trait, 0.5 with two. For Resolve Halved, an 8-die pool
+associated only with Resolve becomes 4; Resolve + Composure becomes 6 (`8 * (1 - .5 * .5)`).
+The weighted result is rounded down before additive modifiers. Derived NPC Willpower retains
+its separate quarter-capacity approximation. Unassociated rolls retain the existing named-pool
+and Storyteller-choice behavior.
+
+An Attack or Power inherits its referenced pool's associations and difficulty unless it defines
+its own. Each field inherits separately. Its conditions are calculated from the original pool
+once; linked entries do not accumulate penalties. Attack damage and Discipline Bonus remain
+separate from the trait adjustment. Passive announcements and Rouse-only activation checks
+continue to use their existing rules.
+
+Difficulty syntax (0–15, matching the NPC difficulty input range):
+
+- `3`: start at difficulty 3; the Storyteller may revise it.
+- `2-5`: show only 2, 3, 4 and 5 on the live difficulty strip.
+- `4+`: show 4 through 15 and keep **–**, the no-difficulty choice (0).
+- Blank: inherit from the linked pool, or leave the difficulty unconfigured.
+
+A range/minimum preserves a previously chosen difficulty only if valid; otherwise the roll
+waits for a valid choice. Selecting an unconfigured custom roll clears the prior filter.
+TTS enforces the filter as well as the dashboard. Invalid text stays editable and prevents
+closing/saving until corrected.
+
+The new metadata lives in dashboard stats JSON. The sheet's current text format cannot store
+it; import preserves it by matching entry names (and power category), including after sheet
+ids change. Sheet write-back compares existing fields and does not export this metadata.
+
+Code: `src/shared/npcCustomRolls.ts`, `npcStats.ts`, `npcConditions.ts`, `npcRollPlan.ts`;
+editor: `src/client/scenesPanel/npcCustomRollFields.tsx`; TTS rules: `lib/npc_roll_difficulty.ttslua`.
