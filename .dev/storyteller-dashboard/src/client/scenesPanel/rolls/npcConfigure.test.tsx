@@ -48,6 +48,15 @@ const setup = (block: NpcStatBlock) => {
 };
 
 describe("NPC Resolve condition controls", () => {
+  it("plans an associated Resolve pool with the weighted modifier without asking for a rating", async () => {
+    const user = userEvent.setup();
+    const send = setup({ ...source, exceptional: [{ id: "save", name: "Resolve + Survival", dice: 8, traits: ["Resolve", "Survival"], difficulty: "3-5" }] });
+    expect(screen.getByRole("spinbutton", { name: "Resolve before halving" })).toHaveValue(null);
+    const roll = screen.getByRole("button", { name: /Resolve \+ Survival/ });
+    expect(roll).toBeEnabled();
+    await user.click(roll);
+    expect(send).toHaveBeenCalledWith(expect.objectContaining({ op: "npcStatRoll", normal: 6, hunger: 0, difficultyRule: "3-5" }));
+  });
   it("uses a saved individual Resolve rating and sends the adjusted composite pool once", async () => {
     const user = userEvent.setup();
     const send = setup({ ...source, exceptional: [...source.exceptional, { id: "resolve", name: "Resolve", dice: 5 }] });

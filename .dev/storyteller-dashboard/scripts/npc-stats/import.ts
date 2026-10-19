@@ -3,7 +3,7 @@ import { isDeepStrictEqual } from "node:util";
 import path from "node:path";
 import { backupName, resolveDashboardBackupDir } from "../../src/server/dataFileStore.ts";
 import { PENDING_FILE_NAME, readPending } from "../../src/server/npcStatsPending.ts";
-import { normalizeNpcStatsFile, normalizeStatBlock, type NpcStats } from "../../src/shared/npcStats.ts";
+import { normalizeNpcStatsFile, normalizeStatBlock, preserveNpcRollMetadata, type NpcStats } from "../../src/shared/npcStats.ts";
 import { parseCharacters } from "./sheet.ts";
 import { fetchCharactersRows } from "./sheetFetch.ts";
 
@@ -57,12 +57,13 @@ const main = async (): Promise<void> => {
       continue;
     }
     const before = current[key]?.named;
+    const imported = preserveNpcRollMetadata(block, before);
     if (!before) {
       added++;
-    } else if (!isDeepStrictEqual(before, block)) {
+    } else if (!isDeepStrictEqual(before, imported)) {
       changed++;
     }
-    next[key] = { ...current[key], named: block };
+    next[key] = { ...current[key], named: imported };
   }
   const offSheet = Object.keys(current).filter((key) => current[key]?.named && !blocks.has(key) && !key.includes(":"));
 

@@ -1,3 +1,5 @@
+import { npcTraitAdjustedDice, type NpcConditionView } from "./npcConditions.js";
+import { rollTraits, type NpcRollMetadata } from "./npcCustomRolls.js";
 /**
  * Turns an NPC stat block entry (pool, attack or power) into the dice the Storyteller rolls for it.
  * Pure: the Configure pop-up on the live NPC roll card shows the plan and sends it as `npcStatRoll`
@@ -41,6 +43,9 @@ export type NpcRollInput = {
   readonly entry: NpcRollEntry;
   readonly bloodPotency: PlanBloodPotency;
   readonly rules: PlanRollTypeRules;
+  /** Raw ratings let an Attack/Power override its referenced pool's associations without stacking effects. */
+  readonly conditionSource?: NpcStatBlock;
+  readonly conditions?: NpcConditionView;
 };
 
 /** Same as `NpcRollInput` without a Configure grid entry (initiate seed for auto-pool types). */
@@ -67,6 +72,7 @@ export type NpcRollPlan = {
   /** Added to the margin on a success ("Feral Claws +2"); 0 when none. */
   readonly marginBonus: number;
   readonly marginLabel: string;
+  readonly difficultyRule?: string;
 };
 
 const OBLIVION_CATEGORIES = new Set(["oblivion", "ceremonies"]);
@@ -83,6 +89,27 @@ const resolvePool = (block: NpcStatBlock, ref: string): { readonly dice: number;
     throw new Error(`Unknown NPC pool "${ref}".`);
   }
   return { dice: option.dice ?? 0, label: option.label };
+};
+
+const inheritMetadata = (parent: NpcRollMetadata, own: NpcRollMetadata): NpcRollMetadata => ({
+  ...(own.traits ?? parent.traits ? { traits: own.traits ?? parent.traits } : {}),
+  ...(own.difficulty ?? parent.difficulty ? { difficulty: own.difficulty ?? parent.difficulty } : {})
+});
+
+const metadataForRef = (block: NpcStatBlock, ref: string): NpcRollMetadata => {
+  if (ref.startsWith("ex:")) return block.exceptional.find((pool) => pool.id === ref.slice(3)) ?? {};
+  if (ref.startsWith("atk:")) {
+    const attack = block.attacks.find((row) => row.id === ref.slice(4));
+    return attack ? inheritMetadata(metadataForRef(block, attack.pool), attack) : {};
+  }
+  return {};
+};
+
+export const npcRollMetadata = (block: NpcStatBlock, entry: NpcRollEntry): NpcRollMetadata => {
+  if (entry.kind === "pool") return metadataForRef(block, entry.ref);
+  if (entry.kind === "attack") return metadataForRef(block, `atk:${entry.id}`);
+  const power = block.powers[entry.category]?.powers[entry.power];
+  return power ? inheritMetadata(metadataForRef(block, power.pool), power) : {};
 };
 
 const attackById = (block: NpcStatBlock, id: string) => {
@@ -133,6 +160,7 @@ const rollPlan = (
     readonly hungerOnFail?: boolean;
     readonly marginBonus?: number;
     readonly marginLabel?: string;
+    readonly difficultyRule?: string;
   }
 ): NpcRollPlan => {
   const total = opts.poolDice + opts.discBonus;
@@ -148,7 +176,8 @@ const rollPlan = (
     heading: opts.heading,
     line: opts.line,
     marginBonus: opts.marginBonus ?? 0,
-    marginLabel: opts.marginLabel ?? ""
+    marginLabel: opts.marginLabel ?? "",
+    ...(opts.difficultyRule ? { difficultyRule: opts.difficultyRule } : {})
   };
 };
 
@@ -294,6 +323,12 @@ export const planNpcRoll = (input: NpcRollInput): NpcRollPlan => {
     };
   }
 
+  const source = input.conditionSource ?? block;
+  const metadata = npcRollMetadata(source, entry);
+  if (input.conditions && rollTraits(metadata).length > 0) {
+    poolDice = npcTraitAdjustedDice(resolvePool(source, poolRef).dice, metadata, input.conditions);
+  }
+
   // Discipline Bonus: powers always (discipline dice pools), and any entry when the card type is Discipline.
   const discBonus = vampire && (isPower || input.rollType === "discipline") ? Math.max(0, Math.floor(bloodPotency.discBonus)) : 0;
   return rollPlan(input, {
@@ -304,6 +339,7 @@ export const planNpcRoll = (input: NpcRollInput): NpcRollPlan => {
     rouse,
     hungerOnFail: vampire && rouse.length > 0,
     marginBonus,
-    marginLabel
+    marginLabel,
+    ...(metadata.difficulty ? { difficultyRule: metadata.difficulty } : {})
   });
 };

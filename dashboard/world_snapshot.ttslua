@@ -472,6 +472,7 @@ local function buildRolls()
       wpReroll = type(active.willpower) == "table" and active.willpower.wpRerollWave == true or nil,
       pool = poolCounts(active.pool),
       difficulty = tonumber(active.difficulty),
+      difficultyRule = meta.npcDifficultyRule,
       result = resultRow(active),
       dice = diceRows(active.diceFaces),
       actions = RUI.stRollPanelActions(active),

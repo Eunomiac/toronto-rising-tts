@@ -70,6 +70,7 @@ export type RollsCommand =
   | { readonly op: "pinToDrawer"; readonly slot: number; readonly color?: string; readonly secret?: boolean }
   | {
       readonly op: "npcStatRoll";
+      readonly difficultyRule?: string;
       readonly kind: "roll" | "rouseOnly";
       readonly rollType: string;
       readonly normal: number;

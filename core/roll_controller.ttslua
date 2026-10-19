@@ -1029,6 +1029,8 @@ function RC.applyNpcStatPlan(plan)
     if active.phase ~= C.RollPhase.SETUP and active.phase ~= C.RollPhase.PRE_ROLL then
         return "The NPC pool is fixed once the dice are rolled."
     end
+    local difficultyRule, difficultyError = require("lib.npc_roll_difficulty").parse(plan.difficultyRule)
+    if difficultyError then return difficultyError end
     local rouse, rouseDice, oblivDice = {}, 0, 0
     for _, check in ipairs(type(plan.rouse) == "table" and plan.rouse or {}) do
         local dice = math.floor(tonumber(check.dice) or 1) == 2 and 2 or 1
@@ -1072,6 +1074,13 @@ function RC.applyNpcStatPlan(plan)
         marginLabel = type(plan.marginLabel) == "string" and plan.marginLabel or nil,
     }
     active.npcRouseFailed = nil
+    active.meta.npcDifficultyRule = difficultyRule and difficultyRule.text or nil
+    if difficultyRule and difficultyRule.kind == "fixed" then
+        active.difficulty = difficultyRule.min
+    elseif difficultyRule and active.difficulty ~= nil
+        and not require("lib.npc_roll_difficulty").allows(difficultyRule, active.difficulty) then
+        active.difficulty = nil
+    end
     active.meta.npcAutoConfirm = plan.autoConfirm == true or nil
     RC.computeEffectiveRollState(color, active)
     if not RO.getForActive(active, RO.ROLL_HUNGER_DICE) then
@@ -1552,6 +1561,12 @@ function RC.setDifficulty(color, difficulty)
     if active.phase == C.RollPhase.RESOLVED then
         print(string.format("[RC] setDifficulty: roll for %s is already RESOLVED", color))
         return false
+    end
+
+    if color == "Black" and active.meta and active.meta.npcDifficultyRule then
+        local rules = require("lib.npc_roll_difficulty")
+        local rule = rules.parse(active.meta.npcDifficultyRule)
+        if not rules.allows(rule, difficulty) then return false end
     end
 
     active.difficulty = difficulty

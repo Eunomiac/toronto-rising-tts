@@ -14,7 +14,8 @@
     "start": "npm run build && node dist/server/index.js",
     "dev": "npm run scene-catalogs && npm run copy-static && tsc -p tsconfig.server.json && node dist/server/index.js --dev",
     "dev:open": "node scripts/dev-and-open.mjs",
-    "test:dnd": "node scripts/dnd-smoke.mjs"
+    "test:dnd": "node scripts/dnd-smoke.mjs",
+    "test:npc-rolls:browser": "node scripts/npc-custom-rolls-smoke.mjs"
   },
   "dependencies": {
     "@tiptap/core": "^3.31.4",

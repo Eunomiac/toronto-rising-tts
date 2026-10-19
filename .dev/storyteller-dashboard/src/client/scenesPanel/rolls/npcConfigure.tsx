@@ -1,9 +1,11 @@
+import { rollTraits } from "../../../shared/npcCustomRolls";
 import { useContext, useState, type MouseEvent, type ReactElement } from "react";
 import { applyNpcConditions, npcResolveRating, npcTraitChoices, withNpcTraitChoices } from "../../../shared/npcConditions";
 import { NpcLiveContext } from "../npcTrackers";
 import { bloodPotencyRow, ROLL_TYPE_RULES } from "../../catalogVocab";
 import {
   isTrackerSeedRollType,
+  npcRollMetadata,
   planNpcRoll,
   planNpcTypeSeed,
   type NpcRollEntry,
@@ -57,6 +59,7 @@ const describe = (plan: NpcRollPlan): string => {
   if (plan.kind === "roll") {
     lines.push(`Dice: ${plan.poolDice}${plan.discBonus > 0 ? ` + ${plan.discBonus} discipline` : ""}`);
   }
+  if (plan.difficultyRule) lines.push(`Difficulty: ${plan.difficultyRule}`);
   plan.rouse.forEach((check, index) => {
     lines.push(`Rouse check ${index + 1}: ${check.dice === 2 ? "2 dice (reroll)" : "1 die"}${check.oblivion ? ", Oblivion" : ""}`);
   });
@@ -124,10 +127,12 @@ export const NpcConfigure = ({ at, live, block: baseBlock, levels, send, onPool,
         : entry.kind === "attack" ? block.attacks.find((attack) => attack.id === entry.id)?.pool
         : block.powers[entry.category]?.powers[entry.power]?.pool;
       const label = poolOptions(block, false).find((option) => option.ref === ref)?.label;
-      if (effects?.rollFeatures.resolveHalved && resolveRating === undefined && /\bresolve\b/i.test(label ?? "")) {
+      if (effects?.rollFeatures.resolveHalved && resolveRating === undefined
+          && rollTraits(npcRollMetadata(sourceBlock ?? block, entry)).length === 0 && /\bresolve\b/i.test(label ?? "")) {
         throw new Error("Set Resolve before halving to adjust this pool's attribute contribution.");
       }
-      return planNpcRoll({ name, block, levels, rollType, entry, bloodPotency, rules });
+      return planNpcRoll({ name, block, levels, rollType, entry, bloodPotency, rules,
+        ...(sourceBlock ? { conditionSource: sourceBlock } : {}), ...(effects ? { conditions: effects } : {}) });
     });
   const pick = (plan: NpcRollPlan): void => {
     if (plan.kind === "passive") {
@@ -146,7 +151,8 @@ export const NpcConfigure = ({ at, live, block: baseBlock, levels, send, onPool,
         heading: plan.heading,
         line: plan.line,
         marginBonus: plan.marginBonus,
-        marginLabel: plan.marginLabel
+        marginLabel: plan.marginLabel,
+        ...(plan.difficultyRule ? { difficultyRule: plan.difficultyRule } : {})
       });
     }
     onClose();
@@ -175,8 +181,8 @@ export const NpcConfigure = ({ at, live, block: baseBlock, levels, send, onPool,
             </label>
             <p className="lab-note">
               {resolveRating === undefined
-                ? "Set the Resolve attribute rating before choosing a pool that uses it. A combined pool total is not the attribute rating."
-                : `Resolve ${resolveRating} becomes ${Math.floor(resolveRating / 2)}. Named Resolve pools include this penalty; check the box for other pools that use it.`}
+                ? "Associated traits are adjusted automatically. For a pool without associations, set its Resolve attribute rating here."
+                : `For unassociated pools, Resolve ${resolveRating} becomes ${Math.floor(resolveRating / 2)}. Named Resolve pools include this penalty; check the box for other pools that use it.`}
               {" "}Willpower separately loses one quarter of its capacity.
             </p>
           </div>

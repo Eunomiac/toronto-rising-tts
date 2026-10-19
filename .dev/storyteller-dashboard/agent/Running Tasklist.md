@@ -24,6 +24,12 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 
 ## General Guidelines
 
+✔️ NPC custom roll associations and difficulties — pending Save & Play for bridge changes.
+Focusing a custom-roll name opens editable Pools/Difficulties bars. Traits drive condition
+modifiers and weighted multipliers; linked Attacks/Powers inherit or override them. Fixed,
+range and minimum difficulties reach the live roll and are enforced in TTS. Local metadata
+survives sheet imports. Browser checks cover animation layout, focus and persistence.
+
 ✔️ NPC conditions — pending Save & Play. All registry stat and roll effects now resolve by NPC
 identity. The tracker popup lists active/manual conditions, Stains and narrative choices;
 Configure uses effective ratings and offers checkboxes for ambiguous exceptional pools.

@@ -166,3 +166,11 @@ npm test
 npm run build
 npm run dev
 ```
+
+### NPC custom roll browser regression
+
+`npm run test:npc-rolls:browser` starts an isolated Vite harness and checks the real Stats editor
+at 1920×1080 with synthetic data. It covers all three animated bar layouts, focus within the
+controls, save payloads and the minimum-difficulty strip. It opens no TTS connection and
+changes no campaign files. Install its browser once with `npx playwright install chromium --only-shell`.
+The temporary harness files and browser/server processes are cleaned up after the check.
