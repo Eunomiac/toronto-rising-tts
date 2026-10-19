@@ -160,6 +160,16 @@ function Conditions.resolveRollPolicy(playerID)
   return Conditions.resolveRollPolicyForActive(playerID, nil)
 end
 
+--- Dispatch a condition event outside the roll FSM using the same resolved policy.
+function Conditions.dispatchEvent(playerID, hook, ...)
+  local color = seatColorForPlayer(playerID)
+  if color ~= nil then
+    return require("core.roll_condition_handlers").run(hook, color, {
+      rollPolicy = Conditions.resolveRollPolicy(playerID),
+    }, ...)
+  end
+end
+
 --- Build effective condition keys for one roll (playerData + per-roll overlay).
 --- @param playerID string
 --- @param active table|nil
@@ -167,6 +177,9 @@ end
 function Conditions.buildEffectiveConditionsForRoll(playerID, active)
   local effective = {}
   if playerID == C.StorytellerID then
+    if type(active) == "table" and type(active.npcCharacterKey) == "string" then
+      effective = require("core.npc_conditions").conditionSet(active.npcCharacterKey)
+    end
     local overlay = type(active) == "table" and active.rollConditionOverlay or nil
     if type(overlay) == "table" then
       if type(overlay.forceOn) == "table" then
@@ -183,6 +196,9 @@ function Conditions.buildEffectiveConditionsForRoll(playerID, active)
           end
         end
       end
+    end
+    for id in pairs(effective) do
+      if not Conditions.canUseRollCondition(playerID, active, id) then effective[id] = nil end
     end
     return effective
   end
@@ -209,7 +225,27 @@ function Conditions.buildEffectiveConditionsForRoll(playerID, active)
       end
     end
   end
+  for id in pairs(effective) do
+    if not Conditions.canUseRollCondition(playerID, active, id) then
+      effective[id] = nil
+    end
+  end
   return effective
+end
+
+--- Whether a roll condition id is active for this roll (persisted + overlay).
+function Conditions.canUseRollCondition(playerID, active, conditionId)
+  local def = CD.getDef(conditionId)
+  if def.onlyRollType ~= nil and (active == nil or active.rollType ~= def.onlyRollType) then
+    return false
+  end
+  if def.requiresCondition ~= nil then
+    local base = playerID == C.StorytellerID and active ~= nil and active.npcCharacterKey ~= nil
+      and require("core.npc_conditions").conditionSet(active.npcCharacterKey)
+      or S.getStateVal("playerData", playerID, "conditions") or {}
+    return base[def.requiresCondition] ~= nil
+  end
+  return true
 end
 
 --- Whether a roll condition id is active for this roll (persisted + overlay).
@@ -233,10 +269,11 @@ function Conditions.resolveRollPolicyForActive(playerID, active)
   if type(playerID) ~= "string" or playerID == "" then
     error("Conditions.resolveRollPolicyForActive: playerID required")
   end
-  if playerID == C.StorytellerID then
-    return RollPolicies.empty()
-  end
   local stats = S.getStateVal("playerData", playerID, "stats")
+  if playerID == C.StorytellerID then
+    stats = type(active) == "table" and type(active.npcCharacterKey) == "string"
+      and require("core.npc_conditions").statsFor(active.npcCharacterKey) or {}
+  end
   local effective = Conditions.buildEffectiveConditionsForRoll(playerID, active)
   return RollPolicies.mergeForPlayer(effective, stats)
 end
@@ -525,6 +562,7 @@ local function reconcileHostedForPlayer(playerID, desired, present, skipPresenta
 
   local stats = S.getStateVal("playerData", playerID, "stats")
   local changed = false
+  local added = {}
 
   for id, def in pairs(CD.Defs) do
     if isHostedConditionDef(def) and conditions[id] ~= nil then
@@ -545,6 +583,7 @@ local function reconcileHostedForPlayer(playerID, desired, present, skipPresenta
       local has = conditions[id] ~= nil
       if want and not has then
         S.setStateVal(true, "playerData", playerID, "conditions", id)
+        added[id] = true
         changed = true
       elseif not want and has then
         S.setStateVal(nil, "playerData", playerID, "conditions", id)
@@ -553,6 +592,9 @@ local function reconcileHostedForPlayer(playerID, desired, present, skipPresenta
     end
   end
 
+  if present then
+    Conditions.dispatchEvent(playerID, "onHostedEnter", added)
+  end
   if changed then
     if skipPresentation ~= true then
       Conditions.afterChange(playerID)
@@ -587,6 +629,7 @@ function Conditions.reconcileHostedForSession(opts)
       end
     end
   end
+  require("core.npc_conditions").reconcileForSession()
   return changedSeatColors
 end
 

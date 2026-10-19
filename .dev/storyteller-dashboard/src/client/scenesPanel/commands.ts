@@ -124,9 +124,12 @@ export type ScenesCommand =
     readonly which: NpcTrackerWhich;
     readonly mode: NpcTrackerMode;
     readonly max?: { readonly health?: number; readonly willpower?: number };
-  };
+  }
+  | { readonly op: "npcConditionStats"; readonly key: string; readonly stats: Partial<import("../../shared/npcStats").NpcStatBlock> }
+  | { readonly op: "npcCondition"; readonly key: string; readonly id: string; readonly on: boolean }
+  | { readonly op: "npcConditionResolved"; readonly key: string; readonly field: "compulsion" | "corruptAmbition" | "desirePending" };
 
-export type NpcTrackerWhich = "health" | "willpower" | "hunger" | "rage";
+export type NpcTrackerWhich = "health" | "willpower" | "hunger" | "rage" | "stains";
 export type NpcTrackerMode = "addSuper" | "addAgg" | "removeSuper" | "removeAgg" | "clearSuper" | "clearAgg" | "up" | "down";
 
 export type ScenesSend = (command: ScenesCommand) => void;

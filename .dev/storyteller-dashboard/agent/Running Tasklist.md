@@ -24,6 +24,23 @@ This file is the progress tracker for Storyteller Dashboard work. **Do not creat
 
 ## General Guidelines
 
+✔️ NPC custom roll associations and difficulties — pending Save & Play for bridge changes.
+Focusing a custom-roll name opens editable Pools/Difficulties bars. Traits drive condition
+modifiers and weighted multipliers; linked Attacks/Powers inherit or override them. Fixed,
+range and minimum difficulties reach the live roll and are enforced in TTS. Local metadata
+survives sheet imports. Browser checks cover animation layout, focus and persistence.
+
+✔️ NPC conditions — pending Save & Play. All registry stat and roll effects now resolve by NPC
+identity. The tracker popup lists active/manual conditions, Stains and narrative choices;
+Configure uses effective ratings and offers checkboxes for ambiguous exceptional pools.
+Resolve-halving changes the Resolve contribution (using a known rating or an ST input in
+Configure); derived NPC Willpower is reduced by one quarter. Drowning pools remain an ST choice.
+See the NPC condition verification row in `.dev/PENDING AUTHOR VERIFICATION.md`.
+
+✔️ Location conditions: Roll Options shows active stat and roll conditions, filters contextual
+checkboxes, and saves every supported condition through the shared Lua overlay API.
+Repeated refreshes preserve the Willpower reroll allowance.
+
 1. I'd like to see more creativity in how you design the various control elements. District, Site and Skybox could be combined into a rectangular widget with buttons to change each; date controls could be condensed into an interesting and well-designed time control widget; weather controls could be contained in a weather-report style widget where various icons can be clicked to toggle through weather states, separating Rain, Snow, Wind, and Thunder into different controls that can be changed independently of each other. Lighting and top fog could also be incorporated into this widget, or perhaps a different one.  Consider checking sites like codepen, Pinterest, StackOverflow, Reddit -- those may be terrible examples, you may know of better sites to look at for UX inspiration, but I think we can do better and you should feel free to experiment with new ideas, see for yourself how they work, and then refine them or reject them and try something new. Feel free to create a planning document specific to these sorts of UX-improvement experiments, to keep track of your work and slowly build up a catalog of what is and isn't effective. **Important:** All issues described below should be considered with this in mind: If instructions there conflict with changes you've made to the functionality a later issue deals with, simply skip it and add a 🤖-comment requesting clarification on how things should work given your new design.
 
 🤖 Experiment log: `.dev/storyteller-dashboard/agent/UX Experiments.md`. First chrome pass is on the right rail (place / clock / weather) with group trays on the left.

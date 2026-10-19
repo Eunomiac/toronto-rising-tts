@@ -245,13 +245,16 @@ function RC.computeEffectiveRollState(color, active)
     local defaults = RO.defaultsForRollType(rt)
 
     local bonus = tonumber(policy.wpRerollCountBonus) or 0
-    if bonus ~= 0 and locked.numberOfRerolls ~= true then
+    active.meta = active.meta or {}
+    local previousBonus = tonumber(active.meta.wpRerollPolicyBonus) or 0
+    if (bonus ~= 0 or previousBonus ~= 0) and locked.numberOfRerolls ~= true then
         local base = active.rollOptions[RO.ROLL_NUMBER_OF_REROLLS]
         if type(base) ~= "number" then
             base = defaults[RO.ROLL_NUMBER_OF_REROLLS]
         end
-        active.rollOptions[RO.ROLL_NUMBER_OF_REROLLS] = math.max(0, math.floor(base + bonus))
+        active.rollOptions[RO.ROLL_NUMBER_OF_REROLLS] = math.max(0, math.floor(base - previousBonus + bonus))
     end
+    active.meta.wpRerollPolicyBonus = bonus
 
     local function structuralBaseline(key)
         local v = active.rollOptions[key]
@@ -275,6 +278,7 @@ function RC.computeEffectiveRollState(color, active)
     active.rollOptions[RO.ROLL_CRITS] = crits
 
     RO.sanitizeRollOptions(active)
+    RollConditionHandlers.run("onPolicyResolved", color, active)
 end
 
 --- @deprecated use `RC.computeEffectiveRollState(color, active)`
@@ -395,6 +399,10 @@ end
 -- @param obj Object
 -- @return boolean
 local function isWpRerollEligibleDie(active, kind, obj)
+    if wpRerollScopeForActive(active) == "all_mandatory"
+        and (kind == DK.KIND_NORMAL or kind == DK.KIND_HUNGER) then
+        return true
+    end
     if not DK.canRerollWithWillpower(kind, obj.getValue()) then
         return false
     end
@@ -520,7 +528,11 @@ local function processQueue(color)
     if #queue == 0 then return end
     local nextConfig = table.remove(queue, 1)
     S.setStateVal(queue, "playerData", pid, "hud", "rollData", "queue")
-    Wait.frames(function() RC.initiateRoll(color, nextConfig) end, 5)
+    Wait.frames(function()
+        if color == "Black" and type(nextConfig.npcCharacterKey) == "string" then
+            require("core.npc_conditions").startCheck(nextConfig)
+        else RC.initiateRoll(color, nextConfig) end
+    end, 5)
 end
 
 --- Queues a Frenzy check when hunger is already at MAX_HUNGER and an increase is applied (state clamps at cap).
@@ -802,14 +814,14 @@ end
 -- @param rollType string  C.RollType.ROUSE or ROUSE_OBLIVION
 -- @param rouseVals table  die face values
 -- @return table|nil result (includes rouseNarrative for broadcast), table|nil oblivRes
-local function buildDedicatedRouseResult(rollType, rouseVals)
+local function buildDedicatedRouseResult(rollType, rouseVals, noStains)
     if type(rouseVals) ~= "table" or #rouseVals == 0 then
         return nil, nil
     end
 
     local oblivRes = nil
     if rollType == C.RollType.ROUSE_OBLIVION then
-        oblivRes = RouseOutcomes.resolveOblivRouseDice(rouseVals)
+        oblivRes = RouseOutcomes.resolveOblivRouseDice(rouseVals, noStains)
     end
 
     local passed = (oblivRes == nil)
@@ -842,68 +854,62 @@ end
 --- Storyteller rolls with rouse checks: the stat-block plan's (`active.npcPlan.rouse`), then a Blood Surge's
 --- (`meta.bloodSurgeActive`, one plain die). Judges each check on its own dice. Rouse dice of a kind are read
 --- in table order and dealt to the checks in that order; every die is independent, so the fixed split keeps
---- the true odds. Sets `active.npcRouseFailed` (failed checks that raise the NPC's Hunger: the plan's when it
---- says so, a surge's always), rewrites the strip narratives per check, drops the PC Oblivion Hunger-or-Stain
---- prompt (NPCs keep no Stains), and re-scores a rouse-only roll as pass (no failed check) or fail.
+--- the true odds. Sets the rolling NPC's Hunger and Stain deltas, preserves individual Oblivion
+--- choices, rewrites strip narratives per check, and re-scores a dedicated Rouse roll.
 --- @param active table  Black active roll
 local function applyNpcRousePlan(active)
-    local plan = type(active.npcPlan) == "table" and active.npcPlan or {}
-    local checks = {}
-    for _, check in ipairs(type(plan.rouse) == "table" and plan.rouse or {}) do
-        checks[#checks + 1] = { dice = check.dice, oblivion = check.oblivion, hunger = plan.hungerOnFail == true }
+    local Checks = require("lib.npc_rouse_checks")
+    local values, summaries = {}, {}
+    for _, strip in ipairs(active.rouseOutcomeStrips or {}) do
+        values[strip.kind] = strip.values or {}
+        summaries[strip.kind] = { hunger = 0, stains = 0, failed = 0, checks = 0, pending = false }
     end
-    if type(active.meta) == "table" and active.meta.bloodSurgeActive == true then
-        checks[#checks + 1] = { dice = 1, oblivion = false, hunger = true }
-    end
+    local hunger, stains, failures = 0, 0, 0
+    local checks = Checks.list(active, values)
     if #checks == 0 then
+        active.npcRouseFailed, active.npcStainDelta = 0, 0
         return
     end
-    local values = { plain = {}, obliv = {} }
-    for _, strip in ipairs(active.rouseOutcomeStrips or {}) do
-        local list = strip.kind == DK.KIND_OBLIV_ROUSE and values.obliv or values.plain
-        for _, value in ipairs(strip.values or {}) do
-            list[#list + 1] = value
-        end
-    end
-    local cursor = { plain = 0, obliv = 0 }
-    local failedByKind = { plain = 0, obliv = 0 }
-    local failed, hungerFailed = 0, 0
-    for _, check in ipairs(checks) do
-        local which = check.oblivion == true and "obliv" or "plain"
-        local read, passed = 0, false
-        for _ = 1, math.max(1, math.floor(tonumber(check.dice) or 1)) do
-            cursor[which] = cursor[which] + 1
-            local value = values[which][cursor[which]]
-            if value ~= nil then
-                read = read + 1
-                if value >= 6 then
-                    passed = true
-                end
+    active.npcPendingChoiceIndex = nil
+    local features = (active.rollPolicy or {}).features or {}
+    for i, check in ipairs(checks) do
+        local choice = (active.meta.npcOblivChoices or {})[i]
+        local result = Checks.outcome(check, values, features.noObvRouseDice, choice)
+        if result.read > 0 then
+            local row = summaries[check.kind]
+            row.checks = row.checks + 1
+            local hd = check.hunger and result.hungerDelta or 0
+            hunger, stains = hunger + hd, stains + result.stainDelta
+            row.hunger, row.stains = row.hunger + hd, row.stains + result.stainDelta
+            if result.hungerDelta > 0 then row.failed = row.failed + 1 end
+            if result.hungerDelta > 0 or result.stainDelta > 0 or result.pendingChoice then
+                failures = failures + 1
             end
-        end
-        if read > 0 and not passed then
-            failed = failed + 1
-            failedByKind[which] = failedByKind[which] + 1
-            if check.hunger then
-                hungerFailed = hungerFailed + 1
+            if result.pendingChoice then
+                row.pending = true
+                active.npcPendingChoiceIndex = active.npcPendingChoiceIndex or i
             end
         end
     end
-    active.npcRouseFailed = hungerFailed
+    active.npcRouseFailed, active.npcStainDelta = hunger, stains
     for _, strip in ipairs(active.rouseOutcomeStrips or {}) do
-        local which = strip.kind == DK.KIND_OBLIV_ROUSE and "obliv" or "plain"
-        strip.pendingChoice = false
-        strip.narrative = failedByKind[which] > 0 and "Hunger Roused" or ""
+        local row = summaries[strip.kind]
+        strip.pendingChoice, strip.failedChecks, strip.checkCount = row.pending, row.failed, row.checks
+        strip.narrative = row.pending and "Hunger or Stain?"
+            or row.hunger > 0 and (row.stains > 0 and "Hunger Roused & Stained" or "Hunger Roused")
+            or row.stains > 0 and "Stained" or "Success"
     end
-    if active.pendingResolution == C.PendingResolution.OBLIV_HUNGER_STAIN then
+    if active.npcPendingChoiceIndex ~= nil then
+        active.pendingResolution = C.PendingResolution.OBLIV_HUNGER_STAIN
+    elseif active.pendingResolution == C.PendingResolution.OBLIV_HUNGER_STAIN then
         active.pendingResolution = nil
     end
     if RO.isRouseFamilyRoll(active.rollType) and type(active.result) == "table" then
-        local passed = failed == 0
+        local passed = failures == 0
         active.result.successes = passed and 1 or 0
         active.result.resultClass = passed and C.ResultClass.WIN or C.ResultClass.FAILURE
         active.result.margin = passed and 1 or -1
-        active.result.rouseNarrative = passed and "Success" or "Hunger Roused"
+        active.result.rouseNarrative = passed and "Success" or "Rouse consequences"
     end
 end
 
@@ -939,7 +945,9 @@ end
 local function addNpcSurgeDice(active, dice)
     local pool = DK.normalizePool(active.pool)
     local hungerRoom = 0
-    if C.RollTypesWithoutHunger[active.rollType] ~= true and type(active.npcCharacterKey) == "string" then
+    if C.RollTypesWithoutHunger[active.rollType] ~= true
+        and RO.getForActive(active, RO.ROLL_HUNGER_DICE)
+        and type(active.npcCharacterKey) == "string" then
         local record = require("core.npc_trackers").get(active.npcCharacterKey)
         local level = type(record) == "table" and math.floor(tonumber(record.hunger) or 0) or 0
         hungerRoom = math.max(0, level - pool.hunger)
@@ -986,11 +994,15 @@ function RC.setNpcBloodSurge(on, dice)
         return "Blood Surge is not allowed on this roll type."
     end
     ensureActiveShape(active)
+    if on == true and RollConditionHandlers.run("onBloodSurgeActivate", color, active) == false then
+        return "Blood Surge is blocked by this NPC's conditions."
+    end
     if active.meta.bloodSurgeActive == (on == true) then
         return nil
     end
     if on == true then
         local n = math.floor(tonumber(dice) or 0)
+        n = math.floor(n * (tonumber((active.rollPolicy or {}).bloodSurgeDiceMultiplier) or 1))
         if n < 1 then
             return "Blood Surge needs at least one die."
         end
@@ -1017,6 +1029,8 @@ function RC.applyNpcStatPlan(plan)
     if active.phase ~= C.RollPhase.SETUP and active.phase ~= C.RollPhase.PRE_ROLL then
         return "The NPC pool is fixed once the dice are rolled."
     end
+    local difficultyRule, difficultyError = require("lib.npc_roll_difficulty").parse(plan.difficultyRule)
+    if difficultyError then return difficultyError end
     local rouse, rouseDice, oblivDice = {}, 0, 0
     for _, check in ipairs(type(plan.rouse) == "table" and plan.rouse or {}) do
         local dice = math.floor(tonumber(check.dice) or 1) == 2 and 2 or 1
@@ -1043,6 +1057,7 @@ function RC.applyNpcStatPlan(plan)
     pool.rouse = rouseDice
     pool.oblivRouse = oblivDice
     active.pool = pool
+    active.meta.locationPoolBonus = 0
     active.meta.bloodSurgeActive = false
     active.meta.npcSurgeDice = nil
     active.meta.bloodSurgeAddedToPool = { normal = 0, hunger = 0 }
@@ -1059,7 +1074,19 @@ function RC.applyNpcStatPlan(plan)
         marginLabel = type(plan.marginLabel) == "string" and plan.marginLabel or nil,
     }
     active.npcRouseFailed = nil
+    active.meta.npcDifficultyRule = difficultyRule and difficultyRule.text or nil
+    if difficultyRule and difficultyRule.kind == "fixed" then
+        active.difficulty = difficultyRule.min
+    elseif difficultyRule and active.difficulty ~= nil
+        and not require("lib.npc_roll_difficulty").allows(difficultyRule, active.difficulty) then
+        active.difficulty = nil
+    end
     active.meta.npcAutoConfirm = plan.autoConfirm == true or nil
+    RC.computeEffectiveRollState(color, active)
+    if not RO.getForActive(active, RO.ROLL_HUNGER_DICE) then
+        active.pool.normal = active.pool.normal + active.pool.hunger
+        active.pool.hunger = 0
+    end
     setActive(color, active)
     notifyStateChanged(color)
     return nil
@@ -1263,7 +1290,8 @@ local function tryClassifyResultInternal(color)
         local rouseVals = (active.rollType == C.RollType.ROUSE_OBLIVION)
             and (valuesByKind[DK.KIND_OBLIV_ROUSE] or {})
             or (valuesByKind[DK.KIND_ROUSE] or {})
-        local result, oblivRes = buildDedicatedRouseResult(active.rollType, rouseVals)
+        local result, oblivRes = buildDedicatedRouseResult(active.rollType, rouseVals,
+            active.rollPolicy and active.rollPolicy.features.noObvRouseDice)
         active.result = result
         if oblivRes ~= nil and oblivRes.pendingChoice == true then
             active.pendingResolution = C.PendingResolution.OBLIV_HUNGER_STAIN
@@ -1330,7 +1358,9 @@ function RC.initiateRoll(color, config)
         return false
     end
 
-    local pool = resolveInitialPoolForRollType(color, config.rollType, config.pool)
+    local pool = color == "Black" and type(config.npcCharacterKey) == "string"
+        and DK.normalizePool(require("core.npc_conditions").initialPool(config.npcCharacterKey, config.rollType, config.pool))
+        or resolveInitialPoolForRollType(color, config.rollType, config.pool)
 
     local skipSetup = RC.shouldSkipSetupForRollType(config.rollType)
 
@@ -1368,6 +1398,7 @@ function RC.initiateRoll(color, config)
     if config.idleBagAutoRouse == true then
         active.meta.idleBagAutoRouse = true
     end
+    active.meta.conditionFollowup = config.conditionFollowup
 
     RO.seedActiveRoll(active)
     active.rollConditionOverlay = { forceOn = {}, forceOff = {} }
@@ -1464,7 +1495,9 @@ function RC.changeRollType(color, rollType)
     end
 
     active.rollType = rollType
-    active.pool = resolveInitialPoolForRollType(color, rollType, nil)
+    active.pool = color == "Black" and active.npcCharacterKey
+        and DK.normalizePool(require("core.npc_conditions").initialPool(active.npcCharacterKey, rollType))
+        or resolveInitialPoolForRollType(color, rollType, nil)
     active.difficulty = autoDifficultyForRollType(rollType)
     if newSkipsSetup then
         active.phase = C.RollPhase.PRE_ROLL
@@ -1528,6 +1561,12 @@ function RC.setDifficulty(color, difficulty)
     if active.phase == C.RollPhase.RESOLVED then
         print(string.format("[RC] setDifficulty: roll for %s is already RESOLVED", color))
         return false
+    end
+
+    if color == "Black" and active.meta and active.meta.npcDifficultyRule then
+        local rules = require("lib.npc_roll_difficulty")
+        local rule = rules.parse(active.meta.npcDifficultyRule)
+        if not rules.allows(rule, difficulty) then return false end
     end
 
     active.difficulty = difficulty
@@ -1879,6 +1918,12 @@ local function recalculateTakeHalfAwaitingRouse(color, active, wasRolling)
     if readableRouse < expectedRouse then
         return false
     end
+    local objectsByKind = RC._getDiceObjectsByKindForRoll(color, active.id)
+    if RollConditionHandlers.run("onBeforeDiceRead", color, active, valuesByKind, objectsByKind) == false then
+        setActive(color, active)
+        notifyStateChanged(color)
+        return true
+    end
 
     -- onDieSettled debounce means dice are quiet; lock before merge (WP reroll locks per die earlier).
     lockRouseDiceForRoll(color, active.id)
@@ -2157,6 +2202,9 @@ local function finishWpRerollWaveFromRolling(color)
     if active.willpower == nil or active.willpower.wpRerollWave ~= true then
         return false
     end
+    if RollConditionHandlers.run("onConfirmRoll", color, active) == false then
+        return false
+    end
     restoreBumpedWpDice(color, active)
     dropUnchosenWpHighlights(active)
     cancelDebounce(color)
@@ -2415,6 +2463,11 @@ function RC.recalculate(color, previewOnly)
     local wasWpWave  = active.willpower ~= nil and active.willpower.wpRerollWave == true
 
     local valuesByKind, objectsByKind = RC._getDicePoolsForRoll(color, active.id)
+    if RollConditionHandlers.run("onBeforeDiceRead", color, active, valuesByKind, objectsByKind) == false then
+        setActive(color, active)
+        notifyStateChanged(color)
+        return true
+    end
     local normalDice = valuesByKind[DK.KIND_NORMAL] or {}
     local hungerDice = valuesByKind[DK.KIND_HUNGER] or {}
     local werewolfDice = valuesByKind[DK.KIND_WEREWOLF] or {}
@@ -2447,7 +2500,8 @@ function RC.recalculate(color, previewOnly)
             and valuesByKind[DK.KIND_OBLIV_ROUSE]
             or valuesByKind[DK.KIND_ROUSE]
         if active.difficulty ~= nil then
-            local result, oblivRes = buildDedicatedRouseResult(active.rollType, rouseVals)
+            local noStains = active.rollPolicy and active.rollPolicy.features.noObvRouseDice
+            local result, oblivRes = buildDedicatedRouseResult(active.rollType, rouseVals, noStains)
             active.result = result
             if oblivRes ~= nil and oblivRes.pendingChoice == true then
                 active.pendingResolution = C.PendingResolution.OBLIV_HUNGER_STAIN
@@ -2794,6 +2848,28 @@ function RC.beginStSelectiveRerollWave(color)
     if active.pendingResolution ~= nil then return nil end
     ensureStSelectiveRerollShape(active)
     if active.stSelectiveReroll.inProgress == true then return nil end
+    if color == "Black" and active.npcCharacterKey then
+        ensureWillpowerShape(active)
+        local features = (active.rollPolicy or {}).features or {}
+        if not RO.isWillpowerSpendAllowedByOptions(active)
+            or active.willpower.rerollsRemaining <= 0
+            or wpRerollScopeForActive(active) == "all_mandatory"
+            or features.setHungerWPReroll then return nil end
+        if RollConditionHandlers.run("onBeforeWillpowerSpend", color, active) == false then return nil end
+        local eligible = {}
+        for kind, objects in pairs(RC._getDiceObjectsByKindForRoll(color, active.id)) do
+            for _, die in ipairs(objects) do
+                if isWpRerollEligibleDie(active, kind, die) then eligible[die.getGUID()] = true end
+            end
+        end
+        local selected = 0
+        for guid in pairs(active.stSelectiveReroll.selectedGuids) do
+            if not eligible[guid] then return nil end
+            selected = selected + 1
+        end
+        local cap = RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_DICE_REROLLED)
+        if cap > 0 and selected > cap then return nil end
+    end
 
     local guids = {}
     for guid in pairs(active.stSelectiveReroll.selectedGuids) do
@@ -2812,6 +2888,11 @@ function RC.beginStSelectiveRerollWave(color)
     setActive(color, active)
     if color == "Black" then
         chargeNpcWillpowerReroll(active)
+        if active.npcCharacterKey then
+            active.meta.wpPreviousResult = active.result
+            active.willpower.rerollsRemaining = active.willpower.rerollsRemaining - 1
+            RollConditionHandlers.run("onWillpowerSpent", color, active)
+        end
     end
     return guids, rollId
 end
@@ -2832,6 +2913,7 @@ function RC.spendWillpower(color)
         return false
     end
     ensureWillpowerShape(active)
+    if not RO.isWillpowerSpendAllowedByOptions(active) then return false end
     if active.phase ~= C.RollPhase.POST_ROLL then
         print(string.format("[RC] spendWillpower: %s roll is not in POST_ROLL", color))
         return false
@@ -2844,6 +2926,10 @@ function RC.spendWillpower(color)
         print(string.format("[RC] spendWillpower: no rerolls remaining for %s", color))
         return false
     end
+    if RollConditionHandlers.run("onBeforeWillpowerSpend", color, active) == false then
+        return false
+    end
+    active.meta.wpPreviousResult = active.result
 
     -- Apply 1 Superficial Willpower damage when Auto-WP is enabled (full tracker pipeline + HUD refresh);
     -- a Storyteller roll charges the rolling NPC instead.
@@ -2885,7 +2971,6 @@ end
 function RC.confirmRoll(color)
     U.Val("RC.confirmRoll()", {color = color}, U.Type(color) == "string", "color must be a string")
 
-    cancelWpDieLockWaitsForColor(color)
     RC.clearStSelectiveReroll(color)
 
     local active = getActive(color)
@@ -2899,6 +2984,7 @@ function RC.confirmRoll(color)
         and active.willpower.wpRerollWave == true then
         return finishWpRerollWaveFromRolling(color)
     end
+    cancelWpDieLockWaitsForColor(color)
     if active.phase ~= C.RollPhase.POST_ROLL then
         print(string.format("[RC] confirmRoll: %s roll is not in POST_ROLL (phase: %s)", color, active.phase))
         return false
@@ -2934,6 +3020,10 @@ function RC.confirmRoll(color)
             return false
         end
         active = refreshed
+        if active.phase ~= C.RollPhase.POST_ROLL then
+            -- A condition may have rerolled a successful Rouse check during the final read.
+            return false
+        end
         -- If the live read finds no dice (timing, moved objects), keep the last classified result
         -- so the broadcast and automation still match what the table already showed.
         if active.result == nil and preResult ~= nil then
@@ -2944,6 +3034,8 @@ function RC.confirmRoll(color)
         end
     end
 
+    -- Condition consequences share the final confirmed result, including any live reread.
+    RollConditionHandlers.run("onRollConsequences", color, active)
     -- Apply consequences for Rouse / Remorse
     if active.result ~= nil then
         RC._applyRollConsequences(color, active)
@@ -3149,6 +3241,22 @@ end
 function RC._applyRollConsequences(color, active)
     if active.result == nil then return end
     local rc = active.result.resultClass
+    if color == "Black" and active.npcCharacterKey then
+        local NC = require("core.npc_conditions")
+        local T = require("core.npc_trackers")
+        if active.rollType == C.RollType.FRENZY
+            and (rc == C.ResultClass.FAILURE or rc == C.ResultClass.TOTAL_FAILURE)
+            and RollConditionHandlers.run("onFrenzyFailed", color, active) ~= false then
+            NC.setManual(active.npcCharacterKey, "hudFrenzy", true)
+        elseif active.rollType == C.RollType.REMORSE and RO.getPermanent(RO.PERM_AUTO_REMORSE) then
+            T.setConditionState(active.npcCharacterKey, "stains", 0)
+            if rc ~= C.ResultClass.WIN and rc ~= C.ResultClass.CRITICAL_WIN and rc ~= C.ResultClass.MESSY_CRITICAL then
+                local r = T.get(active.npcCharacterKey) or {}
+                T.setConditionState(active.npcCharacterKey, "humanityDelta", (r.humanityDelta or 0) - 1)
+            end
+        end
+        return
+    end
 
     if active.rollType == C.RollType.REMORSE then
         if not RO.getPermanent(RO.PERM_AUTO_REMORSE) then
@@ -3172,7 +3280,9 @@ function RC._applyRollConsequences(color, active)
         if pid == nil then return end
         if rc == C.ResultClass.FAILURE or rc == C.ResultClass.TOTAL_FAILURE then
             -- Conditions.setManual announces the seat (Sync.player).
-            Conditions.setManual(pid, "hudFrenzy", true)
+            if RollConditionHandlers.run("onFrenzyFailed", color, active) ~= false then
+                Conditions.setManual(pid, "hudFrenzy", true)
+            end
         end
     end
 end
@@ -3279,7 +3389,8 @@ function RC._buildRouseStripsForActive(color, active, valuesByKind)
 
     local oblivVals = valuesByKind[DK.KIND_OBLIV_ROUSE] or {}
     if #oblivVals > 0 then
-        local res = RouseOutcomes.resolveOblivRouseDice(oblivVals)
+        local res = RouseOutcomes.resolveOblivRouseDice(oblivVals,
+            active.rollPolicy and active.rollPolicy.features.noObvRouseDice)
         strips[#strips + 1] = {
             label = "Oblivion Rouse",
             kind = DK.KIND_OBLIV_ROUSE,
@@ -3329,6 +3440,14 @@ function RC._applyRouseOutcomeStrips(color, active)
         if failed > 0 and type(active.npcCharacterKey) == "string" then
             require("core.npc_trackers").addHunger(active.npcCharacterKey, failed)
         end
+        local stains = math.floor(tonumber(active.npcStainDelta) or 0)
+        if stains > 0 and active.npcCharacterKey then
+            local trackers = require("core.npc_trackers")
+            local current = trackers.get(active.npcCharacterKey) or {}
+            trackers.setConditionState(active.npcCharacterKey, "stains", math.min(10, (current.stains or 0) + stains))
+            require("core.npc_conditions").dispatch(active.npcCharacterKey, "onStainsGained")
+        end
+        RollConditionHandlers.run("onRouseConsequences", color, active)
         return
     end
     if type(active.rouseOutcomeStrips) ~= "table" then
@@ -3342,7 +3461,8 @@ function RC._applyRouseOutcomeStrips(color, active)
         if strip.pendingChoice == true then
             -- Resolved via RC.confirmOblivionChoice before confirm.
         elseif strip.label == "Oblivion Rouse" then
-            local res = RouseOutcomes.resolveOblivRouseDice(strip.values or {})
+            local res = RouseOutcomes.resolveOblivRouseDice(strip.values or {},
+                active.rollPolicy and active.rollPolicy.features.noObvRouseDice)
             hungerDelta = hungerDelta + res.hungerDelta
             stainDelta = stainDelta + res.stainDelta
         elseif strip.label == "Rouse" or strip.label == "Blood Surge Rouse" then
@@ -3351,6 +3471,7 @@ function RC._applyRouseOutcomeStrips(color, active)
         end
     end
 
+    RollConditionHandlers.run("onRouseConsequences", color, active)
     if hungerDelta == 0 and stainDelta == 0 then
         return
     end
@@ -3378,6 +3499,14 @@ function RC.confirmOblivionChoice(color, choice)
     local choiceNarrative = (choice == "hunger") and "Hunger Roused" or "Stained"
     if choice ~= "hunger" and choice ~= "stain" then
         return false
+    end
+    if color == "Black" and active.npcCharacterKey and active.npcPendingChoiceIndex then
+        active.meta.npcOblivChoices = active.meta.npcOblivChoices or {}
+        active.meta.npcOblivChoices[active.npcPendingChoiceIndex] = choice
+        RC.recalculate(color)
+        local nextActive = getActive(color)
+        if nextActive == nil then return true end
+        return nextActive.pendingResolution ~= nil or RC.confirmRoll(color)
     end
 
     if not RO.getPermanent(RO.PERM_AUTO_APPLY_ROUSE_OUTCOMES) or color == "Black" then
@@ -3512,6 +3641,9 @@ end
 function RC.activateBloodSurge(color)
     local active = getActive(color)
     if active == nil then return false end
+    if RollConditionHandlers.run("onBloodSurgeActivate", color, active) == false then
+        return false
+    end
     if C.RollTypesBloodSurge[active.rollType] ~= true then return false end
     if active.phase ~= C.RollPhase.SETUP and active.phase ~= C.RollPhase.PRE_ROLL then
         return false

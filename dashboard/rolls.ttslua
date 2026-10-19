@@ -174,7 +174,7 @@ end
 --- @param color string PC seat
 --- @return table `{ ok, … }`
 function Rolls.options(color)
-  local err = pcColorError(color)
+  local err = color ~= ST_COLOR and pcColorError(color) or nil
   if err then
     return { ok = false, error = err }
   end
@@ -200,19 +200,30 @@ function Rolls.options(color)
   end
   local conditions = {}
   for _, id in ipairs(CD.listRollConditionIds()) do
-    local on = Conditions.isRollConditionEffective(pid, active, id) == true
-    conditions[#conditions + 1] = { id = id, label = CD.Defs[id].displayName or id, on = on }
-    local structuralKey = CD.STRUCTURAL_NEGATING_REVERSE[id]
-    if type(structuralKey) == "string" then
-      structural[structuralKey] = not on
+    if Conditions.canUseRollCondition(pid, active, id) then
+      local on = Conditions.isRollConditionEffective(pid, active, id) == true
+      conditions[#conditions + 1] = { id = id, label = CD.Defs[id].displayName or id, on = on }
+      local structuralKey = CD.STRUCTURAL_NEGATING_REVERSE[id]
+      if type(structuralKey) == "string" then
+        structural[structuralKey] = not on
+      end
     end
   end
-  local hasOblivion = type(require("lib.guids").GetDiceOblivRouseGUID(color)) == "string"
+  local effective = Conditions.buildEffectiveConditionsForRoll(pid, active)
+  local activeConditions = {}
+  for _, id in ipairs(CD.sortedActiveIds(effective)) do
+    local def = CD.getDef(id)
+    activeConditions[#activeConditions + 1] = { id = id, label = def.displayName, type = def.type }
+  end
+  local hasOblivion = color == ST_COLOR or type(require("lib.guids").GetDiceOblivRouseGUID(color)) == "string"
   local rollTypes = {}
   for _, rollType in ipairs(OPTION_ROLL_TYPES) do
     if rollType ~= C.RollType.ROUSE_OBLIVION or hasOblivion then
       rollTypes[#rollTypes + 1] = { key = rollType, label = C.RollTypeLabel[rollType] or rollType }
     end
+  end
+  if color == ST_COLOR and active.rollType == C.RollType.WEREWOLF then
+    rollTypes = { { key = C.RollType.WEREWOLF, label = C.RollTypeLabel[C.RollType.WEREWOLF] } }
   end
   return {
     ok = true,
@@ -223,6 +234,7 @@ function Rolls.options(color)
     structural = structural,
     locked = { takeHalf = RO.isTakeHalfLocked(active.rollType) == true, hungerDice = RO.isHungerDiceLocked(active.rollType) == true },
     conditions = conditions,
+    activeConditions = activeConditions,
     negating = CD.STRUCTURAL_NEGATING,
     rerolls = RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_REROLLS),
     diceRerolled = RO.getNumberForActive(active, RO.ROLL_NUMBER_OF_DICE_REROLLED),
@@ -234,6 +246,8 @@ end
 local function applyOptions(cmd)
   local RC = require("core.roll_controller")
   local RO = require("lib.roll_options")
+  local CD = require("lib.condition_defs")
+  local Conditions = require("core.conditions")
   local permanent = type(cmd.permanent) == "table" and cmd.permanent or {}
   local structural = type(cmd.structural) == "table" and cmd.structural or {}
   local conditions = type(cmd.conditions) == "table" and cmd.conditions or {}
@@ -242,8 +256,21 @@ local function applyOptions(cmd)
   if rerolls == nil or diceRerolled == nil then
     return "Reroll numbers must be numbers."
   end
-  if activeRoll(cmd.color) == nil then
+  local active = activeRoll(cmd.color)
+  if active == nil then
     return cmd.color .. " has no roll in progress."
+  end
+  local patch = { forceOn = {}, forceOff = {} }
+  for id, enabled in pairs(conditions) do
+    if type(enabled) ~= "boolean" or not CD.isKnownId(id)
+        or not CD.isPerRollOptsCondition(CD.getDef(id)) then
+      return "Unknown roll condition: " .. tostring(id)
+    end
+    if not Conditions.canUseRollCondition(S.getPlayerID(cmd.color), active, id) then
+      return "That condition no longer applies. Reopen Roll Options."
+    end
+    local target = enabled and patch.forceOn or patch.forceOff
+    target[id] = true
   end
   local perm = {}
   for _, key in ipairs(PERMANENT_KEYS) do
@@ -251,8 +278,6 @@ local function applyOptions(cmd)
   end
   RO.setPermanentAll(perm)
   local opts = {
-    canRerollHunger = conditions.canRerollHunger == true,
-    bestialNull = conditions.bestialNull == true,
     [RO.ROLL_NUMBER_OF_REROLLS] = math.max(0, math.floor(rerolls)),
     [RO.ROLL_NUMBER_OF_DICE_REROLLED] = math.floor(diceRerolled),
   }
@@ -260,6 +285,7 @@ local function applyOptions(cmd)
     opts[key] = structural[key] == true
   end
   RC.setRollOptions(cmd.color, opts)
+  RC.setRollConditionOverlay(cmd.color, patch)
   require("core.roll_ui").refreshAll()
   return nil
 end
@@ -427,6 +453,7 @@ local function applyNpcCommand(cmd)
       line = cmd.line,
       marginBonus = cmd.marginBonus,
       marginLabel = cmd.marginLabel,
+      difficultyRule = cmd.difficultyRule,
       autoConfirm = cmd.kind == "rouseOnly",
       surgeDice = surgeDice,
     })
@@ -678,6 +705,18 @@ local function applyCommand(cmd)
       return "Unknown choice: " .. tostring(cmd.choice)
     end
     return nil
+  end
+
+  if cmd.color == ST_COLOR and op == "options" then return applyOptions(cmd) end
+  if cmd.color == ST_COLOR and op == "rollType" then
+    local active = activeRoll(ST_COLOR)
+    if active == nil then return "No NPC roll is in progress." end
+    if not isRollType(cmd.rollType) then return "Unknown roll type." end
+    if active.rollType == C.RollType.WEREWOLF and cmd.rollType ~= C.RollType.WEREWOLF then
+      return "A Werewolf roll cannot switch roll type."
+    end
+    if require("core.roll_controller").changeRollType(ST_COLOR, cmd.rollType) then return nil end
+    return "Could not change roll type."
   end
 
   local err = pcColorError(cmd.color)

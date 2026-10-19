@@ -289,12 +289,17 @@ local function buildSeats()
   end
   local spotlight = S.getStateVal("spotlight") or {}
   local NpcTrackers = require("core.npc_trackers")
+  local npcConditions = {}
+  for _, key in ipairs(NpcTrackers.sceneCastKeys()) do
+    npcConditions[key] = require("core.npc_conditions").snapshot(key)
+  end
   return {
     seats = seats,
     stage = stage,
     generics = generics,
     scatter = scatter,
     trackers = NpcTrackers.snapshotForKeys(NpcTrackers.sceneCastKeys()),
+    npcConditions = npcConditions,
     spotlightOrder = spotlight.order or {},
     spotlightFrontIndex = tonumber(spotlight.frontIndex),
   }
@@ -468,12 +473,14 @@ local function buildRolls()
       rollType = active.rollType,
       label = active.label,
       npcCharacterKey = active.npcCharacterKey,
+      conditions = RUI.formatEffectiveRollConditionLabels(blackPid, active),
       slot = tonumber(active.stDrawerSlot),
       phase = active.phase,
       hint = RUI.phaseHint(active, "Black"),
       wpReroll = type(active.willpower) == "table" and active.willpower.wpRerollWave == true or nil,
       pool = poolCounts(active.pool),
       difficulty = tonumber(active.difficulty),
+      difficultyRule = meta.npcDifficultyRule,
       result = resultRow(active),
       dice = diceRows(active.diceFaces),
       actions = RUI.stRollPanelActions(active),

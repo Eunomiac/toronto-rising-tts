@@ -1,3 +1,4 @@
+import { NPC_DIFFICULTY_MAX, npcDifficultyAllows, parseNpcDifficulty } from "../../../shared/npcCustomRolls";
 import { useContext, useEffect, useRef, useState, type CSSProperties, type DragEvent, type MouseEvent, type ReactElement, type ReactNode } from "react";
 import { Icon, type IconName } from "../icons";
 import { NpcLiveContext } from "../npcTrackers";
@@ -70,7 +71,7 @@ const NO_DIFFICULTY_TITLE = "No difficulty: count successes only";
  * again over the result line, and picking folds it. With `noneCell` the 0 cell reads "–": a roll with no
  * difficulty has to be declared, so a forgotten one cannot roll as a success count.
  */
-const Difficulty = ({ value, editable, title, onPick, highlight, noneCell = false }: {
+export const Difficulty = ({ value, editable, title, onPick, highlight, noneCell = false, rule: expression }: {
   value: number | undefined;
   editable: boolean;
   title: string;
@@ -78,9 +79,12 @@ const Difficulty = ({ value, editable, title, onPick, highlight, noneCell = fals
   /** An NPC dropped on the card: its difficulties for actions it is suited to / everything else. */
   highlight?: DifficultyHighlight | undefined;
   noneCell?: boolean;
+  rule?: string;
 }): ReactElement | null => {
   const [open, setOpen] = useState(false);
   const none = (n: number): boolean => noneCell && n === 0;
+  const rule = parseNpcDifficulty(expression ?? "");
+  const max = expression ? NPC_DIFFICULTY_MAX : Math.max(DIFFICULTY_MAX, value ?? 0);
   if (editable && (value === undefined || open)) {
     const mark = (n: number): string =>
       n === highlight?.strong ? " strong" : n === highlight?.weak ? " weak" : "";
@@ -89,7 +93,7 @@ const Difficulty = ({ value, editable, title, onPick, highlight, noneCell = fals
         : n === highlight?.strong ? "Against the dropped NPC where it is well suited" : n === highlight?.weak ? "Against the dropped NPC otherwise" : undefined;
     return (
       <div className={`roll-strip${value === undefined ? "" : " over"}`} title={title}>
-        {range(0, DIFFICULTY_MAX).map((n) => (
+        {range(0, max).filter((n) => npcDifficultyAllows(rule, n)).map((n) => (
           <button
             key={n}
             type="button"
@@ -500,10 +504,12 @@ const npcActions = (
   send: RollsSend,
   picked: ReadonlySet<number>,
   onConfigure: ((event: MouseEvent<HTMLElement>) => void) | undefined,
-  surgeDice: number | undefined
+  surgeDice: number | undefined,
+  onOptions?: (event: MouseEvent<HTMLElement>) => void
 ): CardAction[] => {
   const a = live.actions;
   const actions: CardAction[] = [];
+  if (onOptions) actions.push({ key: "conditions", icon: "options", label: "Roll options and conditions", keep: true, onClick: onOptions });
   if (onConfigure) {
     actions.push({ key: "configure", icon: "options", label: "Roll from the NPC's stats", keep: true, onClick: onConfigure });
   }
@@ -567,7 +573,7 @@ const npcActions = (
   return actions;
 };
 
-const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool, onConfigure, surgeDice }: {
+const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool, onConfigure, surgeDice, onOptions }: {
   live: StLiveRoll;
   send: RollsSend;
   collapsed: boolean;
@@ -577,6 +583,7 @@ const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool, onConfigure, su
   onConfigure?: (event: MouseEvent<HTMLElement>) => void;
   /** A vampire NPC's Blood Surge dice (its Blood Potency); undefined for anyone who cannot surge. */
   surgeDice?: number | undefined;
+  onOptions: (event: MouseEvent<HTMLElement>) => void;
 }): ReactElement => {
   const editable = live.phase === "setup" || live.phase === "preRoll";
   // Reroll picks stay on the dashboard until Reroll sends them; any new throw clears them.
@@ -614,11 +621,11 @@ const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool, onConfigure, su
       rollType={live.rollType}
       name={live.label ?? "NPC"}
       flags={flags}
-      conditions=""
+      conditions={live.conditions ?? ""}
       result={result}
       collapsed={collapsed}
       onToggle={onToggle}
-      actions={npcActions(live, send, picked, onConfigure, surgeDice)}
+      actions={npcActions(live, send, picked, onConfigure, surgeDice, onOptions)}
       onClear={() => send({ op: "npcCancel" })}
       clearLabel="Cancel this roll and clear its drawer"
       dndKind={editable ? "npcRollPreroll" : live.secret ? "npcRollPostrollSecret" : "npcRollPostrollRevealed"}
@@ -634,6 +641,7 @@ const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool, onConfigure, su
       <div className="roll-line">
         <Difficulty
           value={live.difficulty}
+          rule={live.difficultyRule}
           editable={live.phase !== "resolved"}
           title={live.difficulty === undefined ? "Pick a difficulty before rolling (– for none)" : "Difficulty"}
           noneCell
@@ -646,7 +654,7 @@ const NpcRollPanel = ({ live, send, collapsed, onToggle, onPool, onConfigure, su
   );
 };
 
-type OptionsPopup = { readonly x: number; readonly y: number; readonly roll: PcRoll };
+type OptionsPopup = { readonly x: number; readonly y: number; readonly roll: Pick<PcRoll, "color" | "name"> };
 
 const RollOptions = ({ popup, access, send, onClose }: { popup: OptionsPopup; access: OptionsAccess; send: RollsSend; onClose: () => void }): ReactElement => {
   const color = popup.roll.color;
@@ -728,6 +736,16 @@ const RollOptions = ({ popup, access, send, onClose }: { popup: OptionsPopup; ac
                 </button>
               ))}
             </div>
+            {(view.activeConditions?.length ?? 0) > 0 && (
+              <div>
+                <span className="roll-options-head">Active conditions</span>
+                <div className="roll-flags roll-active-conditions">
+                  {view.activeConditions?.map((condition) => (
+                    <span key={condition.id}>{condition.label}</span>
+                  ))}
+                </div>
+              </div>
+            )}
             {view.conditions.length > 0 && (
               <>
                 <span className="roll-options-head">Roll conditions</span>
@@ -871,7 +889,7 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
     const point = canvasPoint(event);
     setPoolRing({ x: Math.min(Math.max(point.x, POOL_RING_MARGIN), 1920 - POOL_RING_MARGIN), y: point.y, target });
   };
-  const openOptions = (event: MouseEvent<HTMLElement>, roll: PcRoll): void => {
+  const openOptions = (event: MouseEvent<HTMLElement>, roll: Pick<PcRoll, "color" | "name">): void => {
     const point = canvasPoint(event);
     setPopup({ x: Math.min(point.x - POPUP_W, 1920 - POPUP_W - 8), y: Math.max(8, point.y - 20), roll });
   };
@@ -907,7 +925,8 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
   const npcKey = live?.npcCharacterKey;
   const npcBlock = npcKey && npcLive ? npcLive.blockFor(npcKey) : undefined;
   const npcRecord = npcKey ? npcLive?.trackers[npcKey] : undefined;
-  const surgeDice = npcBlock?.kind === "vampire" ? bloodPotencyRow(npcBlock.bloodPotency).bloodSurge : undefined;
+  const surgeDice = npcBlock?.kind === "vampire" && !(npcKey && npcLive?.conditions?.[npcKey]?.rollFeatures.noBloodSurge)
+    ? bloodPotencyRow(npcBlock.bloodPotency).bloodSurge : undefined;
   const openConfigure = (event: MouseEvent<HTMLElement>): void => {
     const point = canvasPoint(event);
     setConfigureAt({ x: Math.max(8, Math.min(point.x - POPUP_W, 1920 - POPUP_W - 8)), y: Math.max(8, point.y - 20) });
@@ -962,6 +981,7 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
           send={send}
           collapsed={folded.has(NPC_FOLD)}
           onToggle={() => toggleFold(NPC_FOLD)}
+          onOptions={(event) => openOptions(event, { color: "Black", name: live.label ?? "NPC" })}
           onPool={(event) => openPoolRing(event, { kind: "npc" })}
           {...(liveOpen && npcBlock ? { onConfigure: openConfigure } : {})}
           surgeDice={surgeDice}
@@ -969,6 +989,7 @@ export const RollsCell = ({ rolls: pushed, pending = 0, send, options }: {
       )}
       {configureAt && live && liveOpen && npcBlock && (
         <NpcConfigure
+          key={`${live.rollId ?? ""}:${live.npcCharacterKey ?? ""}`}
           at={configureAt}
           live={live}
           block={npcBlock}

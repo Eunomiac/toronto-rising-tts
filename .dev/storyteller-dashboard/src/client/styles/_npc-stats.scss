@@ -431,6 +431,23 @@ $power-height: 20px;
   color: #9a948a;
 }
 
+.npc-manual-conditions {
+  max-height: 220px;
+  overflow-y: auto;
+  margin-top: 8px;
+
+  label {
+    display: block;
+    padding: 3px 0;
+  }
+}
+
+.npc-condition-status {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .lab-group-token {
   position: relative;
 }
@@ -456,4 +473,83 @@ $power-height: 20px;
     width: 34px;
     height: 34px;
   }
+}
+
+.npc-resolve-condition {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  input[type="number"] {
+    width: 4em;
+  }
+}
+
+// Bars unfold in the row's flow, leaving neighboring entries available while focus stays inside.
+.npc-custom-roll {
+  min-width: 0;
+
+  .npc-roll-bar {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition: grid-template-rows 180ms ease, opacity 180ms ease, transform 180ms ease;
+
+    &.pools { transform: translateY(8px); }
+    &.difficulties { transform: translateY(-8px); }
+  }
+
+  &.editing .npc-roll-bar {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .npc-roll-bar-inner {
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: #c9b988;
+
+    input {
+      box-sizing: border-box;
+      min-width: 0;
+      width: 0;
+      flex: 1;
+      margin: 3px 0;
+      height: 24px;
+      padding: 0 4px;
+      border: 1px solid #686047;
+      background: #17171e;
+      color: #eee;
+      font: inherit;
+
+      &[aria-invalid="true"] { border-color: #e66; }
+    }
+  }
+
+  .difficulties label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+
+    input { width: 80px; flex: 0 1 80px; }
+  }
+
+  .npc-roll-rule-hint { font-size: 12px; }
+  .invalid { color: #e99; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .npc-custom-roll .npc-roll-bar { transition: none; }
 }

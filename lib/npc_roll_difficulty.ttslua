@@ -1,0 +1,31 @@
+-- NPC custom-roll difficulty rules. Kept pure so the dashboard and TTS contract can be tested.
+local Difficulty = {}
+Difficulty.MAX = 15
+
+function Difficulty.parse(value)
+  if value == nil or value == "" then return nil end
+  if type(value) ~= "string" then return nil, "NPC difficulty rule must be text." end
+  local text = value:match("^%s*(.-)%s*$")
+  text = text:match('^"(.*)"$') or text
+  text = text:match("^%s*(.-)%s*$")
+  if text == "" then return nil end
+  local lo, hi = text:match("^(%d+)%s*%-%s*(%d+)$")
+  local kind = lo and "range" or nil
+  if not lo then lo = text:match("^(%d+)%s*%+$") kind = lo and "minimum" or nil end
+  if not lo then lo = text:match("^(%d+)$") kind = lo and "fixed" or nil end
+  local min, max = tonumber(lo), tonumber(hi)
+  if min == nil or min < 0 or min > Difficulty.MAX or (max and (max < min or max > Difficulty.MAX)) then
+    return nil, "Use difficulty 0-15, a range such as 2-5, or a minimum such as 4+."
+  end
+  return { kind = kind, min = min, max = max,
+    text = tostring(min) .. (kind == "range" and ("-" .. tostring(max)) or kind == "minimum" and "+" or "") }
+end
+
+function Difficulty.allows(rule, value)
+  if type(value) ~= "number" or value ~= math.floor(value) or value < 0 or value > Difficulty.MAX then return false end
+  if rule == nil or rule.kind == "fixed" then return true end
+  if rule.kind == "minimum" then return value == 0 or value >= rule.min end
+  return value >= rule.min and value <= rule.max
+end
+
+return Difficulty

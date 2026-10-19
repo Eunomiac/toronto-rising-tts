@@ -1,4 +1,5 @@
-import { createContext, useContext, useMemo, useState, type CSSProperties, type MouseEvent, type ReactElement } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type CSSProperties, type MouseEvent, type ReactElement } from "react";
+import { applyNpcConditions, npcConditionRatings, type NpcConditionView } from "../../shared/npcConditions";
 import { sheetArtUrl } from "../pcSheet/layout";
 import { paintDamageTrack, type BoxSlot } from "../pcSheet/paint";
 import { TraitRing } from "../pcSheet/TraitRing";
@@ -25,9 +26,12 @@ export const LEVEL_BADGE_FROM = 3;
 const LEVEL_MAX = 5;
 
 export type NpcLive = {
+  readonly conditions?: Readonly<Record<string, NpcConditionView>>;
   readonly trackers: Readonly<Record<string, NpcTrackerRecord>>;
   /** The stat block a live NPC uses: its own, its generic type's tier, or a kept character's. */
   readonly blockFor: (characterKey: string) => NpcStatBlock | undefined;
+  /** Saved ratings before live conditions; used when the ST identifies an attribute contribution. */
+  readonly sourceBlockFor: (characterKey: string) => NpcStatBlock | undefined;
   /** The block's kind; NPCs with no block but flagged Werewolf in the NPC data count as werewolves. */
   readonly kindOf: (characterKey: string) => NpcKind | undefined;
 };
@@ -39,12 +43,14 @@ export const useNpcLive = (
   trackers: Readonly<Record<string, NpcTrackerRecord>> | undefined,
   generics: readonly GenericNpc[],
   tiers: Readonly<Record<string, NpcTier>>,
-  werewolves: readonly string[]
+  werewolves: readonly string[],
+  conditions?: Readonly<Record<string, NpcConditionView>>,
+  send?: (command: ScenesCommand) => void
 ): NpcLive => {
   const stats = useNpcStats();
   const catalog = useGenericCatalog();
   const memoriam = useMemoriamCatalog();
-  return useMemo(() => {
+  const raw = useMemo(() => {
     const labels = new Map((catalog ?? []).map((entry) => [entry.key, entry.label]));
     const memoriamByKey = new Map(memoriam.map((npc) => [npc.key, npc]));
     const inScene = new Map(generics.map((npc) => [npc.characterKey, npc]));
@@ -75,9 +81,29 @@ export const useNpcLive = (
     return {
       trackers: trackers ?? {},
       blockFor,
-      kindOf: (characterKey) => blockFor(characterKey)?.kind ?? (wolves.has(characterKey) ? "werewolf" : undefined)
+      kindOf: (characterKey: string) => blockFor(characterKey)?.kind ?? (wolves.has(characterKey) ? "werewolf" : undefined)
     };
   }, [stats, catalog, memoriam, trackers, generics, tiers, werewolves]);
+  const pending = JSON.stringify([...new Set([...Object.keys(trackers ?? {}), ...Object.keys(conditions ?? {})])].sort().flatMap((key) => {
+    const block = raw.blockFor(key);
+    if (!block) return [];
+    const ratings = npcConditionRatings(block);
+    return JSON.stringify(ratings) === JSON.stringify(npcConditionRatings(conditions?.[key]?.base ?? {}))
+      ? [] : [{ op: "npcConditionStats" as const, key, stats: ratings }];
+  }));
+  useEffect(() => {
+    const commands = JSON.parse(pending) as ScenesCommand[];
+    if (send) commands.forEach(send);
+  }, [pending, send]);
+  return useMemo(() => ({
+    ...raw,
+    sourceBlockFor: raw.blockFor,
+    conditions,
+    blockFor: (key: string) => {
+      const block = raw.blockFor(key);
+      return block ? applyNpcConditions(block, conditions?.[key]) : undefined;
+    }
+  }), [raw, conditions]);
 };
 
 /** Character sheet box art; Humanity shows all ten boxes, unfilled ones faint. */
@@ -248,10 +274,26 @@ export const NpcTrackerPopup = ({ characterKey, name, at, send }: {
           <span className="lab-seat-pop-name">{name}</span>
           {!block && <span className="npc-tracker-none" title="Right-click the NPC in the roster → Stats to set its maximums">no stats</span>}
         </span>
+        {live.conditions?.[characterKey]?.conditions.map((condition) => (
+          <div key={condition.id} className="npc-tracker-none">{condition.label}</div>
+        ))}
         {record ? (
           <>
             <DamageRow which="health" sup={record.healthSup} agg={record.healthAgg} max={block?.health} onRing={openRing("health")} />
             <DamageRow which="willpower" sup={record.wpSup} agg={record.wpAgg} max={block?.willpower} onRing={openRing("willpower")} />
+            {kind === "vampire" && (
+              <div className="npc-condition-status">
+                <span>Stains: {record.stains ?? 0}</span>
+                <button type="button" aria-label="Add Stain" onClick={() => send({ op: "npcTracker", key: characterKey, which: "stains", mode: "up" })}>+</button>
+                <button type="button" aria-label="Remove Stain" onClick={() => send({ op: "npcTracker", key: characterKey, which: "stains", mode: "down" })}>−</button>
+              </div>
+            )}
+            {(["compulsion", "corruptAmbition", "desirePending"] as const).filter((field) => record[field]).map((field) => (
+              <button key={field} type="button" className="lab-btn"
+                onClick={() => send({ op: "npcConditionResolved", key: characterKey, field })}>
+                {field === "compulsion" ? "Compulsion chosen / resolved" : field === "corruptAmbition" ? "Corrupt Ambition resolved" : "Replacement Desire chosen"}
+              </button>
+            ))}
             {kind === "vampire" && (
               <LevelRow which="hunger" value={record.hunger} onStep={(mode) => send(trackerCommand(characterKey, "hunger", mode, block))} />
             )}
@@ -262,6 +304,16 @@ export const NpcTrackerPopup = ({ characterKey, name, at, send }: {
         ) : (
           <span className="lab-note">TTS has no trackers for this NPC yet.</span>
         )}
+        <details className="npc-manual-conditions">
+          <summary>Set conditions</summary>
+          {live.conditions?.[characterKey]?.manual.map((condition) => (
+            <label key={condition.id}>
+              <input type="checkbox" checked={condition.on}
+                onChange={(event) => send({ op: "npcCondition", key: characterKey, id: condition.id, on: event.target.checked })} />
+              {condition.label}
+            </label>
+          ))}
+        </details>
       </div>
       {ring && (
         <div className="lab-trait-ring-host">

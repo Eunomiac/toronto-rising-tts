@@ -1,0 +1,61 @@
+-- Pure grouping of an NPC's independent Rouse checks; no dice or state mutations.
+local Checks = {}
+local DK = require("lib.dice_kinds")
+local Outcomes = require("lib.rouse_outcomes")
+
+function Checks.list(active, values)
+  local plan = active.npcPlan or {}
+  local out = {}
+  local plainSurge = (active.meta or {}).bloodSurgeActive == true
+    and #(values[DK.KIND_BLOOD_SURGE_ROUSE] or {}) == 0
+  for _, check in ipairs(plan.rouse or {}) do
+    out[#out + 1] = { kind = check.oblivion and DK.KIND_OBLIV_ROUSE or DK.KIND_ROUSE,
+      dice = math.max(1, math.floor(tonumber(check.dice) or 1)), hunger = plan.hungerOnFail == true }
+  end
+  if #(plan.rouse or {}) == 0 then
+    for _, kind in ipairs({ DK.KIND_ROUSE, DK.KIND_OBLIV_ROUSE }) do
+      local count = #(values[kind] or {}) - (plainSurge and kind == DK.KIND_ROUSE and 1 or 0)
+      if count > 0 then
+        out[#out + 1] = { kind = kind, dice = count, hunger = true }
+      end
+    end
+  end
+  if #(plan.rouse or {}) > 0 and (active.meta or {}).locationPoolBonus then
+    local kind = active.rollType == "rouse" and DK.KIND_ROUSE
+      or active.rollType == "rouseOblivion" and DK.KIND_OBLIV_ROUSE
+    for _, check in ipairs(out) do
+      if check.kind == kind then
+        check.dice = check.dice + active.meta.locationPoolBonus
+        break
+      end
+    end
+  end
+  if plainSurge then out[#out + 1] = { kind = DK.KIND_ROUSE, dice = 1, hunger = true } end
+  if #(values[DK.KIND_BLOOD_SURGE_ROUSE] or {}) > 0 then
+    out[#out + 1] = { kind = DK.KIND_BLOOD_SURGE_ROUSE,
+      dice = #values[DK.KIND_BLOOD_SURGE_ROUSE], hunger = true }
+  end
+  local cursor = {}
+  for _, check in ipairs(out) do
+    check.first = (cursor[check.kind] or 0) + 1
+    cursor[check.kind] = (cursor[check.kind] or 0) + check.dice
+  end
+  return out
+end
+
+function Checks.outcome(check, values, noStains, choice)
+  local faces = {}
+  for i = check.first, check.first + check.dice - 1 do
+    local face = (values[check.kind] or {})[i]
+    if face ~= nil then faces[#faces + 1] = face end
+  end
+  local result = check.kind == DK.KIND_OBLIV_ROUSE
+    and Outcomes.resolveOblivRouseDice(faces, noStains) or Outcomes.resolveRouseDice(faces)
+  if result.pendingChoice and (choice == "hunger" or choice == "stain") then
+    result = { hungerDelta = choice == "hunger" and 1 or 0, stainDelta = choice == "stain" and 1 or 0 }
+  end
+  result.read = #faces
+  return result
+end
+
+return Checks

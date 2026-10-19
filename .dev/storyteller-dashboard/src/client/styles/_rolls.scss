@@ -276,6 +276,13 @@ $phase-held: #ff8a5c;
   }
 }
 
+.roll-active-conditions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+
 .roll-line {
   position: relative;
   display: flex;

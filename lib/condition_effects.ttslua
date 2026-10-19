@@ -98,6 +98,12 @@ function Effects.resolveForPlayer(activeConditions, stats, seatColor)
         applyEffects = def.derive(stats, activeConditions) == true
       end
       if applyEffects then
+        if type(def.statChangesFromStats) == "function" then
+          local changes = def.statChangesFromStats(stats, resolved.statChanges)
+          for key, delta in pairs(changes) do
+            resolved.statChanges[key] = (resolved.statChanges[key] or 0) + delta
+          end
+        end
         if type(def.statChanges) == "table" then
           for statKey, delta in pairs(def.statChanges) do
             if type(statKey) == "string" then

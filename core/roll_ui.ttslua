@@ -283,7 +283,7 @@ local function rollOptsRefreshStructuralDraftFromActive(active, color)
     if pid ~= nil then
         for _, conditionId in ipairs(CD.listRollConditionIds()) do
             local uiId = "rollCondition_" .. conditionId
-            uiSetActive(uiId, true)
+            uiSetActive(uiId, Conditions.canUseRollCondition(pid, active, conditionId))
             local on = Conditions.isRollConditionEffective(pid, active, conditionId)
             rollOptsDraft.conditions[conditionId] = on
             rollOptsSetToggleClass(uiId, on)
@@ -1269,6 +1269,15 @@ function RUI.stRollPanelActions(active)
     local isWpWaveRolling = isRolling and active.willpower ~= nil and active.willpower.wpRerollWave == true
     local rerollInProgress = type(active.stSelectiveReroll) == "table" and active.stSelectiveReroll.inProgress == true
     local canReroll = isPostRoll and not pendingChoice and facesHaveGuid and not rerollInProgress
+    local policy = active.rollPolicy or {}
+    local features = policy.features or {}
+    local specialWp = policy.wpRerollScope == "all_mandatory" or features.setHungerWPReroll == true
+    if active.npcCharacterKey then
+        local permitted = RO.isWillpowerSpendAllowedByOptions(active)
+            and active.willpower ~= nil and (active.willpower.rerollsRemaining or 0) > 0
+        canReroll = canReroll and permitted and not specialWp
+        wpAvailable = wpAvailable and permitted
+    end
     local selectedCount = 0
     if canReroll and type(active.stSelectiveReroll) == "table" and type(active.stSelectiveReroll.selectedGuids) == "table" then
         for _ in pairs(active.stSelectiveReroll.selectedGuids) do
@@ -1287,7 +1296,7 @@ function RUI.stRollPanelActions(active)
             and RO.getForActive(active, RO.ROLL_TAKE_HALF) == true,
         halfEnabled = hasDifficulty,
         -- TOR-224: selective reroll (click dice + REROLL) replaces the WP wave when faces are mapped.
-        wp = wpAvailable and not (facesHaveGuid and not pendingChoice),
+        wp = wpAvailable and (specialWp or not (facesHaveGuid and not pendingChoice)),
         recalc = (isRolling or isPostRoll) and (not active.tookHalf or active.takeHalfAwaitingRouse == true),
         reroll = canReroll,
         rerollEnabled = canReroll and selectedCount > 0,
@@ -2313,6 +2322,12 @@ function RUI.refreshStRollGridStrips(active)
         end
         return selectedPoolCountForStrip(kind, active)
     end)
+    -- Eleven known cells, current Black roll only; no XML rebuild or world scan.
+    local rules = require("lib.npc_roll_difficulty")
+    local rule = rules.parse(active and active.meta and active.meta.npcDifficultyRule)
+    for value = 0, 10 do
+        uiSetActive("gridStrip_rollPanelST_difficulty_" .. value, rules.allows(rule, value))
+    end
     refreshStNormalStripLabels(active)
 end
 

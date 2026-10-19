@@ -35,6 +35,15 @@ const imported = (row: Row): NpcStatBlock => parseCharacterRow(getter(row), row.
 const plan = (row: Row, block: NpcStatBlock) => planRowWrite(row.key!, block, getter(row));
 
 describe("planRowWrite", () => {
+  it("keeps local roll metadata out of sheet writes", () => {
+    const source = imported(VAMPIRE);
+    const block = { ...source,
+      exceptional: source.exceptional.map((row) => ({ ...row, traits: ["Dexterity", "Stealth"] as const, difficulty: "3+" })),
+      attacks: source.attacks.map((row) => ({ ...row, traits: ["Strength", "Brawl"] as const, difficulty: "2-5" })),
+      powers: source.powers.map((group) => ({ ...group, powers: group.powers.map((row) => ({ ...row, traits: ["Resolve", "Obfuscate"] as const, difficulty: "3" })) }))
+    };
+    expect(plan(VAMPIRE, block)).toEqual({ cells: {}, problems: [], notesDiffer: false });
+  });
   it("writes nothing when the dashboard matches the sheet", () => {
     expect(plan(VAMPIRE, imported(VAMPIRE))).toEqual({ cells: {}, problems: [], notesDiffer: false });
   });

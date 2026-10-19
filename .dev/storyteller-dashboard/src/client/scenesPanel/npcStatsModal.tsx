@@ -1,3 +1,5 @@
+import { parseNpcDifficulty, type NpcRollMetadata } from "../../shared/npcCustomRolls";
+import { NpcCustomRollFields } from "./npcCustomRollFields";
 import { useState, type ReactElement, type ReactNode } from "react";
 import {
   configuredSlots,
@@ -22,9 +24,9 @@ import { TIER_LABELS, tierBadgeSrc } from "../npcTierBadges";
 import { Overlay } from "./sketch";
 
 type Num = number | undefined;
-type DraftPool = { id: string; name: string; dice?: Num };
-type DraftAttack = { id: string; name: string; pool: string; bonus?: Num };
-type DraftPower = { level: number; name: string; rouse?: Num; pool: string; ancilla?: boolean };
+type DraftPool = NpcRollMetadata & { id: string; name: string; dice?: Num };
+type DraftAttack = NpcRollMetadata & { id: string; name: string; pool: string; bonus?: Num };
+type DraftPower = NpcRollMetadata & { level: number; name: string; rouse?: Num; pool: string; ancilla?: boolean };
 type DraftCategory = { id: string; name: string; dots?: Num; powers: DraftPower[] };
 type DraftBlock = {
   kind?: NpcKind | undefined;
@@ -144,6 +146,13 @@ const StatsEditor = ({ statsKey, label, generic, saved, onClose }: {
     if (busy) {
       return;
     }
+    for (const block of drafts.values()) {
+      const rolls = [...block.exceptional, ...block.attacks, ...block.powers.flatMap((category) => category.powers)];
+      if (rolls.some((row) => row.name.trim() && parseNpcDifficulty(row.difficulty ?? "") === null)) {
+        setError("Fix the difficulty rule on each named roll before closing (0–15, a range such as 2-5, or a minimum such as 4+).");
+        return;
+      }
+    }
     const next: Partial<Record<NpcStatSlot, NpcStatBlock>> & { kept?: KeptNpc } = {};
     for (const [key, block] of drafts) {
       const normalized = normalizeStatBlock(block);
@@ -250,39 +259,47 @@ const StatsEditor = ({ statsKey, label, generic, saved, onClose }: {
         </div>
         <Section title="Exceptional pools" onAdd={() => update({ exceptional: [...draft.exceptional, { id: newStatId(), name: "" }] })}>
           {draft.exceptional.map((pool, index) => (
-            <div key={pool.id} className="npc-stats-entry">
+            <NpcCustomRollFields key={pool.id} label={pool.name || "Exceptional pool"} metadata={pool}
+              onChange={(patch) => update({ exceptional: replaceAt<DraftPool>(draft.exceptional, index, patch) })}>
+            <div className="npc-stats-entry">
               <input
                 className="npc-stat-name"
                 placeholder="Name (blank removes)"
+                data-roll-name
                 value={pool.name}
-                onChange={(event) => update({ exceptional: replaceAt(draft.exceptional, index, { name: event.target.value }) })}
+                onChange={(event) => update({ exceptional: replaceAt<DraftPool>(draft.exceptional, index, { name: event.target.value }) })}
               />
-              <NumberBox value={pool.dice} range={RANGES.dice} onChange={(dice) => update({ exceptional: replaceAt(draft.exceptional, index, { dice }) })} />
+              <NumberBox value={pool.dice} range={RANGES.dice} onChange={(dice) => update({ exceptional: replaceAt<DraftPool>(draft.exceptional, index, { dice }) })} />
             </div>
+            </NpcCustomRollFields>
           ))}
         </Section>
         <Section title="Attacks" onAdd={() => update({ attacks: [...draft.attacks, { id: newStatId(), name: "", pool: "" }] })}>
           {draft.attacks.map((attack, index) => (
-            <div key={attack.id} className="npc-stats-entry">
+            <NpcCustomRollFields key={attack.id} label={attack.name || "Attack"} metadata={attack}
+              onChange={(patch) => update({ attacks: replaceAt<DraftAttack>(draft.attacks, index, patch) })}>
+            <div className="npc-stats-entry">
               <input
                 className="npc-stat-name"
                 placeholder="Name (blank removes)"
+                data-roll-name
                 value={attack.name}
-                onChange={(event) => update({ attacks: replaceAt(draft.attacks, index, { name: event.target.value }) })}
+                onChange={(event) => update({ attacks: replaceAt<DraftAttack>(draft.attacks, index, { name: event.target.value }) })}
               />
               <select
                 className="npc-stat-select"
                 value={attack.pool}
-                onChange={(event) => update({ attacks: replaceAt(draft.attacks, index, { pool: event.target.value }) })}
+                onChange={(event) => update({ attacks: replaceAt<DraftAttack>(draft.attacks, index, { pool: event.target.value }) })}
               >
                 <option value="">Pool</option>
                 {rollPools.map((option) => <option key={option.ref} value={option.ref}>{option.label}</option>)}
               </select>
               <span className="npc-attack-bonus" title="Added to the margin when the attack succeeds">
                 {(attack.bonus ?? 0) >= 0 ? "+" : ""}
-                <NumberBox value={attack.bonus ?? 0} range={RANGES.bonus} onChange={(bonus) => update({ attacks: replaceAt(draft.attacks, index, { bonus }) })} />
+                <NumberBox value={attack.bonus ?? 0} range={RANGES.bonus} onChange={(bonus) => update({ attacks: replaceAt<DraftAttack>(draft.attacks, index, { bonus }) })} />
               </span>
             </div>
+            </NpcCustomRollFields>
           ))}
         </Section>
         <Section title="Powers" onAdd={() => update({ powers: [...draft.powers, { id: newStatId(), name: "", powers: [] }] })}>
@@ -306,7 +323,9 @@ const StatsEditor = ({ statsKey, label, generic, saved, onClose }: {
                 </div>
                 <div className="npc-power-list">
                   {[...category.powers, blankPower(category)].map((power, at) => (
-                    <div key={at} className="npc-power">
+                    <NpcCustomRollFields key={at} label={power.name || "Power"} metadata={power}
+                      onChange={(patch) => setPower(at, patch)}>
+                    <div className="npc-power">
                       <select
                         className="npc-power-level"
                         title="Power level"
@@ -318,6 +337,7 @@ const StatsEditor = ({ statsKey, label, generic, saved, onClose }: {
                       <input
                         className="npc-power-name"
                         placeholder={at === category.powers.length ? "New power" : "Name (blank removes)"}
+                        data-roll-name
                         value={power.name}
                         onChange={(event) => setPower(at, { name: event.target.value })}
                       />
@@ -339,6 +359,7 @@ const StatsEditor = ({ statsKey, label, generic, saved, onClose }: {
                         {powerPools.map((option) => <option key={option.ref} value={option.ref}>{option.label}</option>)}
                       </select>
                     </div>
+                    </NpcCustomRollFields>
                   ))}
                 </div>
               </div>

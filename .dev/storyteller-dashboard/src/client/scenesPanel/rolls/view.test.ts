@@ -138,6 +138,21 @@ describe("roll options draft", () => {
     expect(() => parseRollOptions(JSON.stringify({ ok: false, error: "Red has no roll in progress." }))).toThrow(/no roll/);
   });
 
+  it("preserves location checkboxes and active stat conditions from TTS", () => {
+    const reply = JSON.parse(optionsReply);
+    reply.conditions = [{ id: "criminalLaunchBonus2", label: "Criminal Background Launch (+2)", on: false }];
+    reply.activeConditions = [{ id: "resolveHalved", label: "Resolve Halved", type: "stat" }];
+    const loaded = parseRollOptions(JSON.stringify(reply));
+    expect(loaded.activeConditions).toEqual(reply.activeConditions);
+    const draft = toggleCondition(draftFromView(loaded), "criminalLaunchBonus2", loaded.negating);
+    expect(draft.conditions.criminalLaunchBonus2).toBe(true);
+    expect(draft.conditions.resolveHalved).toBeUndefined();
+  });
+
+  it("accepts an older TTS reply without active condition metadata", () => {
+    expect(parseRollOptions(optionsReply).activeConditions).toEqual([]);
+  });
+
   it("keeps a structural rule and its negating condition opposite", () => {
     const draft = draftFromView(view);
     const offHalf = toggleStructural(draft, "takeHalf", view.negating);

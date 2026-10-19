@@ -19,6 +19,7 @@
     "memoriam-npcs:import:test": "node .dev/scripts/import_memoriam_npcs_from_sheet.test.js",
     "locations:import": "node .dev/scripts/import_locations_from_sheet.js && npm run scenes-location-modals:generate && npm run dashboard:scene-catalogs && npm run ui-global-xml:embed",
     "locations:import:test": "node .dev/scripts/import_locations_from_sheet.test.js",
+    "locations:conditions:test": "node --test .dev/scripts/location_conditions.test.js",
     "weather:import": "node .dev/scripts/import_weather_from_sheet.js",
     "weather:import:test": "node .dev/scripts/import_weather_from_sheet.test.js",
     "dashboard:scene-catalogs": "node .dev/scripts/generate_dashboard_scene_catalogs.js",

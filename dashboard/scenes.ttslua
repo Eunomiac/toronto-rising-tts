@@ -331,6 +331,19 @@ local function applyCommand(cmd)
   if op == "npcTracker" then
     return require("core.npc_trackers").applyChange(cmd.key, cmd.which, cmd.mode, cmd.max)
   end
+  if op == "npcConditionStats" then
+    return require("core.npc_conditions").syncStats(cmd.key, cmd.stats)
+  end
+  if op == "npcCondition" then
+    return require("core.npc_conditions").setManual(cmd.key, cmd.id, cmd.on)
+  end
+  if op == "npcConditionResolved" then
+    if cmd.field ~= "compulsion" and cmd.field ~= "corruptAmbition" and cmd.field ~= "desirePending" then
+      return "Unknown NPC narrative condition."
+    end
+    require("core.npc_trackers").setConditionState(cmd.key, cmd.field, nil)
+    return nil
+  end
   if op == "location" then
     if type(cmd.siteKey) ~= "string" then
       return "location needs a siteKey."

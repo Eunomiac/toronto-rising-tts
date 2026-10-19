@@ -66,11 +66,13 @@
 
     <HorizontalLayout id="db_rollOpts_modal_horiz_conditions_container" class="rollOpts_conditions_container">
       <VerticalLayout id="db_rollOpts_modal_conditions_column_1" class="rollOpts_conditions_column"><Button id="rollCondition_bestialNull" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="Bestial Null" />
-<Button id="rollCondition_noTakeHalf" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="No Take Half" /></VerticalLayout>
+<Button id="rollCondition_noHungerDice" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="No Hunger Dice" /></VerticalLayout>
       <VerticalLayout id="db_rollOpts_modal_conditions_column_2" class="rollOpts_conditions_column"><Button id="rollCondition_canRerollHunger" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="Can Reroll Hunger" />
+<Button id="rollCondition_noTakeHalf" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="No Take Half" /></VerticalLayout>
+      <VerticalLayout id="db_rollOpts_modal_conditions_column_3" class="rollOpts_conditions_column"><Button id="rollCondition_criminalLaunchBonus2" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="Launch increases a criminal Background (+2)" />
 <Button id="rollCondition_noWPReroll" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="No WP Reroll" /></VerticalLayout>
-      <VerticalLayout id="db_rollOpts_modal_conditions_column_3" class="rollOpts_conditions_column"><Button id="rollCondition_noCriticals" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="No Criticals" /></VerticalLayout>
-      <VerticalLayout id="db_rollOpts_modal_conditions_column_4" class="rollOpts_conditions_column"><Button id="rollCondition_noHungerDice" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="No Hunger Dice" /></VerticalLayout>
+      <VerticalLayout id="db_rollOpts_modal_conditions_column_4" class="rollOpts_conditions_column"><Button id="rollCondition_noCriticals" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="No Criticals" />
+<Button id="rollCondition_fullWPReroll" class="rollOpts_toggle rollOpts_toggle_off" onClick="HUD_rollOptsToggle" text="Reroll All Dice with Willpower" /></VerticalLayout>
     </HorizontalLayout>
 
     <HorizontalLayout id="db_rollOpts_modal_horiz_button_container" class="rollOpts_modal_horiz_button_container">

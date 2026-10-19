@@ -279,6 +279,14 @@ Apply: `Conditions.setManual(playerID, "majorClaim_DupontByTheCastle", true)` â€
 
 ## 6. Roll policy layer
 
+Location Aspect implementations and verification: [Location Aspect Conditions](Location%20Aspect%20Conditions.md).
+Registry `roll.features` merges by boolean OR into the roll-policy snapshot. The
+`locationConditions` handler groups their pool, dice, consequence and entry hooks.
+Optional `statChangesFromStats(stats, mergedChanges)` computes stat deltas after earlier
+conditions; Resolve halving uses it without changing permanent ratings.
+Optional per-roll checkboxes use `showInRollOptions`, `requiresCondition` and
+`onlyRollType`; the resolver enforces their prerequisites as well as hiding unavailable controls.
+
 Conditions may declare **`roll = { ... }`**. At `RC.initiateRoll`, `Conditions.resolveRollPolicyForActive(playerID, active)` merges persisted conditions plus per-roll `active.rollConditionOverlay` into **`active.rollPolicy`**. `RC.computeEffectiveRollState` seeds effective structural `rollOptions`; `RC` and handlers read the snapshot â€” never `CD.Defs` directly.
 
 ### Merge order (with ST roll options)
