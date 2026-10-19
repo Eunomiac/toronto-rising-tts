@@ -34,6 +34,12 @@ Launch concerns a criminal Background.
 Local tests pass; in-game confirmation is outstanding. Linear could not be updated because
 this session has no Linear connector.
 
+Dashboard follow-up: open Roll Options on a Launch in the Distillery District, enable
+**Launch increases a criminal Background (+2)**, save, and reopen it. The choice and bonus
+should persist. Other roll types and locations should not offer that checkbox. Active
+stat conditions such as **Resolve Halved** should also be listed, and reopening options
+must not increase the available Willpower rerolls.
+
 _Last populated: 2026-10-19 (TOR-745 Memoriam NPC sheet import). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
 
 ### Memoriam NPC list moved off the skybox sheet
