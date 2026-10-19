@@ -160,6 +160,16 @@ function Conditions.resolveRollPolicy(playerID)
   return Conditions.resolveRollPolicyForActive(playerID, nil)
 end
 
+--- Dispatch a condition event outside the roll FSM using the same resolved policy.
+function Conditions.dispatchEvent(playerID, hook, ...)
+  local color = seatColorForPlayer(playerID)
+  if color ~= nil then
+    return require("core.roll_condition_handlers").run(hook, color, {
+      rollPolicy = Conditions.resolveRollPolicy(playerID),
+    }, ...)
+  end
+end
+
 --- Build effective condition keys for one roll (playerData + per-roll overlay).
 --- @param playerID string
 --- @param active table|nil
@@ -209,7 +219,25 @@ function Conditions.buildEffectiveConditionsForRoll(playerID, active)
       end
     end
   end
+  for id in pairs(effective) do
+    if not Conditions.canUseRollCondition(playerID, active, id) then
+      effective[id] = nil
+    end
+  end
   return effective
+end
+
+--- Whether a roll condition id is active for this roll (persisted + overlay).
+function Conditions.canUseRollCondition(playerID, active, conditionId)
+  local def = CD.getDef(conditionId)
+  if def.onlyRollType ~= nil and (active == nil or active.rollType ~= def.onlyRollType) then
+    return false
+  end
+  if def.requiresCondition ~= nil then
+    local base = S.getStateVal("playerData", playerID, "conditions") or {}
+    return base[def.requiresCondition] ~= nil
+  end
+  return true
 end
 
 --- Whether a roll condition id is active for this roll (persisted + overlay).
@@ -525,6 +553,7 @@ local function reconcileHostedForPlayer(playerID, desired, present, skipPresenta
 
   local stats = S.getStateVal("playerData", playerID, "stats")
   local changed = false
+  local added = {}
 
   for id, def in pairs(CD.Defs) do
     if isHostedConditionDef(def) and conditions[id] ~= nil then
@@ -545,6 +574,7 @@ local function reconcileHostedForPlayer(playerID, desired, present, skipPresenta
       local has = conditions[id] ~= nil
       if want and not has then
         S.setStateVal(true, "playerData", playerID, "conditions", id)
+        added[id] = true
         changed = true
       elseif not want and has then
         S.setStateVal(nil, "playerData", playerID, "conditions", id)
@@ -553,6 +583,9 @@ local function reconcileHostedForPlayer(playerID, desired, present, skipPresenta
     end
   end
 
+  if present then
+    Conditions.dispatchEvent(playerID, "onHostedEnter", added)
+  end
   if changed then
     if skipPresentation ~= true then
       Conditions.afterChange(playerID)

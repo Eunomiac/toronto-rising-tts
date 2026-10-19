@@ -1,0 +1,300 @@
+-- Location Aspect effects. All decisions read the resolved roll policy, never raw condition tables.
+-- Physical work is bounded to the current roll's dice; scene counters are runtime state.
+local LC = {}
+local S = require("core.state")
+local C = require("lib.constants")
+local U = require("lib.util")
+local DK = require("lib.dice_kinds")
+local DF = require("lib.die_face")
+local idleChecks = {}
+
+local function features(active)
+  return (type(active.rollPolicy) == "table" and active.rollPolicy.features) or {}
+end
+
+local function announce(color, text)
+  U.AlertGM(color .. ": " .. text)
+end
+
+local function sceneState(color)
+  local pid = S.getPlayerID(color)
+  local context = tostring(S.getStateVal("sessionScene", "districtKey")) .. "/" .. tostring(S.getStateVal("sessionScene", "siteKey"))
+  local root = S.getStateVal("locationConditionState")
+  if type(root) ~= "table" or root.context ~= context then
+    root = { context = context, players = {} }
+    S.setStateVal(root, "locationConditionState")
+  end
+  local state = root.players[pid]
+  if type(state) ~= "table" then
+    state = { tally = 0 }
+    root.players[pid] = state
+  end
+  return state
+end
+
+local function queueFrenzy(color, difficulty, label)
+  local RC = require("core.roll_controller")
+  local config = {
+    rollType = C.RollType.FRENZY, difficulty = difficulty,
+    label = label, initiator = "storyteller", autoOpen = true,
+  }
+  local pid = S.getPlayerID(color)
+  if S.getStateVal("playerData", pid, "hud", "rollData", "active") ~= nil then
+    RC.queueRoll(color, config)
+  else
+    local trays = require("lib.pc_roll_tray_lower")
+    if not trays.isInitiateBlocked(color) then
+      RC.initiateRoll(color, config)
+    else
+      local pending = idleChecks[color]
+      if pending ~= nil then
+        pending[#pending + 1] = config
+        return
+      end
+      pending = { config }
+      idleChecks[color] = pending
+      U.await(function()
+        idleChecks[color] = nil
+        RC.initiateRoll(color, table.remove(pending, 1))
+        for _, nextConfig in ipairs(pending) do RC.queueRoll(color, nextConfig) end
+      end, function()
+        return S.getStateVal("playerData", pid, "hud", "rollData", "active") == nil
+          and not trays.isInitiateBlocked(color)
+      end)
+    end
+  end
+end
+
+local function giveCompulsion(color, reason)
+  -- Draw the seat's generic card; its existing callback presents the matching choices.
+  local drawn = require("core.compulsions").drawForCondition(color)
+  announce(color, reason .. (drawn and " Choose a Compulsion from the presented cards."
+    or " Apply or replace the Compulsion as appropriate."))
+end
+
+local function isBestial(rc)
+  return rc == C.ResultClass.BESTIAL_FAILURE or rc == C.ResultClass.TOTAL_BESTIAL_FAILURE
+end
+
+local function isFailure(rc)
+  return rc == C.ResultClass.FAILURE or rc == C.ResultClass.TOTAL_FAILURE or isBestial(rc)
+end
+
+-- Recompute the bonus from context, rather than accumulating it on every modal refresh.
+function LC.poolBonus(color, active)
+  local f = features(active)
+  local bonus = 0
+  if f.launchBonus2 and active.rollType == C.RollType.LAUNCH then bonus = bonus + 2 end
+  if f.remorseBonus2 and active.rollType == C.RollType.REMORSE then bonus = bonus + 2 end
+  if f.memoriamBonus2 and (S.getStateVal("memoriam", "active") == true
+      or S.getStateVal("playSubPhase") == C.PlaySubPhases.MEMORIAM) then
+    bonus = bonus + 2
+  elseif f.criminalLaunchBonus2 and active.rollType == C.RollType.LAUNCH then
+    bonus = bonus + 2
+  end
+  if f.messyRouseTallyBonus then
+    bonus = bonus + (tonumber(sceneState(color).tally) or 0)
+  end
+  return bonus
+end
+
+function LC.applyPoolBonus(color, active)
+  active.meta = active.meta or {}
+  local old = tonumber(active.meta.locationPoolBonus) or 0
+  local bonus = LC.poolBonus(color, active)
+  local kind = active.rollType == C.RollType.ROUSE and DK.KIND_ROUSE
+    or active.rollType == C.RollType.ROUSE_OBLIVION and DK.KIND_OBLIV_ROUSE or DK.KIND_NORMAL
+  active.pool[kind] = math.max(0, (active.pool[kind] or 0) + bonus - old)
+  active.meta.locationPoolBonus = bonus
+end
+
+LC.onPolicyResolved = LC.applyPoolBonus
+
+function LC.onBloodSurgeActivate(_color, active)
+  if features(active).noBloodSurge then return false end
+end
+
+-- Called before a live read. Return false after changing physics so the existing settle path rereads.
+function LC.onBeforeDiceRead(color, active, values, objects)
+  local f = features(active)
+  active.meta = active.meta or {}
+  if f.rerollSuccessfulRouse then
+    active.meta.locationRouseRetried = active.meta.locationRouseRetried or {}
+    for _, kind in ipairs({ DK.KIND_ROUSE, DK.KIND_BLOOD_SURGE_ROUSE, DK.KIND_OBLIV_ROUSE }) do
+      local dice = values[kind] or {}
+      local passed = require("lib.rouse_outcomes").rouseCheckPassed(dice)
+      if kind == DK.KIND_OBLIV_ROUSE then
+        local res = require("lib.rouse_outcomes").resolveOblivRouseDice(dice, f.noObvRouseDice)
+        passed = #dice > 0 and res.hungerDelta == 0 and res.stainDelta == 0 and not res.pendingChoice
+      end
+      if passed and not active.meta.locationRouseRetried[kind] then
+        active.meta.locationRouseRetried[kind] = true
+        active.phase = C.RollPhase.ROLLING
+        for _, obj in ipairs(objects[kind] or {}) do
+          obj.setLock(false)
+          obj.randomize()
+        end
+        return false
+      end
+    end
+  end
+  if f.upgradeStandardSuccess and not active.meta.locationSuccessUpgraded then
+    -- Choose a 6-9 rather than waste the benefit on an existing 10.
+    for i, face in ipairs(values[DK.KIND_NORMAL] or {}) do
+      if face >= 6 and face < 10 then
+        local obj = (objects[DK.KIND_NORMAL] or {})[i]
+        if obj ~= nil and DF.set(obj, 10) then
+          active.meta.locationSuccessUpgraded = true
+          values[DK.KIND_NORMAL][i] = 10
+        end
+        break
+      end
+    end
+  end
+end
+
+function LC.onBeforeWillpowerSpend(color, active)
+  if features(active).setHungerWPReroll then
+    local objects = require("core.roll_controller")._getDiceObjectsByKindForRoll(color, active.id)
+    for _, obj in ipairs(objects[DK.KIND_HUNGER] or {}) do
+      if (DF.read(obj) or 10) < 10 then return true end
+    end
+    announce(color, "Blurred Lines needs a Hunger die that is not already a 10.")
+    return false
+  end
+end
+
+function LC.onWillpowerSpent(color, active)
+  local f = features(active)
+  local previous = active.meta.wpPreviousResult
+  local rc = type(previous) == "table" and previous.resultClass or nil
+  if f.scaryWPReroll and (rc == C.ResultClass.MESSY_CRITICAL
+      or rc == C.ResultClass.BESTIAL_FAILURE or rc == C.ResultClass.TOTAL_BESTIAL_FAILURE
+      or rc == C.ResultClass.TOTAL_FAILURE) then
+    queueFrenzy(color, 3, "Dance in the Dark — Fear Frenzy")
+  end
+  if f.setHungerWPReroll then
+    local RC = require("core.roll_controller")
+    local objects = RC._getDiceObjectsByKindForRoll(color, active.id)
+    for _, obj in ipairs(objects[DK.KIND_HUNGER] or {}) do
+      if (DF.read(obj) or 10) < 10 then
+        DF.set(obj, 10)
+        break
+      end
+    end
+    -- This replaces the reroll wave: every die stays locked, no other dice may be rerolled.
+    for _, list in pairs(objects) do
+      for _, obj in ipairs(list) do
+        obj.setLock(true)
+        obj.interactable = false
+        require("core.wp_reroll_glow").clear(obj)
+      end
+    end
+    active.willpower.wpRerollWave = false
+    active.willpower.mandatoryFullRerollRequired = nil
+    active.willpower.mandatoryFullRerollComplete = true
+    active.phase = C.RollPhase.POST_ROLL
+    RC.recalculate(color)
+  end
+end
+
+function LC.onFrenzyFailed(color, active)
+  if features(active).noFrenzy then
+    announce(color, "Ice Ice Baby: gain a corrupt Ambition instead of losing control. It remains until resolved.")
+    return false
+  end
+end
+
+function LC.onRollConsequences(color, active)
+  if color == "Black" then return end
+  local f = features(active)
+  local rc = type(active.result) == "table" and active.result.resultClass or nil
+  local state = sceneState(color)
+  if active.meta.locationConsequencesApplied then return end
+  active.meta.locationConsequencesApplied = true
+  if f.messyCompulsion and rc == C.ResultClass.MESSY_CRITICAL then
+    giveCompulsion(color, "Can't Stop the Feeling:")
+  end
+  if f.bestialReset and isBestial(rc) then
+    local P = require("lib.pc_stats")
+    local stats = S.getStateVal("playerData", S.getPlayerID(color), "stats") or {}
+    P.applyDamageOrHeal(color, "willpower", -(tonumber((stats.willpower or {}).superficial) or 0), 0)
+    require("core.sync").player(color)
+    announce(color, "Bring Me to Life: Superficial Willpower damage is healed. Choose a replacement Desire.")
+  end
+  if f.surviveFailure and rc == C.ResultClass.FAILURE and not state.drowningUsed then
+    state.drowningUsed = true
+    local ctx = require("lib.effective_stats").forSeat(color)
+    local pool = ctx.dotRating("resolve") + ctx.dotRating("survival")
+    local hunger = math.min(pool, tonumber(S.getPlayerVal(color, "hunger")) or 0)
+    require("core.roll_controller").queueRoll(color, {
+      rollType = C.RollType.STANDARD, difficulty = 4,
+      label = "Drowning — Resolve + Survival (failure makes the original result a Total Failure)",
+      pool = { normal = pool - hunger, hunger = hunger }, autoOpen = true, initiator = "storyteller",
+      conditionFollowup = { kind = "drowning", originalLabel = active.label, originalResult = active.result },
+    })
+  end
+  local followup = active.meta.conditionFollowup
+  if type(followup) == "table" and followup.kind == "drowning" then
+    if isFailure(rc) then
+      local saveResult = active.result
+      active.result = followup.originalResult or active.result
+      active.result.resultClass = C.ResultClass.TOTAL_FAILURE
+      active.result.drowningSave = saveResult ~= active.result and saveResult or nil
+      active.label = (followup.originalLabel or "Original roll") .. " — Drowning: Total Failure"
+      announce(color, "Drowning: the original Failure is now a Total Failure.")
+    else
+      announce(color, "Drowning: the original result remains a Failure.")
+    end
+  end
+  if f.messyRouseTallyBonus then
+    local increment = rc == C.ResultClass.MESSY_CRITICAL and 1 or 0
+    for _, strip in ipairs(active.rouseOutcomeStrips or {}) do
+      if #(strip.values or {}) > 0 then increment = increment + 1 end
+    end
+    state.tally = (tonumber(state.tally) or 0) + increment
+  end
+end
+
+-- Shares the normal Rouse automation switch. Called once, when the roll is confirmed.
+function LC.onRouseConsequences(color, active)
+  if not features(active).toxicRouse then return end
+  local failures = 0
+  for _, strip in ipairs(active.rouseOutcomeStrips or {}) do
+    local failed = not require("lib.rouse_outcomes").rouseCheckPassed(strip.values or {})
+    if strip.kind == DK.KIND_OBLIV_ROUSE then
+      local outcome = require("lib.rouse_outcomes").resolveOblivRouseDice(strip.values or {},
+        features(active).noObvRouseDice)
+      failed = outcome.hungerDelta > 0 or strip.narrative == "Hunger Roused"
+    end
+    if failed then
+      failures = failures + 1
+    end
+  end
+  if failures > 0 then
+    require("lib.pc_stats").applyDamageOrHeal(color, "health", 0, failures)
+    require("core.sync").player(color)
+  end
+end
+
+-- These hooks use a newly resolved policy because they occur outside a roll.
+function LC.onStainsGained(color, active)
+  if features(active).scaryStain then
+    queueFrenzy(color, 4, "You're So Vain — Fury Frenzy")
+  end
+end
+
+function LC.onHostedEnter(color, active, added)
+  if not features(active).woundToCompulsion then return end
+  local state = sceneState(color)
+  if state.entered and not added.woundToCompulsion then return end
+  state.entered = true
+  local ctx = require("lib.effective_stats").forSeat(color)
+  local stats = ctx.stats or {}
+  local wp = stats.willpower or {}
+  if (tonumber(wp.superficial) or 0) + (tonumber(wp.aggravated) or 0) > ctx.trackerMax("willpower") / 2 then
+    giveCompulsion(color, "Mad World:")
+  end
+end
+
+return LC

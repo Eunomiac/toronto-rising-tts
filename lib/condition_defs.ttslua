@@ -104,6 +104,184 @@ end
 
 --- @type table<string, table>
 CD.Defs = {
+  criminalLaunchBonus2 = {
+    id = "criminalLaunchBonus2",
+    type = "roll",
+    displayName = "Launch increases a criminal Background (+2)",
+    canApplyManually = true,
+    priority = 25,
+    showInRollOptions = true,
+    requiresCondition = "memoriamBonus2",
+    onlyRollType = "launch",
+    roll = { features = { criminalLaunchBonus2 = true }, handlers = { "locationConditions" } },
+  },
+  launchBonus2 = {
+    id = "launchBonus2",
+    type = "roll",
+    displayName = "Launch Dice +2",
+    canApplyManually = true,
+    priority = 25,
+    roll = { features = { launchBonus2 = true }, handlers = { "locationConditions" } },
+  },
+  memoriamBonus2 = {
+    id = "memoriamBonus2",
+    type = "roll",
+    displayName = "Memoriam Dice +2",
+    canApplyManually = true,
+    priority = 25,
+    roll = { features = { memoriamBonus2 = true }, handlers = { "locationConditions" } },
+  },
+  messyRouseTallyBonus = {
+    id = "messyRouseTallyBonus",
+    type = "roll",
+    displayName = "Stronger (Scene Tally)",
+    canApplyManually = true,
+    priority = 25,
+    roll = { features = { messyRouseTallyBonus = true }, handlers = { "locationConditions" } },
+  },
+  messyCompulsion = {
+    id = "messyCompulsion",
+    type = "roll",
+    displayName = "Messy Critical Compulsion",
+    canApplyManually = true,
+    priority = 25,
+    roll = { features = { messyCompulsion = true }, handlers = { "locationConditions" } },
+  },
+  fullWPReroll = {
+    id = "fullWPReroll",
+    type = "roll",
+    displayName = "Reroll All Dice with Willpower",
+    canApplyManually = true,
+    priority = 25,
+    requiresCondition = "fullWPReroll",
+    roll = { wpCanRerollHunger = true, wpRerollScope = "all_mandatory", features = { fullWPReroll = true }, handlers = { "locationConditions", "mandatoryFullWpReroll" } },
+  },
+  surviveFailure = {
+    id = "surviveFailure",
+    type = "roll",
+    displayName = "Drowning",
+    canApplyManually = true,
+    priority = 25,
+    roll = { features = { surviveFailure = true }, handlers = { "locationConditions" } },
+  },
+  doubleBloodSurge = {
+    id = "doubleBloodSurge",
+    type = "roll",
+    displayName = "Double Blood Surge",
+    canApplyManually = true,
+    priority = 25,
+    roll = { bloodSurgeDiceMultiplier = 2, features = { doubleBloodSurge = true }, handlers = { "locationConditions" } },
+  },
+  noFrenzy = {
+    id = "noFrenzy",
+    type = "roll",
+    displayName = "Corrupt Ambition Instead of Frenzy",
+    canApplyManually = true,
+    priority = 25,
+    roll = { features = { noFrenzy = true }, handlers = { "locationConditions" } },
+  },
+  noBloodSurge = {
+    id = "noBloodSurge",
+    type = "roll",
+    displayName = "No Blood Surge",
+    canApplyManually = true,
+    priority = 25,
+    roll = { features = { noBloodSurge = true }, handlers = { "locationConditions" } },
+  },
+  upgradeStandardSuccess = {
+    id = "upgradeStandardSuccess",
+    type = "roll",
+    displayName = "Life Is a Highway",
+    canApplyManually = true,
+    priority = 25,
+    roll = { features = { upgradeStandardSuccess = true }, handlers = { "locationConditions" } },
+  },
+  rerollSuccessfulRouse = {
+    id = "rerollSuccessfulRouse",
+    type = "roll",
+    displayName = "Reroll Successful Rouse Checks",
+    canApplyManually = true,
+    priority = 25,
+    roll = { features = { rerollSuccessfulRouse = true }, handlers = { "locationConditions" } },
+  },
+  setHungerWPReroll = {
+    id = "setHungerWPReroll",
+    type = "roll",
+    displayName = "Willpower Sets a Hunger Die to 10",
+    canApplyManually = true,
+    priority = 25,
+    roll = { features = { setHungerWPReroll = true }, handlers = { "locationConditions" } },
+  },
+  scaryWPReroll = {
+    id = "scaryWPReroll",
+    type = "roll",
+    displayName = "Willpower Reroll Provokes Fear",
+    canApplyManually = true,
+    priority = 25,
+    roll = { features = { scaryWPReroll = true }, handlers = { "locationConditions" } },
+  },
+  resolveHalved = {
+    id = "resolveHalved",
+    type = "stat",
+    displayName = "Resolve Halved",
+    canApplyManually = true,
+    priority = 60,
+    -- Applied after the existing impairment penalties, without changing permanent dots.
+    statChangesFromStats = function(stats, changes)
+      local before = PSC.dotRatingFromStats(stats, changes, "resolve")
+      local delta = math.floor(before / 2) - before
+      return { resolve = delta, willpower = delta }
+    end,
+    roll = { features = { resolveHalved = true }, handlers = { "locationConditions" } },
+  },
+  remorseBonus2 = {
+    id = "remorseBonus2",
+    type = "roll",
+    displayName = "Remorse Dice +2",
+    canApplyManually = true,
+    priority = 25,
+    roll = { features = { remorseBonus2 = true }, handlers = { "locationConditions" } },
+  },
+  toxicRouse = {
+    id = "toxicRouse",
+    type = "roll",
+    displayName = "Toxic Rouse",
+    canApplyManually = true,
+    priority = 25,
+    roll = { features = { toxicRouse = true }, handlers = { "locationConditions" } },
+  },
+  scaryStain = {
+    id = "scaryStain",
+    type = "roll",
+    displayName = "Stains Provoke Fury",
+    canApplyManually = true,
+    priority = 25,
+    roll = { features = { scaryStain = true }, handlers = { "locationConditions" } },
+  },
+  noObvRouseDice = {
+    id = "noObvRouseDice",
+    type = "roll",
+    displayName = "Oblivion Rouse without Stains",
+    canApplyManually = true,
+    priority = 25,
+    roll = { features = { noObvRouseDice = true }, handlers = { "locationConditions" } },
+  },
+  bestialReset = {
+    id = "bestialReset",
+    type = "roll",
+    displayName = "Bestial Failure Restores Willpower",
+    canApplyManually = true,
+    priority = 25,
+    roll = { features = { bestialReset = true }, handlers = { "locationConditions" } },
+  },
+  woundToCompulsion = {
+    id = "woundToCompulsion",
+    type = "roll",
+    displayName = "Wounded Arrival Compulsion",
+    canApplyManually = true,
+    priority = 25,
+    roll = { features = { woundToCompulsion = true }, handlers = { "locationConditions" } },
+  },
   torpor = {
     id = "torpor",
     type = "stat",
@@ -403,6 +581,7 @@ function CD.isPerRollOptsCondition(def)
   if type(def) ~= "table" or def.type ~= "roll" then
     return false
   end
+  if def.showInRollOptions == true then return true end
   if CD.STRUCTURAL_NEGATING_REVERSE[def.id] ~= nil then
     return true
   end

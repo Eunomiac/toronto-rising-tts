@@ -847,6 +847,7 @@ end
 --- @return boolean
 function Scenes.applyDefaultNoSceneEnvironment(opts)
     opts = type(opts) == "table" and opts or {}
+    S.setStateVal(nil, "locationConditionState")
     require("lib.sync_trace").report("Scenes.applyDefaultNoSceneEnvironment", {
         reason = tostring(opts.reason or ""),
         outcome = "ran",

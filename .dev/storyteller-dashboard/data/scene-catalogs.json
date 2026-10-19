@@ -890,7 +890,9 @@
       "key": "DupontByTheCastle",
       "name": "Dupont by the Castle",
       "conditions": [
-        "bumpBloodPotency"
+        "messyCompulsion",
+        "bumpBloodPotency",
+        "fullWPReroll"
       ],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14368791366422288324/C98A69FB4A81117D321C62BF4767B5F9FD0B677F/"
     },
@@ -909,7 +911,9 @@
     {
       "key": "LakeOntario",
       "name": "Lake Ontario",
-      "conditions": [],
+      "conditions": [
+        "surviveFailure"
+      ],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13295422317804344879/6B3F8DB1C524A6CC0FEA3531FDDC555ACBFDB7E8/"
     },
     {
@@ -921,7 +925,10 @@
     {
       "key": "LittleItaly",
       "name": "Little Italy",
-      "conditions": [],
+      "conditions": [
+        "doubleBloodSurge",
+        "noFrenzy"
+      ],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11885847352011920899/A29EE7E4DE5BE4DD21611C4C10D0DFA4F27A665C/"
     },
     {
@@ -953,7 +960,9 @@
     {
       "key": "Rosedale",
       "name": "Rosedale",
-      "conditions": [],
+      "conditions": [
+        "noBloodSurge"
+      ],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16828522861709060161/8F7B806AA83360DDE18C85488F0C122AF1A5D909/"
     },
     {
@@ -989,19 +998,25 @@
     {
       "key": "Discovery",
       "name": "The Discovery District",
-      "conditions": [],
+      "conditions": [
+        "launchBonus2"
+      ],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16270717294586029216/51FC15A66811BD265FD4A913F326EAD34CA21EA6/"
     },
     {
       "key": "DistilleryDist",
       "name": "The Distillery District",
-      "conditions": [],
+      "conditions": [
+        "memoriamBonus2"
+      ],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16091672762203465058/7CA5E6953525098C7FD1A7607BC2B90BB7A1E367/"
     },
     {
       "key": "DonRavine",
       "name": "The Don River Ravine",
-      "conditions": [],
+      "conditions": [
+        "messyRouseTallyBonus"
+      ],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/15077374334106774960/136A49EBEAB2F727E2B4EBACEE3919E068660523/"
     },
     {
@@ -1019,7 +1034,9 @@
     {
       "key": "Streets",
       "name": "The Streets",
-      "conditions": [],
+      "conditions": [
+        "upgradeStandardSuccess"
+      ],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16013754493363991735/1C8B6B874A88BCE0F6C56DD5C0C8C1C669701216/"
     },
     {
@@ -1049,7 +1066,9 @@
     {
       "key": "WestQueenWest",
       "name": "West Queen West",
-      "conditions": [],
+      "conditions": [
+        "rerollSuccessfulRouse"
+      ],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13818160331660948267/713119032C73F9305E9C56AF06BE05E955130C5E/"
     },
     {
@@ -1113,7 +1132,9 @@
       "isIndoors": false,
       "skybox": "AptStreetside",
       "locationTrack": "quietCity",
-      "conditions": [],
+      "conditions": [
+        "scaryStain"
+      ],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13482067481287701148/7A695B75C2AE3BCAD62AA6F51DFFF6FF8DD0F554/"
     },
     {
@@ -1344,7 +1365,9 @@
       "isIndoors": false,
       "skybox": "Cemetery",
       "locationTrack": "eerieForest",
-      "conditions": [],
+      "conditions": [
+        "noObvRouseDice"
+      ],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/11247739334670899204/5EF6475D9436C81741EBB97E4157AC932C255B7E/"
     },
     {
@@ -1564,7 +1587,9 @@
       "isIndoors": true,
       "skybox": "EvergreenPalisades",
       "locationTrack": "silent",
-      "conditions": [],
+      "conditions": [
+        "scaryWPReroll"
+      ],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12180670981575690530/2C7BC2DD81883CE7E7B416FF57190AD7B690A80D/"
     },
     {
@@ -2070,7 +2095,9 @@
       "isIndoors": true,
       "skybox": "RedemptionHouse",
       "locationTrack": "softIndoor",
-      "conditions": [],
+      "conditions": [
+        "resolveHalved"
+      ],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/14575964584792726273/AD5ABA95ECC9CF8C9B91F272CB66957788559BD7/"
     },
     {
@@ -2213,7 +2240,9 @@
       "isIndoors": true,
       "skybox": "RunDownApt1",
       "locationTrack": "silent",
-      "conditions": [],
+      "conditions": [
+        "bestialReset"
+      ],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/13956646009086827787/2D7C34FEA1FFFB50400F3024E8168FA8432EEA02/"
     },
     {
@@ -2356,7 +2385,9 @@
       "isIndoors": true,
       "skybox": "StMichaelsCathedral",
       "locationTrack": "church",
-      "conditions": [],
+      "conditions": [
+        "remorseBonus2"
+      ],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10428560055914654340/5671DA7E885E26F8305C9FDF53DBB0F21E1967B1/"
     },
     {
@@ -2389,7 +2420,9 @@
       "isIndoors": false,
       "skybox": "StreetCorner1",
       "locationTrack": "quietCity",
-      "conditions": [],
+      "conditions": [
+        "woundToCompulsion"
+      ],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/16515913079203299756/AA944F47BA95F577CA2AF35CA22C41FBCA9FB76B/"
     },
     {
@@ -2543,7 +2576,9 @@
       "isIndoors": false,
       "skybox": "Docks",
       "locationTrack": "waterside",
-      "conditions": [],
+      "conditions": [
+        "setHungerWPReroll"
+      ],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/12949344677566950941/6EEE071E5BB6F04584D969DDF62C3FC27E78A779/"
     },
     {
@@ -2873,7 +2908,9 @@
       "isIndoors": false,
       "skybox": null,
       "locationTrack": "eerieForest",
-      "conditions": [],
+      "conditions": [
+        "toxicRouse"
+      ],
       "cardUrl": "https://steamusercontent-a.akamaihd.net/ugc/10826935590880878584/1F13199E208F43E8035C91DA2F99205C0747B605/"
     },
     {
@@ -5101,6 +5138,90 @@
     }
   },
   "conditions": [
+    {
+      "id": "criminalLaunchBonus2",
+      "displayName": "Launch increases a criminal Background (+2)"
+    },
+    {
+      "id": "launchBonus2",
+      "displayName": "Launch Dice +2"
+    },
+    {
+      "id": "memoriamBonus2",
+      "displayName": "Memoriam Dice +2"
+    },
+    {
+      "id": "messyRouseTallyBonus",
+      "displayName": "Stronger (Scene Tally)"
+    },
+    {
+      "id": "messyCompulsion",
+      "displayName": "Messy Critical Compulsion"
+    },
+    {
+      "id": "fullWPReroll",
+      "displayName": "Reroll All Dice with Willpower"
+    },
+    {
+      "id": "surviveFailure",
+      "displayName": "Drowning"
+    },
+    {
+      "id": "doubleBloodSurge",
+      "displayName": "Double Blood Surge"
+    },
+    {
+      "id": "noFrenzy",
+      "displayName": "Corrupt Ambition Instead of Frenzy"
+    },
+    {
+      "id": "noBloodSurge",
+      "displayName": "No Blood Surge"
+    },
+    {
+      "id": "upgradeStandardSuccess",
+      "displayName": "Life Is a Highway"
+    },
+    {
+      "id": "rerollSuccessfulRouse",
+      "displayName": "Reroll Successful Rouse Checks"
+    },
+    {
+      "id": "setHungerWPReroll",
+      "displayName": "Willpower Sets a Hunger Die to 10"
+    },
+    {
+      "id": "scaryWPReroll",
+      "displayName": "Willpower Reroll Provokes Fear"
+    },
+    {
+      "id": "resolveHalved",
+      "displayName": "Resolve Halved"
+    },
+    {
+      "id": "remorseBonus2",
+      "displayName": "Remorse Dice +2"
+    },
+    {
+      "id": "toxicRouse",
+      "displayName": "Toxic Rouse"
+    },
+    {
+      "id": "scaryStain",
+      "displayName": "Stains Provoke Fury"
+    },
+    {
+      "id": "noObvRouseDice",
+      "displayName": "Oblivion Rouse without Stains"
+    },
+    {
+      "id": "bestialReset",
+      "displayName": "Bestial Failure Restores Willpower"
+    },
+    {
+      "id": "woundToCompulsion",
+      "displayName": "Wounded Arrival Compulsion"
+    },
     {
       "id": "torpor",
       "displayName": "Torpor"

@@ -38,16 +38,19 @@ local Districts = {
   },
   Discovery = {
     name = "The Discovery District",
+    conditions = { "launchBonus2" },
   },
   DistilleryDist = {
     name = "The Distillery District",
+    conditions = { "memoriamBonus2" },
   },
   DonRavine = {
     name = "The Don River Ravine",
+    conditions = { "messyRouseTallyBonus" },
   },
   DupontByTheCastle = {
     name = "Dupont by the Castle",
-    conditions = { "bumpBloodPotency" },
+    conditions = { "messyCompulsion", "bumpBloodPotency", "fullWPReroll" },
   },
   GayVillage = {
     name = "The Gay Village",
@@ -60,12 +63,14 @@ local Districts = {
   },
   LakeOntario = {
     name = "Lake Ontario",
+    conditions = { "surviveFailure" },
   },
   LibertyVillage = {
     name = "Liberty Village",
   },
   LittleItaly = {
     name = "Little Italy",
+    conditions = { "doubleBloodSurge", "noFrenzy" },
   },
   LittlePortugal = {
     name = "Little Portugal",
@@ -82,6 +87,7 @@ local Districts = {
   },
   Rosedale = {
     name = "Rosedale",
+    conditions = { "noBloodSurge" },
   },
   Sewers = {
     name = "The Sewers",
@@ -91,6 +97,7 @@ local Districts = {
   },
   Streets = {
     name = "The Streets",
+    conditions = { "upgradeStandardSuccess" },
   },
   Subway = {
     name = "The Subway",
@@ -103,6 +110,7 @@ local Districts = {
   },
   WestQueenWest = {
     name = "West Queen West",
+    conditions = { "rerollSuccessfulRouse" },
   },
   Wychwood = {
     name = "Wychwood",
@@ -163,6 +171,7 @@ LocationsCatalog.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     isTopFogActive = false,
+    conditions = { "scaryStain" },
   },
   ArtGallery = {
     name = "Art Gallery of Ontario",
@@ -453,6 +462,7 @@ LocationsCatalog.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     isTopFogActive = true,
+    conditions = { "noObvRouseDice" },
   },
   CentrevillePark = {
     name = "Centreville Theme Park",
@@ -665,6 +675,7 @@ LocationsCatalog.Sites = {
     weatherDucking = 1,
     isTopFogActive = true,
     offsetXY = "497.46 -221.99",
+    conditions = { "setHungerWPReroll" },
   },
   DogPark = {
     name = "Dog Park",
@@ -719,6 +730,7 @@ LocationsCatalog.Sites = {
     weatherDucking = 0.4,
     isTopFogActive = true,
     offsetXY = "512.07 302.32",
+    conditions = { "scaryWPReroll" },
   },
   Fairmont = {
     name = "Fairmont Royal York",
@@ -1346,6 +1358,7 @@ LocationsCatalog.Sites = {
     weatherDucking = 0,
     isTopFogActive = false,
     offsetXY = "465.97 437.89",
+    conditions = { "resolveHalved" },
   },
   RemembranceHouse = {
     name = "Remembrance House",
@@ -1422,6 +1435,7 @@ LocationsCatalog.Sites = {
     isIndoors = true,
     weatherDucking = 0.25,
     isTopFogActive = false,
+    conditions = { "bestialReset" },
   },
   Ryerson = {
     name = "Ryerson University",
@@ -1585,6 +1599,7 @@ LocationsCatalog.Sites = {
     weatherDucking = 0.1,
     isTopFogActive = true,
     offsetXY = "168.94 44.06",
+    conditions = { "remorseBonus2" },
   },
   StMichaelsHospital = {
     name = "St. Michael's Hospital",
@@ -1725,6 +1740,7 @@ LocationsCatalog.Sites = {
     isIndoors = false,
     weatherDucking = 1,
     isTopFogActive = true,
+    conditions = { "woundToCompulsion" },
   },
   StreetCorner2 = {
     name = "Street Corner",
@@ -2134,6 +2150,7 @@ LocationsCatalog.Sites = {
     weatherDucking = 1,
     isTopFogActive = true,
     offsetXY = "351.64 586.93",
+    conditions = { "toxicRouse" },
   },
   WychwoodPub = {
     name = "Wychwood Pub",

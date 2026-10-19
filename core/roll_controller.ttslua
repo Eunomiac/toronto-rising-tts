@@ -275,6 +275,7 @@ function RC.computeEffectiveRollState(color, active)
     active.rollOptions[RO.ROLL_CRITS] = crits
 
     RO.sanitizeRollOptions(active)
+    RollConditionHandlers.run("onPolicyResolved", color, active)
 end
 
 --- @deprecated use `RC.computeEffectiveRollState(color, active)`
@@ -395,6 +396,10 @@ end
 -- @param obj Object
 -- @return boolean
 local function isWpRerollEligibleDie(active, kind, obj)
+    if wpRerollScopeForActive(active) == "all_mandatory"
+        and (kind == DK.KIND_NORMAL or kind == DK.KIND_HUNGER) then
+        return true
+    end
     if not DK.canRerollWithWillpower(kind, obj.getValue()) then
         return false
     end
@@ -802,14 +807,14 @@ end
 -- @param rollType string  C.RollType.ROUSE or ROUSE_OBLIVION
 -- @param rouseVals table  die face values
 -- @return table|nil result (includes rouseNarrative for broadcast), table|nil oblivRes
-local function buildDedicatedRouseResult(rollType, rouseVals)
+local function buildDedicatedRouseResult(rollType, rouseVals, noStains)
     if type(rouseVals) ~= "table" or #rouseVals == 0 then
         return nil, nil
     end
 
     local oblivRes = nil
     if rollType == C.RollType.ROUSE_OBLIVION then
-        oblivRes = RouseOutcomes.resolveOblivRouseDice(rouseVals)
+        oblivRes = RouseOutcomes.resolveOblivRouseDice(rouseVals, noStains)
     end
 
     local passed = (oblivRes == nil)
@@ -1263,7 +1268,8 @@ local function tryClassifyResultInternal(color)
         local rouseVals = (active.rollType == C.RollType.ROUSE_OBLIVION)
             and (valuesByKind[DK.KIND_OBLIV_ROUSE] or {})
             or (valuesByKind[DK.KIND_ROUSE] or {})
-        local result, oblivRes = buildDedicatedRouseResult(active.rollType, rouseVals)
+        local result, oblivRes = buildDedicatedRouseResult(active.rollType, rouseVals,
+            active.rollPolicy and active.rollPolicy.features.noObvRouseDice)
         active.result = result
         if oblivRes ~= nil and oblivRes.pendingChoice == true then
             active.pendingResolution = C.PendingResolution.OBLIV_HUNGER_STAIN
@@ -1368,6 +1374,7 @@ function RC.initiateRoll(color, config)
     if config.idleBagAutoRouse == true then
         active.meta.idleBagAutoRouse = true
     end
+    active.meta.conditionFollowup = config.conditionFollowup
 
     RO.seedActiveRoll(active)
     active.rollConditionOverlay = { forceOn = {}, forceOff = {} }
@@ -1879,6 +1886,12 @@ local function recalculateTakeHalfAwaitingRouse(color, active, wasRolling)
     if readableRouse < expectedRouse then
         return false
     end
+    local objectsByKind = RC._getDiceObjectsByKindForRoll(color, active.id)
+    if RollConditionHandlers.run("onBeforeDiceRead", color, active, valuesByKind, objectsByKind) == false then
+        setActive(color, active)
+        notifyStateChanged(color)
+        return true
+    end
 
     -- onDieSettled debounce means dice are quiet; lock before merge (WP reroll locks per die earlier).
     lockRouseDiceForRoll(color, active.id)
@@ -2157,6 +2170,9 @@ local function finishWpRerollWaveFromRolling(color)
     if active.willpower == nil or active.willpower.wpRerollWave ~= true then
         return false
     end
+    if RollConditionHandlers.run("onConfirmRoll", color, active) == false then
+        return false
+    end
     restoreBumpedWpDice(color, active)
     dropUnchosenWpHighlights(active)
     cancelDebounce(color)
@@ -2415,6 +2431,11 @@ function RC.recalculate(color, previewOnly)
     local wasWpWave  = active.willpower ~= nil and active.willpower.wpRerollWave == true
 
     local valuesByKind, objectsByKind = RC._getDicePoolsForRoll(color, active.id)
+    if RollConditionHandlers.run("onBeforeDiceRead", color, active, valuesByKind, objectsByKind) == false then
+        setActive(color, active)
+        notifyStateChanged(color)
+        return true
+    end
     local normalDice = valuesByKind[DK.KIND_NORMAL] or {}
     local hungerDice = valuesByKind[DK.KIND_HUNGER] or {}
     local werewolfDice = valuesByKind[DK.KIND_WEREWOLF] or {}
@@ -2447,7 +2468,8 @@ function RC.recalculate(color, previewOnly)
             and valuesByKind[DK.KIND_OBLIV_ROUSE]
             or valuesByKind[DK.KIND_ROUSE]
         if active.difficulty ~= nil then
-            local result, oblivRes = buildDedicatedRouseResult(active.rollType, rouseVals)
+            local noStains = active.rollPolicy and active.rollPolicy.features.noObvRouseDice
+            local result, oblivRes = buildDedicatedRouseResult(active.rollType, rouseVals, noStains)
             active.result = result
             if oblivRes ~= nil and oblivRes.pendingChoice == true then
                 active.pendingResolution = C.PendingResolution.OBLIV_HUNGER_STAIN
@@ -2844,6 +2866,10 @@ function RC.spendWillpower(color)
         print(string.format("[RC] spendWillpower: no rerolls remaining for %s", color))
         return false
     end
+    if RollConditionHandlers.run("onBeforeWillpowerSpend", color, active) == false then
+        return false
+    end
+    active.meta.wpPreviousResult = active.result
 
     -- Apply 1 Superficial Willpower damage when Auto-WP is enabled (full tracker pipeline + HUD refresh);
     -- a Storyteller roll charges the rolling NPC instead.
@@ -2885,7 +2911,6 @@ end
 function RC.confirmRoll(color)
     U.Val("RC.confirmRoll()", {color = color}, U.Type(color) == "string", "color must be a string")
 
-    cancelWpDieLockWaitsForColor(color)
     RC.clearStSelectiveReroll(color)
 
     local active = getActive(color)
@@ -2899,6 +2924,7 @@ function RC.confirmRoll(color)
         and active.willpower.wpRerollWave == true then
         return finishWpRerollWaveFromRolling(color)
     end
+    cancelWpDieLockWaitsForColor(color)
     if active.phase ~= C.RollPhase.POST_ROLL then
         print(string.format("[RC] confirmRoll: %s roll is not in POST_ROLL (phase: %s)", color, active.phase))
         return false
@@ -2934,6 +2960,10 @@ function RC.confirmRoll(color)
             return false
         end
         active = refreshed
+        if active.phase ~= C.RollPhase.POST_ROLL then
+            -- A condition may have rerolled a successful Rouse check during the final read.
+            return false
+        end
         -- If the live read finds no dice (timing, moved objects), keep the last classified result
         -- so the broadcast and automation still match what the table already showed.
         if active.result == nil and preResult ~= nil then
@@ -2944,6 +2974,8 @@ function RC.confirmRoll(color)
         end
     end
 
+    -- Condition consequences share the final confirmed result, including any live reread.
+    RollConditionHandlers.run("onRollConsequences", color, active)
     -- Apply consequences for Rouse / Remorse
     if active.result ~= nil then
         RC._applyRollConsequences(color, active)
@@ -3172,7 +3204,9 @@ function RC._applyRollConsequences(color, active)
         if pid == nil then return end
         if rc == C.ResultClass.FAILURE or rc == C.ResultClass.TOTAL_FAILURE then
             -- Conditions.setManual announces the seat (Sync.player).
-            Conditions.setManual(pid, "hudFrenzy", true)
+            if RollConditionHandlers.run("onFrenzyFailed", color, active) ~= false then
+                Conditions.setManual(pid, "hudFrenzy", true)
+            end
         end
     end
 end
@@ -3279,7 +3313,8 @@ function RC._buildRouseStripsForActive(color, active, valuesByKind)
 
     local oblivVals = valuesByKind[DK.KIND_OBLIV_ROUSE] or {}
     if #oblivVals > 0 then
-        local res = RouseOutcomes.resolveOblivRouseDice(oblivVals)
+        local res = RouseOutcomes.resolveOblivRouseDice(oblivVals,
+            active.rollPolicy and active.rollPolicy.features.noObvRouseDice)
         strips[#strips + 1] = {
             label = "Oblivion Rouse",
             kind = DK.KIND_OBLIV_ROUSE,
@@ -3342,7 +3377,8 @@ function RC._applyRouseOutcomeStrips(color, active)
         if strip.pendingChoice == true then
             -- Resolved via RC.confirmOblivionChoice before confirm.
         elseif strip.label == "Oblivion Rouse" then
-            local res = RouseOutcomes.resolveOblivRouseDice(strip.values or {})
+            local res = RouseOutcomes.resolveOblivRouseDice(strip.values or {},
+                active.rollPolicy and active.rollPolicy.features.noObvRouseDice)
             hungerDelta = hungerDelta + res.hungerDelta
             stainDelta = stainDelta + res.stainDelta
         elseif strip.label == "Rouse" or strip.label == "Blood Surge Rouse" then
@@ -3351,6 +3387,7 @@ function RC._applyRouseOutcomeStrips(color, active)
         end
     end
 
+    RollConditionHandlers.run("onRouseConsequences", color, active)
     if hungerDelta == 0 and stainDelta == 0 then
         return
     end
@@ -3512,6 +3549,9 @@ end
 function RC.activateBloodSurge(color)
     local active = getActive(color)
     if active == nil then return false end
+    if RollConditionHandlers.run("onBloodSurgeActivate", color, active) == false then
+        return false
+    end
     if C.RollTypesBloodSurge[active.rollType] ~= true then return false end
     if active.phase ~= C.RollPhase.SETUP and active.phase ~= C.RollPhase.PRE_ROLL then
         return false

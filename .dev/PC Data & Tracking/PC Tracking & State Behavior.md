@@ -305,7 +305,16 @@ type ConditionId =
   | "hudTransitionBlindfold"
   | "bumpBloodPotency"
   | "majorClaim_WestQueenWest"
-  | "majorClaim_DupontByTheCastle";
+  | "majorClaim_DupontByTheCastle"
+  | "compulsion_Delusion_2"
+  | "bonusWPReroll" | "noTakeHalf" | "noWPReroll" | "noHungerDice" | "noCriticals"
+  | "canRerollHunger" | "bestialNull"
+  | "launchBonus2" | "memoriamBonus2" | "criminalLaunchBonus2"
+  | "messyRouseTallyBonus" | "messyCompulsion" | "fullWPReroll"
+  | "surviveFailure" | "doubleBloodSurge" | "noFrenzy" | "noBloodSurge"
+  | "upgradeStandardSuccess" | "rerollSuccessfulRouse" | "setHungerWPReroll"
+  | "scaryWPReroll" | "resolveHalved" | "remorseBonus2" | "toxicRouse"
+  | "scaryStain" | "noObvRouseDice" | "bestialReset" | "woundToCompulsion";
 
 /** true when no instance fields; otherwise a small table (e.g. blindfold variant). */
 type PersistedCondition = true | { variant?: number };

@@ -829,6 +829,21 @@ function Compulsions.resolvePlayerDeck(color)
     return SRI.findObjectByRoleIdentity("COMPULSION_DECK_" .. string.upper(canon))
 end
 
+--- Draw once from the identified seat deck; normal object-leave events present its choices.
+function Compulsions.drawForCondition(color)
+    if Compulsions.hasActiveSelectionForColor(color) or presentByColor[color] ~= nil then
+        return false
+    end
+    local deck = Compulsions.resolvePlayerDeck(color)
+    if deck == nil or deck.takeObject == nil then
+        U.AlertGM(color .. ": suffer a Compulsion (the seat's Compulsion deck is unavailable).")
+        return false
+    end
+    local p = deck.getPosition()
+    deck.takeObject({ position = { x = p.x, y = p.y + 2, z = p.z }, smooth = false })
+    return true
+end
+
 --- Generic drawn from a per-seat Compulsions deck: DRAWN pose, camera, staggered present.
 --- @param container Object
 --- @param card Object
