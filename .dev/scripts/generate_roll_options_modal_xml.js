@@ -65,7 +65,7 @@ function readStandardRollConditions(defsPath) {
     const hasOverlayToggle =
       /bestialNull\s*=\s*true/.test(block) ||
       /wpCanRerollHunger\s*=\s*true/.test(block);
-    if (!isNegating && !hasOverlayToggle) {
+    if (!isNegating && !hasOverlayToggle && !/showInRollOptions\s*=\s*true/.test(block)) {
       continue;
     }
     const idMatch = block.match(/id\s*=\s*"([^"]+)"/);

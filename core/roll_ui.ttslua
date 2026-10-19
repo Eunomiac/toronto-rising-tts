@@ -283,7 +283,7 @@ local function rollOptsRefreshStructuralDraftFromActive(active, color)
     if pid ~= nil then
         for _, conditionId in ipairs(CD.listRollConditionIds()) do
             local uiId = "rollCondition_" .. conditionId
-            uiSetActive(uiId, true)
+            uiSetActive(uiId, Conditions.canUseRollCondition(pid, active, conditionId))
             local on = Conditions.isRollConditionEffective(pid, active, conditionId)
             rollOptsDraft.conditions[conditionId] = on
             rollOptsSetToggleClass(uiId, on)

@@ -30,6 +30,7 @@ function RollPolicies.empty()
     handlers = {},
     locked = {},
     contributingConditions = {},
+    features = {},
   }
 end
 
@@ -56,6 +57,12 @@ function RollPolicies.mergeConditionRoll(roll, acc, conditionId, priority)
   end
 
   acc.contributingConditions[#acc.contributingConditions + 1] = conditionId
+
+  for name, enabled in pairs(roll.features or {}) do
+    if enabled == true then
+      acc.features[name] = true
+    end
+  end
 
   local mult = tonumber(roll.bloodSurgeDiceMultiplier)
   if mult ~= nil and mult > 0 then

@@ -73,7 +73,12 @@ end
 --- Resolve multiple Oblivion-Rouse dice per Pt.2 procedure (A–D).
 -- @param values table  array of integers 1–10
 -- @return table { hungerDelta, stainDelta, narrative, pendingChoice }
-function RO.resolveOblivRouseDice(values)
+function RO.resolveOblivRouseDice(values, noStains)
+    if noStains == true then
+        local res = RO.resolveRouseDice(values)
+        res.pendingChoice = false
+        return res
+    end
     if type(values) ~= "table" or #values == 0 then
         return { hungerDelta = 0, stainDelta = 0, narrative = "Success", pendingChoice = false }
     end

@@ -20,6 +20,20 @@ Some rows cover two or three issues that are tested together (the header lists e
 
 ## Outstanding
 
+### Location Aspect conditions
+
+#### Location condition implementation — direct author request
+
+The 20 missing location conditions now use the shared registry and scene-presence system.
+After building and using Save & Play, follow [the location condition checks](PC%20Data%20%26%20Tracking/Location%20Aspect%20Conditions.md#in-game-verification).
+In particular, check that conditions disappear on absence or scene changes, that Dupont requires
+all dice on a Willpower reroll, and that the Cemetery prevents Oblivion Stains.
+The Storyteller still chooses narrative Ambitions and Desires and decides whether a Distillery
+Launch concerns a criminal Background.
+
+Local tests pass; in-game confirmation is outstanding. Linear could not be updated because
+this session has no Linear connector.
+
 _Last populated: 2026-10-19 (TOR-745 Memoriam NPC sheet import). Almost everything below assumes the dashboard is running. Restart it once (`npm run dev`) after pulling new code, then Save & Play. For the Cloud asset rows, run `npm run build:full` once with Steam on and TTS closed before the first Save & Play, then reload the Toronto Rising save._
 
 ### Memoriam NPC list moved off the skybox sheet

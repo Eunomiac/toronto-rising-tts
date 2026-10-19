@@ -8,6 +8,7 @@ local RollConditionHandlers = {}
 
 --- Mandatory full reroll: player must reroll every eligible die before confirm.
 RollConditionHandlers.HANDLERS = {
+  locationConditions = require("core.location_conditions"),
   mandatoryFullWpReroll = {
     --- Required set = the dice the roll controller unlocked this wave (`willpower.waveEligibleGuids`).
     --- @param _color string
@@ -92,7 +93,7 @@ function RollConditionHandlers.run(hookName, color, active, ...)
       local fn = entry[hookName]
       if type(fn) == "function" then
         local result = fn(color, active, ...)
-        if hookName == "onConfirmRoll" and result == false then
+        if result == false then
           return false
         end
       end

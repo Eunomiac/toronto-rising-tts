@@ -160,9 +160,13 @@ function P.applyHumanityStainDelta(playerRef, stainDelta)
     return
   end
   local hu = stats.humanity
-  local stains = math.max(0, (tonumber(hu.stains) or 0) + (tonumber(stainDelta) or 0))
+  local before = tonumber(hu.stains) or 0
+  local stains = math.max(0, before + (tonumber(stainDelta) or 0))
   S.setStateVal(stains, "playerData", playerID, "stats", "humanity", "stains")
   Conditions.reconcileDerivedForPlayer(playerID, STATE_ONLY)
+  if stains > before then
+    Conditions.dispatchEvent(playerID, "onStainsGained")
+  end
 end
 
 --- Whether collision creates impaired box (last humanity slot touched by stains from right).

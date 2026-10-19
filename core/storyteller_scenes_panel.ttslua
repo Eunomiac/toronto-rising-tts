@@ -1710,6 +1710,7 @@ function StorytellerScenesPanel.applyActiveLibraryScene(player, clockModeOrId, c
             bundle.seatSlots,
             S.getStateVal("sessionScene", "seatSlots")
         )
+        S.setStateVal(nil, "locationConditionState")
         S.setStateVal(bundle, "sessionScene")
         SceneLibrary.syncOccupiedNpcSlotsFromSeatSlots(bundle)
         SceneLibrary.setExclusiveLiveMirror(K, ent.title)
