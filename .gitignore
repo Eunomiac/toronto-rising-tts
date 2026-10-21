@@ -117,3 +117,6 @@ build/
 .dev/sheets-obsidian-dashboard/testing/testOutput/
 .dev/build-logs/global-bundle-sample.lua
 .dev/Revision of Player Positioning/Scatter Mode Diagram.psb
+.dev/storyteller-dashboard/data/roll-chronicle.json
+.dev/storyteller-dashboard/data/npc-roster.json
+lib/csheet_xp_log_baked.ttslua
